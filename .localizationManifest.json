@@ -1,0 +1,14 @@
+{
+  "metadata": {
+    "total": 1,
+    "packageName": "app"
+  },
+  "app": {
+    "app": {
+      "__default__": "__localization__/en_us.json",
+      "__destination__": "__localization__",
+      "__source__": "__localization__/jl10n.json",
+      "__import__": "__localization__/index.js"
+    }
+  }
+}

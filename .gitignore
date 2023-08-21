@@ -1,0 +1,18 @@
+node_modules
+.DS_Store
+local.json
+
+# yarn
+.yarn-integrity
+*.log
+
+# build
+dist
+*.tgz
+
+# coverage reports
+coverage
+
+# exclude vscode config except for our shared snippets
+.vscode/*
+!.vscode/prism.code-snippets

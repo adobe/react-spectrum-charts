@@ -1,0 +1,235 @@
+/*
+ * Copyright 2023 Adobe. All rights reserved.
+ * This file is licensed to you under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy
+ * of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under
+ * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+ * OF ANY KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
+ */
+
+import { ChartTooltip } from '@components/ChartTooltip';
+import { DEFAULT_COLOR, DEFAULT_CONTINUOUS_DIMENSION, DEFAULT_METRIC } from '@constants';
+import { createElement } from 'react';
+import { AreaSpecProps } from 'types';
+import { GroupMark, Spec } from 'vega';
+
+import { initializeSpec } from '../specUtils';
+import { addArea, addAreaMarks, addData, addSignals, setScales } from './areaSpecBuilder';
+
+const startingSpec: Spec = initializeSpec({
+	scales: [{ name: 'color', type: 'ordinal' }],
+});
+
+const defaultAreaProps: AreaSpecProps = {
+	children: [],
+	name: 'area0',
+	opacity: 0.8,
+	scaleType: 'time',
+	color: DEFAULT_COLOR,
+	dimension: DEFAULT_CONTINUOUS_DIMENSION,
+	metric: DEFAULT_METRIC,
+};
+
+const defaultSpec = initializeSpec({
+	data: [
+		{
+			name: 'table',
+			transform: [
+				{ as: 'prismMarkId', type: 'identifier' },
+				{
+					as: ['datetime0', 'datetime1'],
+					field: 'datetime',
+					type: 'timeunit',
+					units: ['year', 'month', 'date', 'hours', 'minutes'],
+				},
+				{
+					as: ['value0', 'value1'],
+					field: DEFAULT_METRIC,
+					groupby: ['datetime'],
+					sort: undefined,
+					type: 'stack',
+				},
+			],
+			values: [],
+		},
+	],
+	marks: [
+		{
+			from: {
+				facet: { data: 'table', groupby: DEFAULT_COLOR, name: 'area0Facet' },
+			},
+			marks: [
+				{
+					encode: {
+						enter: {
+							fill: { field: DEFAULT_COLOR, scale: 'color' },
+							y: { field: 'value0', scale: 'yLinear' },
+							y2: { field: 'value1', scale: 'yLinear' },
+							stroke: { signal: 'backgroundColor' },
+							strokeWidth: { value: 1.5 },
+							strokeJoin: { value: 'round' },
+							tooltip: undefined,
+						},
+						update: {
+							x: { field: 'datetime0', scale: 'xTime' },
+							cursor: undefined,
+							fillOpacity: [{ value: 0.8 }],
+						},
+					},
+					interactive: false,
+					from: { data: 'area0Facet' },
+					name: 'area0',
+					type: 'area',
+				},
+			],
+			name: 'area0Group',
+			type: 'group',
+		},
+	],
+	scales: [
+		{
+			domain: { data: 'table', fields: [DEFAULT_COLOR] },
+			name: 'color',
+			type: 'ordinal',
+		},
+		{
+			domain: { data: 'table', fields: ['datetime0'] },
+			name: 'xTime',
+			padding: 32,
+			range: 'width',
+			type: 'time',
+		},
+		{
+			domain: { data: 'table', fields: ['value0', 'value1'] },
+			name: 'yLinear',
+			nice: true,
+			range: 'height',
+			type: 'linear',
+			zero: true,
+		},
+	],
+	signals: [],
+});
+
+const defaultLinearScale = {
+	domain: { data: 'table', fields: ['datetime'] },
+	name: 'xLinear',
+	padding: 32,
+	range: 'width',
+	type: 'linear',
+};
+
+const defaultPointScale = {
+	domain: { data: 'table', fields: ['datetime'] },
+	name: 'xPoint',
+	paddingOuter: 0.5,
+	range: 'width',
+	type: 'point',
+};
+
+const defaultSignals = [
+	{ name: 'area0ControlledHoveredId', on: [{ events: '@area0:mouseout', update: 'null' }], value: null },
+	{
+		name: 'area0HoveredSeries',
+		on: [
+			{ events: '@area0:mouseover', update: `datum.${DEFAULT_COLOR}` },
+			{ events: '@area0:mouseout', update: 'null' },
+		],
+		value: null,
+	},
+	{ name: 'area0SelectedId', value: null },
+	{ name: 'area0SelectedSeries', value: null },
+];
+
+describe('areaSpecBuilder', () => {
+	describe('addArea()', () => {
+		test('should add area', () => {
+			expect(addArea(startingSpec, {})).toStrictEqual(defaultSpec);
+		});
+
+		test('metricStart defined but valueEnd not defined, should default to value', () => {
+			expect(addArea(startingSpec, { metricStart: 'test' })).toStrictEqual(defaultSpec);
+		});
+	});
+
+	describe('addData()', () => {
+		test('basic', () => {
+			expect(addData(startingSpec.data ?? [], defaultAreaProps)).toStrictEqual(defaultSpec.data);
+		});
+
+		test('empty array for initial state, should return empty data', () => {
+			expect(addData([], defaultAreaProps)).toEqual([]);
+		});
+
+		test('scaleTypes "point" and "linear" should return the original data', () => {
+			expect(addData([], { ...defaultAreaProps, scaleType: 'point' })).toEqual([]);
+			expect(addData([], { ...defaultAreaProps, scaleType: 'linear' })).toEqual([]);
+		});
+	});
+
+	describe('addSignals()', () => {
+		test('no children: should return nothing', () => {
+			expect(addSignals(startingSpec.signals ?? [], defaultAreaProps)).toStrictEqual([]);
+		});
+
+		test('children: should add signals', () => {
+			const tooltip = createElement(ChartTooltip);
+			expect(addSignals(startingSpec.signals ?? [], { ...defaultAreaProps, children: [tooltip] })).toStrictEqual(
+				defaultSignals
+			);
+		});
+	});
+
+	describe('setScales()', () => {
+		test('time', () => {
+			expect(setScales(startingSpec.scales ?? [], defaultAreaProps)).toStrictEqual(defaultSpec.scales);
+		});
+
+		test('linear', () => {
+			expect(setScales(startingSpec.scales ?? [], { ...defaultAreaProps, scaleType: 'linear' })).toStrictEqual([
+				defaultSpec.scales?.[0],
+				defaultLinearScale,
+				defaultSpec.scales?.[2],
+			]);
+		});
+
+		test('point', () => {
+			expect(setScales(startingSpec.scales ?? [], { ...defaultAreaProps, scaleType: 'point' })).toStrictEqual([
+				defaultSpec.scales?.[0],
+				defaultPointScale,
+				defaultSpec.scales?.[2],
+			]);
+		});
+	});
+
+	describe('addAreaMarks()', () => {
+		test('basic', () => {
+			expect(addAreaMarks([], defaultAreaProps)).toStrictEqual(defaultSpec.marks);
+		});
+
+		test('linear', () => {
+			const groupMark: GroupMark = defaultSpec.marks?.[0] as GroupMark;
+
+			expect(addAreaMarks([], { ...defaultAreaProps, scaleType: 'linear' })).toStrictEqual([
+				{
+					...groupMark,
+					marks: [
+						{
+							...groupMark.marks?.[0],
+							encode: {
+								...groupMark.marks?.[0].encode,
+								update: {
+									...groupMark.marks?.[0]?.encode?.update,
+									x: { scale: 'xLinear', field: 'datetime' },
+								},
+							},
+						},
+					],
+				},
+			]);
+		});
+	});
+});

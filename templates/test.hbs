@@ -1,0 +1,23 @@
+import '@matchMediaMock';
+import { {{name}} } from '@prism';
+import {
+	findPrism,
+	render,
+	screen,
+} from '@test-utils';
+import React from "react";
+
+import { Basic } from "./{{name}}.story";
+
+describe("{{name}}", () => {
+	// {{name}} is not a real React component. This is test just provides test coverage for sonarqube
+	test('{{name}} pseudo element', () => {
+		render(<{{name}} />);
+	});
+
+	test("Basic renders properly", async () => {
+		render(<Basic {...Basic.args} />);
+		const prism = await findPrism();
+		expect(prism).toBeInTheDocument();
+	});
+});

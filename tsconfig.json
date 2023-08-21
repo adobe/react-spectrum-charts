@@ -1,0 +1,39 @@
+{
+	"compilerOptions": {
+		"baseUrl": "src",
+		"outDir": "./dist",
+		"module": "ESNext",
+		"target": "ES2017",
+		"jsx": "react",
+		"sourceMap": true,
+		"strict": true,
+		"allowJs": false,
+		"moduleResolution": "node",
+		"forceConsistentCasingInFileNames": true,
+		"allowSyntheticDefaultImports": true,
+		"declaration": true,
+		"declarationDir": "./dist/@types/",
+		"declarationMap": true,
+		"noImplicitAny": false,
+		"resolveJsonModule": true,
+		"esModuleInterop": true,
+		"types": ["node", "jest", "@testing-library/jest-dom"],
+		"skipLibCheck": true,
+		"paths": {
+			"@constants": ["constants.ts"],
+			"@components/*": ["components/*"],
+			"@hooks/*": ["hooks/*"],
+			"@l10n": ["l10n.ts"],
+			"@matchMediaMock": ["test-utils/__mocks__/matchMedia.mock"],
+			"@prism": ["index.ts"],
+			"@specBuilder/*": ["specBuilder/*"],
+			"@stories/*": ["stories/*"],
+			"@test-utils": ["test-utils"],
+			"@themes": ["themes"],
+			"@themes/*": ["themes/*"],
+			"@utils": ["utils"]
+		}
+	},
+	"include": ["src/**/*.ts", "src/**/*.tsx"],
+	"exclude": ["node_modules", "dist"]
+}

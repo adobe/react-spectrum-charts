@@ -1,0 +1,269 @@
+/*
+ * Copyright 2023 Adobe. All rights reserved.
+ * This file is licensed to you under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy
+ * of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under
+ * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+ * OF ANY KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
+ */
+
+import { DEFAULT_COLOR_SCHEME, DEFAULT_LINE_TYPES, TABLE } from '@constants';
+import { Area, Axis, Bar, Legend, Line } from '@prism';
+import colorSchemes from '@themes/colorSchemes';
+import produce from 'immer';
+import {
+	AreaElement,
+	AxisElement,
+	BarElement,
+	ColorScale,
+	ColorScheme,
+	Colors,
+	LegendElement,
+	LineElement,
+	LineType,
+	LineTypes,
+	LineWidth,
+	Opacities,
+	PrismColors,
+	PrismSymbolShape,
+	SanitizedSpecProps,
+	SymbolShapes,
+} from 'types';
+import { Data, OrdinalScale, PointScale, Scale, Signal, Spec } from 'vega';
+
+import { addArea } from './area/areaSpecBuilder';
+import { addAxis } from './axis/axisSpecBuilder';
+import { addBar } from './bar/barSpecBuilder';
+import { addLegend } from './legend/legendSpecBuilder';
+import { addLine } from './line/lineSpecBuilder';
+import { getGenericSignal } from './signal/signalSpecBuilder';
+import {
+	getColorValue,
+	getFacetsFromScales,
+	getLineWidthPixelsFromLineWidth,
+	getPathFromPrismSymbolShape,
+	getStrokeDashFromLineType,
+	initializeSpec,
+} from './specUtils';
+
+export function buildSpec({
+	children,
+	colors = 'categorical12',
+	description,
+	lineTypes = DEFAULT_LINE_TYPES,
+	lineWidths = ['M'],
+	opacities,
+	symbolShapes = ['rounded-square'],
+	colorScheme = DEFAULT_COLOR_SCHEME,
+	title,
+}: SanitizedSpecProps) {
+	let spec = initializeSpec(null, { title, description });
+	spec.signals = getDefaultSignals(colors, lineTypes, opacities, colorScheme);
+	spec.scales = getDefaultScales(colors, colorScheme, lineTypes, lineWidths, opacities, symbolShapes);
+
+	// need to build the spec in a specific order
+	const buildOrder = new Map();
+	buildOrder.set(Area, 0);
+	buildOrder.set(Bar, 0);
+	buildOrder.set(Line, 0);
+	buildOrder.set(Legend, 1);
+	buildOrder.set(Axis, 2);
+
+	spec = [...children]
+		.sort((a, b) => buildOrder.get(a.type) - buildOrder.get(b.type))
+		.reduce((acc: Spec, cur) => {
+			switch (cur.type) {
+				case Area:
+					return addArea(acc, (cur as AreaElement).props);
+				case Axis:
+					return addAxis(acc, { ...(cur as AxisElement).props, colorScheme });
+				case Bar:
+					return addBar(acc, { ...(cur as BarElement).props, colorScheme });
+				case Line:
+					return addLine(acc, { ...(cur as LineElement).props, colorScheme });
+				case Legend:
+					return addLegend(acc, { ...(cur as LegendElement).props, colorScheme });
+				default:
+					console.error('invalid type');
+					return acc;
+			}
+		}, spec);
+
+	// copy the spec so we don't mutate the original
+	spec = JSON.parse(JSON.stringify(spec));
+	spec.data = addData(spec.data ?? [], { facets: getFacetsFromScales(spec.scales) });
+	return spec;
+}
+
+const getDefaultSignals = (
+	colors: PrismColors,
+	lineTypes: LineTypes,
+	opacities: Opacities | undefined,
+	colorScheme: ColorScheme
+): Signal[] => [
+	getGenericSignal('backgroundColor', getColorValue('gray-50', colorScheme)),
+	getGenericSignal('colors', getTwoDimensionalColorScheme(colors, colorScheme)),
+	getGenericSignal('lineTypes', getTwoDimensionalLineTypes(lineTypes)),
+	getGenericSignal('opacities', getTwoDimensionalOpacities(opacities)),
+];
+
+export const getTwoDimensionalColorScheme = (colors: PrismColors, colorScheme: ColorScheme): string[][] => {
+	if (isColors(colors)) {
+		return getColors(colors, colorScheme).map((color) => [color]);
+	}
+	return colors.map((color) => getColors(color, colorScheme));
+};
+
+export const getTwoDimensionalLineTypes = (lineTypes: LineTypes): number[][][] => {
+	// 1D array of line types
+	if (isLineTypeArray(lineTypes)) {
+		return getStrokeDashesFromLineTypes(lineTypes).map((strokeDash) => [strokeDash]);
+	}
+	// 2D array of line types
+	return lineTypes.map((lineTypeArray) => getStrokeDashesFromLineTypes(lineTypeArray));
+};
+
+export const getTwoDimensionalOpacities = (opacities: Opacities | undefined): number[][] => {
+	if (!opacities) return [[1]];
+	// 1D array of line types
+	if (isNumberArray(opacities)) {
+		return opacities.map((opacity) => [opacity]);
+	}
+	// 2D array of line types
+	return opacities;
+};
+
+const getDefaultScales = (
+	colors: PrismColors,
+	colorScheme: ColorScheme,
+	lineTypes: LineTypes,
+	lineWidths: LineWidth[],
+	opacities: Opacities | undefined,
+	symbolShapes: SymbolShapes
+): Scale[] => [
+	getColorScale(colors, colorScheme),
+	getLineTypeScale(lineTypes),
+	getLineWidthScale(lineWidths),
+	getOpacityScale(opacities),
+	getSymbolShapeScale(symbolShapes),
+];
+
+export const getColorScale = (colors: PrismColors, colorScheme: ColorScheme): OrdinalScale => {
+	// if a two dimensional scale was provided, then just grab the first color in each scale and set that as the scale range
+	const range = isColors(colors) ? getColors(colors, colorScheme) : colors.map((c) => getColors(c, colorScheme)[0]);
+	return {
+		name: 'color',
+		type: 'ordinal',
+		range,
+		domain: { data: TABLE, fields: [] },
+	};
+};
+
+export const getLineTypeScale = (lineTypes: LineTypes): OrdinalScale => {
+	// if a two dimensional scale was provided, then just grab the first color in each scale and set that as the scale range
+	const range = isLineTypeArray(lineTypes)
+		? getStrokeDashesFromLineTypes(lineTypes)
+		: lineTypes.map((lineTypesArray) => getStrokeDashFromLineType(lineTypesArray[0]));
+	return {
+		name: 'lineType',
+		type: 'ordinal',
+		range,
+		domain: { data: TABLE, fields: [] },
+	};
+};
+export const getSymbolShapeScale = (symbolShapes: SymbolShapes): OrdinalScale => {
+	// if a two dimensional scale was provided, then just grab the first color in each scale and set that as the scale range
+	const range = isPrismSymbolShapeArray(symbolShapes)
+		? getPathsFromPrismSymbolShapes(symbolShapes)
+		: symbolShapes.map((symbolShape) => getPathFromPrismSymbolShape(symbolShape[0]));
+	return {
+		name: 'symbolShape',
+		type: 'ordinal',
+		range,
+		domain: { data: TABLE, fields: [] },
+	};
+};
+
+export const getLineWidthScale = (lineWidths: LineWidth[]): OrdinalScale => ({
+	name: 'lineWidth',
+	type: 'ordinal',
+	range: lineWidths.map((lineWidth) => getLineWidthPixelsFromLineWidth(lineWidth)),
+	domain: { data: TABLE, fields: [] },
+});
+
+export const getOpacityScale = (opacities?: Opacities): OrdinalScale | PointScale => {
+	if (opacities && opacities.length) {
+		const range = isNumberArray(opacities) ? opacities : opacities.map((opacityArray) => opacityArray[0]);
+		return {
+			name: 'opacity',
+			type: 'ordinal',
+			range: range,
+			domain: { data: TABLE, fields: [] },
+		};
+	}
+	return {
+		name: 'opacity',
+		type: 'point',
+		range: [1, 0],
+		padding: 1,
+		align: 1,
+		domain: { data: TABLE, fields: [] },
+	};
+};
+
+function getColors(colors: Colors, colorScheme: ColorScheme): string[] {
+	if (Array.isArray(colors)) {
+		return colors.map((color) => getColorValue(color, colorScheme));
+	}
+	return colorSchemes[colors];
+}
+
+function getStrokeDashesFromLineTypes(lineTypes: LineType[]): number[][] {
+	return lineTypes.map((lineType) => getStrokeDashFromLineType(lineType));
+}
+
+function getPathsFromPrismSymbolShapes(symbolShapes: PrismSymbolShape[]) {
+	return symbolShapes.map((symbolShape) => getPathFromPrismSymbolShape(symbolShape));
+}
+
+/**
+ * Adds a formula transform to the TABLE data that combines all the facets into a single key
+ */
+export const addData = produce<Data[], [{ facets: string[] }]>((data, { facets }) => {
+	if (facets.length === 0) return;
+	// expression for combining all the facets into a single key
+	const expr = facets.map((facet) => `datum.${facet}`).join(' + " | " + ');
+
+	data[0]?.transform?.push({
+		type: 'formula',
+		as: 'prismSeriesId',
+		expr,
+	});
+});
+
+export const isColorScale = (colors: PrismColors): colors is ColorScale => {
+	return Boolean(!Array.isArray(colors) && colors in colorSchemes);
+};
+
+export const isColors = (colors: PrismColors): colors is Colors => {
+	return isColorScale(colors) || colors.some((color) => !isColorScale(color) && typeof color === 'string');
+};
+
+export const isLineTypeArray = (lineTypes: LineTypes): lineTypes is LineType[] => {
+	return lineTypes.some((lineType) => typeof lineType === 'string' || isStrokeDashArray(lineType));
+};
+
+export const isStrokeDashArray = (lineType: LineType | LineType[]): lineType is number[] => {
+	return Array.isArray(lineType) && !lineType.some((value) => typeof value !== 'number');
+};
+
+export const isNumberArray = (opacities: Opacities): opacities is number[] => {
+	return !opacities.some((opacity) => Array.isArray(opacity));
+};
+
+export const isPrismSymbolShapeArray = (symbolShapes: SymbolShapes): symbolShapes is PrismSymbolShape[] => {
+	return !symbolShapes.some((symbolShape) => Array.isArray(symbolShape));
+};

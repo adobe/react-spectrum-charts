@@ -1,0 +1,4 @@
+spapipe('''
+          attributes:
+            nodeVersion: "16.14.2"
+        ''')

@@ -1,0 +1,88 @@
+/*
+ * Copyright 2023 Adobe. All rights reserved.
+ * This file is licensed to you under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy
+ * of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under
+ * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+ * OF ANY KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
+ */
+
+import { Annotation } from '@components/Annotation';
+import usePrismProps from '@hooks/usePrismProps';
+import { Axis, Bar, Legend, Prism, bindWithProps } from '@prism';
+import { ComponentStory } from '@storybook/react';
+import React, { ReactElement, createElement } from 'react';
+import { SpectrumColor } from 'types';
+
+import { barSeriesData, negativeBarSeriesData } from './data';
+
+export default {
+	title: 'Prism/Bar/Stacked Bar',
+	component: Bar,
+	argTypes: {},
+	parameters: {
+		docs: {
+			description: {
+				component: 'This is _markdown_ enabled description for Bar component doc page.',
+			},
+		},
+	},
+};
+
+const colors: SpectrumColor[] = [
+	'divergent-orange-yellow-seafoam-1000',
+	'divergent-orange-yellow-seafoam-1200',
+	'divergent-orange-yellow-seafoam-1400',
+	'divergent-orange-yellow-seafoam-600',
+];
+
+const BarStory: ComponentStory<typeof Bar> = (args): ReactElement => {
+	const prismProps = usePrismProps({ data: barSeriesData, colors, width: 800, height: 600 });
+	return (
+		<Prism {...prismProps}>
+			<Axis position={args.orientation === 'horizontal' ? 'left' : 'bottom'} baseline title="Browser" />
+			<Axis position={args.orientation === 'horizontal' ? 'bottom' : 'left'} grid title="Downloads" />
+			<Bar {...args} />
+			<Legend title="Operating system" />
+		</Prism>
+	);
+};
+
+const NegativeBarStory: ComponentStory<typeof Bar> = (args): ReactElement => {
+	const prismProps = usePrismProps({ data: negativeBarSeriesData, width: 800, height: 600 });
+	return (
+		<Prism {...prismProps}>
+			<Axis position={args.orientation === 'horizontal' ? 'left' : 'bottom'} baseline title="Browser" />
+			<Axis position={args.orientation === 'horizontal' ? 'bottom' : 'left'} grid title="Downloads" />
+			<Bar {...args} />
+			<Legend title="Operating system" />
+		</Prism>
+	);
+};
+
+const Basic = bindWithProps(BarStory);
+Basic.args = {
+	dimension: 'browser',
+	order: 'order',
+	color: 'operatingSystem',
+};
+
+const WithBarLabels = bindWithProps(BarStory);
+WithBarLabels.args = {
+	dimension: 'browser',
+	order: 'order',
+	color: 'operatingSystem',
+	children: createElement(Annotation, { textKey: 'percentLabel' }),
+};
+
+const NegativeStack = bindWithProps(NegativeBarStory);
+NegativeStack.args = {
+	dimension: 'browser',
+	order: 'order',
+	color: 'operatingSystem',
+};
+
+export { Basic, NegativeStack, WithBarLabels };

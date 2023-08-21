@@ -1,0 +1,40 @@
+{
+	"$schema": "https://docs.renovatebot.com/renovate-schema.json",
+	"extends": [
+		":dependencyDashboard",
+		":separateMajorReleases",
+		":combinePatchMinorReleases",
+		":ignoreUnstable",
+		":prImmediately",
+		":semanticPrefixFixDepsChoreOthers",
+		":updateNotScheduled",
+		":ignoreModulesAndTests",
+		":autodetectPinVersions",
+		"group:monorepos",
+		"group:recommended",
+		"helpers:disableTypesNodeMajor",
+		":prHourlyLimitNone",
+		"docker:enableMajor"
+	],
+	"pinDigests": true,
+	"prConcurrentLimit": 3,
+	"ignoreDeps": [
+		"single-spa-react",
+		"style-loader",
+		"css-loader",
+		"sass-loader",
+		"test",
+		"@testing-library/jest-dom",
+		"@testing-library/react",
+		"@types/react",
+		"@types/react-dom",
+		"react",
+		"react-dom"
+	],
+	"ignoreScripts": true,
+	"automerge": true,
+	"nvm": {
+		"enabled": false
+	},
+	"npmrc": "always-auth=true\n_auth=${NPM_AUTH}\nemail=${NPM_EMAIL}\nregistry=https://artifactory.corp.adobe.com/artifactory/api/npm/npm-adobe-release/\n\n@spectrum:registry=https://artifactory.corp.adobe.com:443/artifactory/api/npm/npm-spectrum-release/\n@analytics:registry=https://artifactory.corp.adobe.com:443/artifactory/api/npm/npm-analytics-release/\n@react:registry=https://artifactory.corp.adobe.com:443/artifactory/api/npm/npm-react-release/\n@adobe:registry=https://artifactory.corp.adobe.com/artifactory/api/npm/npm-adobe-platform-release/\n@aaui:registry=https://artifactory.corp.adobe.com:443/artifactory/api/npm/npm-aaui-release/\n//registry.npmjs.org/:always-auth=false"
+}

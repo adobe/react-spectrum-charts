@@ -1,0 +1,30 @@
+backgroundInfo:
+    description: Declarative library for composing spectrum visualizations in React
+    productLine: Analytics
+    productManager: null
+spa:
+    appId: prism
+    distributionList:
+        - Org-Delorey-ALL
+    url: /analytics
+    repoStatus: existing
+    unifiedShellStatus: skip
+    localDevelopmentServer: https://localhost.corp.adobe.com:9002
+    jobConfig:
+        repoName: prism
+        orgName: AnalyticsUI
+        teamName: admins
+        customLintCmd: yarn lint
+        runIntegrationTests: false
+        deployNotifyEmailFailure: mpeterson@adobe.com
+        deployNotifyEmailSuccess: mpeterson@adobe.com
+        build: yarn build
+        unitTest: yarn test
+        integrationTest: ''
+        unifiedShellRoute: ''
+        deployToEnv: prod
+        pipelineFeaturesEnabled: false
+        defaultBranch: main
+        publishToArtifactory: true
+    onboard:
+        success: true
