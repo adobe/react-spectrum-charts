@@ -1,7 +1,7 @@
 {
 	"name": "@aaui/prism",
 	"version": "0.1.7",
-	"description": "Declarative library for composing Spectrum visualizations in React",
+	"description": "Declarative library for composing Spectrum visualizations in React.",
 	"type": "module",
 	"main": "./dist/cjs/app.module.js",
 	"module": "./dist/cjs/app.module.js",
@@ -14,10 +14,7 @@
 		"dist/app.module.js.map",
 		"dist/index.html"
 	],
-	"publishConfig": {
-		"registry": "https://artifactory.corp.adobe.com/artifactory/api/npm/npm-aaui-release/"
-	},
-	"repository": "git@git.corp.adobe.com:AnalyticsUI/prism.git",
+	"repository": "git@github.com:adobe/react-spectrum-charts.git",
 	"author": "Marshall Peterson <mpeterson@adobe.com>",
 	"license": "MIT",
 	"scripts": {
@@ -30,9 +27,7 @@
 		"copyrights": "babel-node --presets @babel/env ./scripts/addHeaders.js",
 		"g": "plop component",
 		"generate": "plop component",
-		"harvest": "cross-env NODE_ENV='production' && harvest",
 		"lint": "eslint src --ext ts",
-		"localize": "yarn harvest && yarn aladdin:put && yarn aladdin:get",
 		"prepack": "yarn build",
 		"pack-test": "rm -rf dist & npm pack",
 		"start": "webpack serve --port=9026 --env target=mfe",
@@ -50,7 +45,6 @@
 		"@babel/preset-react": "^7.18.6",
 		"@babel/preset-typescript": "^7.18.6",
 		"@babel/runtime": "^7.20.6",
-		"@exc/spa-pipeline-tools": "^3.0.0",
 		"@storybook/addon-a11y": "^6.5.14",
 		"@storybook/addon-actions": "^6.5.14",
 		"@storybook/addon-essentials": "^6.5.14",
@@ -103,10 +97,6 @@
 		"webpack-merge": "^5.8.0"
 	},
 	"dependencies": {
-		"@adobe/adobe-intl-aladdin": "^4.2.4",
-		"@adobe/adobe-intl-harvester": "^3.2.0",
-		"@adobe/l10nify": "^1.0.2",
-		"@adobe/react-l10nify": "^1.0.0",
 		"@adobe/react-spectrum": "^3.23.0 - latest",
 		"dayjs": "^1.11.6 - latest",
 		"immer": "^9.0.16 - latest",

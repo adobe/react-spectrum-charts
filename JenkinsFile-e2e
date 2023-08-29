@@ -1,4 +1,0 @@
-e2eJobSPA('''
-          attributes:
-            nodeVersion: "14.15.4"
-        ''')
