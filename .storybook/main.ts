@@ -1,5 +1,3 @@
-// import TsconfigPathsPlugin from 'tsconfig-paths-webpack-plugin';
-import { updateStorybookConfig } from '@exc/spa-pipeline-tools/lib/storybook';
 import type { StorybookConfig } from '@storybook/core-common';
 import TsconfigPathsPlugin from 'tsconfig-paths-webpack-plugin';
 import merge from 'webpack-merge';
@@ -26,4 +24,4 @@ const config: StorybookConfig = {
 	},
 };
 
-module.exports = updateStorybookConfig(config);
+module.exports = config;

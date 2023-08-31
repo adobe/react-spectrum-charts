@@ -1,5 +1,5 @@
 {
-	"name": "@aaui/prism",
+	"name": "@adobe/react-spectrum-charts",
 	"version": "0.1.7",
 	"description": "Declarative library for composing Spectrum visualizations in React.",
 	"type": "module",
@@ -18,8 +18,6 @@
 	"author": "Marshall Peterson <mpeterson@adobe.com>",
 	"license": "MIT",
 	"scripts": {
-		"aladdin:put": "cross-env NODE_ENV='production' && aladdin --command put",
-		"aladdin:get": "cross-env NODE_ENV='production' && aladdin --command get",
 		"build": "concurrently yarn:build:*",
 		"build:mfe": "webpack --mode=production --env prod=true --env target=mfe",
 		"build:cjs": "webpack --mode=production --env prod=true --env target=cjs",

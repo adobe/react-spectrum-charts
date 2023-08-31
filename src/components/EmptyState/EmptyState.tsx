@@ -11,7 +11,6 @@
  */
 
 import { Flex, Text } from '@adobe/react-spectrum';
-import l10n from '@l10n';
 import GraphBarVertical from '@spectrum-icons/workflow/GraphBarVertical';
 import React, { FC } from 'react';
 
@@ -25,7 +24,7 @@ export const EmptyState: FC<EmptyStateProps> = (props) => {
 	return (
 		<Flex direction="column" justifyContent="center" alignItems="center" {...props}>
 			<GraphBarVertical size="XXL" UNSAFE_className="EmptyState-icon" />
-			<Text UNSAFE_className="EmptyState-text">{l10n`No data found`}</Text>
+			<Text UNSAFE_className="EmptyState-text">{`No data found`}</Text>
 		</Flex>
 	);
 };
