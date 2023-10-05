@@ -1,0 +1,36 @@
+name: Publish library
+
+on:
+    push:
+        tags:
+            - 'v*.*.*' # Only trigger on tags that match the pattern 'vX.X.X'
+
+jobs:
+    release:
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v3
+              with:
+                  fetch-depth: 0
+
+            - name: Extract Tag
+              id: extract_tag
+              run: echo "::set-output name=tag::${GITHUB_REF#refs/tags/}"
+
+            - name: Update Package Version
+              run: |
+                  tag=${{ steps.extract_tag.outputs.tag }}
+                  sed -i "s/\"version\": \".*\"/\"version\": \"$tag\"/" package.json
+
+            - name: Install Dependencies
+              run: yarn install
+
+            - name: Build
+              run: yarn build
+
+            - name: Publish Package
+              run: yarn publish --access public
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.ADOBE_BOT_NPM_TOKEN }}
