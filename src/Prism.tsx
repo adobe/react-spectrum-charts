@@ -153,7 +153,7 @@ export const Prism = forwardRef<PrismHandle, PrismProps>(
 				}
 				selectedData.current = null;
 			}
-		}, [popoverIsOpen, selectedIdSignalName, selectedSeriesSignalName, chartView.current]);
+		}, [popoverIsOpen, selectedIdSignalName, selectedSeriesSignalName, chartView]);
 
 		usePrismImperativeHandle(forwardedRef, { chartView, title });
 
@@ -344,7 +344,7 @@ const ChartDialog = ({ datum, itemName, targetElement, setPopoverState, popovers
 	);
 };
 
-const LegendTooltip: FC<LegendTooltipProps>  = ({ value, descriptions, domain }) => {
+const LegendTooltip: FC<LegendTooltipProps> = ({ value, descriptions, domain }) => {
 	const series = domain[value.index];
 	const description = descriptions.find((d) => d.seriesName === series);
 	if (!description) {

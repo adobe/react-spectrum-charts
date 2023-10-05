@@ -23,7 +23,7 @@ export default function useElementSize(ref: RefObject<HTMLElement>) {
 		handleResize();
 		window.addEventListener('resize', handleResize);
 		return () => window.removeEventListener('resize', handleResize);
-	}, [ref.current]);
+	}, [ref]);
 
 	return [width, height];
 }
