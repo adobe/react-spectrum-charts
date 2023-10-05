@@ -13,6 +13,7 @@ dist-storybook
 
 # coverage reports
 coverage
+test-report.xml
 
 # exclude vscode config except for our shared snippets
 .vscode/*

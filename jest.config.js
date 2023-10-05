@@ -14,6 +14,7 @@ const { pathsToModuleNameMapper } = require('ts-jest');
 const { compilerOptions } = require('./tsconfig.json');
 
 module.exports = {
+	testResultsProcessor: 'jest-sonar-reporter',
 	collectCoverage: true,
 	coverageReporters: ['cobertura', 'html', 'text', 'lcov'],
 	testEnvironment: 'jsdom',
