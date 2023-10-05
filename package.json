@@ -21,6 +21,7 @@
 	"scripts": {
 		"build": "concurrently yarn:build:*",
 		"build:library": "webpack --config webpack.config.js",
+		"build:storybook": "build-storybook -o ./dist-storybook --quiet",
 		"copyrights": "babel-node --presets @babel/env ./scripts/addHeaders.js",
 		"g": "plop component",
 		"generate": "plop component",
