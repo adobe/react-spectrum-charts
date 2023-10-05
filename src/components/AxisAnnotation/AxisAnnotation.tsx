@@ -10,16 +10,14 @@
  * governing permissions and limitations under the License.
  */
 
-import { useMemo } from 'react';
-import { ChartChildElement, ChartPopoverElement, PopoverHandler, PrismElement } from 'types';
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import { DEFAULT_AXIS_ANNOTATION_COLOR, DEFAULT_AXIS_ANNOTATION_OFFSET } from '@constants';
+import { AxisAnnotationProps } from '../../types';
 
-import { ChartPopover } from '../components/ChartPopover';
-import { getElement } from '../utils';
-
-export default function usePopover(children: ChartChildElement[]): [PopoverHandler | undefined, number | undefined] {
-	const popover = useMemo(() => {
-		return getElement({ type: { name: 'Prism' }, props: { children } } as PrismElement, ChartPopover);
-	}, [children]) as ChartPopoverElement;
-	if (!popover) return [undefined, undefined];
-	return [popover.props.children, popover.props.width];
+export function AxisAnnotation({
+	dataKey = 'annotations',
+	color = DEFAULT_AXIS_ANNOTATION_COLOR,
+	offset = DEFAULT_AXIS_ANNOTATION_OFFSET,
+}: AxisAnnotationProps) {
+	return null;
 }

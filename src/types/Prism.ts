@@ -19,6 +19,7 @@ import { Colors, SpectrumColor } from './SpectrumVizColors';
 export type PrismElement = ReactElement<PrismProps, JSXElementConstructor<PrismProps>>;
 export type AreaElement = ReactElement<AreaProps, JSXElementConstructor<AreaProps>>;
 export type AxisElement = ReactElement<AxisProps, JSXElementConstructor<AxisProps>>;
+export type AxisAnnotationElement = ReactElement<AxisAnnotationProps, JSXElementConstructor<AxisAnnotationProps>>;
 export type BarElement = ReactElement<BarProps, JSXElementConstructor<BarProps>>;
 export type AnnotationElement = ReactElement<AnnotationProps, JSXElementConstructor<AnnotationProps>>;
 export type LegendElement = ReactElement<LegendProps, JSXElementConstructor<LegendProps>>;
@@ -27,6 +28,7 @@ export type ChartTooltipElement = ReactElement<ChartTooltipProps, JSXElementCons
 export type ChartPopoverElement = ReactElement<ChartPopoverProps, JSXElementConstructor<ChartPopoverProps>>;
 export type ReferenceLineElement = ReactElement<ReferenceLineProps, JSXElementConstructor<ReferenceLineProps>>;
 export type TrendlineElement = ReactElement<TrendlineProps, JSXElementConstructor<TrendlineProps>>;
+export type MetricRangeElement = ReactElement<MetricRangeProps, JSXElementConstructor<MetricRangeProps>>;
 
 export type SimpleData = { [key: string]: unknown };
 export type PrismData = SimpleData | Data;
@@ -75,6 +77,10 @@ export interface PrismProps extends SpecProps {
 	loading?: boolean;
 }
 
+export interface BaseProps {
+	name?: string;
+}
+
 export type Width = number | string | 'auto';
 
 export interface PrismHandle {
@@ -95,7 +101,7 @@ export interface AreaProps extends MarkProps {
 	metricEnd?: string; // data field for the end of the area
 }
 
-export interface AxisProps {
+export interface AxisProps extends BaseProps {
 	/** Sets the where the axis is placed on the chart */
 	position: Position;
 	/** Adds a baseline rule for this axis */
@@ -174,9 +180,8 @@ export type SubLabel = {
 	fontWeight?: FontWeight;
 };
 
-export interface MarkProps {
+export interface MarkProps extends BaseProps {
 	children?: Children<MarkChildElement>;
-	name?: string;
 	color?: string;
 	metric?: string;
 }
@@ -226,7 +231,7 @@ export interface BarProps extends Omit<MarkProps, 'color'> {
 	/** sets the chart area padding, this is a ratio between 0 and 1 (https://vega.github.io/vega/docs/scales/#band) */
 	paddingOuter?: number;
 	/** The data field used for the trellis categories */
-	trellis?: string; 
+	trellis?: string;
 	/** Orientation of the trellis. Only applicable if `trellis` is also defined. Defaults to "horizontal". */
 	trellisOrientation?: Orientation;
 	type?: BarType;
@@ -237,12 +242,12 @@ export type BarType = 'dodged' | 'stacked';
 export interface LineProps extends Omit<MarkProps, 'color'> {
 	color?: ColorFacet; // line color or key in the data that is used as the color facet
 	dimension?: string; // data field that the value is trended against (x-axis)
-	highlightPoints?: string; // key the the data that if it exists and the value resolves to true, that point will be displayed as a circle
 	lineType?: LineTypeFacet; // line type or key in the data that is used as the line type facet
 	opacity?: OpacityFacet; // opacity or key in the data that is used as the opacity facet
 	/** sets the chart area padding, this is a ratio from 0 to 1 for categorical scales (point) and a pixel value for continuous scales (time, linear) */
 	padding?: number;
 	scaleType?: ScaleType; // sets the type of scale that should be used for the trend
+	staticPoint?: string; // key in the data that if it exists and the value resolves to true for each data object, a point will be drawn for that data point on the line.
 }
 
 export type LineType = 'solid' | 'dashed' | 'dotted' | 'dotDash' | 'shortDash' | 'longDash' | 'twoDash' | number[];
@@ -250,22 +255,41 @@ export type LineType = 'solid' | 'dashed' | 'dotted' | 'dotDash' | 'shortDash' |
 export type LineWidth = 'XS' | 'S' | 'M' | 'L' | 'XL' | number;
 
 export type ScaleType = 'linear' | 'time' | 'point';
-export type LegendDescription = { seriesName: string; description: string };
+export type LegendDescription = { seriesName: string; description: string; title?: string };
 
 export type LegendLabel = { seriesName: string | number; label: string };
 
-export interface LegendProps {
-	color?: ColorFacet; // color or key in the data that is used as the color facet for the symbols
-	descriptions?: LegendDescription[]; // descriptions for each of the series
-	highlight?: boolean; // whether or not to include highlight interactions
-	hiddenEntries?: string[]; // series names to hide from the legend
-	legendLabels?: LegendLabel[]; // labels for each of the series
-	lineType?: LineTypeFacet; // line type or key in the data that is used as the line type facet for the symbols
-	lineWidth?: LineWidthFacet; // line type or key in the data that is used as the line type facet for the symbols
-	opacity?: OpacityFacet; // opacity or key in the data that is used as the opacity facet for the symbols
-	position?: Position; // where the legend should be displayed
-	symbolShape?: string | StaticValue<PrismSymbolShape>;
-	title?: string; // legend title
+export interface LegendProps extends BaseProps {
+	/** color or key in the data that is used as the color facet for the symbols */
+	color?: ColorFacet;
+	/** series that should be hidden by default (uncontrolled) */
+	defaultHiddenSeries?: string[];
+	/** descriptions for each of the series */
+	descriptions?: LegendDescription[];
+	/** series names to hide from the legend */
+	hiddenEntries?: string[];
+	/** series names to hide from the chart */
+	hiddenSeries?: string[];
+	/** whether or not to include highlight interactions (controlled) */
+	highlight?: boolean;
+	/** allows the user to hide/show series by clicking on the legend entry (uncontrolled) */
+	isToggleable?: boolean;
+	/** labels for each of the series */
+	legendLabels?: LegendLabel[];
+	/** line type or key in the data that is used as the line type facet for the symbols */
+	lineType?: LineTypeFacet;
+	/** line type or key in the data that is used as the line type facet for the symbols */
+	lineWidth?: LineWidthFacet;
+	/** callback that will be run when a legend item is selected */
+	onClick?: (seriesName: string) => void;
+	/** opacity or key in the data that is used as the opacity facet for the symbols */
+	opacity?: OpacityFacet;
+	/** where the legend should be displayed */
+	position?: Position;
+	/** customize the legend symbol shape */
+	symbolShape?: SymbolShapeFacet;
+	/** legend title */
+	title?: string;
 }
 
 export type DialogProps = ChartTooltipProps | ChartPopoverProps;
@@ -281,9 +305,33 @@ export interface ChartPopoverProps {
 export interface ReferenceLineProps {
 	value: number;
 	icon?: Icon | string;
+	/** Position the line on the value, or between the previous/next value. Only supported in Bar visualizations. */
+	position?: 'before' | 'after' | 'center';
+	label?: string;
+	labelFontWeight?: FontWeight;
 }
 
 export type Icon = 'date';
+
+export interface MetricRangeProps {
+	children?: Children<ChartTooltipElement>;
+	/** The color of the metric line and range. If undefined, will default to the color of the series that it represents. */
+	color?: SpectrumColor | string;
+	/** The line type of the metric line. (dashed, solid, etc..) */
+	lineType?: LineType;
+	/** The line width of the metric line. */
+	lineWidth?: LineWidth;
+	/** The opacity of the area around the metric */
+	rangeOpacity?: number;
+	/** The key for the upper range in the data */
+	metricEnd: string;
+	/** The key for the lower range in the data */
+	metricStart: string;
+	/** The key for the metric value in the data */
+	metric?: string;
+	/** Whether the metric range should only be visible when hovering over the parent line */
+	displayOnHover?: boolean;
+}
 
 export interface TrendlineProps {
 	children?: Children<ChartTooltipElement>;
@@ -307,6 +355,31 @@ export interface TrendlineProps {
 
 export type TrendlineMethod = 'average' | 'linear' | 'movingAverage';
 
+export type AxisAnnotationFormat = 'span' | 'summary';
+
+export interface AxisAnnotationProps {
+	children?: Children<AxisAnnotationChildElement>;
+	/** the color to use for the annotation icon and span lines if a color isn't specified in options or multiple annotations fall in the same icon */
+	color?: SpectrumColor | string;
+	/** data field where the annotation ids are listed for each data point */
+	dataKey?: string;
+	/** show annotations as a horizontal span of icons or a single summary icon */
+	format?: AxisAnnotationFormat;
+	/** unique name for this annotation */
+	name?: string;
+	/** how far from the bottom of the chart do the annotations display */
+	offset?: number;
+	/** options specific to each annotation in the data */
+	options?: AxisAnnotationOptions[];
+}
+
+export type AxisAnnotationOptions = {
+	/** The id of the annotation to apply these options to */
+	id: string;
+	/** The color of the icon and range lines  */
+	color?: SpectrumColor | string;
+};
+
 export interface MarkBounds {
 	x1: number;
 	x2: number;
@@ -327,12 +400,20 @@ export type TooltipHandler = (datum: Datum) => ReactNode;
 
 export type PopoverHandler = (datum: Datum, close: () => void) => ReactNode;
 
+export type AxisAnnotationClickHandler = (annotations) => ReactNode;
+
 export type Position = 'left' | 'right' | 'top' | 'bottom';
 
 export type ChildElement<T> = T | string | boolean | ReactFragment;
 export type Children<T> = ChildElement<T> | ChildElement<T>[];
 
-export type AxisChildElement = ReferenceLineElement;
-export type ChartChildElement = AxisElement | BarElement | LegendElement | LineElement;
-export type MarkChildElement = AnnotationElement | ChartTooltipElement | ChartPopoverElement | TrendlineElement;
+export type AxisChildElement = ReferenceLineElement | AxisAnnotationElement;
+export type AxisAnnotationChildElement = ChartTooltipElement | ChartPopoverElement;
+export type ChartChildElement = AreaElement | AxisElement | BarElement | LegendElement | LineElement;
+export type MarkChildElement =
+	| AnnotationElement
+	| ChartTooltipElement
+	| ChartPopoverElement
+	| MetricRangeElement
+	| TrendlineElement;
 export type PrismChildElement = ChartChildElement | MarkChildElement;

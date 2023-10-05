@@ -10,7 +10,7 @@
  * governing permissions and limitations under the License.
  */
 
-import { DISCRETE_PADDING, LINEAR_PADDING, PADDING_RATIO, TABLE } from '@constants';
+import { DISCRETE_PADDING, FILTERED_TABLE, LINEAR_PADDING, PADDING_RATIO, TABLE } from '@constants';
 import { getBarPadding } from '@specBuilder/bar/barUtils';
 import { toCamelCase } from '@utils';
 import produce from 'immer';
@@ -167,7 +167,7 @@ export const getDefaultScale = (
 		name: toCamelCase(`${axis} ${scaleType}`),
 		type: scaleType,
 		range: axis === 'x' ? 'width' : 'height',
-		domain: { data: TABLE, fields: [] },
+		domain: { data: FILTERED_TABLE, fields: [] },
 		// if this is the dimension axis, add padding
 		...(isDimensionAxis ? getPadding(scaleType) : {}),
 	};

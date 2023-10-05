@@ -9,15 +9,15 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import React, { ReactElement } from 'react';
 
 import { ChartTooltip } from '@components/ChartTooltip/ChartTooltip';
 import usePrismProps from '@hooks/usePrismProps';
 import { Area, Bar, Datum, Line, Prism } from '@prism';
 import { browserData as data } from '@stories/data/data';
+import { formatTimestamp } from '@stories/storyUtils';
 import { ComponentStory } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
-import dayjs from 'dayjs';
-import React, { ReactElement } from 'react';
 
 export default {
 	title: 'Prism/ChartTooltip',
@@ -134,7 +134,7 @@ const LineChart = bindWithProps(LineTooltipStory);
 LineChart.args = {
 	children: (datum: LineData) => (
 		<div className="bar-tooltip">
-			<div>{dayjs(datum.datetime as number).format('MMM D')}</div>
+			<div>{formatTimestamp(datum.datetime as number)}</div>
 			<div>Event: {datum.series}</div>
 			<div>Count: {Number(datum.value).toLocaleString()}</div>
 			<div>Users: {Number(datum.users).toLocaleString()}</div>
@@ -146,7 +146,7 @@ const AreaChart = bindWithProps(AreaTooltipStory);
 AreaChart.args = {
 	children: (datum: LineData) => (
 		<div className="bar-tooltip">
-			<div>{dayjs(datum.datetime as number).format('MMM D')}</div>
+			<div>{formatTimestamp(datum.datetime as number)}</div>
 			<div>Event: {datum.series}</div>
 			<div>Count: {Number(datum.value).toLocaleString()}</div>
 			<div>Users: {Number(datum.users).toLocaleString()}</div>

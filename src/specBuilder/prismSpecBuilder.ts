@@ -61,7 +61,7 @@ export function buildSpec({
 	title,
 }: SanitizedSpecProps) {
 	let spec = initializeSpec(null, { title, description });
-	spec.signals = getDefaultSignals(colors, lineTypes, opacities, colorScheme);
+	spec.signals = getDefaultSignals(colors, colorScheme, lineTypes, opacities);
 	spec.scales = getDefaultScales(colors, colorScheme, lineTypes, lineWidths, opacities, symbolShapes);
 
 	// need to build the spec in a specific order
@@ -72,20 +72,26 @@ export function buildSpec({
 	buildOrder.set(Legend, 1);
 	buildOrder.set(Axis, 2);
 
+	let { areaCount, axisCount, barCount, legendCount, lineCount } = initializeComponentCounts();
 	spec = [...children]
 		.sort((a, b) => buildOrder.get(a.type) - buildOrder.get(b.type))
 		.reduce((acc: Spec, cur) => {
 			switch (cur.type) {
 				case Area:
-					return addArea(acc, (cur as AreaElement).props);
+					areaCount++;
+					return addArea(acc, { ...(cur as AreaElement).props, colorScheme, index: areaCount });
 				case Axis:
-					return addAxis(acc, { ...(cur as AxisElement).props, colorScheme });
+					axisCount++;
+					return addAxis(acc, { ...(cur as AxisElement).props, colorScheme, index: axisCount });
 				case Bar:
-					return addBar(acc, { ...(cur as BarElement).props, colorScheme });
-				case Line:
-					return addLine(acc, { ...(cur as LineElement).props, colorScheme });
+					barCount++;
+					return addBar(acc, { ...(cur as BarElement).props, colorScheme, index: barCount });
 				case Legend:
-					return addLegend(acc, { ...(cur as LegendElement).props, colorScheme });
+					legendCount++;
+					return addLegend(acc, { ...(cur as LegendElement).props, colorScheme, index: legendCount });
+				case Line:
+					lineCount++;
+					return addLine(acc, { ...(cur as LineElement).props, colorScheme, index: lineCount });
 				default:
 					console.error('invalid type');
 					return acc;
@@ -98,11 +104,21 @@ export function buildSpec({
 	return spec;
 }
 
+const initializeComponentCounts = () => {
+	return {
+		areaCount: -1,
+		axisCount: -1,
+		barCount: -1,
+		legendCount: -1,
+		lineCount: -1,
+	};
+};
+
 const getDefaultSignals = (
 	colors: PrismColors,
+	colorScheme: ColorScheme,
 	lineTypes: LineTypes,
 	opacities: Opacities | undefined,
-	colorScheme: ColorScheme
 ): Signal[] => [
 	getGenericSignal('backgroundColor', getColorValue('gray-50', colorScheme)),
 	getGenericSignal('colors', getTwoDimensionalColorScheme(colors, colorScheme)),
@@ -142,7 +158,7 @@ const getDefaultScales = (
 	lineTypes: LineTypes,
 	lineWidths: LineWidth[],
 	opacities: Opacities | undefined,
-	symbolShapes: SymbolShapes
+	symbolShapes: SymbolShapes,
 ): Scale[] => [
 	getColorScale(colors, colorScheme),
 	getLineTypeScale(lineTypes),

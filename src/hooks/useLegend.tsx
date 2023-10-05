@@ -10,16 +10,26 @@
  * governing permissions and limitations under the License.
  */
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { ChartChildElement, LegendDescription, LegendElement, PrismElement } from 'types';
 
 import { Legend } from '../components/Legend';
-import { getElement } from '../utils';
+import { getElement } from '@utils';
 
-export default function useLegend(children: ChartChildElement[]): [LegendDescription[] | undefined] {
+interface UseLegendProps {
+	hiddenSeriesState: string[];
+	setHiddenSeries: (hiddenSeries: string[]) => void;
+	descriptions?: LegendDescription[];
+	isToggleable?: boolean;
+	onClick?: (seriesName: string) => void;
+}
+
+export default function useLegend(children: ChartChildElement[]): UseLegendProps {
 	const legend = useMemo(() => {
 		return getElement({ type: { name: 'Prism' }, props: { children } } as PrismElement, Legend);
 	}, [children]) as LegendElement;
-	if (!legend) return [undefined];
-	return [legend.props.descriptions];
+	const [hiddenSeriesState, setHiddenSeries] = useState<string[]>(legend?.props?.defaultHiddenSeries ?? []);
+	if (!legend) return { hiddenSeriesState, setHiddenSeries };
+	const { descriptions, isToggleable, onClick } = legend.props;
+	return { hiddenSeriesState, setHiddenSeries, descriptions, isToggleable, onClick };
 }

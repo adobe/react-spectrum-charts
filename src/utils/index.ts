@@ -10,15 +10,5 @@
  * governing permissions and limitations under the License.
  */
 
-import { ChartTooltip } from '@prism';
-import { getElement } from '@utils';
-import { useMemo } from 'react';
-import { ChartChildElement, ChartTooltipElement, PrismElement, TooltipHandler } from 'types';
-
-export default function useTooltip(children: ChartChildElement[]): [TooltipHandler | undefined] {
-	const tooltip = useMemo(() => {
-		return getElement({ type: { name: 'Prism' }, props: { children } } as PrismElement, ChartTooltip);
-	}, [children]) as ChartTooltipElement;
-	if (!tooltip) return [undefined];
-	return [tooltip.props.children];
-}
+export * from './utils';
+export * from './markClickUtils';

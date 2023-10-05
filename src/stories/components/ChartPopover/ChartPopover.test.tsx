@@ -52,7 +52,7 @@ describe('ChartPopover', () => {
 
 		const prism = await findPrism();
 		expect(prism).toBeInTheDocument();
-		const bars = getAllMarksByGroupName(prism, 'rect0');
+		const bars = getAllMarksByGroupName(prism, 'bar0');
 
 		// clicking the bar should open the popover
 		await clickNthElement(bars, 0);
@@ -72,7 +72,7 @@ describe('ChartPopover', () => {
 		render(<StackedBarChart {...StackedBarChart.args} />);
 		const prism = await findPrism();
 		expect(prism).toBeInTheDocument();
-		const bars = getAllMarksByGroupName(prism, 'rect0');
+		const bars = getAllMarksByGroupName(prism, 'bar0');
 
 		await clickNthElement(bars, 0);
 		const popover = await screen.findByTestId('prism-popover');
@@ -88,13 +88,13 @@ describe('ChartPopover', () => {
 		render(<StackedBarChart {...StackedBarChart.args} />);
 		const prism = await findPrism();
 		expect(prism).toBeInTheDocument();
-		let bars = getAllMarksByGroupName(prism, 'rect0');
+		let bars = getAllMarksByGroupName(prism, 'bar0');
 
 		await clickNthElement(bars, 0);
 		const popover = await screen.findByTestId('prism-popover');
 		expect(within(popover).getByText('Users: 5')).toBeInTheDocument();
 
-		bars = getAllMarksByGroupName(prism, 'rect0');
+		bars = getAllMarksByGroupName(prism, 'bar0');
 		// validate the highlight visuals are present
 		expect(bars[1]).toHaveAttribute('fill-opacity', `${1 / HIGHLIGHT_CONTRAST_RATIO}`);
 		expect(bars[1]).toHaveAttribute('stroke-opacity', `${1 / HIGHLIGHT_CONTRAST_RATIO}`);
@@ -110,7 +110,7 @@ describe('ChartPopover', () => {
 		const prism = await findPrism();
 		expect(prism).toBeInTheDocument();
 
-		const points = await findAllMarksByGroupName(prism, 'line0Voronoi');
+		const points = await findAllMarksByGroupName(prism, 'line0_voronoi');
 		// click point and verify popover appears correctly
 		await clickNthElement(points, 2);
 		const popover = await screen.findByTestId('prism-popover');
@@ -121,9 +121,9 @@ describe('ChartPopover', () => {
 		expect(within(popover).getByText('Users: 2')).toBeInTheDocument();
 
 		// validate the highlight visuals are present
-		const highlightRule = await findMarksByGroupName(prism, 'line0HoverRule', 'line');
+		const highlightRule = await findMarksByGroupName(prism, 'line0_hoverRule', 'line');
 		expect(highlightRule).toBeInTheDocument();
-		const highlightPoint = await findMarksByGroupName(prism, 'line0Point');
+		const highlightPoint = await findMarksByGroupName(prism, 'line0_point');
 		expect(highlightPoint).toBeInTheDocument();
 
 		// click on chart which should hide the popover and the highlight visuals
@@ -138,19 +138,19 @@ describe('ChartPopover', () => {
 
 		const prism = await findPrism();
 		expect(prism).toBeInTheDocument();
-		let bars = getAllMarksByGroupName(prism, 'rect0');
-		
+		let bars = getAllMarksByGroupName(prism, 'bar0');
+
 		// clicking the bar should open the popover
 		await clickNthElement(bars, 4);
 		const popover = await screen.findByTestId('prism-popover');
 		await waitFor(() => expect(popover).toBeInTheDocument()); // waitFor to give the popover time to make sure it doesn't close
-		
+
 		// check the content of the popover
 		expect(within(popover).getByText('Operating system: Mac')).toBeInTheDocument();
 		expect(within(popover).getByText('Browser: Firefox')).toBeInTheDocument();
 		expect(within(popover).getByText('Users: 3')).toBeInTheDocument();
-		
-		bars = getAllMarksByGroupName(prism, 'rect0');
+
+		bars = getAllMarksByGroupName(prism, 'bar0');
 
 		// validate the highlight visuals are present
 		expect(bars[0]).toHaveAttribute('fill-opacity', `${1 / HIGHLIGHT_CONTRAST_RATIO}`);

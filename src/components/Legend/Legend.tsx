@@ -10,9 +10,25 @@
  * governing permissions and limitations under the License.
  */
 
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { LegendProps } from '../../types';
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function Legend({ descriptions, highlight = false, position = 'bottom', title }: LegendProps) {
+export function Legend({
+	color,
+	defaultHiddenSeries,
+	descriptions,
+	hiddenEntries,
+	hiddenSeries,
+	highlight = false,
+	isToggleable = false,
+	legendLabels,
+	lineType,
+	lineWidth,
+	onClick,
+	opacity,
+	position = 'bottom',
+	symbolShape,
+	title,
+}: LegendProps) {
 	return null;
 }

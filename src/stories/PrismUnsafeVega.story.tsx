@@ -19,6 +19,7 @@ import React, { ReactElement } from 'react';
 import { barData } from './components/Bar/data';
 import carsData from './data/cars.json';
 import { packedBubbleData } from './data/data';
+import { TABLE } from '@constants';
 
 export default {
 	title: 'Prism/Prism/UNSAFE_vegaSpec',
@@ -35,7 +36,7 @@ export default {
 
 const UnsafeVegaSpecStory: ComponentStory<typeof Prism> = (args): ReactElement => {
 	const prismProps = usePrismProps(args);
-	return <Prism {...prismProps} />;
+	return <Prism {...prismProps} debug />;
 };
 
 const BasicBar = bindWithProps(UnsafeVegaSpecStory);
@@ -60,14 +61,14 @@ BasicBar.args = {
 			{
 				name: 'xscale',
 				type: 'band',
-				domain: { data: 'table', field: 'browser' },
+				domain: { data: TABLE, field: 'browser' },
 				range: 'width',
 				padding: 0.1,
 				round: true,
 			},
 			{
 				name: 'yscale',
-				domain: { data: 'table', field: 'downloads' },
+				domain: { data: TABLE, field: 'downloads' },
 				nice: true,
 				range: 'height',
 			},
@@ -81,7 +82,7 @@ BasicBar.args = {
 		marks: [
 			{
 				type: 'rect',
-				from: { data: 'table' },
+				from: { data: TABLE },
 				encode: {
 					enter: {
 						x: { scale: 'xscale', field: 'browser' },

@@ -18,8 +18,8 @@ import {
 	DEFAULT_COLOR,
 	DEFAULT_METRIC,
 	DEFAULT_SECONDARY_COLOR,
+	FILTERED_TABLE,
 	HIGHLIGHT_CONTRAST_RATIO,
-	TABLE,
 } from '@constants';
 import { createElement } from 'react';
 import { BarSpecProps } from 'types';
@@ -37,8 +37,8 @@ import { getDodgedMark } from './dodgedBarUtils';
 const defaultDodgedProps: BarSpecProps = { ...defaultBarProps, type: 'dodged' };
 
 const defaultDodgedXEncodings: RectEncodeEntry = {
-	x: { scale: 'rect0Position', field: 'rect0DodgeGroup' },
-	width: { scale: 'rect0Position', band: 1 },
+	x: { scale: 'bar0_position', field: 'bar0_dodgeGroup' },
+	width: { scale: 'bar0_position', band: 1 },
 };
 
 const defaultDodgedCornerRadiusEncodings: RectEncodeEntry = {
@@ -62,9 +62,9 @@ const defaultDodgedStackedEnterEncodings: RectEncodeEntry = {
 };
 
 const defaultBackgroundMark: Mark = {
-	name: 'rect0Background',
+	name: 'bar0_background',
 	type: 'rect',
-	from: { data: 'rect0Facet' },
+	from: { data: 'bar0_facet' },
 	interactive: false,
 	encode: {
 		enter: {
@@ -77,9 +77,9 @@ const defaultBackgroundMark: Mark = {
 };
 
 const defaultMark: Mark = {
-	name: 'rect0',
+	name: 'bar0',
 	type: 'rect',
-	from: { data: 'rect0Facet' },
+	from: { data: 'bar0_facet' },
 	interactive: false,
 	encode: {
 		enter: {
@@ -99,26 +99,26 @@ const defaultMark: Mark = {
 };
 
 const defaultMarkWithTooltip: Mark = {
-	name: 'rect0',
+	name: 'bar0',
 	type: 'rect',
-	from: { data: 'rect0Facet' },
+	from: { data: 'bar0_facet' },
 	interactive: true,
 	encode: {
 		enter: {
 			...defaultDodgedYEncodings,
 			...defaultDodgedCornerRadiusEncodings,
-			tooltip: { signal: 'datum' },
+			tooltip: { signal: "merge(datum, {'prismComponentName': 'bar0'})" },
 			fill: { field: DEFAULT_COLOR, scale: 'color' },
 		},
 		update: {
 			...defaultDodgedXEncodings,
 			...defaultBarStrokeEncodings,
 			fillOpacity: [
-				{ test: 'rect0HoveredId && rect0HoveredId !== datum.prismMarkId', value: 1 / HIGHLIGHT_CONTRAST_RATIO },
+				{ test: 'bar0_hoveredId && bar0_hoveredId !== datum.prismMarkId', value: 1 / HIGHLIGHT_CONTRAST_RATIO },
 				{ value: 1 },
 			],
 			strokeOpacity: [
-				{ test: 'rect0HoveredId && rect0HoveredId !== datum.prismMarkId', value: 1 / HIGHLIGHT_CONTRAST_RATIO },
+				{ test: 'bar0_hoveredId && bar0_hoveredId !== datum.prismMarkId', value: 1 / HIGHLIGHT_CONTRAST_RATIO },
 				{ value: 1 },
 			],
 			cursor: undefined,
@@ -127,9 +127,9 @@ const defaultMarkWithTooltip: Mark = {
 };
 
 const defaultDodgedStackedBackgroundMark: Mark = {
-	name: 'rect0Background',
+	name: 'bar0_background',
 	type: 'rect',
-	from: { data: 'rect0Facet' },
+	from: { data: 'bar0_facet' },
 	interactive: false,
 	encode: {
 		enter: {
@@ -141,9 +141,9 @@ const defaultDodgedStackedBackgroundMark: Mark = {
 };
 
 const defaultDodgedStackedMark: Mark = {
-	name: 'rect0',
+	name: 'bar0',
 	type: 'rect',
-	from: { data: 'rect0Facet' },
+	from: { data: 'bar0_facet' },
 	interactive: false,
 	encode: {
 		enter: {
@@ -170,14 +170,14 @@ const defaultDodgedStackedMark: Mark = {
 };
 
 export const defaultDodgedMark = {
-	name: 'rect0Group',
+	name: 'bar0_group',
 	type: 'group',
-	from: { facet: { data: 'table', groupby: DEFAULT_CATEGORICAL_DIMENSION, name: 'rect0Facet' } },
+	from: { facet: { data: FILTERED_TABLE, groupby: DEFAULT_CATEGORICAL_DIMENSION, name: 'bar0_facet' } },
 	signals: [{ name: 'width', update: 'bandwidth("xBand")' }],
 	scales: [
 		{
-			domain: { data: TABLE, field: `rect0DodgeGroup` },
-			name: 'rect0Position',
+			domain: { data: FILTERED_TABLE, field: `bar0_dodgeGroup` },
+			name: 'bar0_position',
 			paddingInner: 0.4,
 			range: 'width',
 			type: 'band',

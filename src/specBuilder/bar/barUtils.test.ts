@@ -18,9 +18,9 @@ import {
 	DEFAULT_CATEGORICAL_DIMENSION,
 	DEFAULT_COLOR,
 	DEFAULT_METRIC,
+	FILTERED_TABLE,
 	HIGHLIGHT_CONTRAST_RATIO,
 	PADDING_RATIO,
-	TABLE,
 } from '@constants';
 import { getOpacityProductionRule } from '@specBuilder/marks/markUtils';
 import { createElement } from 'react';
@@ -28,46 +28,46 @@ import { BarSpecProps } from 'types';
 import { RectEncodeEntry } from 'vega';
 
 import {
+	defaultBarEnterEncodings,
+	defaultBarPopoverFillOpacity,
+	defaultBarProps,
+	defaultBarPropsWithSecondayColor,
+	defaultCornerRadiusEncodings,
+	defaultDodgedCornerRadiusEncodings,
+	defaultDodgedYEncodings,
+	defaultStackedYEncodings,
+	dodgedAnnotationMarks,
+	dodgedAnnotationMarksWithStyles,
+	dodgedGroupField,
+	dodgedSubSeriesAnnotationMarks,
+	dodgedXScale,
+	stackedAnnotationMarks,
+	stackedAnnotationMarksWithStyles,
+	stackedXScale,
+} from './barTestUtils';
+import {
 	getAnnotationMarks,
+	getAnnotationMetricAxisPosition,
+	getAnnotationPositionOffset,
 	getBarPadding,
 	getBaseBarEnterEncodings,
 	getCornerRadiusEncodings,
-	getDodgedGroupMark,
 	getDodgedDimensionEncodings,
+	getDodgedGroupMark,
 	getFillStrokeOpacity,
 	getHighlightOpacityValue,
+	getMetricEncodings,
+	getOrientationProperties,
 	getStackedCornerRadiusEncodings,
+	getStackedMetricEncodings,
 	getStroke,
 	getStrokeDash,
 	getStrokeWidth,
-	getAnnotationMetricAxisPosition,
-	getMetricEncodings,
-	getAnnotationPositionOffset,
-	getOrientationProperties,
-	getStackedMetricEncodings,
 } from './barUtils';
-import {
-	defaultBarProps,
-	defaultStackedYEncodings,
-	defaultCornerRadiusEncodings,
-	defaultDodgedYEncodings,
-	defaultBarPropsWithSecondayColor,
-	defaultDodgedCornerRadiusEncodings,
-	defaultBarPopoverFillOpacity,
-	defaultBarEnterEncodings,
-	dodgedAnnotationMarks,
-	dodgedAnnotationMarksWithStyles,
-	dodgedSubSeriesAnnotationMarks,
-	stackedAnnotationMarks,
-	stackedAnnotationMarksWithStyles,
-	dodgedXScale,
-	dodgedGroupField,
-	stackedXScale,
-} from './barTestUtils';
 
 const defaultDodgedXEncodings: RectEncodeEntry = {
-	x: { scale: 'rect0Position', field: 'rect0DodgeGroup' },
-	width: { scale: 'rect0Position', band: 1 },
+	x: { scale: 'bar0_position', field: 'bar0_dodgeGroup' },
+	width: { scale: 'bar0_position', band: 1 },
 };
 
 describe('barUtils', () => {
@@ -236,7 +236,7 @@ describe('barUtils', () => {
 			expect(getStackedCornerRadiusEncodings(defaultBarPropsWithSecondayColor).cornerRadiusTopLeft).toStrictEqual(
 				[
 					{
-						test: `datum.${DEFAULT_METRIC}1 > 0 && data('rect0Stacks')[indexof(pluck(data('rect0Stacks'), 'prismStackId'), datum.prismStackId)].max_${DEFAULT_METRIC}1 === datum.${DEFAULT_METRIC}1`,
+						test: `datum.${DEFAULT_METRIC}1 > 0 && data('bar0_stacks')[indexof(pluck(data('bar0_stacks'), 'prismStackId'), datum.prismStackId)].max_${DEFAULT_METRIC}1 === datum.${DEFAULT_METRIC}1`,
 						value: CORNER_RADIUS,
 					},
 					{ value: 0 },
@@ -251,7 +251,7 @@ describe('barUtils', () => {
 				}).cornerRadiusTopLeft,
 			).toStrictEqual([
 				{
-					test: `datum.${DEFAULT_METRIC}1 > 0 && data('rect0Stacks')[indexof(pluck(data('rect0Stacks'), 'prismStackId'), datum.prismStackId)].max_${DEFAULT_METRIC}1 === datum.${DEFAULT_METRIC}1`,
+					test: `datum.${DEFAULT_METRIC}1 > 0 && data('bar0_stacks')[indexof(pluck(data('bar0_stacks'), 'prismStackId'), datum.prismStackId)].max_${DEFAULT_METRIC}1 === datum.${DEFAULT_METRIC}1`,
 					value: CORNER_RADIUS,
 				},
 				{ value: 0 },
@@ -292,7 +292,7 @@ describe('barUtils', () => {
 		test('Tooltip child, should return tests for hover and default to opacity', () => {
 			const tooltip = createElement(ChartTooltip);
 			expect(getFillStrokeOpacity({ ...defaultBarProps, children: [tooltip] })).toStrictEqual([
-				{ test: `rect0HoveredId && rect0HoveredId !== datum.prismMarkId`, value: 1 / HIGHLIGHT_CONTRAST_RATIO },
+				{ test: `bar0_hoveredId && bar0_hoveredId !== datum.prismMarkId`, value: 1 / HIGHLIGHT_CONTRAST_RATIO },
 				{ value: 1 },
 			]);
 		});
@@ -306,7 +306,7 @@ describe('barUtils', () => {
 			const popover = createElement(ChartPopover);
 			const rule = getFillStrokeOpacity({ ...defaultBarProps, children: [popover] }, true);
 			expect(rule).toHaveLength(4);
-			expect(rule[2]).toEqual({ test: `rect0SelectedId && rect0SelectedId === datum.prismMarkId`, value: 1 });
+			expect(rule[2]).toEqual({ test: `bar0_selectedId && bar0_selectedId === datum.prismMarkId`, value: 1 });
 		});
 	});
 
@@ -321,7 +321,7 @@ describe('barUtils', () => {
 			const strokeRule = getStroke({ ...defaultBarProps, children: [popover] });
 			expect(strokeRule).toHaveLength(2);
 			expect(strokeRule[0]).toStrictEqual({
-				test: 'rect0SelectedId && rect0SelectedId === datum.prismMarkId',
+				test: 'bar0_selectedId && bar0_selectedId === datum.prismMarkId',
 				value: 'rgb(20, 115, 230)',
 			});
 		});
@@ -338,7 +338,7 @@ describe('barUtils', () => {
 			const strokeRule = getStrokeDash({ ...defaultBarProps, children: [popover] });
 			expect(strokeRule).toHaveLength(2);
 			expect(strokeRule[0]).toStrictEqual({
-				test: 'rect0SelectedId && rect0SelectedId === datum.prismMarkId',
+				test: 'bar0_selectedId && bar0_selectedId === datum.prismMarkId',
 				value: [],
 			});
 		});
@@ -355,7 +355,7 @@ describe('barUtils', () => {
 			const strokeRule = getStrokeWidth({ ...defaultBarProps, children: [popover] });
 			expect(strokeRule).toHaveLength(2);
 			expect(strokeRule[0]).toStrictEqual({
-				test: 'rect0SelectedId && rect0SelectedId === datum.prismMarkId',
+				test: 'bar0_selectedId && bar0_selectedId === datum.prismMarkId',
 				value: 2,
 			});
 		});
@@ -463,7 +463,7 @@ describe('barUtils', () => {
 			expect(
 				getAnnotationMarks(
 					{ ...defaultBarProps, children: annotationChildren },
-					TABLE,
+					FILTERED_TABLE,
 					stackedXScale,
 					defaultBarProps.dimension,
 				),
@@ -472,7 +472,7 @@ describe('barUtils', () => {
 		test('horizontal orientation should return xc and yc opposite of vertical orientation', () => {
 			const annotationWidthSignal = `getLabelWidth(datum.textLabel, 'bold', '12') + 10`;
 			const props: BarSpecProps = { ...defaultBarProps, orientation: 'horizontal', children: annotationChildren };
-			const annotationMarks = getAnnotationMarks(props, TABLE, 'yBand', defaultBarProps.dimension);
+			const annotationMarks = getAnnotationMarks(props, FILTERED_TABLE, 'yBand', defaultBarProps.dimension);
 
 			expect(annotationMarks[0].encode?.enter?.yc).toStrictEqual({
 				scale: 'yBand',
@@ -492,7 +492,7 @@ describe('barUtils', () => {
 			expect(
 				getAnnotationMarks(
 					{ ...defaultBarPropsWithSecondayColor, children: annotationChildren },
-					TABLE,
+					FILTERED_TABLE,
 					stackedXScale,
 					defaultBarProps.dimension,
 				),
@@ -502,7 +502,7 @@ describe('barUtils', () => {
 			expect(
 				getAnnotationMarks(
 					{ ...defaultBarProps, type: 'dodged', children: annotationChildren },
-					`${defaultBarProps.name}Facet`,
+					`${defaultBarProps.name}_facet`,
 					dodgedXScale,
 					dodgedGroupField,
 				),
@@ -516,7 +516,7 @@ describe('barUtils', () => {
 						type: 'dodged',
 						children: annotationChildren,
 					},
-					`${defaultBarProps.name}Facet`,
+					`${defaultBarProps.name}_facet`,
 					dodgedXScale,
 					dodgedGroupField,
 				),
@@ -527,7 +527,7 @@ describe('barUtils', () => {
 			expect(
 				getAnnotationMarks(
 					{ ...defaultBarProps, children: annotationChildrenWithStyles },
-					TABLE,
+					FILTERED_TABLE,
 					stackedXScale,
 					defaultBarProps.dimension,
 				),
@@ -537,7 +537,7 @@ describe('barUtils', () => {
 			expect(
 				getAnnotationMarks(
 					{ ...defaultBarPropsWithSecondayColor, children: annotationChildrenWithStyles },
-					TABLE,
+					FILTERED_TABLE,
 					stackedXScale,
 					defaultBarProps.dimension,
 				),
@@ -547,9 +547,9 @@ describe('barUtils', () => {
 			expect(
 				getAnnotationMarks(
 					{ ...defaultBarProps, type: 'dodged', children: annotationChildrenWithStyles },
-					`${defaultBarProps.name}Facet`,
+					`${defaultBarProps.name}_facet`,
 					dodgedXScale,
-					`${defaultBarProps.name}DodgeGroup`,
+					`${defaultBarProps.name}_dodgeGroup`,
 				),
 			).toStrictEqual(dodgedAnnotationMarksWithStyles);
 		});
@@ -565,12 +565,12 @@ describe('barUtils', () => {
 		test('should retrun group mark', () => {
 			expect(getDodgedGroupMark(defaultBarProps)).toStrictEqual({
 				encode: { enter: { x: { field: DEFAULT_CATEGORICAL_DIMENSION, scale: 'xBand' } } },
-				from: { facet: { data: 'table', groupby: DEFAULT_CATEGORICAL_DIMENSION, name: 'rect0Facet' } },
-				name: 'rect0Group',
+				from: { facet: { data: FILTERED_TABLE, groupby: DEFAULT_CATEGORICAL_DIMENSION, name: 'bar0_facet' } },
+				name: 'bar0_group',
 				scales: [
 					{
-						domain: { data: TABLE, field: 'rect0DodgeGroup' },
-						name: 'rect0Position',
+						domain: { data: FILTERED_TABLE, field: 'bar0_dodgeGroup' },
+						name: 'bar0_position',
 						paddingInner: PADDING_RATIO,
 						range: 'width',
 						type: 'band',
@@ -584,12 +584,12 @@ describe('barUtils', () => {
 			const groupedPadding = PADDING_RATIO + 0.1;
 			expect(getDodgedGroupMark({ ...defaultBarProps, groupedPadding })).toStrictEqual({
 				encode: { enter: { x: { field: DEFAULT_CATEGORICAL_DIMENSION, scale: 'xBand' } } },
-				from: { facet: { data: 'table', groupby: DEFAULT_CATEGORICAL_DIMENSION, name: 'rect0Facet' } },
-				name: 'rect0Group',
+				from: { facet: { data: FILTERED_TABLE, groupby: DEFAULT_CATEGORICAL_DIMENSION, name: 'bar0_facet' } },
+				name: 'bar0_group',
 				scales: [
 					{
-						domain: { data: TABLE, field: 'rect0DodgeGroup' },
-						name: 'rect0Position',
+						domain: { data: FILTERED_TABLE, field: 'bar0_dodgeGroup' },
+						name: 'bar0_position',
 						paddingInner: groupedPadding,
 						range: 'width',
 						type: 'band',

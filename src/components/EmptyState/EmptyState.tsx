@@ -24,7 +24,7 @@ export const EmptyState: FC<EmptyStateProps> = (props) => {
 	return (
 		<Flex direction="column" justifyContent="center" alignItems="center" {...props}>
 			<GraphBarVertical size="XXL" UNSAFE_className="EmptyState-icon" />
-			<Text UNSAFE_className="EmptyState-text">{`No data found`}</Text>
+			<Text UNSAFE_className="EmptyState-text">No data found</Text>
 		</Flex>
 	);
 };

@@ -10,7 +10,7 @@
  * governing permissions and limitations under the License.
  */
 
-import { TABLE, TRELLIS_PADDING } from '@constants';
+import { FILTERED_TABLE, TRELLIS_PADDING } from '@constants';
 import { addDomainFields, getScaleIndexByName } from '@specBuilder/scale/scaleSpecBuilder';
 import { BarSpecProps } from 'types';
 import { GroupMark, Mark, Scale } from 'vega';
@@ -41,7 +41,7 @@ export const getTrellisGroupMark = (props: BarSpecProps, marks: Mark[], repeated
 		// Define data source for this trellis
 		from: {
 			facet: {
-				data: TABLE,
+				data: FILTERED_TABLE,
 				name: facetName,
 				groupby: trellis,
 			},
@@ -98,7 +98,7 @@ export const getTrellisProperties = ({ trellisOrientation, name }: BarSpecProps)
 	const axis = trellisOrientation === 'horizontal' ? 'x' : 'y';
 
 	return {
-		facetName: `${name}Trellis`,
+		facetName: `${name}_trellis`,
 		scaleName: `${axis}TrellisBand`,
 		markName: `${axis}TrellisGroup`,
 		rangeScale: axis === 'x' ? 'width' : 'height',

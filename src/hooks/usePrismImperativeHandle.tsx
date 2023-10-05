@@ -17,7 +17,7 @@ import { View } from 'vega';
 
 export default function usePrismImperativeHandle(
 	forwardedRef: Ref<PrismHandle>,
-	{ chartView, title }: { chartView: MutableRefObject<View | undefined>; title?: string }
+	{ chartView, title }: { chartView: MutableRefObject<View | undefined>; title?: string },
 ) {
 	return useImperativeHandle(forwardedRef, () => ({
 		copy() {
@@ -30,13 +30,13 @@ export default function usePrismImperativeHandle(
 								const blob = await response.blob();
 								navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]).then(
 									() => resolve('Chart copied to clipboard'),
-									() => reject('Error occurred while writing to clipboard, copy to clipboard failed')
+									() => reject('Error occurred while writing to clipboard, copy to clipboard failed'),
 								);
 							} catch (error) {
 								reject('Error occurred while fetching image, copy to clipboard failed');
 							}
 						},
-						() => reject('Error occurred while converting image to URL, copy to clipboard failed')
+						() => reject('Error occurred while converting image to URL, copy to clipboard failed'),
 					);
 				} else {
 					reject("There isn't a chart to copy, copy to clipboard failed");
@@ -56,7 +56,7 @@ export default function usePrismImperativeHandle(
 							link.dispatchEvent(new MouseEvent('click'));
 							resolve(`Chart downloaded as ${filename}`);
 						},
-						() => reject('Error occurred while converting image to URL, download failed')
+						() => reject('Error occurred while converting image to URL, download failed'),
 					);
 				} else {
 					reject("There isn't a chart to download, download failed");

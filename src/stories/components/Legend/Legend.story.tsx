@@ -10,17 +10,12 @@
  * governing permissions and limitations under the License.
  */
 
-import { Content } from '@adobe/react-spectrum';
-import usePrismProps from '@hooks/usePrismProps';
-import { Bar, ChartPopover, ChartTooltip, Legend, Prism } from '@prism';
-import { browserData as data } from '@stories/data/data';
-import { ComponentStory } from '@storybook/react';
-import React, { ReactElement } from 'react';
+import { Legend } from '@prism';
+import { LegendBarStory, defaultProps } from './LegendStoryUtils';
 
 export default {
 	title: 'Prism/Legend',
 	component: Legend,
-	argTypes: {},
 	parameters: {
 		docs: {
 			description: {
@@ -30,29 +25,8 @@ export default {
 	},
 };
 
-const dialogContent = (datum) => (
-	<Content>
-		<div>Operating system: {datum.series}</div>
-		<div>Browser: {datum.category}</div>
-		<div>Users: {datum.value}</div>
-	</Content>
-);
-
-const LegendBarStory: ComponentStory<typeof Legend> = (args): ReactElement => {
-	const prismProps = usePrismProps({ data, width: 700 });
-	return (
-		<Prism {...prismProps}>
-			<Bar color="series">
-				<ChartTooltip>{(datum) => dialogContent(datum)}</ChartTooltip>
-				<ChartPopover>{(datum) => dialogContent(datum)}</ChartPopover>
-			</Bar>
-			<Legend {...args} />
-		</Prism>
-	);
-};
-
 const Basic = LegendBarStory.bind({});
-Basic.args = { descriptions: undefined, highlight: false, position: 'bottom', title: undefined };
+Basic.args = { ...defaultProps };
 
 const descriptions = [
 	{
@@ -64,10 +38,10 @@ const descriptions = [
 ];
 
 const Descriptions = LegendBarStory.bind({});
-Descriptions.args = { descriptions };
+Descriptions.args = { descriptions, ...defaultProps };
 
 const Highlight = LegendBarStory.bind({});
-Highlight.args = { highlight: true };
+Highlight.args = { highlight: true, ...defaultProps };
 
 const legendLabels = [
 	{ seriesName: 'Windows', label: 'Custom Windows' },
@@ -76,15 +50,24 @@ const legendLabels = [
 ];
 
 const Labels = LegendBarStory.bind({});
-Labels.args = { legendLabels, highlight: true };
+Labels.args = { legendLabels, highlight: true, ...defaultProps };
+
+const OnClick = LegendBarStory.bind({});
+OnClick.args = {};
 
 const Position = LegendBarStory.bind({});
-Position.args = { position: 'right' };
+Position.args = { position: 'right', ...defaultProps };
 
 const Title = LegendBarStory.bind({});
-Title.args = { title: 'Operating system' };
+Title.args = { title: 'Operating system', ...defaultProps };
 
 const Supreme = LegendBarStory.bind({});
-Supreme.args = { descriptions, highlight: true, position: 'right', title: 'Operating system', legendLabels };
+Supreme.args = {
+	descriptions,
+	highlight: true,
+	legendLabels,
+	position: 'right',
+	title: 'Operating system',
+};
 
-export { Basic, Descriptions, Highlight, Labels, Position, Title, Supreme };
+export { Basic, Descriptions, Highlight, Labels, OnClick, Position, Title, Supreme };

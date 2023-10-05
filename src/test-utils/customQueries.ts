@@ -36,7 +36,7 @@ export {
 };
 
 const queryAllLegendEntries = (container: HTMLElement) =>
-	[...container.querySelectorAll(`g.legendEntry > g > path.foreground`)] as HTMLElement[];
+	[...container.querySelectorAll(`g.role-legend-entry g.role-scope > g > path.foreground`)] as HTMLElement[];
 
 const getMultipleLegendError = () => `Found multiple legend entries`;
 const getMissingLegendError = () => `Unable to find any legend entries`;
@@ -54,7 +54,7 @@ export {
 };
 
 const queryAllLegendSymbols = (container: HTMLElement) =>
-	[...container.querySelectorAll(`g.legendEntry g.role-legend-symbol > path`)] as HTMLElement[];
+	[...container.querySelectorAll(`g.role-legend-entry g.role-legend-symbol > path`)] as HTMLElement[];
 
 const getMultipleLegendSymbolsError = () => `Found multiple legend symbols`;
 const getMissingLegendSymbolsError = () => `Unable to find any legend symbols`;

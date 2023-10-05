@@ -13,85 +13,82 @@
 import { DEFAULT_COLOR_SCHEME, DEFAULT_GRANULARITY, DEFAULT_LABEL_ALIGN, DEFAULT_LABEL_FONT_WEIGHT } from '@constants';
 import { getGenericSignal } from '@specBuilder/signal/signalSpecBuilder';
 import produce from 'immer';
-import {
-	AxisProps,
-	AxisSpecProps,
-	ColorScheme,
-	Granularity,
-	Label,
-	LabelAlign,
-	LabelFormat,
-	Position,
-	SubLabel,
-} from 'types';
-import {
-	Align,
-	Axis,
-	Baseline,
-	EncodeEntry,
-	FontWeight,
-	GroupMark,
-	GuideEncodeEntry,
-	Mark,
-	NumberValue,
-	ProductionRule,
-	Scale,
-	ScaleType,
-	ScaledValueRef,
-	Signal,
-	SignalRef,
-	Spec,
-	TextEncodeEntry,
-	TextValueRef,
-	TickCount,
-} from 'vega';
+import { AxisProps, AxisSpecProps, ColorScheme, Label, Position } from 'types';
+import { Axis, Data, GroupMark, Mark, ScaleType, Signal, Spec } from 'vega';
 
+import { getAxisLabelsEncoding, getLabelBaselineAlign, getLabelValue } from './axisLabelUtils';
 import {
 	getReferenceLineMarks,
 	getReferenceLinesFromChildren,
-	scaleTypeSupportsRefenceLines,
+	scaleTypeSupportsReferenceLines,
 } from './axisReferenceLineUtils';
+import { encodeAxisTitle, getTrellisAxisProps, isTrellisedChart } from './axisTrellisUtils';
+import {
+	getBaselineRule,
+	getDefaultAxis,
+	getOpposingScaleType,
+	getScale,
+	getSubLabelAxis,
+	getTimeAxes,
+} from './axisUtils';
+import { sanitizeAxisChildren } from '@utils';
+import {
+	addAxisAnnotationAxis,
+	addAxisAnnotationData,
+	addAxisAnnotationMarks,
+	addAxisAnnotationSignals,
+	getAxisAnnotationsFromChildren,
+} from '@specBuilder/axisAnnotation/axisAnnotationUtils';
 
-export const addAxis = produce<Spec, [AxisProps & { colorScheme?: ColorScheme }]>(
+export const addAxis = produce<Spec, [AxisProps & { colorScheme?: ColorScheme; index?: number }]>(
 	(
 		spec,
 		{
 			baseline = false,
 			baselineOffset = 0,
+			children,
 			colorScheme = DEFAULT_COLOR_SCHEME,
 			granularity = DEFAULT_GRANULARITY,
 			grid = false,
 			hideDefaultLabels = false,
+			index = 0,
 			labelAlign = DEFAULT_LABEL_ALIGN,
 			labelFontWeight = DEFAULT_LABEL_FONT_WEIGHT,
+			position,
 			range,
 			ticks = false,
 			...props
 		},
 	) => {
+		// get the scale that this axis will be associated with
+		const scale = getScale(spec.scales ?? [], position);
+		const { name: scaleName, type: scaleType } = scale;
+
+		// get the opposing scale
+		const opposingScaleType = getOpposingScaleType(spec.scales ?? [], position);
+
 		// reconstruct props with defaults
 		const axisProps: AxisSpecProps = {
 			baseline,
 			baselineOffset,
+			children: sanitizeAxisChildren(children),
 			colorScheme,
 			granularity,
 			grid,
 			hideDefaultLabels,
+			index,
 			labelAlign,
 			labelFontWeight,
-			name: getAxisName(spec),
+			position,
+			name: `axis${index}`,
 			range,
 			ticks,
+			scaleType: scaleType ?? 'linear',
 			...props,
 		};
 
+		spec.data = addAxisData(spec.data ?? [], { ...axisProps, scaleType: scaleType ?? 'linear' });
 		spec.signals = addAxisSignals(spec.signals ?? [], axisProps);
-
-		// get the scale that this axis will be associated with
-		const scale = getScale(spec.scales ?? [], axisProps.position);
-		const { name: scaleName, type: scaleType } = scale;
-		// get the opposing scale
-		const opposingScaleType = getOpposingScaleType(spec.scales ?? [], axisProps.position);
 
 		// set custom range if applicable
 		if (range && (scaleType === 'linear' || scaleType === 'time')) {
@@ -100,9 +97,7 @@ export const addAxis = produce<Spec, [AxisProps & { colorScheme?: ColorScheme }]
 
 		spec.axes = addAxes(spec.axes ?? [], {
 			...axisProps,
-			...getTrellisAxisProps(scale.name),
 			scaleName,
-			scaleType,
 			opposingScaleType,
 
 			// we don't want to show the grid on top level
@@ -113,27 +108,31 @@ export const addAxis = produce<Spec, [AxisProps & { colorScheme?: ColorScheme }]
 		spec.marks = addAxesMarks(spec.marks ?? [], {
 			...axisProps,
 			scaleName,
-			scaleType,
 			opposingScaleType,
 		});
+
+		return spec;
 	},
 );
 
-export const getAxisName = (spec: Spec): string => {
-	const nAxes = spec.axes?.length ?? 0;
-	return `axis${nAxes}`;
-};
+export const addAxisData = produce<Data[], [AxisSpecProps & { scaleType: ScaleType }]>((data, props) => {
+	const axisAnnotations = getAxisAnnotationsFromChildren(props);
+	axisAnnotations.forEach((annotationProps) => {
+		addAxisAnnotationData(data, annotationProps);
+	});
+});
 
-export const addAxisSignals = produce<Signal[], [AxisSpecProps]>((signals, { name, labels, position, subLabels }) => {
+export const addAxisSignals = produce<Signal[], [AxisSpecProps]>((signals, props) => {
+	const { name, labels, position, subLabels } = props;
 	if (labels?.length) {
 		// add all the label properties to a signal so that the axis encoding can use it to style each label correctly
-		signals.push(getGenericSignal(`${name}Labels`, getLabelSignalValue(labels, position)));
+		signals.push(getGenericSignal(`${name}_labels`, getLabelSignalValue(labels, position)));
 	}
 	if (subLabels?.length) {
 		// add all the sublabel properties to a signal so that the axis encoding can use it to style each sublabel correctly
 		signals.push(
 			getGenericSignal(
-				`${name}SubLabels`,
+				`${name}_subLabels`,
 				subLabels.map((label) => ({
 					...label,
 					// convert label align to vega align
@@ -142,6 +141,10 @@ export const addAxisSignals = produce<Signal[], [AxisSpecProps]>((signals, { nam
 			),
 		);
 	}
+	const axisAnnotations = getAxisAnnotationsFromChildren(props);
+	axisAnnotations.forEach((annotationProps) => {
+		addAxisAnnotationSignals(signals, annotationProps);
+	});
 });
 
 /**
@@ -164,100 +167,72 @@ export const getLabelSignalValue = (labels: (Label | string | number)[], positio
 		})
 		.filter(Boolean);
 
-export const addAxes = produce<
-	Axis[],
-	[AxisSpecProps & { scaleName: string; scaleType?: ScaleType; opposingScaleType?: string }]
->((axes, { scaleName, scaleType, opposingScaleType, ...axisProps }) => {
-	const { baseline, labelAlign, labelFontWeight, labelFormat, name, position, subLabels } = axisProps;
-	const newAxes: Axis[] = [];
-	if (labelFormat === 'time') {
-		// time axis actually needs two axes. A primary and secondary.
-		newAxes.push(...getTimeAxes(scaleName, axisProps));
-	} else {
-		const axis = getDefaultAxis(axisProps, scaleName, scaleType);
+export const addAxes = produce<Axis[], [AxisSpecProps & { scaleName: string; opposingScaleType?: string }]>(
+	(axes, { scaleName, opposingScaleType, ...axisProps }) => {
+		const newAxes: Axis[] = [];
+		// adds all the trellis axis props if this is a trellis axis
+		axisProps = { ...axisProps, ...getTrellisAxisProps(scaleName) };
+		const { baseline, labelAlign, labelFontWeight, labelFormat, name, position, subLabels } = axisProps;
+		if (labelFormat === 'time') {
+			// time axis actually needs two axes. A primary and secondary.
+			newAxes.push(...getTimeAxes(scaleName, axisProps));
+		} else {
+			const axis = getDefaultAxis(axisProps, scaleName);
 
-		// if labels exist, add them to the axis
-		if (axisProps.labels?.length) {
-			const labels = axisProps.labels as Label[];
-			const signalName = `${name}Labels`;
-			axis.values = labels.map((label) => getLabelValue(label));
-			axis.encode = {
-				labels: getAxisLabelsEncoding(labelAlign, labelFontWeight, 'label', position, signalName),
-			};
-		}
-
-		// if sublabels exist, create a new axis for the sub labels
-		if (subLabels?.length) {
-			axis.titlePadding = 24;
-
-			// add sublabel axis
-			newAxes.push(getSubLabelAxis(axisProps, scaleName, scaleType));
-		}
-		newAxes.unshift(axis);
-	}
-
-	// add baseline
-	if (opposingScaleType !== 'linear') {
-		newAxes[0] = setAxisBaseline(newAxes[0], baseline);
-	}
-
-	if (scaleTypeSupportsRefenceLines(scaleType)) {
-		// encode axis to hide labels that overlap reference line icons
-		const referenceLines = getReferenceLinesFromChildren(axisProps.children);
-		referenceLines.forEach((referenceLineProps) => {
-			const { icon, value } = referenceLineProps;
-			const text = newAxes[0].encode?.labels?.update?.text;
-			if (icon && text && Array.isArray(text)) {
-				// if the label is within 30 pixels of the reference line icon, hide it
-				text.unshift({
-					test: `abs(scale('${scaleName}', ${value}) - scale('${scaleName}', datum.value)) < 30`,
-					value: '',
-				});
+			// if labels exist, add them to the axis
+			if (axisProps.labels?.length) {
+				const labels = axisProps.labels as Label[];
+				const signalName = `${name}_labels`;
+				axis.values = labels.map((label) => getLabelValue(label));
+				axis.encode = {
+					labels: getAxisLabelsEncoding(labelAlign, labelFontWeight, 'label', position, signalName),
+				};
 			}
+
+			// if sublabels exist, create a new axis for the sub labels
+			if (subLabels?.length) {
+				axis.titlePadding = 24;
+
+				// add sublabel axis
+				newAxes.push(getSubLabelAxis(axisProps, scaleName));
+			}
+			newAxes.unshift(axis);
+		}
+
+		// add baseline
+		if (opposingScaleType !== 'linear') {
+			newAxes[0] = setAxisBaseline(newAxes[0], baseline);
+		}
+
+		if (scaleTypeSupportsReferenceLines(axisProps.scaleType)) {
+			// encode axis to hide labels that overlap reference line icons
+			const referenceLines = getReferenceLinesFromChildren(axisProps.children);
+			referenceLines.forEach((referenceLineProps) => {
+				const { label: referenceLineLabel, icon, value, position: linePosition } = referenceLineProps;
+				const text = newAxes[0].encode?.labels?.update?.text;
+				if (
+					(icon || referenceLineLabel) &&
+					text &&
+					Array.isArray(text) &&
+					(!linePosition || linePosition === 'center')
+				) {
+					// if the label is within 30 pixels of the reference line icon, hide it
+					text.unshift({
+						test: `abs(scale('${scaleName}', ${value}) - scale('${scaleName}', datum.value)) < 30`,
+						value: '',
+					});
+				}
+			});
+		}
+
+		const axisAnnotations = getAxisAnnotationsFromChildren(axisProps);
+		axisAnnotations.forEach((annotationProps) => {
+			addAxisAnnotationAxis(newAxes, annotationProps, scaleName);
 		});
-	}
 
-	axes.push(...newAxes);
-});
-
-/**
- * Gets the display value of the label. If it's an object, it will return the value property, otherwise it will return the label.
- * @param label
- * @returns string | number
- */
-export const getLabelValue = (label: Label | number | string): string | number => {
-	if (typeof label === 'object') {
-		return label.value;
-	}
-	return label;
-};
-
-/**
- * gets all the custom props for a trellis axis
- * if this axis is not a trellis axis, it will return an empty object
- * @param scaleName
- * @returns trellisAxisProps
- */
-export const getTrellisAxisProps = (scaleName: string): Partial<AxisSpecProps> => {
-	let trellisAxisProps: Partial<AxisSpecProps> = {};
-
-	// if 'TrellisBand' is in the scale name then this is a trellis axis
-	if (scaleName.includes('TrellisBand')) {
-		// shift the labels up/left half the scale bandwidth
-		const labelOffsetSignal = `bandwidth('${scaleName}') / -2`;
-		const axisType = scaleName[0] === 'x' ? 'x' : 'y';
-		trellisAxisProps = {
-			position: axisType === 'x' ? 'top' : 'left',
-			labelFontWeight: 'bold',
-			labelAlign: undefined, // set this to undefined because we will manually control alignment
-			vegaLabelAlign: 'left',
-			vegaLabelBaseline: 'bottom',
-			vegaLabelOffset: axisType === 'x' ? { signal: labelOffsetSignal } : { signal: `${labelOffsetSignal} - 8` }, // y axis needs an extra 8px as vertical padding
-			vegaLabelPadding: axisType === 'x' ? 8 : 0, // add vertical padding
-		};
-	}
-	return trellisAxisProps;
-};
+		axes.push(...newAxes);
+	},
+);
 
 export const addAxesMarks = produce<
 	Mark[],
@@ -266,7 +241,7 @@ export const addAxesMarks = produce<
 	const { baseline, baselineOffset, children, opposingScaleType, position, scaleName, scaleType } = props;
 
 	// only add reference lines to linear or time scales
-	if (scaleTypeSupportsRefenceLines(scaleType)) {
+	if (scaleTypeSupportsReferenceLines(scaleType)) {
 		const referenceLines = getReferenceLinesFromChildren(children);
 		referenceLines.forEach((referenceLineProps, referenceLineIndex) => {
 			const referenceLineMarks = getReferenceLineMarks(props, referenceLineProps, referenceLineIndex, scaleName);
@@ -282,8 +257,13 @@ export const addAxesMarks = produce<
 	}
 
 	if (isTrellised) {
-		addAxesToTrellisGroup(props, trellisGroupMark, scaleName, scaleType);
+		addAxesToTrellisGroup(props, trellisGroupMark, scaleName);
 	}
+
+	const axisAnnotations = getAxisAnnotationsFromChildren(props);
+	axisAnnotations.forEach((annotationProps) => {
+		addAxisAnnotationMarks(marks, annotationProps, scaleName);
+	});
 });
 
 function addBaseline(marks: Mark[], baselineOffset: number, position: Position, trellisGroupMark: GroupMark) {
@@ -306,12 +286,7 @@ function addBaseline(marks: Mark[], baselineOffset: number, position: Position, 
 	}
 }
 
-function addAxesToTrellisGroup(
-	props: AxisSpecProps,
-	trellisGroupMark: GroupMark,
-	scaleName: string,
-	scaleType?: ScaleType,
-) {
+function addAxesToTrellisGroup(props: AxisSpecProps, trellisGroupMark: GroupMark, scaleName: string) {
 	const trellisOrientation = trellisGroupMark.name?.startsWith('x') ? 'horizontal' : 'vertical';
 	const axisOrientation = props.position === 'bottom' || props.position === 'top' ? 'horizontal' : 'vertical';
 
@@ -319,432 +294,32 @@ function addAxesToTrellisGroup(
 	// for example, we don't want x-axis labels on a vertical trellis
 	const hideDefaultLabels = props.hideDefaultLabels || trellisOrientation !== axisOrientation;
 
+	let scaleType = props.scaleType;
 	// get the scale that this axis will be associated with
 	if (trellisOrientation === axisOrientation) {
 		const scale = getScale(trellisGroupMark.scales ?? [], props.position);
 		scaleName = scale.name;
-		scaleType = scale.type;
+		scaleType = scale.type ?? 'linear';
+	} else {
+		// if the axis is not the same orientation as the trellis, then we don't display the title
+		// because it will be displayed on the root axis at the spec level
+		props.title = undefined;
 	}
 
-	trellisGroupMark.axes = addAxes(trellisGroupMark.axes ?? [], {
+	let newAxes = addAxes([], {
 		...props,
 		hideDefaultLabels,
 		scaleName,
 		scaleType,
 	});
-}
 
-function getScale(scales: Scale[], position: Position) {
-	const applicableScales = scales.filter((s) => 'range' in s && s.range === getRange(position));
-	let scale: Scale | undefined;
+	// titles on axes within the trellis group have special encodings so that the title is only shown on the first axis
+	newAxes = encodeAxisTitle(newAxes, trellisGroupMark);
 
-	if (applicableScales.length > 1) {
-		// Is there a better way to find the trellis scale?
-		scale = scales.find((s) => s.name.includes('Trellis')) ?? applicableScales[0];
-	} else {
-		scale = applicableScales[0];
-	}
-
-	if (scale) {
-		return scale;
-	}
-
-	scale = {
-		name: getScaleNameFromPosition(position),
-		type: 'linear',
-		range: getRange(position),
-	};
-	scales.push(scale);
-	return scale;
-}
-
-function getRange(position: Position): 'width' | 'height' {
-	if (position === 'left' || position === 'right') {
-		return 'height';
-	}
-	return 'width';
-}
-
-function getOpposingScaleType(scales: Scale[], position: Position) {
-	let scale = scales.find((s) => 'range' in s && s.range === getOpposingRange(position));
-	if (scale) {
-		return scale.type;
-	}
-	scale = {
-		name: getOpposingScaleNameFromPosition(position),
-		type: 'linear',
-		range: getOpposingRange(position),
-	};
-	scales.push(scale);
-	return scale.type;
-}
-
-function getOpposingRange(position: Position): 'width' | 'height' {
-	if (position === 'left' || position === 'right') {
-		return 'width';
-	}
-	return 'height';
-}
-
-function getTimeAxes(
-	scaleName: string,
-	{
-		granularity,
-		grid,
-		labelAlign,
-		labelFontWeight,
-		position,
-		ticks,
-		title,
-		vegaLabelAlign,
-		vegaLabelBaseline,
-	}: AxisSpecProps,
-): Axis[] {
-	const [secondaryFormat, primaryFormat, tickGranularity] = getTimeLabelFormats(granularity);
-	return [
-		{
-			scale: scaleName,
-			orient: position,
-			grid,
-			ticks,
-			tickCount: scaleName.includes('Time') ? tickGranularity : undefined,
-			title,
-			format: secondaryFormat,
-			formatType: 'time',
-			labelAlign: getLabelAlign(labelAlign, position, vegaLabelAlign),
-			labelBaseline: getLabelBaseline(labelAlign, position, vegaLabelBaseline),
-		},
-		{
-			scale: scaleName,
-			orient: position,
-			format: primaryFormat,
-			tickCount: scaleName.includes('Time') ? tickGranularity : undefined,
-			formatType: 'time',
-			labelOverlap: 'greedy',
-			labelFontWeight,
-			labelAlign: getLabelAlign(labelAlign, position, vegaLabelAlign),
-			labelBaseline: getLabelBaseline(labelAlign, position, vegaLabelBaseline),
-			encode: {
-				labels: {
-					enter: {
-						dy: { value: (ticks ? 28 : 20) * (position === 'top' ? -1 : 1) }, // account for tick height
-					},
-					update: {
-						text: { signal: 'formatPrimaryTimeLabels(datum)' },
-					},
-				},
-			},
-		},
-	];
-}
-
-function getTimeLabelFormats(granularity: Granularity): [string, string, TickCount] {
-	switch (granularity) {
-		case 'minute':
-			return ['%-I:%M %p', '%b %-d', 'minute'];
-		case 'hour':
-			return ['%-I %p', '%b %-d', 'hour'];
-		case 'day':
-			return ['%-d', '%b', 'day'];
-		case 'week':
-			return ['%-d', '%b', 'week'];
-		case 'month':
-			return ['%b', '%Y', 'month'];
-		case 'quarter':
-			return ['Q%q', '%Y', { interval: 'month', step: 3 }];
-		default:
-			return ['%-d', '%b', 'day'];
-	}
-}
-
-export const getDefaultAxis = (
-	{
-		grid,
-		hideDefaultLabels,
-		labelAlign,
-		labelFontWeight,
-		labelFormat,
-		position,
-		ticks,
-		tickMinStep,
-		title,
-		vegaLabelAlign,
-		vegaLabelBaseline,
-		vegaLabelOffset,
-		vegaLabelPadding,
-	}: AxisSpecProps,
-	scaleName: string,
-	scaleType: ScaleType | undefined,
-): Axis => ({
-	scale: scaleName,
-	orient: position,
-	grid,
-	ticks,
-	tickCount: getTickCount(position, grid),
-	tickMinStep: scaleType !== 'linear' ? undefined : tickMinStep, //only supported for linear scales
-	title,
-	labelAlign: getLabelAlign(labelAlign, position, vegaLabelAlign),
-	labelBaseline: getLabelBaseline(labelAlign, position, vegaLabelBaseline),
-	labelFontWeight,
-	labelOffset: getLabelOffset(labelAlign, scaleName, vegaLabelOffset),
-	labelPadding: vegaLabelPadding,
-	labels: !hideDefaultLabels,
-	encode: {
-		labels: {
-			update: {
-				text: getLabelFormat(labelFormat),
-			},
-		},
-	},
-});
-
-export const getSubLabelAxis = (
-	axisProps: AxisSpecProps,
-	scaleName: string,
-	scaleType: ScaleType | undefined,
-): Axis => {
-	const { labelAlign, labelFontWeight, name, position, ticks } = axisProps;
-	const subLabels = axisProps.subLabels as SubLabel[];
-	const signalName = `${name}SubLabels`;
-	const subLabelValues = subLabels.map((label) => label.value);
-
-	let subLabelAxis = getDefaultAxis(axisProps, scaleName, scaleType);
-	subLabelAxis = {
-		...subLabelAxis,
-		domain: false,
-		domainWidth: undefined,
-		grid: false,
-		labelPadding: ticks ? 32 : 24,
-		ticks: false,
-		title: undefined,
-		values: subLabelValues.length ? subLabelValues : undefined,
-		encode: {
-			labels: {
-				...getAxisLabelsEncoding(labelAlign, labelFontWeight, 'subLabel', position, signalName),
-			},
-		},
-	};
-	return subLabelAxis;
-};
-
-const getAxisLabelsEncoding = (
-	labelAlign: LabelAlign,
-	labelFontWeight: FontWeight,
-	labelKey: 'label' | 'subLabel',
-	position: Position,
-	signalName: string,
-): GuideEncodeEntry<TextEncodeEntry> => ({
-	update: {
-		text: [
-			{
-				test: `indexof(pluck(${signalName}, 'value'), datum.value) !== -1`,
-				signal: `${signalName}[indexof(pluck(${signalName}, 'value'), datum.value)].${labelKey}`,
-			},
-			{ signal: 'datum.value' },
-		],
-		fontWeight: [
-			{
-				test: `indexof(pluck(${signalName}, 'value'), datum.value) !== -1 && ${signalName}[indexof(pluck(${signalName}, 'value'), datum.value)].fontWeight`,
-				signal: `${signalName}[indexof(pluck(${signalName}, 'value'), datum.value)].fontWeight`,
-			},
-			// default to the primary label font weight
-			{ value: labelFontWeight },
-		],
-		...getEncodedLabelBaselineAlign(position, signalName, labelAlign),
-	},
-});
-
-/**
- * clamps the tick count to a min of 2 and max of 5 for linear scales
- * @param position
- * @param scaleType
- * @returns tickCount production rule
- */
-export function getTickCount(position: Position, grid: boolean): SignalRef | undefined {
-	if (!grid) return;
-	const range = ['top', 'bottom'].includes(position) ? 'width' : 'height';
-	// clamp axis tick count to a min of 2 and max of 5
-	return { signal: `clamp(ceil(${range}/40), 2, 5)` };
-}
-
-/**
- * gets the baseline or alignment for the axis label based on the position
- * @param labelAlign
- * @param position
- * @returns
- */
-export function getLabelBaselineAlign(
-	labelAlign: LabelAlign | undefined,
-	position: Position,
-): Align | Baseline | undefined {
-	switch (position) {
-		case 'top':
-		case 'bottom':
-			return getLabelAlign(labelAlign, position);
-		case 'left':
-		case 'right':
-			return getLabelBaseline(labelAlign, position);
-	}
-}
-
-export const getEncodedLabelBaselineAlign = (
-	position: Position,
-	signalName: string,
-	defaultLabelAlign: LabelAlign,
-): EncodeEntry => {
-	const productionRule: ProductionRule<ScaledValueRef<Baseline>> = [
-		{
-			test: `indexof(pluck(${signalName}, 'value'), datum.value) !== -1 && ${signalName}[indexof(pluck(${signalName}, 'value'), datum.value)].align`,
-			signal: `${signalName}[indexof(pluck(${signalName}, 'value'), datum.value)].align`,
-		},
-	];
-	switch (position) {
-		case 'top':
-		case 'bottom':
-			return {
-				align: [...productionRule, { value: getLabelAlign(defaultLabelAlign, position) }],
-			};
-		case 'left':
-		case 'right':
-			return {
-				baseline: [...productionRule, { value: getLabelBaseline(defaultLabelAlign, position) }],
-			};
-	}
-};
-
-/**
- * gets the vega labelAlign value based on the prism labelAlign value
- * @param labelAlign
- * @returns
- */
-export function getLabelAlign(
-	labelAlign: LabelAlign | undefined,
-	position: Position,
-	vegaLabelAlign?: Align,
-): Align | undefined {
-	if (vegaLabelAlign) return vegaLabelAlign;
-	if (!labelAlign) return;
-	if (['top', 'bottom'].includes(position)) {
-		switch (labelAlign) {
-			case 'start':
-				return 'left';
-			case 'end':
-				return 'right';
-			case 'center':
-			default:
-				return 'center';
-		}
-	}
-}
-
-/**
- * gets the vega baseline value based on the prism labelAlign value
- * @param labelAlign
- * @returns
- */
-export function getLabelBaseline(
-	labelAlign: LabelAlign | undefined,
-	position: Position,
-	vegaLabelBaseline?: Baseline,
-): Baseline | undefined {
-	if (vegaLabelBaseline) return vegaLabelBaseline;
-	if (!labelAlign) return;
-	if (['left', 'right'].includes(position)) {
-		switch (labelAlign) {
-			case 'start':
-				return 'top';
-			case 'end':
-				return 'bottom';
-			case 'center':
-			default:
-				return 'middle';
-		}
-	}
-}
-
-/**
- * calculates the label offset for a band scale based on the labelAlign
- * @param labelAlign
- * @param scaleName
- * @returns
- */
-export function getLabelOffset(
-	labelAlign: LabelAlign,
-	scaleName: string,
-	vegaLabelOffset?: NumberValue,
-): NumberValue | undefined {
-	if (vegaLabelOffset !== undefined) return vegaLabelOffset;
-	switch (labelAlign) {
-		case 'start':
-			return { signal: `bandwidth('${scaleName}') / -2` };
-		case 'end':
-			return { signal: `bandwidth('${scaleName}') / 2` };
-		default:
-			return undefined;
-	}
-}
-
-/**
- * gets the vega label format based on the prism labelFormat
- * @param type
- * @returns
- */
-function getLabelFormat(type?: LabelFormat): ProductionRule<TextValueRef> {
-	if (type === 'percentage') {
-		return [{ test: 'isNumber(datum.value)', signal: "format(datum.value, '~%')" }, { signal: 'datum.value' }];
-	}
-
-	// if it's a number and greater than or equal to 1000, we want to format it in scientific notation (but with B instead of G) ex. 1K, 20M, 1.3B
-	return [
-		{
-			test: 'isNumber(datum.value) && abs(datum.value) >= 1000',
-			signal: "upper(replace(format(datum.value, '.3~s'), 'G', 'B'))",
-		},
-		{ signal: 'datum.value' },
-	];
+	trellisGroupMark.axes = [...(trellisGroupMark.axes ?? []), ...newAxes];
 }
 
 export function setAxisBaseline(axis: Axis, baseline = false): Axis {
 	// Vega's property is "domain" - we use "baseline"
 	return { ...axis, domain: baseline, domainWidth: 2 };
-}
-
-export function getBaselineRule(baselineOffset: number, position: Position): Mark {
-	const orientation = ['left', 'right'].includes(position) ? 'y' : 'x';
-
-	const positionProps = {
-		x: {
-			x: { value: 0 },
-			x2: { signal: 'width' },
-			y: { scale: 'yLinear', value: baselineOffset },
-		},
-		y: {
-			x: { scale: 'xLinear', value: baselineOffset },
-			y: { value: 0 },
-			y2: { signal: 'height' },
-		},
-	};
-
-	return {
-		name: `${orientation}Baseline`,
-		type: 'rule',
-		interactive: false,
-		encode: {
-			update: {
-				...positionProps[orientation],
-			},
-		},
-	};
-}
-
-function getScaleNameFromPosition(position: Position) {
-	return ['left', 'right'].includes(position) ? 'yLinear' : 'xLinear';
-}
-
-function getOpposingScaleNameFromPosition(position: Position) {
-	return ['left', 'right'].includes(position) ? 'xLinear' : 'yLinear';
-}
-
-function isTrellisedChart(spec: Spec): boolean {
-	return /[xy]TrellisGroup/g.test(JSON.stringify(spec));
 }

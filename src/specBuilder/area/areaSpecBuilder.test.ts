@@ -11,10 +11,17 @@
  */
 
 import { ChartTooltip } from '@components/ChartTooltip';
-import { DEFAULT_COLOR, DEFAULT_CONTINUOUS_DIMENSION, DEFAULT_METRIC } from '@constants';
+import {
+	DEFAULT_COLOR,
+	DEFAULT_COLOR_SCHEME,
+	DEFAULT_CONTINUOUS_DIMENSION,
+	DEFAULT_METRIC,
+	FILTERED_TABLE,
+	TABLE,
+} from '@constants';
 import { createElement } from 'react';
 import { AreaSpecProps } from 'types';
-import { GroupMark, Spec } from 'vega';
+import { Data, GroupMark, Spec } from 'vega';
 
 import { initializeSpec } from '../specUtils';
 import { addArea, addAreaMarks, addData, addSignals, setScales } from './areaSpecBuilder';
@@ -25,18 +32,20 @@ const startingSpec: Spec = initializeSpec({
 
 const defaultAreaProps: AreaSpecProps = {
 	children: [],
+	colorScheme: DEFAULT_COLOR_SCHEME,
+	color: DEFAULT_COLOR,
+	dimension: DEFAULT_CONTINUOUS_DIMENSION,
+	index: 0,
+	metric: DEFAULT_METRIC,
 	name: 'area0',
 	opacity: 0.8,
 	scaleType: 'time',
-	color: DEFAULT_COLOR,
-	dimension: DEFAULT_CONTINUOUS_DIMENSION,
-	metric: DEFAULT_METRIC,
 };
 
 const defaultSpec = initializeSpec({
 	data: [
 		{
-			name: 'table',
+			name: TABLE,
 			transform: [
 				{ as: 'prismMarkId', type: 'identifier' },
 				{
@@ -45,6 +54,13 @@ const defaultSpec = initializeSpec({
 					type: 'timeunit',
 					units: ['year', 'month', 'date', 'hours', 'minutes'],
 				},
+			],
+			values: [],
+		},
+		{
+			name: FILTERED_TABLE,
+			source: TABLE,
+			transform: [
 				{
 					as: ['value0', 'value1'],
 					field: DEFAULT_METRIC,
@@ -53,13 +69,12 @@ const defaultSpec = initializeSpec({
 					type: 'stack',
 				},
 			],
-			values: [],
 		},
 	],
 	marks: [
 		{
 			from: {
-				facet: { data: 'table', groupby: DEFAULT_COLOR, name: 'area0Facet' },
+				facet: { data: FILTERED_TABLE, groupby: DEFAULT_COLOR, name: 'area0_facet' },
 			},
 			marks: [
 				{
@@ -80,30 +95,30 @@ const defaultSpec = initializeSpec({
 						},
 					},
 					interactive: false,
-					from: { data: 'area0Facet' },
+					from: { data: 'area0_facet' },
 					name: 'area0',
 					type: 'area',
 				},
 			],
-			name: 'area0Group',
+			name: 'area0_group',
 			type: 'group',
 		},
 	],
 	scales: [
 		{
-			domain: { data: 'table', fields: [DEFAULT_COLOR] },
+			domain: { data: TABLE, fields: [DEFAULT_COLOR] },
 			name: 'color',
 			type: 'ordinal',
 		},
 		{
-			domain: { data: 'table', fields: ['datetime0'] },
+			domain: { data: FILTERED_TABLE, fields: ['datetime0'] },
 			name: 'xTime',
 			padding: 32,
 			range: 'width',
 			type: 'time',
 		},
 		{
-			domain: { data: 'table', fields: ['value0', 'value1'] },
+			domain: { data: FILTERED_TABLE, fields: ['value0', 'value1'] },
 			name: 'yLinear',
 			nice: true,
 			range: 'height',
@@ -115,7 +130,7 @@ const defaultSpec = initializeSpec({
 });
 
 const defaultLinearScale = {
-	domain: { data: 'table', fields: ['datetime'] },
+	domain: { data: FILTERED_TABLE, fields: ['datetime'] },
 	name: 'xLinear',
 	padding: 32,
 	range: 'width',
@@ -123,7 +138,7 @@ const defaultLinearScale = {
 };
 
 const defaultPointScale = {
-	domain: { data: 'table', fields: ['datetime'] },
+	domain: { data: FILTERED_TABLE, fields: ['datetime'] },
 	name: 'xPoint',
 	paddingOuter: 0.5,
 	range: 'width',
@@ -131,17 +146,17 @@ const defaultPointScale = {
 };
 
 const defaultSignals = [
-	{ name: 'area0ControlledHoveredId', on: [{ events: '@area0:mouseout', update: 'null' }], value: null },
+	{ name: 'area0_controlledHoveredId', on: [{ events: '@area0:mouseout', update: 'null' }], value: null },
 	{
-		name: 'area0HoveredSeries',
+		name: 'area0_hoveredSeries',
 		on: [
 			{ events: '@area0:mouseover', update: `datum.${DEFAULT_COLOR}` },
 			{ events: '@area0:mouseout', update: 'null' },
 		],
 		value: null,
 	},
-	{ name: 'area0SelectedId', value: null },
-	{ name: 'area0SelectedSeries', value: null },
+	{ name: 'area0_selectedId', value: null },
+	{ name: 'area0_selectedSeries', value: null },
 ];
 
 describe('areaSpecBuilder', () => {
@@ -156,17 +171,26 @@ describe('areaSpecBuilder', () => {
 	});
 
 	describe('addData()', () => {
+		let baseData: Data[];
+
+		beforeEach(() => {
+			baseData = initializeSpec().data ?? [];
+		});
 		test('basic', () => {
 			expect(addData(startingSpec.data ?? [], defaultAreaProps)).toStrictEqual(defaultSpec.data);
 		});
 
-		test('empty array for initial state, should return empty data', () => {
-			expect(addData([], defaultAreaProps)).toEqual([]);
-		});
-
-		test('scaleTypes "point" and "linear" should return the original data', () => {
-			expect(addData([], { ...defaultAreaProps, scaleType: 'point' })).toEqual([]);
-			expect(addData([], { ...defaultAreaProps, scaleType: 'linear' })).toEqual([]);
+		test('scaleTypes "point" and "linear" should not add timeunit transforms return the original data', () => {
+			expect(
+				addData(baseData, { ...defaultAreaProps, scaleType: 'point' })[0].transform?.find(
+					(t) => t.type === 'timeunit',
+				),
+			).toBeUndefined();
+			expect(
+				addData(baseData, { ...defaultAreaProps, scaleType: 'linear' })[0].transform?.find(
+					(t) => t.type === 'timeunit',
+				),
+			).toBeUndefined();
 		});
 	});
 
@@ -178,7 +202,7 @@ describe('areaSpecBuilder', () => {
 		test('children: should add signals', () => {
 			const tooltip = createElement(ChartTooltip);
 			expect(addSignals(startingSpec.signals ?? [], { ...defaultAreaProps, children: [tooltip] })).toStrictEqual(
-				defaultSignals
+				defaultSignals,
 			);
 		});
 	});

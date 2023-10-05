@@ -9,25 +9,36 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
 import { Fragment, ReactFragment } from 'react';
-import { Item, MarkType, SceneItem, Spec, View } from 'vega';
 
-import { Axis, Bar, ChartPopover, ChartTooltip, Legend, Line } from './';
+import { View } from 'vega';
+
+import { Area, Axis, AxisAnnotation, Bar, ChartPopover, ChartTooltip, Legend, Line, Trendline } from '..';
 import {
+	AxisAnnotationChildElement,
+	AxisChildElement,
 	ChartChildElement,
 	ChartTooltipElement,
 	ChildElement,
 	Children,
 	Datum,
 	LegendElement,
-	MarkBounds,
 	MarkChildElement,
 	PopoverHandler,
 	PrismChildElement,
 	PrismElement,
 	TooltipHandler,
-} from './types';
+} from '../types';
+
+type MappedElement = { name: string; element: PrismElement | PrismChildElement };
+type ElementCounts = {
+	area: number;
+	axis: number;
+	axisAnnotation: number;
+	bar: number;
+	legend: number;
+	line: number;
+};
 
 // coerces a value that could be a single value or an array of that value to an array
 export function toArray<Child>(children: Child | Child[] | undefined): Child[] {
@@ -38,19 +49,36 @@ export function toArray<Child>(children: Child | Child[] | undefined): Child[] {
 
 // removes all non-prism specific elements
 export const sanitizeChartChildren = (children: Children<PrismChildElement> | undefined): ChartChildElement[] => {
-	return toArray(children).filter((child): child is ChartChildElement => isChartChildElement(child));
+	return toArray(children)
+		.flat()
+		.filter((child): child is ChartChildElement => isChartChildElement(child));
 };
 
 export const sanitizeMarkChildren = (children: Children<MarkChildElement> | undefined): MarkChildElement[] => {
-	return toArray(children).filter((child): child is MarkChildElement => isMarkChildElement(child));
+	return toArray(children)
+		.flat()
+		.filter((child): child is MarkChildElement => isMarkChildElement(child));
 };
 
+export const sanitizeAxisChildren = (children: Children<AxisChildElement> | undefined): AxisChildElement[] => {
+	return toArray(children)
+		.flat()
+		.filter((child): child is AxisChildElement => isMarkChildElement(child));
+};
+
+export const sanitizeAxisAnnotationChildren = (
+	children: Children<AxisAnnotationChildElement> | undefined
+): AxisAnnotationChildElement[] => {
+	return toArray(children)
+		.flat()
+		.filter((child): child is AxisAnnotationChildElement => isMarkChildElement(child));
+};
 export const sanitizeTrendlineChildren = (
 	children: Children<ChartTooltipElement> | undefined
 ): ChartTooltipElement[] => {
-	return toArray(children).filter((child): child is ChartTooltipElement =>
-		isMarkChildElement<ChartTooltipElement>(child)
-	);
+	return toArray(children)
+		.flat()
+		.filter((child): child is ChartTooltipElement => isMarkChildElement<ChartTooltipElement>(child));
 };
 
 const isChartChildElement = (child: ChildElement<ChartChildElement> | undefined): child is ChartChildElement => {
@@ -67,12 +95,6 @@ const isPrismComponent = (child?: ChildElement<MarkChildElement> | ChildElement<
 		child && typeof child !== 'string' && typeof child !== 'boolean' && 'type' in child && child.type !== Fragment
 	);
 };
-
-// creates a default name for a mark
-export function getDefaultMarkName(spec: Spec, type: MarkType): string {
-	const nElements = spec.marks?.filter((mark) => mark.type === type).length ?? 0;
-	return `${type}${nElements}`;
-}
 
 // converts any string to the camelcase equivalent
 export function toCamelCase(str: string) {
@@ -96,6 +118,21 @@ export function toSnakeCase(str: string) {
 	}
 	return str;
 }
+
+/**
+ * IMMUTABLE
+ *
+ * Adds the value to the target array if it doesn't exist, otherwise removes it
+ * @param target
+ * @param value
+ * @returns
+ */
+export const toggleStringArrayValue = (target: string[], value: string): string[] => {
+	if (target.includes(value)) {
+		return target.filter((item) => item !== value);
+	}
+	return [...target, value];
+};
 
 // traverses the prism children to find the first element instance of the proivded type
 export function getElement(
@@ -137,6 +174,87 @@ export function getElement(
 	return undefined;
 }
 
+// /**
+//  * Traverses the prism child elements finding all elements of the provided type and get the correct name for the element it is associated with
+//  * @param element
+//  * @param type
+//  * @returns
+//  */
+export const getAllElements = (
+	target: Children<PrismElement | PrismChildElement>,
+	source: typeof Axis | typeof Legend | typeof Line | typeof Bar | typeof ChartTooltip | typeof ChartPopover,
+	elements: MappedElement[] = [],
+	name: string = ''
+): MappedElement[] => {
+	if (
+		!target ||
+		typeof target === 'boolean' ||
+		typeof target === 'string' ||
+		!('type' in target) ||
+		target.type === Fragment
+	) {
+		return elements;
+	}
+	// if the type matches, we found our element
+	if (target.type === source) return [...elements, { name, element: target }];
+
+	// if there aren't any more children to search, stop looking
+	if (!('children' in target.props)) return elements;
+
+	const elementCounts = initElementCounts();
+	const desiredElements: MappedElement[] = [];
+	for (const child of toArray(target.props.children)) {
+		const childName = getElementName(child, elementCounts);
+		desiredElements.push(...getAllElements(child, source, elements, [name, childName].filter(Boolean).join('')));
+	}
+	// no element matches found, give up all hope...
+	return [...elements, ...desiredElements];
+};
+
+const getElementName = (element: ChildElement<PrismChildElement>, elementCounts: ElementCounts) => {
+	if (typeof element !== 'object' || !('type' in element)) return '';
+	switch (element.type) {
+		case Area:
+			elementCounts.area++;
+			return getComponentName(element, `area${elementCounts.area}`);
+		case Axis:
+			elementCounts.axis++;
+			return getComponentName(element, `axis${elementCounts.axis}`);
+		case AxisAnnotation:
+			elementCounts.axisAnnotation++;
+			return getComponentName(element, `Annotation${elementCounts.axisAnnotation}`);
+		case Bar:
+			elementCounts.bar++;
+			return getComponentName(element, `bar${elementCounts.bar}`);
+		case Legend:
+			elementCounts.legend++;
+			return getComponentName(element, `legend${elementCounts.legend}`);
+		case Line:
+			elementCounts.line++;
+			return getComponentName(element, `line${elementCounts.line}`);
+		case Trendline:
+			return getComponentName(element, 'Trendline');
+		default:
+			return '';
+	}
+};
+
+export const getComponentName = (element: ChildElement<PrismChildElement>, defaultName: string) => {
+	if (typeof element === 'object' && 'props' in element && 'name' in element.props && element.props.name) {
+		return toCamelCase(element.props.name);
+	}
+	return defaultName;
+};
+
+const initElementCounts = (): ElementCounts => ({
+	area: -1,
+	axis: -1,
+	axisAnnotation: -1,
+	bar: -1,
+	legend: -1,
+	line: -1,
+});
+
 /**
  * log for debugging
  */
@@ -149,29 +267,6 @@ export function debugLog(
 		console.log(`%c${rainbow} ${title}`, 'color: #2780eb', contents);
 	}
 }
-
-/**
- * Gets the bounds for an item provided by the click handler.
- * If the item is in a group that has an offset (like for a grouped bar),
- * then the offset is added to the bounds.
- * @param item
- * @returns MarkBounds
- */
-export const getItemBounds = (item: Item | null | undefined): MarkBounds => {
-	if (isItemSceneItem(item)) {
-		const groupOffset = {
-			x: item.mark.group.x || 0,
-			y: item.mark.group.y || 0,
-		};
-		return {
-			x1: item.bounds.x1 + groupOffset.x,
-			x2: item.bounds.x2 + groupOffset.x,
-			y1: item.bounds.y1 + groupOffset.y,
-			y2: item.bounds.y2 + groupOffset.y,
-		};
-	}
-	return { x1: 0, x2: 0, y1: 0, y2: 0 };
-};
 
 /**
  * Sets the values of the selectedId and selectedSeries signals
@@ -195,8 +290,3 @@ export const setSelectedSignals = ({
 		view.signal(selectedSeriesSignalName, selectedData?.prismSeriesId ?? null);
 	}
 };
-
-export function isItemSceneItem(item: unknown): item is Item & SceneItem {
-	if (typeof item !== 'object' || item === null) return false;
-	return 'bounds' in item && 'datum' in item;
-}

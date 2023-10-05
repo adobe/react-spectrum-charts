@@ -18,6 +18,7 @@ import spectrumColors from './spectrumColors.json';
 import { divergentOrangeYellowSeafoam15 } from './divergingColorPalette';
 import { categorical16 } from './categoricalColorPalette';
 import { sequentialViridis16 } from './sequentialColorPalette';
+import { DEFAULT_SYMBOL_SIZE, DEFAULT_SYMBOL_STROKE_WIDTH } from '@constants';
 
 export const ADOBE_CLEAN_FONT =
 	"adobe-clean, 'Source Sans Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Ubuntu, 'Trebuchet MS', 'Lucida Grande', sans-serif";
@@ -143,8 +144,8 @@ function getSpectrumVegaConfig(colorScheme: ColorScheme): Config {
 			stroke: defaultColor,
 		},
 		symbol: {
-			strokeWidth: 2,
-			size: 100,
+			strokeWidth: DEFAULT_SYMBOL_STROKE_WIDTH,
+			size: DEFAULT_SYMBOL_SIZE,
 			fill: defaultColor,
 		},
 		text: {

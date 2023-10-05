@@ -11,27 +11,28 @@
  */
 
 import {
-	DEFAULT_SECONDARY_COLOR,
-	DEFAULT_METRIC,
 	CORNER_RADIUS,
-	HIGHLIGHT_CONTRAST_RATIO,
-	DEFAULT_COLOR,
 	DEFAULT_CATEGORICAL_DIMENSION,
+	DEFAULT_COLOR,
 	DEFAULT_COLOR_SCHEME,
+	DEFAULT_METRIC,
+	DEFAULT_SECONDARY_COLOR,
+	FILTERED_TABLE,
+	HIGHLIGHT_CONTRAST_RATIO,
 	PADDING_RATIO,
-	TABLE,
 } from '@constants';
 import { BarSpecProps } from 'types';
-import { RectEncodeEntry, ProductionRule, NumericValueRef } from 'vega';
+import { NumericValueRef, ProductionRule, RectEncodeEntry } from 'vega';
 
 export const defaultBarProps: BarSpecProps = {
 	children: [],
 	color: DEFAULT_COLOR,
 	dimension: DEFAULT_CATEGORICAL_DIMENSION,
+	index: 0,
 	lineType: { value: 'solid' },
 	lineWidth: 0,
 	metric: DEFAULT_METRIC,
-	name: 'rect0',
+	name: 'bar0',
 	opacity: { value: 1 },
 	paddingRatio: PADDING_RATIO,
 	colorScheme: DEFAULT_COLOR_SCHEME,
@@ -65,28 +66,28 @@ export const defaultDodgedYEncodings: RectEncodeEntry = {
 export const defaultCornerRadiusEncodings: RectEncodeEntry = {
 	cornerRadiusTopLeft: [
 		{
-			test: `datum.${DEFAULT_METRIC}1 > 0 && data('rect0Stacks')[indexof(pluck(data('rect0Stacks'), 'prismStackId'), datum.prismStackId)].max_${DEFAULT_METRIC}1 === datum.${DEFAULT_METRIC}1`,
+			test: `datum.${DEFAULT_METRIC}1 > 0 && data('bar0_stacks')[indexof(pluck(data('bar0_stacks'), 'prismStackId'), datum.prismStackId)].max_${DEFAULT_METRIC}1 === datum.${DEFAULT_METRIC}1`,
 			value: CORNER_RADIUS,
 		},
 		{ value: 0 },
 	],
 	cornerRadiusTopRight: [
 		{
-			test: `datum.${DEFAULT_METRIC}1 > 0 && data('rect0Stacks')[indexof(pluck(data('rect0Stacks'), 'prismStackId'), datum.prismStackId)].max_${DEFAULT_METRIC}1 === datum.${DEFAULT_METRIC}1`,
+			test: `datum.${DEFAULT_METRIC}1 > 0 && data('bar0_stacks')[indexof(pluck(data('bar0_stacks'), 'prismStackId'), datum.prismStackId)].max_${DEFAULT_METRIC}1 === datum.${DEFAULT_METRIC}1`,
 			value: CORNER_RADIUS,
 		},
 		{ value: 0 },
 	],
 	cornerRadiusBottomLeft: [
 		{
-			test: `datum.${DEFAULT_METRIC}1 < 0 && data('rect0Stacks')[indexof(pluck(data('rect0Stacks'), 'prismStackId'), datum.prismStackId)].min_${DEFAULT_METRIC}1 === datum.${DEFAULT_METRIC}1`,
+			test: `datum.${DEFAULT_METRIC}1 < 0 && data('bar0_stacks')[indexof(pluck(data('bar0_stacks'), 'prismStackId'), datum.prismStackId)].min_${DEFAULT_METRIC}1 === datum.${DEFAULT_METRIC}1`,
 			value: CORNER_RADIUS,
 		},
 		{ value: 0 },
 	],
 	cornerRadiusBottomRight: [
 		{
-			test: `datum.${DEFAULT_METRIC}1 < 0 && data('rect0Stacks')[indexof(pluck(data('rect0Stacks'), 'prismStackId'), datum.prismStackId)].min_${DEFAULT_METRIC}1 === datum.${DEFAULT_METRIC}1`,
+			test: `datum.${DEFAULT_METRIC}1 < 0 && data('bar0_stacks')[indexof(pluck(data('bar0_stacks'), 'prismStackId'), datum.prismStackId)].min_${DEFAULT_METRIC}1 === datum.${DEFAULT_METRIC}1`,
 			value: CORNER_RADIUS,
 		},
 		{ value: 0 },
@@ -104,21 +105,21 @@ export const defaultBarFillOpacity: ProductionRule<NumericValueRef> = [{ value: 
 
 export const defaultBarPopoverFillOpacity: ProductionRule<NumericValueRef> = [
 	{
-		test: `!rect0SelectedId && rect0HoveredId && rect0HoveredId !== datum.prismMarkId`,
+		test: `!bar0_selectedId && bar0_hoveredId && bar0_hoveredId !== datum.prismMarkId`,
 		value: 1 / HIGHLIGHT_CONTRAST_RATIO,
 	},
-	{ test: `rect0SelectedId && rect0SelectedId !== datum.prismMarkId`, value: 1 / HIGHLIGHT_CONTRAST_RATIO },
-	{ test: `rect0SelectedId && rect0SelectedId === datum.prismMarkId`, value: 1 },
+	{ test: `bar0_selectedId && bar0_selectedId !== datum.prismMarkId`, value: 1 / HIGHLIGHT_CONTRAST_RATIO },
+	{ test: `bar0_selectedId && bar0_selectedId === datum.prismMarkId`, value: 1 },
 	{ value: 1 },
 ];
 
 export const stackedXScale = 'xBand';
-export const dodgedXScale = `${defaultBarProps.name}Position`;
-export const dodgedGroupField = `${defaultBarProps.name}DodgeGroup`;
+export const dodgedXScale = `${defaultBarProps.name}_position`;
+export const dodgedGroupField = `${defaultBarProps.name}_dodgeGroup`;
 export const stackedLabelWithStyles = {
 	type: 'rect',
-	from: { data: TABLE },
-	name: 'rect0AnnotationBackground',
+	from: { data: FILTERED_TABLE },
+	name: 'bar0_annotationBackground',
 	interactive: false,
 
 	encode: {
@@ -145,8 +146,8 @@ export const stackedLabelWithStyles = {
 
 export const stackedLabelBackground = {
 	type: 'rect',
-	from: { data: TABLE },
-	name: 'rect0AnnotationBackground',
+	from: { data: FILTERED_TABLE },
+	name: 'bar0_annotationBackground',
 	interactive: false,
 
 	encode: {
@@ -173,8 +174,8 @@ export const stackedLabelBackground = {
 
 export const stackedLabelText = {
 	type: 'text',
-	from: { data: TABLE },
-	name: 'rect0AnnotationText',
+	from: { data: FILTERED_TABLE },
+	name: 'bar0_annotationText',
 	interactive: false,
 
 	encode: {
@@ -200,7 +201,7 @@ export const stackedLabelText = {
 
 export const dodgedLabelWithStyles = {
 	...stackedLabelWithStyles,
-	from: { data: `${defaultBarProps.name}Facet` },
+	from: { data: `${defaultBarProps.name}_facet` },
 	encode: {
 		...stackedLabelWithStyles.encode,
 		enter: {
@@ -222,7 +223,7 @@ export const dodgedLabelWithStyles = {
 
 export const dodgedLabelBackground = {
 	...stackedLabelBackground,
-	from: { data: `${defaultBarProps.name}Facet` },
+	from: { data: `${defaultBarProps.name}_facet` },
 	encode: {
 		...stackedLabelBackground.encode,
 		enter: {
@@ -244,7 +245,7 @@ export const dodgedLabelBackground = {
 
 export const dodgedLabelText = {
 	...stackedLabelText,
-	from: { data: `${defaultBarProps.name}Facet` },
+	from: { data: `${defaultBarProps.name}_facet` },
 	encode: {
 		...stackedLabelText.encode,
 		enter: {

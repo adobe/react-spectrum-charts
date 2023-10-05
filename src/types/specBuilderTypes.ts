@@ -10,9 +10,11 @@
  * governing permissions and limitations under the License.
  */
 
-import { Align, Baseline, NumberValue } from 'vega';
+import { Align, Baseline, NumberValue, ScaleType } from 'vega';
 import {
 	AreaProps,
+	AxisAnnotationChildElement,
+	AxisAnnotationProps,
 	AxisProps,
 	BarProps,
 	ChartTooltipElement,
@@ -21,6 +23,7 @@ import {
 	LegendProps,
 	LineProps,
 	MarkChildElement,
+	MetricRangeProps,
 	TrendlineProps,
 } from './Prism';
 
@@ -28,7 +31,8 @@ type PartiallyRequired<T, K extends keyof T> = Omit<T, K> & Required<Pick<T, K>>
 
 type AreaPropsWithDefaults = 'name' | 'dimension' | 'metric' | 'color' | 'scaleType' | 'opacity';
 
-export interface AreaSpecProps extends PartiallyRequired<AreaProps, AreaPropsWithDefaults> {
+export interface AreaSpecProps
+	extends PartiallyRequired<AreaProps & { colorScheme: ColorScheme; index: number }, AreaPropsWithDefaults> {
 	children: MarkChildElement[];
 }
 
@@ -54,9 +58,19 @@ export interface InternalAxisProps {
 }
 
 export type AxisSpecProps = PartiallyRequired<
-	AxisProps & { name: string; colorScheme?: ColorScheme } & InternalAxisProps,
+	AxisProps & { name: string; colorScheme: ColorScheme; index: number; scaleType: ScaleType } & InternalAxisProps,
 	AxisPropsWithDefaults
 >;
+
+type AxisAnnotationPropsWithDefaults = 'name' | 'offset' | 'dataKey' | 'color' | 'options' | 'format';
+
+export interface AxisAnnotationSpecProps
+	extends PartiallyRequired<
+		AxisAnnotationProps & { axisName: string; colorScheme: ColorScheme },
+		AxisAnnotationPropsWithDefaults
+	> {
+	children: AxisAnnotationChildElement[];
+}
 
 type BarPropsWithDefaults =
 	| 'color'
@@ -67,20 +81,19 @@ type BarPropsWithDefaults =
 	| 'name'
 	| 'opacity'
 	| 'paddingRatio'
-	| 'colorScheme'
 	| 'orientation'
 	| 'trellisOrientation'
 	| 'type';
 
 export interface BarSpecProps
-	extends PartiallyRequired<BarProps & { colorScheme?: ColorScheme }, BarPropsWithDefaults> {
+	extends PartiallyRequired<BarProps & { colorScheme: ColorScheme; index: number }, BarPropsWithDefaults> {
 	children: MarkChildElement[];
 }
 
-type LegendPropsWithDefaults = 'highlight' | 'hiddenEntries' | 'position' | 'colorScheme';
+type LegendPropsWithDefaults = 'hiddenEntries' | 'highlight' | 'isToggleable' | 'position' | 'name';
 
 export interface LegendSpecProps
-	extends PartiallyRequired<LegendProps & { colorScheme?: ColorScheme }, LegendPropsWithDefaults> {
+	extends PartiallyRequired<LegendProps & { colorScheme: ColorScheme; index: number }, LegendPropsWithDefaults> {
 	color?: FacetRef<string>;
 	lineType?: FacetRef<number[]>;
 	lineWidth?: FacetRef<number>;
@@ -98,9 +111,13 @@ type LinePropsWithDefaults =
 	| 'colorScheme';
 
 export interface LineSpecProps
-	extends PartiallyRequired<LineProps & { colorScheme?: ColorScheme }, LinePropsWithDefaults> {
+	extends PartiallyRequired<LineProps & { colorScheme?: ColorScheme; index: number }, LinePropsWithDefaults> {
 	children: MarkChildElement[];
 }
+
+type MetricRangePropsWithDefaults = 'lineType' | 'lineWidth' | 'rangeOpacity' | 'metricEnd' | 'metricStart' | 'metric';
+export interface MetricRangeSpecProps
+	extends PartiallyRequired<MetricRangeProps & { name: string }, MetricRangePropsWithDefaults> {}
 
 type TrendlinePropsWithDefaults =
 	| 'dimensionRange'

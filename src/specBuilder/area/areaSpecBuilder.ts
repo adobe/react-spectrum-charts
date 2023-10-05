@@ -13,12 +13,11 @@
 import { ChartPopover } from '@components/ChartPopover';
 import {
 	DEFAULT_COLOR,
+	DEFAULT_COLOR_SCHEME,
 	DEFAULT_CONTINUOUS_DIMENSION,
 	DEFAULT_METRIC,
-	HIGHLIGHT_CONTRAST_RATIO,
-	TABLE,
+	FILTERED_TABLE,
 } from '@constants';
-import { getBorderStrokeEncodings, getCursor, getInteractive, getTooltip } from '@specBuilder/marks/markUtils';
 import {
 	getControlledHoverSignal,
 	getGenericSignal,
@@ -26,42 +25,47 @@ import {
 	hasSignalByName,
 } from '@specBuilder/signal/signalSpecBuilder';
 import { spectrumColors } from '@themes';
-import { getDefaultMarkName, sanitizeMarkChildren, toCamelCase } from '@utils';
+import { sanitizeMarkChildren, toCamelCase } from '@utils';
 import produce from 'immer';
-import { AreaProps, AreaSpecProps, MarkChildElement, ScaleType } from 'types';
-import { Data, Mark, NumericValueRef, ProductionRule, Scale, Signal, Spec } from 'vega';
+import { AreaProps, AreaSpecProps, ColorScheme, MarkChildElement, ScaleType } from 'types';
+import { Data, Mark, Scale, Signal, Spec } from 'vega';
 
-import { addTimeTransform, getTransformSort, isValuesData } from '../data/dataUtils';
+import { addTimeTransform, getFilteredTableData, getTableData, getTransformSort } from '../data/dataUtils';
 import { addContinuousDimensionScale, addFieldToFacetScaleDomain, addMetricScale } from '../scale/scaleSpecBuilder';
+import { getAreaMark, getX } from './areaUtils';
 
-export const addArea = produce<Spec, [AreaProps]>(
+export const addArea = produce<Spec, [AreaProps & { colorScheme?: ColorScheme; index?: number }]>(
 	(
 		spec,
 		{
-			name = getDefaultMarkName(spec, 'area'),
+			children,
 			color = DEFAULT_COLOR,
+			colorScheme = DEFAULT_COLOR_SCHEME,
 			dimension = DEFAULT_CONTINUOUS_DIMENSION,
+			index = 0,
 			metric = DEFAULT_METRIC,
-			scaleType = 'time',
-			opacity = 0.8,
 			metricStart,
 			metricEnd,
+			name,
+			opacity = 0.8,
+			scaleType = 'time',
 			...props
-		}
+		},
 	) => {
-		const children: MarkChildElement[] = sanitizeMarkChildren(props.children);
 		// put props back together now that all defaults are set
 		const areaProps: AreaSpecProps = {
-			name: toCamelCase(name),
+			children: sanitizeMarkChildren(children),
 			color,
+			colorScheme,
 			dimension,
+			index,
 			metric,
+			name: toCamelCase(name || `area${index}`),
 			scaleType,
 			opacity,
 			metricStart,
 			metricEnd,
 			...props,
-			children,
 		};
 
 		// if either start or end is defined but not both, error to the console and default back to metric
@@ -69,7 +73,7 @@ export const addArea = produce<Spec, [AreaProps]>(
 			console.error(
 				`${metricEnd ? 'metricEnd' : 'metricStart'} is defined but ${
 					metricEnd ? 'metricStart' : 'metricEnd'
-				} is not. Both must be defined in order to use the "start and end" method. Defaulting back to 'metric = ${metric}'`
+				} is not. Both must be defined in order to use the "start and end" method. Defaulting back to 'metric = ${metric}'`,
 			);
 			areaProps.metricEnd = undefined;
 			areaProps.metricStart = undefined;
@@ -81,35 +85,37 @@ export const addArea = produce<Spec, [AreaProps]>(
 		spec.marks = addAreaMarks(spec.marks ?? [], areaProps);
 
 		return spec;
-	}
+	},
 );
 
 export const addData = produce<Data[], [AreaSpecProps]>(
 	(data, { name, dimension, scaleType, color, metric, metricEnd, metricStart, order, children }) => {
-		const tableData = data.find((d) => d.name === TABLE);
-		if (isValuesData(tableData)) {
-			if (scaleType === 'time') {
-				tableData.transform = addTimeTransform(tableData.transform ?? [], dimension);
-			}
+		if (scaleType === 'time') {
+			const tableData = getTableData(data);
+			tableData.transform = addTimeTransform(tableData.transform ?? [], dimension);
+		}
+
+		if (!metricEnd || !metricStart) {
+			const filteredTableData = getFilteredTableData(data);
 			// if metricEnd and metricStart don't exist, then we are using metric so we will support stacked
-			if (!metricEnd || !metricStart) {
-				tableData.transform?.push({
+			filteredTableData.transform = [
+				...(filteredTableData.transform ?? []),
+				{
 					type: 'stack',
 					groupby: [dimension],
 					field: metric,
 					sort: getTransformSort(order),
 					as: [`${metric}0`, `${metric}1`],
-				});
-			}
-		} else {
-			console.error('Something went wrong, the table data was not found');
+				},
+			];
 		}
+
 		if (children.length) {
-			const selectSignal = `${name}SelectedId`;
-			const hoverSignal = `${name}ControlledHoveredId`;
+			const selectSignal = `${name}_selectedId`;
+			const hoverSignal = `${name}_controlledHoveredId`;
 			data.push({
-				name: `${name}HighlightedDataPoint`,
-				source: TABLE,
+				name: `${name}_highlightedDataPoint`,
+				source: FILTERED_TABLE,
 				transform: [
 					{
 						type: 'filter',
@@ -118,10 +124,10 @@ export const addData = produce<Data[], [AreaSpecProps]>(
 				],
 			});
 			if (children.some((child) => child.type === ChartPopover)) {
-				const selectSeriesSignal = `${name}SelectedSeries`;
+				const selectSeriesSignal = `${name}_selectedSeries`;
 				data.push({
-					name: `${name}SelectedDataSeries`,
-					source: TABLE,
+					name: `${name}_selectedDataSeries`,
+					source: FILTERED_TABLE,
 					transform: [
 						{
 							type: 'filter',
@@ -131,22 +137,22 @@ export const addData = produce<Data[], [AreaSpecProps]>(
 				});
 			}
 		}
-	}
+	},
 );
 
 export const addSignals = produce<Signal[], [AreaSpecProps]>((signals, { children, name, color }) => {
 	if (!children.length) return;
-	if (!hasSignalByName(signals, `${name}ControlledHoveredId`)) {
+	if (!hasSignalByName(signals, `${name}_controlledHoveredId`)) {
 		signals.push(getControlledHoverSignal(name));
 	}
-	if (!hasSignalByName(signals, `${name}HoveredSeries`)) {
+	if (!hasSignalByName(signals, `${name}_hoveredSeries`)) {
 		signals.push(getSeriesHoveredSignal(name, color));
 	}
-	if (!hasSignalByName(signals, `${name}SelectedId`)) {
-		signals.push(getGenericSignal(`${name}SelectedId`));
+	if (!hasSignalByName(signals, `${name}_selectedId`)) {
+		signals.push(getGenericSignal(`${name}_selectedId`));
 	}
-	if (!hasSignalByName(signals, `${name}SelectedSeries`)) {
-		signals.push(getGenericSignal(`${name}SelectedSeries`));
+	if (!hasSignalByName(signals, `${name}_selectedSeries`)) {
+		signals.push(getGenericSignal(`${name}_selectedSeries`));
 	}
 });
 
@@ -163,11 +169,11 @@ export const setScales = produce<Scale[], [AreaSpecProps]>(
 		}
 		addMetricScale(scales, [metricStart, metricEnd]);
 		return scales;
-	}
+	},
 );
 
 export const addAreaMarks = produce<Mark[], [AreaSpecProps]>((marks, props) => {
-	const { name, color, metric, dimension, scaleType, opacity, children } = props;
+	const { name, color, colorScheme, metric, dimension, scaleType, opacity, children } = props;
 	let { metricStart, metricEnd } = props;
 	let isStacked = false;
 	if (!metricEnd || !metricStart) {
@@ -177,88 +183,36 @@ export const addAreaMarks = produce<Mark[], [AreaSpecProps]>((marks, props) => {
 	}
 	marks.push(
 		{
-			name: `${name}Group`,
+			name: `${name}_group`,
 			type: 'group',
 			from: {
 				facet: {
-					name: `${name}Facet`,
-					data: TABLE,
+					name: `${name}_facet`,
+					data: FILTERED_TABLE,
 					groupby: color,
 				},
 			},
 			marks: [
-				{
+				getAreaMark({
 					name,
-					type: 'area',
-					from: { data: `${name}Facet` },
-					interactive: getInteractive(children),
-					encode: {
-						enter: {
-							y: { scale: 'yLinear', field: metricStart },
-							y2: { scale: 'yLinear', field: metricEnd },
-							fill: { scale: 'color', field: color },
-							tooltip: getTooltip(children),
-							...getBorderStrokeEncodings(isStacked, true),
-						},
-						update: {
-							// this has to be in update because when you resize the window that doesn't rebuild the spec
-							// but it may change the x position if it causes the chart to resize
-							x: getX(scaleType, dimension),
-							cursor: getCursor(children),
-							fillOpacity: getFillOpacity(name, color, opacity, children),
-						},
-					},
-				},
+					color,
+					colorScheme,
+					children,
+					metricStart,
+					metricEnd,
+					isStacked,
+					dimension,
+					scaleType,
+					opacity,
+				}),
 				...getAnchorPointMark(props),
 			],
 		},
 		...getSelectedAreaMarks({ children, name, scaleType, color, dimension, metricEnd, metricStart }),
-		...getHoverMarks(props)
+		...getHoverMarks(props),
 	);
 	return marks;
 });
-
-const getX = (scaleType: ScaleType, dimension: string): ProductionRule<NumericValueRef> => {
-	if (scaleType === 'time') {
-		return { scale: 'xTime', field: 'datetime0' };
-	} else if (scaleType === 'linear') {
-		return { scale: 'xLinear', field: dimension };
-	}
-	return { scale: 'xPoint', field: dimension };
-};
-
-function getFillOpacity(
-	name: string,
-	color: string,
-	opacity: number,
-	children: MarkChildElement[]
-): ProductionRule<NumericValueRef> | undefined {
-	// no children means no interactive elements
-	if (!children.length) {
-		return [{ value: opacity }];
-	}
-	// if an area is hovered or selected, all other areas should have half opacity
-	const hoverSignal = `${name}HoveredSeries`;
-	if (children.some((child) => child.type === ChartPopover)) {
-		const selectSignal = `${name}SelectedSeries`;
-		return [
-			{
-				test: `!${selectSignal} && ${hoverSignal} && ${hoverSignal} !== datum.${color}`,
-				value: opacity / HIGHLIGHT_CONTRAST_RATIO,
-			},
-			{
-				test: `${selectSignal} && ${selectSignal} !== datum.${color}`,
-				value: opacity / HIGHLIGHT_CONTRAST_RATIO,
-			},
-			{ test: `${selectSignal} && ${selectSignal} === datum.${color}`, value: opacity },
-			{ value: opacity },
-		];
-	}
-	return [
-		{ test: `${hoverSignal} && ${hoverSignal} !== datum.${color}`, value: opacity / HIGHLIGHT_CONTRAST_RATIO },
-		{ value: opacity },
-	];
-}
 
 /**
  * returns a transparent point that gets used by the popover to anchor to
@@ -267,9 +221,9 @@ const getAnchorPointMark = ({ children, name, dimension, metric, scaleType }: Ar
 	if (!children.length) return [];
 	return [
 		{
-			name: `${name}AnchorPoint`,
+			name: `${name}_anchorPoint`,
 			type: 'symbol',
-			from: { data: `${name}HighlightedDataPoint` },
+			from: { data: `${name}_highlightedDataPoint` },
 			interactive: false,
 			encode: {
 				enter: {
@@ -292,9 +246,9 @@ const getHoverMarks = ({ children, name, dimension, metric, color, scaleType }: 
 	if (!children.length) return [];
 	return [
 		{
-			name: `${name}Rule`,
+			name: `${name}_rule`,
 			type: 'rule',
-			from: { data: `${name}HighlightedDataPoint` },
+			from: { data: `${name}_highlightedDataPoint` },
 			interactive: false,
 			encode: {
 				enter: {
@@ -308,9 +262,9 @@ const getHoverMarks = ({ children, name, dimension, metric, color, scaleType }: 
 			},
 		},
 		{
-			name: `${name}Point`,
+			name: `${name}_point`,
 			type: 'symbol',
-			from: { data: `${name}HighlightedDataPoint` },
+			from: { data: `${name}_highlightedDataPoint` },
 			interactive: false,
 			encode: {
 				enter: {
@@ -349,9 +303,9 @@ const getSelectedAreaMarks = ({
 	if (!children.some((child) => child.type === ChartPopover)) return [];
 	return [
 		{
-			name: `${name}SelectBorder`,
+			name: `${name}_selectBorder`,
 			type: 'area',
-			from: { data: `${name}SelectedDataSeries` },
+			from: { data: `${name}_selectedDataSeries` },
 			interactive: false,
 			encode: {
 				enter: {

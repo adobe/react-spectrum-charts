@@ -15,10 +15,10 @@ import { Spec } from 'vega';
 
 export default function useSpecProps(spec: Spec) {
 	return useMemo(() => {
-		const selectedIdSignalName = spec.signals?.find((signal) => signal.name.includes('SelectedId'))?.name ?? null;
+		const selectedIdSignalName = spec.signals?.find((signal) => signal.name.includes('selectedId'))?.name ?? null;
 		const selectedSeriesSignalName =
-			spec.signals?.find((signal) => signal.name.includes('SelectedSeries'))?.name ?? null;
-		const controlledHoverSignal = spec.signals?.find((signal) => signal.name.includes('ControlledHoveredId'));
+			spec.signals?.find((signal) => signal.name.includes('selectedSeries'))?.name ?? null;
+		const controlledHoverSignal = spec.signals?.find((signal) => signal.name.includes('controlledHoveredId'));
 		return { selectedIdSignalName, selectedSeriesSignalName, controlledHoverSignal };
 	}, [spec]);
 }

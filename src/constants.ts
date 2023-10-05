@@ -24,10 +24,15 @@ export const DEFAULT_LABEL_FONT_WEIGHT = 'normal';
 export const DEFAULT_LINE_TYPES: LineType[] = ['solid', 'dashed', 'dotted', 'dotDash', 'longDash', 'twoDash'];
 export const DEFAULT_METRIC = 'value';
 export const DEFAULT_SECONDARY_COLOR = 'subSeries';
+export const DEFAULT_SYMBOL_SIZE = 100;
+export const DEFAULT_SYMBOL_STROKE_WIDTH = 2;
 export const DEFAULT_COLOR_SCHEME = 'light';
+export const DEFAULT_AXIS_ANNOTATION_COLOR = 'gray-600';
+export const DEFAULT_AXIS_ANNOTATION_OFFSET = 80;
 
 // vega data table name
 export const TABLE = 'table';
+export const FILTERED_TABLE = 'filteredTable';
 
 // corner radius
 export const CORNER_RADIUS = 6;
@@ -36,7 +41,7 @@ export const CORNER_RADIUS = 6;
 export const DISCRETE_PADDING = 0.5;
 export const PADDING_RATIO = 0.4;
 export const LINEAR_PADDING = 32;
-export const TRELLIS_PADDING = 0.15;
+export const TRELLIS_PADDING = 0.2;
 
 // ratio that each opacity is divded by when hovering or highlighting from legend
 export const HIGHLIGHT_CONTRAST_RATIO = 5;

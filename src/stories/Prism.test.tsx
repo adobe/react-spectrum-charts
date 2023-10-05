@@ -73,7 +73,7 @@ describe('Prism', () => {
 
 			const prism = await findPrism();
 			expect(prism).toBeInTheDocument();
-			const bars = getAllMarksByGroupName(prism, 'rect0');
+			const bars = getAllMarksByGroupName(prism, 'bar0');
 
 			expect(bars[0].getAttribute('fill')).toEqual('rgb(34, 34, 34)');
 			expect(bars[1].getAttribute('fill')).toEqual('rgb(70, 70, 70)');
@@ -86,12 +86,12 @@ describe('Prism', () => {
 
 			const prism = await findPrism();
 			expect(prism).toBeInTheDocument();
-			const bars = getAllMarksByGroupName(prism, 'rect0');
+			const bars = getAllMarksByGroupName(prism, 'bar0');
 
 			expect(bars[0].getAttribute('fill')).toEqual('rgb(235, 235, 235)');
-			expect(bars[1].getAttribute('fill')).toEqual('rgb(209, 209, 209)');
-			expect(bars[2].getAttribute('fill')).toEqual('rgb(178, 178, 178)');
-			expect(bars[3].getAttribute('fill')).toEqual('rgb(144, 144, 144)');
+			expect(bars[1].getAttribute('fill')).toEqual('rgb(208, 208, 208)');
+			expect(bars[2].getAttribute('fill')).toEqual('rgb(176, 176, 176)');
+			expect(bars[3].getAttribute('fill')).toEqual('rgb(141, 141, 141)');
 		});
 
 		test('Spectrum diverging color scheme renders correctly', async () => {
@@ -99,7 +99,7 @@ describe('Prism', () => {
 
 			const prism = await findPrism();
 			expect(prism).toBeInTheDocument();
-			const bars = getAllMarksByGroupName(prism, 'rect0');
+			const bars = getAllMarksByGroupName(prism, 'bar0');
 
 			expect(bars[0].getAttribute('fill')).toEqual('rgb(88, 0, 0)');
 			expect(bars[1].getAttribute('fill')).toEqual('rgb(221, 134, 41)');
@@ -112,7 +112,7 @@ describe('Prism', () => {
 
 			const prism = await findPrism();
 			expect(prism).toBeInTheDocument();
-			const bars = getAllMarksByGroupName(prism, 'rect0');
+			const bars = getAllMarksByGroupName(prism, 'bar0');
 
 			expect(bars[0].getAttribute('fill')).toEqual('rgb(113, 213, 202)');
 			expect(bars[1].getAttribute('fill')).toEqual('rgb(234, 255, 241)');
@@ -125,7 +125,7 @@ describe('Prism', () => {
 
 			const prism = await findPrism();
 			expect(prism).toBeInTheDocument();
-			const bars = getAllMarksByGroupName(prism, 'rect0');
+			const bars = getAllMarksByGroupName(prism, 'bar0');
 
 			expect(bars[0].getAttribute('fill')).toEqual('purple');
 			expect(bars[1].getAttribute('fill')).toEqual('rgb(38, 142, 108)');

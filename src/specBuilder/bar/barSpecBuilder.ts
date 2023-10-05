@@ -10,7 +10,13 @@
  * governing permissions and limitations under the License.
  */
 
-import { DEFAULT_CATEGORICAL_DIMENSION, DEFAULT_COLOR_SCHEME, DEFAULT_METRIC, PADDING_RATIO, TABLE } from '@constants';
+import {
+	DEFAULT_CATEGORICAL_DIMENSION,
+	DEFAULT_COLOR_SCHEME,
+	DEFAULT_METRIC,
+	FILTERED_TABLE,
+	PADDING_RATIO,
+} from '@constants';
 import { getTransformSort } from '@specBuilder/data/dataUtils';
 import { hasPopover } from '@specBuilder/marks/markUtils';
 import {
@@ -24,7 +30,7 @@ import {
 } from '@specBuilder/scale/scaleSpecBuilder';
 import { getGenericSignal, getUncontrolledHoverSignal, hasSignalByName } from '@specBuilder/signal/signalSpecBuilder';
 import { getFacetsFromProps } from '@specBuilder/specUtils';
-import { getDefaultMarkName, sanitizeMarkChildren, toCamelCase } from '@utils';
+import { sanitizeMarkChildren, toCamelCase } from '@utils';
 import produce from 'immer';
 import { BarProps, BarSpecProps, ColorScheme } from 'types';
 import { BandScale, Data, FormulaTransform, Mark, OrdinalScale, Scale, Signal, Spec } from 'vega';
@@ -34,27 +40,25 @@ import { getDodgedMark } from './dodgedBarUtils';
 import { getDodgedAndStackedBarMark, getStackedBarMarks } from './stackedBarUtils';
 import { addTrellisScale, getTrellisGroupMark, isTrellised } from './trellisedBarUtils';
 
-export const addBar = produce<Spec, [BarProps & { colorScheme?: ColorScheme }]>(
+export const addBar = produce<Spec, [BarProps & { colorScheme?: ColorScheme; index?: number }]>(
 	(
 		spec,
 		{
 			children,
 			color = { value: 'categorical-100' },
+			colorScheme = DEFAULT_COLOR_SCHEME,
 			dimension = DEFAULT_CATEGORICAL_DIMENSION,
-			groupedPadding,
+			index = 0,
 			lineType = { value: 'solid' },
 			lineWidth = 0,
 			metric = DEFAULT_METRIC,
-			name = getDefaultMarkName(spec, 'rect'),
+			name,
 			opacity = { value: 1 },
-			order,
 			orientation = 'vertical',
 			paddingRatio = PADDING_RATIO,
-			paddingOuter,
-			colorScheme = DEFAULT_COLOR_SCHEME,
-			trellis,
 			trellisOrientation = 'horizontal',
 			type = 'stacked',
+			...props
 		},
 	) => {
 		// put props back together now that all defaults are set
@@ -62,20 +66,18 @@ export const addBar = produce<Spec, [BarProps & { colorScheme?: ColorScheme }]>(
 			children: sanitizeMarkChildren(children),
 			orientation,
 			color,
+			colorScheme,
 			dimension,
-			groupedPadding,
+			index,
 			lineType,
 			lineWidth,
 			metric,
-			name: toCamelCase(name),
+			name: toCamelCase(name || `bar${index}`),
 			opacity,
-			order,
 			paddingRatio,
-			paddingOuter,
-			colorScheme,
-			trellis,
 			trellisOrientation,
 			type,
+			...props,
 		};
 
 		spec.data = addData(spec.data ?? [], barProps);
@@ -85,27 +87,29 @@ export const addBar = produce<Spec, [BarProps & { colorScheme?: ColorScheme }]>(
 	},
 );
 
-export const addSignals = produce<Signal[], [BarSpecProps]>((signals, { children, name }) => {
-	if (!children.length) {
-		return;
-	}
-	if (!hasSignalByName(signals, `${name}HoveredId`)) {
-		signals.push(getUncontrolledHoverSignal(name));
-	}
-	if (hasPopover(children)) {
-		if (!hasSignalByName(signals, `${name}SelectedId`)) {
-			signals.push(getGenericSignal(`${name}SelectedId`));
+export const addSignals = produce<Signal[], [BarSpecProps]>(
+	(signals, { children, name, paddingRatio, paddingOuter: barPaddingOuter }) => {
+		// We use this value to calculate ReferenceLine positions.
+		const { paddingInner } = getBarPadding(paddingRatio, barPaddingOuter);
+		signals.push(getGenericSignal('paddingInner', paddingInner));
+
+		if (!children.length) {
+			return;
 		}
-	}
-});
+		if (!hasSignalByName(signals, `${name}_hoveredId`)) {
+			signals.push(getUncontrolledHoverSignal(name));
+		}
+		if (hasPopover(children)) {
+			if (!hasSignalByName(signals, `${name}_selectedId`)) {
+				signals.push(getGenericSignal(`${name}_selectedId`));
+			}
+		}
+	},
+);
 
 export const addData = produce<Data[], [BarSpecProps]>((data, props) => {
 	const { metric, order, type } = props;
-	let index = data.findIndex((d) => d.name === TABLE);
-	if (index === -1) {
-		index = data.length;
-		data.push({ name: TABLE });
-	}
+	const index = data.findIndex((d) => d.name === FILTERED_TABLE);
 	data[index].transform = data[index].transform ?? [];
 	if (type === 'stacked' || isDodgedAndStacked(props)) {
 		data[index].transform?.push({
@@ -134,8 +138,8 @@ export const addData = produce<Data[], [BarSpecProps]>((data, props) => {
 export const getStackAggregateData = (props: BarSpecProps): Data => {
 	const { metric, name } = props;
 	return {
-		name: `${name}Stacks`,
-		source: TABLE,
+		name: `${name}_stacks`,
+		source: FILTERED_TABLE,
 		transform: [
 			{
 				type: 'aggregate',
@@ -172,7 +176,7 @@ export const getDodgeGroupTransform = ({ color, lineType, name, opacity, type }:
 	const { facets, secondaryFacets } = getFacetsFromProps({ color, lineType, opacity });
 	return {
 		type: 'formula',
-		as: `${name}DodgeGroup`,
+		as: `${name}_dodgeGroup`,
 		expr: (type === 'dodged' ? facets : secondaryFacets).map((facet) => `datum.${facet}`).join(' + "," + '),
 	};
 };
@@ -195,6 +199,7 @@ export const addDimensionScale = (
 	const index = getScaleIndexByType(scales, 'band', orientation === 'vertical' ? 'x' : 'y');
 	scales[index] = addDomainFields(scales[index], [dimension]);
 	const { paddingInner, paddingOuter } = getBarPadding(paddingRatio, barPaddingOuter);
+
 	scales[index] = { ...scales[index], paddingInner, paddingOuter } as BandScale;
 };
 

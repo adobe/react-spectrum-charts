@@ -9,17 +9,21 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { createElement } from 'react';
 
+import { Annotation } from '@components/Annotation';
 import { ChartPopover } from '@components/ChartPopover';
 import { ChartTooltip } from '@components/ChartTooltip';
+import { MetricRange } from '@components/MetricRange';
 import { DEFAULT_COLOR, DEFAULT_COLOR_SCHEME, DEFAULT_SECONDARY_COLOR } from '@constants';
-import { createElement } from 'react';
 
 import {
 	getColorProductionRule,
 	getLineWidthProductionRule,
 	getOpacityProductionRule,
 	getStrokeDashProductionRule,
+	getTooltip,
+	hasMetricRange,
 	hasTooltip,
 } from './markUtils';
 
@@ -33,7 +37,7 @@ describe('getColorProductionRule', () => {
 
 	test('should return static value and convert spectrum name to color, respecting the theme', () => {
 		expect(getColorProductionRule({ value: 'gray-700' }, 'light')).toStrictEqual({ value: 'rgb(70, 70, 70)' });
-		expect(getColorProductionRule({ value: 'gray-700' }, 'dark')).toStrictEqual({ value: 'rgb(209, 209, 209)' });
+		expect(getColorProductionRule({ value: 'gray-700' }, 'dark')).toStrictEqual({ value: 'rgb(208, 208, 208)' });
 	});
 
 	test('should return static value of the css color provided', () => {
@@ -96,5 +100,31 @@ describe('hasTooltip()', () => {
 	test('should be false if ChartTooltip does not exist in children', () => {
 		expect(hasTooltip([createElement(ChartPopover)])).toBeFalsy();
 		expect(hasTooltip([createElement(ChartPopover), createElement('div')])).toBeFalsy();
+	});
+});
+
+describe('hasMetricRange()', () => {
+	test('should be true if MetricRange exists in children', () => {
+		expect(hasMetricRange([createElement(MetricRange)])).toBeTruthy();
+		expect(hasMetricRange([createElement(MetricRange), createElement('div')])).toBeTruthy();
+	});
+	test('should be false if MetricRange does not exist in children', () => {
+		expect(hasMetricRange([createElement(ChartPopover)])).toBeFalsy();
+		expect(hasMetricRange([createElement(ChartPopover), createElement('div')])).toBeFalsy();
+	});
+});
+
+describe('getTooltip()', () => {
+	test('should return undefined if there are not any interactive children', () => {
+		expect(getTooltip([createElement(Annotation)], 'line0')).toBeUndefined();
+		expect(getTooltip([], 'line0')).toBeUndefined();
+	});
+	test('should return signal ref if there are interactive children', () => {
+		const rule = getTooltip([createElement(ChartTooltip)], 'line0');
+		expect(rule).toHaveProperty('signal');
+	});
+	test('should reference a nested datum if nestedDatum is true', () => {
+		const rule = getTooltip([createElement(ChartTooltip)], 'line0', true);
+		expect(rule?.signal).toContain('datum.datum');
 	});
 });

@@ -14,17 +14,17 @@ import { getInteractive } from '@specBuilder/marks/markUtils';
 import { BarSpecProps } from 'types';
 import { Mark, RectEncodeEntry, RectMark } from 'vega';
 
+import { FILTERED_TABLE } from '@constants';
 import {
 	getAnnotationMarks,
 	getBarEnterEncodings,
 	getBarUpdateEncodings,
 	getBaseBarEnterEncodings,
-	getDodgedGroupMark,
 	getDodgedDimensionEncodings,
-	isDodgedAndStacked,
+	getDodgedGroupMark,
 	getOrientationProperties,
+	isDodgedAndStacked,
 } from './barUtils';
-import { TABLE } from '@constants';
 import { getTrellisProperties, isTrellised } from './trellisedBarUtils';
 
 export const getStackedBarMarks = (props: BarSpecProps): Mark[] => {
@@ -58,7 +58,9 @@ export const getDodgedAndStackedBarMark = (props: BarSpecProps): Mark => {
 	marks.push(getStackedBar(props));
 
 	// add annotation marks
-	marks.push(...getAnnotationMarks(props, `${props.name}Facet`, `${props.name}Position`, `${props.name}DodgeGroup`));
+	marks.push(
+		...getAnnotationMarks(props, `${props.name}_facet`, `${props.name}_position`, `${props.name}_dodgeGroup`),
+	);
 
 	return { ...getDodgedGroupMark(props), marks };
 };
@@ -67,9 +69,9 @@ export const getStackedBackgroundBar = (props: BarSpecProps): RectMark => {
 	const { name } = props;
 
 	return {
-		name: `${name}Background`,
+		name: `${name}_background`,
 		type: 'rect',
-		from: { data: isDodgedAndStacked(props) ? `${name}Facet` : getBaseDataSourceName(props) },
+		from: { data: isDodgedAndStacked(props) ? `${name}_facet` : getBaseDataSourceName(props) },
 		interactive: false,
 		encode: {
 			enter: {
@@ -88,7 +90,7 @@ export const getStackedBar = (props: BarSpecProps): RectMark => {
 	return {
 		name,
 		type: 'rect',
-		from: { data: isDodgedAndStacked(props) ? `${name}Facet` : getBaseDataSourceName(props) },
+		from: { data: isDodgedAndStacked(props) ? `${name}_facet` : getBaseDataSourceName(props) },
 		interactive: getInteractive(children),
 		encode: {
 			enter: {
@@ -119,5 +121,5 @@ export const getStackedDimensionEncodings = (props: BarSpecProps): RectEncodeEnt
 
 const getBaseDataSourceName = (props: BarSpecProps) => {
 	if (isTrellised(props)) return getTrellisProperties(props).facetName;
-	return TABLE;
+	return FILTERED_TABLE;
 };

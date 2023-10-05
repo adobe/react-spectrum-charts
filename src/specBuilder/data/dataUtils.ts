@@ -10,9 +10,9 @@
  * governing permissions and limitations under the License.
  */
 
-import { TABLE } from '@constants';
+import { FILTERED_TABLE, TABLE } from '@constants';
 import produce from 'immer';
-import { Compare, Data, Transforms, ValuesData } from 'vega';
+import { Compare, Data, SourceData, Transforms, ValuesData } from 'vega';
 
 export const addTimeTransform = produce<Transforms[], [string]>((transforms, dimension) => {
 	if (transforms.findIndex((transform) => transform.type === 'timeunit') === -1) {
@@ -31,10 +31,6 @@ export const getTransformSort = (order?: string): Compare | undefined => {
 	}
 };
 
-export const isValuesData = (data: Data | undefined): data is ValuesData => {
-	return Boolean(data && 'values' in data);
-};
-
 /**
  * gets the table data from the data array
  * @param data
@@ -43,4 +39,13 @@ export const isValuesData = (data: Data | undefined): data is ValuesData => {
 export const getTableData = (data: Data[]): ValuesData => {
 	// ok to cast this here because we know that the data array will always have table data of type ValuesData
 	return data.find((d) => d.name === TABLE) as ValuesData;
+};
+/**
+ * gets the filtered table data from the data array
+ * @param data
+ * @returns
+ */
+export const getFilteredTableData = (data: Data[]): SourceData => {
+	// ok to cast this here because we know that the data array will always have table data of type SourceData
+	return data.find((d) => d.name === FILTERED_TABLE) as SourceData;
 };
