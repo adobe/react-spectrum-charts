@@ -35,7 +35,7 @@ import { Theme } from '@react-types/provider';
 import { getColorValue } from '@specBuilder/specUtils';
 import { getPrismConfig } from '@themes/spectrumTheme';
 import { debugLog, getItemBounds, isItemSceneItem, sanitizeChartChildren, setSelectedSignals } from '@utils';
-import React, { FC, MutableRefObject, forwardRef, useEffect, useMemo, useRef, useState } from 'react';
+import { FC, MutableRefObject, forwardRef, useEffect, useMemo, useRef, useState } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { Vega } from 'react-vega';
 import { v4 as uuid } from 'uuid';
@@ -336,7 +336,7 @@ const ChartDialog = ({ datum, targetElement, width = 250, setPopoverState, popov
 	);
 };
 
-const LegendTooltip = ({ value, descriptions, domain }: LegendTooltipProps) => {
+const LegendTooltip: FC<LegendTooltipProps> = ({ value, descriptions, domain }) => {
 	const series = domain[value.index];
 	const description = descriptions.find((d) => d.seriesName === series);
 	if (!description) {

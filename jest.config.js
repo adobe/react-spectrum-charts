@@ -9,22 +9,24 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
-import { createRequire } from 'module';
-import { pathsToModuleNameMapper } from 'ts-jest';
-
-const require = createRequire(import.meta.url);
+/* eslint-disable @typescript-eslint/no-var-requires */
+const { pathsToModuleNameMapper } = require('ts-jest');
 const { compilerOptions } = require('./tsconfig.json');
 
-export default {
+module.exports = {
+	testResultsProcessor: 'jest-sonar-reporter',
 	collectCoverage: true,
 	coverageReporters: ['cobertura', 'html', 'text', 'lcov'],
 	testEnvironment: 'jsdom',
 	transform: {
 		'^.+\\.(j|t)sx?$': 'babel-jest',
 	},
+	globals: {
+		structuredClone: (value) => JSON.parse(JSON.stringify(value)),
+	},
 	moduleDirectories: ['src', 'node_modules'],
 	moduleNameMapper: {
+		'@aaui/core': '<rootDir>/__mocks__/core.ts',
 		'\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$':
 			'<rootDir>/__mocks__/fileMock.ts',
 		'\\.(css)$': 'identity-obj-proxy',
