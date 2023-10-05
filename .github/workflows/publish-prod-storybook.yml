@@ -1,9 +1,14 @@
-name: Merge to main branch
+name: Publish Storybook to GitHub Pages
+# This action runs when a branch has been merged to main.
 
 on:
     push:
         branches:
             - main
+
+permissions:
+    pages: write
+    id-token: write
 
 jobs:
     build-and-deploy:
