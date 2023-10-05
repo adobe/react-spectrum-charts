@@ -7,6 +7,7 @@ const config: StorybookConfig = {
 		builder: 'webpack5',
 	},
 	addons: [
+		'@storybook/addon-actions',
 		'@storybook/addon-links',
 		'@storybook/addon-essentials',
 		'@storybook/addon-interactions',

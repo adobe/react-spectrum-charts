@@ -314,6 +314,7 @@ export const Prism = forwardRef<PrismHandle, PrismProps>(
 		);
 	}
 );
+Prism.displayName = 'Prism';
 
 const ChartDialog = ({ datum, itemName, targetElement, setPopoverState, popovers }: ChartDialogProps) => {
 	if (!popovers.length) {
@@ -343,7 +344,7 @@ const ChartDialog = ({ datum, itemName, targetElement, setPopoverState, popovers
 	);
 };
 
-const LegendTooltip = ({ value, descriptions, domain }: LegendTooltipProps) => {
+const LegendTooltip: FC<LegendTooltipProps>  = ({ value, descriptions, domain }) => {
 	const series = domain[value.index];
 	const description = descriptions.find((d) => d.seriesName === series);
 	if (!description) {
