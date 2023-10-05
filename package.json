@@ -1,6 +1,6 @@
 {
 	"name": "@adobe/react-spectrum-charts",
-	"version": "0.0.0",
+	"version": "0.0.1-alpha",
 	"description": "Declarative library for composing Spectrum visualizations in React.",
 	"browser": "./dist/index.js",
 	"main": "./dist/index.js",
@@ -13,12 +13,14 @@
 		"type": "git",
 		"url": "git+ssh://git@github.com/adobe/react-spectrum-charts.git"
 	},
+	"publishConfig": {
+		"access": "public"
+	},
 	"author": "Marshall Peterson",
 	"license": "Apache-2.0",
 	"scripts": {
 		"build": "concurrently yarn:build:*",
 		"build:library": "webpack --config webpack.config.js",
-		"build:storybook": "build-storybook -o ./dist-storybook --quiet",
 		"copyrights": "babel-node --presets @babel/env ./scripts/addHeaders.js",
 		"g": "plop component",
 		"generate": "plop component",
