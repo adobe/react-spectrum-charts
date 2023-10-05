@@ -12,36 +12,60 @@
 
 import { Signal } from 'vega';
 
-import { getUncontrolledHoverSignal } from './signalSpecBuilder';
+import { getSeriesHoveredSignal, getUncontrolledHoverSignal } from './signalSpecBuilder';
 
 export const defaultHighlightSignal: Signal = {
 	name: 'highlightedSeries',
 	value: null,
 	on: [
-		{ events: '@legendEntry:mouseover', update: 'domain("legendEntries")[datum.index]' },
-		{ events: '@legendEntry:mouseout', update: '""' },
+		{ events: '@legend0_legendEntry:mouseover', update: 'domain("legendEntries")[datum.index]' },
+		{ events: '@legend0_legendEntry:mouseout', update: '""' },
 	],
 };
 
 describe('Prism spec builder', () => {
 	describe('getUncontrolledHoverSignal()', () => {
 		test('not nested', () => {
-			expect(getUncontrolledHoverSignal('rect0')).toStrictEqual({
-				name: 'rect0HoveredId',
+			expect(getUncontrolledHoverSignal('bar0')).toStrictEqual({
+				name: 'bar0_hoveredId',
 				on: [
-					{ events: '@rect0:mouseover', update: 'datum.prismMarkId' },
-					{ events: '@rect0:mouseout', update: 'null' },
+					{ events: '@bar0:mouseover', update: 'datum.prismMarkId' },
+					{ events: '@bar0:mouseout', update: 'null' },
 				],
 				value: null,
 			});
 		});
 
 		test('nested', () => {
-			expect(getUncontrolledHoverSignal('rect0', true)).toStrictEqual({
-				name: 'rect0HoveredId',
+			expect(getUncontrolledHoverSignal('bar0', true)).toStrictEqual({
+				name: 'bar0_hoveredId',
 				on: [
-					{ events: '@rect0:mouseover', update: 'datum.datum.prismMarkId' },
-					{ events: '@rect0:mouseout', update: 'null' },
+					{ events: '@bar0:mouseover', update: 'datum.datum.prismMarkId' },
+					{ events: '@bar0:mouseout', update: 'null' },
+				],
+				value: null,
+			});
+		});
+	});
+
+	describe('getSeriesHoveredSignal()', () => {
+		test('uses name for eventName if eventName provided', () => {
+			expect(getSeriesHoveredSignal('bar0', 'datum.prismSeriesId')).toStrictEqual({
+				name: 'bar0_hoveredSeries',
+				on: [
+					{ events: '@bar0:mouseover', update: 'datum.datum.prismSeriesId' },
+					{ events: '@bar0:mouseout', update: 'null' },
+				],
+				value: null,
+			});
+		});
+
+		test('uses eventName if provided', () => {
+			expect(getSeriesHoveredSignal('bar0MetricRange', 'datum.prismSeriesId', 'bar0_voronoi')).toStrictEqual({
+				name: 'bar0MetricRange_hoveredSeries',
+				on: [
+					{ events: '@bar0_voronoi:mouseover', update: 'datum.datum.prismSeriesId' },
+					{ events: '@bar0_voronoi:mouseout', update: 'null' },
 				],
 				value: null,
 			});

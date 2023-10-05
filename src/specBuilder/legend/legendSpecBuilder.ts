@@ -10,7 +10,7 @@
  * governing permissions and limitations under the License.
  */
 
-import { DEFAULT_COLOR_SCHEME, HIGHLIGHT_CONTRAST_RATIO } from '@constants';
+import { DEFAULT_COLOR_SCHEME, FILTERED_TABLE } from '@constants';
 import { addFieldToFacetScaleDomain } from '@specBuilder/scale/scaleSpecBuilder';
 import {
 	getColorValue,
@@ -18,67 +18,47 @@ import {
 	getPathFromPrismSymbolShape,
 	getStrokeDashFromLineType,
 } from '@specBuilder/specUtils';
-import { spectrumColors } from '@themes';
-import merge from 'deepmerge';
 import produce from 'immer';
-import { WritableDraft } from 'immer/dist/internal';
 import {
 	ColorFacet,
 	ColorScheme,
 	FacetRef,
 	FacetType,
-	LegendDescription,
-	LegendLabel,
 	LegendProps,
 	LegendSpecProps,
 	LineTypeFacet,
 	LineWidthFacet,
-	OpacityFacet,
-	Position,
 	SecondaryFacetType,
 	SymbolShapeFacet,
 } from 'types';
+import { Data, Legend, Mark, Scale, Signal, Spec } from 'vega';
+
 import {
-	BaseValueRef,
-	Color,
-	Data,
-	FilterTransform,
-	GroupMark,
-	Legend,
-	LegendEncode,
-	Mark,
-	NumericValueRef,
-	ProductionRule,
-	Scale,
-	Signal,
-	SignalRef,
-	Spec,
-} from 'vega';
+	getGenericSignal,
+	getHighlightSeriesSignal,
+	getLegendLabelsSeriesSignal,
+	hasSignalByName,
+} from '../signal/signalSpecBuilder';
+import { setHoverOpacityForMarks } from './legendHighlightUtils';
+import { Facet, getColumns, getEncodings, getHiddenEntriesFilter } from './legendUtils';
 
-import { getHighlightSeriesSignal, getLegendLabelsSeriesSignal, hasSignalByName } from '../signal/signalSpecBuilder';
-
-interface Facet {
-	facetType: FacetType | SecondaryFacetType;
-	field: string;
-}
-
-export const addLegend = produce<Spec, [LegendProps & { colorScheme?: ColorScheme }]>(
+export const addLegend = produce<Spec, [LegendProps & { colorScheme?: ColorScheme; index?: number }]>(
 	(
 		spec,
 		{
 			color,
-			descriptions,
-			highlight = false,
 			hiddenEntries = [],
-			legendLabels,
+			highlight = false,
+			index = 0,
+			isToggleable = false,
 			lineType,
 			lineWidth,
-			opacity,
 			position = 'bottom',
 			symbolShape,
-			colorScheme = DEFAULT_COLOR_SCHEME,
 			title,
-		}
+			colorScheme = DEFAULT_COLOR_SCHEME,
+			...props
+		},
 	) => {
 		const { formattedColor, formattedLineType, formattedLineWidth, formattedSymbolShape } =
 			formatFacetRefsWithPresets(color, lineType, lineWidth, symbolShape, colorScheme);
@@ -86,17 +66,18 @@ export const addLegend = produce<Spec, [LegendProps & { colorScheme?: ColorSchem
 		// put props back together now that all defaults are set
 		const legendProps: LegendSpecProps = {
 			color: formattedColor,
-			descriptions,
-			highlight,
 			hiddenEntries,
-			legendLabels,
+			highlight,
+			index,
+			isToggleable,
 			lineType: formattedLineType,
 			lineWidth: formattedLineWidth,
-			opacity,
+			name: `legend${index}`,
 			position,
 			symbolShape: formattedSymbolShape,
-			colorScheme,
 			title,
+			colorScheme,
+			...props,
 		};
 
 		// get the keys and facet types that are used to divide the data for this visualization
@@ -105,11 +86,10 @@ export const addLegend = produce<Spec, [LegendProps & { colorScheme?: ColorSchem
 		if (facets.length === 0) return;
 
 		const uniqueFacetFields = [...new Set(facets.map((facet) => facet.field))];
-		spec.data = addData(spec.data ?? [], {
-			facets: uniqueFacetFields,
-			hiddenEntries,
-		});
+		spec.data = addData(spec.data ?? [], { ...legendProps, facets: uniqueFacetFields });
+		spec.signals = addSignals(spec.signals ?? [], legendProps);
 		spec.scales = addLegendEntriesScale(spec.scales ?? [], legendProps);
+		spec.marks = addMarks(spec.marks ?? [], legendProps);
 
 		const legend: Legend = {
 			fill: 'legendEntries',
@@ -119,12 +99,9 @@ export const addLegend = produce<Spec, [LegendProps & { colorScheme?: ColorSchem
 			encode: getEncodings(facets, legendProps),
 			columns: getColumns(position),
 		};
-		if (highlight || legendLabels) {
-			spec.signals = addSignals(spec.signals ?? [], { spec, highlight, legendLabels });
-		}
 
 		spec.legends = [legend];
-	}
+	},
 );
 
 /**
@@ -133,18 +110,18 @@ export const addLegend = produce<Spec, [LegendProps & { colorScheme?: ColorSchem
  * @param color
  * @param lineType
  * @param lineWidth
- * @param theme
+ * @param colorScheme
  */
 export const formatFacetRefsWithPresets = (
 	color: ColorFacet | undefined,
 	lineType: LineTypeFacet | undefined,
 	lineWidth: LineWidthFacet | undefined,
 	symbolShape: SymbolShapeFacet | undefined,
-	theme
+	colorScheme: ColorScheme,
 ) => {
 	let formattedColor: FacetRef<string> | undefined;
 	if (color && typeof color === 'object') {
-		formattedColor = { value: getColorValue(color.value, theme) };
+		formattedColor = { value: getColorValue(color.value, colorScheme) };
 	} else {
 		formattedColor = color;
 	}
@@ -210,19 +187,31 @@ const addLegendEntriesScale = produce<Scale[], [LegendSpecProps]>(
 			type: 'ordinal',
 			domain: { data: 'legendAggregate', field: 'legendEntries' },
 		});
-	}
+	},
 );
+
+const addMarks = produce<Mark[], [LegendSpecProps]>((marks, { highlight }) => {
+	if (highlight) {
+		setHoverOpacityForMarks(marks);
+	}
+});
 
 /**
  * Adds a new data set that aggregates the data off of the facet fields
  * This creates a row for every unique combination of the facets in the data
  * Each unique combination gets joined with a pipe to create a single string to use as legend entries
  */
-export const addData = produce<Data[], [{ facets: string[]; hiddenEntries: string[] }]>(
-	(data, { facets, hiddenEntries }) => {
+export const addData = produce<Data[], [LegendSpecProps & { facets: string[] }]>(
+	(data, { facets, hiddenEntries, hiddenSeries, isToggleable }) => {
+		if (isToggleable || hiddenSeries) {
+			const index = data.findIndex((datum) => datum.name === FILTERED_TABLE);
+			data[index].transform = [
+				{ type: 'filter', expr: 'indexof(hiddenSeries, datum.prismSeriesId) === -1' },
+				...(data[index].transform ?? []),
+			];
+		}
 		// expression for combining all the facets into a single key
 		const expr = facets.map((facet) => `datum.${facet}`).join(' + " | " + ');
-
 		data.push({
 			name: 'legendAggregate',
 			source: 'table',
@@ -239,339 +228,25 @@ export const addData = produce<Data[], [{ facets: string[]; hiddenEntries: strin
 				...getHiddenEntriesFilter(hiddenEntries),
 			],
 		});
-	}
+	},
 );
 
-const getHiddenEntriesFilter = (hiddenEntries: string[]): FilterTransform[] => {
-	if (!hiddenEntries.length) return [];
-	return [
-		{
-			type: 'filter',
-			expr: `indexof(${JSON.stringify(hiddenEntries)}, datum.legendEntries) === -1`,
-		},
-	];
-};
-
-const addSignals = produce<
-	Signal[],
-	[{ spec: WritableDraft<Spec>; highlight: boolean; legendLabels: LegendLabel[] | undefined }]
->((signals, { spec, highlight, legendLabels }) => {
-	if (highlight) {
-		if (!hasSignalByName(signals, 'highlightedSeries')) {
-			signals.push(getHighlightSeriesSignal());
-		}
-		spec.marks = setHoverOpacityForMarks(spec.marks ?? []);
-	}
-
-	if (legendLabels) {
-		if (!hasSignalByName(signals, 'legendLabels')) {
-			signals.push(getLegendLabelsSeriesSignal(legendLabels));
-		}
-	}
-});
-
-const getEncodings = (facets: Facet[], legendProps: LegendSpecProps): LegendEncode | undefined => {
-	const { descriptions, highlight, legendLabels, opacity } = legendProps;
-	const symbolEncodings = getSymbolEncodings(facets, legendProps);
-	const hoverEncodings = getHoverEncodings(highlight, opacity, facets, descriptions);
-	const legendLabelsEncodings = getLegendLabelsEncodings(legendLabels);
-	// merge the encodings together
-	const mergedEncodings = merge(symbolEncodings, legendLabelsEncodings);
-	return merge(mergedEncodings, hoverEncodings);
-};
-
-function getLegendLabelsEncodings(legendLabels: LegendLabel[] | undefined): LegendEncode {
-	if (legendLabels) {
-		return {
-			labels: {
-				update: {
-					text: [
-						{
-							// Test whether a legendLabel exists for the seriesName, if not use the seriesName
-							test: "indexof(pluck(legendLabels, 'seriesName'), datum.value) > -1",
-							signal: "legendLabels[indexof(pluck(legendLabels, 'seriesName'), datum.value)].label",
-						},
-						{ signal: 'datum.value' },
-					],
-				},
-			},
-		};
-	}
-	return {};
-}
-
-function getHoverEncodings(
-	highlight: boolean,
-	opacity?: OpacityFacet,
-	facets?: Facet[],
-	descriptions?: LegendDescription[]
-): LegendEncode {
-	if (highlight || descriptions) {
-		return {
-			entries: {
-				name: 'legendEntry',
-				interactive: true,
-				enter: {
-					tooltip: getTooltip(descriptions), // only add tooltip if descriptions exist
-				},
-				update: {
-					fill: { value: 'transparent' }, // need something here to trigger the tooltip
-				},
-			},
-			labels: {
-				update: {
-					fillOpacity: getOpacityEncoding(highlight), // only add fill opacity if highlight is true
-				},
-			},
-			symbols: {
-				update: {
-					fillOpacity: getOpacityEncoding(highlight, opacity, facets), // only add fill opacity if highlight is true
-					strokeOpacity: getOpacityEncoding(highlight), // only add stroke opacity if highlight is true
-				},
-			},
-		};
-	}
-	return {};
-}
-
-const getTooltip = (descriptions?: LegendDescription[]) => {
-	if (descriptions) {
-		return { signal: 'datum' };
-	}
-	return undefined;
-};
-
-/**
- * Combines the opacity facet encodings with the highlight behavior which halves the opacity of non-highlighted legend entries
- * @param highlight
- * @param opacity
- * @param facets
- * @returns
- */
-export const getOpacityEncoding = (
-	highlight: boolean,
-	opacity?: OpacityFacet,
-	facets?: Facet[]
-): ProductionRule<NumericValueRef> | undefined => {
-	if (highlight) {
-		if (facets || opacity) {
-			const opacityEncoding = getSymbolFacetEncoding<number>({
-				facets,
-				facetType: 'opacity',
-				customValue: opacity,
-			}) ?? { value: 1 };
-			if ('signal' in opacityEncoding) {
-				return getHighlightOpacityEncoding(
-					{ signal: opacityEncoding.signal + ` / ${HIGHLIGHT_CONTRAST_RATIO}` },
-					opacityEncoding
-				);
-			}
-			if ('value' in opacityEncoding && typeof opacityEncoding.value === 'number') {
-				return getHighlightOpacityEncoding(
-					{ value: opacityEncoding.value / HIGHLIGHT_CONTRAST_RATIO },
-					opacityEncoding
-				);
+export const addSignals = produce<Signal[], [LegendSpecProps]>(
+	(signals, { hiddenSeries, highlight, isToggleable, legendLabels, name }) => {
+		if (highlight) {
+			if (!hasSignalByName(signals, 'highlightedSeries')) {
+				signals.push(getHighlightSeriesSignal(name, Boolean(isToggleable || hiddenSeries)));
 			}
 		}
-		return getHighlightOpacityEncoding({ value: 1 / HIGHLIGHT_CONTRAST_RATIO }, { value: 1 });
-	}
-	return undefined;
-};
 
-const getHighlightOpacityEncoding = (
-	highlightOpacity: BaseValueRef<number>,
-	defaultOpacity: BaseValueRef<number>
-): ProductionRule<NumericValueRef> => {
-	return [
-		{
-			test: 'highlightedSeries && datum.value !== highlightedSeries',
-			...highlightOpacity,
-		},
-		defaultOpacity,
-	];
-};
-
-export const getSymbolEncodings = (
-	facets: Facet[],
-	{ color, lineType, lineWidth, opacity, symbolShape, colorScheme }: LegendSpecProps
-): LegendEncode => {
-	const update = {
-		fill: getSymbolFacetEncoding<Color>({ facets, facetType: 'color', customValue: color }) || {
-			value: spectrumColors[colorScheme]['categorical-100'],
-		},
-		fillOpacity: getSymbolFacetEncoding<number>({ facets, facetType: 'opacity', customValue: opacity }),
-		size: getSymbolFacetEncoding<number>({ facets, facetType: 'symbolSize' }),
-		stroke: getSymbolFacetEncoding<Color>({ facets, facetType: 'color', customValue: color }) || {
-			value: spectrumColors[colorScheme]['categorical-100'],
-		},
-		strokeDash: getSymbolFacetEncoding<number[]>({ facets, facetType: 'lineType', customValue: lineType }),
-		strokeOpacity: getSymbolFacetEncoding<number>({ facets, facetType: 'opacity' }),
-		strokeWidth: getSymbolFacetEncoding<number>({ facets, facetType: 'lineWidth', customValue: lineWidth }),
-		shape: getSymbolFacetEncoding<string>({ facets, facetType: 'symbolShape', customValue: symbolShape }),
-	};
-	// Remove undefined values
-	Object.keys(update).forEach((key) => update[key] === undefined && delete update[key]);
-	return {
-		entries: {
-			name: 'legendEntry',
-		},
-		symbols: {
-			update,
-		},
-	};
-};
-
-const getSymbolFacetEncoding = <T>({
-	customValue,
-	facets,
-	facetType,
-}: {
-	customValue?: FacetRef<T>;
-	facets?: Facet[];
-	facetType: FacetType;
-}): ProductionRule<BaseValueRef<T>> | undefined => {
-	if (customValue) {
-		if (typeof customValue === 'string') {
-			return { signal: `scale('${facetType}', data('legendAggregate')[datum.index].${customValue})` };
-		}
-		return { value: customValue.value };
-	}
-
-	if (!facets) return;
-
-	const secondaryFacetMapping: { [key in FacetType]: { scale: SecondaryFacetType; signal: string } } = {
-		color: { scale: 'secondaryColor', signal: 'colors' },
-		lineType: { scale: 'secondaryLineType', signal: 'lineTypes' },
-		lineWidth: { scale: 'secondaryLineWidth', signal: 'lineWidths' },
-		opacity: { scale: 'secondaryOpacity', signal: 'opacities' },
-		symbolShape: { scale: 'secondarySymbolShape', signal: 'symbolShapes' },
-		symbolSize: { scale: 'secondarySymbolSize', signal: 'symbolSizes' },
-	};
-
-	const facet = facets.find((facet) => facet.facetType === facetType);
-	if (!facet) return;
-	const secondaryFacet = facets.find((f) => f.facetType === secondaryFacetMapping[facetType].scale);
-	if (secondaryFacet) {
-		const { scale, signal } = secondaryFacetMapping[facetType];
-		return {
-			signal: `scale('${signal}', data('legendAggregate')[datum.index].${facet.field})[indexof(domain('${scale}'), data('legendAggregate')[datum.index].${secondaryFacet.field})% length(scale('${signal}', data('legendAggregate')[datum.index].${facet.field}))]`,
-		};
-	}
-
-	return { signal: `scale('${facetType}', data('legendAggregate')[datum.index].${facet.field})` };
-};
-
-const getColumns = (position: Position): SignalRef | undefined => {
-	if (['left', 'right'].includes(position)) return;
-	return { signal: 'floor(width / 220)' };
-};
-
-export const setHoverOpacityForMarks = produce<Mark[]>((marks) => {
-	if (!marks.length) return;
-	const flatMarks = flattenMarks(marks);
-	const seriesMarks = flatMarks.filter(seriesMarkFilter);
-	seriesMarks.forEach((mark) => {
-		// need to drill down to the prop we need to set and add missing properties if needed
-		if (!mark.encode) {
-			mark.encode = { update: {} };
-		}
-		if (!mark.encode.update) {
-			mark.encode.update = {};
-		}
-		const { update } = mark.encode;
-		const { fillOpacity, strokeOpacity } = update;
-
-		// the production rule that sets the fill opacity for this mark
-		const fillOpacityRule = getOpacityRule(fillOpacity);
-		// the new production rule for highlighting
-		const highlightFillOpacityRule = getHighlightOpacityRule(fillOpacityRule);
-
-		if (!Array.isArray(update.fillOpacity)) {
-			update.fillOpacity = [];
-		}
-		// // need to insert the new test in the second to last slot
-		const fillRuleInsertIndex = Math.max(update.fillOpacity.length - 1, 0);
-		update.fillOpacity.splice(fillRuleInsertIndex, 0, highlightFillOpacityRule);
-
-		// the production rule that sets the stroke opacity for this mark
-		const strokeOpacityRule = getOpacityRule(strokeOpacity);
-		// the new production rule for highlighting
-		const highlightStrokeOpacityRule = getHighlightOpacityRule(strokeOpacityRule);
-
-		if (!Array.isArray(update.strokeOpacity)) {
-			update.strokeOpacity = [];
-		}
-		// // need to insert the new test in the second to last slot
-		const strokeRuleInsertIndex = Math.max(update.strokeOpacity.length - 1, 0);
-		update.strokeOpacity.splice(strokeRuleInsertIndex, 0, highlightStrokeOpacityRule);
-	});
-	return marks;
-});
-
-export const getOpacityRule = (
-	opacityRule: ProductionRule<NumericValueRef> | undefined
-): ProductionRule<NumericValueRef> => {
-	if (opacityRule) {
-		// if it's an array and length > 0, get the last value
-		if (Array.isArray(opacityRule)) {
-			if (opacityRule.length > 0) {
-				return opacityRule[opacityRule.length - 1];
+		if (legendLabels) {
+			if (!hasSignalByName(signals, 'legendLabels')) {
+				signals.push(getLegendLabelsSeriesSignal(legendLabels));
 			}
-		} else {
-			return opacityRule;
 		}
-	}
-	return { value: 1 };
-};
 
-export const getHighlightOpacityRule = (
-	opacityRule: ProductionRule<NumericValueRef>
-): { test?: string } & NumericValueRef => {
-	const test = 'highlightedSeries && highlightedSeries !== datum.prismSeriesId';
-	if ('scale' in opacityRule && 'field' in opacityRule) {
-		return {
-			test,
-			signal: `scale('${opacityRule.scale}', datum.${opacityRule.field}) / ${HIGHLIGHT_CONTRAST_RATIO}`,
-		};
-	}
-	if ('signal' in opacityRule) {
-		return { test, signal: `${opacityRule.signal} / ${HIGHLIGHT_CONTRAST_RATIO}` };
-	}
-	if ('value' in opacityRule && typeof opacityRule.value === 'number') {
-		return { test, value: opacityRule.value / HIGHLIGHT_CONTRAST_RATIO };
-	}
-	return { test, value: 1 / HIGHLIGHT_CONTRAST_RATIO };
-};
-
-// filters for marks that have stroke or fill set to use the color scale
-const seriesMarkFilter = (mark) => {
-	const enter = mark.encode?.enter;
-	if (!enter) return false;
-	const { fill, stroke } = enter;
-	if (fill && 'scale' in fill && fill.scale === 'color') {
-		return true;
-	}
-	// some marks use a 2d color scale, these will use a signal expression to get the color for that series
-	if (fill && 'signal' in fill && fill.signal.includes("scale('colors',")) {
-		return true;
-	}
-	if (stroke && 'scale' in stroke && stroke.scale === 'color') {
-		return true;
-	}
-	return false;
-};
-
-// marks can be nested under group marks, this flattens them all so they are easier to traverse
-function flattenMarks(marks: Mark[]): Mark[] {
-	let result = marks;
-	for (const mark of marks) {
-		if (isGroupMark(mark) && mark.marks) {
-			result = [...result, ...flattenMarks(mark.marks)];
+		if (isToggleable || hiddenSeries) {
+			signals.push(getGenericSignal('hiddenSeries', hiddenSeries ?? []));
 		}
-	}
-	return result;
-}
-
-function isGroupMark(mark: Mark): mark is GroupMark {
-	return mark.type === 'group';
-}
+	},
+);

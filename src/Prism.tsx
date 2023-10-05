@@ -9,6 +9,29 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import React, { FC, MutableRefObject, forwardRef, useEffect, useMemo, useRef, useState } from 'react';
+
+import { EmptyState } from '@components/EmptyState';
+import { LoadingState } from '@components/LoadingState';
+import { DEFAULT_COLOR_SCHEME, DEFAULT_LINE_TYPES } from '@constants';
+import useChartWidth from '@hooks/useChartWidth';
+import { useDebugSpec } from '@hooks/useDebugSpec';
+import useElementSize from '@hooks/useElementSize';
+import useLegend from '@hooks/useLegend';
+import usePopoverAnchorStyle from '@hooks/usePopoverAnchorStyle';
+import usePopovers, { PopoverDetail } from '@hooks/usePopovers';
+import usePrismImperativeHandle from '@hooks/usePrismImperativeHandle';
+import useSpec from '@hooks/useSpec';
+import useSpecProps from '@hooks/useSpecProps';
+import useTooltips from '@hooks/useTooltips';
+import { getColorValue } from '@specBuilder/specUtils';
+import { getPrismConfig } from '@themes/spectrumTheme';
+import { debugLog, getOnMarkClickCallback, sanitizeChartChildren, setSelectedSignals } from '@utils';
+import { renderToStaticMarkup } from 'react-dom/server';
+import { Vega } from 'react-vega';
+import { v4 as uuid } from 'uuid';
+import { View } from 'vega';
+import { Options as TooltipOptions } from 'vega-tooltip';
 
 import {
 	ActionButton,
@@ -18,42 +41,20 @@ import {
 	View as SpectrumView,
 	defaultTheme,
 } from '@adobe/react-spectrum';
-import { EmptyState } from '@components/EmptyState';
-import { LoadingState } from '@components/LoadingState';
-import { DEFAULT_COLOR_SCHEME, DEFAULT_LINE_TYPES } from '@constants';
-import useChartWidth from '@hooks/useChartWidth';
-import { useDebugSpec } from '@hooks/useDebugSpec';
-import useElementSize from '@hooks/useElementSize';
-import useLegend from '@hooks/useLegend';
-import usePopover from '@hooks/usePopover';
-import usePopoverAnchorStyle from '@hooks/usePopoverAnchorStyle';
-import usePrismImperativeHandle from '@hooks/usePrismImperativeHandle';
-import useSpec from '@hooks/useSpec';
-import useSpecProps from '@hooks/useSpecProps';
-import useTooltip from '@hooks/useTooltip';
 import { Theme } from '@react-types/provider';
-import { getColorValue } from '@specBuilder/specUtils';
-import { getPrismConfig } from '@themes/spectrumTheme';
-import { debugLog, getItemBounds, isItemSceneItem, sanitizeChartChildren, setSelectedSignals } from '@utils';
-import { FC, MutableRefObject, forwardRef, useEffect, useMemo, useRef, useState } from 'react';
-import { renderToStaticMarkup } from 'react-dom/server';
-import { Vega } from 'react-vega';
-import { v4 as uuid } from 'uuid';
-import { Item, ScenegraphEvent, View } from 'vega';
-import { Options as TooltipOptions } from 'vega-tooltip';
 
 import './Prism.css';
 import { TABLE } from './constants';
 import { expressionFunctions } from './expressionFunctions';
 import { extractValues, isVegaData } from './specBuilder/specUtils';
-import { Datum, LegendDescription, MarkBounds, PopoverHandler, PrismData, PrismHandle, PrismProps } from './types';
+import { Datum, LegendDescription, MarkBounds, PrismData, PrismHandle, PrismProps } from './types';
 
 interface ChartDialogProps {
 	datum: Datum | null;
+	itemName?: string;
 	targetElement: MutableRefObject<HTMLElement | null>;
-	width?: number;
 	setPopoverState: (isOpen: boolean) => void;
-	popover?: PopoverHandler;
+	popovers: PopoverDetail[];
 }
 
 interface LegendTooltipProps {
@@ -95,12 +96,13 @@ export const Prism = forwardRef<PrismHandle, PrismProps>(
 			UNSAFE_vegaSpec,
 			...props
 		},
-		forwardedRef,
+		forwardedRef
 	) => {
 		// uuid is used to make a unique id so there aren't duplicate ids if there is more than one Prism viz in the document
 		const prismId = useRef<string>(`prism-visuzalizations-${uuid()}`);
 		const chartView = useRef<View>(); // view returned by vega
 		const selectedData = useRef<Datum | null>(null); // data that is currently selected, get's set on click if a popover exists
+		const selectedDataName = useRef<string>();
 		const selectedDataBounds = useRef<MarkBounds>();
 		const containerRef = useRef<HTMLDivElement>(null);
 		const popoverAnchorRef = useRef<HTMLDivElement>(null);
@@ -159,16 +161,23 @@ export const Prism = forwardRef<PrismHandle, PrismProps>(
 		const chartWidth = useChartWidth(containerWidth, maxWidth, minWidth, width); // calculates the width the vega chart should be
 		useDebugSpec(debug, spec, chartData, chartWidth, height, prismConfig);
 
-		const [tooltip] = useTooltip(sanitizedChildren); // gets the tooltip callback if one exists
-		const [legendDescriptions] = useLegend(sanitizedChildren); // gets the legend descriptions map if one exists
-		const [popover, popoverWidth] = usePopover(sanitizedChildren); // gets the popover callback and width if they exist
+		const {
+			hiddenSeriesState,
+			setHiddenSeries,
+			descriptions: legendDescriptions,
+			isToggleable: legendIsToggleable,
+			onClick: onLegendClick,
+		} = useLegend(sanitizedChildren); // gets props from the legend if it exists
+
+		const tooltips = useTooltips(sanitizedChildren);
+		const popovers = usePopovers(sanitizedChildren);
 
 		// gets the correct css style to display the anchor in the correct position
 		const targetStyle = usePopoverAnchorStyle(
 			popoverIsOpen,
 			chartView.current,
 			selectedDataBounds.current,
-			padding,
+			padding
 		);
 		const showPlaceholderContent = useMemo(() => Boolean(loading || !data.length), [loading, data]);
 		useEffect(() => {
@@ -178,36 +187,9 @@ export const Prism = forwardRef<PrismHandle, PrismProps>(
 			}
 		}, [showPlaceholderContent]);
 
-		const onMarkClick = (event: ScenegraphEvent, item: Item | null | undefined) => {
-			// if they clicked on a mark group then we want to go down an additional level
-			if (item?.datum && isItemSceneItem(item.datum)) {
-				item = item.datum;
-			}
-			if (item?.mark.marktype === 'area') {
-				// for area, we want to use the hovered data not the entire area
-				const pointMark = item.mark.group.items.find((mark) => mark.name.includes('AnchorPoint'));
-				if (pointMark && pointMark.items.length === 1) {
-					const point = pointMark.items[0];
-					if (isItemSceneItem(point)) {
-						item = point;
-					}
-				}
-			}
-			// verify that the user didn't click on a legend, legend marktype = 'group'
-			if (isItemSceneItem(item) && item.mark.marktype !== 'group' && chartView.current) {
-				// clicking the button will trigger a new view since it will cause a rerender
-				// this means we don't need to set the signal value since it would just be cleared on rerender
-				// instead, the rerender will set the value of the signal to the selectedData
-				selectedData.current = item.datum;
-				// we need to anchor the popover to a div that we move to the same location as the selected mark
-				selectedDataBounds.current = getItemBounds(item);
-				(document.querySelector(`#${prismId.current} > button`) as HTMLButtonElement)?.click();
-			}
-		};
-
 		const tooltipConfig: TooltipOptions = { theme: colorScheme };
 
-		if (tooltip || legendDescriptions) {
+		if (tooltips.length || legendDescriptions) {
 			tooltipConfig.formatTooltip = (value) => {
 				debugLog(debug, { title: 'Tooltip datum', contents: value });
 				if (legendDescriptions && 'index' in value) {
@@ -220,9 +202,11 @@ export const Prism = forwardRef<PrismHandle, PrismProps>(
 							value={value}
 							descriptions={legendDescriptions}
 							domain={chartView.current?.scale('color').domain()}
-						/>,
+						/>
 					);
 				}
+				// get the correct tooltip to render based on the hovered item
+				const tooltip = tooltips.find((t) => t.name === value.prismComponentName)?.callback;
 				if (tooltip && !('index' in value)) {
 					if (controlledHoverSignal) {
 						chartView.current?.signal(controlledHoverSignal.name, value?.prismMarkId ?? null);
@@ -230,7 +214,7 @@ export const Prism = forwardRef<PrismHandle, PrismProps>(
 					return renderToStaticMarkup(
 						<div className="prism-tooltip" data-testid="prism-tooltip">
 							{tooltip(value)}
-						</div>,
+						</div>
 					);
 				}
 				return '';
@@ -239,16 +223,15 @@ export const Prism = forwardRef<PrismHandle, PrismProps>(
 
 		if (props.children && UNSAFE_vegaSpec) {
 			throw new Error(
-				'Prism cannot accept both children and `UNSAFE_vegaSpec` prop. Please choose one or the other.',
+				'Prism cannot accept both children and `UNSAFE_vegaSpec` prop. Please choose one or the other.'
 			);
 		}
 
 		// Prism requires children or a Vega spec to configure what is drawn. If there aren't any children or a Vega spec, throw an error and return a fragment.
 		if (!props.children && !UNSAFE_vegaSpec) {
-			console.error(
-				'No children in the <Prism /> component. Prism is a collection components and requires children to draw correctly.',
+			throw new Error(
+				'No children in the <Prism /> component. Prism is a collection components and requires children to draw correctly.'
 			);
-			return <></>;
 		}
 
 		return (
@@ -260,7 +243,12 @@ export const Prism = forwardRef<PrismHandle, PrismProps>(
 					className="prism-container"
 					style={{ backgroundColor: getColorValue(backgroundColor, colorScheme) }}
 				>
-					<div id={`${prismId.current}-popover-anchor`} ref={popoverAnchorRef} style={targetStyle} />
+					<div
+						id={`${prismId.current}-popover-anchor`}
+						data-testid="prism-popover-anchor"
+						ref={popoverAnchorRef}
+						style={targetStyle}
+					/>
 					{showPlaceholderContent ? (
 						<PlaceholderContent loading={loading} data={data} height={height} />
 					) : (
@@ -281,14 +269,30 @@ export const Prism = forwardRef<PrismHandle, PrismProps>(
 								chartView.current = view;
 								// this sets the signal value for the background color used behind bars
 								view.signal('backgroundColor', getColorValue('gray-50', colorScheme));
-								if (popover) {
+								if (popovers.length || legendIsToggleable || onLegendClick) {
+									if (legendIsToggleable) {
+										view.signal('hiddenSeries', hiddenSeriesState);
+									}
 									setSelectedSignals({
 										selectedData: selectedData.current,
 										selectedIdSignalName,
 										selectedSeriesSignalName,
 										view,
 									});
-									view.addEventListener('click', (event, item) => onMarkClick(event, item));
+									view.addEventListener(
+										'click',
+										getOnMarkClickCallback(
+											chartView,
+											hiddenSeriesState,
+											prismId,
+											selectedData,
+											selectedDataBounds,
+											selectedDataName,
+											setHiddenSeries,
+											legendIsToggleable,
+											onLegendClick
+										)
+									);
 									// this will trigger the autosize calculation making sure that everything is correct size
 									setTimeout(() => {
 										view.resize();
@@ -302,19 +306,22 @@ export const Prism = forwardRef<PrismHandle, PrismProps>(
 						datum={selectedData.current}
 						targetElement={popoverAnchorRef}
 						setPopoverState={setPopoverIsOpen}
-						popover={popover}
-						width={popoverWidth}
+						popovers={popovers}
+						itemName={selectedDataName.current}
 					/>
 				</div>
 			</Provider>
 		);
-	},
+	}
 );
 
-const ChartDialog = ({ datum, targetElement, width = 250, setPopoverState, popover }: ChartDialogProps) => {
-	if (popover === undefined) {
+const ChartDialog = ({ datum, itemName, targetElement, setPopoverState, popovers }: ChartDialogProps) => {
+	if (!popovers.length) {
 		return <></>;
 	}
+	const popoverDetail = popovers.find((p) => p.name === itemName);
+	const popover = popoverDetail?.callback;
+	const width = popoverDetail?.width;
 	return (
 		<DialogTrigger
 			type="popover"
@@ -336,7 +343,7 @@ const ChartDialog = ({ datum, targetElement, width = 250, setPopoverState, popov
 	);
 };
 
-const LegendTooltip: FC<LegendTooltipProps> = ({ value, descriptions, domain }) => {
+const LegendTooltip = ({ value, descriptions, domain }: LegendTooltipProps) => {
 	const series = domain[value.index];
 	const description = descriptions.find((d) => d.seriesName === series);
 	if (!description) {
@@ -344,7 +351,7 @@ const LegendTooltip: FC<LegendTooltipProps> = ({ value, descriptions, domain }) 
 	}
 	return (
 		<div className="prism-tooltip legend-tooltip" data-testid="prism-tooltip">
-			<div className="series">{series}</div>
+			<div className="series">{description.title || series}</div>
 			<p className="series-description">{description.description}</p>
 		</div>
 	);

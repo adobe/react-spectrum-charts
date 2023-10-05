@@ -31,7 +31,7 @@ describe('Bar', () => {
 		expect(prism).toBeInTheDocument();
 
 		// get bars
-		const bars = await findAllMarksByGroupName(prism, 'rect0');
+		const bars = await findAllMarksByGroupName(prism, 'bar0');
 		expect(bars.length).toEqual(5);
 	});
 
@@ -41,7 +41,7 @@ describe('Bar', () => {
 		expect(prism).toBeInTheDocument();
 
 		// get bars
-		const bars = await findAllMarksByGroupName(prism, 'rect0');
+		const bars = await findAllMarksByGroupName(prism, 'bar0');
 		expect(bars[0].getAttribute('fill-opacity')).toEqual('0.75');
 	});
 
@@ -51,7 +51,7 @@ describe('Bar', () => {
 		expect(prism).toBeInTheDocument();
 
 		// get bars
-		const bars = await findAllMarksByGroupName(prism, 'rect0');
+		const bars = await findAllMarksByGroupName(prism, 'bar0');
 		expect(bars.length).toEqual(5);
 	});
 
@@ -61,11 +61,11 @@ describe('Bar', () => {
 		expect(prism).toBeInTheDocument();
 
 		// get bars
-		const bars = await findAllMarksByGroupName(prism, 'rect0');
+		const bars = await findAllMarksByGroupName(prism, 'bar0');
 		expect(bars.length).toEqual(5);
 
 		// get annotations
-		const labels = await findAllMarksByGroupName(prism, 'rect0AnnotationText', 'text');
+		const labels = await findAllMarksByGroupName(prism, 'bar0_annotationText', 'text');
 		expect(labels.length).toEqual(5);
 	});
 
@@ -75,7 +75,7 @@ describe('Bar', () => {
 		expect(prism).toBeInTheDocument();
 
 		// get bars
-		const bars = await findAllMarksByGroupName(prism, 'rect0');
+		const bars = await findAllMarksByGroupName(prism, 'bar0');
 		expect(bars.length).toEqual(9);
 	});
 
@@ -85,7 +85,7 @@ describe('Bar', () => {
 		expect(prism).toBeInTheDocument();
 
 		// get bars
-		const bars = await findAllMarksByGroupName(prism, 'rect0');
+		const bars = await findAllMarksByGroupName(prism, 'bar0');
 		expect(bars.length).toEqual(18);
 	});
 
@@ -95,7 +95,7 @@ describe('Bar', () => {
 		expect(prism).toBeInTheDocument();
 
 		// get bars
-		const bars = await findAllMarksByGroupName(prism, 'rect0');
+		const bars = await findAllMarksByGroupName(prism, 'bar0');
 		expect(bars.length).toEqual(9);
 	});
 });

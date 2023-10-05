@@ -83,7 +83,7 @@ describe('Prism spec builder', () => {
 			]);
 			expect(
 				getTwoDimensionalColorScheme(['blue-400', 'blue-500', 'blue-600', 'blue-700'], 'dark'),
-			).toStrictEqual([['rgb(0, 89, 194)'], ['rgb(3, 103, 224)'], ['rgb(19, 121, 243)'], ['rgb(52, 143, 244)']]);
+			).toStrictEqual([['rgb(0, 78, 166)'], ['rgb(0, 92, 200)'], ['rgb(6, 108, 231)'], ['rgb(29, 128, 245)']]);
 		});
 		test('should convert color scheme in second dimension to correct colors', () => {
 			expect(

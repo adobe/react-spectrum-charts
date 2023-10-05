@@ -38,7 +38,7 @@ describe('ChartTooltip', () => {
 		expect(prism).toBeInTheDocument();
 
 		// get bars
-		const bars = await findAllMarksByGroupName(prism, 'rect0');
+		const bars = await findAllMarksByGroupName(prism, 'bar0');
 
 		// hover and validate all hover interactions
 		await hoverNthElement(bars, 0);
@@ -59,7 +59,7 @@ describe('ChartTooltip', () => {
 		expect(prism).toBeInTheDocument();
 
 		// get voronoi paths
-		const paths = await findAllMarksByGroupName(prism, 'line0Voronoi');
+		const paths = await findAllMarksByGroupName(prism, 'line0_voronoi');
 
 		// hover and validate all hover components are visible
 		await hoverNthElement(paths, 0);
@@ -67,9 +67,9 @@ describe('ChartTooltip', () => {
 		expect(tooltip).toBeInTheDocument();
 		expect(within(tooltip).getByText('Nov 8')).toBeInTheDocument();
 
-		const highlightRule = await findMarksByGroupName(prism, 'line0HoverRule', 'line');
+		const highlightRule = await findMarksByGroupName(prism, 'line0_hoverRule', 'line');
 		expect(highlightRule).toBeInTheDocument();
-		const highlightPoint = await findMarksByGroupName(prism, 'line0Point');
+		const highlightPoint = await findMarksByGroupName(prism, 'line0_point');
 		expect(highlightPoint).toBeInTheDocument();
 
 		// unhover and validate the highlights go away
@@ -83,7 +83,7 @@ describe('ChartTooltip', () => {
 
 		const prism = await findPrism();
 		expect(prism).toBeInTheDocument();
-		const bars = getAllMarksByGroupName(prism, 'rect0');
+		const bars = getAllMarksByGroupName(prism, 'bar0');
 
 		// clicking the bar should open the popover
 		await hoverNthElement(bars, 4);

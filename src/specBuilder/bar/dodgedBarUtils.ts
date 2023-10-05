@@ -31,8 +31,8 @@ export const getDodgedMark = (props: BarSpecProps): Mark => {
 		marks: [
 			// background bars
 			{
-				name: `${name}Background`,
-				from: { data: `${name}Facet` },
+				name: `${name}_background`,
+				from: { data: `${name}_facet` },
 				type: 'rect',
 				interactive: false,
 				encode: {
@@ -48,7 +48,7 @@ export const getDodgedMark = (props: BarSpecProps): Mark => {
 			// bars
 			{
 				name,
-				from: { data: `${name}Facet` },
+				from: { data: `${name}_facet` },
 				type: 'rect',
 				interactive: getInteractive(children),
 				encode: {
@@ -62,7 +62,7 @@ export const getDodgedMark = (props: BarSpecProps): Mark => {
 					},
 				},
 			},
-			...getAnnotationMarks(props, `${name}Facet`, `${name}Position`, `${name}DodgeGroup`),
+			...getAnnotationMarks(props, `${name}_facet`, `${name}_position`, `${name}_dodgeGroup`),
 		],
 	};
 };

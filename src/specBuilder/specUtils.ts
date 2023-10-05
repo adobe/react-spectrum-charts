@@ -24,9 +24,9 @@ import {
 	PrismSymbolShape,
 	SpectrumColor,
 } from 'types';
-import { Data, IdentifierTransform, Scale, Spec, ValuesData } from 'vega';
+import { Data, Scale, Spec, ValuesData } from 'vega';
 
-import { TABLE } from '../constants';
+import { FILTERED_TABLE, TABLE } from '../constants';
 import { SanitizedSpecProps } from '../types';
 
 /**
@@ -167,6 +167,14 @@ export const getPathFromIcon = (icon: Icon | string): string => {
 };
 
 /**
+ * base data that gets initialized with every uncontrolled spec
+ */
+export const baseData: Data[] = [
+	{ name: TABLE, values: [], transform: [{ type: 'identifier', as: 'prismMarkId' }] },
+	{ name: FILTERED_TABLE, source: TABLE },
+];
+
+/**
  * Merges an optionally supplied spec with Prism props and default values.
  *
  * @param spec - The spec to merge with the base spec. If none is supplied, the base spec is returned.
@@ -175,8 +183,6 @@ export const getPathFromIcon = (icon: Icon | string): string => {
  */
 export const initializeSpec = (spec: Spec | null = {}, prismProps: Partial<SanitizedSpecProps> = {}): Spec => {
 	const { title, description, data } = prismProps;
-	const identifierTransform: IdentifierTransform = { type: 'identifier', as: 'prismMarkId' };
-	const baseData: Data[] = [{ name: TABLE, values: [], transform: [identifierTransform] }];
 
 	const baseSpec: Spec = {
 		title: title || undefined,

@@ -10,30 +10,16 @@
  * governing permissions and limitations under the License.
  */
 
-import {
-	DEFAULT_CATEGORICAL_DIMENSION,
-	DEFAULT_COLOR,
-	DEFAULT_COLOR_SCHEME,
-	DEFAULT_METRIC,
-	DEFAULT_SECONDARY_COLOR,
-	HIGHLIGHT_CONTRAST_RATIO,
-	TABLE,
-} from '@constants';
-import { Data, Legend, LegendEncode, Mark, Scale, Spec, SymbolEncodeEntry } from 'vega';
+import { DEFAULT_COLOR, DEFAULT_COLOR_SCHEME, DEFAULT_SECONDARY_COLOR, FILTERED_TABLE, TABLE } from '@constants';
+import { Data, Legend, LegendEncode, Scale, Spec, SymbolEncodeEntry } from 'vega';
 
 import { defaultHighlightSignal } from '../signal/signalSpecBuilder.test';
-import {
-	addData,
-	addLegend,
-	formatFacetRefsWithPresets,
-	getHighlightOpacityRule,
-	getOpacityEncoding,
-	getOpacityRule,
-	getSymbolEncodings,
-	setHoverOpacityForMarks,
-} from './legendSpecBuilder';
+import { addData, addLegend, addSignals, formatFacetRefsWithPresets } from './legendSpecBuilder';
+import { defaultLegendProps, opacityEncoding } from './legendTestUtils';
+import { baseData } from '@specBuilder/specUtils';
 
 const defaultSpec: Spec = {
+	signals: [],
 	scales: [
 		{
 			name: 'color',
@@ -44,19 +30,15 @@ const defaultSpec: Spec = {
 	marks: [],
 };
 
-const opacityEncoding = [
-	{ test: 'highlightedSeries && datum.value !== highlightedSeries', value: 1 / HIGHLIGHT_CONTRAST_RATIO },
-	{ value: 1 },
-];
 const colorEncoding = { signal: `scale('color', data('legendAggregate')[datum.index].${DEFAULT_COLOR})` };
 const defaultSymbolUpdateEncodings: SymbolEncodeEntry = {
-	fill: colorEncoding,
-	stroke: colorEncoding,
+	fill: [colorEncoding],
+	stroke: [colorEncoding],
 };
 
 const defaultTooltipLegendEncoding: LegendEncode = {
 	entries: {
-		name: 'legendEntry',
+		name: 'legend0_legendEntry',
 		interactive: true,
 		enter: { tooltip: { signal: 'datum' } },
 		update: { fill: { value: 'transparent' } },
@@ -67,7 +49,7 @@ const defaultTooltipLegendEncoding: LegendEncode = {
 
 const defaultHighlightLegendEncoding: LegendEncode = {
 	entries: {
-		name: 'legendEntry',
+		name: 'legend0_legendEntry',
 		interactive: true,
 		enter: { tooltip: undefined },
 		update: { fill: { value: 'transparent' } },
@@ -84,39 +66,11 @@ const defaultHighlightLegendEncoding: LegendEncode = {
 
 const defaultLegend: Legend = {
 	direction: 'horizontal',
-	encode: { entries: { name: 'legendEntry' }, symbols: { update: { ...defaultSymbolUpdateEncodings } } },
+	encode: { entries: { name: 'legend0_legendEntry' }, symbols: { update: { ...defaultSymbolUpdateEncodings } } },
 	fill: 'legendEntries',
 	orient: 'bottom',
 	title: undefined,
 	columns: { signal: 'floor(width / 220)' },
-};
-
-const defaultMark: Mark = {
-	name: 'line0',
-	type: 'line',
-	from: {
-		data: 'table',
-	},
-	encode: {
-		enter: {
-			x: { scale: 'x', field: DEFAULT_CATEGORICAL_DIMENSION },
-			y: { scale: 'y', field: DEFAULT_METRIC },
-			stroke: { scale: 'color', field: DEFAULT_COLOR },
-		},
-	},
-};
-const defaultGroupMark: Mark = {
-	type: 'group',
-	marks: [defaultMark],
-};
-
-const defaultOpacityEncoding = {
-	fillOpacity: [
-		{ test: `highlightedSeries && highlightedSeries !== datum.prismSeriesId`, value: 1 / HIGHLIGHT_CONTRAST_RATIO },
-	],
-	strokeOpacity: [
-		{ test: `highlightedSeries && highlightedSeries !== datum.prismSeriesId`, value: 1 / HIGHLIGHT_CONTRAST_RATIO },
-	],
 };
 
 const defaultLegendAggregateData: Data = {
@@ -140,14 +94,6 @@ const defaultLegendEntriesScale: Scale = {
 	type: 'ordinal',
 	domain: { data: 'legendAggregate', field: 'legendEntries' },
 };
-
-const defaultOpacitySignalEncoding = [
-	{
-		test: 'highlightedSeries && datum.value !== highlightedSeries',
-		signal: `scale('opacity', data('legendAggregate')[datum.index].${DEFAULT_COLOR}) / 5`,
-	},
-	{ signal: `scale('opacity', data('legendAggregate')[datum.index].${DEFAULT_COLOR})` },
-];
 
 describe('addLegend()', () => {
 	describe('no initial legend', () => {
@@ -200,7 +146,7 @@ describe('addLegend()', () => {
 				}).legends?.[0].encode,
 			).toStrictEqual({
 				entries: {
-					name: 'legendEntry',
+					name: 'legend0_legendEntry',
 				},
 				labels: {
 					update: {
@@ -268,10 +214,12 @@ describe('addLegend()', () => {
 
 describe('addData()', () => {
 	test('should add legendAggregate data', () => {
-		expect(addData([], { facets: [DEFAULT_COLOR], hiddenEntries: [] })).toStrictEqual([defaultLegendAggregateData]);
+		expect(addData([], { ...defaultLegendProps, facets: [DEFAULT_COLOR] })).toStrictEqual([
+			defaultLegendAggregateData,
+		]);
 	});
 	test('should join multiple facets', () => {
-		expect(addData([], { facets: [DEFAULT_COLOR, DEFAULT_SECONDARY_COLOR], hiddenEntries: [] })).toStrictEqual([
+		expect(addData([], { ...defaultLegendProps, facets: [DEFAULT_COLOR, DEFAULT_SECONDARY_COLOR] })).toStrictEqual([
 			{
 				name: 'legendAggregate',
 				source: 'table',
@@ -287,7 +235,7 @@ describe('addData()', () => {
 		]);
 	});
 	test('should add filter transform if hiddenEntries has length', () => {
-		expect(addData([], { facets: [DEFAULT_COLOR], hiddenEntries: ['test'] })).toStrictEqual([
+		expect(addData([], { ...defaultLegendProps, facets: [DEFAULT_COLOR], hiddenEntries: ['test'] })).toStrictEqual([
 			{
 				...defaultLegendAggregateData,
 				transform: [
@@ -297,48 +245,19 @@ describe('addData()', () => {
 			},
 		]);
 	});
-});
-
-describe('setHoverOpacityForMarks()', () => {
-	describe('no initial state', () => {
-		test('should return undefined', () => {
-			expect(setHoverOpacityForMarks([])).toStrictEqual([]);
-		});
+	test('should add the hiddenSeries transform to the filteredTable if isToggleable is true', () => {
+		const data = addData(baseData, { ...defaultLegendProps, facets: [DEFAULT_COLOR], isToggleable: true });
+		const hiddenSeriesTransform = data
+			.find((d) => d.name === FILTERED_TABLE)
+			?.transform?.find((t) => t.type === 'filter' && t.expr.includes('hiddenSeries'));
+		expect(hiddenSeriesTransform).toBeDefined();
 	});
-	describe('bar mark initial state', () => {
-		test('encoding should be added for fillOpacity and strokOpacity', () => {
-			expect(setHoverOpacityForMarks([defaultMark])).toStrictEqual([
-				{ ...defaultMark, encode: { ...defaultMark.encode, update: defaultOpacityEncoding } },
-			]);
-		});
-		test('fillOpacity encoding already exists, rules should be added in the correct spot', () => {
-			expect(
-				setHoverOpacityForMarks([
-					{ ...defaultMark, encode: { ...defaultMark.encode, update: { fillOpacity: [{ value: 1 }] } } },
-				]),
-			).toStrictEqual([
-				{
-					...defaultMark,
-					encode: {
-						...defaultMark.encode,
-						update: {
-							...defaultOpacityEncoding,
-							fillOpacity: [...defaultOpacityEncoding.fillOpacity, { value: 1 }],
-						},
-					},
-				},
-			]);
-		});
-	});
-	describe('group mark initial state', () => {
-		test('encoding should be added for fillOpacity and strokOpacity', () => {
-			expect(setHoverOpacityForMarks([defaultGroupMark])).toStrictEqual([
-				{
-					...defaultGroupMark,
-					marks: [{ ...defaultMark, encode: { ...defaultMark.encode, update: defaultOpacityEncoding } }],
-				},
-			]);
-		});
+	test('should not add the hiddenSeries transform to the filteredTable if isToggleable is false', () => {
+		const data = addData(baseData, { ...defaultLegendProps, facets: [DEFAULT_COLOR], isToggleable: false });
+		const hiddenSeriesTransform = data
+			.find((d) => d.name === FILTERED_TABLE)
+			?.transform?.find((t) => t.type === 'filter' && t.expr.includes('hiddenSeries'));
+		expect(hiddenSeriesTransform).toBeUndefined();
 	});
 });
 
@@ -383,102 +302,33 @@ describe('formatFacetRefsWithPresets()', () => {
 	});
 });
 
-describe('getOpacityEncoding()', () => {
-	test('should return undefined if highlight is false', () => {
-		expect(getOpacityEncoding(false)).toBeUndefined();
-	});
-
-	test('should return default highlight encoding if opacity and facets are undefined', () => {
-		expect(getOpacityEncoding(true)).toStrictEqual(opacityEncoding);
-	});
-
-	test('should return signal-based encoding if facets includes opacity facet when opacity id undefined', () => {
-		expect(getOpacityEncoding(true, undefined, [{ facetType: 'opacity', field: DEFAULT_COLOR }])).toStrictEqual(
-			defaultOpacitySignalEncoding,
-		);
-	});
-
-	test('should return value-based encoding if opacity exists and is a static value', () => {
-		const opacity = 0.5;
-		expect(getOpacityEncoding(true, { value: opacity })).toStrictEqual([
-			{
-				test: 'highlightedSeries && datum.value !== highlightedSeries',
-				value: opacity / HIGHLIGHT_CONTRAST_RATIO,
-			},
-			{ value: opacity },
-		]);
-	});
-
-	test('should return signal based highlight encodings if opacity is a signal ref', () => {
-		expect(getOpacityEncoding(true, DEFAULT_COLOR, [{ facetType: 'opacity', field: 'testing' }])).toStrictEqual(
-			defaultOpacitySignalEncoding,
-		);
-	});
-
-	test('should return value based highlight encodings if opacity and facets are valid', () => {
-		expect(getOpacityEncoding(true, DEFAULT_COLOR, [{ facetType: 'opacity', field: 'testing' }])).toStrictEqual(
-			defaultOpacitySignalEncoding,
-		);
-	});
-});
-
-describe('getSymbolEncodings()', () => {
-	test('no factes and no custom values, should return all the defaults', () => {
+describe('addSignals()', () => {
+	test('should add highlightedSeries signal if highlight is true', () => {
 		expect(
-			getSymbolEncodings([], {
-				position: 'bottom',
-				highlight: false,
-				colorScheme: DEFAULT_COLOR_SCHEME,
-				hiddenEntries: [],
-			}),
-		).toStrictEqual({
-			entries: { name: 'legendEntry' },
-			symbols: { update: { fill: { value: 'rgb(15, 181, 174)' }, stroke: { value: 'rgb(15, 181, 174)' } } },
-		});
+			addSignals([], { ...defaultLegendProps, highlight: true }).find(
+				(signal) => signal.name === 'highlightedSeries',
+			),
+		).toBeDefined();
 	});
-});
-
-describe('getOpacityRule()', () => {
-	test('array, should return the last value', () => {
-		expect(getOpacityRule([{ value: 0.5 }])).toStrictEqual({ value: 0.5 });
-		expect(getOpacityRule([{ value: 0.5 }, { signal: `scale('opacity', datum.${DEFAULT_COLOR})` }])).toStrictEqual({
-			signal: `scale('opacity', datum.${DEFAULT_COLOR})`,
-		});
+	test('should add legendLabels signal if legendLabels are defined', () => {
+		expect(
+			addSignals([], { ...defaultLegendProps, legendLabels: [] }).find(
+				(signal) => signal.name === 'legendLabels',
+			),
+		).toBeDefined();
 	});
-	test('empty array, should return default value', () => {
-		expect(getOpacityRule([])).toStrictEqual({ value: 1 });
+	test('should add hiddenSeries signal if isToggleable is true', () => {
+		expect(
+			addSignals([], { ...defaultLegendProps, isToggleable: true }).find(
+				(signal) => signal.name === 'hiddenSeries',
+			),
+		).toBeDefined();
 	});
-	test('object, should return object', () => {
-		expect(getOpacityRule({ value: 0.5 })).toStrictEqual({ value: 0.5 });
-	});
-	test('undefined, should return default value', () => {
-		expect(getOpacityRule(undefined)).toStrictEqual({ value: 1 });
-	});
-});
-
-describe('getHighlightOpacityrule()', () => {
-	test('scale ref should divide by highlight contrast ratio', () => {
-		expect(getHighlightOpacityRule({ scale: 'opacity', field: DEFAULT_COLOR })).toStrictEqual({
-			test: 'highlightedSeries && highlightedSeries !== datum.prismSeriesId',
-			signal: `scale('opacity', datum.${DEFAULT_COLOR}) / ${HIGHLIGHT_CONTRAST_RATIO}`,
-		});
-	});
-	test('signal ref should divide by highlight contrast ratio', () => {
-		expect(getHighlightOpacityRule({ signal: `scale('opacity', datum.${DEFAULT_COLOR})` })).toStrictEqual({
-			test: 'highlightedSeries && highlightedSeries !== datum.prismSeriesId',
-			signal: `scale('opacity', datum.${DEFAULT_COLOR}) / ${HIGHLIGHT_CONTRAST_RATIO}`,
-		});
-	});
-	test('value ref should divide by highlight contrast ratio', () => {
-		expect(getHighlightOpacityRule({ value: 0.5 })).toStrictEqual({
-			test: 'highlightedSeries && highlightedSeries !== datum.prismSeriesId',
-			value: 0.5 / HIGHLIGHT_CONTRAST_RATIO,
-		});
-	});
-	test('empty ref should rturn default rule', () => {
-		expect(getHighlightOpacityRule({})).toStrictEqual({
-			test: 'highlightedSeries && highlightedSeries !== datum.prismSeriesId',
-			value: 1 / HIGHLIGHT_CONTRAST_RATIO,
-		});
+	test('should NOT add hiddenSeries signal if isToggleable is false', () => {
+		expect(
+			addSignals([], { ...defaultLegendProps, isToggleable: false }).find(
+				(signal) => signal.name === 'hiddenSeries',
+			),
+		).toBeUndefined();
 	});
 });

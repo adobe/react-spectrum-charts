@@ -9,15 +9,15 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import React, { ReactElement } from 'react';
 
 import { ReferenceLine } from '@components/ReferenceLine';
 import usePrismProps from '@hooks/usePrismProps';
 import { Axis, Bar, ChartTooltip, Legend, Line, Prism } from '@prism';
-import { workspaceTrendsData } from '@stories/data/data';
+import { workspaceTrendsData, workspaceTrendsDataWithVisiblePoints } from '@stories/data/data';
+import { formatTimestamp } from '@stories/storyUtils';
 import { ComponentStory } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
-import dayjs from 'dayjs';
-import React, { ReactElement } from 'react';
 import { PrismProps } from 'types';
 
 export default {
@@ -131,6 +131,18 @@ const HistoricalCompareStory: ComponentStory<typeof Line> = (args): ReactElement
 	);
 };
 
+const LineWithVisiblePointsStory: ComponentStory<typeof Line> = (args): ReactElement => {
+	const prismProps = usePrismProps({ ...defaultPrismProps, data: workspaceTrendsDataWithVisiblePoints });
+	return (
+		<Prism {...prismProps}>
+			<Axis position="left" grid title="Users" />
+			<Axis position="bottom" labelFormat="time" baseline ticks />
+			<Line {...args} />
+			<Legend highlight />
+		</Prism>
+	);
+};
+
 const Basic = bindWithProps(BasicLineStory);
 Basic.args = {
 	color: 'series',
@@ -190,10 +202,8 @@ Tooltip.args = {
 		<ChartTooltip>
 			{(datum) => (
 				<div className="bar-tooltip">
-					<div>{dayjs(datum.datetime as number).format('MMM D')}</div>
-					<div>
-						Event: <>{datum.series}</>
-					</div>
+					<div>{formatTimestamp(datum.datetime as number)}</div>
+					<div>Event: {datum.series}</div>
 					<div>Users: {Number(datum.value).toLocaleString()}</div>
 				</div>
 			)}
@@ -201,4 +211,46 @@ Tooltip.args = {
 	),
 };
 
-export { Basic, LineWithAxisAndLegend, LineType, Opacity, TrendScale, LinearTrendScale, HistoricalCompare, Tooltip };
+const WithPoints = bindWithProps(LineWithVisiblePointsStory);
+WithPoints.args = {
+	color: 'series',
+	dimension: 'datetime',
+	metric: 'value',
+	name: 'line0',
+	scaleType: 'time',
+	staticPoint: 'staticPoint',
+};
+
+const WithPointsAndTooltip = bindWithProps(LineWithVisiblePointsStory);
+WithPointsAndTooltip.args = {
+	color: 'series',
+	dimension: 'datetime',
+	metric: 'value',
+	name: 'line0',
+	scaleType: 'time',
+	staticPoint: 'staticPoint',
+	children: (
+		<ChartTooltip>
+			{(datum) => (
+				<div className="bar-tooltip">
+					<div>{formatTimestamp(datum.datetime as number)}</div>
+					<div>Event: {datum.series}</div>
+					<div>Users: {Number(datum.value).toLocaleString()}</div>
+				</div>
+			)}
+		</ChartTooltip>
+	),
+};
+
+export {
+	Basic,
+	LineWithAxisAndLegend,
+	LineType,
+	Opacity,
+	TrendScale,
+	LinearTrendScale,
+	HistoricalCompare,
+	Tooltip,
+	WithPoints,
+	WithPointsAndTooltip,
+};

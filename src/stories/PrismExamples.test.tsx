@@ -49,7 +49,7 @@ describe('Funnel stories', () => {
 			const prism = await findPrism();
 			expect(prism).toBeInTheDocument();
 
-			const bars = getAllMarksByGroupName(prism, 'rect0');
+			const bars = getAllMarksByGroupName(prism, 'bar0');
 			expect(bars).toHaveLength(12);
 
 			const legendEntries = getAllLegendEntries(prism);
@@ -69,7 +69,7 @@ describe('Time comparison stories', () => {
 			const prism = await findPrism();
 			expect(prism).toBeInTheDocument();
 
-			const bars = getAllMarksByGroupName(prism, 'rect0');
+			const bars = getAllMarksByGroupName(prism, 'bar0');
 			expect(bars).toHaveLength(112);
 
 			testBarOpacity(bars[0], '0.5');
@@ -82,7 +82,7 @@ describe('Time comparison stories', () => {
 			const prism = await findPrism();
 			expect(prism).toBeInTheDocument();
 
-			const bars = getAllMarksByGroupName(prism, 'rect0');
+			const bars = getAllMarksByGroupName(prism, 'bar0');
 			expect(bars).toHaveLength(112);
 
 			testBarOpacity(bars[1], '1');
@@ -97,7 +97,7 @@ describe('Time comparison stories', () => {
 			const prism = await findPrism();
 			expect(prism).toBeInTheDocument();
 
-			const bars = getAllMarksByGroupName(prism, 'rect0');
+			const bars = getAllMarksByGroupName(prism, 'bar0');
 			expect(bars).toHaveLength(24);
 
 			testBarOpacity(bars[0], '0.5');
@@ -114,7 +114,7 @@ describe('Time comparison stories', () => {
 			const prism = await findPrism();
 			expect(prism).toBeInTheDocument();
 
-			const bars = getAllMarksByGroupName(prism, 'rect0');
+			const bars = getAllMarksByGroupName(prism, 'bar0');
 			expect(bars).toHaveLength(24);
 
 			testBarOpacity(bars[1], '1');
@@ -133,7 +133,7 @@ describe('Time comparison stories', () => {
 			const prism = await findPrism();
 			expect(prism).toBeInTheDocument();
 
-			const bars = getAllMarksByGroupName(prism, 'rect0');
+			const bars = getAllMarksByGroupName(prism, 'bar0');
 			expect(bars).toHaveLength(48);
 		});
 
@@ -143,7 +143,7 @@ describe('Time comparison stories', () => {
 			const prism = await findPrism();
 			expect(prism).toBeInTheDocument();
 
-			const bars = getAllMarksByGroupName(prism, 'rect0');
+			const bars = getAllMarksByGroupName(prism, 'bar0');
 
 			// previous period April
 			for (let i = 0; i <= 3; i++) {
@@ -164,7 +164,7 @@ describe('Time comparison stories', () => {
 			const prism = await findPrism();
 			expect(prism).toBeInTheDocument();
 
-			const bars = getAllMarksByGroupName(prism, 'rect0');
+			const bars = getAllMarksByGroupName(prism, 'bar0');
 
 			// last period April
 			for (let i = 4; i <= 7; i++) {
@@ -188,7 +188,7 @@ describe('Time comparison stories', () => {
 			const prism = await findPrism();
 			expect(prism).toBeInTheDocument();
 
-			const bars = getAllMarksByGroupName(prism, 'rect0');
+			const bars = getAllMarksByGroupName(prism, 'bar0');
 			expect(bars).toHaveLength(112);
 
 			testBarOpacity(bars[0], '0.5');
@@ -201,7 +201,7 @@ describe('Time comparison stories', () => {
 			const prism = await findPrism();
 			expect(prism).toBeInTheDocument();
 
-			const bars = getAllMarksByGroupName(prism, 'rect0');
+			const bars = getAllMarksByGroupName(prism, 'bar0');
 			expect(bars).toHaveLength(112);
 
 			testBarOpacity(bars[1], '1');
@@ -216,10 +216,10 @@ describe('Time comparison stories', () => {
 			const prism = await findPrism();
 			expect(prism).toBeInTheDocument();
 
-			const releaseLine = getMarksByGroupName(prism, 'axis0XReferenceLineRule0', 'line');
+			const releaseLine = getMarksByGroupName(prism, 'axis0_xReferenceLineRule0', 'line');
 			expect(releaseLine).toBeInTheDocument();
 
-			const releaseIcon = getMarksByGroupName(prism, 'axis0XReferenceLineSymbol0');
+			const releaseIcon = getMarksByGroupName(prism, 'axis0_xReferenceLineSymbol0');
 			expect(releaseIcon).toBeInTheDocument();
 		});
 
@@ -251,15 +251,15 @@ describe('Time comparison stories', () => {
 			const prism = await findPrism();
 			expect(prism).toBeInTheDocument();
 
-			const averageLines = getAllMarksByGroupName(prism, 'line0TrendlineVoronoi');
+			const averageLines = getAllMarksByGroupName(prism, 'line0Trendline_voronoi');
 			expect(averageLines).toHaveLength(28);
 			await hoverNthElement(averageLines, 0);
 			const tooltip = await screen.findByTestId('prism-tooltip');
 			expect(tooltip).toBeInTheDocument();
 			expect(screen.getByText(0.58)).toBeInTheDocument();
 
-			expect(await findMarksByGroupName(prism, 'line0TrendlinePoint')).toBeInTheDocument();
-			expect(await findMarksByGroupName(prism, 'line0TrendlineSecondaryPoint')).toBeInTheDocument();
+			expect(await findMarksByGroupName(prism, 'line0Trendline_point')).toBeInTheDocument();
+			expect(await findMarksByGroupName(prism, 'line0Trendline_secondaryPoint')).toBeInTheDocument();
 		});
 	});
 });

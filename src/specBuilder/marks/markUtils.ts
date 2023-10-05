@@ -9,11 +9,12 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { ReactElement } from 'react';
 
 import { ChartPopover } from '@components/ChartPopover';
 import { ChartTooltip } from '@components/ChartTooltip';
+import { MetricRange } from '@components/MetricRange';
 import { getColorValue, getLineWidthPixelsFromLineWidth, getStrokeDashFromLineType } from '@specBuilder/specUtils';
-import { ReactElement } from 'react';
 import {
 	ColorFacet,
 	ColorScheme,
@@ -29,7 +30,8 @@ import {
 	ColorValueRef,
 	Cursor,
 	NumericValueRef,
-	ScaledValueRef
+	ScaledValueRef,
+	SignalRef,
 } from 'vega';
 
 /**
@@ -53,10 +55,10 @@ export function getInteractive(children: MarkChildElement[]): boolean {
 /**
  * If a tooltip or popover exists on the mark, then set tooltip to true.
  */
-export function getTooltip(children: MarkChildElement[]) {
+export function getTooltip(children: MarkChildElement[], name: string, nestedDatum?: boolean): SignalRef | undefined {
 	// skip annotations
 	if (hasInteractiveChildren(children)) {
-		return { signal: 'datum' };
+		return { signal: `merge(datum${nestedDatum ? '.datum' : ''}, {'prismComponentName': '${name}'})` };
 	}
 }
 
@@ -81,13 +83,12 @@ export const getBorderStrokeEncodings = (isStacked: boolean, isArea = false): Ar
 export const hasInteractiveChildren = (children: ReactElement[]): boolean => {
 	return children.some((child) => child.type === ChartTooltip || child.type === ChartPopover);
 };
+export const hasMetricRange = (children: ReactElement[]): boolean =>
+	children.some((child) => child.type === MetricRange);
 export const hasPopover = (children: ReactElement[]): boolean => children.some((child) => child.type === ChartPopover);
 export const hasTooltip = (children: ReactElement[]): boolean => children.some((child) => child.type === ChartTooltip);
 
-export const getColorProductionRule = (
-	color: ColorFacet | DualFacet,
-	colorScheme: ColorScheme
-): ColorValueRef => {
+export const getColorProductionRule = (color: ColorFacet | DualFacet, colorScheme: ColorScheme): ColorValueRef => {
 	if (Array.isArray(color)) {
 		return {
 			signal: `scale('colors', datum.${color[0]})[indexof(domain('secondaryColor'), datum.${color[1]})% length(scale('colors', datum.${color[0]}))]`,

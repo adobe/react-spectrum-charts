@@ -81,9 +81,9 @@ describe('Area', () => {
 		expect(within(tooltip).getByText('OS: Windows')).toBeInTheDocument();
 		expect(areas[1].getAttribute('fill-opacity')).toEqual('0.16');
 
-		const highlightRule = await findMarksByGroupName(prism, 'area0Rule', 'line');
+		const highlightRule = await findMarksByGroupName(prism, 'area0_rule', 'line');
 		expect(highlightRule).toBeInTheDocument();
-		const highlightPoint = await findMarksByGroupName(prism, 'area0Point');
+		const highlightPoint = await findMarksByGroupName(prism, 'area0_point');
 		expect(highlightPoint).toBeInTheDocument();
 
 		// unhover and validate the highlights go away

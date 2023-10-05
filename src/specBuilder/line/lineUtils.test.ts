@@ -10,7 +10,13 @@
  * governing permissions and limitations under the License.
  */
 
-import { DEFAULT_COLOR, DEFAULT_COLOR_SCHEME, DEFAULT_CONTINUOUS_DIMENSION, DEFAULT_METRIC, TABLE } from '@constants';
+import {
+	DEFAULT_COLOR,
+	DEFAULT_COLOR_SCHEME,
+	DEFAULT_CONTINUOUS_DIMENSION,
+	DEFAULT_METRIC,
+	FILTERED_TABLE,
+} from '@constants';
 import { FilterTransform } from 'vega';
 
 import { LineMarkProps, getLineHighlightedData, getLineHoverMarks, getLineMark, getXProductionRule } from './lineUtils';
@@ -29,11 +35,11 @@ const defaultLineProps: LineMarkProps = {
 
 describe('getLineMark()', () => {
 	test('should return line mark', () => {
-		const lineMark = getLineMark(defaultLineProps, 'line0Facet');
+		const lineMark = getLineMark(defaultLineProps, 'line0_facet');
 		expect(lineMark).toEqual({
 			name: 'line0',
 			type: 'line',
-			from: { data: 'line0Facet' },
+			from: { data: 'line0_facet' },
 			interactive: false,
 			encode: {
 				enter: {
@@ -48,8 +54,34 @@ describe('getLineMark()', () => {
 	});
 
 	test('should have undefined strokeWidth if lineWidth if undefined', () => {
-		const lineMark = getLineMark({ ...defaultLineProps, lineWidth: undefined }, 'line0Facet');
+		const lineMark = getLineMark({ ...defaultLineProps, lineWidth: undefined }, 'line0_facet');
 		expect(lineMark.encode?.enter?.strokeWidth).toBeUndefined();
+	});
+
+	test('adds metric range opacity rules if isMetricRange and displayOnHover', () => {
+		const lineMark = getLineMark({ ...defaultLineProps, isMetricRange: true, displayOnHover: true }, 'line0_facet');
+		expect(lineMark.encode?.update?.strokeOpacity).toEqual([
+			{
+				test: 'line0MetricRange_hoveredSeries && line0MetricRange_hoveredSeries === datum.series',
+				value: 1,
+			},
+			{
+				test: 'line0_selectedSeries && line0_selectedSeries === datum.series',
+				value: 1,
+			},
+			{ test: 'highlightedSeries && highlightedSeries === datum.prismSeriesId', value: 1 },
+			{ value: 0 },
+		]);
+	});
+
+	test('does not add metric range opacity rules if isMetricRange is false and displayOnHover', () => {
+		const lineMark = getLineMark({ ...defaultLineProps, displayOnHover: true }, 'line0_facet');
+		expect(lineMark.encode?.update?.strokeOpacity).toEqual([{ value: 1 }]);
+	});
+
+	test('does not add metric range opacity rules if displayOnHover is false and isMetricRange', () => {
+		const lineMark = getLineMark({ ...defaultLineProps, displayOnHover: true }, 'line0_facet');
+		expect(lineMark.encode?.update?.strokeOpacity).toEqual([{ value: 1 }]);
 	});
 });
 
@@ -63,17 +95,17 @@ describe('getXProductionRule()', () => {
 
 describe('getLineHoverMarks()', () => {
 	test('should return 4 marks', () => {
-		expect(getLineHoverMarks({ ...defaultLineProps, children: [] }, 'line0Facet')).toHaveLength(4);
+		expect(getLineHoverMarks({ ...defaultLineProps, children: [] }, 'line0_facet')).toHaveLength(5);
 	});
 });
 
 describe('getLineHighlightedData()', () => {
 	test('should include select signal if hasPopover', () => {
-		const expr = (getLineHighlightedData('line0', TABLE, true).transform?.[0] as FilterTransform).expr;
-		expect(expr.includes('line0SelectedId')).toBeTruthy();
+		const expr = (getLineHighlightedData('line0', FILTERED_TABLE, true).transform?.[0] as FilterTransform).expr;
+		expect(expr.includes('line0_selectedId')).toBeTruthy();
 	});
 	test('should not include select signal if does not hasPopover', () => {
-		const expr = (getLineHighlightedData('line0', TABLE, false).transform?.[0] as FilterTransform).expr;
-		expect(expr.includes('line0SelectedId')).toBeFalsy();
+		const expr = (getLineHighlightedData('line0', FILTERED_TABLE, false).transform?.[0] as FilterTransform).expr;
+		expect(expr.includes('line0_selectedId')).toBeFalsy();
 	});
 });

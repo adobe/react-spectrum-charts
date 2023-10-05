@@ -149,12 +149,8 @@ const dialogCallback = (datum: Datum, close?: () => void) => {
 			<Flex direction="column">
 				<Flex direction="row" justifyContent="space-between">
 					<div>
-						<div>
-							<>{datum.x}</>
-						</div>
-						<div>
-							<>{datum.series}</>
-						</div>
+						<div>{datum.x}</div>
+						<div>{datum.series}</div>
 						<div>{Math.abs(datum.y as number).toLocaleString()} users</div>
 					</div>
 					{close !== undefined && (
@@ -267,9 +263,11 @@ const ReleaseImpactStory: ComponentStory<typeof Prism> = (args): ReactElement =>
 			<Line color="series" dimension="day" metric="value" scaleType="linear" opacity={{ value: 0.4 }}>
 				<Trendline method="average" lineType="solid" dimensionRange={[null, -1]} highlightRawPoint>
 					<ChartTooltip>{dialog}</ChartTooltip>
+					<ChartPopover>{dialog}</ChartPopover>
 				</Trendline>
 				<Trendline method="average" lineType="solid" dimensionRange={[1, null]}>
 					<ChartTooltip>{dialog}</ChartTooltip>
+					<ChartPopover>{dialog}</ChartPopover>
 				</Trendline>
 			</Line>
 			<Legend highlight />

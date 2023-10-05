@@ -14,7 +14,7 @@ import { getTrellisProperties, getTrellisGroupMark, getTrellisedEncodeEntries, i
 import { defaultBarProps } from './barTestUtils';
 import { BarSpecProps } from 'types';
 import { Scale } from 'vega';
-import { TABLE } from '@constants';
+import { FILTERED_TABLE, TABLE } from '@constants';
 
 const defaultTrellisProps: BarSpecProps = { ...defaultBarProps, trellis: 'trellisProperty' };
 const defaultRepeatedScale: Scale = { name: 'xLinear', type: 'linear', domain: { data: TABLE, field: 'x' } };
@@ -25,8 +25,8 @@ describe('trellisedBarUtils', () => {
 			const result = getTrellisGroupMark(defaultTrellisProps, [], defaultRepeatedScale);
 			const from = result.from as { facet: { groupby: string; name: string; data: string } };
 
-			expect(from?.facet?.data).toEqual('table');
-			expect(from?.facet?.name).toEqual('rect0Trellis');
+			expect(from?.facet?.data).toEqual(FILTERED_TABLE);
+			expect(from?.facet?.name).toEqual('bar0_trellis');
 			expect(from?.facet?.groupby).toEqual('trellisProperty');
 		});
 		describe('horizontal trellis', () => {
@@ -108,7 +108,7 @@ describe('trellisedBarUtils', () => {
 			});
 
 			expect(result).toEqual({
-				facetName: `${defaultTrellisProps.name}Trellis`,
+				facetName: `${defaultTrellisProps.name}_trellis`,
 				markName: 'yTrellisGroup',
 				scaleName: 'yTrellisBand',
 				rangeScale: 'height',
@@ -124,7 +124,7 @@ describe('trellisedBarUtils', () => {
 			});
 
 			expect(result).toEqual({
-				facetName: `${defaultTrellisProps.name}Trellis`,
+				facetName: `${defaultTrellisProps.name}_trellis`,
 				markName: 'xTrellisGroup',
 				scaleName: 'xTrellisBand',
 				rangeScale: 'width',
@@ -171,8 +171,11 @@ describe('trellisedBarUtils', () => {
 				});
 
 				expect(result).toEqual({
-					x: { scale: `${defaultTrellisProps.name}Position`, field: `${defaultTrellisProps.name}DodgeGroup` },
-					width: { scale: `${defaultTrellisProps.name}Position`, band: 1 },
+					x: {
+						scale: `${defaultTrellisProps.name}_position`,
+						field: `${defaultTrellisProps.name}_dodgeGroup`,
+					},
+					width: { scale: `${defaultTrellisProps.name}_position`, band: 1 },
 				});
 			});
 
@@ -184,8 +187,11 @@ describe('trellisedBarUtils', () => {
 				});
 
 				expect(result).toEqual({
-					y: { scale: `${defaultTrellisProps.name}Position`, field: `${defaultTrellisProps.name}DodgeGroup` },
-					height: { scale: `${defaultTrellisProps.name}Position`, band: 1 },
+					y: {
+						scale: `${defaultTrellisProps.name}_position`,
+						field: `${defaultTrellisProps.name}_dodgeGroup`,
+					},
+					height: { scale: `${defaultTrellisProps.name}_position`, band: 1 },
 				});
 			});
 		});
@@ -200,8 +206,11 @@ describe('trellisedBarUtils', () => {
 				});
 
 				expect(result).toEqual({
-					x: { scale: `${defaultTrellisProps.name}Position`, field: `${defaultTrellisProps.name}DodgeGroup` },
-					width: { scale: `${defaultTrellisProps.name}Position`, band: 1 },
+					x: {
+						scale: `${defaultTrellisProps.name}_position`,
+						field: `${defaultTrellisProps.name}_dodgeGroup`,
+					},
+					width: { scale: `${defaultTrellisProps.name}_position`, band: 1 },
 				});
 			});
 
@@ -214,8 +223,11 @@ describe('trellisedBarUtils', () => {
 				});
 
 				expect(result).toEqual({
-					y: { scale: `${defaultTrellisProps.name}Position`, field: `${defaultTrellisProps.name}DodgeGroup` },
-					height: { scale: `${defaultTrellisProps.name}Position`, band: 1 },
+					y: {
+						scale: `${defaultTrellisProps.name}_position`,
+						field: `${defaultTrellisProps.name}_dodgeGroup`,
+					},
+					height: { scale: `${defaultTrellisProps.name}_position`, band: 1 },
 				});
 			});
 		});

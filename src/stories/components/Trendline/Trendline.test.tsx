@@ -12,7 +12,7 @@
 
 import '@matchMediaMock';
 import { Trendline } from '@prism';
-import { findAllMarksByGroupName, findPrism, render, screen } from '@test-utils';
+import { findAllMarksByGroupName, findPrism, render } from '@test-utils';
 import React from 'react';
 
 import { Basic } from './Trendline.story';

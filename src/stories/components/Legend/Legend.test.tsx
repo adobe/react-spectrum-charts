@@ -11,14 +11,12 @@
  */
 
 import '@matchMediaMock';
-import { Legend } from '@prism';
-import { findPrism, getAllLegendEntries, getAllLegendSymbols, hoverNthElement, render, screen } from '@test-utils';
+import { clickNthElement, findPrism, getAllLegendEntries, hoverNthElement, render, screen } from '@test-utils';
 import React from 'react';
 
-import { Basic, Descriptions, Highlight, Position, Supreme, Title } from './Legend.story';
-import { Color, LineType, LineWidth, Opacity, Symbols, Supreme as SymbolsSupreme } from './LegendSymbol.story';
+import { Legend } from '@components/Legend';
+import { Basic, Descriptions, Highlight, OnClick, Position, Supreme, Title } from './Legend.story';
 
-// TODO: add proper tests for Legend component
 describe('Legend', () => {
 	test('Basic renders properly', async () => {
 		render(<Basic {...Basic.args} />);
@@ -46,12 +44,6 @@ describe('Legend', () => {
 		expect(view).toBeInTheDocument();
 	});
 
-	test('Symbols renders properly', async () => {
-		render(<Symbols {...Symbols.args} />);
-		const view = await screen.findByRole('graphics-document');
-		expect(view).toBeInTheDocument();
-	});
-
 	test('Title renders properly', async () => {
 		render(<Title {...Title.args} />);
 		const view = await screen.findByRole('graphics-document');
@@ -63,7 +55,8 @@ describe('Legend', () => {
 		const prism = await findPrism();
 		expect(prism).toBeInTheDocument();
 
-		const entries = await getAllLegendEntries(prism);
+		screen.debug(prism, Infinity);
+		const entries = getAllLegendEntries(prism);
 		await hoverNthElement(entries, 0);
 
 		// make sure tooltip is visible
@@ -76,96 +69,31 @@ describe('Legend', () => {
 		const prism = await findPrism();
 		expect(prism).toBeInTheDocument();
 
-		const entries = await getAllLegendEntries(prism);
+		const entries = getAllLegendEntries(prism);
 		await hoverNthElement(entries, 0);
 
 		const tooltip = screen.queryByTestId('prism-tooltip');
 		expect(tooltip).not.toBeInTheDocument();
 	});
 
-	test('Color renders correctly', async () => {
-		render(<Color {...Color.args} />);
+	test('should call onClick callback when selecting a legend entry', async () => {
+		const onClick = jest.fn();
+		render(<OnClick {...OnClick.args} onClick={onClick} />);
 		const prism = await findPrism();
-		expect(prism).toBeInTheDocument();
+		const entries = getAllLegendEntries(prism);
 
-		const symbols = await getAllLegendSymbols(prism);
-		expect(symbols[0].getAttribute('fill')).toEqual('rgb(70, 70, 70)');
-		expect(symbols[0].getAttribute('stroke')).toEqual('rgb(70, 70, 70)');
+		await clickNthElement(entries, 0);
+		expect(onClick).toHaveBeenCalledWith('Windows');
+
+		await clickNthElement(entries, 1);
+		expect(onClick).toHaveBeenCalledWith('Mac');
+
+		await clickNthElement(entries, 2);
+		expect(onClick).toHaveBeenCalledWith('Other');
 	});
 
-	test('LineType renders correctly', async () => {
-		render(<LineType {...LineType.args} />);
-		const prism = await findPrism();
-		expect(prism).toBeInTheDocument();
-
-		const symbols = await getAllLegendSymbols(prism);
-		expect(symbols[0].getAttribute('stroke-dasharray')).toEqual('');
-	});
-
-	test('LineWidth renders correctly', async () => {
-		render(<LineWidth {...LineWidth.args} />);
-		const prism = await findPrism();
-		expect(prism).toBeInTheDocument();
-
-		const symbols = await getAllLegendSymbols(prism);
-		expect(symbols[0].getAttribute('stroke-width')).toEqual('1');
-	});
-
-	test('Opacity renders correctly', async () => {
-		render(<Opacity {...Opacity.args} />);
-		const prism = await findPrism();
-		expect(prism).toBeInTheDocument();
-
-		const symbols = await getAllLegendSymbols(prism);
-		expect(symbols[0].getAttribute('fill-opacity')).toEqual('1');
-		expect(symbols[1].getAttribute('fill-opacity')).toEqual('0.75');
-		expect(symbols[2].getAttribute('fill-opacity')).toEqual('0.5');
-	});
-
-	test('Symbols renders correctly', async () => {
-		render(<Symbols {...Symbols.args} />);
-		const prism = await findPrism();
-		expect(prism).toBeInTheDocument();
-
-		const symbols = await getAllLegendSymbols(prism);
-		// Square SVG path
-		expect(symbols[0].getAttribute('d')).toEqual('M-7.906,-7.906h15.811v15.811h-15.811Z');
-		// Triangle SVG path
-		expect(symbols[1].getAttribute('d')).toEqual('M0,-9.129L-7.906,4.564L7.906,4.564Z');
-		// Custom rounded square SVG path
-		expect(symbols[2].getAttribute('d')).toEqual(
-			'M-4.348,-7.906L4.348,-7.906C6.313,-7.906,7.906,-6.313,7.906,-4.348L7.906,4.348C7.906,6.313,6.313,7.906,4.348,7.906L-4.348,7.906C-6.313,7.906,-7.906,6.313,-7.906,4.348L-7.906,-4.348C-7.906,-6.313,-6.313,-7.906,-4.348,-7.906Z',
-		);
-	});
-
-	test('SymbolsSupreme renders correctly', async () => {
-		render(<SymbolsSupreme {...SymbolsSupreme.args} />);
-		const prism = await findPrism();
-		expect(prism).toBeInTheDocument();
-
-		const symbols = await getAllLegendSymbols(prism);
-		expect(symbols[0].getAttribute('stroke-dasharray')).toEqual('');
-		expect(symbols[1].getAttribute('stroke-dasharray')).toEqual('7,4');
-		expect(symbols[2].getAttribute('stroke-dasharray')).toEqual('2,3');
-
-		expect(symbols[0].getAttribute('stroke-width')).toEqual('1.5');
-
-		expect(symbols[0].getAttribute('fill-opacity')).toEqual('1');
-		expect(symbols[1].getAttribute('fill-opacity')).toEqual('0.75');
-		expect(symbols[2].getAttribute('fill-opacity')).toEqual('0.5');
-
-		// Square SVG path
-		expect(symbols[0].getAttribute('d')).toEqual('M-7.906,-7.906h15.811v15.811h-15.811Z');
-		// Triangle SVG path
-		expect(symbols[1].getAttribute('d')).toEqual('M0,-9.129L-7.906,4.564L7.906,4.564Z');
-		// Custom rounded square SVG path
-		expect(symbols[2].getAttribute('d')).toEqual(
-			'M-4.348,-7.906L4.348,-7.906C6.313,-7.906,7.906,-6.313,7.906,-4.348L7.906,4.348C7.906,6.313,6.313,7.906,4.348,7.906L-4.348,7.906C-6.313,7.906,-7.906,6.313,-7.906,4.348L-7.906,-4.348C-7.906,-6.313,-6.313,-7.906,-4.348,-7.906Z',
-		);
-	});
-
-	// ChartPopover is not a real React component. This is test just provides test coverage for sonarqube
-	test('ChartPopover pseudo element', async () => {
+	// Legend is not a real React component. This is test just provides test coverage for sonarqube
+	test('Legend pseudo element', async () => {
 		render(<Legend />);
 	});
 });

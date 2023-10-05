@@ -16,8 +16,8 @@ import {
 	ANNOTATION_FONT_WEIGHT,
 	CORNER_RADIUS,
 	DISCRETE_PADDING,
+	FILTERED_TABLE,
 	HIGHLIGHT_CONTRAST_RATIO,
-	TABLE,
 } from '@constants';
 import {
 	getColorProductionRule,
@@ -59,12 +59,12 @@ export const getDodgedGroupMark = (props: BarSpecProps): GroupMark => {
 	const { dimensionScaleKey, dimensionAxis, rangeScale } = getOrientationProperties(props);
 
 	return {
-		name: `${name}Group`,
+		name: `${name}_group`,
 		type: 'group',
 		from: {
 			facet: {
-				data: isTrellised(props) ? getTrellisProperties(props).facetName : TABLE,
-				name: `${name}Facet`,
+				data: isTrellised(props) ? getTrellisProperties(props).facetName : FILTERED_TABLE,
+				name: `${name}_facet`,
 				groupby: dimension,
 			},
 		},
@@ -79,12 +79,12 @@ export const getDodgedGroupMark = (props: BarSpecProps): GroupMark => {
 		signals: [{ name: rangeScale, update: `bandwidth("${dimensionScaleKey}")` }],
 		scales: [
 			{
-				name: `${name}Position`,
+				name: `${name}_position`,
 				type: 'band',
 				range: rangeScale,
-				// want to reference the TABLE and not the facet table because we want the bar widths and positioning to be consistent across facets
+				// want to reference the FILTERED_TABLE and not the facet table because we want the bar widths and positioning to be consistent across facets
 				// if we don't do this, the bar widths could be different for the different groups if one of the groups is missing a value
-				domain: { data: TABLE, field: `${name}DodgeGroup` },
+				domain: { data: FILTERED_TABLE, field: `${name}_dodgeGroup` },
 				paddingInner: groupedPadding ?? paddingRatio,
 			},
 		],
@@ -94,8 +94,8 @@ export const getDodgedGroupMark = (props: BarSpecProps): GroupMark => {
 export const getDodgedDimensionEncodings = (props: BarSpecProps): RectEncodeEntry => {
 	const { dimensionAxis, rangeScale } = getOrientationProperties(props);
 
-	const scale = `${props.name}Position`;
-	const field = `${props.name}DodgeGroup`;
+	const scale = `${props.name}_position`;
+	const field = `${props.name}_dodgeGroup`;
 
 	return {
 		[dimensionAxis]: { scale, field },
@@ -194,8 +194,8 @@ export const getCornerRadiusEncodings = (props: BarSpecProps): RectEncodeEntry =
 };
 
 export const getStackedCornerRadiusEncodings = ({ name, metric, lineWidth }: BarSpecProps): RectEncodeEntry => {
-	const topTestString = `datum.${metric}1 > 0 && data('${name}Stacks')[indexof(pluck(data('${name}Stacks'), 'prismStackId'), datum.prismStackId)].max_${metric}1 === datum.${metric}1`;
-	const bottomTestString = `datum.${metric}1 < 0 && data('${name}Stacks')[indexof(pluck(data('${name}Stacks'), 'prismStackId'), datum.prismStackId)].min_${metric}1 === datum.${metric}1`;
+	const topTestString = `datum.${metric}1 > 0 && data('${name}_stacks')[indexof(pluck(data('${name}_stacks'), 'prismStackId'), datum.prismStackId)].max_${metric}1 === datum.${metric}1`;
+	const bottomTestString = `datum.${metric}1 < 0 && data('${name}_stacks')[indexof(pluck(data('${name}_stacks'), 'prismStackId'), datum.prismStackId)].min_${metric}1 === datum.${metric}1`;
 	const value = Math.max(1, CORNER_RADIUS - getLineWidthPixelsFromLineWidth(lineWidth) / 2);
 
 	return {
@@ -297,7 +297,7 @@ export const getAnnotationMarks = (
 		const annotationPosition = getAnnotationMetricAxisPosition(barProps, annotationWidth);
 
 		marks.push({
-			name: `${name}AnnotationBackground`,
+			name: `${name}_annotationBackground`,
 			type: 'rect',
 			from: { data: localDataTableName },
 			interactive: false,
@@ -320,7 +320,7 @@ export const getAnnotationMarks = (
 			},
 		});
 		marks.push({
-			name: `${name}AnnotationText`,
+			name: `${name}_annotationText`,
 			type: 'text',
 			from: { data: localDataTableName },
 			interactive: false,
@@ -349,9 +349,9 @@ export const getBaseBarEnterEncodings = (props: BarSpecProps): EncodeEntry => ({
 	...getCornerRadiusEncodings(props),
 });
 
-export const getBarEnterEncodings = ({ children, color, colorScheme }: BarSpecProps): EncodeEntry => ({
+export const getBarEnterEncodings = ({ children, color, colorScheme, name }: BarSpecProps): EncodeEntry => ({
 	fill: getColorProductionRule(color, colorScheme),
-	tooltip: getTooltip(children),
+	tooltip: getTooltip(children, name),
 });
 
 export const getBarUpdateEncodings = (props: BarSpecProps): EncodeEntry => ({
@@ -374,9 +374,9 @@ export const getFillStrokeOpacity = (
 	}
 
 	// if a bar is hovered/selected, all other bars should be half opacity
-	const hoverSignal = `${name}HoveredId`;
+	const hoverSignal = `${name}_hoveredId`;
 	if (hasPopover(children)) {
-		const selectSignal = `${name}SelectedId`;
+		const selectSignal = `${name}_selectedId`;
 
 		// if this is for a stroke opacity, we want the value to be 1 when selected regardless of the opacity value
 		const selectedMarkRule = isStrokeOpacity ? { value: 1 } : defaultProductionRule;
@@ -408,7 +408,7 @@ export const getStroke = ({ children, color, colorScheme, name }: BarSpecProps):
 		return [defaultProductionRule];
 	}
 
-	const selectSignal = `${name}SelectedId`;
+	const selectSignal = `${name}_selectedId`;
 	return [
 		{
 			test: `${selectSignal} && ${selectSignal} === datum.prismMarkId`,
@@ -424,7 +424,7 @@ export const getStrokeDash = ({ children, lineType, name }: BarSpecProps): Produ
 		return [defaultProductionRule];
 	}
 
-	const selectSignal = `${name}SelectedId`;
+	const selectSignal = `${name}_selectedId`;
 	return [{ test: `${selectSignal} && ${selectSignal} === datum.prismMarkId`, value: [] }, defaultProductionRule];
 };
 
@@ -435,7 +435,7 @@ export const getStrokeWidth = ({ children, lineWidth, name }: BarSpecProps): Pro
 		return [defaultProductionRule];
 	}
 
-	const selectSignal = `${name}SelectedId`;
+	const selectSignal = `${name}_selectedId`;
 	return [
 		{ test: `${selectSignal} && ${selectSignal} === datum.prismMarkId`, value: Math.max(lineWidthValue, 2) },
 		defaultProductionRule,

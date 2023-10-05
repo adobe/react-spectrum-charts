@@ -9,7 +9,6 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
 import { RefObject, useLayoutEffect, useState } from 'react';
 
 export default function useElementSize(ref: RefObject<HTMLElement>) {
@@ -24,7 +23,7 @@ export default function useElementSize(ref: RefObject<HTMLElement>) {
 		handleResize();
 		window.addEventListener('resize', handleResize);
 		return () => window.removeEventListener('resize', handleResize);
-	}, []);
+	}, [ref.current]);
 
 	return [width, height];
 }

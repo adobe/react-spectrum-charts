@@ -22,7 +22,7 @@ export const useDebugSpec = (
 	chartData: unknown[],
 	chartWidth: number,
 	height: number,
-	prismConfig: Config
+	prismConfig: Config,
 ): void => {
 	useEffect(() => {
 		if (debug) {

@@ -28,7 +28,7 @@ describe('AxisReferenceLine', () => {
 		const prism = await findPrism();
 		expect(prism).toBeInTheDocument();
 
-		const axisReferenceLine = await findMarksByGroupName(prism, 'axis0XReferenceLineRule0', 'line');
+		const axisReferenceLine = await findMarksByGroupName(prism, 'axis0_xReferenceLineRule0', 'line');
 		expect(axisReferenceLine).toBeInTheDocument();
 	});
 
@@ -38,7 +38,7 @@ describe('AxisReferenceLine', () => {
 		const prism = await findPrism();
 		expect(prism).toBeInTheDocument();
 
-		const axisReferenceLineIcon = await findMarksByGroupName(prism, 'axis0XReferenceLineSymbol0');
+		const axisReferenceLineIcon = await findMarksByGroupName(prism, 'axis0_xReferenceLineSymbol0');
 		expect(axisReferenceLineIcon).toBeInTheDocument();
 	});
 });

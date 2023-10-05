@@ -40,17 +40,22 @@ export default function useSpec({
 		}
 
 		// or we need to build their spec
-		return buildSpec({
-			children,
-			colors,
-			colorScheme,
-			description,
-			lineTypes,
-			lineWidths,
-			opacities,
-			symbolShapes,
-			title,
-		});
+		// stringify-parse so that all immer stuff gets cleared out
+		return JSON.parse(
+			JSON.stringify(
+				buildSpec({
+					children,
+					colors,
+					colorScheme,
+					description,
+					lineTypes,
+					lineWidths,
+					opacities,
+					symbolShapes,
+					title,
+				}),
+			),
+		);
 	}, [
 		children,
 		colors,

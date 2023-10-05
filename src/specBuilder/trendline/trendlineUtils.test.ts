@@ -9,12 +9,20 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { createElement } from 'react';
 
 import { Annotation } from '@components/Annotation';
+import { ChartPopover } from '@components/ChartPopover';
 import { ChartTooltip } from '@components/ChartTooltip';
 import { Trendline } from '@components/Trendline';
-import { DEFAULT_COLOR, DEFAULT_COLOR_SCHEME, DEFAULT_CONTINUOUS_DIMENSION, DEFAULT_METRIC, TABLE } from '@constants';
-import { createElement } from 'react';
+import {
+	DEFAULT_COLOR,
+	DEFAULT_COLOR_SCHEME,
+	DEFAULT_CONTINUOUS_DIMENSION,
+	DEFAULT_METRIC,
+	FILTERED_TABLE,
+	TABLE,
+} from '@constants';
 import { LineSpecProps } from 'types';
 
 import {
@@ -25,18 +33,18 @@ import {
 	getTrendlineSignals,
 	getTrendlines,
 } from './trendlineUtils';
-import { ChartPopover } from '@components/ChartPopover';
 
 const defaultLineProps: LineSpecProps = {
 	children: [createElement(Trendline, { method: 'average' })],
-	name: 'line0',
-	dimension: DEFAULT_CONTINUOUS_DIMENSION,
-	metric: DEFAULT_METRIC,
 	color: DEFAULT_COLOR,
-	scaleType: 'time',
-	lineType: { value: 'solid' },
-	opacity: { value: 1 },
 	colorScheme: DEFAULT_COLOR_SCHEME,
+	dimension: DEFAULT_CONTINUOUS_DIMENSION,
+	index: 0,
+	lineType: { value: 'solid' },
+	metric: DEFAULT_METRIC,
+	name: 'line0',
+	opacity: { value: 1 },
+	scaleType: 'time',
 };
 
 describe('getTrendlines()', () => {
@@ -100,11 +108,12 @@ describe('getTrendlineMarks()', () => {
 		expect(marks).toHaveLength(2);
 		expect(marks[1]).toHaveProperty('type', 'group');
 		// line mark
-		expect(marks[1].marks).toHaveLength(4);
+		expect(marks[1].marks).toHaveLength(5);
 		expect(marks[1].marks?.[0]).toHaveProperty('type', 'rule');
 		expect(marks[1].marks?.[1]).toHaveProperty('type', 'symbol');
 		expect(marks[1].marks?.[2]).toHaveProperty('type', 'symbol');
-		expect(marks[1].marks?.[3]).toHaveProperty('type', 'path');
+		expect(marks[1].marks?.[3]).toHaveProperty('type', 'symbol'); // highlight point background
+		expect(marks[1].marks?.[4]).toHaveProperty('type', 'path');
 	});
 });
 
@@ -113,8 +122,8 @@ describe('getTrendlineData()', () => {
 		const trendlineData = getTrendlineData(defaultLineProps);
 		expect(trendlineData).toStrictEqual([
 			{
-				name: 'line0Trendline0Data',
-				source: TABLE,
+				name: 'line0Trendline0_data',
+				source: FILTERED_TABLE,
 				transform: [
 					{
 						as: ['prismTrendlineValue'],
@@ -134,8 +143,8 @@ describe('getTrendlineData()', () => {
 			children: [createElement(Trendline, { children: createElement(ChartTooltip) })],
 		});
 		expect(trendlineData).toHaveLength(3);
-		expect(trendlineData[1]).toHaveProperty('name', 'line0AllTrendlineData');
-		expect(trendlineData[2]).toHaveProperty('name', 'line0TrendlineHighlightedData');
+		expect(trendlineData[1]).toHaveProperty('name', 'line0_allTrendlineData');
+		expect(trendlineData[2]).toHaveProperty('name', 'line0Trendline_highlightedData');
 	});
 });
 
@@ -160,7 +169,7 @@ describe('getTrendlineSignals()', () => {
 			children: [createElement(Trendline, { children: createElement(ChartTooltip) })],
 		});
 		expect(signals).toHaveLength(1);
-		expect(signals[0]).toHaveProperty('name', 'line0TrendlineVoronoiHoveredId');
+		expect(signals[0]).toHaveProperty('name', 'line0Trendline_voronoiHoveredId');
 	});
 
 	test('should not return any signals if there is not a ChartTooltip', () => {
@@ -177,7 +186,7 @@ describe('getTrendlineSignals()', () => {
 			],
 		});
 		expect(signals).toHaveLength(2);
-		expect(signals[1]).toHaveProperty('name', 'line0TrendlineSelectedId');
+		expect(signals[1]).toHaveProperty('name', 'line0Trendline_selectedId');
 	});
 
 	test('should not return selected signal if there is not a ChartPopover', () => {
@@ -186,6 +195,6 @@ describe('getTrendlineSignals()', () => {
 			children: [createElement(Trendline, { children: createElement(ChartTooltip) })],
 		});
 		expect(signals).toHaveLength(1);
-		expect(signals[0].name).not.toContain('Selected');
+		expect(signals[0].name).not.toContain('selected');
 	});
 });

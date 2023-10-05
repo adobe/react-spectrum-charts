@@ -11,7 +11,7 @@
  */
 
 import { Annotation } from '@components/Annotation';
-import { DEFAULT_CATEGORICAL_DIMENSION, DEFAULT_COLOR, DEFAULT_SECONDARY_COLOR } from '@constants';
+import { DEFAULT_CATEGORICAL_DIMENSION, DEFAULT_COLOR, DEFAULT_SECONDARY_COLOR, FILTERED_TABLE } from '@constants';
 import { createElement } from 'react';
 import { GroupMark, Mark, RectEncodeEntry } from 'vega';
 
@@ -37,9 +37,9 @@ const defaultBackgroundMark: Mark = {
 		},
 		update: defaultStackedBarXEncondings,
 	},
-	from: { data: 'table' },
+	from: { data: FILTERED_TABLE },
 	interactive: false,
-	name: 'rect0Background',
+	name: 'bar0_background',
 	type: 'rect',
 };
 
@@ -58,9 +58,9 @@ const defaultMark = {
 			...defaultBarStrokeEncodings,
 		},
 	},
-	from: { data: 'table' },
+	from: { data: FILTERED_TABLE },
 	interactive: false,
-	name: 'rect0',
+	name: 'bar0',
 	type: 'rect',
 };
 
@@ -84,12 +84,12 @@ describe('stackedBarUtils', () => {
 		test('should return mark with dodged and stacked marks', () => {
 			const mark = getDodgedAndStackedBarMark(defaultBarProps) as GroupMark;
 
-			expect(mark.name).toEqual('rect0Group');
-			expect(mark.scales?.[0].name).toEqual('rect0Position');
+			expect(mark.name).toEqual('bar0_group');
+			expect(mark.scales?.[0].name).toEqual('bar0_position');
 
 			expect(mark.marks).toHaveLength(2);
-			expect(mark.marks?.[0].name).toEqual('rect0Background');
-			expect(mark.marks?.[1].name).toEqual('rect0');
+			expect(mark.marks?.[0].name).toEqual('bar0_background');
+			expect(mark.marks?.[1].name).toEqual('bar0');
 		});
 
 		test('should return mark with dodged and stacked marks, with annotation', () => {
@@ -98,23 +98,23 @@ describe('stackedBarUtils', () => {
 				children: [...defaultBarProps.children, createElement(Annotation, { textKey: 'textLabel' })],
 			}) as GroupMark;
 
-			expect(mark.name).toEqual('rect0Group');
-			expect(mark.scales?.[0].name).toEqual('rect0Position');
+			expect(mark.name).toEqual('bar0_group');
+			expect(mark.scales?.[0].name).toEqual('bar0_position');
 
 			expect(mark.marks).toHaveLength(4);
-			expect(mark.marks?.[0].name).toEqual('rect0Background');
-			expect(mark.marks?.[1].name).toEqual('rect0');
-			expect(mark.marks?.[2].name).toEqual('rect0AnnotationBackground');
-			expect(mark.marks?.[3].name).toEqual('rect0AnnotationText');
+			expect(mark.marks?.[0].name).toEqual('bar0_background');
+			expect(mark.marks?.[1].name).toEqual('bar0');
+			expect(mark.marks?.[2].name).toEqual('bar0_annotationBackground');
+			expect(mark.marks?.[3].name).toEqual('bar0_annotationText');
 
 			expect(mark.marks?.[2].encode?.enter?.xc).toEqual({
-				scale: 'rect0Position',
-				field: 'rect0DodgeGroup',
+				scale: 'bar0_position',
+				field: 'bar0_dodgeGroup',
 				band: 0.5,
 			});
 			expect(mark.marks?.[3].encode?.enter?.x).toEqual({
-				scale: 'rect0Position',
-				field: 'rect0DodgeGroup',
+				scale: 'bar0_position',
+				field: 'bar0_dodgeGroup',
 				band: 0.5,
 			});
 		});
@@ -126,23 +126,23 @@ describe('stackedBarUtils', () => {
 				children: [...defaultBarProps.children, createElement(Annotation, { textKey: 'textLabel' })],
 			}) as GroupMark;
 
-			expect(mark.name).toEqual('rect0Group');
-			expect(mark.scales?.[0].name).toEqual('rect0Position');
+			expect(mark.name).toEqual('bar0_group');
+			expect(mark.scales?.[0].name).toEqual('bar0_position');
 
 			expect(mark.marks).toHaveLength(4);
-			expect(mark.marks?.[0].name).toEqual('rect0Background');
-			expect(mark.marks?.[1].name).toEqual('rect0');
-			expect(mark.marks?.[2].name).toEqual('rect0AnnotationBackground');
-			expect(mark.marks?.[3].name).toEqual('rect0AnnotationText');
+			expect(mark.marks?.[0].name).toEqual('bar0_background');
+			expect(mark.marks?.[1].name).toEqual('bar0');
+			expect(mark.marks?.[2].name).toEqual('bar0_annotationBackground');
+			expect(mark.marks?.[3].name).toEqual('bar0_annotationText');
 
 			expect(mark.marks?.[2].encode?.enter?.yc).toEqual({
-				scale: 'rect0Position',
-				field: 'rect0DodgeGroup',
+				scale: 'bar0_position',
+				field: 'bar0_dodgeGroup',
 				band: 0.5,
 			});
 			expect(mark.marks?.[3].encode?.enter?.y).toEqual({
-				scale: 'rect0Position',
-				field: 'rect0DodgeGroup',
+				scale: 'bar0_position',
+				field: 'bar0_dodgeGroup',
 				band: 0.5,
 			});
 		});
@@ -160,8 +160,8 @@ describe('stackedBarUtils', () => {
 					color: [DEFAULT_COLOR, DEFAULT_SECONDARY_COLOR],
 				}),
 			).toStrictEqual({
-				width: { band: 1, scale: 'rect0Position' },
-				x: { field: 'rect0DodgeGroup', scale: 'rect0Position' },
+				width: { band: 1, scale: 'bar0_position' },
+				x: { field: 'bar0_dodgeGroup', scale: 'bar0_position' },
 			});
 		});
 	});

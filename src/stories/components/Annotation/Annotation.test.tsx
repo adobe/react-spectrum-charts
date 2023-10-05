@@ -12,7 +12,7 @@
 
 import '@matchMediaMock';
 import { findAllMarksByGroupName, findPrism } from '@prism';
-import { render, screen } from '@testing-library/react';
+import { render } from '@testing-library/react';
 import React from 'react';
 
 import { BarChart, FixedWidthBar } from './Annotation.story';
@@ -24,11 +24,11 @@ describe('Bar', () => {
 		expect(prism).toBeInTheDocument();
 
 		// get bars
-		const bars = await findAllMarksByGroupName(prism, 'rect0');
+		const bars = await findAllMarksByGroupName(prism, 'bar0');
 		expect(bars.length).toEqual(9);
 
 		// get text annotations
-		const labels = await findAllMarksByGroupName(prism, 'rect0AnnotationText', 'text');
+		const labels = await findAllMarksByGroupName(prism, 'bar0_annotationText', 'text');
 		expect(labels.length).toEqual(9);
 	});
 	test('Fixed Width Bar Chart renders properly', async () => {
@@ -37,16 +37,16 @@ describe('Bar', () => {
 		expect(prism).toBeInTheDocument();
 
 		// get bars
-		const bars = await findAllMarksByGroupName(prism, 'rect0');
+		const bars = await findAllMarksByGroupName(prism, 'bar0');
 		expect(bars.length).toEqual(9);
 
 		// get text annotations
-		const labels = await findAllMarksByGroupName(prism, 'rect0AnnotationText', 'text');
+		const labels = await findAllMarksByGroupName(prism, 'bar0_annotationText', 'text');
 		expect(labels.length).toEqual(9);
 
 		// backgrounds have width of 48px
 		labels.forEach(async (label) => {
-			const background = await findAllMarksByGroupName(label, 'rect0AnnotationBackground', 'rect');
+			const background = await findAllMarksByGroupName(label, 'bar0_annotationBackground', 'rect');
 			expect(background.length).toEqual(1);
 			expect(background[0].getAttribute('width')).toEqual('48');
 		});

@@ -23,8 +23,13 @@ export const hasSignalByName = (signals: Signal[], name: string) => {
  *  Returns the hover signal for points
  */
 export const getUncontrolledHoverSignal = (name: string, nestedDatum?: boolean): Signal => {
+	// if there is already an '_' in the name then add 'HoveredId'
+	// ex: 'line0_voroni' => 'line0_voroniHoveredId'
+	// if there is not an '_' in the name then add '_hoveredId'
+	// ex: 'bar0' => 'bar0_hoveredId'
+	const signalName = name.includes('_') ? `${name}HoveredId` : `${name}_hoveredId`;
 	return {
-		name: `${name}HoveredId`,
+		name: signalName,
 		value: null,
 		on: [
 			{ events: `@${name}:mouseover`, update: `${nestedDatum ? 'datum.' : ''}datum.prismMarkId` },
@@ -39,7 +44,7 @@ export const getUncontrolledHoverSignal = (name: string, nestedDatum?: boolean):
  */
 export const getControlledHoverSignal = (name: string): Signal => {
 	return {
-		name: `${name}ControlledHoveredId`,
+		name: `${name}_controlledHoveredId`,
 		value: null,
 		on: [{ events: `@${name}:mouseout`, update: 'null' }],
 	};
@@ -49,13 +54,13 @@ export const getControlledHoverSignal = (name: string): Signal => {
  *  Returns the hover signal for series
  *  Useful when you want to highlight the whole series on hover (area)
  */
-export const getSeriesHoveredSignal = (name: string, series: string): Signal => {
+export const getSeriesHoveredSignal = (name: string, series: string, eventName = name): Signal => {
 	return {
-		name: `${name}HoveredSeries`,
+		name: `${name}_hoveredSeries`,
 		value: null,
 		on: [
-			{ events: `@${name}:mouseover`, update: `datum.${series}` },
-			{ events: `@${name}:mouseout`, update: 'null' },
+			{ events: `@${eventName}:mouseover`, update: `datum.${series}` },
+			{ events: `@${eventName}:mouseout`, update: 'null' },
 		],
 	};
 };
@@ -63,13 +68,17 @@ export const getSeriesHoveredSignal = (name: string, series: string): Signal => 
 /**
  * Returns the highlighted series signal
  */
-export const getHighlightSeriesSignal = (): Signal => {
+export const getHighlightSeriesSignal = (name: string, includeHiddenSeries: boolean): Signal => {
+	const hoveredSeries = 'domain("legendEntries")[datum.index]';
+	const update = includeHiddenSeries
+		? `indexof(hiddenSeries, ${hoveredSeries}) === -1 ? ${hoveredSeries} : ""`
+		: hoveredSeries;
 	return {
 		name: 'highlightedSeries',
 		value: null,
 		on: [
-			{ events: '@legendEntry:mouseover', update: 'domain("legendEntries")[datum.index]' },
-			{ events: '@legendEntry:mouseout', update: '""' },
+			{ events: `@${name}_legendEntry:mouseover`, update },
+			{ events: `@${name}_legendEntry:mouseout`, update: '""' },
 		],
 	};
 };

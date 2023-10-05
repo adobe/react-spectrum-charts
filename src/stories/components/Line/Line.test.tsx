@@ -33,6 +33,8 @@ import {
 	Opacity,
 	Tooltip,
 	TrendScale,
+	WithPoints,
+	WithPointsAndTooltip,
 } from './Line.story';
 
 describe('Line', () => {
@@ -178,12 +180,120 @@ describe('Line', () => {
 		expect(prism).toBeInTheDocument();
 
 		// get voronoi paths
-		const paths = await findAllMarksByGroupName(prism, 'line0Voronoi');
+		const paths = await findAllMarksByGroupName(prism, 'line0_voronoi');
 
 		// hover and validate all hover components are visible
 		await hoverNthElement(paths, 0);
 		const tooltip = await screen.findByTestId('prism-tooltip');
 		expect(tooltip).toBeInTheDocument();
 		expect(within(tooltip).getByText('Nov 8')).toBeInTheDocument();
+	});
+
+	test('Static points render', async () => {
+		render(<WithPoints {...WithPoints.args} />);
+		const prism = await findPrism();
+		expect(prism).toBeInTheDocument();
+
+		const points = await findAllMarksByGroupName(prism, 'line0_points');
+		expect(points.length).toEqual(6);
+
+		expect(points[0].getAttribute('fill')).toEqual('rgb(15, 181, 174)');
+		expect(points[1].getAttribute('fill')).toEqual('rgb(15, 181, 174)');
+		expect(points[2].getAttribute('fill')).toEqual('rgb(15, 181, 174)');
+		expect(points[3].getAttribute('fill')).toEqual('rgb(64, 70, 202)');
+		expect(points[4].getAttribute('fill')).toEqual('rgb(64, 70, 202)');
+		expect(points[5].getAttribute('fill')).toEqual('rgb(64, 70, 202)');
+
+		expect(points[0].getAttribute('stroke')).toEqual('rgb(255, 255, 255)');
+		expect(points[1].getAttribute('stroke')).toEqual('rgb(255, 255, 255)');
+		expect(points[2].getAttribute('stroke')).toEqual('rgb(255, 255, 255)');
+		expect(points[3].getAttribute('stroke')).toEqual('rgb(255, 255, 255)');
+		expect(points[4].getAttribute('stroke')).toEqual('rgb(255, 255, 255)');
+		expect(points[5].getAttribute('stroke')).toEqual('rgb(255, 255, 255)');
+
+		expect(points[0].getAttribute('stroke-opacity')).toBeNull();
+		expect(points[1].getAttribute('stroke-opacity')).toBeNull();
+		expect(points[2].getAttribute('stroke-opacity')).toBeNull();
+		expect(points[3].getAttribute('stroke-opacity')).toBeNull();
+		expect(points[4].getAttribute('stroke-opacity')).toBeNull();
+		expect(points[5].getAttribute('stroke-opacity')).toBeNull();
+	});
+
+	describe('Static point highlighting when there are interactive children', () => {
+		test('Points show on hover', async () => {
+			render(<WithPointsAndTooltip {...WithPointsAndTooltip.args} />);
+			const prism = await findPrism();
+			expect(prism).toBeInTheDocument();
+
+			const paths = await findAllMarksByGroupName(prism, 'line0_voronoi');
+			// hover a place on the line without a static point
+			await hoverNthElement(paths, 0);
+
+			const backgroundPoints = await findAllMarksByGroupName(prism, 'line0_pointBackground');
+			expect(backgroundPoints.length).toBe(1);
+			expect(backgroundPoints[0].getAttribute('fill')).toEqual('rgb(255, 255, 255)');
+			expect(backgroundPoints[0].getAttribute('stroke')).toEqual('rgb(255, 255, 255)');
+			expect(backgroundPoints[0]).toHaveAttribute('stroke-width', '2');
+			expect(backgroundPoints[0]).not.toHaveAttribute('fill-opacity');
+			expect(backgroundPoints[0]).not.toHaveAttribute('stroke-opacity');
+
+			const hoverPoints = await findAllMarksByGroupName(prism, 'line0_point');
+			expect(hoverPoints.length).toBe(1);
+			expect(hoverPoints[0].getAttribute('fill')).toEqual('rgb(255, 255, 255)');
+			expect(hoverPoints[0].getAttribute('stroke')).toEqual('rgb(15, 181, 174)');
+			expect(hoverPoints[0]).toHaveAttribute('stroke-width', '2');
+			expect(hoverPoints[0]).not.toHaveAttribute('stroke-opacity');
+			expect(hoverPoints[0]).not.toHaveAttribute('fill-opacity');
+		});
+
+		test('Static point hovering', async () => {
+			render(<WithPointsAndTooltip {...WithPointsAndTooltip.args} />);
+			const prism = await findPrism();
+			expect(prism).toBeInTheDocument();
+
+			const points = await findAllMarksByGroupName(prism, 'line0_points');
+			expect(points.length).toEqual(6);
+
+			expect(points[0].getAttribute('fill')).toEqual('rgb(15, 181, 174)');
+			expect(points[1].getAttribute('fill')).toEqual('rgb(15, 181, 174)');
+			expect(points[2].getAttribute('fill')).toEqual('rgb(15, 181, 174)');
+			expect(points[3].getAttribute('fill')).toEqual('rgb(64, 70, 202)');
+			expect(points[4].getAttribute('fill')).toEqual('rgb(64, 70, 202)');
+			expect(points[5].getAttribute('fill')).toEqual('rgb(64, 70, 202)');
+
+			expect(points[0].getAttribute('stroke')).toEqual('rgb(255, 255, 255)');
+			expect(points[1].getAttribute('stroke')).toEqual('rgb(255, 255, 255)');
+			expect(points[2].getAttribute('stroke')).toEqual('rgb(255, 255, 255)');
+			expect(points[3].getAttribute('stroke')).toEqual('rgb(255, 255, 255)');
+			expect(points[4].getAttribute('stroke')).toEqual('rgb(255, 255, 255)');
+			expect(points[5].getAttribute('stroke')).toEqual('rgb(255, 255, 255)');
+
+			expect(points[0].getAttribute('stroke-opacity')).toBeNull();
+			expect(points[1].getAttribute('stroke-opacity')).toBeNull();
+			expect(points[2].getAttribute('stroke-opacity')).toBeNull();
+			expect(points[3].getAttribute('stroke-opacity')).toBeNull();
+			expect(points[4].getAttribute('stroke-opacity')).toBeNull();
+			expect(points[5].getAttribute('stroke-opacity')).toBeNull();
+
+			const paths = await findAllMarksByGroupName(prism, 'line0_voronoi');
+			// hover a static point
+			await hoverNthElement(paths, 1);
+
+			const backgroundPoints = await findAllMarksByGroupName(prism, 'line0_pointBackground');
+			expect(backgroundPoints.length).toBe(1);
+			expect(backgroundPoints[0].getAttribute('fill')).toEqual('rgb(255, 255, 255)');
+			expect(backgroundPoints[0].getAttribute('stroke')).toEqual('rgb(255, 255, 255)');
+			expect(backgroundPoints[0]).toHaveAttribute('stroke-width', '6');
+			expect(backgroundPoints[0]).not.toHaveAttribute('fill-opacity');
+			expect(backgroundPoints[0]).not.toHaveAttribute('stroke-opacity');
+
+			const hoverPoints = await findAllMarksByGroupName(prism, 'line0_point');
+			expect(hoverPoints.length).toBe(1);
+			expect(hoverPoints[0].getAttribute('fill')).toEqual('rgb(15, 181, 174)');
+			expect(hoverPoints[0].getAttribute('stroke')).toEqual('rgb(15, 181, 174)');
+			expect(hoverPoints[0]).toHaveAttribute('stroke-width', '6');
+			expect(hoverPoints[0]).toHaveAttribute('stroke-opacity', '0.2');
+			expect(hoverPoints[0]).not.toHaveAttribute('fill-opacity');
+		});
 	});
 });

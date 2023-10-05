@@ -9,9 +9,8 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
 import { Trendline } from '@components/Trendline';
-import { TABLE } from '@constants';
+import { FILTERED_TABLE } from '@constants';
 import { getLineHoverMarks, getLineMark } from '@specBuilder/line/lineUtils';
 import { hasInteractiveChildren, hasPopover, hasTooltip } from '@specBuilder/marks/markUtils';
 import { getGenericSignal, getUncontrolledHoverSignal } from '@specBuilder/signal/signalSpecBuilder';
@@ -45,7 +44,7 @@ export const applyTrendlinePropDefaults = (
 		...props
 	}: TrendlineProps,
 	markName: string,
-	index: number,
+	index: number
 ): TrendlineSpecProps => ({
 	children: sanitizeTrendlineChildren(children),
 	dimensionRange,
@@ -68,12 +67,12 @@ export const getTrendlineMarks = (markProps: LineSpecProps): GroupMark[] => {
 	const trendlines = getTrendlines(children, name);
 	for (const trendlineProps of trendlines) {
 		marks.push({
-			name: `${trendlineProps.name}Group`,
+			name: `${trendlineProps.name}_group`,
 			type: 'group',
 			from: {
 				facet: {
-					name: `${trendlineProps.name}Facet`,
-					data: `${trendlineProps.name}Data`,
+					name: `${trendlineProps.name}_facet`,
+					data: `${trendlineProps.name}_data`,
 					groupby: facets,
 				},
 			},
@@ -85,8 +84,8 @@ export const getTrendlineMarks = (markProps: LineSpecProps): GroupMark[] => {
 		marks.push(
 			getTrendlineHoverMarks(
 				markProps,
-				trendlines.some((trendlineProps) => trendlineProps.highlightRawPoint),
-			),
+				trendlines.some((trendlineProps) => trendlineProps.highlightRawPoint)
+			)
 		);
 	}
 
@@ -105,12 +104,12 @@ const getTrendlineLineMark = (markProps: LineSpecProps, trendlineProps: Trendlin
 		opacity: { value: trendlineProps.opacity },
 		colorScheme: markProps.colorScheme,
 	};
-	return getLineMark(mergedTrendlineProps, `${trendlineProps.name}Facet`);
+	return getLineMark(mergedTrendlineProps, `${trendlineProps.name}_facet`);
 };
 
 const getTrendlineHoverMarks = (
 	{ children, color, colorScheme, dimension, metric, name, scaleType }: LineSpecProps,
-	highlightRawPoint: boolean,
+	highlightRawPoint: boolean
 ): GroupMark => {
 	const trendlines = getTrendlines(children, name);
 	const trendlineHoverProps = {
@@ -123,12 +122,12 @@ const getTrendlineHoverMarks = (
 		colorScheme,
 	};
 	return {
-		name: `${name}TrendlineHoverGroup`,
+		name: `${name}Trendline_hoverGroup`,
 		type: 'group',
 		marks: getLineHoverMarks(
 			trendlineHoverProps,
-			`${name}AllTrendlineData`,
-			highlightRawPoint ? metric : undefined,
+			`${name}_allTrendlineData`,
+			highlightRawPoint ? metric : undefined
 		),
 	};
 };
@@ -144,38 +143,38 @@ export const getTrendlineData = (markProps: BarSpecProps | LineSpecProps): Sourc
 	const trendlines = getTrendlines(children, markName);
 
 	const concatenatedTrendlineData: { name: string; source: string[] } = {
-		name: `${markName}AllTrendlineData`,
+		name: `${markName}_allTrendlineData`,
 		source: [],
 	};
 
 	for (const trendlineProps of trendlines) {
 		const { children: trendlineChildren, name, dimensionRange } = trendlineProps;
 		data.push({
-			name: `${name}Data`,
-			source: TABLE,
+			name: `${name}_data`,
+			source: FILTERED_TABLE,
 			transform: [
 				...getTrendlineDimensionRangeTransforms(dimension, dimensionRange),
 				...getTrendlineStatisticalTransforms(markProps, trendlineProps),
 			],
 		});
 		if (hasInteractiveChildren(trendlineChildren)) {
-			concatenatedTrendlineData.source.push(`${name}Data`);
+			concatenatedTrendlineData.source.push(`${name}_data`);
 		}
 	}
 
 	if (trendlines.some((trendline) => hasInteractiveChildren(trendline.children))) {
 		data.push(concatenatedTrendlineData);
 
-		const selectSignal = `${markName}TrendlineSelectedId`;
-		const hoverSignal = `${markName}TrendlineVoronoiHoveredId`;
+		const selectSignal = `${markName}Trendline_selectedId`;
+		const hoverSignal = `${markName}Trendline_voronoiHoveredId`;
 		const trendlineHasPopover = trendlines.some((trendline) => hasPopover(trendline.children));
 		const expr = trendlineHasPopover
 			? `${selectSignal} === datum.prismMarkId || !${selectSignal} && ${hoverSignal} === datum.prismMarkId`
 			: `${hoverSignal} === datum.prismMarkId`;
 
 		data.push({
-			name: `${markName}TrendlineHighlightedData`,
-			source: `${markName}AllTrendlineData`,
+			name: `${markName}Trendline_highlightedData`,
+			source: `${markName}_allTrendlineData`,
 			transform: [
 				{
 					type: 'filter',
@@ -196,7 +195,7 @@ export const getTrendlineData = (markProps: BarSpecProps | LineSpecProps): Sourc
  */
 export const getTrendlineDimensionRangeTransforms = (
 	dimension: string,
-	dimensionRange: [number | null, number | null],
+	dimensionRange: [number | null, number | null]
 ): FilterTransform[] => {
 	const filters: FilterTransform[] = [];
 	if (dimensionRange[0] !== null) {
@@ -222,7 +221,7 @@ export const getTrendlineDimensionRangeTransforms = (
  */
 export const getTrendlineStatisticalTransforms = (
 	{ color, lineType, metric }: BarSpecProps | LineSpecProps,
-	{ method }: TrendlineSpecProps,
+	{ method }: TrendlineSpecProps
 ): Transforms[] => {
 	const transforms: Transforms[] = [];
 	if (method === 'average') {
@@ -244,11 +243,11 @@ export const getTrendlineSignals = (markProps: BarSpecProps | LineSpecProps): Si
 	const trendlines = getTrendlines(children, markName);
 
 	if (trendlines.some((trendline) => hasTooltip(trendline.children))) {
-		signals.push(getUncontrolledHoverSignal(`${markName}TrendlineVoronoi`, true));
+		signals.push(getUncontrolledHoverSignal(`${markName}Trendline_voronoi`, true));
 	}
 
 	if (trendlines.some((trendline) => hasPopover(trendline.children))) {
-		signals.push(getGenericSignal(`${markName}TrendlineSelectedId`));
+		signals.push(getGenericSignal(`${markName}Trendline_selectedId`));
 	}
 
 	return signals;

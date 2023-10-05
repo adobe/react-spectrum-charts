@@ -16,6 +16,7 @@ import { browserData as data } from '@stories/data/data';
 import { ComponentStory } from '@storybook/react';
 import React, { ReactElement } from 'react';
 import { ROUNDED_SQUARE_PATH } from 'svgPaths';
+import { defaultProps } from './LegendStoryUtils';
 
 export default {
 	title: 'Prism/Legend/Symbols',
@@ -50,19 +51,19 @@ const LegendLineStory: ComponentStory<typeof Legend> = (args): ReactElement => {
 };
 
 const Color = LegendLineStory.bind({});
-Color.args = { color: { value: 'gray-700' }, opacity: { value: 0.25 } };
+Color.args = { color: { value: 'gray-700' }, opacity: { value: 0.25 }, ...defaultProps };
 
 const LineType = LegendLineStory.bind({});
-LineType.args = { lineType: { value: 'solid' }, opacity: { value: 0.25 } };
+LineType.args = { lineType: { value: 'solid' }, opacity: { value: 0.25 }, ...defaultProps };
 
 const LineWidth = LegendBarStory.bind({});
-LineWidth.args = { lineWidth: { value: 'XS' }, opacity: { value: 0.25 } };
+LineWidth.args = { lineWidth: { value: 'XS' }, opacity: { value: 0.25 }, ...defaultProps };
 
 const Opacity = LegendBarStory.bind({});
-Opacity.args = { opacity: 'series', lineWidth: { value: 0 }, highlight: true };
+Opacity.args = { opacity: 'series', lineWidth: { value: 0 }, highlight: true, ...defaultProps };
 
 const Symbols = LegendBarStory.bind({});
-Symbols.args = { symbolShape: 'series', opacity: { value: 0.25 } };
+Symbols.args = { symbolShape: 'series', opacity: { value: 0.25 }, ...defaultProps };
 
 const Supreme = LegendBarStory.bind({});
 Supreme.args = {
@@ -71,7 +72,7 @@ Supreme.args = {
 	lineWidth: { value: 'S' },
 	opacity: 'series',
 	symbolShape: 'series',
-	// highlight: true,
+	...defaultProps,
 };
 
-export { Color, LineType, LineWidth, Opacity, Symbols, Supreme };
+export { Color, LineType, LineWidth, Opacity, Supreme, Symbols };
