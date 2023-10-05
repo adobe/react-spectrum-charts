@@ -97,9 +97,13 @@ const SparkLineStory: ComponentStory<typeof Axis> = (args): ReactElement => {
 				<ChartTooltip>
 					{(item) => (
 						<>
-							<div>{item.stock}</div>
+							<div>
+								<>{item.stock}</>
+							</div>
 							<div style={{ fontWeight: 'bold', fontSize: 24 }}>${(item.price as number).toFixed(2)}</div>
-							<div>{item.date}</div>
+							<div>
+								<>{item.date}</>
+							</div>
 						</>
 					)}
 				</ChartTooltip>

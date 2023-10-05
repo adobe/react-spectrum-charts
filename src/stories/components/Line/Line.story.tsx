@@ -191,7 +191,9 @@ Tooltip.args = {
 			{(datum) => (
 				<div className="bar-tooltip">
 					<div>{dayjs(datum.datetime as number).format('MMM D')}</div>
-					<div>Event: {datum.series}</div>
+					<div>
+						Event: <>{datum.series}</>
+					</div>
 					<div>Users: {Number(datum.value).toLocaleString()}</div>
 				</div>
 			)}

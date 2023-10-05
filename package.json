@@ -1,35 +1,32 @@
 {
 	"name": "@adobe/react-spectrum-charts",
-	"version": "0.1.7",
+	"version": "0.0.0",
 	"description": "Declarative library for composing Spectrum visualizations in React.",
-	"type": "module",
-	"main": "./dist/cjs/app.module.js",
-	"module": "./dist/cjs/app.module.js",
-	"types": "./dist/@types/src/index.d.ts",
+	"browser": "./dist/index.js",
+	"main": "./dist/index.js",
+	"module": "./dist/index.js",
+	"types": "./dist/@types/index.d.ts",
 	"files": [
-		"dist/@types",
-		"dist/cjs",
-		"dist/app.module.js",
-		"dist/app.module.js.LICENSE.txt",
-		"dist/app.module.js.map",
-		"dist/index.html"
+		"/dist"
 	],
-	"repository": "git@github.com:adobe/react-spectrum-charts.git",
-	"author": "Marshall Peterson <mpeterson@adobe.com>",
-	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "git+ssh://git@github.com/adobe/react-spectrum-charts.git"
+	},
+	"author": "Marshall Peterson",
+	"license": "Apache-2.0",
 	"scripts": {
 		"build": "concurrently yarn:build:*",
-		"build:mfe": "webpack --mode=production --env prod=true --env target=mfe",
-		"build:cjs": "webpack --mode=production --env prod=true --env target=cjs",
-		"build:storybook": "build-storybook -o ./dist/storybook --quiet",
+		"build:library": "webpack --config webpack.config.js",
+		"build:storybook": "build-storybook -o ./dist-storybook --quiet",
 		"copyrights": "babel-node --presets @babel/env ./scripts/addHeaders.js",
 		"g": "plop component",
 		"generate": "plop component",
 		"lint": "eslint src --ext ts",
 		"prepack": "yarn build",
 		"pack-test": "rm -rf dist & npm pack",
-		"start": "webpack serve --port=9026 --env target=mfe",
-		"storybook": "start-storybook -p 6009",
+		"start": "yarn storybook",
+		"storybook": "export SET NODE_OPTIONS=--openssl-legacy-provider && start-storybook -p 6009",
 		"test": "cross-env BABEL_ENV=test jest",
 		"watch": "cross-env BABEL_ENV=test jest --watch",
 		"skulk": "yarn watch --silent"
@@ -63,15 +60,16 @@
 		"@typescript-eslint/parser": "^6.0.0",
 		"babel-jest": "^29.3.1",
 		"babel-loader": "^9.1.0",
+		"clean-webpack-plugin": "^4.0.0",
 		"concurrently": "^8.0.0",
 		"cross-env": "^7.0.3",
+		"css-loader": "^6.8.1",
 		"eslint": "^8.29.0",
 		"eslint-config-prettier": "^9.0.0",
 		"eslint-plugin-jsx-a11y": "^6.6.1",
 		"eslint-plugin-prettier": "^5.0.0",
 		"eslint-plugin-react-hooks": "^4.6.0",
 		"eslint-plugin-simple-import-sort": "^10.0.0",
-		"html-webpack-plugin": "^5.5.0",
 		"identity-obj-proxy": "^3.0.0",
 		"jest": "^29.3.1",
 		"jest-canvas-mock": "^2.5.1",
@@ -80,19 +78,18 @@
 		"plop": "^3.1.1",
 		"prettier": "^3.0.0",
 		"react-docgen-typescript-loader": "3.7.2",
-		"single-spa-react": "^5.0.0",
+		"storybook": "6.5.14",
 		"storybook-addon-react-docgen": "^1.2.42",
 		"storybook-dark-mode": "^3.0.0",
-		"style-loader": "^2.0.0",
+		"style-loader": "^3.3.3",
 		"ts-jest": "^29.0.3",
 		"ts-loader": "^9.4.2",
 		"tsconfig-paths-webpack-plugin": "^4.0.0",
 		"typescript": "^4.9.3",
 		"webpack": "^5.75.0",
 		"webpack-cli": "^5.0.1",
-		"webpack-config-single-spa-react": "^4.0.4",
 		"webpack-dev-server": "^4.11.1",
-		"webpack-merge": "^5.8.0"
+		"webpack-node-externals": "^3.0.0"
 	},
 	"dependencies": {
 		"@adobe/react-spectrum": "^3.23.0 - latest",
@@ -100,10 +97,33 @@
 		"immer": "^9.0.16 - latest",
 		"react": "17.0.2 - latest",
 		"react-dom": "17.0.2 - latest",
-		"react-router-dom": "^6.4.4 - latest",
 		"react-vega": "^7.6.0 - latest",
 		"uuid": "^9.0.0 - latest",
 		"vega": "^5.22.1 - latest",
 		"vega-lite": "^5.6.0 - latest"
-	}
+	},
+	"peerDependencies": {
+		"@adobe/react-spectrum": "^3.23.0 - latest",
+		"react": "17.0.2 - latest",
+		"react-dom": "17.0.2 - latest"
+	},
+	"resolutions": {
+		"@types/react": "17.0.50",
+		"@types/react-dom": "17.0.17"
+	},
+	"bugs": {
+		"url": "https://github.com/adobe/react-spectrum-charts/issues"
+	},
+	"homepage": "https://github.com/adobe/react-spectrum-charts#readme",
+	"keywords": [
+		"Adobe",
+		"Spectrum",
+		"Charts",
+		"Data",
+		"Viz",
+		"React",
+		"Spectrum",
+		"Charts",
+		"Analytics"
+	]
 }

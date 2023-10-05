@@ -8,6 +8,7 @@ local.json
 
 # build
 dist
+dist-storybook
 *.tgz
 
 # coverage reports

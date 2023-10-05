@@ -1,9 +1,11 @@
 import type { StorybookConfig } from '@storybook/core-common';
 import TsconfigPathsPlugin from 'tsconfig-paths-webpack-plugin';
-import merge from 'webpack-merge';
 
 const config: StorybookConfig = {
 	stories: ['../src/**/*.story.mdx', '../src/**/*.story.@(js|jsx|ts|tsx)'],
+	core: {
+		builder: 'webpack5',
+	},
 	addons: [
 		'@storybook/addon-links',
 		'@storybook/addon-essentials',
@@ -14,13 +16,15 @@ const config: StorybookConfig = {
 	],
 	framework: '@storybook/react',
 	webpackFinal(config) {
-		if (config?.resolve?.plugins) {
-			config.resolve = {
-				...config.resolve,
-				plugins: [new TsconfigPathsPlugin()],
-			};
+		if (config?.resolve?.plugins == undefined) {
+			config.resolve.plugins = [new TsconfigPathsPlugin()];
+		} else {
+			config.resolve.plugins.push(new TsconfigPathsPlugin());
 		}
-		return merge(config, {});
+		return config;
+	},
+	features: {
+		postcss: false,
 	},
 };
 

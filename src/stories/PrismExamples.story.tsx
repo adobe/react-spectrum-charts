@@ -149,8 +149,12 @@ const dialogCallback = (datum: Datum, close?: () => void) => {
 			<Flex direction="column">
 				<Flex direction="row" justifyContent="space-between">
 					<div>
-						<div>{datum.x}</div>
-						<div>{datum.series}</div>
+						<div>
+							<>{datum.x}</>
+						</div>
+						<div>
+							<>{datum.series}</>
+						</div>
 						<div>{Math.abs(datum.y as number).toLocaleString()} users</div>
 					</div>
 					{close !== undefined && (

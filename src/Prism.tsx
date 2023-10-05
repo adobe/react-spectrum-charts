@@ -336,7 +336,7 @@ const ChartDialog = ({ datum, targetElement, width = 250, setPopoverState, popov
 	);
 };
 
-const LegendTooltip = ({ value, descriptions, domain }: LegendTooltipProps) => {
+const LegendTooltip: FC<LegendTooltipProps> = ({ value, descriptions, domain }) => {
 	const series = domain[value.index];
 	const description = descriptions.find((d) => d.seriesName === series);
 	if (!description) {
