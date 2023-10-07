@@ -22,13 +22,19 @@ const banner = `${name}@v${version}`;
 module.exports = {
 	entry: './src/index.ts',
 	mode: 'production',
+
+	experiments: {
+		outputModule: true,
+	},
+
 	output: {
 		filename: 'index.js',
 		path: path.resolve(__dirname, 'dist'),
-		library: 'reactSpectrumCharts',
-		libraryTarget: 'umd',
-		globalObject: 'this',
+		library: {
+			type: 'module',
+		},
 	},
+
 	module: {
 		rules: [
 			{
@@ -46,12 +52,16 @@ module.exports = {
 			},
 		],
 	},
+
 	externals: [nodeExternals()],
+
 	plugins: [new webpack.BannerPlugin(banner)],
+
 	resolve: {
 		plugins: [new TsconfigPathsPlugin({})],
 		extensions: ['.tsx', '.ts', '.js', '.jsx', '.svg', '.css', '.json'],
 	},
+
 	devServer: {
 		client: {
 			overlay: false,
