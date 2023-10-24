@@ -12,7 +12,7 @@
 
 import '@matchMediaMock';
 import { findAllMarksByGroupName, findPrism } from '@test-utils';
-import { render } from '@testing-library/react';
+import { act, render } from '@testing-library/react';
 
 import { BarChart, FixedWidthBar } from './Annotation.story';
 
@@ -44,10 +44,12 @@ describe('Bar', () => {
 		expect(labels.length).toEqual(9);
 
 		// backgrounds have width of 48px
-		labels.forEach(async (label) => {
-			const background = await findAllMarksByGroupName(label, 'bar0_annotationBackground', 'rect');
-			expect(background.length).toEqual(1);
-			expect(background[0].getAttribute('width')).toEqual('48');
-		});
+		for (const label of labels) {
+			act(async () => {
+				const background = await findAllMarksByGroupName(label, 'bar0_annotationBackground', 'rect');
+				expect(background.length).toEqual(1);
+				expect(background[0].getAttribute('width')).toEqual('48');
+			});
+		}
 	});
 });
