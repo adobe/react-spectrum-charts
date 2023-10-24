@@ -11,9 +11,8 @@
  */
 
 import '@matchMediaMock';
-import { clickNthElement, findAllMarksByGroupName, findPrism } from '@prism';
+import { clickNthElement, findAllMarksByGroupName, findPrism } from '@test-utils';
 import { findAllByText, getByText, render, screen } from '@testing-library/react';
-import React from 'react';
 
 import {
 	Dodged,

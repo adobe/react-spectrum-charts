@@ -11,9 +11,8 @@
  */
 
 import '@matchMediaMock';
-import { findAllMarksByGroupName, findPrism } from '@prism';
+import { findAllMarksByGroupName, findPrism } from '@test-utils';
 import { render } from '@testing-library/react';
-import React from 'react';
 
 import { BarChart, FixedWidthBar } from './Annotation.story';
 

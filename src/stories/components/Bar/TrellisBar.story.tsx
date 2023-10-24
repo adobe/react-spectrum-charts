@@ -11,9 +11,10 @@
  */
 
 import usePrismProps from '@hooks/usePrismProps';
-import { Axis, Bar, ChartPopover, ChartTooltip, Legend, Prism, bindWithProps } from '@prism';
+import { Axis, Bar, ChartPopover, ChartTooltip, Legend, Prism } from '@prism';
+import { bindWithProps } from '@test-utils';
 import { ComponentStory } from '@storybook/react';
-import React, { ReactElement } from 'react';
+import { ReactElement } from 'react';
 import { BarProps, Datum, SpectrumColor } from 'types';
 
 import { generateMockDataForTrellis } from './data';
