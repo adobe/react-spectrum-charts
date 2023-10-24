@@ -11,9 +11,9 @@
  */
 
 import '@matchMediaMock';
-import { Bar, findAllMarksByGroupName, findPrism } from '@prism';
+import { Bar } from '@prism';
+import { findAllMarksByGroupName, findPrism } from '@test-utils';
 import { render } from '@testing-library/react';
-import React from 'react';
 
 import { Basic, Opacity, PaddingRatio, WithAnnotation } from './Bar.story';
 import { Color, DodgedStacked } from './DodgedBar.story';

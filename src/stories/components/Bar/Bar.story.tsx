@@ -12,9 +12,10 @@
 
 import { Annotation } from '@components/Annotation';
 import usePrismProps from '@hooks/usePrismProps';
-import { Axis, Bar, Prism, bindWithProps } from '@prism';
+import { Axis, Bar, Prism } from '@prism';
+import { bindWithProps } from '@test-utils';
 import { ComponentStory } from '@storybook/react';
-import React, { ReactElement, createElement } from 'react';
+import { ReactElement, createElement } from 'react';
 
 import { barData } from './data';
 

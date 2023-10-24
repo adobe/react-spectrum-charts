@@ -12,9 +12,10 @@
 
 import { Annotation } from '@components/Annotation';
 import usePrismProps from '@hooks/usePrismProps';
-import { Axis, Bar, Legend, Prism, bindWithProps } from '@prism';
+import { Axis, Bar, Legend, Prism } from '@prism';
+import { bindWithProps } from '@test-utils';
 import { ComponentStory } from '@storybook/react';
-import React, { ReactElement, createElement } from 'react';
+import { ReactElement, createElement } from 'react';
 import { SpectrumColor } from 'types';
 
 import { barSeriesData, negativeBarSeriesData } from './data';

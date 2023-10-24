@@ -25,4 +25,3 @@ export * from './components/Trendline';
 export * from './Prism';
 export * from './themes';
 export * from './types/';
-export * from './test-utils';

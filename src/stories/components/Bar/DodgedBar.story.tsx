@@ -13,9 +13,10 @@
 import { Content } from '@adobe/react-spectrum';
 import { Annotation } from '@components/Annotation';
 import usePrismProps from '@hooks/usePrismProps';
-import { Axis, Bar, ChartPopover, ChartTooltip, Legend, Prism, bindWithProps, categorical6 } from '@prism';
+import { Axis, Bar, ChartPopover, ChartTooltip, Legend, Prism, categorical6 } from '@prism';
+import { bindWithProps } from '@test-utils';
 import { ComponentStory } from '@storybook/react';
-import React, { ReactElement, createElement } from 'react';
+import { ReactElement, createElement } from 'react';
 
 import { barSeriesData, barSubSeriesData } from './data';
 
