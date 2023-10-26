@@ -9,11 +9,11 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { DEFAULT_COLOR, HIGHLIGHT_CONTRAST_RATIO, SERIES_ID } from '@constants';
+import { Mark } from 'vega';
 
-import { DEFAULT_COLOR, HIGHLIGHT_CONTRAST_RATIO } from '@constants';
 import { getHighlightOpacityRule, getOpacityRule, setHoverOpacityForMarks } from './legendHighlightUtils';
 import { defaultMark } from './legendTestUtils';
-import { Mark } from 'vega';
 
 const defaultGroupMark: Mark = {
 	type: 'group',
@@ -22,35 +22,35 @@ const defaultGroupMark: Mark = {
 
 const defaultOpacityEncoding = {
 	fillOpacity: [
-		{ test: `highlightedSeries && highlightedSeries !== datum.prismSeriesId`, value: 1 / HIGHLIGHT_CONTRAST_RATIO },
+		{ test: `highlightedSeries && highlightedSeries !== datum.${SERIES_ID}`, value: 1 / HIGHLIGHT_CONTRAST_RATIO },
 	],
 	strokeOpacity: [
-		{ test: `highlightedSeries && highlightedSeries !== datum.prismSeriesId`, value: 1 / HIGHLIGHT_CONTRAST_RATIO },
+		{ test: `highlightedSeries && highlightedSeries !== datum.${SERIES_ID}`, value: 1 / HIGHLIGHT_CONTRAST_RATIO },
 	],
 };
 
 describe('getHighlightOpacityrule()', () => {
 	test('scale ref should divide by highlight contrast ratio', () => {
 		expect(getHighlightOpacityRule({ scale: 'opacity', field: DEFAULT_COLOR })).toStrictEqual({
-			test: 'highlightedSeries && highlightedSeries !== datum.prismSeriesId',
+			test: `highlightedSeries && highlightedSeries !== datum.${SERIES_ID}`,
 			signal: `scale('opacity', datum.${DEFAULT_COLOR}) / ${HIGHLIGHT_CONTRAST_RATIO}`,
 		});
 	});
 	test('signal ref should divide by highlight contrast ratio', () => {
 		expect(getHighlightOpacityRule({ signal: `scale('opacity', datum.${DEFAULT_COLOR})` })).toStrictEqual({
-			test: 'highlightedSeries && highlightedSeries !== datum.prismSeriesId',
+			test: `highlightedSeries && highlightedSeries !== datum.${SERIES_ID}`,
 			signal: `scale('opacity', datum.${DEFAULT_COLOR}) / ${HIGHLIGHT_CONTRAST_RATIO}`,
 		});
 	});
 	test('value ref should divide by highlight contrast ratio', () => {
 		expect(getHighlightOpacityRule({ value: 0.5 })).toStrictEqual({
-			test: 'highlightedSeries && highlightedSeries !== datum.prismSeriesId',
+			test: `highlightedSeries && highlightedSeries !== datum.${SERIES_ID}`,
 			value: 0.5 / HIGHLIGHT_CONTRAST_RATIO,
 		});
 	});
 	test('empty ref should rturn default rule', () => {
 		expect(getHighlightOpacityRule({})).toStrictEqual({
-			test: 'highlightedSeries && highlightedSeries !== datum.prismSeriesId',
+			test: `highlightedSeries && highlightedSeries !== datum.${SERIES_ID}`,
 			value: 1 / HIGHLIGHT_CONTRAST_RATIO,
 		});
 	});
@@ -94,7 +94,7 @@ describe('setHoverOpacityForMarks()', () => {
 			const marks = JSON.parse(
 				JSON.stringify([
 					{ ...defaultMark, encode: { ...defaultMark.encode, update: { fillOpacity: [{ value: 1 }] } } },
-				]),
+				])
 			);
 			setHoverOpacityForMarks(marks);
 			expect(marks).toStrictEqual([

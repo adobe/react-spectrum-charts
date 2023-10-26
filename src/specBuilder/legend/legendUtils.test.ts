@@ -23,6 +23,25 @@ const defaultOpacitySignalEncoding = [
 	{ signal: `scale('opacity', data('legendAggregate')[datum.index].${DEFAULT_COLOR})` },
 ];
 
+const hiddenSeriesEncoding = {
+	test: 'indexof(hiddenSeries, datum.value) !== -1',
+	value: 'rgb(213, 213, 213)',
+};
+
+const hiddenSeriesLabelUpdateEncoding = {
+	update: {
+		fill: [
+			{
+				test: 'indexof(hiddenSeries, datum.value) !== -1',
+				value: 'rgb(144, 144, 144)',
+			},
+			{
+				value: 'rgb(70, 70, 70)',
+			},
+		],
+	},
+};
+
 describe('getOpacityEncoding()', () => {
 	test('should return undefined if highlight is false', () => {
 		expect(getOpacityEncoding(false)).toBeUndefined();
@@ -68,6 +87,7 @@ describe('getSymbolEncodings()', () => {
 			getSymbolEncodings([], {
 				colorScheme: DEFAULT_COLOR_SCHEME,
 				hiddenEntries: [],
+				hiddenSeries: [],
 				highlight: false,
 				index: 0,
 				isToggleable: false,
@@ -78,8 +98,8 @@ describe('getSymbolEncodings()', () => {
 			entries: { name: 'legend0_legendEntry' },
 			symbols: {
 				update: {
-					fill: [{ value: spectrumColors.light['categorical-100'] }],
-					stroke: [{ value: spectrumColors.light['categorical-100'] }],
+					fill: [hiddenSeriesEncoding, { value: spectrumColors.light['categorical-100'] }],
+					stroke: [hiddenSeriesEncoding, { value: spectrumColors.light['categorical-100'] }],
 				},
 			},
 		});
@@ -87,15 +107,14 @@ describe('getSymbolEncodings()', () => {
 });
 
 describe('getShowHideEncodings()', () => {
-	test('should not return any encodings if isToggleable, onClick and hiddenSeries are all undefined/false', () => {
+	test('should only return hiddenSeries encoding if isToggleable, onClick and hiddenSeries are all undefined/false', () => {
 		expect(
 			getShowHideEncodings({
 				...defaultLegendProps,
 				isToggleable: false,
-				hiddenSeries: undefined,
 				onClick: undefined,
 			}),
-		).toEqual({});
+		).toEqual({ labels: hiddenSeriesLabelUpdateEncoding });
 	});
 	test('should return encodings if isToggleable', () => {
 		const encoding = getShowHideEncodings({ ...defaultLegendProps, isToggleable: true });
@@ -107,10 +126,11 @@ describe('getShowHideEncodings()', () => {
 		expect(encoding).not.toHaveProperty('entries');
 		expect(encoding).toHaveProperty('labels');
 	});
-	test('should have entries encodings but not labels encodings for onClick', () => {
+	test('should have entries encodings and only hiddenSeries labels encodings for onClick', () => {
 		const encoding = getShowHideEncodings({ ...defaultLegendProps, onClick: () => {} });
 		expect(encoding).toHaveProperty('entries');
-		expect(encoding).not.toHaveProperty('labels');
+		expect(encoding).toHaveProperty('labels');
+		expect(encoding.labels).toStrictEqual(hiddenSeriesLabelUpdateEncoding);
 	});
 });
 

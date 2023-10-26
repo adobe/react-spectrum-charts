@@ -9,14 +9,22 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import React from 'react';
 
-import { DEFAULT_COLOR, DEFAULT_SECONDARY_COLOR, TABLE } from '@constants';
+import { Bar } from '@components/Bar';
+import { Legend } from '@components/Legend';
+import { DEFAULT_COLOR, DEFAULT_SECONDARY_COLOR, FILTERED_TABLE, MARK_ID, SERIES_ID, TABLE } from '@constants';
 import { ROUNDED_SQUARE_PATH } from 'svgPaths';
+import { BarProps, LegendProps } from 'types';
 import { Data } from 'vega';
 
+import { setHoverOpacityForMarks } from './legend/legendHighlightUtils';
 import {
 	addData,
+	addHighlight,
+	buildSpec,
 	getColorScale,
+	getDefaultSignals,
 	getLineTypeScale,
 	getLineWidthScale,
 	getOpacityScale,
@@ -25,8 +33,30 @@ import {
 	getTwoDimensionalLineTypes,
 	getTwoDimensionalOpacities,
 } from './prismSpecBuilder';
+import { baseData } from './specUtils';
 
-const defaultData: Data[] = [{ name: TABLE, values: [], transform: [{ type: 'identifier', as: 'prismMarkId' }] }];
+const defaultData: Data[] = [{ name: TABLE, values: [], transform: [{ type: 'identifier', as: MARK_ID }] }];
+
+function createBar(): React.FunctionComponentElement<BarProps> {
+	return React.createElement(Bar, {
+		dimension: 'browser',
+		metric: 'downloads',
+		color: 'series',
+	});
+}
+function createLegend(highlight: boolean): React.FunctionComponentElement<LegendProps> {
+	return React.createElement(Legend, { highlight: highlight });
+}
+
+jest.mock('./legend/legendHighlightUtils', () => {
+	return {
+		setHoverOpacityForMarks: jest.fn(),
+	};
+});
+
+afterEach(() => {
+	jest.resetAllMocks();
+});
 
 describe('Prism spec builder', () => {
 	describe('setColorScale()', () => {
@@ -74,7 +104,7 @@ describe('Prism spec builder', () => {
 		});
 		test('should get colors from color names for light and dark mode', () => {
 			expect(
-				getTwoDimensionalColorScheme(['blue-400', 'blue-500', 'blue-600', 'blue-700'], 'light'),
+				getTwoDimensionalColorScheme(['blue-400', 'blue-500', 'blue-600', 'blue-700'], 'light')
 			).toStrictEqual([
 				['rgb(150, 206, 253)'],
 				['rgb(120, 187, 250)'],
@@ -82,12 +112,12 @@ describe('Prism spec builder', () => {
 				['rgb(56, 146, 243)'],
 			]);
 			expect(
-				getTwoDimensionalColorScheme(['blue-400', 'blue-500', 'blue-600', 'blue-700'], 'dark'),
+				getTwoDimensionalColorScheme(['blue-400', 'blue-500', 'blue-600', 'blue-700'], 'dark')
 			).toStrictEqual([['rgb(0, 78, 166)'], ['rgb(0, 92, 200)'], ['rgb(6, 108, 231)'], ['rgb(29, 128, 245)']]);
 		});
 		test('should convert color scheme in second dimension to correct colors', () => {
 			expect(
-				getTwoDimensionalColorScheme(['categorical6', 'divergentOrangeYellowSeafoam5'], 'light'),
+				getTwoDimensionalColorScheme(['categorical6', 'divergentOrangeYellowSeafoam5'], 'light')
 			).toStrictEqual([
 				[
 					'rgb(15, 181, 174)',
@@ -202,7 +232,7 @@ describe('Prism spec builder', () => {
 				getOpacityScale([
 					[0.2, 0.4],
 					[0.6, 0.8],
-				]),
+				])
 			).toStrictEqual({
 				name: 'opacity',
 				type: 'ordinal',
@@ -267,7 +297,7 @@ describe('Prism spec builder', () => {
 				getSymbolShapeScale([
 					['circle', 'square'],
 					['triangle,', 'circle'],
-				]),
+				])
 			).toStrictEqual({
 				name: 'symbolShape',
 				type: 'ordinal',
@@ -278,13 +308,180 @@ describe('Prism spec builder', () => {
 	});
 
 	describe('addData()', () => {
-		test('should do nothing if there are not any facets', () => {
+		test('should do nothing if there are not any facets and there is no filteredTable data', () => {
 			expect(addData(defaultData, { facets: [] })[0].transform).toHaveLength(1);
 		});
+
+		test('should add the hiddenSeries transform to the filteredTable if filteredTable data exists', () => {
+			const data = addData(baseData, { facets: [DEFAULT_COLOR] });
+			const hiddenSeriesTransform = data
+				.find((d) => d.name === FILTERED_TABLE)
+				?.transform?.find((t) => t.type === 'filter' && t.expr.includes('hiddenSeries'));
+			expect(hiddenSeriesTransform).toBeDefined();
+		});
+
 		test('should join the facets', () => {
 			expect(
-				addData(defaultData, { facets: [DEFAULT_COLOR, DEFAULT_SECONDARY_COLOR] })[0].transform?.at(-1),
-			).toStrictEqual({ as: 'prismSeriesId', expr: 'datum.series + " | " + datum.subSeries', type: 'formula' });
+				addData(defaultData, { facets: [DEFAULT_COLOR, DEFAULT_SECONDARY_COLOR] })[0].transform?.at(-1)
+			).toStrictEqual({ as: SERIES_ID, expr: 'datum.series + " | " + datum.subSeries', type: 'formula' });
+		});
+	});
+
+	describe('controlled highlighting', () => {
+		test('adds highlightedSeries signal if there is a highlighted series', () => {
+			const spec = buildSpec({
+				children: [createBar()],
+				colors: 'categorical12',
+				lineTypes: ['solid', 'dashed', 'dotted', 'dotDash', 'longDash', 'twoDash'],
+				lineWidths: ['M'],
+				symbolShapes: ['rounded-square'],
+				colorScheme: 'light',
+				hiddenSeries: undefined,
+				highlightedSeries: 'Chrome',
+			});
+
+			expect(spec.signals?.find((signal) => signal.name === 'highlightedSeries')).toStrictEqual({
+				name: 'highlightedSeries',
+				value: 'Chrome',
+			});
+		});
+
+		test('adds highlightedSeries signal if there is a highlighted series and legend does not have highlight', () => {
+			const spec = buildSpec({
+				children: [createBar(), createLegend(false)],
+				colors: 'categorical12',
+				lineTypes: ['solid', 'dashed', 'dotted', 'dotDash', 'longDash', 'twoDash'],
+				lineWidths: ['M'],
+				symbolShapes: ['rounded-square'],
+				colorScheme: 'light',
+				hiddenSeries: undefined,
+				highlightedSeries: 'Chrome',
+			});
+
+			expect(spec.signals?.find((signal) => signal.name === 'highlightedSeries')).toStrictEqual({
+				name: 'highlightedSeries',
+				value: 'Chrome',
+			});
+		});
+
+		test('does not add highlightedSeries signal if there is no highlighted series', () => {
+			const spec = buildSpec({
+				children: [createBar()],
+				colors: 'categorical12',
+				lineTypes: ['solid', 'dashed', 'dotted', 'dotDash', 'longDash', 'twoDash'],
+				lineWidths: ['M'],
+				symbolShapes: ['rounded-square'],
+				colorScheme: 'light',
+				hiddenSeries: undefined,
+				highlightedSeries: undefined,
+			});
+
+			expect(spec.signals?.find((signal) => signal.name === 'highlightedSeries')).toBeUndefined();
+		});
+
+		test('does not apply controlled highlighting if uncontrolled highlighting is applied', () => {
+			const spec = buildSpec({
+				children: [createBar(), createLegend(true)],
+				colors: 'categorical12',
+				lineTypes: ['solid', 'dashed', 'dotted', 'dotDash', 'longDash', 'twoDash'],
+				lineWidths: ['M'],
+				symbolShapes: ['rounded-square'],
+				colorScheme: 'light',
+				hiddenSeries: undefined,
+				highlightedSeries: undefined,
+			});
+			const uncontrolledHighlightSignal = {
+				name: 'highlightedSeries',
+				value: null,
+				on: [
+					{
+						events: '@legend0_legendEntry:mouseover',
+						update: 'indexof(hiddenSeries, domain("legendEntries")[datum.index]) === -1 ? domain("legendEntries")[datum.index] : ""',
+					},
+					{
+						events: '@legend0_legendEntry:mouseout',
+						update: '""',
+					},
+				],
+			};
+
+			expect(spec.signals?.find((signal) => signal.name === 'highlightedSeries')).toStrictEqual(
+				uncontrolledHighlightSignal
+			);
+		});
+	});
+
+	describe('addHighlight()', () => {
+		test('creates spec signals and adds highlight signal if no signals are provided', () => {
+			expect(addHighlight({}, { children: [], hiddenSeries: [], highlightedSeries: undefined })).toStrictEqual({
+				signals: [{ name: 'highlightedSeries', value: null }],
+			});
+		});
+
+		test('adds highlight signal to existing spec signals', () => {
+			const testSignal = { name: 'testName', value: 'testValue' };
+			expect(
+				addHighlight(
+					{ signals: [testSignal] },
+					{ children: [], hiddenSeries: [], highlightedSeries: undefined }
+				)
+			).toStrictEqual({
+				signals: [testSignal, { name: 'highlightedSeries', value: null }],
+			});
+		});
+
+		test('adds highlight signal using the highlightedSeries value', () => {
+			expect(addHighlight({}, { children: [], hiddenSeries: [], highlightedSeries: 'testSeries' })).toStrictEqual(
+				{
+					signals: [{ name: 'highlightedSeries', value: 'testSeries' }],
+				}
+			);
+		});
+
+		test('adds hover opacity to marks', () => {
+			addHighlight({}, { children: [], hiddenSeries: [], highlightedSeries: 'testSeries' });
+			expect(setHoverOpacityForMarks).toHaveBeenCalledTimes(1);
+			expect(setHoverOpacityForMarks).toHaveBeenCalledWith([]);
+		});
+	});
+
+	describe('getDefaultSignals()', () => {
+		const defaultSignals = [
+			{ name: 'backgroundColor', value: 'rgb(255, 255, 255)' },
+			{
+				name: 'colors',
+				value: [
+					['rgb(15, 181, 174)'],
+					['rgb(64, 70, 202)'],
+					['rgb(246, 133, 17)'],
+					['rgb(222, 61, 130)'],
+					['rgb(126, 132, 250)'],
+					['rgb(114, 224, 106)'],
+					['rgb(20, 122, 243)'],
+					['rgb(115, 38, 211)'],
+					['rgb(232, 198, 0)'],
+					['rgb(203, 93, 0)'],
+					['rgb(0, 143, 93)'],
+					['rgb(188, 233, 49)'],
+				],
+			},
+			{ name: 'lineTypes', value: [[[7, 4]]] },
+			{ name: 'opacities', value: [[1]] },
+		];
+
+		test('hiddenSeries is empty when no hidden series', () => {
+			expect(getDefaultSignals('categorical12', 'light', ['dashed'], [1])).toStrictEqual([
+				...defaultSignals,
+				{ name: 'hiddenSeries', value: [] },
+			]);
+		});
+
+		test('hiddenSeries contains provided hidden series', () => {
+			const hiddenSeries = ['test'];
+			expect(getDefaultSignals('categorical12', 'light', ['dashed'], [1], hiddenSeries)).toStrictEqual([
+				...defaultSignals,
+				{ name: 'hiddenSeries', value: hiddenSeries },
+			]);
 		});
 	});
 });

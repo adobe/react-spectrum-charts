@@ -9,7 +9,10 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { createElement } from 'react';
 
+import { ChartPopover } from '@components/ChartPopover';
+import { MetricRange } from '@components/MetricRange';
 import { Trendline } from '@components/Trendline';
 import {
 	DEFAULT_COLOR,
@@ -17,17 +20,17 @@ import {
 	DEFAULT_CONTINUOUS_DIMENSION,
 	DEFAULT_METRIC,
 	FILTERED_TABLE,
+	MARK_ID,
+	SERIES_ID,
 	TABLE,
+	TRENDLINE_VALUE,
 } from '@constants';
-import { createElement } from 'react';
-import { LineSpecProps } from 'types';
+import { LineSpecProps, MetricRangeElement, MetricRangeProps } from 'types';
 import { Data, Spec } from 'vega';
 
+import * as signalSpecBuilder from '../signal/signalSpecBuilder';
 import { initializeSpec } from '../specUtils';
 import { addData, addLine, addLineMarks, addSignals, setScales } from './lineSpecBuilder';
-import * as signalSpecBuilder from '../signal/signalSpecBuilder';
-import { MetricRange } from '@components/MetricRange';
-import { ChartPopover } from '@components/ChartPopover';
 
 const defaultLineProps: LineSpecProps = {
 	children: [],
@@ -42,6 +45,13 @@ const defaultLineProps: LineSpecProps = {
 	colorScheme: DEFAULT_COLOR_SCHEME,
 };
 
+const getMetricRangeElement = (props?: Partial<MetricRangeProps>): MetricRangeElement =>
+	createElement(MetricRange, {
+		metricEnd: 'end',
+		metricStart: 'start',
+		...props,
+	});
+
 const startingSpec: Spec = initializeSpec({
 	scales: [{ name: 'color', type: 'ordinal' }],
 });
@@ -51,7 +61,7 @@ const defaultSpec = initializeSpec({
 		{
 			name: TABLE,
 			transform: [
-				{ as: 'prismMarkId', type: 'identifier' },
+				{ as: MARK_ID, type: 'identifier' },
 				{
 					as: ['datetime0', 'datetime1'],
 					field: DEFAULT_CONTINUOUS_DIMENSION,
@@ -276,6 +286,7 @@ const line0_voronoiMark = {
 const metricRangeGroupMark = {
 	name: 'line0MetricRange0_group',
 	type: 'group',
+	clip: true,
 	from: {
 		facet: {
 			name: 'line0MetricRange0_facet',
@@ -331,12 +342,12 @@ const metricRangeGroupMark = {
 			encode: {
 				enter: {
 					y: {
-						field: undefined,
+						field: 'start',
 
 						scale: 'yLinear',
 					},
 					y2: {
-						field: undefined,
+						field: 'end',
 						scale: 'yLinear',
 					},
 					fill: {
@@ -362,80 +373,7 @@ const metricRangeGroupMark = {
 	],
 };
 
-const metricRangeMarks = [
-	line0_groupMark,
-	metricRangeGroupMark,
-	line0_hoverRuleMark,
-	{
-		name: 'line0_pointBackground',
-		type: 'symbol',
-		from: {
-			data: 'line0_highlightedData',
-		},
-		interactive: false,
-		encode: {
-			enter: {
-				y: {
-					scale: 'yLinear',
-					field: 'value',
-				},
-				fill: {
-					signal: 'backgroundColor',
-				},
-				stroke: {
-					signal: 'backgroundColor',
-				},
-			},
-			update: {
-				x: {
-					scale: 'xTime',
-					field: 'datetime0',
-				},
-				size: [
-					{
-						value: 100,
-					},
-				],
-				strokeWidth: [
-					{
-						value: 2,
-					},
-				],
-			},
-		},
-	},
-	{
-		name: 'line0_point',
-		type: 'symbol',
-		from: {
-			data: 'line0_highlightedData',
-		},
-		interactive: false,
-		encode: {
-			enter: {
-				y: {
-					scale: 'yLinear',
-					field: 'value',
-				},
-				fill: {
-					signal: 'backgroundColor',
-				},
-				stroke: {
-					scale: 'color',
-					field: 'series',
-				},
-			},
-			update: {
-				x: {
-					scale: 'xTime',
-					field: 'datetime0',
-				},
-			},
-		},
-	},
-	line0_pointsForVoronoiMark,
-	line0_voronoiMark,
-];
+const metricRangeMarks = [line0_groupMark, metricRangeGroupMark];
 
 const metricRangeWithDisplayPointMarks = [
 	line0_groupMark,
@@ -469,133 +407,6 @@ const metricRangeWithDisplayPointMarks = [
 		},
 	},
 	metricRangeGroupMark,
-	line0_hoverRuleMark,
-	{
-		name: 'line0_pointBackground',
-		type: 'symbol',
-		from: {
-			data: 'line0_highlightedData',
-		},
-		interactive: false,
-		encode: {
-			enter: {
-				y: {
-					scale: 'yLinear',
-					field: 'value',
-				},
-				fill: {
-					signal: 'backgroundColor',
-				},
-				stroke: {
-					signal: 'backgroundColor',
-				},
-			},
-			update: {
-				x: {
-					scale: 'xTime',
-					field: 'datetime0',
-				},
-				size: [
-					{
-						test: 'datum.staticPoint && datum.staticPoint === true',
-						value: 64,
-					},
-					{
-						value: 100,
-					},
-				],
-				strokeWidth: [
-					{
-						test: 'datum.staticPoint && datum.staticPoint === true',
-						value: 6,
-					},
-					{
-						value: 2,
-					},
-				],
-			},
-		},
-	},
-	{
-		name: 'line0_point',
-		type: 'symbol',
-		from: {
-			data: 'line0_highlightedData',
-		},
-		interactive: false,
-		encode: {
-			enter: {
-				y: {
-					scale: 'yLinear',
-					field: 'value',
-				},
-				fill: {
-					signal: 'backgroundColor',
-				},
-				stroke: {
-					scale: 'color',
-					field: 'series',
-				},
-			},
-			update: {
-				x: {
-					scale: 'xTime',
-					field: 'datetime0',
-				},
-				size: [
-					{
-						test: 'datum.staticPoint && datum.staticPoint === true',
-						value: 64,
-					},
-					{
-						value: 100,
-					},
-				],
-				stroke: [
-					{
-						test: '(line0_voronoiHoveredId && line0_voronoiHoveredId === datum.prismMarkId || line0_selectedId && line0_selectedId === datum.prismMarkId) && datum.staticPoint',
-						scale: 'color',
-						field: 'series',
-					},
-					{
-						test: 'datum.staticPoint && datum.staticPoint === true',
-						signal: 'backgroundColor',
-					},
-					{
-						scale: 'color',
-						field: 'series',
-					},
-				],
-				strokeWidth: [
-					{
-						test: 'datum.staticPoint && datum.staticPoint === true',
-						value: 6,
-					},
-					{
-						value: 2,
-					},
-				],
-				fill: [
-					{
-						test: 'datum.staticPoint && datum.staticPoint === true',
-						scale: 'color',
-						field: 'series',
-					},
-					{
-						signal: 'backgroundColor',
-					},
-				],
-				strokeOpacity: [
-					{
-						test: '(line0_voronoiHoveredId && line0_voronoiHoveredId === datum.prismMarkId || line0_selectedId && line0_selectedId === datum.prismMarkId) && datum.staticPoint',
-						value: 0.2,
-					},
-				],
-			},
-		},
-	},
-	line0_pointsForVoronoiMark,
-	line0_voronoiMark,
 ];
 
 const displayPointMarks = [
@@ -659,14 +470,14 @@ describe('lineSpecBuilder', () => {
 				addData(baseData, {
 					...defaultLineProps,
 					children: [createElement(Trendline, { method: 'average' })],
-				})[2].transform,
+				})[2].transform
 			).toStrictEqual([
 				{
 					type: 'joinaggregate',
 					groupby: ['series'],
 					fields: ['value'],
 					ops: ['mean'],
-					as: ['prismTrendlineValue'],
+					as: [TRENDLINE_VALUE],
 				},
 			]);
 		});
@@ -675,8 +486,8 @@ describe('lineSpecBuilder', () => {
 			expect(
 				addData(baseData, {
 					...defaultLineProps,
-					children: [createElement(Trendline, { method: 'movingAverage' })],
-				})[0].transform,
+					children: [createElement(Trendline, { method: 'movingAverage-7' })],
+				})[0].transform
 			).toHaveLength(2);
 		});
 
@@ -703,7 +514,7 @@ describe('lineSpecBuilder', () => {
 				setScales(startingSpec.scales ?? [], {
 					...defaultLineProps,
 					scaleType: 'linear',
-				}),
+				})
 			).toStrictEqual([defaultSpec.scales?.[0], defaultLinearScale, defaultSpec.scales?.[2]]);
 		});
 
@@ -712,8 +523,25 @@ describe('lineSpecBuilder', () => {
 				setScales(startingSpec.scales ?? [], {
 					...defaultLineProps,
 					scaleType: 'point',
-				}),
+				})
 			).toStrictEqual([defaultSpec.scales?.[0], defaultPointScale, defaultSpec.scales?.[2]]);
+		});
+
+		test('with metric range fields', () => {
+			const [metricStart, metricEnd] = ['metricStart', 'metricEnd'];
+			const metricRangeMetricScale = {
+				...defaultSpec.scales?.[2],
+				domain: {
+					...defaultSpec.scales?.[2].domain,
+					fields: ['value', metricStart, metricEnd],
+				},
+			};
+			expect(
+				setScales(startingSpec.scales ?? [], {
+					...defaultLineProps,
+					children: [createElement(MetricRange, { scaleAxisToFit: true, metricEnd, metricStart })],
+				})
+			).toStrictEqual([defaultSpec.scales?.[0], defaultSpec.scales?.[1], metricRangeMetricScale]);
 		});
 	});
 
@@ -750,14 +578,14 @@ describe('lineSpecBuilder', () => {
 		});
 
 		test('with metric range', () => {
-			expect(addLineMarks([], { ...defaultLineProps, children: [createElement(MetricRange)] })).toStrictEqual(
-				metricRangeMarks,
+			expect(addLineMarks([], { ...defaultLineProps, children: [getMetricRangeElement()] })).toStrictEqual(
+				metricRangeMarks
 			);
 		});
 
 		test('with displayPointMark', () => {
 			expect(addLineMarks([], { ...defaultLineProps, staticPoint: 'staticPoint' })).toStrictEqual(
-				displayPointMarks,
+				displayPointMarks
 			);
 		});
 
@@ -766,8 +594,8 @@ describe('lineSpecBuilder', () => {
 				addLineMarks([], {
 					...defaultLineProps,
 					staticPoint: 'staticPoint',
-					children: [createElement(MetricRange)],
-				}),
+					children: [getMetricRangeElement()],
+				})
 			).toStrictEqual(metricRangeWithDisplayPointMarks);
 		});
 	});
@@ -787,8 +615,8 @@ describe('lineSpecBuilder', () => {
 							value: null,
 						},
 					],
-					defaultLineProps,
-				),
+					defaultLineProps
+				)
 			).toStrictEqual([
 				{
 					name: 'line0_selectedSeries',
@@ -809,7 +637,7 @@ describe('lineSpecBuilder', () => {
 						value: null,
 					},
 				],
-				{ ...defaultLineProps, children: [createElement(ChartPopover)] },
+				{ ...defaultLineProps, children: [createElement(ChartPopover)] }
 			);
 
 			expect(getGenericSignalSpy).toHaveBeenCalledTimes(1);
@@ -817,14 +645,16 @@ describe('lineSpecBuilder', () => {
 		});
 
 		test('hover signals with metric range', () => {
-			expect(addSignals([], { ...defaultLineProps, children: [createElement(MetricRange)] })).toStrictEqual([
+			expect(
+				addSignals([], { ...defaultLineProps, children: [getMetricRangeElement({ displayOnHover: true })] })
+			).toStrictEqual([
 				{
-					name: 'line0MetricRange_hoveredSeries',
+					name: 'line0_hoveredSeries',
 					value: null,
 					on: [
 						{
 							events: '@line0_voronoi:mouseover',
-							update: 'datum.datum.prismSeriesId',
+							update: `datum.datum.${SERIES_ID}`,
 						},
 						{
 							events: '@line0_voronoi:mouseout',
@@ -838,7 +668,7 @@ describe('lineSpecBuilder', () => {
 					on: [
 						{
 							events: '@line0_voronoi:mouseover',
-							update: 'datum.datum.prismMarkId',
+							update: `datum.datum.${MARK_ID}`,
 						},
 						{
 							events: '@line0_voronoi:mouseout',
@@ -866,16 +696,16 @@ describe('lineSpecBuilder', () => {
 				addSignals([], {
 					...defaultLineProps,
 					staticPoint: 'staticPoint',
-					children: [createElement(MetricRange)],
-				}),
+					children: [getMetricRangeElement({ displayOnHover: true })],
+				})
 			).toStrictEqual([
 				{
-					name: 'line0MetricRange_hoveredSeries',
+					name: 'line0_hoveredSeries',
 					value: null,
 					on: [
 						{
 							events: '@line0_voronoi:mouseover',
-							update: 'datum.datum.prismSeriesId',
+							update: `datum.datum.${SERIES_ID}`,
 						},
 						{
 							events: '@line0_voronoi:mouseout',
@@ -889,7 +719,7 @@ describe('lineSpecBuilder', () => {
 					on: [
 						{
 							events: '@line0_voronoi:mouseover',
-							update: 'datum.datum.prismMarkId',
+							update: `datum.datum.${MARK_ID}`,
 						},
 						{
 							events: '@line0_voronoi:mouseout',

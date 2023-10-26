@@ -10,10 +10,15 @@
  * governing permissions and limitations under the License.
  */
 import { Trendline } from '@components/Trendline';
-import { FILTERED_TABLE } from '@constants';
+import { FILTERED_TABLE, MARK_ID, SERIES_ID, TRENDLINE_VALUE } from '@constants';
+import { getPrismSeriesIdTransform } from '@specBuilder/data/dataUtils';
 import { getLineHoverMarks, getLineMark } from '@specBuilder/line/lineUtils';
 import { hasInteractiveChildren, hasPopover, hasTooltip } from '@specBuilder/marks/markUtils';
-import { getGenericSignal, getUncontrolledHoverSignal } from '@specBuilder/signal/signalSpecBuilder';
+import {
+	getGenericSignal,
+	getSeriesHoveredSignal,
+	getUncontrolledHoverSignal,
+} from '@specBuilder/signal/signalSpecBuilder';
 import { getFacetsFromProps } from '@specBuilder/specUtils';
 import { sanitizeTrendlineChildren } from '@utils';
 import {
@@ -21,10 +26,24 @@ import {
 	LineSpecProps,
 	MarkChildElement,
 	TrendlineElement,
+	TrendlineMethod,
 	TrendlineProps,
 	TrendlineSpecProps,
 } from 'types';
-import { FilterTransform, GroupMark, LineMark, Signal, SourceData, Transforms } from 'vega';
+import {
+	FilterTransform,
+	FormulaTransform,
+	GroupMark,
+	JoinAggregateTransform,
+	LineMark,
+	LookupTransform,
+	RegressionMethod,
+	RegressionTransform,
+	Signal,
+	SourceData,
+	Transforms,
+	WindowTransform,
+} from 'vega';
 
 export const getTrendlines = (children: MarkChildElement[], markName: string): TrendlineSpecProps[] => {
 	const trendlineElements = children.filter((child) => child.type === Trendline) as TrendlineElement[];
@@ -35,27 +54,27 @@ export const applyTrendlinePropDefaults = (
 	{
 		children,
 		dimensionRange = [null, null],
+		displayOnHover = false,
 		highlightRawPoint = false,
 		lineType = 'dashed',
 		lineWidth = 'M',
 		method = 'linear',
 		opacity = 1,
-		rollingWindow = 7,
 		...props
 	}: TrendlineProps,
 	markName: string,
 	index: number
 ): TrendlineSpecProps => ({
 	children: sanitizeTrendlineChildren(children),
+	displayOnHover,
 	dimensionRange,
 	highlightRawPoint,
 	lineType,
 	lineWidth,
 	method,
-	metric: 'prismTrendlineValue',
+	metric: TRENDLINE_VALUE,
 	name: `${markName}Trendline${index}`,
 	opacity,
-	rollingWindow,
 	...props,
 });
 
@@ -66,13 +85,15 @@ export const getTrendlineMarks = (markProps: LineSpecProps): GroupMark[] => {
 	const marks: GroupMark[] = [];
 	const trendlines = getTrendlines(children, name);
 	for (const trendlineProps of trendlines) {
+		const dataSuffix = isRegressionMethod(trendlineProps.method) ? '_highResolutionData' : '_data';
 		marks.push({
 			name: `${trendlineProps.name}_group`,
 			type: 'group',
+			clip: true,
 			from: {
 				facet: {
 					name: `${trendlineProps.name}_facet`,
-					data: `${trendlineProps.name}_data`,
+					data: trendlineProps.name + dataSuffix,
 					groupby: facets,
 				},
 			},
@@ -95,6 +116,7 @@ export const getTrendlineMarks = (markProps: LineSpecProps): GroupMark[] => {
 const getTrendlineLineMark = (markProps: LineSpecProps, trendlineProps: TrendlineSpecProps): LineMark => {
 	const mergedTrendlineProps = {
 		name: trendlineProps.name,
+		parentName: markProps.name,
 		color: trendlineProps.color ? { value: trendlineProps.color } : markProps.color,
 		metric: trendlineProps.metric,
 		dimension: markProps.dimension,
@@ -103,6 +125,7 @@ const getTrendlineLineMark = (markProps: LineSpecProps, trendlineProps: Trendlin
 		lineWidth: { value: trendlineProps.lineWidth },
 		opacity: { value: trendlineProps.opacity },
 		colorScheme: markProps.colorScheme,
+		displayOnHover: trendlineProps.displayOnHover,
 	};
 	return getLineMark(mergedTrendlineProps, `${trendlineProps.name}_facet`);
 };
@@ -116,7 +139,7 @@ const getTrendlineHoverMarks = (
 		name: `${name}Trendline`,
 		color,
 		children: trendlines.map((trendline) => trendline.children).flat(),
-		metric: 'prismTrendlineValue',
+		metric: TRENDLINE_VALUE,
 		dimension,
 		scaleType,
 		colorScheme,
@@ -124,6 +147,7 @@ const getTrendlineHoverMarks = (
 	return {
 		name: `${name}Trendline_hoverGroup`,
 		type: 'group',
+		clip: true,
 		marks: getLineHoverMarks(
 			trendlineHoverProps,
 			`${name}_allTrendlineData`,
@@ -139,7 +163,7 @@ const getTrendlineHoverMarks = (
  */
 export const getTrendlineData = (markProps: BarSpecProps | LineSpecProps): SourceData[] => {
 	const data: SourceData[] = [];
-	const { children, dimension, name: markName } = markProps;
+	const { children, color, dimension, lineType, name: markName } = markProps;
 	const trendlines = getTrendlines(children, markName);
 
 	const concatenatedTrendlineData: { name: string; source: string[] } = {
@@ -148,15 +172,61 @@ export const getTrendlineData = (markProps: BarSpecProps | LineSpecProps): Sourc
 	};
 
 	for (const trendlineProps of trendlines) {
-		const { children: trendlineChildren, name, dimensionRange } = trendlineProps;
-		data.push({
-			name: `${name}_data`,
-			source: FILTERED_TABLE,
-			transform: [
-				...getTrendlineDimensionRangeTransforms(dimension, dimensionRange),
-				...getTrendlineStatisticalTransforms(markProps, trendlineProps),
-			],
-		});
+		const { children: trendlineChildren, method, name, dimensionRange } = trendlineProps;
+		const dimensionRangeTransforms = getTrendlineDimensionRangeTransforms(dimension, dimensionRange);
+		const { facets } = getFacetsFromProps({ color, lineType });
+
+		if (isRegressionMethod(method)) {
+			data.push({
+				name: `${name}_highResolutionData`,
+				source: FILTERED_TABLE,
+				transform: [
+					...dimensionRangeTransforms,
+					...getTrendlineStatisticalTransforms(markProps, trendlineProps),
+					getPrismSeriesIdTransform(facets),
+				],
+			});
+			if (hasInteractiveChildren(trendlineChildren)) {
+				data.push(
+					{
+						name: `${name}_params`,
+						source: FILTERED_TABLE,
+						transform: [
+							...dimensionRangeTransforms,
+							...getTrendlineStatisticalTransforms(markProps, trendlineProps, true),
+						],
+					},
+					{
+						name: `${name}_data`,
+						source: FILTERED_TABLE,
+						transform: [
+							...dimensionRangeTransforms,
+							getTrendlineParamLookupTransform(markProps, trendlineProps),
+							...getTrendlineParamFormulaTransforms(dimension, method),
+						],
+					}
+				);
+			}
+		} else if (method === 'average') {
+			data.push({
+				name: `${name}_data`,
+				source: FILTERED_TABLE,
+				transform: [
+					...dimensionRangeTransforms,
+					...getTrendlineStatisticalTransforms(markProps, trendlineProps),
+				],
+			});
+		} else if (isWindowMethod(method)) {
+			// we want to filter down to the dimension range after calculating the moving average
+			data.push({
+				name: `${name}_data`,
+				source: FILTERED_TABLE,
+				transform: [
+					...getTrendlineStatisticalTransforms(markProps, trendlineProps),
+					...dimensionRangeTransforms,
+				],
+			});
+		}
 		if (hasInteractiveChildren(trendlineChildren)) {
 			concatenatedTrendlineData.source.push(`${name}_data`);
 		}
@@ -169,8 +239,8 @@ export const getTrendlineData = (markProps: BarSpecProps | LineSpecProps): Sourc
 		const hoverSignal = `${markName}Trendline_voronoiHoveredId`;
 		const trendlineHasPopover = trendlines.some((trendline) => hasPopover(trendline.children));
 		const expr = trendlineHasPopover
-			? `${selectSignal} === datum.prismMarkId || !${selectSignal} && ${hoverSignal} === datum.prismMarkId`
-			: `${hoverSignal} === datum.prismMarkId`;
+			? `${selectSignal} === datum.${MARK_ID} || !${selectSignal} && ${hoverSignal} === datum.${MARK_ID}`
+			: `${hoverSignal} === datum.${MARK_ID}`;
 
 		data.push({
 			name: `${markName}Trendline_highlightedData`,
@@ -197,21 +267,97 @@ export const getTrendlineDimensionRangeTransforms = (
 	dimension: string,
 	dimensionRange: [number | null, number | null]
 ): FilterTransform[] => {
-	const filters: FilterTransform[] = [];
+	const filterExpressions: string[] = [];
 	if (dimensionRange[0] !== null) {
-		filters.push({
-			type: 'filter',
-			expr: `datum.${dimension} >= ${dimensionRange[0]}`,
-		});
+		filterExpressions.push(`datum.${dimension} >= ${dimensionRange[0]}`);
 	}
 	if (dimensionRange[1] !== null) {
-		filters.push({
-			type: 'filter',
-			expr: `datum.${dimension} <= ${dimensionRange[1]}`,
-		});
+		filterExpressions.push(`datum.${dimension} <= ${dimensionRange[1]}`);
 	}
-	return filters;
+	if (filterExpressions.length) {
+		return [
+			{
+				type: 'filter',
+				expr: filterExpressions.join(' && '),
+			},
+		];
+	}
+	return [];
 };
+
+const getTrendlineParamLookupTransform = (
+	{ color, lineType }: BarSpecProps | LineSpecProps,
+	{ name }: TrendlineSpecProps
+): LookupTransform => {
+	const { facets } = getFacetsFromProps({ color, lineType });
+	return {
+		type: 'lookup',
+		from: `${name}_params`,
+		key: 'keys',
+		fields: facets,
+		values: ['coef'],
+	};
+};
+
+/**
+ * This transform is used to calculate the value of the trendline using the coef and the dimension
+ * @param dimension mark dimension
+ * @param method trenline method
+ * @returns formula transorfm
+ */
+export const getTrendlineParamFormulaTransforms = (dimension: string, method: TrendlineMethod): FormulaTransform[] => {
+	let expr = '';
+	if (isPolynomialMethod(method)) {
+		const order = getPolynomialOrder(method);
+		expr = [
+			'datum.coef[0]',
+			...Array(order)
+				.fill(0)
+				.map((_e, i) => `datum.coef[${i + 1}] * pow(datum.${dimension}, ${i + 1})`),
+		].join(' + ');
+	} else if (method === 'exponential') {
+		expr = `datum.coef[0] + exp(datum.coef[1] * datum.${dimension})`;
+	} else if (method === 'logarithmic') {
+		expr = `datum.coef[0] + datum.coef[1] * log(datum.${dimension})`;
+	} else if (method === 'power') {
+		expr = `datum.coef[0] * pow(datum.${dimension}, datum.coef[1])`;
+	}
+
+	if (!expr) return [];
+	return [
+		{
+			type: 'formula',
+			expr,
+			as: TRENDLINE_VALUE,
+		},
+	];
+};
+
+/**
+ * determines if the supplied method is a polynomial method
+ * @see https://vega.github.io/vega/docs/transforms/regression/
+ * @param method regression method
+ * @returns boolean
+ */
+const isPolynomialMethod = (method: TrendlineMethod): boolean =>
+	method.startsWith('polynomial-') || ['linear', 'quadratic'].includes(method);
+
+/**
+ * determines if the supplied method is a regression method
+ * @see https://vega.github.io/vega/docs/transforms/regression/
+ * @param method regression method
+ * @returns boolean
+ */
+const isRegressionMethod = (method: TrendlineMethod): boolean =>
+	isPolynomialMethod(method) || ['exponential', 'logarithmic', 'power'].includes(method);
+
+/**
+ * determines if the supplied method is a windowing method
+ * @see https://vega.github.io/vega/docs/transforms/window/
+ * @param method regression method
+ * @returns boolean
+ */
+const isWindowMethod = (method: TrendlineMethod): boolean => method.startsWith('movingAverage-');
 
 /**
  * gets the statistical transforms that will calculate the trendline values
@@ -219,22 +365,143 @@ export const getTrendlineDimensionRangeTransforms = (
  * @param trendlineProps
  * @returns dataTransforms
  */
-export const getTrendlineStatisticalTransforms = (
-	{ color, lineType, metric }: BarSpecProps | LineSpecProps,
-	{ method }: TrendlineSpecProps
+const getTrendlineStatisticalTransforms = (
+	markProps: BarSpecProps | LineSpecProps,
+	{ method }: TrendlineSpecProps,
+	params: boolean = false
 ): Transforms[] => {
-	const transforms: Transforms[] = [];
 	if (method === 'average') {
-		const { facets } = getFacetsFromProps({ color, lineType });
-		transforms.push({
-			type: 'joinaggregate',
-			groupby: facets,
-			ops: ['mean'],
-			fields: [metric],
-			as: ['prismTrendlineValue'],
-		});
+		return [getAverageTransform(markProps)];
 	}
-	return transforms;
+	if (isRegressionMethod(method)) {
+		return [getRegressionTransform(markProps, method, params)];
+	}
+	if (isWindowMethod(method)) {
+		return [getMovingAverageTransform(markProps, method)];
+	}
+
+	return [];
+};
+
+/**
+ * gets the join aggreagate transform used for calculating the average trendline
+ * @param facets data facets
+ * @param metric data y key
+ * @returns JoinAggregateTransform
+ */
+export const getAverageTransform = ({
+	color,
+	lineType,
+	metric,
+}: BarSpecProps | LineSpecProps): JoinAggregateTransform => {
+	const { facets } = getFacetsFromProps({ color, lineType });
+	return {
+		type: 'joinaggregate',
+		groupby: facets,
+		ops: ['mean'],
+		fields: [metric],
+		as: [TRENDLINE_VALUE],
+	};
+};
+
+/**
+ * gets the regression transform used for calculating the regression trendline
+ * regression trendlines are ones that use the x value as a parameter
+ * @see https://vega.github.io/vega/docs/transforms/regression/
+ * @param markProps
+ * @param method
+ * @param params
+ * @returns
+ */
+export const getRegressionTransform = (
+	markProps: BarSpecProps | LineSpecProps,
+	method: TrendlineMethod,
+	params: boolean
+): RegressionTransform => {
+	const { color, dimension, lineType, metric } = markProps;
+	const { facets } = getFacetsFromProps({ color, lineType });
+
+	let regressionMethod: RegressionMethod | undefined;
+	let order: number | undefined;
+
+	switch (method) {
+		case 'exponential':
+			regressionMethod = 'exp';
+			break;
+		case 'logarithmic':
+			regressionMethod = 'log';
+			break;
+		case 'power':
+			regressionMethod = 'pow';
+			break;
+		default:
+			order = getPolynomialOrder(method);
+			regressionMethod = 'poly';
+			break;
+	}
+
+	let asDimension = dimension;
+	if ('scaleType' in markProps && markProps.scaleType === 'time') {
+		asDimension = 'datetime0';
+	}
+
+	return {
+		type: 'regression',
+		method: regressionMethod,
+		order,
+		groupby: facets,
+		x: dimension,
+		y: metric,
+		as: params ? undefined : [asDimension, TRENDLINE_VALUE],
+		params,
+	};
+};
+/**
+ * gets the order of the polynomial
+ * y = a + b * x + … + k * pow(x, order)
+ * @see https://vega.github.io/vega/docs/transforms/regression/
+ * @param method trendline method
+ * @returns order
+ */
+export const getPolynomialOrder = (method: TrendlineMethod): number => {
+	// method is one of the named polynomial methods
+	switch (method) {
+		case 'linear':
+			return 1;
+		case 'quadratic':
+			return 2;
+	}
+
+	// method is of the form polynomial-<order>
+	const order = parseInt(method.split('-')[1]);
+	if (order < 1) {
+		throw new Error(`Invalid polynomial order: ${order}, order must be an interger greater than 0`);
+	}
+	return order;
+};
+
+export const getMovingAverageTransform = (
+	markProps: BarSpecProps | LineSpecProps,
+	method: TrendlineMethod
+): WindowTransform => {
+	const frameWidth = parseInt(method.split('-')[1]);
+
+	const { color, lineType, metric } = markProps;
+	const { facets } = getFacetsFromProps({ color, lineType });
+
+	if (isNaN(frameWidth) || frameWidth < 1) {
+		throw new Error(
+			`Invalid moving average frame width: ${frameWidth}, frame width must be an integer greater than 0`
+		);
+	}
+	return {
+		type: 'window',
+		ops: ['mean'],
+		groupby: facets,
+		fields: [metric],
+		as: [TRENDLINE_VALUE],
+		frame: [frameWidth - 1, 0],
+	};
 };
 
 export const getTrendlineSignals = (markProps: BarSpecProps | LineSpecProps): Signal[] => {
@@ -248,6 +515,10 @@ export const getTrendlineSignals = (markProps: BarSpecProps | LineSpecProps): Si
 
 	if (trendlines.some((trendline) => hasPopover(trendline.children))) {
 		signals.push(getGenericSignal(`${markName}Trendline_selectedId`));
+	}
+
+	if (trendlines.some((trendline) => trendline.displayOnHover)) {
+		signals.push(getSeriesHoveredSignal(markName, `datum.${SERIES_ID}`, `${markName}_voronoi`));
 	}
 
 	return signals;

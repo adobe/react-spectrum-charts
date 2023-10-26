@@ -9,18 +9,45 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import React, { ReactElement } from 'react';
 
+import { TRENDLINE_VALUE } from '@constants';
 import usePrismProps from '@hooks/usePrismProps';
-import { Axis, Legend, Line, Prism, PrismProps, Trendline } from '@prism';
+import { Axis, ChartTooltip, Legend, Line, Prism, PrismProps, Trendline } from '@prism';
 import { workspaceTrendsData } from '@stories/data/data';
 import { ComponentStory } from '@storybook/react';
-import React, { ReactElement } from 'react';
 import { bindWithProps } from 'test-utils/bindWithProps';
 
 export default {
 	title: 'Prism/Trendline',
 	component: Trendline,
-	argTypes: {},
+	argTypes: {
+		method: {
+			control: {
+				type: 'select',
+				options: [
+					'average',
+					'exponential',
+					'linear',
+					'logarithmic',
+					'movingAverage-2',
+					'movingAverage-3',
+					'movingAverage-4',
+					'movingAverage-5',
+					'movingAverage-6',
+					'movingAverage-7',
+					'polynomial-1',
+					'polynomial-2',
+					'polynomial-3',
+					'polynomial-4',
+					'polynomial-5',
+					'polynomial-6',
+					'power',
+					'quadratic',
+				],
+			},
+		},
+	},
 	parameters: {
 		docs: {
 			description: {
@@ -39,6 +66,29 @@ const TrendlineStory: ComponentStory<typeof Trendline> = (args): ReactElement =>
 			<Axis position="left" grid title="Users" />
 			<Axis position="bottom" labelFormat="time" baseline ticks />
 			<Line color="series">
+				<Trendline {...args}>
+					<ChartTooltip>
+						{(item) => (
+							<>
+								<div>Trendline value: {item[TRENDLINE_VALUE]}</div>
+								<div>Line value: {item.value}</div>
+							</>
+						)}
+					</ChartTooltip>
+				</Trendline>
+			</Line>
+			<Legend lineWidth={{ value: 0 }} highlight />
+		</Prism>
+	);
+};
+
+const TrendlineStoryWithoutTooltip: ComponentStory<typeof Trendline> = (args): ReactElement => {
+	const prismProps = usePrismProps(defaultPrismProps);
+	return (
+		<Prism {...prismProps}>
+			<Axis position="left" grid title="Users" />
+			<Axis position="bottom" labelFormat="time" baseline ticks />
+			<Line color="series">
 				<Trendline {...args} />
 			</Line>
 			<Legend lineWidth={{ value: 0 }} highlight />
@@ -48,17 +98,27 @@ const TrendlineStory: ComponentStory<typeof Trendline> = (args): ReactElement =>
 
 const Basic = bindWithProps(TrendlineStory);
 Basic.args = {
-	method: 'average',
+	method: 'linear',
 	lineType: 'dashed',
 	lineWidth: 'S',
 };
 
 const DimensionRange = bindWithProps(TrendlineStory);
 DimensionRange.args = {
-	method: 'average',
+	method: 'linear',
 	lineType: 'dashed',
 	lineWidth: 'S',
+	highlightRawPoint: true,
 	dimensionRange: [1668063600000, null],
 };
 
-export { Basic, DimensionRange };
+const DisplayOnHover = bindWithProps(TrendlineStoryWithoutTooltip);
+DisplayOnHover.args = {
+	displayOnHover: true,
+	method: 'linear',
+	lineType: 'solid',
+	lineWidth: 'S',
+	color: 'gray-600',
+};
+
+export { Basic, DimensionRange, DisplayOnHover };

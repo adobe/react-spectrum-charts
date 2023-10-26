@@ -28,6 +28,39 @@ export const LegendBarStory: ComponentStory<typeof Legend> = (args): ReactElemen
 	);
 };
 
+export const LegendBarHighlightedSeriesStory: ComponentStory<typeof Legend> = (args): ReactElement => {
+	const prismProps = usePrismProps({ data, width: 700, highlightedSeries: 'Mac' });
+	return (
+		<Prism {...prismProps}>
+			<Bar color="series" />
+			<Legend {...args} />
+			<Axis position="bottom" baseline />
+			<Axis position="left" grid />
+		</Prism>
+	);
+};
+
+export const LegendBarHiddenSeriesStory: ComponentStory<typeof Legend> = (args): ReactElement => {
+	const prismProps = usePrismProps({ data, width: 700, hiddenSeries: ['Mac'] });
+	return (
+		<Prism {...prismProps}>
+			<Bar color="series" />
+			<Legend {...args} />
+			<Axis position="bottom" baseline />
+			<Axis position="left" grid />
+		</Prism>
+	);
+};
+
+export const LegendDisconnectedStory: ComponentStory<typeof Legend> = (args): ReactElement => {
+	const prismProps = usePrismProps({ data, width: 700, height: 50 });
+	return (
+		<Prism {...prismProps}>
+			<Legend {...args} />
+		</Prism>
+	);
+};
+
 export const defaultProps: LegendProps = {
 	onClick: undefined,
 };

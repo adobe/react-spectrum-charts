@@ -25,6 +25,7 @@ export function MetricRange({
 	metricStart,
 	metric = DEFAULT_METRIC,
 	displayOnHover = false,
+	scaleAxisToFit = false,
 }: MetricRangeProps) {
 	return null;
 }

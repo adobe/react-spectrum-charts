@@ -11,7 +11,14 @@
  */
 import { Item } from 'vega';
 
-import { ClickItem, getItemBounds, getItemName, getLegendItemValue, handleLegendItemClick } from './markClickUtils';
+import {
+	ActionItem,
+	getItemBounds,
+	getItemName,
+	getLegendItemValue,
+	handleLegendItemClick,
+	handleLegendItemMouseInput,
+} from './markClickUtils';
 
 describe('getItemBounds()', () => {
 	test('should return default bounds if null or undefined', () => {
@@ -98,7 +105,7 @@ describe('getItemName()', () => {
 	test('should return undefined if the item is invalid', () => {
 		expect(getItemName(undefined)).toBeUndefined();
 		expect(
-			getItemName({ datum: undefined, mark: { marktype: 'line', role: 'mark', group: undefined, items: [] } })
+			getItemName({ datum: undefined, mark: { marktype: 'line', role: 'mark', group: undefined, items: [] } }),
 		).toBeUndefined();
 	});
 	test('should return undefined if there is no name on the mark', () => {
@@ -107,7 +114,7 @@ describe('getItemName()', () => {
 				datum: undefined,
 				bounds: undefined,
 				mark: { marktype: 'line', role: 'mark', group: undefined, items: [] },
-			} as ClickItem)
+			} as ActionItem),
 		).toBeUndefined();
 	});
 	test('should return the name if it exists on the mark', () => {
@@ -116,7 +123,32 @@ describe('getItemName()', () => {
 				datum: undefined,
 				bounds: undefined,
 				mark: { marktype: 'line', role: 'mark', group: undefined, items: [], name: 'rect0_test' },
-			} as ClickItem)
+			} as ActionItem),
 		).toBe('rect0');
+	});
+});
+
+describe('handleLegendItemMouseInput()', () => {
+	let onLegendMouseInput;
+	beforeEach(() => {
+		onLegendMouseInput = jest.fn();
+	});
+	afterEach(() => {
+		jest.clearAllMocks();
+	});
+
+	test('should call onLegendMouseInput if legendItemValue is found', () => {
+		const item = {
+			context: null,
+			height: null,
+			width: null,
+			items: [{ role: 'legend-label', bounds: null, clip: null, items: [{ datum: { value: 'test' } }] }],
+		} as unknown as Item;
+		handleLegendItemMouseInput(item, onLegendMouseInput);
+		expect(onLegendMouseInput).toHaveBeenCalled();
+	});
+	test('should not call onLegendMouseInput if legendItemValue is not found', () => {
+		handleLegendItemMouseInput(undefined, onLegendMouseInput);
+		expect(onLegendMouseInput).not.toHaveBeenCalled();
 	});
 });

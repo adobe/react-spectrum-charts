@@ -9,30 +9,45 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import React, { Dispatch, ReactElement, SetStateAction, useState } from 'react';
 
-import { ActionButton, ActionGroup, Content, Divider, Flex, Item, Text, View } from '@adobe/react-spectrum';
 import { Annotation } from '@components/Annotation';
 import { ReferenceLine } from '@components/ReferenceLine';
+import { TRENDLINE_VALUE } from '@constants';
 import usePrismProps from '@hooks/usePrismProps';
-import { Area, Axis, Bar, ChartPopover, ChartTooltip, Legend, Line, Prism, Trendline, categorical16 } from '@prism';
+import {
+	Area,
+	Axis,
+	Bar,
+	ChartPopover,
+	ChartTooltip,
+	Legend,
+	Line,
+	Prism,
+	Title,
+	Trendline,
+	categorical16,
+} from '@prism';
+import { ComponentStory } from '@storybook/react';
+import { bindWithProps } from '@test-utils';
+import { Colors, Datum, LegendDescription, LegendLabel, PrismData, PrismProps, SpectrumColor, SubLabel } from 'types';
+
+import { ActionButton, ActionGroup, Content, Divider, Flex, Item, Text, View } from '@adobe/react-spectrum';
 import Close from '@spectrum-icons/workflow/Close';
 import Download from '@spectrum-icons/workflow/Download';
 import GraphPathing from '@spectrum-icons/workflow/GraphPathing';
 import UsersAdd from '@spectrum-icons/workflow/UsersAdd';
 import ViewDetail from '@spectrum-icons/workflow/ViewDetail';
-import { ComponentStory } from '@storybook/react';
-import { bindWithProps } from '@test-utils';
-import React, { ReactElement } from 'react';
-import { Colors, Datum, LegendDescription, LegendLabel, SpectrumColor, SubLabel } from 'types';
-import stackOverflowData from './data/stackOverflowTrends.json';
 
 import {
 	funnelConversionData,
 	funnelConversionTimeComparisonData,
+	releaseImpactBarData,
 	releaseImpactData,
 	userGrowthData,
 	userGrowthTimeComparisonData,
 } from './data/data';
+import stackOverflowData from './data/stackOverflowTrends.json';
 import { trendsTimeComparisonData } from './data/trendsTimeComparisonData';
 
 export default {
@@ -248,7 +263,7 @@ const ReleaseImpactStory: ComponentStory<typeof Prism> = (args): ReactElement =>
 		return (
 			<Content>
 				<View>
-					<Text>{item.prismTrendlineValue?.toFixed(2)}</Text>
+					<Text>{item[TRENDLINE_VALUE]?.toFixed(2)}</Text>
 				</View>
 			</Content>
 		);
@@ -272,6 +287,144 @@ const ReleaseImpactStory: ComponentStory<typeof Prism> = (args): ReactElement =>
 			</Line>
 			<Legend highlight />
 		</Prism>
+	);
+};
+
+const getReleaseImpactBar = (series: string, prismProps: PrismProps, isSingleSeries: boolean) => {
+	return (
+		<>
+			<div style={{ height: 50 }} /> {/* Spacer */}
+			<Prism {...prismProps}>
+				<Title
+					text={series}
+					position="start"
+					{...(isSingleSeries && { orient: 'bottom', position: 'middle' })}
+				/>
+				<Axis position="bottom" baseline ticks>
+					<ReferenceLine
+						value="14 days before"
+						icon="date"
+						position="after"
+						label="Jul 4"
+						labelFontWeight="bold"
+					/>
+				</Axis>
+				<Axis position="left" grid title="Events per user" />
+				<Bar
+					type="dodged"
+					dimension="period"
+					color="series"
+					opacity="series"
+					lineType="series"
+					lineWidth={1.5}
+					paddingRatio={0.2}
+				/>
+			</Prism>
+		</>
+	);
+};
+
+const ReleaseImpactBarStory: ComponentStory<typeof Prism> = (args): ReactElement => {
+	const [highlightedSeries, setHighlightedSeries]: [string, Dispatch<SetStateAction<string>>] = useState('');
+	const [hiddenSeries, setHiddenSeries]: [string[] | undefined, Dispatch<SetStateAction<string[] | undefined>>] =
+		useState();
+
+	function onLegendClick(series: string) {
+		if (!hiddenSeries) {
+			setHiddenSeries([series]);
+		} else if (hiddenSeries.find((s) => s === series)) {
+			setHiddenSeries(hiddenSeries.filter((s) => s !== series));
+		} else if (hiddenSeries.length < 2) {
+			setHiddenSeries([...hiddenSeries, series]);
+		}
+		setHighlightedSeries('');
+	}
+
+	function onLegendMouseOver(series: string) {
+		if (!hiddenSeries?.find((s) => s === series)) setHighlightedSeries(series);
+	}
+
+	function onLegendMouseOut() {
+		setHighlightedSeries('');
+	}
+
+	const { data } = args;
+	const result = {};
+
+	data.forEach((item) => {
+		if ('series' in item) {
+			const series = item.series as string;
+			if (result[series]) {
+				result[series].push(item);
+			} else {
+				result[series] = [item];
+			}
+		}
+	});
+
+	const firstSeries = Object.entries(result)[0];
+	const secondSeries = Object.entries(result)[1];
+	const thirdSeries = Object.entries(result)[2];
+	const [firstSeriesKey, firstSeriesData] = firstSeries;
+	const [secondSeriesKey, secondSeriesData] = secondSeries;
+	const [thirdSeriesKey, thirdSeriesData] = thirdSeries;
+
+	const displayFirstSeries = !hiddenSeries?.find((s) => s === firstSeriesKey);
+	const displaySecondSeries = !hiddenSeries?.find((s) => s === secondSeriesKey);
+	const displayThirdSeries = !hiddenSeries?.find((s) => s === thirdSeriesKey);
+
+	const displayedSeriesCount = [displayFirstSeries, displaySecondSeries, displayThirdSeries].filter(
+		(display) => display === true
+	);
+
+	const isSingleSeries = displayedSeriesCount.length === 1;
+
+	const props = usePrismProps({ ...args, hiddenSeries, highlightedSeries });
+	const firstSeriesProps = usePrismProps({
+		...args,
+		data: firstSeriesData as PrismData[],
+		hiddenSeries,
+		highlightedSeries,
+		height: isSingleSeries ? 500 : 250,
+	});
+	const secondSeriesProps = usePrismProps({
+		...args,
+		data: secondSeriesData as PrismData[],
+		colors: ['categorical-200'],
+		hiddenSeries,
+		highlightedSeries,
+		height: isSingleSeries ? 500 : 250,
+	});
+	const thirdSeriesProps = usePrismProps({
+		...args,
+		data: thirdSeriesData as PrismData[],
+		colors: ['categorical-300'],
+		hiddenSeries,
+		highlightedSeries,
+		height: isSingleSeries ? 500 : 250,
+	});
+
+	return (
+		<>
+			{/* First Series */}
+			{displayFirstSeries && getReleaseImpactBar(firstSeriesKey, firstSeriesProps, isSingleSeries)}
+
+			{/* Second Series */}
+			{displaySecondSeries && getReleaseImpactBar(secondSeriesKey, secondSeriesProps, isSingleSeries)}
+
+			{/* Third Series */}
+			{displayThirdSeries && getReleaseImpactBar(thirdSeriesKey, thirdSeriesProps, isSingleSeries)}
+
+			{/* Legend */}
+			<Prism {...props} height={50}>
+				<Legend
+					color={'series'}
+					onClick={onLegendClick}
+					onMouseOut={onLegendMouseOut}
+					onMouseOver={onLegendMouseOver}
+				/>
+			</Prism>
+		</>
 	);
 };
 
@@ -418,6 +571,13 @@ ReleaseImpact.args = {
 	minWidth: 840,
 };
 
+const ReleaseImpactBar = bindWithProps(ReleaseImpactBarStory);
+ReleaseImpactBar.args = {
+	data: releaseImpactBarData,
+	height: 250,
+	minWidth: 840,
+};
+
 const TrendsTimeComparisonBar = bindWithProps(TrendsTimeComparisonBarStory);
 TrendsTimeComparisonBar.args = {
 	data: trendsTimeComparisonData,
@@ -465,6 +625,7 @@ export {
 	UserGrowthAreaGrowth,
 	UserGrowthBarGrowth,
 	ReleaseImpact,
+	ReleaseImpactBar,
 	TrendsTimeComparisonBar,
 	TrendsTimeComparisonStackedBar,
 	TrendsTimeComparisonLine,

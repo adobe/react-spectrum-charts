@@ -9,16 +9,18 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import React, { ReactElement } from 'react';
 
+import { MARK_ID } from '@constants';
 import usePrismProps from '@hooks/usePrismProps';
 import { Axis, Bar, ChartPopover, ChartTooltip, Legend, Prism } from '@prism';
-import { bindWithProps } from '@test-utils';
 import { ComponentStory } from '@storybook/react';
-import { ReactElement } from 'react';
+import { bindWithProps } from '@test-utils';
 import { BarProps, Datum, SpectrumColor } from 'types';
 
-import { generateMockDataForTrellis } from './data';
 import { Content, Text, View } from '@adobe/react-spectrum';
+
+import { generateMockDataForTrellis } from './data';
 
 export default {
 	title: 'Prism/Bar/Trellis',
@@ -62,7 +64,7 @@ const BarStory: ComponentStory<typeof Bar> = (args: BarProps): ReactElement => {
 		return (
 			<Content>
 				<View>
-					<Text>{item.prismMarkId}</Text>
+					<Text>{item[MARK_ID]}</Text>
 				</View>
 			</Content>
 		);

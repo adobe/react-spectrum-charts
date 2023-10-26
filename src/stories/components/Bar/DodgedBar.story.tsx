@@ -9,14 +9,15 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import React, { ReactElement, createElement } from 'react';
 
-import { Content } from '@adobe/react-spectrum';
 import { Annotation } from '@components/Annotation';
 import usePrismProps from '@hooks/usePrismProps';
 import { Axis, Bar, ChartPopover, ChartTooltip, Legend, Prism, categorical6 } from '@prism';
-import { bindWithProps } from '@test-utils';
 import { ComponentStory } from '@storybook/react';
-import { ReactElement, createElement } from 'react';
+import { bindWithProps } from '@test-utils';
+
+import { Content } from '@adobe/react-spectrum';
 
 import { barSeriesData, barSubSeriesData } from './data';
 

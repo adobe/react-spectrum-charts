@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
+import { MARK_ID } from '@constants';
 import { Signal } from 'vega';
 
 /**
@@ -32,7 +32,7 @@ export const getUncontrolledHoverSignal = (name: string, nestedDatum?: boolean):
 		name: signalName,
 		value: null,
 		on: [
-			{ events: `@${name}:mouseover`, update: `${nestedDatum ? 'datum.' : ''}datum.prismMarkId` },
+			{ events: `@${name}:mouseover`, update: `${nestedDatum ? 'datum.' : ''}datum.${MARK_ID}` },
 			{ events: `@${name}:mouseout`, update: 'null' },
 		],
 	};

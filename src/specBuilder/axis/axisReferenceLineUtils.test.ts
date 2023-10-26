@@ -17,6 +17,7 @@ import { DATE_PATH } from 'svgPaths';
 import { AxisSpecProps, ReferenceLineProps } from 'types';
 
 import {
+	getPositionRule,
 	getReferenceLineRuleMark,
 	getReferenceLineSymbolMark,
 	getReferenceLinesFromChildren,
@@ -67,6 +68,43 @@ describe('scaleTypeSupportsRefenceLines()', () => {
 		expect(scaleTypeSupportsReferenceLines('time')).toBe(true);
 		expect(scaleTypeSupportsReferenceLines('utc')).toBe(true);
 		expect(scaleTypeSupportsReferenceLines('band')).toBe(true);
+	});
+});
+
+describe('getPositionRule()', () => {
+	test('creates the correct mark when value is a string', () => {
+		expect(
+			getPositionRule(defaultAxisProps, { ...defaultReferenceLineProps, value: 'test' }, 'xLinear'),
+		).toStrictEqual({ scale: 'xLinear', value: 'test' });
+	});
+
+	test('creates the correct mark when value is a number', () => {
+		expect(getPositionRule(defaultAxisProps, { ...defaultReferenceLineProps, value: 10 }, 'xLinear')).toStrictEqual(
+			{
+				scale: 'xLinear',
+				value: 10,
+			},
+		);
+	});
+
+	test('creates the correct mark when value is a string and scaleType is band', () => {
+		expect(
+			getPositionRule(
+				{ ...defaultAxisProps, scaleType: 'band' },
+				{ ...defaultReferenceLineProps, value: 'value' },
+				'xBand',
+			),
+		).toStrictEqual({ signal: "scale('xBand', 'value') + bandwidth('xBand') / 2" });
+	});
+
+	test('creates the correct mark when value is a number and scaleType is band', () => {
+		expect(
+			getPositionRule(
+				{ ...defaultAxisProps, scaleType: 'band' },
+				{ ...defaultReferenceLineProps, value: 10 },
+				'xBand',
+			),
+		).toStrictEqual({ signal: "scale('xBand', 10) + bandwidth('xBand') / 2" });
 	});
 });
 

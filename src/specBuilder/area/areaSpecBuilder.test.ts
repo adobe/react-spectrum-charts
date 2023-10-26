@@ -9,6 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { createElement } from 'react';
 
 import { ChartTooltip } from '@components/ChartTooltip';
 import {
@@ -17,9 +18,9 @@ import {
 	DEFAULT_CONTINUOUS_DIMENSION,
 	DEFAULT_METRIC,
 	FILTERED_TABLE,
+	MARK_ID,
 	TABLE,
 } from '@constants';
-import { createElement } from 'react';
 import { AreaSpecProps } from 'types';
 import { Data, GroupMark, Spec } from 'vega';
 
@@ -47,7 +48,7 @@ const defaultSpec = initializeSpec({
 		{
 			name: TABLE,
 			transform: [
-				{ as: 'prismMarkId', type: 'identifier' },
+				{ as: MARK_ID, type: 'identifier' },
 				{
 					as: ['datetime0', 'datetime1'],
 					field: 'datetime',
@@ -183,13 +184,13 @@ describe('areaSpecBuilder', () => {
 		test('scaleTypes "point" and "linear" should not add timeunit transforms return the original data', () => {
 			expect(
 				addData(baseData, { ...defaultAreaProps, scaleType: 'point' })[0].transform?.find(
-					(t) => t.type === 'timeunit',
-				),
+					(t) => t.type === 'timeunit'
+				)
 			).toBeUndefined();
 			expect(
 				addData(baseData, { ...defaultAreaProps, scaleType: 'linear' })[0].transform?.find(
-					(t) => t.type === 'timeunit',
-				),
+					(t) => t.type === 'timeunit'
+				)
 			).toBeUndefined();
 		});
 	});
@@ -202,7 +203,7 @@ describe('areaSpecBuilder', () => {
 		test('children: should add signals', () => {
 			const tooltip = createElement(ChartTooltip);
 			expect(addSignals(startingSpec.signals ?? [], { ...defaultAreaProps, children: [tooltip] })).toStrictEqual(
-				defaultSignals,
+				defaultSignals
 			);
 		});
 	});

@@ -9,10 +9,9 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
-import { FILTERED_TABLE, TABLE } from '@constants';
+import { FILTERED_TABLE, SERIES_ID, TABLE } from '@constants';
 import produce from 'immer';
-import { Compare, Data, SourceData, Transforms, ValuesData } from 'vega';
+import { Compare, Data, FormulaTransform, SourceData, Transforms, ValuesData } from 'vega';
 
 export const addTimeTransform = produce<Transforms[], [string]>((transforms, dimension) => {
 	if (transforms.findIndex((transform) => transform.type === 'timeunit') === -1) {
@@ -48,4 +47,13 @@ export const getTableData = (data: Data[]): ValuesData => {
 export const getFilteredTableData = (data: Data[]): SourceData => {
 	// ok to cast this here because we know that the data array will always have table data of type SourceData
 	return data.find((d) => d.name === FILTERED_TABLE) as SourceData;
+};
+
+export const getPrismSeriesIdTransform = (facets: string[]): FormulaTransform => {
+	const expr = facets.map((facet) => `datum.${facet}`).join(' + " | " + ');
+	return {
+		type: 'formula',
+		as: SERIES_ID,
+		expr,
+	};
 };

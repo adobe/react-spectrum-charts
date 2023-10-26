@@ -9,8 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
-import { DEFAULT_SYMBOL_SIZE, DEFAULT_SYMBOL_STROKE_WIDTH } from '@constants';
+import { DEFAULT_SYMBOL_SIZE, DEFAULT_SYMBOL_STROKE_WIDTH, MARK_ID, SERIES_ID } from '@constants';
 import {
 	getColorProductionRule,
 	getCursor,
@@ -50,9 +49,9 @@ export interface LineMarkProps {
 	lineWidth?: LineWidthFacet;
 	opacity: OpacityFacet;
 	colorScheme: ColorScheme;
-	isMetricRange?: boolean;
 	displayOnHover?: boolean;
 	staticPoint?: string;
+	parentName?: string;
 }
 
 /**
@@ -72,17 +71,16 @@ export const getLineMark = (
 		lineWidth,
 		opacity,
 		colorScheme,
-		isMetricRange,
 		displayOnHover,
+		parentName,
 	}: LineMarkProps,
-	dataSource: string,
+	dataSource: string
 ): LineMark => {
 	// This allows us to only show the metric range when hovering over the parent line component.
-	const baseOpacityRule = getOpacityProductionRule(isMetricRange && displayOnHover ? { value: 0 } : opacity);
-	const opacityRules =
-		isMetricRange && displayOnHover
-			? [...getMetricRangeHoverRules(name, color, opacity), baseOpacityRule]
-			: [baseOpacityRule];
+	const baseOpacityRule = getOpacityProductionRule(displayOnHover ? { value: 0 } : opacity);
+	const opacityRules = displayOnHover
+		? [...getHoverRules(parentName ?? name, opacity), baseOpacityRule]
+		: [baseOpacityRule];
 
 	return {
 		name,
@@ -106,14 +104,17 @@ export const getLineMark = (
 	};
 };
 
-const getMetricRangeHoverRules = (name: string, color: ColorFacet, opacity: OpacityFacet) => {
+const getHoverRules = (name: string, opacity: OpacityFacet) => {
 	const opacityRule = getOpacityProductionRule(opacity);
-	const selectRule = { test: `${name}_selectedSeries && ${name}_selectedSeries === datum.${color}`, ...opacityRule };
 	const hoverRule = {
-		test: `${name}MetricRange_hoveredSeries && ${name}MetricRange_hoveredSeries === datum.${color}`,
+		test: `${name}_hoveredSeries && ${name}_hoveredSeries === datum.${SERIES_ID}`,
 		...opacityRule,
 	};
-	const legendRule = { test: 'highlightedSeries && highlightedSeries === datum.prismSeriesId', value: 1 };
+	const selectRule = {
+		test: `${name}_selectedSeries && ${name}_selectedSeries === datum.${SERIES_ID}`,
+		...opacityRule,
+	};
+	const legendRule = { test: `highlightedSeries && highlightedSeries === datum.${SERIES_ID}`, ...opacityRule };
 	return [hoverRule, selectRule, legendRule];
 };
 
@@ -146,7 +147,7 @@ interface LineHoverMarkProps {
 export const getLineHoverMarks = (
 	{ children, color, colorScheme, dimension, metric, name, scaleType, staticPoint }: LineHoverMarkProps,
 	dataSource: string,
-	secondaryHighlightedMetric?: string,
+	secondaryHighlightedMetric?: string
 ): Mark[] => {
 	return [
 		getHoverRule(dimension, name, scaleType),
@@ -195,7 +196,7 @@ const getBackgroundPoint = (
 	displayPointMark: string | undefined,
 	metric: string,
 	name: string,
-	scaleType: ScaleType,
+	scaleType: ScaleType
 ): SymbolMark => {
 	return {
 		name: `${name}_pointBackground`,
@@ -223,7 +224,7 @@ const getPoint = (
 	displayPointMark: string | undefined,
 	metric: string,
 	name: string,
-	scaleType: ScaleType,
+	scaleType: ScaleType
 ): SymbolMark => {
 	const xProductionRule = getXProductionRule(scaleType, dimension);
 	const update = displayPointMark
@@ -257,7 +258,7 @@ const getSecondaryPoint = (
 	dimension: string,
 	name: string,
 	scaleType: ScaleType,
-	secondaryHighlightedMetric: string,
+	secondaryHighlightedMetric: string
 ): SymbolMark => {
 	return {
 		name: `${name}_secondaryPoint`,
@@ -282,7 +283,7 @@ const getPointsForVoronoi = (
 	dimension: string,
 	metric: string,
 	name: string,
-	scaleType: ScaleType,
+	scaleType: ScaleType
 ): SymbolMark => {
 	return {
 		name: `${name}_pointsForVoronoi`,
@@ -371,11 +372,11 @@ const getHighlightPointStyle = (
 	name: string,
 	displayPointMark: string | undefined,
 	color: ColorFacet,
-	colorScheme: ColorScheme,
+	colorScheme: ColorScheme
 ) => {
 	const displayPointMarkTest = `datum.${displayPointMark} && datum.${displayPointMark} === true`;
-	const hoveredTest = `${name}_voronoiHoveredId && ${name}_voronoiHoveredId === datum.prismMarkId`;
-	const selectedTest = `${name}_selectedId && ${name}_selectedId === datum.prismMarkId`;
+	const hoveredTest = `${name}_voronoiHoveredId && ${name}_voronoiHoveredId === datum.${MARK_ID}`;
+	const selectedTest = `${name}_selectedId && ${name}_selectedId === datum.${MARK_ID}`;
 	const hoverStrokeRule = `(${hoveredTest} || ${selectedTest}) && datum.${displayPointMark}`;
 
 	return {
@@ -442,8 +443,8 @@ export const getLineHighlightedData = (name: string, source: string, hasPopover:
 	const selectSignal = `${name}_selectedId`;
 	const hoverSignal = `${name}_voronoiHoveredId`;
 	const expr = hasPopover
-		? `${selectSignal} && ${selectSignal} === datum.prismMarkId || !${selectSignal} && ${hoverSignal} && ${hoverSignal} === datum.prismMarkId`
-		: `${hoverSignal} && ${hoverSignal} === datum.prismMarkId`;
+		? `${selectSignal} && ${selectSignal} === datum.${MARK_ID} || !${selectSignal} && ${hoverSignal} && ${hoverSignal} === datum.${MARK_ID}`
+		: `${hoverSignal} && ${hoverSignal} === datum.${MARK_ID}`;
 	return {
 		name: `${name}_highlightedData`,
 		source,

@@ -9,12 +9,11 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
+import { FILTERED_TABLE } from '@constants';
 import { getInteractive } from '@specBuilder/marks/markUtils';
 import { BarSpecProps } from 'types';
 import { Mark, RectEncodeEntry, RectMark } from 'vega';
 
-import { FILTERED_TABLE } from '@constants';
 import {
 	getAnnotationMarks,
 	getBarEnterEncodings,
@@ -41,9 +40,9 @@ export const getStackedBarMarks = (props: BarSpecProps): Mark[] => {
 		...getAnnotationMarks(
 			props,
 			getBaseDataSourceName(props),
-			getOrientationProperties(props).dimensionScaleKey,
-			props.dimension,
-		),
+			getOrientationProperties(props.orientation).dimensionScaleKey,
+			props.dimension
+		)
 	);
 
 	return marks;
@@ -59,7 +58,7 @@ export const getDodgedAndStackedBarMark = (props: BarSpecProps): Mark => {
 
 	// add annotation marks
 	marks.push(
-		...getAnnotationMarks(props, `${props.name}_facet`, `${props.name}_position`, `${props.name}_dodgeGroup`),
+		...getAnnotationMarks(props, `${props.name}_facet`, `${props.name}_position`, `${props.name}_dodgeGroup`)
 	);
 
 	return { ...getDodgedGroupMark(props), marks };
@@ -106,12 +105,12 @@ export const getStackedBar = (props: BarSpecProps): RectMark => {
 };
 
 export const getStackedDimensionEncodings = (props: BarSpecProps): RectEncodeEntry => {
-	const { dimension } = props;
+	const { dimension, orientation } = props;
 	if (isDodgedAndStacked(props)) {
 		return getDodgedDimensionEncodings(props);
 	}
 
-	const { dimensionAxis, rangeScale, dimensionScaleKey } = getOrientationProperties(props);
+	const { dimensionAxis, rangeScale, dimensionScaleKey } = getOrientationProperties(orientation);
 
 	return {
 		[dimensionAxis]: { scale: dimensionScaleKey, field: dimension },

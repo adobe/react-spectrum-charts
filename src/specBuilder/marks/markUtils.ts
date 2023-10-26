@@ -14,6 +14,7 @@ import { ReactElement } from 'react';
 import { ChartPopover } from '@components/ChartPopover';
 import { ChartTooltip } from '@components/ChartTooltip';
 import { MetricRange } from '@components/MetricRange';
+import { Trendline } from '@components/Trendline';
 import { getColorValue, getLineWidthPixelsFromLineWidth, getStrokeDashFromLineType } from '@specBuilder/specUtils';
 import {
 	ColorFacet,
@@ -57,7 +58,7 @@ export function getInteractive(children: MarkChildElement[]): boolean {
  */
 export function getTooltip(children: MarkChildElement[], name: string, nestedDatum?: boolean): SignalRef | undefined {
 	// skip annotations
-	if (hasInteractiveChildren(children)) {
+	if (hasTooltip(children)) {
 		return { signal: `merge(datum${nestedDatum ? '.datum' : ''}, {'prismComponentName': '${name}'})` };
 	}
 }
@@ -81,7 +82,13 @@ export const getBorderStrokeEncodings = (isStacked: boolean, isArea = false): Ar
  * @returns
  */
 export const hasInteractiveChildren = (children: ReactElement[]): boolean => {
-	return children.some((child) => child.type === ChartTooltip || child.type === ChartPopover);
+	return children.some(
+		(child) =>
+			child.type === ChartTooltip ||
+			child.type === ChartPopover ||
+			(child.type === Trendline && child.props.displayOnHover) ||
+			(child.type === MetricRange && child.props.displayOnHover)
+	);
 };
 export const hasMetricRange = (children: ReactElement[]): boolean =>
 	children.some((child) => child.type === MetricRange);

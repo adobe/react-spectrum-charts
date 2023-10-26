@@ -9,9 +9,8 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
 import { ChartPopover } from '@components/ChartPopover';
-import { HIGHLIGHT_CONTRAST_RATIO } from '@constants';
+import { HIGHLIGHT_CONTRAST_RATIO, SERIES_ID } from '@constants';
 import {
 	getBorderStrokeEncodings,
 	getColorProductionRule,
@@ -34,7 +33,7 @@ export interface AreaMarkProps {
 	scaleType: ScaleType;
 	opacity: number;
 	isMetricRange?: boolean;
-	lineName?: string;
+	parentName?: string; // Optional name of mark that this area is a child of. Used for metric ranges.
 	displayOnHover?: boolean;
 }
 
@@ -50,7 +49,7 @@ export const getAreaMark = ({
 	dimension,
 	opacity,
 	isMetricRange,
-	lineName,
+	parentName,
 	displayOnHover,
 }: AreaMarkProps): AreaMark => ({
 	name,
@@ -70,7 +69,7 @@ export const getAreaMark = ({
 			// but it may change the x position if it causes the chart to resize
 			x: getX(scaleType, dimension),
 			cursor: getCursor(children),
-			fillOpacity: getFillOpacity(name, color, opacity, children, isMetricRange, lineName, displayOnHover),
+			fillOpacity: getFillOpacity(name, color, opacity, children, isMetricRange, parentName, displayOnHover),
 		},
 	},
 });
@@ -81,19 +80,19 @@ export function getFillOpacity(
 	opacity: number,
 	children: MarkChildElement[],
 	isMetricRange?: boolean,
-	lineName?: string,
-	displayOnHover?: boolean,
+	parentName?: string,
+	displayOnHover?: boolean
 ): ProductionRule<NumericValueRef> | undefined {
-	const hoverSignal = isMetricRange && lineName ? `${lineName}MetricRange_hoveredSeries` : `${name}_hoveredSeries`;
+	const hoverSignal = isMetricRange && parentName ? `${parentName}_hoveredSeries` : `${name}_hoveredSeries`;
 	const selectSignal = `${name}_selectedSeries`;
-	const metricRangeSelectSignal = isMetricRange && lineName ? `${lineName}_selectedSeries` : selectSignal;
+	const metricRangeSelectSignal = isMetricRange && parentName ? `${parentName}_selectedSeries` : selectSignal;
 
 	// if metric ranges only display when hovering, we don't need to include other hover rules for this specific area
 	if (isMetricRange && displayOnHover) {
 		return [
 			{ test: `${hoverSignal} && ${hoverSignal} === datum.${color}`, value: opacity },
 			{ test: `${metricRangeSelectSignal} && ${metricRangeSelectSignal} === datum.${color}`, value: opacity },
-			{ test: 'highlightedSeries && highlightedSeries === datum.prismSeriesId', value: opacity },
+			{ test: `highlightedSeries && highlightedSeries === datum.${SERIES_ID}`, value: opacity },
 			{ value: 0 },
 		];
 	}

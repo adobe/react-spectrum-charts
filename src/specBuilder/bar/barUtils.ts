@@ -9,7 +9,6 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
 import { Annotation } from '@components/Annotation';
 import {
 	ANNOTATION_FONT_SIZE,
@@ -18,6 +17,8 @@ import {
 	DISCRETE_PADDING,
 	FILTERED_TABLE,
 	HIGHLIGHT_CONTRAST_RATIO,
+	MARK_ID,
+	STACK_ID,
 } from '@constants';
 import {
 	getColorProductionRule,
@@ -29,8 +30,8 @@ import {
 	hasPopover,
 } from '@specBuilder/marks/markUtils';
 import { getColorValue, getLineWidthPixelsFromLineWidth } from '@specBuilder/specUtils';
-import { toArray } from '@utils';
-import { AnnotationElement, AnnotationStyleProps, BarSpecProps } from 'types';
+import { sanitizeMarkChildren } from '@utils';
+import { AnnotationElement, AnnotationStyleProps, BarSpecProps, Orientation } from 'types';
 import {
 	ArrayValueRef,
 	ColorValueRef,
@@ -41,6 +42,7 @@ import {
 	ProductionRule,
 	RectEncodeEntry,
 } from 'vega';
+
 import { getTrellisProperties, isTrellised } from './trellisedBarUtils';
 
 const LABEL_HEIGHT = 22;
@@ -54,9 +56,9 @@ export const isDodgedAndStacked = ({ color, lineType, opacity }: BarSpecProps): 
 };
 
 export const getDodgedGroupMark = (props: BarSpecProps): GroupMark => {
-	const { dimension, groupedPadding, name, paddingRatio } = props;
+	const { dimension, groupedPadding, orientation, name, paddingRatio } = props;
 
-	const { dimensionScaleKey, dimensionAxis, rangeScale } = getOrientationProperties(props);
+	const { dimensionScaleKey, dimensionAxis, rangeScale } = getOrientationProperties(orientation);
 
 	return {
 		name: `${name}_group`,
@@ -92,7 +94,7 @@ export const getDodgedGroupMark = (props: BarSpecProps): GroupMark => {
 };
 
 export const getDodgedDimensionEncodings = (props: BarSpecProps): RectEncodeEntry => {
-	const { dimensionAxis, rangeScale } = getOrientationProperties(props);
+	const { dimensionAxis, rangeScale } = getOrientationProperties(props.orientation);
 
 	const scale = `${props.name}_position`;
 	const field = `${props.name}_dodgeGroup`;
@@ -104,7 +106,7 @@ export const getDodgedDimensionEncodings = (props: BarSpecProps): RectEncodeEntr
 };
 
 export const getTrellisedDimensionEncodings = (props: BarSpecProps): RectEncodeEntry => {
-	const { dimensionAxis, rangeScale, dimensionScaleKey } = getOrientationProperties(props);
+	const { dimensionAxis, rangeScale, dimensionScaleKey } = getOrientationProperties(props.orientation);
 
 	return {
 		[dimensionAxis]: { scale: dimensionScaleKey, field: props.dimension },
@@ -114,7 +116,7 @@ export const getTrellisedDimensionEncodings = (props: BarSpecProps): RectEncodeE
 
 export const getMetricEncodings = (props: BarSpecProps): RectEncodeEntry => {
 	const { metric, type } = props;
-	const { metricAxis: startKey, metricScaleKey: scaleKey } = getOrientationProperties(props);
+	const { metricAxis: startKey, metricScaleKey: scaleKey } = getOrientationProperties(props.orientation);
 	const endKey = `${startKey}2`;
 
 	if (type === 'stacked' || isDodgedAndStacked(props)) {
@@ -128,7 +130,7 @@ export const getMetricEncodings = (props: BarSpecProps): RectEncodeEntry => {
 
 export const getStackedMetricEncodings = (props: BarSpecProps): RectEncodeEntry => {
 	const { metric, orientation } = props;
-	const { metricAxis: startKey, metricScaleKey: scaleKey } = getOrientationProperties(props);
+	const { metricAxis: startKey, metricScaleKey: scaleKey } = getOrientationProperties(props.orientation);
 	const endKey = `${startKey}2`;
 
 	const startValue = `datum.${metric}0`;
@@ -194,8 +196,8 @@ export const getCornerRadiusEncodings = (props: BarSpecProps): RectEncodeEntry =
 };
 
 export const getStackedCornerRadiusEncodings = ({ name, metric, lineWidth }: BarSpecProps): RectEncodeEntry => {
-	const topTestString = `datum.${metric}1 > 0 && data('${name}_stacks')[indexof(pluck(data('${name}_stacks'), 'prismStackId'), datum.prismStackId)].max_${metric}1 === datum.${metric}1`;
-	const bottomTestString = `datum.${metric}1 < 0 && data('${name}_stacks')[indexof(pluck(data('${name}_stacks'), 'prismStackId'), datum.prismStackId)].min_${metric}1 === datum.${metric}1`;
+	const topTestString = `datum.${metric}1 > 0 && data('${name}_stacks')[indexof(pluck(data('${name}_stacks'), '${STACK_ID}'), datum.${STACK_ID})].max_${metric}1 === datum.${metric}1`;
+	const bottomTestString = `datum.${metric}1 < 0 && data('${name}_stacks')[indexof(pluck(data('${name}_stacks'), '${STACK_ID}'), datum.${STACK_ID})].min_${metric}1 === datum.${metric}1`;
 	const value = Math.max(1, CORNER_RADIUS - getLineWidthPixelsFromLineWidth(lineWidth) / 2);
 
 	return {
@@ -208,7 +210,7 @@ export const getStackedCornerRadiusEncodings = ({ name, metric, lineWidth }: Bar
 
 export const rotateRectClockwiseIfNeeded = (
 	rectEncodeEntry: RectEncodeEntry,
-	{ orientation }: BarSpecProps,
+	{ orientation }: BarSpecProps
 ): RectEncodeEntry => {
 	if (orientation === 'vertical') return rectEncodeEntry;
 	return {
@@ -221,11 +223,11 @@ export const rotateRectClockwiseIfNeeded = (
 
 export const getAnnotationMetricAxisPosition = (
 	props: BarSpecProps,
-	annotationWidth: AnnotationWidth,
+	annotationWidth: AnnotationWidth
 ): ProductionRule<NumericValueRef> => {
 	const { type, metric, orientation } = props;
 	const field = type === 'stacked' || isDodgedAndStacked(props) ? `${metric}1` : metric;
-	const { metricScaleKey: scaleKey } = getOrientationProperties(props);
+	const { metricScaleKey: scaleKey } = getOrientationProperties(orientation);
 	const positionOffset = getAnnotationPositionOffset(props, annotationWidth);
 
 	if (orientation === 'vertical') {
@@ -253,7 +255,7 @@ export const getAnnotationMetricAxisPosition = (
 
 export const getAnnotationPositionOffset = (
 	{ orientation }: BarSpecProps,
-	annotationWidth: AnnotationWidth,
+	annotationWidth: AnnotationWidth
 ): string => {
 	const pixelGapFromBaseline = 2.5;
 
@@ -283,16 +285,16 @@ export const getAnnotationMarks = (
 	// in which case we don't want to use the "global" (full table) values.
 	localDataTableName: string,
 	localDimensionScaleKey: string,
-	localDimensionField: string,
+	localDimensionField: string
 ) => {
 	const marks: Mark[] = [];
-	const children = toArray(barProps.children);
+	const children = sanitizeMarkChildren(barProps.children);
 	// bar only supports one annotation
 	const annotation = children.find((el) => el.type === Annotation) as AnnotationElement;
 	if (annotation?.props.textKey) {
-		const { name } = barProps;
+		const { orientation, name } = barProps;
 		const { textKey, style } = annotation.props;
-		const { metricAxis, dimensionAxis } = getOrientationProperties(barProps);
+		const { metricAxis, dimensionAxis } = getOrientationProperties(orientation);
 		const annotationWidth = getAnnotationWidth(textKey, style);
 		const annotationPosition = getAnnotationMetricAxisPosition(barProps, annotationWidth);
 
@@ -365,7 +367,7 @@ export const getBarUpdateEncodings = (props: BarSpecProps): EncodeEntry => ({
 
 export const getFillStrokeOpacity = (
 	{ children, name, opacity }: BarSpecProps,
-	isStrokeOpacity?: boolean,
+	isStrokeOpacity?: boolean
 ): ProductionRule<NumericValueRef> => {
 	const defaultProductionRule = getOpacityProductionRule(opacity);
 	// ignore annotations
@@ -382,20 +384,20 @@ export const getFillStrokeOpacity = (
 		const selectedMarkRule = isStrokeOpacity ? { value: 1 } : defaultProductionRule;
 		return [
 			{
-				test: `!${selectSignal} && ${hoverSignal} && ${hoverSignal} !== datum.prismMarkId`,
+				test: `!${selectSignal} && ${hoverSignal} && ${hoverSignal} !== datum.${MARK_ID}`,
 				...getHighlightOpacityValue(defaultProductionRule),
 			},
 			{
-				test: `${selectSignal} && ${selectSignal} !== datum.prismMarkId`,
+				test: `${selectSignal} && ${selectSignal} !== datum.${MARK_ID}`,
 				...getHighlightOpacityValue(defaultProductionRule),
 			},
-			{ test: `${selectSignal} && ${selectSignal} === datum.prismMarkId`, ...selectedMarkRule },
+			{ test: `${selectSignal} && ${selectSignal} === datum.${MARK_ID}`, ...selectedMarkRule },
 			defaultProductionRule,
 		];
 	}
 	return [
 		{
-			test: `${hoverSignal} && ${hoverSignal} !== datum.prismMarkId`,
+			test: `${hoverSignal} && ${hoverSignal} !== datum.${MARK_ID}`,
 			...getHighlightOpacityValue(defaultProductionRule),
 		},
 		defaultProductionRule,
@@ -411,7 +413,7 @@ export const getStroke = ({ children, color, colorScheme, name }: BarSpecProps):
 	const selectSignal = `${name}_selectedId`;
 	return [
 		{
-			test: `${selectSignal} && ${selectSignal} === datum.prismMarkId`,
+			test: `${selectSignal} && ${selectSignal} === datum.${MARK_ID}`,
 			value: getColorValue('static-blue', colorScheme),
 		},
 		defaultProductionRule,
@@ -425,7 +427,7 @@ export const getStrokeDash = ({ children, lineType, name }: BarSpecProps): Produ
 	}
 
 	const selectSignal = `${name}_selectedId`;
-	return [{ test: `${selectSignal} && ${selectSignal} === datum.prismMarkId`, value: [] }, defaultProductionRule];
+	return [{ test: `${selectSignal} && ${selectSignal} === datum.${MARK_ID}`, value: [] }, defaultProductionRule];
 };
 
 export const getStrokeWidth = ({ children, lineWidth, name }: BarSpecProps): ProductionRule<NumericValueRef> => {
@@ -437,13 +439,13 @@ export const getStrokeWidth = ({ children, lineWidth, name }: BarSpecProps): Pro
 
 	const selectSignal = `${name}_selectedId`;
 	return [
-		{ test: `${selectSignal} && ${selectSignal} === datum.prismMarkId`, value: Math.max(lineWidthValue, 2) },
+		{ test: `${selectSignal} && ${selectSignal} === datum.${MARK_ID}`, value: Math.max(lineWidthValue, 2) },
 		defaultProductionRule,
 	];
 };
 
 export const getHighlightOpacityValue = (
-	opacityValue: { signal: string } | { value: number },
+	opacityValue: { signal: string } | { value: number }
 ): ProductionRule<NumericValueRef> => {
 	if ('signal' in opacityValue) {
 		return { signal: `${opacityValue.signal} / ${HIGHLIGHT_CONTRAST_RATIO}` };
@@ -471,9 +473,7 @@ export interface BarOrientationProperties {
 	rangeScale: 'width' | 'height';
 }
 
-export const getOrientationProperties = ({
-	orientation,
-}: Pick<BarSpecProps, 'orientation'>): BarOrientationProperties =>
+export const getOrientationProperties = (orientation: Orientation): BarOrientationProperties =>
 	orientation === 'vertical'
 		? {
 				metricAxis: 'y',

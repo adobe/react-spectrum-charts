@@ -10,20 +10,25 @@
  * governing permissions and limitations under the License.
  */
 
-/* eslint-disable @typescript-eslint/no-unused-vars */
-import { TrendlineProps } from '../../types';
+import { Legend } from '@prism';
+import { LegendBarHighlightedSeriesStory, LegendBarStory, defaultProps } from './LegendStoryUtils';
 
-// destructure props here and set defaults so that storybook can pick them up
-export function Trendline({
-	children,
-	color,
-	dimensionRange = [null, null],
-	lineType = 'dashed',
-	lineWidth = 'M',
-	method = 'linear',
-	displayOnHover = false,
-	highlightRawPoint = false,
-	opacity = 1,
-}: TrendlineProps) {
-	return null;
-}
+export default {
+	title: 'Prism/Legend/Highlight',
+	component: Legend,
+	parameters: {
+		docs: {
+			description: {
+				component: 'This is _markdown_ enabled description for Legend component doc page.',
+			},
+		},
+	},
+};
+
+const Basic = LegendBarStory.bind({});
+Basic.args = { highlight: true, ...defaultProps };
+
+const Controlled = LegendBarHighlightedSeriesStory.bind({});
+Controlled.args = { ...defaultProps };
+
+export { Basic, Controlled };

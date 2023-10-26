@@ -9,7 +9,6 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
 import { spectrumColors } from '@themes';
 import { DATE_PATH, ROUNDED_SQUARE_PATH } from 'svgPaths';
 import {
@@ -26,7 +25,7 @@ import {
 } from 'types';
 import { Data, Scale, Spec, ValuesData } from 'vega';
 
-import { FILTERED_TABLE, TABLE } from '../constants';
+import { FILTERED_TABLE, MARK_ID, TABLE } from '../constants';
 import { SanitizedSpecProps } from '../types';
 
 /**
@@ -74,7 +73,7 @@ export const getFacetsFromScales = (scales: Scale[] = []): string[] => {
 			}
 			return acc;
 		},
-		[] as string[],
+		[] as string[]
 	);
 
 	// only want the unique facets
@@ -170,7 +169,7 @@ export const getPathFromIcon = (icon: Icon | string): string => {
  * base data that gets initialized with every uncontrolled spec
  */
 export const baseData: Data[] = [
-	{ name: TABLE, values: [], transform: [{ type: 'identifier', as: 'prismMarkId' }] },
+	{ name: TABLE, values: [], transform: [{ type: 'identifier', as: MARK_ID }] },
 	{ name: FILTERED_TABLE, source: TABLE },
 ];
 

@@ -100,7 +100,7 @@ const PopoverAxisAnnotationStory: ComponentStory<typeof AxisAnnotation> = (args)
 			<Axis position="left" grid title="Users" />
 			<Axis position="bottom" labelFormat="time" granularity="day" baseline ticks>
 				<AxisAnnotation {...args}>
-					<ChartPopover width={250}>{popoverContent}</ChartPopover>
+					<ChartPopover width={250} children={popoverContent} />
 				</AxisAnnotation>
 			</Axis>
 			<Line color="series" dimension="datetime" metric="users" scaleType="time">

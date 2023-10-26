@@ -9,14 +9,15 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import React, { ReactElement } from 'react';
+
+import usePrismProps from '@hooks/usePrismProps';
+import { Axis, ChartPopover, ChartTooltip, Legend, Line, MetricRange, Prism, PrismProps } from '@prism';
+import { workspaceTrendsDataWithAnomalies, workspaceTrendsDataWithExtremeMetricRange } from '@stories/data/data';
+import { ComponentStory } from '@storybook/react';
+import { bindWithProps } from 'test-utils/bindWithProps';
 
 import { Content } from '@adobe/react-spectrum';
-import usePrismProps from '@hooks/usePrismProps';
-import { Axis, Legend, Line, Prism, PrismProps, MetricRange, ChartTooltip, ChartPopover } from '@prism';
-import { workspaceTrendsDataWithAnomalies } from '@stories/data/data';
-import { ComponentStory } from '@storybook/react';
-import React, { ReactElement } from 'react';
-import { bindWithProps } from 'test-utils/bindWithProps';
 
 export default {
 	title: 'Prism/MetricRange',
@@ -82,6 +83,23 @@ const MetricRangeWithPopoverStory: ComponentStory<typeof MetricRange> = (args): 
 	);
 };
 
+const MetricRangeWithScaledAxisStory: ComponentStory<typeof MetricRange> = (args): ReactElement => {
+	const prismProps = usePrismProps({
+		...defaultPrismProps,
+		data: workspaceTrendsDataWithExtremeMetricRange,
+	});
+	return (
+		<Prism {...prismProps}>
+			<Axis position="left" grid title="Users" />
+			<Axis position="bottom" labelFormat="time" baseline ticks />
+			<Line color="series">
+				<MetricRange {...args} />
+			</Line>
+			<Legend lineWidth={{ value: 0 }} highlight />
+		</Prism>
+	);
+};
+
 const dialogContent = (datum) => (
 	<Content>
 		<div>Operating system: {datum.series}</div>
@@ -133,4 +151,15 @@ WithPopover.args = {
 	displayOnHover: true,
 };
 
-export { Basic, WithHover, WithStaticPoints, WithPopover };
+const WithScaledAxis = bindWithProps(MetricRangeWithScaledAxisStory);
+WithScaledAxis.args = {
+	lineType: 'shortDash',
+	lineWidth: 'S',
+	rangeOpacity: 0.2,
+	metricEnd: 'metricEnd',
+	metricStart: 'metricStart',
+	metric: 'metric',
+	scaleAxisToFit: true,
+};
+
+export { Basic, WithHover, WithStaticPoints, WithPopover, WithScaledAxis };

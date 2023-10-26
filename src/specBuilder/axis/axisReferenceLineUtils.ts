@@ -60,15 +60,16 @@ export const getReferenceLineMarks = (
 	];
 };
 
-const getPositionRule = (
+export const getPositionRule = (
 	{ scaleType }: AxisSpecProps,
 	{ value, position }: ReferenceLineProps,
 	scaleName: string,
 ): ProductionRule<NumericValueRef> | SignalRef => {
+	const signalValue = typeof value === 'string' ? `'${value}'` : value;
 	const halfInnerPaddingFormula = `paddingInner * bandwidth('${scaleName}') / (2 * (1 - paddingInner))`;
-	const beforePositionSignal = `scale('${scaleName}', ${value}) - ${halfInnerPaddingFormula}`;
-	const centeredPositionSignal = `scale('${scaleName}', ${value}) + bandwidth('${scaleName}') / 2`;
-	const afterPositionSignal = `scale('${scaleName}', ${value}) + bandwidth('${scaleName}') + ${halfInnerPaddingFormula}`;
+	const beforePositionSignal = `scale('${scaleName}', ${signalValue}) - ${halfInnerPaddingFormula}`;
+	const centeredPositionSignal = `scale('${scaleName}', ${signalValue}) + bandwidth('${scaleName}') / 2`;
+	const afterPositionSignal = `scale('${scaleName}', ${signalValue}) + bandwidth('${scaleName}') + ${halfInnerPaddingFormula}`;
 	if (scaleType === 'band') {
 		if (position === 'before') return { signal: beforePositionSignal };
 		if (position === 'after') return { signal: afterPositionSignal };

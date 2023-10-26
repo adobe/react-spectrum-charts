@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
+import { MARK_ID, SERIES_ID } from '@constants';
 import { Signal } from 'vega';
 
 import { getSeriesHoveredSignal, getUncontrolledHoverSignal } from './signalSpecBuilder';
@@ -18,7 +18,10 @@ export const defaultHighlightSignal: Signal = {
 	name: 'highlightedSeries',
 	value: null,
 	on: [
-		{ events: '@legend0_legendEntry:mouseover', update: 'domain("legendEntries")[datum.index]' },
+		{
+			events: '@legend0_legendEntry:mouseover',
+			update: 'indexof(hiddenSeries, domain("legendEntries")[datum.index]) === -1 ? domain("legendEntries")[datum.index] : ""',
+		},
 		{ events: '@legend0_legendEntry:mouseout', update: '""' },
 	],
 };
@@ -29,7 +32,7 @@ describe('Prism spec builder', () => {
 			expect(getUncontrolledHoverSignal('bar0')).toStrictEqual({
 				name: 'bar0_hoveredId',
 				on: [
-					{ events: '@bar0:mouseover', update: 'datum.prismMarkId' },
+					{ events: '@bar0:mouseover', update: `datum.${MARK_ID}` },
 					{ events: '@bar0:mouseout', update: 'null' },
 				],
 				value: null,
@@ -40,7 +43,7 @@ describe('Prism spec builder', () => {
 			expect(getUncontrolledHoverSignal('bar0', true)).toStrictEqual({
 				name: 'bar0_hoveredId',
 				on: [
-					{ events: '@bar0:mouseover', update: 'datum.datum.prismMarkId' },
+					{ events: '@bar0:mouseover', update: `datum.datum.${MARK_ID}` },
 					{ events: '@bar0:mouseout', update: 'null' },
 				],
 				value: null,
@@ -50,10 +53,10 @@ describe('Prism spec builder', () => {
 
 	describe('getSeriesHoveredSignal()', () => {
 		test('uses name for eventName if eventName provided', () => {
-			expect(getSeriesHoveredSignal('bar0', 'datum.prismSeriesId')).toStrictEqual({
+			expect(getSeriesHoveredSignal('bar0', `datum.${SERIES_ID}`)).toStrictEqual({
 				name: 'bar0_hoveredSeries',
 				on: [
-					{ events: '@bar0:mouseover', update: 'datum.datum.prismSeriesId' },
+					{ events: '@bar0:mouseover', update: `datum.datum.${SERIES_ID}` },
 					{ events: '@bar0:mouseout', update: 'null' },
 				],
 				value: null,
@@ -61,10 +64,10 @@ describe('Prism spec builder', () => {
 		});
 
 		test('uses eventName if provided', () => {
-			expect(getSeriesHoveredSignal('bar0MetricRange', 'datum.prismSeriesId', 'bar0_voronoi')).toStrictEqual({
-				name: 'bar0MetricRange_hoveredSeries',
+			expect(getSeriesHoveredSignal('bar0', `datum.${SERIES_ID}`, 'bar0_voronoi')).toStrictEqual({
+				name: 'bar0_hoveredSeries',
 				on: [
-					{ events: '@bar0_voronoi:mouseover', update: 'datum.datum.prismSeriesId' },
+					{ events: '@bar0_voronoi:mouseover', update: `datum.datum.${SERIES_ID}` },
 					{ events: '@bar0_voronoi:mouseout', update: 'null' },
 				],
 				value: null,
