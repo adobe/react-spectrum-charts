@@ -9,16 +9,9 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
-import {
-	findAllMarksByGroupName,
-	findPrism,
-	getAllLegendEntries,
-	hoverNthElement,
-	render,
-	screen,
-} from '@test-utils';
 import React from 'react';
+
+import { findAllMarksByGroupName, findPrism, getAllLegendEntries, hoverNthElement, render, screen } from '@test-utils';
 
 import { Basic, Controlled } from './LegendHighlight.story';
 
@@ -27,7 +20,7 @@ describe('Controlled', () => {
 		render(<Controlled {...Controlled.args} />);
 		const prism = await findPrism();
 
-		let bars = await findAllMarksByGroupName(prism, 'bar0');
+		const bars = await findAllMarksByGroupName(prism, 'bar0');
 		expect(bars.length).toEqual(9);
 		expect(bars[0]).toHaveAttribute('fill-opacity', '0.2');
 		expect(bars[1]).toHaveAttribute('fill-opacity', '1');
@@ -42,7 +35,7 @@ describe('Controlled', () => {
 		render(<Controlled {...Controlled.args} />);
 		const prism = await findPrism();
 
-		let legendSymbols = await findAllMarksByGroupName(prism, 'role-legend-symbol');
+		const legendSymbols = await findAllMarksByGroupName(prism, 'role-legend-symbol');
 		expect(legendSymbols.length).toEqual(3);
 		expect(legendSymbols[0]).toHaveAttribute('fill-opacity', '0.2');
 		expect(legendSymbols[1]).toHaveAttribute('fill-opacity', '1');
@@ -57,7 +50,7 @@ describe('Controlled', () => {
 		render(<Controlled {...Controlled.args} />);
 		const prism = await findPrism();
 
-		let legendLabels = await findAllMarksByGroupName(prism, 'role-legend-symbol');
+		const legendLabels = await findAllMarksByGroupName(prism, 'role-legend-symbol');
 		expect(legendLabels.length).toEqual(3);
 		expect(legendLabels[0]).toHaveAttribute('fill-opacity', '0.2');
 		expect(legendLabels[1]).toHaveAttribute('fill-opacity', '1');
