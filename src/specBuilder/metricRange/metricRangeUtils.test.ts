@@ -195,6 +195,7 @@ describe('getMetricRangeGroupMarks', () => {
 			{
 				name: 'line0MetricRange0_group',
 				type: 'group',
+				clip: true,
 				from: {
 					facet: {
 						name: 'line0MetricRange0_facet',

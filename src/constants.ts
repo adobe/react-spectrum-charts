@@ -9,7 +9,6 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
 import { LineType } from 'types';
 
 // prop defaults
@@ -29,10 +28,17 @@ export const DEFAULT_SYMBOL_STROKE_WIDTH = 2;
 export const DEFAULT_COLOR_SCHEME = 'light';
 export const DEFAULT_AXIS_ANNOTATION_COLOR = 'gray-600';
 export const DEFAULT_AXIS_ANNOTATION_OFFSET = 80;
+export const TITLE_FONT_WEIGHT = 'bold';
 
 // vega data table name
 export const TABLE = 'table';
 export const FILTERED_TABLE = 'filteredTable';
+
+// vega data field names
+export const SERIES_ID = 'prismSeriesId';
+export const MARK_ID = 'prismMarkId';
+export const TRENDLINE_VALUE = 'prismTrendlineValue';
+export const STACK_ID = 'prismStackId';
 
 // corner radius
 export const CORNER_RADIUS = 6;

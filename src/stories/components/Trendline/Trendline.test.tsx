@@ -9,13 +9,13 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import React from 'react';
 
 import '@matchMediaMock';
 import { Trendline } from '@prism';
-import { findAllMarksByGroupName, findPrism, render } from '@test-utils';
-import React from 'react';
+import { findAllMarksByGroupName, findPrism, getAllLegendEntries, hoverNthElement, render } from '@test-utils';
 
-import { Basic } from './Trendline.story';
+import { Basic, DisplayOnHover } from './Trendline.story';
 
 describe('Trendline', () => {
 	// Trendline is not a real React component. This is test just provides test coverage for sonarqube
@@ -32,5 +32,50 @@ describe('Trendline', () => {
 		expect(trendlines).toHaveLength(4);
 		expect(trendlines[0]).toHaveAttribute('stroke-dasharray', '7,4');
 		expect(trendlines[0]).toHaveAttribute('stroke-width', '1.5');
+	});
+
+	describe('DisplayOnHover', () => {
+		test('should display trendlines on line hover', async () => {
+			render(<DisplayOnHover {...DisplayOnHover.args} />);
+			const prism = await findPrism();
+			expect(prism).toBeInTheDocument();
+
+			const lines = await findAllMarksByGroupName(prism, 'line0');
+			expect(lines).toHaveLength(4);
+
+			const trendlines = await findAllMarksByGroupName(prism, 'line0Trendline0');
+			expect(trendlines).toHaveLength(4);
+
+			// trendlines should be hidden by default
+			expect(trendlines[0]).toHaveAttribute('stroke-opacity', '0');
+
+			// hover over the first point on the first line
+			const hoverAreas = await findAllMarksByGroupName(prism, 'line0_voronoi');
+			await hoverNthElement(hoverAreas, 0);
+
+			// first trendline should be visible
+			expect(trendlines[0]).toHaveAttribute('stroke-opacity', '1');
+			// second trendline should still be hidden
+			expect(trendlines[1]).toHaveAttribute('stroke-opacity', '0');
+		});
+		test('should display trendlines on legend hover', async () => {
+			render(<DisplayOnHover {...DisplayOnHover.args} />);
+			const prism = await findPrism();
+
+			const trendlines = await findAllMarksByGroupName(prism, 'line0Trendline0');
+			expect(trendlines).toHaveLength(4);
+
+			// trendlines should be hidden by default
+			expect(trendlines[0]).toHaveAttribute('stroke-opacity', '0');
+
+			// hover over the first point on the first line
+			const legendEntries = getAllLegendEntries(prism);
+			await hoverNthElement(legendEntries, 0);
+
+			// first trendline should be visible
+			expect(trendlines[0]).toHaveAttribute('stroke-opacity', '1');
+			// second trendline should still be hidden
+			expect(trendlines[1]).toHaveAttribute('stroke-opacity', '0');
+		});
 	});
 });

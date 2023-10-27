@@ -9,13 +9,13 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
 import {
 	DEFAULT_CATEGORICAL_DIMENSION,
 	DEFAULT_COLOR_SCHEME,
 	DEFAULT_METRIC,
 	FILTERED_TABLE,
 	PADDING_RATIO,
+	STACK_ID,
 } from '@constants';
 import { getTransformSort } from '@specBuilder/data/dataUtils';
 import { hasPopover } from '@specBuilder/marks/markUtils';
@@ -59,7 +59,7 @@ export const addBar = produce<Spec, [BarProps & { colorScheme?: ColorScheme; ind
 			trellisOrientation = 'horizontal',
 			type = 'stacked',
 			...props
-		},
+		}
 	) => {
 		// put props back together now that all defaults are set
 		const barProps: BarSpecProps = {
@@ -84,7 +84,7 @@ export const addBar = produce<Spec, [BarProps & { colorScheme?: ColorScheme; ind
 		spec.signals = addSignals(spec.signals ?? [], barProps);
 		spec.scales = addScales(spec.scales ?? [], barProps);
 		spec.marks = addMarks(spec.marks ?? [], barProps);
-	},
+	}
 );
 
 export const addSignals = produce<Signal[], [BarSpecProps]>(
@@ -104,7 +104,7 @@ export const addSignals = produce<Signal[], [BarSpecProps]>(
 				signals.push(getGenericSignal(`${name}_selectedId`));
 			}
 		}
-	},
+	}
 );
 
 export const addData = produce<Data[], [BarSpecProps]>((data, props) => {
@@ -155,7 +155,7 @@ export const getStackAggregateData = (props: BarSpecProps): Data => {
 export const getPrismStackIdTransform = (props: BarSpecProps): FormulaTransform => {
 	return {
 		type: 'formula',
-		as: 'prismStackId',
+		as: STACK_ID,
 		expr: getStackFields(props)
 			.map((facet) => `datum.${facet}`)
 			.join(' + "," + '),
@@ -194,7 +194,7 @@ export const addScales = produce<Scale[], [BarSpecProps]>((scales, props) => {
 
 export const addDimensionScale = (
 	scales: Scale[],
-	{ dimension, paddingRatio, paddingOuter: barPaddingOuter, orientation }: BarSpecProps,
+	{ dimension, paddingRatio, paddingOuter: barPaddingOuter, orientation }: BarSpecProps
 ) => {
 	const index = getScaleIndexByType(scales, 'band', orientation === 'vertical' ? 'x' : 'y');
 	scales[index] = addDomainFields(scales[index], [dimension]);

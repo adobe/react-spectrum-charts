@@ -11,7 +11,7 @@
  */
 
 import { Legend } from '@prism';
-import { LegendBarStory, defaultProps } from './LegendStoryUtils';
+import { LegendBarStory, LegendDisconnectedStory, defaultProps } from './LegendStoryUtils';
 
 export default {
 	title: 'Prism/Legend',
@@ -40,8 +40,8 @@ const descriptions = [
 const Descriptions = LegendBarStory.bind({});
 Descriptions.args = { descriptions, ...defaultProps };
 
-const Highlight = LegendBarStory.bind({});
-Highlight.args = { highlight: true, ...defaultProps };
+const Disconnected = LegendDisconnectedStory.bind({});
+Disconnected.args = { ...defaultProps, color: 'series' };
 
 const legendLabels = [
 	{ seriesName: 'Windows', label: 'Custom Windows' },
@@ -49,8 +49,17 @@ const legendLabels = [
 	{ seriesName: 'Other', label: 'Custom Other' },
 ];
 
+const truncatedLegendLabels = [
+	{ seriesName: 'Windows', label: 'Very long Windows label that will be truncated without a custom labelLimit' },
+	{ seriesName: 'Mac', label: 'Very long Mac label that will be truncated without a custom labelLimit' },
+	{ seriesName: 'Other', label: 'Very long Other label that will be truncated without a custom labelLimit' },
+];
+
 const Labels = LegendBarStory.bind({});
 Labels.args = { legendLabels, highlight: true, ...defaultProps };
+
+const LabelLimit = LegendBarStory.bind({});
+LabelLimit.args = { legendLabels: truncatedLegendLabels, ...defaultProps };
 
 const OnClick = LegendBarStory.bind({});
 OnClick.args = {};
@@ -70,4 +79,4 @@ Supreme.args = {
 	title: 'Operating system',
 };
 
-export { Basic, Descriptions, Highlight, Labels, OnClick, Position, Title, Supreme };
+export { Basic, Descriptions, Disconnected, Labels, LabelLimit, OnClick, Position, Title, Supreme };

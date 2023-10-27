@@ -15,7 +15,7 @@ import { toggleStringArrayValue } from '@utils';
 import { Datum, MarkBounds } from 'types';
 import { Item, Scene, SceneGroup, SceneItem, ScenegraphEvent, View } from 'vega';
 
-export type ClickItem = Item | undefined | null;
+export type ActionItem = Item | undefined | null;
 
 /**
  * Generates the callback for the mark click handler
@@ -36,9 +36,9 @@ export const getOnMarkClickCallback = (
 	selectedDataName: MutableRefObject<string | undefined>,
 	setHiddenSeries: (hiddenSeries: string[]) => void,
 	legendIsToggleable?: boolean,
-	onLegendClick?: (seriesName: string) => void
-): ((event: ScenegraphEvent, item: ClickItem) => void) => {
-	return (_event: ScenegraphEvent, item: ClickItem) => {
+	onLegendClick?: (seriesName: string) => void,
+): ((event: ScenegraphEvent, item: ActionItem) => void) => {
+	return (_event: ScenegraphEvent, item: ActionItem) => {
 		if (!item) return;
 		if (isLegendItem(item)) {
 			handleLegendItemClick(item, hiddenSeries, setHiddenSeries, legendIsToggleable, onLegendClick);
@@ -68,6 +68,39 @@ export const getOnMarkClickCallback = (
 };
 
 /**
+ * Updates the hidden series when a legend item is clicked
+ * @param item
+ * @param onLegendMouseInput
+ * @returns
+ */
+export const handleLegendItemMouseInput = (
+	item: ActionItem,
+	onLegendMouseInput?: (seriesName: string) => void,
+): void => {
+	const legendItemValue = getLegendItemValue(item);
+	if (legendItemValue) {
+		onLegendMouseInput?.(legendItemValue);
+	}
+};
+
+/**
+ * Generates the callback for simple mouse events
+ * @param item
+ * @param onLegendMouseInput
+ * @returns
+ */
+export const getOnMouseInputCallback = (
+	onMouseInput?: (seriesName: string) => void,
+): ((event: ScenegraphEvent, item: ActionItem) => void) => {
+	return (_event: ScenegraphEvent, item: ActionItem) => {
+		if (!item) return;
+		if (isLegendItem(item)) {
+			handleLegendItemMouseInput(item, onMouseInput);
+		}
+	};
+};
+
+/**
  * Checks if the clicked item is a legend item
  * @param item
  * @returns
@@ -85,11 +118,11 @@ export const isLegendItem = (item: Item): boolean => {
  * @returns
  */
 export const handleLegendItemClick = (
-	item: ClickItem,
+	item: ActionItem,
 	hiddenSeries: string[],
 	setHiddenSeries: (hiddenSeries: string[]) => void,
 	legendIsToggleable?: boolean,
-	onLegendClick?: (seriesName: string) => void
+	onLegendClick?: (seriesName: string) => void,
 ): void => {
 	const legendItemValue = getLegendItemValue(item);
 	if (legendItemValue === undefined) return;
@@ -130,7 +163,7 @@ export const isGroupMarkItem = (item: Item): boolean => {
  * @param item
  * @returns
  */
-export const isAreaMarkItem = (item: ClickItem): boolean => {
+export const isAreaMarkItem = (item: ActionItem): boolean => {
 	return item?.mark.marktype === 'area';
 };
 
@@ -141,7 +174,7 @@ export const isAreaMarkItem = (item: ClickItem): boolean => {
  * @param item
  * @returns
  */
-export const getItemForAreaMark = (item: ClickItem): ClickItem => {
+export const getItemForAreaMark = (item: ActionItem): ActionItem => {
 	// for area, we want to use the hovered data not the entire area
 	const pointMark = item?.mark.group.items.find((mark) => mark.name.includes('_anchorPoint'));
 	if (pointMark && pointMark.items.length === 1) {
@@ -160,7 +193,7 @@ export const getItemForAreaMark = (item: ClickItem): ClickItem => {
  * @param item
  * @returns MarkBounds
  */
-export const getItemBounds = (item: ClickItem): MarkBounds => {
+export const getItemBounds = (item: ActionItem): MarkBounds => {
 	if (isItemSceneItem(item)) {
 		const groupOffset = getGroupOffset(item);
 		return {
@@ -180,7 +213,7 @@ export const getItemBounds = (item: ClickItem): MarkBounds => {
  * @param item
  * @returns MarkBounds
  */
-export const getItemName = (item: ClickItem): string | undefined => {
+export const getItemName = (item: ActionItem): string | undefined => {
 	if (isItemSceneItem(item)) {
 		const itemName = (item.mark as unknown as { name: string }).name;
 		if (!itemName) return;
@@ -196,7 +229,7 @@ export const getItemName = (item: ClickItem): string | undefined => {
  * @param item
  * @returns
  */
-export const getGroupOffset = (item: ClickItem): { x: number; y: number } => {
+export const getGroupOffset = (item: ActionItem): { x: number; y: number } => {
 	if (isItemSceneItem(item)) {
 		// recursively step through all groups to get the total offset
 		const { x, y } = getGroupOffset(item.mark.group);

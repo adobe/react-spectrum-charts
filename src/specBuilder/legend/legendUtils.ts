@@ -104,9 +104,10 @@ const getLegendLabelsEncodings = (legendLabels: LegendLabel[] | undefined): Lege
 
 const getHoverEncodings = (
 	facets: Facet[],
-	{ highlight, name, opacity, descriptions }: LegendSpecProps,
+	{ highlight, highlightedSeries, name, opacity, descriptions, onMouseOut, onMouseOver }: LegendSpecProps,
 ): LegendEncode => {
-	if (highlight || descriptions) {
+	if (highlight || highlightedSeries || descriptions) {
+		const includeOpacity = Boolean(highlight || highlightedSeries); // only add stroke opacity if highlight is true or highlightedSeries is defined
 		return {
 			entries: {
 				name: `${name}_legendEntry`,
@@ -120,17 +121,28 @@ const getHoverEncodings = (
 			},
 			labels: {
 				update: {
-					fillOpacity: getOpacityEncoding(highlight), // only add fill opacity if highlight is true
+					fillOpacity: getOpacityEncoding(includeOpacity),
 				},
 			},
 			symbols: {
 				update: {
-					fillOpacity: getOpacityEncoding(highlight, opacity, facets), // only add fill opacity if highlight is true
-					strokeOpacity: getOpacityEncoding(highlight), // only add stroke opacity if highlight is true
+					fillOpacity: getOpacityEncoding(includeOpacity, opacity, facets),
+					strokeOpacity: getOpacityEncoding(includeOpacity),
+				},
+			},
+		};
+	} else if (onMouseOver || onMouseOut) {
+		return {
+			entries: {
+				name: `${name}_legendEntry`,
+				interactive: true,
+				enter: {
+					fill: { value: 'transparent' },
 				},
 			},
 		};
 	}
+
 	return {};
 };
 

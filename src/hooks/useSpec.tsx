@@ -9,8 +9,8 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
 import { useMemo } from 'react';
+
 import { SanitizedSpecProps } from 'types';
 import { Spec } from 'vega';
 
@@ -23,6 +23,8 @@ export default function useSpec({
 	colorScheme,
 	data,
 	description,
+	hiddenSeries,
+	highlightedSeries,
 	lineTypes,
 	lineWidths,
 	opacities,
@@ -48,13 +50,15 @@ export default function useSpec({
 					colors,
 					colorScheme,
 					description,
+					hiddenSeries,
+					highlightedSeries,
 					lineTypes,
 					lineWidths,
 					opacities,
 					symbolShapes,
 					title,
-				}),
-			),
+				})
+			)
 		);
 	}, [
 		children,
@@ -62,6 +66,8 @@ export default function useSpec({
 		colorScheme,
 		data,
 		description,
+		hiddenSeries,
+		highlightedSeries,
 		lineTypes,
 		lineWidths,
 		opacities,

@@ -9,9 +9,8 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
 import { MetricRange } from '@components/MetricRange';
-import { DEFAULT_METRIC, FILTERED_TABLE } from '@constants';
+import { DEFAULT_METRIC, FILTERED_TABLE, SERIES_ID } from '@constants';
 import { AreaMarkProps, getAreaMark } from '@specBuilder/area/areaUtils';
 import { LineMarkProps, getLineMark } from '@specBuilder/line/lineUtils';
 import { getSeriesHoveredSignal } from '@specBuilder/signal/signalSpecBuilder';
@@ -22,7 +21,7 @@ import { AreaMark, GroupMark, LineMark, Signal, SourceData } from 'vega';
 export const getMetricRanges = (children: MarkChildElement[], markName: string): MetricRangeSpecProps[] => {
 	const metricRangeElements = children.filter((child) => child.type === MetricRange) as MetricRangeElement[];
 	return metricRangeElements.map((metricRange, index) =>
-		applyMetricRangePropDefaults(metricRange.props, markName, index),
+		applyMetricRangePropDefaults(metricRange.props, markName, index)
 	);
 };
 
@@ -36,7 +35,7 @@ export const applyMetricRangePropDefaults = (
 		...props
 	}: MetricRangeProps,
 	markName: string,
-	index: number,
+	index: number
 ): MetricRangeSpecProps => ({
 	children: {},
 	lineType,
@@ -63,6 +62,7 @@ export const getMetricRangeGroupMarks = (lineMarkProps: LineSpecProps): GroupMar
 		marks.push({
 			name: `${metricRangeProps.name}_group`,
 			type: 'group',
+			clip: true,
 			from: {
 				facet: {
 					name: `${metricRangeProps.name}_facet`,
@@ -84,7 +84,7 @@ export const getMetricRangeGroupMarks = (lineMarkProps: LineSpecProps): GroupMar
  */
 export const getMetricRangeMark = (
 	lineMarkProps: LineSpecProps,
-	metricRangeProps: MetricRangeSpecProps,
+	metricRangeProps: MetricRangeSpecProps
 ): (LineMark | AreaMark)[] => {
 	const areaProps: AreaMarkProps = {
 		name: metricRangeProps.name,
@@ -98,7 +98,7 @@ export const getMetricRangeMark = (
 		scaleType: 'time',
 		dimension: lineMarkProps.dimension,
 		isMetricRange: true,
-		lineName: lineMarkProps.name,
+		parentName: lineMarkProps.name,
 		displayOnHover: metricRangeProps.displayOnHover,
 	};
 	const lineProps: LineMarkProps = {
@@ -111,7 +111,6 @@ export const getMetricRangeMark = (
 		lineWidth: { value: metricRangeProps.lineWidth },
 		opacity: lineMarkProps.opacity,
 		colorScheme: lineMarkProps.colorScheme,
-		isMetricRange: true,
 		displayOnHover: metricRangeProps.displayOnHover,
 		staticPoint: lineMarkProps.staticPoint,
 	};
@@ -152,7 +151,7 @@ export const getMetricRangeSignals = (markProps: LineSpecProps): Signal[] => {
 	const metricRanges = getMetricRanges(children, markName);
 
 	if (metricRanges.length) {
-		signals.push(getSeriesHoveredSignal(`${markName}MetricRange`, 'datum.prismSeriesId', `${markName}_voronoi`));
+		signals.push(getSeriesHoveredSignal(markName, `datum.${SERIES_ID}`, `${markName}_voronoi`));
 	}
 
 	return signals;

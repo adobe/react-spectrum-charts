@@ -22,6 +22,8 @@ interface UseLegendProps {
 	descriptions?: LegendDescription[];
 	isToggleable?: boolean;
 	onClick?: (seriesName: string) => void;
+	onMouseOut?: (seriesName: string) => void;
+	onMouseOver?: (seriesName: string) => void;
 }
 
 export default function useLegend(children: ChartChildElement[]): UseLegendProps {
@@ -30,6 +32,6 @@ export default function useLegend(children: ChartChildElement[]): UseLegendProps
 	}, [children]) as LegendElement;
 	const [hiddenSeriesState, setHiddenSeries] = useState<string[]>(legend?.props?.defaultHiddenSeries ?? []);
 	if (!legend) return { hiddenSeriesState, setHiddenSeries };
-	const { descriptions, isToggleable, onClick } = legend.props;
-	return { hiddenSeriesState, setHiddenSeries, descriptions, isToggleable, onClick };
+	const { descriptions, isToggleable, onClick, onMouseOut, onMouseOver } = legend.props;
+	return { hiddenSeriesState, setHiddenSeries, descriptions, isToggleable, onClick, onMouseOut, onMouseOver };
 }

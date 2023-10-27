@@ -15,7 +15,7 @@ import { clickNthElement, findPrism, getAllLegendEntries, hoverNthElement, rende
 import React from 'react';
 
 import { Legend } from '@components/Legend';
-import { Basic, Descriptions, Highlight, OnClick, Position, Supreme, Title } from './Legend.story';
+import { Basic, Descriptions, LabelLimit, OnClick, Position, Supreme, Title } from './Legend.story';
 
 describe('Legend', () => {
 	test('Basic renders properly', async () => {
@@ -32,10 +32,23 @@ describe('Legend', () => {
 		expect(view).toBeInTheDocument();
 	});
 
-	test('Highlight renders properly', async () => {
-		render(<Highlight {...Highlight.args} />);
+	test('Disconnected renders properly', async () => {
+		render(<Basic {...Basic.args} />);
 		const view = await screen.findByRole('graphics-document');
 		expect(view).toBeInTheDocument();
+
+		const prism = await findPrism();
+
+		const legendEntries = getAllLegendEntries(prism);
+		expect(legendEntries.length).toBe(3);
+
+		for (const entry of legendEntries) {
+			expect(entry).toBeVisible();
+		}
+
+		expect(screen.getByText('Windows')).toBeInTheDocument();
+		expect(screen.getByText('Mac')).toBeInTheDocument();
+		expect(screen.getByText('Other')).toBeInTheDocument();
 	});
 
 	test('Position renders properly', async () => {
@@ -55,7 +68,6 @@ describe('Legend', () => {
 		const prism = await findPrism();
 		expect(prism).toBeInTheDocument();
 
-		screen.debug(prism, Infinity);
 		const entries = getAllLegendEntries(prism);
 		await hoverNthElement(entries, 0);
 
@@ -90,6 +102,26 @@ describe('Legend', () => {
 
 		await clickNthElement(entries, 2);
 		expect(onClick).toHaveBeenCalledWith('Other');
+	});
+
+	test('respects labelLimit prop if provided (shorter than default limit)', async () => {
+		render(<LabelLimit {...LabelLimit.args} labelLimit={30} />);
+		const prism = await findPrism();
+		expect(prism).toBeInTheDocument();
+
+		expect(
+			screen.queryByText('Very long Windows label that will be truncated without a custom labelLimit'),
+		).not.toBeInTheDocument();
+	});
+
+	test('respects labelLimit prop if provided (longer than default limit)', async () => {
+		render(<LabelLimit {...LabelLimit.args} labelLimit={300} />);
+		const prism = await findPrism();
+		expect(prism).toBeInTheDocument();
+
+		expect(
+			screen.queryByText('Very long Windows label that will be truncated without a custom labelLimit'),
+		).toBeInTheDocument();
 	});
 
 	// Legend is not a real React component. This is test just provides test coverage for sonarqube

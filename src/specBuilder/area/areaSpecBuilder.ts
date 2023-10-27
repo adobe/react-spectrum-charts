@@ -9,7 +9,6 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
 import { ChartPopover } from '@components/ChartPopover';
 import {
 	DEFAULT_COLOR,
@@ -17,6 +16,7 @@ import {
 	DEFAULT_CONTINUOUS_DIMENSION,
 	DEFAULT_METRIC,
 	FILTERED_TABLE,
+	MARK_ID,
 } from '@constants';
 import {
 	getControlledHoverSignal,
@@ -50,7 +50,7 @@ export const addArea = produce<Spec, [AreaProps & { colorScheme?: ColorScheme; i
 			opacity = 0.8,
 			scaleType = 'time',
 			...props
-		},
+		}
 	) => {
 		// put props back together now that all defaults are set
 		const areaProps: AreaSpecProps = {
@@ -73,7 +73,7 @@ export const addArea = produce<Spec, [AreaProps & { colorScheme?: ColorScheme; i
 			console.error(
 				`${metricEnd ? 'metricEnd' : 'metricStart'} is defined but ${
 					metricEnd ? 'metricStart' : 'metricEnd'
-				} is not. Both must be defined in order to use the "start and end" method. Defaulting back to 'metric = ${metric}'`,
+				} is not. Both must be defined in order to use the "start and end" method. Defaulting back to 'metric = ${metric}'`
 			);
 			areaProps.metricEnd = undefined;
 			areaProps.metricStart = undefined;
@@ -85,7 +85,7 @@ export const addArea = produce<Spec, [AreaProps & { colorScheme?: ColorScheme; i
 		spec.marks = addAreaMarks(spec.marks ?? [], areaProps);
 
 		return spec;
-	},
+	}
 );
 
 export const addData = produce<Data[], [AreaSpecProps]>(
@@ -119,7 +119,7 @@ export const addData = produce<Data[], [AreaSpecProps]>(
 				transform: [
 					{
 						type: 'filter',
-						expr: `${selectSignal} && ${selectSignal} === datum.prismMarkId || !${selectSignal} && ${hoverSignal} && ${hoverSignal} === datum.prismMarkId`,
+						expr: `${selectSignal} && ${selectSignal} === datum.${MARK_ID} || !${selectSignal} && ${hoverSignal} && ${hoverSignal} === datum.${MARK_ID}`,
 					},
 				],
 			});
@@ -137,7 +137,7 @@ export const addData = produce<Data[], [AreaSpecProps]>(
 				});
 			}
 		}
-	},
+	}
 );
 
 export const addSignals = produce<Signal[], [AreaSpecProps]>((signals, { children, name, color }) => {
@@ -169,7 +169,7 @@ export const setScales = produce<Scale[], [AreaSpecProps]>(
 		}
 		addMetricScale(scales, [metricStart, metricEnd]);
 		return scales;
-	},
+	}
 );
 
 export const addAreaMarks = produce<Mark[], [AreaSpecProps]>((marks, props) => {
@@ -209,7 +209,7 @@ export const addAreaMarks = produce<Mark[], [AreaSpecProps]>((marks, props) => {
 			],
 		},
 		...getSelectedAreaMarks({ children, name, scaleType, color, dimension, metricEnd, metricStart }),
-		...getHoverMarks(props),
+		...getHoverMarks(props)
 	);
 	return marks;
 });

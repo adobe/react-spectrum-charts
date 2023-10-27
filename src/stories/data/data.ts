@@ -700,6 +700,15 @@ export const releaseImpactData = [
 	{ day: 14, value: 0.88, series: 'Share project' },
 ];
 
+export const releaseImpactBarData = [
+	{ period: '14 days before', value: 7, series: 'Share project' },
+	{ period: '14 days after', value: 9, series: 'Share project' },
+	{ period: '14 days before', value: 3, series: 'Load project' },
+	{ period: '14 days after', value: 2, series: 'Load project' },
+	{ period: '14 days before', value: 5, series: 'Save project' },
+	{ period: '14 days after', value: 5, series: 'Save project' },
+];
+
 export const browserData = [
 	{ category: 'Chrome', value: 5, series: 'Windows' },
 	{ category: 'Chrome', value: 3, series: 'Mac' },
@@ -749,15 +758,15 @@ export const workspaceTrendsDataWithVisiblePoints = [
 	{ datetime: 1668063600000, point: 3, value: 1730, users: 483, series: 'Add Fallout' },
 	{ datetime: 1668150000000, point: 4, value: 465, users: 310, series: 'Add Fallout', staticPoint: true },
 	{ datetime: 1668236400000, point: 5, value: 31, users: 18, series: 'Add Fallout' },
-	{ datetime: 1668322800000, point: 8, value: 108, users: 70, series: 'Add Fallout', staticPoint: true  },
+	{ datetime: 1668322800000, point: 8, value: 108, users: 70, series: 'Add Fallout', staticPoint: true },
 	{ datetime: 1668409200000, point: 12, value: 648, users: 438, series: 'Add Fallout' },
-	{ datetime: 1667890800000, point: 4, value: 12208, users: 5253, series: 'Add Freeform table', staticPoint: true  },
-	{ datetime: 1667977200000, point: 5, value: 11309, users: 5103, series: 'Add Freeform table', staticPoint: true  },
+	{ datetime: 1667890800000, point: 4, value: 12208, users: 5253, series: 'Add Freeform table', staticPoint: true },
+	{ datetime: 1667977200000, point: 5, value: 11309, users: 5103, series: 'Add Freeform table', staticPoint: true },
 	{ datetime: 1668063600000, point: 17, value: 11099, users: 5047, series: 'Add Freeform table' },
 	{ datetime: 1668150000000, point: 20, value: 7243, users: 3386, series: 'Add Freeform table' },
 	{ datetime: 1668236400000, point: 21, value: 395, users: 205, series: 'Add Freeform table' },
 	{ datetime: 1668322800000, point: 22, value: 1606, users: 790, series: 'Add Freeform table' },
-	{ datetime: 1668409200000, point: 25, value: 10932, users: 4913, series: 'Add Freeform table', staticPoint: true  }
+	{ datetime: 1668409200000, point: 25, value: 10932, users: 4913, series: 'Add Freeform table', staticPoint: true },
 ];
 
 export const workspaceTrendsDataWithAnomalies = [
@@ -904,6 +913,82 @@ export const workspaceTrendsDataWithAnomalies = [
 		series: 'Add Freeform table',
 		metricEnd: 8432,
 		metricStart: 7432,
+		metric: 7932,
+		staticPoint: true,
+	},
+];
+
+export const workspaceTrendsDataWithExtremeMetricRange = [
+	{
+		datetime: 1667890800000,
+		point: 4,
+		value: 12208,
+		users: 5253,
+		series: 'Add Freeform table',
+		metricEnd: 42708,
+		metricStart: -22208,
+		metric: 11708,
+	},
+	{
+		datetime: 1667977200000,
+		point: 5,
+		value: 11309,
+		users: 5103,
+		series: 'Add Freeform table',
+		metricEnd: 61809,
+		metricStart: -29809,
+		metric: 10309,
+		staticPoint: true,
+	},
+	{
+		datetime: 1668063600000,
+		point: 17,
+		value: 11099,
+		users: 5047,
+		series: 'Add Freeform table',
+		metricEnd: 61599,
+		metricStart: -22599,
+		metric: 10099,
+		staticPoint: true,
+	},
+	{
+		datetime: 1668150000000,
+		point: 20,
+		value: 7243,
+		users: 3386,
+		series: 'Add Freeform table',
+		metricEnd: 57743,
+		metricStart: -16743,
+		metric: 7243,
+	},
+	{
+		datetime: 1668236400000,
+		point: 21,
+		value: 395,
+		users: 205,
+		series: 'Add Freeform table',
+		metricEnd: 32895,
+		metricStart: -7000,
+		metric: 100,
+	},
+	{
+		datetime: 1668322800000,
+		point: 22,
+		value: 1606,
+		users: 790,
+		series: 'Add Freeform table',
+		metricEnd: 22106,
+		metricStart: 0,
+		metric: 1606,
+	},
+	{
+		datetime: 1668409200000,
+		point: 25,
+		value: 10932,
+		users: 4913,
+		series: 'Add Freeform table',
+		metricEnd: 12432,
+		metricStart: 1432,
 		metric: 7932,
 		staticPoint: true,
 	},

@@ -9,10 +9,12 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { JSXElementConstructor, ReactElement, ReactFragment, ReactNode } from 'react';
+
+import { MARK_ID, SERIES_ID, TRENDLINE_VALUE } from '@constants';
+import { Config, Data, FontWeight, Padding, Spec, SymbolShape } from 'vega';
 
 import { Theme } from '@react-types/provider';
-import { JSXElementConstructor, ReactElement, ReactFragment, ReactNode } from 'react';
-import { Config, Data, FontWeight, Padding, Spec, SymbolShape } from 'vega';
 
 import { Colors, SpectrumColor } from './SpectrumVizColors';
 
@@ -24,6 +26,7 @@ export type BarElement = ReactElement<BarProps, JSXElementConstructor<BarProps>>
 export type AnnotationElement = ReactElement<AnnotationProps, JSXElementConstructor<AnnotationProps>>;
 export type LegendElement = ReactElement<LegendProps, JSXElementConstructor<LegendProps>>;
 export type LineElement = ReactElement<LineProps, JSXElementConstructor<LineProps>>;
+export type TitleElement = ReactElement<TitleProps, JSXElementConstructor<TitleProps>>;
 export type ChartTooltipElement = ReactElement<ChartTooltipProps, JSXElementConstructor<ChartTooltipProps>>;
 export type ChartPopoverElement = ReactElement<ChartPopoverProps, JSXElementConstructor<ChartPopoverProps>>;
 export type ReferenceLineElement = ReactElement<ReferenceLineProps, JSXElementConstructor<ReferenceLineProps>>;
@@ -47,6 +50,8 @@ export interface SpecProps {
 	opacities?: Opacities; // opacities available for the chart
 	title?: string; // chart title
 	UNSAFE_vegaSpec?: Spec; // vega spec to be used instead of the one generated the component API
+	hiddenSeries?: string[]; // series names to hide from the chart
+	highlightedSeries?: string; // series name to highlight
 }
 
 export interface SanitizedSpecProps extends SpecProps {
@@ -250,6 +255,20 @@ export interface LineProps extends Omit<MarkProps, 'color'> {
 	staticPoint?: string; // key in the data that if it exists and the value resolves to true for each data object, a point will be drawn for that data point on the line.
 }
 
+export type TitlePosition = 'start' | 'middle' | 'end';
+export type TitleOrient = 'top' | 'bottom' | 'left' | 'right';
+
+export interface TitleProps extends MarkProps {
+	/** The title text */
+	text: string;
+	/** The title position */
+	position?: TitlePosition;
+	/** The title font weight */
+	fontWeight?: FontWeight;
+	/** The location of the title relative to the chart */
+	orient?: TitleOrient;
+}
+
 export type LineType = 'solid' | 'dashed' | 'dotted' | 'dotDash' | 'shortDash' | 'longDash' | 'twoDash' | number[];
 
 export type LineWidth = 'XS' | 'S' | 'M' | 'L' | 'XL' | number;
@@ -257,7 +276,7 @@ export type LineWidth = 'XS' | 'S' | 'M' | 'L' | 'XL' | number;
 export type ScaleType = 'linear' | 'time' | 'point';
 export type LegendDescription = { seriesName: string; description: string; title?: string };
 
-export type LegendLabel = { seriesName: string | number; label: string };
+export type LegendLabel = { seriesName: string | number; label: string; maxLength?: number };
 
 export interface LegendProps extends BaseProps {
 	/** color or key in the data that is used as the color facet for the symbols */
@@ -268,20 +287,24 @@ export interface LegendProps extends BaseProps {
 	descriptions?: LegendDescription[];
 	/** series names to hide from the legend */
 	hiddenEntries?: string[];
-	/** series names to hide from the chart */
-	hiddenSeries?: string[];
 	/** whether or not to include highlight interactions (controlled) */
 	highlight?: boolean;
 	/** allows the user to hide/show series by clicking on the legend entry (uncontrolled) */
 	isToggleable?: boolean;
 	/** labels for each of the series */
 	legendLabels?: LegendLabel[];
+	/** max characters before truncating a legend label */
+	labelLimit?: number;
 	/** line type or key in the data that is used as the line type facet for the symbols */
 	lineType?: LineTypeFacet;
 	/** line type or key in the data that is used as the line type facet for the symbols */
 	lineWidth?: LineWidthFacet;
 	/** callback that will be run when a legend item is selected */
 	onClick?: (seriesName: string) => void;
+	/** callback that will be run when mousing out of a legend item */
+	onMouseOut?: (seriesName: string) => void;
+	/** callback that will be run when mousing over a legend item */
+	onMouseOver?: (seriesName: string) => void;
 	/** opacity or key in the data that is used as the opacity facet for the symbols */
 	opacity?: OpacityFacet;
 	/** where the legend should be displayed */
@@ -303,7 +326,7 @@ export interface ChartPopoverProps {
 }
 
 export interface ReferenceLineProps {
-	value: number;
+	value: number | string;
 	icon?: Icon | string;
 	/** Position the line on the value, or between the previous/next value. Only supported in Bar visualizations. */
 	position?: 'before' | 'after' | 'center';
@@ -331,6 +354,8 @@ export interface MetricRangeProps {
 	metric?: string;
 	/** Whether the metric range should only be visible when hovering over the parent line */
 	displayOnHover?: boolean;
+	/** Boolean indicating whether or not the y-axis should expand to include the entire metric range (if necessary). */
+	scaleAxisToFit?: boolean;
 }
 
 export interface TrendlineProps {
@@ -339,6 +364,8 @@ export interface TrendlineProps {
 	color?: SpectrumColor | string;
 	/** The dimension range that the statistical transform should be calculated and drawn for. If the start or end values are null, then the dimension range will not be bounded. */
 	dimensionRange?: [number | null, number | null];
+	/** Whether the trendline should only be visible when hovering over the parent line */
+	displayOnHover?: boolean;
 	/** If there is a tooltip on this trendline, then this will highlight the raw point in addition to the hovered trendline point. */
 	highlightRawPoint?: boolean;
 	/** The line type of the trend line. */
@@ -349,11 +376,17 @@ export interface TrendlineProps {
 	method?: TrendlineMethod;
 	/** The opacity of the trendlines */
 	opacity?: number;
-	/** If the method is set to moving average, rollingWindow sets the width of the moving window used. */
-	rollingWindow?: number;
 }
 
-export type TrendlineMethod = 'average' | 'linear' | 'movingAverage';
+export type TrendlineMethod =
+	| 'average'
+	| 'exponential'
+	| 'linear'
+	| 'logarithmic'
+	| `movingAverage-${number}`
+	| `polynomial-${number}`
+	| 'power'
+	| 'quadratic';
 
 export type AxisAnnotationFormat = 'span' | 'summary';
 
@@ -388,9 +421,9 @@ export interface MarkBounds {
 }
 
 export interface Datum {
-	prismMarkId: number;
-	prismSeriesId: string;
-	prismTrendlineValue?: number;
+	[MARK_ID]: number;
+	[SERIES_ID]: string;
+	[TRENDLINE_VALUE]?: number;
 	[key: string]: unknown;
 }
 
@@ -409,7 +442,7 @@ export type Children<T> = ChildElement<T> | ChildElement<T>[];
 
 export type AxisChildElement = ReferenceLineElement | AxisAnnotationElement;
 export type AxisAnnotationChildElement = ChartTooltipElement | ChartPopoverElement;
-export type ChartChildElement = AreaElement | AxisElement | BarElement | LegendElement | LineElement;
+export type ChartChildElement = AreaElement | AxisElement | BarElement | LegendElement | LineElement | TitleElement;
 export type MarkChildElement =
 	| AnnotationElement
 	| ChartTooltipElement

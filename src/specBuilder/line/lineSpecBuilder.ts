@@ -9,17 +9,20 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
 import { DEFAULT_COLOR_SCHEME, DEFAULT_CONTINUOUS_DIMENSION, DEFAULT_METRIC, FILTERED_TABLE } from '@constants';
-import { hasInteractiveChildren, hasMetricRange, hasPopover } from '@specBuilder/marks/markUtils';
+import { hasInteractiveChildren, hasPopover } from '@specBuilder/marks/markUtils';
+import {
+	getMetricRangeGroupMarks,
+	getMetricRangeSignals,
+	getMetricRanges,
+} from '@specBuilder/metricRange/metricRangeUtils';
 import { getFacetsFromProps } from '@specBuilder/specUtils';
 import { getTrendlineData, getTrendlineMarks, getTrendlineSignals } from '@specBuilder/trendline/trendlineUtils';
 import { sanitizeMarkChildren, toCamelCase } from '@utils';
 import produce from 'immer';
-import { ColorScheme, LineProps, LineSpecProps } from 'types';
+import { ColorScheme, LineProps, LineSpecProps, MarkChildElement } from 'types';
 import { Data, Mark, Scale, Signal, Spec } from 'vega';
 
-import { getMetricRangeGroupMarks, getMetricRangeSignals } from '@specBuilder/metricRange/metricRangeUtils';
 import { addTimeTransform, getTableData } from '../data/dataUtils';
 import { addContinuousDimensionScale, addFieldToFacetScaleDomain, addMetricScale } from '../scale/scaleSpecBuilder';
 import { getGenericSignal, getUncontrolledHoverSignal, hasSignalByName } from '../signal/signalSpecBuilder';
@@ -46,7 +49,7 @@ export const addLine = produce<Spec, [LineProps & { colorScheme?: ColorScheme; i
 			opacity = { value: 1 },
 			scaleType = 'time',
 			...props
-		},
+		}
 	) => {
 		// put props back together now that all defaults are set
 		const lineProps: LineSpecProps = {
@@ -69,7 +72,7 @@ export const addLine = produce<Spec, [LineProps & { colorScheme?: ColorScheme; i
 		spec.marks = addLineMarks(spec.marks ?? [], lineProps);
 
 		return spec;
-	},
+	}
 );
 
 export const addData = produce<Data[], [LineSpecProps]>((data, props) => {
@@ -78,7 +81,7 @@ export const addData = produce<Data[], [LineSpecProps]>((data, props) => {
 		const tableData = getTableData(data);
 		tableData.transform = addTimeTransform(tableData.transform ?? [], dimension);
 	}
-	if (hasInteractiveChildren(children) || hasMetricRange(children)) {
+	if (hasInteractiveChildren(children)) {
 		data.push(getLineHighlightedData(name, FILTERED_TABLE, hasPopover(children)));
 	}
 	if (staticPoint) data.push(getLinePointsData(name, staticPoint, FILTERED_TABLE));
@@ -90,7 +93,7 @@ export const addSignals = produce<Signal[], [LineSpecProps]>((signals, props) =>
 	signals.push(...getTrendlineSignals(props));
 	signals.push(...getMetricRangeSignals(props));
 
-	if (!hasInteractiveChildren(children) && !hasMetricRange(children)) return;
+	if (!hasInteractiveChildren(children)) return;
 	if (!hasSignalByName(signals, `${name}_voronoiHoveredId`)) {
 		signals.push(getUncontrolledHoverSignal(`${name}_voronoi`, true));
 	}
@@ -103,7 +106,7 @@ export const addSignals = produce<Signal[], [LineSpecProps]>((signals, props) =>
 });
 
 export const setScales = produce<Scale[], [LineSpecProps]>(
-	(scales, { metric, dimension, color, lineType, opacity, padding, scaleType }) => {
+	(scales, { metric, dimension, color, lineType, opacity, padding, scaleType, children, name }) => {
 		// add dimension scale
 		addContinuousDimensionScale(scales, { scaleType, dimension, padding });
 		// add color to the color domain
@@ -112,10 +115,10 @@ export const setScales = produce<Scale[], [LineSpecProps]>(
 		addFieldToFacetScaleDomain(scales, 'lineType', lineType);
 		// add opacity to the opacity domain
 		addFieldToFacetScaleDomain(scales, 'opacity', opacity);
-		// find the linear scale and add our field to it
-		addMetricScale(scales, [metric]);
+		// find the linear scale and add our fields to it
+		addMetricScale(scales, getMetricKeys(metric, children, name));
 		return scales;
-	},
+	}
 );
 
 // The order that marks are added is important since it determines the draw order.
@@ -138,8 +141,20 @@ export const addLineMarks = produce<Mark[], [LineSpecProps]>((marks, props) => {
 	});
 	if (staticPoint) marks.push(getLinePointMark(props));
 	marks.push(...getMetricRangeGroupMarks(props));
-	if (hasInteractiveChildren(children) || hasMetricRange(children)) {
+	if (hasInteractiveChildren(children)) {
 		marks.push(...getLineHoverMarks(props, FILTERED_TABLE));
 	}
 	marks.push(...getTrendlineMarks(props));
 });
+
+const getMetricKeys = (lineMetric: string, lineChildren: MarkChildElement[], lineName: string) => {
+	const metricKeys = [lineMetric];
+
+	// metric range fields should be added if metric-axis will be scaled to fit
+	const metricRanges = getMetricRanges(lineChildren, lineName);
+	metricRanges.forEach((metricRange) => {
+		if (metricRange.scaleAxisToFit) metricKeys.push(metricRange.metricStart, metricRange.metricEnd);
+	});
+
+	return metricKeys;
+};

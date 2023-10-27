@@ -43,6 +43,7 @@ export const defaultMark: LineMark = {
 export const defaultLegendProps: LegendSpecProps = {
 	colorScheme: 'light',
 	hiddenEntries: [],
+	hiddenSeries: [],
 	highlight: false,
 	index: 0,
 	isToggleable: false,

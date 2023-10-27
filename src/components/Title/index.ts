@@ -10,20 +10,4 @@
  * governing permissions and limitations under the License.
  */
 
-/* eslint-disable @typescript-eslint/no-unused-vars */
-import { TrendlineProps } from '../../types';
-
-// destructure props here and set defaults so that storybook can pick them up
-export function Trendline({
-	children,
-	color,
-	dimensionRange = [null, null],
-	lineType = 'dashed',
-	lineWidth = 'M',
-	method = 'linear',
-	displayOnHover = false,
-	highlightRawPoint = false,
-	opacity = 1,
-}: TrendlineProps) {
-	return null;
-}
+export * from './Title';

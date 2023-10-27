@@ -11,19 +11,10 @@
  */
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { TrendlineProps } from '../../types';
+import { TITLE_FONT_WEIGHT } from '@constants';
 
-// destructure props here and set defaults so that storybook can pick them up
-export function Trendline({
-	children,
-	color,
-	dimensionRange = [null, null],
-	lineType = 'dashed',
-	lineWidth = 'M',
-	method = 'linear',
-	displayOnHover = false,
-	highlightRawPoint = false,
-	opacity = 1,
-}: TrendlineProps) {
+import { TitleProps } from '../../types';
+
+export function Title({ text, fontWeight = TITLE_FONT_WEIGHT, position = 'middle', orient = 'top' }: TitleProps) {
 	return null;
 }

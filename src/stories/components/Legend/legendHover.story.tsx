@@ -11,10 +11,10 @@
  */
 
 import { Legend } from '@prism';
-import { LegendBarHiddenSeriesStory, LegendBarStory, defaultProps } from './LegendStoryUtils';
+import { LegendBarStory, defaultProps } from './LegendStoryUtils';
 
 export default {
-	title: 'Prism/Legend/Hide Show',
+	title: 'Prism/Legend/Hover',
 	component: Legend,
 	parameters: {
 		docs: {
@@ -25,16 +25,18 @@ export default {
 	},
 };
 
-const DefaultHiddenSeries = LegendBarStory.bind({});
-DefaultHiddenSeries.args = { defaultHiddenSeries: ['Other'], isToggleable: true, highlight: true, ...defaultProps };
-DefaultHiddenSeries.storyName = 'Default Hidden Series (uncontrolled)';
+const onMouseOver = (seriesName: string) => {
+	console.log('onMouseOver', seriesName);
+};
+const onMouseOut = (seriesName: string) => {
+	console.log('onMouseOut', seriesName);
+};
+const ControlledHover = LegendBarStory.bind({});
+ControlledHover.args = {
+	onMouseOver: onMouseOver,
+	onMouseOut: onMouseOut,
+	...defaultProps,
+};
+ControlledHover.storyName = 'Hover (controlled)';
 
-const HiddenSeries = LegendBarHiddenSeriesStory.bind({});
-HiddenSeries.args = { highlight: true, ...defaultProps };
-HiddenSeries.storyName = 'Hidden Series (controlled)';
-
-const IsToggleable = LegendBarStory.bind({});
-IsToggleable.args = { isToggleable: true, highlight: true, ...defaultProps };
-IsToggleable.storyName = 'Is Toggleable (uncontrolled)';
-
-export { DefaultHiddenSeries, HiddenSeries, IsToggleable };
+export { ControlledHover };

@@ -11,6 +11,7 @@
  */
 import { Fragment, ReactFragment } from 'react';
 
+import { MARK_ID, SERIES_ID } from '@constants';
 import { View } from 'vega';
 
 import { Area, Axis, AxisAnnotation, Bar, ChartPopover, ChartTooltip, Legend, Line, Trendline } from '..';
@@ -284,9 +285,9 @@ export const setSelectedSignals = ({
 	view: View;
 }) => {
 	if (selectedIdSignalName) {
-		view.signal(selectedIdSignalName, selectedData?.prismMarkId ?? null);
+		view.signal(selectedIdSignalName, selectedData?.[MARK_ID] ?? null);
 	}
 	if (selectedSeriesSignalName) {
-		view.signal(selectedSeriesSignalName, selectedData?.prismSeriesId ?? null);
+		view.signal(selectedSeriesSignalName, selectedData?.[SERIES_ID] ?? null);
 	}
 };

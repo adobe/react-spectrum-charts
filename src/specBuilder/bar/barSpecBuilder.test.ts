@@ -9,6 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { createElement } from 'react';
 
 import { Annotation } from '@components/Annotation';
 import { ChartPopover } from '@components/ChartPopover';
@@ -19,11 +20,12 @@ import {
 	DEFAULT_METRIC,
 	DEFAULT_SECONDARY_COLOR,
 	FILTERED_TABLE,
+	MARK_ID,
+	STACK_ID,
 	TABLE,
 } from '@constants';
 import { getUncontrolledHoverSignal } from '@specBuilder/signal/signalSpecBuilder';
 import { spectrumColors } from '@themes';
-import { createElement } from 'react';
 import {
 	AggregateTransform,
 	Data,
@@ -37,6 +39,7 @@ import {
 	ValuesData,
 } from 'vega';
 
+import { baseData, initializeSpec } from '../specUtils';
 import {
 	addBar,
 	addData,
@@ -58,7 +61,6 @@ import {
 	stackedAnnotationMarks,
 } from './barTestUtils';
 import { defaultDodgedMark } from './dodgedBarUtils.test';
-import { baseData, initializeSpec } from '../specUtils';
 
 const startingSpec: Spec = initializeSpec({
 	scales: [{ name: 'color', type: 'ordinal' }],
@@ -94,7 +96,7 @@ const defaultColorScale: Scale = {
 const defaultTableData: ValuesData = {
 	name: TABLE,
 	values: [],
-	transform: [{ type: 'identifier', as: 'prismMarkId' }],
+	transform: [{ type: 'identifier', as: MARK_ID }],
 };
 const defaultFilteredTableData: SourceData = { name: FILTERED_TABLE, source: TABLE };
 
@@ -109,7 +111,7 @@ const defaultStacksTransforms: Transforms[] = [
 	},
 	{
 		type: 'formula',
-		as: 'prismStackId',
+		as: STACK_ID,
 		expr: `datum.${DEFAULT_CATEGORICAL_DIMENSION}`,
 	},
 ];
@@ -130,7 +132,7 @@ const defaultStackedTransforms: Transforms[] = [
 	},
 	{
 		type: 'formula',
-		as: 'prismStackId',
+		as: STACK_ID,
 		expr: `datum.${DEFAULT_CATEGORICAL_DIMENSION}`,
 	},
 ];
@@ -184,7 +186,7 @@ const defaultSpec: Spec = {
 	data: [
 		{
 			name: TABLE,
-			transform: [{ type: 'identifier', as: 'prismMarkId' }],
+			transform: [{ type: 'identifier', as: MARK_ID }],
 			values: [],
 		},
 		{
@@ -218,7 +220,7 @@ const defaultSpec: Spec = {
 const defaultHoverSignal = {
 	name: 'bar0_hoveredId',
 	on: [
-		{ events: '@bar0:mouseover', update: 'datum.prismMarkId' },
+		{ events: '@bar0:mouseover', update: `datum.${MARK_ID}` },
 		{ events: '@bar0:mouseout', update: 'null' },
 	],
 	value: null,
@@ -266,7 +268,7 @@ describe('barSpecBuilder', () => {
 					addSignals([getUncontrolledHoverSignal('bar0'), defaultHoverSignal, defaultSelectSignal], {
 						...defaultBarProps,
 						children: [popover],
-					}),
+					})
 				).toStrictEqual([
 					getUncontrolledHoverSignal('bar0'),
 					defaultHoverSignal,
@@ -299,7 +301,7 @@ describe('barSpecBuilder', () => {
 							type: 'ordinal',
 						},
 						{ name: 'colors', range: { signal: 'colors' }, type: 'ordinal' },
-					],
+					]
 				);
 			});
 
@@ -315,8 +317,8 @@ describe('barSpecBuilder', () => {
 							...defaultBarProps,
 							lineType: DEFAULT_COLOR,
 							opacity: DEFAULT_COLOR,
-						},
-					),
+						}
+					)
 				).toStrictEqual([
 					defaultColorScale,
 					{ domain: { data: TABLE, fields: [DEFAULT_COLOR] }, name: 'lineType', type: 'ordinal' },
@@ -389,7 +391,7 @@ describe('barSpecBuilder', () => {
 					addMarks([], {
 						...defaultBarProps,
 						children: [...defaultBarProps.children, annotation],
-					}),
+					})
 				).toStrictEqual([...defaultStackedBarMarks, ...stackedAnnotationMarks]);
 			});
 		});
@@ -421,7 +423,7 @@ describe('barSpecBuilder', () => {
 		describe('existing data "table"', () => {
 			test('new transform should be added to the data table', () => {
 				expect(
-					addData(defaultData, { ...defaultBarProps, metric: 'views', dimension: 'browser' }),
+					addData(defaultData, { ...defaultBarProps, metric: 'views', dimension: 'browser' })
 				).toStrictEqual([
 					defaultTableData,
 					{
@@ -480,7 +482,7 @@ describe('barSpecBuilder', () => {
 		describe('transform already exists', () => {
 			test('no props, new transform should be pushed onto the end with default values', () => {
 				expect(
-					addData([{ ...defaultFilteredTableData, transform: defaultStackedTransforms }], defaultBarProps),
+					addData([{ ...defaultFilteredTableData, transform: defaultStackedTransforms }], defaultBarProps)
 				).toStrictEqual([
 					{
 						...defaultFilteredTableData,
@@ -496,7 +498,7 @@ describe('barSpecBuilder', () => {
 				const popover = createElement(ChartPopover);
 				expect(addData(baseData, { ...defaultBarProps, children: [popover] })[1]).toHaveProperty(
 					'transform',
-					defaultStackedTransforms,
+					defaultStackedTransforms
 				);
 			});
 		});
@@ -507,7 +509,7 @@ describe('barSpecBuilder', () => {
 					...defaultBarProps,
 					type: 'dodged',
 					color: [DEFAULT_COLOR, DEFAULT_SECONDARY_COLOR],
-				}),
+				})
 			).toStrictEqual([
 				defaultTableData,
 				{
@@ -521,7 +523,7 @@ describe('barSpecBuilder', () => {
 							type: 'stack',
 						},
 						{
-							as: 'prismStackId',
+							as: STACK_ID,
 							expr: `datum.${DEFAULT_CATEGORICAL_DIMENSION} + "," + datum.${DEFAULT_COLOR}`,
 							type: 'formula',
 						},
@@ -539,7 +541,7 @@ describe('barSpecBuilder', () => {
 							type: 'aggregate',
 						},
 						{
-							as: 'prismStackId',
+							as: STACK_ID,
 							expr: `datum.${DEFAULT_CATEGORICAL_DIMENSION} + "," + datum.${DEFAULT_COLOR}`,
 							type: 'formula',
 						},
@@ -549,7 +551,7 @@ describe('barSpecBuilder', () => {
 		});
 		test('stacked dodged', () => {
 			expect(
-				addData(defaultData, { ...defaultBarProps, color: [DEFAULT_COLOR, DEFAULT_SECONDARY_COLOR] }),
+				addData(defaultData, { ...defaultBarProps, color: [DEFAULT_COLOR, DEFAULT_SECONDARY_COLOR] })
 			).toStrictEqual([
 				defaultTableData,
 				{
@@ -563,7 +565,7 @@ describe('barSpecBuilder', () => {
 							type: 'stack',
 						},
 						{
-							as: 'prismStackId',
+							as: STACK_ID,
 							expr: `datum.${DEFAULT_CATEGORICAL_DIMENSION} + "," + datum.${DEFAULT_SECONDARY_COLOR}`,
 							type: 'formula',
 						},
@@ -581,7 +583,7 @@ describe('barSpecBuilder', () => {
 							type: 'aggregate',
 						},
 						{
-							as: 'prismStackId',
+							as: STACK_ID,
 							expr: `datum.${DEFAULT_CATEGORICAL_DIMENSION} + "," + datum.${DEFAULT_SECONDARY_COLOR}`,
 							type: 'formula',
 						},
@@ -603,7 +605,7 @@ describe('barSpecBuilder', () => {
 						fields: [`${DEFAULT_METRIC}1`, `${DEFAULT_METRIC}1`],
 						ops: ['min', 'max'],
 					},
-					{ as: 'prismStackId', expr: `datum.${DEFAULT_CATEGORICAL_DIMENSION}`, type: 'formula' },
+					{ as: STACK_ID, expr: `datum.${DEFAULT_CATEGORICAL_DIMENSION}`, type: 'formula' },
 				],
 			});
 		});
@@ -617,7 +619,7 @@ describe('barSpecBuilder', () => {
 	describe('getPrismStackIdTransform()', () => {
 		test('should return default stack id transform', () => {
 			expect(getPrismStackIdTransform(defaultBarProps)).toStrictEqual({
-				as: 'prismStackId',
+				as: STACK_ID,
 				expr: `datum.${DEFAULT_CATEGORICAL_DIMENSION}`,
 				type: 'formula',
 			});
@@ -625,15 +627,15 @@ describe('barSpecBuilder', () => {
 
 		test('should join all facets if dodged', () => {
 			expect(getPrismStackIdTransform({ ...defaultBarProps, type: 'dodged' })).toStrictEqual({
-				as: 'prismStackId',
+				as: STACK_ID,
 				expr: `datum.${DEFAULT_CATEGORICAL_DIMENSION} + "," + datum.${DEFAULT_COLOR}`,
 				type: 'formula',
 			});
 
 			expect(
-				getPrismStackIdTransform({ ...defaultBarProps, type: 'dodged', opacity: DEFAULT_SECONDARY_COLOR }),
+				getPrismStackIdTransform({ ...defaultBarProps, type: 'dodged', opacity: DEFAULT_SECONDARY_COLOR })
 			).toStrictEqual({
-				as: 'prismStackId',
+				as: STACK_ID,
 				expr: `datum.${DEFAULT_CATEGORICAL_DIMENSION} + "," + datum.${DEFAULT_COLOR} + "," + datum.${DEFAULT_SECONDARY_COLOR}`,
 				type: 'formula',
 			});
@@ -643,7 +645,7 @@ describe('barSpecBuilder', () => {
 	describe('getDodgeGroupTransform()', () => {
 		test('should join facets together', () => {
 			expect(
-				getDodgeGroupTransform({ ...defaultBarProps, type: 'dodged', opacity: DEFAULT_SECONDARY_COLOR }),
+				getDodgeGroupTransform({ ...defaultBarProps, type: 'dodged', opacity: DEFAULT_SECONDARY_COLOR })
 			).toStrictEqual({
 				as: 'bar0_dodgeGroup',
 				expr: `datum.${DEFAULT_COLOR} + "," + datum.${DEFAULT_SECONDARY_COLOR}`,
@@ -655,18 +657,18 @@ describe('barSpecBuilder', () => {
 	describe('getRepeatedScale()', () => {
 		test('should return a linear scale if the bar and trellis orientations are the same', () => {
 			expect(
-				getRepeatedScale({ ...defaultBarProps, orientation: 'horizontal', trellisOrientation: 'horizontal' }),
+				getRepeatedScale({ ...defaultBarProps, orientation: 'horizontal', trellisOrientation: 'horizontal' })
 			).toHaveProperty('type', 'linear');
 			expect(
-				getRepeatedScale({ ...defaultBarProps, orientation: 'vertical', trellisOrientation: 'vertical' }),
+				getRepeatedScale({ ...defaultBarProps, orientation: 'vertical', trellisOrientation: 'vertical' })
 			).toHaveProperty('type', 'linear');
 		});
 		test('should return a band scale if the bar and trellis orientations are not the same', () => {
 			expect(
-				getRepeatedScale({ ...defaultBarProps, orientation: 'horizontal', trellisOrientation: 'vertical' }),
+				getRepeatedScale({ ...defaultBarProps, orientation: 'horizontal', trellisOrientation: 'vertical' })
 			).toHaveProperty('type', 'band');
 			expect(
-				getRepeatedScale({ ...defaultBarProps, orientation: 'vertical', trellisOrientation: 'horizontal' }),
+				getRepeatedScale({ ...defaultBarProps, orientation: 'vertical', trellisOrientation: 'horizontal' })
 			).toHaveProperty('type', 'band');
 		});
 	});

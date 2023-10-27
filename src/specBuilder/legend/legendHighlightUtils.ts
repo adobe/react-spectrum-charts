@@ -9,8 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
-import { HIGHLIGHT_CONTRAST_RATIO } from '@constants';
+import { HIGHLIGHT_CONTRAST_RATIO, SERIES_ID } from '@constants';
 import { GroupMark, Mark, NumericValueRef, ProductionRule } from 'vega';
 
 /**
@@ -58,7 +57,7 @@ export const setHoverOpacityForMarks = (marks: Mark[]) => {
 };
 
 export const getOpacityRule = (
-	opacityRule: ProductionRule<NumericValueRef> | undefined,
+	opacityRule: ProductionRule<NumericValueRef> | undefined
 ): ProductionRule<NumericValueRef> => {
 	if (opacityRule) {
 		// if it's an array and length > 0, get the last value
@@ -74,9 +73,9 @@ export const getOpacityRule = (
 };
 
 export const getHighlightOpacityRule = (
-	opacityRule: ProductionRule<NumericValueRef>,
+	opacityRule: ProductionRule<NumericValueRef>
 ): { test?: string } & NumericValueRef => {
-	const test = 'highlightedSeries && highlightedSeries !== datum.prismSeriesId';
+	const test = `highlightedSeries && highlightedSeries !== datum.${SERIES_ID}`;
 	if ('scale' in opacityRule && 'field' in opacityRule) {
 		return {
 			test,

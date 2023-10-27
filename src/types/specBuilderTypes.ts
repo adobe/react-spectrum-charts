@@ -9,8 +9,8 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
 import { Align, Baseline, NumberValue, ScaleType } from 'vega';
+
 import {
 	AreaProps,
 	AxisAnnotationChildElement,
@@ -93,7 +93,10 @@ export interface BarSpecProps
 type LegendPropsWithDefaults = 'hiddenEntries' | 'highlight' | 'isToggleable' | 'position' | 'name';
 
 export interface LegendSpecProps
-	extends PartiallyRequired<LegendProps & { colorScheme: ColorScheme; index: number }, LegendPropsWithDefaults> {
+	extends PartiallyRequired<
+		LegendProps & { colorScheme: ColorScheme; index: number; hiddenSeries: string[]; highlightedSeries?: string },
+		LegendPropsWithDefaults
+	> {
 	color?: FacetRef<string>;
 	lineType?: FacetRef<number[]>;
 	lineWidth?: FacetRef<number>;
@@ -121,13 +124,13 @@ export interface MetricRangeSpecProps
 
 type TrendlinePropsWithDefaults =
 	| 'dimensionRange'
+	| 'displayOnHover'
 	| 'highlightRawPoint'
 	| 'lineType'
 	| 'lineWidth'
 	| 'method'
 	| 'metric'
-	| 'opacity'
-	| 'rollingWindow';
+	| 'opacity';
 
 export interface TrendlineSpecProps
 	extends PartiallyRequired<TrendlineProps & { metric?: string; name: string }, TrendlinePropsWithDefaults> {

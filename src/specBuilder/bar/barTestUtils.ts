@@ -9,7 +9,6 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
 import {
 	CORNER_RADIUS,
 	DEFAULT_CATEGORICAL_DIMENSION,
@@ -19,7 +18,9 @@ import {
 	DEFAULT_SECONDARY_COLOR,
 	FILTERED_TABLE,
 	HIGHLIGHT_CONTRAST_RATIO,
+	MARK_ID,
 	PADDING_RATIO,
+	STACK_ID,
 } from '@constants';
 import { BarSpecProps } from 'types';
 import { NumericValueRef, ProductionRule, RectEncodeEntry } from 'vega';
@@ -66,28 +67,28 @@ export const defaultDodgedYEncodings: RectEncodeEntry = {
 export const defaultCornerRadiusEncodings: RectEncodeEntry = {
 	cornerRadiusTopLeft: [
 		{
-			test: `datum.${DEFAULT_METRIC}1 > 0 && data('bar0_stacks')[indexof(pluck(data('bar0_stacks'), 'prismStackId'), datum.prismStackId)].max_${DEFAULT_METRIC}1 === datum.${DEFAULT_METRIC}1`,
+			test: `datum.${DEFAULT_METRIC}1 > 0 && data('bar0_stacks')[indexof(pluck(data('bar0_stacks'), '${STACK_ID}'), datum.${STACK_ID})].max_${DEFAULT_METRIC}1 === datum.${DEFAULT_METRIC}1`,
 			value: CORNER_RADIUS,
 		},
 		{ value: 0 },
 	],
 	cornerRadiusTopRight: [
 		{
-			test: `datum.${DEFAULT_METRIC}1 > 0 && data('bar0_stacks')[indexof(pluck(data('bar0_stacks'), 'prismStackId'), datum.prismStackId)].max_${DEFAULT_METRIC}1 === datum.${DEFAULT_METRIC}1`,
+			test: `datum.${DEFAULT_METRIC}1 > 0 && data('bar0_stacks')[indexof(pluck(data('bar0_stacks'), '${STACK_ID}'), datum.${STACK_ID})].max_${DEFAULT_METRIC}1 === datum.${DEFAULT_METRIC}1`,
 			value: CORNER_RADIUS,
 		},
 		{ value: 0 },
 	],
 	cornerRadiusBottomLeft: [
 		{
-			test: `datum.${DEFAULT_METRIC}1 < 0 && data('bar0_stacks')[indexof(pluck(data('bar0_stacks'), 'prismStackId'), datum.prismStackId)].min_${DEFAULT_METRIC}1 === datum.${DEFAULT_METRIC}1`,
+			test: `datum.${DEFAULT_METRIC}1 < 0 && data('bar0_stacks')[indexof(pluck(data('bar0_stacks'), '${STACK_ID}'), datum.${STACK_ID})].min_${DEFAULT_METRIC}1 === datum.${DEFAULT_METRIC}1`,
 			value: CORNER_RADIUS,
 		},
 		{ value: 0 },
 	],
 	cornerRadiusBottomRight: [
 		{
-			test: `datum.${DEFAULT_METRIC}1 < 0 && data('bar0_stacks')[indexof(pluck(data('bar0_stacks'), 'prismStackId'), datum.prismStackId)].min_${DEFAULT_METRIC}1 === datum.${DEFAULT_METRIC}1`,
+			test: `datum.${DEFAULT_METRIC}1 < 0 && data('bar0_stacks')[indexof(pluck(data('bar0_stacks'), '${STACK_ID}'), datum.${STACK_ID})].min_${DEFAULT_METRIC}1 === datum.${DEFAULT_METRIC}1`,
 			value: CORNER_RADIUS,
 		},
 		{ value: 0 },
@@ -105,11 +106,11 @@ export const defaultBarFillOpacity: ProductionRule<NumericValueRef> = [{ value: 
 
 export const defaultBarPopoverFillOpacity: ProductionRule<NumericValueRef> = [
 	{
-		test: `!bar0_selectedId && bar0_hoveredId && bar0_hoveredId !== datum.prismMarkId`,
+		test: `!bar0_selectedId && bar0_hoveredId && bar0_hoveredId !== datum.${MARK_ID}`,
 		value: 1 / HIGHLIGHT_CONTRAST_RATIO,
 	},
-	{ test: `bar0_selectedId && bar0_selectedId !== datum.prismMarkId`, value: 1 / HIGHLIGHT_CONTRAST_RATIO },
-	{ test: `bar0_selectedId && bar0_selectedId === datum.prismMarkId`, value: 1 },
+	{ test: `bar0_selectedId && bar0_selectedId !== datum.${MARK_ID}`, value: 1 / HIGHLIGHT_CONTRAST_RATIO },
+	{ test: `bar0_selectedId && bar0_selectedId === datum.${MARK_ID}`, value: 1 },
 	{ value: 1 },
 ];
 

@@ -10,7 +10,7 @@
  * governing permissions and limitations under the License.
  */
 
-import { DEFAULT_COLOR_SCHEME, FILTERED_TABLE } from '@constants';
+import { DEFAULT_COLOR_SCHEME } from '@constants';
 import { addFieldToFacetScaleDomain } from '@specBuilder/scale/scaleSpecBuilder';
 import {
 	getColorValue,
@@ -33,24 +33,25 @@ import {
 } from 'types';
 import { Data, Legend, Mark, Scale, Signal, Spec } from 'vega';
 
-import {
-	getGenericSignal,
-	getHighlightSeriesSignal,
-	getLegendLabelsSeriesSignal,
-	hasSignalByName,
-} from '../signal/signalSpecBuilder';
+import { getHighlightSeriesSignal, getLegendLabelsSeriesSignal, hasSignalByName } from '../signal/signalSpecBuilder';
 import { setHoverOpacityForMarks } from './legendHighlightUtils';
 import { Facet, getColumns, getEncodings, getHiddenEntriesFilter } from './legendUtils';
 
-export const addLegend = produce<Spec, [LegendProps & { colorScheme?: ColorScheme; index?: number }]>(
+export const addLegend = produce<
+	Spec,
+	[LegendProps & { colorScheme?: ColorScheme; index?: number; hiddenSeries?: string[]; highlightedSeries?: string }]
+>(
 	(
 		spec,
 		{
 			color,
 			hiddenEntries = [],
+			hiddenSeries = [],
 			highlight = false,
+			highlightedSeries,
 			index = 0,
 			isToggleable = false,
+			labelLimit,
 			lineType,
 			lineWidth,
 			position = 'bottom',
@@ -67,7 +68,9 @@ export const addLegend = produce<Spec, [LegendProps & { colorScheme?: ColorSchem
 		const legendProps: LegendSpecProps = {
 			color: formattedColor,
 			hiddenEntries,
+			hiddenSeries,
 			highlight,
+			highlightedSeries,
 			index,
 			isToggleable,
 			lineType: formattedLineType,
@@ -80,15 +83,14 @@ export const addLegend = produce<Spec, [LegendProps & { colorScheme?: ColorSchem
 			...props,
 		};
 
+		// Order matters here. Facets rely on the scales being set up.
+		spec.scales = addLegendEntriesScale(spec.scales ?? [], legendProps);
 		// get the keys and facet types that are used to divide the data for this visualization
 		const facets = getFacets(spec.scales ?? []);
-		// if there are no facets, there is no need for a legend
-		if (facets.length === 0) return;
 
 		const uniqueFacetFields = [...new Set(facets.map((facet) => facet.field))];
 		spec.data = addData(spec.data ?? [], { ...legendProps, facets: uniqueFacetFields });
 		spec.signals = addSignals(spec.signals ?? [], legendProps);
-		spec.scales = addLegendEntriesScale(spec.scales ?? [], legendProps);
 		spec.marks = addMarks(spec.marks ?? [], legendProps);
 
 		const legend: Legend = {
@@ -98,6 +100,7 @@ export const addLegend = produce<Spec, [LegendProps & { colorScheme?: ColorSchem
 			title,
 			encode: getEncodings(facets, legendProps),
 			columns: getColumns(position),
+			labelLimit,
 		};
 
 		spec.legends = [legend];
@@ -201,35 +204,26 @@ const addMarks = produce<Mark[], [LegendSpecProps]>((marks, { highlight }) => {
  * This creates a row for every unique combination of the facets in the data
  * Each unique combination gets joined with a pipe to create a single string to use as legend entries
  */
-export const addData = produce<Data[], [LegendSpecProps & { facets: string[] }]>(
-	(data, { facets, hiddenEntries, hiddenSeries, isToggleable }) => {
-		if (isToggleable || hiddenSeries) {
-			const index = data.findIndex((datum) => datum.name === FILTERED_TABLE);
-			data[index].transform = [
-				{ type: 'filter', expr: 'indexof(hiddenSeries, datum.prismSeriesId) === -1' },
-				...(data[index].transform ?? []),
-			];
-		}
-		// expression for combining all the facets into a single key
-		const expr = facets.map((facet) => `datum.${facet}`).join(' + " | " + ');
-		data.push({
-			name: 'legendAggregate',
-			source: 'table',
-			transform: [
-				{
-					type: 'aggregate',
-					groupby: facets,
-				},
-				{
-					type: 'formula',
-					as: 'legendEntries',
-					expr,
-				},
-				...getHiddenEntriesFilter(hiddenEntries),
-			],
-		});
-	},
-);
+export const addData = produce<Data[], [LegendSpecProps & { facets: string[] }]>((data, { facets, hiddenEntries }) => {
+	// expression for combining all the facets into a single key
+	const expr = facets.map((facet) => `datum.${facet}`).join(' + " | " + ');
+	data.push({
+		name: 'legendAggregate',
+		source: 'table',
+		transform: [
+			{
+				type: 'aggregate',
+				groupby: facets,
+			},
+			{
+				type: 'formula',
+				as: 'legendEntries',
+				expr,
+			},
+			...getHiddenEntriesFilter(hiddenEntries),
+		],
+	});
+});
 
 export const addSignals = produce<Signal[], [LegendSpecProps]>(
 	(signals, { hiddenSeries, highlight, isToggleable, legendLabels, name }) => {
@@ -243,10 +237,6 @@ export const addSignals = produce<Signal[], [LegendSpecProps]>(
 			if (!hasSignalByName(signals, 'legendLabels')) {
 				signals.push(getLegendLabelsSeriesSignal(legendLabels));
 			}
-		}
-
-		if (isToggleable || hiddenSeries) {
-			signals.push(getGenericSignal('hiddenSeries', hiddenSeries ?? []));
 		}
 	},
 );

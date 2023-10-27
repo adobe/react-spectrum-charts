@@ -9,9 +9,8 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
-import { DEFAULT_COLOR_SCHEME, DEFAULT_LINE_TYPES, TABLE } from '@constants';
-import { Area, Axis, Bar, Legend, Line } from '@prism';
+import { DEFAULT_COLOR_SCHEME, DEFAULT_LINE_TYPES, FILTERED_TABLE, SERIES_ID, TABLE } from '@constants';
+import { Area, Axis, Bar, Legend, Line, Title } from '@prism';
 import colorSchemes from '@themes/colorSchemes';
 import produce from 'immer';
 import {
@@ -31,15 +30,18 @@ import {
 	PrismSymbolShape,
 	SanitizedSpecProps,
 	SymbolShapes,
+	TitleElement,
 } from 'types';
 import { Data, OrdinalScale, PointScale, Scale, Signal, Spec } from 'vega';
 
 import { addArea } from './area/areaSpecBuilder';
 import { addAxis } from './axis/axisSpecBuilder';
 import { addBar } from './bar/barSpecBuilder';
+import { getPrismSeriesIdTransform } from './data/dataUtils';
+import { setHoverOpacityForMarks } from './legend/legendHighlightUtils';
 import { addLegend } from './legend/legendSpecBuilder';
 import { addLine } from './line/lineSpecBuilder';
-import { getGenericSignal } from './signal/signalSpecBuilder';
+import { getGenericSignal, hasSignalByName } from './signal/signalSpecBuilder';
 import {
 	getColorValue,
 	getFacetsFromScales,
@@ -48,11 +50,14 @@ import {
 	getStrokeDashFromLineType,
 	initializeSpec,
 } from './specUtils';
+import { addTitle } from './title/titleSpecBuilder';
 
 export function buildSpec({
 	children,
 	colors = 'categorical12',
 	description,
+	hiddenSeries,
+	highlightedSeries,
 	lineTypes = DEFAULT_LINE_TYPES,
 	lineWidths = ['M'],
 	opacities,
@@ -61,7 +66,7 @@ export function buildSpec({
 	title,
 }: SanitizedSpecProps) {
 	let spec = initializeSpec(null, { title, description });
-	spec.signals = getDefaultSignals(colors, colorScheme, lineTypes, opacities);
+	spec.signals = getDefaultSignals(colors, colorScheme, lineTypes, opacities, hiddenSeries);
 	spec.scales = getDefaultScales(colors, colorScheme, lineTypes, lineWidths, opacities, symbolShapes);
 
 	// need to build the spec in a specific order
@@ -71,6 +76,7 @@ export function buildSpec({
 	buildOrder.set(Line, 0);
 	buildOrder.set(Legend, 1);
 	buildOrder.set(Axis, 2);
+	buildOrder.set(Title, 3);
 
 	let { areaCount, axisCount, barCount, legendCount, lineCount } = initializeComponentCounts();
 	spec = [...children]
@@ -88,10 +94,19 @@ export function buildSpec({
 					return addBar(acc, { ...(cur as BarElement).props, colorScheme, index: barCount });
 				case Legend:
 					legendCount++;
-					return addLegend(acc, { ...(cur as LegendElement).props, colorScheme, index: legendCount });
+					return addLegend(acc, {
+						...(cur as LegendElement).props,
+						colorScheme,
+						index: legendCount,
+						hiddenSeries,
+						highlightedSeries,
+					});
 				case Line:
 					lineCount++;
 					return addLine(acc, { ...(cur as LineElement).props, colorScheme, index: lineCount });
+				case Title:
+					// No title count. There can only be one title.
+					return addTitle(acc, { ...(cur as TitleElement).props });
 				default:
 					console.error('invalid type');
 					return acc;
@@ -101,8 +116,32 @@ export function buildSpec({
 	// copy the spec so we don't mutate the original
 	spec = JSON.parse(JSON.stringify(spec));
 	spec.data = addData(spec.data ?? [], { facets: getFacetsFromScales(spec.scales) });
+
+	// add signals and update marks for controlled highlighting if there isn't a legend with highlight enabled
+	if (highlightedSeries && !hasSignalByName(spec.signals ?? [], 'highlightedSeries')) {
+		spec = addHighlight(spec, { children, hiddenSeries, highlightedSeries });
+	}
+
+	// clear out all scales that don't have any fields on the domain
+	spec = removeUnusedScales(spec);
+
 	return spec;
 }
+
+export const addHighlight = produce<Spec, [SanitizedSpecProps]>((spec, { highlightedSeries }) => {
+	if (!spec.signals) spec.signals = [];
+	spec.signals.push(getGenericSignal(`highlightedSeries`, highlightedSeries));
+	setHoverOpacityForMarks(spec.marks ?? []);
+});
+
+export const removeUnusedScales = produce<Spec>((spec) => {
+	spec.scales = spec.scales?.filter((scale) => {
+		if ('domain' in scale && scale.domain && 'fields' in scale.domain && scale.domain.fields.length === 0) {
+			return false;
+		}
+		return true;
+	});
+});
 
 const initializeComponentCounts = () => {
 	return {
@@ -114,16 +153,18 @@ const initializeComponentCounts = () => {
 	};
 };
 
-const getDefaultSignals = (
+export const getDefaultSignals = (
 	colors: PrismColors,
 	colorScheme: ColorScheme,
 	lineTypes: LineTypes,
 	opacities: Opacities | undefined,
+	hiddenSeries?: string[]
 ): Signal[] => [
 	getGenericSignal('backgroundColor', getColorValue('gray-50', colorScheme)),
 	getGenericSignal('colors', getTwoDimensionalColorScheme(colors, colorScheme)),
 	getGenericSignal('lineTypes', getTwoDimensionalLineTypes(lineTypes)),
 	getGenericSignal('opacities', getTwoDimensionalOpacities(opacities)),
+	getGenericSignal('hiddenSeries', hiddenSeries ?? []),
 ];
 
 export const getTwoDimensionalColorScheme = (colors: PrismColors, colorScheme: ColorScheme): string[][] => {
@@ -158,7 +199,7 @@ const getDefaultScales = (
 	lineTypes: LineTypes,
 	lineWidths: LineWidth[],
 	opacities: Opacities | undefined,
-	symbolShapes: SymbolShapes,
+	symbolShapes: SymbolShapes
 ): Scale[] => [
 	getColorScale(colors, colorScheme),
 	getLineTypeScale(lineTypes),
@@ -250,14 +291,16 @@ function getPathsFromPrismSymbolShapes(symbolShapes: PrismSymbolShape[]) {
  */
 export const addData = produce<Data[], [{ facets: string[] }]>((data, { facets }) => {
 	if (facets.length === 0) return;
-	// expression for combining all the facets into a single key
-	const expr = facets.map((facet) => `datum.${facet}`).join(' + " | " + ');
+	data[0]?.transform?.push(getPrismSeriesIdTransform(facets));
 
-	data[0]?.transform?.push({
-		type: 'formula',
-		as: 'prismSeriesId',
-		expr,
-	});
+	// add a filter transform to the TABLE data that filters out any hidden series
+	const index = data.findIndex((datum) => datum.name === FILTERED_TABLE);
+	if (index !== -1) {
+		data[index].transform = [
+			{ type: 'filter', expr: `indexof(hiddenSeries, datum.${SERIES_ID}) === -1` },
+			...(data[index].transform ?? []),
+		];
+	}
 });
 
 export const isColorScale = (colors: PrismColors): colors is ColorScale => {

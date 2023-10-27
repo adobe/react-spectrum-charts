@@ -9,13 +9,13 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
 import {
 	DEFAULT_COLOR,
 	DEFAULT_COLOR_SCHEME,
 	DEFAULT_CONTINUOUS_DIMENSION,
 	DEFAULT_METRIC,
 	FILTERED_TABLE,
+	SERIES_ID,
 } from '@constants';
 import { FilterTransform } from 'vega';
 
@@ -59,28 +59,23 @@ describe('getLineMark()', () => {
 	});
 
 	test('adds metric range opacity rules if isMetricRange and displayOnHover', () => {
-		const lineMark = getLineMark({ ...defaultLineProps, isMetricRange: true, displayOnHover: true }, 'line0_facet');
+		const lineMark = getLineMark({ ...defaultLineProps, displayOnHover: true }, 'line0_facet');
 		expect(lineMark.encode?.update?.strokeOpacity).toEqual([
 			{
-				test: 'line0MetricRange_hoveredSeries && line0MetricRange_hoveredSeries === datum.series',
+				test: `line0_hoveredSeries && line0_hoveredSeries === datum.${SERIES_ID}`,
 				value: 1,
 			},
 			{
-				test: 'line0_selectedSeries && line0_selectedSeries === datum.series',
+				test: `line0_selectedSeries && line0_selectedSeries === datum.${SERIES_ID}`,
 				value: 1,
 			},
-			{ test: 'highlightedSeries && highlightedSeries === datum.prismSeriesId', value: 1 },
+			{ test: `highlightedSeries && highlightedSeries === datum.${SERIES_ID}`, value: 1 },
 			{ value: 0 },
 		]);
 	});
 
-	test('does not add metric range opacity rules if isMetricRange is false and displayOnHover', () => {
-		const lineMark = getLineMark({ ...defaultLineProps, displayOnHover: true }, 'line0_facet');
-		expect(lineMark.encode?.update?.strokeOpacity).toEqual([{ value: 1 }]);
-	});
-
 	test('does not add metric range opacity rules if displayOnHover is false and isMetricRange', () => {
-		const lineMark = getLineMark({ ...defaultLineProps, displayOnHover: true }, 'line0_facet');
+		const lineMark = getLineMark({ ...defaultLineProps, displayOnHover: false }, 'line0_facet');
 		expect(lineMark.encode?.update?.strokeOpacity).toEqual([{ value: 1 }]);
 	});
 });

@@ -9,10 +9,10 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import React, { FC } from 'react';
 
 import { Flex, Text } from '@adobe/react-spectrum';
 import GraphBarVertical from '@spectrum-icons/workflow/GraphBarVertical';
-import React, { FC } from 'react';
 
 import './EmptyState.css';
 

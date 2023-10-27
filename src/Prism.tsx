@@ -13,7 +13,7 @@ import React, { FC, MutableRefObject, forwardRef, useEffect, useMemo, useRef, us
 
 import { EmptyState } from '@components/EmptyState';
 import { LoadingState } from '@components/LoadingState';
-import { DEFAULT_COLOR_SCHEME, DEFAULT_LINE_TYPES } from '@constants';
+import { DEFAULT_COLOR_SCHEME, DEFAULT_LINE_TYPES, MARK_ID } from '@constants';
 import useChartWidth from '@hooks/useChartWidth';
 import { useDebugSpec } from '@hooks/useDebugSpec';
 import useElementSize from '@hooks/useElementSize';
@@ -26,7 +26,13 @@ import useSpecProps from '@hooks/useSpecProps';
 import useTooltips from '@hooks/useTooltips';
 import { getColorValue } from '@specBuilder/specUtils';
 import { getPrismConfig } from '@themes/spectrumTheme';
-import { debugLog, getOnMarkClickCallback, sanitizeChartChildren, setSelectedSignals } from '@utils';
+import {
+	debugLog,
+	getOnMarkClickCallback,
+	getOnMouseInputCallback,
+	sanitizeChartChildren,
+	setSelectedSignals,
+} from '@utils';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { Vega } from 'react-vega';
 import { v4 as uuid } from 'uuid';
@@ -81,6 +87,8 @@ export const Prism = forwardRef<PrismHandle, PrismProps>(
 			description,
 			debug = false,
 			height = 300,
+			hiddenSeries = [],
+			highlightedSeries,
 			lineTypes = DEFAULT_LINE_TYPES,
 			lineWidths = ['M'],
 			loading,
@@ -116,6 +124,8 @@ export const Prism = forwardRef<PrismHandle, PrismProps>(
 			colors,
 			data,
 			description,
+			hiddenSeries,
+			highlightedSeries,
 			symbolShapes,
 			lineTypes,
 			lineWidths,
@@ -124,6 +134,12 @@ export const Prism = forwardRef<PrismHandle, PrismProps>(
 			title,
 			UNSAFE_vegaSpec,
 		});
+
+		// if the spec has changed, reset the chartView
+		useEffect(() => {
+			chartView.current = undefined;
+		}, [spec]);
+
 		const { controlledHoverSignal, selectedIdSignalName, selectedSeriesSignalName } = useSpecProps(spec);
 		const prismConfig = useMemo(() => getPrismConfig(config, colorScheme), [config, colorScheme]);
 
@@ -140,20 +156,17 @@ export const Prism = forwardRef<PrismHandle, PrismProps>(
 			return { [TABLE]: clonedData };
 		}, [data]);
 
-		// Hide tooltips on all charts when a popover is open
 		useEffect(() => {
 			const tooltipElement = document.getElementById('vg-tooltip-element');
 			if (!tooltipElement) return;
+			// Hide tooltips on all charts when a popover is open
 			tooltipElement.hidden = popoverIsOpen;
-			if (!popoverIsOpen && selectedIdSignalName && chartView.current) {
-				// clears the selected state on the viz
-				chartView.current.signal(selectedIdSignalName, null);
-				if (selectedSeriesSignalName) {
-					chartView.current.signal(selectedSeriesSignalName, null);
-				}
+
+			// if the popover is closed, reset the selected data
+			if (!popoverIsOpen) {
 				selectedData.current = null;
 			}
-		}, [popoverIsOpen, selectedIdSignalName, selectedSeriesSignalName, chartView]);
+		}, [popoverIsOpen]);
 
 		usePrismImperativeHandle(forwardedRef, { chartView, title });
 
@@ -167,6 +180,8 @@ export const Prism = forwardRef<PrismHandle, PrismProps>(
 			descriptions: legendDescriptions,
 			isToggleable: legendIsToggleable,
 			onClick: onLegendClick,
+			onMouseOut: onLegendMouseOut,
+			onMouseOver: onLegendMouseOver,
 		} = useLegend(sanitizedChildren); // gets props from the legend if it exists
 
 		const tooltips = useTooltips(sanitizedChildren);
@@ -209,7 +224,7 @@ export const Prism = forwardRef<PrismHandle, PrismProps>(
 				const tooltip = tooltips.find((t) => t.name === value.prismComponentName)?.callback;
 				if (tooltip && !('index' in value)) {
 					if (controlledHoverSignal) {
-						chartView.current?.signal(controlledHoverSignal.name, value?.prismMarkId ?? null);
+						chartView.current?.signal(controlledHoverSignal.name, value?.[MARK_ID] ?? null);
 					}
 					return renderToStaticMarkup(
 						<div className="prism-tooltip" data-testid="prism-tooltip">
@@ -293,12 +308,14 @@ export const Prism = forwardRef<PrismHandle, PrismProps>(
 											onLegendClick
 										)
 									);
-									// this will trigger the autosize calculation making sure that everything is correct size
-									setTimeout(() => {
-										view.resize();
-										view.runAsync();
-									}, 0);
 								}
+								view.addEventListener('mouseover', getOnMouseInputCallback(onLegendMouseOver));
+								view.addEventListener('mouseout', getOnMouseInputCallback(onLegendMouseOut));
+								// this will trigger the autosize calculation making sure that everything is correct size
+								setTimeout(() => {
+									view.resize();
+									view.runAsync();
+								}, 0);
 							}}
 						/>
 					)}

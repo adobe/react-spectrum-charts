@@ -9,6 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { createElement } from 'react';
 
 import { Annotation } from '@components/Annotation';
 import { ChartTooltip } from '@components/ChartTooltip';
@@ -20,8 +21,8 @@ import {
 	DEFAULT_SECONDARY_COLOR,
 	FILTERED_TABLE,
 	HIGHLIGHT_CONTRAST_RATIO,
+	MARK_ID,
 } from '@constants';
-import { createElement } from 'react';
 import { BarSpecProps } from 'types';
 import { Mark, RectEncodeEntry } from 'vega';
 
@@ -114,11 +115,11 @@ const defaultMarkWithTooltip: Mark = {
 			...defaultDodgedXEncodings,
 			...defaultBarStrokeEncodings,
 			fillOpacity: [
-				{ test: 'bar0_hoveredId && bar0_hoveredId !== datum.prismMarkId', value: 1 / HIGHLIGHT_CONTRAST_RATIO },
+				{ test: `bar0_hoveredId && bar0_hoveredId !== datum.${MARK_ID}`, value: 1 / HIGHLIGHT_CONTRAST_RATIO },
 				{ value: 1 },
 			],
 			strokeOpacity: [
-				{ test: 'bar0_hoveredId && bar0_hoveredId !== datum.prismMarkId', value: 1 / HIGHLIGHT_CONTRAST_RATIO },
+				{ test: `bar0_hoveredId && bar0_hoveredId !== datum.${MARK_ID}`, value: 1 / HIGHLIGHT_CONTRAST_RATIO },
 				{ value: 1 },
 			],
 			cursor: undefined,
@@ -203,7 +204,7 @@ describe('dodgedBarUtils', () => {
 				getDodgedMark({
 					...defaultDodgedProps,
 					children: [...defaultDodgedProps.children, annotationElement],
-				}),
+				})
 			).toStrictEqual(annotationDodgedMarks);
 		});
 		test('should add tooltip keys if ChartTooltip exists as child', () => {
@@ -216,7 +217,7 @@ describe('dodgedBarUtils', () => {
 	describe('getDodgedMark()', () => {
 		test('subseries, should include advanced fill, advanced corner radius, and border strokes,', () => {
 			expect(
-				getDodgedMark({ ...defaultDodgedProps, color: [DEFAULT_COLOR, DEFAULT_SECONDARY_COLOR] }),
+				getDodgedMark({ ...defaultDodgedProps, color: [DEFAULT_COLOR, DEFAULT_SECONDARY_COLOR] })
 			).toStrictEqual({
 				...defaultDodgedMark,
 				marks: [defaultDodgedStackedBackgroundMark, defaultDodgedStackedMark],

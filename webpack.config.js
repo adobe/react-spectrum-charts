@@ -23,16 +23,12 @@ module.exports = {
 	entry: './src/index.ts',
 	mode: 'production',
 
-	experiments: {
-		outputModule: true,
-	},
-
 	output: {
 		filename: 'index.js',
 		path: path.resolve(__dirname, 'dist'),
-		library: {
-			type: 'module',
-		},
+		library: 'reactSpectrumCharts',
+		libraryTarget: 'umd',
+		globalObject: 'this',
 	},
 
 	module: {
