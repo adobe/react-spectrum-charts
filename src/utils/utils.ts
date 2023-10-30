@@ -111,15 +111,6 @@ export function toCamelCase(str: string) {
 	return str;
 }
 
-// converts any string to the snake_case equivalent
-export function toSnakeCase(str: string) {
-	const words = str.match(/[A-Z]{2,}(?=[A-Z][a-z]+\d*|\b)|[A-Z]?[a-z]+\d*|[A-Z]|\d+/g);
-	if (words) {
-		return words.map((x) => x.toLowerCase()).join('_');
-	}
-	return str;
-}
-
 /**
  * IMMUTABLE
  *

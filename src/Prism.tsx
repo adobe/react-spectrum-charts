@@ -135,11 +135,6 @@ export const Prism = forwardRef<PrismHandle, PrismProps>(
 			UNSAFE_vegaSpec,
 		});
 
-		// if the spec has changed, reset the chartView
-		useEffect(() => {
-			chartView.current = undefined;
-		}, [spec]);
-
 		const { controlledHoverSignal, selectedIdSignalName, selectedSeriesSignalName } = useSpecProps(spec);
 		const prismConfig = useMemo(() => getPrismConfig(config, colorScheme), [config, colorScheme]);
 

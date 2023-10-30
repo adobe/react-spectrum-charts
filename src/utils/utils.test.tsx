@@ -22,32 +22,11 @@ import {
 	getComponentName,
 	sanitizeAxisAnnotationChildren,
 	toCamelCase,
-	toSnakeCase,
 	toggleStringArrayValue,
 } from '@utils';
 import { Prism } from 'Prism';
 
 describe('utils', () => {
-	describe('toSnakeCase()', () => {
-		test('camelCase should convert to snake_case', () => {
-			expect(toSnakeCase('thisIsATest')).toStrictEqual('this_is_a_test');
-		});
-		test('kebab-case should convert to snake_case', () => {
-			expect(toSnakeCase('test-utils')).toStrictEqual('test_utils');
-		});
-		test('PascalCase should convert to snake_case', () => {
-			expect(toSnakeCase('SnakeTest')).toStrictEqual('snake_test');
-		});
-		test('sentence should convert to snake_case', () => {
-			expect(toSnakeCase('This is a test')).toStrictEqual('this_is_a_test');
-		});
-		test('wild string should convert to snake_case', () => {
-			expect(toSnakeCase('The guickFox_jumped-over 2 DOGS!')).toStrictEqual('the_guick_fox_jumped_over_2_dogs');
-		});
-		test('no alpha numeric characters should return original string', () => {
-			expect(toSnakeCase('&()*')).toStrictEqual('&()*');
-		});
-	});
 	describe('toCamelCase()', () => {
 		test('camelCase should convert to camelCase', () => {
 			expect(toCamelCase('camelTest')).toStrictEqual('camelTest');
