@@ -9,12 +9,12 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import React, { createRef } from 'react';
 
 import '@matchMediaMock';
 import { Axis, Bar, ChartTooltip, Line, Prism, PrismHandle } from '@prism';
 import { findPrism, getAllMarksByGroupName, render, screen } from '@test-utils';
 import { getElement } from '@utils';
-import React, { createRef } from 'react';
 
 import { Basic, Config, Width } from './Prism.story';
 import {
@@ -154,7 +154,7 @@ describe('Prism', () => {
 			render(
 				<Prism data={data} ref={ref}>
 					<Line dimension="x" metric="y" />
-				</Prism>,
+				</Prism>
 			);
 			if (ref.current) {
 				// should reject since the chart isn't done rendering
@@ -164,10 +164,26 @@ describe('Prism', () => {
 				expect(prism).toBeInTheDocument();
 				// should reject because fetch isn't mocked
 				await expect(ref.current.copy()).rejects.toBe(
-					'Error occurred while fetching image, copy to clipboard failed',
+					'Error occurred while fetching image, copy to clipboard failed'
 				);
 				// should resolve
-				await expect(ref.current.download()).resolves.toBe('Chart downloaded as prism_export.png');
+				await expect(ref.current.download()).resolves.toBe('Chart downloaded as chart_export.png');
+			}
+		});
+		test('download uses supplied filename', async () => {
+			const ref = createRef<PrismHandle>();
+			render(
+				<Prism data={data} ref={ref}>
+					<Line dimension="x" metric="y" />
+				</Prism>
+			);
+			if (ref.current) {
+				// should reject since the chart isn't done rendering
+				await expect(ref.current.download()).rejects.toBe("There isn't a chart to download, download failed");
+				const prism = await findPrism();
+				expect(prism).toBeInTheDocument();
+				// should resolve
+				await expect(ref.current.download('My filename')).resolves.toBe('Chart downloaded as My filename.png');
 			}
 		});
 	});
