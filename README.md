@@ -26,6 +26,7 @@
   - [Spectrum (Adobe Design System) Integration](#spectrum-adobe-design-system-integration)
   - [API](#api)
   - [Storybook](#storybook)
+  - [Support](#support)
   - [Contributing](#contributing)
   - [License](#license)
     - [Apache License 2.0 Summary](#apache-license-20-summary)
@@ -67,10 +68,6 @@
 `react-spectrum-charts` simplifies the charting process, making it accessible to a broader audience, including developers who may not have prior experience in data visualization. With just a few lines of code, you can create charts that meet the Adobe design system's standards, enriching your React applications with informative and visually appealing data representations.
 
 ## Installation
-
--   Instructions for installing your library.
--   Include code snippets for installation via npm or yarn.
--   Mention any peer dependencies.
 
 #### npm
 
@@ -119,9 +116,9 @@ The Adobe design system has detailed guidelines for charting fundamentals, color
 -   [Fundamentals](https://spectrum.adobe.com/page/data-visualization-fundamentals/)
 -   [Color](https://spectrum.adobe.com/page/color-for-data-visualization/)
 -   Components
-    -   [Area](https://spectrum.corp.adobe.com/page/area-chart/)
-    -   [Bar](https://spectrum.corp.adobe.com/page/bar-chart/)
-    -   [Line](https://spectrum.corp.adobe.com/page/line-chart/)
+    -   [Area](https://spectrum.adobe.com/page/area-chart/)
+    -   [Bar](https://spectrum.adobe.com/page/bar-chart/)
+    -   [Line](https://spectrum.adobe.com/page/line-chart/)
 
 ## API
 
@@ -134,6 +131,16 @@ This library has an extensive [Storybook](opensource.adobe.com/react-spectrum-ch
 It is also possible to view the source code for any story by selecting the "Docs" tab, scrolling to the desired story and then selecting "Show code". This is helpful for getting seeing the full API for any story in storybook.
 
 The Storybook may contain components or props that are not released yet since it gets rebuilt with every push to main, not just with npm releases.
+
+## Support
+
+If you encounter any issues, have questions, or need assistance with **react-spectrum-charts**, there are several ways to get support:
+
+1. **Documentation**: Check out the [official documentation](https://link-to-your-documentation) for in-depth guides, examples, and API references. Many common questions are answered here.
+
+2. **GitHub Issues**: If you believe you've identified a bug or have a feature request or have general feedback, please review the list of [open issues](https://github.com/adobe/react-spectrum-charts/issues) to see if someone else has already submitted a similar issue that you can add to. If an issue doesn't exist, please submit a new issue using the correct template ([create a new issue](https://github.com/adobe/react-spectrum-charts/issues/new/choose)).
+
+Please be respectful and considerate when seeking support. Provide as much context as possible when reporting issues, and follow any guidelines or templates specified in the GitHub issues section. Your feedback and contributions are highly valued.
 
 ## Contributing
 
