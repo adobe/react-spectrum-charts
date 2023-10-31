@@ -86,7 +86,7 @@ yarn add @adobe/react-spectrum-charts
 
 ## Usage
 
-The `react-spectrum-charts` is designed in a way that makes composing charts similar to composing any other app content in JSX.
+`react-spectrum-charts` is designed in a way that makes composing charts similar to composing any other app content in JSX.
 
 Each chart is wrapped in the `<Prism/>` component. The child components and their props control the contents of the chart.
 
