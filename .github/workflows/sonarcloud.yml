@@ -21,6 +21,15 @@ jobs:
               with:
                   node-version: '18'
 
+            - name: Install Dependencies 📦
+              run: yarn install
+
+            - name: Lint 🧼
+              run: yarn lint
+
+            - name: Test 🧪
+              run: yarn test
+
             - name: SonarCloud 🔬
               uses: SonarSource/sonarcloud-github-action@master
               env:
