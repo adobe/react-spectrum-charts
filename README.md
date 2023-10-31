@@ -83,7 +83,7 @@ yarn add @adobe/react-spectrum-charts
 
 ## Usage
 
-The `react-spectrum-charts` is designed in a way that makes composing charts similar to composing any other app content in JSX.
+`react-spectrum-charts` is designed in a way that makes composing charts similar to composing any other app content in JSX.
 
 Each chart is wrapped in the `<Prism/>` component. The child components and their props control the contents of the chart.
 
@@ -126,9 +126,9 @@ The Adobe design system has detailed guidelines for charting fundamentals, color
 
 ## Storybook
 
-This library has an extensive [Storybook](opensource.adobe.com/react-spectrum-charts/) with stories for every component as most props. You can use the controls tab in storybook to alter component props and see how that alters the chart real time.
+This library has an extensive [Storybook](opensource.adobe.com/react-spectrum-charts/) with stories for every component and most props. You can use the controls tab in storybook to alter component props and see how that alters the chart in real time.
 
-It is also possible to view the source code for any story by selecting the "Docs" tab, scrolling to the desired story and then selecting "Show code". This is helpful for getting seeing the full API for any story in storybook.
+It is also possible to view the source code for any story by selecting the "Docs" tab, scrolling to the desired story and then selecting "Show code". This is helpful for seeing the full API for any story in storybook.
 
 The Storybook may contain components or props that are not released yet since it gets rebuilt with every push to main, not just with npm releases.
 
@@ -166,6 +166,6 @@ Please review the [LICENSE](LICENSE) file for the complete text of the license.
 
 ## Roadmap
 
-The roadmap for this project is tracked in github projects. You must be a member of the Adboe org to see the roadmap.
+The roadmap for this project is tracked in github projects. You must be a member of the Adobe org to see the roadmap.
 
 [Roadmap](https://github.com/orgs/adobe/projects/46)
