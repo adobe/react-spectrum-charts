@@ -25,6 +25,7 @@
     - [Example](#example)
   - [Spectrum (Adobe Design System) Integration](#spectrum-adobe-design-system-integration)
   - [API](#api)
+  - [Storybook](#storybook)
   - [Contributing](#contributing)
   - [License](#license)
     - [Apache License 2.0 Summary](#apache-license-20-summary)
@@ -125,6 +126,14 @@ The Adobe design system has detailed guidelines for charting fundamentals, color
 ## API
 
 [API Documentation](https://github.com/adobe/react-spectrum-charts/wiki)
+
+## Storybook
+
+This library has an extensive [Storybook](opensource.adobe.com/react-spectrum-charts/) with stories for every component as most props. You can use the controls tab in storybook to alter component props and see how that alters the chart real time.
+
+It is also possible to view the source code for any story by selecting the "Docs" tab, scrolling to the desired story and then selecting "Show code". This is helpful for getting seeing the full API for any story in storybook.
+
+The Storybook may contain components or props that are not released yet since it gets rebuilt with every push to main, not just with npm releases.
 
 ## Contributing
 
