@@ -159,6 +159,6 @@ Please review the [LICENSE](LICENSE) file for the complete text of the license.
 
 ## Roadmap
 
-The roadmap for this project is tracked in github projects. You must be a member of the Adboe org to see the roadmap.
+The roadmap for this project is tracked in github projects. You must be a member of the Adobe org to see the roadmap.
 
 [Roadmap](https://github.com/orgs/adobe/projects/46)
