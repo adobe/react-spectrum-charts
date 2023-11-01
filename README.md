@@ -144,7 +144,7 @@ Please be respectful and considerate when seeking support. Provide as much conte
 
 ## Contributing
 
-[Contribution Guidelines](https://github.com/adobe/react-spectrum-charts/wiki)
+[Contribution Guidelines](./CONTRIBUTING.md)
 
 ## License
 
