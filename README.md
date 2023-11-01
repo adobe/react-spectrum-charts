@@ -34,7 +34,7 @@
 
 ## Overview
 
-`react-spectrum-charts` is a declarative charting library for composing charts in React. It empowers you to effortlessly create visually stunning charts following the Adobe design system ([spectrum](https://spectrum.adobe.com)) with minimal code. Understanding of the grammar of graphics or lower-level libraries like D3 or Vega is not needed.
+`react-spectrum-charts` is a declarative charting library for composing charts in React. It empowers you to effortlessly create visually stunning charts following Adobe's design system ([Spectrum](https://spectrum.adobe.com)) with minimal code. Understanding of the grammar of graphics or lower-level libraries like D3 or Vega is not needed.
 
 ### Key Features:
 
@@ -109,7 +109,7 @@ const MyChart: FC<MyChartProps> = (props) => {
 
 ## Spectrum (Adobe Design System) Integration
 
-The Adobe design system has detailed guidelines for charting fundamentals, color selection for charts as well as design guidelines for the primary chart components.
+Adobe's design system has detailed guidelines for charting fundamentals, color selection for charts as well as design guidelines for the primary chart components.
 
 `react-spectrum-charts` is the react implementation of these guidelines.
 
