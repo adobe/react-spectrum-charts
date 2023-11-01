@@ -22,7 +22,7 @@ Please follow the issue templates when filing new ones and add as much informati
 
 ### Feature Requests
 
-If you have a feature request, you can use our Feature Request issue template. For larger scopes of work, it is a good idea to open a Request For Comments (RFC) first to gather feedback from the team. Please follow our [RFC template](https://github.com/adobe/react-spectrum-charts/blob/main/rfcs/template). Make a PR to add your RFC to the [rfcs folder](https://github.com/adobe/react-spectrum-charts/blob/main/rfcs/) to give the team and the community a chance to discuss the proposal.
+If you have a feature request, you can use our Feature Request issue template. For larger scopes of work, it is a good idea to open a Request For Comments (RFC) first to gather feedback from the team. Please follow our [RFC template](./rfcs/template.md). Make a PR to add your RFC to the [rfcs folder](./rfcs/) to give the team and the community a chance to discuss the proposal.
 
 ### Security Issues
 
