@@ -11,8 +11,8 @@
  */
 import React, { ReactElement } from 'react';
 
-import usePrismProps from '@hooks/usePrismProps';
-import { Axis, ChartPopover, ChartTooltip, Legend, Line, MetricRange, Prism, PrismProps } from '@prism';
+import useChartProps from '@hooks/useChartProps';
+import { Axis, Chart, ChartPopover, ChartProps, ChartTooltip, Legend, Line, MetricRange } from '@rsc';
 import { workspaceTrendsDataWithAnomalies, workspaceTrendsDataWithExtremeMetricRange } from '@stories/data/data';
 import { ComponentStory } from '@storybook/react';
 import { bindWithProps } from 'test-utils/bindWithProps';
@@ -20,7 +20,7 @@ import { bindWithProps } from 'test-utils/bindWithProps';
 import { Content } from '@adobe/react-spectrum';
 
 export default {
-	title: 'Prism/MetricRange',
+	title: 'RSC/MetricRange',
 	component: MetricRange,
 	argTypes: {},
 	parameters: {
@@ -32,7 +32,7 @@ export default {
 	},
 };
 
-const defaultPrismProps: PrismProps = {
+const defaultChartProps: ChartProps = {
 	data: workspaceTrendsDataWithAnomalies,
 	minWidth: 400,
 	maxWidth: 800,
@@ -40,37 +40,37 @@ const defaultPrismProps: PrismProps = {
 };
 
 const MetricRangeStory: ComponentStory<typeof MetricRange> = (args): ReactElement => {
-	const prismProps = usePrismProps(defaultPrismProps);
+	const chartProps = useChartProps(defaultChartProps);
 	return (
-		<Prism {...prismProps}>
+		<Chart {...chartProps}>
 			<Axis position="left" grid title="Users" />
 			<Axis position="bottom" labelFormat="time" baseline ticks />
 			<Line color="series">
 				<MetricRange {...args} />
 			</Line>
 			<Legend lineWidth={{ value: 0 }} highlight />
-		</Prism>
+		</Chart>
 	);
 };
 
 const MetricRangeWithStaticPointsStory: ComponentStory<typeof MetricRange> = (args): ReactElement => {
-	const prismProps = usePrismProps(defaultPrismProps);
+	const chartProps = useChartProps(defaultChartProps);
 	return (
-		<Prism {...prismProps}>
+		<Chart {...chartProps}>
 			<Axis position="left" grid title="Users" />
 			<Axis position="bottom" labelFormat="time" baseline ticks />
 			<Line color="series" staticPoint="staticPoint">
 				<MetricRange {...args} />
 			</Line>
 			<Legend lineWidth={{ value: 0 }} highlight />
-		</Prism>
+		</Chart>
 	);
 };
 
 const MetricRangeWithPopoverStory: ComponentStory<typeof MetricRange> = (args): ReactElement => {
-	const prismProps = usePrismProps(defaultPrismProps);
+	const chartProps = useChartProps(defaultChartProps);
 	return (
-		<Prism {...prismProps}>
+		<Chart {...chartProps}>
 			<Axis position="left" grid title="Users" />
 			<Axis position="bottom" labelFormat="time" baseline ticks />
 			<Line color="series">
@@ -79,24 +79,24 @@ const MetricRangeWithPopoverStory: ComponentStory<typeof MetricRange> = (args): 
 				<ChartPopover width={200}>{dialogContent}</ChartPopover>
 			</Line>
 			<Legend lineWidth={{ value: 0 }} highlight />
-		</Prism>
+		</Chart>
 	);
 };
 
 const MetricRangeWithScaledAxisStory: ComponentStory<typeof MetricRange> = (args): ReactElement => {
-	const prismProps = usePrismProps({
-		...defaultPrismProps,
+	const chartProps = useChartProps({
+		...defaultChartProps,
 		data: workspaceTrendsDataWithExtremeMetricRange,
 	});
 	return (
-		<Prism {...prismProps}>
+		<Chart {...chartProps}>
 			<Axis position="left" grid title="Users" />
 			<Axis position="bottom" labelFormat="time" baseline ticks />
 			<Line color="series">
 				<MetricRange {...args} />
 			</Line>
 			<Legend lineWidth={{ value: 0 }} highlight />
-		</Prism>
+		</Chart>
 	);
 };
 

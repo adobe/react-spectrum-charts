@@ -17,4 +17,4 @@ test-report.xml
 
 # exclude vscode config except for our shared snippets
 .vscode/*
-!.vscode/prism.code-snippets
+!.vscode/reactSpectrumCharts.code-snippets

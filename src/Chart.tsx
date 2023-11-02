@@ -14,18 +14,18 @@ import React, { FC, MutableRefObject, forwardRef, useEffect, useMemo, useRef, us
 import { EmptyState } from '@components/EmptyState';
 import { LoadingState } from '@components/LoadingState';
 import { DEFAULT_COLOR_SCHEME, DEFAULT_LINE_TYPES, MARK_ID } from '@constants';
+import useChartImperativeHandle from '@hooks/useChartImperativeHandle';
 import useChartWidth from '@hooks/useChartWidth';
 import { useDebugSpec } from '@hooks/useDebugSpec';
 import useElementSize from '@hooks/useElementSize';
 import useLegend from '@hooks/useLegend';
 import usePopoverAnchorStyle from '@hooks/usePopoverAnchorStyle';
 import usePopovers, { PopoverDetail } from '@hooks/usePopovers';
-import usePrismImperativeHandle from '@hooks/usePrismImperativeHandle';
 import useSpec from '@hooks/useSpec';
 import useSpecProps from '@hooks/useSpecProps';
 import useTooltips from '@hooks/useTooltips';
 import { getColorValue } from '@specBuilder/specUtils';
-import { getPrismConfig } from '@themes/spectrumTheme';
+import { getChartConfig } from '@themes/spectrumTheme';
 import {
 	debugLog,
 	getOnMarkClickCallback,
@@ -49,11 +49,11 @@ import {
 } from '@adobe/react-spectrum';
 import { Theme } from '@react-types/provider';
 
-import './Prism.css';
+import './Chart.css';
 import { TABLE } from './constants';
 import { expressionFunctions } from './expressionFunctions';
 import { extractValues, isVegaData } from './specBuilder/specUtils';
-import { Datum, LegendDescription, MarkBounds, PrismData, PrismHandle, PrismProps } from './types';
+import { ChartData, ChartHandle, ChartProps, Datum, LegendDescription, MarkBounds } from './types';
 
 interface ChartDialogProps {
 	datum: Datum | null;
@@ -70,12 +70,12 @@ interface LegendTooltipProps {
 }
 
 interface PlaceholderContentProps {
-	data: PrismData[];
+	data: ChartData[];
 	loading?: boolean;
 	height?: number;
 }
 
-export const Prism = forwardRef<PrismHandle, PrismProps>(
+export const Chart = forwardRef<ChartHandle, ChartProps>(
 	(
 		{
 			backgroundColor = 'transparent',
@@ -106,8 +106,8 @@ export const Prism = forwardRef<PrismHandle, PrismProps>(
 		},
 		forwardedRef
 	) => {
-		// uuid is used to make a unique id so there aren't duplicate ids if there is more than one Prism viz in the document
-		const prismId = useRef<string>(`prism-visuzalizations-${uuid()}`);
+		// uuid is used to make a unique id so there aren't duplicate ids if there is more than one Chart component in the document
+		const chartId = useRef<string>(`rsc-${uuid()}`);
 		const chartView = useRef<View>(); // view returned by vega
 		const selectedData = useRef<Datum | null>(null); // data that is currently selected, get's set on click if a popover exists
 		const selectedDataName = useRef<string>();
@@ -136,7 +136,7 @@ export const Prism = forwardRef<PrismHandle, PrismProps>(
 		});
 
 		const { controlledHoverSignal, selectedIdSignalName, selectedSeriesSignalName } = useSpecProps(spec);
-		const prismConfig = useMemo(() => getPrismConfig(config, colorScheme), [config, colorScheme]);
+		const chartConfig = useMemo(() => getChartConfig(config, colorScheme), [config, colorScheme]);
 
 		// Need to de a deep copy of the data because vega tries to transform the data
 		const chartData = useMemo(() => {
@@ -163,11 +163,11 @@ export const Prism = forwardRef<PrismHandle, PrismProps>(
 			}
 		}, [popoverIsOpen]);
 
-		usePrismImperativeHandle(forwardedRef, { chartView, title });
+		useChartImperativeHandle(forwardedRef, { chartView, title });
 
 		const [containerWidth] = useElementSize(containerRef); // gets the width of the container that wraps vega
 		const chartWidth = useChartWidth(containerWidth, maxWidth, minWidth, width); // calculates the width the vega chart should be
-		useDebugSpec(debug, spec, chartData, chartWidth, height, prismConfig);
+		useDebugSpec(debug, spec, chartData, chartWidth, height, chartConfig);
 
 		const {
 			hiddenSeriesState,
@@ -189,7 +189,7 @@ export const Prism = forwardRef<PrismHandle, PrismProps>(
 			selectedDataBounds.current,
 			padding
 		);
-		const showPlaceholderContent = useMemo(() => Boolean(loading || !data.length), [loading, data]);
+		const showPlaceholderContent = useMemo(() => Boolean(loading ?? !data.length), [loading, data]);
 		useEffect(() => {
 			// if placeholder content is displayed, clear out the chartview so it can't be downloaded or copied to clipboard
 			if (showPlaceholderContent) {
@@ -216,13 +216,13 @@ export const Prism = forwardRef<PrismHandle, PrismProps>(
 					);
 				}
 				// get the correct tooltip to render based on the hovered item
-				const tooltip = tooltips.find((t) => t.name === value.prismComponentName)?.callback;
+				const tooltip = tooltips.find((t) => t.name === value.rscComponentName)?.callback;
 				if (tooltip && !('index' in value)) {
 					if (controlledHoverSignal) {
 						chartView.current?.signal(controlledHoverSignal.name, value?.[MARK_ID] ?? null);
 					}
 					return renderToStaticMarkup(
-						<div className="prism-tooltip" data-testid="prism-tooltip">
+						<div className="rsc-tooltip" data-testid="rsc-tooltip">
 							{tooltip(value)}
 						</div>
 					);
@@ -233,14 +233,14 @@ export const Prism = forwardRef<PrismHandle, PrismProps>(
 
 		if (props.children && UNSAFE_vegaSpec) {
 			throw new Error(
-				'Prism cannot accept both children and `UNSAFE_vegaSpec` prop. Please choose one or the other.'
+				'Chart cannot accept both children and `UNSAFE_vegaSpec` prop. Please choose one or the other.'
 			);
 		}
 
-		// Prism requires children or a Vega spec to configure what is drawn. If there aren't any children or a Vega spec, throw an error and return a fragment.
+		// Chart requires children or a Vega spec to configure what is drawn. If there aren't any children or a Vega spec, throw an error and return a fragment.
 		if (!props.children && !UNSAFE_vegaSpec) {
 			throw new Error(
-				'No children in the <Prism /> component. Prism is a collection components and requires children to draw correctly.'
+				'No children in the <Chart/> component. Chart is a collection components and requires children to draw correctly.'
 			);
 		}
 
@@ -248,14 +248,14 @@ export const Prism = forwardRef<PrismHandle, PrismProps>(
 			<Provider colorScheme={colorScheme} theme={isValidTheme(theme) ? theme : defaultTheme}>
 				<div
 					ref={containerRef}
-					id={prismId.current}
+					id={chartId.current}
 					data-testid={dataTestId}
-					className="prism-container"
+					className="rsc-container"
 					style={{ backgroundColor: getColorValue(backgroundColor, colorScheme) }}
 				>
 					<div
-						id={`${prismId.current}-popover-anchor`}
-						data-testid="prism-popover-anchor"
+						id={`${chartId.current}-popover-anchor`}
+						data-testid="rsc-popover-anchor"
 						ref={popoverAnchorRef}
 						style={targetStyle}
 					/>
@@ -264,9 +264,9 @@ export const Prism = forwardRef<PrismHandle, PrismProps>(
 					) : (
 						<Vega
 							mode="vega"
-							className="prism"
+							className="rsc"
 							spec={spec}
-							config={prismConfig}
+							config={chartConfig}
 							data={chartData}
 							actions={false}
 							renderer={renderer}
@@ -294,7 +294,7 @@ export const Prism = forwardRef<PrismHandle, PrismProps>(
 										getOnMarkClickCallback(
 											chartView,
 											hiddenSeriesState,
-											prismId,
+											chartId,
 											selectedData,
 											selectedDataBounds,
 											selectedDataName,
@@ -326,7 +326,7 @@ export const Prism = forwardRef<PrismHandle, PrismProps>(
 		);
 	}
 );
-Prism.displayName = 'Prism';
+Chart.displayName = 'Chart';
 
 const ChartDialog = ({ datum, itemName, targetElement, setPopoverState, popovers }: ChartDialogProps) => {
 	if (!popovers.length) {
@@ -346,7 +346,7 @@ const ChartDialog = ({ datum, itemName, targetElement, setPopoverState, popovers
 		>
 			<ActionButton UNSAFE_style={{ display: 'none' }}>launch chart popover</ActionButton>
 			{(close) => (
-				<Dialog data-testid="prism-popover" UNSAFE_className="prism-popover" minWidth="size-1000" width={width}>
+				<Dialog data-testid="rsc-popover" UNSAFE_className="rsc-popover" minWidth="size-1000" width={width}>
 					<SpectrumView gridColumn="1/-1" gridRow="1/-1" margin={12}>
 						{popover && datum && popover(datum, close)}
 					</SpectrumView>
@@ -363,8 +363,8 @@ const LegendTooltip: FC<LegendTooltipProps> = ({ value, descriptions, domain }) 
 		return <></>;
 	}
 	return (
-		<div className="prism-tooltip legend-tooltip" data-testid="prism-tooltip">
-			<div className="series">{description.title || series}</div>
+		<div className="rsc-tooltip legend-tooltip" data-testid="rsc-tooltip">
+			<div className="series">{description.title ?? series}</div>
 			<p className="series-description">{description.description}</p>
 		</div>
 	);

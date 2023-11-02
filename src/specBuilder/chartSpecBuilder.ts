@@ -10,13 +10,15 @@
  * governing permissions and limitations under the License.
  */
 import { DEFAULT_COLOR_SCHEME, DEFAULT_LINE_TYPES, FILTERED_TABLE, SERIES_ID, TABLE } from '@constants';
-import { Area, Axis, Bar, Legend, Line, Title } from '@prism';
+import { Area, Axis, Bar, Legend, Line, Title } from '@rsc';
 import colorSchemes from '@themes/colorSchemes';
 import produce from 'immer';
 import {
 	AreaElement,
 	AxisElement,
 	BarElement,
+	ChartColors,
+	ChartSymbolShape,
 	ColorScale,
 	ColorScheme,
 	Colors,
@@ -26,8 +28,6 @@ import {
 	LineTypes,
 	LineWidth,
 	Opacities,
-	PrismColors,
-	PrismSymbolShape,
 	SanitizedSpecProps,
 	SymbolShapes,
 	TitleElement,
@@ -37,7 +37,7 @@ import { Data, OrdinalScale, PointScale, Scale, Signal, Spec } from 'vega';
 import { addArea } from './area/areaSpecBuilder';
 import { addAxis } from './axis/axisSpecBuilder';
 import { addBar } from './bar/barSpecBuilder';
-import { getPrismSeriesIdTransform } from './data/dataUtils';
+import { getSeriesIdTransform } from './data/dataUtils';
 import { setHoverOpacityForMarks } from './legend/legendHighlightUtils';
 import { addLegend } from './legend/legendSpecBuilder';
 import { addLine } from './line/lineSpecBuilder';
@@ -46,7 +46,7 @@ import {
 	getColorValue,
 	getFacetsFromScales,
 	getLineWidthPixelsFromLineWidth,
-	getPathFromPrismSymbolShape,
+	getPathFromSymbolShape,
 	getStrokeDashFromLineType,
 	initializeSpec,
 } from './specUtils';
@@ -154,7 +154,7 @@ const initializeComponentCounts = () => {
 };
 
 export const getDefaultSignals = (
-	colors: PrismColors,
+	colors: ChartColors,
 	colorScheme: ColorScheme,
 	lineTypes: LineTypes,
 	opacities: Opacities | undefined,
@@ -167,7 +167,7 @@ export const getDefaultSignals = (
 	getGenericSignal('hiddenSeries', hiddenSeries ?? []),
 ];
 
-export const getTwoDimensionalColorScheme = (colors: PrismColors, colorScheme: ColorScheme): string[][] => {
+export const getTwoDimensionalColorScheme = (colors: ChartColors, colorScheme: ColorScheme): string[][] => {
 	if (isColors(colors)) {
 		return getColors(colors, colorScheme).map((color) => [color]);
 	}
@@ -194,7 +194,7 @@ export const getTwoDimensionalOpacities = (opacities: Opacities | undefined): nu
 };
 
 const getDefaultScales = (
-	colors: PrismColors,
+	colors: ChartColors,
 	colorScheme: ColorScheme,
 	lineTypes: LineTypes,
 	lineWidths: LineWidth[],
@@ -208,7 +208,7 @@ const getDefaultScales = (
 	getSymbolShapeScale(symbolShapes),
 ];
 
-export const getColorScale = (colors: PrismColors, colorScheme: ColorScheme): OrdinalScale => {
+export const getColorScale = (colors: ChartColors, colorScheme: ColorScheme): OrdinalScale => {
 	// if a two dimensional scale was provided, then just grab the first color in each scale and set that as the scale range
 	const range = isColors(colors) ? getColors(colors, colorScheme) : colors.map((c) => getColors(c, colorScheme)[0]);
 	return {
@@ -233,9 +233,9 @@ export const getLineTypeScale = (lineTypes: LineTypes): OrdinalScale => {
 };
 export const getSymbolShapeScale = (symbolShapes: SymbolShapes): OrdinalScale => {
 	// if a two dimensional scale was provided, then just grab the first color in each scale and set that as the scale range
-	const range = isPrismSymbolShapeArray(symbolShapes)
-		? getPathsFromPrismSymbolShapes(symbolShapes)
-		: symbolShapes.map((symbolShape) => getPathFromPrismSymbolShape(symbolShape[0]));
+	const range = isSymbolShapeArray(symbolShapes)
+		? getPathsFromSymbolShapes(symbolShapes)
+		: symbolShapes.map((symbolShape) => getPathFromSymbolShape(symbolShape[0]));
 	return {
 		name: 'symbolShape',
 		type: 'ordinal',
@@ -252,7 +252,7 @@ export const getLineWidthScale = (lineWidths: LineWidth[]): OrdinalScale => ({
 });
 
 export const getOpacityScale = (opacities?: Opacities): OrdinalScale | PointScale => {
-	if (opacities && opacities.length) {
+	if (opacities?.length) {
 		const range = isNumberArray(opacities) ? opacities : opacities.map((opacityArray) => opacityArray[0]);
 		return {
 			name: 'opacity',
@@ -282,8 +282,8 @@ function getStrokeDashesFromLineTypes(lineTypes: LineType[]): number[][] {
 	return lineTypes.map((lineType) => getStrokeDashFromLineType(lineType));
 }
 
-function getPathsFromPrismSymbolShapes(symbolShapes: PrismSymbolShape[]) {
-	return symbolShapes.map((symbolShape) => getPathFromPrismSymbolShape(symbolShape));
+function getPathsFromSymbolShapes(symbolShapes: ChartSymbolShape[]) {
+	return symbolShapes.map((symbolShape) => getPathFromSymbolShape(symbolShape));
 }
 
 /**
@@ -291,7 +291,7 @@ function getPathsFromPrismSymbolShapes(symbolShapes: PrismSymbolShape[]) {
  */
 export const addData = produce<Data[], [{ facets: string[] }]>((data, { facets }) => {
 	if (facets.length === 0) return;
-	data[0]?.transform?.push(getPrismSeriesIdTransform(facets));
+	data[0]?.transform?.push(getSeriesIdTransform(facets));
 
 	// add a filter transform to the TABLE data that filters out any hidden series
 	const index = data.findIndex((datum) => datum.name === FILTERED_TABLE);
@@ -303,11 +303,11 @@ export const addData = produce<Data[], [{ facets: string[] }]>((data, { facets }
 	}
 });
 
-export const isColorScale = (colors: PrismColors): colors is ColorScale => {
+export const isColorScale = (colors: ChartColors): colors is ColorScale => {
 	return Boolean(!Array.isArray(colors) && colors in colorSchemes);
 };
 
-export const isColors = (colors: PrismColors): colors is Colors => {
+export const isColors = (colors: ChartColors): colors is Colors => {
 	return isColorScale(colors) || colors.some((color) => !isColorScale(color) && typeof color === 'string');
 };
 
@@ -323,6 +323,6 @@ export const isNumberArray = (opacities: Opacities): opacities is number[] => {
 	return !opacities.some((opacity) => Array.isArray(opacity));
 };
 
-export const isPrismSymbolShapeArray = (symbolShapes: SymbolShapes): symbolShapes is PrismSymbolShape[] => {
+export const isSymbolShapeArray = (symbolShapes: SymbolShapes): symbolShapes is ChartSymbolShape[] => {
 	return !symbolShapes.some((symbolShape) => Array.isArray(symbolShape));
 };

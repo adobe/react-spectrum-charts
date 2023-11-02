@@ -9,21 +9,21 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import React, { ReactElement } from 'react';
 
-import usePrismProps from '@hooks/usePrismProps';
-import { Prism } from '@prism';
+import { TABLE } from '@constants';
+import useChartProps from '@hooks/useChartProps';
+import { Chart } from '@rsc';
 import { ComponentStory } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
-import React, { ReactElement } from 'react';
 
 import { barData } from './components/Bar/data';
 import carsData from './data/cars.json';
 import { packedBubbleData } from './data/data';
-import { TABLE } from '@constants';
 
 export default {
-	title: 'Prism/Prism/UNSAFE_vegaSpec',
-	component: Prism,
+	title: 'RSC/Chart/UNSAFE_vegaSpec',
+	component: Chart,
 	argTypes: {},
 	parameters: {
 		docs: {
@@ -34,9 +34,9 @@ export default {
 	},
 };
 
-const UnsafeVegaSpecStory: ComponentStory<typeof Prism> = (args): ReactElement => {
-	const prismProps = usePrismProps(args);
-	return <Prism {...prismProps} debug />;
+const UnsafeVegaSpecStory: ComponentStory<typeof Chart> = (args): ReactElement => {
+	const chartProps = useChartProps(args);
+	return <Chart {...chartProps} debug />;
 };
 
 const BasicBar = bindWithProps(UnsafeVegaSpecStory);

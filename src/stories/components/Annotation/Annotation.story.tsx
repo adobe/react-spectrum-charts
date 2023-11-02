@@ -9,15 +9,15 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
-import { Annotation } from '@components/Annotation/Annotation';
-import usePrismProps from '@hooks/usePrismProps';
-import { Bar, BarProps, Prism } from '@prism';
-import { ComponentStory } from '@storybook/react';
 import React, { ReactElement } from 'react';
 
+import { Annotation } from '@components/Annotation/Annotation';
+import useChartProps from '@hooks/useChartProps';
+import { Bar, BarProps, Chart } from '@rsc';
+import { ComponentStory } from '@storybook/react';
+
 export default {
-	title: 'Prism/Annotation',
+	title: 'RSC/Annotation',
 	component: Annotation,
 	argTypes: {
 		children: {
@@ -51,13 +51,13 @@ const data = [
 const barArgs: BarProps = { dimension: 'browser', order: 'order', color: 'operatingSystem' };
 
 const BarAnnotationStory: ComponentStory<typeof Annotation> = (args): ReactElement => {
-	const prismProps = usePrismProps({ data: data, width: 600, height: 600 });
+	const chartProps = useChartProps({ data: data, width: 600, height: 600 });
 	return (
-		<Prism {...prismProps}>
+		<Chart {...chartProps}>
 			<Bar {...barArgs}>
 				<Annotation {...args} />
 			</Bar>
-		</Prism>
+		</Chart>
 	);
 };
 

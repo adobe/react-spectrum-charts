@@ -9,17 +9,18 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import React, { ReactElement } from 'react';
 
-import { Content } from '@adobe/react-spectrum';
-import usePrismProps from '@hooks/usePrismProps';
-import { Area, Axis, Bar, ChartPopover, ChartTooltip, Legend, Line, Prism, PrismProps } from '@prism';
+import useChartProps from '@hooks/useChartProps';
+import { Area, Axis, Bar, Chart, ChartPopover, ChartProps, ChartTooltip, Legend, Line } from '@rsc';
 import { browserData as data } from '@stories/data/data';
 import { ComponentStory } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
-import React, { ReactElement } from 'react';
+
+import { Content } from '@adobe/react-spectrum';
 
 export default {
-	title: 'Prism/ChartPopover',
+	title: 'RSC/ChartPopover',
 	component: ChartPopover,
 	argTypes: {
 		children: {
@@ -46,48 +47,48 @@ const dialogContent = (datum) => (
 	</Content>
 );
 
-const defaultPrismProps: PrismProps = { data, renderer: 'svg', width: 600 };
+const defaultChartProps: ChartProps = { data, renderer: 'svg', width: 600 };
 
 const ChartPopoverCanvasStory: ComponentStory<typeof ChartPopover> = (args): ReactElement => {
-	const prismProps = usePrismProps({ data, renderer: 'canvas', width: 600 });
+	const chartProps = useChartProps({ data, renderer: 'canvas', width: 600 });
 	return (
-		<Prism {...prismProps}>
+		<Chart {...chartProps}>
 			<Bar color="series">
 				<ChartTooltip>{dialogContent}</ChartTooltip>
 				<ChartPopover {...args} />
 			</Bar>
-		</Prism>
+		</Chart>
 	);
 };
 
 const ChartPopoverSvgStory: ComponentStory<typeof ChartPopover> = (args): ReactElement => {
-	const prismProps = usePrismProps(defaultPrismProps);
+	const chartProps = useChartProps(defaultChartProps);
 	return (
-		<Prism {...prismProps}>
+		<Chart {...chartProps}>
 			<Bar color="series">
 				<ChartTooltip>{dialogContent}</ChartTooltip>
 				<ChartPopover {...args} />
 			</Bar>
-		</Prism>
+		</Chart>
 	);
 };
 
 const ChartPopoverDodgedBarStory: ComponentStory<typeof ChartPopover> = (args): ReactElement => {
-	const prismProps = usePrismProps(defaultPrismProps);
+	const chartProps = useChartProps(defaultChartProps);
 	return (
-		<Prism {...prismProps}>
+		<Chart {...chartProps}>
 			<Bar color="series" type="dodged">
 				<ChartTooltip>{dialogContent}</ChartTooltip>
 				<ChartPopover {...args} />
 			</Bar>
-		</Prism>
+		</Chart>
 	);
 };
 
 const LineStory: ComponentStory<typeof ChartPopover> = (args): ReactElement => {
-	const prismProps = usePrismProps(defaultPrismProps);
+	const chartProps = useChartProps(defaultChartProps);
 	return (
-		<Prism {...prismProps}>
+		<Chart {...chartProps}>
 			<Axis position="bottom" baseline />
 			<Axis position="left" grid />
 			<Line scaleType="point" dimension="category" color="series">
@@ -95,14 +96,14 @@ const LineStory: ComponentStory<typeof ChartPopover> = (args): ReactElement => {
 				<ChartPopover {...args} />
 			</Line>
 			<Legend />
-		</Prism>
+		</Chart>
 	);
 };
 
 const AreaStory: ComponentStory<typeof ChartPopover> = (args): ReactElement => {
-	const prismProps = usePrismProps(defaultPrismProps);
+	const chartProps = useChartProps(defaultChartProps);
 	return (
-		<Prism {...prismProps}>
+		<Chart {...chartProps}>
 			<Axis position="bottom" baseline />
 			<Axis position="left" grid />
 			<Area scaleType="point" dimension="category">
@@ -110,7 +111,7 @@ const AreaStory: ComponentStory<typeof ChartPopover> = (args): ReactElement => {
 				<ChartPopover {...args} />
 			</Area>
 			<Legend />
-		</Prism>
+		</Chart>
 	);
 };
 

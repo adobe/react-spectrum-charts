@@ -11,11 +11,11 @@
  */
 import { MutableRefObject, Ref, useImperativeHandle } from 'react';
 
-import { PrismHandle } from 'types';
+import { ChartHandle } from 'types';
 import { View } from 'vega';
 
-export default function usePrismImperativeHandle(
-	forwardedRef: Ref<PrismHandle>,
+export default function useChartImperativeHandle(
+	forwardedRef: Ref<ChartHandle>,
 	{ chartView, title }: { chartView: MutableRefObject<View | undefined>; title?: string }
 ) {
 	return useImperativeHandle(forwardedRef, () => ({
@@ -29,23 +29,29 @@ export default function usePrismImperativeHandle(
 								const blob = await response.blob();
 								navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]).then(
 									() => resolve('Chart copied to clipboard'),
-									() => reject('Error occurred while writing to clipboard, copy to clipboard failed')
+									() =>
+										reject(
+											new Error(
+												'Error occurred while writing to clipboard, copy to clipboard failed'
+											)
+										)
 								);
 							} catch (error) {
-								reject('Error occurred while fetching image, copy to clipboard failed');
+								reject(new Error('Error occurred while fetching image, copy to clipboard failed'));
 							}
 						},
-						() => reject('Error occurred while converting image to URL, copy to clipboard failed')
+						() =>
+							reject(new Error('Error occurred while converting image to URL, copy to clipboard failed'))
 					);
 				} else {
-					reject("There isn't a chart to copy, copy to clipboard failed");
+					reject(new Error("There isn't a chart to copy, copy to clipboard failed"));
 				}
 			});
 		},
 		download(customFileName?: string) {
 			return new Promise<string>((resolve, reject) => {
 				if (chartView.current) {
-					const filename = `${customFileName || title || 'chart_export'}.png`;
+					const filename = `${customFileName ?? title ?? 'chart_export'}.png`;
 					chartView.current.toImageURL('png').then(
 						(url) => {
 							const link = document.createElement('a');
@@ -55,10 +61,10 @@ export default function usePrismImperativeHandle(
 							link.dispatchEvent(new MouseEvent('click'));
 							resolve(`Chart downloaded as ${filename}`);
 						},
-						() => reject('Error occurred while converting image to URL, download failed')
+						() => reject(new Error('Error occurred while converting image to URL, download failed'))
 					);
 				} else {
-					reject("There isn't a chart to download, download failed");
+					reject(new Error("There isn't a chart to download, download failed"));
 				}
 			});
 		},

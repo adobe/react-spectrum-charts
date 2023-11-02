@@ -24,7 +24,7 @@ import {
 	toCamelCase,
 	toggleStringArrayValue,
 } from '@utils';
-import { Prism } from 'Prism';
+import { Chart } from 'Chart';
 
 describe('utils', () => {
 	describe('toCamelCase()', () => {
@@ -80,7 +80,7 @@ describe('utils', () => {
 	describe('getAllElements()', () => {
 		test('should return all matches', () => {
 			const element = (
-				<Prism data={[]}>
+				<Chart data={[]}>
 					<Bar>
 						<Trendline>
 							<ChartTooltip />
@@ -93,7 +93,7 @@ describe('utils', () => {
 					<Line>
 						<ChartTooltip />
 					</Line>
-				</Prism>
+				</Chart>
 			);
 
 			const matches = getAllElements(element, ChartTooltip);

@@ -9,11 +9,10 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
 import { useDarkMode } from 'storybook-dark-mode';
-import { PrismProps } from 'types';
+import { ChartProps } from 'types';
 
-export default function usePrismProps(props: PrismProps): PrismProps {
+export default function useChartProps(props: ChartProps): ChartProps {
 	const darkMode = useDarkMode();
 	return { colorScheme: darkMode ? 'dark' : 'light', ...props };
 }

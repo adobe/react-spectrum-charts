@@ -12,15 +12,15 @@
 import React, { ReactElement } from 'react';
 
 import { ChartTooltip } from '@components/ChartTooltip/ChartTooltip';
-import usePrismProps from '@hooks/usePrismProps';
-import { Area, Bar, Datum, Line, Prism } from '@prism';
+import useChartProps from '@hooks/useChartProps';
+import { Area, Bar, Chart, Datum, Line } from '@rsc';
 import { browserData as data } from '@stories/data/data';
 import { formatTimestamp } from '@stories/storyUtils';
 import { ComponentStory } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
 
 export default {
-	title: 'Prism/ChartTooltip',
+	title: 'RSC/ChartTooltip',
 	component: ChartTooltip,
 	argTypes: {
 		children: {
@@ -40,23 +40,23 @@ export default {
 };
 
 const StackedBarTooltipStory: ComponentStory<typeof ChartTooltip> = (args): ReactElement => {
-	const prismProps = usePrismProps({ data, width: 600 });
+	const chartProps = useChartProps({ data, width: 600 });
 	return (
-		<Prism {...prismProps}>
+		<Chart {...chartProps}>
 			<Bar color="series">
 				<ChartTooltip {...args} />
 			</Bar>
-		</Prism>
+		</Chart>
 	);
 };
 const DodgedBarTooltipStory: ComponentStory<typeof ChartTooltip> = (args): ReactElement => {
-	const prismProps = usePrismProps({ data, width: 600 });
+	const chartProps = useChartProps({ data, width: 600 });
 	return (
-		<Prism {...prismProps}>
+		<Chart {...chartProps}>
 			<Bar type="dodged" color="series">
 				<ChartTooltip {...args} />
 			</Bar>
-		</Prism>
+		</Chart>
 	);
 };
 
@@ -78,13 +78,13 @@ const lineData = [
 ];
 
 const LineTooltipStory: ComponentStory<typeof ChartTooltip> = (args): ReactElement => {
-	const prismProps = usePrismProps({ data: lineData, width: 600 });
+	const chartProps = useChartProps({ data: lineData, width: 600 });
 	return (
-		<Prism {...prismProps}>
+		<Chart {...chartProps}>
 			<Line color="series">
 				<ChartTooltip {...args} />
 			</Line>
-		</Prism>
+		</Chart>
 	);
 };
 
@@ -98,13 +98,13 @@ interface LineData extends Datum {
 }
 
 const AreaTooltipStory: ComponentStory<typeof ChartTooltip> = (args): ReactElement => {
-	const prismProps = usePrismProps({ data: lineData, width: 600 });
+	const chartProps = useChartProps({ data: lineData, width: 600 });
 	return (
-		<Prism {...prismProps}>
+		<Chart {...chartProps}>
 			<Area>
 				<ChartTooltip {...args} />
 			</Area>
-		</Prism>
+		</Chart>
 	);
 };
 

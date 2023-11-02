@@ -25,7 +25,7 @@
 			"@components/*": ["components/*"],
 			"@hooks/*": ["hooks/*"],
 			"@matchMediaMock": ["test-utils/__mocks__/matchMedia.mock"],
-			"@prism": ["index.ts"],
+			"@rsc": ["index.ts"],
 			"@specBuilder/*": ["specBuilder/*"],
 			"@stories/*": ["stories/*"],
 			"@test-utils": ["test-utils"],

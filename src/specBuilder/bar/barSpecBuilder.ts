@@ -120,7 +120,7 @@ export const addData = produce<Data[], [BarSpecProps]>((data, props) => {
 			as: [`${metric}0`, `${metric}1`],
 		});
 
-		data[index].transform?.push(getPrismStackIdTransform(props));
+		data[index].transform?.push(getStackIdTransform(props));
 		data.push(getStackAggregateData(props));
 	}
 	if (type === 'dodged' || isDodgedAndStacked(props)) {
@@ -147,12 +147,12 @@ export const getStackAggregateData = (props: BarSpecProps): Data => {
 				fields: [`${metric}1`, `${metric}1`],
 				ops: ['min', 'max'],
 			},
-			getPrismStackIdTransform(props),
+			getStackIdTransform(props),
 		],
 	};
 };
 
-export const getPrismStackIdTransform = (props: BarSpecProps): FormulaTransform => {
+export const getStackIdTransform = (props: BarSpecProps): FormulaTransform => {
 	return {
 		type: 'formula',
 		as: STACK_ID,

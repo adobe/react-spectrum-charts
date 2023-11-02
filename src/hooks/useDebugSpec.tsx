@@ -9,9 +9,9 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { useEffect } from 'react';
 
 import { debugLog } from '@utils';
-import { useEffect } from 'react';
 import { Config, Spec } from 'vega';
 
 import { mergeValuesIntoData } from '../specBuilder/specUtils';
@@ -22,7 +22,7 @@ export const useDebugSpec = (
 	chartData: unknown[],
 	chartWidth: number,
 	height: number,
-	prismConfig: Config,
+	config: Config
 ): void => {
 	useEffect(() => {
 		if (debug) {
@@ -32,9 +32,9 @@ export const useDebugSpec = (
 			const combinedData = mergeValuesIntoData(data, chartData);
 
 			debugLog(debug, {
-				title: 'Prism Vega Spec',
-				contents: { width: chartWidth, height, config: prismConfig, ...spec, data: combinedData },
+				title: 'react-spectrum-charts Vega Spec',
+				contents: { width: chartWidth, height, config, ...spec, data: combinedData },
 			});
 		}
-	}, [debug, spec, chartData, chartWidth, height, prismConfig]);
+	}, [debug, spec, chartData, chartWidth, height, config]);
 };

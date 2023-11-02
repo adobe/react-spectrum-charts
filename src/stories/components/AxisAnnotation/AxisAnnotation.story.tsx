@@ -20,16 +20,16 @@
  */
 import React, { ReactElement } from 'react';
 
-import usePrismProps from '@hooks/usePrismProps';
-import { Axis, AxisAnnotation, ChartPopover, Legend, Line, Prism } from '@prism';
+import useChartProps from '@hooks/useChartProps';
+import { Axis, AxisAnnotation, Chart, ChartPopover, Legend, Line } from '@rsc';
 import { ComponentStory } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
-import { PrismProps } from 'types';
+import { ChartProps } from 'types';
 
 import { Content } from '@adobe/react-spectrum';
 
 export default {
-	title: 'Prism/AxisAnnotation',
+	title: 'RSC/AxisAnnotation',
 	component: AxisAnnotation,
 	argTypes: {},
 	parameters: {
@@ -64,39 +64,39 @@ const popoverContent = (datum) => (
 	</Content>
 );
 
-const defaultPrismLineProps: PrismProps = { data: annotationAxisData, minWidth: 400, maxWidth: 800, height: 400 };
+const defaultChartLineProps: ChartProps = { data: annotationAxisData, minWidth: 400, maxWidth: 800, height: 400 };
 
 const BasicAxisAnnotationStory: ComponentStory<typeof AxisAnnotation> = (args): ReactElement => {
-	const prismProps = usePrismProps(defaultPrismLineProps);
+	const chartProps = useChartProps(defaultChartLineProps);
 	return (
-		<Prism {...prismProps}>
+		<Chart {...chartProps}>
 			<Axis position="left" grid title="Users" />
 			<Axis position="bottom" labelFormat="time" granularity="day" baseline ticks>
 				<AxisAnnotation {...args} />
 			</Axis>
 			<Line color="series" dimension="datetime" metric="users" scaleType="time" />
-		</Prism>
+		</Chart>
 	);
 };
 
 const LegendAxisAnnotationStory: ComponentStory<typeof AxisAnnotation> = (args): ReactElement => {
-	const prismProps = usePrismProps(defaultPrismLineProps);
+	const chartProps = useChartProps(defaultChartLineProps);
 	return (
-		<Prism {...prismProps}>
+		<Chart {...chartProps}>
 			<Axis position="left" grid title="Users" />
 			<Axis position="bottom" labelFormat="time" granularity="day" baseline ticks>
 				<AxisAnnotation {...args} />
 			</Axis>
 			<Line color="series" dimension="datetime" metric="users" scaleType="time" />
 			<Legend highlight />
-		</Prism>
+		</Chart>
 	);
 };
 
 const PopoverAxisAnnotationStory: ComponentStory<typeof AxisAnnotation> = (args): ReactElement => {
-	const prismProps = usePrismProps(defaultPrismLineProps);
+	const chartProps = useChartProps(defaultChartLineProps);
 	return (
-		<Prism {...prismProps}>
+		<Chart {...chartProps}>
 			<Axis position="left" grid title="Users" />
 			<Axis position="bottom" labelFormat="time" granularity="day" baseline ticks>
 				<AxisAnnotation {...args}>
@@ -106,7 +106,7 @@ const PopoverAxisAnnotationStory: ComponentStory<typeof AxisAnnotation> = (args)
 			<Line color="series" dimension="datetime" metric="users" scaleType="time">
 				<ChartPopover width={250}>{(datum) => <Content>Series: {datum.series}</Content>}</ChartPopover>
 			</Line>
-		</Prism>
+		</Chart>
 	);
 };
 

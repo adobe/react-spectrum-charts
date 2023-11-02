@@ -12,6 +12,7 @@
 import { spectrumColors } from '@themes';
 import { DATE_PATH, ROUNDED_SQUARE_PATH } from 'svgPaths';
 import {
+	ChartSymbolShape,
 	ColorFacet,
 	ColorScheme,
 	DualFacet,
@@ -20,7 +21,6 @@ import {
 	LineTypeFacet,
 	LineWidth,
 	OpacityFacet,
-	PrismSymbolShape,
 	SpectrumColor,
 } from 'types';
 import { Data, Scale, Spec, ValuesData } from 'vega';
@@ -144,11 +144,11 @@ export const getLineWidthPixelsFromLineWidth = (lineWidth: LineWidth): number =>
 };
 
 /**
- * get the SVG path for the custom prism symbol shape
- * @param symbolShape
- * @returns SVG path or the passed in symbolShape if it is not a supported shape.
+ * get the SVG path for the symbol shape
+ * @param symbolShape supported shape name or custom SVG path
+ * @returns SVG path
  */
-export const getPathFromPrismSymbolShape = (symbolShape: PrismSymbolShape): string => {
+export const getPathFromSymbolShape = (symbolShape: ChartSymbolShape): string => {
 	if (symbolShape === 'rounded-square') return ROUNDED_SQUARE_PATH;
 	return symbolShape;
 };
@@ -174,14 +174,14 @@ export const baseData: Data[] = [
 ];
 
 /**
- * Merges an optionally supplied spec with Prism props and default values.
+ * Merges an optionally supplied spec with Chart props and default values.
  *
  * @param spec - The spec to merge with the base spec. If none is supplied, the base spec is returned.
- * @param prismProps - A partial set of prism props to spread on to the spec.
+ * @param chartProps - A partial set of chart props to spread on to the spec.
  * @returns Spec with default values
  */
-export const initializeSpec = (spec: Spec | null = {}, prismProps: Partial<SanitizedSpecProps> = {}): Spec => {
-	const { title, description, data } = prismProps;
+export const initializeSpec = (spec: Spec | null = {}, chartProps: Partial<SanitizedSpecProps> = {}): Spec => {
+	const { title, description, data } = chartProps;
 
 	const baseSpec: Spec = {
 		title: title || undefined,

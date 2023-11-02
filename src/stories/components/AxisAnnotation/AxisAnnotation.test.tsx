@@ -9,10 +9,12 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { AxisAnnotation } from '@components/AxisAnnotation';
-import { clickNthElement, findAllMarksByGroupName, findPrism, render, screen } from '@test-utils';
-import { spectrumColors } from '@themes';
 import React from 'react';
+
+import { AxisAnnotation } from '@components/AxisAnnotation';
+import { clickNthElement, findAllMarksByGroupName, findChart, render, screen } from '@test-utils';
+import { spectrumColors } from '@themes';
+
 import { Basic, Color, ColorOptions, Format, Popover } from './AxisAnnotation.story';
 
 const colors = spectrumColors.light;
@@ -30,20 +32,20 @@ describe('AxisAnnotation', () => {
 	test('Basic renders correctly', async () => {
 		render(<Basic {...Basic.args} />);
 
-		const prism = await findPrism();
-		expect(prism).toBeInTheDocument();
+		const chart = await findChart();
+		expect(chart).toBeInTheDocument();
 
-		const annotations = await findAllMarksByGroupName(prism, 'axis1Annotation0_icon');
+		const annotations = await findAllMarksByGroupName(chart, 'axis1Annotation0_icon');
 		expect(annotations).toHaveLength(3);
 	});
 
 	test('Annotations render in the correct color', async () => {
 		render(<Color {...Color.args} />);
 
-		const prism = await findPrism();
-		expect(prism).toBeInTheDocument();
+		const chart = await findChart();
+		expect(chart).toBeInTheDocument();
 
-		const annotations = await findAllMarksByGroupName(prism, 'axis1Annotation0_icon');
+		const annotations = await findAllMarksByGroupName(chart, 'axis1Annotation0_icon');
 		expect(annotations).toHaveLength(3);
 
 		expect(annotations[0]).toHaveAttribute('fill', colors['celery-600']);
@@ -52,10 +54,10 @@ describe('AxisAnnotation', () => {
 	test('Annotations render in the correct color when using color options', async () => {
 		render(<ColorOptions {...ColorOptions.args} />);
 
-		const prism = await findPrism();
-		expect(prism).toBeInTheDocument();
+		const chart = await findChart();
+		expect(chart).toBeInTheDocument();
 
-		const annotations = await findAllMarksByGroupName(prism, 'axis1Annotation0_icon');
+		const annotations = await findAllMarksByGroupName(chart, 'axis1Annotation0_icon');
 		expect(annotations).toHaveLength(3);
 
 		expect(annotations[0]).toHaveAttribute('fill', colors['magenta-600']);
@@ -66,10 +68,10 @@ describe('AxisAnnotation', () => {
 	test('Summary icon renders correctly', async () => {
 		render(<Format {...Format.args} />);
 
-		const prism = await findPrism();
-		expect(prism).toBeInTheDocument();
+		const chart = await findChart();
+		expect(chart).toBeInTheDocument();
 
-		const annotations = await findAllMarksByGroupName(prism, 'axis1Annotation0_icon');
+		const annotations = await findAllMarksByGroupName(chart, 'axis1Annotation0_icon');
 		expect(annotations).toHaveLength(1);
 
 		expect(annotations[0]).toHaveAttribute('fill', colors['gray-600']);
@@ -78,17 +80,17 @@ describe('AxisAnnotation', () => {
 	test('Popover renders correctly', async () => {
 		render(<Popover {...Popover.args} />);
 
-		const prism = await findPrism();
-		expect(prism).toBeInTheDocument();
+		const chart = await findChart();
+		expect(chart).toBeInTheDocument();
 
-		const annotations = await findAllMarksByGroupName(prism, 'axis1Annotation0_icon');
+		const annotations = await findAllMarksByGroupName(chart, 'axis1Annotation0_icon');
 		expect(annotations).toHaveLength(3);
 
-		let popover = screen.queryByTestId('prism-popover');
+		let popover = screen.queryByTestId('rsc-popover');
 		expect(popover).not.toBeInTheDocument();
 
 		clickNthElement(annotations, 0);
-		popover = await screen.findByTestId('prism-popover');
+		popover = await screen.findByTestId('rsc-popover');
 		expect(popover).toBeInTheDocument();
 	});
 });

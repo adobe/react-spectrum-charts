@@ -9,36 +9,19 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import React, { ReactElement } from 'react';
 
-import { Prism } from '@prism';
-import { bindWithProps } from '@test-utils';
+import useChartProps from '@hooks/useChartProps';
+import { Axis, Bar, Chart } from '@rsc';
+import { ComponentStory } from '@storybook/react';
 
-import { PrismBarStory } from './PrismBarStory';
-
-export default {
-	title: 'Prism/Prism/States',
-	component: Prism,
-	argTypes: {},
-	parameters: {
-		docs: {
-			description: {
-				component: 'This is _markdown_ enabled description for Chart component doc page.',
-			},
-		},
-	},
+export const ChartBarStory: ComponentStory<typeof Chart> = (args): ReactElement => {
+	const props = useChartProps(args);
+	return (
+		<Chart {...props}>
+			<Axis position="bottom" baseline />
+			<Axis position="left" grid />
+			<Bar dimension="x" metric="y" color="series" />
+		</Chart>
+	);
 };
-
-const EmptyState = bindWithProps(PrismBarStory);
-EmptyState.args = {
-	data: [],
-	height: 500,
-};
-
-const LoadingState = bindWithProps(PrismBarStory);
-LoadingState.args = {
-	data: [],
-	height: 500,
-	loading: true,
-};
-
-export { EmptyState, LoadingState };

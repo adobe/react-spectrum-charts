@@ -9,10 +9,10 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import React from 'react';
 
 import { ReferenceLine } from '@components/ReferenceLine';
-import { findMarksByGroupName, findPrism, render } from '@test-utils';
-import React from 'react';
+import { findChart, findMarksByGroupName, render } from '@test-utils';
 
 import { Basic, Icon } from './AxisReferenceLine.story';
 
@@ -25,20 +25,20 @@ describe('AxisReferenceLine', () => {
 	test('Reference line renders', async () => {
 		render(<Basic {...Basic.args} />);
 
-		const prism = await findPrism();
-		expect(prism).toBeInTheDocument();
+		const chart = await findChart();
+		expect(chart).toBeInTheDocument();
 
-		const axisReferenceLine = await findMarksByGroupName(prism, 'axis0_xReferenceLineRule0', 'line');
+		const axisReferenceLine = await findMarksByGroupName(chart, 'axis0_xReferenceLineRule0', 'line');
 		expect(axisReferenceLine).toBeInTheDocument();
 	});
 
 	test('Icon renders', async () => {
 		render(<Icon {...Icon.args} />);
 
-		const prism = await findPrism();
-		expect(prism).toBeInTheDocument();
+		const chart = await findChart();
+		expect(chart).toBeInTheDocument();
 
-		const axisReferenceLineIcon = await findMarksByGroupName(prism, 'axis0_xReferenceLineSymbol0');
+		const axisReferenceLineIcon = await findMarksByGroupName(chart, 'axis0_xReferenceLineSymbol0');
 		expect(axisReferenceLineIcon).toBeInTheDocument();
 	});
 });

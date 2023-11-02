@@ -9,16 +9,16 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
-import { ReferenceLine } from '@components/ReferenceLine';
-import usePrismProps from '@hooks/usePrismProps';
-import { Axis, Prism } from '@prism';
-import { ComponentStory } from '@storybook/react';
-import { bindWithProps } from '@test-utils';
 import React, { ReactElement } from 'react';
 
+import { ReferenceLine } from '@components/ReferenceLine';
+import useChartProps from '@hooks/useChartProps';
+import { Axis, Chart } from '@rsc';
+import { ComponentStory } from '@storybook/react';
+import { bindWithProps } from '@test-utils';
+
 export default {
-	title: 'Prism/Axis/ReferenceLine',
+	title: 'RSC/Axis/ReferenceLine',
 	component: ReferenceLine,
 	argTypes: {},
 	parameters: {
@@ -36,13 +36,13 @@ const data = [
 ];
 
 const ReferenceLineStory: ComponentStory<typeof ReferenceLine> = (args): ReactElement => {
-	const prismProps = usePrismProps({ data, width: 600 });
+	const chartProps = useChartProps({ data, width: 600 });
 	return (
-		<Prism {...prismProps}>
+		<Chart {...chartProps}>
 			<Axis position="bottom" baseline ticks>
 				<ReferenceLine {...args} />
 			</Axis>
-		</Prism>
+		</Chart>
 	);
 };
 

@@ -9,9 +9,9 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
-import { findPrism, getAllLegendEntries, hoverNthElement, render, unhoverNthElement } from '@test-utils';
 import React from 'react';
+
+import { findChart, getAllLegendEntries, hoverNthElement, render, unhoverNthElement } from '@test-utils';
 
 import { ControlledHover } from './legendHover.story';
 
@@ -19,9 +19,9 @@ test('Mousing over a legend item should trigger callback function.', async () =>
 	const onMouseOver = jest.fn();
 	const onMouseOut = jest.fn();
 	render(<ControlledHover {...ControlledHover.args} onMouseOver={onMouseOver} onMouseOut={onMouseOut} />);
-	const prism = await findPrism();
+	const chart = await findChart();
 
-	const entries = getAllLegendEntries(prism);
+	const entries = getAllLegendEntries(chart);
 	await hoverNthElement(entries, 0);
 	await unhoverNthElement(entries, 0);
 

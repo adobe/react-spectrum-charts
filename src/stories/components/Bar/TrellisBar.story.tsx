@@ -12,8 +12,8 @@
 import React, { ReactElement } from 'react';
 
 import { MARK_ID } from '@constants';
-import usePrismProps from '@hooks/usePrismProps';
-import { Axis, Bar, ChartPopover, ChartTooltip, Legend, Prism } from '@prism';
+import useChartProps from '@hooks/useChartProps';
+import { Axis, Bar, Chart, ChartPopover, ChartTooltip, Legend } from '@rsc';
 import { ComponentStory } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
 import { BarProps, Datum, SpectrumColor } from 'types';
@@ -23,7 +23,7 @@ import { Content, Text, View } from '@adobe/react-spectrum';
 import { generateMockDataForTrellis } from './data';
 
 export default {
-	title: 'Prism/Bar/Trellis',
+	title: 'RSC/Bar/Trellis',
 	component: Bar,
 	argTypes: {},
 	parameters: {
@@ -46,7 +46,7 @@ const colors: SpectrumColor[] = [
 ];
 
 const BarStory: ComponentStory<typeof Bar> = (args: BarProps): ReactElement => {
-	const prismProps = usePrismProps({
+	const chartProps = useChartProps({
 		data: generateMockDataForTrellis({
 			property1: ['All users', 'Roku', 'Chromecast', 'Amazon Fire', 'Apple TV'],
 			property2: ['A. Sign up', 'B. Watch a video', 'C. Add to MyList'],
@@ -71,7 +71,7 @@ const BarStory: ComponentStory<typeof Bar> = (args: BarProps): ReactElement => {
 	};
 
 	return (
-		<Prism {...prismProps}>
+		<Chart {...chartProps}>
 			<Axis position={args.orientation === 'horizontal' ? 'bottom' : 'left'} title="Users, Count" grid />
 			<Axis position={args.orientation === 'horizontal' ? 'left' : 'bottom'} title="Platform" baseline />
 			<Bar {...args}>
@@ -79,7 +79,7 @@ const BarStory: ComponentStory<typeof Bar> = (args: BarProps): ReactElement => {
 				<ChartPopover>{dialog}</ChartPopover>
 			</Bar>
 			<Legend />
-		</Prism>
+		</Chart>
 	);
 };
 

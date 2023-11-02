@@ -9,15 +9,16 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import React from 'react';
 
 import { HIGHLIGHT_CONTRAST_RATIO } from '@constants';
 import '@matchMediaMock';
-import { ChartPopover } from '@prism';
+import { ChartPopover } from '@rsc';
 import {
 	clickNthElement,
 	findAllMarksByGroupName,
+	findChart,
 	findMarksByGroupName,
-	findPrism,
 	getAllMarksByGroupName,
 	render,
 	screen,
@@ -25,7 +26,6 @@ import {
 	within,
 } from '@test-utils';
 import userEvent from '@testing-library/user-event';
-import React from 'react';
 
 import { Canvas, DodgedBarChart, LineChart, StackedBarChart, Svg } from './ChartPopover.story';
 
@@ -37,26 +37,26 @@ describe('ChartPopover', () => {
 
 	test('Renders properly on canvas', async () => {
 		render(<Canvas {...Canvas.args} />);
-		const prism = await findPrism();
-		expect(prism).toBeInTheDocument();
+		const chart = await findChart();
+		expect(chart).toBeInTheDocument();
 	});
 
 	test('Renders properly in svg', async () => {
 		render(<Svg {...Svg.args} />);
-		const prism = await findPrism();
-		expect(prism).toBeInTheDocument();
+		const chart = await findChart();
+		expect(chart).toBeInTheDocument();
 	});
 
 	test('Popover opens on mark click and closes when clicking outside', async () => {
 		render(<StackedBarChart {...StackedBarChart.args} />);
 
-		const prism = await findPrism();
-		expect(prism).toBeInTheDocument();
-		const bars = getAllMarksByGroupName(prism, 'bar0');
+		const chart = await findChart();
+		expect(chart).toBeInTheDocument();
+		const bars = getAllMarksByGroupName(chart, 'bar0');
 
 		// clicking the bar should open the popover
 		await clickNthElement(bars, 0);
-		const popover = await screen.findByTestId('prism-popover');
+		const popover = await screen.findByTestId('rsc-popover');
 		await waitFor(() => expect(popover).toBeInTheDocument()); // waitFor to give the popover time to make sure it doesn't close
 
 		// shouldn't close the popover
@@ -64,18 +64,18 @@ describe('ChartPopover', () => {
 		expect(popover).toBeInTheDocument();
 
 		// should close the popover
-		await userEvent.click(prism);
+		await userEvent.click(chart);
 		await waitFor(() => expect(popover).not.toBeInTheDocument());
 	});
 
 	test('Esc closes the popover', async () => {
 		render(<StackedBarChart {...StackedBarChart.args} />);
-		const prism = await findPrism();
-		expect(prism).toBeInTheDocument();
-		const bars = getAllMarksByGroupName(prism, 'bar0');
+		const chart = await findChart();
+		expect(chart).toBeInTheDocument();
+		const bars = getAllMarksByGroupName(chart, 'bar0');
 
 		await clickNthElement(bars, 0);
-		const popover = await screen.findByTestId('prism-popover');
+		const popover = await screen.findByTestId('rsc-popover');
 
 		await userEvent.keyboard('Hello');
 
@@ -86,15 +86,15 @@ describe('ChartPopover', () => {
 
 	test('Content appears in popover', async () => {
 		render(<StackedBarChart {...StackedBarChart.args} />);
-		const prism = await findPrism();
-		expect(prism).toBeInTheDocument();
-		let bars = getAllMarksByGroupName(prism, 'bar0');
+		const chart = await findChart();
+		expect(chart).toBeInTheDocument();
+		let bars = getAllMarksByGroupName(chart, 'bar0');
 
 		await clickNthElement(bars, 0);
-		const popover = await screen.findByTestId('prism-popover');
+		const popover = await screen.findByTestId('rsc-popover');
 		expect(within(popover).getByText('Users: 5')).toBeInTheDocument();
 
-		bars = getAllMarksByGroupName(prism, 'bar0');
+		bars = getAllMarksByGroupName(chart, 'bar0');
 		// validate the highlight visuals are present
 		expect(bars[1]).toHaveAttribute('fill-opacity', `${1 / HIGHLIGHT_CONTRAST_RATIO}`);
 		expect(bars[1]).toHaveAttribute('stroke-opacity', `${1 / HIGHLIGHT_CONTRAST_RATIO}`);
@@ -107,13 +107,13 @@ describe('ChartPopover', () => {
 	test('Line popover opens and closes corectly when clicking on the chart', async () => {
 		render(<LineChart {...LineChart.args} />);
 		// validate that the line drew
-		const prism = await findPrism();
-		expect(prism).toBeInTheDocument();
+		const chart = await findChart();
+		expect(chart).toBeInTheDocument();
 
-		const points = await findAllMarksByGroupName(prism, 'line0_voronoi');
+		const points = await findAllMarksByGroupName(chart, 'line0_voronoi');
 		// click point and verify popover appears correctly
 		await clickNthElement(points, 2);
-		const popover = await screen.findByTestId('prism-popover');
+		const popover = await screen.findByTestId('rsc-popover');
 		expect(popover).toBeInTheDocument();
 		// check the content of the popover
 		expect(within(popover).getByText('Operating system: Other')).toBeInTheDocument();
@@ -121,13 +121,13 @@ describe('ChartPopover', () => {
 		expect(within(popover).getByText('Users: 2')).toBeInTheDocument();
 
 		// validate the highlight visuals are present
-		const highlightRule = await findMarksByGroupName(prism, 'line0_hoverRule', 'line');
+		const highlightRule = await findMarksByGroupName(chart, 'line0_hoverRule', 'line');
 		expect(highlightRule).toBeInTheDocument();
-		const highlightPoint = await findMarksByGroupName(prism, 'line0_point');
+		const highlightPoint = await findMarksByGroupName(chart, 'line0_point');
 		expect(highlightPoint).toBeInTheDocument();
 
 		// click on chart which should hide the popover and the highlight visuals
-		await userEvent.click(prism);
+		await userEvent.click(chart);
 		await waitFor(() => expect(popover).not.toBeInTheDocument());
 		expect(highlightRule).not.toBeInTheDocument();
 		expect(highlightPoint).not.toBeInTheDocument();
@@ -136,13 +136,13 @@ describe('ChartPopover', () => {
 	test('Dodged bar popover opens on mark click and closes when clicking outside', async () => {
 		render(<DodgedBarChart {...DodgedBarChart.args} />);
 
-		const prism = await findPrism();
-		expect(prism).toBeInTheDocument();
-		let bars = getAllMarksByGroupName(prism, 'bar0');
+		const chart = await findChart();
+		expect(chart).toBeInTheDocument();
+		let bars = getAllMarksByGroupName(chart, 'bar0');
 
 		// clicking the bar should open the popover
 		await clickNthElement(bars, 4);
-		const popover = await screen.findByTestId('prism-popover');
+		const popover = await screen.findByTestId('rsc-popover');
 		await waitFor(() => expect(popover).toBeInTheDocument()); // waitFor to give the popover time to make sure it doesn't close
 
 		// check the content of the popover
@@ -150,7 +150,7 @@ describe('ChartPopover', () => {
 		expect(within(popover).getByText('Browser: Firefox')).toBeInTheDocument();
 		expect(within(popover).getByText('Users: 3')).toBeInTheDocument();
 
-		bars = getAllMarksByGroupName(prism, 'bar0');
+		bars = getAllMarksByGroupName(chart, 'bar0');
 
 		// validate the highlight visuals are present
 		expect(bars[0]).toHaveAttribute('fill-opacity', `${1 / HIGHLIGHT_CONTRAST_RATIO}`);

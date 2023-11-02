@@ -9,13 +9,13 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
-import '@matchMediaMock';
-import { findPrism, fireEvent, getAllMarksByGroupName, render, screen, waitFor } from '@test-utils';
-import { sequentialViridis16 } from '@themes';
 import React from 'react';
 
-import { BasicBar, PackedBubbleChart } from './PrismUnsafeVega.story';
+import '@matchMediaMock';
+import { findChart, fireEvent, getAllMarksByGroupName, render, screen, waitFor } from '@test-utils';
+import { sequentialViridis16 } from '@themes';
+
+import { BasicBar, PackedBubbleChart } from './ChartUnsafeVega.story';
 
 const testFill = (el: HTMLElement, color: string) => {
 	expect(el).toHaveAttribute('fill', color);
@@ -30,20 +30,20 @@ describe('UNSAFE_vegaSpec stories', () => {
 		test('has correct number of bars', async () => {
 			render(<BasicBar {...BasicBar.args} />);
 
-			const prism = await findPrism();
-			expect(prism).toBeInTheDocument();
+			const chart = await findChart();
+			expect(chart).toBeInTheDocument();
 
-			const bars = getAllMarksByGroupName(prism, 'mark-rect');
+			const bars = getAllMarksByGroupName(chart, 'mark-rect');
 			expect(bars).toHaveLength(5);
 		});
 
 		test('bars have spectrum color theme applied', async () => {
 			render(<BasicBar {...BasicBar.args} />);
 
-			const prism = await findPrism();
-			expect(prism).toBeInTheDocument();
+			const chart = await findChart();
+			expect(chart).toBeInTheDocument();
 
-			const bars = getAllMarksByGroupName(prism, 'mark-rect');
+			const bars = getAllMarksByGroupName(chart, 'mark-rect');
 
 			// Ensure the default spectrum color theme is applied
 			bars.forEach((bar) => {
@@ -54,10 +54,10 @@ describe('UNSAFE_vegaSpec stories', () => {
 		test('existing interaction signals in vega spec still work', async () => {
 			render(<BasicBar {...BasicBar.args} />);
 
-			const prism = await findPrism();
-			expect(prism).toBeInTheDocument();
+			const chart = await findChart();
+			expect(chart).toBeInTheDocument();
 
-			const bars = getAllMarksByGroupName(prism, 'mark-rect');
+			const bars = getAllMarksByGroupName(chart, 'mark-rect');
 
 			// Make sure signals in the spec are not interfered with
 			fireEvent.mouseOver(bars[0]);
@@ -70,20 +70,20 @@ describe('UNSAFE_vegaSpec stories', () => {
 		test('has correct number of bubbles', async () => {
 			render(<PackedBubbleChart {...PackedBubbleChart.args} />);
 
-			const prism = await findPrism();
-			expect(prism).toBeInTheDocument();
+			const chart = await findChart();
+			expect(chart).toBeInTheDocument();
 
-			const bubbles = getAllMarksByGroupName(prism, 'mark-symbol');
+			const bubbles = getAllMarksByGroupName(chart, 'mark-symbol');
 			expect(bubbles).toHaveLength(16);
 		});
 
 		test('bubbles have spectrum color theme applied', async () => {
 			render(<PackedBubbleChart {...PackedBubbleChart.args} />);
 
-			const prism = await findPrism();
-			expect(prism).toBeInTheDocument();
+			const chart = await findChart();
+			expect(chart).toBeInTheDocument();
 
-			const bubbles = getAllMarksByGroupName(prism, 'mark-symbol');
+			const bubbles = getAllMarksByGroupName(chart, 'mark-symbol');
 
 			// Check the bubbles to ensure the sequential color scheme is applied
 			// 16-value gradient with 16 bubbles will match 1:1
@@ -95,11 +95,11 @@ describe('UNSAFE_vegaSpec stories', () => {
 		test('Slider interaction controls are present and can be changed', async () => {
 			render(<PackedBubbleChart {...PackedBubbleChart.args} />);
 
-			const prism = await findPrism();
-			expect(prism).toBeInTheDocument();
+			const chart = await findChart();
+			expect(chart).toBeInTheDocument();
 
-			const gravityXSlider = getSlider(prism, 'gravityX');
-			const gravityYSlider = getSlider(prism, 'gravityY');
+			const gravityXSlider = getSlider(chart, 'gravityX');
+			const gravityYSlider = getSlider(chart, 'gravityY');
 
 			// slider defaults are properly set
 			expect(gravityXSlider.value).toBe('0.2');

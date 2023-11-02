@@ -9,22 +9,21 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
+import { DEFAULT_SYMBOL_SIZE, DEFAULT_SYMBOL_STROKE_WIDTH } from '@constants';
 import { ROUNDED_SQUARE_PATH } from 'svgPaths';
 import { ColorScheme } from 'types';
 import { BaseLegendLayout, Config, mergeConfig } from 'vega';
 
-import spectrumColors from './spectrumColors.json';
-import { divergentOrangeYellowSeafoam15 } from './divergingColorPalette';
 import { categorical16 } from './categoricalColorPalette';
+import { divergentOrangeYellowSeafoam15 } from './divergingColorPalette';
 import { sequentialViridis16 } from './sequentialColorPalette';
-import { DEFAULT_SYMBOL_SIZE, DEFAULT_SYMBOL_STROKE_WIDTH } from '@constants';
+import spectrumColors from './spectrumColors.json';
 
 export const ADOBE_CLEAN_FONT =
 	"adobe-clean, 'Source Sans Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Ubuntu, 'Trebuchet MS', 'Lucida Grande', sans-serif";
 const FONT_SIZE = 14;
 
-export function getPrismConfig(config: Config | undefined, colorScheme: ColorScheme): Config {
+export function getChartConfig(config: Config | undefined, colorScheme: ColorScheme): Config {
 	const defaultConfig = getSpectrumVegaConfig(colorScheme);
 	if (config) {
 		return mergeConfig(defaultConfig, config);

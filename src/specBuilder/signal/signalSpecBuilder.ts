@@ -40,7 +40,7 @@ export const getUncontrolledHoverSignal = (name: string, nestedDatum?: boolean):
 
 /**
  *  Returns a controlled hover signal.
- *  Controlled hover signals get manually updated via the view in Prism.tsx
+ *  Controlled hover signals get manually updated via the view in Chart.tsx
  */
 export const getControlledHoverSignal = (name: string): Signal => {
 	return {

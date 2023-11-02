@@ -12,36 +12,35 @@
 import React from 'react';
 
 import '@matchMediaMock';
-import { findAllMarksByGroupName, findPrism } from '@test-utils';
-import { act, render } from '@testing-library/react';
+import { act, findAllMarksByGroupName, findChart, render } from '@test-utils';
 
 import { BarChart, FixedWidthBar } from './Annotation.story';
 
 describe('Bar', () => {
 	test('Bar Chart renders properly', async () => {
 		render(<BarChart {...BarChart.args} />);
-		const prism = await findPrism();
-		expect(prism).toBeInTheDocument();
+		const chart = await findChart();
+		expect(chart).toBeInTheDocument();
 
 		// get bars
-		const bars = await findAllMarksByGroupName(prism, 'bar0');
+		const bars = await findAllMarksByGroupName(chart, 'bar0');
 		expect(bars.length).toEqual(9);
 
 		// get text annotations
-		const labels = await findAllMarksByGroupName(prism, 'bar0_annotationText', 'text');
+		const labels = await findAllMarksByGroupName(chart, 'bar0_annotationText', 'text');
 		expect(labels.length).toEqual(9);
 	});
 	test('Fixed Width Bar Chart renders properly', async () => {
 		render(<FixedWidthBar {...FixedWidthBar.args} />);
-		const prism = await findPrism();
-		expect(prism).toBeInTheDocument();
+		const chart = await findChart();
+		expect(chart).toBeInTheDocument();
 
 		// get bars
-		const bars = await findAllMarksByGroupName(prism, 'bar0');
+		const bars = await findAllMarksByGroupName(chart, 'bar0');
 		expect(bars.length).toEqual(9);
 
 		// get text annotations
-		const labels = await findAllMarksByGroupName(prism, 'bar0_annotationText', 'text');
+		const labels = await findAllMarksByGroupName(chart, 'bar0_annotationText', 'text');
 		expect(labels.length).toEqual(9);
 
 		// backgrounds have width of 48px

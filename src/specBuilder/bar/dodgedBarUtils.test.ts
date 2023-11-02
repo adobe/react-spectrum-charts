@@ -108,7 +108,7 @@ const defaultMarkWithTooltip: Mark = {
 		enter: {
 			...defaultDodgedYEncodings,
 			...defaultDodgedCornerRadiusEncodings,
-			tooltip: { signal: "merge(datum, {'prismComponentName': 'bar0'})" },
+			tooltip: { signal: "merge(datum, {'rscComponentName': 'bar0'})" },
 			fill: { field: DEFAULT_COLOR, scale: 'color' },
 		},
 		update: {

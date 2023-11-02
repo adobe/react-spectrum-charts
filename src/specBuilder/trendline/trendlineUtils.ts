@@ -11,7 +11,7 @@
  */
 import { Trendline } from '@components/Trendline';
 import { FILTERED_TABLE, MARK_ID, SERIES_ID, TRENDLINE_VALUE } from '@constants';
-import { getPrismSeriesIdTransform } from '@specBuilder/data/dataUtils';
+import { getSeriesIdTransform } from '@specBuilder/data/dataUtils';
 import { getLineHoverMarks, getLineMark } from '@specBuilder/line/lineUtils';
 import { hasInteractiveChildren, hasPopover, hasTooltip } from '@specBuilder/marks/markUtils';
 import {
@@ -183,7 +183,7 @@ export const getTrendlineData = (markProps: BarSpecProps | LineSpecProps): Sourc
 				transform: [
 					...dimensionRangeTransforms,
 					...getTrendlineStatisticalTransforms(markProps, trendlineProps),
-					getPrismSeriesIdTransform(facets),
+					getSeriesIdTransform(facets),
 				],
 			});
 			if (hasInteractiveChildren(trendlineChildren)) {

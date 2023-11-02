@@ -9,20 +9,22 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import React from 'react';
 
 import { HIGHLIGHT_CONTRAST_RATIO } from '@constants';
 import '@matchMediaMock';
-import { Line } from '@prism';
+import { Line } from '@rsc';
 import {
 	findAllMarksByGroupName,
-	findPrism,
+	findChart,
 	getAllLegendEntries,
 	getAllLegendSymbols,
 	hoverNthElement,
+	render,
+	screen,
 	unhoverNthElement,
+	within,
 } from '@test-utils';
-import { render, screen, within } from '@testing-library/react';
-import React from 'react';
 
 import {
 	Basic,
@@ -45,11 +47,11 @@ describe('Line', () => {
 
 	test('Basic renders', async () => {
 		render(<Basic {...Basic.args} />);
-		const prism = await findPrism();
-		expect(prism).toBeInTheDocument();
+		const chart = await findChart();
+		expect(chart).toBeInTheDocument();
 
 		// get lines
-		const lines = await findAllMarksByGroupName(prism, 'line0');
+		const lines = await findAllMarksByGroupName(chart, 'line0');
 		expect(lines.length).toEqual(4);
 	});
 
@@ -68,11 +70,11 @@ describe('Line', () => {
 
 	test('LineType renders', async () => {
 		render(<LineType {...LineType.args} />);
-		const prism = await findPrism();
-		expect(prism).toBeInTheDocument();
+		const chart = await findChart();
+		expect(chart).toBeInTheDocument();
 
 		// get lines
-		const lines = await findAllMarksByGroupName(prism, 'line0');
+		const lines = await findAllMarksByGroupName(chart, 'line0');
 		expect(lines.length).toEqual(4);
 		expect(lines[0].getAttribute('stroke-dasharray')).toEqual('');
 		expect(lines[1].getAttribute('stroke-dasharray')).toEqual('7,4');
@@ -82,22 +84,22 @@ describe('Line', () => {
 
 	test('Opacity renders', async () => {
 		render(<Opacity {...Opacity.args} />);
-		const prism = await findPrism();
-		expect(prism).toBeInTheDocument();
+		const chart = await findChart();
+		expect(chart).toBeInTheDocument();
 
 		// get lines
-		const lines = await findAllMarksByGroupName(prism, 'line0');
+		const lines = await findAllMarksByGroupName(chart, 'line0');
 		expect(lines.length).toEqual(4);
 		expect(lines[0].getAttribute('stroke-opacity')).toEqual('0.6');
 	});
 
 	test('HistoricalCompare renders', async () => {
 		render(<HistoricalCompare {...HistoricalCompare.args} />);
-		const prism = await findPrism();
-		expect(prism).toBeInTheDocument();
+		const chart = await findChart();
+		expect(chart).toBeInTheDocument();
 
 		// get lines
-		const lines = await findAllMarksByGroupName(prism, 'line0');
+		const lines = await findAllMarksByGroupName(chart, 'line0');
 		expect(lines.length).toEqual(4);
 		// dotted teal line
 		expect(lines[0].getAttribute('stroke-dasharray')).toEqual('2,3');
@@ -115,15 +117,15 @@ describe('Line', () => {
 
 	test('Hovering over the entries on HistoricalCompare should highlight hovered series', async () => {
 		render(<HistoricalCompare {...HistoricalCompare.args} />);
-		const prism = await findPrism();
-		expect(prism).toBeInTheDocument();
+		const chart = await findChart();
+		expect(chart).toBeInTheDocument();
 
-		const entries = getAllLegendEntries(prism);
+		const entries = getAllLegendEntries(chart);
 		expect(entries.length).toEqual(4);
 		await hoverNthElement(entries, 0);
 
 		// symbol stroke and fill opacity should be divided by the HIGHLIGHT_CONTRAST_RATIO for all but the first symbol
-		let symbols = getAllLegendSymbols(prism);
+		let symbols = getAllLegendSymbols(chart);
 		expect(symbols[0]).toHaveAttribute('fill-opacity', '0.5');
 		expect(symbols[0]).toHaveAttribute('stroke-opacity', '1');
 		expect(symbols[1]).toHaveAttribute('fill-opacity', `${1 / HIGHLIGHT_CONTRAST_RATIO}`);
@@ -134,7 +136,7 @@ describe('Line', () => {
 		expect(symbols[3]).toHaveAttribute('stroke-opacity', `${1 / HIGHLIGHT_CONTRAST_RATIO}`);
 
 		// stroke opacity should be divided by the HIGHLIGHT_CONTRAST_RATIO for all but the first line
-		let lines = await findAllMarksByGroupName(prism, 'line0');
+		let lines = await findAllMarksByGroupName(chart, 'line0');
 		expect(lines[0]).toHaveAttribute('stroke-opacity', '1');
 		expect(lines[1]).toHaveAttribute('stroke-opacity', `${1 / HIGHLIGHT_CONTRAST_RATIO}`);
 		expect(lines[2]).toHaveAttribute('stroke-opacity', `${1 / HIGHLIGHT_CONTRAST_RATIO}`);
@@ -144,7 +146,7 @@ describe('Line', () => {
 		await hoverNthElement(entries, 3);
 
 		// symbol stroke and fill opacity should be divided by the HIGHLIGHT_CONTRAST_RATIO for all but the last symbol
-		symbols = getAllLegendSymbols(prism);
+		symbols = getAllLegendSymbols(chart);
 		expect(symbols[0]).toHaveAttribute('fill-opacity', `${0.5 / HIGHLIGHT_CONTRAST_RATIO}`);
 		expect(symbols[0]).toHaveAttribute('stroke-opacity', `${1 / HIGHLIGHT_CONTRAST_RATIO}`);
 		expect(symbols[1]).toHaveAttribute('fill-opacity', `${1 / HIGHLIGHT_CONTRAST_RATIO}`);
@@ -155,7 +157,7 @@ describe('Line', () => {
 		expect(symbols[3]).toHaveAttribute('stroke-opacity', '1');
 
 		// stroke opacity should be divided by the HIGHLIGHT_CONTRAST_RATIO for all but the last line
-		lines = await findAllMarksByGroupName(prism, 'line0');
+		lines = await findAllMarksByGroupName(chart, 'line0');
 		expect(lines[0]).toHaveAttribute('stroke-opacity', `${1 / HIGHLIGHT_CONTRAST_RATIO}`);
 		expect(lines[1]).toHaveAttribute('stroke-opacity', `${1 / HIGHLIGHT_CONTRAST_RATIO}`);
 		expect(lines[2]).toHaveAttribute('stroke-opacity', `${1 / HIGHLIGHT_CONTRAST_RATIO}`);
@@ -176,25 +178,25 @@ describe('Line', () => {
 
 	test('Tooltip should show on hover', async () => {
 		render(<Tooltip {...Tooltip.args} />);
-		const prism = await findPrism();
-		expect(prism).toBeInTheDocument();
+		const chart = await findChart();
+		expect(chart).toBeInTheDocument();
 
 		// get voronoi paths
-		const paths = await findAllMarksByGroupName(prism, 'line0_voronoi');
+		const paths = await findAllMarksByGroupName(chart, 'line0_voronoi');
 
 		// hover and validate all hover components are visible
 		await hoverNthElement(paths, 0);
-		const tooltip = await screen.findByTestId('prism-tooltip');
+		const tooltip = await screen.findByTestId('rsc-tooltip');
 		expect(tooltip).toBeInTheDocument();
 		expect(within(tooltip).getByText('Nov 8')).toBeInTheDocument();
 	});
 
 	test('Static points render', async () => {
 		render(<WithPoints {...WithPoints.args} />);
-		const prism = await findPrism();
-		expect(prism).toBeInTheDocument();
+		const chart = await findChart();
+		expect(chart).toBeInTheDocument();
 
-		const points = await findAllMarksByGroupName(prism, 'line0_points');
+		const points = await findAllMarksByGroupName(chart, 'line0_points');
 		expect(points.length).toEqual(6);
 
 		expect(points[0].getAttribute('fill')).toEqual('rgb(15, 181, 174)');
@@ -222,14 +224,14 @@ describe('Line', () => {
 	describe('Static point highlighting when there are interactive children', () => {
 		test('Points show on hover', async () => {
 			render(<WithPointsAndTooltip {...WithPointsAndTooltip.args} />);
-			const prism = await findPrism();
-			expect(prism).toBeInTheDocument();
+			const chart = await findChart();
+			expect(chart).toBeInTheDocument();
 
-			const paths = await findAllMarksByGroupName(prism, 'line0_voronoi');
+			const paths = await findAllMarksByGroupName(chart, 'line0_voronoi');
 			// hover a place on the line without a static point
 			await hoverNthElement(paths, 0);
 
-			const backgroundPoints = await findAllMarksByGroupName(prism, 'line0_pointBackground');
+			const backgroundPoints = await findAllMarksByGroupName(chart, 'line0_pointBackground');
 			expect(backgroundPoints.length).toBe(1);
 			expect(backgroundPoints[0].getAttribute('fill')).toEqual('rgb(255, 255, 255)');
 			expect(backgroundPoints[0].getAttribute('stroke')).toEqual('rgb(255, 255, 255)');
@@ -237,7 +239,7 @@ describe('Line', () => {
 			expect(backgroundPoints[0]).not.toHaveAttribute('fill-opacity');
 			expect(backgroundPoints[0]).not.toHaveAttribute('stroke-opacity');
 
-			const hoverPoints = await findAllMarksByGroupName(prism, 'line0_point');
+			const hoverPoints = await findAllMarksByGroupName(chart, 'line0_point');
 			expect(hoverPoints.length).toBe(1);
 			expect(hoverPoints[0].getAttribute('fill')).toEqual('rgb(255, 255, 255)');
 			expect(hoverPoints[0].getAttribute('stroke')).toEqual('rgb(15, 181, 174)');
@@ -248,10 +250,10 @@ describe('Line', () => {
 
 		test('Static point hovering', async () => {
 			render(<WithPointsAndTooltip {...WithPointsAndTooltip.args} />);
-			const prism = await findPrism();
-			expect(prism).toBeInTheDocument();
+			const chart = await findChart();
+			expect(chart).toBeInTheDocument();
 
-			const points = await findAllMarksByGroupName(prism, 'line0_points');
+			const points = await findAllMarksByGroupName(chart, 'line0_points');
 			expect(points.length).toEqual(6);
 
 			expect(points[0].getAttribute('fill')).toEqual('rgb(15, 181, 174)');
@@ -275,11 +277,11 @@ describe('Line', () => {
 			expect(points[4].getAttribute('stroke-opacity')).toBeNull();
 			expect(points[5].getAttribute('stroke-opacity')).toBeNull();
 
-			const paths = await findAllMarksByGroupName(prism, 'line0_voronoi');
+			const paths = await findAllMarksByGroupName(chart, 'line0_voronoi');
 			// hover a static point
 			await hoverNthElement(paths, 1);
 
-			const backgroundPoints = await findAllMarksByGroupName(prism, 'line0_pointBackground');
+			const backgroundPoints = await findAllMarksByGroupName(chart, 'line0_pointBackground');
 			expect(backgroundPoints.length).toBe(1);
 			expect(backgroundPoints[0].getAttribute('fill')).toEqual('rgb(255, 255, 255)');
 			expect(backgroundPoints[0].getAttribute('stroke')).toEqual('rgb(255, 255, 255)');
@@ -287,7 +289,7 @@ describe('Line', () => {
 			expect(backgroundPoints[0]).not.toHaveAttribute('fill-opacity');
 			expect(backgroundPoints[0]).not.toHaveAttribute('stroke-opacity');
 
-			const hoverPoints = await findAllMarksByGroupName(prism, 'line0_point');
+			const hoverPoints = await findAllMarksByGroupName(chart, 'line0_point');
 			expect(hoverPoints.length).toBe(1);
 			expect(hoverPoints[0].getAttribute('fill')).toEqual('rgb(15, 181, 174)');
 			expect(hoverPoints[0].getAttribute('stroke')).toEqual('rgb(15, 181, 174)');

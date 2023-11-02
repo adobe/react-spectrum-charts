@@ -25,7 +25,7 @@ import {
 	MarkChildElement,
 	MetricRangeProps,
 	TrendlineProps,
-} from './Prism';
+} from './Chart';
 
 type PartiallyRequired<T, K extends keyof T> = Omit<T, K> & Required<Pick<T, K>>;
 

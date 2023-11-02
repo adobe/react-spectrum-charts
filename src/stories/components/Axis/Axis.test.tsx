@@ -9,12 +9,11 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import React from 'react';
 
 import '@matchMediaMock';
-import { Axis } from '@prism';
-import { findPrism, getAllAxisLabels } from '@test-utils';
-import { render, screen, within } from '@testing-library/react';
-import React from 'react';
+import { Axis } from '@rsc';
+import { findChart, getAllAxisLabels, render, screen, within } from '@test-utils';
 
 import { Basic, ControlledLabels, NonLinearAxis, SubLabels, TickMinStep, Time } from './Axis.story';
 
@@ -48,8 +47,8 @@ describe('Axis', () => {
 	describe('Time axis', () => {
 		test('Minute renders properly', async () => {
 			render(<Time {...Time.args} granularity="minute" />);
-			const prism = await findPrism();
-			expect(prism).toBeInTheDocument();
+			const chart = await findChart();
+			expect(chart).toBeInTheDocument();
 
 			// make sure labels are visible
 			expect(screen.getByText('Dec 2')).toBeInTheDocument();
@@ -57,8 +56,8 @@ describe('Axis', () => {
 
 		test('Hour renders properly', async () => {
 			render(<Time {...Time.args} granularity="hour" />);
-			const prism = await findPrism();
-			expect(prism).toBeInTheDocument();
+			const chart = await findChart();
+			expect(chart).toBeInTheDocument();
 
 			// make sure labels are visible
 			expect(screen.getByText('Dec 1')).toBeInTheDocument();
@@ -66,8 +65,8 @@ describe('Axis', () => {
 
 		test('Day renders properly', async () => {
 			render(<Time {...Time.args} />);
-			const prism = await findPrism();
-			expect(prism).toBeInTheDocument();
+			const chart = await findChart();
+			expect(chart).toBeInTheDocument();
 
 			// make sure labels are visible
 			expect(screen.getByText('30')).toBeInTheDocument();
@@ -76,8 +75,8 @@ describe('Axis', () => {
 
 		test('Week renders properly', async () => {
 			render(<Time {...Time.args} granularity="week" />);
-			const prism = await findPrism();
-			expect(prism).toBeInTheDocument();
+			const chart = await findChart();
+			expect(chart).toBeInTheDocument();
 
 			// make sure labels are visible
 			expect(screen.getByText('11')).toBeInTheDocument();
@@ -86,8 +85,8 @@ describe('Axis', () => {
 
 		test('Month renders properly', async () => {
 			render(<Time {...Time.args} granularity="month" />);
-			const prism = await findPrism();
-			expect(prism).toBeInTheDocument();
+			const chart = await findChart();
+			expect(chart).toBeInTheDocument();
 
 			// make sure labels are visible
 			expect(screen.getByText('Jan')).toBeInTheDocument();
@@ -96,8 +95,8 @@ describe('Axis', () => {
 
 		test('Quarter renders properly', async () => {
 			render(<Time {...Time.args} granularity="quarter" />);
-			const prism = await findPrism();
-			expect(prism).toBeInTheDocument();
+			const chart = await findChart();
+			expect(chart).toBeInTheDocument();
 
 			// make sure labels are visible
 			expect(screen.getAllByText('Q1')[0]).toBeInTheDocument();
@@ -108,8 +107,8 @@ describe('Axis', () => {
 	describe('SubLabels', () => {
 		test('Sub labels render properly', async () => {
 			render(<SubLabels {...SubLabels.args} />);
-			const prism = await findPrism();
-			expect(prism).toBeInTheDocument();
+			const chart = await findChart();
+			expect(chart).toBeInTheDocument();
 
 			// make sure labels are visible
 			expect(screen.getByText('Chrome')).toBeInTheDocument();
@@ -120,8 +119,8 @@ describe('Axis', () => {
 	describe('TickMinStep', () => {
 		test('tickMinStep prop is respected in linear axis', async () => {
 			render(<TickMinStep {...TickMinStep.args} />);
-			const prism = await findPrism();
-			expect(prism).toBeInTheDocument();
+			const chart = await findChart();
+			expect(chart).toBeInTheDocument();
 
 			expect(screen.getByText('5')).toBeInTheDocument();
 			expect(screen.queryByText('3')).not.toBeInTheDocument();
@@ -130,16 +129,16 @@ describe('Axis', () => {
 			const argsWithUndefinedTickMinStep = { ...TickMinStep.args, tickMinStep: undefined };
 
 			render(<TickMinStep {...argsWithUndefinedTickMinStep} />);
-			const prism = await findPrism();
-			expect(prism).toBeInTheDocument();
+			const chart = await findChart();
+			expect(chart).toBeInTheDocument();
 
 			expect(screen.getByText('2')).toBeInTheDocument();
 			expect(screen.queryByText('5')).not.toBeInTheDocument();
 		});
 		test('tickMinStep is ignored and renders properly with non-linear scale', async () => {
 			render(<NonLinearAxis {...NonLinearAxis.args} />);
-			const prism = await findPrism();
-			expect(prism).toBeInTheDocument();
+			const chart = await findChart();
+			expect(chart).toBeInTheDocument();
 
 			const axes = await screen.findAllByRole('graphics-symbol');
 			expect(axes[0]).toBeInTheDocument();
@@ -149,10 +148,10 @@ describe('Axis', () => {
 	describe('ControlledLabels', () => {
 		test('Axis labels match what is passed in as the labels prop', async () => {
 			render(<ControlledLabels {...ControlledLabels.args} />);
-			const prism = await findPrism();
-			expect(prism).toBeInTheDocument();
+			const chart = await findChart();
+			expect(chart).toBeInTheDocument();
 
-			const axisLabels = getAllAxisLabels(prism);
+			const axisLabels = getAllAxisLabels(chart);
 			expect(axisLabels).toHaveLength(2);
 
 			expect(screen.getByText('Jun 1')).toBeInTheDocument();

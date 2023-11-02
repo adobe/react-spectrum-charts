@@ -9,15 +9,15 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
-import usePrismProps from '@hooks/usePrismProps';
-import { Area, Axis, Prism, PrismProps } from '@prism';
-import { ComponentStory } from '@storybook/react';
 import React, { ReactElement } from 'react';
+
+import useChartProps from '@hooks/useChartProps';
+import { Area, Axis, Chart, ChartProps } from '@rsc';
+import { ComponentStory } from '@storybook/react';
 import { bindWithProps } from 'test-utils/bindWithProps';
 
 export default {
-	title: 'Prism/Area',
+	title: 'RSC/Area',
 	component: Area,
 	argTypes: {
 		/*onClick: {
@@ -45,25 +45,25 @@ const data = [
 	{ datetime: 1668409200000, maxTemperature: 64, minTemperature: 43, series: 'Add Fallout' },
 ];
 
-const defaultPrismProps: PrismProps = { data, minWidth: 400, maxWidth: 800, height: 400 };
+const defaultChartProps: ChartProps = { data, minWidth: 400, maxWidth: 800, height: 400 };
 
 const BasicStory: ComponentStory<typeof Area> = (args): ReactElement => {
-	const prismProps = usePrismProps({ ...defaultPrismProps });
+	const chartProps = useChartProps({ ...defaultChartProps });
 	return (
-		<Prism {...prismProps}>
+		<Chart {...chartProps}>
 			<Area {...args} />
-		</Prism>
+		</Chart>
 	);
 };
 
 const AreaTimeStory: ComponentStory<typeof Area> = (args): ReactElement => {
-	const prismProps = usePrismProps({ ...defaultPrismProps });
+	const chartProps = useChartProps({ ...defaultChartProps });
 	return (
-		<Prism {...prismProps}>
+		<Chart {...chartProps}>
 			<Axis position="bottom" labelFormat="time" baseline />
 			<Axis position="left" title="Temperature (F)" grid />
 			<Area {...args} />
-		</Prism>
+		</Chart>
 	);
 };
 

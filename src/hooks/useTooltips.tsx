@@ -9,12 +9,13 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { createElement, useMemo } from 'react';
 
-import { useMemo } from 'react';
-import { ChartChildElement, ChartTooltipElement, TooltipHandler, PrismElement } from 'types';
-
-import { getAllElements } from '@utils';
 import { ChartTooltip } from '@components/ChartTooltip';
+import { getAllElements } from '@utils';
+import { ChartChildElement, ChartTooltipElement, TooltipHandler } from 'types';
+
+import { Chart } from '../Chart';
 
 type MappedTooltip = { name: string; element: ChartTooltipElement };
 
@@ -22,13 +23,8 @@ export type TooltipDetail = { name: string; callback: TooltipHandler; width?: nu
 
 export default function useTooltips(children: ChartChildElement[]): TooltipDetail[] {
 	const tooltipElements = useMemo(
-		() =>
-			getAllElements(
-				{ type: { name: 'Prism' }, props: { children } } as PrismElement,
-				ChartTooltip,
-				[],
-			) as MappedTooltip[],
-		[children],
+		() => getAllElements(createElement(Chart, { data: [] }, children), ChartTooltip, []) as MappedTooltip[],
+		[children]
 	);
 
 	return useMemo(
@@ -39,6 +35,6 @@ export default function useTooltips(children: ChartChildElement[]): TooltipDetai
 					name: tooltip.name,
 					callback: tooltip.element.props.children,
 				})) as TooltipDetail[],
-		[tooltipElements],
+		[tooltipElements]
 	);
 }

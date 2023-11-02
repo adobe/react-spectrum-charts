@@ -9,13 +9,13 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
 import { AxisAnnotationSpecProps } from 'types';
+
 import {
-	addAxisAnnotationData,
-	addAxisAnnotationSignals,
-	addAxisAnnotationMarks,
 	addAxisAnnotationAxis,
+	addAxisAnnotationData,
+	addAxisAnnotationMarks,
+	addAxisAnnotationSignals,
 	applyDefaultAxisAnnotationProps,
 } from './axisAnnotationUtils';
 
@@ -65,7 +65,7 @@ const testAxisAnnotationSummary: AxisAnnotationSpecProps = {
 	children: [],
 };
 
-describe('Prism spec builder, AxisAnnotation', () => {
+describe('Spec builder, AxisAnnotation', () => {
 	describe('addAxisAnnotationData()', () => {
 		test('test', () => {
 			const data = [];

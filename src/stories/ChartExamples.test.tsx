@@ -9,11 +9,12 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import React from 'react';
 
 import '@matchMediaMock';
 import {
+	findChart,
 	findMarksByGroupName,
-	findPrism,
 	getAllLegendEntries,
 	getAllMarksByGroupName,
 	getMarksByGroupName,
@@ -21,7 +22,6 @@ import {
 	render,
 	screen,
 } from '@test-utils';
-import React from 'react';
 
 import {
 	FunnelConversion,
@@ -30,7 +30,7 @@ import {
 	TrendsTimeComparisonBar,
 	TrendsTimeComparisonStackedBar,
 	UserGrowthTimeComparisonBarGrowth,
-} from './PrismExamples.story';
+} from './ChartExamples.story';
 
 function testBarOpacity(bar: HTMLElement, opacity: string) {
 	expect(bar).toHaveAttribute('fill-opacity', opacity);
@@ -46,13 +46,13 @@ describe('Funnel stories', () => {
 		test('legend should only have 2 items in it', async () => {
 			render(<FunnelConversion {...FunnelConversion.args} />);
 
-			const prism = await findPrism();
-			expect(prism).toBeInTheDocument();
+			const chart = await findChart();
+			expect(chart).toBeInTheDocument();
 
-			const bars = getAllMarksByGroupName(prism, 'bar0');
+			const bars = getAllMarksByGroupName(chart, 'bar0');
 			expect(bars).toHaveLength(12);
 
-			const legendEntries = getAllLegendEntries(prism);
+			const legendEntries = getAllLegendEntries(chart);
 			expect(legendEntries).toHaveLength(2);
 
 			expect(screen.getByText('All users')).toBeInTheDocument();
@@ -66,10 +66,10 @@ describe('Time comparison stories', () => {
 		test('historical series should have special style', async () => {
 			render(<TrendsTimeComparisonBar {...TrendsTimeComparisonBar.args} />);
 
-			const prism = await findPrism();
-			expect(prism).toBeInTheDocument();
+			const chart = await findChart();
+			expect(chart).toBeInTheDocument();
 
-			const bars = getAllMarksByGroupName(prism, 'bar0');
+			const bars = getAllMarksByGroupName(chart, 'bar0');
 			expect(bars).toHaveLength(112);
 
 			testBarOpacity(bars[0], '0.5');
@@ -79,10 +79,10 @@ describe('Time comparison stories', () => {
 		test('current series should have typical style', async () => {
 			render(<TrendsTimeComparisonBar {...TrendsTimeComparisonBar.args} />);
 
-			const prism = await findPrism();
-			expect(prism).toBeInTheDocument();
+			const chart = await findChart();
+			expect(chart).toBeInTheDocument();
 
-			const bars = getAllMarksByGroupName(prism, 'bar0');
+			const bars = getAllMarksByGroupName(chart, 'bar0');
 			expect(bars).toHaveLength(112);
 
 			testBarOpacity(bars[1], '1');
@@ -94,10 +94,10 @@ describe('Time comparison stories', () => {
 		test('historical series should have special style', async () => {
 			render(<FunnelTimeComparison {...FunnelTimeComparison.args} />);
 
-			const prism = await findPrism();
-			expect(prism).toBeInTheDocument();
+			const chart = await findChart();
+			expect(chart).toBeInTheDocument();
 
-			const bars = getAllMarksByGroupName(prism, 'bar0');
+			const bars = getAllMarksByGroupName(chart, 'bar0');
 			expect(bars).toHaveLength(24);
 
 			testBarOpacity(bars[0], '0.5');
@@ -111,10 +111,10 @@ describe('Time comparison stories', () => {
 		test('current series should have typical style', async () => {
 			render(<FunnelTimeComparison {...FunnelTimeComparison.args} />);
 
-			const prism = await findPrism();
-			expect(prism).toBeInTheDocument();
+			const chart = await findChart();
+			expect(chart).toBeInTheDocument();
 
-			const bars = getAllMarksByGroupName(prism, 'bar0');
+			const bars = getAllMarksByGroupName(chart, 'bar0');
 			expect(bars).toHaveLength(24);
 
 			testBarOpacity(bars[1], '1');
@@ -130,20 +130,20 @@ describe('Time comparison stories', () => {
 		test('has correct number of bars', async () => {
 			render(<UserGrowthTimeComparisonBarGrowth {...UserGrowthTimeComparisonBarGrowth.args} />);
 
-			const prism = await findPrism();
-			expect(prism).toBeInTheDocument();
+			const chart = await findChart();
+			expect(chart).toBeInTheDocument();
 
-			const bars = getAllMarksByGroupName(prism, 'bar0');
+			const bars = getAllMarksByGroupName(chart, 'bar0');
 			expect(bars).toHaveLength(48);
 		});
 
 		test('historical series should have special style', async () => {
 			render(<UserGrowthTimeComparisonBarGrowth {...UserGrowthTimeComparisonBarGrowth.args} />);
 
-			const prism = await findPrism();
-			expect(prism).toBeInTheDocument();
+			const chart = await findChart();
+			expect(chart).toBeInTheDocument();
 
-			const bars = getAllMarksByGroupName(prism, 'bar0');
+			const bars = getAllMarksByGroupName(chart, 'bar0');
 
 			// previous period April
 			for (let i = 0; i <= 3; i++) {
@@ -161,10 +161,10 @@ describe('Time comparison stories', () => {
 		test('current series should have typical style', async () => {
 			render(<UserGrowthTimeComparisonBarGrowth {...UserGrowthTimeComparisonBarGrowth.args} />);
 
-			const prism = await findPrism();
-			expect(prism).toBeInTheDocument();
+			const chart = await findChart();
+			expect(chart).toBeInTheDocument();
 
-			const bars = getAllMarksByGroupName(prism, 'bar0');
+			const bars = getAllMarksByGroupName(chart, 'bar0');
 
 			// last period April
 			for (let i = 4; i <= 7; i++) {
@@ -185,10 +185,10 @@ describe('Time comparison stories', () => {
 		test('historical series should have special style', async () => {
 			render(<TrendsTimeComparisonStackedBar {...TrendsTimeComparisonStackedBar.args} />);
 
-			const prism = await findPrism();
-			expect(prism).toBeInTheDocument();
+			const chart = await findChart();
+			expect(chart).toBeInTheDocument();
 
-			const bars = getAllMarksByGroupName(prism, 'bar0');
+			const bars = getAllMarksByGroupName(chart, 'bar0');
 			expect(bars).toHaveLength(112);
 
 			testBarOpacity(bars[0], '0.5');
@@ -198,10 +198,10 @@ describe('Time comparison stories', () => {
 		test('current series should have typical style', async () => {
 			render(<TrendsTimeComparisonStackedBar {...TrendsTimeComparisonStackedBar.args} />);
 
-			const prism = await findPrism();
-			expect(prism).toBeInTheDocument();
+			const chart = await findChart();
+			expect(chart).toBeInTheDocument();
 
-			const bars = getAllMarksByGroupName(prism, 'bar0');
+			const bars = getAllMarksByGroupName(chart, 'bar0');
 			expect(bars).toHaveLength(112);
 
 			testBarOpacity(bars[1], '1');
@@ -213,21 +213,21 @@ describe('Time comparison stories', () => {
 		test('should have release line and icon on chart', async () => {
 			render(<ReleaseImpact {...ReleaseImpact.args} />);
 
-			const prism = await findPrism();
-			expect(prism).toBeInTheDocument();
+			const chart = await findChart();
+			expect(chart).toBeInTheDocument();
 
-			const releaseLine = getMarksByGroupName(prism, 'axis0_xReferenceLineRule0', 'line');
+			const releaseLine = getMarksByGroupName(chart, 'axis0_xReferenceLineRule0', 'line');
 			expect(releaseLine).toBeInTheDocument();
 
-			const releaseIcon = getMarksByGroupName(prism, 'axis0_xReferenceLineSymbol0');
+			const releaseIcon = getMarksByGroupName(chart, 'axis0_xReferenceLineSymbol0');
 			expect(releaseIcon).toBeInTheDocument();
 		});
 
 		test('should have subleabels with correct styling', async () => {
 			render(<ReleaseImpact {...ReleaseImpact.args} />);
 
-			const prism = await findPrism();
-			expect(prism).toBeInTheDocument();
+			const chart = await findChart();
+			expect(chart).toBeInTheDocument();
 
 			const daysBeforeLabel = screen.getByText('Days before');
 			expect(daysBeforeLabel).toBeInTheDocument();
@@ -248,18 +248,18 @@ describe('Time comparison stories', () => {
 		test('hovering the average lines should show tooltips', async () => {
 			render(<ReleaseImpact {...ReleaseImpact.args} />);
 
-			const prism = await findPrism();
-			expect(prism).toBeInTheDocument();
+			const chart = await findChart();
+			expect(chart).toBeInTheDocument();
 
-			const averageLines = getAllMarksByGroupName(prism, 'line0Trendline_voronoi');
+			const averageLines = getAllMarksByGroupName(chart, 'line0Trendline_voronoi');
 			expect(averageLines).toHaveLength(28);
 			await hoverNthElement(averageLines, 0);
-			const tooltip = await screen.findByTestId('prism-tooltip');
+			const tooltip = await screen.findByTestId('rsc-tooltip');
 			expect(tooltip).toBeInTheDocument();
 			expect(screen.getByText(0.58)).toBeInTheDocument();
 
-			expect(await findMarksByGroupName(prism, 'line0Trendline_point')).toBeInTheDocument();
-			expect(await findMarksByGroupName(prism, 'line0Trendline_secondaryPoint')).toBeInTheDocument();
+			expect(await findMarksByGroupName(chart, 'line0Trendline_point')).toBeInTheDocument();
+			expect(await findMarksByGroupName(chart, 'line0Trendline_secondaryPoint')).toBeInTheDocument();
 		});
 	});
 });

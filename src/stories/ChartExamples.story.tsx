@@ -14,23 +14,23 @@ import React, { Dispatch, ReactElement, SetStateAction, useState } from 'react';
 import { Annotation } from '@components/Annotation';
 import { ReferenceLine } from '@components/ReferenceLine';
 import { TRENDLINE_VALUE } from '@constants';
-import usePrismProps from '@hooks/usePrismProps';
+import useChartProps from '@hooks/useChartProps';
 import {
 	Area,
 	Axis,
 	Bar,
+	Chart,
 	ChartPopover,
 	ChartTooltip,
 	Legend,
 	Line,
-	Prism,
 	Title,
 	Trendline,
 	categorical16,
-} from '@prism';
+} from '@rsc';
 import { ComponentStory } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
-import { Colors, Datum, LegendDescription, LegendLabel, PrismData, PrismProps, SpectrumColor, SubLabel } from 'types';
+import { ChartData, ChartProps, Colors, Datum, LegendDescription, LegendLabel, SpectrumColor, SubLabel } from 'types';
 
 import { ActionButton, ActionGroup, Content, Divider, Flex, Item, Text, View } from '@adobe/react-spectrum';
 import Close from '@spectrum-icons/workflow/Close';
@@ -51,8 +51,8 @@ import stackOverflowData from './data/stackOverflowTrends.json';
 import { trendsTimeComparisonData } from './data/trendsTimeComparisonData';
 
 export default {
-	title: 'Prism/Prism/Examples',
-	component: Prism,
+	title: 'RSC/Chart/Examples',
+	component: Chart,
 	argTypes: {},
 	parameters: {
 		docs: {
@@ -103,10 +103,10 @@ const funnelTimeCompareLegendLabels: LegendLabel[] = [
 	{ seriesName: 'US | Last 4 weeks | retained', label: 'US | Last 4 weeks ' },
 ];
 
-const UserGrowthBarStory: ComponentStory<typeof Prism> = (args): ReactElement => {
-	const props = usePrismProps(args);
+const UserGrowthBarStory: ComponentStory<typeof Chart> = (args): ReactElement => {
+	const props = useChartProps(args);
 	return (
-		<Prism {...props}>
+		<Chart {...props}>
 			<Axis position="bottom" baseline />
 			<Axis position="left" grid title="Users" />
 			<Bar dimension="x" metric="y" color="series" order="order">
@@ -114,14 +114,14 @@ const UserGrowthBarStory: ComponentStory<typeof Prism> = (args): ReactElement =>
 				<ChartPopover width={200}>{dialogCallback}</ChartPopover>
 			</Bar>
 			<Legend highlight descriptions={userGrowthDescriptions} />
-		</Prism>
+		</Chart>
 	);
 };
 
-const UserGrowthBarTimeComparisonStory: ComponentStory<typeof Prism> = (args): ReactElement => {
-	const props = usePrismProps(args);
+const UserGrowthBarTimeComparisonStory: ComponentStory<typeof Chart> = (args): ReactElement => {
+	const props = useChartProps(args);
 	return (
-		<Prism {...props}>
+		<Chart {...props}>
 			<Axis position="bottom" baseline />
 			<Axis position="left" grid title="Users" />
 			<Bar
@@ -139,14 +139,14 @@ const UserGrowthBarTimeComparisonStory: ComponentStory<typeof Prism> = (args): R
 				<ChartPopover width={200}>{dialogCallback}</ChartPopover>
 			</Bar>
 			<Legend highlight descriptions={userGrowthDescriptions} />
-		</Prism>
+		</Chart>
 	);
 };
 
-const UserGrowthAreaStory: ComponentStory<typeof Prism> = (args): ReactElement => {
-	const props = usePrismProps(args);
+const UserGrowthAreaStory: ComponentStory<typeof Chart> = (args): ReactElement => {
+	const props = useChartProps(args);
 	return (
-		<Prism {...props}>
+		<Chart {...props}>
 			<Axis position="bottom" baseline />
 			<Axis position="left" grid title="Users" />
 			<Area dimension="x" metric="y" order="order" scaleType="point">
@@ -154,7 +154,7 @@ const UserGrowthAreaStory: ComponentStory<typeof Prism> = (args): ReactElement =
 				<ChartPopover width={200}>{dialogCallback}</ChartPopover>
 			</Area>
 			<Legend highlight descriptions={userGrowthDescriptions} />
-		</Prism>
+		</Chart>
 	);
 };
 
@@ -202,24 +202,24 @@ const dialogCallback = (datum: Datum, close?: () => void) => {
 	);
 };
 
-const FunnelConversionStory: ComponentStory<typeof Prism> = (args): ReactElement => {
-	const props = usePrismProps(args);
+const FunnelConversionStory: ComponentStory<typeof Chart> = (args): ReactElement => {
+	const props = useChartProps(args);
 	return (
-		<Prism {...props}>
+		<Chart {...props}>
 			<Axis position="bottom" labelAlign="start" labelFontWeight="bold" subLabels={funnelSublabels} baseline />
 			<Axis position="left" grid labelFormat="percentage" title="Conversion rate" />
 			<Bar type="dodged" dimension="step" color={['series', 'subSeries']} paddingRatio={0.1}>
 				<Annotation textKey="percentLabel" />
 			</Bar>
 			<Legend highlight hiddenEntries={['All users | lost', 'US | lost']} legendLabels={funnelLegendLabels} />
-		</Prism>
+		</Chart>
 	);
 };
 
-const FunnelTimeComparisonStory: ComponentStory<typeof Prism> = (args): ReactElement => {
-	const props = usePrismProps(args);
+const FunnelTimeComparisonStory: ComponentStory<typeof Chart> = (args): ReactElement => {
+	const props = useChartProps(args);
 	return (
-		<Prism {...props}>
+		<Chart {...props}>
 			<Axis position="bottom" labelAlign="start" labelFontWeight="bold" subLabels={funnelSublabels} baseline />
 			<Axis position="left" grid labelFormat="percentage" title="Conversion rate" />
 			<Bar
@@ -246,12 +246,12 @@ const FunnelTimeComparisonStory: ComponentStory<typeof Prism> = (args): ReactEle
 				]}
 				legendLabels={funnelTimeCompareLegendLabels}
 			/>
-		</Prism>
+		</Chart>
 	);
 };
 
-const ReleaseImpactStory: ComponentStory<typeof Prism> = (args): ReactElement => {
-	const props = usePrismProps(args);
+const ReleaseImpactStory: ComponentStory<typeof Chart> = (args): ReactElement => {
+	const props = useChartProps(args);
 
 	const subLabels: SubLabel[] = [
 		{ value: -14, subLabel: 'Days before', align: 'start', fontWeight: 'bold' },
@@ -270,7 +270,7 @@ const ReleaseImpactStory: ComponentStory<typeof Prism> = (args): ReactElement =>
 	};
 
 	return (
-		<Prism {...props}>
+		<Chart {...props}>
 			<Axis position="bottom" baseline ticks subLabels={subLabels}>
 				<ReferenceLine value={0} icon="date" />
 			</Axis>
@@ -286,15 +286,15 @@ const ReleaseImpactStory: ComponentStory<typeof Prism> = (args): ReactElement =>
 				</Trendline>
 			</Line>
 			<Legend highlight />
-		</Prism>
+		</Chart>
 	);
 };
 
-const getReleaseImpactBar = (series: string, prismProps: PrismProps, isSingleSeries: boolean) => {
+const getReleaseImpactBar = (series: string, chartProps: ChartProps, isSingleSeries: boolean) => {
 	return (
 		<>
 			<div style={{ height: 50 }} /> {/* Spacer */}
-			<Prism {...prismProps}>
+			<Chart {...chartProps}>
 				<Title
 					text={series}
 					position="start"
@@ -319,12 +319,12 @@ const getReleaseImpactBar = (series: string, prismProps: PrismProps, isSingleSer
 					lineWidth={1.5}
 					paddingRatio={0.2}
 				/>
-			</Prism>
+			</Chart>
 		</>
 	);
 };
 
-const ReleaseImpactBarStory: ComponentStory<typeof Prism> = (args): ReactElement => {
+const ReleaseImpactBarStory: ComponentStory<typeof Chart> = (args): ReactElement => {
 	const [highlightedSeries, setHighlightedSeries]: [string, Dispatch<SetStateAction<string>>] = useState('');
 	const [hiddenSeries, setHiddenSeries]: [string[] | undefined, Dispatch<SetStateAction<string[] | undefined>>] =
 		useState();
@@ -379,25 +379,25 @@ const ReleaseImpactBarStory: ComponentStory<typeof Prism> = (args): ReactElement
 
 	const isSingleSeries = displayedSeriesCount.length === 1;
 
-	const props = usePrismProps({ ...args, hiddenSeries, highlightedSeries });
-	const firstSeriesProps = usePrismProps({
+	const props = useChartProps({ ...args, hiddenSeries, highlightedSeries });
+	const firstSeriesProps = useChartProps({
 		...args,
-		data: firstSeriesData as PrismData[],
+		data: firstSeriesData as ChartData[],
 		hiddenSeries,
 		highlightedSeries,
 		height: isSingleSeries ? 500 : 250,
 	});
-	const secondSeriesProps = usePrismProps({
+	const secondSeriesProps = useChartProps({
 		...args,
-		data: secondSeriesData as PrismData[],
+		data: secondSeriesData as ChartData[],
 		colors: ['categorical-200'],
 		hiddenSeries,
 		highlightedSeries,
 		height: isSingleSeries ? 500 : 250,
 	});
-	const thirdSeriesProps = usePrismProps({
+	const thirdSeriesProps = useChartProps({
 		...args,
-		data: thirdSeriesData as PrismData[],
+		data: thirdSeriesData as ChartData[],
 		colors: ['categorical-300'],
 		hiddenSeries,
 		highlightedSeries,
@@ -416,20 +416,20 @@ const ReleaseImpactBarStory: ComponentStory<typeof Prism> = (args): ReactElement
 			{displayThirdSeries && getReleaseImpactBar(thirdSeriesKey, thirdSeriesProps, isSingleSeries)}
 
 			{/* Legend */}
-			<Prism {...props} height={50}>
+			<Chart {...props} height={50}>
 				<Legend
 					color={'series'}
 					onClick={onLegendClick}
 					onMouseOut={onLegendMouseOut}
 					onMouseOver={onLegendMouseOver}
 				/>
-			</Prism>
+			</Chart>
 		</>
 	);
 };
 
-const TrendsTimeComparisonLineStory: ComponentStory<typeof Prism> = (args): ReactElement => {
-	const props = usePrismProps(args);
+const TrendsTimeComparisonLineStory: ComponentStory<typeof Chart> = (args): ReactElement => {
+	const props = useChartProps(args);
 	const legendLabels = [
 		{ seriesName: 'add-freeform-table-0 | Previous 4 weeks', label: 'Add Freeform table | Previous 4 weeks' },
 		{ seriesName: 'add-freeform-table-0 | Last 4 weeks', label: 'Add Freeform table | Last 4 weeks' },
@@ -437,17 +437,17 @@ const TrendsTimeComparisonLineStory: ComponentStory<typeof Prism> = (args): Reac
 		{ seriesName: 'add-line-viz-1 | Last 4 weeks', label: 'Add Line Viz | Last 4 weeks' },
 	];
 	return (
-		<Prism {...props}>
+		<Chart {...props}>
 			<Axis position="bottom" ticks baseline labelFormat="time" />
 			<Axis position="left" grid title="Events" />
 			<Line color="series" lineType="period" scaleType="time" />
 			<Legend highlight legendLabels={legendLabels} opacity="period" />
-		</Prism>
+		</Chart>
 	);
 };
 
-const TrendsTimeComparisonBarStory: ComponentStory<typeof Prism> = (args): ReactElement => {
-	const props = usePrismProps(args);
+const TrendsTimeComparisonBarStory: ComponentStory<typeof Chart> = (args): ReactElement => {
+	const props = useChartProps(args);
 	const legendLabels = [
 		{ seriesName: 'add-freeform-table-0 | Previous 4 weeks', label: 'Add Freeform table | Previous 4 weeks' },
 		{ seriesName: 'add-freeform-table-0 | Last 4 weeks', label: 'Add Freeform table | Last 4 weeks' },
@@ -455,7 +455,7 @@ const TrendsTimeComparisonBarStory: ComponentStory<typeof Prism> = (args): React
 		{ seriesName: 'add-line-viz-1 | Last 4 weeks', label: 'Add Line Viz | Last 4 weeks' },
 	];
 	return (
-		<Prism {...props}>
+		<Chart {...props}>
 			<Axis position="bottom" ticks baseline labelFormat="time" />
 			<Axis position="left" grid title="Events" />
 			<Bar
@@ -468,12 +468,12 @@ const TrendsTimeComparisonBarStory: ComponentStory<typeof Prism> = (args): React
 				paddingRatio={0.2}
 			/>
 			<Legend highlight legendLabels={legendLabels} />
-		</Prism>
+		</Chart>
 	);
 };
 
-const TrendsTimeComparisonStackedBarStory: ComponentStory<typeof Prism> = (args): ReactElement => {
-	const props = usePrismProps(args);
+const TrendsTimeComparisonStackedBarStory: ComponentStory<typeof Chart> = (args): ReactElement => {
+	const props = useChartProps(args);
 	const legendLabels = [
 		{ seriesName: 'add-freeform-table-0 | Previous 4 weeks', label: 'Add Freeform table | Previous 4 weeks' },
 		{ seriesName: 'add-freeform-table-0 | Last 4 weeks', label: 'Add Freeform table | Last 4 weeks' },
@@ -481,7 +481,7 @@ const TrendsTimeComparisonStackedBarStory: ComponentStory<typeof Prism> = (args)
 		{ seriesName: 'add-line-viz-1 | Last 4 weeks', label: 'Add Line Viz | Last 4 weeks' },
 	];
 	return (
-		<Prism {...props} colors={categorical16} opacities={[[0.5, 1]]} lineTypes={[['shortDash', 'solid']]}>
+		<Chart {...props} colors={categorical16} opacities={[[0.5, 1]]} lineTypes={[['shortDash', 'solid']]}>
 			<Axis position="bottom" ticks baseline labelFormat="time" />
 			<Axis position="left" grid title="Events" />
 			<Bar
@@ -494,18 +494,18 @@ const TrendsTimeComparisonStackedBarStory: ComponentStory<typeof Prism> = (args)
 				paddingRatio={0.2}
 			/>
 			<Legend highlight legendLabels={legendLabels} />
-		</Prism>
+		</Chart>
 	);
 };
 
-const StackOverflowStory: ComponentStory<typeof Prism> = (args): ReactElement => {
-	const props = usePrismProps(args);
+const StackOverflowStory: ComponentStory<typeof Chart> = (args): ReactElement => {
+	const props = useChartProps(args);
 	return (
-		<Prism {...props}>
+		<Chart {...props}>
 			<Axis position="left" grid title="Page Views" />
 			<Axis position="bottom" baseline ticks labelFormat="time" granularity="month" />
 			<Line dimension="timestamp" metric="rollingAveragePageViews" />
-		</Prism>
+		</Chart>
 	);
 };
 

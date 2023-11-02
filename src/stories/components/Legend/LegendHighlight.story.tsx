@@ -9,12 +9,12 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { Legend } from '@rsc';
 
-import { Legend } from '@prism';
 import { LegendBarHighlightedSeriesStory, LegendBarStory, defaultProps } from './LegendStoryUtils';
 
 export default {
-	title: 'Prism/Legend/Highlight',
+	title: 'RSC/Legend/Highlight',
 	component: Legend,
 	parameters: {
 		docs: {

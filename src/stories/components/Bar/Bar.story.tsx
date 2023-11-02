@@ -12,15 +12,15 @@
 import React, { ReactElement, createElement } from 'react';
 
 import { Annotation } from '@components/Annotation';
-import usePrismProps from '@hooks/usePrismProps';
-import { Axis, Bar, Prism } from '@prism';
+import useChartProps from '@hooks/useChartProps';
+import { Axis, Bar, Chart } from '@rsc';
 import { ComponentStory } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
 
 import { barData } from './data';
 
 export default {
-	title: 'Prism/Bar',
+	title: 'RSC/Bar',
 	component: Bar,
 	argTypes: {},
 	parameters: {
@@ -33,13 +33,13 @@ export default {
 };
 
 const BarStory: ComponentStory<typeof Bar> = (args): ReactElement => {
-	const prismProps = usePrismProps({ data: barData, width: 600, height: 600 });
+	const chartProps = useChartProps({ data: barData, width: 600, height: 600 });
 	return (
-		<Prism {...prismProps}>
+		<Chart {...chartProps}>
 			<Axis position={args.orientation === 'horizontal' ? 'left' : 'bottom'} baseline title="Browser" />
 			<Axis position={args.orientation === 'horizontal' ? 'bottom' : 'left'} grid title="Downloads" />
 			<Bar {...args} />
-		</Prism>
+		</Chart>
 	);
 };
 

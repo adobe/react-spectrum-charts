@@ -59,7 +59,7 @@ export function getInteractive(children: MarkChildElement[]): boolean {
 export function getTooltip(children: MarkChildElement[], name: string, nestedDatum?: boolean): SignalRef | undefined {
 	// skip annotations
 	if (hasTooltip(children)) {
-		return { signal: `merge(datum${nestedDatum ? '.datum' : ''}, {'prismComponentName': '${name}'})` };
+		return { signal: `merge(datum${nestedDatum ? '.datum' : ''}, {'rscComponentName': '${name}'})` };
 	}
 }
 

@@ -12,16 +12,16 @@
 import React, { ReactElement } from 'react';
 
 import { ReferenceLine } from '@components/ReferenceLine';
-import usePrismProps from '@hooks/usePrismProps';
-import { Axis, Bar, ChartTooltip, Legend, Line, Prism } from '@prism';
+import useChartProps from '@hooks/useChartProps';
+import { Axis, Bar, Chart, ChartTooltip, Legend, Line } from '@rsc';
 import { workspaceTrendsData, workspaceTrendsDataWithVisiblePoints } from '@stories/data/data';
 import { formatTimestamp } from '@stories/storyUtils';
 import { ComponentStory } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
-import { PrismProps } from 'types';
+import { ChartProps } from 'types';
 
 export default {
-	title: 'Prism/Line',
+	title: 'RSC/Line',
 	component: Line,
 	argTypes: {},
 	parameters: {
@@ -64,82 +64,82 @@ const historicalCompareData = [
 	{ datetime: 1668409200000, users: 4913, series: 'Add Freeform table', period: 'Current' },
 ];
 
-const defaultPrismProps: PrismProps = { data: workspaceTrendsData, minWidth: 400, maxWidth: 800, height: 400 };
+const defaultChartProps: ChartProps = { data: workspaceTrendsData, minWidth: 400, maxWidth: 800, height: 400 };
 
 const BasicLineStory: ComponentStory<typeof Line> = (args): ReactElement => {
-	const prismProps = usePrismProps(defaultPrismProps);
+	const chartProps = useChartProps(defaultChartProps);
 	return (
-		<Prism {...prismProps}>
+		<Chart {...chartProps}>
 			<Line {...args} />
 			<Legend lineWidth={{ value: 0 }} />
-		</Prism>
+		</Chart>
 	);
 };
 const LinearStory: ComponentStory<typeof Line> = (args): ReactElement => {
-	const prismProps = usePrismProps(defaultPrismProps);
+	const chartProps = useChartProps(defaultChartProps);
 	return (
-		<Prism {...prismProps}>
+		<Chart {...chartProps}>
 			<Axis position="left" grid title="Users" />
 			<Axis position="bottom" labelFormat="linear" baseline ticks>
 				<ReferenceLine value={13} />
 			</Axis>
 			<Line {...args} />
-		</Prism>
+		</Chart>
 	);
 };
 
 const LineStory: ComponentStory<typeof Line> = (args): ReactElement => {
-	const prismProps = usePrismProps(defaultPrismProps);
+	const chartProps = useChartProps(defaultChartProps);
 	return (
-		<Prism {...prismProps}>
+		<Chart {...chartProps}>
 			<Axis position="left" grid title="Users" />
 			<Axis position="bottom" labelFormat="time" baseline ticks />
 			<Line {...args} />
 			<Legend highlight />
-		</Prism>
+		</Chart>
 	);
 };
 
 const ComboStory: ComponentStory<typeof Line> = (args): ReactElement => {
-	const prismProps = usePrismProps(defaultPrismProps);
+	const chartProps = useChartProps(defaultChartProps);
 	return (
-		<Prism {...prismProps}>
+		<Chart {...chartProps}>
 			<Axis position="left" grid title="Users" />
 			<Axis position="bottom" labelFormat="time" baseline ticks />
 			<Bar dimension="datetime" metric="users" opacity={{ value: 0.75 }} />
 			<Line {...args} />
 			<Legend highlight />
-		</Prism>
+		</Chart>
 	);
 };
 
 const HistoricalCompareStory: ComponentStory<typeof Line> = (args): ReactElement => {
-	const prismProps = usePrismProps({
-		...defaultPrismProps,
+	const chartProps = useChartProps({
+		...defaultChartProps,
 		data: historicalCompareData,
 		width: 600,
 		opacities: [0.5, 1],
 		lineTypes: ['dotted', 'solid'],
 	});
 	return (
-		<Prism {...prismProps}>
+		<Chart {...chartProps}>
 			<Axis position="left" grid title="Users" />
 			<Axis position="bottom" labelFormat="time" baseline ticks />
 			<Line {...args} />
 			<Legend highlight opacity="period" />
-		</Prism>
+		</Chart>
 	);
 };
 
 const LineWithVisiblePointsStory: ComponentStory<typeof Line> = (args): ReactElement => {
-	const prismProps = usePrismProps({ ...defaultPrismProps, data: workspaceTrendsDataWithVisiblePoints });
+	const chartProps = useChartProps({ ...defaultChartProps, data: workspaceTrendsDataWithVisiblePoints });
 	return (
-		<Prism {...prismProps}>
+		<Chart {...chartProps}>
 			<Axis position="left" grid title="Users" />
 			<Axis position="bottom" labelFormat="time" baseline ticks />
 			<Line {...args} />
 			<Legend highlight />
-		</Prism>
+		</Chart>
 	);
 };
 
