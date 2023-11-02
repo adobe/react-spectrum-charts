@@ -9,20 +9,21 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
 import React from 'react';
-import { findPrism, getAllMarksByGroupName, render } from '@test-utils';
-import { Basic, Position, FontWeight, Orient } from './Title.story';
+
 import { Title } from '@components/Title';
+import { findChart, getAllMarksByGroupName, render } from '@test-utils';
+
+import { Basic, FontWeight, Orient, Position } from './Title.story';
 
 describe('Title', () => {
 	test('Basic renders properly', async () => {
 		render(<Basic {...Basic.args} />);
 
-		const prism = await findPrism();
-		expect(prism).toBeInTheDocument();
+		const chart = await findChart();
+		expect(chart).toBeInTheDocument();
 
-		const titles = getAllMarksByGroupName(prism, 'role-title-text', 'text');
+		const titles = getAllMarksByGroupName(chart, 'role-title-text', 'text');
 		expect(titles.length).toBe(1);
 		const title = titles[0];
 		expect(title).toHaveTextContent(Basic.args.text);
@@ -37,10 +38,10 @@ describe('Title', () => {
 	test('Position renders properly', async () => {
 		render(<Position {...Position.args} />);
 
-		const prism = await findPrism();
-		expect(prism).toBeInTheDocument();
+		const chart = await findChart();
+		expect(chart).toBeInTheDocument();
 
-		const titles = getAllMarksByGroupName(prism, 'role-title-text', 'text');
+		const titles = getAllMarksByGroupName(chart, 'role-title-text', 'text');
 		expect(titles.length).toBe(1);
 		const title = titles[0];
 		expect(title).toHaveTextContent(Position.args.text);
@@ -52,10 +53,10 @@ describe('Title', () => {
 	test('FontWeight renders properly', async () => {
 		render(<FontWeight {...FontWeight.args} />);
 
-		const prism = await findPrism();
-		expect(prism).toBeInTheDocument();
+		const chart = await findChart();
+		expect(chart).toBeInTheDocument();
 
-		const titles = getAllMarksByGroupName(prism, 'role-title-text', 'text');
+		const titles = getAllMarksByGroupName(chart, 'role-title-text', 'text');
 		expect(titles.length).toBe(1);
 		const title = titles[0];
 		expect(title).toHaveTextContent(FontWeight.args.text);
@@ -67,10 +68,10 @@ describe('Title', () => {
 	test('Orient renders properly', async () => {
 		render(<Orient {...Orient.args} />);
 
-		const prism = await findPrism();
-		expect(prism).toBeInTheDocument();
+		const chart = await findChart();
+		expect(chart).toBeInTheDocument();
 
-		const titles = getAllMarksByGroupName(prism, 'role-title-text', 'text');
+		const titles = getAllMarksByGroupName(chart, 'role-title-text', 'text');
 		expect(titles.length).toBe(1);
 		const title = titles[0];
 		expect(title).toHaveTextContent(FontWeight.args.text);
@@ -78,7 +79,7 @@ describe('Title', () => {
 		// Baseline is top for bottom orient
 		expect(title).toHaveAttribute('transform', 'translate(0,14)');
 
-		const titleGroups = getAllMarksByGroupName(prism, 'role-title', 'g');
+		const titleGroups = getAllMarksByGroupName(chart, 'role-title', 'g');
 		const positioningGroup = titleGroups[0];
 		expect(positioningGroup).toHaveAttribute('transform', 'translate(194,375)');
 	});

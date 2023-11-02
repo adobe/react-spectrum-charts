@@ -48,9 +48,9 @@ import {
 	addSecondaryScales,
 	addSignals,
 	getDodgeGroupTransform,
-	getPrismStackIdTransform,
 	getRepeatedScale,
 	getStackAggregateData,
+	getStackIdTransform,
 } from './barSpecBuilder';
 import {
 	defaultBarProps,
@@ -616,9 +616,9 @@ describe('barSpecBuilder', () => {
 		});
 	});
 
-	describe('getPrismStackIdTransform()', () => {
+	describe('getStackIdTransform()', () => {
 		test('should return default stack id transform', () => {
-			expect(getPrismStackIdTransform(defaultBarProps)).toStrictEqual({
+			expect(getStackIdTransform(defaultBarProps)).toStrictEqual({
 				as: STACK_ID,
 				expr: `datum.${DEFAULT_CATEGORICAL_DIMENSION}`,
 				type: 'formula',
@@ -626,14 +626,14 @@ describe('barSpecBuilder', () => {
 		});
 
 		test('should join all facets if dodged', () => {
-			expect(getPrismStackIdTransform({ ...defaultBarProps, type: 'dodged' })).toStrictEqual({
+			expect(getStackIdTransform({ ...defaultBarProps, type: 'dodged' })).toStrictEqual({
 				as: STACK_ID,
 				expr: `datum.${DEFAULT_CATEGORICAL_DIMENSION} + "," + datum.${DEFAULT_COLOR}`,
 				type: 'formula',
 			});
 
 			expect(
-				getPrismStackIdTransform({ ...defaultBarProps, type: 'dodged', opacity: DEFAULT_SECONDARY_COLOR })
+				getStackIdTransform({ ...defaultBarProps, type: 'dodged', opacity: DEFAULT_SECONDARY_COLOR })
 			).toStrictEqual({
 				as: STACK_ID,
 				expr: `datum.${DEFAULT_CATEGORICAL_DIMENSION} + "," + datum.${DEFAULT_COLOR} + "," + datum.${DEFAULT_SECONDARY_COLOR}`,

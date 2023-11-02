@@ -12,8 +12,8 @@
 import React, { ReactElement, createElement } from 'react';
 
 import { Annotation } from '@components/Annotation';
-import usePrismProps from '@hooks/usePrismProps';
-import { Axis, Bar, ChartPopover, ChartTooltip, Legend, Prism, categorical6 } from '@prism';
+import useChartProps from '@hooks/useChartProps';
+import { Axis, Bar, Chart, ChartPopover, ChartTooltip, Legend, categorical6 } from '@rsc';
 import { ComponentStory } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
 
@@ -22,7 +22,7 @@ import { Content } from '@adobe/react-spectrum';
 import { barSeriesData, barSubSeriesData } from './data';
 
 export default {
-	title: 'Prism/Bar/Dodged Bar',
+	title: 'RSC/Bar/Dodged Bar',
 	component: Bar,
 	argTypes: {},
 	parameters: {
@@ -44,14 +44,14 @@ const DodgedBarStory: ComponentStory<typeof Bar> = (args): ReactElement => {
 		  ]
 		: categorical6;
 	const data = Array.isArray(color) ? barSubSeriesData : barSeriesData;
-	const prismProps = usePrismProps({ data, width: 800, height: 600, colors });
+	const chartProps = useChartProps({ data, width: 800, height: 600, colors });
 	return (
-		<Prism {...prismProps}>
+		<Chart {...chartProps}>
 			<Axis position={args.orientation === 'horizontal' ? 'left' : 'bottom'} baseline title="Browser" />
 			<Axis position={args.orientation === 'horizontal' ? 'bottom' : 'left'} grid title="Downloads" />
 			<Bar {...args} />
 			<Legend title="Operating system" highlight />
-		</Prism>
+		</Chart>
 	);
 };
 
@@ -64,9 +64,9 @@ const dialogContent = (datum) => (
 );
 
 const DodgedBarPopoverStory: ComponentStory<typeof Bar> = (args): ReactElement => {
-	const prismProps = usePrismProps({ data: barSeriesData, width: 800, height: 600 });
+	const chartProps = useChartProps({ data: barSeriesData, width: 800, height: 600 });
 	return (
-		<Prism {...prismProps}>
+		<Chart {...chartProps}>
 			<Axis position={args.orientation === 'horizontal' ? 'left' : 'bottom'} baseline title="Browser" />
 			<Axis position={args.orientation === 'horizontal' ? 'bottom' : 'left'} grid title="Downloads" />
 			<Bar {...args}>
@@ -74,19 +74,19 @@ const DodgedBarPopoverStory: ComponentStory<typeof Bar> = (args): ReactElement =
 				<ChartPopover width={200}>{dialogContent}</ChartPopover>
 			</Bar>
 			<Legend title="Operating system" highlight />
-		</Prism>
+		</Chart>
 	);
 };
 
 const DodgedBarLineTypeStory: ComponentStory<typeof Bar> = (args): ReactElement => {
-	const prismProps = usePrismProps({ data: barSeriesData, width: 800, height: 600 });
+	const chartProps = useChartProps({ data: barSeriesData, width: 800, height: 600 });
 	return (
-		<Prism {...prismProps}>
+		<Chart {...chartProps}>
 			<Axis position={args.orientation === 'horizontal' ? 'left' : 'bottom'} baseline title="Browser" />
 			<Axis position={args.orientation === 'horizontal' ? 'bottom' : 'left'} grid title="Downloads" />
 			<Bar {...args} />
 			<Legend title="Operating system" opacity={{ value: 0.2 }} />
-		</Prism>
+		</Chart>
 	);
 };
 

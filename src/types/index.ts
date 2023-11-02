@@ -10,6 +10,6 @@
  * governing permissions and limitations under the License.
  */
 
-export * from './Prism';
+export * from './Chart';
 export * from './specBuilderTypes';
 export * from './SpectrumVizColors';

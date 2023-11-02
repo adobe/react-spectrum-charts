@@ -19,24 +19,27 @@ export type ActionItem = Item | undefined | null;
 
 /**
  * Generates the callback for the mark click handler
- * @param hiddenSeries
- * @param setHiddenSeries
  * @param chartView
+ * @param hiddenSeries
+ * @param chartId
  * @param selectedData
  * @param selectedDataBounds
- * @param prismId
+ * @param selectedDataName
+ * @param setHiddenSeries
+ * @param legendIsToggleable
+ * @param onLegendClick
  * @returns
  */
 export const getOnMarkClickCallback = (
 	chartView: MutableRefObject<View | undefined>,
 	hiddenSeries: string[],
-	prismId: MutableRefObject<string>,
+	chartId: MutableRefObject<string>,
 	selectedData: MutableRefObject<Datum | null>,
 	selectedDataBounds: MutableRefObject<MarkBounds | undefined>,
 	selectedDataName: MutableRefObject<string | undefined>,
 	setHiddenSeries: (hiddenSeries: string[]) => void,
 	legendIsToggleable?: boolean,
-	onLegendClick?: (seriesName: string) => void,
+	onLegendClick?: (seriesName: string) => void
 ): ((event: ScenegraphEvent, item: ActionItem) => void) => {
 	return (_event: ScenegraphEvent, item: ActionItem) => {
 		if (!item) return;
@@ -62,7 +65,7 @@ export const getOnMarkClickCallback = (
 			// we need to anchor the popover to a div that we move to the same location as the selected mark
 			selectedDataBounds.current = getItemBounds(item);
 			selectedDataName.current = getItemName(item);
-			(document.querySelector(`#${prismId.current} > button`) as HTMLButtonElement)?.click();
+			(document.querySelector(`#${chartId.current} > button`) as HTMLButtonElement)?.click();
 		}
 	};
 };
@@ -75,7 +78,7 @@ export const getOnMarkClickCallback = (
  */
 export const handleLegendItemMouseInput = (
 	item: ActionItem,
-	onLegendMouseInput?: (seriesName: string) => void,
+	onLegendMouseInput?: (seriesName: string) => void
 ): void => {
 	const legendItemValue = getLegendItemValue(item);
 	if (legendItemValue) {
@@ -90,7 +93,7 @@ export const handleLegendItemMouseInput = (
  * @returns
  */
 export const getOnMouseInputCallback = (
-	onMouseInput?: (seriesName: string) => void,
+	onMouseInput?: (seriesName: string) => void
 ): ((event: ScenegraphEvent, item: ActionItem) => void) => {
 	return (_event: ScenegraphEvent, item: ActionItem) => {
 		if (!item) return;
@@ -122,7 +125,7 @@ export const handleLegendItemClick = (
 	hiddenSeries: string[],
 	setHiddenSeries: (hiddenSeries: string[]) => void,
 	legendIsToggleable?: boolean,
-	onLegendClick?: (seriesName: string) => void,
+	onLegendClick?: (seriesName: string) => void
 ): void => {
 	const legendItemValue = getLegendItemValue(item);
 	if (legendItemValue === undefined) return;

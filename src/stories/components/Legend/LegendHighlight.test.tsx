@@ -11,16 +11,16 @@
  */
 import React from 'react';
 
-import { findAllMarksByGroupName, findPrism, getAllLegendEntries, hoverNthElement, render, screen } from '@test-utils';
+import { findAllMarksByGroupName, findChart, getAllLegendEntries, hoverNthElement, render, screen } from '@test-utils';
 
 import { Basic, Controlled } from './LegendHighlight.story';
 
 describe('Controlled', () => {
 	test('non highlighted series bars should have opacity applied', async () => {
 		render(<Controlled {...Controlled.args} />);
-		const prism = await findPrism();
+		const chart = await findChart();
 
-		const bars = await findAllMarksByGroupName(prism, 'bar0');
+		const bars = await findAllMarksByGroupName(chart, 'bar0');
 		expect(bars.length).toEqual(9);
 		expect(bars[0]).toHaveAttribute('fill-opacity', '0.2');
 		expect(bars[1]).toHaveAttribute('fill-opacity', '1');
@@ -33,9 +33,9 @@ describe('Controlled', () => {
 
 	test('non highlighted series legend symbols should have opacity applied', async () => {
 		render(<Controlled {...Controlled.args} />);
-		const prism = await findPrism();
+		const chart = await findChart();
 
-		const legendSymbols = await findAllMarksByGroupName(prism, 'role-legend-symbol');
+		const legendSymbols = await findAllMarksByGroupName(chart, 'role-legend-symbol');
 		expect(legendSymbols.length).toEqual(3);
 		expect(legendSymbols[0]).toHaveAttribute('fill-opacity', '0.2');
 		expect(legendSymbols[1]).toHaveAttribute('fill-opacity', '1');
@@ -48,9 +48,9 @@ describe('Controlled', () => {
 
 	test('non highlighted series legend labels should have opacity applied', async () => {
 		render(<Controlled {...Controlled.args} />);
-		const prism = await findPrism();
+		const chart = await findChart();
 
-		const legendLabels = await findAllMarksByGroupName(prism, 'role-legend-symbol');
+		const legendLabels = await findAllMarksByGroupName(chart, 'role-legend-symbol');
 		expect(legendLabels.length).toEqual(3);
 		expect(legendLabels[0]).toHaveAttribute('fill-opacity', '0.2');
 		expect(legendLabels[1]).toHaveAttribute('fill-opacity', '1');
@@ -67,9 +67,9 @@ describe('Uncontrolled', () => {
 
 	test('hovering over legend items highlights the bars with matching series', async () => {
 		render(<Basic {...Basic.args} />);
-		const prism = await findPrism();
+		const chart = await findChart();
 
-		let bars = await findAllMarksByGroupName(prism, 'bar0');
+		let bars = await findAllMarksByGroupName(chart, 'bar0');
 		expect(bars.length).toEqual(9);
 		expect(bars[0]).toHaveAttribute('fill-opacity', '1');
 		expect(bars[1]).toHaveAttribute('fill-opacity', '1');
@@ -79,10 +79,10 @@ describe('Uncontrolled', () => {
 		expect(bars[1]).toHaveAttribute('stroke-opacity', '1');
 		expect(bars[2]).toHaveAttribute('stroke-opacity', '1');
 
-		const legendEntries = getAllLegendEntries(prism);
+		const legendEntries = getAllLegendEntries(chart);
 		await hoverNthElement(legendEntries, 0);
 
-		bars = await findAllMarksByGroupName(prism, 'bar0');
+		bars = await findAllMarksByGroupName(chart, 'bar0');
 		expect(bars[0]).toHaveAttribute('fill-opacity', '1');
 		expect(bars[1]).toHaveAttribute('fill-opacity', '0.2');
 		expect(bars[2]).toHaveAttribute('fill-opacity', '0.2');
@@ -94,9 +94,9 @@ describe('Uncontrolled', () => {
 
 	test('hovering over legend items adds opacity to the non hovered legend symbols', async () => {
 		render(<Basic {...Basic.args} />);
-		const prism = await findPrism();
+		const chart = await findChart();
 
-		let legendSymbols = await findAllMarksByGroupName(prism, 'role-legend-symbol');
+		let legendSymbols = await findAllMarksByGroupName(chart, 'role-legend-symbol');
 		expect(legendSymbols.length).toEqual(3);
 		expect(legendSymbols[0]).toHaveAttribute('fill-opacity', '1');
 		expect(legendSymbols[1]).toHaveAttribute('fill-opacity', '1');
@@ -106,10 +106,10 @@ describe('Uncontrolled', () => {
 		expect(legendSymbols[1]).toHaveAttribute('stroke-opacity', '1');
 		expect(legendSymbols[2]).toHaveAttribute('stroke-opacity', '1');
 
-		const legendEntries = getAllLegendEntries(prism);
+		const legendEntries = getAllLegendEntries(chart);
 		await hoverNthElement(legendEntries, 0);
 
-		legendSymbols = await findAllMarksByGroupName(prism, 'role-legend-symbol');
+		legendSymbols = await findAllMarksByGroupName(chart, 'role-legend-symbol');
 		expect(legendSymbols[0]).toHaveAttribute('fill-opacity', '1');
 		expect(legendSymbols[1]).toHaveAttribute('fill-opacity', '0.2');
 		expect(legendSymbols[2]).toHaveAttribute('fill-opacity', '0.2');
@@ -121,18 +121,18 @@ describe('Uncontrolled', () => {
 
 	test('hovering over legend items adds opacity to the non hovered legend labels', async () => {
 		render(<Basic {...Basic.args} />);
-		const prism = await findPrism();
+		const chart = await findChart();
 
-		let legendLabels = await findAllMarksByGroupName(prism, 'role-legend-symbol');
+		let legendLabels = await findAllMarksByGroupName(chart, 'role-legend-symbol');
 		expect(legendLabels.length).toEqual(3);
 		expect(legendLabels[0]).toHaveAttribute('fill-opacity', '1');
 		expect(legendLabels[1]).toHaveAttribute('fill-opacity', '1');
 		expect(legendLabels[2]).toHaveAttribute('fill-opacity', '1');
 
-		const legendEntries = getAllLegendEntries(prism);
+		const legendEntries = getAllLegendEntries(chart);
 		await hoverNthElement(legendEntries, 0);
 
-		legendLabels = await findAllMarksByGroupName(prism, 'role-legend-symbol');
+		legendLabels = await findAllMarksByGroupName(chart, 'role-legend-symbol');
 		expect(legendLabels.length).toEqual(3);
 		expect(legendLabels[0]).toHaveAttribute('fill-opacity', '1');
 		expect(legendLabels[1]).toHaveAttribute('fill-opacity', '0.2');

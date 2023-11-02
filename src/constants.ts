@@ -35,10 +35,10 @@ export const TABLE = 'table';
 export const FILTERED_TABLE = 'filteredTable';
 
 // vega data field names
-export const SERIES_ID = 'prismSeriesId';
-export const MARK_ID = 'prismMarkId';
-export const TRENDLINE_VALUE = 'prismTrendlineValue';
-export const STACK_ID = 'prismStackId';
+export const SERIES_ID = 'rscSeriesId';
+export const MARK_ID = 'rscMarkId';
+export const TRENDLINE_VALUE = 'rscTrendlineValue';
+export const STACK_ID = 'rscStackId';
 
 // corner radius
 export const CORNER_RADIUS = 6;

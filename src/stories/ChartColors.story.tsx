@@ -9,16 +9,15 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
-import { Prism } from '@prism';
+import { Chart } from '@rsc';
 import { bindWithProps } from '@test-utils';
 
-import { PrismBarStory } from './PrismBarStory';
+import { ChartBarStory } from './ChartBarStory';
 import { data } from './data/data';
 
 export default {
-	title: 'Prism/Prism/Colors',
-	component: Prism,
+	title: 'RSC/Chart/Colors',
+	component: Chart,
 	argTypes: {},
 	parameters: {
 		docs: {
@@ -29,25 +28,25 @@ export default {
 	},
 };
 
-const SpectrumColorNames = bindWithProps(PrismBarStory);
+const SpectrumColorNames = bindWithProps(ChartBarStory);
 SpectrumColorNames.args = {
 	colors: ['gray-800', 'gray-700', 'gray-600', 'gray-500'],
 	data,
 };
 
-const SpectrumDivergentColorScheme = bindWithProps(PrismBarStory);
+const SpectrumDivergentColorScheme = bindWithProps(ChartBarStory);
 SpectrumDivergentColorScheme.args = {
 	colors: 'divergentOrangeYellowSeafoam5',
 	data,
 };
 
-const SpectrumSequentialColorScheme = bindWithProps(PrismBarStory);
+const SpectrumSequentialColorScheme = bindWithProps(ChartBarStory);
 SpectrumSequentialColorScheme.args = {
 	colors: 'sequentialCerulean5',
 	data,
 };
 
-const CssColors = bindWithProps(PrismBarStory);
+const CssColors = bindWithProps(ChartBarStory);
 CssColors.args = {
 	colors: ['purple', 'rgb(38, 142, 108)', '#0d66d0', 'hsl(32deg, 86%, 46%)'],
 	data,

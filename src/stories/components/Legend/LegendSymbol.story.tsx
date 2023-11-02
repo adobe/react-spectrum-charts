@@ -9,17 +9,18 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import React, { ReactElement } from 'react';
 
-import usePrismProps from '@hooks/usePrismProps';
-import { Bar, Legend, Line, Prism } from '@prism';
+import useChartProps from '@hooks/useChartProps';
+import { Bar, Chart, Legend, Line } from '@rsc';
 import { browserData as data } from '@stories/data/data';
 import { ComponentStory } from '@storybook/react';
-import React, { ReactElement } from 'react';
 import { ROUNDED_SQUARE_PATH } from 'svgPaths';
+
 import { defaultProps } from './LegendStoryUtils';
 
 export default {
-	title: 'Prism/Legend/Symbols',
+	title: 'RSC/Legend/Symbols',
 	component: Legend,
 	argTypes: {},
 	parameters: {
@@ -32,21 +33,21 @@ export default {
 };
 
 const LegendBarStory: ComponentStory<typeof Legend> = (args): ReactElement => {
-	const prismProps = usePrismProps({ data, width: 700, symbolShapes: ['square', 'triangle', ROUNDED_SQUARE_PATH] });
+	const chartProps = useChartProps({ data, width: 700, symbolShapes: ['square', 'triangle', ROUNDED_SQUARE_PATH] });
 	return (
-		<Prism {...prismProps}>
+		<Chart {...chartProps}>
 			<Bar color="series" />
 			<Legend {...args} />
-		</Prism>
+		</Chart>
 	);
 };
 const LegendLineStory: ComponentStory<typeof Legend> = (args): ReactElement => {
-	const prismProps = usePrismProps({ data, width: 700 });
+	const chartProps = useChartProps({ data, width: 700 });
 	return (
-		<Prism {...prismProps}>
+		<Chart {...chartProps}>
 			<Line dimension="category" lineType="series" color="series" scaleType="point" />
 			<Legend {...args} />
-		</Prism>
+		</Chart>
 	);
 };
 

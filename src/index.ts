@@ -23,6 +23,6 @@ export * from './components/MetricRange';
 export * from './components/ReferenceLine';
 export * from './components/Trendline';
 export * from './components/Title';
-export * from './Prism';
+export * from './Chart';
 export * from './themes';
 export * from './types/';

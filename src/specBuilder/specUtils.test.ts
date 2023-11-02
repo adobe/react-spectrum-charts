@@ -9,7 +9,6 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
 import { DEFAULT_COLOR, DEFAULT_SECONDARY_COLOR, TABLE } from '@constants';
 import { ROUNDED_SQUARE_PATH } from 'svgPaths';
 import { BandScale, OrdinalScale } from 'vega';
@@ -19,7 +18,7 @@ import {
 	getFacetsFromProps,
 	getFacetsFromScales,
 	getLineWidthPixelsFromLineWidth,
-	getPathFromPrismSymbolShape,
+	getPathFromSymbolShape,
 	getStrokeDashFromLineType,
 } from './specUtils';
 
@@ -78,7 +77,7 @@ describe('specUtils', () => {
 				getFacetsFromScales([
 					defaultColorScale,
 					{ ...defaultLineTypeScale, domain: { data: TABLE, fields: [DEFAULT_COLOR] } },
-				]),
+				])
 			).toStrictEqual([DEFAULT_COLOR]);
 			expect(getFacetsFromScales([defaultColorScale, defaultLineTypeScale, defaultOpacityScale])).toStrictEqual([
 				DEFAULT_COLOR,
@@ -96,7 +95,7 @@ describe('specUtils', () => {
 
 		test('should return empty array if no scales have fields', () => {
 			expect(getFacetsFromScales([{ ...defaultColorScale, domain: { data: TABLE, fields: [] } }])).toStrictEqual(
-				[],
+				[]
 			);
 		});
 
@@ -150,15 +149,15 @@ describe('specUtils', () => {
 		});
 	});
 
-	describe('getPathFromPrismSymbolShape()', () => {
+	describe('getPathFromSymbolShape()', () => {
 		test('return rounded square path for rounded-square', () => {
-			expect(getPathFromPrismSymbolShape('rounded-square')).toBe(ROUNDED_SQUARE_PATH);
+			expect(getPathFromSymbolShape('rounded-square')).toBe(ROUNDED_SQUARE_PATH);
 		});
 		test('return input unless input is rounded-square', () => {
-			expect(getPathFromPrismSymbolShape('circle')).toBe('circle');
+			expect(getPathFromSymbolShape('circle')).toBe('circle');
 		});
 		test('return input unless input is rounded-square', () => {
-			expect(getPathFromPrismSymbolShape('abc123')).toBe('abc123');
+			expect(getPathFromSymbolShape('abc123')).toBe('abc123');
 		});
 	});
 });

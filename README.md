@@ -14,23 +14,23 @@
 
 ## Table of Contents
 
-- [React Spectrum Charts](#react-spectrum-charts)
-  - [Table of Contents](#table-of-contents)
-  - [Overview](#overview)
-    - [Key Features:](#key-features)
-  - [Installation](#installation)
-      - [npm](#npm)
-      - [yarn](#yarn)
-  - [Usage](#usage)
-    - [Example](#example)
-  - [Spectrum (Adobe Design System) Integration](#spectrum-adobe-design-system-integration)
-  - [API](#api)
-  - [Storybook](#storybook)
-  - [Support](#support)
-  - [Contributing](#contributing)
-  - [License](#license)
-    - [Apache License 2.0 Summary](#apache-license-20-summary)
-  - [Roadmap](#roadmap)
+-   [React Spectrum Charts](#react-spectrum-charts)
+    -   [Table of Contents](#table-of-contents)
+    -   [Overview](#overview)
+        -   [Key Features:](#key-features)
+    -   [Installation](#installation)
+        -   [npm](#npm)
+        -   [yarn](#yarn)
+    -   [Usage](#usage)
+        -   [Example](#example)
+    -   [Spectrum (Adobe Design System) Integration](#spectrum-adobe-design-system-integration)
+    -   [API](#api)
+    -   [Storybook](#storybook)
+    -   [Support](#support)
+    -   [Contributing](#contributing)
+    -   [License](#license)
+        -   [Apache License 2.0 Summary](#apache-license-20-summary)
+    -   [Roadmap](#roadmap)
 
 ## Overview
 
@@ -85,24 +85,24 @@ yarn add @adobe/react-spectrum-charts
 
 `react-spectrum-charts` is designed in a way that makes composing charts similar to composing any other app content in JSX.
 
-Each chart is wrapped in the `<Prism/>` component. The child components and their props control the contents of the chart.
+Each chart is wrapped in the `<Chart/>` component. The child components and their props control the contents of the chart.
 
 ### Example
 
 ```
 import React from 'react';
-import {Axis, Bar, Legend, Prism} from '@adobe/react-spectrum-charts';
+import {Axis, Bar, Legend, Chart} from '@adobe/react-spectrum-charts';
 
 const MyChart: FC<MyChartProps> = (props) => {
     ...
 
     return (
-        <Prism data={myChartData}>
+        <Chart data={myChartData}>
             <Axis position="bottom" />
             <Axis position="left" />
             <Bar type="stacked" color="series" />
             <Legend />
-        </Prism>
+        </Chart>
     )
 }
 ```

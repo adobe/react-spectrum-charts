@@ -49,7 +49,7 @@ export const getFilteredTableData = (data: Data[]): SourceData => {
 	return data.find((d) => d.name === FILTERED_TABLE) as SourceData;
 };
 
-export const getPrismSeriesIdTransform = (facets: string[]): FormulaTransform => {
+export const getSeriesIdTransform = (facets: string[]): FormulaTransform => {
 	const expr = facets.map((facet) => `datum.${facet}`).join(' + " | " + ');
 	return {
 		type: 'formula',

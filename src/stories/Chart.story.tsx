@@ -9,20 +9,20 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
-import usePrismProps from '@hooks/usePrismProps';
-import { Axis, Line, Prism } from '@prism';
-import { ComponentStory } from '@storybook/react';
-import { bindWithProps } from '@test-utils';
 import React, { ReactElement } from 'react';
 
-import './Prism.story.css';
-import { PrismBarStory } from './PrismBarStory';
+import useChartProps from '@hooks/useChartProps';
+import { Axis, Chart, Line } from '@rsc';
+import { ComponentStory } from '@storybook/react';
+import { bindWithProps } from '@test-utils';
+
+import './Chart.story.css';
+import { ChartBarStory } from './ChartBarStory';
 import { data } from './data/data';
 
 export default {
-	title: 'Prism/Prism',
-	component: Prism,
+	title: 'RSC/Chart',
+	component: Chart,
 	argTypes: {},
 	parameters: {
 		docs: {
@@ -33,23 +33,23 @@ export default {
 	},
 };
 
-const PrismLineStory: ComponentStory<typeof Prism> = (args): ReactElement => {
-	const props = usePrismProps(args);
+const ChartLineStory: ComponentStory<typeof Chart> = (args): ReactElement => {
+	const props = useChartProps(args);
 	return (
-		<Prism {...props}>
+		<Chart {...props}>
 			<Axis position="bottom" baseline ticks />
 			<Axis position="left" grid />
 			<Line dimension="x" metric="y" color="series" scaleType="linear" />
-		</Prism>
+		</Chart>
 	);
 };
 
-const Basic = bindWithProps(PrismLineStory);
+const Basic = bindWithProps(ChartLineStory);
 
 // Story specific props are passed here
 Basic.args = { data, renderer: 'svg', height: 300 };
 
-const Config = bindWithProps(PrismBarStory);
+const Config = bindWithProps(ChartBarStory);
 Config.args = {
 	config: {
 		rect: {
@@ -59,7 +59,7 @@ Config.args = {
 	data,
 };
 
-const Width = bindWithProps(PrismBarStory);
+const Width = bindWithProps(ChartBarStory);
 Width.args = {
 	width: '50%',
 	minWidth: 300,

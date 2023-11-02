@@ -12,8 +12,8 @@
 import React, { ReactElement, createElement } from 'react';
 
 import { Annotation } from '@components/Annotation';
-import usePrismProps from '@hooks/usePrismProps';
-import { Axis, Bar, Legend, Prism } from '@prism';
+import useChartProps from '@hooks/useChartProps';
+import { Axis, Bar, Chart, Legend } from '@rsc';
 import { ComponentStory } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
 import { SpectrumColor } from 'types';
@@ -21,7 +21,7 @@ import { SpectrumColor } from 'types';
 import { barSeriesData, negativeBarSeriesData } from './data';
 
 export default {
-	title: 'Prism/Bar/Stacked Bar',
+	title: 'RSC/Bar/Stacked Bar',
 	component: Bar,
 	argTypes: {},
 	parameters: {
@@ -41,26 +41,26 @@ const colors: SpectrumColor[] = [
 ];
 
 const BarStory: ComponentStory<typeof Bar> = (args): ReactElement => {
-	const prismProps = usePrismProps({ data: barSeriesData, colors, width: 800, height: 600 });
+	const chartProps = useChartProps({ data: barSeriesData, colors, width: 800, height: 600 });
 	return (
-		<Prism {...prismProps}>
+		<Chart {...chartProps}>
 			<Axis position={args.orientation === 'horizontal' ? 'left' : 'bottom'} baseline title="Browser" />
 			<Axis position={args.orientation === 'horizontal' ? 'bottom' : 'left'} grid title="Downloads" />
 			<Bar {...args} />
 			<Legend title="Operating system" />
-		</Prism>
+		</Chart>
 	);
 };
 
 const NegativeBarStory: ComponentStory<typeof Bar> = (args): ReactElement => {
-	const prismProps = usePrismProps({ data: negativeBarSeriesData, width: 800, height: 600 });
+	const chartProps = useChartProps({ data: negativeBarSeriesData, width: 800, height: 600 });
 	return (
-		<Prism {...prismProps}>
+		<Chart {...chartProps}>
 			<Axis position={args.orientation === 'horizontal' ? 'left' : 'bottom'} baseline title="Browser" />
 			<Axis position={args.orientation === 'horizontal' ? 'bottom' : 'left'} grid title="Downloads" />
 			<Bar {...args} />
 			<Legend title="Operating system" />
-		</Prism>
+		</Chart>
 	);
 };
 

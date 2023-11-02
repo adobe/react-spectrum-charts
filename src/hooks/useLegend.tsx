@@ -9,12 +9,13 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { createElement, useMemo, useState } from 'react';
 
-import { useMemo, useState } from 'react';
-import { ChartChildElement, LegendDescription, LegendElement, PrismElement } from 'types';
-
-import { Legend } from '../components/Legend';
 import { getElement } from '@utils';
+import { ChartChildElement, LegendDescription, LegendElement } from 'types';
+
+import { Chart } from '../Chart';
+import { Legend } from '../components/Legend';
 
 interface UseLegendProps {
 	hiddenSeriesState: string[];
@@ -28,7 +29,7 @@ interface UseLegendProps {
 
 export default function useLegend(children: ChartChildElement[]): UseLegendProps {
 	const legend = useMemo(() => {
-		return getElement({ type: { name: 'Prism' }, props: { children } } as PrismElement, Legend);
+		return getElement(createElement(Chart, { data: [] }, children), Legend);
 	}, [children]) as LegendElement;
 	const [hiddenSeriesState, setHiddenSeries] = useState<string[]>(legend?.props?.defaultHiddenSeries ?? []);
 	if (!legend) return { hiddenSeriesState, setHiddenSeries };

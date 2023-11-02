@@ -9,17 +9,17 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
-import { ReferenceLine } from '@components/ReferenceLine';
-import { Bar } from 'components/Bar';
-import usePrismProps from '@hooks/usePrismProps';
-import { Axis, Prism } from '@prism';
-import { ComponentStory } from '@storybook/react';
-import { bindWithProps } from '@test-utils';
 import React, { ReactElement } from 'react';
 
+import { ReferenceLine } from '@components/ReferenceLine';
+import useChartProps from '@hooks/useChartProps';
+import { Axis, Chart } from '@rsc';
+import { ComponentStory } from '@storybook/react';
+import { bindWithProps } from '@test-utils';
+import { Bar } from 'components/Bar';
+
 export default {
-	title: 'Prism/Bar/ReferenceLine',
+	title: 'RSC/Bar/ReferenceLine',
 	component: ReferenceLine,
 	argTypes: {},
 	parameters: {
@@ -40,27 +40,27 @@ const data = [
 ];
 
 const ReferenceLineStory: ComponentStory<typeof ReferenceLine> = (args): ReactElement => {
-	const prismProps = usePrismProps({ data, width: 600 });
+	const chartProps = useChartProps({ data, width: 600 });
 	return (
-		<Prism {...prismProps}>
+		<Chart {...chartProps}>
 			<Axis position="bottom" baseline ticks>
 				<ReferenceLine {...args} />
 			</Axis>
 			<Bar dimension="y" metric="x" />
-		</Prism>
+		</Chart>
 	);
 };
 
 const ReferenceLineHorizontalStory: ComponentStory<typeof ReferenceLine> = (args): ReactElement => {
-	const prismProps = usePrismProps({ data, width: 600 });
+	const chartProps = useChartProps({ data, width: 600 });
 	return (
-		<Prism {...prismProps}>
+		<Chart {...chartProps}>
 			<Axis position="left" baseline ticks>
 				<ReferenceLine {...args} />
 			</Axis>
 			<Axis position="bottom" baseline ticks></Axis>
 			<Bar dimension="y" metric="x" />
-		</Prism>
+		</Chart>
 	);
 };
 

@@ -12,9 +12,8 @@
 import React from 'react';
 
 import '@matchMediaMock';
-import { Bar } from '@prism';
-import { findAllMarksByGroupName, findPrism } from '@test-utils';
-import { render } from '@testing-library/react';
+import { Bar } from '@rsc';
+import { findAllMarksByGroupName, findChart, render } from '@test-utils';
 
 import { Basic, Opacity, PaddingRatio, WithAnnotation } from './Bar.story';
 import { Color, DodgedStacked } from './DodgedBar.story';
@@ -28,75 +27,75 @@ describe('Bar', () => {
 
 	test('Basic renders properly', async () => {
 		render(<Basic {...Basic.args} />);
-		const prism = await findPrism();
-		expect(prism).toBeInTheDocument();
+		const chart = await findChart();
+		expect(chart).toBeInTheDocument();
 
 		// get bars
-		const bars = await findAllMarksByGroupName(prism, 'bar0');
+		const bars = await findAllMarksByGroupName(chart, 'bar0');
 		expect(bars.length).toEqual(5);
 	});
 
 	test('Opacity renders properly', async () => {
 		render(<Opacity {...Opacity.args} />);
-		const prism = await findPrism();
-		expect(prism).toBeInTheDocument();
+		const chart = await findChart();
+		expect(chart).toBeInTheDocument();
 
 		// get bars
-		const bars = await findAllMarksByGroupName(prism, 'bar0');
+		const bars = await findAllMarksByGroupName(chart, 'bar0');
 		expect(bars[0].getAttribute('fill-opacity')).toEqual('0.75');
 	});
 
 	test('Padding Ratio renders properly', async () => {
 		render(<PaddingRatio {...PaddingRatio.args} />);
-		const prism = await findPrism();
-		expect(prism).toBeInTheDocument();
+		const chart = await findChart();
+		expect(chart).toBeInTheDocument();
 
 		// get bars
-		const bars = await findAllMarksByGroupName(prism, 'bar0');
+		const bars = await findAllMarksByGroupName(chart, 'bar0');
 		expect(bars.length).toEqual(5);
 	});
 
 	test('With Annotation renders properly', async () => {
 		render(<WithAnnotation {...WithAnnotation.args} />);
-		const prism = await findPrism();
-		expect(prism).toBeInTheDocument();
+		const chart = await findChart();
+		expect(chart).toBeInTheDocument();
 
 		// get bars
-		const bars = await findAllMarksByGroupName(prism, 'bar0');
+		const bars = await findAllMarksByGroupName(chart, 'bar0');
 		expect(bars.length).toEqual(5);
 
 		// get annotations
-		const labels = await findAllMarksByGroupName(prism, 'bar0_annotationText', 'text');
+		const labels = await findAllMarksByGroupName(chart, 'bar0_annotationText', 'text');
 		expect(labels.length).toEqual(5);
 	});
 
 	test('Dodged Basic renders properly', async () => {
 		render(<Color {...Color.args} />);
-		const prism = await findPrism();
-		expect(prism).toBeInTheDocument();
+		const chart = await findChart();
+		expect(chart).toBeInTheDocument();
 
 		// get bars
-		const bars = await findAllMarksByGroupName(prism, 'bar0');
+		const bars = await findAllMarksByGroupName(chart, 'bar0');
 		expect(bars.length).toEqual(9);
 	});
 
 	test('Dodged Stacked renders properly', async () => {
 		render(<DodgedStacked {...DodgedStacked.args} />);
-		const prism = await findPrism();
-		expect(prism).toBeInTheDocument();
+		const chart = await findChart();
+		expect(chart).toBeInTheDocument();
 
 		// get bars
-		const bars = await findAllMarksByGroupName(prism, 'bar0');
+		const bars = await findAllMarksByGroupName(chart, 'bar0');
 		expect(bars.length).toEqual(18);
 	});
 
 	test('Stacked Basic renders properly', async () => {
 		render(<StackedBasic {...StackedBasic.args} />);
-		const prism = await findPrism();
-		expect(prism).toBeInTheDocument();
+		const chart = await findChart();
+		expect(chart).toBeInTheDocument();
 
 		// get bars
-		const bars = await findAllMarksByGroupName(prism, 'bar0');
+		const bars = await findAllMarksByGroupName(chart, 'bar0');
 		expect(bars.length).toEqual(9);
 	});
 });

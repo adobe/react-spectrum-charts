@@ -12,7 +12,7 @@
 import React from 'react';
 
 import '@matchMediaMock';
-import { findPrism, getAllLegendSymbols, render, screen } from '@test-utils';
+import { findChart, getAllLegendSymbols, render, screen } from '@test-utils';
 import { spectrumColors } from '@themes';
 
 import { Color, LineType, LineWidth, Opacity, Supreme, Symbols } from './LegendSymbol.story';
@@ -27,38 +27,38 @@ test('Symbols renders properly', async () => {
 
 test('Color renders correctly', async () => {
 	render(<Color {...Color.args} />);
-	const prism = await findPrism();
-	expect(prism).toBeInTheDocument();
+	const chart = await findChart();
+	expect(chart).toBeInTheDocument();
 
-	const symbols = getAllLegendSymbols(prism);
+	const symbols = getAllLegendSymbols(chart);
 	expect(symbols[0].getAttribute('fill')).toEqual(colors['gray-700']);
 	expect(symbols[0].getAttribute('stroke')).toEqual(colors['gray-700']);
 });
 
 test('LineType renders correctly', async () => {
 	render(<LineType {...LineType.args} />);
-	const prism = await findPrism();
-	expect(prism).toBeInTheDocument();
+	const chart = await findChart();
+	expect(chart).toBeInTheDocument();
 
-	const symbols = getAllLegendSymbols(prism);
+	const symbols = getAllLegendSymbols(chart);
 	expect(symbols[0].getAttribute('stroke-dasharray')).toEqual('');
 });
 
 test('LineWidth renders correctly', async () => {
 	render(<LineWidth {...LineWidth.args} />);
-	const prism = await findPrism();
-	expect(prism).toBeInTheDocument();
+	const chart = await findChart();
+	expect(chart).toBeInTheDocument();
 
-	const symbols = getAllLegendSymbols(prism);
+	const symbols = getAllLegendSymbols(chart);
 	expect(symbols[0].getAttribute('stroke-width')).toEqual('1');
 });
 
 test('Opacity renders correctly', async () => {
 	render(<Opacity {...Opacity.args} />);
-	const prism = await findPrism();
-	expect(prism).toBeInTheDocument();
+	const chart = await findChart();
+	expect(chart).toBeInTheDocument();
 
-	const symbols = getAllLegendSymbols(prism);
+	const symbols = getAllLegendSymbols(chart);
 	expect(symbols[0].getAttribute('fill-opacity')).toEqual('1');
 	expect(symbols[1].getAttribute('fill-opacity')).toEqual('0.75');
 	expect(symbols[2].getAttribute('fill-opacity')).toEqual('0.5');
@@ -66,10 +66,10 @@ test('Opacity renders correctly', async () => {
 
 test('Symbols renders correctly', async () => {
 	render(<Symbols {...Symbols.args} />);
-	const prism = await findPrism();
-	expect(prism).toBeInTheDocument();
+	const chart = await findChart();
+	expect(chart).toBeInTheDocument();
 
-	const symbols = getAllLegendSymbols(prism);
+	const symbols = getAllLegendSymbols(chart);
 	// Square SVG path
 	expect(symbols[0].getAttribute('d')).toEqual('M-7.906,-7.906h15.811v15.811h-15.811Z');
 	// Triangle SVG path
@@ -82,10 +82,10 @@ test('Symbols renders correctly', async () => {
 
 test('Supreme renders correctly', async () => {
 	render(<Supreme {...Supreme.args} />);
-	const prism = await findPrism();
-	expect(prism).toBeInTheDocument();
+	const chart = await findChart();
+	expect(chart).toBeInTheDocument();
 
-	const symbols = getAllLegendSymbols(prism);
+	const symbols = getAllLegendSymbols(chart);
 	expect(symbols[0].getAttribute('stroke-dasharray')).toEqual('');
 	expect(symbols[1].getAttribute('stroke-dasharray')).toEqual('7,4');
 	expect(symbols[2].getAttribute('stroke-dasharray')).toEqual('2,3');

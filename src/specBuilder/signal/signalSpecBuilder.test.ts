@@ -26,7 +26,7 @@ export const defaultHighlightSignal: Signal = {
 	],
 };
 
-describe('Prism spec builder', () => {
+describe('Signal spec builder', () => {
 	describe('getUncontrolledHoverSignal()', () => {
 		test('not nested', () => {
 			expect(getUncontrolledHoverSignal('bar0')).toStrictEqual({

@@ -9,12 +9,13 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { createElement, useMemo } from 'react';
 
-import { useMemo } from 'react';
-import { ChartChildElement, ChartPopoverElement, PopoverHandler, PrismElement } from 'types';
-
-import { ChartPopover } from '../components/ChartPopover';
 import { getAllElements } from '@utils';
+import { ChartChildElement, ChartPopoverElement, PopoverHandler } from 'types';
+
+import { Chart } from '../Chart';
+import { ChartPopover } from '../components/ChartPopover';
 
 type MappedPopover = { name: string; element: ChartPopoverElement };
 
@@ -22,13 +23,8 @@ export type PopoverDetail = { name: string; callback: PopoverHandler; width?: nu
 
 export default function usePopovers(children: ChartChildElement[]): PopoverDetail[] {
 	const popoverElements = useMemo(
-		() =>
-			getAllElements(
-				{ type: { name: 'Prism' }, props: { children } } as PrismElement,
-				ChartPopover,
-				[],
-			) as MappedPopover[],
-		[children],
+		() => getAllElements(createElement(Chart, { data: [] }, children), ChartPopover, []) as MappedPopover[],
+		[children]
 	);
 
 	return useMemo(
@@ -40,6 +36,6 @@ export default function usePopovers(children: ChartChildElement[]): PopoverDetai
 					callback: popover.element.props.children,
 					width: popover.element.props.width,
 				})) as PopoverDetail[],
-		[popoverElements],
+		[popoverElements]
 	);
 }

@@ -9,20 +9,21 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
-import { ActionButton, Content, Flex } from '@adobe/react-spectrum';
-import usePrismProps from '@hooks/usePrismProps';
-import { Axis, Line, Prism, PrismHandle } from '@prism';
-import { ComponentStory } from '@storybook/react';
-import { bindWithProps } from '@test-utils';
 import React, { ReactElement, useRef, useState } from 'react';
 
-import './Prism.story.css';
+import useChartProps from '@hooks/useChartProps';
+import { Axis, Chart, ChartHandle, Line } from '@rsc';
+import { ComponentStory } from '@storybook/react';
+import { bindWithProps } from '@test-utils';
+
+import { ActionButton, Content, Flex } from '@adobe/react-spectrum';
+
+import './Chart.story.css';
 import { data } from './data/data';
 
 export default {
-	title: 'Prism/Prism/Handles',
-	component: Prism,
+	title: 'RSC/Chart/Handles',
+	component: Chart,
 	argTypes: {},
 	parameters: {
 		docs: {
@@ -35,15 +36,15 @@ export default {
 
 const HandleStory = ({ variant }: { variant: 'copy' | 'download' }) => {
 	const [loading, setLoading] = useState(false);
-	const ref = useRef<PrismHandle>(null);
-	const props = usePrismProps({ data });
+	const ref = useRef<ChartHandle>(null);
+	const props = useChartProps({ data });
 	return (
 		<Content>
-			<Prism {...props} ref={ref} loading={loading}>
+			<Chart {...props} ref={ref} loading={loading}>
 				<Axis position="bottom" baseline ticks />
 				<Axis position="left" grid />
 				<Line dimension="x" metric="y" color="series" scaleType="linear" />
-			</Prism>
+			</Chart>
 			<Flex direction="row" gap="size-100">
 				<ActionButton
 					onPress={() => ref?.current?.[variant]().then(console.log, console.warn)}
@@ -57,11 +58,11 @@ const HandleStory = ({ variant }: { variant: 'copy' | 'download' }) => {
 	);
 };
 
-const CopyStory: ComponentStory<typeof Prism> = (): ReactElement => {
+const CopyStory: ComponentStory<typeof Chart> = (): ReactElement => {
 	return <HandleStory variant="copy" />;
 };
 
-const DownloadStory: ComponentStory<typeof Prism> = (): ReactElement => {
+const DownloadStory: ComponentStory<typeof Chart> = (): ReactElement => {
 	return <HandleStory variant="download" />;
 };
 

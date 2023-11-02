@@ -12,8 +12,8 @@
 import React from 'react';
 
 import '@matchMediaMock';
-import { Trendline } from '@prism';
-import { findAllMarksByGroupName, findPrism, getAllLegendEntries, hoverNthElement, render } from '@test-utils';
+import { Trendline } from '@rsc';
+import { findAllMarksByGroupName, findChart, getAllLegendEntries, hoverNthElement, render } from '@test-utils';
 
 import { Basic, DisplayOnHover } from './Trendline.story';
 
@@ -25,10 +25,10 @@ describe('Trendline', () => {
 
 	test('Basic renders properly', async () => {
 		render(<Basic {...Basic.args} />);
-		const prism = await findPrism();
-		expect(prism).toBeInTheDocument();
+		const chart = await findChart();
+		expect(chart).toBeInTheDocument();
 
-		const trendlines = await findAllMarksByGroupName(prism, 'line0Trendline0');
+		const trendlines = await findAllMarksByGroupName(chart, 'line0Trendline0');
 		expect(trendlines).toHaveLength(4);
 		expect(trendlines[0]).toHaveAttribute('stroke-dasharray', '7,4');
 		expect(trendlines[0]).toHaveAttribute('stroke-width', '1.5');
@@ -37,20 +37,20 @@ describe('Trendline', () => {
 	describe('DisplayOnHover', () => {
 		test('should display trendlines on line hover', async () => {
 			render(<DisplayOnHover {...DisplayOnHover.args} />);
-			const prism = await findPrism();
-			expect(prism).toBeInTheDocument();
+			const chart = await findChart();
+			expect(chart).toBeInTheDocument();
 
-			const lines = await findAllMarksByGroupName(prism, 'line0');
+			const lines = await findAllMarksByGroupName(chart, 'line0');
 			expect(lines).toHaveLength(4);
 
-			const trendlines = await findAllMarksByGroupName(prism, 'line0Trendline0');
+			const trendlines = await findAllMarksByGroupName(chart, 'line0Trendline0');
 			expect(trendlines).toHaveLength(4);
 
 			// trendlines should be hidden by default
 			expect(trendlines[0]).toHaveAttribute('stroke-opacity', '0');
 
 			// hover over the first point on the first line
-			const hoverAreas = await findAllMarksByGroupName(prism, 'line0_voronoi');
+			const hoverAreas = await findAllMarksByGroupName(chart, 'line0_voronoi');
 			await hoverNthElement(hoverAreas, 0);
 
 			// first trendline should be visible
@@ -60,16 +60,16 @@ describe('Trendline', () => {
 		});
 		test('should display trendlines on legend hover', async () => {
 			render(<DisplayOnHover {...DisplayOnHover.args} />);
-			const prism = await findPrism();
+			const chart = await findChart();
 
-			const trendlines = await findAllMarksByGroupName(prism, 'line0Trendline0');
+			const trendlines = await findAllMarksByGroupName(chart, 'line0Trendline0');
 			expect(trendlines).toHaveLength(4);
 
 			// trendlines should be hidden by default
 			expect(trendlines[0]).toHaveAttribute('stroke-opacity', '0');
 
 			// hover over the first point on the first line
-			const legendEntries = getAllLegendEntries(prism);
+			const legendEntries = getAllLegendEntries(chart);
 			await hoverNthElement(legendEntries, 0);
 
 			// first trendline should be visible

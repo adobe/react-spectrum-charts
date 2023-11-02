@@ -11,14 +11,14 @@
  */
 import React, { ReactElement } from 'react';
 
-import usePrismProps from '@hooks/usePrismProps';
-import { Axis, Bar, Legend, Prism, PrismProps, Title } from '@prism';
+import useChartProps from '@hooks/useChartProps';
+import { Axis, Bar, Chart, ChartProps, Legend, Title } from '@rsc';
 import { browserData as data } from '@stories/data/data';
 import { ComponentStory } from '@storybook/react';
 import { bindWithProps } from 'test-utils/bindWithProps';
 
 export default {
-	title: 'Prism/Title',
+	title: 'RSC/Title',
 	component: Title,
 	argTypes: {},
 	parameters: {
@@ -30,18 +30,18 @@ export default {
 	},
 };
 
-const defaultPrismProps: PrismProps = { data, minWidth: 400, maxWidth: 800, height: 400 };
+const defaultChartProps: ChartProps = { data, minWidth: 400, maxWidth: 800, height: 400 };
 
 const TitleBarStory: ComponentStory<typeof Title> = (args): ReactElement => {
-	const prismProps = usePrismProps(defaultPrismProps);
+	const chartProps = useChartProps(defaultChartProps);
 	return (
-		<Prism {...prismProps}>
+		<Chart {...chartProps}>
 			<Title {...args} />
 			<Bar color="series" />
 			<Legend />
 			<Axis position="bottom" baseline />
 			<Axis position="left" grid />
-		</Prism>
+		</Chart>
 	);
 };
 

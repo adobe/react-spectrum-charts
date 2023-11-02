@@ -11,11 +11,11 @@
  */
 import { MutableRefObject, Ref, useImperativeHandle } from 'react';
 
-import { PrismHandle } from 'types';
+import { ChartHandle } from 'types';
 import { View } from 'vega';
 
-export default function usePrismImperativeHandle(
-	forwardedRef: Ref<PrismHandle>,
+export default function useChartImperativeHandle(
+	forwardedRef: Ref<ChartHandle>,
 	{ chartView, title }: { chartView: MutableRefObject<View | undefined>; title?: string }
 ) {
 	return useImperativeHandle(forwardedRef, () => ({

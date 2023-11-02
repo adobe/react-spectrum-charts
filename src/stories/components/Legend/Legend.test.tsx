@@ -9,12 +9,12 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
-import '@matchMediaMock';
-import { clickNthElement, findPrism, getAllLegendEntries, hoverNthElement, render, screen } from '@test-utils';
 import React from 'react';
 
 import { Legend } from '@components/Legend';
+import '@matchMediaMock';
+import { clickNthElement, findChart, getAllLegendEntries, hoverNthElement, render, screen } from '@test-utils';
+
 import { Basic, Descriptions, LabelLimit, OnClick, Position, Supreme, Title } from './Legend.story';
 
 describe('Legend', () => {
@@ -37,9 +37,9 @@ describe('Legend', () => {
 		const view = await screen.findByRole('graphics-document');
 		expect(view).toBeInTheDocument();
 
-		const prism = await findPrism();
+		const chart = await findChart();
 
-		const legendEntries = getAllLegendEntries(prism);
+		const legendEntries = getAllLegendEntries(chart);
 		expect(legendEntries.length).toBe(3);
 
 		for (const entry of legendEntries) {
@@ -65,34 +65,34 @@ describe('Legend', () => {
 
 	test('Supreme renders properly', async () => {
 		render(<Supreme {...Supreme.args} />);
-		const prism = await findPrism();
-		expect(prism).toBeInTheDocument();
+		const chart = await findChart();
+		expect(chart).toBeInTheDocument();
 
-		const entries = getAllLegendEntries(prism);
+		const entries = getAllLegendEntries(chart);
 		await hoverNthElement(entries, 0);
 
 		// make sure tooltip is visible
-		const tooltip = await screen.findByTestId('prism-tooltip');
+		const tooltip = await screen.findByTestId('rsc-tooltip');
 		expect(tooltip).toBeInTheDocument();
 	});
 
 	test('Supreme with no descriptions', async () => {
 		render(<Supreme {...Supreme.args} descriptions={[]} />);
-		const prism = await findPrism();
-		expect(prism).toBeInTheDocument();
+		const chart = await findChart();
+		expect(chart).toBeInTheDocument();
 
-		const entries = getAllLegendEntries(prism);
+		const entries = getAllLegendEntries(chart);
 		await hoverNthElement(entries, 0);
 
-		const tooltip = screen.queryByTestId('prism-tooltip');
+		const tooltip = screen.queryByTestId('rsc-tooltip');
 		expect(tooltip).not.toBeInTheDocument();
 	});
 
 	test('should call onClick callback when selecting a legend entry', async () => {
 		const onClick = jest.fn();
 		render(<OnClick {...OnClick.args} onClick={onClick} />);
-		const prism = await findPrism();
-		const entries = getAllLegendEntries(prism);
+		const chart = await findChart();
+		const entries = getAllLegendEntries(chart);
 
 		await clickNthElement(entries, 0);
 		expect(onClick).toHaveBeenCalledWith('Windows');
@@ -106,21 +106,21 @@ describe('Legend', () => {
 
 	test('respects labelLimit prop if provided (shorter than default limit)', async () => {
 		render(<LabelLimit {...LabelLimit.args} labelLimit={30} />);
-		const prism = await findPrism();
-		expect(prism).toBeInTheDocument();
+		const chart = await findChart();
+		expect(chart).toBeInTheDocument();
 
 		expect(
-			screen.queryByText('Very long Windows label that will be truncated without a custom labelLimit'),
+			screen.queryByText('Very long Windows label that will be truncated without a custom labelLimit')
 		).not.toBeInTheDocument();
 	});
 
 	test('respects labelLimit prop if provided (longer than default limit)', async () => {
 		render(<LabelLimit {...LabelLimit.args} labelLimit={300} />);
-		const prism = await findPrism();
-		expect(prism).toBeInTheDocument();
+		const chart = await findChart();
+		expect(chart).toBeInTheDocument();
 
 		expect(
-			screen.queryByText('Very long Windows label that will be truncated without a custom labelLimit'),
+			screen.queryByText('Very long Windows label that will be truncated without a custom labelLimit')
 		).toBeInTheDocument();
 	});
 

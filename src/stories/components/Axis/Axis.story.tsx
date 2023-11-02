@@ -9,20 +9,20 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import React, { ReactElement } from 'react';
 
 import { DEFAULT_GRANULARITY } from '@constants';
-import usePrismProps from '@hooks/usePrismProps';
-import { Axis, Bar, ChartTooltip, Line, Prism } from '@prism';
+import useChartProps from '@hooks/useChartProps';
+import { Axis, Bar, Chart, ChartTooltip, Line } from '@rsc';
 import { stockPriceData, workspaceTrendsData } from '@stories/data/data';
 import { ComponentStory } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
-import React, { ReactElement } from 'react';
 
 import { barData } from '../Bar/data';
 import timeData from './timeData.json';
 
 export default {
-	title: 'Prism/Axis',
+	title: 'RSC/Axis',
 	component: Axis,
 	argTypes: {},
 	parameters: {
@@ -40,58 +40,58 @@ const data = [
 ];
 
 const AxisStory: ComponentStory<typeof Axis> = (args): ReactElement => {
-	const prismProps = usePrismProps({ data, width: 600 });
+	const chartProps = useChartProps({ data, width: 600 });
 	return (
-		<Prism {...prismProps}>
+		<Chart {...chartProps}>
 			<Axis {...args} />
-		</Prism>
+		</Chart>
 	);
 };
 
 const TimeAxisStory: ComponentStory<typeof Axis> = (args): ReactElement => {
 	return (
-		<Prism data={timeData[args.granularity ?? DEFAULT_GRANULARITY]} width={600}>
+		<Chart data={timeData[args.granularity ?? DEFAULT_GRANULARITY]} width={600}>
 			<Axis {...args} />
 			<Line />
-		</Prism>
+		</Chart>
 	);
 };
 
 const SubLabelStory: ComponentStory<typeof Axis> = (args): ReactElement => {
 	return (
-		<Prism data={barData} width={600}>
+		<Chart data={barData} width={600}>
 			<Axis {...args} />
 			<Bar dimension="browser" metric="downloads" />
-		</Prism>
+		</Chart>
 	);
 };
 
 const LinearAxisStory: ComponentStory<typeof Axis> = (args): ReactElement => {
-	const prismProps = usePrismProps({ data: workspaceTrendsData, width: 600 });
+	const chartProps = useChartProps({ data: workspaceTrendsData, width: 600 });
 	return (
-		<Prism {...prismProps}>
+		<Chart {...chartProps}>
 			<Axis position="left" grid title="Users" />
 			<Axis {...args} />
 			<Line color="series" dimension="point" scaleType="linear" />
-		</Prism>
+		</Chart>
 	);
 };
 
 const NonLinearAxisStory: ComponentStory<typeof Axis> = (args): ReactElement => {
-	const prismProps = usePrismProps({ data: workspaceTrendsData, width: 600 });
+	const chartProps = useChartProps({ data: workspaceTrendsData, width: 600 });
 	return (
-		<Prism {...prismProps}>
+		<Chart {...chartProps}>
 			<Axis position="bottom" ticks baseline labelFormat="time" />
 			<Axis {...args} />
 			<Line color="series" lineType="period" scaleType="time" />
-		</Prism>
+		</Chart>
 	);
 };
 
 const SparkLineStory: ComponentStory<typeof Axis> = (args): ReactElement => {
-	const prismProps = usePrismProps({ data: stockPriceData, width: 200, height: 100 });
+	const chartProps = useChartProps({ data: stockPriceData, width: 200, height: 100 });
 	return (
-		<Prism {...prismProps}>
+		<Chart {...chartProps}>
 			<Axis {...args} />
 			<Line dimension="timestamp" metric="price" scaleType="point" padding={0}>
 				<ChartTooltip>
@@ -104,7 +104,7 @@ const SparkLineStory: ComponentStory<typeof Axis> = (args): ReactElement => {
 					)}
 				</ChartTooltip>
 			</Line>
-		</Prism>
+		</Chart>
 	);
 };
 

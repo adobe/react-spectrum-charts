@@ -9,7 +9,6 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
 import { buildQueries } from '@testing-library/react';
 
 const queryAllMarksByGroupName = (container: HTMLElement, markName: string, tagName = 'path') =>
@@ -80,7 +79,7 @@ const getMissingAxisLabelError = () => `Unable to find any legend entries`;
 const [queryAxisLabels, getAllAxisLabels, getAxisLabels, findAllAxisLabels, findAxisLabels] = buildQueries(
 	queryAllAxisLabels,
 	getMultipleAxisLabelError,
-	getMissingAxisLabelError,
+	getMissingAxisLabelError
 );
 
 export { queryAxisLabels, queryAllAxisLabels, getAxisLabels, getAllAxisLabels, findAllAxisLabels, findAxisLabels };

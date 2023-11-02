@@ -19,6 +19,7 @@ import {
 	AxisAnnotationChildElement,
 	AxisChildElement,
 	ChartChildElement,
+	ChartElement,
 	ChartTooltipElement,
 	ChildElement,
 	Children,
@@ -26,12 +27,11 @@ import {
 	LegendElement,
 	MarkChildElement,
 	PopoverHandler,
-	PrismChildElement,
-	PrismElement,
+	RscElement,
 	TooltipHandler,
 } from '../types';
 
-type MappedElement = { name: string; element: PrismElement | PrismChildElement };
+type MappedElement = { name: string; element: ChartElement | RscElement };
 type ElementCounts = {
 	area: number;
 	axis: number;
@@ -48,8 +48,8 @@ export function toArray<Child>(children: Child | Child[] | undefined): Child[] {
 	return [children];
 }
 
-// removes all non-prism specific elements
-export const sanitizeChartChildren = (children: Children<PrismChildElement> | undefined): ChartChildElement[] => {
+// removes all non-chart specific elements
+export const sanitizeChartChildren = (children: Children<RscElement> | undefined): ChartChildElement[] => {
 	return toArray(children)
 		.flat()
 		.filter((child): child is ChartChildElement => isChartChildElement(child));
@@ -83,15 +83,15 @@ export const sanitizeTrendlineChildren = (
 };
 
 const isChartChildElement = (child: ChildElement<ChartChildElement> | undefined): child is ChartChildElement => {
-	return isPrismComponent(child);
+	return isRscComponent(child);
 };
 const isMarkChildElement = <T extends MarkChildElement = MarkChildElement>(
 	child: ChildElement<T> | undefined
 ): child is T => {
-	return isPrismComponent(child);
+	return isRscComponent(child);
 };
 
-const isPrismComponent = (child?: ChildElement<MarkChildElement> | ChildElement<ChartChildElement>): boolean => {
+const isRscComponent = (child?: ChildElement<RscElement>): boolean => {
 	return Boolean(
 		child && typeof child !== 'string' && typeof child !== 'boolean' && 'type' in child && child.type !== Fragment
 	);
@@ -126,11 +126,11 @@ export const toggleStringArrayValue = (target: string[], value: string): string[
 	return [...target, value];
 };
 
-// traverses the prism children to find the first element instance of the proivded type
+// traverses the children to find the first element instance of the proivded type
 export function getElement(
 	element:
-		| PrismElement
-		| PrismChildElement
+		| ChartElement
+		| RscElement
 		| TooltipHandler
 		| PopoverHandler
 		| LegendElement
@@ -139,7 +139,7 @@ export function getElement(
 		| ReactFragment
 		| undefined,
 	type: typeof Axis | typeof Legend | typeof Line | typeof Bar | typeof ChartTooltip | typeof ChartPopover
-): PrismElement | PrismChildElement | undefined {
+): ChartElement | RscElement | undefined {
 	// if the element is undefined or 'type' doesn't exist on the element, stop searching
 	if (
 		!element ||
@@ -166,14 +166,14 @@ export function getElement(
 	return undefined;
 }
 
-// /**
-//  * Traverses the prism child elements finding all elements of the provided type and get the correct name for the element it is associated with
-//  * @param element
-//  * @param type
-//  * @returns
-//  */
+/**
+ * Traverses the child elements finding all elements of the provided type and get the correct name for the element it is associated with
+ * @param element
+ * @param type
+ * @returns
+ */
 export const getAllElements = (
-	target: Children<PrismElement | PrismChildElement>,
+	target: Children<ChartElement | RscElement>,
 	source: typeof Axis | typeof Legend | typeof Line | typeof Bar | typeof ChartTooltip | typeof ChartPopover,
 	elements: MappedElement[] = [],
 	name: string = ''
@@ -203,7 +203,7 @@ export const getAllElements = (
 	return [...elements, ...desiredElements];
 };
 
-const getElementName = (element: ChildElement<PrismChildElement>, elementCounts: ElementCounts) => {
+const getElementName = (element: ChildElement<RscElement>, elementCounts: ElementCounts) => {
 	if (typeof element !== 'object' || !('type' in element)) return '';
 	switch (element.type) {
 		case Area:
@@ -231,7 +231,7 @@ const getElementName = (element: ChildElement<PrismChildElement>, elementCounts:
 	}
 };
 
-export const getComponentName = (element: ChildElement<PrismChildElement>, defaultName: string) => {
+export const getComponentName = (element: ChildElement<RscElement>, defaultName: string) => {
 	if (typeof element === 'object' && 'props' in element && 'name' in element.props && element.props.name) {
 		return toCamelCase(element.props.name);
 	}

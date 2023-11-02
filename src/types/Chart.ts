@@ -18,7 +18,7 @@ import { Theme } from '@react-types/provider';
 
 import { Colors, SpectrumColor } from './SpectrumVizColors';
 
-export type PrismElement = ReactElement<PrismProps, JSXElementConstructor<PrismProps>>;
+export type ChartElement = ReactElement<ChartProps, JSXElementConstructor<ChartProps>>;
 export type AreaElement = ReactElement<AreaProps, JSXElementConstructor<AreaProps>>;
 export type AxisElement = ReactElement<AxisProps, JSXElementConstructor<AxisProps>>;
 export type AxisAnnotationElement = ReactElement<AxisAnnotationProps, JSXElementConstructor<AxisAnnotationProps>>;
@@ -34,14 +34,14 @@ export type TrendlineElement = ReactElement<TrendlineProps, JSXElementConstructo
 export type MetricRangeElement = ReactElement<MetricRangeProps, JSXElementConstructor<MetricRangeProps>>;
 
 export type SimpleData = { [key: string]: unknown };
-export type PrismData = SimpleData | Data;
+export type ChartData = SimpleData | Data;
 
 export interface SpecProps {
 	// children is optional because it is a pain to make this required with how children get defined in stories
-	// we have a check at the beginning of Prism to make sure this isn't undefined
+	// we have a check at the beginning of Chart to make sure this isn't undefined
 	// if it is undefined, we log an error and render a fragment
-	children?: Children<PrismChildElement>;
-	colors?: PrismColors;
+	children?: Children<RscElement>;
+	colors?: ChartColors;
 	colorScheme?: ColorScheme; // spectrum color scheme
 	description?: string; // chart description
 	symbolShapes?: SymbolShapes;
@@ -56,20 +56,20 @@ export interface SpecProps {
 
 export interface SanitizedSpecProps extends SpecProps {
 	children: ChartChildElement[];
-	data?: PrismData[];
+	data?: ChartData[];
 }
 
 export type Orientation = 'vertical' | 'horizontal';
-export type PrismColors = Colors | Colors[];
+export type ChartColors = Colors | Colors[];
 export type LineTypes = LineType[] | LineType[][];
 export type Opacities = number[] | number[][];
-export type SymbolShapes = PrismSymbolShape[] | PrismSymbolShape[][];
-export type PrismSymbolShape = 'rounded-square' | SymbolShape;
+export type SymbolShapes = ChartSymbolShape[] | ChartSymbolShape[][];
+export type ChartSymbolShape = 'rounded-square' | SymbolShape;
 
-export interface PrismProps extends SpecProps {
+export interface ChartProps extends SpecProps {
 	backgroundColor?: string;
 	config?: Config;
-	data: PrismData[];
+	data: ChartData[];
 	debug?: boolean;
 	height?: number;
 	maxWidth?: number;
@@ -88,7 +88,7 @@ export interface BaseProps {
 
 export type Width = number | string | 'auto';
 
-export interface PrismHandle {
+export interface ChartHandle {
 	copy: () => Promise<string>;
 	download: (customFileName?: string) => Promise<string>;
 }
@@ -209,7 +209,7 @@ export type ColorFacet = FacetRef<string | SpectrumColor>;
 export type LineTypeFacet = FacetRef<LineType>;
 export type LineWidthFacet = FacetRef<LineWidth>;
 export type OpacityFacet = FacetRef<number>;
-export type SymbolShapeFacet = FacetRef<PrismSymbolShape>;
+export type SymbolShapeFacet = FacetRef<ChartSymbolShape>;
 
 export type DualFacet = [string, string]; // two keys used for a secondary facet on Bar charts
 
@@ -449,4 +449,4 @@ export type MarkChildElement =
 	| ChartPopoverElement
 	| MetricRangeElement
 	| TrendlineElement;
-export type PrismChildElement = ChartChildElement | MarkChildElement;
+export type RscElement = ChartChildElement | MarkChildElement;

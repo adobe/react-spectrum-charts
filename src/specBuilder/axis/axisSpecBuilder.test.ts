@@ -9,10 +9,10 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { createElement } from 'react';
 
 import { ReferenceLine } from '@components/ReferenceLine';
 import { DEFAULT_LABEL_FONT_WEIGHT, FILTERED_TABLE } from '@constants';
-import { createElement } from 'react';
 import { SubLabel } from 'types';
 import { Axis, GroupMark, ProductionRule, Scale, Signal, TextValueRef } from 'vega';
 
@@ -153,7 +153,7 @@ const defaultTrellisGroupMark: GroupMark = {
 	},
 };
 
-describe('Prism spec builder, Axis', () => {
+describe('Spec builder, Axis', () => {
 	describe('addAxis()', () => {
 		describe('no initial state', () => {
 			test('position = "bottom"', () => {
@@ -185,7 +185,7 @@ describe('Prism spec builder, Axis', () => {
 			});
 			test('type = percentage', () => {
 				expect(
-					addAxis({ scales: defaultScales }, { position: 'left', labelFormat: 'percentage' }),
+					addAxis({ scales: defaultScales }, { position: 'left', labelFormat: 'percentage' })
 				).toStrictEqual({
 					scales: defaultScales,
 					axes: [
@@ -215,7 +215,7 @@ describe('Prism spec builder, Axis', () => {
 				// eslint-disable-next-line @typescript-eslint/no-unused-vars
 				const { domain, domainWidth, ...axis } = defaultAxis;
 				expect(
-					addAxis({ scales: defaultScales }, { position: 'bottom', subLabels: defaultSubLabels }),
+					addAxis({ scales: defaultScales }, { position: 'bottom', subLabels: defaultSubLabels })
 				).toStrictEqual({
 					scales: defaultScales,
 					axes: [{ ...axis, labelAlign: 'center', titlePadding: 24 }, defaultSubLabelAxis],
@@ -227,7 +227,7 @@ describe('Prism spec builder, Axis', () => {
 			test('custom X range', () => {
 				const resultScales = addAxis(
 					{ scales: defaultLinearScales },
-					{ position: 'bottom', range: [0, 100] },
+					{ position: 'bottom', range: [0, 100] }
 				).scales;
 
 				expect(resultScales?.at(0)?.domain).toEqual([0, 100]);
@@ -235,7 +235,7 @@ describe('Prism spec builder, Axis', () => {
 			test('custom Y range', () => {
 				const resultScales = addAxis(
 					{ scales: defaultLinearScales },
-					{ position: 'left', range: [0, 100] },
+					{ position: 'left', range: [0, 100] }
 				).scales;
 
 				expect(resultScales?.at(1)?.domain).toEqual([0, 100]);

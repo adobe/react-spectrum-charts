@@ -9,13 +9,12 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
 import { DEFAULT_COLOR_SCHEME } from '@constants';
 import { addFieldToFacetScaleDomain } from '@specBuilder/scale/scaleSpecBuilder';
 import {
 	getColorValue,
 	getLineWidthPixelsFromLineWidth,
-	getPathFromPrismSymbolShape,
+	getPathFromSymbolShape,
 	getStrokeDashFromLineType,
 } from '@specBuilder/specUtils';
 import produce from 'immer';
@@ -59,7 +58,7 @@ export const addLegend = produce<
 			title,
 			colorScheme = DEFAULT_COLOR_SCHEME,
 			...props
-		},
+		}
 	) => {
 		const { formattedColor, formattedLineType, formattedLineWidth, formattedSymbolShape } =
 			formatFacetRefsWithPresets(color, lineType, lineWidth, symbolShape, colorScheme);
@@ -104,7 +103,7 @@ export const addLegend = produce<
 		};
 
 		spec.legends = [legend];
-	},
+	}
 );
 
 /**
@@ -120,7 +119,7 @@ export const formatFacetRefsWithPresets = (
 	lineType: LineTypeFacet | undefined,
 	lineWidth: LineWidthFacet | undefined,
 	symbolShape: SymbolShapeFacet | undefined,
-	colorScheme: ColorScheme,
+	colorScheme: ColorScheme
 ) => {
 	let formattedColor: FacetRef<string> | undefined;
 	if (color && typeof color === 'object') {
@@ -145,7 +144,7 @@ export const formatFacetRefsWithPresets = (
 
 	let formattedSymbolShape: FacetRef<string> | undefined;
 	if (symbolShape && typeof symbolShape === 'object') {
-		formattedSymbolShape = { value: getPathFromPrismSymbolShape(symbolShape.value) };
+		formattedSymbolShape = { value: getPathFromSymbolShape(symbolShape.value) };
 	} else {
 		formattedSymbolShape = symbolShape;
 	}
@@ -190,7 +189,7 @@ const addLegendEntriesScale = produce<Scale[], [LegendSpecProps]>(
 			type: 'ordinal',
 			domain: { data: 'legendAggregate', field: 'legendEntries' },
 		});
-	},
+	}
 );
 
 const addMarks = produce<Mark[], [LegendSpecProps]>((marks, { highlight }) => {
@@ -238,5 +237,5 @@ export const addSignals = produce<Signal[], [LegendSpecProps]>(
 				signals.push(getLegendLabelsSeriesSignal(legendLabels));
 			}
 		}
-	},
+	}
 );

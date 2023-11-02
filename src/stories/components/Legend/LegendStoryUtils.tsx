@@ -9,55 +9,55 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
-import usePrismProps from '@hooks/usePrismProps';
-import { Axis, Bar, Legend, LegendProps, Prism } from '@prism';
-import { browserData as data } from '@stories/data/data';
-import { ComponentStory } from '@storybook/react';
 import React, { ReactElement } from 'react';
 
+import useChartProps from '@hooks/useChartProps';
+import { Axis, Bar, Chart, Legend, LegendProps } from '@rsc';
+import { browserData as data } from '@stories/data/data';
+import { ComponentStory } from '@storybook/react';
+
 export const LegendBarStory: ComponentStory<typeof Legend> = (args): ReactElement => {
-	const prismProps = usePrismProps({ data, width: 700 });
+	const chartProps = useChartProps({ data, width: 700 });
 	return (
-		<Prism {...prismProps}>
+		<Chart {...chartProps}>
 			<Bar color="series" />
 			<Legend {...args} />
 			<Axis position="bottom" baseline />
 			<Axis position="left" grid />
-		</Prism>
+		</Chart>
 	);
 };
 
 export const LegendBarHighlightedSeriesStory: ComponentStory<typeof Legend> = (args): ReactElement => {
-	const prismProps = usePrismProps({ data, width: 700, highlightedSeries: 'Mac' });
+	const chartProps = useChartProps({ data, width: 700, highlightedSeries: 'Mac' });
 	return (
-		<Prism {...prismProps}>
+		<Chart {...chartProps}>
 			<Bar color="series" />
 			<Legend {...args} />
 			<Axis position="bottom" baseline />
 			<Axis position="left" grid />
-		</Prism>
+		</Chart>
 	);
 };
 
 export const LegendBarHiddenSeriesStory: ComponentStory<typeof Legend> = (args): ReactElement => {
-	const prismProps = usePrismProps({ data, width: 700, hiddenSeries: ['Mac'] });
+	const chartProps = useChartProps({ data, width: 700, hiddenSeries: ['Mac'] });
 	return (
-		<Prism {...prismProps}>
+		<Chart {...chartProps}>
 			<Bar color="series" />
 			<Legend {...args} />
 			<Axis position="bottom" baseline />
 			<Axis position="left" grid />
-		</Prism>
+		</Chart>
 	);
 };
 
 export const LegendDisconnectedStory: ComponentStory<typeof Legend> = (args): ReactElement => {
-	const prismProps = usePrismProps({ data, width: 700, height: 50 });
+	const chartProps = useChartProps({ data, width: 700, height: 50 });
 	return (
-		<Prism {...prismProps}>
+		<Chart {...chartProps}>
 			<Legend {...args} />
-		</Prism>
+		</Chart>
 	);
 };
 

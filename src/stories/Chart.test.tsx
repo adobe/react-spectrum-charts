@@ -12,31 +12,31 @@
 import React, { createRef } from 'react';
 
 import '@matchMediaMock';
-import { Axis, Bar, ChartTooltip, Line, Prism, PrismHandle } from '@prism';
-import { findPrism, getAllMarksByGroupName, render, screen } from '@test-utils';
+import { Axis, Bar, Chart, ChartHandle, ChartTooltip, Line } from '@rsc';
+import { findChart, getAllMarksByGroupName, render, screen } from '@test-utils';
 import { getElement } from '@utils';
 
-import { Basic, Config, Width } from './Prism.story';
+import { Basic, Config, Width } from './Chart.story';
 import {
 	CssColors,
 	SpectrumColorNames,
 	SpectrumDivergentColorScheme,
 	SpectrumSequentialColorScheme,
-} from './PrismColors.story';
-import { EmptyState, LoadingState } from './PrismStates.story';
+} from './ChartColors.story';
+import { EmptyState, LoadingState } from './ChartStates.story';
 import { data } from './data/data';
 
 const PopoverTest = (
-	<Prism data={[]} renderer="svg">
+	<Chart data={[]} renderer="svg">
 		<Axis position="left" />
 		<Bar />
 		<Bar>
 			<ChartTooltip />
 		</Bar>
-	</Prism>
+	</Chart>
 );
 
-describe('Prism', () => {
+describe('Chart', () => {
 	test('Basic renders properly', async () => {
 		render(<Basic {...Basic.args} />);
 		const view = await screen.findByRole('graphics-document');
@@ -71,9 +71,9 @@ describe('Prism', () => {
 		test('Spectrum colors render correctly (light)', async () => {
 			render(<SpectrumColorNames {...SpectrumColorNames.args} />);
 
-			const prism = await findPrism();
-			expect(prism).toBeInTheDocument();
-			const bars = getAllMarksByGroupName(prism, 'bar0');
+			const chart = await findChart();
+			expect(chart).toBeInTheDocument();
+			const bars = getAllMarksByGroupName(chart, 'bar0');
 
 			expect(bars[0].getAttribute('fill')).toEqual('rgb(34, 34, 34)');
 			expect(bars[1].getAttribute('fill')).toEqual('rgb(70, 70, 70)');
@@ -84,9 +84,9 @@ describe('Prism', () => {
 		test('Spectrum colors render correctly (dark)', async () => {
 			render(<SpectrumColorNames {...SpectrumColorNames.args} colorScheme="dark" />);
 
-			const prism = await findPrism();
-			expect(prism).toBeInTheDocument();
-			const bars = getAllMarksByGroupName(prism, 'bar0');
+			const chart = await findChart();
+			expect(chart).toBeInTheDocument();
+			const bars = getAllMarksByGroupName(chart, 'bar0');
 
 			expect(bars[0].getAttribute('fill')).toEqual('rgb(235, 235, 235)');
 			expect(bars[1].getAttribute('fill')).toEqual('rgb(208, 208, 208)');
@@ -97,9 +97,9 @@ describe('Prism', () => {
 		test('Spectrum diverging color scheme renders correctly', async () => {
 			render(<SpectrumDivergentColorScheme {...SpectrumDivergentColorScheme.args} />);
 
-			const prism = await findPrism();
-			expect(prism).toBeInTheDocument();
-			const bars = getAllMarksByGroupName(prism, 'bar0');
+			const chart = await findChart();
+			expect(chart).toBeInTheDocument();
+			const bars = getAllMarksByGroupName(chart, 'bar0');
 
 			expect(bars[0].getAttribute('fill')).toEqual('rgb(88, 0, 0)');
 			expect(bars[1].getAttribute('fill')).toEqual('rgb(221, 134, 41)');
@@ -110,9 +110,9 @@ describe('Prism', () => {
 		test('Spectrum sequential color scheme renders correctly', async () => {
 			render(<SpectrumSequentialColorScheme {...SpectrumSequentialColorScheme.args} />);
 
-			const prism = await findPrism();
-			expect(prism).toBeInTheDocument();
-			const bars = getAllMarksByGroupName(prism, 'bar0');
+			const chart = await findChart();
+			expect(chart).toBeInTheDocument();
+			const bars = getAllMarksByGroupName(chart, 'bar0');
 
 			expect(bars[0].getAttribute('fill')).toEqual('rgb(113, 213, 202)');
 			expect(bars[1].getAttribute('fill')).toEqual('rgb(234, 255, 241)');
@@ -123,9 +123,9 @@ describe('Prism', () => {
 		test('CSS colors renders correctly', async () => {
 			render(<CssColors {...CssColors.args} />);
 
-			const prism = await findPrism();
-			expect(prism).toBeInTheDocument();
-			const bars = getAllMarksByGroupName(prism, 'bar0');
+			const chart = await findChart();
+			expect(chart).toBeInTheDocument();
+			const bars = getAllMarksByGroupName(chart, 'bar0');
 
 			expect(bars[0].getAttribute('fill')).toEqual('purple');
 			expect(bars[1].getAttribute('fill')).toEqual('rgb(38, 142, 108)');
@@ -150,18 +150,18 @@ describe('Prism', () => {
 
 	describe('Handles', () => {
 		test('Copy and download resolve/reject', async () => {
-			const ref = createRef<PrismHandle>();
+			const ref = createRef<ChartHandle>();
 			render(
-				<Prism data={data} ref={ref}>
+				<Chart data={data} ref={ref}>
 					<Line dimension="x" metric="y" />
-				</Prism>
+				</Chart>
 			);
 			if (ref.current) {
 				// should reject since the chart isn't done rendering
 				await expect(ref.current.copy()).rejects.toBe("There isn't a chart to copy, copy to clipboard failed");
 				await expect(ref.current.download()).rejects.toBe("There isn't a chart to download, download failed");
-				const prism = await findPrism();
-				expect(prism).toBeInTheDocument();
+				const chart = await findChart();
+				expect(chart).toBeInTheDocument();
 				// should reject because fetch isn't mocked
 				await expect(ref.current.copy()).rejects.toBe(
 					'Error occurred while fetching image, copy to clipboard failed'
@@ -171,17 +171,17 @@ describe('Prism', () => {
 			}
 		});
 		test('download uses supplied filename', async () => {
-			const ref = createRef<PrismHandle>();
+			const ref = createRef<ChartHandle>();
 			render(
-				<Prism data={data} ref={ref}>
+				<Chart data={data} ref={ref}>
 					<Line dimension="x" metric="y" />
-				</Prism>
+				</Chart>
 			);
 			if (ref.current) {
 				// should reject since the chart isn't done rendering
 				await expect(ref.current.download()).rejects.toBe("There isn't a chart to download, download failed");
-				const prism = await findPrism();
-				expect(prism).toBeInTheDocument();
+				const chart = await findChart();
+				expect(chart).toBeInTheDocument();
 				// should resolve
 				await expect(ref.current.download('My filename')).resolves.toBe('Chart downloaded as My filename.png');
 			}

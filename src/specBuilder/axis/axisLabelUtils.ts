@@ -9,7 +9,6 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
 import { Granularity, Label, LabelAlign, LabelFormat, Position } from 'types';
 import {
 	Align,
@@ -24,6 +23,7 @@ import {
 	TextValueRef,
 	TickCount,
 } from 'vega';
+
 import { isVerticalAxis } from './axisUtils';
 
 /**
@@ -70,7 +70,7 @@ export const getTimeLabelFormats = (granularity: Granularity): [string, string, 
  */
 export const getLabelBaselineAlign = (
 	labelAlign: LabelAlign | undefined,
-	position: Position,
+	position: Position
 ): Align | Baseline | undefined => {
 	switch (position) {
 		case 'top':
@@ -83,14 +83,14 @@ export const getLabelBaselineAlign = (
 };
 
 /**
- * gets the vega labelAlign value based on the prism labelAlign value
+ * gets the vega labelAlign value based on the labelAlign value
  * @param labelAlign
  * @returns
  */
 export const getLabelAlign = (
 	labelAlign: LabelAlign | undefined,
 	position: Position,
-	vegaLabelAlign?: Align,
+	vegaLabelAlign?: Align
 ): Align | undefined => {
 	if (vegaLabelAlign) return vegaLabelAlign;
 	if (!labelAlign) return;
@@ -108,14 +108,14 @@ export const getLabelAlign = (
 };
 
 /**
- * gets the vega baseline value based on the prism labelAlign value
+ * gets the vega baseline value based on the labelAlign value
  * @param labelAlign
  * @returns
  */
 export const getLabelBaseline = (
 	labelAlign: LabelAlign | undefined,
 	position: Position,
-	vegaLabelBaseline?: Baseline,
+	vegaLabelBaseline?: Baseline
 ): Baseline | undefined => {
 	if (vegaLabelBaseline) return vegaLabelBaseline;
 	if (!labelAlign) return;
@@ -141,7 +141,7 @@ export const getLabelBaseline = (
 export const getLabelOffset = (
 	labelAlign: LabelAlign,
 	scaleName: string,
-	vegaLabelOffset?: NumberValue,
+	vegaLabelOffset?: NumberValue
 ): NumberValue | undefined => {
 	if (vegaLabelOffset !== undefined) return vegaLabelOffset;
 	switch (labelAlign) {
@@ -155,7 +155,7 @@ export const getLabelOffset = (
 };
 
 /**
- * gets the vega label format based on the prism labelFormat
+ * gets the vega label format based on the labelFormat
  * @param type
  * @returns
  */
@@ -188,7 +188,7 @@ export const getAxisLabelsEncoding = (
 	labelFontWeight: FontWeight,
 	labelKey: 'label' | 'subLabel',
 	position: Position,
-	signalName: string,
+	signalName: string
 ): GuideEncodeEntry<TextEncodeEntry> => ({
 	update: {
 		text: [
@@ -223,7 +223,7 @@ export const getAxisLabelsEncoding = (
 export const getEncodedLabelBaselineAlign = (
 	position: Position,
 	signalName: string,
-	defaultLabelAlign: LabelAlign,
+	defaultLabelAlign: LabelAlign
 ): EncodeEntry => {
 	const productionRule: ProductionRule<ScaledValueRef<Baseline>> = [
 		{

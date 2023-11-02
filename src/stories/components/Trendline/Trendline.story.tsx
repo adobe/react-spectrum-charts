@@ -12,14 +12,14 @@
 import React, { ReactElement } from 'react';
 
 import { TRENDLINE_VALUE } from '@constants';
-import usePrismProps from '@hooks/usePrismProps';
-import { Axis, ChartTooltip, Legend, Line, Prism, PrismProps, Trendline } from '@prism';
+import useChartProps from '@hooks/useChartProps';
+import { Axis, Chart, ChartProps, ChartTooltip, Legend, Line, Trendline } from '@rsc';
 import { workspaceTrendsData } from '@stories/data/data';
 import { ComponentStory } from '@storybook/react';
 import { bindWithProps } from 'test-utils/bindWithProps';
 
 export default {
-	title: 'Prism/Trendline',
+	title: 'RSC/Trendline',
 	component: Trendline,
 	argTypes: {
 		method: {
@@ -57,12 +57,12 @@ export default {
 	},
 };
 
-const defaultPrismProps: PrismProps = { data: workspaceTrendsData, minWidth: 400, maxWidth: 800, height: 400 };
+const defaultChartProps: ChartProps = { data: workspaceTrendsData, minWidth: 400, maxWidth: 800, height: 400 };
 
 const TrendlineStory: ComponentStory<typeof Trendline> = (args): ReactElement => {
-	const prismProps = usePrismProps(defaultPrismProps);
+	const chartProps = useChartProps(defaultChartProps);
 	return (
-		<Prism {...prismProps}>
+		<Chart {...chartProps}>
 			<Axis position="left" grid title="Users" />
 			<Axis position="bottom" labelFormat="time" baseline ticks />
 			<Line color="series">
@@ -78,21 +78,21 @@ const TrendlineStory: ComponentStory<typeof Trendline> = (args): ReactElement =>
 				</Trendline>
 			</Line>
 			<Legend lineWidth={{ value: 0 }} highlight />
-		</Prism>
+		</Chart>
 	);
 };
 
 const TrendlineStoryWithoutTooltip: ComponentStory<typeof Trendline> = (args): ReactElement => {
-	const prismProps = usePrismProps(defaultPrismProps);
+	const chartProps = useChartProps(defaultChartProps);
 	return (
-		<Prism {...prismProps}>
+		<Chart {...chartProps}>
 			<Axis position="left" grid title="Users" />
 			<Axis position="bottom" labelFormat="time" baseline ticks />
 			<Line color="series">
 				<Trendline {...args} />
 			</Line>
 			<Legend lineWidth={{ value: 0 }} highlight />
-		</Prism>
+		</Chart>
 	);
 };
 

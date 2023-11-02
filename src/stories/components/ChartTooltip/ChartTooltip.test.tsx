@@ -9,20 +9,22 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import React from 'react';
 
 import { HIGHLIGHT_CONTRAST_RATIO } from '@constants';
 import '@matchMediaMock';
-import { ChartTooltip } from '@prism';
+import { ChartTooltip } from '@rsc';
 import {
 	findAllMarksByGroupName,
+	findChart,
 	findMarksByGroupName,
-	findPrism,
 	getAllMarksByGroupName,
 	hoverNthElement,
+	render,
+	screen,
 	unhoverNthElement,
+	within,
 } from '@test-utils';
-import { render, screen, within } from '@testing-library/react';
-import React from 'react';
 
 import { DodgedBarChart, LineChart, StackedBarChart } from './ChartTooltip.story';
 
@@ -34,15 +36,15 @@ describe('ChartTooltip', () => {
 
 	test('StackedBarChart renders properly', async () => {
 		render(<StackedBarChart {...StackedBarChart.args} />);
-		const prism = await findPrism();
-		expect(prism).toBeInTheDocument();
+		const chart = await findChart();
+		expect(chart).toBeInTheDocument();
 
 		// get bars
-		const bars = await findAllMarksByGroupName(prism, 'bar0');
+		const bars = await findAllMarksByGroupName(chart, 'bar0');
 
 		// hover and validate all hover interactions
 		await hoverNthElement(bars, 0);
-		const tooltip = await screen.findByTestId('prism-tooltip');
+		const tooltip = await screen.findByTestId('rsc-tooltip');
 		expect(tooltip).toBeInTheDocument();
 		expect(within(tooltip).getByText('Operating system: Windows')).toBeInTheDocument();
 		expect(bars[1].getAttribute('fill-opacity')).toEqual(`${1 / HIGHLIGHT_CONTRAST_RATIO}`);
@@ -54,22 +56,22 @@ describe('ChartTooltip', () => {
 
 	test('Line renders properly and hover works as expected', async () => {
 		render(<LineChart {...LineChart.args} />);
-		// validate prism drew
-		const prism = await findPrism();
-		expect(prism).toBeInTheDocument();
+		// validate chart drew
+		const chart = await findChart();
+		expect(chart).toBeInTheDocument();
 
 		// get voronoi paths
-		const paths = await findAllMarksByGroupName(prism, 'line0_voronoi');
+		const paths = await findAllMarksByGroupName(chart, 'line0_voronoi');
 
 		// hover and validate all hover components are visible
 		await hoverNthElement(paths, 0);
-		const tooltip = await screen.findByTestId('prism-tooltip');
+		const tooltip = await screen.findByTestId('rsc-tooltip');
 		expect(tooltip).toBeInTheDocument();
 		expect(within(tooltip).getByText('Nov 8')).toBeInTheDocument();
 
-		const highlightRule = await findMarksByGroupName(prism, 'line0_hoverRule', 'line');
+		const highlightRule = await findMarksByGroupName(chart, 'line0_hoverRule', 'line');
 		expect(highlightRule).toBeInTheDocument();
-		const highlightPoint = await findMarksByGroupName(prism, 'line0_point');
+		const highlightPoint = await findMarksByGroupName(chart, 'line0_point');
 		expect(highlightPoint).toBeInTheDocument();
 
 		// unhover and validate the highlights go away
@@ -81,13 +83,13 @@ describe('ChartTooltip', () => {
 	test('Dodged bar tooltip opens on hover and bar is highlighted correctly', async () => {
 		render(<DodgedBarChart {...DodgedBarChart.args} />);
 
-		const prism = await findPrism();
-		expect(prism).toBeInTheDocument();
-		const bars = getAllMarksByGroupName(prism, 'bar0');
+		const chart = await findChart();
+		expect(chart).toBeInTheDocument();
+		const bars = getAllMarksByGroupName(chart, 'bar0');
 
 		// clicking the bar should open the popover
 		await hoverNthElement(bars, 4);
-		const tooltip = await screen.findByTestId('prism-tooltip');
+		const tooltip = await screen.findByTestId('rsc-tooltip');
 		expect(tooltip).toBeInTheDocument();
 
 		// check the content of the popover

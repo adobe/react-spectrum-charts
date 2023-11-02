@@ -18,7 +18,6 @@ import { ROUNDED_SQUARE_PATH } from 'svgPaths';
 import { BarProps, LegendProps } from 'types';
 import { Data } from 'vega';
 
-import { setHoverOpacityForMarks } from './legend/legendHighlightUtils';
 import {
 	addData,
 	addHighlight,
@@ -32,7 +31,8 @@ import {
 	getTwoDimensionalColorScheme,
 	getTwoDimensionalLineTypes,
 	getTwoDimensionalOpacities,
-} from './prismSpecBuilder';
+} from './chartSpecBuilder';
+import { setHoverOpacityForMarks } from './legend/legendHighlightUtils';
 import { baseData } from './specUtils';
 
 const defaultData: Data[] = [{ name: TABLE, values: [], transform: [{ type: 'identifier', as: MARK_ID }] }];
@@ -58,7 +58,7 @@ afterEach(() => {
 	jest.resetAllMocks();
 });
 
-describe('Prism spec builder', () => {
+describe('Chart spec builder', () => {
 	describe('setColorScale()', () => {
 		test('default color scale used', () => {
 			expect(getColorScale('categorical12', 'light')).toStrictEqual({
@@ -283,7 +283,7 @@ describe('Prism spec builder', () => {
 			});
 		});
 
-		test('should return symbolShape scale with prism shapes', () => {
+		test('should return symbolShape scale with supported shapes', () => {
 			expect(getSymbolShapeScale(['rounded-square'])).toStrictEqual({
 				name: 'symbolShape',
 				type: 'ordinal',
