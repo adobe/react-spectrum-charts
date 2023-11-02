@@ -158,12 +158,16 @@ describe('Chart', () => {
 			);
 			if (ref.current) {
 				// should reject since the chart isn't done rendering
-				await expect(ref.current.copy()).rejects.toBe("There isn't a chart to copy, copy to clipboard failed");
-				await expect(ref.current.download()).rejects.toBe("There isn't a chart to download, download failed");
+				await expect(ref.current.copy()).rejects.toThrowError(
+					"There isn't a chart to copy, copy to clipboard failed"
+				);
+				await expect(ref.current.download()).rejects.toThrowError(
+					"There isn't a chart to download, download failed"
+				);
 				const chart = await findChart();
 				expect(chart).toBeInTheDocument();
 				// should reject because fetch isn't mocked
-				await expect(ref.current.copy()).rejects.toBe(
+				await expect(ref.current.copy()).rejects.toThrowError(
 					'Error occurred while fetching image, copy to clipboard failed'
 				);
 				// should resolve
@@ -179,7 +183,9 @@ describe('Chart', () => {
 			);
 			if (ref.current) {
 				// should reject since the chart isn't done rendering
-				await expect(ref.current.download()).rejects.toBe("There isn't a chart to download, download failed");
+				await expect(ref.current.download()).rejects.toThrowError(
+					"There isn't a chart to download, download failed"
+				);
 				const chart = await findChart();
 				expect(chart).toBeInTheDocument();
 				// should resolve

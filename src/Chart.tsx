@@ -189,7 +189,7 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 			selectedDataBounds.current,
 			padding
 		);
-		const showPlaceholderContent = useMemo(() => Boolean(loading || !data.length), [loading, data]);
+		const showPlaceholderContent = useMemo(() => Boolean(loading ?? !data.length), [loading, data]);
 		useEffect(() => {
 			// if placeholder content is displayed, clear out the chartview so it can't be downloaded or copied to clipboard
 			if (showPlaceholderContent) {
@@ -364,7 +364,7 @@ const LegendTooltip: FC<LegendTooltipProps> = ({ value, descriptions, domain }) 
 	}
 	return (
 		<div className="rsc-tooltip legend-tooltip" data-testid="rsc-tooltip">
-			<div className="series">{description.title || series}</div>
+			<div className="series">{description.title ?? series}</div>
 			<p className="series-description">{description.description}</p>
 		</div>
 	);

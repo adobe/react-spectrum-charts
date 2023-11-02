@@ -252,7 +252,7 @@ export const getLineWidthScale = (lineWidths: LineWidth[]): OrdinalScale => ({
 });
 
 export const getOpacityScale = (opacities?: Opacities): OrdinalScale | PointScale => {
-	if (opacities && opacities.length) {
+	if (opacities?.length) {
 		const range = isNumberArray(opacities) ? opacities : opacities.map((opacityArray) => opacityArray[0]);
 		return {
 			name: 'opacity',
