@@ -35,5 +35,26 @@ jobs:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
                   SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
+            - name: Check if Chart types file was modified
+              id: check_chart_types
+              run: |
+                FILES_JSON=$(gh pr view ${{ github.event.pull_request.number }} --json files)
+                CHART_TYPES_MODIFIED=$(echo "$FILES_JSON" | jq -r '.files[].filename' | grep -F "Chart.ts")
+                if [ -n "$CHART_TYPES_MODIFIED" ]; then
+                  echo "chart_types_modified=true" >> $GITHUB_ENV
+                else
+                echo "chart_types_modified=false" >> $GITHUB_ENV
+                fi
+
+            - name: Update PR description
+              if: env.chart_types_modified == 'true'
+              run: |
+                PR_DESCRIPTION=$(gh pr view ${{ github.event.pull_request.number }} --json body -q .body)
+                NEW_DESCRIPTION="${PR_DESCRIPTION}\n- [ ] Documentation has been updated for modified components."
+          
+                gh pr edit ${{ github.event.pull_request.number }} --body "$NEW_DESCRIPTION"
+              env:
+                GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
             - name: Build 🛠️
               run: yarn build
