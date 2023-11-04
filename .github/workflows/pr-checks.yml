@@ -27,11 +27,17 @@ jobs:
             - name: Check Chart if types modified
               id: check_chart_types
               run: |
+                set -eo pipefail
+                echo "Fetching PR details..."
                 FILES_JSON=$(gh pr view ${{ github.event.pull_request.number }} --json files)
-                CHART_TYPES_MODIFIED=$(echo "$FILES_JSON" | jq -r '.files[].filename' | grep -F "Chart.ts")
+                echo "Looking for modifications in Chart.ts..."
+                CHART_TYPES_MODIFIED=$(echo "$FILES_JSON" | jq -r '.files[].filename' | grep -F "Chart.ts") || true
+                
                 if [ -n "$CHART_TYPES_MODIFIED" ]; then
+                  echo "Chart.ts has been modified."
                   echo "chart_types_modified=true" >> $GITHUB_ENV
                 else
+                  echo "Chart.ts has not been modified."
                   echo "chart_types_modified=false" >> $GITHUB_ENV
                 fi
               env:
