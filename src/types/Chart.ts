@@ -41,7 +41,7 @@ export interface SpecProps {
 	// we have a check at the beginning of Chart to make sure this isn't undefined
 	// if it is undefined, we log an error and render a fragment
 	children?: Children<RscElement>;
-	colors?: ChartColors;
+	colors?: Colors | Colors[]; // chart color or array of colors
 	colorScheme?: ColorScheme; // spectrum color scheme
 	description?: string; // chart description
 	symbolShapes?: SymbolShapes;
@@ -53,7 +53,9 @@ export interface SpecProps {
 	hiddenSeries?: string[]; // series names to hide from the chart
 	highlightedSeries?: string; // series name to highlight
 }
-
+// testing file change
+// testing file change
+// testing file change
 export interface SanitizedSpecProps extends SpecProps {
 	children: ChartChildElement[];
 	data?: ChartData[];
