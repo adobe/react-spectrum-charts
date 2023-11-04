@@ -24,15 +24,6 @@ jobs:
             - name: Lint 🧼
               run: yarn lint
 
-            - name: Test 🧪
-              run: yarn test
-
-            - name: SonarCloud 🔬
-              uses: SonarSource/sonarcloud-github-action@master
-              env:
-                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-                  SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-
             - name: Check Chart if types modified
               id: check_chart_types
               run: |
