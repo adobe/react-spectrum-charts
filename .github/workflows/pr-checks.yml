@@ -43,6 +43,8 @@ jobs:
                 else
                   echo "chart_types_modified=false" >> $GITHUB_ENV
                 fi
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
             - name: Add PR documentation requirements
               if: env.chart_types_modified == 'true'
