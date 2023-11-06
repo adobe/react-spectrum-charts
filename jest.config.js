@@ -26,7 +26,7 @@ module.exports = {
 	},
 	moduleDirectories: ['src', 'node_modules'],
 	moduleNameMapper: {
-		'@aaui/core': '<rootDir>/__mocks__/core.ts',
+		'@hooks/useElementSize': '<rootDir>/__mocks__/useElementSize.ts',
 		'\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$':
 			'<rootDir>/__mocks__/fileMock.ts',
 		'\\.(css)$': 'identity-obj-proxy',

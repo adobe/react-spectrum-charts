@@ -177,7 +177,7 @@ describe('Chart', () => {
 		test('download uses supplied filename', async () => {
 			const ref = createRef<ChartHandle>();
 			render(
-				<Chart data={data} ref={ref}>
+				<Chart data={data} ref={ref} width={200}>
 					<Line dimension="x" metric="y" />
 				</Chart>
 			);

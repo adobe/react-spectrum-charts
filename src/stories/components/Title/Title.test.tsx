@@ -81,7 +81,7 @@ describe('Title', () => {
 
 		const titleGroups = getAllMarksByGroupName(chart, 'role-title', 'g');
 		const positioningGroup = titleGroups[0];
-		expect(positioningGroup).toHaveAttribute('transform', 'translate(194,375)');
+		expect(positioningGroup).toHaveAttribute('transform', 'translate(244,375)');
 	});
 
 	// Title is not a real React component. This is test just provides test coverage for sonarqube

@@ -9,11 +9,11 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import React, { FC, MutableRefObject, forwardRef, useEffect, useMemo, useRef, useState } from 'react';
+import { FC, MutableRefObject, forwardRef, useEffect, useMemo, useRef, useState } from 'react';
 
 import { EmptyState } from '@components/EmptyState';
 import { LoadingState } from '@components/LoadingState';
-import { DEFAULT_COLOR_SCHEME, DEFAULT_LINE_TYPES, MARK_ID } from '@constants';
+import { DEFAULT_COLOR_SCHEME, DEFAULT_LINE_TYPES, MARK_ID, SERIES_ID } from '@constants';
 import useChartImperativeHandle from '@hooks/useChartImperativeHandle';
 import useChartWidth from '@hooks/useChartWidth';
 import { useDebugSpec } from '@hooks/useDebugSpec';
@@ -33,8 +33,8 @@ import {
 	sanitizeChartChildren,
 	setSelectedSignals,
 } from '@utils';
+import { VegaRenderer } from 'VegaRenderer';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { Vega } from 'react-vega';
 import { v4 as uuid } from 'uuid';
 import { View } from 'vega';
 import { Options as TooltipOptions } from 'vega-tooltip';
@@ -51,7 +51,6 @@ import { Theme } from '@react-types/provider';
 
 import './Chart.css';
 import { TABLE } from './constants';
-import { expressionFunctions } from './expressionFunctions';
 import { extractValues, isVegaData } from './specBuilder/specUtils';
 import { ChartData, ChartHandle, ChartProps, Datum, LegendDescription, MarkBounds } from './types';
 
@@ -158,10 +157,12 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 			tooltipElement.hidden = popoverIsOpen;
 
 			// if the popover is closed, reset the selected data
-			if (!popoverIsOpen) {
+			if (!popoverIsOpen && chartView.current) {
 				selectedData.current = null;
+
+				chartView.current.runAsync();
 			}
-		}, [popoverIsOpen]);
+		}, [popoverIsOpen, chartView]);
 
 		useChartImperativeHandle(forwardedRef, { chartView, title });
 
@@ -244,6 +245,23 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 			);
 		}
 
+		const signals = useMemo(() => {
+			const signals: Record<string, unknown> = {
+				backgroundColor: getColorValue('gray-50', colorScheme),
+			};
+			if (legendIsToggleable) {
+				signals.hiddenSeries = hiddenSeriesState;
+			}
+			if (selectedIdSignalName) {
+				signals[selectedIdSignalName] = selectedData?.[MARK_ID] ?? null;
+			}
+			if (selectedSeriesSignalName) {
+				signals[selectedSeriesSignalName] = selectedData?.[SERIES_ID] ?? null;
+			}
+
+			return signals;
+		}, [hiddenSeriesState, legendIsToggleable, selectedIdSignalName, selectedSeriesSignalName]);
+
 		return (
 			<Provider colorScheme={colorScheme} theme={isValidTheme(theme) ? theme : defaultTheme}>
 				<div
@@ -262,23 +280,22 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 					{showPlaceholderContent ? (
 						<PlaceholderContent loading={loading} data={data} height={height} />
 					) : (
-						<Vega
-							mode="vega"
-							className="rsc"
+						<VegaRenderer
+							chartId={chartId.current}
 							spec={spec}
 							config={chartConfig}
 							data={chartData}
-							actions={false}
 							renderer={renderer}
 							width={chartWidth}
 							height={height}
 							padding={padding}
-							expressionFunctions={expressionFunctions}
+							signals={signals}
 							tooltip={tooltipConfig}
 							onNewView={(view) => {
+								console.log('new view');
 								chartView.current = view;
 								// this sets the signal value for the background color used behind bars
-								view.signal('backgroundColor', getColorValue('gray-50', colorScheme));
+								// view.signal('backgroundColor', getColorValue('gray-50', colorScheme));
 								if (popovers.length || legendIsToggleable || onLegendClick) {
 									if (legendIsToggleable) {
 										view.signal('hiddenSeries', hiddenSeriesState);
