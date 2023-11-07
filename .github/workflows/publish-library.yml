@@ -13,7 +13,6 @@ jobs:
             - name: Checkout code
               uses: actions/checkout@v3
               with:
-                  ref: ${{ github.event.pull_request.head.ref }}
                   fetch-depth: 0
 
             - name: Setup Node.js
@@ -35,6 +34,7 @@ jobs:
                   # Commit the changes
                   git config user.name "GitHub Actions"
                   git config user.email "actions@users.noreply.github.com"
+                  git checkout main
                   git add package.json
                   git commit -m "Update package version to $tag"
                   git push
