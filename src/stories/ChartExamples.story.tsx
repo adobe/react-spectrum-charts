@@ -614,7 +614,6 @@ StackOverflowTrends.args = {
 	height: 500,
 	minWidth: 840,
 	width: 'auto',
-	debug: true,
 	renderer: 'canvas',
 	title: 'The Fall of Stack Overflow',
 };

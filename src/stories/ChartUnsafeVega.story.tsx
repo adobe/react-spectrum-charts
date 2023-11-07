@@ -36,7 +36,7 @@ export default {
 
 const UnsafeVegaSpecStory: ComponentStory<typeof Chart> = (args): ReactElement => {
 	const chartProps = useChartProps(args);
-	return <Chart {...chartProps} debug />;
+	return <Chart {...chartProps} />;
 };
 
 const BasicBar = bindWithProps(UnsafeVegaSpecStory);
