@@ -141,14 +141,10 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 			tooltipElement.hidden = popoverIsOpen;
 
 			// if the popover is closed, reset the selected data
-			if (!popoverIsOpen && chartView.current) {
+			if (!popoverIsOpen) {
 				selectedData.current = null;
-
-				setTimeout(() => {
-					chartView.current?.runAsync();
-				}, 1000);
 			}
-		}, [popoverIsOpen, chartView]);
+		}, [popoverIsOpen]);
 
 		useChartImperativeHandle(forwardedRef, { chartView, title });
 
