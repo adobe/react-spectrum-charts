@@ -16,7 +16,6 @@ import { LoadingState } from '@components/LoadingState';
 import { DEFAULT_COLOR_SCHEME, DEFAULT_LINE_TYPES, MARK_ID, SERIES_ID } from '@constants';
 import useChartImperativeHandle from '@hooks/useChartImperativeHandle';
 import useChartWidth from '@hooks/useChartWidth';
-import { useDebugSpec } from '@hooks/useDebugSpec';
 import useElementSize from '@hooks/useElementSize';
 import useLegend from '@hooks/useLegend';
 import usePopoverAnchorStyle from '@hooks/usePopoverAnchorStyle';
@@ -33,7 +32,7 @@ import {
 	sanitizeChartChildren,
 	setSelectedSignals,
 } from '@utils';
-import { VegaRenderer } from 'VegaRenderer';
+import { VegaChart } from 'VegaChart';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { v4 as uuid } from 'uuid';
 import { View } from 'vega';
@@ -50,8 +49,6 @@ import {
 import { Theme } from '@react-types/provider';
 
 import './Chart.css';
-import { TABLE } from './constants';
-import { extractValues, isVegaData } from './specBuilder/specUtils';
 import { ChartData, ChartHandle, ChartProps, Datum, LegendDescription, MarkBounds } from './types';
 
 interface ChartDialogProps {
@@ -137,19 +134,6 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 		const { controlledHoverSignal, selectedIdSignalName, selectedSeriesSignalName } = useSpecProps(spec);
 		const chartConfig = useMemo(() => getChartConfig(config, colorScheme), [config, colorScheme]);
 
-		// Need to de a deep copy of the data because vega tries to transform the data
-		const chartData = useMemo(() => {
-			const clonedData = JSON.parse(JSON.stringify(data));
-
-			// We received a full Vega data array with potentially multiple dataset objects
-			if (isVegaData(clonedData)) {
-				return extractValues(clonedData);
-			}
-
-			// We received a simple array of data and we'll set a default key of 'table' to reference internally
-			return { [TABLE]: clonedData };
-		}, [data]);
-
 		useEffect(() => {
 			const tooltipElement = document.getElementById('vg-tooltip-element');
 			if (!tooltipElement) return;
@@ -160,7 +144,9 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 			if (!popoverIsOpen && chartView.current) {
 				selectedData.current = null;
 
-				chartView.current.runAsync();
+				setTimeout(() => {
+					chartView.current?.runAsync();
+				}, 1000);
 			}
 		}, [popoverIsOpen, chartView]);
 
@@ -168,7 +154,6 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 
 		const [containerWidth] = useElementSize(containerRef); // gets the width of the container that wraps vega
 		const chartWidth = useChartWidth(containerWidth, maxWidth, minWidth, width); // calculates the width the vega chart should be
-		useDebugSpec(debug, spec, chartData, chartWidth, height, chartConfig);
 
 		const {
 			hiddenSeriesState,
@@ -260,7 +245,7 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 			}
 
 			return signals;
-		}, [hiddenSeriesState, legendIsToggleable, selectedIdSignalName, selectedSeriesSignalName]);
+		}, [colorScheme, hiddenSeriesState, legendIsToggleable, selectedIdSignalName, selectedSeriesSignalName]);
 
 		return (
 			<Provider colorScheme={colorScheme} theme={isValidTheme(theme) ? theme : defaultTheme}>
@@ -280,11 +265,12 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 					{showPlaceholderContent ? (
 						<PlaceholderContent loading={loading} data={data} height={height} />
 					) : (
-						<VegaRenderer
+						<VegaChart
 							chartId={chartId.current}
 							spec={spec}
 							config={chartConfig}
-							data={chartData}
+							data={data}
+							debug={debug}
 							renderer={renderer}
 							width={chartWidth}
 							height={height}
@@ -292,10 +278,8 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 							signals={signals}
 							tooltip={tooltipConfig}
 							onNewView={(view) => {
-								console.log('new view');
 								chartView.current = view;
 								// this sets the signal value for the background color used behind bars
-								// view.signal('backgroundColor', getColorValue('gray-50', colorScheme));
 								if (popovers.length || legendIsToggleable || onLegendClick) {
 									if (legendIsToggleable) {
 										view.signal('hiddenSeries', hiddenSeriesState);
@@ -324,10 +308,6 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 								view.addEventListener('mouseover', getOnMouseInputCallback(onLegendMouseOver));
 								view.addEventListener('mouseout', getOnMouseInputCallback(onLegendMouseOut));
 								// this will trigger the autosize calculation making sure that everything is correct size
-								setTimeout(() => {
-									view.resize();
-									view.runAsync();
-								}, 0);
 							}}
 						/>
 					)}
