@@ -126,7 +126,7 @@ Adobe's design system has detailed guidelines for charting fundamentals, color s
 
 ## Storybook
 
-This library has an extensive [Storybook](opensource.adobe.com/react-spectrum-charts/) with stories for every component and most props. You can use the controls tab in storybook to alter component props and see how that alters the chart in real time.
+This library has an extensive [Storybook](http://opensource.adobe.com/react-spectrum-charts/) with stories for every component and most props. You can use the controls tab in storybook to alter component props and see how that alters the chart in real time.
 
 It is also possible to view the source code for any story by selecting the "Docs" tab, scrolling to the desired story and then selecting "Show code". This is helpful for seeing the full API for any story in storybook.
 
