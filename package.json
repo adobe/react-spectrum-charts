@@ -104,7 +104,8 @@
 		"react-dom": "17.0.2 - latest",
 		"uuid": "9.0.0 - latest",
 		"vega": "5.22.1 - latest",
-		"vega-embed": "^6.0.0 - latest"
+		"vega-embed": "6.0.0 - latest",
+		"vega-lite": "5.6.0 - latest"
 	},
 	"peerDependencies": {
 		"@adobe/react-spectrum": "^3.23.0 - latest",
