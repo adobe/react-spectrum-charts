@@ -27,7 +27,6 @@ jobs:
 
             - name: Update Package Version
               run: |
-                  # Update the version in package.json
                   tag=${{ steps.extract_tag.outputs.tag }}
                   sed -i "s/\"version\": \".*\"/\"version\": \"$tag\"/" package.json
 
