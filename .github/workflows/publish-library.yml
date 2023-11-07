@@ -25,6 +25,7 @@ jobs:
               id: extract_tag
               run: |
                   echo "tag=${GITHUB_REF#refs/tags/}" >> "$GITHUB_ENV"
+                  echo "tag=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
 
             - name: Set Branch Name
               id: set_branch_name
@@ -33,7 +34,8 @@ jobs:
 
             - name: Update Package Version
               run: |
-                  sed -i "s/\"version\": \".*\"/\"version\": \"$tag\"/" package.json
+                  tag_name=${{ steps.extract_tag.outputs.tag }}
+                  sed -i "s/\"version\": \".*\"/\"version\": \"$tag_name\"/" package.json
 
             - name: Commit package version
               run: |
@@ -43,7 +45,7 @@ jobs:
                   git checkout -b $branch_name
                   git add package.json
                   git commit -m "Update package version to $tag"
-                  git push origin "$branch_name"
+                  git push origin $branch_name
 
 
             - name: Create Pull Request
@@ -53,7 +55,7 @@ jobs:
                 commit-message: "Create PR to update version to $tag"
                 title: "Update version to $tag"
                 body: "This PR updates the version in package.json to $tag."
-                branch: $branch_name
+                branch: "$branch_name"
                 base: "main"
               
 
