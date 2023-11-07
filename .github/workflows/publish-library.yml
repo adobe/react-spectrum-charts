@@ -24,8 +24,7 @@ jobs:
             - name: Extract Tag
               id: extract_tag
               run: |
-                  tag=${GITHUB_REF#refs/tags/}
-                  echo "$tag"
+                  echo "tag=${GITHUB_REF#refs/tags/}" >> "$GITHUB_ENV"
 
             - name: Update Package Version
               run: |
@@ -36,7 +35,7 @@ jobs:
                   # Commit the changes
                   git config user.name "GitHub Actions"
                   git config user.email "actions@users.noreply.github.com"
-                  branch_name="release-$tag"
+                  echo "branch_name=release-$tag" >> "$GITHUB_ENV"
                   git checkout -b $branch_name
                   git add package.json
                   git commit -m "Update package version to $tag"
