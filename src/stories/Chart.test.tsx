@@ -39,26 +39,33 @@ const PopoverTest = (
 describe('Chart', () => {
 	test('Basic renders properly', async () => {
 		render(<Basic {...Basic.args} />);
-		const view = await screen.findByRole('graphics-document');
-		expect(view).toBeInTheDocument();
+		const chart = await findChart();
+		expect(chart).toBeInTheDocument();
 	});
 
-	test('Basic renders properly', async () => {
+	test('Config renders properly', async () => {
 		render(<Config {...Config.args} />);
-		const view = await screen.findByRole('graphics-document');
-		expect(view).toBeInTheDocument();
+		const chart = await findChart();
+		expect(chart).toBeInTheDocument();
 	});
 
-	test('Basic renders properly', async () => {
+	test('Width renders properly', async () => {
 		render(<Width {...Width.args} />);
-		const view = await screen.findByRole('graphics-document');
-		expect(view).toBeInTheDocument();
+		const chart = await findChart();
+		expect(chart).toBeInTheDocument();
 	});
 
-	test('Basic renders properly with invalid width', async () => {
+	test('Width renders properly with invalid width', async () => {
 		render(<Width {...Width.args} width="50.2%" />);
-		const view = await screen.findByRole('graphics-document');
-		expect(view).toBeInTheDocument();
+		const chart = await findChart();
+		expect(chart).toBeInTheDocument();
+	});
+
+	test('Chart does not render if the width or height are 0', () => {
+		render(<Width {...Width.args} width={0} />);
+		expect(screen.queryByRole('graphics-document')).not.toBeInTheDocument();
+		render(<Width {...Width.args} height={0} />);
+		expect(screen.queryByRole('graphics-document')).not.toBeInTheDocument();
 	});
 
 	test('Existence of children and UNSAFE_vegaSpec throw an error', async () => {
