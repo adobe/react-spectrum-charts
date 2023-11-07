@@ -23,11 +23,12 @@ jobs:
 
             - name: Extract Tag
               id: extract_tag
-              run: echo "::set-output name=tag::${GITHUB_REF#refs/tags/}"
+              run: |
+                  tag=${GITHUB_REF#refs/tags/}
+                  echo "$tag"
 
             - name: Update Package Version
               run: |
-                  tag=${{ steps.extract_tag.outputs.tag }}
                   sed -i "s/\"version\": \".*\"/\"version\": \"$tag\"/" package.json
 
             - name: Commit package version
