@@ -26,6 +26,11 @@ jobs:
               run: |
                   echo "tag=${GITHUB_REF#refs/tags/}" >> "$GITHUB_ENV"
 
+            - name: Set Branch Name
+              id: set_branch_name
+              run: |
+                  echo "branch_name=release-$tag" >> "$GITHUB_ENV"
+
             - name: Update Package Version
               run: |
                   sed -i "s/\"version\": \".*\"/\"version\": \"$tag\"/" package.json
@@ -35,11 +40,10 @@ jobs:
                   # Commit the changes
                   git config user.name "GitHub Actions"
                   git config user.email "actions@users.noreply.github.com"
-                  echo "branch_name=release-$tag" >> "$GITHUB_ENV"
                   git checkout -b $branch_name
                   git add package.json
                   git commit -m "Update package version to $tag"
-                  git push origin $branch_name
+                  git push origin "$branch_name"
 
 
             - name: Create Pull Request
