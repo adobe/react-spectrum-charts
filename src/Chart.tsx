@@ -9,14 +9,13 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import React, { FC, MutableRefObject, forwardRef, useEffect, useMemo, useRef, useState } from 'react';
+import { FC, MutableRefObject, forwardRef, useEffect, useMemo, useRef, useState } from 'react';
 
 import { EmptyState } from '@components/EmptyState';
 import { LoadingState } from '@components/LoadingState';
-import { DEFAULT_COLOR_SCHEME, DEFAULT_LINE_TYPES, MARK_ID } from '@constants';
+import { DEFAULT_COLOR_SCHEME, DEFAULT_LINE_TYPES, MARK_ID, SERIES_ID } from '@constants';
 import useChartImperativeHandle from '@hooks/useChartImperativeHandle';
 import useChartWidth from '@hooks/useChartWidth';
-import { useDebugSpec } from '@hooks/useDebugSpec';
 import useElementSize from '@hooks/useElementSize';
 import useLegend from '@hooks/useLegend';
 import usePopoverAnchorStyle from '@hooks/usePopoverAnchorStyle';
@@ -33,8 +32,8 @@ import {
 	sanitizeChartChildren,
 	setSelectedSignals,
 } from '@utils';
+import { VegaChart } from 'VegaChart';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { Vega } from 'react-vega';
 import { v4 as uuid } from 'uuid';
 import { View } from 'vega';
 import { Options as TooltipOptions } from 'vega-tooltip';
@@ -50,9 +49,6 @@ import {
 import { Theme } from '@react-types/provider';
 
 import './Chart.css';
-import { TABLE } from './constants';
-import { expressionFunctions } from './expressionFunctions';
-import { extractValues, isVegaData } from './specBuilder/specUtils';
 import { ChartData, ChartHandle, ChartProps, Datum, LegendDescription, MarkBounds } from './types';
 
 interface ChartDialogProps {
@@ -138,19 +134,6 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 		const { controlledHoverSignal, selectedIdSignalName, selectedSeriesSignalName } = useSpecProps(spec);
 		const chartConfig = useMemo(() => getChartConfig(config, colorScheme), [config, colorScheme]);
 
-		// Need to de a deep copy of the data because vega tries to transform the data
-		const chartData = useMemo(() => {
-			const clonedData = JSON.parse(JSON.stringify(data));
-
-			// We received a full Vega data array with potentially multiple dataset objects
-			if (isVegaData(clonedData)) {
-				return extractValues(clonedData);
-			}
-
-			// We received a simple array of data and we'll set a default key of 'table' to reference internally
-			return { [TABLE]: clonedData };
-		}, [data]);
-
 		useEffect(() => {
 			const tooltipElement = document.getElementById('vg-tooltip-element');
 			if (!tooltipElement) return;
@@ -167,7 +150,6 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 
 		const [containerWidth] = useElementSize(containerRef); // gets the width of the container that wraps vega
 		const chartWidth = useChartWidth(containerWidth, maxWidth, minWidth, width); // calculates the width the vega chart should be
-		useDebugSpec(debug, spec, chartData, chartWidth, height, chartConfig);
 
 		const {
 			hiddenSeriesState,
@@ -244,6 +226,23 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 			);
 		}
 
+		const signals = useMemo(() => {
+			const signals: Record<string, unknown> = {
+				backgroundColor: getColorValue('gray-50', colorScheme),
+			};
+			if (legendIsToggleable) {
+				signals.hiddenSeries = hiddenSeriesState;
+			}
+			if (selectedIdSignalName) {
+				signals[selectedIdSignalName] = selectedData?.[MARK_ID] ?? null;
+			}
+			if (selectedSeriesSignalName) {
+				signals[selectedSeriesSignalName] = selectedData?.[SERIES_ID] ?? null;
+			}
+
+			return signals;
+		}, [colorScheme, hiddenSeriesState, legendIsToggleable, selectedIdSignalName, selectedSeriesSignalName]);
+
 		return (
 			<Provider colorScheme={colorScheme} theme={isValidTheme(theme) ? theme : defaultTheme}>
 				<div
@@ -262,23 +261,21 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 					{showPlaceholderContent ? (
 						<PlaceholderContent loading={loading} data={data} height={height} />
 					) : (
-						<Vega
-							mode="vega"
-							className="rsc"
+						<VegaChart
+							chartId={chartId.current}
 							spec={spec}
 							config={chartConfig}
-							data={chartData}
-							actions={false}
+							data={data}
+							debug={debug}
 							renderer={renderer}
 							width={chartWidth}
 							height={height}
 							padding={padding}
-							expressionFunctions={expressionFunctions}
+							signals={signals}
 							tooltip={tooltipConfig}
 							onNewView={(view) => {
 								chartView.current = view;
 								// this sets the signal value for the background color used behind bars
-								view.signal('backgroundColor', getColorValue('gray-50', colorScheme));
 								if (popovers.length || legendIsToggleable || onLegendClick) {
 									if (legendIsToggleable) {
 										view.signal('hiddenSeries', hiddenSeriesState);
@@ -307,10 +304,6 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 								view.addEventListener('mouseover', getOnMouseInputCallback(onLegendMouseOver));
 								view.addEventListener('mouseout', getOnMouseInputCallback(onLegendMouseOut));
 								// this will trigger the autosize calculation making sure that everything is correct size
-								setTimeout(() => {
-									view.resize();
-									view.runAsync();
-								}, 0);
 							}}
 						/>
 					)}

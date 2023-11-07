@@ -9,7 +9,6 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
 import { useMemo } from 'react';
 
 export default function useChartWidth(
@@ -31,6 +30,6 @@ export default function useChartWidth(
 				`width of ${width} is not a valid width. Please provide a valid number, 'auto' or percentage ex. 75%`
 			);
 		}
-		return Math.min(maxWidth, Math.max(minWidth, targetWidth));
+		return targetWidth === 0 ? 0 : Math.min(maxWidth, Math.max(minWidth, targetWidth));
 	}, [containerWidth, maxWidth, minWidth, width]);
 }
