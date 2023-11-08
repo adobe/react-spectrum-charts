@@ -31,6 +31,7 @@ jobs:
               id: set_branch_name
               run: |
                   echo "branch_name=release-$tag" >> "$GITHUB_ENV"
+                  echo "branch_name=release-$tag" >> "$GITHUB_OUTPUT"
 
             - name: Update Package Version
               run: |
@@ -55,7 +56,7 @@ jobs:
                 commit-message: "Create PR to update version to $tag"
                 title: "Update version to $tag"
                 body: "This PR updates the version in package.json to $tag."
-                branch: ${{ steps.set_branch_name.env.branch_name }}
+                branch: ${{ steps.set_branch_name.output.branch_name }}
                 base: "main"
               
 
