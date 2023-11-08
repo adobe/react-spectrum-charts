@@ -30,7 +30,6 @@ jobs:
             - name: Set Branch Name
               id: set_branch_name
               run: |
-                  echo "branch_name=release-$tag" >> "$GITHUB_ENV"
                   echo "branch_name=release-$tag" >> "$GITHUB_OUTPUT"
 
             - name: Update Package Version
@@ -38,25 +37,25 @@ jobs:
                   tag_name=${{ steps.extract_tag.outputs.tag }}
                   sed -i "s/\"version\": \".*\"/\"version\": \"$tag_name\"/" package.json
 
-            - name: Commit package version
-              run: |
-                  # Commit the changes
-                  git config user.name "GitHub Actions"
-                  git config user.email "actions@users.noreply.github.com"
-                  git checkout -b $branch_name
-                  git add package.json
-                  git commit -m "Update package version to $tag"
-                  git push origin $branch_name
+            # - name: Commit package version
+            #   run: |
+            #       # Commit the changes
+            #       git config user.name "GitHub Actions"
+            #       git config user.email "actions@users.noreply.github.com"
+            #       git checkout -b $branch_name
+            #       git add package.json
+            #       git commit -m "Update package version to $tag"
+            #       git push origin $branch_name
 
 
             - name: Create Pull Request
               uses: peter-evans/create-pull-request@v3
               with:
                 token: ${{ secrets.GITHUB_TOKEN }}
-                commit-message: "Create PR to update version to $tag"
-                title: "Update version to $tag"
+                commit-message: "Update package version to $tag"
+                title: "Update package version to $tag"
                 body: "This PR updates the version in package.json to $tag."
-                branch: ${{ steps.set_branch_name.output.branch_name }}
+                branch: ${{ steps.set_branch_name.outputs.branch_name }}
                 base: "main"
               
 
