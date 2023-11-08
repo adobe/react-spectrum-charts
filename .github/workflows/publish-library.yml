@@ -55,7 +55,7 @@ jobs:
                 commit-message: "Create PR to update version to $tag"
                 title: "Update version to $tag"
                 body: "This PR updates the version in package.json to $tag."
-                branch: "$branch_name"
+                branch: ${{ branch_name }}
                 base: "main"
               
 
