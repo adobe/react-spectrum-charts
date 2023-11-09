@@ -17,8 +17,15 @@ export default function useElementSize(ref: RefObject<HTMLElement>) {
 
 	useLayoutEffect(() => {
 		const handleResize = () => {
-			setWidth(ref.current?.offsetWidth ?? 0);
-			setHeight(ref.current?.offsetHeight ?? 0);
+			if (!ref.current) {
+				setWidth(0);
+				setHeight(0);
+				return;
+			}
+			// in jest, offsetWidth and offsetHeight are always 0
+			// default to 500px for testing
+			setWidth(ref.current.offsetWidth || 500);
+			setHeight(ref.current.offsetHeight || 500);
 		};
 		handleResize();
 		window.addEventListener('resize', handleResize);

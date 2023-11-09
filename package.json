@@ -92,6 +92,8 @@
 		"ts-loader": "^9.4.2",
 		"tsconfig-paths-webpack-plugin": "^4.0.0",
 		"typescript": "^4.9.3",
+		"vega": "5.26.0",
+		"vega-lite": "^5.16.2",
 		"webpack": "^5.75.0",
 		"webpack-cli": "^5.0.1",
 		"webpack-dev-server": "^4.11.1",
@@ -103,14 +105,14 @@
 		"react": "17.0.2 - latest",
 		"react-dom": "17.0.2 - latest",
 		"uuid": "9.0.0 - latest",
-		"vega": "5.22.1 - latest",
-		"vega-embed": "6.21.0 - latest",
-		"vega-lite": "5.6.0 - latest"
+		"vega-embed": "6.23.0 - latest"
 	},
 	"peerDependencies": {
 		"@adobe/react-spectrum": "^3.23.0 - latest",
 		"react": "17.0.2 - latest",
-		"react-dom": "17.0.2 - latest"
+		"react-dom": "17.0.2 - latest",
+		"vega": "5.20.2 - latest",
+		"vega-lite": "5.0.0 - latest"
 	},
 	"resolutions": {
 		"@types/react": "17.0.50",

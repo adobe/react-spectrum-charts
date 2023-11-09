@@ -14,23 +14,23 @@
 
 ## Table of Contents
 
--   [React Spectrum Charts](#react-spectrum-charts)
-    -   [Table of Contents](#table-of-contents)
-    -   [Overview](#overview)
-        -   [Key Features:](#key-features)
-    -   [Installation](#installation)
-        -   [npm](#npm)
-        -   [yarn](#yarn)
-    -   [Usage](#usage)
-        -   [Example](#example)
-    -   [Spectrum (Adobe Design System) Integration](#spectrum-adobe-design-system-integration)
-    -   [API](#api)
-    -   [Storybook](#storybook)
-    -   [Support](#support)
-    -   [Contributing](#contributing)
-    -   [License](#license)
-        -   [Apache License 2.0 Summary](#apache-license-20-summary)
-    -   [Roadmap](#roadmap)
+- [React Spectrum Charts](#react-spectrum-charts)
+  - [Table of Contents](#table-of-contents)
+  - [Overview](#overview)
+    - [Key Features:](#key-features)
+  - [Installation](#installation)
+      - [npm](#npm)
+      - [yarn](#yarn)
+  - [Usage](#usage)
+    - [Example](#example)
+  - [Spectrum (Adobe Design System) Integration](#spectrum-adobe-design-system-integration)
+  - [API](#api)
+  - [Storybook](#storybook)
+  - [Support](#support)
+  - [Contributing](#contributing)
+  - [License](#license)
+    - [Apache License 2.0 Summary](#apache-license-20-summary)
+  - [Roadmap](#roadmap)
 
 ## Overview
 
@@ -72,13 +72,13 @@
 #### npm
 
 ```
-npm install @adobe/react-spectrum-charts
+npm install @adobe/react-spectrum-charts vega vega-lite
 ```
 
 #### yarn
 
 ```
-yarn add @adobe/react-spectrum-charts
+yarn add @adobe/react-spectrum-charts vega vega-lite
 ```
 
 ## Usage
