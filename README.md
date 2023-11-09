@@ -136,7 +136,7 @@ The Storybook may contain components or props that are not released yet since it
 
 If you encounter any issues, have questions, or need assistance with **react-spectrum-charts**, there are several ways to get support:
 
-1. **Documentation**: Check out the [official documentation](https://link-to-your-documentation) for in-depth guides, examples, and API references. Many common questions are answered here.
+1. **Documentation**: Check out the [official documentation](https://github.com/adobe/react-spectrum-charts/wiki) for examples, API documentation and developer docs.
 
 2. **GitHub Issues**: If you believe you've identified a bug or have a feature request or have general feedback, please review the list of [open issues](https://github.com/adobe/react-spectrum-charts/issues) to see if someone else has already submitted a similar issue that you can add to. If an issue doesn't exist, please submit a new issue using the correct template ([create a new issue](https://github.com/adobe/react-spectrum-charts/issues/new/choose)).
 
