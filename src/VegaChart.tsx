@@ -10,7 +10,6 @@ import embed from 'vega-embed';
 import { Options as TooltipOptions } from 'vega-tooltip';
 
 export interface VegaChartProps {
-	chartId: string;
 	config: Config;
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	data: ChartData[];
@@ -26,7 +25,6 @@ export interface VegaChartProps {
 }
 
 export const VegaChart: FC<VegaChartProps> = ({
-	chartId,
 	config,
 	data,
 	debug,
@@ -39,6 +37,7 @@ export const VegaChart: FC<VegaChartProps> = ({
 	tooltip,
 	width,
 }) => {
+	const containerRef = useRef<HTMLDivElement>(null);
 	const chartView = useRef<View>();
 
 	// Need to de a deep copy of the data because vega tries to transform the data
@@ -57,7 +56,7 @@ export const VegaChart: FC<VegaChartProps> = ({
 	useDebugSpec(debug, spec, chartData, width, height, config);
 
 	useEffect(() => {
-		if (width && height) {
+		if (width && height && containerRef.current) {
 			const specCopy = JSON.parse(JSON.stringify(spec)) as Spec;
 			const tableData = specCopy.data?.find((d) => d.name === TABLE);
 			if (tableData && 'values' in tableData) {
@@ -71,7 +70,7 @@ export const VegaChart: FC<VegaChartProps> = ({
 					return signal;
 				});
 			}
-			embed(`#${chartId}-chart`, specCopy, {
+			embed(containerRef.current, specCopy, {
 				actions: false,
 				expressionFunctions: expressionFunctions,
 				renderer,
@@ -94,7 +93,7 @@ export const VegaChart: FC<VegaChartProps> = ({
 				chartView.current = undefined;
 			}
 		};
-	}, [chartData.table, chartId, config, data, height, onNewView, padding, renderer, signals, spec, tooltip, width]);
+	}, [chartData.table, config, data, height, onNewView, padding, renderer, signals, spec, tooltip, width]);
 
-	return <div id={`${chartId}-chart`} className="rsc"></div>;
+	return <div ref={containerRef} className="rsc"></div>;
 };

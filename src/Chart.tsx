@@ -262,7 +262,6 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 						<PlaceholderContent loading={loading} data={data} height={height} />
 					) : (
 						<VegaChart
-							chartId={chartId.current}
 							spec={spec}
 							config={chartConfig}
 							data={data}
