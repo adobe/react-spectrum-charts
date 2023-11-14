@@ -16,13 +16,13 @@ import {
 	CORNER_RADIUS,
 	DISCRETE_PADDING,
 	FILTERED_TABLE,
-	HIGHLIGHT_CONTRAST_RATIO,
 	MARK_ID,
 	STACK_ID,
 } from '@constants';
 import {
 	getColorProductionRule,
 	getCursor,
+	getHighlightOpacityValue,
 	getOpacityProductionRule,
 	getStrokeDashProductionRule,
 	getTooltip,
@@ -442,15 +442,6 @@ export const getStrokeWidth = ({ children, lineWidth, name }: BarSpecProps): Pro
 		{ test: `${selectSignal} && ${selectSignal} === datum.${MARK_ID}`, value: Math.max(lineWidthValue, 2) },
 		defaultProductionRule,
 	];
-};
-
-export const getHighlightOpacityValue = (
-	opacityValue: { signal: string } | { value: number }
-): ProductionRule<NumericValueRef> => {
-	if ('signal' in opacityValue) {
-		return { signal: `${opacityValue.signal} / ${HIGHLIGHT_CONTRAST_RATIO}` };
-	}
-	return { value: opacityValue.value / HIGHLIGHT_CONTRAST_RATIO };
 };
 
 export const getBarPadding = (paddingRatio: number, paddingOuter?: number) => {

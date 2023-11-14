@@ -10,9 +10,9 @@
  * governing permissions and limitations under the License.
  */
 import { Trendline } from '@components/Trendline';
-import { FILTERED_TABLE, MARK_ID, SERIES_ID, TRENDLINE_VALUE } from '@constants';
+import { FILTERED_TABLE, MARK_ID, TRENDLINE_VALUE } from '@constants';
 import { getSeriesIdTransform } from '@specBuilder/data/dataUtils';
-import { getLineHoverMarks, getLineMark } from '@specBuilder/line/lineUtils';
+import { LineMarkProps, getLineHoverMarks, getLineMark } from '@specBuilder/line/lineUtils';
 import { hasInteractiveChildren, hasPopover, hasTooltip } from '@specBuilder/marks/markUtils';
 import {
 	getGenericSignal,
@@ -114,17 +114,15 @@ export const getTrendlineMarks = (markProps: LineSpecProps): GroupMark[] => {
 };
 
 const getTrendlineLineMark = (markProps: LineSpecProps, trendlineProps: TrendlineSpecProps): LineMark => {
-	const mergedTrendlineProps = {
+	const mergedTrendlineProps: LineMarkProps = {
+		...markProps,
 		name: trendlineProps.name,
-		parentName: markProps.name,
+		children: trendlineProps.children,
 		color: trendlineProps.color ? { value: trendlineProps.color } : markProps.color,
 		metric: trendlineProps.metric,
-		dimension: markProps.dimension,
-		scaleType: markProps.scaleType,
 		lineType: { value: trendlineProps.lineType },
 		lineWidth: { value: trendlineProps.lineWidth },
 		opacity: { value: trendlineProps.opacity },
-		colorScheme: markProps.colorScheme,
 		displayOnHover: trendlineProps.displayOnHover,
 	};
 	return getLineMark(mergedTrendlineProps, `${trendlineProps.name}_facet`);
@@ -236,7 +234,7 @@ export const getTrendlineData = (markProps: BarSpecProps | LineSpecProps): Sourc
 		data.push(concatenatedTrendlineData);
 
 		const selectSignal = `${markName}Trendline_selectedId`;
-		const hoverSignal = `${markName}Trendline_voronoiHoveredId`;
+		const hoverSignal = `${markName}Trendline_hoveredId`;
 		const trendlineHasPopover = trendlines.some((trendline) => hasPopover(trendline.children));
 		const expr = trendlineHasPopover
 			? `${selectSignal} === datum.${MARK_ID} || !${selectSignal} && ${hoverSignal} === datum.${MARK_ID}`
@@ -510,15 +508,17 @@ export const getTrendlineSignals = (markProps: BarSpecProps | LineSpecProps): Si
 	const trendlines = getTrendlines(children, markName);
 
 	if (trendlines.some((trendline) => hasTooltip(trendline.children))) {
-		signals.push(getUncontrolledHoverSignal(`${markName}Trendline_voronoi`, true));
+		signals.push(getUncontrolledHoverSignal(`${markName}Trendline`, true, `${markName}Trendline_voronoi`));
+		signals.push(getSeriesHoveredSignal(`${markName}Trendline`, true, `${markName}Trendline_voronoi`));
+	}
+
+	if (trendlines.some((trendline) => trendline.displayOnHover)) {
+		signals.push(getSeriesHoveredSignal(markName, true, `${markName}_voronoi`));
 	}
 
 	if (trendlines.some((trendline) => hasPopover(trendline.children))) {
 		signals.push(getGenericSignal(`${markName}Trendline_selectedId`));
-	}
-
-	if (trendlines.some((trendline) => trendline.displayOnHover)) {
-		signals.push(getSeriesHoveredSignal(markName, `datum.${SERIES_ID}`, `${markName}_voronoi`));
+		signals.push(getGenericSignal(`${markName}Trendline_selectedSeries`));
 	}
 
 	return signals;

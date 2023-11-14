@@ -9,15 +9,20 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { Trendline } from '@components/Trendline';
 import { DEFAULT_SYMBOL_SIZE, DEFAULT_SYMBOL_STROKE_WIDTH, MARK_ID, SERIES_ID } from '@constants';
 import {
 	getColorProductionRule,
 	getCursor,
+	getHighlightOpacityValue,
 	getLineWidthProductionRule,
 	getOpacityProductionRule,
 	getStrokeDashProductionRule,
 	getTooltip,
+	hasInteractiveChildren,
+	hasPopover,
 } from '@specBuilder/marks/markUtils';
+import { sanitizeMarkChildren } from '@utils';
 import {
 	ColorFacet,
 	ColorScheme,
@@ -39,19 +44,47 @@ import {
 	SymbolMark,
 } from 'vega';
 
+export const getInteractiveMarkName = (children: MarkChildElement[], name: string): string | undefined => {
+	// if the line has an interactive component, this line is the target for the interactive component
+	if (hasInteractiveChildren(children)) {
+		return name;
+	}
+	// if there is a trendline with an interactive component on the line, then the trendline is the target for the interactive component
+	if (
+		children.some(
+			(child) => child.type === Trendline && hasInteractiveChildren(sanitizeMarkChildren(child.props.children))
+		)
+	) {
+		return `${name}Trendline`;
+	}
+};
+
+export const getPopoverMarkName = (children: MarkChildElement[], name: string): string | undefined => {
+	// if the line has a popover, this line is the target for the popover
+	if (hasPopover(children)) {
+		return name;
+	}
+	// if there is a trendline with a popover on this line, then the trendline is the target for the popover
+	if (children.some((child) => child.type === Trendline && hasPopover(sanitizeMarkChildren(child.props.children)))) {
+		return `${name}Trendline`;
+	}
+};
+
 export interface LineMarkProps {
-	name: string;
+	children?: MarkChildElement[];
 	color: ColorFacet;
-	metric: string;
+	colorScheme: ColorScheme;
 	dimension: string;
-	scaleType: ScaleType;
+	displayOnHover?: boolean;
+	interactiveMarkName?: string; // optional name of the mark that is used for hover and click interactions
 	lineType: LineTypeFacet;
 	lineWidth?: LineWidthFacet;
+	metric: string;
+	name: string;
 	opacity: OpacityFacet;
-	colorScheme: ColorScheme;
-	displayOnHover?: boolean;
+	popoverMarkName?: string;
+	scaleType: ScaleType;
 	staticPoint?: string;
-	parentName?: string;
 }
 
 /**
@@ -60,27 +93,8 @@ export interface LineMarkProps {
  * @param dataSource
  * @returns LineMark
  */
-export const getLineMark = (
-	{
-		name,
-		color,
-		metric,
-		dimension,
-		scaleType,
-		lineType,
-		lineWidth,
-		opacity,
-		colorScheme,
-		displayOnHover,
-		parentName,
-	}: LineMarkProps,
-	dataSource: string
-): LineMark => {
-	// This allows us to only show the metric range when hovering over the parent line component.
-	const baseOpacityRule = getOpacityProductionRule(displayOnHover ? { value: 0 } : opacity);
-	const opacityRules = displayOnHover
-		? [...getHoverRules(parentName ?? name, opacity), baseOpacityRule]
-		: [baseOpacityRule];
+export const getLineMark = (lineMarkProps: LineMarkProps, dataSource: string): LineMark => {
+	const { name, color, metric, dimension, scaleType, lineType, lineWidth, colorScheme } = lineMarkProps;
 
 	return {
 		name,
@@ -98,13 +112,47 @@ export const getLineMark = (
 				// this has to be in update because when you resize the window that doesn't rebuild the spec
 				// but it may change the x position if it causes the chart to resize
 				x: getXProductionRule(scaleType, dimension),
-				strokeOpacity: opacityRules,
+				strokeOpacity: getLineStrokeOpacity(lineMarkProps),
 			},
 		},
 	};
 };
 
-const getHoverRules = (name: string, opacity: OpacityFacet) => {
+export const getLineStrokeOpacity = ({
+	displayOnHover,
+	interactiveMarkName,
+	opacity,
+	popoverMarkName,
+}: LineMarkProps): ProductionRule<NumericValueRef> => {
+	const baseRule = getOpacityProductionRule(displayOnHover ? { value: 0 } : opacity);
+	if (!interactiveMarkName) return [baseRule];
+	const strokeOpacityRules: ProductionRule<NumericValueRef> = [];
+
+	// add a rule that will lower the opacity of the line if there is a hovered series, but this line is not the one hovered
+	const hoverSignal = `${interactiveMarkName}_hoveredSeries`;
+	strokeOpacityRules.push({
+		test: `${hoverSignal} && ${hoverSignal} !== datum.${SERIES_ID}`,
+		...getHighlightOpacityValue(baseRule),
+	});
+
+	if (popoverMarkName) {
+		const selectSignal = `${interactiveMarkName}_selectedSeries`;
+		strokeOpacityRules.push({
+			test: `${selectSignal} && ${selectSignal} !== datum.${SERIES_ID}`,
+			...getHighlightOpacityValue(baseRule),
+		});
+	}
+
+	if (displayOnHover) {
+		strokeOpacityRules.push(...getDisplayOnHoverRules(interactiveMarkName, opacity));
+	}
+	// This allows us to only show the metric range when hovering over the parent line component.
+	strokeOpacityRules.push(baseRule);
+
+	return strokeOpacityRules;
+};
+
+const getDisplayOnHoverRules = (name: string, opacity: OpacityFacet) => {
 	const opacityRule = getOpacityProductionRule(opacity);
 	const hoverRule = {
 		test: `${name}_hoveredSeries && ${name}_hoveredSeries === datum.${SERIES_ID}`,
@@ -375,7 +423,7 @@ const getHighlightPointStyle = (
 	colorScheme: ColorScheme
 ) => {
 	const displayPointMarkTest = `datum.${displayPointMark} && datum.${displayPointMark} === true`;
-	const hoveredTest = `${name}_voronoiHoveredId && ${name}_voronoiHoveredId === datum.${MARK_ID}`;
+	const hoveredTest = `${name}_hoveredId && ${name}_hoveredId === datum.${MARK_ID}`;
 	const selectedTest = `${name}_selectedId && ${name}_selectedId === datum.${MARK_ID}`;
 	const hoverStrokeRule = `(${hoveredTest} || ${selectedTest}) && datum.${displayPointMark}`;
 
@@ -441,7 +489,7 @@ export const getLinePointMark = ({
  */
 export const getLineHighlightedData = (name: string, source: string, hasPopover: boolean): SourceData => {
 	const selectSignal = `${name}_selectedId`;
-	const hoverSignal = `${name}_voronoiHoveredId`;
+	const hoverSignal = `${name}_hoveredId`;
 	const expr = hasPopover
 		? `${selectSignal} && ${selectSignal} === datum.${MARK_ID} || !${selectSignal} && ${hoverSignal} && ${hoverSignal} === datum.${MARK_ID}`
 		: `${hoverSignal} && ${hoverSignal} === datum.${MARK_ID}`;

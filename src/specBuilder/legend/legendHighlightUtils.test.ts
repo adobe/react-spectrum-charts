@@ -93,7 +93,10 @@ describe('setHoverOpacityForMarks()', () => {
 		test('fillOpacity encoding already exists, rules should be added in the correct spot', () => {
 			const marks = JSON.parse(
 				JSON.stringify([
-					{ ...defaultMark, encode: { ...defaultMark.encode, update: { fillOpacity: [{ value: 1 }] } } },
+					{
+						...defaultMark,
+						encode: { ...defaultMark.encode, update: { strokeOpacity: [], fillOpacity: [{ value: 1 }] } },
+					},
 				])
 			);
 			setHoverOpacityForMarks(marks);

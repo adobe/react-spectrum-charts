@@ -50,6 +50,8 @@ const defaultLineProps: LineSpecProps = {
 	name: 'line0',
 	opacity: { value: 1 },
 	scaleType: 'time',
+	interactiveMarkName: undefined,
+	popoverMarkName: undefined,
 };
 
 describe('getTrendlines()', () => {
@@ -318,8 +320,9 @@ describe('getTrendlineSignals()', () => {
 			...defaultLineProps,
 			children: [createElement(Trendline, {}, createElement(ChartTooltip))],
 		});
-		expect(signals).toHaveLength(1);
-		expect(signals[0]).toHaveProperty('name', 'line0Trendline_voronoiHoveredId');
+		expect(signals).toHaveLength(2);
+		expect(signals[0]).toHaveProperty('name', 'line0Trendline_hoveredId');
+		expect(signals[1]).toHaveProperty('name', 'line0Trendline_hoveredSeries');
 	});
 
 	test('should not return any signals if there is not a ChartTooltip', () => {
@@ -335,8 +338,9 @@ describe('getTrendlineSignals()', () => {
 				createElement(Trendline, {}, createElement(ChartPopover)),
 			],
 		});
-		expect(signals).toHaveLength(2);
-		expect(signals[1]).toHaveProperty('name', 'line0Trendline_selectedId');
+		expect(signals).toHaveLength(4);
+		expect(signals[2]).toHaveProperty('name', 'line0Trendline_selectedId');
+		expect(signals[3]).toHaveProperty('name', 'line0Trendline_selectedSeries');
 	});
 
 	test('should not return selected signal if there is not a ChartPopover', () => {
@@ -344,7 +348,7 @@ describe('getTrendlineSignals()', () => {
 			...defaultLineProps,
 			children: [createElement(Trendline, {}, createElement(ChartTooltip))],
 		});
-		expect(signals).toHaveLength(1);
+		expect(signals).toHaveLength(2);
 		expect(signals[0].name).not.toContain('selected');
 	});
 });

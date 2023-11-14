@@ -176,19 +176,40 @@ describe('Line', () => {
 		expect(await screen.findByText('14')).toBeInTheDocument();
 	});
 
-	test('Tooltip should show on hover', async () => {
-		render(<Tooltip {...Tooltip.args} />);
-		const chart = await findChart();
-		expect(chart).toBeInTheDocument();
+	describe('Tooltip', () => {
+		test('Tooltip should show on hover', async () => {
+			render(<Tooltip {...Tooltip.args} />);
+			const chart = await findChart();
+			expect(chart).toBeInTheDocument();
 
-		// get voronoi paths
-		const paths = await findAllMarksByGroupName(chart, 'line0_voronoi');
+			// get voronoi paths
+			const paths = await findAllMarksByGroupName(chart, 'line0_voronoi');
 
-		// hover and validate all hover components are visible
-		await hoverNthElement(paths, 0);
-		const tooltip = await screen.findByTestId('rsc-tooltip');
-		expect(tooltip).toBeInTheDocument();
-		expect(within(tooltip).getByText('Nov 8')).toBeInTheDocument();
+			// hover and validate all hover components are visible
+			await hoverNthElement(paths, 0);
+			const tooltip = await screen.findByTestId('rsc-tooltip');
+			expect(tooltip).toBeInTheDocument();
+			expect(within(tooltip).getByText('Nov 8')).toBeInTheDocument();
+		});
+		test('should fade the opacity of non-hovered lines', async () => {
+			render(<Tooltip {...Tooltip.args} />);
+			const chart = await findChart();
+			expect(chart).toBeInTheDocument();
+
+			const lines = await findAllMarksByGroupName(chart, 'line0');
+			expect(lines).toHaveLength(4);
+			expect(lines[0]).toHaveAttribute('stroke-opacity', '1');
+			expect(lines[1]).toHaveAttribute('stroke-opacity', '1');
+
+			// get voronoi paths
+			const paths = await findAllMarksByGroupName(chart, 'line0_voronoi');
+
+			// hover and validate all hover components are visible
+			await hoverNthElement(paths, 0);
+
+			expect(lines[0]).toHaveAttribute('stroke-opacity', '1');
+			expect(lines[1]).toHaveAttribute('stroke-opacity', '0.2');
+		});
 	});
 
 	test('Static points render', async () => {

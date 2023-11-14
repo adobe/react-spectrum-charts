@@ -140,13 +140,13 @@ export const addData = produce<Data[], [AreaSpecProps]>(
 	}
 );
 
-export const addSignals = produce<Signal[], [AreaSpecProps]>((signals, { children, name, color }) => {
+export const addSignals = produce<Signal[], [AreaSpecProps]>((signals, { children, name }) => {
 	if (!children.length) return;
 	if (!hasSignalByName(signals, `${name}_controlledHoveredId`)) {
 		signals.push(getControlledHoverSignal(name));
 	}
 	if (!hasSignalByName(signals, `${name}_hoveredSeries`)) {
-		signals.push(getSeriesHoveredSignal(name, color));
+		signals.push(getSeriesHoveredSignal(name));
 	}
 	if (!hasSignalByName(signals, `${name}_selectedId`)) {
 		signals.push(getGenericSignal(`${name}_selectedId`));

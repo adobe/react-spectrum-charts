@@ -133,6 +133,29 @@ describe('ChartPopover', () => {
 		expect(highlightPoint).not.toBeInTheDocument();
 	});
 
+	test('should highlight the selected line by fading other lines', async () => {
+		render(<LineChart {...LineChart.args} />);
+		// validate that the line drew
+		const chart = await findChart();
+		expect(chart).toBeInTheDocument();
+
+		// lines should have full opacity
+		const lines = await findAllMarksByGroupName(chart, 'line0');
+		expect(lines).toHaveLength(3);
+		expect(lines[0]).toHaveAttribute('stroke-opacity', '1');
+		expect(lines[1]).toHaveAttribute('stroke-opacity', '1');
+		expect(lines[2]).toHaveAttribute('stroke-opacity', '1');
+
+		// click on the first line
+		const points = await findAllMarksByGroupName(chart, 'line0_voronoi');
+		await clickNthElement(points, 0);
+
+		// validate the first line is still full opacity, but the other lines are faded
+		expect(lines[0]).toHaveAttribute('stroke-opacity', '1');
+		expect(lines[1]).toHaveAttribute('stroke-opacity', '0.2');
+		expect(lines[2]).toHaveAttribute('stroke-opacity', '0.2');
+	});
+
 	test('Dodged bar popover opens on mark click and closes when clicking outside', async () => {
 		render(<DodgedBarChart {...DodgedBarChart.args} />);
 

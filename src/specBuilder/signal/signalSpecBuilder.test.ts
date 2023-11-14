@@ -49,11 +49,22 @@ describe('Signal spec builder', () => {
 				value: null,
 			});
 		});
+
+		test('should use eventName if provided', () => {
+			expect(getUncontrolledHoverSignal('line0', false, 'line0_voronoi')).toStrictEqual({
+				name: 'line0_hoveredId',
+				on: [
+					{ events: '@line0_voronoi:mouseover', update: `datum.${MARK_ID}` },
+					{ events: '@line0_voronoi:mouseout', update: 'null' },
+				],
+				value: null,
+			});
+		});
 	});
 
 	describe('getSeriesHoveredSignal()', () => {
 		test('uses name for eventName if eventName provided', () => {
-			expect(getSeriesHoveredSignal('bar0', `datum.${SERIES_ID}`)).toStrictEqual({
+			expect(getSeriesHoveredSignal('bar0', true)).toStrictEqual({
 				name: 'bar0_hoveredSeries',
 				on: [
 					{ events: '@bar0:mouseover', update: `datum.datum.${SERIES_ID}` },
@@ -64,10 +75,21 @@ describe('Signal spec builder', () => {
 		});
 
 		test('uses eventName if provided', () => {
-			expect(getSeriesHoveredSignal('bar0', `datum.${SERIES_ID}`, 'bar0_voronoi')).toStrictEqual({
+			expect(getSeriesHoveredSignal('bar0', true, 'bar0_voronoi')).toStrictEqual({
 				name: 'bar0_hoveredSeries',
 				on: [
 					{ events: '@bar0_voronoi:mouseover', update: `datum.datum.${SERIES_ID}` },
+					{ events: '@bar0_voronoi:mouseout', update: 'null' },
+				],
+				value: null,
+			});
+		});
+
+		test('should not nest datum if nestedDatum is false', () => {
+			expect(getSeriesHoveredSignal('bar0', false, 'bar0_voronoi')).toStrictEqual({
+				name: 'bar0_hoveredSeries',
+				on: [
+					{ events: '@bar0_voronoi:mouseover', update: `datum.${SERIES_ID}` },
 					{ events: '@bar0_voronoi:mouseout', update: 'null' },
 				],
 				value: null,

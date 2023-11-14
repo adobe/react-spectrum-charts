@@ -9,7 +9,9 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { createElement } from 'react';
 
+import { MetricRange } from '@components/MetricRange';
 import {
 	DEFAULT_COLOR,
 	DEFAULT_COLOR_SCHEME,
@@ -17,15 +19,14 @@ import {
 	DEFAULT_METRIC,
 	FILTERED_TABLE,
 } from '@constants';
+import { LineSpecProps, MetricRangeProps, MetricRangeSpecProps } from 'types';
+
 import {
 	applyMetricRangePropDefaults,
 	getMetricRangeData,
-	getMetricRangeMark,
 	getMetricRangeGroupMarks,
+	getMetricRangeMark,
 } from './metricRangeUtils';
-import { LineSpecProps, MetricRangeProps, MetricRangeSpecProps } from 'types';
-import { createElement } from 'react';
-import { MetricRange } from '@components/MetricRange';
 
 const defaultMetricRangeProps: MetricRangeProps = {
 	children: [],
@@ -59,6 +60,8 @@ const defaultLineProps: LineSpecProps = {
 	lineType: { value: 'solid' },
 	opacity: { value: 1 },
 	colorScheme: DEFAULT_COLOR_SCHEME,
+	interactiveMarkName: undefined,
+	popoverMarkName: undefined,
 };
 
 const basicMetricRangeMarks = [
@@ -141,7 +144,7 @@ const basicMetricRangeMarks = [
 describe('applyMetricRangePropDefaults', () => {
 	test('applies defaults', () => {
 		expect(
-			applyMetricRangePropDefaults({ metricEnd: 'metricStart', metricStart: 'metricEnd' }, 'line0', 0),
+			applyMetricRangePropDefaults({ metricEnd: 'metricStart', metricStart: 'metricEnd' }, 'line0', 0)
 		).toEqual({
 			children: {},
 			displayOnHover: false,
@@ -167,8 +170,8 @@ describe('applyMetricRangePropDefaults', () => {
 					displayOnHover: true,
 				},
 				'line0',
-				0,
-			),
+				0
+			)
 		).toEqual({
 			children: {},
 			displayOnHover: true,

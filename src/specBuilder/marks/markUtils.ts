@@ -15,6 +15,7 @@ import { ChartPopover } from '@components/ChartPopover';
 import { ChartTooltip } from '@components/ChartTooltip';
 import { MetricRange } from '@components/MetricRange';
 import { Trendline } from '@components/Trendline';
+import { HIGHLIGHT_CONTRAST_RATIO } from '@constants';
 import { getColorValue, getLineWidthPixelsFromLineWidth, getStrokeDashFromLineType } from '@specBuilder/specUtils';
 import {
 	ColorFacet,
@@ -31,6 +32,7 @@ import {
 	ColorValueRef,
 	Cursor,
 	NumericValueRef,
+	ProductionRule,
 	ScaledValueRef,
 	SignalRef,
 } from 'vega';
@@ -94,6 +96,8 @@ export const hasMetricRange = (children: ReactElement[]): boolean =>
 	children.some((child) => child.type === MetricRange);
 export const hasPopover = (children: ReactElement[]): boolean => children.some((child) => child.type === ChartPopover);
 export const hasTooltip = (children: ReactElement[]): boolean => children.some((child) => child.type === ChartTooltip);
+export const childHasTooltip = (children: ReactElement[]): boolean =>
+	children.some((child) => hasTooltip(child.props.children));
 
 export const getColorProductionRule = (color: ColorFacet | DualFacet, colorScheme: ColorScheme): ColorValueRef => {
 	if (Array.isArray(color)) {
@@ -144,4 +148,13 @@ export const getOpacityProductionRule = (opacity: OpacityFacet | DualFacet): { s
 		return { signal: `scale('opacity', datum.${opacity})` };
 	}
 	return { value: opacity.value };
+};
+
+export const getHighlightOpacityValue = (
+	opacityValue: { signal: string } | { value: number }
+): ProductionRule<NumericValueRef> => {
+	if ('signal' in opacityValue) {
+		return { signal: `${opacityValue.signal} / ${HIGHLIGHT_CONTRAST_RATIO}` };
+	}
+	return { value: opacityValue.value / HIGHLIGHT_CONTRAST_RATIO };
 };

@@ -25,13 +25,20 @@ import { Data, Mark, Scale, Signal, Spec } from 'vega';
 
 import { addTimeTransform, getTableData } from '../data/dataUtils';
 import { addContinuousDimensionScale, addFieldToFacetScaleDomain, addMetricScale } from '../scale/scaleSpecBuilder';
-import { getGenericSignal, getUncontrolledHoverSignal, hasSignalByName } from '../signal/signalSpecBuilder';
 import {
+	getGenericSignal,
+	getSeriesHoveredSignal,
+	getUncontrolledHoverSignal,
+	hasSignalByName,
+} from '../signal/signalSpecBuilder';
+import {
+	getInteractiveMarkName,
 	getLineHighlightedData,
 	getLineHoverMarks,
 	getLineMark,
 	getLinePointMark,
 	getLinePointsData,
+	getPopoverMarkName,
 } from './lineUtils';
 
 export const addLine = produce<Spec, [LineProps & { colorScheme?: ColorScheme; index?: number }]>(
@@ -51,17 +58,21 @@ export const addLine = produce<Spec, [LineProps & { colorScheme?: ColorScheme; i
 			...props
 		}
 	) => {
+		const sanitizedChildren = sanitizeMarkChildren(children);
+		const lineName = toCamelCase(name || `line${index}`);
 		// put props back together now that all defaults are set
 		const lineProps: LineSpecProps = {
-			children: sanitizeMarkChildren(children),
+			children: sanitizedChildren,
 			color,
 			colorScheme,
 			dimension,
 			index,
+			interactiveMarkName: getInteractiveMarkName(sanitizedChildren, lineName),
 			lineType,
 			metric,
-			name: toCamelCase(name || `line${index}`),
+			name: lineName,
 			opacity,
+			popoverMarkName: getPopoverMarkName(sanitizedChildren, lineName),
 			scaleType,
 			...props,
 		};
@@ -94,8 +105,11 @@ export const addSignals = produce<Signal[], [LineSpecProps]>((signals, props) =>
 	signals.push(...getMetricRangeSignals(props));
 
 	if (!hasInteractiveChildren(children)) return;
-	if (!hasSignalByName(signals, `${name}_voronoiHoveredId`)) {
-		signals.push(getUncontrolledHoverSignal(`${name}_voronoi`, true));
+	if (!hasSignalByName(signals, `${name}_hoveredId`)) {
+		signals.push(getUncontrolledHoverSignal(`${name}`, true, `${name}_voronoi`));
+	}
+	if (!hasSignalByName(signals, `${name}_hoveredSeries`)) {
+		signals.push(getSeriesHoveredSignal(`${name}`, true, `${name}_voronoi`));
 	}
 	if (!hasSignalByName(signals, `${name}_selectedId`)) {
 		signals.push(getGenericSignal(`${name}_selectedId`));

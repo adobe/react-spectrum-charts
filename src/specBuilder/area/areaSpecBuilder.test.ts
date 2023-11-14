@@ -19,6 +19,7 @@ import {
 	DEFAULT_METRIC,
 	FILTERED_TABLE,
 	MARK_ID,
+	SERIES_ID,
 	TABLE,
 } from '@constants';
 import { AreaSpecProps } from 'types';
@@ -151,7 +152,7 @@ const defaultSignals = [
 	{
 		name: 'area0_hoveredSeries',
 		on: [
-			{ events: '@area0:mouseover', update: `datum.${DEFAULT_COLOR}` },
+			{ events: '@area0:mouseover', update: `datum.${SERIES_ID}` },
 			{ events: '@area0:mouseout', update: 'null' },
 		],
 		value: null,
