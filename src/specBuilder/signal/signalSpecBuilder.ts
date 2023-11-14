@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { MARK_ID } from '@constants';
+import { MARK_ID, SERIES_ID } from '@constants';
 import { Signal } from 'vega';
 
 /**
@@ -22,18 +22,13 @@ export const hasSignalByName = (signals: Signal[], name: string) => {
 /**
  *  Returns the hover signal for points
  */
-export const getUncontrolledHoverSignal = (name: string, nestedDatum?: boolean): Signal => {
-	// if there is already an '_' in the name then add 'HoveredId'
-	// ex: 'line0_voroni' => 'line0_voroniHoveredId'
-	// if there is not an '_' in the name then add '_hoveredId'
-	// ex: 'bar0' => 'bar0_hoveredId'
-	const signalName = name.includes('_') ? `${name}HoveredId` : `${name}_hoveredId`;
+export const getUncontrolledHoverSignal = (name: string, nestedDatum?: boolean, eventName: string = name): Signal => {
 	return {
-		name: signalName,
+		name: `${name}_hoveredId`,
 		value: null,
 		on: [
-			{ events: `@${name}:mouseover`, update: `${nestedDatum ? 'datum.' : ''}datum.${MARK_ID}` },
-			{ events: `@${name}:mouseout`, update: 'null' },
+			{ events: `@${eventName}:mouseover`, update: `${nestedDatum ? 'datum.' : ''}datum.${MARK_ID}` },
+			{ events: `@${eventName}:mouseout`, update: 'null' },
 		],
 	};
 };
@@ -54,12 +49,12 @@ export const getControlledHoverSignal = (name: string): Signal => {
  *  Returns the hover signal for series
  *  Useful when you want to highlight the whole series on hover (area)
  */
-export const getSeriesHoveredSignal = (name: string, series: string, eventName = name): Signal => {
+export const getSeriesHoveredSignal = (name: string, nestedDatum?: boolean, eventName: string = name): Signal => {
 	return {
 		name: `${name}_hoveredSeries`,
 		value: null,
 		on: [
-			{ events: `@${eventName}:mouseover`, update: `datum.${series}` },
+			{ events: `@${eventName}:mouseover`, update: `${nestedDatum ? 'datum.' : ''}datum.${SERIES_ID}` },
 			{ events: `@${eventName}:mouseout`, update: 'null' },
 		],
 	};

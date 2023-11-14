@@ -43,6 +43,8 @@ const defaultLineProps: LineSpecProps = {
 	lineType: { value: 'solid' },
 	opacity: { value: 1 },
 	colorScheme: DEFAULT_COLOR_SCHEME,
+	interactiveMarkName: undefined,
+	popoverMarkName: undefined,
 };
 
 const getMetricRangeElement = (props?: Partial<MetricRangeProps>): MetricRangeElement =>
@@ -566,7 +568,7 @@ describe('lineSpecBuilder', () => {
 					],
 				},
 				{
-					name: 'line0_voronoiHoveredId',
+					name: 'line0_hoveredId',
 					value: null,
 					on: [
 						{
@@ -617,7 +619,7 @@ describe('lineSpecBuilder', () => {
 					],
 				},
 				{
-					name: 'line0_voronoiHoveredId',
+					name: 'line0_hoveredId',
 					value: null,
 					on: [
 						{

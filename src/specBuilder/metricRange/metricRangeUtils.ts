@@ -10,7 +10,7 @@
  * governing permissions and limitations under the License.
  */
 import { MetricRange } from '@components/MetricRange';
-import { DEFAULT_METRIC, FILTERED_TABLE, SERIES_ID } from '@constants';
+import { DEFAULT_METRIC, FILTERED_TABLE } from '@constants';
 import { AreaMarkProps, getAreaMark } from '@specBuilder/area/areaUtils';
 import { LineMarkProps, getLineMark } from '@specBuilder/line/lineUtils';
 import { getSeriesHoveredSignal } from '@specBuilder/signal/signalSpecBuilder';
@@ -102,17 +102,12 @@ export const getMetricRangeMark = (
 		displayOnHover: metricRangeProps.displayOnHover,
 	};
 	const lineProps: LineMarkProps = {
-		name: lineMarkProps.name,
+		...lineMarkProps,
 		color: metricRangeProps.color ? { value: metricRangeProps.color } : lineMarkProps.color,
 		metric: metricRangeProps.metric,
-		dimension: lineMarkProps.dimension,
-		scaleType: lineMarkProps.scaleType,
 		lineType: { value: metricRangeProps.lineType },
 		lineWidth: { value: metricRangeProps.lineWidth },
-		opacity: lineMarkProps.opacity,
-		colorScheme: lineMarkProps.colorScheme,
 		displayOnHover: metricRangeProps.displayOnHover,
-		staticPoint: lineMarkProps.staticPoint,
 	};
 
 	const lineMark = getLineMark(lineProps, `${metricRangeProps.name}_facet`);
@@ -151,7 +146,7 @@ export const getMetricRangeSignals = (markProps: LineSpecProps): Signal[] => {
 	const metricRanges = getMetricRanges(children, markName);
 
 	if (metricRanges.length) {
-		signals.push(getSeriesHoveredSignal(markName, `datum.${SERIES_ID}`, `${markName}_voronoi`));
+		signals.push(getSeriesHoveredSignal(markName, true, `${markName}_voronoi`));
 	}
 
 	return signals;

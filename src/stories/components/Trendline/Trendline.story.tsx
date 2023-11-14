@@ -13,7 +13,7 @@ import React, { ReactElement } from 'react';
 
 import { TRENDLINE_VALUE } from '@constants';
 import useChartProps from '@hooks/useChartProps';
-import { Axis, Chart, ChartProps, ChartTooltip, Legend, Line, Trendline } from '@rsc';
+import { Axis, Chart, ChartPopover, ChartProps, ChartTooltip, Legend, Line, Trendline } from '@rsc';
 import { workspaceTrendsData } from '@stories/data/data';
 import { ComponentStory } from '@storybook/react';
 import { bindWithProps } from 'test-utils/bindWithProps';
@@ -66,6 +66,20 @@ const TrendlineStory: ComponentStory<typeof Trendline> = (args): ReactElement =>
 			<Axis position="left" grid title="Users" />
 			<Axis position="bottom" labelFormat="time" baseline ticks />
 			<Line color="series">
+				<Trendline {...args} />
+			</Line>
+			<Legend lineWidth={{ value: 0 }} highlight />
+		</Chart>
+	);
+};
+
+const TrendlineWithDialogsStory: ComponentStory<typeof Trendline> = (args): ReactElement => {
+	const chartProps = useChartProps(defaultChartProps);
+	return (
+		<Chart {...chartProps}>
+			<Axis position="left" grid title="Users" />
+			<Axis position="bottom" labelFormat="time" baseline ticks />
+			<Line color="series">
 				<Trendline {...args}>
 					<ChartTooltip>
 						{(item) => (
@@ -75,6 +89,14 @@ const TrendlineStory: ComponentStory<typeof Trendline> = (args): ReactElement =>
 							</>
 						)}
 					</ChartTooltip>
+					<ChartPopover>
+						{(item) => (
+							<>
+								<div>Trendline value: {item[TRENDLINE_VALUE]}</div>
+								<div>Line value: {item.value}</div>
+							</>
+						)}
+					</ChartPopover>
 				</Trendline>
 			</Line>
 			<Legend lineWidth={{ value: 0 }} highlight />
@@ -82,13 +104,29 @@ const TrendlineStory: ComponentStory<typeof Trendline> = (args): ReactElement =>
 	);
 };
 
-const TrendlineStoryWithoutTooltip: ComponentStory<typeof Trendline> = (args): ReactElement => {
+const TrendlineWithDialogsOnParentStory: ComponentStory<typeof Trendline> = (args): ReactElement => {
 	const chartProps = useChartProps(defaultChartProps);
 	return (
 		<Chart {...chartProps}>
 			<Axis position="left" grid title="Users" />
 			<Axis position="bottom" labelFormat="time" baseline ticks />
 			<Line color="series">
+				<ChartTooltip>
+					{(item) => (
+						<>
+							<div>Trendline value: {item[TRENDLINE_VALUE]}</div>
+							<div>Line value: {item.value}</div>
+						</>
+					)}
+				</ChartTooltip>
+				<ChartPopover>
+					{(item) => (
+						<>
+							<div>Trendline value: {item[TRENDLINE_VALUE]}</div>
+							<div>Line value: {item.value}</div>
+						</>
+					)}
+				</ChartPopover>
 				<Trendline {...args} />
 			</Line>
 			<Legend lineWidth={{ value: 0 }} highlight />
@@ -103,7 +141,7 @@ Basic.args = {
 	lineWidth: 'S',
 };
 
-const DimensionRange = bindWithProps(TrendlineStory);
+const DimensionRange = bindWithProps(TrendlineWithDialogsStory);
 DimensionRange.args = {
 	method: 'linear',
 	lineType: 'dashed',
@@ -112,7 +150,7 @@ DimensionRange.args = {
 	dimensionRange: [1668063600000, null],
 };
 
-const DisplayOnHover = bindWithProps(TrendlineStoryWithoutTooltip);
+const DisplayOnHover = bindWithProps(TrendlineStory);
 DisplayOnHover.args = {
 	displayOnHover: true,
 	method: 'linear',
@@ -121,4 +159,16 @@ DisplayOnHover.args = {
 	color: 'gray-600',
 };
 
-export { Basic, DimensionRange, DisplayOnHover };
+const TooltipAndPopover = bindWithProps(TrendlineWithDialogsStory);
+TooltipAndPopover.args = {
+	highlightRawPoint: true,
+};
+
+const TooltipAndPopoverOnParentLine = bindWithProps(TrendlineWithDialogsOnParentStory);
+TooltipAndPopoverOnParentLine.args = {
+	method: 'linear',
+	lineType: 'dashed',
+	lineWidth: 'S',
+};
+
+export { Basic, DimensionRange, DisplayOnHover, TooltipAndPopover, TooltipAndPopoverOnParentLine };

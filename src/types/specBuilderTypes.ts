@@ -114,7 +114,15 @@ type LinePropsWithDefaults =
 	| 'colorScheme';
 
 export interface LineSpecProps
-	extends PartiallyRequired<LineProps & { colorScheme?: ColorScheme; index: number }, LinePropsWithDefaults> {
+	extends PartiallyRequired<
+		LineProps & {
+			colorScheme?: ColorScheme;
+			index: number;
+			interactiveMarkName: string | undefined;
+			popoverMarkName: string | undefined;
+		},
+		LinePropsWithDefaults
+	> {
 	children: MarkChildElement[];
 }
 

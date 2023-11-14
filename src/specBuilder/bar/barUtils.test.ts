@@ -25,7 +25,6 @@ import {
 	PADDING_RATIO,
 	STACK_ID,
 } from '@constants';
-import { getOpacityProductionRule } from '@specBuilder/marks/markUtils';
 import { BarSpecProps } from 'types';
 import { RectEncodeEntry } from 'vega';
 
@@ -57,7 +56,6 @@ import {
 	getDodgedDimensionEncodings,
 	getDodgedGroupMark,
 	getFillStrokeOpacity,
-	getHighlightOpacityValue,
 	getMetricEncodings,
 	getOrientationProperties,
 	getStackedCornerRadiusEncodings,
@@ -359,19 +357,6 @@ describe('barUtils', () => {
 			expect(strokeRule[0]).toStrictEqual({
 				test: `bar0_selectedId && bar0_selectedId === datum.${MARK_ID}`,
 				value: 2,
-			});
-		});
-	});
-
-	describe('getHighlightOpacityValue()', () => {
-		test('should divide a signal ref by the highlight contract ratio', () => {
-			expect(getHighlightOpacityValue(getOpacityProductionRule(DEFAULT_COLOR))).toStrictEqual({
-				signal: `scale('opacity', datum.${DEFAULT_COLOR}) / ${HIGHLIGHT_CONTRAST_RATIO}`,
-			});
-		});
-		test('shold divide a value ref by the highlight contrast ratio', () => {
-			expect(getHighlightOpacityValue(getOpacityProductionRule({ value: 0.5 }))).toStrictEqual({
-				value: 0.5 / HIGHLIGHT_CONTRAST_RATIO,
 			});
 		});
 	});

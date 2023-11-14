@@ -15,7 +15,7 @@ import '@matchMediaMock';
 import { Trendline } from '@rsc';
 import { findAllMarksByGroupName, findChart, getAllLegendEntries, hoverNthElement, render } from '@test-utils';
 
-import { Basic, DisplayOnHover } from './Trendline.story';
+import { Basic, DisplayOnHover, TooltipAndPopover, TooltipAndPopoverOnParentLine } from './Trendline.story';
 
 describe('Trendline', () => {
 	// Trendline is not a real React component. This is test just provides test coverage for sonarqube
@@ -76,6 +76,68 @@ describe('Trendline', () => {
 			expect(trendlines[0]).toHaveAttribute('stroke-opacity', '1');
 			// second trendline should still be hidden
 			expect(trendlines[1]).toHaveAttribute('stroke-opacity', '0');
+		});
+	});
+
+	describe('TooltipAndPopover', () => {
+		test('Should highlight trendline on hover', async () => {
+			render(<TooltipAndPopover {...TooltipAndPopover.args} />);
+			const chart = await findChart();
+			expect(chart).toBeInTheDocument();
+
+			const lines = await findAllMarksByGroupName(chart, 'line0');
+			expect(lines).toHaveLength(4);
+			const trendlines = await findAllMarksByGroupName(chart, 'line0Trendline0');
+			expect(trendlines).toHaveLength(4);
+
+			// all lines and trendlines are full opacity
+			expect(lines[0]).toHaveAttribute('stroke-opacity', '1');
+			expect(lines[1]).toHaveAttribute('stroke-opacity', '1');
+			expect(trendlines[0]).toHaveAttribute('stroke-opacity', '1');
+			expect(trendlines[1]).toHaveAttribute('stroke-opacity', '1');
+
+			// hover over the first point on the first trendline
+			const trendlineHoverAreas = await findAllMarksByGroupName(chart, 'line0Trendline_voronoi');
+			await hoverNthElement(trendlineHoverAreas, 0);
+
+			// highlighted line and trendline are still full opacity
+			expect(lines[0]).toHaveAttribute('stroke-opacity', '1');
+			expect(trendlines[0]).toHaveAttribute('stroke-opacity', '1');
+
+			// other lines and trendlines are faded
+			expect(lines[1]).toHaveAttribute('stroke-opacity', '0.2');
+			expect(trendlines[1]).toHaveAttribute('stroke-opacity', '0.2');
+		});
+	});
+
+	describe('TooltipAndPopoverOnParentLine', () => {
+		test('Should highlight trendline on hover', async () => {
+			render(<TooltipAndPopoverOnParentLine {...TooltipAndPopoverOnParentLine.args} />);
+			const chart = await findChart();
+			expect(chart).toBeInTheDocument();
+
+			const lines = await findAllMarksByGroupName(chart, 'line0');
+			expect(lines).toHaveLength(4);
+			const trendlines = await findAllMarksByGroupName(chart, 'line0Trendline0');
+			expect(trendlines).toHaveLength(4);
+
+			// all lines and trendlines are full opacity
+			expect(lines[0]).toHaveAttribute('stroke-opacity', '1');
+			expect(lines[1]).toHaveAttribute('stroke-opacity', '1');
+			expect(trendlines[0]).toHaveAttribute('stroke-opacity', '1');
+			expect(trendlines[1]).toHaveAttribute('stroke-opacity', '1');
+
+			// hover over the first point on the first trendline
+			const trendlineHoverAreas = await findAllMarksByGroupName(chart, 'line0_voronoi');
+			await hoverNthElement(trendlineHoverAreas, 0);
+
+			// highlighted line and trendline are still full opacity
+			expect(lines[0]).toHaveAttribute('stroke-opacity', '1');
+			expect(trendlines[0]).toHaveAttribute('stroke-opacity', '1');
+
+			// other lines and trendlines are faded
+			expect(lines[1]).toHaveAttribute('stroke-opacity', '0.2');
+			expect(trendlines[1]).toHaveAttribute('stroke-opacity', '0.2');
 		});
 	});
 });

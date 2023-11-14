@@ -30,29 +30,32 @@ export const setHoverOpacityForMarks = (marks: Mark[]) => {
 		const { update } = mark.encode;
 		const { fillOpacity, strokeOpacity } = update;
 
-		// the production rule that sets the fill opacity for this mark
-		const fillOpacityRule = getOpacityRule(fillOpacity);
-		// the new production rule for highlighting
-		const highlightFillOpacityRule = getHighlightOpacityRule(fillOpacityRule);
+		if ('fillOpacity' in update) {
+			// the production rule that sets the fill opacity for this mark
+			const fillOpacityRule = getOpacityRule(fillOpacity);
+			// the new production rule for highlighting
+			const highlightFillOpacityRule = getHighlightOpacityRule(fillOpacityRule);
 
-		if (!Array.isArray(update.fillOpacity)) {
-			update.fillOpacity = [];
+			if (!Array.isArray(update.fillOpacity)) {
+				update.fillOpacity = [];
+			}
+			// // need to insert the new test in the second to last slot
+			const fillRuleInsertIndex = Math.max(update.fillOpacity.length - 1, 0);
+			update.fillOpacity.splice(fillRuleInsertIndex, 0, highlightFillOpacityRule);
 		}
-		// // need to insert the new test in the second to last slot
-		const fillRuleInsertIndex = Math.max(update.fillOpacity.length - 1, 0);
-		update.fillOpacity.splice(fillRuleInsertIndex, 0, highlightFillOpacityRule);
 
-		// the production rule that sets the stroke opacity for this mark
-		const strokeOpacityRule = getOpacityRule(strokeOpacity);
-		// the new production rule for highlighting
-		const highlightStrokeOpacityRule = getHighlightOpacityRule(strokeOpacityRule);
-
-		if (!Array.isArray(update.strokeOpacity)) {
-			update.strokeOpacity = [];
+		if ('strokeOpacity' in update) {
+			// the production rule that sets the stroke opacity for this mark
+			const strokeOpacityRule = getOpacityRule(strokeOpacity);
+			// the new production rule for highlighting
+			const highlightStrokeOpacityRule = getHighlightOpacityRule(strokeOpacityRule);
+			if (!Array.isArray(update.strokeOpacity)) {
+				update.strokeOpacity = [];
+			}
+			// // need to insert the new test in the second to last slot
+			const strokeRuleInsertIndex = Math.max(update.strokeOpacity.length - 1, 0);
+			update.strokeOpacity.splice(strokeRuleInsertIndex, 0, highlightStrokeOpacityRule);
 		}
-		// // need to insert the new test in the second to last slot
-		const strokeRuleInsertIndex = Math.max(update.strokeOpacity.length - 1, 0);
-		update.strokeOpacity.splice(strokeRuleInsertIndex, 0, highlightStrokeOpacityRule);
 	});
 };
 

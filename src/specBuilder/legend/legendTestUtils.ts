@@ -9,7 +9,6 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
 import {
 	DEFAULT_CATEGORICAL_DIMENSION,
 	DEFAULT_COLOR,
@@ -36,6 +35,10 @@ export const defaultMark: LineMark = {
 			x: { scale: 'x', field: DEFAULT_CATEGORICAL_DIMENSION },
 			y: { scale: 'y', field: DEFAULT_METRIC },
 			stroke: { scale: 'color', field: DEFAULT_COLOR },
+		},
+		update: {
+			strokeOpacity: [],
+			fillOpacity: [],
 		},
 	},
 };

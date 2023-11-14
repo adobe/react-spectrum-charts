@@ -15,10 +15,11 @@ import { Annotation } from '@components/Annotation';
 import { ChartPopover } from '@components/ChartPopover';
 import { ChartTooltip } from '@components/ChartTooltip';
 import { MetricRange } from '@components/MetricRange';
-import { DEFAULT_COLOR, DEFAULT_COLOR_SCHEME, DEFAULT_SECONDARY_COLOR } from '@constants';
+import { DEFAULT_COLOR, DEFAULT_COLOR_SCHEME, DEFAULT_SECONDARY_COLOR, HIGHLIGHT_CONTRAST_RATIO } from '@constants';
 
 import {
 	getColorProductionRule,
+	getHighlightOpacityValue,
 	getLineWidthProductionRule,
 	getOpacityProductionRule,
 	getStrokeDashProductionRule,
@@ -126,5 +127,18 @@ describe('getTooltip()', () => {
 	test('should reference a nested datum if nestedDatum is true', () => {
 		const rule = getTooltip([createElement(ChartTooltip)], 'line0', true);
 		expect(rule?.signal).toContain('datum.datum');
+	});
+});
+
+describe('getHighlightOpacityValue()', () => {
+	test('should divide a signal ref by the highlight contract ratio', () => {
+		expect(getHighlightOpacityValue(getOpacityProductionRule(DEFAULT_COLOR))).toStrictEqual({
+			signal: `scale('opacity', datum.${DEFAULT_COLOR}) / ${HIGHLIGHT_CONTRAST_RATIO}`,
+		});
+	});
+	test('shold divide a value ref by the highlight contrast ratio', () => {
+		expect(getHighlightOpacityValue(getOpacityProductionRule({ value: 0.5 }))).toStrictEqual({
+			value: 0.5 / HIGHLIGHT_CONTRAST_RATIO,
+		});
 	});
 });
