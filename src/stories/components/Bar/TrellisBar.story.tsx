@@ -25,14 +25,6 @@ import { generateMockDataForTrellis } from './data';
 export default {
 	title: 'RSC/Bar/Trellis',
 	component: Bar,
-	argTypes: {},
-	parameters: {
-		docs: {
-			description: {
-				component: 'This is _markdown_ enabled description for Bar component doc page.',
-			},
-		},
-	},
 };
 
 const colors: SpectrumColor[] = [

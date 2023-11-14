@@ -26,13 +26,6 @@ export default {
             },
         },*/
 	},
-	parameters: {
-		docs: {
-			description: {
-				component: 'This is _markdown_ enabled description for Area component doc page.',
-			},
-		},
-	},
 };
 
 const data = [

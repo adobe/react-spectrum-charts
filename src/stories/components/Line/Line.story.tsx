@@ -23,14 +23,6 @@ import { ChartProps } from 'types';
 export default {
 	title: 'RSC/Line',
 	component: Line,
-	argTypes: {},
-	parameters: {
-		docs: {
-			description: {
-				component: 'This is _markdown_ enabled description for Line component doc page.',
-			},
-		},
-	},
 };
 
 const historicalCompareData = [

@@ -23,14 +23,6 @@ import { barSeriesData, negativeBarSeriesData } from './data';
 export default {
 	title: 'RSC/Bar/Stacked Bar',
 	component: Bar,
-	argTypes: {},
-	parameters: {
-		docs: {
-			description: {
-				component: 'This is _markdown_ enabled description for Bar component doc page.',
-			},
-		},
-	},
 };
 
 const colors: SpectrumColor[] = [

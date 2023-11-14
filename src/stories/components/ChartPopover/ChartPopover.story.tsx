@@ -30,13 +30,6 @@ export default {
 			},
 		},
 	},
-	parameters: {
-		docs: {
-			description: {
-				component: 'This is _markdown_ enabled description for ChartPopover component doc page.',
-			},
-		},
-	},
 };
 
 const dialogContent = (datum) => (

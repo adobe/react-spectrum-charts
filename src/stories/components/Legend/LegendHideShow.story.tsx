@@ -16,13 +16,6 @@ import { LegendBarHiddenSeriesStory, LegendBarStory, defaultProps } from './Lege
 export default {
 	title: 'RSC/Legend/Hide Show',
 	component: Legend,
-	parameters: {
-		docs: {
-			description: {
-				component: 'This is _markdown_ enabled description for Legend component doc page.',
-			},
-		},
-	},
 };
 
 const DefaultHiddenSeries = LegendBarStory.bind({});

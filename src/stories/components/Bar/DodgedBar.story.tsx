@@ -24,14 +24,6 @@ import { barSeriesData, barSubSeriesData } from './data';
 export default {
 	title: 'RSC/Bar/Dodged Bar',
 	component: Bar,
-	argTypes: {},
-	parameters: {
-		docs: {
-			description: {
-				component: 'This is _markdown_ enabled description for Bar component doc page.',
-			},
-		},
-	},
 };
 
 const DodgedBarStory: ComponentStory<typeof Bar> = (args): ReactElement => {

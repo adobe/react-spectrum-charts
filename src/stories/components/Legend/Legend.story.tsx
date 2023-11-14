@@ -16,13 +16,6 @@ import { LegendBarStory, LegendDisconnectedStory, defaultProps } from './LegendS
 export default {
 	title: 'RSC/Legend',
 	component: Legend,
-	parameters: {
-		docs: {
-			description: {
-				component: 'This is _markdown_ enabled description for Legend component doc page.',
-			},
-		},
-	},
 };
 
 const Basic = LegendBarStory.bind({});

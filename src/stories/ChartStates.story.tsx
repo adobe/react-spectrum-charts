@@ -17,14 +17,6 @@ import { ChartBarStory } from './ChartBarStory';
 export default {
 	title: 'RSC/Chart/States',
 	component: Chart,
-	argTypes: {},
-	parameters: {
-		docs: {
-			description: {
-				component: 'This is _markdown_ enabled description for Chart component doc page.',
-			},
-		},
-	},
 };
 
 const EmptyState = bindWithProps(ChartBarStory);

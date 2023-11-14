@@ -30,13 +30,6 @@ export default {
 			},
 		},
 	},
-	parameters: {
-		docs: {
-			description: {
-				component: 'This is _markdown_ enabled description for ChartTooltip component doc page.',
-			},
-		},
-	},
 };
 
 const StackedBarTooltipStory: ComponentStory<typeof ChartTooltip> = (args): ReactElement => {

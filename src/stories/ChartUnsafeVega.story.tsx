@@ -24,14 +24,6 @@ import { packedBubbleData } from './data/data';
 export default {
 	title: 'RSC/Chart/UNSAFE_vegaSpec',
 	component: Chart,
-	argTypes: {},
-	parameters: {
-		docs: {
-			description: {
-				component: 'This is _markdown_ enabled description for Chart component doc page.',
-			},
-		},
-	},
 };
 
 const UnsafeVegaSpecStory: ComponentStory<typeof Chart> = (args): ReactElement => {

@@ -27,13 +27,6 @@ export default {
 			},
 		},
 	},
-	parameters: {
-		docs: {
-			description: {
-				component: 'This is _markdown_ enabled description for Annotation component doc page.',
-			},
-		},
-	},
 };
 
 const data = [

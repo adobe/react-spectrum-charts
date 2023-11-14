@@ -20,14 +20,6 @@ import { bindWithProps } from 'test-utils/bindWithProps';
 export default {
 	title: 'RSC/Title',
 	component: Title,
-	argTypes: {},
-	parameters: {
-		docs: {
-			description: {
-				component: 'This is _markdown_ enabled description for Title component doc page.',
-			},
-		},
-	},
 };
 
 const defaultChartProps: ChartProps = { data, minWidth: 400, maxWidth: 800, height: 400 };

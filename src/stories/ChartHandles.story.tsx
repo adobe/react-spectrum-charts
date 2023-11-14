@@ -24,14 +24,6 @@ import { data } from './data/data';
 export default {
 	title: 'RSC/Chart/Handles',
 	component: Chart,
-	argTypes: {},
-	parameters: {
-		docs: {
-			description: {
-				component: 'This is _markdown_ enabled description for Chart component doc page.',
-			},
-		},
-	},
 };
 
 const HandleStory = ({ variant }: { variant: 'copy' | 'download' }) => {
