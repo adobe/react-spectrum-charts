@@ -16,13 +16,6 @@ import { LegendBarStory, defaultProps } from './LegendStoryUtils';
 export default {
 	title: 'RSC/Legend/Hover',
 	component: Legend,
-	parameters: {
-		docs: {
-			description: {
-				component: 'This is _markdown_ enabled description for Legend component doc page.',
-			},
-		},
-	},
 };
 
 const onMouseOver = (seriesName: string) => {

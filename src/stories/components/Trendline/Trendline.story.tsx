@@ -48,13 +48,6 @@ export default {
 			},
 		},
 	},
-	parameters: {
-		docs: {
-			description: {
-				component: 'This is _markdown_ enabled description for Trendline component doc page.',
-			},
-		},
-	},
 };
 
 const defaultChartProps: ChartProps = { data: workspaceTrendsData, minWidth: 400, maxWidth: 800, height: 400 };

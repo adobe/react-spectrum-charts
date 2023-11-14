@@ -31,14 +31,6 @@ import { Content } from '@adobe/react-spectrum';
 export default {
 	title: 'RSC/AxisAnnotation',
 	component: AxisAnnotation,
-	argTypes: {},
-	parameters: {
-		docs: {
-			description: {
-				component: 'This is _markdown_ enabled description for AxisAnnotation component doc page.',
-			},
-		},
-	},
 };
 
 const annotationAxisData = [

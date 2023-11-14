@@ -20,14 +20,6 @@ import { bindWithProps } from '@test-utils';
 export default {
 	title: 'RSC/Axis/ReferenceLine',
 	component: ReferenceLine,
-	argTypes: {},
-	parameters: {
-		docs: {
-			description: {
-				component: 'This is _markdown_ enabled description for Axis component doc page.',
-			},
-		},
-	},
 };
 
 const data = [

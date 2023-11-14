@@ -22,14 +22,6 @@ import { Content } from '@adobe/react-spectrum';
 export default {
 	title: 'RSC/MetricRange',
 	component: MetricRange,
-	argTypes: {},
-	parameters: {
-		docs: {
-			description: {
-				component: 'This is _markdown_ enabled description for MetricRange component doc page.',
-			},
-		},
-	},
 };
 
 const defaultChartProps: ChartProps = {

@@ -24,14 +24,6 @@ import timeData from './timeData.json';
 export default {
 	title: 'RSC/Axis',
 	component: Axis,
-	argTypes: {},
-	parameters: {
-		docs: {
-			description: {
-				component: 'This is _markdown_ enabled description for Axis component doc page.',
-			},
-		},
-	},
 };
 
 const data = [

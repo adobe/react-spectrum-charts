@@ -22,14 +22,6 @@ import { defaultProps } from './LegendStoryUtils';
 export default {
 	title: 'RSC/Legend/Symbols',
 	component: Legend,
-	argTypes: {},
-	parameters: {
-		docs: {
-			description: {
-				component: 'This is _markdown_ enabled description for Legend component doc page.',
-			},
-		},
-	},
 };
 
 const LegendBarStory: ComponentStory<typeof Legend> = (args): ReactElement => {

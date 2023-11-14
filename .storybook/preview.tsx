@@ -1,14 +1,17 @@
 import React from 'react';
+
 import { addDecorator, addParameters } from '@storybook/react';
-import { defaultTheme, Provider, View } from '@adobe/react-spectrum';
 import { withPropsTable } from 'storybook-addon-react-docgen';
 import { useDarkMode } from 'storybook-dark-mode';
+
+import { Provider, View, defaultTheme } from '@adobe/react-spectrum';
+
 import './storybook.css';
 
 addDecorator((Story) => {
 	const darkMode = useDarkMode();
 	return (
-		<Provider theme={defaultTheme} colorScheme={darkMode ? 'dark' : 'light'} locale="en-US" height="100vh">
+		<Provider theme={defaultTheme} colorScheme={darkMode ? 'dark' : 'light'} locale="en-US" height="auto">
 			<View padding="size-300">
 				<Story />
 			</View>

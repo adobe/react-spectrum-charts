@@ -21,14 +21,6 @@ import { Bar } from 'components/Bar';
 export default {
 	title: 'RSC/Bar/ReferenceLine',
 	component: ReferenceLine,
-	argTypes: {},
-	parameters: {
-		docs: {
-			description: {
-				component: 'This is _markdown_ enabled description for Axis component doc page.',
-			},
-		},
-	},
 };
 
 const data = [

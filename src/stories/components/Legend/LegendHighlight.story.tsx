@@ -16,13 +16,6 @@ import { LegendBarHighlightedSeriesStory, LegendBarStory, defaultProps } from '.
 export default {
 	title: 'RSC/Legend/Highlight',
 	component: Legend,
-	parameters: {
-		docs: {
-			description: {
-				component: 'This is _markdown_ enabled description for Legend component doc page.',
-			},
-		},
-	},
 };
 
 const Basic = LegendBarStory.bind({});

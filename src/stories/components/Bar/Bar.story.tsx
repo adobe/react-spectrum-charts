@@ -22,14 +22,6 @@ import { barData } from './data';
 export default {
 	title: 'RSC/Bar',
 	component: Bar,
-	argTypes: {},
-	parameters: {
-		docs: {
-			description: {
-				component: 'This is _markdown_ enabled description for Bar component doc page.',
-			},
-		},
-	},
 };
 
 const BarStory: ComponentStory<typeof Bar> = (args): ReactElement => {

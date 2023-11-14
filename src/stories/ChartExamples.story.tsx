@@ -53,14 +53,6 @@ import { trendsTimeComparisonData } from './data/trendsTimeComparisonData';
 export default {
 	title: 'RSC/Chart/Examples',
 	component: Chart,
-	argTypes: {},
-	parameters: {
-		docs: {
-			description: {
-				component: 'This is _markdown_ enabled description for Chart component doc page.',
-			},
-		},
-	},
 };
 
 const userGrowthColors: SpectrumColor[] = [
