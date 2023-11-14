@@ -127,7 +127,6 @@ export const getLineStrokeOpacity = ({
 	const baseRule = getOpacityProductionRule(displayOnHover ? { value: 0 } : opacity);
 	if (!interactiveMarkName) return [baseRule];
 	const strokeOpacityRules: ProductionRule<NumericValueRef> = [];
-	// const targetMarkName = interactiveMarkName ?? name;
 
 	// add a rule that will lower the opacity of the line if there is a hovered series, but this line is not the one hovered
 	const hoverSignal = `${interactiveMarkName}_hoveredSeries`;
