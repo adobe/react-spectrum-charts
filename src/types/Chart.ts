@@ -239,6 +239,8 @@ export interface BarProps extends Omit<MarkProps, 'color'> {
 	trellis?: string;
 	/** Orientation of the trellis. Only applicable if `trellis` is also defined. Defaults to "horizontal". */
 	trellisOrientation?: Orientation;
+	/** Padding between trellis groups; ratio between 0 and 1 (https://vega.github.io/vega/docs/scales/#band). Only applicable if `trellis` is also defined. Defaults to 0.2. */
+	trellisPadding?: number;
 	type?: BarType;
 }
 

@@ -16,6 +16,7 @@ import {
 	FILTERED_TABLE,
 	PADDING_RATIO,
 	STACK_ID,
+	TRELLIS_PADDING,
 } from '@constants';
 import { getTransformSort } from '@specBuilder/data/dataUtils';
 import { hasPopover } from '@specBuilder/marks/markUtils';
@@ -57,6 +58,7 @@ export const addBar = produce<Spec, [BarProps & { colorScheme?: ColorScheme; ind
 			orientation = 'vertical',
 			paddingRatio = PADDING_RATIO,
 			trellisOrientation = 'horizontal',
+			trellisPadding = TRELLIS_PADDING,
 			type = 'stacked',
 			...props
 		}
@@ -76,6 +78,7 @@ export const addBar = produce<Spec, [BarProps & { colorScheme?: ColorScheme; ind
 			opacity,
 			paddingRatio,
 			trellisOrientation,
+			trellisPadding,
 			type,
 			...props,
 		};

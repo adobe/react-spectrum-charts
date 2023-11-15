@@ -83,6 +83,7 @@ type BarPropsWithDefaults =
 	| 'paddingRatio'
 	| 'orientation'
 	| 'trellisOrientation'
+	| 'trellisPadding'
 	| 'type';
 
 export interface BarSpecProps
