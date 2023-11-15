@@ -39,6 +39,7 @@ A few things to keep in mind before submitting a pull request:
 -   Make sure linting and tests pass
 -   Include relevant unit tests
 -   Add/update stories in storybook for your changes
+  -   Any change that adds or modifies a prop must have stories to represent this change and tests against said stories
 -   Update documentation
 -   Remember that all submissions require review, please be patient.
 
