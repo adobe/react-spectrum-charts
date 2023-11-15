@@ -111,6 +111,7 @@ describe('trellisedBarUtils', () => {
 				facetName: `${defaultTrellisProps.name}_trellis`,
 				markName: 'yTrellisGroup',
 				scaleName: 'yTrellisBand',
+				paddingInner: 0.2,
 				rangeScale: 'height',
 				axis: 'y',
 			});
@@ -127,18 +128,10 @@ describe('trellisedBarUtils', () => {
 				facetName: `${defaultTrellisProps.name}_trellis`,
 				markName: 'xTrellisGroup',
 				scaleName: 'xTrellisBand',
+				paddingInner: 0.2,
 				rangeScale: 'width',
 				axis: 'x',
 			});
-		});
-
-		test('returns given paddingInner from trellisPadding', () => {
-			const result = getTrellisProperties({
-				...defaultTrellisProps,
-				trellisPadding: 0.5,
-			});
-
-			expect(result).toEqual(expect.objectContaining({ paddingInner: 0.5 }));
 		});
 	});
 
