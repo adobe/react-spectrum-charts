@@ -131,6 +131,15 @@ describe('trellisedBarUtils', () => {
 				axis: 'x',
 			});
 		});
+
+		test('returns given paddingInner from trellisPadding', () => {
+			const result = getTrellisProperties({
+				...defaultTrellisProps,
+				trellisPadding: 0.5,
+			});
+
+			expect(result).toEqual(expect.objectContaining({ paddingInner: 0.5 }));
+		});
 	});
 
 	describe('getTrellisedEncodeEntries()', () => {

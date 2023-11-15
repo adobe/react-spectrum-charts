@@ -327,6 +327,26 @@ describe('barSpecBuilder', () => {
 					defaultDimensionScale,
 				]);
 			});
+
+			test('should add trellis scales', () => {
+				expect(addScales([{ name: 'color', type: 'ordinal' }], {
+					...defaultBarProps,
+					trellis: 'event',
+					trellisOrientation: 'vertical',
+					trellisPadding: 0.5,
+				})).toStrictEqual([
+					defaultColorScale,
+					defaultMetricScale,
+					defaultDimensionScale,
+					{
+						name: 'yTrellisBand',
+						type: 'band',
+						domain: { data: TABLE, fields: ['event'] },
+						range: 'height',
+						paddingInner: 0.5,
+					},
+				]);
+			});
 		});
 	});
 
