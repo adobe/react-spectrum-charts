@@ -111,11 +111,7 @@ export const addMetricScale = (scales: Scale[], metricKeys: string[], metricAxis
  * @param metricAxis
  * @returns
  */
-export const getMetricScale = (
-	metricKeys: string[],
-	metricAxis: AxisType = 'y',
-	chartOrientation: Orientation
-): Scale => {
+export const getMetricScale = (metricKeys: string[], metricAxis: AxisType, chartOrientation: Orientation): Scale => {
 	let scale = getDefaultScale('linear', metricAxis, chartOrientation);
 	scale = addDomainFields(scale, metricKeys);
 	return scale;
