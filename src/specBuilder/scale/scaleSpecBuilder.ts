@@ -114,7 +114,7 @@ export const addMetricScale = (scales: Scale[], metricKeys: string[], metricAxis
 export const getMetricScale = (
 	metricKeys: string[],
 	metricAxis: AxisType = 'y',
-	chartOrientation: Orientation = 'vertical'
+	chartOrientation: Orientation
 ): Scale => {
 	let scale = getDefaultScale('linear', metricAxis, chartOrientation);
 	scale = addDomainFields(scale, metricKeys);
