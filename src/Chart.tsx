@@ -36,8 +36,7 @@ import { VegaChart } from 'VegaChart';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { v4 as uuid } from 'uuid';
 import { Item, View } from 'vega';
-import { Handler } from 'vega-tooltip';
-import { Options as TooltipOptions } from 'vega-tooltip';
+import { Handler, Options as TooltipOptions } from 'vega-tooltip';
 
 import {
 	ActionButton,

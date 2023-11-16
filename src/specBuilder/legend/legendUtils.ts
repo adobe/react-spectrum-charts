@@ -147,7 +147,7 @@ const getHoverEncodings = (
 };
 
 const getTooltip = (descriptions?: LegendDescription[]) => {
-	if (descriptions && descriptions.length) {
+	if (descriptions?.length) {
 		return { signal: 'datum' };
 	}
 	return undefined;
