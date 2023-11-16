@@ -400,6 +400,6 @@ const isValidTheme = (theme: unknown): theme is Theme => {
 	return typeof theme === 'object' && theme !== null && 'light' in theme && 'dark' in theme;
 };
 
-const itemIsLegendItem = (item: Item<any>): boolean => {
+const itemIsLegendItem = (item: Item<unknown>): boolean => {
 	return 'name' in item.mark && typeof item.mark.name === 'string' && item.mark.name.includes('legend');
 };
