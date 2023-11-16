@@ -121,10 +121,18 @@ VerticalBarVerticalTrellis.args = {
 	trellisOrientation: 'vertical',
 };
 
+const WithCustomTrellisPadding = bindWithProps<BarProps>(BarStory);
+WithCustomTrellisPadding.args = {
+	...HorizontalBarVerticalTrellis.args,
+	orientation: 'vertical',
+	trellisPadding: 0.33,
+};
+
 export {
 	Dodged,
 	HorizontalBarHorizontalTrellis,
 	HorizontalBarVerticalTrellis,
 	VerticalBarHorizontalTrellis,
 	VerticalBarVerticalTrellis,
+	WithCustomTrellisPadding,
 };
