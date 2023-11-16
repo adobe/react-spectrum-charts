@@ -19,7 +19,7 @@ import {
 import { getFacetsFromProps } from '@specBuilder/specUtils';
 import { getTrendlineData, getTrendlineMarks, getTrendlineSignals } from '@specBuilder/trendline/trendlineUtils';
 import { sanitizeMarkChildren, toCamelCase } from '@utils';
-import produce from 'immer';
+import { produce } from 'immer';
 import { ColorScheme, LineProps, LineSpecProps, MarkChildElement } from 'types';
 import { Data, Mark, Scale, Signal, Spec } from 'vega';
 

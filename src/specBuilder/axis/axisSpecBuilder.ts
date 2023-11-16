@@ -9,10 +9,17 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
 import { DEFAULT_COLOR_SCHEME, DEFAULT_GRANULARITY, DEFAULT_LABEL_ALIGN, DEFAULT_LABEL_FONT_WEIGHT } from '@constants';
+import {
+	addAxisAnnotationAxis,
+	addAxisAnnotationData,
+	addAxisAnnotationMarks,
+	addAxisAnnotationSignals,
+	getAxisAnnotationsFromChildren,
+} from '@specBuilder/axisAnnotation/axisAnnotationUtils';
 import { getGenericSignal } from '@specBuilder/signal/signalSpecBuilder';
-import produce from 'immer';
+import { sanitizeAxisChildren } from '@utils';
+import { produce } from 'immer';
 import { AxisProps, AxisSpecProps, ColorScheme, Label, Position } from 'types';
 import { Axis, Data, GroupMark, Mark, ScaleType, Signal, Spec } from 'vega';
 
@@ -31,14 +38,6 @@ import {
 	getSubLabelAxis,
 	getTimeAxes,
 } from './axisUtils';
-import { sanitizeAxisChildren } from '@utils';
-import {
-	addAxisAnnotationAxis,
-	addAxisAnnotationData,
-	addAxisAnnotationMarks,
-	addAxisAnnotationSignals,
-	getAxisAnnotationsFromChildren,
-} from '@specBuilder/axisAnnotation/axisAnnotationUtils';
 
 export const addAxis = produce<Spec, [AxisProps & { colorScheme?: ColorScheme; index?: number }]>(
 	(
@@ -58,7 +57,7 @@ export const addAxis = produce<Spec, [AxisProps & { colorScheme?: ColorScheme; i
 			range,
 			ticks = false,
 			...props
-		},
+		}
 	) => {
 		// get the scale that this axis will be associated with
 		const scale = getScale(spec.scales ?? [], position);
@@ -112,7 +111,7 @@ export const addAxis = produce<Spec, [AxisProps & { colorScheme?: ColorScheme; i
 		});
 
 		return spec;
-	},
+	}
 );
 
 export const addAxisData = produce<Data[], [AxisSpecProps & { scaleType: ScaleType }]>((data, props) => {
@@ -137,8 +136,8 @@ export const addAxisSignals = produce<Signal[], [AxisSpecProps]>((signals, props
 					...label,
 					// convert label align to vega align
 					align: getLabelBaselineAlign(label.align, position),
-				})),
-			),
+				}))
+			)
 		);
 	}
 	const axisAnnotations = getAxisAnnotationsFromChildren(props);
@@ -231,7 +230,7 @@ export const addAxes = produce<Axis[], [AxisSpecProps & { scaleName: string; opp
 		});
 
 		axes.push(...newAxes);
-	},
+	}
 );
 
 export const addAxesMarks = produce<

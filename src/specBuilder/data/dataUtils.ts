@@ -10,7 +10,7 @@
  * governing permissions and limitations under the License.
  */
 import { FILTERED_TABLE, SERIES_ID, TABLE } from '@constants';
-import produce from 'immer';
+import { produce } from 'immer';
 import { Compare, Data, FormulaTransform, SourceData, Transforms, ValuesData } from 'vega';
 
 export const addTimeTransform = produce<Transforms[], [string]>((transforms, dimension) => {

@@ -17,7 +17,7 @@ import {
 	getPathFromSymbolShape,
 	getStrokeDashFromLineType,
 } from '@specBuilder/specUtils';
-import produce from 'immer';
+import { produce } from 'immer';
 import {
 	ColorFacet,
 	ColorScheme,

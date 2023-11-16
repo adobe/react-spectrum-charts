@@ -26,7 +26,7 @@ import {
 } from '@specBuilder/signal/signalSpecBuilder';
 import { spectrumColors } from '@themes';
 import { sanitizeMarkChildren, toCamelCase } from '@utils';
-import produce from 'immer';
+import { produce } from 'immer';
 import { AreaProps, AreaSpecProps, ColorScheme, MarkChildElement, ScaleType } from 'types';
 import { Data, Mark, Scale, Signal, Spec } from 'vega';
 
