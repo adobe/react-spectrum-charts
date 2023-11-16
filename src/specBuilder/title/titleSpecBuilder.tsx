@@ -1,5 +1,5 @@
 import { TITLE_FONT_WEIGHT } from '@constants';
-import produce from 'immer';
+import { produce } from 'immer';
 import { TitleProps } from 'types';
 import { Spec } from 'vega';
 
@@ -15,5 +15,5 @@ export const addTitle = produce<Spec, [TitleProps]>(
 		};
 
 		return spec;
-	},
+	}
 );

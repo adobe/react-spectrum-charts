@@ -12,7 +12,7 @@
 import { DEFAULT_COLOR_SCHEME, DEFAULT_LINE_TYPES, FILTERED_TABLE, SERIES_ID, TABLE } from '@constants';
 import { Area, Axis, Bar, Legend, Line, Title } from '@rsc';
 import colorSchemes from '@themes/colorSchemes';
-import produce from 'immer';
+import { produce } from 'immer';
 import {
 	AreaElement,
 	AxisElement,

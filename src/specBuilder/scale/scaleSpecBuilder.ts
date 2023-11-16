@@ -9,11 +9,10 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
 import { DISCRETE_PADDING, FILTERED_TABLE, LINEAR_PADDING, PADDING_RATIO, TABLE } from '@constants';
 import { getBarPadding } from '@specBuilder/bar/barUtils';
 import { toCamelCase } from '@utils';
-import produce from 'immer';
+import { produce } from 'immer';
 import { DualFacet, FacetRef, FacetType, Orientation } from 'types';
 import { Scale, ScaleData, ScaleMultiFieldsRef, SignalRef } from 'vega';
 
@@ -73,11 +72,7 @@ export const addDomainFields = produce<Scale, [string[]]>((scale, values) => {
 
 export const addContinuousDimensionScale = (
 	scales: Scale[],
-	{
-		scaleType,
-		dimension,
-		padding,
-	}: { scaleType: Exclude<ScaleType, 'ordinal'>; dimension: string; padding?: number },
+	{ scaleType, dimension, padding }: { scaleType: Exclude<ScaleType, 'ordinal'>; dimension: string; padding?: number }
 ) => {
 	const index = getScaleIndexByType(scales, scaleType, 'x');
 	const fields = scaleType === 'time' ? ['datetime0'] : [dimension];
@@ -116,11 +111,7 @@ export const addMetricScale = (scales: Scale[], metricKeys: string[], metricAxis
  * @param metricAxis
  * @returns
  */
-export const getMetricScale = (
-	metricKeys: string[],
-	metricAxis: AxisType = 'y',
-	chartOrientation: Orientation = 'vertical',
-): Scale => {
+export const getMetricScale = (metricKeys: string[], metricAxis: AxisType, chartOrientation: Orientation): Scale => {
 	let scale = getDefaultScale('linear', metricAxis, chartOrientation);
 	scale = addDomainFields(scale, metricKeys);
 	return scale;
@@ -135,7 +126,7 @@ export const getMetricScale = (
 export const addFieldToFacetScaleDomain = (
 	scales: Scale[],
 	facetType: FacetType,
-	facetValue: FacetRef<string | number | number[]> | DualFacet | undefined,
+	facetValue: FacetRef<string | number | number[]> | DualFacet | undefined
 ) => {
 	// if facetValue is a string or an array of strings, it is a field reference and should be added the facet scale domain
 	if (typeof facetValue === 'string' || (Array.isArray(facetValue) && facetValue.length)) {
@@ -155,7 +146,7 @@ export const generateScale = (type: ScaleType, axis: AxisType, props?: Partial<S
 export const getDefaultScale = (
 	scaleType: ScaleType,
 	axis: AxisType,
-	chartOrientation: Orientation = 'vertical',
+	chartOrientation: Orientation = 'vertical'
 ): Scale => {
 	const orientationToAxis: { [key in Orientation]: AxisType } = {
 		vertical: 'x',
@@ -204,7 +195,7 @@ export const getPadding = (type: ScaleType) => {
 };
 
 const isScaleMultiFieldsRef = (
-	domain: (null | string | number | boolean | SignalRef)[] | ScaleData | SignalRef | undefined,
+	domain: (null | string | number | boolean | SignalRef)[] | ScaleData | SignalRef | undefined
 ): domain is ScaleMultiFieldsRef => {
 	return Boolean(domain && !Array.isArray(domain) && 'data' in domain && 'fields' in domain);
 };
