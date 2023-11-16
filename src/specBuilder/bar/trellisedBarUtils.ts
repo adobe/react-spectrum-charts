@@ -10,7 +10,7 @@
  * governing permissions and limitations under the License.
  */
 
-import { FILTERED_TABLE, TRELLIS_PADDING } from '@constants';
+import { FILTERED_TABLE } from '@constants';
 import { addDomainFields, getScaleIndexByName } from '@specBuilder/scale/scaleSpecBuilder';
 import { BarSpecProps } from 'types';
 import { GroupMark, Mark, Scale } from 'vega';
@@ -68,13 +68,13 @@ export const addTrellisScale = (scales: Scale[], props: BarSpecProps) => {
 	if (!props.trellis) {
 		return;
 	}
-	const { scaleName, rangeScale } = getTrellisProperties(props);
+	const { scaleName, rangeScale, paddingInner } = getTrellisProperties(props);
 	const trellisScaleIndex = getScaleIndexByName(scales, scaleName, 'band');
 	scales[trellisScaleIndex] = addDomainFields(scales[trellisScaleIndex], [props.trellis]);
 	scales[trellisScaleIndex] = {
 		...scales[trellisScaleIndex],
 		range: rangeScale,
-		paddingInner: TRELLIS_PADDING,
+		paddingInner,
 	} as Scale;
 };
 
@@ -92,9 +92,10 @@ export interface BarTrellisProperties {
 	markName: 'xTrellisGroup' | 'yTrellisGroup';
 	rangeScale: 'width' | 'height';
 	axis: 'x' | 'y';
+	paddingInner: number;
 }
 
-export const getTrellisProperties = ({ trellisOrientation, name }: BarSpecProps): BarTrellisProperties => {
+export const getTrellisProperties = ({ trellisOrientation, name, trellisPadding }: BarSpecProps): BarTrellisProperties => {
 	const axis = trellisOrientation === 'horizontal' ? 'x' : 'y';
 
 	return {
@@ -103,6 +104,7 @@ export const getTrellisProperties = ({ trellisOrientation, name }: BarSpecProps)
 		markName: `${axis}TrellisGroup`,
 		rangeScale: axis === 'x' ? 'width' : 'height',
 		axis,
+		paddingInner: trellisPadding,
 	};
 };
 

@@ -14,7 +14,7 @@ import { getTrellisProperties, getTrellisGroupMark, getTrellisedEncodeEntries, i
 import { defaultBarProps } from './barTestUtils';
 import { BarSpecProps } from 'types';
 import { Scale } from 'vega';
-import { FILTERED_TABLE, TABLE } from '@constants';
+import { FILTERED_TABLE, TABLE, TRELLIS_PADDING } from '@constants';
 
 const defaultTrellisProps: BarSpecProps = { ...defaultBarProps, trellis: 'trellisProperty' };
 const defaultRepeatedScale: Scale = { name: 'xLinear', type: 'linear', domain: { data: TABLE, field: 'x' } };
@@ -111,6 +111,7 @@ describe('trellisedBarUtils', () => {
 				facetName: `${defaultTrellisProps.name}_trellis`,
 				markName: 'yTrellisGroup',
 				scaleName: 'yTrellisBand',
+				paddingInner: TRELLIS_PADDING,
 				rangeScale: 'height',
 				axis: 'y',
 			});
@@ -127,6 +128,7 @@ describe('trellisedBarUtils', () => {
 				facetName: `${defaultTrellisProps.name}_trellis`,
 				markName: 'xTrellisGroup',
 				scaleName: 'xTrellisBand',
+				paddingInner: TRELLIS_PADDING,
 				rangeScale: 'width',
 				axis: 'x',
 			});

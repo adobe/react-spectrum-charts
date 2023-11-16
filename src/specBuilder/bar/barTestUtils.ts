@@ -21,6 +21,7 @@ import {
 	MARK_ID,
 	PADDING_RATIO,
 	STACK_ID,
+	TRELLIS_PADDING,
 } from '@constants';
 import { BarSpecProps } from 'types';
 import { NumericValueRef, ProductionRule, RectEncodeEntry } from 'vega';
@@ -38,6 +39,7 @@ export const defaultBarProps: BarSpecProps = {
 	paddingRatio: PADDING_RATIO,
 	colorScheme: DEFAULT_COLOR_SCHEME,
 	trellisOrientation: 'horizontal',
+	trellisPadding: TRELLIS_PADDING,
 	type: 'stacked',
 	orientation: 'vertical',
 };

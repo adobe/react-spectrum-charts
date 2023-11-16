@@ -11,7 +11,7 @@
  */
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { DEFAULT_CATEGORICAL_DIMENSION, DEFAULT_METRIC, PADDING_RATIO } from '@constants';
+import { DEFAULT_CATEGORICAL_DIMENSION, DEFAULT_METRIC, PADDING_RATIO, TRELLIS_PADDING } from '@constants';
 
 import { BarProps } from '../../types';
 
@@ -24,6 +24,7 @@ export function Bar({
 	lineType = { value: 'solid' },
 	orientation = 'vertical',
 	trellisOrientation = 'horizontal',
+	trellisPadding = TRELLIS_PADDING,
 	paddingRatio = PADDING_RATIO,
 	paddingOuter,
 }: BarProps) {
