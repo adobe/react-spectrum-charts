@@ -13,11 +13,23 @@ import React from 'react';
 
 import { Legend } from '@components/Legend';
 import '@matchMediaMock';
-import { clickNthElement, findChart, getAllLegendEntries, hoverNthElement, render, screen } from '@test-utils';
+import { cleanupTooltips, waitForLegendTooltip } from '@specBuilder/legend/legendTestUtils';
+import {
+	clickNthElement,
+	findChart,
+	getAllLegendEntries,
+	hoverNthElement,
+	render,
+	screen,
+} from '@test-utils';
 
 import { Basic, Descriptions, LabelLimit, OnClick, Position, Supreme, Title } from './Legend.story';
 
 describe('Legend', () => {
+	afterEach(() => {
+		cleanupTooltips();
+	});
+
 	test('Basic renders properly', async () => {
 		render(<Basic {...Basic.args} />);
 		const view = await screen.findByRole('graphics-document');
@@ -30,6 +42,45 @@ describe('Legend', () => {
 		render(<Descriptions {...Descriptions.args} />);
 		const view = await screen.findByRole('graphics-document');
 		expect(view).toBeInTheDocument();
+	});
+
+	test('Displays legend descriptions on hover after a delay', async () => {
+		render(<Descriptions {...Descriptions.args} />);
+		const chart = await findChart();
+		const legendEntries = getAllLegendEntries(chart);
+		await hoverNthElement(legendEntries, 0);
+		let tooltip = screen.queryByTestId('rsc-tooltip');
+
+		expect(tooltip).toBeNull();
+
+		await waitForLegendTooltip();
+		tooltip = await screen.findByTestId('rsc-tooltip');
+		expect(tooltip).toBeInTheDocument();
+		expect(tooltip).toHaveTextContent('WindowsMost popular operating system, especially in business');
+	});
+
+	test('Does not display legend tooltip if there are no descriptions', async () => {
+		render(<Descriptions {...Descriptions.args} descriptions={undefined} />);
+		const chart = await findChart();
+		const legendEntries = getAllLegendEntries(chart);
+		await hoverNthElement(legendEntries, 0);
+
+		await waitForLegendTooltip();
+
+		const tooltip = screen.queryByTestId('rsc-tooltip');
+
+		expect(tooltip).toBeNull();
+	});
+
+	test('Does not display legend tooltip if descriptions is empty', async () => {
+		render(<Descriptions {...Descriptions.args} descriptions={[]} />);
+		const chart = await findChart();
+		const legendEntries = getAllLegendEntries(chart);
+		await hoverNthElement(legendEntries, 0);
+		waitForLegendTooltip();
+
+		const tooltip = screen.queryByTestId('rsc-tooltip');
+		expect(tooltip).toBeNull();
 	});
 
 	test('Disconnected renders properly', async () => {
@@ -83,9 +134,10 @@ describe('Legend', () => {
 
 		const entries = getAllLegendEntries(chart);
 		await hoverNthElement(entries, 0);
+		await waitForLegendTooltip();
 
 		const tooltip = screen.queryByTestId('rsc-tooltip');
-		expect(tooltip).not.toBeInTheDocument();
+		expect(tooltip).toBeNull();
 	});
 
 	test('should call onClick callback when selecting a legend entry', async () => {
