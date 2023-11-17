@@ -43,10 +43,13 @@ jobs:
                 git commit --allow-empty -m "Update gh-pages with latest Storybook build"
                 git push -f origin gh-pages
 
+            - name: Copy 'dist-storybook' to 'gh-pages' branch
+              run: |
+                cp -r dist-storybook/* .
+
             - name: Commit and push changes to 'gh-pages' branch
               run: |
-                cd dist-storybook
-                git add .
+                git add -- . ':!dist-storybook'
                 git commit -m "Update gh-pages with latest Storybook build"
                 git push origin gh-pages
 
