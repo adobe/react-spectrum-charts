@@ -32,15 +32,25 @@ jobs:
             - name: Build Storybook
               run: yarn build:storybook
 
-            - name: Create and Checkout 'gh-pages' branch
+            - name: Checkout and clean current 'gh-pages' branch
               run: |
                   git config user.name "evargast"
                   git config user.email "52969178+evargast@users.noreply.github.com"
-                  git checkout -B gh-pages
-                  git ls-files | grep -v '^PR-/' | xargs git rm -r
-                  rm -rf node_modules  # Explicitly remove the node_modules directory
-                  git commit --allow-empty -m "Update gh-pages with latest Storybook build"
-                  git push -f origin gh-pages
+
+                  # Fetch the existing gh-pages branch
+                  git fetch origin gh-pages
+
+                  # Checkout the existing gh-pages branch
+                  git checkout gh-pages
+
+                  # Remove all files
+                  git rm -r --cached .
+
+                  # Restore directories starting with "PR-"
+                  find . -mindepth 1 -maxdepth 1 -type d -name 'PR-*' -exec git reset {} +
+                  
+                  # Explicitly remove the node_modules directory
+                  rm -rf node_modules  
 
             - name: Copy 'dist-storybook' to 'gh-pages' branch
               run: |
