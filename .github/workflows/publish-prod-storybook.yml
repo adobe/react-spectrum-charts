@@ -9,6 +9,7 @@ on:
 permissions:
     pages: write
     id-token: write
+    contents: write
 
 jobs:
     build-and-deploy:
@@ -33,6 +34,8 @@ jobs:
 
             - name: Create and Checkout 'gh-pages' branch
               run: |
+                git config user.name "evargast"
+                git config user.email "52969178+evargast@users.noreply.github.com"
                 git checkout --orphan gh-pages
                 git rm -rf .
                 git reset -- 'PR-*'
