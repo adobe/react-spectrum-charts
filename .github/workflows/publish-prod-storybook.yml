@@ -31,6 +31,24 @@ jobs:
             - name: Build Storybook
               run: yarn build:storybook
 
+            - name: Create and Checkout 'gh-pages' branch
+              run: |
+                git checkout --orphan gh-pages
+                git rm -rf .
+                git reset -- 'PR-*'
+                git commit --allow-empty -m "Initialize gh-pages branch"
+                git push origin gh-pages
+
+            - name: Copy 'dist-storybook' to 'gh-pages' branch
+              run: |
+                cp -r dist-storybook/* .
+
+            - name: Commit and push changes to 'gh-pages' branch
+              run: |
+                git add -A
+                git commit -m "Update gh-pages with latest Storybook build"
+                git push origin gh-pages
+
             - name: Setup Pages
               uses: actions/configure-pages@v3
 
