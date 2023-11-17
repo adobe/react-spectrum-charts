@@ -5,6 +5,11 @@ on:
         branches:
             - '*'
 
+permissions:
+    contents: write
+    pull-requests: write
+    repository-projects: write
+
 jobs:
     build:
         runs-on: ubuntu-latest
@@ -37,3 +42,52 @@ jobs:
 
             - name: Build 🛠️
               run: yarn build
+
+            - name: Build Storybook
+              run: yarn build:storybook
+
+            - name: Create and Upload Storybook to PR directory
+              run: |
+                  PR_NUMBER="PR-${{ github.event.number }}"
+
+                  git config user.name "evargast"
+                  git config user.email "52969178+evargast@users.noreply.github.com"
+
+                  # Fetch the existing gh-pages branch
+                  git fetch origin gh-pages
+
+                  # Checkout the existing gh-pages branch
+                  git checkout gh-pages
+
+                  # Remove the PR directory if it exists
+                  rm -rf "${PR_NUMBER}"
+
+                  # Create the PR directory
+                  mkdir "${PR_NUMBER}"
+
+                  # Copy the contents of dist-storybook to the directory
+                  cp -r dist-storybook/* "${PR_NUMBER}/"
+
+                  rm -rf node_modules  # Explicitly remove the node_modules directory
+                  rm -rf dist-storybook # Explicitly remove the dist-storybook directory
+
+                  # Add, commit, and push changes
+                  git add "${PR_NUMBER}/."
+                  git commit -m "Update Storybook for ${PR_NUMBER}"
+                  git push -f origin gh-pages
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+            - name: Add comment to the PR with Storybook URL
+              run: |
+                  PR_NUMBER="${{ github.event.number }}"
+                  COMMENT_BODY="🎨 Storybook -> https://opensource.adobe.com/react-spectrum-charts/PR-${PR_NUMBER}"
+
+                  curl -sSL \
+                    -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+                    -X POST \
+                    -d '{"body":"'"${COMMENT_BODY}"'"}' \
+                    "https://api.github.com/repos/${{ github.repository }}/issues/${PR_NUMBER}/comments"
+
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
