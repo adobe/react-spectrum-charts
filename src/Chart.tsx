@@ -75,7 +75,7 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 	(
 		{
 			backgroundColor = 'transparent',
-			data,
+			data = [],
 			colors = 'categorical12',
 			colorScheme = DEFAULT_COLOR_SCHEME,
 			config,

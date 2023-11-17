@@ -142,6 +142,23 @@ describe('Chart', () => {
 	});
 
 	describe('State stories', () => {
+		describe('Empty state renders when data is any falsey state or empty', () => {
+			test('empty data', async () => {
+				render(<Basic {...Basic.args} data={[]} />);
+				expect(await screen.findByText('No data found')).toBeInTheDocument();
+			});
+			test('undefined data', async () => {
+				// non-typescript users could leave data undefined
+				render(<Basic {...Basic.args} data={undefined as unknown as []} />);
+				expect(await screen.findByText('No data found')).toBeInTheDocument();
+			});
+			test('false data', async () => {
+				// non-typescript users could pass false as data
+				render(<Basic {...Basic.args} data={false as unknown as []} />);
+				expect(await screen.findByText('No data found')).toBeInTheDocument();
+			});
+		});
+
 		test('Empty state renders correctly', async () => {
 			render(<EmptyState {...EmptyState.args} />);
 			const text = screen.getByText('No data found');
