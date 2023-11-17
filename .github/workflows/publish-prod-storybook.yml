@@ -39,6 +39,7 @@ jobs:
                 git checkout --orphan gh-pages
                 git rm -rf .
                 git reset -- 'PR-*'
+                rm -rf node_modules  # Explicitly remove the node_modules directory
                 git commit --allow-empty -m "Initialize gh-pages branch"
                 git push origin gh-pages
 
@@ -52,14 +53,3 @@ jobs:
                 git commit -m "Update gh-pages with latest Storybook build"
                 git push origin gh-pages
 
-            - name: Setup Pages
-              uses: actions/configure-pages@v3
-
-            - name: Upload artifact
-              uses: actions/upload-pages-artifact@v2
-              with:
-                  path: './dist-storybook'
-
-            - name: Deploy to GitHub Pages
-              id: deployment
-              uses: actions/deploy-pages@v2
