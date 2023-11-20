@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
+import { BACKGROUND_COLOR } from '@constants';
 import { getInteractive } from '@specBuilder/marks/markUtils';
 import { BarSpecProps } from 'types';
 import { Mark } from 'vega';
@@ -19,8 +19,8 @@ import {
 	getBarEnterEncodings,
 	getBarUpdateEncodings,
 	getBaseBarEnterEncodings,
-	getDodgedGroupMark,
 	getDodgedDimensionEncodings,
+	getDodgedGroupMark,
 } from './barUtils';
 
 export const getDodgedMark = (props: BarSpecProps): Mark => {
@@ -38,7 +38,7 @@ export const getDodgedMark = (props: BarSpecProps): Mark => {
 				encode: {
 					enter: {
 						...getBaseBarEnterEncodings(props),
-						fill: { signal: 'backgroundColor' },
+						fill: { signal: BACKGROUND_COLOR },
 					},
 					update: {
 						...getDodgedDimensionEncodings(props),

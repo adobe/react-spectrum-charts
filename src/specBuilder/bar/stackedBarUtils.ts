@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { FILTERED_TABLE } from '@constants';
+import { BACKGROUND_COLOR, FILTERED_TABLE } from '@constants';
 import { getInteractive } from '@specBuilder/marks/markUtils';
 import { BarSpecProps } from 'types';
 import { Mark, RectEncodeEntry, RectMark } from 'vega';
@@ -75,7 +75,7 @@ export const getStackedBackgroundBar = (props: BarSpecProps): RectMark => {
 		encode: {
 			enter: {
 				...getBaseBarEnterEncodings(props),
-				fill: { signal: 'backgroundColor' },
+				fill: { signal: BACKGROUND_COLOR },
 			},
 			update: {
 				...getStackedDimensionEncodings(props),

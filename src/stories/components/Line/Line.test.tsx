@@ -217,7 +217,7 @@ describe('Line', () => {
 		const chart = await findChart();
 		expect(chart).toBeInTheDocument();
 
-		const points = await findAllMarksByGroupName(chart, 'line0_points');
+		const points = await findAllMarksByGroupName(chart, 'line0_staticPoints');
 		expect(points.length).toEqual(6);
 
 		expect(points[0].getAttribute('fill')).toEqual('rgb(15, 181, 174)');
@@ -265,7 +265,7 @@ describe('Line', () => {
 			expect(hoverPoints[0].getAttribute('fill')).toEqual('rgb(255, 255, 255)');
 			expect(hoverPoints[0].getAttribute('stroke')).toEqual('rgb(15, 181, 174)');
 			expect(hoverPoints[0]).toHaveAttribute('stroke-width', '2');
-			expect(hoverPoints[0]).not.toHaveAttribute('stroke-opacity');
+			expect(hoverPoints[0]).toHaveAttribute('stroke-opacity', '1');
 			expect(hoverPoints[0]).not.toHaveAttribute('fill-opacity');
 		});
 
@@ -274,7 +274,7 @@ describe('Line', () => {
 			const chart = await findChart();
 			expect(chart).toBeInTheDocument();
 
-			const points = await findAllMarksByGroupName(chart, 'line0_points');
+			const points = await findAllMarksByGroupName(chart, 'line0_staticPoints');
 			expect(points.length).toEqual(6);
 
 			expect(points[0].getAttribute('fill')).toEqual('rgb(15, 181, 174)');

@@ -12,7 +12,8 @@
 import { Trendline } from '@components/Trendline';
 import { FILTERED_TABLE, MARK_ID, TRENDLINE_VALUE } from '@constants';
 import { getSeriesIdTransform } from '@specBuilder/data/dataUtils';
-import { LineMarkProps, getLineHoverMarks, getLineMark } from '@specBuilder/line/lineUtils';
+import { getLineHoverMarks, getLineMark } from '@specBuilder/line/lineMarkUtils';
+import { LineMarkProps } from '@specBuilder/line/lineUtils';
 import { hasInteractiveChildren, hasPopover, hasTooltip } from '@specBuilder/marks/markUtils';
 import {
 	getGenericSignal,
@@ -128,19 +129,14 @@ const getTrendlineLineMark = (markProps: LineSpecProps, trendlineProps: Trendlin
 	return getLineMark(mergedTrendlineProps, `${trendlineProps.name}_facet`);
 };
 
-const getTrendlineHoverMarks = (
-	{ children, color, colorScheme, dimension, metric, name, scaleType }: LineSpecProps,
-	highlightRawPoint: boolean
-): GroupMark => {
+const getTrendlineHoverMarks = (lineProps: LineSpecProps, highlightRawPoint: boolean): GroupMark => {
+	const { children, metric, name } = lineProps;
 	const trendlines = getTrendlines(children, name);
-	const trendlineHoverProps = {
+	const trendlineHoverProps: LineMarkProps = {
+		...lineProps,
 		name: `${name}Trendline`,
-		color,
 		children: trendlines.map((trendline) => trendline.children).flat(),
 		metric: TRENDLINE_VALUE,
-		dimension,
-		scaleType,
-		colorScheme,
 	};
 	return {
 		name: `${name}Trendline_hoverGroup`,

@@ -9,10 +9,16 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { createElement } from 'react';
 
 import { Annotation } from '@components/Annotation';
-import { DEFAULT_CATEGORICAL_DIMENSION, DEFAULT_COLOR, DEFAULT_SECONDARY_COLOR, FILTERED_TABLE } from '@constants';
-import { createElement } from 'react';
+import {
+	BACKGROUND_COLOR,
+	DEFAULT_CATEGORICAL_DIMENSION,
+	DEFAULT_COLOR,
+	DEFAULT_SECONDARY_COLOR,
+	FILTERED_TABLE,
+} from '@constants';
 import { GroupMark, Mark, RectEncodeEntry } from 'vega';
 
 import {
@@ -22,7 +28,7 @@ import {
 	defaultBarStrokeEncodings,
 	stackedAnnotationMarks,
 } from './barTestUtils';
-import { getStackedBarMarks, getStackedDimensionEncodings, getDodgedAndStackedBarMark } from './stackedBarUtils';
+import { getDodgedAndStackedBarMark, getStackedBarMarks, getStackedDimensionEncodings } from './stackedBarUtils';
 
 const defaultStackedBarXEncondings: RectEncodeEntry = {
 	x: { scale: 'xBand', field: DEFAULT_CATEGORICAL_DIMENSION },
@@ -33,7 +39,7 @@ const defaultBackgroundMark: Mark = {
 	encode: {
 		enter: {
 			...defaultBarEnterEncodings,
-			fill: { signal: 'backgroundColor' },
+			fill: { signal: BACKGROUND_COLOR },
 		},
 		update: defaultStackedBarXEncondings,
 	},
@@ -75,7 +81,7 @@ describe('stackedBarUtils', () => {
 				getStackedBarMarks({
 					...defaultBarProps,
 					children: [...defaultBarProps.children, annotationElement],
-				}),
+				})
 			).toStrictEqual([defaultBackgroundMark, defaultMark, ...stackedAnnotationMarks]);
 		});
 	});
@@ -158,7 +164,7 @@ describe('stackedBarUtils', () => {
 				getStackedDimensionEncodings({
 					...defaultBarProps,
 					color: [DEFAULT_COLOR, DEFAULT_SECONDARY_COLOR],
-				}),
+				})
 			).toStrictEqual({
 				width: { band: 1, scale: 'bar0_position' },
 				x: { field: 'bar0_dodgeGroup', scale: 'bar0_position' },

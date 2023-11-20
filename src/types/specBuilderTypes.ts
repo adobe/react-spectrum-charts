@@ -22,6 +22,7 @@ import {
 	FacetRef,
 	LegendProps,
 	LineProps,
+	LineWidth,
 	MarkChildElement,
 	MetricRangeProps,
 	TrendlineProps,
@@ -104,27 +105,15 @@ export interface LegendSpecProps
 	symbolShape?: FacetRef<string>;
 }
 
-type LinePropsWithDefaults =
-	| 'name'
-	| 'dimension'
-	| 'metric'
-	| 'color'
-	| 'scaleType'
-	| 'lineType'
-	| 'opacity'
-	| 'colorScheme';
+type LinePropsWithDefaults = 'name' | 'dimension' | 'metric' | 'color' | 'scaleType' | 'lineType' | 'opacity';
 
-export interface LineSpecProps
-	extends PartiallyRequired<
-		LineProps & {
-			colorScheme?: ColorScheme;
-			index: number;
-			interactiveMarkName: string | undefined;
-			popoverMarkName: string | undefined;
-		},
-		LinePropsWithDefaults
-	> {
+export interface LineSpecProps extends PartiallyRequired<LineProps, LinePropsWithDefaults> {
 	children: MarkChildElement[];
+	colorScheme: ColorScheme;
+	index: number;
+	interactiveMarkName: string | undefined;
+	lineWidth?: FacetRef<LineWidth>;
+	popoverMarkName: string | undefined;
 }
 
 type MetricRangePropsWithDefaults = 'lineType' | 'lineWidth' | 'rangeOpacity' | 'metricEnd' | 'metricStart' | 'metric';
