@@ -126,7 +126,7 @@ const HistoricalCompareStory: ComponentStory<typeof Line> = (args): ReactElement
 const LineWithVisiblePointsStory: ComponentStory<typeof Line> = (args): ReactElement => {
 	const chartProps = useChartProps({ ...defaultChartProps, data: workspaceTrendsDataWithVisiblePoints });
 	return (
-		<Chart {...chartProps>
+		<Chart {...chartProps}>
 			<Axis position="left" grid title="Users" />
 			<Axis position="bottom" labelFormat="time" baseline ticks />
 			<Line {...args} />
