@@ -10,6 +10,7 @@
  * governing permissions and limitations under the License.
  */
 import {
+	BACKGROUND_COLOR,
 	CORNER_RADIUS,
 	DEFAULT_CATEGORICAL_DIMENSION,
 	DEFAULT_COLOR,
@@ -129,7 +130,7 @@ export const stackedLabelWithStyles = {
 		enter: {
 			align: { value: 'center' },
 			baseline: { value: 'middle' },
-			fill: [{ test: `datum.textLabel && bandwidth('${stackedXScale}') >= 48`, signal: 'backgroundColor' }],
+			fill: [{ test: `datum.textLabel && bandwidth('${stackedXScale}') >= 48`, signal: BACKGROUND_COLOR }],
 			height: { value: 22 },
 			width: { value: 48 },
 			xc: { scale: stackedXScale, field: defaultBarProps.dimension, band: 0.5 },
@@ -157,7 +158,7 @@ export const stackedLabelBackground = {
 		enter: {
 			align: { value: 'center' },
 			baseline: { value: 'middle' },
-			fill: [{ test: `datum.textLabel && bandwidth('${stackedXScale}') >= 48`, signal: 'backgroundColor' }],
+			fill: [{ test: `datum.textLabel && bandwidth('${stackedXScale}') >= 48`, signal: BACKGROUND_COLOR }],
 			height: { value: 22 },
 			width: { signal: "getLabelWidth(datum.textLabel, 'bold', '12') + 10" },
 			xc: { scale: stackedXScale, field: defaultBarProps.dimension, band: 0.5 },
@@ -219,7 +220,7 @@ export const dodgedLabelWithStyles = {
 					signal: `min(scale('yLinear', datum.${defaultBarProps.metric}), scale('yLinear', 0) - 13.5)`,
 				},
 			],
-			fill: [{ test: `datum.textLabel && bandwidth('${dodgedXScale}') >= 48`, signal: 'backgroundColor' }],
+			fill: [{ test: `datum.textLabel && bandwidth('${dodgedXScale}') >= 48`, signal: BACKGROUND_COLOR }],
 		},
 	},
 };
@@ -241,7 +242,7 @@ export const dodgedLabelBackground = {
 					signal: `min(scale('yLinear', datum.${defaultBarProps.metric}), scale('yLinear', 0) - 13.5)`,
 				},
 			],
-			fill: [{ test: `datum.textLabel && bandwidth('${dodgedXScale}') >= 48`, signal: 'backgroundColor' }],
+			fill: [{ test: `datum.textLabel && bandwidth('${dodgedXScale}') >= 48`, signal: BACKGROUND_COLOR }],
 		},
 	},
 };

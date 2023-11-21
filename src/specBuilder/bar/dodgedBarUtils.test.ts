@@ -14,6 +14,7 @@ import { createElement } from 'react';
 import { Annotation } from '@components/Annotation';
 import { ChartTooltip } from '@components/ChartTooltip';
 import {
+	BACKGROUND_COLOR,
 	CORNER_RADIUS,
 	DEFAULT_CATEGORICAL_DIMENSION,
 	DEFAULT_COLOR,
@@ -71,7 +72,7 @@ const defaultBackgroundMark: Mark = {
 		enter: {
 			...defaultDodgedYEncodings,
 			...defaultDodgedCornerRadiusEncodings,
-			fill: { signal: 'backgroundColor' },
+			fill: { signal: BACKGROUND_COLOR },
 		},
 		update: { ...defaultDodgedXEncodings },
 	},
@@ -135,7 +136,7 @@ const defaultDodgedStackedBackgroundMark: Mark = {
 	encode: {
 		enter: {
 			...defaultDodgedStackedEnterEncodings,
-			fill: { signal: 'backgroundColor' },
+			fill: { signal: BACKGROUND_COLOR },
 		},
 		update: { ...defaultDodgedXEncodings },
 	},

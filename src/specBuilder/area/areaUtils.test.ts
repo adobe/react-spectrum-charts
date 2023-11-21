@@ -9,8 +9,8 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { BACKGROUND_COLOR, DEFAULT_COLOR_SCHEME } from '@constants';
 
-import { DEFAULT_COLOR_SCHEME } from '@constants';
 import { getAreaMark } from './areaUtils';
 
 describe('getAreaMark', () => {
@@ -27,7 +27,7 @@ describe('getAreaMark', () => {
 				dimension: 'dimension',
 				scaleType: 'linear',
 				opacity: 0.5,
-			}),
+			})
 		).toStrictEqual({
 			name: 'area0',
 			type: 'area',
@@ -81,7 +81,7 @@ describe('getAreaMark', () => {
 				dimension: 'dimension',
 				scaleType: 'linear',
 				opacity: 0.5,
-			}),
+			})
 		).toStrictEqual({
 			name: 'area0',
 			type: 'area',
@@ -105,7 +105,7 @@ describe('getAreaMark', () => {
 						field: 'color',
 					},
 					stroke: {
-						signal: 'backgroundColor',
+						signal: BACKGROUND_COLOR,
 					},
 					strokeWidth: {
 						value: 1.5,
@@ -143,7 +143,7 @@ describe('getAreaMark', () => {
 				dimension: 'dimension',
 				scaleType: 'time',
 				opacity: 0.5,
-			}),
+			})
 		).toStrictEqual({
 			name: 'area0',
 			type: 'area',
@@ -197,7 +197,7 @@ describe('getAreaMark', () => {
 				dimension: 'dimension',
 				scaleType: 'point',
 				opacity: 0.5,
-			}),
+			})
 		).toStrictEqual({
 			name: 'area0',
 			type: 'area',

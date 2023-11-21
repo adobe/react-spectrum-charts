@@ -13,7 +13,15 @@ import React from 'react';
 
 import { Bar } from '@components/Bar';
 import { Legend } from '@components/Legend';
-import { DEFAULT_COLOR, DEFAULT_SECONDARY_COLOR, FILTERED_TABLE, MARK_ID, SERIES_ID, TABLE } from '@constants';
+import {
+	BACKGROUND_COLOR,
+	DEFAULT_COLOR,
+	DEFAULT_SECONDARY_COLOR,
+	FILTERED_TABLE,
+	MARK_ID,
+	SERIES_ID,
+	TABLE,
+} from '@constants';
 import { ROUNDED_SQUARE_PATH } from 'svgPaths';
 import { BarProps, LegendProps } from 'types';
 import { Data } from 'vega';
@@ -447,7 +455,7 @@ describe('Chart spec builder', () => {
 
 	describe('getDefaultSignals()', () => {
 		const defaultSignals = [
-			{ name: 'backgroundColor', value: 'rgb(255, 255, 255)' },
+			{ name: BACKGROUND_COLOR, value: 'rgb(255, 255, 255)' },
 			{
 				name: 'colors',
 				value: [

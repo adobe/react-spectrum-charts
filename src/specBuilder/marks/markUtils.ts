@@ -15,7 +15,7 @@ import { ChartPopover } from '@components/ChartPopover';
 import { ChartTooltip } from '@components/ChartTooltip';
 import { MetricRange } from '@components/MetricRange';
 import { Trendline } from '@components/Trendline';
-import { HIGHLIGHT_CONTRAST_RATIO } from '@constants';
+import { BACKGROUND_COLOR, HIGHLIGHT_CONTRAST_RATIO } from '@constants';
 import { getColorValue, getLineWidthPixelsFromLineWidth, getStrokeDashFromLineType } from '@specBuilder/specUtils';
 import {
 	ColorFacet,
@@ -32,7 +32,6 @@ import {
 	ColorValueRef,
 	Cursor,
 	NumericValueRef,
-	ProductionRule,
 	ScaledValueRef,
 	SignalRef,
 } from 'vega';
@@ -71,7 +70,7 @@ export function getTooltip(children: MarkChildElement[], name: string, nestedDat
 export const getBorderStrokeEncodings = (isStacked: boolean, isArea = false): AreaEncodeEntry => {
 	if (isStacked)
 		return {
-			stroke: { signal: 'backgroundColor' },
+			stroke: { signal: BACKGROUND_COLOR },
 			strokeWidth: { value: isArea ? 1.5 : 1 },
 			strokeJoin: { value: 'round' },
 		};
@@ -111,7 +110,10 @@ export const getColorProductionRule = (color: ColorFacet | DualFacet, colorSchem
 	return { value: getColorValue(color.value, colorScheme) };
 };
 
-export const getLineWidthProductionRule = (lineWidth: LineWidthFacet | DualFacet): NumericValueRef => {
+export const getLineWidthProductionRule = (
+	lineWidth: LineWidthFacet | DualFacet | undefined
+): NumericValueRef | undefined => {
+	if (!lineWidth) return;
 	if (Array.isArray(lineWidth)) {
 		// 2d key reference for setting line width
 		return {
@@ -150,9 +152,7 @@ export const getOpacityProductionRule = (opacity: OpacityFacet | DualFacet): { s
 	return { value: opacity.value };
 };
 
-export const getHighlightOpacityValue = (
-	opacityValue: { signal: string } | { value: number }
-): ProductionRule<NumericValueRef> => {
+export const getHighlightOpacityValue = (opacityValue: { signal: string } | { value: number }): NumericValueRef => {
 	if ('signal' in opacityValue) {
 		return { signal: `${opacityValue.signal} / ${HIGHLIGHT_CONTRAST_RATIO}` };
 	}

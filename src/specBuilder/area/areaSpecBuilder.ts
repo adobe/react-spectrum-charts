@@ -11,6 +11,7 @@
  */
 import { ChartPopover } from '@components/ChartPopover';
 import {
+	BACKGROUND_COLOR,
 	DEFAULT_COLOR,
 	DEFAULT_COLOR_SCHEME,
 	DEFAULT_CONTINUOUS_DIMENSION,
@@ -270,7 +271,7 @@ const getHoverMarks = ({ children, name, dimension, metric, color, scaleType }: 
 				enter: {
 					y: { scale: 'yLinear', field: `${metric}1` },
 					stroke: { scale: 'color', field: color },
-					fill: { signal: 'backgroundColor' },
+					fill: { signal: BACKGROUND_COLOR },
 				},
 				update: {
 					x: getX(scaleType, dimension),
