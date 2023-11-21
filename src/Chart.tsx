@@ -194,7 +194,7 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 						<LegendTooltip
 							value={value}
 							descriptions={legendDescriptions}
-							domain={chartView.current?.scale('color').domain()}
+							domain={chartView.current?.scale('legendEntries').domain()}
 						/>
 					);
 				}
