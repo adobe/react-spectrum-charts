@@ -15,8 +15,10 @@ import { HIGHLIGHT_CONTRAST_RATIO } from '@constants';
 import '@matchMediaMock';
 import { Line } from '@rsc';
 import {
+	clickNthElement,
 	findAllMarksByGroupName,
 	findChart,
+	findMarksByGroupName,
 	getAllLegendEntries,
 	getAllLegendSymbols,
 	hoverNthElement,
@@ -35,8 +37,8 @@ import {
 	Opacity,
 	Tooltip,
 	TrendScale,
-	WithPoints,
-	WithPointsAndTooltip,
+	WithStaticPoints,
+	WithStaticPointsAndDialogs,
 } from './Line.story';
 
 describe('Line', () => {
@@ -213,7 +215,7 @@ describe('Line', () => {
 	});
 
 	test('Static points render', async () => {
-		render(<WithPoints {...WithPoints.args} />);
+		render(<WithStaticPoints {...WithStaticPoints.args} />);
 		const chart = await findChart();
 		expect(chart).toBeInTheDocument();
 
@@ -244,7 +246,7 @@ describe('Line', () => {
 
 	describe('Static point highlighting when there are interactive children', () => {
 		test('Points show on hover', async () => {
-			render(<WithPointsAndTooltip {...WithPointsAndTooltip.args} />);
+			render(<WithStaticPointsAndDialogs {...WithStaticPointsAndDialogs.args} />);
 			const chart = await findChart();
 			expect(chart).toBeInTheDocument();
 
@@ -270,7 +272,7 @@ describe('Line', () => {
 		});
 
 		test('Static point hovering', async () => {
-			render(<WithPointsAndTooltip {...WithPointsAndTooltip.args} />);
+			render(<WithStaticPointsAndDialogs {...WithStaticPointsAndDialogs.args} />);
 			const chart = await findChart();
 			expect(chart).toBeInTheDocument();
 
@@ -317,6 +319,64 @@ describe('Line', () => {
 			expect(hoverPoints[0]).toHaveAttribute('stroke-width', '6');
 			expect(hoverPoints[0]).toHaveAttribute('stroke-opacity', '0.2');
 			expect(hoverPoints[0]).not.toHaveAttribute('fill-opacity');
+		});
+	});
+
+	describe('selected point styling', () => {
+		test('points on a line should have a selection ring around them when selected', async () => {
+			render(<WithStaticPointsAndDialogs {...WithStaticPointsAndDialogs.args} />);
+			const chart = await findChart();
+			expect(chart).toBeInTheDocument();
+
+			const paths = await findAllMarksByGroupName(chart, 'line0_voronoi');
+			// hover a static point
+			await clickNthElement(paths, 1);
+
+			const point = await findMarksByGroupName(chart, 'line0_pointSelectRing');
+			expect(point).toBeInTheDocument();
+
+			expect(point.getAttribute('stroke')).toEqual('rgb(20, 115, 230)');
+			expect(point.getAttribute('stroke-width')).toEqual('2');
+		});
+
+		test('static points should have extra wide, low opacity, series color border and series color fill when selected', async () => {
+			render(<WithStaticPointsAndDialogs {...WithStaticPointsAndDialogs.args} />);
+			const chart = await findChart();
+			expect(chart).toBeInTheDocument();
+
+			const paths = await findAllMarksByGroupName(chart, 'line0_voronoi');
+			// select a static point
+			await clickNthElement(paths, 1);
+
+			const point = await findMarksByGroupName(chart, 'line0_point');
+			expect(point).toBeInTheDocument();
+
+			// series color fill
+			expect(point.getAttribute('fill')).toEqual('rgb(15, 181, 174)');
+			// extra widt low opacity series color border
+			expect(point.getAttribute('stroke')).toEqual('rgb(15, 181, 174)');
+			expect(point.getAttribute('stroke-opacity')).toEqual('0.2');
+			expect(point.getAttribute('stroke-width')).toEqual('6');
+		});
+
+		test('standard points should have backgroundColor border and series color fill when selected', async () => {
+			render(<WithStaticPointsAndDialogs {...WithStaticPointsAndDialogs.args} />);
+			const chart = await findChart();
+			expect(chart).toBeInTheDocument();
+
+			const paths = await findAllMarksByGroupName(chart, 'line0_voronoi');
+			// select a standard point
+			await clickNthElement(paths, 2);
+
+			const point = await findMarksByGroupName(chart, 'line0_point');
+			expect(point).toBeInTheDocument();
+
+			// series color fill
+			expect(point.getAttribute('fill')).toEqual('rgb(15, 181, 174)');
+			// full opacity backgroundColor border
+			expect(point.getAttribute('stroke')).toEqual('rgb(255, 255, 255)');
+			expect(point.getAttribute('stroke-opacity')).toEqual('1');
+			expect(point.getAttribute('stroke-width')).toEqual('2');
 		});
 	});
 });

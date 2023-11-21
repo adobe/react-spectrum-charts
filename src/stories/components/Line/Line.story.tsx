@@ -9,11 +9,11 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import React, { ReactElement } from 'react';
+import React, { ReactElement, createElement } from 'react';
 
 import { ReferenceLine } from '@components/ReferenceLine';
 import useChartProps from '@hooks/useChartProps';
-import { Axis, Bar, Chart, ChartTooltip, Legend, Line } from '@rsc';
+import { Axis, Bar, Chart, ChartPopover, ChartTooltip, Legend, Line } from '@rsc';
 import { workspaceTrendsData, workspaceTrendsDataWithVisiblePoints } from '@stories/data/data';
 import { formatTimestamp } from '@stories/storyUtils';
 import { ComponentStory } from '@storybook/react';
@@ -203,8 +203,8 @@ Tooltip.args = {
 	),
 };
 
-const WithPoints = bindWithProps(LineWithVisiblePointsStory);
-WithPoints.args = {
+const WithStaticPoints = bindWithProps(LineWithVisiblePointsStory);
+WithStaticPoints.args = {
 	color: 'series',
 	dimension: 'datetime',
 	metric: 'value',
@@ -213,25 +213,23 @@ WithPoints.args = {
 	staticPoint: 'staticPoint',
 };
 
-const WithPointsAndTooltip = bindWithProps(LineWithVisiblePointsStory);
-WithPointsAndTooltip.args = {
+const dialogCallback = (datum) => (
+	<div className="bar-tooltip">
+		<div>{formatTimestamp(datum.datetime as number)}</div>
+		<div>Event: {datum.series}</div>
+		<div>Users: {Number(datum.value).toLocaleString()}</div>
+	</div>
+);
+
+const WithStaticPointsAndDialogs = bindWithProps(LineWithVisiblePointsStory);
+WithStaticPointsAndDialogs.args = {
 	color: 'series',
 	dimension: 'datetime',
 	metric: 'value',
 	name: 'line0',
 	scaleType: 'time',
 	staticPoint: 'staticPoint',
-	children: (
-		<ChartTooltip>
-			{(datum) => (
-				<div className="bar-tooltip">
-					<div>{formatTimestamp(datum.datetime as number)}</div>
-					<div>Event: {datum.series}</div>
-					<div>Users: {Number(datum.value).toLocaleString()}</div>
-				</div>
-			)}
-		</ChartTooltip>
-	),
+	children: [createElement(ChartTooltip, {}, dialogCallback), createElement(ChartPopover, {}, dialogCallback)],
 };
 
 export {
@@ -243,6 +241,6 @@ export {
 	LinearTrendScale,
 	HistoricalCompare,
 	Tooltip,
-	WithPoints,
-	WithPointsAndTooltip,
+	WithStaticPoints,
+	WithStaticPointsAndDialogs,
 };

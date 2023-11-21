@@ -7,11 +7,17 @@ import {
 	getOpacityProductionRule,
 	getStrokeDashProductionRule,
 	getTooltip,
+	hasPopover,
 } from '@specBuilder/marks/markUtils';
 import { MarkChildElement, OpacityFacet } from 'types';
 import { LineMark, Mark, NumericValueRef, PathMark, ProductionRule, RuleMark, ScaleType, SymbolMark } from 'vega';
 
-import { getHighlightBackgroundPoint, getHighlightPoint, getSecondaryHighlightPoint } from './linePointUtils';
+import {
+	getHighlightBackgroundPoint,
+	getHighlightPoint,
+	getSecondaryHighlightPoint,
+	getSelectRingPoint,
+} from './linePointUtils';
 import { LineMarkProps, getXProductionRule } from './lineUtils';
 
 /**
@@ -111,6 +117,8 @@ export const getLineHoverMarks = (
 		getHoverRule(dimension, name, scaleType),
 		// point behind the hovered or selected point used to prevent bacgorund elements from being visible through low opacity point
 		getHighlightBackgroundPoint(lineProps),
+		// if has popover, add selection ring,
+		...(hasPopover(children) ? [getSelectRingPoint(lineProps)] : []),
 		// hover or select point
 		getHighlightPoint(lineProps),
 		// additional point that gets highlighted like the trendline or raw line point
