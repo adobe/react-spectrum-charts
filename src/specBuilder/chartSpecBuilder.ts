@@ -9,7 +9,14 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { DEFAULT_COLOR_SCHEME, DEFAULT_LINE_TYPES, FILTERED_TABLE, SERIES_ID, TABLE } from '@constants';
+import {
+	BACKGROUND_COLOR,
+	DEFAULT_COLOR_SCHEME,
+	DEFAULT_LINE_TYPES,
+	FILTERED_TABLE,
+	SERIES_ID,
+	TABLE,
+} from '@constants';
 import { Area, Axis, Bar, Legend, Line, Title } from '@rsc';
 import colorSchemes from '@themes/colorSchemes';
 import { produce } from 'immer';
@@ -160,7 +167,7 @@ export const getDefaultSignals = (
 	opacities: Opacities | undefined,
 	hiddenSeries?: string[]
 ): Signal[] => [
-	getGenericSignal('backgroundColor', getColorValue('gray-50', colorScheme)),
+	getGenericSignal(BACKGROUND_COLOR, getColorValue('gray-50', colorScheme)),
 	getGenericSignal('colors', getTwoDimensionalColorScheme(colors, colorScheme)),
 	getGenericSignal('lineTypes', getTwoDimensionalLineTypes(lineTypes)),
 	getGenericSignal('opacities', getTwoDimensionalOpacities(opacities)),

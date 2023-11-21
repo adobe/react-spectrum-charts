@@ -15,6 +15,7 @@ import { ChartPopover } from '@components/ChartPopover';
 import { MetricRange } from '@components/MetricRange';
 import { Trendline } from '@components/Trendline';
 import {
+	BACKGROUND_COLOR,
 	DEFAULT_COLOR,
 	DEFAULT_COLOR_SCHEME,
 	DEFAULT_CONTINUOUS_DIMENSION,
@@ -283,10 +284,10 @@ const metricRangeMarks = [line0_groupMark, metricRangeGroupMark];
 const metricRangeWithDisplayPointMarks = [
 	line0_groupMark,
 	{
-		name: 'line0_points',
+		name: 'line0_staticPoints',
 		type: 'symbol',
 		from: {
-			data: 'line0_pointsData',
+			data: 'line0_staticPointData',
 		},
 		interactive: false,
 		encode: {
@@ -300,7 +301,7 @@ const metricRangeWithDisplayPointMarks = [
 					field: 'series',
 				},
 				stroke: {
-					signal: 'backgroundColor',
+					signal: BACKGROUND_COLOR,
 				},
 			},
 			update: {
@@ -317,10 +318,10 @@ const metricRangeWithDisplayPointMarks = [
 const displayPointMarks = [
 	line0_groupMark,
 	{
-		name: 'line0_points',
+		name: 'line0_staticPoints',
 		type: 'symbol',
 		from: {
-			data: 'line0_pointsData',
+			data: 'line0_staticPointData',
 		},
 		interactive: false,
 		encode: {
@@ -334,7 +335,7 @@ const displayPointMarks = [
 					field: 'series',
 				},
 				stroke: {
-					signal: 'backgroundColor',
+					signal: BACKGROUND_COLOR,
 				},
 			},
 			update: {
@@ -401,8 +402,8 @@ describe('lineSpecBuilder', () => {
 				...defaultLineProps,
 				staticPoint: 'staticPoint',
 			});
-			expect(resultData.find((data) => data.name === 'line0_pointsData')).toStrictEqual({
-				name: 'line0_pointsData',
+			expect(resultData.find((data) => data.name === 'line0_staticPointData')).toStrictEqual({
+				name: 'line0_staticPointData',
 				source: FILTERED_TABLE,
 				transform: [{ expr: 'datum.staticPoint === true', type: 'filter' }],
 			});

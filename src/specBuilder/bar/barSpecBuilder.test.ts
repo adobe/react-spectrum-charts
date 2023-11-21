@@ -15,6 +15,7 @@ import { Annotation } from '@components/Annotation';
 import { ChartPopover } from '@components/ChartPopover';
 import { ChartTooltip } from '@components/ChartTooltip';
 import {
+	BACKGROUND_COLOR,
 	DEFAULT_CATEGORICAL_DIMENSION,
 	DEFAULT_COLOR,
 	DEFAULT_METRIC,
@@ -146,7 +147,7 @@ const defaultBackgroundStackedMark: Mark = {
 		enter: {
 			...defaultStackedYEncodings,
 			...defaultCornerRadiusEncodings,
-			fill: { signal: 'backgroundColor' },
+			fill: { signal: BACKGROUND_COLOR },
 		},
 		update: {
 			x: { scale: 'xBand', field: DEFAULT_CATEGORICAL_DIMENSION },
@@ -329,12 +330,14 @@ describe('barSpecBuilder', () => {
 			});
 
 			test('should add trellis scales', () => {
-				expect(addScales([{ name: 'color', type: 'ordinal' }], {
-					...defaultBarProps,
-					trellis: 'event',
-					trellisOrientation: 'vertical',
-					trellisPadding: 0.5,
-				})).toStrictEqual([
+				expect(
+					addScales([{ name: 'color', type: 'ordinal' }], {
+						...defaultBarProps,
+						trellis: 'event',
+						trellisOrientation: 'vertical',
+						trellisPadding: 0.5,
+					})
+				).toStrictEqual([
 					defaultColorScale,
 					defaultMetricScale,
 					defaultDimensionScale,

@@ -31,15 +31,10 @@ import {
 	getUncontrolledHoverSignal,
 	hasSignalByName,
 } from '../signal/signalSpecBuilder';
-import {
-	getInteractiveMarkName,
-	getLineHighlightedData,
-	getLineHoverMarks,
-	getLineMark,
-	getLinePointMark,
-	getLinePointsData,
-	getPopoverMarkName,
-} from './lineUtils';
+import { getLineHighlightedData, getLineStaticPointData } from './lineDataUtils';
+import { getLineHoverMarks, getLineMark } from './lineMarkUtils';
+import { getLineStaticPoint } from './linePointUtils';
+import { getInteractiveMarkName, getPopoverMarkName } from './lineUtils';
 
 export const addLine = produce<Spec, [LineProps & { colorScheme?: ColorScheme; index?: number }]>(
 	(
@@ -95,7 +90,7 @@ export const addData = produce<Data[], [LineSpecProps]>((data, props) => {
 	if (hasInteractiveChildren(children)) {
 		data.push(getLineHighlightedData(name, FILTERED_TABLE, hasPopover(children)));
 	}
-	if (staticPoint) data.push(getLinePointsData(name, staticPoint, FILTERED_TABLE));
+	if (staticPoint) data.push(getLineStaticPointData(name, staticPoint, FILTERED_TABLE));
 	data.push(...getTrendlineData(props));
 });
 
@@ -153,7 +148,7 @@ export const addLineMarks = produce<Mark[], [LineSpecProps]>((marks, props) => {
 		},
 		marks: [getLineMark(props, `${name}_facet`)],
 	});
-	if (staticPoint) marks.push(getLinePointMark(props));
+	if (staticPoint) marks.push(getLineStaticPoint(props));
 	marks.push(...getMetricRangeGroupMarks(props));
 	if (hasInteractiveChildren(children)) {
 		marks.push(...getLineHoverMarks(props, FILTERED_TABLE));

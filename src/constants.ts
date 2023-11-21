@@ -54,3 +54,6 @@ export const HIGHLIGHT_CONTRAST_RATIO = 5;
 
 // legend tooltips
 export const LEGEND_TOOLTIP_DELAY = 350;
+
+// signal names
+export const BACKGROUND_COLOR = 'backgroundColor';

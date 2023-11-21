@@ -13,6 +13,7 @@ import { Annotation } from '@components/Annotation';
 import {
 	ANNOTATION_FONT_SIZE,
 	ANNOTATION_FONT_WEIGHT,
+	BACKGROUND_COLOR,
 	CORNER_RADIUS,
 	DISCRETE_PADDING,
 	FILTERED_TABLE,
@@ -314,7 +315,7 @@ export const getAnnotationMarks = (
 					fill: [
 						{
 							test: `datum.${textKey} && bandwidth('${localDimensionScaleKey}') >= 48`,
-							signal: 'backgroundColor',
+							signal: BACKGROUND_COLOR,
 						},
 					],
 					width: annotationWidth,

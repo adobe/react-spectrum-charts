@@ -12,7 +12,8 @@
 import { MetricRange } from '@components/MetricRange';
 import { DEFAULT_METRIC, FILTERED_TABLE } from '@constants';
 import { AreaMarkProps, getAreaMark } from '@specBuilder/area/areaUtils';
-import { LineMarkProps, getLineMark } from '@specBuilder/line/lineUtils';
+import { getLineMark } from '@specBuilder/line/lineMarkUtils';
+import { LineMarkProps } from '@specBuilder/line/lineUtils';
 import { getSeriesHoveredSignal } from '@specBuilder/signal/signalSpecBuilder';
 import { getFacetsFromProps } from '@specBuilder/specUtils';
 import { LineSpecProps, MarkChildElement, MetricRangeElement, MetricRangeProps, MetricRangeSpecProps } from 'types';

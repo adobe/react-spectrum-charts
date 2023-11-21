@@ -13,6 +13,7 @@ import { createElement } from 'react';
 
 import { ChartTooltip } from '@components/ChartTooltip';
 import {
+	BACKGROUND_COLOR,
 	DEFAULT_COLOR,
 	DEFAULT_COLOR_SCHEME,
 	DEFAULT_CONTINUOUS_DIMENSION,
@@ -85,7 +86,7 @@ const defaultSpec = initializeSpec({
 							fill: { field: DEFAULT_COLOR, scale: 'color' },
 							y: { field: 'value0', scale: 'yLinear' },
 							y2: { field: 'value1', scale: 'yLinear' },
-							stroke: { signal: 'backgroundColor' },
+							stroke: { signal: BACKGROUND_COLOR },
 							strokeWidth: { value: 1.5 },
 							strokeJoin: { value: 'round' },
 							tooltip: undefined,
