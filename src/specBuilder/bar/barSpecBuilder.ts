@@ -234,12 +234,13 @@ export const addSecondaryScales = (scales: Scale[], props: BarSpecProps) => {
 		].forEach(({ value, scaleName, secondaryScaleName }) => {
 			if (Array.isArray(value) && value.length === 2) {
 				// secondary value scale used for 2D scales
-				const index = getScaleIndexByName(scales, secondaryScaleName, 'ordinal');
-				scales[index] = addDomainFields(scales[index], [value[1]]);
+				const secondaryIndex = getScaleIndexByName(scales, secondaryScaleName, 'ordinal');
+				scales[secondaryIndex] = addDomainFields(scales[secondaryIndex], [value[1]]);
 
-				const i = getScaleIndexByName(scales, scaleName, 'ordinal');
-				const colorsScale = scales[i] as OrdinalScale;
-				colorsScale.range = { signal: scaleName };
+				const primaryIndex = getScaleIndexByName(scales, scaleName, 'ordinal');
+				const primaryScale = scales[primaryIndex] as OrdinalScale;
+				primaryScale.range = { signal: scaleName };
+				scales[primaryIndex] = addDomainFields(primaryScale, [value[0]]);
 			}
 		});
 	}
