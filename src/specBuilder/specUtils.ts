@@ -181,13 +181,14 @@ export const baseData: Data[] = [
  * @returns Spec with default values
  */
 export const initializeSpec = (spec: Spec | null = {}, chartProps: Partial<SanitizedSpecProps> = {}): Spec => {
-	const { title, description, data } = chartProps;
+	const { backgroundColor, colorScheme = 'light', data, description, title } = chartProps;
 
 	const baseSpec: Spec = {
 		title: title || undefined,
 		description,
 		autosize: { type: 'fit', contains: 'padding', resize: true },
 		data: isVegaData(data) ? data : baseData,
+		background: backgroundColor ? getColorValue(backgroundColor, colorScheme) : undefined,
 	};
 
 	return { ...baseSpec, ...(spec || {}) };

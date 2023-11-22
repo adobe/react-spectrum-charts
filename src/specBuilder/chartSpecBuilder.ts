@@ -60,6 +60,7 @@ import {
 import { addTitle } from './title/titleSpecBuilder';
 
 export function buildSpec({
+	backgroundColor,
 	children,
 	colors = 'categorical12',
 	description,
@@ -72,7 +73,7 @@ export function buildSpec({
 	colorScheme = DEFAULT_COLOR_SCHEME,
 	title,
 }: SanitizedSpecProps) {
-	let spec = initializeSpec(null, { title, description });
+	let spec = initializeSpec(null, { backgroundColor, colorScheme, description, title });
 	spec.signals = getDefaultSignals(colors, colorScheme, lineTypes, opacities, hiddenSeries);
 	spec.scales = getDefaultScales(colors, colorScheme, lineTypes, lineWidths, opacities, symbolShapes);
 

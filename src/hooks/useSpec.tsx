@@ -18,6 +18,7 @@ import { buildSpec } from '../specBuilder';
 import { initializeSpec } from '../specBuilder/specUtils';
 
 export default function useSpec({
+	backgroundColor,
 	children,
 	colors,
 	colorScheme,
@@ -35,7 +36,13 @@ export default function useSpec({
 	return useMemo(() => {
 		// They already supplied a spec, fill it in with defaults
 		if (UNSAFE_vegaSpec) {
-			const vegaSpecWithDefaults = initializeSpec(UNSAFE_vegaSpec, { data, description, title });
+			const vegaSpecWithDefaults = initializeSpec(UNSAFE_vegaSpec, {
+				backgroundColor,
+				colorScheme,
+				data,
+				description,
+				title,
+			});
 
 			// copy the spec so we don't mutate the original
 			return JSON.parse(JSON.stringify(vegaSpecWithDefaults));
@@ -46,6 +53,7 @@ export default function useSpec({
 		return JSON.parse(
 			JSON.stringify(
 				buildSpec({
+					backgroundColor,
 					children,
 					colors,
 					colorScheme,
@@ -61,6 +69,7 @@ export default function useSpec({
 			)
 		);
 	}, [
+		backgroundColor,
 		children,
 		colors,
 		colorScheme,

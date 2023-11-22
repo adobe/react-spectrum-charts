@@ -116,6 +116,7 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 
 		// THE MAGIC, builds our spec
 		const spec = useSpec({
+			backgroundColor,
 			children: sanitizedChildren,
 			colors,
 			data,
@@ -244,7 +245,11 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 		}, [colorScheme, hiddenSeriesState, legendIsToggleable, selectedIdSignalName, selectedSeriesSignalName]);
 
 		return (
-			<Provider colorScheme={colorScheme} theme={isValidTheme(theme) ? theme : defaultTheme}>
+			<Provider
+				colorScheme={colorScheme}
+				theme={isValidTheme(theme) ? theme : defaultTheme}
+				UNSAFE_style={{ backgroundColor: 'transparent' }}
+			>
 				<div
 					ref={containerRef}
 					id={chartId.current}
