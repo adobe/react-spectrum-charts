@@ -55,4 +55,6 @@ this removes transitions in the vega tooltip
 }
 .rsc-container {
 	position: relative;
+	width: auto;
+	height: auto;
 }

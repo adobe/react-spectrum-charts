@@ -13,7 +13,7 @@ import { FC, MutableRefObject, forwardRef, useEffect, useMemo, useRef, useState 
 
 import { EmptyState } from '@components/EmptyState';
 import { LoadingState } from '@components/LoadingState';
-import { DEFAULT_COLOR_SCHEME, DEFAULT_LINE_TYPES, MARK_ID, SERIES_ID } from '@constants';
+import { DEFAULT_BACKGROUND_COLOR, DEFAULT_COLOR_SCHEME, DEFAULT_LINE_TYPES, MARK_ID, SERIES_ID } from '@constants';
 import useChartImperativeHandle from '@hooks/useChartImperativeHandle';
 import useChartWidth from '@hooks/useChartWidth';
 import useElementSize from '@hooks/useElementSize';
@@ -74,7 +74,7 @@ interface PlaceholderContentProps {
 export const Chart = forwardRef<ChartHandle, ChartProps>(
 	(
 		{
-			backgroundColor = 'transparent',
+			backgroundColor = DEFAULT_BACKGROUND_COLOR,
 			data,
 			colors = 'categorical12',
 			colorScheme = DEFAULT_COLOR_SCHEME,
@@ -116,6 +116,7 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 
 		// THE MAGIC, builds our spec
 		const spec = useSpec({
+			backgroundColor,
 			children: sanitizedChildren,
 			colors,
 			data,
@@ -244,7 +245,11 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 		}, [colorScheme, hiddenSeriesState, legendIsToggleable, selectedIdSignalName, selectedSeriesSignalName]);
 
 		return (
-			<Provider colorScheme={colorScheme} theme={isValidTheme(theme) ? theme : defaultTheme}>
+			<Provider
+				colorScheme={colorScheme}
+				theme={isValidTheme(theme) ? theme : defaultTheme}
+				UNSAFE_style={{ backgroundColor: 'transparent' }}
+			>
 				<div
 					ref={containerRef}
 					id={chartId.current}
