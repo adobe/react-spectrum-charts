@@ -15,6 +15,7 @@ import { Bar } from '@components/Bar';
 import { Legend } from '@components/Legend';
 import {
 	BACKGROUND_COLOR,
+	DEFAULT_BACKGROUND_COLOR,
 	DEFAULT_COLOR,
 	DEFAULT_SECONDARY_COLOR,
 	FILTERED_TABLE,
@@ -478,18 +479,16 @@ describe('Chart spec builder', () => {
 		];
 
 		test('hiddenSeries is empty when no hidden series', () => {
-			expect(getDefaultSignals('categorical12', 'light', ['dashed'], [1])).toStrictEqual([
-				...defaultSignals,
-				{ name: 'hiddenSeries', value: [] },
-			]);
+			expect(
+				getDefaultSignals(DEFAULT_BACKGROUND_COLOR, 'categorical12', 'light', ['dashed'], [1])
+			).toStrictEqual([...defaultSignals, { name: 'hiddenSeries', value: [] }]);
 		});
 
 		test('hiddenSeries contains provided hidden series', () => {
 			const hiddenSeries = ['test'];
-			expect(getDefaultSignals('categorical12', 'light', ['dashed'], [1], hiddenSeries)).toStrictEqual([
-				...defaultSignals,
-				{ name: 'hiddenSeries', value: hiddenSeries },
-			]);
+			expect(
+				getDefaultSignals(DEFAULT_BACKGROUND_COLOR, 'categorical12', 'light', ['dashed'], [1], hiddenSeries)
+			).toStrictEqual([...defaultSignals, { name: 'hiddenSeries', value: hiddenSeries }]);
 		});
 	});
 });

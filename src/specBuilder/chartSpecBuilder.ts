@@ -11,6 +11,7 @@
  */
 import {
 	BACKGROUND_COLOR,
+	DEFAULT_BACKGROUND_COLOR,
 	DEFAULT_COLOR_SCHEME,
 	DEFAULT_LINE_TYPES,
 	FILTERED_TABLE,
@@ -60,7 +61,7 @@ import {
 import { addTitle } from './title/titleSpecBuilder';
 
 export function buildSpec({
-	backgroundColor,
+	backgroundColor = DEFAULT_BACKGROUND_COLOR,
 	children,
 	colors = 'categorical12',
 	description,
@@ -74,7 +75,7 @@ export function buildSpec({
 	title,
 }: SanitizedSpecProps) {
 	let spec = initializeSpec(null, { backgroundColor, colorScheme, description, title });
-	spec.signals = getDefaultSignals(colors, colorScheme, lineTypes, opacities, hiddenSeries);
+	spec.signals = getDefaultSignals(backgroundColor, colors, colorScheme, lineTypes, opacities, hiddenSeries);
 	spec.scales = getDefaultScales(colors, colorScheme, lineTypes, lineWidths, opacities, symbolShapes);
 
 	// need to build the spec in a specific order
@@ -162,18 +163,24 @@ const initializeComponentCounts = () => {
 };
 
 export const getDefaultSignals = (
+	backgroundColor: string,
 	colors: ChartColors,
 	colorScheme: ColorScheme,
 	lineTypes: LineTypes,
 	opacities: Opacities | undefined,
 	hiddenSeries?: string[]
-): Signal[] => [
-	getGenericSignal(BACKGROUND_COLOR, getColorValue('gray-50', colorScheme)),
-	getGenericSignal('colors', getTwoDimensionalColorScheme(colors, colorScheme)),
-	getGenericSignal('lineTypes', getTwoDimensionalLineTypes(lineTypes)),
-	getGenericSignal('opacities', getTwoDimensionalOpacities(opacities)),
-	getGenericSignal('hiddenSeries', hiddenSeries ?? []),
-];
+): Signal[] => {
+	// if the background color is transparent, then we want to set the signal background color to gray-50
+	// if the signal background color were transparent then backgroundMarks and annotation fill would also be transparent
+	const signalBackgroundColor = backgroundColor === 'transparent' ? 'gray-50' : backgroundColor;
+	return [
+		getGenericSignal(BACKGROUND_COLOR, getColorValue(signalBackgroundColor, colorScheme)),
+		getGenericSignal('colors', getTwoDimensionalColorScheme(colors, colorScheme)),
+		getGenericSignal('lineTypes', getTwoDimensionalLineTypes(lineTypes)),
+		getGenericSignal('opacities', getTwoDimensionalOpacities(opacities)),
+		getGenericSignal('hiddenSeries', hiddenSeries ?? []),
+	];
+};
 
 export const getTwoDimensionalColorScheme = (colors: ChartColors, colorScheme: ColorScheme): string[][] => {
 	if (isColors(colors)) {

@@ -26,6 +26,7 @@ export const DEFAULT_SECONDARY_COLOR = 'subSeries';
 export const DEFAULT_SYMBOL_SIZE = 100;
 export const DEFAULT_SYMBOL_STROKE_WIDTH = 2;
 export const DEFAULT_COLOR_SCHEME = 'light';
+export const DEFAULT_BACKGROUND_COLOR = 'transparent';
 export const DEFAULT_AXIS_ANNOTATION_COLOR = 'gray-600';
 export const DEFAULT_AXIS_ANNOTATION_OFFSET = 80;
 export const TITLE_FONT_WEIGHT = 'bold';
@@ -53,4 +54,5 @@ export const TRELLIS_PADDING = 0.2;
 export const HIGHLIGHT_CONTRAST_RATIO = 5;
 
 // signal names
-export const BACKGROUND_COLOR = 'backgroundColor';
+// 'backgroundColor' is an undocumented protected signal name used by vega
+export const BACKGROUND_COLOR = 'chartBackgroundColor';
