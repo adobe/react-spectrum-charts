@@ -128,6 +128,8 @@ describe('Legend', () => {
 		expect(tooltip).toBeVisible();
 		expect(tooltip).toHaveTextContent('Series | Previous perioddescription previous');
 
+		cleanupTooltips();
+
 		await hoverNthElement(entries, 1);
 
 		tooltip = await screen.findByTestId('rsc-tooltip');
