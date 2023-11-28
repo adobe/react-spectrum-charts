@@ -14,14 +14,8 @@ import React from 'react';
 import { Legend } from '@components/Legend';
 import '@matchMediaMock';
 import { cleanupTooltips, waitForLegendTooltip } from '@specBuilder/legend/legendTestUtils';
-import {
-	clickNthElement,
-	findChart,
-	getAllLegendEntries,
-	hoverNthElement,
-	render,
-	screen,
-} from '@test-utils';
+import { clickNthElement, findChart, getAllLegendEntries, hoverNthElement, render, screen } from '@test-utils';
+import { Chart } from 'Chart';
 
 import { Basic, Descriptions, LabelLimit, OnClick, Position, Supreme, Title } from './Legend.story';
 
@@ -81,6 +75,64 @@ describe('Legend', () => {
 
 		const tooltip = screen.queryByTestId('rsc-tooltip');
 		expect(tooltip).toBeNull();
+	});
+
+	test('Description tooltips display for multiple entries with one series', async () => {
+		const data = [
+			{
+				period: 'Previous period',
+				series: 'series',
+			},
+			{
+				period: 'Current period',
+				series: 'series',
+			},
+		];
+
+		const descriptions = [
+			{
+				seriesName: 'series | Previous period',
+				description: 'description previous',
+				title: 'Series | Previous period',
+			},
+			{
+				seriesName: 'series | Current period',
+				description: 'description current',
+				title: 'Series | Current period',
+			},
+		];
+
+		const legendLabels = [
+			{
+				seriesName: descriptions[0].seriesName,
+				label: descriptions[0].title,
+			},
+			{
+				seriesName: descriptions[1].seriesName,
+				label: descriptions[1].title,
+			},
+		];
+
+		render(
+			<Chart data={data} width={700}>
+				<Legend color="series" lineType="period" descriptions={descriptions} legendLabels={legendLabels} />
+			</Chart>
+		);
+		const chart = await findChart();
+		expect(chart).toBeInTheDocument();
+
+		const entries = getAllLegendEntries(chart);
+		await hoverNthElement(entries, 0);
+
+		let tooltip = await screen.findByTestId('rsc-tooltip');
+		expect(tooltip).toBeVisible();
+		expect(tooltip).toHaveTextContent('Series | Previous perioddescription previous');
+
+		await hoverNthElement(entries, 1);
+
+		tooltip = await screen.findByTestId('rsc-tooltip');
+		expect(tooltip).toBeVisible();
+		expect(tooltip).toHaveTextContent('Series | Current perioddescription current');
 	});
 
 	test('Disconnected renders properly', async () => {
