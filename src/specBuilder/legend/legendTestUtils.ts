@@ -15,9 +15,27 @@ import {
 	DEFAULT_METRIC,
 	FILTERED_TABLE,
 	HIGHLIGHT_CONTRAST_RATIO,
+	LEGEND_TOOLTIP_DELAY,
 } from '@constants';
 import { LegendSpecProps } from 'types';
 import { LineMark } from 'vega';
+
+/**
+ * Wait for the the duration of the legend tooltip hover delay.
+ */
+export const waitForLegendTooltip = async () => {
+	await new Promise((resolve) => setTimeout(resolve, LEGEND_TOOLTIP_DELAY));
+};
+
+/**
+ * Tooltips are rendered in a portal, so jest's default cleanup won't remove them.
+ * This helper will remove all vega tooltips from the DOM.
+ */
+export const cleanupTooltips = () => {
+	document.body.querySelectorAll('.vg-tooltip').forEach((node) => {
+		node.remove();
+	});
+};
 
 export const opacityEncoding = [
 	{ test: 'highlightedSeries && datum.value !== highlightedSeries', value: 1 / HIGHLIGHT_CONTRAST_RATIO },
