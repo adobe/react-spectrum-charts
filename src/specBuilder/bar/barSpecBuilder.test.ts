@@ -297,11 +297,16 @@ describe('barSpecBuilder', () => {
 						defaultMetricScale,
 						defaultDimensionScale,
 						{
-							domain: { data: TABLE, fields: [DEFAULT_SECONDARY_COLOR] },
 							name: 'secondaryColor',
 							type: 'ordinal',
+							domain: { data: TABLE, fields: [DEFAULT_SECONDARY_COLOR] },
 						},
-						{ name: 'colors', range: { signal: 'colors' }, type: 'ordinal' },
+						{
+							name: 'colors',
+							type: 'ordinal',
+							range: { signal: 'colors' },
+							domain: { data: TABLE, fields: [DEFAULT_COLOR] },
+						},
 					]
 				);
 			});
@@ -364,11 +369,16 @@ describe('barSpecBuilder', () => {
 			addSecondaryScales(scales, { ...defaultBarProps, color: [DEFAULT_COLOR, DEFAULT_SECONDARY_COLOR] });
 			expect(scales).toStrictEqual([
 				{
-					domain: { data: TABLE, fields: [DEFAULT_SECONDARY_COLOR] },
 					name: 'secondaryColor',
 					type: 'ordinal',
+					domain: { data: TABLE, fields: [DEFAULT_SECONDARY_COLOR] },
 				},
-				{ name: 'colors', range: { signal: 'colors' }, type: 'ordinal' },
+				{
+					name: 'colors',
+					type: 'ordinal',
+					range: { signal: 'colors' },
+					domain: { data: TABLE, fields: [DEFAULT_COLOR] },
+				},
 			]);
 		});
 		test('secondary lineType facet, should add colors secondary scale', () => {
@@ -376,11 +386,16 @@ describe('barSpecBuilder', () => {
 			addSecondaryScales(scales, { ...defaultBarProps, lineType: [DEFAULT_COLOR, DEFAULT_SECONDARY_COLOR] });
 			expect(scales).toStrictEqual([
 				{
-					domain: { data: TABLE, fields: [DEFAULT_SECONDARY_COLOR] },
 					name: 'secondaryLineType',
 					type: 'ordinal',
+					domain: { data: TABLE, fields: [DEFAULT_SECONDARY_COLOR] },
 				},
-				{ name: 'lineTypes', range: { signal: 'lineTypes' }, type: 'ordinal' },
+				{
+					name: 'lineTypes',
+					type: 'ordinal',
+					range: { signal: 'lineTypes' },
+					domain: { data: TABLE, fields: [DEFAULT_COLOR] },
+				},
 			]);
 		});
 		test('secondary opacity facet, should add colors secondary scale', () => {
@@ -388,11 +403,16 @@ describe('barSpecBuilder', () => {
 			addSecondaryScales(scales, { ...defaultBarProps, opacity: [DEFAULT_COLOR, DEFAULT_SECONDARY_COLOR] });
 			expect(scales).toStrictEqual([
 				{
-					domain: { data: TABLE, fields: [DEFAULT_SECONDARY_COLOR] },
 					name: 'secondaryOpacity',
 					type: 'ordinal',
+					domain: { data: TABLE, fields: [DEFAULT_SECONDARY_COLOR] },
 				},
-				{ name: 'opacities', range: { signal: 'opacities' }, type: 'ordinal' },
+				{
+					name: 'opacities',
+					type: 'ordinal',
+					range: { signal: 'opacities' },
+					domain: { data: TABLE, fields: [DEFAULT_COLOR] },
+				},
 			]);
 		});
 	});

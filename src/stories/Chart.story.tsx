@@ -41,6 +41,13 @@ const Basic = bindWithProps(ChartLineStory);
 // Story specific props are passed here
 Basic.args = { data, renderer: 'svg', height: 300 };
 
+const BackgroundColor = bindWithProps(ChartLineStory);
+BackgroundColor.args = {
+	backgroundColor: 'gray-50',
+	padding: 32,
+	data,
+};
+
 const Config = bindWithProps(ChartBarStory);
 Config.args = {
 	config: {
@@ -59,4 +66,4 @@ Width.args = {
 	data,
 };
 
-export { Basic, Config, Width };
+export { Basic, BackgroundColor, Config, Width };

@@ -16,7 +16,7 @@ import { Axis, Bar, Chart, ChartHandle, ChartTooltip, Line } from '@rsc';
 import { findChart, getAllMarksByGroupName, render, screen } from '@test-utils';
 import { getElement } from '@utils';
 
-import { Basic, Config, Width } from './Chart.story';
+import { BackgroundColor, Basic, Config, Width } from './Chart.story';
 import {
 	CssColors,
 	SpectrumColorNames,
@@ -138,6 +138,19 @@ describe('Chart', () => {
 			expect(bars[1].getAttribute('fill')).toEqual('rgb(38, 142, 108)');
 			expect(bars[2].getAttribute('fill')).toEqual('#0d66d0');
 			expect(bars[3].getAttribute('fill')).toEqual('hsl(32deg, 86%, 46%)');
+		});
+
+		test('background color gets set', async () => {
+			render(<BackgroundColor {...BackgroundColor.args} />);
+
+			const chart = await findChart();
+			expect(chart).toBeInTheDocument();
+
+			const svg = chart.querySelector('svg');
+			expect(svg).toHaveStyle('background-color: rgb(255, 255, 255);');
+
+			const container = document.querySelector('.rsc-container');
+			expect(container).toHaveStyle('background-color: rgb(255, 255, 255);');
 		});
 	});
 

@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { DEFAULT_SYMBOL_SIZE, DEFAULT_SYMBOL_STROKE_WIDTH } from '@constants';
+import { DEFAULT_BACKGROUND_COLOR, DEFAULT_SYMBOL_SIZE, DEFAULT_SYMBOL_STROKE_WIDTH } from '@constants';
 import { ROUNDED_SQUARE_PATH } from 'svgPaths';
 import { ColorScheme } from 'types';
 import { BaseLegendLayout, Config, mergeConfig } from 'vega';
@@ -93,7 +93,7 @@ function getSpectrumVegaConfig(colorScheme: ColorScheme): Config {
 			ordinal: categorical16,
 			ramp: sequentialViridis16,
 		},
-		background: 'transparent',
+		background: DEFAULT_BACKGROUND_COLOR,
 		legend: {
 			columnPadding: 20,
 			labelColor: gray700,

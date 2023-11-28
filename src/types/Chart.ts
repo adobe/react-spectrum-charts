@@ -37,6 +37,7 @@ export type SimpleData = { [key: string]: unknown };
 export type ChartData = SimpleData | Data;
 
 export interface SpecProps {
+	backgroundColor?: string;
 	// children is optional because it is a pain to make this required with how children get defined in stories
 	// we have a check at the beginning of Chart to make sure this isn't undefined
 	// if it is undefined, we log an error and render a fragment
@@ -67,7 +68,6 @@ export type SymbolShapes = ChartSymbolShape[] | ChartSymbolShape[][];
 export type ChartSymbolShape = 'rounded-square' | SymbolShape;
 
 export interface ChartProps extends SpecProps {
-	backgroundColor?: string;
 	config?: Config;
 	data: ChartData[];
 	debug?: boolean;
