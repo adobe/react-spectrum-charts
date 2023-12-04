@@ -19,6 +19,7 @@ import {
 	BarProps,
 	ChartTooltipElement,
 	ColorScheme,
+	DonutProps,
 	FacetRef,
 	LegendProps,
 	LineProps,
@@ -89,6 +90,13 @@ type BarPropsWithDefaults =
 
 export interface BarSpecProps
 	extends PartiallyRequired<BarProps & { colorScheme: ColorScheme; index: number }, BarPropsWithDefaults> {
+	children: MarkChildElement[];
+}
+
+type DonutPropsWithDefaults = 'color' | 'metric' | 'name' | 'lineType' | 'lineWidth' | 'startAngle' | 'holeRatio';
+
+export interface DonutSpecProps
+	extends PartiallyRequired<DonutProps & { colorScheme: ColorScheme; index: number }, DonutPropsWithDefaults> {
 	children: MarkChildElement[];
 }
 

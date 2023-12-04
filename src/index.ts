@@ -17,6 +17,7 @@ export * from './components/AxisAnnotation';
 export * from './components/Bar';
 export * from './components/ChartPopover';
 export * from './components/ChartTooltip';
+export * from './components/Donut';
 export * from './components/Legend';
 export * from './components/Line';
 export * from './components/MetricRange';

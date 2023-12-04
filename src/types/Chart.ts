@@ -23,6 +23,7 @@ export type AreaElement = ReactElement<AreaProps, JSXElementConstructor<AreaProp
 export type AxisElement = ReactElement<AxisProps, JSXElementConstructor<AxisProps>>;
 export type AxisAnnotationElement = ReactElement<AxisAnnotationProps, JSXElementConstructor<AxisAnnotationProps>>;
 export type BarElement = ReactElement<BarProps, JSXElementConstructor<BarProps>>;
+export type DonutElement = ReactElement<DonutProps, JSXElementConstructor<DonutProps>>;
 export type AnnotationElement = ReactElement<AnnotationProps, JSXElementConstructor<AnnotationProps>>;
 export type LegendElement = ReactElement<LegendProps, JSXElementConstructor<LegendProps>>;
 export type LineElement = ReactElement<LineProps, JSXElementConstructor<LineProps>>;
@@ -104,6 +105,26 @@ export interface AreaProps extends MarkProps {
 	// define area using start/end
 	metricStart?: string; // data field for the start of the area
 	metricEnd?: string; // data field for the end of the area
+}
+
+export interface DonutProps extends Omit<MarkProps, 'color'> {
+	/** donut segment color or key in the data that is used as the color facet */
+	color?: ColorFacet;
+
+	/** line type of the segment border or a key in the data that is used as the line type facet */
+	lineType?: LineTypeFacet;
+
+	/** line width of the segment border */
+	lineWidth?: LineWidth;
+
+	/** text label for the metric total */
+	metricLabel?: string;
+
+	/** start angle of the donut in radians (0 is top dead center) */
+	startAngle?: number;
+
+	/** ratio of the donut inner radius / donut outer radius. 0 is a pie chart. 0.85 is the default. */
+	holeRatio?: number;
 }
 
 export interface AxisProps extends BaseProps {
