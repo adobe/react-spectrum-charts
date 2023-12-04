@@ -108,12 +108,6 @@ export interface AreaProps extends MarkProps {
 }
 
 export interface DonutProps extends MarkProps {
-	/** line type of the segment border or a key in the data that is used as the line type facet */
-	lineType?: LineTypeFacet;
-
-	/** line width of the segment border */
-	lineWidth?: LineWidth;
-
 	/** text label for the metric total */
 	metricLabel?: string;
 

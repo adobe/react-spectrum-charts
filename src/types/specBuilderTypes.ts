@@ -93,7 +93,7 @@ export interface BarSpecProps
 	children: MarkChildElement[];
 }
 
-type DonutPropsWithDefaults = 'color' | 'metric' | 'name' | 'lineType' | 'lineWidth' | 'startAngle' | 'holeRatio';
+type DonutPropsWithDefaults = 'color' | 'metric' | 'name' | 'startAngle' | 'holeRatio';
 
 export interface DonutSpecProps
 	extends PartiallyRequired<DonutProps & { colorScheme: ColorScheme; index: number }, DonutPropsWithDefaults> {

@@ -22,8 +22,6 @@ export function Donut({
 	color = DEFAULT_COLOR,
 	metric = DEFAULT_METRIC,
 	metricLabel,
-	lineType,
-	lineWidth,
 	startAngle,
 	holeRatio,
 }: DonutProps) {
