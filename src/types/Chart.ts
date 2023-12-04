@@ -107,10 +107,7 @@ export interface AreaProps extends MarkProps {
 	metricEnd?: string; // data field for the end of the area
 }
 
-export interface DonutProps extends Omit<MarkProps, 'color'> {
-	/** donut segment color or key in the data that is used as the color facet */
-	color?: ColorFacet;
-
+export interface DonutProps extends MarkProps {
 	/** line type of the segment border or a key in the data that is used as the line type facet */
 	lineType?: LineTypeFacet;
 

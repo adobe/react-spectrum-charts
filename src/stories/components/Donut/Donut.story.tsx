@@ -35,6 +35,8 @@ const DonutStory: ComponentStory<typeof Donut> = (args): ReactElement => {
 const Basic = bindWithProps(DonutStory);
 Basic.args = {
 	metric: 'count',
+	metricLabel: 'Visitors',
+	color: 'id',
 };
 
 export { Basic };

@@ -9,7 +9,8 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { DEFAULT_COLOR_SCHEME, DEFAULT_METRIC, FILTERED_TABLE } from '@constants';
+import { DEFAULT_COLOR, DEFAULT_COLOR_SCHEME, DEFAULT_METRIC, FILTERED_TABLE } from '@constants';
+import { addFieldToFacetScaleDomain } from '@specBuilder/scale/scaleSpecBuilder';
 import { sanitizeMarkChildren, toCamelCase } from '@utils';
 import { produce } from 'immer';
 import { DonutSpecProps } from 'types';
@@ -21,7 +22,7 @@ export const addDonut = produce<Spec, [DonutProps & { colorScheme?: ColorScheme;
 		spec,
 		{
 			children,
-			color = { value: 'categorical-100' },
+			color = DEFAULT_COLOR,
 			colorScheme = DEFAULT_COLOR_SCHEME,
 			index = 0,
 			lineType = { value: 'solid' },
@@ -60,7 +61,7 @@ export const addData = produce<Data[], [DonutSpecProps]>((data, props) => {
 	const filteredTableIndex = data.findIndex((d) => d.name === FILTERED_TABLE);
 
 	//set up transform
-	data[filteredTableIndex].transform = data[filteredTableIndex].transform ? data[filteredTableIndex].transform : [];
+	data[filteredTableIndex].transform = data[filteredTableIndex].transform ?? [];
 	data[filteredTableIndex].transform?.push({
 		type: 'pie',
 		field: metric,
@@ -75,7 +76,6 @@ export const addData = produce<Data[], [DonutSpecProps]>((data, props) => {
 		transform: [
 			{
 				type: 'aggregate',
-				//groupby: ['id'], JADEN - maybe add this back in, to be seen
 				fields: [metric],
 				ops: ['sum'],
 				as: ['sum'],
@@ -85,15 +85,13 @@ export const addData = produce<Data[], [DonutSpecProps]>((data, props) => {
 });
 
 export const addScales = produce<Scale[], [DonutSpecProps]>((scales, props) => {
-	scales.push({
-		name: 'color',
-		type: 'ordinal',
-		domain: { data: FILTERED_TABLE, field: 'id' },
-		range: { scheme: 'category20' },
-	});
+	const { color } = props;
+	addFieldToFacetScaleDomain(scales, 'color', color);
 });
 
 export const addMarks = produce<Mark[], [DonutSpecProps]>((marks, props) => {
+	const { holeRatio, index, metricLabel } = props;
+	const radius = 'min(width, height) / 2';
 	marks.push({
 		type: 'arc',
 		from: { data: FILTERED_TABLE },
@@ -107,19 +105,19 @@ export const addMarks = produce<Mark[], [DonutSpecProps]>((marks, props) => {
 				startAngle: { field: 'startAngle' },
 				endAngle: { field: 'endAngle' },
 				padAngle: { value: 0.01 },
-				innerRadius: { signal: '0.85* min(width, height) / 2' },
-				outerRadius: { signal: 'min(width, height) / 2' },
+				innerRadius: { signal: `${holeRatio} * ${radius}` },
+				outerRadius: { signal: radius },
 			},
 		},
 	});
 
-	marks.push({
+	const groupMark: Mark = {
 		type: 'group',
-		name: 'donut0_metricLabel',
+		name: `donut${index}_aggregateText`,
 		marks: [
 			{
 				type: 'text',
-				from: { data: `donut${props.index}_aggregate` },
+				from: { data: `donut${index}_aggregate` },
 				encode: {
 					enter: {
 						x: { signal: 'width / 2' },
@@ -130,20 +128,24 @@ export const addMarks = produce<Mark[], [DonutSpecProps]>((marks, props) => {
 					},
 				},
 			},
-			{
-				type: 'text',
-				from: { data: `donut${props.index}_aggregate` },
-				encode: {
-					enter: {
-						x: { signal: 'width / 2' },
-						y: { signal: 'height / 2', offset: 24 },
-						text: { value: 'Visitors' },
-						fontSize: { value: 24 },
-						align: { value: 'center' },
-						baseline: { value: 'top' },
-					},
+		],
+	};
+	if (metricLabel) {
+		groupMark.marks!.push({
+			type: 'text',
+			from: { data: `donut${index}_aggregate` },
+			encode: {
+				enter: {
+					x: { signal: 'width / 2' },
+					y: { signal: 'height / 2', offset: 24 },
+					text: { value: metricLabel },
+					fontSize: { value: 24 },
+					align: { value: 'center' },
+					baseline: { value: 'top' },
 				},
 			},
-		],
-	});
+		});
+	}
+
+	marks.push(groupMark);
 });
