@@ -50,6 +50,7 @@ export interface SpecProps {
 	lineWidths?: LineWidth[]; // line widths available for the chart
 	opacities?: Opacities; // opacities available for the chart
 	title?: string; // chart title
+	animate?: Animation; // whether or not to animate the chart changes
 	UNSAFE_vegaSpec?: Spec; // vega spec to be used instead of the one generated the component API
 	hiddenSeries?: string[]; // series names to hide from the chart
 	highlightedSeries?: string; // series name to highlight
@@ -80,6 +81,15 @@ export interface ChartProps extends SpecProps {
 	width?: Width; // strings must be in a valid percent format ex. '50%'
 	dataTestId?: string;
 	loading?: boolean;
+	animate?: Animation;
+}
+
+export type Animation = boolean | AnimationProps;
+export type AnimationCurve = string; // to be: ease-in, ease-out, ease-in-out, linear, etc
+
+export interface AnimationProps {
+	duration?: number;
+	curve?: AnimationCurve;
 }
 
 export interface BaseProps {

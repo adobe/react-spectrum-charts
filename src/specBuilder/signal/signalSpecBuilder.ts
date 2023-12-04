@@ -9,7 +9,8 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { MARK_ID, SERIES_ID } from '@constants';
+import { ANIMATION_CURVE, ANIMATION_DURATION, ANIMATION_SIGNAL, MARK_ID, SERIES_ID } from '@constants';
+import { Animation, AnimationProps } from 'types';
 import { Signal } from 'vega';
 
 /**
@@ -93,4 +94,32 @@ export const getLegendLabelsSeriesSignal = (value: unknown = null): Signal => {
  */
 export const getGenericSignal = (name: string, value: unknown = null): Signal => {
 	return { name, value };
+};
+
+export const getAnimationSignal = (animation: Animation): Signal => {
+	const { duration } = getAnimationDefaults(animation);
+
+	const FPS = 1000 / 60;
+	const steps = duration / FPS;
+	const stepValue = 1 / steps;
+
+	return {
+		name: ANIMATION_SIGNAL,
+		value: 0,
+		on: [{ events: `timer{${FPS}}`, update: `min(1, ${ANIMATION_SIGNAL} + ${stepValue})` }],
+	};
+};
+
+const getAnimationDefaults = (animation: Animation): Required<AnimationProps> => {
+	if (typeof animation === 'boolean') {
+		return {
+			duration: ANIMATION_DURATION,
+			curve: ANIMATION_CURVE,
+		};
+	}
+	return {
+		duration: ANIMATION_DURATION,
+		curve: ANIMATION_CURVE,
+		...animation,
+	};
 };

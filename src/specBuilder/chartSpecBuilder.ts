@@ -72,6 +72,7 @@ export function buildSpec({
 	opacities,
 	symbolShapes = ['rounded-square'],
 	colorScheme = DEFAULT_COLOR_SCHEME,
+	animate,
 	title,
 }: SanitizedSpecProps) {
 	let spec = initializeSpec(null, { backgroundColor, colorScheme, description, title });
@@ -112,7 +113,7 @@ export function buildSpec({
 					});
 				case Line:
 					lineCount++;
-					return addLine(acc, { ...(cur as LineElement).props, colorScheme, index: lineCount });
+					return addLine(acc, { ...(cur as LineElement).props, colorScheme, index: lineCount, animate });
 				case Title:
 					// No title count. There can only be one title.
 					return addTitle(acc, { ...(cur as TitleElement).props });
@@ -128,7 +129,7 @@ export function buildSpec({
 
 	// add signals and update marks for controlled highlighting if there isn't a legend with highlight enabled
 	if (highlightedSeries && !hasSignalByName(spec.signals ?? [], 'highlightedSeries')) {
-		spec = addHighlight(spec, { children, hiddenSeries, highlightedSeries });
+		spec = addHighlight(spec, { highlightedSeries });
 	}
 
 	// clear out all scales that don't have any fields on the domain
@@ -137,11 +138,13 @@ export function buildSpec({
 	return spec;
 }
 
-export const addHighlight = produce<Spec, [SanitizedSpecProps]>((spec, { highlightedSeries }) => {
-	if (!spec.signals) spec.signals = [];
-	spec.signals.push(getGenericSignal(`highlightedSeries`, highlightedSeries));
-	setHoverOpacityForMarks(spec.marks ?? []);
-});
+export const addHighlight = produce<Spec, [Pick<SanitizedSpecProps, 'highlightedSeries'>]>(
+	(spec, { highlightedSeries }) => {
+		if (!spec.signals) spec.signals = [];
+		spec.signals.push(getGenericSignal(`highlightedSeries`, highlightedSeries));
+		setHoverOpacityForMarks(spec.marks ?? []);
+	}
+);
 
 export const removeUnusedScales = produce<Spec>((spec) => {
 	spec.scales = spec.scales?.filter((scale) => {

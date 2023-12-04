@@ -1,4 +1,5 @@
 import { SERIES_ID } from '@constants';
+import { getEffectiveMetricName } from '@specBuilder/data/dataUtils';
 import {
 	getColorProductionRule,
 	getCursor,
@@ -27,7 +28,8 @@ import { LineMarkProps, getXProductionRule } from './lineUtils';
  * @returns LineMark
  */
 export const getLineMark = (lineMarkProps: LineMarkProps, dataSource: string): LineMark => {
-	const { name, color, metric, dimension, scaleType, lineType, lineWidth, colorScheme } = lineMarkProps;
+	const { name, color, animate, dimension, scaleType, lineType, lineWidth, colorScheme } = lineMarkProps;
+	const metric = getEffectiveMetricName(lineMarkProps.metric, animate);
 
 	return {
 		name,
@@ -36,7 +38,6 @@ export const getLineMark = (lineMarkProps: LineMarkProps, dataSource: string): L
 		interactive: false,
 		encode: {
 			enter: {
-				y: { scale: 'yLinear', field: metric },
 				stroke: getColorProductionRule(color, colorScheme),
 				strokeDash: getStrokeDashProductionRule(lineType),
 				strokeWidth: getLineWidthProductionRule(lineWidth),
@@ -45,6 +46,7 @@ export const getLineMark = (lineMarkProps: LineMarkProps, dataSource: string): L
 				// this has to be in update because when you resize the window that doesn't rebuild the spec
 				// but it may change the x position if it causes the chart to resize
 				x: getXProductionRule(scaleType, dimension),
+				y: { scale: 'yLinear', field: metric },
 				strokeOpacity: getLineStrokeOpacity(lineMarkProps),
 			},
 		},

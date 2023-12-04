@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { LineType } from 'types';
+import { AnimationCurve, LineType } from 'types';
 
 // prop defaults
 export const ANNOTATION_FONT_SIZE = 12;
@@ -43,6 +43,11 @@ export const STACK_ID = 'rscStackId';
 
 // corner radius
 export const CORNER_RADIUS = 6;
+
+// animation
+export const ANIMATION_SIGNAL = 'rscAnimation';
+export const ANIMATION_DURATION = 500;
+export const ANIMATION_CURVE: AnimationCurve = 'linear';
 
 // padding constants
 export const DISCRETE_PADDING = 0.5;

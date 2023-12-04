@@ -9,7 +9,12 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { DEFAULT_COLOR_SCHEME, DEFAULT_CONTINUOUS_DIMENSION, DEFAULT_METRIC, FILTERED_TABLE } from '@constants';
+import {
+	DEFAULT_COLOR_SCHEME,
+	DEFAULT_CONTINUOUS_DIMENSION,
+	DEFAULT_METRIC,
+	FILTERED_TABLE,
+} from '@constants';
 import { hasInteractiveChildren, hasPopover } from '@specBuilder/marks/markUtils';
 import {
 	getMetricRangeGroupMarks,
@@ -20,10 +25,10 @@ import { getFacetsFromProps } from '@specBuilder/specUtils';
 import { getTrendlineData, getTrendlineMarks, getTrendlineSignals } from '@specBuilder/trendline/trendlineUtils';
 import { sanitizeMarkChildren, toCamelCase } from '@utils';
 import { produce } from 'immer';
-import { ColorScheme, LineProps, LineSpecProps, MarkChildElement } from 'types';
+import { Animation, ColorScheme, LineProps, LineSpecProps, MarkChildElement } from 'types';
 import { Data, Mark, Scale, Signal, Spec } from 'vega';
 
-import { addTimeTransform, getTableData } from '../data/dataUtils';
+import { addTimeTransform, getMetricAnimationTransform, getTableData } from '../data/dataUtils';
 import { addContinuousDimensionScale, addFieldToFacetScaleDomain, addMetricScale } from '../scale/scaleSpecBuilder';
 import {
 	getGenericSignal,
@@ -36,7 +41,7 @@ import { getLineHoverMarks, getLineMark } from './lineMarkUtils';
 import { getLineStaticPoint } from './linePointUtils';
 import { getInteractiveMarkName, getPopoverMarkName } from './lineUtils';
 
-export const addLine = produce<Spec, [LineProps & { colorScheme?: ColorScheme; index?: number }]>(
+export const addLine = produce<Spec, [LineProps & { colorScheme?: ColorScheme; index?: number; animate?: Animation }]>(
 	(
 		spec,
 		{
@@ -82,7 +87,7 @@ export const addLine = produce<Spec, [LineProps & { colorScheme?: ColorScheme; i
 );
 
 export const addData = produce<Data[], [LineSpecProps]>((data, props) => {
-	const { dimension, scaleType, children, name, staticPoint } = props;
+	const { dimension, scaleType, children, name, staticPoint, animate, metric } = props;
 	if (scaleType === 'time') {
 		const tableData = getTableData(data);
 		tableData.transform = addTimeTransform(tableData.transform ?? [], dimension);
@@ -92,6 +97,9 @@ export const addData = produce<Data[], [LineSpecProps]>((data, props) => {
 	}
 	if (staticPoint) data.push(getLineStaticPointData(name, staticPoint, FILTERED_TABLE));
 	data.push(...getTrendlineData(props));
+	if (animate) {
+		data[0]?.transform?.push(getMetricAnimationTransform(metric));
+	}
 });
 
 export const addSignals = produce<Signal[], [LineSpecProps]>((signals, props) => {

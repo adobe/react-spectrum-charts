@@ -80,6 +80,16 @@ const LinearStory: ComponentStory<typeof Line> = (args): ReactElement => {
 	);
 };
 
+const AnimatedStory: ComponentStory<typeof Line> = (args): ReactElement => {
+	const chartProps = useChartProps(defaultChartProps);
+	return (
+		<Chart {...chartProps} animate debug>
+			<Line {...args} />
+			<Legend lineWidth={{ value: 0 }} />
+		</Chart>
+	);
+};
+
 const LineStory: ComponentStory<typeof Line> = (args): ReactElement => {
 	const chartProps = useChartProps(defaultChartProps);
 	return (
@@ -142,6 +152,11 @@ Basic.args = {
 	metric: 'value',
 	name: 'line0',
 	scaleType: 'time',
+};
+
+const Animated = bindWithProps(AnimatedStory);
+Animated.args = {
+	...Basic.args
 };
 
 const LineWithAxisAndLegend = bindWithProps(LineStory);
@@ -234,6 +249,7 @@ WithStaticPointsAndDialogs.args = {
 
 export {
 	Basic,
+	Animated,
 	LineWithAxisAndLegend,
 	LineType,
 	Opacity,

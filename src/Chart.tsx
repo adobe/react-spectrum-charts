@@ -97,6 +97,7 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 			theme = defaultTheme,
 			title,
 			width = 'auto',
+			animate,
 			UNSAFE_vegaSpec,
 			...props
 		},
@@ -116,6 +117,7 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 
 		// THE MAGIC, builds our spec
 		const spec = useSpec({
+			animate,
 			backgroundColor,
 			children: sanitizedChildren,
 			colors,

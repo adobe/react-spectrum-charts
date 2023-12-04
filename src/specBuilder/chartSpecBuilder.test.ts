@@ -422,33 +422,26 @@ describe('Chart spec builder', () => {
 
 	describe('addHighlight()', () => {
 		test('creates spec signals and adds highlight signal if no signals are provided', () => {
-			expect(addHighlight({}, { children: [], hiddenSeries: [], highlightedSeries: undefined })).toStrictEqual({
+			expect(addHighlight({}, { highlightedSeries: undefined })).toStrictEqual({
 				signals: [{ name: 'highlightedSeries', value: null }],
 			});
 		});
 
 		test('adds highlight signal to existing spec signals', () => {
 			const testSignal = { name: 'testName', value: 'testValue' };
-			expect(
-				addHighlight(
-					{ signals: [testSignal] },
-					{ children: [], hiddenSeries: [], highlightedSeries: undefined }
-				)
-			).toStrictEqual({
+			expect(addHighlight({ signals: [testSignal] }, { highlightedSeries: undefined })).toStrictEqual({
 				signals: [testSignal, { name: 'highlightedSeries', value: null }],
 			});
 		});
 
 		test('adds highlight signal using the highlightedSeries value', () => {
-			expect(addHighlight({}, { children: [], hiddenSeries: [], highlightedSeries: 'testSeries' })).toStrictEqual(
-				{
-					signals: [{ name: 'highlightedSeries', value: 'testSeries' }],
-				}
-			);
+			expect(addHighlight({}, { highlightedSeries: 'testSeries' })).toStrictEqual({
+				signals: [{ name: 'highlightedSeries', value: 'testSeries' }],
+			});
 		});
 
 		test('adds hover opacity to marks', () => {
-			addHighlight({}, { children: [], hiddenSeries: [], highlightedSeries: 'testSeries' });
+			addHighlight({}, { highlightedSeries: 'testSeries' });
 			expect(setHoverOpacityForMarks).toHaveBeenCalledTimes(1);
 			expect(setHoverOpacityForMarks).toHaveBeenCalledWith([]);
 		});

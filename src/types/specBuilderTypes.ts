@@ -12,6 +12,7 @@
 import { Align, Baseline, NumberValue, ScaleType } from 'vega';
 
 import {
+	Animation,
 	AreaProps,
 	AxisAnnotationChildElement,
 	AxisAnnotationProps,
@@ -114,6 +115,7 @@ export interface LineSpecProps extends PartiallyRequired<LineProps, LinePropsWit
 	interactiveMarkName: string | undefined;
 	lineWidth?: FacetRef<LineWidth>;
 	popoverMarkName: string | undefined;
+	animate?: Animation;
 }
 
 type MetricRangePropsWithDefaults = 'lineType' | 'lineWidth' | 'rangeOpacity' | 'metricEnd' | 'metricStart' | 'metric';

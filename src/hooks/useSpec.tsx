@@ -31,6 +31,7 @@ export default function useSpec({
 	opacities,
 	symbolShapes,
 	title,
+	animate,
 	UNSAFE_vegaSpec,
 }: SanitizedSpecProps): Spec {
 	return useMemo(() => {
@@ -53,6 +54,7 @@ export default function useSpec({
 		return JSON.parse(
 			JSON.stringify(
 				buildSpec({
+					animate,
 					backgroundColor,
 					children,
 					colors,
@@ -69,6 +71,7 @@ export default function useSpec({
 			)
 		);
 	}, [
+		animate,
 		backgroundColor,
 		children,
 		colors,

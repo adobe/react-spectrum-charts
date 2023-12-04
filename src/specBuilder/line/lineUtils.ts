@@ -12,7 +12,7 @@
 import { Trendline } from '@components/Trendline';
 import { hasInteractiveChildren, hasPopover } from '@specBuilder/marks/markUtils';
 import { sanitizeMarkChildren } from '@utils';
-import { ColorFacet, ColorScheme, LineTypeFacet, LineWidthFacet, MarkChildElement, OpacityFacet } from 'types';
+import { Animation, ColorFacet, ColorScheme, LineTypeFacet, LineWidthFacet, MarkChildElement, OpacityFacet } from 'types';
 import { NumericValueRef, ProductionRule, ScaleType } from 'vega';
 
 export const getInteractiveMarkName = (children: MarkChildElement[], name: string): string | undefined => {
@@ -56,6 +56,7 @@ export interface LineMarkProps {
 	popoverMarkName?: string;
 	scaleType: ScaleType;
 	staticPoint?: string;
+	animate?: Animation;
 }
 
 /**

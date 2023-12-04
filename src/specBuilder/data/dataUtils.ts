@@ -9,8 +9,9 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { FILTERED_TABLE, SERIES_ID, TABLE } from '@constants';
+import { ANIMATION_SIGNAL,   FILTERED_TABLE, SERIES_ID, TABLE } from '@constants';
 import { produce } from 'immer';
+import { Animation } from 'types';
 import { Compare, Data, FormulaTransform, SourceData, Transforms, ValuesData } from 'vega';
 
 export const addTimeTransform = produce<Transforms[], [string]>((transforms, dimension) => {
@@ -56,4 +57,19 @@ export const getSeriesIdTransform = (facets: string[]): FormulaTransform => {
 		as: SERIES_ID,
 		expr,
 	};
+};
+
+/**
+ * Returns the transform that will be used to animate the metric scale.
+ */
+export const getMetricAnimationTransform = (metric: string): FormulaTransform => {
+	return {
+		type: 'formula',
+		as: getEffectiveMetricName(metric, true),
+		expr: `datum.${metric}*${ANIMATION_SIGNAL}`,
+	};
+};
+
+export const getEffectiveMetricName = (metric: string, animate?: Animation) => {
+	return animate ? `${metric}Animated` : metric;
 };
