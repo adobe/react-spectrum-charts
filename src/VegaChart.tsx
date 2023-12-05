@@ -53,11 +53,13 @@ export const VegaChart: FC<VegaChartProps> = ({
 		return { [TABLE]: clonedData };
 	}, [data]);
 
-	useDebugSpec(debug, spec, chartData, width, height, config);
+	const logSpec = useDebugSpec(debug, width, height, config);
+	const chartTableData = chartData[TABLE];
 
 	useEffect(() => {
+		let specCopy: typeof spec = spec;
 		if (width && height && containerRef.current) {
-			const specCopy = JSON.parse(JSON.stringify(spec)) as Spec;
+			specCopy = JSON.parse(JSON.stringify(spec)) as Spec;
 			const tableData = specCopy.data?.find((d) => d.name === TABLE);
 			if (tableData && 'values' in tableData) {
 				tableData.values = chartData.table;
@@ -70,6 +72,7 @@ export const VegaChart: FC<VegaChartProps> = ({
 					return signal;
 				});
 			}
+
 			embed(containerRef.current, specCopy, {
 				actions: false,
 				expressionFunctions: expressionFunctions,
@@ -86,6 +89,9 @@ export const VegaChart: FC<VegaChartProps> = ({
 				view.runAsync();
 			});
 		}
+
+		logSpec(specCopy);
+
 		return () => {
 			// destroy the chart on unmount
 			if (chartView.current) {
@@ -93,7 +99,7 @@ export const VegaChart: FC<VegaChartProps> = ({
 				chartView.current = undefined;
 			}
 		};
-	}, [chartData.table, config, data, height, onNewView, padding, renderer, signals, spec, tooltip, width]);
+	}, [chartTableData, logSpec, config, data, height, onNewView, padding, renderer, signals, spec, tooltip, width]);
 
 	return <div ref={containerRef} className="rsc"></div>;
 };

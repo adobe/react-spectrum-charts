@@ -9,32 +9,26 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { useEffect } from 'react';
+import { useCallback } from 'react';
 
 import { debugLog } from '@utils';
 import { Config, Spec } from 'vega';
 
-import { mergeValuesIntoData } from '../specBuilder/specUtils';
-
-export const useDebugSpec = (
-	debug: boolean,
-	spec: Spec,
-	chartData: unknown[],
-	chartWidth: number,
-	height: number,
-	config: Config
-): void => {
-	useEffect(() => {
-		if (debug) {
-			const data = JSON.parse(JSON.stringify(spec.data));
-
-			// Merge raw values into the Vega datasets array for a combined view of the data
-			const combinedData = mergeValuesIntoData(data, chartData);
-
-			debugLog(debug, {
-				title: 'react-spectrum-charts Vega Spec',
-				contents: { width: chartWidth, height, config, ...spec, data: combinedData },
-			});
-		}
-	}, [debug, spec, chartData, chartWidth, height, config]);
+/**
+ * Returns a callback that will log the Vega spec to the console,
+ * if `debug` is true.
+ */
+export const useDebugSpec = (debug: boolean, width: number, height: number, config: Config) => {
+	return useCallback(
+		(spec: Spec) => {
+			if (debug) {
+				const data = JSON.parse(JSON.stringify(spec.data));
+				debugLog(debug, {
+					title: 'react-spectrum-charts Vega Spec',
+					contents: { width, height, config, ...spec, data },
+				});
+			}
+		},
+		[debug, width, height, config]
+	);
 };
