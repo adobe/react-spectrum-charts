@@ -9,13 +9,20 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { DEFAULT_COLOR, DEFAULT_COLOR_SCHEME, DEFAULT_METRIC, FILTERED_TABLE } from '@constants';
+import {
+	DEFAULT_COLOR,
+	DEFAULT_COLOR_SCHEME,
+	DEFAULT_METRIC,
+	FILTERED_TABLE,
+	HIGHLIGHT_CONTRAST_RATIO,
+} from '@constants';
 import { addFieldToFacetScaleDomain } from '@specBuilder/scale/scaleSpecBuilder';
+import { getUncontrolledHoverSignal, hasSignalByName } from '@specBuilder/signal/signalSpecBuilder';
 import { sanitizeMarkChildren, toCamelCase } from '@utils';
 import { produce } from 'immer';
 import { DonutSpecProps } from 'types';
 import { ColorScheme, DonutProps } from 'types';
-import { Data, Mark, Scale, Spec } from 'vega';
+import { Data, Mark, Scale, Signal, Spec } from 'vega';
 
 export const addDonut = produce<Spec, [DonutProps & { colorScheme?: ColorScheme; index?: number }]>(
 	(
@@ -41,7 +48,7 @@ export const addDonut = produce<Spec, [DonutProps & { colorScheme?: ColorScheme;
 			index,
 			color,
 			metric,
-			name: toCamelCase(name || `bar${index}`),
+			name: toCamelCase(name || `donut${index}`),
 			startAngle,
 			holeRatio,
 			segment,
@@ -52,12 +59,12 @@ export const addDonut = produce<Spec, [DonutProps & { colorScheme?: ColorScheme;
 		spec.data = addData(spec.data ?? [], donutProps);
 		spec.scales = addScales(spec.scales ?? [], donutProps);
 		spec.marks = addMarks(spec.marks ?? [], donutProps);
-		// spec.signals = addSignals(spec.signals ?? [], donutProps);
+		spec.signals = addSignals(spec.signals ?? [], donutProps);
 	}
 );
 
 export const addData = produce<Data[], [DonutSpecProps]>((data, props) => {
-	const { metric, startAngle, index } = props;
+	const { metric, startAngle, name } = props;
 	const filteredTableIndex = data.findIndex((d) => d.name === FILTERED_TABLE);
 
 	//set up transform
@@ -71,7 +78,7 @@ export const addData = produce<Data[], [DonutSpecProps]>((data, props) => {
 
 	//set up aggregate
 	data.push({
-		name: `donut${index}_aggregate`,
+		name: `${name}_aggregateData`,
 		source: FILTERED_TABLE,
 		transform: [
 			{
@@ -90,12 +97,13 @@ export const addScales = produce<Scale[], [DonutSpecProps]>((scales, props) => {
 });
 
 export const addMarks = produce<Mark[], [DonutSpecProps]>((marks, props) => {
-	const { holeRatio, index, metricLabel, metric, segment, hasDirectLabels } = props;
+	const { holeRatio, name, metricLabel, metric, segment, hasDirectLabels } = props;
 	const radius = 'min(width, height) / 2';
 
 	//first mark: the arc
 	marks.push({
 		type: 'arc',
+		name,
 		from: { data: FILTERED_TABLE },
 		encode: {
 			enter: {
@@ -109,6 +117,15 @@ export const addMarks = produce<Mark[], [DonutSpecProps]>((marks, props) => {
 				padAngle: { value: 0.01 },
 				innerRadius: { signal: `${holeRatio} * ${radius}` },
 				outerRadius: { signal: radius },
+				opacity: [
+					{
+						test: `datum.rscMarkId === ${name}_hoveredId || !${name}_hoveredId`,
+						value: 1,
+					},
+					{
+						value: 1 / HIGHLIGHT_CONTRAST_RATIO,
+					},
+				],
 			},
 		},
 	});
@@ -116,11 +133,11 @@ export const addMarks = produce<Mark[], [DonutSpecProps]>((marks, props) => {
 	//seocnd mark: the inner aggregate metric
 	const groupMark: Mark = {
 		type: 'group',
-		name: `donut${index}_aggregateText`,
+		name: `${name}_aggregateText`,
 		marks: [
 			{
 				type: 'text',
-				from: { data: `donut${index}_aggregate` },
+				from: { data: `${name}_aggregateData` },
 				encode: {
 					enter: {
 						x: { signal: 'width / 2' },
@@ -136,7 +153,7 @@ export const addMarks = produce<Mark[], [DonutSpecProps]>((marks, props) => {
 	if (metricLabel) {
 		groupMark.marks!.push({
 			type: 'text',
-			from: { data: `donut${index}_aggregate` },
+			from: { data: `${name}_aggregateData` },
 			encode: {
 				enter: {
 					x: { signal: 'width / 2' },
@@ -154,7 +171,7 @@ export const addMarks = produce<Mark[], [DonutSpecProps]>((marks, props) => {
 	//third mark: the segment labels
 	if (hasDirectLabels) {
 		marks.push({
-			name: `donut${index}_segmentLabels`,
+			name: `${name}_directLabels`,
 			type: 'group',
 			marks: [
 				{
@@ -201,5 +218,13 @@ export const addMarks = produce<Mark[], [DonutSpecProps]>((marks, props) => {
 				},
 			],
 		});
+	}
+});
+
+export const addSignals = produce<Signal[], [DonutSpecProps]>((signals, props) => {
+	const { name } = props;
+
+	if (!hasSignalByName(signals, `${name}_hoveredId`)) {
+		signals.push(getUncontrolledHoverSignal(name));
 	}
 });
