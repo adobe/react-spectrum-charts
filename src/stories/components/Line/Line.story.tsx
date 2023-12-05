@@ -22,7 +22,7 @@ import {
 import { formatTimestamp } from '@stories/storyUtils';
 import { ComponentStory } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
-import { ChartProps } from 'types';
+import { AnimationCurve, ChartProps } from 'types';
 
 export default {
 	title: 'RSC/Line',
@@ -84,19 +84,43 @@ const LinearStory: ComponentStory<typeof Line> = (args): ReactElement => {
 	);
 };
 
+interface AnimationProps {
+	curve: AnimationCurve;
+	duration: number;
+	dataSet: number;
+}
+
 const AnimatedStory: ComponentStory<typeof Line> = (args): ReactElement => {
 	const chartProps = useChartProps(defaultChartProps);
-	const [dataSet, setDataSet] = useState(0);
+	const [{ dataSet, curve, duration }, setDataSet] = useState<AnimationProps>({
+		dataSet: 0,
+		duration: 500,
+		curve: 'ease-in' as AnimationCurve,
+	});
+
+	const stateSetter = (newState: Partial<AnimationProps>) => () =>
+		setDataSet((prev) => ({ ...prev, dataSet: (prev.dataSet + 1) % 2, ...newState }));
+
 	return (
 		<div>
-			<button style={{ marginBottom: 12 }} onClick={() => setDataSet((prev) => (prev + 1) % 2)}>
-				Swap dataset
-			</button>
+			<div style={{ marginBottom: 16, display: 'flex', flexDirection: 'row', gap: 8, alignItems: 'center' }}>
+				<span>Animation curve</span>
+				<button onClick={stateSetter({ curve: 'linear' })}>Linear</button>
+				<button onClick={stateSetter({ curve: 'ease-in' })}>Ease-in</button>
+				<button onClick={stateSetter({ curve: 'ease-out' })}>Ease-out</button>
+				<button onClick={stateSetter({ curve: 'ease-in-out' })}>Ease-in-out</button>
+				<span style={{ marginLeft: 24 }}>Animation duration</span>
+				<input
+					value={duration}
+					type="number"
+					onChange={(e) => stateSetter({ duration: Number(e.target.value) })()}
+					min={0}
+				/>
+			</div>
 			<Chart
 				{...chartProps}
 				data={dataSet === 0 ? workspaceTrendsData : alternativeWorkspaceTrendsData}
-				animate={{ curve: 'linear' }}
-				debug
+				animate={{ curve, duration }}
 			>
 				<Line {...args} />
 				<Axis position="left" grid title="Events" />

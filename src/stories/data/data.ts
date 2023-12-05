@@ -729,8 +729,8 @@ export const workspaceTrendsData = [
 	{ datetime: 1668236400000, point: 5, value: 31, users: 18, series: 'Add Fallout' },
 	{ datetime: 1668322800000, point: 8, value: 108, users: 70, series: 'Add Fallout' },
 	{ datetime: 1668409200000, point: 12, value: 648, users: 438, series: 'Add Fallout' },
-	{ datetime: 1667890800000, point: 4, value: 12208, users: 5253, series: 'Add Freeform table' },
-	{ datetime: 1667977200000, point: 5, value: 11309, users: 5103, series: 'Add Freeform table' },
+	{ datetime: 1667890800000, point: 4, value: 11208, users: 5253, series: 'Add Freeform table' },
+	{ datetime: 1667977200000, point: 5, value: 10309, users: 5103, series: 'Add Freeform table' },
 	{ datetime: 1668063600000, point: 17, value: 11099, users: 5047, series: 'Add Freeform table' },
 	{ datetime: 1668150000000, point: 20, value: 7243, users: 3386, series: 'Add Freeform table' },
 	{ datetime: 1668236400000, point: 21, value: 395, users: 205, series: 'Add Freeform table' },
@@ -752,10 +752,36 @@ export const workspaceTrendsData = [
 	{ datetime: 1668409200000, point: 25, value: 6932, users: 3493, series: 'Add Bar viz' },
 ];
 
-export const alternativeWorkspaceTrendsData = workspaceTrendsData.map((item) => ({
-	...item,
-	value: Math.round(item.value * (1.5 - Math.random())),
-}));
+export const alternativeWorkspaceTrendsData = [
+	{ datetime: 1667890800000, point: 1, value: 5427, users: 477, series: 'Add Fallout' },
+	{ datetime: 1667977200000, point: 2, value: 1711, users: 481, series: 'Add Fallout' },
+	{ datetime: 1668063600000, point: 3, value: 2357, users: 483, series: 'Add Fallout' },
+	{ datetime: 1668150000000, point: 4, value: 666, users: 310, series: 'Add Fallout' },
+	{ datetime: 1668236400000, point: 5, value: 31, users: 18, series: 'Add Fallout' },
+	{ datetime: 1668322800000, point: 8, value: 72, users: 70, series: 'Add Fallout' },
+	{ datetime: 1668409200000, point: 12, value: 950, users: 438, series: 'Add Fallout' },
+	{ datetime: 1667890800000, point: 4, value: 6735, users: 5253, series: 'Add Freeform table' },
+	{ datetime: 1667977200000, point: 5, value: 11715, users: 5103, series: 'Add Freeform table' },
+	{ datetime: 1668063600000, point: 17, value: 9561, users: 5047, series: 'Add Freeform table' },
+	{ datetime: 1668150000000, point: 20, value: 4478, users: 3386, series: 'Add Freeform table' },
+	{ datetime: 1668236400000, point: 21, value: 417, users: 205, series: 'Add Freeform table' },
+	{ datetime: 1668322800000, point: 22, value: 1321, users: 790, series: 'Add Freeform table' },
+	{ datetime: 1668409200000, point: 25, value: 7684, users: 4913, series: 'Add Freeform table' },
+	{ datetime: 1667890800000, point: 4, value: 1687, users: 2253, series: 'Add Line viz' },
+	{ datetime: 1667977200000, point: 5, value: 1924, users: 1103, series: 'Add Line viz' },
+	{ datetime: 1668063600000, point: 17, value: 1930, users: 1547, series: 'Add Line viz' },
+	{ datetime: 1668150000000, point: 20, value: 2569, users: 1386, series: 'Add Line viz' },
+	{ datetime: 1668236400000, point: 21, value: 1276, users: 75, series: 'Add Line viz' },
+	{ datetime: 1668322800000, point: 22, value: 2215, users: 270, series: 'Add Line viz' },
+	{ datetime: 1668409200000, point: 25, value: 1430, users: 1413, series: 'Add Line viz' },
+	{ datetime: 1667890800000, point: 4, value: 263, users: 3523, series: 'Add Bar viz' },
+	{ datetime: 1667977200000, point: 5, value: 328, users: 3513, series: 'Add Bar viz' },
+	{ datetime: 1668063600000, point: 17, value: 1010, users: 3507, series: 'Add Bar viz' },
+	{ datetime: 1668150000000, point: 20, value: 1476, users: 3336, series: 'Add Bar viz' },
+	{ datetime: 1668236400000, point: 21, value: 2356, users: 3025, series: 'Add Bar viz' },
+	{ datetime: 1668322800000, point: 22, value: 2864, users: 3070, series: 'Add Bar viz' },
+	{ datetime: 1668409200000, point: 25, value: 3895, users: 3493, series: 'Add Bar viz' },
+];
 
 export const workspaceTrendsDataWithVisiblePoints = [
 	{ datetime: 1667890800000, point: 1, value: 3738, users: 477, series: 'Add Fallout' },
