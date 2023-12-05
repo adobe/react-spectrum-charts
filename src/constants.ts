@@ -34,6 +34,7 @@ export const TITLE_FONT_WEIGHT = 'bold';
 // vega data table name
 export const TABLE = 'table';
 export const FILTERED_TABLE = 'filteredTable';
+export const OLD_TABLE = `${TABLE}_old`;
 
 // vega data field names
 export const SERIES_ID = 'rscSeriesId';

@@ -1,11 +1,11 @@
 import { FC, useEffect, useMemo, useRef } from 'react';
 
-import { TABLE } from '@constants';
+import { OLD_TABLE, TABLE } from '@constants';
 import { useDebugSpec } from '@hooks/useDebugSpec';
 import { extractValues, isVegaData } from '@specBuilder/specUtils';
 import { expressionFunctions } from 'expressionFunctions';
 import { ChartData } from 'types';
-import { Config, Padding, Renderers, Spec, View } from 'vega';
+import { Config, Padding, Renderers, Spec, ValuesData, View } from 'vega';
 import embed from 'vega-embed';
 import { Options as TooltipOptions } from 'vega-tooltip';
 
@@ -39,6 +39,7 @@ export const VegaChart: FC<VegaChartProps> = ({
 }) => {
 	const containerRef = useRef<HTMLDivElement>(null);
 	const chartView = useRef<View>();
+	const oldData = useRef<ValuesData | undefined>(undefined);
 
 	// Need to de a deep copy of the data because vega tries to transform the data
 	const chartData = useMemo(() => {
@@ -61,9 +62,17 @@ export const VegaChart: FC<VegaChartProps> = ({
 		if (width && height && containerRef.current) {
 			specCopy = JSON.parse(JSON.stringify(spec)) as Spec;
 			const tableData = specCopy.data?.find((d) => d.name === TABLE);
+
 			if (tableData && 'values' in tableData) {
-				tableData.values = chartData.table;
+				tableData.values = chartTableData;
+				specCopy.data?.push({
+					values: [],
+					...oldData.current,
+					name: OLD_TABLE,
+				});
+				oldData.current = tableData;
 			}
+
 			if (signals) {
 				specCopy.signals = specCopy.signals?.map((signal) => {
 					if (signal.name in signals && signals[signal.name] !== undefined && 'value' in signal) {
