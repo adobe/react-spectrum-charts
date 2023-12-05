@@ -9,7 +9,15 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { ANIMATION_CURVE, ANIMATION_DURATION, ANIMATION_SIGNAL, MARK_ID, SERIES_ID } from '@constants';
+import {
+	ANIMATION_CURVE,
+	ANIMATION_DURATION,
+	ANIMATION_SCALE,
+	ANIMATION_SCALE_INVERSE,
+	ANIMATION_SIGNAL,
+	MARK_ID,
+	SERIES_ID,
+} from '@constants';
 import { Animation, AnimationProps } from 'types';
 import { Signal } from 'vega';
 
@@ -100,7 +108,7 @@ export const getGenericSignal = (name: string, value: unknown = null): Signal =>
 const FPS = 1000 / 60;
 
 export const getAnimationSignal = (animation: Animation): Signal => {
-	const { duration } = getAnimationDefaults(animation);
+	const { duration, curve } = getAnimationDefaults(animation);
 
 	// Steps = total number of frames in the animation
 	// Step value = amount to increment the animation signal by each frame
@@ -108,15 +116,39 @@ export const getAnimationSignal = (animation: Animation): Signal => {
 	// Divide duration by the time for each frame to get the number of steps.
 	const steps = duration / FPS;
 	const stepValue = 1 / steps;
+	let signalOn: Signal['on'];
+
+	const inverseValue = `scale('${ANIMATION_SCALE_INVERSE}', ${ANIMATION_SIGNAL})`;
+
+	if (curve === 'ease-in-out') {
+		signalOn = [
+			{
+				events: `timer{${FPS}}`,
+				update:
+					`${ANIMATION_SIGNAL} < .5 ? ` +
+					`scale('${ANIMATION_SCALE}', scale('${ANIMATION_SCALE_INVERSE}', ${ANIMATION_SIGNAL}) + ${stepValue}) : ` +
+					`scale('${ANIMATION_SCALE}2', scale('${ANIMATION_SCALE_INVERSE}2', ${ANIMATION_SIGNAL}) + ${stepValue})`,
+			},
+		];
+	} else {
+		signalOn = [
+			{
+				events: `timer{${FPS}}`,
+				// We need to apply the inverse transform to the animation signal when adding the step value,
+				// so that the signal will increase at a constant rate, despite the easing curve.
+				update: `scale('${ANIMATION_SCALE}', ${inverseValue} + ${stepValue})`,
+			},
+		];
+	}
 
 	return {
 		name: ANIMATION_SIGNAL,
 		value: 0,
-		on: [{ events: `timer{${FPS}}`, update: `min(1, ${ANIMATION_SIGNAL} + ${stepValue})` }],
+		on: signalOn,
 	};
 };
 
-const getAnimationDefaults = (animation: Animation): Required<AnimationProps> => {
+export const getAnimationDefaults = (animation: Animation): Required<AnimationProps> => {
 	if (typeof animation === 'boolean') {
 		return {
 			duration: ANIMATION_DURATION,

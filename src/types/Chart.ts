@@ -85,11 +85,11 @@ export interface ChartProps extends SpecProps {
 }
 
 export type Animation = boolean | AnimationProps;
-export type AnimationCurve = string; // to be: ease-in, ease-out, ease-in-out, linear, etc
+export type AnimationCurve = 'ease-in' | 'ease-out' | 'ease-in-out' | 'linear';
 
 export interface AnimationProps {
-	duration?: number;
-	curve?: AnimationCurve;
+	duration?: number; // defaults to 500
+	curve?: AnimationCurve; // defaults to 'linear'
 }
 
 export interface BaseProps {

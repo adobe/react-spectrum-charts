@@ -95,7 +95,7 @@ const AnimatedStory: ComponentStory<typeof Line> = (args): ReactElement => {
 			<Chart
 				{...chartProps}
 				data={dataSet === 0 ? workspaceTrendsData : alternativeWorkspaceTrendsData}
-				animate
+				animate={{ curve: 'ease-in-out', duration: 1500 }}
 				debug
 			>
 				<Line {...args} />

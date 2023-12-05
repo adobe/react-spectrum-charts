@@ -9,12 +9,21 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { DISCRETE_PADDING, FILTERED_TABLE, LINEAR_PADDING, PADDING_RATIO, TABLE } from '@constants';
+import {
+	ANIMATION_SCALE,
+	ANIMATION_SCALE_INVERSE,
+	DISCRETE_PADDING,
+	FILTERED_TABLE,
+	LINEAR_PADDING,
+	PADDING_RATIO,
+	TABLE,
+} from '@constants';
 import { getBarPadding } from '@specBuilder/bar/barUtils';
+import { getAnimationDefaults } from '@specBuilder/signal/signalSpecBuilder';
 import { toCamelCase } from '@utils';
 import { produce } from 'immer';
-import { DualFacet, FacetRef, FacetType, Orientation } from 'types';
-import { Scale, ScaleData, ScaleMultiFieldsRef, SignalRef } from 'vega';
+import { Animation, DualFacet, FacetRef, FacetType, Orientation } from 'types';
+import { PowScale, Scale, ScaleData, ScaleMultiFieldsRef, SignalRef } from 'vega';
 
 type ScaleType = 'linear' | 'point' | 'band' | 'time' | 'ordinal';
 type AxisType = 'x' | 'y';
@@ -198,4 +207,92 @@ const isScaleMultiFieldsRef = (
 	domain: (null | string | number | boolean | SignalRef)[] | ScaleData | SignalRef | undefined
 ): domain is ScaleMultiFieldsRef => {
 	return Boolean(domain && !Array.isArray(domain) && 'data' in domain && 'fields' in domain);
+};
+
+export const getAnimationCurveScales = (animation: Animation): Scale[] => {
+	const { curve } = getAnimationDefaults(animation);
+
+	const linearScale: Scale = {
+		name: ANIMATION_SCALE,
+		type: 'linear',
+		domain: [0, 1],
+		range: [0, 1],
+		clamp: true,
+	};
+
+	const curvedScale: Partial<PowScale> = {
+		type: 'pow',
+		domain: [0, 1],
+		range: [0, 1],
+		clamp: true,
+	};
+
+	const exponent = 3;
+	const exponentInverse = 1 / exponent;
+
+	switch (curve) {
+		case 'ease-in':
+			return [
+				{
+					...curvedScale,
+					name: ANIMATION_SCALE,
+					exponent,
+				},
+				{
+					...curvedScale,
+					name: ANIMATION_SCALE_INVERSE,
+					exponent: exponentInverse,
+				},
+			];
+		case 'ease-out':
+			return [
+				{
+					...curvedScale,
+					name: ANIMATION_SCALE,
+					exponent: exponentInverse,
+				},
+				{
+					...curvedScale,
+					name: ANIMATION_SCALE_INVERSE,
+					exponent,
+				},
+			];
+		case 'ease-in-out':
+			return [
+				{
+					name: ANIMATION_SCALE,
+					type: 'pow',
+					exponent,
+					range: [0, 0.5],
+					domain: [0, 0.5],
+					clamp: true,
+				},
+				{
+					name: ANIMATION_SCALE + '2',
+					type: 'pow',
+					exponent: exponentInverse,
+					range: [0.5, 1],
+					domain: [0.5, 1],
+					clamp: true,
+				},
+				{
+					name: ANIMATION_SCALE_INVERSE,
+					type: 'pow',
+					exponent: exponentInverse,
+					range: [0, 0.5],
+					domain: [0, 0.5],
+					clamp: true,
+				},
+				{
+					name: ANIMATION_SCALE_INVERSE + '2',
+					type: 'pow',
+					exponent,
+					range: [0.5, 1],
+					domain: [0.5, 1],
+					clamp: true,
+				},
+			];
+		default:
+			return [linearScale, { ...linearScale, name: ANIMATION_SCALE_INVERSE }];
+	}
 };

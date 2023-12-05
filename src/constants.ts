@@ -47,6 +47,8 @@ export const CORNER_RADIUS = 6;
 
 // animation
 export const ANIMATION_SIGNAL = 'rscAnimation';
+export const ANIMATION_SCALE = 'rscAnimationCurve';
+export const ANIMATION_SCALE_INVERSE = 'rscAnimationCurveInverse';
 export const ANIMATION_DURATION = 500;
 export const ANIMATION_CURVE: AnimationCurve = 'linear';
 
