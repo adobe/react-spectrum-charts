@@ -268,14 +268,6 @@ export const getAnimationCurveScales = (animation: Animation): Scale[] => {
 					clamp: true,
 				},
 				{
-					name: ANIMATION_SCALE + '2',
-					type: 'pow',
-					exponent: exponentInverse,
-					range: [0.5, 1],
-					domain: [0.5, 1],
-					clamp: true,
-				},
-				{
 					name: ANIMATION_SCALE_INVERSE,
 					type: 'pow',
 					exponent: exponentInverse,
@@ -284,15 +276,16 @@ export const getAnimationCurveScales = (animation: Animation): Scale[] => {
 					clamp: true,
 				},
 				{
-					name: ANIMATION_SCALE_INVERSE + '2',
+					name: ANIMATION_SCALE + 'Out',
 					type: 'pow',
-					exponent,
+					exponent: exponentInverse,
 					range: [0.5, 1],
-					domain: [0.5, 1],
+					domain: [0, 0.5],
 					clamp: true,
 				},
 			];
 		default:
+			// A linear scale's inverse is itself
 			return [linearScale, { ...linearScale, name: ANIMATION_SCALE_INVERSE }];
 	}
 };

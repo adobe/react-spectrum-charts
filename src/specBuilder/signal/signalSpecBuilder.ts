@@ -114,20 +114,21 @@ export const getAnimationSignal = (animation: Animation): Signal => {
 	// Step value = amount to increment the animation signal by each frame
 
 	// Divide duration by the time for each frame to get the number of steps.
-	const steps = duration / FPS;
+	// Use Math.abs to ensure that the duration is positive.
+	const steps = Math.abs(duration) / FPS;
 	const stepValue = 1 / steps;
 	let signalOn: Signal['on'];
-
-	const inverseValue = `scale('${ANIMATION_SCALE_INVERSE}', ${ANIMATION_SIGNAL})`;
 
 	if (curve === 'ease-in-out') {
 		signalOn = [
 			{
 				events: `timer{${FPS}}`,
 				update:
+					// Use an ease-in scale for the first half of the animation, and an ease-out scale for the second half.
 					`${ANIMATION_SIGNAL} < .5 ? ` +
 					`scale('${ANIMATION_SCALE}', scale('${ANIMATION_SCALE_INVERSE}', ${ANIMATION_SIGNAL}) + ${stepValue}) : ` +
-					`scale('${ANIMATION_SCALE}2', scale('${ANIMATION_SCALE_INVERSE}2', ${ANIMATION_SIGNAL}) + ${stepValue})`,
+					// Have to subtract .5 from the signal because the {ANIMATION_SCALE} expects a value between 0 and .5,
+					`scale('${ANIMATION_SCALE}Out', scale('${ANIMATION_SCALE}', ${ANIMATION_SIGNAL} - 0.5) + ${stepValue})`,
 			},
 		];
 	} else {
@@ -136,7 +137,7 @@ export const getAnimationSignal = (animation: Animation): Signal => {
 				events: `timer{${FPS}}`,
 				// We need to apply the inverse transform to the animation signal when adding the step value,
 				// so that the signal will increase at a constant rate, despite the easing curve.
-				update: `scale('${ANIMATION_SCALE}', ${inverseValue} + ${stepValue})`,
+				update: `scale('${ANIMATION_SCALE}', scale('${ANIMATION_SCALE_INVERSE}', ${ANIMATION_SIGNAL}) + ${stepValue})`,
 			},
 		];
 	}
