@@ -5,7 +5,7 @@ import { useDebugSpec } from '@hooks/useDebugSpec';
 import { extractValues, isVegaData } from '@specBuilder/specUtils';
 import { expressionFunctions } from 'expressionFunctions';
 import { ChartData } from 'types';
-import { Config, Padding, Renderers, Spec, ValuesData, View } from 'vega';
+import { Config, Padding, Renderers, Spec, Transforms, ValuesData, View } from 'vega';
 import embed from 'vega-embed';
 import { Options as TooltipOptions } from 'vega-tooltip';
 
@@ -68,9 +68,7 @@ export const VegaChart: FC<VegaChartProps> = ({
 				specCopy.data?.unshift({
 					name: OLD_TABLE,
 					values: oldData.current?.values ?? [],
-					transform: oldData.current?.transform?.filter(
-						(t) => !(t.type === 'formula' && t.as === 'valueAnimated')
-					),
+					transform: filterOldDataTransforms(oldData.current?.transform),
 				});
 				oldData.current = tableData;
 			}
@@ -113,4 +111,11 @@ export const VegaChart: FC<VegaChartProps> = ({
 	}, [chartTableData, logSpec, config, data, height, onNewView, padding, renderer, signals, spec, tooltip, width]);
 
 	return <div ref={containerRef} className="rsc"></div>;
+};
+
+// We can't use the animation transform in the old data table because it would reference itself
+// and throw errors
+const filterOldDataTransforms = (transforms?: Transforms[]): Transforms[] => {
+	if (!transforms) return [];
+	return transforms.filter((t) => !(t.type === 'formula' && t.as.toString().endsWith('Animated')));
 };

@@ -96,10 +96,16 @@ export const getGenericSignal = (name: string, value: unknown = null): Signal =>
 	return { name, value };
 };
 
+// 60 frames every 1000 milliseconds
+const FPS = 1000 / 60;
+
 export const getAnimationSignal = (animation: Animation): Signal => {
 	const { duration } = getAnimationDefaults(animation);
 
-	const FPS = 1000 / 60;
+	// Steps = total number of frames in the animation
+	// Step value = amount to increment the animation signal by each frame
+
+	// Divide duration by the time for each frame to get the number of steps.
 	const steps = duration / FPS;
 	const stepValue = 1 / steps;
 
