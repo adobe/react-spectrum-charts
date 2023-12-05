@@ -111,11 +111,17 @@ export interface DonutProps extends MarkProps {
 	/** text label for the metric total */
 	metricLabel?: string;
 
+	/** the datum property for segments of the data */
+	segment?: string;
+
 	/** start angle of the donut in radians (0 is top dead center) */
 	startAngle?: number;
 
 	/** ratio of the donut inner radius / donut outer radius. 0 is a pie chart. 0.85 is the default. */
 	holeRatio?: number;
+
+	/** determines if it should display direct labels. If true, must also supply 'segment' prop. Default is false */
+	hasDirectLabels?: boolean;
 }
 
 export interface AxisProps extends BaseProps {

@@ -29,6 +29,8 @@ export const addDonut = produce<Spec, [DonutProps & { colorScheme?: ColorScheme;
 			name,
 			startAngle = 0,
 			holeRatio = 0.85,
+			segment,
+			hasDirectLabels = false,
 			...props
 		}
 	) => {
@@ -42,6 +44,8 @@ export const addDonut = produce<Spec, [DonutProps & { colorScheme?: ColorScheme;
 			name: toCamelCase(name || `bar${index}`),
 			startAngle,
 			holeRatio,
+			segment,
+			hasDirectLabels,
 			...props,
 		};
 
@@ -86,8 +90,10 @@ export const addScales = produce<Scale[], [DonutSpecProps]>((scales, props) => {
 });
 
 export const addMarks = produce<Mark[], [DonutSpecProps]>((marks, props) => {
-	const { holeRatio, index, metricLabel } = props;
+	const { holeRatio, index, metricLabel, metric, segment, hasDirectLabels } = props;
 	const radius = 'min(width, height) / 2';
+
+	//first mark: the arc
 	marks.push({
 		type: 'arc',
 		from: { data: FILTERED_TABLE },
@@ -107,6 +113,7 @@ export const addMarks = produce<Mark[], [DonutSpecProps]>((marks, props) => {
 		},
 	});
 
+	//seocnd mark: the inner aggregate metric
 	const groupMark: Mark = {
 		type: 'group',
 		name: `donut${index}_aggregateText`,
@@ -142,6 +149,57 @@ export const addMarks = produce<Mark[], [DonutSpecProps]>((marks, props) => {
 			},
 		});
 	}
-
 	marks.push(groupMark);
+
+	//third mark: the segment labels
+	if (hasDirectLabels) {
+		marks.push({
+			name: `donut${index}_segmentLabels`,
+			type: 'group',
+			marks: [
+				{
+					type: 'text',
+					from: { data: FILTERED_TABLE },
+					encode: {
+						enter: {
+							text: {
+								signal: `if(datum['endAngle'] - datum['startAngle'] < 0.3, '', datum['${metric}'])`,
+							},
+							x: { signal: 'width / 2' },
+							y: { signal: 'height / 2' },
+							radius: { signal: `${radius} + 15` },
+							theta: { signal: "(datum['startAngle'] + datum['endAngle']) / 2" },
+							fontSize: { value: 14 },
+							width: { signal: `getLabelWidth(datum['${metric}'], 'bold', '14') + 10` },
+							align: {
+								signal: "(datum['startAngle'] + datum['endAngle']) / 2 <= PI ? 'left' : 'right'",
+							},
+							baseline: { value: 'top' },
+						},
+					},
+				},
+				{
+					type: 'text',
+					from: { data: FILTERED_TABLE },
+					encode: {
+						enter: {
+							text: {
+								signal: `if(datum['endAngle'] - datum['startAngle'] < 0.3, '', datum['${segment}'])`,
+							},
+							x: { signal: 'width / 2' },
+							y: { signal: 'height / 2' },
+							radius: { signal: `${radius} + 15` },
+							theta: { signal: "(datum['startAngle'] + datum['endAngle']) / 2" },
+							fontSize: { value: 14 },
+							width: { signal: `getLabelWidth(datum['${segment}'], 'bold', '14') + 10` },
+							align: {
+								signal: "(datum['startAngle'] + datum['endAngle']) / 2 <= PI ? 'left' : 'right'",
+							},
+							baseline: { value: 'bottom' },
+						},
+					},
+				},
+			],
+		});
+	}
 });

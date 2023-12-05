@@ -24,7 +24,7 @@ export default {
 };
 
 const DonutStory: ComponentStory<typeof Donut> = (args): ReactElement => {
-	const chartProps = useChartProps({ data: donutData, width: 300, height: 300 });
+	const chartProps = useChartProps({ data: donutData, width: 350, height: 350 });
 	return (
 		<Chart {...chartProps} debug>
 			<Donut {...args} />
@@ -39,4 +39,13 @@ Basic.args = {
 	color: 'id',
 };
 
-export { Basic };
+const WithDirectLabels = bindWithProps(DonutStory);
+WithDirectLabels.args = {
+	metric: 'count',
+	metricLabel: 'Visitors',
+	segment: 'segment',
+	color: 'id',
+	hasDirectLabels: true,
+};
+
+export { Basic, WithDirectLabels };
