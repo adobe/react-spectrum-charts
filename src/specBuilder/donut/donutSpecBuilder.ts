@@ -15,9 +15,11 @@ import {
 	DEFAULT_METRIC,
 	FILTERED_TABLE,
 	HIGHLIGHT_CONTRAST_RATIO,
+	MARK_ID,
 } from '@constants';
+import { getTooltip, hasPopover } from '@specBuilder/marks/markUtils';
 import { addFieldToFacetScaleDomain } from '@specBuilder/scale/scaleSpecBuilder';
-import { getUncontrolledHoverSignal, hasSignalByName } from '@specBuilder/signal/signalSpecBuilder';
+import { getGenericSignal, getUncontrolledHoverSignal, hasSignalByName } from '@specBuilder/signal/signalSpecBuilder';
 import { sanitizeMarkChildren, toCamelCase } from '@utils';
 import { produce } from 'immer';
 import { DonutSpecProps } from 'types';
@@ -97,8 +99,27 @@ export const addScales = produce<Scale[], [DonutSpecProps]>((scales, props) => {
 });
 
 export const addMarks = produce<Mark[], [DonutSpecProps]>((marks, props) => {
-	const { holeRatio, name, metricLabel, metric, segment, hasDirectLabels } = props;
+	const { holeRatio, name, metricLabel, metric, segment, hasDirectLabels, children } = props;
 	const radius = 'min(width, height) / 2';
+
+	const hoveredSignal = `${name}_hoveredId`;
+	const selectedSignal = `${name}_selectedId`;
+	const opacityRules = [
+		{
+			test: `!${hoveredSignal} || datum.${MARK_ID} === ${hoveredSignal}`,
+			value: 1,
+		},
+		{
+			value: 1 / HIGHLIGHT_CONTRAST_RATIO,
+		},
+	];
+	if (hasPopover(children)) {
+		opacityRules[0].test = `!${selectedSignal} && (!${hoveredSignal} || datum.${MARK_ID} === ${hoveredSignal})`;
+		opacityRules.splice(1, 0, {
+			test: `${selectedSignal} && datum.${MARK_ID} === ${selectedSignal}`,
+			value: 1,
+		});
+	}
 
 	//first mark: the arc
 	marks.push({
@@ -110,6 +131,7 @@ export const addMarks = produce<Mark[], [DonutSpecProps]>((marks, props) => {
 				fill: { scale: 'color', field: 'id' },
 				x: { signal: 'width / 2' },
 				y: { signal: 'height / 2' },
+				tooltip: getTooltip(children, name),
 			},
 			update: {
 				startAngle: { field: 'startAngle' },
@@ -117,15 +139,7 @@ export const addMarks = produce<Mark[], [DonutSpecProps]>((marks, props) => {
 				padAngle: { value: 0.01 },
 				innerRadius: { signal: `${holeRatio} * ${radius}` },
 				outerRadius: { signal: radius },
-				opacity: [
-					{
-						test: `datum.rscMarkId === ${name}_hoveredId || !${name}_hoveredId`,
-						value: 1,
-					},
-					{
-						value: 1 / HIGHLIGHT_CONTRAST_RATIO,
-					},
-				],
+				opacity: opacityRules,
 			},
 		},
 	});
@@ -145,6 +159,7 @@ export const addMarks = produce<Mark[], [DonutSpecProps]>((marks, props) => {
 						text: { signal: "upper(replace(format(datum.sum, '.3~s'), 'G', 'B'))" },
 						fontSize: { value: 72 },
 						align: { value: 'center' },
+						baseline: { value: metricLabel ? 'alphabetic' : 'middle' },
 					},
 				},
 			},
@@ -222,9 +237,15 @@ export const addMarks = produce<Mark[], [DonutSpecProps]>((marks, props) => {
 });
 
 export const addSignals = produce<Signal[], [DonutSpecProps]>((signals, props) => {
-	const { name } = props;
+	const { name, children } = props;
 
 	if (!hasSignalByName(signals, `${name}_hoveredId`)) {
 		signals.push(getUncontrolledHoverSignal(name));
+	}
+
+	if (hasPopover(children)) {
+		if (!hasSignalByName(signals, `${name}_selectedId`)) {
+			signals.push(getGenericSignal(`${name}_selectedId`));
+		}
 	}
 });

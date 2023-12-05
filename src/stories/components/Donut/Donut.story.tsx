@@ -12,9 +12,11 @@
 import React, { ReactElement } from 'react';
 
 import useChartProps from '@hooks/useChartProps';
-import { Chart, Donut } from '@rsc';
+import { Chart, ChartPopover, ChartTooltip, Donut } from '@rsc';
 import { ComponentStory } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
+
+import { Content } from '@adobe/react-spectrum';
 
 import { donutData } from './data';
 
@@ -48,4 +50,33 @@ WithDirectLabels.args = {
 	hasDirectLabels: true,
 };
 
-export { Basic, WithDirectLabels };
+const dialogContent = (datum) => {
+	return (
+		<Content>
+			<div>Browser: {datum.segment}</div>
+			<div>Visitors: {datum.count}</div>
+		</Content>
+	);
+};
+
+const DonutTooltipStory: ComponentStory<typeof Donut> = (args): ReactElement => {
+	const chartProps = useChartProps({ data: donutData, width: 350, height: 350 });
+	return (
+		<Chart {...chartProps} debug>
+			<Donut {...args}>
+				<ChartTooltip>{dialogContent}</ChartTooltip>
+				<ChartPopover width={150}>{dialogContent}</ChartPopover>
+			</Donut>
+		</Chart>
+	);
+};
+
+const WithPopover = bindWithProps(DonutTooltipStory);
+WithPopover.args = {
+	metric: 'count',
+	metricLabel: 'Visitors',
+	segment: 'segment',
+	color: 'id',
+};
+
+export { Basic, WithDirectLabels, WithPopover };

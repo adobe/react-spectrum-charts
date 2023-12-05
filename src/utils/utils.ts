@@ -14,7 +14,7 @@ import { Fragment, ReactFragment } from 'react';
 import { MARK_ID, SERIES_ID } from '@constants';
 import { View } from 'vega';
 
-import { Area, Axis, AxisAnnotation, Bar, ChartPopover, ChartTooltip, Legend, Line, Trendline } from '..';
+import { Area, Axis, AxisAnnotation, Bar, ChartPopover, ChartTooltip, Donut, Legend, Line, Trendline } from '..';
 import {
 	AxisAnnotationChildElement,
 	AxisChildElement,
@@ -37,6 +37,7 @@ type ElementCounts = {
 	axis: number;
 	axisAnnotation: number;
 	bar: number;
+	donut: number;
 	legend: number;
 	line: number;
 };
@@ -218,6 +219,9 @@ const getElementName = (element: ChildElement<RscElement>, elementCounts: Elemen
 		case Bar:
 			elementCounts.bar++;
 			return getComponentName(element, `bar${elementCounts.bar}`);
+		case Donut:
+			elementCounts.donut++;
+			return getComponentName(element, `donut${elementCounts.donut}`);
 		case Legend:
 			elementCounts.legend++;
 			return getComponentName(element, `legend${elementCounts.legend}`);
@@ -243,6 +247,7 @@ const initElementCounts = (): ElementCounts => ({
 	axis: -1,
 	axisAnnotation: -1,
 	bar: -1,
+	donut: -1,
 	legend: -1,
 	line: -1,
 });
