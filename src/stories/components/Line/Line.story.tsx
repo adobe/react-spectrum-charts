@@ -99,6 +99,7 @@ const AnimatedStory: ComponentStory<typeof Line> = (args): ReactElement => {
 				debug
 			>
 				<Line {...args} />
+				<Axis position="left" grid title="Events" />
 				<Legend lineWidth={{ value: 0 }} />
 			</Chart>
 		</div>
@@ -233,6 +234,11 @@ Tooltip.args = {
 	),
 };
 
+const AnimatedWithTooltip = bindWithProps(AnimatedStory);
+AnimatedWithTooltip.args = {
+	...Tooltip.args,
+};
+
 const WithStaticPoints = bindWithProps(LineWithVisiblePointsStory);
 WithStaticPoints.args = {
 	color: 'series',
@@ -272,6 +278,7 @@ export {
 	LinearTrendScale,
 	HistoricalCompare,
 	Tooltip,
+	AnimatedWithTooltip,
 	WithStaticPoints,
 	WithStaticPointsAndDialogs,
 };
