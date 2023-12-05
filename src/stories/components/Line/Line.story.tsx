@@ -9,12 +9,16 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import React, { ReactElement, createElement } from 'react';
+import React, { ReactElement, createElement, useState } from 'react';
 
 import { ReferenceLine } from '@components/ReferenceLine';
 import useChartProps from '@hooks/useChartProps';
 import { Axis, Bar, Chart, ChartPopover, ChartTooltip, Legend, Line } from '@rsc';
-import { workspaceTrendsData, workspaceTrendsDataWithVisiblePoints } from '@stories/data/data';
+import {
+	alternativeWorkspaceTrendsData,
+	workspaceTrendsData,
+	workspaceTrendsDataWithVisiblePoints,
+} from '@stories/data/data';
 import { formatTimestamp } from '@stories/storyUtils';
 import { ComponentStory } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
@@ -82,11 +86,22 @@ const LinearStory: ComponentStory<typeof Line> = (args): ReactElement => {
 
 const AnimatedStory: ComponentStory<typeof Line> = (args): ReactElement => {
 	const chartProps = useChartProps(defaultChartProps);
+	const [dataSet, setDataSet] = useState(0);
 	return (
-		<Chart {...chartProps} animate debug>
-			<Line {...args} />
-			<Legend lineWidth={{ value: 0 }} />
-		</Chart>
+		<div>
+			<button style={{ marginBottom: 12 }} onClick={() => setDataSet((prev) => (prev + 1) % 2)}>
+				Swap dataset
+			</button>
+			<Chart
+				{...chartProps}
+				data={dataSet === 0 ? workspaceTrendsData : alternativeWorkspaceTrendsData}
+				animate
+				debug
+			>
+				<Line {...args} />
+				<Legend lineWidth={{ value: 0 }} />
+			</Chart>
+		</div>
 	);
 };
 
@@ -156,7 +171,7 @@ Basic.args = {
 
 const Animated = bindWithProps(AnimatedStory);
 Animated.args = {
-	...Basic.args
+	...Basic.args,
 };
 
 const LineWithAxisAndLegend = bindWithProps(LineStory);

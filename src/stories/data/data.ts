@@ -752,6 +752,11 @@ export const workspaceTrendsData = [
 	{ datetime: 1668409200000, point: 25, value: 6932, users: 3493, series: 'Add Bar viz' },
 ];
 
+export const alternativeWorkspaceTrendsData = workspaceTrendsData.map((item) => ({
+	...item,
+	value: Math.round(item.value * (1.5 - Math.random())),
+}));
+
 export const workspaceTrendsDataWithVisiblePoints = [
 	{ datetime: 1667890800000, point: 1, value: 3738, users: 477, series: 'Add Fallout' },
 	{ datetime: 1667977200000, point: 2, value: 2704, users: 481, series: 'Add Fallout', staticPoint: true },

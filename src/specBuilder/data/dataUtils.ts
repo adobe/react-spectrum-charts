@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { ANIMATION_SIGNAL,   FILTERED_TABLE, SERIES_ID, TABLE } from '@constants';
+import { ANIMATION_SIGNAL, FILTERED_TABLE, MARK_ID, OLD_TABLE, SERIES_ID, TABLE } from '@constants';
 import { produce } from 'immer';
 import { Animation } from 'types';
 import { Compare, Data, FormulaTransform, SourceData, Transforms, ValuesData } from 'vega';
@@ -63,10 +63,18 @@ export const getSeriesIdTransform = (facets: string[]): FormulaTransform => {
  * Returns the transform that will be used to animate the metric scale.
  */
 export const getMetricAnimationTransform = (metric: string): FormulaTransform => {
+	// To animate from the old data to new data we need to do the following:
+	// 1. Get the old data at the same index, or 0 if it doesn't exist
+	// 2. Multiply that by 1 - animationSignal (for the inverse animation)
+	// 3. Add that to the current data multiplied by animationSignal
+	const oldDataTable = `data('${OLD_TABLE}')`;
+	const indexOfOldData = `indexof(pluck(data('${OLD_TABLE}'), '${MARK_ID}'), datum.${MARK_ID})`;
+	const oldDataValue = `(${indexOfOldData} > -1 ? ${oldDataTable}[${indexOfOldData}].${metric} : 0)`;
+	const currentDataValue = `datum.${metric}`;
 	return {
 		type: 'formula',
 		as: getEffectiveMetricName(metric, true),
-		expr: `datum.${metric}*${ANIMATION_SIGNAL}`,
+		expr: `${oldDataValue}*(1-${ANIMATION_SIGNAL}) + ${currentDataValue}*${ANIMATION_SIGNAL}`,
 	};
 };
 

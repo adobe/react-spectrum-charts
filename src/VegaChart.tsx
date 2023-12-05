@@ -65,10 +65,12 @@ export const VegaChart: FC<VegaChartProps> = ({
 
 			if (tableData && 'values' in tableData) {
 				tableData.values = chartTableData;
-				specCopy.data?.push({
-					values: [],
-					...oldData.current,
+				specCopy.data?.unshift({
 					name: OLD_TABLE,
+					values: oldData.current?.values ?? [],
+					transform: oldData.current?.transform?.filter(
+						(t) => !(t.type === 'formula' && t.as === 'valueAnimated')
+					),
 				});
 				oldData.current = tableData;
 			}
