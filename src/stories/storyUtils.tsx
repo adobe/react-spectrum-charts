@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { useState } from 'react';
+import { CSSProperties, useState } from 'react';
 
 import { AnimationCurve } from 'types';
 
@@ -39,26 +39,43 @@ interface AnimationProps {
 	dataSet: number;
 }
 
-export const useAnimationControls = () => {
+export const useAnimationControls = (initialProps?: AnimationProps) => {
 	const [animationProps, setAnimationProps] = useState<AnimationProps>({
 		dataSet: 0,
 		duration: 500,
-		curve: 'ease-in' as AnimationCurve,
+		curve: 'linear',
+		...initialProps,
 	});
 
 	const stateSetter = (newState: Partial<AnimationProps>) => () =>
 		setAnimationProps((prev) => ({ ...prev, dataSet: (prev.dataSet + 1) % 2, ...newState }));
+
+	const getSelectedStyle = (curveType: AnimationCurve): CSSProperties => ({
+		borderColor: animationProps.curve === curveType ? 'blue' : undefined,
+		backgroundColor: animationProps.curve === curveType ? 'lightblue' : undefined,
+		borderWidth: 1,
+		borderRadius: 4,
+		padding: '2px 8px',
+	});
 
 	return {
 		...animationProps,
 		component: (
 			<div style={{ marginBottom: 16, display: 'flex', flexDirection: 'row', gap: 8, alignItems: 'center' }}>
 				<span>Animation curve</span>
-				<button onClick={stateSetter({ curve: 'linear' })}>Linear</button>
-				<button onClick={stateSetter({ curve: 'ease-in' })}>Ease-in</button>
-				<button onClick={stateSetter({ curve: 'ease-out' })}>Ease-out</button>
-				<button onClick={stateSetter({ curve: 'ease-in-out' })}>Ease-in-out</button>
-				<span style={{ marginLeft: 24 }}>Animation duration</span>
+				<button style={getSelectedStyle('linear')} onClick={stateSetter({ curve: 'linear' })}>
+					Linear
+				</button>
+				<button style={getSelectedStyle('ease-in')} onClick={stateSetter({ curve: 'ease-in' })}>
+					Ease-in
+				</button>
+				<button style={getSelectedStyle('ease-out')} onClick={stateSetter({ curve: 'ease-out' })}>
+					Ease-out
+				</button>
+				<button style={getSelectedStyle('ease-in-out')} onClick={stateSetter({ curve: 'ease-in-out' })}>
+					Ease-in-out
+				</button>
+				<span style={{ marginLeft: 24 }}>Animation duration (ms)</span>
 				<input
 					value={animationProps.duration}
 					type="number"
