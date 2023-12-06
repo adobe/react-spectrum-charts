@@ -14,7 +14,7 @@ import { DEFAULT_METRIC, FILTERED_TABLE } from '@constants';
 import { AreaMarkProps, getAreaMark } from '@specBuilder/area/areaUtils';
 import { getLineMark } from '@specBuilder/line/lineMarkUtils';
 import { LineMarkProps } from '@specBuilder/line/lineUtils';
-import { getAnimationSignal, getSeriesHoveredSignal } from '@specBuilder/signal/signalSpecBuilder';
+import { getSeriesHoveredSignal } from '@specBuilder/signal/signalSpecBuilder';
 import { getFacetsFromProps } from '@specBuilder/specUtils';
 import { LineSpecProps, MarkChildElement, MetricRangeElement, MetricRangeProps, MetricRangeSpecProps } from 'types';
 import { AreaMark, GroupMark, LineMark, Signal, SourceData } from 'vega';
@@ -143,15 +143,11 @@ export const getMetricRangeData = (markProps: LineSpecProps): SourceData[] => {
  */
 export const getMetricRangeSignals = (markProps: LineSpecProps): Signal[] => {
 	const signals: Signal[] = [];
-	const { children, name: markName, animate } = markProps;
+	const { children, name: markName } = markProps;
 	const metricRanges = getMetricRanges(children, markName);
 
 	if (metricRanges.length) {
 		signals.push(getSeriesHoveredSignal(markName, true, `${markName}_voronoi`));
-	}
-
-	if (animate) {
-		signals.push(getAnimationSignal(animate));
 	}
 
 	return signals;

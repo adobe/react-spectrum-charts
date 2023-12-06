@@ -29,12 +29,14 @@ import {
 	TrendlineProps,
 } from './Chart';
 
-type PartiallyRequired<T, K extends keyof T> = Omit<T, K> & Required<Pick<T, K>>;
+export type PickRequired<T, K extends keyof T> = Omit<T, K> & Required<Pick<T, K>>;
+
+export type PartiallyRequired<T, K extends keyof T> = Partial<T> & Required<Pick<T, K>>;
 
 type AreaPropsWithDefaults = 'name' | 'dimension' | 'metric' | 'color' | 'scaleType' | 'opacity';
 
 export interface AreaSpecProps
-	extends PartiallyRequired<AreaProps & { colorScheme: ColorScheme; index: number }, AreaPropsWithDefaults> {
+	extends PickRequired<AreaProps & { colorScheme: ColorScheme; index: number }, AreaPropsWithDefaults> {
 	children: MarkChildElement[];
 }
 
@@ -59,7 +61,7 @@ export interface InternalAxisProps {
 	vegaLabelPadding?: number;
 }
 
-export type AxisSpecProps = PartiallyRequired<
+export type AxisSpecProps = PickRequired<
 	AxisProps & { name: string; colorScheme: ColorScheme; index: number; scaleType: ScaleType } & InternalAxisProps,
 	AxisPropsWithDefaults
 >;
@@ -67,7 +69,7 @@ export type AxisSpecProps = PartiallyRequired<
 type AxisAnnotationPropsWithDefaults = 'name' | 'offset' | 'dataKey' | 'color' | 'options' | 'format';
 
 export interface AxisAnnotationSpecProps
-	extends PartiallyRequired<
+	extends PickRequired<
 		AxisAnnotationProps & { axisName: string; colorScheme: ColorScheme },
 		AxisAnnotationPropsWithDefaults
 	> {
@@ -89,14 +91,14 @@ type BarPropsWithDefaults =
 	| 'type';
 
 export interface BarSpecProps
-	extends PartiallyRequired<BarProps & { colorScheme: ColorScheme; index: number }, BarPropsWithDefaults> {
+	extends PickRequired<BarProps & { colorScheme: ColorScheme; index: number }, BarPropsWithDefaults> {
 	children: MarkChildElement[];
 }
 
 type LegendPropsWithDefaults = 'hiddenEntries' | 'highlight' | 'isToggleable' | 'position' | 'name';
 
 export interface LegendSpecProps
-	extends PartiallyRequired<
+	extends PickRequired<
 		LegendProps & { colorScheme: ColorScheme; index: number; hiddenSeries: string[]; highlightedSeries?: string },
 		LegendPropsWithDefaults
 	> {
@@ -108,7 +110,7 @@ export interface LegendSpecProps
 
 type LinePropsWithDefaults = 'name' | 'dimension' | 'metric' | 'color' | 'scaleType' | 'lineType' | 'opacity';
 
-export interface LineSpecProps extends PartiallyRequired<LineProps, LinePropsWithDefaults> {
+export interface LineSpecProps extends PickRequired<LineProps, LinePropsWithDefaults> {
 	children: MarkChildElement[];
 	colorScheme: ColorScheme;
 	index: number;
@@ -120,7 +122,7 @@ export interface LineSpecProps extends PartiallyRequired<LineProps, LinePropsWit
 
 type MetricRangePropsWithDefaults = 'lineType' | 'lineWidth' | 'rangeOpacity' | 'metricEnd' | 'metricStart' | 'metric';
 export interface MetricRangeSpecProps
-	extends PartiallyRequired<MetricRangeProps & { name: string }, MetricRangePropsWithDefaults> {}
+	extends PickRequired<MetricRangeProps & { name: string }, MetricRangePropsWithDefaults> {}
 
 type TrendlinePropsWithDefaults =
 	| 'dimensionRange'
@@ -133,6 +135,6 @@ type TrendlinePropsWithDefaults =
 	| 'opacity';
 
 export interface TrendlineSpecProps
-	extends PartiallyRequired<TrendlineProps & { metric?: string; name: string }, TrendlinePropsWithDefaults> {
+	extends PickRequired<TrendlineProps & { metric?: string; name: string }, TrendlinePropsWithDefaults> {
 	children: ChartTooltipElement[];
 }

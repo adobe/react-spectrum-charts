@@ -24,12 +24,7 @@ import { Animation, ColorScheme, LineProps, LineSpecProps, MarkChildElement } fr
 import { Data, Mark, Scale, Signal, Spec } from 'vega';
 
 import { addTimeTransform, getMetricAnimationTransform, getTableData } from '../data/dataUtils';
-import {
-	addContinuousDimensionScale,
-	addFieldToFacetScaleDomain,
-	addMetricScale,
-	getAnimationCurveScales,
-} from '../scale/scaleSpecBuilder';
+import { addContinuousDimensionScale, addFieldToFacetScaleDomain, addMetricScale } from '../scale/scaleSpecBuilder';
 import {
 	getGenericSignal,
 	getSeriesHoveredSignal,
@@ -123,7 +118,7 @@ export const addSignals = produce<Signal[], [LineSpecProps]>((signals, props) =>
 });
 
 export const setScales = produce<Scale[], [LineSpecProps]>(
-	(scales, { metric, dimension, color, lineType, opacity, padding, scaleType, children, name, animate }) => {
+	(scales, { metric, dimension, color, lineType, opacity, padding, scaleType, children, name }) => {
 		// add dimension scale
 		addContinuousDimensionScale(scales, { scaleType, dimension, padding });
 		// add color to the color domain
@@ -134,11 +129,6 @@ export const setScales = produce<Scale[], [LineSpecProps]>(
 		addFieldToFacetScaleDomain(scales, 'opacity', opacity);
 		// find the linear scale and add our fields to it
 		addMetricScale(scales, getMetricKeys(metric, children, name));
-
-		if (animate) {
-			scales.push(...getAnimationCurveScales(animate));
-		}
-
 		return scales;
 	}
 );

@@ -36,6 +36,7 @@ import {
 	LineTypes,
 	LineWidth,
 	Opacities,
+	PartiallyRequired,
 	SanitizedSpecProps,
 	SymbolShapes,
 	TitleElement,
@@ -49,7 +50,8 @@ import { getSeriesIdTransform } from './data/dataUtils';
 import { setHoverOpacityForMarks } from './legend/legendHighlightUtils';
 import { addLegend } from './legend/legendSpecBuilder';
 import { addLine } from './line/lineSpecBuilder';
-import { getGenericSignal, hasSignalByName } from './signal/signalSpecBuilder';
+import { getAnimationCurveScales } from './scale/scaleSpecBuilder';
+import { getAnimationSignal, getGenericSignal, hasSignalByName } from './signal/signalSpecBuilder';
 import {
 	getColorValue,
 	getFacetsFromScales,
@@ -60,24 +62,26 @@ import {
 } from './specUtils';
 import { addTitle } from './title/titleSpecBuilder';
 
-export function buildSpec({
-	backgroundColor = DEFAULT_BACKGROUND_COLOR,
-	children,
-	colors = 'categorical12',
-	description,
-	hiddenSeries,
-	highlightedSeries,
-	lineTypes = DEFAULT_LINE_TYPES,
-	lineWidths = ['M'],
-	opacities,
-	symbolShapes = ['rounded-square'],
-	colorScheme = DEFAULT_COLOR_SCHEME,
-	animate,
-	title,
-}: SanitizedSpecProps) {
+export function buildSpec(props: SanitizedSpecProps) {
+	const {
+		backgroundColor = DEFAULT_BACKGROUND_COLOR,
+		children,
+		colors = 'categorical12',
+		description,
+		hiddenSeries,
+		highlightedSeries,
+		lineTypes = DEFAULT_LINE_TYPES,
+		lineWidths = ['M'],
+		opacities,
+		symbolShapes = ['rounded-square'],
+		colorScheme = DEFAULT_COLOR_SCHEME,
+		animate,
+		title,
+	} = props;
+
 	let spec = initializeSpec(null, { backgroundColor, colorScheme, description, title });
-	spec.signals = getDefaultSignals(backgroundColor, colors, colorScheme, lineTypes, opacities, hiddenSeries);
-	spec.scales = getDefaultScales(colors, colorScheme, lineTypes, lineWidths, opacities, symbolShapes);
+	spec.signals = getDefaultSignals({ ...props, backgroundColor, colors, colorScheme, lineTypes });
+	spec.scales = getDefaultScales({ ...props, colors, colorScheme, lineTypes, lineWidths, opacities, symbolShapes });
 
 	// need to build the spec in a specific order
 	const buildOrder = new Map();
@@ -165,24 +169,31 @@ const initializeComponentCounts = () => {
 	};
 };
 
-export const getDefaultSignals = (
-	backgroundColor: string,
-	colors: ChartColors,
-	colorScheme: ColorScheme,
-	lineTypes: LineTypes,
-	opacities: Opacities | undefined,
-	hiddenSeries?: string[]
-): Signal[] => {
+export const getDefaultSignals = ({
+	backgroundColor,
+	colors,
+	colorScheme,
+	lineTypes,
+	opacities,
+	hiddenSeries,
+	animate,
+}: PartiallyRequired<SanitizedSpecProps, 'backgroundColor' | 'colorScheme' | 'colors' | 'lineTypes'>): Signal[] => {
 	// if the background color is transparent, then we want to set the signal background color to gray-50
 	// if the signal background color were transparent then backgroundMarks and annotation fill would also be transparent
 	const signalBackgroundColor = backgroundColor === 'transparent' ? 'gray-50' : backgroundColor;
-	return [
+	const signals = [
 		getGenericSignal(BACKGROUND_COLOR, getColorValue(signalBackgroundColor, colorScheme)),
 		getGenericSignal('colors', getTwoDimensionalColorScheme(colors, colorScheme)),
 		getGenericSignal('lineTypes', getTwoDimensionalLineTypes(lineTypes)),
 		getGenericSignal('opacities', getTwoDimensionalOpacities(opacities)),
 		getGenericSignal('hiddenSeries', hiddenSeries ?? []),
 	];
+
+	if (animate) {
+		signals.push(getAnimationSignal(animate));
+	}
+
+	return signals;
 };
 
 export const getTwoDimensionalColorScheme = (colors: ChartColors, colorScheme: ColorScheme): string[][] => {
@@ -211,20 +222,32 @@ export const getTwoDimensionalOpacities = (opacities: Opacities | undefined): nu
 	return opacities;
 };
 
-const getDefaultScales = (
-	colors: ChartColors,
-	colorScheme: ColorScheme,
-	lineTypes: LineTypes,
-	lineWidths: LineWidth[],
-	opacities: Opacities | undefined,
-	symbolShapes: SymbolShapes
-): Scale[] => [
-	getColorScale(colors, colorScheme),
-	getLineTypeScale(lineTypes),
-	getLineWidthScale(lineWidths),
-	getOpacityScale(opacities),
-	getSymbolShapeScale(symbolShapes),
-];
+const getDefaultScales = ({
+	colors,
+	colorScheme,
+	lineTypes,
+	lineWidths,
+	opacities,
+	symbolShapes,
+	animate,
+}: PartiallyRequired<
+	SanitizedSpecProps,
+	'colors' | 'colorScheme' | 'lineTypes' | 'lineWidths' | 'symbolShapes'
+>): Scale[] => {
+	const scales: Scale[] = [
+		getColorScale(colors, colorScheme),
+		getLineTypeScale(lineTypes),
+		getLineWidthScale(lineWidths),
+		getOpacityScale(opacities),
+		getSymbolShapeScale(symbolShapes),
+	];
+
+	if (animate) {
+		scales.push(...getAnimationCurveScales(animate));
+	}
+
+	return scales;
+};
 
 export const getColorScale = (colors: ChartColors, colorScheme: ColorScheme): OrdinalScale => {
 	// if a two dimensional scale was provided, then just grab the first color in each scale and set that as the scale range
