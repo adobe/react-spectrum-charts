@@ -9,15 +9,8 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import {
-	DEFAULT_COLOR,
-	DEFAULT_COLOR_SCHEME,
-	DEFAULT_METRIC,
-	FILTERED_TABLE,
-	HIGHLIGHT_CONTRAST_RATIO,
-	MARK_ID,
-} from '@constants';
-import { getTooltip, hasPopover } from '@specBuilder/marks/markUtils';
+import { DEFAULT_COLOR, DEFAULT_COLOR_SCHEME, DEFAULT_METRIC, FILTERED_TABLE } from '@constants';
+import { hasPopover } from '@specBuilder/marks/markUtils';
 import { addFieldToFacetScaleDomain } from '@specBuilder/scale/scaleSpecBuilder';
 import { getGenericSignal, getUncontrolledHoverSignal, hasSignalByName } from '@specBuilder/signal/signalSpecBuilder';
 import { sanitizeMarkChildren, toCamelCase } from '@utils';
@@ -26,7 +19,7 @@ import { DonutSpecProps } from 'types';
 import { ColorScheme, DonutProps } from 'types';
 import { Data, Mark, Scale, Signal, Spec } from 'vega';
 
-import { getFontSize } from './donutSpecUtils';
+import { getAggregateMetricMark, getArcMark, getDirectLabelMark } from './donutSpecUtils';
 
 export const addDonut = produce<Spec, [DonutProps & { colorScheme?: ColorScheme; index?: number }]>(
 	(
@@ -104,142 +97,13 @@ export const addMarks = produce<Mark[], [DonutSpecProps]>((marks, props) => {
 	const { holeRatio, name, metricLabel, metric, segment, hasDirectLabels, children } = props;
 	const radius = 'min(width, height) / 2';
 
-	const hoveredSignal = `${name}_hoveredId`;
-	const selectedSignal = `${name}_selectedId`;
-	const opacityRules = [
-		{
-			test: `!${hoveredSignal} || datum.${MARK_ID} === ${hoveredSignal}`,
-			value: 1,
-		},
-		{
-			value: 1 / HIGHLIGHT_CONTRAST_RATIO,
-		},
-	];
-	if (hasPopover(children)) {
-		opacityRules[0].test = `!${selectedSignal} && (!${hoveredSignal} || datum.${MARK_ID} === ${hoveredSignal})`;
-		opacityRules.splice(1, 0, {
-			test: `${selectedSignal} && datum.${MARK_ID} === ${selectedSignal}`,
-			value: 1,
-		});
-	}
-
-	//first mark: the arc
-	marks.push({
-		type: 'arc',
-		name,
-		from: { data: FILTERED_TABLE },
-		encode: {
-			enter: {
-				fill: { scale: 'color', field: 'id' },
-				x: { signal: 'width / 2' },
-				y: { signal: 'height / 2' },
-				tooltip: getTooltip(children, name),
-			},
-			update: {
-				startAngle: { field: 'startAngle' },
-				endAngle: { field: 'endAngle' },
-				padAngle: { value: 0.01 },
-				innerRadius: { signal: `${holeRatio} * ${radius}` },
-				outerRadius: { signal: radius },
-				opacity: opacityRules,
-			},
-		},
-	});
-
-	//seocnd mark: the inner aggregate metric
-	const groupMark: Mark = {
-		type: 'group',
-		name: `${name}_aggregateText`,
-		marks: [
-			{
-				type: 'text',
-				from: { data: `${name}_aggregateData` },
-				encode: {
-					enter: {
-						x: { signal: 'width / 2' },
-						y: { signal: 'height / 2' },
-						text: { signal: "upper(replace(format(datum.sum, '.3~s'), 'G', 'B'))" },
-						fontSize: getFontSize(radius, holeRatio, true),
-						align: { value: 'center' },
-						baseline: {
-							signal: metricLabel ? `${radius} * ${holeRatio} > 48 ? 'alphabetic' : 'middle'` : 'middle',
-						},
-					},
-				},
-			},
-		],
-	};
-	if (metricLabel) {
-		groupMark.marks!.push({
-			type: 'text',
-			from: { data: `${name}_aggregateData` },
-			encode: {
-				enter: {
-					x: { signal: 'width / 2' },
-					y: {
-						signal: `height / 2 + (${radius} * ${holeRatio} > 72 ? 24 : ${radius} * ${holeRatio} > 60 ? 18 : ${radius} * ${holeRatio} > 48 ? 12 : 0)`,
-					},
-					text: { value: metricLabel },
-					fontSize: getFontSize(radius, holeRatio, false),
-					align: { value: 'center' },
-					baseline: { value: 'top' },
-				},
-			},
-		});
-	}
-	marks.push(groupMark);
-
-	//third mark: the segment labels
+	marks.push(getArcMark(name, holeRatio, radius, children));
+	marks.push(getAggregateMetricMark(name, radius, holeRatio, metricLabel));
 	if (hasDirectLabels) {
-		marks.push({
-			name: `${name}_directLabels`,
-			type: 'group',
-			marks: [
-				{
-					type: 'text',
-					from: { data: FILTERED_TABLE },
-					encode: {
-						enter: {
-							text: {
-								// signal: `if(datum['endAngle'] - datum['startAngle'] < 0.3, '', datum['${metric}'])`, //this version of the signal doesn't place commas in the numbers
-								signal: `if(datum['endAngle'] - datum['startAngle'] < 0.3, '', format(datum['${metric}'], ','))`,
-							},
-							x: { signal: 'width / 2' },
-							y: { signal: 'height / 2' },
-							radius: { signal: `${radius} + 15` },
-							theta: { signal: "(datum['startAngle'] + datum['endAngle']) / 2" },
-							fontSize: { value: 14 },
-							width: { signal: `getLabelWidth(datum['${metric}'], 'bold', '14') + 10` },
-							align: {
-								signal: "(datum['startAngle'] + datum['endAngle']) / 2 <= PI ? 'left' : 'right'",
-							},
-							baseline: { value: 'top' },
-						},
-					},
-				},
-				{
-					type: 'text',
-					from: { data: FILTERED_TABLE },
-					encode: {
-						enter: {
-							text: {
-								signal: `if(datum['endAngle'] - datum['startAngle'] < 0.3, '', datum['${segment}'])`,
-							},
-							x: { signal: 'width / 2' },
-							y: { signal: 'height / 2' },
-							radius: { signal: `${radius} + 15` },
-							theta: { signal: "(datum['startAngle'] + datum['endAngle']) / 2" },
-							fontSize: { value: 14 },
-							width: { signal: `getLabelWidth(datum['${segment}'], 'bold', '14') + 10` },
-							align: {
-								signal: "(datum['startAngle'] + datum['endAngle']) / 2 <= PI ? 'left' : 'right'",
-							},
-							baseline: { value: 'bottom' },
-						},
-					},
-				},
-			],
-		});
+		if (!segment) {
+			throw new Error('If a Donut chart hasDirectLabels, a segment property name must be supplied.');
+		}
+		marks.push(getDirectLabelMark(name, radius, metric, segment));
 	}
 });
 
