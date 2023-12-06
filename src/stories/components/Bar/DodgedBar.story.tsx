@@ -9,11 +9,12 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import React, { ReactElement, createElement } from 'react';
+import { ReactElement, createElement } from 'react';
 
 import { Annotation } from '@components/Annotation';
 import useChartProps from '@hooks/useChartProps';
 import { Axis, Bar, Chart, ChartPopover, ChartTooltip, Legend, categorical6 } from '@rsc';
+import { useAnimationControls } from '@stories/storyUtils';
 import { ComponentStory } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
 
@@ -26,17 +27,19 @@ export default {
 	component: Bar,
 };
 
-const DodgedBarStory: ComponentStory<typeof Bar> = (args): ReactElement => {
-	const { color } = args;
-	const colors = Array.isArray(color)
+const getColors = (color: unknown) =>
+	Array.isArray(color)
 		? [
 				['#00a6a0', '#4bcec7'],
 				['#575de8', '#8489fd'],
 				['#d16100', '#fa8b1a'],
 		  ]
 		: categorical6;
+
+const DodgedBarStory: ComponentStory<typeof Bar> = (args): ReactElement => {
+	const { color } = args;
 	const data = Array.isArray(color) ? barSubSeriesData : barSeriesData;
-	const chartProps = useChartProps({ data, width: 800, height: 600, colors });
+	const chartProps = useChartProps({ data, width: 800, height: 600, colors: getColors(color) });
 	return (
 		<Chart {...chartProps}>
 			<Axis position={args.orientation === 'horizontal' ? 'left' : 'bottom'} baseline title="Browser" />
@@ -44,6 +47,37 @@ const DodgedBarStory: ComponentStory<typeof Bar> = (args): ReactElement => {
 			<Bar {...args} />
 			<Legend title="Operating system" highlight />
 		</Chart>
+	);
+};
+
+const AnimatedDodgedBarStory: ComponentStory<typeof Bar> = (args): ReactElement => {
+	const { color } = args;
+	const data = Array.isArray(color) ? barSubSeriesData : barSeriesData;
+	const chartProps = useChartProps({ data, width: 800, height: 600, colors: getColors(color) });
+	const { component, dataSet, ...animProps } = useAnimationControls();
+
+	return (
+		<div>
+			{component}
+			<Chart
+				{...chartProps}
+				animate={animProps}
+				data={
+					dataSet === 0
+						? data.map((d) => ({
+								...d,
+								value: d.value * 1000,
+						  }))
+						: data.map((d) => ({ ...d, value: d.value * (1.5 - Math.random()) * 1000 }))
+				}
+				debug
+			>
+				<Axis position={args.orientation === 'horizontal' ? 'left' : 'bottom'} baseline title="Browser" />
+				<Axis position={args.orientation === 'horizontal' ? 'bottom' : 'left'} grid title="Downloads" />
+				<Bar {...args} />
+				<Legend title="Operating system" highlight />
+			</Chart>
+		</div>
 	);
 };
 
@@ -97,6 +131,16 @@ DodgedStacked.args = {
 	color: ['operatingSystem', 'version'],
 };
 
+const AnimatedDodged = bindWithProps(AnimatedDodgedBarStory);
+AnimatedDodged.args = {
+	...Color.args,
+};
+
+const AnimatedDodgedStacked = bindWithProps(AnimatedDodgedBarStory);
+AnimatedDodgedStacked.args = {
+	...DodgedStacked.args,
+};
+
 const LineType = bindWithProps(DodgedBarLineTypeStory);
 LineType.args = {
 	type: 'dodged',
@@ -132,4 +176,19 @@ DodgedStackedWithLabels.args = {
 	paddingRatio: 0.1,
 };
 
-export { Color, DodgedStacked, DodgedStackedWithLabels, LineType, Opacity, Popover };
+const AnimatedDodgedStackedWithLabels = bindWithProps(AnimatedDodgedBarStory);
+AnimatedDodgedStackedWithLabels.args = {
+	...DodgedStackedWithLabels.args,
+};
+
+export {
+	Color,
+	AnimatedDodged,
+	DodgedStacked,
+	AnimatedDodgedStacked,
+	DodgedStackedWithLabels,
+	AnimatedDodgedStackedWithLabels,
+	LineType,
+	Opacity,
+	Popover,
+};

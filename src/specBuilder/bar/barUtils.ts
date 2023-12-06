@@ -234,7 +234,8 @@ export const getAnnotationMetricAxisPosition = (
 	props: BarSpecProps,
 	annotationWidth: AnnotationWidth
 ): ProductionRule<NumericValueRef> => {
-	const { type, metric, orientation } = props;
+	const { type, animate, orientation } = props;
+	const metric = getEffectiveMetricName(props.metric, animate);
 	const field = type === 'stacked' || isDodgedAndStacked(props) ? `${metric}1` : metric;
 	const { metricScaleKey: scaleKey } = getOrientationProperties(orientation);
 	const positionOffset = getAnnotationPositionOffset(props, annotationWidth);
@@ -316,8 +317,6 @@ export const getAnnotationMarks = (
 				enter: {
 					align: { value: 'center' },
 					baseline: { value: 'middle' },
-					[`${dimensionAxis}c`]: { scale: localDimensionScaleKey, field: localDimensionField, band: 0.5 },
-					[`${metricAxis}c`]: annotationPosition,
 					cornerRadius: { value: 4 },
 					height: { value: LABEL_HEIGHT },
 					fill: [
@@ -328,6 +327,10 @@ export const getAnnotationMarks = (
 					],
 					width: annotationWidth,
 				},
+				update: {
+					[`${dimensionAxis}c`]: { scale: localDimensionScaleKey, field: localDimensionField, band: 0.5 },
+					[`${metricAxis}c`]: annotationPosition,
+				},
 			},
 		});
 		marks.push({
@@ -337,17 +340,19 @@ export const getAnnotationMarks = (
 			interactive: false,
 			encode: {
 				enter: {
+					text: [{ test: `bandwidth('${localDimensionScaleKey}') >= 48`, field: textKey }],
+					fontSize: { value: ANNOTATION_FONT_SIZE },
+					fontWeight: { value: ANNOTATION_FONT_WEIGHT },
+					baseline: { value: 'middle' },
+					align: { value: 'center' },
+				},
+				update: {
 					[dimensionAxis]: {
 						scale: localDimensionScaleKey,
 						field: localDimensionField,
 						band: 0.5,
 					},
 					[metricAxis]: annotationPosition,
-					text: [{ test: `bandwidth('${localDimensionScaleKey}') >= 48`, field: textKey }],
-					fontSize: { value: ANNOTATION_FONT_SIZE },
-					fontWeight: { value: ANNOTATION_FONT_WEIGHT },
-					baseline: { value: 'middle' },
-					align: { value: 'center' },
 				},
 			},
 		});
