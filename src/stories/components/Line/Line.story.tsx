@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import React, { ReactElement, createElement, useState } from 'react';
+import { ReactElement, createElement } from 'react';
 
 import { ReferenceLine } from '@components/ReferenceLine';
 import useChartProps from '@hooks/useChartProps';
@@ -19,10 +19,10 @@ import {
 	workspaceTrendsData,
 	workspaceTrendsDataWithVisiblePoints,
 } from '@stories/data/data';
-import { formatTimestamp } from '@stories/storyUtils';
+import { formatTimestamp, useAnimationControls } from '@stories/storyUtils';
 import { ComponentStory } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
-import { AnimationCurve, ChartProps } from 'types';
+import { ChartProps } from 'types';
 
 export default {
 	title: 'RSC/Line',
@@ -84,39 +84,13 @@ const LinearStory: ComponentStory<typeof Line> = (args): ReactElement => {
 	);
 };
 
-interface AnimationProps {
-	curve: AnimationCurve;
-	duration: number;
-	dataSet: number;
-}
-
 const AnimatedStory: ComponentStory<typeof Line> = (args): ReactElement => {
 	const chartProps = useChartProps(defaultChartProps);
-	const [{ dataSet, curve, duration }, setDataSet] = useState<AnimationProps>({
-		dataSet: 0,
-		duration: 500,
-		curve: 'ease-in' as AnimationCurve,
-	});
-
-	const stateSetter = (newState: Partial<AnimationProps>) => () =>
-		setDataSet((prev) => ({ ...prev, dataSet: (prev.dataSet + 1) % 2, ...newState }));
+	const { dataSet, duration, curve, component } = useAnimationControls();
 
 	return (
 		<div>
-			<div style={{ marginBottom: 16, display: 'flex', flexDirection: 'row', gap: 8, alignItems: 'center' }}>
-				<span>Animation curve</span>
-				<button onClick={stateSetter({ curve: 'linear' })}>Linear</button>
-				<button onClick={stateSetter({ curve: 'ease-in' })}>Ease-in</button>
-				<button onClick={stateSetter({ curve: 'ease-out' })}>Ease-out</button>
-				<button onClick={stateSetter({ curve: 'ease-in-out' })}>Ease-in-out</button>
-				<span style={{ marginLeft: 24 }}>Animation duration</span>
-				<input
-					value={duration}
-					type="number"
-					onChange={(e) => stateSetter({ duration: Number(e.target.value) })()}
-					min={0}
-				/>
-			</div>
+			{component}
 			<Chart
 				{...chartProps}
 				data={dataSet === 0 ? workspaceTrendsData : alternativeWorkspaceTrendsData}
