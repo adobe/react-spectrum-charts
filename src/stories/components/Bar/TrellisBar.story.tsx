@@ -14,6 +14,7 @@ import React, { ReactElement } from 'react';
 import { MARK_ID } from '@constants';
 import useChartProps from '@hooks/useChartProps';
 import { Axis, Bar, Chart, ChartPopover, ChartTooltip, Legend } from '@rsc';
+import { useAnimationControls } from '@stories/storyUtils';
 import { ComponentStory } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
 import { BarProps, Datum, SpectrumColor } from 'types';
@@ -37,7 +38,7 @@ const colors: SpectrumColor[] = [
 	'sequential-magma-1400',
 ];
 
-const BarStory: ComponentStory<typeof Bar> = (args: BarProps): ReactElement => {
+const BarStory: ComponentStory<typeof Bar> = (args): ReactElement => {
 	const chartProps = useChartProps({
 		data: generateMockDataForTrellis({
 			property1: ['All users', 'Roku', 'Chromecast', 'Amazon Fire', 'Apple TV'],
@@ -75,6 +76,55 @@ const BarStory: ComponentStory<typeof Bar> = (args: BarProps): ReactElement => {
 	);
 };
 
+const AnimatedBarStory: ComponentStory<typeof Bar> = (args): ReactElement => {
+	const data1 = generateMockDataForTrellis({
+		property1: ['All users', 'Roku', 'Chromecast', 'Amazon Fire', 'Apple TV'],
+		property2: ['A. Sign up', 'B. Watch a video', 'C. Add to MyList'],
+		property3: ['1-5 times', '6-10 times', '11-15 times', '16-20 times', '21-25 times', '26+ times'],
+		propertyNames: ['segment', 'event', 'bucket'],
+		maxValue: 10000,
+		randomizeSteps: false,
+		orderBy: 'bucket',
+	});
+	const data2 = generateMockDataForTrellis({
+		property1: ['All users', 'Roku', 'Chromecast', 'Amazon Fire', 'Apple TV'],
+		property2: ['A. Sign up', 'B. Watch a video', 'C. Add to MyList'],
+		property3: ['1-5 times', '6-10 times', '11-15 times', '16-20 times', '21-25 times', '26+ times'],
+		propertyNames: ['segment', 'event', 'bucket'],
+		randomizeSteps: true,
+		maxValue: 13500,
+		orderBy: 'bucket',
+	});
+
+	const chartProps = useChartProps({ data: data1, colors, width: 800, height: 800 });
+	const { component, dataSet, ...animProps } = useAnimationControls();
+
+	const dialog = (item: Datum) => {
+		return (
+			<Content>
+				<View>
+					<Text>{item.value}</Text>
+				</View>
+			</Content>
+		);
+	};
+
+	return (
+		<div>
+			{component}
+			<Chart {...chartProps} data={dataSet === 0 ? data1 : data2} animate={animProps}>
+				<Axis position={args.orientation === 'horizontal' ? 'bottom' : 'left'} title="Users, Count" grid />
+				<Axis position={args.orientation === 'horizontal' ? 'left' : 'bottom'} title="Platform" baseline />
+				<Bar {...args}>
+					<ChartTooltip>{dialog}</ChartTooltip>
+					<ChartPopover>{dialog}</ChartPopover>
+				</Bar>
+				<Legend />
+			</Chart>
+		</div>
+	);
+};
+
 const Dodged = bindWithProps<BarProps>(BarStory);
 Dodged.args = {
 	type: 'dodged',
@@ -84,6 +134,11 @@ Dodged.args = {
 	trellis: 'event',
 	trellisOrientation: 'horizontal',
 	orientation: 'horizontal',
+};
+
+const AnimatedDodged = bindWithProps<BarProps>(AnimatedBarStory);
+AnimatedDodged.args = {
+	...Dodged.args,
 };
 
 const HorizontalBarHorizontalTrellis = bindWithProps<BarProps>(BarStory);
@@ -130,6 +185,7 @@ WithCustomTrellisPadding.args = {
 
 export {
 	Dodged,
+	AnimatedDodged,
 	HorizontalBarHorizontalTrellis,
 	HorizontalBarVerticalTrellis,
 	VerticalBarHorizontalTrellis,
