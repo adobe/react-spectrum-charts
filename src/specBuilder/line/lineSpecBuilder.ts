@@ -118,9 +118,9 @@ export const addSignals = produce<Signal[], [LineSpecProps]>((signals, props) =>
 });
 
 export const setScales = produce<Scale[], [LineSpecProps]>(
-	(scales, { metric, dimension, color, lineType, opacity, padding, scaleType, children, name }) => {
+	(scales, { metric, dimension, color, lineType, opacity, padding, scaleType, animate, children, name }) => {
 		// add dimension scale
-		addContinuousDimensionScale(scales, { scaleType, dimension, padding });
+		addContinuousDimensionScale(scales, { scaleType, dimension, padding, animate });
 		// add color to the color domain
 		addFieldToFacetScaleDomain(scales, 'color', color);
 		// add lineType to the lineType domain
@@ -128,7 +128,7 @@ export const setScales = produce<Scale[], [LineSpecProps]>(
 		// add opacity to the opacity domain
 		addFieldToFacetScaleDomain(scales, 'opacity', opacity);
 		// find the linear scale and add our fields to it
-		addMetricScale(scales, getMetricKeys(metric, children, name));
+		addMetricScale(scales, getMetricKeys(metric, children, name), animate);
 		return scales;
 	}
 );

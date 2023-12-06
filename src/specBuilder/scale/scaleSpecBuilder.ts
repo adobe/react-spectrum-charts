@@ -34,12 +34,17 @@ type AxisType = 'x' | 'y';
  *
  * NOTE: this should only be called from a 'produce' function since it mutates the scales
  */
-export const getScaleIndexByType = (scales: Scale[], type: ScaleType, axis: AxisType): number => {
+export const getScaleIndexByType = (
+	scales: Scale[],
+	type: ScaleType,
+	axis: AxisType,
+	animate: Animation | undefined
+): number => {
 	const name = toCamelCase(`${axis} ${type}`);
 	let index = scales.findIndex((scale) => scale.name === name);
 	if (index === -1) {
 		index = scales.length;
-		scales.push(generateScale(type, axis));
+		scales.push(generateScale(type, axis, animate));
 	}
 	return index;
 };
@@ -80,9 +85,14 @@ export const addDomainFields = produce<Scale, [string[]]>((scale, values) => {
 
 export const addContinuousDimensionScale = (
 	scales: Scale[],
-	{ scaleType, dimension, padding }: { scaleType: Exclude<ScaleType, 'ordinal'>; dimension: string; padding?: number }
+	{
+		scaleType,
+		dimension,
+		animate,
+		padding,
+	}: { scaleType: Exclude<ScaleType, 'ordinal'>; dimension: string; padding?: number; animate: Animation | undefined }
 ) => {
-	const index = getScaleIndexByType(scales, scaleType, 'x');
+	const index = getScaleIndexByType(scales, scaleType, 'x', animate);
 	const fields = scaleType === 'time' ? ['datetime0'] : [dimension];
 	scales[index] = addDomainFields(scales[index], fields);
 	if (padding !== undefined) {
@@ -107,8 +117,13 @@ const overridePadding = produce<Scale, [number]>((scale, padding) => {
  * @param values
  * @param metricAxis
  */
-export const addMetricScale = (scales: Scale[], metricKeys: string[], metricAxis: AxisType = 'y') => {
-	const index = getScaleIndexByType(scales, 'linear', metricAxis);
+export const addMetricScale = (
+	scales: Scale[],
+	metricKeys: string[],
+	animate: Animation | undefined,
+	metricAxis: AxisType = 'y'
+) => {
+	const index = getScaleIndexByType(scales, 'linear', metricAxis, animate);
 	scales[index] = addDomainFields(scales[index], metricKeys);
 };
 
@@ -119,8 +134,13 @@ export const addMetricScale = (scales: Scale[], metricKeys: string[], metricAxis
  * @param metricAxis
  * @returns
  */
-export const getMetricScale = (metricKeys: string[], metricAxis: AxisType, chartOrientation: Orientation): Scale => {
-	let scale = getDefaultScale('linear', metricAxis, chartOrientation);
+export const getMetricScale = (
+	metricKeys: string[],
+	metricAxis: AxisType,
+	animate: Animation | undefined,
+	chartOrientation: Orientation
+): Scale => {
+	let scale = getDefaultScale('linear', metricAxis, animate, chartOrientation);
 	scale = addDomainFields(scale, metricKeys);
 	return scale;
 };
@@ -144,9 +164,14 @@ export const addFieldToFacetScaleDomain = (
 	}
 };
 
-export const generateScale = (type: ScaleType, axis: AxisType, props?: Partial<Scale>): Scale => {
+export const generateScale = (
+	type: ScaleType,
+	axis: AxisType,
+	animate: Animation | undefined,
+	props?: Partial<Scale>
+): Scale => {
 	return {
-		...getDefaultScale(type, axis),
+		...getDefaultScale(type, axis, animate),
 		...props,
 	} as unknown as Scale;
 };
@@ -154,6 +179,7 @@ export const generateScale = (type: ScaleType, axis: AxisType, props?: Partial<S
 export const getDefaultScale = (
 	scaleType: ScaleType,
 	axis: AxisType,
+	animate: Animation | undefined,
 	chartOrientation: Orientation = 'vertical'
 ): Scale => {
 	const orientationToAxis: { [key in Orientation]: AxisType } = {
@@ -176,7 +202,9 @@ export const getDefaultScale = (
 	}
 	// metric axis properties
 	if (scale.type === 'linear' && !isDimensionAxis) {
-		return { ...scale, nice: true, zero: true };
+		// Only set nice to true if we are not animating, since
+		// it creates some jitter when the scale changes and nice is true
+		return { ...scale, nice: !animate, zero: true };
 	}
 	return scale;
 };

@@ -190,8 +190,8 @@ export const getDodgeGroupTransform = ({ color, lineType, name, opacity, type }:
 };
 
 export const addScales = produce<Scale[], [BarSpecProps]>((scales, props) => {
-	const { color, lineType, opacity, orientation } = props;
-	addMetricScale(scales, getScaleValues(props), orientation === 'vertical' ? 'y' : 'x');
+	const { animate, color, lineType, opacity, orientation } = props;
+	addMetricScale(scales, getScaleValues(props), animate, orientation === 'vertical' ? 'y' : 'x');
 	addDimensionScale(scales, props);
 	addTrellisScale(scales, props);
 	addFieldToFacetScaleDomain(scales, 'color', color);
@@ -202,9 +202,9 @@ export const addScales = produce<Scale[], [BarSpecProps]>((scales, props) => {
 
 export const addDimensionScale = (
 	scales: Scale[],
-	{ dimension, paddingRatio, paddingOuter: barPaddingOuter, orientation }: BarSpecProps
+	{ animate, dimension, paddingRatio, paddingOuter: barPaddingOuter, orientation }: BarSpecProps
 ) => {
-	const index = getScaleIndexByType(scales, 'band', orientation === 'vertical' ? 'x' : 'y');
+	const index = getScaleIndexByType(scales, 'band', orientation === 'vertical' ? 'x' : 'y', animate);
 	scales[index] = addDomainFields(scales[index], [dimension]);
 	const { paddingInner, paddingOuter } = getBarPadding(paddingRatio, barPaddingOuter);
 
@@ -271,11 +271,11 @@ export const addMarks = produce<Mark[], [BarSpecProps]>((marks, props) => {
 });
 
 export const getRepeatedScale = (props: BarSpecProps): Scale => {
-	const { orientation, trellisOrientation } = props;
+	const { animate, orientation, trellisOrientation } = props;
 	// if the orientations match then the metric scale is repeated, otherwise the dimension scale is repeated
 	// ex. vertical bar in a vertical trellis will have multiple copies of the metric scale
 	if (orientation === trellisOrientation) {
-		return getMetricScale(getScaleValues(props), orientation === 'vertical' ? 'y' : 'x', orientation);
+		return getMetricScale(getScaleValues(props), orientation === 'vertical' ? 'y' : 'x', animate, orientation);
 	} else {
 		return getDimensionScale(props);
 	}
@@ -292,8 +292,9 @@ const getDimensionScale = ({
 	orientation,
 	paddingRatio,
 	paddingOuter: barPaddingOuter,
+	animate,
 }: BarSpecProps): BandScale => {
-	let scale = getDefaultScale('band', orientation === 'vertical' ? 'x' : 'y', orientation);
+	let scale = getDefaultScale('band', orientation === 'vertical' ? 'x' : 'y', animate, orientation);
 	scale = addDomainFields(scale, [dimension]);
 	const { paddingInner, paddingOuter } = getBarPadding(paddingRatio, barPaddingOuter);
 	return { ...scale, paddingInner, paddingOuter } as BandScale;

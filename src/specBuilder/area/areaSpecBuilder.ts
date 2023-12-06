@@ -160,7 +160,7 @@ export const addSignals = produce<Signal[], [AreaSpecProps]>((signals, { childre
 export const setScales = produce<Scale[], [AreaSpecProps]>(
 	(scales, { metric, metricEnd, metricStart, dimension, color, scaleType, padding }) => {
 		// add dimension scale
-		addContinuousDimensionScale(scales, { scaleType, dimension, padding });
+		addContinuousDimensionScale(scales, { scaleType, dimension, padding, animate: undefined });
 		// add color to the color domain
 		addFieldToFacetScaleDomain(scales, 'color', color);
 		// find the linear scale and add our field to it
@@ -168,7 +168,7 @@ export const setScales = produce<Scale[], [AreaSpecProps]>(
 			metricStart = `${metric}0`;
 			metricEnd = `${metric}1`;
 		}
-		addMetricScale(scales, [metricStart, metricEnd]);
+		addMetricScale(scales, [metricStart, metricEnd], undefined);
 		return scales;
 	}
 );

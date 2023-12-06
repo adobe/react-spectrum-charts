@@ -467,13 +467,8 @@ export const getBarPadding = (paddingRatio: number, paddingOuter?: number) => {
 };
 
 export const getScaleValues = (props: BarSpecProps) => {
-	if (props.animate) {
-		// If the chart is animated, we don't want the scale to animate, only the bars
-		// And there will never be a {metric}1 field in the animated chart without "Animated" appended,
-		// so we can just use the {metric} field
-		return [props.metric];
-	}
-	return props.type === 'stacked' || isDodgedAndStacked(props) ? [`${props.metric}1`] : [props.metric];
+	const metric = getEffectiveMetricName(props.metric, props.animate);
+	return props.type === 'stacked' || isDodgedAndStacked(props) ? [`${metric}1`] : [metric];
 };
 
 export interface BarOrientationProperties {
