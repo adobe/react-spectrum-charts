@@ -68,5 +68,17 @@ export default function useChartImperativeHandle(
 				}
 			});
 		},
+		getSvg() {
+			return new Promise<string>((resolve, reject) => {
+				if (chartView.current) {
+					chartView.current.toSVG().then(
+						(value) => resolve(value),
+						() => reject(new Error('Error occurred while converting chart to SVG'))
+					);
+				} else {
+					reject(new Error("There isn't a chart to get the SVG from, get SVG failed"));
+				}
+			});
+		},
 	}));
 }

@@ -26,10 +26,16 @@ export default {
 	component: Chart,
 };
 
-const HandleStory = ({ variant }: { variant: 'copy' | 'download' }) => {
+const HandleStory = ({ variant }: { variant: 'copy' | 'download' | 'getSvg' }) => {
 	const [loading, setLoading] = useState(false);
 	const ref = useRef<ChartHandle>(null);
 	const props = useChartProps({ data });
+
+	const buttonText: Record<typeof variant, string> = {
+		copy: 'Copy to clipboard',
+		download: 'Download PNG',
+		getSvg: 'Get SVG',
+	};
 	return (
 		<Content>
 			<Chart {...props} ref={ref} loading={loading}>
@@ -42,7 +48,7 @@ const HandleStory = ({ variant }: { variant: 'copy' | 'download' }) => {
 					onPress={() => ref?.current?.[variant]().then(console.log, console.warn)}
 					data-testid={variant}
 				>
-					{variant === 'copy' ? 'Copy to clipboard' : 'Download PNG'}
+					{buttonText[variant]}
 				</ActionButton>
 				<ActionButton onPress={() => setLoading(!loading)}>Toggle loading</ActionButton>
 			</Flex>
@@ -58,8 +64,14 @@ const DownloadStory: ComponentStory<typeof Chart> = (): ReactElement => {
 	return <HandleStory variant="download" />;
 };
 
+const SvgStory: ComponentStory<typeof Chart> = (): ReactElement => {
+	return <HandleStory variant="getSvg" />;
+};
+
 const Copy = bindWithProps(CopyStory);
 
 const Download = bindWithProps(DownloadStory);
 
-export { Copy, Download };
+const GetSvg = bindWithProps(SvgStory);
+
+export { Copy, Download, GetSvg };
