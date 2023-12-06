@@ -26,6 +26,8 @@ import { DonutSpecProps } from 'types';
 import { ColorScheme, DonutProps } from 'types';
 import { Data, Mark, Scale, Signal, Spec } from 'vega';
 
+import { getFontSize } from './donutSpecUtils';
+
 export const addDonut = produce<Spec, [DonutProps & { colorScheme?: ColorScheme; index?: number }]>(
 	(
 		spec,
@@ -157,9 +159,11 @@ export const addMarks = produce<Mark[], [DonutSpecProps]>((marks, props) => {
 						x: { signal: 'width / 2' },
 						y: { signal: 'height / 2' },
 						text: { signal: "upper(replace(format(datum.sum, '.3~s'), 'G', 'B'))" },
-						fontSize: { value: 72 },
+						fontSize: getFontSize(radius, holeRatio, true),
 						align: { value: 'center' },
-						baseline: { value: metricLabel ? 'alphabetic' : 'middle' },
+						baseline: {
+							signal: metricLabel ? `${radius} * ${holeRatio} > 48 ? 'alphabetic' : 'middle'` : 'middle',
+						},
 					},
 				},
 			},
@@ -172,9 +176,11 @@ export const addMarks = produce<Mark[], [DonutSpecProps]>((marks, props) => {
 			encode: {
 				enter: {
 					x: { signal: 'width / 2' },
-					y: { signal: 'height / 2', offset: 24 },
+					y: {
+						signal: `height / 2 + (${radius} * ${holeRatio} > 72 ? 24 : ${radius} * ${holeRatio} > 60 ? 18 : ${radius} * ${holeRatio} > 48 ? 12 : 0)`,
+					},
 					text: { value: metricLabel },
-					fontSize: { value: 24 },
+					fontSize: getFontSize(radius, holeRatio, false),
 					align: { value: 'center' },
 					baseline: { value: 'top' },
 				},
@@ -195,7 +201,8 @@ export const addMarks = produce<Mark[], [DonutSpecProps]>((marks, props) => {
 					encode: {
 						enter: {
 							text: {
-								signal: `if(datum['endAngle'] - datum['startAngle'] < 0.3, '', datum['${metric}'])`,
+								// signal: `if(datum['endAngle'] - datum['startAngle'] < 0.3, '', datum['${metric}'])`, //this version of the signal doesn't place commas in the numbers
+								signal: `if(datum['endAngle'] - datum['startAngle'] < 0.3, '', format(datum['${metric}'], ','))`,
 							},
 							x: { signal: 'width / 2' },
 							y: { signal: 'height / 2' },
