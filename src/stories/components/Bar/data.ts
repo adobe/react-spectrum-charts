@@ -27,15 +27,27 @@ export const alternateBarData = [
 ];
 
 export const barSeriesData = [
-	{ browser: 'Chrome', value: 5, operatingSystem: 'Windows', order: 2, percentLabel: '50%' },
-	{ browser: 'Chrome', value: 3, operatingSystem: 'Mac', order: 1, percentLabel: '30%' },
-	{ browser: 'Chrome', value: 2, operatingSystem: 'Other', order: 0, percentLabel: '20%' },
-	{ browser: 'Firefox', value: 3, operatingSystem: 'Windows', order: 2, percentLabel: '42.6%' },
-	{ browser: 'Firefox', value: 3, operatingSystem: 'Mac', order: 1, percentLabel: '42.6%' },
-	{ browser: 'Firefox', value: 1, operatingSystem: 'Other', order: 0, percentLabel: '14.3%' },
-	{ browser: 'Safari', value: 3, operatingSystem: 'Windows', order: 2, percentLabel: '75%' },
+	{ browser: 'Chrome', value: 50, operatingSystem: 'Windows', order: 2, percentLabel: '50%' },
+	{ browser: 'Chrome', value: 30, operatingSystem: 'Mac', order: 1, percentLabel: '30%' },
+	{ browser: 'Chrome', value: 20, operatingSystem: 'Other', order: 0, percentLabel: '20%' },
+	{ browser: 'Firefox', value: 30, operatingSystem: 'Windows', order: 2, percentLabel: '42.6%' },
+	{ browser: 'Firefox', value: 30, operatingSystem: 'Mac', order: 1, percentLabel: '42.6%' },
+	{ browser: 'Firefox', value: 10, operatingSystem: 'Other', order: 0, percentLabel: '14.3%' },
+	{ browser: 'Safari', value: 30, operatingSystem: 'Windows', order: 2, percentLabel: '75%' },
 	{ browser: 'Safari', value: 0, operatingSystem: 'Mac', order: 1 },
-	{ browser: 'Safari', value: 1, operatingSystem: 'Other', order: 0, percentLabel: '25%' },
+	{ browser: 'Safari', value: 7, operatingSystem: 'Other', order: 0, percentLabel: '25%' },
+];
+
+export const alternateBarSeriesData = [
+	{ browser: 'Chrome', value: 41, operatingSystem: 'Windows', order: 2, percentLabel: '41.8%' },
+	{ browser: 'Chrome', value: 25, operatingSystem: 'Mac', order: 1, percentLabel: '25.5%' },
+	{ browser: 'Chrome', value: 32, operatingSystem: 'Other', order: 0, percentLabel: '32.7%' },
+	{ browser: 'Firefox', value: 55, operatingSystem: 'Windows', order: 2, percentLabel: '42.3%' },
+	{ browser: 'Firefox', value: 60, operatingSystem: 'Mac', order: 1, percentLabel: '46.2%' },
+	{ browser: 'Firefox', value: 15, operatingSystem: 'Other', order: 0, percentLabel: '11.5%' },
+	{ browser: 'Safari', value: 12, operatingSystem: 'Windows', order: 2, percentLabel: '31.6%' },
+	{ browser: 'Safari', value: 16, operatingSystem: 'Mac', order: 1, percentLabel: '42.1%' },
+	{ browser: 'Safari', value: 10, operatingSystem: 'Other', order: 0, percentLabel: '26.3%' },
 ];
 
 export const negativeBarSeriesData = [

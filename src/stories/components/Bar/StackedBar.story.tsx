@@ -14,11 +14,12 @@ import React, { ReactElement, createElement } from 'react';
 import { Annotation } from '@components/Annotation';
 import useChartProps from '@hooks/useChartProps';
 import { Axis, Bar, Chart, Legend } from '@rsc';
+import { useAnimationControls } from '@stories/storyUtils';
 import { ComponentStory } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
 import { SpectrumColor } from 'types';
 
-import { barSeriesData, negativeBarSeriesData } from './data';
+import { alternateBarSeriesData, barSeriesData, negativeBarSeriesData } from './data';
 
 export default {
 	title: 'RSC/Bar/Stacked Bar',
@@ -41,6 +42,22 @@ const BarStory: ComponentStory<typeof Bar> = (args): ReactElement => {
 			<Bar {...args} />
 			<Legend title="Operating system" />
 		</Chart>
+	);
+};
+
+const AnimatedBarStory: ComponentStory<typeof Bar> = (args): ReactElement => {
+	const chartProps = useChartProps({ data: barSeriesData, colors, width: 800, height: 600 });
+	const { component, dataSet, ...animProps } = useAnimationControls();
+	return (
+		<div>
+			{component}
+			<Chart {...chartProps} animate={animProps} data={dataSet === 0 ? barSeriesData : alternateBarSeriesData}>
+				<Axis position={args.orientation === 'horizontal' ? 'left' : 'bottom'} baseline title="Browser" />
+				<Axis position={args.orientation === 'horizontal' ? 'bottom' : 'left'} grid title="Downloads" />
+				<Bar {...args} />
+				<Legend title="Operating system" />
+			</Chart>
+		</div>
 	);
 };
 
@@ -78,4 +95,14 @@ NegativeStack.args = {
 	color: 'operatingSystem',
 };
 
-export { Basic, NegativeStack, WithBarLabels };
+const AnimatedBasic = bindWithProps(AnimatedBarStory);
+AnimatedBasic.args = {
+	...Basic.args,
+};
+
+const AnimatedWithLabels = bindWithProps(AnimatedBarStory);
+AnimatedWithLabels.args = {
+	...WithBarLabels.args,
+};
+
+export { Basic, AnimatedBasic, NegativeStack, WithBarLabels, AnimatedWithLabels };

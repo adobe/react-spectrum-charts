@@ -70,7 +70,6 @@ const AnimatedDodgedBarStory: ComponentStory<typeof Bar> = (args): ReactElement 
 						  }))
 						: data.map((d) => ({ ...d, value: d.value * (1.5 - Math.random()) * 1000 }))
 				}
-				debug
 			>
 				<Axis position={args.orientation === 'horizontal' ? 'left' : 'bottom'} baseline title="Browser" />
 				<Axis position={args.orientation === 'horizontal' ? 'bottom' : 'left'} grid title="Downloads" />
