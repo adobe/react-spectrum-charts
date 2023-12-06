@@ -209,7 +209,7 @@ const getDisplayTextForLargeSlice = (
 	radius: string,
 	datumProperty: string,
 	format: boolean,
-	minArcLength: number = 45 // minimum arc length to display text, in pixels
+	minArcLength: number = 40 // minimum arc length to display text, in pixels
 ): ProductionRule<TextValueRef> => {
 	return {
 		//if we want to go back to displaying based on radians rather than arc length, use this if statement:  if(datum['endAngle'] - datum['startAngle'] < 0.3

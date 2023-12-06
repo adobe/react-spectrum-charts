@@ -18,7 +18,7 @@ import { bindWithProps } from '@test-utils';
 
 import { Content } from '@adobe/react-spectrum';
 
-import { donutData } from './data';
+import { basicDonutData, sliveredDonutData } from './data';
 
 export default {
 	title: 'RSC/Donut',
@@ -26,9 +26,9 @@ export default {
 };
 
 const DonutStory: ComponentStory<typeof Donut> = (args): ReactElement => {
-	const chartProps = useChartProps({ data: donutData, width: 350, height: 350 });
+	const chartProps = useChartProps({ data: basicDonutData, width: 350, height: 350 });
 	return (
-		<Chart {...chartProps} debug>
+		<Chart {...chartProps}>
 			<Donut {...args} />
 		</Chart>
 	);
@@ -60,9 +60,9 @@ const dialogContent = (datum) => {
 };
 
 const DonutTooltipStory: ComponentStory<typeof Donut> = (args): ReactElement => {
-	const chartProps = useChartProps({ data: donutData, width: 350, height: 350 });
+	const chartProps = useChartProps({ data: basicDonutData, width: 350, height: 350 });
 	return (
-		<Chart {...chartProps} debug>
+		<Chart {...chartProps}>
 			<Donut {...args}>
 				<ChartTooltip>{dialogContent}</ChartTooltip>
 				<ChartPopover width={150}>{dialogContent}</ChartPopover>
@@ -75,19 +75,18 @@ const WithPopover = bindWithProps(DonutTooltipStory);
 WithPopover.args = {
 	metric: 'count',
 	metricLabel: 'Visitors',
-	segment: 'segment',
 	color: 'id',
 };
 
 const DonutLegendStory: ComponentStory<typeof Donut> = (args): ReactElement => {
-	const chartProps = useChartProps({ data: donutData, width: 400, height: 350 });
+	const chartProps = useChartProps({ data: basicDonutData, width: 400, height: 350 });
 	return (
-		<Chart {...chartProps} debug>
+		<Chart {...chartProps}>
 			<Donut {...args} />
 			<Legend
 				title="Browsers"
 				position={'right'}
-				legendLabels={donutData.map((d) => ({ label: d.segment, seriesName: d.id }))}
+				legendLabels={basicDonutData.map((d) => ({ label: d.segment, seriesName: d.id }))}
 				highlight
 				isToggleable
 			/>
@@ -99,8 +98,58 @@ const WithLegend = bindWithProps(DonutLegendStory);
 WithLegend.args = {
 	metric: 'count',
 	metricLabel: 'Visitors',
-	segment: 'segment',
 	color: 'id',
 };
 
-export { Basic, WithDirectLabels, WithPopover, WithLegend };
+const EverythingBagel: ComponentStory<typeof Donut> = (args): ReactElement => {
+	const chartProps = useChartProps({ data: basicDonutData, width: 400, height: 350 });
+	return (
+		<Chart {...chartProps}>
+			<Donut {...args}>
+				<ChartTooltip>{dialogContent}</ChartTooltip>
+				<ChartPopover width={150}>{dialogContent}</ChartPopover>
+			</Donut>
+			<Legend
+				title="Browsers"
+				position={'right'}
+				legendLabels={basicDonutData.map((d) => ({ label: d.segment, seriesName: d.id }))}
+				highlight
+				isToggleable
+			/>
+		</Chart>
+	);
+};
+
+const Everything = bindWithProps(EverythingBagel);
+Everything.args = {
+	metric: 'count',
+	metricLabel: 'Visitors',
+	segment: 'segment',
+	color: 'id',
+	hasDirectLabels: true,
+	holeRatio: 0.8,
+};
+
+const SliversStory: ComponentStory<typeof Donut> = (args): ReactElement => {
+	const chartProps = useChartProps({ data: sliveredDonutData, width: 350, height: 350 });
+	return (
+		<Chart {...chartProps}>
+			<Donut {...args}>
+				<ChartTooltip>{dialogContent}</ChartTooltip>
+				<ChartPopover width={150}>{dialogContent}</ChartPopover>
+			</Donut>
+		</Chart>
+	);
+};
+
+const Slivers = bindWithProps(SliversStory);
+Slivers.args = {
+	metric: 'count',
+	metricLabel: 'Visitors',
+	segment: 'segment',
+	color: 'id',
+	hasDirectLabels: true,
+	holeRatio: 0.8,
+};
+
+export { Basic, WithDirectLabels, WithPopover, WithLegend, Everything, Slivers };

@@ -114,7 +114,7 @@ export interface DonutProps extends MarkProps {
 	/** the datum property for segments of the data */
 	segment?: string;
 
-	/** start angle of the donut in radians (0 is top dead center) */
+	/** start angle of the donut in radians (0 is top dead center, and default) */
 	startAngle?: number;
 
 	/** ratio of the donut inner radius / donut outer radius. 0 is a pie chart. 0.85 is the default. */
