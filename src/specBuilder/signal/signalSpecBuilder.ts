@@ -9,16 +9,9 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import {
-	ANIMATION_CURVE,
-	ANIMATION_DURATION,
-	ANIMATION_SCALE,
-	ANIMATION_SCALE_INVERSE,
-	ANIMATION_SIGNAL,
-	MARK_ID,
-	SERIES_ID,
-} from '@constants';
-import { Animation, AnimationProps } from 'types';
+import { ANIMATION_SCALE, ANIMATION_SCALE_INVERSE, ANIMATION_SIGNAL, MARK_ID, SERIES_ID } from '@constants';
+import { getAnimationDefaults } from '@utils';
+import { Animation } from 'types';
 import { Signal } from 'vega';
 
 /**
@@ -146,19 +139,5 @@ export const getAnimationSignal = (animation: Animation): Signal => {
 		name: ANIMATION_SIGNAL,
 		value: 0,
 		on: signalOn,
-	};
-};
-
-export const getAnimationDefaults = (animation: Animation): Required<AnimationProps> => {
-	if (typeof animation === 'boolean') {
-		return {
-			duration: ANIMATION_DURATION,
-			curve: ANIMATION_CURVE,
-		};
-	}
-	return {
-		duration: ANIMATION_DURATION,
-		curve: ANIMATION_CURVE,
-		...animation,
 	};
 };

@@ -11,11 +11,13 @@
  */
 import { Fragment, ReactFragment } from 'react';
 
-import { MARK_ID, SERIES_ID } from '@constants';
+import { ANIMATION_CURVE, ANIMATION_DURATION, MARK_ID, SERIES_ID } from '@constants';
 import { View } from 'vega';
 
 import { Area, Axis, AxisAnnotation, Bar, ChartPopover, ChartTooltip, Legend, Line, Trendline } from '..';
 import {
+	Animation,
+	AnimationProps,
 	AxisAnnotationChildElement,
 	AxisChildElement,
 	ChartChildElement,
@@ -124,6 +126,24 @@ export const toggleStringArrayValue = (target: string[], value: string): string[
 		return target.filter((item) => item !== value);
 	}
 	return [...target, value];
+};
+
+/**
+ * Returns the the unpacked values for the animation parameter,
+ * returning the defaults where necessary.
+ */
+export const getAnimationDefaults = (animation: Animation | undefined): Required<AnimationProps> => {
+	if (typeof animation === 'boolean') {
+		return {
+			duration: ANIMATION_DURATION,
+			curve: ANIMATION_CURVE,
+		};
+	}
+	return {
+		duration: ANIMATION_DURATION,
+		curve: ANIMATION_CURVE,
+		...animation,
+	};
 };
 
 // traverses the children to find the first element instance of the proivded type

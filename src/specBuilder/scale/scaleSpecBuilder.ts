@@ -19,8 +19,7 @@ import {
 	TABLE,
 } from '@constants';
 import { getBarPadding } from '@specBuilder/bar/barUtils';
-import { getAnimationDefaults } from '@specBuilder/signal/signalSpecBuilder';
-import { toCamelCase } from '@utils';
+import { getAnimationDefaults, toCamelCase } from '@utils';
 import { produce } from 'immer';
 import { Animation, DualFacet, FacetRef, FacetType, Orientation } from 'types';
 import { PowScale, Scale, ScaleData, ScaleMultiFieldsRef, SignalRef } from 'vega';
