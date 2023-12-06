@@ -12,7 +12,7 @@
 import React, { ReactElement } from 'react';
 
 import useChartProps from '@hooks/useChartProps';
-import { Chart, ChartPopover, ChartTooltip, Donut } from '@rsc';
+import { Chart, ChartPopover, ChartTooltip, Donut, Legend } from '@rsc';
 import { ComponentStory } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
 
@@ -79,4 +79,28 @@ WithPopover.args = {
 	color: 'id',
 };
 
-export { Basic, WithDirectLabels, WithPopover };
+const DonutLegendStory: ComponentStory<typeof Donut> = (args): ReactElement => {
+	const chartProps = useChartProps({ data: donutData, width: 400, height: 350 });
+	return (
+		<Chart {...chartProps} debug>
+			<Donut {...args} />
+			<Legend
+				title="Browsers"
+				position={'right'}
+				legendLabels={donutData.map((d) => ({ label: d.segment, seriesName: d.id }))}
+				highlight
+				isToggleable
+			/>
+		</Chart>
+	);
+};
+
+const WithLegend = bindWithProps(DonutLegendStory);
+WithLegend.args = {
+	metric: 'count',
+	metricLabel: 'Visitors',
+	segment: 'segment',
+	color: 'id',
+};
+
+export { Basic, WithDirectLabels, WithPopover, WithLegend };

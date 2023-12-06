@@ -5,5 +5,5 @@ export const donutData = [
 	{ id: 4, count: 3000, segment: 'Brave' },
 	{ id: 5, count: 7000, segment: 'Safari' },
 	{ id: 6, count: 8000, segment: 'Firefox' },
-	{ id: 7, count: 1000, segment: 'other' },
+	{ id: 7, count: 1000, segment: 'Unknown' },
 ];

@@ -29,30 +29,30 @@ export const getArcMark = (name: string, holeRatio: number, radius: string, chil
 				padAngle: { value: 0.01 },
 				innerRadius: { signal: `${holeRatio} * ${radius}` },
 				outerRadius: { signal: radius },
-				opacity: getOpacityRules(name, children),
+				fillOpacity: getOpacityRules(name, children),
 			},
 		},
 	};
 };
 
 export const getOpacityRules = (name: string, children: MarkChildElement[]): ProductionRule<NumericValueRef> => {
+	const lowOpacity = 1 / HIGHLIGHT_CONTRAST_RATIO;
 	const hoveredSignal = `${name}_hoveredId`;
 	const selectedSignal = `${name}_selectedId`;
 
 	const opacityRules = [
 		{
-			test: `!${hoveredSignal} || datum.${MARK_ID} === ${hoveredSignal}`,
-			value: 1,
+			test: `${hoveredSignal} && datum.${MARK_ID} !== ${hoveredSignal}`,
+			value: lowOpacity,
 		},
 		{
-			value: 1 / HIGHLIGHT_CONTRAST_RATIO,
+			value: 1,
 		},
 	];
 	if (hasPopover(children)) {
-		opacityRules[0].test = `!${selectedSignal} && (!${hoveredSignal} || datum.${MARK_ID} === ${hoveredSignal})`;
 		opacityRules.splice(1, 0, {
-			test: `${selectedSignal} && datum.${MARK_ID} === ${selectedSignal}`,
-			value: 1,
+			test: `${selectedSignal} && datum.${MARK_ID} !== ${selectedSignal}`,
+			value: lowOpacity,
 		});
 	}
 	return opacityRules;
