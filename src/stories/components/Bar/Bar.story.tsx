@@ -14,10 +14,11 @@ import React, { ReactElement, createElement } from 'react';
 import { Annotation } from '@components/Annotation';
 import useChartProps from '@hooks/useChartProps';
 import { Axis, Bar, Chart } from '@rsc';
+import { useAnimationControls } from '@stories/storyUtils';
 import { ComponentStory } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
 
-import { barData } from './data';
+import { alternateBarData, barData } from './data';
 
 export default {
 	title: 'RSC/Bar',
@@ -32,6 +33,22 @@ const BarStory: ComponentStory<typeof Bar> = (args): ReactElement => {
 			<Axis position={args.orientation === 'horizontal' ? 'bottom' : 'left'} grid title="Downloads" />
 			<Bar {...args} />
 		</Chart>
+	);
+};
+
+const AnimatedBarStory: ComponentStory<typeof Bar> = (args): ReactElement => {
+	const chartProps = useChartProps({ data: barData, width: 600, height: 600 });
+	const { component, dataSet, ...animProps } = useAnimationControls();
+
+	return (
+		<div>
+			{component}
+			<Chart {...chartProps} animate={animProps} data={dataSet === 0 ? barData : alternateBarData} debug>
+				<Axis position={args.orientation === 'horizontal' ? 'left' : 'bottom'} baseline title="Browser" />
+				<Axis position={args.orientation === 'horizontal' ? 'bottom' : 'left'} grid title="Downloads" />
+				<Bar {...args} />
+			</Chart>
+		</div>
 	);
 };
 
@@ -78,4 +95,14 @@ WithAnnotation.args = {
 	metric: 'downloads',
 };
 
-export { Basic, Horizontal, LineType, Opacity, PaddingRatio, WithAnnotation };
+const Animated = bindWithProps(AnimatedBarStory);
+Animated.args = {
+	...Basic.args,
+};
+
+const AnimatedHorizontal = bindWithProps(AnimatedBarStory);
+AnimatedHorizontal.args = {
+	...Horizontal.args,
+};
+
+export { Basic, Horizontal, LineType, Opacity, PaddingRatio, WithAnnotation, Animated, AnimatedHorizontal };

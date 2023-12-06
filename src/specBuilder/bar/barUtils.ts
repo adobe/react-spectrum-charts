@@ -31,7 +31,7 @@ import {
 	hasPopover,
 } from '@specBuilder/marks/markUtils';
 import { getColorValue, getLineWidthPixelsFromLineWidth } from '@specBuilder/specUtils';
-import { sanitizeMarkChildren } from '@utils';
+import { getEffectiveMetricName, sanitizeMarkChildren } from '@utils';
 import { AnnotationElement, AnnotationStyleProps, BarSpecProps, Orientation } from 'types';
 import {
 	ArrayValueRef,
@@ -116,7 +116,7 @@ export const getTrellisedDimensionEncodings = (props: BarSpecProps): RectEncodeE
 };
 
 export const getMetricEncodings = (props: BarSpecProps): RectEncodeEntry => {
-	const { metric, type } = props;
+	const { metric, type, animate } = props;
 	const { metricAxis: startKey, metricScaleKey: scaleKey } = getOrientationProperties(props.orientation);
 	const endKey = `${startKey}2`;
 
@@ -125,12 +125,13 @@ export const getMetricEncodings = (props: BarSpecProps): RectEncodeEntry => {
 	}
 	return {
 		[startKey]: { scale: scaleKey, value: 0 },
-		[endKey]: { scale: scaleKey, field: metric },
+		[endKey]: { scale: scaleKey, field: getEffectiveMetricName(metric, animate) },
 	};
 };
 
 export const getStackedMetricEncodings = (props: BarSpecProps): RectEncodeEntry => {
-	const { metric, orientation } = props;
+	const { orientation, animate } = props;
+	const metric = getEffectiveMetricName(props.metric, animate);
 	const { metricAxis: startKey, metricScaleKey: scaleKey } = getOrientationProperties(props.orientation);
 	const endKey = `${startKey}2`;
 
@@ -177,7 +178,8 @@ export const getStackedMetricEncodings = (props: BarSpecProps): RectEncodeEntry 
 };
 
 export const getCornerRadiusEncodings = (props: BarSpecProps): RectEncodeEntry => {
-	const { type, lineWidth, metric } = props;
+	const { type, lineWidth, animate } = props;
+	const metric = getEffectiveMetricName(props.metric, animate);
 	const value = Math.max(1, CORNER_RADIUS - getLineWidthPixelsFromLineWidth(lineWidth) / 2);
 
 	let rectEncodeEntry: RectEncodeEntry;
@@ -196,9 +198,15 @@ export const getCornerRadiusEncodings = (props: BarSpecProps): RectEncodeEntry =
 	return rotateRectClockwiseIfNeeded(rectEncodeEntry, props);
 };
 
-export const getStackedCornerRadiusEncodings = ({ name, metric, lineWidth }: BarSpecProps): RectEncodeEntry => {
-	const topTestString = `datum.${metric}1 > 0 && data('${name}_stacks')[indexof(pluck(data('${name}_stacks'), '${STACK_ID}'), datum.${STACK_ID})].max_${metric}1 === datum.${metric}1`;
-	const bottomTestString = `datum.${metric}1 < 0 && data('${name}_stacks')[indexof(pluck(data('${name}_stacks'), '${STACK_ID}'), datum.${STACK_ID})].min_${metric}1 === datum.${metric}1`;
+export const getStackedCornerRadiusEncodings = ({
+	name,
+	animate,
+	lineWidth,
+	...props
+}: BarSpecProps): RectEncodeEntry => {
+	const metric = getEffectiveMetricName(props.metric, animate) + '1';
+	const topTestString = `datum.${metric} > 0 && data('${name}_stacks')[indexof(pluck(data('${name}_stacks'), '${STACK_ID}'), datum.${STACK_ID})].max_${metric} === datum.${metric}`;
+	const bottomTestString = `datum.${metric} < 0 && data('${name}_stacks')[indexof(pluck(data('${name}_stacks'), '${STACK_ID}'), datum.${STACK_ID})].min_${metric} === datum.${metric}`;
 	const value = Math.max(1, CORNER_RADIUS - getLineWidthPixelsFromLineWidth(lineWidth) / 2);
 
 	return {
@@ -454,6 +462,12 @@ export const getBarPadding = (paddingRatio: number, paddingOuter?: number) => {
 };
 
 export const getScaleValues = (props: BarSpecProps) => {
+	if (props.animate) {
+		// If the chart is animated, we don't want the scale to animate, only the bars
+		// And there will never be a {metric}1 field in the animated chart without "Animated" appended,
+		// so we can just use the {metric} field
+		return [props.metric];
+	}
 	return props.type === 'stacked' || isDodgedAndStacked(props) ? [`${props.metric}1`] : [props.metric];
 };
 

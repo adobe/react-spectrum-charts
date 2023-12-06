@@ -37,10 +37,10 @@ export const getDodgedMark = (props: BarSpecProps): Mark => {
 				interactive: false,
 				encode: {
 					enter: {
-						...getBaseBarEnterEncodings(props),
 						fill: { signal: BACKGROUND_COLOR },
 					},
 					update: {
+						...getBaseBarEnterEncodings(props),
 						...getDodgedDimensionEncodings(props),
 					},
 				},
@@ -53,10 +53,10 @@ export const getDodgedMark = (props: BarSpecProps): Mark => {
 				interactive: getInteractive(children),
 				encode: {
 					enter: {
-						...getBaseBarEnterEncodings(props),
 						...getBarEnterEncodings(props),
 					},
 					update: {
+						...getBaseBarEnterEncodings(props),
 						...getDodgedDimensionEncodings(props),
 						...getBarUpdateEncodings(props),
 					},

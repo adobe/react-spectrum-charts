@@ -1,5 +1,4 @@
 import { BACKGROUND_COLOR, DEFAULT_SYMBOL_SIZE, DEFAULT_SYMBOL_STROKE_WIDTH, MARK_ID } from '@constants';
-import { getEffectiveMetricName } from '@specBuilder/data/dataUtils';
 import {
 	getColorProductionRule,
 	getHighlightOpacityValue,
@@ -7,6 +6,7 @@ import {
 	hasPopover,
 } from '@specBuilder/marks/markUtils';
 import { getColorValue } from '@specBuilder/specUtils';
+import { getEffectiveMetricName } from '@utils';
 import { LineSpecProps, ProductionRuleTests } from 'types';
 import { ColorValueRef, NumericValueRef, SymbolMark } from 'vega';
 

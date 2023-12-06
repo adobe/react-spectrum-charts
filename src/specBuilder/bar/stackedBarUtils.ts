@@ -74,10 +74,10 @@ export const getStackedBackgroundBar = (props: BarSpecProps): RectMark => {
 		interactive: false,
 		encode: {
 			enter: {
-				...getBaseBarEnterEncodings(props),
 				fill: { signal: BACKGROUND_COLOR },
 			},
 			update: {
+				...getBaseBarEnterEncodings(props),
 				...getStackedDimensionEncodings(props),
 			},
 		},
@@ -93,10 +93,10 @@ export const getStackedBar = (props: BarSpecProps): RectMark => {
 		interactive: getInteractive(children),
 		encode: {
 			enter: {
-				...getBaseBarEnterEncodings(props),
 				...getBarEnterEncodings(props),
 			},
 			update: {
+				...getBaseBarEnterEncodings(props),
 				...getStackedDimensionEncodings(props),
 				...getBarUpdateEncodings(props),
 			},

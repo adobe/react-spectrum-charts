@@ -93,6 +93,7 @@ type BarPropsWithDefaults =
 export interface BarSpecProps
 	extends PickRequired<BarProps & { colorScheme: ColorScheme; index: number }, BarPropsWithDefaults> {
 	children: MarkChildElement[];
+	animate?: Animation;
 }
 
 type LegendPropsWithDefaults = 'hiddenEntries' | 'highlight' | 'isToggleable' | 'position' | 'name';

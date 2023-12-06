@@ -105,7 +105,7 @@ export function buildSpec(props: SanitizedSpecProps) {
 					return addAxis(acc, { ...(cur as AxisElement).props, colorScheme, index: axisCount });
 				case Bar:
 					barCount++;
-					return addBar(acc, { ...(cur as BarElement).props, colorScheme, index: barCount });
+					return addBar(acc, { ...(cur as BarElement).props, colorScheme, index: barCount, animate });
 				case Legend:
 					legendCount++;
 					return addLegend(acc, {

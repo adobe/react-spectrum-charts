@@ -18,12 +18,12 @@ import {
 } from '@specBuilder/metricRange/metricRangeUtils';
 import { getFacetsFromProps } from '@specBuilder/specUtils';
 import { getTrendlineData, getTrendlineMarks, getTrendlineSignals } from '@specBuilder/trendline/trendlineUtils';
-import { sanitizeMarkChildren, toCamelCase } from '@utils';
+import { getMetricAnimationTransform, sanitizeMarkChildren, toCamelCase } from '@utils';
 import { produce } from 'immer';
 import { Animation, ColorScheme, LineProps, LineSpecProps, MarkChildElement } from 'types';
 import { Data, Mark, Scale, Signal, Spec } from 'vega';
 
-import { addTimeTransform, getMetricAnimationTransform, getTableData } from '../data/dataUtils';
+import { addTimeTransform, getTableData } from '../data/dataUtils';
 import { addContinuousDimensionScale, addFieldToFacetScaleDomain, addMetricScale } from '../scale/scaleSpecBuilder';
 import {
 	getGenericSignal,

@@ -11,8 +11,8 @@
  */
 import { Fragment, ReactFragment } from 'react';
 
-import { ANIMATION_CURVE, ANIMATION_DURATION, MARK_ID, SERIES_ID } from '@constants';
-import { View } from 'vega';
+import { ANIMATION_CURVE, ANIMATION_DURATION, ANIMATION_SIGNAL, MARK_ID, OLD_TABLE, SERIES_ID } from '@constants';
+import { FormulaTransform, View } from 'vega';
 
 import { Area, Axis, AxisAnnotation, Bar, ChartPopover, ChartTooltip, Legend, Line, Trendline } from '..';
 import {
@@ -301,4 +301,27 @@ export const setSelectedSignals = ({
 	if (selectedSeriesSignalName) {
 		view.signal(selectedSeriesSignalName, selectedData?.[SERIES_ID] ?? null);
 	}
+};
+
+/**
+ * Returns the transform that will be used to animate the metric scale.
+ */
+export const getMetricAnimationTransform = (metric: string): FormulaTransform => {
+	// To animate from the old data to new data we need to do the following:
+	// 1. Get the old data at the same index, or 0 if it doesn't exist
+	// 2. Multiply that by 1 - animationSignal (for the inverse animation)
+	// 3. Add that to the current data multiplied by animationSignal
+	const oldDataTable = `data('${OLD_TABLE}')`;
+	const indexOfOldData = `indexof(pluck(data('${OLD_TABLE}'), '${MARK_ID}'), datum.${MARK_ID})`;
+	const oldDataValue = `(${indexOfOldData} > -1 ? ${oldDataTable}[${indexOfOldData}].${metric} : 0)`;
+	const currentDataValue = `datum.${metric}`;
+	return {
+		type: 'formula',
+		as: getEffectiveMetricName(metric, true),
+		expr: `${oldDataValue}*(1-${ANIMATION_SIGNAL}) + ${currentDataValue}*${ANIMATION_SIGNAL}`,
+	};
+};
+
+export const getEffectiveMetricName = (metric: string, animate?: Animation) => {
+	return animate ? `${metric}Animated` : metric;
 };

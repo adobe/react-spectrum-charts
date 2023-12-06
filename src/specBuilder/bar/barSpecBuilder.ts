@@ -31,9 +31,9 @@ import {
 } from '@specBuilder/scale/scaleSpecBuilder';
 import { getGenericSignal, getUncontrolledHoverSignal, hasSignalByName } from '@specBuilder/signal/signalSpecBuilder';
 import { getFacetsFromProps } from '@specBuilder/specUtils';
-import { sanitizeMarkChildren, toCamelCase } from '@utils';
+import { getEffectiveMetricName, getMetricAnimationTransform, sanitizeMarkChildren, toCamelCase } from '@utils';
 import { produce } from 'immer';
-import { BarProps, BarSpecProps, ColorScheme } from 'types';
+import { Animation, BarProps, BarSpecProps, ColorScheme } from 'types';
 import { BandScale, Data, FormulaTransform, Mark, OrdinalScale, Scale, Signal, Spec } from 'vega';
 
 import { getBarPadding, getScaleValues, isDodgedAndStacked } from './barUtils';
@@ -41,7 +41,7 @@ import { getDodgedMark } from './dodgedBarUtils';
 import { getDodgedAndStackedBarMark, getStackedBarMarks } from './stackedBarUtils';
 import { addTrellisScale, getTrellisGroupMark, isTrellised } from './trellisedBarUtils';
 
-export const addBar = produce<Spec, [BarProps & { colorScheme?: ColorScheme; index?: number }]>(
+export const addBar = produce<Spec, [BarProps & { colorScheme?: ColorScheme; index?: number; animate?: Animation }]>(
 	(
 		spec,
 		{
@@ -111,7 +111,8 @@ export const addSignals = produce<Signal[], [BarSpecProps]>(
 );
 
 export const addData = produce<Data[], [BarSpecProps]>((data, props) => {
-	const { metric, order, type } = props;
+	const { order, type, animate } = props;
+	const metric = getEffectiveMetricName(props.metric, animate);
 	const index = data.findIndex((d) => d.name === FILTERED_TABLE);
 	data[index].transform = data[index].transform ?? [];
 	if (type === 'stacked' || isDodgedAndStacked(props)) {
@@ -129,6 +130,9 @@ export const addData = produce<Data[], [BarSpecProps]>((data, props) => {
 	if (type === 'dodged' || isDodgedAndStacked(props)) {
 		data[index].transform?.push(getDodgeGroupTransform(props));
 	}
+	if (animate) {
+		data[0]?.transform?.push(getMetricAnimationTransform(props.metric));
+	}
 });
 
 /**
@@ -139,7 +143,8 @@ export const addData = produce<Data[], [BarSpecProps]>((data, props) => {
  * @returns vega Data object
  */
 export const getStackAggregateData = (props: BarSpecProps): Data => {
-	const { metric, name } = props;
+	const { animate, name } = props;
+	const metric = getEffectiveMetricName(props.metric, animate);
 	return {
 		name: `${name}_stacks`,
 		source: FILTERED_TABLE,

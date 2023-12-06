@@ -18,6 +18,14 @@ export const barData = [
 	{ browser: 'Explorer', downloads: 500, percentLabel: '1.0%' },
 ];
 
+export const alternateBarData = [
+	{ browser: 'Chrome', downloads: 17000, percentLabel: '32.4%' },
+	{ browser: 'Firefox', downloads: 18500, percentLabel: '35.3%' },
+	{ browser: 'Safari', downloads: 10750, percentLabel: '20.5%' },
+	{ browser: 'Edge', downloads: 6000, percentLabel: '11.4%' },
+	{ browser: 'Explorer', downloads: 200, percentLabel: '0.4%' },
+];
+
 export const barSeriesData = [
 	{ browser: 'Chrome', value: 5, operatingSystem: 'Windows', order: 2, percentLabel: '50%' },
 	{ browser: 'Chrome', value: 3, operatingSystem: 'Mac', order: 1, percentLabel: '30%' },

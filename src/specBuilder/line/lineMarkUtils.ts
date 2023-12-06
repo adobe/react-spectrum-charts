@@ -1,5 +1,4 @@
 import { SERIES_ID } from '@constants';
-import { getEffectiveMetricName } from '@specBuilder/data/dataUtils';
 import {
 	getColorProductionRule,
 	getCursor,
@@ -10,6 +9,7 @@ import {
 	getTooltip,
 	hasPopover,
 } from '@specBuilder/marks/markUtils';
+import { getEffectiveMetricName } from '@utils';
 import { MarkChildElement, OpacityFacet } from 'types';
 import { LineMark, Mark, NumericValueRef, PathMark, ProductionRule, RuleMark, ScaleType, SymbolMark } from 'vega';
 
