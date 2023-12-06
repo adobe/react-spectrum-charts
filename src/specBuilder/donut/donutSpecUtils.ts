@@ -105,7 +105,7 @@ export const getAggregateMetricMark = (
 	return groupMark;
 };
 
-const fontBreakpoints = [72, 60, 48, 36];
+const fontBreakpoints = [76, 64, 52, 40];
 const metricNumberFontSizes = [72, 60, 48, 36];
 const metricLabelFontSizes = [24, 18, 12, 0];
 
@@ -117,9 +117,7 @@ export const getAggregateMetricBaseline = (
 	// whenever we aren't showing the label, the metric number should be in the middle
 	// we check if the radius * holeRatio is greater than the second breakpoint because after that point the label dissapears
 	return {
-		signal: showingLabel
-			? `${radius} * ${holeRatio} > ${metricNumberFontSizes[2]} ? 'alphabetic' : 'middle'`
-			: 'middle',
+		signal: showingLabel ? `${radius} * ${holeRatio} > ${fontBreakpoints[2]} ? 'alphabetic' : 'middle'` : 'middle',
 	};
 };
 
@@ -193,7 +191,7 @@ export const getDirectLabelTextEntry = (
 	format: boolean = false
 ): TextEncodeEntry => {
 	return {
-		text: getDisplayTextForLargeSlice(datumProperty, format),
+		text: getDisplayTextForLargeSlice(radius, datumProperty, format),
 		x: { signal: 'width / 2' },
 		y: { signal: 'height / 2' },
 		radius: { signal: `${radius} + 15` },
@@ -207,11 +205,15 @@ export const getDirectLabelTextEntry = (
 	};
 };
 
-// This signal returns no text for slices of the donut that are too small
-// currently, the threshold is 0.3 radians. We could change it to be based off arc length instead so larger pie charts would have labels
-const getDisplayTextForLargeSlice = (datumProperty: string, format: boolean): ProductionRule<TextValueRef> => {
+const getDisplayTextForLargeSlice = (
+	radius: string,
+	datumProperty: string,
+	format: boolean,
+	minArcLength: number = 45 // minimum arc length to display text, in pixels
+): ProductionRule<TextValueRef> => {
 	return {
-		signal: `if(datum['endAngle'] - datum['startAngle'] < 0.3, '', ${
+		//if we want to go back to displaying based on radians rather than arc length, use this if statement:  if(datum['endAngle'] - datum['startAngle'] < 0.3
+		signal: `if((${radius} * (datum['endAngle'] - datum['startAngle'])) < ${minArcLength}, '', ${
 			format ? `format(datum['${datumProperty}'], ',')` : `datum['${datumProperty}']`
 		})`,
 	};
