@@ -18,7 +18,7 @@ import {
 	getAnnotationMarks,
 	getBarEnterEncodings,
 	getBarUpdateEncodings,
-	getBaseBarEnterEncodings,
+	getBaseBarUpdateEncodings,
 	getDodgedDimensionEncodings,
 	getDodgedGroupMark,
 	getOrientationProperties,
@@ -77,7 +77,7 @@ export const getStackedBackgroundBar = (props: BarSpecProps): RectMark => {
 				fill: { signal: BACKGROUND_COLOR },
 			},
 			update: {
-				...getBaseBarEnterEncodings(props),
+				...getBaseBarUpdateEncodings(props),
 				...getStackedDimensionEncodings(props),
 			},
 		},
@@ -96,7 +96,7 @@ export const getStackedBar = (props: BarSpecProps): RectMark => {
 				...getBarEnterEncodings(props),
 			},
 			update: {
-				...getBaseBarEnterEncodings(props),
+				...getBaseBarUpdateEncodings(props),
 				...getStackedDimensionEncodings(props),
 				...getBarUpdateEncodings(props),
 			},

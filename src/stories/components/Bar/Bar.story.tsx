@@ -43,7 +43,7 @@ const AnimatedBarStory: ComponentStory<typeof Bar> = (args): ReactElement => {
 	return (
 		<div>
 			{component}
-			<Chart {...chartProps} animate={animProps} data={dataSet === 0 ? barData : alternateBarData} debug>
+			<Chart {...chartProps} animate={animProps} data={dataSet === 0 ? barData : alternateBarData}>
 				<Axis position={args.orientation === 'horizontal' ? 'left' : 'bottom'} baseline title="Browser" />
 				<Axis position={args.orientation === 'horizontal' ? 'bottom' : 'left'} grid title="Downloads" />
 				<Bar {...args} />

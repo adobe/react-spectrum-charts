@@ -18,7 +18,7 @@ import {
 	getAnnotationMarks,
 	getBarEnterEncodings,
 	getBarUpdateEncodings,
-	getBaseBarEnterEncodings,
+	getBaseBarUpdateEncodings,
 	getDodgedDimensionEncodings,
 	getDodgedGroupMark,
 } from './barUtils';
@@ -40,7 +40,7 @@ export const getDodgedMark = (props: BarSpecProps): Mark => {
 						fill: { signal: BACKGROUND_COLOR },
 					},
 					update: {
-						...getBaseBarEnterEncodings(props),
+						...getBaseBarUpdateEncodings(props),
 						...getDodgedDimensionEncodings(props),
 					},
 				},
@@ -56,7 +56,7 @@ export const getDodgedMark = (props: BarSpecProps): Mark => {
 						...getBarEnterEncodings(props),
 					},
 					update: {
-						...getBaseBarEnterEncodings(props),
+						...getBaseBarUpdateEncodings(props),
 						...getDodgedDimensionEncodings(props),
 						...getBarUpdateEncodings(props),
 					},

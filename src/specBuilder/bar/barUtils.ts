@@ -360,7 +360,7 @@ export const getAnnotationMarks = (
 	return marks;
 };
 
-export const getBaseBarEnterEncodings = (props: BarSpecProps): EncodeEntry => ({
+export const getBaseBarUpdateEncodings = (props: BarSpecProps): EncodeEntry => ({
 	...getMetricEncodings(props),
 	...getCornerRadiusEncodings(props),
 });

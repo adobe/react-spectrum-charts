@@ -51,7 +51,7 @@ import {
 	getAnnotationMetricAxisPosition,
 	getAnnotationPositionOffset,
 	getBarPadding,
-	getBaseBarEnterEncodings,
+	getBaseBarUpdateEncodings,
 	getCornerRadiusEncodings,
 	getDodgedDimensionEncodings,
 	getDodgedGroupMark,
@@ -542,9 +542,9 @@ describe('barUtils', () => {
 		});
 	});
 
-	describe('getBaseBarEnterEncodings()', () => {
+	describe('getBaseBarUpdateEncodings()', () => {
 		test('default props', () => {
-			expect(getBaseBarEnterEncodings(defaultBarProps)).toStrictEqual(defaultBarEnterEncodings);
+			expect(getBaseBarUpdateEncodings(defaultBarProps)).toStrictEqual(defaultBarEnterEncodings);
 		});
 	});
 
