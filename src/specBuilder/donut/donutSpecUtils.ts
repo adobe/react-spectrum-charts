@@ -3,6 +3,7 @@ import { getTooltip, hasPopover } from '@specBuilder/marks/markUtils';
 import { MarkChildElement } from 'types';
 import {
 	ArcMark,
+	EncodeEntryName,
 	Mark,
 	NumericValueRef,
 	ProductionRule,
@@ -60,6 +61,7 @@ export const getOpacityRules = (name: string, children: MarkChildElement[]): Pro
 
 export const getAggregateMetricMark = (
 	name: string,
+	metric: string,
 	radius: string,
 	holeRatio: number,
 	metricLabel: string | undefined
@@ -72,16 +74,7 @@ export const getAggregateMetricMark = (
 				type: 'text',
 				name: `${name}_aggregateMetricNumber`,
 				from: { data: `${name}_aggregateData` },
-				encode: {
-					enter: {
-						x: { signal: 'width / 2' },
-						y: { signal: 'height / 2' },
-						text: { signal: "upper(replace(format(datum.sum, '.3~s'), 'G', 'B'))" },
-						fontSize: getFontSize(radius, holeRatio, true),
-						align: { value: 'center' },
-						baseline: getAggregateMetricBaseline(radius, holeRatio, !!metricLabel),
-					},
-				},
+				encode: getMetricNumberEncodeEnter(metric, radius, holeRatio, !!metricLabel, false),
 			},
 		],
 	};
@@ -90,19 +83,83 @@ export const getAggregateMetricMark = (
 			type: 'text',
 			name: `${name}_aggregateMetricLabel`,
 			from: { data: `${name}_aggregateData` },
-			encode: {
-				enter: {
-					x: { signal: 'width / 2' },
-					y: getLabelYWithOffset(radius, holeRatio),
-					text: { value: metricLabel },
-					fontSize: getFontSize(radius, holeRatio, false),
-					align: { value: 'center' },
-					baseline: { value: 'top' },
-				},
-			},
+			encode: getMetricLabelEncodeEnter(radius, holeRatio, metricLabel),
 		});
 	}
 	return groupMark;
+};
+
+export const getPercentMetricMark = (
+	name: string,
+	metric: string,
+	radius: string,
+	holeRatio: number,
+	metricLabel: string | undefined
+): Mark => {
+	const groupMark: Mark = {
+		type: 'group',
+		name: `${name}_percentText`,
+		marks: [
+			{
+				type: 'text',
+				name: `${name}_percentMetricNumber`,
+				from: { data: `${name}_booleanData` },
+				encode: getMetricNumberEncodeEnter(metric, radius, holeRatio, !!metricLabel, true),
+			},
+		],
+	};
+	if (metricLabel) {
+		groupMark.marks!.push({
+			type: 'text',
+			name: `${name}_percentMetricLabel`,
+			from: { data: `${name}_booleanData` },
+			encode: getMetricLabelEncodeEnter(radius, holeRatio, metricLabel),
+		});
+	}
+	return groupMark;
+};
+
+export const getMetricNumberEncodeEnter = (
+	metric: string,
+	radius: string,
+	holeRatio: number,
+	showingLabel: boolean,
+	isBoolean: boolean
+): Partial<Record<EncodeEntryName, TextEncodeEntry>> => {
+	return {
+		enter: {
+			x: { signal: 'width / 2' },
+			y: { signal: 'height / 2' },
+			text: getMetricNumberText(metric, isBoolean),
+			fontSize: getFontSize(radius, holeRatio, true),
+			align: { value: 'center' },
+			baseline: getAggregateMetricBaseline(radius, holeRatio, showingLabel),
+		},
+	};
+};
+
+export const getMetricNumberText = (metric: string, isBoolean: boolean): ProductionRule<TextValueRef> => {
+	if (isBoolean) {
+		return { signal: `format(datum['${metric}'], '.0%')` };
+	}
+	return { signal: "upper(replace(format(datum.sum, '.3~s'), 'G', 'B'))" };
+};
+
+export const getMetricLabelEncodeEnter = (
+	radius: string,
+	holeRatio: number,
+	metricLabel: string
+): Partial<Record<EncodeEntryName, TextEncodeEntry>> => {
+	return {
+		enter: {
+			x: { signal: 'width / 2' },
+			y: getLabelYWithOffset(radius, holeRatio),
+			text: { value: metricLabel },
+			fontSize: getFontSize(radius, holeRatio, false),
+			align: { value: 'center' },
+			baseline: { value: 'top' },
+		},
+	};
 };
 
 const fontBreakpoints = [76, 64, 52, 40];

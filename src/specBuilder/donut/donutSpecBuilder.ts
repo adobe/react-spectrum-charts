@@ -19,7 +19,7 @@ import { DonutSpecProps } from 'types';
 import { ColorScheme, DonutProps } from 'types';
 import { Data, Mark, Scale, Signal, Spec } from 'vega';
 
-import { getAggregateMetricMark, getArcMark, getDirectLabelMark } from './donutSpecUtils';
+import { getAggregateMetricMark, getArcMark, getDirectLabelMark, getPercentMetricMark } from './donutSpecUtils';
 
 export const addDonut = produce<Spec, [DonutProps & { colorScheme?: ColorScheme; index?: number }]>(
 	(
@@ -35,6 +35,7 @@ export const addDonut = produce<Spec, [DonutProps & { colorScheme?: ColorScheme;
 			holeRatio = 0.85,
 			segment,
 			hasDirectLabels = false,
+			isBoolean = false,
 			...props
 		}
 	) => {
@@ -50,6 +51,7 @@ export const addDonut = produce<Spec, [DonutProps & { colorScheme?: ColorScheme;
 			holeRatio,
 			segment,
 			hasDirectLabels,
+			isBoolean,
 			...props,
 		};
 
@@ -61,7 +63,7 @@ export const addDonut = produce<Spec, [DonutProps & { colorScheme?: ColorScheme;
 );
 
 export const addData = produce<Data[], [DonutSpecProps]>((data, props) => {
-	const { metric, startAngle, name } = props;
+	const { metric, startAngle, name, isBoolean } = props;
 	const filteredTableIndex = data.findIndex((d) => d.name === FILTERED_TABLE);
 
 	//set up transform
@@ -73,19 +75,38 @@ export const addData = produce<Data[], [DonutSpecProps]>((data, props) => {
 		endAngle: { signal: `${startAngle} + 2 * PI` },
 	});
 
-	//set up aggregate
-	data.push({
-		name: `${name}_aggregateData`,
-		source: FILTERED_TABLE,
-		transform: [
-			{
-				type: 'aggregate',
-				fields: [metric],
-				ops: ['sum'],
-				as: ['sum'],
-			},
-		],
-	});
+	if (isBoolean) {
+		//select first data point for our boolean value
+		data.push({
+			name: `${name}_booleanData`,
+			source: FILTERED_TABLE,
+			transform: [
+				{
+					type: 'window',
+					ops: ['row_number'],
+					as: [`${name}_rscRowIndex`],
+				},
+				{
+					type: 'filter',
+					expr: `datum.${name}_rscRowIndex === 1`, // Keep only the first row
+				},
+			],
+		});
+	} else {
+		//set up aggregate
+		data.push({
+			name: `${name}_aggregateData`,
+			source: FILTERED_TABLE,
+			transform: [
+				{
+					type: 'aggregate',
+					fields: [metric],
+					ops: ['sum'],
+					as: ['sum'],
+				},
+			],
+		});
+	}
 });
 
 export const addScales = produce<Scale[], [DonutSpecProps]>((scales, props) => {
@@ -94,16 +115,20 @@ export const addScales = produce<Scale[], [DonutSpecProps]>((scales, props) => {
 });
 
 export const addMarks = produce<Mark[], [DonutSpecProps]>((marks, props) => {
-	const { holeRatio, name, metricLabel, metric, segment, hasDirectLabels, children } = props;
+	const { holeRatio, name, metricLabel, metric, segment, hasDirectLabels, isBoolean, children } = props;
 	const radius = 'min(width, height) / 2';
 
 	marks.push(getArcMark(name, holeRatio, radius, children));
-	marks.push(getAggregateMetricMark(name, radius, holeRatio, metricLabel));
-	if (hasDirectLabels) {
-		if (!segment) {
-			throw new Error('If a Donut chart hasDirectLabels, a segment property name must be supplied.');
+	if (isBoolean) {
+		marks.push(getPercentMetricMark(name, metric, radius, holeRatio, metricLabel));
+	} else {
+		marks.push(getAggregateMetricMark(name, metric, radius, holeRatio, metricLabel));
+		if (hasDirectLabels) {
+			if (!segment) {
+				throw new Error('If a Donut chart hasDirectLabels, a segment property name must be supplied.');
+			}
+			marks.push(getDirectLabelMark(name, radius, metric, segment));
 		}
-		marks.push(getDirectLabelMark(name, radius, metric, segment));
 	}
 });
 

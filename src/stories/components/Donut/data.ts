@@ -25,3 +25,8 @@ export const sliveredDonutData = [
 	{ id: 14, count: 198, segment: 'Lunascape' },
 	{ id: 15, count: 120, segment: 'SlimBrowser' },
 ];
+
+export const booleanDonutData = [
+	{ id: '1', value: 0.68 },
+	{ id: '2', value: 0.32 },
+];
