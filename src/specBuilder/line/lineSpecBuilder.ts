@@ -28,7 +28,7 @@ import { addContinuousDimensionScale, addFieldToFacetScaleDomain, addMetricScale
 import {
 	getGenericSignal,
 	getSeriesHoveredSignal,
-	getUncontrolledHoverSignal,
+	getUncontrolledHoverSignals,
 	hasSignalByName,
 } from '../signal/signalSpecBuilder';
 import { getLineHighlightedData, getLineStaticPointData } from './lineDataUtils';
@@ -104,7 +104,7 @@ export const addSignals = produce<Signal[], [LineSpecProps]>((signals, props) =>
 
 	if (!hasInteractiveChildren(children)) return;
 	if (!hasSignalByName(signals, `${name}_hoveredId`)) {
-		signals.push(getUncontrolledHoverSignal(`${name}`, true, `${name}_voronoi`));
+		signals.push(...getUncontrolledHoverSignals(`${name}`, true, `${name}_voronoi`));
 	}
 	if (!hasSignalByName(signals, `${name}_hoveredSeries`)) {
 		signals.push(getSeriesHoveredSignal(`${name}`, true, `${name}_voronoi`));

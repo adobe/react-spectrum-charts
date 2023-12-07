@@ -25,7 +25,7 @@ import {
 	STACK_ID,
 	TABLE,
 } from '@constants';
-import { getUncontrolledHoverSignal } from '@specBuilder/signal/signalSpecBuilder';
+import { getUncontrolledHoverSignals } from '@specBuilder/signal/signalSpecBuilder';
 import { spectrumColors } from '@themes';
 import {
 	AggregateTransform,
@@ -258,20 +258,20 @@ describe('barSpecBuilder', () => {
 		});
 		describe('existing signals', () => {
 			test('default props, should return original signal', () => {
-				expect(addSignals([getUncontrolledHoverSignal('bar0')], defaultBarProps)).toStrictEqual([
-					getUncontrolledHoverSignal('bar0'),
+				expect(addSignals([...getUncontrolledHoverSignals('bar0')], defaultBarProps)).toStrictEqual([
+					...getUncontrolledHoverSignals('bar0'),
 					defaultPaddingSignal,
 				]);
 			});
 			test('existing hover and select signals, should do nothing', () => {
 				const popover = createElement(ChartPopover);
 				expect(
-					addSignals([getUncontrolledHoverSignal('bar0'), defaultHoverSignal, defaultSelectSignal], {
+					addSignals([...getUncontrolledHoverSignals('bar0'), defaultHoverSignal, defaultSelectSignal], {
 						...defaultBarProps,
 						children: [popover],
 					})
 				).toStrictEqual([
-					getUncontrolledHoverSignal('bar0'),
+					...getUncontrolledHoverSignals('bar0'),
 					defaultHoverSignal,
 					defaultSelectSignal,
 					defaultPaddingSignal,

@@ -15,7 +15,7 @@ import { ChartPopover } from '@components/ChartPopover';
 import { ChartTooltip } from '@components/ChartTooltip';
 import { MetricRange } from '@components/MetricRange';
 import { Trendline } from '@components/Trendline';
-import { BACKGROUND_COLOR, HIGHLIGHT_CONTRAST_RATIO } from '@constants';
+import { ANIMATION_COLOR_SIGNAL, BACKGROUND_COLOR, HIGHLIGHT_CONTRAST_RATIO } from '@constants';
 import { getColorValue, getLineWidthPixelsFromLineWidth, getStrokeDashFromLineType } from '@specBuilder/specUtils';
 import {
 	ColorFacet,
@@ -140,20 +140,30 @@ export const getStrokeDashProductionRule = (lineType: LineTypeFacet | DualFacet)
 	return { value: getStrokeDashFromLineType(lineType.value) };
 };
 
-export const getOpacityProductionRule = (opacity: OpacityFacet | DualFacet): { signal: string } | { value: number } => {
+export const getOpacityProductionRule = (
+	opacity: OpacityFacet | DualFacet,
+	isInteractable = false
+): { signal: string } | { value: number } => {
+	let opacityValue: string;
 	if (Array.isArray(opacity)) {
-		return {
-			signal: `scale('opacities', datum.${opacity[0]})[indexof(domain('secondaryOpacity'), datum.${opacity[1]})% length(scale('opacities', datum.${opacity[0]}))]`,
-		};
+		opacityValue = `scale('opacities', datum.${opacity[0]})[indexof(domain('secondaryOpacity'), datum.${opacity[1]})% length(scale('opacities', datum.${opacity[0]}))]`;
+	} else if (typeof opacity === 'string') {
+		opacityValue = `scale('opacity', datum.${opacity})`;
+	} else {
+		if (!isInteractable) {
+			return { value: opacity.value };
+		}
+		opacityValue = opacity.value.toString();
 	}
-	if (typeof opacity === 'string') {
-		return { signal: `scale('opacity', datum.${opacity})` };
-	}
-	return { value: opacity.value };
+	return isInteractable
+		? { signal: `max(${ANIMATION_COLOR_SIGNAL}, ${opacityValue} / ${HIGHLIGHT_CONTRAST_RATIO})` }
+		: { signal: opacityValue };
 };
 
 export const getHighlightOpacityValue = (opacityValue: { signal: string } | { value: number }): NumericValueRef => {
 	if ('signal' in opacityValue) {
+		// if the signal already includes the contrast ratio, don't add it again
+		if (opacityValue.signal.includes(` / ${HIGHLIGHT_CONTRAST_RATIO}`)) return opacityValue;
 		return { signal: `${opacityValue.signal} / ${HIGHLIGHT_CONTRAST_RATIO}` };
 	}
 	return { value: opacityValue.value / HIGHLIGHT_CONTRAST_RATIO };

@@ -9,8 +9,8 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { HIGHLIGHT_CONTRAST_RATIO, SERIES_ID } from '@constants';
-import { GroupMark, Mark, NumericValueRef, ProductionRule } from 'vega';
+import { ANIMATION_COLOR_SIGNAL, HIGHLIGHT_CONTRAST_RATIO, SERIES_ID } from '@constants';
+import { EncodeEntry, GroupMark, Mark, NumericValueRef, ProductionRule } from 'vega';
 
 /**
  * Adds opacity tests for the fill and stroke of marks that use the color scale to set the fill or stroke value.
@@ -27,38 +27,32 @@ export const setHoverOpacityForMarks = (marks: Mark[]) => {
 		if (!mark.encode.update) {
 			mark.encode.update = {};
 		}
-		const { update } = mark.encode;
-		const { fillOpacity, strokeOpacity } = update;
 
-		if ('fillOpacity' in update) {
-			// the production rule that sets the fill opacity for this mark
-			const fillOpacityRule = getOpacityRule(fillOpacity);
-			// the new production rule for highlighting
-			const highlightFillOpacityRule = getHighlightOpacityRule(fillOpacityRule);
-
-			if (!Array.isArray(update.fillOpacity)) {
-				update.fillOpacity = [];
-			}
-			// // need to insert the new test in the second to last slot
-			const fillRuleInsertIndex = Math.max(update.fillOpacity.length - 1, 0);
-			update.fillOpacity.splice(fillRuleInsertIndex, 0, highlightFillOpacityRule);
-		}
-
-		if ('strokeOpacity' in update) {
-			// the production rule that sets the stroke opacity for this mark
-			const strokeOpacityRule = getOpacityRule(strokeOpacity);
-			// the new production rule for highlighting
-			const highlightStrokeOpacityRule = getHighlightOpacityRule(strokeOpacityRule);
-			if (!Array.isArray(update.strokeOpacity)) {
-				update.strokeOpacity = [];
-			}
-			// // need to insert the new test in the second to last slot
-			const strokeRuleInsertIndex = Math.max(update.strokeOpacity.length - 1, 0);
-			update.strokeOpacity.splice(strokeRuleInsertIndex, 0, highlightStrokeOpacityRule);
-		}
+		setFillStrokeOpacityForHoveredSeries(mark.encode as EncodeEntry, 'fillOpacity');
+		setFillStrokeOpacityForHoveredSeries(mark.encode as EncodeEntry, 'strokeOpacity');
 	});
 };
 
+const setFillStrokeOpacityForHoveredSeries = (entry: EncodeEntry, opacityType: string) => {
+	const { update } = entry;
+	if (!update || !(opacityType in update)) return;
+
+	const opacity = update[opacityType];
+	// the production rule that sets the opacity for this mark
+	const opacityRule = getOpacityRule(opacity);
+
+	// the new production rule for highlighting
+	const highlightOpacityRules = getHighlightOpacityRules(opacityRule);
+	if (!Array.isArray(update[opacityType])) {
+		update[opacityType] = [];
+	}
+
+	// need to insert the new test in the second to last slot
+	const ruleInsertIndex = Math.max(update[opacityType].length - 1, 0);
+	update[opacityType].splice(ruleInsertIndex, 0, ...highlightOpacityRules);
+};
+
+// !! This function assumes that the final opacity rule is the one that should be used for fully opaque marks
 export const getOpacityRule = (
 	opacityRule: ProductionRule<NumericValueRef> | undefined
 ): ProductionRule<NumericValueRef> => {
@@ -75,23 +69,35 @@ export const getOpacityRule = (
 	return { value: 1 };
 };
 
-export const getHighlightOpacityRule = (
+// This function is meant to augment the chart marks' opacity rules with a test for whether the series is highlighted,
+// and is not for the legend entries. The legend entries are handled in the legend spec builder.
+export const getHighlightOpacityRules = (
 	opacityRule: ProductionRule<NumericValueRef>
-): { test?: string } & NumericValueRef => {
-	const test = `highlightedSeries && highlightedSeries !== datum.${SERIES_ID}`;
+): ({ test?: string } & NumericValueRef)[] => {
+	const test1 = `highlightedSeries && highlightedSeries !== datum.${SERIES_ID}`;
+	const test2 = `!highlightedSeries && highlightedSeries_prev && highlightedSeries_prev !== datum.${SERIES_ID}`;
+
+	let opacityValue: string;
+
 	if ('scale' in opacityRule && 'field' in opacityRule) {
-		return {
-			test,
-			signal: `scale('${opacityRule.scale}', datum.${opacityRule.field}) / ${HIGHLIGHT_CONTRAST_RATIO}`,
-		};
+		opacityValue = `scale('${opacityRule.scale}', datum.${opacityRule.field}) / ${HIGHLIGHT_CONTRAST_RATIO}`;
+	} else if ('signal' in opacityRule) {
+		// if the signal already includes the contrast ratio, don't add it again
+		opacityValue = opacityRule.signal.includes(` / ${HIGHLIGHT_CONTRAST_RATIO}`)
+			? opacityRule.signal
+			: `${opacityRule.signal} / ${HIGHLIGHT_CONTRAST_RATIO}`;
+	} else if ('value' in opacityRule && typeof opacityRule.value === 'number') {
+		opacityValue = `${opacityRule.value / HIGHLIGHT_CONTRAST_RATIO}`;
+	} else {
+		opacityValue = `${1 / HIGHLIGHT_CONTRAST_RATIO}`;
 	}
-	if ('signal' in opacityRule) {
-		return { test, signal: `${opacityRule.signal} / ${HIGHLIGHT_CONTRAST_RATIO}` };
-	}
-	if ('value' in opacityRule && typeof opacityRule.value === 'number') {
-		return { test, value: opacityRule.value / HIGHLIGHT_CONTRAST_RATIO };
-	}
-	return { test, value: 1 / HIGHLIGHT_CONTRAST_RATIO };
+
+	const signal = `max(${ANIMATION_COLOR_SIGNAL}, ${opacityValue})`;
+
+	return [
+		{ test: test1, signal },
+		{ test: test2, signal },
+	];
 };
 
 /**

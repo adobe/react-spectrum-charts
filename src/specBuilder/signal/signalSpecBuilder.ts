@@ -9,7 +9,16 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { ANIMATION_SCALE, ANIMATION_SCALE_INVERSE, ANIMATION_SIGNAL, MARK_ID, SERIES_ID } from '@constants';
+import {
+	ANIMATION_COLOR_DIRECTION,
+	ANIMATION_COLOR_DIRECTION_FADE,
+	ANIMATION_COLOR_SIGNAL,
+	ANIMATION_SCALE,
+	ANIMATION_SCALE_INVERSE,
+	ANIMATION_SIGNAL,
+	MARK_ID,
+	SERIES_ID,
+} from '@constants';
 import { getAnimationDefaults } from '@utils';
 import { Animation } from 'types';
 import { Signal } from 'vega';
@@ -24,15 +33,28 @@ export const hasSignalByName = (signals: Signal[], name: string) => {
 /**
  *  Returns the hover signal for points
  */
-export const getUncontrolledHoverSignal = (name: string, nestedDatum?: boolean, eventName: string = name): Signal => {
-	return {
-		name: `${name}_hoveredId`,
-		value: null,
-		on: [
-			{ events: `@${eventName}:mouseover`, update: `${nestedDatum ? 'datum.' : ''}datum.${MARK_ID}` },
-			{ events: `@${eventName}:mouseout`, update: 'null' },
-		],
+export const getUncontrolledHoverSignals = (
+	name: string,
+	nestedDatum?: boolean,
+	eventName: string = name
+): Signal[] => {
+	const mouseoverEvent = {
+		events: `@${eventName}:mouseover`,
+		update: `${nestedDatum ? 'datum.' : ''}datum.${MARK_ID}`,
 	};
+	return [
+		{
+			name: `${name}_hoveredId`,
+			value: null,
+			on: [mouseoverEvent, { events: `@${eventName}:mouseout`, update: 'null' }],
+		},
+		{
+			// Keeps track of the previously hovered id without clearing it when the mouse leaves the mark
+			name: `${name}_hoveredId_prev`,
+			value: null,
+			on: [mouseoverEvent],
+		},
+	];
 };
 
 /**
@@ -65,19 +87,27 @@ export const getSeriesHoveredSignal = (name: string, nestedDatum?: boolean, even
 /**
  * Returns the highlighted series signal
  */
-export const getHighlightSeriesSignal = (name: string, includeHiddenSeries: boolean): Signal => {
+export const getHighlightSeriesSignals = (name: string, includeHiddenSeries: boolean): Signal[] => {
 	const hoveredSeries = 'domain("legendEntries")[datum.index]';
 	const update = includeHiddenSeries
-		? `indexof(hiddenSeries, ${hoveredSeries}) === -1 ? ${hoveredSeries} : ""`
+		? `indexof(hiddenSeries, ${hoveredSeries}) === -1 ? ${hoveredSeries} : ''`
 		: hoveredSeries;
-	return {
-		name: 'highlightedSeries',
-		value: null,
-		on: [
-			{ events: `@${name}_legendEntry:mouseover`, update },
-			{ events: `@${name}_legendEntry:mouseout`, update: '""' },
-		],
-	};
+	return [
+		{
+			name: 'highlightedSeries',
+			value: null,
+			on: [
+				{ events: `@${name}:mouseover`, update },
+				{ events: `@${name}:mouseout`, update: "''" },
+			],
+		},
+		{
+			// Keeps track of the previously hovered series without clearing it when the mouse leaves the series
+			name: 'highlightedSeries_prev',
+			value: null,
+			on: [{ events: `@${name}:mouseover`, update }],
+		},
+	];
 };
 
 /**
@@ -140,4 +170,37 @@ export const getAnimationSignal = (animation: Animation): Signal => {
 		value: 0,
 		on: signalOn,
 	};
+};
+
+export const getColorAnimationSignals = (eventName: string): Signal[] => {
+	return [
+		{
+			name: ANIMATION_COLOR_DIRECTION,
+			value: ANIMATION_COLOR_DIRECTION_FADE.in,
+			on: getColorAnimationFadeEvents(eventName),
+		},
+		{
+			name: ANIMATION_COLOR_SIGNAL,
+			value: 0,
+			on: [
+				{
+					events: `timer{${FPS}}`,
+					update: `clamp(${ANIMATION_COLOR_SIGNAL} + .06 * ${ANIMATION_COLOR_DIRECTION}, 0, 1)`,
+				},
+			],
+		},
+	];
+};
+
+export const getColorAnimationFadeEvents = (eventName: string) => {
+	return [
+		{
+			events: `@${eventName}:mouseover`,
+			update: `${ANIMATION_COLOR_DIRECTION_FADE.out}`,
+		},
+		{
+			events: `@${eventName}:mouseout`,
+			update: `${ANIMATION_COLOR_DIRECTION_FADE.in}`,
+		},
+	];
 };

@@ -136,6 +136,12 @@ export function buildSpec(props: SanitizedSpecProps) {
 		spec = addHighlight(spec, { highlightedSeries });
 	}
 
+	// if there is a legend with highlight enabled, then we need to update the signals to clear previous highlights
+	// on certain mouseover events
+	if (hasSignalByName(spec.signals ?? [], 'highlightedSeries')) {
+		spec = updateHighlightSignalsWithClearSignals(spec);
+	}
+
 	// clear out all scales that don't have any fields on the domain
 	spec = removeUnusedScales(spec);
 
@@ -149,6 +155,45 @@ export const addHighlight = produce<Spec, [Pick<SanitizedSpecProps, 'highlighted
 		setHoverOpacityForMarks(spec.marks ?? []);
 	}
 );
+
+export const updateHighlightSignalsWithClearSignals = produce<Spec>((spec) => {
+	const getEventNameForPrevHoverSignal = (signal: Signal) => {
+		if (!signal.name.includes('_hoveredId_prev')) return undefined;
+		const name = signal.on?.[0]?.events.toString();
+		return name?.substring(0, name.indexOf(':'));
+	};
+
+	const prevHighlightedSeriesSignal = spec.signals?.find((signal) => signal.name === 'highlightedSeries_prev');
+	let prevHighlightedSeriesEventName = prevHighlightedSeriesSignal?.on?.[0]?.events.toString();
+	if (!prevHighlightedSeriesEventName) return;
+
+	prevHighlightedSeriesEventName = prevHighlightedSeriesEventName.substring(
+		0,
+		prevHighlightedSeriesEventName.indexOf(':')
+	);
+
+	const hoverEventNames: Set<string> = new Set();
+
+	// Clear the previously highlighted series whenever mousing over an interactable chart element
+	spec.signals?.forEach((signal) => {
+		const eventName = getEventNameForPrevHoverSignal(signal);
+		if (eventName) {
+			hoverEventNames.add(eventName);
+			signal.on?.push({
+				events: `${prevHighlightedSeriesEventName}:mouseover`,
+				update: 'null',
+			});
+		}
+	});
+
+	// Clear the previously highlighted individual chart element whenever mousing over the legend
+	hoverEventNames.forEach((eventName) => {
+		prevHighlightedSeriesSignal?.on?.push({
+			events: `${eventName}:mouseover`,
+			update: 'null',
+		});
+	});
+});
 
 export const removeUnusedScales = produce<Spec>((spec) => {
 	spec.scales = spec.scales?.filter((scale) => {

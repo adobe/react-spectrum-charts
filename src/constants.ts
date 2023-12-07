@@ -51,6 +51,12 @@ export const ANIMATION_SCALE = 'rscAnimationCurve';
 export const ANIMATION_SCALE_INVERSE = 'rscAnimationCurveInverse';
 export const ANIMATION_DURATION = 500;
 export const ANIMATION_CURVE: AnimationCurve = 'linear';
+export const ANIMATION_COLOR_SIGNAL = 'rscColorAnimation';
+export const ANIMATION_COLOR_DIRECTION = 'rscColorAnimationDirection';
+export const ANIMATION_COLOR_DIRECTION_FADE = {
+	in: 1,
+	out: -1,
+};
 
 // padding constants
 export const DISCRETE_PADDING = 0.5;

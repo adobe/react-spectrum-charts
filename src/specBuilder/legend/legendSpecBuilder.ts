@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { DEFAULT_COLOR_SCHEME } from '@constants';
+import { ANIMATION_COLOR_DIRECTION, ANIMATION_COLOR_SIGNAL, DEFAULT_COLOR_SCHEME } from '@constants';
 import { addFieldToFacetScaleDomain } from '@specBuilder/scale/scaleSpecBuilder';
 import {
 	getColorValue,
@@ -32,9 +32,22 @@ import {
 } from 'types';
 import { Data, Legend, Mark, Scale, Signal, Spec } from 'vega';
 
-import { getHighlightSeriesSignal, getLegendLabelsSeriesSignal, hasSignalByName } from '../signal/signalSpecBuilder';
+import {
+	getColorAnimationFadeEvents,
+	getColorAnimationSignals,
+	getHighlightSeriesSignals,
+	getLegendLabelsSeriesSignal,
+	hasSignalByName,
+} from '../signal/signalSpecBuilder';
 import { setHoverOpacityForMarks } from './legendHighlightUtils';
-import { Facet, getColumns, getEncodings, getHiddenEntriesFilter } from './legendUtils';
+import {
+	Facet,
+	getColumns,
+	getEncodings,
+	getHiddenEntriesFilter,
+	getLegendEntryName,
+	getLegendName,
+} from './legendUtils';
 
 export const addLegend = produce<
 	Spec,
@@ -56,6 +69,7 @@ export const addLegend = produce<
 			position = 'bottom',
 			symbolShape,
 			title,
+			name,
 			colorScheme = DEFAULT_COLOR_SCHEME,
 			...props
 		}
@@ -74,7 +88,7 @@ export const addLegend = produce<
 			isToggleable,
 			lineType: formattedLineType,
 			lineWidth: formattedLineWidth,
-			name: `legend${index}`,
+			name: getLegendName(index, name),
 			position,
 			symbolShape: formattedSymbolShape,
 			title,
@@ -227,8 +241,15 @@ export const addData = produce<Data[], [LegendSpecProps & { facets: string[] }]>
 export const addSignals = produce<Signal[], [LegendSpecProps]>(
 	(signals, { hiddenSeries, highlight, isToggleable, legendLabels, name }) => {
 		if (highlight) {
+			const eventName = getLegendEntryName(name);
 			if (!hasSignalByName(signals, 'highlightedSeries')) {
-				signals.push(getHighlightSeriesSignal(name, Boolean(isToggleable || hiddenSeries)));
+				signals.push(...getHighlightSeriesSignals(eventName, Boolean(isToggleable || hiddenSeries)));
+			}
+			if (!hasSignalByName(signals, ANIMATION_COLOR_SIGNAL)) {
+				signals.push(...getColorAnimationSignals(eventName));
+			} else {
+				const animDirectionSignal = signals.find((signal) => signal.name === ANIMATION_COLOR_DIRECTION);
+				animDirectionSignal?.on?.push(...getColorAnimationFadeEvents(eventName));
 			}
 		}
 

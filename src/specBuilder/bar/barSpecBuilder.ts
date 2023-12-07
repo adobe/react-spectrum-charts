@@ -10,6 +10,8 @@
  * governing permissions and limitations under the License.
  */
 import {
+	ANIMATION_COLOR_DIRECTION,
+	ANIMATION_COLOR_SIGNAL,
 	DEFAULT_CATEGORICAL_DIMENSION,
 	DEFAULT_COLOR_SCHEME,
 	DEFAULT_METRIC,
@@ -19,7 +21,7 @@ import {
 	TRELLIS_PADDING,
 } from '@constants';
 import { getTransformSort } from '@specBuilder/data/dataUtils';
-import { hasPopover } from '@specBuilder/marks/markUtils';
+import { hasInteractiveChildren, hasPopover } from '@specBuilder/marks/markUtils';
 import {
 	addDomainFields,
 	addFieldToFacetScaleDomain,
@@ -29,14 +31,20 @@ import {
 	getScaleIndexByName,
 	getScaleIndexByType,
 } from '@specBuilder/scale/scaleSpecBuilder';
-import { getGenericSignal, getUncontrolledHoverSignal, hasSignalByName } from '@specBuilder/signal/signalSpecBuilder';
+import {
+	getColorAnimationFadeEvents,
+	getColorAnimationSignals,
+	getGenericSignal,
+	getUncontrolledHoverSignals,
+	hasSignalByName,
+} from '@specBuilder/signal/signalSpecBuilder';
 import { getFacetsFromProps } from '@specBuilder/specUtils';
-import { getEffectiveMetricName, getMetricAnimationTransform, sanitizeMarkChildren, toCamelCase } from '@utils';
+import { getEffectiveMetricName, getMetricAnimationTransform, sanitizeMarkChildren } from '@utils';
 import { produce } from 'immer';
 import { Animation, BarProps, BarSpecProps, ColorScheme } from 'types';
 import { BandScale, Data, FormulaTransform, Mark, OrdinalScale, Scale, Signal, Spec } from 'vega';
 
-import { getBarPadding, getScaleValues, isDodgedAndStacked } from './barUtils';
+import { getBarName, getBarPadding, getScaleValues, isDodgedAndStacked } from './barUtils';
 import { getDodgedMark } from './dodgedBarUtils';
 import { getDodgedAndStackedBarMark, getStackedBarMarks } from './stackedBarUtils';
 import { addTrellisScale, getTrellisGroupMark, isTrellised } from './trellisedBarUtils';
@@ -74,7 +82,7 @@ export const addBar = produce<Spec, [BarProps & { colorScheme?: ColorScheme; ind
 			lineType,
 			lineWidth,
 			metric,
-			name: toCamelCase(name || `bar${index}`),
+			name: getBarName(index, name),
 			opacity,
 			paddingRatio,
 			trellisOrientation,
@@ -100,11 +108,19 @@ export const addSignals = produce<Signal[], [BarSpecProps]>(
 			return;
 		}
 		if (!hasSignalByName(signals, `${name}_hoveredId`)) {
-			signals.push(getUncontrolledHoverSignal(name));
+			signals.push(...getUncontrolledHoverSignals(name));
 		}
 		if (hasPopover(children)) {
 			if (!hasSignalByName(signals, `${name}_selectedId`)) {
 				signals.push(getGenericSignal(`${name}_selectedId`));
+			}
+		}
+		if (hasInteractiveChildren(children)) {
+			if (!hasSignalByName(signals, ANIMATION_COLOR_SIGNAL)) {
+				signals.push(...getColorAnimationSignals(name));
+			} else {
+				const animDirectionSignal = signals.find((signal) => signal.name === ANIMATION_COLOR_DIRECTION);
+				animDirectionSignal?.on?.push(...getColorAnimationFadeEvents(name));
 			}
 		}
 	}

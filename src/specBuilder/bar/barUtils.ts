@@ -31,7 +31,7 @@ import {
 	hasPopover,
 } from '@specBuilder/marks/markUtils';
 import { getColorValue, getLineWidthPixelsFromLineWidth } from '@specBuilder/specUtils';
-import { getEffectiveMetricName, sanitizeMarkChildren } from '@utils';
+import { getEffectiveMetricName, sanitizeMarkChildren, toCamelCase } from '@utils';
 import { AnnotationElement, AnnotationStyleProps, BarSpecProps, Orientation } from 'types';
 import {
 	ArrayValueRef,
@@ -383,30 +383,43 @@ export const getFillStrokeOpacity = (
 	{ children, name, opacity }: BarSpecProps,
 	isStrokeOpacity?: boolean
 ): ProductionRule<NumericValueRef> => {
-	const defaultProductionRule = getOpacityProductionRule(opacity);
+	const defaultProductionRule = getOpacityProductionRule(opacity, hasInteractiveChildren(children));
 	// ignore annotations
 	if (!hasInteractiveChildren(children)) {
 		return [defaultProductionRule];
 	}
 
-	// if a bar is hovered/selected, all other bars should be half opacity
+	// if a bar is hovered/selected, all other bars should be lower opacity
 	const hoverSignal = `${name}_hoveredId`;
 	if (hasPopover(children)) {
 		const selectSignal = `${name}_selectedId`;
 
 		// if this is for a stroke opacity, we want the value to be 1 when selected regardless of the opacity value
-		const selectedMarkRule = isStrokeOpacity ? { value: 1 } : defaultProductionRule;
+		const selectedMarkRule = isStrokeOpacity ? { value: 1 } : getOpacityProductionRule(opacity, false);
 		return [
+			// Bar should fade in/out when:
+			// - there is a current selection or hover, and it is not the selected or hovered bar
+			// - there is no selection or hover, and it is not the previously hovered bar
 			{
-				test: `!${selectSignal} && ${hoverSignal} && ${hoverSignal} !== datum.${MARK_ID}`,
-				...getHighlightOpacityValue(defaultProductionRule),
+				// Do not fade in for the initial render
+				test: `!${selectSignal} && !${hoverSignal} && !${hoverSignal}_prev && !highlightedSeries && !highlightedSeries_prev`,
+				...selectedMarkRule,
 			},
 			{
 				test: `${selectSignal} && ${selectSignal} !== datum.${MARK_ID}`,
 				...getHighlightOpacityValue(defaultProductionRule),
 			},
-			{ test: `${selectSignal} && ${selectSignal} === datum.${MARK_ID}`, ...selectedMarkRule },
-			defaultProductionRule,
+			{
+				test: `${hoverSignal} && ${hoverSignal} !== datum.${MARK_ID}`,
+				...getHighlightOpacityValue(defaultProductionRule),
+			},
+			{
+				// Note that the previously hovered bar gets set to null when a series is highlighted, and vice versa
+				test: `!${selectSignal} && !${hoverSignal} && ${hoverSignal}_prev && ${hoverSignal}_prev !== datum.${MARK_ID}`,
+				...getHighlightOpacityValue(defaultProductionRule),
+			},
+			// Otherwise, keep it opaque
+			selectedMarkRule,
 		];
 	}
 	return [
@@ -462,7 +475,7 @@ export const getBarPadding = (paddingRatio: number, paddingOuter?: number) => {
 	const paddingInner = paddingRatio;
 	return {
 		paddingInner,
-		paddingOuter: paddingOuter === undefined ? DISCRETE_PADDING - (1 - paddingInner) / 2 : paddingOuter,
+		paddingOuter: paddingOuter ?? DISCRETE_PADDING - (1 - paddingInner) / 2,
 	};
 };
 
@@ -470,6 +483,8 @@ export const getScaleValues = (props: BarSpecProps) => {
 	const metric = getEffectiveMetricName(props.metric, props.animate);
 	return props.type === 'stacked' || isDodgedAndStacked(props) ? [`${metric}1`] : [metric];
 };
+
+export const getBarName = (index: number, name = 'bar') => toCamelCase(`${name}${index}`);
 
 export interface BarOrientationProperties {
 	metricAxis: 'x' | 'y';

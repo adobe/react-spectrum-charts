@@ -9,11 +9,10 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
-import { HIGHLIGHT_CONTRAST_RATIO } from '@constants';
-import { ColorValueV6 } from '@react-types/shared';
+import { ANIMATION_COLOR_SIGNAL, HIGHLIGHT_CONTRAST_RATIO } from '@constants';
 import { getColorValue } from '@specBuilder/specUtils';
 import { spectrumColors } from '@themes';
+import { toCamelCase } from '@utils';
 import merge from 'deepmerge';
 import {
 	FacetRef,
@@ -36,6 +35,8 @@ import {
 	SignalRef,
 	SymbolEncodeEntry,
 } from 'vega';
+
+import { ColorValueV6 } from '@react-types/shared';
 
 export interface Facet {
 	facetType: FacetType | SecondaryFacetType;
@@ -104,13 +105,13 @@ const getLegendLabelsEncodings = (legendLabels: LegendLabel[] | undefined): Lege
 
 const getHoverEncodings = (
 	facets: Facet[],
-	{ highlight, highlightedSeries, name, opacity, descriptions, onMouseOut, onMouseOver }: LegendSpecProps,
+	{ highlight, highlightedSeries, name, opacity, descriptions, onMouseOut, onMouseOver }: LegendSpecProps
 ): LegendEncode => {
 	if (highlight || highlightedSeries || descriptions) {
 		const includeOpacity = Boolean(highlight || highlightedSeries); // only add stroke opacity if highlight is true or highlightedSeries is defined
 		return {
 			entries: {
-				name: `${name}_legendEntry`,
+				name: getLegendEntryName(name),
 				interactive: true,
 				enter: {
 					tooltip: getTooltip(descriptions), // only add tooltip if descriptions exist
@@ -134,7 +135,7 @@ const getHoverEncodings = (
 	} else if (onMouseOver || onMouseOut) {
 		return {
 			entries: {
-				name: `${name}_legendEntry`,
+				name: getLegendEntryName(name),
 				interactive: true,
 				enter: {
 					fill: { value: 'transparent' },
@@ -163,7 +164,7 @@ const getTooltip = (descriptions?: LegendDescription[]) => {
 export const getOpacityEncoding = (
 	highlight: boolean,
 	opacity?: OpacityFacet,
-	facets?: Facet[],
+	facets?: Facet[]
 ): ProductionRule<NumericValueRef> | undefined => {
 	if (highlight) {
 		if (facets || opacity) {
@@ -174,29 +175,38 @@ export const getOpacityEncoding = (
 			}) ?? { value: 1 };
 			if ('signal' in opacityEncoding) {
 				return getHighlightOpacityEncoding(
-					{ signal: opacityEncoding.signal + ` / ${HIGHLIGHT_CONTRAST_RATIO}` },
-					opacityEncoding,
+					{
+						signal: `max(${ANIMATION_COLOR_SIGNAL}, ${opacityEncoding.signal} / ${HIGHLIGHT_CONTRAST_RATIO})`,
+					},
+					opacityEncoding
 				);
 			}
 			if ('value' in opacityEncoding && typeof opacityEncoding.value === 'number') {
 				return getHighlightOpacityEncoding(
-					{ value: opacityEncoding.value / HIGHLIGHT_CONTRAST_RATIO },
-					opacityEncoding,
+					{ signal: `max(${ANIMATION_COLOR_SIGNAL}, ${opacityEncoding.value / HIGHLIGHT_CONTRAST_RATIO})` },
+					opacityEncoding
 				);
 			}
 		}
-		return getHighlightOpacityEncoding({ value: 1 / HIGHLIGHT_CONTRAST_RATIO }, { value: 1 });
+		return getHighlightOpacityEncoding(
+			{ signal: `max(${ANIMATION_COLOR_SIGNAL}, ${1 / HIGHLIGHT_CONTRAST_RATIO})` },
+			{ value: 1 }
+		);
 	}
 	return undefined;
 };
 
 const getHighlightOpacityEncoding = (
 	highlightOpacity: BaseValueRef<number>,
-	defaultOpacity: BaseValueRef<number>,
+	defaultOpacity: BaseValueRef<number>
 ): ProductionRule<NumericValueRef> => {
 	return [
 		{
 			test: 'highlightedSeries && datum.value !== highlightedSeries',
+			...highlightOpacity,
+		},
+		{
+			test: '!highlightedSeries && highlightedSeries_prev && datum.value !== highlightedSeries_prev',
 			...highlightOpacity,
 		},
 		defaultOpacity,
@@ -229,7 +239,7 @@ export const getSymbolEncodings = (facets: Facet[], props: LegendSpecProps): Leg
 	update = JSON.parse(JSON.stringify(update));
 	return {
 		entries: {
-			name: `${name}_legendEntry`,
+			name: getLegendEntryName(name),
 		},
 		symbols: {
 			update,
@@ -279,7 +289,7 @@ const getSymbolFacetEncoding = <T>({
 
 export const getHiddenSeriesColorRule = (
 	{ colorScheme, hiddenSeries, isToggleable }: LegendSpecProps,
-	colorValue: ColorValueV6,
+	colorValue: ColorValueV6
 ): ({
 	test?: string;
 } & ColorValueRef)[] => {
@@ -312,7 +322,7 @@ export const getShowHideEncodings = (props: LegendSpecProps): LegendEncode => {
 	if (isToggleable || onClick) {
 		clickEncode = {
 			entries: {
-				name: `${name}_legendEntry`,
+				name: getLegendEntryName(name),
 				interactive: true,
 				enter: {
 					fill: { value: 'transparent' },
@@ -336,3 +346,6 @@ export const mergeLegendEncodings = (encodings: LegendEncode[]): LegendEncode =>
 	}
 	return mergedEncodings;
 };
+
+export const getLegendName = (index: number, name = 'legend') => toCamelCase(`${name}${index}`);
+export const getLegendEntryName = (legendName: string) => `${legendName}_legendEntry`;
