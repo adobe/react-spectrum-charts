@@ -3,7 +3,6 @@ import { getTooltip, hasPopover } from '@specBuilder/marks/markUtils';
 import { MarkChildElement } from 'types';
 import {
 	ArcMark,
-	EncodeEntryName,
 	Mark,
 	NumericValueRef,
 	ProductionRule,
@@ -62,7 +61,6 @@ export const getOpacityRules = (name: string, children: MarkChildElement[]): Pro
 export const getAggregateMetricMark = (
 	name: string,
 	radius: string,
-	metric: string,
 	holeRatio: number,
 	metricLabel: string | undefined
 ): Mark => {
@@ -74,7 +72,16 @@ export const getAggregateMetricMark = (
 				type: 'text',
 				name: `${name}_aggregateMetricNumber`,
 				from: { data: `${name}_aggregateData` },
-				encode: getMetricNumberEncode(metric, radius, holeRatio, !!metricLabel, false),
+				encode: {
+					enter: {
+						x: { signal: 'width / 2' },
+						y: { signal: 'height / 2' },
+						text: { signal: "upper(replace(format(datum.sum, '.3~s'), 'G', 'B'))" },
+						fontSize: getFontSize(radius, holeRatio, true),
+						align: { value: 'center' },
+						baseline: getAggregateMetricBaseline(radius, holeRatio, !!metricLabel),
+					},
+				},
 			},
 		],
 	};
@@ -82,89 +89,27 @@ export const getAggregateMetricMark = (
 		groupMark.marks!.push({
 			type: 'text',
 			name: `${name}_aggregateMetricLabel`,
-			encode: getMetricLabelEncode(radius, holeRatio, metricLabel),
-		});
-	}
-	return groupMark;
-};
-
-export const getPercentMetricMark = (
-	name: string,
-	radius: string,
-	metric: string,
-	holeRatio: number,
-	metricLabel: string | undefined
-) => {
-	const groupMark: Mark = {
-		type: 'group',
-		name: `${name}_percentText`,
-		marks: [
-			{
-				type: 'text',
-				name: `${name}_percentMetricNumber`,
-				from: { data: FILTERED_TABLE },
-				encode: getMetricNumberEncode(metric, radius, holeRatio, !!metricLabel, true),
+			from: { data: `${name}_aggregateData` },
+			encode: {
+				enter: {
+					x: { signal: 'width / 2' },
+					y: getLabelYWithOffset(radius, holeRatio),
+					text: { value: metricLabel },
+					fontSize: getFontSize(radius, holeRatio, false),
+					align: { value: 'center' },
+					baseline: { value: 'top' },
+				},
 			},
-		],
-	};
-	if (metricLabel) {
-		groupMark.marks!.push({
-			type: 'text',
-			name: `${name}_percentMetricLabel`,
-			encode: getMetricLabelEncode(radius, holeRatio, metricLabel),
 		});
 	}
 	return groupMark;
-};
-
-export const getMetricNumberEncode = (
-	metric: string,
-	radius: string,
-	holeRatio: number,
-	hasLabel: boolean,
-	isBoolean: boolean
-): Partial<Record<EncodeEntryName, TextEncodeEntry>> => {
-	return {
-		enter: {
-			x: { signal: 'width / 2' },
-			y: { signal: 'height / 2' },
-			text: getMetricNumberText(metric, isBoolean),
-			fontSize: getFontSize(radius, holeRatio, true),
-			align: { value: 'center' },
-			baseline: getCenterMetricBaseline(radius, holeRatio, hasLabel),
-		},
-	};
-};
-
-export const getMetricLabelEncode = (
-	radius: string,
-	holeRatio: number,
-	metricLabel: string
-): Partial<Record<EncodeEntryName, TextEncodeEntry>> => {
-	return {
-		enter: {
-			x: { signal: 'width / 2' },
-			y: getLabelYWithOffset(radius, holeRatio),
-			text: { value: metricLabel },
-			fontSize: getFontSize(radius, holeRatio, false),
-			align: { value: 'center' },
-			baseline: { value: 'top' },
-		},
-	};
-};
-
-export const getMetricNumberText = (metric: string, isBoolean: boolean): ProductionRule<TextValueRef> => {
-	if (isBoolean) {
-		return { signal: `format(datum['${metric}'], '.0%')` };
-	}
-	return { signal: "upper(replace(format(datum.sum, '.3~s'), 'G', 'B'))" };
 };
 
 const fontBreakpoints = [76, 64, 52, 40];
 const metricNumberFontSizes = [72, 60, 48, 36];
 const metricLabelFontSizes = [24, 18, 12, 0];
 
-export const getCenterMetricBaseline = (
+export const getAggregateMetricBaseline = (
 	radius: string,
 	holeRatio: number,
 	showingLabel: boolean
@@ -172,9 +117,7 @@ export const getCenterMetricBaseline = (
 	// whenever we aren't showing the label, the metric number should be in the middle
 	// we check if the radius * holeRatio is greater than the second breakpoint because after that point the label dissapears
 	return {
-		signal: showingLabel
-			? `${radius} * ${holeRatio} > ${fontBreakpoints[2]} ? 'alphabetic' : 'middle'`
-			: "'middle'",
+		signal: showingLabel ? `${radius} * ${holeRatio} > ${fontBreakpoints[2]} ? 'alphabetic' : 'middle'` : 'middle',
 	};
 };
 
