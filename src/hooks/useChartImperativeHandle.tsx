@@ -14,71 +14,87 @@ import { MutableRefObject, Ref, useImperativeHandle } from 'react';
 import { ChartHandle } from 'types';
 import { View } from 'vega';
 
-export default function useChartImperativeHandle(
-	forwardedRef: Ref<ChartHandle>,
-	{ chartView, title }: { chartView: MutableRefObject<View | undefined>; title?: string }
-) {
+interface ChartImperativeHandleProps {
+	chartView: MutableRefObject<View | undefined>;
+	title?: string;
+}
+
+export default function useChartImperativeHandle(forwardedRef: Ref<ChartHandle>, props: ChartImperativeHandleProps) {
 	return useImperativeHandle(forwardedRef, () => ({
-		copy() {
-			return new Promise<string>((resolve, reject) => {
-				if (chartView.current) {
-					chartView.current.toImageURL('png').then(
-						async (url) => {
-							try {
-								const response = await fetch(url);
-								const blob = await response.blob();
-								navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]).then(
-									() => resolve('Chart copied to clipboard'),
-									() =>
-										reject(
-											new Error(
-												'Error occurred while writing to clipboard, copy to clipboard failed'
-											)
-										)
-								);
-							} catch (error) {
-								reject(new Error('Error occurred while fetching image, copy to clipboard failed'));
-							}
-						},
-						() =>
-							reject(new Error('Error occurred while converting image to URL, copy to clipboard failed'))
-					);
-				} else {
-					reject(new Error("There isn't a chart to copy, copy to clipboard failed"));
-				}
-			});
-		},
-		download(customFileName?: string) {
-			return new Promise<string>((resolve, reject) => {
-				if (chartView.current) {
-					const filename = `${customFileName ?? title ?? 'chart_export'}.png`;
-					chartView.current.toImageURL('png').then(
-						(url) => {
-							const link = document.createElement('a');
-							link.setAttribute('href', url);
-							link.setAttribute('target', '_blank');
-							link.setAttribute('download', filename);
-							link.dispatchEvent(new MouseEvent('click'));
-							resolve(`Chart downloaded as ${filename}`);
-						},
-						() => reject(new Error('Error occurred while converting image to URL, download failed'))
-					);
-				} else {
-					reject(new Error("There isn't a chart to download, download failed"));
-				}
-			});
-		},
-		getSvg() {
-			return new Promise<string>((resolve, reject) => {
-				if (chartView.current) {
-					chartView.current.toSVG().then(
-						(value) => resolve(value),
-						() => reject(new Error('Error occurred while converting chart to SVG'))
-					);
-				} else {
-					reject(new Error("There isn't a chart to get the SVG from, get SVG failed"));
-				}
-			});
-		},
+		copy: () => copy(props),
+		download: (customFileName?: string) => download(props, customFileName),
+		getSvg: () => getSvg(props),
 	}));
 }
+
+/**
+ * Copies the chart to the clipboard
+ * @param props
+ * @returns Promise<string>
+ */
+const copy = ({ chartView }: ChartImperativeHandleProps) =>
+	new Promise<string>((resolve, reject) => {
+		if (chartView.current) {
+			chartView.current.toImageURL('png').then(
+				async (url) => {
+					try {
+						const response = await fetch(url);
+						const blob = await response.blob();
+						navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]).then(
+							() => resolve('Chart copied to clipboard'),
+							() =>
+								reject(new Error('Error occurred while writing to clipboard, copy to clipboard failed'))
+						);
+					} catch (error) {
+						reject(new Error('Error occurred while fetching image, copy to clipboard failed'));
+					}
+				},
+				() => reject(new Error('Error occurred while converting image to URL, copy to clipboard failed'))
+			);
+		} else {
+			reject(new Error("There isn't a chart to copy, copy to clipboard failed"));
+		}
+	});
+
+/**
+ * Downloads the chart as a PNG to the users computer
+ * @param props
+ * @param customFileName
+ * @returns Promise<string>
+ */
+const download = ({ chartView, title }: ChartImperativeHandleProps, customFileName?: string) =>
+	new Promise<string>((resolve, reject) => {
+		if (chartView.current) {
+			const filename = `${customFileName ?? title ?? 'chart_export'}.png`;
+			chartView.current.toImageURL('png').then(
+				(url) => {
+					const link = document.createElement('a');
+					link.setAttribute('href', url);
+					link.setAttribute('target', '_blank');
+					link.setAttribute('download', filename);
+					link.dispatchEvent(new MouseEvent('click'));
+					resolve(`Chart downloaded as ${filename}`);
+				},
+				() => reject(new Error('Error occurred while converting image to URL, download failed'))
+			);
+		} else {
+			reject(new Error("There isn't a chart to download, download failed"));
+		}
+	});
+
+/**
+ * Gets the SVG string from the chart
+ * @param props
+ * @returns Promise<string>
+ */
+const getSvg = ({ chartView }: ChartImperativeHandleProps) =>
+	new Promise<string>((resolve, reject) => {
+		if (chartView.current) {
+			chartView.current.toSVG().then(
+				(value) => resolve(value),
+				() => reject(new Error('Error occurred while converting chart to SVG'))
+			);
+		} else {
+			reject(new Error("There isn't a chart to get the SVG from, get SVG failed"));
+		}
+	});
