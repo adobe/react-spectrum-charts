@@ -91,7 +91,8 @@ export type Width = number | string | 'auto';
 export interface ChartHandle {
 	copy: () => Promise<string>;
 	download: (customFileName?: string) => Promise<string>;
-	getSvg: (width?: number, height?: number) => Promise<string>;
+	getBase64Png: () => Promise<string>;
+	getSvg: () => Promise<string>;
 }
 
 export interface AreaProps extends MarkProps {
