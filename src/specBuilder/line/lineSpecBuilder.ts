@@ -9,7 +9,14 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { DEFAULT_COLOR_SCHEME, DEFAULT_CONTINUOUS_DIMENSION, DEFAULT_METRIC, FILTERED_TABLE } from '@constants';
+import {
+	ANIMATION_COLOR_DIRECTION,
+	ANIMATION_COLOR_SIGNAL,
+	DEFAULT_COLOR_SCHEME,
+	DEFAULT_CONTINUOUS_DIMENSION,
+	DEFAULT_METRIC,
+	FILTERED_TABLE,
+} from '@constants';
 import { hasInteractiveChildren, hasPopover } from '@specBuilder/marks/markUtils';
 import {
 	getMetricRangeGroupMarks,
@@ -26,8 +33,10 @@ import { Data, Mark, Scale, Signal, Spec } from 'vega';
 import { addTimeTransform, getTableData } from '../data/dataUtils';
 import { addContinuousDimensionScale, addFieldToFacetScaleDomain, addMetricScale } from '../scale/scaleSpecBuilder';
 import {
+	getColorAnimationFadeEvents,
+	getColorAnimationSignals,
 	getGenericSignal,
-	getSeriesHoveredSignal,
+	getSeriesHoveredSignals,
 	getUncontrolledHoverSignals,
 	hasSignalByName,
 } from '../signal/signalSpecBuilder';
@@ -101,19 +110,27 @@ export const addSignals = produce<Signal[], [LineSpecProps]>((signals, props) =>
 	const { children, name } = props;
 	signals.push(...getTrendlineSignals(props));
 	signals.push(...getMetricRangeSignals(props));
+	const eventNameVoronoi = `${name}_voronoi`;
 
 	if (!hasInteractiveChildren(children)) return;
 	if (!hasSignalByName(signals, `${name}_hoveredId`)) {
-		signals.push(...getUncontrolledHoverSignals(`${name}`, true, `${name}_voronoi`));
+		signals.push(...getUncontrolledHoverSignals(`${name}`, true, eventNameVoronoi));
 	}
 	if (!hasSignalByName(signals, `${name}_hoveredSeries`)) {
-		signals.push(getSeriesHoveredSignal(`${name}`, true, `${name}_voronoi`));
+		signals.push(...getSeriesHoveredSignals(`${name}`, true, eventNameVoronoi));
 	}
 	if (!hasSignalByName(signals, `${name}_selectedId`)) {
 		signals.push(getGenericSignal(`${name}_selectedId`));
 	}
 	if (!hasSignalByName(signals, `${name}_selectedSeries`)) {
 		signals.push(getGenericSignal(`${name}_selectedSeries`));
+	}
+
+	if (!hasSignalByName(signals, ANIMATION_COLOR_SIGNAL)) {
+		signals.push(...getColorAnimationSignals(eventNameVoronoi));
+	} else {
+		const animDirectionSignal = signals.find((signal) => signal.name === ANIMATION_COLOR_DIRECTION);
+		animDirectionSignal?.on?.push(...getColorAnimationFadeEvents(eventNameVoronoi));
 	}
 });
 

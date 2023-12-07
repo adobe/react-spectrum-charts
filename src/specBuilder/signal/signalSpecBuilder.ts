@@ -38,23 +38,11 @@ export const getUncontrolledHoverSignals = (
 	nestedDatum?: boolean,
 	eventName: string = name
 ): Signal[] => {
-	const mouseoverEvent = {
-		events: `@${eventName}:mouseover`,
-		update: `${nestedDatum ? 'datum.' : ''}datum.${MARK_ID}`,
-	};
-	return [
-		{
-			name: `${name}_hoveredId`,
-			value: null,
-			on: [mouseoverEvent, { events: `@${eventName}:mouseout`, update: 'null' }],
-		},
-		{
-			// Keeps track of the previously hovered id without clearing it when the mouse leaves the mark
-			name: `${name}_hoveredId_prev`,
-			value: null,
-			on: [mouseoverEvent],
-		},
-	];
+	return getCurrentAndPrevHoverSignals(
+		`${name}_hoveredId`,
+		`${nestedDatum ? 'datum.' : ''}datum.${MARK_ID}`,
+		eventName
+	);
 };
 
 /**
@@ -73,15 +61,29 @@ export const getControlledHoverSignal = (name: string): Signal => {
  *  Returns the hover signal for series
  *  Useful when you want to highlight the whole series on hover (area)
  */
-export const getSeriesHoveredSignal = (name: string, nestedDatum?: boolean, eventName: string = name): Signal => {
-	return {
-		name: `${name}_hoveredSeries`,
-		value: null,
-		on: [
-			{ events: `@${eventName}:mouseover`, update: `${nestedDatum ? 'datum.' : ''}datum.${SERIES_ID}` },
-			{ events: `@${eventName}:mouseout`, update: 'null' },
-		],
-	};
+export const getSeriesHoveredSignals = (name: string, nestedDatum?: boolean, eventName: string = name): Signal[] => {
+	return getCurrentAndPrevHoverSignals(
+		`${name}_hoveredSeries`,
+		`${nestedDatum ? 'datum.' : ''}datum.${SERIES_ID}`,
+		eventName
+	);
+};
+
+const getCurrentAndPrevHoverSignals = (name: string, updateValue: string, eventName: string = name) => {
+	const mouseoverEvent = { events: `@${eventName}:mouseover`, update: updateValue };
+	return [
+		{
+			name: name,
+			value: null,
+			on: [mouseoverEvent, { events: `@${eventName}:mouseout`, update: 'null' }],
+		},
+		{
+			// Keeps track of the previously hovered id without clearing it when the mouse leaves the mark
+			name: `${name}_prev`,
+			value: null,
+			on: [mouseoverEvent],
+		},
+	];
 };
 
 /**

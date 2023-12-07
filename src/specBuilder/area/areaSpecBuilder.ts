@@ -22,7 +22,7 @@ import {
 import {
 	getControlledHoverSignal,
 	getGenericSignal,
-	getSeriesHoveredSignal,
+	getSeriesHoveredSignals,
 	hasSignalByName,
 } from '@specBuilder/signal/signalSpecBuilder';
 import { spectrumColors } from '@themes';
@@ -147,7 +147,7 @@ export const addSignals = produce<Signal[], [AreaSpecProps]>((signals, { childre
 		signals.push(getControlledHoverSignal(name));
 	}
 	if (!hasSignalByName(signals, `${name}_hoveredSeries`)) {
-		signals.push(getSeriesHoveredSignal(name));
+		signals.push(...getSeriesHoveredSignals(name));
 	}
 	if (!hasSignalByName(signals, `${name}_selectedId`)) {
 		signals.push(getGenericSignal(`${name}_selectedId`));

@@ -12,7 +12,7 @@
 import { MARK_ID, SERIES_ID } from '@constants';
 import { Signal } from 'vega';
 
-import { getSeriesHoveredSignal, getUncontrolledHoverSignals } from './signalSpecBuilder';
+import { getSeriesHoveredSignals, getUncontrolledHoverSignals } from './signalSpecBuilder';
 
 export const defaultHighlightSignal: Signal = {
 	name: 'highlightedSeries',
@@ -62,9 +62,9 @@ describe('Signal spec builder', () => {
 		});
 	});
 
-	describe('getSeriesHoveredSignal()', () => {
+	describe('getSeriesHoveredSignals()', () => {
 		test('uses name for eventName if eventName provided', () => {
-			expect(getSeriesHoveredSignal('bar0', true)).toStrictEqual({
+			expect(getSeriesHoveredSignals('bar0', true)[0]).toStrictEqual({
 				name: 'bar0_hoveredSeries',
 				on: [
 					{ events: '@bar0:mouseover', update: `datum.datum.${SERIES_ID}` },
@@ -75,7 +75,7 @@ describe('Signal spec builder', () => {
 		});
 
 		test('uses eventName if provided', () => {
-			expect(getSeriesHoveredSignal('bar0', true, 'bar0_voronoi')).toStrictEqual({
+			expect(getSeriesHoveredSignals('bar0', true, 'bar0_voronoi')[0]).toStrictEqual({
 				name: 'bar0_hoveredSeries',
 				on: [
 					{ events: '@bar0_voronoi:mouseover', update: `datum.datum.${SERIES_ID}` },
@@ -86,7 +86,7 @@ describe('Signal spec builder', () => {
 		});
 
 		test('should not nest datum if nestedDatum is false', () => {
-			expect(getSeriesHoveredSignal('bar0', false, 'bar0_voronoi')).toStrictEqual({
+			expect(getSeriesHoveredSignals('bar0', false, 'bar0_voronoi')[0]).toStrictEqual({
 				name: 'bar0_hoveredSeries',
 				on: [
 					{ events: '@bar0_voronoi:mouseover', update: `datum.${SERIES_ID}` },

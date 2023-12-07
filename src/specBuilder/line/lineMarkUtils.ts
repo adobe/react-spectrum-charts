@@ -58,28 +58,52 @@ export const getLineStrokeOpacity = ({
 	opacity,
 	popoverMarkName,
 }: LineMarkProps): ProductionRule<NumericValueRef> => {
-	const baseRule = getOpacityProductionRule(displayOnHover ? { value: 0 } : opacity);
+	const baseRule = getOpacityProductionRule(displayOnHover ? { value: 0 } : opacity, false);
 	if (!interactiveMarkName) return [baseRule];
-	const strokeOpacityRules: ProductionRule<NumericValueRef> = [];
 
-	// add a rule that will lower the opacity of the line if there is a hovered series, but this line is not the one hovered
+	const interactiveBaseRule = getOpacityProductionRule(displayOnHover ? { value: 0 } : opacity, true);
+	const strokeOpacityRules: ProductionRule<NumericValueRef> = [];
 	const hoverSignal = `${interactiveMarkName}_hoveredSeries`;
+	const selectSignal = `${interactiveMarkName}_selectedSeries`;
+
+	// Don't fade in when first rendering the line
 	strokeOpacityRules.push({
-		test: `${hoverSignal} && ${hoverSignal} !== datum.${SERIES_ID}`,
-		...getHighlightOpacityValue(baseRule),
+		test: `!${hoverSignal} && !${selectSignal} && !${hoverSignal}_prev && !highlightedSeries && !highlightedSeries_prev`,
+		...baseRule,
 	});
 
+	// Line should fade in/out when:
+	// - there is a current selection or hover, and it is not the selected or hovered series
+	// - there is no selection or hover, and it is not the previously hovered series
+
+	strokeOpacityRules.push(
+		{
+			test: `${hoverSignal} && ${hoverSignal} !== datum.${SERIES_ID}`,
+			...getHighlightOpacityValue(interactiveBaseRule),
+		},
+		{
+			// This allows the non-hovered lines to fade back in when the mouse stops hovering
+			test: `!${hoverSignal} && ${hoverSignal}_prev && ${hoverSignal}_prev !== datum.${SERIES_ID}`,
+			...getHighlightOpacityValue(interactiveBaseRule),
+		},
+		{
+			// This allows the non-hovered lines to fade back in when the mouse stops hovering over a legend entry
+			test: `!${hoverSignal} && highlightedSeries_prev && highlightedSeries_prev !== datum.${SERIES_ID}`,
+			...getHighlightOpacityValue(interactiveBaseRule),
+		}
+	);
+
 	if (popoverMarkName) {
-		const selectSignal = `${interactiveMarkName}_selectedSeries`;
 		strokeOpacityRules.push({
 			test: `${selectSignal} && ${selectSignal} !== datum.${SERIES_ID}`,
-			...getHighlightOpacityValue(baseRule),
+			...getHighlightOpacityValue(interactiveBaseRule),
 		});
 	}
 
 	if (displayOnHover) {
 		strokeOpacityRules.push(...getDisplayOnHoverRules(interactiveMarkName, opacity));
 	}
+
 	// This allows us to only show the metric range when hovering over the parent line component.
 	strokeOpacityRules.push(baseRule);
 
@@ -87,7 +111,7 @@ export const getLineStrokeOpacity = ({
 };
 
 const getDisplayOnHoverRules = (name: string, opacity: OpacityFacet) => {
-	const opacityRule = getOpacityProductionRule(opacity);
+	const opacityRule = getOpacityProductionRule(opacity, true);
 	const hoverRule = {
 		test: `${name}_hoveredSeries && ${name}_hoveredSeries === datum.${SERIES_ID}`,
 		...opacityRule,

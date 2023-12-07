@@ -17,7 +17,7 @@ import { LineMarkProps } from '@specBuilder/line/lineUtils';
 import { hasInteractiveChildren, hasPopover, hasTooltip } from '@specBuilder/marks/markUtils';
 import {
 	getGenericSignal,
-	getSeriesHoveredSignal,
+	getSeriesHoveredSignals,
 	getUncontrolledHoverSignals,
 } from '@specBuilder/signal/signalSpecBuilder';
 import { getFacetsFromProps } from '@specBuilder/specUtils';
@@ -505,11 +505,11 @@ export const getTrendlineSignals = (markProps: BarSpecProps | LineSpecProps): Si
 
 	if (trendlines.some((trendline) => hasTooltip(trendline.children))) {
 		signals.push(...getUncontrolledHoverSignals(`${markName}Trendline`, true, `${markName}Trendline_voronoi`));
-		signals.push(getSeriesHoveredSignal(`${markName}Trendline`, true, `${markName}Trendline_voronoi`));
+		signals.push(...getSeriesHoveredSignals(`${markName}Trendline`, true, `${markName}Trendline_voronoi`));
 	}
 
 	if (trendlines.some((trendline) => trendline.displayOnHover)) {
-		signals.push(getSeriesHoveredSignal(markName, true, `${markName}_voronoi`));
+		signals.push(...getSeriesHoveredSignals(markName, true, `${markName}_voronoi`));
 	}
 
 	if (trendlines.some((trendline) => hasPopover(trendline.children))) {

@@ -158,7 +158,7 @@ export const addHighlight = produce<Spec, [Pick<SanitizedSpecProps, 'highlighted
 
 export const updateHighlightSignalsWithClearSignals = produce<Spec>((spec) => {
 	const getEventNameForPrevHoverSignal = (signal: Signal) => {
-		if (!signal.name.includes('_hoveredId_prev')) return undefined;
+		if (!/_hovered.*_prev/.test(signal.name)) return undefined;
 		const name = signal.on?.[0]?.events.toString();
 		return name?.substring(0, name.indexOf(':'));
 	};
