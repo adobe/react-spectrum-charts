@@ -26,7 +26,7 @@ export default {
 	component: Chart,
 };
 
-const HandleStory = ({ variant }: { variant: 'copy' | 'download' | 'getSvg' }) => {
+const HandleStory = ({ variant }: { variant: 'copy' | 'download' | 'getBase64Png' | 'getSvg' }) => {
 	const [loading, setLoading] = useState(false);
 	const ref = useRef<ChartHandle>(null);
 	const props = useChartProps({ data });
@@ -34,6 +34,7 @@ const HandleStory = ({ variant }: { variant: 'copy' | 'download' | 'getSvg' }) =
 	const buttonText: Record<typeof variant, string> = {
 		copy: 'Copy to clipboard',
 		download: 'Download PNG',
+		getBase64Png: 'Get base64 PNG',
 		getSvg: 'Get SVG',
 	};
 	return (
@@ -64,14 +65,17 @@ const DownloadStory: ComponentStory<typeof Chart> = (): ReactElement => {
 	return <HandleStory variant="download" />;
 };
 
+const PngStory: ComponentStory<typeof Chart> = (): ReactElement => {
+	return <HandleStory variant="getBase64Png" />;
+};
+
 const SvgStory: ComponentStory<typeof Chart> = (): ReactElement => {
 	return <HandleStory variant="getSvg" />;
 };
 
 const Copy = bindWithProps(CopyStory);
-
 const Download = bindWithProps(DownloadStory);
-
+const GetBase64Png = bindWithProps(PngStory);
 const GetSvg = bindWithProps(SvgStory);
 
-export { Copy, Download, GetSvg };
+export { Copy, Download, GetBase64Png, GetSvg };

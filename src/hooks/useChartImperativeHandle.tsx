@@ -23,6 +23,7 @@ export default function useChartImperativeHandle(forwardedRef: Ref<ChartHandle>,
 	return useImperativeHandle(forwardedRef, () => ({
 		copy: () => copy(props),
 		download: (customFileName?: string) => download(props, customFileName),
+		getBase64Png: () => getBase64Png(props),
 		getSvg: () => getSvg(props),
 	}));
 }
@@ -81,6 +82,45 @@ const download = ({ chartView, title }: ChartImperativeHandleProps, customFileNa
 			reject(new Error("There isn't a chart to download, download failed"));
 		}
 	});
+
+/**
+ * Gets the base64 encoded PNG string from the chart
+ * @param props
+ * @param customFileName
+ * @returns Promise<string>
+ */
+const getBase64Png = ({ chartView }: ChartImperativeHandleProps) =>
+	new Promise<string>((resolve, reject) => {
+		if (chartView.current) {
+			chartView.current.toImageURL('png').then(
+				async (url) => {
+					try {
+						const response = await fetch(url);
+						const blob = await response.blob();
+						const base64Png = await blobToBase64(blob);
+						if (typeof base64Png === 'string') {
+							resolve(base64Png);
+						} else {
+							reject(new Error('Error occurred while converting image to base64, get base64 PNG failed'));
+						}
+					} catch (error) {
+						reject(new Error('Error occurred while fetching image, get base64 PNG failed'));
+					}
+				},
+				() => reject(new Error('Error occurred while converting image to URL, get base64 PNG failed'))
+			);
+		} else {
+			reject(new Error("There isn't a chart to get the PNG from, get base64 PNG failed"));
+		}
+	});
+
+const blobToBase64 = (blob): Promise<string | ArrayBuffer | null> => {
+	return new Promise((resolve) => {
+		const reader = new FileReader();
+		reader.onloadend = () => resolve(reader.result);
+		reader.readAsDataURL(blob);
+	});
+};
 
 /**
  * Gets the SVG string from the chart
