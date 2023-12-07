@@ -25,5 +25,3 @@ export const sliveredDonutData = [
 	{ id: 14, count: 198, segment: 'Lunascape' },
 	{ id: 15, count: 120, segment: 'SlimBrowser' },
 ];
-
-export const booleanDonutData = [{ id: '1', percent: 0.68 }];

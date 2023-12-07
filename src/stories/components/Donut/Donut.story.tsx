@@ -18,7 +18,7 @@ import { bindWithProps } from '@test-utils';
 
 import { Content } from '@adobe/react-spectrum';
 
-import { basicDonutData, booleanDonutData, sliveredDonutData } from './data';
+import { basicDonutData, sliveredDonutData } from './data';
 
 export default {
 	title: 'RSC/Donut',
@@ -152,22 +152,4 @@ Slivers.args = {
 	holeRatio: 0.8,
 };
 
-const BooleanDonut: ComponentStory<typeof Donut> = (args): ReactElement => {
-	const chartProps = useChartProps({ data: booleanDonutData, width: 350, height: 350 });
-	return (
-		<Chart {...chartProps} debug>
-			<Donut {...args} />
-		</Chart>
-	);
-};
-
-const Boolean = bindWithProps(BooleanDonut);
-Boolean.args = {
-	metric: 'percent',
-	metricLabel: 'Completion rate',
-	color: 'id',
-	isBoolean: true,
-	variant: 'positive',
-};
-
-export { Basic, WithDirectLabels, WithPopover, WithLegend, Everything, Slivers, Boolean };
+export { Basic, WithDirectLabels, WithPopover, WithLegend, Everything, Slivers };
