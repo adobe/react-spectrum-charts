@@ -122,6 +122,12 @@ export interface DonutProps extends MarkProps {
 
 	/** determines if it should display direct labels. If true, must also supply 'segment' prop. Default is false */
 	hasDirectLabels?: boolean;
+
+	/** determines if it is a boolean donut. If true, data supplied should only be one value between 0~1 (e.g. data=[{id: '123', value: .68}]) */
+	isBoolean?: boolean;
+
+	/** determines display color for boolean donut. Unused if isBoolean is false */
+	variant?: 'positive' | 'negative' | 'neutral';
 }
 
 export interface AxisProps extends BaseProps {
