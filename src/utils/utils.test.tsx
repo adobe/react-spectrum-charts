@@ -15,6 +15,7 @@ import React from 'react';
 import { Bar } from '@components/Bar';
 import { ChartPopover } from '@components/ChartPopover';
 import { ChartTooltip } from '@components/ChartTooltip';
+import { Donut } from '@components/Donut';
 import { Line } from '@components/Line';
 import { Trendline } from '@components/Trendline';
 import {
@@ -93,15 +94,19 @@ describe('utils', () => {
 					<Line>
 						<ChartTooltip />
 					</Line>
+					<Donut>
+						<ChartTooltip />
+					</Donut>
 				</Chart>
 			);
 
 			const matches = getAllElements(element, ChartTooltip);
 
-			expect(matches).toHaveLength(3);
+			expect(matches).toHaveLength(4);
 			expect(matches[0].name).toBe('bar0Trendline');
 			expect(matches[1].name).toBe('myLine');
 			expect(matches[2].name).toBe('line1');
+			expect(matches[3].name).toBe('donut0');
 		});
 	});
 

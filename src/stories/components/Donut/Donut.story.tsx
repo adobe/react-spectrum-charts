@@ -178,12 +178,12 @@ const BooleanStory: ComponentStory<typeof Donut> = (args): ReactElement => {
 	);
 };
 
-const Boolean = bindWithProps(BooleanStory);
-Boolean.args = {
+const BooleanDonut = bindWithProps(BooleanStory);
+BooleanDonut.args = {
 	metric: 'value',
 	metricLabel: 'Success rate',
 	color: 'id',
 	isBoolean: true,
 };
 
-export { Basic, WithDirectLabels, WithPopover, WithLegend, Everything, Slivers, Boolean };
+export { Basic, WithDirectLabels, WithPopover, WithLegend, Everything, Slivers, BooleanDonut };
