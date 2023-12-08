@@ -162,9 +162,9 @@ export const getMetricLabelEncodeEnter = (
 	};
 };
 
-const fontBreakpoints = [76, 64, 52, 40];
-const metricNumberFontSizes = [72, 60, 48, 36];
-const metricLabelFontSizes = [24, 18, 12, 0];
+export const fontBreakpoints = [76, 64, 52, 40];
+export const metricNumberFontSizes = [72, 60, 48, 36];
+export const metricLabelFontSizes = [24, 18, 12, 0];
 
 export const getAggregateMetricBaseline = (
 	radius: string,
@@ -205,7 +205,7 @@ export const getFontSize = (
 };
 
 // The offset is based off the font size of the metric label. However, we can't use tests here, so the signal is nested ternary statements
-const getLabelYWithOffset = (radius: string, holeRatio: number): ProductionRule<NumericValueRef> => {
+export const getLabelYWithOffset = (radius: string, holeRatio: number): ProductionRule<NumericValueRef> => {
 	const openSpace = `${radius} * ${holeRatio}`;
 	return {
 		signal: `height / 2`,
@@ -262,7 +262,7 @@ export const getDirectLabelTextEntry = (
 	};
 };
 
-const getDisplayTextForLargeSlice = (
+export const getDisplayTextForLargeSlice = (
 	radius: string,
 	datumProperty: string,
 	format: boolean,

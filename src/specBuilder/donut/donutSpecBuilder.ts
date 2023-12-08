@@ -19,7 +19,7 @@ import { DonutSpecProps } from 'types';
 import { ColorScheme, DonutProps } from 'types';
 import { Data, Mark, Scale, Signal, Spec } from 'vega';
 
-import { getAggregateMetricMark, getArcMark, getDirectLabelMark, getPercentMetricMark } from './donutSpecUtils';
+import { getAggregateMetricMark, getArcMark, getDirectLabelMark, getPercentMetricMark } from './donutUtils';
 
 export const addDonut = produce<Spec, [DonutProps & { colorScheme?: ColorScheme; index?: number }]>(
 	(
