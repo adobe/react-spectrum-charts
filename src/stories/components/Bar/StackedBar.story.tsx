@@ -14,7 +14,7 @@ import React, { ReactElement, createElement } from 'react';
 import { Annotation } from '@components/Annotation';
 import useChartProps from '@hooks/useChartProps';
 import { Axis, Bar, Chart, Legend } from '@rsc';
-import { ComponentStory } from '@storybook/react';
+import { StoryFn } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
 import { SpectrumColor } from 'types';
 
@@ -32,7 +32,7 @@ const colors: SpectrumColor[] = [
 	'divergent-orange-yellow-seafoam-600',
 ];
 
-const BarStory: ComponentStory<typeof Bar> = (args): ReactElement => {
+const BarStory: StoryFn<typeof Bar> = (args): ReactElement => {
 	const chartProps = useChartProps({ data: barSeriesData, colors, width: 800, height: 600 });
 	return (
 		<Chart {...chartProps}>
@@ -44,7 +44,7 @@ const BarStory: ComponentStory<typeof Bar> = (args): ReactElement => {
 	);
 };
 
-const NegativeBarStory: ComponentStory<typeof Bar> = (args): ReactElement => {
+const NegativeBarStory: StoryFn<typeof Bar> = (args): ReactElement => {
 	const chartProps = useChartProps({ data: negativeBarSeriesData, width: 800, height: 600 });
 	return (
 		<Chart {...chartProps}>

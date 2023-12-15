@@ -16,7 +16,7 @@ import useChartProps from '@hooks/useChartProps';
 import { Area, Bar, Chart, Datum, Line } from '@rsc';
 import { browserData as data } from '@stories/data/data';
 import { formatTimestamp } from '@stories/storyUtils';
-import { ComponentStory } from '@storybook/react';
+import { StoryFn } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
 
 export default {
@@ -32,7 +32,7 @@ export default {
 	},
 };
 
-const StackedBarTooltipStory: ComponentStory<typeof ChartTooltip> = (args): ReactElement => {
+const StackedBarTooltipStory: StoryFn<typeof ChartTooltip> = (args): ReactElement => {
 	const chartProps = useChartProps({ data, width: 600 });
 	return (
 		<Chart {...chartProps}>
@@ -42,7 +42,7 @@ const StackedBarTooltipStory: ComponentStory<typeof ChartTooltip> = (args): Reac
 		</Chart>
 	);
 };
-const DodgedBarTooltipStory: ComponentStory<typeof ChartTooltip> = (args): ReactElement => {
+const DodgedBarTooltipStory: StoryFn<typeof ChartTooltip> = (args): ReactElement => {
 	const chartProps = useChartProps({ data, width: 600 });
 	return (
 		<Chart {...chartProps}>
@@ -70,7 +70,7 @@ const lineData = [
 	{ datetime: 1668409200000, point: 25, value: 10932, users: 4913, series: 'Add Freeform table' },
 ];
 
-const LineTooltipStory: ComponentStory<typeof ChartTooltip> = (args): ReactElement => {
+const LineTooltipStory: StoryFn<typeof ChartTooltip> = (args): ReactElement => {
 	const chartProps = useChartProps({ data: lineData, width: 600 });
 	return (
 		<Chart {...chartProps}>
@@ -90,7 +90,7 @@ interface LineData extends Datum {
 	category?: string;
 }
 
-const AreaTooltipStory: ComponentStory<typeof ChartTooltip> = (args): ReactElement => {
+const AreaTooltipStory: StoryFn<typeof ChartTooltip> = (args): ReactElement => {
 	const chartProps = useChartProps({ data: lineData, width: 600 });
 	return (
 		<Chart {...chartProps}>

@@ -14,7 +14,7 @@ import React, { ReactElement } from 'react';
 import useChartProps from '@hooks/useChartProps';
 import { Bar, Chart, Legend, Line } from '@rsc';
 import { browserData as data } from '@stories/data/data';
-import { ComponentStory } from '@storybook/react';
+import { StoryFn } from '@storybook/react';
 import { ROUNDED_SQUARE_PATH } from 'svgPaths';
 
 import { defaultProps } from './LegendStoryUtils';
@@ -24,7 +24,7 @@ export default {
 	component: Legend,
 };
 
-const LegendBarStory: ComponentStory<typeof Legend> = (args): ReactElement => {
+const LegendBarStory: StoryFn<typeof Legend> = (args): ReactElement => {
 	const chartProps = useChartProps({ data, width: 700, symbolShapes: ['square', 'triangle', ROUNDED_SQUARE_PATH] });
 	return (
 		<Chart {...chartProps}>
@@ -33,7 +33,7 @@ const LegendBarStory: ComponentStory<typeof Legend> = (args): ReactElement => {
 		</Chart>
 	);
 };
-const LegendLineStory: ComponentStory<typeof Legend> = (args): ReactElement => {
+const LegendLineStory: StoryFn<typeof Legend> = (args): ReactElement => {
 	const chartProps = useChartProps({ data, width: 700 });
 	return (
 		<Chart {...chartProps}>

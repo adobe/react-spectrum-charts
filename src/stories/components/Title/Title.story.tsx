@@ -14,7 +14,7 @@ import React, { ReactElement } from 'react';
 import useChartProps from '@hooks/useChartProps';
 import { Axis, Bar, Chart, ChartProps, Legend, Title } from '@rsc';
 import { browserData as data } from '@stories/data/data';
-import { ComponentStory } from '@storybook/react';
+import { StoryFn } from '@storybook/react';
 import { bindWithProps } from 'test-utils/bindWithProps';
 
 export default {
@@ -24,7 +24,7 @@ export default {
 
 const defaultChartProps: ChartProps = { data, minWidth: 400, maxWidth: 800, height: 400 };
 
-const TitleBarStory: ComponentStory<typeof Title> = (args): ReactElement => {
+const TitleBarStory: StoryFn<typeof Title> = (args): ReactElement => {
 	const chartProps = useChartProps(defaultChartProps);
 	return (
 		<Chart {...chartProps}>

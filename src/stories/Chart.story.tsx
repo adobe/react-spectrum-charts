@@ -13,7 +13,7 @@ import React, { ReactElement } from 'react';
 
 import useChartProps from '@hooks/useChartProps';
 import { Axis, Chart, Line } from '@rsc';
-import { ComponentStory } from '@storybook/react';
+import { StoryFn } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
 
 import './Chart.story.css';
@@ -25,7 +25,7 @@ export default {
 	component: Chart,
 };
 
-const ChartLineStory: ComponentStory<typeof Chart> = (args): ReactElement => {
+const ChartLineStory: StoryFn<typeof Chart> = (args): ReactElement => {
 	const props = useChartProps(args);
 	return (
 		<Chart {...props}>

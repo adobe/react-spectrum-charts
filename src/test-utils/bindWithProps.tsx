@@ -9,13 +9,12 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
 import { ArgsStoryFn } from '@storybook/csf';
-import { ReactFramework, Story } from '@storybook/react';
+import { ReactRenderer, StoryFn } from '@storybook/react';
 
-type StoryArgsTypes<T> = T extends ArgsStoryFn<ReactFramework, infer Return> ? Return : T;
+type StoryArgsTypes<T> = T extends ArgsStoryFn<ReactRenderer, infer Return> ? Return : T;
 
-type RequiredProps<T> = Story<T> & { args: T };
+type RequiredProps<T> = StoryFn<T> & { args: T };
 
 /**
  * Will make the props in a story required (by default Storybook makes all props optional).
@@ -24,7 +23,7 @@ type RequiredProps<T> = Story<T> & { args: T };
  * Usage: `const CustomStory = bindWithProps(TemplateStory);`
  * @param template: Story to bind.
  */
-function bindWithProps<T>(template: Story<T>) {
+function bindWithProps<T>(template: StoryFn<T>) {
 	return template.bind({}) as RequiredProps<StoryArgsTypes<typeof template>>;
 }
 
