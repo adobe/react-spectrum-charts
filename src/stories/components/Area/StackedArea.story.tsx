@@ -13,7 +13,7 @@ import React, { ReactElement } from 'react';
 
 import useChartProps from '@hooks/useChartProps';
 import { Area, Axis, Chart, ChartPopover, ChartProps, ChartTooltip, Legend } from '@rsc';
-import { ComponentStory } from '@storybook/react';
+import { StoryFn } from '@storybook/react';
 import { bindWithProps } from 'test-utils/bindWithProps';
 
 export default {
@@ -41,7 +41,7 @@ const data = [
 ];
 const defaultChartProps: ChartProps = { data, minWidth: 400, maxWidth: 800, height: 400 };
 
-const AreaStory: ComponentStory<typeof Area> = (args): ReactElement => {
+const AreaStory: StoryFn<typeof Area> = (args): ReactElement => {
 	const chartProps = useChartProps(defaultChartProps);
 	return (
 		<Chart {...chartProps}>
@@ -67,7 +67,7 @@ const timeData = [
 	{ datetime: 1668409200000, point: 25, value: 1093, users: 491, series: 'Add Freeform table' },
 ];
 
-const AreaTimeStory: ComponentStory<typeof Area> = (args): ReactElement => {
+const AreaTimeStory: StoryFn<typeof Area> = (args): ReactElement => {
 	const chartProps = useChartProps({ ...defaultChartProps, data: timeData });
 	return (
 		<Chart {...chartProps}>
@@ -79,7 +79,7 @@ const AreaTimeStory: ComponentStory<typeof Area> = (args): ReactElement => {
 	);
 };
 
-const TooltipStory: ComponentStory<typeof Area> = (args): ReactElement => {
+const TooltipStory: StoryFn<typeof Area> = (args): ReactElement => {
 	const chartProps = useChartProps(defaultChartProps);
 	return (
 		<Chart {...chartProps}>
@@ -93,7 +93,7 @@ const TooltipStory: ComponentStory<typeof Area> = (args): ReactElement => {
 	);
 };
 
-const PopoverStory: ComponentStory<typeof Area> = (args): ReactElement => {
+const PopoverStory: StoryFn<typeof Area> = (args): ReactElement => {
 	const chartProps = useChartProps(defaultChartProps);
 	return (
 		<Chart {...chartProps}>

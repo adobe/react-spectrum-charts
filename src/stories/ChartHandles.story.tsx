@@ -13,7 +13,7 @@ import React, { ReactElement, useRef, useState } from 'react';
 
 import useChartProps from '@hooks/useChartProps';
 import { Axis, Chart, ChartHandle, Line } from '@rsc';
-import { ComponentStory } from '@storybook/react';
+import { StoryFn } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
 
 import { ActionButton, Content, Flex } from '@adobe/react-spectrum';
@@ -57,19 +57,19 @@ const HandleStory = ({ variant }: { variant: 'copy' | 'download' | 'getBase64Png
 	);
 };
 
-const CopyStory: ComponentStory<typeof Chart> = (): ReactElement => {
+const CopyStory: StoryFn<typeof Chart> = (): ReactElement => {
 	return <HandleStory variant="copy" />;
 };
 
-const DownloadStory: ComponentStory<typeof Chart> = (): ReactElement => {
+const DownloadStory: StoryFn<typeof Chart> = (): ReactElement => {
 	return <HandleStory variant="download" />;
 };
 
-const PngStory: ComponentStory<typeof Chart> = (): ReactElement => {
+const PngStory: StoryFn<typeof Chart> = (): ReactElement => {
 	return <HandleStory variant="getBase64Png" />;
 };
 
-const SvgStory: ComponentStory<typeof Chart> = (): ReactElement => {
+const SvgStory: StoryFn<typeof Chart> = (): ReactElement => {
 	return <HandleStory variant="getSvg" />;
 };
 

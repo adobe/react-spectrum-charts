@@ -14,7 +14,7 @@ import React, { ReactElement } from 'react';
 import { MARK_ID } from '@constants';
 import useChartProps from '@hooks/useChartProps';
 import { Axis, Bar, Chart, ChartPopover, ChartTooltip, Legend } from '@rsc';
-import { ComponentStory } from '@storybook/react';
+import { StoryFn } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
 import { BarProps, Datum, SpectrumColor } from 'types';
 
@@ -37,7 +37,7 @@ const colors: SpectrumColor[] = [
 	'sequential-magma-1400',
 ];
 
-const BarStory: ComponentStory<typeof Bar> = (args: BarProps): ReactElement => {
+const BarStory: StoryFn<typeof Bar> = (args: BarProps): ReactElement => {
 	const chartProps = useChartProps({
 		data: generateMockDataForTrellis({
 			property1: ['All users', 'Roku', 'Chromecast', 'Amazon Fire', 'Apple TV'],

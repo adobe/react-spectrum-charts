@@ -15,7 +15,7 @@ import { TRENDLINE_VALUE } from '@constants';
 import useChartProps from '@hooks/useChartProps';
 import { Axis, Chart, ChartPopover, ChartProps, ChartTooltip, Legend, Line, Trendline } from '@rsc';
 import { workspaceTrendsData } from '@stories/data/data';
-import { ComponentStory } from '@storybook/react';
+import { StoryFn } from '@storybook/react';
 import { bindWithProps } from 'test-utils/bindWithProps';
 
 export default {
@@ -52,7 +52,7 @@ export default {
 
 const defaultChartProps: ChartProps = { data: workspaceTrendsData, minWidth: 400, maxWidth: 800, height: 400 };
 
-const TrendlineStory: ComponentStory<typeof Trendline> = (args): ReactElement => {
+const TrendlineStory: StoryFn<typeof Trendline> = (args): ReactElement => {
 	const chartProps = useChartProps(defaultChartProps);
 	return (
 		<Chart {...chartProps}>
@@ -66,7 +66,7 @@ const TrendlineStory: ComponentStory<typeof Trendline> = (args): ReactElement =>
 	);
 };
 
-const TrendlineWithDialogsStory: ComponentStory<typeof Trendline> = (args): ReactElement => {
+const TrendlineWithDialogsStory: StoryFn<typeof Trendline> = (args): ReactElement => {
 	const chartProps = useChartProps(defaultChartProps);
 	return (
 		<Chart {...chartProps}>
@@ -97,7 +97,7 @@ const TrendlineWithDialogsStory: ComponentStory<typeof Trendline> = (args): Reac
 	);
 };
 
-const TrendlineWithDialogsOnParentStory: ComponentStory<typeof Trendline> = (args): ReactElement => {
+const TrendlineWithDialogsOnParentStory: StoryFn<typeof Trendline> = (args): ReactElement => {
 	const chartProps = useChartProps(defaultChartProps);
 	return (
 		<Chart {...chartProps}>
