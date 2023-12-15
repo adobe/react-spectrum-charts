@@ -3,7 +3,6 @@ import TsconfigPathsPlugin from 'tsconfig-paths-webpack-plugin';
 
 const config: StorybookConfig = {
 	stories: ['../src/**/*.story.mdx', '../src/**/*.story.@(js|jsx|ts|tsx)'],
-	core: {},
 
 	addons: ['@storybook/addon-links', '@storybook/addon-essentials', 'storybook-dark-mode'],
 
