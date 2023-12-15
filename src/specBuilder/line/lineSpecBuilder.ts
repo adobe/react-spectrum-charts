@@ -17,7 +17,12 @@ import {
 	getMetricRanges,
 } from '@specBuilder/metricRange/metricRangeUtils';
 import { getFacetsFromProps } from '@specBuilder/specUtils';
-import { getTrendlineData, getTrendlineMarks, getTrendlineSignals } from '@specBuilder/trendline/trendlineUtils';
+import {
+	addTrendlineData,
+	getTrendlineMarks,
+	getTrendlineScales,
+	getTrendlineSignals,
+} from '@specBuilder/trendline/trendlineUtils';
 import { sanitizeMarkChildren, toCamelCase } from '@utils';
 import { produce } from 'immer';
 import { ColorScheme, LineProps, LineSpecProps, MarkChildElement } from 'types';
@@ -91,7 +96,7 @@ export const addData = produce<Data[], [LineSpecProps]>((data, props) => {
 		data.push(getLineHighlightedData(name, FILTERED_TABLE, hasPopover(children)));
 	}
 	if (staticPoint) data.push(getLineStaticPointData(name, staticPoint, FILTERED_TABLE));
-	data.push(...getTrendlineData(props));
+	addTrendlineData(data, props);
 });
 
 export const addSignals = produce<Signal[], [LineSpecProps]>((signals, props) => {
@@ -114,21 +119,22 @@ export const addSignals = produce<Signal[], [LineSpecProps]>((signals, props) =>
 	}
 });
 
-export const setScales = produce<Scale[], [LineSpecProps]>(
-	(scales, { metric, dimension, color, lineType, opacity, padding, scaleType, children, name }) => {
-		// add dimension scale
-		addContinuousDimensionScale(scales, { scaleType, dimension, padding });
-		// add color to the color domain
-		addFieldToFacetScaleDomain(scales, 'color', color);
-		// add lineType to the lineType domain
-		addFieldToFacetScaleDomain(scales, 'lineType', lineType);
-		// add opacity to the opacity domain
-		addFieldToFacetScaleDomain(scales, 'opacity', opacity);
-		// find the linear scale and add our fields to it
-		addMetricScale(scales, getMetricKeys(metric, children, name));
-		return scales;
-	}
-);
+export const setScales = produce<Scale[], [LineSpecProps]>((scales, props) => {
+	const { metric, dimension, color, lineType, opacity, padding, scaleType, children, name } = props;
+	// add dimension scale
+	addContinuousDimensionScale(scales, { scaleType, dimension, padding });
+	// add color to the color domain
+	addFieldToFacetScaleDomain(scales, 'color', color);
+	// add lineType to the lineType domain
+	addFieldToFacetScaleDomain(scales, 'lineType', lineType);
+	// add opacity to the opacity domain
+	addFieldToFacetScaleDomain(scales, 'opacity', opacity);
+	// find the linear scale and add our fields to it
+	addMetricScale(scales, getMetricKeys(metric, children, name));
+	// add trendline scales
+	scales.push(...getTrendlineScales(props));
+	return scales;
+});
 
 // The order that marks are added is important since it determines the draw order.
 export const addLineMarks = produce<Mark[], [LineSpecProps]>((marks, props) => {

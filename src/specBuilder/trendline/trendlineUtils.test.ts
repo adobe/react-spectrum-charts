@@ -23,15 +23,16 @@ import {
 	FILTERED_TABLE,
 	TRENDLINE_VALUE,
 } from '@constants';
+import { baseData } from '@specBuilder/specUtils';
 import { LineSpecProps } from 'types';
 import { Facet, From } from 'vega';
 
 import {
+	addTrendlineData,
 	applyTrendlinePropDefaults,
 	getMovingAverageTransform,
 	getPolynomialOrder,
 	getRegressionTransform,
-	getTrendlineData,
 	getTrendlineDimensionRangeTransforms,
 	getTrendlineMarks,
 	getTrendlineParamFormulaTransforms,
@@ -146,9 +147,9 @@ describe('getTrendlineMarks()', () => {
 	});
 });
 
-describe('getTrendlineData()', () => {
+describe('addTrendlineData()', () => {
 	test('should return data source for trendline', () => {
-		const trendlineData = getTrendlineData(defaultLineProps);
+		const trendlineData = addTrendlineData(baseData, defaultLineProps);
 		expect(trendlineData).toStrictEqual([
 			{
 				name: 'line0Trendline0_data',
@@ -167,7 +168,7 @@ describe('getTrendlineData()', () => {
 	});
 
 	test('should add data sources for hover interactiontions if ChartTooltip exists', () => {
-		const trendlineData = getTrendlineData({
+		const trendlineData = addTrendlineData(baseData, {
 			...defaultLineProps,
 			children: [createElement(Trendline, {}, createElement(ChartTooltip))],
 		});
@@ -177,7 +178,7 @@ describe('getTrendlineData()', () => {
 	});
 
 	test('should add _highResolutionData if doing a regression method', () => {
-		const trendlineData = getTrendlineData({
+		const trendlineData = addTrendlineData(baseData, {
 			...defaultLineProps,
 			children: [createElement(Trendline, { method: 'linear' })],
 		});
@@ -186,7 +187,7 @@ describe('getTrendlineData()', () => {
 	});
 
 	test('should add _params and _data if doing a regression method and there is a tooltip on the trendline', () => {
-		const trendlineData = getTrendlineData({
+		const trendlineData = addTrendlineData(baseData, {
 			...defaultLineProps,
 			children: [createElement(Trendline, { method: 'linear' }, createElement(ChartTooltip))],
 		});
@@ -196,7 +197,7 @@ describe('getTrendlineData()', () => {
 	});
 
 	test('should add window trandform and then dimension range filter transform for movingAverage', () => {
-		const trendlineData = getTrendlineData({
+		const trendlineData = addTrendlineData(baseData, {
 			...defaultLineProps,
 			children: [createElement(Trendline, { method: 'movingAverage-3', dimensionRange: [1, 2] })],
 		});
