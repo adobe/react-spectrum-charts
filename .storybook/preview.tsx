@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 
 import { DocsContainer } from '@storybook/addon-docs';
 import { Decorator, Parameters, Preview } from '@storybook/react';
@@ -39,7 +39,7 @@ const parameters: Parameters = {
 				theme: isDark ? themes.dark : themes.light,
 			};
 
-			return React.createElement(DocsContainer, props);
+			return <DocsContainer {...props} />;
 		},
 	},
 };
