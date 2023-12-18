@@ -50,6 +50,7 @@ import {
 	RegressionMethod,
 	RegressionTransform,
 	Scale,
+	ScaleType,
 	Signal,
 	SourceData,
 	Transforms,
@@ -223,6 +224,7 @@ const addNormalizedDimensionTransform = produce<Transforms[], [string]>((transfo
 export const getTrendlineData = (markProps: BarSpecProps | LineSpecProps): SourceData[] => {
 	const data: SourceData[] = [];
 	const { children, color, dimension, lineType, name: markName } = markProps;
+	const scaleType = 'scaleType' in markProps ? markProps.scaleType : undefined;
 	const trendlines = getTrendlines(children, markName);
 
 	const concatenatedTrendlineData: { name: string; source: string[] } = {
@@ -262,7 +264,7 @@ export const getTrendlineData = (markProps: BarSpecProps | LineSpecProps): Sourc
 						transform: [
 							...dimensionRangeTransforms,
 							getTrendlineParamLookupTransform(markProps, trendlineProps),
-							...getTrendlineParamFormulaTransforms(dimension, method),
+							...getTrendlineParamFormulaTransforms(dimension, method, scaleType),
 						],
 					}
 				);
@@ -365,22 +367,27 @@ const getTrendlineParamLookupTransform = (
  * @param method trenline method
  * @returns formula transorfm
  */
-export const getTrendlineParamFormulaTransforms = (dimension: string, method: TrendlineMethod): FormulaTransform[] => {
+export const getTrendlineParamFormulaTransforms = (
+	dimension: string,
+	method: TrendlineMethod,
+	scaleType: ScaleType | undefined
+): FormulaTransform[] => {
 	let expr = '';
+	const trendlineDimension = scaleType === 'time' ? `${dimension}Normalized` : dimension;
 	if (isPolynomialMethod(method)) {
 		const order = getPolynomialOrder(method);
 		expr = [
 			'datum.coef[0]',
 			...Array(order)
 				.fill(0)
-				.map((_e, i) => `datum.coef[${i + 1}] * pow(datum.${dimension}, ${i + 1})`),
+				.map((_e, i) => `datum.coef[${i + 1}] * pow(datum.${trendlineDimension}, ${i + 1})`),
 		].join(' + ');
 	} else if (method === 'exponential') {
-		expr = `datum.coef[0] + exp(datum.coef[1] * datum.${dimension})`;
+		expr = `datum.coef[0] + exp(datum.coef[1] * datum.${trendlineDimension})`;
 	} else if (method === 'logarithmic') {
-		expr = `datum.coef[0] + datum.coef[1] * log(datum.${dimension})`;
+		expr = `datum.coef[0] + datum.coef[1] * log(datum.${trendlineDimension})`;
 	} else if (method === 'power') {
-		expr = `datum.coef[0] * pow(datum.${dimension}, datum.coef[1])`;
+		expr = `datum.coef[0] * pow(datum.${trendlineDimension}, datum.coef[1])`;
 	}
 
 	if (!expr) return [];
