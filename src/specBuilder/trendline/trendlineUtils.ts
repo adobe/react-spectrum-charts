@@ -178,37 +178,24 @@ const getTrendlineHoverMarks = (lineProps: LineSpecProps, highlightRawPoint: boo
 	};
 };
 
+/**
+ * Adds the necessary data sources and transforms for the trendlines
+ * NOTE: this function mutates the data array because it gets called from within a data produce function
+ * @param data
+ * @param markProps
+ */
 export const addTrendlineData = (data: Data[], markProps: BarSpecProps | LineSpecProps) => {
 	const { dimension } = markProps;
 	data.push(...getTrendlineData(markProps));
+	const trendlines = getTrendlines(markProps.children, markProps.name);
 
-	if ('scaleType' in markProps && markProps.scaleType === 'time') {
-		// const tableDataIndex = data.findIndex((d) => d.name === FILTERED_TABLE);
+	// only need to add the normalized dimension transform if there is a regression trendline and the dimension is time
+	const hasRegressionTrendline = trendlines.some((trendline) => isRegressionMethod(trendline.method));
+	const hasTimeScale = 'scaleType' in markProps && markProps.scaleType === 'time';
+
+	if (hasRegressionTrendline && hasTimeScale) {
 		const tableData = getTableData(data);
 		tableData.transform = addNormalizedDimensionTransform(tableData.transform ?? [], dimension);
-		// if (!data[tableDataIndex].transform) {
-		// 	data[tableDataIndex].transform = [];
-		// }
-		// // make sure the normalized dimension hasn't been added yet
-		// if (
-		// 	(data[tableDataIndex].transform as Transforms[]).findIndex(
-		// 		(transform) => 'as' in transform && transform.as === `${dimension}Normalized`
-		// 	) === -1
-		// ) {
-		// 	const minimumDimension: JoinAggregateTransform = {
-		// 		type: 'joinaggregate',
-		// 		fields: [dimension],
-		// 		as: [`${dimension}Min`],
-		// 		ops: ['min'],
-		// 	};
-		// 	// normalizes the time data to number of days since the minimum date + 1 day
-		// 	const normalizedDimension: FormulaTransform = {
-		// 		type: 'formula',
-		// 		expr: `(datum.${dimension} - datum.${dimension}Min + 86400000) / 86400000`,
-		// 		as: `${dimension}Normalized`,
-		// 	};
-		// 	(data[tableDataIndex].transform as Transforms[]).push(minimumDimension, normalizedDimension);
-		// }
 	}
 };
 
@@ -259,6 +246,7 @@ export const getTrendlineData = (markProps: BarSpecProps | LineSpecProps): Sourc
 				],
 			});
 			if (hasInteractiveChildren(trendlineChildren)) {
+				console.log('add tooltip stuff');
 				data.push(
 					{
 						name: `${name}_params`,

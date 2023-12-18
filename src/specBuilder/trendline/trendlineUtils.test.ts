@@ -25,7 +25,7 @@ import {
 } from '@constants';
 import { baseData } from '@specBuilder/specUtils';
 import { LineSpecProps } from 'types';
-import { Facet, From } from 'vega';
+import { Data, Facet, From } from 'vega';
 
 import {
 	addTrendlineData,
@@ -54,6 +54,8 @@ const defaultLineProps: LineSpecProps = {
 	interactiveMarkName: undefined,
 	popoverMarkName: undefined,
 };
+
+const getDefaultData = (): Data[] => JSON.parse(JSON.stringify(baseData));
 
 describe('getTrendlines()', () => {
 	test('should return an array of trendline props', () => {
@@ -148,64 +150,97 @@ describe('getTrendlineMarks()', () => {
 });
 
 describe('addTrendlineData()', () => {
-	test('should return data source for trendline', () => {
-		const trendlineData = addTrendlineData(baseData, defaultLineProps);
-		expect(trendlineData).toStrictEqual([
-			{
-				name: 'line0Trendline0_data',
-				source: FILTERED_TABLE,
-				transform: [
-					{
-						as: [TRENDLINE_VALUE],
-						fields: [DEFAULT_METRIC],
-						groupby: [DEFAULT_COLOR],
-						ops: ['mean'],
-						type: 'joinaggregate',
-					},
-				],
-			},
-		]);
-	});
-
-	test('should add data sources for hover interactiontions if ChartTooltip exists', () => {
-		const trendlineData = addTrendlineData(baseData, {
-			...defaultLineProps,
-			children: [createElement(Trendline, {}, createElement(ChartTooltip))],
-		});
-		expect(trendlineData).toHaveLength(5);
-		expect(trendlineData[3]).toHaveProperty('name', 'line0_allTrendlineData');
-		expect(trendlineData[4]).toHaveProperty('name', 'line0Trendline_highlightedData');
-	});
-
-	test('should add _highResolutionData if doing a regression method', () => {
-		const trendlineData = addTrendlineData(baseData, {
+	test('should add normalized dimension for regression trendline', () => {
+		const trendlineData = getDefaultData();
+		addTrendlineData(trendlineData, {
 			...defaultLineProps,
 			children: [createElement(Trendline, { method: 'linear' })],
 		});
-		expect(trendlineData).toHaveLength(1);
-		expect(trendlineData[0]).toHaveProperty('name', 'line0Trendline0_highResolutionData');
+		expect(trendlineData[0].transform).toHaveLength(3);
+		expect(trendlineData[0].transform?.[1]).toStrictEqual({
+			as: ['datetimeMin'],
+			fields: ['datetime'],
+			ops: ['min'],
+			type: 'joinaggregate',
+		});
+		expect(trendlineData[0].transform?.[2]).toStrictEqual({
+			as: 'datetimeNormalized',
+			expr: '(datum.datetime - datum.datetimeMin + 86400000) / 86400000',
+			type: 'formula',
+		});
+	});
+
+	test('should not add normalized dimension in not regression trendline', () => {
+		const trendlineData = getDefaultData();
+		addTrendlineData(trendlineData, defaultLineProps);
+		expect(trendlineData[0].transform).toHaveLength(1);
+	});
+
+	test('should add datasource for trendline', () => {
+		const trendlineData = getDefaultData();
+		expect(trendlineData).toHaveLength(2);
+		addTrendlineData(trendlineData, defaultLineProps);
+		expect(trendlineData).toHaveLength(3);
+		expect(trendlineData[2]).toStrictEqual({
+			name: 'line0Trendline0_data',
+			source: FILTERED_TABLE,
+			transform: [
+				{
+					as: [TRENDLINE_VALUE],
+					fields: ['value'],
+					groupby: ['series'],
+					ops: ['mean'],
+					type: 'joinaggregate',
+				},
+			],
+		});
+	});
+
+	test('should add data sources for hover interactiontions if ChartTooltip exists', () => {
+		const trendlineData = getDefaultData();
+		addTrendlineData(trendlineData, {
+			...defaultLineProps,
+			children: [createElement(Trendline, {}, createElement(ChartTooltip))],
+		});
+		expect(trendlineData).toHaveLength(7);
+		expect(trendlineData[5]).toHaveProperty('name', 'line0_allTrendlineData');
+		expect(trendlineData[6]).toHaveProperty('name', 'line0Trendline_highlightedData');
+	});
+
+	test('should add _highResolutionData if doing a regression method', () => {
+		const trendlineData = getDefaultData();
+
+		addTrendlineData(trendlineData, {
+			...defaultLineProps,
+			children: [createElement(Trendline, { method: 'linear' })],
+		});
+		expect(trendlineData).toHaveLength(3);
+		expect(trendlineData[2]).toHaveProperty('name', 'line0Trendline0_highResolutionData');
 	});
 
 	test('should add _params and _data if doing a regression method and there is a tooltip on the trendline', () => {
-		const trendlineData = addTrendlineData(baseData, {
+		const trendlineData = getDefaultData();
+
+		addTrendlineData(trendlineData, {
 			...defaultLineProps,
 			children: [createElement(Trendline, { method: 'linear' }, createElement(ChartTooltip))],
 		});
-		expect(trendlineData).toHaveLength(5);
-		expect(trendlineData[1]).toHaveProperty('name', 'line0Trendline0_params');
-		expect(trendlineData[2]).toHaveProperty('name', 'line0Trendline0_data');
+		expect(trendlineData).toHaveLength(7);
+		expect(trendlineData[3]).toHaveProperty('name', 'line0Trendline0_params');
+		expect(trendlineData[4]).toHaveProperty('name', 'line0Trendline0_data');
 	});
 
 	test('should add window trandform and then dimension range filter transform for movingAverage', () => {
-		const trendlineData = addTrendlineData(baseData, {
+		const trendlineData = getDefaultData();
+		addTrendlineData(trendlineData, {
 			...defaultLineProps,
 			children: [createElement(Trendline, { method: 'movingAverage-3', dimensionRange: [1, 2] })],
 		});
-		expect(trendlineData).toHaveLength(1);
-		expect(trendlineData[0]).toHaveProperty('name', 'line0Trendline0_data');
-		expect(trendlineData[0].transform).toHaveLength(2);
-		expect(trendlineData[0].transform?.[0]).toHaveProperty('type', 'window');
-		expect(trendlineData[0].transform?.[1]).toHaveProperty('type', 'filter');
+		expect(trendlineData).toHaveLength(3);
+		expect(trendlineData[2]).toHaveProperty('name', 'line0Trendline0_data');
+		expect(trendlineData[2].transform).toHaveLength(2);
+		expect(trendlineData[2].transform?.[0]).toHaveProperty('type', 'window');
+		expect(trendlineData[2].transform?.[1]).toHaveProperty('type', 'filter');
 	});
 });
 
@@ -281,14 +316,14 @@ describe('getRegressionTransform()', () => {
 		expect(getRegressionTransform(defaultLineProps, 'polynomial-25', false)).toHaveProperty('order', 25);
 		expect(getRegressionTransform(defaultLineProps, 'power', false).order).toBeUndefined();
 	});
-	test('should use datetime0 as ouput dimension if scaleType is time', () => {
+	test('should use ${dimension}Normalized as ouput dimension if scaleType is time', () => {
 		const transform = getRegressionTransform(
 			{ ...defaultLineProps, dimension: 'x', scaleType: 'time' },
 			'linear',
 			false
 		);
 		expect(transform.as).toHaveLength(2);
-		expect(transform.as).toEqual(['datetime0', TRENDLINE_VALUE]);
+		expect(transform.as).toEqual(['xNormalized', TRENDLINE_VALUE]);
 	});
 	test('should have params on transform and no `as` property when params is true', () => {
 		const transform = getRegressionTransform(defaultLineProps, 'linear', true);
