@@ -212,6 +212,38 @@ describe('Chart', () => {
 				await expect(ref.current.download('My filename')).resolves.toBe('Chart downloaded as My filename.png');
 			}
 		});
+		test('getBase64Png returns an svg string', async () => {
+			const ref = createRef<ChartHandle>();
+			render(
+				<Chart data={data} ref={ref} width={200}>
+					<Line dimension="x" metric="y" />
+				</Chart>
+			);
+			if (ref.current) {
+				// should reject since the chart isn't done rendering
+				await expect(ref.current.getBase64Png()).rejects.toThrowError(
+					"There isn't a chart to get the PNG from, get base64 PNG failed"
+				);
+			}
+		});
+		test('getSvg returns an svg string', async () => {
+			const ref = createRef<ChartHandle>();
+			render(
+				<Chart data={data} ref={ref} width={200}>
+					<Line dimension="x" metric="y" />
+				</Chart>
+			);
+			if (ref.current) {
+				// should reject since the chart isn't done rendering
+				await expect(ref.current.getSvg()).rejects.toThrowError(
+					"There isn't a chart to get the SVG from, get SVG failed"
+				);
+				const chart = await findChart();
+				expect(chart).toBeInTheDocument();
+				// should resolve and return an svg string
+				await expect(ref.current.getSvg()).resolves.toMatch(/^<svg/i);
+			}
+		});
 	});
 
 	describe('getElement()', () => {

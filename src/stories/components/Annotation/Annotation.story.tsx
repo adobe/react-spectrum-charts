@@ -14,7 +14,7 @@ import React, { ReactElement } from 'react';
 import { Annotation } from '@components/Annotation/Annotation';
 import useChartProps from '@hooks/useChartProps';
 import { Bar, BarProps, Chart } from '@rsc';
-import { ComponentStory } from '@storybook/react';
+import { StoryFn } from '@storybook/react';
 
 export default {
 	title: 'RSC/Annotation',
@@ -43,7 +43,7 @@ const data = [
 
 const barArgs: BarProps = { dimension: 'browser', order: 'order', color: 'operatingSystem' };
 
-const BarAnnotationStory: ComponentStory<typeof Annotation> = (args): ReactElement => {
+const BarAnnotationStory: StoryFn<typeof Annotation> = (args): ReactElement => {
 	const chartProps = useChartProps({ data: data, width: 600, height: 600 });
 	return (
 		<Chart {...chartProps}>

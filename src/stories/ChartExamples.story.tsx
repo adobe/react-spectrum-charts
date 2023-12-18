@@ -28,7 +28,7 @@ import {
 	Trendline,
 	categorical16,
 } from '@rsc';
-import { ComponentStory } from '@storybook/react';
+import { StoryFn } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
 import { ChartData, ChartProps, Colors, Datum, LegendDescription, LegendLabel, SpectrumColor, SubLabel } from 'types';
 
@@ -95,7 +95,7 @@ const funnelTimeCompareLegendLabels: LegendLabel[] = [
 	{ seriesName: 'US | Last 4 weeks | retained', label: 'US | Last 4 weeks ' },
 ];
 
-const UserGrowthBarStory: ComponentStory<typeof Chart> = (args): ReactElement => {
+const UserGrowthBarStory: StoryFn<typeof Chart> = (args): ReactElement => {
 	const props = useChartProps(args);
 	return (
 		<Chart {...props}>
@@ -110,7 +110,7 @@ const UserGrowthBarStory: ComponentStory<typeof Chart> = (args): ReactElement =>
 	);
 };
 
-const UserGrowthBarTimeComparisonStory: ComponentStory<typeof Chart> = (args): ReactElement => {
+const UserGrowthBarTimeComparisonStory: StoryFn<typeof Chart> = (args): ReactElement => {
 	const props = useChartProps(args);
 	return (
 		<Chart {...props}>
@@ -135,7 +135,7 @@ const UserGrowthBarTimeComparisonStory: ComponentStory<typeof Chart> = (args): R
 	);
 };
 
-const UserGrowthAreaStory: ComponentStory<typeof Chart> = (args): ReactElement => {
+const UserGrowthAreaStory: StoryFn<typeof Chart> = (args): ReactElement => {
 	const props = useChartProps(args);
 	return (
 		<Chart {...props}>
@@ -194,7 +194,7 @@ const dialogCallback = (datum: Datum, close?: () => void) => {
 	);
 };
 
-const FunnelConversionStory: ComponentStory<typeof Chart> = (args): ReactElement => {
+const FunnelConversionStory: StoryFn<typeof Chart> = (args): ReactElement => {
 	const props = useChartProps(args);
 	return (
 		<Chart {...props}>
@@ -208,7 +208,7 @@ const FunnelConversionStory: ComponentStory<typeof Chart> = (args): ReactElement
 	);
 };
 
-const FunnelTimeComparisonStory: ComponentStory<typeof Chart> = (args): ReactElement => {
+const FunnelTimeComparisonStory: StoryFn<typeof Chart> = (args): ReactElement => {
 	const props = useChartProps(args);
 	return (
 		<Chart {...props}>
@@ -242,7 +242,7 @@ const FunnelTimeComparisonStory: ComponentStory<typeof Chart> = (args): ReactEle
 	);
 };
 
-const ReleaseImpactStory: ComponentStory<typeof Chart> = (args): ReactElement => {
+const ReleaseImpactStory: StoryFn<typeof Chart> = (args): ReactElement => {
 	const props = useChartProps(args);
 
 	const subLabels: SubLabel[] = [
@@ -316,7 +316,7 @@ const getReleaseImpactBar = (series: string, chartProps: ChartProps, isSingleSer
 	);
 };
 
-const ReleaseImpactBarStory: ComponentStory<typeof Chart> = (args): ReactElement => {
+const ReleaseImpactBarStory: StoryFn<typeof Chart> = (args): ReactElement => {
 	const [highlightedSeries, setHighlightedSeries]: [string, Dispatch<SetStateAction<string>>] = useState('');
 	const [hiddenSeries, setHiddenSeries]: [string[] | undefined, Dispatch<SetStateAction<string[] | undefined>>] =
 		useState();
@@ -420,7 +420,7 @@ const ReleaseImpactBarStory: ComponentStory<typeof Chart> = (args): ReactElement
 	);
 };
 
-const TrendsTimeComparisonLineStory: ComponentStory<typeof Chart> = (args): ReactElement => {
+const TrendsTimeComparisonLineStory: StoryFn<typeof Chart> = (args): ReactElement => {
 	const props = useChartProps(args);
 	const legendLabels = [
 		{ seriesName: 'add-freeform-table-0 | Previous 4 weeks', label: 'Add Freeform table | Previous 4 weeks' },
@@ -438,7 +438,7 @@ const TrendsTimeComparisonLineStory: ComponentStory<typeof Chart> = (args): Reac
 	);
 };
 
-const TrendsTimeComparisonBarStory: ComponentStory<typeof Chart> = (args): ReactElement => {
+const TrendsTimeComparisonBarStory: StoryFn<typeof Chart> = (args): ReactElement => {
 	const props = useChartProps(args);
 	const legendLabels = [
 		{ seriesName: 'add-freeform-table-0 | Previous 4 weeks', label: 'Add Freeform table | Previous 4 weeks' },
@@ -464,7 +464,7 @@ const TrendsTimeComparisonBarStory: ComponentStory<typeof Chart> = (args): React
 	);
 };
 
-const TrendsTimeComparisonStackedBarStory: ComponentStory<typeof Chart> = (args): ReactElement => {
+const TrendsTimeComparisonStackedBarStory: StoryFn<typeof Chart> = (args): ReactElement => {
 	const props = useChartProps(args);
 	const legendLabels = [
 		{ seriesName: 'add-freeform-table-0 | Previous 4 weeks', label: 'Add Freeform table | Previous 4 weeks' },
@@ -490,7 +490,7 @@ const TrendsTimeComparisonStackedBarStory: ComponentStory<typeof Chart> = (args)
 	);
 };
 
-const StackOverflowStory: ComponentStory<typeof Chart> = (args): ReactElement => {
+const StackOverflowStory: StoryFn<typeof Chart> = (args): ReactElement => {
 	const props = useChartProps(args);
 	return (
 		<Chart {...props}>

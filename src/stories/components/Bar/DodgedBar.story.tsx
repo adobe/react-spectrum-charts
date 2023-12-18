@@ -14,7 +14,7 @@ import React, { ReactElement, createElement } from 'react';
 import { Annotation } from '@components/Annotation';
 import useChartProps from '@hooks/useChartProps';
 import { Axis, Bar, Chart, ChartPopover, ChartTooltip, Legend, categorical6 } from '@rsc';
-import { ComponentStory } from '@storybook/react';
+import { StoryFn } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
 
 import { Content } from '@adobe/react-spectrum';
@@ -26,7 +26,7 @@ export default {
 	component: Bar,
 };
 
-const DodgedBarStory: ComponentStory<typeof Bar> = (args): ReactElement => {
+const DodgedBarStory: StoryFn<typeof Bar> = (args): ReactElement => {
 	const { color } = args;
 	const colors = Array.isArray(color)
 		? [
@@ -55,7 +55,7 @@ const dialogContent = (datum) => (
 	</Content>
 );
 
-const DodgedBarPopoverStory: ComponentStory<typeof Bar> = (args): ReactElement => {
+const DodgedBarPopoverStory: StoryFn<typeof Bar> = (args): ReactElement => {
 	const chartProps = useChartProps({ data: barSeriesData, width: 800, height: 600 });
 	return (
 		<Chart {...chartProps}>
@@ -70,7 +70,7 @@ const DodgedBarPopoverStory: ComponentStory<typeof Bar> = (args): ReactElement =
 	);
 };
 
-const DodgedBarLineTypeStory: ComponentStory<typeof Bar> = (args): ReactElement => {
+const DodgedBarLineTypeStory: StoryFn<typeof Bar> = (args): ReactElement => {
 	const chartProps = useChartProps({ data: barSeriesData, width: 800, height: 600 });
 	return (
 		<Chart {...chartProps}>

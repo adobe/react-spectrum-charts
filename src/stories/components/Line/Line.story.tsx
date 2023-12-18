@@ -16,7 +16,7 @@ import useChartProps from '@hooks/useChartProps';
 import { Axis, Bar, Chart, ChartPopover, ChartTooltip, Legend, Line } from '@rsc';
 import { workspaceTrendsData, workspaceTrendsDataWithVisiblePoints } from '@stories/data/data';
 import { formatTimestamp } from '@stories/storyUtils';
-import { ComponentStory } from '@storybook/react';
+import { StoryFn } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
 import { ChartProps } from 'types';
 
@@ -58,7 +58,7 @@ const historicalCompareData = [
 
 const defaultChartProps: ChartProps = { data: workspaceTrendsData, minWidth: 400, maxWidth: 800, height: 400 };
 
-const BasicLineStory: ComponentStory<typeof Line> = (args): ReactElement => {
+const BasicLineStory: StoryFn<typeof Line> = (args): ReactElement => {
 	const chartProps = useChartProps(defaultChartProps);
 	return (
 		<Chart {...chartProps}>
@@ -67,7 +67,7 @@ const BasicLineStory: ComponentStory<typeof Line> = (args): ReactElement => {
 		</Chart>
 	);
 };
-const LinearStory: ComponentStory<typeof Line> = (args): ReactElement => {
+const LinearStory: StoryFn<typeof Line> = (args): ReactElement => {
 	const chartProps = useChartProps(defaultChartProps);
 	return (
 		<Chart {...chartProps}>
@@ -80,7 +80,7 @@ const LinearStory: ComponentStory<typeof Line> = (args): ReactElement => {
 	);
 };
 
-const LineStory: ComponentStory<typeof Line> = (args): ReactElement => {
+const LineStory: StoryFn<typeof Line> = (args): ReactElement => {
 	const chartProps = useChartProps(defaultChartProps);
 	return (
 		<Chart {...chartProps}>
@@ -92,7 +92,7 @@ const LineStory: ComponentStory<typeof Line> = (args): ReactElement => {
 	);
 };
 
-const ComboStory: ComponentStory<typeof Line> = (args): ReactElement => {
+const ComboStory: StoryFn<typeof Line> = (args): ReactElement => {
 	const chartProps = useChartProps(defaultChartProps);
 	return (
 		<Chart {...chartProps}>
@@ -105,7 +105,7 @@ const ComboStory: ComponentStory<typeof Line> = (args): ReactElement => {
 	);
 };
 
-const HistoricalCompareStory: ComponentStory<typeof Line> = (args): ReactElement => {
+const HistoricalCompareStory: StoryFn<typeof Line> = (args): ReactElement => {
 	const chartProps = useChartProps({
 		...defaultChartProps,
 		data: historicalCompareData,
@@ -123,7 +123,7 @@ const HistoricalCompareStory: ComponentStory<typeof Line> = (args): ReactElement
 	);
 };
 
-const LineWithVisiblePointsStory: ComponentStory<typeof Line> = (args): ReactElement => {
+const LineWithVisiblePointsStory: StoryFn<typeof Line> = (args): ReactElement => {
 	const chartProps = useChartProps({ ...defaultChartProps, data: workspaceTrendsDataWithVisiblePoints });
 	return (
 		<Chart {...chartProps}>

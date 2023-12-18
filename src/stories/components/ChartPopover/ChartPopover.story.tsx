@@ -14,7 +14,7 @@ import React, { ReactElement } from 'react';
 import useChartProps from '@hooks/useChartProps';
 import { Area, Axis, Bar, Chart, ChartPopover, ChartProps, ChartTooltip, Legend, Line } from '@rsc';
 import { browserData as data } from '@stories/data/data';
-import { ComponentStory } from '@storybook/react';
+import { StoryFn } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
 
 import { Content } from '@adobe/react-spectrum';
@@ -42,7 +42,7 @@ const dialogContent = (datum) => (
 
 const defaultChartProps: ChartProps = { data, renderer: 'svg', width: 600 };
 
-const ChartPopoverCanvasStory: ComponentStory<typeof ChartPopover> = (args): ReactElement => {
+const ChartPopoverCanvasStory: StoryFn<typeof ChartPopover> = (args): ReactElement => {
 	const chartProps = useChartProps({ data, renderer: 'canvas', width: 600 });
 	return (
 		<Chart {...chartProps}>
@@ -54,7 +54,7 @@ const ChartPopoverCanvasStory: ComponentStory<typeof ChartPopover> = (args): Rea
 	);
 };
 
-const ChartPopoverSvgStory: ComponentStory<typeof ChartPopover> = (args): ReactElement => {
+const ChartPopoverSvgStory: StoryFn<typeof ChartPopover> = (args): ReactElement => {
 	const chartProps = useChartProps(defaultChartProps);
 	return (
 		<Chart {...chartProps}>
@@ -66,7 +66,7 @@ const ChartPopoverSvgStory: ComponentStory<typeof ChartPopover> = (args): ReactE
 	);
 };
 
-const ChartPopoverDodgedBarStory: ComponentStory<typeof ChartPopover> = (args): ReactElement => {
+const ChartPopoverDodgedBarStory: StoryFn<typeof ChartPopover> = (args): ReactElement => {
 	const chartProps = useChartProps(defaultChartProps);
 	return (
 		<Chart {...chartProps}>
@@ -78,7 +78,7 @@ const ChartPopoverDodgedBarStory: ComponentStory<typeof ChartPopover> = (args): 
 	);
 };
 
-const LineStory: ComponentStory<typeof ChartPopover> = (args): ReactElement => {
+const LineStory: StoryFn<typeof ChartPopover> = (args): ReactElement => {
 	const chartProps = useChartProps(defaultChartProps);
 	return (
 		<Chart {...chartProps}>
@@ -93,7 +93,7 @@ const LineStory: ComponentStory<typeof ChartPopover> = (args): ReactElement => {
 	);
 };
 
-const AreaStory: ComponentStory<typeof ChartPopover> = (args): ReactElement => {
+const AreaStory: StoryFn<typeof ChartPopover> = (args): ReactElement => {
 	const chartProps = useChartProps(defaultChartProps);
 	return (
 		<Chart {...chartProps}>

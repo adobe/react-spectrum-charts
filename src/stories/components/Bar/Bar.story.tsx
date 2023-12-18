@@ -14,7 +14,7 @@ import React, { ReactElement, createElement } from 'react';
 import { Annotation } from '@components/Annotation';
 import useChartProps from '@hooks/useChartProps';
 import { Axis, Bar, Chart } from '@rsc';
-import { ComponentStory } from '@storybook/react';
+import { StoryFn } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
 
 import { barData } from './data';
@@ -24,7 +24,7 @@ export default {
 	component: Bar,
 };
 
-const BarStory: ComponentStory<typeof Bar> = (args): ReactElement => {
+const BarStory: StoryFn<typeof Bar> = (args): ReactElement => {
 	const chartProps = useChartProps({ data: barData, width: 600, height: 600 });
 	return (
 		<Chart {...chartProps}>

@@ -13,7 +13,7 @@ import React, { ReactElement } from 'react';
 
 import useChartProps from '@hooks/useChartProps';
 import { Area, Axis, Chart, ChartProps } from '@rsc';
-import { ComponentStory } from '@storybook/react';
+import { StoryFn } from '@storybook/react';
 import { bindWithProps } from 'test-utils/bindWithProps';
 
 export default {
@@ -40,7 +40,7 @@ const data = [
 
 const defaultChartProps: ChartProps = { data, minWidth: 400, maxWidth: 800, height: 400 };
 
-const BasicStory: ComponentStory<typeof Area> = (args): ReactElement => {
+const BasicStory: StoryFn<typeof Area> = (args): ReactElement => {
 	const chartProps = useChartProps({ ...defaultChartProps });
 	return (
 		<Chart {...chartProps}>
@@ -49,7 +49,7 @@ const BasicStory: ComponentStory<typeof Area> = (args): ReactElement => {
 	);
 };
 
-const AreaTimeStory: ComponentStory<typeof Area> = (args): ReactElement => {
+const AreaTimeStory: StoryFn<typeof Area> = (args): ReactElement => {
 	const chartProps = useChartProps({ ...defaultChartProps });
 	return (
 		<Chart {...chartProps}>

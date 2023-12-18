@@ -13,7 +13,7 @@ import React, { ReactElement, useRef, useState } from 'react';
 
 import useChartProps from '@hooks/useChartProps';
 import { Axis, Chart, ChartHandle, Line } from '@rsc';
-import { ComponentStory } from '@storybook/react';
+import { StoryFn } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
 
 import { ActionButton, Content, Flex } from '@adobe/react-spectrum';
@@ -26,10 +26,17 @@ export default {
 	component: Chart,
 };
 
-const HandleStory = ({ variant }: { variant: 'copy' | 'download' }) => {
+const HandleStory = ({ variant }: { variant: 'copy' | 'download' | 'getBase64Png' | 'getSvg' }) => {
 	const [loading, setLoading] = useState(false);
 	const ref = useRef<ChartHandle>(null);
 	const props = useChartProps({ data });
+
+	const buttonText: Record<typeof variant, string> = {
+		copy: 'Copy to clipboard',
+		download: 'Download PNG',
+		getBase64Png: 'Get base64 PNG',
+		getSvg: 'Get SVG',
+	};
 	return (
 		<Content>
 			<Chart {...props} ref={ref} loading={loading}>
@@ -42,7 +49,7 @@ const HandleStory = ({ variant }: { variant: 'copy' | 'download' }) => {
 					onPress={() => ref?.current?.[variant]().then(console.log, console.warn)}
 					data-testid={variant}
 				>
-					{variant === 'copy' ? 'Copy to clipboard' : 'Download PNG'}
+					{buttonText[variant]}
 				</ActionButton>
 				<ActionButton onPress={() => setLoading(!loading)}>Toggle loading</ActionButton>
 			</Flex>
@@ -50,16 +57,25 @@ const HandleStory = ({ variant }: { variant: 'copy' | 'download' }) => {
 	);
 };
 
-const CopyStory: ComponentStory<typeof Chart> = (): ReactElement => {
+const CopyStory: StoryFn<typeof Chart> = (): ReactElement => {
 	return <HandleStory variant="copy" />;
 };
 
-const DownloadStory: ComponentStory<typeof Chart> = (): ReactElement => {
+const DownloadStory: StoryFn<typeof Chart> = (): ReactElement => {
 	return <HandleStory variant="download" />;
 };
 
+const PngStory: StoryFn<typeof Chart> = (): ReactElement => {
+	return <HandleStory variant="getBase64Png" />;
+};
+
+const SvgStory: StoryFn<typeof Chart> = (): ReactElement => {
+	return <HandleStory variant="getSvg" />;
+};
+
 const Copy = bindWithProps(CopyStory);
-
 const Download = bindWithProps(DownloadStory);
+const GetBase64Png = bindWithProps(PngStory);
+const GetSvg = bindWithProps(SvgStory);
 
-export { Copy, Download };
+export { Copy, Download, GetBase64Png, GetSvg };

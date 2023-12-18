@@ -14,7 +14,7 @@ import React, { ReactElement } from 'react';
 import { ReferenceLine } from '@components/ReferenceLine';
 import useChartProps from '@hooks/useChartProps';
 import { Axis, Chart } from '@rsc';
-import { ComponentStory } from '@storybook/react';
+import { StoryFn } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
 
 export default {
@@ -27,7 +27,7 @@ const data = [
 	{ x: 1, y: 1, series: 0 },
 ];
 
-const ReferenceLineStory: ComponentStory<typeof ReferenceLine> = (args): ReactElement => {
+const ReferenceLineStory: StoryFn<typeof ReferenceLine> = (args): ReactElement => {
 	const chartProps = useChartProps({ data, width: 600 });
 	return (
 		<Chart {...chartProps}>

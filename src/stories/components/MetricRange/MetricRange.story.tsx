@@ -14,7 +14,7 @@ import React, { ReactElement } from 'react';
 import useChartProps from '@hooks/useChartProps';
 import { Axis, Chart, ChartPopover, ChartProps, ChartTooltip, Legend, Line, MetricRange } from '@rsc';
 import { workspaceTrendsDataWithAnomalies, workspaceTrendsDataWithExtremeMetricRange } from '@stories/data/data';
-import { ComponentStory } from '@storybook/react';
+import { StoryFn } from '@storybook/react';
 import { bindWithProps } from 'test-utils/bindWithProps';
 
 import { Content } from '@adobe/react-spectrum';
@@ -31,7 +31,7 @@ const defaultChartProps: ChartProps = {
 	height: 400,
 };
 
-const MetricRangeStory: ComponentStory<typeof MetricRange> = (args): ReactElement => {
+const MetricRangeStory: StoryFn<typeof MetricRange> = (args): ReactElement => {
 	const chartProps = useChartProps(defaultChartProps);
 	return (
 		<Chart {...chartProps}>
@@ -45,7 +45,7 @@ const MetricRangeStory: ComponentStory<typeof MetricRange> = (args): ReactElemen
 	);
 };
 
-const MetricRangeWithStaticPointsStory: ComponentStory<typeof MetricRange> = (args): ReactElement => {
+const MetricRangeWithStaticPointsStory: StoryFn<typeof MetricRange> = (args): ReactElement => {
 	const chartProps = useChartProps(defaultChartProps);
 	return (
 		<Chart {...chartProps}>
@@ -59,7 +59,7 @@ const MetricRangeWithStaticPointsStory: ComponentStory<typeof MetricRange> = (ar
 	);
 };
 
-const MetricRangeWithPopoverStory: ComponentStory<typeof MetricRange> = (args): ReactElement => {
+const MetricRangeWithPopoverStory: StoryFn<typeof MetricRange> = (args): ReactElement => {
 	const chartProps = useChartProps(defaultChartProps);
 	return (
 		<Chart {...chartProps}>
@@ -75,7 +75,7 @@ const MetricRangeWithPopoverStory: ComponentStory<typeof MetricRange> = (args): 
 	);
 };
 
-const MetricRangeWithScaledAxisStory: ComponentStory<typeof MetricRange> = (args): ReactElement => {
+const MetricRangeWithScaledAxisStory: StoryFn<typeof MetricRange> = (args): ReactElement => {
 	const chartProps = useChartProps({
 		...defaultChartProps,
 		data: workspaceTrendsDataWithExtremeMetricRange,

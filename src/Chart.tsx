@@ -13,7 +13,14 @@ import { FC, MutableRefObject, forwardRef, useEffect, useMemo, useRef, useState 
 
 import { EmptyState } from '@components/EmptyState';
 import { LoadingState } from '@components/LoadingState';
-import { DEFAULT_BACKGROUND_COLOR, DEFAULT_COLOR_SCHEME, DEFAULT_LINE_TYPES, LEGEND_TOOLTIP_DELAY, MARK_ID, SERIES_ID } from '@constants';
+import {
+	DEFAULT_BACKGROUND_COLOR,
+	DEFAULT_COLOR_SCHEME,
+	DEFAULT_LINE_TYPES,
+	LEGEND_TOOLTIP_DELAY,
+	MARK_ID,
+	SERIES_ID,
+} from '@constants';
 import useChartImperativeHandle from '@hooks/useChartImperativeHandle';
 import useChartWidth from '@hooks/useChartWidth';
 import useElementSize from '@hooks/useElementSize';
