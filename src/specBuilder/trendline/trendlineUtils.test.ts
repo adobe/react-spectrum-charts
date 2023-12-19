@@ -21,6 +21,7 @@ import {
 	DEFAULT_CONTINUOUS_DIMENSION,
 	DEFAULT_METRIC,
 	FILTERED_TABLE,
+	MS_PER_DAY,
 	TRENDLINE_VALUE,
 } from '@constants';
 import { baseData } from '@specBuilder/specUtils';
@@ -165,7 +166,7 @@ describe('addTrendlineData()', () => {
 		});
 		expect(trendlineData[0].transform?.[2]).toStrictEqual({
 			as: 'datetimeNormalized',
-			expr: '(datum.datetime - datum.datetimeMin + 86400000) / 86400000',
+			expr: `(datum.datetime - datum.datetimeMin + ${MS_PER_DAY}) / ${MS_PER_DAY}`,
 			type: 'formula',
 		});
 	});

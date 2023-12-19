@@ -10,7 +10,7 @@
  * governing permissions and limitations under the License.
  */
 import { Trendline } from '@components/Trendline';
-import { FILTERED_TABLE, LINEAR_PADDING, MARK_ID, TRENDLINE_VALUE } from '@constants';
+import { FILTERED_TABLE, LINEAR_PADDING, MARK_ID, MS_PER_DAY, TRENDLINE_VALUE } from '@constants';
 import { getSeriesIdTransform, getTableData } from '@specBuilder/data/dataUtils';
 import { getLineHoverMarks, getLineStrokeOpacity } from '@specBuilder/line/lineMarkUtils';
 import { LineMarkProps, getXProductionRule } from '@specBuilder/line/lineUtils';
@@ -210,7 +210,7 @@ const addNormalizedDimensionTransform = produce<Transforms[], [string]>((transfo
 		});
 		transforms.push({
 			type: 'formula',
-			expr: `(datum.${dimension} - datum.${dimension}Min + 86400000) / 86400000`,
+			expr: `(datum.${dimension} - datum.${dimension}Min + ${MS_PER_DAY}) / ${MS_PER_DAY}`,
 			as: `${dimension}Normalized`,
 		});
 	}
