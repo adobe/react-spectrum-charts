@@ -13,7 +13,7 @@ import React, { ReactElement } from "react";
 
 import useChartProps from '@hooks/useChartProps';
 import { {{name}}, Chart } from "@rsc";
-import { ComponentStory } from "@storybook/react";
+import { StoryFn } from "@storybook/react";
 import { bindWithProps } from '@test-utils';
 
 export default {
@@ -21,7 +21,7 @@ export default {
     component: {{name}},
 };
 
-const {{name}}Story: ComponentStory<typeof {{name}}> = (args): ReactElement => {
+const {{name}}Story: StoryFn<typeof {{name}}> = (args): ReactElement => {
 	// TODO: add data
     const chartProps = useChartProps({ data: [], width: 600 });
 

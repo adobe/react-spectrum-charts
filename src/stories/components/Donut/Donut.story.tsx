@@ -13,7 +13,7 @@ import React, { ReactElement } from 'react';
 
 import useChartProps from '@hooks/useChartProps';
 import { Chart, ChartPopover, ChartTooltip, Donut, Legend } from '@rsc';
-import { ComponentStory } from '@storybook/react';
+import { StoryFn } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
 
 import { Content } from '@adobe/react-spectrum';
@@ -25,7 +25,7 @@ export default {
 	component: Donut,
 };
 
-const DonutStory: ComponentStory<typeof Donut> = (args): ReactElement => {
+const DonutStory: StoryFn<typeof Donut> = (args): ReactElement => {
 	const chartProps = useChartProps({ data: basicDonutData, width: 350, height: 350 });
 	return (
 		<Chart {...chartProps}>
@@ -59,7 +59,7 @@ const dialogContent = (datum) => {
 	);
 };
 
-const DonutTooltipStory: ComponentStory<typeof Donut> = (args): ReactElement => {
+const DonutTooltipStory: StoryFn<typeof Donut> = (args): ReactElement => {
 	const chartProps = useChartProps({ data: basicDonutData, width: 350, height: 350 });
 	return (
 		<Chart {...chartProps}>
@@ -78,7 +78,7 @@ WithPopover.args = {
 	color: 'id',
 };
 
-const DonutLegendStory: ComponentStory<typeof Donut> = (args): ReactElement => {
+const DonutLegendStory: StoryFn<typeof Donut> = (args): ReactElement => {
 	const chartProps = useChartProps({ data: basicDonutData, width: 400, height: 350 });
 	return (
 		<Chart {...chartProps}>
@@ -101,7 +101,7 @@ WithLegend.args = {
 	color: 'id',
 };
 
-const EverythingBagel: ComponentStory<typeof Donut> = (args): ReactElement => {
+const EverythingBagel: StoryFn<typeof Donut> = (args): ReactElement => {
 	const chartProps = useChartProps({ data: basicDonutData, width: 400, height: 350 });
 	return (
 		<Chart {...chartProps}>
@@ -130,7 +130,7 @@ Everything.args = {
 	holeRatio: 0.8,
 };
 
-const SliversStory: ComponentStory<typeof Donut> = (args): ReactElement => {
+const SliversStory: StoryFn<typeof Donut> = (args): ReactElement => {
 	const chartProps = useChartProps({ data: sliveredDonutData, width: 350, height: 350 });
 	return (
 		<Chart {...chartProps}>
@@ -152,7 +152,7 @@ Slivers.args = {
 	holeRatio: 0.8,
 };
 
-const BooleanStory: ComponentStory<typeof Donut> = (args): ReactElement => {
+const BooleanStory: StoryFn<typeof Donut> = (args): ReactElement => {
 	const positiveBooleanProps = useChartProps({
 		data: booleanDonutData,
 		width: 350,
