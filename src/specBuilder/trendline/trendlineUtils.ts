@@ -248,7 +248,6 @@ export const getTrendlineData = (markProps: BarSpecProps | LineSpecProps): Sourc
 				],
 			});
 			if (hasInteractiveChildren(trendlineChildren)) {
-				console.log('add tooltip stuff');
 				data.push(
 					{
 						name: `${name}_params`,
