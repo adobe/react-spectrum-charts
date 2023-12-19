@@ -14,7 +14,7 @@ import React, { ReactElement } from 'react';
 import { TABLE } from '@constants';
 import useChartProps from '@hooks/useChartProps';
 import { Chart } from '@rsc';
-import { ComponentStory } from '@storybook/react';
+import { StoryFn } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
 
 import { barData } from './components/Bar/data';
@@ -26,7 +26,7 @@ export default {
 	component: Chart,
 };
 
-const UnsafeVegaSpecStory: ComponentStory<typeof Chart> = (args): ReactElement => {
+const UnsafeVegaSpecStory: StoryFn<typeof Chart> = (args): ReactElement => {
 	const chartProps = useChartProps(args);
 	return <Chart {...chartProps} />;
 };

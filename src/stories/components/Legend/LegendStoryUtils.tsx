@@ -14,9 +14,9 @@ import React, { ReactElement } from 'react';
 import useChartProps from '@hooks/useChartProps';
 import { Axis, Bar, Chart, Legend, LegendProps } from '@rsc';
 import { browserData as data } from '@stories/data/data';
-import { ComponentStory } from '@storybook/react';
+import { StoryFn } from '@storybook/react';
 
-export const LegendBarStory: ComponentStory<typeof Legend> = (args): ReactElement => {
+export const LegendBarStory: StoryFn<typeof Legend> = (args): ReactElement => {
 	const chartProps = useChartProps({ data, width: 700 });
 	return (
 		<Chart {...chartProps}>
@@ -28,7 +28,7 @@ export const LegendBarStory: ComponentStory<typeof Legend> = (args): ReactElemen
 	);
 };
 
-export const LegendBarHighlightedSeriesStory: ComponentStory<typeof Legend> = (args): ReactElement => {
+export const LegendBarHighlightedSeriesStory: StoryFn<typeof Legend> = (args): ReactElement => {
 	const chartProps = useChartProps({ data, width: 700, highlightedSeries: 'Mac' });
 	return (
 		<Chart {...chartProps}>
@@ -40,7 +40,7 @@ export const LegendBarHighlightedSeriesStory: ComponentStory<typeof Legend> = (a
 	);
 };
 
-export const LegendBarHiddenSeriesStory: ComponentStory<typeof Legend> = (args): ReactElement => {
+export const LegendBarHiddenSeriesStory: StoryFn<typeof Legend> = (args): ReactElement => {
 	const chartProps = useChartProps({ data, width: 700, hiddenSeries: ['Mac'] });
 	return (
 		<Chart {...chartProps}>
@@ -52,7 +52,7 @@ export const LegendBarHiddenSeriesStory: ComponentStory<typeof Legend> = (args):
 	);
 };
 
-export const LegendDisconnectedStory: ComponentStory<typeof Legend> = (args): ReactElement => {
+export const LegendDisconnectedStory: StoryFn<typeof Legend> = (args): ReactElement => {
 	const chartProps = useChartProps({ data, width: 700, height: 50 });
 	return (
 		<Chart {...chartProps}>

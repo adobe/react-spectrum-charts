@@ -15,7 +15,7 @@ import { DEFAULT_GRANULARITY } from '@constants';
 import useChartProps from '@hooks/useChartProps';
 import { Axis, Bar, Chart, ChartTooltip, Line } from '@rsc';
 import { stockPriceData, workspaceTrendsData } from '@stories/data/data';
-import { ComponentStory } from '@storybook/react';
+import { StoryFn } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
 
 import { barData } from '../Bar/data';
@@ -31,7 +31,7 @@ const data = [
 	{ x: 1, y: 1, series: 0 },
 ];
 
-const AxisStory: ComponentStory<typeof Axis> = (args): ReactElement => {
+const AxisStory: StoryFn<typeof Axis> = (args): ReactElement => {
 	const chartProps = useChartProps({ data, width: 600 });
 	return (
 		<Chart {...chartProps}>
@@ -40,7 +40,7 @@ const AxisStory: ComponentStory<typeof Axis> = (args): ReactElement => {
 	);
 };
 
-const TimeAxisStory: ComponentStory<typeof Axis> = (args): ReactElement => {
+const TimeAxisStory: StoryFn<typeof Axis> = (args): ReactElement => {
 	return (
 		<Chart data={timeData[args.granularity ?? DEFAULT_GRANULARITY]} width={600}>
 			<Axis {...args} />
@@ -49,7 +49,7 @@ const TimeAxisStory: ComponentStory<typeof Axis> = (args): ReactElement => {
 	);
 };
 
-const SubLabelStory: ComponentStory<typeof Axis> = (args): ReactElement => {
+const SubLabelStory: StoryFn<typeof Axis> = (args): ReactElement => {
 	return (
 		<Chart data={barData} width={600}>
 			<Axis {...args} />
@@ -58,7 +58,7 @@ const SubLabelStory: ComponentStory<typeof Axis> = (args): ReactElement => {
 	);
 };
 
-const LinearAxisStory: ComponentStory<typeof Axis> = (args): ReactElement => {
+const LinearAxisStory: StoryFn<typeof Axis> = (args): ReactElement => {
 	const chartProps = useChartProps({ data: workspaceTrendsData, width: 600 });
 	return (
 		<Chart {...chartProps}>
@@ -69,7 +69,7 @@ const LinearAxisStory: ComponentStory<typeof Axis> = (args): ReactElement => {
 	);
 };
 
-const NonLinearAxisStory: ComponentStory<typeof Axis> = (args): ReactElement => {
+const NonLinearAxisStory: StoryFn<typeof Axis> = (args): ReactElement => {
 	const chartProps = useChartProps({ data: workspaceTrendsData, width: 600 });
 	return (
 		<Chart {...chartProps}>
@@ -80,7 +80,7 @@ const NonLinearAxisStory: ComponentStory<typeof Axis> = (args): ReactElement => 
 	);
 };
 
-const SparkLineStory: ComponentStory<typeof Axis> = (args): ReactElement => {
+const SparkLineStory: StoryFn<typeof Axis> = (args): ReactElement => {
 	const chartProps = useChartProps({ data: stockPriceData, width: 200, height: 100 });
 	return (
 		<Chart {...chartProps}>

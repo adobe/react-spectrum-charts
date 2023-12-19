@@ -22,7 +22,7 @@ import React, { ReactElement } from 'react';
 
 import useChartProps from '@hooks/useChartProps';
 import { Axis, AxisAnnotation, Chart, ChartPopover, Legend, Line } from '@rsc';
-import { ComponentStory } from '@storybook/react';
+import { StoryFn } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
 import { ChartProps } from 'types';
 
@@ -58,7 +58,7 @@ const popoverContent = (datum) => (
 
 const defaultChartLineProps: ChartProps = { data: annotationAxisData, minWidth: 400, maxWidth: 800, height: 400 };
 
-const BasicAxisAnnotationStory: ComponentStory<typeof AxisAnnotation> = (args): ReactElement => {
+const BasicAxisAnnotationStory: StoryFn<typeof AxisAnnotation> = (args): ReactElement => {
 	const chartProps = useChartProps(defaultChartLineProps);
 	return (
 		<Chart {...chartProps}>
@@ -71,7 +71,7 @@ const BasicAxisAnnotationStory: ComponentStory<typeof AxisAnnotation> = (args): 
 	);
 };
 
-const LegendAxisAnnotationStory: ComponentStory<typeof AxisAnnotation> = (args): ReactElement => {
+const LegendAxisAnnotationStory: StoryFn<typeof AxisAnnotation> = (args): ReactElement => {
 	const chartProps = useChartProps(defaultChartLineProps);
 	return (
 		<Chart {...chartProps}>
@@ -85,7 +85,7 @@ const LegendAxisAnnotationStory: ComponentStory<typeof AxisAnnotation> = (args):
 	);
 };
 
-const PopoverAxisAnnotationStory: ComponentStory<typeof AxisAnnotation> = (args): ReactElement => {
+const PopoverAxisAnnotationStory: StoryFn<typeof AxisAnnotation> = (args): ReactElement => {
 	const chartProps = useChartProps(defaultChartLineProps);
 	return (
 		<Chart {...chartProps}>
