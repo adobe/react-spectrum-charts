@@ -59,3 +59,6 @@ export const LEGEND_TOOLTIP_DELAY = 350;
 // signal names
 // 'backgroundColor' is an undocumented protected signal name used by vega
 export const BACKGROUND_COLOR = 'chartBackgroundColor';
+
+// time constants
+export const MS_PER_DAY = 86400000;
