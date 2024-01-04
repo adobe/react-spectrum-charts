@@ -61,61 +61,34 @@ export const getTimeLabelFormats = (granularity: Granularity): [string, string, 
 	}
 };
 
-// /**
-//  * gets the baseline or alignment for the axis label based on the position
-//  * @param labelAlign
-//  * @param position
-//  * @returns
-//  */
-// export const getLabelBaselineAlign = (
-// 	labelAlign: LabelAlign | undefined,
-// 	position: Position
-// ): Align | Baseline | undefined => {
-// 	switch (position) {
-// 		case 'top':
-// 		case 'bottom':
-// 			return getLabelAlign(labelAlign, position);
-// 		case 'left':
-// 		case 'right':
-// 			return getLabelBaseline(labelAlign, position);
-// 	}
-// };
-
-// /**
-//  * gets the vega labelAlign value based on the labelAlign value
-//  * @param labelAlign
-//  * @returns
-//  */
-// export const getLabelAlign = (
-// 	labelAlign: LabelAlign | undefined,
-// 	position: Position,
-// 	// labelOrientaion: Orientation,
-// 	vegaLabelAlign?: Align
-// ): Align | undefined => {
-// 	if (vegaLabelAlign) return vegaLabelAlign;
-// 	if (!labelAlign) return;
-// 	if (['top', 'bottom'].includes(position)) {
-// 		switch (labelAlign) {
-// 			case 'start':
-// 				return 'left';
-// 			case 'end':
-// 				return 'right';
-// 			case 'center':
-// 			default:
-// 				return 'center';
-// 		}
-// 	}
-// };
-
+/**
+ * label align can be set in a controlled manner using the `labels` and `subLabels` props
+ * This function will return the correct align and baseline encodings based on the labelAlign and position
+ * @param position
+ * @param labelOrientaion
+ * @param labelAlign
+ * @returns align and baseline
+ */
 export const getControlledLabelAnchorValues = (
 	position: Position,
 	labelOrientaion: Orientation,
 	labelAlign?: LabelAlign
 ): { align: Align | undefined; baseline: Baseline | undefined } => {
+	// if there isn't a labelAlign, we don't want to set the align or baseline
 	if (!labelAlign) return { align: undefined, baseline: undefined };
 	return getLabelAnchor(position, labelOrientaion, labelAlign);
 };
 
+/**
+ * gets the values for labelAlign and labelBaseline based on the `labelAlign`, `labelOrientation`, and `position` props
+ * vegaLabelAlign and vegaLabelBaseline props can be used to override these values
+ * @param position
+ * @param labelOrientaion
+ * @param labelAlign
+ * @param vegaLabelAlign
+ * @param vegaLabelBaseline
+ * @returns labelAlign and labelBaseline
+ */
 export const getLabelAnchorValues = (
 	position: Position,
 	labelOrientaion: Orientation,
@@ -124,12 +97,20 @@ export const getLabelAnchorValues = (
 	vegaLabelBaseline?: Baseline
 ): { labelAlign: Align; labelBaseline: Baseline } => {
 	const { align, baseline } = getLabelAnchor(position, labelOrientaion, labelAlign);
+	// if vegaLabelAlign or vegaLabelBaseline are set, we want to use those values instead of the calculated values
 	return {
 		labelAlign: vegaLabelAlign ?? align,
 		labelBaseline: vegaLabelBaseline ?? baseline,
 	};
 };
 
+/**
+ * gets the label align and baseline values based on the `labelAlign`, `labelOrientation`, and `position` props
+ * @param position
+ * @param labelOrientaion
+ * @param labelAlign
+ * @returns align and baseline
+ */
 export const getLabelAnchor = (
 	position: Position,
 	labelOrientaion: Orientation,
@@ -170,16 +151,25 @@ export const getLabelAnchor = (
 			align = 'left';
 		}
 	}
-	console.log('align', align);
-	console.log('baseline', baseline);
 	return { align, baseline };
 };
 
-const labelIsParallelToAxis = (position: Position, labelOrientaion: Orientation): boolean => {
+/**
+ * determines if the label orientation is parallel to the axis direction
+ * @param position
+ * @param labelOrientaion
+ * @returns boolean
+ */
+export const labelIsParallelToAxis = (position: Position, labelOrientaion: Orientation): boolean => {
 	const axisOrientation = ['top', 'bottom'].includes(position) ? 'horizontal' : 'vertical';
 	return axisOrientation === labelOrientaion;
 };
 
+/**
+ * gets the label angle based on the `labelOrientation` prop
+ * @param labelOrientaion
+ * @returns labelAngle: number
+ */
 export const getLabelAngle = (labelOrientaion: Orientation): number => {
 	if (labelOrientaion === 'horizontal') {
 		return 0;

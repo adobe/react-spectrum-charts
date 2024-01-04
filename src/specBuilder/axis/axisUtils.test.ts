@@ -9,8 +9,8 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
 import { SubLabel } from 'types';
+
 import { defaultAxisProps, defaultXBaselineMark, defaultYBaselineMark } from './axisTestUtils';
 import { getBaselineRule, getDefaultAxis, getSubLabelAxis } from './axisUtils';
 
@@ -46,15 +46,17 @@ describe('getDefaultAxis()', () => {
 					index: 0,
 					labelAlign: 'center',
 					labelFontWeight: 'normal',
+					labelOrientation: 'horizontal',
 					name: 'axis0',
 					position: 'left',
 					scaleType: 'linear',
+					subLabels: [],
 					ticks: false,
 					title: 'Users',
 					tickMinStep: 5,
 				},
-				'yLinear',
-			),
+				'yLinear'
+			)
 		).toStrictEqual({
 			scale: 'yLinear',
 			orient: 'left',
@@ -66,7 +68,8 @@ describe('getDefaultAxis()', () => {
 			tickMinStep: 5,
 			title: 'Users',
 			labels: true,
-			labelAlign: undefined,
+			labelAlign: 'right',
+			labelAngle: 0,
 			labelBaseline: 'middle',
 			labelFontWeight: 'normal',
 			labelOffset: undefined,
@@ -101,15 +104,17 @@ describe('getDefaultAxis()', () => {
 					index: 0,
 					labelAlign: 'center',
 					labelFontWeight: 'normal',
+					labelOrientation: 'horizontal',
 					name: 'axis0',
 					position: 'left',
 					scaleType: 'point',
+					subLabels: [],
 					ticks: false,
 					title: 'Users',
 					tickMinStep: 5,
 				},
-				'yLinear',
-			),
+				'yLinear'
+			)
 		).toStrictEqual({
 			scale: 'yLinear',
 			orient: 'left',
@@ -121,7 +126,8 @@ describe('getDefaultAxis()', () => {
 			tickMinStep: undefined,
 			title: 'Users',
 			labels: true,
-			labelAlign: undefined,
+			labelAlign: 'right',
+			labelAngle: 0,
 			labelBaseline: 'middle',
 			labelFontWeight: 'normal',
 			labelOffset: undefined,
@@ -146,7 +152,7 @@ describe('getDefaultAxis()', () => {
 	test('should set values to empty array if hideDefaultLabels === true', () => {
 		expect(getDefaultAxis({ ...defaultAxisProps, hideDefaultLabels: true }, 'xLinear')).toHaveProperty(
 			'labels',
-			false,
+			false
 		);
 	});
 });
@@ -160,7 +166,7 @@ describe('getSubLabelAxis()', () => {
 		expect(getSubLabelAxis({ ...defaultAxisProps, subLabels }, 'xLinear')).toHaveProperty('labelPadding', 24);
 		expect(getSubLabelAxis({ ...defaultAxisProps, subLabels, ticks: true }, 'xLinear')).toHaveProperty(
 			'labelPadding',
-			32,
+			32
 		);
 	});
 

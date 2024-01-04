@@ -43,6 +43,7 @@ import {
 	getScale,
 	getSubLabelAxis,
 	getTimeAxes,
+	hasSubLabels,
 } from './axisUtils';
 
 export const addAxis = produce<Spec, [AxisProps & { colorScheme?: ColorScheme; index?: number }]>(
@@ -62,6 +63,7 @@ export const addAxis = produce<Spec, [AxisProps & { colorScheme?: ColorScheme; i
 			labelOrientation = DEFAULT_LABEL_ORIENTATION,
 			position,
 			range,
+			subLabels = [],
 			ticks = false,
 			...props
 		}
@@ -89,6 +91,7 @@ export const addAxis = produce<Spec, [AxisProps & { colorScheme?: ColorScheme; i
 			position,
 			name: `axis${index}`,
 			range,
+			subLabels,
 			ticks,
 			scaleType: scaleType ?? 'linear',
 			...props,
@@ -135,7 +138,7 @@ export const addAxisSignals = produce<Signal[], [AxisSpecProps]>((signals, props
 		// add all the label properties to a signal so that the axis encoding can use it to style each label correctly
 		signals.push(getGenericSignal(`${name}_labels`, getLabelSignalValue(labels, position, labelOrientation)));
 	}
-	if (subLabels?.length) {
+	if (hasSubLabels(props)) {
 		// add all the sublabel properties to a signal so that the axis encoding can use it to style each sublabel correctly
 		signals.push(
 			getGenericSignal(
@@ -143,7 +146,6 @@ export const addAxisSignals = produce<Signal[], [AxisSpecProps]>((signals, props
 				subLabels.map((label) => ({
 					...label,
 					// convert label align to vega align
-					// align: getLabelBaselineAlign(label.align, position),
 					...getControlledLabelAnchorValues(position, labelOrientation, label.align),
 				}))
 			)
@@ -184,8 +186,7 @@ export const addAxes = produce<Axis[], [AxisSpecProps & { scaleName: string; opp
 		const newAxes: Axis[] = [];
 		// adds all the trellis axis props if this is a trellis axis
 		axisProps = { ...axisProps, ...getTrellisAxisProps(scaleName) };
-		const { baseline, labelAlign, labelFontWeight, labelFormat, labelOrientation, name, position, subLabels } =
-			axisProps;
+		const { baseline, labelAlign, labelFontWeight, labelFormat, labelOrientation, name, position } = axisProps;
 		if (labelFormat === 'time') {
 			// time axis actually needs two axes. A primary and secondary.
 			newAxes.push(...getTimeAxes(scaleName, axisProps));
@@ -210,7 +211,7 @@ export const addAxes = produce<Axis[], [AxisSpecProps & { scaleName: string; opp
 			}
 
 			// if sublabels exist, create a new axis for the sub labels
-			if (subLabels?.length) {
+			if (hasSubLabels(axisProps)) {
 				axis.titlePadding = 24;
 
 				// add sublabel axis

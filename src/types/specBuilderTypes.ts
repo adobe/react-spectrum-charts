@@ -47,6 +47,7 @@ type AxisPropsWithDefaults =
 	| 'labelAlign'
 	| 'labelFontWeight'
 	| 'labelOrientation'
+	| 'subLabels'
 	| 'ticks';
 
 /**

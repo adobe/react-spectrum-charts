@@ -48,4 +48,26 @@ Basic.args = {
 	baseline: true,
 };
 
-export { Basic };
+const LabelAlign = bindWithProps(AxisLabelStory);
+LabelAlign.args = {
+	labelAlign: 'start',
+	labelFontWeight: DEFAULT_LABEL_FONT_WEIGHT,
+	labelFormat: 'linear',
+	labelOrientation: 'horizontal',
+	position: 'bottom',
+	ticks: true,
+	baseline: true,
+};
+
+const LabelOrientation = bindWithProps(AxisLabelStory);
+LabelOrientation.args = {
+	labelOrientation: 'vertical',
+	labelAlign: 'center',
+	labelFontWeight: DEFAULT_LABEL_FONT_WEIGHT,
+	labelFormat: 'linear',
+	position: 'bottom',
+	ticks: true,
+	baseline: true,
+};
+
+export { Basic, LabelAlign, LabelOrientation };

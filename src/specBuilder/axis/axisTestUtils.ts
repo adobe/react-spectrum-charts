@@ -59,5 +59,6 @@ export const defaultAxisProps: AxisSpecProps = {
 	labelOrientation: DEFAULT_LABEL_ORIENTATION,
 	position: 'bottom',
 	scaleType: 'linear',
+	subLabels: [],
 	ticks: false,
 };

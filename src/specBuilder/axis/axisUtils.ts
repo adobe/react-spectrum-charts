@@ -54,7 +54,7 @@ export const getDefaultAxis = (
 	tickCount: getTickCount(position, grid),
 	tickMinStep: scaleType !== 'linear' ? undefined : tickMinStep, //only supported for linear scales
 	title,
-	labelAngle: getLabelAngle(labelOrientation, position),
+	labelAngle: getLabelAngle(labelOrientation),
 	labelFontWeight,
 	labelOffset: getLabelOffset(labelAlign, scaleName, vegaLabelOffset),
 	labelPadding: vegaLabelPadding,
@@ -101,7 +101,7 @@ export const getTimeAxes = (
 			title,
 			format: secondaryFormat,
 			formatType: 'time',
-			labelAngle: getLabelAngle(labelOrientation, position),
+			labelAngle: getLabelAngle(labelOrientation),
 			...getLabelAnchorValues(position, labelOrientation, labelAlign, vegaLabelAlign, vegaLabelBaseline),
 		},
 		{
@@ -112,7 +112,7 @@ export const getTimeAxes = (
 			formatType: 'time',
 			labelOverlap: 'greedy',
 			labelFontWeight,
-			labelAngle: getLabelAngle(labelOrientation, position),
+			labelAngle: getLabelAngle(labelOrientation),
 			...getLabelAnchorValues(position, labelOrientation, labelAlign, vegaLabelAlign, vegaLabelBaseline),
 			encode: {
 				labels: {
@@ -314,4 +314,9 @@ export const getBaselineRule = (baselineOffset: number, position: Position): Mar
 			},
 		},
 	};
+};
+
+export const hasSubLabels = ({ subLabels, labelOrientation }: AxisSpecProps) => {
+	// subLabels are only supported for horizontal axis labels
+	return Boolean(subLabels.length && labelOrientation === 'horizontal');
 };
