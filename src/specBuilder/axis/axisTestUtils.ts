@@ -57,6 +57,7 @@ export const defaultAxisProps: AxisSpecProps = {
 	labelAlign: DEFAULT_LABEL_ALIGN,
 	labelFontWeight: DEFAULT_LABEL_FONT_WEIGHT,
 	labelOrientation: DEFAULT_LABEL_ORIENTATION,
+	labels: [],
 	position: 'bottom',
 	scaleType: 'linear',
 	subLabels: [],

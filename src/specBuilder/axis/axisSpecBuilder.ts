@@ -61,6 +61,7 @@ export const addAxis = produce<Spec, [AxisProps & { colorScheme?: ColorScheme; i
 			labelAlign = DEFAULT_LABEL_ALIGN,
 			labelFontWeight = DEFAULT_LABEL_FONT_WEIGHT,
 			labelOrientation = DEFAULT_LABEL_ORIENTATION,
+			labels = [],
 			position,
 			range,
 			subLabels = [],
@@ -88,6 +89,7 @@ export const addAxis = produce<Spec, [AxisProps & { colorScheme?: ColorScheme; i
 			labelAlign,
 			labelFontWeight,
 			labelOrientation,
+			labels,
 			position,
 			name: `axis${index}`,
 			range,
@@ -194,8 +196,8 @@ export const addAxes = produce<Axis[], [AxisSpecProps & { scaleName: string; opp
 			const axis = getDefaultAxis(axisProps, scaleName);
 
 			// if labels exist, add them to the axis
-			if (axisProps.labels?.length) {
-				const labels = axisProps.labels as Label[];
+			if (axisProps.labels.length) {
+				const labels = axisProps.labels;
 				const signalName = `${name}_labels`;
 				axis.values = labels.map((label) => getLabelValue(label));
 				axis.encode = {

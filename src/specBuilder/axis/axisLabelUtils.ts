@@ -300,28 +300,10 @@ export const getEncodedLabelAnchor = (
 ): EncodeEntry => {
 	const baseTestString = `indexof(pluck(${signalName}, 'value'), datum.value) !== -1 && ${signalName}[indexof(pluck(${signalName}, 'value'), datum.value)]`;
 	const baseSignalString = `${signalName}[indexof(pluck(${signalName}, 'value'), datum.value)]`;
-	// const productionRule: ProductionRule<ScaledValueRef<Baseline>> = [
-	// 	{
-	// 		test: `indexof(pluck(${signalName}, 'value'), datum.value) !== -1 && ${signalName}[indexof(pluck(${signalName}, 'value'), datum.value)].align`,
-	// 		signal: `${signalName}[indexof(pluck(${signalName}, 'value'), datum.value)].align`,
-	// 	},
-	// ];
 	const { align, baseline } = getLabelAnchor(position, labelOrientation, defaultLabelAlign);
 
 	return {
 		align: [{ test: `${baseTestString}.align`, signal: `${baseSignalString}.align` }, { value: align }],
 		baseline: [{ test: `${baseTestString}.baseline`, signal: `${baseSignalString}.baseline` }, { value: baseline }],
 	};
-	// switch (position) {
-	// 	case 'top':
-	// 	case 'bottom':
-	// 		return {
-	// 			align: [...productionRule, { value: getLabelAlign(defaultLabelAlign, position) }],
-	// 		};
-	// 	case 'left':
-	// 	case 'right':
-	// 		return {
-	// 			baseline: [...productionRule, { value: getLabelBaseline(defaultLabelAlign, position) }],
-	// 		};
-	// }
 };

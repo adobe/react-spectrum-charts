@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { AxisSpecProps, Position, SubLabel } from 'types';
+import { AxisSpecProps, Position } from 'types';
 import { Axis, Mark, Scale, SignalRef } from 'vega';
 
 import {
@@ -136,7 +136,7 @@ export const getTimeAxes = (
  */
 export const getSubLabelAxis = (axisProps: AxisSpecProps, scaleName: string): Axis => {
 	const { labelAlign, labelFontWeight, labelOrientation, name, position, ticks } = axisProps;
-	const subLabels = axisProps.subLabels as SubLabel[];
+	const subLabels = axisProps.subLabels;
 	const signalName = `${name}_subLabels`;
 	const subLabelValues = subLabels.map((label) => label.value);
 
