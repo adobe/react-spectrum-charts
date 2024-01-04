@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { Granularity, Label, LabelAlign, LabelFormat, Position } from 'types';
+import { Granularity, Label, LabelAlign, LabelFormat, Orientation, Position } from 'types';
 import {
 	Align,
 	Baseline,
@@ -18,7 +18,6 @@ import {
 	GuideEncodeEntry,
 	NumberValue,
 	ProductionRule,
-	ScaledValueRef,
 	TextEncodeEntry,
 	TextValueRef,
 	TickCount,
@@ -62,49 +61,131 @@ export const getTimeLabelFormats = (granularity: Granularity): [string, string, 
 	}
 };
 
-/**
- * gets the baseline or alignment for the axis label based on the position
- * @param labelAlign
- * @param position
- * @returns
- */
-export const getLabelBaselineAlign = (
-	labelAlign: LabelAlign | undefined,
-	position: Position
-): Align | Baseline | undefined => {
-	switch (position) {
-		case 'top':
-		case 'bottom':
-			return getLabelAlign(labelAlign, position);
-		case 'left':
-		case 'right':
-			return getLabelBaseline(labelAlign, position);
-	}
+// /**
+//  * gets the baseline or alignment for the axis label based on the position
+//  * @param labelAlign
+//  * @param position
+//  * @returns
+//  */
+// export const getLabelBaselineAlign = (
+// 	labelAlign: LabelAlign | undefined,
+// 	position: Position
+// ): Align | Baseline | undefined => {
+// 	switch (position) {
+// 		case 'top':
+// 		case 'bottom':
+// 			return getLabelAlign(labelAlign, position);
+// 		case 'left':
+// 		case 'right':
+// 			return getLabelBaseline(labelAlign, position);
+// 	}
+// };
+
+// /**
+//  * gets the vega labelAlign value based on the labelAlign value
+//  * @param labelAlign
+//  * @returns
+//  */
+// export const getLabelAlign = (
+// 	labelAlign: LabelAlign | undefined,
+// 	position: Position,
+// 	// labelOrientaion: Orientation,
+// 	vegaLabelAlign?: Align
+// ): Align | undefined => {
+// 	if (vegaLabelAlign) return vegaLabelAlign;
+// 	if (!labelAlign) return;
+// 	if (['top', 'bottom'].includes(position)) {
+// 		switch (labelAlign) {
+// 			case 'start':
+// 				return 'left';
+// 			case 'end':
+// 				return 'right';
+// 			case 'center':
+// 			default:
+// 				return 'center';
+// 		}
+// 	}
+// };
+
+export const getControlledLabelAnchorValues = (
+	position: Position,
+	labelOrientaion: Orientation,
+	labelAlign?: LabelAlign
+): { align: Align | undefined; baseline: Baseline | undefined } => {
+	if (!labelAlign) return { align: undefined, baseline: undefined };
+	return getLabelAnchor(position, labelOrientaion, labelAlign);
 };
 
-/**
- * gets the vega labelAlign value based on the labelAlign value
- * @param labelAlign
- * @returns
- */
-export const getLabelAlign = (
-	labelAlign: LabelAlign | undefined,
+export const getLabelAnchorValues = (
 	position: Position,
-	vegaLabelAlign?: Align
-): Align | undefined => {
-	if (vegaLabelAlign) return vegaLabelAlign;
-	if (!labelAlign) return;
-	if (['top', 'bottom'].includes(position)) {
-		switch (labelAlign) {
-			case 'start':
-				return 'left';
-			case 'end':
-				return 'right';
-			case 'center':
-			default:
-				return 'center';
+	labelOrientaion: Orientation,
+	labelAlign: LabelAlign,
+	vegaLabelAlign?: Align,
+	vegaLabelBaseline?: Baseline
+): { labelAlign: Align; labelBaseline: Baseline } => {
+	const { align, baseline } = getLabelAnchor(position, labelOrientaion, labelAlign);
+	return {
+		labelAlign: vegaLabelAlign ?? align,
+		labelBaseline: vegaLabelBaseline ?? baseline,
+	};
+};
+
+export const getLabelAnchor = (
+	position: Position,
+	labelOrientaion: Orientation,
+	labelAlign: LabelAlign
+): { align: Align; baseline: Baseline } => {
+	let align: Align;
+	let baseline: Baseline;
+	if (labelIsParallelToAxis(position, labelOrientaion)) {
+		// label direction is parallel to the axis
+		// for these, the align depends on the labelAlign and the baseline depends on the position
+		const labelAlignToAlign: { [key in LabelAlign]: Align } = {
+			start: 'left',
+			center: 'center',
+			end: 'right',
+		};
+		align = labelAlignToAlign[labelAlign];
+		if (['top', 'left'].includes(position)) {
+			// baseline is bottom for top and left axes
+			baseline = 'bottom';
+		} else {
+			// baseline is top for bottom and right axes
+			baseline = 'top';
+		}
+	} else {
+		// label direction is perpendicular to the axis
+		// for these, baseline depends on the labelAlign and align depends on the position
+		const labelAlignToBaseline: { [key in LabelAlign]: Baseline } = {
+			start: 'top',
+			center: 'middle',
+			end: 'bottom',
+		};
+		baseline = labelAlignToBaseline[labelAlign];
+		if (['bottom', 'left'].includes(position)) {
+			// bottom and left will always have the anchor on the right side of the text
+			align = 'right';
+		} else {
+			// top and right will always have the anchor on the left side of the text
+			align = 'left';
 		}
 	}
+	console.log('align', align);
+	console.log('baseline', baseline);
+	return { align, baseline };
+};
+
+const labelIsParallelToAxis = (position: Position, labelOrientaion: Orientation): boolean => {
+	const axisOrientation = ['top', 'bottom'].includes(position) ? 'horizontal' : 'vertical';
+	return axisOrientation === labelOrientaion;
+};
+
+export const getLabelAngle = (labelOrientaion: Orientation): number => {
+	if (labelOrientaion === 'horizontal') {
+		return 0;
+	}
+	// default vertical label should read from bottom to top
+	return 270;
 };
 
 /**
@@ -187,6 +268,7 @@ export const getAxisLabelsEncoding = (
 	labelAlign: LabelAlign,
 	labelFontWeight: FontWeight,
 	labelKey: 'label' | 'subLabel',
+	labelOrientation: Orientation,
 	position: Position,
 	signalName: string
 ): GuideEncodeEntry<TextEncodeEntry> => ({
@@ -206,7 +288,7 @@ export const getAxisLabelsEncoding = (
 			// default to the primary label font weight
 			{ value: labelFontWeight },
 		],
-		...getEncodedLabelBaselineAlign(position, signalName, labelAlign),
+		...getEncodedLabelAnchor(position, signalName, labelOrientation, labelAlign),
 	},
 });
 
@@ -220,27 +302,36 @@ export const getAxisLabelsEncoding = (
  * @param defaultLabelAlign
  * @returns align | baseline
  */
-export const getEncodedLabelBaselineAlign = (
+export const getEncodedLabelAnchor = (
 	position: Position,
 	signalName: string,
+	labelOrientation: Orientation,
 	defaultLabelAlign: LabelAlign
 ): EncodeEntry => {
-	const productionRule: ProductionRule<ScaledValueRef<Baseline>> = [
-		{
-			test: `indexof(pluck(${signalName}, 'value'), datum.value) !== -1 && ${signalName}[indexof(pluck(${signalName}, 'value'), datum.value)].align`,
-			signal: `${signalName}[indexof(pluck(${signalName}, 'value'), datum.value)].align`,
-		},
-	];
-	switch (position) {
-		case 'top':
-		case 'bottom':
-			return {
-				align: [...productionRule, { value: getLabelAlign(defaultLabelAlign, position) }],
-			};
-		case 'left':
-		case 'right':
-			return {
-				baseline: [...productionRule, { value: getLabelBaseline(defaultLabelAlign, position) }],
-			};
-	}
+	const baseTestString = `indexof(pluck(${signalName}, 'value'), datum.value) !== -1 && ${signalName}[indexof(pluck(${signalName}, 'value'), datum.value)]`;
+	const baseSignalString = `${signalName}[indexof(pluck(${signalName}, 'value'), datum.value)]`;
+	// const productionRule: ProductionRule<ScaledValueRef<Baseline>> = [
+	// 	{
+	// 		test: `indexof(pluck(${signalName}, 'value'), datum.value) !== -1 && ${signalName}[indexof(pluck(${signalName}, 'value'), datum.value)].align`,
+	// 		signal: `${signalName}[indexof(pluck(${signalName}, 'value'), datum.value)].align`,
+	// 	},
+	// ];
+	const { align, baseline } = getLabelAnchor(position, labelOrientation, defaultLabelAlign);
+
+	return {
+		align: [{ test: `${baseTestString}.align`, signal: `${baseSignalString}.align` }, { value: align }],
+		baseline: [{ test: `${baseTestString}.baseline`, signal: `${baseSignalString}.baseline` }, { value: baseline }],
+	};
+	// switch (position) {
+	// 	case 'top':
+	// 	case 'bottom':
+	// 		return {
+	// 			align: [...productionRule, { value: getLabelAlign(defaultLabelAlign, position) }],
+	// 		};
+	// 	case 'left':
+	// 	case 'right':
+	// 		return {
+	// 			baseline: [...productionRule, { value: getLabelBaseline(defaultLabelAlign, position) }],
+	// 		};
+	// }
 };

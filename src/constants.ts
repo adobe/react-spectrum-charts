@@ -20,6 +20,7 @@ export const DEFAULT_CONTINUOUS_DIMENSION = 'datetime';
 export const DEFAULT_GRANULARITY = 'day';
 export const DEFAULT_LABEL_ALIGN = 'center';
 export const DEFAULT_LABEL_FONT_WEIGHT = 'normal';
+export const DEFAULT_LABEL_ORIENTATION = 'horizontal';
 export const DEFAULT_LINE_TYPES: LineType[] = ['solid', 'dashed', 'dotted', 'dotDash', 'longDash', 'twoDash'];
 export const DEFAULT_METRIC = 'value';
 export const DEFAULT_SECONDARY_COLOR = 'subSeries';

@@ -9,8 +9,13 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
-import { DEFAULT_COLOR_SCHEME, DEFAULT_GRANULARITY, DEFAULT_LABEL_ALIGN, DEFAULT_LABEL_FONT_WEIGHT } from '@constants';
+import {
+	DEFAULT_COLOR_SCHEME,
+	DEFAULT_GRANULARITY,
+	DEFAULT_LABEL_ALIGN,
+	DEFAULT_LABEL_FONT_WEIGHT,
+	DEFAULT_LABEL_ORIENTATION,
+} from '@constants';
 import { AxisSpecProps } from 'types';
 import { Mark } from 'vega';
 
@@ -51,6 +56,7 @@ export const defaultAxisProps: AxisSpecProps = {
 	index: 0,
 	labelAlign: DEFAULT_LABEL_ALIGN,
 	labelFontWeight: DEFAULT_LABEL_FONT_WEIGHT,
+	labelOrientation: DEFAULT_LABEL_ORIENTATION,
 	position: 'bottom',
 	scaleType: 'linear',
 	ticks: false,
