@@ -10,10 +10,10 @@
  * governing permissions and limitations under the License.
  */
 
-import glob from 'fast-glob';
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
+/* eslint-disable @typescript-eslint/no-var-requires */
+const glob = require('fast-glob');
+const fs = require('fs');
+const path = require('path');
 
 const HEADER = `Copyright ${new Date().getFullYear()} Adobe. All rights reserved.
 This file is licensed to you under the Apache License, Version 2.0 (the "License");
@@ -45,10 +45,6 @@ const COMMENT_STYLES = {
 	'.md': HTML_COMMENT_STYLE,
 	'.mdx': HTML_COMMENT_STYLE,
 };
-
-const __filename = fileURLToPath(import.meta.url);
-
-const __dirname = path.dirname(__filename);
 
 let files = glob.sync(path.dirname(__dirname) + '/**/*.{js,ts,tsx,mdx,md,css}', {
 	ignore: [

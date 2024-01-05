@@ -21,7 +21,7 @@
 	"scripts": {
 		"build": "webpack --config webpack.config.js",
 		"build:storybook": "storybook build -o ./dist-storybook --quiet",
-		"copyrights": "babel-node --presets @babel/env ./scripts/addHeaders.js",
+		"copyrights": "node ./scripts/addHeaders.js",
 		"g": "plop component",
 		"generate": "plop component",
 		"lint": "eslint src --ext .ts,.tsx,.js,.jsx",
