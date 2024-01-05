@@ -9,11 +9,11 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
 import { FILTERED_TABLE } from '@constants';
 import { addDomainFields, getScaleIndexByName } from '@specBuilder/scale/scaleSpecBuilder';
 import { BarSpecProps } from 'types';
 import { GroupMark, Mark, Scale } from 'vega';
+
 import { getDodgedDimensionEncodings, getTrellisedDimensionEncodings, isDodgedAndStacked } from './barUtils';
 
 /**
@@ -95,7 +95,11 @@ export interface BarTrellisProperties {
 	paddingInner: number;
 }
 
-export const getTrellisProperties = ({ trellisOrientation, name, trellisPadding }: BarSpecProps): BarTrellisProperties => {
+export const getTrellisProperties = ({
+	trellisOrientation,
+	name,
+	trellisPadding,
+}: BarSpecProps): BarTrellisProperties => {
 	const axis = trellisOrientation === 'horizontal' ? 'x' : 'y';
 
 	return {

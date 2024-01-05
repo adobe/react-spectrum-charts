@@ -12,6 +12,7 @@
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { DEFAULT_LABEL_FONT_WEIGHT } from '@constants';
+
 import { ReferenceLineProps } from '../../types';
 
 export function ReferenceLine({ value, labelFontWeight = DEFAULT_LABEL_FONT_WEIGHT }: ReferenceLineProps) {

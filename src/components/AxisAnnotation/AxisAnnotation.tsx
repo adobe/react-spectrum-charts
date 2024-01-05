@@ -12,6 +12,7 @@
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { DEFAULT_AXIS_ANNOTATION_COLOR, DEFAULT_AXIS_ANNOTATION_OFFSET } from '@constants';
+
 import { AxisAnnotationProps } from '../../types';
 
 export function AxisAnnotation({

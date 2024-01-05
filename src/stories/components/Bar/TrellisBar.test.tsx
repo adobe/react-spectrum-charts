@@ -96,19 +96,19 @@ describe('TrellisBar', () => {
 			render(<WithCustomTrellisPadding {...WithCustomTrellisPadding.args} />);
 			const chart = await findChart();
 			expect(chart).toBeInTheDocument();
-	
+
 			// get bars
 			const bars = await findAllMarksByGroupName(chart, 'bar0');
 			expect(bars.length).toEqual(90);
 		});
-	
+
 		test('WithCustomTrellisPadding has correct padding for vertical trellis', async () => {
 			render(<WithCustomTrellisPadding {...WithCustomTrellisPadding.args} />);
 			const chart = await findChart();
 			expect(chart).toBeInTheDocument();
 			// Get subcharts
 			const trellisCharts = await findAllMarksByGroupName(chart, 'yTrellisGroup', 'g');
-	
+
 			// Y Trellis Group should have Y Translate. X Translate should be 0.
 			// First chart should not have been tra.
 			expect(trellisCharts[0]).toHaveAttribute('transform', 'translate(0,0)');
@@ -117,12 +117,12 @@ describe('TrellisBar', () => {
 		});
 
 		test('WithCustomTrellisPadding has correct padding for horizontal trellis', async () => {
-			render(<WithCustomTrellisPadding {...WithCustomTrellisPadding.args} trellisOrientation='horizontal' />);
+			render(<WithCustomTrellisPadding {...WithCustomTrellisPadding.args} trellisOrientation="horizontal" />);
 			const chart = await findChart();
 			expect(chart).toBeInTheDocument();
 			// Get subcharts
 			const trellisCharts = await findAllMarksByGroupName(chart, 'xTrellisGroup', 'g');
-	
+
 			// X Trellis Group should have X Translate. Y Translate should be 0.
 			// First chart should not have been transformed.
 			expect(trellisCharts[0]).toHaveAttribute('transform', 'translate(0,0)');

@@ -9,12 +9,12 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
-import { getTrellisProperties, getTrellisGroupMark, getTrellisedEncodeEntries, isTrellised } from './trellisedBarUtils';
-import { defaultBarProps } from './barTestUtils';
+import { FILTERED_TABLE, TABLE, TRELLIS_PADDING } from '@constants';
 import { BarSpecProps } from 'types';
 import { Scale } from 'vega';
-import { FILTERED_TABLE, TABLE, TRELLIS_PADDING } from '@constants';
+
+import { defaultBarProps } from './barTestUtils';
+import { getTrellisGroupMark, getTrellisProperties, getTrellisedEncodeEntries, isTrellised } from './trellisedBarUtils';
 
 const defaultTrellisProps: BarSpecProps = { ...defaultBarProps, trellis: 'trellisProperty' };
 const defaultRepeatedScale: Scale = { name: 'xLinear', type: 'linear', domain: { data: TABLE, field: 'x' } };

@@ -9,7 +9,6 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
 import { DEFAULT_COLOR, DEFAULT_COLOR_SCHEME, DEFAULT_SECONDARY_COLOR, TABLE } from '@constants';
 import { Data, Legend, LegendEncode, Scale, Spec, SymbolEncodeEntry } from 'vega';
 
@@ -127,7 +126,7 @@ describe('addLegend()', () => {
 
 		test('descriptions, should add encoding', () => {
 			expect(
-				addLegend(defaultSpec, { descriptions: [{ seriesName: 'test', description: 'test' }] }),
+				addLegend(defaultSpec, { descriptions: [{ seriesName: 'test', description: 'test' }] })
 			).toStrictEqual({
 				...defaultSpec,
 				data: [defaultLegendAggregateData],
@@ -163,7 +162,7 @@ describe('addLegend()', () => {
 						{ seriesName: 1, label: 'Any event' },
 						{ seriesName: 2, label: 'Any event' },
 					],
-				}).legends?.[0].encode,
+				}).legends?.[0].encode
 			).toStrictEqual({
 				entries: {
 					name: 'legend0_legendEntry',
@@ -194,7 +193,7 @@ describe('addLegend()', () => {
 						{ seriesName: 1, label: 'Any event' },
 						{ seriesName: 2, label: 'Any event' },
 					],
-				}).legends?.[0].encode,
+				}).legends?.[0].encode
 			).toStrictEqual({
 				...defaultHighlightLegendEncoding,
 				labels: {
@@ -221,7 +220,7 @@ describe('addLegend()', () => {
 						{ seriesName: 1, label: 'Any event' },
 						{ seriesName: 2, label: 'Any event' },
 					],
-				}).signals,
+				}).signals
 			).toStrictEqual([
 				{
 					name: 'legendLabels',
@@ -295,7 +294,7 @@ describe('formatFacetRefsWithPresets()', () => {
 				{ value: 'dotDash' },
 				{ value: 'XL' },
 				{ value: 'wedge' },
-				DEFAULT_COLOR_SCHEME,
+				DEFAULT_COLOR_SCHEME
 			);
 		expect(formattedColor).toStrictEqual({ value: 'rgb(255, 155, 136)' });
 		expect(formattedLineType).toStrictEqual({ value: [2, 3, 7, 4] });
@@ -319,7 +318,7 @@ describe('formatFacetRefsWithPresets()', () => {
 				{ value: [3, 4, 5, 6] },
 				{ value: 10 },
 				{ value: svgPath },
-				DEFAULT_COLOR_SCHEME,
+				DEFAULT_COLOR_SCHEME
 			);
 		expect(formattedColor).toStrictEqual({ value: 'rgb(50, 50, 50)' });
 		expect(formattedLineType).toStrictEqual({ value: [3, 4, 5, 6] });
@@ -332,22 +331,20 @@ describe('addSignals()', () => {
 	test('should add highlightedSeries signal if highlight is true', () => {
 		expect(
 			addSignals([], { ...defaultLegendProps, highlight: true }).find(
-				(signal) => signal.name === 'highlightedSeries',
-			),
+				(signal) => signal.name === 'highlightedSeries'
+			)
 		).toBeDefined();
 	});
 	test('should add legendLabels signal if legendLabels are defined', () => {
 		expect(
-			addSignals([], { ...defaultLegendProps, legendLabels: [] }).find(
-				(signal) => signal.name === 'legendLabels',
-			),
+			addSignals([], { ...defaultLegendProps, legendLabels: [] }).find((signal) => signal.name === 'legendLabels')
 		).toBeDefined();
 	});
 	test('should NOT add hiddenSeries signal if isToggleable is false', () => {
 		expect(
 			addSignals([], { ...defaultLegendProps, isToggleable: false }).find(
-				(signal) => signal.name === 'hiddenSeries',
-			),
+				(signal) => signal.name === 'hiddenSeries'
+			)
 		).toBeUndefined();
 	});
 });
