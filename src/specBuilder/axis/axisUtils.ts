@@ -9,13 +9,13 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
-import { AxisSpecProps, Position, SubLabel } from 'types';
+import { AxisSpecProps, Position } from 'types';
 import { Axis, Mark, Scale, SignalRef } from 'vega';
+
 import {
 	getAxisLabelsEncoding,
-	getLabelAlign,
-	getLabelBaseline,
+	getLabelAnchorValues,
+	getLabelAngle,
 	getLabelFormat,
 	getLabelOffset,
 	getTimeLabelFormats,
@@ -34,6 +34,7 @@ export const getDefaultAxis = (
 		labelAlign,
 		labelFontWeight,
 		labelFormat,
+		labelOrientation,
 		position,
 		scaleType,
 		ticks,
@@ -44,7 +45,7 @@ export const getDefaultAxis = (
 		vegaLabelOffset,
 		vegaLabelPadding,
 	}: AxisSpecProps,
-	scaleName: string,
+	scaleName: string
 ): Axis => ({
 	scale: scaleName,
 	orient: position,
@@ -53,12 +54,12 @@ export const getDefaultAxis = (
 	tickCount: getTickCount(position, grid),
 	tickMinStep: scaleType !== 'linear' ? undefined : tickMinStep, //only supported for linear scales
 	title,
-	labelAlign: getLabelAlign(labelAlign, position, vegaLabelAlign),
-	labelBaseline: getLabelBaseline(labelAlign, position, vegaLabelBaseline),
+	labelAngle: getLabelAngle(labelOrientation),
 	labelFontWeight,
 	labelOffset: getLabelOffset(labelAlign, scaleName, vegaLabelOffset),
 	labelPadding: vegaLabelPadding,
 	labels: !hideDefaultLabels,
+	...getLabelAnchorValues(position, labelOrientation, labelAlign, vegaLabelAlign, vegaLabelBaseline),
 	encode: {
 		labels: {
 			update: {
@@ -81,12 +82,13 @@ export const getTimeAxes = (
 		grid,
 		labelAlign,
 		labelFontWeight,
+		labelOrientation,
 		position,
 		ticks,
 		title,
 		vegaLabelAlign,
 		vegaLabelBaseline,
-	}: AxisSpecProps,
+	}: AxisSpecProps
 ): Axis[] => {
 	const [secondaryFormat, primaryFormat, tickGranularity] = getTimeLabelFormats(granularity);
 	return [
@@ -99,8 +101,8 @@ export const getTimeAxes = (
 			title,
 			format: secondaryFormat,
 			formatType: 'time',
-			labelAlign: getLabelAlign(labelAlign, position, vegaLabelAlign),
-			labelBaseline: getLabelBaseline(labelAlign, position, vegaLabelBaseline),
+			labelAngle: getLabelAngle(labelOrientation),
+			...getLabelAnchorValues(position, labelOrientation, labelAlign, vegaLabelAlign, vegaLabelBaseline),
 		},
 		{
 			scale: scaleName,
@@ -110,8 +112,8 @@ export const getTimeAxes = (
 			formatType: 'time',
 			labelOverlap: 'greedy',
 			labelFontWeight,
-			labelAlign: getLabelAlign(labelAlign, position, vegaLabelAlign),
-			labelBaseline: getLabelBaseline(labelAlign, position, vegaLabelBaseline),
+			labelAngle: getLabelAngle(labelOrientation),
+			...getLabelAnchorValues(position, labelOrientation, labelAlign, vegaLabelAlign, vegaLabelBaseline),
 			encode: {
 				labels: {
 					enter: {
@@ -133,8 +135,8 @@ export const getTimeAxes = (
  * @returns axis
  */
 export const getSubLabelAxis = (axisProps: AxisSpecProps, scaleName: string): Axis => {
-	const { labelAlign, labelFontWeight, name, position, ticks } = axisProps;
-	const subLabels = axisProps.subLabels as SubLabel[];
+	const { labelAlign, labelFontWeight, labelOrientation, name, position, ticks } = axisProps;
+	const subLabels = axisProps.subLabels;
 	const signalName = `${name}_subLabels`;
 	const subLabelValues = subLabels.map((label) => label.value);
 
@@ -150,7 +152,14 @@ export const getSubLabelAxis = (axisProps: AxisSpecProps, scaleName: string): Ax
 		values: subLabelValues.length ? subLabelValues : undefined,
 		encode: {
 			labels: {
-				...getAxisLabelsEncoding(labelAlign, labelFontWeight, 'subLabel', position, signalName),
+				...getAxisLabelsEncoding(
+					labelAlign,
+					labelFontWeight,
+					'subLabel',
+					labelOrientation,
+					position,
+					signalName
+				),
 			},
 		},
 	};
@@ -305,4 +314,9 @@ export const getBaselineRule = (baselineOffset: number, position: Position): Mar
 			},
 		},
 	};
+};
+
+export const hasSubLabels = ({ subLabels, labelOrientation }: AxisSpecProps) => {
+	// subLabels are only supported for horizontal axis labels
+	return Boolean(subLabels.length && labelOrientation === 'horizontal');
 };
