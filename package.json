@@ -105,7 +105,8 @@
 		"@adobe/react-spectrum": ">= 3.23.0",
 		"immer": ">= 9.0.0",
 		"uuid": ">= 9.0.0",
-		"vega-embed": ">= 6.23.0"
+		"vega-embed": ">= 6.23.0",
+		"vega-tooltip": ">= 0.26.0"
 	},
 	"peerDependencies": {
 		"@adobe/react-spectrum": ">=3.23.0",
