@@ -49,7 +49,7 @@ jobs:
 
             - name: Create and Upload Storybook to PR directory
               run: |
-                  PR_NUMBER="PR-$('${{ github.event.issue.pull_request.url }}' | sed 's/[^0-9]*//g')"
+                  PR_NUMBER="PR-$(echo '${{ github.event.issue.pull_request.url }}' | sed 's/[^0-9]*//g')"
 
                   git config user.name "evargast"
                   git config user.email "52969178+evargast@users.noreply.github.com"
@@ -81,7 +81,7 @@ jobs:
 
             - name: Add comment to the PR with Storybook URL
               run: |
-                  PR_NUMBER="$('${{ github.event.issue.pull_request.url }}' | sed 's/[^0-9]*//g')"
+                  PR_NUMBER="$(echo '${{ github.event.issue.pull_request.url }}' | sed 's/[^0-9]*//g')"
                   COMMENT_BODY="🎨 Storybook -> https://opensource.adobe.com/react-spectrum-charts/PR-${PR_NUMBER}"
 
                   curl -sSL \
