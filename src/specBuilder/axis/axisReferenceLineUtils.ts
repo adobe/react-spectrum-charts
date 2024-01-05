@@ -9,7 +9,6 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
 import { ReferenceLine } from '@components/ReferenceLine';
 import { DEFAULT_LABEL_FONT_WEIGHT } from '@constants';
 import { getColorValue, getPathFromIcon } from '@specBuilder/specUtils';
@@ -29,14 +28,15 @@ import {
 	TextEncodeEntry,
 	TextMark,
 } from 'vega';
+
 import { isVerticalAxis } from './axisUtils';
 
 export const getReferenceLinesFromChildren = (
-	children: Children<AxisChildElement> | undefined,
+	children: Children<AxisChildElement> | undefined
 ): ReferenceLineProps[] => {
 	const childrenArray = toArray(children);
 	const referenceLines = childrenArray.filter(
-		(child) => typeof child === 'object' && 'type' in child && child.type === ReferenceLine,
+		(child) => typeof child === 'object' && 'type' in child && child.type === ReferenceLine
 	) as ReferenceLineElement[];
 	return referenceLines.map((referenceLineElement) => referenceLineElement.props);
 };
@@ -50,7 +50,7 @@ export const getReferenceLineMarks = (
 	axisProps: AxisSpecProps,
 	referenceLineProps: ReferenceLineProps,
 	referenceLineIndex: number,
-	scaleName: string,
+	scaleName: string
 ): Mark[] => {
 	const positionRule = getPositionRule(axisProps, referenceLineProps, scaleName);
 	return [
@@ -63,7 +63,7 @@ export const getReferenceLineMarks = (
 export const getPositionRule = (
 	{ scaleType }: AxisSpecProps,
 	{ value, position }: ReferenceLineProps,
-	scaleName: string,
+	scaleName: string
 ): ProductionRule<NumericValueRef> | SignalRef => {
 	const signalValue = typeof value === 'string' ? `'${value}'` : value;
 	const halfInnerPaddingFormula = `paddingInner * bandwidth('${scaleName}') / (2 * (1 - paddingInner))`;
@@ -85,7 +85,7 @@ const getOrientation = (position: Position): 'y' | 'x' => {
 export const getReferenceLineRuleMark = (
 	{ name, position, ticks }: AxisSpecProps,
 	referenceLineIndex: number,
-	positionRule: ProductionRule<NumericValueRef> | SignalRef,
+	positionRule: ProductionRule<NumericValueRef> | SignalRef
 ): RuleMark => {
 	const orientation = getOrientation(position);
 
@@ -136,7 +136,7 @@ export const getReferenceLineRuleMark = (
 const getAdditiveMarkPositionProps = (
 	offset: number,
 	positionRule: ProductionRule<NumericValueRef> | SignalRef,
-	horizontalOffset?: number,
+	horizontalOffset?: number
 ) => ({
 	top: {
 		x: positionRule,
@@ -168,7 +168,7 @@ export const getReferenceLineSymbolMark = (
 	{ colorScheme, name, position }: AxisSpecProps,
 	{ icon }: ReferenceLineProps,
 	referenceLineIndex: number,
-	positionRule: ProductionRule<NumericValueRef> | SignalRef,
+	positionRule: ProductionRule<NumericValueRef> | SignalRef
 ): SymbolMark[] => {
 	if (!icon) return [];
 	const orientation = getOrientation(position);
@@ -209,7 +209,7 @@ export const getReferenceLineTextMark = (
 	{ name, position }: AxisSpecProps,
 	{ label, icon, labelFontWeight }: ReferenceLineProps,
 	referenceLineIndex: number,
-	positionRule: ProductionRule<NumericValueRef> | SignalRef,
+	positionRule: ProductionRule<NumericValueRef> | SignalRef
 ): TextMark[] => {
 	if (!label) return [];
 	const orientation = getOrientation(position);
@@ -237,7 +237,7 @@ export const getReferenceLineLabelsEncoding = (
 	label: string,
 	position: Position,
 	positionRule: ProductionRule<NumericValueRef> | SignalRef,
-	icon: string | undefined,
+	icon: string | undefined
 ): GuideEncodeEntry<TextEncodeEntry> => {
 	const VERTICAL_OFFSET = icon ? 48 : 26; // Position label outside of icon.
 	const HORIZONTAL_OFFSET = isVerticalAxis(position) && icon ? 24 : 12; // Position label outside of icon for horizontal orientation.

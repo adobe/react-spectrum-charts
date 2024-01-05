@@ -9,11 +9,11 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
 import { DEFAULT_COLOR, DEFAULT_COLOR_SCHEME, HIGHLIGHT_CONTRAST_RATIO } from '@constants';
-import { getOpacityEncoding, getShowHideEncodings, getSymbolEncodings, mergeLegendEncodings } from './legendUtils';
-import { defaultLegendProps, opacityEncoding } from './legendTestUtils';
 import { spectrumColors } from '@themes';
+
+import { defaultLegendProps, opacityEncoding } from './legendTestUtils';
+import { getOpacityEncoding, getShowHideEncodings, getSymbolEncodings, mergeLegendEncodings } from './legendUtils';
 
 const defaultOpacitySignalEncoding = [
 	{
@@ -53,7 +53,7 @@ describe('getOpacityEncoding()', () => {
 
 	test('should return signal-based encoding if facets includes opacity facet when opacity id undefined', () => {
 		expect(getOpacityEncoding(true, undefined, [{ facetType: 'opacity', field: DEFAULT_COLOR }])).toStrictEqual(
-			defaultOpacitySignalEncoding,
+			defaultOpacitySignalEncoding
 		);
 	});
 
@@ -70,13 +70,13 @@ describe('getOpacityEncoding()', () => {
 
 	test('should return signal based highlight encodings if opacity is a signal ref', () => {
 		expect(getOpacityEncoding(true, DEFAULT_COLOR, [{ facetType: 'opacity', field: 'testing' }])).toStrictEqual(
-			defaultOpacitySignalEncoding,
+			defaultOpacitySignalEncoding
 		);
 	});
 
 	test('should return value based highlight encodings if opacity and facets are valid', () => {
 		expect(getOpacityEncoding(true, DEFAULT_COLOR, [{ facetType: 'opacity', field: 'testing' }])).toStrictEqual(
-			defaultOpacitySignalEncoding,
+			defaultOpacitySignalEncoding
 		);
 	});
 });
@@ -93,7 +93,7 @@ describe('getSymbolEncodings()', () => {
 				isToggleable: false,
 				name: 'legend0',
 				position: 'bottom',
-			}),
+			})
 		).toStrictEqual({
 			entries: { name: 'legend0_legendEntry' },
 			symbols: {
@@ -113,7 +113,7 @@ describe('getShowHideEncodings()', () => {
 				...defaultLegendProps,
 				isToggleable: false,
 				onClick: undefined,
-			}),
+			})
 		).toEqual({ labels: hiddenSeriesLabelUpdateEncoding });
 	});
 	test('should return encodings if isToggleable', () => {
@@ -141,7 +141,7 @@ describe('mergeLegendEncodings()', () => {
 				{ entries: { name: 'legendEntry' } },
 				{ entries: { name: 'legendEntry2' } },
 				{ entries: { name: 'legendEntry3' } },
-			]),
+			])
 		).toStrictEqual({ entries: { name: 'legendEntry3' } });
 	});
 
@@ -151,7 +151,7 @@ describe('mergeLegendEncodings()', () => {
 				{ entries: { name: 'legendEntry' } },
 				{ labels: { name: 'legendLabel' } },
 				{ title: { name: 'legendTitle' } },
-			]),
+			])
 		).toStrictEqual({
 			entries: { name: 'legendEntry' },
 			labels: { name: 'legendLabel' },
@@ -169,7 +169,7 @@ describe('mergeLegendEncodings()', () => {
 					},
 				},
 				{ entries: { name: 'legendEntry', interactive: true, enter: { cursor: { value: 'pointer' } } } },
-			]),
+			])
 		).toStrictEqual({
 			entries: {
 				name: 'legendEntry',

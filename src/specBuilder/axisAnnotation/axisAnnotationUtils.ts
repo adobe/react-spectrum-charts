@@ -9,9 +9,10 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
 import { AxisAnnotation } from '@components/AxisAnnotation';
 import { DEFAULT_AXIS_ANNOTATION_COLOR, DEFAULT_AXIS_ANNOTATION_OFFSET, FILTERED_TABLE } from '@constants';
+import { getCursor } from '@specBuilder/marks/markUtils';
+import { getColorValue } from '@specBuilder/specUtils';
 import { sanitizeAxisAnnotationChildren, toArray } from '@utils';
 import { ANNOTATION_RANGED_ICON_SVG, ANNOTATION_SINGLE_ICON_SVG } from 'svgPaths';
 import {
@@ -22,9 +23,6 @@ import {
 	ColorScheme,
 	Position,
 } from 'types';
-
-import { getCursor } from '@specBuilder/marks/markUtils';
-import { getColorValue } from '@specBuilder/specUtils';
 import { Axis, Data, Mark, Signal, SourceData, ValuesData } from 'vega';
 import { ScaleType } from 'vega-lite/build/src/scale';
 
@@ -38,7 +36,7 @@ import { ScaleType } from 'vega-lite/build/src/scale';
  */
 export const addAxisAnnotationData = (
 	data: Data[],
-	{ name, dataKey, color, colorScheme, options, format }: AxisAnnotationSpecProps,
+	{ name, dataKey, color, colorScheme, options, format }: AxisAnnotationSpecProps
 ) => {
 	data.push(getAxisAnnotationDetailData(name, options, colorScheme));
 	if (format === 'summary') {
@@ -177,7 +175,7 @@ export const addAxisAnnotationSignals = (signals: Signal[], { name, format }: Ax
 		signals.push(
 			getHighlightAxisAnnotationSignal(name),
 			getClickAxisAnnotationSignal(name),
-			getSelectAxisAnnotationSignal(name),
+			getSelectAxisAnnotationSignal(name)
 		);
 	}
 };
@@ -238,7 +236,7 @@ const getSelectAxisAnnotationSignal = (name: string): Signal => {
 export const addAxisAnnotationMarks = (
 	marks: Mark[],
 	axisAnnotationProps: AxisAnnotationSpecProps,
-	scaleName: string,
+	scaleName: string
 ) => {
 	const { format } = axisAnnotationProps;
 	if (format === 'summary') {
@@ -303,7 +301,7 @@ export const getAxisAnnotationSummaryMarks = ({ children, name, offset }: AxisAn
  */
 export const getAxisAnnotationSpanMarks = (
 	{ children, name, offset }: AxisAnnotationSpecProps,
-	scaleName: string,
+	scaleName: string
 ): Mark => {
 	return {
 		name: `${name}_group`,
@@ -450,7 +448,7 @@ export const getAxisAnnotationsFromChildren = ({
 	if (position !== 'bottom') return [];
 	const childrenArray = toArray(children);
 	const axisAnnotations = childrenArray.filter(
-		(child) => typeof child === 'object' && 'type' in child && child.type === AxisAnnotation,
+		(child) => typeof child === 'object' && 'type' in child && child.type === AxisAnnotation
 	) as AxisAnnotationElement[];
 	return axisAnnotations.map((annotationElement, annotationIndex) => {
 		return applyDefaultAxisAnnotationProps(
@@ -458,7 +456,7 @@ export const getAxisAnnotationsFromChildren = ({
 			annotationIndex,
 			axisName,
 			colorScheme,
-			scaleType,
+			scaleType
 		);
 	});
 };
@@ -476,7 +474,7 @@ export const applyDefaultAxisAnnotationProps = (
 	annotationIndex: number,
 	axisName: string,
 	colorScheme: ColorScheme,
-	scaleType: ScaleType,
+	scaleType: ScaleType
 ): AxisAnnotationSpecProps => {
 	return {
 		children: sanitizeAxisAnnotationChildren(children),

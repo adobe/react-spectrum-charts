@@ -9,7 +9,6 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
 import { AxisSpecProps } from 'types';
 import { Axis, GroupMark, Spec } from 'vega';
 
@@ -90,7 +89,7 @@ export const encodeAxisTitle = (axes: Axis[], trellisGroupMark: GroupMark) => {
  * @returns properties
  */
 export const getTrellisGroupProperties = (
-	groupMark: GroupMark,
+	groupMark: GroupMark
 ): { facetGroupBy: string; facetName: string; trellisScaleName: string } => {
 	const trellisScaleName = `${(groupMark.name ?? 'x')[0]}TrellisBand`;
 	const fromFacet = groupMark.from as { facet: { name: string; groupby: string } };

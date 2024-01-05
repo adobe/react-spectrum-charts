@@ -105,7 +105,7 @@ describe('getItemName()', () => {
 	test('should return undefined if the item is invalid', () => {
 		expect(getItemName(undefined)).toBeUndefined();
 		expect(
-			getItemName({ datum: undefined, mark: { marktype: 'line', role: 'mark', group: undefined, items: [] } }),
+			getItemName({ datum: undefined, mark: { marktype: 'line', role: 'mark', group: undefined, items: [] } })
 		).toBeUndefined();
 	});
 	test('should return undefined if there is no name on the mark', () => {
@@ -114,7 +114,7 @@ describe('getItemName()', () => {
 				datum: undefined,
 				bounds: undefined,
 				mark: { marktype: 'line', role: 'mark', group: undefined, items: [] },
-			} as ActionItem),
+			} as ActionItem)
 		).toBeUndefined();
 	});
 	test('should return the name if it exists on the mark', () => {
@@ -123,7 +123,7 @@ describe('getItemName()', () => {
 				datum: undefined,
 				bounds: undefined,
 				mark: { marktype: 'line', role: 'mark', group: undefined, items: [], name: 'rect0_test' },
-			} as ActionItem),
+			} as ActionItem)
 		).toBe('rect0');
 	});
 });

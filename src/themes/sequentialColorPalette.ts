@@ -9,7 +9,6 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
 import { spectrumColors } from '@themes';
 
 const colors = spectrumColors.light;
@@ -37,20 +36,20 @@ export const sequentialViridis9 = [
 	colors['sequential-viridis-100'],
 	colors['sequential-viridis-200'],
 	colors['sequential-viridis-400'],
-  colors['sequential-viridis-600'],
-  colors['sequential-viridis-800'],
-  colors['sequential-viridis-1000'],
-  colors['sequential-viridis-1200'],
-  colors['sequential-viridis-1400'],
-  colors['sequential-viridis-1600'],
+	colors['sequential-viridis-600'],
+	colors['sequential-viridis-800'],
+	colors['sequential-viridis-1000'],
+	colors['sequential-viridis-1200'],
+	colors['sequential-viridis-1400'],
+	colors['sequential-viridis-1600'],
 ];
 
 export const sequentialViridis5 = [
-  colors['sequential-viridis-100'],
-  colors['sequential-viridis-400'],
-  colors['sequential-viridis-800'],
-  colors['sequential-viridis-1200'],
-  colors['sequential-viridis-1600'],
+	colors['sequential-viridis-100'],
+	colors['sequential-viridis-400'],
+	colors['sequential-viridis-800'],
+	colors['sequential-viridis-1200'],
+	colors['sequential-viridis-1600'],
 ];
 
 export const sequentialMagma16 = [
@@ -85,11 +84,11 @@ export const sequentialMagma9 = [
 ];
 
 export const sequentialMagma5 = [
-  colors['sequential-magma-400'],
-  colors['sequential-magma-100'],
-  colors['sequential-magma-800'],
-  colors['sequential-magma-1200'],
-  colors['sequential-magma-1600'],
+	colors['sequential-magma-400'],
+	colors['sequential-magma-100'],
+	colors['sequential-magma-800'],
+	colors['sequential-magma-1200'],
+	colors['sequential-magma-1600'],
 ];
 
 export const sequentialRose16 = [
@@ -124,11 +123,11 @@ export const sequentialRose9 = [
 ];
 
 export const sequentialRose5 = [
-  colors['sequential-rose-400'],
-  colors['sequential-rose-100'],
-  colors['sequential-rose-800'],
-  colors['sequential-rose-1200'],
-  colors['sequential-rose-1600'],
+	colors['sequential-rose-400'],
+	colors['sequential-rose-100'],
+	colors['sequential-rose-800'],
+	colors['sequential-rose-1200'],
+	colors['sequential-rose-1600'],
 ];
 
 export const sequentialCerulean16 = [
@@ -163,11 +162,11 @@ export const sequentialCerulean9 = [
 ];
 
 export const sequentialCerulean5 = [
-  colors['sequential-cerulean-400'],
-  colors['sequential-cerulean-100'],
-  colors['sequential-cerulean-800'],
-  colors['sequential-cerulean-1200'],
-  colors['sequential-cerulean-1600'],
+	colors['sequential-cerulean-400'],
+	colors['sequential-cerulean-100'],
+	colors['sequential-cerulean-800'],
+	colors['sequential-cerulean-1200'],
+	colors['sequential-cerulean-1600'],
 ];
 
 export const sequentialForest16 = [
@@ -202,9 +201,9 @@ export const sequentialForest9 = [
 ];
 
 export const sequentialForest5 = [
-  colors['sequential-forest-400'],
-  colors['sequential-forest-100'],
-  colors['sequential-forest-800'],
-  colors['sequential-forest-1200'],
-  colors['sequential-forest-1600'],
+	colors['sequential-forest-400'],
+	colors['sequential-forest-100'],
+	colors['sequential-forest-800'],
+	colors['sequential-forest-1200'],
+	colors['sequential-forest-1600'],
 ];

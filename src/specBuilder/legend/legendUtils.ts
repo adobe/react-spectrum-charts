@@ -9,9 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
 import { HIGHLIGHT_CONTRAST_RATIO } from '@constants';
-import { ColorValueV6 } from '@react-types/shared';
 import { getColorValue } from '@specBuilder/specUtils';
 import { spectrumColors } from '@themes';
 import merge from 'deepmerge';
@@ -36,6 +34,8 @@ import {
 	SignalRef,
 	SymbolEncodeEntry,
 } from 'vega';
+
+import { ColorValueV6 } from '@react-types/shared';
 
 export interface Facet {
 	facetType: FacetType | SecondaryFacetType;
@@ -104,7 +104,7 @@ const getLegendLabelsEncodings = (legendLabels: LegendLabel[] | undefined): Lege
 
 const getHoverEncodings = (
 	facets: Facet[],
-	{ highlight, highlightedSeries, name, opacity, descriptions, onMouseOut, onMouseOver }: LegendSpecProps,
+	{ highlight, highlightedSeries, name, opacity, descriptions, onMouseOut, onMouseOver }: LegendSpecProps
 ): LegendEncode => {
 	if (highlight || highlightedSeries || descriptions) {
 		const includeOpacity = Boolean(highlight || highlightedSeries); // only add stroke opacity if highlight is true or highlightedSeries is defined
@@ -163,7 +163,7 @@ const getTooltip = (descriptions?: LegendDescription[]) => {
 export const getOpacityEncoding = (
 	highlight: boolean,
 	opacity?: OpacityFacet,
-	facets?: Facet[],
+	facets?: Facet[]
 ): ProductionRule<NumericValueRef> | undefined => {
 	if (highlight) {
 		if (facets || opacity) {
@@ -175,13 +175,13 @@ export const getOpacityEncoding = (
 			if ('signal' in opacityEncoding) {
 				return getHighlightOpacityEncoding(
 					{ signal: opacityEncoding.signal + ` / ${HIGHLIGHT_CONTRAST_RATIO}` },
-					opacityEncoding,
+					opacityEncoding
 				);
 			}
 			if ('value' in opacityEncoding && typeof opacityEncoding.value === 'number') {
 				return getHighlightOpacityEncoding(
 					{ value: opacityEncoding.value / HIGHLIGHT_CONTRAST_RATIO },
-					opacityEncoding,
+					opacityEncoding
 				);
 			}
 		}
@@ -192,7 +192,7 @@ export const getOpacityEncoding = (
 
 const getHighlightOpacityEncoding = (
 	highlightOpacity: BaseValueRef<number>,
-	defaultOpacity: BaseValueRef<number>,
+	defaultOpacity: BaseValueRef<number>
 ): ProductionRule<NumericValueRef> => {
 	return [
 		{
@@ -279,7 +279,7 @@ const getSymbolFacetEncoding = <T>({
 
 export const getHiddenSeriesColorRule = (
 	{ colorScheme, hiddenSeries, isToggleable }: LegendSpecProps,
-	colorValue: ColorValueV6,
+	colorValue: ColorValueV6
 ): ({
 	test?: string;
 } & ColorValueRef)[] => {
