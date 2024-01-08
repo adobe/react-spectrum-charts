@@ -200,13 +200,4 @@ TooltipAndPopoverOnParentLine.args = {
 	lineWidth: 'S',
 };
 
-const TrendsUsage = bindWithProps(TrendsUsageStory);
-TrendsUsage.args = {
-	method: 'movingAverage-7',
-	lineType: 'solid',
-	lineWidth: 1,
-	color: 'gray-600',
-	displayOnHover: false,
-};
-
-export { Basic, DimensionRange, DisplayOnHover, TooltipAndPopover, TooltipAndPopoverOnParentLine, TrendsUsage };
+export { Basic, DimensionRange, DisplayOnHover, TooltipAndPopover, TooltipAndPopoverOnParentLine };
