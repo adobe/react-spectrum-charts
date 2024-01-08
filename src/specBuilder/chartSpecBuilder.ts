@@ -18,7 +18,7 @@ import {
 	SERIES_ID,
 	TABLE,
 } from '@constants';
-import { Area, Axis, Bar, Legend, Line, Title } from '@rsc';
+import { Area, Axis, Bar, Donut, Legend, Line, Title } from '@rsc';
 import colorSchemes from '@themes/colorSchemes';
 import { produce } from 'immer';
 import {
@@ -30,6 +30,7 @@ import {
 	ColorScale,
 	ColorScheme,
 	Colors,
+	DonutElement,
 	LegendElement,
 	LineElement,
 	LineType,
@@ -46,6 +47,7 @@ import { addArea } from './area/areaSpecBuilder';
 import { addAxis } from './axis/axisSpecBuilder';
 import { addBar } from './bar/barSpecBuilder';
 import { getSeriesIdTransform } from './data/dataUtils';
+import { addDonut } from './donut/donutSpecBuilder';
 import { setHoverOpacityForMarks } from './legend/legendHighlightUtils';
 import { addLegend } from './legend/legendSpecBuilder';
 import { addLine } from './line/lineSpecBuilder';
@@ -83,11 +85,12 @@ export function buildSpec({
 	buildOrder.set(Area, 0);
 	buildOrder.set(Bar, 0);
 	buildOrder.set(Line, 0);
+	buildOrder.set(Donut, 0);
 	buildOrder.set(Legend, 1);
 	buildOrder.set(Axis, 2);
 	buildOrder.set(Title, 3);
 
-	let { areaCount, axisCount, barCount, legendCount, lineCount } = initializeComponentCounts();
+	let { areaCount, axisCount, barCount, donutCount, legendCount, lineCount } = initializeComponentCounts();
 	spec = [...children]
 		.sort((a, b) => buildOrder.get(a.type) - buildOrder.get(b.type))
 		.reduce((acc: Spec, cur) => {
@@ -101,6 +104,9 @@ export function buildSpec({
 				case Bar:
 					barCount++;
 					return addBar(acc, { ...(cur as BarElement).props, colorScheme, index: barCount });
+				case Donut:
+					donutCount++;
+					return addDonut(acc, { ...(cur as DonutElement).props, colorScheme, index: donutCount });
 				case Legend:
 					legendCount++;
 					return addLegend(acc, {
@@ -157,6 +163,7 @@ const initializeComponentCounts = () => {
 		areaCount: -1,
 		axisCount: -1,
 		barCount: -1,
+		donutCount: -1,
 		legendCount: -1,
 		lineCount: -1,
 	};
