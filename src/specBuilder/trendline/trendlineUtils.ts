@@ -128,10 +128,10 @@ export const getTrendlineMarks = (markProps: LineSpecProps): GroupMark[] => {
 const getTrendlineLineMark = (markProps: LineSpecProps, trendlineProps: TrendlineSpecProps): LineMark => {
 	const { colorScheme, dimension, scaleType } = markProps;
 	const { displayOnHover, lineType, lineWidth, metric, name, opacity } = trendlineProps;
-	const x =
-		scaleType === 'time'
-			? { scale: 'xTrendline', field: `${dimension}Normalized` }
-			: getXProductionRule(scaleType, dimension);
+
+	const x = trendlineUsesNormalizedDimension(trendlineProps.method, scaleType)
+		? { scale: 'xTrendline', field: `${dimension}Normalized` }
+		: getXProductionRule(scaleType, dimension);
 	const color = trendlineProps.color ? { value: trendlineProps.color } : markProps.color;
 
 	return {
@@ -188,13 +188,8 @@ const getTrendlineHoverMarks = (lineProps: LineSpecProps, highlightRawPoint: boo
 export const addTrendlineData = (data: Data[], markProps: BarSpecProps | LineSpecProps) => {
 	const { dimension } = markProps;
 	data.push(...getTrendlineData(markProps));
-	const trendlines = getTrendlines(markProps.children, markProps.name);
 
-	// only need to add the normalized dimension transform if there is a regression trendline and the dimension is time
-	const hasRegressionTrendline = trendlines.some((trendline) => isRegressionMethod(trendline.method));
-	const hasTimeScale = 'scaleType' in markProps && markProps.scaleType === 'time';
-
-	if (hasRegressionTrendline && hasTimeScale) {
+	if (hasTrendlineWithNormailizedDimension(markProps)) {
 		const tableData = getTableData(data);
 		tableData.transform = addNormalizedDimensionTransform(tableData.transform ?? [], dimension);
 	}
@@ -372,7 +367,9 @@ export const getTrendlineParamFormulaTransforms = (
 	scaleType: ScaleType | undefined
 ): FormulaTransform[] => {
 	let expr = '';
-	const trendlineDimension = scaleType === 'time' ? `${dimension}Normalized` : dimension;
+	const trendlineDimension = trendlineUsesNormalizedDimension(method, scaleType)
+		? `${dimension}Normalized`
+		: dimension;
 	if (isPolynomialMethod(method)) {
 		const order = getPolynomialOrder(method);
 		expr = [
@@ -400,9 +397,9 @@ export const getTrendlineParamFormulaTransforms = (
 };
 
 export const getTrendlineScales = (props: LineSpecProps | BarSpecProps): Scale[] => {
-	const { children, dimension, name } = props;
-	const trendlines = getTrendlines(children, name);
-	if (trendlines.length && 'scaleType' in props && props.scaleType === 'time') {
+	const { dimension } = props;
+
+	if (hasTrendlineWithNormailizedDimension(props)) {
 		return [
 			{
 				name: 'xTrendline',
@@ -421,7 +418,7 @@ export const getTrendlineScales = (props: LineSpecProps | BarSpecProps): Scale[]
 /**
  * determines if the supplied method is a polynomial method
  * @see https://vega.github.io/vega/docs/transforms/regression/
- * @param method regression method
+ * @param method
  * @returns boolean
  */
 const isPolynomialMethod = (method: TrendlineMethod): boolean =>
@@ -430,7 +427,7 @@ const isPolynomialMethod = (method: TrendlineMethod): boolean =>
 /**
  * determines if the supplied method is a regression method
  * @see https://vega.github.io/vega/docs/transforms/regression/
- * @param method regression method
+ * @param method
  * @returns boolean
  */
 const isRegressionMethod = (method: TrendlineMethod): boolean =>
@@ -439,10 +436,33 @@ const isRegressionMethod = (method: TrendlineMethod): boolean =>
 /**
  * determines if the supplied method is a windowing method
  * @see https://vega.github.io/vega/docs/transforms/window/
- * @param method regression method
+ * @param method
  * @returns boolean
  */
 const isWindowMethod = (method: TrendlineMethod): boolean => method.startsWith('movingAverage-');
+
+/**
+ * determines if the supplied method is a regression method that uses the normalized dimension
+ * @see https://vega.github.io/vega/docs/transforms/regression/
+ * @param method
+ * @returns boolean
+ */
+const trendlineUsesNormalizedDimension = (method: TrendlineMethod, scaleType: ScaleType | undefined): boolean =>
+	scaleType === 'time' && isRegressionMethod(method);
+
+/**
+ * determines if any trendlines use the normalized dimension
+ * @param markProps
+ * @returns boolean
+ */
+const hasTrendlineWithNormailizedDimension = (markProps: BarSpecProps | LineSpecProps): boolean => {
+	const trendlines = getTrendlines(markProps.children, markProps.name);
+
+	// only need to add the normalized dimension transform if there is a regression trendline and the dimension is time
+	const hasRegressionTrendline = trendlines.some((trendline) => isRegressionMethod(trendline.method));
+	const hasTimeScale = 'scaleType' in markProps && markProps.scaleType === 'time';
+	return hasRegressionTrendline && hasTimeScale;
+};
 
 /**
  * gets the statistical transforms that will calculate the trendline values
