@@ -133,6 +133,36 @@ const TrendlineWithDialogsOnParentStory: StoryFn<typeof Trendline> = (args): Rea
 	);
 };
 
+const TrendsUsageStory: StoryFn<typeof Trendline> = (args): ReactElement => {
+	const chartProps = useChartProps(defaultChartProps);
+	return (
+		<Chart {...chartProps}>
+			<Axis position="left" grid title="Users" />
+			<Axis position="bottom" labelFormat="time" baseline ticks />
+			<Line color="series" staticPoint="displayMark" name="trendsUsageLine">
+				<Trendline {...args} />
+				<ChartTooltip>
+					{(item) => (
+						<>
+							<div>Trendline value: {item[TRENDLINE_VALUE]}</div>
+							<div>Line value: {item.value}</div>
+						</>
+					)}
+				</ChartTooltip>
+				<ChartPopover>
+					{(item) => (
+						<>
+							<div>Trendline value: {item[TRENDLINE_VALUE]}</div>
+							<div>Line value: {item.value}</div>
+						</>
+					)}
+				</ChartPopover>
+			</Line>
+			<Legend lineWidth={{ value: 0 }} highlight />
+		</Chart>
+	);
+};
+
 const Basic = bindWithProps(TrendlineStory);
 Basic.args = {
 	method: 'linear',
@@ -170,4 +200,13 @@ TooltipAndPopoverOnParentLine.args = {
 	lineWidth: 'S',
 };
 
-export { Basic, DimensionRange, DisplayOnHover, TooltipAndPopover, TooltipAndPopoverOnParentLine };
+const TrendsUsage = bindWithProps(TrendsUsageStory);
+TrendsUsage.args = {
+	method: 'movingAverage-7',
+	lineType: 'solid',
+	lineWidth: 1,
+	color: 'gray-600',
+	displayOnHover: false,
+};
+
+export { Basic, DimensionRange, DisplayOnHover, TooltipAndPopover, TooltipAndPopoverOnParentLine, TrendsUsage };

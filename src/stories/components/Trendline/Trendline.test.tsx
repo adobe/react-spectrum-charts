@@ -23,15 +23,52 @@ describe('Trendline', () => {
 		render(<Trendline />);
 	});
 
-	test('Basic renders properly', async () => {
-		render(<Basic {...Basic.args} />);
-		const chart = await findChart();
-		expect(chart).toBeInTheDocument();
+	describe('Basic', () => {
+		test('Basic renders properly', async () => {
+			render(<Basic {...Basic.args} />);
+			const chart = await findChart();
+			expect(chart).toBeInTheDocument();
 
-		const trendlines = await findAllMarksByGroupName(chart, 'line0Trendline0');
-		expect(trendlines).toHaveLength(4);
-		expect(trendlines[0]).toHaveAttribute('stroke-dasharray', '7,4');
-		expect(trendlines[0]).toHaveAttribute('stroke-width', '1.5');
+			const trendlines = await findAllMarksByGroupName(chart, 'line0Trendline0');
+			expect(trendlines).toHaveLength(4);
+			expect(trendlines[0]).toHaveAttribute('stroke-dasharray', '7,4');
+			expect(trendlines[0]).toHaveAttribute('stroke-width', '1.5');
+		});
+
+		/**
+		 * If there is an issue with the trendline, vega defaults to drawing all the x positions at 0.
+		 * This function checks that all the x positions are unique.
+		 * @param path
+		 * @returns
+		 */
+		const allXPathPositionsAreUnique = (path: string): boolean => {
+			const xPositions = path.match(/([+-]?(\d*\.)?\d+),/g)?.map((match) => match.replace(',', '')) ?? [];
+			return new Set(xPositions).size === xPositions.length;
+		};
+
+		test('regression method renders correctly', async () => {
+			render(<Basic {...Basic.args} />);
+			const chart = await findChart();
+			expect(chart).toBeInTheDocument();
+
+			const trendlines = await findAllMarksByGroupName(chart, 'line0Trendline0');
+			expect(trendlines).toHaveLength(4);
+			const trendlinePath = trendlines[0].getAttribute('d');
+			expect(trendlinePath).toBeTruthy();
+			expect(allXPathPositionsAreUnique(trendlinePath ?? '')).toBeTruthy();
+		});
+
+		test('moving average method renders correctly', async () => {
+			render(<Basic {...Basic.args} method="movingAverage-3" />);
+			const chart = await findChart();
+			expect(chart).toBeInTheDocument();
+
+			const trendlines = await findAllMarksByGroupName(chart, 'line0Trendline0');
+			expect(trendlines).toHaveLength(4);
+			const trendlinePath = trendlines[0].getAttribute('d');
+			expect(trendlinePath).toBeTruthy();
+			expect(allXPathPositionsAreUnique(trendlinePath ?? '')).toBeTruthy();
+		});
 	});
 
 	describe('DisplayOnHover', () => {
