@@ -9,10 +9,16 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { createElement } from 'react';
 
 import { ReferenceLine } from '@components/ReferenceLine';
-import { DEFAULT_COLOR_SCHEME, DEFAULT_GRANULARITY, DEFAULT_LABEL_ALIGN, DEFAULT_LABEL_FONT_WEIGHT } from '@constants';
-import { createElement } from 'react';
+import {
+	DEFAULT_COLOR_SCHEME,
+	DEFAULT_GRANULARITY,
+	DEFAULT_LABEL_ALIGN,
+	DEFAULT_LABEL_FONT_WEIGHT,
+	DEFAULT_LABEL_ORIENTATION,
+} from '@constants';
 import { DATE_PATH } from 'svgPaths';
 import { AxisSpecProps, ReferenceLineProps } from 'types';
 
@@ -41,8 +47,11 @@ const defaultAxisProps: AxisSpecProps = {
 	index: 0,
 	labelAlign: DEFAULT_LABEL_ALIGN,
 	labelFontWeight: DEFAULT_LABEL_FONT_WEIGHT,
+	labelOrientation: DEFAULT_LABEL_ORIENTATION,
+	labels: [],
 	position: 'bottom',
 	scaleType: 'linear',
+	subLabels: [],
 	ticks: false,
 };
 
@@ -74,7 +83,7 @@ describe('scaleTypeSupportsRefenceLines()', () => {
 describe('getPositionRule()', () => {
 	test('creates the correct mark when value is a string', () => {
 		expect(
-			getPositionRule(defaultAxisProps, { ...defaultReferenceLineProps, value: 'test' }, 'xLinear'),
+			getPositionRule(defaultAxisProps, { ...defaultReferenceLineProps, value: 'test' }, 'xLinear')
 		).toStrictEqual({ scale: 'xLinear', value: 'test' });
 	});
 
@@ -83,7 +92,7 @@ describe('getPositionRule()', () => {
 			{
 				scale: 'xLinear',
 				value: 10,
-			},
+			}
 		);
 	});
 
@@ -92,8 +101,8 @@ describe('getPositionRule()', () => {
 			getPositionRule(
 				{ ...defaultAxisProps, scaleType: 'band' },
 				{ ...defaultReferenceLineProps, value: 'value' },
-				'xBand',
-			),
+				'xBand'
+			)
 		).toStrictEqual({ signal: "scale('xBand', 'value') + bandwidth('xBand') / 2" });
 	});
 
@@ -102,8 +111,8 @@ describe('getPositionRule()', () => {
 			getPositionRule(
 				{ ...defaultAxisProps, scaleType: 'band' },
 				{ ...defaultReferenceLineProps, value: 10 },
-				'xBand',
-			),
+				'xBand'
+			)
 		).toStrictEqual({ signal: "scale('xBand', 10) + bandwidth('xBand') / 2" });
 	});
 });
@@ -124,7 +133,7 @@ describe('getReferenceLineRuleMark()', () => {
 			{ ...defaultAxisProps, position: 'top' },
 
 			0,
-			{ scale: 'xLinear', value: 10 },
+			{ scale: 'xLinear', value: 10 }
 		);
 		expect(topAxisRule.encode?.update?.x).toStrictEqual({ scale: 'xLinear', value: 10 });
 		expect(topAxisRule.encode?.update?.y).toStrictEqual({ value: -0 });
@@ -139,7 +148,7 @@ describe('getReferenceLineRuleMark()', () => {
 			{ ...defaultAxisProps, position: 'left' },
 
 			0,
-			{ scale: 'yLinear', value: 10 },
+			{ scale: 'yLinear', value: 10 }
 		);
 		expect(leftAxisRule.encode?.update?.x).toStrictEqual({ value: -0 });
 		expect(leftAxisRule.encode?.update?.x2).toStrictEqual({ signal: 'width' });
@@ -159,7 +168,7 @@ describe('getReferenceLineRuleMark()', () => {
 			{ ...defaultAxisProps, ticks: true },
 
 			0,
-			{ scale: 'xLinear', value: 10 },
+			{ scale: 'xLinear', value: 10 }
 		);
 		expect(bottomAxisRule.encode?.update?.y2).toStrictEqual({ signal: 'height + 9' });
 
@@ -167,7 +176,7 @@ describe('getReferenceLineRuleMark()', () => {
 			{ ...defaultAxisProps, position: 'top', ticks: true },
 
 			0,
-			{ scale: 'xLinear', value: 10 },
+			{ scale: 'xLinear', value: 10 }
 		);
 		expect(topAxisRule.encode?.update?.y).toStrictEqual({ value: -9 });
 	});
@@ -179,7 +188,7 @@ describe('getReferenceLineSymbolMark()', () => {
 			defaultAxisProps,
 			{ ...defaultReferenceLineProps, icon: undefined },
 			0,
-			{ scale: 'xLinear', value: 10 },
+			{ scale: 'xLinear', value: 10 }
 		);
 		expect(symbols).toHaveLength(0);
 	});
@@ -213,7 +222,7 @@ describe('getReferenceLineSymbolMark()', () => {
 			{ ...defaultAxisProps, position: 'top' },
 			defaultReferenceLineProps,
 			0,
-			{ scale: 'xLinear', value: 10 },
+			{ scale: 'xLinear', value: 10 }
 		)[0];
 		expect(topAxisSymbol.encode?.update).toStrictEqual({
 			x: { scale: 'xLinear', value: 10 },
@@ -233,7 +242,7 @@ describe('getReferenceLineSymbolMark()', () => {
 			{ ...defaultAxisProps, position: 'left' },
 			defaultReferenceLineProps,
 			0,
-			{ scale: 'yLinear', value: 10 },
+			{ scale: 'yLinear', value: 10 }
 		)[0];
 		expect(leftAxisSymbol.encode?.update).toStrictEqual({
 			x: { value: -24 },
@@ -244,7 +253,7 @@ describe('getReferenceLineSymbolMark()', () => {
 			{ ...defaultAxisProps, position: 'right' },
 			defaultReferenceLineProps,
 			0,
-			{ scale: 'yLinear', value: 10 },
+			{ scale: 'yLinear', value: 10 }
 		)[0];
 		expect(rightAxisSymbol.encode?.update).toStrictEqual({
 			x: { signal: 'width + 24' },

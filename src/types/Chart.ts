@@ -155,6 +155,8 @@ export interface AxisProps extends BaseProps {
 	labelFontWeight?: FontWeight;
 	/** Sets the format of the axis labels */
 	labelFormat?: LabelFormat;
+	/** Sets the orientation of the label. Defaults to horizontal. */
+	labelOrientation?: Orientation;
 	/** Explicityly sets the axis labels (controlled). Providing a Label object allows for more control over the label display. */
 	labels?: (Label | string | number)[];
 	/** The minimum and maximum values for the axis, for example: `[-10, 10]`.

@@ -9,8 +9,8 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
 import { CSSProperties, useMemo } from 'react';
+
 import { MarkBounds } from 'types';
 import { Padding, View } from 'vega';
 

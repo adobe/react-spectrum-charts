@@ -9,9 +9,9 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import React, { FC } from 'react';
 
 import { Flex, ProgressCircle } from '@adobe/react-spectrum';
-import React, { FC } from 'react';
 
 interface LoadingStateProps {
 	height?: number;

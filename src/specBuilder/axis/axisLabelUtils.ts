@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { Granularity, Label, LabelAlign, LabelFormat, Position } from 'types';
+import { Granularity, Label, LabelAlign, LabelFormat, Orientation, Position } from 'types';
 import {
 	Align,
 	Baseline,
@@ -18,7 +18,6 @@ import {
 	GuideEncodeEntry,
 	NumberValue,
 	ProductionRule,
-	ScaledValueRef,
 	TextEncodeEntry,
 	TextValueRef,
 	TickCount,
@@ -63,48 +62,120 @@ export const getTimeLabelFormats = (granularity: Granularity): [string, string, 
 };
 
 /**
- * gets the baseline or alignment for the axis label based on the position
- * @param labelAlign
+ * label align can be set in a controlled manner using the `labels` and `subLabels` props
+ * This function will return the correct align and baseline encodings based on the labelAlign and position
  * @param position
- * @returns
+ * @param labelOrientaion
+ * @param labelAlign
+ * @returns align and baseline
  */
-export const getLabelBaselineAlign = (
-	labelAlign: LabelAlign | undefined,
-	position: Position
-): Align | Baseline | undefined => {
-	switch (position) {
-		case 'top':
-		case 'bottom':
-			return getLabelAlign(labelAlign, position);
-		case 'left':
-		case 'right':
-			return getLabelBaseline(labelAlign, position);
-	}
+export const getControlledLabelAnchorValues = (
+	position: Position,
+	labelOrientaion: Orientation,
+	labelAlign?: LabelAlign
+): { align: Align | undefined; baseline: Baseline | undefined } => {
+	// if there isn't a labelAlign, we don't want to set the align or baseline
+	if (!labelAlign) return { align: undefined, baseline: undefined };
+	return getLabelAnchor(position, labelOrientaion, labelAlign);
 };
 
 /**
- * gets the vega labelAlign value based on the labelAlign value
+ * gets the values for labelAlign and labelBaseline based on the `labelAlign`, `labelOrientation`, and `position` props
+ * vegaLabelAlign and vegaLabelBaseline props can be used to override these values
+ * @param position
+ * @param labelOrientaion
  * @param labelAlign
- * @returns
+ * @param vegaLabelAlign
+ * @param vegaLabelBaseline
+ * @returns labelAlign and labelBaseline
  */
-export const getLabelAlign = (
-	labelAlign: LabelAlign | undefined,
+export const getLabelAnchorValues = (
 	position: Position,
-	vegaLabelAlign?: Align
-): Align | undefined => {
-	if (vegaLabelAlign) return vegaLabelAlign;
-	if (!labelAlign) return;
-	if (['top', 'bottom'].includes(position)) {
-		switch (labelAlign) {
-			case 'start':
-				return 'left';
-			case 'end':
-				return 'right';
-			case 'center':
-			default:
-				return 'center';
+	labelOrientaion: Orientation,
+	labelAlign: LabelAlign,
+	vegaLabelAlign?: Align,
+	vegaLabelBaseline?: Baseline
+): { labelAlign: Align; labelBaseline: Baseline } => {
+	const { align, baseline } = getLabelAnchor(position, labelOrientaion, labelAlign);
+	// if vegaLabelAlign or vegaLabelBaseline are set, we want to use those values instead of the calculated values
+	return {
+		labelAlign: vegaLabelAlign ?? align,
+		labelBaseline: vegaLabelBaseline ?? baseline,
+	};
+};
+
+/**
+ * gets the label align and baseline values based on the `labelAlign`, `labelOrientation`, and `position` props
+ * @param position
+ * @param labelOrientaion
+ * @param labelAlign
+ * @returns align and baseline
+ */
+export const getLabelAnchor = (
+	position: Position,
+	labelOrientaion: Orientation,
+	labelAlign: LabelAlign
+): { align: Align; baseline: Baseline } => {
+	let align: Align;
+	let baseline: Baseline;
+	if (labelIsParallelToAxis(position, labelOrientaion)) {
+		// label direction is parallel to the axis
+		// for these, the align depends on the labelAlign and the baseline depends on the position
+		const labelAlignToAlign: { [key in LabelAlign]: Align } = {
+			start: 'left',
+			center: 'center',
+			end: 'right',
+		};
+		align = labelAlignToAlign[labelAlign];
+		if (['top', 'left'].includes(position)) {
+			// baseline is bottom for top and left axes
+			baseline = 'bottom';
+		} else {
+			// baseline is top for bottom and right axes
+			baseline = 'top';
+		}
+	} else {
+		// label direction is perpendicular to the axis
+		// for these, baseline depends on the labelAlign and align depends on the position
+		const labelAlignToBaseline: { [key in LabelAlign]: Baseline } = {
+			start: 'top',
+			center: 'middle',
+			end: 'bottom',
+		};
+		baseline = labelAlignToBaseline[labelAlign];
+		if (['bottom', 'left'].includes(position)) {
+			// bottom and left will always have the anchor on the right side of the text
+			align = 'right';
+		} else {
+			// top and right will always have the anchor on the left side of the text
+			align = 'left';
 		}
 	}
+	return { align, baseline };
+};
+
+/**
+ * determines if the label orientation is parallel to the axis direction
+ * @param position
+ * @param labelOrientaion
+ * @returns boolean
+ */
+export const labelIsParallelToAxis = (position: Position, labelOrientaion: Orientation): boolean => {
+	const axisOrientation = ['top', 'bottom'].includes(position) ? 'horizontal' : 'vertical';
+	return axisOrientation === labelOrientaion;
+};
+
+/**
+ * gets the label angle based on the `labelOrientation` prop
+ * @param labelOrientaion
+ * @returns labelAngle: number
+ */
+export const getLabelAngle = (labelOrientaion: Orientation): number => {
+	if (labelOrientaion === 'horizontal') {
+		return 0;
+	}
+	// default vertical label should read from bottom to top
+	return 270;
 };
 
 /**
@@ -187,6 +258,7 @@ export const getAxisLabelsEncoding = (
 	labelAlign: LabelAlign,
 	labelFontWeight: FontWeight,
 	labelKey: 'label' | 'subLabel',
+	labelOrientation: Orientation,
 	position: Position,
 	signalName: string
 ): GuideEncodeEntry<TextEncodeEntry> => ({
@@ -206,7 +278,7 @@ export const getAxisLabelsEncoding = (
 			// default to the primary label font weight
 			{ value: labelFontWeight },
 		],
-		...getEncodedLabelBaselineAlign(position, signalName, labelAlign),
+		...getEncodedLabelAnchor(position, signalName, labelOrientation, labelAlign),
 	},
 });
 
@@ -220,27 +292,18 @@ export const getAxisLabelsEncoding = (
  * @param defaultLabelAlign
  * @returns align | baseline
  */
-export const getEncodedLabelBaselineAlign = (
+export const getEncodedLabelAnchor = (
 	position: Position,
 	signalName: string,
+	labelOrientation: Orientation,
 	defaultLabelAlign: LabelAlign
 ): EncodeEntry => {
-	const productionRule: ProductionRule<ScaledValueRef<Baseline>> = [
-		{
-			test: `indexof(pluck(${signalName}, 'value'), datum.value) !== -1 && ${signalName}[indexof(pluck(${signalName}, 'value'), datum.value)].align`,
-			signal: `${signalName}[indexof(pluck(${signalName}, 'value'), datum.value)].align`,
-		},
-	];
-	switch (position) {
-		case 'top':
-		case 'bottom':
-			return {
-				align: [...productionRule, { value: getLabelAlign(defaultLabelAlign, position) }],
-			};
-		case 'left':
-		case 'right':
-			return {
-				baseline: [...productionRule, { value: getLabelBaseline(defaultLabelAlign, position) }],
-			};
-	}
+	const baseTestString = `indexof(pluck(${signalName}, 'value'), datum.value) !== -1 && ${signalName}[indexof(pluck(${signalName}, 'value'), datum.value)]`;
+	const baseSignalString = `${signalName}[indexof(pluck(${signalName}, 'value'), datum.value)]`;
+	const { align, baseline } = getLabelAnchor(position, labelOrientation, defaultLabelAlign);
+
+	return {
+		align: [{ test: `${baseTestString}.align`, signal: `${baseSignalString}.align` }, { value: align }],
+		baseline: [{ test: `${baseTestString}.baseline`, signal: `${baseSignalString}.baseline` }, { value: baseline }],
+	};
 };

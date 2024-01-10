@@ -9,14 +9,14 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
 import {
-	getEncodedLabelBaselineAlign,
-	getLabelAlign,
-	getLabelBaseline,
-	getLabelBaselineAlign,
+	getControlledLabelAnchorValues,
+	getLabelAnchor,
+	getLabelAnchorValues,
+	getLabelAngle,
 	getLabelOffset,
 	getLabelValue,
+	labelIsParallelToAxis,
 } from './axisLabelUtils';
 
 describe('getLabelValue()', () => {
@@ -27,29 +27,6 @@ describe('getLabelValue()', () => {
 	test('should return the label as is if not an object', () => {
 		expect(getLabelValue(1)).toEqual(1);
 		expect(getLabelValue('test')).toEqual('test');
-	});
-});
-
-describe('getLabelBaselineAlign()', () => {
-	describe('bottom/top axis', () => {
-		test('should return labelAlign object', () => {
-			expect(getLabelBaselineAlign('start', 'bottom')).toEqual('left');
-			expect(getLabelBaselineAlign('start', 'top')).toEqual('left');
-			expect(getLabelBaselineAlign('center', 'bottom')).toEqual('center');
-			expect(getLabelBaselineAlign('center', 'top')).toEqual('center');
-			expect(getLabelBaselineAlign('end', 'bottom')).toEqual('right');
-			expect(getLabelBaselineAlign('end', 'top')).toEqual('right');
-		});
-	});
-	describe('left/right axis', () => {
-		test('should return labelBaseline object', () => {
-			expect(getLabelBaselineAlign('start', 'left')).toEqual('top');
-			expect(getLabelBaselineAlign('start', 'right')).toEqual('top');
-			expect(getLabelBaselineAlign('center', 'left')).toEqual('middle');
-			expect(getLabelBaselineAlign('center', 'right')).toEqual('middle');
-			expect(getLabelBaselineAlign('end', 'left')).toEqual('bottom');
-			expect(getLabelBaselineAlign('end', 'right')).toEqual('bottom');
-		});
 	});
 });
 
@@ -69,61 +46,110 @@ describe('getLabelOffset()', () => {
 	});
 });
 
-describe('getEncodedLabelBaselineAlign()', () => {
-	test('should return the correct key based on the position of the axis', () => {
-		expect(getEncodedLabelBaselineAlign('bottom', 'mySignal', 'center')).toHaveProperty('align');
-		expect(getEncodedLabelBaselineAlign('top', 'mySignal', 'center')).toHaveProperty('align');
-		expect(getEncodedLabelBaselineAlign('left', 'mySignal', 'center')).toHaveProperty('baseline');
-		expect(getEncodedLabelBaselineAlign('right', 'mySignal', 'center')).toHaveProperty('baseline');
+describe('getControlledLabelAnchorValues()', () => {
+	test('should return correct align and baseline for labelAlign', () => {
+		expect(getControlledLabelAnchorValues('bottom', 'horizontal', 'center')).toEqual({
+			align: 'center',
+			baseline: 'top',
+		});
+	});
+	test('should return undefined for align and baseline if labelAlign is undefined', () => {
+		const anchor = getControlledLabelAnchorValues('bottom', 'horizontal');
+		expect(anchor.align).toBeUndefined();
+		expect(anchor.baseline).toBeUndefined();
 	});
 });
 
-describe('getLabelAlign()', () => {
-	test('should return the correct mappings for labelAlgin to vega Align', () => {
-		expect(getLabelAlign(undefined, 'bottom')).toBeUndefined();
-		expect(getLabelAlign('start', 'bottom')).toEqual('left');
-		expect(getLabelAlign('center', 'bottom')).toEqual('center');
-		expect(getLabelAlign('end', 'bottom')).toEqual('right');
-	});
-	test('should return controlled vegaLabelAlign value if supplied', () => {
-		expect(getLabelAlign(undefined, 'bottom', 'left')).toEqual('left');
-		expect(getLabelAlign('start', 'bottom', 'left')).toEqual('left');
-		expect(getLabelAlign('center', 'bottom', 'left')).toEqual('left');
-		expect(getLabelAlign('end', 'bottom', 'left')).toEqual('left');
-	});
-	test('should return undefined if position is left or right', () => {
-		expect(getLabelAlign(undefined, 'left')).toBeUndefined();
-		expect(getLabelAlign('start', 'left')).toBeUndefined();
-		expect(getLabelAlign('center', 'left')).toBeUndefined();
-		expect(getLabelAlign('end', 'left')).toBeUndefined();
-		expect(getLabelAlign(undefined, 'right')).toBeUndefined();
-		expect(getLabelAlign('start', 'right')).toBeUndefined();
-		expect(getLabelAlign('center', 'right')).toBeUndefined();
-		expect(getLabelAlign('end', 'right')).toBeUndefined();
+describe('getLabelAnchorValues()', () => {
+	test('should return override values if they are supplied', () => {
+		expect(getLabelAnchorValues('bottom', 'horizontal', 'center')).toEqual({
+			labelAlign: 'center',
+			labelBaseline: 'top',
+		});
+		expect(getLabelAnchorValues('bottom', 'horizontal', 'center', 'left')).toEqual({
+			labelAlign: 'left',
+			labelBaseline: 'top',
+		});
+		expect(getLabelAnchorValues('bottom', 'horizontal', 'center', undefined, 'middle')).toEqual({
+			labelAlign: 'center',
+			labelBaseline: 'middle',
+		});
+		expect(getLabelAnchorValues('bottom', 'horizontal', 'center', 'right', 'bottom')).toEqual({
+			labelAlign: 'right',
+			labelBaseline: 'bottom',
+		});
 	});
 });
 
-describe('getLabelBaseline()', () => {
-	test('should return the correct mappings for labelAlgin to vega Align', () => {
-		expect(getLabelBaseline(undefined, 'left')).toEqual(undefined);
-		expect(getLabelBaseline('start', 'left')).toEqual('top');
-		expect(getLabelBaseline('center', 'left')).toEqual('middle');
-		expect(getLabelBaseline('end', 'left')).toEqual('bottom');
+describe('getLabelAnchor()', () => {
+	describe('should return the correct align and baseline for each combination of position, labelOrientation and align', () => {
+		describe('bottom', () => {
+			test('horizontal', () => {
+				expect(getLabelAnchor('bottom', 'horizontal', 'start')).toEqual({ align: 'left', baseline: 'top' });
+				expect(getLabelAnchor('bottom', 'horizontal', 'center')).toEqual({ align: 'center', baseline: 'top' });
+				expect(getLabelAnchor('bottom', 'horizontal', 'end')).toEqual({ align: 'right', baseline: 'top' });
+			});
+			test('vertical', () => {
+				expect(getLabelAnchor('bottom', 'vertical', 'start')).toEqual({ align: 'right', baseline: 'top' });
+				expect(getLabelAnchor('bottom', 'vertical', 'center')).toEqual({ align: 'right', baseline: 'middle' });
+				expect(getLabelAnchor('bottom', 'vertical', 'end')).toEqual({ align: 'right', baseline: 'bottom' });
+			});
+		});
+		describe('top', () => {
+			test('horizontal', () => {
+				expect(getLabelAnchor('top', 'horizontal', 'start')).toEqual({ align: 'left', baseline: 'bottom' });
+				expect(getLabelAnchor('top', 'horizontal', 'center')).toEqual({ align: 'center', baseline: 'bottom' });
+				expect(getLabelAnchor('top', 'horizontal', 'end')).toEqual({ align: 'right', baseline: 'bottom' });
+			});
+			test('vertical', () => {
+				expect(getLabelAnchor('top', 'vertical', 'start')).toEqual({ align: 'left', baseline: 'top' });
+				expect(getLabelAnchor('top', 'vertical', 'center')).toEqual({ align: 'left', baseline: 'middle' });
+				expect(getLabelAnchor('top', 'vertical', 'end')).toEqual({ align: 'left', baseline: 'bottom' });
+			});
+		});
+		describe('left', () => {
+			test('horizontal', () => {
+				expect(getLabelAnchor('left', 'horizontal', 'start')).toEqual({ align: 'right', baseline: 'top' });
+				expect(getLabelAnchor('left', 'horizontal', 'center')).toEqual({ align: 'right', baseline: 'middle' });
+				expect(getLabelAnchor('left', 'horizontal', 'end')).toEqual({ align: 'right', baseline: 'bottom' });
+			});
+			test('vertical', () => {
+				expect(getLabelAnchor('left', 'vertical', 'start')).toEqual({ align: 'left', baseline: 'bottom' });
+				expect(getLabelAnchor('left', 'vertical', 'center')).toEqual({ align: 'center', baseline: 'bottom' });
+				expect(getLabelAnchor('left', 'vertical', 'end')).toEqual({ align: 'right', baseline: 'bottom' });
+			});
+		});
+		describe('right', () => {
+			test('horizontal', () => {
+				expect(getLabelAnchor('right', 'horizontal', 'start')).toEqual({ align: 'left', baseline: 'top' });
+				expect(getLabelAnchor('right', 'horizontal', 'center')).toEqual({ align: 'left', baseline: 'middle' });
+				expect(getLabelAnchor('right', 'horizontal', 'end')).toEqual({ align: 'left', baseline: 'bottom' });
+			});
+			test('vertical', () => {
+				expect(getLabelAnchor('right', 'vertical', 'start')).toEqual({ align: 'left', baseline: 'top' });
+				expect(getLabelAnchor('right', 'vertical', 'center')).toEqual({ align: 'center', baseline: 'top' });
+				expect(getLabelAnchor('right', 'vertical', 'end')).toEqual({ align: 'right', baseline: 'top' });
+			});
+		});
 	});
-	test('should return controlled vegaLabelBaseline value if supplied', () => {
-		expect(getLabelBaseline(undefined, 'left', 'top')).toEqual('top');
-		expect(getLabelBaseline('start', 'left', 'top')).toEqual('top');
-		expect(getLabelBaseline('center', 'left', 'top')).toEqual('top');
-		expect(getLabelBaseline('end', 'left', 'top')).toEqual('top');
+});
+
+describe('labelIsParallelToAxis()', () => {
+	test('should return the true if parallel and false if perpendicular', () => {
+		expect(labelIsParallelToAxis('bottom', 'horizontal')).toBeTruthy();
+		expect(labelIsParallelToAxis('top', 'horizontal')).toBeTruthy();
+		expect(labelIsParallelToAxis('left', 'vertical')).toBeTruthy();
+		expect(labelIsParallelToAxis('right', 'vertical')).toBeTruthy();
+		expect(labelIsParallelToAxis('bottom', 'vertical')).toBeFalsy();
+		expect(labelIsParallelToAxis('top', 'vertical')).toBeFalsy();
+		expect(labelIsParallelToAxis('left', 'horizontal')).toBeFalsy();
+		expect(labelIsParallelToAxis('right', 'horizontal')).toBeFalsy();
 	});
-	test('should return undefined if position is top or bottom', () => {
-		expect(getLabelBaseline(undefined, 'top')).toBeUndefined();
-		expect(getLabelBaseline('start', 'top')).toBeUndefined();
-		expect(getLabelBaseline('center', 'top')).toBeUndefined();
-		expect(getLabelBaseline('end', 'top')).toBeUndefined();
-		expect(getLabelBaseline(undefined, 'bottom')).toBeUndefined();
-		expect(getLabelBaseline('start', 'bottom')).toBeUndefined();
-		expect(getLabelBaseline('center', 'bottom')).toBeUndefined();
-		expect(getLabelBaseline('end', 'bottom')).toBeUndefined();
+});
+
+describe('getLabelAngle', () => {
+	test('should return 0 for horizontal and 270 for vertical', () => {
+		expect(getLabelAngle('horizontal')).toEqual(0);
+		expect(getLabelAngle('vertical')).toEqual(270);
 	});
 });

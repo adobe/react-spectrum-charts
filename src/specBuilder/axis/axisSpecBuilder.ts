@@ -9,7 +9,13 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { DEFAULT_COLOR_SCHEME, DEFAULT_GRANULARITY, DEFAULT_LABEL_ALIGN, DEFAULT_LABEL_FONT_WEIGHT } from '@constants';
+import {
+	DEFAULT_COLOR_SCHEME,
+	DEFAULT_GRANULARITY,
+	DEFAULT_LABEL_ALIGN,
+	DEFAULT_LABEL_FONT_WEIGHT,
+	DEFAULT_LABEL_ORIENTATION,
+} from '@constants';
 import {
 	addAxisAnnotationAxis,
 	addAxisAnnotationData,
@@ -20,10 +26,10 @@ import {
 import { getGenericSignal } from '@specBuilder/signal/signalSpecBuilder';
 import { sanitizeAxisChildren } from '@utils';
 import { produce } from 'immer';
-import { AxisProps, AxisSpecProps, ColorScheme, Label, Position } from 'types';
+import { AxisProps, AxisSpecProps, ColorScheme, Label, Orientation, Position } from 'types';
 import { Axis, Data, GroupMark, Mark, ScaleType, Signal, Spec } from 'vega';
 
-import { getAxisLabelsEncoding, getLabelBaselineAlign, getLabelValue } from './axisLabelUtils';
+import { getAxisLabelsEncoding, getControlledLabelAnchorValues, getLabelValue } from './axisLabelUtils';
 import {
 	getReferenceLineMarks,
 	getReferenceLinesFromChildren,
@@ -37,6 +43,7 @@ import {
 	getScale,
 	getSubLabelAxis,
 	getTimeAxes,
+	hasSubLabels,
 } from './axisUtils';
 
 export const addAxis = produce<Spec, [AxisProps & { colorScheme?: ColorScheme; index?: number }]>(
@@ -53,8 +60,11 @@ export const addAxis = produce<Spec, [AxisProps & { colorScheme?: ColorScheme; i
 			index = 0,
 			labelAlign = DEFAULT_LABEL_ALIGN,
 			labelFontWeight = DEFAULT_LABEL_FONT_WEIGHT,
+			labelOrientation = DEFAULT_LABEL_ORIENTATION,
+			labels = [],
 			position,
 			range,
+			subLabels = [],
 			ticks = false,
 			...props
 		}
@@ -78,9 +88,12 @@ export const addAxis = produce<Spec, [AxisProps & { colorScheme?: ColorScheme; i
 			index,
 			labelAlign,
 			labelFontWeight,
+			labelOrientation,
+			labels,
 			position,
 			name: `axis${index}`,
 			range,
+			subLabels,
 			ticks,
 			scaleType: scaleType ?? 'linear',
 			...props,
@@ -122,12 +135,12 @@ export const addAxisData = produce<Data[], [AxisSpecProps & { scaleType: ScaleTy
 });
 
 export const addAxisSignals = produce<Signal[], [AxisSpecProps]>((signals, props) => {
-	const { name, labels, position, subLabels } = props;
+	const { name, labels, position, subLabels, labelOrientation } = props;
 	if (labels?.length) {
 		// add all the label properties to a signal so that the axis encoding can use it to style each label correctly
-		signals.push(getGenericSignal(`${name}_labels`, getLabelSignalValue(labels, position)));
+		signals.push(getGenericSignal(`${name}_labels`, getLabelSignalValue(labels, position, labelOrientation)));
 	}
-	if (subLabels?.length) {
+	if (hasSubLabels(props)) {
 		// add all the sublabel properties to a signal so that the axis encoding can use it to style each sublabel correctly
 		signals.push(
 			getGenericSignal(
@@ -135,7 +148,7 @@ export const addAxisSignals = produce<Signal[], [AxisSpecProps]>((signals, props
 				subLabels.map((label) => ({
 					...label,
 					// convert label align to vega align
-					align: getLabelBaselineAlign(label.align, position),
+					...getControlledLabelAnchorValues(position, labelOrientation, label.align),
 				}))
 			)
 		);
@@ -152,7 +165,11 @@ export const addAxisSignals = produce<Signal[], [AxisSpecProps]>((signals, props
  * @param position
  * @returns
  */
-export const getLabelSignalValue = (labels: (Label | string | number)[], position: Position) =>
+export const getLabelSignalValue = (
+	labels: (Label | string | number)[],
+	position: Position,
+	labelOrientation: Orientation
+) =>
 	labels
 		.map((label) => {
 			// if this label is a string or number, then it doesn't need to be a signal
@@ -161,7 +178,7 @@ export const getLabelSignalValue = (labels: (Label | string | number)[], positio
 			}
 			return {
 				...label,
-				align: getLabelBaselineAlign(label.align, position),
+				...getControlledLabelAnchorValues(position, labelOrientation, label.align),
 			};
 		})
 		.filter(Boolean);
@@ -171,7 +188,7 @@ export const addAxes = produce<Axis[], [AxisSpecProps & { scaleName: string; opp
 		const newAxes: Axis[] = [];
 		// adds all the trellis axis props if this is a trellis axis
 		axisProps = { ...axisProps, ...getTrellisAxisProps(scaleName) };
-		const { baseline, labelAlign, labelFontWeight, labelFormat, name, position, subLabels } = axisProps;
+		const { baseline, labelAlign, labelFontWeight, labelFormat, labelOrientation, name, position } = axisProps;
 		if (labelFormat === 'time') {
 			// time axis actually needs two axes. A primary and secondary.
 			newAxes.push(...getTimeAxes(scaleName, axisProps));
@@ -179,17 +196,24 @@ export const addAxes = produce<Axis[], [AxisSpecProps & { scaleName: string; opp
 			const axis = getDefaultAxis(axisProps, scaleName);
 
 			// if labels exist, add them to the axis
-			if (axisProps.labels?.length) {
-				const labels = axisProps.labels as Label[];
+			if (axisProps.labels.length) {
+				const labels = axisProps.labels;
 				const signalName = `${name}_labels`;
 				axis.values = labels.map((label) => getLabelValue(label));
 				axis.encode = {
-					labels: getAxisLabelsEncoding(labelAlign, labelFontWeight, 'label', position, signalName),
+					labels: getAxisLabelsEncoding(
+						labelAlign,
+						labelFontWeight,
+						'label',
+						labelOrientation,
+						position,
+						signalName
+					),
 				};
 			}
 
 			// if sublabels exist, create a new axis for the sub labels
-			if (subLabels?.length) {
+			if (hasSubLabels(axisProps)) {
 				axis.titlePadding = 24;
 
 				// add sublabel axis

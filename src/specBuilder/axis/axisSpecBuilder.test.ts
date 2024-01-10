@@ -38,7 +38,8 @@ const defaultAxis: Axis = {
 	title: undefined,
 	labels: true,
 	labelAlign: undefined,
-	labelBaseline: undefined,
+	labelBaseline: 'top',
+	labelAngle: 0,
 	labelFontWeight: DEFAULT_LABEL_FONT_WEIGHT,
 	labelOffset: undefined,
 	labelPadding: undefined,
@@ -76,6 +77,15 @@ const defaultSubLabelAxis: Axis = {
 					},
 					{
 						value: 'center',
+					},
+				],
+				baseline: [
+					{
+						test: "indexof(pluck(axis0_subLabels, 'value'), datum.value) !== -1 && axis0_subLabels[indexof(pluck(axis0_subLabels, 'value'), datum.value)].baseline",
+						signal: "axis0_subLabels[indexof(pluck(axis0_subLabels, 'value'), datum.value)].baseline",
+					},
+					{
+						value: 'top',
 					},
 				],
 				fontWeight: [
@@ -175,6 +185,7 @@ describe('Spec builder, Axis', () => {
 							...defaultAxis,
 							orient: 'left',
 							scale: 'yLinear',
+							labelAlign: 'right',
 							labelBaseline: 'middle',
 						},
 					],
@@ -193,6 +204,7 @@ describe('Spec builder, Axis', () => {
 							...defaultAxis,
 							orient: 'left',
 							scale: 'yLinear',
+							labelAlign: 'right',
 							labelBaseline: 'middle',
 							encode: {
 								labels: {
@@ -220,7 +232,7 @@ describe('Spec builder, Axis', () => {
 					scales: defaultScales,
 					axes: [{ ...axis, labelAlign: 'center', titlePadding: 24 }, defaultSubLabelAxis],
 					marks: [],
-					signals: [defaultSignal],
+					signals: [{ ...defaultSignal, value: [{ ...defaultSignal.value[0], baseline: undefined }] }],
 					data: [],
 				});
 			});
@@ -452,7 +464,7 @@ describe('Spec builder, Axis', () => {
 			});
 			expect(signals).toHaveLength(1);
 			expect(signals[0]).toHaveProperty('name', 'axis0_labels');
-			expect(signals[0]).toHaveProperty('value', [{ value: 2, label: 'two', align: 'left' }]);
+			expect(signals[0]).toHaveProperty('value', [{ value: 2, label: 'two', align: 'left', baseline: 'top' }]);
 		});
 
 		test('should add subLabels if subLabels exist', () => {
@@ -466,17 +478,21 @@ describe('Spec builder, Axis', () => {
 			expect(signals).toHaveLength(1);
 			expect(signals[0]).toHaveProperty('name', 'axis0_subLabels');
 			expect(signals[0]).toHaveProperty('value', [
-				{ value: 1, subLabel: 'one', align: 'left' },
-				{ value: 2, subLabel: 'two', align: 'right' },
+				{ value: 1, subLabel: 'one', align: 'left', baseline: 'top' },
+				{ value: 2, subLabel: 'two', align: 'right', baseline: 'top' },
 			]);
 		});
 	});
 
 	describe('getLabelSignalValue()', () => {
 		test('should filter out any labels that are not objects', () => {
-			const labelValue = getLabelSignalValue([1, 'test', { value: 2, label: 'two', align: 'start' }], 'bottom');
+			const labelValue = getLabelSignalValue(
+				[1, 'test', { value: 2, label: 'two', align: 'start' }],
+				'bottom',
+				'horizontal'
+			);
 			expect(labelValue).toHaveLength(1);
-			expect(labelValue[0]).toEqual({ value: 2, label: 'two', align: 'left' });
+			expect(labelValue[0]).toEqual({ value: 2, label: 'two', align: 'left', baseline: 'top' });
 		});
 	});
 });

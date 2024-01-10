@@ -11,7 +11,12 @@
  */
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { DEFAULT_GRANULARITY, DEFAULT_LABEL_ALIGN, DEFAULT_LABEL_FONT_WEIGHT } from '@constants';
+import {
+	DEFAULT_GRANULARITY,
+	DEFAULT_LABEL_ALIGN,
+	DEFAULT_LABEL_FONT_WEIGHT,
+	DEFAULT_LABEL_ORIENTATION,
+} from '@constants';
 
 import { AxisProps } from '../../types';
 
@@ -25,6 +30,7 @@ export function Axis({
 	labelAlign = DEFAULT_LABEL_ALIGN,
 	labelFontWeight = DEFAULT_LABEL_FONT_WEIGHT,
 	labelFormat,
+	labelOrientation = DEFAULT_LABEL_ORIENTATION,
 	labels,
 	range = undefined,
 	subLabels,
