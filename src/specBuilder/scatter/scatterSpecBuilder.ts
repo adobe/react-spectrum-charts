@@ -90,8 +90,6 @@ export const addScales = produce<Scale[], [ScatterSpecProps]>((scales, props) =>
 export const addScatterMarks = produce<Mark[], [ScatterSpecProps]>((marks, props) => {
 	const { name } = props;
 
-	// const { facets } = getFacetsFromProps({ color, size });
-
 	const scatterGroup: GroupMark = {
 		name: `${name}_group`,
 		type: 'group',

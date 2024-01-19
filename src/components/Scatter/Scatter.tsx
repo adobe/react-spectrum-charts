@@ -11,13 +11,7 @@
  */
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import {
-	DEFAULT_COLOR,
-	DEFAULT_LINEAR_DIMENSION,
-	DEFAULT_METRIC,
-	DEFAULT_SYMBOL_SIZE,
-	DEFAULT_TIME_DIMENSION,
-} from '@constants';
+import { DEFAULT_COLOR, DEFAULT_LINEAR_DIMENSION, DEFAULT_METRIC, DEFAULT_SYMBOL_SIZE } from '@constants';
 
 import { ScatterProps } from '../../types';
 
