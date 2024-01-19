@@ -9,29 +9,27 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import React from "react";
+import React from 'react';
 
 import '@matchMediaMock';
 import { Scatter } from '@rsc';
-import {
-	findChart,
-	render,
-	screen,
-} from '@test-utils';
+import { findAllMarksByGroupName, findChart, render } from '@test-utils';
 
-import { Basic } from "./Scatter.story";
+import { Basic } from './Scatter.story';
 
-describe("Scatter", () => {
+describe('Scatter', () => {
 	// Scatter is not a real React component. This is test just provides test coverage for sonarqube
 	test('Scatter pseudo element', () => {
 		render(<Scatter />);
 	});
 
-	test("Basic renders properly", async () => {
+	test('Basic renders properly', async () => {
 		render(<Basic {...Basic.args} />);
+
 		const chart = await findChart();
 		expect(chart).toBeInTheDocument();
-		// TODO: add expect statements for the basic behavior of Scatter here
+
+		const points = await findAllMarksByGroupName(chart, 'scatter0');
+		expect(points).toHaveLength(16);
 	});
-		// TODO: add tests for each variation of Scatter here
 });

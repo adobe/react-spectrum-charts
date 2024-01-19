@@ -26,6 +26,7 @@ export type BarElement = ReactElement<BarProps, JSXElementConstructor<BarProps>>
 export type AnnotationElement = ReactElement<AnnotationProps, JSXElementConstructor<AnnotationProps>>;
 export type LegendElement = ReactElement<LegendProps, JSXElementConstructor<LegendProps>>;
 export type LineElement = ReactElement<LineProps, JSXElementConstructor<LineProps>>;
+export type ScatterElement = ReactElement<ScatterProps, JSXElementConstructor<ScatterProps>>;
 export type TitleElement = ReactElement<TitleProps, JSXElementConstructor<TitleProps>>;
 export type ChartTooltipElement = ReactElement<ChartTooltipProps, JSXElementConstructor<ChartTooltipProps>>;
 export type ChartPopoverElement = ReactElement<ChartPopoverProps, JSXElementConstructor<ChartPopoverProps>>;
@@ -480,7 +481,14 @@ export type Children<T> = ChildElement<T> | ChildElement<T>[];
 
 export type AxisChildElement = ReferenceLineElement | AxisAnnotationElement;
 export type AxisAnnotationChildElement = ChartTooltipElement | ChartPopoverElement;
-export type ChartChildElement = AreaElement | AxisElement | BarElement | LegendElement | LineElement | TitleElement;
+export type ChartChildElement =
+	| AreaElement
+	| AxisElement
+	| BarElement
+	| LegendElement
+	| LineElement
+	| ScatterElement
+	| TitleElement;
 export type MarkChildElement =
 	| AnnotationElement
 	| ChartTooltipElement

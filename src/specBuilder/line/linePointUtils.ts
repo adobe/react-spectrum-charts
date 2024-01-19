@@ -14,13 +14,14 @@ import {
 	getColorProductionRule,
 	getHighlightOpacityValue,
 	getOpacityProductionRule,
+	getXProductionRule,
 	hasPopover,
 } from '@specBuilder/marks/markUtils';
 import { getColorValue } from '@specBuilder/specUtils';
 import { LineSpecProps, ProductionRuleTests } from 'types';
 import { ColorValueRef, NumericValueRef, SymbolMark } from 'vega';
 
-import { LineMarkProps, getXProductionRule } from './lineUtils';
+import { LineMarkProps } from './lineUtils';
 
 const staticPointTest = (staticPoint: string) => `datum.${staticPoint} && datum.${staticPoint} === true`;
 const selectedTest = (name: string) => `${name}_selectedId && ${name}_selectedId === datum.${MARK_ID}`;

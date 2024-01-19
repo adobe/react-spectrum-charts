@@ -14,15 +14,19 @@ import {
 	DEFAULT_DIMENSION_SCALE_TYPE,
 	DEFAULT_LINEAR_DIMENSION,
 	DEFAULT_METRIC,
-	DEFAULT_SYMBOL_SIZE,
 	FILTERED_TABLE,
 } from '@constants';
+import { addTimeTransform, getTableData } from '@specBuilder/data/dataUtils';
 import { getColorProductionRule, getSymbolSizeProductionRule, getXProductionRule } from '@specBuilder/marks/markUtils';
-import { getFacetsFromProps } from '@specBuilder/specUtils';
+import {
+	addContinuousDimensionScale,
+	addFieldToFacetScaleDomain,
+	addMetricScale,
+} from '@specBuilder/scale/scaleSpecBuilder';
 import { sanitizeMarkChildren, toCamelCase } from '@utils';
 import { produce } from 'immer';
 import { ColorScheme, ScatterProps, ScatterSpecProps } from 'types';
-import { GroupMark, Mark, Spec, SymbolMark } from 'vega';
+import { Data, GroupMark, Mark, Scale, Spec, SymbolMark } from 'vega';
 
 export const addScatter = produce<Spec, [ScatterProps & { colorScheme?: ColorScheme; index?: number }]>(
 	(
@@ -38,7 +42,7 @@ export const addScatter = produce<Spec, [ScatterProps & { colorScheme?: ColorSch
 			metric = DEFAULT_METRIC,
 			name,
 			opacity = 0.8,
-			size = { value: DEFAULT_SYMBOL_SIZE },
+			size = { value: 'M' },
 			...props
 		}
 	) => {
@@ -60,25 +64,37 @@ export const addScatter = produce<Spec, [ScatterProps & { colorScheme?: ColorSch
 			...props,
 		};
 
+		spec.data = addData(spec.data ?? [], scatterProps);
+		spec.scales = addScales(spec.scales ?? [], scatterProps);
 		spec.marks = addScatterMarks(spec.marks ?? [], scatterProps);
 	}
 );
 
-export const addScatterMarks = produce<Mark[], [ScatterSpecProps]>((marks, props) => {
-	const { color, name, size } = props;
+export const addData = produce<Data[], [ScatterSpecProps]>((data, { dimension, dimensionScaleType }) => {
+	if (dimensionScaleType === 'time') {
+		const tableData = getTableData(data);
+		tableData.transform = addTimeTransform(tableData.transform ?? [], dimension);
+	}
+});
 
-	const { facets } = getFacetsFromProps({ color, size });
+export const addScales = produce<Scale[], [ScatterSpecProps]>((scales, props) => {
+	const { color, dimension, dimensionScaleType, metric } = props;
+	// add dimension scale
+	addContinuousDimensionScale(scales, { scaleType: dimensionScaleType, dimension });
+	// add metric scale
+	addMetricScale(scales, [metric]);
+	// add color to the color domain
+	addFieldToFacetScaleDomain(scales, 'color', color);
+});
+
+export const addScatterMarks = produce<Mark[], [ScatterSpecProps]>((marks, props) => {
+	const { name } = props;
+
+	// const { facets } = getFacetsFromProps({ color, size });
 
 	const scatterGroup: GroupMark = {
 		name: `${name}_group`,
 		type: 'group',
-		from: {
-			facet: {
-				name: `${name}_facet`,
-				data: FILTERED_TABLE,
-				groupby: facets,
-			},
-		},
 		marks: [getScatterMark(props)],
 	};
 
@@ -101,10 +117,13 @@ export const getScatterMark = ({
 		data: FILTERED_TABLE,
 	},
 	encode: {
+		enter: {
+			blend: { value: 'multiply' },
+			fillOpacity: [{ value: opacity }],
+			shape: { value: 'circle' },
+		},
 		update: {
 			size: getSymbolSizeProductionRule(size),
-			opacity: [{ value: opacity }],
-			shape: { value: 'circle' },
 			fill: getColorProductionRule(color, colorScheme),
 			x: getXProductionRule(dimensionScaleType, dimension),
 			y: { scale: 'yLinear', field: metric },

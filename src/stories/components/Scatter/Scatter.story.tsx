@@ -9,34 +9,38 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import React, { ReactElement } from "react";
+import React, { ReactElement } from 'react';
 
 import useChartProps from '@hooks/useChartProps';
-import { Scatter, Chart } from "@rsc";
-import { ComponentStory } from "@storybook/react";
+import { Axis, Chart, Legend, Scatter, Title } from '@rsc';
+import { characterData } from '@stories/data/marioKartData';
+import { StoryFn } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
 
 export default {
-    title: "RSC/Scatter",
-    component: Scatter,
+	title: 'RSC/Scatter',
+	component: Scatter,
 };
 
-const ScatterStory: ComponentStory<typeof Scatter> = (args): ReactElement => {
-	// TODO: add data
-    const chartProps = useChartProps({ data: [], width: 600 });
+const ScatterStory: StoryFn<typeof Scatter> = (args): ReactElement => {
+	const chartProps = useChartProps({ data: characterData, width: 400 });
 
-    // TODO: use Scatter correctly
-    return (
-        <Chart {...chartProps}>
-            <Scatter {...args} />;
-        </Chart>
-    )
-
+	return (
+		<Chart {...chartProps}>
+			<Axis position="bottom" grid ticks baseline title="Speed (normal)" />
+			<Axis position="left" grid ticks baseline title="Handling (normal)" />
+			<Scatter {...args} />;
+			<Legend position="right" title="Weight class" />
+			<Title text="Mario Kart 8 Character Data" />
+		</Chart>
+	);
 };
 
-// TODO: add component props and additional stories here
 const Basic = bindWithProps(ScatterStory);
-Basic.args = {};
-
+Basic.args = {
+	color: 'weightClass',
+	dimension: 'speedNormal',
+	metric: 'handlingNormal',
+};
 
 export { Basic };
