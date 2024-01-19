@@ -14,8 +14,8 @@ import {
 	BACKGROUND_COLOR,
 	DEFAULT_COLOR,
 	DEFAULT_COLOR_SCHEME,
-	DEFAULT_CONTINUOUS_DIMENSION,
 	DEFAULT_METRIC,
+	DEFAULT_TIME_DIMENSION,
 	FILTERED_TABLE,
 	MARK_ID,
 } from '@constants';
@@ -42,7 +42,7 @@ export const addArea = produce<Spec, [AreaProps & { colorScheme?: ColorScheme; i
 			children,
 			color = DEFAULT_COLOR,
 			colorScheme = DEFAULT_COLOR_SCHEME,
-			dimension = DEFAULT_CONTINUOUS_DIMENSION,
+			dimension = DEFAULT_TIME_DIMENSION,
 			index = 0,
 			metric = DEFAULT_METRIC,
 			metricStart,

@@ -14,23 +14,25 @@ import { LineType } from 'types';
 // prop defaults
 export const ANNOTATION_FONT_SIZE = 12;
 export const ANNOTATION_FONT_WEIGHT = 'bold';
+export const DEFAULT_AXIS_ANNOTATION_COLOR = 'gray-600';
+export const DEFAULT_AXIS_ANNOTATION_OFFSET = 80;
+export const DEFAULT_BACKGROUND_COLOR = 'transparent';
 export const DEFAULT_CATEGORICAL_DIMENSION = 'category';
 export const DEFAULT_COLOR = 'series';
-export const DEFAULT_CONTINUOUS_DIMENSION = 'datetime';
+export const DEFAULT_COLOR_SCHEME = 'light';
+export const DEFAULT_DIMENSION_SCALE_TYPE = 'linear';
 export const DEFAULT_GRANULARITY = 'day';
 export const DEFAULT_LABEL_ALIGN = 'center';
 export const DEFAULT_LABEL_FONT_WEIGHT = 'normal';
 export const DEFAULT_LABEL_ORIENTATION = 'horizontal';
 export const DEFAULT_LINE_TYPES: LineType[] = ['solid', 'dashed', 'dotted', 'dotDash', 'longDash', 'twoDash'];
+export const DEFAULT_LINEAR_DIMENSION = 'x';
 export const DEFAULT_METRIC = 'value';
 export const DEFAULT_SECONDARY_COLOR = 'subSeries';
 export const DEFAULT_SYMBOL_SIZE = 100;
 export const DEFAULT_SYMBOL_STROKE_WIDTH = 2;
-export const DEFAULT_COLOR_SCHEME = 'light';
-export const DEFAULT_BACKGROUND_COLOR = 'transparent';
-export const DEFAULT_AXIS_ANNOTATION_COLOR = 'gray-600';
-export const DEFAULT_AXIS_ANNOTATION_OFFSET = 80;
-export const TITLE_FONT_WEIGHT = 'bold';
+export const DEFAULT_TIME_DIMENSION = 'datetime';
+export const DEFAULT_TITLE_FONT_WEIGHT = 'bold';
 
 // vega data table name
 export const TABLE = 'table';

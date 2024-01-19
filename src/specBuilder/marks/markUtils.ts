@@ -16,7 +16,12 @@ import { ChartTooltip } from '@components/ChartTooltip';
 import { MetricRange } from '@components/MetricRange';
 import { Trendline } from '@components/Trendline';
 import { BACKGROUND_COLOR, HIGHLIGHT_CONTRAST_RATIO } from '@constants';
-import { getColorValue, getLineWidthPixelsFromLineWidth, getStrokeDashFromLineType } from '@specBuilder/specUtils';
+import {
+	getColorValue,
+	getLineWidthPixelsFromLineWidth,
+	getStrokeDashFromLineType,
+	getVegaSymbolSizeFromRscSymbolSize,
+} from '@specBuilder/specUtils';
 import {
 	ColorFacet,
 	ColorScheme,
@@ -25,6 +30,8 @@ import {
 	LineWidthFacet,
 	MarkChildElement,
 	OpacityFacet,
+	ScaleType,
+	SymbolSizeFacet,
 } from 'types';
 import {
 	AreaEncodeEntry,
@@ -32,6 +39,7 @@ import {
 	ColorValueRef,
 	Cursor,
 	NumericValueRef,
+	ProductionRule,
 	ScaledValueRef,
 	SignalRef,
 } from 'vega';
@@ -128,18 +136,6 @@ export const getLineWidthProductionRule = (
 	return { value: getLineWidthPixelsFromLineWidth(lineWidth.value) };
 };
 
-export const getStrokeDashProductionRule = (lineType: LineTypeFacet | DualFacet): ArrayValueRef => {
-	if (Array.isArray(lineType)) {
-		return {
-			signal: `scale('lineTypes', datum.${lineType[0]})[indexof(domain('secondaryLineType'), datum.${lineType[1]})% length(scale('lineTypes', datum.${lineType[0]}))]`,
-		};
-	}
-	if (typeof lineType === 'string') {
-		return { scale: 'lineType', field: lineType };
-	}
-	return { value: getStrokeDashFromLineType(lineType.value) };
-};
-
 export const getOpacityProductionRule = (opacity: OpacityFacet | DualFacet): { signal: string } | { value: number } => {
 	if (Array.isArray(opacity)) {
 		return {
@@ -152,9 +148,45 @@ export const getOpacityProductionRule = (opacity: OpacityFacet | DualFacet): { s
 	return { value: opacity.value };
 };
 
+export const getSymbolSizeProductionRule = (symbolSize: SymbolSizeFacet): NumericValueRef | undefined => {
+	// key reference for setting symbol size
+	if (typeof symbolSize === 'string') {
+		return { scale: 'symbolSize', field: symbolSize };
+	}
+	// static value for setting symbol size
+	return { value: getVegaSymbolSizeFromRscSymbolSize(symbolSize.value) };
+};
+
+export const getStrokeDashProductionRule = (lineType: LineTypeFacet | DualFacet): ArrayValueRef => {
+	if (Array.isArray(lineType)) {
+		return {
+			signal: `scale('lineTypes', datum.${lineType[0]})[indexof(domain('secondaryLineType'), datum.${lineType[1]})% length(scale('lineTypes', datum.${lineType[0]}))]`,
+		};
+	}
+	if (typeof lineType === 'string') {
+		return { scale: 'lineType', field: lineType };
+	}
+	return { value: getStrokeDashFromLineType(lineType.value) };
+};
+
 export const getHighlightOpacityValue = (opacityValue: { signal: string } | { value: number }): NumericValueRef => {
 	if ('signal' in opacityValue) {
 		return { signal: `${opacityValue.signal} / ${HIGHLIGHT_CONTRAST_RATIO}` };
 	}
 	return { value: opacityValue.value / HIGHLIGHT_CONTRAST_RATIO };
+};
+
+/**
+ * gets the correct x encoding for marks that support scaleType
+ * @param scaleType
+ * @param dimension
+ * @returns x encoding
+ */
+export const getXProductionRule = (scaleType: ScaleType, dimension: string): ProductionRule<NumericValueRef> => {
+	if (scaleType === 'time') {
+		return { scale: 'xTime', field: 'datetime0' };
+	} else if (scaleType === 'linear') {
+		return { scale: 'xLinear', field: dimension };
+	}
+	return { scale: 'xPoint', field: dimension };
 };

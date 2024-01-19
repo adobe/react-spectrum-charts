@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Adobe. All rights reserved.
+ * Copyright 2024 Adobe. All rights reserved.
  * This file is licensed to you under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License. You may obtain a copy
  * of the License at http://www.apache.org/licenses/LICENSE-2.0
@@ -11,18 +11,26 @@
  */
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { DEFAULT_COLOR, DEFAULT_METRIC, DEFAULT_TIME_DIMENSION } from '@constants';
+import {
+	DEFAULT_COLOR,
+	DEFAULT_LINEAR_DIMENSION,
+	DEFAULT_METRIC,
+	DEFAULT_SYMBOL_SIZE,
+	DEFAULT_TIME_DIMENSION,
+} from '@constants';
 
-import { LineProps } from '../../types';
+import { ScatterProps } from '../../types';
 
-export function Line({
-	name = 'line0',
-	dimension = DEFAULT_TIME_DIMENSION,
+// destructure props here and set defaults so that storybook can pick them up
+export function Scatter({
+	color = DEFAULT_COLOR,
+	colorScaleType,
+	dimension = DEFAULT_LINEAR_DIMENSION,
+	children,
 	metric = DEFAULT_METRIC,
-	color = { value: 'categorical-100' },
-	scaleType = 'time',
-	lineType = { value: 'solid' },
-	padding,
-}: LineProps) {
+	name,
+	opacity = 0.8,
+	size = { value: DEFAULT_SYMBOL_SIZE },
+}: ScatterProps) {
 	return null;
 }

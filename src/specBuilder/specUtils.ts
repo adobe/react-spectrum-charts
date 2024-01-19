@@ -22,6 +22,8 @@ import {
 	LineWidth,
 	OpacityFacet,
 	SpectrumColor,
+	SymbolSize,
+	SymbolSizeFacet,
 } from 'types';
 import { Data, Scale, Spec, ValuesData } from 'vega';
 
@@ -37,14 +39,16 @@ export const getFacetsFromProps = ({
 	color,
 	lineType,
 	opacity,
+	size,
 }: {
 	color?: ColorFacet | DualFacet;
 	lineType?: LineTypeFacet | DualFacet;
 	opacity?: OpacityFacet | DualFacet;
+	size?: SymbolSizeFacet;
 }): { facets: string[]; secondaryFacets: string[] } => {
 	// get all the keys that we need to facet by
 	// filter out the ones that use static values instead of fields
-	let facets = [color, lineType, opacity]
+	let facets = [color, lineType, opacity, size]
 		.map((facet) => (Array.isArray(facet) ? facet[0] : facet))
 		.filter((facet) => typeof facet === 'string') as string[];
 	// remove duplicates
@@ -163,6 +167,31 @@ export const getPathFromIcon = (icon: Icon | string): string => {
 		date: DATE_PATH,
 	};
 	return supportedIcons[icon] || icon;
+};
+
+export const getVegaSymbolSizeFromRscSymbolSize = (symbolSize: SymbolSize): number => {
+	if (typeof symbolSize === 'number') {
+		return Math.pow(symbolSize, 2);
+	}
+
+	switch (symbolSize) {
+		case 'XS':
+			// 6 x 6
+			return 36;
+		case 'S':
+			// 8 x 8
+			return 64;
+		case 'L':
+			// 12 x 12
+			return 144;
+		case 'XL':
+			// 16 x 16
+			return 256;
+		case 'M':
+		default:
+			// 10 x 10
+			return 100;
+	}
 };
 
 /**
