@@ -16,7 +16,7 @@ import GraphBarVertical from '@spectrum-icons/workflow/GraphBarVertical';
 
 import './EmptyState.css';
 
-interface EmptyStateProps {
+export interface EmptyStateProps {
 	height?: number;
 }
 
