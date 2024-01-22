@@ -41,7 +41,7 @@ export const addScatter = produce<Spec, [ScatterProps & { colorScheme?: ColorSch
 			index = 0,
 			metric = DEFAULT_METRIC,
 			name,
-			opacity = 0.8,
+			opacity = 1,
 			size = { value: 'M' },
 			...props
 		}
@@ -116,7 +116,12 @@ export const getScatterMark = ({
 	},
 	encode: {
 		enter: {
-			blend: { value: 'multiply' },
+			/**
+			 * the blend mode makes it possible to tell when there are overlapping points
+			 * in light mode, the points are darker when they overlap (multiply)
+			 * in dark mode, the points are lighter when they overlap (screen)
+			 */
+			blend: { value: colorScheme === 'light' ? 'multiply' : 'screen' },
 			fillOpacity: [{ value: opacity }],
 			shape: { value: 'circle' },
 		},
