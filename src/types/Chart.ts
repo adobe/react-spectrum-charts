@@ -72,6 +72,7 @@ export interface ChartProps extends SpecProps {
 	config?: Config;
 	data: ChartData[];
 	debug?: boolean;
+	emptyStateText?: string;
 	height?: number;
 	maxWidth?: number;
 	minWidth?: number;

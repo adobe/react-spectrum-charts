@@ -76,6 +76,7 @@ interface PlaceholderContentProps {
 	data: ChartData[];
 	loading?: boolean;
 	height?: number;
+	emptyStateText: string;
 }
 
 export const Chart = forwardRef<ChartHandle, ChartProps>(
@@ -89,6 +90,7 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 			dataTestId,
 			description,
 			debug = false,
+			emptyStateText = 'No data found',
 			height = 300,
 			hiddenSeries = [],
 			highlightedSeries,
@@ -271,7 +273,12 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 						style={targetStyle}
 					/>
 					{showPlaceholderContent ? (
-						<PlaceholderContent loading={loading} data={data} height={height} />
+						<PlaceholderContent
+							loading={loading}
+							data={data}
+							height={height}
+							emptyStateText={emptyStateText}
+						/>
 					) : (
 						<VegaChart
 							spec={spec}
@@ -396,13 +403,13 @@ const LegendTooltip: FC<LegendTooltipProps> = ({ value, descriptions, domain }) 
 	);
 };
 
-const PlaceholderContent: FC<PlaceholderContentProps> = ({ loading, data, ...layoutProps }) => {
+const PlaceholderContent: FC<PlaceholderContentProps> = ({ data, emptyStateText, loading, ...layoutProps }) => {
 	if (loading) {
 		//show a spinner while data is loading
 		return <LoadingState {...layoutProps} />;
 	} else if (!data.length) {
 		//if it is no longer loading but there is not data, show the empty state
-		return <EmptyState {...layoutProps} />;
+		return <EmptyState {...layoutProps} text={emptyStateText} />;
 	}
 	return <></>;
 };
