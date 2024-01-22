@@ -18,8 +18,8 @@ import {
 	BACKGROUND_COLOR,
 	DEFAULT_COLOR,
 	DEFAULT_COLOR_SCHEME,
-	DEFAULT_CONTINUOUS_DIMENSION,
 	DEFAULT_METRIC,
+	DEFAULT_TIME_DIMENSION,
 	FILTERED_TABLE,
 	MARK_ID,
 	SERIES_ID,
@@ -36,7 +36,7 @@ import { addData, addLine, addLineMarks, addSignals, setScales } from './lineSpe
 const defaultLineProps: LineSpecProps = {
 	children: [],
 	name: 'line0',
-	dimension: DEFAULT_CONTINUOUS_DIMENSION,
+	dimension: DEFAULT_TIME_DIMENSION,
 	index: 0,
 	metric: DEFAULT_METRIC,
 	color: DEFAULT_COLOR,
@@ -67,7 +67,7 @@ const defaultSpec = initializeSpec({
 				{ as: MARK_ID, type: 'identifier' },
 				{
 					as: ['datetime0', 'datetime1'],
-					field: DEFAULT_CONTINUOUS_DIMENSION,
+					field: DEFAULT_TIME_DIMENSION,
 					type: 'timeunit',
 					units: ['year', 'month', 'date', 'hours', 'minutes'],
 				},
@@ -125,7 +125,7 @@ const defaultSpec = initializeSpec({
 });
 
 const defaultLinearScale = {
-	domain: { data: FILTERED_TABLE, fields: [DEFAULT_CONTINUOUS_DIMENSION] },
+	domain: { data: FILTERED_TABLE, fields: [DEFAULT_TIME_DIMENSION] },
 	name: 'xLinear',
 	padding: 32,
 	range: 'width',
@@ -133,7 +133,7 @@ const defaultLinearScale = {
 };
 
 const defaultPointScale = {
-	domain: { data: FILTERED_TABLE, fields: [DEFAULT_CONTINUOUS_DIMENSION] },
+	domain: { data: FILTERED_TABLE, fields: [DEFAULT_TIME_DIMENSION] },
 	name: 'xPoint',
 	paddingOuter: 0.5,
 	range: 'width',

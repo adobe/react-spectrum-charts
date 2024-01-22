@@ -25,6 +25,7 @@ import {
 	LineWidth,
 	MarkChildElement,
 	MetricRangeProps,
+	ScatterProps,
 	TrendlineProps,
 } from './Chart';
 
@@ -117,6 +118,22 @@ export interface LineSpecProps extends PartiallyRequired<LineProps, LinePropsWit
 	interactiveMarkName: string | undefined;
 	lineWidth?: FacetRef<LineWidth>;
 	popoverMarkName: string | undefined;
+}
+
+type ScatterPropsWithDefaults =
+	| 'color'
+	| 'colorScaleType'
+	| 'dimension'
+	| 'dimensionScaleType'
+	| 'metric'
+	| 'name'
+	| 'opacity'
+	| 'size';
+
+export interface ScatterSpecProps extends PartiallyRequired<ScatterProps, ScatterPropsWithDefaults> {
+	children: MarkChildElement[];
+	colorScheme: ColorScheme;
+	index: number;
 }
 
 type MetricRangePropsWithDefaults = 'lineType' | 'lineWidth' | 'rangeOpacity' | 'metricEnd' | 'metricStart' | 'metric';

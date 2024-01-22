@@ -26,6 +26,7 @@ export type BarElement = ReactElement<BarProps, JSXElementConstructor<BarProps>>
 export type AnnotationElement = ReactElement<AnnotationProps, JSXElementConstructor<AnnotationProps>>;
 export type LegendElement = ReactElement<LegendProps, JSXElementConstructor<LegendProps>>;
 export type LineElement = ReactElement<LineProps, JSXElementConstructor<LineProps>>;
+export type ScatterElement = ReactElement<ScatterProps, JSXElementConstructor<ScatterProps>>;
 export type TitleElement = ReactElement<TitleProps, JSXElementConstructor<TitleProps>>;
 export type ChartTooltipElement = ReactElement<ChartTooltipProps, JSXElementConstructor<ChartTooltipProps>>;
 export type ChartPopoverElement = ReactElement<ChartPopoverProps, JSXElementConstructor<ChartPopoverProps>>;
@@ -261,6 +262,33 @@ export interface LineProps extends Omit<MarkProps, 'color'> {
 	staticPoint?: string; // key in the data that if it exists and the value resolves to true for each data object, a point will be drawn for that data point on the line.
 }
 
+export interface ScatterProps extends Omit<MarkProps, 'color'> {
+	/**
+	 * point fill and stroke color
+	 * uses a key in the data that will map to the color scale or a static color value
+	 */
+	color?: ColorFacet;
+	/**
+	 * type of color scale that should be used for the points
+	 * use ordinal if the key used for `color` maps to string values ('UT', 'CA', 'NY', etc.)
+	 * use linear if the key used for `color` maps to numeric values (0, 1, 2, etc.)
+	 */
+	colorScaleType?: 'linear' | 'ordinal';
+	/** data key for the x-axis */
+	dimension?: string;
+	/** scale type of the x-axis
+	 * see https://vega.github.io/vega/docs/scales/#types for more information
+	 */
+	dimensionScaleType?: ScaleType;
+	/** point fill and stroke opacity */
+	opacity?: number;
+	/**
+	 * point size
+	 * uses a key in the data that will map to the size scale (linear) or a static size value
+	 */
+	size?: SymbolSizeFacet;
+}
+
 export type TitlePosition = 'start' | 'middle' | 'end';
 export type TitleOrient = 'top' | 'bottom' | 'left' | 'right';
 
@@ -278,6 +306,11 @@ export interface TitleProps extends MarkProps {
 export type LineType = 'solid' | 'dashed' | 'dotted' | 'dotDash' | 'shortDash' | 'longDash' | 'twoDash' | number[];
 
 export type LineWidth = 'XS' | 'S' | 'M' | 'L' | 'XL' | number;
+
+/** width of the symbol in pixels  */
+export type SymbolSize = 'XS' | 'S' | 'M' | 'L' | 'XL' | number;
+
+export type SymbolSizeFacet = FacetRef<SymbolSize>;
 
 export type ScaleType = 'linear' | 'time' | 'point';
 export type LegendDescription = { seriesName: string; description: string; title?: string };
@@ -448,7 +481,14 @@ export type Children<T> = ChildElement<T> | ChildElement<T>[];
 
 export type AxisChildElement = ReferenceLineElement | AxisAnnotationElement;
 export type AxisAnnotationChildElement = ChartTooltipElement | ChartPopoverElement;
-export type ChartChildElement = AreaElement | AxisElement | BarElement | LegendElement | LineElement | TitleElement;
+export type ChartChildElement =
+	| AreaElement
+	| AxisElement
+	| BarElement
+	| LegendElement
+	| LineElement
+	| ScatterElement
+	| TitleElement;
 export type MarkChildElement =
 	| AnnotationElement
 	| ChartTooltipElement

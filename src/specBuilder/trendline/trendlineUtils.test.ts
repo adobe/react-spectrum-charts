@@ -18,8 +18,8 @@ import { Trendline } from '@components/Trendline';
 import {
 	DEFAULT_COLOR,
 	DEFAULT_COLOR_SCHEME,
-	DEFAULT_CONTINUOUS_DIMENSION,
 	DEFAULT_METRIC,
+	DEFAULT_TIME_DIMENSION,
 	FILTERED_TABLE,
 	MS_PER_DAY,
 	TRENDLINE_VALUE,
@@ -45,7 +45,7 @@ const defaultLineProps: LineSpecProps = {
 	children: [createElement(Trendline, { method: 'average' })],
 	color: DEFAULT_COLOR,
 	colorScheme: DEFAULT_COLOR_SCHEME,
-	dimension: DEFAULT_CONTINUOUS_DIMENSION,
+	dimension: DEFAULT_TIME_DIMENSION,
 	index: 0,
 	lineType: { value: 'solid' },
 	metric: DEFAULT_METRIC,
@@ -247,22 +247,22 @@ describe('addTrendlineData()', () => {
 
 describe('getTrendlineDimensionRangeTransforms()', () => {
 	test('should add filters if the dimensionRange has non-null values', () => {
-		const transforms = getTrendlineDimensionRangeTransforms(DEFAULT_CONTINUOUS_DIMENSION, [1, 2]);
+		const transforms = getTrendlineDimensionRangeTransforms(DEFAULT_TIME_DIMENSION, [1, 2]);
 		expect(transforms).toHaveLength(1);
 		expect(transforms[0].expr.split(' && ')).toHaveLength(2);
 		expect(transforms).toStrictEqual([
 			{
 				type: 'filter',
-				expr: `datum.${DEFAULT_CONTINUOUS_DIMENSION} >= 1 && datum.${DEFAULT_CONTINUOUS_DIMENSION} <= 2`,
+				expr: `datum.${DEFAULT_TIME_DIMENSION} >= 1 && datum.${DEFAULT_TIME_DIMENSION} <= 2`,
 			},
 		]);
 		expect(
-			getTrendlineDimensionRangeTransforms(DEFAULT_CONTINUOUS_DIMENSION, [null, 2])[0].expr.split(' && ')
+			getTrendlineDimensionRangeTransforms(DEFAULT_TIME_DIMENSION, [null, 2])[0].expr.split(' && ')
 		).toHaveLength(1);
 		expect(
-			getTrendlineDimensionRangeTransforms(DEFAULT_CONTINUOUS_DIMENSION, [1, null])[0].expr.split(' && ')
+			getTrendlineDimensionRangeTransforms(DEFAULT_TIME_DIMENSION, [1, null])[0].expr.split(' && ')
 		).toHaveLength(1);
-		expect(getTrendlineDimensionRangeTransforms(DEFAULT_CONTINUOUS_DIMENSION, [null, null])).toHaveLength(0);
+		expect(getTrendlineDimensionRangeTransforms(DEFAULT_TIME_DIMENSION, [null, null])).toHaveLength(0);
 	});
 });
 

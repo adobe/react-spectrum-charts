@@ -26,3 +26,5 @@ export * from './components/Title';
 export * from './Chart';
 export * from './themes';
 export * from './types/';
+
+export * from './components/Scatter';

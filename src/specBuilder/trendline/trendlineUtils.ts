@@ -13,11 +13,12 @@ import { Trendline } from '@components/Trendline';
 import { FILTERED_TABLE, LINEAR_PADDING, MARK_ID, MS_PER_DAY, TRENDLINE_VALUE } from '@constants';
 import { getSeriesIdTransform, getTableData } from '@specBuilder/data/dataUtils';
 import { getLineHoverMarks, getLineStrokeOpacity } from '@specBuilder/line/lineMarkUtils';
-import { LineMarkProps, getXProductionRule } from '@specBuilder/line/lineUtils';
+import { LineMarkProps } from '@specBuilder/line/lineUtils';
 import {
 	getColorProductionRule,
 	getLineWidthProductionRule,
 	getStrokeDashProductionRule,
+	getXProductionRule,
 	hasInteractiveChildren,
 	hasPopover,
 	hasTooltip,

@@ -18,10 +18,11 @@ import {
 	getOpacityProductionRule,
 	getStrokeDashProductionRule,
 	getTooltip,
+	getXProductionRule,
 	hasPopover,
 } from '@specBuilder/marks/markUtils';
-import { MarkChildElement, OpacityFacet } from 'types';
-import { LineMark, Mark, NumericValueRef, PathMark, ProductionRule, RuleMark, ScaleType, SymbolMark } from 'vega';
+import { MarkChildElement, OpacityFacet, ScaleType } from 'types';
+import { LineMark, Mark, NumericValueRef, PathMark, ProductionRule, RuleMark, SymbolMark } from 'vega';
 
 import {
 	getHighlightBackgroundPoint,
@@ -29,7 +30,7 @@ import {
 	getSecondaryHighlightPoint,
 	getSelectRingPoint,
 } from './linePointUtils';
-import { LineMarkProps, getXProductionRule } from './lineUtils';
+import { LineMarkProps } from './lineUtils';
 
 /**
  * generates a line mark

@@ -18,7 +18,7 @@ import {
 	SERIES_ID,
 	TABLE,
 } from '@constants';
-import { Area, Axis, Bar, Legend, Line, Title } from '@rsc';
+import { Area, Axis, Bar, Legend, Line, Scatter, Title } from '@rsc';
 import colorSchemes from '@themes/colorSchemes';
 import { produce } from 'immer';
 import {
@@ -37,6 +37,7 @@ import {
 	LineWidth,
 	Opacities,
 	SanitizedSpecProps,
+	ScatterElement,
 	SymbolShapes,
 	TitleElement,
 } from 'types';
@@ -49,6 +50,7 @@ import { getSeriesIdTransform } from './data/dataUtils';
 import { setHoverOpacityForMarks } from './legend/legendHighlightUtils';
 import { addLegend } from './legend/legendSpecBuilder';
 import { addLine } from './line/lineSpecBuilder';
+import { addScatter } from './scatter/scatterSpecBuilder';
 import { getGenericSignal, hasSignalByName } from './signal/signalSpecBuilder';
 import {
 	getColorValue,
@@ -83,11 +85,12 @@ export function buildSpec({
 	buildOrder.set(Area, 0);
 	buildOrder.set(Bar, 0);
 	buildOrder.set(Line, 0);
+	buildOrder.set(Scatter, 0);
 	buildOrder.set(Legend, 1);
 	buildOrder.set(Axis, 2);
 	buildOrder.set(Title, 3);
 
-	let { areaCount, axisCount, barCount, legendCount, lineCount } = initializeComponentCounts();
+	let { areaCount, axisCount, barCount, legendCount, lineCount, scatterCount } = initializeComponentCounts();
 	spec = [...children]
 		.sort((a, b) => buildOrder.get(a.type) - buildOrder.get(b.type))
 		.reduce((acc: Spec, cur) => {
@@ -113,6 +116,9 @@ export function buildSpec({
 				case Line:
 					lineCount++;
 					return addLine(acc, { ...(cur as LineElement).props, colorScheme, index: lineCount });
+				case Scatter:
+					scatterCount++;
+					return addScatter(acc, { ...(cur as ScatterElement).props, colorScheme, index: scatterCount });
 				case Title:
 					// No title count. There can only be one title.
 					return addTitle(acc, { ...(cur as TitleElement).props });
@@ -159,6 +165,7 @@ const initializeComponentCounts = () => {
 		barCount: -1,
 		legendCount: -1,
 		lineCount: -1,
+		scatterCount: -1,
 	};
 };
 
