@@ -116,6 +116,11 @@ export const getScatterMark = ({
 	},
 	encode: {
 		enter: {
+			/**
+			 * the blend mode makes it possible to tell when there are overlapping points
+			 * in light mode, the points are darker when they overlap (multiply)
+			 * in dark mode, the points are lighter when they overlap (screen)
+			 */
 			blend: { value: colorScheme === 'light' ? 'multiply' : 'screen' },
 			fillOpacity: [{ value: opacity }],
 			shape: { value: 'circle' },
