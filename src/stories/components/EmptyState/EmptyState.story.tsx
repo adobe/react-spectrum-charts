@@ -10,11 +10,10 @@ export default {
 };
 
 const EmptyStateStory: StoryFn<typeof EmptyState> = (args): ReactElement => {
-	const { height } = args;
-	return <EmptyState height={height}></EmptyState>;
+	return <EmptyState {...args}></EmptyState>;
 };
 
 const Basic = bindWithProps(EmptyStateStory);
-Basic.args = { height: 500 };
+Basic.args = { height: 500, text: 'No data found' };
 
 export { Basic };
