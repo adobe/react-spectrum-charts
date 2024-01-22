@@ -70,10 +70,10 @@ describe('addScatterMarks()', () => {
 
 	test('should use "multiply" blend mode in light mode', () => {
 		const marks = addScatterMarks([], { ...defaultScatterProps, colorScheme: 'light' });
-		expect((marks[0] as GroupMark).marks?.[0].encode?.enter?.blend).toBe('multiply');
+		expect((marks[0] as GroupMark).marks?.[0].encode?.enter?.blend).toEqual({ value: 'multiply' });
 	});
 	test('should "screen" blend mode in dark mode', () => {
 		const marks = addScatterMarks([], { ...defaultScatterProps, colorScheme: 'dark' });
-		expect((marks[0] as GroupMark).marks?.[0].encode?.enter?.blend).toBe('screen');
+		expect((marks[0] as GroupMark).marks?.[0].encode?.enter?.blend).toEqual({ value: 'screen' });
 	});
 });
