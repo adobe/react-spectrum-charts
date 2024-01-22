@@ -9,7 +9,6 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
 import {
 	DEFAULT_COLOR,
 	DEFAULT_COLOR_SCHEME,
@@ -67,5 +66,14 @@ describe('addScatterMarks()', () => {
 		expect(marks[0].name).toBe('scatter0_group');
 		expect(marks[0].type).toBe('group');
 		expect((marks[0] as GroupMark).marks).toHaveLength(1);
+	});
+
+	test('should use "multiply" blend mode in light mode', () => {
+		const marks = addScatterMarks([], { ...defaultScatterProps, colorScheme: 'light' });
+		expect((marks[0] as GroupMark).marks?.[0].encode?.enter?.blend).toBe('multiply');
+	});
+	test('should "screen" blend mode in dark mode', () => {
+		const marks = addScatterMarks([], { ...defaultScatterProps, colorScheme: 'dark' });
+		expect((marks[0] as GroupMark).marks?.[0].encode?.enter?.blend).toBe('screen');
 	});
 });
