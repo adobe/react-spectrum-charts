@@ -9,10 +9,8 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import React from 'react';
-
 import { Scatter, spectrumColors } from '@rsc';
-import { findAllMarksByGroupName, findChart, getAllLegendEntries, render, screen } from '@test-utils';
+import { findAllMarksByGroupName, findChart, getAllLegendEntries, render } from '@test-utils';
 
 import { Basic, Color, Opacity, Size } from './Scatter.story';
 
