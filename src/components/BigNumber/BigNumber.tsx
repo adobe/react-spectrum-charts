@@ -19,13 +19,15 @@ export const BigNumber: FC<BigNumberProps> = (props) => {
 	const direction = props.orientation == 'vertical' ? 'column' : 'row';
 	const alignment = props.orientation == 'vertical' ? 'center' : 'start';
 
+	const formattedValue = props.numberFormat?.format(props.value) ?? props.value;
+
 	return (
 		<Flex direction={direction}>
 			<Flex alignItems="center" direction={direction}>
 				{props.icon}
 			</Flex>
 			<Flex direction="column" alignItems={alignment}>
-				<Text>{props.value}</Text>
+				<Text>{formattedValue}</Text>
 				<Text>{props.label}</Text>
 			</Flex>
 		</Flex>
