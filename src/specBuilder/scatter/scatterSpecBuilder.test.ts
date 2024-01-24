@@ -20,7 +20,7 @@ import { initializeSpec } from '@specBuilder/specUtils';
 import { ScatterSpecProps } from 'types';
 import { GroupMark } from 'vega';
 
-import { addData, addScales, addScatterMarks } from './scatterSpecBuilder';
+import { addData, addScatterMarks, setScales } from './scatterSpecBuilder';
 
 const defaultScatterProps: ScatterSpecProps = {
 	children: [],
@@ -45,17 +45,23 @@ describe('addData()', () => {
 	});
 });
 
-describe('addScales()', () => {
+describe('setScales()', () => {
 	test('should add all the correct scales', () => {
-		const scales = addScales([], defaultScatterProps);
+		const scales = setScales([], defaultScatterProps);
 		expect(scales).toHaveLength(2);
 		expect(scales[0].name).toBe('xLinear');
 		expect(scales[1].name).toBe('yLinear');
 	});
 	test('should add the color scale if color is a reference to a key', () => {
-		const scales = addScales([], { ...defaultScatterProps, color: DEFAULT_COLOR });
+		const scales = setScales([], { ...defaultScatterProps, color: DEFAULT_COLOR });
 		expect(scales).toHaveLength(3);
 		expect(scales[2].name).toBe('color');
+	});
+	test('should add the symbolSize scale if size is a reference to a key', () => {
+		const scales = setScales([], { ...defaultScatterProps, size: 'weight' });
+		expect(scales).toHaveLength(3);
+		expect(scales[2].name).toBe('symbolSize');
+		expect(scales[2].domain).toEqual({ data: 'table', fields: ['weight'] });
 	});
 });
 

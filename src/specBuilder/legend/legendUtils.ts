@@ -10,7 +10,7 @@
  * governing permissions and limitations under the License.
  */
 import { HIGHLIGHT_CONTRAST_RATIO } from '@constants';
-import { getColorValue } from '@specBuilder/specUtils';
+import { getColorValue, getPathFromSymbolShape } from '@specBuilder/specUtils';
 import { spectrumColors } from '@themes';
 import merge from 'deepmerge';
 import {
@@ -19,7 +19,6 @@ import {
 	LegendDescription,
 	LegendLabel,
 	LegendSpecProps,
-	OpacityFacet,
 	Position,
 	SecondaryFacetType,
 } from 'types';
@@ -57,12 +56,12 @@ export const getColumns = (position: Position): SignalRef | undefined => {
  * @param hiddenEntries
  * @returns
  */
-export const getHiddenEntriesFilter = (hiddenEntries: string[]): FilterTransform[] => {
+export const getHiddenEntriesFilter = (hiddenEntries: string[], name: string): FilterTransform[] => {
 	if (!hiddenEntries.length) return [];
 	return [
 		{
 			type: 'filter',
-			expr: `indexof(${JSON.stringify(hiddenEntries)}, datum.legendEntries) === -1`,
+			expr: `indexof(${JSON.stringify(hiddenEntries)}, datum.${name}Entries) === -1`,
 		},
 	];
 };
@@ -102,18 +101,15 @@ const getLegendLabelsEncodings = (legendLabels: LegendLabel[] | undefined): Lege
 	return {};
 };
 
-const getHoverEncodings = (
-	facets: Facet[],
-	{ highlight, highlightedSeries, name, opacity, descriptions, onMouseOut, onMouseOver }: LegendSpecProps
-): LegendEncode => {
+const getHoverEncodings = (facets: Facet[], props: LegendSpecProps): LegendEncode => {
+	const { highlight, highlightedSeries, name, onMouseOver, onMouseOut, descriptions } = props;
 	if (highlight || highlightedSeries || descriptions) {
-		const includeOpacity = Boolean(highlight || highlightedSeries); // only add stroke opacity if highlight is true or highlightedSeries is defined
 		return {
 			entries: {
 				name: `${name}_legendEntry`,
 				interactive: true,
 				enter: {
-					tooltip: getTooltip(descriptions), // only add tooltip if descriptions exist
+					tooltip: getTooltip(descriptions, name), // only add tooltip if descriptions exist
 				},
 				update: {
 					fill: { value: 'transparent' }, // need something here to trigger the tooltip
@@ -121,13 +117,13 @@ const getHoverEncodings = (
 			},
 			labels: {
 				update: {
-					fillOpacity: getOpacityEncoding(includeOpacity),
+					fillOpacity: getOpacityEncoding(props),
 				},
 			},
 			symbols: {
 				update: {
-					fillOpacity: getOpacityEncoding(includeOpacity, opacity, facets),
-					strokeOpacity: getOpacityEncoding(includeOpacity),
+					fillOpacity: getSymbolOpacityEncoding(props),
+					strokeOpacity: getOpacityEncoding(props),
 				},
 			},
 		};
@@ -146,9 +142,28 @@ const getHoverEncodings = (
 	return {};
 };
 
-const getTooltip = (descriptions?: LegendDescription[]) => {
+const getTooltip = (descriptions: LegendDescription[] | undefined, name: string) => {
 	if (descriptions?.length) {
-		return { signal: 'datum' };
+		return { signal: `merge(datum, {'rscComponentName': '${name}'})` };
+	}
+	return undefined;
+};
+
+/**
+ * simple opacity encoding for legend labels and the symbol stroke opacity
+ * @param legendProps
+ * @returns opactiy encoding
+ */
+export const getOpacityEncoding = ({
+	highlight,
+	highlightedSeries,
+	keys,
+	name,
+}: LegendSpecProps): ProductionRule<NumericValueRef> | undefined => {
+	const highlightSignalName = keys ? `${name}_highlight` : 'highlightedSeries';
+	// only add symbol opacity if highlight is true or highlightedSeries is defined
+	if (Boolean(highlight || highlightedSeries)) {
+		return getHighlightOpacityEncoding({ value: 1 / HIGHLIGHT_CONTRAST_RATIO }, { value: 1 }, highlightSignalName);
 	}
 	return undefined;
 };
@@ -160,43 +175,52 @@ const getTooltip = (descriptions?: LegendDescription[]) => {
  * @param facets
  * @returns
  */
-export const getOpacityEncoding = (
-	highlight: boolean,
-	opacity?: OpacityFacet,
-	facets?: Facet[]
-): ProductionRule<NumericValueRef> | undefined => {
-	if (highlight) {
+export const getSymbolOpacityEncoding = ({
+	facets,
+	highlight,
+	highlightedSeries,
+	keys,
+	name,
+	opacity,
+}: LegendSpecProps & { facets?: Facet[] }): ProductionRule<NumericValueRef> | undefined => {
+	const highlightSignalName = keys ? `${name}_highlight` : 'highlightedSeries';
+	// only add symbol opacity if highlight is true or highlightedSeries is defined
+	if (Boolean(highlight || highlightedSeries)) {
 		if (facets || opacity) {
 			const opacityEncoding = getSymbolFacetEncoding<number>({
 				facets,
 				facetType: 'opacity',
 				customValue: opacity,
+				name,
 			}) ?? { value: 1 };
 			if ('signal' in opacityEncoding) {
 				return getHighlightOpacityEncoding(
 					{ signal: opacityEncoding.signal + ` / ${HIGHLIGHT_CONTRAST_RATIO}` },
-					opacityEncoding
+					opacityEncoding,
+					highlightSignalName
 				);
 			}
 			if ('value' in opacityEncoding && typeof opacityEncoding.value === 'number') {
 				return getHighlightOpacityEncoding(
 					{ value: opacityEncoding.value / HIGHLIGHT_CONTRAST_RATIO },
-					opacityEncoding
+					opacityEncoding,
+					highlightSignalName
 				);
 			}
 		}
-		return getHighlightOpacityEncoding({ value: 1 / HIGHLIGHT_CONTRAST_RATIO }, { value: 1 });
+		return getHighlightOpacityEncoding({ value: 1 / HIGHLIGHT_CONTRAST_RATIO }, { value: 1 }, highlightSignalName);
 	}
 	return undefined;
 };
 
 const getHighlightOpacityEncoding = (
 	highlightOpacity: BaseValueRef<number>,
-	defaultOpacity: BaseValueRef<number>
+	defaultOpacity: BaseValueRef<number>,
+	highlightSignalName: string
 ): ProductionRule<NumericValueRef> => {
 	return [
 		{
-			test: 'highlightedSeries && datum.value !== highlightedSeries',
+			test: `${highlightSignalName} && datum.value !== ${highlightSignalName}`,
 			...highlightOpacity,
 		},
 		defaultOpacity,
@@ -208,22 +232,22 @@ export const getSymbolEncodings = (facets: Facet[], props: LegendSpecProps): Leg
 	let update: SymbolEncodeEntry = {
 		fill: [
 			...getHiddenSeriesColorRule(props, 'gray-300'),
-			getSymbolFacetEncoding<Color>({ facets, facetType: 'color', customValue: color }) || {
+			getSymbolFacetEncoding<Color>({ facets, facetType: 'color', customValue: color, name }) || {
 				value: spectrumColors[colorScheme]['categorical-100'],
 			},
 		],
-		fillOpacity: getSymbolFacetEncoding<number>({ facets, facetType: 'opacity', customValue: opacity }),
-		size: getSymbolFacetEncoding<number>({ facets, facetType: 'symbolSize' }),
+		fillOpacity: getSymbolFacetEncoding<number>({ facets, facetType: 'opacity', customValue: opacity, name }),
+		size: getSymbolFacetEncoding<number>({ facets, facetType: 'symbolSize', name }),
 		stroke: [
 			...getHiddenSeriesColorRule(props, 'gray-300'),
-			getSymbolFacetEncoding<Color>({ facets, facetType: 'color', customValue: color }) || {
+			getSymbolFacetEncoding<Color>({ facets, facetType: 'color', customValue: color, name }) || {
 				value: spectrumColors[colorScheme]['categorical-100'],
 			},
 		],
-		strokeDash: getSymbolFacetEncoding<number[]>({ facets, facetType: 'lineType', customValue: lineType }),
-		strokeOpacity: getSymbolFacetEncoding<number>({ facets, facetType: 'opacity' }),
-		strokeWidth: getSymbolFacetEncoding<number>({ facets, facetType: 'lineWidth', customValue: lineWidth }),
-		shape: getSymbolFacetEncoding<string>({ facets, facetType: 'symbolShape', customValue: symbolShape }),
+		strokeDash: getSymbolFacetEncoding<number[]>({ facets, facetType: 'lineType', customValue: lineType, name }),
+		strokeOpacity: getSymbolFacetEncoding<number>({ facets, facetType: 'opacity', name }),
+		strokeWidth: getSymbolFacetEncoding<number>({ facets, facetType: 'lineWidth', customValue: lineWidth, name }),
+		shape: getSymbolFacetEncoding<string>({ facets, facetType: 'symbolShape', customValue: symbolShape, name }),
 	};
 	// Remove undefined values
 	update = JSON.parse(JSON.stringify(update));
@@ -241,14 +265,16 @@ const getSymbolFacetEncoding = <T>({
 	customValue,
 	facets,
 	facetType,
+	name,
 }: {
 	customValue?: FacetRef<T>;
 	facets?: Facet[];
 	facetType: FacetType;
+	name: string;
 }): BaseValueRef<T> | undefined => {
 	if (customValue) {
 		if (typeof customValue === 'string') {
-			return { signal: `scale('${facetType}', data('legendAggregate')[datum.index].${customValue})` };
+			return { signal: `scale('${facetType}', data('${name}Aggregate')[datum.index].${customValue})` };
 		}
 		return { value: customValue.value };
 	}
@@ -270,20 +296,21 @@ const getSymbolFacetEncoding = <T>({
 	if (secondaryFacet) {
 		const { scale, signal } = secondaryFacetMapping[facetType];
 		return {
-			signal: `scale('${signal}', data('legendAggregate')[datum.index].${facet.field})[indexof(domain('${scale}'), data('legendAggregate')[datum.index].${secondaryFacet.field})% length(scale('${signal}', data('legendAggregate')[datum.index].${facet.field}))]`,
+			signal: `scale('${signal}', data('${name}Aggregate')[datum.index].${facet.field})[indexof(domain('${scale}'), data('${name}Aggregate')[datum.index].${secondaryFacet.field})% length(scale('${signal}', data('${name}Aggregate')[datum.index].${facet.field}))]`,
 		};
 	}
 
-	return { signal: `scale('${facetType}', data('legendAggregate')[datum.index].${facet.field})` };
+	return { signal: `scale('${facetType}', data('${name}Aggregate')[datum.index].${facet.field})` };
 };
 
 export const getHiddenSeriesColorRule = (
-	{ colorScheme, hiddenSeries, isToggleable }: LegendSpecProps,
+	{ colorScheme, hiddenSeries, isToggleable, keys }: LegendSpecProps,
 	colorValue: ColorValueV6
 ): ({
 	test?: string;
 } & ColorValueRef)[] => {
-	if (!isToggleable && !hiddenSeries) return [];
+	// if the legend doesn't support hide/show or if it has custom keys, don't add the hidden series color rule
+	if ((!isToggleable && !hiddenSeries) || keys) return [];
 	return [{ test: 'indexof(hiddenSeries, datum.value) !== -1', value: getColorValue(colorValue, colorScheme) }];
 };
 
@@ -293,9 +320,10 @@ export const getHiddenSeriesColorRule = (
  * @returns
  */
 export const getShowHideEncodings = (props: LegendSpecProps): LegendEncode => {
-	const { colorScheme, hiddenSeries, isToggleable, name, onClick } = props;
+	const { colorScheme, hiddenSeries, isToggleable, keys, name, onClick } = props;
 	let hiddenSeriesEncode: LegendEncode = {};
-	if (hiddenSeries || isToggleable) {
+	// if the legend supports hide/show and doesn't have custom keys, add the hidden series encodings
+	if ((hiddenSeries || isToggleable) && !keys) {
 		hiddenSeriesEncode = {
 			labels: {
 				update: {
@@ -309,7 +337,7 @@ export const getShowHideEncodings = (props: LegendSpecProps): LegendEncode => {
 	}
 
 	let clickEncode: LegendEncode = {};
-	if (isToggleable || onClick) {
+	if ((isToggleable && !keys) || onClick) {
 		clickEncode = {
 			entries: {
 				name: `${name}_legendEntry`,
@@ -335,4 +363,15 @@ export const mergeLegendEncodings = (encodings: LegendEncode[]): LegendEncode =>
 		mergedEncodings = merge(mergedEncodings, encoding);
 	}
 	return mergedEncodings;
+};
+
+/**
+ * Gets the symbol type (shape) for the legend
+ * @param symbolShape
+ * @returns symbolShape
+ */
+export const getSymbolType = (symbolShape: FacetRef<string> | undefined): string => {
+	if (symbolShape && typeof symbolShape === 'object' && 'value' in symbolShape)
+		return getPathFromSymbolShape(symbolShape.value);
+	return 'circle';
 };

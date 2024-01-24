@@ -63,13 +63,13 @@ export const getSeriesHoveredSignal = (name: string, nestedDatum?: boolean, even
 /**
  * Returns the highlighted series signal
  */
-export const getHighlightSeriesSignal = (name: string, includeHiddenSeries: boolean): Signal => {
-	const hoveredSeries = 'domain("legendEntries")[datum.index]';
+export const getHighlightSeriesSignal = (name: string, includeHiddenSeries: boolean, keys?: string[]): Signal => {
+	const hoveredSeries = `domain("${name}Entries")[datum.index]`;
 	const update = includeHiddenSeries
 		? `indexof(hiddenSeries, ${hoveredSeries}) === -1 ? ${hoveredSeries} : ""`
 		: hoveredSeries;
 	return {
-		name: 'highlightedSeries',
+		name: keys ? `${name}_highlight` : 'highlightedSeries',
 		value: null,
 		on: [
 			{ events: `@${name}_legendEntry:mouseover`, update },

@@ -11,11 +11,12 @@
  */
 import React from 'react';
 
-import '@matchMediaMock';
-import { Scatter } from '@rsc';
-import { findAllMarksByGroupName, findChart, render } from '@test-utils';
+import { Scatter, spectrumColors } from '@rsc';
+import { findAllMarksByGroupName, findChart, getAllLegendEntries, render, screen } from '@test-utils';
 
-import { Basic } from './Scatter.story';
+import { Basic, Color, Opacity, Size } from './Scatter.story';
+
+const colors = spectrumColors.light;
 
 describe('Scatter', () => {
 	// Scatter is not a real React component. This is test just provides test coverage for sonarqube
@@ -31,5 +32,48 @@ describe('Scatter', () => {
 
 		const points = await findAllMarksByGroupName(chart, 'scatter0');
 		expect(points).toHaveLength(16);
+	});
+
+	test('Color renders properly', async () => {
+		render(<Color {...Color.args} />);
+
+		const chart = await findChart();
+		expect(chart).toBeInTheDocument();
+
+		const points = await findAllMarksByGroupName(chart, 'scatter0');
+		expect(points).toHaveLength(16);
+		expect(points[0]).toHaveAttribute('fill', colors['categorical-100']);
+		expect(points[6]).toHaveAttribute('fill', colors['categorical-200']);
+		expect(points[11]).toHaveAttribute('fill', colors['categorical-300']);
+
+		const legendEntries = getAllLegendEntries(chart);
+		expect(legendEntries).toHaveLength(3);
+	});
+
+	test('Opacity renders properly', async () => {
+		render(<Opacity {...Opacity.args} />);
+
+		const chart = await findChart();
+		expect(chart).toBeInTheDocument();
+
+		const points = await findAllMarksByGroupName(chart, 'scatter0');
+		expect(points[0]).toHaveAttribute('fill-opacity', '0.5');
+	});
+
+	test('Size renders properly', async () => {
+		render(<Size {...Size.args} />);
+
+		const chart = await findChart();
+		expect(chart).toBeInTheDocument();
+
+		const points = await findAllMarksByGroupName(chart, 'scatter0');
+
+		// small circle (radius 3)
+		expect(points[0]).toHaveAttribute('d', 'M3,0A3,3,0,1,1,-3,0A3,3,0,1,1,3,0');
+		// big circle (radius 8)
+		expect(points[15]).toHaveAttribute('d', 'M8,0A8,8,0,1,1,-8,0A8,8,0,1,1,8,0');
+
+		const legendEntries = getAllLegendEntries(chart);
+		expect(legendEntries).toHaveLength(6);
 	});
 });

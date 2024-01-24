@@ -46,6 +46,7 @@ function getSpectrumVegaConfig(colorScheme: ColorScheme): Config {
 		center: true,
 		offset: 24,
 		bounds: 'full',
+		margin: 48,
 	};
 	const verticalLegendLayout: BaseLegendLayout = {
 		anchor: 'middle',
@@ -53,6 +54,7 @@ function getSpectrumVegaConfig(colorScheme: ColorScheme): Config {
 		center: false,
 		offset: 24,
 		bounds: 'full',
+		margin: 24,
 	};
 
 	const defaultColor = spectrumColors[colorScheme]['categorical-100'];

@@ -30,6 +30,7 @@ export default function useSpec({
 	lineWidths,
 	opacities,
 	symbolShapes,
+	symbolSizes,
 	title,
 	UNSAFE_vegaSpec,
 }: SanitizedSpecProps): Spec {
@@ -64,6 +65,7 @@ export default function useSpec({
 					lineWidths,
 					opacities,
 					symbolShapes,
+					symbolSizes,
 					title,
 				})
 			)
@@ -81,6 +83,7 @@ export default function useSpec({
 		lineWidths,
 		opacities,
 		symbolShapes,
+		symbolSizes,
 		title,
 		UNSAFE_vegaSpec,
 	]);

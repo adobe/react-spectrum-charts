@@ -39,9 +39,10 @@ import {
 	SanitizedSpecProps,
 	ScatterElement,
 	SymbolShapes,
+	SymbolSize,
 	TitleElement,
 } from 'types';
-import { Data, OrdinalScale, PointScale, Scale, Signal, Spec } from 'vega';
+import { Data, LinearScale, OrdinalScale, PointScale, Scale, Signal, Spec } from 'vega';
 
 import { addArea } from './area/areaSpecBuilder';
 import { addAxis } from './axis/axisSpecBuilder';
@@ -58,6 +59,7 @@ import {
 	getLineWidthPixelsFromLineWidth,
 	getPathFromSymbolShape,
 	getStrokeDashFromLineType,
+	getVegaSymbolSizeFromRscSymbolSize,
 	initializeSpec,
 } from './specUtils';
 import { addTitle } from './title/titleSpecBuilder';
@@ -73,12 +75,13 @@ export function buildSpec({
 	lineWidths = ['M'],
 	opacities,
 	symbolShapes = ['rounded-square'],
+	symbolSizes = ['XS', 'XL'],
 	colorScheme = DEFAULT_COLOR_SCHEME,
 	title,
 }: SanitizedSpecProps) {
 	let spec = initializeSpec(null, { backgroundColor, colorScheme, description, title });
 	spec.signals = getDefaultSignals(backgroundColor, colors, colorScheme, lineTypes, opacities, hiddenSeries);
-	spec.scales = getDefaultScales(colors, colorScheme, lineTypes, lineWidths, opacities, symbolShapes);
+	spec.scales = getDefaultScales(colors, colorScheme, lineTypes, lineWidths, opacities, symbolShapes, symbolSizes);
 
 	// need to build the spec in a specific order
 	const buildOrder = new Map();
@@ -221,13 +224,15 @@ const getDefaultScales = (
 	lineTypes: LineTypes,
 	lineWidths: LineWidth[],
 	opacities: Opacities | undefined,
-	symbolShapes: SymbolShapes
+	symbolShapes: SymbolShapes,
+	symbolSizes: [SymbolSize, SymbolSize]
 ): Scale[] => [
 	getColorScale(colors, colorScheme),
 	getLineTypeScale(lineTypes),
 	getLineWidthScale(lineWidths),
 	getOpacityScale(opacities),
 	getSymbolShapeScale(symbolShapes),
+	getSymbolSizeScale(symbolSizes),
 ];
 
 export const getColorScale = (colors: ChartColors, colorScheme: ColorScheme): OrdinalScale => {
@@ -265,6 +270,19 @@ export const getSymbolShapeScale = (symbolShapes: SymbolShapes): OrdinalScale =>
 		domain: { data: TABLE, fields: [] },
 	};
 };
+
+/**
+ * returns the symbol size scale
+ * @param symbolSizes
+ * @returns LinearScale
+ */
+export const getSymbolSizeScale = (symbolSizes: [SymbolSize, SymbolSize]): LinearScale => ({
+	name: 'symbolSize',
+	type: 'linear',
+	zero: false,
+	range: symbolSizes.map((symbolSize) => getVegaSymbolSizeFromRscSymbolSize(symbolSize)),
+	domain: { data: TABLE, fields: [] },
+});
 
 export const getLineWidthScale = (lineWidths: LineWidth[]): OrdinalScale => ({
 	name: 'lineWidth',
