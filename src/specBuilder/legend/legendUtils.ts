@@ -162,7 +162,7 @@ export const getOpacityEncoding = ({
 }: LegendSpecProps): ProductionRule<NumericValueRef> | undefined => {
 	const highlightSignalName = keys ? `${name}_highlight` : 'highlightedSeries';
 	// only add symbol opacity if highlight is true or highlightedSeries is defined
-	if (Boolean(highlight || highlightedSeries)) {
+	if (highlight || highlightedSeries) {
 		return getHighlightOpacityEncoding({ value: 1 / HIGHLIGHT_CONTRAST_RATIO }, { value: 1 }, highlightSignalName);
 	}
 	return undefined;
@@ -185,7 +185,7 @@ export const getSymbolOpacityEncoding = ({
 }: LegendSpecProps & { facets?: Facet[] }): ProductionRule<NumericValueRef> | undefined => {
 	const highlightSignalName = keys ? `${name}_highlight` : 'highlightedSeries';
 	// only add symbol opacity if highlight is true or highlightedSeries is defined
-	if (Boolean(highlight || highlightedSeries)) {
+	if (highlight || highlightedSeries) {
 		if (facets || opacity) {
 			const opacityEncoding = getSymbolFacetEncoding<number>({
 				facets,
@@ -232,7 +232,7 @@ export const getSymbolEncodings = (facets: Facet[], props: LegendSpecProps): Leg
 	let update: SymbolEncodeEntry = {
 		fill: [
 			...getHiddenSeriesColorRule(props, 'gray-300'),
-			getSymbolFacetEncoding<Color>({ facets, facetType: 'color', customValue: color, name }) || {
+			getSymbolFacetEncoding<Color>({ facets, facetType: 'color', customValue: color, name }) ?? {
 				value: spectrumColors[colorScheme]['categorical-100'],
 			},
 		],
@@ -240,7 +240,7 @@ export const getSymbolEncodings = (facets: Facet[], props: LegendSpecProps): Leg
 		size: getSymbolFacetEncoding<number>({ facets, facetType: 'symbolSize', name }),
 		stroke: [
 			...getHiddenSeriesColorRule(props, 'gray-300'),
-			getSymbolFacetEncoding<Color>({ facets, facetType: 'color', customValue: color, name }) || {
+			getSymbolFacetEncoding<Color>({ facets, facetType: 'color', customValue: color, name }) ?? {
 				value: spectrumColors[colorScheme]['categorical-100'],
 			},
 		],

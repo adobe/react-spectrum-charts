@@ -20,7 +20,15 @@ import { bindWithProps } from '@test-utils';
 const marioDataKeys = [
 	...Object.keys(characterData[0])
 		.filter((key) => key !== 'character')
-		.sort(),
+		.sort((a, b) => {
+			if (a < b) {
+				return -1;
+			}
+			if (a > b) {
+				return 1;
+			}
+			return 0;
+		}),
 	undefined,
 ];
 
@@ -68,7 +76,7 @@ const marioKeyTitle: Record<Exclude<MarioDataKey, 'character'>, string> = {
 const ScatterStory: StoryFn<typeof Scatter> = (args): ReactElement => {
 	const chartProps = useChartProps({ data: characterData, width: 400 });
 
-	const legendKey = (args.color || args.size) as MarioDataKey;
+	const legendKey = (args.color ?? args.size) as MarioDataKey;
 
 	return (
 		<Chart {...chartProps}>
