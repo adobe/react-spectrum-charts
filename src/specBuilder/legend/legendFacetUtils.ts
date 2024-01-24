@@ -62,7 +62,7 @@ export const getFacetsFromKeys = (
 	const ordinalFacets: Facet[] = [];
 	const continuousFacets: Facet[] = [];
 	scales.forEach((scale) => {
-		if (isScaleWithMultiFields(scale) && scaleHaskey(scale, keys)) {
+		if (isScaleWithMultiFields(scale) && scaleHasKey(scale, keys)) {
 			if (scale.type === 'ordinal' || scale.type === 'point') {
 				ordinalFacets.push({
 					facetType: scale.name as FacetType,
@@ -85,7 +85,7 @@ export const getFacetsFromKeys = (
  * @param keys
  * @returns boolean
  */
-const scaleHaskey = (scale: ScaleWithMultiFields, keys: string[]): boolean =>
+const scaleHasKey = (scale: ScaleWithMultiFields, keys: string[]): boolean =>
 	scale.domain.fields.some((field) => keys.includes(field.toString()));
 
 type ScaleWithMultiFields = Scale & { domain: ScaleMultiFieldsRef };
