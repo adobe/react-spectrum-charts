@@ -13,6 +13,8 @@ import { JSXElementConstructor, ReactElement, ReactFragment, ReactNode } from 'r
 
 import { MARK_ID, SERIES_ID, TRENDLINE_VALUE } from '@constants';
 import { Config, Data, FontWeight, Padding, Spec, SymbolShape } from 'vega';
+import {Icon} from '@adobe/react-spectrum'
+
 
 import { Theme } from '@react-types/provider';
 
@@ -156,6 +158,15 @@ export interface AxisProps extends BaseProps {
 	tickMinStep?: number;
 	/** Sets the axis title */
 	title?: string;
+}
+
+export type BigNumberOrientation = 'vertical' | 'horizontal'
+
+export interface BigNumberProps {
+	orientation: BigNumberOrientation;
+	icon?: Icon;
+	value: number;
+	label: string;
 }
 
 export type Granularity = 'minute' | 'hour' | 'day' | 'week' | 'month' | 'quarter';

@@ -15,6 +15,7 @@ export * from './components/Area';
 export * from './components/Axis';
 export * from './components/AxisAnnotation';
 export * from './components/Bar';
+export * from './components/BigNumber';
 export * from './components/ChartPopover';
 export * from './components/ChartTooltip';
 export * from './components/Legend';
