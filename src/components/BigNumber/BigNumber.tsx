@@ -13,21 +13,36 @@ import React, { FC } from 'react';
 
 import { BigNumberProps } from 'types';
 
-import { Flex, Text } from '@adobe/react-spectrum';
+import { Flex, Icon, Text } from '@adobe/react-spectrum';
+import { ErrorState } from '@components/BigNumber/ErrorState';
+import GraphBarVerticalStacked from '@spectrum-icons/workflow/GraphBarVerticalStacked';
+
 
 export const BigNumber: FC<BigNumberProps> = (props) => {
 	const direction = props.orientation == 'vertical' ? 'column' : 'row';
 	const alignment = props.orientation == 'vertical' ? 'center' : 'start';
 
-	return (
-		<Flex direction={direction}>
-			<Flex alignItems="center" direction={direction}>
-				{props.icon}
+
+	if (props.value === null) {
+		return <ErrorState direction={direction} alignment = {alignment}
+						   message="Unable to load. One or more values are null."/>;
+	} else if (props.value === undefined) {
+		return <ErrorState icon={<GraphBarVerticalStacked size="L"/>} actionText="Link Dataset"
+			direction={direction} alignment = {alignment} message="No data available."/>
+	} else {
+		return (
+			<Flex direction={direction}>
+				<Flex alignItems="center" direction={direction}>
+					{ props.icon && (
+						<Icon aria-label={props.iconLabel}>
+						{props.icon}
+						</Icon>) }
+				</Flex>
+				<Flex direction="column" alignItems={alignment}>
+					<Text>{props.value}</Text>
+					<Text>{props.label}</Text>
+				</Flex>
 			</Flex>
-			<Flex direction="column" alignItems={alignment}>
-				<Text>{props.value}</Text>
-				<Text>{props.label}</Text>
-			</Flex>
-		</Flex>
-	);
+		);
+	}
 };

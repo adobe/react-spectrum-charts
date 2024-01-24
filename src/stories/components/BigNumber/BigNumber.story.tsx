@@ -15,6 +15,8 @@ import { BigNumber } from '@rsc';
 import { StoryFn } from '@storybook/react';
 import { bindWithProps } from 'test-utils/bindWithProps';
 
+import Calendar from '@spectrum-icons/workflow/Calendar';
+
 export default {
 	title: 'RSC/BigNumber',
 	component: BigNumber,
@@ -40,7 +42,7 @@ BasicVertical.args = {
 
 const IconHorizonal = bindWithProps(BigNumberStory);
 IconHorizonal.args = {
-	icon: 'date',
+	icon: <Calendar/>,
 	orientation: 'horizontal',
 	value: 2555,
 	label: 'Visitors',
@@ -48,9 +50,26 @@ IconHorizonal.args = {
 
 const IconVertical = bindWithProps(BigNumberStory);
 IconVertical.args = {
-	icon: 'date',
+	icon: (<svg width="100" height="100">
+			<circle cx="50%" cy="50%" r="10" fill="red" />
+		</svg>),
 	orientation: 'vertical',
 	value: 2555,
-	label: 'Visitors',
+	label: 'Visitors'
 };
-export { BasicHorizonal, BasicVertical, IconHorizonal, IconVertical };
+
+const NoData = bindWithProps(BigNumberStory);
+NoData.args = {
+	value: null,
+	orientation: 'horizontal',
+	label: 'Visitors'
+}
+
+const UndefinedData = bindWithProps(BigNumberStory);
+UndefinedData.args = {
+	value: undefined,
+	orientation: 'horizontal',
+	label: 'Visitors'
+}
+
+export { BasicHorizonal, BasicVertical, IconHorizonal, IconVertical, NoData, UndefinedData };
