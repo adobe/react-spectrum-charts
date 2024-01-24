@@ -18,7 +18,7 @@ import { findChart, getAllAxisLabels, render, screen, within } from '@test-utils
 import { Basic, ControlledLabels, NonLinearAxis, SubLabels, TickMinStep, Time } from './Axis.story';
 
 describe('Axis', () => {
-	test('Renders properly', async () => {
+	test('Renders component properly', async () => {
 		render(<Basic {...Basic.args} />);
 		const axes = await screen.findAllByRole('graphics-symbol');
 		expect(axes[0]).toBeInTheDocument();
