@@ -12,6 +12,17 @@
   resolved "https://registry.yarnpkg.com/@adobe/css-tools/-/css-tools-4.3.2.tgz#a6abc715fb6884851fca9dad37fc34739a04fd11"
   integrity sha512-DA5a1C0gD/pLOvhv33YMrbf2FK3oUzwNl9oOJqE4XVjuEtt6XIakRcsd7eLiOSPkp1kTRQGICTA8cKra/vFbjw==
 
+"@adobe/react-spectrum-charts@^1.0.1":
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/@adobe/react-spectrum-charts/-/react-spectrum-charts-1.0.1.tgz#fbfb40dcd9d501dbe5b24a2f5ef57bb5a85cd85c"
+  integrity sha512-kJdYnquNyIfQ/t36TEy5JYgx2ujCjTqFmiegxG6PIWt5gGSz79sqvq1l8PNJnHMQ//r7u/V4XqIObz06+vU6gw==
+  dependencies:
+    "@adobe/react-spectrum" ">= 3.23.0"
+    immer ">= 9.0.0"
+    uuid ">= 9.0.0"
+    vega-embed ">= 6.24.0"
+    vega-tooltip ">= 0.26.0"
+
 "@adobe/react-spectrum-ui@1.2.0":
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/@adobe/react-spectrum-ui/-/react-spectrum-ui-1.2.0.tgz#b1c72d5db6ac84c99fd45ddb3bd8e00bfff9f150"
@@ -13681,9 +13692,9 @@ vega-scale@^7.3.0, vega-scale@^7.3.1, vega-scale@~7.3.1:
     vega-util "^1.17.1"
 
 vega-scenegraph@^4.10.2, vega-scenegraph@^4.9.2, vega-scenegraph@~4.11.0:
-  version "4.11.1"
-  resolved "https://registry.yarnpkg.com/vega-scenegraph/-/vega-scenegraph-4.11.1.tgz#5faf91d3d1d45ce593e421550303d284ebfba141"
-  integrity sha512-XXEy8zbLYATj6yuIz6PcSGxO/pob4DEYBHdwoN4tfB2Yz6/eModF0JJdlNsGWNxV27VO6EPtzpJEc5Ql/OOQNw==
+  version "4.11.2"
+  resolved "https://registry.yarnpkg.com/vega-scenegraph/-/vega-scenegraph-4.11.2.tgz#7e9cad503c95fb5af22691bbd394faa8a0b97ce9"
+  integrity sha512-PXSvv/L7Ek+9mwOTPLpzgkXdfGCR+AcWV5aquPGrqCWoiIF49VJkKFNT1HWxj3RZJX0XKo2r7SuXvRBb9EJ1aA==
   dependencies:
     d3-path "^3.1.0"
     d3-shape "^3.2.0"
@@ -13735,9 +13746,9 @@ vega-time@^2.1.1, vega-time@~2.1.1:
     vega-util "^1.17.2"
 
 vega-transforms@~4.11.0:
-  version "4.11.0"
-  resolved "https://registry.yarnpkg.com/vega-transforms/-/vega-transforms-4.11.0.tgz#3b7c2508c6cb1929fe69012e18ce7162223f7b8a"
-  integrity sha512-BeDASz7s9pIFjcSBljJJb8Eg0to2VjU0DvS/UjCQQYtqlfmzz78/mZnHyC+mW06h58ZKN+1QrIfqTZ6uMB4ySw==
+  version "4.11.1"
+  resolved "https://registry.yarnpkg.com/vega-transforms/-/vega-transforms-4.11.1.tgz#bc1291c49337eb465c3ead1ac0297cd8dd98d74a"
+  integrity sha512-DDbqEQnvy9/qEvv0bAKPqAuzgaNb7Lh2xKJFom2Yzx4tZHCl8dnKxC1lH9JnJlAMdtZuiNLPARUkf3pCNQ/olw==
   dependencies:
     d3-array "^3.2.2"
     vega-dataflow "^5.7.5"
