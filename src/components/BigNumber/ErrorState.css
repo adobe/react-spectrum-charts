@@ -1,15 +1,15 @@
 .action-button {
     background: none;
-    font-size: 0.75rem;
+    font-size: 1.05em;
     border: none;
     color: #3e89e3;
 }
 
-.action-button:hover {
-    text-decoration: underline;
-    cursor: pointer;
+.text-color {
+    color: #b1b1b1
 }
 
 .error-info {
     font-style: italic;
+    font-size: 1.0em;
 }

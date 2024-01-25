@@ -13,7 +13,7 @@ import React, { FC } from 'react';
 
 import { BigNumberProps } from 'types';
 
-import { Flex, Icon, Text } from '@adobe/react-spectrum';
+import { Flex, Text } from '@adobe/react-spectrum';
 import { ErrorState } from '@components/BigNumber/ErrorState';
 import GraphBarVerticalStacked from '@spectrum-icons/workflow/GraphBarVerticalStacked';
 
@@ -25,20 +25,14 @@ export const BigNumber: FC<BigNumberProps> = (props) => {
 	const formattedValue = props.value ? props.numberFormat?.format(props.value) ?? props.value : props.value;
 
 	if (props.value === null) {
-		return <ErrorState direction={direction} alignment = {alignment}
-						   message="Unable to load. One or more values are null."/>;
+		return <ErrorState message="Unable to load. One or more values are null."/>;
 	} else if (props.value === undefined) {
-		return <ErrorState icon={<GraphBarVerticalStacked size="L"/>} actionText="Link Dataset"
-			direction={direction} alignment = {alignment} message="No data available."/>
+		return <ErrorState icon={<GraphBarVerticalStacked size="L"/>}
+						   actionText="Please check data is defined" message="No data available."/>
 	} else {
 		return (
-			<Flex direction={direction}>
-				<Flex alignItems="center" direction={direction}>
-					{ props.icon && (
-						<Icon aria-label={props.iconLabel}>
-						{props.icon}
-						</Icon>) }
-				</Flex>
+			<Flex direction={direction} alignItems="center" gap={direction === 'row' ? 'size-150' : 'size-75'}>
+				{ props.icon }
 				<Flex direction="column" alignItems={alignment}>
 					<Text>{formattedValue}</Text>
 					<Text>{props.label}</Text>

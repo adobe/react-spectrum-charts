@@ -164,7 +164,6 @@ export type BigNumberOrientation = 'vertical' | 'horizontal';
 export interface BigNumberProps {
 	orientation: BigNumberOrientation;
 	icon?: ReactElement;
-	iconLabel?: string;
 	value: number | undefined | null;
 	label: string;
 	numberFormat?: Intl.NumberFormat;
