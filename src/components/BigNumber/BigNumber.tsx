@@ -17,6 +17,8 @@ import { Flex, Text } from '@adobe/react-spectrum';
 import { ErrorState } from '@components/BigNumber/ErrorState';
 import GraphBarVerticalStacked from '@spectrum-icons/workflow/GraphBarVerticalStacked';
 
+import './BigNumber.css';
+
 
 export const BigNumber: FC<BigNumberProps> = (props) => {
 	const direction = props.orientation == 'vertical' ? 'column' : 'row';
@@ -32,10 +34,12 @@ export const BigNumber: FC<BigNumberProps> = (props) => {
 	} else {
 		return (
 			<Flex direction={direction} alignItems="center" gap={direction === 'row' ? 'size-150' : 'size-75'}>
-				{ props.icon }
+				<div className="theme">
+					{ props.icon }
+				</div>
 				<Flex direction="column" alignItems={alignment}>
-					<Text>{formattedValue}</Text>
-					<Text>{props.label}</Text>
+					<Text UNSAFE_className="theme number">{formattedValue}</Text>
+					<Text UNSAFE_className="theme description">{props.label}</Text>
 				</Flex>
 			</Flex>
 		);
