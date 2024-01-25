@@ -47,6 +47,7 @@ export interface SpecProps {
 	colorScheme?: ColorScheme; // spectrum color scheme
 	description?: string; // chart description
 	symbolShapes?: SymbolShapes;
+	symbolSizes?: [SymbolSize, SymbolSize]; // min and max for symbol size scale
 	lineTypes?: LineTypes; // line types available for the chart
 	lineWidths?: LineWidth[]; // line widths available for the chart
 	opacities?: Opacities; // opacities available for the chart
@@ -331,6 +332,8 @@ export interface LegendProps extends BaseProps {
 	highlight?: boolean;
 	/** allows the user to hide/show series by clicking on the legend entry (uncontrolled) */
 	isToggleable?: boolean;
+	/** keys from the data to generate the legend for. Defaults to all keys used to facet the data. */
+	keys?: string[];
 	/** labels for each of the series */
 	legendLabels?: LegendLabel[];
 	/** max characters before truncating a legend label */

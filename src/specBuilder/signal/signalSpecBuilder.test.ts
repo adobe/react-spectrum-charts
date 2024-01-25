@@ -20,7 +20,7 @@ export const defaultHighlightSignal: Signal = {
 	on: [
 		{
 			events: '@legend0_legendEntry:mouseover',
-			update: 'indexof(hiddenSeries, domain("legendEntries")[datum.index]) === -1 ? domain("legendEntries")[datum.index] : ""',
+			update: 'indexof(hiddenSeries, domain("legend0Entries")[datum.index]) === -1 ? domain("legend0Entries")[datum.index] : ""',
 		},
 		{ events: '@legend0_legendEntry:mouseout', update: '""' },
 	],

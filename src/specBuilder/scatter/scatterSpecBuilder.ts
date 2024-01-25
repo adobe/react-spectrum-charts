@@ -65,7 +65,7 @@ export const addScatter = produce<Spec, [ScatterProps & { colorScheme?: ColorSch
 		};
 
 		spec.data = addData(spec.data ?? [], scatterProps);
-		spec.scales = addScales(spec.scales ?? [], scatterProps);
+		spec.scales = setScales(spec.scales ?? [], scatterProps);
 		spec.marks = addScatterMarks(spec.marks ?? [], scatterProps);
 	}
 );
@@ -77,14 +77,16 @@ export const addData = produce<Data[], [ScatterSpecProps]>((data, { dimension, d
 	}
 });
 
-export const addScales = produce<Scale[], [ScatterSpecProps]>((scales, props) => {
-	const { color, dimension, dimensionScaleType, metric } = props;
+export const setScales = produce<Scale[], [ScatterSpecProps]>((scales, props) => {
+	const { color, dimension, dimensionScaleType, metric, size } = props;
 	// add dimension scale
 	addContinuousDimensionScale(scales, { scaleType: dimensionScaleType, dimension });
 	// add metric scale
 	addMetricScale(scales, [metric]);
 	// add color to the color domain
 	addFieldToFacetScaleDomain(scales, 'color', color);
+	// add size to the size domain
+	addFieldToFacetScaleDomain(scales, 'symbolSize', size);
 });
 
 export const addScatterMarks = produce<Mark[], [ScatterSpecProps]>((marks, props) => {

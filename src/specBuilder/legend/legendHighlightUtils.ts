@@ -15,7 +15,7 @@ import { GroupMark, Mark, NumericValueRef, ProductionRule } from 'vega';
 /**
  * Adds opacity tests for the fill and stroke of marks that use the color scale to set the fill or stroke value.
  */
-export const setHoverOpacityForMarks = (marks: Mark[]) => {
+export const setHoverOpacityForMarks = (marks: Mark[], keys?: string[], name?: string) => {
 	if (!marks.length) return;
 	const flatMarks = flattenMarks(marks);
 	const seriesMarks = flatMarks.filter(markUsesSeriesColorScale);
@@ -34,7 +34,7 @@ export const setHoverOpacityForMarks = (marks: Mark[]) => {
 			// the production rule that sets the fill opacity for this mark
 			const fillOpacityRule = getOpacityRule(fillOpacity);
 			// the new production rule for highlighting
-			const highlightFillOpacityRule = getHighlightOpacityRule(fillOpacityRule);
+			const highlightFillOpacityRule = getHighlightOpacityRule(fillOpacityRule, keys, name);
 
 			if (!Array.isArray(update.fillOpacity)) {
 				update.fillOpacity = [];
@@ -48,7 +48,7 @@ export const setHoverOpacityForMarks = (marks: Mark[]) => {
 			// the production rule that sets the stroke opacity for this mark
 			const strokeOpacityRule = getOpacityRule(strokeOpacity);
 			// the new production rule for highlighting
-			const highlightStrokeOpacityRule = getHighlightOpacityRule(strokeOpacityRule);
+			const highlightStrokeOpacityRule = getHighlightOpacityRule(strokeOpacityRule, keys, name);
 			if (!Array.isArray(update.strokeOpacity)) {
 				update.strokeOpacity = [];
 			}
@@ -76,9 +76,14 @@ export const getOpacityRule = (
 };
 
 export const getHighlightOpacityRule = (
-	opacityRule: ProductionRule<NumericValueRef>
+	opacityRule: ProductionRule<NumericValueRef>,
+	keys?: string[],
+	name?: string
 ): { test?: string } & NumericValueRef => {
-	const test = `highlightedSeries && highlightedSeries !== datum.${SERIES_ID}`;
+	let test = `highlightedSeries && highlightedSeries !== datum.${SERIES_ID}`;
+	if (keys) {
+		test = `${name}_highlight && ${name}_highlight !== datum.${keys[0]}`;
+	}
 	if ('scale' in opacityRule && 'field' in opacityRule) {
 		return {
 			test,

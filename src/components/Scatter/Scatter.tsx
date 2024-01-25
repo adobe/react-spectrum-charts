@@ -23,7 +23,7 @@ export function Scatter({
 	children,
 	metric = DEFAULT_METRIC,
 	name,
-	opacity = 0.8,
+	opacity = 1,
 	size = { value: DEFAULT_SYMBOL_SIZE },
 }: ScatterProps) {
 	return null;

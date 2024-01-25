@@ -103,6 +103,7 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 			padding = 0,
 			renderer = 'svg',
 			symbolShapes,
+			symbolSizes,
 			theme = defaultTheme,
 			title,
 			width = 'auto',
@@ -133,6 +134,7 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 			hiddenSeries,
 			highlightedSeries,
 			symbolShapes,
+			symbolSizes,
 			lineTypes,
 			lineWidths,
 			opacities,
@@ -194,7 +196,7 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 		if (tooltips.length || legendDescriptions) {
 			tooltipConfig.formatTooltip = (value) => {
 				debugLog(debug, { title: 'Tooltip datum', contents: value });
-				if (legendDescriptions && 'index' in value) {
+				if (value.rscComponentName?.startsWith('legend') && legendDescriptions && 'index' in value) {
 					debugLog(debug, {
 						title: 'Legend descriptions',
 						contents: legendDescriptions,
@@ -203,7 +205,8 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 						<LegendTooltip
 							value={value}
 							descriptions={legendDescriptions}
-							domain={chartView.current?.scale('legendEntries').domain()}
+							// TODO: support multiple legends
+							domain={chartView.current?.scale('legend0Entries').domain()}
 						/>
 					);
 				}
