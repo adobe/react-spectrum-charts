@@ -15,10 +15,7 @@
     font-size: 1.05em;
     border: none;
     color: #3e89e3;
-}
-
-.action-button:focus {
-    border: blue;
+    outline: none;
 }
 
 .text-color {
@@ -28,4 +25,11 @@
 .error-info {
     font-style: italic;
     font-size: 1.0em;
+}
+
+.focus-style {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
 }

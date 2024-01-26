@@ -28,17 +28,20 @@ interface ErrorStateProps {
 
 export const ErrorState: FC<ErrorStateProps> = (props) => {
 	return (
-		<Flex direction="column" alignItems="center" justifyContent="center">
-			<div className="text-color">
-				{ props.icon
-					? 	props.icon
-					: <AlertCircle size="XL"/>
-				}
+
+		<Flex justifyContent="center">
+			<div tabIndex={0} className="focus-style">
+				<div className="text-color">
+					{props.icon
+						? props.icon
+						: <AlertCircle size="XL" />
+					}
+				</div>
+				<span className="error-info text-color">{props.message}</span>
+				<button className="action-button">
+					<Text>{props.actionText ? props.actionText : 'Please check incoming data'}</Text>
+				</button>
 			</div>
-			<span className="error-info text-color">{props.message}</span>
-			<button className="action-button">
-				<Text>{props.actionText ? props.actionText : 'Please check incoming data'}</Text>
-			</button>
 		</Flex>
 	);
-}
+};

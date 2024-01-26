@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import React, { FC, useState } from 'react';
+import React, { FC } from 'react';
 
 import { BigNumberProps } from 'types';
 
@@ -37,7 +37,6 @@ export const BigNumber: FC<BigNumberProps> = (props) => {
 			<div>
 				<Flex direction={direction} alignItems="center" gap={direction === 'row' ? 'size-150' : 'size-75'}>
 					<div tabIndex={0} className={"content"}>
-
 						<div className="theme main-container">
 							{props.icon}
 						</div>
