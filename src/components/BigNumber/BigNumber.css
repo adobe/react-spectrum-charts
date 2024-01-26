@@ -23,12 +23,9 @@
     font-size: medium;
 }
 
-.on-focus {
-    border: 2px solid cornflowerblue;
-}
-
 .content {
-    height: 100%;
-    width: 100%;
+    height: fit-content;
+    width: fit-content;
     display: flex;
 }
+

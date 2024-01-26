@@ -9,16 +9,15 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
 import React, { ReactElement } from 'react';
 
 import { BigNumber } from '@rsc';
 import { StoryFn } from '@storybook/react';
 import { bindWithProps } from 'test-utils/bindWithProps';
 
-import Calendar from '@spectrum-icons/workflow/Calendar';
-import Amusementpark from '@spectrum-icons/workflow/Amusementpark';
 import { Icon } from '@adobe/react-spectrum';
+import Amusementpark from '@spectrum-icons/workflow/Amusementpark';
+import Calendar from '@spectrum-icons/workflow/Calendar';
 
 export default {
 	title: 'RSC/BigNumber',
@@ -45,7 +44,11 @@ BasicVertical.args = {
 
 const IconHorizontal = bindWithProps(BigNumberStory);
 IconHorizontal.args = {
-	icon: <Icon data-testid="icon-calendar"><Calendar/></Icon>,
+	icon: (
+		<Icon data-testid="icon-calendar">
+			<Calendar />
+		</Icon>
+	),
 	orientation: 'horizontal',
 	value: 2555,
 	label: 'Visitors',
@@ -53,7 +56,11 @@ IconHorizontal.args = {
 
 const IconVertical = bindWithProps(BigNumberStory);
 IconVertical.args = {
-	icon: (<Icon data-testid="icon-amusementpark"><Amusementpark size="L"></Amusementpark></Icon>),
+	icon: (
+		<Icon data-testid="icon-amusementpark">
+			<Amusementpark size="L"></Amusementpark>
+		</Icon>
+	),
 	orientation: 'vertical',
 	value: 2555,
 	label: 'Visitors',
@@ -63,15 +70,15 @@ const NullData = bindWithProps(BigNumberStory);
 NullData.args = {
 	value: null,
 	orientation: 'horizontal',
-	label: 'Visitors'
-}
+	label: 'Visitors',
+};
 
 const UndefinedData = bindWithProps(BigNumberStory);
 UndefinedData.args = {
 	value: undefined,
 	orientation: 'horizontal',
-	label: 'Visitors'
-}
+	label: 'Visitors',
+};
 
 const compactNumberFormat = () => {
 	return new Intl.NumberFormat('en-US', { style: 'decimal', notation: 'compact', compactDisplay: 'short' });
@@ -149,7 +156,7 @@ const GroupedNumberVertical = bindWithProps(BigNumberStory);
 GroupedNumberVertical.args = {
 	orientation: 'vertical',
 	value: 2555,
-	label: 'Visitor',
+	label: 'Visitors',
 	numberFormat: groupedNumberFormat(),
 };
 
@@ -167,5 +174,5 @@ export {
 	CurrencyNumberHorizontal,
 	CurrencyNumberVertical,
 	GroupedNumberHorizontal,
-	GroupedNumberVertical
+	GroupedNumberVertical,
 };
