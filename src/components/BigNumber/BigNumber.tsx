@@ -9,25 +9,48 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import React, { FC } from 'react';
+import React, { FC, useState } from 'react';
 
 import { BigNumberProps } from 'types';
 
 import { Flex, Text } from '@adobe/react-spectrum';
+import { ErrorState } from '@components/BigNumber/ErrorState';
+import GraphBarVerticalStacked from '@spectrum-icons/workflow/GraphBarVerticalStacked';
+
+import './BigNumber.css';
 
 export const BigNumber: FC<BigNumberProps> = (props) => {
 	const direction = props.orientation == 'vertical' ? 'column' : 'row';
 	const alignment = props.orientation == 'vertical' ? 'center' : 'start';
 
+	const [focused, setFocus] = useState(false);
+
+	function handleClick() {
+		setFocus(!focused);
+	}
+
+	const formattedValue = props.value ? props.numberFormat?.format(props.value) ?? props.value : props.value;
+
+	let innerContent;
+	if (props.value === null) {
+		innerContent =  <ErrorState message="Unable to load. One or more values are null."/>;
+	} else if (props.value === undefined) {
+		innerContent =  <ErrorState icon={<GraphBarVerticalStacked size="L"/>}
+						   actionText="Please verify that data is defined" message="No data available."/>
+	} else {
+		innerContent = (
+			<Flex direction={direction} alignItems="center" gap={direction === 'row' ? 'size-150' : 'size-75'}>
+					{props.icon}
+					<Flex direction="column" alignItems={alignment}>
+						<Text UNSAFE_className="BigNumber-value">{formattedValue}</Text>
+						<Text UNSAFE_className="BigNumber-label">{props.label}</Text>
+					</Flex>
+			</Flex>
+		);
+	}
 	return (
-		<Flex direction={direction}>
-			<Flex alignItems="center" direction={direction}>
-				{props.icon}
-			</Flex>
-			<Flex direction="column" alignItems={alignment}>
-				<Text>{props.value}</Text>
-				<Text>{props.label}</Text>
-			</Flex>
-		</Flex>
+		<div onClick={handleClick} className={`BigNumber-container BigNumber-theme ${focused ? 'BigNumber-onfocus' : ''}`}>
+			{ innerContent }
+		</div>
 	);
 };

@@ -15,7 +15,6 @@ import { MARK_ID, SERIES_ID, TRENDLINE_VALUE } from '@constants';
 import { Config, Data, FontWeight, Padding, Spec, SymbolShape } from 'vega';
 import {Icon} from '@adobe/react-spectrum'
 
-
 import { Theme } from '@react-types/provider';
 
 import { Colors, SpectrumColor } from './SpectrumVizColors';
@@ -160,13 +159,14 @@ export interface AxisProps extends BaseProps {
 	title?: string;
 }
 
-export type BigNumberOrientation = 'vertical' | 'horizontal'
+export type BigNumberOrientation = 'vertical' | 'horizontal';
 
 export interface BigNumberProps {
 	orientation: BigNumberOrientation;
-	icon?: Icon;
-	value: number;
+	icon?: ReactElement;
+	value: number | undefined | null;
 	label: string;
+	numberFormat?: Intl.NumberFormat;
 }
 
 export type Granularity = 'minute' | 'hour' | 'day' | 'week' | 'month' | 'quarter';

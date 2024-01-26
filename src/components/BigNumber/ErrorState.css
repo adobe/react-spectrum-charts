@@ -10,28 +10,22 @@
  * governing permissions and limitations under the License.
  */
 
-
-.BigNumber-theme {
-    color: #4b6fc3;
+.action-button {
+    background: none;
+    font-size: 1.05em;
+    border: none;
+    color: #3e89e3;
 }
 
-.BigNumber-value {
-    font-size: x-large;
-    font-weight: bold;
+.action-button:focus {
+    border: blue;
 }
 
-.BigNumber-label {
-    font-size: medium;
+.text-color {
+    color: #b1b1b1
 }
 
-.BigNumber-onfocus {
-    border: 2px solid cornflowerblue;
-}
-
-.BigNumber-container {
-    order: 1;
-    margin: .5rem;
-    height: 100%;
-    width: 100%;
-    display: flex;
+.error-info {
+    font-style: italic;
+    font-size: 1.0em;
 }
