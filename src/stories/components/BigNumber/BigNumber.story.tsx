@@ -42,10 +42,10 @@ BasicVertical.args = {
 	label: 'Visitors',
 };
 
-const IconHorizonal = bindWithProps(BigNumberStory);
-IconHorizonal.args = {
+const IconHorizontal = bindWithProps(BigNumberStory);
+IconHorizontal.args = {
 	icon: (
-		<Icon>
+		<Icon data-testid="icon-calendar">
 			<Calendar />
 		</Icon>
 	),
@@ -57,7 +57,7 @@ IconHorizonal.args = {
 const IconVertical = bindWithProps(BigNumberStory);
 IconVertical.args = {
 	icon: (
-		<Icon>
+		<Icon data-testid="icon-amusementpark">
 			<Amusementpark size="L"></Amusementpark>
 		</Icon>
 	),
@@ -163,7 +163,7 @@ GroupedNumberVertical.args = {
 export {
 	BasicHorizonal,
 	BasicVertical,
-	IconHorizonal,
+	IconHorizontal,
 	IconVertical,
 	NullData,
 	UndefinedData,
