@@ -23,11 +23,6 @@
     font-size: medium;
 }
 
-.on-focus {
-    background-color: pink;
-    order: 2;
-}
-
 .content {
     height: fit-content;
     width: fit-content;

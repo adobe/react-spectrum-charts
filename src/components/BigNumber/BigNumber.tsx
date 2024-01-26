@@ -24,12 +24,6 @@ export const BigNumber: FC<BigNumberProps> = (props) => {
 	const direction = props.orientation == 'vertical' ? 'column' : 'row';
 	const alignment = props.orientation == 'vertical' ? 'center' : 'start';
 
-	const [focused, setFocus] = useState(false);
-
-	function handleClick() {
-		setFocus(!focused);
-	}
-
 	const formattedValue = props.value ? props.numberFormat?.format(props.value) ?? props.value : props.value;
 
 	if (props.value === null) {
@@ -42,7 +36,7 @@ export const BigNumber: FC<BigNumberProps> = (props) => {
 		return (
 			<div>
 				<Flex direction={direction} alignItems="center" gap={direction === 'row' ? 'size-150' : 'size-75'}>
-					<div tabIndex={0} onClick={handleClick} className={`content ${focused ? 'on-focus' : ''}`}>
+					<div tabIndex={0} className={"content"}>
 
 						<div className="theme main-container">
 							{props.icon}
