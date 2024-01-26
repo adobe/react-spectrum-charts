@@ -32,27 +32,26 @@ export const BigNumber: FC<BigNumberProps> = (props) => {
 
 	const formattedValue = props.value ? props.numberFormat?.format(props.value) ?? props.value : props.value;
 
+	let innerContent;
 	if (props.value === null) {
-		return <ErrorState message="Unable to load. One or more values are null."/>;
+		innerContent =  <ErrorState message="Unable to load. One or more values are null."/>;
 	} else if (props.value === undefined) {
-		return <ErrorState icon={<GraphBarVerticalStacked size="L"/>}
+		innerContent =  <ErrorState icon={<GraphBarVerticalStacked size="L"/>}
 						   actionText="Please verify that data is defined" message="No data available."/>
 	} else {
-		return (
-			<div>
-				<Flex direction={direction} alignItems="center" gap={direction === 'row' ? 'size-150' : 'size-75'}>
-					<div onClick={handleClick} className={`content ${focused ? 'on-focus' : ''}`}>
-						<div className="theme main-container">
-							{props.icon}
-						</div>
-						<Flex direction="column" alignItems={alignment}>
-							<Text UNSAFE_className="theme number">{formattedValue}</Text>
-							<Text UNSAFE_className="theme description">{props.label}</Text>
-						</Flex>
-					</div>
-				</Flex>
-			</div>
-
+		innerContent = (
+			<Flex direction={direction} alignItems="center" gap={direction === 'row' ? 'size-150' : 'size-75'}>
+					{props.icon}
+					<Flex direction="column" alignItems={alignment}>
+						<Text UNSAFE_className="number">{formattedValue}</Text>
+						<Text UNSAFE_className="description">{props.label}</Text>
+					</Flex>
+			</Flex>
 		);
 	}
+	return (
+		<div onClick={handleClick} className={`content theme ${focused ? 'on-focus' : ''}`}>
+			{ innerContent }
+		</div>
+	);
 };

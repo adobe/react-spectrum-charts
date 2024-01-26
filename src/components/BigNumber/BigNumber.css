@@ -24,11 +24,11 @@
 }
 
 .on-focus {
-    background-color: pink;
+    border: 2px solid cornflowerblue;
 }
 
 .content {
-    height: fit-content;
-    width: fit-content;
+    height: 100%;
+    width: 100%;
     display: flex;
 }
