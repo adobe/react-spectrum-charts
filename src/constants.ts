@@ -27,6 +27,7 @@ export const DEFAULT_LABEL_FONT_WEIGHT = 'normal';
 export const DEFAULT_LABEL_ORIENTATION = 'horizontal';
 export const DEFAULT_LINE_TYPES: LineType[] = ['solid', 'dashed', 'dotted', 'dotDash', 'longDash', 'twoDash'];
 export const DEFAULT_LINEAR_DIMENSION = 'x';
+export const DEFAULT_LOCALE = 'en-US';
 export const DEFAULT_METRIC = 'value';
 export const DEFAULT_SECONDARY_COLOR = 'subSeries';
 export const DEFAULT_SYMBOL_SIZE = 100;

@@ -15,7 +15,7 @@ import '@matchMediaMock';
 import { Axis } from '@rsc';
 import { findChart, getAllAxisLabels, render, screen, within } from '@test-utils';
 
-import { Basic, ControlledLabels, NonLinearAxis, SubLabels, TickMinStep, Time } from './Axis.story';
+import { Basic, ControlledLabels, NonLinearAxis, NumberFormat, SubLabels, TickMinStep, Time } from './Axis.story';
 
 describe('Axis', () => {
 	test('Renders properly', async () => {
@@ -156,6 +156,17 @@ describe('Axis', () => {
 
 			expect(screen.getByText('Jun 1')).toBeInTheDocument();
 			expect(screen.getByText('Jun 29')).toBeInTheDocument();
+		});
+	});
+
+	describe('NumberFormat', () => {
+		test('Should render the number format provided', async () => {
+			render(<NumberFormat {...NumberFormat.args} numberFormat="$,.2f" />);
+			const chart = await findChart();
+			expect(chart).toBeInTheDocument();
+
+			expect(screen.getByText('$1.00')).toBeInTheDocument();
+			expect(screen.getByText('$0.00')).toBeInTheDocument();
 		});
 	});
 });

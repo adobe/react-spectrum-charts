@@ -15,7 +15,8 @@ import { TABLE } from '@constants';
 import { useDebugSpec } from '@hooks/useDebugSpec';
 import { extractValues, isVegaData } from '@specBuilder/specUtils';
 import { expressionFunctions } from 'expressionFunctions';
-import { ChartData } from 'types';
+import { ChartData, ChartProps } from 'types';
+import { getLocale } from 'utils/locale';
 import { Config, Padding, Renderers, Spec, View } from 'vega';
 import embed from 'vega-embed';
 import { Options as TooltipOptions } from 'vega-tooltip';
@@ -26,6 +27,7 @@ export interface VegaChartProps {
 	data: ChartData[];
 	debug: boolean;
 	height: number;
+	locale: ChartProps['locale'];
 	onNewView: (view: View) => void;
 	padding: Padding;
 	renderer: Renderers;
@@ -40,6 +42,7 @@ export const VegaChart: FC<VegaChartProps> = ({
 	data,
 	debug,
 	height,
+	locale,
 	onNewView,
 	padding,
 	renderer = 'svg',
@@ -50,6 +53,8 @@ export const VegaChart: FC<VegaChartProps> = ({
 }) => {
 	const containerRef = useRef<HTMLDivElement>(null);
 	const chartView = useRef<View>();
+
+	const { number: numberLocale, time: timeLocale } = useMemo(() => getLocale(locale), [locale]);
 
 	// Need to de a deep copy of the data because vega tries to transform the data
 	const chartData = useMemo(() => {
@@ -83,13 +88,15 @@ export const VegaChart: FC<VegaChartProps> = ({
 			}
 			embed(containerRef.current, specCopy, {
 				actions: false,
-				expressionFunctions: expressionFunctions,
-				renderer,
-				width,
-				height,
 				config,
+				expressionFunctions: expressionFunctions,
+				formatLocale: numberLocale as unknown as Record<string, unknown>, // these are poorly typed by vega-embed
+				height,
 				padding,
+				renderer,
+				timeFormatLocale: timeLocale as unknown as Record<string, unknown>, // these are poorly typed by vega-embed
 				tooltip,
+				width,
 			}).then(({ view }) => {
 				chartView.current = view;
 				onNewView(view);
@@ -104,7 +111,21 @@ export const VegaChart: FC<VegaChartProps> = ({
 				chartView.current = undefined;
 			}
 		};
-	}, [chartData.table, config, data, height, onNewView, padding, renderer, signals, spec, tooltip, width]);
+	}, [
+		chartData.table,
+		config,
+		data,
+		height,
+		numberLocale,
+		timeLocale,
+		onNewView,
+		padding,
+		renderer,
+		signals,
+		spec,
+		tooltip,
+		width,
+	]);
 
 	return <div ref={containerRef} className="rsc"></div>;
 };
