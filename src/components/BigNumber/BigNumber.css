@@ -25,6 +25,7 @@
 
 .on-focus {
     background-color: pink;
+    order: 2;
 }
 
 .content {
@@ -32,3 +33,4 @@
     width: fit-content;
     display: flex;
 }
+

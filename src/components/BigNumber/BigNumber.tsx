@@ -35,13 +35,15 @@ export const BigNumber: FC<BigNumberProps> = (props) => {
 	if (props.value === null) {
 		return <ErrorState message="Unable to load. One or more values are null."/>;
 	} else if (props.value === undefined) {
+
 		return <ErrorState icon={<GraphBarVerticalStacked size="L"/>}
 						   actionText="Please verify that data is defined" message="No data available."/>
 	} else {
 		return (
 			<div>
 				<Flex direction={direction} alignItems="center" gap={direction === 'row' ? 'size-150' : 'size-75'}>
-					<div onClick={handleClick} className={`content ${focused ? 'on-focus' : ''}`}>
+					<div tabIndex={0} onClick={handleClick} className={`content ${focused ? 'on-focus' : ''}`}>
+
 						<div className="theme main-container">
 							{props.icon}
 						</div>
