@@ -158,6 +158,8 @@ export {
 	BasicVertical,
 	IconHorizonal,
 	IconVertical,
+	NullData,
+	UndefinedData,
 	CompactNumberHorizontal,
 	CompactNumberVertical,
 	PercentNumberHorizontal,
@@ -165,7 +167,5 @@ export {
 	CurrencyNumberHorizontal,
 	CurrencyNumberVertical,
 	GroupedNumberHorizontal,
-	GroupedNumberVertical,
-	NullData,
-	UndefinedData
+	GroupedNumberVertical
 };

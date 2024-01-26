@@ -28,7 +28,7 @@ interface ErrorStateProps {
 
 export const ErrorState: FC<ErrorStateProps> = (props) => {
 	return (
-		<Flex direction="column" alignItems="center" justifyContent="center" flex={1} height="100%">
+		<Flex direction="column" alignItems="center" justifyContent="center">
 			<div className="text-color">
 				{ props.icon
 					? 	props.icon

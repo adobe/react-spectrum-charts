@@ -17,6 +17,10 @@
     color: #3e89e3;
 }
 
+.action-button:focus {
+    border: blue;
+}
+
 .text-color {
     color: #b1b1b1
 }

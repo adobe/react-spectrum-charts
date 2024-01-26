@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import React, { FC } from 'react';
+import React, { FC, useState } from 'react';
 
 import { BigNumberProps } from 'types';
 
@@ -24,24 +24,35 @@ export const BigNumber: FC<BigNumberProps> = (props) => {
 	const direction = props.orientation == 'vertical' ? 'column' : 'row';
 	const alignment = props.orientation == 'vertical' ? 'center' : 'start';
 
+	const [focused, setFocus] = useState(false);
+
+	function handleClick() {
+		setFocus(!focused);
+	}
+
 	const formattedValue = props.value ? props.numberFormat?.format(props.value) ?? props.value : props.value;
 
 	if (props.value === null) {
 		return <ErrorState message="Unable to load. One or more values are null."/>;
 	} else if (props.value === undefined) {
 		return <ErrorState icon={<GraphBarVerticalStacked size="L"/>}
-						   actionText="Please check data is defined" message="No data available."/>
+						   actionText="Please verify that data is defined" message="No data available."/>
 	} else {
 		return (
-			<Flex direction={direction} alignItems="center" gap={direction === 'row' ? 'size-150' : 'size-75'}>
-				<div className="theme">
-					{ props.icon }
-				</div>
-				<Flex direction="column" alignItems={alignment}>
-					<Text UNSAFE_className="theme number">{formattedValue}</Text>
-					<Text UNSAFE_className="theme description">{props.label}</Text>
+			<div>
+				<Flex direction={direction} alignItems="center" gap={direction === 'row' ? 'size-150' : 'size-75'}>
+					<div onClick={handleClick} className={`content ${focused ? 'on-focus' : ''}`}>
+						<div className="theme main-container">
+							{props.icon}
+						</div>
+						<Flex direction="column" alignItems={alignment}>
+							<Text UNSAFE_className="theme number">{formattedValue}</Text>
+							<Text UNSAFE_className="theme description">{props.label}</Text>
+						</Flex>
+					</div>
 				</Flex>
-			</Flex>
+			</div>
+
 		);
 	}
 };

@@ -22,3 +22,13 @@
 .description {
     font-size: medium;
 }
+
+.on-focus {
+    background-color: pink;
+}
+
+.content {
+    height: fit-content;
+    width: fit-content;
+    display: flex;
+}
