@@ -16,7 +16,7 @@ import { Axis, Bar, Chart, ChartHandle, ChartTooltip, Line } from '@rsc';
 import { findChart, getAllMarksByGroupName, render, screen } from '@test-utils';
 import { getElement } from '@utils';
 
-import { BackgroundColor, Basic, Config, Width } from './Chart.story';
+import { BackgroundColor, Basic, Config, Locale, Width } from './Chart.story';
 import {
 	CssColors,
 	SpectrumColorNames,
@@ -47,6 +47,33 @@ describe('Chart', () => {
 		render(<Config {...Config.args} />);
 		const chart = await findChart();
 		expect(chart).toBeInTheDocument();
+	});
+
+	describe('Locale', () => {
+		test('Locale sets the time and number format correctly for fr-FR', async () => {
+			render(<Locale {...Locale.args} locale="fr-FR" />);
+			const chart = await findChart();
+			expect(chart).toBeInTheDocument();
+
+			expect(screen.getByText('nov.')).toBeInTheDocument();
+			expect(screen.getByText('2 000,00')).toBeInTheDocument();
+		});
+		test('Locale sets the time and number format correctly for de-DE', async () => {
+			render(<Locale {...Locale.args} locale="de-DE" />);
+			const chart = await findChart();
+			expect(chart).toBeInTheDocument();
+
+			expect(screen.getByText('Nov')).toBeInTheDocument();
+			expect(screen.getByText('2.000,00')).toBeInTheDocument();
+		});
+		test('Locale sets the time and number format correctly for en-US', async () => {
+			render(<Locale {...Locale.args} locale="en-US" />);
+			const chart = await findChart();
+			expect(chart).toBeInTheDocument();
+
+			expect(screen.getByText('Nov')).toBeInTheDocument();
+			expect(screen.getByText('2,000.00')).toBeInTheDocument();
+		});
 	});
 
 	test('Width renders properly', async () => {

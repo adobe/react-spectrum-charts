@@ -14,6 +14,7 @@ import {
 	getLabelAnchor,
 	getLabelAnchorValues,
 	getLabelAngle,
+	getLabelFormat,
 	getLabelOffset,
 	getLabelValue,
 	labelIsParallelToAxis,
@@ -151,5 +152,17 @@ describe('getLabelAngle', () => {
 	test('should return 0 for horizontal and 270 for vertical', () => {
 		expect(getLabelAngle('horizontal')).toEqual(0);
 		expect(getLabelAngle('vertical')).toEqual(270);
+	});
+});
+
+describe('getLabelFormat()', () => {
+	test('should include the number format test if numberFormat exists', () => {
+		const labelFormat = getLabelFormat('linear', '.2f');
+		expect(labelFormat).toHaveLength(4);
+		expect(labelFormat[0]).toEqual({ test: 'isNumber(datum.value)', signal: "format(datum.value, '.2f')" });
+	});
+	test('should not include the number format test if numberFormat does not exist or is an empty string', () => {
+		expect(getLabelFormat('linear', undefined)).toHaveLength(3);
+		expect(getLabelFormat('linear', '')).toHaveLength(3);
 	});
 });

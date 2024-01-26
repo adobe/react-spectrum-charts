@@ -17,6 +17,7 @@ import {
 	DEFAULT_BACKGROUND_COLOR,
 	DEFAULT_COLOR_SCHEME,
 	DEFAULT_LINE_TYPES,
+	DEFAULT_LOCALE,
 	LEGEND_TOOLTIP_DELAY,
 	MARK_ID,
 	SERIES_ID,
@@ -97,6 +98,7 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 			lineTypes = DEFAULT_LINE_TYPES,
 			lineWidths = ['M'],
 			loading,
+			locale = DEFAULT_LOCALE,
 			minWidth = 100,
 			maxWidth = Infinity,
 			opacities,
@@ -291,6 +293,7 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 							renderer={renderer}
 							width={chartWidth}
 							height={height}
+							locale={locale}
 							padding={padding}
 							signals={signals}
 							tooltip={tooltipConfig} // legend show/hide relies on this

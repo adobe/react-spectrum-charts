@@ -32,6 +32,7 @@ export function Axis({
 	labelFormat,
 	labelOrientation = DEFAULT_LABEL_ORIENTATION,
 	labels,
+	numberFormat,
 	range = undefined,
 	subLabels,
 	ticks = false,

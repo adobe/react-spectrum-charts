@@ -12,11 +12,12 @@
 import { JSXElementConstructor, ReactElement, ReactFragment, ReactNode } from 'react';
 
 import { MARK_ID, SERIES_ID, TRENDLINE_VALUE } from '@constants';
-import { Config, Data, FontWeight, Padding, Spec, SymbolShape } from 'vega';
+import { Config, Data, FontWeight, Locale, NumberLocale, Padding, Spec, SymbolShape, TimeLocale } from 'vega';
 
 import { Theme } from '@react-types/provider';
 
 import { Colors, SpectrumColor } from './SpectrumVizColors';
+import { LocaleCode, NumberLocaleCode, TimeLocaleCode } from './locales';
 
 export type ChartElement = ReactElement<ChartProps, JSXElementConstructor<ChartProps>>;
 export type AreaElement = ReactElement<AreaProps, JSXElementConstructor<AreaProps>>;
@@ -75,6 +76,8 @@ export interface ChartProps extends SpecProps {
 	debug?: boolean;
 	emptyStateText?: string;
 	height?: number;
+	/** number and time locales to use */
+	locale?: Locale | LocaleCode | { number?: NumberLocaleCode | NumberLocale; time?: TimeLocaleCode | TimeLocale };
 	maxWidth?: number;
 	minWidth?: number;
 	padding?: Padding;
@@ -140,6 +143,11 @@ export interface AxisProps extends BaseProps {
 	labelOrientation?: Orientation;
 	/** Explicityly sets the axis labels (controlled). Providing a Label object allows for more control over the label display. */
 	labels?: (Label | string | number)[];
+	/** d3 number format specifier. Only valid if labelFormat is linear or undefined.
+	 *
+	 * see {@link https://d3js.org/d3-format#locale_format}
+	 */
+	numberFormat?: string;
 	/** The minimum and maximum values for the axis, for example: `[-10, 10]`.
 	 *
 	 * Note: This prop is only supported for axes with `linear` or `time` scale types.
