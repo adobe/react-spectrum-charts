@@ -18,11 +18,56 @@ import {
 	CurrencyNumberVertical,
 	GroupedNumberHorizontal,
 	GroupedNumberVertical,
+	IconHorizontal,
+	IconVertical,
+	NullData,
 	PercentNumberHorizontal,
-	PercentNumberVertical,
+	PercentNumberVertical, UndefinedData
 } from './BigNumber.story';
 
 describe('BigNumber', () => {
+	describe('BigNumber with icon prop passed in', () => {
+		test('IconVertical renders with correct icon present', async () => {
+			render(<IconVertical {...IconVertical.args}/>);
+			const icon = await screen.findByTestId('icon-amusementpark');
+			expect(icon).toBeInTheDocument();
+			const value = await screen.findByText(IconVertical.args.value ? IconVertical.args.value : '');
+			expect(value).toBeInTheDocument();
+			const label = await screen.findByText(IconVertical.args.label);
+			expect(label).toBeInTheDocument();
+		});
+
+		test('IconHorizontal renders with correct icon present', async () => {
+			render(<IconHorizontal {...IconHorizontal.args}/>);
+			const icon = await screen.findByTestId('icon-calendar');
+			expect(icon).toBeInTheDocument();
+			const value = await screen.findByText(IconHorizontal.args.value ? IconHorizontal.args.value : '');
+			expect(value).toBeInTheDocument();
+			const label = await screen.findByText(IconHorizontal.args.label);
+			expect(label).toBeInTheDocument();
+		});
+	});
+	describe('BigNumber error states', () => {
+		test('NullData renders correct warning icon and text', async () => {
+			render(<NullData {...NullData.args} />);
+			const errorMessage = await screen.findByText('Unable to load. One or more values are null.');
+			expect(errorMessage).toBeInTheDocument();
+			const actionMessage = await screen.findByText('Please check incoming data');
+			expect(actionMessage).toBeInTheDocument();
+			const nullIcon = await screen.findByTestId('alert-circle');
+			expect(nullIcon).toBeInTheDocument();
+		});
+
+		test('UndefinedData renders appropriate warning icon and text', async () => {
+			render(<UndefinedData {...UndefinedData.args} />)
+			const errorDescription = await screen.findByText('No data available.');
+			const actionText = await screen.findByText('Please verify that data is defined');
+			expect(errorDescription).toBeInTheDocument();
+			expect(actionText).toBeInTheDocument();
+			const undefinedIcon = await screen.findByTestId('vertical-graph');
+			expect(undefinedIcon).toBeInTheDocument();
+		});
+	});
 	describe('BigNumber using numberFormat', () => {
 		test('CompactNumberHorizontal renders with formatted value', async () => {
 			render(<CompactNumberHorizontal {...CompactNumberHorizontal.args} />);

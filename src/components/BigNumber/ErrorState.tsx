@@ -29,10 +29,10 @@ interface ErrorStateProps {
 export const ErrorState: FC<ErrorStateProps> = (props) => {
 	return (
 		<Flex direction="column" alignItems="center" justifyContent="center">
-			<div className="text-color">
+			<div className="text-color" data-testid="error-icon">
 				{ props.icon
 					? 	props.icon
-					: <AlertCircle size="XL"/>
+					: <AlertCircle data-testid="alert-circle" size="XL"/>
 				}
 			</div>
 			<span className="error-info text-color">{props.message}</span>

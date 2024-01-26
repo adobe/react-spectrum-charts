@@ -36,7 +36,7 @@ export const BigNumber: FC<BigNumberProps> = (props) => {
 	if (props.value === null) {
 		innerContent =  <ErrorState message="Unable to load. One or more values are null."/>;
 	} else if (props.value === undefined) {
-		innerContent =  <ErrorState icon={<GraphBarVerticalStacked size="L"/>}
+		innerContent =  <ErrorState icon={<GraphBarVerticalStacked data-testid="vertical-graph" size="L"/>}
 						   actionText="Please verify that data is defined" message="No data available."/>
 	} else {
 		innerContent = (
