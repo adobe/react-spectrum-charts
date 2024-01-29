@@ -71,7 +71,6 @@ function getSpectrumVegaConfig(colorScheme: ColorScheme): Config {
 			labelFontWeight: 'normal',
 			labelPadding: 8,
 			labelOverlap: true,
-			labelSeparation: 20,
 			labelColor: gray800,
 			ticks: false,
 			tickColor: gray300,

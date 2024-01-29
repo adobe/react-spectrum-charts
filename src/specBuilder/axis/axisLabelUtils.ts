@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { Granularity, Label, LabelAlign, LabelFormat, Orientation, Position } from 'types';
+import { AxisSpecProps, Granularity, Label, LabelAlign, Orientation, Position } from 'types';
 import {
 	Align,
 	Baseline,
@@ -231,10 +231,10 @@ export const getLabelOffset = (
  * @returns
  */
 export const getLabelFormat = (
-	type: LabelFormat | undefined,
-	numberFormat: string | undefined
+	{ labelFormat, labelOrientation, numberFormat, position, truncateLabels }: AxisSpecProps,
+	scaleName: string
 ): ProductionRule<TextValueRef> => {
-	if (type === 'percentage') {
+	if (labelFormat === 'percentage') {
 		return [{ test: 'isNumber(datum.value)', signal: "format(datum.value, '~%')" }, { signal: 'datum.value' }];
 	}
 
@@ -249,7 +249,9 @@ export const getLabelFormat = (
 			test: 'isNumber(datum.value)',
 			signal: 'format(datum.value, ",")',
 		},
-		{ signal: 'datum.value' },
+		...(truncateLabels && scaleName.includes('Band') && labelIsParallelToAxis(position, labelOrientation)
+			? [{ signal: 'truncateText(datum.value, bandwidth("xBand")/(1- paddingInner), "normal", 14)' }]
+			: [{ signal: 'datum.value' }]),
 	];
 };
 
