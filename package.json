@@ -30,7 +30,7 @@
 		"prepack": "yarn build",
 		"pack-test": "rm -rf dist & npm pack",
 		"start": "yarn storybook",
-		"storybook": "setx NODE_OPTIONS --openssl-legacy-provider && storybook dev -p 6009",
+		"storybook": "cross-env NODE_OPTIONS=--openssl-legacy-provider && storybook dev -p 6009",
 		"test": "cross-env BABEL_ENV=test jest",
 		"watch": "cross-env BABEL_ENV=test jest --watch",
 		"skulk": "yarn watch --silent"
