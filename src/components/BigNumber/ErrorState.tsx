@@ -28,7 +28,6 @@ interface ErrorStateProps {
 
 export const ErrorState: FC<ErrorStateProps> = (props) => {
 	return (
-
 		<Flex justifyContent="center">
 			<div tabIndex={0} className="focus-style">
 				<div className="text-color">

@@ -34,9 +34,8 @@ export const BigNumber: FC<BigNumberProps> = (props) => {
 						   actionText="Please verify that data is defined" message="No data available."/>
 	} else {
 		return (
-			<div>
-				<Flex direction={direction} alignItems="center" gap={direction === 'row' ? 'size-150' : 'size-75'}>
-					<div tabIndex={0} className={"content"}>
+			<div tabIndex={0} className="content">
+				<Flex direction={direction} alignItems="center" gap={direction === 'row' ? 'size-150' : 'size-75'} UNSAFE_className="content">
 						<div className="theme main-container">
 							{props.icon}
 						</div>
@@ -44,10 +43,8 @@ export const BigNumber: FC<BigNumberProps> = (props) => {
 							<Text UNSAFE_className="theme number">{formattedValue}</Text>
 							<Text UNSAFE_className="theme description">{props.label}</Text>
 						</Flex>
-					</div>
 				</Flex>
 			</div>
-
 		);
 	}
 };
