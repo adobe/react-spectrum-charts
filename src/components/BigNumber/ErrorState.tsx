@@ -33,7 +33,7 @@ export const ErrorState: FC<ErrorStateProps> = (props) => {
 				<div className="text-color">
 					{props.icon
 						? props.icon
-						: <AlertCircle size="XL" />
+						: <AlertCircle data-testid="alert-circle" size="XL" />
 					}
 				</div>
 				<span className="error-info text-color">{props.message}</span>
