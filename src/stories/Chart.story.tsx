@@ -18,7 +18,7 @@ import { bindWithProps } from '@test-utils';
 
 import './Chart.story.css';
 import { ChartBarStory } from './ChartBarStory';
-import { data } from './data/data';
+import { data, workspaceTrendsData } from './data/data';
 
 export default {
 	title: 'RSC/Chart',
@@ -32,6 +32,17 @@ const ChartLineStory: StoryFn<typeof Chart> = (args): ReactElement => {
 			<Axis position="bottom" baseline ticks />
 			<Axis position="left" grid />
 			<Line dimension="x" metric="y" color="series" scaleType="linear" />
+		</Chart>
+	);
+};
+
+const ChartTimeStory: StoryFn<typeof Chart> = (args): ReactElement => {
+	const props = useChartProps(args);
+	return (
+		<Chart {...props} width={500}>
+			<Axis position="bottom" baseline ticks labelFormat="time" />
+			<Axis position="left" grid numberFormat=",.2f" />
+			<Line dimension="datetime" metric="value" color="series" scaleType="time" />
 		</Chart>
 	);
 };
@@ -58,6 +69,12 @@ Config.args = {
 	data,
 };
 
+const Locale = bindWithProps(ChartTimeStory);
+Locale.args = {
+	locale: 'de-DE',
+	data: workspaceTrendsData,
+};
+
 const Width = bindWithProps(ChartBarStory);
 Width.args = {
 	width: '50%',
@@ -66,4 +83,4 @@ Width.args = {
 	data,
 };
 
-export { Basic, BackgroundColor, Config, Width };
+export { Basic, BackgroundColor, Config, Locale, Width };

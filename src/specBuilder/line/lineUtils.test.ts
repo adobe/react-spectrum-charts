@@ -15,7 +15,7 @@ import { ChartPopover } from '@components/ChartPopover';
 import { ChartTooltip } from '@components/ChartTooltip';
 import { Trendline } from '@components/Trendline';
 
-import { getInteractiveMarkName, getPopoverMarkName, getXProductionRule } from './lineUtils';
+import { getInteractiveMarkName, getPopoverMarkName } from './lineUtils';
 
 describe('getInteractiveMarkName()', () => {
 	test('should return undefined if there are no interactive children', () => {
@@ -49,13 +49,5 @@ describe('getPopoverMarkName()', () => {
 		expect(getPopoverMarkName([createElement(Trendline, {}, createElement(ChartPopover))], 'line0')).toEqual(
 			'line0Trendline'
 		);
-	});
-});
-
-describe('getXProductionRule()', () => {
-	test('should return the correct scale based on scale type', () => {
-		expect(getXProductionRule('time', 'datetime')).toEqual({ scale: 'xTime', field: 'datetime0' });
-		expect(getXProductionRule('linear', 'datetime')).toEqual({ scale: 'xLinear', field: 'datetime' });
-		expect(getXProductionRule('point', 'datetime')).toEqual({ scale: 'xPoint', field: 'datetime' });
 	});
 });

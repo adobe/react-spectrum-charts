@@ -16,15 +16,16 @@ import GraphBarVertical from '@spectrum-icons/workflow/GraphBarVertical';
 
 import './EmptyState.css';
 
-interface EmptyStateProps {
+export interface EmptyStateProps {
 	height?: number;
+	text?: string;
 }
 
-export const EmptyState: FC<EmptyStateProps> = (props) => {
+export const EmptyState: FC<EmptyStateProps> = ({ height, text }) => {
 	return (
-		<Flex direction="column" justifyContent="center" alignItems="center" {...props}>
+		<Flex direction="column" justifyContent="center" alignItems="center" height={height}>
 			<GraphBarVertical size="XXL" UNSAFE_className="EmptyState-icon" />
-			<Text UNSAFE_className="EmptyState-text">No data found</Text>
+			{Boolean(text) && <Text UNSAFE_className="EmptyState-text">{text}</Text>}
 		</Flex>
 	);
 };

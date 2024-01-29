@@ -12,8 +12,15 @@
 import { Trendline } from '@components/Trendline';
 import { hasInteractiveChildren, hasPopover } from '@specBuilder/marks/markUtils';
 import { sanitizeMarkChildren } from '@utils';
-import { ColorFacet, ColorScheme, LineTypeFacet, LineWidthFacet, MarkChildElement, OpacityFacet } from 'types';
-import { NumericValueRef, ProductionRule, ScaleType } from 'vega';
+import {
+	ColorFacet,
+	ColorScheme,
+	LineTypeFacet,
+	LineWidthFacet,
+	MarkChildElement,
+	OpacityFacet,
+	ScaleType,
+} from 'types';
 
 export const getInteractiveMarkName = (children: MarkChildElement[], name: string): string | undefined => {
 	// if the line has an interactive component, this line is the target for the interactive component
@@ -57,18 +64,3 @@ export interface LineMarkProps {
 	scaleType: ScaleType;
 	staticPoint?: string;
 }
-
-/**
- * gets the correct x encoding for the line mark
- * @param scaleType
- * @param dimension
- * @returns x encoding
- */
-export const getXProductionRule = (scaleType: ScaleType, dimension: string): ProductionRule<NumericValueRef> => {
-	if (scaleType === 'time') {
-		return { scale: 'xTime', field: 'datetime0' };
-	} else if (scaleType === 'linear') {
-		return { scale: 'xLinear', field: dimension };
-	}
-	return { scale: 'xPoint', field: dimension };
-};

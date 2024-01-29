@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { DEFAULT_COLOR_SCHEME, DEFAULT_CONTINUOUS_DIMENSION, DEFAULT_METRIC, FILTERED_TABLE } from '@constants';
+import { DEFAULT_COLOR_SCHEME, DEFAULT_METRIC, DEFAULT_TIME_DIMENSION, FILTERED_TABLE } from '@constants';
 import { hasInteractiveChildren, hasPopover } from '@specBuilder/marks/markUtils';
 import {
 	getMetricRangeGroupMarks,
@@ -48,7 +48,7 @@ export const addLine = produce<Spec, [LineProps & { colorScheme?: ColorScheme; i
 			children,
 			color = { value: 'categorical-100' },
 			colorScheme = DEFAULT_COLOR_SCHEME,
-			dimension = DEFAULT_CONTINUOUS_DIMENSION,
+			dimension = DEFAULT_TIME_DIMENSION,
 			index = 0,
 			lineType = { value: 'solid' },
 			metric = DEFAULT_METRIC,

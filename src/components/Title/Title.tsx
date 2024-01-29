@@ -11,10 +11,15 @@
  */
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { TITLE_FONT_WEIGHT } from '@constants';
+import { DEFAULT_TITLE_FONT_WEIGHT } from '@constants';
 
 import { TitleProps } from '../../types';
 
-export function Title({ text, fontWeight = TITLE_FONT_WEIGHT, position = 'middle', orient = 'top' }: TitleProps) {
+export function Title({
+	text,
+	fontWeight = DEFAULT_TITLE_FONT_WEIGHT,
+	position = 'middle',
+	orient = 'top',
+}: TitleProps) {
 	return null;
 }

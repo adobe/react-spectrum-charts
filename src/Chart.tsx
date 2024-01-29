@@ -17,6 +17,7 @@ import {
 	DEFAULT_BACKGROUND_COLOR,
 	DEFAULT_COLOR_SCHEME,
 	DEFAULT_LINE_TYPES,
+	DEFAULT_LOCALE,
 	LEGEND_TOOLTIP_DELAY,
 	MARK_ID,
 	SERIES_ID,
@@ -76,6 +77,7 @@ interface PlaceholderContentProps {
 	data: ChartData[];
 	loading?: boolean;
 	height?: number;
+	emptyStateText: string;
 }
 
 export const Chart = forwardRef<ChartHandle, ChartProps>(
@@ -89,18 +91,21 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 			dataTestId,
 			description,
 			debug = false,
+			emptyStateText = 'No data found',
 			height = 300,
 			hiddenSeries = [],
 			highlightedSeries,
 			lineTypes = DEFAULT_LINE_TYPES,
 			lineWidths = ['M'],
 			loading,
+			locale = DEFAULT_LOCALE,
 			minWidth = 100,
 			maxWidth = Infinity,
 			opacities,
 			padding = 0,
 			renderer = 'svg',
 			symbolShapes,
+			symbolSizes,
 			theme = defaultTheme,
 			title,
 			width = 'auto',
@@ -131,6 +136,7 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 			hiddenSeries,
 			highlightedSeries,
 			symbolShapes,
+			symbolSizes,
 			lineTypes,
 			lineWidths,
 			opacities,
@@ -192,7 +198,7 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 		if (tooltips.length || legendDescriptions) {
 			tooltipConfig.formatTooltip = (value) => {
 				debugLog(debug, { title: 'Tooltip datum', contents: value });
-				if (legendDescriptions && 'index' in value) {
+				if (value.rscComponentName?.startsWith('legend') && legendDescriptions && 'index' in value) {
 					debugLog(debug, {
 						title: 'Legend descriptions',
 						contents: legendDescriptions,
@@ -201,7 +207,8 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 						<LegendTooltip
 							value={value}
 							descriptions={legendDescriptions}
-							domain={chartView.current?.scale('legendEntries').domain()}
+							// TODO: support multiple legends
+							domain={chartView.current?.scale('legend0Entries').domain()}
 						/>
 					);
 				}
@@ -271,7 +278,12 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 						style={targetStyle}
 					/>
 					{showPlaceholderContent ? (
-						<PlaceholderContent loading={loading} data={data} height={height} />
+						<PlaceholderContent
+							loading={loading}
+							data={data}
+							height={height}
+							emptyStateText={emptyStateText}
+						/>
 					) : (
 						<VegaChart
 							spec={spec}
@@ -281,6 +293,7 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 							renderer={renderer}
 							width={chartWidth}
 							height={height}
+							locale={locale}
 							padding={padding}
 							signals={signals}
 							tooltip={tooltipConfig} // legend show/hide relies on this
@@ -396,13 +409,13 @@ const LegendTooltip: FC<LegendTooltipProps> = ({ value, descriptions, domain }) 
 	);
 };
 
-const PlaceholderContent: FC<PlaceholderContentProps> = ({ loading, data, ...layoutProps }) => {
+const PlaceholderContent: FC<PlaceholderContentProps> = ({ data, emptyStateText, loading, ...layoutProps }) => {
 	if (loading) {
 		//show a spinner while data is loading
 		return <LoadingState {...layoutProps} />;
 	} else if (!data.length) {
 		//if it is no longer loading but there is not data, show the empty state
-		return <EmptyState {...layoutProps} />;
+		return <EmptyState {...layoutProps} text={emptyStateText} />;
 	}
 	return <></>;
 };

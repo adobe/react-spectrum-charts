@@ -35,6 +35,7 @@ export const getDefaultAxis = (
 		labelFontWeight,
 		labelFormat,
 		labelOrientation,
+		numberFormat,
 		position,
 		scaleType,
 		ticks,
@@ -63,7 +64,7 @@ export const getDefaultAxis = (
 	encode: {
 		labels: {
 			update: {
-				text: getLabelFormat(labelFormat),
+				text: getLabelFormat(labelFormat, numberFormat),
 			},
 		},
 	},

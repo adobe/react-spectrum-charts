@@ -10,7 +10,7 @@
  * governing permissions and limitations under the License.
  */
 
-export default function generate(plop) {
+module.exports = function generate(plop) {
 	plop.setGenerator('component', {
 		description: 'Create a new React component',
 		prompts: [
@@ -48,4 +48,4 @@ export default function generate(plop) {
 			},
 		],
 	});
-}
+};

@@ -23,7 +23,9 @@ import {
 	getLineWidthProductionRule,
 	getOpacityProductionRule,
 	getStrokeDashProductionRule,
+	getSymbolSizeProductionRule,
 	getTooltip,
+	getXProductionRule,
 	hasMetricRange,
 	hasTooltip,
 } from './markUtils';
@@ -93,6 +95,15 @@ describe('getOpacityProductionRule()', () => {
 	});
 });
 
+describe('getSymbolSizeProductionRule()', () => {
+	test('should return scale rule for key reference', () => {
+		expect(getSymbolSizeProductionRule('weight')).toStrictEqual({ scale: 'symbolSize', field: 'weight' });
+	});
+	test('should return static value squared if static value supplied', () => {
+		expect(getSymbolSizeProductionRule({ value: 5 })).toStrictEqual({ value: 25 });
+	});
+});
+
 describe('hasTooltip()', () => {
 	test('should be true if ChartTooltip exists in children', () => {
 		expect(hasTooltip([createElement(ChartTooltip)])).toBeTruthy();
@@ -140,5 +151,13 @@ describe('getHighlightOpacityValue()', () => {
 		expect(getHighlightOpacityValue(getOpacityProductionRule({ value: 0.5 }))).toStrictEqual({
 			value: 0.5 / HIGHLIGHT_CONTRAST_RATIO,
 		});
+	});
+});
+
+describe('getXProductionRule()', () => {
+	test('should return the correct scale based on scale type', () => {
+		expect(getXProductionRule('time', 'datetime')).toEqual({ scale: 'xTime', field: 'datetime0' });
+		expect(getXProductionRule('linear', 'datetime')).toEqual({ scale: 'xLinear', field: 'datetime' });
+		expect(getXProductionRule('point', 'datetime')).toEqual({ scale: 'xPoint', field: 'datetime' });
 	});
 });

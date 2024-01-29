@@ -14,3 +14,4 @@ export * from './Chart';
 export * from './specBuilderTypes';
 export * from './SpectrumVizColors';
 export * from './supplementalVegaTypes';
+export * from './locales';

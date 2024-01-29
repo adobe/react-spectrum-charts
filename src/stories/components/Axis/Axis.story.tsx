@@ -150,6 +150,17 @@ NonLinearAxis.args = {
 	grid: true,
 };
 
+const NumberFormat = bindWithProps(AxisStory);
+NumberFormat.args = {
+	numberFormat: '$,.2f',
+	position: 'left',
+	baseline: true,
+	grid: true,
+	labelFormat: 'linear',
+	ticks: true,
+	title: 'Price',
+};
+
 const CustomXRange = bindWithProps(LinearAxisStory);
 CustomXRange.args = {
 	position: 'bottom',
@@ -169,4 +180,4 @@ ControlledLabels.args = {
 	],
 };
 
-export { Basic, Time, SubLabels, TickMinStep, NonLinearAxis, CustomXRange, ControlledLabels };
+export { Basic, Time, SubLabels, TickMinStep, NonLinearAxis, NumberFormat, CustomXRange, ControlledLabels };

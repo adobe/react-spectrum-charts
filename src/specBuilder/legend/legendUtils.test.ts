@@ -13,14 +13,20 @@ import { DEFAULT_COLOR, DEFAULT_COLOR_SCHEME, HIGHLIGHT_CONTRAST_RATIO } from '@
 import { spectrumColors } from '@themes';
 
 import { defaultLegendProps, opacityEncoding } from './legendTestUtils';
-import { getOpacityEncoding, getShowHideEncodings, getSymbolEncodings, mergeLegendEncodings } from './legendUtils';
+import {
+	getShowHideEncodings,
+	getSymbolEncodings,
+	getSymbolOpacityEncoding,
+	getSymbolType,
+	mergeLegendEncodings,
+} from './legendUtils';
 
 const defaultOpacitySignalEncoding = [
 	{
 		test: 'highlightedSeries && datum.value !== highlightedSeries',
-		signal: `scale('opacity', data('legendAggregate')[datum.index].${DEFAULT_COLOR}) / 5`,
+		signal: `scale('opacity', data('legend0Aggregate')[datum.index].${DEFAULT_COLOR}) / 5`,
 	},
-	{ signal: `scale('opacity', data('legendAggregate')[datum.index].${DEFAULT_COLOR})` },
+	{ signal: `scale('opacity', data('legend0Aggregate')[datum.index].${DEFAULT_COLOR})` },
 ];
 
 const hiddenSeriesEncoding = {
@@ -42,24 +48,30 @@ const hiddenSeriesLabelUpdateEncoding = {
 	},
 };
 
-describe('getOpacityEncoding()', () => {
+describe('getSymbolOpacityEncoding()', () => {
 	test('should return undefined if highlight is false', () => {
-		expect(getOpacityEncoding(false)).toBeUndefined();
+		expect(getSymbolOpacityEncoding(defaultLegendProps)).toBeUndefined();
 	});
 
 	test('should return default highlight encoding if opacity and facets are undefined', () => {
-		expect(getOpacityEncoding(true)).toStrictEqual(opacityEncoding);
+		expect(getSymbolOpacityEncoding({ ...defaultLegendProps, highlight: true })).toStrictEqual(opacityEncoding);
 	});
 
 	test('should return signal-based encoding if facets includes opacity facet when opacity id undefined', () => {
-		expect(getOpacityEncoding(true, undefined, [{ facetType: 'opacity', field: DEFAULT_COLOR }])).toStrictEqual(
-			defaultOpacitySignalEncoding
-		);
+		expect(
+			getSymbolOpacityEncoding({
+				...defaultLegendProps,
+				highlight: true,
+				facets: [{ facetType: 'opacity', field: DEFAULT_COLOR }],
+			})
+		).toStrictEqual(defaultOpacitySignalEncoding);
 	});
 
 	test('should return value-based encoding if opacity exists and is a static value', () => {
 		const opacity = 0.5;
-		expect(getOpacityEncoding(true, { value: opacity })).toStrictEqual([
+		expect(
+			getSymbolOpacityEncoding({ ...defaultLegendProps, highlight: true, opacity: { value: opacity } })
+		).toStrictEqual([
 			{
 				test: 'highlightedSeries && datum.value !== highlightedSeries',
 				value: opacity / HIGHLIGHT_CONTRAST_RATIO,
@@ -69,15 +81,14 @@ describe('getOpacityEncoding()', () => {
 	});
 
 	test('should return signal based highlight encodings if opacity is a signal ref', () => {
-		expect(getOpacityEncoding(true, DEFAULT_COLOR, [{ facetType: 'opacity', field: 'testing' }])).toStrictEqual(
-			defaultOpacitySignalEncoding
-		);
-	});
-
-	test('should return value based highlight encodings if opacity and facets are valid', () => {
-		expect(getOpacityEncoding(true, DEFAULT_COLOR, [{ facetType: 'opacity', field: 'testing' }])).toStrictEqual(
-			defaultOpacitySignalEncoding
-		);
+		expect(
+			getSymbolOpacityEncoding({
+				...defaultLegendProps,
+				highlight: true,
+				opacity: DEFAULT_COLOR,
+				facets: [{ facetType: 'opacity', field: 'testing' }],
+			})
+		).toStrictEqual(defaultOpacitySignalEncoding);
 	});
 });
 
@@ -177,5 +188,14 @@ describe('mergeLegendEncodings()', () => {
 				enter: { cursor: { value: 'pointer' }, fill: { value: 'transparent' } },
 			},
 		});
+	});
+});
+
+describe('getSymbolType()', () => {
+	test('should return the symbolShape if a static value is provided', () => {
+		expect(getSymbolType({ value: 'diamond' })).toStrictEqual('diamond');
+	});
+	test('should default to circle if static value is not provided', () => {
+		expect(getSymbolType('series')).toStrictEqual('circle');
 	});
 });

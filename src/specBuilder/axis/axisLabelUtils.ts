@@ -230,16 +230,24 @@ export const getLabelOffset = (
  * @param type
  * @returns
  */
-export const getLabelFormat = (type?: LabelFormat): ProductionRule<TextValueRef> => {
+export const getLabelFormat = (
+	type: LabelFormat | undefined,
+	numberFormat: string | undefined
+): ProductionRule<TextValueRef> => {
 	if (type === 'percentage') {
 		return [{ test: 'isNumber(datum.value)', signal: "format(datum.value, '~%')" }, { signal: 'datum.value' }];
 	}
 
 	// if it's a number and greater than or equal to 1000, we want to format it in scientific notation (but with B instead of G) ex. 1K, 20M, 1.3B
 	return [
+		...(numberFormat ? [{ test: 'isNumber(datum.value)', signal: `format(datum.value, '${numberFormat}')` }] : []),
 		{
 			test: 'isNumber(datum.value) && abs(datum.value) >= 1000',
 			signal: "upper(replace(format(datum.value, '.3~s'), 'G', 'B'))",
+		},
+		{
+			test: 'isNumber(datum.value)',
+			signal: 'format(datum.value, ",")',
 		},
 		{ signal: 'datum.value' },
 	];
