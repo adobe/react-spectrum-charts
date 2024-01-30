@@ -120,7 +120,6 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 		const selectedData = useRef<Datum | null>(null); // data that is currently selected, get's set on click if a popover exists
 		const selectedDataName = useRef<string>();
 		const selectedDataBounds = useRef<MarkBounds>();
-		// const containerRef = useRef<HTMLDivElement>(null);
 		const [containerWidth, setContainerWidth] = useState<number>(0);
 		const popoverAnchorRef = useRef<HTMLDivElement>(null);
 		const [popoverIsOpen, setPopoverIsOpen] = useState<boolean>(false); // tracks the open/close state of the popover
@@ -163,7 +162,7 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 
 		useChartImperativeHandle(forwardedRef, { chartView, title });
 
-		const resizeRef = useResizeObserver<HTMLDivElement>((_target, entry) => {
+		const containerRef = useResizeObserver<HTMLDivElement>((_target, entry) => {
 			if (typeof width === 'number') return;
 			setContainerWidth(entry.contentRect.width);
 		});
@@ -269,8 +268,7 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 				UNSAFE_style={{ backgroundColor: 'transparent' }}
 			>
 				<div
-					// ref={containerRef}
-					ref={resizeRef}
+					ref={containerRef}
 					id={chartId.current}
 					data-testid={dataTestId}
 					className="rsc-container"
