@@ -10,13 +10,27 @@
  * governing permissions and limitations under the License.
  */
 
-import { render } from '@testing-library/react';
+import { useLayoutEffect, useRef } from 'react';
 
-import { Basic } from './EmptyState.story';
+export const useResizeObserver = <T extends HTMLElement>(callback: (target: T, entry: ResizeObserverEntry) => void) => {
+	const ref = useRef<T>(null);
 
-describe('EmptyState', () => {
-	test('Empty state renders text', () => {
-		const { getByText } = render(<Basic {...Basic.args} />);
-		expect(getByText('No data found')).toBeInTheDocument();
-	});
-});
+	useLayoutEffect(() => {
+		const element = ref?.current;
+
+		if (!element) {
+			return;
+		}
+
+		const observer = new ResizeObserver((entries) => {
+			callback(element, entries[0]);
+		});
+
+		observer.observe(element);
+		return () => {
+			observer.disconnect();
+		};
+	}, [callback, ref]);
+
+	return ref;
+};

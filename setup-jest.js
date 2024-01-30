@@ -10,13 +10,7 @@
  * governing permissions and limitations under the License.
  */
 
-import { render } from '@testing-library/react';
+ResizeObserver = require('resize-observer-polyfill');
 
-import { Basic } from './EmptyState.story';
-
-describe('EmptyState', () => {
-	test('Empty state renders text', () => {
-		const { getByText } = render(<Basic {...Basic.args} />);
-		expect(getByText('No data found')).toBeInTheDocument();
-	});
-});
+global.ResizeObserver = ResizeObserver;
+process.env.NODE_ENV = 'test';

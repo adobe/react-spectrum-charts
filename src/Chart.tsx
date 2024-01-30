@@ -24,10 +24,10 @@ import {
 } from '@constants';
 import useChartImperativeHandle from '@hooks/useChartImperativeHandle';
 import useChartWidth from '@hooks/useChartWidth';
-import useElementSize from '@hooks/useElementSize';
 import useLegend from '@hooks/useLegend';
 import usePopoverAnchorStyle from '@hooks/usePopoverAnchorStyle';
 import usePopovers, { PopoverDetail } from '@hooks/usePopovers';
+import { useResizeObserver } from '@hooks/useResizeObserver';
 import useSpec from '@hooks/useSpec';
 import useSpecProps from '@hooks/useSpecProps';
 import useTooltips from '@hooks/useTooltips';
@@ -120,7 +120,7 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 		const selectedData = useRef<Datum | null>(null); // data that is currently selected, get's set on click if a popover exists
 		const selectedDataName = useRef<string>();
 		const selectedDataBounds = useRef<MarkBounds>();
-		const containerRef = useRef<HTMLDivElement>(null);
+		const [containerWidth, setContainerWidth] = useState<number>(0);
 		const popoverAnchorRef = useRef<HTMLDivElement>(null);
 		const [popoverIsOpen, setPopoverIsOpen] = useState<boolean>(false); // tracks the open/close state of the popover
 
@@ -162,7 +162,10 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 
 		useChartImperativeHandle(forwardedRef, { chartView, title });
 
-		const [containerWidth] = useElementSize(containerRef); // gets the width of the container that wraps vega
+		const containerRef = useResizeObserver<HTMLDivElement>((_target, entry) => {
+			if (typeof width === 'number') return;
+			setContainerWidth(entry.contentRect.width);
+		});
 		const chartWidth = useChartWidth(containerWidth, maxWidth, minWidth, width); // calculates the width the vega chart should be
 
 		const {

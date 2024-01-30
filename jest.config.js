@@ -33,5 +33,5 @@ module.exports = {
 		'^.+\\.(css|less|scss)$': 'babel-jest',
 		...pathsToModuleNameMapper(compilerOptions.paths),
 	},
-	setupFilesAfterEnv: ['@testing-library/jest-dom', 'jest-canvas-mock'],
+	setupFilesAfterEnv: ['@testing-library/jest-dom', 'jest-canvas-mock', '<rootDir>/setup-jest.js'],
 };
