@@ -167,6 +167,8 @@ export interface AxisProps extends BaseProps {
 	tickMinStep?: number;
 	/** Sets the axis title */
 	title?: string;
+	/** If the text is wider than the bandwidth that is labels, it will be truncated so that it stays within that bandwidth. */
+	truncateLabels?: boolean;
 }
 
 export type Granularity = 'minute' | 'hour' | 'day' | 'week' | 'month' | 'quarter';
