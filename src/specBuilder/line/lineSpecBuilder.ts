@@ -87,7 +87,7 @@ export const addLine = produce<Spec, [LineProps & { colorScheme?: ColorScheme; i
 );
 
 export const addData = produce<Data[], [LineSpecProps]>((data, props) => {
-	const { dimension, scaleType, children, name, staticPoint } = props;
+	const { dimension, scaleType, children, name, staticPoint, isSparkline, isMethodLast } = props;
 	if (scaleType === 'time') {
 		const tableData = getTableData(data);
 		tableData.transform = addTimeTransform(tableData.transform ?? [], dimension);
@@ -95,7 +95,7 @@ export const addData = produce<Data[], [LineSpecProps]>((data, props) => {
 	if (hasInteractiveChildren(children)) {
 		data.push(getLineHighlightedData(name, FILTERED_TABLE, hasPopover(children)));
 	}
-	if (staticPoint) data.push(getLineStaticPointData(name, staticPoint, FILTERED_TABLE));
+	if (staticPoint) data.push(getLineStaticPointData(name, staticPoint, FILTERED_TABLE, isSparkline, isMethodLast));
 	addTrendlineData(data, props);
 });
 
