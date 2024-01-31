@@ -48,7 +48,7 @@ export const getLineStaticPoint = ({
 		encode: {
 			enter: {
 				y: { scale: 'yLinear', field: metric },
-				fill: isSparkline ? { value: "transparent" } : getColorProductionRule(color, colorScheme),
+				fill: isSparkline ? { signal: BACKGROUND_COLOR } : getColorProductionRule(color, colorScheme),
 				stroke: isSparkline ? getColorProductionRule(color, colorScheme) : { signal: BACKGROUND_COLOR }
 			},
 			update: {

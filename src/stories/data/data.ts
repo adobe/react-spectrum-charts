@@ -1035,3 +1035,16 @@ export const stockPriceData = [
 	{ date: 'June 28, 2023', timestamp: 1687910400000, price: 482.429993, stock: 'ADBE' },
 	{ date: 'June 29, 2023', timestamp: 1687996800000, price: 483.769989, stock: 'ADBE' },
 ];
+
+export const simpleLineData = [
+	{ x: 0, y: 28 },
+	{ x: 1, y: 43 },
+	{ x: 2, y: 81 },
+	{ x: 3, y: 19 },
+	{ x: 4, y: 52 },
+	{ x: 5, y: 24 },
+	{ x: 6, y: 87 },
+	{ x: 7, y: 17 },
+	{ x: 8, y: 68 },
+	{ x: 9, y: 25 }
+];

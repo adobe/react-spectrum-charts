@@ -14,7 +14,12 @@ import React, { ReactElement, createElement } from 'react';
 import { ReferenceLine } from '@components/ReferenceLine';
 import useChartProps from '@hooks/useChartProps';
 import { Axis, Bar, Chart, ChartPopover, ChartTooltip, Legend, Line } from '@rsc';
-import { workspaceTrendsData, workspaceTrendsDataWithVisiblePoints } from '@stories/data/data';
+import {
+	browserData,
+	simpleLineData,
+	workspaceTrendsData,
+	workspaceTrendsDataWithVisiblePoints
+} from '@stories/data/data';
 import { formatTimestamp } from '@stories/storyUtils';
 import { StoryFn } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
@@ -135,6 +140,15 @@ const LineWithVisiblePointsStory: StoryFn<typeof Line> = (args): ReactElement =>
 	);
 };
 
+const PlainLineStory: StoryFn<typeof Line> = (args): ReactElement => {
+	const chartProps = useChartProps({...defaultChartProps, data: simpleLineData });
+	return (
+		<Chart {...chartProps}>
+			<Line {...args}/>
+		</Chart>
+	);
+}
+
 const Basic = bindWithProps(BasicLineStory);
 Basic.args = {
 	color: 'series',
@@ -209,7 +223,7 @@ WithStaticPoints.args = {
 	dimension: 'datetime',
 	metric: 'value',
 	name: 'line0',
-	scaleType: 'time',
+	scaleType: 'linear',
 	staticPoint: 'staticPoint',
 };
 
@@ -232,14 +246,13 @@ WithStaticPointsAndDialogs.args = {
 	children: [createElement(ChartTooltip, {}, dialogCallback), createElement(ChartPopover, {}, dialogCallback)],
 };
 
-const Sparkline = bindWithProps(LineWithVisiblePointsStory);
+const Sparkline = bindWithProps(PlainLineStory);
 Sparkline.args = {
-	color: 'series',
-	dimension: 'datetime',
-	metric: 'value',
+	metric: 'y',
 	name: 'line0',
-	scaleType: 'time',
+	dimension: 'x',
 	staticPoint: 'staticPoint',
+	scaleType: 'linear',
 	isSparkline: true,
 	isMethodLast: true
 }
