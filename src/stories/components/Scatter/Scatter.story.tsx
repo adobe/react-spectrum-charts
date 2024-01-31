@@ -77,7 +77,7 @@ const ScatterStory: StoryFn<typeof Scatter> = (args): ReactElement => {
 	const chartProps = useChartProps({ data: characterData, height: 500, width: 500, lineWidths: [1, 2, 3] });
 
 	const facets = ['color', 'lineType', 'opacity', 'size'];
-	const legendKey = args[facets.find((key) => args[key] !== undefined) || 'color'];
+	const legendKey = args[facets.find((key) => args[key] !== undefined) ?? 'color'];
 	const legendProps: LegendProps = {
 		position: 'right',
 		title: marioKeyTitle[legendKey],
