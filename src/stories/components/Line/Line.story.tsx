@@ -232,6 +232,18 @@ WithStaticPointsAndDialogs.args = {
 	children: [createElement(ChartTooltip, {}, dialogCallback), createElement(ChartPopover, {}, dialogCallback)],
 };
 
+const Sparkline = bindWithProps(LineWithVisiblePointsStory);
+Sparkline.args = {
+	color: 'series',
+	dimension: 'datetime',
+	metric: 'value',
+	name: 'line0',
+	scaleType: 'time',
+	staticPoint: 'staticPoint',
+	isSparkline: true,
+	isMethodLast: true
+}
+
 export {
 	Basic,
 	LineWithAxisAndLegend,
@@ -243,4 +255,5 @@ export {
 	Tooltip,
 	WithStaticPoints,
 	WithStaticPointsAndDialogs,
+	Sparkline
 };

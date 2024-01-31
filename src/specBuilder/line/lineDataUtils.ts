@@ -52,7 +52,7 @@ export const getLineStaticPointData = (name: string, staticPoint: string, source
 		transform: [
 			{
 				type: 'filter',
-				expr: `${isSparkline && isMethodLast ? `datum === data('${name}')[data('${name}').length - 1]` : `datum.${staticPoint} === true`}`,
+				expr: `${isSparkline && isMethodLast ? `datum === data('table')[data('table').length - 1]` : `datum.${staticPoint} === true`}`,
 			},
 		],
 	};
