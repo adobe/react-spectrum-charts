@@ -30,7 +30,6 @@ import {
 	addFieldToFacetScaleDomain,
 	addMetricScale,
 } from '@specBuilder/scale/scaleSpecBuilder';
-import { addTrendlineData } from '@specBuilder/trendline/trendlineUtils';
 import { sanitizeMarkChildren, toCamelCase } from '@utils';
 import { produce } from 'immer';
 import { ColorScheme, ScatterProps, ScatterSpecProps } from 'types';
@@ -88,7 +87,6 @@ export const addData = produce<Data[], [ScatterSpecProps]>((data, props) => {
 		const tableData = getTableData(data);
 		tableData.transform = addTimeTransform(tableData.transform ?? [], dimension);
 	}
-	addTrendlineData(data, props);
 });
 
 export const setScales = produce<Scale[], [ScatterSpecProps]>((scales, props) => {
