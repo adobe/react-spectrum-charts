@@ -21,9 +21,11 @@ export function Scatter({
 	colorScaleType,
 	dimension = DEFAULT_LINEAR_DIMENSION,
 	children,
+	lineType = { value: 'solid' },
+	lineWidth = { value: 0 },
 	metric = DEFAULT_METRIC,
 	name,
-	opacity = 1,
+	opacity = { value: 1 },
 	size = { value: DEFAULT_SYMBOL_SIZE },
 }: ScatterProps) {
 	return null;

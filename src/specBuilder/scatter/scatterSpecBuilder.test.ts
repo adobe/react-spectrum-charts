@@ -30,9 +30,11 @@ const defaultScatterProps: ScatterSpecProps = {
 	dimension: DEFAULT_LINEAR_DIMENSION,
 	dimensionScaleType: DEFAULT_DIMENSION_SCALE_TYPE,
 	index: 0,
+	lineType: { value: 'solid' },
+	lineWidth: { value: 0 },
 	metric: DEFAULT_METRIC,
 	name: 'scatter0',
-	opacity: 0.8,
+	opacity: { value: 1 },
 	size: { value: 'M' },
 };
 
@@ -56,6 +58,21 @@ describe('setScales()', () => {
 		const scales = setScales([], { ...defaultScatterProps, color: DEFAULT_COLOR });
 		expect(scales).toHaveLength(3);
 		expect(scales[2].name).toBe('color');
+	});
+	test('should add the lineType scale if lineType is a reference to a key', () => {
+		const scales = setScales([], { ...defaultScatterProps, lineType: DEFAULT_COLOR });
+		expect(scales).toHaveLength(3);
+		expect(scales[2].name).toBe('lineType');
+	});
+	test('should add the lineWidth scale if lineWidth is a reference to a key', () => {
+		const scales = setScales([], { ...defaultScatterProps, lineWidth: DEFAULT_COLOR });
+		expect(scales).toHaveLength(3);
+		expect(scales[2].name).toBe('lineWidth');
+	});
+	test('should add the opacity scale if opacity is a reference to a key', () => {
+		const scales = setScales([], { ...defaultScatterProps, opacity: DEFAULT_COLOR });
+		expect(scales).toHaveLength(3);
+		expect(scales[2].name).toBe('opacity');
 	});
 	test('should add the symbolSize scale if size is a reference to a key', () => {
 		const scales = setScales([], { ...defaultScatterProps, size: 'weight' });
