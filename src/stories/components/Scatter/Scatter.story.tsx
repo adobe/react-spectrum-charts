@@ -12,7 +12,7 @@
 import React, { ReactElement } from 'react';
 
 import useChartProps from '@hooks/useChartProps';
-import { Axis, Chart, Legend, Scatter, Title } from '@rsc';
+import { Axis, Chart, Legend, LegendProps, Scatter, Title } from '@rsc';
 import { characterData } from '@stories/data/marioKartData';
 import { StoryFn } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
@@ -74,16 +74,24 @@ const marioKeyTitle: Record<Exclude<MarioDataKey, 'character'>, string> = {
 };
 
 const ScatterStory: StoryFn<typeof Scatter> = (args): ReactElement => {
-	const chartProps = useChartProps({ data: characterData, width: 400 });
+	const chartProps = useChartProps({ data: characterData, height: 500, width: 500, lineWidths: [1, 2, 3] });
 
-	const legendKey = (args.color ?? args.size) as MarioDataKey;
+	const facets = ['color', 'lineType', 'opacity', 'size'];
+	const legendKey = args[facets.find((key) => args[key] !== undefined) ?? 'color'];
+	const legendProps: LegendProps = {
+		position: 'right',
+		title: marioKeyTitle[legendKey],
+	};
+	if (typeof args.opacity === 'object') {
+		legendProps.opacity = args.opacity;
+	}
 
 	return (
 		<Chart {...chartProps}>
 			<Axis position="bottom" grid ticks baseline title={marioKeyTitle[args.dimension as MarioDataKey]} />
 			<Axis position="left" grid ticks baseline title={marioKeyTitle[args.metric as MarioDataKey]} />
 			<Scatter {...args} />
-			<Legend position="right" title={marioKeyTitle[legendKey]} />
+			<Legend {...legendProps} />
 			<Title text="Mario Kart 8 Character Data" />
 		</Chart>
 	);
@@ -102,9 +110,18 @@ Color.args = {
 	metric: 'handlingNormal',
 };
 
+const LineType = bindWithProps(ScatterStory);
+LineType.args = {
+	lineType: 'weightClass',
+	lineWidth: { value: 2 },
+	opacity: { value: 0.5 },
+	dimension: 'speedNormal',
+	metric: 'handlingNormal',
+};
+
 const Opacity = bindWithProps(ScatterStory);
 Opacity.args = {
-	opacity: 0.5,
+	opacity: 'weightClass',
 	dimension: 'speedNormal',
 	metric: 'handlingNormal',
 };
@@ -116,4 +133,4 @@ Size.args = {
 	metric: 'handlingNormal',
 };
 
-export { Basic, Color, Opacity, Size };
+export { Basic, Color, LineType, Opacity, Size };
