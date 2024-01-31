@@ -11,38 +11,51 @@
  */
 import React, { FC } from 'react';
 
+import { ErrorState } from '@components/BigNumber/ErrorState';
+import { Line } from '@components/Line';
+import { Chart } from 'Chart';
 import { BigNumberProps } from 'types';
 
 import { Flex, Text } from '@adobe/react-spectrum';
-import { ErrorState } from '@components/BigNumber/ErrorState';
 import GraphBarVerticalStacked from '@spectrum-icons/workflow/GraphBarVerticalStacked';
 
 import './BigNumber.css';
-
 
 export const BigNumber: FC<BigNumberProps> = (props) => {
 	const direction = props.orientation == 'vertical' ? 'column' : 'row';
 	const alignment = props.orientation == 'vertical' ? 'center' : 'start';
 
-	const formattedValue = props.value ? props.numberFormat?.format(props.value) ?? props.value : props.value;
+	const bigNumberValue = props.data != undefined && props.data.length > 0 ? props.data[props.data.length - 1]["value"] : undefined
 
-	if (props.value === null) {
-		return <ErrorState message="Unable to load. One or more values are null."/>;
-	} else if (props.value === undefined) {
+	const formattedValue = props.numberFormat?.format(bigNumberValue) ?? bigNumberValue
 
-		return <ErrorState icon={<GraphBarVerticalStacked data-testid="vertical-graph" size="L"/>}
-						   actionText="Please verify that data is defined" message="No data available."/>
+	if (props.data === null) {
+		return <ErrorState message="Unable to load. One or more values are null." />;
+	} else if (props.data === undefined || formattedValue === undefined) {
+		return (
+			<ErrorState
+				icon={<GraphBarVerticalStacked data-testid="vertical-graph" size="L" />}
+				actionText="Please verify that data is defined"
+				message="No data available."
+			/>
+		);
 	} else {
 		return (
 			<div tabIndex={0} className="content">
-				<Flex direction={direction} alignItems="center" gap={direction === 'row' ? 'size-150' : 'size-75'} UNSAFE_className="content">
-						<div className="theme main-container">
-							{props.icon}
-						</div>
-						<Flex direction="column" alignItems={alignment}>
-							<Text UNSAFE_className="theme number">{formattedValue}</Text>
-							<Text UNSAFE_className="theme description">{props.label}</Text>
-						</Flex>
+				<Flex
+					direction={direction}
+					alignItems="center"
+					gap={direction === 'row' ? 'size-150' : 'size-75'}
+					UNSAFE_className="content"
+				>
+					<Chart data={props.data}>
+						<Line />
+					</Chart>
+					<div className="theme main-container">{props.icon}</div>
+					<Flex direction="column" alignItems={alignment}>
+						<Text UNSAFE_className="theme number">{formattedValue}</Text>
+						<Text UNSAFE_className="theme description">{props.label}</Text>
+					</Flex>
 				</Flex>
 			</div>
 		);

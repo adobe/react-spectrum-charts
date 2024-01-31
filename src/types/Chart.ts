@@ -174,8 +174,9 @@ export type BigNumberOrientation = 'vertical' | 'horizontal';
 
 export interface BigNumberProps {
 	orientation: BigNumberOrientation;
+	sparkline?: boolean
 	icon?: ReactElement;
-	value: number | undefined | null;
+	data: ChartData[] | undefined | null;
 	label: string;
 	numberFormat?: Intl.NumberFormat;
 }

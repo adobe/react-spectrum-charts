@@ -31,14 +31,14 @@ const BigNumberStory: StoryFn<typeof BigNumber> = (args): ReactElement => {
 const BasicHorizonal = bindWithProps(BigNumberStory);
 BasicHorizonal.args = {
 	orientation: 'horizontal',
-	value: 2555,
+	data: [{ value: 2555 }],
 	label: 'Visitors',
 };
 
 const BasicVertical = bindWithProps(BigNumberStory);
 BasicVertical.args = {
 	orientation: 'vertical',
-	value: 2555,
+	data: [{ value: 2555 }],
 	label: 'Visitors',
 };
 
@@ -50,7 +50,7 @@ IconHorizontal.args = {
 		</Icon>
 	),
 	orientation: 'horizontal',
-	value: 2555,
+	data: [{ value: 2555 }],
 	label: 'Visitors',
 };
 
@@ -62,20 +62,20 @@ IconVertical.args = {
 		</Icon>
 	),
 	orientation: 'vertical',
-	value: 2555,
+	data: [{ value: 2555 }],
 	label: 'Visitors',
 };
 
 const NullData = bindWithProps(BigNumberStory);
 NullData.args = {
-	value: null,
+	data: null,
 	orientation: 'horizontal',
 	label: 'Visitors',
 };
 
 const UndefinedData = bindWithProps(BigNumberStory);
 UndefinedData.args = {
-	value: undefined,
+	data: undefined,
 	orientation: 'horizontal',
 	label: 'Visitors',
 };
@@ -87,7 +87,7 @@ const compactNumberFormat = () => {
 const CompactNumberHorizontal = bindWithProps(BigNumberStory);
 CompactNumberHorizontal.args = {
 	orientation: 'horizontal',
-	value: 2555,
+	data: [{ value: 2555 }],
 	label: 'Visitors',
 	numberFormat: compactNumberFormat(),
 };
@@ -95,7 +95,7 @@ CompactNumberHorizontal.args = {
 const CompactNumberVertical = bindWithProps(BigNumberStory);
 CompactNumberVertical.args = {
 	orientation: 'vertical',
-	value: 2555,
+	data: [{ value: 2555 }],
 	label: 'Visitors',
 	numberFormat: compactNumberFormat(),
 };
@@ -107,7 +107,7 @@ const percentNumberFormat = () => {
 const PercentNumberHorizontal = bindWithProps(BigNumberStory);
 PercentNumberHorizontal.args = {
 	orientation: 'horizontal',
-	value: 0.2555,
+	data: [{ value: 0.2555 }],
 	label: 'Capacity',
 	numberFormat: percentNumberFormat(),
 };
@@ -115,7 +115,7 @@ PercentNumberHorizontal.args = {
 const PercentNumberVertical = bindWithProps(BigNumberStory);
 PercentNumberVertical.args = {
 	orientation: 'vertical',
-	value: 0.2555,
+	data: [{ value: 0.2555 }],
 	label: 'Capacity',
 	numberFormat: percentNumberFormat(),
 };
@@ -127,7 +127,7 @@ const currencyNumberFormat = () => {
 const CurrencyNumberHorizontal = bindWithProps(BigNumberStory);
 CurrencyNumberHorizontal.args = {
 	orientation: 'horizontal',
-	value: 25.55,
+	data: [{ value: 25.55 }],
 	label: 'Sales',
 	numberFormat: currencyNumberFormat(),
 };
@@ -135,7 +135,7 @@ CurrencyNumberHorizontal.args = {
 const CurrencyNumberVertical = bindWithProps(BigNumberStory);
 CurrencyNumberVertical.args = {
 	orientation: 'vertical',
-	value: 25.55,
+	data: [{ value: 25.55 }],
 	label: 'Sales',
 	numberFormat: currencyNumberFormat(),
 };
@@ -147,7 +147,7 @@ const groupedNumberFormat = () => {
 const GroupedNumberHorizontal = bindWithProps(BigNumberStory);
 GroupedNumberHorizontal.args = {
 	orientation: 'horizontal',
-	value: 2555,
+	data: [{ value: 2555 }],
 	label: 'Visitors',
 	numberFormat: groupedNumberFormat(),
 };
@@ -155,7 +155,7 @@ GroupedNumberHorizontal.args = {
 const GroupedNumberVertical = bindWithProps(BigNumberStory);
 GroupedNumberVertical.args = {
 	orientation: 'vertical',
-	value: 2555,
+	data: [{ value: 2555 }],
 	label: 'Visitors',
 	numberFormat: groupedNumberFormat(),
 };
