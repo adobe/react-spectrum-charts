@@ -279,7 +279,7 @@ export const getTickCount = (position: Position, grid: boolean): SignalRef | und
 	if (!grid) return;
 	const range = ['top', 'bottom'].includes(position) ? 'width' : 'height';
 	// clamp axis tick count to a min of 2 and max of 5
-	return { signal: `clamp(ceil(${range}/40), 2, 5)` };
+	return { signal: `clamp(ceil(${range}/60), 2, 10)` };
 };
 
 /**
