@@ -15,19 +15,25 @@ import { ErrorState } from '@components/BigNumber/ErrorState';
 import { Line } from '@components/Line';
 import { Chart } from 'Chart';
 import { BigNumberProps } from 'types';
+import { getLocale } from 'utils/locale';
 
 import { Flex, Text } from '@adobe/react-spectrum';
 import GraphBarVerticalStacked from '@spectrum-icons/workflow/GraphBarVerticalStacked';
 
 import './BigNumber.css';
+import { getFormattedString } from './bigNumberFormatUtils';
 
 export const BigNumber: FC<BigNumberProps> = (props) => {
 	const direction = props.orientation == 'vertical' ? 'column' : 'row';
 	const alignment = props.orientation == 'vertical' ? 'center' : 'start';
 
-	const bigNumberValue = props.data != undefined && props.data.length > 0 ? props.data[props.data.length - 1]["value"] : undefined
+	const bigNumberValue =
+		props.data != undefined && props.data.length > 0 ? props.data[props.data.length - 1]['value'] : undefined;
 
-	const formattedValue = props.numberFormat?.format(bigNumberValue) ?? bigNumberValue
+	const numberLocale = getLocale(props.locale).number;
+	const numberType = props.numberType ?? 'linear';
+	const formattedValue =
+		getFormattedString(bigNumberValue, numberLocale, props.numberFormat, numberType) ?? bigNumberValue;
 
 	if (props.data === null) {
 		return <ErrorState message="Unable to load. One or more values are null." />;
