@@ -17,9 +17,6 @@ export default function useChartWidth(
 	minWidth: number,
 	width: number | 'auto' | string
 ) {
-	if (process.env.NODE_ENV === 'test') {
-		containerWidth = 500;
-	}
 	return useMemo(() => {
 		let targetWidth = minWidth;
 		if (typeof width === 'number') {
