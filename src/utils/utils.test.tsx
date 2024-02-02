@@ -15,7 +15,6 @@ import React from 'react';
 import { Bar } from '@components/Bar';
 import { ChartPopover } from '@components/ChartPopover';
 import { ChartTooltip } from '@components/ChartTooltip';
-import { Donut } from '@components/Donut';
 import { Line } from '@components/Line';
 import { Trendline } from '@components/Trendline';
 import {
@@ -26,6 +25,7 @@ import {
 	toggleStringArrayValue,
 } from '@utils';
 import { Chart } from 'Chart';
+import { Donut } from 'alpha/components/Donut';
 
 describe('utils', () => {
 	describe('toCamelCase()', () => {

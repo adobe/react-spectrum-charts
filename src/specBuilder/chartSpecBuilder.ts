@@ -18,7 +18,8 @@ import {
 	SERIES_ID,
 	TABLE,
 } from '@constants';
-import { Area, Axis, Bar, Donut, Legend, Line, Scatter, Title } from '@rsc';
+import { Area, Axis, Bar, Legend, Line, Scatter, Title } from '@rsc';
+import { Donut } from '@rsc/alpha';
 import colorSchemes from '@themes/colorSchemes';
 import { produce } from 'immer';
 import {

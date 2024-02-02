@@ -10,21 +10,7 @@
  * governing permissions and limitations under the License.
  */
 
-export * from './components/Annotation';
-export * from './components/Area';
-export * from './components/Axis';
-export * from './components/AxisAnnotation';
-export * from './components/Bar';
-export * from './components/ChartPopover';
-export * from './components/ChartTooltip';
-export * from './components/Donut';
-export * from './components/EmptyState';
-export * from './components/Legend';
-export * from './components/Line';
-export * from './components/MetricRange';
-export * from './components/ReferenceLine';
-export * from './components/Trendline';
-export * from './components/Title';
+export * from './components';
 export * from './Chart';
 export * from './themes';
 export * from './types/';

@@ -12,7 +12,8 @@
 import React, { ReactElement } from 'react';
 
 import useChartProps from '@hooks/useChartProps';
-import { Chart, ChartPopover, ChartTooltip, Donut, Legend } from '@rsc';
+import { Chart, ChartPopover, ChartTooltip, Legend } from '@rsc';
+import { Donut } from '@rsc/alpha';
 import { StoryFn } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
 
@@ -21,7 +22,7 @@ import { Content } from '@adobe/react-spectrum';
 import { basicDonutData, booleanDonutData, sliveredDonutData } from './data';
 
 export default {
-	title: 'RSC/Donut',
+	title: 'RSC/Donut (alpha)',
 	component: Donut,
 };
 

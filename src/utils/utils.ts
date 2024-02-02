@@ -14,7 +14,8 @@ import { Fragment, ReactFragment } from 'react';
 import { MARK_ID, SERIES_ID } from '@constants';
 import { View } from 'vega';
 
-import { Area, Axis, AxisAnnotation, Bar, ChartPopover, ChartTooltip, Donut, Legend, Line, Trendline } from '..';
+import { Area, Axis, AxisAnnotation, Bar, ChartPopover, ChartTooltip, Legend, Line, Trendline } from '..';
+import { Donut } from '../alpha';
 import {
 	AxisAnnotationChildElement,
 	AxisChildElement,

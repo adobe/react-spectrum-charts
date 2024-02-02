@@ -3,9 +3,21 @@
 	"version": "v1.0.1",
 	"description": "Declarative library for composing Spectrum visualizations in React.",
 	"browser": "./dist/index.js",
-	"main": "./dist/index.js",
+	"exports": {
+		".": "./dist/index.js",
+		"./alpha": "./dist/alpha.js"
+	},
 	"module": "./dist/index.js",
-	"types": "./dist/@types/index.d.ts",
+	"typesVersions": {
+		"*": {
+			"*": [
+				"./dist/@types/index.d.ts"
+			],
+			"alpha": [
+				"./dist/@types/alpha/index.d.ts"
+			]
+		}
+	},
 	"files": [
 		"/dist"
 	],
