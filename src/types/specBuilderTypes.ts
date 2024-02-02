@@ -125,6 +125,8 @@ type ScatterPropsWithDefaults =
 	| 'colorScaleType'
 	| 'dimension'
 	| 'dimensionScaleType'
+	| 'lineType'
+	| 'lineWidth'
 	| 'metric'
 	| 'name'
 	| 'opacity'

@@ -18,7 +18,14 @@ import {
 } from '@constants';
 import { addTimeTransform, getTableData } from '@specBuilder/data/dataUtils';
 import { getInteractiveMarkName } from '@specBuilder/line/lineUtils';
-import { getColorProductionRule, getSymbolSizeProductionRule, getXProductionRule } from '@specBuilder/marks/markUtils';
+import {
+	getColorProductionRule,
+	getLineWidthProductionRule,
+	getOpacityProductionRule,
+	getStrokeDashProductionRule,
+	getSymbolSizeProductionRule,
+	getXProductionRule,
+} from '@specBuilder/marks/markUtils';
 import {
 	addContinuousDimensionScale,
 	addFieldToFacetScaleDomain,
@@ -40,9 +47,11 @@ export const addScatter = produce<Spec, [ScatterProps & { colorScheme?: ColorSch
 			dimension = DEFAULT_LINEAR_DIMENSION,
 			dimensionScaleType = DEFAULT_DIMENSION_SCALE_TYPE,
 			index = 0,
+			lineType = { value: 'solid' },
+			lineWidth = { value: 0 },
 			metric = DEFAULT_METRIC,
 			name,
-			opacity = 1,
+			opacity = { value: 1 },
 			size = { value: 'M' },
 			...props
 		}
@@ -74,7 +83,8 @@ export const addScatter = produce<Spec, [ScatterProps & { colorScheme?: ColorSch
 	}
 );
 
-export const addData = produce<Data[], [ScatterSpecProps]>((data, { dimension, dimensionScaleType }) => {
+export const addData = produce<Data[], [ScatterSpecProps]>((data, props) => {
+	const { dimension, dimensionScaleType } = props;
 	if (dimensionScaleType === 'time') {
 		const tableData = getTableData(data);
 		tableData.transform = addTimeTransform(tableData.transform ?? [], dimension);
@@ -82,13 +92,19 @@ export const addData = produce<Data[], [ScatterSpecProps]>((data, { dimension, d
 });
 
 export const setScales = produce<Scale[], [ScatterSpecProps]>((scales, props) => {
-	const { color, dimension, dimensionScaleType, metric, size } = props;
+	const { color, dimension, dimensionScaleType, lineType, lineWidth, metric, opacity, size } = props;
 	// add dimension scale
 	addContinuousDimensionScale(scales, { scaleType: dimensionScaleType, dimension });
 	// add metric scale
 	addMetricScale(scales, [metric]);
 	// add color to the color domain
 	addFieldToFacetScaleDomain(scales, 'color', color);
+	// add lineType to the lineType domain
+	addFieldToFacetScaleDomain(scales, 'lineType', lineType);
+	// add lineWidth to the lineWidth domain
+	addFieldToFacetScaleDomain(scales, 'lineWidth', lineWidth);
+	// add opacity to the opacity domain
+	addFieldToFacetScaleDomain(scales, 'opacity', opacity);
 	// add size to the size domain
 	addFieldToFacetScaleDomain(scales, 'symbolSize', size);
 });
@@ -110,6 +126,8 @@ export const getScatterMark = ({
 	colorScheme,
 	dimension,
 	dimensionScaleType,
+	lineType,
+	lineWidth,
 	metric,
 	name,
 	opacity,
@@ -128,12 +146,15 @@ export const getScatterMark = ({
 			 * in dark mode, the points are lighter when they overlap (screen)
 			 */
 			blend: { value: colorScheme === 'light' ? 'multiply' : 'screen' },
-			fillOpacity: [{ value: opacity }],
+			fill: getColorProductionRule(color, colorScheme),
 			shape: { value: 'circle' },
+			strokeDash: getStrokeDashProductionRule(lineType),
+			strokeWidth: getLineWidthProductionRule(lineWidth),
+			stroke: getColorProductionRule(color, colorScheme),
+			size: getSymbolSizeProductionRule(size),
 		},
 		update: {
-			size: getSymbolSizeProductionRule(size),
-			fill: getColorProductionRule(color, colorScheme),
+			fillOpacity: [getOpacityProductionRule(opacity)],
 			x: getXProductionRule(dimensionScaleType, dimension),
 			y: { scale: 'yLinear', field: metric },
 		},

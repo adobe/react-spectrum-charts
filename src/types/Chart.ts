@@ -292,8 +292,21 @@ export interface ScatterProps extends Omit<MarkProps, 'color'> {
 	 * see https://vega.github.io/vega/docs/scales/#types for more information
 	 */
 	dimensionScaleType?: ScaleType;
-	/** point fill and stroke opacity */
-	opacity?: number;
+	/**
+	 * line type of the point border
+	 * uses a key in the data that will map to the line type scale or a static line type value
+	 */
+	lineType?: LineTypeFacet;
+	/**
+	 * line width of the point border
+	 * uses a key in the data that will map to the line width scale or a static line width value
+	 */
+	lineWidth?: LineWidthFacet;
+	/**
+	 * point fill and stroke opacity
+	 * uses a key in the data that will map to the opacity scale or a opacity value
+	 */
+	opacity?: OpacityFacet;
 	/**
 	 * point size
 	 * uses a key in the data that will map to the size scale (linear) or a static size value
