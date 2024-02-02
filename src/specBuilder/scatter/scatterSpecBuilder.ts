@@ -17,6 +17,7 @@ import {
 	FILTERED_TABLE,
 } from '@constants';
 import { addTimeTransform, getTableData } from '@specBuilder/data/dataUtils';
+import { getInteractiveMarkName } from '@specBuilder/line/lineUtils';
 import { getColorProductionRule, getSymbolSizeProductionRule, getXProductionRule } from '@specBuilder/marks/markUtils';
 import {
 	addContinuousDimensionScale,
@@ -57,6 +58,9 @@ export const addScatter = produce<Spec, [ScatterProps & { colorScheme?: ColorSch
 			dimension,
 			dimensionScaleType,
 			index,
+			interactiveMarkName: getInteractiveMarkName(sanitizedChildren, scatterName),
+			lineType,
+			lineWidth,
 			metric,
 			name: scatterName,
 			opacity,

@@ -134,6 +134,7 @@ export interface ScatterSpecProps extends PartiallyRequired<ScatterProps, Scatte
 	children: MarkChildElement[];
 	colorScheme: ColorScheme;
 	index: number;
+	interactiveMarkName: string | undefined;
 }
 
 type MetricRangePropsWithDefaults = 'lineType' | 'lineWidth' | 'rangeOpacity' | 'metricEnd' | 'metricStart' | 'metric';

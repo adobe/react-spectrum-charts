@@ -32,9 +32,9 @@ import { getFacetsFromProps } from '@specBuilder/specUtils';
 import { sanitizeTrendlineChildren } from '@utils';
 import { produce } from 'immer';
 import {
-	BarSpecProps,
 	LineSpecProps,
 	MarkChildElement,
+	ScatterSpecProps,
 	TrendlineElement,
 	TrendlineMethod,
 	TrendlineProps,
@@ -57,6 +57,9 @@ import {
 	Transforms,
 	WindowTransform,
 } from 'vega';
+
+/** These are all the spec props that currently support trendlines */
+type TrendlineParentProps = LineSpecProps | ScatterSpecProps;
 
 export const getTrendlines = (children: MarkChildElement[], markName: string): TrendlineSpecProps[] => {
 	const trendlineElements = children.filter((child) => child.type === Trendline) as TrendlineElement[];
@@ -186,7 +189,7 @@ const getTrendlineHoverMarks = (lineProps: LineSpecProps, highlightRawPoint: boo
  * @param data
  * @param markProps
  */
-export const addTrendlineData = (data: Data[], markProps: BarSpecProps | LineSpecProps) => {
+export const addTrendlineData = (data: Data[], markProps: TrendlineParentProps) => {
 	const { dimension } = markProps;
 	data.push(...getTrendlineData(markProps));
 
@@ -217,7 +220,7 @@ const addNormalizedDimensionTransform = produce<Transforms[], [string]>((transfo
  * @param data
  * @param markProps
  */
-export const getTrendlineData = (markProps: BarSpecProps | LineSpecProps): SourceData[] => {
+export const getTrendlineData = (markProps: TrendlineParentProps): SourceData[] => {
 	const data: SourceData[] = [];
 	const { children, color, dimension, lineType, name: markName } = markProps;
 	const scaleType = 'scaleType' in markProps ? markProps.scaleType : undefined;
@@ -343,7 +346,7 @@ export const getTrendlineDimensionRangeTransforms = (
 };
 
 const getTrendlineParamLookupTransform = (
-	{ color, lineType }: BarSpecProps | LineSpecProps,
+	{ color, lineType }: TrendlineParentProps,
 	{ name }: TrendlineSpecProps
 ): LookupTransform => {
 	const { facets } = getFacetsFromProps({ color, lineType });
@@ -397,7 +400,7 @@ export const getTrendlineParamFormulaTransforms = (
 	];
 };
 
-export const getTrendlineScales = (props: LineSpecProps | BarSpecProps): Scale[] => {
+export const getTrendlineScales = (props: TrendlineParentProps): Scale[] => {
 	const { dimension } = props;
 
 	if (hasTrendlineWithNormailizedDimension(props)) {
@@ -456,7 +459,7 @@ const trendlineUsesNormalizedDimension = (method: TrendlineMethod, scaleType: Sc
  * @param markProps
  * @returns boolean
  */
-const hasTrendlineWithNormailizedDimension = (markProps: BarSpecProps | LineSpecProps): boolean => {
+const hasTrendlineWithNormailizedDimension = (markProps: TrendlineParentProps): boolean => {
 	const trendlines = getTrendlines(markProps.children, markProps.name);
 
 	// only need to add the normalized dimension transform if there is a regression trendline and the dimension is time
@@ -472,7 +475,7 @@ const hasTrendlineWithNormailizedDimension = (markProps: BarSpecProps | LineSpec
  * @returns dataTransforms
  */
 const getTrendlineStatisticalTransforms = (
-	markProps: BarSpecProps | LineSpecProps,
+	markProps: TrendlineParentProps,
 	{ method }: TrendlineSpecProps,
 	params: boolean = false
 ): Transforms[] => {
@@ -495,11 +498,7 @@ const getTrendlineStatisticalTransforms = (
  * @param metric data y key
  * @returns JoinAggregateTransform
  */
-export const getAverageTransform = ({
-	color,
-	lineType,
-	metric,
-}: BarSpecProps | LineSpecProps): JoinAggregateTransform => {
+export const getAverageTransform = ({ color, lineType, metric }: TrendlineParentProps): JoinAggregateTransform => {
 	const { facets } = getFacetsFromProps({ color, lineType });
 	return {
 		type: 'joinaggregate',
@@ -520,7 +519,7 @@ export const getAverageTransform = ({
  * @returns
  */
 export const getRegressionTransform = (
-	markProps: BarSpecProps | LineSpecProps,
+	markProps: TrendlineParentProps,
 	method: TrendlineMethod,
 	params: boolean
 ): RegressionTransform => {
@@ -587,7 +586,7 @@ export const getPolynomialOrder = (method: TrendlineMethod): number => {
 };
 
 export const getMovingAverageTransform = (
-	markProps: BarSpecProps | LineSpecProps,
+	markProps: TrendlineParentProps,
 	method: TrendlineMethod
 ): WindowTransform => {
 	const frameWidth = parseInt(method.split('-')[1]);
@@ -610,7 +609,7 @@ export const getMovingAverageTransform = (
 	};
 };
 
-export const getTrendlineSignals = (markProps: BarSpecProps | LineSpecProps): Signal[] => {
+export const getTrendlineSignals = (markProps: TrendlineParentProps): Signal[] => {
 	const signals: Signal[] = [];
 	const { children, name: markName } = markProps;
 	const trendlines = getTrendlines(children, markName);
