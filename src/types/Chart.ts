@@ -9,10 +9,10 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { JSXElementConstructor, ReactElement, ReactFragment, ReactNode } from 'react';
+import { JSXElementConstructor, MutableRefObject, ReactElement, ReactFragment, ReactNode } from 'react';
 
 import { MARK_ID, SERIES_ID, TRENDLINE_VALUE } from '@constants';
-import { Config, Data, FontWeight, Locale, NumberLocale, Padding, Spec, SymbolShape, TimeLocale } from 'vega';
+import { Config, Data, FontWeight, Locale, NumberLocale, Padding, Spec, SymbolShape, TimeLocale, View } from 'vega';
 
 import { Theme } from '@react-types/provider';
 
@@ -70,22 +70,32 @@ export type Opacities = number[] | number[][];
 export type SymbolShapes = ChartSymbolShape[] | ChartSymbolShape[][];
 export type ChartSymbolShape = 'rounded-square' | SymbolShape;
 
-export interface ChartProps extends SpecProps {
+export interface SharedChartProps extends SpecProps {
 	config?: Config;
 	data: ChartData[];
 	debug?: boolean;
-	emptyStateText?: string;
 	height?: number;
 	/** number and time locales to use */
 	locale?: Locale | LocaleCode | { number?: NumberLocaleCode | NumberLocale; time?: TimeLocaleCode | TimeLocale };
-	maxWidth?: number;
-	minWidth?: number;
 	padding?: Padding;
 	renderer?: 'svg' | 'canvas';
+}
+
+export interface RscChartProps extends SharedChartProps {
+	chartId: MutableRefObject<string>;
+	chartView: MutableRefObject<View | undefined>;
+	chartWidth: number;
+	popoverIsOpen?: boolean;
+}
+
+export interface ChartProps extends SharedChartProps {
+	dataTestId?: string;
+	emptyStateText?: string;
+	loading?: boolean;
+	maxWidth?: number;
+	minWidth?: number;
 	theme?: Theme;
 	width?: Width; // strings must be in a valid percent format ex. '50%'
-	dataTestId?: string;
-	loading?: boolean;
 }
 
 export interface BaseProps {
