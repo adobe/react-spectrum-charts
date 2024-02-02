@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { Granularity, Label, LabelAlign, LabelFormat, Orientation, Position } from 'types';
+import { AxisSpecProps, Granularity, Label, LabelAlign, Orientation, Position } from 'types';
 import {
 	Align,
 	Baseline,
@@ -230,18 +230,28 @@ export const getLabelOffset = (
  * @param type
  * @returns
  */
-export const getLabelFormat = (type?: LabelFormat): ProductionRule<TextValueRef> => {
-	if (type === 'percentage') {
+export const getLabelFormat = (
+	{ labelFormat, labelOrientation, numberFormat, position, truncateLabels }: AxisSpecProps,
+	scaleName: string
+): ProductionRule<TextValueRef> => {
+	if (labelFormat === 'percentage') {
 		return [{ test: 'isNumber(datum.value)', signal: "format(datum.value, '~%')" }, { signal: 'datum.value' }];
 	}
 
 	// if it's a number and greater than or equal to 1000, we want to format it in scientific notation (but with B instead of G) ex. 1K, 20M, 1.3B
 	return [
+		...(numberFormat ? [{ test: 'isNumber(datum.value)', signal: `format(datum.value, '${numberFormat}')` }] : []),
 		{
 			test: 'isNumber(datum.value) && abs(datum.value) >= 1000',
 			signal: "upper(replace(format(datum.value, '.3~s'), 'G', 'B'))",
 		},
-		{ signal: 'datum.value' },
+		{
+			test: 'isNumber(datum.value)',
+			signal: 'format(datum.value, ",")',
+		},
+		...(truncateLabels && scaleName.includes('Band') && labelIsParallelToAxis(position, labelOrientation)
+			? [{ signal: 'truncateText(datum.value, bandwidth("xBand")/(1- paddingInner), "normal", 14)' }]
+			: [{ signal: 'datum.value' }]),
 	];
 };
 

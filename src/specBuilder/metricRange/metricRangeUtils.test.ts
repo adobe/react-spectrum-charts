@@ -15,8 +15,8 @@ import { MetricRange } from '@components/MetricRange';
 import {
 	DEFAULT_COLOR,
 	DEFAULT_COLOR_SCHEME,
-	DEFAULT_CONTINUOUS_DIMENSION,
 	DEFAULT_METRIC,
+	DEFAULT_TIME_DIMENSION,
 	FILTERED_TABLE,
 } from '@constants';
 import { LineSpecProps, MetricRangeProps, MetricRangeSpecProps } from 'types';
@@ -52,7 +52,7 @@ const defaultMetricRangeSpecProps: MetricRangeSpecProps = {
 const defaultLineProps: LineSpecProps = {
 	children: [createElement(MetricRange, defaultMetricRangeProps)],
 	name: 'line0',
-	dimension: DEFAULT_CONTINUOUS_DIMENSION,
+	dimension: DEFAULT_TIME_DIMENSION,
 	index: 0,
 	metric: DEFAULT_METRIC,
 	color: DEFAULT_COLOR,

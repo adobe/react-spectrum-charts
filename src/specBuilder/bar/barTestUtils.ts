@@ -160,7 +160,7 @@ export const stackedLabelBackground = {
 			baseline: { value: 'middle' },
 			fill: [{ test: `datum.textLabel && bandwidth('${stackedXScale}') >= 48`, signal: BACKGROUND_COLOR }],
 			height: { value: 22 },
-			width: { signal: "getLabelWidth(datum.textLabel, 'bold', '12') + 10" },
+			width: { signal: "getLabelWidth(datum.textLabel, 'bold', 12) + 10" },
 			xc: { scale: stackedXScale, field: defaultBarProps.dimension, band: 0.5 },
 			yc: [
 				{

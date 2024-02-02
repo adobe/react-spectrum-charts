@@ -37,6 +37,7 @@ import {
 	getLineWidthScale,
 	getOpacityScale,
 	getSymbolShapeScale,
+	getSymbolSizeScale,
 	getTwoDimensionalColorScheme,
 	getTwoDimensionalLineTypes,
 	getTwoDimensionalOpacities,
@@ -316,6 +317,18 @@ describe('Chart spec builder', () => {
 		});
 	});
 
+	describe('getSymbolSizeScale()', () => {
+		test('should return the symbolSize scale', () => {
+			expect(getSymbolSizeScale(['XS', 'XL'])).toStrictEqual({
+				name: 'symbolSize',
+				type: 'linear',
+				zero: false,
+				domain: { data: 'table', fields: [] },
+				range: [36, 256],
+			});
+		});
+	});
+
 	describe('addData()', () => {
 		test('should do nothing if there are not any facets and there is no filteredTable data', () => {
 			expect(addData(defaultData, { facets: [] })[0].transform).toHaveLength(1);
@@ -405,7 +418,7 @@ describe('Chart spec builder', () => {
 				on: [
 					{
 						events: '@legend0_legendEntry:mouseover',
-						update: 'indexof(hiddenSeries, domain("legendEntries")[datum.index]) === -1 ? domain("legendEntries")[datum.index] : ""',
+						update: 'indexof(hiddenSeries, domain("legend0Entries")[datum.index]) === -1 ? domain("legend0Entries")[datum.index] : ""',
 					},
 					{
 						events: '@legend0_legendEntry:mouseout',

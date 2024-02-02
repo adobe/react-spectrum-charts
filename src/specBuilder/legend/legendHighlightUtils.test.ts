@@ -29,7 +29,7 @@ const defaultOpacityEncoding = {
 	],
 };
 
-describe('getHighlightOpacityrule()', () => {
+describe('getHighlightOpacityRule()', () => {
 	test('scale ref should divide by highlight contrast ratio', () => {
 		expect(getHighlightOpacityRule({ scale: 'opacity', field: DEFAULT_COLOR })).toStrictEqual({
 			test: `highlightedSeries && highlightedSeries !== datum.${SERIES_ID}`,
@@ -48,11 +48,20 @@ describe('getHighlightOpacityrule()', () => {
 			value: 0.5 / HIGHLIGHT_CONTRAST_RATIO,
 		});
 	});
-	test('empty ref should rturn default rule', () => {
+	test('empty ref should return default rule', () => {
 		expect(getHighlightOpacityRule({})).toStrictEqual({
 			test: `highlightedSeries && highlightedSeries !== datum.${SERIES_ID}`,
 			value: 1 / HIGHLIGHT_CONTRAST_RATIO,
 		});
+	});
+	test('should use the legend name in the test if keys exist', () => {
+		const legendName = 'legend0';
+		const { test } = getHighlightOpacityRule({}, ['series'], legendName);
+		expect(test).toContain(legendName);
+	});
+	test('should use the highlighedSeries in the test if keys do not', () => {
+		const { test } = getHighlightOpacityRule({});
+		expect(test).toContain('highlightedSeries');
 	});
 });
 

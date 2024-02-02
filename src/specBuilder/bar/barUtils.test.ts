@@ -457,7 +457,7 @@ describe('barUtils', () => {
 			).toStrictEqual(stackedAnnotationMarks);
 		});
 		test('horizontal orientation should return xc and yc opposite of vertical orientation', () => {
-			const annotationWidthSignal = `getLabelWidth(datum.textLabel, 'bold', '12') + 10`;
+			const annotationWidthSignal = `getLabelWidth(datum.textLabel, 'bold', 12) + 10`;
 			const props: BarSpecProps = { ...defaultBarProps, orientation: 'horizontal', children: annotationChildren };
 			const annotationMarks = getAnnotationMarks(props, FILTERED_TABLE, 'yBand', defaultBarProps.dimension);
 

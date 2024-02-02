@@ -11,7 +11,7 @@
  */
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { DEFAULT_COLOR, DEFAULT_CONTINUOUS_DIMENSION, DEFAULT_METRIC } from '@constants';
+import { DEFAULT_COLOR, DEFAULT_METRIC, DEFAULT_TIME_DIMENSION } from '@constants';
 
 import { AreaProps } from '../../types';
 
@@ -23,7 +23,7 @@ export function Area({
 	order,
 	scaleType = 'time',
 	color = DEFAULT_COLOR,
-	dimension = DEFAULT_CONTINUOUS_DIMENSION,
+	dimension = DEFAULT_TIME_DIMENSION,
 	metric = DEFAULT_METRIC,
 	metricEnd,
 	metricStart,

@@ -11,13 +11,13 @@
  */
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { DEFAULT_COLOR, DEFAULT_CONTINUOUS_DIMENSION, DEFAULT_METRIC } from '@constants';
+import { DEFAULT_COLOR, DEFAULT_METRIC, DEFAULT_TIME_DIMENSION } from '@constants';
 
 import { LineProps } from '../../types';
 
 export function Line({
 	name = 'line0',
-	dimension = DEFAULT_CONTINUOUS_DIMENSION,
+	dimension = DEFAULT_TIME_DIMENSION,
 	metric = DEFAULT_METRIC,
 	color = { value: 'categorical-100' },
 	scaleType = 'time',

@@ -46,6 +46,7 @@ function getSpectrumVegaConfig(colorScheme: ColorScheme): Config {
 		center: true,
 		offset: 24,
 		bounds: 'full',
+		margin: 48,
 	};
 	const verticalLegendLayout: BaseLegendLayout = {
 		anchor: 'middle',
@@ -53,6 +54,7 @@ function getSpectrumVegaConfig(colorScheme: ColorScheme): Config {
 		center: false,
 		offset: 24,
 		bounds: 'full',
+		margin: 24,
 	};
 
 	const defaultColor = spectrumColors[colorScheme]['categorical-100'];
@@ -69,7 +71,6 @@ function getSpectrumVegaConfig(colorScheme: ColorScheme): Config {
 			labelFontWeight: 'normal',
 			labelPadding: 8,
 			labelOverlap: true,
-			labelSeparation: 20,
 			labelColor: gray800,
 			ticks: false,
 			tickColor: gray300,

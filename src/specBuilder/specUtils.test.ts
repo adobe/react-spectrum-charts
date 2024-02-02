@@ -20,6 +20,7 @@ import {
 	getLineWidthPixelsFromLineWidth,
 	getPathFromSymbolShape,
 	getStrokeDashFromLineType,
+	getVegaSymbolSizeFromRscSymbolSize,
 } from './specUtils';
 
 const defaultColorScale: OrdinalScale = {
@@ -158,6 +159,20 @@ describe('specUtils', () => {
 		});
 		test('return input unless input is rounded-square', () => {
 			expect(getPathFromSymbolShape('abc123')).toBe('abc123');
+		});
+	});
+
+	describe('getVegaSymbolSizeFromRscSymbolSize()', () => {
+		test('should return the value squared if it is a number', () => {
+			expect(getVegaSymbolSizeFromRscSymbolSize(2)).toEqual(4);
+			expect(getVegaSymbolSizeFromRscSymbolSize(4)).toEqual(16);
+		});
+		test('should return the correct named size', () => {
+			expect(getVegaSymbolSizeFromRscSymbolSize('XS')).toEqual(36);
+			expect(getVegaSymbolSizeFromRscSymbolSize('S')).toEqual(64);
+			expect(getVegaSymbolSizeFromRscSymbolSize('M')).toEqual(100);
+			expect(getVegaSymbolSizeFromRscSymbolSize('L')).toEqual(144);
+			expect(getVegaSymbolSizeFromRscSymbolSize('XL')).toEqual(256);
 		});
 	});
 });

@@ -28,7 +28,7 @@ const defaultSpec: Spec = {
 	marks: [],
 };
 
-const colorEncoding = { signal: `scale('color', data('legendAggregate')[datum.index].${DEFAULT_COLOR})` };
+const colorEncoding = { signal: `scale('color', data('legend0Aggregate')[datum.index].${DEFAULT_COLOR})` };
 const hiddenSeriesEncoding = {
 	test: 'indexof(hiddenSeries, datum.value) !== -1',
 	value: 'rgb(213, 213, 213)',
@@ -53,7 +53,7 @@ const defaultTooltipLegendEncoding: LegendEncode = {
 	entries: {
 		name: 'legend0_legendEntry',
 		interactive: true,
-		enter: { tooltip: { signal: 'datum' } },
+		enter: { tooltip: { signal: "merge(datum, {'rscComponentName': 'legend0'})" } },
 		update: { fill: { value: 'transparent' } },
 	},
 	labels: { update: { ...hiddenSeriesLabelUpdateEncoding, fillOpacity: undefined } },
@@ -84,7 +84,7 @@ const defaultLegend: Legend = {
 		labels: { update: { ...hiddenSeriesLabelUpdateEncoding } },
 		symbols: { update: { ...defaultSymbolUpdateEncodings } },
 	},
-	fill: 'legendEntries',
+	fill: 'legend0Entries',
 	labelLimit: undefined,
 	orient: 'bottom',
 	title: undefined,
@@ -92,7 +92,7 @@ const defaultLegend: Legend = {
 };
 
 const defaultLegendAggregateData: Data = {
-	name: 'legendAggregate',
+	name: 'legend0Aggregate',
 	source: TABLE,
 	transform: [
 		{
@@ -101,16 +101,16 @@ const defaultLegendAggregateData: Data = {
 		},
 		{
 			type: 'formula',
-			as: 'legendEntries',
+			as: 'legend0Entries',
 			expr: `datum.${DEFAULT_COLOR}`,
 		},
 	],
 };
 
 const defaultLegendEntriesScale: Scale = {
-	name: 'legendEntries',
+	name: 'legend0Entries',
 	type: 'ordinal',
-	domain: { data: 'legendAggregate', field: 'legendEntries' },
+	domain: { data: 'legend0Aggregate', field: 'legend0Entries' },
 };
 
 describe('addLegend()', () => {
@@ -246,16 +246,24 @@ describe('addLegend()', () => {
 			expect(legendSpec.scales).toEqual([...(defaultSpec.scales || []), defaultLegendEntriesScale]);
 		});
 
-		test('should create scales if there are no existing scales', () => {
-			const legendSpec = addLegend({ ...defaultSpec, scales: undefined }, {});
+		test('should add fields to scales if they have not been added', () => {
+			const legendSpec = addLegend(
+				{ ...defaultSpec, scales: [{ name: 'color', type: 'ordinal' }] },
+				{ color: 'series' }
+			);
 			expect(legendSpec.scales).toEqual([
 				{
-					domain: {
-						data: 'legendAggregate',
-						field: 'legendEntries',
-					},
-					name: 'legendEntries',
+					name: 'color',
 					type: 'ordinal',
+					domain: { data: 'table', fields: ['series'] },
+				},
+				{
+					name: 'legend0Entries',
+					type: 'ordinal',
+					domain: {
+						data: 'legend0Aggregate',
+						field: 'legend0Entries',
+					},
 				},
 			]);
 		});
@@ -263,7 +271,7 @@ describe('addLegend()', () => {
 });
 
 describe('addData()', () => {
-	test('should add legendAggregate data', () => {
+	test('should add legend0Aggregate data', () => {
 		expect(addData([], { ...defaultLegendProps, facets: [DEFAULT_COLOR] })).toStrictEqual([
 			defaultLegendAggregateData,
 		]);
@@ -271,12 +279,12 @@ describe('addData()', () => {
 	test('should join multiple facets', () => {
 		expect(addData([], { ...defaultLegendProps, facets: [DEFAULT_COLOR, DEFAULT_SECONDARY_COLOR] })).toStrictEqual([
 			{
-				name: 'legendAggregate',
+				name: 'legend0Aggregate',
 				source: 'table',
 				transform: [
 					{ groupby: [DEFAULT_COLOR, DEFAULT_SECONDARY_COLOR], type: 'aggregate' },
 					{
-						as: 'legendEntries',
+						as: 'legend0Entries',
 						expr: `datum.${DEFAULT_COLOR} + " | " + datum.${DEFAULT_SECONDARY_COLOR}`,
 						type: 'formula',
 					},

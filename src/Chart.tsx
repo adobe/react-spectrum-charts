@@ -17,16 +17,17 @@ import {
 	DEFAULT_BACKGROUND_COLOR,
 	DEFAULT_COLOR_SCHEME,
 	DEFAULT_LINE_TYPES,
+	DEFAULT_LOCALE,
 	LEGEND_TOOLTIP_DELAY,
 	MARK_ID,
 	SERIES_ID,
 } from '@constants';
 import useChartImperativeHandle from '@hooks/useChartImperativeHandle';
 import useChartWidth from '@hooks/useChartWidth';
-import useElementSize from '@hooks/useElementSize';
 import useLegend from '@hooks/useLegend';
 import usePopoverAnchorStyle from '@hooks/usePopoverAnchorStyle';
 import usePopovers, { PopoverDetail } from '@hooks/usePopovers';
+import { useResizeObserver } from '@hooks/useResizeObserver';
 import useSpec from '@hooks/useSpec';
 import useSpecProps from '@hooks/useSpecProps';
 import useTooltips from '@hooks/useTooltips';
@@ -76,6 +77,7 @@ interface PlaceholderContentProps {
 	data: ChartData[];
 	loading?: boolean;
 	height?: number;
+	emptyStateText: string;
 }
 
 export const Chart = forwardRef<ChartHandle, ChartProps>(
@@ -89,18 +91,21 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 			dataTestId,
 			description,
 			debug = false,
+			emptyStateText = 'No data found',
 			height = 300,
 			hiddenSeries = [],
 			highlightedSeries,
 			lineTypes = DEFAULT_LINE_TYPES,
 			lineWidths = ['M'],
 			loading,
+			locale = DEFAULT_LOCALE,
 			minWidth = 100,
 			maxWidth = Infinity,
 			opacities,
 			padding = 0,
 			renderer = 'svg',
 			symbolShapes,
+			symbolSizes,
 			theme = defaultTheme,
 			title,
 			width = 'auto',
@@ -115,7 +120,7 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 		const selectedData = useRef<Datum | null>(null); // data that is currently selected, get's set on click if a popover exists
 		const selectedDataName = useRef<string>();
 		const selectedDataBounds = useRef<MarkBounds>();
-		const containerRef = useRef<HTMLDivElement>(null);
+		const [containerWidth, setContainerWidth] = useState<number>(0);
 		const popoverAnchorRef = useRef<HTMLDivElement>(null);
 		const [popoverIsOpen, setPopoverIsOpen] = useState<boolean>(false); // tracks the open/close state of the popover
 
@@ -131,6 +136,7 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 			hiddenSeries,
 			highlightedSeries,
 			symbolShapes,
+			symbolSizes,
 			lineTypes,
 			lineWidths,
 			opacities,
@@ -156,7 +162,10 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 
 		useChartImperativeHandle(forwardedRef, { chartView, title });
 
-		const [containerWidth] = useElementSize(containerRef); // gets the width of the container that wraps vega
+		const containerRef = useResizeObserver<HTMLDivElement>((_target, entry) => {
+			if (typeof width === 'number') return;
+			setContainerWidth(entry.contentRect.width);
+		});
 		const chartWidth = useChartWidth(containerWidth, maxWidth, minWidth, width); // calculates the width the vega chart should be
 
 		const {
@@ -192,7 +201,7 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 		if (tooltips.length || legendDescriptions) {
 			tooltipConfig.formatTooltip = (value) => {
 				debugLog(debug, { title: 'Tooltip datum', contents: value });
-				if (legendDescriptions && 'index' in value) {
+				if (value.rscComponentName?.startsWith('legend') && legendDescriptions && 'index' in value) {
 					debugLog(debug, {
 						title: 'Legend descriptions',
 						contents: legendDescriptions,
@@ -201,7 +210,8 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 						<LegendTooltip
 							value={value}
 							descriptions={legendDescriptions}
-							domain={chartView.current?.scale('legendEntries').domain()}
+							// TODO: support multiple legends
+							domain={chartView.current?.scale('legend0Entries').domain()}
 						/>
 					);
 				}
@@ -271,7 +281,12 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 						style={targetStyle}
 					/>
 					{showPlaceholderContent ? (
-						<PlaceholderContent loading={loading} data={data} height={height} />
+						<PlaceholderContent
+							loading={loading}
+							data={data}
+							height={height}
+							emptyStateText={emptyStateText}
+						/>
 					) : (
 						<VegaChart
 							spec={spec}
@@ -281,6 +296,7 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 							renderer={renderer}
 							width={chartWidth}
 							height={height}
+							locale={locale}
 							padding={padding}
 							signals={signals}
 							tooltip={tooltipConfig} // legend show/hide relies on this
@@ -396,13 +412,13 @@ const LegendTooltip: FC<LegendTooltipProps> = ({ value, descriptions, domain }) 
 	);
 };
 
-const PlaceholderContent: FC<PlaceholderContentProps> = ({ loading, data, ...layoutProps }) => {
+const PlaceholderContent: FC<PlaceholderContentProps> = ({ data, emptyStateText, loading, ...layoutProps }) => {
 	if (loading) {
 		//show a spinner while data is loading
 		return <LoadingState {...layoutProps} />;
 	} else if (!data.length) {
 		//if it is no longer loading but there is not data, show the empty state
-		return <EmptyState {...layoutProps} />;
+		return <EmptyState {...layoutProps} text={emptyStateText} />;
 	}
 	return <></>;
 };

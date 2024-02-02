@@ -18,7 +18,7 @@ import {
 	SERIES_ID,
 	TABLE,
 } from '@constants';
-import { Area, Axis, Bar, Donut, Legend, Line, Title } from '@rsc';
+import { Area, Axis, Bar, Donut, Legend, Line, Scatter, Title } from '@rsc';
 import colorSchemes from '@themes/colorSchemes';
 import { produce } from 'immer';
 import {
@@ -38,10 +38,12 @@ import {
 	LineWidth,
 	Opacities,
 	SanitizedSpecProps,
+	ScatterElement,
 	SymbolShapes,
+	SymbolSize,
 	TitleElement,
 } from 'types';
-import { Data, OrdinalScale, PointScale, Scale, Signal, Spec } from 'vega';
+import { Data, LinearScale, OrdinalScale, PointScale, Scale, Signal, Spec } from 'vega';
 
 import { addArea } from './area/areaSpecBuilder';
 import { addAxis } from './axis/axisSpecBuilder';
@@ -51,6 +53,7 @@ import { addDonut } from './donut/donutSpecBuilder';
 import { setHoverOpacityForMarks } from './legend/legendHighlightUtils';
 import { addLegend } from './legend/legendSpecBuilder';
 import { addLine } from './line/lineSpecBuilder';
+import { addScatter } from './scatter/scatterSpecBuilder';
 import { getGenericSignal, hasSignalByName } from './signal/signalSpecBuilder';
 import {
 	getColorValue,
@@ -58,6 +61,7 @@ import {
 	getLineWidthPixelsFromLineWidth,
 	getPathFromSymbolShape,
 	getStrokeDashFromLineType,
+	getVegaSymbolSizeFromRscSymbolSize,
 	initializeSpec,
 } from './specUtils';
 import { addTitle } from './title/titleSpecBuilder';
@@ -73,12 +77,13 @@ export function buildSpec({
 	lineWidths = ['M'],
 	opacities,
 	symbolShapes = ['rounded-square'],
+	symbolSizes = ['XS', 'XL'],
 	colorScheme = DEFAULT_COLOR_SCHEME,
 	title,
 }: SanitizedSpecProps) {
 	let spec = initializeSpec(null, { backgroundColor, colorScheme, description, title });
 	spec.signals = getDefaultSignals(backgroundColor, colors, colorScheme, lineTypes, opacities, hiddenSeries);
-	spec.scales = getDefaultScales(colors, colorScheme, lineTypes, lineWidths, opacities, symbolShapes);
+	spec.scales = getDefaultScales(colors, colorScheme, lineTypes, lineWidths, opacities, symbolShapes, symbolSizes);
 
 	// need to build the spec in a specific order
 	const buildOrder = new Map();
@@ -86,11 +91,13 @@ export function buildSpec({
 	buildOrder.set(Bar, 0);
 	buildOrder.set(Line, 0);
 	buildOrder.set(Donut, 0);
+	buildOrder.set(Scatter, 0);
 	buildOrder.set(Legend, 1);
 	buildOrder.set(Axis, 2);
 	buildOrder.set(Title, 3);
 
-	let { areaCount, axisCount, barCount, donutCount, legendCount, lineCount } = initializeComponentCounts();
+	let { areaCount, axisCount, barCount, donutCount, legendCount, lineCount, scatterCount } =
+		initializeComponentCounts();
 	spec = [...children]
 		.sort((a, b) => buildOrder.get(a.type) - buildOrder.get(b.type))
 		.reduce((acc: Spec, cur) => {
@@ -119,6 +126,9 @@ export function buildSpec({
 				case Line:
 					lineCount++;
 					return addLine(acc, { ...(cur as LineElement).props, colorScheme, index: lineCount });
+				case Scatter:
+					scatterCount++;
+					return addScatter(acc, { ...(cur as ScatterElement).props, colorScheme, index: scatterCount });
 				case Title:
 					// No title count. There can only be one title.
 					return addTitle(acc, { ...(cur as TitleElement).props });
@@ -166,6 +176,7 @@ const initializeComponentCounts = () => {
 		donutCount: -1,
 		legendCount: -1,
 		lineCount: -1,
+		scatterCount: -1,
 	};
 };
 
@@ -221,13 +232,15 @@ const getDefaultScales = (
 	lineTypes: LineTypes,
 	lineWidths: LineWidth[],
 	opacities: Opacities | undefined,
-	symbolShapes: SymbolShapes
+	symbolShapes: SymbolShapes,
+	symbolSizes: [SymbolSize, SymbolSize]
 ): Scale[] => [
 	getColorScale(colors, colorScheme),
 	getLineTypeScale(lineTypes),
 	getLineWidthScale(lineWidths),
 	getOpacityScale(opacities),
 	getSymbolShapeScale(symbolShapes),
+	getSymbolSizeScale(symbolSizes),
 ];
 
 export const getColorScale = (colors: ChartColors, colorScheme: ColorScheme): OrdinalScale => {
@@ -265,6 +278,19 @@ export const getSymbolShapeScale = (symbolShapes: SymbolShapes): OrdinalScale =>
 		domain: { data: TABLE, fields: [] },
 	};
 };
+
+/**
+ * returns the symbol size scale
+ * @param symbolSizes
+ * @returns LinearScale
+ */
+export const getSymbolSizeScale = (symbolSizes: [SymbolSize, SymbolSize]): LinearScale => ({
+	name: 'symbolSize',
+	type: 'linear',
+	zero: false,
+	range: symbolSizes.map((symbolSize) => getVegaSymbolSizeFromRscSymbolSize(symbolSize)),
+	domain: { data: TABLE, fields: [] },
+});
 
 export const getLineWidthScale = (lineWidths: LineWidth[]): OrdinalScale => ({
 	name: 'lineWidth',

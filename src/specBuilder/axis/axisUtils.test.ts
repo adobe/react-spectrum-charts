@@ -64,7 +64,7 @@ describe('getDefaultAxis()', () => {
 			grid: true,
 			ticks: false,
 			tickCount: {
-				signal: 'clamp(ceil(height/40), 2, 5)',
+				signal: 'clamp(ceil(height/60), 2, 10)',
 			},
 			tickMinStep: 5,
 			title: 'Users',
@@ -82,6 +82,10 @@ describe('getDefaultAxis()', () => {
 							{
 								test: 'isNumber(datum.value) && abs(datum.value) >= 1000',
 								signal: "upper(replace(format(datum.value, '.3~s'), 'G', 'B'))",
+							},
+							{
+								test: 'isNumber(datum.value)',
+								signal: 'format(datum.value, ",")',
 							},
 							{
 								signal: 'datum.value',
@@ -123,7 +127,7 @@ describe('getDefaultAxis()', () => {
 			grid: true,
 			ticks: false,
 			tickCount: {
-				signal: 'clamp(ceil(height/40), 2, 5)',
+				signal: 'clamp(ceil(height/60), 2, 10)',
 			},
 			tickMinStep: undefined,
 			title: 'Users',
@@ -141,6 +145,10 @@ describe('getDefaultAxis()', () => {
 							{
 								test: 'isNumber(datum.value) && abs(datum.value) >= 1000',
 								signal: "upper(replace(format(datum.value, '.3~s'), 'G', 'B'))",
+							},
+							{
+								test: 'isNumber(datum.value)',
+								signal: 'format(datum.value, ",")',
 							},
 							{
 								signal: 'datum.value',

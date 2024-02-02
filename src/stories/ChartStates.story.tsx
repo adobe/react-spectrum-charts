@@ -23,6 +23,7 @@ const EmptyState = bindWithProps(ChartBarStory);
 EmptyState.args = {
 	data: [],
 	height: 500,
+	emptyStateText: 'No data found',
 };
 
 const LoadingState = bindWithProps(ChartBarStory);
