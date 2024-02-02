@@ -14,22 +14,29 @@ import React, { Children, PropsWithChildren } from 'react';
 import { ErrorState } from '@components/ErrorState';
 import { Line } from '@components/Line';
 import { BigNumberProps } from 'types';
+import { getLocale } from 'utils/locale';
 
 import { Grid, View } from '@adobe/react-spectrum';
 import GraphBarVerticalStacked from '@spectrum-icons/workflow/GraphBarVerticalStacked';
 
 import './BigNumber.css';
+import { getFormattedString } from './bigNumberFormatUtils';
 
 export function BigNumber({
 	orientation = 'vertical',
 	data = [],
 	label,
+	locale,
 	numberFormat,
+	numberType,
 	children,
 }: PropsWithChildren<BigNumberProps>) {
 	const bigNumberValue = data != undefined && data.length > 0 ? data[data.length - 1]['value'] : undefined;
 
-	const formattedValue = numberFormat?.format(bigNumberValue) ?? bigNumberValue;
+	const numberLocale = getLocale(locale).number;
+	const type = numberType ?? 'linear';
+	const formattedValue = bigNumberValue ?
+		getFormattedString(bigNumberValue, numberLocale, numberFormat, type) : bigNumberValue;
 
 	let lineElement, iconElement;
 	Children.forEach(children, (child) => {

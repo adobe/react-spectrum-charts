@@ -14,7 +14,13 @@ import React, { ReactElement, createElement } from 'react';
 import { ReferenceLine } from '@components/ReferenceLine';
 import useChartProps from '@hooks/useChartProps';
 import { Axis, Bar, Chart, ChartPopover, ChartTooltip, Legend, Line } from '@rsc';
-import { workspaceTrendsData, workspaceTrendsDataWithVisiblePoints } from '@stories/data/data';
+import {
+	simpleSparklineData,
+	browserData,
+	simpleLineData,
+	workspaceTrendsData,
+	workspaceTrendsDataWithVisiblePoints
+} from '@stories/data/data';
 import { formatTimestamp } from '@stories/storyUtils';
 import { StoryFn } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
@@ -57,6 +63,8 @@ const historicalCompareData = [
 ];
 
 const defaultChartProps: ChartProps = { data: workspaceTrendsData, minWidth: 400, maxWidth: 800, height: 400 };
+
+const sparklineChartProps: ChartProps = { data: simpleSparklineData, minWidth: 50, maxWidth: 200, height: 50 };
 
 const BasicLineStory: StoryFn<typeof Line> = (args): ReactElement => {
 	const chartProps = useChartProps(defaultChartProps);
@@ -135,6 +143,15 @@ const LineWithVisiblePointsStory: StoryFn<typeof Line> = (args): ReactElement =>
 	);
 };
 
+const PlainLineStory: StoryFn<typeof Line> = (args): ReactElement => {
+	const chartProps = useChartProps(sparklineChartProps);
+	return (
+		<Chart {...chartProps}>
+			<Line {...args}/>
+		</Chart>
+	);
+}
+
 const Basic = bindWithProps(BasicLineStory);
 Basic.args = {
 	color: 'series',
@@ -209,7 +226,7 @@ WithStaticPoints.args = {
 	dimension: 'datetime',
 	metric: 'value',
 	name: 'line0',
-	scaleType: 'time',
+	scaleType: 'linear',
 	staticPoint: 'staticPoint',
 };
 
@@ -232,14 +249,23 @@ WithStaticPointsAndDialogs.args = {
 	children: [createElement(ChartTooltip, {}, dialogCallback), createElement(ChartPopover, {}, dialogCallback)],
 };
 
-const Sparkline = bindWithProps(LineWithVisiblePointsStory);
-Sparkline.args = {
-	color: 'series',
-	dimension: 'datetime',
-	metric: 'value',
+const BasicSparkline = bindWithProps(PlainLineStory);
+BasicSparkline.args = {
+	metric: 'y',
 	name: 'line0',
-	scaleType: 'time',
+	dimension: 'x',
 	staticPoint: 'staticPoint',
+	scaleType: 'linear',
+	isSparkline: true
+}
+
+const SparklineWithStaticPoint = bindWithProps(PlainLineStory);
+SparklineWithStaticPoint.args = {
+	metric: 'y',
+	name: 'line0',
+	dimension: 'x',
+	staticPoint: 'staticPoint',
+	scaleType: 'linear',
 	isSparkline: true,
 	isMethodLast: true
 }
@@ -255,5 +281,6 @@ export {
 	Tooltip,
 	WithStaticPoints,
 	WithStaticPointsAndDialogs,
-	Sparkline
+	BasicSparkline,
+	SparklineWithStaticPoint
 };

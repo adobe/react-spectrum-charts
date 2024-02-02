@@ -12,36 +12,32 @@
 import { render, screen } from '@test-utils';
 
 import {
-	CompactNumberHorizontal,
-	CompactNumberVertical,
-	CurrencyNumberHorizontal,
-	CurrencyNumberVertical,
-	GroupedNumberHorizontal,
-	GroupedNumberVertical,
+	CompactFormat,
+	CurrencyFormat,
 	IconHorizontal,
 	IconVertical,
 	NullData,
-	PercentNumberHorizontal,
-	PercentNumberVertical, UndefinedData
+	PercentageFormat,
+	UndefinedData,
 } from './BigNumber.story';
 
 describe('BigNumber', () => {
 	describe('BigNumber with icon prop passed in', () => {
 		test('IconVertical renders with correct icon present', async () => {
-			render(<IconVertical {...IconVertical.args}/>);
+			render(<IconVertical {...IconVertical.args} />);
 			const icon = await screen.findByTestId('icon-amusementpark');
 			expect(icon).toBeInTheDocument();
-			const value = await screen.findByText(IconVertical.args.value ? IconVertical.args.value : '');
+			const value = await screen.findByText('255');
 			expect(value).toBeInTheDocument();
 			const label = await screen.findByText(IconVertical.args.label);
 			expect(label).toBeInTheDocument();
 		});
 
 		test('IconHorizontal renders with correct icon present', async () => {
-			render(<IconHorizontal {...IconHorizontal.args}/>);
+			render(<IconHorizontal {...IconHorizontal.args} />);
 			const icon = await screen.findByTestId('icon-calendar');
 			expect(icon).toBeInTheDocument();
-			const value = await screen.findByText(IconHorizontal.args.value ? IconHorizontal.args.value : '');
+			const value = await screen.findByText('255');
 			expect(value).toBeInTheDocument();
 			const label = await screen.findByText(IconHorizontal.args.label);
 			expect(label).toBeInTheDocument();
@@ -59,7 +55,7 @@ describe('BigNumber', () => {
 		});
 
 		test('UndefinedData renders appropriate warning icon and text', async () => {
-			render(<UndefinedData {...UndefinedData.args} />)
+			render(<UndefinedData {...UndefinedData.args} />);
 			const errorDescription = await screen.findByText('No data available.');
 			const actionText = await screen.findByText('Please verify that data is defined');
 			expect(errorDescription).toBeInTheDocument();
@@ -69,51 +65,21 @@ describe('BigNumber', () => {
 		});
 	});
 	describe('BigNumber using numberFormat', () => {
-		test('CompactNumberHorizontal renders with formatted value', async () => {
-			render(<CompactNumberHorizontal {...CompactNumberHorizontal.args} />);
-			const formattedValue = await screen.findByText('2.6K');
+		test('CurrencyFormat renders with formatted value', async () => {
+			render(<CurrencyFormat {...CurrencyFormat.args} />);
+			const formattedValue = await screen.findByText('255,56 €');
 			expect(formattedValue).toBeInTheDocument();
 		});
 
-		test('CompactNumberVertical renders with formatted value', async () => {
-			render(<CompactNumberVertical {...CompactNumberVertical.args} />);
-			const formattedValue = await screen.findByText('2.6K');
+		test('PercentageFormat renders with formatted value', async () => {
+			render(<PercentageFormat {...PercentageFormat.args} />);
+			const formattedValue = await screen.findByText('25%');
 			expect(formattedValue).toBeInTheDocument();
 		});
 
-		test('CurrencyNumberHorizontal renders with formatted value', async () => {
-			render(<CurrencyNumberHorizontal {...CurrencyNumberHorizontal.args} />);
-			const formattedValue = await screen.findByText('$25.55');
-			expect(formattedValue).toBeInTheDocument();
-		});
-
-		test('CurrencyNumberVertical renders with formatted value', async () => {
-			render(<CurrencyNumberVertical {...CurrencyNumberVertical.args} />);
-			const formattedValue = await screen.findByText('$25.55');
-			expect(formattedValue).toBeInTheDocument();
-		});
-
-		test('GroupedNumberHorizontal renders with formatted value', async () => {
-			render(<GroupedNumberHorizontal {...GroupedNumberHorizontal.args} />);
-			const formattedValue = await screen.findByText('2,555');
-			expect(formattedValue).toBeInTheDocument();
-		});
-
-		test('GroupedNumberVertical renders with formatted value', async () => {
-			render(<GroupedNumberVertical {...GroupedNumberVertical.args} />);
-			const formattedValue = await screen.findByText('2,555');
-			expect(formattedValue).toBeInTheDocument();
-		});
-
-		test('PercentNumberHorizontal renders with formatted value', async () => {
-			render(<PercentNumberHorizontal {...PercentNumberHorizontal.args} />);
-			const formattedValue = await screen.findByText('26%');
-			expect(formattedValue).toBeInTheDocument();
-		});
-
-		test('PercentNumberVertical renders with formatted value', async () => {
-			render(<PercentNumberVertical {...PercentNumberVertical.args} />);
-			const formattedValue = await screen.findByText('26%');
+		test('CompactFormat renders with formatted value', async () => {
+			render(<CompactFormat {...CompactFormat.args} />);
+			const formattedValue = await screen.findByText('12.3B');
 			expect(formattedValue).toBeInTheDocument();
 		});
 	});
