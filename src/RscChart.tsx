@@ -41,7 +41,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { Item } from 'vega';
 import { Handler, Options as TooltipOptions } from 'vega-tooltip';
 
-import { ActionButton, Dialog, DialogTrigger, View as SpectrumView, defaultTheme } from '@adobe/react-spectrum';
+import { ActionButton, Dialog, DialogTrigger, View as SpectrumView } from '@adobe/react-spectrum';
 
 import './Chart.css';
 import { ChartHandle, Datum, LegendDescription, MarkBounds, RscChartProps } from './types';
@@ -82,7 +82,6 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 			renderer = 'svg',
 			symbolShapes,
 			symbolSizes,
-			theme = defaultTheme,
 			title,
 			chartWidth,
 			UNSAFE_vegaSpec,
@@ -291,6 +290,7 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 		);
 	}
 );
+RscChart.displayName = 'RscChart';
 
 const ChartDialog = ({ datum, itemName, targetElement, setPopoverState, popovers }: ChartDialogProps) => {
 	if (!popovers.length) {

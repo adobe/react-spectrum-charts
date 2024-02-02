@@ -79,23 +79,23 @@ export interface SharedChartProps extends SpecProps {
 	locale?: Locale | LocaleCode | { number?: NumberLocaleCode | NumberLocale; time?: TimeLocaleCode | TimeLocale };
 	padding?: Padding;
 	renderer?: 'svg' | 'canvas';
-	theme?: Theme;
 }
 
 export interface RscChartProps extends SharedChartProps {
-	chartWidth: number;
-	popoverIsOpen?: boolean;
 	chartId: MutableRefObject<string>;
 	chartView: MutableRefObject<View | undefined>;
+	chartWidth: number;
+	popoverIsOpen?: boolean;
 }
 
 export interface ChartProps extends SharedChartProps {
-	emptyStateText?: string;
 	dataTestId?: string;
+	emptyStateText?: string;
 	loading?: boolean;
-	width?: Width; // strings must be in a valid percent format ex. '50%'
 	maxWidth?: number;
 	minWidth?: number;
+	theme?: Theme;
+	width?: Width; // strings must be in a valid percent format ex. '50%'
 }
 
 export interface BaseProps {

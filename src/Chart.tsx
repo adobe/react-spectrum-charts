@@ -146,7 +146,6 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 							renderer={renderer}
 							symbolShapes={symbolShapes}
 							symbolSizes={symbolSizes}
-							theme={theme}
 							title={title}
 							chartWidth={chartWidth}
 							UNSAFE_vegaSpec={UNSAFE_vegaSpec}
