@@ -9,7 +9,6 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
 import { useLayoutEffect, useRef } from 'react';
 
 export const useResizeObserver = <T extends HTMLElement>(callback: (target: T, entry: ResizeObserverEntry) => void) => {
@@ -22,11 +21,19 @@ export const useResizeObserver = <T extends HTMLElement>(callback: (target: T, e
 			return;
 		}
 
+		// ResizeObserver is not supported in jest
+		if (typeof ResizeObserver === 'undefined') {
+			console.warn('ResizeObserver is not supported. Defaulting to 500px.');
+			callback(element, { contentRect: { width: 500 } } as ResizeObserverEntry);
+			return;
+		}
+
 		const observer = new ResizeObserver((entries) => {
 			callback(element, entries[0]);
 		});
 
 		observer.observe(element);
+
 		return () => {
 			observer.disconnect();
 		};
