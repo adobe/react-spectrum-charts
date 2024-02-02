@@ -15,6 +15,7 @@ import { ReferenceLine } from '@components/ReferenceLine';
 import useChartProps from '@hooks/useChartProps';
 import { Axis, Bar, Chart, ChartPopover, ChartTooltip, Legend, Line } from '@rsc';
 import {
+	simpleSparklineData,
 	browserData,
 	simpleLineData,
 	workspaceTrendsData,
@@ -62,6 +63,8 @@ const historicalCompareData = [
 ];
 
 const defaultChartProps: ChartProps = { data: workspaceTrendsData, minWidth: 400, maxWidth: 800, height: 400 };
+
+const sparklineChartProps: ChartProps = { data: simpleSparklineData, minWidth: 50, maxWidth: 200, height: 50 };
 
 const BasicLineStory: StoryFn<typeof Line> = (args): ReactElement => {
 	const chartProps = useChartProps(defaultChartProps);
@@ -141,7 +144,7 @@ const LineWithVisiblePointsStory: StoryFn<typeof Line> = (args): ReactElement =>
 };
 
 const PlainLineStory: StoryFn<typeof Line> = (args): ReactElement => {
-	const chartProps = useChartProps({...defaultChartProps, data: simpleLineData });
+	const chartProps = useChartProps(sparklineChartProps);
 	return (
 		<Chart {...chartProps}>
 			<Line {...args}/>
@@ -246,8 +249,18 @@ WithStaticPointsAndDialogs.args = {
 	children: [createElement(ChartTooltip, {}, dialogCallback), createElement(ChartPopover, {}, dialogCallback)],
 };
 
-const Sparkline = bindWithProps(PlainLineStory);
-Sparkline.args = {
+const BasicSparkline = bindWithProps(PlainLineStory);
+BasicSparkline.args = {
+	metric: 'y',
+	name: 'line0',
+	dimension: 'x',
+	staticPoint: 'staticPoint',
+	scaleType: 'linear',
+	isSparkline: true
+}
+
+const SparklineWithStaticPoint = bindWithProps(PlainLineStory);
+SparklineWithStaticPoint.args = {
 	metric: 'y',
 	name: 'line0',
 	dimension: 'x',
@@ -268,5 +281,6 @@ export {
 	Tooltip,
 	WithStaticPoints,
 	WithStaticPointsAndDialogs,
-	Sparkline
+	BasicSparkline,
+	SparklineWithStaticPoint
 };
