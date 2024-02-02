@@ -9,29 +9,76 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import React, { FC } from 'react';
+import React, { Children, PropsWithChildren } from 'react';
 
-import { ErrorState } from '@components/BigNumber/ErrorState';
+import { ErrorState } from '@components/ErrorState';
 import { Line } from '@components/Line';
-import { Chart } from 'Chart';
 import { BigNumberProps } from 'types';
 
-import { Flex, Text } from '@adobe/react-spectrum';
+import { Grid, View } from '@adobe/react-spectrum';
 import GraphBarVerticalStacked from '@spectrum-icons/workflow/GraphBarVerticalStacked';
 
 import './BigNumber.css';
 
-export const BigNumber: FC<BigNumberProps> = (props) => {
-	const direction = props.orientation == 'vertical' ? 'column' : 'row';
-	const alignment = props.orientation == 'vertical' ? 'center' : 'start';
+export function BigNumber({
+	orientation = 'vertical',
+	data = [],
+	label,
+	numberFormat,
+	children,
+}: PropsWithChildren<BigNumberProps>) {
+	const bigNumberValue = data != undefined && data.length > 0 ? data[data.length - 1]['value'] : undefined;
 
-	const bigNumberValue = props.data != undefined && props.data.length > 0 ? props.data[props.data.length - 1]["value"] : undefined
+	const formattedValue = numberFormat?.format(bigNumberValue) ?? bigNumberValue;
 
-	const formattedValue = props.numberFormat?.format(bigNumberValue) ?? bigNumberValue
+	let lineElement, iconElement;
+	Children.forEach(children, (child) => {
+		if (child instanceof Line) {
+			lineElement = child;
+		} else {
+			iconElement = child;
+		}
+	});
 
-	if (props.data === null) {
+	let areas, columns, align;
+
+	if (iconElement && lineElement && orientation == 'vertical') {
+		align = 'center';
+		areas = ['sparkline sparkline', 'data data', 'icon label'];
+		columns = ['1fr', '4fr'];
+	} else if (iconElement && lineElement && orientation == 'horizontal') {
+		align = 'left';
+		areas = ['sparkline data data', 'sparkline icon label'];
+		columns = ['3fr', '1fr', '2fr'];
+	} else if (lineElement && orientation == 'vertical') {
+		align = 'center';
+		areas = ['sparkline', 'data', 'label'];
+		columns = ['1fr'];
+	} else if (lineElement && orientation == 'horizontal') {
+		align = 'left';
+		areas = ['sparkline data', 'sparkline label'];
+		columns = ['1fr 1fr'];
+	} else if (iconElement && orientation == 'vertical') {
+		align = 'center';
+		areas = ['icon', 'data', 'label'];
+		columns = ['1fr'];
+	} else if (iconElement && orientation == 'horizontal') {
+		align = 'left';
+		areas = ['icon data', 'icon label'];
+		columns = ['1fr', '2fr'];
+	} else if (orientation == 'vertical') {
+		align = 'center';
+		areas = ['data', 'label'];
+		columns = ['1fr'];
+	} else {
+		align = 'left';
+		areas = ['data', 'label'];
+		columns = ['1fr'];
+	}
+
+	if (data === null) {
 		return <ErrorState message="Unable to load. One or more values are null." />;
-	} else if (props.data === undefined || formattedValue === undefined) {
+	} else if (data === undefined || formattedValue === undefined) {
 		return (
 			<ErrorState
 				icon={<GraphBarVerticalStacked data-testid="vertical-graph" size="L" />}
@@ -41,23 +88,18 @@ export const BigNumber: FC<BigNumberProps> = (props) => {
 		);
 	} else {
 		return (
-			<div tabIndex={0} className="content">
-				<Flex
-					direction={direction}
-					alignItems="center"
-					gap={direction === 'row' ? 'size-150' : 'size-75'}
-					UNSAFE_className="content"
-				>
-					<Chart data={props.data}>
-						<Line />
-					</Chart>
-					<div className="theme main-container">{props.icon}</div>
-					<Flex direction="column" alignItems={alignment}>
-						<Text UNSAFE_className="theme number">{formattedValue}</Text>
-						<Text UNSAFE_className="theme description">{props.label}</Text>
-					</Flex>
-				</Flex>
+			<div tabIndex={0} className="BigNumber-container">
+				<Grid areas={areas} columns={columns} columnGap="size-100" justifyItems={align} alignItems={'center'}>
+					<View gridArea="sparkline">{lineElement}</View>
+					<View gridArea="icon">{iconElement}</View>
+					<View gridArea="data" UNSAFE_className="BigNumber-data">
+						{formattedValue}
+					</View>
+					<View gridArea="label" UNSAFE_className="BigNumber-label">
+						{label}
+					</View>
+				</Grid>
 			</div>
 		);
 	}
-};
+}

@@ -170,13 +170,9 @@ export interface AxisProps extends BaseProps {
 	title?: string;
 }
 
-export type BigNumberOrientation = 'vertical' | 'horizontal';
-
 export interface BigNumberProps {
-	orientation: BigNumberOrientation;
-	sparkline?: boolean
-	icon?: ReactElement;
-	data: ChartData[] | undefined | null;
+	data: ChartData[] | null | undefined
+	orientation: Orientation;
 	label: string;
 	numberFormat?: Intl.NumberFormat;
 }

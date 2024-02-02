@@ -10,21 +10,16 @@
  * governing permissions and limitations under the License.
  */
 
-.theme {
-    color: #4b6fc3;
-}
 
-.number {
-    font-size: x-large;
+.BigNumber-data {
+    font-size: large;
     font-weight: bold;
 }
 
-.description {
+.BigNumber-label {
     font-size: medium;
 }
 
-.content {
-    height: fit-content;
+.BigNumber-container {
     width: fit-content;
 }
-

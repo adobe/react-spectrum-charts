@@ -9,9 +9,12 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { ReactElement } from 'react';
 
-import { BigNumber } from '@rsc';
+import useChartProps from '@hooks/useChartProps';
+import { BigNumber, Chart } from '@rsc';
 import { StoryFn } from '@storybook/react';
 import { bindWithProps } from 'test-utils/bindWithProps';
 
@@ -25,44 +28,49 @@ export default {
 };
 
 const BigNumberStory: StoryFn<typeof BigNumber> = (args): ReactElement => {
-	return <BigNumber {...args} />;
+	// const chartProps = useChartProps({ data: [{ value: 2555 }], width: 600, height: 600 });
+	return (
+		// <Chart {...chartProps}>
+		<BigNumber {...args} />
+		// </Chart>
+	);
 };
 
 const BasicHorizonal = bindWithProps(BigNumberStory);
 BasicHorizonal.args = {
-	orientation: 'horizontal',
 	data: [{ value: 2555 }],
+	orientation: 'horizontal',
 	label: 'Visitors',
 };
 
 const BasicVertical = bindWithProps(BigNumberStory);
 BasicVertical.args = {
-	orientation: 'vertical',
 	data: [{ value: 2555 }],
+	orientation: 'vertical',
 	label: 'Visitors',
 };
 
 const IconHorizontal = bindWithProps(BigNumberStory);
 IconHorizontal.args = {
-	icon: (
-		<Icon data-testid="icon-calendar">
-			<Calendar />
+	data: [{ value: 2555 }],
+	children: (
+		<Icon key={'i'} data-testid="icon-calendar">
+			<Calendar size="L" />
 		</Icon>
 	),
 	orientation: 'horizontal',
-	data: [{ value: 2555 }],
 	label: 'Visitors',
 };
 
 const IconVertical = bindWithProps(BigNumberStory);
 IconVertical.args = {
-	icon: (
+	data: [{ value: 2555 }],
+	children: (
 		<Icon data-testid="icon-amusementpark">
-			<Amusementpark size="L"></Amusementpark>
+			<Amusementpark size="L" />
 		</Icon>
 	),
 	orientation: 'vertical',
-	data: [{ value: 2555 }],
 	label: 'Visitors',
 };
 
@@ -86,16 +94,16 @@ const compactNumberFormat = () => {
 
 const CompactNumberHorizontal = bindWithProps(BigNumberStory);
 CompactNumberHorizontal.args = {
+	data: [{ value: 0.2555 }],
 	orientation: 'horizontal',
-	data: [{ value: 2555 }],
 	label: 'Visitors',
 	numberFormat: compactNumberFormat(),
 };
 
 const CompactNumberVertical = bindWithProps(BigNumberStory);
 CompactNumberVertical.args = {
+	data: [{ value: 25.55 }],
 	orientation: 'vertical',
-	data: [{ value: 2555 }],
 	label: 'Visitors',
 	numberFormat: compactNumberFormat(),
 };
@@ -106,16 +114,16 @@ const percentNumberFormat = () => {
 
 const PercentNumberHorizontal = bindWithProps(BigNumberStory);
 PercentNumberHorizontal.args = {
+	data: [{ value: 25.55 }],
 	orientation: 'horizontal',
-	data: [{ value: 0.2555 }],
 	label: 'Capacity',
 	numberFormat: percentNumberFormat(),
 };
 
 const PercentNumberVertical = bindWithProps(BigNumberStory);
 PercentNumberVertical.args = {
-	orientation: 'vertical',
 	data: [{ value: 0.2555 }],
+	orientation: 'vertical',
 	label: 'Capacity',
 	numberFormat: percentNumberFormat(),
 };
@@ -126,16 +134,16 @@ const currencyNumberFormat = () => {
 
 const CurrencyNumberHorizontal = bindWithProps(BigNumberStory);
 CurrencyNumberHorizontal.args = {
+	data: [{ value: 2555 }],
 	orientation: 'horizontal',
-	data: [{ value: 25.55 }],
 	label: 'Sales',
 	numberFormat: currencyNumberFormat(),
 };
 
 const CurrencyNumberVertical = bindWithProps(BigNumberStory);
 CurrencyNumberVertical.args = {
+	data: [{ value: 2555 }],
 	orientation: 'vertical',
-	data: [{ value: 25.55 }],
 	label: 'Sales',
 	numberFormat: currencyNumberFormat(),
 };
@@ -146,16 +154,16 @@ const groupedNumberFormat = () => {
 
 const GroupedNumberHorizontal = bindWithProps(BigNumberStory);
 GroupedNumberHorizontal.args = {
-	orientation: 'horizontal',
 	data: [{ value: 2555 }],
+	orientation: 'horizontal',
 	label: 'Visitors',
 	numberFormat: groupedNumberFormat(),
 };
 
 const GroupedNumberVertical = bindWithProps(BigNumberStory);
 GroupedNumberVertical.args = {
-	orientation: 'vertical',
 	data: [{ value: 2555 }],
+	orientation: 'vertical',
 	label: 'Visitors',
 	numberFormat: groupedNumberFormat(),
 };
