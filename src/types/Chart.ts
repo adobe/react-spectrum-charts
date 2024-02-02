@@ -13,8 +13,8 @@ import { JSXElementConstructor, ReactElement, ReactFragment, ReactNode } from 'r
 
 import { MARK_ID, SERIES_ID, TRENDLINE_VALUE } from '@constants';
 import { Config, Data, FontWeight, Locale, NumberLocale, Padding, Spec, SymbolShape, TimeLocale } from 'vega';
-import {Icon} from '@adobe/react-spectrum'
 
+import { Icon } from '@adobe/react-spectrum';
 import { Theme } from '@react-types/provider';
 
 import { Colors, SpectrumColor } from './SpectrumVizColors';
@@ -178,7 +178,9 @@ export interface BigNumberProps {
 	icon?: ReactElement;
 	data: ChartData[] | undefined | null;
 	label: string;
-	numberFormat?: Intl.NumberFormat;
+	locale?: ChartProps['locale'];
+	numberFormat?: string;
+	numberType?: 'linear' | 'percentage';
 }
 
 export type Granularity = 'minute' | 'hour' | 'day' | 'week' | 'month' | 'quarter';
