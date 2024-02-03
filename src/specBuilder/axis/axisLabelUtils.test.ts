@@ -19,6 +19,7 @@ import {
 	getLabelValue,
 	labelIsParallelToAxis,
 } from './axisLabelUtils';
+import { defaultAxisProps } from './axisTestUtils';
 
 describe('getLabelValue()', () => {
 	test('should return the value key if an object', () => {
@@ -157,12 +158,43 @@ describe('getLabelAngle', () => {
 
 describe('getLabelFormat()', () => {
 	test('should include the number format test if numberFormat exists', () => {
-		const labelFormat = getLabelFormat('linear', '.2f');
+		const labelFormat = getLabelFormat(
+			{ ...defaultAxisProps, labelFormat: 'linear', numberFormat: '.2f' },
+			'xLinear'
+		);
 		expect(labelFormat).toHaveLength(4);
 		expect(labelFormat[0]).toEqual({ test: 'isNumber(datum.value)', signal: "format(datum.value, '.2f')" });
 	});
 	test('should not include the number format test if numberFormat does not exist or is an empty string', () => {
-		expect(getLabelFormat('linear', undefined)).toHaveLength(3);
-		expect(getLabelFormat('linear', '')).toHaveLength(3);
+		expect(
+			getLabelFormat({ ...defaultAxisProps, labelFormat: 'linear', numberFormat: undefined }, 'xLinear')
+		).toHaveLength(3);
+		expect(
+			getLabelFormat({ ...defaultAxisProps, labelFormat: 'linear', numberFormat: '' }, 'xLinear')
+		).toHaveLength(3);
+	});
+	test('should include text truncation if truncateText is true', () => {
+		const labelEncodings = getLabelFormat({ ...defaultAxisProps, truncateLabels: true }, 'xBand');
+		expect(labelEncodings).toHaveLength(3);
+		expect(labelEncodings[2].signal).toContain('truncateText');
+	});
+	test('should not include text truncation if the scale name does not include band', () => {
+		expect(getLabelFormat({ ...defaultAxisProps, truncateLabels: true }, 'xLinear')[2].signal).not.toContain(
+			'truncateText'
+		);
+	});
+	test('should not include truncae text if labels are perpendicular to the axis', () => {
+		expect(
+			getLabelFormat(
+				{ ...defaultAxisProps, truncateLabels: true, position: 'bottom', labelOrientation: 'vertical' },
+				'xBand'
+			)[2].signal
+		).not.toContain('truncateText');
+		expect(
+			getLabelFormat(
+				{ ...defaultAxisProps, truncateLabels: true, position: 'left', labelOrientation: 'horizontal' },
+				'yBand'
+			)[2].signal
+		).not.toContain('truncateText');
 	});
 });

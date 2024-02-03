@@ -18,7 +18,7 @@ import { stockPriceData, workspaceTrendsData } from '@stories/data/data';
 import { StoryFn } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
 
-import { barData } from '../Bar/data';
+import { barData, barDataLongLabels } from '../Bar/data';
 import timeData from './timeData.json';
 
 export default {
@@ -41,8 +41,9 @@ const AxisStory: StoryFn<typeof Axis> = (args): ReactElement => {
 };
 
 const TimeAxisStory: StoryFn<typeof Axis> = (args): ReactElement => {
+	const chartProps = useChartProps({ data: timeData[args.granularity ?? DEFAULT_GRANULARITY], width: 'auto' });
 	return (
-		<Chart data={timeData[args.granularity ?? DEFAULT_GRANULARITY]} width={600}>
+		<Chart {...chartProps}>
 			<Axis {...args} />
 			<Line />
 		</Chart>
@@ -50,8 +51,19 @@ const TimeAxisStory: StoryFn<typeof Axis> = (args): ReactElement => {
 };
 
 const SubLabelStory: StoryFn<typeof Axis> = (args): ReactElement => {
+	const chartProps = useChartProps({ data: barData, width: 600 });
 	return (
-		<Chart data={barData} width={600}>
+		<Chart {...chartProps}>
+			<Axis {...args} />
+			<Bar dimension="browser" metric="downloads" />
+		</Chart>
+	);
+};
+
+const TruncatedLabelStory: StoryFn<typeof Axis> = (args): ReactElement => {
+	const chartProps = useChartProps({ data: barDataLongLabels, width: 450 });
+	return (
+		<Chart {...chartProps}>
 			<Axis {...args} />
 			<Bar dimension="browser" metric="downloads" />
 		</Chart>
@@ -133,6 +145,14 @@ SubLabels.args = {
 	labelAlign: 'start',
 };
 
+const TruncateLabels = bindWithProps(TruncatedLabelStory);
+TruncateLabels.args = {
+	truncateLabels: true,
+	position: 'bottom',
+	baseline: true,
+	title: 'Browser',
+};
+
 const TickMinStep = bindWithProps(LinearAxisStory);
 TickMinStep.args = {
 	position: 'bottom',
@@ -180,4 +200,14 @@ ControlledLabels.args = {
 	],
 };
 
-export { Basic, Time, SubLabels, TickMinStep, NonLinearAxis, NumberFormat, CustomXRange, ControlledLabels };
+export {
+	Basic,
+	ControlledLabels,
+	CustomXRange,
+	NonLinearAxis,
+	NumberFormat,
+	SubLabels,
+	TickMinStep,
+	Time,
+	TruncateLabels,
+};

@@ -64,7 +64,7 @@ describe('getDefaultAxis()', () => {
 			grid: true,
 			ticks: false,
 			tickCount: {
-				signal: 'clamp(ceil(height/40), 2, 5)',
+				signal: 'clamp(ceil(height/60), 2, 10)',
 			},
 			tickMinStep: 5,
 			title: 'Users',
@@ -127,7 +127,7 @@ describe('getDefaultAxis()', () => {
 			grid: true,
 			ticks: false,
 			tickCount: {
-				signal: 'clamp(ceil(height/40), 2, 5)',
+				signal: 'clamp(ceil(height/60), 2, 10)',
 			},
 			tickMinStep: undefined,
 			title: 'Users',

@@ -276,7 +276,7 @@ export const getAnnotationPositionOffset = (
 type AnnotationWidth = { value: number } | { signal: string };
 const getAnnotationWidth = (textKey: string, style?: AnnotationStyleProps): AnnotationWidth => {
 	if (style?.width) return { value: style.width };
-	return { signal: `getLabelWidth(datum.${textKey}, '${ANNOTATION_FONT_WEIGHT}', '${ANNOTATION_FONT_SIZE}') + 10` };
+	return { signal: `getLabelWidth(datum.${textKey}, '${ANNOTATION_FONT_WEIGHT}', ${ANNOTATION_FONT_SIZE}) + 10` };
 };
 
 export const getAnnotationMarks = (
