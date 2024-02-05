@@ -32,7 +32,6 @@ export const addDonut = produce<Spec, [DonutProps & { colorScheme?: ColorScheme;
 			name,
 			startAngle = 0,
 			holeRatio = 0.85,
-			segment,
 			hasDirectLabels = false,
 			isBoolean = false,
 			...props
@@ -48,7 +47,6 @@ export const addDonut = produce<Spec, [DonutProps & { colorScheme?: ColorScheme;
 			name: toCamelCase(name ?? `donut${index}`),
 			startAngle,
 			holeRatio,
-			segment,
 			hasDirectLabels,
 			isBoolean,
 			...props,

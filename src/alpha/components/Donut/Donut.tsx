@@ -18,12 +18,15 @@ import { DonutProps } from '../../../types';
 // destructure props here and set defaults so that storybook can pick them up
 export function Donut({
 	children,
-	name,
 	color = DEFAULT_COLOR,
+	hasDirectLabels = false,
+	holeRatio = 0.85,
+	isBoolean = false,
 	metric = DEFAULT_METRIC,
 	metricLabel,
-	startAngle,
-	holeRatio,
+	name,
+	segment,
+	startAngle = 0,
 }: DonutProps) {
 	return null;
 }
