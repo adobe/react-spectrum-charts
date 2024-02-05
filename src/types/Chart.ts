@@ -9,10 +9,10 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { JSXElementConstructor, ReactElement, ReactFragment, ReactNode } from 'react';
+import { JSXElementConstructor, MutableRefObject, ReactElement, ReactFragment, ReactNode } from 'react';
 
 import { MARK_ID, SERIES_ID, TRENDLINE_VALUE } from '@constants';
-import { Config, Data, FontWeight, Locale, NumberLocale, Padding, Spec, SymbolShape, TimeLocale } from 'vega';
+import { Config, Data, FontWeight, Locale, NumberLocale, Padding, Spec, SymbolShape, TimeLocale, View } from 'vega';
 
 import { Icon } from '@adobe/react-spectrum';
 import { Theme } from '@react-types/provider';
@@ -71,22 +71,32 @@ export type Opacities = number[] | number[][];
 export type SymbolShapes = ChartSymbolShape[] | ChartSymbolShape[][];
 export type ChartSymbolShape = 'rounded-square' | SymbolShape;
 
-export interface ChartProps extends SpecProps {
+export interface SharedChartProps extends SpecProps {
 	config?: Config;
 	data: ChartData[];
 	debug?: boolean;
-	emptyStateText?: string;
 	height?: number;
 	/** number and time locales to use */
 	locale?: Locale | LocaleCode | { number?: NumberLocaleCode | NumberLocale; time?: TimeLocaleCode | TimeLocale };
-	maxWidth?: number;
-	minWidth?: number;
 	padding?: Padding;
 	renderer?: 'svg' | 'canvas';
+}
+
+export interface RscChartProps extends SharedChartProps {
+	chartId: MutableRefObject<string>;
+	chartView: MutableRefObject<View | undefined>;
+	chartWidth: number;
+	popoverIsOpen?: boolean;
+}
+
+export interface ChartProps extends SharedChartProps {
+	dataTestId?: string;
+	emptyStateText?: string;
+	loading?: boolean;
+	maxWidth?: number;
+	minWidth?: number;
 	theme?: Theme;
 	width?: Width; // strings must be in a valid percent format ex. '50%'
-	dataTestId?: string;
-	loading?: boolean;
 }
 
 export interface BaseProps {
@@ -168,6 +178,8 @@ export interface AxisProps extends BaseProps {
 	tickMinStep?: number;
 	/** Sets the axis title */
 	title?: string;
+	/** If the text is wider than the bandwidth that is labels, it will be truncated so that it stays within that bandwidth. */
+	truncateLabels?: boolean;
 }
 
 export type BigNumberOrientation = 'vertical' | 'horizontal';
@@ -306,8 +318,21 @@ export interface ScatterProps extends Omit<MarkProps, 'color'> {
 	 * see https://vega.github.io/vega/docs/scales/#types for more information
 	 */
 	dimensionScaleType?: ScaleType;
-	/** point fill and stroke opacity */
-	opacity?: number;
+	/**
+	 * line type of the point border
+	 * uses a key in the data that will map to the line type scale or a static line type value
+	 */
+	lineType?: LineTypeFacet;
+	/**
+	 * line width of the point border
+	 * uses a key in the data that will map to the line width scale or a static line width value
+	 */
+	lineWidth?: LineWidthFacet;
+	/**
+	 * point fill and stroke opacity
+	 * uses a key in the data that will map to the opacity scale or a opacity value
+	 */
+	opacity?: OpacityFacet;
 	/**
 	 * point size
 	 * uses a key in the data that will map to the size scale (linear) or a static size value

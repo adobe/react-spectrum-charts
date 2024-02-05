@@ -10,6 +10,7 @@
  * governing permissions and limitations under the License.
  */
 import { ADOBE_CLEAN_FONT } from '@themes/spectrumTheme';
+import { FontWeight } from 'vega';
 
 interface LabelDatum {
 	index: number;
@@ -47,17 +48,35 @@ const consoleLog = (value) => {
  * @param fontSize
  * @returns width in pixels
  */
-const getLabelWidth = (text, fontWeight = 'bold', fontSize = '12') => {
+const getLabelWidth = (text: string, fontWeight: FontWeight = 'bold', fontSize: number = 12) => {
 	const canvas = document.createElement('canvas');
 	const context = canvas.getContext('2d');
 	if (context === null) return 0;
 
-	context.font = `${fontWeight} ${fontSize}px ${ADOBE_CLEAN_FONT}}`;
-	return context.measureText(text).width + 2;
+	context.font = `${fontWeight} ${fontSize}px ${ADOBE_CLEAN_FONT}`;
+	return context.measureText(text).width;
+};
+
+const truncateText = (text: string, maxWidth: number, fontWeight: FontWeight = 'normal', fontSize: number = 12) => {
+	maxWidth = maxWidth - 4;
+	const textWidth = getLabelWidth(text, fontWeight, fontSize);
+	const elipsisWidth = getLabelWidth('\u2026', fontWeight, fontSize);
+	if (textWidth <= maxWidth) return text;
+
+	let truncatedText = text.slice(0, text.length - 1).trim();
+
+	for (let i = truncatedText.length; i > 0; i--) {
+		truncatedText = truncatedText.slice(0, truncatedText.length - 1).trim();
+		if (getLabelWidth(truncatedText, fontWeight, fontSize) + elipsisWidth <= maxWidth) break;
+	}
+
+	if (truncatedText.length === 0) return text;
+	return truncatedText + '\u2026';
 };
 
 export const expressionFunctions = {
-	getLabelWidth,
-	formatPrimaryTimeLabels: formatPrimaryTimeLabels(),
 	consoleLog,
+	formatPrimaryTimeLabels: formatPrimaryTimeLabels(),
+	getLabelWidth,
+	truncateText,
 };

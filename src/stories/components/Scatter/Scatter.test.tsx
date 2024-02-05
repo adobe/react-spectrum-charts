@@ -12,7 +12,7 @@
 import { Scatter, spectrumColors } from '@rsc';
 import { findAllMarksByGroupName, findChart, getAllLegendEntries, render } from '@test-utils';
 
-import { Basic, Color, Opacity, Size } from './Scatter.story';
+import { Basic, Color, LineType, Opacity, Size } from './Scatter.story';
 
 const colors = spectrumColors.light;
 
@@ -48,6 +48,18 @@ describe('Scatter', () => {
 		expect(legendEntries).toHaveLength(3);
 	});
 
+	test('LineType renders properly', async () => {
+		render(<LineType {...LineType.args} />);
+
+		const chart = await findChart();
+		expect(chart).toBeInTheDocument();
+
+		const points = await findAllMarksByGroupName(chart, 'scatter0');
+		expect(points[0]).toHaveAttribute('stroke-dasharray', '');
+		expect(points[6]).toHaveAttribute('stroke-dasharray', '7,4');
+		expect(points[11]).toHaveAttribute('stroke-dasharray', '2,3');
+	});
+
 	test('Opacity renders properly', async () => {
 		render(<Opacity {...Opacity.args} />);
 
@@ -55,7 +67,9 @@ describe('Scatter', () => {
 		expect(chart).toBeInTheDocument();
 
 		const points = await findAllMarksByGroupName(chart, 'scatter0');
-		expect(points[0]).toHaveAttribute('fill-opacity', '0.5');
+		expect(points[0]).toHaveAttribute('fill-opacity', '1');
+		expect(points[6]).toHaveAttribute('fill-opacity', '0.75');
+		expect(points[11]).toHaveAttribute('fill-opacity', '0.5');
 	});
 
 	test('Size renders properly', async () => {

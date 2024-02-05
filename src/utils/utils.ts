@@ -49,7 +49,7 @@ export function toArray<Child>(children: Child | Child[] | undefined): Child[] {
 }
 
 // removes all non-chart specific elements
-export const sanitizeChartChildren = (children: Children<RscElement> | undefined): ChartChildElement[] => {
+export const sanitizeRscChartChildren = (children: Children<RscElement> | undefined): ChartChildElement[] => {
 	return toArray(children)
 		.flat()
 		.filter((child): child is ChartChildElement => isChartChildElement(child));

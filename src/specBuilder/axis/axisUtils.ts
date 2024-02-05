@@ -27,15 +27,13 @@ import {
  * @param scaleName
  * @returns axis
  */
-export const getDefaultAxis = (
-	{
+export const getDefaultAxis = (axisProps: AxisSpecProps, scaleName: string): Axis => {
+	const {
 		grid,
 		hideDefaultLabels,
 		labelAlign,
 		labelFontWeight,
-		labelFormat,
 		labelOrientation,
-		numberFormat,
 		position,
 		scaleType,
 		ticks,
@@ -45,30 +43,30 @@ export const getDefaultAxis = (
 		vegaLabelBaseline,
 		vegaLabelOffset,
 		vegaLabelPadding,
-	}: AxisSpecProps,
-	scaleName: string
-): Axis => ({
-	scale: scaleName,
-	orient: position,
-	grid,
-	ticks,
-	tickCount: getTickCount(position, grid),
-	tickMinStep: scaleType !== 'linear' ? undefined : tickMinStep, //only supported for linear scales
-	title,
-	labelAngle: getLabelAngle(labelOrientation),
-	labelFontWeight,
-	labelOffset: getLabelOffset(labelAlign, scaleName, vegaLabelOffset),
-	labelPadding: vegaLabelPadding,
-	labels: !hideDefaultLabels,
-	...getLabelAnchorValues(position, labelOrientation, labelAlign, vegaLabelAlign, vegaLabelBaseline),
-	encode: {
-		labels: {
-			update: {
-				text: getLabelFormat(labelFormat, numberFormat),
+	} = axisProps;
+	return {
+		scale: scaleName,
+		orient: position,
+		grid,
+		ticks,
+		tickCount: getTickCount(position, grid),
+		tickMinStep: scaleType !== 'linear' ? undefined : tickMinStep, //only supported for linear scales
+		title,
+		labelAngle: getLabelAngle(labelOrientation),
+		labelFontWeight,
+		labelOffset: getLabelOffset(labelAlign, scaleName, vegaLabelOffset),
+		labelPadding: vegaLabelPadding,
+		labels: !hideDefaultLabels,
+		...getLabelAnchorValues(position, labelOrientation, labelAlign, vegaLabelAlign, vegaLabelBaseline),
+		encode: {
+			labels: {
+				update: {
+					text: getLabelFormat(axisProps, scaleName),
+				},
 			},
 		},
-	},
-});
+	};
+};
 
 /**
  * Generates the time axes for a time scale from the axis props
@@ -103,6 +101,7 @@ export const getTimeAxes = (
 			format: secondaryFormat,
 			formatType: 'time',
 			labelAngle: getLabelAngle(labelOrientation),
+			labelSeparation: 12,
 			...getLabelAnchorValues(position, labelOrientation, labelAlign, vegaLabelAlign, vegaLabelBaseline),
 		},
 		{
@@ -279,8 +278,9 @@ const getDefaultOpposingScaleNameFromPosition = (position: Position) => {
 export const getTickCount = (position: Position, grid: boolean): SignalRef | undefined => {
 	if (!grid) return;
 	const range = ['top', 'bottom'].includes(position) ? 'width' : 'height';
-	// clamp axis tick count to a min of 2 and max of 5
-	return { signal: `clamp(ceil(${range}/40), 2, 5)` };
+	// divide the range by 60 to get the ideal number of ticks (grid lines)
+	// clamp axis tick count to a min of 2 and max of 10
+	return { signal: `clamp(ceil(${range}/60), 2, 10)` };
 };
 
 /**
