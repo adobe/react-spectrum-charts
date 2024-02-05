@@ -12,6 +12,8 @@
 import { render, screen } from '@test-utils';
 
 import {
+	BasicHorizontal,
+	BasicVertical,
 	CompactFormat,
 	CurrencyFormat,
 	IconHorizontal,
@@ -22,6 +24,23 @@ import {
 } from './BigNumber.story';
 
 describe('BigNumber', () => {
+	describe('BigNumber basic component', () => {
+		test('BasicHorizontal renders', async () => {
+			render(<BasicHorizontal {...BasicHorizontal.args} />);
+			const value = await screen.findByText('255');
+			expect(value).toBeInTheDocument();
+			const label = await screen.findByText(BasicHorizontal.args.label);
+			expect(label).toBeInTheDocument();
+		});
+
+		test('BasicVertical renders', async () => {
+			render(<BasicVertical {...BasicVertical.args} />);
+			const value = await screen.findByText('255');
+			expect(value).toBeInTheDocument();
+			const label = await screen.findByText(BasicVertical.args.label);
+			expect(label).toBeInTheDocument();
+		});
+	});
 	describe('BigNumber with icon prop passed in', () => {
 		test('IconVertical renders with correct icon present', async () => {
 			render(<IconVertical {...IconVertical.args} />);

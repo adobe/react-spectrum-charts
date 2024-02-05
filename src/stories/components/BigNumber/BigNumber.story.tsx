@@ -36,8 +36,8 @@ const BigNumberStory: StoryFn<typeof BigNumber> = (args): ReactElement => {
 	);
 };
 
-const BasicHorizonal = bindWithProps(BigNumberStory);
-BasicHorizonal.args = {
+const BasicHorizontal = bindWithProps(BigNumberStory);
+BasicHorizontal.args = {
 	orientation: 'horizontal',
 	data: [{ value: 255 }],
 	label: 'Visitors',
@@ -114,7 +114,7 @@ UndefinedData.args = {
 };
 
 export {
-	BasicHorizonal,
+	BasicHorizontal,
 	BasicVertical,
 	CurrencyFormat,
 	CompactFormat,

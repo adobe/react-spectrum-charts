@@ -47,7 +47,7 @@ export function BigNumber({
 		areas = ['sparkline sparkline', 'data data', 'icon label'];
 		columns = ['1fr', '4fr'];
 	} else if (iconElements.length > 0 && lineElements.length > 0 && orientation == 'horizontal') {
-		align = 'left';
+		align = 'start';
 		areas = ['sparkline data data', 'sparkline icon label'];
 		columns = ['3fr', '1fr', '2fr'];
 	} else if (lineElements.length > 0 && orientation == 'vertical') {
@@ -55,7 +55,7 @@ export function BigNumber({
 		areas = ['sparkline', 'data', 'label'];
 		columns = ['1fr'];
 	} else if (lineElements.length > 0 && orientation == 'horizontal') {
-		align = 'left';
+		align = 'start';
 		areas = ['sparkline data', 'sparkline label'];
 		columns = ['1fr 1fr'];
 	} else if (iconElements.length > 0 && orientation == 'vertical') {
@@ -63,7 +63,7 @@ export function BigNumber({
 		areas = ['icon', 'data', 'label'];
 		columns = ['1fr'];
 	} else if (iconElements.length > 0 && orientation == 'horizontal') {
-		align = 'left';
+		align = 'start';
 		areas = ['icon data', 'icon label'];
 		columns = ['1fr', '2fr'];
 	} else if (orientation == 'vertical') {
@@ -71,7 +71,7 @@ export function BigNumber({
 		areas = ['data', 'label'];
 		columns = ['1fr'];
 	} else {
-		align = 'left';
+		align = 'start';
 		areas = ['data', 'label'];
 		columns = ['1fr'];
 	}
