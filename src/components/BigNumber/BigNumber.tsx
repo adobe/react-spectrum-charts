@@ -35,8 +35,9 @@ export function BigNumber({
 
 	const numberLocale = getLocale(locale).number;
 	const type = numberType ?? 'linear';
-	const formattedValue = bigNumberValue ?
-		getFormattedString(bigNumberValue, numberLocale, numberFormat, type) : bigNumberValue;
+	const formattedValue = bigNumberValue
+		? getFormattedString(bigNumberValue, numberLocale, numberFormat, type)
+		: bigNumberValue;
 
 	let lineElement, iconElement;
 	Children.forEach(children, (child) => {
@@ -54,7 +55,7 @@ export function BigNumber({
 		areas = ['sparkline sparkline', 'data data', 'icon label'];
 		columns = ['1fr', '4fr'];
 	} else if (iconElement && lineElement && orientation == 'horizontal') {
-		align = 'left';
+		align = 'start';
 		areas = ['sparkline data data', 'sparkline icon label'];
 		columns = ['3fr', '1fr', '2fr'];
 	} else if (lineElement && orientation == 'vertical') {
@@ -62,7 +63,7 @@ export function BigNumber({
 		areas = ['sparkline', 'data', 'label'];
 		columns = ['1fr'];
 	} else if (lineElement && orientation == 'horizontal') {
-		align = 'left';
+		align = 'start';
 		areas = ['sparkline data', 'sparkline label'];
 		columns = ['1fr 1fr'];
 	} else if (iconElement && orientation == 'vertical') {
@@ -70,7 +71,7 @@ export function BigNumber({
 		areas = ['icon', 'data', 'label'];
 		columns = ['1fr'];
 	} else if (iconElement && orientation == 'horizontal') {
-		align = 'left';
+		align = 'start';
 		areas = ['icon data', 'icon label'];
 		columns = ['1fr', '2fr'];
 	} else if (orientation == 'vertical') {
@@ -78,7 +79,7 @@ export function BigNumber({
 		areas = ['data', 'label'];
 		columns = ['1fr'];
 	} else {
-		align = 'left';
+		align = 'start';
 		areas = ['data', 'label'];
 		columns = ['1fr'];
 	}
