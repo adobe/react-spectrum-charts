@@ -9,9 +9,12 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { ReactElement } from 'react';
 
-import { BigNumber } from '@rsc';
+import useChartProps from '@hooks/useChartProps';
+import { BigNumber, Chart } from '@rsc';
 import { StoryFn } from '@storybook/react';
 import { bindWithProps } from 'test-utils/bindWithProps';
 
@@ -25,11 +28,16 @@ export default {
 };
 
 const BigNumberStory: StoryFn<typeof BigNumber> = (args): ReactElement => {
-	return <BigNumber {...args} />;
+	// const chartProps = useChartProps({ data: [{ value: 2555 }], width: 600, height: 600 });
+	return (
+		// <Chart {...chartProps}>
+		<BigNumber {...args} />
+		// </Chart>
+	);
 };
 
-const BasicHorizonal = bindWithProps(BigNumberStory);
-BasicHorizonal.args = {
+const BasicHorizontal = bindWithProps(BigNumberStory);
+BasicHorizontal.args = {
 	orientation: 'horizontal',
 	data: [{ value: 255 }],
 	label: 'Visitors',
@@ -44,9 +52,9 @@ BasicVertical.args = {
 
 const IconHorizontal = bindWithProps(BigNumberStory);
 IconHorizontal.args = {
-	icon: (
-		<Icon data-testid="icon-calendar">
-			<Calendar />
+	children: (
+		<Icon key={'i'} data-testid="icon-calendar">
+			<Calendar size="L" />
 		</Icon>
 	),
 	orientation: 'horizontal',
@@ -56,9 +64,9 @@ IconHorizontal.args = {
 
 const IconVertical = bindWithProps(BigNumberStory);
 IconVertical.args = {
-	icon: (
+	children: (
 		<Icon data-testid="icon-amusementpark">
-			<Amusementpark size="L"></Amusementpark>
+			<Amusementpark size="L" />
 		</Icon>
 	),
 	orientation: 'vertical',
@@ -106,7 +114,7 @@ UndefinedData.args = {
 };
 
 export {
-	BasicHorizonal,
+	BasicHorizontal,
 	BasicVertical,
 	CurrencyFormat,
 	CompactFormat,

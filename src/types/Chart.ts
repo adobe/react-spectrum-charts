@@ -182,13 +182,9 @@ export interface AxisProps extends BaseProps {
 	truncateLabels?: boolean;
 }
 
-export type BigNumberOrientation = 'vertical' | 'horizontal';
-
 export interface BigNumberProps {
-	orientation: BigNumberOrientation;
-	sparkline?: boolean
-	icon?: ReactElement;
-	data: ChartData[] | undefined | null;
+	data: ChartData[] | null | undefined
+	orientation: Orientation;
 	label: string;
 	locale?: ChartProps['locale'];
 	numberFormat?: string;

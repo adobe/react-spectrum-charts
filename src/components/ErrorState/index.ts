@@ -10,16 +10,4 @@
  * governing permissions and limitations under the License.
  */
 
-
-.BigNumber-data {
-    font-size: large;
-    font-weight: bold;
-}
-
-.BigNumber-label {
-    font-size: medium;
-}
-
-.BigNumber-container {
-    width: fit-content;
-}
+export * from './ErrorState';
