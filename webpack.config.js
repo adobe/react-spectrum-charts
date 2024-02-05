@@ -54,6 +54,10 @@ module.exports = {
 
 	externals: [nodeExternals()],
 
+	optimization: {
+		minimize: process.env.NODE_ENV === 'development' ? false : true,
+	},
+
 	plugins: [new webpack.BannerPlugin(banner)],
 
 	resolve: {

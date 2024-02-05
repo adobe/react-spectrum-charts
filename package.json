@@ -7,7 +7,6 @@
 		".": "./dist/index.js",
 		"./alpha": "./dist/alpha.js"
 	},
-	"module": "./dist/index.js",
 	"typesVersions": {
 		"*": {
 			"*": [
@@ -40,7 +39,7 @@
 		"ts": "yarn tsc",
 		"tsc": "tsc --noEmit --skipLibCheck",
 		"prepack": "yarn build",
-		"pack-test": "rm -rf dist & npm pack",
+		"pack-test": "rm -rf dist & cross-env NODE_ENV=development npm pack",
 		"start": "yarn storybook",
 		"storybook": "cross-env NODE_OPTIONS=--openssl-legacy-provider && storybook dev -p 6009",
 		"test": "cross-env BABEL_ENV=test jest",
