@@ -14,10 +14,11 @@ import { Fragment, ReactFragment } from 'react';
 import { MARK_ID, SERIES_ID } from '@constants';
 import { View } from 'vega';
 
-import { Area, Axis, AxisAnnotation, Bar, ChartPopover, ChartTooltip, Legend, Line, Trendline } from '..';
+import { Area, Axis, AxisAnnotation, Bar, BigNumber, ChartPopover, ChartTooltip, Legend, Line, Trendline } from '..';
 import {
 	AxisAnnotationChildElement,
 	AxisChildElement,
+	BigNumberChildElement,
 	ChartChildElement,
 	ChartElement,
 	ChartTooltipElement,
@@ -25,11 +26,13 @@ import {
 	Children,
 	Datum,
 	LegendElement,
+	LineElement,
 	MarkChildElement,
 	PopoverHandler,
 	RscElement,
 	TooltipHandler,
 } from '../types';
+import { Icon } from '@adobe/react-spectrum';
 
 type MappedElement = { name: string; element: ChartElement | RscElement };
 type ElementCounts = {
@@ -53,6 +56,17 @@ export const sanitizeRscChartChildren = (children: Children<RscElement> | undefi
 	return toArray(children)
 		.flat()
 		.filter((child): child is ChartChildElement => isChartChildElement(child));
+};
+
+export const sanitizeBigNumberChildren = (children: Children<BigNumberChildElement> | undefined): {lineElements: BigNumberChildElement[], iconElements: typeof BigNumberChildElement[]} => {
+	const sanitizedChildren = toArray(children)
+		.flat()
+		.filter((child): child is BigNumberChildElement => isBigNumberChildElement(child));
+
+	const lineElements = sanitizedChildren.filter(c => c instanceof Line)
+	const iconElements = sanitizedChildren.filter(c => c instanceof Icon)
+
+	return {lineElements, iconElements}
 };
 
 export const sanitizeMarkChildren = (children: Children<MarkChildElement> | undefined): MarkChildElement[] => {
@@ -85,6 +99,11 @@ export const sanitizeTrendlineChildren = (
 const isChartChildElement = (child: ChildElement<ChartChildElement> | undefined): child is ChartChildElement => {
 	return isRscComponent(child);
 };
+
+const isBigNumberChildElement = (child: ChildElement<BigNumberChildElement> | undefined): child is BigNumberChildElement => {
+	return Boolean(child && (child instanceof Line || child instanceof Icon))
+}
+
 const isMarkChildElement = <T extends MarkChildElement = MarkChildElement>(
 	child: ChildElement<T> | undefined
 ): child is T => {

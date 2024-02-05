@@ -9,10 +9,9 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import React, { Children, PropsWithChildren } from 'react';
-
 import { ErrorState } from '@components/ErrorState';
-import { Line } from '@components/Line';
+import { sanitizeBigNumberChildren } from '@utils';
+import { RscChart } from 'RscChart';
 import { BigNumberProps } from 'types';
 import { getLocale } from 'utils/locale';
 
@@ -30,46 +29,40 @@ export function BigNumber({
 	numberFormat,
 	numberType,
 	children,
-}: PropsWithChildren<BigNumberProps>) {
+}: BigNumberProps) {
 	const bigNumberValue = data != undefined && data.length > 0 ? data[data.length - 1]['value'] : undefined;
 
 	const numberLocale = getLocale(locale).number;
 	const type = numberType ?? 'linear';
-	const formattedValue = bigNumberValue ?
-		getFormattedString(bigNumberValue, numberLocale, numberFormat, type) : bigNumberValue;
+	const formattedValue = bigNumberValue
+		? getFormattedString(bigNumberValue, numberLocale, numberFormat, type)
+		: bigNumberValue;
 
-	let lineElement, iconElement;
-	Children.forEach(children, (child) => {
-		if (child instanceof Line) {
-			lineElement = child;
-		} else {
-			iconElement = child;
-		}
-	});
+	const { lineElements, iconElements } = sanitizeBigNumberChildren(children);
 
 	let areas, columns, align;
 
-	if (iconElement && lineElement && orientation == 'vertical') {
+	if (iconElements.length > 0 && lineElements.length > 0 && orientation == 'vertical') {
 		align = 'center';
 		areas = ['sparkline sparkline', 'data data', 'icon label'];
 		columns = ['1fr', '4fr'];
-	} else if (iconElement && lineElement && orientation == 'horizontal') {
+	} else if (iconElements.length > 0 && lineElements.length > 0 && orientation == 'horizontal') {
 		align = 'left';
 		areas = ['sparkline data data', 'sparkline icon label'];
 		columns = ['3fr', '1fr', '2fr'];
-	} else if (lineElement && orientation == 'vertical') {
+	} else if (lineElements.length > 0 && orientation == 'vertical') {
 		align = 'center';
 		areas = ['sparkline', 'data', 'label'];
 		columns = ['1fr'];
-	} else if (lineElement && orientation == 'horizontal') {
+	} else if (lineElements.length > 0 && orientation == 'horizontal') {
 		align = 'left';
 		areas = ['sparkline data', 'sparkline label'];
 		columns = ['1fr 1fr'];
-	} else if (iconElement && orientation == 'vertical') {
+	} else if (iconElements.length > 0 && orientation == 'vertical') {
 		align = 'center';
 		areas = ['icon', 'data', 'label'];
 		columns = ['1fr'];
-	} else if (iconElement && orientation == 'horizontal') {
+	} else if (iconElements.length > 0 && orientation == 'horizontal') {
 		align = 'left';
 		areas = ['icon data', 'icon label'];
 		columns = ['1fr', '2fr'];
@@ -97,8 +90,10 @@ export function BigNumber({
 		return (
 			<div tabIndex={0} className="BigNumber-container">
 				<Grid areas={areas} columns={columns} columnGap="size-100" justifyItems={align} alignItems={'center'}>
-					<View gridArea="sparkline">{lineElement}</View>
-					<View gridArea="icon">{iconElement}</View>
+					<View gridArea="sparkline">
+						{lineElements}
+					</View>
+					<View gridArea="icon">{iconElements}</View>
 					<View gridArea="data" UNSAFE_className="BigNumber-data">
 						{formattedValue}
 					</View>
