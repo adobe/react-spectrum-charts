@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { FC, forwardRef, useEffect, useMemo, useRef, useState } from 'react';
+import { Children, FC, forwardRef, useEffect, useMemo, useRef, useState } from 'react';
 
 import { EmptyState } from '@components/EmptyState';
 import { LoadingState } from '@components/LoadingState';
@@ -27,6 +27,8 @@ import { Theme } from '@react-types/provider';
 
 import './Chart.css';
 import { ChartData, ChartHandle, ChartProps } from './types';
+import { Line } from '@components/Line';
+import { BigNumber } from '@components/BigNumber';
 
 interface PlaceholderContentProps {
 	data: ChartData[];
@@ -96,6 +98,18 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 				'Chart cannot accept both children and `UNSAFE_vegaSpec` prop. Please choose one or the other.'
 			);
 		}
+
+		if (props.children) {
+			const children = Children.toArray(props.children);
+			if (children.some((child) => child instanceof BigNumber)) {
+				if (!children.some((child) => !(child instanceof BigNumber))) {
+					throw new Error(
+						'If passing BigNumber to Chart, all of Chart\'s children must be BigNumber components.'
+					);
+				}
+			}
+		}
+
 
 		// Chart requires children or a Vega spec to configure what is drawn. If there aren't any children or a Vega spec, throw an error and return a fragment.
 		if (!props.children && !UNSAFE_vegaSpec) {
