@@ -19,6 +19,7 @@ import { Theme } from '@react-types/provider';
 
 import { Colors, SpectrumColor } from './SpectrumVizColors';
 import { LocaleCode, NumberLocaleCode, TimeLocaleCode } from './locales';
+import { Line } from '@components/Line';
 
 export type ChartElement = ReactElement<ChartProps, JSXElementConstructor<ChartProps>>;
 export type AreaElement = ReactElement<AreaProps, JSXElementConstructor<AreaProps>>;
@@ -183,6 +184,7 @@ export interface AxisProps extends BaseProps {
 }
 
 export interface BigNumberProps {
+	children: Children<BigNumberChildElement>
 	data: ChartData[] | null | undefined
 	orientation: Orientation;
 	label: string;
@@ -530,6 +532,9 @@ export type Children<T> = ChildElement<T> | ChildElement<T>[];
 
 export type AxisChildElement = ReferenceLineElement | AxisAnnotationElement;
 export type AxisAnnotationChildElement = ChartTooltipElement | ChartPopoverElement;
+
+export type BigNumberChildElement = typeof Line | typeof Icon
+
 export type ChartChildElement =
 	| AreaElement
 	| AxisElement
