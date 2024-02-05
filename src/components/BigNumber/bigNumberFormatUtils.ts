@@ -16,7 +16,7 @@ export const getFormattedString = (
 
 	if (Math.abs(value) >= 1000) {
 		// Format in scientific notation with B instead of G (e.g., 1K, 20M, 1.3B)
-		let formattedValue = formatter.format('.3s')(value);
+		const formattedValue = formatter.format('.3s')(value);
 		return formattedValue.replace('G', 'B').toUpperCase();
 	}
 
