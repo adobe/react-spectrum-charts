@@ -122,7 +122,7 @@ const getHoverEncodings = (facets: Facet[], props: LegendSpecProps): LegendEncod
 			},
 			symbols: {
 				update: {
-					fillOpacity: getSymbolOpacityEncoding(props),
+					fillOpacity: getSymbolOpacityEncoding(facets, props),
 					strokeOpacity: getOpacityEncoding(props),
 				},
 			},
@@ -175,14 +175,10 @@ export const getOpacityEncoding = ({
  * @param facets
  * @returns
  */
-export const getSymbolOpacityEncoding = ({
-	facets,
-	highlight,
-	highlightedSeries,
-	keys,
-	name,
-	opacity,
-}: LegendSpecProps & { facets?: Facet[] }): ProductionRule<NumericValueRef> | undefined => {
+export const getSymbolOpacityEncoding = (
+	facets: Facet[],
+	{ highlight, highlightedSeries, keys, name, opacity }: LegendSpecProps
+): ProductionRule<NumericValueRef> | undefined => {
 	const highlightSignalName = keys ? `${name}_highlight` : 'highlightedSeries';
 	// only add symbol opacity if highlight is true or highlightedSeries is defined
 	if (highlight || highlightedSeries) {
