@@ -93,7 +93,7 @@ const isMarkChildElement = <T extends MarkChildElement = MarkChildElement>(
 	return isRscComponent(child);
 };
 
-export const isRscElement = <T extends RscElement = RscElement>(child: ChildElement<T> | undefined): child is T => {
+const isRscElement = <T extends RscElement = RscElement>(child: ChildElement<T> | undefined): child is T => {
 	return isRscComponent(child);
 };
 
