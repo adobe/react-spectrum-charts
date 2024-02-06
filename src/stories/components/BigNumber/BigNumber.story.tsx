@@ -14,7 +14,7 @@
 import React, { ReactElement } from 'react';
 
 import useChartProps from '@hooks/useChartProps';
-import { BigNumber, Chart } from '@rsc';
+import { BigNumber, Chart, Line } from '@rsc';
 import { StoryFn } from '@storybook/react';
 import { bindWithProps } from 'test-utils/bindWithProps';
 
@@ -122,5 +122,5 @@ export {
 	IconHorizontal,
 	IconVertical,
 	NullData,
-	UndefinedData,
+	UndefinedData
 };

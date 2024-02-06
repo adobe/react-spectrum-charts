@@ -22,6 +22,8 @@ import {
 	PercentageFormat,
 	UndefinedData,
 } from './BigNumber.story';
+import { BigNumber, Chart, Line } from '@rsc';
+import { simpleSparklineData } from '@stories/data/data';
 
 describe('BigNumber', () => {
 	describe('BigNumber basic component', () => {
@@ -100,6 +102,19 @@ describe('BigNumber', () => {
 			render(<CompactFormat {...CompactFormat.args} />);
 			const formattedValue = await screen.findByText('12.3B');
 			expect(formattedValue).toBeInTheDocument();
+		});
+	});
+
+	describe('Chart with more children than just BigNumber', () => {
+		test('Chart with BigNumber and Line as children should throw error', () => {
+			expect(() => render(
+				<Chart data={simpleSparklineData}>
+					<BigNumber data={simpleSparklineData} orientation="horizontal" label="Empty">
+						<div></div>
+					</BigNumber>
+					<Line/>
+				</Chart>
+			)).toThrow('If passing BigNumber to Chart, all of Chart\'s children must be BigNumber components.');
 		});
 	});
 });

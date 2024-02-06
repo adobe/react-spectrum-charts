@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { Children, FC, forwardRef, useEffect, useMemo, useRef, useState } from 'react';
+import { Children, FC, forwardRef, isValidElement, ReactElement, useEffect, useMemo, useRef, useState } from 'react';
 
 import { EmptyState } from '@components/EmptyState';
 import { LoadingState } from '@components/LoadingState';
@@ -99,10 +99,11 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 			);
 		}
 
+		// if one of Chart's children is a BigNumber, the rest must also be BigNumbers.
 		if (props.children) {
 			const children = Children.toArray(props.children);
-			if (children.some((child) => child instanceof BigNumber)) {
-				if (!children.some((child) => !(child instanceof BigNumber))) {
+			if (children.some((child) => (isValidElement(child) && child.type === BigNumber))) {
+				if (!children.every((child) => (isValidElement(child) && child.type === BigNumber))) {
 					throw new Error(
 						'If passing BigNumber to Chart, all of Chart\'s children must be BigNumber components.'
 					);
