@@ -11,9 +11,11 @@
  */
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
+import { FC } from 'react';
+
 import { LegendProps } from '../../types';
 
-export function Legend({
+const Legend: FC<LegendProps> = ({
 	color,
 	defaultHiddenSeries,
 	descriptions,
@@ -30,6 +32,11 @@ export function Legend({
 	position = 'bottom',
 	symbolShape,
 	title,
-}: LegendProps) {
+}) => {
 	return null;
-}
+};
+
+// displayName is used to validate the component type in the spec builder
+Legend.displayName = 'Legend';
+
+export { Legend };

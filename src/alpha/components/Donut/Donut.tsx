@@ -11,12 +11,14 @@
  */
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
+import { FC } from 'react';
+
 import { DEFAULT_COLOR, DEFAULT_METRIC } from '@constants';
 
 import { DonutProps } from '../../../types';
 
 // destructure props here and set defaults so that storybook can pick them up
-export function Donut({
+const Donut: FC<DonutProps> = ({
 	children,
 	color = DEFAULT_COLOR,
 	hasDirectLabels = false,
@@ -27,6 +29,11 @@ export function Donut({
 	name,
 	segment,
 	startAngle = 0,
-}: DonutProps) {
+}) => {
 	return null;
-}
+};
+
+// displayName is used to validate the component type in the spec builder
+Donut.displayName = 'Donut';
+
+export { Donut };

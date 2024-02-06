@@ -22,5 +22,6 @@ export * from './Legend';
 export * from './Line';
 export * from './MetricRange';
 export * from './ReferenceLine';
-export * from './Trendline';
 export * from './Title';
+export * from './Trendline';
+export * from './Scatter';

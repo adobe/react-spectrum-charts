@@ -11,6 +11,8 @@
  */
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
+import { FC } from 'react';
+
 import {
 	DEFAULT_GRANULARITY,
 	DEFAULT_LABEL_ALIGN,
@@ -20,7 +22,7 @@ import {
 
 import { AxisProps } from '../../types';
 
-export function Axis({
+const Axis: FC<AxisProps> = ({
 	position,
 	baseline = false,
 	baselineOffset = 0,
@@ -38,6 +40,11 @@ export function Axis({
 	ticks = false,
 	tickMinStep = undefined,
 	title = undefined,
-}: AxisProps) {
+}) => {
 	return null;
-}
+};
+
+// displayName is used to validate the component type in the spec builder
+Axis.displayName = 'Axis';
+
+export { Axis };

@@ -102,20 +102,29 @@ export function buildSpec({
 	spec = [...children]
 		.sort((a, b) => buildOrder.get(a.type) - buildOrder.get(b.type))
 		.reduce((acc: Spec, cur) => {
-			switch (cur.type) {
-				case Area:
+			if (!('displayName' in cur.type)) {
+				console.error('Invalid component type. Component is missing display name.');
+				return acc;
+			}
+			/**
+			 * type.displayName is used because it doesn't get minified, unlike type.name
+			 * If we simply compare cur.type to the component,
+			 * that uses referential equailty which fails in production when the component is imported from a different module like ./alpha
+			 */
+			switch (cur.type.displayName) {
+				case Area.displayName:
 					areaCount++;
 					return addArea(acc, { ...(cur as AreaElement).props, colorScheme, index: areaCount });
-				case Axis:
+				case Axis.displayName:
 					axisCount++;
 					return addAxis(acc, { ...(cur as AxisElement).props, colorScheme, index: axisCount });
-				case Bar:
+				case Bar.displayName:
 					barCount++;
 					return addBar(acc, { ...(cur as BarElement).props, colorScheme, index: barCount });
-				case Donut:
+				case Donut.displayName:
 					donutCount++;
 					return addDonut(acc, { ...(cur as DonutElement).props, colorScheme, index: donutCount });
-				case Legend:
+				case Legend.displayName:
 					legendCount++;
 					return addLegend(acc, {
 						...(cur as LegendElement).props,
@@ -124,17 +133,17 @@ export function buildSpec({
 						hiddenSeries,
 						highlightedSeries,
 					});
-				case Line:
+				case Line.displayName:
 					lineCount++;
 					return addLine(acc, { ...(cur as LineElement).props, colorScheme, index: lineCount });
-				case Scatter:
+				case Scatter.displayName:
 					scatterCount++;
 					return addScatter(acc, { ...(cur as ScatterElement).props, colorScheme, index: scatterCount });
-				case Title:
+				case Title.displayName:
 					// No title count. There can only be one title.
 					return addTitle(acc, { ...(cur as TitleElement).props });
 				default:
-					console.error('invalid type');
+					console.error(`Invalid component type: ${cur.type.displayName} is not a supported <Chart> child`);
 					return acc;
 			}
 		}, spec);
