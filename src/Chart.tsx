@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { Children, FC, forwardRef, isValidElement, ReactElement, useEffect, useMemo, useRef, useState } from 'react';
+import { Children, FC, forwardRef, isValidElement, useEffect, useMemo, useRef, useState } from 'react';
 
 import { EmptyState } from '@components/EmptyState';
 import { LoadingState } from '@components/LoadingState';
@@ -100,17 +100,23 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 		}
 
 		// if one of Chart's children is a BigNumber, the rest must also be BigNumbers.
+		let children = props.children;
 		if (props.children) {
-			const children = Children.toArray(props.children);
-			if (children.some((child) => (isValidElement(child) && child.type === BigNumber))) {
-				if (!children.every((child) => (isValidElement(child) && child.type === BigNumber))) {
+			const childrenArr = Children.toArray(props.children);
+			if (childrenArr.some((child) => (isValidElement(child) && child.type === BigNumber))) {
+				if (!childrenArr.every((child) => (isValidElement(child) && child.type === BigNumber))) {
 					throw new Error(
 						'If passing BigNumber to Chart, all of Chart\'s children must be BigNumber components.'
 					);
+				} else {
+					// in the case that all are BigNumbers, only display the first one.
+					children = [props.children[0]];
+					console.warn('-----------------------CHILDREN ARE: ', children);
 				}
 			}
 		}
 
+		// only show/render the first BigNumber component in the list of children.
 
 		// Chart requires children or a Vega spec to configure what is drawn. If there aren't any children or a Vega spec, throw an error and return a fragment.
 		if (!props.children && !UNSAFE_vegaSpec) {
@@ -165,7 +171,7 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 							chartWidth={chartWidth}
 							UNSAFE_vegaSpec={UNSAFE_vegaSpec}
 						>
-							{props.children}
+							{children}
 						</RscChart>
 					)}
 				</div>

@@ -28,9 +28,13 @@ export function BigNumber({
 	locale,
 	numberFormat,
 	numberType,
-	children,
+	children
 }: BigNumberProps) {
-	const bigNumberValue = data != undefined && data.length > 0 ? data[data.length - 1]['value'] : undefined;
+
+	// TODO: generate display value based on method
+
+	// TODO: replace 'x' with non-hardcoded value
+	const bigNumberValue = data != undefined && data.length > 0 ? data[data.length - 1]['x'] : undefined;
 
 	const numberLocale = getLocale(locale).number;
 	const type = numberType ?? 'linear';

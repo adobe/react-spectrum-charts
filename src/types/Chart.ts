@@ -191,6 +191,7 @@ export interface BigNumberProps {
 	locale?: ChartProps['locale'];
 	numberFormat?: string;
 	numberType?: 'linear' | 'percentage';
+	method?: 'sum' | 'avg' | 'last';
 }
 
 export type Granularity = 'minute' | 'hour' | 'day' | 'week' | 'month' | 'quarter';
@@ -533,7 +534,8 @@ export type Children<T> = ChildElement<T> | ChildElement<T>[];
 export type AxisChildElement = ReferenceLineElement | AxisAnnotationElement;
 export type AxisAnnotationChildElement = ChartTooltipElement | ChartPopoverElement;
 
-export type BigNumberChildElement = typeof Line | typeof Icon
+// TODO: PUT THIS BACK
+export type BigNumberChildElement = typeof Line | typeof Icon | typeof HTMLElement
 
 export type ChartChildElement =
 	| AreaElement

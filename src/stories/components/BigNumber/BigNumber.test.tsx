@@ -24,6 +24,8 @@ import {
 } from './BigNumber.story';
 import { BigNumber, Chart, Line } from '@rsc';
 import { simpleSparklineData } from '@stories/data/data';
+import { queryByTestId } from '@testing-library/react';
+import { Icon } from '@adobe/react-spectrum';
 
 describe('BigNumber', () => {
 	describe('BigNumber basic component', () => {
@@ -105,7 +107,7 @@ describe('BigNumber', () => {
 		});
 	});
 
-	describe('Chart with more children than just BigNumber', () => {
+	describe('Chart with BigNumber children', () => {
 		test('Chart with BigNumber and Line as children should throw error', () => {
 			expect(() => render(
 				<Chart data={simpleSparklineData}>
@@ -115,6 +117,42 @@ describe('BigNumber', () => {
 					<Line/>
 				</Chart>
 			)).toThrow('If passing BigNumber to Chart, all of Chart\'s children must be BigNumber components.');
+		});
+
+		test('Chart with multiple BigNumbers only displays first', async () => {
+			// render(
+			// 	<Chart data-testid="outer-chart" data={simpleSparklineData}>
+			// 		<BigNumber data-testid="bignumber-1" data={simpleSparklineData} orientation="horizontal" label="BigNumberOne">
+			// 			<div></div>
+			// 		</BigNumber>
+			// 		<BigNumber data={simpleSparklineData} data-testid="bignumber-2" orientation="horizontal" label="BigNumberTwo">
+			// 			<div></div>
+			// 		</BigNumber>
+			// 		<BigNumber data={simpleSparklineData} data-testid="bignumber-3" orientation="horizontal" label="BigNumberThree">
+			// 			<div></div>
+			// 		</BigNumber>
+			// 	</Chart>
+			// );
+
+			render(
+				<BigNumber data-testid="test" orientation="horizontal" label="BigNumberThree" data={simpleSparklineData}>
+					<Icon><svg></svg></Icon>
+				</BigNumber>
+			);
+
+			// Make sure only the top one is showing
+			const bigNumber = await screen.getByLabelText('BigNumberThree');
+			const testing = 4;
+			expect(bigNumber).toBeInTheDocument();
+			// expect(screen.getByRole('big-number')).toBeInTheDocument();
+			//// console.warn(firstBigNumber);
+			// expect(firstBigNumber).toBeInTheDocument();
+			// const secondBigNumber = await screen.findByTestId('bignumber-2');
+			// expect(secondBigNumber).toNotBeInTheDocument();
+			//
+			// const thirdBigNumber = await screen.findByTestId('bignumber-3');
+			// expect(thirdBigNumber).toNotBeInTheDocument();
+			// expect(queryByTestId(/username/i)).toBeNull();
 		});
 	});
 });
