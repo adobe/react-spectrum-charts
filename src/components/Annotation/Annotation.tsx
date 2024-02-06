@@ -11,8 +11,15 @@
  */
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
+import { FC } from 'react';
+
 import { AnnotationProps } from '../../types';
 
-export function Annotation({ textKey = 'annotation', style }: AnnotationProps) {
+const Annotation: FC<AnnotationProps> = ({ textKey = 'annotation', style }) => {
 	return null;
-}
+};
+
+// displayName is used to validate the component type in the spec builder
+Annotation.displayName = 'Annotation';
+
+export { Annotation };

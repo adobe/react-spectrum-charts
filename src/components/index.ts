@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Adobe. All rights reserved.
+ * Copyright 2024 Adobe. All rights reserved.
  * This file is licensed to you under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License. You may obtain a copy
  * of the License at http://www.apache.org/licenses/LICENSE-2.0
@@ -10,18 +10,18 @@
  * governing permissions and limitations under the License.
  */
 
-/* eslint-disable @typescript-eslint/no-unused-vars */
-import { FC } from 'react';
-
-import { DEFAULT_LABEL_FONT_WEIGHT } from '@constants';
-
-import { ReferenceLineProps } from '../../types';
-
-const ReferenceLine: FC<ReferenceLineProps> = ({ value, labelFontWeight = DEFAULT_LABEL_FONT_WEIGHT }) => {
-	return null;
-};
-
-// displayName is used to validate the component type in the spec builder
-ReferenceLine.displayName = 'ReferenceLine';
-
-export { ReferenceLine };
+export * from './Annotation';
+export * from './Area';
+export * from './Axis';
+export * from './AxisAnnotation';
+export * from './Bar';
+export * from './ChartPopover';
+export * from './ChartTooltip';
+export * from './EmptyState';
+export * from './Legend';
+export * from './Line';
+export * from './MetricRange';
+export * from './ReferenceLine';
+export * from './Title';
+export * from './Trendline';
+export * from './Scatter';

@@ -21,7 +21,7 @@ export interface EmptyStateProps {
 	text?: string;
 }
 
-export const EmptyState: FC<EmptyStateProps> = ({ height, text }) => {
+const EmptyState: FC<EmptyStateProps> = ({ height, text }) => {
 	return (
 		<Flex direction="column" justifyContent="center" alignItems="center" height={height}>
 			<GraphBarVertical size="XXL" UNSAFE_className="EmptyState-icon" />
@@ -29,3 +29,8 @@ export const EmptyState: FC<EmptyStateProps> = ({ height, text }) => {
 		</Flex>
 	);
 };
+
+// displayName is used to validate the component type in the spec builder
+EmptyState.displayName = 'EmptyState';
+
+export { EmptyState };

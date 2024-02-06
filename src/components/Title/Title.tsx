@@ -11,15 +11,22 @@
  */
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
+import { FC } from 'react';
+
 import { DEFAULT_TITLE_FONT_WEIGHT } from '@constants';
 
 import { TitleProps } from '../../types';
 
-export function Title({
+const Title: FC<TitleProps> = ({
 	text,
 	fontWeight = DEFAULT_TITLE_FONT_WEIGHT,
 	position = 'middle',
 	orient = 'top',
-}: TitleProps) {
+}) => {
 	return null;
-}
+};
+
+// displayName is used to validate the component type in the spec builder
+Title.displayName = 'Title';
+
+export { Title };

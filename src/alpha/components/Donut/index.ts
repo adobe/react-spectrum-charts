@@ -10,33 +10,4 @@
  * governing permissions and limitations under the License.
  */
 
-/* eslint-disable @typescript-eslint/no-unused-vars */
-import { FC } from 'react';
-
-import { LegendProps } from '../../types';
-
-const Legend: FC<LegendProps> = ({
-	color,
-	defaultHiddenSeries,
-	descriptions,
-	hiddenEntries,
-	highlight = false,
-	isToggleable = false,
-	legendLabels,
-	lineType,
-	lineWidth,
-	onClick,
-	onMouseOut,
-	onMouseOver,
-	opacity,
-	position = 'bottom',
-	symbolShape,
-	title,
-}) => {
-	return null;
-};
-
-// displayName is used to validate the component type in the spec builder
-Legend.displayName = 'Legend';
-
-export { Legend };
+export * from './Donut';

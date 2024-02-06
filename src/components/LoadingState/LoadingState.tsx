@@ -17,10 +17,15 @@ interface LoadingStateProps {
 	height?: number;
 }
 
-export const LoadingState: FC<LoadingStateProps> = (props) => {
+const LoadingState: FC<LoadingStateProps> = (props) => {
 	return (
 		<Flex direction="column" justifyContent="center" alignItems="center" {...props}>
 			<ProgressCircle isIndeterminate size="L" />
 		</Flex>
 	);
 };
+
+// displayName is used to validate the component type in the spec builder
+LoadingState.displayName = 'LoadingState';
+
+export { LoadingState };

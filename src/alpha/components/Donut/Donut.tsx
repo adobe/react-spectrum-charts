@@ -13,38 +13,27 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { FC } from 'react';
 
-import {
-	DEFAULT_GRANULARITY,
-	DEFAULT_LABEL_ALIGN,
-	DEFAULT_LABEL_FONT_WEIGHT,
-	DEFAULT_LABEL_ORIENTATION,
-} from '@constants';
+import { DEFAULT_COLOR, DEFAULT_METRIC } from '@constants';
 
-import { AxisProps } from '../../types';
+import { DonutProps } from '../../../types';
 
-const Axis: FC<AxisProps> = ({
-	position,
-	baseline = false,
-	baselineOffset = 0,
-	granularity = DEFAULT_GRANULARITY,
-	grid = false,
-	hideDefaultLabels = false,
-	labelAlign = DEFAULT_LABEL_ALIGN,
-	labelFontWeight = DEFAULT_LABEL_FONT_WEIGHT,
-	labelFormat,
-	labelOrientation = DEFAULT_LABEL_ORIENTATION,
-	labels,
-	numberFormat,
-	range = undefined,
-	subLabels,
-	ticks = false,
-	tickMinStep = undefined,
-	title = undefined,
+// destructure props here and set defaults so that storybook can pick them up
+const Donut: FC<DonutProps> = ({
+	children,
+	color = DEFAULT_COLOR,
+	hasDirectLabels = false,
+	holeRatio = 0.85,
+	isBoolean = false,
+	metric = DEFAULT_METRIC,
+	metricLabel,
+	name,
+	segment,
+	startAngle = 0,
 }) => {
 	return null;
 };
 
 // displayName is used to validate the component type in the spec builder
-Axis.displayName = 'Axis';
+Donut.displayName = 'Donut';
 
-export { Axis };
+export { Donut };
