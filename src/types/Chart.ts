@@ -534,8 +534,7 @@ export type Children<T> = ChildElement<T> | ChildElement<T>[];
 export type AxisChildElement = ReferenceLineElement | AxisAnnotationElement;
 export type AxisAnnotationChildElement = ChartTooltipElement | ChartPopoverElement;
 
-// TODO: PUT THIS BACK
-export type BigNumberChildElement = typeof Line | typeof Icon | typeof HTMLElement
+export type BigNumberChildElement = typeof Line | typeof Icon
 
 export type ChartChildElement =
 	| AreaElement

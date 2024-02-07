@@ -120,39 +120,34 @@ describe('BigNumber', () => {
 		});
 
 		test('Chart with multiple BigNumbers only displays first', async () => {
-			// render(
-			// 	<Chart data-testid="outer-chart" data={simpleSparklineData}>
-			// 		<BigNumber data-testid="bignumber-1" data={simpleSparklineData} orientation="horizontal" label="BigNumberOne">
-			// 			<div></div>
-			// 		</BigNumber>
-			// 		<BigNumber data={simpleSparklineData} data-testid="bignumber-2" orientation="horizontal" label="BigNumberTwo">
-			// 			<div></div>
-			// 		</BigNumber>
-			// 		<BigNumber data={simpleSparklineData} data-testid="bignumber-3" orientation="horizontal" label="BigNumberThree">
-			// 			<div></div>
-			// 		</BigNumber>
-			// 	</Chart>
-			// );
-
 			render(
-				<BigNumber data-testid="test" orientation="horizontal" label="BigNumberThree" data={simpleSparklineData}>
-					<Icon><svg></svg></Icon>
-				</BigNumber>
+				<Chart data={simpleSparklineData}>
+					<BigNumber orientation="horizontal" label="test" data={simpleSparklineData}>
+						<Icon data-testid="first-icon">
+							<svg></svg>
+						</Icon>
+					</BigNumber>
+					<BigNumber orientation="horizontal" label="test" data={simpleSparklineData}>
+						<Icon data-testid="second-icon">
+							<svg></svg>
+						</Icon>
+					</BigNumber>
+					<BigNumber orientation="horizontal" label="test" data={simpleSparklineData}>
+						<Icon data-testid="third-icon">
+							<svg></svg>
+						</Icon>
+					</BigNumber>
+				</Chart>
 			);
 
-			// Make sure only the top one is showing
-			const bigNumber = await screen.getByLabelText('BigNumberThree');
-			const testing = 4;
+			const bigNumber = screen.queryByTestId('first-icon');
 			expect(bigNumber).toBeInTheDocument();
-			// expect(screen.getByRole('big-number')).toBeInTheDocument();
-			//// console.warn(firstBigNumber);
-			// expect(firstBigNumber).toBeInTheDocument();
-			// const secondBigNumber = await screen.findByTestId('bignumber-2');
-			// expect(secondBigNumber).toNotBeInTheDocument();
-			//
-			// const thirdBigNumber = await screen.findByTestId('bignumber-3');
-			// expect(thirdBigNumber).toNotBeInTheDocument();
-			// expect(queryByTestId(/username/i)).toBeNull();
+
+			const secondBigNumber = screen.queryByTestId('second-icon');
+			const thirdBigNumber = screen.queryByTestId('third-icon');
+
+			expect(secondBigNumber).toBe(null);
+			expect(thirdBigNumber).toBe(null);
 		});
 	});
 });

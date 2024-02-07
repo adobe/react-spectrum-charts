@@ -110,8 +110,7 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 					);
 				} else {
 					// in the case that all are BigNumbers, only display the first one.
-					children = [props.children[0]];
-					console.warn('-----------------------CHILDREN ARE: ', children);
+					children = props.children[0];
 				}
 			}
 		}

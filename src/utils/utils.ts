@@ -9,12 +9,12 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { Fragment, ReactFragment } from 'react';
+import { Fragment, isValidElement, ReactFragment } from 'react';
 
 import { MARK_ID, SERIES_ID } from '@constants';
 import { View } from 'vega';
 
-import { Area, Axis, AxisAnnotation, Bar, BigNumber, ChartPopover, ChartTooltip, Legend, Line, Trendline } from '..';
+import { Area, Axis, AxisAnnotation, Bar, ChartPopover, ChartTooltip, Legend, Line, Trendline } from '..';
 import {
 	AxisAnnotationChildElement,
 	AxisChildElement,
@@ -58,13 +58,13 @@ export const sanitizeRscChartChildren = (children: Children<RscElement> | undefi
 		.filter((child): child is ChartChildElement => isChartChildElement(child));
 };
 
-export const sanitizeBigNumberChildren = (children: Children<BigNumberChildElement> | undefined): {lineElements: BigNumberChildElement[], iconElements: typeof BigNumberChildElement[]} => {
+export const sanitizeBigNumberChildren = (children: Children<BigNumberChildElement> | undefined): {lineElements: BigNumberChildElement[], iconElements: BigNumberChildElement[]} => {
 	const sanitizedChildren = toArray(children)
 		.flat()
 		.filter((child): child is BigNumberChildElement => isBigNumberChildElement(child));
 
-	const lineElements = sanitizedChildren.filter(c => c instanceof Line)
-	const iconElements = sanitizedChildren.filter(c => c instanceof Icon)
+	const lineElements = sanitizedChildren.filter(c => isValidElement(c) && c.type === Line);
+	const iconElements = sanitizedChildren.filter(c => isValidElement(c) && c.type === Icon);
 
 	return {lineElements, iconElements}
 };
@@ -101,7 +101,7 @@ const isChartChildElement = (child: ChildElement<ChartChildElement> | undefined)
 };
 
 const isBigNumberChildElement = (child: ChildElement<BigNumberChildElement> | undefined): child is BigNumberChildElement => {
-	return Boolean(child && (child instanceof Line || child instanceof Icon))
+	return Boolean(child && isValidElement(child) && (child.type === Line || child.type === Icon))
 }
 
 const isMarkChildElement = <T extends MarkChildElement = MarkChildElement>(

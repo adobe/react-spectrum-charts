@@ -31,7 +31,7 @@ const BigNumberStory: StoryFn<typeof BigNumber> = (args): ReactElement => {
 	// const chartProps = useChartProps({ data: [{ value: 2555 }], width: 600, height: 600 });
 	return (
 		// <Chart {...chartProps}>
-		<BigNumber {...args} />
+		<BigNumber {...args}/>
 		// </Chart>
 	);
 };
