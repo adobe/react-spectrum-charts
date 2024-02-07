@@ -184,8 +184,9 @@ export interface AxisProps extends BaseProps {
 }
 
 export interface BigNumberProps {
-	children: Children<BigNumberChildElement>
-	data: ChartData[] | null | undefined
+	children?: Children<BigNumberChildElement>,
+	data: ChartData[] | null | undefined,
+	dataKey: string,
 	orientation: Orientation;
 	label: string;
 	locale?: ChartProps['locale'];

@@ -40,6 +40,7 @@ const BasicHorizontal = bindWithProps(BigNumberStory);
 BasicHorizontal.args = {
 	orientation: 'horizontal',
 	data: [{ value: 255 }],
+	dataKey: 'value',
 	label: 'Visitors',
 };
 
@@ -47,6 +48,7 @@ const BasicVertical = bindWithProps(BigNumberStory);
 BasicVertical.args = {
 	orientation: 'vertical',
 	data: [{ value: 255 }],
+	dataKey: 'value',
 	label: 'Visitors',
 };
 
@@ -59,6 +61,7 @@ IconHorizontal.args = {
 	),
 	orientation: 'horizontal',
 	data: [{ value: 255 }],
+	dataKey: 'value',
 	label: 'Visitors',
 };
 
@@ -71,6 +74,7 @@ IconVertical.args = {
 	),
 	orientation: 'vertical',
 	data: [{ value: 255 }],
+	dataKey: 'value',
 	label: 'Visitors',
 };
 
@@ -78,6 +82,7 @@ const CurrencyFormat = bindWithProps(BigNumberStory);
 CurrencyFormat.args = {
 	orientation: 'horizontal',
 	data: [{ value: 255.56 }],
+	dataKey: 'value',
 	label: 'Ad Spend',
 	numberFormat: '$,.2f',
 	locale: 'de-DE',
@@ -87,6 +92,7 @@ const PercentageFormat = bindWithProps(BigNumberStory);
 PercentageFormat.args = {
 	orientation: 'horizontal',
 	data: [{ value: 0.25 }],
+	dataKey: 'value',
 	label: 'Capacity',
 	numberType: 'percentage',
 	locale: 'en-US',
@@ -96,6 +102,7 @@ const CompactFormat = bindWithProps(BigNumberStory);
 CompactFormat.args = {
 	orientation: 'horizontal',
 	data: [{ value: 12345678912 }],
+	dataKey: 'value',
 	label: 'Requests',
 };
 
@@ -103,6 +110,7 @@ const NullData = bindWithProps(BigNumberStory);
 NullData.args = {
 	data: null,
 	orientation: 'horizontal',
+	dataKey: 'value',
 	label: 'Visitors',
 };
 
@@ -110,6 +118,7 @@ const UndefinedData = bindWithProps(BigNumberStory);
 UndefinedData.args = {
 	data: undefined,
 	orientation: 'horizontal',
+	dataKey: 'value',
 	label: 'Visitors',
 };
 

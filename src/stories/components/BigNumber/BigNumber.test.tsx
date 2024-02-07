@@ -111,7 +111,7 @@ describe('BigNumber', () => {
 		test('Chart with BigNumber and Line as children should throw error', () => {
 			expect(() => render(
 				<Chart data={simpleSparklineData}>
-					<BigNumber data={simpleSparklineData} orientation="horizontal" label="Empty">
+					<BigNumber data={simpleSparklineData} dataKey='y' orientation="horizontal" label="Empty">
 						<div></div>
 					</BigNumber>
 					<Line/>
@@ -122,17 +122,17 @@ describe('BigNumber', () => {
 		test('Chart with multiple BigNumbers only displays first', async () => {
 			render(
 				<Chart data={simpleSparklineData}>
-					<BigNumber orientation="horizontal" label="test" data={simpleSparklineData}>
+					<BigNumber dataKey='y' orientation="horizontal" label="test" data={simpleSparklineData}>
 						<Icon data-testid="first-icon">
 							<svg></svg>
 						</Icon>
 					</BigNumber>
-					<BigNumber orientation="horizontal" label="test" data={simpleSparklineData}>
+					<BigNumber dataKey='y' orientation="horizontal" label="test" data={simpleSparklineData}>
 						<Icon data-testid="second-icon">
 							<svg></svg>
 						</Icon>
 					</BigNumber>
-					<BigNumber orientation="horizontal" label="test" data={simpleSparklineData}>
+					<BigNumber dataKey='y' orientation="horizontal" label="test" data={simpleSparklineData}>
 						<Icon data-testid="third-icon">
 							<svg></svg>
 						</Icon>

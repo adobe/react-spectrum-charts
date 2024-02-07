@@ -115,8 +115,6 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 			}
 		}
 
-		// only show/render the first BigNumber component in the list of children.
-
 		// Chart requires children or a Vega spec to configure what is drawn. If there aren't any children or a Vega spec, throw an error and return a fragment.
 		if (!props.children && !UNSAFE_vegaSpec) {
 			throw new Error(

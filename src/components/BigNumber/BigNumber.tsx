@@ -24,17 +24,20 @@ import { getFormattedString } from './bigNumberFormatUtils';
 export function BigNumber({
 	orientation = 'vertical',
 	data = [],
+	dataKey,
 	label,
 	locale,
 	numberFormat,
 	numberType,
-	children
+	children,
 }: BigNumberProps) {
 
 	// TODO: generate display value based on method
 
 	// TODO: replace 'x' with non-hardcoded value
-	const bigNumberValue = data != undefined && data.length > 0 ? data[data.length - 1]['x'] : undefined;
+	const bigNumberValue = data != undefined && data.length > 0 ? data[data.length - 1][dataKey] : undefined;
+
+	console.warn('Big number value is', bigNumberValue);
 
 	const numberLocale = getLocale(locale).number;
 	const type = numberType ?? 'linear';
