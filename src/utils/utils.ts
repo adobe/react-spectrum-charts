@@ -14,7 +14,7 @@ import { Fragment, ReactFragment } from 'react';
 import { MARK_ID, SERIES_ID } from '@constants';
 import { View } from 'vega';
 
-import { Area, Axis, AxisAnnotation, Bar, ChartPopover, ChartTooltip, Legend, Line, Trendline } from '..';
+import { Area, Axis, AxisAnnotation, Bar, BigNumber, ChartPopover, ChartTooltip, Legend, Line, Trendline } from '..';
 import {
 	AxisAnnotationChildElement,
 	AxisChildElement,
@@ -69,8 +69,8 @@ export const sanitizeBigNumberChildren = (children: Children<BigNumberChildEleme
 };
 
 export const chartContainsBigNumber = (children: Children<ChartChildElement> | undefined): ChartChildElement[] => {
-	const sanitizedChildren = sanitizeRscChartChildren(children)
-	return sanitizedChildren.filter(child => child.type == BigNumber)
+	const sanitizedChildren = sanitizeRscChartChildren(children);
+	return sanitizedChildren.filter(child => child.type == BigNumber);
 }
 
 

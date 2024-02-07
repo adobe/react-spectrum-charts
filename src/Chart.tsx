@@ -167,7 +167,7 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 							})}
 						</>
 					) : (
-						<RscChart {...rscChartProps}>{children}</RscChart>
+						<RscChart {...rscChartProps}>{props.children}</RscChart>
 					)}
 				</div>
 			</Provider>

@@ -13,7 +13,6 @@
  */
 import { cloneElement, useRef } from 'react';
 
-import { ErrorState } from '@components/ErrorState';
 import { sanitizeBigNumberChildren } from '@utils';
 import { RscChart } from 'RscChart';
 import { BigNumberProps, LineElement } from 'types';
@@ -22,7 +21,6 @@ import { View as VegaView } from 'vega';
 import { v4 as uuid } from 'uuid';
 
 import { Grid, View } from '@adobe/react-spectrum';
-import GraphBarVerticalStacked from '@spectrum-icons/workflow/GraphBarVerticalStacked';
 
 import './BigNumber.css';
 import { getFormattedString } from './bigNumberFormatUtils';
@@ -95,42 +93,30 @@ export function BigNumber({
 		columns = ['1fr'];
 	}
 
-	if (data === null) {
-		return <ErrorState message="Unable to load. One or more values are null." />;
-	} else if (data === undefined || formattedValue === undefined) {
-		return (
-			<ErrorState
-				icon={<GraphBarVerticalStacked data-testid="vertical-graph" size="L" />}
-				actionText="Please verify that data is defined"
-				message="No data available."
-			/>
-		);
-	} else {
-		return (
-			<div tabIndex={0} className="BigNumber-container">
-				<Grid areas={areas} columns={columns} columnGap="size-100" justifyItems={align} alignItems={'center'}>
-					{lineElements.length > 0 && (
-						<View gridArea="sparkline">
-							<RscChart
-								chartWidth={cWidth}
-								height={cHeight}
-								data={data}
-								locale={locale}
-								{...rscChartRemain}
-							>
-								{lineElements.map((le) => cloneElement(le as LineElement, { isSparkline: true }))}
-							</RscChart>
-						</View>
-					)}
-					<View gridArea="icon">{iconElements}</View>
-					<View gridArea="data" UNSAFE_className="BigNumber-data">
-						{formattedValue}
+	return (
+		<div tabIndex={0} className="BigNumber-container">
+			<Grid areas={areas} columns={columns} columnGap="size-100" justifyItems={align} alignItems={'center'}>
+				{lineElements.length > 0 && (
+					<View gridArea="sparkline">
+						<RscChart
+							chartWidth={cWidth}
+							height={cHeight}
+							data={data}
+							locale={locale}
+							{...rscChartRemain}
+						>
+							{lineElements.map((le) => cloneElement(le as LineElement, { isSparkline: true }))}
+						</RscChart>
 					</View>
-					<View gridArea="label" UNSAFE_className="BigNumber-label">
-						{label}
-					</View>
-				</Grid>
-			</div>
-		);
-	}
+				)}
+				<View gridArea="icon">{iconElements}</View>
+				<View gridArea="data" UNSAFE_className="BigNumber-data">
+					{formattedValue}
+				</View>
+				<View gridArea="label" UNSAFE_className="BigNumber-label">
+					{label}
+				</View>
+			</Grid>
+		</div>
+	);
 }
