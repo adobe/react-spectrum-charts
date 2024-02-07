@@ -14,12 +14,11 @@ import { JSXElementConstructor, MutableRefObject, ReactElement, ReactFragment, R
 import { MARK_ID, SERIES_ID, TRENDLINE_VALUE } from '@constants';
 import { Config, Data, FontWeight, Locale, NumberLocale, Padding, Spec, SymbolShape, TimeLocale, View } from 'vega';
 
-import { Icon } from '@adobe/react-spectrum';
+import { Icon, IconProps } from '@adobe/react-spectrum';
 import { Theme } from '@react-types/provider';
 
 import { Colors, SpectrumColor } from './SpectrumVizColors';
 import { LocaleCode, NumberLocaleCode, TimeLocaleCode } from './locales';
-import { Line } from '@components/Line';
 
 export type ChartElement = ReactElement<ChartProps, JSXElementConstructor<ChartProps>>;
 export type AreaElement = ReactElement<AreaProps, JSXElementConstructor<AreaProps>>;
@@ -29,6 +28,8 @@ export type BarElement = ReactElement<BarProps, JSXElementConstructor<BarProps>>
 export type AnnotationElement = ReactElement<AnnotationProps, JSXElementConstructor<AnnotationProps>>;
 export type LegendElement = ReactElement<LegendProps, JSXElementConstructor<LegendProps>>;
 export type LineElement = ReactElement<LineProps, JSXElementConstructor<LineProps>>;
+export type BigNumberElement = ReactElement<BigNumberProps, JSXElementConstructor<BigNumberProps>>;
+export type IconElement = ReactElement<IconProps, JSXElementConstructor<IconProps>>;
 export type ScatterElement = ReactElement<ScatterProps, JSXElementConstructor<ScatterProps>>;
 export type TitleElement = ReactElement<TitleProps, JSXElementConstructor<TitleProps>>;
 export type ChartTooltipElement = ReactElement<ChartTooltipProps, JSXElementConstructor<ChartTooltipProps>>;
@@ -184,11 +185,11 @@ export interface AxisProps extends BaseProps {
 }
 
 export interface BigNumberProps {
-	children: Children<BigNumberChildElement>
-	data: ChartData[] | null | undefined
 	orientation: Orientation;
 	label: string;
-	locale?: ChartProps['locale'];
+	dataKey: string;
+	children?: Children<BigNumberChildElement> | undefined
+	rscChartProps: RscChartProps
 	numberFormat?: string;
 	numberType?: 'linear' | 'percentage';
 }
@@ -533,12 +534,13 @@ export type Children<T> = ChildElement<T> | ChildElement<T>[];
 export type AxisChildElement = ReferenceLineElement | AxisAnnotationElement;
 export type AxisAnnotationChildElement = ChartTooltipElement | ChartPopoverElement;
 
-export type BigNumberChildElement = typeof Line | typeof Icon
+export type BigNumberChildElement = LineElement | IconElement
 
 export type ChartChildElement =
 	| AreaElement
 	| AxisElement
 	| BarElement
+	| BigNumberElement
 	| LegendElement
 	| LineElement
 	| ScatterElement

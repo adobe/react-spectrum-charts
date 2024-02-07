@@ -18,7 +18,7 @@ import {
 	SERIES_ID,
 	TABLE,
 } from '@constants';
-import { Area, Axis, Bar, Legend, Line, Scatter, Title } from '@rsc';
+import { Area, Axis, Bar, BigNumber, Legend, Line, Scatter, Title } from '@rsc';
 import colorSchemes from '@themes/colorSchemes';
 import { produce } from 'immer';
 import {
@@ -125,6 +125,9 @@ export function buildSpec({
 				case Title:
 					// No title count. There can only be one title.
 					return addTitle(acc, { ...(cur as TitleElement).props });
+				case BigNumber: 
+					// Do nothing and do not throw an error
+					return acc;
 				default:
 					console.error('invalid type');
 					return acc;
