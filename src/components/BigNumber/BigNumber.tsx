@@ -38,10 +38,25 @@ export function BigNumber({
 		chartView: useRef<VegaView>(),
 		chartWidth: 600,
 	},
+	method
 }: BigNumberProps) {
 	const { chartWidth, height, locale, data, ...rscChartRemain } = rscChartProps;
 
-	const bigNumberValue = data && data.length > 0 ? data[data.length - 1][dataKey] : undefined;
+	if (!method) {
+		method = 'last';
+	}
+
+	let bigNumberValue: number | undefined;
+	if (method === 'last') {
+		bigNumberValue = data && data.length > 0 ? data[data.length - 1][dataKey] : undefined;
+	} else if (method === 'sum' || method === 'avg') {
+		bigNumberValue = data && data.length > 0 ? data.reduce((sum, cur) => {
+			return sum + cur[dataKey];
+		}, 0) : undefined;
+		if (method === 'avg') {
+			bigNumberValue = bigNumberValue ? bigNumberValue / data.length : bigNumberValue;
+		}
+	}
 
 	const numberLocale = getLocale(locale).number;
 	const type = numberType ?? 'linear';
@@ -105,7 +120,7 @@ export function BigNumber({
 							locale={locale}
 							{...rscChartRemain}
 						>
-							{lineElements.map((le) => cloneElement(le as LineElement, { isSparkline: true }))}
+							{lineElements.map((le) => cloneElement(le as LineElement, { isSparkline: true, isMethodLast: method === 'last' }))}
 						</RscChart>
 					</View>
 				)}

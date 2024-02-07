@@ -18,8 +18,8 @@ import {
 	CurrencyFormat,
 	IconHorizontal,
 	IconVertical,
-	PercentageFormat,
-	UndefinedData,
+	PercentageFormat, SparklineMethodLast,
+	UndefinedData
 } from './BigNumber.story';
 import { BigNumber, Chart, Line } from '@rsc';
 import { simpleSparklineData } from '@stories/data/data';
@@ -132,6 +132,26 @@ describe('BigNumber', () => {
 
 			expect(secondBigNumber).toBe(null);
 			expect(thirdBigNumber).toBe(null);
+		});
+	});
+
+	describe('Sparkline with different display methods', () => {
+		test('Sparkline with  no method specified (default to last)', async () => {
+			render(<SparklineMethodLast {...SparklineMethodLast.args}/>);
+			const val = await screen.findByText('90');
+			expect(val).toBeInTheDocument();
+		});
+
+		test('Sparkline with sum method specified', async () => {
+			render(<SparklineMethodLast {...SparklineMethodLast.args} method="sum"/>);
+			const val = await screen.findByText('1.05K');
+			expect(val).toBeInTheDocument();
+		});
+
+		test('Sparkline with avg method specified', async () => {
+			render(<SparklineMethodLast {...SparklineMethodLast.args} method="avg"/>);
+			const val = await screen.findByText('50');
+			expect(val).toBeInTheDocument();
 		});
 	});
 });

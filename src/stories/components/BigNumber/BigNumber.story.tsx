@@ -179,6 +179,16 @@ SparklineAndIconVertical.args = {
 	label: 'Visitors',
 };
 
+const SparklineMethodLast = bindWithProps(BigNumberStory);
+SparklineMethodLast.args = {
+	dataKey: 'y',
+	children: [
+		<Line key="line" dimension="x" metric="y" scaleType="linear" />,
+	],
+	orientation: 'vertical',
+	label: 'Visitors'
+}
+
 const CurrencyFormat = bindWithProps(CurrencyFormatStory);
 CurrencyFormat.args = {
 	children: undefined,
@@ -222,6 +232,7 @@ export {
 	SparklineVertical,
 	SparklineAndIconHorizontal,
 	SparklineAndIconVertical,
+	SparklineMethodLast,
 	CurrencyFormat,
 	CompactFormat,
 	PercentageFormat,
