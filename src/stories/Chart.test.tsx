@@ -56,7 +56,7 @@ describe('Chart', () => {
 			expect(chart).toBeInTheDocument();
 
 			expect(screen.getByText('nov.')).toBeInTheDocument();
-			expect(screen.getByText('2 000,00')).toBeInTheDocument();
+			expect(screen.getByText('5 000,00')).toBeInTheDocument();
 		});
 		test('Locale sets the time and number format correctly for de-DE', async () => {
 			render(<Locale {...Locale.args} locale="de-DE" />);
@@ -64,7 +64,7 @@ describe('Chart', () => {
 			expect(chart).toBeInTheDocument();
 
 			expect(screen.getByText('Nov')).toBeInTheDocument();
-			expect(screen.getByText('2.000,00')).toBeInTheDocument();
+			expect(screen.getByText('5.000,00')).toBeInTheDocument();
 		});
 		test('Locale sets the time and number format correctly for en-US', async () => {
 			render(<Locale {...Locale.args} locale="en-US" />);
@@ -72,7 +72,7 @@ describe('Chart', () => {
 			expect(chart).toBeInTheDocument();
 
 			expect(screen.getByText('Nov')).toBeInTheDocument();
-			expect(screen.getByText('2,000.00')).toBeInTheDocument();
+			expect(screen.getByText('5,000.00')).toBeInTheDocument();
 		});
 	});
 
