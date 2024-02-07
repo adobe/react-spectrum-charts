@@ -1,3 +1,5 @@
+/* eslint-disable react-hooks/rules-of-hooks */
+
 /*
  * Copyright 2023 Adobe. All rights reserved.
  * This file is licensed to you under the Apache License, Version 2.0 (the "License");
@@ -9,9 +11,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
-/* eslint-disable @typescript-eslint/no-unused-vars */
-import React, { ReactElement } from 'react';
+import { ReactElement } from 'react';
 
 import useChartProps from '@hooks/useChartProps';
 import { BigNumber, Chart, Line } from '@rsc';
@@ -22,114 +22,163 @@ import { Icon } from '@adobe/react-spectrum';
 import Amusementpark from '@spectrum-icons/workflow/Amusementpark';
 import Calendar from '@spectrum-icons/workflow/Calendar';
 
+import { simpleSparklineData as data } from '../../data/data';
+
 export default {
 	title: 'RSC/BigNumber',
 	component: BigNumber,
 };
 
 const BigNumberStory: StoryFn<typeof BigNumber> = (args): ReactElement => {
-	// const chartProps = useChartProps({ data: [{ value: 2555 }], width: 600, height: 600 });
+	const chartProps = useChartProps({
+		data: data,
+		width: 600,
+		height: 600,
+	});
 	return (
-		// <Chart {...chartProps}>
-		<BigNumber {...args}/>
-		// </Chart>
+		<>
+			<Chart {...chartProps}>
+				<BigNumber {...args}/>
+			</Chart>
+		</>
 	);
 };
 
 const BasicHorizontal = bindWithProps(BigNumberStory);
 BasicHorizontal.args = {
+	children: undefined,
+	dataKey: 'x',
 	orientation: 'horizontal',
-	data: [{ value: 255 }],
-	dataKey: 'value',
 	label: 'Visitors',
 };
 
 const BasicVertical = bindWithProps(BigNumberStory);
 BasicVertical.args = {
+	children: undefined,
+	dataKey: 'x',
 	orientation: 'vertical',
-	data: [{ value: 255 }],
-	dataKey: 'value',
 	label: 'Visitors',
 };
 
 const IconHorizontal = bindWithProps(BigNumberStory);
 IconHorizontal.args = {
+	dataKey: 'x',
 	children: (
 		<Icon key={'i'} data-testid="icon-calendar">
 			<Calendar size="L" />
 		</Icon>
 	),
 	orientation: 'horizontal',
-	data: [{ value: 255 }],
-	dataKey: 'value',
 	label: 'Visitors',
 };
 
 const IconVertical = bindWithProps(BigNumberStory);
 IconVertical.args = {
+	dataKey: 'x',
 	children: (
 		<Icon data-testid="icon-amusementpark">
 			<Amusementpark size="L" />
 		</Icon>
 	),
 	orientation: 'vertical',
-	data: [{ value: 255 }],
+	label: 'Visitors',
+};
+
+const SparklineHorizontal = bindWithProps(BigNumberStory);
+SparklineHorizontal.args = {
+	dataKey: 'x',
+	children: <Line dimension="x" metric="y" scaleType="linear" />,
+	orientation: 'horizontal',
+	label: 'Visitors',
+};
+
+const SparklineVertical = bindWithProps(BigNumberStory);
+SparklineVertical.args = {
+	dataKey: 'x',
+	children: <Line dimension="x" metric="y" scaleType="linear" />,
+	orientation: 'vertical',
+	label: 'Visitors',
+};
+
+const SparklineAndIconHorizontal = bindWithProps(BigNumberStory);
+SparklineAndIconHorizontal.args = {
+	dataKey: 'x',
+	children: [
+		<Icon key="icon" data-testid="icon-amusementpark">
+			<Amusementpark size="L" />
+		</Icon>,
+		<Line key="line" dimension="x" metric="y" scaleType="linear" />,
+	],
+	orientation: 'horizontal',
+	label: 'Visitors',
+};
+
+const SparklineAndIconVertical = bindWithProps(BigNumberStory);
+SparklineAndIconVertical.args = {
+	dataKey: 'x',
+	children: [
+		<Line key="line" dimension="x" metric="y" scaleType="linear" />,
+		<Icon key="icon" data-testid="icon-amusementpark">
+			<Amusementpark size="L" />
+		</Icon>,
+	],
+	orientation: 'vertical',
 	dataKey: 'value',
 	label: 'Visitors',
 };
 
 const CurrencyFormat = bindWithProps(BigNumberStory);
 CurrencyFormat.args = {
+	children: undefined,
+	dataKey: 'x',
 	orientation: 'horizontal',
-	data: [{ value: 255.56 }],
-	dataKey: 'value',
 	label: 'Ad Spend',
 	numberFormat: '$,.2f',
-	locale: 'de-DE',
 };
 
 const PercentageFormat = bindWithProps(BigNumberStory);
 PercentageFormat.args = {
+	children: undefined,
+	dataKey: 'x',
 	orientation: 'horizontal',
-	data: [{ value: 0.25 }],
-	dataKey: 'value',
 	label: 'Capacity',
 	numberType: 'percentage',
-	locale: 'en-US',
 };
 
 const CompactFormat = bindWithProps(BigNumberStory);
 CompactFormat.args = {
+	children: undefined,
+	dataKey: 'x',
 	orientation: 'horizontal',
-	data: [{ value: 12345678912 }],
-	dataKey: 'value',
 	label: 'Requests',
 };
 
-const NullData = bindWithProps(BigNumberStory);
-NullData.args = {
-	data: null,
-	orientation: 'horizontal',
-	dataKey: 'value',
-	label: 'Visitors',
-};
+// const NullData = bindWithProps(BigNumberStory);
+// NullData.args = {
+// 	data: null,
+// 	orientation: 'horizontal',
+// 	label: 'Visitors',
+// };
 
-const UndefinedData = bindWithProps(BigNumberStory);
-UndefinedData.args = {
-	data: undefined,
-	orientation: 'horizontal',
-	dataKey: 'value',
-	label: 'Visitors',
-};
+// const UndefinedData = bindWithProps(BigNumberStory);
+// UndefinedData.args = {
+// 	data: undefined,
+// 	orientation: 'horizontal',
+// 	label: 'Visitors',
+// };
 
 export {
 	BasicHorizontal,
 	BasicVertical,
+	IconHorizontal,
+	IconVertical,
+	SparklineHorizontal,
+	SparklineVertical,
+	SparklineAndIconHorizontal,
+	SparklineAndIconVertical,
 	CurrencyFormat,
 	CompactFormat,
 	PercentageFormat,
-	IconHorizontal,
-	IconVertical,
-	NullData,
-	UndefinedData
+	// NullData,
+	// UndefinedData
 };

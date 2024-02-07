@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { Children, FC, forwardRef, isValidElement, useEffect, useMemo, useRef, useState } from 'react';
+import { FC, cloneElement, forwardRef, useEffect, useMemo, useRef, useState } from 'react';
 
 import { EmptyState } from '@components/EmptyState';
 import { LoadingState } from '@components/LoadingState';
@@ -18,6 +18,7 @@ import useChartImperativeHandle from '@hooks/useChartImperativeHandle';
 import useChartWidth from '@hooks/useChartWidth';
 import { useResizeObserver } from '@hooks/useResizeObserver';
 import { getColorValue } from '@specBuilder/specUtils';
+import { chartContainsBigNumber, toArray } from '@utils';
 import { RscChart } from 'RscChart';
 import { v4 as uuid } from 'uuid';
 import { View } from 'vega';
@@ -26,9 +27,7 @@ import { Provider, defaultTheme } from '@adobe/react-spectrum';
 import { Theme } from '@react-types/provider';
 
 import './Chart.css';
-import { ChartData, ChartHandle, ChartProps } from './types';
-import { Line } from '@components/Line';
-import { BigNumber } from '@components/BigNumber';
+import { BigNumberElement, ChartData, ChartHandle, ChartProps, RscChartProps } from './types';
 
 interface PlaceholderContentProps {
 	data: ChartData[];
@@ -86,6 +85,9 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 		const chartWidth = useChartWidth(containerWidth, maxWidth, minWidth, width); // calculates the width the vega chart should be
 
 		const showPlaceholderContent = useMemo(() => Boolean(loading ?? !data.length), [loading, data]);
+
+		const bigNumberChildren = chartContainsBigNumber(props.children);
+
 		useEffect(() => {
 			// if placeholder content is displayed, clear out the chartview so it can't be downloaded or copied to clipboard
 			if (showPlaceholderContent) {
@@ -99,28 +101,44 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 			);
 		}
 
-		// if one of Chart's children is a BigNumber, the rest must also be BigNumbers.
-		let children = props.children;
-		if (props.children) {
-			const childrenArr = Children.toArray(props.children);
-			if (childrenArr.some((child) => (isValidElement(child) && child.type === BigNumber))) {
-				if (!childrenArr.every((child) => (isValidElement(child) && child.type === BigNumber))) {
-					throw new Error(
-						'If passing BigNumber to Chart, all of Chart\'s children must be BigNumber components.'
-					);
-				} else {
-					// in the case that all are BigNumbers, only display the first one.
-					children = props.children[0];
-				}
-			}
-		}
-
 		// Chart requires children or a Vega spec to configure what is drawn. If there aren't any children or a Vega spec, throw an error and return a fragment.
 		if (!props.children && !UNSAFE_vegaSpec) {
 			throw new Error(
 				'No children in the <Chart/> component. Chart is a collection components and requires children to draw correctly.'
 			);
 		}
+
+		if (bigNumberChildren.length > 0 && toArray(props.children).length != bigNumberChildren.length) {
+			throw new Error(
+				'If passing BigNumber to Chart only the BigNumber will be displayed. All other elements will be ignored'
+			);
+		}
+
+		const rscChartProps: RscChartProps = {
+			chartView: chartView,
+			chartId: chartId,
+			data: data,
+			backgroundColor: backgroundColor,
+			colors: colors,
+			colorScheme: colorScheme,
+			config: config,
+			description: description,
+			debug: debug,
+			height: height,
+			hiddenSeries: hiddenSeries,
+			highlightedSeries: highlightedSeries,
+			lineTypes: lineTypes,
+			lineWidths: lineWidths,
+			locale: locale,
+			opacities: opacities,
+			padding: padding,
+			renderer: renderer,
+			symbolShapes: symbolShapes,
+			symbolSizes: symbolSizes,
+			title: title,
+			chartWidth: chartWidth,
+			UNSAFE_vegaSpec: UNSAFE_vegaSpec,
+		};
 
 		return (
 			<Provider
@@ -142,34 +160,14 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 							height={height}
 							emptyStateText={emptyStateText}
 						/>
+					) : bigNumberChildren.length > 0 ? (
+						<>
+							{cloneElement(bigNumberChildren[0] as BigNumberElement, {
+								rscChartProps: rscChartProps,
+							})}
+						</>
 					) : (
-						<RscChart
-							chartView={chartView}
-							chartId={chartId}
-							data={data}
-							backgroundColor={backgroundColor}
-							colors={colors}
-							colorScheme={colorScheme}
-							config={config}
-							description={description}
-							debug={debug}
-							height={height}
-							hiddenSeries={hiddenSeries}
-							highlightedSeries={highlightedSeries}
-							lineTypes={lineTypes}
-							lineWidths={lineWidths}
-							locale={locale}
-							opacities={opacities}
-							padding={padding}
-							renderer={renderer}
-							symbolShapes={symbolShapes}
-							symbolSizes={symbolSizes}
-							title={title}
-							chartWidth={chartWidth}
-							UNSAFE_vegaSpec={UNSAFE_vegaSpec}
-						>
-							{children}
-						</RscChart>
+						<RscChart {...rscChartProps}>{children}</RscChart>
 					)}
 				</div>
 			</Provider>

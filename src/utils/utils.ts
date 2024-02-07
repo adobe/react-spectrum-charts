@@ -26,7 +26,6 @@ import {
 	Children,
 	Datum,
 	LegendElement,
-	LineElement,
 	MarkChildElement,
 	PopoverHandler,
 	RscElement,
@@ -63,11 +62,17 @@ export const sanitizeBigNumberChildren = (children: Children<BigNumberChildEleme
 		.flat()
 		.filter((child): child is BigNumberChildElement => isBigNumberChildElement(child));
 
-	const lineElements = sanitizedChildren.filter(c => isValidElement(c) && c.type === Line);
-	const iconElements = sanitizedChildren.filter(c => isValidElement(c) && c.type === Icon);
+	const lineElements = sanitizedChildren.filter(c => c.type == Line)
+	const iconElements = sanitizedChildren.filter(c => c.type == Icon)
 
 	return {lineElements, iconElements}
 };
+
+export const chartContainsBigNumber = (children: Children<ChartChildElement> | undefined): ChartChildElement[] => {
+	const sanitizedChildren = sanitizeRscChartChildren(children)
+	return sanitizedChildren.filter(child => child.type == BigNumber)
+}
+
 
 export const sanitizeMarkChildren = (children: Children<MarkChildElement> | undefined): MarkChildElement[] => {
 	return toArray(children)
@@ -101,7 +106,7 @@ const isChartChildElement = (child: ChildElement<ChartChildElement> | undefined)
 };
 
 const isBigNumberChildElement = (child: ChildElement<BigNumberChildElement> | undefined): child is BigNumberChildElement => {
-	return Boolean(child && isValidElement(child) && (child.type === Line || child.type === Icon))
+	return isRscComponent(child)
 }
 
 const isMarkChildElement = <T extends MarkChildElement = MarkChildElement>(
