@@ -16,8 +16,6 @@ import useChartProps from '@hooks/useChartProps';
 import { Axis, Bar, Chart, ChartPopover, ChartTooltip, Legend, Line } from '@rsc';
 import {
 	simpleSparklineData,
-	browserData,
-	simpleLineData,
 	workspaceTrendsData,
 	workspaceTrendsDataWithVisiblePoints
 } from '@stories/data/data';
