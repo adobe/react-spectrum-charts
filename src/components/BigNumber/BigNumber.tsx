@@ -11,27 +11,35 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { cloneElement, useRef } from 'react';
+
 import { ErrorState } from '@components/ErrorState';
 import { sanitizeBigNumberChildren } from '@utils';
 import { RscChart } from 'RscChart';
 import { BigNumberProps, LineElement } from 'types';
 import { getLocale } from 'utils/locale';
+import { View as VegaView } from 'vega';
+import { v4 as uuid } from 'uuid';
 
 import { Grid, View } from '@adobe/react-spectrum';
 import GraphBarVerticalStacked from '@spectrum-icons/workflow/GraphBarVerticalStacked';
 
 import './BigNumber.css';
 import { getFormattedString } from './bigNumberFormatUtils';
-import { cloneElement } from 'react';
 
 export function BigNumber({
-	orientation = 'vertical',
 	dataKey,
 	label,
 	numberFormat,
 	numberType,
 	children,
-	rscChartProps,
+	orientation = 'vertical',
+	rscChartProps = {
+		data: [],
+		chartId: useRef<string>(`rsc-${uuid()}`),
+		chartView: useRef<VegaView>(),
+		chartWidth: 600,
+	},
 }: BigNumberProps) {
 	const { chartWidth, height, locale, data, ...rscChartRemain } = rscChartProps;
 
@@ -110,7 +118,7 @@ export function BigNumber({
 								locale={locale}
 								{...rscChartRemain}
 							>
-								{lineElements.map(le => cloneElement((le as LineElement), { isSparkline: true }))}
+								{lineElements.map((le) => cloneElement(le as LineElement, { isSparkline: true }))}
 							</RscChart>
 						</View>
 					)}

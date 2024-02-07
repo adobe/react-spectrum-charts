@@ -188,8 +188,8 @@ export interface BigNumberProps {
 	orientation: Orientation;
 	label: string;
 	dataKey: string;
-	children?: Children<BigNumberChildElement> | undefined
-	rscChartProps: RscChartProps
+	children: Children<BigNumberChildElement> | undefined
+	rscChartProps?: RscChartProps
 	numberFormat?: string;
 	numberType?: 'linear' | 'percentage';
 }

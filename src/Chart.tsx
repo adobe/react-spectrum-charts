@@ -164,8 +164,6 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 						<>
 							{cloneElement(bigNumberChildren[0] as BigNumberElement, {
 								rscChartProps: rscChartProps,
-								data: data,
-								locale: locale,
 							})}
 						</>
 					) : (
