@@ -157,10 +157,7 @@ export const addHighlight = produce<Spec, [SanitizedSpecProps]>((spec, { highlig
 
 export const removeUnusedScales = produce<Spec>((spec) => {
 	spec.scales = spec.scales?.filter((scale) => {
-		if ('domain' in scale && scale.domain && 'fields' in scale.domain && scale.domain.fields.length === 0) {
-			return false;
-		}
-		return true;
+		return !('domain' in scale && scale.domain && 'fields' in scale.domain && scale.domain.fields.length === 0);
 	});
 });
 
