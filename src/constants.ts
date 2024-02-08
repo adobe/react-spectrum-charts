@@ -33,6 +33,7 @@ export const DEFAULT_SECONDARY_COLOR = 'subSeries';
 export const DEFAULT_SYMBOL_SIZE = 100;
 export const DEFAULT_SYMBOL_STROKE_WIDTH = 2;
 export const DEFAULT_TIME_DIMENSION = 'datetime';
+export const DEFAULT_TRANSFORMED_TIME_DIMENSION = `${DEFAULT_TIME_DIMENSION}0`;
 export const DEFAULT_TITLE_FONT_WEIGHT = 'bold';
 
 // vega data table name

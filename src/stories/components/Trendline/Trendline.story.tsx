@@ -29,6 +29,7 @@ export default {
 				'exponential',
 				'linear',
 				'logarithmic',
+				'median',
 				'movingAverage-2',
 				'movingAverage-3',
 				'movingAverage-4',

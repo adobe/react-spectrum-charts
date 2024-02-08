@@ -369,7 +369,7 @@ export type SymbolSize = 'XS' | 'S' | 'M' | 'L' | 'XL' | number;
 
 export type SymbolSizeFacet = FacetRef<SymbolSize>;
 
-export type ScaleType = 'linear' | 'time' | 'point';
+export type ScaleType = 'linear' | 'point' | 'time';
 export type LegendDescription = { seriesName: string; description: string; title?: string };
 
 export type LegendLabel = { seriesName: string | number; label: string; maxLength?: number };
@@ -476,15 +476,21 @@ export interface TrendlineProps {
 	opacity?: number;
 }
 
-export type TrendlineMethod =
-	| 'average'
+/** trendline methods that use a joinaggregate transform */
+export type AggregateMethod = 'average' | 'median';
+/** trendline methods that use a regression transform */
+export type RegressionMethod =
 	| 'exponential'
 	| 'linear'
 	| 'logarithmic'
-	| `movingAverage-${number}`
 	| `polynomial-${number}`
 	| 'power'
 	| 'quadratic';
+/** trendline methods that use a window transform */
+export type WindowMethod = `movingAverage-${number}`;
+
+/** avaliable methods for generating a trendline */
+export type TrendlineMethod = AggregateMethod | RegressionMethod | WindowMethod;
 
 export type AxisAnnotationFormat = 'span' | 'summary';
 

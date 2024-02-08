@@ -11,13 +11,14 @@
  */
 import { DISCRETE_PADDING, FILTERED_TABLE, LINEAR_PADDING, PADDING_RATIO, TABLE } from '@constants';
 import { getBarPadding } from '@specBuilder/bar/barUtils';
+import { getDimensionField } from '@specBuilder/specUtils';
 import { toCamelCase } from '@utils';
 import { produce } from 'immer';
 import { DualFacet, FacetRef, FacetType, Orientation } from 'types';
 import { Scale, ScaleData, ScaleMultiFieldsRef, SignalRef } from 'vega';
 
-type ScaleType = 'linear' | 'point' | 'band' | 'time' | 'ordinal';
 type AxisType = 'x' | 'y';
+type SupportedScaleType = 'linear' | 'point' | 'band' | 'time' | 'ordinal';
 
 /**
  * Gets the first index for the given scale type and axis.
@@ -26,7 +27,7 @@ type AxisType = 'x' | 'y';
  *
  * NOTE: this should only be called from a 'produce' function since it mutates the scales
  */
-export const getScaleIndexByType = (scales: Scale[], type: ScaleType, axis: AxisType): number => {
+export const getScaleIndexByType = (scales: Scale[], type: SupportedScaleType, axis: AxisType): number => {
 	const name = toCamelCase(`${axis} ${type}`);
 	let index = scales.findIndex((scale) => scale.name === name);
 	if (index === -1) {
@@ -43,7 +44,7 @@ export const getScaleIndexByType = (scales: Scale[], type: ScaleType, axis: Axis
  *
  * NOTE: this should only be called from a 'produce' function since it mutates the scales
  */
-export const getScaleIndexByName = (scales: Scale[], name: string, type?: ScaleType): number => {
+export const getScaleIndexByName = (scales: Scale[], name: string, type?: SupportedScaleType): number => {
 	let index = scales.findIndex((scale) => scale.name === name);
 	if (index === -1) {
 		index = scales.length;
@@ -72,10 +73,10 @@ export const addDomainFields = produce<Scale, [string[]]>((scale, values) => {
 
 export const addContinuousDimensionScale = (
 	scales: Scale[],
-	{ scaleType, dimension, padding }: { scaleType: Exclude<ScaleType, 'ordinal'>; dimension: string; padding?: number }
+	{ scaleType, dimension, padding }: { scaleType: SupportedScaleType; dimension: string; padding?: number }
 ) => {
 	const index = getScaleIndexByType(scales, scaleType, 'x');
-	const fields = scaleType === 'time' ? ['datetime0'] : [dimension];
+	const fields = [getDimensionField(dimension, scaleType)];
 	scales[index] = addDomainFields(scales[index], fields);
 	if (padding !== undefined) {
 		scales[index] = overridePadding(scales[index], padding);
@@ -136,7 +137,7 @@ export const addFieldToFacetScaleDomain = (
 	}
 };
 
-export const generateScale = (type: ScaleType, axis: AxisType, props?: Partial<Scale>): Scale => {
+export const generateScale = (type: SupportedScaleType, axis: AxisType, props?: Partial<Scale>): Scale => {
 	return {
 		...getDefaultScale(type, axis),
 		...props,
@@ -144,7 +145,7 @@ export const generateScale = (type: ScaleType, axis: AxisType, props?: Partial<S
 };
 
 export const getDefaultScale = (
-	scaleType: ScaleType,
+	scaleType: SupportedScaleType,
 	axis: AxisType,
 	chartOrientation: Orientation = 'vertical'
 ): Scale => {
@@ -179,7 +180,7 @@ export const getDefaultScale = (
  * Discrete scales use a relative value where padding is step size * padding [0-1].
  * Continuous scales use a pixel value for padding.
  */
-export const getPadding = (type: ScaleType) => {
+export const getPadding = (type: SupportedScaleType | 'band') => {
 	switch (type) {
 		case 'band':
 			const { paddingInner, paddingOuter } = getBarPadding(PADDING_RATIO);

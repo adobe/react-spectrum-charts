@@ -205,7 +205,6 @@ describe('Time comparison stories', () => {
 
 			// last period May
 			for (let i = 12; i <= 15; i++) {
-				console.log({ i });
 				testBarOpacity(bars[i], '1');
 				testBarStroke(bars[i], '', '1.5');
 			}
