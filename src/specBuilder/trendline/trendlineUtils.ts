@@ -538,7 +538,13 @@ const getTrendlineStatisticalTransforms = (
 	return [];
 };
 
-export const getSortTransform = (dimension: string): CollectTransform => ({
+/**
+ * gets the sort transform for the provided dimension
+ * this is used to sort aggregate and window methods
+ * @param dimension
+ * @returns CollectTransform
+ */
+const getSortTransform = (dimension: string): CollectTransform => ({
 	type: 'collect',
 	sort: {
 		field: dimension,
