@@ -11,12 +11,12 @@
  */
 import { DISCRETE_PADDING, FILTERED_TABLE, LINEAR_PADDING, PADDING_RATIO, TABLE } from '@constants';
 import { getBarPadding } from '@specBuilder/bar/barUtils';
+import { getDimensionField } from '@specBuilder/specUtils';
 import { toCamelCase } from '@utils';
 import { produce } from 'immer';
-import { DualFacet, FacetRef, FacetType, Orientation } from 'types';
+import { DualFacet, FacetRef, FacetType, Orientation, ScaleType } from 'types';
 import { Scale, ScaleData, ScaleMultiFieldsRef, SignalRef } from 'vega';
 
-type ScaleType = 'linear' | 'point' | 'band' | 'time' | 'ordinal';
 type AxisType = 'x' | 'y';
 
 /**
@@ -72,10 +72,10 @@ export const addDomainFields = produce<Scale, [string[]]>((scale, values) => {
 
 export const addContinuousDimensionScale = (
 	scales: Scale[],
-	{ scaleType, dimension, padding }: { scaleType: Exclude<ScaleType, 'ordinal'>; dimension: string; padding?: number }
+	{ scaleType, dimension, padding }: { scaleType: ScaleType; dimension: string; padding?: number }
 ) => {
 	const index = getScaleIndexByType(scales, scaleType, 'x');
-	const fields = scaleType === 'time' ? ['datetime0'] : [dimension];
+	const fields = [getDimensionField(dimension, scaleType)];
 	scales[index] = addDomainFields(scales[index], fields);
 	if (padding !== undefined) {
 		scales[index] = overridePadding(scales[index], padding);
@@ -179,7 +179,7 @@ export const getDefaultScale = (
  * Discrete scales use a relative value where padding is step size * padding [0-1].
  * Continuous scales use a pixel value for padding.
  */
-export const getPadding = (type: ScaleType) => {
+export const getPadding = (type: ScaleType | 'band') => {
 	switch (type) {
 		case 'band':
 			const { paddingInner, paddingOuter } = getBarPadding(PADDING_RATIO);

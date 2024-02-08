@@ -21,13 +21,14 @@ import {
 	LineTypeFacet,
 	LineWidth,
 	OpacityFacet,
+	ScaleType,
 	SpectrumColor,
 	SymbolSize,
 	SymbolSizeFacet,
 } from 'types';
 import { Data, Scale, Spec, ValuesData } from 'vega';
 
-import { FILTERED_TABLE, MARK_ID, TABLE } from '../constants';
+import { DEFAULT_TRANSFORMED_TIME_DIMENSION, FILTERED_TABLE, MARK_ID, TABLE } from '../constants';
 import { SanitizedSpecProps } from '../types';
 
 /**
@@ -271,4 +272,14 @@ export const mergeValuesIntoData = (data, values) => {
 		}
 		return dataset;
 	});
+};
+
+/**
+ * returns the correct data field to use as the dimension
+ * @param dimension
+ * @param scaleType
+ * @returns string
+ */
+export const getDimensionField = (dimension: string, scaleType?: ScaleType) => {
+	return scaleType === 'time' ? DEFAULT_TRANSFORMED_TIME_DIMENSION : dimension;
 };

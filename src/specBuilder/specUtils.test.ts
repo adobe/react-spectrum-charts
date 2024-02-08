@@ -9,12 +9,19 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { DEFAULT_COLOR, DEFAULT_SECONDARY_COLOR, TABLE } from '@constants';
+import {
+	DEFAULT_CATEGORICAL_DIMENSION,
+	DEFAULT_COLOR,
+	DEFAULT_SECONDARY_COLOR,
+	DEFAULT_TRANSFORMED_TIME_DIMENSION,
+	TABLE,
+} from '@constants';
 import { ROUNDED_SQUARE_PATH } from 'svgPaths';
 import { BandScale, OrdinalScale } from 'vega';
 
 import {
 	getColorValue,
+	getDimensionField,
 	getFacetsFromProps,
 	getFacetsFromScales,
 	getLineWidthPixelsFromLineWidth,
@@ -173,6 +180,17 @@ describe('specUtils', () => {
 			expect(getVegaSymbolSizeFromRscSymbolSize('M')).toEqual(100);
 			expect(getVegaSymbolSizeFromRscSymbolSize('L')).toEqual(144);
 			expect(getVegaSymbolSizeFromRscSymbolSize('XL')).toEqual(256);
+		});
+	});
+
+	describe('getDimensionField()', () => {
+		test('should return the correct dimension', () => {
+			expect(getDimensionField(DEFAULT_CATEGORICAL_DIMENSION)).toEqual(DEFAULT_CATEGORICAL_DIMENSION);
+			expect(getDimensionField(DEFAULT_CATEGORICAL_DIMENSION, 'linear')).toEqual(DEFAULT_CATEGORICAL_DIMENSION);
+			expect(getDimensionField(DEFAULT_CATEGORICAL_DIMENSION, 'point')).toEqual(DEFAULT_CATEGORICAL_DIMENSION);
+			expect(getDimensionField(DEFAULT_CATEGORICAL_DIMENSION, 'time')).toEqual(
+				DEFAULT_TRANSFORMED_TIME_DIMENSION
+			);
 		});
 	});
 });

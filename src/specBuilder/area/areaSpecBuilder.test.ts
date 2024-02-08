@@ -18,6 +18,7 @@ import {
 	DEFAULT_COLOR_SCHEME,
 	DEFAULT_METRIC,
 	DEFAULT_TIME_DIMENSION,
+	DEFAULT_TRANSFORMED_TIME_DIMENSION,
 	FILTERED_TABLE,
 	MARK_ID,
 	SERIES_ID,
@@ -52,8 +53,8 @@ const defaultSpec = initializeSpec({
 			transform: [
 				{ as: MARK_ID, type: 'identifier' },
 				{
-					as: ['datetime0', 'datetime1'],
-					field: 'datetime',
+					as: [DEFAULT_TRANSFORMED_TIME_DIMENSION, `${DEFAULT_TIME_DIMENSION}1`],
+					field: DEFAULT_TIME_DIMENSION,
 					type: 'timeunit',
 					units: ['year', 'month', 'date', 'hours', 'minutes'],
 				},
@@ -67,7 +68,7 @@ const defaultSpec = initializeSpec({
 				{
 					as: ['value0', 'value1'],
 					field: DEFAULT_METRIC,
-					groupby: ['datetime'],
+					groupby: [DEFAULT_TIME_DIMENSION],
 					sort: undefined,
 					type: 'stack',
 				},
@@ -92,7 +93,7 @@ const defaultSpec = initializeSpec({
 							tooltip: undefined,
 						},
 						update: {
-							x: { field: 'datetime0', scale: 'xTime' },
+							x: { field: DEFAULT_TRANSFORMED_TIME_DIMENSION, scale: 'xTime' },
 							cursor: undefined,
 							fillOpacity: [{ value: 0.8 }],
 						},
@@ -114,7 +115,7 @@ const defaultSpec = initializeSpec({
 			type: 'ordinal',
 		},
 		{
-			domain: { data: FILTERED_TABLE, fields: ['datetime0'] },
+			domain: { data: FILTERED_TABLE, fields: [DEFAULT_TRANSFORMED_TIME_DIMENSION] },
 			name: 'xTime',
 			padding: 32,
 			range: 'width',
@@ -133,7 +134,7 @@ const defaultSpec = initializeSpec({
 });
 
 const defaultLinearScale = {
-	domain: { data: FILTERED_TABLE, fields: ['datetime'] },
+	domain: { data: FILTERED_TABLE, fields: [DEFAULT_TIME_DIMENSION] },
 	name: 'xLinear',
 	padding: 32,
 	range: 'width',
@@ -141,7 +142,7 @@ const defaultLinearScale = {
 };
 
 const defaultPointScale = {
-	domain: { data: FILTERED_TABLE, fields: ['datetime'] },
+	domain: { data: FILTERED_TABLE, fields: [DEFAULT_TIME_DIMENSION] },
 	name: 'xPoint',
 	paddingOuter: 0.5,
 	range: 'width',
@@ -250,7 +251,7 @@ describe('areaSpecBuilder', () => {
 								...groupMark.marks?.[0].encode,
 								update: {
 									...groupMark.marks?.[0]?.encode?.update,
-									x: { scale: 'xLinear', field: 'datetime' },
+									x: { scale: 'xLinear', field: DEFAULT_TIME_DIMENSION },
 								},
 							},
 						},

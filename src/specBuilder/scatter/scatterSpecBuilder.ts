@@ -31,10 +31,16 @@ import {
 	addFieldToFacetScaleDomain,
 	addMetricScale,
 } from '@specBuilder/scale/scaleSpecBuilder';
+import {
+	addTrendlineData,
+	getTrendlineMarks,
+	getTrendlineScales,
+	getTrendlineSignals,
+} from '@specBuilder/trendline/trendlineUtils';
 import { sanitizeMarkChildren, toCamelCase } from '@utils';
 import { produce } from 'immer';
 import { ColorScheme, ScatterProps, ScatterSpecProps } from 'types';
-import { Data, GroupMark, Mark, Scale, Spec, SymbolMark } from 'vega';
+import { Data, GroupMark, Mark, Scale, Signal, Spec, SymbolMark } from 'vega';
 
 export const addScatter = produce<Spec, [ScatterProps & { colorScheme?: ColorScheme; index?: number }]>(
 	(
@@ -78,6 +84,7 @@ export const addScatter = produce<Spec, [ScatterProps & { colorScheme?: ColorSch
 		};
 
 		spec.data = addData(spec.data ?? [], scatterProps);
+		spec.signals = addSignals(spec.signals ?? [], scatterProps);
 		spec.scales = setScales(spec.scales ?? [], scatterProps);
 		spec.marks = addScatterMarks(spec.marks ?? [], scatterProps);
 	}
@@ -89,6 +96,11 @@ export const addData = produce<Data[], [ScatterSpecProps]>((data, props) => {
 		const tableData = getTableData(data);
 		tableData.transform = addTimeTransform(tableData.transform ?? [], dimension);
 	}
+	addTrendlineData(data, props);
+});
+
+export const addSignals = produce<Signal[], [ScatterSpecProps]>((signals, props) => {
+	signals.push(...getTrendlineSignals(props));
 });
 
 export const setScales = produce<Scale[], [ScatterSpecProps]>((scales, props) => {
@@ -107,6 +119,8 @@ export const setScales = produce<Scale[], [ScatterSpecProps]>((scales, props) =>
 	addFieldToFacetScaleDomain(scales, 'opacity', opacity);
 	// add size to the size domain
 	addFieldToFacetScaleDomain(scales, 'symbolSize', size);
+
+	scales.push(...getTrendlineScales(props));
 });
 
 export const addScatterMarks = produce<Mark[], [ScatterSpecProps]>((marks, props) => {
@@ -119,6 +133,7 @@ export const addScatterMarks = produce<Mark[], [ScatterSpecProps]>((marks, props
 	};
 
 	marks.push(scatterGroup);
+	marks.push(...getTrendlineMarks(props));
 });
 
 export const getScatterMark = ({

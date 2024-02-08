@@ -29,6 +29,7 @@ export default {
 				'exponential',
 				'linear',
 				'logarithmic',
+				'median',
 				'movingAverage-2',
 				'movingAverage-3',
 				'movingAverage-4',
@@ -61,7 +62,7 @@ const defaultChartProps: ChartProps = { data: workspaceTrendsData, minWidth: 400
 const TrendlineStory: StoryFn<typeof Trendline> = (args): ReactElement => {
 	const chartProps = useChartProps(defaultChartProps);
 	return (
-		<Chart {...chartProps}>
+		<Chart {...chartProps} debug>
 			<Axis position="left" grid title="Users" />
 			<Axis position="bottom" labelFormat="time" baseline ticks />
 			<Line color="series">

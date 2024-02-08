@@ -17,6 +17,7 @@ import {
 	DEFAULT_COLOR_SCHEME,
 	DEFAULT_METRIC,
 	DEFAULT_TIME_DIMENSION,
+	DEFAULT_TRANSFORMED_TIME_DIMENSION,
 	FILTERED_TABLE,
 } from '@constants';
 import { LineSpecProps, MetricRangeProps, MetricRangeSpecProps } from 'types';
@@ -92,7 +93,7 @@ const basicMetricRangeMarks = [
 			update: {
 				x: {
 					scale: 'xTime',
-					field: 'datetime0',
+					field: DEFAULT_TRANSFORMED_TIME_DIMENSION,
 				},
 				strokeOpacity: [
 					{
@@ -129,7 +130,7 @@ const basicMetricRangeMarks = [
 				cursor: undefined,
 				x: {
 					scale: 'xTime',
-					field: 'datetime0',
+					field: DEFAULT_TRANSFORMED_TIME_DIMENSION,
 				},
 				fillOpacity: [
 					{
