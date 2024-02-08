@@ -38,13 +38,13 @@ export function BigNumber({
 		chartView: useRef<VegaView>(),
 		chartWidth: 600,
 	},
-	method = 'last'
+	method
 }: BigNumberProps) {
 	const { chartWidth, height, locale, data, ...rscChartRemain } = rscChartProps;
 
 	// based on Chart.tsx checks, data will always be defined and have a length greater than 0.
 	let bigNumberValue: number;
-	if (method === 'last') {
+	if (!method || method === 'last') {
 		bigNumberValue = data[data.length - 1][dataKey];
 	} else {
 		// this must be either 'sum' or 'avg'
