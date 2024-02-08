@@ -38,21 +38,19 @@ export function BigNumber({
 		chartView: useRef<VegaView>(),
 		chartWidth: 600,
 	},
-	method
+	method = 'last'
 }: BigNumberProps) {
 	const { chartWidth, height, locale, data, ...rscChartRemain } = rscChartProps;
 
-	if (!method) {
-		method = 'last';
-	}
-
-	let bigNumberValue: number | undefined;
+	// based on Chart.tsx checks, data will always be defined and have a length greater than 0.
+	let bigNumberValue: number;
 	if (method === 'last') {
-		bigNumberValue = data && data.length > 0 ? data[data.length - 1][dataKey] : undefined;
-	} else if (method === 'sum' || method === 'avg') {
-		bigNumberValue = data && data.length > 0 ? data.reduce((sum, cur) => {
+		bigNumberValue = data[data.length - 1][dataKey];
+	} else {
+		// this must be either 'sum' or 'avg'
+		bigNumberValue = data.reduce((sum, cur) => {
 			return sum + cur[dataKey];
-		}, 0) : undefined;
+		}, 0);
 		if (method === 'avg') {
 			bigNumberValue = bigNumberValue ? bigNumberValue / data.length : bigNumberValue;
 		}
