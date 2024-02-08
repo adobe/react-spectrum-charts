@@ -459,10 +459,6 @@ export const getTrendlineScales = (props: TrendlineParentProps): Scale[] => {
 const isAggregateMethod = (method: TrendlineMethod): method is AggregateMethod =>
 	['average', 'median'].includes(method);
 
-// export const isLineTypeArray = (lineTypes: LineTypes): lineTypes is LineType[] => {
-// 	return lineTypes.some((lineType) => typeof lineType === 'string' || isStrokeDashArray(lineType));
-// };
-
 /**
  * determines if the supplied method is a regression method
  * @see https://vega.github.io/vega/docs/transforms/regression/
