@@ -383,6 +383,12 @@ describe('lineSpecBuilder', () => {
 				})[2].transform
 			).toStrictEqual([
 				{
+					type: 'collect',
+					sort: {
+						field: DEFAULT_TRANSFORMED_TIME_DIMENSION,
+					},
+				},
+				{
 					type: 'joinaggregate',
 					groupby: ['series'],
 					fields: ['value'],
