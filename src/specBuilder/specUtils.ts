@@ -21,12 +21,11 @@ import {
 	LineTypeFacet,
 	LineWidth,
 	OpacityFacet,
-	ScaleType,
 	SpectrumColor,
 	SymbolSize,
 	SymbolSizeFacet,
 } from 'types';
-import { Data, Scale, Spec, ValuesData } from 'vega';
+import { Data, Scale, ScaleType, Spec, ValuesData } from 'vega';
 
 import { DEFAULT_TRANSFORMED_TIME_DIMENSION, FILTERED_TABLE, MARK_ID, TABLE } from '../constants';
 import { SanitizedSpecProps } from '../types';

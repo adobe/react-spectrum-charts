@@ -347,7 +347,7 @@ export type SymbolSize = 'XS' | 'S' | 'M' | 'L' | 'XL' | number;
 
 export type SymbolSizeFacet = FacetRef<SymbolSize>;
 
-export type ScaleType = 'linear' | 'time' | 'point';
+export type ScaleType = 'linear' | 'point' | 'time';
 export type LegendDescription = { seriesName: string; description: string; title?: string };
 
 export type LegendLabel = { seriesName: string | number; label: string; maxLength?: number };
