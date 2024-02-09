@@ -39,11 +39,11 @@ export function BigNumber({
 		data: [],
 		chartId: useRef<string>(`rsc-${uuid()}`),
 		chartView: useRef<VegaView>(),
-		chartWidth: 600,
+		chartWidth: 200,
 	},
 }: BigNumberProps) {
 	const { chartWidth, height, locale, data, ...rscChartRemain } = rscChartProps;
-	const aspectRatio = 30 / 9;
+	const aspectRatio = 16 / 9;
 	const bigNumberValue = data && data.length > 0 ? data[data.length - 1][dataKey] : undefined;
 
 	const numberLocale = getLocale(locale).number;
@@ -55,7 +55,7 @@ export function BigNumber({
 	const lineElements = sanitizeBigNumberChildren(children);
 
 	if (lineElements.length > 0 && !rscChartProps) {
-		throw new Error('BigNumber must be nested in a Chart to properly display the sparkline.');
+		throw new Error('BigNumber must be nested in a Chart');
 	}
 
 	let areas,
@@ -66,33 +66,35 @@ export function BigNumber({
 		iconSize,
 		dataJustify,
 		labelJustify,
+		padding,
 		cWidth,
 		cHeight,
 		displayCombo;
 	let labelAlign: 'start' | 'center' = 'start';
 
 	if (orientation == 'vertical') {
+		padding = 0
 		cHeight = height ? height / 2.25 : chartWidth / aspectRatio;
 		cWidth = height ? cHeight * aspectRatio : chartWidth;
 		generalJustify = 'center';
 	} else {
-		if (height && height < chartWidth / (1.35 * aspectRatio)) {
+		if (height && height < chartWidth / (1.75 * aspectRatio)) {
 			cHeight = height;
 			cWidth = height * aspectRatio;
 		} else {
-			cWidth = chartWidth / 1.35;
+			cWidth = chartWidth / 1.75;
 			cHeight = cWidth / aspectRatio;
 		}
+		padding = 10
 		generalJustify = 'start';
 	}
 
 	const determineIconSize = (widthAvailable: number) => {
-		if (widthAvailable <= 15) return 'XXS';
-		else if (widthAvailable <= 25) return 'XS';
+		if (widthAvailable <= 21) return 'XS';
 		else if (widthAvailable <= 35) return 'S';
-		else if (widthAvailable <= 50) return 'M';
-		else if (widthAvailable <= 64) return 'L';
-		else if (widthAvailable <= 81) return 'XL';
+		else if (widthAvailable <= 45) return 'M';
+		else if (widthAvailable <= 60) return 'L';
+		else if (widthAvailable <= 75) return 'XL';
 		return 'XXL';
 	};
 
@@ -107,13 +109,13 @@ export function BigNumber({
 		iconAlign = 'start';
 		areas = ['sparkline data', 'sparkline combo'];
 		displayCombo = true;
-		columns = ['1fr', '.75fr'];
-		iconSize = determineIconSize(chartWidth / 4);
+		columns = ['1fr', '1fr'];
+		iconSize = determineIconSize(chartWidth / 6);
 	} else if (lineElements.length > 0 && orientation == 'vertical') {
 		areas = ['sparkline', 'data', 'label'];
 	} else if (lineElements.length > 0 && orientation == 'horizontal') {
 		areas = ['sparkline data', 'sparkline label'];
-		columns = ['2fr 1fr'];
+		columns = ['1fr 1fr'];
 	} else if (icon && orientation == 'vertical') {
 		areas = ['icon', 'data', 'label'];
 		iconSize = determineIconSize(height ? height / 1.75 : chartWidth);
@@ -149,7 +151,7 @@ export function BigNumber({
 					alignItems={'center'}
 				>
 					{lineElements.length > 0 && (
-						<View gridArea="sparkline">
+						<View gridArea="sparkline" justifySelf={"center"}>
 							<RscChart
 								chartWidth={cWidth}
 								height={cHeight}
@@ -157,7 +159,7 @@ export function BigNumber({
 								locale={locale}
 								{...rscChartRemain}
 							>
-								{cloneElement(lineElements[0] as LineElement, { isSparkline: true })}
+								{cloneElement(lineElements[0] as LineElement, { isSparkline: true, padding })}
 							</RscChart>
 						</View>
 					)}
