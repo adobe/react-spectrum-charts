@@ -185,13 +185,14 @@ export interface AxisProps extends BaseProps {
 }
 
 export interface BigNumberProps {
-	orientation: Orientation;
-	label: string;
-	dataKey: string;
-	children: Children<BigNumberChildElement> | undefined
-	rscChartProps?: RscChartProps
-	numberFormat?: string;
-	numberType?: 'linear' | 'percentage';
+	readonly orientation: Orientation;
+	readonly label: string;
+	readonly dataKey: string;
+	readonly children: Children<BigNumberChildElement> | undefined
+	readonly rscChartProps?: RscChartProps
+	readonly numberFormat?: string;
+	readonly numberType?: 'linear' | 'percentage';
+	readonly method?: 'sum' | 'avg' | 'last';
 }
 
 export type Granularity = 'minute' | 'hour' | 'day' | 'week' | 'month' | 'quarter';

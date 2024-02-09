@@ -64,13 +64,13 @@ export const sanitizeBigNumberChildren = (children: Children<BigNumberChildEleme
 
 	const lineElements = sanitizedChildren.filter(c => c.type == Line)
 	const iconElements = sanitizedChildren.filter(c => c.type == Icon)
-	
+
 	return {lineElements, iconElements}
 };
 
 export const chartContainsBigNumber = (children: Children<ChartChildElement> | undefined): ChartChildElement[] => {
-	const sanitizedChildren = sanitizeRscChartChildren(children)
-	return sanitizedChildren.filter(child => child.type == BigNumber)
+	const sanitizedChildren = sanitizeRscChartChildren(children);
+	return sanitizedChildren.filter(child => child.type == BigNumber);
 }
 
 

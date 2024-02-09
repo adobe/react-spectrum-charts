@@ -125,7 +125,7 @@ export function buildSpec({
 				case Title:
 					// No title count. There can only be one title.
 					return addTitle(acc, { ...(cur as TitleElement).props });
-				case BigNumber: 
+				case BigNumber:
 					// Do nothing and do not throw an error
 					return acc;
 				default:
@@ -157,10 +157,7 @@ export const addHighlight = produce<Spec, [SanitizedSpecProps]>((spec, { highlig
 
 export const removeUnusedScales = produce<Spec>((spec) => {
 	spec.scales = spec.scales?.filter((scale) => {
-		if ('domain' in scale && scale.domain && 'fields' in scale.domain && scale.domain.fields.length === 0) {
-			return false;
-		}
-		return true;
+		return !('domain' in scale && scale.domain && 'fields' in scale.domain && scale.domain.fields.length === 0);
 	});
 });
 
