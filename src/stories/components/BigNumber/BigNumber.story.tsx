@@ -18,7 +18,6 @@ import { BigNumber, Chart, Line } from '@rsc';
 import { StoryFn } from '@storybook/react';
 import { bindWithProps } from 'test-utils/bindWithProps';
 
-import { Icon } from '@adobe/react-spectrum';
 import Amusementpark from '@spectrum-icons/workflow/Amusementpark';
 import Calendar from '@spectrum-icons/workflow/Calendar';
 
@@ -32,8 +31,8 @@ export default {
 const BigNumberStory: StoryFn<typeof BigNumber> = (args): ReactElement => {
 	const chartProps = useChartProps({
 		data: data,
-		width: 600,
-		height: 600,
+		width: 200,
+		height: 100,
 	});
 	return (
 		<>
@@ -63,11 +62,8 @@ BasicVertical.args = {
 const IconHorizontal = bindWithProps(BigNumberStory);
 IconHorizontal.args = {
 	dataKey: 'x',
-	children: (
-		<Icon key={'i'} data-testid="icon-calendar">
-			<Calendar size="L" />
-		</Icon>
-	),
+	icon: <Calendar data-testid="icon-calendar" />,
+	children: undefined,
 	orientation: 'horizontal',
 	label: 'Visitors',
 };
@@ -75,13 +71,10 @@ IconHorizontal.args = {
 const IconVertical = bindWithProps(BigNumberStory);
 IconVertical.args = {
 	dataKey: 'x',
-	children: (
-		<Icon data-testid="icon-amusementpark">
-			<Amusementpark size="L" />
-		</Icon>
-	),
+	icon: <Amusementpark data-testid="icon-amusementpark" />,
+	children: undefined,
 	orientation: 'vertical',
-	label: 'Visitors',
+	label: 'Visitor',
 };
 
 const SparklineHorizontal = bindWithProps(BigNumberStory);
@@ -103,12 +96,8 @@ SparklineVertical.args = {
 const SparklineAndIconHorizontal = bindWithProps(BigNumberStory);
 SparklineAndIconHorizontal.args = {
 	dataKey: 'x',
-	children: [
-		<Icon key="icon" data-testid="icon-amusementpark">
-			<Amusementpark size="L" />
-		</Icon>,
-		<Line key="line" dimension="x" metric="y" scaleType="linear" />,
-	],
+	children: <Line key="line" dimension="x" metric="y" scaleType="linear" />,
+	icon: <Amusementpark key="icon" data-testid="icon-amusementpark" />,
 	orientation: 'horizontal',
 	label: 'Visitors',
 };
@@ -116,12 +105,8 @@ SparklineAndIconHorizontal.args = {
 const SparklineAndIconVertical = bindWithProps(BigNumberStory);
 SparklineAndIconVertical.args = {
 	dataKey: 'x',
-	children: [
-		<Line key="line" dimension="x" metric="y" scaleType="linear" />,
-		<Icon key="icon" data-testid="icon-amusementpark">
-			<Amusementpark size="L" />
-		</Icon>,
-	],
+	children: <Line key="line" dimension="x" metric="y" scaleType="linear" />,
+	icon: <Amusementpark key="icon" data-testid="icon-amusementpark" />,
 	orientation: 'vertical',
 	label: 'Visitors',
 };

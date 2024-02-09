@@ -14,7 +14,7 @@ import { JSXElementConstructor, MutableRefObject, ReactElement, ReactFragment, R
 import { MARK_ID, SERIES_ID, TRENDLINE_VALUE } from '@constants';
 import { Config, Data, FontWeight, Locale, NumberLocale, Padding, Spec, SymbolShape, TimeLocale, View } from 'vega';
 
-import { Icon, IconProps } from '@adobe/react-spectrum';
+import { Icon, IconProps, } from '@adobe/react-spectrum';
 import { Theme } from '@react-types/provider';
 
 import { Colors, SpectrumColor } from './SpectrumVizColors';
@@ -29,7 +29,7 @@ export type AnnotationElement = ReactElement<AnnotationProps, JSXElementConstruc
 export type LegendElement = ReactElement<LegendProps, JSXElementConstructor<LegendProps>>;
 export type LineElement = ReactElement<LineProps, JSXElementConstructor<LineProps>>;
 export type BigNumberElement = ReactElement<BigNumberProps, JSXElementConstructor<BigNumberProps>>;
-export type IconElement = ReactElement<IconProps, JSXElementConstructor<IconProps>>;
+export type IconElement = ReactElement<IconProps | Omit<IconProps, "children">, JSXElementConstructor<IconProps | Omit<IconProps, "children">>>;
 export type ScatterElement = ReactElement<ScatterProps, JSXElementConstructor<ScatterProps>>;
 export type TitleElement = ReactElement<TitleProps, JSXElementConstructor<TitleProps>>;
 export type ChartTooltipElement = ReactElement<ChartTooltipProps, JSXElementConstructor<ChartTooltipProps>>;
@@ -189,6 +189,7 @@ export interface BigNumberProps {
 	label: string;
 	dataKey: string;
 	children: Children<BigNumberChildElement> | undefined
+	icon?: IconElement;
 	rscChartProps?: RscChartProps
 	numberFormat?: string;
 	numberType?: 'linear' | 'percentage';
@@ -534,7 +535,7 @@ export type Children<T> = ChildElement<T> | ChildElement<T>[];
 export type AxisChildElement = ReferenceLineElement | AxisAnnotationElement;
 export type AxisAnnotationChildElement = ChartTooltipElement | ChartPopoverElement;
 
-export type BigNumberChildElement = LineElement | IconElement
+export type BigNumberChildElement = LineElement
 
 export type ChartChildElement =
 	| AreaElement
