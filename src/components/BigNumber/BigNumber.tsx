@@ -115,17 +115,17 @@ export function BigNumber({
 
 function checkElements(icon, lineElements, orientation) {
 
-	if (icon > 0 && lineElements.length > 0 && orientation == 'vertical') {
+	if (icon && lineElements.length > 0 && orientation == 'vertical') {
 		return { areas: ['sparkline sparkline', 'data data', 'icon label'], columns: ['1fr', '4fr'] };
-	} else if (icon > 0 && lineElements.length > 0 && orientation == 'horizontal') {
+	} else if (icon && lineElements.length > 0 && orientation == 'horizontal') {
 		return { areas: ['sparkline data data', 'sparkline icon label'], columns: ['3fr', '1fr', '2fr'] };
 	} else if (lineElements.length > 0 && orientation == 'vertical') {
 		return { areas: ['sparkline', 'data', 'label'], columns: ['1fr'] };
 	} else if (lineElements.length > 0 && orientation == 'horizontal') {
 		return { areas: ['sparkline data', 'sparkline label'], columns: ['1fr 1fr'] };
-	} else if (icon > 0 && orientation == 'vertical') {
+	} else if (icon && orientation == 'vertical') {
 		return { areas: ['icon', 'data', 'label'], columns: ['1fr'] };
-	} else if (icon > 0 && orientation == 'horizontal') {
+	} else if (icon && orientation == 'horizontal') {
 		return { areas: ['icon data', 'icon label'], columns: ['1fr', '2fr']};
 	} else {
 		return { areas: ['data', 'label'], columns: ['1fr']};
