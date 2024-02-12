@@ -14,12 +14,11 @@
 .BigNumber-data {
     font-size: large;
     font-weight: bold;
-    align-self: flex-end;
+    align-self: end;
 }
 
 .BigNumber-label {
-    align-self: flex-start;
-    font-size: medium;
+    font-size: medium
 }
 
 .BigNumber-container {
