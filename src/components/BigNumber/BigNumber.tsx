@@ -13,7 +13,6 @@
  */
 import { cloneElement, useRef } from 'react';
 
-import { ErrorState } from '@components/ErrorState';
 import { sanitizeBigNumberChildren } from '@utils';
 import { RscChart } from 'RscChart';
 import { BigNumberProps, LineElement } from 'types';
@@ -22,7 +21,6 @@ import { v4 as uuid } from 'uuid';
 import { View as VegaView } from 'vega';
 
 import { Flex, Grid, View } from '@adobe/react-spectrum';
-import GraphBarVerticalStacked from '@spectrum-icons/workflow/GraphBarVerticalStacked';
 
 import './BigNumber.css';
 import { getFormattedString } from './bigNumberFormatUtils';
@@ -39,37 +37,33 @@ export function BigNumber({
 		data: [],
 		chartId: useRef<string>(`rsc-${uuid()}`),
 		chartView: useRef<VegaView>(),
-		chartWidth: 600,
-	},
-}: BigNumberProps) {
+		chartWidth: 600
+							  },
+							  method
+						  }: BigNumberProps) {
 	const { chartWidth, height, locale, data, ...rscChartRemain } = rscChartProps;
 	const aspectRatio = 30 / 9;
-	const bigNumberValue = data && data.length > 0 ? data[data.length - 1][dataKey] : undefined;
+	// based on Chart.tsx checks, data will always be defined and have a length greater than 0.
+	let bigNumberValue: number;
+	if (!method || method === 'last') {
+		bigNumberValue = data[data.length - 1][dataKey];
+	} else {
+		// this must be either 'sum' or 'avg'
+		bigNumberValue = data.reduce((sum, cur) => {
+			return sum + cur[dataKey];
+		}, 0);
+		if (method === 'avg') {
+			bigNumberValue = bigNumberValue / data.length;
+		}
+	}
 
 	const numberLocale = getLocale(locale).number;
 	const type = numberType ?? 'linear';
-	const formattedValue = bigNumberValue
-		? getFormattedString(bigNumberValue, numberLocale, numberFormat, type)
-		: bigNumberValue;
+	const formattedValue = getFormattedString(bigNumberValue, numberLocale, numberFormat, type);
 
 	const lineElements = sanitizeBigNumberChildren(children);
 
-	if (lineElements.length > 0 && !rscChartProps) {
-		throw new Error('BigNumber must be nested in a Chart to properly display the sparkline.');
-	}
-
-	let areas,
-		columns,
-		generalJustify,
-		iconAlign,
-		iconJustify,
-		iconSize,
-		dataJustify,
-		labelJustify,
-		cWidth,
-		cHeight,
-		displayCombo;
-	let labelAlign: 'start' | 'center' = 'start';
+	let cWidth, cHeight, generalJustify;
 
 	if (orientation == 'vertical') {
 		cHeight = height ? height / 2.25 : chartWidth / aspectRatio;
@@ -86,115 +80,55 @@ export function BigNumber({
 		generalJustify = 'start';
 	}
 
-	const determineIconSize = (widthAvailable: number) => {
-		if (widthAvailable <= 15) return 'XXS';
-		else if (widthAvailable <= 25) return 'XS';
-		else if (widthAvailable <= 35) return 'S';
-		else if (widthAvailable <= 50) return 'M';
-		else if (widthAvailable <= 64) return 'L';
-		else if (widthAvailable <= 81) return 'XL';
-		return 'XXL';
-	};
+	const {areas, columns} = checkElements(icon, lineElements, orientation);
 
-	if (icon && lineElements.length > 0 && orientation == 'vertical') {
-		labelAlign = 'center';
-		iconJustify = 'end';
-		areas = ['sparkline', 'data', 'combo'];
-		displayCombo = true;
-		iconSize = determineIconSize(height ? height / 3 : chartWidth / 2);
-	} else if (icon && lineElements.length > 0 && orientation == 'horizontal') {
-		iconJustify = 'end';
-		iconAlign = 'start';
-		areas = ['sparkline data', 'sparkline combo'];
-		displayCombo = true;
-		columns = ['1fr', '.75fr'];
-		iconSize = determineIconSize(chartWidth / 4);
-	} else if (lineElements.length > 0 && orientation == 'vertical') {
-		areas = ['sparkline', 'data', 'label'];
-	} else if (lineElements.length > 0 && orientation == 'horizontal') {
-		areas = ['sparkline data', 'sparkline label'];
-		columns = ['2fr 1fr'];
-	} else if (icon && orientation == 'vertical') {
-		areas = ['icon', 'data', 'label'];
-		iconSize = determineIconSize(height ? height / 1.75 : chartWidth);
-	} else if (icon && orientation == 'horizontal') {
-		iconJustify = 'end';
-		areas = ['icon data', 'icon label'];
-		columns = ['1fr', '2fr'];
-		iconSize = determineIconSize(chartWidth / 3.5);
-	} else {
-		areas = ['data', 'label'];
-	}
-
-	if (data === null) {
-		return <ErrorState message="Unable to load. One or more values are null." />;
-	} else if (data === undefined || formattedValue === undefined) {
-		return (
-			<ErrorState
-				icon={<GraphBarVerticalStacked data-testid="vertical-graph" size="L" />}
-				actionText="Please verify that data is defined"
-				message="No data available."
-			/>
-		);
-	} else {
-		return (
-			<div tabIndex={0} className="BigNumber-container">
-				<Grid
-					width={chartWidth}
-					height={height}
-					areas={areas}
-					columns={columns}
-					columnGap="size-50"
-					justifyItems={generalJustify}
-					alignItems={'center'}
-				>
-					{lineElements.length > 0 && (
-						<View gridArea="sparkline">
-							<RscChart
-								chartWidth={cWidth}
-								height={cHeight}
-								data={data}
-								locale={locale}
-								{...rscChartRemain}
-							>
-								{cloneElement(lineElements[0] as LineElement, { isSparkline: true })}
-							</RscChart>
-						</View>
-					)}
-					{displayCombo && icon ? (
-						<View
-							gridArea="combo"
-							justifySelf={labelJustify}
-							alignSelf={labelAlign}
-							UNSAFE_className="BigNumber-label"
+	return (
+		<div tabIndex={0} className="BigNumber-container">
+			<Grid areas={areas} columns={columns} columnGap="size-100" justifyItems={generalJustify} alignItems={'center'}>
+				{lineElements.length > 0 && (
+					<View gridArea="sparkline">
+						<RscChart
+							chartWidth={cWidth}
+							height={cHeight}
+							data={data}
+							locale={locale}
+							{...rscChartRemain}
 						>
-							<Flex gap="size-50">
-								{cloneElement(icon, { size: iconSize })}
-								{label}
-							</Flex>
-						</View>
-					) : (
-						<>
-							{icon && (
-								<View gridArea="icon" alignSelf={iconAlign} justifySelf={iconJustify}>
-									{cloneElement(icon, { size: iconSize })}
-								</View>
-							)}
-							<View
-								gridArea="label"
-								justifySelf={labelJustify}
-								alignSelf={labelAlign}
-								UNSAFE_className="BigNumber-label"
-							>
-								{label}
-							</View>
-						</>
-					)}
-					<View gridArea="data" justifySelf={dataJustify} UNSAFE_className="BigNumber-data">
-						{formattedValue}
+							{lineElements.map((le) => cloneElement(le as LineElement, {
+								isSparkline: true,
+								isMethodLast: method === 'last'
+							}))}
+						</RscChart>
 					</View>
-				</Grid>
-			</div>
-		);
+				)}
+				<View gridArea="icon">{icon}</View>
+				<View gridArea="data" UNSAFE_className="BigNumber-data">
+					{formattedValue}
+				</View>
+				<View gridArea="label" UNSAFE_className="BigNumber-label">
+					{label}
+				</View>
+			</Grid>
+		</div>
+	);
+}
+
+function checkElements(icon, lineElements, orientation) {
+
+	if (icon > 0 && lineElements.length > 0 && orientation == 'vertical') {
+		return { areas: ['sparkline sparkline', 'data data', 'icon label'], columns: ['1fr', '4fr'] };
+	} else if (icon > 0 && lineElements.length > 0 && orientation == 'horizontal') {
+		return { areas: ['sparkline data data', 'sparkline icon label'], columns: ['3fr', '1fr', '2fr'] };
+	} else if (lineElements.length > 0 && orientation == 'vertical') {
+		return { areas: ['sparkline', 'data', 'label'], columns: ['1fr'] };
+	} else if (lineElements.length > 0 && orientation == 'horizontal') {
+		return { areas: ['sparkline data', 'sparkline label'], columns: ['1fr 1fr'] };
+	} else if (icon > 0 && orientation == 'vertical') {
+		return { areas: ['icon', 'data', 'label'], columns: ['1fr'] };
+	} else if (icon > 0 && orientation == 'horizontal') {
+		return { areas: ['icon data', 'icon label'], columns: ['1fr', '2fr']};
+	} else {
+		return { areas: ['data', 'label'], columns: ['1fr']};
 	}
 }
+

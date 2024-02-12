@@ -45,7 +45,7 @@ export const getLineHighlightedData = (name: string, source: string, hasPopover:
  * @param isMethodLast
  * @returns
  */
-export const getLineStaticPointData = (name: string, staticPoint: string, source: string, isSparkline: boolean | undefined, isMethodLast: boolean | undefined): SourceData => {
+export const getLineStaticPointData = (name: string, staticPoint: string | undefined, source: string, isSparkline: boolean | undefined, isMethodLast: boolean | undefined): SourceData => {
 	return {
 		name: `${name}_staticPointData`,
 		source,

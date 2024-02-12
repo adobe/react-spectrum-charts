@@ -37,9 +37,62 @@ const BigNumberStory: StoryFn<typeof BigNumber> = (args): ReactElement => {
 	return (
 		<>
 			<Chart {...chartProps}>
-				<BigNumber {...args} />
+				<BigNumber {...args}/>
 			</Chart>
 		</>
+	);
+};
+
+const UndefinedDataStory: StoryFn<typeof BigNumber> = (args): ReactElement => {
+	const chartProps = useChartProps({
+		data: [],
+		width: 600,
+		height: 600,
+	});
+	return (
+		<Chart {...chartProps}>
+				<BigNumber {...args}/>
+		</Chart>
+	);
+};
+
+const CurrencyFormatStory: StoryFn<typeof BigNumber> = (args): ReactElement => {
+	const chartProps = useChartProps({
+		data: [{value: 255.56}],
+		width: 600,
+		height: 600,
+		locale: 'de-DE'
+	});
+	return (
+		<Chart {...chartProps}>
+			<BigNumber {...args}/>
+		</Chart>
+	);
+};
+
+const PercentageFormatStory: StoryFn<typeof BigNumber> = (args): ReactElement => {
+	const chartProps = useChartProps({
+		data: [{value: .25}],
+		width: 600,
+		height: 600,
+	});
+	return (
+		<Chart {...chartProps}>
+			<BigNumber {...args}/>
+		</Chart>
+	);
+};
+
+const CompactFormatStory: StoryFn<typeof BigNumber> = (args): ReactElement => {
+	const chartProps = useChartProps({
+		data: [{value: 12300000000}],
+		width: 600,
+		height: 600,
+	});
+	return (
+		<Chart {...chartProps}>
+			<BigNumber {...args}/>
+		</Chart>
 	);
 };
 
@@ -48,7 +101,7 @@ BasicHorizontal.args = {
 	children: undefined,
 	dataKey: 'x',
 	orientation: 'horizontal',
-	label: 'Visitors',
+	label: 'Visitors'
 };
 
 const BasicVertical = bindWithProps(BigNumberStory);
@@ -111,45 +164,49 @@ SparklineAndIconVertical.args = {
 	label: 'Visitors',
 };
 
-const CurrencyFormat = bindWithProps(BigNumberStory);
+const SparklineMethodLast = bindWithProps(BigNumberStory);
+SparklineMethodLast.args = {
+	dataKey: 'y',
+	children: [
+		<Line key="line" dimension="x" metric="y" scaleType="linear" />,
+	],
+	orientation: 'vertical',
+	label: 'Visitors'
+}
+
+const CurrencyFormat = bindWithProps(CurrencyFormatStory);
 CurrencyFormat.args = {
 	children: undefined,
-	dataKey: 'x',
+	dataKey: 'value',
 	orientation: 'horizontal',
 	label: 'Ad Spend',
 	numberFormat: '$,.2f',
 };
 
-const PercentageFormat = bindWithProps(BigNumberStory);
+const PercentageFormat = bindWithProps(PercentageFormatStory);
 PercentageFormat.args = {
 	children: undefined,
-	dataKey: 'x',
+	dataKey: 'value',
 	orientation: 'horizontal',
 	label: 'Capacity',
 	numberType: 'percentage',
 };
 
-const CompactFormat = bindWithProps(BigNumberStory);
+const CompactFormat = bindWithProps(CompactFormatStory);
 CompactFormat.args = {
 	children: undefined,
-	dataKey: 'x',
+	dataKey: 'value',
 	orientation: 'horizontal',
 	label: 'Requests',
 };
 
-// const NullData = bindWithProps(BigNumberStory);
-// NullData.args = {
-// 	data: null,
-// 	orientation: 'horizontal',
-// 	label: 'Visitors',
-// };
-
-// const UndefinedData = bindWithProps(BigNumberStory);
-// UndefinedData.args = {
-// 	data: undefined,
-// 	orientation: 'horizontal',
-// 	label: 'Visitors',
-// };
+const UndefinedData = bindWithProps(UndefinedDataStory);
+UndefinedData.args = {
+	children: undefined,
+	orientation: 'horizontal',
+	dataKey: 'test',
+	label: 'Visitors',
+};
 
 export {
 	BasicHorizontal,
@@ -160,9 +217,9 @@ export {
 	SparklineVertical,
 	SparklineAndIconHorizontal,
 	SparklineAndIconVertical,
+	SparklineMethodLast,
 	CurrencyFormat,
 	CompactFormat,
 	PercentageFormat,
-	// NullData,
-	// UndefinedData,
+	UndefinedData
 };

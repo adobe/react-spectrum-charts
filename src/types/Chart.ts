@@ -14,7 +14,7 @@ import { JSXElementConstructor, MutableRefObject, ReactElement, ReactFragment, R
 import { MARK_ID, SERIES_ID, TRENDLINE_VALUE } from '@constants';
 import { Config, Data, FontWeight, Locale, NumberLocale, Padding, Spec, SymbolShape, TimeLocale, View } from 'vega';
 
-import { Icon, IconProps, } from '@adobe/react-spectrum';
+import { Icon, IconProps } from '@adobe/react-spectrum';
 import { Theme } from '@react-types/provider';
 
 import { Colors, SpectrumColor } from './SpectrumVizColors';
@@ -185,14 +185,14 @@ export interface AxisProps extends BaseProps {
 }
 
 export interface BigNumberProps {
-	orientation: Orientation;
-	label: string;
-	dataKey: string;
-	children: Children<BigNumberChildElement> | undefined
-	icon?: IconElement;
-	rscChartProps?: RscChartProps
-	numberFormat?: string;
-	numberType?: 'linear' | 'percentage';
+	readonly orientation: Orientation;
+	readonly label: string;
+	readonly dataKey: string;
+	readonly children: Children<BigNumberChildElement> | undefined
+	readonly rscChartProps?: RscChartProps
+	readonly numberFormat?: string;
+	readonly numberType?: 'linear' | 'percentage';
+	readonly method?: 'sum' | 'avg' | 'last';
 }
 
 export type Granularity = 'minute' | 'hour' | 'day' | 'week' | 'month' | 'quarter';
@@ -535,7 +535,7 @@ export type Children<T> = ChildElement<T> | ChildElement<T>[];
 export type AxisChildElement = ReferenceLineElement | AxisAnnotationElement;
 export type AxisAnnotationChildElement = ChartTooltipElement | ChartPopoverElement;
 
-export type BigNumberChildElement = LineElement
+export type BigNumberChildElement = LineElement | IconElement
 
 export type ChartChildElement =
 	| AreaElement

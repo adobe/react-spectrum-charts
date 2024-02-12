@@ -31,6 +31,7 @@ import {
 	RscElement,
 	TooltipHandler,
 } from '../types';
+import { Icon } from '@adobe/react-spectrum';
 
 type MappedElement = { name: string; element: ChartElement | RscElement };
 type ElementCounts = {
@@ -64,8 +65,8 @@ export const sanitizeBigNumberChildren = (children: Children<BigNumberChildEleme
 };
 
 export const chartContainsBigNumber = (children: Children<ChartChildElement> | undefined): ChartChildElement[] => {
-	const sanitizedChildren = sanitizeRscChartChildren(children)
-	return sanitizedChildren.filter(child => child.type == BigNumber)
+	const sanitizedChildren = sanitizeRscChartChildren(children);
+	return sanitizedChildren.filter(child => child.type == BigNumber);
 }
 
 
