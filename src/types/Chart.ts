@@ -193,6 +193,7 @@ export interface BigNumberProps {
 	readonly numberFormat?: string;
 	readonly numberType?: 'linear' | 'percentage';
 	readonly method?: 'sum' | 'avg' | 'last';
+	readonly icon?: IconElement;
 }
 
 export type Granularity = 'minute' | 'hour' | 'day' | 'week' | 'month' | 'quarter';
