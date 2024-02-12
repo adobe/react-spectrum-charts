@@ -64,7 +64,6 @@ export function BigNumber({
 		iconAlign,
 		iconJustify,
 		iconSize,
-		dataJustify,
 		labelJustify,
 		padding,
 		cWidth,
@@ -73,7 +72,7 @@ export function BigNumber({
 	let labelAlign: 'start' | 'center' = 'start';
 
 	if (orientation == 'vertical') {
-		padding = 0
+		padding = 0;
 		cHeight = height ? height / 2.25 : chartWidth / aspectRatio;
 		cWidth = height ? cHeight * aspectRatio : chartWidth;
 		generalJustify = 'center';
@@ -85,7 +84,7 @@ export function BigNumber({
 			cWidth = chartWidth / 1.75;
 			cHeight = cWidth / aspectRatio;
 		}
-		padding = 10
+		padding = 10;
 		generalJustify = 'start';
 	}
 
@@ -151,7 +150,7 @@ export function BigNumber({
 					alignItems={'center'}
 				>
 					{lineElements.length > 0 && (
-						<View gridArea="sparkline" justifySelf={"center"}>
+						<View gridArea="sparkline" justifySelf={'center'}>
 							<RscChart
 								chartWidth={cWidth}
 								height={cHeight}
@@ -192,7 +191,7 @@ export function BigNumber({
 							</View>
 						</>
 					)}
-					<View gridArea="data" justifySelf={dataJustify} UNSAFE_className="BigNumber-data">
+					<View gridArea="data" UNSAFE_className="BigNumber-data">
 						{formattedValue}
 					</View>
 				</Grid>
