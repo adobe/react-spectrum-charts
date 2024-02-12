@@ -9,7 +9,11 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { render, screen } from '@test-utils';
+import { BigNumber, Chart, Line } from '@rsc';
+import { simpleSparklineData } from '@stories/data/data';
+import { findChart, render, screen } from '@test-utils';
+
+import { Icon } from '@adobe/react-spectrum';
 
 import {
 	BasicHorizontal,
@@ -18,12 +22,14 @@ import {
 	CurrencyFormat,
 	IconHorizontal,
 	IconVertical,
-	PercentageFormat, SparklineMethodLast,
-	UndefinedData
+	PercentageFormat,
+	SparklineAndIconHorizontal,
+	SparklineAndIconVertical,
+	SparklineHorizontal,
+	SparklineMethodLast,
+	SparklineVertical,
+	UndefinedData,
 } from './BigNumber.story';
-import { BigNumber, Chart, Line } from '@rsc';
-import { simpleSparklineData } from '@stories/data/data';
-import { Icon } from '@adobe/react-spectrum';
 
 describe('BigNumber', () => {
 	describe('BigNumber basic component', () => {
@@ -93,30 +99,34 @@ describe('BigNumber', () => {
 
 	describe('Chart with BigNumber children', () => {
 		test('Chart with BigNumber and Line as children should throw error', () => {
-			expect(() => render(
-				<Chart data={simpleSparklineData}>
-					<BigNumber dataKey='y' orientation="horizontal" label="Empty">
-						<div></div>
-					</BigNumber>
-					<Line/>
-				</Chart>
-			)).toThrow('If passing BigNumber to Chart only the BigNumber will be displayed. All other elements will be ignored');
+			expect(() =>
+				render(
+					<Chart data={simpleSparklineData}>
+						<BigNumber dataKey="y" orientation="horizontal" label="Empty">
+							<div></div>
+						</BigNumber>
+						<Line />
+					</Chart>
+				)
+			).toThrow(
+				'If passing BigNumber to Chart only the BigNumber will be displayed. All other elements will be ignored'
+			);
 		});
 
 		test('Chart with multiple BigNumbers only displays first', async () => {
 			render(
 				<Chart data={simpleSparklineData}>
-					<BigNumber dataKey='y' orientation="horizontal" label="test">
+					<BigNumber dataKey="y" orientation="horizontal" label="test">
 						<Icon data-testid="first-icon">
 							<svg></svg>
 						</Icon>
 					</BigNumber>
-					<BigNumber dataKey='y' orientation="horizontal" label="test">
+					<BigNumber dataKey="y" orientation="horizontal" label="test">
 						<Icon data-testid="second-icon">
 							<svg></svg>
 						</Icon>
 					</BigNumber>
-					<BigNumber dataKey='y' orientation="horizontal" label="test">
+					<BigNumber dataKey="y" orientation="horizontal" label="test">
 						<Icon data-testid="third-icon">
 							<svg></svg>
 						</Icon>
@@ -135,21 +145,77 @@ describe('BigNumber', () => {
 		});
 	});
 
+	describe('Sparkline with orientation', () => {
+		test('Vertical orientation sparkline', async () => {
+			render(<SparklineVertical {...SparklineVertical.args} />);
+			const value = await screen.findByText('20');
+			expect(value).toBeInTheDocument();
+
+			const label = await screen.findByText('Visitors');
+			expect(label).toBeInTheDocument();
+
+			const chart = await findChart();
+			expect(chart).toBeInTheDocument();
+		});
+		test('Horizontal orientation sparkline', async () => {
+			render(<SparklineHorizontal {...SparklineHorizontal.args} />);
+			const value = await screen.findByText('20');
+			expect(value).toBeInTheDocument();
+
+			const label = await screen.findByText('Visitors');
+			expect(label).toBeInTheDocument();
+
+			const chart = await findChart();
+			expect(chart).toBeInTheDocument();
+		});
+	});
+
+	describe('Sparkline with orientation and icon', () => {
+		test('Vertical orientation sparkline with icon', async () => {
+			render(<SparklineAndIconVertical {...SparklineAndIconVertical.args} />);
+			const icon = await screen.findByTestId('icon-amusementpark');
+			expect(icon).toBeInTheDocument();
+
+			const value = await screen.findByText('20');
+			expect(value).toBeInTheDocument();
+
+			const label = await screen.findByText('Visitors');
+			expect(label).toBeInTheDocument();
+
+			const chart = await findChart();
+			expect(chart).toBeInTheDocument();
+		});
+		test('Horizontal orientation sparkline with icon', async () => {
+			render(<SparklineAndIconHorizontal {...SparklineAndIconHorizontal.args} />);
+			const icon = await screen.findByTestId('icon-amusementpark');
+			expect(icon).toBeInTheDocument();
+
+			const value = await screen.findByText('20');
+			expect(value).toBeInTheDocument();
+
+			const label = await screen.findByText('Visitors');
+			expect(label).toBeInTheDocument();
+
+			const chart = await findChart();
+			expect(chart).toBeInTheDocument();
+		});
+	});
+
 	describe('Sparkline with different display methods', () => {
 		test('Sparkline with  no method specified (default to last)', async () => {
-			render(<SparklineMethodLast {...SparklineMethodLast.args}/>);
+			render(<SparklineMethodLast {...SparklineMethodLast.args} />);
 			const val = await screen.findByText('90');
 			expect(val).toBeInTheDocument();
 		});
 
 		test('Sparkline with sum method specified', async () => {
-			render(<SparklineMethodLast {...SparklineMethodLast.args} method="sum"/>);
+			render(<SparklineMethodLast {...SparklineMethodLast.args} method="sum" />);
 			const val = await screen.findByText('1.05K');
 			expect(val).toBeInTheDocument();
 		});
 
 		test('Sparkline with avg method specified', async () => {
-			render(<SparklineMethodLast {...SparklineMethodLast.args} method="avg"/>);
+			render(<SparklineMethodLast {...SparklineMethodLast.args} method="avg" />);
 			const val = await screen.findByText('50');
 			expect(val).toBeInTheDocument();
 		});
