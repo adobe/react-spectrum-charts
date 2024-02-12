@@ -9,6 +9,9 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { createElement } from 'react';
+
+import { Trendline } from '@components/Trendline';
 import {
 	DEFAULT_COLOR,
 	DEFAULT_COLOR_SCHEME,
@@ -20,7 +23,7 @@ import { initializeSpec } from '@specBuilder/specUtils';
 import { ScatterSpecProps } from 'types';
 import { GroupMark } from 'vega';
 
-import { addData, addScatterMarks, setScales } from './scatterSpecBuilder';
+import { addData, addScatterMarks, addSignals, setScales } from './scatterSpecBuilder';
 
 const defaultScatterProps: ScatterSpecProps = {
 	children: [],
@@ -30,6 +33,7 @@ const defaultScatterProps: ScatterSpecProps = {
 	dimension: DEFAULT_LINEAR_DIMENSION,
 	dimensionScaleType: DEFAULT_DIMENSION_SCALE_TYPE,
 	index: 0,
+	interactiveMarkName: 'scatter0',
 	lineType: { value: 'solid' },
 	lineWidth: { value: 0 },
 	metric: DEFAULT_METRIC,
@@ -44,6 +48,25 @@ describe('addData()', () => {
 		expect(data).toHaveLength(2);
 		expect(data[0].transform).toHaveLength(2);
 		expect(data[0].transform?.[1].type).toBe('timeunit');
+	});
+	test('should add trendline data if trendline exists as a child', () => {
+		const data = addData(initializeSpec().data ?? [], {
+			...defaultScatterProps,
+			children: [createElement(Trendline)],
+		});
+		expect(data).toHaveLength(3);
+		expect(data[2].transform).toHaveLength(2);
+		expect(data[2].transform?.[0].type).toBe('regression');
+	});
+});
+
+describe('addSignals()', () => {
+	test('should add trendline signals if trendline exists as a child', () => {
+		const signals = addSignals([], {
+			...defaultScatterProps,
+			children: [createElement(Trendline, { displayOnHover: true })],
+		});
+		expect(signals).toHaveLength(1);
 	});
 });
 
@@ -98,5 +121,10 @@ describe('addScatterMarks()', () => {
 	test('should "screen" blend mode in dark mode', () => {
 		const marks = addScatterMarks([], { ...defaultScatterProps, colorScheme: 'dark' });
 		expect((marks[0] as GroupMark).marks?.[0].encode?.enter?.blend).toEqual({ value: 'screen' });
+	});
+	test('should add trendline marks if trendline exists as a child', () => {
+		const marks = addScatterMarks([], { ...defaultScatterProps, children: [createElement(Trendline)] });
+		expect(marks).toHaveLength(2);
+		expect(marks[1].name).toBe('scatter0Trendline0_group');
 	});
 });

@@ -15,6 +15,7 @@ import { MARK_ID, SERIES_ID } from '@constants';
 import { View } from 'vega';
 
 import { Area, Axis, AxisAnnotation, Bar, BigNumber, ChartPopover, ChartTooltip, Legend, Line, Trendline } from '..';
+import { Donut } from '../alpha';
 import {
 	AxisAnnotationChildElement,
 	AxisChildElement,
@@ -38,6 +39,7 @@ type ElementCounts = {
 	axis: number;
 	axisAnnotation: number;
 	bar: number;
+	donut: number;
 	legend: number;
 	line: number;
 };
@@ -110,9 +112,18 @@ const isMarkChildElement = <T extends MarkChildElement = MarkChildElement>(
 	return isRscComponent(child);
 };
 
+const isRscElement = <T extends RscElement = RscElement>(child: ChildElement<T> | undefined): child is T => {
+	return isRscComponent(child);
+};
+
 const isRscComponent = (child?: ChildElement<RscElement>): boolean => {
 	return Boolean(
-		child && typeof child !== 'string' && typeof child !== 'boolean' && 'type' in child && child.type !== Fragment
+		child &&
+			typeof child !== 'string' &&
+			typeof child !== 'boolean' &&
+			'type' in child &&
+			child.type !== Fragment &&
+			'displayName' in child.type
 	);
 };
 
@@ -223,27 +234,31 @@ export const getAllElements = (
 };
 
 const getElementName = (element: ChildElement<RscElement>, elementCounts: ElementCounts) => {
-	if (typeof element !== 'object' || !('type' in element)) return '';
-	switch (element.type) {
-		case Area:
+	if (!(isRscElement(element) && 'displayName' in element.type)) return '';
+	// use displayName since it is the olny way to check alpha and beta components
+	switch (element.type.displayName) {
+		case Area.displayName:
 			elementCounts.area++;
 			return getComponentName(element, `area${elementCounts.area}`);
-		case Axis:
+		case Axis.displayName:
 			elementCounts.axis++;
 			return getComponentName(element, `axis${elementCounts.axis}`);
-		case AxisAnnotation:
+		case AxisAnnotation.displayName:
 			elementCounts.axisAnnotation++;
 			return getComponentName(element, `Annotation${elementCounts.axisAnnotation}`);
-		case Bar:
+		case Bar.displayName:
 			elementCounts.bar++;
 			return getComponentName(element, `bar${elementCounts.bar}`);
-		case Legend:
+		case Donut.displayName:
+			elementCounts.donut++;
+			return getComponentName(element, `donut${elementCounts.donut}`);
+		case Legend.displayName:
 			elementCounts.legend++;
 			return getComponentName(element, `legend${elementCounts.legend}`);
-		case Line:
+		case Line.displayName:
 			elementCounts.line++;
 			return getComponentName(element, `line${elementCounts.line}`);
-		case Trendline:
+		case Trendline.displayName:
 			return getComponentName(element, 'Trendline');
 		default:
 			return '';
@@ -262,6 +277,7 @@ const initElementCounts = (): ElementCounts => ({
 	axis: -1,
 	axisAnnotation: -1,
 	bar: -1,
+	donut: -1,
 	legend: -1,
 	line: -1,
 });

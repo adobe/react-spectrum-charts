@@ -11,11 +11,13 @@
  */
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { DEFAULT_COLOR, DEFAULT_METRIC, DEFAULT_TIME_DIMENSION } from '@constants';
+import { FC } from 'react';
+
+import { DEFAULT_METRIC, DEFAULT_TIME_DIMENSION } from '@constants';
 
 import { LineProps } from '../../types';
 
-export function Line({
+const Line: FC<LineProps> = ({
 	name = 'line0',
 	dimension = DEFAULT_TIME_DIMENSION,
 	metric = DEFAULT_METRIC,
@@ -23,6 +25,11 @@ export function Line({
 	scaleType = 'time',
 	lineType = { value: 'solid' },
 	padding,
-}: LineProps) {
+}: LineProps) => {
 	return null;
-}
+};
+
+// displayName is used to validate the component type in the spec builder
+Line.displayName = 'Line';
+
+export { Line };

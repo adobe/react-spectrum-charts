@@ -87,7 +87,7 @@ const ScatterStory: StoryFn<typeof Scatter> = (args): ReactElement => {
 	}
 
 	return (
-		<Chart {...chartProps}>
+		<Chart {...chartProps} >
 			<Axis position="bottom" grid ticks baseline title={marioKeyTitle[args.dimension as MarioDataKey]} />
 			<Axis position="left" grid ticks baseline title={marioKeyTitle[args.metric as MarioDataKey]} />
 			<Scatter {...args} />

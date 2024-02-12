@@ -16,12 +16,14 @@ import {
 	findChart,
 	findMarksByGroupName,
 	getAllLegendEntries,
+	getAllLegendSymbols,
 	getAllMarksByGroupName,
 	getMarksByGroupName,
 	hoverNthElement,
 	render,
 	screen,
 } from '@test-utils';
+import { spectrumColors } from '@themes';
 
 import {
 	FunnelConversion,
@@ -31,6 +33,8 @@ import {
 	TrendsTimeComparisonStackedBar,
 	UserGrowthTimeComparisonBarGrowth,
 } from './ChartExamples.story';
+
+const colors = spectrumColors.light;
 
 function testBarOpacity(bar: HTMLElement, opacity: string) {
 	expect(bar).toHaveAttribute('fill-opacity', opacity);
@@ -124,6 +128,33 @@ describe('Time comparison stories', () => {
 			testBarOpacity(bars[3], '1');
 			testBarStroke(bars[3], '', '1.5');
 		});
+
+		test('legend symobls should be styled correctly', async () => {
+			render(<FunnelTimeComparison {...FunnelTimeComparison.args} />);
+
+			const chart = await findChart();
+			expect(chart).toBeInTheDocument();
+
+			const legendSymbols = getAllLegendSymbols(chart);
+
+			expect(legendSymbols).toHaveLength(4);
+
+			// fill-opacity
+			expect(legendSymbols[0]).toHaveAttribute('fill-opacity', '0.5');
+			expect(legendSymbols[1]).toHaveAttribute('fill-opacity', '1');
+
+			// stroke-dasharray
+			expect(legendSymbols[0]).toHaveAttribute('stroke-dasharray', '3,4');
+			expect(legendSymbols[1]).toHaveAttribute('stroke-dasharray', '');
+
+			// fill
+			expect(legendSymbols[0]).toHaveAttribute('fill', colors['categorical-100']);
+			expect(legendSymbols[2]).toHaveAttribute('fill', colors['categorical-200']);
+
+			// stroke
+			expect(legendSymbols[0]).toHaveAttribute('stroke', colors['categorical-100']);
+			expect(legendSymbols[2]).toHaveAttribute('stroke', colors['categorical-200']);
+		});
 	});
 
 	describe('UserGrowthTimeComparison', () => {
@@ -174,7 +205,6 @@ describe('Time comparison stories', () => {
 
 			// last period May
 			for (let i = 12; i <= 15; i++) {
-				console.log({ i });
 				testBarOpacity(bars[i], '1');
 				testBarStroke(bars[i], '', '1.5');
 			}
