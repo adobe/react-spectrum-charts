@@ -55,7 +55,7 @@ export function BigNumber({
 
 	let cWidth: number, cHeight: number, generalJustify: 'center' | 'start', padding: number;
 
-	if (orientation == 'vertical') {
+	if (orientation == 'vertical' || !orientation) {
 		padding = 0;
 		cHeight = height ? height / 2.25 : chartWidth / aspectRatio;
 		cWidth = height ? cHeight * aspectRatio : chartWidth;
@@ -135,10 +135,13 @@ export function BigNumber({
 
 BigNumber.displayName = 'BigNumber';
 
-function checkElements(icon: IconElement | undefined, lineElements: BigNumberChildElement[], orientation: Orientation, height: number | undefined, chartWidth: number) {
+function checkElements(icon: IconElement | undefined, lineElements: BigNumberChildElement[], orientation: Orientation | undefined, height: number | undefined, chartWidth: number) {
 	let labelAlign: 'start' | 'center' = 'start';
 	let iconAlign: 'start';
 	let iconJustify: 'end';
+	if (!orientation) {
+		orientation = 'vertical';
+	}
 	const iconSize = getIconSizeByOrientation(orientation, height, chartWidth, icon !== undefined, lineElements.length > 0);
 	if (icon && lineElements.length > 0 && orientation == 'vertical') {
 		labelAlign = 'center';
