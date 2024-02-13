@@ -142,7 +142,7 @@ export function buildSpec({
 				case Title.displayName:
 					// No title count. There can only be one title.
 					return addTitle(acc, { ...(cur as TitleElement).props });
-				case BigNumber:
+				case BigNumber.displayName:
 					// Do nothing and do not throw an error
 					return acc;
 				default:

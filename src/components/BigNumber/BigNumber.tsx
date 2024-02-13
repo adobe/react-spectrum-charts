@@ -140,7 +140,10 @@ export function BigNumber({
 			</Grid>
 		</div>
 	);
+
 }
+
+BigNumber.displayName = 'BigNumber';
 
 function checkElements(icon: IconElement | undefined, lineElements: BigNumberChildElement[], orientation: string, height: number | undefined, chartWidth: number) {
 	let labelAlign: 'start' | 'center' = 'start';

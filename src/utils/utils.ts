@@ -67,7 +67,9 @@ export const sanitizeBigNumberChildren = (children: Children<BigNumberChildEleme
 };
 
 export const chartContainsBigNumber = (children: Children<ChartChildElement> | undefined): ChartChildElement[] => {
+	console.warn('Chart contains big number out of these children', children);
 	const sanitizedChildren = sanitizeRscChartChildren(children);
+	console.warn('After children have been sanitized', sanitizedChildren);
 	return sanitizedChildren.filter(child => child.type == BigNumber);
 }
 
@@ -100,7 +102,9 @@ export const sanitizeTrendlineChildren = (
 };
 
 const isChartChildElement = (child: ChildElement<ChartChildElement> | undefined): child is ChartChildElement => {
-	return isRscComponent(child);
+	const res = isRscComponent(child);
+	console.warn('Is the child an rsc component?', res);
+	return res;
 };
 
 const isBigNumberChildElement = (child: ChildElement<BigNumberChildElement> | undefined): child is BigNumberChildElement => {
@@ -205,7 +209,7 @@ export function getElement(
  */
 export const getAllElements = (
 	target: Children<ChartElement | RscElement>,
-	source: typeof Axis | typeof Legend | typeof Line | typeof Bar | typeof ChartTooltip | typeof ChartPopover,
+	source: typeof Axis | typeof Legend | typeof Line | typeof Bar | typeof ChartTooltip | typeof ChartPopover | typeof BigNumber,
 	elements: MappedElement[] = [],
 	name: string = ''
 ): MappedElement[] => {

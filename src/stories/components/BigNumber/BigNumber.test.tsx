@@ -22,7 +22,7 @@ import {
 	UndefinedData
 } from './BigNumber.story';
 import { BigNumber, Chart, Line } from '@rsc';
-import { simpleSparklineData } from '@stories/data/data';
+import { simpleSparklineData as data } from '@stories/data/data';
 import { Icon } from '@adobe/react-spectrum';
 
 describe('BigNumber', () => {
@@ -30,7 +30,7 @@ describe('BigNumber', () => {
 		test('BasicHorizontal renders', async () => {
 			render(<BasicHorizontal {...BasicHorizontal.args} />);
 			console.warn(prettyDOM());
-			const value = await screen.findByText('20');
+			const value = await screen.findByText(data[data.length - 1][BasicHorizontal.args.dataKey]);
 			expect(value).toBeInTheDocument();
 			const label = await screen.findByText(BasicHorizontal.args.label);
 			expect(label).toBeInTheDocument();
@@ -38,7 +38,7 @@ describe('BigNumber', () => {
 
 		test('BasicVertical renders', async () => {
 			render(<BasicVertical {...BasicVertical.args} />);
-			const value = await screen.findByText('20');
+			const value = await screen.findByText(data[data.length - 1][BasicHorizontal.args.dataKey]);
 			expect(value).toBeInTheDocument();
 			const label = await screen.findByText(BasicVertical.args.label);
 			expect(label).toBeInTheDocument();
@@ -49,7 +49,7 @@ describe('BigNumber', () => {
 			render(<IconVertical {...IconVertical.args} />);
 			const icon = await screen.findByTestId('icon-amusementpark');
 			expect(icon).toBeInTheDocument();
-			const value = await screen.findByText('20');
+			const value = await screen.findByText(data[data.length - 1][BasicHorizontal.args.dataKey]);
 			expect(value).toBeInTheDocument();
 			const label = await screen.findByText(IconVertical.args.label);
 			expect(label).toBeInTheDocument();
@@ -95,7 +95,7 @@ describe('BigNumber', () => {
 	describe('Chart with BigNumber children', () => {
 		test('Chart with BigNumber and Line as children should throw error', () => {
 			expect(() => render(
-				<Chart data={simpleSparklineData}>
+				<Chart data={data}>
 					<BigNumber dataKey='y' orientation="horizontal" label="Empty">
 						<div></div>
 					</BigNumber>
@@ -106,7 +106,7 @@ describe('BigNumber', () => {
 
 		test('Chart with multiple BigNumbers only displays first', async () => {
 			render(
-				<Chart data={simpleSparklineData}>
+				<Chart data={data}>
 					<BigNumber dataKey='y' orientation="horizontal" label="test" icon={<Icon data-testid="first-icon">
 					<svg></svg>
 		</Icon>}>
@@ -136,7 +136,7 @@ describe('BigNumber', () => {
 	describe('Sparkline with different display methods', () => {
 		test('Sparkline with  no method specified (default to last)', async () => {
 			render(<SparklineMethodLast {...SparklineMethodLast.args}/>);
-			const val = await screen.findByText('90');
+			const val = await screen.findByText(data[data.length - 1][SparklineMethodLast.args.dataKey]);
 			expect(val).toBeInTheDocument();
 		});
 
