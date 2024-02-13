@@ -117,21 +117,21 @@ describe('BigNumber', () => {
 		test('Chart with multiple BigNumbers only displays first', async () => {
 			render(
 				<Chart data={data}>
-					<BigNumber dataKey="y" orientation="horizontal" label="test">
+					<BigNumber dataKey="y" orientation="horizontal" label="test" icon={
 						<Icon data-testid="first-icon">
 							<svg></svg>
 						</Icon>
-					</BigNumber>
-					<BigNumber dataKey="y" orientation="horizontal" label="test">
+					}/>
+					<BigNumber dataKey="y" orientation="horizontal" label="test" icon={
 						<Icon data-testid="second-icon">
 							<svg></svg>
 						</Icon>
-					</BigNumber>
-					<BigNumber dataKey="y" orientation="horizontal" label="test">
+					}/>
+					<BigNumber dataKey="y" orientation="horizontal" label="test" icon={
 						<Icon data-testid="third-icon">
 							<svg></svg>
 						</Icon>
-					</BigNumber>
+					}/>
 				</Chart>
 			);
 
