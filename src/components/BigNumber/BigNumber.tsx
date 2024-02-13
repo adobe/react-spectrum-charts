@@ -15,7 +15,7 @@ import { cloneElement, useRef } from 'react';
 
 import { sanitizeBigNumberChildren } from '@utils';
 import { RscChart } from 'RscChart';
-import { BigNumberChildElement, BigNumberProps, IconElement, LineElement } from 'types';
+import { BigNumberChildElement, BigNumberProps, ChartData, IconElement, LineElement, Orientation } from 'types';
 import { getLocale } from 'utils/locale';
 import { v4 as uuid } from 'uuid';
 import { View as VegaView } from 'vega';
@@ -44,18 +44,8 @@ export function BigNumber({
 	const { chartWidth, height, locale, data, ...rscChartRemain } = rscChartProps;
 	const aspectRatio = 16 / 9;
 	// based on Chart.tsx checks, data will always be defined and have a length greater than 0.
-	let bigNumberValue: number;
-	if (!method || method === 'last') {
-		bigNumberValue = data[data.length - 1][dataKey];
-	} else {
-		// this must be either 'sum' or 'avg'
-		bigNumberValue = data.reduce((sum, cur) => {
-			return sum + cur[dataKey];
-		}, 0);
-		if (method === 'avg') {
-			bigNumberValue = bigNumberValue / data.length;
-		}
-	}
+	const bigNumberValue = getBigNumberValue(method, data, dataKey);
+
 
 	const numberLocale = getLocale(locale).number;
 	const type = numberType ?? 'linear';
@@ -145,15 +135,14 @@ export function BigNumber({
 
 BigNumber.displayName = 'BigNumber';
 
-function checkElements(icon: IconElement | undefined, lineElements: BigNumberChildElement[], orientation: string, height: number | undefined, chartWidth: number) {
+function checkElements(icon: IconElement | undefined, lineElements: BigNumberChildElement[], orientation: Orientation, height: number | undefined, chartWidth: number) {
 	let labelAlign: 'start' | 'center' = 'start';
 	let iconAlign: 'start';
 	let iconJustify: 'end';
-	let iconSize: 'XXS' | 'XS' | 'S' | 'M' | 'L' | 'XL' | 'XXL';
+	const iconSize = getIconSizeByOrientation(orientation, height, chartWidth, icon !== undefined, lineElements.length > 0);
 	if (icon && lineElements.length > 0 && orientation == 'vertical') {
 		labelAlign = 'center';
 		iconJustify = 'end'
-		iconSize = determineIconSize(height ? height / 3 : chartWidth / 2);
 		return {
 					areas: ['sparkline sparkline', 'data data', 'icon label'],
 					columns: ['1fr', '4fr'],
@@ -165,7 +154,6 @@ function checkElements(icon: IconElement | undefined, lineElements: BigNumberChi
 	} else if (icon && lineElements.length > 0 && orientation == 'horizontal') {
 		iconJustify = 'end';
 		iconAlign = 'start';
-		iconSize = determineIconSize(chartWidth / 6);
 		return {
 			areas: ['sparkline data data', 'sparkline icon label'],
 			columns: ['3fr', '1fr', '2fr'],
@@ -180,7 +168,6 @@ function checkElements(icon: IconElement | undefined, lineElements: BigNumberChi
 	} else if (lineElements.length > 0 && orientation == 'horizontal') {
 		return { areas: ['sparkline data', 'sparkline label'], columns: ['1fr 1fr'], labelAlign };
 	} else if (icon && orientation == 'vertical') {
-		iconSize = determineIconSize(height ? height / 1.75 : chartWidth);
 		return {
 			areas: ['icon', 'data', 'label'],
 			columns: ['1fr'],
@@ -189,7 +176,6 @@ function checkElements(icon: IconElement | undefined, lineElements: BigNumberChi
 		};
 	} else if (icon && orientation == 'horizontal') {
 		iconJustify = 'end';
-		iconSize = determineIconSize(chartWidth / 3.5)
 		return {
 			areas: ['icon data', 'icon label'],
 			columns: ['1fr', '2fr'],
@@ -202,6 +188,19 @@ function checkElements(icon: IconElement | undefined, lineElements: BigNumberChi
 	}
 }
 
+function getIconSizeByOrientation(orientation: Orientation, height: number | undefined, chartWidth: number, hasIcon: boolean, hasLines: boolean): 'XXS' | 'XS' | 'S' | 'M' | 'L' | 'XL' | 'XXL' {
+	if (hasIcon && hasLines && orientation == 'vertical') {
+		return determineIconSize(height ? height / 3 : chartWidth / 2);
+	} else if (hasIcon && hasLines && orientation == 'horizontal') {
+		return determineIconSize(chartWidth / 6);
+	} else if (hasIcon && orientation == 'vertical') {
+		return determineIconSize(height ? height / 1.75 : chartWidth);
+	} else if (hasIcon && orientation == 'horizontal') {
+		return determineIconSize(chartWidth / 3.5);
+	}
+	return 'L';
+}
+
 function determineIconSize (widthAvailable: number) {
 	if (widthAvailable <= 21) return 'XS';
 	else if (widthAvailable <= 35) return 'S';
@@ -209,5 +208,20 @@ function determineIconSize (widthAvailable: number) {
 	else if (widthAvailable <= 60) return 'L';
 	else if (widthAvailable <= 75) return 'XL';
 	return 'XXL';
+}
+
+function getBigNumberValue(method: 'last' | 'avg' | 'sum' | undefined, data: ChartData[], dataKey: string) {
+	if (!method || method === 'last') {
+		 return data[data.length - 1][dataKey];
+	} else {
+		// this must be either 'sum' or 'avg'
+		 const value = data.reduce((sum, cur) => {
+			return sum + cur[dataKey];
+		}, 0);
+		if (method === 'avg') {
+			return value / data.length;
+		}
+		return value;
+	}
 }
 
