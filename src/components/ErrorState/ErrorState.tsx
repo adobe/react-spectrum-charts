@@ -22,8 +22,6 @@ interface ErrorStateProps {
 	icon?: ReactElement;
 
 	actionText?: string;
-
-	action?: () => void;
 }
 
 export const ErrorState: FC<ErrorStateProps> = (props) => {

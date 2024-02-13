@@ -88,6 +88,8 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 
 		const bigNumberChildren = chartContainsBigNumber(props.children);
 
+		const hasBigNumberChildren = bigNumberChildren.length > 0;
+
 		useEffect(() => {
 			// if placeholder content is displayed, clear out the chartview so it can't be downloaded or copied to clipboard
 			if (showPlaceholderContent) {
@@ -108,13 +110,11 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 			);
 		}
 
-		if (bigNumberChildren.length > 0 && toArray(props.children).length != bigNumberChildren.length) {
+		if (hasBigNumberChildren && toArray(props.children).length != bigNumberChildren.length) {
 			throw new Error(
 				'If passing BigNumber to Chart only the BigNumber will be displayed. All other elements will be ignored'
 			);
 		}
-
-		console.warn('BigNumberChildren from Chart.tsx are', bigNumberChildren);
 
 		const rscChartProps: RscChartProps = {
 			chartView: chartView,
@@ -142,6 +142,17 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 			UNSAFE_vegaSpec: UNSAFE_vegaSpec,
 		};
 
+
+		const placeholderContent = hasBigNumberChildren ? (
+			<>
+				{cloneElement(bigNumberChildren[0] as BigNumberElement, {
+					rscChartProps: rscChartProps,
+				})}
+			</>
+		) : (
+			<RscChart {...rscChartProps}>{props.children}</RscChart>
+		);
+
 		return (
 			<Provider
 				colorScheme={colorScheme}
@@ -155,22 +166,14 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 					className="rsc-container"
 					style={{ backgroundColor: getColorValue(backgroundColor, colorScheme) }}
 				>
-					{showPlaceholderContent ? (
+					{ showPlaceholderContent ? (
 						<PlaceholderContent
 							loading={loading}
 							data={data}
 							height={height}
 							emptyStateText={emptyStateText}
 						/>
-					) : bigNumberChildren.length > 0 ? (
-						<>
-							{cloneElement(bigNumberChildren[0] as BigNumberElement, {
-								rscChartProps: rscChartProps,
-							})}
-						</>
-					) : (
-						<RscChart {...rscChartProps}>{props.children}</RscChart>
-					)}
+					) : placeholderContent }
 				</div>
 			</Provider>
 		);

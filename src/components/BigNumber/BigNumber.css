@@ -23,4 +23,11 @@
 
 .BigNumber-container {
     width: fit-content;
+    border: none;
+    background: none;
+    padding: 0;
+    font: inherit;
+    color: inherit;
+    cursor: default;
+    outline: none;
 }

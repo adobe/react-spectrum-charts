@@ -79,7 +79,7 @@ const BigNumber: FC<BigNumberProps> = ({
 		chartWidth
 	);
 	return (
-		<div tabIndex={0} className="BigNumber-container">
+		<button tabIndex={0} className="BigNumber-container">
 			<Grid
 				width={chartWidth}
 				height={height}
@@ -119,7 +119,7 @@ const BigNumber: FC<BigNumberProps> = ({
 					{formattedValue}
 				</View>
 			</Grid>
-		</div>
+		</button>
 	);
 };
 
