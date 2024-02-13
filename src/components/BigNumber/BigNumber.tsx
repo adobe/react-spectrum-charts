@@ -11,7 +11,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { cloneElement, useRef } from 'react';
+import { FC, cloneElement, useRef } from 'react';
 
 import { sanitizeBigNumberChildren } from '@utils';
 import { RscChart } from 'RscChart';
@@ -25,7 +25,7 @@ import { Flex, Grid, View } from '@adobe/react-spectrum';
 import './BigNumber.css';
 import { getFormattedString } from './bigNumberFormatUtils';
 
-export function BigNumber({
+const BigNumber: FC<BigNumberProps> = ({
 	dataKey,
 	label,
 	numberFormat,
@@ -39,8 +39,8 @@ export function BigNumber({
 		chartView: useRef<VegaView>(),
 		chartWidth: 200,
 	},
-	method
-}: BigNumberProps) {
+	method,
+}) => {
 	const { chartWidth, height, locale, data, ...rscChartRemain } = rscChartProps;
 	const aspectRatio = 16 / 9;
 	// based on Chart.tsx checks, data will always be defined and have a length greater than 0.
@@ -71,7 +71,13 @@ export function BigNumber({
 		generalJustify = 'start';
 	}
 
-	const {areas, columns, iconAlign, labelAlign, iconJustify, iconSize, displayCombo } = checkElements(icon, lineElements, orientation, height, chartWidth);
+	const { areas, columns, iconAlign, labelAlign, iconJustify, iconSize, displayCombo } = checkElements(
+		icon,
+		lineElements,
+		orientation,
+		height,
+		chartWidth
+	);
 	return (
 		<div tabIndex={0} className="BigNumber-container">
 			<Grid
@@ -85,23 +91,13 @@ export function BigNumber({
 			>
 				{lineElements.length > 0 && (
 					<View gridArea="sparkline" justifySelf={'center'}>
-						<RscChart
-							chartWidth={cWidth}
-							height={cHeight}
-							data={data}
-							locale={locale}
-							{...rscChartRemain}
-						>
+						<RscChart chartWidth={cWidth} height={cHeight} data={data} locale={locale} {...rscChartRemain}>
 							{cloneElement(lineElements[0] as LineElement, { isSparkline: true, padding })}
 						</RscChart>
 					</View>
 				)}
 				{displayCombo && icon ? (
-					<View
-						gridArea="combo"
-						alignSelf={labelAlign}
-						UNSAFE_className="BigNumber-label"
-					>
+					<View gridArea="combo" alignSelf={labelAlign} UNSAFE_className="BigNumber-label">
 						<Flex gap="size-50">
 							{cloneElement(icon, { size: iconSize })}
 							{label}
@@ -114,11 +110,7 @@ export function BigNumber({
 								{cloneElement(icon, { size: iconSize })}
 							</View>
 						)}
-						<View
-							gridArea="label"
-							alignSelf={labelAlign}
-							UNSAFE_className="BigNumber-label"
-						>
+						<View gridArea="label" alignSelf={labelAlign} UNSAFE_className="BigNumber-label">
 							{label}
 						</View>
 					</>
@@ -129,27 +121,38 @@ export function BigNumber({
 			</Grid>
 		</div>
 	);
-
-}
+};
 
 BigNumber.displayName = 'BigNumber';
 
-function checkElements(icon: IconElement | undefined, lineElements: BigNumberChildElement[], orientation: Orientation, height: number | undefined, chartWidth: number) {
+function checkElements(
+	icon: IconElement | undefined,
+	lineElements: BigNumberChildElement[],
+	orientation: Orientation,
+	height: number | undefined,
+	chartWidth: number
+) {
 	let labelAlign: 'start' | 'center' = 'start';
 	let iconAlign: 'start';
 	let iconJustify: 'end';
-	const iconSize = getIconSizeByOrientation(orientation, height, chartWidth, icon !== undefined, lineElements.length > 0);
+	const iconSize = getIconSizeByOrientation(
+		orientation,
+		height,
+		chartWidth,
+		icon !== undefined,
+		lineElements.length > 0
+	);
 	if (icon && lineElements.length > 0 && orientation == 'vertical') {
 		labelAlign = 'center';
-		iconJustify = 'end'
+		iconJustify = 'end';
 		return {
-					areas: ['sparkline sparkline', 'data data', 'icon label'],
-					columns: ['1fr', '4fr'],
-					displayCombo: true,
-					labelAlign,
-					iconJustify,
-					iconSize
-				};
+			areas: ['sparkline sparkline', 'data data', 'icon label'],
+			columns: ['1fr', '4fr'],
+			displayCombo: true,
+			labelAlign,
+			iconJustify,
+			iconSize,
+		};
 	} else if (icon && lineElements.length > 0 && orientation == 'horizontal') {
 		iconJustify = 'end';
 		iconAlign = 'start';
@@ -160,7 +163,7 @@ function checkElements(icon: IconElement | undefined, lineElements: BigNumberChi
 			iconAlign,
 			displayCombo: true,
 			iconSize,
-			labelAlign
+			labelAlign,
 		};
 	} else if (lineElements.length > 0 && orientation == 'vertical') {
 		return { areas: ['sparkline', 'data', 'label'], columns: ['1fr'], labelAlign };
@@ -171,7 +174,7 @@ function checkElements(icon: IconElement | undefined, lineElements: BigNumberChi
 			areas: ['icon', 'data', 'label'],
 			columns: ['1fr'],
 			iconSize,
-			labelAlign
+			labelAlign,
 		};
 	} else if (icon && orientation == 'horizontal') {
 		iconJustify = 'end';
@@ -180,14 +183,20 @@ function checkElements(icon: IconElement | undefined, lineElements: BigNumberChi
 			columns: ['1fr', '2fr'],
 			iconSize,
 			iconJustify,
-			labelAlign
+			labelAlign,
 		};
 	} else {
 		return { areas: ['data', 'label'], columns: ['1fr'], labelAlign };
 	}
 }
 
-function getIconSizeByOrientation(orientation: Orientation, height: number | undefined, chartWidth: number, hasIcon: boolean, hasLines: boolean): 'XXS' | 'XS' | 'S' | 'M' | 'L' | 'XL' | 'XXL' {
+function getIconSizeByOrientation(
+	orientation: Orientation,
+	height: number | undefined,
+	chartWidth: number,
+	hasIcon: boolean,
+	hasLines: boolean
+): 'XXS' | 'XS' | 'S' | 'M' | 'L' | 'XL' | 'XXL' {
 	if (hasIcon && hasLines && orientation == 'vertical') {
 		return determineIconSize(height ? height / 3 : chartWidth / 2);
 	} else if (hasIcon && hasLines && orientation == 'horizontal') {
@@ -200,7 +209,7 @@ function getIconSizeByOrientation(orientation: Orientation, height: number | und
 	return 'L';
 }
 
-function determineIconSize (widthAvailable: number) {
+function determineIconSize(widthAvailable: number) {
 	if (widthAvailable <= 21) return 'XS';
 	else if (widthAvailable <= 35) return 'S';
 	else if (widthAvailable <= 45) return 'M';
@@ -211,10 +220,10 @@ function determineIconSize (widthAvailable: number) {
 
 function getBigNumberValue(method: 'last' | 'avg' | 'sum' | undefined, data: ChartData[], dataKey: string) {
 	if (!method || method === 'last') {
-		 return data[data.length - 1][dataKey];
+		return data[data.length - 1][dataKey];
 	} else {
 		// this must be either 'sum' or 'avg'
-		 const value = data.reduce((sum, cur) => {
+		const value = data.reduce((sum, cur) => {
 			return sum + cur[dataKey];
 		}, 0);
 		if (method === 'avg') {
@@ -224,3 +233,4 @@ function getBigNumberValue(method: 'last' | 'avg' | 'sum' | undefined, data: Cha
 	}
 }
 
+export { BigNumber };
