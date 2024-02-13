@@ -32,7 +32,6 @@ import {
 	RscElement,
 	TooltipHandler,
 } from '../types';
-import { Icon } from '@adobe/react-spectrum';
 
 type MappedElement = { name: string; element: ChartElement | RscElement };
 type ElementCounts = {
