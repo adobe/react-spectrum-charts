@@ -50,19 +50,18 @@ const hiddenSeriesLabelUpdateEncoding = {
 
 describe('getSymbolOpacityEncoding()', () => {
 	test('should return undefined if highlight is false', () => {
-		expect(getSymbolOpacityEncoding(defaultLegendProps)).toBeUndefined();
+		expect(getSymbolOpacityEncoding([], defaultLegendProps)).toBeUndefined();
 	});
 
 	test('should return default highlight encoding if opacity and facets are undefined', () => {
-		expect(getSymbolOpacityEncoding({ ...defaultLegendProps, highlight: true })).toStrictEqual(opacityEncoding);
+		expect(getSymbolOpacityEncoding([], { ...defaultLegendProps, highlight: true })).toStrictEqual(opacityEncoding);
 	});
 
 	test('should return signal-based encoding if facets includes opacity facet when opacity id undefined', () => {
 		expect(
-			getSymbolOpacityEncoding({
+			getSymbolOpacityEncoding([{ facetType: 'opacity', field: DEFAULT_COLOR }], {
 				...defaultLegendProps,
 				highlight: true,
-				facets: [{ facetType: 'opacity', field: DEFAULT_COLOR }],
 			})
 		).toStrictEqual(defaultOpacitySignalEncoding);
 	});
@@ -70,7 +69,7 @@ describe('getSymbolOpacityEncoding()', () => {
 	test('should return value-based encoding if opacity exists and is a static value', () => {
 		const opacity = 0.5;
 		expect(
-			getSymbolOpacityEncoding({ ...defaultLegendProps, highlight: true, opacity: { value: opacity } })
+			getSymbolOpacityEncoding([], { ...defaultLegendProps, highlight: true, opacity: { value: opacity } })
 		).toStrictEqual([
 			{
 				test: 'highlightedSeries && datum.value !== highlightedSeries',
@@ -82,11 +81,10 @@ describe('getSymbolOpacityEncoding()', () => {
 
 	test('should return signal based highlight encodings if opacity is a signal ref', () => {
 		expect(
-			getSymbolOpacityEncoding({
+			getSymbolOpacityEncoding([{ facetType: 'opacity', field: 'testing' }], {
 				...defaultLegendProps,
 				highlight: true,
 				opacity: DEFAULT_COLOR,
-				facets: [{ facetType: 'opacity', field: 'testing' }],
 			})
 		).toStrictEqual(defaultOpacitySignalEncoding);
 	});

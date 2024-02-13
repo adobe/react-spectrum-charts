@@ -23,7 +23,6 @@ export const useResizeObserver = <T extends HTMLElement>(callback: (target: T, e
 
 		// ResizeObserver is not supported in jest
 		if (typeof ResizeObserver === 'undefined') {
-			console.warn('ResizeObserver is not supported. Defaulting to 500px.');
 			callback(element, { contentRect: { width: 500 } } as ResizeObserverEntry);
 			return;
 		}

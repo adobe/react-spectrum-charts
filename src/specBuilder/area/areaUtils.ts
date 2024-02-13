@@ -10,7 +10,7 @@
  * governing permissions and limitations under the License.
  */
 import { ChartPopover } from '@components/ChartPopover';
-import { HIGHLIGHT_CONTRAST_RATIO, SERIES_ID } from '@constants';
+import { DEFAULT_TRANSFORMED_TIME_DIMENSION, HIGHLIGHT_CONTRAST_RATIO, SERIES_ID } from '@constants';
 import {
 	getBorderStrokeEncodings,
 	getColorProductionRule,
@@ -126,7 +126,7 @@ export function getFillOpacity(
 
 export const getX = (scaleType: ScaleType, dimension: string): ProductionRule<NumericValueRef> => {
 	if (scaleType === 'time') {
-		return { scale: 'xTime', field: 'datetime0' };
+		return { scale: 'xTime', field: DEFAULT_TRANSFORMED_TIME_DIMENSION };
 	} else if (scaleType === 'linear') {
 		return { scale: 'xLinear', field: dimension };
 	}

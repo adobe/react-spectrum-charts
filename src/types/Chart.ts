@@ -25,6 +25,7 @@ export type AreaElement = ReactElement<AreaProps, JSXElementConstructor<AreaProp
 export type AxisElement = ReactElement<AxisProps, JSXElementConstructor<AxisProps>>;
 export type AxisAnnotationElement = ReactElement<AxisAnnotationProps, JSXElementConstructor<AxisAnnotationProps>>;
 export type BarElement = ReactElement<BarProps, JSXElementConstructor<BarProps>>;
+export type DonutElement = ReactElement<DonutProps, JSXElementConstructor<DonutProps>>;
 export type AnnotationElement = ReactElement<AnnotationProps, JSXElementConstructor<AnnotationProps>>;
 export type LegendElement = ReactElement<LegendProps, JSXElementConstructor<LegendProps>>;
 export type LineElement = ReactElement<LineProps, JSXElementConstructor<LineProps>>;
@@ -125,6 +126,27 @@ export interface AreaProps extends MarkProps {
 	// define area using start/end
 	metricStart?: string; // data field for the start of the area
 	metricEnd?: string; // data field for the end of the area
+}
+
+export interface DonutProps extends MarkProps {
+	/** text label for the metric total */
+	metricLabel?: string;
+
+	/** the datum property for segments of the data */
+	segment?: string;
+
+	/** start angle of the donut in radians (0 is top dead center, and default) */
+	startAngle?: number;
+
+	/** ratio of the donut inner radius / donut outer radius. 0 is a pie chart. 0.85 is the default. */
+	holeRatio?: number;
+
+	/** determines if it should display direct labels. If true, must also supply 'segment' prop. Default is false */
+	hasDirectLabels?: boolean;
+
+	/** determines if the center metric should be displayed as a percent. if true, data should only be two data points, which sum to 1
+	 * Also, if true, will display the first datapoint as a percent */
+	isBoolean?: boolean;
 }
 
 export interface AxisProps extends BaseProps {
@@ -364,7 +386,7 @@ export type SymbolSize = 'XS' | 'S' | 'M' | 'L' | 'XL' | number;
 
 export type SymbolSizeFacet = FacetRef<SymbolSize>;
 
-export type ScaleType = 'linear' | 'time' | 'point';
+export type ScaleType = 'linear' | 'point' | 'time';
 export type LegendDescription = { seriesName: string; description: string; title?: string };
 
 export type LegendLabel = { seriesName: string | number; label: string; maxLength?: number };
@@ -471,15 +493,21 @@ export interface TrendlineProps {
 	opacity?: number;
 }
 
-export type TrendlineMethod =
-	| 'average'
+/** trendline methods that use a joinaggregate transform */
+export type AggregateMethod = 'average' | 'median';
+/** trendline methods that use a regression transform */
+export type RegressionMethod =
 	| 'exponential'
 	| 'linear'
 	| 'logarithmic'
-	| `movingAverage-${number}`
 	| `polynomial-${number}`
 	| 'power'
 	| 'quadratic';
+/** trendline methods that use a window transform */
+export type WindowMethod = `movingAverage-${number}`;
+
+/** avaliable methods for generating a trendline */
+export type TrendlineMethod = AggregateMethod | RegressionMethod | WindowMethod;
 
 export type AxisAnnotationFormat = 'span' | 'summary';
 

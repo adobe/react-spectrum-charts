@@ -11,12 +11,14 @@
  */
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
+import { FC } from 'react';
+
 import { DEFAULT_COLOR, DEFAULT_LINEAR_DIMENSION, DEFAULT_METRIC, DEFAULT_SYMBOL_SIZE } from '@constants';
 
 import { ScatterProps } from '../../types';
 
 // destructure props here and set defaults so that storybook can pick them up
-export function Scatter({
+const Scatter: FC<ScatterProps> = ({
 	color = DEFAULT_COLOR,
 	colorScaleType,
 	dimension = DEFAULT_LINEAR_DIMENSION,
@@ -27,6 +29,11 @@ export function Scatter({
 	name,
 	opacity = { value: 1 },
 	size = { value: DEFAULT_SYMBOL_SIZE },
-}: ScatterProps) {
+}) => {
 	return null;
-}
+};
+
+// displayName is used to validate the component type in the spec builder
+Scatter.displayName = 'Scatter';
+
+export { Scatter };

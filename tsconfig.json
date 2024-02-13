@@ -26,6 +26,7 @@
 			"@hooks/*": ["hooks/*"],
 			"@matchMediaMock": ["test-utils/__mocks__/matchMedia.mock"],
 			"@rsc": ["index.ts"],
+			"@rsc/alpha": ["alpha"],
 			"@specBuilder/*": ["specBuilder/*"],
 			"@stories/*": ["stories/*"],
 			"@test-utils": ["test-utils"],

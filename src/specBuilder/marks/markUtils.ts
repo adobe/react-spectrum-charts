@@ -15,7 +15,7 @@ import { ChartPopover } from '@components/ChartPopover';
 import { ChartTooltip } from '@components/ChartTooltip';
 import { MetricRange } from '@components/MetricRange';
 import { Trendline } from '@components/Trendline';
-import { BACKGROUND_COLOR, HIGHLIGHT_CONTRAST_RATIO } from '@constants';
+import { BACKGROUND_COLOR, DEFAULT_TRANSFORMED_TIME_DIMENSION, HIGHLIGHT_CONTRAST_RATIO } from '@constants';
 import {
 	getColorValue,
 	getLineWidthPixelsFromLineWidth,
@@ -184,7 +184,7 @@ export const getHighlightOpacityValue = (opacityValue: { signal: string } | { va
  */
 export const getXProductionRule = (scaleType: ScaleType, dimension: string): ProductionRule<NumericValueRef> => {
 	if (scaleType === 'time') {
-		return { scale: 'xTime', field: 'datetime0' };
+		return { scale: 'xTime', field: DEFAULT_TRANSFORMED_TIME_DIMENSION };
 	} else if (scaleType === 'linear') {
 		return { scale: 'xLinear', field: dimension };
 	}

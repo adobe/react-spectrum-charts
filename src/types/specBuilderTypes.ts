@@ -19,6 +19,7 @@ import {
 	BarProps,
 	ChartTooltipElement,
 	ColorScheme,
+	DonutProps,
 	FacetRef,
 	LegendProps,
 	LineProps,
@@ -96,6 +97,20 @@ export interface BarSpecProps
 	children: MarkChildElement[];
 }
 
+type DonutPropsWithDefaults =
+	| 'color'
+	| 'metric'
+	| 'name'
+	| 'startAngle'
+	| 'holeRatio'
+	| 'hasDirectLabels'
+	| 'isBoolean';
+
+export interface DonutSpecProps
+	extends PartiallyRequired<DonutProps & { colorScheme: ColorScheme; index: number }, DonutPropsWithDefaults> {
+	children: MarkChildElement[];
+}
+
 type LegendPropsWithDefaults = 'hiddenEntries' | 'highlight' | 'isToggleable' | 'position' | 'name';
 
 export interface LegendSpecProps
@@ -136,6 +151,7 @@ export interface ScatterSpecProps extends PartiallyRequired<ScatterProps, Scatte
 	children: MarkChildElement[];
 	colorScheme: ColorScheme;
 	index: number;
+	interactiveMarkName: string | undefined;
 }
 
 type MetricRangePropsWithDefaults = 'lineType' | 'lineWidth' | 'rangeOpacity' | 'metricEnd' | 'metricStart' | 'metric';
