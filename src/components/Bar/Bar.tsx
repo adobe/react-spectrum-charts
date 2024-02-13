@@ -11,11 +11,13 @@
  */
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
+import { FC } from 'react';
+
 import { DEFAULT_CATEGORICAL_DIMENSION, DEFAULT_METRIC, PADDING_RATIO, TRELLIS_PADDING } from '@constants';
 
 import { BarProps } from '../../types';
 
-export function Bar({
+const Bar: FC<BarProps> = ({
 	dimension = DEFAULT_CATEGORICAL_DIMENSION,
 	color = { value: 'categorical-100' },
 	metric = DEFAULT_METRIC,
@@ -27,6 +29,11 @@ export function Bar({
 	trellisPadding = TRELLIS_PADDING,
 	paddingRatio = PADDING_RATIO,
 	paddingOuter,
-}: BarProps) {
+}) => {
 	return null;
-}
+};
+
+// displayName is used to validate the component type in the spec builder
+Bar.displayName = 'Bar';
+
+export { Bar };

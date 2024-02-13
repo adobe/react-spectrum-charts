@@ -114,6 +114,8 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 			);
 		}
 
+		console.warn('BigNumberChildren from Chart.tsx are', bigNumberChildren);
+
 		const rscChartProps: RscChartProps = {
 			chartView: chartView,
 			chartId: chartId,

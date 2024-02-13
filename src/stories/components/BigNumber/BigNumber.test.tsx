@@ -30,6 +30,7 @@ import {
 	SparklineVertical,
 	UndefinedData,
 } from './BigNumber.story';
+import { simpleSparklineData as data } from '@stories/data/data';
 
 describe('BigNumber', () => {
 	describe('BigNumber basic component', () => {
@@ -43,7 +44,7 @@ describe('BigNumber', () => {
 
 		test('BasicVertical renders', async () => {
 			render(<BasicVertical {...BasicVertical.args} />);
-			const value = await screen.findByText('20');
+			const value = await screen.findByText(data[data.length - 1][BasicHorizontal.args.dataKey]);
 			expect(value).toBeInTheDocument();
 			const label = await screen.findByText(BasicVertical.args.label);
 			expect(label).toBeInTheDocument();
@@ -54,7 +55,7 @@ describe('BigNumber', () => {
 			render(<IconVertical {...IconVertical.args} />);
 			const icon = await screen.findByTestId('icon-amusementpark');
 			expect(icon).toBeInTheDocument();
-			const value = await screen.findByText('20');
+			const value = await screen.findByText(data[data.length - 1][BasicHorizontal.args.dataKey]);
 			expect(value).toBeInTheDocument();
 			const label = await screen.findByText(IconVertical.args.label);
 			expect(label).toBeInTheDocument();
@@ -115,22 +116,22 @@ describe('BigNumber', () => {
 
 		test('Chart with multiple BigNumbers only displays first', async () => {
 			render(
-				<Chart data={simpleSparklineData}>
-					<BigNumber dataKey="y" orientation="horizontal" label="test">
+				<Chart data={data}>
+					<BigNumber dataKey="y" orientation="horizontal" label="test" icon={
 						<Icon data-testid="first-icon">
 							<svg></svg>
 						</Icon>
-					</BigNumber>
-					<BigNumber dataKey="y" orientation="horizontal" label="test">
+					}/>
+					<BigNumber dataKey="y" orientation="horizontal" label="test" icon={
 						<Icon data-testid="second-icon">
 							<svg></svg>
 						</Icon>
-					</BigNumber>
-					<BigNumber dataKey="y" orientation="horizontal" label="test">
+					}/>
+					<BigNumber dataKey="y" orientation="horizontal" label="test" icon={
 						<Icon data-testid="third-icon">
 							<svg></svg>
 						</Icon>
-					</BigNumber>
+					}/>
 				</Chart>
 			);
 
@@ -203,8 +204,8 @@ describe('BigNumber', () => {
 
 	describe('Sparkline with different display methods', () => {
 		test('Sparkline with  no method specified (default to last)', async () => {
-			render(<SparklineMethodLast {...SparklineMethodLast.args} />);
-			const val = await screen.findByText('90');
+			render(<SparklineMethodLast {...SparklineMethodLast.args}/>);
+			const val = await screen.findByText(data[data.length - 1][SparklineMethodLast.args.dataKey]);
 			expect(val).toBeInTheDocument();
 		});
 

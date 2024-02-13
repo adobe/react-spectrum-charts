@@ -9,9 +9,16 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { FC } from 'react';
+
 import { ChartPopoverProps } from '../../types';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function ChartPopover({ children, width = 250 }: ChartPopoverProps) {
+const ChartPopover: FC<ChartPopoverProps> = ({ children, width = 250 }) => {
 	return null;
-}
+};
+
+// displayName is used to validate the component type in the spec builder
+ChartPopover.displayName = 'ChartPopover';
+
+export { ChartPopover };

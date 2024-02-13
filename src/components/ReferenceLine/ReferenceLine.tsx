@@ -11,10 +11,17 @@
  */
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
+import { FC } from 'react';
+
 import { DEFAULT_LABEL_FONT_WEIGHT } from '@constants';
 
 import { ReferenceLineProps } from '../../types';
 
-export function ReferenceLine({ value, labelFontWeight = DEFAULT_LABEL_FONT_WEIGHT }: ReferenceLineProps) {
+const ReferenceLine: FC<ReferenceLineProps> = ({ value, labelFontWeight = DEFAULT_LABEL_FONT_WEIGHT }) => {
 	return null;
-}
+};
+
+// displayName is used to validate the component type in the spec builder
+ReferenceLine.displayName = 'ReferenceLine';
+
+export { ReferenceLine };

@@ -20,6 +20,7 @@ import {
 	DEFAULT_COLOR_SCHEME,
 	DEFAULT_METRIC,
 	DEFAULT_TIME_DIMENSION,
+	DEFAULT_TRANSFORMED_TIME_DIMENSION,
 	FILTERED_TABLE,
 	MS_PER_DAY,
 	TRENDLINE_VALUE,
@@ -31,6 +32,7 @@ import { Data, Facet, From } from 'vega';
 import {
 	addTrendlineData,
 	applyTrendlinePropDefaults,
+	getAggregateTransform,
 	getMovingAverageTransform,
 	getPolynomialOrder,
 	getRegressionTransform,
@@ -187,6 +189,12 @@ describe('addTrendlineData()', () => {
 			source: FILTERED_TABLE,
 			transform: [
 				{
+					type: 'collect',
+					sort: {
+						field: DEFAULT_TRANSFORMED_TIME_DIMENSION,
+					},
+				},
+				{
 					as: [TRENDLINE_VALUE],
 					fields: ['value'],
 					groupby: ['series'],
@@ -231,7 +239,7 @@ describe('addTrendlineData()', () => {
 		expect(trendlineData[4]).toHaveProperty('name', 'line0Trendline0_data');
 	});
 
-	test('should add window trandform and then dimension range filter transform for movingAverage', () => {
+	test('should add sort transform, then window trandform, and then dimension range filter transform for movingAverage', () => {
 		const trendlineData = getDefaultData();
 		addTrendlineData(trendlineData, {
 			...defaultLineProps,
@@ -239,9 +247,10 @@ describe('addTrendlineData()', () => {
 		});
 		expect(trendlineData).toHaveLength(3);
 		expect(trendlineData[2]).toHaveProperty('name', 'line0Trendline0_data');
-		expect(trendlineData[2].transform).toHaveLength(2);
-		expect(trendlineData[2].transform?.[0]).toHaveProperty('type', 'window');
-		expect(trendlineData[2].transform?.[1]).toHaveProperty('type', 'filter');
+		expect(trendlineData[2].transform).toHaveLength(3);
+		expect(trendlineData[2].transform?.[0]).toHaveProperty('type', 'collect');
+		expect(trendlineData[2].transform?.[1]).toHaveProperty('type', 'window');
+		expect(trendlineData[2].transform?.[2]).toHaveProperty('type', 'filter');
 	});
 });
 
@@ -302,6 +311,13 @@ describe('getTrendlineParamFormulaTransforms()', () => {
 		expect(getTrendlineParamFormulaTransforms('x', 'exponential', 'time')[0].expr).toEqual(
 			'datum.coef[0] + exp(datum.coef[1] * datum.xNormalized)'
 		);
+	});
+});
+
+describe('getAggregateTransform()', () => {
+	test('should return the correct method', () => {
+		expect(getAggregateTransform(defaultLineProps, 'average')).toHaveProperty('ops', ['mean']);
+		expect(getAggregateTransform(defaultLineProps, 'median')).toHaveProperty('ops', ['median']);
 	});
 });
 

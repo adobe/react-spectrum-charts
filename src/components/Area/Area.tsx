@@ -11,12 +11,14 @@
  */
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
+import { FC } from 'react';
+
 import { DEFAULT_COLOR, DEFAULT_METRIC, DEFAULT_TIME_DIMENSION } from '@constants';
 
 import { AreaProps } from '../../types';
 
 // destructure props here and set defaults so that storybook can pick them up
-export function Area({
+const Area: FC<AreaProps> = ({
 	children,
 	name,
 	opacity = 0.8,
@@ -28,6 +30,11 @@ export function Area({
 	metricEnd,
 	metricStart,
 	padding,
-}: AreaProps) {
+}) => {
 	return null;
-}
+};
+
+// displayName is used to validate the component type in the spec builder
+Area.displayName = 'Area';
+
+export { Area };

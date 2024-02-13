@@ -25,6 +25,7 @@ import {
 	toggleStringArrayValue,
 } from '@utils';
 import { Chart } from 'Chart';
+import { Donut } from 'alpha/components/Donut';
 
 describe('utils', () => {
 	describe('toCamelCase()', () => {
@@ -93,15 +94,19 @@ describe('utils', () => {
 					<Line>
 						<ChartTooltip />
 					</Line>
+					<Donut>
+						<ChartTooltip />
+					</Donut>
 				</Chart>
 			);
 
 			const matches = getAllElements(element, ChartTooltip);
 
-			expect(matches).toHaveLength(3);
+			expect(matches).toHaveLength(4);
 			expect(matches[0].name).toBe('bar0Trendline');
 			expect(matches[1].name).toBe('myLine');
 			expect(matches[2].name).toBe('line1');
+			expect(matches[3].name).toBe('donut0');
 		});
 	});
 
