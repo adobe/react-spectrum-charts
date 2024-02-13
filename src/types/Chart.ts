@@ -188,7 +188,7 @@ export interface BigNumberProps {
 	readonly orientation: Orientation;
 	readonly label: string;
 	readonly dataKey: string;
-	readonly children: Children<BigNumberChildElement> | undefined
+	readonly children?: Children<BigNumberChildElement>
 	readonly rscChartProps?: RscChartProps
 	readonly numberFormat?: string;
 	readonly numberType?: 'linear' | 'percentage';

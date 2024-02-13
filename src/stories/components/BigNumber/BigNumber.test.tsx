@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { render, screen } from '@test-utils';
+import { prettyDOM, render, screen } from '@test-utils';
 
 import {
 	BasicHorizontal,
@@ -29,6 +29,7 @@ describe('BigNumber', () => {
 	describe('BigNumber basic component', () => {
 		test('BasicHorizontal renders', async () => {
 			render(<BasicHorizontal {...BasicHorizontal.args} />);
+			console.warn(prettyDOM());
 			const value = await screen.findByText('20');
 			expect(value).toBeInTheDocument();
 			const label = await screen.findByText(BasicHorizontal.args.label);

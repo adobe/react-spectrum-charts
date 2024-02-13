@@ -15,7 +15,7 @@ import { cloneElement, useRef } from 'react';
 
 import { sanitizeBigNumberChildren } from '@utils';
 import { RscChart } from 'RscChart';
-import { BigNumberProps, LineElement } from 'types';
+import { BigNumberChildElement, BigNumberProps, IconElement, LineElement } from 'types';
 import { getLocale } from 'utils/locale';
 import { v4 as uuid } from 'uuid';
 import { View as VegaView } from 'vega';
@@ -63,7 +63,7 @@ export function BigNumber({
 
 	const lineElements = sanitizeBigNumberChildren(children);
 
-	let cWidth, cHeight, generalJustify, padding;
+	let cWidth: number, cHeight: number, generalJustify: 'center' | 'start', padding: number;
 
 	if (orientation == 'vertical') {
 		padding = 0;
@@ -142,11 +142,11 @@ export function BigNumber({
 	);
 }
 
-function checkElements(icon, lineElements, orientation, height, chartWidth) {
+function checkElements(icon: IconElement | undefined, lineElements: BigNumberChildElement[], orientation: string, height: number | undefined, chartWidth: number) {
 	let labelAlign: 'start' | 'center' = 'start';
-	let iconAlign: 'start' | undefined;
-	let iconJustify: 'end' | undefined;
-	let iconSize;
+	let iconAlign: 'start';
+	let iconJustify: 'end';
+	let iconSize: 'XXS' | 'XS' | 'S' | 'M' | 'L' | 'XL' | 'XXL';
 	if (icon && lineElements.length > 0 && orientation == 'vertical') {
 		labelAlign = 'center';
 		iconJustify = 'end'
@@ -173,9 +173,9 @@ function checkElements(icon, lineElements, orientation, height, chartWidth) {
 			labelAlign
 		};
 	} else if (lineElements.length > 0 && orientation == 'vertical') {
-		return { areas: ['sparkline', 'data', 'label'], columns: ['1fr'], labelAlign, iconSize };
+		return { areas: ['sparkline', 'data', 'label'], columns: ['1fr'], labelAlign };
 	} else if (lineElements.length > 0 && orientation == 'horizontal') {
-		return { areas: ['sparkline data', 'sparkline label'], columns: ['1fr 1fr'], labelAlign, iconSize };
+		return { areas: ['sparkline data', 'sparkline label'], columns: ['1fr 1fr'], labelAlign };
 	} else if (icon && orientation == 'vertical') {
 		iconSize = determineIconSize(height ? height / 1.75 : chartWidth);
 		return {
@@ -195,11 +195,11 @@ function checkElements(icon, lineElements, orientation, height, chartWidth) {
 			labelAlign
 		};
 	} else {
-		return { areas: ['data', 'label'], columns: ['1fr'], labelAlign, iconSize};
+		return { areas: ['data', 'label'], columns: ['1fr'], labelAlign };
 	}
 }
 
-function determineIconSize (widthAvailable: number): string {
+function determineIconSize (widthAvailable: number) {
 	if (widthAvailable <= 21) return 'XS';
 	else if (widthAvailable <= 35) return 'S';
 	else if (widthAvailable <= 45) return 'M';
