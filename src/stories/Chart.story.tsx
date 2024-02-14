@@ -28,7 +28,7 @@ export default {
 const ChartLineStory: StoryFn<typeof Chart> = (args): ReactElement => {
 	const props = useChartProps({ ...args, animations: false });
 	return (
-		<Chart {...props} debug>
+		<Chart {...props}>
 			<Axis position="bottom" baseline ticks />
 			<Axis position="left" grid />
 			<Line dimension="x" metric="y" color="series" scaleType="linear" />
