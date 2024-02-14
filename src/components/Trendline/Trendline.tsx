@@ -19,12 +19,13 @@ import { TrendlineProps } from '../../types';
 const Trendline: FC<TrendlineProps> = ({
 	children,
 	color,
+	dimensionExtent,
 	dimensionRange = [null, null],
+	displayOnHover = false,
+	highlightRawPoint = false,
 	lineType = 'dashed',
 	lineWidth = 'M',
 	method = 'linear',
-	displayOnHover = false,
-	highlightRawPoint = false,
 	opacity = 1,
 }) => {
 	return null;

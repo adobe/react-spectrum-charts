@@ -460,7 +460,19 @@ export interface TrendlineProps {
 	children?: Children<ChartTooltipElement>;
 	/** The line color of the trendline. If undefined, will default to the color of the series that it represents. */
 	color?: SpectrumColor | string;
-	/** The dimension range that the statistical transform should be calculated and drawn for. If the start or end values are null, then the dimension range will not be bounded. */
+	/**
+	 * The dimenstion range to draw the trendline for. If undefined, the value will default to the value of dimensionRange.
+	 *
+	 * If 'domain' is used as a start or end value, this will extrapolate the trendline out to the beginning and end of the chart domain respectively.
+	 *
+	 * If null is used as a start or end value, the trendline will be be drawn from the first data point to the last data point respectively.
+	 */
+	dimensionExtent?: [number | 'domain' | null, number | 'domain' | null];
+	/**
+	 * The dimension range that the statistical transform should be calculated for. If undefined, the value will default to [null, null]
+	 *
+	 * If the start or end values are null, then the dimension range will not be bounded for the start or end respectively.
+	 */
 	dimensionRange?: [number | null, number | null];
 	/** Whether the trendline should only be visible when hovering over the parent line */
 	displayOnHover?: boolean;

@@ -23,6 +23,7 @@ import {
 	hasPopover,
 	hasTooltip,
 } from '@specBuilder/marks/markUtils';
+import { getScaleName } from '@specBuilder/scale/scaleSpecBuilder';
 import {
 	getGenericSignal,
 	getSeriesHoveredSignal,
@@ -46,19 +47,24 @@ import {
 } from 'types';
 import {
 	AggregateOp,
+	AggregateTransform,
 	CollectTransform,
 	Data,
+	ExtentTransform,
 	FilterTransform,
 	FormulaTransform,
 	GroupMark,
 	JoinAggregateTransform,
 	LineMark,
 	LookupTransform,
+	NumericValueRef,
 	RegressionMethod,
 	RegressionTransform,
+	RuleMark,
 	Scale,
 	ScaleType,
 	Signal,
+	SignalRef,
 	SourceData,
 	Transforms,
 	WindowTransform,
@@ -75,6 +81,7 @@ export const getTrendlines = (children: MarkChildElement[], markName: string): T
 export const applyTrendlinePropDefaults = (
 	{
 		children,
+		dimensionExtent,
 		dimensionRange = [null, null],
 		displayOnHover = false,
 		highlightRawPoint = false,
@@ -85,10 +92,11 @@ export const applyTrendlinePropDefaults = (
 		...props
 	}: TrendlineProps,
 	markName: string,
-	index: number
+	index: number,
 ): TrendlineSpecProps => ({
 	children: sanitizeTrendlineChildren(children),
 	displayOnHover,
+	dimensionExtent: dimensionExtent ?? dimensionRange,
 	dimensionRange,
 	highlightRawPoint,
 	lineType,
@@ -100,39 +108,106 @@ export const applyTrendlinePropDefaults = (
 	...props,
 });
 
-export const getTrendlineMarks = (markProps: TrendlineParentProps): GroupMark[] => {
+export const getTrendlineMarks = (markProps: TrendlineParentProps): (GroupMark | RuleMark)[] => {
 	const { children, color, lineType, name } = markProps;
 	const { facets } = getFacetsFromProps({ color, lineType });
 
-	const marks: GroupMark[] = [];
+	const marks: (GroupMark | RuleMark)[] = [];
 	const trendlines = getTrendlines(children, name);
 	for (const trendlineProps of trendlines) {
 		const dataSuffix = isRegressionMethod(trendlineProps.method) ? '_highResolutionData' : '_data';
-		marks.push({
-			name: `${trendlineProps.name}_group`,
-			type: 'group',
-			clip: true,
-			from: {
-				facet: {
-					name: `${trendlineProps.name}_facet`,
-					data: trendlineProps.name + dataSuffix,
-					groupby: facets,
+		if (isAggregateMethod(trendlineProps.method)) {
+			marks.push(getTrendlineRuleMark(markProps, trendlineProps));
+		} else {
+			marks.push({
+				name: `${trendlineProps.name}_group`,
+				type: 'group',
+				clip: true,
+				from: {
+					facet: {
+						name: `${trendlineProps.name}_facet`,
+						data: trendlineProps.name + dataSuffix,
+						groupby: facets,
+					},
 				},
-			},
-			marks: [getTrendlineLineMark(markProps, trendlineProps)],
-		});
+				marks: [getTrendlineLineMark(markProps, trendlineProps)],
+			});
+		}
 	}
 
 	if (trendlines.some((trendline) => hasTooltip(trendline.children))) {
 		marks.push(
 			getTrendlineHoverMarks(
 				markProps,
-				trendlines.some((trendlineProps) => trendlineProps.highlightRawPoint)
-			)
+				trendlines.some((trendlineProps) => trendlineProps.highlightRawPoint),
+			),
 		);
 	}
 
 	return marks;
+};
+
+const getTrendlineRuleMark = (markProps: TrendlineParentProps, trendlineProps: TrendlineSpecProps): RuleMark => {
+	const { dimension, colorScheme } = markProps;
+	const { dimensionExtent, lineType, lineWidth, metric, name } = trendlineProps;
+	const color = trendlineProps.color ? { value: trendlineProps.color } : markProps.color;
+	const scaleType = getScaleType(markProps);
+	const dimensionField = getDimensionField(dimension, scaleType);
+
+	return {
+		name,
+		type: 'rule',
+		clip: true,
+		from: {
+			data: `${name}_highResolutionData`,
+		},
+		interactive: false,
+		encode: {
+			enter: {
+				y: { scale: 'yLinear', field: metric },
+				stroke: getColorProductionRule(color, colorScheme),
+				strokeDash: getStrokeDashProductionRule({ value: lineType }),
+				strokeWidth: getLineWidthProductionRule({ value: lineWidth }),
+			},
+			update: {
+				x: getRuleXProductionRule(dimensionExtent[0], dimensionField, scaleType),
+				x2: getRuleX2ProductionRule(dimensionExtent[1], dimensionField, scaleType),
+				strokeOpacity: getLineStrokeOpacity(getLineMarkProps(markProps, trendlineProps)),
+			},
+		},
+	};
+};
+
+const getRuleXProductionRule = (
+	startDimensionExtent: number | 'domain' | null,
+	dimension: string,
+	scaleType: RscScaleType,
+): NumericValueRef => {
+	const scale = getScaleName('x', scaleType);
+	switch (startDimensionExtent) {
+		case null:
+			return { scale, field: `${dimension}Min` };
+		case 'domain':
+			return { value: 0 };
+		default:
+			return { scale, value: startDimensionExtent };
+	}
+};
+
+const getRuleX2ProductionRule = (
+	endDimensionExtent: number | 'domain' | null,
+	dimension: string,
+	scaleType: RscScaleType,
+): NumericValueRef => {
+	const scale = getScaleName('x', scaleType);
+	switch (endDimensionExtent) {
+		case null:
+			return { scale, field: `${dimension}Max` };
+		case 'domain':
+			return { signal: 'width' };
+		default:
+			return { scale, value: endDimensionExtent };
+	}
 };
 
 const getTrendlineLineMark = (markProps: TrendlineParentProps, trendlineProps: TrendlineSpecProps): LineMark => {
@@ -168,7 +243,7 @@ const getTrendlineLineMark = (markProps: TrendlineParentProps, trendlineProps: T
 const getLineMarkProps = (
 	markProps: TrendlineParentProps,
 	{ displayOnHover, lineWidth, metric, name, opacity }: TrendlineSpecProps,
-	override?: Partial<LineMarkProps>
+	override?: Partial<LineMarkProps>,
 ): LineMarkProps => {
 	const { children, color, colorScheme, dimension, interactiveMarkName, lineType } = markProps;
 	const popoverMarkName = 'popoverMarkName' in markProps ? markProps.popoverMarkName : undefined;
@@ -209,7 +284,7 @@ const getTrendlineHoverMarks = (lineProps: TrendlineParentProps, highlightRawPoi
 		marks: getLineHoverMarks(
 			trendlineHoverProps,
 			`${name}_allTrendlineData`,
-			highlightRawPoint ? metric : undefined
+			highlightRawPoint ? metric : undefined,
 		),
 	};
 };
@@ -221,30 +296,50 @@ const getTrendlineHoverMarks = (lineProps: TrendlineParentProps, highlightRawPoi
  * @param markProps
  */
 export const addTrendlineData = (data: Data[], markProps: TrendlineParentProps) => {
-	const { dimension } = markProps;
 	data.push(...getTrendlineData(markProps));
 
-	if (hasTrendlineWithNormailizedDimension(markProps)) {
-		const tableData = getTableData(data);
-		tableData.transform = addNormalizedDimensionTransform(tableData.transform ?? [], dimension);
-	}
+	const tableData = getTableData(data);
+	tableData.transform = addTableDataTransforms(tableData.transform ?? [], markProps);
 };
 
-const addNormalizedDimensionTransform = produce<Transforms[], [string]>((transforms, dimension) => {
-	if (transforms.findIndex((transform) => 'as' in transform && transform.as === `${dimension}Normalized`) === -1) {
-		transforms.push({
-			type: 'joinaggregate',
-			fields: [dimension],
-			as: [`${dimension}Min`],
-			ops: ['min'],
-		});
-		transforms.push({
-			type: 'formula',
-			expr: `(datum.${dimension} - datum.${dimension}Min + ${MS_PER_DAY}) / ${MS_PER_DAY}`,
-			as: `${dimension}Normalized`,
-		});
+/**
+ * Adds the table data transforms needed for trendlines
+ */
+export const addTableDataTransforms = produce<Transforms[], [TrendlineParentProps]>((transforms, markProps) => {
+	const { children, dimension, name } = markProps;
+	const scaleType = getScaleType(markProps);
+
+	const normalizedDimensionTransformExists = transforms.some(
+		(transform) => 'as' in transform && transform.as === `${dimension}Normalized`,
+	);
+	// if a normalized dimension transform is needed and doesn't exist, add it
+	if (hasTrendlineWithNormailizedDimension(markProps) && !normalizedDimensionTransformExists) {
+		transforms.push(...getNormalizedDimensionTransform(dimension));
+	}
+
+	// add the extent transform for each regression trendline
+	const trendlines = getTrendlines(children, name);
+	for (const trendlineProps of trendlines) {
+		if (isRegressionMethod(trendlineProps.method)) {
+			const trendlineDimension = scaleType === 'time' ? `${dimension}Normalized` : dimension;
+			transforms.push(getRegressionExtentTransform(trendlineDimension, trendlineProps.name));
+		}
 	}
 });
+
+const getNormalizedDimensionTransform = (dimension: string): Transforms[] => [
+	{
+		type: 'joinaggregate',
+		fields: [dimension],
+		as: [`${dimension}Min`],
+		ops: ['min'],
+	},
+	{
+		type: 'formula',
+		expr: `(datum.${dimension} - datum.${dimension}Min + ${MS_PER_DAY}) / ${MS_PER_DAY}`,
+		as: `${dimension}Normalized`,
+	},
+];
 
 /**
  * adds the data transforms and data sources for the trendlines
@@ -273,7 +368,7 @@ export const getTrendlineData = (markProps: TrendlineParentProps): SourceData[] 
 				source: FILTERED_TABLE,
 				transform: [
 					...dimensionRangeTransforms,
-					...getTrendlineStatisticalTransforms(markProps, trendlineProps),
+					...getTrendlineStatisticalTransforms(markProps, trendlineProps, true),
 					getSeriesIdTransform(facets),
 				],
 			});
@@ -284,7 +379,7 @@ export const getTrendlineData = (markProps: TrendlineParentProps): SourceData[] 
 						source: FILTERED_TABLE,
 						transform: [
 							...dimensionRangeTransforms,
-							...getTrendlineStatisticalTransforms(markProps, trendlineProps, true),
+							...getTrendlineStatisticalTransforms(markProps, trendlineProps, false),
 						],
 					},
 					{
@@ -295,25 +390,36 @@ export const getTrendlineData = (markProps: TrendlineParentProps): SourceData[] 
 							getTrendlineParamLookupTransform(markProps, trendlineProps),
 							...getTrendlineParamFormulaTransforms(dimension, method, scaleType),
 						],
-					}
+					},
 				);
 			}
 		} else if (isAggregateMethod(method)) {
 			data.push({
-				name: `${name}_data`,
+				name: `${name}_highResolutionData`,
 				source: FILTERED_TABLE,
 				transform: [
 					...dimensionRangeTransforms,
-					...getTrendlineStatisticalTransforms(markProps, trendlineProps),
+					...getTrendlineStatisticalTransforms(markProps, trendlineProps, true),
+					getSeriesIdTransform(facets),
 				],
 			});
+			if (hasInteractiveChildren(trendlineChildren)) {
+				data.push({
+					name: `${name}_data`,
+					source: FILTERED_TABLE,
+					transform: [
+						...dimensionRangeTransforms,
+						...getTrendlineStatisticalTransforms(markProps, trendlineProps, false),
+					],
+				});
+			}
 		} else if (isWindowMethod(method)) {
 			// we want to filter down to the dimension range after calculating the moving average
 			data.push({
 				name: `${name}_data`,
 				source: FILTERED_TABLE,
 				transform: [
-					...getTrendlineStatisticalTransforms(markProps, trendlineProps),
+					...getTrendlineStatisticalTransforms(markProps, trendlineProps, false),
 					...dimensionRangeTransforms,
 				],
 			});
@@ -356,7 +462,7 @@ export const getTrendlineData = (markProps: TrendlineParentProps): SourceData[] 
  */
 export const getTrendlineDimensionRangeTransforms = (
 	dimension: string,
-	dimensionRange: [number | null, number | null]
+	dimensionRange: [number | null, number | null],
 ): FilterTransform[] => {
 	const filterExpressions: string[] = [];
 	if (dimensionRange[0] !== null) {
@@ -378,7 +484,7 @@ export const getTrendlineDimensionRangeTransforms = (
 
 const getTrendlineParamLookupTransform = (
 	{ color, lineType }: TrendlineParentProps,
-	{ name }: TrendlineSpecProps
+	{ name }: TrendlineSpecProps,
 ): LookupTransform => {
 	const { facets } = getFacetsFromProps({ color, lineType });
 	return {
@@ -399,7 +505,7 @@ const getTrendlineParamLookupTransform = (
 export const getTrendlineParamFormulaTransforms = (
 	dimension: string,
 	method: TrendlineMethod,
-	scaleType: ScaleType | undefined
+	scaleType: ScaleType | undefined,
 ): FormulaTransform[] => {
 	let expr = '';
 	const trendlineDimension = trendlineUsesNormalizedDimension(method, scaleType)
@@ -516,16 +622,18 @@ const hasTrendlineWithNormailizedDimension = (markProps: TrendlineParentProps): 
  */
 const getTrendlineStatisticalTransforms = (
 	markProps: TrendlineParentProps,
-	{ method }: TrendlineSpecProps,
-	params: boolean = false
+	trendlineProps: TrendlineSpecProps,
+	isHighResolutionData: boolean,
 ): Transforms[] => {
+	const { method } = trendlineProps;
 	const scaleType = getScaleType(markProps);
 	const dimension = getDimensionField(markProps.dimension, scaleType);
+
 	if (isAggregateMethod(method)) {
-		return [getSortTransform(dimension), getAggregateTransform(markProps, method)];
+		return [getAggregateTransform(markProps, method, isHighResolutionData, dimension)];
 	}
 	if (isRegressionMethod(method)) {
-		return [getRegressionTransform(markProps, method, params)];
+		return [getRegressionTransform(markProps, trendlineProps, isHighResolutionData)];
 	}
 	if (isWindowMethod(method)) {
 		return [getSortTransform(dimension), getMovingAverageTransform(markProps, method)];
@@ -533,6 +641,12 @@ const getTrendlineStatisticalTransforms = (
 
 	return [];
 };
+
+const getRegressionExtentTransform = (dimension: string, name: string): ExtentTransform => ({
+	type: 'extent',
+	field: dimension,
+	signal: `${name}_extent`,
+});
 
 /**
  * gets the sort transform for the provided dimension
@@ -551,17 +665,28 @@ const getSortTransform = (dimension: string): CollectTransform => ({
  * gets the join aggreagate transform used for calculating the average trendline
  * @param facets data facets
  * @param metric data y key
- * @returns JoinAggregateTransform
+ * @returns transform
  */
 export const getAggregateTransform = (
 	{ color, lineType, metric }: TrendlineParentProps,
-	method: AggregateMethod
-): JoinAggregateTransform => {
+	method: AggregateMethod,
+	isHighResolutionData: boolean,
+	dimension: string,
+): AggregateTransform | JoinAggregateTransform => {
 	const { facets } = getFacetsFromProps({ color, lineType });
 	const operations: Record<AggregateMethod, AggregateOp> = {
 		average: 'mean',
 		median: 'median',
 	};
+	if (isHighResolutionData) {
+		return {
+			type: 'aggregate',
+			groupby: facets,
+			ops: [operations[method], 'min', 'max'],
+			fields: [metric, dimension, dimension],
+			as: [TRENDLINE_VALUE, `${dimension}Min`, `${dimension}Max`],
+		};
+	}
 	return {
 		type: 'joinaggregate',
 		groupby: facets,
@@ -577,15 +702,16 @@ export const getAggregateTransform = (
  * @see https://vega.github.io/vega/docs/transforms/regression/
  * @param markProps
  * @param method
- * @param params
+ * @param isHighResolutionData
  * @returns
  */
 export const getRegressionTransform = (
 	markProps: TrendlineParentProps,
-	method: TrendlineMethod,
-	params: boolean
+	trendlineProps: TrendlineSpecProps,
+	isHighResolutionData: boolean,
 ): RegressionTransform => {
 	const { color, dimension, lineType, metric } = markProps;
+	const { dimensionExtent, method, name } = trendlineProps;
 	const { facets } = getFacetsFromProps({ color, lineType });
 
 	let regressionMethod: RegressionMethod | undefined;
@@ -607,10 +733,8 @@ export const getRegressionTransform = (
 			break;
 	}
 
-	let trendlineDimension = dimension;
-	if (getScaleType(markProps) === 'time') {
-		trendlineDimension += 'Normalized';
-	}
+	const isNormalized = getScaleType(markProps) === 'time';
+	const trendlineDimension = isNormalized ? `${dimension}Normalized` : dimension;
 
 	return {
 		type: 'regression',
@@ -619,8 +743,9 @@ export const getRegressionTransform = (
 		groupby: facets,
 		x: trendlineDimension,
 		y: metric,
-		as: params ? undefined : [trendlineDimension, TRENDLINE_VALUE],
-		params,
+		as: isHighResolutionData ? [trendlineDimension, TRENDLINE_VALUE] : undefined,
+		params: !isHighResolutionData,
+		extent: isHighResolutionData ? getRegressionExtent(dimensionExtent, name, isNormalized) : undefined,
 	};
 };
 /**
@@ -647,9 +772,37 @@ export const getPolynomialOrder = (method: TrendlineMethod): number => {
 	return order;
 };
 
+const getRegressionExtent = (
+	dimensionExtent: TrendlineSpecProps['dimensionExtent'],
+	name: string,
+	isNormalized: boolean,
+): SignalRef => {
+	const extentName = `${name}_extent`;
+	const extentSignal = dimensionExtent
+		.map((value, i) => {
+			switch (value) {
+				case null:
+					return `${extentName}[${i}]`;
+				case 'domain':
+					const operator = i === 0 ? '-' : '+';
+					const extentRange = `(${extentName}[1] - ${extentName}[0])`;
+					return `${extentName}[${i}] ${operator} ${extentRange} * 0.3`;
+				default:
+					// if this is a normalized date, we need to normalize the value
+					if (isNormalized) {
+						return `(${value} - data('${FILTERED_TABLE}')[0].datetimeMin + ${MS_PER_DAY}) / ${MS_PER_DAY}`;
+					}
+					return value;
+			}
+		})
+		.join(', ');
+
+	return { signal: `[${extentSignal}]` };
+};
+
 export const getMovingAverageTransform = (
 	markProps: TrendlineParentProps,
-	method: TrendlineMethod
+	method: TrendlineMethod,
 ): WindowTransform => {
 	const frameWidth = parseInt(method.split('-')[1]);
 
@@ -658,7 +811,7 @@ export const getMovingAverageTransform = (
 
 	if (isNaN(frameWidth) || frameWidth < 1) {
 		throw new Error(
-			`Invalid moving average frame width: ${frameWidth}, frame width must be an integer greater than 0`
+			`Invalid moving average frame width: ${frameWidth}, frame width must be an integer greater than 0`,
 		);
 	}
 	return {

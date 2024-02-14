@@ -159,6 +159,7 @@ export interface MetricRangeSpecProps
 	extends PartiallyRequired<MetricRangeProps & { name: string }, MetricRangePropsWithDefaults> {}
 
 type TrendlinePropsWithDefaults =
+	| 'dimensionExtent'
 	| 'dimensionRange'
 	| 'displayOnHover'
 	| 'highlightRawPoint'

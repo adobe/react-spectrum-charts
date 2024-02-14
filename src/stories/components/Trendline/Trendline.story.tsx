@@ -22,6 +22,14 @@ export default {
 	title: 'RSC/Trendline',
 	component: Trendline,
 	argTypes: {
+		lineType: {
+			control: 'select',
+			options: ['solid', 'dashed', 'dotted', 'dotDash', 'shortDash', 'longDash', 'twoDash'],
+		},
+		lineWidth: {
+			control: 'inline-radio',
+			options: ['XS', 'S', 'M', 'L', 'XL'],
+		},
 		method: {
 			control: 'select',
 			options: [
@@ -45,14 +53,6 @@ export default {
 				'power',
 				'quadratic',
 			],
-		},
-		lineType: {
-			control: 'select',
-			options: ['solid', 'dashed', 'dotted', 'dotDash', 'shortDash', 'longDash', 'twoDash'],
-		},
-		lineWidth: {
-			control: 'inline-radio',
-			options: ['S', 'M', 'L'],
 		},
 	},
 };
@@ -141,6 +141,15 @@ Basic.args = {
 	lineWidth: 'S',
 };
 
+const DimensionExtent = bindWithProps(TrendlineWithDialogsStory);
+DimensionExtent.args = {
+	method: 'linear',
+	lineType: 'dashed',
+	lineWidth: 'S',
+	highlightRawPoint: true,
+	dimensionExtent: ['domain', 'domain'],
+};
+
 const DimensionRange = bindWithProps(TrendlineWithDialogsStory);
 DimensionRange.args = {
 	method: 'linear',
@@ -171,4 +180,4 @@ TooltipAndPopoverOnParentLine.args = {
 	lineWidth: 'S',
 };
 
-export { Basic, DimensionRange, DisplayOnHover, TooltipAndPopover, TooltipAndPopoverOnParentLine };
+export { Basic, DimensionExtent, DimensionRange, DisplayOnHover, TooltipAndPopover, TooltipAndPopoverOnParentLine };
