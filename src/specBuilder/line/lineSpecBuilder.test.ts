@@ -371,8 +371,8 @@ describe('lineSpecBuilder', () => {
 		});
 
 		test('scaleTypes "point" and "linear" should return the original data', () => {
-			expect(addData([], { ...defaultLineProps, scaleType: 'point' })).toEqual([]);
-			expect(addData([], { ...defaultLineProps, scaleType: 'linear' })).toEqual([]);
+			expect(addData(baseData, { ...defaultLineProps, scaleType: 'point' })).toEqual(baseData);
+			expect(addData(baseData, { ...defaultLineProps, scaleType: 'linear' })).toEqual(baseData);
 		});
 
 		test('should add trendline transform', () => {
@@ -380,21 +380,20 @@ describe('lineSpecBuilder', () => {
 				addData(baseData, {
 					...defaultLineProps,
 					children: [createElement(Trendline, { method: 'average' })],
-				})[2].transform
+				})[2].transform,
 			).toStrictEqual([
 				{
-					type: 'collect',
-					sort: {
-						field: DEFAULT_TRANSFORMED_TIME_DIMENSION,
-					},
+					as: [
+						TRENDLINE_VALUE,
+						`${DEFAULT_TRANSFORMED_TIME_DIMENSION}Min`,
+						`${DEFAULT_TRANSFORMED_TIME_DIMENSION}Max`,
+					],
+					fields: [DEFAULT_METRIC, DEFAULT_TRANSFORMED_TIME_DIMENSION, DEFAULT_TRANSFORMED_TIME_DIMENSION],
+					groupby: [DEFAULT_COLOR],
+					ops: ['mean', 'min', 'max'],
+					type: 'aggregate',
 				},
-				{
-					type: 'joinaggregate',
-					groupby: ['series'],
-					fields: ['value'],
-					ops: ['mean'],
-					as: [TRENDLINE_VALUE],
-				},
+				{ as: SERIES_ID, expr: `datum.${DEFAULT_COLOR}`, type: 'formula' },
 			]);
 		});
 
@@ -403,7 +402,7 @@ describe('lineSpecBuilder', () => {
 				addData(baseData, {
 					...defaultLineProps,
 					children: [createElement(Trendline, { method: 'movingAverage-7' })],
-				})[0].transform
+				})[0].transform,
 			).toHaveLength(2);
 		});
 
@@ -430,7 +429,7 @@ describe('lineSpecBuilder', () => {
 				setScales(startingSpec.scales ?? [], {
 					...defaultLineProps,
 					scaleType: 'linear',
-				})
+				}),
 			).toStrictEqual([defaultSpec.scales?.[0], defaultLinearScale, defaultSpec.scales?.[2]]);
 		});
 
@@ -439,7 +438,7 @@ describe('lineSpecBuilder', () => {
 				setScales(startingSpec.scales ?? [], {
 					...defaultLineProps,
 					scaleType: 'point',
-				})
+				}),
 			).toStrictEqual([defaultSpec.scales?.[0], defaultPointScale, defaultSpec.scales?.[2]]);
 		});
 
@@ -456,7 +455,7 @@ describe('lineSpecBuilder', () => {
 				setScales(startingSpec.scales ?? [], {
 					...defaultLineProps,
 					children: [createElement(MetricRange, { scaleAxisToFit: true, metricEnd, metricStart })],
-				})
+				}),
 			).toStrictEqual([defaultSpec.scales?.[0], defaultSpec.scales?.[1], metricRangeMetricScale]);
 		});
 	});
@@ -498,13 +497,13 @@ describe('lineSpecBuilder', () => {
 
 		test('with metric range', () => {
 			expect(addLineMarks([], { ...defaultLineProps, children: [getMetricRangeElement()] })).toStrictEqual(
-				metricRangeMarks
+				metricRangeMarks,
 			);
 		});
 
 		test('with displayPointMark', () => {
 			expect(addLineMarks([], { ...defaultLineProps, staticPoint: 'staticPoint' })).toStrictEqual(
-				displayPointMarks
+				displayPointMarks,
 			);
 		});
 
@@ -514,7 +513,7 @@ describe('lineSpecBuilder', () => {
 					...defaultLineProps,
 					staticPoint: 'staticPoint',
 					children: [getMetricRangeElement()],
-				})
+				}),
 			).toStrictEqual(metricRangeWithDisplayPointMarks);
 		});
 	});
@@ -534,8 +533,8 @@ describe('lineSpecBuilder', () => {
 							value: null,
 						},
 					],
-					defaultLineProps
-				)
+					defaultLineProps,
+				),
 			).toStrictEqual([
 				{
 					name: 'line0_selectedSeries',
@@ -556,7 +555,7 @@ describe('lineSpecBuilder', () => {
 						value: null,
 					},
 				],
-				{ ...defaultLineProps, children: [createElement(ChartPopover)] }
+				{ ...defaultLineProps, children: [createElement(ChartPopover)] },
 			);
 
 			expect(getGenericSignalSpy).toHaveBeenCalledTimes(1);
@@ -565,7 +564,7 @@ describe('lineSpecBuilder', () => {
 
 		test('hover signals with metric range', () => {
 			expect(
-				addSignals([], { ...defaultLineProps, children: [getMetricRangeElement({ displayOnHover: true })] })
+				addSignals([], { ...defaultLineProps, children: [getMetricRangeElement({ displayOnHover: true })] }),
 			).toStrictEqual([
 				{
 					name: 'line0_hoveredSeries',
@@ -616,7 +615,7 @@ describe('lineSpecBuilder', () => {
 					...defaultLineProps,
 					staticPoint: 'staticPoint',
 					children: [getMetricRangeElement({ displayOnHover: true })],
-				})
+				}),
 			).toStrictEqual([
 				{
 					name: 'line0_hoveredSeries',

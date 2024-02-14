@@ -31,12 +31,7 @@ import {
 	addFieldToFacetScaleDomain,
 	addMetricScale,
 } from '@specBuilder/scale/scaleSpecBuilder';
-import {
-	addTrendlineData,
-	getTrendlineMarks,
-	getTrendlineScales,
-	getTrendlineSignals,
-} from '@specBuilder/trendline/trendlineUtils';
+import { addTrendlineData, getTrendlineMarks, getTrendlineScales, getTrendlineSignals } from '@specBuilder/trendline';
 import { sanitizeMarkChildren, toCamelCase } from '@utils';
 import { produce } from 'immer';
 import { ColorScheme, ScatterProps, ScatterSpecProps } from 'types';
@@ -60,7 +55,7 @@ export const addScatter = produce<Spec, [ScatterProps & { colorScheme?: ColorSch
 			opacity = { value: 1 },
 			size = { value: 'M' },
 			...props
-		}
+		},
 	) => {
 		const sanitizedChildren = sanitizeMarkChildren(children);
 		const scatterName = toCamelCase(name || `scatter${index}`);
@@ -87,7 +82,7 @@ export const addScatter = produce<Spec, [ScatterProps & { colorScheme?: ColorSch
 		spec.signals = addSignals(spec.signals ?? [], scatterProps);
 		spec.scales = setScales(spec.scales ?? [], scatterProps);
 		spec.marks = addScatterMarks(spec.marks ?? [], scatterProps);
-	}
+	},
 );
 
 export const addData = produce<Data[], [ScatterSpecProps]>((data, props) => {

@@ -17,12 +17,7 @@ import {
 	getMetricRanges,
 } from '@specBuilder/metricRange/metricRangeUtils';
 import { getFacetsFromProps } from '@specBuilder/specUtils';
-import {
-	addTrendlineData,
-	getTrendlineMarks,
-	getTrendlineScales,
-	getTrendlineSignals,
-} from '@specBuilder/trendline/trendlineUtils';
+import { addTrendlineData, getTrendlineMarks, getTrendlineScales, getTrendlineSignals } from '@specBuilder/trendline';
 import { sanitizeMarkChildren, toCamelCase } from '@utils';
 import { produce } from 'immer';
 import { ColorScheme, LineProps, LineSpecProps, MarkChildElement } from 'types';
@@ -56,7 +51,7 @@ export const addLine = produce<Spec, [LineProps & { colorScheme?: ColorScheme; i
 			opacity = { value: 1 },
 			scaleType = 'time',
 			...props
-		}
+		},
 	) => {
 		const sanitizedChildren = sanitizeMarkChildren(children);
 		const lineName = toCamelCase(name || `line${index}`);
@@ -83,7 +78,7 @@ export const addLine = produce<Spec, [LineProps & { colorScheme?: ColorScheme; i
 		spec.marks = addLineMarks(spec.marks ?? [], lineProps);
 
 		return spec;
-	}
+	},
 );
 
 export const addData = produce<Data[], [LineSpecProps]>((data, props) => {
