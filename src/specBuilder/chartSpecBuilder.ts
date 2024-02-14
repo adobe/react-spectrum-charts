@@ -202,6 +202,7 @@ export const getDefaultSignals = (
 	// if the signal background color were transparent then backgroundMarks and annotation fill would also be transparent
 	const signalBackgroundColor = backgroundColor === 'transparent' ? 'gray-50' : backgroundColor;
 	return [
+		getTimer(),
 		getGenericSignal(BACKGROUND_COLOR, getColorValue(signalBackgroundColor, colorScheme)),
 		getGenericSignal('colors', getTwoDimensionalColorScheme(colors, colorScheme)),
 		getGenericSignal('lineTypes', getTwoDimensionalLineTypes(lineTypes)),
@@ -209,6 +210,14 @@ export const getDefaultSignals = (
 		getGenericSignal('hiddenSeries', hiddenSeries ?? []),
 	];
 };
+
+export const getTimer = () => {
+	return {
+		name: 'timerValue',
+		value: '0',
+		on: [{ events: 'timer{16}', update: 'min(1, timerValue + (1 / 360))' }],
+	}
+}
 
 export const getTwoDimensionalColorScheme = (colors: ChartColors, colorScheme: ColorScheme): string[][] => {
 	if (isColors(colors)) {
