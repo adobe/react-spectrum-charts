@@ -11,7 +11,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { FC, cloneElement, useRef } from 'react';
+import { FC, cloneElement, useRef, useCallback } from 'react';
 
 import { sanitizeBigNumberChildren } from '@utils';
 import { RscChart } from 'RscChart';
@@ -33,14 +33,19 @@ const BigNumber: FC<BigNumberProps> = ({
 	children,
 	icon,
 	orientation,
-	rscChartProps = {
-		data: [],
-		chartId: useRef<string>(`rsc-${uuid()}`),
-		chartView: useRef<VegaView>(),
-		chartWidth: 200,
-	},
+	rscChartProps,
 	method,
 }) => {
+	const getChartId = useCallback(() => useRef<string>(`rsc-${uuid()}`), []);
+	const getChartView = useCallback(() => useRef<VegaView>(), []);
+
+	rscChartProps = rscChartProps || {
+		data: [],
+		chartId: getChartId(),
+		chartView: getChartView(),
+		chartWidth: 200,
+	};
+
 	const { chartWidth, height, locale, data, ...rscChartRemain } = rscChartProps;
 	const aspectRatio = 16 / 9;
 	// based on Chart.tsx checks, data will always be defined and have a length greater than 0.
