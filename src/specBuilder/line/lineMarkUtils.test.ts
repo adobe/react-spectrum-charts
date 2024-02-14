@@ -13,7 +13,7 @@ import { createElement } from 'react';
 
 import { ChartPopover } from '@components/ChartPopover';
 import { ChartTooltip } from '@components/ChartTooltip';
-import { SERIES_ID } from '@constants';
+import { DEFAULT_TRANSFORMED_TIME_DIMENSION, SERIES_ID } from '@constants';
 
 import { getLineHoverMarks, getLineMark, getLineStrokeOpacity } from './lineMarkUtils';
 import { defaultLineMarkProps } from './lineTestUtils';
@@ -33,7 +33,10 @@ describe('getLineMark()', () => {
 					strokeWidth: { value: 1 },
 					y: { field: 'value', scale: 'yLinear' },
 				},
-				update: { x: { field: 'datetime0', scale: 'xTime' }, strokeOpacity: [{ value: 1 }] },
+				update: {
+					x: { field: DEFAULT_TRANSFORMED_TIME_DIMENSION, scale: 'xTime' },
+					strokeOpacity: [{ value: 1 }],
+				},
 			},
 		});
 	});

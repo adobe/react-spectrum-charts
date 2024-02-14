@@ -1,7 +1,16 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
+import { FC } from 'react';
+
 import { {{name}}Props } from '../../types';
 
 // destructure props here and set defaults so that storybook can pick them up
-export function {{name}}(props: {{name}}Props) {
+const {{name}}: FC<{{name}}Props> = ({
+	// TODO: destructure props here
+}) {
 	return null;
 }
+
+// displayName is used to validate the component type in the spec builder
+{{name}}.displayName = '{{name}}';
+
+export { {name} };

@@ -20,6 +20,7 @@ import {
 	DEFAULT_COLOR_SCHEME,
 	DEFAULT_METRIC,
 	DEFAULT_TIME_DIMENSION,
+	DEFAULT_TRANSFORMED_TIME_DIMENSION,
 	FILTERED_TABLE,
 	MARK_ID,
 	SERIES_ID,
@@ -66,7 +67,7 @@ const defaultSpec = initializeSpec({
 			transform: [
 				{ as: MARK_ID, type: 'identifier' },
 				{
-					as: ['datetime0', 'datetime1'],
+					as: [DEFAULT_TRANSFORMED_TIME_DIMENSION, `${DEFAULT_TIME_DIMENSION}1`],
 					field: DEFAULT_TIME_DIMENSION,
 					type: 'timeunit',
 					units: ['year', 'month', 'date', 'hours', 'minutes'],
@@ -91,7 +92,10 @@ const defaultSpec = initializeSpec({
 							strokeWidth: undefined,
 							y: { field: 'value', scale: 'yLinear' },
 						},
-						update: { x: { field: 'datetime0', scale: 'xTime' }, strokeOpacity: [{ value: 1 }] },
+						update: {
+							x: { field: DEFAULT_TRANSFORMED_TIME_DIMENSION, scale: 'xTime' },
+							strokeOpacity: [{ value: 1 }],
+						},
 					},
 					from: { data: 'line0_facet' },
 					name: 'line0',
@@ -106,7 +110,7 @@ const defaultSpec = initializeSpec({
 	scales: [
 		{ domain: { data: TABLE, fields: [DEFAULT_COLOR] }, name: 'color', type: 'ordinal' },
 		{
-			domain: { data: FILTERED_TABLE, fields: ['datetime0'] },
+			domain: { data: FILTERED_TABLE, fields: [DEFAULT_TRANSFORMED_TIME_DIMENSION] },
 			name: 'xTime',
 			padding: 32,
 			range: 'width',
@@ -176,7 +180,7 @@ const line0_groupMark = {
 				update: {
 					x: {
 						scale: 'xTime',
-						field: 'datetime0',
+						field: DEFAULT_TRANSFORMED_TIME_DIMENSION,
 					},
 					strokeOpacity: [
 						{
@@ -228,7 +232,7 @@ const metricRangeGroupMark = {
 				update: {
 					x: {
 						scale: 'xTime',
-						field: 'datetime0',
+						field: DEFAULT_TRANSFORMED_TIME_DIMENSION,
 					},
 					strokeOpacity: [
 						{
@@ -266,7 +270,7 @@ const metricRangeGroupMark = {
 					cursor: undefined,
 					x: {
 						scale: 'xTime',
-						field: 'datetime0',
+						field: DEFAULT_TRANSFORMED_TIME_DIMENSION,
 					},
 					fillOpacity: [
 						{
@@ -307,7 +311,7 @@ const metricRangeWithDisplayPointMarks = [
 			update: {
 				x: {
 					scale: 'xTime',
-					field: 'datetime0',
+					field: DEFAULT_TRANSFORMED_TIME_DIMENSION,
 				},
 			},
 		},
@@ -341,7 +345,7 @@ const displayPointMarks = [
 			update: {
 				x: {
 					scale: 'xTime',
-					field: 'datetime0',
+					field: DEFAULT_TRANSFORMED_TIME_DIMENSION,
 				},
 			},
 		},
@@ -378,6 +382,12 @@ describe('lineSpecBuilder', () => {
 					children: [createElement(Trendline, { method: 'average' })],
 				})[2].transform
 			).toStrictEqual([
+				{
+					type: 'collect',
+					sort: {
+						field: DEFAULT_TRANSFORMED_TIME_DIMENSION,
+					},
+				},
 				{
 					type: 'joinaggregate',
 					groupby: ['series'],
@@ -469,7 +479,10 @@ describe('lineSpecBuilder', () => {
 									strokeWidth: undefined,
 									y: { field: 'value', scale: 'yLinear' },
 								},
-								update: { x: { field: 'datetime0', scale: 'xTime' }, strokeOpacity: [{ value: 1 }] },
+								update: {
+									x: { field: DEFAULT_TRANSFORMED_TIME_DIMENSION, scale: 'xTime' },
+									strokeOpacity: [{ value: 1 }],
+								},
 							},
 							from: { data: 'line0_facet' },
 							name: 'line0',

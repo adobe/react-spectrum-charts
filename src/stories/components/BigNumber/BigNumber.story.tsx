@@ -35,11 +35,9 @@ const BigNumberStory: StoryFn<typeof BigNumber> = (args): ReactElement => {
 		height: 100,
 	});
 	return (
-		<>
-			<Chart {...chartProps}>
-				<BigNumber {...args}/>
-			</Chart>
-		</>
+		<Chart {...chartProps}>
+			<BigNumber {...args}/>
+		</Chart>
 	);
 };
 

@@ -11,14 +11,21 @@
  */
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
+import { FC } from 'react';
+
 import { DEFAULT_AXIS_ANNOTATION_COLOR, DEFAULT_AXIS_ANNOTATION_OFFSET } from '@constants';
 
 import { AxisAnnotationProps } from '../../types';
 
-export function AxisAnnotation({
+const AxisAnnotation: FC<AxisAnnotationProps> = ({
 	dataKey = 'annotations',
 	color = DEFAULT_AXIS_ANNOTATION_COLOR,
 	offset = DEFAULT_AXIS_ANNOTATION_OFFSET,
-}: AxisAnnotationProps) {
+}) => {
 	return null;
-}
+};
+
+// displayName is used to validate the component type in the spec builder
+AxisAnnotation.displayName = 'AxisAnnotation';
+
+export { AxisAnnotation };

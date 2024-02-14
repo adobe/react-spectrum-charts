@@ -15,7 +15,14 @@ import { Annotation } from '@components/Annotation';
 import { ChartPopover } from '@components/ChartPopover';
 import { ChartTooltip } from '@components/ChartTooltip';
 import { MetricRange } from '@components/MetricRange';
-import { DEFAULT_COLOR, DEFAULT_COLOR_SCHEME, DEFAULT_SECONDARY_COLOR, HIGHLIGHT_CONTRAST_RATIO } from '@constants';
+import {
+	DEFAULT_COLOR,
+	DEFAULT_COLOR_SCHEME,
+	DEFAULT_SECONDARY_COLOR,
+	DEFAULT_TIME_DIMENSION,
+	DEFAULT_TRANSFORMED_TIME_DIMENSION,
+	HIGHLIGHT_CONTRAST_RATIO,
+} from '@constants';
 
 import {
 	getColorProductionRule,
@@ -156,8 +163,17 @@ describe('getHighlightOpacityValue()', () => {
 
 describe('getXProductionRule()', () => {
 	test('should return the correct scale based on scale type', () => {
-		expect(getXProductionRule('time', 'datetime')).toEqual({ scale: 'xTime', field: 'datetime0' });
-		expect(getXProductionRule('linear', 'datetime')).toEqual({ scale: 'xLinear', field: 'datetime' });
-		expect(getXProductionRule('point', 'datetime')).toEqual({ scale: 'xPoint', field: 'datetime' });
+		expect(getXProductionRule('time', DEFAULT_TIME_DIMENSION)).toEqual({
+			scale: 'xTime',
+			field: DEFAULT_TRANSFORMED_TIME_DIMENSION,
+		});
+		expect(getXProductionRule('linear', DEFAULT_TIME_DIMENSION)).toEqual({
+			scale: 'xLinear',
+			field: DEFAULT_TIME_DIMENSION,
+		});
+		expect(getXProductionRule('point', DEFAULT_TIME_DIMENSION)).toEqual({
+			scale: 'xPoint',
+			field: DEFAULT_TIME_DIMENSION,
+		});
 	});
 });

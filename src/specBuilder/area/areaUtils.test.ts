@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { BACKGROUND_COLOR, DEFAULT_COLOR_SCHEME } from '@constants';
+import { BACKGROUND_COLOR, DEFAULT_COLOR_SCHEME, DEFAULT_TRANSFORMED_TIME_DIMENSION } from '@constants';
 
 import { getAreaMark } from './areaUtils';
 
@@ -172,7 +172,7 @@ describe('getAreaMark', () => {
 					cursor: undefined,
 					x: {
 						scale: 'xTime',
-						field: 'datetime0',
+						field: DEFAULT_TRANSFORMED_TIME_DIMENSION,
 					},
 					fillOpacity: [
 						{

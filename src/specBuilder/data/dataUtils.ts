@@ -9,7 +9,13 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { FILTERED_TABLE, SERIES_ID, TABLE } from '@constants';
+import {
+	DEFAULT_TIME_DIMENSION,
+	DEFAULT_TRANSFORMED_TIME_DIMENSION,
+	FILTERED_TABLE,
+	SERIES_ID,
+	TABLE,
+} from '@constants';
 import { produce } from 'immer';
 import { Compare, Data, FormulaTransform, SourceData, Transforms, ValuesData } from 'vega';
 
@@ -19,7 +25,7 @@ export const addTimeTransform = produce<Transforms[], [string]>((transforms, dim
 			type: 'timeunit',
 			field: dimension,
 			units: ['year', 'month', 'date', 'hours', 'minutes'],
-			as: ['datetime0', 'datetime1'],
+			as: [DEFAULT_TRANSFORMED_TIME_DIMENSION, `${DEFAULT_TIME_DIMENSION}1`],
 		});
 	}
 });

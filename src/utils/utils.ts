@@ -15,6 +15,7 @@ import { MARK_ID, SERIES_ID } from '@constants';
 import { View } from 'vega';
 
 import { Area, Axis, AxisAnnotation, Bar, BigNumber, ChartPopover, ChartTooltip, Legend, Line, Trendline } from '..';
+import { Donut } from '../alpha';
 import {
 	AxisAnnotationChildElement,
 	AxisChildElement,
@@ -31,7 +32,6 @@ import {
 	RscElement,
 	TooltipHandler,
 } from '../types';
-import { Icon } from '@adobe/react-spectrum';
 
 type MappedElement = { name: string; element: ChartElement | RscElement };
 type ElementCounts = {
@@ -39,6 +39,7 @@ type ElementCounts = {
 	axis: number;
 	axisAnnotation: number;
 	bar: number;
+	donut: number;
 	legend: number;
 	line: number;
 };
@@ -57,19 +58,17 @@ export const sanitizeRscChartChildren = (children: Children<RscElement> | undefi
 		.filter((child): child is ChartChildElement => isChartChildElement(child));
 };
 
-export const sanitizeBigNumberChildren = (children: Children<BigNumberChildElement> | undefined): {lineElements: BigNumberChildElement[], iconElements: BigNumberChildElement[]} => {
+export const sanitizeBigNumberChildren = (children: Children<BigNumberChildElement> | undefined): BigNumberChildElement[] => {
 	const sanitizedChildren = toArray(children)
 		.flat()
 		.filter((child): child is BigNumberChildElement => isBigNumberChildElement(child));
-
-	const lineElements = sanitizedChildren.filter(c => c.type == Line)
-	const iconElements = sanitizedChildren.filter(c => c.type == Icon)
-
-	return {lineElements, iconElements}
+	return sanitizedChildren.filter(c => c.type == Line)
 };
 
 export const chartContainsBigNumber = (children: Children<ChartChildElement> | undefined): ChartChildElement[] => {
+	console.warn('Chart contains big number out of these children', children);
 	const sanitizedChildren = sanitizeRscChartChildren(children);
+	console.warn('After children have been sanitized', sanitizedChildren);
 	return sanitizedChildren.filter(child => child.type == BigNumber);
 }
 
@@ -102,7 +101,9 @@ export const sanitizeTrendlineChildren = (
 };
 
 const isChartChildElement = (child: ChildElement<ChartChildElement> | undefined): child is ChartChildElement => {
-	return isRscComponent(child);
+	const res = isRscComponent(child);
+	console.warn('Is the child an rsc component?', res);
+	return res;
 };
 
 const isBigNumberChildElement = (child: ChildElement<BigNumberChildElement> | undefined): child is BigNumberChildElement => {
@@ -115,9 +116,18 @@ const isMarkChildElement = <T extends MarkChildElement = MarkChildElement>(
 	return isRscComponent(child);
 };
 
+const isRscElement = <T extends RscElement = RscElement>(child: ChildElement<T> | undefined): child is T => {
+	return isRscComponent(child);
+};
+
 const isRscComponent = (child?: ChildElement<RscElement>): boolean => {
 	return Boolean(
-		child && typeof child !== 'string' && typeof child !== 'boolean' && 'type' in child && child.type !== Fragment
+		child &&
+			typeof child !== 'string' &&
+			typeof child !== 'boolean' &&
+			'type' in child &&
+			child.type !== Fragment &&
+			'displayName' in child.type
 	);
 };
 
@@ -198,7 +208,7 @@ export function getElement(
  */
 export const getAllElements = (
 	target: Children<ChartElement | RscElement>,
-	source: typeof Axis | typeof Legend | typeof Line | typeof Bar | typeof ChartTooltip | typeof ChartPopover,
+	source: typeof Axis | typeof Legend | typeof Line | typeof Bar | typeof ChartTooltip | typeof ChartPopover | typeof BigNumber,
 	elements: MappedElement[] = [],
 	name: string = ''
 ): MappedElement[] => {
@@ -228,27 +238,31 @@ export const getAllElements = (
 };
 
 const getElementName = (element: ChildElement<RscElement>, elementCounts: ElementCounts) => {
-	if (typeof element !== 'object' || !('type' in element)) return '';
-	switch (element.type) {
-		case Area:
+	if (!(isRscElement(element) && 'displayName' in element.type)) return '';
+	// use displayName since it is the olny way to check alpha and beta components
+	switch (element.type.displayName) {
+		case Area.displayName:
 			elementCounts.area++;
 			return getComponentName(element, `area${elementCounts.area}`);
-		case Axis:
+		case Axis.displayName:
 			elementCounts.axis++;
 			return getComponentName(element, `axis${elementCounts.axis}`);
-		case AxisAnnotation:
+		case AxisAnnotation.displayName:
 			elementCounts.axisAnnotation++;
 			return getComponentName(element, `Annotation${elementCounts.axisAnnotation}`);
-		case Bar:
+		case Bar.displayName:
 			elementCounts.bar++;
 			return getComponentName(element, `bar${elementCounts.bar}`);
-		case Legend:
+		case Donut.displayName:
+			elementCounts.donut++;
+			return getComponentName(element, `donut${elementCounts.donut}`);
+		case Legend.displayName:
 			elementCounts.legend++;
 			return getComponentName(element, `legend${elementCounts.legend}`);
-		case Line:
+		case Line.displayName:
 			elementCounts.line++;
 			return getComponentName(element, `line${elementCounts.line}`);
-		case Trendline:
+		case Trendline.displayName:
 			return getComponentName(element, 'Trendline');
 		default:
 			return '';
@@ -267,6 +281,7 @@ const initElementCounts = (): ElementCounts => ({
 	axis: -1,
 	axisAnnotation: -1,
 	bar: -1,
+	donut: -1,
 	legend: -1,
 	line: -1,
 });

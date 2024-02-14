@@ -11,10 +11,12 @@
  */
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
+import { FC } from 'react';
+
 import { TrendlineProps } from '../../types';
 
 // destructure props here and set defaults so that storybook can pick them up
-export function Trendline({
+const Trendline: FC<TrendlineProps> = ({
 	children,
 	color,
 	dimensionRange = [null, null],
@@ -24,6 +26,11 @@ export function Trendline({
 	displayOnHover = false,
 	highlightRawPoint = false,
 	opacity = 1,
-}: TrendlineProps) {
+}) => {
 	return null;
-}
+};
+
+// displayName is used to validate the component type in the spec builder
+Trendline.displayName = 'Trendline';
+
+export { Trendline };

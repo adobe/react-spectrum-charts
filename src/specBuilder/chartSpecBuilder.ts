@@ -19,6 +19,7 @@ import {
 	TABLE,
 } from '@constants';
 import { Area, Axis, Bar, BigNumber, Legend, Line, Scatter, Title } from '@rsc';
+import { Donut } from '@rsc/alpha';
 import colorSchemes from '@themes/colorSchemes';
 import { produce } from 'immer';
 import {
@@ -30,6 +31,7 @@ import {
 	ColorScale,
 	ColorScheme,
 	Colors,
+	DonutElement,
 	LegendElement,
 	LineElement,
 	LineType,
@@ -48,6 +50,7 @@ import { addArea } from './area/areaSpecBuilder';
 import { addAxis } from './axis/axisSpecBuilder';
 import { addBar } from './bar/barSpecBuilder';
 import { getSeriesIdTransform } from './data/dataUtils';
+import { addDonut } from './donut/donutSpecBuilder';
 import { setHoverOpacityForMarks } from './legend/legendHighlightUtils';
 import { addLegend } from './legend/legendSpecBuilder';
 import { addLine } from './line/lineSpecBuilder';
@@ -88,26 +91,40 @@ export function buildSpec({
 	buildOrder.set(Area, 0);
 	buildOrder.set(Bar, 0);
 	buildOrder.set(Line, 0);
+	buildOrder.set(Donut, 0);
 	buildOrder.set(Scatter, 0);
 	buildOrder.set(Legend, 1);
 	buildOrder.set(Axis, 2);
 	buildOrder.set(Title, 3);
 
-	let { areaCount, axisCount, barCount, legendCount, lineCount, scatterCount } = initializeComponentCounts();
+	let { areaCount, axisCount, barCount, donutCount, legendCount, lineCount, scatterCount } =
+		initializeComponentCounts();
 	spec = [...children]
 		.sort((a, b) => buildOrder.get(a.type) - buildOrder.get(b.type))
 		.reduce((acc: Spec, cur) => {
-			switch (cur.type) {
-				case Area:
+			if (!('displayName' in cur.type)) {
+				console.error('Invalid component type. Component is missing display name.');
+				return acc;
+			}
+			/**
+			 * type.displayName is used because it doesn't get minified, unlike type.name
+			 * If we simply compare cur.type to the component,
+			 * that uses referential equailty which fails in production when the component is imported from a different module like ./alpha
+			 */
+			switch (cur.type.displayName) {
+				case Area.displayName:
 					areaCount++;
 					return addArea(acc, { ...(cur as AreaElement).props, colorScheme, index: areaCount });
-				case Axis:
+				case Axis.displayName:
 					axisCount++;
 					return addAxis(acc, { ...(cur as AxisElement).props, colorScheme, index: axisCount });
-				case Bar:
+				case Bar.displayName:
 					barCount++;
 					return addBar(acc, { ...(cur as BarElement).props, colorScheme, index: barCount });
-				case Legend:
+				case Donut.displayName:
+					donutCount++;
+					return addDonut(acc, { ...(cur as DonutElement).props, colorScheme, index: donutCount });
+				case Legend.displayName:
 					legendCount++;
 					return addLegend(acc, {
 						...(cur as LegendElement).props,
@@ -116,20 +133,20 @@ export function buildSpec({
 						hiddenSeries,
 						highlightedSeries,
 					});
-				case Line:
+				case Line.displayName:
 					lineCount++;
 					return addLine(acc, { ...(cur as LineElement).props, colorScheme, index: lineCount });
-				case Scatter:
+				case Scatter.displayName:
 					scatterCount++;
 					return addScatter(acc, { ...(cur as ScatterElement).props, colorScheme, index: scatterCount });
-				case Title:
+				case Title.displayName:
 					// No title count. There can only be one title.
 					return addTitle(acc, { ...(cur as TitleElement).props });
-				case BigNumber:
+				case BigNumber.displayName:
 					// Do nothing and do not throw an error
 					return acc;
 				default:
-					console.error('invalid type');
+					console.error(`Invalid component type: ${cur.type.displayName} is not a supported <Chart> child`);
 					return acc;
 			}
 		}, spec);
@@ -166,6 +183,7 @@ const initializeComponentCounts = () => {
 		areaCount: -1,
 		axisCount: -1,
 		barCount: -1,
+		donutCount: -1,
 		legendCount: -1,
 		lineCount: -1,
 		scatterCount: -1,

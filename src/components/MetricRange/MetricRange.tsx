@@ -11,12 +11,14 @@
  */
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
+import { FC } from 'react';
+
 import { DEFAULT_METRIC } from '@constants';
 
 import { MetricRangeProps } from '../../types';
 
 // destructure props here and set defaults so that storybook can pick them up
-export function MetricRange({
+const MetricRange: FC<MetricRangeProps> = ({
 	children,
 	color,
 	lineType = 'dashed',
@@ -27,6 +29,11 @@ export function MetricRange({
 	metric = DEFAULT_METRIC,
 	displayOnHover = false,
 	scaleAxisToFit = false,
-}: MetricRangeProps) {
+}) => {
 	return null;
-}
+};
+
+// displayName is used to validate the component type in the spec builder
+MetricRange.displayName = 'MetricRange';
+
+export { MetricRange };

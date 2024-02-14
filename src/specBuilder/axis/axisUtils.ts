@@ -278,9 +278,9 @@ const getDefaultOpposingScaleNameFromPosition = (position: Position) => {
 export const getTickCount = (position: Position, grid: boolean): SignalRef | undefined => {
 	if (!grid) return;
 	const range = ['top', 'bottom'].includes(position) ? 'width' : 'height';
-	// divide the range by 60 to get the ideal number of ticks (grid lines)
+	// divide the range by 100 to get the ideal number of ticks (grid lines)
 	// clamp axis tick count to a min of 2 and max of 10
-	return { signal: `clamp(ceil(${range}/60), 2, 10)` };
+	return { signal: `clamp(ceil(${range}/100), 2, 10)` };
 };
 
 /**
