@@ -469,6 +469,11 @@ describe('Chart spec builder', () => {
 
 	describe('getDefaultSignals()', () => {
 		const defaultSignals = [
+			{
+				name: 'timerValue',
+				value: '0',
+				on: [{ events: 'timer{16}', update: 'min(1, timerValue + (1 / 360))' }],
+			},
 			{ name: BACKGROUND_COLOR, value: 'rgb(255, 255, 255)' },
 			{
 				name: 'colors',
