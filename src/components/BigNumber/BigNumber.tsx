@@ -36,13 +36,13 @@ const BigNumber: FC<BigNumberProps> = ({
 	rscChartProps,
 	method,
 }) => {
-	const getChartId = useCallback(() => useRef<string>(`rsc-${uuid()}`), []);
-	const getChartView = useCallback(() => useRef<VegaView>(), []);
+	const chartId = useRef<string>(`rsc-${uuid()}`);
+	const chartView = useRef<VegaView>();
 
-	rscChartProps = rscChartProps || {
+	rscChartProps = rscChartProps ?? {
 		data: [],
-		chartId: getChartId(),
-		chartView: getChartView(),
+		chartId,
+		chartView,
 		chartWidth: 200,
 	};
 
