@@ -236,6 +236,14 @@ export const getDefaultSignals = ({
 	];
 };
 
+export const getTimer = () => {
+	return {
+		name: 'timerValue',
+		value: '0',
+		on: [{ events: 'timer{16}', update: 'min(1, timerValue + (1 / 360))' }],
+	}
+}
+
 export const getTwoDimensionalColorScheme = (colors: ChartColors, colorScheme: ColorScheme): string[][] => {
 	if (isColors(colors)) {
 		return getColors(colors, colorScheme).map((color) => [color]);
