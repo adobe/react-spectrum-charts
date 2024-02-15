@@ -14,31 +14,20 @@ import {
 	DEFAULT_DIMENSION_SCALE_TYPE,
 	DEFAULT_LINEAR_DIMENSION,
 	DEFAULT_METRIC,
-	FILTERED_TABLE,
 } from '@constants';
 import { addTimeTransform, getTableData } from '@specBuilder/data/dataUtils';
 import { getInteractiveMarkName } from '@specBuilder/line/lineUtils';
-import {
-	getColorProductionRule,
-	getCursor,
-	getLineWidthProductionRule,
-	getOpacityProductionRule,
-	getStrokeDashProductionRule,
-	getSymbolSizeProductionRule,
-	getTooltip,
-	getXProductionRule,
-	hasInteractiveChildren,
-} from '@specBuilder/marks/markUtils';
 import {
 	addContinuousDimensionScale,
 	addFieldToFacetScaleDomain,
 	addMetricScale,
 } from '@specBuilder/scale/scaleSpecBuilder';
-import { addTrendlineData, getTrendlineMarks, getTrendlineScales, getTrendlineSignals } from '@specBuilder/trendline';
+import { addTrendlineData, getTrendlineScales, getTrendlineSignals } from '@specBuilder/trendline';
 import { sanitizeMarkChildren, toCamelCase } from '@utils';
 import { produce } from 'immer';
 import { ColorScheme, ScatterProps, ScatterSpecProps } from 'types';
-import { Data, GroupMark, Mark, PathMark, Scale, Signal, Spec, SymbolMark } from 'vega';
+import { Data, Scale, Signal, Spec } from 'vega';
+import { addScatterMarks } from './scatterMarkUtils';
 
 export const addScatter = produce<Spec, [ScatterProps & { colorScheme?: ColorScheme; index?: number }]>(
 	(
@@ -120,90 +109,3 @@ export const setScales = produce<Scale[], [ScatterSpecProps]>((scales, props) =>
 
 	scales.push(...getTrendlineScales(props));
 });
-
-export const addScatterMarks = produce<Mark[], [ScatterSpecProps]>((marks, props) => {
-	const { name } = props;
-
-	const scatterGroup: GroupMark = {
-		name: `${name}_group`,
-		type: 'group',
-		marks: [getScatterMark(props), ...getScatterHoverMarks(props)],
-	};
-
-	marks.push(scatterGroup);
-	marks.push(...getTrendlineMarks(props));
-});
-
-export const getScatterMark = ({
-	color,
-	colorScheme,
-	dimension,
-	dimensionScaleType,
-	lineType,
-	lineWidth,
-	metric,
-	name,
-	opacity,
-	size,
-}: ScatterSpecProps): SymbolMark => ({
-	name,
-	type: 'symbol',
-	from: {
-		data: FILTERED_TABLE,
-	},
-	encode: {
-		enter: {
-			/**
-			 * the blend mode makes it possible to tell when there are overlapping points
-			 * in light mode, the points are darker when they overlap (multiply)
-			 * in dark mode, the points are lighter when they overlap (screen)
-			 */
-			blend: { value: colorScheme === 'light' ? 'multiply' : 'screen' },
-			fill: getColorProductionRule(color, colorScheme),
-			shape: { value: 'circle' },
-			strokeDash: getStrokeDashProductionRule(lineType),
-			strokeWidth: getLineWidthProductionRule(lineWidth),
-			stroke: getColorProductionRule(color, colorScheme),
-			size: getSymbolSizeProductionRule(size),
-		},
-		update: {
-			fillOpacity: [getOpacityProductionRule(opacity)],
-			x: getXProductionRule(dimensionScaleType, dimension),
-			y: { scale: 'yLinear', field: metric },
-		},
-	},
-});
-
-const getScatterHoverMarks = ({ children, name }: ScatterSpecProps): PathMark[] => {
-	if (!hasInteractiveChildren(children)) {
-		return [];
-	}
-	return [
-		{
-			name: `${name}_voronoi`,
-			type: 'path',
-			from: { data: `${name}` },
-			encode: {
-				enter: {
-					fill: { value: 'transparent' },
-					stroke: { value: 'transparent' },
-					isVoronoi: { value: true },
-					// Don't add a tooltip if there are no interactive children. We only want the other hover marks for metric ranges.
-					tooltip: getTooltip(children, name, true),
-				},
-				update: {
-					cursor: getCursor(children),
-				},
-			},
-			transform: [
-				{
-					type: 'voronoi',
-					x: `datum.x`,
-					y: `datum.y`,
-					// on initial render, width/height could be 0 which causes problems
-					size: [{ signal: 'max(width, 1)' }, { signal: 'max(height, 1)' }],
-				},
-			],
-		},
-	];
-};

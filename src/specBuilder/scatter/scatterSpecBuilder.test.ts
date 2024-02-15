@@ -12,35 +12,11 @@
 import { createElement } from 'react';
 
 import { Trendline } from '@components/Trendline';
-import {
-	DEFAULT_COLOR,
-	DEFAULT_COLOR_SCHEME,
-	DEFAULT_DIMENSION_SCALE_TYPE,
-	DEFAULT_LINEAR_DIMENSION,
-	DEFAULT_METRIC,
-} from '@constants';
+import { DEFAULT_COLOR } from '@constants';
 import { initializeSpec } from '@specBuilder/specUtils';
-import { ScatterSpecProps } from 'types';
-import { GroupMark } from 'vega';
 
-import { addData, addScatterMarks, addSignals, setScales } from './scatterSpecBuilder';
-
-const defaultScatterProps: ScatterSpecProps = {
-	children: [],
-	color: { value: 'categorical-100' },
-	colorScaleType: 'ordinal',
-	colorScheme: DEFAULT_COLOR_SCHEME,
-	dimension: DEFAULT_LINEAR_DIMENSION,
-	dimensionScaleType: DEFAULT_DIMENSION_SCALE_TYPE,
-	index: 0,
-	interactiveMarkName: 'scatter0',
-	lineType: { value: 'solid' },
-	lineWidth: { value: 0 },
-	metric: DEFAULT_METRIC,
-	name: 'scatter0',
-	opacity: { value: 1 },
-	size: { value: 'M' },
-};
+import { addData, addSignals, setScales } from './scatterSpecBuilder';
+import { defaultScatterProps } from './scatterTestUtils';
 
 describe('addData()', () => {
 	test('should add time transform is dimensionScaleType === "time"', () => {
@@ -102,29 +78,5 @@ describe('setScales()', () => {
 		expect(scales).toHaveLength(3);
 		expect(scales[2].name).toBe('symbolSize');
 		expect(scales[2].domain).toEqual({ data: 'table', fields: ['weight'] });
-	});
-});
-
-describe('addScatterMarks()', () => {
-	test('should add the scatter group with the symbol marks', () => {
-		const marks = addScatterMarks([], defaultScatterProps);
-		expect(marks).toHaveLength(1);
-		expect(marks[0].name).toBe('scatter0_group');
-		expect(marks[0].type).toBe('group');
-		expect((marks[0] as GroupMark).marks).toHaveLength(1);
-	});
-
-	test('should use "multiply" blend mode in light mode', () => {
-		const marks = addScatterMarks([], { ...defaultScatterProps, colorScheme: 'light' });
-		expect((marks[0] as GroupMark).marks?.[0].encode?.enter?.blend).toEqual({ value: 'multiply' });
-	});
-	test('should "screen" blend mode in dark mode', () => {
-		const marks = addScatterMarks([], { ...defaultScatterProps, colorScheme: 'dark' });
-		expect((marks[0] as GroupMark).marks?.[0].encode?.enter?.blend).toEqual({ value: 'screen' });
-	});
-	test('should add trendline marks if trendline exists as a child', () => {
-		const marks = addScatterMarks([], { ...defaultScatterProps, children: [createElement(Trendline)] });
-		expect(marks).toHaveLength(2);
-		expect(marks[1].name).toBe('scatter0Trendline0_group');
 	});
 });

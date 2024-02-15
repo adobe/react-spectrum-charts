@@ -16,6 +16,7 @@ import { ChartTooltip } from '@components/ChartTooltip';
 import { MetricRange } from '@components/MetricRange';
 import { Trendline } from '@components/Trendline';
 import { BACKGROUND_COLOR, DEFAULT_TRANSFORMED_TIME_DIMENSION, HIGHLIGHT_CONTRAST_RATIO } from '@constants';
+import { getScaleName } from '@specBuilder/scale/scaleSpecBuilder';
 import {
 	getColorValue,
 	getLineWidthPixelsFromLineWidth,
@@ -39,11 +40,11 @@ import {
 	ColorValueRef,
 	Cursor,
 	NumericValueRef,
+	PathMark,
 	ProductionRule,
 	ScaledValueRef,
 	SignalRef,
 } from 'vega';
-import { getScaleName } from '@specBuilder/scale/scaleSpecBuilder';
 
 /**
  * If a popover exists on the mark, then set the cursor to a pointer.
@@ -190,3 +191,36 @@ export const getXProductionRule = (scaleType: ScaleType, dimension: string): Pro
 	}
 	return { scale, field: dimension };
 };
+
+/**
+ * Gets the voronoi path used for tooltips and popovers
+ * @param children
+ * @param dataSource name of the point data source the voronoi is based on
+ * @param markName
+ * @returns PathMark
+ */
+export const getVoronoiPath = (children: MarkChildElement[], dataSource: string, markName: string): PathMark => ({
+	name: `${markName}_voronoi`,
+	type: 'path',
+	from: { data: dataSource },
+	encode: {
+		enter: {
+			fill: { value: 'transparent' },
+			stroke: { value: 'transparent' },
+			isVoronoi: { value: true },
+			tooltip: getTooltip(children, markName, true),
+		},
+		update: {
+			cursor: getCursor(children),
+		},
+	},
+	transform: [
+		{
+			type: 'voronoi',
+			x: `datum.x`,
+			y: `datum.y`,
+			// on initial render, width/height could be 0 which causes problems
+			size: [{ signal: 'max(width, 1)' }, { signal: 'max(height, 1)' }],
+		},
+	],
+});
