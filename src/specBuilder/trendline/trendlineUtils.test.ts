@@ -13,9 +13,9 @@ import { createElement } from 'react';
 
 import { Annotation } from '@components/Annotation';
 import { Trendline } from '@components/Trendline';
-import { TRENDLINE_VALUE } from '@constants';
+import { FILTERED_TABLE, MS_PER_DAY, TRENDLINE_VALUE } from '@constants';
 
-import { applyTrendlinePropDefaults, getPolynomialOrder, getTrendlines } from './trendlineUtils';
+import { applyTrendlinePropDefaults, getPolynomialOrder, getRegressionExtent, getTrendlines } from './trendlineUtils';
 
 describe('getTrendlines()', () => {
 	test('should return an array of trendline props', () => {
@@ -51,5 +51,24 @@ describe('applyTrendlinePropDefaults()', () => {
 describe('getPolynomialOrder()', () => {
 	test('should trow error if the polynomial order is less than 1', () => {
 		expect(() => getPolynomialOrder('polynomial-0')).toThrowError();
+	});
+});
+
+describe('getRegressionExtent()', () => {
+	test('should the correct extent based on extent value', () => {
+		const name = 'line0Trendline0';
+		expect(getRegressionExtent([1, 2], name, false)).toHaveProperty('signal', '[1, 2]');
+		expect(getRegressionExtent([1, 2], name, true)).toHaveProperty(
+			'signal',
+			`[(1 - data('${FILTERED_TABLE}')[0].datetimeMin + ${MS_PER_DAY}) / ${MS_PER_DAY}, (2 - data('${FILTERED_TABLE}')[0].datetimeMin + ${MS_PER_DAY}) / ${MS_PER_DAY}]`,
+		);
+		expect(getRegressionExtent([null, null], name, false)).toHaveProperty(
+			'signal',
+			`[${name}_extent[0], ${name}_extent[1]]`,
+		);
+		expect(getRegressionExtent(['domain', 'domain'], name, false)).toHaveProperty(
+			'signal',
+			`[${name}_extent[0] - (${name}_extent[1] - ${name}_extent[0]) * 0.3, ${name}_extent[1] + (${name}_extent[1] - ${name}_extent[0]) * 0.3]`,
+		);
 	});
 });
