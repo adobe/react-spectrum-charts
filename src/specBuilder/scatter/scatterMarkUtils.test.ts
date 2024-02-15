@@ -12,11 +12,12 @@
 
 import { createElement } from 'react';
 
-import { Trendline } from '@components/Trendline';
-import { GroupMark } from 'vega';
-import { defaultScatterProps } from './scatterTestUtils';
-import { addScatterMarks, getScatterHoverMarks } from './scatterMarkUtils';
 import { ChartTooltip } from '@components/ChartTooltip';
+import { Trendline } from '@components/Trendline';
+import { DEFAULT_OPACITY_RULE, MARK_ID } from '@constants';
+import { GroupMark } from 'vega';
+import { addScatterMarks, getOpacity, getScatterHoverMarks } from './scatterMarkUtils';
+import { defaultScatterProps } from './scatterTestUtils';
 
 describe('addScatterMarks()', () => {
 	test('should add the scatter group with the symbol marks', () => {
@@ -39,6 +40,17 @@ describe('addScatterMarks()', () => {
 		const marks = addScatterMarks([], { ...defaultScatterProps, children: [createElement(Trendline)] });
 		expect(marks).toHaveLength(2);
 		expect(marks[1].name).toBe('scatter0Trendline0_group');
+	});
+});
+
+describe('getOpacity()', () => {
+	test('should return the default rule if there are not any interactive children', () => {
+		expect(getOpacity(defaultScatterProps)).toEqual([DEFAULT_OPACITY_RULE]);
+	});
+	test('should include hover rules if tooltip exists', () => {
+		const opacity = getOpacity({ ...defaultScatterProps, children: [createElement(ChartTooltip)] });
+		expect(opacity).toHaveLength(2);
+		expect(opacity[0]).toHaveProperty('test', `scatter0_hoveredId && scatter0_hoveredId !== datum.${MARK_ID}`);
 	});
 });
 
