@@ -46,10 +46,12 @@ const BigNumber: FC<BigNumberProps> = ({
 		chartWidth: 200,
 	};
 
+	const numberMethod = method ?? 'last';
+
 	const { chartWidth, height, locale, data, ...rscChartRemain } = rscChartProps;
 	const aspectRatio = 16 / 9;
 	// based on Chart.tsx checks, data will always be defined and have a length greater than 0.
-	const bigNumberValue = getBigNumberValue(method, data, dataKey);
+	const bigNumberValue = getBigNumberValue(numberMethod, data, dataKey);
 
 	const numberLocale = getLocale(locale).number;
 	const type = numberType ?? 'linear';
@@ -97,7 +99,7 @@ const BigNumber: FC<BigNumberProps> = ({
 				{lineElements.length > 0 && (
 					<View gridArea="sparkline" justifySelf={'center'}>
 						<RscChart chartWidth={cWidth} height={cHeight} data={data} locale={locale} {...rscChartRemain}>
-							{cloneElement(lineElements[0] as LineElement, { isSparkline: true, padding })}
+							{cloneElement(lineElements[0] as LineElement, { isSparkline: true, isMethodLast: numberMethod === 'last', padding })}
 						</RscChart>
 					</View>
 				)}
