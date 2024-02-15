@@ -10,9 +10,17 @@
  * governing permissions and limitations under the License.
  */
 import { Scatter, spectrumColors } from '@rsc';
-import { findAllMarksByGroupName, findChart, getAllLegendEntries, render } from '@test-utils';
+import {
+	findAllMarksByGroupName,
+	findChart,
+	getAllLegendEntries,
+	hoverNthElement,
+	render,
+	screen,
+	within,
+} from '@test-utils';
 
-import { Basic, Color, LineType, Opacity, Size } from './Scatter.story';
+import { Basic, Color, LineType, Opacity, Size, Tooltip } from './Scatter.story';
 
 const colors = spectrumColors.light;
 
@@ -87,5 +95,25 @@ describe('Scatter', () => {
 
 		const legendEntries = getAllLegendEntries(chart);
 		expect(legendEntries).toHaveLength(6);
+	});
+
+	describe('Tooltip', () => {
+		test('should render a tooltip on hover', async () => {
+			render(<Tooltip {...Basic.args} />);
+
+			const chart = await findChart();
+			expect(chart).toBeInTheDocument();
+
+			const paths = await findAllMarksByGroupName(chart, 'scatter0_voronoi');
+
+			await hoverNthElement(paths, 0);
+			let tooltip = await screen.findByTestId('rsc-tooltip');
+			expect(tooltip).toBeInTheDocument();
+			expect(within(tooltip).getByText('Baby Peach, Baby Daisy')).toBeInTheDocument();
+
+			await hoverNthElement(paths, 12);
+			tooltip = await screen.findByTestId('rsc-tooltip');
+			expect(within(tooltip).getByText('Metal Mario, Gold Mario, Pink Gold Peach')).toBeInTheDocument();
+		});
 	});
 });

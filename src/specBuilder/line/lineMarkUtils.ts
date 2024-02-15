@@ -12,17 +12,16 @@
 import { SERIES_ID } from '@constants';
 import {
 	getColorProductionRule,
-	getCursor,
 	getHighlightOpacityValue,
 	getLineWidthProductionRule,
 	getOpacityProductionRule,
 	getStrokeDashProductionRule,
-	getTooltip,
+	getVoronoiPath,
 	getXProductionRule,
 	hasPopover,
 } from '@specBuilder/marks/markUtils';
-import { MarkChildElement, OpacityFacet, ScaleType } from 'types';
-import { LineMark, Mark, NumericValueRef, PathMark, ProductionRule, RuleMark, SymbolMark } from 'vega';
+import { OpacityFacet, ScaleType } from 'types';
+import { LineMark, Mark, NumericValueRef, ProductionRule, RuleMark, SymbolMark } from 'vega';
 
 import {
 	getHighlightBackgroundPoint,
@@ -121,7 +120,7 @@ const getDisplayOnHoverRules = (name: string, opacity: OpacityFacet) => {
 export const getLineHoverMarks = (
 	lineProps: LineMarkProps,
 	dataSource: string,
-	secondaryHighlightedMetric?: string
+	secondaryHighlightedMetric?: string,
 ): Mark[] => {
 	const { children, dimension, metric, name, scaleType } = lineProps;
 	return [
@@ -138,7 +137,7 @@ export const getLineHoverMarks = (
 		// points used for the voronoi transform
 		getPointsForVoronoi(dataSource, dimension, metric, name, scaleType),
 		// voronoi transform used to get nearest point paths
-		getVoronoiPath(children, name),
+		getVoronoiPath(children, `${name}_pointsForVoronoi`, name),
 	];
 };
 
@@ -166,7 +165,7 @@ const getPointsForVoronoi = (
 	dimension: string,
 	metric: string,
 	name: string,
-	scaleType: ScaleType
+	scaleType: ScaleType,
 ): SymbolMark => {
 	return {
 		name: `${name}_pointsForVoronoi`,
@@ -183,34 +182,5 @@ const getPointsForVoronoi = (
 				x: getXProductionRule(scaleType, dimension),
 			},
 		},
-	};
-};
-
-const getVoronoiPath = (children: MarkChildElement[], name: string): PathMark => {
-	return {
-		name: `${name}_voronoi`,
-		type: 'path',
-		from: { data: `${name}_pointsForVoronoi` },
-		encode: {
-			enter: {
-				fill: { value: 'transparent' },
-				stroke: { value: 'transparent' },
-				isVoronoi: { value: true },
-				// Don't add a tooltip if there are no interactive children. We only want the other hover marks for metric ranges.
-				tooltip: getTooltip(children, name, true),
-			},
-			update: {
-				cursor: getCursor(children),
-			},
-		},
-		transform: [
-			{
-				type: 'voronoi',
-				x: `datum.x`,
-				y: `datum.y`,
-				// on initial render, width/height could be 0 which causes problems
-				size: [{ signal: 'max(width, 1)' }, { signal: 'max(height, 1)' }],
-			},
-		],
 	};
 };

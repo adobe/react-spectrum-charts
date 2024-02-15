@@ -9,10 +9,11 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import React, { ReactElement } from 'react';
+import { ReactElement } from 'react';
 
+import { Content, Flex } from '@adobe/react-spectrum';
 import useChartProps from '@hooks/useChartProps';
-import { Axis, Chart, Legend, LegendProps, Scatter, Title } from '@rsc';
+import { Axis, Chart, ChartProps, ChartTooltip, Datum, Legend, LegendProps, Scatter, ScatterProps, Title } from '@rsc';
 import { characterData } from '@stories/data/marioKartData';
 import { StoryFn } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
@@ -73,9 +74,9 @@ const marioKeyTitle: Record<Exclude<MarioDataKey, 'character'>, string> = {
 	miniTurbo: 'Mini-turbo',
 };
 
-const ScatterStory: StoryFn<typeof Scatter> = (args): ReactElement => {
-	const chartProps = useChartProps({ data: characterData, height: 500, width: 500, lineWidths: [1, 2, 3] });
+const defaultChartProps: ChartProps = { data: characterData, height: 500, width: 500, lineWidths: [1, 2, 3] };
 
+const getLegendProps = (args: ScatterProps): LegendProps => {
 	const facets = ['color', 'lineType', 'opacity', 'size'];
 	const legendKey = args[facets.find((key) => args[key] !== undefined) ?? 'color'];
 	const legendProps: LegendProps = {
@@ -85,15 +86,56 @@ const ScatterStory: StoryFn<typeof Scatter> = (args): ReactElement => {
 	if (typeof args.opacity === 'object') {
 		legendProps.opacity = args.opacity;
 	}
+	return legendProps;
+};
+
+const ScatterStory: StoryFn<typeof Scatter> = (args): ReactElement => {
+	const chartProps = useChartProps(defaultChartProps);
+	const legendProps = getLegendProps(args);
 
 	return (
-		<Chart {...chartProps} >
+		<Chart {...chartProps}>
 			<Axis position="bottom" grid ticks baseline title={marioKeyTitle[args.dimension as MarioDataKey]} />
 			<Axis position="left" grid ticks baseline title={marioKeyTitle[args.metric as MarioDataKey]} />
 			<Scatter {...args} />
 			<Legend {...legendProps} />
 			<Title text="Mario Kart 8 Character Data" />
 		</Chart>
+	);
+};
+
+const ScatterTooltipStory: StoryFn<typeof Scatter> = (args): ReactElement => {
+	const chartProps = useChartProps(defaultChartProps);
+	const legendProps = getLegendProps(args);
+	const dimension = args.dimension as MarioDataKey;
+	const metric = args.metric as MarioDataKey;
+
+	return (
+		<Chart {...chartProps}>
+			<Axis position="bottom" grid ticks baseline title={marioKeyTitle[dimension]} />
+			<Axis position="left" grid ticks baseline title={marioKeyTitle[metric]} />
+			<Scatter {...args}>
+				<ChartTooltip>{(item) => dialog(item, dimension, metric)}</ChartTooltip>
+			</Scatter>
+			<Legend {...legendProps} />
+			<Title text="Mario Kart 8 Character Data" />
+		</Chart>
+	);
+};
+
+const dialog = (item: Datum, dimension: MarioDataKey, metric: MarioDataKey) => {
+	return (
+		<Content>
+			<Flex direction="column">
+				<div style={{ fontWeight: 'bold' }}>{(item.character as string[]).join(', ')}</div>
+				<div>
+					{marioKeyTitle[dimension]}: {item[dimension]}
+				</div>
+				<div>
+					{marioKeyTitle[metric]}: {item[metric]}
+				</div>
+			</Flex>
+		</Content>
 	);
 };
 
@@ -133,4 +175,11 @@ Size.args = {
 	metric: 'handlingNormal',
 };
 
-export { Basic, Color, LineType, Opacity, Size };
+const Tooltip = bindWithProps(ScatterTooltipStory);
+Tooltip.args = {
+	color: 'weightClass',
+	dimension: 'speedNormal',
+	metric: 'handlingNormal',
+};
+
+export { Basic, Color, LineType, Opacity, Size, Tooltip };
