@@ -46,7 +46,7 @@ const BigNumber: FC<BigNumberProps> = ({
 		chartWidth: 200,
 	};
 
-	const numberMethod = method ? method : 'last';
+	const numberMethod = method ?? 'last';
 
 	const { chartWidth, height, locale, data, ...rscChartRemain } = rscChartProps;
 	const aspectRatio = 16 / 9;
