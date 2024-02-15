@@ -15,7 +15,12 @@ import { ChartPopover } from '@components/ChartPopover';
 import { ChartTooltip } from '@components/ChartTooltip';
 import { MetricRange } from '@components/MetricRange';
 import { Trendline } from '@components/Trendline';
-import { BACKGROUND_COLOR, DEFAULT_TRANSFORMED_TIME_DIMENSION, HIGHLIGHT_CONTRAST_RATIO } from '@constants';
+import {
+	BACKGROUND_COLOR,
+	DEFAULT_OPACITY_RULE,
+	DEFAULT_TRANSFORMED_TIME_DIMENSION,
+	HIGHLIGHT_CONTRAST_RATIO,
+} from '@constants';
 import { getScaleName } from '@specBuilder/scale/scaleSpecBuilder';
 import {
 	getColorValue,
@@ -171,7 +176,9 @@ export const getStrokeDashProductionRule = (lineType: LineTypeFacet | DualFacet)
 	return { value: getStrokeDashFromLineType(lineType.value) };
 };
 
-export const getHighlightOpacityValue = (opacityValue: { signal: string } | { value: number }): NumericValueRef => {
+export const getHighlightOpacityValue = (
+	opacityValue: { signal: string } | { value: number } = DEFAULT_OPACITY_RULE,
+): NumericValueRef => {
 	if ('signal' in opacityValue) {
 		return { signal: `${opacityValue.signal} / ${HIGHLIGHT_CONTRAST_RATIO}` };
 	}

@@ -21,6 +21,7 @@ import {
 } from '@test-utils';
 
 import { Basic, Color, LineType, Opacity, Size, Tooltip } from './Scatter.story';
+import { HIGHLIGHT_CONTRAST_RATIO } from '@constants';
 
 const colors = spectrumColors.light;
 
@@ -114,6 +115,25 @@ describe('Scatter', () => {
 			await hoverNthElement(paths, 12);
 			tooltip = await screen.findByTestId('rsc-tooltip');
 			expect(within(tooltip).getByText('Metal Mario, Gold Mario, Pink Gold Peach')).toBeInTheDocument();
+		});
+		test('should highligh hovered points', async () => {
+			render(<Tooltip {...Basic.args} />);
+
+			const chart = await findChart();
+			expect(chart).toBeInTheDocument();
+
+			const paths = await findAllMarksByGroupName(chart, 'scatter0_voronoi');
+			const points = await findAllMarksByGroupName(chart, 'scatter0');
+			expect(points).toHaveLength(16);
+
+			await hoverNthElement(paths, 0);
+			expect(points[0]).toHaveAttribute('opacity', '1');
+			expect(points[1]).toHaveAttribute('opacity', `${1 / HIGHLIGHT_CONTRAST_RATIO}`);
+
+			// make sure all points after the first have reduced opacity
+			expect(
+				points.slice(1).every((point) => point.getAttribute('opacity') === `${1 / HIGHLIGHT_CONTRAST_RATIO}`),
+			).toBeTruthy();
 		});
 	});
 });

@@ -17,11 +17,13 @@ import {
 } from '@constants';
 import { addTimeTransform, getTableData } from '@specBuilder/data/dataUtils';
 import { getInteractiveMarkName } from '@specBuilder/line/lineUtils';
+import { hasInteractiveChildren } from '@specBuilder/marks/markUtils';
 import {
 	addContinuousDimensionScale,
 	addFieldToFacetScaleDomain,
 	addMetricScale,
 } from '@specBuilder/scale/scaleSpecBuilder';
+import { getUncontrolledHoverSignal, hasSignalByName } from '@specBuilder/signal/signalSpecBuilder';
 import { addTrendlineData, getTrendlineScales, getTrendlineSignals } from '@specBuilder/trendline';
 import { sanitizeMarkChildren, toCamelCase } from '@utils';
 import { produce } from 'immer';
@@ -29,6 +31,11 @@ import { ColorScheme, ScatterProps, ScatterSpecProps } from 'types';
 import { Data, Scale, Signal, Spec } from 'vega';
 import { addScatterMarks } from './scatterMarkUtils';
 
+/**
+ * Adds all the necessary parts of a scatter to the spec
+ * @param spec Spec
+ * @param scatterProps ScatterProps
+ */
 export const addScatter = produce<Spec, [ScatterProps & { colorScheme?: ColorScheme; index?: number }]>(
 	(
 		spec,
@@ -86,10 +93,28 @@ export const addData = produce<Data[], [ScatterSpecProps]>((data, props) => {
 	addTrendlineData(data, props);
 });
 
+/**
+ * Adds the signals for scatter to the signals array
+ * @param signals Signal[]
+ * @param scatterProps ScatterSpecProps
+ */
 export const addSignals = produce<Signal[], [ScatterSpecProps]>((signals, props) => {
+	const { children, name } = props;
+	// trendline signals
 	signals.push(...getTrendlineSignals(props));
+
+	if (!hasInteractiveChildren(children)) return;
+	// interactive signals
+	if (!hasSignalByName(signals, `${name}_hoveredId`)) {
+		signals.push(getUncontrolledHoverSignal(`${name}`, true, `${name}_voronoi`));
+	}
 });
 
+/**
+ * Sets up all the scales for scatter on the scales array
+ * @param scales Scale[]
+ * @param scatterProps ScatterSpecProps
+ */
 export const setScales = produce<Scale[], [ScatterSpecProps]>((scales, props) => {
 	const { color, dimension, dimensionScaleType, lineType, lineWidth, metric, opacity, size } = props;
 	// add dimension scale

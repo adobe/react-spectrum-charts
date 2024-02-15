@@ -46,6 +46,9 @@ export const MARK_ID = 'rscMarkId';
 export const TRENDLINE_VALUE = 'rscTrendlineValue';
 export const STACK_ID = 'rscStackId';
 
+// encode rules
+export const DEFAULT_OPACITY_RULE = { value: 1 };
+
 // corner radius
 export const CORNER_RADIUS = 6;
 
