@@ -43,6 +43,7 @@ import {
 	ScaledValueRef,
 	SignalRef,
 } from 'vega';
+import { getScaleName } from '@specBuilder/scale/scaleSpecBuilder';
 
 /**
  * If a popover exists on the mark, then set the cursor to a pointer.
@@ -96,7 +97,7 @@ export const hasInteractiveChildren = (children: ReactElement[]): boolean => {
 			child.type === ChartTooltip ||
 			child.type === ChartPopover ||
 			(child.type === Trendline && child.props.displayOnHover) ||
-			(child.type === MetricRange && child.props.displayOnHover)
+			(child.type === MetricRange && child.props.displayOnHover),
 	);
 };
 export const hasMetricRange = (children: ReactElement[]): boolean =>
@@ -119,7 +120,7 @@ export const getColorProductionRule = (color: ColorFacet | DualFacet, colorSchem
 };
 
 export const getLineWidthProductionRule = (
-	lineWidth: LineWidthFacet | DualFacet | undefined
+	lineWidth: LineWidthFacet | DualFacet | undefined,
 ): NumericValueRef | undefined => {
 	if (!lineWidth) return;
 	if (Array.isArray(lineWidth)) {
@@ -183,10 +184,9 @@ export const getHighlightOpacityValue = (opacityValue: { signal: string } | { va
  * @returns x encoding
  */
 export const getXProductionRule = (scaleType: ScaleType, dimension: string): ProductionRule<NumericValueRef> => {
+	const scale = getScaleName('x', scaleType);
 	if (scaleType === 'time') {
-		return { scale: 'xTime', field: DEFAULT_TRANSFORMED_TIME_DIMENSION };
-	} else if (scaleType === 'linear') {
-		return { scale: 'xLinear', field: dimension };
+		return { scale, field: DEFAULT_TRANSFORMED_TIME_DIMENSION };
 	}
-	return { scale: 'xPoint', field: dimension };
+	return { scale, field: dimension };
 };
