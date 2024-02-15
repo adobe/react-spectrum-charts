@@ -179,9 +179,7 @@ export const getRegressionExtent = (
 				case null:
 					return `${extentName}[${i}]`;
 				case 'domain':
-					const operator = i === 0 ? '-' : '+';
-					const extentRange = `(${extentName}[1] - ${extentName}[0])`;
-					return `${extentName}[${i}] ${operator} ${extentRange} * 0.3`;
+					return `${extentName}[${i}] ${i === 0 ? '-' : '+'} (${extentName}[1] - ${extentName}[0]) * 0.3`;
 				default:
 					// if this is a normalized date, we need to normalize the value
 					if (isNormalized) {
