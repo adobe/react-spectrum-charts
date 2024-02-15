@@ -20,11 +20,14 @@ import { addTimeTransform, getTableData } from '@specBuilder/data/dataUtils';
 import { getInteractiveMarkName } from '@specBuilder/line/lineUtils';
 import {
 	getColorProductionRule,
+	getCursor,
 	getLineWidthProductionRule,
 	getOpacityProductionRule,
 	getStrokeDashProductionRule,
 	getSymbolSizeProductionRule,
+	getTooltip,
 	getXProductionRule,
+	hasInteractiveChildren,
 } from '@specBuilder/marks/markUtils';
 import {
 	addContinuousDimensionScale,
@@ -35,7 +38,7 @@ import { addTrendlineData, getTrendlineMarks, getTrendlineScales, getTrendlineSi
 import { sanitizeMarkChildren, toCamelCase } from '@utils';
 import { produce } from 'immer';
 import { ColorScheme, ScatterProps, ScatterSpecProps } from 'types';
-import { Data, GroupMark, Mark, Scale, Signal, Spec, SymbolMark } from 'vega';
+import { Data, GroupMark, Mark, PathMark, Scale, Signal, Spec, SymbolMark } from 'vega';
 
 export const addScatter = produce<Spec, [ScatterProps & { colorScheme?: ColorScheme; index?: number }]>(
 	(
@@ -124,7 +127,7 @@ export const addScatterMarks = produce<Mark[], [ScatterSpecProps]>((marks, props
 	const scatterGroup: GroupMark = {
 		name: `${name}_group`,
 		type: 'group',
-		marks: [getScatterMark(props)],
+		marks: [getScatterMark(props), ...getScatterHoverMarks(props)],
 	};
 
 	marks.push(scatterGroup);
@@ -170,3 +173,37 @@ export const getScatterMark = ({
 		},
 	},
 });
+
+const getScatterHoverMarks = ({ children, name }: ScatterSpecProps): PathMark[] => {
+	if (!hasInteractiveChildren(children)) {
+		return [];
+	}
+	return [
+		{
+			name: `${name}_voronoi`,
+			type: 'path',
+			from: { data: `${name}` },
+			encode: {
+				enter: {
+					fill: { value: 'transparent' },
+					stroke: { value: 'transparent' },
+					isVoronoi: { value: true },
+					// Don't add a tooltip if there are no interactive children. We only want the other hover marks for metric ranges.
+					tooltip: getTooltip(children, name, true),
+				},
+				update: {
+					cursor: getCursor(children),
+				},
+			},
+			transform: [
+				{
+					type: 'voronoi',
+					x: `datum.x`,
+					y: `datum.y`,
+					// on initial render, width/height could be 0 which causes problems
+					size: [{ signal: 'max(width, 1)' }, { signal: 'max(height, 1)' }],
+				},
+			],
+		},
+	];
+};
