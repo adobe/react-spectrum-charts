@@ -88,7 +88,7 @@ export const getOpacity = ({ children, name }: ScatterSpecProps): ({ test?: stri
 	if (!hasInteractiveChildren(children)) {
 		return [DEFAULT_OPACITY_RULE];
 	}
-	// if a symbol is hovered, all other symbols should be 1/5th opacity
+	// if a point is hovered, all other points should be reduced opacity
 	const hoverSignal = `${name}_hoveredId`;
 	return [
 		{
