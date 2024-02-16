@@ -14,16 +14,18 @@ import {
 	DEFAULT_DIMENSION_SCALE_TYPE,
 	DEFAULT_LINEAR_DIMENSION,
 	DEFAULT_METRIC,
+	FILTERED_TABLE,
+	MARK_ID,
 } from '@constants';
 import { addTimeTransform, getTableData } from '@specBuilder/data/dataUtils';
 import { getInteractiveMarkName } from '@specBuilder/line/lineUtils';
-import { hasInteractiveChildren } from '@specBuilder/marks/markUtils';
+import { hasInteractiveChildren, hasPopover } from '@specBuilder/marks/markUtils';
 import {
 	addContinuousDimensionScale,
 	addFieldToFacetScaleDomain,
 	addMetricScale,
 } from '@specBuilder/scale/scaleSpecBuilder';
-import { getUncontrolledHoverSignal, hasSignalByName } from '@specBuilder/signal/signalSpecBuilder';
+import { getGenericSignal, getUncontrolledHoverSignal, hasSignalByName } from '@specBuilder/signal/signalSpecBuilder';
 import { addTrendlineData, getTrendlineScales, getTrendlineSignals } from '@specBuilder/trendline';
 import { sanitizeMarkChildren, toCamelCase } from '@utils';
 import { produce } from 'immer';
@@ -85,10 +87,22 @@ export const addScatter = produce<Spec, [ScatterProps & { colorScheme?: ColorSch
 );
 
 export const addData = produce<Data[], [ScatterSpecProps]>((data, props) => {
-	const { dimension, dimensionScaleType } = props;
+	const { children, dimension, dimensionScaleType, name } = props;
 	if (dimensionScaleType === 'time') {
 		const tableData = getTableData(data);
 		tableData.transform = addTimeTransform(tableData.transform ?? [], dimension);
+	}
+	if (hasPopover(children)) {
+		data.push({
+			name: `${name}_selectedData`,
+			source: FILTERED_TABLE,
+			transform: [
+				{
+					type: 'filter',
+					expr: `${name}_selectedId === datum.${MARK_ID}`,
+				},
+			],
+		});
 	}
 	addTrendlineData(data, props);
 });
@@ -106,7 +120,14 @@ export const addSignals = produce<Signal[], [ScatterSpecProps]>((signals, props)
 	if (!hasInteractiveChildren(children)) return;
 	// interactive signals
 	if (!hasSignalByName(signals, `${name}_hoveredId`)) {
+		// hover signal
 		signals.push(getUncontrolledHoverSignal(`${name}`, true, `${name}_voronoi`));
+	}
+	if (hasPopover(children)) {
+		if (!hasSignalByName(signals, `${name}_selectedId`)) {
+			// select signal
+			signals.push(getGenericSignal(`${name}_selectedId`));
+		}
 	}
 });
 

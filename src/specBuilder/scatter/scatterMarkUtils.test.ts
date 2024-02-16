@@ -16,8 +16,9 @@ import { ChartTooltip } from '@components/ChartTooltip';
 import { Trendline } from '@components/Trendline';
 import { DEFAULT_OPACITY_RULE, MARK_ID } from '@constants';
 import { GroupMark } from 'vega';
-import { addScatterMarks, getOpacity, getScatterHoverMarks } from './scatterMarkUtils';
+import { addScatterMarks, getOpacity, getScatterHoverMarks, getSelectRingSize } from './scatterMarkUtils';
 import { defaultScatterProps } from './scatterTestUtils';
+import { ChartPopover } from '@components/ChartPopover';
 
 describe('addScatterMarks()', () => {
 	test('should add the scatter group with the symbol marks', () => {
@@ -52,6 +53,12 @@ describe('getOpacity()', () => {
 		expect(opacity).toHaveLength(2);
 		expect(opacity[0]).toHaveProperty('test', `scatter0_hoveredId && scatter0_hoveredId !== datum.${MARK_ID}`);
 	});
+	test('should include select rule if popover exists', () => {
+		const opacity = getOpacity({ ...defaultScatterProps, children: [createElement(ChartPopover)] });
+		expect(opacity).toHaveLength(3);
+		expect(opacity[0]).toHaveProperty('test', `scatter0_hoveredId && scatter0_hoveredId !== datum.${MARK_ID}`);
+		expect(opacity[1]).toHaveProperty('test', `scatter0_selectedId && scatter0_selectedId !== datum.${MARK_ID}`);
+	});
 });
 
 describe('getScatterHoverMarks()', () => {
@@ -61,5 +68,18 @@ describe('getScatterHoverMarks()', () => {
 		const marks = getScatterHoverMarks({ ...defaultScatterProps, children: [createElement(ChartTooltip)] });
 		expect(marks).toHaveLength(1);
 		expect(marks[0].name).toBe('scatter0_voronoi');
+	});
+});
+
+describe('getScatterSelectMarks()', () => {
+	test('should return a staic value if a static value is provided', () => {
+		const ringSize = getSelectRingSize({ value: 10 });
+		// sqrt of 196 is 14 which is 4 pixels larger than 10;
+		expect(ringSize).toHaveProperty('value', 196);
+	});
+	test('should return a signal if data key is provided', () => {
+		const sizeKey = 'weight';
+		const ringSize = getSelectRingSize(sizeKey);
+		expect(ringSize).toHaveProperty('signal', `pow(sqrt(scale('symbolSize', datum.${sizeKey})) + 4, 2)`);
 	});
 });

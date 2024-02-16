@@ -9,11 +9,23 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { ReactElement } from 'react';
+import { ReactElement, createElement } from 'react';
 
 import { Content, Flex } from '@adobe/react-spectrum';
 import useChartProps from '@hooks/useChartProps';
-import { Axis, Chart, ChartProps, ChartTooltip, Datum, Legend, LegendProps, Scatter, ScatterProps, Title } from '@rsc';
+import {
+	Axis,
+	Chart,
+	ChartPopover,
+	ChartProps,
+	ChartTooltip,
+	Datum,
+	Legend,
+	LegendProps,
+	Scatter,
+	ScatterProps,
+	Title,
+} from '@rsc';
 import { characterData } from '@stories/data/marioKartData';
 import { StoryFn } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
@@ -98,41 +110,22 @@ const ScatterStory: StoryFn<typeof Scatter> = (args): ReactElement => {
 			<Axis position="bottom" grid ticks baseline title={marioKeyTitle[args.dimension as MarioDataKey]} />
 			<Axis position="left" grid ticks baseline title={marioKeyTitle[args.metric as MarioDataKey]} />
 			<Scatter {...args} />
-			<Legend {...legendProps} />
-			<Title text="Mario Kart 8 Character Data" />
-		</Chart>
-	);
-};
-
-const ScatterTooltipStory: StoryFn<typeof Scatter> = (args): ReactElement => {
-	const chartProps = useChartProps(defaultChartProps);
-	const legendProps = getLegendProps(args);
-	const dimension = args.dimension as MarioDataKey;
-	const metric = args.metric as MarioDataKey;
-
-	return (
-		<Chart {...chartProps}>
-			<Axis position="bottom" grid ticks baseline title={marioKeyTitle[dimension]} />
-			<Axis position="left" grid ticks baseline title={marioKeyTitle[metric]} />
-			<Scatter {...args}>
-				<ChartTooltip>{(item) => dialog(item, dimension, metric)}</ChartTooltip>
-			</Scatter>
 			<Legend {...legendProps} highlight />
 			<Title text="Mario Kart 8 Character Data" />
 		</Chart>
 	);
 };
 
-const dialog = (item: Datum, dimension: MarioDataKey, metric: MarioDataKey) => {
+const dialog = (item: Datum) => {
 	return (
 		<Content>
 			<Flex direction="column">
 				<div style={{ fontWeight: 'bold' }}>{(item.character as string[]).join(', ')}</div>
 				<div>
-					{marioKeyTitle[dimension]}: {item[dimension]}
+					{marioKeyTitle.speedNormal}: {item.speedNormal}
 				</div>
 				<div>
-					{marioKeyTitle[metric]}: {item[metric]}
+					{marioKeyTitle.handlingNormal}: {item.handlingNormal}
 				</div>
 			</Flex>
 		</Content>
@@ -168,6 +161,14 @@ Opacity.args = {
 	metric: 'handlingNormal',
 };
 
+const Popover = bindWithProps(ScatterStory);
+Popover.args = {
+	color: 'weightClass',
+	dimension: 'speedNormal',
+	metric: 'handlingNormal',
+	children: [createElement(ChartTooltip, {}, dialog), createElement(ChartPopover, { width: 200 }, dialog)],
+};
+
 const Size = bindWithProps(ScatterStory);
 Size.args = {
 	size: 'weight',
@@ -175,11 +176,12 @@ Size.args = {
 	metric: 'handlingNormal',
 };
 
-const Tooltip = bindWithProps(ScatterTooltipStory);
+const Tooltip = bindWithProps(ScatterStory);
 Tooltip.args = {
 	color: 'weightClass',
 	dimension: 'speedNormal',
 	metric: 'handlingNormal',
+	children: [createElement(ChartTooltip, {}, dialog)],
 };
 
-export { Basic, Color, LineType, Opacity, Size, Tooltip };
+export { Basic, Color, LineType, Opacity, Popover, Size, Tooltip };

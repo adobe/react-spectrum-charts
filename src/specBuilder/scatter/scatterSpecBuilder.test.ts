@@ -18,6 +18,7 @@ import { initializeSpec } from '@specBuilder/specUtils';
 import { addData, addSignals, setScales } from './scatterSpecBuilder';
 import { defaultScatterProps } from './scatterTestUtils';
 import { ChartTooltip } from '@components/ChartTooltip';
+import { ChartPopover } from '@components/ChartPopover';
 
 describe('addData()', () => {
 	test('should add time transform is dimensionScaleType === "time"', () => {
@@ -25,6 +26,14 @@ describe('addData()', () => {
 		expect(data).toHaveLength(2);
 		expect(data[0].transform).toHaveLength(2);
 		expect(data[0].transform?.[1].type).toBe('timeunit');
+	});
+	test('should add selectedData if popover exists', () => {
+		const data = addData(initializeSpec().data ?? [], {
+			...defaultScatterProps,
+			children: [createElement(ChartPopover)],
+		});
+		expect(data).toHaveLength(3);
+		expect(data[2].name).toBe('scatter0_selectedData');
 	});
 	test('should add trendline data if trendline exists as a child', () => {
 		const data = addData(initializeSpec().data ?? [], {
@@ -44,7 +53,15 @@ describe('addSignals()', () => {
 			children: [createElement(ChartTooltip)],
 		});
 		expect(signals).toHaveLength(1);
-		expect(signals[0]).toHaveProperty('name', 'scatter0_hoveredId');
+		expect(signals[0].name).toBe('scatter0_hoveredId');
+	});
+	test('should add selectedId signal if popover exists', () => {
+		const signals = addSignals([], {
+			...defaultScatterProps,
+			children: [createElement(ChartPopover)],
+		});
+		expect(signals).toHaveLength(2);
+		expect(signals[1].name).toBe('scatter0_selectedId');
 	});
 	test('should add trendline signals if trendline exists as a child', () => {
 		const signals = addSignals([], {
@@ -52,8 +69,8 @@ describe('addSignals()', () => {
 			children: [createElement(Trendline, { displayOnHover: true })],
 		});
 		expect(signals).toHaveLength(2);
-		expect(signals[0]).toHaveProperty('name', 'scatter0_hoveredSeries');
-		expect(signals[1]).toHaveProperty('name', 'scatter0_hoveredId');
+		expect(signals[0].name).toBe('scatter0_hoveredSeries');
+		expect(signals[1].name).toBe('scatter0_hoveredId');
 	});
 });
 
