@@ -39,7 +39,7 @@ export const setHoverOpacityForMarks = (marks: Mark[], keys?: string[], name?: s
 			if (!Array.isArray(update.opacity)) {
 				update.opacity = [];
 			}
-			// // need to insert the new test in the second to last slot
+			// need to insert the new test in the second to last slot
 			const opacityRuleInsertIndex = Math.max(update.opacity.length - 1, 0);
 			update.opacity.splice(opacityRuleInsertIndex, 0, highlightOpacityRule);
 		}
