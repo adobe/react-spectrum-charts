@@ -174,35 +174,6 @@ export const getOpacityEncoding = ({
 	return undefined;
 };
 
-// /**
-//  * Gets the fill opacity encoding for the legend symbols.
-//  * Highlight encoding is handled separately using `opacity` on update
-//  * @param highlight
-//  * @param opacity
-//  * @param facets
-//  * @returns
-//  */
-// export const getSymbolFillOpacityEncoding = (
-// 	facets: Facet[],
-// 	{ highlight, highlightedSeries, name, opacity }: LegendSpecProps,
-// ): ProductionRule<NumericValueRef> | undefined => {
-// 	// only add symbol opacity if highlight is true or highlightedSeries is defined
-// 	if (highlight || highlightedSeries) {
-// 		if (facets || opacity) {
-// 			return (
-// 				getSymbolFacetEncoding<number>({
-// 					facets,
-// 					facetType: 'opacity',
-// 					customValue: opacity,
-// 					name,
-// 				}) ?? DEFAULT_OPACITY_RULE
-// 			);
-// 		}
-// 		return DEFAULT_OPACITY_RULE;
-// 	}
-// 	return undefined;
-// };
-
 export const getSymbolEncodings = (facets: Facet[], props: LegendSpecProps): LegendEncode => {
 	const { color, lineType, lineWidth, name, opacity, symbolShape, colorScheme } = props;
 	const enter: SymbolEncodeEntry = {
