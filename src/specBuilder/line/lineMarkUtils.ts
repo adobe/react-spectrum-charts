@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { SERIES_ID } from '@constants';
+import { DEFAULT_OPACITY_RULE, SERIES_ID } from '@constants';
 import {
 	getColorProductionRule,
 	getHighlightOpacityValue,
@@ -38,7 +38,7 @@ import { LineMarkProps } from './lineUtils';
  * @returns LineMark
  */
 export const getLineMark = (lineMarkProps: LineMarkProps, dataSource: string): LineMark => {
-	const { name, color, metric, dimension, scaleType, lineType, lineWidth, colorScheme } = lineMarkProps;
+	const { color, colorScheme, dimension, lineType, lineWidth, metric, name, opacity, scaleType } = lineMarkProps;
 
 	return {
 		name,
@@ -50,25 +50,26 @@ export const getLineMark = (lineMarkProps: LineMarkProps, dataSource: string): L
 				y: { scale: 'yLinear', field: metric },
 				stroke: getColorProductionRule(color, colorScheme),
 				strokeDash: getStrokeDashProductionRule(lineType),
+				strokeOpacity: getOpacityProductionRule(opacity),
 				strokeWidth: getLineWidthProductionRule(lineWidth),
 			},
 			update: {
 				// this has to be in update because when you resize the window that doesn't rebuild the spec
 				// but it may change the x position if it causes the chart to resize
 				x: getXProductionRule(scaleType, dimension),
-				strokeOpacity: getLineStrokeOpacity(lineMarkProps),
+				opacity: getLineOpacity(lineMarkProps),
 			},
 		},
 	};
 };
 
-export const getLineStrokeOpacity = ({
+export const getLineOpacity = ({
 	displayOnHover,
 	interactiveMarkName,
 	opacity,
 	popoverMarkName,
 }: LineMarkProps): ProductionRule<NumericValueRef> => {
-	const baseRule = getOpacityProductionRule(displayOnHover ? { value: 0 } : opacity);
+	const baseRule = displayOnHover ? { value: 0 } : DEFAULT_OPACITY_RULE;
 	if (!interactiveMarkName) return [baseRule];
 	const strokeOpacityRules: ProductionRule<NumericValueRef> = [];
 

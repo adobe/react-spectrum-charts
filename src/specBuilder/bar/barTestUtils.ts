@@ -16,6 +16,7 @@ import {
 	DEFAULT_COLOR,
 	DEFAULT_COLOR_SCHEME,
 	DEFAULT_METRIC,
+	DEFAULT_OPACITY_RULE,
 	DEFAULT_SECONDARY_COLOR,
 	FILTERED_TABLE,
 	HIGHLIGHT_CONTRAST_RATIO,
@@ -107,14 +108,14 @@ export const defaultDodgedCornerRadiusEncodings: RectEncodeEntry = {
 
 export const defaultBarFillOpacity: ProductionRule<NumericValueRef> = [{ value: 1 }];
 
-export const defaultBarPopoverFillOpacity: ProductionRule<NumericValueRef> = [
+export const defaultBarPopoverOpacity: ProductionRule<NumericValueRef> = [
 	{
 		test: `!bar0_selectedId && bar0_hoveredId && bar0_hoveredId !== datum.${MARK_ID}`,
 		value: 1 / HIGHLIGHT_CONTRAST_RATIO,
 	},
 	{ test: `bar0_selectedId && bar0_selectedId !== datum.${MARK_ID}`, value: 1 / HIGHLIGHT_CONTRAST_RATIO },
 	{ test: `bar0_selectedId && bar0_selectedId === datum.${MARK_ID}`, value: 1 },
-	{ value: 1 },
+	DEFAULT_OPACITY_RULE,
 ];
 
 export const stackedXScale = 'xBand';

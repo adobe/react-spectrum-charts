@@ -10,7 +10,21 @@
  * governing permissions and limitations under the License.
  */
 
+import { TRENDLINE_VALUE } from '@constants';
+import { getLineHoverMarks, getLineOpacity } from '@specBuilder/line/lineMarkUtils';
+import { LineMarkProps } from '@specBuilder/line/lineUtils';
+import {
+	getColorProductionRule,
+	getLineWidthProductionRule,
+	getOpacityProductionRule,
+	getStrokeDashProductionRule,
+	getXProductionRule,
+	hasTooltip,
+} from '@specBuilder/marks/markUtils';
+import { getScaleName } from '@specBuilder/scale/scaleSpecBuilder';
+import { getDimensionField, getFacetsFromProps } from '@specBuilder/specUtils';
 import { ScaleType, TrendlineSpecProps } from 'types';
+import { GroupMark, LineMark, NumericValueRef, RuleMark } from 'vega';
 import {
 	TrendlineParentProps,
 	getTrendlineScaleType,
@@ -19,19 +33,6 @@ import {
 	isRegressionMethod,
 	trendlineUsesNormalizedDimension,
 } from './trendlineUtils';
-import { GroupMark, LineMark, NumericValueRef, RuleMark } from 'vega';
-import { getDimensionField, getFacetsFromProps } from '@specBuilder/specUtils';
-import {
-	getColorProductionRule,
-	getLineWidthProductionRule,
-	getStrokeDashProductionRule,
-	getXProductionRule,
-	hasTooltip,
-} from '@specBuilder/marks/markUtils';
-import { getScaleName } from '@specBuilder/scale/scaleSpecBuilder';
-import { getLineHoverMarks, getLineStrokeOpacity } from '@specBuilder/line/lineMarkUtils';
-import { LineMarkProps } from '@specBuilder/line/lineUtils';
-import { TRENDLINE_VALUE } from '@constants';
 
 export const getTrendlineMarks = (markProps: TrendlineParentProps): (GroupMark | RuleMark)[] => {
 	const { children, color, lineType, name } = markProps;
@@ -98,12 +99,13 @@ export const getTrendlineRuleMark = (markProps: TrendlineParentProps, trendlineP
 				y: { scale: 'yLinear', field: metric },
 				stroke: getColorProductionRule(color, colorScheme),
 				strokeDash: getStrokeDashProductionRule({ value: lineType }),
+				strokeOpacity: getOpacityProductionRule({ value: trendlineProps.opacity }),
 				strokeWidth: getLineWidthProductionRule({ value: lineWidth }),
 			},
 			update: {
 				x: getRuleXProductionRule(dimensionExtent[0], dimensionField, scaleType),
 				x2: getRuleX2ProductionRule(dimensionExtent[1], dimensionField, scaleType),
-				strokeOpacity: getLineStrokeOpacity(getLineMarkProps(markProps, trendlineProps)),
+				opacity: getLineOpacity(getLineMarkProps(markProps, trendlineProps)),
 			},
 		},
 	};
@@ -181,11 +183,12 @@ export const getTrendlineLineMark = (markProps: TrendlineParentProps, trendlineP
 				y: { scale: 'yLinear', field: metric },
 				stroke: getColorProductionRule(color, colorScheme),
 				strokeDash: getStrokeDashProductionRule({ value: lineType }),
+				strokeOpacity: getOpacityProductionRule({ value: trendlineProps.opacity }),
 				strokeWidth: getLineWidthProductionRule({ value: lineWidth }),
 			},
 			update: {
 				x,
-				strokeOpacity: getLineStrokeOpacity(getLineMarkProps(markProps, trendlineProps)),
+				opacity: getLineOpacity(getLineMarkProps(markProps, trendlineProps)),
 			},
 		},
 	};

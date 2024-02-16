@@ -19,6 +19,7 @@ import {
 	DEFAULT_CATEGORICAL_DIMENSION,
 	DEFAULT_COLOR,
 	DEFAULT_METRIC,
+	DEFAULT_OPACITY_RULE,
 	DEFAULT_SECONDARY_COLOR,
 	FILTERED_TABLE,
 	MARK_ID,
@@ -165,15 +166,15 @@ const defaultStackedMark: Mark = {
 			...defaultStackedYEncodings,
 			...defaultCornerRadiusEncodings,
 			fill: { scale: 'color', field: DEFAULT_COLOR },
+			fillOpacity: DEFAULT_OPACITY_RULE,
 			tooltip: undefined,
 		},
 		update: {
-			x: { scale: 'xBand', field: DEFAULT_CATEGORICAL_DIMENSION },
 			...defaultBarStrokeEncodings,
-			width: { scale: 'xBand', band: 1 },
 			cursor: undefined,
-			fillOpacity: [{ value: 1 }],
-			strokeOpacity: [{ value: 1 }],
+			opacity: [DEFAULT_OPACITY_RULE],
+			width: { scale: 'xBand', band: 1 },
+			x: { scale: 'xBand', field: DEFAULT_CATEGORICAL_DIMENSION },
 		},
 	},
 };
@@ -269,7 +270,7 @@ describe('barSpecBuilder', () => {
 					addSignals([getUncontrolledHoverSignal('bar0'), defaultHoverSignal, defaultSelectSignal], {
 						...defaultBarProps,
 						children: [popover],
-					})
+					}),
 				).toStrictEqual([
 					getUncontrolledHoverSignal('bar0'),
 					defaultHoverSignal,
@@ -307,7 +308,7 @@ describe('barSpecBuilder', () => {
 							range: { signal: 'colors' },
 							domain: { data: TABLE, fields: [DEFAULT_COLOR] },
 						},
-					]
+					],
 				);
 			});
 
@@ -323,8 +324,8 @@ describe('barSpecBuilder', () => {
 							...defaultBarProps,
 							lineType: DEFAULT_COLOR,
 							opacity: DEFAULT_COLOR,
-						}
-					)
+						},
+					),
 				).toStrictEqual([
 					defaultColorScale,
 					{ domain: { data: TABLE, fields: [DEFAULT_COLOR] }, name: 'lineType', type: 'ordinal' },
@@ -341,7 +342,7 @@ describe('barSpecBuilder', () => {
 						trellis: 'event',
 						trellisOrientation: 'vertical',
 						trellisPadding: 0.5,
-					})
+					}),
 				).toStrictEqual([
 					defaultColorScale,
 					defaultMetricScale,
@@ -434,7 +435,7 @@ describe('barSpecBuilder', () => {
 					addMarks([], {
 						...defaultBarProps,
 						children: [...defaultBarProps.children, annotation],
-					})
+					}),
 				).toStrictEqual([...defaultStackedBarMarks, ...stackedAnnotationMarks]);
 			});
 		});
@@ -466,7 +467,7 @@ describe('barSpecBuilder', () => {
 		describe('existing data "table"', () => {
 			test('new transform should be added to the data table', () => {
 				expect(
-					addData(defaultData, { ...defaultBarProps, metric: 'views', dimension: 'browser' })
+					addData(defaultData, { ...defaultBarProps, metric: 'views', dimension: 'browser' }),
 				).toStrictEqual([
 					defaultTableData,
 					{
@@ -525,7 +526,7 @@ describe('barSpecBuilder', () => {
 		describe('transform already exists', () => {
 			test('no props, new transform should be pushed onto the end with default values', () => {
 				expect(
-					addData([{ ...defaultFilteredTableData, transform: defaultStackedTransforms }], defaultBarProps)
+					addData([{ ...defaultFilteredTableData, transform: defaultStackedTransforms }], defaultBarProps),
 				).toStrictEqual([
 					{
 						...defaultFilteredTableData,
@@ -541,7 +542,7 @@ describe('barSpecBuilder', () => {
 				const popover = createElement(ChartPopover);
 				expect(addData(baseData, { ...defaultBarProps, children: [popover] })[1]).toHaveProperty(
 					'transform',
-					defaultStackedTransforms
+					defaultStackedTransforms,
 				);
 			});
 		});
@@ -552,7 +553,7 @@ describe('barSpecBuilder', () => {
 					...defaultBarProps,
 					type: 'dodged',
 					color: [DEFAULT_COLOR, DEFAULT_SECONDARY_COLOR],
-				})
+				}),
 			).toStrictEqual([
 				defaultTableData,
 				{
@@ -594,7 +595,7 @@ describe('barSpecBuilder', () => {
 		});
 		test('stacked dodged', () => {
 			expect(
-				addData(defaultData, { ...defaultBarProps, color: [DEFAULT_COLOR, DEFAULT_SECONDARY_COLOR] })
+				addData(defaultData, { ...defaultBarProps, color: [DEFAULT_COLOR, DEFAULT_SECONDARY_COLOR] }),
 			).toStrictEqual([
 				defaultTableData,
 				{
@@ -676,7 +677,7 @@ describe('barSpecBuilder', () => {
 			});
 
 			expect(
-				getStackIdTransform({ ...defaultBarProps, type: 'dodged', opacity: DEFAULT_SECONDARY_COLOR })
+				getStackIdTransform({ ...defaultBarProps, type: 'dodged', opacity: DEFAULT_SECONDARY_COLOR }),
 			).toStrictEqual({
 				as: STACK_ID,
 				expr: `datum.${DEFAULT_CATEGORICAL_DIMENSION} + "," + datum.${DEFAULT_COLOR} + "," + datum.${DEFAULT_SECONDARY_COLOR}`,
@@ -688,7 +689,7 @@ describe('barSpecBuilder', () => {
 	describe('getDodgeGroupTransform()', () => {
 		test('should join facets together', () => {
 			expect(
-				getDodgeGroupTransform({ ...defaultBarProps, type: 'dodged', opacity: DEFAULT_SECONDARY_COLOR })
+				getDodgeGroupTransform({ ...defaultBarProps, type: 'dodged', opacity: DEFAULT_SECONDARY_COLOR }),
 			).toStrictEqual({
 				as: 'bar0_dodgeGroup',
 				expr: `datum.${DEFAULT_COLOR} + "," + datum.${DEFAULT_SECONDARY_COLOR}`,
@@ -700,18 +701,18 @@ describe('barSpecBuilder', () => {
 	describe('getRepeatedScale()', () => {
 		test('should return a linear scale if the bar and trellis orientations are the same', () => {
 			expect(
-				getRepeatedScale({ ...defaultBarProps, orientation: 'horizontal', trellisOrientation: 'horizontal' })
+				getRepeatedScale({ ...defaultBarProps, orientation: 'horizontal', trellisOrientation: 'horizontal' }),
 			).toHaveProperty('type', 'linear');
 			expect(
-				getRepeatedScale({ ...defaultBarProps, orientation: 'vertical', trellisOrientation: 'vertical' })
+				getRepeatedScale({ ...defaultBarProps, orientation: 'vertical', trellisOrientation: 'vertical' }),
 			).toHaveProperty('type', 'linear');
 		});
 		test('should return a band scale if the bar and trellis orientations are not the same', () => {
 			expect(
-				getRepeatedScale({ ...defaultBarProps, orientation: 'horizontal', trellisOrientation: 'vertical' })
+				getRepeatedScale({ ...defaultBarProps, orientation: 'horizontal', trellisOrientation: 'vertical' }),
 			).toHaveProperty('type', 'band');
 			expect(
-				getRepeatedScale({ ...defaultBarProps, orientation: 'vertical', trellisOrientation: 'horizontal' })
+				getRepeatedScale({ ...defaultBarProps, orientation: 'vertical', trellisOrientation: 'horizontal' }),
 			).toHaveProperty('type', 'band');
 		});
 	});
