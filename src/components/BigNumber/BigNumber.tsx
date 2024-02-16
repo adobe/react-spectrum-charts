@@ -105,6 +105,9 @@ const BigNumber: FC<BigNumberProps> = ({
 				)}
 				{displayCombo && icon ? (
 					<View gridArea="combo" alignSelf={labelAlign} UNSAFE_className="BigNumber-label">
+						<View gridArea="data" UNSAFE_className="BigNumber-data">
+							{formattedValue}
+						</View>
 						<Flex gap="size-50">
 							{cloneElement(icon, { size: iconSize })}
 							{label}
@@ -122,9 +125,9 @@ const BigNumber: FC<BigNumberProps> = ({
 						</View>
 					</>
 				)}
-				<View gridArea="data" UNSAFE_className="BigNumber-data">
+				{!displayCombo && (<View gridArea="data" UNSAFE_className="BigNumber-data">
 					{formattedValue}
-				</View>
+				</View>)}
 			</Grid>
 		</button>
 	);
@@ -153,8 +156,8 @@ function checkElements(
 		labelAlign = 'center';
 		iconJustify = 'end';
 		return {
-			areas: ['sparkline sparkline', 'data data', 'icon label'],
-			columns: ['1fr', '4fr'],
+			areas: ['sparkline', 'combo', 'data' ],
+			columns: ['4fr'],
 			displayCombo: true,
 			labelAlign,
 			iconJustify,
@@ -163,9 +166,10 @@ function checkElements(
 	} else if (icon && lineElements.length > 0 && orientation == 'horizontal') {
 		iconJustify = 'end';
 		iconAlign = 'start';
+		labelAlign = 'center';
 		return {
-			areas: ['sparkline data data', 'sparkline icon label'],
-			columns: ['3fr', '1fr', '2fr'],
+			areas: ['sparkline combo'],
+			columns: ['1fr'],
 			iconJustify,
 			iconAlign,
 			displayCombo: true,
