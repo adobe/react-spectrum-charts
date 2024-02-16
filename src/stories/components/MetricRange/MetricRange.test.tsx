@@ -53,7 +53,7 @@ describe('MetricRange', () => {
 		expect(metricRange0Children).toHaveLength(2);
 
 		let metricRangeLines = await findAllMarksByGroupName(metricRange0Children[0], 'line0');
-		expect(metricRangeLines[0]).toHaveAttribute('stroke-opacity', '0');
+		expect(metricRangeLines[0]).toHaveAttribute('opacity', '0');
 		expect(metricRangeLines[0]).toHaveAttribute('stroke-dasharray', '3,4');
 		expect(metricRangeLines[0]).toHaveAttribute('stroke-width', '1.5');
 

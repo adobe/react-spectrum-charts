@@ -13,6 +13,7 @@ import {
 	DEFAULT_CATEGORICAL_DIMENSION,
 	DEFAULT_COLOR,
 	DEFAULT_METRIC,
+	DEFAULT_OPACITY_RULE,
 	FILTERED_TABLE,
 	HIGHLIGHT_CONTRAST_RATIO,
 	LEGEND_TOOLTIP_DELAY,
@@ -39,7 +40,7 @@ export const cleanupTooltips = () => {
 
 export const opacityEncoding = [
 	{ test: 'highlightedSeries && datum.value !== highlightedSeries', value: 1 / HIGHLIGHT_CONTRAST_RATIO },
-	{ value: 1 },
+	DEFAULT_OPACITY_RULE,
 ];
 
 export const defaultMark: LineMark = {
@@ -55,8 +56,7 @@ export const defaultMark: LineMark = {
 			stroke: { scale: 'color', field: DEFAULT_COLOR },
 		},
 		update: {
-			strokeOpacity: [],
-			fillOpacity: [],
+			opacity: [],
 		},
 	},
 };

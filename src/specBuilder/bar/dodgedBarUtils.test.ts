@@ -19,6 +19,7 @@ import {
 	DEFAULT_CATEGORICAL_DIMENSION,
 	DEFAULT_COLOR,
 	DEFAULT_METRIC,
+	DEFAULT_OPACITY_RULE,
 	DEFAULT_SECONDARY_COLOR,
 	FILTERED_TABLE,
 	HIGHLIGHT_CONTRAST_RATIO,
@@ -87,15 +88,15 @@ const defaultMark: Mark = {
 		enter: {
 			...defaultDodgedYEncodings,
 			...defaultDodgedCornerRadiusEncodings,
-			tooltip: undefined,
 			fill: { field: DEFAULT_COLOR, scale: 'color' },
+			fillOpacity: DEFAULT_OPACITY_RULE,
+			tooltip: undefined,
 		},
 		update: {
 			...defaultDodgedXEncodings,
 			...defaultBarStrokeEncodings,
-			fillOpacity: [{ value: 1 }],
-			strokeOpacity: [{ value: 1 }],
 			cursor: undefined,
+			opacity: [DEFAULT_OPACITY_RULE],
 		},
 	},
 };
@@ -109,19 +110,16 @@ const defaultMarkWithTooltip: Mark = {
 		enter: {
 			...defaultDodgedYEncodings,
 			...defaultDodgedCornerRadiusEncodings,
-			tooltip: { signal: "merge(datum, {'rscComponentName': 'bar0'})" },
 			fill: { field: DEFAULT_COLOR, scale: 'color' },
+			fillOpacity: DEFAULT_OPACITY_RULE,
+			tooltip: { signal: "merge(datum, {'rscComponentName': 'bar0'})" },
 		},
 		update: {
 			...defaultDodgedXEncodings,
 			...defaultBarStrokeEncodings,
-			fillOpacity: [
+			opacity: [
 				{ test: `bar0_hoveredId && bar0_hoveredId !== datum.${MARK_ID}`, value: 1 / HIGHLIGHT_CONTRAST_RATIO },
-				{ value: 1 },
-			],
-			strokeOpacity: [
-				{ test: `bar0_hoveredId && bar0_hoveredId !== datum.${MARK_ID}`, value: 1 / HIGHLIGHT_CONTRAST_RATIO },
-				{ value: 1 },
+				DEFAULT_OPACITY_RULE,
 			],
 			cursor: undefined,
 		},
@@ -153,20 +151,20 @@ const defaultDodgedStackedMark: Mark = {
 			fill: {
 				signal: `scale('colors', datum.${DEFAULT_COLOR})[indexof(domain('secondaryColor'), datum.${DEFAULT_SECONDARY_COLOR})% length(scale('colors', datum.${DEFAULT_COLOR}))]`,
 			},
+			fillOpacity: DEFAULT_OPACITY_RULE,
 			tooltip: undefined,
 		},
 		update: {
 			...defaultDodgedXEncodings,
-			fillOpacity: [{ value: 1 }],
+			cursor: undefined,
+			opacity: [DEFAULT_OPACITY_RULE],
 			stroke: [
 				{
 					signal: `scale('colors', datum.${DEFAULT_COLOR})[indexof(domain('secondaryColor'), datum.${DEFAULT_SECONDARY_COLOR})% length(scale('colors', datum.${DEFAULT_COLOR}))]`,
 				},
 			],
 			strokeDash: [{ value: [] }],
-			strokeOpacity: [{ value: 1 }],
 			strokeWidth: [{ value: 0 }],
-			cursor: undefined,
 		},
 	},
 };
@@ -205,7 +203,7 @@ describe('dodgedBarUtils', () => {
 				getDodgedMark({
 					...defaultDodgedProps,
 					children: [...defaultDodgedProps.children, annotationElement],
-				})
+				}),
 			).toStrictEqual(annotationDodgedMarks);
 		});
 		test('should add tooltip keys if ChartTooltip exists as child', () => {
@@ -218,7 +216,7 @@ describe('dodgedBarUtils', () => {
 	describe('getDodgedMark()', () => {
 		test('subseries, should include advanced fill, advanced corner radius, and border strokes,', () => {
 			expect(
-				getDodgedMark({ ...defaultDodgedProps, color: [DEFAULT_COLOR, DEFAULT_SECONDARY_COLOR] })
+				getDodgedMark({ ...defaultDodgedProps, color: [DEFAULT_COLOR, DEFAULT_SECONDARY_COLOR] }),
 			).toStrictEqual({
 				...defaultDodgedMark,
 				marks: [defaultDodgedStackedBackgroundMark, defaultDodgedStackedMark],

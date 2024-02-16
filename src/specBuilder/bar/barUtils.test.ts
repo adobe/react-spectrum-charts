@@ -19,6 +19,7 @@ import {
 	DEFAULT_CATEGORICAL_DIMENSION,
 	DEFAULT_COLOR,
 	DEFAULT_METRIC,
+	DEFAULT_OPACITY_RULE,
 	FILTERED_TABLE,
 	HIGHLIGHT_CONTRAST_RATIO,
 	MARK_ID,
@@ -30,7 +31,7 @@ import { RectEncodeEntry } from 'vega';
 
 import {
 	defaultBarEnterEncodings,
-	defaultBarPopoverFillOpacity,
+	defaultBarPopoverOpacity,
 	defaultBarProps,
 	defaultBarPropsWithSecondayColor,
 	defaultCornerRadiusEncodings,
@@ -55,7 +56,7 @@ import {
 	getCornerRadiusEncodings,
 	getDodgedDimensionEncodings,
 	getDodgedGroupMark,
-	getFillStrokeOpacity,
+	getBarOpacity,
 	getMetricEncodings,
 	getOrientationProperties,
 	getStackedCornerRadiusEncodings,
@@ -78,12 +79,12 @@ describe('barUtils', () => {
 			});
 			test('dodged, should return dodged encodings', () => {
 				expect(getMetricEncodings({ ...defaultBarProps, type: 'dodged' })).toStrictEqual(
-					defaultDodgedYEncodings
+					defaultDodgedYEncodings,
 				);
 			});
 			test('dodged with secdondary color series, should return stacked encodings', () => {
 				expect(getMetricEncodings({ ...defaultBarPropsWithSecondayColor, type: 'dodged' })).toStrictEqual(
-					defaultStackedYEncodings
+					defaultStackedYEncodings,
 				);
 			});
 		});
@@ -140,7 +141,7 @@ describe('barUtils', () => {
 				const encodings = getStackedMetricEncodings(defaultBarProps);
 				expect(encodings.y?.[1]?.test).toEqual(`${endValue} > 0`);
 				expect(encodings.y?.[1]?.signal).toEqual(
-					`max(scale('yLinear', ${startValue}) - 1.5, scale('yLinear', datum.${DEFAULT_METRIC}1))`
+					`max(scale('yLinear', ${startValue}) - 1.5, scale('yLinear', datum.${DEFAULT_METRIC}1))`,
 				);
 			});
 
@@ -148,7 +149,7 @@ describe('barUtils', () => {
 				const encodings = getStackedMetricEncodings(defaultBarProps);
 				expect(encodings.y?.[2]?.test).toBeUndefined();
 				expect(encodings.y?.[2]?.signal).toEqual(
-					`min(scale('yLinear', ${startValue}) + 1.5, scale('yLinear', datum.${DEFAULT_METRIC}1))`
+					`min(scale('yLinear', ${startValue}) + 1.5, scale('yLinear', datum.${DEFAULT_METRIC}1))`,
 				);
 			});
 
@@ -176,7 +177,7 @@ describe('barUtils', () => {
 				const encodings = getStackedMetricEncodings(horizontalProps);
 				expect(encodings.x?.[1]?.test).toEqual(`${endValue} > 0`);
 				expect(encodings.x?.[1]?.signal).toEqual(
-					`min(scale('xLinear', ${startValue}) + 1.5, scale('xLinear', datum.${DEFAULT_METRIC}1))`
+					`min(scale('xLinear', ${startValue}) + 1.5, scale('xLinear', datum.${DEFAULT_METRIC}1))`,
 				);
 			});
 
@@ -184,7 +185,7 @@ describe('barUtils', () => {
 				const encodings = getStackedMetricEncodings(horizontalProps);
 				expect(encodings.x?.[2]?.test).toBeUndefined();
 				expect(encodings.x?.[2]?.signal).toEqual(
-					`max(scale('xLinear', ${startValue}) - 1.5, scale('xLinear', datum.${DEFAULT_METRIC}1))`
+					`max(scale('xLinear', ${startValue}) - 1.5, scale('xLinear', datum.${DEFAULT_METRIC}1))`,
 				);
 			});
 
@@ -201,7 +202,7 @@ describe('barUtils', () => {
 		});
 		test('dodged, return simple radius encodings', () => {
 			expect(getCornerRadiusEncodings({ ...defaultBarProps, type: 'dodged' })).toStrictEqual(
-				defaultDodgedCornerRadiusEncodings
+				defaultDodgedCornerRadiusEncodings,
 			);
 		});
 		test('horizontal, should return stacked radius encodings rotated clockwise', () => {
@@ -240,7 +241,7 @@ describe('barUtils', () => {
 						value: CORNER_RADIUS,
 					},
 					{ value: 0 },
-				]
+				],
 			);
 		});
 		test('dodged with secondary color, should include secondaryColor in singal path', () => {
@@ -248,7 +249,7 @@ describe('barUtils', () => {
 				getStackedCornerRadiusEncodings({
 					...defaultBarPropsWithSecondayColor,
 					type: 'dodged',
-				}).cornerRadiusTopLeft
+				}).cornerRadiusTopLeft,
 			).toStrictEqual([
 				{
 					test: `datum.${DEFAULT_METRIC}1 > 0 && data('bar0_stacks')[indexof(pluck(data('bar0_stacks'), '${STACK_ID}'), datum.${STACK_ID})].max_${DEFAULT_METRIC}1 === datum.${DEFAULT_METRIC}1`,
@@ -280,33 +281,20 @@ describe('barUtils', () => {
 		});
 	});
 
-	describe('getFillStrokeOpacity()', () => {
-		test('no children, should use provided opacity', () => {
-			expect(getFillStrokeOpacity(defaultBarProps)).toStrictEqual([{ value: 1 }]);
-		});
-		test('no children, series key for opacity, should use scale and field for opacity', () => {
-			expect(getFillStrokeOpacity({ ...defaultBarProps, opacity: DEFAULT_COLOR })).toStrictEqual([
-				{ signal: "scale('opacity', datum.series)" },
-			]);
+	describe('getBarOpacity()', () => {
+		test('no children, should use default opacity', () => {
+			expect(getBarOpacity(defaultBarProps)).toStrictEqual([DEFAULT_OPACITY_RULE]);
 		});
 		test('Tooltip child, should return tests for hover and default to opacity', () => {
 			const tooltip = createElement(ChartTooltip);
-			expect(getFillStrokeOpacity({ ...defaultBarProps, children: [tooltip] })).toStrictEqual([
+			expect(getBarOpacity({ ...defaultBarProps, children: [tooltip] })).toStrictEqual([
 				{ test: `bar0_hoveredId && bar0_hoveredId !== datum.${MARK_ID}`, value: 1 / HIGHLIGHT_CONTRAST_RATIO },
-				{ value: 1 },
+				DEFAULT_OPACITY_RULE,
 			]);
 		});
 		test('Popover child, should return tests for hover and select and default to opacity', () => {
 			const popover = createElement(ChartPopover);
-			expect(getFillStrokeOpacity({ ...defaultBarProps, children: [popover] })).toStrictEqual(
-				defaultBarPopoverFillOpacity
-			);
-		});
-		test('isStrokeOpacity with popover, should set opacity to 1 when mark is selected', () => {
-			const popover = createElement(ChartPopover);
-			const rule = getFillStrokeOpacity({ ...defaultBarProps, children: [popover] }, true);
-			expect(rule).toHaveLength(4);
-			expect(rule[2]).toEqual({ test: `bar0_selectedId && bar0_selectedId === datum.${MARK_ID}`, value: 1 });
+			expect(getBarOpacity({ ...defaultBarProps, children: [popover] })).toStrictEqual(defaultBarPopoverOpacity);
 		});
 	});
 
@@ -368,13 +356,13 @@ describe('barUtils', () => {
 
 		test('returns provided value / 2 + 2.5 when value is set and orientation is not vertical', () => {
 			expect(
-				getAnnotationPositionOffset({ ...defaultBarProps, orientation: 'horizontal' }, { value: 50 })
+				getAnnotationPositionOffset({ ...defaultBarProps, orientation: 'horizontal' }, { value: 50 }),
 			).toEqual('27.5');
 		});
 
 		test('returns the signal string wrapped with parens when signal is set and orientation is not vertical', () => {
 			expect(
-				getAnnotationPositionOffset({ ...defaultBarProps, orientation: 'horizontal' }, { signal: 'foo' })
+				getAnnotationPositionOffset({ ...defaultBarProps, orientation: 'horizontal' }, { signal: 'foo' }),
 			).toEqual('((foo) / 2 + 2.5)');
 		});
 	});
@@ -395,8 +383,8 @@ describe('barUtils', () => {
 			expect(
 				getAnnotationMetricAxisPosition(
 					{ ...defaultBarProps, orientation: 'horizontal' },
-					defaultAnnotationWidth
-				)
+					defaultAnnotationWidth,
+				),
 			).toStrictEqual([
 				{
 					test: `datum.${defaultBarProps.metric}1 < 0`,
@@ -407,7 +395,7 @@ describe('barUtils', () => {
 		});
 		test("stacked with seconday scale, should return '${value}1' field", () => {
 			expect(
-				getAnnotationMetricAxisPosition(defaultBarPropsWithSecondayColor, defaultAnnotationWidth)
+				getAnnotationMetricAxisPosition(defaultBarPropsWithSecondayColor, defaultAnnotationWidth),
 			).toStrictEqual([
 				{
 					signal: `max(scale('yLinear', datum.${defaultBarProps.metric}1), scale('yLinear', 0) + 13.5)`,
@@ -418,7 +406,7 @@ describe('barUtils', () => {
 		});
 		test("dodged without secondary scale, should return 'value' field", () => {
 			expect(
-				getAnnotationMetricAxisPosition({ ...defaultBarProps, type: 'dodged' }, defaultAnnotationWidth)
+				getAnnotationMetricAxisPosition({ ...defaultBarProps, type: 'dodged' }, defaultAnnotationWidth),
 			).toStrictEqual([
 				{
 					signal: `max(scale('yLinear', datum.${defaultBarProps.metric}), scale('yLinear', 0) + 13.5)`,
@@ -429,7 +417,7 @@ describe('barUtils', () => {
 		});
 		test("dodged with secondary scale, should return '${value}1' field", () => {
 			expect(
-				getAnnotationMetricAxisPosition(defaultBarPropsWithSecondayColor, defaultAnnotationWidth)
+				getAnnotationMetricAxisPosition(defaultBarPropsWithSecondayColor, defaultAnnotationWidth),
 			).toStrictEqual([
 				{
 					signal: `max(scale('yLinear', datum.${defaultBarProps.metric}1), scale('yLinear', 0) + 13.5)`,
@@ -452,8 +440,8 @@ describe('barUtils', () => {
 					{ ...defaultBarProps, children: annotationChildren },
 					FILTERED_TABLE,
 					stackedXScale,
-					defaultBarProps.dimension
-				)
+					defaultBarProps.dimension,
+				),
 			).toStrictEqual(stackedAnnotationMarks);
 		});
 		test('horizontal orientation should return xc and yc opposite of vertical orientation', () => {
@@ -467,12 +455,12 @@ describe('barUtils', () => {
 				band: 0.5,
 			});
 			expect(annotationMarks[0].encode?.enter?.xc).toStrictEqual(
-				getAnnotationMetricAxisPosition(props, { signal: annotationWidthSignal })
+				getAnnotationMetricAxisPosition(props, { signal: annotationWidthSignal }),
 			);
 
 			expect(annotationMarks[1].encode?.enter?.y).toStrictEqual({ scale: 'yBand', field: 'category', band: 0.5 });
 			expect(annotationMarks[1].encode?.enter?.x).toStrictEqual(
-				getAnnotationMetricAxisPosition(props, { signal: annotationWidthSignal })
+				getAnnotationMetricAxisPosition(props, { signal: annotationWidthSignal }),
 			);
 		});
 		test('defaultBarProps with secondary scale should return text marks when passed with Annotation', () => {
@@ -481,8 +469,8 @@ describe('barUtils', () => {
 					{ ...defaultBarPropsWithSecondayColor, children: annotationChildren },
 					FILTERED_TABLE,
 					stackedXScale,
-					defaultBarProps.dimension
-				)
+					defaultBarProps.dimension,
+				),
 			).toStrictEqual(stackedAnnotationMarks);
 		});
 		test('dodged should return text marks when passed with Annotation', () => {
@@ -491,8 +479,8 @@ describe('barUtils', () => {
 					{ ...defaultBarProps, type: 'dodged', children: annotationChildren },
 					`${defaultBarProps.name}_facet`,
 					dodgedXScale,
-					dodgedGroupField
-				)
+					dodgedGroupField,
+				),
 			).toStrictEqual(dodgedAnnotationMarks);
 		});
 		test('dodged with secondary series should return text marks when passed with Annotation', () => {
@@ -505,8 +493,8 @@ describe('barUtils', () => {
 					},
 					`${defaultBarProps.name}_facet`,
 					dodgedXScale,
-					dodgedGroupField
-				)
+					dodgedGroupField,
+				),
 			).toStrictEqual(dodgedSubSeriesAnnotationMarks);
 		});
 
@@ -516,8 +504,8 @@ describe('barUtils', () => {
 					{ ...defaultBarProps, children: annotationChildrenWithStyles },
 					FILTERED_TABLE,
 					stackedXScale,
-					defaultBarProps.dimension
-				)
+					defaultBarProps.dimension,
+				),
 			).toStrictEqual(stackedAnnotationMarksWithStyles);
 		});
 		test('defaultBarProps with secondary scale returns fixed width annotation background when Annotation has style.width', () => {
@@ -526,8 +514,8 @@ describe('barUtils', () => {
 					{ ...defaultBarPropsWithSecondayColor, children: annotationChildrenWithStyles },
 					FILTERED_TABLE,
 					stackedXScale,
-					defaultBarProps.dimension
-				)
+					defaultBarProps.dimension,
+				),
 			).toStrictEqual(stackedAnnotationMarksWithStyles);
 		});
 		test('dodged should returns fixed width annotation background when Annotation has style.width', () => {
@@ -536,8 +524,8 @@ describe('barUtils', () => {
 					{ ...defaultBarProps, type: 'dodged', children: annotationChildrenWithStyles },
 					`${defaultBarProps.name}_facet`,
 					dodgedXScale,
-					`${defaultBarProps.name}_dodgeGroup`
-				)
+					`${defaultBarProps.name}_dodgeGroup`,
+				),
 			).toStrictEqual(dodgedAnnotationMarksWithStyles);
 		});
 	});

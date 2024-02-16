@@ -117,7 +117,7 @@ const ScatterTooltipStory: StoryFn<typeof Scatter> = (args): ReactElement => {
 			<Scatter {...args}>
 				<ChartTooltip>{(item) => dialog(item, dimension, metric)}</ChartTooltip>
 			</Scatter>
-			<Legend {...legendProps} />
+			<Legend {...legendProps} highlight />
 			<Title text="Mario Kart 8 Character Data" />
 		</Chart>
 	);

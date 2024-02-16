@@ -25,6 +25,7 @@ import {
 import { spectrumColors } from '@themes';
 
 import { DefaultHiddenSeries, HiddenSeries, IsToggleable } from './LegendHideShow.story';
+import { HIGHLIGHT_CONTRAST_RATIO } from '@constants';
 
 const colors = spectrumColors.light;
 
@@ -112,10 +113,10 @@ test('Hidden series should not highlight any marks', async () => {
 	// hovering the second entry should lower the opacity of the first series
 	await hoverNthElement(entries, 1);
 	let bars = await findAllMarksByGroupName(chart, 'bar0');
-	expect(bars[0]).toHaveAttribute('fill-opacity', '0.2');
+	expect(bars[0]).toHaveAttribute('opacity', `${1 / HIGHLIGHT_CONTRAST_RATIO}`);
 
 	// hovering the third entry should not adjust the opcity of any of the bars since it is a hidden series
 	await hoverNthElement(entries, 2);
 	bars = await findAllMarksByGroupName(chart, 'bar0');
-	expect(bars[0]).toHaveAttribute('fill-opacity', '1');
+	expect(bars[0]).toHaveAttribute('opacity', '1');
 });

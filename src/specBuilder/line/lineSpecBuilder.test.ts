@@ -19,6 +19,7 @@ import {
 	DEFAULT_COLOR,
 	DEFAULT_COLOR_SCHEME,
 	DEFAULT_METRIC,
+	DEFAULT_OPACITY_RULE,
 	DEFAULT_TIME_DIMENSION,
 	DEFAULT_TRANSFORMED_TIME_DIMENSION,
 	FILTERED_TABLE,
@@ -89,12 +90,13 @@ const defaultSpec = initializeSpec({
 						enter: {
 							stroke: { field: DEFAULT_COLOR, scale: 'color' },
 							strokeDash: { value: [] },
+							strokeOpacity: DEFAULT_OPACITY_RULE,
 							strokeWidth: undefined,
 							y: { field: 'value', scale: 'yLinear' },
 						},
 						update: {
 							x: { field: DEFAULT_TRANSFORMED_TIME_DIMENSION, scale: 'xTime' },
-							strokeOpacity: [{ value: 1 }],
+							opacity: [DEFAULT_OPACITY_RULE],
 						},
 					},
 					from: { data: 'line0_facet' },
@@ -164,29 +166,15 @@ const line0_groupMark = {
 			interactive: false,
 			encode: {
 				enter: {
-					y: {
-						scale: 'yLinear',
-						field: 'value',
-					},
-					stroke: {
-						scale: 'color',
-						field: 'series',
-					},
-					strokeDash: {
-						value: [],
-					},
+					y: { scale: 'yLinear', field: 'value' },
+					stroke: { scale: 'color', field: 'series' },
+					strokeDash: { value: [] },
+					strokeOpacity: DEFAULT_OPACITY_RULE,
 					strokeWidth: undefined,
 				},
 				update: {
-					x: {
-						scale: 'xTime',
-						field: DEFAULT_TRANSFORMED_TIME_DIMENSION,
-					},
-					strokeOpacity: [
-						{
-							value: 1,
-						},
-					],
+					x: { scale: 'xTime', field: DEFAULT_TRANSFORMED_TIME_DIMENSION },
+					opacity: [DEFAULT_OPACITY_RULE],
 				},
 			},
 		},
@@ -225,6 +213,7 @@ const metricRangeGroupMark = {
 					strokeDash: {
 						value: [7, 4],
 					},
+					strokeOpacity: DEFAULT_OPACITY_RULE,
 					strokeWidth: {
 						value: 1.5,
 					},
@@ -234,11 +223,7 @@ const metricRangeGroupMark = {
 						scale: 'xTime',
 						field: DEFAULT_TRANSFORMED_TIME_DIMENSION,
 					},
-					strokeOpacity: [
-						{
-							value: 1,
-						},
-					],
+					opacity: [DEFAULT_OPACITY_RULE],
 				},
 			},
 		},
@@ -474,13 +459,14 @@ describe('lineSpecBuilder', () => {
 							encode: {
 								enter: {
 									stroke: { field: DEFAULT_COLOR, scale: 'color' },
+									strokeOpacity: DEFAULT_OPACITY_RULE,
 									strokeDash: { value: [8, 8] },
 									strokeWidth: undefined,
 									y: { field: 'value', scale: 'yLinear' },
 								},
 								update: {
 									x: { field: DEFAULT_TRANSFORMED_TIME_DIMENSION, scale: 'xTime' },
-									strokeOpacity: [{ value: 1 }],
+									opacity: [DEFAULT_OPACITY_RULE],
 								},
 							},
 							from: { data: 'line0_facet' },

@@ -15,6 +15,7 @@ import {
 	ANNOTATION_FONT_WEIGHT,
 	BACKGROUND_COLOR,
 	CORNER_RADIUS,
+	DEFAULT_OPACITY_RULE,
 	DISCRETE_PADDING,
 	FILTERED_TABLE,
 	MARK_ID,
@@ -211,7 +212,7 @@ export const getStackedCornerRadiusEncodings = ({ name, metric, lineWidth }: Bar
 
 export const rotateRectClockwiseIfNeeded = (
 	rectEncodeEntry: RectEncodeEntry,
-	{ orientation }: BarSpecProps
+	{ orientation }: BarSpecProps,
 ): RectEncodeEntry => {
 	if (orientation === 'vertical') return rectEncodeEntry;
 	return {
@@ -224,7 +225,7 @@ export const rotateRectClockwiseIfNeeded = (
 
 export const getAnnotationMetricAxisPosition = (
 	props: BarSpecProps,
-	annotationWidth: AnnotationWidth
+	annotationWidth: AnnotationWidth,
 ): ProductionRule<NumericValueRef> => {
 	const { type, metric, orientation } = props;
 	const field = type === 'stacked' || isDodgedAndStacked(props) ? `${metric}1` : metric;
@@ -256,7 +257,7 @@ export const getAnnotationMetricAxisPosition = (
 
 export const getAnnotationPositionOffset = (
 	{ orientation }: BarSpecProps,
-	annotationWidth: AnnotationWidth
+	annotationWidth: AnnotationWidth,
 ): string => {
 	const pixelGapFromBaseline = 2.5;
 
@@ -286,7 +287,7 @@ export const getAnnotationMarks = (
 	// in which case we don't want to use the "global" (full table) values.
 	localDataTableName: string,
 	localDimensionScaleKey: string,
-	localDimensionField: string
+	localDimensionField: string,
 ) => {
 	const marks: Mark[] = [];
 	const children = sanitizeMarkChildren(barProps.children);
@@ -352,56 +353,50 @@ export const getBaseBarEnterEncodings = (props: BarSpecProps): EncodeEntry => ({
 	...getCornerRadiusEncodings(props),
 });
 
-export const getBarEnterEncodings = ({ children, color, colorScheme, name }: BarSpecProps): EncodeEntry => ({
+export const getBarEnterEncodings = ({ children, color, colorScheme, name, opacity }: BarSpecProps): EncodeEntry => ({
 	fill: getColorProductionRule(color, colorScheme),
+	fillOpacity: getOpacityProductionRule(opacity),
 	tooltip: getTooltip(children, name),
 });
 
 export const getBarUpdateEncodings = (props: BarSpecProps): EncodeEntry => ({
 	cursor: getCursor(props.children),
-	fillOpacity: getFillStrokeOpacity(props),
+	opacity: getBarOpacity(props),
 	stroke: getStroke(props),
 	strokeDash: getStrokeDash(props),
-	strokeOpacity: getFillStrokeOpacity(props, true),
 	strokeWidth: getStrokeWidth(props),
 });
 
-export const getFillStrokeOpacity = (
-	{ children, name, opacity }: BarSpecProps,
-	isStrokeOpacity?: boolean
-): ProductionRule<NumericValueRef> => {
-	const defaultProductionRule = getOpacityProductionRule(opacity);
-	// ignore annotations
+export const getBarOpacity = ({ children, name }: BarSpecProps): ProductionRule<NumericValueRef> => {
+	// if there aren't any interactive components, then we don't need to add special opacity rules
 	if (!hasInteractiveChildren(children)) {
-		return [defaultProductionRule];
+		return [DEFAULT_OPACITY_RULE];
 	}
 
-	// if a bar is hovered/selected, all other bars should be half opacity
+	// if a bar is hovered/selected, all other bars should have reduced opacity
 	const hoverSignal = `${name}_hoveredId`;
 	if (hasPopover(children)) {
 		const selectSignal = `${name}_selectedId`;
 
-		// if this is for a stroke opacity, we want the value to be 1 when selected regardless of the opacity value
-		const selectedMarkRule = isStrokeOpacity ? { value: 1 } : defaultProductionRule;
 		return [
 			{
 				test: `!${selectSignal} && ${hoverSignal} && ${hoverSignal} !== datum.${MARK_ID}`,
-				...getHighlightOpacityValue(defaultProductionRule),
+				...getHighlightOpacityValue(DEFAULT_OPACITY_RULE),
 			},
 			{
 				test: `${selectSignal} && ${selectSignal} !== datum.${MARK_ID}`,
-				...getHighlightOpacityValue(defaultProductionRule),
+				...getHighlightOpacityValue(DEFAULT_OPACITY_RULE),
 			},
-			{ test: `${selectSignal} && ${selectSignal} === datum.${MARK_ID}`, ...selectedMarkRule },
-			defaultProductionRule,
+			{ test: `${selectSignal} && ${selectSignal} === datum.${MARK_ID}`, ...DEFAULT_OPACITY_RULE },
+			DEFAULT_OPACITY_RULE,
 		];
 	}
 	return [
 		{
 			test: `${hoverSignal} && ${hoverSignal} !== datum.${MARK_ID}`,
-			...getHighlightOpacityValue(defaultProductionRule),
+			...getHighlightOpacityValue(),
 		},
-		defaultProductionRule,
+		DEFAULT_OPACITY_RULE,
 	];
 };
 
@@ -473,11 +468,11 @@ export const getOrientationProperties = (orientation: Orientation): BarOrientati
 				metricScaleKey: 'yLinear',
 				dimensionScaleKey: 'xBand',
 				rangeScale: 'width',
-		  }
+			}
 		: {
 				metricAxis: 'x',
 				dimensionAxis: 'y',
 				metricScaleKey: 'xLinear',
 				dimensionScaleKey: 'yBand',
 				rangeScale: 'height',
-		  };
+			};

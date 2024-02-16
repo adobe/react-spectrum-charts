@@ -13,9 +13,17 @@ import React from 'react';
 
 import '@matchMediaMock';
 import { Trendline } from '@rsc';
-import { findAllMarksByGroupName, findChart, getAllLegendEntries, hoverNthElement, render } from '@test-utils';
+import {
+	allElementsHaveAttributeValue,
+	findAllMarksByGroupName,
+	findChart,
+	getAllLegendEntries,
+	hoverNthElement,
+	render,
+} from '@test-utils';
 
 import { Basic, DisplayOnHover, TooltipAndPopover, TooltipAndPopoverOnParentLine } from './Trendline.story';
+import { HIGHLIGHT_CONTRAST_RATIO } from '@constants';
 
 describe('Trendline', () => {
 	// Trendline is not a real React component. This is test just provides test coverage for sonarqube
@@ -84,17 +92,18 @@ describe('Trendline', () => {
 			expect(trendlines).toHaveLength(4);
 
 			// trendlines should be hidden by default
-			expect(trendlines[0]).toHaveAttribute('stroke-opacity', '0');
+			expect(trendlines[0]).toHaveAttribute('opacity', '0');
 
 			// hover over the first point on the first line
 			const hoverAreas = await findAllMarksByGroupName(chart, 'line0_voronoi');
 			await hoverNthElement(hoverAreas, 0);
 
 			// first trendline should be visible
-			expect(trendlines[0]).toHaveAttribute('stroke-opacity', '1');
+			expect(trendlines[0]).toHaveAttribute('opacity', '1');
 			// second trendline should still be hidden
-			expect(trendlines[1]).toHaveAttribute('stroke-opacity', '0');
+			expect(trendlines[1]).toHaveAttribute('opacity', '0');
 		});
+
 		test('should display trendlines on legend hover', async () => {
 			render(<DisplayOnHover {...DisplayOnHover.args} />);
 			const chart = await findChart();
@@ -103,16 +112,16 @@ describe('Trendline', () => {
 			expect(trendlines).toHaveLength(4);
 
 			// trendlines should be hidden by default
-			expect(trendlines[0]).toHaveAttribute('stroke-opacity', '0');
+			expect(trendlines[0]).toHaveAttribute('opacity', '0');
 
 			// hover over the first point on the first line
 			const legendEntries = getAllLegendEntries(chart);
 			await hoverNthElement(legendEntries, 0);
 
 			// first trendline should be visible
-			expect(trendlines[0]).toHaveAttribute('stroke-opacity', '1');
+			expect(trendlines[0]).toHaveAttribute('opacity', '1');
 			// second trendline should still be hidden
-			expect(trendlines[1]).toHaveAttribute('stroke-opacity', '0');
+			expect(trendlines[1]).toHaveAttribute('opacity', '0');
 		});
 	});
 
@@ -128,22 +137,19 @@ describe('Trendline', () => {
 			expect(trendlines).toHaveLength(4);
 
 			// all lines and trendlines are full opacity
-			expect(lines[0]).toHaveAttribute('stroke-opacity', '1');
-			expect(lines[1]).toHaveAttribute('stroke-opacity', '1');
-			expect(trendlines[0]).toHaveAttribute('stroke-opacity', '1');
-			expect(trendlines[1]).toHaveAttribute('stroke-opacity', '1');
+			expect(allElementsHaveAttributeValue([...lines, ...trendlines], 'opacity', 1)).toBeTruthy();
 
 			// hover over the first point on the first trendline
 			const trendlineHoverAreas = await findAllMarksByGroupName(chart, 'line0Trendline_voronoi');
 			await hoverNthElement(trendlineHoverAreas, 0);
 
 			// highlighted line and trendline are still full opacity
-			expect(lines[0]).toHaveAttribute('stroke-opacity', '1');
-			expect(trendlines[0]).toHaveAttribute('stroke-opacity', '1');
+			expect(allElementsHaveAttributeValue([lines[0], trendlines[0]], 'opacity', 1)).toBeTruthy();
 
 			// other lines and trendlines are faded
-			expect(lines[1]).toHaveAttribute('stroke-opacity', '0.2');
-			expect(trendlines[1]).toHaveAttribute('stroke-opacity', '0.2');
+			expect(
+				allElementsHaveAttributeValue([lines[1], trendlines[1]], 'opacity', 1 / HIGHLIGHT_CONTRAST_RATIO),
+			).toBeTruthy();
 		});
 	});
 
@@ -159,22 +165,17 @@ describe('Trendline', () => {
 			expect(trendlines).toHaveLength(4);
 
 			// all lines and trendlines are full opacity
-			expect(lines[0]).toHaveAttribute('stroke-opacity', '1');
-			expect(lines[1]).toHaveAttribute('stroke-opacity', '1');
-			expect(trendlines[0]).toHaveAttribute('stroke-opacity', '1');
-			expect(trendlines[1]).toHaveAttribute('stroke-opacity', '1');
+			expect(allElementsHaveAttributeValue([...lines, ...trendlines], 'opacity', 1)).toBeTruthy();
 
 			// hover over the first point on the first trendline
 			const trendlineHoverAreas = await findAllMarksByGroupName(chart, 'line0_voronoi');
 			await hoverNthElement(trendlineHoverAreas, 0);
 
 			// highlighted line and trendline are still full opacity
-			expect(lines[0]).toHaveAttribute('stroke-opacity', '1');
-			expect(trendlines[0]).toHaveAttribute('stroke-opacity', '1');
+			expect(lines[0]).toHaveAttribute('opacity', '1');
 
 			// other lines and trendlines are faded
-			expect(lines[1]).toHaveAttribute('stroke-opacity', '0.2');
-			expect(trendlines[1]).toHaveAttribute('stroke-opacity', '0.2');
+			expect(lines[1]).toHaveAttribute('opacity', `${1 / HIGHLIGHT_CONTRAST_RATIO}`);
 		});
 	});
 });

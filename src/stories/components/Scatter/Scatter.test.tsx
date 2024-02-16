@@ -11,6 +11,7 @@
  */
 import { Scatter, spectrumColors } from '@rsc';
 import {
+	allElementsHaveAttributeValue,
 	findAllMarksByGroupName,
 	findChart,
 	getAllLegendEntries,
@@ -128,11 +129,10 @@ describe('Scatter', () => {
 
 			await hoverNthElement(paths, 0);
 			expect(points[0]).toHaveAttribute('opacity', '1');
-			expect(points[1]).toHaveAttribute('opacity', `${1 / HIGHLIGHT_CONTRAST_RATIO}`);
 
 			// make sure all points after the first have reduced opacity
 			expect(
-				points.slice(1).every((point) => point.getAttribute('opacity') === `${1 / HIGHLIGHT_CONTRAST_RATIO}`),
+				allElementsHaveAttributeValue(points.slice(1), 'opacity', 1 / HIGHLIGHT_CONTRAST_RATIO),
 			).toBeTruthy();
 		});
 	});
