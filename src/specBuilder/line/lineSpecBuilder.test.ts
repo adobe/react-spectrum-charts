@@ -23,6 +23,7 @@ import {
 	DEFAULT_TRANSFORMED_TIME_DIMENSION,
 	FILTERED_TABLE,
 	MARK_ID,
+	PREVIOUS_TABLE,
 	SERIES_ID,
 	TABLE,
 	TRENDLINE_VALUE,
@@ -78,6 +79,10 @@ const defaultSpec = initializeSpec({
 		{
 			name: FILTERED_TABLE,
 			source: TABLE,
+		},
+		{
+			name: PREVIOUS_TABLE,
+			values: [],
 		},
 	],
 	marks: [
@@ -380,7 +385,7 @@ describe('lineSpecBuilder', () => {
 				addData(baseData, {
 					...defaultLineProps,
 					children: [createElement(Trendline, { method: 'average' })],
-				})[2].transform
+				})[3].transform
 			).toStrictEqual([
 				{
 					type: 'collect',
