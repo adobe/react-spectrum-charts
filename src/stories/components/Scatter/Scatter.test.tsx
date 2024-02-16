@@ -12,8 +12,10 @@
 import { Scatter, spectrumColors } from '@rsc';
 import {
 	allElementsHaveAttributeValue,
+	clickNthElement,
 	findAllMarksByGroupName,
 	findChart,
+	findMarksByGroupName,
 	getAllLegendEntries,
 	hoverNthElement,
 	render,
@@ -21,8 +23,9 @@ import {
 	within,
 } from '@test-utils';
 
-import { Basic, Color, LineType, Opacity, Size, Tooltip } from './Scatter.story';
+import { Basic, Color, LineType, Opacity, Popover, Size, Tooltip } from './Scatter.story';
 import { HIGHLIGHT_CONTRAST_RATIO } from '@constants';
+import userEvent from '@testing-library/user-event';
 
 const colors = spectrumColors.light;
 
@@ -82,6 +85,53 @@ describe('Scatter', () => {
 		expect(points[11]).toHaveAttribute('fill-opacity', '0.5');
 	});
 
+	describe('Popover', () => {
+		test('should render a popover on hover', async () => {
+			render(<Popover {...Popover.args} />);
+
+			const chart = await findChart();
+			expect(chart).toBeInTheDocument();
+
+			const paths = await findAllMarksByGroupName(chart, 'scatter0_voronoi');
+
+			await clickNthElement(paths, 0);
+			let popover = await screen.findByTestId('rsc-popover');
+			expect(popover).toBeInTheDocument();
+			expect(within(popover).getByText('Baby Peach, Baby Daisy')).toBeInTheDocument();
+
+			await userEvent.click(document.body);
+
+			await clickNthElement(paths, 12);
+			popover = await screen.findByTestId('rsc-popover');
+			expect(within(popover).getByText('Metal Mario, Gold Mario, Pink Gold Peach')).toBeInTheDocument();
+		});
+
+		test('should highlight hovered points', async () => {
+			render(<Popover {...Popover.args} />);
+
+			const chart = await findChart();
+			expect(chart).toBeInTheDocument();
+
+			const paths = await findAllMarksByGroupName(chart, 'scatter0_voronoi');
+			const points = await findAllMarksByGroupName(chart, 'scatter0');
+			expect(points).toHaveLength(16);
+
+			await clickNthElement(paths, 0);
+			expect(points[0]).toHaveAttribute('opacity', '1');
+
+			// make sure all points after the first have reduced opacity
+			expect(
+				allElementsHaveAttributeValue(points.slice(1), 'opacity', 1 / HIGHLIGHT_CONTRAST_RATIO),
+			).toBeTruthy();
+
+			// find the select ring
+			const selectRing = await findMarksByGroupName(chart, 'scatter0_selectRing');
+			expect(selectRing).toBeInTheDocument();
+			expect(selectRing).toHaveAttribute('stroke', spectrumColors.light['static-blue']);
+			expect(selectRing).toHaveAttribute('stroke-width', '2');
+		});
+	});
+
 	test('Size renders properly', async () => {
 		render(<Size {...Size.args} />);
 
@@ -101,7 +151,7 @@ describe('Scatter', () => {
 
 	describe('Tooltip', () => {
 		test('should render a tooltip on hover', async () => {
-			render(<Tooltip {...Basic.args} />);
+			render(<Tooltip {...Tooltip.args} />);
 
 			const chart = await findChart();
 			expect(chart).toBeInTheDocument();
@@ -117,8 +167,8 @@ describe('Scatter', () => {
 			tooltip = await screen.findByTestId('rsc-tooltip');
 			expect(within(tooltip).getByText('Metal Mario, Gold Mario, Pink Gold Peach')).toBeInTheDocument();
 		});
-		test('should highligh hovered points', async () => {
-			render(<Tooltip {...Basic.args} />);
+		test('should highlight hovered points', async () => {
+			render(<Tooltip {...Tooltip.args} />);
 
 			const chart = await findChart();
 			expect(chart).toBeInTheDocument();

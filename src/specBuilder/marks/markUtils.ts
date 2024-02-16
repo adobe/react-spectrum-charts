@@ -155,7 +155,7 @@ export const getOpacityProductionRule = (opacity: OpacityFacet | DualFacet): { s
 	return { value: opacity.value };
 };
 
-export const getSymbolSizeProductionRule = (symbolSize: SymbolSizeFacet): NumericValueRef | undefined => {
+export const getSymbolSizeProductionRule = (symbolSize: SymbolSizeFacet): NumericValueRef => {
 	// key reference for setting symbol size
 	if (typeof symbolSize === 'string') {
 		return { scale: 'symbolSize', field: symbolSize };
