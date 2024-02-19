@@ -4172,12 +4172,24 @@
     "@react-spectrum/icon" "^3.7.8"
     "@swc/helpers" "^0.5.0"
 
-"@storybook/addon-actions@7.6.13", "@storybook/addon-actions@^7.6.13":
+"@storybook/addon-actions@7.6.13":
   version "7.6.13"
   resolved "https://registry.yarnpkg.com/@storybook/addon-actions/-/addon-actions-7.6.13.tgz#a1675fe2535e76228fa121fa1b30eb274349c0a4"
   integrity sha512-uxjBLzJNJfj8oS0orgLt7/Gs5tLoP2xhBESi5vjk+7BZjAgfoA6w5IwMwmh9sRB3+aUx3ks7fGjE/hRT/YcaxA==
   dependencies:
     "@storybook/core-events" "7.6.13"
+    "@storybook/global" "^5.0.0"
+    "@types/uuid" "^9.0.1"
+    dequal "^2.0.2"
+    polished "^4.2.2"
+    uuid "^9.0.0"
+
+"@storybook/addon-actions@^7.6.13":
+  version "7.6.16"
+  resolved "https://registry.yarnpkg.com/@storybook/addon-actions/-/addon-actions-7.6.16.tgz#aed33b43743832f037aede8ce2bfda26b3b91fe6"
+  integrity sha512-wCpZljLXnu08TZzp+qL5AXousfUBzY6TgHVwn4yoZkMhPg3WLxZTceKYnc+XAxoMmdTrDjwanEF7v/uQ9eu64Q==
+  dependencies:
+    "@storybook/core-events" "7.6.16"
     "@storybook/global" "^5.0.0"
     "@types/uuid" "^9.0.1"
     dequal "^2.0.2"
@@ -4575,7 +4587,14 @@
   dependencies:
     ts-dedent "^2.0.0"
 
-"@storybook/core-events@7.6.5", "@storybook/core-events@^7.0.0":
+"@storybook/core-events@7.6.16", "@storybook/core-events@^7.0.0":
+  version "7.6.16"
+  resolved "https://registry.yarnpkg.com/@storybook/core-events/-/core-events-7.6.16.tgz#320f88f463201a1a1c857c7b596dd61bde34e4c8"
+  integrity sha512-mkBqzrbp6vmdjo0fBZGrFQQ4YdvMFxF6AesdKTf8EzPa69FoxnhQLrmQ4aXF+9vXkxfXVJF2HfpoTEdfqqAo+w==
+  dependencies:
+    ts-dedent "^2.0.0"
+
+"@storybook/core-events@7.6.5":
   version "7.6.5"
   resolved "https://registry.yarnpkg.com/@storybook/core-events/-/core-events-7.6.5.tgz#bcac8a2625c1f63d290d4ca0b70bb7a953939750"
   integrity sha512-zk2q/qicYXAzHA4oV3GDbIql+Kd4TOHUgDE8e4jPCOPp856z2ScqEKUAbiJizs6eEJOH4nW9Db1kuzgrBVEykQ==
