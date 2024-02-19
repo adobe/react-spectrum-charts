@@ -233,6 +233,7 @@ export const getDefaultSignals = ({
 		getGenericValueSignal(SELECTED_ITEM),
 		getGenericValueSignal(SELECTED_SERIES),
 		getGenericValueSignal(SELECTED_GROUP),
+		getTimer(),
 	];
 };
 

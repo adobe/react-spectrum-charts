@@ -42,6 +42,7 @@ export const DEFAULT_INTERACTION_MODE = 'nearest';
 // vega data table name
 export const TABLE = 'table';
 export const FILTERED_TABLE = 'filteredTable';
+export const PREVIOUS_TABLE = 'previousTable'
 
 // vega data field names
 export const GROUP_DATA = 'rscGroupData';

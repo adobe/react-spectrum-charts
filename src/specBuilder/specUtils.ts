@@ -20,15 +20,6 @@ import { spectrumColors } from '@themes';
 import { Data, Scale, ScaleType, Spec, ValuesData } from 'vega';
 
 import {
-	COLOR_SCALE,
-	DEFAULT_TRANSFORMED_TIME_DIMENSION,
-	FILTERED_TABLE,
-	LINE_TYPE_SCALE,
-	MARK_ID,
-	OPACITY_SCALE,
-	TABLE,
-} from '../constants';
-import {
 	ChartSymbolShape,
 	ColorFacet,
 	ColorScheme,
@@ -44,6 +35,9 @@ import {
 	SymbolSize,
 	SymbolSizeFacet,
 } from '../types';
+
+import {  LINE_TYPE_SCALE, OPACITY_SCALE, COLOR_SCALE, DEFAULT_TRANSFORMED_TIME_DIMENSION, FILTERED_TABLE, MARK_ID, PREVIOUS_TABLE, TABLE } from '../constants';
+import { useRef, useEffect } from 'react';
 
 /**
  * gets all the keys that are used to facet by
@@ -233,6 +227,7 @@ export const getSymbolWidthFromRscSymbolSize = (symbolSize: SymbolSize): number 
 export const baseData: Data[] = [
 	{ name: TABLE, values: [], transform: [{ type: 'identifier', as: MARK_ID }] },
 	{ name: FILTERED_TABLE, source: TABLE },
+	{ name: PREVIOUS_TABLE, values: [] },
 ];
 
 /**
@@ -297,6 +292,7 @@ export const extractValues = (data) =>
  * @returns An array of Vega datasets with the values from the values object merged in
  */
 export const mergeValuesIntoData = (data, values) => {
+	console.log(data, values)
 	return data.map((dataset) => {
 		const datasetValues = values[dataset.name];
 		if (datasetValues) {
@@ -331,4 +327,15 @@ export const getD3FormatSpecifierFromNumberFormat = (numberFormat: NumberFormat 
 		default:
 			return numberFormat;
 	}
+};
+export const usePreviousChartData = <T>(data: T) => {
+	const ref = useRef<T>();
+	const previousDataRef = useRef<T>();
+
+	useEffect(() => {
+	  previousDataRef.current = ref.current;
+	  ref.current = data;
+	}, [data]);
+
+	return previousDataRef.current;
 };

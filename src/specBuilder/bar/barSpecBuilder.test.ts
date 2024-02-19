@@ -26,6 +26,7 @@ import {
 	LINE_TYPE_SCALE,
 	MARK_ID,
 	OPACITY_SCALE,
+	PREVIOUS_TABLE,
 	STACK_ID,
 	TABLE,
 } from '@constants';
@@ -208,6 +209,10 @@ const defaultSpec: Spec = {
 			name: FILTERED_TABLE,
 			source: TABLE,
 			transform: defaultStackedTransforms,
+		},
+		{
+			name: PREVIOUS_TABLE,
+			values: [],
 		},
 		defaultStacksData,
 	],

@@ -29,6 +29,8 @@ import {
 	SELECTED_GROUP,
 	SELECTED_ITEM,
 	SELECTED_SERIES,
+	PREVIOUS_TABLE,
+	SERIES_ID,
 	TABLE,
 } from '@constants';
 import { getGenericValueSignal } from '@specBuilder/signal/signalSpecBuilder';
@@ -89,6 +91,10 @@ const defaultSpec = initializeSpec({
 					type: 'stack',
 				},
 			],
+		},
+		{
+			name: PREVIOUS_TABLE,
+			values: [],
 		},
 	],
 	marks: [

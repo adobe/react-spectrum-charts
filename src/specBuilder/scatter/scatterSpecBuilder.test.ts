@@ -73,6 +73,9 @@ describe('addData()', () => {
 		});
 		expect(data).toHaveLength(4);
 		expect(data[3].name).toBe('scatter0_selectedData');
+		expect(data).toHaveLength(3);
+		expect(data[0].transform).toHaveLength(2);
+		expect(data[0].transform?.[1].type).toBe('timeunit');
 	});
 	test('should add trendline data if trendline exists as a child', () => {
 		const data = addData(initializeSpec().data ?? [], {
@@ -82,6 +85,9 @@ describe('addData()', () => {
 		expect(data).toHaveLength(3);
 		expect(data[2].transform).toHaveLength(1);
 		expect(data[2].transform?.[0].type).toBe('regression');
+		expect(data).toHaveLength(4);
+		expect(data[3].transform).toHaveLength(2);
+		expect(data[3].transform?.[0].type).toBe('regression');
 	});
 });
 

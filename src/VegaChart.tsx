@@ -11,9 +11,9 @@
  */
 import { FC, useEffect, useMemo, useRef } from 'react';
 
-import { TABLE } from '@constants';
+import { PREVIOUS_TABLE, TABLE } from '@constants';
 import { useDebugSpec } from '@hooks/useDebugSpec';
-import { extractValues, isVegaData } from '@specBuilder/specUtils';
+import { extractValues, isVegaData, usePreviousChartData } from '@specBuilder/specUtils';
 import { Config, Padding, Renderers, Spec, View } from 'vega';
 import embed from 'vega-embed';
 import { Options as TooltipOptions } from 'vega-tooltip';
@@ -70,7 +70,9 @@ export const VegaChart: FC<VegaChartProps> = ({
 		return { [TABLE]: clonedData };
 	}, [data]);
 
-	useDebugSpec(debug, spec, chartData, width, height, config);
+	const previousChartData = usePreviousChartData({ [PREVIOUS_TABLE]: chartData.table });
+
+	useDebugSpec(debug, spec, { ...previousChartData, ...chartData }, width, height, config);
 
 	useEffect(() => {
 		if (width && height && containerRef.current) {
@@ -78,6 +80,10 @@ export const VegaChart: FC<VegaChartProps> = ({
 			const tableData = specCopy.data?.find((d) => d.name === TABLE);
 			if (tableData && 'values' in tableData) {
 				tableData.values = chartData.table;
+			}
+			const previousTableData = specCopy.data?.find((d) => d.name === PREVIOUS_TABLE);
+			if (previousTableData && 'values' in previousTableData) {
+				previousTableData.values = previousChartData ? previousChartData.previousTable : [];
 			}
 			if (signals) {
 				specCopy.signals = specCopy.signals?.map((signal) => {
@@ -120,6 +126,7 @@ export const VegaChart: FC<VegaChartProps> = ({
 		};
 	}, [
 		chartData.table,
+		previousChartData,
 		config,
 		data,
 		height,

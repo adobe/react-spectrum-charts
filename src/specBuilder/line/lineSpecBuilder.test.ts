@@ -28,6 +28,7 @@ import {
 	HIGHLIGHTED_SERIES,
 	LINEAR_PADDING,
 	MARK_ID,
+	PREVIOUS_TABLE,
 	SERIES_ID,
 	TABLE,
 	TRENDLINE_VALUE,
@@ -91,6 +92,10 @@ const defaultSpec = initializeSpec({
 		{
 			name: FILTERED_TABLE,
 			source: TABLE,
+		},
+		{
+			name: PREVIOUS_TABLE,
+			values: [],
 		},
 	],
 	marks: [
@@ -385,7 +390,7 @@ describe('lineSpecBuilder', () => {
 				addData(baseData, {
 					...defaultLineProps,
 					children: [createElement(Trendline, { method: 'average' })],
-				})[2].transform
+				})[3].transform
 			).toStrictEqual([
 				{
 					as: [TRENDLINE_VALUE, `${DEFAULT_TIME_DIMENSION}Min`, `${DEFAULT_TIME_DIMENSION}Max`],
