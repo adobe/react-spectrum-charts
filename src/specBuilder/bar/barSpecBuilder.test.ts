@@ -22,6 +22,7 @@ import {
 	DEFAULT_SECONDARY_COLOR,
 	FILTERED_TABLE,
 	MARK_ID,
+	PREVIOUS_TABLE,
 	STACK_ID,
 	TABLE,
 } from '@constants';
@@ -194,6 +195,10 @@ const defaultSpec: Spec = {
 			name: FILTERED_TABLE,
 			source: TABLE,
 			transform: defaultStackedTransforms,
+		},
+		{
+			name: PREVIOUS_TABLE,
+			values: [],
 		},
 		defaultStacksData,
 	],

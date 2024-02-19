@@ -21,6 +21,7 @@ import {
 	DEFAULT_TRANSFORMED_TIME_DIMENSION,
 	FILTERED_TABLE,
 	MARK_ID,
+	PREVIOUS_TABLE,
 	SERIES_ID,
 	TABLE,
 } from '@constants';
@@ -73,6 +74,10 @@ const defaultSpec = initializeSpec({
 					type: 'stack',
 				},
 			],
+		},
+		{
+			name: PREVIOUS_TABLE,
+			values: [],
 		},
 	],
 	marks: [
