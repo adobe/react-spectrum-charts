@@ -162,7 +162,7 @@ export interface AreaProps extends MarkProps {
 export interface DonutProps extends MarkProps {
 	/** Text label for the metric total */
 	metricLabel?: string;
-	/** the datum property for segments of the data */
+	/** The datum property for segments of the data */
 	segment?: string;
 	/** start angle of the donut in radians (0 is top dead center, and default) */
 	startAngle?: number;
