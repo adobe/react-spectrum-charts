@@ -13,8 +13,15 @@
 import { FacetType, SecondaryFacetType } from 'types';
 import { Scale, ScaleMultiFieldsRef } from 'vega';
 
+import {
+	COLOR_SCALE,
+	LINEAR_COLOR_SCALE,
+	LINE_TYPE_SCALE,
+	OPACITY_SCALE,
+	SYMBOL_SHAPE_SCALE,
+	SYMBOL_SIZE_SCALE,
+} from '@constants';
 import { Facet } from './legendUtils';
-import { COLOR_SCALE, LINE_TYPE_SCALE, OPACITY_SCALE, SYMBOL_SHAPE_SCALE, SYMBOL_SIZE_SCALE } from '@constants';
 
 /**
  * These are all the scale names that are used for facets
@@ -22,6 +29,7 @@ import { COLOR_SCALE, LINE_TYPE_SCALE, OPACITY_SCALE, SYMBOL_SHAPE_SCALE, SYMBOL
 const facetScaleNames: (FacetType | SecondaryFacetType)[] = [
 	COLOR_SCALE,
 	LINE_TYPE_SCALE,
+	LINEAR_COLOR_SCALE,
 	OPACITY_SCALE,
 	'secondaryColor',
 	'secondaryLineType',

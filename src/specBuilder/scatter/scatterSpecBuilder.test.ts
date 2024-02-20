@@ -15,6 +15,7 @@ import { Trendline } from '@components/Trendline';
 import {
 	COLOR_SCALE,
 	DEFAULT_COLOR,
+	LINEAR_COLOR_SCALE,
 	LINE_TYPE_SCALE,
 	LINE_WIDTH_SCALE,
 	OPACITY_SCALE,
@@ -22,10 +23,10 @@ import {
 } from '@constants';
 import { initializeSpec } from '@specBuilder/specUtils';
 
+import { ChartPopover } from '@components/ChartPopover';
+import { ChartTooltip } from '@components/ChartTooltip';
 import { addData, addSignals, setScales } from './scatterSpecBuilder';
 import { defaultScatterProps } from './scatterTestUtils';
-import { ChartTooltip } from '@components/ChartTooltip';
-import { ChartPopover } from '@components/ChartPopover';
 
 describe('addData()', () => {
 	test('should add time transform is dimensionScaleType === "time"', () => {
@@ -92,6 +93,11 @@ describe('setScales()', () => {
 		const scales = setScales([], { ...defaultScatterProps, color: DEFAULT_COLOR });
 		expect(scales).toHaveLength(3);
 		expect(scales[2].name).toBe(COLOR_SCALE);
+	});
+	test('should add color to linear color scale if the colorScaleType is linear', () => {
+		const scales = setScales([], { ...defaultScatterProps, color: DEFAULT_COLOR, colorScaleType: 'linear' });
+		expect(scales).toHaveLength(3);
+		expect(scales[2].name).toBe(LINEAR_COLOR_SCALE);
 	});
 	test('should add the lineType scale if lineType is a reference to a key', () => {
 		const scales = setScales([], { ...defaultScatterProps, lineType: DEFAULT_COLOR });

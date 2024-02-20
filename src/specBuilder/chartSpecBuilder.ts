@@ -11,11 +11,11 @@
  */
 import {
 	BACKGROUND_COLOR,
-	COLOR_SCALE,
 	DEFAULT_BACKGROUND_COLOR,
 	DEFAULT_COLOR_SCHEME,
 	DEFAULT_LINE_TYPES,
 	FILTERED_TABLE,
+	LINEAR_COLOR_SCALE,
 	LINE_TYPE_SCALE,
 	LINE_WIDTH_SCALE,
 	OPACITY_SCALE,
@@ -60,6 +60,7 @@ import { addDonut } from './donut/donutSpecBuilder';
 import { setHoverOpacityForMarks } from './legend/legendHighlightUtils';
 import { addLegend } from './legend/legendSpecBuilder';
 import { addLine } from './line/lineSpecBuilder';
+import { getOrdinalScale } from './scale/scaleSpecBuilder';
 import { addScatter } from './scatter/scatterSpecBuilder';
 import { getGenericSignal, hasSignalByName } from './signal/signalSpecBuilder';
 import {
@@ -252,6 +253,7 @@ const getDefaultScales = (
 	symbolSizes: [SymbolSize, SymbolSize],
 ): Scale[] => [
 	getColorScale(colors, colorScheme),
+	getLinearColorScale(colors, colorScheme),
 	getLineTypeScale(lineTypes),
 	getLineWidthScale(lineWidths),
 	getOpacityScale(opacities),
@@ -262,9 +264,15 @@ const getDefaultScales = (
 export const getColorScale = (colors: ChartColors, colorScheme: ColorScheme): OrdinalScale => {
 	// if a two dimensional scale was provided, then just grab the first color in each scale and set that as the scale range
 	const range = isColors(colors) ? getColors(colors, colorScheme) : colors.map((c) => getColors(c, colorScheme)[0]);
+	return getOrdinalScale('color', range);
+};
+
+export const getLinearColorScale = (colors: ChartColors, colorScheme: ColorScheme): LinearScale => {
+	// if a two dimensional scale was provided, then just grab the first color in each scale and set that as the scale range
+	const range = isColors(colors) ? getColors(colors, colorScheme) : colors.map((c) => getColors(c, colorScheme)[0]);
 	return {
-		name: COLOR_SCALE,
-		type: 'ordinal',
+		name: LINEAR_COLOR_SCALE,
+		type: 'linear',
 		range,
 		domain: { data: TABLE, fields: [] },
 	};
@@ -275,24 +283,15 @@ export const getLineTypeScale = (lineTypes: LineTypes): OrdinalScale => {
 	const range = isLineTypeArray(lineTypes)
 		? getStrokeDashesFromLineTypes(lineTypes)
 		: lineTypes.map((lineTypesArray) => getStrokeDashFromLineType(lineTypesArray[0]));
-	return {
-		name: LINE_TYPE_SCALE,
-		type: 'ordinal',
-		range,
-		domain: { data: TABLE, fields: [] },
-	};
+	return getOrdinalScale(LINE_TYPE_SCALE, range);
 };
+
 export const getSymbolShapeScale = (symbolShapes: SymbolShapes): OrdinalScale => {
 	// if a two dimensional scale was provided, then just grab the first color in each scale and set that as the scale range
 	const range = isSymbolShapeArray(symbolShapes)
 		? getPathsFromSymbolShapes(symbolShapes)
 		: symbolShapes.map((symbolShape) => getPathFromSymbolShape(symbolShape[0]));
-	return {
-		name: SYMBOL_SHAPE_SCALE,
-		type: 'ordinal',
-		range,
-		domain: { data: TABLE, fields: [] },
-	};
+	return getOrdinalScale(SYMBOL_SHAPE_SCALE, range);
 };
 
 /**
@@ -308,22 +307,15 @@ export const getSymbolSizeScale = (symbolSizes: [SymbolSize, SymbolSize]): Linea
 	domain: { data: TABLE, fields: [] },
 });
 
-export const getLineWidthScale = (lineWidths: LineWidth[]): OrdinalScale => ({
-	name: LINE_WIDTH_SCALE,
-	type: 'ordinal',
-	range: lineWidths.map((lineWidth) => getLineWidthPixelsFromLineWidth(lineWidth)),
-	domain: { data: TABLE, fields: [] },
-});
+export const getLineWidthScale = (lineWidths: LineWidth[]): OrdinalScale => {
+	const range = lineWidths.map((lineWidth) => getLineWidthPixelsFromLineWidth(lineWidth));
+	return getOrdinalScale(LINE_WIDTH_SCALE, range);
+};
 
 export const getOpacityScale = (opacities?: Opacities): OrdinalScale | PointScale => {
 	if (opacities?.length) {
 		const range = isNumberArray(opacities) ? opacities : opacities.map((opacityArray) => opacityArray[0]);
-		return {
-			name: OPACITY_SCALE,
-			type: 'ordinal',
-			range: range,
-			domain: { data: TABLE, fields: [] },
-		};
+		return getOrdinalScale(OPACITY_SCALE, range);
 	}
 	return {
 		name: OPACITY_SCALE,
@@ -337,7 +329,7 @@ export const getOpacityScale = (opacities?: Opacities): OrdinalScale | PointScal
 
 function getColors(colors: Colors, colorScheme: ColorScheme): string[] {
 	if (Array.isArray(colors)) {
-		return colors.map((color) => getColorValue(color, colorScheme));
+		return colors.map((color: string) => getColorValue(color, colorScheme));
 	}
 	return colorSchemes[colors];
 }

@@ -16,6 +16,7 @@ import useChartProps from '@hooks/useChartProps';
 import {
 	Axis,
 	Chart,
+	ChartColors,
 	ChartPopover,
 	ChartProps,
 	ChartTooltip,
@@ -60,7 +61,7 @@ export default {
 		},
 		color: {
 			control: 'select',
-			options: marioDataKeys.filter((key) => key !== 'weight'),
+			options: marioDataKeys,
 		},
 		size: {
 			control: 'select',
@@ -103,7 +104,8 @@ const getLegendProps = (args: ScatterProps): LegendProps => {
 };
 
 const ScatterStory: StoryFn<typeof Scatter> = (args): ReactElement => {
-	const chartProps = useChartProps(defaultChartProps);
+	const colors: ChartColors = args.colorScaleType === 'linear' ? 'sequentialViridis5' : 'categorical16';
+	const chartProps = useChartProps({ ...defaultChartProps, colors });
 	const legendProps = getLegendProps(args);
 
 	return (
@@ -142,6 +144,14 @@ Basic.args = {
 const Color = bindWithProps(ScatterStory);
 Color.args = {
 	color: 'weightClass',
+	dimension: 'speedNormal',
+	metric: 'handlingNormal',
+};
+
+const ColorScaleType = bindWithProps(ScatterStory);
+ColorScaleType.args = {
+	color: 'weight',
+	colorScaleType: 'linear',
 	dimension: 'speedNormal',
 	metric: 'handlingNormal',
 };
@@ -185,4 +195,4 @@ Tooltip.args = {
 	children: [createElement(ChartTooltip, {}, dialog)],
 };
 
-export { Basic, Color, LineType, Opacity, Popover, Size, Tooltip };
+export { Basic, Color, ColorScaleType, LineType, Opacity, Popover, Size, Tooltip };

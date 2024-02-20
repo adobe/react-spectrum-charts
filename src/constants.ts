@@ -49,6 +49,7 @@ export const STACK_ID = 'rscStackId';
 // scale names
 export const COLOR_SCALE = 'color';
 export const LINE_TYPE_SCALE = 'lineType';
+export const LINEAR_COLOR_SCALE = 'linearColor';
 export const LINE_WIDTH_SCALE = 'lineWidth';
 export const OPACITY_SCALE = 'opacity';
 export const SYMBOL_SHAPE_SCALE = 'symbolShape';

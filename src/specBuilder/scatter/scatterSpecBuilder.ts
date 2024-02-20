@@ -18,6 +18,7 @@ import {
 	FILTERED_TABLE,
 	LINE_TYPE_SCALE,
 	LINE_WIDTH_SCALE,
+	LINEAR_COLOR_SCALE,
 	MARK_ID,
 	OPACITY_SCALE,
 	SYMBOL_SIZE_SCALE,
@@ -142,13 +143,18 @@ export const addSignals = produce<Signal[], [ScatterSpecProps]>((signals, props)
  * @param scatterProps ScatterSpecProps
  */
 export const setScales = produce<Scale[], [ScatterSpecProps]>((scales, props) => {
-	const { color, dimension, dimensionScaleType, lineType, lineWidth, metric, opacity, size } = props;
+	const { color, colorScaleType, dimension, dimensionScaleType, lineType, lineWidth, metric, opacity, size } = props;
 	// add dimension scale
 	addContinuousDimensionScale(scales, { scaleType: dimensionScaleType, dimension });
 	// add metric scale
 	addMetricScale(scales, [metric]);
-	// add color to the color domain
-	addFieldToFacetScaleDomain(scales, COLOR_SCALE, color);
+	if (colorScaleType === 'linear') {
+		// add color to the color domain
+		addFieldToFacetScaleDomain(scales, LINEAR_COLOR_SCALE, color);
+	} else {
+		// add color to the color domain
+		addFieldToFacetScaleDomain(scales, COLOR_SCALE, color);
+	}
 	// add lineType to the lineType domain
 	addFieldToFacetScaleDomain(scales, LINE_TYPE_SCALE, lineType);
 	// add lineWidth to the lineWidth domain

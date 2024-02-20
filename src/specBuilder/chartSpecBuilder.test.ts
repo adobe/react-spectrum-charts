@@ -33,6 +33,7 @@ import { ROUNDED_SQUARE_PATH } from 'svgPaths';
 import { BarProps, LegendProps } from 'types';
 import { Data } from 'vega';
 
+import colorSchemes from '@themes/colorSchemes';
 import {
 	addData,
 	addHighlight,
@@ -41,6 +42,7 @@ import {
 	getDefaultSignals,
 	getLineTypeScale,
 	getLineWidthScale,
+	getLinearColorScale,
 	getOpacityScale,
 	getSymbolShapeScale,
 	getSymbolSizeScale,
@@ -50,6 +52,7 @@ import {
 } from './chartSpecBuilder';
 import { setHoverOpacityForMarks } from './legend/legendHighlightUtils';
 import { baseData } from './specUtils';
+import { spectrumColors } from '@themes';
 
 const defaultData: Data[] = [{ name: TABLE, values: [], transform: [{ type: 'identifier', as: MARK_ID }] }];
 
@@ -75,7 +78,7 @@ afterEach(() => {
 });
 
 describe('Chart spec builder', () => {
-	describe('setColorScale()', () => {
+	describe('getColorScale()', () => {
 		test('default color scale used', () => {
 			expect(getColorScale('categorical12', 'light')).toStrictEqual({
 				domain: { data: 'table', fields: [] },
@@ -104,6 +107,19 @@ describe('Chart spec builder', () => {
 				range: ['red', 'blue'],
 				domain: { data: 'table', fields: [] },
 			});
+		});
+	});
+
+	describe('getLinearColorScale()', () => {
+		test('should return color scale from named scale', () => {
+			expect(getLinearColorScale('categorical12', 'light')).toHaveProperty('range', colorSchemes.categorical12);
+		});
+		test('should transform custom color names', () => {
+			const colors = spectrumColors.light;
+			expect(getLinearColorScale(['blue-200', 'rgb(20, 30, 40)', 'static-black'], 'light')).toHaveProperty(
+				'range',
+				[colors['blue-200'], 'rgb(20, 30, 40)', colors['static-black']],
+			);
 		});
 	});
 

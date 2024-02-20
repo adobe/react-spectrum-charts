@@ -46,8 +46,19 @@ export const addScatterMarks = produce<Mark[], [ScatterSpecProps]>((marks, props
  * @returns SymbolMark
  */
 export const getScatterMark = (props: ScatterSpecProps): SymbolMark => {
-	const { color, colorScheme, dimension, dimensionScaleType, lineType, lineWidth, metric, name, opacity, size } =
-		props;
+	const {
+		color,
+		colorScaleType,
+		colorScheme,
+		dimension,
+		dimensionScaleType,
+		lineType,
+		lineWidth,
+		metric,
+		name,
+		opacity,
+		size,
+	} = props;
 	return {
 		name,
 		type: 'symbol',
@@ -62,13 +73,13 @@ export const getScatterMark = (props: ScatterSpecProps): SymbolMark => {
 				 * in dark mode, the points are lighter when they overlap (screen)
 				 */
 				blend: { value: colorScheme === 'light' ? 'multiply' : 'screen' },
-				fill: getColorProductionRule(color, colorScheme),
+				fill: getColorProductionRule(color, colorScheme, colorScaleType),
 				fillOpacity: getOpacityProductionRule(opacity),
 				shape: { value: 'circle' },
 				size: getSymbolSizeProductionRule(size),
 				strokeDash: getStrokeDashProductionRule(lineType),
 				strokeWidth: getLineWidthProductionRule(lineWidth),
-				stroke: getColorProductionRule(color, colorScheme),
+				stroke: getColorProductionRule(color, colorScheme, colorScaleType),
 			},
 			update: {
 				opacity: getOpacity(props),

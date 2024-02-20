@@ -12,6 +12,7 @@
 import {
 	COLOR_SCALE,
 	DEFAULT_COLOR_SCHEME,
+	LINEAR_COLOR_SCALE,
 	LINE_TYPE_SCALE,
 	OPACITY_SCALE,
 	SYMBOL_SHAPE_SCALE,
@@ -205,13 +206,20 @@ const getCategoricalLegend = (facets: Facet[], props: LegendSpecProps): Legend =
  * @param props
  * @returns
  */
-const getContinuousLegend = (_facet: Facet, props: LegendSpecProps): Legend => {
+export const getContinuousLegend = (facet: Facet, props: LegendSpecProps): Legend => {
 	const { symbolShape } = props;
 	// add a switch statement here for the different types of continuous legends
+	if (facet.facetType === SYMBOL_SIZE_SCALE) {
+		return {
+			size: SYMBOL_SIZE_SCALE,
+			...getLegendLayout(props),
+			symbolType: getSymbolType(symbolShape),
+		};
+	}
 	return {
-		size: SYMBOL_SIZE_SCALE,
+		fill: LINEAR_COLOR_SCALE,
+		gradientThickness: 10,
 		...getLegendLayout(props),
-		symbolType: getSymbolType(symbolShape),
 	};
 };
 

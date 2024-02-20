@@ -21,6 +21,7 @@ import {
 	DEFAULT_OPACITY_RULE,
 	DEFAULT_TRANSFORMED_TIME_DIMENSION,
 	HIGHLIGHT_CONTRAST_RATIO,
+	LINEAR_COLOR_SCALE,
 	LINE_TYPE_SCALE,
 	LINE_WIDTH_SCALE,
 	OPACITY_SCALE,
@@ -118,14 +119,19 @@ export const hasTooltip = (children: ReactElement[]): boolean => children.some((
 export const childHasTooltip = (children: ReactElement[]): boolean =>
 	children.some((child) => hasTooltip(child.props.children));
 
-export const getColorProductionRule = (color: ColorFacet | DualFacet, colorScheme: ColorScheme): ColorValueRef => {
+export const getColorProductionRule = (
+	color: ColorFacet | DualFacet,
+	colorScheme: ColorScheme,
+	colorScaleType: 'linear' | 'ordinal' = 'ordinal',
+): ColorValueRef => {
+	const colorScaleName = colorScaleType === 'linear' ? LINEAR_COLOR_SCALE : COLOR_SCALE;
 	if (Array.isArray(color)) {
 		return {
 			signal: `scale('colors', datum.${color[0]})[indexof(domain('secondaryColor'), datum.${color[1]})% length(scale('colors', datum.${color[0]}))]`,
 		};
 	}
 	if (typeof color === 'string') {
-		return { scale: COLOR_SCALE, field: color };
+		return { scale: colorScaleName, field: color };
 	}
 	return { value: getColorValue(color.value, colorScheme) };
 };
