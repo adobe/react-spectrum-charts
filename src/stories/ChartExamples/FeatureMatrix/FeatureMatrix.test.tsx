@@ -10,7 +10,14 @@
  * governing permissions and limitations under the License.
  */
 
-import { findAllMarksByGroupName, findChart, findMarksByGroupName, render } from '@test-utils';
+import {
+	allElementsHaveAttributeValue,
+	findAllMarksByGroupName,
+	findChart,
+	findMarksByGroupName,
+	hoverNthElement,
+	render,
+} from '@test-utils';
 import { spectrumColors } from '@themes';
 
 import { FeatureMatrix, MultipleSegmentFeatureMatrix } from './FeatureMatrix.story';
@@ -43,7 +50,7 @@ describe('FeatureMatrix', () => {
 });
 
 describe('MultipleSegmentFeatureMatrix', () => {
-	test('Single series should render correctly', async () => {
+	test('multiple series should render correctly', async () => {
 		render(<MultipleSegmentFeatureMatrix {...MultipleSegmentFeatureMatrix.args} />);
 
 		const chart = await findChart();
@@ -60,6 +67,15 @@ describe('MultipleSegmentFeatureMatrix', () => {
 
 		expect(points[6]).toHaveAttribute('fill', colors['categorical-200']);
 		expect(points[12]).toHaveAttribute('fill', colors['categorical-300']);
+	});
+	test('should display trendline on hover', async () => {
+		render(<MultipleSegmentFeatureMatrix {...MultipleSegmentFeatureMatrix.args} />);
+
+		const chart = await findChart();
+		expect(chart).toBeInTheDocument();
+
+		const hoverAreas = await findAllMarksByGroupName(chart, 'scatter0_voronoi');
+		expect(hoverAreas).toHaveLength(18);
 
 		// trendline styling
 		const trendlines = await findAllMarksByGroupName(chart, 'scatter0Trendline0', 'line');
@@ -72,5 +88,24 @@ describe('MultipleSegmentFeatureMatrix', () => {
 
 		expect(trendlines[1]).toHaveAttribute('stroke', colors['categorical-200']);
 		expect(trendlines[2]).toHaveAttribute('stroke', colors['categorical-300']);
+		expect(allElementsHaveAttributeValue(trendlines, 'opacity', 0)).toBeTruthy();
+
+		// first trendline should be visible on hover
+		await hoverNthElement(hoverAreas, 0);
+		expect(trendlines[0]).toHaveAttribute('opacity', '1');
+		expect(trendlines[1]).toHaveAttribute('opacity', '0');
+		expect(trendlines[2]).toHaveAttribute('opacity', '0');
+
+		// second trendline should be visible on hover
+		await hoverNthElement(hoverAreas, 6);
+		expect(trendlines[0]).toHaveAttribute('opacity', '0');
+		expect(trendlines[1]).toHaveAttribute('opacity', '1');
+		expect(trendlines[2]).toHaveAttribute('opacity', '0');
+
+		// third trendline should be visible on hover
+		await hoverNthElement(hoverAreas, 12);
+		expect(trendlines[0]).toHaveAttribute('opacity', '0');
+		expect(trendlines[1]).toHaveAttribute('opacity', '0');
+		expect(trendlines[2]).toHaveAttribute('opacity', '1');
 	});
 });

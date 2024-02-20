@@ -49,11 +49,17 @@ const MultipleSegmentFeatureMatrixStory: StoryFn<typeof Chart> = (args): ReactEl
 	const chartProps = useChartProps(args);
 
 	return (
-		<Chart {...chartProps}>
+		<Chart {...chartProps} debug>
 			<Axis position="bottom" ticks grid title="Percentage of daily users (DAU)" labelFormat="percentage" />
 			<Axis position="left" ticks grid title="Average number of times per day" />
 			<Scatter dimension="dauPercent" metric="countAvg" color="segment">
-				<Trendline method="median" lineWidth="XS" lineType="solid" dimensionExtent={['domain', 'domain']} />
+				<Trendline
+					method="median"
+					lineWidth="XS"
+					lineType="solid"
+					dimensionExtent={['domain', 'domain']}
+					displayOnHover
+				/>
 			</Scatter>
 			<Legend position="bottom" highlight />
 		</Chart>
