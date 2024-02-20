@@ -79,15 +79,14 @@ const BigNumber: FC<BigNumberProps> = ({
 		generalJustify = 'start';
 	}
 
-	const { areas, columns, iconAlign, labelAlign, iconJustify, iconSize, displayCombo } = getGridProperties(
-		icon,
+	const iconSize = getIconSizeByOrientation(orientation, chartWidth, icon, lineProps, height);
+	const { areas, columns, iconAlign, labelAlign, iconJustify, displayCombo } = getGridProperties(
 		orientation,
-		height,
-		chartWidth,
-		lineProps
+		lineProps,
+		icon
 	);
 	return (
-		<div tabIndex={0} className="big-number-container">
+		<div className="big-number-container">
 			<Grid
 				width={chartWidth}
 				height={height}
@@ -138,120 +137,131 @@ const BigNumber: FC<BigNumberProps> = ({
 
 BigNumber.displayName = 'BigNumber';
 
-function getGridProperties(
-	icon: IconElement | undefined,
-	orientation: Orientation,
-	height: number | undefined,
-	chartWidth: number,
-	lineProps?: LineProps
-) {
-	let labelAlign: 'start' | 'center' = 'start';
-	let iconAlign: 'start';
-	let iconJustify: 'end';
-	const iconSize = getIconSizeByOrientation(
-		orientation,
-		chartWidth,
-		icon !== undefined,
-		lineProps !== undefined,
-		height
-	);
+interface BigNumberGridProperties {
+	areas: string[];
+	columns: string[];
+	iconAlign?: 'start';
+	labelAlign?: 'start' | 'center';
+	iconJustify?: 'end';
+	displayCombo?: boolean;
+}
 
+type BigNumberIconSize = 'XXS' | 'XS' | 'S' | 'M' | 'L' | 'XL' | 'XXL';
+
+function getGridProperties(
+	orientation: Orientation,
+	lineProps?: LineProps,
+	icon?: IconElement
+): BigNumberGridProperties {
 	// First block (line elements)
 	if (lineProps) {
 		// Then get the icon conditions
 		if (icon) {
-			if (orientation === 'vertical') {
-				labelAlign = 'center';
-				iconJustify = 'end';
-				return {
-					areas: ['sparkline', 'combo', 'data'],
-					columns: ['4fr'],
-					displayCombo: true,
-					labelAlign,
-					iconJustify,
-					iconSize,
-				};
-			}
-			if (orientation === 'horizontal') {
-				iconJustify = 'end';
-				iconAlign = 'start';
-				labelAlign = 'center';
-				return {
-					areas: ['sparkline combo'],
-					columns: ['1fr'],
-					iconJustify,
-					iconAlign,
-					displayCombo: true,
-					iconSize,
-					labelAlign,
-				};
-			}
+			return getIconAndLineGridProperties(orientation);
 		} else {
-			if (orientation === 'vertical') {
-				return { areas: ['sparkline', 'data', 'label'], columns: ['1fr'], labelAlign };
-			}
-			if (orientation === 'horizontal') {
-				return { areas: ['sparkline data', 'sparkline label'], columns: ['1fr 1fr'], labelAlign };
-			}
+			return getLineGridProperties(orientation);
 		}
 	}
 	// Second block (no line elements)
 	if (icon) {
-		if (orientation === 'vertical') {
-			return {
-				areas: ['icon', 'data', 'label'],
-				columns: ['1fr'],
-				iconSize,
-				labelAlign,
-			};
-		}
-		if (orientation === 'horizontal') {
-			iconJustify = 'end';
-			return {
-				areas: ['icon data', 'icon label'],
-				columns: ['1fr', '2fr'],
-				iconSize,
-				iconJustify,
-				labelAlign,
-			};
-		}
+		return getIconGridProperties(orientation);
 	}
 	// Third block (default)
+	return getDefaultGridProperties();
+}
+
+function getIconAndLineGridProperties(orientation: Orientation): BigNumberGridProperties {
+	const labelAlign = 'center';
+	const iconJustify = 'end';
+	if (orientation === 'vertical') {
+		return {
+			areas: ['sparkline', 'combo', 'data'],
+			columns: ['4fr'],
+			displayCombo: true,
+			labelAlign,
+			iconJustify,
+		};
+	} else {
+		const iconAlign = 'start';
+		return {
+			areas: ['sparkline combo'],
+			columns: ['1fr'],
+			iconJustify,
+			iconAlign,
+			displayCombo: true,
+			labelAlign,
+		};
+	}
+}
+
+function getLineGridProperties(orientation: Orientation): BigNumberGridProperties {
+	const labelAlign = 'start';
+	if (orientation === 'vertical') {
+		return { areas: ['sparkline', 'data', 'label'], columns: ['1fr'], labelAlign };
+	} else {
+		return { areas: ['sparkline data', 'sparkline label'], columns: ['1fr 1fr'], labelAlign };
+	}
+}
+
+function getIconGridProperties(orientation: Orientation): BigNumberGridProperties {
+	const labelAlign = 'start';
+	if (orientation === 'vertical') {
+		return {
+			areas: ['icon', 'data', 'label'],
+			columns: ['1fr'],
+			labelAlign,
+		};
+	} else {
+		const iconJustify = 'end';
+		return {
+			areas: ['icon data', 'icon label'],
+			columns: ['1fr', '2fr'],
+			iconJustify,
+			labelAlign,
+		};
+	}
+}
+
+function getDefaultGridProperties(): BigNumberGridProperties {
+	const labelAlign = 'start';
 	return { areas: ['data', 'label'], columns: ['1fr'], labelAlign };
 }
 
 function getIconSizeByOrientation(
 	orientation: Orientation,
 	chartWidth: number,
-	hasIcon: boolean,
-	hasLines: boolean,
+	icon?: IconElement,
+	lineProps?: LineProps,
 	height?: number
-): 'XXS' | 'XS' | 'S' | 'M' | 'L' | 'XL' | 'XXL' {
-	if (hasIcon) {
-		if (hasLines) {
-			if (orientation == 'vertical') {
-				return determineIconSize(height ? height / 3 : chartWidth / 2);
-			}
-			if (orientation == 'horizontal') {
-				return determineIconSize(chartWidth / 6);
-			}
-		}
+): BigNumberIconSize {
+	if (icon) {
+		return 'L';
+	}
 
+	if (lineProps) {
 		if (orientation == 'vertical') {
-			return determineIconSize(height ? height / 1.75 : chartWidth);
-		} else {
-			return determineIconSize(chartWidth / 3.5);
+			const availableWidth = height ? height / 3 : chartWidth / 2;
+			return determineIconSize(availableWidth);
+		}
+		if (orientation == 'horizontal') {
+			return determineIconSize(chartWidth / 6);
 		}
 	}
-	return 'L';
+
+	if (orientation == 'vertical') {
+		const availableWidth = height ? height / 1.75 : chartWidth;
+		return determineIconSize(availableWidth);
+	} else {
+		return determineIconSize(chartWidth / 3.5);
+	}
 }
 
-function determineIconSize(widthAvailable: number) {
-	if (widthAvailable <= 21) return 'XS';
-	else if (widthAvailable <= 35) return 'S';
-	else if (widthAvailable <= 45) return 'M';
-	else if (widthAvailable <= 60) return 'L';
-	else if (widthAvailable <= 75) return 'XL';
+function determineIconSize(availableWidth: number) {
+	if (availableWidth <= 21) return 'XS';
+	else if (availableWidth <= 35) return 'S';
+	else if (availableWidth <= 45) return 'M';
+	else if (availableWidth <= 60) return 'L';
+	else if (availableWidth <= 75) return 'XL';
 	return 'XXL';
 }
 
