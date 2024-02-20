@@ -266,6 +266,7 @@ export const addAreaMarks = produce<Mark[], [AreaSpecProps]>((marks, props) => {
 		...getSelectedAreaMarks({ children, name, scaleType, color, dimension, metricEnd, metricStart }),
 		...getHoverMarks(props)
 	);
+	// TODO: ADD ANIMATION MARK CHANGE - (choose scale/animation property on data if not given one)
 	return marks;
 });
 
