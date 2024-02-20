@@ -12,7 +12,7 @@
 
 import { ChartTooltip } from '@components/ChartTooltip';
 import { Trendline } from '@components/Trendline';
-import { DEFAULT_TIME_DIMENSION } from '@constants';
+import { COLOR_SCALE, DEFAULT_TIME_DIMENSION } from '@constants';
 import { spectrumColors } from '@themes';
 import { createElement } from 'react';
 import { Facet, From, GroupMark, Mark } from 'vega';
@@ -94,7 +94,7 @@ describe('getTrendlineMarks()', () => {
 describe('getTrendlineRuleMark()', () => {
 	test('should use series color if static color is not provided', () => {
 		const mark = getTrendlineRuleMark(defaultLineProps, { ...defaultTrendlineProps, method: 'median' });
-		expect(mark.encode?.enter?.stroke).toEqual({ field: 'series', scale: 'color' });
+		expect(mark.encode?.enter?.stroke).toEqual({ field: 'series', scale: COLOR_SCALE });
 	});
 	test('should use static color if provided', () => {
 		const mark = getTrendlineRuleMark(defaultLineProps, {
@@ -158,7 +158,7 @@ describe('getTrendlineLineMark()', () => {
 	});
 	test('should use series color if static color is not provided', () => {
 		const mark = getTrendlineLineMark(defaultLineProps, defaultTrendlineProps);
-		expect(mark.encode?.enter?.stroke).toEqual({ field: 'series', scale: 'color' });
+		expect(mark.encode?.enter?.stroke).toEqual({ field: 'series', scale: COLOR_SCALE });
 	});
 	test('should use static color if provided', () => {
 		const mark = getTrendlineLineMark(defaultLineProps, { ...defaultTrendlineProps, color: 'gray-500' });

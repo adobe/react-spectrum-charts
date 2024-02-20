@@ -11,11 +11,17 @@
  */
 import {
 	BACKGROUND_COLOR,
+	COLOR_SCALE,
 	DEFAULT_BACKGROUND_COLOR,
 	DEFAULT_COLOR_SCHEME,
 	DEFAULT_LINE_TYPES,
 	FILTERED_TABLE,
+	LINE_TYPE_SCALE,
+	LINE_WIDTH_SCALE,
+	OPACITY_SCALE,
 	SERIES_ID,
+	SYMBOL_SHAPE_SCALE,
+	SYMBOL_SIZE_SCALE,
 	TABLE,
 } from '@constants';
 import { Area, Axis, Bar, Legend, Line, Scatter, Title } from '@rsc';
@@ -196,7 +202,7 @@ export const getDefaultSignals = (
 	colorScheme: ColorScheme,
 	lineTypes: LineTypes,
 	opacities: Opacities | undefined,
-	hiddenSeries?: string[]
+	hiddenSeries?: string[],
 ): Signal[] => {
 	// if the background color is transparent, then we want to set the signal background color to gray-50
 	// if the signal background color were transparent then backgroundMarks and annotation fill would also be transparent
@@ -243,7 +249,7 @@ const getDefaultScales = (
 	lineWidths: LineWidth[],
 	opacities: Opacities | undefined,
 	symbolShapes: SymbolShapes,
-	symbolSizes: [SymbolSize, SymbolSize]
+	symbolSizes: [SymbolSize, SymbolSize],
 ): Scale[] => [
 	getColorScale(colors, colorScheme),
 	getLineTypeScale(lineTypes),
@@ -257,7 +263,7 @@ export const getColorScale = (colors: ChartColors, colorScheme: ColorScheme): Or
 	// if a two dimensional scale was provided, then just grab the first color in each scale and set that as the scale range
 	const range = isColors(colors) ? getColors(colors, colorScheme) : colors.map((c) => getColors(c, colorScheme)[0]);
 	return {
-		name: 'color',
+		name: COLOR_SCALE,
 		type: 'ordinal',
 		range,
 		domain: { data: TABLE, fields: [] },
@@ -270,7 +276,7 @@ export const getLineTypeScale = (lineTypes: LineTypes): OrdinalScale => {
 		? getStrokeDashesFromLineTypes(lineTypes)
 		: lineTypes.map((lineTypesArray) => getStrokeDashFromLineType(lineTypesArray[0]));
 	return {
-		name: 'lineType',
+		name: LINE_TYPE_SCALE,
 		type: 'ordinal',
 		range,
 		domain: { data: TABLE, fields: [] },
@@ -282,7 +288,7 @@ export const getSymbolShapeScale = (symbolShapes: SymbolShapes): OrdinalScale =>
 		? getPathsFromSymbolShapes(symbolShapes)
 		: symbolShapes.map((symbolShape) => getPathFromSymbolShape(symbolShape[0]));
 	return {
-		name: 'symbolShape',
+		name: SYMBOL_SHAPE_SCALE,
 		type: 'ordinal',
 		range,
 		domain: { data: TABLE, fields: [] },
@@ -295,7 +301,7 @@ export const getSymbolShapeScale = (symbolShapes: SymbolShapes): OrdinalScale =>
  * @returns LinearScale
  */
 export const getSymbolSizeScale = (symbolSizes: [SymbolSize, SymbolSize]): LinearScale => ({
-	name: 'symbolSize',
+	name: SYMBOL_SIZE_SCALE,
 	type: 'linear',
 	zero: false,
 	range: symbolSizes.map((symbolSize) => getVegaSymbolSizeFromRscSymbolSize(symbolSize)),
@@ -303,7 +309,7 @@ export const getSymbolSizeScale = (symbolSizes: [SymbolSize, SymbolSize]): Linea
 });
 
 export const getLineWidthScale = (lineWidths: LineWidth[]): OrdinalScale => ({
-	name: 'lineWidth',
+	name: LINE_WIDTH_SCALE,
 	type: 'ordinal',
 	range: lineWidths.map((lineWidth) => getLineWidthPixelsFromLineWidth(lineWidth)),
 	domain: { data: TABLE, fields: [] },
@@ -313,14 +319,14 @@ export const getOpacityScale = (opacities?: Opacities): OrdinalScale | PointScal
 	if (opacities?.length) {
 		const range = isNumberArray(opacities) ? opacities : opacities.map((opacityArray) => opacityArray[0]);
 		return {
-			name: 'opacity',
+			name: OPACITY_SCALE,
 			type: 'ordinal',
 			range: range,
 			domain: { data: TABLE, fields: [] },
 		};
 	}
 	return {
-		name: 'opacity',
+		name: OPACITY_SCALE,
 		type: 'point',
 		range: [1, 0],
 		padding: 1,

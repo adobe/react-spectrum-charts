@@ -13,7 +13,7 @@
 import { createElement } from 'react';
 
 import { ChartPopover } from '@components/ChartPopover';
-import { FILTERED_TABLE, MARK_ID } from '@constants';
+import { COLOR_SCALE, FILTERED_TABLE, MARK_ID } from '@constants';
 import { DonutSpecProps } from 'types';
 
 import { addData } from './donutSpecBuilder';
@@ -141,7 +141,7 @@ describe('addMarks', () => {
 				props.metric,
 				'min(width, height) / 2',
 				props.holeRatio,
-				props.metricLabel
+				props.metricLabel,
 			),
 		];
 		expect(result).toEqual(expectedMarks);
@@ -171,7 +171,7 @@ describe('addMarks', () => {
 				props.metric,
 				'min(width, height) / 2',
 				props.holeRatio,
-				props.metricLabel
+				props.metricLabel,
 			),
 			getDirectLabelMark(props.name, 'min(width, height) / 2', props.metric, props.segment!),
 		];
@@ -195,7 +195,7 @@ describe('addMarks', () => {
 			children: [],
 		};
 		expect(() => addMarks(marks, props)).toThrow(
-			'If a Donut chart hasDirectLabels, a segment property name must be supplied.'
+			'If a Donut chart hasDirectLabels, a segment property name must be supplied.',
 		);
 	});
 });
@@ -398,7 +398,7 @@ describe('donutSpecBuilder', () => {
 					data: 'table',
 					fields: ['testColor'],
 				},
-				name: 'color',
+				name: COLOR_SCALE,
 				type: undefined,
 			},
 		];

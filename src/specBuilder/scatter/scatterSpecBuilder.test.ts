@@ -12,7 +12,14 @@
 import { createElement } from 'react';
 
 import { Trendline } from '@components/Trendline';
-import { DEFAULT_COLOR } from '@constants';
+import {
+	COLOR_SCALE,
+	DEFAULT_COLOR,
+	LINE_TYPE_SCALE,
+	LINE_WIDTH_SCALE,
+	OPACITY_SCALE,
+	SYMBOL_SIZE_SCALE,
+} from '@constants';
 import { initializeSpec } from '@specBuilder/specUtils';
 
 import { addData, addSignals, setScales } from './scatterSpecBuilder';
@@ -84,27 +91,27 @@ describe('setScales()', () => {
 	test('should add the color scale if color is a reference to a key', () => {
 		const scales = setScales([], { ...defaultScatterProps, color: DEFAULT_COLOR });
 		expect(scales).toHaveLength(3);
-		expect(scales[2].name).toBe('color');
+		expect(scales[2].name).toBe(COLOR_SCALE);
 	});
 	test('should add the lineType scale if lineType is a reference to a key', () => {
 		const scales = setScales([], { ...defaultScatterProps, lineType: DEFAULT_COLOR });
 		expect(scales).toHaveLength(3);
-		expect(scales[2].name).toBe('lineType');
+		expect(scales[2].name).toBe(LINE_TYPE_SCALE);
 	});
 	test('should add the lineWidth scale if lineWidth is a reference to a key', () => {
 		const scales = setScales([], { ...defaultScatterProps, lineWidth: DEFAULT_COLOR });
 		expect(scales).toHaveLength(3);
-		expect(scales[2].name).toBe('lineWidth');
+		expect(scales[2].name).toBe(LINE_WIDTH_SCALE);
 	});
 	test('should add the opacity scale if opacity is a reference to a key', () => {
 		const scales = setScales([], { ...defaultScatterProps, opacity: DEFAULT_COLOR });
 		expect(scales).toHaveLength(3);
-		expect(scales[2].name).toBe('opacity');
+		expect(scales[2].name).toBe(OPACITY_SCALE);
 	});
 	test('should add the symbolSize scale if size is a reference to a key', () => {
 		const scales = setScales([], { ...defaultScatterProps, size: 'weight' });
 		expect(scales).toHaveLength(3);
-		expect(scales[2].name).toBe('symbolSize');
+		expect(scales[2].name).toBe(SYMBOL_SIZE_SCALE);
 		expect(scales[2].domain).toEqual({ data: 'table', fields: ['weight'] });
 	});
 });

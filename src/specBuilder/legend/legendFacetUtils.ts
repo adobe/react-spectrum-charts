@@ -14,20 +14,21 @@ import { FacetType, SecondaryFacetType } from 'types';
 import { Scale, ScaleMultiFieldsRef } from 'vega';
 
 import { Facet } from './legendUtils';
+import { COLOR_SCALE, LINE_TYPE_SCALE, OPACITY_SCALE, SYMBOL_SHAPE_SCALE, SYMBOL_SIZE_SCALE } from '@constants';
 
 /**
  * These are all the scale names that are used for facets
  */
 const facetScaleNames: (FacetType | SecondaryFacetType)[] = [
-	'color',
-	'lineType',
-	'opacity',
+	COLOR_SCALE,
+	LINE_TYPE_SCALE,
+	OPACITY_SCALE,
 	'secondaryColor',
 	'secondaryLineType',
 	'secondaryOpacity',
 	'secondarySymbolShape',
-	'symbolShape',
-	'symbolSize',
+	SYMBOL_SHAPE_SCALE,
+	SYMBOL_SIZE_SCALE,
 ];
 
 /**
@@ -69,7 +70,7 @@ export const getFacets = (scales: Scale[]): { ordinalFacets: Facet[]; continuous
  */
 export const getFacetsFromKeys = (
 	keys: string[],
-	scales: Scale[]
+	scales: Scale[],
 ): { ordinalFacets: Facet[]; continuousFacets: Facet[] } => {
 	const ordinalFacets: Facet[] = [];
 	const continuousFacets: Facet[] = [];

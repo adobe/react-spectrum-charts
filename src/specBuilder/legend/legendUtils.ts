@@ -9,7 +9,16 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { DEFAULT_OPACITY_RULE, HIGHLIGHT_CONTRAST_RATIO } from '@constants';
+import {
+	COLOR_SCALE,
+	DEFAULT_OPACITY_RULE,
+	HIGHLIGHT_CONTRAST_RATIO,
+	LINE_TYPE_SCALE,
+	LINE_WIDTH_SCALE,
+	OPACITY_SCALE,
+	SYMBOL_SHAPE_SCALE,
+	SYMBOL_SIZE_SCALE,
+} from '@constants';
 import { getColorValue, getPathFromSymbolShape } from '@specBuilder/specUtils';
 import { spectrumColors } from '@themes';
 import merge from 'deepmerge';
@@ -177,22 +186,37 @@ export const getOpacityEncoding = ({
 export const getSymbolEncodings = (facets: Facet[], props: LegendSpecProps): LegendEncode => {
 	const { color, lineType, lineWidth, name, opacity, symbolShape, colorScheme } = props;
 	const enter: SymbolEncodeEntry = {
-		fillOpacity: getSymbolFacetEncoding<number>({ facets, facetType: 'opacity', customValue: opacity, name }),
-		shape: getSymbolFacetEncoding<string>({ facets, facetType: 'symbolShape', customValue: symbolShape, name }),
-		size: getSymbolFacetEncoding<number>({ facets, facetType: 'symbolSize', name }),
-		strokeDash: getSymbolFacetEncoding<number[]>({ facets, facetType: 'lineType', customValue: lineType, name }),
-		strokeWidth: getSymbolFacetEncoding<number>({ facets, facetType: 'lineWidth', customValue: lineWidth, name }),
+		fillOpacity: getSymbolFacetEncoding<number>({ facets, facetType: OPACITY_SCALE, customValue: opacity, name }),
+		shape: getSymbolFacetEncoding<string>({
+			facets,
+			facetType: SYMBOL_SHAPE_SCALE,
+			customValue: symbolShape,
+			name,
+		}),
+		size: getSymbolFacetEncoding<number>({ facets, facetType: SYMBOL_SIZE_SCALE, name }),
+		strokeDash: getSymbolFacetEncoding<number[]>({
+			facets,
+			facetType: LINE_TYPE_SCALE,
+			customValue: lineType,
+			name,
+		}),
+		strokeWidth: getSymbolFacetEncoding<number>({
+			facets,
+			facetType: LINE_WIDTH_SCALE,
+			customValue: lineWidth,
+			name,
+		}),
 	};
 	const update: SymbolEncodeEntry = {
 		fill: [
 			...getHiddenSeriesColorRule(props, 'gray-300'),
-			getSymbolFacetEncoding<Color>({ facets, facetType: 'color', customValue: color, name }) ?? {
+			getSymbolFacetEncoding<Color>({ facets, facetType: COLOR_SCALE, customValue: color, name }) ?? {
 				value: spectrumColors[colorScheme]['categorical-100'],
 			},
 		],
 		stroke: [
 			...getHiddenSeriesColorRule(props, 'gray-300'),
-			getSymbolFacetEncoding<Color>({ facets, facetType: 'color', customValue: color, name }) ?? {
+			getSymbolFacetEncoding<Color>({ facets, facetType: COLOR_SCALE, customValue: color, name }) ?? {
 				value: spectrumColors[colorScheme]['categorical-100'],
 			},
 		],

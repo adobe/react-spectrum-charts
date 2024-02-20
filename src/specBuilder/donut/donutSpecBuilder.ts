@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { DEFAULT_COLOR, DEFAULT_COLOR_SCHEME, DEFAULT_METRIC, FILTERED_TABLE } from '@constants';
+import { COLOR_SCALE, DEFAULT_COLOR, DEFAULT_COLOR_SCHEME, DEFAULT_METRIC, FILTERED_TABLE } from '@constants';
 import { hasPopover } from '@specBuilder/marks/markUtils';
 import { addFieldToFacetScaleDomain } from '@specBuilder/scale/scaleSpecBuilder';
 import { getGenericSignal, getUncontrolledHoverSignal, hasSignalByName } from '@specBuilder/signal/signalSpecBuilder';
@@ -35,7 +35,7 @@ export const addDonut = produce<Spec, [DonutProps & { colorScheme?: ColorScheme;
 			hasDirectLabels = false,
 			isBoolean = false,
 			...props
-		}
+		},
 	) => {
 		// put props back together now that all defaults are set
 		const donutProps: DonutSpecProps = {
@@ -56,7 +56,7 @@ export const addDonut = produce<Spec, [DonutProps & { colorScheme?: ColorScheme;
 		spec.scales = addScales(spec.scales ?? [], donutProps);
 		spec.marks = addMarks(spec.marks ?? [], donutProps);
 		spec.signals = addSignals(spec.signals ?? [], donutProps);
-	}
+	},
 );
 
 export const addData = produce<Data[], [DonutSpecProps]>((data, props) => {
@@ -108,7 +108,7 @@ export const addData = produce<Data[], [DonutSpecProps]>((data, props) => {
 
 export const addScales = produce<Scale[], [DonutSpecProps]>((scales, props) => {
 	const { color } = props;
-	addFieldToFacetScaleDomain(scales, 'color', color);
+	addFieldToFacetScaleDomain(scales, COLOR_SCALE, color);
 });
 
 export const addMarks = produce<Mark[], [DonutSpecProps]>((marks, props) => {

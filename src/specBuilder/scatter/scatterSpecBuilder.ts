@@ -10,12 +10,17 @@
  * governing permissions and limitations under the License.
  */
 import {
+	COLOR_SCALE,
 	DEFAULT_COLOR_SCHEME,
 	DEFAULT_DIMENSION_SCALE_TYPE,
 	DEFAULT_LINEAR_DIMENSION,
 	DEFAULT_METRIC,
 	FILTERED_TABLE,
+	LINE_TYPE_SCALE,
+	LINE_WIDTH_SCALE,
 	MARK_ID,
+	OPACITY_SCALE,
+	SYMBOL_SIZE_SCALE,
 } from '@constants';
 import { addTimeTransform, getTableData } from '@specBuilder/data/dataUtils';
 import { getInteractiveMarkName } from '@specBuilder/line/lineUtils';
@@ -143,15 +148,15 @@ export const setScales = produce<Scale[], [ScatterSpecProps]>((scales, props) =>
 	// add metric scale
 	addMetricScale(scales, [metric]);
 	// add color to the color domain
-	addFieldToFacetScaleDomain(scales, 'color', color);
+	addFieldToFacetScaleDomain(scales, COLOR_SCALE, color);
 	// add lineType to the lineType domain
-	addFieldToFacetScaleDomain(scales, 'lineType', lineType);
+	addFieldToFacetScaleDomain(scales, LINE_TYPE_SCALE, lineType);
 	// add lineWidth to the lineWidth domain
-	addFieldToFacetScaleDomain(scales, 'lineWidth', lineWidth);
+	addFieldToFacetScaleDomain(scales, LINE_WIDTH_SCALE, lineWidth);
 	// add opacity to the opacity domain
-	addFieldToFacetScaleDomain(scales, 'opacity', opacity);
+	addFieldToFacetScaleDomain(scales, OPACITY_SCALE, opacity);
 	// add size to the size domain
-	addFieldToFacetScaleDomain(scales, 'symbolSize', size);
+	addFieldToFacetScaleDomain(scales, SYMBOL_SIZE_SCALE, size);
 
 	scales.push(...getTrendlineScales(props));
 });

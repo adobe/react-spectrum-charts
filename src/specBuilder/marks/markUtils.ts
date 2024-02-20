@@ -17,9 +17,14 @@ import { MetricRange } from '@components/MetricRange';
 import { Trendline } from '@components/Trendline';
 import {
 	BACKGROUND_COLOR,
+	COLOR_SCALE,
 	DEFAULT_OPACITY_RULE,
 	DEFAULT_TRANSFORMED_TIME_DIMENSION,
 	HIGHLIGHT_CONTRAST_RATIO,
+	LINE_TYPE_SCALE,
+	LINE_WIDTH_SCALE,
+	OPACITY_SCALE,
+	SYMBOL_SIZE_SCALE,
 } from '@constants';
 import { getScaleName } from '@specBuilder/scale/scaleSpecBuilder';
 import {
@@ -120,7 +125,7 @@ export const getColorProductionRule = (color: ColorFacet | DualFacet, colorSchem
 		};
 	}
 	if (typeof color === 'string') {
-		return { scale: 'color', field: color };
+		return { scale: COLOR_SCALE, field: color };
 	}
 	return { value: getColorValue(color.value, colorScheme) };
 };
@@ -137,7 +142,7 @@ export const getLineWidthProductionRule = (
 	}
 	// key reference for setting line width
 	if (typeof lineWidth === 'string') {
-		return { scale: 'lineWidth', field: lineWidth };
+		return { scale: LINE_WIDTH_SCALE, field: lineWidth };
 	}
 	// static value for setting line width
 	return { value: getLineWidthPixelsFromLineWidth(lineWidth.value) };
@@ -150,7 +155,7 @@ export const getOpacityProductionRule = (opacity: OpacityFacet | DualFacet): { s
 		};
 	}
 	if (typeof opacity === 'string') {
-		return { signal: `scale('opacity', datum.${opacity})` };
+		return { signal: `scale('${OPACITY_SCALE}', datum.${opacity})` };
 	}
 	return { value: opacity.value };
 };
@@ -158,7 +163,7 @@ export const getOpacityProductionRule = (opacity: OpacityFacet | DualFacet): { s
 export const getSymbolSizeProductionRule = (symbolSize: SymbolSizeFacet): NumericValueRef => {
 	// key reference for setting symbol size
 	if (typeof symbolSize === 'string') {
-		return { scale: 'symbolSize', field: symbolSize };
+		return { scale: SYMBOL_SIZE_SCALE, field: symbolSize };
 	}
 	// static value for setting symbol size
 	return { value: getVegaSymbolSizeFromRscSymbolSize(symbolSize.value) };
@@ -171,7 +176,7 @@ export const getStrokeDashProductionRule = (lineType: LineTypeFacet | DualFacet)
 		};
 	}
 	if (typeof lineType === 'string') {
-		return { scale: 'lineType', field: lineType };
+		return { scale: LINE_TYPE_SCALE, field: lineType };
 	}
 	return { value: getStrokeDashFromLineType(lineType.value) };
 };

@@ -14,6 +14,7 @@ import { createElement } from 'react';
 import { Annotation } from '@components/Annotation';
 import {
 	BACKGROUND_COLOR,
+	COLOR_SCALE,
 	DEFAULT_CATEGORICAL_DIMENSION,
 	DEFAULT_COLOR,
 	DEFAULT_OPACITY_RULE,
@@ -53,7 +54,7 @@ const defaultMark = {
 	encode: {
 		enter: {
 			...defaultBarEnterEncodings,
-			fill: { field: DEFAULT_COLOR, scale: 'color' },
+			fill: { field: DEFAULT_COLOR, scale: COLOR_SCALE },
 			fillOpacity: DEFAULT_OPACITY_RULE,
 			tooltip: undefined,
 		},

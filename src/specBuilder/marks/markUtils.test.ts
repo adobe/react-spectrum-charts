@@ -16,12 +16,17 @@ import { ChartPopover } from '@components/ChartPopover';
 import { ChartTooltip } from '@components/ChartTooltip';
 import { MetricRange } from '@components/MetricRange';
 import {
+	COLOR_SCALE,
 	DEFAULT_COLOR,
 	DEFAULT_COLOR_SCHEME,
 	DEFAULT_SECONDARY_COLOR,
 	DEFAULT_TIME_DIMENSION,
 	DEFAULT_TRANSFORMED_TIME_DIMENSION,
 	HIGHLIGHT_CONTRAST_RATIO,
+	LINE_TYPE_SCALE,
+	LINE_WIDTH_SCALE,
+	OPACITY_SCALE,
+	SYMBOL_SIZE_SCALE,
 } from '@constants';
 
 import {
@@ -40,7 +45,7 @@ import {
 describe('getColorProductionRule', () => {
 	test('should return scale reference if color is a string', () => {
 		expect(getColorProductionRule(DEFAULT_COLOR, DEFAULT_COLOR_SCHEME)).toStrictEqual({
-			scale: 'color',
+			scale: COLOR_SCALE,
 			field: DEFAULT_COLOR,
 		});
 	});
@@ -65,7 +70,10 @@ describe('getLineWidthProductionRule', () => {
 	});
 
 	test('should return scale reference if lineWidth is a string', () => {
-		expect(getLineWidthProductionRule(DEFAULT_COLOR)).toStrictEqual({ scale: 'lineWidth', field: DEFAULT_COLOR });
+		expect(getLineWidthProductionRule(DEFAULT_COLOR)).toStrictEqual({
+			scale: LINE_WIDTH_SCALE,
+			field: DEFAULT_COLOR,
+		});
 	});
 
 	test('should return static value and convert preset line width to pixel value', () => {
@@ -79,7 +87,10 @@ describe('getLineWidthProductionRule', () => {
 
 describe('getStrokeDashProductionRule', () => {
 	test('should return scale reference if lineType is a string', () => {
-		expect(getStrokeDashProductionRule(DEFAULT_COLOR)).toStrictEqual({ scale: 'lineType', field: DEFAULT_COLOR });
+		expect(getStrokeDashProductionRule(DEFAULT_COLOR)).toStrictEqual({
+			scale: LINE_TYPE_SCALE,
+			field: DEFAULT_COLOR,
+		});
 	});
 
 	test('should return static value and convert preset line type to dash array', () => {
@@ -94,7 +105,7 @@ describe('getStrokeDashProductionRule', () => {
 describe('getOpacityProductionRule()', () => {
 	test('shold return signal rule for scale reference input', () => {
 		expect(getOpacityProductionRule(DEFAULT_COLOR)).toStrictEqual({
-			signal: `scale('opacity', datum.${DEFAULT_COLOR})`,
+			signal: `scale('${OPACITY_SCALE}', datum.${DEFAULT_COLOR})`,
 		});
 	});
 	test('should return value rule for static value', () => {
@@ -104,7 +115,7 @@ describe('getOpacityProductionRule()', () => {
 
 describe('getSymbolSizeProductionRule()', () => {
 	test('should return scale rule for key reference', () => {
-		expect(getSymbolSizeProductionRule('weight')).toStrictEqual({ scale: 'symbolSize', field: 'weight' });
+		expect(getSymbolSizeProductionRule('weight')).toStrictEqual({ scale: SYMBOL_SIZE_SCALE, field: 'weight' });
 	});
 	test('should return static value squared if static value supplied', () => {
 		expect(getSymbolSizeProductionRule({ value: 5 })).toStrictEqual({ value: 25 });
@@ -151,7 +162,7 @@ describe('getTooltip()', () => {
 describe('getHighlightOpacityValue()', () => {
 	test('should divide a signal ref by the highlight contract ratio', () => {
 		expect(getHighlightOpacityValue(getOpacityProductionRule(DEFAULT_COLOR))).toStrictEqual({
-			signal: `scale('opacity', datum.${DEFAULT_COLOR}) / ${HIGHLIGHT_CONTRAST_RATIO}`,
+			signal: `scale('${OPACITY_SCALE}', datum.${DEFAULT_COLOR}) / ${HIGHLIGHT_CONTRAST_RATIO}`,
 		});
 	});
 	test('shold divide a value ref by the highlight contrast ratio', () => {

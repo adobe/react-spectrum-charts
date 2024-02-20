@@ -12,6 +12,7 @@
 import { ChartPopover } from '@components/ChartPopover';
 import {
 	BACKGROUND_COLOR,
+	COLOR_SCALE,
 	DEFAULT_COLOR,
 	DEFAULT_COLOR_SCHEME,
 	DEFAULT_METRIC,
@@ -51,7 +52,7 @@ export const addArea = produce<Spec, [AreaProps & { colorScheme?: ColorScheme; i
 			opacity = 0.8,
 			scaleType = 'time',
 			...props
-		}
+		},
 	) => {
 		// put props back together now that all defaults are set
 		const areaProps: AreaSpecProps = {
@@ -74,7 +75,7 @@ export const addArea = produce<Spec, [AreaProps & { colorScheme?: ColorScheme; i
 			console.error(
 				`${metricEnd ? 'metricEnd' : 'metricStart'} is defined but ${
 					metricEnd ? 'metricStart' : 'metricEnd'
-				} is not. Both must be defined in order to use the "start and end" method. Defaulting back to 'metric = ${metric}'`
+				} is not. Both must be defined in order to use the "start and end" method. Defaulting back to 'metric = ${metric}'`,
 			);
 			areaProps.metricEnd = undefined;
 			areaProps.metricStart = undefined;
@@ -86,7 +87,7 @@ export const addArea = produce<Spec, [AreaProps & { colorScheme?: ColorScheme; i
 		spec.marks = addAreaMarks(spec.marks ?? [], areaProps);
 
 		return spec;
-	}
+	},
 );
 
 export const addData = produce<Data[], [AreaSpecProps]>(
@@ -138,7 +139,7 @@ export const addData = produce<Data[], [AreaSpecProps]>(
 				});
 			}
 		}
-	}
+	},
 );
 
 export const addSignals = produce<Signal[], [AreaSpecProps]>((signals, { children, name }) => {
@@ -162,7 +163,7 @@ export const setScales = produce<Scale[], [AreaSpecProps]>(
 		// add dimension scale
 		addContinuousDimensionScale(scales, { scaleType, dimension, padding });
 		// add color to the color domain
-		addFieldToFacetScaleDomain(scales, 'color', color);
+		addFieldToFacetScaleDomain(scales, COLOR_SCALE, color);
 		// find the linear scale and add our field to it
 		if (!metricEnd || !metricStart) {
 			metricStart = `${metric}0`;
@@ -170,7 +171,7 @@ export const setScales = produce<Scale[], [AreaSpecProps]>(
 		}
 		addMetricScale(scales, [metricStart, metricEnd]);
 		return scales;
-	}
+	},
 );
 
 export const addAreaMarks = produce<Mark[], [AreaSpecProps]>((marks, props) => {
@@ -210,7 +211,7 @@ export const addAreaMarks = produce<Mark[], [AreaSpecProps]>((marks, props) => {
 			],
 		},
 		...getSelectedAreaMarks({ children, name, scaleType, color, dimension, metricEnd, metricStart }),
-		...getHoverMarks(props)
+		...getHoverMarks(props),
 	);
 	return marks;
 });
@@ -270,7 +271,7 @@ const getHoverMarks = ({ children, name, dimension, metric, color, scaleType }: 
 			encode: {
 				enter: {
 					y: { scale: 'yLinear', field: `${metric}1` },
-					stroke: { scale: 'color', field: color },
+					stroke: { scale: COLOR_SCALE, field: color },
 					fill: { signal: BACKGROUND_COLOR },
 				},
 				update: {
@@ -313,7 +314,7 @@ const getSelectedAreaMarks = ({
 					y: { scale: 'yLinear', field: metricStart },
 					y2: { scale: 'yLinear', field: metricEnd },
 					// need to fill this so the white border doesn't slightly bleed around the blue select border
-					fill: { scale: 'color', field: color },
+					fill: { scale: COLOR_SCALE, field: color },
 					stroke: { value: spectrumColors.light['static-blue'] },
 					strokeWidth: { value: 2 },
 					strokeJoin: { value: 'round' },

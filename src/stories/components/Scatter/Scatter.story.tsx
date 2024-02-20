@@ -29,6 +29,7 @@ import {
 import { characterData } from '@stories/data/marioKartData';
 import { StoryFn } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
+import { COLOR_SCALE, LINE_TYPE_SCALE, OPACITY_SCALE } from '@constants';
 
 const marioDataKeys = [
 	...Object.keys(characterData[0])
@@ -89,8 +90,8 @@ const marioKeyTitle: Record<Exclude<MarioDataKey, 'character'>, string> = {
 const defaultChartProps: ChartProps = { data: characterData, height: 500, width: 500, lineWidths: [1, 2, 3] };
 
 const getLegendProps = (args: ScatterProps): LegendProps => {
-	const facets = ['color', 'lineType', 'opacity', 'size'];
-	const legendKey = args[facets.find((key) => args[key] !== undefined) ?? 'color'];
+	const facets = [COLOR_SCALE, LINE_TYPE_SCALE, OPACITY_SCALE, 'size'];
+	const legendKey = args[facets.find((key) => args[key] !== undefined) ?? COLOR_SCALE];
 	const legendProps: LegendProps = {
 		position: 'right',
 		title: marioKeyTitle[legendKey],

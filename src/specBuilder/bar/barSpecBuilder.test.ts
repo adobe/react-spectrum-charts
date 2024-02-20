@@ -16,13 +16,16 @@ import { ChartPopover } from '@components/ChartPopover';
 import { ChartTooltip } from '@components/ChartTooltip';
 import {
 	BACKGROUND_COLOR,
+	COLOR_SCALE,
 	DEFAULT_CATEGORICAL_DIMENSION,
 	DEFAULT_COLOR,
 	DEFAULT_METRIC,
 	DEFAULT_OPACITY_RULE,
 	DEFAULT_SECONDARY_COLOR,
 	FILTERED_TABLE,
+	LINE_TYPE_SCALE,
 	MARK_ID,
+	OPACITY_SCALE,
 	STACK_ID,
 	TABLE,
 } from '@constants';
@@ -65,7 +68,7 @@ import {
 import { defaultDodgedMark } from './dodgedBarUtils.test';
 
 const startingSpec: Spec = initializeSpec({
-	scales: [{ name: 'color', type: 'ordinal' }],
+	scales: [{ name: COLOR_SCALE, type: 'ordinal' }],
 });
 
 const defaultMetricScaleDomain: ScaleData = { data: FILTERED_TABLE, fields: ['value1'] };
@@ -90,7 +93,7 @@ const defaultDimensionScale: Scale = {
 
 const defaultColorScaleDomain: ScaleData = { data: TABLE, fields: [DEFAULT_COLOR] };
 const defaultColorScale: Scale = {
-	name: 'color',
+	name: COLOR_SCALE,
 	type: 'ordinal',
 	domain: defaultColorScaleDomain,
 };
@@ -165,7 +168,7 @@ const defaultStackedMark: Mark = {
 		enter: {
 			...defaultStackedYEncodings,
 			...defaultCornerRadiusEncodings,
-			fill: { scale: 'color', field: DEFAULT_COLOR },
+			fill: { scale: COLOR_SCALE, field: DEFAULT_COLOR },
 			fillOpacity: DEFAULT_OPACITY_RULE,
 			tooltip: undefined,
 		},
@@ -199,7 +202,7 @@ const defaultSpec: Spec = {
 		defaultStacksData,
 	],
 	signals: [defaultPaddingSignal],
-	scales: [{ name: 'color', type: 'ordinal' }, defaultMetricScale, defaultDimensionScale],
+	scales: [{ name: COLOR_SCALE, type: 'ordinal' }, defaultMetricScale, defaultDimensionScale],
 	marks: [
 		defaultBackgroundStackedMark,
 		{
@@ -284,7 +287,7 @@ describe('barSpecBuilder', () => {
 	describe('addScales()', () => {
 		describe('no initial state', () => {
 			test('default props, should add default scales', () => {
-				expect(addScales([{ name: 'color', type: 'ordinal' }], defaultBarProps)).toStrictEqual([
+				expect(addScales([{ name: COLOR_SCALE, type: 'ordinal' }], defaultBarProps)).toStrictEqual([
 					defaultColorScale,
 					defaultMetricScale,
 					defaultDimensionScale,
@@ -292,33 +295,33 @@ describe('barSpecBuilder', () => {
 			});
 
 			test('secondary series, should add default scales', () => {
-				expect(addScales([{ name: 'color', type: 'ordinal' }], defaultBarPropsWithSecondayColor)).toStrictEqual(
-					[
-						defaultColorScale,
-						defaultMetricScale,
-						defaultDimensionScale,
-						{
-							name: 'secondaryColor',
-							type: 'ordinal',
-							domain: { data: TABLE, fields: [DEFAULT_SECONDARY_COLOR] },
-						},
-						{
-							name: 'colors',
-							type: 'ordinal',
-							range: { signal: 'colors' },
-							domain: { data: TABLE, fields: [DEFAULT_COLOR] },
-						},
-					],
-				);
+				expect(
+					addScales([{ name: COLOR_SCALE, type: 'ordinal' }], defaultBarPropsWithSecondayColor),
+				).toStrictEqual([
+					defaultColorScale,
+					defaultMetricScale,
+					defaultDimensionScale,
+					{
+						name: 'secondaryColor',
+						type: 'ordinal',
+						domain: { data: TABLE, fields: [DEFAULT_SECONDARY_COLOR] },
+					},
+					{
+						name: 'colors',
+						type: 'ordinal',
+						range: { signal: 'colors' },
+						domain: { data: TABLE, fields: [DEFAULT_COLOR] },
+					},
+				]);
 			});
 
 			test('should add facet scales', () => {
 				expect(
 					addScales(
 						[
-							{ name: 'color', type: 'ordinal' },
-							{ name: 'lineType', type: 'ordinal' },
-							{ name: 'opacity', type: 'point' },
+							{ name: COLOR_SCALE, type: 'ordinal' },
+							{ name: LINE_TYPE_SCALE, type: 'ordinal' },
+							{ name: OPACITY_SCALE, type: 'point' },
 						],
 						{
 							...defaultBarProps,
@@ -328,8 +331,8 @@ describe('barSpecBuilder', () => {
 					),
 				).toStrictEqual([
 					defaultColorScale,
-					{ domain: { data: TABLE, fields: [DEFAULT_COLOR] }, name: 'lineType', type: 'ordinal' },
-					{ domain: { data: TABLE, fields: [DEFAULT_COLOR] }, name: 'opacity', type: 'point' },
+					{ domain: { data: TABLE, fields: [DEFAULT_COLOR] }, name: LINE_TYPE_SCALE, type: 'ordinal' },
+					{ domain: { data: TABLE, fields: [DEFAULT_COLOR] }, name: OPACITY_SCALE, type: 'point' },
 					defaultMetricScale,
 					defaultDimensionScale,
 				]);
@@ -337,7 +340,7 @@ describe('barSpecBuilder', () => {
 
 			test('should add trellis scales', () => {
 				expect(
-					addScales([{ name: 'color', type: 'ordinal' }], {
+					addScales([{ name: COLOR_SCALE, type: 'ordinal' }], {
 						...defaultBarProps,
 						trellis: 'event',
 						trellisOrientation: 'vertical',

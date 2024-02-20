@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { HIGHLIGHT_CONTRAST_RATIO, SERIES_ID } from '@constants';
+import { COLOR_SCALE, HIGHLIGHT_CONTRAST_RATIO, SERIES_ID } from '@constants';
 import { GroupMark, Mark, NumericValueRef, ProductionRule } from 'vega';
 
 /**
@@ -96,14 +96,14 @@ export const markUsesSeriesColorScale = (mark: Mark): boolean => {
 	const enter = mark.encode?.enter;
 	if (!enter) return false;
 	const { fill, stroke } = enter;
-	if (fill && 'scale' in fill && fill.scale === 'color') {
+	if (fill && 'scale' in fill && fill.scale === COLOR_SCALE) {
 		return true;
 	}
 	// some marks use a 2d color scale, these will use a signal expression to get the color for that series
 	if (fill && 'signal' in fill && fill.signal.includes("scale('colors',")) {
 		return true;
 	}
-	if (stroke && 'scale' in stroke && stroke.scale === 'color') {
+	if (stroke && 'scale' in stroke && stroke.scale === COLOR_SCALE) {
 		return true;
 	}
 	return false;

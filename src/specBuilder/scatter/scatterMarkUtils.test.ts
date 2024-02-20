@@ -14,7 +14,7 @@ import { createElement } from 'react';
 
 import { ChartTooltip } from '@components/ChartTooltip';
 import { Trendline } from '@components/Trendline';
-import { DEFAULT_OPACITY_RULE, MARK_ID } from '@constants';
+import { DEFAULT_OPACITY_RULE, MARK_ID, SYMBOL_SIZE_SCALE } from '@constants';
 import { GroupMark } from 'vega';
 import { addScatterMarks, getOpacity, getScatterHoverMarks, getSelectRingSize } from './scatterMarkUtils';
 import { defaultScatterProps } from './scatterTestUtils';
@@ -80,6 +80,6 @@ describe('getScatterSelectMarks()', () => {
 	test('should return a signal if data key is provided', () => {
 		const sizeKey = 'weight';
 		const ringSize = getSelectRingSize(sizeKey);
-		expect(ringSize).toHaveProperty('signal', `pow(sqrt(scale('symbolSize', datum.${sizeKey})) + 4, 2)`);
+		expect(ringSize).toHaveProperty('signal', `pow(sqrt(scale('${SYMBOL_SIZE_SCALE}', datum.${sizeKey})) + 4, 2)`);
 	});
 });

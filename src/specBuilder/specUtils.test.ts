@@ -10,10 +10,12 @@
  * governing permissions and limitations under the License.
  */
 import {
+	COLOR_SCALE,
 	DEFAULT_CATEGORICAL_DIMENSION,
 	DEFAULT_COLOR,
 	DEFAULT_SECONDARY_COLOR,
 	DEFAULT_TRANSFORMED_TIME_DIMENSION,
+	LINE_TYPE_SCALE,
 	TABLE,
 } from '@constants';
 import { ROUNDED_SQUARE_PATH } from 'svgPaths';
@@ -31,17 +33,17 @@ import {
 } from './specUtils';
 
 const defaultColorScale: OrdinalScale = {
-	name: 'color',
+	name: COLOR_SCALE,
 	type: 'ordinal',
 	domain: { data: TABLE, fields: [DEFAULT_COLOR] },
 };
 const defaultLineTypeScale: OrdinalScale = {
-	name: 'lineType',
+	name: LINE_TYPE_SCALE,
 	type: 'ordinal',
 	domain: { data: TABLE, fields: [DEFAULT_SECONDARY_COLOR] },
 };
 const defaultOpacityScale: BandScale = {
-	name: 'lineType',
+	name: LINE_TYPE_SCALE,
 	type: 'band',
 	domain: { data: TABLE, fields: [DEFAULT_SECONDARY_COLOR] },
 };
@@ -85,7 +87,7 @@ describe('specUtils', () => {
 				getFacetsFromScales([
 					defaultColorScale,
 					{ ...defaultLineTypeScale, domain: { data: TABLE, fields: [DEFAULT_COLOR] } },
-				])
+				]),
 			).toStrictEqual([DEFAULT_COLOR]);
 			expect(getFacetsFromScales([defaultColorScale, defaultLineTypeScale, defaultOpacityScale])).toStrictEqual([
 				DEFAULT_COLOR,
@@ -103,7 +105,7 @@ describe('specUtils', () => {
 
 		test('should return empty array if no scales have fields', () => {
 			expect(getFacetsFromScales([{ ...defaultColorScale, domain: { data: TABLE, fields: [] } }])).toStrictEqual(
-				[]
+				[],
 			);
 		});
 
@@ -189,7 +191,7 @@ describe('specUtils', () => {
 			expect(getDimensionField(DEFAULT_CATEGORICAL_DIMENSION, 'linear')).toEqual(DEFAULT_CATEGORICAL_DIMENSION);
 			expect(getDimensionField(DEFAULT_CATEGORICAL_DIMENSION, 'point')).toEqual(DEFAULT_CATEGORICAL_DIMENSION);
 			expect(getDimensionField(DEFAULT_CATEGORICAL_DIMENSION, 'time')).toEqual(
-				DEFAULT_TRANSFORMED_TIME_DIMENSION
+				DEFAULT_TRANSFORMED_TIME_DIMENSION,
 			);
 		});
 	});
