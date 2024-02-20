@@ -89,7 +89,7 @@ export const addLine = produce<
 		spec.data = addData(spec.data ?? [], lineProps);
 		spec.signals = addSignals(spec.signals ?? [], lineProps);
 		spec.scales = setScales(spec.scales ?? [], lineProps);
-		spec.marks = addLineMarks(spec.marks ?? [], lineProps);
+		spec.marks = addLineMarks(spec.marks ?? [], {...lineProps, data: spec.data});
 
 		return spec;
 	}

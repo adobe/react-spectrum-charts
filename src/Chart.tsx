@@ -21,12 +21,14 @@ import {
 	MARK_ID,
 } from '@constants';
 import useChartHeight from '@hooks/useChartHeight';
-import useChartImperativeHandle from '@hooks/useChartImperativeHandle';
-import useChartWidth from '@hooks/useChartWidth';
-import { useResizeObserver } from '@hooks/useResizeObserver';
 import { getColorValue } from '@specBuilder/specUtils';
 import { getBigNumberElementsFromChildren, toArray } from '@utils';
 import { BigNumberInternal } from 'rc/components/BigNumber/BigNumber';
+	PREVIOUS_TABLE
+} from '@constants';
+import useChartImperativeHandle from '@hooks/useChartImperativeHandle';
+import useChartWidth from '@hooks/useChartWidth';
+import { useResizeObserver } from '@hooks/useResizeObserver';
 import { v4 as uuid } from 'uuid';
 import { View } from 'vega';
 

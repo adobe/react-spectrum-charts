@@ -41,6 +41,7 @@ import {
 	getSelectionPoint,
 } from './linePointUtils';
 import { LineMarkProps } from './lineUtils';
+import { getAnimationMarks } from '@specBuilder/specUtils';
 
 /**
  * generates a line mark
@@ -48,6 +49,7 @@ import { LineMarkProps } from './lineUtils';
  * @param dataSource
  * @returns LineMark
  */
+// TODO: get current and previous data down this low.
 export const getLineMark = (lineMarkProps: LineMarkProps, dataSource: string): LineMark => {
 	const { color, colorScheme, dimension, lineType, lineWidth, metric, metricAxis, name, opacity, scaleType } =
 		lineMarkProps;
@@ -56,6 +58,7 @@ export const getLineMark = (lineMarkProps: LineMarkProps, dataSource: string): L
 		({ UNSAFE_highlightBy }) => UNSAFE_highlightBy === 'dimension'
 	);
 
+	// TODO: ADD CONDITIONAL CHECK IF ANIMATIONS NOT ON
 	return {
 		name,
 		description: name,
@@ -74,6 +77,8 @@ export const getLineMark = (lineMarkProps: LineMarkProps, dataSource: string): L
 				// this has to be in update because when you resize the window that doesn't rebuild the spec
 				// but it may change the x position if it causes the chart to resize
 				x: getXProductionRule(scaleType, dimension),
+				strokeOpacity: getLineStrokeOpacity(lineMarkProps),
+				y: getAnimationMarks(metric),
 				...(popoverWithDimensionHighlightExists ? {} : { opacity: getLineOpacity(lineMarkProps) }),
 			},
 		},
