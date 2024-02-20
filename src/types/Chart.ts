@@ -40,27 +40,42 @@ export type SimpleData = { [key: string]: unknown };
 export type ChartData = SimpleData | Data;
 
 export interface SpecProps {
+	/** Background color of the chart. */
 	backgroundColor?: string;
 	// children is optional because it is a pain to make this required with how children get defined in stories
 	// we have a check at the beginning of Chart to make sure this isn't undefined
 	// if it is undefined, we log an error and render a fragment
 	children?: Children<RscElement>;
+	/** Color scale. Defaults to the `categorical16' color scale. */
 	colors?: ChartColors;
-	colorScheme?: ColorScheme; // spectrum color scheme
-	description?: string; // chart description
+	/** react-spectrum color scheme. @see https://react-spectrum.adobe.com/react-spectrum/Provider.html#props */
+	colorScheme?: ColorScheme;
+	/** Chart description. Sets the aria-label attribute for the chart container. @see https://vega.github.io/vega/docs/specification/ */
+	description?: string;
+	/** Symbol shape scale. */
 	symbolShapes?: SymbolShapes;
-	symbolSizes?: [SymbolSize, SymbolSize]; // min and max for symbol size scale
-	lineTypes?: LineTypes; // line types available for the chart
-	lineWidths?: LineWidth[]; // line widths available for the chart
-	opacities?: Opacities; // opacities available for the chart
-	title?: string; // chart title
-	UNSAFE_vegaSpec?: Spec; // vega spec to be used instead of the one generated the component API
-	hiddenSeries?: string[]; // series names to hide from the chart
-	highlightedSeries?: string; // series name to highlight
+	/** Symbol size scale. Values define the min and max size in that order. */
+	symbolSizes?: [SymbolSize, SymbolSize];
+	/** Line type scale. */
+	lineTypes?: LineTypes;
+	/** Line width scale. */
+	lineWidths?: LineWidth[];
+	/** Opacity scale*/
+	opacities?: Opacities;
+	/** Chart title. If the `Title` component is provided as a child, the component will override this prop. */
+	title?: string;
+	/** Vega spec to be used instead of generating one using the component API. */
+	UNSAFE_vegaSpec?: Spec;
+	/** Series names to hide from the chart (controlled). */
+	hiddenSeries?: string[];
+	/** Series name to highlight on the chart (controlled). */
+	highlightedSeries?: string;
 }
 
 export interface SanitizedSpecProps extends SpecProps {
+	/** Children with all non-prism components removed */
 	children: ChartChildElement[];
+	/**  */
 	data?: ChartData[];
 }
 
@@ -72,13 +87,19 @@ export type SymbolShapes = ChartSymbolShape[] | ChartSymbolShape[][];
 export type ChartSymbolShape = 'rounded-square' | SymbolShape;
 
 export interface SharedChartProps extends SpecProps {
+	/** Vega config that can be used to tweak the style of the chart. @see https://vega.github.io/vega/docs/config/ */
 	config?: Config;
+	/** Chart data array. */
 	data: ChartData[];
+	/** Enables debug mode which will console log things like the generated vega spec and the datums for tooltips. */
 	debug?: boolean;
+	/** Chart height */
 	height?: number;
-	/** number and time locales to use */
+	/** Number and time locales to use */
 	locale?: Locale | LocaleCode | { number?: NumberLocaleCode | NumberLocale; time?: TimeLocaleCode | TimeLocale };
+	/** Chart padding */
 	padding?: Padding;
+	/** Method to use for rendering the chart. 'canvas' is ideal for large data sets. */
 	renderer?: 'svg' | 'canvas';
 }
 
@@ -90,16 +111,24 @@ export interface RscChartProps extends SharedChartProps {
 }
 
 export interface ChartProps extends SharedChartProps {
+	/** Test id */
 	dataTestId?: string;
+	/** Optional text to display when the data set is empty and loading is complete. */
 	emptyStateText?: string;
+	/** Loading state. If true, a spinner will render in place of the chart. */
 	loading?: boolean;
+	/** Maximum chart width */
 	maxWidth?: number;
+	/** Minimum chart width. */
 	minWidth?: number;
+	/** react-spectrum theme. This sets the react-spectrum theming on tooltips and popovers. */
 	theme?: Theme;
-	width?: Width; // strings must be in a valid percent format ex. '50%'
+	/** Chart width */
+	width?: Width;
 }
 
 export interface BaseProps {
+	/** Sets the name of the component. */
 	name?: string;
 }
 
@@ -113,34 +142,35 @@ export interface ChartHandle {
 }
 
 export interface AreaProps extends MarkProps {
-	dimension?: string; // data field that the metric is trended against (x-axis for horizontal orientation)
-	order?: string; // optional field used to set the stack order of the area (higher order = stacked on top/right)
-	opacity?: number; // optional field used to set the area opacity
-	/** sets the chart area padding, this is a ratio from 0 to 1 for categorical scales (point) and a pixel value for continuous scales (time, linear) */
+	/** Data field that the metric is trended against (x-axis for horizontal orientation) */
+	dimension?: string;
+	/** Optional field used to set the stack order of the area (higher order = stacked on top/right) */
+	order?: string;
+	/** Optional field used to set the area opacity */
+	opacity?: number;
+	/** Sets the horizontal padding, this is a ratio from 0 to 1 for categorical scales (point) and a pixel value for continuous scales (time, linear) */
 	padding?: number;
-	scaleType?: ScaleType; // sets the type of scale that should be used for the trend
+	/** Sets the type of scale that should be used for the trend */
+	scaleType?: ScaleType;
 
 	// define area using start/end
-	metricStart?: string; // data field for the start of the area
-	metricEnd?: string; // data field for the end of the area
+	/** Data field for the start of the area */
+	metricStart?: string;
+	/** Data field for the end of the area */
+	metricEnd?: string;
 }
 
 export interface DonutProps extends MarkProps {
 	/** text label for the metric total */
 	metricLabel?: string;
-
 	/** the datum property for segments of the data */
 	segment?: string;
-
 	/** start angle of the donut in radians (0 is top dead center, and default) */
 	startAngle?: number;
-
 	/** ratio of the donut inner radius / donut outer radius. 0 is a pie chart. 0.85 is the default. */
 	holeRatio?: number;
-
 	/** determines if it should display direct labels. If true, must also supply 'segment' prop. Default is false */
 	hasDirectLabels?: boolean;
-
 	/** determines if the center metric should be displayed as a percent. if true, data should only be two data points, which sum to 1
 	 * Also, if true, will display the first datapoint as a percent */
 	isBoolean?: boolean;
@@ -236,7 +266,9 @@ export type SubLabel = {
 
 export interface MarkProps extends BaseProps {
 	children?: Children<MarkChildElement>;
+	/** Key in the data that is used as the color facet */
 	color?: string;
+	/** Key in the data that is used as the metric */
 	metric?: string;
 }
 
@@ -272,16 +304,24 @@ export interface AnnotationStyleProps extends MarkProps {
 }
 
 export interface BarProps extends Omit<MarkProps, 'color'> {
-	color?: ColorFacet | DualFacet; // bar color or key in the data that is used as the color facet
-	dimension?: string; // data field used for the bar categories (x-axis for a vertical bar)
-	groupedPadding?: number; // sets the inner padding between bars in a group
-	lineType?: LineTypeFacet | DualFacet; // line type or key in the data that is used as the line type facet
-	lineWidth?: LineWidth; // border width of the bar
-	order?: string; // optional field used to set the stack order of the bar (higher order = higher on bar)
+	/** Bar color or key in the data that is used as the color facet */
+	color?: ColorFacet | DualFacet;
+	/** Data field used for the bar categories (x-axis for a vertical bar) */
+	dimension?: string;
+	/** Sets the inner padding between bars in a group */
+	groupedPadding?: number;
+	/** Line type or key in the data that is used as the line type facet */
+	lineType?: LineTypeFacet | DualFacet;
+	/** Border width of the bar */
+	lineWidth?: LineWidth;
+	/** Optional field used to set the stack order of the bar (higher order = higher on bar) */
+	order?: string;
 	/** The direction of the bars. Defaults to "vertical". */
 	orientation?: Orientation;
-	opacity?: OpacityFacet | DualFacet; // opacity or key in the data that is used as the opacity facet
-	paddingRatio?: number; // sets inner padding (https://vega.github.io/vega/docs/scales/#band)
+	/** Opacity or key in the data that is used as the opacity facet */
+	opacity?: OpacityFacet | DualFacet;
+	/** Sets inner padding (https://vega.github.io/vega/docs/scales/#band) */
+	paddingRatio?: number;
 	/** sets the chart area padding, this is a ratio between 0 and 1 (https://vega.github.io/vega/docs/scales/#band) */
 	paddingOuter?: number;
 	/** The data field used for the trellis categories */
@@ -290,20 +330,27 @@ export interface BarProps extends Omit<MarkProps, 'color'> {
 	trellisOrientation?: Orientation;
 	/** Padding between trellis groups; ratio between 0 and 1 (https://vega.github.io/vega/docs/scales/#band). Only applicable if `trellis` is also defined. Defaults to 0.2. */
 	trellisPadding?: number;
+	/** Bar type. */
 	type?: BarType;
 }
 
 export type BarType = 'dodged' | 'stacked';
 
 export interface LineProps extends Omit<MarkProps, 'color'> {
-	color?: ColorFacet; // line color or key in the data that is used as the color facet
-	dimension?: string; // data field that the value is trended against (x-axis)
-	lineType?: LineTypeFacet; // line type or key in the data that is used as the line type facet
-	opacity?: OpacityFacet; // opacity or key in the data that is used as the opacity facet
-	/** sets the chart area padding, this is a ratio from 0 to 1 for categorical scales (point) and a pixel value for continuous scales (time, linear) */
+	/** Line color or key in the data that is used as the color facet */
+	color?: ColorFacet;
+	/** Data field that the value is trended against (x-axis) */
+	dimension?: string;
+	/** Line type or key in the data that is used as the line type facet */
+	lineType?: LineTypeFacet;
+	/** Opacity or key in the data that is used as the opacity facet */
+	opacity?: OpacityFacet;
+	/** Sets the chart area padding, this is a ratio from 0 to 1 for categorical scales (point) and a pixel value for continuous scales (time, linear) */
 	padding?: number;
-	scaleType?: ScaleType; // sets the type of scale that should be used for the trend
-	staticPoint?: string; // key in the data that if it exists and the value resolves to true for each data object, a point will be drawn for that data point on the line.
+	/** Sets the type of scale that should be used for the trend */
+	scaleType?: ScaleType;
+	/** Key in the data that if it exists and the value resolves to true for each data object, a point will be drawn for that data point on the line. */
+	staticPoint?: string;
 }
 
 export interface ScatterProps extends Omit<MarkProps, 'color'> {
@@ -360,11 +407,41 @@ export interface TitleProps extends MarkProps {
 	orient?: TitleOrient;
 }
 
+/**
+ * Stroke dasharray for the line.
+ *
+ * solid: null,
+ * dashed: 7 4,
+ * dotted: 2 3,
+ * dotDash: 2 3 7 4,
+ * shortDash: 3 4,
+ * longDash: 11 4,
+ * twoDash: 5 2 11 2
+ *
+ * @see https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute/stroke-dasharray
+ */
 export type LineType = 'solid' | 'dashed' | 'dotted' | 'dotDash' | 'shortDash' | 'longDash' | 'twoDash' | number[];
 
+/**
+ * Width of line in pixels
+ *
+ * XS: 1px,
+ * S: 1.5px,
+ * M: 2px,
+ * L: 3px,
+ * XL: 4px
+ * */
 export type LineWidth = 'XS' | 'S' | 'M' | 'L' | 'XL' | number;
 
-/** width of the symbol in pixels  */
+/**
+ * Width of the symbol in pixels
+ *
+ * XS: 6px,
+ * S: 8px,
+ * M: 10px,
+ * L: 12px,
+ * XL: 16px
+ * */
 export type SymbolSize = 'XS' | 'S' | 'M' | 'L' | 'XL' | number;
 
 export type SymbolSizeFacet = FacetRef<SymbolSize>;
