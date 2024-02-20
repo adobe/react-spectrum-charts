@@ -168,7 +168,7 @@ export interface DonutProps extends MarkProps {
 	startAngle?: number;
 	/** Ratio of the donut inner radius / donut outer radius. 0 is a pie chart. 0.85 is the default. */
 	holeRatio?: number;
-	/** determines if it should display direct labels. If true, must also supply 'segment' prop. Default is false */
+	/** Determines if it should display direct labels. If true, must also supply 'segment' prop. Default is false */
 	hasDirectLabels?: boolean;
 	/** determines if the center metric should be displayed as a percent. if true, data should only be two data points, which sum to 1
 	 * Also, if true, will display the first datapoint as a percent */
