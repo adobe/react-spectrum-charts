@@ -13,11 +13,17 @@ import { FC, forwardRef, useEffect, useMemo, useRef, useState } from 'react';
 
 import { EmptyState } from '@components/EmptyState';
 import { LoadingState } from '@components/LoadingState';
-import { DEFAULT_BACKGROUND_COLOR, DEFAULT_COLOR_SCHEME, DEFAULT_LINE_TYPES, DEFAULT_LOCALE } from '@constants';
+import {
+	DEFAULT_BACKGROUND_COLOR,
+	DEFAULT_COLOR_SCHEME,
+	DEFAULT_LINE_TYPES,
+	DEFAULT_LOCALE,
+	PREVIOUS_TABLE
+} from '@constants';
 import useChartImperativeHandle from '@hooks/useChartImperativeHandle';
 import useChartWidth from '@hooks/useChartWidth';
 import { useResizeObserver } from '@hooks/useResizeObserver';
-import { getColorValue } from '@specBuilder/specUtils';
+import { getColorValue, usePreviousChartData } from '@specBuilder/specUtils';
 import { RscChart } from 'RscChart';
 import { v4 as uuid } from 'uuid';
 import { View } from 'vega';

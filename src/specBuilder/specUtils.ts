@@ -298,8 +298,11 @@ export const usePreviousChartData = <T>(data: T) => {
 	return previousDataRef.current;
 };
 
-// TODO: shared function for mark "on update" addition
-export const getAnimationMarks = () => {
+// TODO: get data and previousData down this low
+export const getAnimationMarks = (metric: string) => {
 	// TODO: Check congruence with previous dataset. For now, do from zero always.
-	// "scale": "yLinear", "signal": "datum.value * timerValue"
+	return {
+		scale: "yLinear",
+		signal: `datum.${metric} * timerValue`
+	}
 }

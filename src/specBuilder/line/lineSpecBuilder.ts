@@ -41,6 +41,7 @@ import { getLineHoverMarks, getLineMark } from './lineMarkUtils';
 import { getLineStaticPoint } from './linePointUtils';
 import { getInteractiveMarkName, getPopoverMarkName } from './lineUtils';
 
+// TODO: Get data and previousData down this low.
 export const addLine = produce<Spec, [LineProps & { colorScheme?: ColorScheme; index?: number }]>(
 	(
 		spec,
@@ -80,14 +81,14 @@ export const addLine = produce<Spec, [LineProps & { colorScheme?: ColorScheme; i
 		spec.data = addData(spec.data ?? [], lineProps);
 		spec.signals = addSignals(spec.signals ?? [], lineProps);
 		spec.scales = setScales(spec.scales ?? [], lineProps);
-		spec.marks = addLineMarks(spec.marks ?? [], lineProps);
+		spec.marks = addLineMarks(spec.marks ?? [], {...lineProps, data: spec.data});
 
 		return spec;
 	}
 );
 
 export const addData = produce<Data[], [LineSpecProps]>((data, props) => {
-	const { dimension, scaleType, children, name, staticPoint, isSparkline, isMethodLast } = props;
+	const { dimension, scaleType, children, name, staticPoint } = props;
 	if (scaleType === 'time') {
 		const tableData = getTableData(data);
 		tableData.transform = addTimeTransform(tableData.transform ?? [], dimension);
@@ -95,7 +96,7 @@ export const addData = produce<Data[], [LineSpecProps]>((data, props) => {
 	if (hasInteractiveChildren(children)) {
 		data.push(getLineHighlightedData(name, FILTERED_TABLE, hasPopover(children)));
 	}
-	if (staticPoint || isSparkline) data.push(getLineStaticPointData(name, staticPoint, FILTERED_TABLE, isSparkline, isMethodLast));
+	if (staticPoint) data.push(getLineStaticPointData(name, staticPoint, FILTERED_TABLE));
 	addTrendlineData(data, props);
 });
 
@@ -137,7 +138,9 @@ export const setScales = produce<Scale[], [LineSpecProps]>((scales, props) => {
 });
 
 // The order that marks are added is important since it determines the draw order.
-export const addLineMarks = produce<Mark[], [LineSpecProps]>((marks, props) => {
+// TODO: LineProps & { colorScheme?: ColorScheme; index?: number }. Do we need this? If we move the useRef previousData check up is this still important?
+
+export const addLineMarks = produce<Mark[], [LineSpecProps & {data: Data[]}]>((marks, props) => {
 	const { name, children, color, lineType, opacity, staticPoint } = props;
 
 	const { facets } = getFacetsFromProps({ color, lineType, opacity });
@@ -154,7 +157,6 @@ export const addLineMarks = produce<Mark[], [LineSpecProps]>((marks, props) => {
 		},
 		marks: [getLineMark(props, `${name}_facet`)],
 	});
-	// TODO: ADD ANIMATION MARK CHANGE - (choose scale/animation property on data if not given one)
 	if (staticPoint) marks.push(getLineStaticPoint(props));
 	marks.push(...getMetricRangeGroupMarks(props));
 	if (hasInteractiveChildren(children)) {
