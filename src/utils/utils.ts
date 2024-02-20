@@ -61,14 +61,12 @@ export const sanitizeRscChartChildren = (children: Children<RscElement> | undefi
 export const sanitizeBigNumberChildren = (children: Children<BigNumberChildElement> | undefined): BigNumberChildElement[] => {
 	const sanitizedChildren = toArray(children)
 		.flat()
-		.filter((child): child is BigNumberChildElement => isBigNumberChildElement(child));
+		.filter((child): child is BigNumberChildElement => isChartChildElement(child));
 	return sanitizedChildren.filter(c => c.type == Line)
 };
 
 export const chartContainsBigNumber = (children: Children<ChartChildElement> | undefined): ChartChildElement[] => {
-	console.warn('Chart contains big number out of these children', children);
 	const sanitizedChildren = sanitizeRscChartChildren(children);
-	console.warn('After children have been sanitized', sanitizedChildren);
 	return sanitizedChildren.filter(child => child.type == BigNumber);
 }
 
@@ -102,13 +100,8 @@ export const sanitizeTrendlineChildren = (
 
 const isChartChildElement = (child: ChildElement<ChartChildElement> | undefined): child is ChartChildElement => {
 	const res = isRscComponent(child);
-	console.warn('Is the child an rsc component?', res);
 	return res;
 };
-
-const isBigNumberChildElement = (child: ChildElement<BigNumberChildElement> | undefined): child is BigNumberChildElement => {
-	return isRscComponent(child)
-}
 
 const isMarkChildElement = <T extends MarkChildElement = MarkChildElement>(
 	child: ChildElement<T> | undefined

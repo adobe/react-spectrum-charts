@@ -213,10 +213,13 @@ export interface BigNumberProps {
 	readonly children?: Children<BigNumberChildElement>
 	readonly rscChartProps?: RscChartProps
 	readonly numberFormat?: string;
-	readonly numberType?: 'linear' | 'percentage';
-	readonly method?: 'sum' | 'avg' | 'last';
+	readonly numberType?: BigNumberNumberType;
+	readonly method?: BigNumberMethod;
 	readonly icon?: IconElement;
 }
+
+export type BigNumberNumberType = 'linear' | 'percentage'
+export type BigNumberMethod = 'sum' | 'avg' | 'last'
 
 export type Granularity = 'minute' | 'hour' | 'day' | 'week' | 'month' | 'quarter';
 /**

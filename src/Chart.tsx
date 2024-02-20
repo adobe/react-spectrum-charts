@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { FC, cloneElement, forwardRef, useEffect, useMemo, useRef, useState } from 'react';
+import { FC, forwardRef, useEffect, useMemo, useRef, useState } from 'react';
 
 import { EmptyState } from '@components/EmptyState';
 import { LoadingState } from '@components/LoadingState';
@@ -17,6 +17,7 @@ import { DEFAULT_BACKGROUND_COLOR, DEFAULT_COLOR_SCHEME, DEFAULT_LINE_TYPES, DEF
 import useChartImperativeHandle from '@hooks/useChartImperativeHandle';
 import useChartWidth from '@hooks/useChartWidth';
 import { useResizeObserver } from '@hooks/useResizeObserver';
+import { BigNumber } from '@rsc';
 import { getColorValue } from '@specBuilder/specUtils';
 import { chartContainsBigNumber, toArray } from '@utils';
 import { RscChart } from 'RscChart';
@@ -88,7 +89,8 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 
 		const bigNumberChildren = chartContainsBigNumber(props.children);
 
-		const hasBigNumberChildren = bigNumberChildren.length > 0;
+		const bigNumberProps =
+			bigNumberChildren.length > 0 ? (bigNumberChildren[0] as BigNumberElement).props : undefined;
 
 		useEffect(() => {
 			// if placeholder content is displayed, clear out the chartview so it can't be downloaded or copied to clipboard
@@ -110,8 +112,8 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 			);
 		}
 
-		if (hasBigNumberChildren && toArray(props.children).length != bigNumberChildren.length) {
-			throw new Error(
+		if (bigNumberProps && toArray(props.children).length != bigNumberChildren.length) {
+			console.warn(
 				'If passing BigNumber to Chart only the BigNumber will be displayed. All other elements will be ignored'
 			);
 		}
@@ -142,13 +144,8 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 			UNSAFE_vegaSpec: UNSAFE_vegaSpec,
 		};
 
-
-		const placeholderContent = hasBigNumberChildren ? (
-			<>
-				{cloneElement(bigNumberChildren[0] as BigNumberElement, {
-					rscChartProps: rscChartProps,
-				})}
-			</>
+		const chartContent = bigNumberProps ? (
+			<BigNumber {...bigNumberProps} rscChartProps={rscChartProps} />
 		) : (
 			<RscChart {...rscChartProps}>{props.children}</RscChart>
 		);
@@ -166,14 +163,16 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 					className="rsc-container"
 					style={{ backgroundColor: getColorValue(backgroundColor, colorScheme) }}
 				>
-					{ showPlaceholderContent ? (
+					{showPlaceholderContent ? (
 						<PlaceholderContent
 							loading={loading}
 							data={data}
 							height={height}
 							emptyStateText={emptyStateText}
 						/>
-					) : placeholderContent }
+					) : (
+						chartContent
+					)}
 				</div>
 			</Provider>
 		);
