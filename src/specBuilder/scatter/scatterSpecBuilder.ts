@@ -15,6 +15,7 @@ import {
 	DEFAULT_LINEAR_DIMENSION,
 	DEFAULT_METRIC,
 	FILTERED_TABLE,
+	LINEAR_COLOR_SCALE,
 	MARK_ID,
 } from '@constants';
 import { addTimeTransform, getTableData } from '@specBuilder/data/dataUtils';
@@ -137,13 +138,18 @@ export const addSignals = produce<Signal[], [ScatterSpecProps]>((signals, props)
  * @param scatterProps ScatterSpecProps
  */
 export const setScales = produce<Scale[], [ScatterSpecProps]>((scales, props) => {
-	const { color, dimension, dimensionScaleType, lineType, lineWidth, metric, opacity, size } = props;
+	const { color, colorScaleType, dimension, dimensionScaleType, lineType, lineWidth, metric, opacity, size } = props;
 	// add dimension scale
 	addContinuousDimensionScale(scales, { scaleType: dimensionScaleType, dimension });
 	// add metric scale
 	addMetricScale(scales, [metric]);
-	// add color to the color domain
-	addFieldToFacetScaleDomain(scales, 'color', color);
+	if (colorScaleType === 'linear') {
+		// add color to the color domain
+		addFieldToFacetScaleDomain(scales, LINEAR_COLOR_SCALE, color);
+	} else {
+		// add color to the color domain
+		addFieldToFacetScaleDomain(scales, 'color', color);
+	}
 	// add lineType to the lineType domain
 	addFieldToFacetScaleDomain(scales, 'lineType', lineType);
 	// add lineWidth to the lineWidth domain

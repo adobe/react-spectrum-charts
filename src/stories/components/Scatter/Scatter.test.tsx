@@ -23,7 +23,7 @@ import {
 	within,
 } from '@test-utils';
 
-import { Basic, Color, LineType, Opacity, Popover, Size, Tooltip } from './Scatter.story';
+import { Basic, Color, ColorScaleType, LineType, Opacity, Popover, Size, Tooltip } from './Scatter.story';
 import { HIGHLIGHT_CONTRAST_RATIO } from '@constants';
 import userEvent from '@testing-library/user-event';
 
@@ -59,6 +59,25 @@ describe('Scatter', () => {
 
 		const legendEntries = getAllLegendEntries(chart);
 		expect(legendEntries).toHaveLength(3);
+	});
+
+	test('ColorScaleType renders properly', async () => {
+		render(<ColorScaleType {...ColorScaleType.args} />);
+
+		const chart = await findChart();
+		expect(chart).toBeInTheDocument();
+
+		const points = await findAllMarksByGroupName(chart, 'scatter0');
+		expect(points).toHaveLength(16);
+		expect(points[0]).toHaveAttribute('fill', 'rgb(253, 231, 37)');
+		expect(points[6]).toHaveAttribute('fill', 'rgb(104, 198, 93)');
+		expect(points[11]).toHaveAttribute('fill', 'rgb(52, 99, 140)');
+
+		// legend title
+		expect(screen.getByText('Weight')).toBeInTheDocument();
+		// gradient labels
+		expect(screen.getByText('2.0')).toBeInTheDocument();
+		expect(screen.getByText('4.5')).toBeInTheDocument();
 	});
 
 	test('LineType renders properly', async () => {

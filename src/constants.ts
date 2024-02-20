@@ -46,6 +46,9 @@ export const MARK_ID = 'rscMarkId';
 export const TRENDLINE_VALUE = 'rscTrendlineValue';
 export const STACK_ID = 'rscStackId';
 
+// scaleNames
+export const LINEAR_COLOR_SCALE = 'linearColor';
+
 // encode rules
 export const DEFAULT_OPACITY_RULE = { value: 1 };
 

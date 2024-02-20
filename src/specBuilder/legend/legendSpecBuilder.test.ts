@@ -9,11 +9,11 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { DEFAULT_COLOR, DEFAULT_COLOR_SCHEME, DEFAULT_SECONDARY_COLOR, TABLE } from '@constants';
+import { DEFAULT_COLOR, DEFAULT_COLOR_SCHEME, DEFAULT_SECONDARY_COLOR, LINEAR_COLOR_SCALE, TABLE } from '@constants';
 import { Data, Legend, LegendEncode, Scale, Spec, SymbolEncodeEntry } from 'vega';
 
 import { defaultHighlightSignal } from '../signal/signalSpecBuilder.test';
-import { addData, addLegend, addSignals, formatFacetRefsWithPresets } from './legendSpecBuilder';
+import { addData, addLegend, addSignals, formatFacetRefsWithPresets, getContinuousLegend } from './legendSpecBuilder';
 import { defaultLegendProps, opacityEncoding } from './legendTestUtils';
 
 const defaultSpec: Spec = {
@@ -356,5 +356,19 @@ describe('addSignals()', () => {
 				(signal) => signal.name === 'hiddenSeries',
 			),
 		).toBeUndefined();
+	});
+});
+
+describe('getContinuousLegend()', () => {
+	test('should return symbolSize legend if facetType is symbolSize', () => {
+		expect(getContinuousLegend({ facetType: 'symbolSize', field: 'weight' }, defaultLegendProps)).toHaveProperty(
+			'size',
+			'symbolSize',
+		);
+	});
+	test('should return linearColor scale if facetType is linearColor', () => {
+		expect(
+			getContinuousLegend({ facetType: LINEAR_COLOR_SCALE, field: 'weight' }, defaultLegendProps),
+		).toHaveProperty('fill', LINEAR_COLOR_SCALE);
 	});
 });
