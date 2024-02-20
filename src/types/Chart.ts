@@ -170,7 +170,7 @@ export interface DonutProps extends MarkProps {
 	holeRatio?: number;
 	/** Determines if it should display direct labels. If true, must also supply 'segment' prop. Default is false */
 	hasDirectLabels?: boolean;
-	/** determines if the center metric should be displayed as a percent. if true, data should only be two data points, which sum to 1
+	/** Determines if the center metric should be displayed as a percent. if true, data should only be two data points, which sum to 1
 	 * Also, if true, will display the first datapoint as a percent */
 	isBoolean?: boolean;
 }
