@@ -229,6 +229,7 @@ const getSymbolFacetEncoding = <T>({
 
 	const secondaryFacetMapping: { [key in FacetType]: { scale: SecondaryFacetType; signal: string } } = {
 		color: { scale: 'secondaryColor', signal: 'colors' },
+		linearColor: { scale: 'secondaryColor', signal: 'colors' },
 		lineType: { scale: 'secondaryLineType', signal: 'lineTypes' },
 		lineWidth: { scale: 'secondaryLineWidth', signal: 'lineWidths' },
 		opacity: { scale: 'secondaryOpacity', signal: 'opacities' },
