@@ -15,6 +15,7 @@ import { Annotation } from '@components/Annotation';
 import { ChartTooltip } from '@components/ChartTooltip';
 import {
 	BACKGROUND_COLOR,
+	COLOR_SCALE,
 	CORNER_RADIUS,
 	DEFAULT_CATEGORICAL_DIMENSION,
 	DEFAULT_COLOR,
@@ -88,7 +89,7 @@ const defaultMark: Mark = {
 		enter: {
 			...defaultDodgedYEncodings,
 			...defaultDodgedCornerRadiusEncodings,
-			fill: { field: DEFAULT_COLOR, scale: 'color' },
+			fill: { field: DEFAULT_COLOR, scale: COLOR_SCALE },
 			fillOpacity: DEFAULT_OPACITY_RULE,
 			tooltip: undefined,
 		},
@@ -110,7 +111,7 @@ const defaultMarkWithTooltip: Mark = {
 		enter: {
 			...defaultDodgedYEncodings,
 			...defaultDodgedCornerRadiusEncodings,
-			fill: { field: DEFAULT_COLOR, scale: 'color' },
+			fill: { field: DEFAULT_COLOR, scale: COLOR_SCALE },
 			fillOpacity: DEFAULT_OPACITY_RULE,
 			tooltip: { signal: "merge(datum, {'rscComponentName': 'bar0'})" },
 		},

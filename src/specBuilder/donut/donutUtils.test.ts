@@ -13,7 +13,7 @@
 import { createElement } from 'react';
 
 import { ChartPopover } from '@components/ChartPopover';
-import { FILTERED_TABLE, HIGHLIGHT_CONTRAST_RATIO, MARK_ID } from '@constants';
+import { COLOR_SCALE, FILTERED_TABLE, HIGHLIGHT_CONTRAST_RATIO, MARK_ID } from '@constants';
 import { getTooltip } from '@specBuilder/marks/markUtils';
 import { MarkChildElement } from 'types';
 
@@ -434,7 +434,7 @@ describe('getArcMark', () => {
 			from: { data: FILTERED_TABLE },
 			encode: {
 				enter: {
-					fill: { scale: 'color', field: 'id' },
+					fill: { scale: COLOR_SCALE, field: 'id' },
 					x: { signal: 'width / 2' },
 					y: { signal: 'height / 2' },
 					tooltip: undefined,
@@ -460,7 +460,7 @@ describe('getArcMark', () => {
 			from: { data: FILTERED_TABLE },
 			encode: {
 				enter: {
-					fill: { scale: 'color', field: 'id' },
+					fill: { scale: COLOR_SCALE, field: 'id' },
 					x: { signal: 'width / 2' },
 					y: { signal: 'height / 2' },
 					tooltip: getTooltip(children, 'Test'),

@@ -16,6 +16,7 @@ import { MetricRange } from '@components/MetricRange';
 import { Trendline } from '@components/Trendline';
 import {
 	BACKGROUND_COLOR,
+	COLOR_SCALE,
 	DEFAULT_COLOR,
 	DEFAULT_COLOR_SCHEME,
 	DEFAULT_METRIC,
@@ -58,7 +59,7 @@ const getMetricRangeElement = (props?: Partial<MetricRangeProps>): MetricRangeEl
 	});
 
 const startingSpec: Spec = initializeSpec({
-	scales: [{ name: 'color', type: 'ordinal' }],
+	scales: [{ name: COLOR_SCALE, type: 'ordinal' }],
 });
 
 const defaultSpec = initializeSpec({
@@ -88,7 +89,7 @@ const defaultSpec = initializeSpec({
 				{
 					encode: {
 						enter: {
-							stroke: { field: DEFAULT_COLOR, scale: 'color' },
+							stroke: { field: DEFAULT_COLOR, scale: COLOR_SCALE },
 							strokeDash: { value: [] },
 							strokeOpacity: DEFAULT_OPACITY_RULE,
 							strokeWidth: undefined,
@@ -110,7 +111,7 @@ const defaultSpec = initializeSpec({
 		},
 	],
 	scales: [
-		{ domain: { data: TABLE, fields: [DEFAULT_COLOR] }, name: 'color', type: 'ordinal' },
+		{ domain: { data: TABLE, fields: [DEFAULT_COLOR] }, name: COLOR_SCALE, type: 'ordinal' },
 		{
 			domain: { data: FILTERED_TABLE, fields: [DEFAULT_TRANSFORMED_TIME_DIMENSION] },
 			name: 'xTime',
@@ -167,7 +168,7 @@ const line0_groupMark = {
 			encode: {
 				enter: {
 					y: { scale: 'yLinear', field: 'value' },
-					stroke: { scale: 'color', field: 'series' },
+					stroke: { scale: COLOR_SCALE, field: 'series' },
 					strokeDash: { value: [] },
 					strokeOpacity: DEFAULT_OPACITY_RULE,
 					strokeWidth: undefined,
@@ -207,7 +208,7 @@ const metricRangeGroupMark = {
 						field: 'value',
 					},
 					stroke: {
-						scale: 'color',
+						scale: COLOR_SCALE,
 						field: 'series',
 					},
 					strokeDash: {
@@ -246,7 +247,7 @@ const metricRangeGroupMark = {
 						scale: 'yLinear',
 					},
 					fill: {
-						scale: 'color',
+						scale: COLOR_SCALE,
 						field: 'series',
 					},
 					tooltip: undefined,
@@ -286,7 +287,7 @@ const metricRangeWithDisplayPointMarks = [
 					field: 'value',
 				},
 				fill: {
-					scale: 'color',
+					scale: COLOR_SCALE,
 					field: 'series',
 				},
 				stroke: {
@@ -320,7 +321,7 @@ const displayPointMarks = [
 					field: 'value',
 				},
 				fill: {
-					scale: 'color',
+					scale: COLOR_SCALE,
 					field: 'series',
 				},
 				stroke: {
@@ -458,7 +459,7 @@ describe('lineSpecBuilder', () => {
 						{
 							encode: {
 								enter: {
-									stroke: { field: DEFAULT_COLOR, scale: 'color' },
+									stroke: { field: DEFAULT_COLOR, scale: COLOR_SCALE },
 									strokeOpacity: DEFAULT_OPACITY_RULE,
 									strokeDash: { value: [8, 8] },
 									strokeWidth: undefined,

@@ -16,7 +16,12 @@ import {
 	DEFAULT_LINE_TYPES,
 	FILTERED_TABLE,
 	LINEAR_COLOR_SCALE,
+	LINE_TYPE_SCALE,
+	LINE_WIDTH_SCALE,
+	OPACITY_SCALE,
 	SERIES_ID,
+	SYMBOL_SHAPE_SCALE,
+	SYMBOL_SIZE_SCALE,
 	TABLE,
 } from '@constants';
 import { Area, Axis, Bar, Legend, Line, Scatter, Title } from '@rsc';
@@ -55,6 +60,7 @@ import { addDonut } from './donut/donutSpecBuilder';
 import { setHoverOpacityForMarks } from './legend/legendHighlightUtils';
 import { addLegend } from './legend/legendSpecBuilder';
 import { addLine } from './line/lineSpecBuilder';
+import { getOrdinalScale } from './scale/scaleSpecBuilder';
 import { addScatter } from './scatter/scatterSpecBuilder';
 import { getGenericSignal, hasSignalByName } from './signal/signalSpecBuilder';
 import {
@@ -67,7 +73,6 @@ import {
 	initializeSpec,
 } from './specUtils';
 import { addTitle } from './title/titleSpecBuilder';
-import { getOrdinalScale } from './scale/scaleSpecBuilder';
 
 export function buildSpec({
 	backgroundColor = DEFAULT_BACKGROUND_COLOR,
@@ -278,7 +283,7 @@ export const getLineTypeScale = (lineTypes: LineTypes): OrdinalScale => {
 	const range = isLineTypeArray(lineTypes)
 		? getStrokeDashesFromLineTypes(lineTypes)
 		: lineTypes.map((lineTypesArray) => getStrokeDashFromLineType(lineTypesArray[0]));
-	return getOrdinalScale('lineType', range);
+	return getOrdinalScale(LINE_TYPE_SCALE, range);
 };
 
 export const getSymbolShapeScale = (symbolShapes: SymbolShapes): OrdinalScale => {
@@ -286,7 +291,7 @@ export const getSymbolShapeScale = (symbolShapes: SymbolShapes): OrdinalScale =>
 	const range = isSymbolShapeArray(symbolShapes)
 		? getPathsFromSymbolShapes(symbolShapes)
 		: symbolShapes.map((symbolShape) => getPathFromSymbolShape(symbolShape[0]));
-	return getOrdinalScale('symbolShape', range);
+	return getOrdinalScale(SYMBOL_SHAPE_SCALE, range);
 };
 
 /**
@@ -295,7 +300,7 @@ export const getSymbolShapeScale = (symbolShapes: SymbolShapes): OrdinalScale =>
  * @returns LinearScale
  */
 export const getSymbolSizeScale = (symbolSizes: [SymbolSize, SymbolSize]): LinearScale => ({
-	name: 'symbolSize',
+	name: SYMBOL_SIZE_SCALE,
 	type: 'linear',
 	zero: false,
 	range: symbolSizes.map((symbolSize) => getVegaSymbolSizeFromRscSymbolSize(symbolSize)),
@@ -304,16 +309,16 @@ export const getSymbolSizeScale = (symbolSizes: [SymbolSize, SymbolSize]): Linea
 
 export const getLineWidthScale = (lineWidths: LineWidth[]): OrdinalScale => {
 	const range = lineWidths.map((lineWidth) => getLineWidthPixelsFromLineWidth(lineWidth));
-	return getOrdinalScale('lineWidth', range);
+	return getOrdinalScale(LINE_WIDTH_SCALE, range);
 };
 
 export const getOpacityScale = (opacities?: Opacities): OrdinalScale | PointScale => {
 	if (opacities?.length) {
 		const range = isNumberArray(opacities) ? opacities : opacities.map((opacityArray) => opacityArray[0]);
-		return getOrdinalScale('opacity', range);
+		return getOrdinalScale(OPACITY_SCALE, range);
 	}
 	return {
-		name: 'opacity',
+		name: OPACITY_SCALE,
 		type: 'point',
 		range: [1, 0],
 		padding: 1,

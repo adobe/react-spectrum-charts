@@ -9,7 +9,15 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { DEFAULT_COLOR_SCHEME, LINEAR_COLOR_SCALE } from '@constants';
+import {
+	COLOR_SCALE,
+	DEFAULT_COLOR_SCHEME,
+	LINEAR_COLOR_SCALE,
+	LINE_TYPE_SCALE,
+	OPACITY_SCALE,
+	SYMBOL_SHAPE_SCALE,
+	SYMBOL_SIZE_SCALE,
+} from '@constants';
 import { addFieldToFacetScaleDomain } from '@specBuilder/scale/scaleSpecBuilder';
 import {
 	getColorValue,
@@ -201,9 +209,9 @@ const getCategoricalLegend = (facets: Facet[], props: LegendSpecProps): Legend =
 export const getContinuousLegend = (facet: Facet, props: LegendSpecProps): Legend => {
 	const { symbolShape } = props;
 	// add a switch statement here for the different types of continuous legends
-	if (facet.facetType === 'symbolSize') {
+	if (facet.facetType === SYMBOL_SIZE_SCALE) {
 		return {
-			size: 'symbolSize',
+			size: SYMBOL_SIZE_SCALE,
 			...getLegendLayout(props),
 			symbolType: getSymbolType(symbolShape),
 		};
@@ -225,10 +233,10 @@ const getLegendLayout = ({ position, title }: LegendSpecProps): Partial<Legend> 
 const addScales = produce<Scale[], [LegendSpecProps]>((scales, { color, lineType, opacity, symbolShape }) => {
 	// it is possible to define fields to facet the data off of on the legend
 	// if these fields are not already defined on the scales, we need to add them
-	addFieldToFacetScaleDomain(scales, 'color', color);
-	addFieldToFacetScaleDomain(scales, 'lineType', lineType);
-	addFieldToFacetScaleDomain(scales, 'opacity', opacity);
-	addFieldToFacetScaleDomain(scales, 'symbolShape', symbolShape);
+	addFieldToFacetScaleDomain(scales, COLOR_SCALE, color);
+	addFieldToFacetScaleDomain(scales, LINE_TYPE_SCALE, lineType);
+	addFieldToFacetScaleDomain(scales, OPACITY_SCALE, opacity);
+	addFieldToFacetScaleDomain(scales, SYMBOL_SHAPE_SCALE, symbolShape);
 });
 
 const addMarks = produce<Mark[], [LegendSpecProps]>((marks, { highlight, keys, name }) => {

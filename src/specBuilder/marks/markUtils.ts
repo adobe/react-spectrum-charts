@@ -17,10 +17,15 @@ import { MetricRange } from '@components/MetricRange';
 import { Trendline } from '@components/Trendline';
 import {
 	BACKGROUND_COLOR,
+	COLOR_SCALE,
 	DEFAULT_OPACITY_RULE,
 	DEFAULT_TRANSFORMED_TIME_DIMENSION,
 	HIGHLIGHT_CONTRAST_RATIO,
 	LINEAR_COLOR_SCALE,
+	LINE_TYPE_SCALE,
+	LINE_WIDTH_SCALE,
+	OPACITY_SCALE,
+	SYMBOL_SIZE_SCALE,
 } from '@constants';
 import { getScaleName } from '@specBuilder/scale/scaleSpecBuilder';
 import {
@@ -119,7 +124,7 @@ export const getColorProductionRule = (
 	colorScheme: ColorScheme,
 	colorScaleType: 'linear' | 'ordinal' = 'ordinal',
 ): ColorValueRef => {
-	const colorScaleName = colorScaleType === 'linear' ? LINEAR_COLOR_SCALE : 'color';
+	const colorScaleName = colorScaleType === 'linear' ? LINEAR_COLOR_SCALE : COLOR_SCALE;
 	if (Array.isArray(color)) {
 		return {
 			signal: `scale('colors', datum.${color[0]})[indexof(domain('secondaryColor'), datum.${color[1]})% length(scale('colors', datum.${color[0]}))]`,
@@ -143,7 +148,7 @@ export const getLineWidthProductionRule = (
 	}
 	// key reference for setting line width
 	if (typeof lineWidth === 'string') {
-		return { scale: 'lineWidth', field: lineWidth };
+		return { scale: LINE_WIDTH_SCALE, field: lineWidth };
 	}
 	// static value for setting line width
 	return { value: getLineWidthPixelsFromLineWidth(lineWidth.value) };
@@ -156,7 +161,7 @@ export const getOpacityProductionRule = (opacity: OpacityFacet | DualFacet): { s
 		};
 	}
 	if (typeof opacity === 'string') {
-		return { signal: `scale('opacity', datum.${opacity})` };
+		return { signal: `scale('${OPACITY_SCALE}', datum.${opacity})` };
 	}
 	return { value: opacity.value };
 };
@@ -164,7 +169,7 @@ export const getOpacityProductionRule = (opacity: OpacityFacet | DualFacet): { s
 export const getSymbolSizeProductionRule = (symbolSize: SymbolSizeFacet): NumericValueRef => {
 	// key reference for setting symbol size
 	if (typeof symbolSize === 'string') {
-		return { scale: 'symbolSize', field: symbolSize };
+		return { scale: SYMBOL_SIZE_SCALE, field: symbolSize };
 	}
 	// static value for setting symbol size
 	return { value: getVegaSymbolSizeFromRscSymbolSize(symbolSize.value) };
@@ -177,7 +182,7 @@ export const getStrokeDashProductionRule = (lineType: LineTypeFacet | DualFacet)
 		};
 	}
 	if (typeof lineType === 'string') {
-		return { scale: 'lineType', field: lineType };
+		return { scale: LINE_TYPE_SCALE, field: lineType };
 	}
 	return { value: getStrokeDashFromLineType(lineType.value) };
 };

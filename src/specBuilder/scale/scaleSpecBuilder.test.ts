@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { DEFAULT_COLOR } from '@constants';
+import { COLOR_SCALE, DEFAULT_COLOR } from '@constants';
 import { OrdinalScale, Scale } from 'vega';
 
 import {
@@ -22,15 +22,15 @@ import {
 
 const defaultColorScale: OrdinalScale = {
 	domain: { data: 'table', fields: [DEFAULT_COLOR] },
-	name: 'color',
+	name: COLOR_SCALE,
 	type: 'ordinal',
 };
 
 describe('addDomainFields()', () => {
 	test('no domain fields', () => {
-		expect(addDomainFields({ name: 'color', type: 'ordinal' }, [DEFAULT_COLOR])).toStrictEqual({
+		expect(addDomainFields({ name: COLOR_SCALE, type: 'ordinal' }, [DEFAULT_COLOR])).toStrictEqual({
 			domain: { data: 'table', fields: [DEFAULT_COLOR] },
-			name: 'color',
+			name: COLOR_SCALE,
 			type: 'ordinal',
 		});
 	});
@@ -72,17 +72,17 @@ describe('getPadding()', () => {
 
 describe('addFieldToFacetScaleDomain()', () => {
 	test('should add fields to correct scale', () => {
-		const scales: Scale[] = [{ name: 'color', type: 'ordinal' }];
-		addFieldToFacetScaleDomain(scales, 'color', DEFAULT_COLOR);
+		const scales: Scale[] = [{ name: COLOR_SCALE, type: 'ordinal' }];
+		addFieldToFacetScaleDomain(scales, COLOR_SCALE, DEFAULT_COLOR);
 		expect(scales).toStrictEqual([
-			{ name: 'color', type: 'ordinal', domain: { data: 'table', fields: [DEFAULT_COLOR] } },
+			{ name: COLOR_SCALE, type: 'ordinal', domain: { data: 'table', fields: [DEFAULT_COLOR] } },
 		]);
 	});
 
 	test('should not add any fields to the domain if the facet value is static', () => {
-		const scales: Scale[] = [{ name: 'color', type: 'ordinal' }];
-		addFieldToFacetScaleDomain(scales, 'color', { value: 'red-500' });
-		expect(scales).toStrictEqual([{ name: 'color', type: 'ordinal' }]);
+		const scales: Scale[] = [{ name: COLOR_SCALE, type: 'ordinal' }];
+		addFieldToFacetScaleDomain(scales, COLOR_SCALE, { value: 'red-500' });
+		expect(scales).toStrictEqual([{ name: COLOR_SCALE, type: 'ordinal' }]);
 	});
 });
 

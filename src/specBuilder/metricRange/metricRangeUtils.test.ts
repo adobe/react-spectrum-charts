@@ -13,6 +13,7 @@ import { createElement } from 'react';
 
 import { MetricRange } from '@components/MetricRange';
 import {
+	COLOR_SCALE,
 	DEFAULT_COLOR,
 	DEFAULT_COLOR_SCHEME,
 	DEFAULT_METRIC,
@@ -77,7 +78,7 @@ const basicMetricRangeMarks = [
 		encode: {
 			enter: {
 				y: { scale: 'yLinear', field: 'metric' },
-				stroke: { scale: 'color', field: 'series' },
+				stroke: { scale: COLOR_SCALE, field: 'series' },
 				strokeDash: { value: [3, 4] },
 				strokeOpacity: DEFAULT_OPACITY_RULE,
 				strokeWidth: { value: 1.5 },
@@ -103,7 +104,7 @@ const basicMetricRangeMarks = [
 				tooltip: undefined,
 				y: { scale: 'yLinear', field: 'metricStart' },
 				y2: { scale: 'yLinear', field: 'metricEnd' },
-				fill: { scale: 'color', field: 'series' },
+				fill: { scale: COLOR_SCALE, field: 'series' },
 			},
 			update: {
 				cursor: undefined,

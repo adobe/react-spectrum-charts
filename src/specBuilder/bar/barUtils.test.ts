@@ -15,6 +15,7 @@ import { Annotation } from '@components/Annotation';
 import { ChartPopover } from '@components/ChartPopover';
 import { ChartTooltip } from '@components/ChartTooltip';
 import {
+	COLOR_SCALE,
 	CORNER_RADIUS,
 	DEFAULT_CATEGORICAL_DIMENSION,
 	DEFAULT_COLOR,
@@ -302,7 +303,7 @@ describe('barUtils', () => {
 		test('should return production rule with one item in array if there is not a popover', () => {
 			const strokeRule = getStroke(defaultBarProps);
 			expect(strokeRule).toHaveLength(1);
-			expect(strokeRule[0]).toStrictEqual({ scale: 'color', field: DEFAULT_COLOR });
+			expect(strokeRule[0]).toStrictEqual({ scale: COLOR_SCALE, field: DEFAULT_COLOR });
 		});
 		test('should return rules for selected data if popover exists', () => {
 			const popover = createElement(ChartPopover);

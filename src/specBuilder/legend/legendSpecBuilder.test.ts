@@ -9,7 +9,14 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { DEFAULT_COLOR, DEFAULT_COLOR_SCHEME, DEFAULT_SECONDARY_COLOR, LINEAR_COLOR_SCALE, TABLE } from '@constants';
+import {
+	COLOR_SCALE,
+	DEFAULT_COLOR,
+	DEFAULT_COLOR_SCHEME,
+	DEFAULT_SECONDARY_COLOR,
+	LINEAR_COLOR_SCALE,
+	TABLE,
+} from '@constants';
 import { Data, Legend, LegendEncode, Scale, Spec, SymbolEncodeEntry } from 'vega';
 
 import { defaultHighlightSignal } from '../signal/signalSpecBuilder.test';
@@ -20,7 +27,7 @@ const defaultSpec: Spec = {
 	signals: [],
 	scales: [
 		{
-			name: 'color',
+			name: COLOR_SCALE,
 			type: 'ordinal',
 			domain: { data: TABLE, fields: [DEFAULT_COLOR] },
 		},
@@ -28,7 +35,7 @@ const defaultSpec: Spec = {
 	marks: [],
 };
 
-const colorEncoding = { signal: `scale('color', data('legend0Aggregate')[datum.index].${DEFAULT_COLOR})` };
+const colorEncoding = { signal: `scale('${COLOR_SCALE}', data('legend0Aggregate')[datum.index].${DEFAULT_COLOR})` };
 const hiddenSeriesEncoding = {
 	test: 'indexof(hiddenSeries, datum.value) !== -1',
 	value: 'rgb(213, 213, 213)',
@@ -248,12 +255,12 @@ describe('addLegend()', () => {
 
 		test('should add fields to scales if they have not been added', () => {
 			const legendSpec = addLegend(
-				{ ...defaultSpec, scales: [{ name: 'color', type: 'ordinal' }] },
+				{ ...defaultSpec, scales: [{ name: COLOR_SCALE, type: 'ordinal' }] },
 				{ color: 'series' },
 			);
 			expect(legendSpec.scales).toEqual([
 				{
-					name: 'color',
+					name: COLOR_SCALE,
 					type: 'ordinal',
 					domain: { data: 'table', fields: ['series'] },
 				},

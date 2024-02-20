@@ -11,6 +11,7 @@
  */
 import {
 	BACKGROUND_COLOR,
+	COLOR_SCALE,
 	CORNER_RADIUS,
 	DEFAULT_CATEGORICAL_DIMENSION,
 	DEFAULT_COLOR,
@@ -320,7 +321,7 @@ export const defaultBarEnterEncodings: RectEncodeEntry = {
 };
 
 export const defaultBarStrokeEncodings: RectEncodeEntry = {
-	stroke: [{ scale: 'color', field: DEFAULT_COLOR }],
+	stroke: [{ scale: COLOR_SCALE, field: DEFAULT_COLOR }],
 	strokeDash: [{ value: [] }],
 	strokeWidth: [{ value: 0 }],
 };

@@ -15,12 +15,18 @@ import { Bar } from '@components/Bar';
 import { Legend } from '@components/Legend';
 import {
 	BACKGROUND_COLOR,
+	COLOR_SCALE,
 	DEFAULT_BACKGROUND_COLOR,
 	DEFAULT_COLOR,
 	DEFAULT_SECONDARY_COLOR,
 	FILTERED_TABLE,
+	LINE_TYPE_SCALE,
+	LINE_WIDTH_SCALE,
 	MARK_ID,
+	OPACITY_SCALE,
 	SERIES_ID,
+	SYMBOL_SHAPE_SCALE,
+	SYMBOL_SIZE_SCALE,
 	TABLE,
 } from '@constants';
 import { ROUNDED_SQUARE_PATH } from 'svgPaths';
@@ -76,7 +82,7 @@ describe('Chart spec builder', () => {
 		test('default color scale used', () => {
 			expect(getColorScale('categorical12', 'light')).toStrictEqual({
 				domain: { data: 'table', fields: [] },
-				name: 'color',
+				name: COLOR_SCALE,
 				range: [
 					'rgb(15, 181, 174)',
 					'rgb(64, 70, 202)',
@@ -96,7 +102,7 @@ describe('Chart spec builder', () => {
 		});
 		test('custom colors supplied', () => {
 			expect(getColorScale(['red', 'blue'], 'light')).toStrictEqual({
-				name: 'color',
+				name: COLOR_SCALE,
 				type: 'ordinal',
 				range: ['red', 'blue'],
 				domain: { data: 'table', fields: [] },
@@ -213,7 +219,7 @@ describe('Chart spec builder', () => {
 	describe('getLineTypeScale()', () => {
 		test('should return lineType scale', () => {
 			expect(getLineTypeScale(['solid', 'dashed'])).toStrictEqual({
-				name: 'lineType',
+				name: LINE_TYPE_SCALE,
 				type: 'ordinal',
 				range: [[], [7, 4]],
 				domain: { data: 'table', fields: [] },
@@ -222,7 +228,7 @@ describe('Chart spec builder', () => {
 
 		test('should return lineType scale from 2d input', () => {
 			expect(getLineTypeScale([['solid', 'dashed']])).toStrictEqual({
-				name: 'lineType',
+				name: LINE_TYPE_SCALE,
 				type: 'ordinal',
 				range: [[]],
 				domain: { data: 'table', fields: [] },
@@ -233,7 +239,7 @@ describe('Chart spec builder', () => {
 	describe('getOpacityScale()', () => {
 		test('should return default opacity point scale if no scale provided', () => {
 			const defaultOpacityScale = {
-				name: 'opacity',
+				name: OPACITY_SCALE,
 				type: 'point',
 				range: [1, 0],
 				padding: 1,
@@ -246,7 +252,7 @@ describe('Chart spec builder', () => {
 
 		test('should return opacity ordinal scale if scale values are provided', () => {
 			expect(getOpacityScale([0.2, 0.4, 0.6, 0.8])).toStrictEqual({
-				name: 'opacity',
+				name: OPACITY_SCALE,
 				type: 'ordinal',
 				range: [0.2, 0.4, 0.6, 0.8],
 				domain: { data: 'table', fields: [] },
@@ -260,7 +266,7 @@ describe('Chart spec builder', () => {
 					[0.6, 0.8],
 				]),
 			).toStrictEqual({
-				name: 'opacity',
+				name: OPACITY_SCALE,
 				type: 'ordinal',
 				range: [0.2, 0.6],
 				domain: { data: 'table', fields: [] },
@@ -271,7 +277,7 @@ describe('Chart spec builder', () => {
 	describe('getLineWidthScale()', () => {
 		test('should return lineWidth scale with line width pixel values provided', () => {
 			expect(getLineWidthScale([1, 2, 3, 4])).toStrictEqual({
-				name: 'lineWidth',
+				name: LINE_WIDTH_SCALE,
 				type: 'ordinal',
 				range: [1, 2, 3, 4],
 				domain: { data: 'table', fields: [] },
@@ -280,7 +286,7 @@ describe('Chart spec builder', () => {
 
 		test('should return corect pixel values in scale if pixels and preset names are passed in', () => {
 			expect(getLineWidthScale(['S', 'L', 2, 4])).toStrictEqual({
-				name: 'lineWidth',
+				name: LINE_WIDTH_SCALE,
 				type: 'ordinal',
 				range: [1.5, 3, 2, 4],
 				domain: { data: 'table', fields: [] },
@@ -291,7 +297,7 @@ describe('Chart spec builder', () => {
 	describe('getSymbolShapeScale()', () => {
 		test('should return symbolShape scale with vega shapes', () => {
 			expect(getSymbolShapeScale(['circle', 'square'])).toStrictEqual({
-				name: 'symbolShape',
+				name: SYMBOL_SHAPE_SCALE,
 				type: 'ordinal',
 				range: ['circle', 'square'],
 				domain: { data: 'table', fields: [] },
@@ -302,7 +308,7 @@ describe('Chart spec builder', () => {
 			const path =
 				'M -0.01 -0.38 C -0.04 -0.27 -0.1 -0.07 -0.15 0.08 H 0.14 C 0.1 -0.03 0.03 -0.26 -0.01 -0.38 H -0.01 M -1 -1 M 0.55 -1 H -0.55 C -0.8 -1 -1 -0.8 -1 -0.55 V 0.55 C -1 0.8 -0.8 1 -0.55 1 H 0.55 C 0.8 1 1 0.8 1 0.55 V -0.55 C 1 -0.8 0.8 -1 0.55 -1 M 0.49 0.55 H 0.3 S 0.29 0.55 0.28 0.55 L 0.18 0.27 H -0.22 L -0.31 0.55 S -0.31 0.56 -0.33 0.56 H -0.5 S -0.51 0.56 -0.51 0.54 L -0.17 -0.44 S -0.16 -0.47 -0.15 -0.53 C -0.15 -0.53 -0.15 -0.54 -0.15 -0.54 H 0.08 S 0.09 -0.54 0.09 -0.53 L 0.48 0.54 S 0.48 0.56 0.48 0.56 Z';
 			expect(getSymbolShapeScale([path])).toStrictEqual({
-				name: 'symbolShape',
+				name: SYMBOL_SHAPE_SCALE,
 				type: 'ordinal',
 				range: [path],
 				domain: { data: 'table', fields: [] },
@@ -311,7 +317,7 @@ describe('Chart spec builder', () => {
 
 		test('should return symbolShape scale with supported shapes', () => {
 			expect(getSymbolShapeScale(['rounded-square'])).toStrictEqual({
-				name: 'symbolShape',
+				name: SYMBOL_SHAPE_SCALE,
 				type: 'ordinal',
 				range: [ROUNDED_SQUARE_PATH],
 				domain: { data: 'table', fields: [] },
@@ -325,7 +331,7 @@ describe('Chart spec builder', () => {
 					['triangle,', 'circle'],
 				]),
 			).toStrictEqual({
-				name: 'symbolShape',
+				name: SYMBOL_SHAPE_SCALE,
 				type: 'ordinal',
 				range: ['circle', 'triangle,'],
 				domain: { data: 'table', fields: [] },
@@ -336,7 +342,7 @@ describe('Chart spec builder', () => {
 	describe('getSymbolSizeScale()', () => {
 		test('should return the symbolSize scale', () => {
 			expect(getSymbolSizeScale(['XS', 'XL'])).toStrictEqual({
-				name: 'symbolSize',
+				name: SYMBOL_SIZE_SCALE,
 				type: 'linear',
 				zero: false,
 				domain: { data: 'table', fields: [] },

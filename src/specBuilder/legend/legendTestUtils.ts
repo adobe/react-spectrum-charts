@@ -10,6 +10,7 @@
  * governing permissions and limitations under the License.
  */
 import {
+	COLOR_SCALE,
 	DEFAULT_CATEGORICAL_DIMENSION,
 	DEFAULT_COLOR,
 	DEFAULT_METRIC,
@@ -53,7 +54,7 @@ export const defaultMark: LineMark = {
 		enter: {
 			x: { scale: 'x', field: DEFAULT_CATEGORICAL_DIMENSION },
 			y: { scale: 'y', field: DEFAULT_METRIC },
-			stroke: { scale: 'color', field: DEFAULT_COLOR },
+			stroke: { scale: COLOR_SCALE, field: DEFAULT_COLOR },
 		},
 		update: {
 			opacity: [],
