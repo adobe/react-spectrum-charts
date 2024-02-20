@@ -160,7 +160,7 @@ export interface AreaProps extends MarkProps {
 }
 
 export interface DonutProps extends MarkProps {
-	/** text label for the metric total */
+	/** Text label for the metric total */
 	metricLabel?: string;
 	/** the datum property for segments of the data */
 	segment?: string;
