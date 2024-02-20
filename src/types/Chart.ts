@@ -321,7 +321,7 @@ export interface BarProps extends Omit<MarkProps, 'color'> {
 	opacity?: OpacityFacet | DualFacet;
 	/** Sets inner padding (https://vega.github.io/vega/docs/scales/#band) */
 	paddingRatio?: number;
-	/** sets the chart area padding, this is a ratio between 0 and 1 (https://vega.github.io/vega/docs/scales/#band) */
+	/** Sets the chart area padding, this is a ratio between 0 and 1 (https://vega.github.io/vega/docs/scales/#band) */
 	paddingOuter?: number;
 	/** The data field used for the trellis categories */
 	trellis?: string;
