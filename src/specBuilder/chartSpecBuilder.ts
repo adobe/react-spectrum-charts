@@ -111,6 +111,7 @@ export function buildSpec({
 			 * If we simply compare cur.type to the component,
 			 * that uses referential equailty which fails in production when the component is imported from a different module like ./alpha
 			 */
+
 			switch (cur.type.displayName) {
 				case Area.displayName:
 					areaCount++;

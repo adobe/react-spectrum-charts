@@ -256,6 +256,9 @@ export const addMarks = produce<Mark[], [BarSpecProps]>((marks, props) => {
 		barMarks.push(getDodgedMark(props));
 	}
 
+	// TODO: ADD ANIMATION MARK CHANGE - (choose scale/animation property on data if not given one)
+	// TODO: Determine animation method (from zero or from old data)
+
 	// if this is a trellis plot, we add the bars and the repeated scale to the trellis group
 	if (isTrellised(props)) {
 		const repeatedScale = getRepeatedScale(props);
