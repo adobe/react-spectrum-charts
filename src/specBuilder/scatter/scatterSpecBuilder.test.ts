@@ -60,21 +60,26 @@ describe('addSignals()', () => {
 			...defaultScatterProps,
 			children: [createElement(ChartTooltip)],
 		});
-		expect(signals).toHaveLength(3);
+		expect(signals).toHaveLength(1);
 		expect(signals[0].name).toBe('scatter0_hoveredId');
+	});
+	test('should add selectedId signal if popover exists', () => {
+		const signals = addSignals([], {
+			...defaultScatterProps,
+			children: [createElement(ChartPopover)],
+		});
+		expect(signals).toHaveLength(2);
 		expect(signals[1].name).toBe('scatter0_selectedId');
-		expect(signals[2].name).toBe('scatter0_selectedSeries');
 	});
 	test('should add trendline signals if trendline exists as a child', () => {
 		const signals = addSignals([], {
 			...defaultScatterProps,
 			children: [createElement(Trendline, { displayOnHover: true })],
 		});
-		expect(signals).toHaveLength(4);
+		expect(signals).toHaveLength(3);
 		expect(signals[0].name).toBe('scatter0_hoveredSeries');
-		expect(signals[1].name).toBe('scatter0_hoveredId');
-		expect(signals[2].name).toBe('scatter0_selectedId');
-		expect(signals[3].name).toBe('scatter0_selectedSeries');
+		expect(signals[1].name).toBe('scatter0_selectedSeries');
+		expect(signals[2].name).toBe('scatter0_hoveredId');
 	});
 });
 

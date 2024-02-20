@@ -125,18 +125,15 @@ export const addSignals = produce<Signal[], [ScatterSpecProps]>((signals, props)
 
 	if (!hasInteractiveChildren(children)) return;
 	// interactive signals
-
-	// used to style both hovered and unhovered points
 	if (!hasSignalByName(signals, `${name}_hoveredId`)) {
+		// hover signal
 		signals.push(getUncontrolledHoverSignal(`${name}`, true, `${name}_voronoi`));
 	}
-	// used to style both selected and unselcted points
-	if (!hasSignalByName(signals, `${name}_selectedId`)) {
-		signals.push(getGenericSignal(`${name}_selectedId`));
-	}
-	// used to know which trendline to display when displayOnHover is true
-	if (!hasSignalByName(signals, `${name}_selectedSeries`)) {
-		signals.push(getGenericSignal(`${name}_selectedSeries`));
+	if (hasPopover(children)) {
+		if (!hasSignalByName(signals, `${name}_selectedId`)) {
+			// select signal
+			signals.push(getGenericSignal(`${name}_selectedId`));
+		}
 	}
 });
 
