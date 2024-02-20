@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { DEFAULT_COLOR_SCHEME } from '@constants';
+import { DEFAULT_COLOR_SCHEME, LINEAR_COLOR_SCALE } from '@constants';
 import { addFieldToFacetScaleDomain } from '@specBuilder/scale/scaleSpecBuilder';
 import {
 	getColorValue,
@@ -56,7 +56,7 @@ export const addLegend = produce<
 			title,
 			colorScheme = DEFAULT_COLOR_SCHEME,
 			...props
-		}
+		},
 	) => {
 		const { formattedColor, formattedLineType, formattedLineWidth, formattedSymbolShape } =
 			formatFacetRefsWithPresets(color, lineType, lineWidth, symbolShape, colorScheme);
@@ -124,7 +124,7 @@ export const addLegend = produce<
 			spec.legends = [];
 		}
 		spec.legends.push(...legends);
-	}
+	},
 );
 
 /**
@@ -140,7 +140,7 @@ export const formatFacetRefsWithPresets = (
 	lineType: LineTypeFacet | undefined,
 	lineWidth: LineWidthFacet | undefined,
 	symbolShape: SymbolShapeFacet | undefined,
-	colorScheme: ColorScheme
+	colorScheme: ColorScheme,
 ) => {
 	let formattedColor: FacetRef<string> | undefined;
 	if (color && typeof color === 'object') {
@@ -198,13 +198,20 @@ const getCategoricalLegend = (facets: Facet[], props: LegendSpecProps): Legend =
  * @param props
  * @returns
  */
-const getContinuousLegend = (_facet: Facet, props: LegendSpecProps): Legend => {
+export const getContinuousLegend = (facet: Facet, props: LegendSpecProps): Legend => {
 	const { symbolShape } = props;
 	// add a switch statement here for the different types of continuous legends
+	if (facet.facetType === 'symbolSize') {
+		return {
+			size: 'symbolSize',
+			...getLegendLayout(props),
+			symbolType: getSymbolType(symbolShape),
+		};
+	}
 	return {
-		size: 'symbolSize',
+		fill: LINEAR_COLOR_SCALE,
+		gradientThickness: 10,
 		...getLegendLayout(props),
-		symbolType: getSymbolType(symbolShape),
 	};
 };
 
@@ -255,7 +262,7 @@ export const addData = produce<Data[], [LegendSpecProps & { facets: string[] }]>
 				...getHiddenEntriesFilter(hiddenEntries, name),
 			],
 		});
-	}
+	},
 );
 
 export const addSignals = produce<Signal[], [LegendSpecProps]>(
@@ -272,5 +279,5 @@ export const addSignals = produce<Signal[], [LegendSpecProps]>(
 				signals.push(getLegendLabelsSeriesSignal(legendLabels));
 			}
 		}
-	}
+	},
 );

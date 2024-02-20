@@ -12,7 +12,7 @@
 import { createElement } from 'react';
 
 import { Trendline } from '@components/Trendline';
-import { DEFAULT_COLOR } from '@constants';
+import { DEFAULT_COLOR, LINEAR_COLOR_SCALE } from '@constants';
 import { initializeSpec } from '@specBuilder/specUtils';
 
 import { addData, addSignals, setScales } from './scatterSpecBuilder';
@@ -85,6 +85,11 @@ describe('setScales()', () => {
 		const scales = setScales([], { ...defaultScatterProps, color: DEFAULT_COLOR });
 		expect(scales).toHaveLength(3);
 		expect(scales[2].name).toBe('color');
+	});
+	test('should add color to linear color scale if the colorScaleType is linear', () => {
+		const scales = setScales([], { ...defaultScatterProps, color: DEFAULT_COLOR, colorScaleType: 'linear' });
+		expect(scales).toHaveLength(3);
+		expect(scales[2].name).toBe(LINEAR_COLOR_SCALE);
 	});
 	test('should add the lineType scale if lineType is a reference to a key', () => {
 		const scales = setScales([], { ...defaultScatterProps, lineType: DEFAULT_COLOR });

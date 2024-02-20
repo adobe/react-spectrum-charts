@@ -27,6 +27,7 @@ import { ROUNDED_SQUARE_PATH } from 'svgPaths';
 import { BarProps, LegendProps } from 'types';
 import { Data } from 'vega';
 
+import colorSchemes from '@themes/colorSchemes';
 import {
 	addData,
 	addHighlight,
@@ -35,6 +36,7 @@ import {
 	getDefaultSignals,
 	getLineTypeScale,
 	getLineWidthScale,
+	getLinearColorScale,
 	getOpacityScale,
 	getSymbolShapeScale,
 	getSymbolSizeScale,
@@ -44,6 +46,7 @@ import {
 } from './chartSpecBuilder';
 import { setHoverOpacityForMarks } from './legend/legendHighlightUtils';
 import { baseData } from './specUtils';
+import { spectrumColors } from '@themes';
 
 const defaultData: Data[] = [{ name: TABLE, values: [], transform: [{ type: 'identifier', as: MARK_ID }] }];
 
@@ -69,7 +72,7 @@ afterEach(() => {
 });
 
 describe('Chart spec builder', () => {
-	describe('setColorScale()', () => {
+	describe('getColorScale()', () => {
 		test('default color scale used', () => {
 			expect(getColorScale('categorical12', 'light')).toStrictEqual({
 				domain: { data: 'table', fields: [] },
@@ -101,6 +104,19 @@ describe('Chart spec builder', () => {
 		});
 	});
 
+	describe('getLinearColorScale()', () => {
+		test('should return color scale from named scale', () => {
+			expect(getLinearColorScale('categorical12', 'light')).toHaveProperty('range', colorSchemes.categorical12);
+		});
+		test('should transform custom color names', () => {
+			const colors = spectrumColors.light;
+			expect(getLinearColorScale(['blue-200', 'rgb(20, 30, 40)', 'static-black'], 'light')).toHaveProperty(
+				'range',
+				[colors['blue-200'], 'rgb(20, 30, 40)', colors['static-black']],
+			);
+		});
+	});
+
 	describe('getTwoDimensionalColorScheme()', () => {
 		test('should get colors from scheme', () => {
 			expect(getTwoDimensionalColorScheme('categorical6', 'light')).toStrictEqual([
@@ -114,7 +130,7 @@ describe('Chart spec builder', () => {
 		});
 		test('should get colors from color names for light and dark mode', () => {
 			expect(
-				getTwoDimensionalColorScheme(['blue-400', 'blue-500', 'blue-600', 'blue-700'], 'light')
+				getTwoDimensionalColorScheme(['blue-400', 'blue-500', 'blue-600', 'blue-700'], 'light'),
 			).toStrictEqual([
 				['rgb(150, 206, 253)'],
 				['rgb(120, 187, 250)'],
@@ -122,12 +138,12 @@ describe('Chart spec builder', () => {
 				['rgb(56, 146, 243)'],
 			]);
 			expect(
-				getTwoDimensionalColorScheme(['blue-400', 'blue-500', 'blue-600', 'blue-700'], 'dark')
+				getTwoDimensionalColorScheme(['blue-400', 'blue-500', 'blue-600', 'blue-700'], 'dark'),
 			).toStrictEqual([['rgb(0, 78, 166)'], ['rgb(0, 92, 200)'], ['rgb(6, 108, 231)'], ['rgb(29, 128, 245)']]);
 		});
 		test('should convert color scheme in second dimension to correct colors', () => {
 			expect(
-				getTwoDimensionalColorScheme(['categorical6', 'divergentOrangeYellowSeafoam5'], 'light')
+				getTwoDimensionalColorScheme(['categorical6', 'divergentOrangeYellowSeafoam5'], 'light'),
 			).toStrictEqual([
 				[
 					'rgb(15, 181, 174)',
@@ -242,7 +258,7 @@ describe('Chart spec builder', () => {
 				getOpacityScale([
 					[0.2, 0.4],
 					[0.6, 0.8],
-				])
+				]),
 			).toStrictEqual({
 				name: 'opacity',
 				type: 'ordinal',
@@ -307,7 +323,7 @@ describe('Chart spec builder', () => {
 				getSymbolShapeScale([
 					['circle', 'square'],
 					['triangle,', 'circle'],
-				])
+				]),
 			).toStrictEqual({
 				name: 'symbolShape',
 				type: 'ordinal',
@@ -344,7 +360,7 @@ describe('Chart spec builder', () => {
 
 		test('should join the facets', () => {
 			expect(
-				addData(defaultData, { facets: [DEFAULT_COLOR, DEFAULT_SECONDARY_COLOR] })[0].transform?.at(-1)
+				addData(defaultData, { facets: [DEFAULT_COLOR, DEFAULT_SECONDARY_COLOR] })[0].transform?.at(-1),
 			).toStrictEqual({ as: SERIES_ID, expr: 'datum.series + " | " + datum.subSeries', type: 'formula' });
 		});
 	});
@@ -428,7 +444,7 @@ describe('Chart spec builder', () => {
 			};
 
 			expect(spec.signals?.find((signal) => signal.name === 'highlightedSeries')).toStrictEqual(
-				uncontrolledHighlightSignal
+				uncontrolledHighlightSignal,
 			);
 		});
 	});
@@ -445,8 +461,8 @@ describe('Chart spec builder', () => {
 			expect(
 				addHighlight(
 					{ signals: [testSignal] },
-					{ children: [], hiddenSeries: [], highlightedSeries: undefined }
-				)
+					{ children: [], hiddenSeries: [], highlightedSeries: undefined },
+				),
 			).toStrictEqual({
 				signals: [testSignal, { name: 'highlightedSeries', value: null }],
 			});
@@ -456,7 +472,7 @@ describe('Chart spec builder', () => {
 			expect(addHighlight({}, { children: [], hiddenSeries: [], highlightedSeries: 'testSeries' })).toStrictEqual(
 				{
 					signals: [{ name: 'highlightedSeries', value: 'testSeries' }],
-				}
+				},
 			);
 		});
 
@@ -493,14 +509,14 @@ describe('Chart spec builder', () => {
 
 		test('hiddenSeries is empty when no hidden series', () => {
 			expect(
-				getDefaultSignals(DEFAULT_BACKGROUND_COLOR, 'categorical12', 'light', ['dashed'], [1])
+				getDefaultSignals(DEFAULT_BACKGROUND_COLOR, 'categorical12', 'light', ['dashed'], [1]),
 			).toStrictEqual([...defaultSignals, { name: 'hiddenSeries', value: [] }]);
 		});
 
 		test('hiddenSeries contains provided hidden series', () => {
 			const hiddenSeries = ['test'];
 			expect(
-				getDefaultSignals(DEFAULT_BACKGROUND_COLOR, 'categorical12', 'light', ['dashed'], [1], hiddenSeries)
+				getDefaultSignals(DEFAULT_BACKGROUND_COLOR, 'categorical12', 'light', ['dashed'], [1], hiddenSeries),
 			).toStrictEqual([...defaultSignals, { name: 'hiddenSeries', value: hiddenSeries }]);
 		});
 	});

@@ -22,6 +22,7 @@ import {
 	DEFAULT_TIME_DIMENSION,
 	DEFAULT_TRANSFORMED_TIME_DIMENSION,
 	HIGHLIGHT_CONTRAST_RATIO,
+	LINEAR_COLOR_SCALE,
 } from '@constants';
 
 import {
@@ -43,6 +44,13 @@ describe('getColorProductionRule', () => {
 			scale: 'color',
 			field: DEFAULT_COLOR,
 		});
+	});
+
+	test('should use linear scale if colorScaleType is linear', () => {
+		expect(getColorProductionRule(DEFAULT_COLOR, DEFAULT_COLOR_SCHEME, 'linear')).toHaveProperty(
+			'scale',
+			LINEAR_COLOR_SCALE,
+		);
 	});
 
 	test('should return static value and convert spectrum name to color, respecting the theme', () => {

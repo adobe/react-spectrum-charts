@@ -242,7 +242,7 @@ export interface MarkProps extends BaseProps {
 
 export type StaticValue<T> = { value: T };
 
-export type FacetType = 'color' | 'lineType' | 'lineWidth' | 'opacity' | 'symbolShape' | 'symbolSize';
+export type FacetType = 'color' | 'linearColor' | 'lineType' | 'lineWidth' | 'opacity' | 'symbolShape' | 'symbolSize';
 
 export type SecondaryFacetType =
 	| 'secondaryColor'
