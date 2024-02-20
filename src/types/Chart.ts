@@ -73,7 +73,7 @@ export interface SpecProps {
 }
 
 export interface SanitizedSpecProps extends SpecProps {
-	/** Children with all non-prism components removed */
+	/** Children with all non-RSC components removed */
 	children: ChartChildElement[];
 	data?: ChartData[];
 }
