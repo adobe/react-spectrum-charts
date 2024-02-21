@@ -10,3 +10,12 @@ updates:
     schedule:
       interval: "daily"
     open-pull-requests-limit: 5
+    groups:
+      storybook:
+        patterns:
+          - "storybook"
+          - "@storybook/*"
+      react:
+        patterns:
+          - "react"
+          - "react-dom"
