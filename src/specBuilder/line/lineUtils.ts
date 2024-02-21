@@ -53,6 +53,8 @@ export interface LineMarkProps {
 	color: ColorFacet;
 	colorScheme: ColorScheme;
 	dimension: string;
+	data?: ChartData[],
+	previousData?: ChartData[],
 	displayOnHover?: boolean;
 	interactiveMarkName?: string; // optional name of the mark that is used for hover and click interactions
 	lineType: LineTypeFacet;

@@ -61,6 +61,7 @@ export interface SpecProps {
 
 export interface SanitizedSpecProps extends SpecProps {
 	children: ChartChildElement[];
+	previousData?: ChartData[];
 	data?: ChartData[];
 }
 
@@ -74,6 +75,8 @@ export type ChartSymbolShape = 'rounded-square' | SymbolShape;
 export interface SharedChartProps extends SpecProps {
 	config?: Config;
 	data: ChartData[];
+	previousData?: ChartData[];
+	noAnimations?: boolean;
 	debug?: boolean;
 	height?: number;
 	/** number and time locales to use */

@@ -14,9 +14,9 @@ import {
 	DEFAULT_BACKGROUND_COLOR,
 	DEFAULT_COLOR_SCHEME,
 	DEFAULT_LINE_TYPES,
-	FILTERED_TABLE,
+	FILTERED_TABLE, PREVIOUS_TABLE,
 	SERIES_ID,
-	TABLE,
+	TABLE
 } from '@constants';
 import { Area, Axis, Bar, Legend, Line, Scatter, Title } from '@rsc';
 import { Donut } from '@rsc/alpha';
@@ -63,7 +63,7 @@ import {
 	getPathFromSymbolShape,
 	getStrokeDashFromLineType,
 	getVegaSymbolSizeFromRscSymbolSize,
-	initializeSpec,
+	initializeSpec
 } from './specUtils';
 import { addTitle } from './title/titleSpecBuilder';
 
@@ -72,6 +72,8 @@ export function buildSpec({
 	children,
 	colors = 'categorical12',
 	description,
+	data,
+	previousData,
 	hiddenSeries,
 	highlightedSeries,
 	lineTypes = DEFAULT_LINE_TYPES,
@@ -97,6 +99,8 @@ export function buildSpec({
 	buildOrder.set(Axis, 2);
 	buildOrder.set(Title, 3);
 
+	console.warn('Spec after initialization', spec);
+
 	let { areaCount, axisCount, barCount, donutCount, legendCount, lineCount, scatterCount } =
 		initializeComponentCounts();
 	spec = [...children]
@@ -115,7 +119,7 @@ export function buildSpec({
 			switch (cur.type.displayName) {
 				case Area.displayName:
 					areaCount++;
-					return addArea(acc, { ...(cur as AreaElement).props, colorScheme, index: areaCount });
+					return addArea(acc, { ...(cur as AreaElement).props, colorScheme, index: areaCount, previousData, data });
 				case Axis.displayName:
 					axisCount++;
 					return addAxis(acc, { ...(cur as AxisElement).props, colorScheme, index: axisCount });
@@ -136,7 +140,7 @@ export function buildSpec({
 					});
 				case Line.displayName:
 					lineCount++;
-					return addLine(acc, { ...(cur as LineElement).props, colorScheme, index: lineCount });
+					return addLine(acc, { ...(cur as LineElement).props, colorScheme, index: lineCount, data, previousData });
 				case Scatter.displayName:
 					scatterCount++;
 					return addScatter(acc, { ...(cur as ScatterElement).props, colorScheme, index: scatterCount });
@@ -152,6 +156,8 @@ export function buildSpec({
 	// copy the spec so we don't mutate the original
 	spec = JSON.parse(JSON.stringify(spec));
 	spec.data = addData(spec.data ?? [], { facets: getFacetsFromScales(spec.scales) });
+
+	console.warn('Spec data after addData is called', spec.data);
 
 	// add signals and update marks for controlled highlighting if there isn't a legend with highlight enabled
 	if (highlightedSeries && !hasSignalByName(spec.signals ?? [], 'highlightedSeries')) {

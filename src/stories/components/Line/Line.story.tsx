@@ -14,7 +14,12 @@ import React, { ReactElement, createElement } from 'react';
 import { ReferenceLine } from '@components/ReferenceLine';
 import useChartProps from '@hooks/useChartProps';
 import { Axis, Bar, Chart, ChartPopover, ChartTooltip, Legend, Line } from '@rsc';
-import { workspaceTrendsData, workspaceTrendsDataWithVisiblePoints } from '@stories/data/data';
+import {
+	newDataArray1,
+	newDataArray2,
+	workspaceTrendsData,
+	workspaceTrendsDataWithVisiblePoints
+} from '@stories/data/data';
 import { formatTimestamp } from '@stories/storyUtils';
 import { StoryFn } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
@@ -57,6 +62,17 @@ const historicalCompareData = [
 ];
 
 const defaultChartProps: ChartProps = { data: workspaceTrendsData, minWidth: 400, maxWidth: 800, height: 400 };
+
+const singleLineChartProps: ChartProps = { data: newDataArray1, minWidth: 400, maxWidth: 800, height: 400 };
+
+const SingleLineStory: StoryFn<typeof Line> = (args): ReactElement => {
+	const chartProps = useChartProps(singleLineChartProps);
+	return (
+		<Chart {...chartProps} debug>
+			<Line {...args} />
+		</Chart>
+	);
+}
 
 const BasicLineStory: StoryFn<typeof Line> = (args): ReactElement => {
 	const chartProps = useChartProps(defaultChartProps);
@@ -232,6 +248,13 @@ WithStaticPointsAndDialogs.args = {
 	children: [createElement(ChartTooltip, {}, dialogCallback), createElement(ChartPopover, {}, dialogCallback)],
 };
 
+const SingleLine = bindWithProps(SingleLineStory);
+SingleLine.args = {
+	dimension: 'x',
+	metric: 'y',
+	scaleType: 'linear'
+}
+
 export {
 	Basic,
 	LineWithAxisAndLegend,
@@ -243,4 +266,5 @@ export {
 	Tooltip,
 	WithStaticPoints,
 	WithStaticPointsAndDialogs,
+	SingleLine
 };

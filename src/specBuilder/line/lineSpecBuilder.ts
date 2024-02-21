@@ -25,7 +25,7 @@ import {
 } from '@specBuilder/trendline/trendlineUtils';
 import { sanitizeMarkChildren, toCamelCase } from '@utils';
 import { produce } from 'immer';
-import { ColorScheme, LineProps, LineSpecProps, MarkChildElement } from 'types';
+import { ChartData, ColorScheme, LineProps, LineSpecProps, MarkChildElement } from 'types';
 import { Data, Mark, Scale, Signal, Spec } from 'vega';
 
 import { addTimeTransform, getTableData } from '../data/dataUtils';
@@ -42,7 +42,7 @@ import { getLineStaticPoint } from './linePointUtils';
 import { getInteractiveMarkName, getPopoverMarkName } from './lineUtils';
 
 // TODO: Get data and previousData down this low.
-export const addLine = produce<Spec, [LineProps & { colorScheme?: ColorScheme; index?: number }]>(
+export const addLine = produce<Spec, [LineProps & { colorScheme?: ColorScheme; index?: number, data: ChartData[] | undefined, previousData: ChartData[] | undefined }]>(
 	(
 		spec,
 		{
@@ -81,7 +81,7 @@ export const addLine = produce<Spec, [LineProps & { colorScheme?: ColorScheme; i
 		spec.data = addData(spec.data ?? [], lineProps);
 		spec.signals = addSignals(spec.signals ?? [], lineProps);
 		spec.scales = setScales(spec.scales ?? [], lineProps);
-		spec.marks = addLineMarks(spec.marks ?? [], {...lineProps, data: spec.data});
+		spec.marks = addLineMarks(spec.marks ?? [], lineProps);
 
 		return spec;
 	}

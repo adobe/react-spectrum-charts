@@ -18,7 +18,7 @@ import { bindWithProps } from '@test-utils';
 
 import './Chart.story.css';
 import { ChartBarStory } from './ChartBarStory';
-import { data, workspaceTrendsData } from './data/data';
+import { data, newDataArray1, workspaceTrendsData } from './data/data';
 
 export default {
 	title: 'RSC/Chart',
@@ -46,6 +46,15 @@ const ChartTimeStory: StoryFn<typeof Chart> = (args): ReactElement => {
 		</Chart>
 	);
 };
+
+const SingleLineStory: StoryFn<typeof Chart> = (args): ReactElement => {
+	const props = useChartProps(args);
+	return (
+		<Chart {...props}>
+			<Line metric="y" dimension="x" scaleType="linear"/>
+		</Chart>
+	);
+}
 
 const Basic = bindWithProps(ChartLineStory);
 
@@ -83,4 +92,11 @@ Width.args = {
 	data,
 };
 
-export { Basic, BackgroundColor, Config, Locale, Width };
+const SingleLine = bindWithProps(SingleLineStory);
+SingleLine.args = {
+	data: newDataArray1
+}
+
+
+
+export { Basic, BackgroundColor, Config, Locale, Width, SingleLine };

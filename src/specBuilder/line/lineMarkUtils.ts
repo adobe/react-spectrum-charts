@@ -41,7 +41,7 @@ import { getAnimationMarks } from '@specBuilder/specUtils';
  */
 // TODO: get current and previous data down this low.
 export const getLineMark = (lineMarkProps: LineMarkProps, dataSource: string): LineMark => {
-	const { name, color, metric, dimension, scaleType, lineType, lineWidth, colorScheme } = lineMarkProps;
+	const { name, color, metric, dimension, scaleType, lineType, lineWidth, colorScheme, data, previousData } = lineMarkProps;
 
 	// TODO: ADD CONDITIONAL CHECK IF ANIMATIONS NOT ON
 	return {
@@ -61,7 +61,7 @@ export const getLineMark = (lineMarkProps: LineMarkProps, dataSource: string): L
 				// but it may change the x position if it causes the chart to resize
 				x: getXProductionRule(scaleType, dimension),
 				strokeOpacity: getLineStrokeOpacity(lineMarkProps),
-				y: getAnimationMarks(metric)
+				y: getAnimationMarks(dimension, metric, data, previousData)
 			},
 		},
 	};

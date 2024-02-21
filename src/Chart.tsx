@@ -83,6 +83,9 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 
 		useChartImperativeHandle(forwardedRef, { chartView, title });
 
+		const previousChartData = usePreviousChartData(data);
+
+
 		const containerRef = useResizeObserver<HTMLDivElement>((_target, entry) => {
 			if (typeof width === 'number') return;
 			setContainerWidth(entry.contentRect.width);
@@ -135,6 +138,7 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 							chartView={chartView}
 							chartId={chartId}
 							data={data}
+							previousData={previousChartData}
 							backgroundColor={backgroundColor}
 							colors={colors}
 							colorScheme={colorScheme}
