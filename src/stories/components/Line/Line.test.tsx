@@ -11,8 +11,8 @@
  */
 import { HIGHLIGHT_CONTRAST_RATIO } from '@constants';
 import '@matchMediaMock';
-import { Line } from '@rsc';
 import { workspaceTrendsData } from '@stories/data/data';
+import { Line } from '@rsc';
 import {
 	allElementsHaveAttributeValue,
 	clickNthElement,
@@ -41,7 +41,7 @@ import {
 	Tooltip,
 	TrendScale,
 	WithStaticPoints,
-	WithStaticPointsAndDialogs,
+	WithStaticPointsAndDialogs
 } from './Line.story';
 
 describe('Line', () => {

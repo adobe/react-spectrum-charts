@@ -11,7 +11,6 @@
  */
 import {
 	BACKGROUND_COLOR,
-	FILTERED_TABLE,
 	HIGHLIGHTED_GROUP,
 	HIGHLIGHTED_ITEM,
 	HIGHLIGHTED_SERIES,
@@ -22,11 +21,16 @@ import {
 	SELECTED_GROUP,
 	SELECTED_ITEM,
 	SELECTED_SERIES,
-	SERIES_ID,
 	SYMBOL_PATH_WIDTH_SCALE,
 	SYMBOL_SHAPE_SCALE,
 	SYMBOL_SIZE_SCALE,
-	TABLE,
+	DEFAULT_BACKGROUND_COLOR,
+	DEFAULT_COLOR_SCHEME,
+	DEFAULT_LINE_TYPES,
+	FILTERED_TABLE,
+	PREVIOUS_TABLE,
+	SERIES_ID,
+	TABLE
 } from '@constants';
 import { Area, Axis, Bar, Legend, Line, Scatter, Title } from '@rsc';
 import { Combo } from '@rsc/alpha';
@@ -78,7 +82,7 @@ import {
 	getStrokeDashFromLineType,
 	getSymbolWidthFromRscSymbolSize,
 	getVegaSymbolSizeFromRscSymbolSize,
-	initializeSpec,
+	initializeSpec
 } from './specUtils';
 import { addTitle } from './title/titleSpecBuilder';
 
@@ -88,6 +92,7 @@ export function buildSpec(props: SanitizedSpecProps) {
 		children,
 		colors,
 		colorScheme,
+		data,
 		description,
 		hiddenSeries,
 		highlightedItem,
@@ -96,6 +101,7 @@ export function buildSpec(props: SanitizedSpecProps) {
 		lineTypes,
 		lineWidths,
 		opacities,
+		previousData,
 		symbolShapes,
 		symbolSizes,
 		title,
@@ -135,7 +141,7 @@ export function buildSpec(props: SanitizedSpecProps) {
 			switch (cur.type.displayName) {
 				case Area.displayName:
 					areaCount++;
-					return addArea(acc, { ...(cur as AreaElement).props, ...specProps, index: areaCount });
+					return addArea(acc, { ...(cur as AreaElement).props, ...specProps, index: areaCount, previousData, data });
 				case Axis.displayName:
 					axisCount++;
 					return addAxis(acc, { ...(cur as AxisElement).props, ...specProps, index: axisCount });
@@ -156,7 +162,7 @@ export function buildSpec(props: SanitizedSpecProps) {
 					});
 				case Line.displayName:
 					lineCount++;
-					return addLine(acc, { ...(cur as LineElement).props, ...specProps, index: lineCount });
+					return addLine(acc, { ...(cur as LineElement).props, ...specProps, index: lineCount, data, previousData });
 				case Scatter.displayName:
 					scatterCount++;
 					return addScatter(acc, { ...(cur as ScatterElement).props, ...specProps, index: scatterCount });
@@ -178,6 +184,8 @@ export function buildSpec(props: SanitizedSpecProps) {
 	// copy the spec so we don't mutate the original
 	spec = JSON.parse(JSON.stringify(spec));
 	spec.data = addData(spec.data ?? [], { facets: getFacetsFromScales(spec.scales) });
+
+	console.warn('Spec data after addData is called', spec.data);
 
 	// add signals and update marks for controlled highlighting if there isn't a legend with highlight enabled
 	if (highlightedSeries) {

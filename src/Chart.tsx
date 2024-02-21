@@ -88,6 +88,9 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 
 		useChartImperativeHandle(forwardedRef, { chartView, title });
 
+		const previousData = usePreviousChartData(data);
+
+
 		const containerRef = useResizeObserver<HTMLDivElement>((_target, entry) => {
 			if (typeof width !== 'number') {
 				setContainerWidth(entry.contentRect.width);
@@ -136,6 +139,7 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 			lineWidths,
 			locale,
 			padding,
+			previousData,
 			renderer,
 			title,
 			tooltipAnchor,

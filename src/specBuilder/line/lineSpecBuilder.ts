@@ -32,6 +32,7 @@ import { getFacetsFromProps } from '@specBuilder/specUtils';
 import { addTrendlineData, getTrendlineMarks, getTrendlineScales, setTrendlineSignals } from '@specBuilder/trendline';
 import { sanitizeMarkChildren, toCamelCase } from '@utils';
 import { produce } from 'immer';
+import { ChartData, ColorScheme, LineProps, LineSpecProps, MarkChildElement } from 'types';
 import { Data, Mark, Scale, Signal, Spec } from 'vega';
 
 import { ColorScheme, HighlightedItem, LineProps, LineSpecProps, MarkChildElement } from '../../types';
@@ -45,7 +46,7 @@ import { getInteractiveMarkName, getPopoverMarkName } from './lineUtils';
 
 export const addLine = produce<
 	Spec,
-	[LineProps & { colorScheme?: ColorScheme; highlightedItem?: HighlightedItem; index?: number; idKey: string }]
+  [LineProps & { colorScheme?: ColorScheme; data: ChartData[] | undefined; highlightedItem?: HighlightedItem; index?: number; idKey: string, previousData: ChartData[] | undefined }]
 >(
 	(
 		spec,
@@ -89,7 +90,7 @@ export const addLine = produce<
 		spec.data = addData(spec.data ?? [], lineProps);
 		spec.signals = addSignals(spec.signals ?? [], lineProps);
 		spec.scales = setScales(spec.scales ?? [], lineProps);
-		spec.marks = addLineMarks(spec.marks ?? [], {...lineProps, data: spec.data});
+		spec.marks = addLineMarks(spec.marks ?? [], lineProps);
 
 		return spec;
 	}

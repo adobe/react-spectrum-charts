@@ -38,16 +38,15 @@ import { spectrumColors } from '@themes';
 import { sanitizeMarkChildren, toCamelCase } from '@utils';
 import { produce } from 'immer';
 import { Data, Mark, Scale, Signal, SourceData, Spec } from 'vega';
+import { AreaProps, AreaSpecProps, ChartData, ColorScheme, MarkChildElement, ScaleType } from 'types';
+import { Data, Mark, Scale, Signal, Spec } from 'vega';
 
 import { AreaProps, AreaSpecProps, ColorScheme, HighlightedItem, MarkChildElement, ScaleType } from '../../types';
 import { addTimeTransform, getFilteredTableData, getTableData, getTransformSort } from '../data/dataUtils';
 import { addContinuousDimensionScale, addFieldToFacetScaleDomain, addMetricScale } from '../scale/scaleSpecBuilder';
 import { getAreaMark, getX } from './areaUtils';
 
-export const addArea = produce<
-	Spec,
-	[AreaProps & { colorScheme?: ColorScheme; highlightedItem?: HighlightedItem; index?: number; idKey: string }]
->(
+export const addArea = produce<Spec, [AreaProps & { colorScheme?: ColorScheme; highlightedItem?: HighlightedItem; index?: number, previousData: ChartData[] | undefined, data: ChartData[] | undefined }]>(
 	(
 		spec,
 		{
@@ -226,7 +225,7 @@ export const setScales = produce<Scale[], [AreaSpecProps]>(
 );
 
 export const addAreaMarks = produce<Mark[], [AreaSpecProps]>((marks, props) => {
-	const { children, color, colorScheme, dimension, highlightedItem, metric, name, opacity, scaleType } = props;
+	const { children, color, colorScheme, data, dimension, highlightedItem, metric, name, opacity, previousData, scaleType } = props;
 	let { metricStart, metricEnd } = props;
 	let isStacked = false;
 	if (!metricEnd || !metricStart) {

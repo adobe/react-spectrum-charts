@@ -51,7 +51,7 @@ import { getAnimationMarks } from '@specBuilder/specUtils';
  */
 // TODO: get current and previous data down this low.
 export const getLineMark = (lineMarkProps: LineMarkProps, dataSource: string): LineMark => {
-	const { color, colorScheme, dimension, lineType, lineWidth, metric, metricAxis, name, opacity, scaleType } =
+	const { color, colorScheme, data, dimension, lineType, lineWidth, metric, metricAxis, name, opacity, previousData, scaleType } =
 		lineMarkProps;
 	const popovers = getPopovers(lineMarkProps);
 	const popoverWithDimensionHighlightExists = popovers.some(

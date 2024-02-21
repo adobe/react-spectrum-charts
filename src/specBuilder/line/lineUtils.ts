@@ -75,6 +75,8 @@ export interface LineMarkProps {
 	color: ColorFacet;
 	colorScheme: ColorScheme;
 	dimension: string;
+	data?: ChartData[],
+	previousData?: ChartData[],
 	displayOnHover?: boolean;
 	highlightedItem?: HighlightedItem;
 	idKey: string;

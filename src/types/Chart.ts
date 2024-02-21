@@ -109,6 +109,7 @@ type SpecPropsWithDefaults =
 export interface SanitizedSpecProps extends PartiallyRequired<SpecProps, SpecPropsWithDefaults> {
 	/** Children with all non-RSC components removed */
 	children: ChartChildElement[];
+	previousData?: ChartData[];
 	data?: ChartData[];
 }
 
@@ -127,6 +128,8 @@ export interface SharedChartProps extends SpecProps {
 	config?: Config;
 	/** Chart data array. */
 	data: ChartData[];
+	previousData?: ChartData[];
+	noAnimations?: boolean;
 	/** Enables debug mode which will console log things like the generated vega spec and the datums for tooltips. */
 	debug?: boolean;
 	/** Number and time locales to use */

@@ -20,6 +20,7 @@ import { spectrumColors } from '@themes';
 import { Data, Scale, ScaleType, Spec, ValuesData } from 'vega';
 
 import {
+	ChartData,
 	ChartSymbolShape,
 	ColorFacet,
 	ColorScheme,
@@ -238,6 +239,7 @@ export const baseData: Data[] = [
  * @returns Spec with default values
  */
 export const initializeSpec = (spec: Spec | null = {}, chartProps: Partial<SanitizedSpecProps> = {}): Spec => {
+	console.warn('Current spec so far', spec, 'chartProps', chartProps);
 	const { backgroundColor, colorScheme = 'light', data, description, title } = chartProps;
 
 	const baseSpec: Spec = {
@@ -341,10 +343,20 @@ export const usePreviousChartData = <T>(data: T) => {
 };
 
 // TODO: get data and previousData down this low
-export const getAnimationMarks = (metric: string) => {
+export const getAnimationMarks = (dimension: string, metric: string, data: ChartData[] | undefined, previousData: ChartData[] | undefined) => {
 	// TODO: Check congruence with previous dataset. For now, do from zero always.
-	return {
+	let markUpdate = {
 		scale: "yLinear",
 		signal: `datum.${metric} * timerValue`
+	};
+	if (data && previousData) {
+		const isCongruent = data.every((d) => previousData.some((pd) => d[dimension] === pd[dimension]));
+		if (isCongruent) {
+			markUpdate = {
+				scale: 'yLinear',
+				signal: `(data(${PREVIOUS_TABLE})[indexof(pluck(data(${PREVIOUS_TABLE}), ${dimension}), datum.${dimension})].${metric} * (1 - timerValue)) + (datum.${metric} * timerValue)`
+			}
+		}
 	}
+	return markUpdate;
 }

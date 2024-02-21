@@ -18,7 +18,7 @@ import { bindWithProps } from '@test-utils';
 
 import './Chart.story.css';
 import { ChartBarStory } from './ChartBarStory';
-import { data, workspaceTrendsData } from './data/data';
+import { data, newDataArray1, workspaceTrendsData } from './data/data';
 
 export default {
 	title: 'RSC/Chart',
