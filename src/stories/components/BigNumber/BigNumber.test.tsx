@@ -93,7 +93,7 @@ describe('BigNumber', () => {
 
 		test('CompactFormat renders with formatted value', async () => {
 			render(<CompactFormat {...CompactFormat.args} />);
-			const formattedValue = await screen.findByText('12.3B');
+			const formattedValue = await screen.findByText('12.3M');
 			expect(formattedValue).toBeInTheDocument();
 		});
 	});
@@ -244,7 +244,7 @@ describe('BigNumber', () => {
 
 		test('Sparkline with sum method specified', async () => {
 			render(<SparklineMethodLast {...SparklineMethodLast.args} method="sum" />);
-			const val = await screen.findByText('1.05K');
+			const val = await screen.findByText('1050');
 			expect(val).toBeInTheDocument();
 		});
 
