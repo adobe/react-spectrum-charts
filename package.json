@@ -58,7 +58,7 @@
 		"@babel/runtime": "^7.20.6",
 		"@storybook/addon-actions": "7.6.16",
 		"@storybook/addon-essentials": "7.6.16",
-		"@storybook/addon-links": "7.6.16",
+		"@storybook/addon-links": "7.6.17",
 		"@storybook/preset-scss": "^1.0.3",
 		"@storybook/react": "7.6.16",
 		"@storybook/react-webpack5": "7.6.16",
