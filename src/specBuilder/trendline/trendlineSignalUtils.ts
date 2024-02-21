@@ -31,6 +31,7 @@ export const getTrendlineSignals = (markProps: TrendlineParentProps): Signal[] =
 
 	if (trendlines.some((trendline) => trendline.displayOnHover)) {
 		signals.push(getSeriesHoveredSignal(markName, true, `${markName}_voronoi`));
+		signals.push(getGenericSignal(`${markName}_selectedSeries`));
 	}
 
 	if (trendlines.some((trendline) => hasPopover(trendline.children))) {

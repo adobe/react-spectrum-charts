@@ -54,4 +54,14 @@ describe('getTrendlineSignals()', () => {
 		expect(signals).toHaveLength(2);
 		expect(signals[0].name).not.toContain('selected');
 	});
+
+	test('should add displayOnHover signals', () => {
+		const signals = getTrendlineSignals({
+			...defaultLineProps,
+			children: [createElement(Trendline, { displayOnHover: true })],
+		});
+		expect(signals).toHaveLength(2);
+		expect(signals[0]).toHaveProperty('name', 'line0_hoveredSeries');
+		expect(signals[1]).toHaveProperty('name', 'line0_selectedSeries');
+	});
 });

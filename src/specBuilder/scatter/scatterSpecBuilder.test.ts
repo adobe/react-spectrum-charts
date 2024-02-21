@@ -76,9 +76,10 @@ describe('addSignals()', () => {
 			...defaultScatterProps,
 			children: [createElement(Trendline, { displayOnHover: true })],
 		});
-		expect(signals).toHaveLength(2);
+		expect(signals).toHaveLength(3);
 		expect(signals[0].name).toBe('scatter0_hoveredSeries');
-		expect(signals[1].name).toBe('scatter0_hoveredId');
+		expect(signals[1].name).toBe('scatter0_selectedSeries');
+		expect(signals[2].name).toBe('scatter0_hoveredId');
 	});
 });
 
