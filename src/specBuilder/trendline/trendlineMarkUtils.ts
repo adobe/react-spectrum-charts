@@ -224,7 +224,13 @@ export const getTrendlineLineMark = (markProps: TrendlineParentProps, trendlineP
 	};
 };
 
-const getLineYProductionRule = (trendlineDimension: string, orientation: Orientation): NumericValueRef => {
+/**
+ * gets the production rule for the y encoding of a line mark
+ * @param trendlineDimension
+ * @param orientation
+ * @returns
+ */
+export const getLineYProductionRule = (trendlineDimension: string, orientation: Orientation): NumericValueRef => {
 	const scale = 'yLinear';
 	if (orientation === 'horizontal') {
 		return { scale, field: TRENDLINE_VALUE };
@@ -232,7 +238,15 @@ const getLineYProductionRule = (trendlineDimension: string, orientation: Orienta
 	return { scale, field: trendlineDimension };
 };
 
-const getLineXProductionRule = (
+/**
+ * gets the production rule for the x encoding of a line mark
+ * @param trendlineDimension
+ * @param scaleType
+ * @param orientation
+ * @param isDimensionNormalized
+ * @returns
+ */
+export const getLineXProductionRule = (
 	trendlineDimension: string,
 	scaleType: ScaleType,
 	orientation: Orientation,

@@ -17,6 +17,8 @@ import { spectrumColors } from '@themes';
 import { createElement } from 'react';
 import { Facet, From, GroupMark, Mark } from 'vega';
 import {
+	getLineXProductionRule,
+	getLineYProductionRule,
 	getRuleXEncodings,
 	getRuleYEncodings,
 	getTrendlineLineMark,
@@ -185,5 +187,27 @@ describe('getTrendlineLineMark()', () => {
 	test('should use static color if provided', () => {
 		const mark = getTrendlineLineMark(defaultLineProps, { ...defaultTrendlineProps, color: 'gray-500' });
 		expect(mark.encode?.enter?.stroke).toEqual({ value: spectrumColors.light['gray-500'] });
+	});
+});
+
+describe('getLineYProductionRule()', () => {
+	test('should use trendline dimension for vertical orientation', () => {
+		expect(getLineYProductionRule('count', 'vertical')).toHaveProperty('field', 'count');
+	});
+	test('should use TRENDLINE_VALUE for horizontal orientation', () => {
+		expect(getLineYProductionRule('count', 'horizontal')).toHaveProperty('field', TRENDLINE_VALUE);
+	});
+});
+
+describe('getLineXProductionRule()', () => {
+	test('should use TRENDLINE_VALUE for vertical orientation', () => {
+		expect(getLineXProductionRule('count', 'linear', 'vertical', false)).toHaveProperty('field', TRENDLINE_VALUE);
+	});
+	test('should use xTrendline scale if horizontal and normalized', () => {
+		expect(getLineXProductionRule('count', 'linear', 'horizontal', true)).toHaveProperty('scale', 'xTrendline');
+	});
+	test('should use trendline dimension if horizontal', () => {
+		expect(getLineXProductionRule('count', 'linear', 'horizontal', true)).toHaveProperty('field', 'count');
+		expect(getLineXProductionRule('count', 'linear', 'horizontal', false)).toHaveProperty('field', 'count');
 	});
 });

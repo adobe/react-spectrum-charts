@@ -238,4 +238,13 @@ describe('addTableDataTransforms()', () => {
 			}),
 		).toHaveLength(0);
 	});
+	test('should not add normalized dimension transform if it is not a time scale', () => {
+		const transforms = addTableDataTransforms([], {
+			...defaultLineProps,
+			scaleType: 'linear',
+			children: [createElement(Trendline, { method: 'linear' })],
+		});
+		expect(transforms).toHaveLength(1);
+		expect(transforms[0]).toHaveProperty('type', 'extent');
+	});
 });
