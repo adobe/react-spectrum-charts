@@ -139,7 +139,7 @@ const ScatterStory: StoryFn<typeof Trendline> = (args): ReactElement => {
 	const chartProps = useChartProps({ data: characterData, height: 500, width: 500, lineWidths: [1, 2, 3] });
 
 	return (
-		<Chart {...chartProps} debug>
+		<Chart {...chartProps}>
 			<Axis position="bottom" grid ticks baseline title="Speed (normal)" />
 			<Axis position="left" grid ticks baseline title="Handling (normal)" />
 			<Scatter color="weightClass" dimension="speedNormal" metric="handlingNormal">
