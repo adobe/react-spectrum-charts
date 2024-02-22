@@ -124,7 +124,7 @@ export const getRuleYEncodings = (
 		return { y: { scale: 'yLinear', field: TRENDLINE_VALUE } };
 	}
 	return {
-		y: getStartDimensionExtentProductionRule(dimensionExtent[0], dimension, 'yLinear'),
+		y: getStartDimensionExtentProductionRule(dimensionExtent[0], dimension, 'yLinear', 'y'),
 		y2: getEndDimensionExtentProductionRule(dimensionExtent[1], dimension, 'yLinear', 'y'),
 	};
 };
@@ -148,7 +148,7 @@ export const getRuleXEncodings = (
 		return { x: { scale, field: TRENDLINE_VALUE } };
 	}
 	return {
-		x: getStartDimensionExtentProductionRule(dimensionExtent[0], dimension, scale),
+		x: getStartDimensionExtentProductionRule(dimensionExtent[0], dimension, scale, 'x'),
 		x2: getEndDimensionExtentProductionRule(dimensionExtent[1], dimension, scale, 'x'),
 	};
 };
@@ -157,12 +157,14 @@ const getStartDimensionExtentProductionRule = (
 	startDimensionExtent: number | 'domain' | null,
 	dimension: string,
 	scale: string,
+	axis: 'x' | 'y',
 ): NumericValueRef => {
 	switch (startDimensionExtent) {
 		case null:
 			return { scale, field: `${dimension}Min` };
 		case 'domain':
-			return { value: 0 };
+			if (axis === 'x') return { value: 0 };
+			return { signal: 'height' };
 		default:
 			return { scale, value: startDimensionExtent };
 	}
@@ -178,7 +180,8 @@ const getEndDimensionExtentProductionRule = (
 		case null:
 			return { scale, field: `${dimension}Max` };
 		case 'domain':
-			return { signal: axis === 'x' ? 'width' : 'height' };
+			if (axis === 'x') return { signal: 'width' };
+			return { value: 0 };
 		default:
 			return { scale, value: endDimensionExtent };
 	}

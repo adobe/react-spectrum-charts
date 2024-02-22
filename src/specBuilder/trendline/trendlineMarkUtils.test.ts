@@ -114,8 +114,8 @@ describe('getRuleYEncodings()', () => {
 	});
 	test('should return the correct rules for "domain" extent', () => {
 		const encoding = getRuleYEncodings(['domain', 'domain'], 'count', 'vertical');
-		expect(encoding).toHaveProperty('y', { value: 0 });
-		expect(encoding).toHaveProperty('y2', { signal: 'height' });
+		expect(encoding).toHaveProperty('y', { signal: 'height' });
+		expect(encoding).toHaveProperty('y2', { value: 0 });
 	});
 	test('should return the correct rules for null extent', () => {
 		const encoding = getRuleYEncodings([null, null], 'count', 'vertical');
