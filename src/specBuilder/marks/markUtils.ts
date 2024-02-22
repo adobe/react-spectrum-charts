@@ -52,7 +52,6 @@ import {
 	Cursor,
 	NumericValueRef,
 	PathMark,
-	ProductionRule,
 	ScaledValueRef,
 	SignalRef,
 } from 'vega';
@@ -202,7 +201,7 @@ export const getHighlightOpacityValue = (
  * @param dimension
  * @returns x encoding
  */
-export const getXProductionRule = (scaleType: ScaleType, dimension: string): ProductionRule<NumericValueRef> => {
+export const getXProductionRule = (scaleType: ScaleType, dimension: string): NumericValueRef => {
 	const scale = getScaleName('x', scaleType);
 	if (scaleType === 'time') {
 		return { scale, field: DEFAULT_TRANSFORMED_TIME_DIMENSION };

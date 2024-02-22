@@ -21,8 +21,8 @@ import {
 
 export const getTrendlineSignals = (markProps: TrendlineParentProps): Signal[] => {
 	const signals: Signal[] = [];
-	const { children, name: markName } = markProps;
-	const trendlines = getTrendlines(children, markName);
+	const { name: markName } = markProps;
+	const trendlines = getTrendlines(markProps);
 
 	if (trendlines.some((trendline) => hasTooltip(trendline.children))) {
 		signals.push(getUncontrolledHoverSignal(`${markName}Trendline`, true, `${markName}Trendline_voronoi`));

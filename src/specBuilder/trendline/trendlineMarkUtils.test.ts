@@ -12,13 +12,13 @@
 
 import { ChartTooltip } from '@components/ChartTooltip';
 import { Trendline } from '@components/Trendline';
-import { COLOR_SCALE, DEFAULT_TIME_DIMENSION } from '@constants';
+import { COLOR_SCALE, DEFAULT_TIME_DIMENSION, TRENDLINE_VALUE } from '@constants';
 import { spectrumColors } from '@themes';
 import { createElement } from 'react';
 import { Facet, From, GroupMark, Mark } from 'vega';
 import {
-	getRuleX2ProductionRule,
-	getRuleXProductionRule,
+	getRuleXEncodings,
+	getRuleYEncodings,
 	getTrendlineLineMark,
 	getTrendlineMarks,
 	getTrendlineRuleMark,
@@ -106,29 +106,51 @@ describe('getTrendlineRuleMark()', () => {
 	});
 });
 
-describe('getRuleXProductionRule()', () => {
-	test('should return the correct production rule for a number value extent', () => {
-		expect(getRuleXProductionRule(0, 'count', 'linear')).toEqual({ scale: 'xLinear', value: 0 });
-		expect(getRuleXProductionRule(10, 'count', 'linear')).toEqual({ scale: 'xLinear', value: 10 });
+describe('getRuleYEncodings()', () => {
+	test('should return the correct rules for numeric extent', () => {
+		const encoding = getRuleYEncodings([0, 10], 'count', 'vertical');
+		expect(encoding).toHaveProperty('y', { scale: 'yLinear', value: 0 });
+		expect(encoding).toHaveProperty('y2', { scale: 'yLinear', value: 10 });
 	});
-	test('should return the correct production rule for "domain" extent', () => {
-		expect(getRuleXProductionRule('domain', 'count', 'linear')).toEqual({ value: 0 });
+	test('should return the correct rules for "domain" extent', () => {
+		const encoding = getRuleYEncodings(['domain', 'domain'], 'count', 'vertical');
+		expect(encoding).toHaveProperty('y', { value: 0 });
+		expect(encoding).toHaveProperty('y2', { signal: 'height' });
 	});
-	test('should return the correct production rule for null extent', () => {
-		expect(getRuleXProductionRule(null, 'count', 'linear')).toEqual({ scale: 'xLinear', field: 'countMin' });
+	test('should return the correct rules for null extent', () => {
+		const encoding = getRuleYEncodings([null, null], 'count', 'vertical');
+		expect(encoding).toHaveProperty('y', { scale: 'yLinear', field: 'countMin' });
+		expect(encoding).toHaveProperty('y2', { scale: 'yLinear', field: 'countMax' });
+	});
+
+	test('should return the corret rules for horizontal orientation', () => {
+		const encoding = getRuleYEncodings([0, 10], 'count', 'horizontal');
+		expect(encoding).toHaveProperty('y', { scale: 'yLinear', field: TRENDLINE_VALUE });
+		expect(encoding).not.toHaveProperty('y2');
 	});
 });
 
-describe('getRuleX2ProductionRule()', () => {
-	test('should return the correct production rule for a number value extent', () => {
-		expect(getRuleX2ProductionRule(0, 'count', 'linear')).toEqual({ scale: 'xLinear', value: 0 });
-		expect(getRuleX2ProductionRule(10, 'count', 'linear')).toEqual({ scale: 'xLinear', value: 10 });
+describe('getRuleXEncondings()', () => {
+	test('should return the correct rules for numeric extent', () => {
+		const encoding = getRuleXEncodings([0, 10], 'count', 'linear', 'horizontal');
+		expect(encoding).toHaveProperty('x', { scale: 'xLinear', value: 0 });
+		expect(encoding).toHaveProperty('x2', { scale: 'xLinear', value: 10 });
 	});
-	test('should return the correct production rule for "domain" extent', () => {
-		expect(getRuleX2ProductionRule('domain', 'count', 'linear')).toEqual({ signal: 'width' });
+	test('should return the correct rules for "domain" extent', () => {
+		const encoding = getRuleXEncodings(['domain', 'domain'], 'count', 'linear', 'horizontal');
+		expect(encoding).toHaveProperty('x', { value: 0 });
+		expect(encoding).toHaveProperty('x2', { signal: 'width' });
 	});
-	test('should return the correct production rule for null extent', () => {
-		expect(getRuleX2ProductionRule(null, 'count', 'linear')).toEqual({ scale: 'xLinear', field: 'countMax' });
+	test('should return the correct rules for null extent', () => {
+		const encoding = getRuleXEncodings([null, null], 'count', 'linear', 'horizontal');
+		expect(encoding).toHaveProperty('x', { scale: 'xLinear', field: 'countMin' });
+		expect(encoding).toHaveProperty('x2', { scale: 'xLinear', field: 'countMax' });
+	});
+
+	test('should return the corret rules for vertical orientation', () => {
+		const encoding = getRuleXEncodings([0, 10], 'count', 'linear', 'vertical');
+		expect(encoding).toHaveProperty('x', { scale: 'xLinear', field: TRENDLINE_VALUE });
+		expect(encoding).not.toHaveProperty('x2');
 	});
 });
 
@@ -144,15 +166,15 @@ describe('getTrendlineLineMark()', () => {
 	test('should use regular x rule if the x dimension is not normalized', () => {
 		expect(
 			getTrendlineLineMark(defaultLineProps, { ...defaultTrendlineProps, method: 'median' }).encode?.update?.x,
-		).toEqual({ field: 'datetime0', scale: 'xTime' });
+		).toEqual({ field: DEFAULT_TIME_DIMENSION, scale: 'xTime' });
 		expect(
 			getTrendlineLineMark(defaultLineProps, { ...defaultTrendlineProps, method: 'movingAverage-12' }).encode
 				?.update?.x,
-		).toEqual({ field: 'datetime0', scale: 'xTime' });
+		).toEqual({ field: DEFAULT_TIME_DIMENSION, scale: 'xTime' });
 		expect(
 			getTrendlineLineMark(
 				{ ...defaultLineProps, scaleType: 'linear', dimension: 'count' },
-				defaultTrendlineProps,
+				{ ...defaultTrendlineProps, dimensionScaleType: 'linear' },
 			).encode?.update?.x,
 		).toEqual({ field: 'count', scale: 'xLinear' });
 	});

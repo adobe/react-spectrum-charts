@@ -14,7 +14,7 @@ import { ChartTooltip } from '@components/ChartTooltip';
 import { Trendline } from '@components/Trendline';
 import {
 	DEFAULT_COLOR,
-	DEFAULT_TRANSFORMED_TIME_DIMENSION,
+	DEFAULT_TIME_DIMENSION,
 	FILTERED_TABLE,
 	MS_PER_DAY,
 	SERIES_ID,
@@ -71,12 +71,8 @@ describe('addTrendlineData()', () => {
 			source: FILTERED_TABLE,
 			transform: [
 				{
-					as: [
-						TRENDLINE_VALUE,
-						`${DEFAULT_TRANSFORMED_TIME_DIMENSION}Min`,
-						`${DEFAULT_TRANSFORMED_TIME_DIMENSION}Max`,
-					],
-					fields: ['value', DEFAULT_TRANSFORMED_TIME_DIMENSION, DEFAULT_TRANSFORMED_TIME_DIMENSION],
+					as: [TRENDLINE_VALUE, `${DEFAULT_TIME_DIMENSION}Min`, `${DEFAULT_TIME_DIMENSION}Max`],
+					fields: ['value', DEFAULT_TIME_DIMENSION, DEFAULT_TIME_DIMENSION],
 					groupby: ['series'],
 					ops: ['mean', 'min', 'max'],
 					type: 'aggregate',

@@ -16,6 +16,7 @@ import { Trendline } from '@components/Trendline';
 import { FILTERED_TABLE, MS_PER_DAY, TRENDLINE_VALUE } from '@constants';
 
 import { applyTrendlinePropDefaults, getPolynomialOrder, getRegressionExtent, getTrendlines } from './trendlineUtils';
+import { defaultLineProps } from './trendlineTestUtils';
 
 describe('getTrendlines()', () => {
 	test('should return an array of trendline props', () => {
@@ -24,7 +25,7 @@ describe('getTrendlines()', () => {
 			createElement(Trendline, { method: 'average' }),
 			createElement(Trendline, { method: 'linear' }),
 		];
-		const trendlines = getTrendlines(children, 'line0');
+		const trendlines = getTrendlines({ ...defaultLineProps, children });
 		expect(trendlines).toHaveLength(2);
 		expect(trendlines[0]).toHaveProperty('method', 'average');
 		expect(trendlines[1]).toHaveProperty('method', 'linear');
@@ -32,14 +33,14 @@ describe('getTrendlines()', () => {
 
 	test('should return an empty array if there are not any trendline child elements', () => {
 		const children = [createElement(Annotation)];
-		const trendlines = getTrendlines(children, 'line0');
+		const trendlines = getTrendlines({ ...defaultLineProps, children });
 		expect(trendlines).toHaveLength(0);
 	});
 });
 
 describe('applyTrendlinePropDefaults()', () => {
 	test('should add defaults', () => {
-		const props = applyTrendlinePropDefaults({}, 'line0', 0);
+		const props = applyTrendlinePropDefaults(defaultLineProps, {}, 0);
 		expect(props).toHaveProperty('method', 'linear');
 		expect(props).toHaveProperty('dimensionRange', [null, null]);
 		expect(props).toHaveProperty('lineType', 'dashed');
