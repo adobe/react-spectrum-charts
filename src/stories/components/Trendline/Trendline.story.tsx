@@ -62,7 +62,7 @@ const defaultChartProps: ChartProps = { data: workspaceTrendsData, minWidth: 400
 const TrendlineStory: StoryFn<typeof Trendline> = (args): ReactElement => {
 	const chartProps = useChartProps(defaultChartProps);
 	return (
-		<Chart {...chartProps} debug>
+		<Chart {...chartProps}>
 			<Axis position="left" grid title="Users" />
 			<Axis position="bottom" labelFormat="time" baseline ticks />
 			<Line color="series">
@@ -76,7 +76,7 @@ const TrendlineStory: StoryFn<typeof Trendline> = (args): ReactElement => {
 const TrendlineWithDialogsStory: StoryFn<typeof Trendline> = (args): ReactElement => {
 	const chartProps = useChartProps(defaultChartProps);
 	return (
-		<Chart {...chartProps} debug>
+		<Chart {...chartProps}>
 			<Axis position="left" grid title="Users" />
 			<Axis position="bottom" labelFormat="time" baseline ticks />
 			<Line color="series">
@@ -107,7 +107,7 @@ const TrendlineWithDialogsStory: StoryFn<typeof Trendline> = (args): ReactElemen
 const TrendlineWithDialogsOnParentStory: StoryFn<typeof Trendline> = (args): ReactElement => {
 	const chartProps = useChartProps(defaultChartProps);
 	return (
-		<Chart {...chartProps} debug>
+		<Chart {...chartProps}>
 			<Axis position="left" grid title="Users" />
 			<Axis position="bottom" labelFormat="time" baseline ticks />
 			<Line color="series">
