@@ -369,12 +369,8 @@ describe('lineSpecBuilder', () => {
 				})[2].transform,
 			).toStrictEqual([
 				{
-					as: [
-						TRENDLINE_VALUE,
-						`${DEFAULT_TRANSFORMED_TIME_DIMENSION}Min`,
-						`${DEFAULT_TRANSFORMED_TIME_DIMENSION}Max`,
-					],
-					fields: [DEFAULT_METRIC, DEFAULT_TRANSFORMED_TIME_DIMENSION, DEFAULT_TRANSFORMED_TIME_DIMENSION],
+					as: [TRENDLINE_VALUE, `${DEFAULT_TIME_DIMENSION}Min`, `${DEFAULT_TIME_DIMENSION}Max`],
+					fields: [DEFAULT_METRIC, DEFAULT_TIME_DIMENSION, DEFAULT_TIME_DIMENSION],
 					groupby: [DEFAULT_COLOR],
 					ops: ['mean', 'min', 'max'],
 					type: 'aggregate',

@@ -41,11 +41,19 @@ describe('FeatureMatrix', () => {
 		expect(point).toHaveAttribute('stroke-width', '0');
 
 		// trendline styling
-		const trendline = await findMarksByGroupName(chart, 'scatter0Trendline0', 'line');
-		expect(trendline).toBeInTheDocument();
-		expect(trendline).toHaveAttribute('stroke', colors['gray-900']);
-		expect(trendline).toHaveAttribute('stroke-width', '1');
-		expect(trendline).toHaveAttribute('stroke-dasharray', '');
+		// horizontal trendline
+		const horizontalTrendline = await findMarksByGroupName(chart, 'scatter0Trendline0', 'line');
+		expect(horizontalTrendline).toBeInTheDocument();
+		expect(horizontalTrendline).toHaveAttribute('x2', '453');
+		expect(horizontalTrendline).toHaveAttribute('y2', '0');
+		expect(horizontalTrendline).toHaveAttribute('stroke', colors['gray-900']);
+		expect(horizontalTrendline).toHaveAttribute('stroke-width', '1');
+		expect(horizontalTrendline).toHaveAttribute('stroke-dasharray', '');
+		// vertical trendline
+		const verticalTrendline = await findMarksByGroupName(chart, 'scatter0Trendline1', 'line');
+		expect(verticalTrendline).toBeInTheDocument();
+		expect(verticalTrendline).toHaveAttribute('x2', '0');
+		expect(verticalTrendline).toHaveAttribute('y2', '-397');
 	});
 });
 

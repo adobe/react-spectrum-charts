@@ -13,7 +13,7 @@
 import { ReactElement } from 'react';
 
 import useChartProps from '@hooks/useChartProps';
-import { Axis, Chart, Legend, Scatter, Trendline } from '@rsc';
+import { Axis, Chart, Legend, Scatter, Trendline, TrendlineProps } from '@rsc';
 import { StoryFn } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
 
@@ -24,6 +24,13 @@ export default {
 	component: Chart,
 };
 
+const trendlineProps: TrendlineProps = {
+	method: 'median',
+	lineWidth: 'XS',
+	lineType: 'solid',
+	dimensionExtent: ['domain', 'domain'],
+};
+
 const FeatureMatrixStory: StoryFn<typeof Chart> = (args): ReactElement => {
 	const chartProps = useChartProps(args);
 
@@ -32,13 +39,8 @@ const FeatureMatrixStory: StoryFn<typeof Chart> = (args): ReactElement => {
 			<Axis position="bottom" ticks grid title="Percentage of daily users (DAU)" labelFormat="percentage" />
 			<Axis position="left" ticks grid title="Average number of times per day" />
 			<Scatter dimension="dauPercent" metric="countAvg" color="segment">
-				<Trendline
-					method="median"
-					lineWidth="XS"
-					lineType="solid"
-					color="gray-900"
-					dimensionExtent={['domain', 'domain']}
-				/>
+				<Trendline {...trendlineProps} color="gray-900" orientation="horizontal" />
+				<Trendline {...trendlineProps} color="gray-900" orientation="vertical" />
 			</Scatter>
 			<Legend position="bottom" highlight />
 		</Chart>
@@ -53,13 +55,8 @@ const MultipleSegmentFeatureMatrixStory: StoryFn<typeof Chart> = (args): ReactEl
 			<Axis position="bottom" ticks grid title="Percentage of daily users (DAU)" labelFormat="percentage" />
 			<Axis position="left" ticks grid title="Average number of times per day" />
 			<Scatter dimension="dauPercent" metric="countAvg" color="segment">
-				<Trendline
-					method="median"
-					lineWidth="XS"
-					lineType="solid"
-					dimensionExtent={['domain', 'domain']}
-					displayOnHover
-				/>
+				<Trendline {...trendlineProps} displayOnHover orientation="horizontal" />
+				<Trendline {...trendlineProps} displayOnHover orientation="vertical" />
 			</Scatter>
 			<Legend position="bottom" highlight />
 		</Chart>

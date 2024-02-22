@@ -22,13 +22,12 @@ import { defaultLineProps, defaultTrendlineProps } from './trendlineTestUtils';
 
 describe('getAggregateTransform()', () => {
 	test('should return the correct method', () => {
-		expect(getAggregateTransform(defaultLineProps, 'average', false, DEFAULT_TIME_DIMENSION)).toHaveProperty(
-			'ops',
-			['mean'],
-		);
-		expect(getAggregateTransform(defaultLineProps, 'median', false, DEFAULT_TIME_DIMENSION)).toHaveProperty('ops', [
-			'median',
-		]);
+		expect(
+			getAggregateTransform(defaultLineProps, { ...defaultTrendlineProps, method: 'average' }, false),
+		).toHaveProperty('ops', ['mean']);
+		expect(
+			getAggregateTransform(defaultLineProps, { ...defaultTrendlineProps, method: 'median' }, false),
+		).toHaveProperty('ops', ['median']);
 	});
 });
 
@@ -95,17 +94,17 @@ describe('getRegressionTransform()', () => {
 
 describe('getWindowTransform()', () => {
 	test('should return a window transform with the correct frame', () => {
-		const transform = getWindowTransform(defaultLineProps, 'movingAverage-7');
+		const transform = getWindowTransform(defaultLineProps, { ...defaultTrendlineProps, method: 'movingAverage-7' });
 		expect(transform).toHaveProperty('type', 'window');
 		expect(transform).toHaveProperty('frame', [6, 0]);
 	});
 	test('should throw error if the method is not of form "moveingAverage-${number}"', () => {
-		expect(() => getWindowTransform(defaultLineProps, 'linear')).toThrow(
+		expect(() => getWindowTransform(defaultLineProps, { ...defaultTrendlineProps, method: 'linear' })).toThrow(
 			'Invalid moving average frame width: NaN, frame width must be an integer greater than 0',
 		);
-		expect(() => getWindowTransform(defaultLineProps, 'movingAverage-0')).toThrow(
-			'Invalid moving average frame width: 0, frame width must be an integer greater than 0',
-		);
+		expect(() =>
+			getWindowTransform(defaultLineProps, { ...defaultTrendlineProps, method: 'movingAverage-0' }),
+		).toThrow('Invalid moving average frame width: 0, frame width must be an integer greater than 0');
 	});
 });
 
@@ -132,39 +131,34 @@ describe('getTrendlineDimensionRangeTransforms()', () => {
 
 describe('getTrendlineParamFormulaTransforms()', () => {
 	test('should return the correct formula for each polynomial method', () => {
-		expect(getTrendlineParamFormulaTransforms('x', 'linear', 'linear')[0].expr).toEqual(
+		expect(getTrendlineParamFormulaTransforms('x', 'linear')[0].expr).toEqual(
 			'datum.coef[0] + datum.coef[1] * pow(datum.x, 1)',
 		);
-		expect(getTrendlineParamFormulaTransforms('x', 'quadratic', 'linear')[0].expr).toEqual(
+		expect(getTrendlineParamFormulaTransforms('x', 'quadratic')[0].expr).toEqual(
 			'datum.coef[0] + datum.coef[1] * pow(datum.x, 1) + datum.coef[2] * pow(datum.x, 2)',
 		);
-		expect(getTrendlineParamFormulaTransforms('x', 'polynomial-1', 'linear')[0].expr).toEqual(
+		expect(getTrendlineParamFormulaTransforms('x', 'polynomial-1')[0].expr).toEqual(
 			'datum.coef[0] + datum.coef[1] * pow(datum.x, 1)',
 		);
-		expect(getTrendlineParamFormulaTransforms('x', 'polynomial-2', 'linear')[0].expr).toEqual(
+		expect(getTrendlineParamFormulaTransforms('x', 'polynomial-2')[0].expr).toEqual(
 			'datum.coef[0] + datum.coef[1] * pow(datum.x, 1) + datum.coef[2] * pow(datum.x, 2)',
 		);
-		expect(getTrendlineParamFormulaTransforms('x', 'polynomial-3', 'linear')[0].expr).toEqual(
+		expect(getTrendlineParamFormulaTransforms('x', 'polynomial-3')[0].expr).toEqual(
 			'datum.coef[0] + datum.coef[1] * pow(datum.x, 1) + datum.coef[2] * pow(datum.x, 2) + datum.coef[3] * pow(datum.x, 3)',
 		);
-		expect(getTrendlineParamFormulaTransforms('x', 'polynomial-8', 'linear')[0].expr).toEqual(
+		expect(getTrendlineParamFormulaTransforms('x', 'polynomial-8')[0].expr).toEqual(
 			'datum.coef[0] + datum.coef[1] * pow(datum.x, 1) + datum.coef[2] * pow(datum.x, 2) + datum.coef[3] * pow(datum.x, 3) + datum.coef[4] * pow(datum.x, 4) + datum.coef[5] * pow(datum.x, 5) + datum.coef[6] * pow(datum.x, 6) + datum.coef[7] * pow(datum.x, 7) + datum.coef[8] * pow(datum.x, 8)',
 		);
 	});
 	test('should return the correct formula for other non-polynomial regression methods', () => {
-		expect(getTrendlineParamFormulaTransforms('x', 'exponential', 'linear')[0].expr).toEqual(
+		expect(getTrendlineParamFormulaTransforms('x', 'exponential')[0].expr).toEqual(
 			'datum.coef[0] + exp(datum.coef[1] * datum.x)',
 		);
-		expect(getTrendlineParamFormulaTransforms('x', 'logarithmic', 'linear')[0].expr).toEqual(
+		expect(getTrendlineParamFormulaTransforms('x', 'logarithmic')[0].expr).toEqual(
 			'datum.coef[0] + datum.coef[1] * log(datum.x)',
 		);
-		expect(getTrendlineParamFormulaTransforms('x', 'power', 'linear')[0].expr).toEqual(
+		expect(getTrendlineParamFormulaTransforms('x', 'power')[0].expr).toEqual(
 			'datum.coef[0] * pow(datum.x, datum.coef[1])',
-		);
-	});
-	test('should use normalized dimension for time scaleType', () => {
-		expect(getTrendlineParamFormulaTransforms('x', 'exponential', 'time')[0].expr).toEqual(
-			'datum.coef[0] + exp(datum.coef[1] * datum.xNormalized)',
 		);
 	});
 });

@@ -562,6 +562,8 @@ export interface TrendlineProps {
 	method?: TrendlineMethod;
 	/** The opacity of the trendlines */
 	opacity?: number;
+	/** Orientation of the trendline. Only supported on scatter plots. */
+	orientation?: Orientation;
 }
 
 /** trendline methods that use a joinaggregate transform */

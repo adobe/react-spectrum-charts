@@ -13,10 +13,11 @@ import React, { ReactElement } from 'react';
 
 import { TRENDLINE_VALUE } from '@constants';
 import useChartProps from '@hooks/useChartProps';
-import { Axis, Chart, ChartPopover, ChartProps, ChartTooltip, Legend, Line, Trendline } from '@rsc';
+import { Axis, Chart, ChartPopover, ChartProps, ChartTooltip, Legend, Line, Scatter, Title, Trendline } from '@rsc';
 import { workspaceTrendsData } from '@stories/data/data';
 import { StoryFn } from '@storybook/react';
 import { bindWithProps } from 'test-utils/bindWithProps';
+import { characterData } from '@stories/data/marioKartData';
 
 export default {
 	title: 'RSC/Trendline',
@@ -134,6 +135,22 @@ const TrendlineWithDialogsOnParentStory: StoryFn<typeof Trendline> = (args): Rea
 	);
 };
 
+const ScatterStory: StoryFn<typeof Trendline> = (args): ReactElement => {
+	const chartProps = useChartProps({ data: characterData, height: 500, width: 500, lineWidths: [1, 2, 3] });
+
+	return (
+		<Chart {...chartProps}>
+			<Axis position="bottom" grid ticks baseline title="Speed (normal)" />
+			<Axis position="left" grid ticks baseline title="Handling (normal)" />
+			<Scatter color="weightClass" dimension="speedNormal" metric="handlingNormal">
+				<Trendline {...args} />
+			</Scatter>
+			<Legend title="Weight class" highlight position="right" />
+			<Title text="Mario Kart 8 Character Data" />
+		</Chart>
+	);
+};
+
 const Basic = bindWithProps(TrendlineStory);
 Basic.args = {
 	method: 'linear',
@@ -168,6 +185,15 @@ DisplayOnHover.args = {
 	color: 'gray-600',
 };
 
+const Orientation = bindWithProps(ScatterStory);
+Orientation.args = {
+	orientation: 'vertical',
+	method: 'average',
+	lineType: 'solid',
+	lineWidth: 'XS',
+	dimensionExtent: ['domain', 'domain'],
+};
+
 const TooltipAndPopover = bindWithProps(TrendlineWithDialogsStory);
 TooltipAndPopover.args = {
 	highlightRawPoint: true,
@@ -180,4 +206,12 @@ TooltipAndPopoverOnParentLine.args = {
 	lineWidth: 'S',
 };
 
-export { Basic, DimensionExtent, DimensionRange, DisplayOnHover, TooltipAndPopover, TooltipAndPopoverOnParentLine };
+export {
+	Basic,
+	DimensionExtent,
+	DimensionRange,
+	DisplayOnHover,
+	Orientation,
+	TooltipAndPopover,
+	TooltipAndPopoverOnParentLine,
+};
