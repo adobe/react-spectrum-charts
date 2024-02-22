@@ -9,7 +9,6 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import React from 'react';
 
 import '@matchMediaMock';
 import { Trendline } from '@rsc';
@@ -22,8 +21,14 @@ import {
 	render,
 } from '@test-utils';
 
-import { Basic, DisplayOnHover, TooltipAndPopover, TooltipAndPopoverOnParentLine } from './Trendline.story';
 import { HIGHLIGHT_CONTRAST_RATIO } from '@constants';
+import {
+	Basic,
+	DisplayOnHover,
+	Orientation,
+	TooltipAndPopover,
+	TooltipAndPopoverOnParentLine,
+} from './Trendline.story';
 
 describe('Trendline', () => {
 	// Trendline is not a real React component. This is test just provides test coverage for sonarqube
@@ -122,6 +127,20 @@ describe('Trendline', () => {
 			expect(trendlines[0]).toHaveAttribute('opacity', '1');
 			// second trendline should still be hidden
 			expect(trendlines[1]).toHaveAttribute('opacity', '0');
+		});
+	});
+
+	describe('Orientation', () => {
+		test('Should have vertical trendline', async () => {
+			render(<Orientation {...Orientation.args} />);
+			const chart = await findChart();
+			expect(chart).toBeInTheDocument();
+
+			const trendlines = await findAllMarksByGroupName(chart, 'scatter0Trendline0', 'line');
+			expect(trendlines).toHaveLength(3);
+			// if x2 is 0, then the trendline is vertical
+			expect(allElementsHaveAttributeValue(trendlines, 'x2', '0')).toBeTruthy();
+			expect(allElementsHaveAttributeValue(trendlines, 'y2', '-387')).toBeTruthy();
 		});
 	});
 
