@@ -39,7 +39,7 @@ import { getAnimationMarks } from '@specBuilder/specUtils';
  * @param dataSource
  * @returns LineMark
  */
-// TODO: get current and previous data down this low.
+
 export const getLineMark = (lineMarkProps: LineMarkProps, dataSource: string): LineMark => {
 	const { name, color, metric, dimension, scaleType, lineType, lineWidth, colorScheme, data, previousData, animations } = lineMarkProps;
 
