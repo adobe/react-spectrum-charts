@@ -16,7 +16,6 @@ import useChartProps from '@hooks/useChartProps';
 import { Axis, Bar, Chart, ChartPopover, ChartTooltip, Legend, Line } from '@rsc';
 import {
 	newDataArray1,
-	newDataArray2,
 	workspaceTrendsData,
 	workspaceTrendsDataWithVisiblePoints
 } from '@stories/data/data';
@@ -68,7 +67,7 @@ const singleLineChartProps: ChartProps = { data: newDataArray1, minWidth: 400, m
 const SingleLineStory: StoryFn<typeof Line> = (args): ReactElement => {
 	const chartProps = useChartProps(singleLineChartProps);
 	return (
-		<Chart {...chartProps} debug>
+		<Chart {...chartProps}>
 			<Line {...args} />
 		</Chart>
 	);
@@ -77,7 +76,7 @@ const SingleLineStory: StoryFn<typeof Line> = (args): ReactElement => {
 const BasicLineStory: StoryFn<typeof Line> = (args): ReactElement => {
 	const chartProps = useChartProps(defaultChartProps);
 	return (
-		<Chart {...chartProps} debug>
+		<Chart {...chartProps}>
 			<Line {...args} />
 			<Legend lineWidth={{ value: 0 }} />
 		</Chart>

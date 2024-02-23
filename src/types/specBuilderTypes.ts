@@ -16,7 +16,7 @@ import {
 	AxisAnnotationChildElement,
 	AxisAnnotationProps,
 	AxisProps,
-	BarProps,
+	BarProps, ChartData,
 	ChartTooltipElement,
 	ColorScheme,
 	DonutProps,
@@ -27,7 +27,7 @@ import {
 	MarkChildElement,
 	MetricRangeProps,
 	ScatterProps,
-	TrendlineProps,
+	TrendlineProps
 } from './Chart';
 
 type PartiallyRequired<T, K extends keyof T> = Omit<T, K> & Required<Pick<T, K>>;
@@ -128,6 +128,9 @@ type LinePropsWithDefaults = 'name' | 'dimension' | 'metric' | 'color' | 'scaleT
 
 export interface LineSpecProps extends PartiallyRequired<LineProps, LinePropsWithDefaults> {
 	children: MarkChildElement[];
+	data?: ChartData[],
+	previousData?: ChartData[],
+	animations?: boolean,
 	colorScheme: ColorScheme;
 	index: number;
 	interactiveMarkName: string | undefined;

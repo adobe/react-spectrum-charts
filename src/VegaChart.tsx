@@ -136,7 +136,7 @@ export const VegaChart: FC<VegaChartProps> = ({
 		};
 	}, [
 		chartData.table,
-		// previousChartData,
+		previousChartData,
 		config,
 		data,
 		previousData,

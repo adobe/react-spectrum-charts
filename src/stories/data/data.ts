@@ -1055,23 +1055,23 @@ export const newDataArray1 = [
 	{ x: 15, y: 77 },
 ];
 
-export const newDataArray2 = [
-	{ x: 0, y: 95 },
-	{ x: 1, y: 62 },
-	{ x: 2, y: 83 },
-	{ x: 3, y: 58 },
-	{ x: 4, y: 71 },
-	{ x: 5, y: 49 },
-	{ x: 6, y: 84 },
-	{ x: 7, y: 78 },
-	{ x: 8, y: 95 },
-	{ x: 9, y: 62 },
-	{ x: 10, y: 83 },
-	{ x: 11, y: 58 },
-	{ x: 12, y: 71 },
-	{ x: 13, y: 49 },
-	{ x: 14, y: 84 },
-	{ x: 15, y: 78 },
+export const newDataArray1WithStaticPoints = [
+	{ x: 0, y: 92, point: true },
+	{ x: 1, y: 56, point: true },
+	{ x: 2, y: 84, point: true },
+	{ x: 3, y: 37, point: true },
+	{ x: 4, y: 49, point: true },
+	{ x: 5, y: 67, point: true },
+	{ x: 6, y: 95, point: true },
+	{ x: 7, y: 77, point: true },
+	{ x: 8, y: 92, point: true },
+	{ x: 9, y: 56, point: true },
+	{ x: 10, y: 84, point: true },
+	{ x: 11, y: 37, point: true },
+	{ x: 12, y: 49, point: true },
+	{ x: 13, y: 67, point: true },
+	{ x: 14, y: 95, point: true },
+	{ x: 15, y: 77, point: true},
 ];
 
 

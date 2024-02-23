@@ -38,9 +38,9 @@ import {
 	Tooltip,
 	TrendScale,
 	WithStaticPoints,
-	WithStaticPointsAndDialogs, SingleLine
+	WithStaticPointsAndDialogs
 } from './Line.story';
-import { newDataArray1, newDataArray2 } from '@stories/data/data';
+import { newDataArray1 } from '@stories/data/data';
 
 describe('Line', () => {
 	// Line is not a real React component. This is test just provides test coverage for sonarqube
