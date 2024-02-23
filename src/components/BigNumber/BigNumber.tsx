@@ -55,7 +55,7 @@ const BigNumber: FC<BigNumberProps> = ({
 
 	const numberLocale = getLocale(locale).number;
 
-	const formattedValue = getFormattedString(bigNumberValue, numberType, numberLocale, numberFormat);
+	const formattedValue = getFormattedString(bigNumberValue, numberType, numberFormat, numberLocale);
 
 	const lineElements = sanitizeBigNumberChildren(children);
 	let lineProps;

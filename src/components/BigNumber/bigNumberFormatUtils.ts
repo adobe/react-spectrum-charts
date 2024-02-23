@@ -9,29 +9,29 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
+import { DEFAULT_LOCALE } from '@constants';
 import { BigNumberNumberType } from 'types';
+import { getLocale } from 'utils/locale';
 import { NumberLocale } from 'vega';
 import { numberFormatLocale } from 'vega-format';
 
 export const getFormattedString = (
 	value: number,
 	numberType: BigNumberNumberType,
-	numberLocale?: NumberLocale,
 	numberFormat?: string,
+	numberLocale?: NumberLocale
 ): string => {
-	const formatter = numberFormatLocale(numberLocale);
+	const formatter = numberLocale
+		? numberFormatLocale(numberLocale)
+		: numberFormatLocale(getLocale(DEFAULT_LOCALE).number);
 
 	if (numberType === 'percentage') {
 		return formatter.format('~%')(value);
 	}
 
-	if (Math.abs(value) >= 1000) {
-		// Format in scientific notation with B instead of G (e.g., 1K, 20M, 1.3B)
-		const formattedValue = formatter.format('.3s')(value);
-		return formattedValue.replace('G', 'B').toUpperCase();
+	if (numberFormat) {
+		return formatter.format(numberFormat)(value);
+	} else {
+		return formatter.format('')(value);
 	}
-
-	// Format with commas for thousands, etc., or use the provided numberFormat
-	return numberFormat ? formatter.format(numberFormat)(value) : formatter.format(',')(value);
 };

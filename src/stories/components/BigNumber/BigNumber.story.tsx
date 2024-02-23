@@ -36,7 +36,7 @@ const BigNumberStory: StoryFn<typeof BigNumber> = (args): ReactElement => {
 	});
 	return (
 		<Chart {...chartProps}>
-			<BigNumber {...args}/>
+			<BigNumber {...args} />
 		</Chart>
 	);
 };
@@ -62,7 +62,7 @@ const UndefinedDataStory: StoryFn<typeof BigNumber> = (args): ReactElement => {
 	});
 	return (
 		<Chart {...chartProps}>
-				<BigNumber {...args}/>
+			<BigNumber {...args} />
 		</Chart>
 	);
 };
@@ -76,7 +76,7 @@ const CurrencyFormatStory: StoryFn<typeof BigNumber> = (args): ReactElement => {
 	});
 	return (
 		<Chart {...chartProps}>
-			<BigNumber {...args}/>
+			<BigNumber {...args} />
 		</Chart>
 	);
 };
@@ -89,20 +89,20 @@ const PercentageFormatStory: StoryFn<typeof BigNumber> = (args): ReactElement =>
 	});
 	return (
 		<Chart {...chartProps}>
-			<BigNumber {...args}/>
+			<BigNumber {...args} />
 		</Chart>
 	);
 };
 
 const CompactFormatStory: StoryFn<typeof BigNumber> = (args): ReactElement => {
 	const chartProps = useChartProps({
-		data: [{value: 12300000000}],
-		width: 200,
-		height: 100,
+		data: [{ value: 12300000 }],
+		width: 100,
+		height: 200,
 	});
 	return (
 		<Chart {...chartProps}>
-			<BigNumber {...args}/>
+			<BigNumber {...args} />
 		</Chart>
 	);
 };
@@ -112,7 +112,7 @@ BasicHorizontal.args = {
 	children: undefined,
 	dataKey: 'x',
 	orientation: 'horizontal',
-	label: 'Visitors'
+	label: 'Visitors',
 };
 
 const BasicVertical = bindWithProps(BigNumberStory);
@@ -178,12 +178,10 @@ SparklineAndIconVertical.args = {
 const SparklineMethodLast = bindWithProps(BigNumberLargeStory);
 SparklineMethodLast.args = {
 	dataKey: 'y',
-	children: [
-		<Line key="line" dimension="x" metric="y" scaleType="linear" />,
-	],
+	children: [<Line key="line" dimension="x" metric="y" scaleType="linear" />],
 	orientation: 'vertical',
-	label: 'Visitors'
-}
+	label: 'Visitors',
+};
 
 const CurrencyFormat = bindWithProps(CurrencyFormatStory);
 CurrencyFormat.args = {
@@ -209,6 +207,7 @@ CompactFormat.args = {
 	dataKey: 'value',
 	orientation: 'horizontal',
 	label: 'Requests',
+	numberFormat: '.3s',
 };
 
 const UndefinedData = bindWithProps(UndefinedDataStory);
@@ -232,5 +231,5 @@ export {
 	CurrencyFormat,
 	CompactFormat,
 	PercentageFormat,
-	UndefinedData
+	UndefinedData,
 };
