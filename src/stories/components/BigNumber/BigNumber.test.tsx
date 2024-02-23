@@ -40,6 +40,8 @@ describe('BigNumber', () => {
 			expect(value).toBeInTheDocument();
 			const label = await screen.findByText(BasicHorizontal.args.label);
 			expect(label).toBeInTheDocument();
+			// const grid = await screen.findByText('grid');
+			// expect(grid).toHaveStyle('justify-items: center');
 		});
 
 		test('BasicVertical renders', async () => {
@@ -98,7 +100,6 @@ describe('BigNumber', () => {
 		});
 	});
 
-	/** TODO: Fix this test to search for and find that there is no rsc chart */
 	describe('Chart with BigNumber children', () => {
 		test('Chart with BigNumber and Line as children should only display BigNumber', async () => {
 			render(
@@ -119,6 +120,8 @@ describe('BigNumber', () => {
 
 			const bigNumber = screen.queryByTestId('icon');
 			expect(bigNumber).toBeInTheDocument();
+			const charts = await screen.queryAllByRole('graphics-document');
+			expect(charts.length).toEqual(0);
 		});
 
 		test('Chart with multiple BigNumbers only displays first', async () => {
@@ -244,7 +247,7 @@ describe('BigNumber', () => {
 
 		test('Sparkline with sum method specified', async () => {
 			render(<SparklineMethodLast {...SparklineMethodLast.args} method="sum" />);
-			const val = await screen.findByText('1.05K');
+			const val = await screen.findByText('1,050');
 			expect(val).toBeInTheDocument();
 		});
 

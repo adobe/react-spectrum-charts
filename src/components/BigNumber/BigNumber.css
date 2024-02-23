@@ -12,22 +12,10 @@
 
 
 .big-number-data {
-    font-size: large;
     font-weight: bold;
-    align-self: end;
+    margin: 0;
 }
 
 .big-number-label {
-    font-size: medium
-}
-
-.big-number-container {
-    width: fit-content;
-    border: none;
-    background: none;
-    padding: 0;
-    font: inherit;
-    color: inherit;
-    cursor: default;
-    outline: none;
+    margin: 0
 }

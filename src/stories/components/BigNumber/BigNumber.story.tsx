@@ -41,11 +41,24 @@ const BigNumberStory: StoryFn<typeof BigNumber> = (args): ReactElement => {
 	);
 };
 
+const BigNumberLargeStory: StoryFn<typeof BigNumber> = (args): ReactElement => {
+	const chartProps = useChartProps({
+		data: data,
+		width: 500,
+		height: 500,
+	});
+	return (
+		<Chart {...chartProps}>
+			<BigNumber {...args}/>
+		</Chart>
+	);
+};
+
 const UndefinedDataStory: StoryFn<typeof BigNumber> = (args): ReactElement => {
 	const chartProps = useChartProps({
 		data: [],
-		width: 600,
-		height: 600,
+		width: 200,
+		height: 100,
 	});
 	return (
 		<Chart {...chartProps}>
@@ -57,8 +70,8 @@ const UndefinedDataStory: StoryFn<typeof BigNumber> = (args): ReactElement => {
 const CurrencyFormatStory: StoryFn<typeof BigNumber> = (args): ReactElement => {
 	const chartProps = useChartProps({
 		data: [{value: 255.56}],
-		width: 600,
-		height: 600,
+		width: 200,
+		height: 100,
 		locale: 'de-DE'
 	});
 	return (
@@ -71,8 +84,8 @@ const CurrencyFormatStory: StoryFn<typeof BigNumber> = (args): ReactElement => {
 const PercentageFormatStory: StoryFn<typeof BigNumber> = (args): ReactElement => {
 	const chartProps = useChartProps({
 		data: [{value: .25}],
-		width: 600,
-		height: 600,
+		width: 200,
+		height: 100,
 	});
 	return (
 		<Chart {...chartProps}>
@@ -84,8 +97,8 @@ const PercentageFormatStory: StoryFn<typeof BigNumber> = (args): ReactElement =>
 const CompactFormatStory: StoryFn<typeof BigNumber> = (args): ReactElement => {
 	const chartProps = useChartProps({
 		data: [{value: 12300000000}],
-		width: 600,
-		height: 600,
+		width: 200,
+		height: 100,
 	});
 	return (
 		<Chart {...chartProps}>
@@ -94,7 +107,7 @@ const CompactFormatStory: StoryFn<typeof BigNumber> = (args): ReactElement => {
 	);
 };
 
-const BasicHorizontal = bindWithProps(BigNumberStory);
+const BasicHorizontal = bindWithProps(BigNumberLargeStory);
 BasicHorizontal.args = {
 	children: undefined,
 	dataKey: 'x',
@@ -119,7 +132,7 @@ IconHorizontal.args = {
 	label: 'Visitors',
 };
 
-const IconVertical = bindWithProps(BigNumberStory);
+const IconVertical = bindWithProps(BigNumberLargeStory);
 IconVertical.args = {
 	dataKey: 'x',
 	icon: <Amusementpark data-testid="icon-amusementpark" />,
@@ -136,7 +149,7 @@ SparklineHorizontal.args = {
 	label: 'Visitors',
 };
 
-const SparklineVertical = bindWithProps(BigNumberStory);
+const SparklineVertical = bindWithProps(BigNumberLargeStory);
 SparklineVertical.args = {
 	dataKey: 'x',
 	children: <Line dimension="x" metric="y" scaleType="linear" />,
@@ -144,7 +157,7 @@ SparklineVertical.args = {
 	label: 'Visitors',
 };
 
-const SparklineAndIconHorizontal = bindWithProps(BigNumberStory);
+const SparklineAndIconHorizontal = bindWithProps(BigNumberLargeStory);
 SparklineAndIconHorizontal.args = {
 	dataKey: 'x',
 	children: <Line key="line" dimension="x" metric="y" scaleType="linear" />,
@@ -162,7 +175,7 @@ SparklineAndIconVertical.args = {
 	label: 'Visitors',
 };
 
-const SparklineMethodLast = bindWithProps(BigNumberStory);
+const SparklineMethodLast = bindWithProps(BigNumberLargeStory);
 SparklineMethodLast.args = {
 	dataKey: 'y',
 	children: [

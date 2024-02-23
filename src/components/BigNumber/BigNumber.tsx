@@ -22,7 +22,7 @@ import { getLocale } from 'utils/locale';
 import { v4 as uuid } from 'uuid';
 import { View as VegaView } from 'vega';
 
-import { Flex, Grid, View } from '@adobe/react-spectrum';
+import { Flex } from '@adobe/react-spectrum';
 
 import './BigNumber.css';
 import { getFormattedString } from './bigNumberFormatUtils';
@@ -58,16 +58,27 @@ const BigNumber: FC<BigNumberProps> = ({
 	const formattedValue = getFormattedString(bigNumberValue, numberType, numberLocale, numberFormat);
 
 	const lineElements = sanitizeBigNumberChildren(children);
-	const lineProps = lineElements.length > 0 ? (lineElements[0] as LineElement).props : undefined;
+	let lineProps;
+	if (lineElements.length > 0) {
+		// eslint-disable-next-line @typescript-eslint/no-unused-vars
+		const { padding, isMethodLast, isSparkline, ...remainingProps } = (lineElements[0] as LineElement).props;
+		lineProps = remainingProps;
+	}
 
-	let cWidth: number, cHeight: number, generalJustify: 'center' | 'start', padding: number;
+	let cWidth, cHeight, padding, textAlign, direction, iconDirection;
 
 	if (orientation == 'vertical') {
 		padding = 0;
 		cHeight = height ? height / 2.25 : chartWidth / aspectRatio;
 		cWidth = height ? cHeight * aspectRatio : chartWidth;
-		generalJustify = 'center';
+		textAlign = 'center';
+		direction = 'column';
+		iconDirection = 'row';
 	} else {
+		padding = 10;
+		textAlign = 'start';
+		direction = 'row';
+		iconDirection = 'column';
 		if (height && height < chartWidth / (1.75 * aspectRatio)) {
 			cHeight = height;
 			cWidth = height * aspectRatio;
@@ -75,185 +86,99 @@ const BigNumber: FC<BigNumberProps> = ({
 			cWidth = chartWidth / 1.75;
 			cHeight = cWidth / aspectRatio;
 		}
-		padding = 10;
-		generalJustify = 'start';
 	}
 
-	const iconSize = getIconSizeByOrientation(orientation, chartWidth, icon, lineProps, height);
-	const { areas, columns, iconAlign, labelAlign, iconJustify, displayCombo } = getGridProperties(
-		orientation,
-		lineProps,
-		icon
-	);
+	const { iconSize, labelSize, valueSize } = getDynamicSizes(orientation, chartWidth, icon, lineProps, height);
+	// const { areas, columns, iconAlign, labelAlign, iconJustify, displayCombo } = getGridProperties(
+	// 	orientation,
+	// 	lineProps,
+	// 	icon
+	// );
 	return (
-		<div className="big-number-container">
-			<Grid
-				width={chartWidth}
-				height={height}
-				areas={areas}
-				columns={columns}
-				columnGap="size-50"
-				justifyItems={generalJustify}
-				alignItems={'center'}
-			>
+		<Flex alignItems={'center'} justifyContent={'center'} direction={direction}>
+			<Flex gap={'size-100'} justifyContent={'center'} direction={direction} width={chartWidth} height={height}>
 				{lineProps && (
-					<View gridArea="sparkline" justifySelf={'center'}>
+					<Flex justifySelf={'center'} alignSelf={'center'} marginTop="5px">
 						<RscChart chartWidth={cWidth} height={cHeight} data={data} locale={locale} {...rscChartRemain}>
 							<Line {...lineProps} isSparkline isMethodLast={method === 'last'} padding={padding} />
 						</RscChart>
-					</View>
+					</Flex>
 				)}
-				{displayCombo && icon ? (
-					<View gridArea="combo" alignSelf={labelAlign} UNSAFE_className="big-number-label">
-						<View gridArea="data" UNSAFE_className="big-number-data">
-							{formattedValue}
-						</View>
-						<Flex gap="size-50">
-							{cloneElement(icon, { size: iconSize })}
-							{label}
-						</Flex>
-					</View>
-				) : (
-					<>
-						{icon && (
-							<View gridArea="icon" alignSelf={iconAlign} justifySelf={iconJustify}>
-								{cloneElement(icon, { size: iconSize })}
-							</View>
-						)}
-						<View gridArea="label" alignSelf={labelAlign} UNSAFE_className="big-number-label">
-							{label}
-						</View>
-					</>
+				{icon && !lineProps && (
+					<Flex direction={iconDirection} justifyContent={'center'}>
+						{cloneElement(icon, { size: iconSize, marginTop: '1px' })}
+					</Flex>
 				)}
-				{!displayCombo && (
-					<View gridArea="data" UNSAFE_className="big-number-data">
-						{formattedValue}
-					</View>
-				)}
-			</Grid>
-		</div>
+
+				<Flex direction={'column'} justifyContent={'center'}>
+					{icon && lineProps ? (
+						<>
+							<p style={{ fontSize: valueSize, textAlign: textAlign }} className="big-number-data">
+								{formattedValue}
+							</p>
+							<Flex gap={'size-100'} justifyContent={'center'}>
+								<Flex direction={'column'} justifyContent={'center'}>
+									{cloneElement(icon, { size: iconSize, marginTop: '1px' })}
+								</Flex>
+								<p style={{ fontSize: labelSize, textAlign: textAlign }} className="big-number-label">
+									{label}
+								</p>
+							</Flex>
+						</>
+					) : (
+						<>
+							<p style={{ fontSize: valueSize, textAlign: textAlign }} className="big-number-data">
+								{formattedValue}
+							</p>
+							<p style={{ fontSize: labelSize, textAlign: textAlign }} className="big-number-label">
+								{label}
+							</p>
+						</>
+					)}
+				</Flex>
+			</Flex>
+		</Flex>
 	);
 };
 
 BigNumber.displayName = 'BigNumber';
 
-interface BigNumberGridProperties {
-	areas: string[];
-	columns: string[];
-	iconAlign?: 'start';
-	labelAlign?: 'start' | 'center';
-	iconJustify?: 'end';
-	displayCombo?: boolean;
-}
-
 type BigNumberIconSize = 'XXS' | 'XS' | 'S' | 'M' | 'L' | 'XL' | 'XXL';
 
-function getGridProperties(
-	orientation: Orientation,
-	lineProps?: LineProps,
-	icon?: IconElement
-): BigNumberGridProperties {
-	// First block (line elements)
-	if (lineProps) {
-		// Then get the icon conditions
-		if (icon) {
-			return getIconAndLineGridProperties(orientation);
-		} else {
-			return getLineGridProperties(orientation);
-		}
-	}
-	// Second block (no line elements)
-	if (icon) {
-		return getIconGridProperties(orientation);
-	}
-	// Third block (default)
-	return getDefaultGridProperties();
-}
-
-function getIconAndLineGridProperties(orientation: Orientation): BigNumberGridProperties {
-	const labelAlign = 'center';
-	const iconJustify = 'end';
-	if (orientation === 'vertical') {
-		return {
-			areas: ['sparkline', 'combo', 'data'],
-			columns: ['4fr'],
-			displayCombo: true,
-			labelAlign,
-			iconJustify,
-		};
-	} else {
-		const iconAlign = 'start';
-		return {
-			areas: ['sparkline combo'],
-			columns: ['1fr'],
-			iconJustify,
-			iconAlign,
-			displayCombo: true,
-			labelAlign,
-		};
-	}
-}
-
-function getLineGridProperties(orientation: Orientation): BigNumberGridProperties {
-	const labelAlign = 'start';
-	if (orientation === 'vertical') {
-		return { areas: ['sparkline', 'data', 'label'], columns: ['1fr'], labelAlign };
-	} else {
-		return { areas: ['sparkline data', 'sparkline label'], columns: ['1fr 1fr'], labelAlign };
-	}
-}
-
-function getIconGridProperties(orientation: Orientation): BigNumberGridProperties {
-	const labelAlign = 'start';
-	if (orientation === 'vertical') {
-		return {
-			areas: ['icon', 'data', 'label'],
-			columns: ['1fr'],
-			labelAlign,
-		};
-	} else {
-		const iconJustify = 'end';
-		return {
-			areas: ['icon data', 'icon label'],
-			columns: ['1fr', '2fr'],
-			iconJustify,
-			labelAlign,
-		};
-	}
-}
-
-function getDefaultGridProperties(): BigNumberGridProperties {
-	const labelAlign = 'start';
-	return { areas: ['data', 'label'], columns: ['1fr'], labelAlign };
-}
-
-function getIconSizeByOrientation(
+function getDynamicSizes(
 	orientation: Orientation,
 	chartWidth: number,
 	icon?: IconElement,
 	lineProps?: LineProps,
 	height?: number
-): BigNumberIconSize {
-	if (icon) {
-		return 'L';
+): { iconSize: BigNumberIconSize; labelSize: string; valueSize: string } {
+	if (!icon) {
+		return { iconSize: 'L', ...determineFontSize(chartWidth) };
 	}
 
 	if (lineProps) {
 		if (orientation == 'vertical') {
 			const availableWidth = height ? height / 3 : chartWidth / 2;
-			return determineIconSize(availableWidth);
+			return { iconSize: determineIconSize(availableWidth), ...determineFontSize(availableWidth) };
 		}
 		if (orientation == 'horizontal') {
-			return determineIconSize(chartWidth / 6);
+			return { iconSize: determineIconSize(chartWidth / 12), ...determineFontSize(chartWidth) };
 		}
 	}
 
 	if (orientation == 'vertical') {
 		const availableWidth = height ? height / 1.75 : chartWidth;
-		return determineIconSize(availableWidth);
+		return { iconSize: determineIconSize(availableWidth), ...determineFontSize(availableWidth) };
 	} else {
-		return determineIconSize(chartWidth / 3.5);
+		return { iconSize: determineIconSize(chartWidth / 3.5), ...determineFontSize(chartWidth) };
 	}
+}
+
+function determineFontSize(availableWidth: number): { labelSize: string; valueSize: string } {
+	if (availableWidth <= 75) return { labelSize: 'medium', valueSize: 'large' };
+	else if (availableWidth <= 200) return { labelSize: 'large', valueSize: 'x-large' };
+	else if (availableWidth <= 350) return { labelSize: 'x-large', valueSize: 'xx-large' };
+	return { labelSize: 'xx-large', valueSize: 'xxx-large' };
 }
 
 function determineIconSize(availableWidth: number) {
