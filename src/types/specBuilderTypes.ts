@@ -22,6 +22,8 @@ import {
 	ChartPopoverProps,
 	ChartTooltipProps,
 	ColorFacet,
+	BarProps, ChartData,
+	ChartTooltipElement,
 	ColorScheme,
 	DonutProps,
 	DonutSummaryProps,
@@ -42,6 +44,7 @@ import {
 	TrendlineAnnotationProps,
 	TrendlineChildElement,
 	TrendlineProps,
+	TrendlineProps
 } from './Chart';
 
 type PartiallyRequired<T, K extends keyof T> = Omit<T, K> & Required<Pick<T, K>>;
@@ -179,6 +182,9 @@ type LinePropsWithDefaults = 'name' | 'dimension' | 'metric' | 'color' | 'scaleT
 
 export interface LineSpecProps extends PartiallyRequired<LineProps, LinePropsWithDefaults> {
 	children: MarkChildElement[];
+	data?: ChartData[],
+	previousData?: ChartData[],
+	animations?: boolean,
 	colorScheme: ColorScheme;
 	highlightedItem?: HighlightedItem;
 	idKey: string;

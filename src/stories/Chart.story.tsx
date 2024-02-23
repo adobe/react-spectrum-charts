@@ -18,7 +18,7 @@ import { bindWithProps } from '@test-utils';
 
 import './Chart.story.css';
 import { ChartBarStory } from './ChartBarStory';
-import { data, newDataArray1, workspaceTrendsData } from './data/data';
+import { data, newDataArray1WithStaticPoints, workspaceTrendsData } from './data/data';
 
 export default {
 	title: 'RSC/Chart',
@@ -66,6 +66,15 @@ const ChartBarTooltipStory: StoryFn<typeof Chart> = (args): ReactElement => {
 		</Chart>
 	);
 };
+
+const SingleLineWithStaticPointsStory: StoryFn<typeof Chart> = (args): ReactElement => {
+	const props = useChartProps(args);
+	return (
+		<Chart {...props}>
+			<Line metric="y" dimension="x" scaleType="linear" staticPoint="point"/>
+		</Chart>
+	);
+}
 
 const Basic = bindWithProps(ChartLineStory);
 
@@ -118,10 +127,13 @@ TooltipAnchor.args = {
 	data,
 };
 
+const SingleLineWithStaticPoints = bindWithProps(SingleLineWithStaticPointsStory);
+SingleLineWithStaticPoints.args = { data: newDataArray1WithStaticPoints };
+
 const HighlightedItem = bindWithProps(ChartBarTooltipStory);
 HighlightedItem.args = {
 	highlightedItem: 15,
 	data,
 };
 
-export { BackgroundColor, Basic, Config, Height, HighlightedItem, Locale, TooltipAnchor, Width };
+export { BackgroundColor, Basic, Config, Height, HighlightedItem, Locale, TooltipAnchor, Width, SingleLineWithStaticPoints};

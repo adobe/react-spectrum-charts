@@ -249,7 +249,7 @@ export const getTimer = () => {
 	return {
 		name: 'timerValue',
 		value: '0',
-		on: [{ events: 'timer{16}', update: 'min(1, timerValue + (1 / 360))' }],
+		on: [{ events: 'timer{16}', update: 'min(1, timerValue + (1 / 180))' }],
 	}
 }
 

@@ -65,7 +65,7 @@ const sparklineChartProps: ChartProps = { data: simpleSparklineData, minWidth: 5
 const BasicLineStory: StoryFn<typeof Line> = (args): ReactElement => {
 	const chartProps = useChartProps(defaultChartProps);
 	return (
-		<Chart {...chartProps} debug>
+		<Chart {...chartProps}>
 			<Line {...args} />
 			<Legend lineWidth={{ value: 0 }} />
 		</Chart>
