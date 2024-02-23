@@ -51,14 +51,13 @@ import { getAnimationMarks } from '@specBuilder/specUtils';
  */
 // TODO: get current and previous data down this low.
 export const getLineMark = (lineMarkProps: LineMarkProps, dataSource: string): LineMark => {
-	const { color, colorScheme, data, dimension, lineType, lineWidth, metric, metricAxis, name, opacity, previousData, scaleType } =
+	const { animations, color, colorScheme, data, dimension, lineType, lineWidth, metric, metricAxis, name, opacity, previousData, scaleType } =
 		lineMarkProps;
 	const popovers = getPopovers(lineMarkProps);
 	const popoverWithDimensionHighlightExists = popovers.some(
 		({ UNSAFE_highlightBy }) => UNSAFE_highlightBy === 'dimension'
 	);
 
-	// TODO: ADD CONDITIONAL CHECK IF ANIMATIONS NOT ON
 	return {
 		name,
 		description: name,
@@ -78,7 +77,7 @@ export const getLineMark = (lineMarkProps: LineMarkProps, dataSource: string): L
 				// but it may change the x position if it causes the chart to resize
 				x: getXProductionRule(scaleType, dimension),
 				strokeOpacity: getLineStrokeOpacity(lineMarkProps),
-				y: getAnimationMarks(metric),
+        y: animations !== false ? getAnimationMarks(dimension, metric, data, previousData) : undefined,
 				...(popoverWithDimensionHighlightExists ? {} : { opacity: getLineOpacity(lineMarkProps) }),
 			},
 		},

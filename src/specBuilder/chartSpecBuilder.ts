@@ -88,6 +88,7 @@ import { addTitle } from './title/titleSpecBuilder';
 
 export function buildSpec(props: SanitizedSpecProps) {
 	const {
+	  animations,
 		backgroundColor,
 		children,
 		colors,
@@ -162,7 +163,7 @@ export function buildSpec(props: SanitizedSpecProps) {
 					});
 				case Line.displayName:
 					lineCount++;
-					return addLine(acc, { ...(cur as LineElement).props, ...specProps, index: lineCount, data, previousData });
+					return addLine(acc, { ...(cur as LineElement).props, ...specProps, index: lineCount, animations, data, previousData });
 				case Scatter.displayName:
 					scatterCount++;
 					return addScatter(acc, { ...(cur as ScatterElement).props, ...specProps, index: scatterCount });
@@ -184,8 +185,6 @@ export function buildSpec(props: SanitizedSpecProps) {
 	// copy the spec so we don't mutate the original
 	spec = JSON.parse(JSON.stringify(spec));
 	spec.data = addData(spec.data ?? [], { facets: getFacetsFromScales(spec.scales) });
-
-	console.warn('Spec data after addData is called', spec.data);
 
 	// add signals and update marks for controlled highlighting if there isn't a legend with highlight enabled
 	if (highlightedSeries) {

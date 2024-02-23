@@ -25,6 +25,7 @@ import { getColorValue } from '@specBuilder/specUtils';
 import { getBigNumberElementsFromChildren, toArray } from '@utils';
 import { BigNumberInternal } from 'rc/components/BigNumber/BigNumber';
 	PREVIOUS_TABLE
+	DEFAULT_LOCALE
 } from '@constants';
 import useChartImperativeHandle from '@hooks/useChartImperativeHandle';
 import useChartWidth from '@hooks/useChartWidth';
@@ -51,6 +52,7 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 		{
 			backgroundColor = DEFAULT_BACKGROUND_COLOR,
 			data,
+			animations,
 			colors = 'categorical12',
 			colorScheme = DEFAULT_COLOR_SCHEME,
 			dataTestId,
@@ -126,7 +128,8 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 		}
 
 		const rscChartProps: RscChartProps = {
-			chartView,
+	    animations,
+		  chartView,
 			chartId,
 			data,
 			backgroundColor,

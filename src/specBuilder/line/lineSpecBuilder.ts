@@ -32,10 +32,9 @@ import { getFacetsFromProps } from '@specBuilder/specUtils';
 import { addTrendlineData, getTrendlineMarks, getTrendlineScales, setTrendlineSignals } from '@specBuilder/trendline';
 import { sanitizeMarkChildren, toCamelCase } from '@utils';
 import { produce } from 'immer';
-import { ChartData, ColorScheme, LineProps, LineSpecProps, MarkChildElement } from 'types';
 import { Data, Mark, Scale, Signal, Spec } from 'vega';
 
-import { ColorScheme, HighlightedItem, LineProps, LineSpecProps, MarkChildElement } from '../../types';
+import { ChartData, ColorScheme, HighlightedItem, LineProps, LineSpecProps, MarkChildElement } from '../../types';
 import { addTimeTransform, getFilteredTooltipData, getTableData } from '../data/dataUtils';
 import { addContinuousDimensionScale, addFieldToFacetScaleDomain, addMetricScale } from '../scale/scaleSpecBuilder';
 import { addHighlightedItemSignalEvents, addHighlightedSeriesSignalEvents } from '../signal/signalSpecBuilder';
@@ -46,7 +45,7 @@ import { getInteractiveMarkName, getPopoverMarkName } from './lineUtils';
 
 export const addLine = produce<
 	Spec,
-  [LineProps & { colorScheme?: ColorScheme; data: ChartData[] | undefined; highlightedItem?: HighlightedItem; index?: number; idKey: string, previousData: ChartData[] | undefined }]
+  [LineProps & { colorScheme?: ColorScheme; data: ChartData[] | undefined; animations?: boolean; highlightedItem?: HighlightedItem; index?: number; idKey: string, previousData: ChartData[] | undefined }]
 >(
 	(
 		spec,

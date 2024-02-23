@@ -111,6 +111,7 @@ export interface SanitizedSpecProps extends PartiallyRequired<SpecProps, SpecPro
 	children: ChartChildElement[];
 	previousData?: ChartData[];
 	data?: ChartData[];
+	animations?: boolean;
 }
 
 export type Orientation = 'vertical' | 'horizontal';
@@ -129,7 +130,7 @@ export interface SharedChartProps extends SpecProps {
 	/** Chart data array. */
 	data: ChartData[];
 	previousData?: ChartData[];
-	noAnimations?: boolean;
+  animations?: boolean;
 	/** Enables debug mode which will console log things like the generated vega spec and the datums for tooltips. */
 	debug?: boolean;
 	/** Number and time locales to use */

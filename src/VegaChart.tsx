@@ -26,6 +26,7 @@ export interface VegaChartProps {
 	config: Config;
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	data: ChartData[];
+	previousData: ChartData[];
 	debug: boolean;
 	height: number;
 	locale: ChartProps['locale'];
@@ -41,6 +42,7 @@ export interface VegaChartProps {
 export const VegaChart: FC<VegaChartProps> = ({
 	config,
 	data,
+	previousData,
 	debug,
 	height,
 	locale,
@@ -70,9 +72,23 @@ export const VegaChart: FC<VegaChartProps> = ({
 		return { [TABLE]: clonedData };
 	}, [data]);
 
-	const previousChartData = usePreviousChartData({ [PREVIOUS_TABLE]: chartData.table });
+	const previousChartData = useMemo(() => {
+		const clonedData = JSON.parse(JSON.stringify(previousData));
 
-	useDebugSpec(debug, spec, { ...previousChartData, ...chartData }, width, height, config);
+		// We received a full Vega data array with potentially multiple dataset objects
+		if (isVegaData(clonedData)) {
+			return extractValues(clonedData);
+		}
+
+		// We received a simple array of data and we'll set a default key of 'table' to reference internally
+		return { [PREVIOUS_TABLE]: clonedData };
+	}, [previousData]);
+
+	// const previousChartData = usePreviousChartData({ [PREVIOUS_TABLE]: chartData.table });
+
+	// useDebugSpec(debug, spec, { ...previousChartData, ...chartData }, width, height, config);
+	useDebugSpec(debug, spec, { ...chartData }, width, height, config);
+
 
 	useEffect(() => {
 		if (width && height && containerRef.current) {
@@ -93,6 +109,7 @@ export const VegaChart: FC<VegaChartProps> = ({
 					return signal;
 				});
 			}
+
 			embed(containerRef.current, specCopy, {
 				actions: false,
 				ast: true,
@@ -126,9 +143,10 @@ export const VegaChart: FC<VegaChartProps> = ({
 		};
 	}, [
 		chartData.table,
-		previousChartData,
+		// previousChartData,
 		config,
 		data,
+		previousData,
 		height,
 		numberLocale,
 		timeLocale,

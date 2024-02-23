@@ -17,6 +17,7 @@ import { sanitizeMarkChildren } from '@utils';
 
 import {
 	ClickableChartProps,
+	ChartData,
 	ColorFacet,
 	ColorScheme,
 	HighlightedItem,
@@ -77,6 +78,7 @@ export interface LineMarkProps {
 	dimension: string;
 	data?: ChartData[],
 	previousData?: ChartData[],
+	animations?: boolean,
 	displayOnHover?: boolean;
 	highlightedItem?: HighlightedItem;
 	idKey: string;

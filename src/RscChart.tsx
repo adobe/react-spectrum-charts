@@ -73,6 +73,7 @@ interface LegendTooltipProps {
 export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 	(
 		{
+		  animations,
 			chartView,
 			backgroundColor,
 			data,
@@ -121,6 +122,7 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 			colors,
 			data,
 			previousData,
+			animations,
 			description,
 			idKey,
 			hiddenSeries,
@@ -245,6 +247,7 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 					spec={spec}
 					config={chartConfig}
 					data={data}
+					previousData={previousData ? previousData : []}
 					debug={debug}
 					renderer={renderer}
 					width={chartWidth}
