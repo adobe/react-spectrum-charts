@@ -67,6 +67,7 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 			backgroundColor = DEFAULT_BACKGROUND_COLOR,
 			data,
 			previousData,
+			animations,
 			colors = 'categorical12',
 			colorScheme = DEFAULT_COLOR_SCHEME,
 			config,
@@ -108,6 +109,7 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 			colors,
 			data,
 			previousData,
+			animations,
 			description,
 			hiddenSeries,
 			highlightedSeries,
@@ -223,6 +225,7 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 					spec={spec}
 					config={chartConfig}
 					data={data}
+					previousData={previousData ? previousData : []}
 					debug={debug}
 					renderer={renderer}
 					width={chartWidth}
