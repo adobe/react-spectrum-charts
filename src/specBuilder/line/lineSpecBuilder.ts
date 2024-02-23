@@ -41,7 +41,6 @@ import { getLineHoverMarks, getLineMark } from './lineMarkUtils';
 import { getLineStaticPoint } from './linePointUtils';
 import { getInteractiveMarkName, getPopoverMarkName } from './lineUtils';
 
-// TODO: Get data and previousData down this low.
 export const addLine = produce<Spec, [LineProps & { colorScheme?: ColorScheme; index?: number, data?: ChartData[], previousData?: ChartData[], animations?: boolean}]>(
 	(
 		spec,
