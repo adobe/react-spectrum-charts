@@ -322,6 +322,7 @@ export interface LineProps extends Omit<MarkProps, 'color'> {
 	padding?: number;
 	scaleType?: ScaleType; // sets the type of scale that should be used for the trend
 	staticPoint?: string; // key in the data that if it exists and the value resolves to true for each data object, a point will be drawn for that data point on the line.
+	pointSize?: number;
 	isSparkline?: boolean; // line to be interpreted and rendered as a sparkline. Changes the fill of static points, for example
 	isMethodLast?: boolean; // sparkline's method is last - meaning that last element of data has the static point
 }

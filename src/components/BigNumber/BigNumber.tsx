@@ -57,11 +57,12 @@ const BigNumber: FC<BigNumberProps> = ({
 	let lineProps;
 	if (lineElements.length > 0) {
 		// eslint-disable-next-line @typescript-eslint/no-unused-vars
-		const { padding, isMethodLast, isSparkline, ...remainingProps } = (lineElements[0] as LineElement).props;
+		const { padding, isMethodLast, isSparkline, pointSize, ...remainingProps } = (lineElements[0] as LineElement)
+			.props;
 		lineProps = remainingProps;
 	}
 
-	const { iconSize, labelSize, valueSize, cWidth, cHeight, padding, textAlign, direction, iconDirection } =
+	const { iconSize, labelSize, valueSize, pointSize, cWidth, cHeight, padding, textAlign, direction, iconDirection } =
 		getDynamicProperties(orientation, chartWidth, lineProps, height);
 
 	return (
@@ -76,7 +77,13 @@ const BigNumber: FC<BigNumberProps> = ({
 				{lineProps && (
 					<Flex justifySelf={'center'} alignSelf={'center'} marginTop="5px">
 						<RscChart chartWidth={cWidth} height={cHeight} data={data} locale={locale} {...rscChartRemain}>
-							<Line {...lineProps} isSparkline isMethodLast={method === 'last'} padding={padding} />
+							<Line
+								isSparkline
+								isMethodLast={method === 'last'}
+								padding={padding}
+								pointSize={pointSize}
+								{...lineProps}
+							/>
 						</RscChart>
 					</Flex>
 				)}
@@ -136,6 +143,7 @@ function getDynamicProperties(
 	textAlign;
 	direction;
 	iconDirection;
+	pointSize;
 } {
 	const aspectRatio = BIG_NUMBER_ASPECT_RATIO;
 
@@ -156,12 +164,13 @@ function getDynamicProperties(
 			iconSize = determineIconSize(chartWidth / 3.5);
 		}
 	}
- 
+
 	let cHeight, cWidth;
 	if (orientation == 'vertical') {
 		cHeight = height ? height / 3 : chartWidth / aspectRatio;
 		cWidth = height ? cHeight * aspectRatio : chartWidth;
 		const fontSizes = determineFontSize(chartWidth / 2);
+		const pointSize = determinePointSize(cWidth);
 		return {
 			padding: 0,
 			textAlign: 'center',
@@ -172,6 +181,7 @@ function getDynamicProperties(
 			iconSize,
 			cHeight,
 			cWidth,
+			pointSize,
 		};
 	}
 
@@ -183,6 +193,7 @@ function getDynamicProperties(
 		cWidth = chartWidth / 1.75;
 		cHeight = cWidth / aspectRatio;
 	}
+	const pointSize = determinePointSize(cWidth);
 	return {
 		padding: 10,
 		textAlign: 'start',
@@ -193,6 +204,7 @@ function getDynamicProperties(
 		iconSize,
 		cHeight,
 		cWidth,
+		pointSize,
 	};
 }
 
@@ -201,6 +213,13 @@ function determineFontSize(availableSpace: number): { labelSize: string; valueSi
 	else if (availableSpace <= 200) return { labelSize: 'large', valueSize: 'x-large' };
 	else if (availableSpace <= 350) return { labelSize: 'x-large', valueSize: 'xx-large' };
 	return { labelSize: 'xx-large', valueSize: 'xxx-large' };
+}
+
+function determinePointSize(availableSpace: number): number {
+	if (availableSpace <= 150) return 50;
+	else if (availableSpace <= 300) 100;
+	else if (availableSpace <= 450) return 150;
+	return 200;
 }
 
 function determineIconSize(availableSpace: number) {
