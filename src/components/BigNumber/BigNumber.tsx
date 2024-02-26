@@ -147,7 +147,7 @@ function getDynamicProperties(
 } {
 	const aspectRatio = BIG_NUMBER_ASPECT_RATIO;
 
-	const iconSize = getDynamicIcon(orientation, chartWidth, lineProps, height);
+	const iconSize = getDynamicIconSize(orientation, chartWidth, lineProps, height);
 	let cHeight, cWidth;
 	if (orientation == 'vertical') {
 		cHeight = height ? height / 3 : chartWidth / aspectRatio;
@@ -205,13 +205,13 @@ function determinePointSize(availableSpace: number): number {
 	return 200;
 }
 
-function getDynamicIcon(
+function getDynamicIconSize(
 	orientation: string,
 	chartWidth: number,
 	lineProps?: LineProps,
 	height?: number
 ): BigNumberIconSize {
-	let iconSize = 'L';
+	let iconSize: BigNumberIconSize= 'L';
 	if (lineProps) {
 		if (orientation == 'vertical') {
 			const availableSpace = height ? height / 3 : chartWidth / 2;
