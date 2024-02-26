@@ -17,5 +17,6 @@
 }
 
 .big-number-label {
-    margin: 0
+    margin: 0;
+    align-self: center;
 }

@@ -17,7 +17,7 @@ import { BIG_NUMBER_ASPECT_RATIO } from '@constants';
 import { Line } from '@rsc';
 import { sanitizeBigNumberChildren } from '@utils';
 import { RscChart } from 'RscChart';
-import { BigNumberMethod, BigNumberProps, ChartData, IconElement, LineElement, LineProps, Orientation } from 'types';
+import { BigNumberMethod, BigNumberProps, ChartData, LineElement, LineProps, Orientation } from 'types';
 import { getLocale } from 'utils/locale';
 import { v4 as uuid } from 'uuid';
 import { View as VegaView } from 'vega';
@@ -49,15 +49,11 @@ const BigNumber: FC<BigNumberProps> = ({
 	};
 
 	const { chartWidth, height, locale, data, ...rscChartRemain } = rscChartProps;
-	const aspectRatio = BIG_NUMBER_ASPECT_RATIO;
-	// based on Chart.tsx checks, data will always be defined and have a length greater than 0.
 	const bigNumberValue = getBigNumberValue(data, dataKey, method);
-
 	const numberLocale = getLocale(locale).number;
-
 	const formattedValue = getFormattedString(bigNumberValue, numberType, numberFormat, numberLocale);
-
 	const lineElements = sanitizeBigNumberChildren(children);
+
 	let lineProps;
 	if (lineElements.length > 0) {
 		// eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -65,38 +61,18 @@ const BigNumber: FC<BigNumberProps> = ({
 		lineProps = remainingProps;
 	}
 
-	let cWidth, cHeight, padding, textAlign, direction, iconDirection;
+	const { iconSize, labelSize, valueSize, cWidth, cHeight, padding, textAlign, direction, iconDirection } =
+		getDynamicProperties(orientation, chartWidth, lineProps, height);
 
-	if (orientation == 'vertical') {
-		padding = 0;
-		cHeight = height ? height / 2.25 : chartWidth / aspectRatio;
-		cWidth = height ? cHeight * aspectRatio : chartWidth;
-		textAlign = 'center';
-		direction = 'column';
-		iconDirection = 'row';
-	} else {
-		padding = 10;
-		textAlign = 'start';
-		direction = 'row';
-		iconDirection = 'column';
-		if (height && height < chartWidth / (1.75 * aspectRatio)) {
-			cHeight = height;
-			cWidth = height * aspectRatio;
-		} else {
-			cWidth = chartWidth / 1.75;
-			cHeight = cWidth / aspectRatio;
-		}
-	}
-
-	const { iconSize, labelSize, valueSize } = getDynamicSizes(orientation, chartWidth, icon, lineProps, height);
-	// const { areas, columns, iconAlign, labelAlign, iconJustify, displayCombo } = getGridProperties(
-	// 	orientation,
-	// 	lineProps,
-	// 	icon
-	// );
 	return (
 		<Flex alignItems={'center'} justifyContent={'center'} direction={direction}>
-			<Flex gap={'size-100'} justifyContent={'center'} direction={direction} width={chartWidth} height={height}>
+			<Flex
+				columnGap={'size-100'}
+				justifyContent={'center'}
+				direction={direction}
+				width={chartWidth}
+				height={height}
+			>
 				{lineProps && (
 					<Flex justifySelf={'center'} alignSelf={'center'} marginTop="5px">
 						<RscChart chartWidth={cWidth} height={cHeight} data={data} locale={locale} {...rscChartRemain}>
@@ -143,50 +119,96 @@ const BigNumber: FC<BigNumberProps> = ({
 
 BigNumber.displayName = 'BigNumber';
 
-type BigNumberIconSize = 'XXS' | 'XS' | 'S' | 'M' | 'L' | 'XL' | 'XXL';
+type BigNumberIconSize = 'XXS' | 'XS' | 'S' | 'M' | 'L' | 'XL' | 'XXL' | undefined;
 
-function getDynamicSizes(
+function getDynamicProperties(
 	orientation: Orientation,
 	chartWidth: number,
-	icon?: IconElement,
 	lineProps?: LineProps,
 	height?: number
-): { iconSize: BigNumberIconSize; labelSize: string; valueSize: string } {
-	if (!icon) {
-		return { iconSize: 'L', ...determineFontSize(chartWidth) };
-	}
+): {
+	iconSize: BigNumberIconSize;
+	labelSize;
+	valueSize;
+	cHeight;
+	cWidth;
+	padding;
+	textAlign;
+	direction;
+	iconDirection;
+} {
+	const aspectRatio = BIG_NUMBER_ASPECT_RATIO;
 
+	let iconSize;
 	if (lineProps) {
 		if (orientation == 'vertical') {
-			const availableWidth = height ? height / 3 : chartWidth / 2;
-			return { iconSize: determineIconSize(availableWidth), ...determineFontSize(availableWidth) };
+			const availableSpace = height ? height / 3 : chartWidth / 2;
+			iconSize = determineIconSize(availableSpace);
 		}
 		if (orientation == 'horizontal') {
-			return { iconSize: determineIconSize(chartWidth / 12), ...determineFontSize(chartWidth) };
+			iconSize = determineIconSize(chartWidth / 12);
+		}
+	} else {
+		if (orientation == 'vertical') {
+			const availableSpace = height ? height / 1.75 : chartWidth;
+			iconSize = determineIconSize(availableSpace);
+		} else {
+			iconSize = determineIconSize(chartWidth / 3.5);
 		}
 	}
-
+ 
+	let cHeight, cWidth;
 	if (orientation == 'vertical') {
-		const availableWidth = height ? height / 1.75 : chartWidth;
-		return { iconSize: determineIconSize(availableWidth), ...determineFontSize(availableWidth) };
-	} else {
-		return { iconSize: determineIconSize(chartWidth / 3.5), ...determineFontSize(chartWidth) };
+		cHeight = height ? height / 3 : chartWidth / aspectRatio;
+		cWidth = height ? cHeight * aspectRatio : chartWidth;
+		const fontSizes = determineFontSize(chartWidth / 2);
+		return {
+			padding: 0,
+			textAlign: 'center',
+			direction: 'column',
+			iconDirection: 'row',
+			labelSize: fontSizes.labelSize,
+			valueSize: fontSizes.valueSize,
+			iconSize,
+			cHeight,
+			cWidth,
+		};
 	}
+
+	const fontSizes = determineFontSize(chartWidth);
+	if (height && height < chartWidth / (1.75 * aspectRatio)) {
+		cHeight = height;
+		cWidth = height * aspectRatio;
+	} else {
+		cWidth = chartWidth / 1.75;
+		cHeight = cWidth / aspectRatio;
+	}
+	return {
+		padding: 10,
+		textAlign: 'start',
+		direction: 'row',
+		iconDirection: 'column',
+		labelSize: fontSizes.labelSize,
+		valueSize: fontSizes.valueSize,
+		iconSize,
+		cHeight,
+		cWidth,
+	};
 }
 
-function determineFontSize(availableWidth: number): { labelSize: string; valueSize: string } {
-	if (availableWidth <= 75) return { labelSize: 'medium', valueSize: 'large' };
-	else if (availableWidth <= 200) return { labelSize: 'large', valueSize: 'x-large' };
-	else if (availableWidth <= 350) return { labelSize: 'x-large', valueSize: 'xx-large' };
+function determineFontSize(availableSpace: number): { labelSize: string; valueSize: string } {
+	if (availableSpace <= 75) return { labelSize: 'medium', valueSize: 'large' };
+	else if (availableSpace <= 200) return { labelSize: 'large', valueSize: 'x-large' };
+	else if (availableSpace <= 350) return { labelSize: 'x-large', valueSize: 'xx-large' };
 	return { labelSize: 'xx-large', valueSize: 'xxx-large' };
 }
 
-function determineIconSize(availableWidth: number) {
-	if (availableWidth <= 21) return 'XS';
-	else if (availableWidth <= 35) return 'S';
-	else if (availableWidth <= 45) return 'M';
-	else if (availableWidth <= 60) return 'L';
-	else if (availableWidth <= 75) return 'XL';
+function determineIconSize(availableSpace: number) {
+	if (availableSpace <= 21) return 'XS';
+	else if (availableSpace <= 35) return 'S';
+	else if (availableSpace <= 45) return 'M';
+	else if (availableSpace <= 60) return 'L';
+	else if (availableSpace <= 75) return 'XL';
 	return 'XXL';
 }
 
