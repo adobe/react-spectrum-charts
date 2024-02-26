@@ -18,11 +18,11 @@ import {
 	AxisAnnotationProps,
 	AxisChildElement,
 	AxisProps,
-	BarProps,
 	ChartPopoverProps,
 	ChartTooltipProps,
 	ColorFacet,
-	BarProps, ChartData,
+	BarProps,
+  ChartData,
 	ChartTooltipElement,
 	ColorScheme,
 	DonutProps,
@@ -43,7 +43,6 @@ import {
 	SegmentLabelProps,
 	TrendlineAnnotationProps,
 	TrendlineChildElement,
-	TrendlineProps,
 	TrendlineProps
 } from './Chart';
 
@@ -52,10 +51,13 @@ type PartiallyRequired<T, K extends keyof T> = Omit<T, K> & Required<Pick<T, K>>
 type AreaPropsWithDefaults = 'name' | 'dimension' | 'metric' | 'color' | 'scaleType' | 'opacity';
 
 export interface AreaSpecProps extends PartiallyRequired<AreaProps, AreaPropsWithDefaults> {
+  animations?: boolean,
 	colorScheme: ColorScheme;
+	data?: ChartData[],
 	highlightedItem?: HighlightedItem;
 	idKey: string;
 	index: number;
+	previousData?: ChartData[],
 	children: MarkChildElement[];
 	markType: 'area';
 }
@@ -111,14 +113,17 @@ type BarPropsWithDefaults =
 	| 'type';
 
 export interface BarSpecProps extends PartiallyRequired<BarProps, BarPropsWithDefaults> {
+  animations?: boolean,
 	children: MarkChildElement[];
 	colorScheme: ColorScheme;
+	data?: ChartData[],
 	dimensionScaleType: 'band';
 	highlightedItem?: HighlightedItem;
 	idKey: string;
 	index: number;
 	interactiveMarkName: string | undefined;
 	markType: 'bar';
+	previousData?: ChartData[],
 }
 
 type AnnotationPropsWithDefaults = 'textKey';

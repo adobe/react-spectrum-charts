@@ -25,6 +25,7 @@ import {
 	isDodgedAndStacked,
 } from './barUtils';
 import { getTrellisProperties, isTrellised } from './trellisedBarUtils';
+import { getAnimationMarks } from '@specBuilder/specUtils';
 
 export const getStackedBarMarks = (props: BarSpecProps): Mark[] => {
 	const marks: Mark[] = [];
@@ -34,6 +35,8 @@ export const getStackedBarMarks = (props: BarSpecProps): Mark[] => {
 
 	// bar mark
 	marks.push(getStackedBar(props));
+
+	console.warn('marks after adding stacked bar and background bar are', marks);
 
 	// add annotation marks
 	marks.push(
@@ -107,14 +110,18 @@ export const getStackedBar = (props: BarSpecProps): RectMark => {
 };
 
 export const getStackedDimensionEncodings = (props: BarSpecProps): RectEncodeEntry => {
-	const { dimension, orientation } = props;
+	const { dimension, orientation, previousData, data, animations, metric } = props;
 	if (isDodgedAndStacked(props)) {
 		return getDodgedDimensionEncodings(props);
 	}
 
-	const { dimensionAxis, rangeScale, dimensionScaleKey } = getOrientationProperties(orientation);
+	const { dimensionAxis, rangeScale, dimensionScaleKey, metricScaleKey: scaleKey, metricAxis: startKey } = getOrientationProperties(orientation);
+
+	const endKey = `${startKey}2`;
 
 	return {
+		[startKey]: animations !== false ? getAnimationMarks(dimension, `${metric}0`, data, previousData, scaleKey) : undefined,
+		[endKey]: animations !== false ? getAnimationMarks(dimension, `${metric}1`, data, previousData, scaleKey) : undefined,
 		[dimensionAxis]: { scale: dimensionScaleKey, field: dimension },
 		[rangeScale]: { scale: dimensionScaleKey, band: 1 },
 	};

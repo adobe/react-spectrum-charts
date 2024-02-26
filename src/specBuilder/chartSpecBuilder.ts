@@ -142,13 +142,13 @@ export function buildSpec(props: SanitizedSpecProps) {
 			switch (cur.type.displayName) {
 				case Area.displayName:
 					areaCount++;
-					return addArea(acc, { ...(cur as AreaElement).props, ...specProps, index: areaCount, previousData, data });
+					return addArea(acc, { ...(cur as AreaElement).props, ...specProps, index: areaCount, previousData, data, animations });
 				case Axis.displayName:
 					axisCount++;
 					return addAxis(acc, { ...(cur as AxisElement).props, ...specProps, index: axisCount });
 				case Bar.displayName:
 					barCount++;
-					return addBar(acc, { ...(cur as BarElement).props, ...specProps, index: barCount });
+					return addBar(acc, { ...(cur as BarElement).props, ...specProps, index: barCount, previousData, data, animations });
 				case Donut.displayName:
 					donutCount++;
 					return addDonut(acc, { ...(cur as DonutElement).props, ...specProps, index: donutCount });
@@ -181,6 +181,8 @@ export function buildSpec(props: SanitizedSpecProps) {
 					return acc;
 			}
 		}, spec);
+
+	console.log('Full spec after marks added', spec);
 
 	// copy the spec so we don't mutate the original
 	spec = JSON.parse(JSON.stringify(spec));

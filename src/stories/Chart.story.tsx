@@ -12,13 +12,13 @@
 import { ReactElement } from 'react';
 
 import useChartProps from '@hooks/useChartProps';
-import { Axis, Bar, Chart, ChartTooltip, Line } from '@rsc';
+import { Area, Axis, Bar, Chart, ChartTooltip, Line } from '@rsc';
 import { StoryFn } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
 
 import './Chart.story.css';
 import { ChartBarStory } from './ChartBarStory';
-import { data, newDataArray1WithStaticPoints, workspaceTrendsData } from './data/data';
+import { areaData, data, newDataArray1, newDataArray1WithStaticPoints, workspaceTrendsData } from './data/data';
 
 export default {
 	title: 'RSC/Chart',
@@ -75,6 +75,15 @@ const SingleLineWithStaticPointsStory: StoryFn<typeof Chart> = (args): ReactElem
 		</Chart>
 	);
 }
+
+const BasicAreaStory: StoryFn<typeof Chart> = (args): ReactElement => {
+	const chartProps = useChartProps(args);
+	return (
+		<Chart {...chartProps} debug>
+			<Area metric='maxTemperature' />
+		</Chart>
+	);
+};
 
 const Basic = bindWithProps(ChartLineStory);
 
@@ -136,4 +145,10 @@ HighlightedItem.args = {
 	data,
 };
 
-export { BackgroundColor, Basic, Config, Height, HighlightedItem, Locale, TooltipAnchor, Width, SingleLineWithStaticPoints};
+const BasicArea = bindWithProps(BasicAreaStory);
+BasicArea.args = {
+	data: areaData
+}
+
+
+export { BasicArea, BackgroundColor, Basic, Config, Height, HighlightedItem, Locale, TooltipAnchor, Width, SingleLineWithStaticPoints};

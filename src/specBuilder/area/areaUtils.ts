@@ -27,6 +27,7 @@ import {
 	isInteractive,
 } from '@specBuilder/marks/markUtils';
 import { AreaMark, NumericValueRef, ProductionRule } from 'vega';
+import { getAnimationMarks } from '@specBuilder/specUtils';
 
 import { ColorFacet, ColorScheme, HighlightedItem, MarkChildElement, ScaleType } from '../../types';
 
@@ -40,6 +41,7 @@ export interface AreaMarkProps {
 	isHighlightedByGroup?: boolean;
 	isMetricRange?: boolean;
 	isStacked: boolean;
+	animations?: boolean;
 	metricStart: string;
 	metricEnd: string;
 	name: string;
@@ -49,7 +51,7 @@ export interface AreaMarkProps {
 }
 
 export const getAreaMark = (areaProps: AreaMarkProps, dataSource: string = `${areaProps.name}_facet`): AreaMark => {
-	const { name, color, colorScheme, children, metricStart, metricEnd, isStacked, scaleType, dimension, opacity } =
+	const { animations, name, color, colorScheme, children, metricStart, metricEnd, isStacked, scaleType, dimension, opacity } =
 		areaProps;
 	return {
 		name,
@@ -59,8 +61,8 @@ export const getAreaMark = (areaProps: AreaMarkProps, dataSource: string = `${ar
 		interactive: isInteractive(children),
 		encode: {
 			enter: {
-				y: { scale: 'yLinear', field: metricStart },
-				y2: { scale: 'yLinear', field: metricEnd },
+			y: animations === false ? { scale: 'yLinear', field: metricStart } : undefined,
+			y2: animations === false ? { scale: 'yLinear', field: metricEnd } : undefined,
 				fill: getColorProductionRule(color, colorScheme),
 				tooltip: getTooltip(children, name),
 				...getBorderStrokeEncodings(isStacked, true),
@@ -68,6 +70,8 @@ export const getAreaMark = (areaProps: AreaMarkProps, dataSource: string = `${ar
 			update: {
 				// this has to be in update because when you resize the window that doesn't rebuild the spec
 				// but it may change the x position if it causes the chart to resize
+				y: animations !== false ? getAnimationMarks(dimension, metricStart) : undefined,
+				y2: animations !== false ? getAnimationMarks(dimension, metricEnd) : undefined,
 				x: getX(scaleType, dimension),
 				cursor: getCursor(children),
 				fillOpacity: { value: opacity },

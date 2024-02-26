@@ -42,7 +42,7 @@ import { sanitizeMarkChildren, toCamelCase } from '@utils';
 import { produce } from 'immer';
 import { BandScale, Data, FormulaTransform, Mark, OrdinalScale, Scale, Signal, Spec } from 'vega';
 
-import { BarProps, BarSpecProps, ColorScheme, HighlightedItem } from '../../types';
+import { BarProps, BarSpecProps, ChartData, ColorScheme, HighlightedItem } from '../../types';
 import { getBarPadding, getDimensionSelectionRing, getScaleValues, isDodgedAndStacked } from './barUtils';
 import { getDodgedMark } from './dodgedBarUtils';
 import { getDodgedAndStackedBarMark, getStackedBarMarks } from './stackedBarUtils';
@@ -50,7 +50,7 @@ import { addTrellisScale, getTrellisGroupMark, isTrellised } from './trellisedBa
 
 export const addBar = produce<
 	Spec,
-	[BarProps & { colorScheme?: ColorScheme; highlightedItem?: HighlightedItem; index?: number; idKey: string }]
+  [BarProps & { data?: ChartData[]; colorScheme?: ColorScheme; highlightedItem?: HighlightedItem; index?: number; idKey: string; previousData?: ChartData[]; animations?: boolean }]
 >(
 	(
 		spec,

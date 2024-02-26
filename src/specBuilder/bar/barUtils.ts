@@ -20,7 +20,8 @@ import {
 	getTooltip,
 	hasPopover,
 } from '@specBuilder/marks/markUtils';
-import { getColorValue, getLineWidthPixelsFromLineWidth } from '@specBuilder/specUtils';
+import { getAnimationMarks, getColorValue, getLineWidthPixelsFromLineWidth } from '@specBuilder/specUtils';
+import { sanitizeMarkChildren } from '@utils';
 import {
 	ArrayValueRef,
 	ColorValueRef,
@@ -32,7 +33,7 @@ import {
 	RectMark,
 } from 'vega';
 
-import { BarSpecProps, Orientation } from '../../types';
+import { BarSpecProps, Orientation, BarSpecProps, Orientation } from '../../types';
 import { getTrellisProperties, isTrellised } from './trellisedBarUtils';
 
 /**
@@ -82,13 +83,22 @@ export const getDodgedGroupMark = (props: BarSpecProps): GroupMark => {
 };
 
 export const getDodgedDimensionEncodings = (props: BarSpecProps): RectEncodeEntry => {
-	const { dimensionAxis, rangeScale } = getOrientationProperties(props.orientation);
+	const { animations, dimension, metric, previousData, data} = props;
+
+	const { dimensionAxis, metricAxis: startKey, rangeScale, metricScaleKey: scaleKey } = getOrientationProperties(props.orientation);
 
 	const scale = `${props.name}_position`;
 	const field = `${props.name}_dodgeGroup`;
 
+	const startMetric = `${metric}0`;
+	const endMetric = `${metric}1`;
+
+	const endKey = `${startKey}2`;
+
 	return {
 		[dimensionAxis]: { scale, field },
+		[startKey]: animations !== false ? getAnimationMarks(dimension, startMetric, data, previousData, scaleKey) : undefined,
+		[endKey]: animations !== false ? getAnimationMarks(dimension, endMetric, data, previousData, scaleKey) : undefined,
 		[rangeScale]: { scale, band: 1 },
 	};
 };
