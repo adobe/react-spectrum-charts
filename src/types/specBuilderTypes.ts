@@ -36,6 +36,9 @@ type AreaPropsWithDefaults = 'name' | 'dimension' | 'metric' | 'color' | 'scaleT
 
 export interface AreaSpecProps
 	extends PartiallyRequired<AreaProps & { colorScheme: ColorScheme; index: number }, AreaPropsWithDefaults> {
+	data?: ChartData[],
+	previousData?: ChartData[],
+	animations?: boolean,
 	children: MarkChildElement[];
 }
 
@@ -93,7 +96,7 @@ type BarPropsWithDefaults =
 	| 'type';
 
 export interface BarSpecProps
-	extends PartiallyRequired<BarProps & { colorScheme: ColorScheme; index: number }, BarPropsWithDefaults> {
+	extends PartiallyRequired<BarProps & { colorScheme: ColorScheme; index: number, data?: ChartData[], previousData?: ChartData[], animations?: boolean }, BarPropsWithDefaults> {
 	children: MarkChildElement[];
 }
 

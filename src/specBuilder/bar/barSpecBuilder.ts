@@ -33,7 +33,7 @@ import { getGenericSignal, getUncontrolledHoverSignal, hasSignalByName } from '@
 import { getFacetsFromProps } from '@specBuilder/specUtils';
 import { sanitizeMarkChildren, toCamelCase } from '@utils';
 import { produce } from 'immer';
-import { BarProps, BarSpecProps, ColorScheme } from 'types';
+import { BarProps, BarSpecProps, ChartData, ColorScheme } from 'types';
 import { BandScale, Data, FormulaTransform, Mark, OrdinalScale, Scale, Signal, Spec } from 'vega';
 
 import { getBarPadding, getScaleValues, isDodgedAndStacked } from './barUtils';
@@ -41,7 +41,7 @@ import { getDodgedMark } from './dodgedBarUtils';
 import { getDodgedAndStackedBarMark, getStackedBarMarks } from './stackedBarUtils';
 import { addTrellisScale, getTrellisGroupMark, isTrellised } from './trellisedBarUtils';
 
-export const addBar = produce<Spec, [BarProps & { colorScheme?: ColorScheme; index?: number }]>(
+export const addBar = produce<Spec, [BarProps & { colorScheme?: ColorScheme; index?: number, data?: ChartData[], previousData?: ChartData[], animations?: boolean }]>(
 	(
 		spec,
 		{
@@ -255,9 +255,6 @@ export const addMarks = produce<Mark[], [BarSpecProps]>((marks, props) => {
 	} else {
 		barMarks.push(getDodgedMark(props));
 	}
-
-	// TODO: ADD ANIMATION MARK CHANGE - (choose scale/animation property on data if not given one)
-	// TODO: Determine animation method (from zero or from old data)
 
 	// if this is a trellis plot, we add the bars and the repeated scale to the trellis group
 	if (isTrellised(props)) {

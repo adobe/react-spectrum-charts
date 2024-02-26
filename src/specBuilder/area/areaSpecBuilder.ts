@@ -35,7 +35,7 @@ import { addTimeTransform, getFilteredTableData, getTableData, getTransformSort 
 import { addContinuousDimensionScale, addFieldToFacetScaleDomain, addMetricScale } from '../scale/scaleSpecBuilder';
 import { getAreaMark, getX } from './areaUtils';
 
-export const addArea = produce<Spec, [AreaProps & { colorScheme?: ColorScheme; index?: number, previousData: ChartData[] | undefined, data: ChartData[] | undefined }]>(
+export const addArea = produce<Spec, [AreaProps & { colorScheme?: ColorScheme; index?: number, previousData?: ChartData[], data?: ChartData[], animations?: boolean }]>(
 	(
 		spec,
 		{
@@ -175,7 +175,7 @@ export const setScales = produce<Scale[], [AreaSpecProps]>(
 
 export const addAreaMarks = produce<Mark[], [AreaSpecProps]>((marks, props) => {
 	// TODO: Finish area implementation
-	const { name, color, colorScheme, metric, dimension, scaleType, opacity, children, data, previousData } = props;
+	const { name, color, colorScheme, metric, dimension, scaleType, opacity, children, data, previousData, animations } = props;
 	let { metricStart, metricEnd } = props;
 	let isStacked = false;
 	if (!metricEnd || !metricStart) {
@@ -202,6 +202,7 @@ export const addAreaMarks = produce<Mark[], [AreaSpecProps]>((marks, props) => {
 					children,
 					metricStart,
 					metricEnd,
+					animations,
 					isStacked,
 					dimension,
 					scaleType,

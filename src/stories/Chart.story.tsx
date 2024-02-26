@@ -12,13 +12,13 @@
 import React, { ReactElement } from 'react';
 
 import useChartProps from '@hooks/useChartProps';
-import { Axis, Chart, Line } from '@rsc';
+import { Area, Axis, Chart, Line } from '@rsc';
 import { StoryFn } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
 
 import './Chart.story.css';
 import { ChartBarStory } from './ChartBarStory';
-import { data, newDataArray1, newDataArray1WithStaticPoints, workspaceTrendsData } from './data/data';
+import { areaData, data, newDataArray1, newDataArray1WithStaticPoints, workspaceTrendsData } from './data/data';
 
 export default {
 	title: 'RSC/Chart',
@@ -65,6 +65,15 @@ const SingleLineWithStaticPointsStory: StoryFn<typeof Chart> = (args): ReactElem
 	);
 }
 
+const BasicAreaStory: StoryFn<typeof Chart> = (args): ReactElement => {
+	const chartProps = useChartProps(args);
+	return (
+		<Chart {...chartProps} debug>
+			<Area metric='maxTemperature' />
+		</Chart>
+	);
+};
+
 const Basic = bindWithProps(ChartLineStory);
 
 // Story specific props are passed here
@@ -109,6 +118,9 @@ SingleLine.args = {
 const SingleLineWithStaticPoints = bindWithProps(SingleLineWithStaticPointsStory);
 SingleLineWithStaticPoints.args = { data: newDataArray1WithStaticPoints };
 
+const BasicArea = bindWithProps(BasicAreaStory);
+BasicArea.args = {
+	data: areaData
+}
 
-
-export { Basic, BackgroundColor, Config, Locale, Width, SingleLine, SingleLineWithStaticPoints };
+export { Basic, BackgroundColor, Config, Locale, Width, SingleLine, SingleLineWithStaticPoints, BasicArea };

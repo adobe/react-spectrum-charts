@@ -20,12 +20,14 @@ import {
 } from '@specBuilder/marks/markUtils';
 import { ColorFacet, ColorScheme, MarkChildElement, ScaleType } from 'types';
 import { AreaMark, NumericValueRef, ProductionRule } from 'vega';
+import { getAnimationMarks } from '@specBuilder/specUtils';
 
 export interface AreaMarkProps {
 	name: string;
 	color: ColorFacet;
 	colorScheme: ColorScheme;
 	children: MarkChildElement[];
+	animations?: boolean;
 	metricStart: string;
 	metricEnd: string;
 	isStacked: boolean;
@@ -44,6 +46,7 @@ export const getAreaMark = ({
 	children,
 	metricStart,
 	metricEnd,
+	animations,
 	isStacked,
 	scaleType,
 	dimension,
@@ -58,8 +61,8 @@ export const getAreaMark = ({
 	interactive: getInteractive(children),
 	encode: {
 		enter: {
-			y: { scale: 'yLinear', field: metricStart },
-			y2: { scale: 'yLinear', field: metricEnd },
+			y: animations === false ? { scale: 'yLinear', field: metricStart } : undefined,
+			y2: animations === false ? { scale: 'yLinear', field: metricEnd } : undefined,
 			fill: getColorProductionRule(color, colorScheme),
 			tooltip: getTooltip(children, name),
 			...getBorderStrokeEncodings(isStacked, true),
@@ -67,6 +70,8 @@ export const getAreaMark = ({
 		update: {
 			// this has to be in update because when you resize the window that doesn't rebuild the spec
 			// but it may change the x position if it causes the chart to resize
+			y: animations !== false ? getAnimationMarks(dimension, metricStart) : undefined,
+			y2: animations !== false ? getAnimationMarks(dimension, metricEnd) : undefined,
 			x: getX(scaleType, dimension),
 			cursor: getCursor(children),
 			fillOpacity: getFillOpacity(name, color, opacity, children, isMetricRange, parentName, displayOnHover),
