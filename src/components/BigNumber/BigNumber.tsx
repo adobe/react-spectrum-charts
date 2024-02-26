@@ -147,24 +147,7 @@ function getDynamicProperties(
 } {
 	const aspectRatio = BIG_NUMBER_ASPECT_RATIO;
 
-	let iconSize;
-	if (lineProps) {
-		if (orientation == 'vertical') {
-			const availableSpace = height ? height / 3 : chartWidth / 2;
-			iconSize = determineIconSize(availableSpace);
-		}
-		if (orientation == 'horizontal') {
-			iconSize = determineIconSize(chartWidth / 12);
-		}
-	} else {
-		if (orientation == 'vertical') {
-			const availableSpace = height ? height / 1.75 : chartWidth;
-			iconSize = determineIconSize(availableSpace);
-		} else {
-			iconSize = determineIconSize(chartWidth / 3.5);
-		}
-	}
-
+	const iconSize = getDynamicIcon(orientation, chartWidth, lineProps, height);
 	let cHeight, cWidth;
 	if (orientation == 'vertical') {
 		cHeight = height ? height / 3 : chartWidth / aspectRatio;
@@ -217,9 +200,35 @@ function determineFontSize(availableSpace: number): { labelSize: string; valueSi
 
 function determinePointSize(availableSpace: number): number {
 	if (availableSpace <= 150) return 50;
-	else if (availableSpace <= 300) 100;
+	else if (availableSpace <= 300) return 100;
 	else if (availableSpace <= 450) return 150;
 	return 200;
+}
+
+function getDynamicIcon(
+	orientation: string,
+	chartWidth: number,
+	lineProps?: LineProps,
+	height?: number
+): BigNumberIconSize {
+	let iconSize = 'L';
+	if (lineProps) {
+		if (orientation == 'vertical') {
+			const availableSpace = height ? height / 3 : chartWidth / 2;
+			iconSize = determineIconSize(availableSpace);
+		}
+		if (orientation == 'horizontal') {
+			iconSize = determineIconSize(chartWidth / 12);
+		}
+	} else {
+		if (orientation == 'vertical') {
+			const availableSpace = height ? height / 1.75 : chartWidth;
+			iconSize = determineIconSize(availableSpace);
+		} else {
+			iconSize = determineIconSize(chartWidth / 3.5);
+		}
+	}
+	return iconSize;
 }
 
 function determineIconSize(availableSpace: number) {
