@@ -16,10 +16,13 @@ import { TrendlineAnnotationProps } from '../../types';
 
 // destructure props here and set defaults so that storybook can pick them up
 const TrendlineAnnotation: FC<TrendlineAnnotationProps> = ({
-	// TODO: destructure props here
+	align = 'center',
+	numberFormat = '.2f',
+	position = 'top',
+	prefix,
 }) => {
 	return null;
-}
+};
 
 // displayName is used to validate the component type in the spec builder
 TrendlineAnnotation.displayName = 'TrendlineAnnotation';
