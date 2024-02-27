@@ -566,6 +566,13 @@ export interface TrendlineProps {
 	orientation?: Orientation;
 }
 
+export interface TrendlineAnnotationProps {
+	align?: 'center' | 'start' | 'end';
+	numberFormat?: string;
+	prefix?: string;
+	position?: Position;
+}
+
 /** trendline methods that use a joinaggregate transform */
 export type AggregateMethod = 'average' | 'median';
 /** trendline methods that use a regression transform */
