@@ -43,8 +43,8 @@ module.exports = function generate(plop) {
 			},
 			{
 				type: 'append',
-				path: 'src/index.ts',
-				template: "export * from './components/{{name}}';",
+				path: 'src/components/index.ts',
+				template: "export * from './{{name}}';",
 			},
 		],
 	});
