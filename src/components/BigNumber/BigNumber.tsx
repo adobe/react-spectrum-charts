@@ -211,24 +211,19 @@ function getDynamicIconSize(
 	lineProps?: LineProps,
 	height?: number
 ): BigNumberIconSize {
-	let iconSize: BigNumberIconSize= 'L';
 	if (lineProps) {
 		if (orientation == 'vertical') {
 			const availableSpace = height ? height / 3 : chartWidth / 2;
-			iconSize = determineIconSize(availableSpace);
-		}
-		if (orientation == 'horizontal') {
-			iconSize = determineIconSize(chartWidth / 12);
-		}
-	} else {
-		if (orientation == 'vertical') {
-			const availableSpace = height ? height / 1.75 : chartWidth;
-			iconSize = determineIconSize(availableSpace);
+			return determineIconSize(availableSpace);
 		} else {
-			iconSize = determineIconSize(chartWidth / 3.5);
+			return determineIconSize(chartWidth / 12);
 		}
+	} else if (orientation == 'vertical') {
+		const availableSpace = height ? height / 1.75 : chartWidth;
+		return determineIconSize(availableSpace);
+	} else {
+		return determineIconSize(chartWidth / 3.5);
 	}
-	return iconSize;
 }
 
 function determineIconSize(availableSpace: number) {
