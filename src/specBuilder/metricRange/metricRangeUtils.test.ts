@@ -13,9 +13,11 @@ import { createElement } from 'react';
 
 import { MetricRange } from '@components/MetricRange';
 import {
+	COLOR_SCALE,
 	DEFAULT_COLOR,
 	DEFAULT_COLOR_SCHEME,
 	DEFAULT_METRIC,
+	DEFAULT_OPACITY_RULE,
 	DEFAULT_TIME_DIMENSION,
 	DEFAULT_TRANSFORMED_TIME_DIMENSION,
 	FILTERED_TABLE,
@@ -75,31 +77,18 @@ const basicMetricRangeMarks = [
 		interactive: false,
 		encode: {
 			enter: {
-				y: {
-					scale: 'yLinear',
-					field: 'metric',
-				},
-				stroke: {
-					scale: 'color',
-					field: 'series',
-				},
-				strokeDash: {
-					value: [3, 4],
-				},
-				strokeWidth: {
-					value: 1.5,
-				},
+				y: { scale: 'yLinear', field: 'metric' },
+				stroke: { scale: COLOR_SCALE, field: 'series' },
+				strokeDash: { value: [3, 4] },
+				strokeOpacity: DEFAULT_OPACITY_RULE,
+				strokeWidth: { value: 1.5 },
 			},
 			update: {
 				x: {
 					scale: 'xTime',
 					field: DEFAULT_TRANSFORMED_TIME_DIMENSION,
 				},
-				strokeOpacity: [
-					{
-						value: 1,
-					},
-				],
+				opacity: [DEFAULT_OPACITY_RULE],
 			},
 		},
 	},
@@ -113,30 +102,14 @@ const basicMetricRangeMarks = [
 		encode: {
 			enter: {
 				tooltip: undefined,
-				y: {
-					scale: 'yLinear',
-					field: 'metricStart',
-				},
-				y2: {
-					scale: 'yLinear',
-					field: 'metricEnd',
-				},
-				fill: {
-					scale: 'color',
-					field: 'series',
-				},
+				y: { scale: 'yLinear', field: 'metricStart' },
+				y2: { scale: 'yLinear', field: 'metricEnd' },
+				fill: { scale: COLOR_SCALE, field: 'series' },
 			},
 			update: {
 				cursor: undefined,
-				x: {
-					scale: 'xTime',
-					field: DEFAULT_TRANSFORMED_TIME_DIMENSION,
-				},
-				fillOpacity: [
-					{
-						value: 0.2,
-					},
-				],
+				x: { scale: 'xTime', field: DEFAULT_TRANSFORMED_TIME_DIMENSION },
+				fillOpacity: [{ value: 0.2 }],
 			},
 		},
 	},
@@ -145,7 +118,7 @@ const basicMetricRangeMarks = [
 describe('applyMetricRangePropDefaults', () => {
 	test('applies defaults', () => {
 		expect(
-			applyMetricRangePropDefaults({ metricEnd: 'metricStart', metricStart: 'metricEnd' }, 'line0', 0)
+			applyMetricRangePropDefaults({ metricEnd: 'metricStart', metricStart: 'metricEnd' }, 'line0', 0),
 		).toEqual({
 			children: {},
 			displayOnHover: false,
@@ -171,8 +144,8 @@ describe('applyMetricRangePropDefaults', () => {
 					displayOnHover: true,
 				},
 				'line0',
-				0
-			)
+				0,
+			),
 		).toEqual({
 			children: {},
 			displayOnHover: true,

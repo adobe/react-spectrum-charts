@@ -14,6 +14,7 @@ import { createElement } from 'react';
 import { ChartTooltip } from '@components/ChartTooltip';
 import {
 	BACKGROUND_COLOR,
+	COLOR_SCALE,
 	DEFAULT_COLOR,
 	DEFAULT_COLOR_SCHEME,
 	DEFAULT_METRIC,
@@ -32,7 +33,7 @@ import { initializeSpec } from '../specUtils';
 import { addArea, addAreaMarks, addData, addSignals, setScales } from './areaSpecBuilder';
 
 const startingSpec: Spec = initializeSpec({
-	scales: [{ name: 'color', type: 'ordinal' }],
+	scales: [{ name: COLOR_SCALE, type: 'ordinal' }],
 });
 
 const defaultAreaProps: AreaSpecProps = {
@@ -89,7 +90,7 @@ const defaultSpec = initializeSpec({
 				{
 					encode: {
 						enter: {
-							fill: { field: DEFAULT_COLOR, scale: 'color' },
+							fill: { field: DEFAULT_COLOR, scale: COLOR_SCALE },
 							y: { field: 'value0', scale: 'yLinear' },
 							y2: { field: 'value1', scale: 'yLinear' },
 							stroke: { signal: BACKGROUND_COLOR },
@@ -116,7 +117,7 @@ const defaultSpec = initializeSpec({
 	scales: [
 		{
 			domain: { data: TABLE, fields: [DEFAULT_COLOR] },
-			name: 'color',
+			name: COLOR_SCALE,
 			type: 'ordinal',
 		},
 		{
@@ -192,13 +193,13 @@ describe('areaSpecBuilder', () => {
 		test('scaleTypes "point" and "linear" should not add timeunit transforms return the original data', () => {
 			expect(
 				addData(baseData, { ...defaultAreaProps, scaleType: 'point' })[0].transform?.find(
-					(t) => t.type === 'timeunit'
-				)
+					(t) => t.type === 'timeunit',
+				),
 			).toBeUndefined();
 			expect(
 				addData(baseData, { ...defaultAreaProps, scaleType: 'linear' })[0].transform?.find(
-					(t) => t.type === 'timeunit'
-				)
+					(t) => t.type === 'timeunit',
+				),
 			).toBeUndefined();
 		});
 	});
@@ -211,7 +212,7 @@ describe('areaSpecBuilder', () => {
 		test('children: should add signals', () => {
 			const tooltip = createElement(ChartTooltip);
 			expect(addSignals(startingSpec.signals ?? [], { ...defaultAreaProps, children: [tooltip] })).toStrictEqual(
-				defaultSignals
+				defaultSignals,
 			);
 		});
 	});

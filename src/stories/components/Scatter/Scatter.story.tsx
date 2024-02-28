@@ -9,13 +9,28 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import React, { ReactElement } from 'react';
+import { ReactElement, createElement } from 'react';
 
+import { Content, Flex } from '@adobe/react-spectrum';
 import useChartProps from '@hooks/useChartProps';
-import { Axis, Chart, Legend, LegendProps, Scatter, Title } from '@rsc';
+import {
+	Axis,
+	Chart,
+	ChartColors,
+	ChartPopover,
+	ChartProps,
+	ChartTooltip,
+	Datum,
+	Legend,
+	LegendProps,
+	Scatter,
+	ScatterProps,
+	Title,
+} from '@rsc';
 import { characterData } from '@stories/data/marioKartData';
 import { StoryFn } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
+import { COLOR_SCALE, LINE_TYPE_SCALE, OPACITY_SCALE } from '@constants';
 
 const marioDataKeys = [
 	...Object.keys(characterData[0])
@@ -46,7 +61,7 @@ export default {
 		},
 		color: {
 			control: 'select',
-			options: marioDataKeys.filter((key) => key !== 'weight'),
+			options: marioDataKeys,
 		},
 		size: {
 			control: 'select',
@@ -73,11 +88,11 @@ const marioKeyTitle: Record<Exclude<MarioDataKey, 'character'>, string> = {
 	miniTurbo: 'Mini-turbo',
 };
 
-const ScatterStory: StoryFn<typeof Scatter> = (args): ReactElement => {
-	const chartProps = useChartProps({ data: characterData, height: 500, width: 500, lineWidths: [1, 2, 3] });
+const defaultChartProps: ChartProps = { data: characterData, height: 500, width: 500, lineWidths: [1, 2, 3] };
 
-	const facets = ['color', 'lineType', 'opacity', 'size'];
-	const legendKey = args[facets.find((key) => args[key] !== undefined) ?? 'color'];
+const getLegendProps = (args: ScatterProps): LegendProps => {
+	const facets = [COLOR_SCALE, LINE_TYPE_SCALE, OPACITY_SCALE, 'size'];
+	const legendKey = args[facets.find((key) => args[key] !== undefined) ?? COLOR_SCALE];
 	const legendProps: LegendProps = {
 		position: 'right',
 		title: marioKeyTitle[legendKey],
@@ -85,15 +100,38 @@ const ScatterStory: StoryFn<typeof Scatter> = (args): ReactElement => {
 	if (typeof args.opacity === 'object') {
 		legendProps.opacity = args.opacity;
 	}
+	return legendProps;
+};
+
+const ScatterStory: StoryFn<typeof Scatter> = (args): ReactElement => {
+	const colors: ChartColors = args.colorScaleType === 'linear' ? 'sequentialViridis5' : 'categorical16';
+	const chartProps = useChartProps({ ...defaultChartProps, colors });
+	const legendProps = getLegendProps(args);
 
 	return (
-		<Chart {...chartProps} >
+		<Chart {...chartProps}>
 			<Axis position="bottom" grid ticks baseline title={marioKeyTitle[args.dimension as MarioDataKey]} />
 			<Axis position="left" grid ticks baseline title={marioKeyTitle[args.metric as MarioDataKey]} />
 			<Scatter {...args} />
-			<Legend {...legendProps} />
+			<Legend {...legendProps} highlight />
 			<Title text="Mario Kart 8 Character Data" />
 		</Chart>
+	);
+};
+
+const dialog = (item: Datum) => {
+	return (
+		<Content>
+			<Flex direction="column">
+				<div style={{ fontWeight: 'bold' }}>{(item.character as string[]).join(', ')}</div>
+				<div>
+					{marioKeyTitle.speedNormal}: {item.speedNormal}
+				</div>
+				<div>
+					{marioKeyTitle.handlingNormal}: {item.handlingNormal}
+				</div>
+			</Flex>
+		</Content>
 	);
 };
 
@@ -106,6 +144,14 @@ Basic.args = {
 const Color = bindWithProps(ScatterStory);
 Color.args = {
 	color: 'weightClass',
+	dimension: 'speedNormal',
+	metric: 'handlingNormal',
+};
+
+const ColorScaleType = bindWithProps(ScatterStory);
+ColorScaleType.args = {
+	color: 'weight',
+	colorScaleType: 'linear',
 	dimension: 'speedNormal',
 	metric: 'handlingNormal',
 };
@@ -126,6 +172,14 @@ Opacity.args = {
 	metric: 'handlingNormal',
 };
 
+const Popover = bindWithProps(ScatterStory);
+Popover.args = {
+	color: 'weightClass',
+	dimension: 'speedNormal',
+	metric: 'handlingNormal',
+	children: [createElement(ChartTooltip, {}, dialog), createElement(ChartPopover, { width: 200 }, dialog)],
+};
+
 const Size = bindWithProps(ScatterStory);
 Size.args = {
 	size: 'weight',
@@ -133,4 +187,12 @@ Size.args = {
 	metric: 'handlingNormal',
 };
 
-export { Basic, Color, LineType, Opacity, Size };
+const Tooltip = bindWithProps(ScatterStory);
+Tooltip.args = {
+	color: 'weightClass',
+	dimension: 'speedNormal',
+	metric: 'handlingNormal',
+	children: [createElement(ChartTooltip, {}, dialog)],
+};
+
+export { Basic, Color, ColorScaleType, LineType, Opacity, Popover, Size, Tooltip };

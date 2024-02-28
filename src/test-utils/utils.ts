@@ -27,3 +27,6 @@ export const unhoverNthElement = async (elements: HTMLElement[], index: number) 
 export const clickNthElement = async (elements: HTMLElement[], index: number) => {
 	await userEvent.click(elements[index]);
 };
+
+export const allElementsHaveAttributeValue = (elements: HTMLElement[], attribute: string, value: number | string) =>
+	elements.every((element) => element.getAttribute(attribute) === value.toString());

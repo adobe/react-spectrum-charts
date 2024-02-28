@@ -26,6 +26,7 @@ import {
 	LineWidth,
 	MarkChildElement,
 	MetricRangeProps,
+	ScaleType as RscScaleType,
 	ScatterProps,
 	TrendlineProps,
 } from './Chart';
@@ -159,6 +160,7 @@ export interface MetricRangeSpecProps
 	extends PartiallyRequired<MetricRangeProps & { name: string }, MetricRangePropsWithDefaults> {}
 
 type TrendlinePropsWithDefaults =
+	| 'dimensionExtent'
 	| 'dimensionRange'
 	| 'displayOnHover'
 	| 'highlightRawPoint'
@@ -166,9 +168,11 @@ type TrendlinePropsWithDefaults =
 	| 'lineWidth'
 	| 'method'
 	| 'metric'
-	| 'opacity';
+	| 'opacity'
+	| 'orientation';
 
 export interface TrendlineSpecProps
 	extends PartiallyRequired<TrendlineProps & { metric?: string; name: string }, TrendlinePropsWithDefaults> {
 	children: ChartTooltipElement[];
+	dimensionScaleType: RscScaleType;
 }

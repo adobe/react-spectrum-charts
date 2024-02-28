@@ -9,20 +9,19 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { SERIES_ID } from '@constants';
+import { DEFAULT_OPACITY_RULE, SERIES_ID } from '@constants';
 import {
 	getColorProductionRule,
-	getCursor,
 	getHighlightOpacityValue,
 	getLineWidthProductionRule,
 	getOpacityProductionRule,
 	getStrokeDashProductionRule,
-	getTooltip,
+	getVoronoiPath,
 	getXProductionRule,
 	hasPopover,
 } from '@specBuilder/marks/markUtils';
-import { MarkChildElement, OpacityFacet, ScaleType } from 'types';
-import { LineMark, Mark, NumericValueRef, PathMark, ProductionRule, RuleMark, SymbolMark } from 'vega';
+import { OpacityFacet, ScaleType } from 'types';
+import { LineMark, Mark, NumericValueRef, ProductionRule, RuleMark, SymbolMark } from 'vega';
 
 import {
 	getHighlightBackgroundPoint,
@@ -39,7 +38,7 @@ import { LineMarkProps } from './lineUtils';
  * @returns LineMark
  */
 export const getLineMark = (lineMarkProps: LineMarkProps, dataSource: string): LineMark => {
-	const { name, color, metric, dimension, scaleType, lineType, lineWidth, colorScheme } = lineMarkProps;
+	const { color, colorScheme, dimension, lineType, lineWidth, metric, name, opacity, scaleType } = lineMarkProps;
 
 	return {
 		name,
@@ -51,25 +50,26 @@ export const getLineMark = (lineMarkProps: LineMarkProps, dataSource: string): L
 				y: { scale: 'yLinear', field: metric },
 				stroke: getColorProductionRule(color, colorScheme),
 				strokeDash: getStrokeDashProductionRule(lineType),
+				strokeOpacity: getOpacityProductionRule(opacity),
 				strokeWidth: getLineWidthProductionRule(lineWidth),
 			},
 			update: {
 				// this has to be in update because when you resize the window that doesn't rebuild the spec
 				// but it may change the x position if it causes the chart to resize
 				x: getXProductionRule(scaleType, dimension),
-				strokeOpacity: getLineStrokeOpacity(lineMarkProps),
+				opacity: getLineOpacity(lineMarkProps),
 			},
 		},
 	};
 };
 
-export const getLineStrokeOpacity = ({
+export const getLineOpacity = ({
 	displayOnHover,
 	interactiveMarkName,
 	opacity,
 	popoverMarkName,
 }: LineMarkProps): ProductionRule<NumericValueRef> => {
-	const baseRule = getOpacityProductionRule(displayOnHover ? { value: 0 } : opacity);
+	const baseRule = displayOnHover ? { value: 0 } : DEFAULT_OPACITY_RULE;
 	if (!interactiveMarkName) return [baseRule];
 	const strokeOpacityRules: ProductionRule<NumericValueRef> = [];
 
@@ -121,7 +121,7 @@ const getDisplayOnHoverRules = (name: string, opacity: OpacityFacet) => {
 export const getLineHoverMarks = (
 	lineProps: LineMarkProps,
 	dataSource: string,
-	secondaryHighlightedMetric?: string
+	secondaryHighlightedMetric?: string,
 ): Mark[] => {
 	const { children, dimension, metric, name, scaleType } = lineProps;
 	return [
@@ -138,7 +138,7 @@ export const getLineHoverMarks = (
 		// points used for the voronoi transform
 		getPointsForVoronoi(dataSource, dimension, metric, name, scaleType),
 		// voronoi transform used to get nearest point paths
-		getVoronoiPath(children, name),
+		getVoronoiPath(children, `${name}_pointsForVoronoi`, name),
 	];
 };
 
@@ -166,7 +166,7 @@ const getPointsForVoronoi = (
 	dimension: string,
 	metric: string,
 	name: string,
-	scaleType: ScaleType
+	scaleType: ScaleType,
 ): SymbolMark => {
 	return {
 		name: `${name}_pointsForVoronoi`,
@@ -183,34 +183,5 @@ const getPointsForVoronoi = (
 				x: getXProductionRule(scaleType, dimension),
 			},
 		},
-	};
-};
-
-const getVoronoiPath = (children: MarkChildElement[], name: string): PathMark => {
-	return {
-		name: `${name}_voronoi`,
-		type: 'path',
-		from: { data: `${name}_pointsForVoronoi` },
-		encode: {
-			enter: {
-				fill: { value: 'transparent' },
-				stroke: { value: 'transparent' },
-				isVoronoi: { value: true },
-				// Don't add a tooltip if there are no interactive children. We only want the other hover marks for metric ranges.
-				tooltip: getTooltip(children, name, true),
-			},
-			update: {
-				cursor: getCursor(children),
-			},
-		},
-		transform: [
-			{
-				type: 'voronoi',
-				x: `datum.x`,
-				y: `datum.y`,
-				// on initial render, width/height could be 0 which causes problems
-				size: [{ signal: 'max(width, 1)' }, { signal: 'max(height, 1)' }],
-			},
-		],
 	};
 };

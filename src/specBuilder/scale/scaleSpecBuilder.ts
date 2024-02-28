@@ -15,7 +15,7 @@ import { getDimensionField } from '@specBuilder/specUtils';
 import { toCamelCase } from '@utils';
 import { produce } from 'immer';
 import { DualFacet, FacetRef, FacetType, Orientation } from 'types';
-import { Scale, ScaleData, ScaleMultiFieldsRef, SignalRef } from 'vega';
+import { OrdinalScale, Scale, ScaleData, ScaleMultiFieldsRef, SignalRef } from 'vega';
 
 type AxisType = 'x' | 'y';
 type SupportedScaleType = 'linear' | 'point' | 'band' | 'time' | 'ordinal';
@@ -73,7 +73,7 @@ export const addDomainFields = produce<Scale, [string[]]>((scale, values) => {
 
 export const addContinuousDimensionScale = (
 	scales: Scale[],
-	{ scaleType, dimension, padding }: { scaleType: SupportedScaleType; dimension: string; padding?: number }
+	{ scaleType, dimension, padding }: { scaleType: SupportedScaleType; dimension: string; padding?: number },
 ) => {
 	const index = getScaleIndexByType(scales, scaleType, 'x');
 	const fields = [getDimensionField(dimension, scaleType)];
@@ -127,7 +127,7 @@ export const getMetricScale = (metricKeys: string[], metricAxis: AxisType, chart
 export const addFieldToFacetScaleDomain = (
 	scales: Scale[],
 	facetType: FacetType,
-	facetValue: FacetRef<string | number | number[]> | DualFacet | undefined
+	facetValue: FacetRef<string | number | number[]> | DualFacet | undefined,
 ) => {
 	// if facetValue is a string or an array of strings, it is a field reference and should be added the facet scale domain
 	if (typeof facetValue === 'string' || (Array.isArray(facetValue) && facetValue.length)) {
@@ -147,7 +147,7 @@ export const generateScale = (type: SupportedScaleType, axis: AxisType, props?: 
 export const getDefaultScale = (
 	scaleType: SupportedScaleType,
 	axis: AxisType,
-	chartOrientation: Orientation = 'vertical'
+	chartOrientation: Orientation = 'vertical',
 ): Scale => {
 	const orientationToAxis: { [key in Orientation]: AxisType } = {
 		vertical: 'x',
@@ -195,8 +195,23 @@ export const getPadding = (type: SupportedScaleType | 'band') => {
 	}
 };
 
+/**
+ * Gets the name of the scale based on the axis and type
+ * @param axis
+ * @param type
+ * @returns scale name
+ */
+export const getScaleName = (axis: AxisType, type: SupportedScaleType) => toCamelCase(`${axis} ${type}`);
+
+export const getOrdinalScale = (name: string, range: OrdinalScale['range']): OrdinalScale => ({
+	name,
+	type: 'ordinal',
+	range,
+	domain: { data: TABLE, fields: [] },
+});
+
 const isScaleMultiFieldsRef = (
-	domain: (null | string | number | boolean | SignalRef)[] | ScaleData | SignalRef | undefined
+	domain: (null | string | number | boolean | SignalRef)[] | ScaleData | SignalRef | undefined,
 ): domain is ScaleMultiFieldsRef => {
 	return Boolean(domain && !Array.isArray(domain) && 'data' in domain && 'fields' in domain);
 };

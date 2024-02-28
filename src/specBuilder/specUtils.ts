@@ -27,7 +27,16 @@ import {
 } from 'types';
 import { Data, Scale, ScaleType, Spec, ValuesData } from 'vega';
 
-import { DEFAULT_TRANSFORMED_TIME_DIMENSION, FILTERED_TABLE, MARK_ID, PREVIOUS_TABLE, TABLE } from '../constants';
+import {
+	COLOR_SCALE,
+	DEFAULT_TRANSFORMED_TIME_DIMENSION,
+	FILTERED_TABLE,
+	LINE_TYPE_SCALE,
+	MARK_ID,
+	OPACITY_SCALE,
+	PREVIOUS_TABLE,
+	TABLE,
+} from '../constants';
 import { SanitizedSpecProps } from '../types';
 import { useRef, useEffect } from 'react';
 
@@ -70,16 +79,20 @@ export const getFacetsFromProps = ({
  * @returns
  */
 export const getFacetsFromScales = (scales: Scale[] = []): string[] => {
-	const facets = ['color', 'lineType', 'opacity', 'secondaryColor', 'secondaryLineType', 'secondaryOpacity'].reduce(
-		(acc, cur) => {
-			const scale = scales.find((scale) => scale.name === cur);
-			if (scale?.domain && 'fields' in scale.domain && scale.domain.fields.length) {
-				return [...acc, scale.domain.fields[0].toString()];
-			}
-			return acc;
-		},
-		[] as string[]
-	);
+	const facets = [
+		COLOR_SCALE,
+		LINE_TYPE_SCALE,
+		OPACITY_SCALE,
+		'secondaryColor',
+		'secondaryLineType',
+		'secondaryOpacity',
+	].reduce((acc, cur) => {
+		const scale = scales.find((scale) => scale.name === cur);
+		if (scale?.domain && 'fields' in scale.domain && scale.domain.fields.length) {
+			return [...acc, scale.domain.fields[0].toString()];
+		}
+		return acc;
+	}, [] as string[]);
 
 	// only want the unique facets
 	return [...new Set(facets)];

@@ -9,7 +9,15 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { DEFAULT_COLOR_SCHEME, DEFAULT_METRIC, DEFAULT_TIME_DIMENSION, FILTERED_TABLE } from '@constants';
+import {
+	COLOR_SCALE,
+	DEFAULT_COLOR_SCHEME,
+	DEFAULT_METRIC,
+	DEFAULT_TIME_DIMENSION,
+	FILTERED_TABLE,
+	LINE_TYPE_SCALE,
+	OPACITY_SCALE,
+} from '@constants';
 import { hasInteractiveChildren, hasPopover } from '@specBuilder/marks/markUtils';
 import {
 	getMetricRangeGroupMarks,
@@ -17,12 +25,7 @@ import {
 	getMetricRanges,
 } from '@specBuilder/metricRange/metricRangeUtils';
 import { getFacetsFromProps } from '@specBuilder/specUtils';
-import {
-	addTrendlineData,
-	getTrendlineMarks,
-	getTrendlineScales,
-	getTrendlineSignals,
-} from '@specBuilder/trendline/trendlineUtils';
+import { addTrendlineData, getTrendlineMarks, getTrendlineScales, getTrendlineSignals } from '@specBuilder/trendline';
 import { sanitizeMarkChildren, toCamelCase } from '@utils';
 import { produce } from 'immer';
 import { ColorScheme, LineProps, LineSpecProps, MarkChildElement } from 'types';
@@ -56,7 +59,7 @@ export const addLine = produce<Spec, [LineProps & { colorScheme?: ColorScheme; i
 			opacity = { value: 1 },
 			scaleType = 'time',
 			...props
-		}
+		},
 	) => {
 		const sanitizedChildren = sanitizeMarkChildren(children);
 		const lineName = toCamelCase(name || `line${index}`);
@@ -83,7 +86,7 @@ export const addLine = produce<Spec, [LineProps & { colorScheme?: ColorScheme; i
 		spec.marks = addLineMarks(spec.marks ?? [], lineProps);
 
 		return spec;
-	}
+	},
 );
 
 export const addData = produce<Data[], [LineSpecProps]>((data, props) => {
@@ -124,11 +127,11 @@ export const setScales = produce<Scale[], [LineSpecProps]>((scales, props) => {
 	// add dimension scale
 	addContinuousDimensionScale(scales, { scaleType, dimension, padding });
 	// add color to the color domain
-	addFieldToFacetScaleDomain(scales, 'color', color);
+	addFieldToFacetScaleDomain(scales, COLOR_SCALE, color);
 	// add lineType to the lineType domain
-	addFieldToFacetScaleDomain(scales, 'lineType', lineType);
+	addFieldToFacetScaleDomain(scales, LINE_TYPE_SCALE, lineType);
 	// add opacity to the opacity domain
-	addFieldToFacetScaleDomain(scales, 'opacity', opacity);
+	addFieldToFacetScaleDomain(scales, OPACITY_SCALE, opacity);
 	// find the linear scale and add our fields to it
 	addMetricScale(scales, getMetricKeys(metric, children, name));
 	// add trendline scales
