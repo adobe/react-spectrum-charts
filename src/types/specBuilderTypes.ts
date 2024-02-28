@@ -175,4 +175,7 @@ export interface TrendlineSpecProps
 	extends PartiallyRequired<TrendlineProps & { metric?: string; name: string }, TrendlinePropsWithDefaults> {
 	children: ChartTooltipElement[];
 	dimensionScaleType: RscScaleType;
+	isDimensionNormalized: boolean;
+	trendlineDimension: string;
+	trendlineMetric: string;
 }

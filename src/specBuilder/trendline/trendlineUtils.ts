@@ -25,7 +25,7 @@ import {
 	TrendlineSpecProps,
 	WindowMethod,
 } from 'types';
-import { ScaleType, SignalRef } from 'vega';
+import { SignalRef } from 'vega';
 
 /** These are all the spec props that currently support trendlines */
 export type TrendlineParentProps = LineSpecProps | ScatterSpecProps;
@@ -64,22 +64,36 @@ export const applyTrendlinePropDefaults = (
 		...props
 	}: TrendlineProps,
 	index: number,
-): TrendlineSpecProps => ({
-	children: sanitizeTrendlineChildren(children),
-	displayOnHover,
-	dimensionExtent: dimensionExtent ?? dimensionRange,
-	dimensionRange,
-	dimensionScaleType: getTrendlineScaleType(markProps, orientation),
-	highlightRawPoint,
-	lineType,
-	lineWidth,
-	method,
-	metric: TRENDLINE_VALUE,
-	name: `${markProps.name}Trendline${index}`,
-	opacity,
-	orientation,
-	...props,
-});
+): TrendlineSpecProps => {
+	const dimensionScaleType = getTrendlineScaleType(markProps, orientation);
+	const isDimensionNormalized =
+		dimensionScaleType === 'time' && isRegressionMethod(method) && orientation === 'horizontal';
+	const { trendlineDimension, trendlineMetric } = getTrendlineDimensionMetric(
+		markProps.dimension,
+		markProps.metric,
+		orientation,
+		isDimensionNormalized,
+	);
+	return {
+		children: sanitizeTrendlineChildren(children),
+		displayOnHover,
+		dimensionExtent: dimensionExtent ?? dimensionRange,
+		dimensionRange,
+		dimensionScaleType,
+		highlightRawPoint,
+		isDimensionNormalized,
+		lineType,
+		lineWidth,
+		method,
+		metric: TRENDLINE_VALUE,
+		name: `${markProps.name}Trendline${index}`,
+		opacity,
+		orientation,
+		trendlineDimension,
+		trendlineMetric,
+		...props,
+	};
+};
 
 /**
  * Gets the metric and dimension for the trendline, taking into account the orientation.
@@ -151,15 +165,6 @@ export const isWindowMethod = (method: TrendlineMethod): method is WindowMethod 
  */
 export const isPolynomialMethod = (method: TrendlineMethod): boolean =>
 	method.startsWith('polynomial-') || ['linear', 'quadratic'].includes(method);
-
-/**
- * determines if the supplied method is a regression method that uses the normalized dimension
- * @see https://vega.github.io/vega/docs/transforms/regression/
- * @param method
- * @returns boolean
- */
-export const trendlineUsesNormalizedDimension = (method: TrendlineMethod, scaleType: ScaleType | undefined): boolean =>
-	scaleType === 'time' && isRegressionMethod(method);
 
 /**
  * determines if any trendlines use the normalized dimension

@@ -37,6 +37,7 @@ export const defaultTrendlineProps: TrendlineSpecProps = {
 	dimensionScaleType: 'time',
 	displayOnHover: false,
 	highlightRawPoint: false,
+	isDimensionNormalized: false,
 	lineType: 'dashed',
 	lineWidth: 'M',
 	method: 'average',
@@ -44,4 +45,6 @@ export const defaultTrendlineProps: TrendlineSpecProps = {
 	name: 'line0Trendline0',
 	opacity: 1,
 	orientation: 'horizontal',
+	trendlineDimension: DEFAULT_TIME_DIMENSION,
+	trendlineMetric: DEFAULT_METRIC,
 };

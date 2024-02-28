@@ -75,7 +75,13 @@ describe('getRegressionTransform()', () => {
 	test('should use ${dimension}Normalized as ouput dimension if scaleType is time', () => {
 		const transform = getRegressionTransform(
 			{ ...defaultLineProps, dimension: 'x', scaleType: 'time' },
-			{ ...defaultTrendlineProps, method: 'linear' },
+			{
+				...defaultTrendlineProps,
+				dimensionScaleType: 'time',
+				isDimensionNormalized: true,
+				method: 'linear',
+				trendlineDimension: 'xNormalized',
+			},
 			true,
 		);
 		expect(transform.as).toHaveLength(2);

@@ -27,13 +27,7 @@ import {
 	Transforms,
 	WindowTransform,
 } from 'vega';
-import {
-	TrendlineParentProps,
-	getPolynomialOrder,
-	getRegressionExtent,
-	getTrendlineDimensionMetric,
-	isPolynomialMethod,
-} from './trendlineUtils';
+import { TrendlineParentProps, getPolynomialOrder, getRegressionExtent, isPolynomialMethod } from './trendlineUtils';
 
 /**
  * Gets the aggreagate transform used for calculating the average trendline
@@ -44,11 +38,10 @@ import {
  */
 export const getAggregateTransform = (
 	markProps: TrendlineParentProps,
-	{ method, orientation }: TrendlineSpecProps,
+	{ method, trendlineDimension, trendlineMetric }: TrendlineSpecProps,
 	isHighResolutionData: boolean,
 ): AggregateTransform | JoinAggregateTransform => {
-	const { color, dimension, lineType, metric } = markProps;
-	const { trendlineDimension, trendlineMetric } = getTrendlineDimensionMetric(dimension, metric, orientation, false);
+	const { color, lineType } = markProps;
 	const { facets } = getFacetsFromProps({ color, lineType });
 	const operations: Record<AggregateMethod, AggregateOp> = {
 		average: 'mean',
@@ -86,16 +79,10 @@ export const getRegressionTransform = (
 	trendlineProps: TrendlineSpecProps,
 	isHighResolutionData: boolean,
 ): RegressionTransform => {
-	const { color, dimension, lineType, metric } = markProps;
-	const { dimensionExtent, dimensionScaleType, method, name, orientation } = trendlineProps;
+	const { color, lineType } = markProps;
+	const { dimensionExtent, isDimensionNormalized, method, name, trendlineDimension, trendlineMetric } =
+		trendlineProps;
 	const { facets } = getFacetsFromProps({ color, lineType });
-	const isDimensionNormalized = dimensionScaleType === 'time';
-	const { trendlineDimension, trendlineMetric } = getTrendlineDimensionMetric(
-		dimension,
-		metric,
-		orientation,
-		isDimensionNormalized,
-	);
 
 	let regressionMethod: RegressionMethod | undefined;
 	let order: number | undefined;
@@ -137,11 +124,11 @@ export const getRegressionTransform = (
  */
 export const getWindowTransform = (
 	markProps: TrendlineParentProps,
-	{ method, orientation }: TrendlineSpecProps,
+	{ method, trendlineMetric }: TrendlineSpecProps,
 ): WindowTransform => {
 	const frameWidth = parseInt(method.split('-')[1]);
 
-	const { color, dimension, lineType, metric } = markProps;
+	const { color, lineType } = markProps;
 	const { facets } = getFacetsFromProps({ color, lineType });
 
 	if (isNaN(frameWidth) || frameWidth < 1) {
@@ -150,7 +137,6 @@ export const getWindowTransform = (
 		);
 	}
 
-	const { trendlineMetric } = getTrendlineDimensionMetric(dimension, metric, orientation, false);
 	return {
 		type: 'window',
 		ops: ['mean'],
