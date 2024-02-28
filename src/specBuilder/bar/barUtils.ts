@@ -107,6 +107,8 @@ export const getDodgedDimensionEncodings = (props: BarSpecProps): RectEncodeEntr
 
 	const endKey = `${startKey}2`;
 
+	console.log('Metric', metric, 'start key', startKey, 'properties', props);
+
 	return {
 		[dimensionAxis]: { scale, field },
 		[startKey]: animations !== false ? getAnimationMarks(dimension, startMetric, data, previousData, scaleKey) : undefined,
