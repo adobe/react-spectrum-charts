@@ -27,7 +27,7 @@ const parameters: Parameters = {
 	controls: {
 		expanded: true,
 		// data is huge so we don't want to show it in the controls
-		exclude: ['data'],
+		// exclude: ['data'],
 	},
 	backgrounds: { disable: true },
 	docs: {

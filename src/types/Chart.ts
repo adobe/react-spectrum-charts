@@ -75,7 +75,9 @@ export interface SpecProps {
 export interface SanitizedSpecProps extends SpecProps {
 	/** Children with all non-RSC components removed */
 	children: ChartChildElement[];
+	previousData?: ChartData[];
 	data?: ChartData[];
+	animations?: boolean;
 }
 
 export type Orientation = 'vertical' | 'horizontal';
@@ -90,7 +92,8 @@ export interface SharedChartProps extends SpecProps {
 	config?: Config;
 	/** Chart data array. */
 	data: ChartData[];
-	/** Enables debug mode which will console log things like the generated vega spec and the datums for tooltips. */
+	previousData?: ChartData[];
+	animations?: boolean;
 	debug?: boolean;
 	/** Chart height */
 	height?: number;

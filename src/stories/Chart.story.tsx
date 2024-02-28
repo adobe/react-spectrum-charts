@@ -12,13 +12,13 @@
 import React, { ReactElement } from 'react';
 
 import useChartProps from '@hooks/useChartProps';
-import { Axis, Chart, Line } from '@rsc';
+import { Area, Axis, Chart, Line } from '@rsc';
 import { StoryFn } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
 
 import './Chart.story.css';
 import { ChartBarStory } from './ChartBarStory';
-import { data, workspaceTrendsData } from './data/data';
+import { areaData, data, newDataArray1, newDataArray1WithStaticPoints, workspaceTrendsData } from './data/data';
 
 export default {
 	title: 'RSC/Chart',
@@ -43,6 +43,33 @@ const ChartTimeStory: StoryFn<typeof Chart> = (args): ReactElement => {
 			<Axis position="bottom" baseline ticks labelFormat="time" />
 			<Axis position="left" grid numberFormat=",.2f" />
 			<Line dimension="datetime" metric="value" color="series" scaleType="time" />
+		</Chart>
+	);
+};
+
+const SingleLineStory: StoryFn<typeof Chart> = (args): ReactElement => {
+	const props = useChartProps(args);
+	return (
+		<Chart {...props}>
+			<Line metric="y" dimension="x" scaleType="linear"/>
+		</Chart>
+	);
+}
+
+const SingleLineWithStaticPointsStory: StoryFn<typeof Chart> = (args): ReactElement => {
+	const props = useChartProps(args);
+	return (
+		<Chart {...props}>
+			<Line metric="y" dimension="x" scaleType="linear" staticPoint="point"/>
+		</Chart>
+	);
+}
+
+const BasicAreaStory: StoryFn<typeof Chart> = (args): ReactElement => {
+	const chartProps = useChartProps(args);
+	return (
+		<Chart {...chartProps} debug>
+			<Area metric='maxTemperature' />
 		</Chart>
 	);
 };
@@ -83,4 +110,17 @@ Width.args = {
 	data,
 };
 
-export { Basic, BackgroundColor, Config, Locale, Width };
+const SingleLine = bindWithProps(SingleLineStory);
+SingleLine.args = {
+	data: newDataArray1
+}
+
+const SingleLineWithStaticPoints = bindWithProps(SingleLineWithStaticPointsStory);
+SingleLineWithStaticPoints.args = { data: newDataArray1WithStaticPoints };
+
+const BasicArea = bindWithProps(BasicAreaStory);
+BasicArea.args = {
+	data: areaData
+}
+
+export { Basic, BackgroundColor, Config, Locale, Width, SingleLine, SingleLineWithStaticPoints, BasicArea };

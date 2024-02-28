@@ -28,7 +28,7 @@ import { getFacetsFromProps } from '@specBuilder/specUtils';
 import { addTrendlineData, getTrendlineMarks, getTrendlineScales, getTrendlineSignals } from '@specBuilder/trendline';
 import { sanitizeMarkChildren, toCamelCase } from '@utils';
 import { produce } from 'immer';
-import { ColorScheme, LineProps, LineSpecProps, MarkChildElement } from 'types';
+import { ChartData, ColorScheme, LineProps, LineSpecProps, MarkChildElement } from 'types';
 import { Data, Mark, Scale, Signal, Spec } from 'vega';
 
 import { addTimeTransform, getTableData } from '../data/dataUtils';
@@ -44,7 +44,7 @@ import { getLineHoverMarks, getLineMark } from './lineMarkUtils';
 import { getLineStaticPoint } from './linePointUtils';
 import { getInteractiveMarkName, getPopoverMarkName } from './lineUtils';
 
-export const addLine = produce<Spec, [LineProps & { colorScheme?: ColorScheme; index?: number }]>(
+export const addLine = produce<Spec, [LineProps & { colorScheme?: ColorScheme; index?: number, data?: ChartData[], previousData?: ChartData[], animations?: boolean}]>(
 	(
 		spec,
 		{
@@ -140,6 +140,8 @@ export const setScales = produce<Scale[], [LineSpecProps]>((scales, props) => {
 });
 
 // The order that marks are added is important since it determines the draw order.
+// TODO: LineProps & { colorScheme?: ColorScheme; index?: number }. Do we need this? If we move the useRef previousData check up is this still important?
+
 export const addLineMarks = produce<Mark[], [LineSpecProps]>((marks, props) => {
 	const { name, children, color, lineType, opacity, staticPoint } = props;
 

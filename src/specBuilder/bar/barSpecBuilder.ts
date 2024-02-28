@@ -36,7 +36,7 @@ import { getGenericSignal, getUncontrolledHoverSignal, hasSignalByName } from '@
 import { getFacetsFromProps } from '@specBuilder/specUtils';
 import { sanitizeMarkChildren, toCamelCase } from '@utils';
 import { produce } from 'immer';
-import { BarProps, BarSpecProps, ColorScheme } from 'types';
+import { BarProps, BarSpecProps, ChartData, ColorScheme } from 'types';
 import { BandScale, Data, FormulaTransform, Mark, OrdinalScale, Scale, Signal, Spec } from 'vega';
 
 import { getBarPadding, getScaleValues, isDodgedAndStacked } from './barUtils';
@@ -44,7 +44,7 @@ import { getDodgedMark } from './dodgedBarUtils';
 import { getDodgedAndStackedBarMark, getStackedBarMarks } from './stackedBarUtils';
 import { addTrellisScale, getTrellisGroupMark, isTrellised } from './trellisedBarUtils';
 
-export const addBar = produce<Spec, [BarProps & { colorScheme?: ColorScheme; index?: number }]>(
+export const addBar = produce<Spec, [BarProps & { colorScheme?: ColorScheme; index?: number, data?: ChartData[], previousData?: ChartData[], animations?: boolean }]>(
 	(
 		spec,
 		{

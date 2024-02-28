@@ -29,14 +29,14 @@ import {
 import { spectrumColors } from '@themes';
 import { sanitizeMarkChildren, toCamelCase } from '@utils';
 import { produce } from 'immer';
-import { AreaProps, AreaSpecProps, ColorScheme, MarkChildElement, ScaleType } from 'types';
+import { AreaProps, AreaSpecProps, ChartData, ColorScheme, MarkChildElement, ScaleType } from 'types';
 import { Data, Mark, Scale, Signal, Spec } from 'vega';
 
 import { addTimeTransform, getFilteredTableData, getTableData, getTransformSort } from '../data/dataUtils';
 import { addContinuousDimensionScale, addFieldToFacetScaleDomain, addMetricScale } from '../scale/scaleSpecBuilder';
 import { getAreaMark, getX } from './areaUtils';
 
-export const addArea = produce<Spec, [AreaProps & { colorScheme?: ColorScheme; index?: number }]>(
+export const addArea = produce<Spec, [AreaProps & { colorScheme?: ColorScheme; index?: number, previousData?: ChartData[], data?: ChartData[], animations?: boolean }]>(
 	(
 		spec,
 		{
@@ -175,7 +175,8 @@ export const setScales = produce<Scale[], [AreaSpecProps]>(
 );
 
 export const addAreaMarks = produce<Mark[], [AreaSpecProps]>((marks, props) => {
-	const { name, color, colorScheme, metric, dimension, scaleType, opacity, children } = props;
+	// TODO: Finish area implementation
+	const { name, color, colorScheme, metric, dimension, scaleType, opacity, children, data, previousData, animations } = props;
 	let { metricStart, metricEnd } = props;
 	let isStacked = false;
 	if (!metricEnd || !metricStart) {
@@ -202,6 +203,7 @@ export const addAreaMarks = produce<Mark[], [AreaSpecProps]>((marks, props) => {
 					children,
 					metricStart,
 					metricEnd,
+					animations,
 					isStacked,
 					dimension,
 					scaleType,
@@ -213,6 +215,7 @@ export const addAreaMarks = produce<Mark[], [AreaSpecProps]>((marks, props) => {
 		...getSelectedAreaMarks({ children, name, scaleType, color, dimension, metricEnd, metricStart }),
 		...getHoverMarks(props),
 	);
+	// TODO: ADD ANIMATION MARK CHANGE - (choose scale/animation property on data if not given one)
 	return marks;
 });
 

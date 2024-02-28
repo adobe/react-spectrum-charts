@@ -30,6 +30,7 @@ import {
 	getSelectRingPoint,
 } from './linePointUtils';
 import { LineMarkProps } from './lineUtils';
+import { getAnimationMarks } from '@specBuilder/specUtils';
 
 /**
  * generates a line mark
@@ -37,8 +38,9 @@ import { LineMarkProps } from './lineUtils';
  * @param dataSource
  * @returns LineMark
  */
+
 export const getLineMark = (lineMarkProps: LineMarkProps, dataSource: string): LineMark => {
-	const { color, colorScheme, dimension, lineType, lineWidth, metric, name, opacity, scaleType } = lineMarkProps;
+	const { color, colorScheme, dimension, lineType, lineWidth, metric, name, opacity, scaleType, data, previousData, animations } = lineMarkProps;
 
 	return {
 		name,
@@ -58,6 +60,7 @@ export const getLineMark = (lineMarkProps: LineMarkProps, dataSource: string): L
 				// but it may change the x position if it causes the chart to resize
 				x: getXProductionRule(scaleType, dimension),
 				opacity: getLineOpacity(lineMarkProps),
+				y: animations !== false ? getAnimationMarks(dimension, metric, data, previousData) : undefined
 			},
 		},
 	};

@@ -18,3 +18,5 @@ test-report.xml
 # exclude vscode config except for our shared snippets
 .vscode/*
 !.vscode/reactSpectrumCharts.code-snippets
+
+.idea/
