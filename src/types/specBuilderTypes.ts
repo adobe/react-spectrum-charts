@@ -17,7 +17,6 @@ import {
 	AxisAnnotationProps,
 	AxisProps,
 	BarProps,
-	ChartTooltipElement,
 	ColorScheme,
 	DonutProps,
 	FacetRef,
@@ -26,8 +25,11 @@ import {
 	LineWidth,
 	MarkChildElement,
 	MetricRangeProps,
+	Orientation,
 	ScaleType as RscScaleType,
 	ScatterProps,
+	TrendlineAnnotationProps,
+	TrendlineChildElement,
 	TrendlineProps,
 } from './Chart';
 
@@ -173,9 +175,23 @@ type TrendlinePropsWithDefaults =
 
 export interface TrendlineSpecProps
 	extends PartiallyRequired<TrendlineProps & { metric?: string; name: string }, TrendlinePropsWithDefaults> {
-	children: ChartTooltipElement[];
+	children: TrendlineChildElement[];
 	dimensionScaleType: RscScaleType;
 	isDimensionNormalized: boolean;
 	trendlineDimension: string;
 	trendlineMetric: string;
+}
+
+type TrendlineAnnotationPropsWithDefaults = 'dimensionValue' | 'numberFormat';
+
+export interface TrendlineAnnotationSpecProps
+	extends PartiallyRequired<TrendlineAnnotationProps, TrendlineAnnotationPropsWithDefaults> {
+	markName: string;
+	name: string;
+	trendlineDimension: string;
+	trendlineDimensionExtent: TrendlineSpecProps['dimensionExtent'];
+	trendlineDimensionScaleType: RscScaleType;
+	trendlineName: string;
+	trendlineOrientation: Orientation;
+	trendlineWidth: number;
 }

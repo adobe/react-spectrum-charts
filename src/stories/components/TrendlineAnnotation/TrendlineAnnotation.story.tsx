@@ -9,34 +9,65 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import React, { ReactElement } from "react";
+import { ReactElement } from 'react';
 
 import useChartProps from '@hooks/useChartProps';
-import { TrendlineAnnotation, Chart } from "@rsc";
-import { StoryFn } from "@storybook/react";
+import { Axis, Chart, Legend, Scatter, Title, Trendline, TrendlineAnnotation, TrendlineProps } from '@rsc';
+import { characterData } from '@stories/data/marioKartData';
+import { StoryFn } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
 
 export default {
-    title: "RSC/TrendlineAnnotation",
-    component: TrendlineAnnotation,
+	title: 'RSC/Trendline/TrendlineAnnotation',
+	component: TrendlineAnnotation,
+};
+
+const trendlineProps: TrendlineProps = {
+	method: 'median',
+	dimensionExtent: ['domain', 'domain'],
+	lineWidth: 'S',
 };
 
 const TrendlineAnnotationStory: StoryFn<typeof TrendlineAnnotation> = (args): ReactElement => {
-	// TODO: add data
-    const chartProps = useChartProps({ data: [], width: 600 });
+	const chartProps = useChartProps({ data: characterData, height: 500, width: 500, lineWidths: [1, 2, 3] });
 
-    // TODO: use TrendlineAnnotation correctly
-    return (
-        <Chart {...chartProps}>
-            <TrendlineAnnotation {...args} />;
-        </Chart>
-    )
-
+	return (
+		<Chart {...chartProps}>
+			<Axis position="bottom" grid ticks baseline title="Speed (normal)" />
+			<Axis position="left" grid ticks baseline title="Handling (normal)" />
+			<Scatter color="weightClass" dimension="speedNormal" metric="handlingNormal">
+				<Trendline {...trendlineProps}>
+					<TrendlineAnnotation {...args} />
+				</Trendline>
+			</Scatter>
+			<Legend title="Weight class" highlight position="right" />
+			<Title text="Mario Kart 8 Character Data" />
+		</Chart>
+	);
 };
 
-// TODO: add component props and additional stories here
 const Basic = bindWithProps(TrendlineAnnotationStory);
-Basic.args = {};
 
+const DimensionValue = bindWithProps(TrendlineAnnotationStory);
+DimensionValue.args = {
+	dimensionValue: 2,
+};
 
-export { Basic };
+const NumberFormat = bindWithProps(TrendlineAnnotationStory);
+NumberFormat.args = {
+	numberFormat: '.2f',
+};
+
+const Prefix = bindWithProps(TrendlineAnnotationStory);
+Prefix.args = {
+	prefix: 'Speed: ',
+};
+
+const Supreme = bindWithProps(TrendlineAnnotationStory);
+Supreme.args = {
+	dimensionValue: 'start',
+	numberFormat: '.2f',
+	prefix: 'Speed: ',
+};
+
+export { Basic, DimensionValue, NumberFormat, Prefix, Supreme };

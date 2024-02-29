@@ -571,8 +571,8 @@ export interface TrendlineProps {
 }
 
 export interface TrendlineAnnotationProps {
-	/** horizontal or vertical alignment of the text annotation */
-	align?: 'center' | 'start' | 'end';
+	/** where along the dimension scale to label the trendline value */
+	dimensionValue?: number | 'start' | 'end';
 	/** d3 number format specifier. Only valid if labelFormat is linear or undefined.
 	 *
 	 * @see https://d3js.org/d3-format#locale_format
@@ -580,8 +580,6 @@ export interface TrendlineAnnotationProps {
 	numberFormat?: string;
 	/** text that will be prepended to the trendline value */
 	prefix?: string;
-	/** position of the text relative to the point that it is associated with */
-	position?: Position;
 }
 
 /** trendline methods that use a joinaggregate transform */

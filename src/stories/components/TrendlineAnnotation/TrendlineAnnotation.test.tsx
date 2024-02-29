@@ -9,28 +9,66 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import React from "react";
 
 import '@matchMediaMock';
 import { TrendlineAnnotation } from '@rsc';
-import {
-	findChart,
-	render,
-} from '@test-utils';
+import { allElementsHaveAttributeValue, findAllMarksByGroupName, findChart, render } from '@test-utils';
 
-import { Basic } from "./TrendlineAnnotation.story";
+import { Basic, DimensionValue, NumberFormat, Prefix } from './TrendlineAnnotation.story';
 
-describe("TrendlineAnnotation", () => {
+describe('TrendlineAnnotation', () => {
 	// TrendlineAnnotation is not a real React component. This is test just provides test coverage for sonarqube
 	test('TrendlineAnnotation pseudo element', () => {
 		render(<TrendlineAnnotation />);
 	});
 
-	test("Basic renders properly", async () => {
+	test('Basic renders properly', async () => {
 		render(<Basic {...Basic.args} />);
+
 		const chart = await findChart();
 		expect(chart).toBeInTheDocument();
-		// TODO: add expect statements for the basic behavior of TrendlineAnnotation here
+
+		const labels = await findAllMarksByGroupName(chart, 'scatter0Trendline0Annotation0', 'text');
+		expect(labels).toHaveLength(3);
+		expect(allElementsHaveAttributeValue(labels, 'opacity', 1)).toBeTruthy();
+		expect(labels[0]).toHaveTextContent('4.5');
+		expect(labels[1]).toHaveTextContent('3.75');
+		expect(labels[2]).toHaveTextContent('3');
 	});
-		// TODO: add tests for each variation of TrendlineAnnotation here
+
+	test('should render DimensionValue correctly', async () => {
+		render(<DimensionValue {...DimensionValue.args} />);
+
+		const chart = await findChart();
+		expect(chart).toBeInTheDocument();
+
+		const labels = await findAllMarksByGroupName(chart, 'scatter0Trendline0Annotation0', 'text');
+		expect(labels).toHaveLength(3);
+		expect(allElementsHaveAttributeValue(labels, 'opacity', 1)).toBeTruthy();
+	});
+
+	test('should render NumberFormat', async () => {
+		render(<NumberFormat {...NumberFormat.args} />);
+		const chart = await findChart();
+		expect(chart).toBeInTheDocument();
+
+		const labels = await findAllMarksByGroupName(chart, 'scatter0Trendline0Annotation0', 'text');
+		expect(labels).toHaveLength(3);
+		expect(allElementsHaveAttributeValue(labels, 'opacity', 1)).toBeTruthy();
+		expect(labels[0]).toHaveTextContent('4.50');
+		expect(labels[1]).toHaveTextContent('3.75');
+		expect(labels[2]).toHaveTextContent('3.00');
+	});
+
+	test('should render Prefix', async () => {
+		render(<Prefix {...Prefix.args} />);
+		const chart = await findChart();
+		expect(chart).toBeInTheDocument();
+
+		const labels = await findAllMarksByGroupName(chart, 'scatter0Trendline0Annotation0', 'text');
+		expect(labels).toHaveLength(3);
+		expect(labels[0]).toHaveTextContent('Speed: 4.5');
+		expect(labels[1]).toHaveTextContent('Speed: 3.75');
+		expect(labels[2]).toHaveTextContent('Speed: 3');
+	});
 });

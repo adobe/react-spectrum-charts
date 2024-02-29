@@ -23,6 +23,7 @@ import {
 } from '@specBuilder/marks/markUtils';
 import { getScaleName } from '@specBuilder/scale/scaleSpecBuilder';
 import { getFacetsFromProps } from '@specBuilder/specUtils';
+import { getTrendlineAnnotationMarks } from '@specBuilder/trendlineAnnotation';
 import { ChartTooltipElement, Orientation, ScaleType, TrendlineSpecProps } from 'types';
 import { EncodeEntry, GroupMark, LineMark, NumericValueRef, RuleMark } from 'vega';
 import { TrendlineParentProps, getTrendlines, isAggregateMethod, isRegressionMethod } from './trendlineUtils';
@@ -52,6 +53,7 @@ export const getTrendlineMarks = (markProps: TrendlineParentProps): (GroupMark |
 				marks: [getTrendlineLineMark(markProps, trendlineProps)],
 			});
 		}
+		marks.push(...getTrendlineAnnotationMarks(trendlineProps, markProps.name));
 	}
 
 	if (trendlines.some((trendline) => hasTooltip(trendline.children))) {
@@ -147,7 +149,15 @@ export const getRuleXEncodings = (
 	};
 };
 
-const getStartDimensionExtentProductionRule = (
+/**
+ * Gets the production rule for the start dimension extent of a trendline
+ * @param startDimensionExtent
+ * @param dimension
+ * @param scale
+ * @param axis
+ * @returns
+ */
+export const getStartDimensionExtentProductionRule = (
 	startDimensionExtent: number | 'domain' | null,
 	dimension: string,
 	scale: string,
@@ -164,7 +174,15 @@ const getStartDimensionExtentProductionRule = (
 	}
 };
 
-const getEndDimensionExtentProductionRule = (
+/**
+ * gets the production rule for the end dimension extent of a trendline
+ * @param endDimensionExtent
+ * @param dimension
+ * @param scale
+ * @param axis
+ * @returns
+ */
+export const getEndDimensionExtentProductionRule = (
 	endDimensionExtent: number | 'domain' | null,
 	dimension: string,
 	scale: string,
@@ -257,7 +275,10 @@ const getTrendlineHoverMarks = (markProps: TrendlineParentProps, highlightRawPoi
 	const trendlines = getTrendlines(markProps);
 	const trendlineHoverProps: LineMarkProps = getLineMarkProps(markProps, trendlines[0], {
 		name: `${name}Trendline`,
-		children: trendlines.map((trendline) => trendline.children).flat(),
+		children: trendlines
+			.map((trendline) => trendline.children)
+			.flat()
+			.filter((child) => child.type === ChartTooltip) as ChartTooltipElement[],
 		metric: TRENDLINE_VALUE,
 	});
 
