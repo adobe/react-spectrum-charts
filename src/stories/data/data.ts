@@ -1071,14 +1071,16 @@ export const peopleAdoptionComboData = [
 ];
 
 export const peopleTotalComboData = [
-	{ datetime: 1667890800000, people: 10, total: 10 },
-	{ datetime: 1667977200000, people: 20, total: 30 },
-	{ datetime: 1668063600000, people: 30, total: 60 },
-	{ datetime: 1668150000000, people: 20, total: 80 },
-	{ datetime: 1668236400000, people: 10, total: 90 },
-	{ datetime: 1668322800000, people: 30, total: 120 },
-	{ datetime: 1668409200000, people: 2, total: 122 },
-export const newDataArray1WithStaticPoints = [
+  { datetime: 1667890800000, people: 10, total: 10 },
+  { datetime: 1667977200000, people: 20, total: 30 },
+  { datetime: 1668063600000, people: 30, total: 60 },
+  { datetime: 1668150000000, people: 20, total: 80 },
+  { datetime: 1668236400000, people: 10, total: 90 },
+  { datetime: 1668322800000, people: 30, total: 120 },
+  { datetime: 1668409200000, people: 2, total: 122 },
+];
+
+	export const newDataArray1WithStaticPoints = [
 	{ x: 0, y: 92, point: true },
 	{ x: 1, y: 56, point: true },
 	{ x: 2, y: 84, point: true },
@@ -1106,5 +1108,3 @@ export const areaData = [
 	{ datetime: 1668322800000, maxTemperature: 60, minTemperature: 45, series: 'Add Fallout' },
 	{ datetime: 1668409200000, maxTemperature: 64, minTemperature: 43, series: 'Add Fallout' },
 ];
-
-

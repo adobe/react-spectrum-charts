@@ -346,8 +346,9 @@ export const getAnimationMarks = (dimension: string, metric: string, data?: Char
 		signal: `datum.${metric} * timerValue`
 	};
 	if (data && previousData) {
-		const isCongruent = data.every((d) => previousData.some((pd) => d[dimension] === pd[dimension]));
-		if (isCongruent) {
+		const hasSameDimensions = data.every((d) => previousData.some((pd) => d[dimension] === pd[dimension]));
+		if (hasSameDimensions) {
+			// If data isn't similar enough, keep the animation from zero as shown above
 			markUpdate = {
 				scale,
 				signal: `(data('${PREVIOUS_TABLE}')[indexof(pluck(data('${PREVIOUS_TABLE}'), '${dimension}'), datum.${dimension})].${metric} * (1 - timerValue)) + (datum.${metric} * timerValue)`

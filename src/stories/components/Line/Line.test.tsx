@@ -43,6 +43,7 @@ import {
 	WithStaticPoints,
 	WithStaticPointsAndDialogs
 } from './Line.story';
+import { newDataArray1, newDataArray2 } from '@stories/data/data';
 
 describe('Line', () => {
 	// Line is not a real React component. This is test just provides test coverage for sonarqube
@@ -403,5 +404,20 @@ describe('Line', () => {
 			expect(onClick).toHaveBeenCalledTimes(1);
 			expect(onClick).toHaveBeenCalledWith(expect.objectContaining(workspaceTrendsData[4]));
 		});
-	});
+		});
+  describe('Line animation tests', async () => {
+    test('Line animates between congruent datasets', async () => {
+      const chartProps = {
+        data: newDataArray1
+      }
+      render(
+        <Chart {...chartProps}>
+          <Line dimension="x" metric="y" />
+        </Chart>
+      );
+      setTimeout(() => {
+        chartProps.data = newDataArray2;
+      }, 3000);
+    });
+  });
 });
