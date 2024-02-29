@@ -40,6 +40,7 @@ export const applyTrendlineAnnotationDefaults = (
 	{
 		dimensionExtent,
 		dimensionScaleType,
+		displayOnHover,
 		lineWidth,
 		orientation,
 		trendlineDimension,
@@ -48,6 +49,7 @@ export const applyTrendlineAnnotationDefaults = (
 	markName: string,
 ): TrendlineAnnotationSpecProps => ({
 	dimensionValue,
+	displayOnHover,
 	markName,
 	name: `${trendlineName}Annotation${index}`,
 	numberFormat,
@@ -112,10 +114,10 @@ const getTrendlineAnnotationPoints = (annotationProps: TrendlineAnnotationSpecPr
 		from: { data: `${trendlineName}_highResolutionData` },
 		encode: {
 			enter: {
+				opacity: { value: 0 },
+				size: { value: Math.pow(trendlineWidth, 2) },
 				x: getTrendlineAnnotationPointX(annotationProps),
 				y: getTrendlineAnnotationPointY(annotationProps),
-				fill: { value: 'transparent' },
-				size: { value: Math.pow(trendlineWidth, 2) },
 			},
 		},
 	};

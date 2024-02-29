@@ -59,8 +59,12 @@ const MultipleSegmentFeatureMatrixStory: StoryFn<typeof Chart> = (args): ReactEl
 			<Axis position="bottom" ticks grid title="Percentage of daily users (DAU)" labelFormat="percentage" />
 			<Axis position="left" ticks grid title="Average number of times per day" />
 			<Scatter dimension="dauPercent" metric="countAvg" color="segment">
-				<Trendline {...trendlineProps} displayOnHover orientation="horizontal" />
-				<Trendline {...trendlineProps} displayOnHover orientation="vertical" />
+				<Trendline {...trendlineProps} displayOnHover orientation="horizontal">
+					<TrendlineAnnotation prefix="Median times" numberFormat=".3" />
+				</Trendline>
+				<Trendline {...trendlineProps} displayOnHover orientation="vertical">
+					<TrendlineAnnotation prefix="Median %DAU" numberFormat=".2%" />
+				</Trendline>
 			</Scatter>
 			<Legend position="bottom" highlight />
 		</Chart>

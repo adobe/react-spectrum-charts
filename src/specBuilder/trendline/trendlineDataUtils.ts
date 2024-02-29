@@ -10,9 +10,9 @@
  * governing permissions and limitations under the License.
  */
 
-import { FILTERED_TABLE, MARK_ID } from '@constants';
+import { FILTERED_TABLE } from '@constants';
 import { getSeriesIdTransform, getTableData } from '@specBuilder/data/dataUtils';
-import { hasInteractiveChildren, hasPopover } from '@specBuilder/marks/markUtils';
+import { hasInteractiveChildren } from '@specBuilder/marks/markUtils';
 import { getFacetsFromProps } from '@specBuilder/specUtils';
 import { produce } from 'immer';
 import { TrendlineSpecProps } from 'types';
@@ -84,7 +84,6 @@ export const getTrendlineData = (markProps: TrendlineParentProps): SourceData[] 
 
 	if (trendlines.some((trendline) => hasInteractiveChildren(trendline.children))) {
 		data.push(concatenatedTrendlineData);
-		data.push(getHighlightTrendlineData(markName, trendlines));
 	}
 
 	return data;
@@ -208,32 +207,6 @@ const getWindowTrendlineData = (markProps: TrendlineParentProps, trendlineProps:
 		...getTrendlineDimensionRangeTransforms(markProps.dimension, trendlineProps.dimensionRange),
 	],
 });
-
-/**
- * gets the data source and transforms for highlighting trendlines
- * @param markName
- * @param trendlines
- * @returns Data
- */
-const getHighlightTrendlineData = (markName: string, trendlines: TrendlineSpecProps[]): SourceData => {
-	const selectSignal = `${markName}Trendline_selectedId`;
-	const hoverSignal = `${markName}Trendline_hoveredId`;
-	const trendlineHasPopover = trendlines.some((trendline) => hasPopover(trendline.children));
-	const expr = trendlineHasPopover
-		? `${selectSignal} === datum.${MARK_ID} || !${selectSignal} && ${hoverSignal} === datum.${MARK_ID}`
-		: `${hoverSignal} === datum.${MARK_ID}`;
-
-	return {
-		name: `${markName}Trendline_highlightedData`,
-		source: `${markName}_allTrendlineData`,
-		transform: [
-			{
-				type: 'filter',
-				expr,
-			},
-		],
-	};
-};
 
 /**
  * Gets the statistical transforms that will calculate the trendline values

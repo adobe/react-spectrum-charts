@@ -186,6 +186,7 @@ type TrendlineAnnotationPropsWithDefaults = 'dimensionValue' | 'numberFormat';
 
 export interface TrendlineAnnotationSpecProps
 	extends PartiallyRequired<TrendlineAnnotationProps, TrendlineAnnotationPropsWithDefaults> {
+	displayOnHover: boolean;
 	markName: string;
 	name: string;
 	trendlineDimension: string;

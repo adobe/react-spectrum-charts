@@ -92,9 +92,8 @@ describe('addTrendlineData()', () => {
 			...defaultLineProps,
 			children: [createElement(Trendline, {}, createElement(ChartTooltip))],
 		});
-		expect(trendlineData).toHaveLength(7);
+		expect(trendlineData).toHaveLength(6);
 		expect(trendlineData[5]).toHaveProperty('name', 'line0_allTrendlineData');
-		expect(trendlineData[6]).toHaveProperty('name', 'line0Trendline_highlightedData');
 	});
 
 	test('should add _highResolutionData if doing a regression method', () => {
