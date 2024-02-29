@@ -140,6 +140,11 @@ export const stackedLabelWithStyles = {
 			],
 			cornerRadius: { value: 4 },
 		},
+		update: {
+			fillOpacity: {
+				signal: 'timerValue === 1 ? 1 : 0'
+			}
+		}
 	},
 };
 
@@ -167,6 +172,11 @@ export const stackedLabelBackground = {
 			],
 			cornerRadius: { value: 4 },
 		},
+		update: {
+			fillOpacity: {
+				signal: 'timerValue === 1 ? 1 : 0'
+			}
+		}
 	},
 };
 
@@ -193,7 +203,12 @@ export const stackedLabelText = {
 			baseline: { value: 'middle' },
 			align: { value: 'center' },
 		},
-	},
+		update: {
+			fillOpacity: {
+				signal: 'timerValue === 1 ? 1 : 0'
+			}
+		}
+	}
 };
 
 export const dodgedLabelWithStyles = {
@@ -215,6 +230,11 @@ export const dodgedLabelWithStyles = {
 			],
 			fill: [{ test: `datum.textLabel && bandwidth('${dodgedXScale}') >= 48`, signal: BACKGROUND_COLOR }],
 		},
+		update: {
+			fillOpacity: {
+				signal: 'timerValue === 1 ? 1 : 0'
+			}
+		}
 	},
 };
 
@@ -237,6 +257,11 @@ export const dodgedLabelBackground = {
 			],
 			fill: [{ test: `datum.textLabel && bandwidth('${dodgedXScale}') >= 48`, signal: BACKGROUND_COLOR }],
 		},
+		update: {
+			fillOpacity: {
+				signal: 'timerValue === 1 ? 1 : 0'
+			}
+		}
 	},
 };
 
@@ -259,6 +284,11 @@ export const dodgedLabelText = {
 			],
 			text: [{ test: `bandwidth('${dodgedXScale}') >= 48`, field: 'textLabel' }],
 		},
+		update: {
+			fillOpacity: {
+				signal: 'timerValue === 1 ? 1 : 0'
+			}
+		}
 	},
 };
 

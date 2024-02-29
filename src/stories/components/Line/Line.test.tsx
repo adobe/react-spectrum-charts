@@ -390,34 +390,34 @@ describe('Line', () => {
 		});
 	});
 
-	describe('onClick callback', () => {
-		test('should call the onClick function with the expected data', async () => {
-			const onClick = jest.fn();
-			render(<OnClickStory {...OnClickStory.args} onClick={onClick} />);
+  describe('onClick callback', () => {
+    test('should call the onClick function with the expected data', async () => {
+      const onClick = jest.fn();
+      render(<OnClickStory {...OnClickStory.args} onClick={onClick} />);
 
-			const chart = await findChart();
-			expect(chart).toBeInTheDocument();
+      const chart = await findChart();
+      expect(chart).toBeInTheDocument();
 
-			const paths = await findAllMarksByGroupName(chart, 'line0_voronoi');
-			await clickNthElement(paths, 4);
+      const paths = await findAllMarksByGroupName(chart, 'line0_voronoi');
+      await clickNthElement(paths, 4);
 
-			expect(onClick).toHaveBeenCalledTimes(1);
-			expect(onClick).toHaveBeenCalledWith(expect.objectContaining(workspaceTrendsData[4]));
-		});
-		});
-  describe('Line animation tests', async () => {
-    test('Line animates between congruent datasets', async () => {
-      const chartProps = {
-        data: newDataArray1
-      }
-      render(
-        <Chart {...chartProps}>
-          <Line dimension="x" metric="y" />
-        </Chart>
-      );
-      setTimeout(() => {
-        chartProps.data = newDataArray2;
-      }, 3000);
+      expect(onClick).toHaveBeenCalledTimes(1);
+      expect(onClick).toHaveBeenCalledWith(expect.objectContaining(workspaceTrendsData[4]));
     });
+  });
+	describe('Line animation tests', () => {
+		test('Line animates between congruent datasets', async () => {
+			const chartProps = {
+				data: newDataArray1
+			}
+			render(
+				<Chart {...chartProps}>
+					<Line dimension="x" metric="y"/>
+				</Chart>
+			);
+			setTimeout(() => {
+				chartProps.data = newDataArray2;
+			}, 3000);
+		});
   });
 });

@@ -106,9 +106,9 @@ const defaultSpec = initializeSpec({
 				{
 					encode: {
 						enter: {
-							fill: { field: DEFAULT_COLOR, scale: COLOR_SCALE },
-							y: { field: 'value0', scale: 'yLinear' },
-							y2: { field: 'value1', scale: 'yLinear' },
+							fill: { field: DEFAULT_COLOR, scale: 'color' },
+							y: undefined,
+							y2: undefined,
 							stroke: { signal: BACKGROUND_COLOR },
 							strokeWidth: { value: 1.5 },
 							strokeJoin: { value: 'round' },
@@ -116,6 +116,14 @@ const defaultSpec = initializeSpec({
 						},
 						update: {
 							x: { field: DEFAULT_TRANSFORMED_TIME_DIMENSION, scale: 'xTime' },
+							y: {
+								scale: 'yLinear',
+								signal: 'datum.value0'
+							},
+							y2: {
+								scale: 'yLinear',
+								signal: 'datum.value1 * timerValue'
+							},
 							cursor: undefined,
 							fillOpacity: { value: 0.8 },
 							opacity: [DEFAULT_OPACITY_RULE],
@@ -317,6 +325,8 @@ describe('areaSpecBuilder', () => {
 								update: {
 									...groupMark.marks?.[0]?.encode?.update,
 									x: { scale: 'xLinear', field: DEFAULT_TIME_DIMENSION },
+									y: undefined,
+									y2: undefined
 								},
 							},
 						},
