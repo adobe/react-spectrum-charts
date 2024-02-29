@@ -32,7 +32,6 @@ import { Theme } from '@react-types/provider';
 
 import './Chart.css';
 import { ChartData, ChartHandle, ChartProps } from './types';
-import { newDataArray2 } from '@stories/data/data';
 
 interface PlaceholderContentProps {
 	data: ChartData[];
