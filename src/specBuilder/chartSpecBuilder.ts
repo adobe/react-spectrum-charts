@@ -182,8 +182,6 @@ export function buildSpec(props: SanitizedSpecProps) {
 			}
 		}, spec);
 
-	console.log('Full spec after marks added', spec);
-
 	// copy the spec so we don't mutate the original
 	spec = JSON.parse(JSON.stringify(spec));
 	spec.data = addData(spec.data ?? [], { facets: getFacetsFromScales(spec.scales) });
