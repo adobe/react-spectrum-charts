@@ -13,7 +13,7 @@
 import { ReactElement } from 'react';
 
 import useChartProps from '@hooks/useChartProps';
-import { Axis, Chart, Legend, Scatter, Trendline, TrendlineProps } from '@rsc';
+import { Axis, Chart, Legend, Scatter, Trendline, TrendlineAnnotation, TrendlineProps } from '@rsc';
 import { StoryFn } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
 
@@ -39,8 +39,12 @@ const FeatureMatrixStory: StoryFn<typeof Chart> = (args): ReactElement => {
 			<Axis position="bottom" ticks grid title="Percentage of daily users (DAU)" labelFormat="percentage" />
 			<Axis position="left" ticks grid title="Average number of times per day" />
 			<Scatter dimension="dauPercent" metric="countAvg" color="segment">
-				<Trendline {...trendlineProps} color="gray-900" orientation="horizontal" />
-				<Trendline {...trendlineProps} color="gray-900" orientation="vertical" />
+				<Trendline {...trendlineProps} color="gray-900" orientation="horizontal">
+					<TrendlineAnnotation prefix="Median times" numberFormat=".3" />
+				</Trendline>
+				<Trendline {...trendlineProps} color="gray-900" orientation="vertical">
+					<TrendlineAnnotation prefix="Median %DAU" numberFormat=".2%" />
+				</Trendline>
 			</Scatter>
 			<Legend position="bottom" highlight />
 		</Chart>

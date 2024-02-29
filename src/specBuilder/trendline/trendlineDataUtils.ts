@@ -35,7 +35,6 @@ import {
 	isAggregateMethod,
 	isRegressionMethod,
 	isWindowMethod,
-	trendlineUsesNormalizedDimension,
 } from './trendlineUtils';
 
 /**
@@ -104,9 +103,7 @@ export const getAggregateTrendlineData = (
 	facets: string[],
 ) => {
 	const data: SourceData[] = [];
-	const { dimension, metric } = markProps;
-	const { dimensionRange, name, orientation, children: trendlineChildren } = trendlineProps;
-	const { trendlineDimension } = getTrendlineDimensionMetric(dimension, metric, orientation, false);
+	const { dimensionRange, name, children: trendlineChildren, trendlineDimension } = trendlineProps;
 	const dimensionRangeTransforms = getTrendlineDimensionRangeTransforms(trendlineDimension, dimensionRange);
 	// high resolution data used for drawing the rule marks
 	data.push({
@@ -148,11 +145,11 @@ export const getRegressionTrendlineData = (
 	const { dimension, metric } = markProps;
 	const {
 		dimensionRange,
-		dimensionScaleType,
 		method,
 		name,
 		orientation,
 		children: trendlineChildren,
+		trendlineDimension,
 	} = trendlineProps;
 	const { trendlineDimension: standardTrendlineDimension } = getTrendlineDimensionMetric(
 		dimension,
@@ -161,9 +158,6 @@ export const getRegressionTrendlineData = (
 		false,
 	);
 	const dimensionRangeTransforms = getTrendlineDimensionRangeTransforms(standardTrendlineDimension, dimensionRange);
-	const isDimensionNormalized =
-		trendlineUsesNormalizedDimension(method, dimensionScaleType) && orientation === 'horizontal';
-	const { trendlineDimension } = getTrendlineDimensionMetric(dimension, metric, orientation, isDimensionNormalized);
 	// high resolution data used for drawing the smooth trendline
 	data.push({
 		name: `${name}_highResolutionData`,
@@ -252,8 +246,7 @@ export const getTrendlineStatisticalTransforms = (
 	trendlineProps: TrendlineSpecProps,
 	isHighResolutionData: boolean,
 ): Transforms[] => {
-	const { dimension, metric } = markProps;
-	const { method, orientation } = trendlineProps;
+	const { method, trendlineDimension } = trendlineProps;
 
 	if (isAggregateMethod(method)) {
 		return [getAggregateTransform(markProps, trendlineProps, isHighResolutionData)];
@@ -262,7 +255,6 @@ export const getTrendlineStatisticalTransforms = (
 		return [getRegressionTransform(markProps, trendlineProps, isHighResolutionData)];
 	}
 	if (isWindowMethod(method)) {
-		const { trendlineDimension } = getTrendlineDimensionMetric(dimension, metric, orientation, false);
 		return [getSortTransform(trendlineDimension), getWindowTransform(markProps, trendlineProps)];
 	}
 
@@ -278,21 +270,24 @@ export const addTableDataTransforms = produce<Transforms[], [TrendlineParentProp
 	const { dimension, metric } = markProps;
 
 	const trendlines = getTrendlines(markProps);
-	for (const { dimensionScaleType, method, name, orientation } of trendlines) {
+	for (const { isDimensionNormalized, method, name, orientation, trendlineDimension } of trendlines) {
 		if (isRegressionMethod(method)) {
 			// time scales need to be normalized for regression trendlines
-			const isDimensionNormalized = dimensionScaleType === 'time';
-			let { trendlineDimension } = getTrendlineDimensionMetric(dimension, metric, orientation, false);
+			const { trendlineDimension: standardTrendlinDimension } = getTrendlineDimensionMetric(
+				dimension,
+				metric,
+				orientation,
+				false,
+			);
 
 			if (isDimensionNormalized) {
 				if (
 					!transforms.some(
-						(transform) => 'as' in transform && transform.as === `${trendlineDimension}Normalized`,
+						(transform) => 'as' in transform && transform.as === `${standardTrendlinDimension}Normalized`,
 					)
 				) {
-					transforms.push(...getNormalizedDimensionTransform(trendlineDimension));
+					transforms.push(...getNormalizedDimensionTransform(standardTrendlinDimension));
 				}
-				trendlineDimension += 'Normalized';
 			}
 			// add the extent transform
 			transforms.push(getRegressionExtentTransform(trendlineDimension, name));

@@ -159,7 +159,12 @@ describe('getRuleXEncondings()', () => {
 describe('getTrendlineLineMark()', () => {
 	test('should use normalized values for x if it is a regression method and scale is time', () => {
 		expect(
-			getTrendlineLineMark(defaultLineProps, { ...defaultTrendlineProps, method: 'linear' }).encode?.update?.x,
+			getTrendlineLineMark(defaultLineProps, {
+				...defaultTrendlineProps,
+				isDimensionNormalized: true,
+				method: 'linear',
+				trendlineDimension: `${DEFAULT_TIME_DIMENSION}Normalized`,
+			}).encode?.update?.x,
 		).toEqual({
 			scale: 'xTrendline',
 			field: `${DEFAULT_TIME_DIMENSION}Normalized`,
@@ -176,7 +181,7 @@ describe('getTrendlineLineMark()', () => {
 		expect(
 			getTrendlineLineMark(
 				{ ...defaultLineProps, scaleType: 'linear', dimension: 'count' },
-				{ ...defaultTrendlineProps, dimensionScaleType: 'linear' },
+				{ ...defaultTrendlineProps, dimensionScaleType: 'linear', trendlineDimension: 'count' },
 			).encode?.update?.x,
 		).toEqual({ field: 'count', scale: 'xLinear' });
 	});

@@ -19,22 +19,26 @@ import { Theme } from '@react-types/provider';
 import { Colors, SpectrumColor } from './SpectrumVizColors';
 import { LocaleCode, NumberLocaleCode, TimeLocaleCode } from './locales';
 
-export type ChartElement = ReactElement<ChartProps, JSXElementConstructor<ChartProps>>;
+export type AnnotationElement = ReactElement<AnnotationProps, JSXElementConstructor<AnnotationProps>>;
 export type AreaElement = ReactElement<AreaProps, JSXElementConstructor<AreaProps>>;
 export type AxisElement = ReactElement<AxisProps, JSXElementConstructor<AxisProps>>;
 export type AxisAnnotationElement = ReactElement<AxisAnnotationProps, JSXElementConstructor<AxisAnnotationProps>>;
 export type BarElement = ReactElement<BarProps, JSXElementConstructor<BarProps>>;
+export type ChartElement = ReactElement<ChartProps, JSXElementConstructor<ChartProps>>;
+export type ChartPopoverElement = ReactElement<ChartPopoverProps, JSXElementConstructor<ChartPopoverProps>>;
+export type ChartTooltipElement = ReactElement<ChartTooltipProps, JSXElementConstructor<ChartTooltipProps>>;
 export type DonutElement = ReactElement<DonutProps, JSXElementConstructor<DonutProps>>;
-export type AnnotationElement = ReactElement<AnnotationProps, JSXElementConstructor<AnnotationProps>>;
 export type LegendElement = ReactElement<LegendProps, JSXElementConstructor<LegendProps>>;
 export type LineElement = ReactElement<LineProps, JSXElementConstructor<LineProps>>;
+export type MetricRangeElement = ReactElement<MetricRangeProps, JSXElementConstructor<MetricRangeProps>>;
+export type ReferenceLineElement = ReactElement<ReferenceLineProps, JSXElementConstructor<ReferenceLineProps>>;
 export type ScatterElement = ReactElement<ScatterProps, JSXElementConstructor<ScatterProps>>;
 export type TitleElement = ReactElement<TitleProps, JSXElementConstructor<TitleProps>>;
-export type ChartTooltipElement = ReactElement<ChartTooltipProps, JSXElementConstructor<ChartTooltipProps>>;
-export type ChartPopoverElement = ReactElement<ChartPopoverProps, JSXElementConstructor<ChartPopoverProps>>;
-export type ReferenceLineElement = ReactElement<ReferenceLineProps, JSXElementConstructor<ReferenceLineProps>>;
+export type TrendlineAnnotationElement = ReactElement<
+	TrendlineAnnotationProps,
+	JSXElementConstructor<TrendlineAnnotationProps>
+>;
 export type TrendlineElement = ReactElement<TrendlineProps, JSXElementConstructor<TrendlineProps>>;
-export type MetricRangeElement = ReactElement<MetricRangeProps, JSXElementConstructor<MetricRangeProps>>;
 
 export type SimpleData = { [key: string]: unknown };
 export type ChartData = SimpleData | Data;
@@ -533,7 +537,7 @@ export interface MetricRangeProps {
 }
 
 export interface TrendlineProps {
-	children?: Children<ChartTooltipElement>;
+	children?: Children<TrendlineChildElement>;
 	/** The line color of the trendline. If undefined, will default to the color of the series that it represents. */
 	color?: SpectrumColor | string;
 	/**
@@ -564,6 +568,18 @@ export interface TrendlineProps {
 	opacity?: number;
 	/** Orientation of the trendline. Only supported on scatter plots. */
 	orientation?: Orientation;
+}
+
+export interface TrendlineAnnotationProps {
+	/** where along the dimension scale to label the trendline value */
+	dimensionValue?: number | 'start' | 'end';
+	/** d3 number format specifier. Only valid if labelFormat is linear or undefined.
+	 *
+	 * @see https://d3js.org/d3-format#locale_format
+	 */
+	numberFormat?: string;
+	/** text that will be prepended to the trendline value */
+	prefix?: string;
 }
 
 /** trendline methods that use a joinaggregate transform */
@@ -636,6 +652,7 @@ export type Children<T> = ChildElement<T> | ChildElement<T>[];
 
 export type AxisChildElement = ReferenceLineElement | AxisAnnotationElement;
 export type AxisAnnotationChildElement = ChartTooltipElement | ChartPopoverElement;
+export type TrendlineChildElement = ChartTooltipElement | TrendlineAnnotationElement;
 export type ChartChildElement =
 	| AreaElement
 	| AxisElement

@@ -17,6 +17,7 @@ import {
 	findMarksByGroupName,
 	hoverNthElement,
 	render,
+	screen,
 } from '@test-utils';
 import { spectrumColors } from '@themes';
 
@@ -44,7 +45,7 @@ describe('FeatureMatrix', () => {
 		// horizontal trendline
 		const horizontalTrendline = await findMarksByGroupName(chart, 'scatter0Trendline0', 'line');
 		expect(horizontalTrendline).toBeInTheDocument();
-		expect(horizontalTrendline).toHaveAttribute('x2', '453');
+		expect(horizontalTrendline).toHaveAttribute('x2', '452');
 		expect(horizontalTrendline).toHaveAttribute('y2', '0');
 		expect(horizontalTrendline).toHaveAttribute('stroke', colors['gray-900']);
 		expect(horizontalTrendline).toHaveAttribute('stroke-width', '1');
@@ -53,7 +54,18 @@ describe('FeatureMatrix', () => {
 		const verticalTrendline = await findMarksByGroupName(chart, 'scatter0Trendline1', 'line');
 		expect(verticalTrendline).toBeInTheDocument();
 		expect(verticalTrendline).toHaveAttribute('x2', '0');
-		expect(verticalTrendline).toHaveAttribute('y2', '-397');
+		expect(verticalTrendline).toHaveAttribute('y2', '-396');
+
+		// trendline annotations
+		// horizontal trendline annotation
+		const horizontalAnnotation = await screen.findByText('Median times 2.94');
+		expect(horizontalAnnotation).toBeInTheDocument();
+		expect(horizontalAnnotation).toHaveAttribute('text-anchor', 'end');
+
+		// vertical trendline annotation
+		const verticalAnnotation = await screen.findByText('Median %DAU 8.39%');
+		expect(verticalAnnotation).toBeInTheDocument();
+		expect(verticalAnnotation).toHaveAttribute('text-anchor', 'middle');
 	});
 });
 

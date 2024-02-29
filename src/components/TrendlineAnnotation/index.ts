@@ -9,20 +9,4 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
-export * from './Annotation';
-export * from './Area';
-export * from './Axis';
-export * from './AxisAnnotation';
-export * from './Bar';
-export * from './ChartPopover';
-export * from './ChartTooltip';
-export * from './EmptyState';
-export * from './Legend';
-export * from './Line';
-export * from './MetricRange';
-export * from './ReferenceLine';
-export * from './Title';
-export * from './Trendline';
-export * from './TrendlineAnnotation';
-export * from './Scatter';
+export * from "./TrendlineAnnotation";
