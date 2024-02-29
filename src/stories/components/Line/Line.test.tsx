@@ -381,7 +381,7 @@ describe('Line', () => {
 		});
 	});
 
-	describe('Line animation tests', async () => {
+	describe('Line animation tests', () => {
 		test('Line animates between congruent datasets', async () => {
 			const chartProps = {
 				data: newDataArray1

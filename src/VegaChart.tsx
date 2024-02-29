@@ -72,7 +72,7 @@ export const VegaChart: FC<VegaChartProps> = ({
 	}, [data]);
 
 	const previousChartData = useMemo(() => {
-		const clonedData = JSON.parse(JSON.stringify(previousData));
+		const clonedData = structuredClone(previousData);
 
 		// We received a full Vega data array with potentially multiple dataset objects
 		if (isVegaData(clonedData)) {
