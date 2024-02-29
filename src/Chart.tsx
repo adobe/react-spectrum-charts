@@ -85,7 +85,6 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 		useChartImperativeHandle(forwardedRef, { chartView, title });
 
 		const previousChartData = usePreviousChartData(data);
-		console.log('previous data is', previousChartData);
 
 		const containerRef = useResizeObserver<HTMLDivElement>((_target, entry) => {
 			if (typeof width === 'number') return;
