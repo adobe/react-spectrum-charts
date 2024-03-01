@@ -32,13 +32,13 @@ import { Data, Scale, ScaleType, Spec, ValuesData } from 'vega';
 
 import {
 	COLOR_SCALE,
-	DEFAULT_TRANSFORMED_TIME_DIMENSION,
+	DEFAULT_TRANSFORMED_TIME_DIMENSION, EASE_OUT_CUBIC,
 	FILTERED_TABLE,
 	LINE_TYPE_SCALE,
 	MARK_ID,
 	OPACITY_SCALE,
 	PREVIOUS_TABLE,
-	TABLE,
+	TABLE
 } from '../constants';
 import { SanitizedSpecProps } from '../types';
 
@@ -325,7 +325,7 @@ export const getAnimationMarks = (
 		signal: `datum.${metric} * ${easingFunction}`,
 	};
 	if (data && previousData) {
-		const hasSameDimensions = data.every((d) => previousData.some((pd) => d[dimension] === pd[dimension]));
+		const hasSameDimensions = data !== previousData && data.every((d) => previousData.some((pd) => d[dimension] === pd[dimension]));
 		if (hasSameDimensions) {
 			// If data isn't similar enough, keep the animation from zero as shown above
 			markUpdate = {
