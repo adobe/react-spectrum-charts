@@ -39,7 +39,7 @@ export const DEFAULT_TITLE_FONT_WEIGHT = 'bold';
 // vega data table name
 export const TABLE = 'table';
 export const FILTERED_TABLE = 'filteredTable';
-export const PREVIOUS_TABLE = 'previousTable'
+export const PREVIOUS_TABLE = 'previousTable';
 
 // vega data field names
 export const SERIES_ID = 'rscSeriesId';
@@ -68,3 +68,6 @@ export const BACKGROUND_COLOR = 'chartBackgroundColor';
 
 // time constants
 export const MS_PER_DAY = 86400000;
+
+// chart animation easing functions
+export const EASE_OUT_CUBIC = '(1 - pow(1 - timerValue, 3))';
