@@ -288,14 +288,12 @@ export const getDimensionField = (dimension: string, scaleType?: ScaleType) => {
 
 export const usePreviousChartData = <T>(data: T) => {
 	const ref = useRef<T>();
-	const previousDataRef = useRef<T>();
   
 	useEffect(() => {
-	  previousDataRef.current = ref.current;
 	  ref.current = data;
 	}, [data]);
   
-	return previousDataRef.current;
+	return ref.current;
 };
 
 export const getAnimationMarks = (dimension: string, metric: string, data?: ChartData[], previousData?: ChartData[], scale = 'yLinear') => {
