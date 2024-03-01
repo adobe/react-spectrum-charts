@@ -12,6 +12,7 @@
 import { spectrumColors } from '@themes';
 import { DATE_PATH, ROUNDED_SQUARE_PATH } from 'svgPaths';
 import {
+	ChartData,
 	ChartSymbolShape,
 	ColorFacet,
 	ColorScheme,
@@ -23,7 +24,7 @@ import {
 	OpacityFacet,
 	SpectrumColor,
 	SymbolSize,
-	SymbolSizeFacet,
+	SymbolSizeFacet
 } from 'types';
 import { Data, Scale, ScaleType, Spec, ValuesData } from 'vega';
 
@@ -266,7 +267,6 @@ export const extractValues = (data) =>
  * @returns An array of Vega datasets with the values from the values object merged in
  */
 export const mergeValuesIntoData = (data, values) => {
-	console.log(data, values)
 	return data.map((dataset) => {
 		const datasetValues = values[dataset.name];
 		if (datasetValues) {
@@ -297,3 +297,21 @@ export const usePreviousChartData = <T>(data: T) => {
   
 	return previousDataRef.current;
 };
+
+export const getAnimationMarks = (dimension: string, metric: string, data?: ChartData[], previousData?: ChartData[], scale = 'yLinear') => {
+	let markUpdate = {
+		scale,
+		signal: `datum.${metric} * timerValue`
+	};
+	if (data && previousData) {
+		const hasSameDimensions = data.every((d) => previousData.some((pd) => d[dimension] === pd[dimension]));
+		if (hasSameDimensions) {
+			// If data isn't similar enough, keep the animation from zero as shown above
+			markUpdate = {
+				scale,
+				signal: `(data('${PREVIOUS_TABLE}')[indexof(pluck(data('${PREVIOUS_TABLE}'), '${dimension}'), datum.${dimension})].${metric} * (1 - timerValue)) + (datum.${metric} * timerValue)`
+			}
+		}
+	}
+	return markUpdate;
+}

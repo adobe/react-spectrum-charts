@@ -30,7 +30,7 @@ import {
 	hasInteractiveChildren,
 	hasPopover,
 } from '@specBuilder/marks/markUtils';
-import { getColorValue, getLineWidthPixelsFromLineWidth } from '@specBuilder/specUtils';
+import { getAnimationMarks, getColorValue, getLineWidthPixelsFromLineWidth } from '@specBuilder/specUtils';
 import { sanitizeMarkChildren } from '@utils';
 import { AnnotationElement, AnnotationStyleProps, BarSpecProps, Orientation } from 'types';
 import {
@@ -95,13 +95,27 @@ export const getDodgedGroupMark = (props: BarSpecProps): GroupMark => {
 };
 
 export const getDodgedDimensionEncodings = (props: BarSpecProps): RectEncodeEntry => {
-	const { dimensionAxis, rangeScale } = getOrientationProperties(props.orientation);
+	const { animations, dimension, metric, previousData, data} = props;
+
+	const { dimensionAxis, metricAxis: startKey, rangeScale, metricScaleKey: scaleKey } = getOrientationProperties(props.orientation);
 
 	const scale = `${props.name}_position`;
 	const field = `${props.name}_dodgeGroup`;
 
+	const isStacked = isDodgedAndStacked(props);
+
+	const startMetric = isStacked ? `${metric}0` : metric;
+	const endMetric = `${metric}1`;
+
+	const endAnimations = isStacked ? getAnimationMarks(dimension, endMetric, data, previousData, scaleKey)
+		: { scale: 'yLinear', signal: "0" }
+
+	const endKey = `${startKey}2`;
+
 	return {
 		[dimensionAxis]: { scale, field },
+		[startKey]: animations !== false ? getAnimationMarks(dimension, startMetric, data, previousData, scaleKey) : undefined,
+		[endKey]: animations !== false ? endAnimations : undefined,
 		[rangeScale]: { scale, band: 1 },
 	};
 };
@@ -293,7 +307,7 @@ export const getAnnotationMarks = (
 	// bar only supports one annotation
 	const annotation = children.find((el) => el.type === Annotation) as AnnotationElement;
 	if (annotation?.props.textKey) {
-		const { orientation, name } = barProps;
+		const { orientation, name, animations } = barProps;
 		const { textKey, style } = annotation.props;
 		const { metricAxis, dimensionAxis } = getOrientationProperties(orientation);
 		const annotationWidth = getAnnotationWidth(textKey, style);
@@ -320,6 +334,11 @@ export const getAnnotationMarks = (
 					],
 					width: annotationWidth,
 				},
+				update: animations !== false ?  {
+					fillOpacity: {
+						signal: 'timerValue === 1 ? 1 : 0'
+					}
+				} : undefined
 			},
 		});
 		marks.push({
@@ -341,6 +360,11 @@ export const getAnnotationMarks = (
 					baseline: { value: 'middle' },
 					align: { value: 'center' },
 				},
+				update: animations !== false ?  {
+					fillOpacity: {
+						signal: 'timerValue === 1 ? 1 : 0'
+					}
+				} : undefined
 			},
 		});
 	}
