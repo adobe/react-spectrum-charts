@@ -16,7 +16,7 @@ import {
 	DEFAULT_LINE_TYPES,
 	FILTERED_TABLE,
 	SERIES_ID,
-	TABLE
+	TABLE,
 } from '@constants';
 import { Area, Axis, Bar, Legend, Line, Scatter, Title } from '@rsc';
 import { Donut } from '@rsc/alpha';
@@ -63,7 +63,7 @@ import {
 	getPathFromSymbolShape,
 	getStrokeDashFromLineType,
 	getVegaSymbolSizeFromRscSymbolSize,
-	initializeSpec
+	initializeSpec,
 } from './specUtils';
 import { addTitle } from './title/titleSpecBuilder';
 
@@ -118,13 +118,27 @@ export function buildSpec({
 			switch (cur.type.displayName) {
 				case Area.displayName:
 					areaCount++;
-					return addArea(acc, { ...(cur as AreaElement).props, colorScheme, index: areaCount, previousData, data, animations });
+					return addArea(acc, {
+						...(cur as AreaElement).props,
+						colorScheme,
+						index: areaCount,
+						previousData,
+						data,
+						animations,
+					});
 				case Axis.displayName:
 					axisCount++;
 					return addAxis(acc, { ...(cur as AxisElement).props, colorScheme, index: axisCount });
 				case Bar.displayName:
 					barCount++;
-					return addBar(acc, { ...(cur as BarElement).props, colorScheme, index: barCount, previousData, data, animations });
+					return addBar(acc, {
+						...(cur as BarElement).props,
+						colorScheme,
+						index: barCount,
+						previousData,
+						data,
+						animations,
+					});
 				case Donut.displayName:
 					donutCount++;
 					return addDonut(acc, { ...(cur as DonutElement).props, colorScheme, index: donutCount });
@@ -139,7 +153,14 @@ export function buildSpec({
 					});
 				case Line.displayName:
 					lineCount++;
-					return addLine(acc, { ...(cur as LineElement).props, colorScheme, index: lineCount, data, previousData, animations });
+					return addLine(acc, {
+						...(cur as LineElement).props,
+						colorScheme,
+						index: lineCount,
+						data,
+						previousData,
+						animations,
+					});
 				case Scatter.displayName:
 					scatterCount++;
 					return addScatter(acc, { ...(cur as ScatterElement).props, colorScheme, index: scatterCount });
@@ -219,9 +240,9 @@ export const getTimer = () => {
 	return {
 		name: 'timerValue',
 		value: '0',
-		on: [{ events: 'timer{16}', update: 'min(1, timerValue + (1 / 180))' }],
-	}
-}
+		on: [{ events: 'timer{16}', update: 'min(1, timerValue + (1 / 60))' }],
+	};
+};
 
 export const getTwoDimensionalColorScheme = (colors: ChartColors, colorScheme: ColorScheme): string[][] => {
 	if (isColors(colors)) {
