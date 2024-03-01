@@ -16,6 +16,8 @@ import {
 	SENTIMENT_NEUTRAL_PATH,
 	SENTIMENT_POSITIVE_PATH,
 } from '@svgPaths';
+import { useEffect, useRef } from 'react';
+
 import { spectrumColors } from '@themes';
 import { Data, Scale, ScaleType, Spec, ValuesData } from 'vega';
 
@@ -38,7 +40,6 @@ import {
 } from '../types';
 
 import {  LINE_TYPE_SCALE, OPACITY_SCALE, COLOR_SCALE, DEFAULT_TRANSFORMED_TIME_DIMENSION, FILTERED_TABLE, MARK_ID, PREVIOUS_TABLE, TABLE } from '../constants';
-import { useRef, useEffect } from 'react';
 
 /**
  * gets all the keys that are used to facet by
@@ -330,18 +331,28 @@ export const getD3FormatSpecifierFromNumberFormat = (numberFormat: NumberFormat 
 };
 export const usePreviousChartData = <T>(data: T) => {
 	const ref = useRef<T>();
-  
+	const previousDataRef = useRef<T>();
+
 	useEffect(() => {
-	  ref.current = data;
+		previousDataRef.current = ref.current;
+		ref.current = data;
 	}, [data]);
-  
-	return ref.current;
+
+	return previousDataRef.current;
 };
 
-export const getAnimationMarks = (dimension: string, metric: string, data?: ChartData[], previousData?: ChartData[], scale = 'yLinear') => {
+export const getAnimationMarks = (
+	dimension: string,
+	metric: string,
+	data?: ChartData[],
+	previousData?: ChartData[],
+	scale = 'yLinear'
+) => {
+	const easingFunction = EASE_OUT_CUBIC;
+
 	let markUpdate = {
 		scale,
-		signal: `datum.${metric} * timerValue`
+		signal: `datum.${metric} * ${easingFunction}`,
 	};
 	if (data && previousData) {
 		const hasSameDimensions = data.every((d) => previousData.some((pd) => d[dimension] === pd[dimension]));
@@ -349,9 +360,9 @@ export const getAnimationMarks = (dimension: string, metric: string, data?: Char
 			// If data isn't similar enough, keep the animation from zero as shown above
 			markUpdate = {
 				scale,
-				signal: `(data('${PREVIOUS_TABLE}')[indexof(pluck(data('${PREVIOUS_TABLE}'), '${dimension}'), datum.${dimension})].${metric} * (1 - timerValue)) + (datum.${metric} * timerValue)`
-			}
+				signal: `(data('${PREVIOUS_TABLE}')[indexof(pluck(data('${PREVIOUS_TABLE}'), '${dimension}'), datum.${dimension})].${metric} * (1 - ${easingFunction})) + (datum.${metric} * ${easingFunction})`,
+			};
 		}
 	}
 	return markUpdate;
-}
+};

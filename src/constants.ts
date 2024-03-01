@@ -42,7 +42,7 @@ export const DEFAULT_INTERACTION_MODE = 'nearest';
 // vega data table name
 export const TABLE = 'table';
 export const FILTERED_TABLE = 'filteredTable';
-export const PREVIOUS_TABLE = 'previousTable'
+export const PREVIOUS_TABLE = 'previousTable';
 
 // vega data field names
 export const GROUP_DATA = 'rscGroupData';
@@ -117,3 +117,5 @@ export enum INTERACTION_MODE {
 export const HOVER_SIZE = 3000;
 export const HOVER_SHAPE_COUNT = 3;
 export const HOVER_SHAPE = 'diamond';
+// chart animation easing functions
+export const EASE_OUT_CUBIC = '(1 - pow(1 - timerValue, 3))';

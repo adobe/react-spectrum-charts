@@ -30,7 +30,7 @@ import {
 	FILTERED_TABLE,
 	PREVIOUS_TABLE,
 	SERIES_ID,
-	TABLE
+	TABLE,
 } from '@constants';
 import { Area, Axis, Bar, Legend, Line, Scatter, Title } from '@rsc';
 import { Combo } from '@rsc/alpha';
@@ -82,7 +82,7 @@ import {
 	getStrokeDashFromLineType,
 	getSymbolWidthFromRscSymbolSize,
 	getVegaSymbolSizeFromRscSymbolSize,
-	initializeSpec
+	initializeSpec,
 } from './specUtils';
 import { addTitle } from './title/titleSpecBuilder';
 
@@ -125,7 +125,7 @@ export function buildSpec(props: SanitizedSpecProps) {
 
 	let { areaCount, axisCount, barCount, comboCount, donutCount, legendCount, lineCount, scatterCount } =
 		initializeComponentCounts();
-	const specProps = { colorScheme, idKey, highlightedItem };
+	const specProps = { animations, colorScheme, data, idKey, highlightedItem, previousData };
 	spec = [...children]
 		.sort((a, b) => buildOrder.get(a.type) - buildOrder.get(b.type))
 		.reduce((acc: Spec, cur) => {
@@ -142,13 +142,13 @@ export function buildSpec(props: SanitizedSpecProps) {
 			switch (cur.type.displayName) {
 				case Area.displayName:
 					areaCount++;
-					return addArea(acc, { ...(cur as AreaElement).props, ...specProps, index: areaCount, previousData, data, animations });
+					return addArea(acc, { ...(cur as AreaElement).props, ...specProps, index: areaCount });
 				case Axis.displayName:
 					axisCount++;
 					return addAxis(acc, { ...(cur as AxisElement).props, ...specProps, index: axisCount });
 				case Bar.displayName:
 					barCount++;
-					return addBar(acc, { ...(cur as BarElement).props, ...specProps, index: barCount, previousData, data, animations });
+					return addBar(acc, { ...(cur as BarElement).props, ...specProps, index: barCount });
 				case Donut.displayName:
 					donutCount++;
 					return addDonut(acc, { ...(cur as DonutElement).props, ...specProps, index: donutCount });
@@ -163,7 +163,7 @@ export function buildSpec(props: SanitizedSpecProps) {
 					});
 				case Line.displayName:
 					lineCount++;
-					return addLine(acc, { ...(cur as LineElement).props, ...specProps, index: lineCount, animations, data, previousData });
+					return addLine(acc, { ...(cur as LineElement).props, ...specProps, index: lineCount });
 				case Scatter.displayName:
 					scatterCount++;
 					return addScatter(acc, { ...(cur as ScatterElement).props, ...specProps, index: scatterCount });
@@ -249,9 +249,9 @@ export const getTimer = () => {
 	return {
 		name: 'timerValue',
 		value: '0',
-		on: [{ events: 'timer{16}', update: 'min(1, timerValue + (1 / 180))' }],
-	}
-}
+		on: [{ events: 'timer{16}', update: 'min(1, timerValue + (1 / 60))' }],
+	};
+};
 
 export const getTwoDimensionalColorScheme = (colors: ChartColors, colorScheme: ColorScheme): string[][] => {
 	if (isColors(colors)) {
