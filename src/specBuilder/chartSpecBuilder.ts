@@ -136,6 +136,7 @@ export function buildSpec({
 						index: legendCount,
 						hiddenSeries,
 						highlightedSeries,
+						animations,
 					});
 				case Line.displayName:
 					lineCount++;

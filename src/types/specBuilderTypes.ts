@@ -118,7 +118,7 @@ type LegendPropsWithDefaults = 'hiddenEntries' | 'highlight' | 'isToggleable' | 
 
 export interface LegendSpecProps
 	extends PartiallyRequired<
-		LegendProps & { colorScheme: ColorScheme; index: number; hiddenSeries: string[]; highlightedSeries?: string },
+		LegendProps & { colorScheme: ColorScheme; index: number; hiddenSeries: string[]; highlightedSeries?: string; animations?: boolean },
 		LegendPropsWithDefaults
 	> {
 	color?: FacetRef<string>;

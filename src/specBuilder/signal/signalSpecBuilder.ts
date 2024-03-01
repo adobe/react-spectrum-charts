@@ -28,11 +28,57 @@ export const getUncontrolledHoverSignal = (name: string, nestedDatum?: boolean, 
 		value: null,
 		on: [
 			{ events: `@${eventName}:mouseover`, update: `${nestedDatum ? 'datum.' : ''}datum.${MARK_ID}` },
-			{ events: `@${eventName}:mouseout`, update: 'null' },
-		],
+			{ events: `@${eventName}:mouseout`, update: 'null' }
+		]
 	};
 };
 
+//TODO: add documentation
+export const getRSCAnimation = (): Signal => {
+	return {
+		name: 'rscAnimation',
+		value: 0,
+		on: [{
+			events: 'timer{16}',
+			update: 'scale(\'rscAnimationCurve\', scale(\'rscAnimationCurveInverse\', rscAnimation) + 0.03333333333333334)'
+		}]
+	};
+};
+
+//TODO: add documentation
+export const getRSCColorAnimationDirection = (name: string): Signal => {
+	return {
+		name: 'rscColorAnimationDirection',
+		value: -1,
+		on: [
+			{ events: `@${name}:mouseover`, update: '1' },
+			{ events: `@${name}:mouseout`, update: '-1' },
+		]
+	};
+};
+
+//TODO: add documentation
+export const getRSCLegendColorAnimationDirection = (name: string): ({ update: string; events: string })[] => {
+	return [
+		{ events: `@${name}_legendEntry:mouseover`, update: '1' },
+		{ events: `@${name}_legendEntry:mouseout`, update: '-1' }
+		];
+};
+
+//TODO: add documentation
+export const getRSCColorAnimation = (): Signal => {
+	return {
+		name: 'rscColorAnimation',
+		value: 0,
+		on: [
+			{
+				events: 'timer{16.666666666666668}',
+				update: 'scale(\'rscAnimationCurve\', scale(\'rscAnimationCurveInverse\', rscColorAnimation) ' +
+					'+ 0.06 * rscBarColorAnimationDirection)'
+			}
+		]
+	};
+};
 /**
  *  Returns a controlled hover signal.
  *  Controlled hover signals get manually updated via the view in Chart.tsx
@@ -41,7 +87,7 @@ export const getControlledHoverSignal = (name: string): Signal => {
 	return {
 		name: `${name}_controlledHoveredId`,
 		value: null,
-		on: [{ events: `@${name}:mouseout`, update: 'null' }],
+		on: [{ events: `@${name}:mouseout`, update: 'null' }]
 	};
 };
 
@@ -55,8 +101,8 @@ export const getSeriesHoveredSignal = (name: string, nestedDatum?: boolean, even
 		value: null,
 		on: [
 			{ events: `@${eventName}:mouseover`, update: `${nestedDatum ? 'datum.' : ''}datum.${SERIES_ID}` },
-			{ events: `@${eventName}:mouseout`, update: 'null' },
-		],
+			{ events: `@${eventName}:mouseout`, update: 'null' }
+		]
 	};
 };
 
@@ -73,8 +119,8 @@ export const getHighlightSeriesSignal = (name: string, includeHiddenSeries: bool
 		value: null,
 		on: [
 			{ events: `@${name}_legendEntry:mouseover`, update },
-			{ events: `@${name}_legendEntry:mouseout`, update: '""' },
-		],
+			{ events: `@${name}_legendEntry:mouseout`, update: '""' }
+		]
 	};
 };
 
@@ -84,7 +130,7 @@ export const getHighlightSeriesSignal = (name: string, includeHiddenSeries: bool
 export const getLegendLabelsSeriesSignal = (value: unknown = null): Signal => {
 	return {
 		name: 'legendLabels',
-		value,
+		value
 	};
 };
 

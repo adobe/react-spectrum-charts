@@ -35,7 +35,7 @@ const colors: SpectrumColor[] = [
 const BarStory: StoryFn<typeof Bar> = (args): ReactElement => {
 	const chartProps = useChartProps({ data: barSeriesData, colors, width: 800, height: 600 });
 	return (
-		<Chart {...chartProps}>
+		<Chart {...chartProps} debug>
 			<Axis position={args.orientation === 'horizontal' ? 'left' : 'bottom'} baseline title="Browser" />
 			<Axis position={args.orientation === 'horizontal' ? 'bottom' : 'left'} grid title="Downloads" />
 			<Bar {...args} />

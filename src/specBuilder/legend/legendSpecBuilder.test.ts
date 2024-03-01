@@ -34,6 +34,15 @@ const hiddenSeriesEncoding = {
 	value: 'rgb(213, 213, 213)',
 };
 
+const defaultAnimationsSignal = {
+	name: 'rscColorAnimationDirection',
+	value: '-1',
+	on: [
+		{ events: '@bar0:mouseover', update: '1' },
+		{ events: '@bar0:mouseout', update: '-1' },
+	]
+};
+
 const defaultSymbolUpdateEncodings: SymbolEncodeEntry = {
 	fill: [hiddenSeriesEncoding, colorEncoding],
 	stroke: [hiddenSeriesEncoding, colorEncoding],
@@ -355,4 +364,21 @@ describe('addSignals()', () => {
 			)
 		).toBeUndefined();
 	});
+
+	test('should update colorAnimationDirection signal if animations are true', () => {
+		defaultSpec.signals?.push(defaultAnimationsSignal);
+		expect(addLegend(defaultSpec, {...defaultLegendProps, animations: true}).signals)
+			.toStrictEqual([
+				{
+					name: 'rscColorAnimationDirection',
+					value: '-1',
+					on: [
+						{ events: '@bar0:mouseover', update: '1' },
+						{ events: '@bar0:mouseout', update: '-1' },
+						{ events: '@legend0_legendEntry:mouseover', update: '1' },
+						{ events: '@legend0_legendEntry:mouseout', update: '-1' }
+					]
+				}]
+			)
+	})
 });

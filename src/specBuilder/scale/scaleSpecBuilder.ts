@@ -200,3 +200,25 @@ const isScaleMultiFieldsRef = (
 ): domain is ScaleMultiFieldsRef => {
 	return Boolean(domain && !Array.isArray(domain) && 'data' in domain && 'fields' in domain);
 };
+
+//TODO: Add documentation
+export const getRSCAnimationCurve = (): Scale => {
+	return {
+		name: 'rscAnimationCurve',
+		type: 'linear',
+		domain: [0, 1],
+		range: [0, 1],
+		clamp: true
+	}
+}
+
+//TODO: Add documentation
+export const getRSCAnimationCurveInverse = (): Scale => {
+	return {
+			name: 'rscAnimationCurveInverse',
+			type: 'linear',
+			domain: [0, 1],
+			range: [0, 1],
+			clamp: true
+	}
+}
