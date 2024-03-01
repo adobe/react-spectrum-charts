@@ -60,7 +60,7 @@ export const VegaChart: FC<VegaChartProps> = ({
 
 	// Need to de a deep copy of the data because vega tries to transform the data
 	const chartData = useMemo(() => {
-		const clonedData = JSON.parse(JSON.stringify(data));
+		const clonedData = structuredClone(data);
 
 		// We received a full Vega data array with potentially multiple dataset objects
 		if (isVegaData(clonedData)) {
@@ -72,7 +72,7 @@ export const VegaChart: FC<VegaChartProps> = ({
 	}, [data]);
 
 	const previousChartData = useMemo(() => {
-		const clonedData = JSON.parse(JSON.stringify(previousData));
+		const clonedData = structuredClone(previousData);
 
 		// We received a full Vega data array with potentially multiple dataset objects
 		if (isVegaData(clonedData)) {
@@ -83,11 +83,7 @@ export const VegaChart: FC<VegaChartProps> = ({
 		return { [PREVIOUS_TABLE]: clonedData };
 	}, [previousData]);
 
-	// const previousChartData = usePreviousChartData({ [PREVIOUS_TABLE]: chartData.table });
-
-	// useDebugSpec(debug, spec, { ...previousChartData, ...chartData }, width, height, config);
-	useDebugSpec(debug, spec, { ...chartData }, width, height, config);
-
+	useDebugSpec(debug, spec, { ...previousChartData, ...chartData }, width, height, config);
 
 	useEffect(() => {
 		if (width && height && containerRef.current) {

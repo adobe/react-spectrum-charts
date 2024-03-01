@@ -12,13 +12,14 @@
 import React, { ReactElement } from 'react';
 
 import useChartProps from '@hooks/useChartProps';
-import { Area, Axis, Chart, Line } from '@rsc';
+import { Area, Axis, Bar, Chart, Line } from '@rsc';
 import { StoryFn } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
 
 import './Chart.story.css';
 import { ChartBarStory } from './ChartBarStory';
 import { areaData, data, newDataArray1, newDataArray1WithStaticPoints, workspaceTrendsData } from './data/data';
+import { barData } from '@stories/components/Bar/data';
 
 export default {
 	title: 'RSC/Chart',
@@ -74,6 +75,17 @@ const BasicAreaStory: StoryFn<typeof Chart> = (args): ReactElement => {
 	);
 };
 
+const BasicBarStory: StoryFn<typeof Chart> = (args): ReactElement => {
+	const chartProps = useChartProps(args);
+	return (
+		<Chart {...chartProps} debug>
+			<Axis position="bottom" baseline title="Browser" />
+			<Axis position="left" grid title="Downloads" />
+			<Bar dimension="browser" metric="downloads" />
+		</Chart>
+	);
+};
+
 const Basic = bindWithProps(ChartLineStory);
 
 // Story specific props are passed here
@@ -123,4 +135,11 @@ BasicArea.args = {
 	data: areaData
 }
 
-export { Basic, BackgroundColor, Config, Locale, Width, SingleLine, SingleLineWithStaticPoints, BasicArea };
+const BasicBar = bindWithProps(BasicBarStory);
+BasicBar.args = {
+	data: barData,
+	width: 600,
+	height: 600
+}
+
+export { Basic, BackgroundColor, Config, Locale, Width, SingleLine, SingleLineWithStaticPoints, BasicArea, BasicBar };

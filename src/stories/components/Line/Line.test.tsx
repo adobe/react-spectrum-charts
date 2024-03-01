@@ -41,7 +41,7 @@ import {
 	WithStaticPoints,
 	WithStaticPointsAndDialogs
 } from './Line.story';
-import { newDataArray1 } from '@stories/data/data';
+import { newDataArray1, newDataArray2 } from '@stories/data/data';
 
 describe('Line', () => {
 	// Line is not a real React component. This is test just provides test coverage for sonarqube
@@ -368,7 +368,7 @@ describe('Line', () => {
 	});
 
 	describe('Line animation tests', () => {
-		test('Line animates between congruent datasets', () => {
+		test('Line animates between congruent datasets', async () => {
 			const chartProps = {
 				data: newDataArray1
 			}

@@ -100,6 +100,14 @@ const defaultSpec = initializeSpec({
 						},
 						update: {
 							x: { field: DEFAULT_TRANSFORMED_TIME_DIMENSION, scale: 'xTime' },
+							y: {
+								scale: 'yLinear',
+								signal: 'datum.value0'
+							},
+							y2: {
+								scale: 'yLinear',
+								signal: 'datum.value1 * timerValue'
+							},
 							cursor: undefined,
 							fillOpacity: [{ value: 0.8 }],
 						},
@@ -258,6 +266,8 @@ describe('areaSpecBuilder', () => {
 								update: {
 									...groupMark.marks?.[0]?.encode?.update,
 									x: { scale: 'xLinear', field: DEFAULT_TIME_DIMENSION },
+									y: undefined,
+									y2: undefined
 								},
 							},
 						},

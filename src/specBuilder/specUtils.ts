@@ -9,6 +9,8 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { useEffect, useRef } from 'react';
+
 import { spectrumColors } from '@themes';
 import { DATE_PATH, ROUNDED_SQUARE_PATH } from 'svgPaths';
 import {
@@ -24,7 +26,7 @@ import {
 	OpacityFacet,
 	SpectrumColor,
 	SymbolSize,
-	SymbolSizeFacet
+	SymbolSizeFacet,
 } from 'types';
 import { Data, Scale, ScaleType, Spec, ValuesData } from 'vega';
 
@@ -39,7 +41,6 @@ import {
 	TABLE,
 } from '../constants';
 import { SanitizedSpecProps } from '../types';
-import { useRef, useEffect } from 'react';
 
 /**
  * gets all the keys that are used to facet by
@@ -302,28 +303,35 @@ export const getDimensionField = (dimension: string, scaleType?: ScaleType) => {
 
 export const usePreviousChartData = <T>(data: T) => {
 	const ref = useRef<T>();
-	const previousDataRef = useRef<T>();
-  
+
 	useEffect(() => {
-	  previousDataRef.current = ref.current;
-	  ref.current = data;
+		ref.current = data;
 	}, [data]);
-  
-	return previousDataRef.current;
+
+	return ref.current;
 };
 
-export const getAnimationMarks = (dimension: string, metric: string, data?: ChartData[], previousData?: ChartData[], scale = 'yLinear') => {
+export const getAnimationMarks = (
+	dimension: string,
+	metric: string,
+	data?: ChartData[],
+	previousData?: ChartData[],
+	scale = 'yLinear'
+) => {
+	const easingFunction = EASE_OUT_CUBIC;
+
 	let markUpdate = {
 		scale,
-		signal: `datum.${metric} * timerValue`
+		signal: `datum.${metric} * ${easingFunction}`,
 	};
 	if (data && previousData) {
-		const isCongruent = data.every((d) => previousData.some((pd) => d[dimension] === pd[dimension]));
-		if (isCongruent) {
+		const hasSameDimensions = data.every((d) => previousData.some((pd) => d[dimension] === pd[dimension]));
+		if (hasSameDimensions) {
+			// If data isn't similar enough, keep the animation from zero as shown above
 			markUpdate = {
 				scale,
-				signal: `(data('${PREVIOUS_TABLE}')[indexof(pluck(data('${PREVIOUS_TABLE}'), '${dimension}'), datum.${dimension})].${metric} * (1 - timerValue)) + (datum.${metric} * timerValue)`
-			}
+				signal: `(data('${PREVIOUS_TABLE}')[indexof(pluck(data('${PREVIOUS_TABLE}'), '${dimension}'), datum.${dimension})].${metric} * (1 - ${easingFunction})) + (datum.${metric} * ${easingFunction})`,
+			};
 		}
 	}
 	return markUpdate;

@@ -42,6 +42,14 @@ const defaultDodgedProps: BarSpecProps = { ...defaultBarProps, type: 'dodged' };
 
 const defaultDodgedXEncodings: RectEncodeEntry = {
 	x: { scale: 'bar0_position', field: 'bar0_dodgeGroup' },
+	y: {
+		scale: 'yLinear',
+		signal: 'datum.value * timerValue'
+	},
+	y2: {
+		scale: 'yLinear',
+		signal: "0"
+	},
 	width: { scale: 'bar0_position', band: 1 },
 };
 
@@ -184,7 +192,8 @@ export const defaultDodgedMark = {
 			type: 'band',
 		},
 	],
-	encode: { enter: { x: { field: DEFAULT_CATEGORICAL_DIMENSION, scale: 'xBand' } } },
+	encode: {
+		enter: { x: { field: DEFAULT_CATEGORICAL_DIMENSION, scale: 'xBand' } } },
 	marks: [defaultBackgroundMark, defaultMark],
 };
 

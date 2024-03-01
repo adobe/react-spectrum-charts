@@ -32,7 +32,6 @@ import { Theme } from '@react-types/provider';
 
 import './Chart.css';
 import { ChartData, ChartHandle, ChartProps } from './types';
-import { newDataArray2 } from '@stories/data/data';
 
 interface PlaceholderContentProps {
 	data: ChartData[];
@@ -85,7 +84,8 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 		useChartImperativeHandle(forwardedRef, { chartView, title });
 
 		const previousChartData = usePreviousChartData(data);
-		console.log('previous data is', previousChartData);
+
+		console.warn('Previous data is', previousChartData);
 
 		const containerRef = useResizeObserver<HTMLDivElement>((_target, entry) => {
 			if (typeof width === 'number') return;

@@ -175,8 +175,7 @@ export const setScales = produce<Scale[], [AreaSpecProps]>(
 );
 
 export const addAreaMarks = produce<Mark[], [AreaSpecProps]>((marks, props) => {
-	// TODO: Finish area implementation
-	const { name, color, colorScheme, metric, dimension, scaleType, opacity, children, data, previousData, animations } = props;
+	const { name, color, colorScheme, metric, dimension, scaleType, opacity, children, animations } = props;
 	let { metricStart, metricEnd } = props;
 	let isStacked = false;
 	if (!metricEnd || !metricStart) {
@@ -215,7 +214,6 @@ export const addAreaMarks = produce<Mark[], [AreaSpecProps]>((marks, props) => {
 		...getSelectedAreaMarks({ children, name, scaleType, color, dimension, metricEnd, metricStart }),
 		...getHoverMarks(props),
 	);
-	// TODO: ADD ANIMATION MARK CHANGE - (choose scale/animation property on data if not given one)
 	return marks;
 });
 
