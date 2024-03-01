@@ -92,6 +92,8 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 
 		const previousChartData = usePreviousChartData(data);
 
+		console.warn('Previous data is', previousChartData);
+
 		const containerRef = useResizeObserver<HTMLDivElement>((_target, entry) => {
 			if (typeof width !== 'number') {
 				setContainerWidth(entry.contentRect.width);

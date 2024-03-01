@@ -19,6 +19,7 @@ import { bindWithProps } from '@test-utils';
 import './Chart.story.css';
 import { ChartBarStory } from './ChartBarStory';
 import { areaData, data, newDataArray1, newDataArray1WithStaticPoints, workspaceTrendsData } from './data/data';
+import { barData } from '@stories/components/Bar/data';
 
 export default {
 	title: 'RSC/Chart',
@@ -81,6 +82,17 @@ const BasicAreaStory: StoryFn<typeof Chart> = (args): ReactElement => {
 	return (
 		<Chart {...chartProps} debug>
 			<Area metric='maxTemperature' />
+		</Chart>
+	);
+};
+
+const BasicBarStory: StoryFn<typeof Chart> = (args): ReactElement => {
+	const chartProps = useChartProps(args);
+	return (
+		<Chart {...chartProps} debug>
+			<Axis position="bottom" baseline title="Browser" />
+			<Axis position="left" grid title="Downloads" />
+			<Bar dimension="browser" metric="downloads" />
 		</Chart>
 	);
 };
