@@ -25,7 +25,7 @@ import {
 	getMetricRanges,
 } from '@specBuilder/metricRange/metricRangeUtils';
 import { getFacetsFromProps } from '@specBuilder/specUtils';
-import { addTrendlineData, getTrendlineMarks, getTrendlineScales, getTrendlineSignals } from '@specBuilder/trendline';
+import { addTrendlineData, getTrendlineMarks, getTrendlineScales, setTrendlineSignals } from '@specBuilder/trendline';
 import { sanitizeMarkChildren, toCamelCase } from '@utils';
 import { produce } from 'immer';
 import { ColorScheme, LineProps, LineSpecProps, MarkChildElement } from 'types';
@@ -34,9 +34,9 @@ import { Data, Mark, Scale, Signal, Spec } from 'vega';
 import { addTimeTransform, getTableData } from '../data/dataUtils';
 import { addContinuousDimensionScale, addFieldToFacetScaleDomain, addMetricScale } from '../scale/scaleSpecBuilder';
 import {
+	addHighlightedItemSignalEvents,
 	getGenericSignal,
 	getSeriesHoveredSignal,
-	getUncontrolledHoverSignal,
 	hasSignalByName,
 } from '../signal/signalSpecBuilder';
 import { getLineHighlightedData, getLineStaticPointData } from './lineDataUtils';
@@ -104,13 +104,11 @@ export const addData = produce<Data[], [LineSpecProps]>((data, props) => {
 
 export const addSignals = produce<Signal[], [LineSpecProps]>((signals, props) => {
 	const { children, name } = props;
-	signals.push(...getTrendlineSignals(props));
+	setTrendlineSignals(signals, props);
 	signals.push(...getMetricRangeSignals(props));
 
 	if (!hasInteractiveChildren(children)) return;
-	if (!hasSignalByName(signals, `${name}_hoveredId`)) {
-		signals.push(getUncontrolledHoverSignal(`${name}`, true, `${name}_voronoi`));
-	}
+	addHighlightedItemSignalEvents(signals, `${name}_voronoi`, 2);
 	if (!hasSignalByName(signals, `${name}_hoveredSeries`)) {
 		signals.push(getSeriesHoveredSignal(`${name}`, true, `${name}_voronoi`));
 	}

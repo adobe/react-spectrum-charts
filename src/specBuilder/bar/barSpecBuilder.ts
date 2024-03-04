@@ -32,7 +32,11 @@ import {
 	getScaleIndexByName,
 	getScaleIndexByType,
 } from '@specBuilder/scale/scaleSpecBuilder';
-import { getGenericSignal, getUncontrolledHoverSignal, hasSignalByName } from '@specBuilder/signal/signalSpecBuilder';
+import {
+	addHighlightedItemSignalEvents,
+	getGenericSignal,
+	hasSignalByName,
+} from '@specBuilder/signal/signalSpecBuilder';
 import { getFacetsFromProps } from '@specBuilder/specUtils';
 import { sanitizeMarkChildren, toCamelCase } from '@utils';
 import { produce } from 'immer';
@@ -102,9 +106,7 @@ export const addSignals = produce<Signal[], [BarSpecProps]>(
 		if (!children.length) {
 			return;
 		}
-		if (!hasSignalByName(signals, `${name}_hoveredId`)) {
-			signals.push(getUncontrolledHoverSignal(name));
-		}
+		addHighlightedItemSignalEvents(signals, name);
 		if (hasPopover(children)) {
 			if (!hasSignalByName(signals, `${name}_selectedId`)) {
 				signals.push(getGenericSignal(`${name}_selectedId`));

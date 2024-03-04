@@ -31,8 +31,12 @@ import {
 	addFieldToFacetScaleDomain,
 	addMetricScale,
 } from '@specBuilder/scale/scaleSpecBuilder';
-import { getGenericSignal, getUncontrolledHoverSignal, hasSignalByName } from '@specBuilder/signal/signalSpecBuilder';
-import { addTrendlineData, getTrendlineScales, getTrendlineSignals } from '@specBuilder/trendline';
+import {
+	addHighlightedItemSignalEvents,
+	getGenericSignal,
+	hasSignalByName,
+} from '@specBuilder/signal/signalSpecBuilder';
+import { addTrendlineData, getTrendlineScales, setTrendlineSignals } from '@specBuilder/trendline';
 import { sanitizeMarkChildren, toCamelCase } from '@utils';
 import { produce } from 'immer';
 import { ColorScheme, ScatterProps, ScatterSpecProps } from 'types';
@@ -121,14 +125,11 @@ export const addData = produce<Data[], [ScatterSpecProps]>((data, props) => {
 export const addSignals = produce<Signal[], [ScatterSpecProps]>((signals, props) => {
 	const { children, name } = props;
 	// trendline signals
-	signals.push(...getTrendlineSignals(props));
+	setTrendlineSignals(signals, props);
 
 	if (!hasInteractiveChildren(children)) return;
 	// interactive signals
-	if (!hasSignalByName(signals, `${name}_hoveredId`)) {
-		// hover signal
-		signals.push(getUncontrolledHoverSignal(`${name}`, true, `${name}_voronoi`));
-	}
+	addHighlightedItemSignalEvents(signals, `${name}_voronoi`, 2);
 	if (hasPopover(children)) {
 		if (!hasSignalByName(signals, `${name}_selectedId`)) {
 			// select signal

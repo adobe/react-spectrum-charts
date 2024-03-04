@@ -33,6 +33,7 @@ import { ROUNDED_SQUARE_PATH } from 'svgPaths';
 import { BarProps, LegendProps } from 'types';
 import { Data } from 'vega';
 
+import { spectrumColors } from '@themes';
 import colorSchemes from '@themes/colorSchemes';
 import {
 	addData,
@@ -51,8 +52,8 @@ import {
 	getTwoDimensionalOpacities,
 } from './chartSpecBuilder';
 import { setHoverOpacityForMarks } from './legend/legendHighlightUtils';
+import { defaultHighlightedItemSignal } from './specTestUtils';
 import { baseData } from './specUtils';
-import { spectrumColors } from '@themes';
 
 const defaultData: Data[] = [{ name: TABLE, values: [], transform: [{ type: 'identifier', as: MARK_ID }] }];
 
@@ -490,7 +491,7 @@ describe('Chart spec builder', () => {
 	});
 
 	describe('getDefaultSignals()', () => {
-		const defaultSignals = [
+		const beginningSignals = [
 			{ name: BACKGROUND_COLOR, value: 'rgb(255, 255, 255)' },
 			{
 				name: 'colors',
@@ -513,17 +514,19 @@ describe('Chart spec builder', () => {
 			{ name: 'opacities', value: [[1]] },
 		];
 
+		const endSignals = [defaultHighlightedItemSignal];
+
 		test('hiddenSeries is empty when no hidden series', () => {
 			expect(
 				getDefaultSignals(DEFAULT_BACKGROUND_COLOR, 'categorical12', 'light', ['dashed'], [1]),
-			).toStrictEqual([...defaultSignals, { name: 'hiddenSeries', value: [] }]);
+			).toStrictEqual([...beginningSignals, { name: 'hiddenSeries', value: [] }, ...endSignals]);
 		});
 
 		test('hiddenSeries contains provided hidden series', () => {
 			const hiddenSeries = ['test'];
 			expect(
 				getDefaultSignals(DEFAULT_BACKGROUND_COLOR, 'categorical12', 'light', ['dashed'], [1], hiddenSeries),
-			).toStrictEqual([...defaultSignals, { name: 'hiddenSeries', value: hiddenSeries }]);
+			).toStrictEqual([...beginningSignals, { name: 'hiddenSeries', value: hiddenSeries }, ...endSignals]);
 		});
 	});
 });

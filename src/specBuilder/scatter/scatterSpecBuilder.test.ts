@@ -15,6 +15,7 @@ import { Trendline } from '@components/Trendline';
 import {
 	COLOR_SCALE,
 	DEFAULT_COLOR,
+	HIGHLIGHTED_ITEM,
 	LINEAR_COLOR_SCALE,
 	LINE_TYPE_SCALE,
 	LINE_WIDTH_SCALE,
@@ -61,7 +62,7 @@ describe('addSignals()', () => {
 			children: [createElement(ChartTooltip)],
 		});
 		expect(signals).toHaveLength(1);
-		expect(signals[0].name).toBe('scatter0_hoveredId');
+		expect(signals[0].name).toBe(HIGHLIGHTED_ITEM);
 	});
 	test('should add selectedId signal if popover exists', () => {
 		const signals = addSignals([], {
@@ -79,7 +80,7 @@ describe('addSignals()', () => {
 		expect(signals).toHaveLength(3);
 		expect(signals[0].name).toBe('scatter0_hoveredSeries');
 		expect(signals[1].name).toBe('scatter0_selectedSeries');
-		expect(signals[2].name).toBe('scatter0_hoveredId');
+		expect(signals[2].name).toBe(HIGHLIGHTED_ITEM);
 	});
 });
 

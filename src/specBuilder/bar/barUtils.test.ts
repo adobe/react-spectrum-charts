@@ -22,6 +22,7 @@ import {
 	DEFAULT_METRIC,
 	DEFAULT_OPACITY_RULE,
 	FILTERED_TABLE,
+	HIGHLIGHTED_ITEM,
 	HIGHLIGHT_CONTRAST_RATIO,
 	MARK_ID,
 	PADDING_RATIO,
@@ -289,7 +290,10 @@ describe('barUtils', () => {
 		test('Tooltip child, should return tests for hover and default to opacity', () => {
 			const tooltip = createElement(ChartTooltip);
 			expect(getBarOpacity({ ...defaultBarProps, children: [tooltip] })).toStrictEqual([
-				{ test: `bar0_hoveredId && bar0_hoveredId !== datum.${MARK_ID}`, value: 1 / HIGHLIGHT_CONTRAST_RATIO },
+				{
+					test: `${HIGHLIGHTED_ITEM} && ${HIGHLIGHTED_ITEM} !== datum.${MARK_ID}`,
+					value: 1 / HIGHLIGHT_CONTRAST_RATIO,
+				},
 				DEFAULT_OPACITY_RULE,
 			]);
 		});

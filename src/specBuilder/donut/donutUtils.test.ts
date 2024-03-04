@@ -397,7 +397,7 @@ describe('getOpacityRules', () => {
 		const result = getOpacityRules('Test', []);
 		expect(result).toEqual([
 			{
-				test: `Test_hoveredId && datum.${MARK_ID} !== Test_hoveredId`,
+				test: `${HIGHLIGHT_CONTRAST_RATIO} && datum.${MARK_ID} !== ${HIGHLIGHT_CONTRAST_RATIO}`,
 				value: 1 / HIGHLIGHT_CONTRAST_RATIO,
 			},
 			{
@@ -411,7 +411,7 @@ describe('getOpacityRules', () => {
 		const result = getOpacityRules('Test', children);
 		expect(result).toEqual([
 			{
-				test: `Test_hoveredId && datum.${MARK_ID} !== Test_hoveredId`,
+				test: `${HIGHLIGHT_CONTRAST_RATIO} && datum.${MARK_ID} !== ${HIGHLIGHT_CONTRAST_RATIO}`,
 				value: 1 / HIGHLIGHT_CONTRAST_RATIO,
 			},
 			{

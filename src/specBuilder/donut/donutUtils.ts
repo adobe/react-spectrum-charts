@@ -10,7 +10,7 @@
  * governing permissions and limitations under the License.
  */
 
-import { COLOR_SCALE, FILTERED_TABLE, HIGHLIGHT_CONTRAST_RATIO, MARK_ID } from '@constants';
+import { COLOR_SCALE, FILTERED_TABLE, HIGHLIGHTED_ITEM, HIGHLIGHT_CONTRAST_RATIO, MARK_ID } from '@constants';
 import { getTooltip, hasPopover } from '@specBuilder/marks/markUtils';
 import { MarkChildElement } from 'types';
 import {
@@ -50,12 +50,11 @@ export const getArcMark = (name: string, holeRatio: number, radius: string, chil
 
 export const getOpacityRules = (name: string, children: MarkChildElement[]): ProductionRule<NumericValueRef> => {
 	const lowOpacity = 1 / HIGHLIGHT_CONTRAST_RATIO;
-	const hoveredSignal = `${name}_hoveredId`;
 	const selectedSignal = `${name}_selectedId`;
 
 	const opacityRules = [
 		{
-			test: `${hoveredSignal} && datum.${MARK_ID} !== ${hoveredSignal}`,
+			test: `${HIGHLIGHTED_ITEM} && datum.${MARK_ID} !== ${HIGHLIGHTED_ITEM}`,
 			value: lowOpacity,
 		},
 		{

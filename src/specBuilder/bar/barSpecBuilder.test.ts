@@ -29,7 +29,6 @@ import {
 	STACK_ID,
 	TABLE,
 } from '@constants';
-import { getUncontrolledHoverSignal } from '@specBuilder/signal/signalSpecBuilder';
 import { spectrumColors } from '@themes';
 import {
 	AggregateTransform,
@@ -66,6 +65,7 @@ import {
 	stackedAnnotationMarks,
 } from './barTestUtils';
 import { defaultDodgedMark } from './dodgedBarUtils.test';
+import { defaultSignals } from '@specBuilder/specTestUtils';
 
 const startingSpec: Spec = initializeSpec({
 	scales: [{ name: COLOR_SCALE, type: 'ordinal' }],
@@ -222,16 +222,6 @@ const defaultSpec: Spec = {
 	],
 };
 
-const defaultHoverSignal = {
-	name: 'bar0_hoveredId',
-	on: [
-		{ events: '@bar0:mouseover', update: `datum.${MARK_ID}` },
-		{ events: '@bar0:mouseout', update: 'null' },
-	],
-	value: null,
-};
-const defaultSelectSignal = { name: 'bar0_selectedId', value: null };
-
 describe('barSpecBuilder', () => {
 	describe('addBar()', () => {
 		test('no props', () => {
@@ -240,47 +230,24 @@ describe('barSpecBuilder', () => {
 	});
 
 	describe('addSignals()', () => {
-		describe('no initial state', () => {
-			test('default props, should return padding signal', () => {
-				expect(addSignals([], defaultBarProps)).toStrictEqual([defaultPaddingSignal]);
-			});
-			test('ChartTooltip, should add hover signal', () => {
-				const tooltip = createElement(ChartTooltip);
-				expect(addSignals([], { ...defaultBarProps, children: [tooltip] })).toStrictEqual([
-					defaultPaddingSignal,
-					defaultHoverSignal,
-				]);
-			});
-			test('ChartPopover, should add hover and select signal', () => {
-				const popover = createElement(ChartPopover);
-				expect(addSignals([], { ...defaultBarProps, children: [popover] })).toStrictEqual([
-					defaultPaddingSignal,
-					defaultHoverSignal,
-					defaultSelectSignal,
-				]);
-			});
+		test('should add padding signal', () => {
+			const signals = addSignals(defaultSignals, defaultBarProps);
+			expect(signals).toHaveLength(2);
+			expect(signals[1]).toHaveProperty('name', 'paddingInner');
 		});
-		describe('existing signals', () => {
-			test('default props, should return original signal', () => {
-				expect(addSignals([getUncontrolledHoverSignal('bar0')], defaultBarProps)).toStrictEqual([
-					getUncontrolledHoverSignal('bar0'),
-					defaultPaddingSignal,
-				]);
+		test('should add hover events if tooltip is present', () => {
+			const signals = addSignals(defaultSignals, { ...defaultBarProps, children: [createElement(ChartTooltip)] });
+			expect(signals[0]).toHaveProperty('on');
+			expect(signals[0].on).toHaveLength(2);
+			expect(signals[0].on?.[0]).toHaveProperty('events', '@bar0:mouseover');
+		});
+		test('should add selected signal if popover is present', () => {
+			const signals = addSignals(defaultSignals, {
+				...defaultBarProps,
+				children: [createElement(ChartTooltip), createElement(ChartPopover)],
 			});
-			test('existing hover and select signals, should do nothing', () => {
-				const popover = createElement(ChartPopover);
-				expect(
-					addSignals([getUncontrolledHoverSignal('bar0'), defaultHoverSignal, defaultSelectSignal], {
-						...defaultBarProps,
-						children: [popover],
-					}),
-				).toStrictEqual([
-					getUncontrolledHoverSignal('bar0'),
-					defaultHoverSignal,
-					defaultSelectSignal,
-					defaultPaddingSignal,
-				]);
-			});
+			expect(signals).toHaveLength(3);
+			expect(signals[2]).toHaveProperty('name', 'bar0_selectedId');
 		});
 	});
 

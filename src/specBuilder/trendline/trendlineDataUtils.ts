@@ -10,7 +10,7 @@
  * governing permissions and limitations under the License.
  */
 
-import { FILTERED_TABLE, MARK_ID } from '@constants';
+import { FILTERED_TABLE, HIGHLIGHTED_ITEM, MARK_ID } from '@constants';
 import { getSeriesIdTransform, getTableData } from '@specBuilder/data/dataUtils';
 import { hasInteractiveChildren, hasPopover } from '@specBuilder/marks/markUtils';
 import { getFacetsFromProps } from '@specBuilder/specUtils';
@@ -217,11 +217,10 @@ const getWindowTrendlineData = (markProps: TrendlineParentProps, trendlineProps:
  */
 const getHighlightTrendlineData = (markName: string, trendlines: TrendlineSpecProps[]): SourceData => {
 	const selectSignal = `${markName}Trendline_selectedId`;
-	const hoverSignal = `${markName}Trendline_hoveredId`;
 	const trendlineHasPopover = trendlines.some((trendline) => hasPopover(trendline.children));
 	const expr = trendlineHasPopover
-		? `${selectSignal} === datum.${MARK_ID} || !${selectSignal} && ${hoverSignal} === datum.${MARK_ID}`
-		: `${hoverSignal} === datum.${MARK_ID}`;
+		? `${selectSignal} === datum.${MARK_ID} || !${selectSignal} && ${HIGHLIGHTED_ITEM} === datum.${MARK_ID}`
+		: `${HIGHLIGHTED_ITEM} === datum.${MARK_ID}`;
 
 	return {
 		name: `${markName}Trendline_highlightedData`,

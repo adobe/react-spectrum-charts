@@ -18,6 +18,7 @@ import {
 	DEFAULT_OPACITY_RULE,
 	DISCRETE_PADDING,
 	FILTERED_TABLE,
+	HIGHLIGHTED_ITEM,
 	MARK_ID,
 	STACK_ID,
 } from '@constants';
@@ -374,13 +375,12 @@ export const getBarOpacity = ({ children, name }: BarSpecProps): ProductionRule<
 	}
 
 	// if a bar is hovered/selected, all other bars should have reduced opacity
-	const hoverSignal = `${name}_hoveredId`;
 	if (hasPopover(children)) {
 		const selectSignal = `${name}_selectedId`;
 
 		return [
 			{
-				test: `!${selectSignal} && ${hoverSignal} && ${hoverSignal} !== datum.${MARK_ID}`,
+				test: `!${selectSignal} && ${HIGHLIGHTED_ITEM} && ${HIGHLIGHTED_ITEM} !== datum.${MARK_ID}`,
 				...getHighlightOpacityValue(DEFAULT_OPACITY_RULE),
 			},
 			{
@@ -393,7 +393,7 @@ export const getBarOpacity = ({ children, name }: BarSpecProps): ProductionRule<
 	}
 	return [
 		{
-			test: `${hoverSignal} && ${hoverSignal} !== datum.${MARK_ID}`,
+			test: `${HIGHLIGHTED_ITEM} && ${HIGHLIGHTED_ITEM} !== datum.${MARK_ID}`,
 			...getHighlightOpacityValue(),
 		},
 		DEFAULT_OPACITY_RULE,
