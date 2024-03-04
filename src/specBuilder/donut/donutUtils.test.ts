@@ -13,7 +13,7 @@
 import { createElement } from 'react';
 
 import { ChartPopover } from '@components/ChartPopover';
-import { COLOR_SCALE, FILTERED_TABLE, HIGHLIGHT_CONTRAST_RATIO, MARK_ID } from '@constants';
+import { COLOR_SCALE, FILTERED_TABLE, HIGHLIGHTED_ITEM, HIGHLIGHT_CONTRAST_RATIO, MARK_ID } from '@constants';
 import { getTooltip } from '@specBuilder/marks/markUtils';
 import { MarkChildElement } from 'types';
 
@@ -397,7 +397,7 @@ describe('getOpacityRules', () => {
 		const result = getOpacityRules('Test', []);
 		expect(result).toEqual([
 			{
-				test: `${HIGHLIGHT_CONTRAST_RATIO} && datum.${MARK_ID} !== ${HIGHLIGHT_CONTRAST_RATIO}`,
+				test: `${HIGHLIGHTED_ITEM} && datum.${MARK_ID} !== ${HIGHLIGHTED_ITEM}`,
 				value: 1 / HIGHLIGHT_CONTRAST_RATIO,
 			},
 			{
@@ -411,7 +411,7 @@ describe('getOpacityRules', () => {
 		const result = getOpacityRules('Test', children);
 		expect(result).toEqual([
 			{
-				test: `${HIGHLIGHT_CONTRAST_RATIO} && datum.${MARK_ID} !== ${HIGHLIGHT_CONTRAST_RATIO}`,
+				test: `${HIGHLIGHTED_ITEM} && datum.${MARK_ID} !== ${HIGHLIGHTED_ITEM}`,
 				value: 1 / HIGHLIGHT_CONTRAST_RATIO,
 			},
 			{

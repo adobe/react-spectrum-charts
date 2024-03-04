@@ -16,8 +16,9 @@ import { ChartPopover } from '@components/ChartPopover';
 import { ChartTooltip } from '@components/ChartTooltip';
 import { Trendline } from '@components/Trendline';
 import { defaultLineProps } from './trendlineTestUtils';
-import { defaultSignals } from '@specBuilder/specTestUtils';
+import { defaultHighlightedItemSignal, defaultSignals } from '@specBuilder/specTestUtils';
 import { Signal } from 'vega';
+import { HIGHLIGHTED_ITEM } from '@constants';
 
 describe('getTrendlineSignals()', () => {
 	let signals: Signal[];
@@ -30,13 +31,13 @@ describe('getTrendlineSignals()', () => {
 			children: [createElement(Trendline, {}, createElement(ChartTooltip))],
 		});
 		expect(signals).toHaveLength(2);
-		expect(signals[0]).toHaveProperty('name', 'line0Trendline_hoveredId');
+		expect(signals[0]).toHaveProperty('name', HIGHLIGHTED_ITEM);
 		expect(signals[1]).toHaveProperty('name', 'line0Trendline_hoveredSeries');
 	});
 
 	test('should not return any signals if there is not a ChartTooltip', () => {
 		setTrendlineSignals(signals, defaultLineProps);
-		expect(signals).toHaveLength(0);
+		expect(signals).toStrictEqual([defaultHighlightedItemSignal]);
 	});
 
 	test('should return voronoi selected signal if ChartPopover exists', () => {
