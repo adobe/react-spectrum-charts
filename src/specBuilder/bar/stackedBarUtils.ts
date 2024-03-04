@@ -36,8 +36,6 @@ export const getStackedBarMarks = (props: BarSpecProps): Mark[] => {
 	// bar mark
 	marks.push(getStackedBar(props));
 
-	console.warn('marks after adding stacked bar and background bar are', marks);
-
 	// add annotation marks
 	marks.push(
 		...getAnnotationMarks(
