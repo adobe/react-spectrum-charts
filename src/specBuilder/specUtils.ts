@@ -39,7 +39,7 @@ import {
 	MARK_ID,
 	OPACITY_SCALE,
 	PREVIOUS_TABLE,
-	TABLE,
+	TABLE
 } from '../constants';
 import { SanitizedSpecProps } from '../types';
 
@@ -326,7 +326,7 @@ export const getAnimationMarks = (
 		signal: `datum.${metric} * ${easingFunction}`,
 	};
 	if (data && previousData) {
-		const hasSameDimensions = data.every((d) => previousData.some((pd) => d[dimension] === pd[dimension]));
+		const hasSameDimensions = data !== previousData && data.every((d) => previousData.some((pd) => d[dimension] === pd[dimension]));
 		if (hasSameDimensions) {
 			// If data isn't similar enough, keep the animation from zero as shown above
 			markUpdate = {
