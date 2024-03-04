@@ -11,7 +11,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { FC, cloneElement, useRef } from 'react';
+import { CSSProperties, FC, cloneElement, useRef } from 'react';
 
 import { BIG_NUMBER_ASPECT_RATIO } from '@constants';
 import { Line } from '@rsc';
@@ -22,7 +22,7 @@ import { getLocale } from 'utils/locale';
 import { v4 as uuid } from 'uuid';
 import { View as VegaView } from 'vega';
 
-import { Flex } from '@adobe/react-spectrum';
+import { Flex, FlexProps, IconProps } from '@adobe/react-spectrum';
 
 import './BigNumber.css';
 import { getFormattedString } from './bigNumberFormatUtils';
@@ -54,12 +54,9 @@ const BigNumber: FC<BigNumberProps> = ({
 	const formattedValue = getFormattedString(bigNumberValue, numberType, numberFormat, numberLocale);
 	const lineElements = sanitizeBigNumberChildren(children);
 
-	let lineProps;
+	let lineProps: LineProps | undefined;
 	if (lineElements.length > 0) {
-		// eslint-disable-next-line @typescript-eslint/no-unused-vars
-		const { padding, isMethodLast, isSparkline, pointSize, ...remainingProps } = (lineElements[0] as LineElement)
-			.props;
-		lineProps = remainingProps;
+		lineProps = (lineElements[0] as LineElement).props;
 	}
 
 	const { iconSize, labelSize, valueSize, pointSize, cWidth, cHeight, padding, textAlign, direction, iconDirection } =
@@ -78,11 +75,11 @@ const BigNumber: FC<BigNumberProps> = ({
 					<Flex justifySelf={'center'} alignSelf={'center'} marginTop="5px">
 						<RscChart chartWidth={cWidth} height={cHeight} data={data} locale={locale} {...rscChartRemain}>
 							<Line
+								{...lineProps}
 								isSparkline
 								isMethodLast={method === 'last'}
 								padding={padding}
 								pointSize={pointSize}
-								{...lineProps}
 							/>
 						</RscChart>
 					</Flex>
@@ -126,24 +123,22 @@ const BigNumber: FC<BigNumberProps> = ({
 
 BigNumber.displayName = 'BigNumber';
 
-type BigNumberIconSize = 'XXS' | 'XS' | 'S' | 'M' | 'L' | 'XL' | 'XXL' | undefined;
-
 function getDynamicProperties(
 	orientation: Orientation,
 	chartWidth: number,
 	lineProps?: LineProps,
 	height?: number
 ): {
-	iconSize: BigNumberIconSize;
-	labelSize;
-	valueSize;
-	cHeight;
-	cWidth;
-	padding;
-	textAlign;
-	direction;
-	iconDirection;
-	pointSize;
+	iconSize: IconProps['size'];
+	labelSize: CSSProperties['fontSize'];
+	valueSize: CSSProperties['fontSize'];
+	cHeight: number;
+	cWidth: number;
+	padding: number;
+	textAlign: CSSProperties['textAlign'];
+	direction: FlexProps['direction'];
+	iconDirection: FlexProps['direction'];
+	pointSize: number;
 } {
 	const aspectRatio = BIG_NUMBER_ASPECT_RATIO;
 
@@ -191,7 +186,10 @@ function getDynamicProperties(
 	};
 }
 
-function determineFontSize(availableSpace: number): { labelSize: string; valueSize: string } {
+function determineFontSize(availableSpace: number): {
+	labelSize: CSSProperties['fontSize'];
+	valueSize: CSSProperties['fontSize'];
+} {
 	if (availableSpace <= 75) return { labelSize: 'medium', valueSize: 'large' };
 	else if (availableSpace <= 200) return { labelSize: 'large', valueSize: 'x-large' };
 	else if (availableSpace <= 350) return { labelSize: 'x-large', valueSize: 'xx-large' };
@@ -206,11 +204,11 @@ function determinePointSize(availableSpace: number): number {
 }
 
 function getDynamicIconSize(
-	orientation: string,
+	orientation: Orientation,
 	chartWidth: number,
 	lineProps?: LineProps,
 	height?: number
-): BigNumberIconSize {
+): IconProps['size'] {
 	if (lineProps) {
 		if (orientation == 'vertical') {
 			const availableSpace = height ? height / 3 : chartWidth / 2;
@@ -226,7 +224,7 @@ function getDynamicIconSize(
 	}
 }
 
-function determineIconSize(availableSpace: number) {
+function determineIconSize(availableSpace: number): IconProps['size'] {
 	if (availableSpace <= 21) return 'XS';
 	else if (availableSpace <= 35) return 'S';
 	else if (availableSpace <= 45) return 'M';
