@@ -116,8 +116,10 @@ export const getStackedDimensionEncodings = (props: BarSpecProps): RectEncodeEnt
 	const endKey = `${startKey}2`;
 
 	return {
-		[startKey]: animations !== false ? getAnimationMarks(dimension, `${metric}0`, data, previousData, scaleKey) : undefined,
-		[endKey]: animations !== false ? getAnimationMarks(dimension, `${metric}1`, data, previousData, scaleKey) : undefined,
+		...(animations !== false && {
+			[startKey]: getAnimationMarks(dimension, `${metric}0`, data, previousData, scaleKey),
+			[endKey]: getAnimationMarks(dimension, `${metric}1`, data, previousData, scaleKey)
+		}),
 		[dimensionAxis]: { scale: dimensionScaleKey, field: dimension },
 		[rangeScale]: { scale: dimensionScaleKey, band: 1 },
 	};

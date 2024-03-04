@@ -113,9 +113,11 @@ export const getDodgedDimensionEncodings = (props: BarSpecProps): RectEncodeEntr
 	const endKey = `${startKey}2`;
 
 	return {
+		...(animations !== false && {
+			[startKey]: getAnimationMarks(dimension, startMetric, data, previousData, scaleKey),
+			[endKey]: endAnimations
+		}),
 		[dimensionAxis]: { scale, field },
-		[startKey]: animations !== false ? getAnimationMarks(dimension, startMetric, data, previousData, scaleKey) : undefined,
-		[endKey]: animations !== false ? endAnimations : undefined,
 		[rangeScale]: { scale, band: 1 },
 	};
 };
@@ -334,11 +336,13 @@ export const getAnnotationMarks = (
 					],
 					width: annotationWidth,
 				},
-				update: animations !== false ?  {
-					fillOpacity: {
-						signal: 'timerValue === 1 ? 1 : 0'
+				...(animations !== false && {
+					update: {
+						fillOpacity: {
+							signal: 'timerValue === 1 ? 1 : 0'
+						}
 					}
-				} : undefined
+				})
 			},
 		});
 		marks.push({
@@ -360,11 +364,13 @@ export const getAnnotationMarks = (
 					baseline: { value: 'middle' },
 					align: { value: 'center' },
 				},
-				update: animations !== false ?  {
-					fillOpacity: {
-						signal: 'timerValue === 1 ? 1 : 0'
+				...(animations !== false && {
+					update: {
+						fillOpacity: {
+							signal: 'timerValue === 1 ? 1 : 0'
+						}
 					}
-				} : undefined
+				})
 			},
 		});
 	}
