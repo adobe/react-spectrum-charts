@@ -62,6 +62,9 @@ const BigNumber: FC<BigNumberProps> = ({
 	const { iconSize, labelSize, valueSize, pointSize, cWidth, cHeight, padding, textAlign, direction, iconDirection } =
 		getDynamicProperties(orientation, chartWidth, lineProps, height);
 
+	const labelStyle: CSSProperties = { fontSize: labelSize, textAlign };
+	const valueStyle: CSSProperties = { fontSize: valueSize, textAlign };
+
 	return (
 		<Flex alignItems={'center'} justifyContent={'center'} direction={direction}>
 			<Flex
@@ -93,24 +96,24 @@ const BigNumber: FC<BigNumberProps> = ({
 				<Flex direction={'column'} justifyContent={'center'}>
 					{icon && lineProps ? (
 						<>
-							<p style={{ fontSize: valueSize, textAlign: textAlign }} className="big-number-data">
+							<p style={valueStyle} className="big-number-data">
 								{formattedValue}
 							</p>
-							<Flex gap={'size-100'} justifyContent={'center'}>
+							<Flex gap={'size-50'} justifyContent={'center'}>
 								<Flex direction={'column'} justifyContent={'center'}>
 									{cloneElement(icon, { size: iconSize, marginTop: '1px' })}
 								</Flex>
-								<p style={{ fontSize: labelSize, textAlign: textAlign }} className="big-number-label">
+								<p style={labelStyle} className="big-number-label">
 									{label}
 								</p>
 							</Flex>
 						</>
 					) : (
 						<>
-							<p style={{ fontSize: valueSize, textAlign: textAlign }} className="big-number-data">
+							<p style={valueStyle} className="big-number-data">
 								{formattedValue}
 							</p>
-							<p style={{ fontSize: labelSize, textAlign: textAlign }} className="big-number-label">
+							<p style={labelStyle} className="big-number-label">
 								{label}
 							</p>
 						</>
@@ -132,23 +135,23 @@ function getDynamicProperties(
 	iconSize: IconProps['size'];
 	labelSize: CSSProperties['fontSize'];
 	valueSize: CSSProperties['fontSize'];
-	cHeight: number;
-	cWidth: number;
-	padding: number;
 	textAlign: CSSProperties['textAlign'];
 	direction: FlexProps['direction'];
 	iconDirection: FlexProps['direction'];
+	cHeight: number;
+	cWidth: number;
+	padding: number;
 	pointSize: number;
 } {
 	const aspectRatio = BIG_NUMBER_ASPECT_RATIO;
 
-	const iconSize = getDynamicIconSize(orientation, chartWidth, lineProps, height);
 	let cHeight, cWidth;
 	if (orientation == 'vertical') {
-		cHeight = height ? height / 3 : chartWidth / aspectRatio;
+		cHeight = height ? height / 3 : (chartWidth / aspectRatio) * 1.2;
 		cWidth = height ? cHeight * aspectRatio : chartWidth;
 		const fontSizes = determineFontSize(chartWidth / 2);
 		const pointSize = determinePointSize(cWidth);
+		const iconSize = determineIconSize(fontSizes.labelSize, lineProps != undefined);
 		return {
 			padding: 0,
 			textAlign: 'center',
@@ -164,14 +167,15 @@ function getDynamicProperties(
 	}
 
 	const fontSizes = determineFontSize(chartWidth);
-	if (height && height < chartWidth / (1.75 * aspectRatio)) {
-		cHeight = height;
+	if (height && height < chartWidth / (2 * aspectRatio)) {
+		cHeight = height / 1.5;
 		cWidth = height * aspectRatio;
 	} else {
-		cWidth = chartWidth / 1.75;
+		cWidth = chartWidth / 2.5;
 		cHeight = cWidth / aspectRatio;
 	}
 	const pointSize = determinePointSize(cWidth);
+	const iconSize = determineIconSize(fontSizes.valueSize, lineProps != undefined);
 	return {
 		padding: 10,
 		textAlign: 'start',
@@ -203,34 +207,28 @@ function determinePointSize(availableSpace: number): number {
 	return 200;
 }
 
-function getDynamicIconSize(
-	orientation: Orientation,
-	chartWidth: number,
-	lineProps?: LineProps,
-	height?: number
-): IconProps['size'] {
-	if (lineProps) {
-		if (orientation == 'vertical') {
-			const availableSpace = height ? height / 3 : chartWidth / 2;
-			return determineIconSize(availableSpace);
+function determineIconSize(textSize: CSSProperties['fontSize'], line: boolean): IconProps['size'] {
+	if (line) {
+		if (textSize == 'medium') {
+			return 'XXS';
+		} else if (textSize == 'large') {
+			return 'XS';
+		} else if (textSize == 'x-large') {
+			return 'S';
 		} else {
-			return determineIconSize(chartWidth / 12);
+			return 'M';
 		}
-	} else if (orientation == 'vertical') {
-		const availableSpace = height ? height / 1.75 : chartWidth;
-		return determineIconSize(availableSpace);
 	} else {
-		return determineIconSize(chartWidth / 3.5);
+		if (textSize == 'medium') {
+			return 'M';
+		} else if (textSize == 'large') {
+			return 'L';
+		} else if (textSize == 'x-large') {
+			return 'XL';
+		} else {
+			return 'XXL';
+		}
 	}
-}
-
-function determineIconSize(availableSpace: number): IconProps['size'] {
-	if (availableSpace <= 21) return 'XS';
-	else if (availableSpace <= 35) return 'S';
-	else if (availableSpace <= 45) return 'M';
-	else if (availableSpace <= 60) return 'L';
-	else if (availableSpace <= 75) return 'XL';
-	return 'XXL';
 }
 
 function getBigNumberValue(data: ChartData[], dataKey: string, method?: BigNumberMethod) {

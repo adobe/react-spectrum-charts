@@ -40,7 +40,7 @@ describe('BigNumber', () => {
 			expect(value).toBeInTheDocument();
 			const label = await screen.findByText(BasicHorizontal.args.label);
 			expect(label).toBeInTheDocument();
-			expect(label.style.textAlign).toEqual('start')
+			expect(label.style.textAlign).toEqual('start');
 		});
 
 		test('BasicVertical renders', async () => {
@@ -49,30 +49,30 @@ describe('BigNumber', () => {
 			expect(value).toBeInTheDocument();
 			const label = await screen.findByText(BasicVertical.args.label);
 			expect(label).toBeInTheDocument();
-			expect(label.style.textAlign).toEqual('center')
+			expect(label.style.textAlign).toEqual('center');
 		});
 	});
 	describe('BigNumber with icon prop passed in', () => {
 		test('IconVertical renders with correct icon present', async () => {
 			render(<IconVertical {...IconVertical.args} />);
-			const icon = await screen.findByTestId('icon-amusementpark');
+			const icon = await screen.findByTestId('icon-user');
 			expect(icon).toBeInTheDocument();
 			const value = await screen.findByText(data[data.length - 1][IconVertical.args.dataKey]);
 			expect(value).toBeInTheDocument();
 			const label = await screen.findByText(IconVertical.args.label);
 			expect(label).toBeInTheDocument();
-			expect(label.style.textAlign).toEqual('center')
+			expect(label.style.textAlign).toEqual('center');
 		});
 
 		test('IconHorizontal renders with correct icon present', async () => {
 			render(<IconHorizontal {...IconHorizontal.args} />);
-			const icon = await screen.findByTestId('icon-calendar');
+			const icon = await screen.findByTestId('icon-user');
 			expect(icon).toBeInTheDocument();
 			const value = await screen.findByText('20');
 			expect(value).toBeInTheDocument();
 			const label = await screen.findByText(IconHorizontal.args.label);
 			expect(label).toBeInTheDocument();
-			expect(label.style.textAlign).toEqual('start')
+			expect(label.style.textAlign).toEqual('start');
 		});
 	});
 	describe('BigNumber error states', () => {
@@ -180,7 +180,7 @@ describe('BigNumber', () => {
 
 			const label = await screen.findByText('Visitors');
 			expect(label).toBeInTheDocument();
-			expect(label.style.textAlign).toEqual('center')
+			expect(label.style.textAlign).toEqual('center');
 
 			const chart = await findChart();
 			expect(chart).toBeInTheDocument();
@@ -195,7 +195,7 @@ describe('BigNumber', () => {
 
 			const label = await screen.findByText('Visitors');
 			expect(label).toBeInTheDocument();
-			expect(label.style.textAlign).toEqual('start')
+			expect(label.style.textAlign).toEqual('start');
 
 			const chart = await findChart();
 			expect(chart).toBeInTheDocument();
@@ -208,7 +208,7 @@ describe('BigNumber', () => {
 	describe('Sparkline with orientation and icon', () => {
 		test('Vertical orientation sparkline with icon', async () => {
 			render(<SparklineAndIconVertical {...SparklineAndIconVertical.args} />);
-			const icon = await screen.findByTestId('icon-amusementpark');
+			const icon = await screen.findByTestId('icon-user');
 			expect(icon).toBeInTheDocument();
 
 			const value = await screen.findByText('20');
@@ -216,7 +216,7 @@ describe('BigNumber', () => {
 
 			const label = await screen.findByText('Visitors');
 			expect(label).toBeInTheDocument();
-			expect(label.style.textAlign).toEqual('center')
+			expect(label.style.textAlign).toEqual('center');
 
 			const chart = await findChart();
 			expect(chart).toBeInTheDocument();
@@ -226,7 +226,7 @@ describe('BigNumber', () => {
 		});
 		test('Horizontal orientation sparkline with icon', async () => {
 			render(<SparklineAndIconHorizontal {...SparklineAndIconHorizontal.args} />);
-			const icon = await screen.findByTestId('icon-amusementpark');
+			const icon = await screen.findByTestId('icon-user');
 			expect(icon).toBeInTheDocument();
 
 			const value = await screen.findByText('20');
@@ -234,7 +234,7 @@ describe('BigNumber', () => {
 
 			const label = await screen.findByText('Visitors');
 			expect(label).toBeInTheDocument();
-			expect(label.style.textAlign).toEqual('start')
+			expect(label.style.textAlign).toEqual('start');
 
 			const chart = await findChart();
 			expect(chart).toBeInTheDocument();

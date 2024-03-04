@@ -18,8 +18,7 @@ import { BigNumber, Chart, Line } from '@rsc';
 import { StoryFn } from '@storybook/react';
 import { bindWithProps } from 'test-utils/bindWithProps';
 
-import Amusementpark from '@spectrum-icons/workflow/Amusementpark';
-import Calendar from '@spectrum-icons/workflow/Calendar';
+import User from '@spectrum-icons/workflow/User';
 
 import { simpleSparklineData as data } from '../../data/data';
 
@@ -28,11 +27,24 @@ export default {
 	component: BigNumber,
 };
 
-const BigNumberStory: StoryFn<typeof BigNumber> = (args): ReactElement => {
+const BigNumberSmallStory: StoryFn<typeof BigNumber> = (args): ReactElement => {
 	const chartProps = useChartProps({
 		data: data,
 		width: 200,
-		height: 100,
+		height: 200,
+	});
+	return (
+		<Chart {...chartProps}>
+			<BigNumber {...args} />
+		</Chart>
+	);
+};
+
+const BigNumberMediumStory: StoryFn<typeof BigNumber> = (args): ReactElement => {
+	const chartProps = useChartProps({
+		data: data,
+		width: 350,
+		height: 350,
 	});
 	return (
 		<Chart {...chartProps}>
@@ -49,7 +61,7 @@ const BigNumberLargeStory: StoryFn<typeof BigNumber> = (args): ReactElement => {
 	});
 	return (
 		<Chart {...chartProps}>
-			<BigNumber {...args}/>
+			<BigNumber {...args} />
 		</Chart>
 	);
 };
@@ -69,10 +81,10 @@ const UndefinedDataStory: StoryFn<typeof BigNumber> = (args): ReactElement => {
 
 const CurrencyFormatStory: StoryFn<typeof BigNumber> = (args): ReactElement => {
 	const chartProps = useChartProps({
-		data: [{value: 255.56}],
+		data: [{ value: 255.56 }],
 		width: 200,
 		height: 100,
-		locale: 'de-DE'
+		locale: 'de-DE',
 	});
 	return (
 		<Chart {...chartProps}>
@@ -83,7 +95,7 @@ const CurrencyFormatStory: StoryFn<typeof BigNumber> = (args): ReactElement => {
 
 const PercentageFormatStory: StoryFn<typeof BigNumber> = (args): ReactElement => {
 	const chartProps = useChartProps({
-		data: [{value: .25}],
+		data: [{ value: 0.25 }],
 		width: 200,
 		height: 100,
 	});
@@ -115,7 +127,7 @@ BasicHorizontal.args = {
 	label: 'Visitors',
 };
 
-const BasicVertical = bindWithProps(BigNumberStory);
+const BasicVertical = bindWithProps(BigNumberLargeStory);
 BasicVertical.args = {
 	children: undefined,
 	dataKey: 'x',
@@ -123,10 +135,10 @@ BasicVertical.args = {
 	label: 'Visitors',
 };
 
-const IconHorizontal = bindWithProps(BigNumberStory);
+const IconHorizontal = bindWithProps(BigNumberLargeStory);
 IconHorizontal.args = {
 	dataKey: 'x',
-	icon: <Calendar data-testid="icon-calendar" />,
+	icon: <User data-testid="icon-user" />,
 	children: undefined,
 	orientation: 'horizontal',
 	label: 'Visitors',
@@ -135,13 +147,13 @@ IconHorizontal.args = {
 const IconVertical = bindWithProps(BigNumberLargeStory);
 IconVertical.args = {
 	dataKey: 'x',
-	icon: <Amusementpark data-testid="icon-amusementpark" />,
+	icon: <User data-testid="icon-user" />,
 	children: undefined,
 	orientation: 'vertical',
 	label: 'Visitor',
 };
 
-const SparklineHorizontal = bindWithProps(BigNumberStory);
+const SparklineHorizontal = bindWithProps(BigNumberLargeStory);
 SparklineHorizontal.args = {
 	dataKey: 'x',
 	children: <Line dimension="x" metric="y" scaleType="linear" />,
@@ -161,16 +173,16 @@ const SparklineAndIconHorizontal = bindWithProps(BigNumberLargeStory);
 SparklineAndIconHorizontal.args = {
 	dataKey: 'x',
 	children: <Line key="line" dimension="x" metric="y" scaleType="linear" />,
-	icon: <Amusementpark key="icon" data-testid="icon-amusementpark" />,
+	icon: <User key="icon" data-testid="icon-user" />,
 	orientation: 'horizontal',
 	label: 'Visitors',
 };
 
-const SparklineAndIconVertical = bindWithProps(BigNumberStory);
+const SparklineAndIconVertical = bindWithProps(BigNumberLargeStory);
 SparklineAndIconVertical.args = {
 	dataKey: 'x',
 	children: <Line key="line" dimension="x" metric="y" scaleType="linear" />,
-	icon: <Amusementpark key="icon" data-testid="icon-amusementpark" />,
+	icon: <User key="icon" data-testid="icon-user" />,
 	orientation: 'vertical',
 	label: 'Visitors',
 };
@@ -218,6 +230,24 @@ UndefinedData.args = {
 	label: 'Visitors',
 };
 
+const SparklineAndIconHorizontalSmall = bindWithProps(BigNumberSmallStory);
+SparklineAndIconHorizontalSmall.args = {
+	dataKey: 'x',
+	children: <Line key="line" dimension="x" metric="y" scaleType="linear" />,
+	icon: <User key="icon" data-testid="icon-user" />,
+	orientation: 'horizontal',
+	label: 'Visitors',
+};
+
+const SparklineAndIconHorizontalMedium = bindWithProps(BigNumberMediumStory);
+SparklineAndIconHorizontalMedium.args = {
+	dataKey: 'x',
+	children: <Line key="line" dimension="x" metric="y" scaleType="linear" />,
+	icon: <User key="icon" data-testid="icon-user" />,
+	orientation: 'horizontal',
+	label: 'Visitors',
+};
+
 export {
 	BasicHorizontal,
 	BasicVertical,
@@ -232,4 +262,6 @@ export {
 	CompactFormat,
 	PercentageFormat,
 	UndefinedData,
+	SparklineAndIconHorizontalSmall,
+	SparklineAndIconHorizontalMedium,
 };
