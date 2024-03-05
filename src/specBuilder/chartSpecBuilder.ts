@@ -172,7 +172,6 @@ export function buildSpec({
 	// add signals and update marks for controlled highlighting if there isn't a legend with highlight enabled
 	if (highlightedSeries) {
 		setHoverOpacityForMarks(spec.marks ?? []);
-		// spec = addHighlight(spec, { children, hiddenSeries, highlightedSeries });
 	}
 
 	// clear out all scales that don't have any fields on the domain
