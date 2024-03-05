@@ -18,11 +18,10 @@ import {
 	DEFAULT_METRIC,
 	DEFAULT_TIME_DIMENSION,
 	FILTERED_TABLE,
-	HIGHLIGHTED_SERIES,
 	MARK_ID,
 } from '@constants';
 import {
-	addHighlightSignalMarkHoverEvents,
+	addHighlightedSeriesSignalEvents,
 	getControlledHoverSignal,
 	getGenericSignal,
 	hasSignalByName,
@@ -148,7 +147,7 @@ export const addSignals = produce<Signal[], [AreaSpecProps]>((signals, { childre
 	if (!hasSignalByName(signals, `${name}_controlledHoveredId`)) {
 		signals.push(getControlledHoverSignal(name));
 	}
-	addHighlightSignalMarkHoverEvents(signals, HIGHLIGHTED_SERIES, name);
+	addHighlightedSeriesSignalEvents(signals, name);
 	if (!hasSignalByName(signals, `${name}_selectedId`)) {
 		signals.push(getGenericSignal(`${name}_selectedId`));
 	}

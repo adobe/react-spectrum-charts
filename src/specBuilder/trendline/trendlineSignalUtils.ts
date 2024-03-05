@@ -10,9 +10,12 @@
  * governing permissions and limitations under the License.
  */
 
-import { HIGHLIGHTED_ITEM, HIGHLIGHTED_SERIES } from '@constants';
 import { hasPopover, hasTooltip } from '@specBuilder/marks/markUtils';
-import { addHighlightSignalMarkHoverEvents, getGenericSignal } from '@specBuilder/signal/signalSpecBuilder';
+import {
+	addHighlightedItemSignalEvents,
+	addHighlightedSeriesSignalEvents,
+	getGenericSignal,
+} from '@specBuilder/signal/signalSpecBuilder';
 import { Signal } from 'vega';
 import { TrendlineParentProps, getTrendlines } from './trendlineUtils';
 
@@ -21,12 +24,12 @@ export const setTrendlineSignals = (signals: Signal[], markProps: TrendlineParen
 	const trendlines = getTrendlines(markProps);
 
 	if (trendlines.some((trendline) => hasTooltip(trendline.children))) {
-		addHighlightSignalMarkHoverEvents(signals, HIGHLIGHTED_ITEM, `${markName}Trendline_voronoi`, 2);
-		addHighlightSignalMarkHoverEvents(signals, HIGHLIGHTED_SERIES, `${markName}Trendline_voronoi`, 2);
+		addHighlightedItemSignalEvents(signals, `${markName}Trendline_voronoi`, 2);
+		addHighlightedSeriesSignalEvents(signals, `${markName}Trendline_voronoi`, 2);
 	}
 
 	if (trendlines.some((trendline) => trendline.displayOnHover)) {
-		addHighlightSignalMarkHoverEvents(signals, HIGHLIGHTED_SERIES, `${markName}_voronoi`, 2);
+		addHighlightedSeriesSignalEvents(signals, `${markName}_voronoi`, 2);
 		signals.push(getGenericSignal(`${markName}_selectedSeries`));
 	}
 

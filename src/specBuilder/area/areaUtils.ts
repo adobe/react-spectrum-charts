@@ -88,7 +88,6 @@ export function getFillOpacity(
 	parentName?: string,
 	displayOnHover?: boolean,
 ): ProductionRule<NumericValueRef> | undefined {
-	// const hoverSignal = isMetricRange && parentName ? `${parentName}_hoveredSeries` : `${name}_hoveredSeries`;
 	const selectSignal = `${name}_selectedSeries`;
 	const metricRangeSelectSignal = isMetricRange && parentName ? `${parentName}_selectedSeries` : selectSignal;
 
