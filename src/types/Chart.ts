@@ -245,7 +245,7 @@ export type Granularity = 'minute' | 'hour' | 'day' | 'week' | 'month' | 'quarte
  * `end` will set the align to `right` for horizontal axes and the baseline to `bottom` for vertical axes.
  */
 export type LabelAlign = 'center' | 'start' | 'end';
-export type LabelFormat = 'linear' | 'percentage' | 'time';
+export type LabelFormat = 'duration' | 'linear' | 'percentage' | 'time';
 export type Label = {
 	/** The axis value that this label is anchored to */
 	value: string | number;

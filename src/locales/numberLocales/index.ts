@@ -69,7 +69,7 @@ import svse from './sv-SE.json';
 import ukua from './uk-UA.json';
 import zhcn from './zh-CN.json';
 
-export const numberLocale: Record<NumberLocaleCode, NumberLocale> = {
+export const numberLocales: Record<NumberLocaleCode, NumberLocale> = {
 	['ar-AE']: arae as NumberLocale,
 	['ar-BH']: arbh as NumberLocale,
 	['ar-DJ']: ardj as NumberLocale,

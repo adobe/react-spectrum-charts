@@ -72,7 +72,7 @@ export const getTimeLabelFormats = (granularity: Granularity): [string, string, 
 export const getControlledLabelAnchorValues = (
 	position: Position,
 	labelOrientaion: Orientation,
-	labelAlign?: LabelAlign
+	labelAlign?: LabelAlign,
 ): { align: Align | undefined; baseline: Baseline | undefined } => {
 	// if there isn't a labelAlign, we don't want to set the align or baseline
 	if (!labelAlign) return { align: undefined, baseline: undefined };
@@ -94,7 +94,7 @@ export const getLabelAnchorValues = (
 	labelOrientaion: Orientation,
 	labelAlign: LabelAlign,
 	vegaLabelAlign?: Align,
-	vegaLabelBaseline?: Baseline
+	vegaLabelBaseline?: Baseline,
 ): { labelAlign: Align; labelBaseline: Baseline } => {
 	const { align, baseline } = getLabelAnchor(position, labelOrientaion, labelAlign);
 	// if vegaLabelAlign or vegaLabelBaseline are set, we want to use those values instead of the calculated values
@@ -114,7 +114,7 @@ export const getLabelAnchorValues = (
 export const getLabelAnchor = (
 	position: Position,
 	labelOrientaion: Orientation,
-	labelAlign: LabelAlign
+	labelAlign: LabelAlign,
 ): { align: Align; baseline: Baseline } => {
 	let align: Align;
 	let baseline: Baseline;
@@ -186,7 +186,7 @@ export const getLabelAngle = (labelOrientaion: Orientation): number => {
 export const getLabelBaseline = (
 	labelAlign: LabelAlign | undefined,
 	position: Position,
-	vegaLabelBaseline?: Baseline
+	vegaLabelBaseline?: Baseline,
 ): Baseline | undefined => {
 	if (vegaLabelBaseline) return vegaLabelBaseline;
 	if (!labelAlign) return;
@@ -212,7 +212,7 @@ export const getLabelBaseline = (
 export const getLabelOffset = (
 	labelAlign: LabelAlign,
 	scaleName: string,
-	vegaLabelOffset?: NumberValue
+	vegaLabelOffset?: NumberValue,
 ): NumberValue | undefined => {
 	if (vegaLabelOffset !== undefined) return vegaLabelOffset;
 	switch (labelAlign) {
@@ -232,10 +232,13 @@ export const getLabelOffset = (
  */
 export const getLabelFormat = (
 	{ labelFormat, labelOrientation, numberFormat, position, truncateLabels }: AxisSpecProps,
-	scaleName: string
+	scaleName: string,
 ): ProductionRule<TextValueRef> => {
 	if (labelFormat === 'percentage') {
 		return [{ test: 'isNumber(datum.value)', signal: "format(datum.value, '~%')" }, { signal: 'datum.value' }];
+	}
+	if (labelFormat === 'duration') {
+		return { signal: 'formatTimeDurationLabels(datum)' };
 	}
 
 	// if it's a number and greater than or equal to 1000, we want to format it in scientific notation (but with B instead of G) ex. 1K, 20M, 1.3B
@@ -270,7 +273,7 @@ export const getAxisLabelsEncoding = (
 	labelKey: 'label' | 'subLabel',
 	labelOrientation: Orientation,
 	position: Position,
-	signalName: string
+	signalName: string,
 ): GuideEncodeEntry<TextEncodeEntry> => ({
 	update: {
 		text: [
@@ -306,7 +309,7 @@ export const getEncodedLabelAnchor = (
 	position: Position,
 	signalName: string,
 	labelOrientation: Orientation,
-	defaultLabelAlign: LabelAlign
+	defaultLabelAlign: LabelAlign,
 ): EncodeEntry => {
 	const baseTestString = `indexof(pluck(${signalName}, 'value'), datum.value) !== -1 && ${signalName}[indexof(pluck(${signalName}, 'value'), datum.value)]`;
 	const baseSignalString = `${signalName}[indexof(pluck(${signalName}, 'value'), datum.value)]`;
