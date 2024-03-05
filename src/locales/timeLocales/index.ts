@@ -48,7 +48,7 @@ import ukua from './uk-UA.json';
 import zhcn from './zh-CN.json';
 import zhtw from './zh-TW.json';
 
-export const timeLocale: Record<TimeLocaleCode, TimeLocale> = {
+export const timeLocales: Record<TimeLocaleCode, TimeLocale> = {
 	['ar-EG']: areg as TimeLocale,
 	['ar-SY']: arsy as TimeLocale,
 	['ca-ES']: caes as TimeLocale,

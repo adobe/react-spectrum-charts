@@ -81,6 +81,17 @@ const LinearAxisStory: StoryFn<typeof Axis> = (args): ReactElement => {
 	);
 };
 
+const DurationStory: StoryFn<typeof Axis> = (args): ReactElement => {
+	const chartProps = useChartProps({ data: workspaceTrendsData, width: 600 });
+	return (
+		<Chart {...chartProps}>
+			<Axis {...args} />
+			<Axis position="bottom" labelFormat="time" />
+			<Line color="series" dimension="datetime" scaleType="time" />
+		</Chart>
+	);
+};
+
 const NonLinearAxisStory: StoryFn<typeof Axis> = (args): ReactElement => {
 	const chartProps = useChartProps({ data: workspaceTrendsData, width: 600 });
 	return (
@@ -120,6 +131,14 @@ Basic.args = {
 	labelFormat: 'percentage',
 	ticks: true,
 	title: 'Conversion Rate',
+};
+
+const DurationLabelFormat = bindWithProps(DurationStory);
+DurationLabelFormat.args = {
+	position: 'left',
+	grid: true,
+	labelFormat: 'duration',
+	title: 'Time spent',
 };
 
 const Time = bindWithProps(TimeAxisStory);
@@ -204,6 +223,7 @@ export {
 	Basic,
 	ControlledLabels,
 	CustomXRange,
+	DurationLabelFormat,
 	NonLinearAxis,
 	NumberFormat,
 	SubLabels,
