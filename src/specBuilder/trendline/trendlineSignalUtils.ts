@@ -14,18 +14,17 @@ import { Signal } from 'vega';
 import { TrendlineParentProps, getTrendlines } from './trendlineUtils';
 import { hasPopover, hasTooltip } from '@specBuilder/marks/markUtils';
 import {
+	addHighlightedItemSignalEvents,
 	getGenericSignal,
 	getSeriesHoveredSignal,
-	getUncontrolledHoverSignal,
 } from '@specBuilder/signal/signalSpecBuilder';
 
-export const getTrendlineSignals = (markProps: TrendlineParentProps): Signal[] => {
-	const signals: Signal[] = [];
+export const setTrendlineSignals = (signals: Signal[], markProps: TrendlineParentProps): void => {
 	const { name: markName } = markProps;
 	const trendlines = getTrendlines(markProps);
 
 	if (trendlines.some((trendline) => hasTooltip(trendline.children))) {
-		signals.push(getUncontrolledHoverSignal(`${markName}Trendline`, true, `${markName}Trendline_voronoi`));
+		addHighlightedItemSignalEvents(signals, `${markName}Trendline_voronoi`, 2);
 		signals.push(getSeriesHoveredSignal(`${markName}Trendline`, true, `${markName}Trendline_voronoi`));
 	}
 
@@ -38,6 +37,4 @@ export const getTrendlineSignals = (markProps: TrendlineParentProps): Signal[] =
 		signals.push(getGenericSignal(`${markName}Trendline_selectedId`));
 		signals.push(getGenericSignal(`${markName}Trendline_selectedSeries`));
 	}
-
-	return signals;
 };

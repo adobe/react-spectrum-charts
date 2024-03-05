@@ -15,6 +15,7 @@ import { Trendline } from '@components/Trendline';
 import {
 	COLOR_SCALE,
 	DEFAULT_COLOR,
+	HIGHLIGHTED_ITEM,
 	LINEAR_COLOR_SCALE,
 	LINE_TYPE_SCALE,
 	LINE_WIDTH_SCALE,
@@ -27,6 +28,7 @@ import { ChartPopover } from '@components/ChartPopover';
 import { ChartTooltip } from '@components/ChartTooltip';
 import { addData, addSignals, setScales } from './scatterSpecBuilder';
 import { defaultScatterProps } from './scatterTestUtils';
+import { defaultSignals } from '@specBuilder/specTestUtils';
 
 describe('addData()', () => {
 	test('should add time transform is dimensionScaleType === "time"', () => {
@@ -56,15 +58,15 @@ describe('addData()', () => {
 
 describe('addSignals()', () => {
 	test('should add hoveredId signal if tooltip exists', () => {
-		const signals = addSignals([], {
+		const signals = addSignals(defaultSignals, {
 			...defaultScatterProps,
 			children: [createElement(ChartTooltip)],
 		});
 		expect(signals).toHaveLength(1);
-		expect(signals[0].name).toBe('scatter0_hoveredId');
+		expect(signals[0].name).toBe(HIGHLIGHTED_ITEM);
 	});
 	test('should add selectedId signal if popover exists', () => {
-		const signals = addSignals([], {
+		const signals = addSignals(defaultSignals, {
 			...defaultScatterProps,
 			children: [createElement(ChartPopover)],
 		});
@@ -72,14 +74,14 @@ describe('addSignals()', () => {
 		expect(signals[1].name).toBe('scatter0_selectedId');
 	});
 	test('should add trendline signals if trendline exists as a child', () => {
-		const signals = addSignals([], {
+		const signals = addSignals(defaultSignals, {
 			...defaultScatterProps,
 			children: [createElement(Trendline, { displayOnHover: true })],
 		});
 		expect(signals).toHaveLength(3);
-		expect(signals[0].name).toBe('scatter0_hoveredSeries');
-		expect(signals[1].name).toBe('scatter0_selectedSeries');
-		expect(signals[2].name).toBe('scatter0_hoveredId');
+		expect(signals[0].name).toBe(HIGHLIGHTED_ITEM);
+		expect(signals[1].name).toBe('scatter0_hoveredSeries');
+		expect(signals[2].name).toBe('scatter0_selectedSeries');
 	});
 });
 

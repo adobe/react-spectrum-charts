@@ -9,10 +9,10 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { MARK_ID, SERIES_ID } from '@constants';
+import { SERIES_ID } from '@constants';
 import { Signal } from 'vega';
 
-import { getSeriesHoveredSignal, getUncontrolledHoverSignal } from './signalSpecBuilder';
+import { getSeriesHoveredSignal } from './signalSpecBuilder';
 
 export const defaultHighlightSignal: Signal = {
 	name: 'highlightedSeries',
@@ -27,41 +27,6 @@ export const defaultHighlightSignal: Signal = {
 };
 
 describe('Signal spec builder', () => {
-	describe('getUncontrolledHoverSignal()', () => {
-		test('not nested', () => {
-			expect(getUncontrolledHoverSignal('bar0')).toStrictEqual({
-				name: 'bar0_hoveredId',
-				on: [
-					{ events: '@bar0:mouseover', update: `datum.${MARK_ID}` },
-					{ events: '@bar0:mouseout', update: 'null' },
-				],
-				value: null,
-			});
-		});
-
-		test('nested', () => {
-			expect(getUncontrolledHoverSignal('bar0', true)).toStrictEqual({
-				name: 'bar0_hoveredId',
-				on: [
-					{ events: '@bar0:mouseover', update: `datum.datum.${MARK_ID}` },
-					{ events: '@bar0:mouseout', update: 'null' },
-				],
-				value: null,
-			});
-		});
-
-		test('should use eventName if provided', () => {
-			expect(getUncontrolledHoverSignal('line0', false, 'line0_voronoi')).toStrictEqual({
-				name: 'line0_hoveredId',
-				on: [
-					{ events: '@line0_voronoi:mouseover', update: `datum.${MARK_ID}` },
-					{ events: '@line0_voronoi:mouseout', update: 'null' },
-				],
-				value: null,
-			});
-		});
-	});
-
 	describe('getSeriesHoveredSignal()', () => {
 		test('uses name for eventName if eventName provided', () => {
 			expect(getSeriesHoveredSignal('bar0', true)).toStrictEqual({

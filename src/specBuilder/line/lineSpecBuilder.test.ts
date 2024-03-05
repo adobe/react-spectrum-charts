@@ -32,6 +32,7 @@ import {
 import { LineSpecProps, MetricRangeElement, MetricRangeProps } from 'types';
 import { Data, Spec } from 'vega';
 
+import { defaultHighlightedItemSignal, defaultSignals } from '@specBuilder/specTestUtils';
 import * as signalSpecBuilder from '../signal/signalSpecBuilder';
 import { initializeSpec } from '../specUtils';
 import { addData, addLine, addLineMarks, addSignals, setScales } from './lineSpecBuilder';
@@ -547,15 +548,17 @@ describe('lineSpecBuilder', () => {
 
 		test('hover signals with metric range', () => {
 			expect(
-				addSignals([], { ...defaultLineProps, children: [getMetricRangeElement({ displayOnHover: true })] }),
+				addSignals(defaultSignals, {
+					...defaultLineProps,
+					children: [getMetricRangeElement({ displayOnHover: true })],
+				}),
 			).toStrictEqual([
 				{
-					name: 'line0_hoveredSeries',
-					value: null,
+					...defaultHighlightedItemSignal,
 					on: [
 						{
 							events: '@line0_voronoi:mouseover',
-							update: `datum.datum.${SERIES_ID}`,
+							update: `datum.datum.${MARK_ID}`,
 						},
 						{
 							events: '@line0_voronoi:mouseout',
@@ -564,12 +567,12 @@ describe('lineSpecBuilder', () => {
 					],
 				},
 				{
-					name: 'line0_hoveredId',
+					name: 'line0_hoveredSeries',
 					value: null,
 					on: [
 						{
 							events: '@line0_voronoi:mouseover',
-							update: `datum.datum.${MARK_ID}`,
+							update: `datum.datum.${SERIES_ID}`,
 						},
 						{
 							events: '@line0_voronoi:mouseout',
@@ -594,19 +597,18 @@ describe('lineSpecBuilder', () => {
 
 		test('adds hover signals with metric range when displayPointMark is not undefined', () => {
 			expect(
-				addSignals([], {
+				addSignals(defaultSignals, {
 					...defaultLineProps,
 					staticPoint: 'staticPoint',
 					children: [getMetricRangeElement({ displayOnHover: true })],
 				}),
 			).toStrictEqual([
 				{
-					name: 'line0_hoveredSeries',
-					value: null,
+					...defaultHighlightedItemSignal,
 					on: [
 						{
 							events: '@line0_voronoi:mouseover',
-							update: `datum.datum.${SERIES_ID}`,
+							update: `datum.datum.${MARK_ID}`,
 						},
 						{
 							events: '@line0_voronoi:mouseout',
@@ -615,12 +617,12 @@ describe('lineSpecBuilder', () => {
 					],
 				},
 				{
-					name: 'line0_hoveredId',
+					name: 'line0_hoveredSeries',
 					value: null,
 					on: [
 						{
 							events: '@line0_voronoi:mouseover',
-							update: `datum.datum.${MARK_ID}`,
+							update: `datum.datum.${SERIES_ID}`,
 						},
 						{
 							events: '@line0_voronoi:mouseout',

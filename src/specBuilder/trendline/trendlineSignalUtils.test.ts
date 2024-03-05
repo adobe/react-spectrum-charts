@@ -10,31 +10,38 @@
  * governing permissions and limitations under the License.
  */
 
-import { getTrendlineSignals } from './trendlineSignalUtils';
+import { setTrendlineSignals } from './trendlineSignalUtils';
 import { createElement } from 'react';
 import { ChartPopover } from '@components/ChartPopover';
 import { ChartTooltip } from '@components/ChartTooltip';
 import { Trendline } from '@components/Trendline';
 import { defaultLineProps } from './trendlineTestUtils';
+import { defaultHighlightedItemSignal, defaultSignals } from '@specBuilder/specTestUtils';
+import { Signal } from 'vega';
+import { HIGHLIGHTED_ITEM } from '@constants';
 
 describe('getTrendlineSignals()', () => {
+	let signals: Signal[];
+	beforeEach(() => {
+		signals = JSON.parse(JSON.stringify(defaultSignals));
+	});
 	test('should return voronoi hover signal if ChartTooltip exists', () => {
-		const signals = getTrendlineSignals({
+		setTrendlineSignals(signals, {
 			...defaultLineProps,
 			children: [createElement(Trendline, {}, createElement(ChartTooltip))],
 		});
 		expect(signals).toHaveLength(2);
-		expect(signals[0]).toHaveProperty('name', 'line0Trendline_hoveredId');
+		expect(signals[0]).toHaveProperty('name', HIGHLIGHTED_ITEM);
 		expect(signals[1]).toHaveProperty('name', 'line0Trendline_hoveredSeries');
 	});
 
 	test('should not return any signals if there is not a ChartTooltip', () => {
-		const signals = getTrendlineSignals(defaultLineProps);
-		expect(signals).toHaveLength(0);
+		setTrendlineSignals(signals, defaultLineProps);
+		expect(signals).toStrictEqual([defaultHighlightedItemSignal]);
 	});
 
 	test('should return voronoi selected signal if ChartPopover exists', () => {
-		const signals = getTrendlineSignals({
+		setTrendlineSignals(signals, {
 			...defaultLineProps,
 			children: [
 				createElement(Trendline, {}, createElement(ChartTooltip)),
@@ -47,7 +54,7 @@ describe('getTrendlineSignals()', () => {
 	});
 
 	test('should not return selected signal if there is not a ChartPopover', () => {
-		const signals = getTrendlineSignals({
+		setTrendlineSignals(signals, {
 			...defaultLineProps,
 			children: [createElement(Trendline, {}, createElement(ChartTooltip))],
 		});
@@ -56,12 +63,12 @@ describe('getTrendlineSignals()', () => {
 	});
 
 	test('should add displayOnHover signals', () => {
-		const signals = getTrendlineSignals({
+		setTrendlineSignals(signals, {
 			...defaultLineProps,
 			children: [createElement(Trendline, { displayOnHover: true })],
 		});
-		expect(signals).toHaveLength(2);
-		expect(signals[0]).toHaveProperty('name', 'line0_hoveredSeries');
-		expect(signals[1]).toHaveProperty('name', 'line0_selectedSeries');
+		expect(signals).toHaveLength(3);
+		expect(signals[1]).toHaveProperty('name', 'line0_hoveredSeries');
+		expect(signals[2]).toHaveProperty('name', 'line0_selectedSeries');
 	});
 });

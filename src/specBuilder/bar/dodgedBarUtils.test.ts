@@ -23,6 +23,7 @@ import {
 	DEFAULT_OPACITY_RULE,
 	DEFAULT_SECONDARY_COLOR,
 	FILTERED_TABLE,
+	HIGHLIGHTED_ITEM,
 	HIGHLIGHT_CONTRAST_RATIO,
 	MARK_ID,
 } from '@constants';
@@ -119,7 +120,10 @@ const defaultMarkWithTooltip: Mark = {
 			...defaultDodgedXEncodings,
 			...defaultBarStrokeEncodings,
 			opacity: [
-				{ test: `bar0_hoveredId && bar0_hoveredId !== datum.${MARK_ID}`, value: 1 / HIGHLIGHT_CONTRAST_RATIO },
+				{
+					test: `${HIGHLIGHTED_ITEM} && ${HIGHLIGHTED_ITEM} !== datum.${MARK_ID}`,
+					value: 1 / HIGHLIGHT_CONTRAST_RATIO,
+				},
 				DEFAULT_OPACITY_RULE,
 			],
 			cursor: undefined,

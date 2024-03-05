@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { MARK_ID, SERIES_ID } from '@constants';
+import { HIGHLIGHTED_ITEM, MARK_ID, SERIES_ID } from '@constants';
 import { Signal } from 'vega';
 
 /**
@@ -17,20 +17,6 @@ import { Signal } from 'vega';
  */
 export const hasSignalByName = (signals: Signal[], name: string) => {
 	return signals.some((signal) => signal.name === name);
-};
-
-/**
- *  Returns the hover signal for points
- */
-export const getUncontrolledHoverSignal = (name: string, nestedDatum?: boolean, eventName: string = name): Signal => {
-	return {
-		name: `${name}_hoveredId`,
-		value: null,
-		on: [
-			{ events: `@${eventName}:mouseover`, update: `${nestedDatum ? 'datum.' : ''}datum.${MARK_ID}` },
-			{ events: `@${eventName}:mouseout`, update: 'null' },
-		],
-	};
 };
 
 /**
@@ -93,4 +79,28 @@ export const getLegendLabelsSeriesSignal = (value: unknown = null): Signal => {
  */
 export const getGenericSignal = (name: string, value: unknown = null): Signal => {
 	return { name, value };
+};
+
+/**
+ * adds on events to the highlighted item signal
+ * @param signals
+ * @param markName
+ * @param datumOrder how deep the datum is nested (i.e. 1 becomes datum.rscMarkId, 2 becomes datum.datum.rscMarkId, etc.)
+ */
+export const addHighlightedItemSignalEvents = (signals: Signal[], markName: string, datumOrder = 1) => {
+	const highlightedItemSignal = signals.find((signal) => signal.name === HIGHLIGHTED_ITEM);
+	if (highlightedItemSignal) {
+		if (highlightedItemSignal.on === undefined) {
+			highlightedItemSignal.on = [];
+		}
+		highlightedItemSignal.on.push(
+			...[
+				{
+					events: `@${markName}:mouseover`,
+					update: `${new Array(datumOrder).fill('datum.').join('')}${MARK_ID}`,
+				},
+				{ events: `@${markName}:mouseout`, update: 'null' },
+			],
+		);
+	}
 };
