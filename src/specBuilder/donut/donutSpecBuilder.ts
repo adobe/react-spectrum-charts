@@ -9,11 +9,18 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { COLOR_SCALE, DEFAULT_COLOR, DEFAULT_COLOR_SCHEME, DEFAULT_METRIC, FILTERED_TABLE } from '@constants';
+import {
+	COLOR_SCALE,
+	DEFAULT_COLOR,
+	DEFAULT_COLOR_SCHEME,
+	DEFAULT_METRIC,
+	FILTERED_TABLE,
+	HIGHLIGHTED_ITEM,
+} from '@constants';
 import { hasPopover } from '@specBuilder/marks/markUtils';
 import { addFieldToFacetScaleDomain } from '@specBuilder/scale/scaleSpecBuilder';
 import {
-	addHighlightedItemSignalEvents,
+	addHighlightSignalMarkHoverEvents,
 	getGenericSignal,
 	hasSignalByName,
 } from '@specBuilder/signal/signalSpecBuilder';
@@ -136,7 +143,7 @@ export const addMarks = produce<Mark[], [DonutSpecProps]>((marks, props) => {
 export const addSignals = produce<Signal[], [DonutSpecProps]>((signals, props) => {
 	const { name, children } = props;
 
-	addHighlightedItemSignalEvents(signals, name);
+	addHighlightSignalMarkHoverEvents(signals, HIGHLIGHTED_ITEM, name);
 
 	if (hasPopover(children)) {
 		if (!hasSignalByName(signals, `${name}_selectedId`)) {

@@ -15,6 +15,8 @@ import {
 	DEFAULT_METRIC,
 	DEFAULT_TIME_DIMENSION,
 	FILTERED_TABLE,
+	HIGHLIGHTED_ITEM,
+	HIGHLIGHTED_SERIES,
 	LINE_TYPE_SCALE,
 	OPACITY_SCALE,
 } from '@constants';
@@ -33,12 +35,7 @@ import { Data, Mark, Scale, Signal, Spec } from 'vega';
 
 import { addTimeTransform, getTableData } from '../data/dataUtils';
 import { addContinuousDimensionScale, addFieldToFacetScaleDomain, addMetricScale } from '../scale/scaleSpecBuilder';
-import {
-	addHighlightedItemSignalEvents,
-	getGenericSignal,
-	getSeriesHoveredSignal,
-	hasSignalByName,
-} from '../signal/signalSpecBuilder';
+import { addHighlightSignalMarkHoverEvents, getGenericSignal, hasSignalByName } from '../signal/signalSpecBuilder';
 import { getLineHighlightedData, getLineStaticPointData } from './lineDataUtils';
 import { getLineHoverMarks, getLineMark } from './lineMarkUtils';
 import { getLineStaticPoint } from './linePointUtils';
@@ -108,10 +105,8 @@ export const addSignals = produce<Signal[], [LineSpecProps]>((signals, props) =>
 	signals.push(...getMetricRangeSignals(props));
 
 	if (!hasInteractiveChildren(children)) return;
-	addHighlightedItemSignalEvents(signals, `${name}_voronoi`, 2);
-	if (!hasSignalByName(signals, `${name}_hoveredSeries`)) {
-		signals.push(getSeriesHoveredSignal(`${name}`, true, `${name}_voronoi`));
-	}
+	addHighlightSignalMarkHoverEvents(signals, HIGHLIGHTED_ITEM, `${name}_voronoi`, 2);
+	addHighlightSignalMarkHoverEvents(signals, HIGHLIGHTED_SERIES, `${name}_voronoi`, 2);
 	if (!hasSignalByName(signals, `${name}_selectedId`)) {
 		signals.push(getGenericSignal(`${name}_selectedId`));
 	}

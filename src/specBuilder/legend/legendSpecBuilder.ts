@@ -38,7 +38,11 @@ import {
 } from 'types';
 import { Data, Legend, Mark, Scale, Signal, Spec } from 'vega';
 
-import { getHighlightSeriesSignal, getLegendLabelsSeriesSignal, hasSignalByName } from '../signal/signalSpecBuilder';
+import {
+	addHighlighSignalLegendHoverEvents,
+	getLegendLabelsSeriesSignal,
+	hasSignalByName,
+} from '../signal/signalSpecBuilder';
 import { getFacets, getFacetsFromKeys } from './legendFacetUtils';
 import { setHoverOpacityForMarks } from './legendHighlightUtils';
 import { Facet, getColumns, getEncodings, getHiddenEntriesFilter, getSymbolType } from './legendUtils';
@@ -274,12 +278,9 @@ export const addData = produce<Data[], [LegendSpecProps & { facets: string[] }]>
 );
 
 export const addSignals = produce<Signal[], [LegendSpecProps]>(
-	(signals, { hiddenSeries, highlight, isToggleable, keys, legendLabels, name }) => {
+	(signals, { hiddenSeries, highlight, isToggleable, legendLabels, name }) => {
 		if (highlight) {
-			const signalName = keys ? `${name}_highlighted` : 'highlightedSeries';
-			if (!hasSignalByName(signals, signalName)) {
-				signals.push(getHighlightSeriesSignal(name, Boolean(isToggleable || hiddenSeries), keys));
-			}
+			addHighlighSignalLegendHoverEvents(signals, name, Boolean(isToggleable || hiddenSeries));
 		}
 
 		if (legendLabels) {

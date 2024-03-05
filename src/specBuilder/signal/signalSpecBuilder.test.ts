@@ -9,10 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { SERIES_ID } from '@constants';
 import { Signal } from 'vega';
-
-import { getSeriesHoveredSignal } from './signalSpecBuilder';
 
 export const defaultHighlightSignal: Signal = {
 	name: 'highlightedSeries',
@@ -25,40 +22,3 @@ export const defaultHighlightSignal: Signal = {
 		{ events: '@legend0_legendEntry:mouseout', update: '""' },
 	],
 };
-
-describe('Signal spec builder', () => {
-	describe('getSeriesHoveredSignal()', () => {
-		test('uses name for eventName if eventName provided', () => {
-			expect(getSeriesHoveredSignal('bar0', true)).toStrictEqual({
-				name: 'bar0_hoveredSeries',
-				on: [
-					{ events: '@bar0:mouseover', update: `datum.datum.${SERIES_ID}` },
-					{ events: '@bar0:mouseout', update: 'null' },
-				],
-				value: null,
-			});
-		});
-
-		test('uses eventName if provided', () => {
-			expect(getSeriesHoveredSignal('bar0', true, 'bar0_voronoi')).toStrictEqual({
-				name: 'bar0_hoveredSeries',
-				on: [
-					{ events: '@bar0_voronoi:mouseover', update: `datum.datum.${SERIES_ID}` },
-					{ events: '@bar0_voronoi:mouseout', update: 'null' },
-				],
-				value: null,
-			});
-		});
-
-		test('should not nest datum if nestedDatum is false', () => {
-			expect(getSeriesHoveredSignal('bar0', false, 'bar0_voronoi')).toStrictEqual({
-				name: 'bar0_hoveredSeries',
-				on: [
-					{ events: '@bar0_voronoi:mouseover', update: `datum.${SERIES_ID}` },
-					{ events: '@bar0_voronoi:mouseout', update: 'null' },
-				],
-				value: null,
-			});
-		});
-	});
-});

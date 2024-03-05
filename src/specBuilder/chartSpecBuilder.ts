@@ -16,6 +16,7 @@ import {
 	DEFAULT_LINE_TYPES,
 	FILTERED_TABLE,
 	HIGHLIGHTED_ITEM,
+	HIGHLIGHTED_SERIES,
 	LINEAR_COLOR_SCALE,
 	LINE_TYPE_SCALE,
 	LINE_WIDTH_SCALE,
@@ -216,6 +217,7 @@ export const getDefaultSignals = (
 		getGenericSignal('opacities', getTwoDimensionalOpacities(opacities)),
 		getGenericSignal('hiddenSeries', hiddenSeries ?? []),
 		getGenericSignal(HIGHLIGHTED_ITEM),
+		getGenericSignal(HIGHLIGHTED_SERIES),
 	];
 };
 

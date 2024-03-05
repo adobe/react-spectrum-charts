@@ -15,6 +15,7 @@ import {
 	DEFAULT_COLOR_SCHEME,
 	DEFAULT_METRIC,
 	FILTERED_TABLE,
+	HIGHLIGHTED_ITEM,
 	LINE_TYPE_SCALE,
 	OPACITY_SCALE,
 	PADDING_RATIO,
@@ -33,7 +34,7 @@ import {
 	getScaleIndexByType,
 } from '@specBuilder/scale/scaleSpecBuilder';
 import {
-	addHighlightedItemSignalEvents,
+	addHighlightSignalMarkHoverEvents,
 	getGenericSignal,
 	hasSignalByName,
 } from '@specBuilder/signal/signalSpecBuilder';
@@ -106,7 +107,7 @@ export const addSignals = produce<Signal[], [BarSpecProps]>(
 		if (!children.length) {
 			return;
 		}
-		addHighlightedItemSignalEvents(signals, name);
+		addHighlightSignalMarkHoverEvents(signals, HIGHLIGHTED_ITEM, name);
 		if (hasPopover(children)) {
 			if (!hasSignalByName(signals, `${name}_selectedId`)) {
 				signals.push(getGenericSignal(`${name}_selectedId`));

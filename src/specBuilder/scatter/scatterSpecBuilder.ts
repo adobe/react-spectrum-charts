@@ -16,6 +16,7 @@ import {
 	DEFAULT_LINEAR_DIMENSION,
 	DEFAULT_METRIC,
 	FILTERED_TABLE,
+	HIGHLIGHTED_ITEM,
 	LINE_TYPE_SCALE,
 	LINE_WIDTH_SCALE,
 	LINEAR_COLOR_SCALE,
@@ -32,7 +33,7 @@ import {
 	addMetricScale,
 } from '@specBuilder/scale/scaleSpecBuilder';
 import {
-	addHighlightedItemSignalEvents,
+	addHighlightSignalMarkHoverEvents,
 	getGenericSignal,
 	hasSignalByName,
 } from '@specBuilder/signal/signalSpecBuilder';
@@ -129,7 +130,7 @@ export const addSignals = produce<Signal[], [ScatterSpecProps]>((signals, props)
 
 	if (!hasInteractiveChildren(children)) return;
 	// interactive signals
-	addHighlightedItemSignalEvents(signals, `${name}_voronoi`, 2);
+	addHighlightSignalMarkHoverEvents(signals, HIGHLIGHTED_ITEM, `${name}_voronoi`, 2);
 	if (hasPopover(children)) {
 		if (!hasSignalByName(signals, `${name}_selectedId`)) {
 			// select signal
