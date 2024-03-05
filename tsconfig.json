@@ -24,6 +24,7 @@
 			"@constants": ["constants.ts"],
 			"@components/*": ["components/*"],
 			"@hooks/*": ["hooks/*"],
+			"@locales": ["locales"],
 			"@matchMediaMock": ["test-utils/__mocks__/matchMedia.mock"],
 			"@rsc": ["index.ts"],
 			"@rsc/alpha": ["alpha"],

@@ -10,8 +10,7 @@
  * governing permissions and limitations under the License.
  */
 
-import { numberLocale } from 'locales/numberLocales/numberLocales';
-import { timeLocale } from 'locales/timeLocales/timeLocales';
+import { numberLocale, timeLocale } from '@locales';
 import { ChartProps } from 'types';
 import { NumberLocaleCode, TimeLocaleCode } from 'types/locales';
 import { Locale, NumberLocale, TimeLocale } from 'vega';
