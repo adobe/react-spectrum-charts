@@ -98,18 +98,18 @@ export const addHighlightedItemSignalEvents = (signals: Signal[], markName: stri
 	}
 };
 /**
- * adds on events to the highlighted item signal
+ * adds on events to the highlighted series signal
  * @param signals
  * @param markName
  * @param datumOrder how deep the datum is nested (i.e. 1 becomes datum.rscMarkId, 2 becomes datum.datum.rscMarkId, etc.)
  */
 export const addHighlightedSeriesSignalEvents = (signals: Signal[], markName: string, datumOrder = 1) => {
-	const highlightedItemSignal = signals.find((signal) => signal.name === HIGHLIGHTED_SERIES);
-	if (highlightedItemSignal) {
-		if (highlightedItemSignal.on === undefined) {
-			highlightedItemSignal.on = [];
+	const highlightedSeriesSignal = signals.find((signal) => signal.name === HIGHLIGHTED_SERIES);
+	if (highlightedSeriesSignal) {
+		if (highlightedSeriesSignal.on === undefined) {
+			highlightedSeriesSignal.on = [];
 		}
-		highlightedItemSignal.on.push(
+		highlightedSeriesSignal.on.push(
 			...[
 				{
 					events: `@${markName}:mouseover`,
