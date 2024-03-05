@@ -41,6 +41,10 @@ describe('formatTimeDurationLabels()', () => {
 		expect(formatDurationsFrFr({ index: 0, label: '0', value: 3603661 })).toBe('1\u00a0001:01:01');
 		expect(formatDurationsDeDe({ index: 0, label: '0', value: 3603661 })).toBe('1.001:01:01');
 	});
+	test('should default to using en-US', () => {
+		const formatDurations = formatTimeDurationLabels();
+		expect(formatDurations({ index: 0, label: '0', value: 3603661 })).toBe('1,001:01:01');
+	});
 	test('should original string if type of value is string', () => {
 		const formatDurationsEnUS = formatTimeDurationLabels(numberLocales['en-US']);
 		expect(formatDurationsEnUS({ index: 0, label: '0', value: 'hello world!' })).toBe('hello world!');
