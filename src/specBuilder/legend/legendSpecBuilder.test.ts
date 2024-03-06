@@ -23,6 +23,8 @@ import { Data, Legend, LegendEncode, Scale, Spec, SymbolEncodeEntry } from 'vega
 import {
 	defaultHighlightedItemSignal,
 	defaultHighlightedSeriesSignal,
+	defaultSelectedItemSignal,
+	defaultSelectedSeriesSignal,
 	defaultSignals,
 } from '@specBuilder/specTestUtils';
 import { addData, addLegend, addSignals, formatFacetRefsWithPresets, getContinuousLegend } from './legendSpecBuilder';
@@ -163,7 +165,12 @@ describe('addLegend()', () => {
 				...defaultSpec,
 				data: [defaultLegendAggregateData],
 				scales: [...(defaultSpec.scales || []), defaultLegendEntriesScale],
-				signals: [defaultHighlightedItemSignal, defaultHighlightSeriesSignal],
+				signals: [
+					defaultHighlightedItemSignal,
+					defaultHighlightSeriesSignal,
+					defaultSelectedItemSignal,
+					defaultSelectedSeriesSignal,
+				],
 				legends: [{ ...defaultLegend, encode: defaultHighlightLegendEncoding }],
 			});
 		});

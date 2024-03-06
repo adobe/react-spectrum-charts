@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { DEFAULT_OPACITY_RULE, HIGHLIGHTED_SERIES, SERIES_ID } from '@constants';
+import { DEFAULT_OPACITY_RULE, HIGHLIGHTED_SERIES, SELECTED_SERIES, SERIES_ID } from '@constants';
 import {
 	getColorProductionRule,
 	getHighlightOpacityValue,
@@ -80,9 +80,8 @@ export const getLineOpacity = ({
 	});
 
 	if (popoverMarkName) {
-		const selectSignal = `${interactiveMarkName}_selectedSeries`;
 		strokeOpacityRules.push({
-			test: `${selectSignal} && ${selectSignal} !== datum.${SERIES_ID}`,
+			test: `${SELECTED_SERIES} && ${SELECTED_SERIES} !== datum.${SERIES_ID}`,
 			...getHighlightOpacityValue(baseRule),
 		});
 	}
@@ -103,7 +102,7 @@ const getDisplayOnHoverRules = (name: string, opacity: OpacityFacet) => {
 		...opacityRule,
 	};
 	const selectRule = {
-		test: `${name}_selectedSeries && ${name}_selectedSeries === datum.${SERIES_ID}`,
+		test: `${SELECTED_SERIES} && ${SELECTED_SERIES} === datum.${SERIES_ID}`,
 		...opacityRule,
 	};
 	const legendRule = { test: `highlightedSeries && highlightedSeries === datum.${SERIES_ID}`, ...opacityRule };

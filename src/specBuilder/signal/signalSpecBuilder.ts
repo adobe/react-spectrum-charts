@@ -97,6 +97,7 @@ export const addHighlightedItemSignalEvents = (signals: Signal[], markName: stri
 		);
 	}
 };
+
 /**
  * adds on events to the highlighted series signal
  * @param signals

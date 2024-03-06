@@ -10,7 +10,6 @@
  * governing permissions and limitations under the License.
  */
 
-import { ChartPopover } from '@components/ChartPopover';
 import { ChartTooltip } from '@components/ChartTooltip';
 import { Trendline } from '@components/Trendline';
 import { HIGHLIGHTED_ITEM, HIGHLIGHTED_SERIES } from '@constants';
@@ -25,12 +24,12 @@ describe('getTrendlineSignals()', () => {
 	beforeEach(() => {
 		signals = JSON.parse(JSON.stringify(defaultSignals));
 	});
-	test('should return voronoi hover signal if ChartTooltip exists', () => {
+	test('should add voronoi hover signal events if ChartTooltip exists', () => {
 		setTrendlineSignals(signals, {
 			...defaultLineProps,
 			children: [createElement(Trendline, {}, createElement(ChartTooltip))],
 		});
-		expect(signals).toHaveLength(2);
+		expect(signals).toHaveLength(4);
 		expect(signals[0]).toHaveProperty('name', HIGHLIGHTED_ITEM);
 		expect(signals[0].on).toHaveLength(2);
 		expect(signals[1]).toHaveProperty('name', HIGHLIGHTED_SERIES);
@@ -42,35 +41,13 @@ describe('getTrendlineSignals()', () => {
 		expect(signals).toStrictEqual(defaultSignals);
 	});
 
-	test('should return voronoi selected signal if ChartPopover exists', () => {
-		setTrendlineSignals(signals, {
-			...defaultLineProps,
-			children: [
-				createElement(Trendline, {}, createElement(ChartTooltip)),
-				createElement(Trendline, {}, createElement(ChartPopover)),
-			],
-		});
-		expect(signals).toHaveLength(4);
-		expect(signals[2]).toHaveProperty('name', 'line0Trendline_selectedId');
-		expect(signals[3]).toHaveProperty('name', 'line0Trendline_selectedSeries');
-	});
-
-	test('should not return selected signal if there is not a ChartPopover', () => {
-		setTrendlineSignals(signals, {
-			...defaultLineProps,
-			children: [createElement(Trendline, {}, createElement(ChartTooltip))],
-		});
-		expect(signals).toHaveLength(2);
-		expect(signals[0].name).not.toContain('selected');
-	});
-
-	test('should add displayOnHover signals', () => {
+	test('should add displayOnHover signal events', () => {
 		setTrendlineSignals(signals, {
 			...defaultLineProps,
 			children: [createElement(Trendline, { displayOnHover: true })],
 		});
-		expect(signals).toHaveLength(3);
+		expect(signals).toHaveLength(4);
 		expect(signals[1]).toHaveProperty('name', HIGHLIGHTED_SERIES);
-		expect(signals[2]).toHaveProperty('name', 'line0_selectedSeries');
+		expect(signals[1].on).toHaveLength(2);
 	});
 });

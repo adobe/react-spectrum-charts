@@ -26,6 +26,7 @@ import {
 	HIGHLIGHT_CONTRAST_RATIO,
 	MARK_ID,
 	PADDING_RATIO,
+	SELECTED_ITEM,
 	STACK_ID,
 } from '@constants';
 import { BarSpecProps } from 'types';
@@ -314,7 +315,7 @@ describe('barUtils', () => {
 			const strokeRule = getStroke({ ...defaultBarProps, children: [popover] });
 			expect(strokeRule).toHaveLength(2);
 			expect(strokeRule[0]).toStrictEqual({
-				test: `bar0_selectedId && bar0_selectedId === datum.${MARK_ID}`,
+				test: `${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${MARK_ID}`,
 				value: 'rgb(20, 115, 230)',
 			});
 		});
@@ -331,7 +332,7 @@ describe('barUtils', () => {
 			const strokeRule = getStrokeDash({ ...defaultBarProps, children: [popover] });
 			expect(strokeRule).toHaveLength(2);
 			expect(strokeRule[0]).toStrictEqual({
-				test: `bar0_selectedId && bar0_selectedId === datum.${MARK_ID}`,
+				test: `${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${MARK_ID}`,
 				value: [],
 			});
 		});
@@ -348,7 +349,7 @@ describe('barUtils', () => {
 			const strokeRule = getStrokeWidth({ ...defaultBarProps, children: [popover] });
 			expect(strokeRule).toHaveLength(2);
 			expect(strokeRule[0]).toStrictEqual({
-				test: `bar0_selectedId && bar0_selectedId === datum.${MARK_ID}`,
+				test: `${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${MARK_ID}`,
 				value: 2,
 			});
 		});

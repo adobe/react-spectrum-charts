@@ -19,11 +19,12 @@ import {
 	DEFAULT_TIME_DIMENSION,
 	FILTERED_TABLE,
 	MARK_ID,
+	SELECTED_ITEM,
+	SELECTED_SERIES,
 } from '@constants';
 import {
 	addHighlightedSeriesSignalEvents,
 	getControlledHoverSignal,
-	getGenericSignal,
 	hasSignalByName,
 } from '@specBuilder/signal/signalSpecBuilder';
 import { spectrumColors } from '@themes';
@@ -113,7 +114,6 @@ export const addData = produce<Data[], [AreaSpecProps]>(
 		}
 
 		if (children.length) {
-			const selectSignal = `${name}_selectedId`;
 			const hoverSignal = `${name}_controlledHoveredId`;
 			data.push({
 				name: `${name}_highlightedDataPoint`,
@@ -121,19 +121,18 @@ export const addData = produce<Data[], [AreaSpecProps]>(
 				transform: [
 					{
 						type: 'filter',
-						expr: `${selectSignal} && ${selectSignal} === datum.${MARK_ID} || !${selectSignal} && ${hoverSignal} && ${hoverSignal} === datum.${MARK_ID}`,
+						expr: `${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${MARK_ID} || !${SELECTED_ITEM} && ${hoverSignal} && ${hoverSignal} === datum.${MARK_ID}`,
 					},
 				],
 			});
 			if (children.some((child) => child.type === ChartPopover)) {
-				const selectSeriesSignal = `${name}_selectedSeries`;
 				data.push({
 					name: `${name}_selectedDataSeries`,
 					source: FILTERED_TABLE,
 					transform: [
 						{
 							type: 'filter',
-							expr: `${selectSeriesSignal} && ${selectSeriesSignal} === datum.${color}`,
+							expr: `${SELECTED_SERIES} && ${SELECTED_SERIES} === datum.${color}`,
 						},
 					],
 				});
@@ -148,12 +147,6 @@ export const addSignals = produce<Signal[], [AreaSpecProps]>((signals, { childre
 		signals.push(getControlledHoverSignal(name));
 	}
 	addHighlightedSeriesSignalEvents(signals, name);
-	if (!hasSignalByName(signals, `${name}_selectedId`)) {
-		signals.push(getGenericSignal(`${name}_selectedId`));
-	}
-	if (!hasSignalByName(signals, `${name}_selectedSeries`)) {
-		signals.push(getGenericSignal(`${name}_selectedSeries`));
-	}
 });
 
 export const setScales = produce<Scale[], [AreaSpecProps]>(

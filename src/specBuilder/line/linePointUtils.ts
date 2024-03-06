@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { BACKGROUND_COLOR, DEFAULT_SYMBOL_SIZE, DEFAULT_SYMBOL_STROKE_WIDTH, MARK_ID } from '@constants';
+import { BACKGROUND_COLOR, DEFAULT_SYMBOL_SIZE, DEFAULT_SYMBOL_STROKE_WIDTH, MARK_ID, SELECTED_ITEM } from '@constants';
 import {
 	getColorProductionRule,
 	getHighlightOpacityValue,
@@ -24,7 +24,7 @@ import { ColorValueRef, NumericValueRef, SymbolMark } from 'vega';
 import { LineMarkProps } from './lineUtils';
 
 const staticPointTest = (staticPoint: string) => `datum.${staticPoint} && datum.${staticPoint} === true`;
-const selectedTest = (name: string) => `${name}_selectedId && ${name}_selectedId === datum.${MARK_ID}`;
+const selectedTest = `${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${MARK_ID}`;
 
 /**
  * Gets the point mark for static points on a line chart.
@@ -121,7 +121,7 @@ export const getHighlightPoint = (lineProps: LineMarkProps): SymbolMark => {
  */
 export const getSecondaryHighlightPoint = (
 	lineProps: LineMarkProps,
-	secondaryHighlightedMetric: string
+	secondaryHighlightedMetric: string,
 ): SymbolMark => {
 	const { color, colorScheme, dimension, name, scaleType } = lineProps;
 	return {
@@ -151,7 +151,6 @@ export const getHighlightPointFill = ({
 	children,
 	color,
 	colorScheme,
-	name,
 	staticPoint,
 }: LineMarkProps): ProductionRuleTests<ColorValueRef> => {
 	const fillRules: ProductionRuleTests<ColorValueRef> = [];
@@ -159,7 +158,7 @@ export const getHighlightPointFill = ({
 		fillRules.push({ test: staticPointTest(staticPoint), ...getColorProductionRule(color, colorScheme) });
 	}
 	if (hasPopover(children)) {
-		fillRules.push({ test: selectedTest(name), ...getColorProductionRule(color, colorScheme) });
+		fillRules.push({ test: selectedTest, ...getColorProductionRule(color, colorScheme) });
 	}
 	return [...fillRules, { signal: BACKGROUND_COLOR }];
 };
@@ -173,7 +172,6 @@ export const getHighlightPointStroke = ({
 	children,
 	color,
 	colorScheme,
-	name,
 	staticPoint,
 }: LineMarkProps): ProductionRuleTests<ColorValueRef> => {
 	const strokeRules: ProductionRuleTests<ColorValueRef> = [];
@@ -181,7 +179,7 @@ export const getHighlightPointStroke = ({
 		strokeRules.push({ test: staticPointTest(staticPoint), ...getColorProductionRule(color, colorScheme) });
 	}
 	if (hasPopover(children)) {
-		strokeRules.push({ test: selectedTest(name), signal: BACKGROUND_COLOR });
+		strokeRules.push({ test: selectedTest, signal: BACKGROUND_COLOR });
 	}
 	return [...strokeRules, getColorProductionRule(color, colorScheme)];
 };
@@ -259,8 +257,8 @@ export const getSelectRingPoint = (lineProps: LineMarkProps): SymbolMark => {
 				stroke: { value: getColorValue('static-blue', colorScheme) },
 			},
 			update: {
-				size: [{ test: selectedTest(name), value: 196 }, { value: 0 }],
-				strokeWidth: [{ test: selectedTest(name), value: DEFAULT_SYMBOL_STROKE_WIDTH }, { value: 0 }],
+				size: [{ test: selectedTest, value: 196 }, { value: 0 }],
+				strokeWidth: [{ test: selectedTest, value: DEFAULT_SYMBOL_STROKE_WIDTH }, { value: 0 }],
 				x: getXProductionRule(scaleType, dimension),
 			},
 		},

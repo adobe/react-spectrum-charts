@@ -18,6 +18,8 @@ import {
 	DEFAULT_LOCALE,
 	LEGEND_TOOLTIP_DELAY,
 	MARK_ID,
+	SELECTED_ITEM,
+	SELECTED_SERIES,
 	SERIES_ID,
 } from '@constants';
 import useChartImperativeHandle from '@hooks/useChartImperativeHandle';
@@ -88,7 +90,7 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 			chartId,
 			...props
 		},
-		forwardedRef
+		forwardedRef,
 	) => {
 		// uuid is used to make a unique id so there aren't duplicate ids if there is more than one Chart component in the document
 		const selectedData = useRef<Datum | null>(null); // data that is currently selected, get's set on click if a popover exists
@@ -119,7 +121,7 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 			UNSAFE_vegaSpec,
 		});
 
-		const { controlledHoverSignal, selectedIdSignalName, selectedSeriesSignalName } = useSpecProps(spec);
+		const { controlledHoverSignal } = useSpecProps(spec);
 		const chartConfig = useMemo(() => getChartConfig(config, colorScheme), [config, colorScheme]);
 
 		useEffect(() => {
@@ -154,7 +156,7 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 			popoverIsOpen,
 			chartView.current,
 			selectedDataBounds.current,
-			padding
+			padding,
 		);
 
 		const tooltipConfig: TooltipOptions = { theme: colorScheme };
@@ -173,7 +175,7 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 							descriptions={legendDescriptions}
 							// TODO: support multiple legends
 							domain={chartView.current?.scale('legend0Entries').domain()}
-						/>
+						/>,
 					);
 				}
 				// get the correct tooltip to render based on the hovered item
@@ -185,7 +187,7 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 					return renderToStaticMarkup(
 						<div className="rsc-tooltip" data-testid="rsc-tooltip">
 							{tooltip(value)}
-						</div>
+						</div>,
 					);
 				}
 				return '';
@@ -199,15 +201,11 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 			if (legendIsToggleable) {
 				signals.hiddenSeries = hiddenSeriesState;
 			}
-			if (selectedIdSignalName) {
-				signals[selectedIdSignalName] = selectedData?.[MARK_ID] ?? null;
-			}
-			if (selectedSeriesSignalName) {
-				signals[selectedSeriesSignalName] = selectedData?.[SERIES_ID] ?? null;
-			}
+			signals[SELECTED_ITEM] = selectedData?.[MARK_ID] ?? null;
+			signals[SELECTED_SERIES] = selectedData?.[SERIES_ID] ?? null;
 
 			return signals;
-		}, [colorScheme, hiddenSeriesState, legendIsToggleable, selectedIdSignalName, selectedSeriesSignalName]);
+		}, [colorScheme, hiddenSeriesState, legendIsToggleable]);
 
 		return (
 			<>
@@ -255,8 +253,6 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 							}
 							setSelectedSignals({
 								selectedData: selectedData.current,
-								selectedIdSignalName,
-								selectedSeriesSignalName,
 								view,
 							});
 							view.addEventListener(
@@ -270,8 +266,8 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 									selectedDataName,
 									setHiddenSeries,
 									legendIsToggleable,
-									onLegendClick
-								)
+									onLegendClick,
+								),
 							);
 						}
 						view.addEventListener('mouseover', getOnMouseInputCallback(onLegendMouseOver));
@@ -288,7 +284,7 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 				/>
 			</>
 		);
-	}
+	},
 );
 RscChart.displayName = 'RscChart';
 

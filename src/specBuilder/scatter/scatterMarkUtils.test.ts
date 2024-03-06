@@ -14,7 +14,7 @@ import { createElement } from 'react';
 
 import { ChartTooltip } from '@components/ChartTooltip';
 import { Trendline } from '@components/Trendline';
-import { DEFAULT_OPACITY_RULE, HIGHLIGHTED_ITEM, MARK_ID, SYMBOL_SIZE_SCALE } from '@constants';
+import { DEFAULT_OPACITY_RULE, HIGHLIGHTED_ITEM, MARK_ID, SELECTED_ITEM, SYMBOL_SIZE_SCALE } from '@constants';
 import { GroupMark } from 'vega';
 import { addScatterMarks, getOpacity, getScatterHoverMarks, getSelectRingSize } from './scatterMarkUtils';
 import { defaultScatterProps } from './scatterTestUtils';
@@ -57,7 +57,7 @@ describe('getOpacity()', () => {
 		const opacity = getOpacity({ ...defaultScatterProps, children: [createElement(ChartPopover)] });
 		expect(opacity).toHaveLength(3);
 		expect(opacity[0]).toHaveProperty('test', `${HIGHLIGHTED_ITEM} && ${HIGHLIGHTED_ITEM} !== datum.${MARK_ID}`);
-		expect(opacity[1]).toHaveProperty('test', `scatter0_selectedId && scatter0_selectedId !== datum.${MARK_ID}`);
+		expect(opacity[1]).toHaveProperty('test', `${SELECTED_ITEM} && ${SELECTED_ITEM} !== datum.${MARK_ID}`);
 	});
 });
 

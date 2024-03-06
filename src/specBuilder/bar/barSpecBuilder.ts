@@ -22,7 +22,6 @@ import {
 	TRELLIS_PADDING,
 } from '@constants';
 import { getTransformSort } from '@specBuilder/data/dataUtils';
-import { hasPopover } from '@specBuilder/marks/markUtils';
 import {
 	addDomainFields,
 	addFieldToFacetScaleDomain,
@@ -32,11 +31,7 @@ import {
 	getScaleIndexByName,
 	getScaleIndexByType,
 } from '@specBuilder/scale/scaleSpecBuilder';
-import {
-	addHighlightedItemSignalEvents,
-	getGenericSignal,
-	hasSignalByName,
-} from '@specBuilder/signal/signalSpecBuilder';
+import { addHighlightedItemSignalEvents, getGenericSignal } from '@specBuilder/signal/signalSpecBuilder';
 import { getFacetsFromProps } from '@specBuilder/specUtils';
 import { sanitizeMarkChildren, toCamelCase } from '@utils';
 import { produce } from 'immer';
@@ -107,11 +102,6 @@ export const addSignals = produce<Signal[], [BarSpecProps]>(
 			return;
 		}
 		addHighlightedItemSignalEvents(signals, name);
-		if (hasPopover(children)) {
-			if (!hasSignalByName(signals, `${name}_selectedId`)) {
-				signals.push(getGenericSignal(`${name}_selectedId`));
-			}
-		}
 	},
 );
 
