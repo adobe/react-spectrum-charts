@@ -33,6 +33,11 @@ import { defaultHighlightedItemSignal, defaultSignals } from '@specBuilder/specT
 import { LineSpecProps, MetricRangeElement, MetricRangeProps } from 'types';
 import { Data, Spec } from 'vega';
 
+import {
+	defaultHighlightedItemSignal,
+	defaultHighlightedSeriesSignal,
+	defaultSignals,
+} from '@specBuilder/specTestUtils';
 import * as signalSpecBuilder from '../signal/signalSpecBuilder';
 import { initializeSpec } from '../specUtils';
 import { addData, addLine, addLineMarks, addSignals, setScales } from './lineSpecBuilder';
@@ -567,8 +572,7 @@ describe('lineSpecBuilder', () => {
 					],
 				},
 				{
-					name: 'line0_hoveredSeries',
-					value: null,
+					...defaultHighlightedSeriesSignal,
 					on: [
 						{
 							events: '@line0_voronoi:mouseover',
@@ -617,8 +621,7 @@ describe('lineSpecBuilder', () => {
 					],
 				},
 				{
-					name: 'line0_hoveredSeries',
-					value: null,
+					...defaultHighlightedSeriesSignal,
 					on: [
 						{
 							events: '@line0_voronoi:mouseover',

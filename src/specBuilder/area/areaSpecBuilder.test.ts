@@ -21,10 +21,12 @@ import {
 	DEFAULT_TIME_DIMENSION,
 	DEFAULT_TRANSFORMED_TIME_DIMENSION,
 	FILTERED_TABLE,
+	HIGHLIGHTED_ITEM,
+	HIGHLIGHTED_SERIES,
 	MARK_ID,
-	SERIES_ID,
 	TABLE,
 } from '@constants';
+import { defaultSignals } from '@specBuilder/specTestUtils';
 import { AreaSpecProps } from 'types';
 import { Data, GroupMark, Spec } from 'vega';
 
@@ -150,20 +152,6 @@ const defaultPointScale = {
 	type: 'point',
 };
 
-const defaultSignals = [
-	{ name: 'area0_controlledHoveredId', on: [{ events: '@area0:mouseout', update: 'null' }], value: null },
-	{
-		name: 'area0_hoveredSeries',
-		on: [
-			{ events: '@area0:mouseover', update: `datum.${SERIES_ID}` },
-			{ events: '@area0:mouseout', update: 'null' },
-		],
-		value: null,
-	},
-	{ name: 'area0_selectedId', value: null },
-	{ name: 'area0_selectedSeries', value: null },
-];
-
 describe('areaSpecBuilder', () => {
 	describe('addArea()', () => {
 		test('should add area', () => {
@@ -201,14 +189,19 @@ describe('areaSpecBuilder', () => {
 
 	describe('addSignals()', () => {
 		test('no children: should return nothing', () => {
-			expect(addSignals(startingSpec.signals ?? [], defaultAreaProps)).toStrictEqual([]);
+			expect(addSignals(defaultSignals, defaultAreaProps)).toStrictEqual(defaultSignals);
 		});
 
 		test('children: should add signals', () => {
 			const tooltip = createElement(ChartTooltip);
-			expect(addSignals(startingSpec.signals ?? [], { ...defaultAreaProps, children: [tooltip] })).toStrictEqual(
-				defaultSignals
-			);
+			const signals = addSignals(defaultSignals, { ...defaultAreaProps, children: [tooltip] });
+			expect(signals).toHaveLength(5);
+			expect(signals[0]).toHaveProperty('name', HIGHLIGHTED_ITEM);
+			expect(signals[1]).toHaveProperty('name', HIGHLIGHTED_SERIES);
+			expect(signals[1].on).toHaveLength(2);
+			expect(signals[2]).toHaveProperty('name', 'area0_controlledHoveredId');
+			expect(signals[3]).toHaveProperty('name', 'area0_selectedId');
+			expect(signals[4]).toHaveProperty('name', 'area0_selectedSeries');
 		});
 	});
 

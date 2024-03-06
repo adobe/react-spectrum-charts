@@ -37,7 +37,6 @@ import { Data } from 'vega';
 
 import {
 	addData,
-	addHighlight,
 	buildSpec,
 	getColorScale,
 	getDefaultSignals,
@@ -51,8 +50,7 @@ import {
 	getTwoDimensionalLineTypes,
 	getTwoDimensionalOpacities,
 } from './chartSpecBuilder';
-import { setHoverOpacityForMarks } from './legend/legendHighlightUtils';
-import { defaultHighlightedItemSignal } from './specTestUtils';
+import { defaultSignals } from './specTestUtils';
 import { baseData } from './specUtils';
 
 const defaultData: Data[] = [{ name: TABLE, values: [], transform: [{ type: 'identifier', as: MARK_ID }] }];
@@ -409,21 +407,6 @@ describe('Chart spec builder', () => {
 			});
 		});
 
-		test('does not add highlightedSeries signal if there is no highlighted series', () => {
-			const spec = buildSpec({
-				children: [createBar()],
-				colors: 'categorical12',
-				lineTypes: ['solid', 'dashed', 'dotted', 'dotDash', 'longDash', 'twoDash'],
-				lineWidths: ['M'],
-				symbolShapes: ['rounded-square'],
-				colorScheme: 'light',
-				hiddenSeries: undefined,
-				highlightedSeries: undefined,
-			});
-
-			expect(spec.signals?.find((signal) => signal.name === 'highlightedSeries')).toBeUndefined();
-		});
-
 		test('does not apply controlled highlighting if uncontrolled highlighting is applied', () => {
 			const spec = buildSpec({
 				children: [createBar(), createLegend(true)],
@@ -441,11 +424,11 @@ describe('Chart spec builder', () => {
 				on: [
 					{
 						events: '@legend0_legendEntry:mouseover',
-						update: 'indexof(hiddenSeries, domain("legend0Entries")[datum.index]) === -1 ? domain("legend0Entries")[datum.index] : ""',
+						update: 'indexof(hiddenSeries, domain("legend0Entries")[datum.index]) === -1 ? domain("legend0Entries")[datum.index] : null',
 					},
 					{
 						events: '@legend0_legendEntry:mouseout',
-						update: '""',
+						update: 'null',
 					},
 				],
 			};
@@ -453,40 +436,6 @@ describe('Chart spec builder', () => {
 			expect(spec.signals?.find((signal) => signal.name === 'highlightedSeries')).toStrictEqual(
 				uncontrolledHighlightSignal
 			);
-		});
-	});
-
-	describe('addHighlight()', () => {
-		test('creates spec signals and adds highlight signal if no signals are provided', () => {
-			expect(addHighlight({}, { children: [], hiddenSeries: [], highlightedSeries: undefined })).toStrictEqual({
-				signals: [{ name: 'highlightedSeries', value: null }],
-			});
-		});
-
-		test('adds highlight signal to existing spec signals', () => {
-			const testSignal = { name: 'testName', value: 'testValue' };
-			expect(
-				addHighlight(
-					{ signals: [testSignal] },
-					{ children: [], hiddenSeries: [], highlightedSeries: undefined }
-				)
-			).toStrictEqual({
-				signals: [testSignal, { name: 'highlightedSeries', value: null }],
-			});
-		});
-
-		test('adds highlight signal using the highlightedSeries value', () => {
-			expect(addHighlight({}, { children: [], hiddenSeries: [], highlightedSeries: 'testSeries' })).toStrictEqual(
-				{
-					signals: [{ name: 'highlightedSeries', value: 'testSeries' }],
-				}
-			);
-		});
-
-		test('adds hover opacity to marks', () => {
-			addHighlight({}, { children: [], hiddenSeries: [], highlightedSeries: 'testSeries' });
-			expect(setHoverOpacityForMarks).toHaveBeenCalledTimes(1);
-			expect(setHoverOpacityForMarks).toHaveBeenCalledWith([]);
 		});
 	});
 
@@ -514,7 +463,7 @@ describe('Chart spec builder', () => {
 			{ name: 'opacities', value: [[1]] },
 		];
 
-		const endSignals = [defaultHighlightedItemSignal];
+		const endSignals = defaultSignals;
 
 		test('hiddenSeries is empty when no hidden series', () => {
 			expect(

@@ -18,6 +18,7 @@ import {
 	COLOR_SCALE,
 	DEFAULT_COLOR,
 	HIGHLIGHTED_ITEM,
+	HIGHLIGHTED_SERIES,
 	LINEAR_COLOR_SCALE,
 	LINE_TYPE_SCALE,
 	LINE_WIDTH_SCALE,
@@ -62,16 +63,17 @@ describe('addSignals()', () => {
 			...defaultScatterProps,
 			children: [createElement(ChartTooltip)],
 		});
-		expect(signals).toHaveLength(1);
+		expect(signals).toHaveLength(2);
 		expect(signals[0].name).toBe(HIGHLIGHTED_ITEM);
+		expect(signals[0].on).toHaveLength(2);
 	});
 	test('should add selectedId signal if popover exists', () => {
 		const signals = addSignals(defaultSignals, {
 			...defaultScatterProps,
 			children: [createElement(ChartPopover)],
 		});
-		expect(signals).toHaveLength(2);
-		expect(signals[1].name).toBe('scatter0_selectedId');
+		expect(signals).toHaveLength(3);
+		expect(signals[2].name).toBe('scatter0_selectedId');
 	});
 	test('should add trendline signals if trendline exists as a child', () => {
 		const signals = addSignals(defaultSignals, {
@@ -80,7 +82,7 @@ describe('addSignals()', () => {
 		});
 		expect(signals).toHaveLength(3);
 		expect(signals[0].name).toBe(HIGHLIGHTED_ITEM);
-		expect(signals[1].name).toBe('scatter0_hoveredSeries');
+		expect(signals[1].name).toBe(HIGHLIGHTED_SERIES);
 		expect(signals[2].name).toBe('scatter0_selectedSeries');
 	});
 });

@@ -35,8 +35,8 @@ import { addTimeTransform, getTableData } from '../data/dataUtils';
 import { addContinuousDimensionScale, addFieldToFacetScaleDomain, addMetricScale } from '../scale/scaleSpecBuilder';
 import {
 	addHighlightedItemSignalEvents,
+	addHighlightedSeriesSignalEvents,
 	getGenericSignal,
-	getSeriesHoveredSignal,
 	hasSignalByName,
 } from '../signal/signalSpecBuilder';
 import { getLineHighlightedData, getLineStaticPointData } from './lineDataUtils';
@@ -109,9 +109,7 @@ export const addSignals = produce<Signal[], [LineSpecProps]>((signals, props) =>
 
 	if (!hasInteractiveChildren(children)) return;
 	addHighlightedItemSignalEvents(signals, `${name}_voronoi`, 2);
-	if (!hasSignalByName(signals, `${name}_hoveredSeries`)) {
-		signals.push(getSeriesHoveredSignal(`${name}`, true, `${name}_voronoi`));
-	}
+	addHighlightedSeriesSignalEvents(signals, `${name}_voronoi`, 2);
 	if (!hasSignalByName(signals, `${name}_selectedId`)) {
 		signals.push(getGenericSignal(`${name}_selectedId`));
 	}

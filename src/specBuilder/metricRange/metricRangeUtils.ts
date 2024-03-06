@@ -14,7 +14,7 @@ import { DEFAULT_METRIC, FILTERED_TABLE } from '@constants';
 import { AreaMarkProps, getAreaMark } from '@specBuilder/area/areaUtils';
 import { getLineMark } from '@specBuilder/line/lineMarkUtils';
 import { LineMarkProps } from '@specBuilder/line/lineUtils';
-import { getSeriesHoveredSignal } from '@specBuilder/signal/signalSpecBuilder';
+import { addHighlightedSeriesSignalEvents } from '@specBuilder/signal/signalSpecBuilder';
 import { getFacetsFromProps } from '@specBuilder/specUtils';
 import { LineSpecProps, MarkChildElement, MetricRangeElement, MetricRangeProps, MetricRangeSpecProps } from 'types';
 import { AreaMark, GroupMark, LineMark, Signal, SourceData } from 'vega';
@@ -22,7 +22,7 @@ import { AreaMark, GroupMark, LineMark, Signal, SourceData } from 'vega';
 export const getMetricRanges = (children: MarkChildElement[], markName: string): MetricRangeSpecProps[] => {
 	const metricRangeElements = children.filter((child) => child.type === MetricRange) as MetricRangeElement[];
 	return metricRangeElements.map((metricRange, index) =>
-		applyMetricRangePropDefaults(metricRange.props, markName, index)
+		applyMetricRangePropDefaults(metricRange.props, markName, index),
 	);
 };
 
@@ -36,7 +36,7 @@ export const applyMetricRangePropDefaults = (
 		...props
 	}: MetricRangeProps,
 	markName: string,
-	index: number
+	index: number,
 ): MetricRangeSpecProps => ({
 	children: {},
 	lineType,
@@ -85,7 +85,7 @@ export const getMetricRangeGroupMarks = (lineMarkProps: LineSpecProps): GroupMar
  */
 export const getMetricRangeMark = (
 	lineMarkProps: LineSpecProps,
-	metricRangeProps: MetricRangeSpecProps
+	metricRangeProps: MetricRangeSpecProps,
 ): (LineMark | AreaMark)[] => {
 	const areaProps: AreaMarkProps = {
 		name: metricRangeProps.name,
@@ -147,7 +147,7 @@ export const getMetricRangeSignals = (markProps: LineSpecProps): Signal[] => {
 	const metricRanges = getMetricRanges(children, markName);
 
 	if (metricRanges.length) {
-		signals.push(getSeriesHoveredSignal(markName, true, `${markName}_voronoi`));
+		addHighlightedSeriesSignalEvents(signals, `${markName}_voronoi`, 2);
 	}
 
 	return signals;

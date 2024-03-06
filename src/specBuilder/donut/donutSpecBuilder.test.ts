@@ -12,9 +12,10 @@
 import { createElement } from 'react';
 
 import { ChartPopover } from '@components/ChartPopover';
-import { COLOR_SCALE, FILTERED_TABLE, HIGHLIGHTED_ITEM, MARK_ID } from '@constants';
+import { ChartTooltip } from '@components/ChartTooltip';
+import { COLOR_SCALE, FILTERED_TABLE, HIGHLIGHTED_ITEM, HIGHLIGHTED_SERIES, MARK_ID } from '@constants';
 import { defaultHighlightSignal } from '@specBuilder/signal/signalSpecBuilder.test';
-import { defaultSignals } from '@specBuilder/specTestUtils';
+import { defaultHighlightedSeriesSignal, defaultSignals } from '@specBuilder/specTestUtils';
 import { DonutSpecProps } from 'types';
 
 import { addData, addDonut, addMarks, addScales, addSignals } from './donutSpecBuilder';
@@ -168,13 +169,19 @@ describe('addMarks', () => {
 });
 
 describe('addSignals()', () => {
-	test('should add signals correctly when there is no popover', () => {
+	test('should not add signals when there are not interactive children', () => {
 		const signals = addSignals(defaultSignals, defaultDonutProps);
-		expect(signals).toHaveLength(1);
+		expect(signals).toStrictEqual(defaultSignals);
+	});
+
+	test('should add hover events when tooltip is present', () => {
+		const signals = addSignals(defaultSignals, { ...defaultDonutProps, children: [createElement(ChartTooltip)] });
+		expect(signals).toHaveLength(2);
 		expect(signals[0]).toHaveProperty('name', HIGHLIGHTED_ITEM);
 		expect(signals[0].on).toHaveLength(2);
 		expect(signals[0].on?.[0]).toHaveProperty('events', '@testName:mouseover');
 		expect(signals[0].on?.[1]).toHaveProperty('events', '@testName:mouseout');
+		expect(signals[1]).toStrictEqual(defaultHighlightedSeriesSignal);
 	});
 
 	test('doesnt double add hovoredId signal', () => {
@@ -216,12 +223,13 @@ describe('addSignals()', () => {
 
 	test('should add signals correctly when there is a popover', () => {
 		const signals = addSignals(defaultSignals, { ...defaultDonutProps, children: [createElement(ChartPopover)] });
-		expect(signals).toHaveLength(2);
+		expect(signals).toHaveLength(3);
 		expect(signals[0]).toHaveProperty('name', HIGHLIGHTED_ITEM);
 		expect(signals[0].on).toHaveLength(2);
 		expect(signals[0].on?.[0]).toHaveProperty('events', '@testName:mouseover');
 		expect(signals[0].on?.[1]).toHaveProperty('events', '@testName:mouseout');
-		expect(signals[1]).toHaveProperty('name', 'testName_selectedId');
+		expect(signals[1]).toHaveProperty('name', HIGHLIGHTED_SERIES);
+		expect(signals[2]).toHaveProperty('name', 'testName_selectedId');
 	});
 
 	test('doesnt double add selectedId signal', () => {

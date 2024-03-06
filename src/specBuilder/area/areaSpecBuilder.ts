@@ -21,9 +21,9 @@ import {
 	MARK_ID,
 } from '@constants';
 import {
+	addHighlightedSeriesSignalEvents,
 	getControlledHoverSignal,
 	getGenericSignal,
-	getSeriesHoveredSignal,
 	hasSignalByName,
 } from '@specBuilder/signal/signalSpecBuilder';
 import { spectrumColors } from '@themes';
@@ -147,9 +147,7 @@ export const addSignals = produce<Signal[], [AreaSpecProps]>((signals, { childre
 	if (!hasSignalByName(signals, `${name}_controlledHoveredId`)) {
 		signals.push(getControlledHoverSignal(name));
 	}
-	if (!hasSignalByName(signals, `${name}_hoveredSeries`)) {
-		signals.push(getSeriesHoveredSignal(name));
-	}
+	addHighlightedSeriesSignalEvents(signals, name);
 	if (!hasSignalByName(signals, `${name}_selectedId`)) {
 		signals.push(getGenericSignal(`${name}_selectedId`));
 	}
