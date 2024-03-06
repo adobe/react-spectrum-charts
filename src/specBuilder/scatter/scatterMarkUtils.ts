@@ -9,7 +9,14 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { DEFAULT_OPACITY_RULE, FILTERED_TABLE, HIGHLIGHT_CONTRAST_RATIO, MARK_ID } from '@constants';
+import {
+	DEFAULT_OPACITY_RULE,
+	FILTERED_TABLE,
+	HIGHLIGHTED_ITEM,
+	HIGHLIGHT_CONTRAST_RATIO,
+	MARK_ID,
+	SELECTED_ITEM,
+} from '@constants';
 import {
 	getColorProductionRule,
 	getLineWidthProductionRule,
@@ -96,24 +103,22 @@ export const getScatterMark = (props: ScatterSpecProps): SymbolMark => {
  * @param scatterProps ScatterSpecProps
  * @returns opacity production rule
  */
-export const getOpacity = ({ children, name }: ScatterSpecProps): ({ test?: string } & NumericValueRef)[] => {
+export const getOpacity = ({ children }: ScatterSpecProps): ({ test?: string } & NumericValueRef)[] => {
 	if (!hasInteractiveChildren(children)) {
 		return [DEFAULT_OPACITY_RULE];
 	}
 	// if a point is hovered or selected, all other points should be reduced opacity
-	const hoverSignal = `${name}_hoveredId`;
-	const selectSignal = `${name}_selectedId`;
 	const fadedValue = 1 / HIGHLIGHT_CONTRAST_RATIO;
 
 	const rules = [
 		{
-			test: `${hoverSignal} && ${hoverSignal} !== datum.${MARK_ID}`,
+			test: `${HIGHLIGHTED_ITEM} && ${HIGHLIGHTED_ITEM} !== datum.${MARK_ID}`,
 			value: fadedValue,
 		},
 	];
 	if (hasPopover(children)) {
 		rules.push({
-			test: `${selectSignal} && ${selectSignal} !== datum.${MARK_ID}`,
+			test: `${SELECTED_ITEM} && ${SELECTED_ITEM} !== datum.${MARK_ID}`,
 			value: fadedValue,
 		});
 	}

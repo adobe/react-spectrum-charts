@@ -18,7 +18,9 @@ import {
 	DEFAULT_OPACITY_RULE,
 	DISCRETE_PADDING,
 	FILTERED_TABLE,
+	HIGHLIGHTED_ITEM,
 	MARK_ID,
+	SELECTED_ITEM,
 	STACK_ID,
 } from '@constants';
 import {
@@ -212,7 +214,7 @@ export const getStackedCornerRadiusEncodings = ({ name, metric, lineWidth }: Bar
 
 export const rotateRectClockwiseIfNeeded = (
 	rectEncodeEntry: RectEncodeEntry,
-	{ orientation }: BarSpecProps,
+	{ orientation }: BarSpecProps
 ): RectEncodeEntry => {
 	if (orientation === 'vertical') return rectEncodeEntry;
 	return {
@@ -225,7 +227,7 @@ export const rotateRectClockwiseIfNeeded = (
 
 export const getAnnotationMetricAxisPosition = (
 	props: BarSpecProps,
-	annotationWidth: AnnotationWidth,
+	annotationWidth: AnnotationWidth
 ): ProductionRule<NumericValueRef> => {
 	const { type, metric, orientation } = props;
 	const field = type === 'stacked' || isDodgedAndStacked(props) ? `${metric}1` : metric;
@@ -257,7 +259,7 @@ export const getAnnotationMetricAxisPosition = (
 
 export const getAnnotationPositionOffset = (
 	{ orientation }: BarSpecProps,
-	annotationWidth: AnnotationWidth,
+	annotationWidth: AnnotationWidth
 ): string => {
 	const pixelGapFromBaseline = 2.5;
 
@@ -287,7 +289,7 @@ export const getAnnotationMarks = (
 	// in which case we don't want to use the "global" (full table) values.
 	localDataTableName: string,
 	localDimensionScaleKey: string,
-	localDimensionField: string,
+	localDimensionField: string
 ) => {
 	const marks: Mark[] = [];
 	const children = sanitizeMarkChildren(barProps.children);
@@ -367,75 +369,69 @@ export const getBarUpdateEncodings = (props: BarSpecProps): EncodeEntry => ({
 	strokeWidth: getStrokeWidth(props),
 });
 
-export const getBarOpacity = ({ children, name }: BarSpecProps): ProductionRule<NumericValueRef> => {
+export const getBarOpacity = ({ children }: BarSpecProps): ProductionRule<NumericValueRef> => {
 	// if there aren't any interactive components, then we don't need to add special opacity rules
 	if (!hasInteractiveChildren(children)) {
 		return [DEFAULT_OPACITY_RULE];
 	}
 
 	// if a bar is hovered/selected, all other bars should have reduced opacity
-	const hoverSignal = `${name}_hoveredId`;
 	if (hasPopover(children)) {
-		const selectSignal = `${name}_selectedId`;
-
 		return [
 			{
-				test: `!${selectSignal} && ${hoverSignal} && ${hoverSignal} !== datum.${MARK_ID}`,
+				test: `!${SELECTED_ITEM} && ${HIGHLIGHTED_ITEM} && ${HIGHLIGHTED_ITEM} !== datum.${MARK_ID}`,
 				...getHighlightOpacityValue(DEFAULT_OPACITY_RULE),
 			},
 			{
-				test: `${selectSignal} && ${selectSignal} !== datum.${MARK_ID}`,
+				test: `${SELECTED_ITEM} && ${SELECTED_ITEM} !== datum.${MARK_ID}`,
 				...getHighlightOpacityValue(DEFAULT_OPACITY_RULE),
 			},
-			{ test: `${selectSignal} && ${selectSignal} === datum.${MARK_ID}`, ...DEFAULT_OPACITY_RULE },
+			{ test: `${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${MARK_ID}`, ...DEFAULT_OPACITY_RULE },
 			DEFAULT_OPACITY_RULE,
 		];
 	}
 	return [
 		{
-			test: `${hoverSignal} && ${hoverSignal} !== datum.${MARK_ID}`,
+			test: `${HIGHLIGHTED_ITEM} && ${HIGHLIGHTED_ITEM} !== datum.${MARK_ID}`,
 			...getHighlightOpacityValue(),
 		},
 		DEFAULT_OPACITY_RULE,
 	];
 };
 
-export const getStroke = ({ children, color, colorScheme, name }: BarSpecProps): ProductionRule<ColorValueRef> => {
+export const getStroke = ({ children, color, colorScheme }: BarSpecProps): ProductionRule<ColorValueRef> => {
 	const defaultProductionRule = getColorProductionRule(color, colorScheme);
 	if (!hasPopover(children)) {
 		return [defaultProductionRule];
 	}
 
-	const selectSignal = `${name}_selectedId`;
 	return [
 		{
-			test: `${selectSignal} && ${selectSignal} === datum.${MARK_ID}`,
+			test: `${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${MARK_ID}`,
 			value: getColorValue('static-blue', colorScheme),
 		},
 		defaultProductionRule,
 	];
 };
 
-export const getStrokeDash = ({ children, lineType, name }: BarSpecProps): ProductionRule<ArrayValueRef> => {
+export const getStrokeDash = ({ children, lineType }: BarSpecProps): ProductionRule<ArrayValueRef> => {
 	const defaultProductionRule = getStrokeDashProductionRule(lineType);
 	if (!hasPopover(children)) {
 		return [defaultProductionRule];
 	}
 
-	const selectSignal = `${name}_selectedId`;
-	return [{ test: `${selectSignal} && ${selectSignal} === datum.${MARK_ID}`, value: [] }, defaultProductionRule];
+	return [{ test: `${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${MARK_ID}`, value: [] }, defaultProductionRule];
 };
 
-export const getStrokeWidth = ({ children, lineWidth, name }: BarSpecProps): ProductionRule<NumericValueRef> => {
+export const getStrokeWidth = ({ children, lineWidth }: BarSpecProps): ProductionRule<NumericValueRef> => {
 	const lineWidthValue = getLineWidthPixelsFromLineWidth(lineWidth);
 	const defaultProductionRule = { value: lineWidthValue };
 	if (!hasPopover(children)) {
 		return [defaultProductionRule];
 	}
 
-	const selectSignal = `${name}_selectedId`;
 	return [
-		{ test: `${selectSignal} && ${selectSignal} === datum.${MARK_ID}`, value: Math.max(lineWidthValue, 2) },
+		{ test: `${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${MARK_ID}`, value: Math.max(lineWidthValue, 2) },
 		defaultProductionRule,
 	];
 };
@@ -468,11 +464,11 @@ export const getOrientationProperties = (orientation: Orientation): BarOrientati
 				metricScaleKey: 'yLinear',
 				dimensionScaleKey: 'xBand',
 				rangeScale: 'width',
-			}
+		  }
 		: {
 				metricAxis: 'x',
 				dimensionAxis: 'y',
 				metricScaleKey: 'xLinear',
 				dimensionScaleKey: 'yBand',
 				rangeScale: 'height',
-			};
+		  };

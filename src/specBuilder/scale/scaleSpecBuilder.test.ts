@@ -41,7 +41,7 @@ describe('addDomainFields()', () => {
 
 	test('new field should be added to existing one', () => {
 		expect(
-			addDomainFields({ ...defaultColorScale, domain: { data: 'table', fields: ['test'] } }, [DEFAULT_COLOR]),
+			addDomainFields({ ...defaultColorScale, domain: { data: 'table', fields: ['test'] } }, [DEFAULT_COLOR])
 		).toStrictEqual({ ...defaultColorScale, domain: { data: 'table', fields: ['test', DEFAULT_COLOR] } });
 	});
 });

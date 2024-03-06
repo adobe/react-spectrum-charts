@@ -82,7 +82,7 @@ describe('stackedBarUtils', () => {
 				getStackedBarMarks({
 					...defaultBarProps,
 					children: [...defaultBarProps.children, annotationElement],
-				}),
+				})
 			).toStrictEqual([defaultBackgroundMark, defaultMark, ...stackedAnnotationMarks]);
 		});
 	});
@@ -165,7 +165,7 @@ describe('stackedBarUtils', () => {
 				getStackedDimensionEncodings({
 					...defaultBarProps,
 					color: [DEFAULT_COLOR, DEFAULT_SECONDARY_COLOR],
-				}),
+				})
 			).toStrictEqual({
 				width: { band: 1, scale: 'bar0_position' },
 				x: { field: 'bar0_dodgeGroup', scale: 'bar0_position' },

@@ -9,11 +9,17 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
 import { createElement } from 'react';
 
 import { ChartPopover } from '@components/ChartPopover';
-import { COLOR_SCALE, FILTERED_TABLE, HIGHLIGHT_CONTRAST_RATIO, MARK_ID } from '@constants';
+import {
+	COLOR_SCALE,
+	FILTERED_TABLE,
+	HIGHLIGHTED_ITEM,
+	HIGHLIGHT_CONTRAST_RATIO,
+	MARK_ID,
+	SELECTED_ITEM,
+} from '@constants';
 import { getTooltip } from '@specBuilder/marks/markUtils';
 import { MarkChildElement } from 'types';
 
@@ -397,7 +403,7 @@ describe('getOpacityRules', () => {
 		const result = getOpacityRules('Test', []);
 		expect(result).toEqual([
 			{
-				test: `Test_hoveredId && datum.${MARK_ID} !== Test_hoveredId`,
+				test: `${HIGHLIGHTED_ITEM} && datum.${MARK_ID} !== ${HIGHLIGHTED_ITEM}`,
 				value: 1 / HIGHLIGHT_CONTRAST_RATIO,
 			},
 			{
@@ -411,11 +417,11 @@ describe('getOpacityRules', () => {
 		const result = getOpacityRules('Test', children);
 		expect(result).toEqual([
 			{
-				test: `Test_hoveredId && datum.${MARK_ID} !== Test_hoveredId`,
+				test: `${HIGHLIGHTED_ITEM} && datum.${MARK_ID} !== ${HIGHLIGHTED_ITEM}`,
 				value: 1 / HIGHLIGHT_CONTRAST_RATIO,
 			},
 			{
-				test: `Test_selectedId && datum.${MARK_ID} !== Test_selectedId`,
+				test: `${SELECTED_ITEM} && datum.${MARK_ID} !== ${SELECTED_ITEM}`,
 				value: 1 / HIGHLIGHT_CONTRAST_RATIO,
 			},
 			{

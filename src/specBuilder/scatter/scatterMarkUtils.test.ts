@@ -9,16 +9,16 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
 import { createElement } from 'react';
 
+import { ChartPopover } from '@components/ChartPopover';
 import { ChartTooltip } from '@components/ChartTooltip';
 import { Trendline } from '@components/Trendline';
-import { DEFAULT_OPACITY_RULE, MARK_ID, SYMBOL_SIZE_SCALE } from '@constants';
+import { DEFAULT_OPACITY_RULE, HIGHLIGHTED_ITEM, MARK_ID, SELECTED_ITEM, SYMBOL_SIZE_SCALE } from '@constants';
 import { GroupMark } from 'vega';
+
 import { addScatterMarks, getOpacity, getScatterHoverMarks, getSelectRingSize } from './scatterMarkUtils';
 import { defaultScatterProps } from './scatterTestUtils';
-import { ChartPopover } from '@components/ChartPopover';
 
 describe('addScatterMarks()', () => {
 	test('should add the scatter group with the symbol marks', () => {
@@ -51,13 +51,13 @@ describe('getOpacity()', () => {
 	test('should include hover rules if tooltip exists', () => {
 		const opacity = getOpacity({ ...defaultScatterProps, children: [createElement(ChartTooltip)] });
 		expect(opacity).toHaveLength(2);
-		expect(opacity[0]).toHaveProperty('test', `scatter0_hoveredId && scatter0_hoveredId !== datum.${MARK_ID}`);
+		expect(opacity[0]).toHaveProperty('test', `${HIGHLIGHTED_ITEM} && ${HIGHLIGHTED_ITEM} !== datum.${MARK_ID}`);
 	});
 	test('should include select rule if popover exists', () => {
 		const opacity = getOpacity({ ...defaultScatterProps, children: [createElement(ChartPopover)] });
 		expect(opacity).toHaveLength(3);
-		expect(opacity[0]).toHaveProperty('test', `scatter0_hoveredId && scatter0_hoveredId !== datum.${MARK_ID}`);
-		expect(opacity[1]).toHaveProperty('test', `scatter0_selectedId && scatter0_selectedId !== datum.${MARK_ID}`);
+		expect(opacity[0]).toHaveProperty('test', `${HIGHLIGHTED_ITEM} && ${HIGHLIGHTED_ITEM} !== datum.${MARK_ID}`);
+		expect(opacity[1]).toHaveProperty('test', `${SELECTED_ITEM} && ${SELECTED_ITEM} !== datum.${MARK_ID}`);
 	});
 });
 

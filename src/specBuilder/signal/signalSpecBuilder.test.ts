@@ -9,91 +9,58 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { MARK_ID, SERIES_ID } from '@constants';
+import { HIGHLIGHTED_ITEM, HIGHLIGHTED_SERIES } from '@constants';
+import {
+	defaultHighlightedItemSignal,
+	defaultHighlightedSeriesSignal,
+	defaultSignals,
+} from '@specBuilder/specTestUtils';
 import { Signal } from 'vega';
 
-import { getSeriesHoveredSignal, getUncontrolledHoverSignal } from './signalSpecBuilder';
+import { addHighlightedItemSignalEvents, addHighlightedSeriesSignalEvents } from './signalSpecBuilder';
 
-export const defaultHighlightSignal: Signal = {
-	name: 'highlightedSeries',
-	value: null,
-	on: [
-		{
-			events: '@legend0_legendEntry:mouseover',
-			update: 'indexof(hiddenSeries, domain("legend0Entries")[datum.index]) === -1 ? domain("legend0Entries")[datum.index] : ""',
-		},
-		{ events: '@legend0_legendEntry:mouseout', update: '""' },
-	],
-};
-
-describe('Signal spec builder', () => {
-	describe('getUncontrolledHoverSignal()', () => {
-		test('not nested', () => {
-			expect(getUncontrolledHoverSignal('bar0')).toStrictEqual({
-				name: 'bar0_hoveredId',
-				on: [
-					{ events: '@bar0:mouseover', update: `datum.${MARK_ID}` },
-					{ events: '@bar0:mouseout', update: 'null' },
-				],
-				value: null,
-			});
+describe('signalSpecBuilder', () => {
+	let signals: Signal[];
+	beforeEach(() => {
+		signals = JSON.parse(JSON.stringify(defaultSignals));
+	});
+	describe('addHighlightedItemSignalEvents()', () => {
+		test('should add on events', () => {
+			addHighlightedItemSignalEvents(signals, 'line0');
+			expect(signals).toHaveLength(4);
+			expect(signals[0]).toHaveProperty('name', HIGHLIGHTED_ITEM);
+			expect(signals[0].on).toHaveLength(2);
+			expect(signals[0]?.on?.[0]).toHaveProperty('events', '@line0:mouseover');
+			expect(signals[0]?.on?.[1]).toHaveProperty('events', '@line0:mouseout');
+			expect(signals[1].on).toBeUndefined();
+			expect(signals[2].on).toBeUndefined();
+			expect(signals[3].on).toBeUndefined();
 		});
-
-		test('nested', () => {
-			expect(getUncontrolledHoverSignal('bar0', true)).toStrictEqual({
-				name: 'bar0_hoveredId',
-				on: [
-					{ events: '@bar0:mouseover', update: `datum.datum.${MARK_ID}` },
-					{ events: '@bar0:mouseout', update: 'null' },
-				],
-				value: null,
-			});
-		});
-
-		test('should use eventName if provided', () => {
-			expect(getUncontrolledHoverSignal('line0', false, 'line0_voronoi')).toStrictEqual({
-				name: 'line0_hoveredId',
-				on: [
-					{ events: '@line0_voronoi:mouseover', update: `datum.${MARK_ID}` },
-					{ events: '@line0_voronoi:mouseout', update: 'null' },
-				],
-				value: null,
-			});
+		test('should not do anything if the highlight signal is not found', () => {
+			const signals = JSON.parse(JSON.stringify([defaultHighlightedSeriesSignal]));
+			const signalsCopy = JSON.parse(JSON.stringify(signals));
+			addHighlightedItemSignalEvents(signals, 'line0');
+			expect(signals).toEqual(signalsCopy);
 		});
 	});
 
-	describe('getSeriesHoveredSignal()', () => {
-		test('uses name for eventName if eventName provided', () => {
-			expect(getSeriesHoveredSignal('bar0', true)).toStrictEqual({
-				name: 'bar0_hoveredSeries',
-				on: [
-					{ events: '@bar0:mouseover', update: `datum.datum.${SERIES_ID}` },
-					{ events: '@bar0:mouseout', update: 'null' },
-				],
-				value: null,
-			});
+	describe('addHighlightedSeriesSignalEvents()', () => {
+		test('should add on events', () => {
+			addHighlightedSeriesSignalEvents(signals, 'line0');
+			expect(signals).toHaveLength(4);
+			expect(signals[0].on).toBeUndefined();
+			expect(signals[1]).toHaveProperty('name', HIGHLIGHTED_SERIES);
+			expect(signals[1].on).toHaveLength(2);
+			expect(signals[1]?.on?.[0]).toHaveProperty('events', '@line0:mouseover');
+			expect(signals[1]?.on?.[1]).toHaveProperty('events', '@line0:mouseout');
+			expect(signals[2].on).toBeUndefined();
+			expect(signals[3].on).toBeUndefined();
 		});
-
-		test('uses eventName if provided', () => {
-			expect(getSeriesHoveredSignal('bar0', true, 'bar0_voronoi')).toStrictEqual({
-				name: 'bar0_hoveredSeries',
-				on: [
-					{ events: '@bar0_voronoi:mouseover', update: `datum.datum.${SERIES_ID}` },
-					{ events: '@bar0_voronoi:mouseout', update: 'null' },
-				],
-				value: null,
-			});
-		});
-
-		test('should not nest datum if nestedDatum is false', () => {
-			expect(getSeriesHoveredSignal('bar0', false, 'bar0_voronoi')).toStrictEqual({
-				name: 'bar0_hoveredSeries',
-				on: [
-					{ events: '@bar0_voronoi:mouseover', update: `datum.${SERIES_ID}` },
-					{ events: '@bar0_voronoi:mouseout', update: 'null' },
-				],
-				value: null,
-			});
+		test('should not do anything if the highlight signal is not found', () => {
+			const signals = JSON.parse(JSON.stringify([defaultHighlightedItemSignal]));
+			const signalsCopy = JSON.parse(JSON.stringify(signals));
+			addHighlightedSeriesSignalEvents(signals, 'line0');
+			expect(signals).toEqual(signalsCopy);
 		});
 	});
 });

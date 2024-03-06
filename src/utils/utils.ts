@@ -11,7 +11,7 @@
  */
 import { Fragment, ReactFragment } from 'react';
 
-import { MARK_ID, SERIES_ID } from '@constants';
+import { MARK_ID, SELECTED_ITEM, SELECTED_SERIES, SERIES_ID } from '@constants';
 import { View } from 'vega';
 
 import { Area, Axis, AxisAnnotation, Bar, ChartPopover, ChartTooltip, Legend, Line, Scatter, Trendline } from '..';
@@ -71,14 +71,14 @@ export const sanitizeAxisChildren = (children: Children<AxisChildElement> | unde
 };
 
 export const sanitizeAxisAnnotationChildren = (
-	children: Children<AxisAnnotationChildElement> | undefined,
+	children: Children<AxisAnnotationChildElement> | undefined
 ): AxisAnnotationChildElement[] => {
 	return toArray(children)
 		.flat()
 		.filter((child): child is AxisAnnotationChildElement => isMarkChildElement(child));
 };
 export const sanitizeTrendlineChildren = (
-	children: Children<ChartTooltipElement> | undefined,
+	children: Children<ChartTooltipElement> | undefined
 ): ChartTooltipElement[] => {
 	return toArray(children)
 		.flat()
@@ -89,7 +89,7 @@ const isChartChildElement = (child: ChildElement<ChartChildElement> | undefined)
 	return isRscComponent(child);
 };
 const isMarkChildElement = <T extends MarkChildElement = MarkChildElement>(
-	child: ChildElement<T> | undefined,
+	child: ChildElement<T> | undefined
 ): child is T => {
 	return isRscComponent(child);
 };
@@ -105,7 +105,7 @@ const isRscComponent = (child?: ChildElement<RscElement>): boolean => {
 			typeof child !== 'boolean' &&
 			'type' in child &&
 			child.type !== Fragment &&
-			'displayName' in child.type,
+			'displayName' in child.type
 	);
 };
 
@@ -157,7 +157,7 @@ export function getElement(
 		| typeof ChartTooltip
 		| typeof Legend
 		| typeof Line
-		| typeof Scatter,
+		| typeof Scatter
 ): ChartElement | RscElement | undefined {
 	// if the element is undefined or 'type' doesn't exist on the element, stop searching
 	if (
@@ -202,7 +202,7 @@ export const getAllElements = (
 		| typeof Line
 		| typeof Scatter,
 	elements: MappedElement[] = [],
-	name: string = '',
+	name: string = ''
 ): MappedElement[] => {
 	if (
 		!target ||
@@ -287,7 +287,7 @@ const initElementCounts = (): ElementCounts => ({
  */
 export function debugLog(
 	debug: boolean | undefined,
-	{ title = '', contents }: { contents?: unknown; title?: string },
+	{ title = '', contents }: { contents?: unknown; title?: string }
 ): void {
 	if (debug) {
 		const rainbow = String.fromCodePoint(0x1f308);
@@ -299,21 +299,7 @@ export function debugLog(
  * Sets the values of the selectedId and selectedSeries signals
  * @param param0
  */
-export const setSelectedSignals = ({
-	selectedData,
-	selectedIdSignalName,
-	selectedSeriesSignalName,
-	view,
-}: {
-	selectedData: Datum | null;
-	selectedIdSignalName: string | null;
-	selectedSeriesSignalName: string | null;
-	view: View;
-}) => {
-	if (selectedIdSignalName) {
-		view.signal(selectedIdSignalName, selectedData?.[MARK_ID] ?? null);
-	}
-	if (selectedSeriesSignalName) {
-		view.signal(selectedSeriesSignalName, selectedData?.[SERIES_ID] ?? null);
-	}
+export const setSelectedSignals = ({ selectedData, view }: { selectedData: Datum | null; view: View }) => {
+	view.signal(SELECTED_ITEM, selectedData?.[MARK_ID] ?? null);
+	view.signal(SELECTED_SERIES, selectedData?.[SERIES_ID] ?? null);
 };

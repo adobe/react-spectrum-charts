@@ -22,7 +22,6 @@ import {
 	TRELLIS_PADDING,
 } from '@constants';
 import { getTransformSort } from '@specBuilder/data/dataUtils';
-import { hasPopover } from '@specBuilder/marks/markUtils';
 import {
 	addDomainFields,
 	addFieldToFacetScaleDomain,
@@ -32,7 +31,7 @@ import {
 	getScaleIndexByName,
 	getScaleIndexByType,
 } from '@specBuilder/scale/scaleSpecBuilder';
-import { getGenericSignal, getUncontrolledHoverSignal, hasSignalByName } from '@specBuilder/signal/signalSpecBuilder';
+import { addHighlightedItemSignalEvents, getGenericSignal } from '@specBuilder/signal/signalSpecBuilder';
 import { getFacetsFromProps } from '@specBuilder/specUtils';
 import { sanitizeMarkChildren, toCamelCase } from '@utils';
 import { produce } from 'immer';
@@ -64,7 +63,7 @@ export const addBar = produce<Spec, [BarProps & { colorScheme?: ColorScheme; ind
 			trellisPadding = TRELLIS_PADDING,
 			type = 'stacked',
 			...props
-		},
+		}
 	) => {
 		// put props back together now that all defaults are set
 		const barProps: BarSpecProps = {
@@ -90,7 +89,7 @@ export const addBar = produce<Spec, [BarProps & { colorScheme?: ColorScheme; ind
 		spec.signals = addSignals(spec.signals ?? [], barProps);
 		spec.scales = addScales(spec.scales ?? [], barProps);
 		spec.marks = addMarks(spec.marks ?? [], barProps);
-	},
+	}
 );
 
 export const addSignals = produce<Signal[], [BarSpecProps]>(
@@ -102,15 +101,8 @@ export const addSignals = produce<Signal[], [BarSpecProps]>(
 		if (!children.length) {
 			return;
 		}
-		if (!hasSignalByName(signals, `${name}_hoveredId`)) {
-			signals.push(getUncontrolledHoverSignal(name));
-		}
-		if (hasPopover(children)) {
-			if (!hasSignalByName(signals, `${name}_selectedId`)) {
-				signals.push(getGenericSignal(`${name}_selectedId`));
-			}
-		}
-	},
+		addHighlightedItemSignalEvents(signals, name);
+	}
 );
 
 export const addData = produce<Data[], [BarSpecProps]>((data, props) => {
@@ -200,7 +192,7 @@ export const addScales = produce<Scale[], [BarSpecProps]>((scales, props) => {
 
 export const addDimensionScale = (
 	scales: Scale[],
-	{ dimension, paddingRatio, paddingOuter: barPaddingOuter, orientation }: BarSpecProps,
+	{ dimension, paddingRatio, paddingOuter: barPaddingOuter, orientation }: BarSpecProps
 ) => {
 	const index = getScaleIndexByType(scales, 'band', orientation === 'vertical' ? 'x' : 'y');
 	scales[index] = addDomainFields(scales[index], [dimension]);

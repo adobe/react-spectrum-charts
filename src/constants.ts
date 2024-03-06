@@ -46,6 +46,12 @@ export const MARK_ID = 'rscMarkId';
 export const TRENDLINE_VALUE = 'rscTrendlineValue';
 export const STACK_ID = 'rscStackId';
 
+// signal names
+export const HIGHLIGHTED_ITEM = 'highlightedItem'; // data point
+export const HIGHLIGHTED_SERIES = 'highlightedSeries'; // series
+export const SELECTED_ITEM = 'selectedItem'; // data point
+export const SELECTED_SERIES = 'selectedSeries'; // series
+
 // scale names
 export const COLOR_SCALE = 'color';
 export const LINE_TYPE_SCALE = 'lineType';

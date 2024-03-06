@@ -20,9 +20,11 @@ import {
 	DEFAULT_OPACITY_RULE,
 	DEFAULT_SECONDARY_COLOR,
 	FILTERED_TABLE,
+	HIGHLIGHTED_ITEM,
 	HIGHLIGHT_CONTRAST_RATIO,
 	MARK_ID,
 	PADDING_RATIO,
+	SELECTED_ITEM,
 	STACK_ID,
 	TRELLIS_PADDING,
 } from '@constants';
@@ -111,11 +113,11 @@ export const defaultBarFillOpacity: ProductionRule<NumericValueRef> = [{ value: 
 
 export const defaultBarPopoverOpacity: ProductionRule<NumericValueRef> = [
 	{
-		test: `!bar0_selectedId && bar0_hoveredId && bar0_hoveredId !== datum.${MARK_ID}`,
+		test: `!${SELECTED_ITEM} && ${HIGHLIGHTED_ITEM} && ${HIGHLIGHTED_ITEM} !== datum.${MARK_ID}`,
 		value: 1 / HIGHLIGHT_CONTRAST_RATIO,
 	},
-	{ test: `bar0_selectedId && bar0_selectedId !== datum.${MARK_ID}`, value: 1 / HIGHLIGHT_CONTRAST_RATIO },
-	{ test: `bar0_selectedId && bar0_selectedId === datum.${MARK_ID}`, value: 1 },
+	{ test: `${SELECTED_ITEM} && ${SELECTED_ITEM} !== datum.${MARK_ID}`, value: 1 / HIGHLIGHT_CONTRAST_RATIO },
+	{ test: `${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${MARK_ID}`, value: 1 },
 	DEFAULT_OPACITY_RULE,
 ];
 

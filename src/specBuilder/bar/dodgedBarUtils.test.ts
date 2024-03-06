@@ -23,6 +23,7 @@ import {
 	DEFAULT_OPACITY_RULE,
 	DEFAULT_SECONDARY_COLOR,
 	FILTERED_TABLE,
+	HIGHLIGHTED_ITEM,
 	HIGHLIGHT_CONTRAST_RATIO,
 	MARK_ID,
 } from '@constants';
@@ -119,7 +120,10 @@ const defaultMarkWithTooltip: Mark = {
 			...defaultDodgedXEncodings,
 			...defaultBarStrokeEncodings,
 			opacity: [
-				{ test: `bar0_hoveredId && bar0_hoveredId !== datum.${MARK_ID}`, value: 1 / HIGHLIGHT_CONTRAST_RATIO },
+				{
+					test: `${HIGHLIGHTED_ITEM} && ${HIGHLIGHTED_ITEM} !== datum.${MARK_ID}`,
+					value: 1 / HIGHLIGHT_CONTRAST_RATIO,
+				},
 				DEFAULT_OPACITY_RULE,
 			],
 			cursor: undefined,
@@ -204,7 +208,7 @@ describe('dodgedBarUtils', () => {
 				getDodgedMark({
 					...defaultDodgedProps,
 					children: [...defaultDodgedProps.children, annotationElement],
-				}),
+				})
 			).toStrictEqual(annotationDodgedMarks);
 		});
 		test('should add tooltip keys if ChartTooltip exists as child', () => {
@@ -217,7 +221,7 @@ describe('dodgedBarUtils', () => {
 	describe('getDodgedMark()', () => {
 		test('subseries, should include advanced fill, advanced corner radius, and border strokes,', () => {
 			expect(
-				getDodgedMark({ ...defaultDodgedProps, color: [DEFAULT_COLOR, DEFAULT_SECONDARY_COLOR] }),
+				getDodgedMark({ ...defaultDodgedProps, color: [DEFAULT_COLOR, DEFAULT_SECONDARY_COLOR] })
 			).toStrictEqual({
 				...defaultDodgedMark,
 				marks: [defaultDodgedStackedBackgroundMark, defaultDodgedStackedMark],

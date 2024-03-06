@@ -9,7 +9,6 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
 import { FILTERED_TABLE } from '@constants';
 import { getSeriesIdTransform, getTableData } from '@specBuilder/data/dataUtils';
 import { hasInteractiveChildren } from '@specBuilder/marks/markUtils';
@@ -17,6 +16,7 @@ import { getFacetsFromProps } from '@specBuilder/specUtils';
 import { produce } from 'immer';
 import { TrendlineSpecProps } from 'types';
 import { Data, SourceData, Transforms } from 'vega';
+
 import {
 	getAggregateTransform,
 	getNormalizedDimensionTransform,
@@ -99,7 +99,7 @@ export const getTrendlineData = (markProps: TrendlineParentProps): SourceData[] 
 export const getAggregateTrendlineData = (
 	markProps: TrendlineParentProps,
 	trendlineProps: TrendlineSpecProps,
-	facets: string[],
+	facets: string[]
 ) => {
 	const data: SourceData[] = [];
 	const { dimensionRange, name, children: trendlineChildren, trendlineDimension } = trendlineProps;
@@ -138,7 +138,7 @@ export const getAggregateTrendlineData = (
 export const getRegressionTrendlineData = (
 	markProps: TrendlineParentProps,
 	trendlineProps: TrendlineSpecProps,
-	facets: string[],
+	facets: string[]
 ) => {
 	const data: SourceData[] = [];
 	const { dimension, metric } = markProps;
@@ -154,7 +154,7 @@ export const getRegressionTrendlineData = (
 		dimension,
 		metric,
 		orientation,
-		false,
+		false
 	);
 	const dimensionRangeTransforms = getTrendlineDimensionRangeTransforms(standardTrendlineDimension, dimensionRange);
 	// high resolution data used for drawing the smooth trendline
@@ -187,7 +187,7 @@ export const getRegressionTrendlineData = (
 					getTrendlineParamLookupTransform(markProps, trendlineProps),
 					...getTrendlineParamFormulaTransforms(trendlineDimension, method),
 				],
-			},
+			}
 		);
 	}
 	return data;
@@ -217,7 +217,7 @@ const getWindowTrendlineData = (markProps: TrendlineParentProps, trendlineProps:
 export const getTrendlineStatisticalTransforms = (
 	markProps: TrendlineParentProps,
 	trendlineProps: TrendlineSpecProps,
-	isHighResolutionData: boolean,
+	isHighResolutionData: boolean
 ): Transforms[] => {
 	const { method, trendlineDimension } = trendlineProps;
 
@@ -250,13 +250,13 @@ export const addTableDataTransforms = produce<Transforms[], [TrendlineParentProp
 				dimension,
 				metric,
 				orientation,
-				false,
+				false
 			);
 
 			if (isDimensionNormalized) {
 				if (
 					!transforms.some(
-						(transform) => 'as' in transform && transform.as === `${standardTrendlinDimension}Normalized`,
+						(transform) => 'as' in transform && transform.as === `${standardTrendlinDimension}Normalized`
 					)
 				) {
 					transforms.push(...getNormalizedDimensionTransform(standardTrendlinDimension));

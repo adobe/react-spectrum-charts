@@ -13,7 +13,14 @@ import { createElement } from 'react';
 
 import { ChartPopover } from '@components/ChartPopover';
 import { ChartTooltip } from '@components/ChartTooltip';
-import { COLOR_SCALE, DEFAULT_OPACITY_RULE, DEFAULT_TRANSFORMED_TIME_DIMENSION, SERIES_ID } from '@constants';
+import {
+	COLOR_SCALE,
+	DEFAULT_OPACITY_RULE,
+	DEFAULT_TRANSFORMED_TIME_DIMENSION,
+	HIGHLIGHTED_SERIES,
+	SELECTED_SERIES,
+	SERIES_ID,
+} from '@constants';
 
 import { getLineHoverMarks, getLineMark, getLineOpacity } from './lineMarkUtils';
 import { defaultLineMarkProps } from './lineTestUtils';
@@ -50,22 +57,22 @@ describe('getLineMark()', () => {
 	test('adds metric range opacity rules if isMetricRange and displayOnHover', () => {
 		const lineMark = getLineMark(
 			{ ...defaultLineMarkProps, interactiveMarkName: 'line0', displayOnHover: true },
-			'line0_facet',
+			'line0_facet'
 		);
 		expect(lineMark.encode?.update?.opacity).toEqual([
 			{
-				test: `line0_hoveredSeries && line0_hoveredSeries !== datum.${SERIES_ID}`,
+				test: `${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES} !== datum.${SERIES_ID}`,
 				value: 0,
 			},
 			{
-				test: `line0_hoveredSeries && line0_hoveredSeries === datum.${SERIES_ID}`,
+				test: `${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES} === datum.${SERIES_ID}`,
 				value: 1,
 			},
 			{
-				test: `line0_selectedSeries && line0_selectedSeries === datum.${SERIES_ID}`,
+				test: `${SELECTED_SERIES} && ${SELECTED_SERIES} === datum.${SERIES_ID}`,
 				value: 1,
 			},
-			{ test: `highlightedSeries && highlightedSeries === datum.${SERIES_ID}`, value: 1 },
+			{ test: `${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES} === datum.${SERIES_ID}`, value: 1 },
 			{ value: 0 },
 		]);
 	});
@@ -95,7 +102,7 @@ describe('getLineOpacity()', () => {
 			children: [createElement(ChartTooltip)],
 		});
 		expect(opacityRule).toEqual([
-			{ test: `line0_hoveredSeries && line0_hoveredSeries !== datum.${SERIES_ID}`, value: 0.2 },
+			{ test: `${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES} !== datum.${SERIES_ID}`, value: 0.2 },
 			{ value: 1 },
 		]);
 	});
@@ -108,8 +115,8 @@ describe('getLineOpacity()', () => {
 			children: [createElement(ChartPopover)],
 		});
 		expect(opacityRule).toEqual([
-			{ test: `line0_hoveredSeries && line0_hoveredSeries !== datum.${SERIES_ID}`, value: 0.2 },
-			{ test: `line0_selectedSeries && line0_selectedSeries !== datum.${SERIES_ID}`, value: 0.2 },
+			{ test: `${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES} !== datum.${SERIES_ID}`, value: 0.2 },
+			{ test: `${SELECTED_SERIES} && ${SELECTED_SERIES} !== datum.${SERIES_ID}`, value: 0.2 },
 			{ value: 1 },
 		]);
 	});
@@ -121,10 +128,10 @@ describe('getLineOpacity()', () => {
 			displayOnHover: true,
 		});
 		expect(opacityRule).toEqual([
-			{ test: `line0_hoveredSeries && line0_hoveredSeries !== datum.${SERIES_ID}`, value: 0 },
-			{ test: `line0_hoveredSeries && line0_hoveredSeries === datum.${SERIES_ID}`, value: 1 },
-			{ test: `line0_selectedSeries && line0_selectedSeries === datum.${SERIES_ID}`, value: 1 },
-			{ test: `highlightedSeries && highlightedSeries === datum.${SERIES_ID}`, value: 1 },
+			{ test: `${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES} !== datum.${SERIES_ID}`, value: 0 },
+			{ test: `${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES} === datum.${SERIES_ID}`, value: 1 },
+			{ test: `${SELECTED_SERIES} && ${SELECTED_SERIES} === datum.${SERIES_ID}`, value: 1 },
+			{ test: `${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES} === datum.${SERIES_ID}`, value: 1 },
 			{ value: 0 },
 		]);
 	});

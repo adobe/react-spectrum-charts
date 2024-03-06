@@ -9,7 +9,6 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
 import {
 	DEFAULT_COLOR_SCHEME,
 	DEFAULT_DIMENSION_SCALE_TYPE,

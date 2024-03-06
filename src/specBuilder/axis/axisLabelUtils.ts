@@ -237,6 +237,9 @@ export const getLabelFormat = (
 	if (labelFormat === 'percentage') {
 		return [{ test: 'isNumber(datum.value)', signal: "format(datum.value, '~%')" }, { signal: 'datum.value' }];
 	}
+	if (labelFormat === 'duration') {
+		return { signal: 'formatTimeDurationLabels(datum)' };
+	}
 
 	// if it's a number and greater than or equal to 1000, we want to format it in scientific notation (but with B instead of G) ex. 1K, 20M, 1.3B
 	return [

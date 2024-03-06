@@ -9,8 +9,14 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
-import { COLOR_SCALE, FILTERED_TABLE, HIGHLIGHT_CONTRAST_RATIO, MARK_ID } from '@constants';
+import {
+	COLOR_SCALE,
+	FILTERED_TABLE,
+	HIGHLIGHTED_ITEM,
+	HIGHLIGHT_CONTRAST_RATIO,
+	MARK_ID,
+	SELECTED_ITEM,
+} from '@constants';
 import { getTooltip, hasPopover } from '@specBuilder/marks/markUtils';
 import { MarkChildElement } from 'types';
 import {
@@ -50,12 +56,10 @@ export const getArcMark = (name: string, holeRatio: number, radius: string, chil
 
 export const getOpacityRules = (name: string, children: MarkChildElement[]): ProductionRule<NumericValueRef> => {
 	const lowOpacity = 1 / HIGHLIGHT_CONTRAST_RATIO;
-	const hoveredSignal = `${name}_hoveredId`;
-	const selectedSignal = `${name}_selectedId`;
 
 	const opacityRules = [
 		{
-			test: `${hoveredSignal} && datum.${MARK_ID} !== ${hoveredSignal}`,
+			test: `${HIGHLIGHTED_ITEM} && datum.${MARK_ID} !== ${HIGHLIGHTED_ITEM}`,
 			value: lowOpacity,
 		},
 		{
@@ -64,7 +68,7 @@ export const getOpacityRules = (name: string, children: MarkChildElement[]): Pro
 	];
 	if (hasPopover(children)) {
 		opacityRules.splice(1, 0, {
-			test: `${selectedSignal} && datum.${MARK_ID} !== ${selectedSignal}`,
+			test: `${SELECTED_ITEM} && datum.${MARK_ID} !== ${SELECTED_ITEM}`,
 			value: lowOpacity,
 		});
 	}
@@ -76,7 +80,7 @@ export const getAggregateMetricMark = (
 	metric: string,
 	radius: string,
 	holeRatio: number,
-	metricLabel: string | undefined,
+	metricLabel: string | undefined
 ): Mark => {
 	const groupMark: Mark = {
 		type: 'group',
@@ -106,7 +110,7 @@ export const getPercentMetricMark = (
 	metric: string,
 	radius: string,
 	holeRatio: number,
-	metricLabel: string | undefined,
+	metricLabel: string | undefined
 ): Mark => {
 	const groupMark: Mark = {
 		type: 'group',
@@ -136,7 +140,7 @@ export const getMetricNumberEncodeEnter = (
 	radius: string,
 	holeRatio: number,
 	showingLabel: boolean,
-	isBoolean: boolean,
+	isBoolean: boolean
 ): Partial<Record<EncodeEntryName, TextEncodeEntry>> => {
 	return {
 		enter: {
@@ -160,7 +164,7 @@ export const getMetricNumberText = (metric: string, isBoolean: boolean): Product
 export const getMetricLabelEncodeEnter = (
 	radius: string,
 	holeRatio: number,
-	metricLabel: string,
+	metricLabel: string
 ): Partial<Record<EncodeEntryName, TextEncodeEntry>> => {
 	return {
 		enter: {
@@ -181,7 +185,7 @@ export const metricLabelFontSizes = [24, 18, 12, 0];
 export const getAggregateMetricBaseline = (
 	radius: string,
 	holeRatio: number,
-	showingLabel: boolean,
+	showingLabel: boolean
 ): ProductionRule<TextBaselineValueRef> => {
 	// whenever we aren't showing the label, the metric number should be in the middle
 	// we check if the radius * holeRatio is greater than the second breakpoint because after that point the label dissapears
@@ -193,7 +197,7 @@ export const getAggregateMetricBaseline = (
 export const getFontSize = (
 	radius: string,
 	holeRatio: number,
-	isPrimaryText: boolean,
+	isPrimaryText: boolean
 ): ProductionRule<NumericValueRef> => {
 	return [
 		{
@@ -257,7 +261,7 @@ export const getDirectLabelTextEntry = (
 	radius: string,
 	datumProperty: string,
 	baselinePosition: 'top' | 'bottom',
-	format: boolean = false,
+	format: boolean = false
 ): TextEncodeEntry => {
 	return {
 		text: getDisplayTextForLargeSlice(radius, datumProperty, format),
@@ -278,7 +282,7 @@ export const getDisplayTextForLargeSlice = (
 	radius: string,
 	datumProperty: string,
 	format: boolean,
-	minArcLength: number = 40, // minimum arc length to display text, in pixels
+	minArcLength: number = 40 // minimum arc length to display text, in pixels
 ): ProductionRule<TextValueRef> => {
 	return {
 		//if we want to go back to displaying based on radians rather than arc length, use this if statement:  if(datum['endAngle'] - datum['startAngle'] < 0.3

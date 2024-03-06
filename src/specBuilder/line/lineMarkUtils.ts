@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { DEFAULT_OPACITY_RULE, SERIES_ID } from '@constants';
+import { DEFAULT_OPACITY_RULE, HIGHLIGHTED_SERIES, SELECTED_SERIES, SERIES_ID } from '@constants';
 import {
 	getColorProductionRule,
 	getHighlightOpacityValue,
@@ -74,16 +74,14 @@ export const getLineOpacity = ({
 	const strokeOpacityRules: ProductionRule<NumericValueRef> = [];
 
 	// add a rule that will lower the opacity of the line if there is a hovered series, but this line is not the one hovered
-	const hoverSignal = `${interactiveMarkName}_hoveredSeries`;
 	strokeOpacityRules.push({
-		test: `${hoverSignal} && ${hoverSignal} !== datum.${SERIES_ID}`,
+		test: `${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES} !== datum.${SERIES_ID}`,
 		...getHighlightOpacityValue(baseRule),
 	});
 
 	if (popoverMarkName) {
-		const selectSignal = `${interactiveMarkName}_selectedSeries`;
 		strokeOpacityRules.push({
-			test: `${selectSignal} && ${selectSignal} !== datum.${SERIES_ID}`,
+			test: `${SELECTED_SERIES} && ${SELECTED_SERIES} !== datum.${SERIES_ID}`,
 			...getHighlightOpacityValue(baseRule),
 		});
 	}
@@ -100,11 +98,11 @@ export const getLineOpacity = ({
 const getDisplayOnHoverRules = (name: string, opacity: OpacityFacet) => {
 	const opacityRule = getOpacityProductionRule(opacity);
 	const hoverRule = {
-		test: `${name}_hoveredSeries && ${name}_hoveredSeries === datum.${SERIES_ID}`,
+		test: `${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES} === datum.${SERIES_ID}`,
 		...opacityRule,
 	};
 	const selectRule = {
-		test: `${name}_selectedSeries && ${name}_selectedSeries === datum.${SERIES_ID}`,
+		test: `${SELECTED_SERIES} && ${SELECTED_SERIES} === datum.${SERIES_ID}`,
 		...opacityRule,
 	};
 	const legendRule = { test: `highlightedSeries && highlightedSeries === datum.${SERIES_ID}`, ...opacityRule };
@@ -121,7 +119,7 @@ const getDisplayOnHoverRules = (name: string, opacity: OpacityFacet) => {
 export const getLineHoverMarks = (
 	lineProps: LineMarkProps,
 	dataSource: string,
-	secondaryHighlightedMetric?: string,
+	secondaryHighlightedMetric?: string
 ): Mark[] => {
 	const { children, dimension, metric, name, scaleType } = lineProps;
 	return [
@@ -166,7 +164,7 @@ const getPointsForVoronoi = (
 	dimension: string,
 	metric: string,
 	name: string,
-	scaleType: ScaleType,
+	scaleType: ScaleType
 ): SymbolMark => {
 	return {
 		name: `${name}_pointsForVoronoi`,

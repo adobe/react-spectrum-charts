@@ -9,6 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { createElement } from 'react';
 
 import { ChartTooltip } from '@components/ChartTooltip';
 import { Trendline } from '@components/Trendline';
@@ -21,8 +22,8 @@ import {
 	TRENDLINE_VALUE,
 } from '@constants';
 import { baseData } from '@specBuilder/specUtils';
-import { createElement } from 'react';
 import { Data } from 'vega';
+
 import {
 	addTableDataTransforms,
 	addTrendlineData,
@@ -144,7 +145,7 @@ describe('getAggregateTrendlineData()', () => {
 		const data = getAggregateTrendlineData(
 			defaultLineProps,
 			{ ...defaultTrendlineProps, children: [createElement(ChartTooltip)] },
-			[DEFAULT_COLOR],
+			[DEFAULT_COLOR]
 		);
 		expect(data).toHaveLength(2);
 		expect(data[1]).toHaveProperty('name', 'line0Trendline0_data');
@@ -161,7 +162,7 @@ describe('getRegressionTrendlineData()', () => {
 		const data = getRegressionTrendlineData(
 			defaultLineProps,
 			{ ...defaultTrendlineProps, children: [createElement(ChartTooltip)] },
-			[DEFAULT_COLOR],
+			[DEFAULT_COLOR]
 		);
 		expect(data).toHaveLength(3);
 		expect(data[1]).toHaveProperty('name', 'line0Trendline0_params');
@@ -174,7 +175,7 @@ describe('getTrendlineStatisticalTransforms()', () => {
 		const aggregateTransforms = getTrendlineStatisticalTransforms(
 			defaultLineProps,
 			{ ...defaultTrendlineProps, method: 'average' },
-			true,
+			true
 		);
 		expect(aggregateTransforms).toHaveLength(1);
 		expect(aggregateTransforms[0]).toHaveProperty('type', 'aggregate');
@@ -183,7 +184,7 @@ describe('getTrendlineStatisticalTransforms()', () => {
 		const aggregateTransforms = getTrendlineStatisticalTransforms(
 			defaultLineProps,
 			{ ...defaultTrendlineProps, method: 'linear' },
-			true,
+			true
 		);
 		expect(aggregateTransforms).toHaveLength(1);
 		expect(aggregateTransforms[0]).toHaveProperty('type', 'regression');
@@ -192,7 +193,7 @@ describe('getTrendlineStatisticalTransforms()', () => {
 		const aggregateTransforms = getTrendlineStatisticalTransforms(
 			defaultLineProps,
 			{ ...defaultTrendlineProps, method: 'movingAverage-2' },
-			true,
+			true
 		);
 		expect(aggregateTransforms).toHaveLength(2);
 		expect(aggregateTransforms[0]).toHaveProperty('type', 'collect');
@@ -227,14 +228,14 @@ describe('addTableDataTransforms()', () => {
 				...defaultLineProps,
 				scaleType: 'linear',
 				children: [createElement(Trendline, { method: 'average' })],
-			}),
+			})
 		).toHaveLength(0);
 		expect(
 			addTableDataTransforms([], {
 				...defaultLineProps,
 				scaleType: 'linear',
 				children: [createElement(Trendline, { method: 'movingAverage-2' })],
-			}),
+			})
 		).toHaveLength(0);
 	});
 	test('should not add normalized dimension transform if it is not a time scale', () => {

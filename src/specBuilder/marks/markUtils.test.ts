@@ -54,7 +54,7 @@ describe('getColorProductionRule', () => {
 	test('should use linear scale if colorScaleType is linear', () => {
 		expect(getColorProductionRule(DEFAULT_COLOR, DEFAULT_COLOR_SCHEME, 'linear')).toHaveProperty(
 			'scale',
-			LINEAR_COLOR_SCALE,
+			LINEAR_COLOR_SCALE
 		);
 	});
 

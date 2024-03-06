@@ -10,9 +10,9 @@
  * governing permissions and limitations under the License.
  */
 import { COLOR_SCALE, DEFAULT_COLOR, DEFAULT_COLOR_SCHEME, DEFAULT_METRIC, FILTERED_TABLE } from '@constants';
-import { hasPopover } from '@specBuilder/marks/markUtils';
+import { hasInteractiveChildren } from '@specBuilder/marks/markUtils';
 import { addFieldToFacetScaleDomain } from '@specBuilder/scale/scaleSpecBuilder';
-import { getGenericSignal, getUncontrolledHoverSignal, hasSignalByName } from '@specBuilder/signal/signalSpecBuilder';
+import { addHighlightedItemSignalEvents } from '@specBuilder/signal/signalSpecBuilder';
 import { sanitizeMarkChildren, toCamelCase } from '@utils';
 import { produce } from 'immer';
 import { ColorScheme, DonutProps, DonutSpecProps } from 'types';
@@ -35,7 +35,7 @@ export const addDonut = produce<Spec, [DonutProps & { colorScheme?: ColorScheme;
 			hasDirectLabels = false,
 			isBoolean = false,
 			...props
-		},
+		}
 	) => {
 		// put props back together now that all defaults are set
 		const donutProps: DonutSpecProps = {
@@ -56,7 +56,7 @@ export const addDonut = produce<Spec, [DonutProps & { colorScheme?: ColorScheme;
 		spec.scales = addScales(spec.scales ?? [], donutProps);
 		spec.marks = addMarks(spec.marks ?? [], donutProps);
 		spec.signals = addSignals(spec.signals ?? [], donutProps);
-	},
+	}
 );
 
 export const addData = produce<Data[], [DonutSpecProps]>((data, props) => {
@@ -131,14 +131,6 @@ export const addMarks = produce<Mark[], [DonutSpecProps]>((marks, props) => {
 
 export const addSignals = produce<Signal[], [DonutSpecProps]>((signals, props) => {
 	const { name, children } = props;
-
-	if (!hasSignalByName(signals, `${name}_hoveredId`)) {
-		signals.push(getUncontrolledHoverSignal(name));
-	}
-
-	if (hasPopover(children)) {
-		if (!hasSignalByName(signals, `${name}_selectedId`)) {
-			signals.push(getGenericSignal(`${name}_selectedId`));
-		}
-	}
+	if (!hasInteractiveChildren(children)) return;
+	addHighlightedItemSignalEvents(signals, name);
 });
