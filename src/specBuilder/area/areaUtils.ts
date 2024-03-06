@@ -29,7 +29,7 @@ import {
 import { AreaMark, NumericValueRef, ProductionRule } from 'vega';
 import { getAnimationMarks } from '@specBuilder/specUtils';
 
-import { ColorFacet, ColorScheme, HighlightedItem, MarkChildElement, ScaleType } from '../../types';
+import { ChartData, ColorFacet, ColorScheme, HighlightedItem, MarkChildElement, ScaleType } from '../../types';
 
 export interface AreaMarkProps {
 	color: ColorFacet;
@@ -42,6 +42,8 @@ export interface AreaMarkProps {
 	isMetricRange?: boolean;
 	isStacked: boolean;
 	animations?: boolean;
+	data?: ChartData[];
+	previousData?: ChartData[];
 	metricStart: string;
 	metricEnd: string;
 	name: string;
@@ -70,8 +72,8 @@ export const getAreaMark = (areaProps: AreaMarkProps, dataSource: string = `${ar
 			update: {
 				// this has to be in update because when you resize the window that doesn't rebuild the spec
 				// but it may change the x position if it causes the chart to resize
-				y: animations !== false ? getAnimationMarks(dimension, metricStart) : undefined,
-				y2: animations !== false ? getAnimationMarks(dimension, metricEnd) : undefined,
+				y: animations !== false ? getAnimationMarks(dimension, metricStart, data, previousData) : undefined,
+				y2: animations !== false ? getAnimationMarks(dimension, metricEnd, data, previousData) : undefined,
 				x: getX(scaleType, dimension),
 				cursor: getCursor(children),
 				fillOpacity: { value: opacity },
