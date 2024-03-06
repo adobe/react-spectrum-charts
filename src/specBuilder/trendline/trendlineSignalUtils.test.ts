@@ -11,14 +11,13 @@
  */
 import { createElement } from 'react';
 
-
 import { ChartPopover } from '@components/ChartPopover';
 import { ChartTooltip } from '@components/ChartTooltip';
 import { Trendline } from '@components/Trendline';
 import { HIGHLIGHTED_ITEM, HIGHLIGHTED_SERIES } from '@constants';
 import { defaultSignals } from '@specBuilder/specTestUtils';
-import { createElement } from 'react';
 import { Signal } from 'vega';
+
 import { setTrendlineSignals } from './trendlineSignalUtils';
 import { defaultLineProps } from './trendlineTestUtils';
 
