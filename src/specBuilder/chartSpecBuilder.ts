@@ -21,6 +21,8 @@ import {
 	LINE_TYPE_SCALE,
 	LINE_WIDTH_SCALE,
 	OPACITY_SCALE,
+	SELECTED_ITEM,
+	SELECTED_SERIES,
 	SERIES_ID,
 	SYMBOL_SHAPE_SCALE,
 	SYMBOL_SIZE_SCALE,
@@ -221,6 +223,8 @@ export const getDefaultSignals = (
 		getGenericSignal('hiddenSeries', hiddenSeries ?? []),
 		getGenericSignal(HIGHLIGHTED_ITEM),
 		getGenericSignal(HIGHLIGHTED_SERIES, highlightedSeries),
+		getGenericSignal(SELECTED_ITEM),
+		getGenericSignal(SELECTED_SERIES),
 	];
 };
 

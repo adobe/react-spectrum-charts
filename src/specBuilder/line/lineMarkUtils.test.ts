@@ -18,6 +18,7 @@ import {
 	DEFAULT_OPACITY_RULE,
 	DEFAULT_TRANSFORMED_TIME_DIMENSION,
 	HIGHLIGHTED_SERIES,
+	SELECTED_SERIES,
 	SERIES_ID,
 } from '@constants';
 
@@ -68,10 +69,10 @@ describe('getLineMark()', () => {
 				value: 1,
 			},
 			{
-				test: `line0_selectedSeries && line0_selectedSeries === datum.${SERIES_ID}`,
+				test: `${SELECTED_SERIES} && ${SELECTED_SERIES} === datum.${SERIES_ID}`,
 				value: 1,
 			},
-			{ test: `highlightedSeries && highlightedSeries === datum.${SERIES_ID}`, value: 1 },
+			{ test: `${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES} === datum.${SERIES_ID}`, value: 1 },
 			{ value: 0 },
 		]);
 	});
@@ -115,7 +116,7 @@ describe('getLineOpacity()', () => {
 		});
 		expect(opacityRule).toEqual([
 			{ test: `${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES} !== datum.${SERIES_ID}`, value: 0.2 },
-			{ test: `line0_selectedSeries && line0_selectedSeries !== datum.${SERIES_ID}`, value: 0.2 },
+			{ test: `${SELECTED_SERIES} && ${SELECTED_SERIES} !== datum.${SERIES_ID}`, value: 0.2 },
 			{ value: 1 },
 		]);
 	});
@@ -129,8 +130,8 @@ describe('getLineOpacity()', () => {
 		expect(opacityRule).toEqual([
 			{ test: `${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES} !== datum.${SERIES_ID}`, value: 0 },
 			{ test: `${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES} === datum.${SERIES_ID}`, value: 1 },
-			{ test: `line0_selectedSeries && line0_selectedSeries === datum.${SERIES_ID}`, value: 1 },
-			{ test: `highlightedSeries && highlightedSeries === datum.${SERIES_ID}`, value: 1 },
+			{ test: `${SELECTED_SERIES} && ${SELECTED_SERIES} === datum.${SERIES_ID}`, value: 1 },
+			{ test: `${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES} === datum.${SERIES_ID}`, value: 1 },
 			{ value: 0 },
 		]);
 	});

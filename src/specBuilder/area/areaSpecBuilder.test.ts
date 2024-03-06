@@ -24,6 +24,8 @@ import {
 	HIGHLIGHTED_ITEM,
 	HIGHLIGHTED_SERIES,
 	MARK_ID,
+	SELECTED_ITEM,
+	SELECTED_SERIES,
 	TABLE,
 } from '@constants';
 import { defaultSignals } from '@specBuilder/specTestUtils';
@@ -199,9 +201,9 @@ describe('areaSpecBuilder', () => {
 			expect(signals[0]).toHaveProperty('name', HIGHLIGHTED_ITEM);
 			expect(signals[1]).toHaveProperty('name', HIGHLIGHTED_SERIES);
 			expect(signals[1].on).toHaveLength(2);
-			expect(signals[2]).toHaveProperty('name', 'area0_controlledHoveredId');
-			expect(signals[3]).toHaveProperty('name', 'area0_selectedId');
-			expect(signals[4]).toHaveProperty('name', 'area0_selectedSeries');
+			expect(signals[2]).toHaveProperty('name', SELECTED_ITEM);
+			expect(signals[3]).toHaveProperty('name', SELECTED_SERIES);
+			expect(signals[4]).toHaveProperty('name', 'area0_controlledHoveredId');
 		});
 	});
 

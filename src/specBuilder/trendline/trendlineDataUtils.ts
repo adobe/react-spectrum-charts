@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { FILTERED_TABLE, HIGHLIGHTED_ITEM, MARK_ID } from '@constants';
+import { FILTERED_TABLE, HIGHLIGHTED_ITEM, MARK_ID, SELECTED_ITEM } from '@constants';
 import { getSeriesIdTransform, getTableData } from '@specBuilder/data/dataUtils';
 import { hasInteractiveChildren, hasPopover } from '@specBuilder/marks/markUtils';
 import { getFacetsFromProps } from '@specBuilder/specUtils';
@@ -216,10 +216,9 @@ const getWindowTrendlineData = (markProps: TrendlineParentProps, trendlineProps:
  * @returns Data
  */
 const getHighlightTrendlineData = (markName: string, trendlines: TrendlineSpecProps[]): SourceData => {
-	const selectSignal = `${markName}Trendline_selectedId`;
 	const trendlineHasPopover = trendlines.some((trendline) => hasPopover(trendline.children));
 	const expr = trendlineHasPopover
-		? `${selectSignal} === datum.${MARK_ID} || !${selectSignal} && ${HIGHLIGHTED_ITEM} === datum.${MARK_ID}`
+		? `${SELECTED_ITEM} === datum.${MARK_ID} || !${SELECTED_ITEM} && ${HIGHLIGHTED_ITEM} === datum.${MARK_ID}`
 		: `${HIGHLIGHTED_ITEM} === datum.${MARK_ID}`;
 
 	return {

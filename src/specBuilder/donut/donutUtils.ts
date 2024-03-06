@@ -9,7 +9,14 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { COLOR_SCALE, FILTERED_TABLE, HIGHLIGHTED_ITEM, HIGHLIGHT_CONTRAST_RATIO, MARK_ID } from '@constants';
+import {
+	COLOR_SCALE,
+	FILTERED_TABLE,
+	HIGHLIGHTED_ITEM,
+	HIGHLIGHT_CONTRAST_RATIO,
+	MARK_ID,
+	SELECTED_ITEM,
+} from '@constants';
 import { getTooltip, hasPopover } from '@specBuilder/marks/markUtils';
 import { MarkChildElement } from 'types';
 import {
@@ -49,7 +56,6 @@ export const getArcMark = (name: string, holeRatio: number, radius: string, chil
 
 export const getOpacityRules = (name: string, children: MarkChildElement[]): ProductionRule<NumericValueRef> => {
 	const lowOpacity = 1 / HIGHLIGHT_CONTRAST_RATIO;
-	const selectedSignal = `${name}_selectedId`;
 
 	const opacityRules = [
 		{
@@ -62,7 +68,7 @@ export const getOpacityRules = (name: string, children: MarkChildElement[]): Pro
 	];
 	if (hasPopover(children)) {
 		opacityRules.splice(1, 0, {
-			test: `${selectedSignal} && datum.${MARK_ID} !== ${selectedSignal}`,
+			test: `${SELECTED_ITEM} && datum.${MARK_ID} !== ${SELECTED_ITEM}`,
 			value: lowOpacity,
 		});
 	}

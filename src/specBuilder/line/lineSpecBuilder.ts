@@ -33,12 +33,7 @@ import { Data, Mark, Scale, Signal, Spec } from 'vega';
 
 import { addTimeTransform, getTableData } from '../data/dataUtils';
 import { addContinuousDimensionScale, addFieldToFacetScaleDomain, addMetricScale } from '../scale/scaleSpecBuilder';
-import {
-	addHighlightedItemSignalEvents,
-	addHighlightedSeriesSignalEvents,
-	getGenericSignal,
-	hasSignalByName,
-} from '../signal/signalSpecBuilder';
+import { addHighlightedItemSignalEvents, addHighlightedSeriesSignalEvents } from '../signal/signalSpecBuilder';
 import { getLineHighlightedData, getLineStaticPointData } from './lineDataUtils';
 import { getLineHoverMarks, getLineMark } from './lineMarkUtils';
 import { getLineStaticPoint } from './linePointUtils';
@@ -110,12 +105,6 @@ export const addSignals = produce<Signal[], [LineSpecProps]>((signals, props) =>
 	if (!hasInteractiveChildren(children)) return;
 	addHighlightedItemSignalEvents(signals, `${name}_voronoi`, 2);
 	addHighlightedSeriesSignalEvents(signals, `${name}_voronoi`, 2);
-	if (!hasSignalByName(signals, `${name}_selectedId`)) {
-		signals.push(getGenericSignal(`${name}_selectedId`));
-	}
-	if (!hasSignalByName(signals, `${name}_selectedSeries`)) {
-		signals.push(getGenericSignal(`${name}_selectedSeries`));
-	}
 });
 
 export const setScales = produce<Scale[], [LineSpecProps]>((scales, props) => {

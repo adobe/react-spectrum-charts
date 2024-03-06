@@ -21,6 +21,7 @@ import {
 	LINE_WIDTH_SCALE,
 	MARK_ID,
 	OPACITY_SCALE,
+	SELECTED_ITEM,
 	SYMBOL_SIZE_SCALE,
 } from '@constants';
 import { addTimeTransform, getTableData } from '@specBuilder/data/dataUtils';
@@ -31,11 +32,7 @@ import {
 	addFieldToFacetScaleDomain,
 	addMetricScale,
 } from '@specBuilder/scale/scaleSpecBuilder';
-import {
-	addHighlightedItemSignalEvents,
-	getGenericSignal,
-	hasSignalByName,
-} from '@specBuilder/signal/signalSpecBuilder';
+import { addHighlightedItemSignalEvents } from '@specBuilder/signal/signalSpecBuilder';
 import { addTrendlineData, getTrendlineScales, setTrendlineSignals } from '@specBuilder/trendline';
 import { sanitizeMarkChildren, toCamelCase } from '@utils';
 import { produce } from 'immer';
@@ -110,7 +107,7 @@ export const addData = produce<Data[], [ScatterSpecProps]>((data, props) => {
 			transform: [
 				{
 					type: 'filter',
-					expr: `${name}_selectedId === datum.${MARK_ID}`,
+					expr: `${SELECTED_ITEM} === datum.${MARK_ID}`,
 				},
 			],
 		});
@@ -131,12 +128,6 @@ export const addSignals = produce<Signal[], [ScatterSpecProps]>((signals, props)
 	if (!hasInteractiveChildren(children)) return;
 	// interactive signals
 	addHighlightedItemSignalEvents(signals, `${name}_voronoi`, 2);
-	if (hasPopover(children)) {
-		if (!hasSignalByName(signals, `${name}_selectedId`)) {
-			// select signal
-			signals.push(getGenericSignal(`${name}_selectedId`));
-		}
-	}
 });
 
 /**

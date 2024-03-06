@@ -20,6 +20,7 @@ import {
 	DEFAULT_COLOR,
 	DEFAULT_SECONDARY_COLOR,
 	FILTERED_TABLE,
+	HIGHLIGHTED_SERIES,
 	LINE_TYPE_SCALE,
 	LINE_WIDTH_SCALE,
 	MARK_ID,
@@ -383,8 +384,8 @@ describe('Chart spec builder', () => {
 				highlightedSeries: 'Chrome',
 			});
 
-			expect(spec.signals?.find((signal) => signal.name === 'highlightedSeries')).toStrictEqual({
-				name: 'highlightedSeries',
+			expect(spec.signals?.find((signal) => signal.name === HIGHLIGHTED_SERIES)).toStrictEqual({
+				name: HIGHLIGHTED_SERIES,
 				value: 'Chrome',
 			});
 		});
@@ -401,8 +402,8 @@ describe('Chart spec builder', () => {
 				highlightedSeries: 'Chrome',
 			});
 
-			expect(spec.signals?.find((signal) => signal.name === 'highlightedSeries')).toStrictEqual({
-				name: 'highlightedSeries',
+			expect(spec.signals?.find((signal) => signal.name === HIGHLIGHTED_SERIES)).toStrictEqual({
+				name: HIGHLIGHTED_SERIES,
 				value: 'Chrome',
 			});
 		});
@@ -419,7 +420,7 @@ describe('Chart spec builder', () => {
 				highlightedSeries: undefined,
 			});
 			const uncontrolledHighlightSignal = {
-				name: 'highlightedSeries',
+				name: HIGHLIGHTED_SERIES,
 				value: null,
 				on: [
 					{

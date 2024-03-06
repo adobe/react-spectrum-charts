@@ -12,6 +12,7 @@
 import {
 	COLOR_SCALE,
 	DEFAULT_OPACITY_RULE,
+	HIGHLIGHTED_SERIES,
 	HIGHLIGHT_CONTRAST_RATIO,
 	LINE_TYPE_SCALE,
 	LINE_WIDTH_SCALE,
@@ -169,7 +170,7 @@ export const getOpacityEncoding = ({
 	keys,
 	name,
 }: LegendSpecProps): ProductionRule<NumericValueRef> | undefined => {
-	const highlightSignalName = keys ? `${name}_highlight` : 'highlightedSeries';
+	const highlightSignalName = keys ? `${name}_highlight` : HIGHLIGHTED_SERIES;
 	// only add symbol opacity if highlight is true or highlightedSeries is defined
 	if (highlight || highlightedSeries) {
 		return [

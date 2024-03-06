@@ -10,13 +10,9 @@
  * governing permissions and limitations under the License.
  */
 import { COLOR_SCALE, DEFAULT_COLOR, DEFAULT_COLOR_SCHEME, DEFAULT_METRIC, FILTERED_TABLE } from '@constants';
-import { hasInteractiveChildren, hasPopover } from '@specBuilder/marks/markUtils';
+import { hasInteractiveChildren } from '@specBuilder/marks/markUtils';
 import { addFieldToFacetScaleDomain } from '@specBuilder/scale/scaleSpecBuilder';
-import {
-	addHighlightedItemSignalEvents,
-	getGenericSignal,
-	hasSignalByName,
-} from '@specBuilder/signal/signalSpecBuilder';
+import { addHighlightedItemSignalEvents } from '@specBuilder/signal/signalSpecBuilder';
 import { sanitizeMarkChildren, toCamelCase } from '@utils';
 import { produce } from 'immer';
 import { ColorScheme, DonutProps, DonutSpecProps } from 'types';
@@ -137,9 +133,4 @@ export const addSignals = produce<Signal[], [DonutSpecProps]>((signals, props) =
 	const { name, children } = props;
 	if (!hasInteractiveChildren(children)) return;
 	addHighlightedItemSignalEvents(signals, name);
-	if (hasPopover(children)) {
-		if (!hasSignalByName(signals, `${name}_selectedId`)) {
-			signals.push(getGenericSignal(`${name}_selectedId`));
-		}
-	}
 });

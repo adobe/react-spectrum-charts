@@ -11,7 +11,7 @@
  */
 import { Fragment, ReactFragment } from 'react';
 
-import { MARK_ID, SERIES_ID } from '@constants';
+import { MARK_ID, SELECTED_ITEM, SELECTED_SERIES, SERIES_ID } from '@constants';
 import { View } from 'vega';
 
 import { Area, Axis, AxisAnnotation, Bar, ChartPopover, ChartTooltip, Legend, Line, Scatter, Trendline } from '..';
@@ -299,21 +299,7 @@ export function debugLog(
  * Sets the values of the selectedId and selectedSeries signals
  * @param param0
  */
-export const setSelectedSignals = ({
-	selectedData,
-	selectedIdSignalName,
-	selectedSeriesSignalName,
-	view,
-}: {
-	selectedData: Datum | null;
-	selectedIdSignalName: string | null;
-	selectedSeriesSignalName: string | null;
-	view: View;
-}) => {
-	if (selectedIdSignalName) {
-		view.signal(selectedIdSignalName, selectedData?.[MARK_ID] ?? null);
-	}
-	if (selectedSeriesSignalName) {
-		view.signal(selectedSeriesSignalName, selectedData?.[SERIES_ID] ?? null);
-	}
+export const setSelectedSignals = ({ selectedData, view }: { selectedData: Datum | null; view: View }) => {
+	view.signal(SELECTED_ITEM, selectedData?.[MARK_ID] ?? null);
+	view.signal(SELECTED_SERIES, selectedData?.[SERIES_ID] ?? null);
 };

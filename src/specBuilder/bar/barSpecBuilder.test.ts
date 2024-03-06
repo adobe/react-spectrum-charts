@@ -232,22 +232,14 @@ describe('barSpecBuilder', () => {
 	describe('addSignals()', () => {
 		test('should add padding signal', () => {
 			const signals = addSignals(defaultSignals, defaultBarProps);
-			expect(signals).toHaveLength(3);
-			expect(signals[2]).toHaveProperty('name', 'paddingInner');
+			expect(signals).toHaveLength(5);
+			expect(signals.at(-1)).toHaveProperty('name', 'paddingInner');
 		});
 		test('should add hover events if tooltip is present', () => {
 			const signals = addSignals(defaultSignals, { ...defaultBarProps, children: [createElement(ChartTooltip)] });
 			expect(signals[0]).toHaveProperty('on');
 			expect(signals[0].on).toHaveLength(2);
 			expect(signals[0].on?.[0]).toHaveProperty('events', '@bar0:mouseover');
-		});
-		test('should add selected signal if popover is present', () => {
-			const signals = addSignals(defaultSignals, {
-				...defaultBarProps,
-				children: [createElement(ChartTooltip), createElement(ChartPopover)],
-			});
-			expect(signals).toHaveLength(4);
-			expect(signals[3]).toHaveProperty('name', 'bar0_selectedId');
 		});
 	});
 

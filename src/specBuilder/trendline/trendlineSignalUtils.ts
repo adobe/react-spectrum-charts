@@ -9,11 +9,10 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { hasPopover, hasTooltip } from '@specBuilder/marks/markUtils';
+import { hasTooltip } from '@specBuilder/marks/markUtils';
 import {
 	addHighlightedItemSignalEvents,
 	addHighlightedSeriesSignalEvents,
-	getGenericSignal,
 } from '@specBuilder/signal/signalSpecBuilder';
 import { Signal } from 'vega';
 
@@ -30,11 +29,5 @@ export const setTrendlineSignals = (signals: Signal[], markProps: TrendlineParen
 
 	if (trendlines.some((trendline) => trendline.displayOnHover)) {
 		addHighlightedSeriesSignalEvents(signals, `${markName}_voronoi`, 2);
-		signals.push(getGenericSignal(`${markName}_selectedSeries`));
-	}
-
-	if (trendlines.some((trendline) => hasPopover(trendline.children))) {
-		signals.push(getGenericSignal(`${markName}Trendline_selectedId`));
-		signals.push(getGenericSignal(`${markName}Trendline_selectedSeries`));
 	}
 };

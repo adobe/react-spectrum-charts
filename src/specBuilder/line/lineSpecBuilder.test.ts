@@ -11,7 +11,6 @@
  */
 import { createElement } from 'react';
 
-import { ChartPopover } from '@components/ChartPopover';
 import { MetricRange } from '@components/MetricRange';
 import { Trendline } from '@components/Trendline';
 import {
@@ -24,16 +23,14 @@ import {
 	DEFAULT_TIME_DIMENSION,
 	DEFAULT_TRANSFORMED_TIME_DIMENSION,
 	FILTERED_TABLE,
+	HIGHLIGHTED_ITEM,
+	HIGHLIGHTED_SERIES,
 	MARK_ID,
 	SERIES_ID,
 	TABLE,
 	TRENDLINE_VALUE,
 } from '@constants';
-import {
-	defaultHighlightedItemSignal,
-	defaultHighlightedSeriesSignal,
-	defaultSignals,
-} from '@specBuilder/specTestUtils';
+import { defaultSignals } from '@specBuilder/specTestUtils';
 import { LineSpecProps, MetricRangeElement, MetricRangeProps } from 'types';
 import { Data, Spec } from 'vega';
 
@@ -533,65 +530,16 @@ describe('lineSpecBuilder', () => {
 			expect(hasSignalByNameSpy).not.toHaveBeenCalled();
 		});
 
-		test('does not add selected series if it already exists and there are interactive children', () => {
-			const getGenericSignalSpy = jest.spyOn(signalSpecBuilder, 'getGenericSignal');
-
-			addSignals(
-				[
-					{
-						name: 'line0_selectedSeries',
-						value: null,
-					},
-				],
-				{ ...defaultLineProps, children: [createElement(ChartPopover)] }
-			);
-
-			expect(getGenericSignalSpy).toHaveBeenCalledTimes(1);
-			expect(getGenericSignalSpy).not.toHaveBeenCalledWith('line0_selectedSeries');
-		});
-
 		test('hover signals with metric range', () => {
-			expect(
-				addSignals(defaultSignals, {
-					...defaultLineProps,
-					children: [getMetricRangeElement({ displayOnHover: true })],
-				})
-			).toStrictEqual([
-				{
-					...defaultHighlightedItemSignal,
-					on: [
-						{
-							events: '@line0_voronoi:mouseover',
-							update: `datum.datum.${MARK_ID}`,
-						},
-						{
-							events: '@line0_voronoi:mouseout',
-							update: 'null',
-						},
-					],
-				},
-				{
-					...defaultHighlightedSeriesSignal,
-					on: [
-						{
-							events: '@line0_voronoi:mouseover',
-							update: `datum.datum.${SERIES_ID}`,
-						},
-						{
-							events: '@line0_voronoi:mouseout',
-							update: 'null',
-						},
-					],
-				},
-				{
-					name: 'line0_selectedId',
-					value: null,
-				},
-				{
-					name: 'line0_selectedSeries',
-					value: null,
-				},
-			]);
+			const signals = addSignals(defaultSignals, {
+				...defaultLineProps,
+				children: [getMetricRangeElement({ displayOnHover: true })],
+			});
+			expect(signals).toHaveLength(4);
+			expect(signals[0]).toHaveProperty('name', HIGHLIGHTED_ITEM);
+			expect(signals[0].on).toHaveLength(2);
+			expect(signals[1]).toHaveProperty('name', HIGHLIGHTED_SERIES);
+			expect(signals[1].on).toHaveLength(2);
 		});
 
 		test('adds hover signals when displayPointMark is not undefined', () => {
@@ -599,48 +547,16 @@ describe('lineSpecBuilder', () => {
 		});
 
 		test('adds hover signals with metric range when displayPointMark is not undefined', () => {
-			expect(
-				addSignals(defaultSignals, {
-					...defaultLineProps,
-					staticPoint: 'staticPoint',
-					children: [getMetricRangeElement({ displayOnHover: true })],
-				})
-			).toStrictEqual([
-				{
-					...defaultHighlightedItemSignal,
-					on: [
-						{
-							events: '@line0_voronoi:mouseover',
-							update: `datum.datum.${MARK_ID}`,
-						},
-						{
-							events: '@line0_voronoi:mouseout',
-							update: 'null',
-						},
-					],
-				},
-				{
-					...defaultHighlightedSeriesSignal,
-					on: [
-						{
-							events: '@line0_voronoi:mouseover',
-							update: `datum.datum.${SERIES_ID}`,
-						},
-						{
-							events: '@line0_voronoi:mouseout',
-							update: 'null',
-						},
-					],
-				},
-				{
-					name: 'line0_selectedId',
-					value: null,
-				},
-				{
-					name: 'line0_selectedSeries',
-					value: null,
-				},
-			]);
+			const signals = addSignals(defaultSignals, {
+				...defaultLineProps,
+				staticPoint: 'staticPoint',
+				children: [getMetricRangeElement({ displayOnHover: true })],
+			});
+			expect(signals).toHaveLength(4);
+			expect(signals[0]).toHaveProperty('name', HIGHLIGHTED_ITEM);
+			expect(signals[0].on).toHaveLength(2);
+			expect(signals[1]).toHaveProperty('name', HIGHLIGHTED_SERIES);
+			expect(signals[1].on).toHaveLength(2);
 		});
 	});
 });
