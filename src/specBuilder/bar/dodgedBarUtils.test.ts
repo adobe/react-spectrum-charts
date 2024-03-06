@@ -208,7 +208,7 @@ describe('dodgedBarUtils', () => {
 				getDodgedMark({
 					...defaultDodgedProps,
 					children: [...defaultDodgedProps.children, annotationElement],
-				}),
+				})
 			).toStrictEqual(annotationDodgedMarks);
 		});
 		test('should add tooltip keys if ChartTooltip exists as child', () => {
@@ -221,7 +221,7 @@ describe('dodgedBarUtils', () => {
 	describe('getDodgedMark()', () => {
 		test('subseries, should include advanced fill, advanced corner radius, and border strokes,', () => {
 			expect(
-				getDodgedMark({ ...defaultDodgedProps, color: [DEFAULT_COLOR, DEFAULT_SECONDARY_COLOR] }),
+				getDodgedMark({ ...defaultDodgedProps, color: [DEFAULT_COLOR, DEFAULT_SECONDARY_COLOR] })
 			).toStrictEqual({
 				...defaultDodgedMark,
 				marks: [defaultDodgedStackedBackgroundMark, defaultDodgedStackedMark],

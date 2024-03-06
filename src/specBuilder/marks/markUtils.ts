@@ -108,7 +108,7 @@ export const hasInteractiveChildren = (children: ReactElement[]): boolean => {
 			child.type === ChartTooltip ||
 			child.type === ChartPopover ||
 			(child.type === Trendline && child.props.displayOnHover) ||
-			(child.type === MetricRange && child.props.displayOnHover),
+			(child.type === MetricRange && child.props.displayOnHover)
 	);
 };
 export const hasMetricRange = (children: ReactElement[]): boolean =>
@@ -121,7 +121,7 @@ export const childHasTooltip = (children: ReactElement[]): boolean =>
 export const getColorProductionRule = (
 	color: ColorFacet | DualFacet,
 	colorScheme: ColorScheme,
-	colorScaleType: 'linear' | 'ordinal' = 'ordinal',
+	colorScaleType: 'linear' | 'ordinal' = 'ordinal'
 ): ColorValueRef => {
 	const colorScaleName = colorScaleType === 'linear' ? LINEAR_COLOR_SCALE : COLOR_SCALE;
 	if (Array.isArray(color)) {
@@ -136,7 +136,7 @@ export const getColorProductionRule = (
 };
 
 export const getLineWidthProductionRule = (
-	lineWidth: LineWidthFacet | DualFacet | undefined,
+	lineWidth: LineWidthFacet | DualFacet | undefined
 ): NumericValueRef | undefined => {
 	if (!lineWidth) return;
 	if (Array.isArray(lineWidth)) {
@@ -187,7 +187,7 @@ export const getStrokeDashProductionRule = (lineType: LineTypeFacet | DualFacet)
 };
 
 export const getHighlightOpacityValue = (
-	opacityValue: { signal: string } | { value: number } = DEFAULT_OPACITY_RULE,
+	opacityValue: { signal: string } | { value: number } = DEFAULT_OPACITY_RULE
 ): NumericValueRef => {
 	if ('signal' in opacityValue) {
 		return { signal: `${opacityValue.signal} / ${HIGHLIGHT_CONTRAST_RATIO}` };

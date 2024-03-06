@@ -28,10 +28,10 @@ import {
 	SELECTED_SERIES,
 	TABLE,
 } from '@constants';
+import { defaultSignals } from '@specBuilder/specTestUtils';
 import { AreaSpecProps } from 'types';
 import { Data, GroupMark, Spec } from 'vega';
 
-import { defaultSignals } from '@specBuilder/specTestUtils';
 import { initializeSpec } from '../specUtils';
 import { addArea, addAreaMarks, addData, addSignals, setScales } from './areaSpecBuilder';
 
@@ -178,13 +178,13 @@ describe('areaSpecBuilder', () => {
 		test('scaleTypes "point" and "linear" should not add timeunit transforms return the original data', () => {
 			expect(
 				addData(baseData, { ...defaultAreaProps, scaleType: 'point' })[0].transform?.find(
-					(t) => t.type === 'timeunit',
-				),
+					(t) => t.type === 'timeunit'
+				)
 			).toBeUndefined();
 			expect(
 				addData(baseData, { ...defaultAreaProps, scaleType: 'linear' })[0].transform?.find(
-					(t) => t.type === 'timeunit',
-				),
+					(t) => t.type === 'timeunit'
+				)
 			).toBeUndefined();
 		});
 	});

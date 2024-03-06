@@ -197,4 +197,10 @@ describe('getLabelFormat()', () => {
 			)[2].signal
 		).not.toContain('truncateText');
 	});
+	test('should return duration formatter if labelFormat is duration', () => {
+		expect(getLabelFormat({ ...defaultAxisProps, labelFormat: 'duration' }, 'xLinear')).toHaveProperty(
+			'signal',
+			'formatTimeDurationLabels(datum)'
+		);
+	});
 });

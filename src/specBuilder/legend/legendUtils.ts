@@ -277,7 +277,7 @@ const getSymbolFacetEncoding = <T>({
 
 export const getHiddenSeriesColorRule = (
 	{ colorScheme, hiddenSeries, isToggleable, keys }: LegendSpecProps,
-	colorValue: ColorValueV6,
+	colorValue: ColorValueV6
 ): ({
 	test?: string;
 } & ColorValueRef)[] => {

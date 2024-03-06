@@ -11,7 +11,6 @@
  */
 import { createElement } from 'react';
 
-import { ChartPopover } from '@components/ChartPopover';
 import { MetricRange } from '@components/MetricRange';
 import { Trendline } from '@components/Trendline';
 import {
@@ -31,14 +30,10 @@ import {
 	TABLE,
 	TRENDLINE_VALUE,
 } from '@constants';
+import { defaultSignals } from '@specBuilder/specTestUtils';
 import { LineSpecProps, MetricRangeElement, MetricRangeProps } from 'types';
 import { Data, Spec } from 'vega';
 
-import {
-	defaultHighlightedItemSignal,
-	defaultHighlightedSeriesSignal,
-	defaultSignals,
-} from '@specBuilder/specTestUtils';
 import * as signalSpecBuilder from '../signal/signalSpecBuilder';
 import { initializeSpec } from '../specUtils';
 import { addData, addLine, addLineMarks, addSignals, setScales } from './lineSpecBuilder';
@@ -373,7 +368,7 @@ describe('lineSpecBuilder', () => {
 				addData(baseData, {
 					...defaultLineProps,
 					children: [createElement(Trendline, { method: 'average' })],
-				})[2].transform,
+				})[2].transform
 			).toStrictEqual([
 				{
 					as: [TRENDLINE_VALUE, `${DEFAULT_TIME_DIMENSION}Min`, `${DEFAULT_TIME_DIMENSION}Max`],
@@ -391,7 +386,7 @@ describe('lineSpecBuilder', () => {
 				addData(baseData, {
 					...defaultLineProps,
 					children: [createElement(Trendline, { method: 'movingAverage-7' })],
-				})[0].transform,
+				})[0].transform
 			).toHaveLength(2);
 		});
 
@@ -418,7 +413,7 @@ describe('lineSpecBuilder', () => {
 				setScales(startingSpec.scales ?? [], {
 					...defaultLineProps,
 					scaleType: 'linear',
-				}),
+				})
 			).toStrictEqual([defaultSpec.scales?.[0], defaultLinearScale, defaultSpec.scales?.[2]]);
 		});
 
@@ -427,7 +422,7 @@ describe('lineSpecBuilder', () => {
 				setScales(startingSpec.scales ?? [], {
 					...defaultLineProps,
 					scaleType: 'point',
-				}),
+				})
 			).toStrictEqual([defaultSpec.scales?.[0], defaultPointScale, defaultSpec.scales?.[2]]);
 		});
 
@@ -444,7 +439,7 @@ describe('lineSpecBuilder', () => {
 				setScales(startingSpec.scales ?? [], {
 					...defaultLineProps,
 					children: [createElement(MetricRange, { scaleAxisToFit: true, metricEnd, metricStart })],
-				}),
+				})
 			).toStrictEqual([defaultSpec.scales?.[0], defaultSpec.scales?.[1], metricRangeMetricScale]);
 		});
 	});
@@ -487,13 +482,13 @@ describe('lineSpecBuilder', () => {
 
 		test('with metric range', () => {
 			expect(addLineMarks([], { ...defaultLineProps, children: [getMetricRangeElement()] })).toStrictEqual(
-				metricRangeMarks,
+				metricRangeMarks
 			);
 		});
 
 		test('with displayPointMark', () => {
 			expect(addLineMarks([], { ...defaultLineProps, staticPoint: 'staticPoint' })).toStrictEqual(
-				displayPointMarks,
+				displayPointMarks
 			);
 		});
 
@@ -503,7 +498,7 @@ describe('lineSpecBuilder', () => {
 					...defaultLineProps,
 					staticPoint: 'staticPoint',
 					children: [getMetricRangeElement()],
-				}),
+				})
 			).toStrictEqual(metricRangeWithDisplayPointMarks);
 		});
 	});
@@ -523,8 +518,8 @@ describe('lineSpecBuilder', () => {
 							value: null,
 						},
 					],
-					defaultLineProps,
-				),
+					defaultLineProps
+				)
 			).toStrictEqual([
 				{
 					name: 'line0_selectedSeries',

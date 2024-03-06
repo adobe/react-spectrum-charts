@@ -9,10 +9,10 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
-import { Scale } from 'vega';
-import { TrendlineParentProps, hasTrendlineWithNormalizedDimension } from './trendlineUtils';
 import { FILTERED_TABLE, LINEAR_PADDING } from '@constants';
+import { Scale } from 'vega';
+
+import { TrendlineParentProps, hasTrendlineWithNormalizedDimension } from './trendlineUtils';
 
 /**
  * Gets all the scales used for trendlines

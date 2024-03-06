@@ -29,6 +29,7 @@ import {
 	STACK_ID,
 	TABLE,
 } from '@constants';
+import { defaultSignals } from '@specBuilder/specTestUtils';
 import { spectrumColors } from '@themes';
 import {
 	AggregateTransform,
@@ -65,7 +66,6 @@ import {
 	stackedAnnotationMarks,
 } from './barTestUtils';
 import { defaultDodgedMark } from './dodgedBarUtils.test';
-import { defaultSignals } from '@specBuilder/specTestUtils';
 
 const startingSpec: Spec = initializeSpec({
 	scales: [{ name: COLOR_SCALE, type: 'ordinal' }],
@@ -255,7 +255,7 @@ describe('barSpecBuilder', () => {
 
 			test('secondary series, should add default scales', () => {
 				expect(
-					addScales([{ name: COLOR_SCALE, type: 'ordinal' }], defaultBarPropsWithSecondayColor),
+					addScales([{ name: COLOR_SCALE, type: 'ordinal' }], defaultBarPropsWithSecondayColor)
 				).toStrictEqual([
 					defaultColorScale,
 					defaultMetricScale,
@@ -286,8 +286,8 @@ describe('barSpecBuilder', () => {
 							...defaultBarProps,
 							lineType: DEFAULT_COLOR,
 							opacity: DEFAULT_COLOR,
-						},
-					),
+						}
+					)
 				).toStrictEqual([
 					defaultColorScale,
 					{ domain: { data: TABLE, fields: [DEFAULT_COLOR] }, name: LINE_TYPE_SCALE, type: 'ordinal' },
@@ -304,7 +304,7 @@ describe('barSpecBuilder', () => {
 						trellis: 'event',
 						trellisOrientation: 'vertical',
 						trellisPadding: 0.5,
-					}),
+					})
 				).toStrictEqual([
 					defaultColorScale,
 					defaultMetricScale,
@@ -397,7 +397,7 @@ describe('barSpecBuilder', () => {
 					addMarks([], {
 						...defaultBarProps,
 						children: [...defaultBarProps.children, annotation],
-					}),
+					})
 				).toStrictEqual([...defaultStackedBarMarks, ...stackedAnnotationMarks]);
 			});
 		});
@@ -429,7 +429,7 @@ describe('barSpecBuilder', () => {
 		describe('existing data "table"', () => {
 			test('new transform should be added to the data table', () => {
 				expect(
-					addData(defaultData, { ...defaultBarProps, metric: 'views', dimension: 'browser' }),
+					addData(defaultData, { ...defaultBarProps, metric: 'views', dimension: 'browser' })
 				).toStrictEqual([
 					defaultTableData,
 					{
@@ -488,7 +488,7 @@ describe('barSpecBuilder', () => {
 		describe('transform already exists', () => {
 			test('no props, new transform should be pushed onto the end with default values', () => {
 				expect(
-					addData([{ ...defaultFilteredTableData, transform: defaultStackedTransforms }], defaultBarProps),
+					addData([{ ...defaultFilteredTableData, transform: defaultStackedTransforms }], defaultBarProps)
 				).toStrictEqual([
 					{
 						...defaultFilteredTableData,
@@ -504,7 +504,7 @@ describe('barSpecBuilder', () => {
 				const popover = createElement(ChartPopover);
 				expect(addData(baseData, { ...defaultBarProps, children: [popover] })[1]).toHaveProperty(
 					'transform',
-					defaultStackedTransforms,
+					defaultStackedTransforms
 				);
 			});
 		});
@@ -515,7 +515,7 @@ describe('barSpecBuilder', () => {
 					...defaultBarProps,
 					type: 'dodged',
 					color: [DEFAULT_COLOR, DEFAULT_SECONDARY_COLOR],
-				}),
+				})
 			).toStrictEqual([
 				defaultTableData,
 				{
@@ -557,7 +557,7 @@ describe('barSpecBuilder', () => {
 		});
 		test('stacked dodged', () => {
 			expect(
-				addData(defaultData, { ...defaultBarProps, color: [DEFAULT_COLOR, DEFAULT_SECONDARY_COLOR] }),
+				addData(defaultData, { ...defaultBarProps, color: [DEFAULT_COLOR, DEFAULT_SECONDARY_COLOR] })
 			).toStrictEqual([
 				defaultTableData,
 				{
@@ -639,7 +639,7 @@ describe('barSpecBuilder', () => {
 			});
 
 			expect(
-				getStackIdTransform({ ...defaultBarProps, type: 'dodged', opacity: DEFAULT_SECONDARY_COLOR }),
+				getStackIdTransform({ ...defaultBarProps, type: 'dodged', opacity: DEFAULT_SECONDARY_COLOR })
 			).toStrictEqual({
 				as: STACK_ID,
 				expr: `datum.${DEFAULT_CATEGORICAL_DIMENSION} + "," + datum.${DEFAULT_COLOR} + "," + datum.${DEFAULT_SECONDARY_COLOR}`,
@@ -651,7 +651,7 @@ describe('barSpecBuilder', () => {
 	describe('getDodgeGroupTransform()', () => {
 		test('should join facets together', () => {
 			expect(
-				getDodgeGroupTransform({ ...defaultBarProps, type: 'dodged', opacity: DEFAULT_SECONDARY_COLOR }),
+				getDodgeGroupTransform({ ...defaultBarProps, type: 'dodged', opacity: DEFAULT_SECONDARY_COLOR })
 			).toStrictEqual({
 				as: 'bar0_dodgeGroup',
 				expr: `datum.${DEFAULT_COLOR} + "," + datum.${DEFAULT_SECONDARY_COLOR}`,
@@ -663,18 +663,18 @@ describe('barSpecBuilder', () => {
 	describe('getRepeatedScale()', () => {
 		test('should return a linear scale if the bar and trellis orientations are the same', () => {
 			expect(
-				getRepeatedScale({ ...defaultBarProps, orientation: 'horizontal', trellisOrientation: 'horizontal' }),
+				getRepeatedScale({ ...defaultBarProps, orientation: 'horizontal', trellisOrientation: 'horizontal' })
 			).toHaveProperty('type', 'linear');
 			expect(
-				getRepeatedScale({ ...defaultBarProps, orientation: 'vertical', trellisOrientation: 'vertical' }),
+				getRepeatedScale({ ...defaultBarProps, orientation: 'vertical', trellisOrientation: 'vertical' })
 			).toHaveProperty('type', 'linear');
 		});
 		test('should return a band scale if the bar and trellis orientations are not the same', () => {
 			expect(
-				getRepeatedScale({ ...defaultBarProps, orientation: 'horizontal', trellisOrientation: 'vertical' }),
+				getRepeatedScale({ ...defaultBarProps, orientation: 'horizontal', trellisOrientation: 'vertical' })
 			).toHaveProperty('type', 'band');
 			expect(
-				getRepeatedScale({ ...defaultBarProps, orientation: 'vertical', trellisOrientation: 'horizontal' }),
+				getRepeatedScale({ ...defaultBarProps, orientation: 'vertical', trellisOrientation: 'horizontal' })
 			).toHaveProperty('type', 'band');
 		});
 	});

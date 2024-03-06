@@ -13,7 +13,16 @@ import '@matchMediaMock';
 import { Axis } from '@rsc';
 import { findChart, getAllAxisLabels, render, screen, within } from '@test-utils';
 
-import { Basic, ControlledLabels, NonLinearAxis, NumberFormat, SubLabels, TickMinStep, Time } from './Axis.story';
+import {
+	Basic,
+	ControlledLabels,
+	DurationLabelFormat,
+	NonLinearAxis,
+	NumberFormat,
+	SubLabels,
+	TickMinStep,
+	Time,
+} from './Axis.story';
 
 describe('Axis', () => {
 	test('Renders properly', async () => {
@@ -165,6 +174,18 @@ describe('Axis', () => {
 
 			expect(screen.getByText('$1.00')).toBeInTheDocument();
 			expect(screen.getByText('$0.00')).toBeInTheDocument();
+		});
+	});
+
+	describe('DurationLabelFormat', () => {
+		test('should render duration labels correctly', async () => {
+			render(<DurationLabelFormat {...DurationLabelFormat.args} />);
+			const chart = await findChart();
+			expect(chart).toBeInTheDocument();
+
+			expect(screen.getByText('00:00:00')).toBeInTheDocument();
+			expect(screen.getByText('01:23:20')).toBeInTheDocument();
+			expect(screen.getByText('02:46:40')).toBeInTheDocument();
 		});
 	});
 });

@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
+import { HIGHLIGHT_CONTRAST_RATIO } from '@constants';
 import '@matchMediaMock';
 import { Trendline } from '@rsc';
 import {
@@ -21,7 +21,6 @@ import {
 	render,
 } from '@test-utils';
 
-import { HIGHLIGHT_CONTRAST_RATIO } from '@constants';
 import {
 	Basic,
 	DisplayOnHover,
@@ -167,7 +166,7 @@ describe('Trendline', () => {
 
 			// other lines and trendlines are faded
 			expect(
-				allElementsHaveAttributeValue([lines[1], trendlines[1]], 'opacity', 1 / HIGHLIGHT_CONTRAST_RATIO),
+				allElementsHaveAttributeValue([lines[1], trendlines[1]], 'opacity', 1 / HIGHLIGHT_CONTRAST_RATIO)
 			).toBeTruthy();
 		});
 	});

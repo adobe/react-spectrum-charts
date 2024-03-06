@@ -54,7 +54,7 @@ export const addLine = produce<Spec, [LineProps & { colorScheme?: ColorScheme; i
 			opacity = { value: 1 },
 			scaleType = 'time',
 			...props
-		},
+		}
 	) => {
 		const sanitizedChildren = sanitizeMarkChildren(children);
 		const lineName = toCamelCase(name || `line${index}`);
@@ -81,7 +81,7 @@ export const addLine = produce<Spec, [LineProps & { colorScheme?: ColorScheme; i
 		spec.marks = addLineMarks(spec.marks ?? [], lineProps);
 
 		return spec;
-	},
+	}
 );
 
 export const addData = produce<Data[], [LineSpecProps]>((data, props) => {

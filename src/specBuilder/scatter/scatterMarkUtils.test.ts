@@ -9,16 +9,16 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
 import { createElement } from 'react';
 
+import { ChartPopover } from '@components/ChartPopover';
 import { ChartTooltip } from '@components/ChartTooltip';
 import { Trendline } from '@components/Trendline';
 import { DEFAULT_OPACITY_RULE, HIGHLIGHTED_ITEM, MARK_ID, SELECTED_ITEM, SYMBOL_SIZE_SCALE } from '@constants';
 import { GroupMark } from 'vega';
+
 import { addScatterMarks, getOpacity, getScatterHoverMarks, getSelectRingSize } from './scatterMarkUtils';
 import { defaultScatterProps } from './scatterTestUtils';
-import { ChartPopover } from '@components/ChartPopover';
 
 describe('addScatterMarks()', () => {
 	test('should add the scatter group with the symbol marks', () => {

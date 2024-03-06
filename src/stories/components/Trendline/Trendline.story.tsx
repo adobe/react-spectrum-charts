@@ -15,9 +15,9 @@ import { TRENDLINE_VALUE } from '@constants';
 import useChartProps from '@hooks/useChartProps';
 import { Axis, Chart, ChartPopover, ChartProps, ChartTooltip, Legend, Line, Scatter, Title, Trendline } from '@rsc';
 import { workspaceTrendsData } from '@stories/data/data';
+import { characterData } from '@stories/data/marioKartData';
 import { StoryFn } from '@storybook/react';
 import { bindWithProps } from 'test-utils/bindWithProps';
-import { characterData } from '@stories/data/marioKartData';
 
 export default {
 	title: 'RSC/Trendline',

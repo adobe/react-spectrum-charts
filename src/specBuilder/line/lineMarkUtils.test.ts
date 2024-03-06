@@ -57,7 +57,7 @@ describe('getLineMark()', () => {
 	test('adds metric range opacity rules if isMetricRange and displayOnHover', () => {
 		const lineMark = getLineMark(
 			{ ...defaultLineMarkProps, interactiveMarkName: 'line0', displayOnHover: true },
-			'line0_facet',
+			'line0_facet'
 		);
 		expect(lineMark.encode?.update?.opacity).toEqual([
 			{

@@ -9,10 +9,6 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
-import { FacetType, SecondaryFacetType } from 'types';
-import { Scale, ScaleMultiFieldsRef } from 'vega';
-
 import {
 	COLOR_SCALE,
 	LINEAR_COLOR_SCALE,
@@ -21,6 +17,9 @@ import {
 	SYMBOL_SHAPE_SCALE,
 	SYMBOL_SIZE_SCALE,
 } from '@constants';
+import { FacetType, SecondaryFacetType } from 'types';
+import { Scale, ScaleMultiFieldsRef } from 'vega';
+
 import { Facet } from './legendUtils';
 
 /**
@@ -78,7 +77,7 @@ export const getFacets = (scales: Scale[]): { ordinalFacets: Facet[]; continuous
  */
 export const getFacetsFromKeys = (
 	keys: string[],
-	scales: Scale[],
+	scales: Scale[]
 ): { ordinalFacets: Facet[]; continuousFacets: Facet[] } => {
 	const ordinalFacets: Facet[] = [];
 	const continuousFacets: Facet[] = [];
