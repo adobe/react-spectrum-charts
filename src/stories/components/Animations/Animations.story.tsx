@@ -1,22 +1,15 @@
 import { ReactElement, useState } from 'react';
 
-import { Area } from '@components/Area';
-import { Line } from '@components/Line';
 import useChartProps from '@hooks/useChartProps';
-import {
-	areaData,
-	areaData2,
-	areaData3,
-	newDataArray1WithStaticPoints,
-	newDataArray2WithStaticPoints,
-	newDataArray3WithStaticPoints,
-} from '@stories/data/data';
+import { Annotation, Area, Axis, Bar, Chart, Legend, Line } from '@rsc';
+import { areaData, newDataArray1WithStaticPoints } from '@stories/data/data';
 import { StoryFn } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
-import { Chart } from 'Chart';
 import { ChartData, ChartElement } from 'types';
 
 import { Button } from '@adobe/react-spectrum';
+
+import { barData, barSubSeriesData } from '../Bar/data';
 
 export default {
 	title: 'RSC/Animations',
@@ -52,8 +45,14 @@ const ChartWithToggleableData = ({ ChartComponent, initialData, secondaryData }:
 	);
 };
 
+const manipulateData = (data: number): number => {
+	const randomFactor = Math.random() * (1.15 - 0.85) + 0.85;
+	const result = data * randomFactor;
+	return Math.round(result);
+};
+
 const AreaStory: StoryFn<ToggleableDataProps> = (args): ReactElement => {
-	const chartProps = useChartProps({ data: areaData, minWidth: 400, maxWidth: 800, height: 400 });
+	const chartProps = useChartProps({ data: [], minWidth: 400, maxWidth: 800, height: 400 });
 	return (
 		<ChartWithToggleableData
 			ChartComponent={
@@ -67,12 +66,7 @@ const AreaStory: StoryFn<ToggleableDataProps> = (args): ReactElement => {
 };
 
 const SingleLineStory: StoryFn<ToggleableDataProps> = (args): ReactElement => {
-	const chartProps = useChartProps({
-		data: newDataArray1WithStaticPoints,
-		minWidth: 400,
-		maxWidth: 800,
-		height: 400,
-	});
+	const chartProps = useChartProps({ data: [], minWidth: 400, maxWidth: 800, height: 400 });
 	return (
 		<ChartWithToggleableData
 			ChartComponent={
@@ -85,67 +79,144 @@ const SingleLineStory: StoryFn<ToggleableDataProps> = (args): ReactElement => {
 	);
 };
 
-const AreaZero = bindWithProps(AreaStory);
-AreaZero.args = { initialData: areaData, secondaryData: areaData3 };
+const BarStory: StoryFn<ToggleableDataProps> = (args): ReactElement => {
+	const chartProps = useChartProps({ data: [], minWidth: 400, maxWidth: 800, height: 400 });
+	return (
+		<ChartWithToggleableData
+			ChartComponent={
+				<Chart {...chartProps}>
+					<Axis position={'left'} baseline title="Browser" />
+					<Axis position={'bottom'} grid title="Downloads" />
+					<Bar dimension={'browser'} metric={'downloads'} />
+				</Chart>
+			}
+			{...args}
+		/>
+	);
+};
+
+const DodgedBarStory: StoryFn<ToggleableDataProps> = (args): ReactElement => {
+	const colors = [
+		['#00a6a0', '#4bcec7'],
+		['#575de8', '#8489fd'],
+		['#d16100', '#fa8b1a'],
+	];
+	const chartProps = useChartProps({ data: [], minWidth: 400, maxWidth: 800, height: 400, colors });
+	return (
+		<ChartWithToggleableData
+			ChartComponent={
+				<Chart {...chartProps} debug>
+					<Axis position={'left'} baseline title="Browser" />
+					<Axis position={'bottom'} grid title="Downloads" />
+					<Bar
+						type={'dodged'}
+						dimension={'browser'}
+						color={['operatingSystem', 'version']}
+						paddingRatio={0.1}
+					>
+						<Annotation textKey="percentLabel" />
+					</Bar>
+					<Legend title="Operating system" highlight />
+				</Chart>
+			}
+			{...args}
+		/>
+	);
+};
 
 const AreaSwitch = bindWithProps(AreaStory);
-AreaSwitch.args = { initialData: areaData, secondaryData: areaData2 };
+AreaSwitch.args = {
+	initialData: areaData,
+	secondaryData: areaData.map((data) => {
+		return {
+			...data,
+			minTemperature: manipulateData(data.minTemperature),
+			maxTemperature: manipulateData(data.maxTemperature),
+		};
+	}),
+};
 
-const SingleLineZero = bindWithProps(SingleLineStory);
-SingleLineZero.args = { initialData: newDataArray1WithStaticPoints, secondaryData: newDataArray3WithStaticPoints };
+const AreaZero = bindWithProps(AreaStory);
+AreaZero.args = {
+	initialData: areaData,
+	secondaryData: areaData.concat({
+		datetime: 1668509200000,
+		minTemperature: 5,
+		maxTemperature: 32,
+		series: 'Add Fallout',
+	}),
+};
 
 const SingleLineSwitch = bindWithProps(SingleLineStory);
-SingleLineSwitch.args = { initialData: newDataArray1WithStaticPoints, secondaryData: newDataArray2WithStaticPoints };
+SingleLineSwitch.args = {
+	initialData: newDataArray1WithStaticPoints,
+	secondaryData: newDataArray1WithStaticPoints.map((data) => {
+		return {
+			...data,
+			y: manipulateData(data.y),
+		};
+	}),
+};
 
-// const BarStory: StoryFn<typeof Bar> = (args): ReactElement => {
-// 	const chartProps = useChartProps({ data: barData, width: 600, height: 600 });
-// 	return (
-// 		<Chart {...chartProps} debug>
-// 			<Axis position={args.orientation === 'horizontal' ? 'left' : 'bottom'} baseline title="Browser" />
-// 			<Axis position={args.orientation === 'horizontal' ? 'bottom' : 'left'} grid title="Downloads" />
-// 			<Bar {...args} />
-// 		</Chart>
-// 	);
-// };
+const SingleLineZero = bindWithProps(SingleLineStory);
+SingleLineZero.args = {
+	initialData: newDataArray1WithStaticPoints,
+	secondaryData: newDataArray1WithStaticPoints.concat({ x: 16, y: 55, point: true }),
+};
 
-// const DodgedBarStory: StoryFn<typeof Bar> = (args): ReactElement => {
-// 	const { color } = args;
-// 	const colors = Array.isArray(color)
-// 		? [
-// 				['#00a6a0', '#4bcec7'],
-// 				['#575de8', '#8489fd'],
-// 				['#d16100', '#fa8b1a'],
-// 		  ]
-// 		: categorical6;
-// 	const data = Array.isArray(color) ? barSubSeriesData : barSeriesData;
-// 	const chartProps = useChartProps({ data, width: 800, height: 600, colors });
-// 	return (
-// 		<Chart {...chartProps} debug>
-// 			<Axis position={args.orientation === 'horizontal' ? 'left' : 'bottom'} baseline title="Browser" />
-// 			<Axis position={args.orientation === 'horizontal' ? 'bottom' : 'left'} grid title="Downloads" />
-// 			<Bar {...args} />
-// 			<Legend title="Operating system" highlight />
-// 		</Chart>
-// 	);
-// };
+const BarSwitch = bindWithProps(BarStory);
+BarSwitch.args = {
+	initialData: barData,
+	secondaryData: barData.map((data) => {
+		return {
+			...data,
+			downloads: manipulateData(data.downloads),
+		};
+	}),
+};
 
-// const colors: SpectrumColor[] = [
-// 	'divergent-orange-yellow-seafoam-1000',
-// 	'divergent-orange-yellow-seafoam-1200',
-// 	'divergent-orange-yellow-seafoam-1400',
-// 	'divergent-orange-yellow-seafoam-600',
-// ];
+const BarZero = bindWithProps(BarStory);
+BarZero.args = {
+	initialData: barData,
+	secondaryData: barData.concat({ browser: 'Opera', downloads: 10, percentLabel: '.01%' }),
+};
 
-// const BarStory: StoryFn<typeof Bar> = (args): ReactElement => {
-// 	const chartProps = useChartProps({ data: barSeriesData, colors, width: 800, height: 600 });
-// 	return (
-// 		<Chart {...chartProps}>
-// 			<Axis position={args.orientation === 'horizontal' ? 'left' : 'bottom'} baseline title="Browser" />
-// 			<Axis position={args.orientation === 'horizontal' ? 'bottom' : 'left'} grid title="Downloads" />
-// 			<Bar {...args} />
-// 			<Legend title="Operating system" />
-// 		</Chart>
-// 	);
-// };
+const DodgedBarSwitch = bindWithProps(DodgedBarStory);
+DodgedBarSwitch.args = {
+	initialData: barSubSeriesData,
+	secondaryData: barSubSeriesData.map((data) => {
+		return {
+			...data,
+			value: manipulateData(data.value),
+		};
+	}),
+};
 
-export { AreaZero, AreaSwitch, SingleLineSwitch, SingleLineZero };
+const DodgedBarZero = bindWithProps(DodgedBarStory);
+DodgedBarZero.args = {
+	initialData: barSubSeriesData,
+	secondaryData: barSubSeriesData.concat([
+		{
+			browser: 'Opera',
+			value: 5,
+			operatingSystem: 'Windows',
+			version: 'Current',
+			order: 2,
+			percentLabel: '71.4%',
+		},
+		{ browser: 'Opera', value: 3, operatingSystem: 'Mac', version: 'Current', order: 1, percentLabel: '42.9%' },
+		{ browser: 'Opera', value: 2, operatingSystem: 'Linux', version: 'Current', order: 0, percentLabel: '28.6%' },
+		{
+			browser: 'Opera',
+			value: 2,
+			operatingSystem: 'Windows',
+			version: 'Previous',
+			order: 2,
+			percentLabel: '28.6%',
+		},
+		{ browser: 'Opera', value: 4, operatingSystem: 'Mac', version: 'Previous', order: 1, percentLabel: '57.1%' },
+		{ browser: 'Opera', value: 5, operatingSystem: 'Linux', version: 'Previous', order: 0, percentLabel: '71.4%' },
+	]),
+};
+
+export { AreaSwitch, AreaZero, SingleLineSwitch, SingleLineZero, BarSwitch, BarZero, DodgedBarSwitch, DodgedBarZero };

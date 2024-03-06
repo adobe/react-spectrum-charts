@@ -1091,43 +1091,6 @@ export const newDataArray1WithStaticPoints = [
 	{ x: 13, y: 67, point: true },
 	{ x: 14, y: 95, point: true },
 	{ x: 15, y: 77, point: true},
-];
-
-export const newDataArray2WithStaticPoints = [
-	{ x: 0, y: 95, point: true },
-	{ x: 1, y: 62, point: true },
-	{ x: 2, y: 83, point: true },
-	{ x: 3, y: 58, point: true },
-	{ x: 4, y: 71, point: true },
-	{ x: 5, y: 49, point: true },
-	{ x: 6, y: 84, point: true },
-	{ x: 7, y: 78, point: true },
-	{ x: 8, y: 95, point: true },
-	{ x: 9, y: 62, point: true },
-	{ x: 10, y: 83, point: true },
-	{ x: 11, y: 58, point: true },
-	{ x: 12, y: 71, point: true },
-	{ x: 13, y: 49, point: true },
-	{ x: 14, y: 84, point: true },
-	{ x: 15, y: 78,point: true}
-]
-
-export const newDataArray3WithStaticPoints = [
-	{ x: 0, y: 95, point: true },
-	{ x: 1, y: 62, point: true },
-	{ x: 2, y: 83, point: true },
-	{ x: 3, y: 58, point: true },
-	{ x: 4, y: 71, point: true },
-	{ x: 5, y: 49, point: true },
-	{ x: 6, y: 84, point: true },
-	{ x: 7, y: 78, point: true },
-	{ x: 8, y: 95, point: true },
-	{ x: 9, y: 62, point: true },
-	{ x: 10, y: 83, point: true },
-	{ x: 11, y: 58, point: true },
-	{ x: 12, y: 71, point: true },
-	{ x: 13, y: 49, point: true },
-	{ x: 14, y: 84, point: true }
 ]
 
 export const areaData = [
@@ -1138,16 +1101,6 @@ export const areaData = [
 	{ datetime: 1668236400000, maxTemperature: 41, minTemperature: 18, series: 'Add Fallout' },
 	{ datetime: 1668322800000, maxTemperature: 60, minTemperature: 45, series: 'Add Fallout' },
 	{ datetime: 1668409200000, maxTemperature: 64, minTemperature: 43, series: 'Add Fallout' },
-];
-
-export const areaData2 = [
-	{ datetime: 1667890800000, maxTemperature: 100, minTemperature: 47, series: 'Add Fallout' },
-	{ datetime: 1667977200000, maxTemperature: 81, minTemperature: 48, series: 'Add Fallout' },
-	{ datetime: 1668063600000, maxTemperature: 15, minTemperature: 48, series: 'Add Fallout' },
-	{ datetime: 1668150000000, maxTemperature: 31, minTemperature: 20, series: 'Add Fallout' },
-	{ datetime: 1668236400000, maxTemperature: 49, minTemperature: 18, series: 'Add Fallout' },
-	{ datetime: 1668322800000, maxTemperature: 90, minTemperature: 45, series: 'Add Fallout' },
-	{ datetime: 1668409200000, maxTemperature: 104, minTemperature: 43, series: 'Add Fallout' },
 ];
 
 export const areaData3 = [

@@ -48,8 +48,6 @@ export const getAreaMark = ({
 	children,
 	metricStart,
 	metricEnd,
-	data,
-	previousData,
 	animations,
 	data,
 	previousData,

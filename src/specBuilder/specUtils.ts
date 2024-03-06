@@ -304,7 +304,6 @@ export const getDimensionField = (dimension: string, scaleType?: ScaleType) => {
 
 export const usePreviousChartData = <T>(data: T) => {
 	const ref = useRef<T>();
-
 	useEffect(() => {
 		ref.current = data;
 	}, [data]);
@@ -326,7 +325,7 @@ export const getAnimationMarks = (
 		signal: `datum.${metric} * ${easingFunction}`,
 	};
 	if (data && previousData) {
-		const hasSameDimensions = data !== previousData && data.every((d) => previousData.some((pd) => d[dimension] === pd[dimension]));
+		const hasSameDimensions = data !== previousData && data.every((d) => previousData.some((pd) => d[dimension] === pd[dimension])) && data.length == previousData.length;
 		if (hasSameDimensions) {
 			// If data isn't similar enough, keep the animation from zero as shown above
 			markUpdate = {
