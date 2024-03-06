@@ -215,9 +215,8 @@ function determineIconSize(textSize: CSSProperties['fontSize'], line: boolean): 
 			return 'XS';
 		} else if (textSize == 'x-large') {
 			return 'S';
-		} else {
-			return 'M';
 		}
+		return 'M';
 	} else {
 		if (textSize == 'medium') {
 			return 'M';
@@ -225,9 +224,8 @@ function determineIconSize(textSize: CSSProperties['fontSize'], line: boolean): 
 			return 'L';
 		} else if (textSize == 'x-large') {
 			return 'XL';
-		} else {
-			return 'XXL';
 		}
+		return 'XXL';
 	}
 }
 
