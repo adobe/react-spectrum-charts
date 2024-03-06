@@ -51,6 +51,8 @@ export const getAreaMark = ({
 	data,
 	previousData,
 	animations,
+	data,
+	previousData,
 	isStacked,
 	scaleType,
 	dimension,
