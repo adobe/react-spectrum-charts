@@ -39,7 +39,7 @@ export const addDonut = produce<Spec, [DonutProps & { colorScheme?: ColorScheme;
 			hasDirectLabels = false,
 			isBoolean = false,
 			...props
-		},
+		}
 	) => {
 		// put props back together now that all defaults are set
 		const donutProps: DonutSpecProps = {
@@ -60,7 +60,7 @@ export const addDonut = produce<Spec, [DonutProps & { colorScheme?: ColorScheme;
 		spec.scales = addScales(spec.scales ?? [], donutProps);
 		spec.marks = addMarks(spec.marks ?? [], donutProps);
 		spec.signals = addSignals(spec.signals ?? [], donutProps);
-	},
+	}
 );
 
 export const addData = produce<Data[], [DonutSpecProps]>((data, props) => {

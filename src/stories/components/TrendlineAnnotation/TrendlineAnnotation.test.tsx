@@ -9,7 +9,6 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
 import '@matchMediaMock';
 import { TrendlineAnnotation } from '@rsc';
 import { allElementsHaveAttributeValue, findAllMarksByGroupName, findChart, render } from '@test-utils';

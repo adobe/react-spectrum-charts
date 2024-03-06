@@ -49,7 +49,7 @@ describe('getHighlightPointFill()', () => {
 		expect(rules).toHaveLength(2);
 		expect(rules[0]).toHaveProperty(
 			'test',
-			`${defaultLineMarkProps.name}_selectedId && ${defaultLineMarkProps.name}_selectedId === datum.${MARK_ID}`,
+			`${defaultLineMarkProps.name}_selectedId && ${defaultLineMarkProps.name}_selectedId === datum.${MARK_ID}`
 		);
 	});
 });
@@ -73,7 +73,7 @@ describe('getHighlightPointStroke()', () => {
 		expect(rules).toHaveLength(2);
 		expect(rules[0]).toHaveProperty(
 			'test',
-			`${defaultLineMarkProps.name}_selectedId && ${defaultLineMarkProps.name}_selectedId === datum.${MARK_ID}`,
+			`${defaultLineMarkProps.name}_selectedId && ${defaultLineMarkProps.name}_selectedId === datum.${MARK_ID}`
 		);
 	});
 });

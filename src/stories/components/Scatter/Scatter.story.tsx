@@ -11,7 +11,7 @@
  */
 import { ReactElement, createElement } from 'react';
 
-import { Content, Flex } from '@adobe/react-spectrum';
+import { COLOR_SCALE, LINE_TYPE_SCALE, OPACITY_SCALE } from '@constants';
 import useChartProps from '@hooks/useChartProps';
 import {
 	Axis,
@@ -30,7 +30,8 @@ import {
 import { characterData } from '@stories/data/marioKartData';
 import { StoryFn } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
-import { COLOR_SCALE, LINE_TYPE_SCALE, OPACITY_SCALE } from '@constants';
+
+import { Content, Flex } from '@adobe/react-spectrum';
 
 const marioDataKeys = [
 	...Object.keys(characterData[0])

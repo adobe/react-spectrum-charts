@@ -9,8 +9,8 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
 import { numberLocales } from '@locales';
+
 import { expressionFunctions, formatTimeDurationLabels } from './expressionFunctions';
 
 describe('truncateText()', () => {
@@ -20,7 +20,7 @@ describe('truncateText()', () => {
 	test('should truncate text that is too long', () => {
 		expect(expressionFunctions.truncateText(longText, 24)).toBe('Lorem ipsum dolor s…');
 		expect(expressionFunctions.truncateText(longText, 100)).toBe(
-			'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec a diam lectus. Sed sit amet ipsu…',
+			'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec a diam lectus. Sed sit amet ipsu…'
 		);
 	});
 	test('should not truncate text that is shorter than maxLength', () => {

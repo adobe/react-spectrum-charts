@@ -120,7 +120,7 @@ const getDisplayOnHoverRules = (name: string, opacity: OpacityFacet) => {
 export const getLineHoverMarks = (
 	lineProps: LineMarkProps,
 	dataSource: string,
-	secondaryHighlightedMetric?: string,
+	secondaryHighlightedMetric?: string
 ): Mark[] => {
 	const { children, dimension, metric, name, scaleType } = lineProps;
 	return [
@@ -165,7 +165,7 @@ const getPointsForVoronoi = (
 	dimension: string,
 	metric: string,
 	name: string,
-	scaleType: ScaleType,
+	scaleType: ScaleType
 ): SymbolMark => {
 	return {
 		name: `${name}_pointsForVoronoi`,
