@@ -188,13 +188,13 @@ describe('areaSpecBuilder', () => {
 		test('scaleTypes "point" and "linear" should not add timeunit transforms return the original data', () => {
 			expect(
 				addData(baseData, { ...defaultAreaProps, scaleType: 'point' })[0].transform?.find(
-					(t) => t.type === 'timeunit',
-				),
+					(t) => t.type === 'timeunit'
+				)
 			).toBeUndefined();
 			expect(
 				addData(baseData, { ...defaultAreaProps, scaleType: 'linear' })[0].transform?.find(
-					(t) => t.type === 'timeunit',
-				),
+					(t) => t.type === 'timeunit'
+				)
 			).toBeUndefined();
 		});
 	});
@@ -207,7 +207,7 @@ describe('areaSpecBuilder', () => {
 		test('children: should add signals', () => {
 			const tooltip = createElement(ChartTooltip);
 			expect(addSignals(startingSpec.signals ?? [], { ...defaultAreaProps, children: [tooltip] })).toStrictEqual(
-				defaultSignals,
+				defaultSignals
 			);
 		});
 	});

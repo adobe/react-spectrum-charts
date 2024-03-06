@@ -204,7 +204,7 @@ export const getDefaultSignals = (
 	colorScheme: ColorScheme,
 	lineTypes: LineTypes,
 	opacities: Opacities | undefined,
-	hiddenSeries?: string[],
+	hiddenSeries?: string[]
 ): Signal[] => {
 	// if the background color is transparent, then we want to set the signal background color to gray-50
 	// if the signal background color were transparent then backgroundMarks and annotation fill would also be transparent
@@ -252,7 +252,7 @@ const getDefaultScales = (
 	lineWidths: LineWidth[],
 	opacities: Opacities | undefined,
 	symbolShapes: SymbolShapes,
-	symbolSizes: [SymbolSize, SymbolSize],
+	symbolSizes: [SymbolSize, SymbolSize]
 ): Scale[] => [
 	getColorScale(colors, colorScheme),
 	getLinearColorScale(colors, colorScheme),

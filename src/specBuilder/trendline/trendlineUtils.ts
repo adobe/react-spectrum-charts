@@ -63,7 +63,7 @@ export const applyTrendlinePropDefaults = (
 		orientation = 'horizontal',
 		...props
 	}: TrendlineProps,
-	index: number,
+	index: number
 ): TrendlineSpecProps => {
 	const dimensionScaleType = getTrendlineScaleType(markProps, orientation);
 	const isDimensionNormalized =
@@ -72,7 +72,7 @@ export const applyTrendlinePropDefaults = (
 		markProps.dimension,
 		markProps.metric,
 		orientation,
-		isDimensionNormalized,
+		isDimensionNormalized
 	);
 	return {
 		children: sanitizeTrendlineChildren(children),
@@ -108,17 +108,17 @@ export const getTrendlineDimensionMetric = (
 	dimension: string,
 	metric: string,
 	orientation: Orientation,
-	isDimensionNormalized: boolean,
+	isDimensionNormalized: boolean
 ): { trendlineDimension: string; trendlineMetric: string } => {
 	return orientation === 'horizontal'
 		? {
 				trendlineDimension: normalizeTrendlineDimensionName(dimension, isDimensionNormalized),
 				trendlineMetric: metric,
-			}
+		  }
 		: {
 				trendlineDimension: metric,
 				trendlineMetric: dimension,
-			};
+		  };
 };
 
 /**
@@ -176,7 +176,7 @@ export const hasTrendlineWithNormalizedDimension = (markProps: TrendlineParentPr
 
 	// only need to add the normalized dimension transform if there is a regression trendline and the dimension scale type is time
 	return trendlines.some(
-		({ dimensionScaleType, method }) => isRegressionMethod(method) && dimensionScaleType === 'time',
+		({ dimensionScaleType, method }) => isRegressionMethod(method) && dimensionScaleType === 'time'
 	);
 };
 
@@ -214,7 +214,7 @@ export const getPolynomialOrder = (method: TrendlineMethod): number => {
 export const getRegressionExtent = (
 	dimensionExtent: TrendlineSpecProps['dimensionExtent'],
 	name: string,
-	isNormalized: boolean,
+	isNormalized: boolean
 ): SignalRef => {
 	const extentName = `${name}_extent`;
 	const extentSignal = dimensionExtent
@@ -239,7 +239,7 @@ export const getRegressionExtent = (
 
 export const getTrendlineScaleType = (
 	markProps: TrendlineParentProps,
-	trendlineOrientation: Orientation,
+	trendlineOrientation: Orientation
 ): RscScaleType => {
 	// y axis only support linear... for now...
 	if (trendlineOrientation === 'vertical') return 'linear';

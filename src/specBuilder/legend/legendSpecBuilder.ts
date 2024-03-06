@@ -64,7 +64,7 @@ export const addLegend = produce<
 			title,
 			colorScheme = DEFAULT_COLOR_SCHEME,
 			...props
-		},
+		}
 	) => {
 		const { formattedColor, formattedLineType, formattedLineWidth, formattedSymbolShape } =
 			formatFacetRefsWithPresets(color, lineType, lineWidth, symbolShape, colorScheme);
@@ -132,7 +132,7 @@ export const addLegend = produce<
 			spec.legends = [];
 		}
 		spec.legends.push(...legends);
-	},
+	}
 );
 
 /**
@@ -148,7 +148,7 @@ export const formatFacetRefsWithPresets = (
 	lineType: LineTypeFacet | undefined,
 	lineWidth: LineWidthFacet | undefined,
 	symbolShape: SymbolShapeFacet | undefined,
-	colorScheme: ColorScheme,
+	colorScheme: ColorScheme
 ) => {
 	let formattedColor: FacetRef<string> | undefined;
 	if (color && typeof color === 'object') {
@@ -270,7 +270,7 @@ export const addData = produce<Data[], [LegendSpecProps & { facets: string[] }]>
 				...getHiddenEntriesFilter(hiddenEntries, name),
 			],
 		});
-	},
+	}
 );
 
 export const addSignals = produce<Signal[], [LegendSpecProps]>(
@@ -287,5 +287,5 @@ export const addSignals = produce<Signal[], [LegendSpecProps]>(
 				signals.push(getLegendLabelsSeriesSignal(legendLabels));
 			}
 		}
-	},
+	}
 );

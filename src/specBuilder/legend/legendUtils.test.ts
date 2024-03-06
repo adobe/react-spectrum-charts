@@ -46,7 +46,7 @@ describe('getSymbolEncodings()', () => {
 				isToggleable: false,
 				name: 'legend0',
 				position: 'bottom',
-			}),
+			})
 		).toStrictEqual({
 			entries: { name: 'legend0_legendEntry' },
 			symbols: {
@@ -67,7 +67,7 @@ describe('getShowHideEncodings()', () => {
 				...defaultLegendProps,
 				isToggleable: false,
 				onClick: undefined,
-			}),
+			})
 		).toEqual({ labels: hiddenSeriesLabelUpdateEncoding });
 	});
 	test('should return encodings if isToggleable', () => {
@@ -95,7 +95,7 @@ describe('mergeLegendEncodings()', () => {
 				{ entries: { name: 'legendEntry' } },
 				{ entries: { name: 'legendEntry2' } },
 				{ entries: { name: 'legendEntry3' } },
-			]),
+			])
 		).toStrictEqual({ entries: { name: 'legendEntry3' } });
 	});
 
@@ -105,7 +105,7 @@ describe('mergeLegendEncodings()', () => {
 				{ entries: { name: 'legendEntry' } },
 				{ labels: { name: 'legendLabel' } },
 				{ title: { name: 'legendTitle' } },
-			]),
+			])
 		).toStrictEqual({
 			entries: { name: 'legendEntry' },
 			labels: { name: 'legendLabel' },
@@ -123,7 +123,7 @@ describe('mergeLegendEncodings()', () => {
 					},
 				},
 				{ entries: { name: 'legendEntry', interactive: true, enter: { cursor: { value: 'pointer' } } } },
-			]),
+			])
 		).toStrictEqual({
 			entries: {
 				name: 'legendEntry',

@@ -9,7 +9,6 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
 import { TrendlineAnnotation } from '@components/TrendlineAnnotation';
 import { TRENDLINE_VALUE } from '@constants';
 import { getScaleName } from '@specBuilder/scale/scaleSpecBuilder';
@@ -45,7 +44,7 @@ export const applyTrendlineAnnotationDefaults = (
 		trendlineDimension,
 		name: trendlineName,
 	}: TrendlineSpecProps,
-	markName: string,
+	markName: string
 ): TrendlineAnnotationSpecProps => ({
 	dimensionValue,
 	markName,
@@ -68,13 +67,13 @@ export const applyTrendlineAnnotationDefaults = (
  */
 export const getTrendlineAnnotations = (
 	trendlineProps: TrendlineSpecProps,
-	markName: string,
+	markName: string
 ): TrendlineAnnotationSpecProps[] => {
 	const annotationElements = trendlineProps.children.filter(
-		(child) => child.type === TrendlineAnnotation,
+		(child) => child.type === TrendlineAnnotation
 	) as TrendlineAnnotationElement[];
 	return annotationElements.map((annotation, index) =>
-		applyTrendlineAnnotationDefaults(annotation.props, index, trendlineProps, markName),
+		applyTrendlineAnnotationDefaults(annotation.props, index, trendlineProps, markName)
 	);
 };
 

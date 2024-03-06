@@ -66,7 +66,7 @@ describe('getOpacityRule()', () => {
 	test('array, should return the last value', () => {
 		expect(getOpacityRule([{ value: 0.5 }])).toStrictEqual({ value: 0.5 });
 		expect(
-			getOpacityRule([{ value: 0.5 }, { signal: `scale('${OPACITY_SCALE}', datum.${DEFAULT_COLOR})` }]),
+			getOpacityRule([{ value: 0.5 }, { signal: `scale('${OPACITY_SCALE}', datum.${DEFAULT_COLOR})` }])
 		).toStrictEqual({
 			signal: `scale('${OPACITY_SCALE}', datum.${DEFAULT_COLOR})`,
 		});
@@ -105,7 +105,7 @@ describe('setHoverOpacityForMarks()', () => {
 						...defaultMark,
 						encode: { ...defaultMark.encode, update: { opacity: [DEFAULT_OPACITY_RULE] } },
 					},
-				]),
+				])
 			);
 			setHoverOpacityForMarks(marks);
 			expect(marks).toStrictEqual([

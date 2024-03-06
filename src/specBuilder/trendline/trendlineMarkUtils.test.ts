@@ -9,13 +9,14 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { createElement } from 'react';
 
 import { ChartTooltip } from '@components/ChartTooltip';
 import { Trendline } from '@components/Trendline';
 import { COLOR_SCALE, DEFAULT_TIME_DIMENSION, TRENDLINE_VALUE } from '@constants';
 import { spectrumColors } from '@themes';
-import { createElement } from 'react';
 import { Facet, From, GroupMark, Mark } from 'vega';
+
 import {
 	getLineXProductionRule,
 	getLineYProductionRule,
@@ -75,7 +76,7 @@ describe('getTrendlineMarks()', () => {
 				marks[0].from as From & {
 					facet: Facet;
 				}
-			).facet.data,
+			).facet.data
 		).toEqual('line0Trendline0_data');
 	});
 	test('should reference _highResolutionData for linear method', () => {
@@ -88,7 +89,7 @@ describe('getTrendlineMarks()', () => {
 				marks[0].from as From & {
 					facet: Facet;
 				}
-			).facet.data,
+			).facet.data
 		).toEqual('line0Trendline0_highResolutionData');
 	});
 });
@@ -164,7 +165,7 @@ describe('getTrendlineLineMark()', () => {
 				isDimensionNormalized: true,
 				method: 'linear',
 				trendlineDimension: `${DEFAULT_TIME_DIMENSION}Normalized`,
-			}).encode?.update?.x,
+			}).encode?.update?.x
 		).toEqual({
 			scale: 'xTrendline',
 			field: `${DEFAULT_TIME_DIMENSION}Normalized`,
@@ -172,17 +173,17 @@ describe('getTrendlineLineMark()', () => {
 	});
 	test('should use regular x rule if the x dimension is not normalized', () => {
 		expect(
-			getTrendlineLineMark(defaultLineProps, { ...defaultTrendlineProps, method: 'median' }).encode?.update?.x,
+			getTrendlineLineMark(defaultLineProps, { ...defaultTrendlineProps, method: 'median' }).encode?.update?.x
 		).toEqual({ field: DEFAULT_TIME_DIMENSION, scale: 'xTime' });
 		expect(
 			getTrendlineLineMark(defaultLineProps, { ...defaultTrendlineProps, method: 'movingAverage-12' }).encode
-				?.update?.x,
+				?.update?.x
 		).toEqual({ field: DEFAULT_TIME_DIMENSION, scale: 'xTime' });
 		expect(
 			getTrendlineLineMark(
 				{ ...defaultLineProps, scaleType: 'linear', dimension: 'count' },
-				{ ...defaultTrendlineProps, dimensionScaleType: 'linear', trendlineDimension: 'count' },
-			).encode?.update?.x,
+				{ ...defaultTrendlineProps, dimensionScaleType: 'linear', trendlineDimension: 'count' }
+			).encode?.update?.x
 		).toEqual({ field: 'count', scale: 'xLinear' });
 	});
 	test('should use series color if static color is not provided', () => {

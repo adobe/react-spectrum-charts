@@ -9,16 +9,17 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
-import { setTrendlineSignals } from './trendlineSignalUtils';
 import { createElement } from 'react';
+
 import { ChartPopover } from '@components/ChartPopover';
 import { ChartTooltip } from '@components/ChartTooltip';
 import { Trendline } from '@components/Trendline';
-import { defaultLineProps } from './trendlineTestUtils';
+import { HIGHLIGHTED_ITEM } from '@constants';
 import { defaultHighlightedItemSignal, defaultSignals } from '@specBuilder/specTestUtils';
 import { Signal } from 'vega';
-import { HIGHLIGHTED_ITEM } from '@constants';
+
+import { setTrendlineSignals } from './trendlineSignalUtils';
+import { defaultLineProps } from './trendlineTestUtils';
 
 describe('getTrendlineSignals()', () => {
 	let signals: Signal[];

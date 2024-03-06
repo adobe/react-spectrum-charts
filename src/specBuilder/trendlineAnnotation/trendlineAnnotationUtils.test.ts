@@ -9,8 +9,14 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { createElement } from 'react';
 
+import { ChartTooltip } from '@components/ChartTooltip';
+import { TrendlineAnnotation } from '@components/TrendlineAnnotation';
+import { DEFAULT_TIME_DIMENSION, TRENDLINE_VALUE } from '@constants';
 import { defaultTrendlineProps } from '@specBuilder/trendline/trendlineTestUtils';
+import { TrendlineAnnotationSpecProps } from 'types';
+
 import {
 	applyTrendlineAnnotationDefaults,
 	getTrendlineAnnotationMarks,
@@ -19,11 +25,6 @@ import {
 	getTrendlineAnnotationTextMark,
 	getTrendlineAnnotations,
 } from './trendlineAnnotationUtils';
-import { TrendlineAnnotationSpecProps } from 'types';
-import { DEFAULT_TIME_DIMENSION, TRENDLINE_VALUE } from '@constants';
-import { createElement } from 'react';
-import { TrendlineAnnotation } from '@components/TrendlineAnnotation';
-import { ChartTooltip } from '@components/ChartTooltip';
 
 const defaultAnnotationProps: TrendlineAnnotationSpecProps = {
 	dimensionValue: 'end',
@@ -54,8 +55,8 @@ describe('getTrendlineAnnotations()', () => {
 					...defaultTrendlineProps,
 					children: [createElement(TrendlineAnnotation), createElement(ChartTooltip)],
 				},
-				'line0',
-			),
+				'line0'
+			)
 		).toHaveLength(1);
 	});
 });
@@ -65,7 +66,7 @@ describe('getTrendlineAnnotationMarks()', () => {
 		expect(getTrendlineAnnotationMarks(defaultTrendlineProps, 'line0')).toHaveLength(0);
 		const annotationGroups = getTrendlineAnnotationMarks(
 			{ ...defaultTrendlineProps, children: [createElement(TrendlineAnnotation)] },
-			'line0',
+			'line0'
 		);
 		expect(annotationGroups).toHaveLength(1);
 		expect(annotationGroups[0]).toHaveProperty('type', 'group');
@@ -137,7 +138,7 @@ describe('getTrendlineAnnotationTextMark()', () => {
 		const textMark = getTrendlineAnnotationTextMark({ ...defaultAnnotationProps, prefix });
 		expect(textMark.encode?.enter?.text).toHaveProperty(
 			'signal',
-			`'${prefix} ' + format(datum.datum.${TRENDLINE_VALUE}, '')`,
+			`'${prefix} ' + format(datum.datum.${TRENDLINE_VALUE}, '')`
 		);
 	});
 	test('should not add the prefix if it is not a valid string', () => {

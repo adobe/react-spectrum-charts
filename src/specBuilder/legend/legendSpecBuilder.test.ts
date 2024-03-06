@@ -133,7 +133,7 @@ describe('addLegend()', () => {
 
 		test('descriptions, should add encoding', () => {
 			expect(
-				addLegend(defaultSpec, { descriptions: [{ seriesName: 'test', description: 'test' }] }),
+				addLegend(defaultSpec, { descriptions: [{ seriesName: 'test', description: 'test' }] })
 			).toStrictEqual({
 				...defaultSpec,
 				data: [defaultLegendAggregateData],
@@ -169,7 +169,7 @@ describe('addLegend()', () => {
 						{ seriesName: 1, label: 'Any event' },
 						{ seriesName: 2, label: 'Any event' },
 					],
-				}).legends?.[0].encode,
+				}).legends?.[0].encode
 			).toStrictEqual({
 				entries: {
 					name: 'legend0_legendEntry',
@@ -200,7 +200,7 @@ describe('addLegend()', () => {
 						{ seriesName: 1, label: 'Any event' },
 						{ seriesName: 2, label: 'Any event' },
 					],
-				}).legends?.[0].encode,
+				}).legends?.[0].encode
 			).toStrictEqual({
 				...defaultHighlightLegendEncoding,
 				labels: {
@@ -227,7 +227,7 @@ describe('addLegend()', () => {
 						{ seriesName: 1, label: 'Any event' },
 						{ seriesName: 2, label: 'Any event' },
 					],
-				}).signals,
+				}).signals
 			).toStrictEqual([
 				{
 					name: 'legendLabels',
@@ -256,7 +256,7 @@ describe('addLegend()', () => {
 		test('should add fields to scales if they have not been added', () => {
 			const legendSpec = addLegend(
 				{ ...defaultSpec, scales: [{ name: COLOR_SCALE, type: 'ordinal' }] },
-				{ color: 'series' },
+				{ color: 'series' }
 			);
 			expect(legendSpec.scales).toEqual([
 				{
@@ -309,7 +309,7 @@ describe('formatFacetRefsWithPresets()', () => {
 				{ value: 'dotDash' },
 				{ value: 'XL' },
 				{ value: 'wedge' },
-				DEFAULT_COLOR_SCHEME,
+				DEFAULT_COLOR_SCHEME
 			);
 		expect(formattedColor).toStrictEqual({ value: 'rgb(255, 155, 136)' });
 		expect(formattedLineType).toStrictEqual({ value: [2, 3, 7, 4] });
@@ -333,7 +333,7 @@ describe('formatFacetRefsWithPresets()', () => {
 				{ value: [3, 4, 5, 6] },
 				{ value: 10 },
 				{ value: svgPath },
-				DEFAULT_COLOR_SCHEME,
+				DEFAULT_COLOR_SCHEME
 			);
 		expect(formattedColor).toStrictEqual({ value: 'rgb(50, 50, 50)' });
 		expect(formattedLineType).toStrictEqual({ value: [3, 4, 5, 6] });
@@ -346,22 +346,20 @@ describe('addSignals()', () => {
 	test('should add highlightedSeries signal if highlight is true', () => {
 		expect(
 			addSignals([], { ...defaultLegendProps, highlight: true }).find(
-				(signal) => signal.name === 'highlightedSeries',
-			),
+				(signal) => signal.name === 'highlightedSeries'
+			)
 		).toBeDefined();
 	});
 	test('should add legendLabels signal if legendLabels are defined', () => {
 		expect(
-			addSignals([], { ...defaultLegendProps, legendLabels: [] }).find(
-				(signal) => signal.name === 'legendLabels',
-			),
+			addSignals([], { ...defaultLegendProps, legendLabels: [] }).find((signal) => signal.name === 'legendLabels')
 		).toBeDefined();
 	});
 	test('should NOT add hiddenSeries signal if isToggleable is false', () => {
 		expect(
 			addSignals([], { ...defaultLegendProps, isToggleable: false }).find(
-				(signal) => signal.name === 'hiddenSeries',
-			),
+				(signal) => signal.name === 'hiddenSeries'
+			)
 		).toBeUndefined();
 	});
 });
@@ -370,12 +368,12 @@ describe('getContinuousLegend()', () => {
 	test('should return symbolSize legend if facetType is symbolSize', () => {
 		expect(getContinuousLegend({ facetType: 'symbolSize', field: 'weight' }, defaultLegendProps)).toHaveProperty(
 			'size',
-			'symbolSize',
+			'symbolSize'
 		);
 	});
 	test('should return linearColor scale if facetType is linearColor', () => {
 		expect(
-			getContinuousLegend({ facetType: LINEAR_COLOR_SCALE, field: 'weight' }, defaultLegendProps),
+			getContinuousLegend({ facetType: LINEAR_COLOR_SCALE, field: 'weight' }, defaultLegendProps)
 		).toHaveProperty('fill', LINEAR_COLOR_SCALE);
 	});
 });

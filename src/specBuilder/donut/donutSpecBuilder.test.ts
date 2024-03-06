@@ -9,15 +9,14 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
 import { createElement } from 'react';
 
 import { ChartPopover } from '@components/ChartPopover';
 import { COLOR_SCALE, FILTERED_TABLE, HIGHLIGHTED_ITEM, MARK_ID } from '@constants';
-import { DonutSpecProps } from 'types';
-
 import { defaultHighlightSignal } from '@specBuilder/signal/signalSpecBuilder.test';
 import { defaultSignals } from '@specBuilder/specTestUtils';
+import { DonutSpecProps } from 'types';
+
 import { addData, addDonut, addMarks, addScales, addSignals } from './donutSpecBuilder';
 import { getAggregateMetricMark, getArcMark, getDirectLabelMark, getPercentMetricMark } from './donutUtils';
 
@@ -113,7 +112,7 @@ describe('addMarks', () => {
 				props.metric,
 				'min(width, height) / 2',
 				props.holeRatio,
-				props.metricLabel,
+				props.metricLabel
 			),
 		];
 		expect(result).toEqual(expectedMarks);
@@ -127,20 +126,20 @@ describe('addMarks', () => {
 				defaultDonutProps.name,
 				defaultDonutProps.holeRatio,
 				'min(width, height) / 2',
-				defaultDonutProps.children,
+				defaultDonutProps.children
 			),
 			getAggregateMetricMark(
 				defaultDonutProps.name,
 				defaultDonutProps.metric,
 				'min(width, height) / 2',
 				defaultDonutProps.holeRatio,
-				defaultDonutProps.metricLabel,
+				defaultDonutProps.metricLabel
 			),
 			getDirectLabelMark(
 				defaultDonutProps.name,
 				'min(width, height) / 2',
 				defaultDonutProps.metric,
-				defaultDonutProps.segment!,
+				defaultDonutProps.segment!
 			),
 		];
 		expect(result).toEqual(expectedMarks);
@@ -163,7 +162,7 @@ describe('addMarks', () => {
 			children: [],
 		};
 		expect(() => addMarks(marks, props)).toThrow(
-			'If a Donut chart hasDirectLabels, a segment property name must be supplied.',
+			'If a Donut chart hasDirectLabels, a segment property name must be supplied.'
 		);
 	});
 });

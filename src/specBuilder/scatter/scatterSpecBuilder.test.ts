@@ -11,6 +11,8 @@
  */
 import { createElement } from 'react';
 
+import { ChartPopover } from '@components/ChartPopover';
+import { ChartTooltip } from '@components/ChartTooltip';
 import { Trendline } from '@components/Trendline';
 import {
 	COLOR_SCALE,
@@ -22,13 +24,11 @@ import {
 	OPACITY_SCALE,
 	SYMBOL_SIZE_SCALE,
 } from '@constants';
+import { defaultSignals } from '@specBuilder/specTestUtils';
 import { initializeSpec } from '@specBuilder/specUtils';
 
-import { ChartPopover } from '@components/ChartPopover';
-import { ChartTooltip } from '@components/ChartTooltip';
 import { addData, addSignals, setScales } from './scatterSpecBuilder';
 import { defaultScatterProps } from './scatterTestUtils';
-import { defaultSignals } from '@specBuilder/specTestUtils';
 
 describe('addData()', () => {
 	test('should add time transform is dimensionScaleType === "time"', () => {

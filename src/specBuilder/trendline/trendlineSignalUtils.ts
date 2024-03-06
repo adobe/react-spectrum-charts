@@ -9,15 +9,15 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
-import { Signal } from 'vega';
-import { TrendlineParentProps, getTrendlines } from './trendlineUtils';
 import { hasPopover, hasTooltip } from '@specBuilder/marks/markUtils';
 import {
 	addHighlightedItemSignalEvents,
 	getGenericSignal,
 	getSeriesHoveredSignal,
 } from '@specBuilder/signal/signalSpecBuilder';
+import { Signal } from 'vega';
+
+import { TrendlineParentProps, getTrendlines } from './trendlineUtils';
 
 export const setTrendlineSignals = (signals: Signal[], markProps: TrendlineParentProps): void => {
 	const { name: markName } = markProps;

@@ -9,7 +9,6 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
 import { MS_PER_DAY, TRENDLINE_VALUE } from '@constants';
 import { getFacetsFromProps } from '@specBuilder/specUtils';
 import { AggregateMethod, TrendlineMethod, TrendlineSpecProps } from 'types';
@@ -27,6 +26,7 @@ import {
 	Transforms,
 	WindowTransform,
 } from 'vega';
+
 import { TrendlineParentProps, getPolynomialOrder, getRegressionExtent, isPolynomialMethod } from './trendlineUtils';
 
 /**
@@ -39,7 +39,7 @@ import { TrendlineParentProps, getPolynomialOrder, getRegressionExtent, isPolyno
 export const getAggregateTransform = (
 	markProps: TrendlineParentProps,
 	{ method, trendlineDimension, trendlineMetric }: TrendlineSpecProps,
-	isHighResolutionData: boolean,
+	isHighResolutionData: boolean
 ): AggregateTransform | JoinAggregateTransform => {
 	const { color, lineType } = markProps;
 	const { facets } = getFacetsFromProps({ color, lineType });
@@ -77,7 +77,7 @@ export const getAggregateTransform = (
 export const getRegressionTransform = (
 	markProps: TrendlineParentProps,
 	trendlineProps: TrendlineSpecProps,
-	isHighResolutionData: boolean,
+	isHighResolutionData: boolean
 ): RegressionTransform => {
 	const { color, lineType } = markProps;
 	const { dimensionExtent, isDimensionNormalized, method, name, trendlineDimension, trendlineMetric } =
@@ -124,7 +124,7 @@ export const getRegressionTransform = (
  */
 export const getWindowTransform = (
 	markProps: TrendlineParentProps,
-	{ method, trendlineMetric }: TrendlineSpecProps,
+	{ method, trendlineMetric }: TrendlineSpecProps
 ): WindowTransform => {
 	const frameWidth = parseInt(method.split('-')[1]);
 
@@ -133,7 +133,7 @@ export const getWindowTransform = (
 
 	if (isNaN(frameWidth) || frameWidth < 1) {
 		throw new Error(
-			`Invalid moving average frame width: ${frameWidth}, frame width must be an integer greater than 0`,
+			`Invalid moving average frame width: ${frameWidth}, frame width must be an integer greater than 0`
 		);
 	}
 
@@ -201,7 +201,7 @@ export const getSortTransform = (dimension: string): CollectTransform => ({
  */
 export const getTrendlineDimensionRangeTransforms = (
 	dimension: string,
-	dimensionRange: [number | null, number | null],
+	dimensionRange: [number | null, number | null]
 ): FilterTransform[] => {
 	const filterExpressions: string[] = [];
 	if (dimensionRange[0] !== null) {
@@ -229,7 +229,7 @@ export const getTrendlineDimensionRangeTransforms = (
  */
 export const getTrendlineParamFormulaTransforms = (
 	trendlineDimension: string,
-	method: TrendlineMethod,
+	method: TrendlineMethod
 ): FormulaTransform[] => {
 	let expr = '';
 	if (isPolynomialMethod(method)) {
@@ -266,7 +266,7 @@ export const getTrendlineParamFormulaTransforms = (
  */
 export const getTrendlineParamLookupTransform = (
 	{ color, lineType }: TrendlineParentProps,
-	{ name }: TrendlineSpecProps,
+	{ name }: TrendlineSpecProps
 ): LookupTransform => {
 	const { facets } = getFacetsFromProps({ color, lineType });
 	return {

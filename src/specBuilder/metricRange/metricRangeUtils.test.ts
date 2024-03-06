@@ -118,7 +118,7 @@ const basicMetricRangeMarks = [
 describe('applyMetricRangePropDefaults', () => {
 	test('applies defaults', () => {
 		expect(
-			applyMetricRangePropDefaults({ metricEnd: 'metricStart', metricStart: 'metricEnd' }, 'line0', 0),
+			applyMetricRangePropDefaults({ metricEnd: 'metricStart', metricStart: 'metricEnd' }, 'line0', 0)
 		).toEqual({
 			children: {},
 			displayOnHover: false,
@@ -144,8 +144,8 @@ describe('applyMetricRangePropDefaults', () => {
 					displayOnHover: true,
 				},
 				'line0',
-				0,
-			),
+				0
+			)
 		).toEqual({
 			children: {},
 			displayOnHover: true,

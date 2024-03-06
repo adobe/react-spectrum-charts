@@ -47,7 +47,7 @@ export const setHoverOpacityForMarks = (marks: Mark[], keys?: string[], name?: s
 };
 
 export const getOpacityRule = (
-	opacityRule: ProductionRule<NumericValueRef> | undefined,
+	opacityRule: ProductionRule<NumericValueRef> | undefined
 ): ProductionRule<NumericValueRef> => {
 	if (opacityRule) {
 		// if it's an array and length > 0, get the last value
@@ -65,7 +65,7 @@ export const getOpacityRule = (
 export const getHighlightOpacityRule = (
 	opacityRule: ProductionRule<NumericValueRef>,
 	keys?: string[],
-	name?: string,
+	name?: string
 ): { test?: string } & NumericValueRef => {
 	let test = `highlightedSeries && highlightedSeries !== datum.${SERIES_ID}`;
 	if (keys) {

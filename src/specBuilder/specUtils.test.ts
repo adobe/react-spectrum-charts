@@ -87,7 +87,7 @@ describe('specUtils', () => {
 				getFacetsFromScales([
 					defaultColorScale,
 					{ ...defaultLineTypeScale, domain: { data: TABLE, fields: [DEFAULT_COLOR] } },
-				]),
+				])
 			).toStrictEqual([DEFAULT_COLOR]);
 			expect(getFacetsFromScales([defaultColorScale, defaultLineTypeScale, defaultOpacityScale])).toStrictEqual([
 				DEFAULT_COLOR,
@@ -105,7 +105,7 @@ describe('specUtils', () => {
 
 		test('should return empty array if no scales have fields', () => {
 			expect(getFacetsFromScales([{ ...defaultColorScale, domain: { data: TABLE, fields: [] } }])).toStrictEqual(
-				[],
+				[]
 			);
 		});
 
@@ -191,7 +191,7 @@ describe('specUtils', () => {
 			expect(getDimensionField(DEFAULT_CATEGORICAL_DIMENSION, 'linear')).toEqual(DEFAULT_CATEGORICAL_DIMENSION);
 			expect(getDimensionField(DEFAULT_CATEGORICAL_DIMENSION, 'point')).toEqual(DEFAULT_CATEGORICAL_DIMENSION);
 			expect(getDimensionField(DEFAULT_CATEGORICAL_DIMENSION, 'time')).toEqual(
-				DEFAULT_TRANSFORMED_TIME_DIMENSION,
+				DEFAULT_TRANSFORMED_TIME_DIMENSION
 			);
 		});
 	});

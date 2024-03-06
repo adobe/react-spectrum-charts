@@ -100,7 +100,7 @@ export const addHighlightedItemSignalEvents = (signals: Signal[], markName: stri
 					update: `${new Array(datumOrder).fill('datum.').join('')}${MARK_ID}`,
 				},
 				{ events: `@${markName}:mouseout`, update: 'null' },
-			],
+			]
 		);
 	}
 };

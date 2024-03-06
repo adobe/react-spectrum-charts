@@ -213,7 +213,7 @@ export const getStackedCornerRadiusEncodings = ({ name, metric, lineWidth }: Bar
 
 export const rotateRectClockwiseIfNeeded = (
 	rectEncodeEntry: RectEncodeEntry,
-	{ orientation }: BarSpecProps,
+	{ orientation }: BarSpecProps
 ): RectEncodeEntry => {
 	if (orientation === 'vertical') return rectEncodeEntry;
 	return {
@@ -226,7 +226,7 @@ export const rotateRectClockwiseIfNeeded = (
 
 export const getAnnotationMetricAxisPosition = (
 	props: BarSpecProps,
-	annotationWidth: AnnotationWidth,
+	annotationWidth: AnnotationWidth
 ): ProductionRule<NumericValueRef> => {
 	const { type, metric, orientation } = props;
 	const field = type === 'stacked' || isDodgedAndStacked(props) ? `${metric}1` : metric;
@@ -258,7 +258,7 @@ export const getAnnotationMetricAxisPosition = (
 
 export const getAnnotationPositionOffset = (
 	{ orientation }: BarSpecProps,
-	annotationWidth: AnnotationWidth,
+	annotationWidth: AnnotationWidth
 ): string => {
 	const pixelGapFromBaseline = 2.5;
 
@@ -288,7 +288,7 @@ export const getAnnotationMarks = (
 	// in which case we don't want to use the "global" (full table) values.
 	localDataTableName: string,
 	localDimensionScaleKey: string,
-	localDimensionField: string,
+	localDimensionField: string
 ) => {
 	const marks: Mark[] = [];
 	const children = sanitizeMarkChildren(barProps.children);
@@ -468,11 +468,11 @@ export const getOrientationProperties = (orientation: Orientation): BarOrientati
 				metricScaleKey: 'yLinear',
 				dimensionScaleKey: 'xBand',
 				rangeScale: 'width',
-			}
+		  }
 		: {
 				metricAxis: 'x',
 				dimensionAxis: 'y',
 				metricScaleKey: 'xLinear',
 				dimensionScaleKey: 'yBand',
 				rangeScale: 'height',
-			};
+		  };
