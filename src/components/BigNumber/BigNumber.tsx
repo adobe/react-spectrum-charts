@@ -146,10 +146,11 @@ function getDynamicProperties(
 	const aspectRatio = BIG_NUMBER_ASPECT_RATIO;
 
 	let cHeight, cWidth;
+
+	const fontSizes = determineFontSize(chartWidth * 0.75);
 	if (orientation == 'vertical') {
 		cHeight = height ? height / 3 : (chartWidth / aspectRatio) * 1.2;
 		cWidth = height ? cHeight * aspectRatio : chartWidth;
-		const fontSizes = determineFontSize(chartWidth / 2);
 		const pointSize = determinePointSize(cWidth);
 		const iconSize = determineIconSize(fontSizes.labelSize, lineProps != undefined);
 		return {
@@ -166,7 +167,6 @@ function getDynamicProperties(
 		};
 	}
 
-	const fontSizes = determineFontSize(chartWidth);
 	if (height && height < chartWidth / (2 * aspectRatio)) {
 		cHeight = height / 1.5;
 		cWidth = height * aspectRatio;
