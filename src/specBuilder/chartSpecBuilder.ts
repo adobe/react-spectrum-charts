@@ -16,6 +16,7 @@ import {
 	DEFAULT_LINE_TYPES,
 	FILTERED_TABLE,
 	HIGHLIGHTED_ITEM,
+	HIGHLIGHTED_SERIES,
 	LINEAR_COLOR_SCALE,
 	LINE_TYPE_SCALE,
 	LINE_WIDTH_SCALE,
@@ -63,7 +64,7 @@ import { addLegend } from './legend/legendSpecBuilder';
 import { addLine } from './line/lineSpecBuilder';
 import { getOrdinalScale } from './scale/scaleSpecBuilder';
 import { addScatter } from './scatter/scatterSpecBuilder';
-import { getGenericSignal, hasSignalByName } from './signal/signalSpecBuilder';
+import { getGenericSignal } from './signal/signalSpecBuilder';
 import {
 	getColorValue,
 	getFacetsFromScales,
@@ -91,7 +92,15 @@ export function buildSpec({
 	title,
 }: SanitizedSpecProps) {
 	let spec = initializeSpec(null, { backgroundColor, colorScheme, description, title });
-	spec.signals = getDefaultSignals(backgroundColor, colors, colorScheme, lineTypes, opacities, hiddenSeries);
+	spec.signals = getDefaultSignals(
+		backgroundColor,
+		colors,
+		colorScheme,
+		lineTypes,
+		opacities,
+		hiddenSeries,
+		highlightedSeries,
+	);
 	spec.scales = getDefaultScales(colors, colorScheme, lineTypes, lineWidths, opacities, symbolShapes, symbolSizes);
 
 	// need to build the spec in a specific order
@@ -161,8 +170,8 @@ export function buildSpec({
 	spec.data = addData(spec.data ?? [], { facets: getFacetsFromScales(spec.scales) });
 
 	// add signals and update marks for controlled highlighting if there isn't a legend with highlight enabled
-	if (highlightedSeries && !hasSignalByName(spec.signals ?? [], 'highlightedSeries')) {
-		spec = addHighlight(spec, { children, hiddenSeries, highlightedSeries });
+	if (highlightedSeries) {
+		setHoverOpacityForMarks(spec.marks ?? []);
 	}
 
 	// clear out all scales that don't have any fields on the domain
@@ -170,12 +179,6 @@ export function buildSpec({
 
 	return spec;
 }
-
-export const addHighlight = produce<Spec, [SanitizedSpecProps]>((spec, { highlightedSeries }) => {
-	if (!spec.signals) spec.signals = [];
-	spec.signals.push(getGenericSignal(`highlightedSeries`, highlightedSeries));
-	setHoverOpacityForMarks(spec.marks ?? []);
-});
 
 export const removeUnusedScales = produce<Spec>((spec) => {
 	spec.scales = spec.scales?.filter((scale) => {
@@ -205,6 +208,7 @@ export const getDefaultSignals = (
 	lineTypes: LineTypes,
 	opacities: Opacities | undefined,
 	hiddenSeries?: string[],
+	highlightedSeries?: string,
 ): Signal[] => {
 	// if the background color is transparent, then we want to set the signal background color to gray-50
 	// if the signal background color were transparent then backgroundMarks and annotation fill would also be transparent
@@ -216,6 +220,7 @@ export const getDefaultSignals = (
 		getGenericSignal('opacities', getTwoDimensionalOpacities(opacities)),
 		getGenericSignal('hiddenSeries', hiddenSeries ?? []),
 		getGenericSignal(HIGHLIGHTED_ITEM),
+		getGenericSignal(HIGHLIGHTED_SERIES, highlightedSeries),
 	];
 };
 

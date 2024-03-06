@@ -14,17 +14,22 @@ import {
 	DEFAULT_COLOR,
 	DEFAULT_COLOR_SCHEME,
 	DEFAULT_SECONDARY_COLOR,
+	HIGHLIGHTED_SERIES,
 	LINEAR_COLOR_SCALE,
 	TABLE,
 } from '@constants';
 import { Data, Legend, LegendEncode, Scale, Spec, SymbolEncodeEntry } from 'vega';
 
-import { defaultHighlightSignal } from '../signal/signalSpecBuilder.test';
+import {
+	defaultHighlightedItemSignal,
+	defaultHighlightedSeriesSignal,
+	defaultSignals,
+} from '@specBuilder/specTestUtils';
 import { addData, addLegend, addSignals, formatFacetRefsWithPresets, getContinuousLegend } from './legendSpecBuilder';
 import { defaultLegendProps, opacityEncoding } from './legendTestUtils';
 
 const defaultSpec: Spec = {
-	signals: [],
+	signals: defaultSignals,
 	scales: [
 		{
 			name: COLOR_SCALE,
@@ -120,6 +125,17 @@ const defaultLegendEntriesScale: Scale = {
 	domain: { data: 'legend0Aggregate', field: 'legend0Entries' },
 };
 
+const defaultHighlightSeriesSignal = {
+	...defaultHighlightedSeriesSignal,
+	on: [
+		{
+			events: '@legend0_legendEntry:mouseover',
+			update: 'indexof(hiddenSeries, domain("legend0Entries")[datum.index]) === -1 ? domain("legend0Entries")[datum.index] : null',
+		},
+		{ events: '@legend0_legendEntry:mouseout', update: 'null' },
+	],
+};
+
 describe('addLegend()', () => {
 	describe('no initial legend', () => {
 		test('no props, should setup default legend', () => {
@@ -147,7 +163,7 @@ describe('addLegend()', () => {
 				...defaultSpec,
 				data: [defaultLegendAggregateData],
 				scales: [...(defaultSpec.scales || []), defaultLegendEntriesScale],
-				signals: [defaultHighlightSignal],
+				signals: [defaultHighlightedItemSignal, defaultHighlightSeriesSignal],
 				legends: [{ ...defaultLegend, encode: defaultHighlightLegendEncoding }],
 			});
 		});
@@ -229,6 +245,7 @@ describe('addLegend()', () => {
 					],
 				}).signals,
 			).toStrictEqual([
+				...defaultSignals,
 				{
 					name: 'legendLabels',
 					value: [
@@ -343,23 +360,23 @@ describe('formatFacetRefsWithPresets()', () => {
 });
 
 describe('addSignals()', () => {
-	test('should add highlightedSeries signal if highlight is true', () => {
-		expect(
-			addSignals([], { ...defaultLegendProps, highlight: true }).find(
-				(signal) => signal.name === 'highlightedSeries',
-			),
-		).toBeDefined();
+	test('should add highlightedSeries signal events if highlight is true', () => {
+		const highlightSignal = addSignals(defaultSignals, { ...defaultLegendProps, highlight: true }).find(
+			(signal) => signal.name === HIGHLIGHTED_SERIES,
+		);
+		expect(highlightSignal?.on).toHaveLength(2);
+		expect(highlightSignal?.on?.[0]).toHaveProperty('events', '@legend0_legendEntry:mouseover');
 	});
 	test('should add legendLabels signal if legendLabels are defined', () => {
 		expect(
-			addSignals([], { ...defaultLegendProps, legendLabels: [] }).find(
+			addSignals(defaultSignals, { ...defaultLegendProps, legendLabels: [] }).find(
 				(signal) => signal.name === 'legendLabels',
 			),
 		).toBeDefined();
 	});
 	test('should NOT add hiddenSeries signal if isToggleable is false', () => {
 		expect(
-			addSignals([], { ...defaultLegendProps, isToggleable: false }).find(
+			addSignals(defaultSignals, { ...defaultLegendProps, isToggleable: false }).find(
 				(signal) => signal.name === 'hiddenSeries',
 			),
 		).toBeUndefined();

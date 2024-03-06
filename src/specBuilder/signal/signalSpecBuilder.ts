@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { HIGHLIGHTED_ITEM, MARK_ID, SERIES_ID } from '@constants';
+import { HIGHLIGHTED_ITEM, HIGHLIGHTED_SERIES, MARK_ID, SERIES_ID } from '@constants';
 import { Signal } from 'vega';
 
 /**
@@ -32,36 +32,29 @@ export const getControlledHoverSignal = (name: string): Signal => {
 };
 
 /**
- *  Returns the hover signal for series
- *  Useful when you want to highlight the whole series on hover (area)
- */
-export const getSeriesHoveredSignal = (name: string, nestedDatum?: boolean, eventName: string = name): Signal => {
-	return {
-		name: `${name}_hoveredSeries`,
-		value: null,
-		on: [
-			{ events: `@${eventName}:mouseover`, update: `${nestedDatum ? 'datum.' : ''}datum.${SERIES_ID}` },
-			{ events: `@${eventName}:mouseout`, update: 'null' },
-		],
-	};
-};
-
-/**
  * Returns the highlighted series signal
  */
-export const getHighlightSeriesSignal = (name: string, includeHiddenSeries: boolean, keys?: string[]): Signal => {
-	const hoveredSeries = `domain("${name}Entries")[datum.index]`;
-	const update = includeHiddenSeries
-		? `indexof(hiddenSeries, ${hoveredSeries}) === -1 ? ${hoveredSeries} : ""`
-		: hoveredSeries;
-	return {
-		name: keys ? `${name}_highlight` : 'highlightedSeries',
-		value: null,
-		on: [
-			{ events: `@${name}_legendEntry:mouseover`, update },
-			{ events: `@${name}_legendEntry:mouseout`, update: '""' },
-		],
-	};
+export const addHighlighSignalLegendHoverEvents = (
+	signals: Signal[],
+	legendName: string,
+	includeHiddenSeries: boolean,
+) => {
+	const highlightedItemSignal = signals.find((signal) => signal.name === HIGHLIGHTED_SERIES);
+	if (highlightedItemSignal) {
+		if (highlightedItemSignal.on === undefined) {
+			highlightedItemSignal.on = [];
+		}
+		const hoveredSeries = `domain("${legendName}Entries")[datum.index]`;
+		const update = includeHiddenSeries
+			? `indexof(hiddenSeries, ${hoveredSeries}) === -1 ? ${hoveredSeries} : null`
+			: hoveredSeries;
+		highlightedItemSignal.on.push(
+			...[
+				{ events: `@${legendName}_legendEntry:mouseover`, update },
+				{ events: `@${legendName}_legendEntry:mouseout`, update: 'null' },
+			],
+		);
+	}
 };
 
 /**
@@ -98,6 +91,29 @@ export const addHighlightedItemSignalEvents = (signals: Signal[], markName: stri
 				{
 					events: `@${markName}:mouseover`,
 					update: `${new Array(datumOrder).fill('datum.').join('')}${MARK_ID}`,
+				},
+				{ events: `@${markName}:mouseout`, update: 'null' },
+			],
+		);
+	}
+};
+/**
+ * adds on events to the highlighted series signal
+ * @param signals
+ * @param markName
+ * @param datumOrder how deep the datum is nested (i.e. 1 becomes datum.rscMarkId, 2 becomes datum.datum.rscMarkId, etc.)
+ */
+export const addHighlightedSeriesSignalEvents = (signals: Signal[], markName: string, datumOrder = 1) => {
+	const highlightedSeriesSignal = signals.find((signal) => signal.name === HIGHLIGHTED_SERIES);
+	if (highlightedSeriesSignal) {
+		if (highlightedSeriesSignal.on === undefined) {
+			highlightedSeriesSignal.on = [];
+		}
+		highlightedSeriesSignal.on.push(
+			...[
+				{
+					events: `@${markName}:mouseover`,
+					update: `${new Array(datumOrder).fill('datum.').join('')}${SERIES_ID}`,
 				},
 				{ events: `@${markName}:mouseout`, update: 'null' },
 			],

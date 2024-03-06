@@ -10,7 +10,7 @@
  * governing permissions and limitations under the License.
  */
 import { COLOR_SCALE, DEFAULT_COLOR, DEFAULT_COLOR_SCHEME, DEFAULT_METRIC, FILTERED_TABLE } from '@constants';
-import { hasPopover } from '@specBuilder/marks/markUtils';
+import { hasInteractiveChildren, hasPopover } from '@specBuilder/marks/markUtils';
 import { addFieldToFacetScaleDomain } from '@specBuilder/scale/scaleSpecBuilder';
 import {
 	addHighlightedItemSignalEvents,
@@ -135,9 +135,8 @@ export const addMarks = produce<Mark[], [DonutSpecProps]>((marks, props) => {
 
 export const addSignals = produce<Signal[], [DonutSpecProps]>((signals, props) => {
 	const { name, children } = props;
-
+	if (!hasInteractiveChildren(children)) return;
 	addHighlightedItemSignalEvents(signals, name);
-
 	if (hasPopover(children)) {
 		if (!hasSignalByName(signals, `${name}_selectedId`)) {
 			signals.push(getGenericSignal(`${name}_selectedId`));
