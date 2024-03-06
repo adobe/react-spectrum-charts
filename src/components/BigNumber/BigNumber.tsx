@@ -202,9 +202,7 @@ function determineFontSize(availableSpace: number): {
 
 function determinePointSize(availableSpace: number): number {
 	if (availableSpace <= 150) return 50;
-	else if (availableSpace <= 300) return 100;
-	else if (availableSpace <= 450) return 150;
-	return 200;
+	return 100;
 }
 
 function determineIconSize(textSize: CSSProperties['fontSize'], line: boolean): IconProps['size'] {
