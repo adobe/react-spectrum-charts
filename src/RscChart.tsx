@@ -90,7 +90,7 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 			chartId,
 			...props
 		},
-		forwardedRef,
+		forwardedRef
 	) => {
 		// uuid is used to make a unique id so there aren't duplicate ids if there is more than one Chart component in the document
 		const selectedData = useRef<Datum | null>(null); // data that is currently selected, get's set on click if a popover exists
@@ -156,7 +156,7 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 			popoverIsOpen,
 			chartView.current,
 			selectedDataBounds.current,
-			padding,
+			padding
 		);
 
 		const tooltipConfig: TooltipOptions = { theme: colorScheme };
@@ -175,7 +175,7 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 							descriptions={legendDescriptions}
 							// TODO: support multiple legends
 							domain={chartView.current?.scale('legend0Entries').domain()}
-						/>,
+						/>
 					);
 				}
 				// get the correct tooltip to render based on the hovered item
@@ -187,7 +187,7 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 					return renderToStaticMarkup(
 						<div className="rsc-tooltip" data-testid="rsc-tooltip">
 							{tooltip(value)}
-						</div>,
+						</div>
 					);
 				}
 				return '';
@@ -266,8 +266,8 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 									selectedDataName,
 									setHiddenSeries,
 									legendIsToggleable,
-									onLegendClick,
-								),
+									onLegendClick
+								)
 							);
 						}
 						view.addEventListener('mouseover', getOnMouseInputCallback(onLegendMouseOver));
@@ -284,7 +284,7 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 				/>
 			</>
 		);
-	},
+	}
 );
 RscChart.displayName = 'RscChart';
 

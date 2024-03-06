@@ -9,14 +9,15 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { Signal } from 'vega';
-import { addHighlightedItemSignalEvents, addHighlightedSeriesSignalEvents } from './signalSpecBuilder';
+import { HIGHLIGHTED_ITEM, HIGHLIGHTED_SERIES } from '@constants';
 import {
 	defaultHighlightedItemSignal,
 	defaultHighlightedSeriesSignal,
 	defaultSignals,
 } from '@specBuilder/specTestUtils';
-import { HIGHLIGHTED_ITEM, HIGHLIGHTED_SERIES } from '@constants';
+import { Signal } from 'vega';
+
+import { addHighlightedItemSignalEvents, addHighlightedSeriesSignalEvents } from './signalSpecBuilder';
 
 describe('signalSpecBuilder', () => {
 	let signals: Signal[];

@@ -121,7 +121,7 @@ export const getHighlightPoint = (lineProps: LineMarkProps): SymbolMark => {
  */
 export const getSecondaryHighlightPoint = (
 	lineProps: LineMarkProps,
-	secondaryHighlightedMetric: string,
+	secondaryHighlightedMetric: string
 ): SymbolMark => {
 	const { color, colorScheme, dimension, name, scaleType } = lineProps;
 	return {

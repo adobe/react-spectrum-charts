@@ -37,7 +37,7 @@ export const getControlledHoverSignal = (name: string): Signal => {
 export const addHighlighSignalLegendHoverEvents = (
 	signals: Signal[],
 	legendName: string,
-	includeHiddenSeries: boolean,
+	includeHiddenSeries: boolean
 ) => {
 	const highlightedItemSignal = signals.find((signal) => signal.name === HIGHLIGHTED_SERIES);
 	if (highlightedItemSignal) {
@@ -52,7 +52,7 @@ export const addHighlighSignalLegendHoverEvents = (
 			...[
 				{ events: `@${legendName}_legendEntry:mouseover`, update },
 				{ events: `@${legendName}_legendEntry:mouseout`, update: 'null' },
-			],
+			]
 		);
 	}
 };
@@ -117,7 +117,7 @@ export const addHighlightedSeriesSignalEvents = (signals: Signal[], markName: st
 					update: `${new Array(datumOrder).fill('datum.').join('')}${SERIES_ID}`,
 				},
 				{ events: `@${markName}:mouseout`, update: 'null' },
-			],
+			]
 		);
 	}
 };

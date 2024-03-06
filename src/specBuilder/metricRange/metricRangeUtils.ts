@@ -22,7 +22,7 @@ import { AreaMark, GroupMark, LineMark, Signal, SourceData } from 'vega';
 export const getMetricRanges = (children: MarkChildElement[], markName: string): MetricRangeSpecProps[] => {
 	const metricRangeElements = children.filter((child) => child.type === MetricRange) as MetricRangeElement[];
 	return metricRangeElements.map((metricRange, index) =>
-		applyMetricRangePropDefaults(metricRange.props, markName, index),
+		applyMetricRangePropDefaults(metricRange.props, markName, index)
 	);
 };
 
@@ -36,7 +36,7 @@ export const applyMetricRangePropDefaults = (
 		...props
 	}: MetricRangeProps,
 	markName: string,
-	index: number,
+	index: number
 ): MetricRangeSpecProps => ({
 	children: {},
 	lineType,
@@ -85,7 +85,7 @@ export const getMetricRangeGroupMarks = (lineMarkProps: LineSpecProps): GroupMar
  */
 export const getMetricRangeMark = (
 	lineMarkProps: LineSpecProps,
-	metricRangeProps: MetricRangeSpecProps,
+	metricRangeProps: MetricRangeSpecProps
 ): (LineMark | AreaMark)[] => {
 	const areaProps: AreaMarkProps = {
 		name: metricRangeProps.name,

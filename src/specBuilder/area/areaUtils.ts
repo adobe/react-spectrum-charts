@@ -87,7 +87,7 @@ export function getFillOpacity(
 	children: MarkChildElement[],
 	isMetricRange?: boolean,
 	parentName?: string,
-	displayOnHover?: boolean,
+	displayOnHover?: boolean
 ): ProductionRule<NumericValueRef> | undefined {
 	// if metric ranges only display when hovering, we don't need to include other hover rules for this specific area
 	if (isMetricRange && displayOnHover) {
