@@ -18,7 +18,7 @@ import {
 	getInteractive,
 	getTooltip,
 } from '@specBuilder/marks/markUtils';
-import { ColorFacet, ColorScheme, MarkChildElement, ScaleType } from 'types';
+import { ChartData, ColorFacet, ColorScheme, MarkChildElement, ScaleType } from 'types';
 import { AreaMark, NumericValueRef, ProductionRule } from 'vega';
 import { getAnimationMarks } from '@specBuilder/specUtils';
 
@@ -28,6 +28,8 @@ export interface AreaMarkProps {
 	colorScheme: ColorScheme;
 	children: MarkChildElement[];
 	animations?: boolean;
+	data?: ChartData[];
+	previousData?: ChartData[];
 	metricStart: string;
 	metricEnd: string;
 	isStacked: boolean;
@@ -47,6 +49,8 @@ export const getAreaMark = ({
 	metricStart,
 	metricEnd,
 	animations,
+	data,
+	previousData,
 	isStacked,
 	scaleType,
 	dimension,
@@ -73,8 +77,8 @@ export const getAreaMark = ({
 			// this has to be in update because when you resize the window that doesn't rebuild the spec
 			// but it may change the x position if it causes the chart to resize
 			...(animations !== false && {
-				y: getAnimationMarks(dimension, metricStart),
-				y2: getAnimationMarks(dimension, metricEnd)
+				y: getAnimationMarks(dimension, metricStart, data, previousData),
+				y2: getAnimationMarks(dimension, metricEnd, data, previousData)
 			}),
 			x: getX(scaleType, dimension),
 			cursor: getCursor(children),
