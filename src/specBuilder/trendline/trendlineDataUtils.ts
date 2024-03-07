@@ -301,6 +301,12 @@ export const addTableDataTransforms = produce<Transforms[], [TrendlineParentProp
 	}
 });
 
+/**
+ * Gets the data source and transforms for displaying the trendline on hover
+ * @param trendlineName
+ * @param method
+ * @returns SourceData
+ */
 export const getTrendlineDisplayOnHoverData = (trendlineName: string, method: TrendlineMethod): SourceData => {
 	const source = isWindowMethod(method) ? `${trendlineName}_data` : `${trendlineName}_highResolutionData`;
 	return {

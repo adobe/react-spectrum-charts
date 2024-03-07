@@ -125,6 +125,28 @@ describe('Trendline', () => {
 			expect(trendline).toBeInTheDocument();
 			expect(trendline).toHaveAttribute('opacity', '1');
 		});
+
+		test('should display on haver for window methods', async () => {
+			render(<DisplayOnHover {...DisplayOnHover.args} method="movingAverage-2" />);
+			const chart = await findChart();
+			expect(chart).toBeInTheDocument();
+
+			const lines = await findAllMarksByGroupName(chart, 'line0');
+			expect(lines).toHaveLength(4);
+
+			// shouldn't be any trendlines visible
+			let trendline = queryMarksByGroupName(chart, 'line0Trendline0');
+			expect(trendline).not.toBeInTheDocument();
+
+			// hover over the first point on the first line
+			const hoverAreas = await findAllMarksByGroupName(chart, 'line0_voronoi');
+			await hoverNthElement(hoverAreas, 0);
+
+			// trendline should be visible
+			trendline = await findMarksByGroupName(chart, 'line0Trendline0');
+			expect(trendline).toBeInTheDocument();
+			expect(trendline).toHaveAttribute('opacity', '1');
+		});
 	});
 
 	describe('Orientation', () => {
