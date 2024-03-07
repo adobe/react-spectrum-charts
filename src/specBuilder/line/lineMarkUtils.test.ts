@@ -59,22 +59,7 @@ describe('getLineMark()', () => {
 			{ ...defaultLineMarkProps, interactiveMarkName: 'line0', displayOnHover: true },
 			'line0_facet'
 		);
-		expect(lineMark.encode?.update?.opacity).toEqual([
-			{
-				test: `${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES} !== datum.${SERIES_ID}`,
-				value: 0,
-			},
-			{
-				test: `${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES} === datum.${SERIES_ID}`,
-				value: 1,
-			},
-			{
-				test: `${SELECTED_SERIES} && ${SELECTED_SERIES} === datum.${SERIES_ID}`,
-				value: 1,
-			},
-			{ test: `${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES} === datum.${SERIES_ID}`, value: 1 },
-			{ value: 0 },
-		]);
+		expect(lineMark.encode?.update?.opacity).toEqual([DEFAULT_OPACITY_RULE]);
 	});
 
 	test('does not add metric range opacity rules if displayOnHover is false and isMetricRange', () => {
@@ -127,12 +112,6 @@ describe('getLineOpacity()', () => {
 			interactiveMarkName: 'line0',
 			displayOnHover: true,
 		});
-		expect(opacityRule).toEqual([
-			{ test: `${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES} !== datum.${SERIES_ID}`, value: 0 },
-			{ test: `${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES} === datum.${SERIES_ID}`, value: 1 },
-			{ test: `${SELECTED_SERIES} && ${SELECTED_SERIES} === datum.${SERIES_ID}`, value: 1 },
-			{ test: `${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES} === datum.${SERIES_ID}`, value: 1 },
-			{ value: 0 },
-		]);
+		expect(opacityRule).toEqual([DEFAULT_OPACITY_RULE]);
 	});
 });

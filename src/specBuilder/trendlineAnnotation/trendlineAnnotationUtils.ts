@@ -106,11 +106,12 @@ export const getTrendlineAnnotationMarks = (trendlineProps: TrendlineSpecProps, 
  * @returns SymbolMark
  */
 const getTrendlineAnnotationPoints = (annotationProps: TrendlineAnnotationSpecProps): SymbolMark => {
-	const { name, trendlineName, trendlineWidth } = annotationProps;
+	const { name, trendlineName, trendlineWidth, displayOnHover } = annotationProps;
+	const data = displayOnHover ? `${trendlineName}_highlightedData` : `${trendlineName}_highResolutionData`;
 	return {
 		name: `${name}_points`,
 		type: 'symbol',
-		from: { data: `${trendlineName}_highResolutionData` },
+		from: { data },
 		encode: {
 			enter: {
 				opacity: { value: 0 },

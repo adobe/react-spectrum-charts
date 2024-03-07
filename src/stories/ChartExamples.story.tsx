@@ -262,7 +262,7 @@ const ReleaseImpactStory: StoryFn<typeof Chart> = (args): ReactElement => {
 	};
 
 	return (
-		<Chart {...props}>
+		<Chart {...props} debug>
 			<Axis position="bottom" baseline ticks subLabels={subLabels}>
 				<ReferenceLine value={0} icon="date" />
 			</Axis>

@@ -43,24 +43,27 @@ export interface AreaMarkProps {
 	displayOnHover?: boolean;
 }
 
-export const getAreaMark = ({
-	name,
-	color,
-	colorScheme,
-	children,
-	metricStart,
-	metricEnd,
-	isStacked,
-	scaleType,
-	dimension,
-	opacity,
-	isMetricRange,
-	parentName,
-	displayOnHover,
-}: AreaMarkProps): AreaMark => ({
+export const getAreaMark = (
+	{
+		name,
+		color,
+		colorScheme,
+		children,
+		metricStart,
+		metricEnd,
+		isStacked,
+		scaleType,
+		dimension,
+		opacity,
+		isMetricRange,
+		parentName,
+		displayOnHover,
+	}: AreaMarkProps,
+	dataSource: string = `${name}_facet`
+): AreaMark => ({
 	name,
 	type: 'area',
-	from: { data: `${name}_facet` },
+	from: { data: dataSource },
 	interactive: getInteractive(children),
 	encode: {
 		enter: {

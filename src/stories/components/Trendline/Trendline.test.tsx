@@ -16,8 +16,10 @@ import {
 	allElementsHaveAttributeValue,
 	findAllMarksByGroupName,
 	findChart,
+	findMarksByGroupName,
 	getAllLegendEntries,
 	hoverNthElement,
+	queryMarksByGroupName,
 	render,
 } from '@test-utils';
 
@@ -92,40 +94,36 @@ describe('Trendline', () => {
 			const lines = await findAllMarksByGroupName(chart, 'line0');
 			expect(lines).toHaveLength(4);
 
-			const trendlines = await findAllMarksByGroupName(chart, 'line0Trendline0');
-			expect(trendlines).toHaveLength(4);
-
-			// trendlines should be hidden by default
-			expect(trendlines[0]).toHaveAttribute('opacity', '0');
+			// shouldn't be any trendlines visible
+			let trendline = queryMarksByGroupName(chart, 'line0Trendline0');
+			expect(trendline).not.toBeInTheDocument();
 
 			// hover over the first point on the first line
 			const hoverAreas = await findAllMarksByGroupName(chart, 'line0_voronoi');
 			await hoverNthElement(hoverAreas, 0);
 
-			// first trendline should be visible
-			expect(trendlines[0]).toHaveAttribute('opacity', '1');
-			// second trendline should still be hidden
-			expect(trendlines[1]).toHaveAttribute('opacity', '0');
+			// trendline should be visible
+			trendline = await findMarksByGroupName(chart, 'line0Trendline0');
+			expect(trendline).toBeInTheDocument();
+			expect(trendline).toHaveAttribute('opacity', '1');
 		});
 
 		test('should display trendlines on legend hover', async () => {
 			render(<DisplayOnHover {...DisplayOnHover.args} />);
 			const chart = await findChart();
 
-			const trendlines = await findAllMarksByGroupName(chart, 'line0Trendline0');
-			expect(trendlines).toHaveLength(4);
-
-			// trendlines should be hidden by default
-			expect(trendlines[0]).toHaveAttribute('opacity', '0');
+			// shouldn't be any trendlines visible
+			let trendline = queryMarksByGroupName(chart, 'line0Trendline0');
+			expect(trendline).not.toBeInTheDocument();
 
 			// hover over the first point on the first line
 			const legendEntries = getAllLegendEntries(chart);
 			await hoverNthElement(legendEntries, 0);
 
-			// first trendline should be visible
-			expect(trendlines[0]).toHaveAttribute('opacity', '1');
-			// second trendline should still be hidden
-			expect(trendlines[1]).toHaveAttribute('opacity', '0');
+			// trendline should be visible
+			trendline = await findMarksByGroupName(chart, 'line0Trendline0');
+			expect(trendline).toBeInTheDocument();
+			expect(trendline).toHaveAttribute('opacity', '1');
 		});
 	});
 
