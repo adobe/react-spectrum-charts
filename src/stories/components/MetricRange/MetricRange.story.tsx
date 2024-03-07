@@ -75,7 +75,7 @@ const MetricRangeWithPopoverStory: StoryFn<typeof MetricRange> = (args): ReactEl
 	);
 };
 
-const MetricRangeWithScaledAxisStory: StoryFn<typeof MetricRange> = (args): ReactElement => {
+const MetricRangescaleAxisToFitStory: StoryFn<typeof MetricRange> = (args): ReactElement => {
 	const chartProps = useChartProps({
 		...defaultChartProps,
 		data: workspaceTrendsDataWithExtremeMetricRange,
@@ -110,8 +110,8 @@ Basic.args = {
 	metric: 'metric',
 };
 
-const WithHover = bindWithProps(MetricRangeStory);
-WithHover.args = {
+const DisplayOnHover = bindWithProps(MetricRangeStory);
+DisplayOnHover.args = {
 	lineType: 'shortDash',
 	lineWidth: 'S',
 	rangeOpacity: 0.2,
@@ -143,8 +143,8 @@ WithPopover.args = {
 	displayOnHover: true,
 };
 
-const WithScaledAxis = bindWithProps(MetricRangeWithScaledAxisStory);
-WithScaledAxis.args = {
+const ScaleAxisToFit = bindWithProps(MetricRangescaleAxisToFitStory);
+ScaleAxisToFit.args = {
 	lineType: 'shortDash',
 	lineWidth: 'S',
 	rangeOpacity: 0.2,
@@ -154,4 +154,4 @@ WithScaledAxis.args = {
 	scaleAxisToFit: true,
 };
 
-export { Basic, WithHover, WithStaticPoints, WithPopover, WithScaledAxis };
+export { Basic, DisplayOnHover, WithStaticPoints, WithPopover, ScaleAxisToFit };

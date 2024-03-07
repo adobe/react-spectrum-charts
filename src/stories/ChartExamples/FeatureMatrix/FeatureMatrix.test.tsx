@@ -10,11 +10,11 @@
  * governing permissions and limitations under the License.
  */
 import {
-	allElementsHaveAttributeValue,
 	findAllMarksByGroupName,
 	findChart,
 	findMarksByGroupName,
 	hoverNthElement,
+	queryMarksByGroupName,
 	render,
 	screen,
 } from '@test-utils';
@@ -96,35 +96,57 @@ describe('MultipleSegmentFeatureMatrix', () => {
 		const hoverAreas = await findAllMarksByGroupName(chart, 'scatter0_voronoi');
 		expect(hoverAreas).toHaveLength(18);
 
-		// trendline styling
-		const trendlines = await findAllMarksByGroupName(chart, 'scatter0Trendline0', 'line');
-		expect(trendlines).toHaveLength(3);
+		let trendline = queryMarksByGroupName(chart, 'scatter0Trendline0', 'line');
+		expect(trendline).not.toBeInTheDocument();
 
-		const trendline = trendlines[0];
+		// first trendline should be visible on hover
+		await hoverNthElement(hoverAreas, 0);
+		trendline = await findMarksByGroupName(chart, 'scatter0Trendline0', 'line');
+		expect(trendline).toBeInTheDocument();
 		expect(trendline).toHaveAttribute('stroke', colors['categorical-100']);
 		expect(trendline).toHaveAttribute('stroke-width', '1');
 		expect(trendline).toHaveAttribute('stroke-dasharray', '');
 
-		expect(trendlines[1]).toHaveAttribute('stroke', colors['categorical-200']);
-		expect(trendlines[2]).toHaveAttribute('stroke', colors['categorical-300']);
-		expect(allElementsHaveAttributeValue(trendlines, 'opacity', 0)).toBeTruthy();
-
-		// first trendline should be visible on hover
-		await hoverNthElement(hoverAreas, 0);
-		expect(trendlines[0]).toHaveAttribute('opacity', '1');
-		expect(trendlines[1]).toHaveAttribute('opacity', '0');
-		expect(trendlines[2]).toHaveAttribute('opacity', '0');
-
 		// second trendline should be visible on hover
 		await hoverNthElement(hoverAreas, 6);
-		expect(trendlines[0]).toHaveAttribute('opacity', '0');
-		expect(trendlines[1]).toHaveAttribute('opacity', '1');
-		expect(trendlines[2]).toHaveAttribute('opacity', '0');
+		trendline = await findMarksByGroupName(chart, 'scatter0Trendline0', 'line');
+		expect(trendline).toBeInTheDocument();
+		expect(trendline).toHaveAttribute('stroke', colors['categorical-200']);
 
 		// third trendline should be visible on hover
 		await hoverNthElement(hoverAreas, 12);
-		expect(trendlines[0]).toHaveAttribute('opacity', '0');
-		expect(trendlines[1]).toHaveAttribute('opacity', '0');
-		expect(trendlines[2]).toHaveAttribute('opacity', '1');
+		trendline = await findMarksByGroupName(chart, 'scatter0Trendline0', 'line');
+		expect(trendline).toBeInTheDocument();
+		expect(trendline).toHaveAttribute('stroke', colors['categorical-300']);
+	});
+	test('should display trendline annotations on hover', async () => {
+		render(<MultipleSegmentFeatureMatrix {...MultipleSegmentFeatureMatrix.args} />);
+
+		const chart = await findChart();
+		expect(chart).toBeInTheDocument();
+
+		const hoverAreas = await findAllMarksByGroupName(chart, 'scatter0_voronoi');
+		expect(hoverAreas).toHaveLength(18);
+
+		// no annotations should be visible initially
+		expect(queryMarksByGroupName(chart, 'scatter0Trendline0Annotation0', 'text')).not.toBeInTheDocument();
+		expect(queryMarksByGroupName(chart, 'scatter0Trendline1Annotation0', 'text')).not.toBeInTheDocument();
+
+		// first annotations should be visible on hover
+		await hoverNthElement(hoverAreas, 0);
+		expect(queryMarksByGroupName(chart, 'scatter0Trendline0Annotation0', 'text')).toBeInTheDocument();
+		expect(queryMarksByGroupName(chart, 'scatter0Trendline1Annotation0', 'text')).toBeInTheDocument();
+		expect(screen.getByText('Median times 2.94')).toBeInTheDocument();
+		expect(screen.getByText('Median %DAU 8.39%')).toBeInTheDocument();
+
+		// second annotations should be visible on hover
+		await hoverNthElement(hoverAreas, 6);
+		expect(screen.getByText('Median times 2.54')).toBeInTheDocument();
+		expect(screen.getByText('Median %DAU 10.58%')).toBeInTheDocument();
+
+		// third annotations should be visible on hover
+		await hoverNthElement(hoverAreas, 12);
+		expect(screen.getByText('Median times 2.59')).toBeInTheDocument();
+		expect(screen.getByText('Median %DAU 8.96%')).toBeInTheDocument();
 	});
 });

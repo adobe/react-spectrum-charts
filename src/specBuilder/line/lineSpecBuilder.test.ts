@@ -197,7 +197,7 @@ const metricRangeGroupMark = {
 	},
 	marks: [
 		{
-			name: 'line0',
+			name: 'line0MetricRange0_line',
 			type: 'line',
 			from: {
 				data: 'line0MetricRange0_facet',
@@ -231,7 +231,7 @@ const metricRangeGroupMark = {
 			},
 		},
 		{
-			name: 'line0MetricRange0',
+			name: 'line0MetricRange0_area',
 			type: 'area',
 			from: {
 				data: 'line0MetricRange0_facet',
@@ -262,7 +262,7 @@ const metricRangeGroupMark = {
 					},
 					fillOpacity: [
 						{
-							value: 0.8,
+							value: 0.2,
 						},
 					],
 				},

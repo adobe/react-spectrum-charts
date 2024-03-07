@@ -23,7 +23,7 @@ import {
 import { getScaleName } from '@specBuilder/scale/scaleSpecBuilder';
 import { getFacetsFromProps } from '@specBuilder/specUtils';
 import { getTrendlineAnnotationMarks } from '@specBuilder/trendlineAnnotation';
-import { ChartTooltipElement, Orientation, ScaleType, TrendlineSpecProps } from 'types';
+import { ChartTooltipElement, Orientation, ScaleType, TrendlineMethod, TrendlineSpecProps } from 'types';
 import { EncodeEntry, GroupMark, LineMark, NumericValueRef, RuleMark } from 'vega';
 
 import { TrendlineParentProps, getTrendlines, isAggregateMethod, isRegressionMethod } from './trendlineUtils';
@@ -35,18 +35,19 @@ export const getTrendlineMarks = (markProps: TrendlineParentProps): (GroupMark |
 	const marks: (GroupMark | RuleMark)[] = [];
 	const trendlines = getTrendlines(markProps);
 	for (const trendlineProps of trendlines) {
-		if (isAggregateMethod(trendlineProps.method)) {
+		const { displayOnHover, method, name } = trendlineProps;
+		if (isAggregateMethod(method)) {
 			marks.push(getTrendlineRuleMark(markProps, trendlineProps));
 		} else {
-			const dataSuffix = isRegressionMethod(trendlineProps.method) ? '_highResolutionData' : '_data';
+			const data = getDataSourceName(name, method, displayOnHover);
 			marks.push({
-				name: `${trendlineProps.name}_group`,
+				name: `${name}_group`,
 				type: 'group',
 				clip: true,
 				from: {
 					facet: {
-						name: `${trendlineProps.name}_facet`,
-						data: trendlineProps.name + dataSuffix,
+						name: `${name}_facet`,
+						data,
 						groupby: facets,
 					},
 				},
@@ -68,6 +69,12 @@ export const getTrendlineMarks = (markProps: TrendlineParentProps): (GroupMark |
 	return marks;
 };
 
+const getDataSourceName = (trendlineName: string, method: TrendlineMethod, displayOnHover: boolean): string => {
+	if (displayOnHover) return `${trendlineName}_highlightedData`;
+	if (isRegressionMethod(method)) return `${trendlineName}_highResolutionData`;
+	return `${trendlineName}_data`;
+};
+
 /**
  * gets the trendline rule mark used for aggregate methods (mean, median)
  * @param markProps
@@ -76,16 +83,26 @@ export const getTrendlineMarks = (markProps: TrendlineParentProps): (GroupMark |
  */
 export const getTrendlineRuleMark = (markProps: TrendlineParentProps, trendlineProps: TrendlineSpecProps): RuleMark => {
 	const { colorScheme } = markProps;
-	const { dimensionExtent, dimensionScaleType, lineType, lineWidth, name, orientation, trendlineDimension } =
-		trendlineProps;
+	const {
+		dimensionExtent,
+		dimensionScaleType,
+		displayOnHover,
+		lineType,
+		lineWidth,
+		name,
+		orientation,
+		trendlineDimension,
+	} = trendlineProps;
 	const color = trendlineProps.color ? { value: trendlineProps.color } : markProps.color;
+
+	const data = displayOnHover ? `${name}_highlightedData` : `${name}_highResolutionData`;
 
 	return {
 		name,
 		type: 'rule',
 		clip: true,
 		from: {
-			data: `${name}_highResolutionData`,
+			data,
 		},
 		interactive: false,
 		encode: {

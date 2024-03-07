@@ -27,6 +27,7 @@ import {
 } from './trendlineAnnotationUtils';
 
 const defaultAnnotationProps: TrendlineAnnotationSpecProps = {
+	displayOnHover: false,
 	dimensionValue: 'end',
 	markName: 'line0',
 	name: 'line0Trendline0Annotation0',

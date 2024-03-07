@@ -9,12 +9,20 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { FILTERED_TABLE, HIGHLIGHTED_ITEM, MARK_ID, SELECTED_ITEM } from '@constants';
+import {
+	FILTERED_TABLE,
+	HIGHLIGHTED_ITEM,
+	HIGHLIGHTED_SERIES,
+	MARK_ID,
+	SELECTED_ITEM,
+	SELECTED_SERIES,
+	SERIES_ID,
+} from '@constants';
 import { getSeriesIdTransform, getTableData } from '@specBuilder/data/dataUtils';
-import { hasInteractiveChildren, hasPopover } from '@specBuilder/marks/markUtils';
+import { hasInteractiveChildren } from '@specBuilder/marks/markUtils';
 import { getFacetsFromProps } from '@specBuilder/specUtils';
 import { produce } from 'immer';
-import { TrendlineSpecProps } from 'types';
+import { TrendlineMethod, TrendlineSpecProps } from 'types';
 import { Data, SourceData, Transforms } from 'vega';
 
 import {
@@ -67,7 +75,7 @@ export const getTrendlineData = (markProps: TrendlineParentProps): SourceData[] 
 	};
 
 	for (const trendlineProps of trendlines) {
-		const { children: trendlineChildren, method, name } = trendlineProps;
+		const { displayOnHover, method, name, children: trendlineChildren } = trendlineProps;
 		const { facets } = getFacetsFromProps({ color, lineType });
 
 		if (isRegressionMethod(method)) {
@@ -77,6 +85,9 @@ export const getTrendlineData = (markProps: TrendlineParentProps): SourceData[] 
 		} else if (isWindowMethod(method)) {
 			data.push(getWindowTrendlineData(markProps, trendlineProps));
 		}
+		if (displayOnHover) {
+			data.push(getTrendlineDisplayOnHoverData(name, method));
+		}
 		if (hasInteractiveChildren(trendlineChildren)) {
 			concatenatedTrendlineData.source.push(`${name}_data`);
 		}
@@ -84,7 +95,7 @@ export const getTrendlineData = (markProps: TrendlineParentProps): SourceData[] 
 
 	if (trendlines.some((trendline) => hasInteractiveChildren(trendline.children))) {
 		data.push(concatenatedTrendlineData);
-		data.push(getHighlightTrendlineData(markName, trendlines));
+		data.push(getHighlightTrendlineData(markName));
 	}
 
 	return data;
@@ -215,11 +226,8 @@ const getWindowTrendlineData = (markProps: TrendlineParentProps, trendlineProps:
  * @param trendlines
  * @returns Data
  */
-const getHighlightTrendlineData = (markName: string, trendlines: TrendlineSpecProps[]): SourceData => {
-	const trendlineHasPopover = trendlines.some((trendline) => hasPopover(trendline.children));
-	const expr = trendlineHasPopover
-		? `${SELECTED_ITEM} === datum.${MARK_ID} || !${SELECTED_ITEM} && ${HIGHLIGHTED_ITEM} === datum.${MARK_ID}`
-		: `${HIGHLIGHTED_ITEM} === datum.${MARK_ID}`;
+const getHighlightTrendlineData = (markName: string): SourceData => {
+	const expr = `${SELECTED_ITEM} === datum.${MARK_ID} || !${SELECTED_ITEM} && ${HIGHLIGHTED_ITEM} === datum.${MARK_ID}`;
 
 	return {
 		name: `${markName}Trendline_highlightedData`,
@@ -292,3 +300,23 @@ export const addTableDataTransforms = produce<Transforms[], [TrendlineParentProp
 		}
 	}
 });
+
+/**
+ * Gets the data source and transforms for displaying the trendline on hover
+ * @param trendlineName
+ * @param method
+ * @returns SourceData
+ */
+export const getTrendlineDisplayOnHoverData = (trendlineName: string, method: TrendlineMethod): SourceData => {
+	const source = isWindowMethod(method) ? `${trendlineName}_data` : `${trendlineName}_highResolutionData`;
+	return {
+		name: `${trendlineName}_highlightedData`,
+		source,
+		transform: [
+			{
+				type: 'filter',
+				expr: `datum.${SERIES_ID} === ${HIGHLIGHTED_SERIES} || datum.${SERIES_ID} === ${SELECTED_SERIES}`,
+			},
+		],
+	};
+};

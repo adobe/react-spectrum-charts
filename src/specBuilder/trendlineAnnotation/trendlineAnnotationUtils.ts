@@ -39,6 +39,7 @@ export const applyTrendlineAnnotationDefaults = (
 	{
 		dimensionExtent,
 		dimensionScaleType,
+		displayOnHover,
 		lineWidth,
 		orientation,
 		trendlineDimension,
@@ -47,6 +48,7 @@ export const applyTrendlineAnnotationDefaults = (
 	markName: string
 ): TrendlineAnnotationSpecProps => ({
 	dimensionValue,
+	displayOnHover,
 	markName,
 	name: `${trendlineName}Annotation${index}`,
 	numberFormat,
@@ -104,17 +106,18 @@ export const getTrendlineAnnotationMarks = (trendlineProps: TrendlineSpecProps, 
  * @returns SymbolMark
  */
 const getTrendlineAnnotationPoints = (annotationProps: TrendlineAnnotationSpecProps): SymbolMark => {
-	const { name, trendlineName, trendlineWidth } = annotationProps;
+	const { name, trendlineName, trendlineWidth, displayOnHover } = annotationProps;
+	const data = displayOnHover ? `${trendlineName}_highlightedData` : `${trendlineName}_highResolutionData`;
 	return {
 		name: `${name}_points`,
 		type: 'symbol',
-		from: { data: `${trendlineName}_highResolutionData` },
+		from: { data },
 		encode: {
 			enter: {
+				opacity: { value: 0 },
+				size: { value: Math.pow(trendlineWidth, 2) },
 				x: getTrendlineAnnotationPointX(annotationProps),
 				y: getTrendlineAnnotationPointY(annotationProps),
-				fill: { value: 'transparent' },
-				size: { value: Math.pow(trendlineWidth, 2) },
 			},
 		},
 	};

@@ -20,6 +20,7 @@ import {
 } from '@constants';
 import { hasInteractiveChildren, hasPopover } from '@specBuilder/marks/markUtils';
 import {
+	getMetricRangeData,
 	getMetricRangeGroupMarks,
 	getMetricRangeSignals,
 	getMetricRanges,
@@ -95,6 +96,7 @@ export const addData = produce<Data[], [LineSpecProps]>((data, props) => {
 	}
 	if (staticPoint) data.push(getLineStaticPointData(name, staticPoint, FILTERED_TABLE));
 	addTrendlineData(data, props);
+	data.push(...getMetricRangeData(props));
 });
 
 export const addSignals = produce<Signal[], [LineSpecProps]>((signals, props) => {
