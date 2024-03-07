@@ -33,52 +33,6 @@ export const getUncontrolledHoverSignal = (name: string, nestedDatum?: boolean, 
 	};
 };
 
-//TODO: add documentation
-export const getRSCAnimation = (): Signal => {
-	return {
-		name: 'rscAnimation',
-		value: 0,
-		on: [{
-			events: 'timer{16}',
-			update: 'scale(\'rscAnimationCurve\', scale(\'rscAnimationCurveInverse\', rscAnimation) + 0.03333333333333334)'
-		}]
-	};
-};
-
-//TODO: add documentation
-export const getRSCColorAnimationDirection = (name: string): Signal => {
-	return {
-		name: 'rscColorAnimationDirection',
-		value: -1,
-		on: [
-			{ events: `@${name}:mouseover`, update: '1' },
-			{ events: `@${name}:mouseout`, update: '-1' },
-		]
-	};
-};
-
-//TODO: add documentation
-export const getRSCLegendColorAnimationDirection = (name: string): ({ update: string; events: string })[] => {
-	return [
-		{ events: `@${name}_legendEntry:mouseover`, update: '1' },
-		{ events: `@${name}_legendEntry:mouseout`, update: '-1' }
-		];
-};
-
-//TODO: add documentation
-export const getRSCColorAnimation = (): Signal => {
-	return {
-		name: 'rscColorAnimation',
-		value: 0,
-		on: [
-			{
-				events: 'timer{16.666666666666668}',
-				update: 'scale(\'rscAnimationCurve\', scale(\'rscAnimationCurveInverse\', rscColorAnimation) ' +
-					'+ 0.06 * rscBarColorAnimationDirection)'
-			}
-		]
-	};
-};
 /**
  *  Returns a controlled hover signal.
  *  Controlled hover signals get manually updated via the view in Chart.tsx
@@ -140,3 +94,78 @@ export const getLegendLabelsSeriesSignal = (value: unknown = null): Signal => {
 export const getGenericSignal = (name: string, value: unknown = null): Signal => {
 	return { name, value };
 };
+
+//TODO: Add documentation
+export const getAnimationSignals = (name: string): Signal[] => {
+	return [
+		getRSCAnimation(),
+		getRSCColorAnimationDirection(name),
+		getRSCColorAnimation(),
+		getPrevHoverSignal(name),
+		getSelectedID(name)
+	]
+}
+
+export const getRSCLegendColorAnimationDirection = (name: string): ({ update: string; events: string })[] => {
+	return [
+		{ events: `@${name}_legendEntry:mouseover`, update: '1' },
+		{ events: `@${name}_legendEntry:mouseout`, update: '-1' }
+	];
+};
+
+//TODO: add documentation
+const getRSCAnimation = (): Signal => {
+	return {
+		name: 'rscAnimation',
+		value: 0,
+		on: [{
+			events: 'timer{16}',
+			update: 'scale(\'rscAnimationCurve\', scale(\'rscAnimationCurveInverse\', rscAnimation) + 0.03333333333333334)'
+		}]
+	};
+};
+
+//TODO: add documentation
+const getRSCColorAnimationDirection = (name: string): Signal => {
+	return {
+		name: 'rscColorAnimationDirection',
+		value: -1,
+		on: [
+			{ events: `@${name}:mouseover`, update: '1' },
+			{ events: `@${name}:mouseout`, update: '-1' },
+		]
+	};
+};
+
+//TODO: add documentation
+const getRSCColorAnimation = (): Signal => {
+	return {
+		name: 'rscColorAnimation',
+		value: 0,
+		on: [
+			{
+				events: 'timer{16.666666666666668}',
+				update: 'scale(\'rscAnimationCurve\', scale(\'rscAnimationCurveInverse\', rscColorAnimation) ' +
+					'+ 0.06 * rscColorAnimationDirection)'
+			}
+		]
+	};
+};
+
+//TODO add documentation
+const getPrevHoverSignal = (name: string): Signal => {
+	return {
+		"name": `${name}_hoveredId_prev`,
+		"value": null,
+		"on": [
+			{ "events": `@${name}:mouseover`, "update": `datum.${MARK_ID}` },
+		]
+	}
+}
+
+//TODO: add documentation
+const getSelectedID = (name: string): Signal => {
+	return {
+		name: `${name}_selectedId`, value: null
+	}
+}

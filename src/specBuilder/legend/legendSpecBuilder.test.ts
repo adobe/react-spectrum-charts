@@ -10,7 +10,7 @@
  * governing permissions and limitations under the License.
  */
 import { DEFAULT_COLOR, DEFAULT_COLOR_SCHEME, DEFAULT_SECONDARY_COLOR, TABLE } from '@constants';
-import { Data, Legend, LegendEncode, Scale, Spec, SymbolEncodeEntry } from 'vega';
+import { Data, Legend, LegendEncode, Scale, Signal, Spec, SymbolEncodeEntry } from 'vega';
 
 import { defaultHighlightSignal } from '../signal/signalSpecBuilder.test';
 import { addData, addLegend, addSignals, formatFacetRefsWithPresets } from './legendSpecBuilder';
@@ -34,7 +34,7 @@ const hiddenSeriesEncoding = {
 	value: 'rgb(213, 213, 213)',
 };
 
-const defaultAnimationsSignal = {
+const defaultAnimationsSignal: Signal = {
 	name: 'rscColorAnimationDirection',
 	value: '-1',
 	on: [
@@ -366,7 +366,8 @@ describe('addSignals()', () => {
 	});
 
 	test('should update colorAnimationDirection signal if animations are true', () => {
-		defaultSpec.signals?.push(defaultAnimationsSignal);
+		defaultSpec.signals = new Array<Signal>;
+		defaultSpec.signals.push(defaultAnimationsSignal);
 		expect(addLegend(defaultSpec, {...defaultLegendProps, animations: true}).signals)
 			.toStrictEqual([
 				{

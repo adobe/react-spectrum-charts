@@ -24,6 +24,7 @@ import {
 	getColorProductionRule,
 	getCursor,
 	getHighlightOpacityValue,
+	getHighlightOpacityAnimationValue,
 	getOpacityProductionRule,
 	getStrokeDashProductionRule,
 	getTooltip,
@@ -387,7 +388,8 @@ export const getBarEnterEncodings = ({ children, color, colorScheme, name }: Bar
 	tooltip: getTooltip(children, name),
 });
 
-export const getBarUpdateEncodings = (props: BarSpecProps): EncodeEntry => ({
+export const getBarUpdateEncodings = (props: BarSpecProps): EncodeEntry => (
+	{
 	cursor: getCursor(props.children),
 	fillOpacity: getFillStrokeOpacity(props),
 	stroke: getStroke(props),
@@ -397,7 +399,7 @@ export const getBarUpdateEncodings = (props: BarSpecProps): EncodeEntry => ({
 });
 
 export const getFillStrokeOpacity = (
-	{ children, name, opacity }: BarSpecProps,
+	{ children, name, opacity, animations, }: BarSpecProps,
 	isStrokeOpacity?: boolean
 ): ProductionRule<NumericValueRef> => {
 	const defaultProductionRule = getOpacityProductionRule(opacity);
@@ -408,9 +410,13 @@ export const getFillStrokeOpacity = (
 
 	// if a bar is hovered/selected, all other bars should be half opacity
 	const hoverSignal = `${name}_hoveredId`;
-	if (hasPopover(children)) {
-		const selectSignal = `${name}_selectedId`;
+	const selectSignal = `${name}_selectedId`;
 
+	if (animations == true) {
+		return getAnimationsFillOpacity(selectSignal, hoverSignal, defaultProductionRule, isStrokeOpacity)
+	}
+
+	if (hasPopover(children)) {
 		// if this is for a stroke opacity, we want the value to be 1 when selected regardless of the opacity value
 		const selectedMarkRule = isStrokeOpacity ? { value: 1 } : defaultProductionRule;
 		return [
@@ -434,6 +440,49 @@ export const getFillStrokeOpacity = (
 		defaultProductionRule,
 	];
 };
+
+const getAnimationsFillOpacity = (
+	selectSignal: string,
+	hoverSignal: string,
+	defaultProductionRule: { signal: string } | { value: number },
+	isStrokeOpacity?: boolean,
+): ProductionRule<NumericValueRef> => {
+	return [
+		{
+			test: `!${selectSignal} && ${hoverSignal} && ${hoverSignal} !== datum.${MARK_ID}`,
+			...getHighlightOpacityAnimationValue(defaultProductionRule)
+		},
+		{
+			test: `${selectSignal} && ${selectSignal} !== datum.${MARK_ID}`,
+			...getHighlightOpacityAnimationValue(defaultProductionRule)
+		},
+		...getAnimationProductionRule(hoverSignal, selectSignal, defaultProductionRule, isStrokeOpacity),
+		{ value: 1 }
+	];
+};
+
+const getAnimationProductionRule = (
+	hoverSignal: string,
+	selectedSignal: string,
+	defaultProductionRule: { signal: string } | { value: number },
+	isStrokeOpacity?: boolean
+): [{ test: string, signal: string } | { test: string, value: number }] => {
+	if (isStrokeOpacity == true) {
+		return [
+			{
+				test: `${selectedSignal} && ${selectedSignal} === datum.${MARK_ID}`,
+				value: 1
+			}
+		];
+	} else {
+		return [
+			{
+				test: `${hoverSignal}_prev !== datum.${MARK_ID} && rscColorAnimationDirection === -1`,
+			    ...getHighlightOpacityAnimationValue(defaultProductionRule)
+			}
+		];
+	}
+}
 
 export const getStroke = ({ children, color, colorScheme, name }: BarSpecProps): ProductionRule<ColorValueRef> => {
 	const defaultProductionRule = getColorProductionRule(color, colorScheme);

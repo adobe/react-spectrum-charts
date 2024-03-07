@@ -268,7 +268,7 @@ export const addSignals = produce<Signal[], [LegendSpecProps]>(
 		if (animations == true) {
 			const signalName = 'rscColorAnimationDirection';
 			if (hasSignalByName(signals, signalName)) {
-				signals.find((sig) => sig.name = signalName)?.on?.push(...getRSCLegendColorAnimationDirection(name))
+				signals.find((sig) => sig.name == signalName)?.on?.push(...getRSCLegendColorAnimationDirection(name))
 			}
 		}
 

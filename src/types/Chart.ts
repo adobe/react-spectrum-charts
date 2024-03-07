@@ -276,6 +276,7 @@ export interface AnnotationStyleProps extends MarkProps {
 }
 
 export interface BarProps extends Omit<MarkProps, 'color'> {
+	animations?: boolean;
 	color?: ColorFacet | DualFacet; // bar color or key in the data that is used as the color facet
 	dimension?: string; // data field used for the bar categories (x-axis for a vertical bar)
 	groupedPadding?: number; // sets the inner padding between bars in a group

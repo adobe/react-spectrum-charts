@@ -33,11 +33,9 @@ import {
 } from '@specBuilder/scale/scaleSpecBuilder';
 import {
 	getGenericSignal,
-	getRSCAnimation,
-	getRSCColorAnimationDirection,
-	getRSCColorAnimation,
 	getUncontrolledHoverSignal,
-	hasSignalByName
+	hasSignalByName,
+	getAnimationSignals
 } from '@specBuilder/signal/signalSpecBuilder';
 import { getFacetsFromProps } from '@specBuilder/specUtils';
 import { sanitizeMarkChildren, toCamelCase } from '@utils';
@@ -110,9 +108,7 @@ export const addSignals = produce<Signal[], [BarSpecProps]>(
 		}
 		//TODO: add comments
 		if (animations == true) {
-			signals.push(getRSCAnimation())
-			signals.push(getRSCColorAnimation())
-			signals.push(getRSCColorAnimationDirection(name))
+			getAnimationSignals(name).forEach((signal) => signals.push(signal))
 		}
 
 		if (!hasSignalByName(signals, `${name}_hoveredId`)) {

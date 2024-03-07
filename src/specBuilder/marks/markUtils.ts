@@ -176,6 +176,13 @@ export const getHighlightOpacityValue = (opacityValue: { signal: string } | { va
 	return { value: opacityValue.value / HIGHLIGHT_CONTRAST_RATIO };
 };
 
+//TODO: Add documentation
+export const getHighlightOpacityAnimationValue = (opacityValue: { signal: string } | { value: number }): { signal: string }  => {
+		if ('signal' in opacityValue) {
+			return { signal: `max(1-rscColorAnimation, ${opacityValue.signal} / ${HIGHLIGHT_CONTRAST_RATIO})` }
+		}
+		return { signal: `max(1-rscColorAnimation, ${opacityValue.value} / ${HIGHLIGHT_CONTRAST_RATIO})`}
+};
 /**
  * gets the correct x encoding for marks that support scaleType
  * @param scaleType
