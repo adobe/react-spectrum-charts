@@ -119,4 +119,34 @@ describe('MultipleSegmentFeatureMatrix', () => {
 		expect(trendline).toBeInTheDocument();
 		expect(trendline).toHaveAttribute('stroke', colors['categorical-300']);
 	});
+	test('should display trendline annotations on hover', async () => {
+		render(<MultipleSegmentFeatureMatrix {...MultipleSegmentFeatureMatrix.args} />);
+
+		const chart = await findChart();
+		expect(chart).toBeInTheDocument();
+
+		const hoverAreas = await findAllMarksByGroupName(chart, 'scatter0_voronoi');
+		expect(hoverAreas).toHaveLength(18);
+
+		// no annotations should be visible initially
+		expect(queryMarksByGroupName(chart, 'scatter0Trendline0Annotation0', 'text')).not.toBeInTheDocument();
+		expect(queryMarksByGroupName(chart, 'scatter0Trendline1Annotation0', 'text')).not.toBeInTheDocument();
+
+		// first annotations should be visible on hover
+		await hoverNthElement(hoverAreas, 0);
+		expect(queryMarksByGroupName(chart, 'scatter0Trendline0Annotation0', 'text')).toBeInTheDocument();
+		expect(queryMarksByGroupName(chart, 'scatter0Trendline1Annotation0', 'text')).toBeInTheDocument();
+		expect(screen.getByText('Median times 2.94')).toBeInTheDocument();
+		expect(screen.getByText('Median %DAU 8.39%')).toBeInTheDocument();
+
+		// second annotations should be visible on hover
+		await hoverNthElement(hoverAreas, 6);
+		expect(screen.getByText('Median times 2.54')).toBeInTheDocument();
+		expect(screen.getByText('Median %DAU 10.58%')).toBeInTheDocument();
+
+		// third annotations should be visible on hover
+		await hoverNthElement(hoverAreas, 12);
+		expect(screen.getByText('Median times 2.59')).toBeInTheDocument();
+		expect(screen.getByText('Median %DAU 8.96%')).toBeInTheDocument();
+	});
 });
