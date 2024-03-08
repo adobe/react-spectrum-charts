@@ -328,6 +328,5 @@ export const getAnimationMarks = (
 			};
 		}
 	}
-	console.log('MarkUpdate is', markUpdate);
 	return markUpdate;
 };

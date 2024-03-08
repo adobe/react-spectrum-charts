@@ -108,7 +108,7 @@ export const getDodgedDimensionEncodings = (props: BarSpecProps): RectEncodeEntr
 	const endMetric = `${metric}1`;
 
 	const endAnimations = isStacked ? getAnimationMarks(dimension, endMetric, data, previousData, scaleKey)
-		: { scale: 'yLinear', signal: "0" }
+		: { scale: scaleKey, signal: "0" }
 
 	const endKey = `${startKey}2`;
 

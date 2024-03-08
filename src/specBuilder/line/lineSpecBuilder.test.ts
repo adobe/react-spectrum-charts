@@ -20,13 +20,13 @@ import {
 	DEFAULT_COLOR_SCHEME,
 	DEFAULT_METRIC,
 	DEFAULT_TIME_DIMENSION,
-	DEFAULT_TRANSFORMED_TIME_DIMENSION,
+	DEFAULT_TRANSFORMED_TIME_DIMENSION, FILTERED_PREVIOUS_TABLE,
 	FILTERED_TABLE,
 	MARK_ID,
 	PREVIOUS_TABLE,
 	SERIES_ID,
 	TABLE,
-	TRENDLINE_VALUE,
+	TRENDLINE_VALUE
 } from '@constants';
 import { LineSpecProps, MetricRangeElement, MetricRangeProps } from 'types';
 import { Data, Spec } from 'vega';
@@ -84,6 +84,10 @@ const defaultSpec = initializeSpec({
 		{
 			name: PREVIOUS_TABLE,
 			values: [],
+		},
+		{
+			name: FILTERED_PREVIOUS_TABLE,
+			source: PREVIOUS_TABLE,
 		},
 	],
 	marks: [
@@ -382,11 +386,16 @@ describe('lineSpecBuilder', () => {
 		});
 
 		test('should add trendline transform', () => {
+			const testAddData = addData(baseData, {
+				...defaultLineProps,
+				children: [createElement(Trendline, { method: 'average' })],
+			});
+			console.warn(testAddData);
 			expect(
 				addData(baseData, {
 					...defaultLineProps,
 					children: [createElement(Trendline, { method: 'average' })],
-				})[3].transform
+				})[4].transform
 			).toStrictEqual([
 				{
 					type: 'collect',
