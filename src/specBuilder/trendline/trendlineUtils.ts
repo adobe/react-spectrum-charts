@@ -52,6 +52,7 @@ export const applyTrendlinePropDefaults = (
 	markProps: TrendlineParentProps,
 	{
 		children,
+		color,
 		dimensionExtent,
 		dimensionRange = [null, null],
 		displayOnHover = false,
@@ -74,8 +75,10 @@ export const applyTrendlinePropDefaults = (
 		orientation,
 		isDimensionNormalized
 	);
+	const trendlineColor = color ? { value: color } : markProps.color;
 	return {
 		children: sanitizeTrendlineChildren(children),
+		colorScheme: markProps.colorScheme,
 		displayOnHover,
 		dimensionExtent: dimensionExtent ?? dimensionRange,
 		dimensionRange,
@@ -89,6 +92,7 @@ export const applyTrendlinePropDefaults = (
 		name: `${markProps.name}Trendline${index}`,
 		opacity,
 		orientation,
+		trendlineColor,
 		trendlineDimension,
 		trendlineMetric,
 		...props,

@@ -10,10 +10,12 @@
  * governing permissions and limitations under the License.
  */
 import '@matchMediaMock';
-import { TrendlineAnnotation } from '@rsc';
+import { TrendlineAnnotation, spectrumColors } from '@rsc';
 import { allElementsHaveAttributeValue, findAllMarksByGroupName, findChart, render } from '@test-utils';
 
-import { Basic, DimensionValue, NumberFormat, Prefix } from './TrendlineAnnotation.story';
+import { Badge, Basic, DimensionValue, NumberFormat, Prefix } from './TrendlineAnnotation.story';
+
+const colors = spectrumColors.light;
 
 describe('TrendlineAnnotation', () => {
 	// TrendlineAnnotation is not a real React component. This is test just provides test coverage for sonarqube
@@ -33,6 +35,18 @@ describe('TrendlineAnnotation', () => {
 		expect(labels[0]).toHaveTextContent('4.5');
 		expect(labels[1]).toHaveTextContent('3.75');
 		expect(labels[2]).toHaveTextContent('3');
+	});
+
+	test('should render Badge correctly', async () => {
+		render(<Badge {...Badge.args} />);
+		const chart = await findChart();
+		expect(chart).toBeInTheDocument();
+
+		const badges = await findAllMarksByGroupName(chart, 'scatter0Trendline0Annotation0_badge');
+		expect(badges).toHaveLength(3);
+		expect(badges[0]).toHaveAttribute('fill', colors['categorical-100']);
+		expect(badges[1]).toHaveAttribute('fill', colors['categorical-200']);
+		expect(badges[2]).toHaveAttribute('fill', colors['categorical-300']);
 	});
 
 	test('should render DimensionValue correctly', async () => {

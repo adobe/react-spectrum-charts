@@ -59,10 +59,10 @@ const MultipleSegmentFeatureMatrixStory: StoryFn<typeof Chart> = (args): ReactEl
 			<Axis position="left" ticks grid title="Average number of times per day" />
 			<Scatter dimension="dauPercent" metric="countAvg" color="segment">
 				<Trendline {...trendlineProps} displayOnHover orientation="horizontal">
-					<TrendlineAnnotation prefix="Median times" numberFormat=".3" />
+					<TrendlineAnnotation badge prefix="Median times" numberFormat=".3" />
 				</Trendline>
 				<Trendline {...trendlineProps} displayOnHover orientation="vertical">
-					<TrendlineAnnotation prefix="Median %DAU" numberFormat=".2%" />
+					<TrendlineAnnotation badge prefix="Median %DAU" numberFormat=".2%" />
 				</Trendline>
 			</Scatter>
 			<Legend position="bottom" highlight />

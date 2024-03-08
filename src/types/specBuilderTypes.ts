@@ -17,6 +17,7 @@ import {
 	AxisAnnotationProps,
 	AxisProps,
 	BarProps,
+	ColorFacet,
 	ColorScheme,
 	DonutProps,
 	FacetRef,
@@ -174,21 +175,26 @@ type TrendlinePropsWithDefaults =
 	| 'orientation';
 
 export interface TrendlineSpecProps
-	extends PartiallyRequired<TrendlineProps & { metric?: string; name: string }, TrendlinePropsWithDefaults> {
+	extends PartiallyRequired<TrendlineProps & { metric?: string }, TrendlinePropsWithDefaults> {
 	children: TrendlineChildElement[];
+	colorScheme: ColorScheme;
 	dimensionScaleType: RscScaleType;
 	isDimensionNormalized: boolean;
+	name: string;
+	trendlineColor: ColorFacet;
 	trendlineDimension: string;
 	trendlineMetric: string;
 }
 
-type TrendlineAnnotationPropsWithDefaults = 'dimensionValue' | 'numberFormat';
+type TrendlineAnnotationPropsWithDefaults = 'badge' | 'dimensionValue' | 'numberFormat' | 'prefix';
 
 export interface TrendlineAnnotationSpecProps
 	extends PartiallyRequired<TrendlineAnnotationProps, TrendlineAnnotationPropsWithDefaults> {
+	colorScheme: ColorScheme;
 	displayOnHover: boolean;
 	markName: string;
 	name: string;
+	trendlineColor: ColorFacet;
 	trendlineDimension: string;
 	trendlineDimensionExtent: TrendlineSpecProps['dimensionExtent'];
 	trendlineDimensionScaleType: RscScaleType;

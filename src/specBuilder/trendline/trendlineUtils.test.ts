@@ -13,7 +13,7 @@ import { createElement } from 'react';
 
 import { Annotation } from '@components/Annotation';
 import { Trendline } from '@components/Trendline';
-import { FILTERED_TABLE, MS_PER_DAY, TRENDLINE_VALUE } from '@constants';
+import { DEFAULT_METRIC, DEFAULT_TIME_DIMENSION, FILTERED_TABLE, MS_PER_DAY, TRENDLINE_VALUE } from '@constants';
 
 import { defaultLineProps } from './trendlineTestUtils';
 import { applyTrendlinePropDefaults, getPolynomialOrder, getRegressionExtent, getTrendlines } from './trendlineUtils';
@@ -46,6 +46,16 @@ describe('applyTrendlinePropDefaults()', () => {
 		expect(props).toHaveProperty('lineType', 'dashed');
 		expect(props).toHaveProperty('lineWidth', 'M');
 		expect(props).toHaveProperty('metric', TRENDLINE_VALUE);
+		expect(props).toHaveProperty('trendlineColor', defaultLineProps.color);
+	});
+	test('should swap dimension and metric if orientation is vertical', () => {
+		const props = applyTrendlinePropDefaults(defaultLineProps, { orientation: 'vertical' }, 0);
+		expect(props).toHaveProperty('trendlineDimension', DEFAULT_METRIC);
+		expect(props).toHaveProperty('trendlineMetric', DEFAULT_TIME_DIMENSION);
+	});
+	test('should use color from trendline if defined', () => {
+		const props = applyTrendlinePropDefaults(defaultLineProps, { color: 'gray-700' }, 0);
+		expect(props).toHaveProperty('trendlineColor', { value: 'gray-700' });
 	});
 });
 

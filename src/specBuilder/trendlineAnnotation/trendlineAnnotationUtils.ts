@@ -11,19 +11,21 @@
  */
 import { TrendlineAnnotation } from '@components/TrendlineAnnotation';
 import { TRENDLINE_VALUE } from '@constants';
+import { getColorProductionRule, getColorProductionRuleSignalString } from '@specBuilder/marks/markUtils';
 import { getScaleName } from '@specBuilder/scale/scaleSpecBuilder';
-import { getLineWidthPixelsFromLineWidth } from '@specBuilder/specUtils';
+import { getColorValue, getLineWidthPixelsFromLineWidth } from '@specBuilder/specUtils';
 import {
 	getEndDimensionExtentProductionRule,
 	getStartDimensionExtentProductionRule,
 } from '@specBuilder/trendline/trendlineMarkUtils';
 import {
+	ColorFacet,
 	TrendlineAnnotationElement,
 	TrendlineAnnotationProps,
 	TrendlineAnnotationSpecProps,
 	TrendlineSpecProps,
 } from 'types';
-import { GroupMark, NumericValueRef, SymbolMark, TextMark } from 'vega';
+import { ColorValueRef, GroupMark, NumericValueRef, ProductionRule, RectMark, SymbolMark, TextMark } from 'vega';
 
 /**
  * Applies all trendline annotation defaults
@@ -34,25 +36,30 @@ import { GroupMark, NumericValueRef, SymbolMark, TextMark } from 'vega';
  * @returns TrendlineAnnotationSpecProps
  */
 export const applyTrendlineAnnotationDefaults = (
-	{ dimensionValue = 'end', numberFormat = '', prefix = '' }: TrendlineAnnotationProps,
+	{ badge = false, dimensionValue = 'end', numberFormat = '', prefix = '' }: TrendlineAnnotationProps,
 	index: number,
 	{
+		colorScheme,
 		dimensionExtent,
 		dimensionScaleType,
 		displayOnHover,
 		lineWidth,
 		orientation,
+		trendlineColor,
 		trendlineDimension,
 		name: trendlineName,
 	}: TrendlineSpecProps,
 	markName: string
 ): TrendlineAnnotationSpecProps => ({
+	badge,
+	colorScheme,
 	dimensionValue,
 	displayOnHover,
 	markName,
 	name: `${trendlineName}Annotation${index}`,
 	numberFormat,
 	prefix,
+	trendlineColor,
 	trendlineDimension,
 	trendlineDimensionExtent: dimensionExtent,
 	trendlineDimensionScaleType: dimensionScaleType,
@@ -94,7 +101,11 @@ export const getTrendlineAnnotationMarks = (trendlineProps: TrendlineSpecProps, 
 			name: `${annotation.name}_group`,
 			type: 'group',
 			interactive: false,
-			marks: [getTrendlineAnnotationPoints(annotation), getTrendlineAnnotationTextMark(annotation)],
+			marks: [
+				getTrendlineAnnotationPoints(annotation),
+				getTrendlineAnnotationTextMark(annotation),
+				...getTrendlineAnnotationBadgeMark(annotation),
+			],
 		});
 	});
 	return marks;
@@ -179,21 +190,21 @@ export const getTrendlineAnnotationPointY = ({
  * @param annotationProps
  * @returns TextMark
  */
-export const getTrendlineAnnotationTextMark = ({
-	markName,
-	name,
-	numberFormat,
-	prefix,
-	trendlineName,
-}: TrendlineAnnotationSpecProps): TextMark => {
+export const getTrendlineAnnotationTextMark = (annotation: TrendlineAnnotationSpecProps): TextMark => {
+	const { badge, name, numberFormat, prefix, trendlineName, markName } = annotation;
 	const textPrefix = prefix ? `'${prefix} ' + ` : '';
+	// need more offset if there is a badge to make room for said badge
+	const offset = badge ? [4, 4, 4, 4, 5.65, 5.65, 5.65, 5.65] : [2, 2, 2, 2, 2.83, 2.83, 2.83, 2.83];
+	const fill = getTextFill({ ...annotation });
 	return {
 		name,
 		type: 'text',
 		from: { data: `${name}_points` },
+		zindex: 1, // this will draw the text in front of the badge
 		encode: {
 			enter: {
 				text: { signal: `${textPrefix}format(datum.datum.${TRENDLINE_VALUE}, '${numberFormat}')` },
+				fill,
 			},
 		},
 		transform: [
@@ -201,9 +212,70 @@ export const getTrendlineAnnotationTextMark = ({
 				type: 'label',
 				size: { signal: '[width, height]' },
 				avoidMarks: [trendlineName, `${markName}_group`],
-				offset: [2],
+				offset,
 				anchor: ['top', 'bottom', 'right', 'left', 'top-right', 'top-left', 'bottom-right', 'bottom-left'],
 			},
 		],
 	};
+};
+
+/**
+ * Get's the encoding for the annotation text fill.
+ * Includes a color contrast check to ensure the text is visually a11y.
+ * @param annotationProps
+ * @returns fill ProductionRule
+ */
+export const getTextFill = ({
+	badge,
+	colorScheme,
+	trendlineColor,
+}: TrendlineAnnotationSpecProps): ProductionRule<ColorValueRef> | undefined => {
+	if (!badge) {
+		// by returning undefined, the rsc config will be used
+		return undefined;
+	}
+	const color = getColorKey(trendlineColor);
+	const colorString = getColorProductionRuleSignalString(color, colorScheme);
+	const textColors = [getColorValue('gray-50', colorScheme), getColorValue('gray-900', colorScheme)];
+	return [
+		{ test: `contrast(${colorString}, '${textColors[0]}') > 3.5`, value: textColors[0] },
+		{ value: textColors[1] },
+	];
+};
+
+export const getTrendlineAnnotationBadgeMark = ({
+	badge,
+	colorScheme,
+	name,
+	trendlineColor,
+}: TrendlineAnnotationSpecProps): RectMark[] => {
+	if (!badge) {
+		return [];
+	}
+	const color = getColorKey(trendlineColor, 2);
+	return [
+		{
+			name: `${name}_badge`,
+			type: 'rect',
+			from: { data: `${name}` },
+			encode: {
+				enter: {
+					cornerRadius: { value: 2 },
+					fill: getColorProductionRule(color, colorScheme),
+					opacity: { field: 'opacity' },
+					x: { signal: 'datum.bounds.x1 - 3' },
+					x2: { signal: 'datum.bounds.x2 + 3' },
+					y: { signal: 'datum.bounds.y1 - 3' },
+					y2: { signal: 'datum.bounds.y2 + 3' },
+				},
+			},
+		},
+	];
+};
+
+const getColorKey = (trendlineColor: ColorFacet, datumOrder: number = 1): ColorFacet => {
+	if (typeof trendlineColor === 'string') {
+		return `${new Array(datumOrder).fill('datum.').join('')}${trendlineColor}`;
+	}
+	return trendlineColor;
 };

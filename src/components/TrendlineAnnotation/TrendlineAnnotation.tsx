@@ -17,6 +17,7 @@ import { TrendlineAnnotationProps } from '../../types';
 
 // destructure props here and set defaults so that storybook can pick them up
 const TrendlineAnnotation: FC<TrendlineAnnotationProps> = ({
+	badge = false,
 	dimensionValue = 'end',
 	numberFormat = '',
 	prefix = '',

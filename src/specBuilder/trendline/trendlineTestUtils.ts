@@ -32,6 +32,7 @@ export const defaultLineProps: LineSpecProps = {
 
 export const defaultTrendlineProps: TrendlineSpecProps = {
 	children: [],
+	colorScheme: DEFAULT_COLOR_SCHEME,
 	dimensionExtent: [null, null],
 	dimensionRange: [null, null],
 	dimensionScaleType: 'time',
@@ -45,6 +46,7 @@ export const defaultTrendlineProps: TrendlineSpecProps = {
 	name: 'line0Trendline0',
 	opacity: 1,
 	orientation: 'horizontal',
+	trendlineColor: DEFAULT_COLOR,
 	trendlineDimension: DEFAULT_TIME_DIMENSION,
 	trendlineMetric: DEFAULT_METRIC,
 };

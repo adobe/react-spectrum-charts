@@ -126,7 +126,7 @@ describe('Trendline', () => {
 			expect(trendline).toHaveAttribute('opacity', '1');
 		});
 
-		test('should display on haver for window methods', async () => {
+		test('should display on hover for window methods', async () => {
 			render(<DisplayOnHover {...DisplayOnHover.args} method="movingAverage-2" />);
 			const chart = await findChart();
 			expect(chart).toBeInTheDocument();

@@ -13,12 +13,15 @@ import { createElement } from 'react';
 
 import { ChartTooltip } from '@components/ChartTooltip';
 import { TrendlineAnnotation } from '@components/TrendlineAnnotation';
-import { DEFAULT_TIME_DIMENSION, TRENDLINE_VALUE } from '@constants';
+import { DEFAULT_COLOR, DEFAULT_COLOR_SCHEME, DEFAULT_TIME_DIMENSION, TRENDLINE_VALUE } from '@constants';
 import { defaultTrendlineProps } from '@specBuilder/trendline/trendlineTestUtils';
+import { spectrumColors } from '@themes';
 import { TrendlineAnnotationSpecProps } from 'types';
 
 import {
 	applyTrendlineAnnotationDefaults,
+	getTextFill,
+	getTrendlineAnnotationBadgeMark,
 	getTrendlineAnnotationMarks,
 	getTrendlineAnnotationPointX,
 	getTrendlineAnnotationPointY,
@@ -27,12 +30,15 @@ import {
 } from './trendlineAnnotationUtils';
 
 const defaultAnnotationProps: TrendlineAnnotationSpecProps = {
+	badge: false,
+	colorScheme: DEFAULT_COLOR_SCHEME,
 	displayOnHover: false,
 	dimensionValue: 'end',
 	markName: 'line0',
 	name: 'line0Trendline0Annotation0',
 	numberFormat: '',
 	prefix: '',
+	trendlineColor: DEFAULT_COLOR,
 	trendlineDimension: DEFAULT_TIME_DIMENSION,
 	trendlineDimensionExtent: [null, null],
 	trendlineDimensionScaleType: 'time',
@@ -40,6 +46,8 @@ const defaultAnnotationProps: TrendlineAnnotationSpecProps = {
 	trendlineOrientation: 'horizontal',
 	trendlineWidth: 2,
 };
+
+const colors = spectrumColors.light;
 
 describe('applyTrendlineAnnotationDefaults()', () => {
 	test('should apply all defaults', () => {
@@ -145,5 +153,35 @@ describe('getTrendlineAnnotationTextMark()', () => {
 	test('should not add the prefix if it is not a valid string', () => {
 		const textMark = getTrendlineAnnotationTextMark({ ...defaultAnnotationProps, prefix: '' });
 		expect(textMark.encode?.enter?.text).toHaveProperty('signal', `format(datum.datum.${TRENDLINE_VALUE}, '')`);
+	});
+	test('should increase offset if badge is true', () => {
+		const textMark = getTrendlineAnnotationTextMark({ ...defaultAnnotationProps, badge: true });
+		expect(textMark.transform?.[0]).toHaveProperty('offset', [4, 4, 4, 4, 5.65, 5.65, 5.65, 5.65]);
+	});
+});
+
+describe('getTextFill()', () => {
+	test('should return the correct fill for the text', () => {
+		expect(getTextFill({ ...defaultAnnotationProps, badge: true })).toEqual([
+			{
+				test: `contrast(scale('color', datum.datum.${DEFAULT_COLOR}), '${colors['gray-50']}') > 3.5`,
+				value: colors['gray-50'],
+			},
+			{ value: colors['gray-900'] },
+		]);
+	});
+	test('should return undefined if badge is false', () => {
+		expect(getTextFill(defaultAnnotationProps)).toBeUndefined();
+	});
+});
+
+describe('getTrendlineAnnotationBadgeMark()', () => {
+	test('should return the badge mark', () => {
+		const badgeMark = getTrendlineAnnotationBadgeMark({ ...defaultAnnotationProps, badge: true });
+		expect(badgeMark).toHaveLength(1);
+		expect(badgeMark[0]).toHaveProperty('type', 'rect');
+	});
+	test('should return empty array if badge is false', () => {
+		expect(getTrendlineAnnotationBadgeMark(defaultAnnotationProps)).toHaveLength(0);
 	});
 });

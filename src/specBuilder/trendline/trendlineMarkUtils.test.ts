@@ -102,7 +102,7 @@ describe('getTrendlineRuleMark()', () => {
 	test('should use static color if provided', () => {
 		const mark = getTrendlineRuleMark(defaultLineProps, {
 			...defaultTrendlineProps,
-			color: 'gray-500',
+			trendlineColor: { value: 'gray-500' },
 			method: 'median',
 		});
 		expect(mark.encode?.enter?.stroke).toEqual({ value: spectrumColors.light['gray-500'] });
@@ -191,7 +191,10 @@ describe('getTrendlineLineMark()', () => {
 		expect(mark.encode?.enter?.stroke).toEqual({ field: 'series', scale: COLOR_SCALE });
 	});
 	test('should use static color if provided', () => {
-		const mark = getTrendlineLineMark(defaultLineProps, { ...defaultTrendlineProps, color: 'gray-500' });
+		const mark = getTrendlineLineMark(defaultLineProps, {
+			...defaultTrendlineProps,
+			trendlineColor: { value: 'gray-500' },
+		});
 		expect(mark.encode?.enter?.stroke).toEqual({ value: spectrumColors.light['gray-500'] });
 	});
 });
