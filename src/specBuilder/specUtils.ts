@@ -32,11 +32,11 @@ import { Data, Scale, ScaleType, Spec, ValuesData } from 'vega';
 
 import {
 	DEFAULT_TRANSFORMED_TIME_DIMENSION,
-	EASE_OUT_CUBIC,
+	EASE_OUT_CUBIC, FILTERED_PREVIOUS_TABLE,
 	FILTERED_TABLE,
 	MARK_ID,
 	PREVIOUS_TABLE,
-	TABLE,
+	TABLE
 } from '../constants';
 import { SanitizedSpecProps } from '../types';
 
@@ -211,6 +211,7 @@ export const baseData: Data[] = [
 	{ name: TABLE, values: [], transform: [{ type: 'identifier', as: MARK_ID }] },
 	{ name: FILTERED_TABLE, source: TABLE },
 	{ name: PREVIOUS_TABLE, values: [] },
+	{ name: FILTERED_PREVIOUS_TABLE, source: PREVIOUS_TABLE }
 ];
 
 /**
@@ -323,9 +324,10 @@ export const getAnimationMarks = (
 			// If data isn't similar enough, keep the animation from zero as shown above
 			markUpdate = {
 				scale,
-				signal: `(data('${PREVIOUS_TABLE}')[indexof(pluck(data('${PREVIOUS_TABLE}'), '${dimension}'), datum.${dimension})].${metric} * (1 - ${easingFunction})) + (datum.${metric} * ${easingFunction})`,
+				signal: `(data('${FILTERED_PREVIOUS_TABLE}')[indexof(pluck(data('${FILTERED_PREVIOUS_TABLE}'), '${dimension}'), datum.${dimension})].${metric} * (1 - ${easingFunction})) + (datum.${metric} * ${easingFunction})`,
 			};
 		}
 	}
+	console.log('MarkUpdate is', markUpdate);
 	return markUpdate;
 };

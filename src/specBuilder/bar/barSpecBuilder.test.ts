@@ -19,12 +19,12 @@ import {
 	DEFAULT_CATEGORICAL_DIMENSION,
 	DEFAULT_COLOR,
 	DEFAULT_METRIC,
-	DEFAULT_SECONDARY_COLOR,
+	DEFAULT_SECONDARY_COLOR, FILTERED_PREVIOUS_TABLE,
 	FILTERED_TABLE,
 	MARK_ID,
 	PREVIOUS_TABLE,
 	STACK_ID,
-	TABLE,
+	TABLE
 } from '@constants';
 import { getUncontrolledHoverSignal } from '@specBuilder/signal/signalSpecBuilder';
 import { spectrumColors } from '@themes';
@@ -100,9 +100,19 @@ const defaultTableData: ValuesData = {
 	values: [],
 	transform: [{ type: 'identifier', as: MARK_ID }],
 };
+
+const defaultPreviousTableData: ValuesData = {
+	name: PREVIOUS_TABLE,
+	values: [],
+	transform: [{ type: 'identifier', as: MARK_ID }],
+};
+
 const defaultFilteredTableData: SourceData = { name: FILTERED_TABLE, source: TABLE };
 
-const defaultData: Data[] = [defaultTableData, defaultFilteredTableData];
+const defaultFilteredPreviousTableData: SourceData = { name: FILTERED_PREVIOUS_TABLE, source: PREVIOUS_TABLE };
+
+
+const defaultData: Data[] = [defaultTableData, defaultFilteredTableData, defaultPreviousTableData, defaultFilteredPreviousTableData];
 
 const defaultStacksTransforms: Transforms[] = [
 	{
@@ -486,6 +496,19 @@ describe('barSpecBuilder', () => {
 							{ ...defaultStackedTransforms[1], expr: 'datum.browser' },
 						],
 					},
+					defaultPreviousTableData,
+					{
+						...defaultFilteredPreviousTableData,
+						transform: [
+							{
+								...defaultStackedTransforms[0],
+								groupby: ['browser'],
+								field: 'views',
+								as: ['views0', 'views1'],
+							},
+							{ ...defaultStackedTransforms[1], expr: 'datum.browser' },
+						],
+					},
 					{
 						...defaultStacksData,
 						transform: [
@@ -501,6 +524,11 @@ describe('barSpecBuilder', () => {
 					defaultTableData,
 					{
 						...defaultFilteredTableData,
+						transform: defaultStackedTransforms,
+					},
+					defaultPreviousTableData,
+					{
+						...defaultFilteredPreviousTableData,
 						transform: defaultStackedTransforms,
 					},
 					defaultStacksData,
@@ -522,6 +550,19 @@ describe('barSpecBuilder', () => {
 							defaultStackedTransforms[1],
 						],
 					},
+					defaultPreviousTableData,
+					{
+						...defaultFilteredPreviousTableData,
+						transform: [
+							{
+								...defaultStackedTransforms[0],
+								sort: {
+									field: 'order',
+								},
+							},
+							defaultStackedTransforms[1],
+						],
+					},
 					defaultStacksData,
 				]);
 			});
@@ -530,10 +571,15 @@ describe('barSpecBuilder', () => {
 		describe('transform already exists', () => {
 			test('no props, new transform should be pushed onto the end with default values', () => {
 				expect(
-					addData([{ ...defaultFilteredTableData, transform: defaultStackedTransforms }], defaultBarProps)
+					addData([{ ...defaultFilteredTableData, transform: defaultStackedTransforms },
+						{...defaultFilteredPreviousTableData, transform: defaultStackedTransforms}], defaultBarProps)
 				).toStrictEqual([
 					{
 						...defaultFilteredTableData,
+						transform: [...defaultStackedTransforms, ...defaultStackedTransforms],
+					},
+					{
+						...defaultFilteredPreviousTableData,
 						transform: [...defaultStackedTransforms, ...defaultStackedTransforms],
 					},
 					defaultStacksData,
@@ -578,6 +624,25 @@ describe('barSpecBuilder', () => {
 						{ as: 'bar0_dodgeGroup', expr: `datum.${DEFAULT_COLOR}`, type: 'formula' },
 					],
 				},
+				defaultPreviousTableData,
+				{
+					...defaultFilteredPreviousTableData,
+					transform: [
+						{
+							as: [`${DEFAULT_METRIC}0`, `${DEFAULT_METRIC}1`],
+							field: DEFAULT_METRIC,
+							groupby: [DEFAULT_CATEGORICAL_DIMENSION, DEFAULT_COLOR],
+							sort: undefined,
+							type: 'stack',
+						},
+						{
+							as: STACK_ID,
+							expr: `datum.${DEFAULT_CATEGORICAL_DIMENSION} + "," + datum.${DEFAULT_COLOR}`,
+							type: 'formula',
+						},
+						{ as: 'bar0_dodgeGroup', expr: `datum.${DEFAULT_COLOR}`, type: 'formula' },
+					],
+				},
 				{
 					name: 'bar0_stacks',
 					source: FILTERED_TABLE,
@@ -604,6 +669,25 @@ describe('barSpecBuilder', () => {
 				defaultTableData,
 				{
 					...defaultFilteredTableData,
+					transform: [
+						{
+							as: [`${DEFAULT_METRIC}0`, `${DEFAULT_METRIC}1`],
+							field: DEFAULT_METRIC,
+							groupby: [DEFAULT_CATEGORICAL_DIMENSION, DEFAULT_SECONDARY_COLOR],
+							sort: undefined,
+							type: 'stack',
+						},
+						{
+							as: STACK_ID,
+							expr: `datum.${DEFAULT_CATEGORICAL_DIMENSION} + "," + datum.${DEFAULT_SECONDARY_COLOR}`,
+							type: 'formula',
+						},
+						{ as: 'bar0_dodgeGroup', expr: `datum.${DEFAULT_SECONDARY_COLOR}`, type: 'formula' },
+					],
+				},
+				defaultPreviousTableData,
+				{
+					...defaultFilteredPreviousTableData,
 					transform: [
 						{
 							as: [`${DEFAULT_METRIC}0`, `${DEFAULT_METRIC}1`],

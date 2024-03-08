@@ -45,7 +45,7 @@ const defaultScatterProps: ScatterSpecProps = {
 describe('addData()', () => {
 	test('should add time transform is dimensionScaleType === "time"', () => {
 		const data = addData(initializeSpec().data ?? [], { ...defaultScatterProps, dimensionScaleType: 'time' });
-		expect(data).toHaveLength(3);
+		expect(data).toHaveLength(4);
 		expect(data[0].transform).toHaveLength(2);
 		expect(data[0].transform?.[1].type).toBe('timeunit');
 	});
@@ -54,7 +54,7 @@ describe('addData()', () => {
 			...defaultScatterProps,
 			children: [createElement(Trendline)],
 		});
-		expect(data).toHaveLength(4);
+		expect(data).toHaveLength(5);
 		expect(data[3].transform).toHaveLength(2);
 		expect(data[3].transform?.[0].type).toBe('regression');
 	});
