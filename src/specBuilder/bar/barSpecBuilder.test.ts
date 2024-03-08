@@ -246,7 +246,7 @@ const defaultSelectSignal = { name: 'bar0_selectedId', value: null };
 describe('barSpecBuilder', () => {
 	describe('addBar()', () => {
 		test('no props', () => {
-			expect(addBar(startingSpec, {})).toStrictEqual(defaultSpec);
+			expect(addBar(startingSpec, { animations: false })).toStrictEqual(defaultSpec);
 		});
 	});
 
