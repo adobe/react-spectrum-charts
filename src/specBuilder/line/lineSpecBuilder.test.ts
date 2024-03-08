@@ -48,6 +48,7 @@ const defaultLineProps: LineSpecProps = {
 	colorScheme: DEFAULT_COLOR_SCHEME,
 	interactiveMarkName: undefined,
 	popoverMarkName: undefined,
+	animations: false
 };
 
 const getMetricRangeElement = (props?: Partial<MetricRangeProps>): MetricRangeElement =>
@@ -360,7 +361,7 @@ const displayPointMarks = [
 describe('lineSpecBuilder', () => {
 	describe('addLine()', () => {
 		test('should add line', () => {
-			expect(addLine(startingSpec, { color: DEFAULT_COLOR })).toStrictEqual(defaultSpec);
+			expect(addLine(startingSpec, { color: DEFAULT_COLOR, animations: false })).toStrictEqual(defaultSpec);
 		});
 	});
 

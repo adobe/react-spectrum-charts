@@ -24,4 +24,5 @@ export const defaultLineMarkProps: LineMarkProps = {
 	opacity: { value: 1 },
 	metric: DEFAULT_METRIC,
 	scaleType: 'time',
+	animations: false
 };

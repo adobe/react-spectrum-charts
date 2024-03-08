@@ -101,6 +101,7 @@ export const getMetricRangeMark = (
 		isMetricRange: true,
 		parentName: lineMarkProps.name,
 		displayOnHover: metricRangeProps.displayOnHover,
+		animations: lineMarkProps.animations
 	};
 	const lineProps: LineMarkProps = {
 		...lineMarkProps,

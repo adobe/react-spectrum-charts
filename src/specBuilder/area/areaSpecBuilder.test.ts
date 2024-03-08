@@ -32,7 +32,7 @@ import { initializeSpec } from '../specUtils';
 import { addArea, addAreaMarks, addData, addSignals, setScales } from './areaSpecBuilder';
 
 const startingSpec: Spec = initializeSpec({
-	scales: [{ name: 'color', type: 'ordinal' }],
+	scales: [{ name: 'color', type: 'ordinal' }]
 });
 
 const defaultAreaProps: AreaSpecProps = {
@@ -45,6 +45,7 @@ const defaultAreaProps: AreaSpecProps = {
 	name: 'area0',
 	opacity: 0.8,
 	scaleType: 'time',
+	animations: false
 };
 
 const defaultSpec = initializeSpec({
@@ -90,8 +91,8 @@ const defaultSpec = initializeSpec({
 					encode: {
 						enter: {
 							fill: { field: DEFAULT_COLOR, scale: 'color' },
-							y: undefined,
-							y2: undefined,
+							y: { field: 'value0', scale: 'yLinear' },
+							y2: { field: 'value1', scale: 'yLinear' },
 							stroke: { signal: BACKGROUND_COLOR },
 							strokeWidth: { value: 1.5 },
 							strokeJoin: { value: 'round' },
@@ -99,14 +100,6 @@ const defaultSpec = initializeSpec({
 						},
 						update: {
 							x: { field: DEFAULT_TRANSFORMED_TIME_DIMENSION, scale: 'xTime' },
-							y: {
-								scale: 'yLinear',
-								signal: 'datum.value0'
-							},
-							y2: {
-								scale: 'yLinear',
-								signal: 'datum.value1 * timerValue'
-							},
 							cursor: undefined,
 							fillOpacity: [{ value: 0.8 }],
 						},
@@ -179,11 +172,11 @@ const defaultSignals = [
 describe('areaSpecBuilder', () => {
 	describe('addArea()', () => {
 		test('should add area', () => {
-			expect(addArea(startingSpec, {})).toStrictEqual(defaultSpec);
+			expect(addArea(startingSpec, { animations: false })).toStrictEqual(defaultSpec);
 		});
 
 		test('metricStart defined but valueEnd not defined, should default to value', () => {
-			expect(addArea(startingSpec, { metricStart: 'test' })).toStrictEqual(defaultSpec);
+			expect(addArea(startingSpec, { metricStart: 'test', animations: false })).toStrictEqual(defaultSpec);
 		});
 	});
 
@@ -265,8 +258,6 @@ describe('areaSpecBuilder', () => {
 								update: {
 									...groupMark.marks?.[0]?.encode?.update,
 									x: { scale: 'xLinear', field: DEFAULT_TIME_DIMENSION },
-									y: undefined,
-									y2: undefined
 								},
 							},
 						},
