@@ -273,7 +273,14 @@ export const getTrendlineAnnotationBadgeMark = ({
 	];
 };
 
-const getColorKey = (trendlineColor: ColorFacet, datumOrder: number = 1): ColorFacet => {
+/**
+ * Gets the key used for color.
+ * Since some of the marks base their data off of previous marks, the datum might be nested.
+ * @param trendlineColor
+ * @param datumOrder how many levels deep the datum is (ex. 1 becomes datum.color, 2 becomes datum.datum.color, etc.)
+ * @returns
+ */
+export const getColorKey = (trendlineColor: ColorFacet, datumOrder: number = 1): ColorFacet => {
 	if (typeof trendlineColor === 'string') {
 		return `${new Array(datumOrder).fill('datum.').join('')}${trendlineColor}`;
 	}

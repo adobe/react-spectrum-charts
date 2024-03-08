@@ -20,6 +20,7 @@ import { TrendlineAnnotationSpecProps } from 'types';
 
 import {
 	applyTrendlineAnnotationDefaults,
+	getColorKey,
 	getTextFill,
 	getTrendlineAnnotationBadgeMark,
 	getTrendlineAnnotationMarks,
@@ -183,5 +184,13 @@ describe('getTrendlineAnnotationBadgeMark()', () => {
 	});
 	test('should return empty array if badge is false', () => {
 		expect(getTrendlineAnnotationBadgeMark(defaultAnnotationProps)).toHaveLength(0);
+	});
+});
+
+describe('getColorKey()', () => {
+	test('should return the correct color key', () => {
+		expect(getColorKey(DEFAULT_COLOR)).toEqual(`datum.${DEFAULT_COLOR}`);
+		expect(getColorKey(DEFAULT_COLOR, 2)).toEqual(`datum.datum.${DEFAULT_COLOR}`);
+		expect(getColorKey({ value: 'red-500' })).toEqual({ value: 'red-500' });
 	});
 });
