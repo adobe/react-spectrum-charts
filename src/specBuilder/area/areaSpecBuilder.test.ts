@@ -20,7 +20,7 @@ import {
 	DEFAULT_METRIC,
 	DEFAULT_OPACITY_RULE,
 	DEFAULT_TIME_DIMENSION,
-	DEFAULT_TRANSFORMED_TIME_DIMENSION,
+	DEFAULT_TRANSFORMED_TIME_DIMENSION, FILTERED_PREVIOUS_TABLE,
 	FILTERED_TABLE,
 	HIGHLIGHTED_ITEM,
 	HIGHLIGHTED_SERIES,
@@ -31,7 +31,7 @@ import {
 	SELECTED_SERIES,
 	PREVIOUS_TABLE,
 	SERIES_ID,
-	TABLE,
+	TABLE
 } from '@constants';
 import { getGenericValueSignal } from '@specBuilder/signal/signalSpecBuilder';
 import { defaultSignals } from '@specBuilder/specTestUtils';
@@ -95,8 +95,30 @@ const defaultSpec = initializeSpec({
 		},
 		{
 			name: PREVIOUS_TABLE,
+			transform: [
+				{ as: MARK_ID, type: 'identifier' },
+				{
+					as: [DEFAULT_TRANSFORMED_TIME_DIMENSION, `${DEFAULT_TIME_DIMENSION}1`],
+					field: DEFAULT_TIME_DIMENSION,
+					type: 'timeunit',
+					units: ['year', 'month', 'date', 'hours', 'minutes'],
+				},
+			],
 			values: [],
 		},
+		{
+			name: FILTERED_PREVIOUS_TABLE,
+			source: PREVIOUS_TABLE,
+			transform: [
+				{
+					as: ['value0', 'value1'],
+					field: DEFAULT_METRIC,
+					groupby: [DEFAULT_TIME_DIMENSION],
+					sort: undefined,
+					type: 'stack',
+				},
+			],
+		}
 	],
 	marks: [
 		{

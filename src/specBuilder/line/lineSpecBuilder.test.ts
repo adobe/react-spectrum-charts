@@ -22,7 +22,7 @@ import {
 	DEFAULT_METRIC,
 	DEFAULT_OPACITY_RULE,
 	DEFAULT_TIME_DIMENSION,
-	DEFAULT_TRANSFORMED_TIME_DIMENSION,
+	DEFAULT_TRANSFORMED_TIME_DIMENSION, FILTERED_PREVIOUS_TABLE,
 	FILTERED_TABLE,
 	HIGHLIGHTED_ITEM,
 	HIGHLIGHTED_SERIES,
@@ -31,7 +31,7 @@ import {
 	PREVIOUS_TABLE,
 	SERIES_ID,
 	TABLE,
-	TRENDLINE_VALUE,
+	TRENDLINE_VALUE
 } from '@constants';
 import { defaultSignals } from '@specBuilder/specTestUtils';
 import { Data, Spec } from 'vega';
@@ -97,6 +97,10 @@ const defaultSpec = initializeSpec({
 		{
 			name: PREVIOUS_TABLE,
 			values: [],
+		},
+		{
+			name: FILTERED_PREVIOUS_TABLE,
+			source: PREVIOUS_TABLE,
 		},
 	],
 	marks: [
@@ -387,11 +391,16 @@ describe('lineSpecBuilder', () => {
 		});
 
 		test('should add trendline transform', () => {
+			const testAddData = addData(baseData, {
+				...defaultLineProps,
+				children: [createElement(Trendline, { method: 'average' })],
+			});
+			console.warn(testAddData);
 			expect(
 				addData(baseData, {
 					...defaultLineProps,
 					children: [createElement(Trendline, { method: 'average' })],
-				})[3].transform
+				})[4].transform
 			).toStrictEqual([
 				{
 					as: [TRENDLINE_VALUE, `${DEFAULT_TIME_DIMENSION}Min`, `${DEFAULT_TIME_DIMENSION}Max`],

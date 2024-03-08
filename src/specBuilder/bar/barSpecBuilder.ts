@@ -324,7 +324,8 @@ export const addMarks = produce<Mark[], [BarSpecProps]>((marks, props) => {
 	// if this is a trellis plot, we add the bars and the repeated scale to the trellis group
 	if (isTrellised(props)) {
 		const repeatedScale = getRepeatedScale(props);
-		console.log('Repeated scale:', repeatedScale);
+		console.log('Current barMarks up to this point', barMarks);
+		console.log(getTrellisGroupMark(props, barMarks, repeatedScale));
 		marks.push(getTrellisGroupMark(props, barMarks, repeatedScale));
 	} else {
 		marks.push(...barMarks);

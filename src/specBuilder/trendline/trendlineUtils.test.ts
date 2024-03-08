@@ -145,8 +145,8 @@ describe('addTrendlineData()', () => {
 		const trendlineData = getDefaultData();
 		expect(trendlineData).toHaveLength(4);
 		addTrendlineData(trendlineData, defaultLineProps);
-		expect(trendlineData).toHaveLength(4);
-		expect(trendlineData[3]).toStrictEqual({
+		expect(trendlineData).toHaveLength(5);
+		expect(trendlineData[4]).toStrictEqual({
 			name: 'line0Trendline0_data',
 			source: FILTERED_TABLE,
 			transform: [
@@ -174,8 +174,8 @@ describe('addTrendlineData()', () => {
 			children: [createElement(Trendline, {}, createElement(ChartTooltip))],
 		});
 		expect(trendlineData).toHaveLength(9);
-		expect(trendlineData[6]).toHaveProperty('name', 'line0_allTrendlineData');
-		expect(trendlineData[7]).toHaveProperty('name', 'line0Trendline_highlightedData');
+		expect(trendlineData[7]).toHaveProperty('name', 'line0_allTrendlineData');
+		expect(trendlineData[8]).toHaveProperty('name', 'line0Trendline_highlightedData');
 	});
 
 	test('should add _highResolutionData if doing a regression method', () => {
@@ -186,7 +186,7 @@ describe('addTrendlineData()', () => {
 			children: [createElement(Trendline, { method: 'linear' })],
 		});
 		expect(trendlineData).toHaveLength(5);
-		expect(trendlineData[3]).toHaveProperty('name', 'line0Trendline0_highResolutionData');
+		expect(trendlineData[4]).toHaveProperty('name', 'line0Trendline0_highResolutionData');
 	});
 
 	test('should add _params and _data if doing a regression method and there is a tooltip on the trendline', () => {
@@ -197,8 +197,8 @@ describe('addTrendlineData()', () => {
 			children: [createElement(Trendline, { method: 'linear' }, createElement(ChartTooltip))],
 		});
 		expect(trendlineData).toHaveLength(9);
-		expect(trendlineData[4]).toHaveProperty('name', 'line0Trendline0_params');
-		expect(trendlineData[5]).toHaveProperty('name', 'line0Trendline0_data');
+		expect(trendlineData[5]).toHaveProperty('name', 'line0Trendline0_params');
+		expect(trendlineData[6]).toHaveProperty('name', 'line0Trendline0_data');
 	});
 
 	test('should add sort transform, then window trandform, and then dimension range filter transform for movingAverage', () => {
@@ -208,11 +208,11 @@ describe('addTrendlineData()', () => {
 			children: [createElement(Trendline, { method: 'movingAverage-3', dimensionRange: [1, 2] })],
 		});
 		expect(trendlineData).toHaveLength(5);
-		expect(trendlineData[3]).toHaveProperty('name', 'line0Trendline0_data');
-		expect(trendlineData[3].transform).toHaveLength(3);
-		expect(trendlineData[3].transform?.[0]).toHaveProperty('type', 'collect');
-		expect(trendlineData[3].transform?.[1]).toHaveProperty('type', 'window');
-		expect(trendlineData[3].transform?.[2]).toHaveProperty('type', 'filter');
+		expect(trendlineData[4]).toHaveProperty('name', 'line0Trendline0_data');
+		expect(trendlineData[4].transform).toHaveLength(3);
+		expect(trendlineData[4].transform?.[0]).toHaveProperty('type', 'collect');
+		expect(trendlineData[4].transform?.[1]).toHaveProperty('type', 'window');
+		expect(trendlineData[4].transform?.[2]).toHaveProperty('type', 'filter');
 	});
 });
 

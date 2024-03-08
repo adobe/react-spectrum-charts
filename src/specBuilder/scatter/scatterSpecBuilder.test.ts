@@ -88,8 +88,8 @@ describe('addData()', () => {
 		expect(data[2].transform?.[0].type).toBe('regression');
 		expect(data).toHaveLength(4);
 		expect(data).toHaveLength(5);
-		expect(data[3].transform).toHaveLength(2);
-		expect(data[3].transform?.[0].type).toBe('regression');
+		expect(data[4].transform).toHaveLength(2);
+		expect(data[4].transform?.[0].type).toBe('regression');
 	});
 });
 
