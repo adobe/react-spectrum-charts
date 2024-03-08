@@ -16,9 +16,10 @@ import {
 	DEFAULT_COLOR,
 	DEFAULT_COLOR_SCHEME,
 	DEFAULT_METRIC,
-	DEFAULT_TIME_DIMENSION,
+	DEFAULT_TIME_DIMENSION, 
+	FILTERED_PREVIOUS_TABLE,
 	FILTERED_TABLE,
-	MARK_ID,
+	MARK_ID
 } from '@constants';
 import {
 	getControlledHoverSignal,
@@ -30,9 +31,15 @@ import { spectrumColors } from '@themes';
 import { sanitizeMarkChildren, toCamelCase } from '@utils';
 import { produce } from 'immer';
 import { AreaProps, AreaSpecProps, ChartData, ColorScheme, MarkChildElement, ScaleType } from 'types';
-import { Data, Mark, Scale, Signal, Spec } from 'vega';
+import { Data, Mark, Scale, Signal, Spec, Transforms } from 'vega';
 
-import { addTimeTransform, getFilteredTableData, getTableData, getTransformSort } from '../data/dataUtils';
+import {
+	addTimeTransform, getFilteredPreviousTableData,
+	getFilteredTableData,
+	getPreviousTableData,
+	getTableData,
+	getTransformSort
+} from '../data/dataUtils';
 import { addContinuousDimensionScale, addFieldToFacetScaleDomain, addMetricScale } from '../scale/scaleSpecBuilder';
 import { getAreaMark, getX } from './areaUtils';
 
@@ -94,13 +101,16 @@ export const addData = produce<Data[], [AreaSpecProps]>(
 	(data, { name, dimension, scaleType, color, metric, metricEnd, metricStart, order, children }) => {
 		if (scaleType === 'time') {
 			const tableData = getTableData(data);
+			const previousTableData = getPreviousTableData(data);
 			tableData.transform = addTimeTransform(tableData.transform ?? [], dimension);
+			previousTableData.transform = addTimeTransform(tableData.transform ?? [], dimension);
 		}
 
 		if (!metricEnd || !metricStart) {
 			const filteredTableData = getFilteredTableData(data);
+			const filteredPreviousTableData = getFilteredPreviousTableData(data);
 			// if metricEnd and metricStart don't exist, then we are using metric so we will support stacked
-			filteredTableData.transform = [
+			const transform: Transforms[] = [
 				...(filteredTableData.transform ?? []),
 				{
 					type: 'stack',
@@ -110,12 +120,14 @@ export const addData = produce<Data[], [AreaSpecProps]>(
 					as: [`${metric}0`, `${metric}1`],
 				},
 			];
+			filteredTableData.transform = transform;
+			filteredPreviousTableData.transform = transform;
 		}
 
 		if (children.length) {
 			const selectSignal = `${name}_selectedId`;
 			const hoverSignal = `${name}_controlledHoveredId`;
-			data.push({
+			const highlightedDataPoint: Data = {
 				name: `${name}_highlightedDataPoint`,
 				source: FILTERED_TABLE,
 				transform: [
@@ -124,10 +136,14 @@ export const addData = produce<Data[], [AreaSpecProps]>(
 						expr: `${selectSignal} && ${selectSignal} === datum.${MARK_ID} || !${selectSignal} && ${hoverSignal} && ${hoverSignal} === datum.${MARK_ID}`,
 					},
 				],
-			});
+			};
+			data.push(highlightedDataPoint);
+			highlightedDataPoint.source = FILTERED_PREVIOUS_TABLE;
+			data.push(highlightedDataPoint);
+
 			if (children.some((child) => child.type === ChartPopover)) {
 				const selectSeriesSignal = `${name}_selectedSeries`;
-				data.push({
+				const selectedDataSeries: Data = {
 					name: `${name}_selectedDataSeries`,
 					source: FILTERED_TABLE,
 					transform: [
@@ -136,7 +152,10 @@ export const addData = produce<Data[], [AreaSpecProps]>(
 							expr: `${selectSeriesSignal} && ${selectSeriesSignal} === datum.${color}`,
 						},
 					],
-				});
+				}
+				data.push(selectedDataSeries);
+				selectedDataSeries.source = FILTERED_PREVIOUS_TABLE;
+				data.push(selectedDataSeries);
 			}
 		}
 	},

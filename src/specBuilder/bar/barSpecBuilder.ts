@@ -13,13 +13,14 @@ import {
 	COLOR_SCALE,
 	DEFAULT_CATEGORICAL_DIMENSION,
 	DEFAULT_COLOR_SCHEME,
-	DEFAULT_METRIC,
+	DEFAULT_METRIC, 
+	FILTERED_PREVIOUS_TABLE,
 	FILTERED_TABLE,
 	LINE_TYPE_SCALE,
 	OPACITY_SCALE,
 	PADDING_RATIO,
 	STACK_ID,
-	TRELLIS_PADDING,
+	TRELLIS_PADDING
 } from '@constants';
 import { getTransformSort } from '@specBuilder/data/dataUtils';
 import { hasPopover } from '@specBuilder/marks/markUtils';
@@ -37,7 +38,17 @@ import { getFacetsFromProps } from '@specBuilder/specUtils';
 import { sanitizeMarkChildren, toCamelCase } from '@utils';
 import { produce } from 'immer';
 import { BarProps, BarSpecProps, ChartData, ColorScheme } from 'types';
-import { BandScale, Data, FormulaTransform, Mark, OrdinalScale, Scale, Signal, Spec } from 'vega';
+import {
+	BandScale,
+	Data,
+	FormulaTransform,
+	Mark,
+	OrdinalScale,
+	Scale,
+	Signal,
+	Spec,
+	Transforms
+} from 'vega';
 
 import { getBarPadding, getScaleValues, isDodgedAndStacked } from './barUtils';
 import { getDodgedMark } from './dodgedBarUtils';
@@ -85,7 +96,6 @@ export const addBar = produce<Spec, [BarProps & { colorScheme?: ColorScheme; ind
 			type,
 			...props,
 		};
-
 		spec.data = addData(spec.data ?? [], barProps);
 		spec.signals = addSignals(spec.signals ?? [], barProps);
 		spec.scales = addScales(spec.scales ?? [], barProps);
@@ -115,22 +125,32 @@ export const addSignals = produce<Signal[], [BarSpecProps]>(
 
 export const addData = produce<Data[], [BarSpecProps]>((data, props) => {
 	const { metric, order, type } = props;
-	const index = data.findIndex((d) => d.name === FILTERED_TABLE);
-	data[index].transform = data[index].transform ?? [];
+
+	const filteredIndex = data.findIndex((d) => d.name === FILTERED_TABLE);
+	const filteredPreviousIndex = data.findIndex((d) => d.name === FILTERED_PREVIOUS_TABLE);
+
+	data[filteredIndex].transform = data[filteredIndex].transform ?? [];
+	data[filteredPreviousIndex].transform = data[filteredPreviousIndex].transform ?? [];
 	if (type === 'stacked' || isDodgedAndStacked(props)) {
-		data[index].transform?.push({
+		const stackedDataGroup: Transforms = {
 			type: 'stack',
 			groupby: getStackFields(props),
 			field: metric,
 			sort: getTransformSort(order),
 			as: [`${metric}0`, `${metric}1`],
-		});
+		};
 
-		data[index].transform?.push(getStackIdTransform(props));
+		data[filteredIndex].transform?.push(stackedDataGroup);
+		data[filteredPreviousIndex].transform?.push(stackedDataGroup);
+
+		data[filteredIndex].transform?.push(getStackIdTransform(props));
+		data[filteredPreviousIndex].transform?.push(getStackIdTransform(props));
+
 		data.push(getStackAggregateData(props));
 	}
 	if (type === 'dodged' || isDodgedAndStacked(props)) {
-		data[index].transform?.push(getDodgeGroupTransform(props));
+		data[filteredIndex].transform?.push(getDodgeGroupTransform(props));
+		data[filteredPreviousIndex].transform?.push(getDodgeGroupTransform(props));
 	}
 });
 
@@ -146,6 +166,23 @@ export const getStackAggregateData = (props: BarSpecProps): Data => {
 	return {
 		name: `${name}_stacks`,
 		source: FILTERED_TABLE,
+		transform: [
+			{
+				type: 'aggregate',
+				groupby: getStackFields(props),
+				fields: [`${metric}1`, `${metric}1`],
+				ops: ['min', 'max'],
+			},
+			getStackIdTransform(props),
+		],
+	};
+};
+
+export const getPreviousStackAggregateData = (props: BarSpecProps): Data => {
+	const { metric, name } = props;
+	return {
+		name: `${name}_stacks`,
+		source: FILTERED_PREVIOUS_TABLE,
 		transform: [
 			{
 				type: 'aggregate',

@@ -33,7 +33,8 @@ import { Data, Scale, ScaleType, Spec, ValuesData } from 'vega';
 import {
 	COLOR_SCALE,
 	DEFAULT_TRANSFORMED_TIME_DIMENSION,
-	EASE_OUT_CUBIC,
+	EASE_OUT_CUBIC, 
+	FILTERED_PREVIOUS_TABLE,
 	FILTERED_TABLE,
 	LINE_TYPE_SCALE,
 	MARK_ID,
@@ -218,6 +219,7 @@ export const baseData: Data[] = [
 	{ name: TABLE, values: [], transform: [{ type: 'identifier', as: MARK_ID }] },
 	{ name: FILTERED_TABLE, source: TABLE },
 	{ name: PREVIOUS_TABLE, values: [] },
+	{ name: FILTERED_PREVIOUS_TABLE, source: PREVIOUS_TABLE }
 ];
 
 /**
@@ -282,7 +284,6 @@ export const extractValues = (data) =>
  * @returns An array of Vega datasets with the values from the values object merged in
  */
 export const mergeValuesIntoData = (data, values) => {
-	console.log(data, values)
 	return data.map((dataset) => {
 		const datasetValues = values[dataset.name];
 		if (datasetValues) {
@@ -330,7 +331,7 @@ export const getAnimationMarks = (
 			// If data isn't similar enough, keep the animation from zero as shown above
 			markUpdate = {
 				scale,
-				signal: `(data('${PREVIOUS_TABLE}')[indexof(pluck(data('${PREVIOUS_TABLE}'), '${dimension}'), datum.${dimension})].${metric} * (1 - ${easingFunction})) + (datum.${metric} * ${easingFunction})`,
+				signal: `(data('${FILTERED_PREVIOUS_TABLE}')[indexof(pluck(data('${FILTERED_PREVIOUS_TABLE}'), '${dimension}'), datum.${dimension})].${metric} * (1 - ${easingFunction})) + (datum.${metric} * ${easingFunction})`,
 			};
 		}
 	}

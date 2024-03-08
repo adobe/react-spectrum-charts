@@ -41,6 +41,8 @@ export const TABLE = 'table';
 export const FILTERED_TABLE = 'filteredTable';
 export const PREVIOUS_TABLE = 'previousTable';
 
+export const FILTERED_PREVIOUS_TABLE = 'filteredPreviousTable';
+
 // vega data field names
 export const SERIES_ID = 'rscSeriesId';
 export const MARK_ID = 'rscMarkId';

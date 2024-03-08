@@ -65,6 +65,7 @@ const defaultLineProps: LineSpecProps = {
 	colorScheme: DEFAULT_COLOR_SCHEME,
 	interactiveMarkName: undefined,
 	popoverMarkName: undefined,
+	animations: false
 };
 
 const basicMetricRangeMarks = [
