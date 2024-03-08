@@ -143,7 +143,7 @@ describe('addTrendlineData()', () => {
 
 	test('should add datasource for trendline', () => {
 		const trendlineData = getDefaultData();
-		expect(trendlineData).toHaveLength(3);
+		expect(trendlineData).toHaveLength(4);
 		addTrendlineData(trendlineData, defaultLineProps);
 		expect(trendlineData).toHaveLength(4);
 		expect(trendlineData[3]).toStrictEqual({
@@ -173,7 +173,7 @@ describe('addTrendlineData()', () => {
 			...defaultLineProps,
 			children: [createElement(Trendline, {}, createElement(ChartTooltip))],
 		});
-		expect(trendlineData).toHaveLength(8);
+		expect(trendlineData).toHaveLength(9);
 		expect(trendlineData[6]).toHaveProperty('name', 'line0_allTrendlineData');
 		expect(trendlineData[7]).toHaveProperty('name', 'line0Trendline_highlightedData');
 	});
@@ -185,7 +185,7 @@ describe('addTrendlineData()', () => {
 			...defaultLineProps,
 			children: [createElement(Trendline, { method: 'linear' })],
 		});
-		expect(trendlineData).toHaveLength(4);
+		expect(trendlineData).toHaveLength(5);
 		expect(trendlineData[3]).toHaveProperty('name', 'line0Trendline0_highResolutionData');
 	});
 
@@ -196,7 +196,7 @@ describe('addTrendlineData()', () => {
 			...defaultLineProps,
 			children: [createElement(Trendline, { method: 'linear' }, createElement(ChartTooltip))],
 		});
-		expect(trendlineData).toHaveLength(8);
+		expect(trendlineData).toHaveLength(9);
 		expect(trendlineData[4]).toHaveProperty('name', 'line0Trendline0_params');
 		expect(trendlineData[5]).toHaveProperty('name', 'line0Trendline0_data');
 	});
@@ -207,7 +207,7 @@ describe('addTrendlineData()', () => {
 			...defaultLineProps,
 			children: [createElement(Trendline, { method: 'movingAverage-3', dimensionRange: [1, 2] })],
 		});
-		expect(trendlineData).toHaveLength(4);
+		expect(trendlineData).toHaveLength(5);
 		expect(trendlineData[3]).toHaveProperty('name', 'line0Trendline0_data');
 		expect(trendlineData[3].transform).toHaveLength(3);
 		expect(trendlineData[3].transform?.[0]).toHaveProperty('type', 'collect');

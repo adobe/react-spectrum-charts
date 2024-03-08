@@ -17,10 +17,12 @@ import {
 	DEFAULT_COLOR_SCHEME,
 	DEFAULT_METRIC,
 	DEFAULT_TIME_DIMENSION,
+	FILTERED_PREVIOUS_TABLE,
 	FILTERED_TABLE,
 	HIGHLIGHTED_ITEM,
 	SELECTED_ITEM,
 	SELECTED_SERIES,
+	MARK_ID
 } from '@constants';
 import {
 	addTooltipData,
@@ -37,10 +39,17 @@ import {
 import { spectrumColors } from '@themes';
 import { sanitizeMarkChildren, toCamelCase } from '@utils';
 import { produce } from 'immer';
-import { Data, Mark, Scale, Signal, SourceData, Spec } from 'vega';
+import { Data, Mark, Scale, Signal, SourceData, Spec, Transforms } from 'vega';
 
 import { AreaProps, AreaSpecProps, ChartData, ColorScheme, HighlightedItem, MarkChildElement, ScaleType } from '../../types';
-import { addTimeTransform, getFilteredTableData, getTableData, getTransformSort } from '../data/dataUtils';
+import {
+	addTimeTransform,
+	getFilteredPreviousTableData,
+	getFilteredTableData,
+	getPreviousTableData,
+	getTableData,
+	getTransformSort
+} from '../data/dataUtils';
 import { addContinuousDimensionScale, addFieldToFacetScaleDomain, addMetricScale } from '../scale/scaleSpecBuilder';
 import { getAreaMark, getX } from './areaUtils';
 
@@ -104,13 +113,16 @@ export const addData = produce<Data[], [AreaSpecProps]>((data, props) => {
 		props;
 	if (scaleType === 'time') {
 		const tableData = getTableData(data);
+		const previousTableData = getPreviousTableData(data);
 		tableData.transform = addTimeTransform(tableData.transform ?? [], dimension);
+		previousTableData.transform = addTimeTransform(tableData.transform ?? [], dimension);
 	}
 
 	if (!metricEnd || !metricStart) {
 		const filteredTableData = getFilteredTableData(data);
+		const filteredPreviousTableData = getFilteredPreviousTableData(data);
 		// if metricEnd and metricStart don't exist, then we are using metric so we will support stacked
-		filteredTableData.transform = [
+		const transform: Transforms[] = [
 			...(filteredTableData.transform ?? []),
 			{
 				type: 'stack',
@@ -120,6 +132,8 @@ export const addData = produce<Data[], [AreaSpecProps]>((data, props) => {
 				as: [`${metric}0`, `${metric}1`],
 			},
 		];
+		filteredTableData.transform = transform;
+		filteredPreviousTableData.transform = transform;
 	}
 
 	if (children.length || highlightedItem !== undefined) {

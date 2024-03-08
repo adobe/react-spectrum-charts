@@ -44,6 +44,8 @@ export const TABLE = 'table';
 export const FILTERED_TABLE = 'filteredTable';
 export const PREVIOUS_TABLE = 'previousTable';
 
+export const FILTERED_PREVIOUS_TABLE = 'filteredPreviousTable';
+
 // vega data field names
 export const GROUP_DATA = 'rscGroupData';
 export const MARK_ID = 'rscMarkId';
