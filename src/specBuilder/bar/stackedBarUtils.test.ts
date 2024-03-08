@@ -26,7 +26,7 @@ import { GroupMark, Mark, RectEncodeEntry } from 'vega';
 import { defaultBarEnterEncodings, defaultBarProps, defaultBarStrokeEncodings } from './barTestUtils';
 import { getDodgedAndStackedBarMark, getStackedBarMarks, getStackedDimensionEncodings } from './stackedBarUtils';
 
-const defaultStackedBarXEncondings: RectEncodeEntry = {
+const defaultStackedBarXEncodings: RectEncodeEntry = {
 	x: { scale: 'xBand', field: DEFAULT_CATEGORICAL_DIMENSION },
 	width: { scale: 'xBand', band: 1 },
 };
@@ -37,7 +37,7 @@ const defaultBackgroundMark: Mark = {
 			...defaultBarEnterEncodings,
 			fill: { signal: BACKGROUND_COLOR },
 		},
-		update: defaultStackedBarXEncondings,
+		update: defaultStackedBarXEncodings,
 	},
 	from: { data: FILTERED_TABLE },
 	interactive: false,
@@ -145,7 +145,7 @@ describe('stackedBarUtils', () => {
 
 	describe('getStackedDimensionEncodings()', () => {
 		test('should return x and width encodings', () => {
-			expect(getStackedDimensionEncodings(defaultBarProps)).toStrictEqual(defaultStackedBarXEncondings);
+			expect(getStackedDimensionEncodings(defaultBarProps)).toStrictEqual(defaultStackedBarXEncodings);
 		});
 
 		test('should get dodged x encoding if stacked/dodged', () => {

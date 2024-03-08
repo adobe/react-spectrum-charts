@@ -251,7 +251,7 @@ const defaultSpec: Spec = {
 describe('barSpecBuilder', () => {
 	describe('addBar()', () => {
 		test('no props', () => {
-			expect(addBar(startingSpec, { idKey: MARK_ID })).toStrictEqual(defaultSpec);
+			expect(addBar(startingSpec, { idKey: MARK_ID, animations: false })).toStrictEqual(defaultSpec);
 		});
 	});
 

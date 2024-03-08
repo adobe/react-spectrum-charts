@@ -69,7 +69,7 @@ export const getLineStaticPoint = ({
 			},
 			update: {
 				x: getXProductionRule(scaleType, dimension),
-				y: animations !== false ? getAnimationMarks(dimension, metric, data, previousData) : undefined
+				...(animations !== false && { y: getAnimationMarks(dimension, metric, data, previousData) })
 			},
 		},
 	};

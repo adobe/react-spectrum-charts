@@ -68,6 +68,7 @@ const defaultLineProps: LineSpecProps = {
 	opacity: { value: 1 },
 	popoverMarkName: undefined,
 	scaleType: 'time',
+	animations: false
 };
 
 const basicMetricRangeMarks = [
