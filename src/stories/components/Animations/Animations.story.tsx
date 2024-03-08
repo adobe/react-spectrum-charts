@@ -1,15 +1,16 @@
 import { ReactElement, useState } from 'react';
 
+import { MARK_ID } from '@constants';
 import useChartProps from '@hooks/useChartProps';
-import { Annotation, Area, Axis, Bar, Chart, Legend, Line } from '@rsc';
+import { Annotation, Area, Axis, Bar, Chart, ChartPopover, ChartTooltip, Legend, Line } from '@rsc';
 import { areaData, newDataArray1WithStaticPoints } from '@stories/data/data';
 import { StoryFn } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
-import { ChartData, ChartElement } from 'types';
+import { ChartData, ChartElement, Datum, SpectrumColor } from 'types';
 
-import { Button } from '@adobe/react-spectrum';
+import { Button, Content, Text, View } from '@adobe/react-spectrum';
 
-import { barData, barSubSeriesData } from '../Bar/data';
+import { barData, barSubSeriesData, generateMockDataForTrellis } from '../Bar/data';
 
 export default {
 	title: 'RSC/Animations',
@@ -37,7 +38,7 @@ const ChartWithToggleableData = ({ ChartComponent, initialData, secondaryData }:
 
 	return (
 		<div>
-			<Chart data={currentData} {...remaingProps} />
+			<Chart data={currentData} {...remaingProps} debug />
 			<Button onPress={toggleDataSource} variant={'primary'}>
 				Toggle Data
 			</Button>
@@ -85,8 +86,8 @@ const BarStory: StoryFn<ToggleableDataProps> = (args): ReactElement => {
 		<ChartWithToggleableData
 			ChartComponent={
 				<Chart {...chartProps}>
-					<Axis position={'left'} baseline title="Browser" />
-					<Axis position={'bottom'} grid title="Downloads" />
+					<Axis position={'bottom'} baseline title="Browser" />
+					<Axis position={'left'} grid title="Downloads" />
 					<Bar dimension={'browser'} metric={'downloads'} />
 				</Chart>
 			}
@@ -106,8 +107,8 @@ const DodgedBarStory: StoryFn<ToggleableDataProps> = (args): ReactElement => {
 		<ChartWithToggleableData
 			ChartComponent={
 				<Chart {...chartProps}>
-					<Axis position={'left'} baseline title="Browser" />
-					<Axis position={'bottom'} grid title="Downloads" />
+					<Axis position={'bottom'} baseline title="Browser" />
+					<Axis position={'left'} grid title="Downloads" />
 					<Bar
 						type={'dodged'}
 						dimension={'browser'}
@@ -117,6 +118,55 @@ const DodgedBarStory: StoryFn<ToggleableDataProps> = (args): ReactElement => {
 						<Annotation textKey="percentLabel" />
 					</Bar>
 					<Legend title="Operating system" highlight />
+				</Chart>
+			}
+			{...args}
+		/>
+	);
+};
+
+const TrellisHorizontalBarStory: StoryFn<ToggleableDataProps> = (args): ReactElement => {
+	const colors: SpectrumColor[] = [
+		'sequential-magma-200',
+		'sequential-magma-400',
+		'sequential-magma-600',
+		'sequential-magma-800',
+		'sequential-magma-1000',
+		'sequential-magma-1200',
+		'sequential-magma-1400',
+	];
+
+	const chartProps = useChartProps({ data: [], minWidth: 400, maxWidth: 800, height: 400, colors });
+
+	const dialog = (item: Datum) => {
+		return (
+			<Content>
+				<View>
+					<Text>{item[MARK_ID]}</Text>
+				</View>
+			</Content>
+		);
+	};
+
+	return (
+		<ChartWithToggleableData
+			ChartComponent={
+				<Chart {...chartProps}>
+					<Axis position={'bottom'} title="Users, Count" grid />
+					<Axis position={'left'} title="Platform" baseline />
+					<Bar
+						type="stacked"
+						trellis="event"
+						dimension="segment"
+						color="bucket"
+						order="order"
+						orientation="horizontal"
+						trellisOrientation="horizontal"
+					>
+						<ChartTooltip>{dialog}</ChartTooltip>
+						<ChartPopover>{dialog}</ChartPopover>
+					</Bar>
+					<Legend />
 				</Chart>
 			}
 			{...args}
@@ -219,4 +269,47 @@ DodgedBarZero.args = {
 	]),
 };
 
-export { AreaSwitch, AreaZero, SingleLineSwitch, SingleLineZero, BarSwitch, BarZero, DodgedBarSwitch, DodgedBarZero };
+const trellisData = generateMockDataForTrellis({
+	property1: ['All users', 'Roku', 'Chromecast', 'Amazon Fire', 'Apple TV'],
+	property2: ['A. Sign up', 'B. Watch a video', 'C. Add to MyList'],
+	property3: ['1-5 times', '6-10 times', '11-15 times', '16-20 times', '21-25 times', '26+ times'],
+	propertyNames: ['segment', 'event', 'bucket'],
+	randomizeSteps: false,
+	orderBy: 'bucket',
+});
+const TrellisHorizontalBarSwitch = bindWithProps(TrellisHorizontalBarStory);
+TrellisHorizontalBarSwitch.args = {
+	initialData: trellisData,
+	secondaryData: trellisData.map((data) => {
+		return {
+			value: manipulateData(data.value as number),
+			...data,
+		};
+	}),
+};
+
+const TrellisHorizontalBarZero = bindWithProps(TrellisHorizontalBarStory);
+TrellisHorizontalBarZero.args = {
+	initialData: trellisData,
+	secondaryData: generateMockDataForTrellis({
+		property1: ['All users', 'Roku', 'Chromecast', 'Amazon Fire', 'Apple TV'],
+		property2: ['A. Sign up', 'B. Watch a video', 'C. Add to MyList'],
+		property3: ['1-5 times', '6-10 times', '11-15 times', '16-20 times', '21-25 times', '26+ times'],
+		propertyNames: ['segment', 'event', 'bucket'],
+		randomizeSteps: true,
+		orderBy: 'bucket',
+	}),
+};
+
+export {
+	AreaSwitch,
+	AreaZero,
+	SingleLineSwitch,
+	SingleLineZero,
+	BarSwitch,
+	BarZero,
+	DodgedBarSwitch,
+	DodgedBarZero,
+	TrellisHorizontalBarSwitch,
+	TrellisHorizontalBarZero,
+};
