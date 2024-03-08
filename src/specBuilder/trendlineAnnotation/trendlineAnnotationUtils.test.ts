@@ -165,7 +165,7 @@ describe('getTextFill()', () => {
 	test('should return the correct fill for the text', () => {
 		expect(getTextFill({ ...defaultAnnotationProps, badge: true })).toEqual([
 			{
-				test: `contrast(scale('color', datum.datum.${DEFAULT_COLOR}), '${colors['gray-50']}') > 3.5`,
+				test: `contrast(scale('color', datum.datum.${DEFAULT_COLOR}), '${colors['gray-50']}') >= 4.5`,
 				value: colors['gray-50'],
 			},
 			{ value: colors['gray-900'] },

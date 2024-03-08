@@ -238,7 +238,7 @@ export const getTextFill = ({
 	const colorString = getColorProductionRuleSignalString(color, colorScheme);
 	const textColors = [getColorValue('gray-50', colorScheme), getColorValue('gray-900', colorScheme)];
 	return [
-		{ test: `contrast(${colorString}, '${textColors[0]}') > 3.5`, value: textColors[0] },
+		{ test: `contrast(${colorString}, '${textColors[0]}') >= 4.5`, value: textColors[0] },
 		{ value: textColors[1] },
 	];
 };
