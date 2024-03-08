@@ -168,12 +168,44 @@ describe('Axis', () => {
 
 	describe('NumberFormat', () => {
 		test('Should render the number format provided', async () => {
-			render(<NumberFormat {...NumberFormat.args} numberFormat="$,.2f" />);
+			render(<NumberFormat {...NumberFormat.args} numberFormat=",.2f" />);
 			const chart = await findChart();
 			expect(chart).toBeInTheDocument();
 
-			expect(screen.getByText('$1.00')).toBeInTheDocument();
+			expect(screen.getByText('2,000,000.00')).toBeInTheDocument();
+			expect(screen.getByText('0.00')).toBeInTheDocument();
+		});
+		test('currency', async () => {
+			render(<NumberFormat {...NumberFormat.args} numberFormat="currency" />);
+			const chart = await findChart();
+			expect(chart).toBeInTheDocument();
+
+			expect(screen.getByText('$2,000,000.00')).toBeInTheDocument();
 			expect(screen.getByText('$0.00')).toBeInTheDocument();
+		});
+		test('shortCurrency', async () => {
+			render(<NumberFormat {...NumberFormat.args} numberFormat="shortCurrency" />);
+			const chart = await findChart();
+			expect(chart).toBeInTheDocument();
+
+			expect(screen.getByText('$2M')).toBeInTheDocument();
+			expect(screen.getByText('$500K')).toBeInTheDocument();
+		});
+		test('shortNumber', async () => {
+			render(<NumberFormat {...NumberFormat.args} numberFormat="shortNumber" />);
+			const chart = await findChart();
+			expect(chart).toBeInTheDocument();
+
+			expect(screen.getByText('2M')).toBeInTheDocument();
+			expect(screen.getByText('500K')).toBeInTheDocument();
+		});
+		test('standardNumber', async () => {
+			render(<NumberFormat {...NumberFormat.args} numberFormat="standardNumber" />);
+			const chart = await findChart();
+			expect(chart).toBeInTheDocument();
+
+			expect(screen.getByText('2,000,000')).toBeInTheDocument();
+			expect(screen.getByText('500,000')).toBeInTheDocument();
 		});
 	});
 

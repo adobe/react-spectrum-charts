@@ -191,10 +191,8 @@ export const getTrendlineAnnotationPointY = ({
  * @returns TextMark
  */
 export const getTrendlineAnnotationTextMark = (annotation: TrendlineAnnotationSpecProps): TextMark => {
-	const { badge, name, numberFormat, prefix, trendlineName, markName } = annotation;
+	const { name, numberFormat, prefix, trendlineName, markName } = annotation;
 	const textPrefix = prefix ? `'${prefix} ' + ` : '';
-	// need more offset if there is a badge to make room for said badge
-	const offset = badge ? [4, 4, 4, 4, 5.65, 5.65, 5.65, 5.65] : [2, 2, 2, 2, 2.83, 2.83, 2.83, 2.83];
 	const fill = getTextFill({ ...annotation });
 	return {
 		name,
@@ -212,7 +210,7 @@ export const getTrendlineAnnotationTextMark = (annotation: TrendlineAnnotationSp
 				type: 'label',
 				size: { signal: '[width, height]' },
 				avoidMarks: [trendlineName, `${markName}_group`],
-				offset,
+				offset: [6, 6, 6, 6, 8.49, 8.49, 8.49, 8.49],
 				anchor: ['top', 'bottom', 'right', 'left', 'top-right', 'top-left', 'bottom-right', 'bottom-left'],
 			},
 		],

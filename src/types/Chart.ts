@@ -88,6 +88,7 @@ export type LineTypes = LineType[] | LineType[][];
 export type Opacities = number[] | number[][];
 export type SymbolShapes = ChartSymbolShape[] | ChartSymbolShape[][];
 export type ChartSymbolShape = 'rounded-square' | SymbolShape;
+export type NumberFormat = 'currency' | 'shortCurrency' | 'shortNumber' | 'standardNumber';
 
 export interface SharedChartProps extends SpecProps {
 	/** Vega config that can be used to tweak the style of the chart. @see https://vega.github.io/vega/docs/config/ */
@@ -212,7 +213,7 @@ export interface AxisProps extends BaseProps {
 	 *
 	 * see {@link https://d3js.org/d3-format#locale_format}
 	 */
-	numberFormat?: string;
+	numberFormat?: NumberFormat | string;
 	/** The minimum and maximum values for the axis, for example: `[-10, 10]`.
 	 *
 	 * Note: This prop is only supported for axes with `linear` or `time` scale types.

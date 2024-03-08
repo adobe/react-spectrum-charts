@@ -155,10 +155,6 @@ describe('getTrendlineAnnotationTextMark()', () => {
 		const textMark = getTrendlineAnnotationTextMark({ ...defaultAnnotationProps, prefix: '' });
 		expect(textMark.encode?.enter?.text).toHaveProperty('signal', `format(datum.datum.${TRENDLINE_VALUE}, '')`);
 	});
-	test('should increase offset if badge is true', () => {
-		const textMark = getTrendlineAnnotationTextMark({ ...defaultAnnotationProps, badge: true });
-		expect(textMark.transform?.[0]).toHaveProperty('offset', [4, 4, 4, 4, 5.65, 5.65, 5.65, 5.65]);
-	});
 });
 
 describe('getTextFill()', () => {

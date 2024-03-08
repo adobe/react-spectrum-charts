@@ -20,6 +20,7 @@ import {
 	LineType,
 	LineTypeFacet,
 	LineWidth,
+	NumberFormat,
 	OpacityFacet,
 	SpectrumColor,
 	SymbolSize,
@@ -293,4 +294,21 @@ export const mergeValuesIntoData = (data, values) => {
  */
 export const getDimensionField = (dimension: string, scaleType?: ScaleType) => {
 	return scaleType === 'time' ? DEFAULT_TRANSFORMED_TIME_DIMENSION : dimension;
+};
+
+/**
+ * Gets the d3 format specifier for named number formats.
+ * shortNumber and shortCurrency are not included since these require additional logic
+ * @param numberFormat
+ * @returns
+ */
+export const getD3FormatSpecifierFromNumberFormat = (numberFormat: NumberFormat | string): string => {
+	switch (numberFormat) {
+		case 'currency':
+			return '$,.2f'; // currency format
+		case 'standardNumber':
+			return ','; // standard number format
+		default:
+			return numberFormat;
+	}
 };
