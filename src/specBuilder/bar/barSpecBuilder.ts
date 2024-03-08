@@ -28,8 +28,7 @@ import {
 	getMetricScale,
 	getScaleIndexByName,
 	getScaleIndexByType,
-	getRSCAnimationCurve,
-	getRSCAnimationCurveInverse,
+	getRSCAnimationScales,
 } from '@specBuilder/scale/scaleSpecBuilder';
 import {
 	getGenericSignal,
@@ -201,8 +200,7 @@ export const addScales = produce<Scale[], [BarSpecProps]>((scales, props) => {
 
 	//TODO add comments
 	if (animations == true) {
-		scales.push(getRSCAnimationCurve());
-		scales.push(getRSCAnimationCurveInverse());
+		getRSCAnimationScales(scales)
 	}
 	addMetricScale(scales, getScaleValues(props), orientation === 'vertical' ? 'y' : 'x');
 	addDimensionScale(scales, props);
