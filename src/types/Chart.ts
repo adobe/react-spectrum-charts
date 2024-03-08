@@ -571,6 +571,8 @@ export interface TrendlineProps {
 }
 
 export interface TrendlineAnnotationProps {
+	/** Adds a badge around the annotation */
+	badge?: boolean;
 	/** where along the dimension scale to label the trendline value */
 	dimensionValue?: number | 'start' | 'end';
 	/** d3 number format specifier. Only valid if labelFormat is linear or undefined.

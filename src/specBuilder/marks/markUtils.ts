@@ -118,6 +118,13 @@ export const hasTooltip = (children: ReactElement[]): boolean => children.some((
 export const childHasTooltip = (children: ReactElement[]): boolean =>
 	children.some((child) => hasTooltip(child.props.children));
 
+/**
+ * Gets the color encoding
+ * @param color
+ * @param colorScheme
+ * @param colorScaleType
+ * @returns ColorValueRef
+ */
 export const getColorProductionRule = (
 	color: ColorFacet | DualFacet,
 	colorScheme: ColorScheme,
@@ -133,6 +140,31 @@ export const getColorProductionRule = (
 		return { scale: colorScaleName, field: color };
 	}
 	return { value: getColorValue(color.value, colorScheme) };
+};
+
+/**
+ * gets the color encoding in a signal string format
+ * @param color
+ * @param colorScheme
+ * @param colorScaleType
+ * @returns string
+ */
+export const getColorProductionRuleSignalString = (
+	color: ColorFacet | DualFacet,
+	colorScheme: ColorScheme,
+	colorScaleType: 'linear' | 'ordinal' = 'ordinal'
+): string => {
+	const colorRule = getColorProductionRule(color, colorScheme, colorScaleType);
+	if ('signal' in colorRule) {
+		return colorRule.signal;
+	}
+	if ('scale' in colorRule && 'field' in colorRule) {
+		return `scale('${colorRule.scale}', datum.${colorRule.field})`;
+	}
+	if ('value' in colorRule && colorRule.value) {
+		return `'${colorRule.value}'`;
+	}
+	return '';
 };
 
 export const getLineWidthProductionRule = (

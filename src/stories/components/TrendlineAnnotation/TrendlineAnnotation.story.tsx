@@ -48,6 +48,11 @@ const TrendlineAnnotationStory: StoryFn<typeof TrendlineAnnotation> = (args): Re
 
 const Basic = bindWithProps(TrendlineAnnotationStory);
 
+const Badge = bindWithProps(TrendlineAnnotationStory);
+Badge.args = {
+	badge: true,
+};
+
 const DimensionValue = bindWithProps(TrendlineAnnotationStory);
 DimensionValue.args = {
 	dimensionValue: 2,
@@ -60,14 +65,15 @@ NumberFormat.args = {
 
 const Prefix = bindWithProps(TrendlineAnnotationStory);
 Prefix.args = {
-	prefix: 'Speed: ',
+	prefix: 'Speed:',
 };
 
 const Supreme = bindWithProps(TrendlineAnnotationStory);
 Supreme.args = {
+	badge: true,
 	dimensionValue: 'start',
 	numberFormat: '.2f',
-	prefix: 'Speed: ',
+	prefix: 'Speed:',
 };
 
-export { Basic, DimensionValue, NumberFormat, Prefix, Supreme };
+export { Basic, Badge, DimensionValue, NumberFormat, Prefix, Supreme };

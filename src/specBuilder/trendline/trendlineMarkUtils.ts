@@ -91,9 +91,9 @@ export const getTrendlineRuleMark = (markProps: TrendlineParentProps, trendlineP
 		lineWidth,
 		name,
 		orientation,
+		trendlineColor,
 		trendlineDimension,
 	} = trendlineProps;
-	const color = trendlineProps.color ? { value: trendlineProps.color } : markProps.color;
 
 	const data = displayOnHover ? `${name}_highlightedData` : `${name}_highResolutionData`;
 
@@ -108,7 +108,7 @@ export const getTrendlineRuleMark = (markProps: TrendlineParentProps, trendlineP
 		encode: {
 			enter: {
 				...getRuleYEncodings(dimensionExtent, trendlineDimension, orientation),
-				stroke: getColorProductionRule(color, colorScheme),
+				stroke: getColorProductionRule(trendlineColor, colorScheme),
 				strokeDash: getStrokeDashProductionRule({ value: lineType }),
 				strokeOpacity: getOpacityProductionRule({ value: trendlineProps.opacity }),
 				strokeWidth: getLineWidthProductionRule({ value: lineWidth }),
@@ -224,10 +224,16 @@ export const getEndDimensionExtentProductionRule = (
  */
 export const getTrendlineLineMark = (markProps: TrendlineParentProps, trendlineProps: TrendlineSpecProps): LineMark => {
 	const { colorScheme } = markProps;
-	const { dimensionScaleType, isDimensionNormalized, lineType, lineWidth, name, orientation, trendlineDimension } =
-		trendlineProps;
-
-	const color = trendlineProps.color ? { value: trendlineProps.color } : markProps.color;
+	const {
+		dimensionScaleType,
+		isDimensionNormalized,
+		lineType,
+		lineWidth,
+		name,
+		orientation,
+		trendlineColor,
+		trendlineDimension,
+	} = trendlineProps;
 
 	return {
 		name,
@@ -237,7 +243,7 @@ export const getTrendlineLineMark = (markProps: TrendlineParentProps, trendlineP
 		encode: {
 			enter: {
 				y: getLineYProductionRule(trendlineDimension, orientation),
-				stroke: getColorProductionRule(color, colorScheme),
+				stroke: getColorProductionRule(trendlineColor, colorScheme),
 				strokeDash: getStrokeDashProductionRule({ value: lineType }),
 				strokeOpacity: getOpacityProductionRule({ value: trendlineProps.opacity }),
 				strokeWidth: getLineWidthProductionRule({ value: lineWidth }),
