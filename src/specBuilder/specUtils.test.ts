@@ -23,6 +23,7 @@ import { BandScale, OrdinalScale } from 'vega';
 
 import {
 	getColorValue,
+	getD3FormatSpecifierFromNumberFormat,
 	getDimensionField,
 	getFacetsFromProps,
 	getFacetsFromScales,
@@ -193,6 +194,14 @@ describe('specUtils', () => {
 			expect(getDimensionField(DEFAULT_CATEGORICAL_DIMENSION, 'time')).toEqual(
 				DEFAULT_TRANSFORMED_TIME_DIMENSION
 			);
+		});
+	});
+
+	describe('getD3FormatSpecifierFromNumberFormat()', () => {
+		test('should return proper formats', () => {
+			expect(getD3FormatSpecifierFromNumberFormat('currency')).toEqual('$,.2f');
+			expect(getD3FormatSpecifierFromNumberFormat('standardNumber')).toEqual(',');
+			expect(getD3FormatSpecifierFromNumberFormat(',.2f')).toEqual(',.2f');
 		});
 	});
 });

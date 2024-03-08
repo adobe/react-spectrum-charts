@@ -49,6 +49,7 @@ const defaultAxisProps: AxisSpecProps = {
 	labelFontWeight: DEFAULT_LABEL_FONT_WEIGHT,
 	labelOrientation: DEFAULT_LABEL_ORIENTATION,
 	labels: [],
+	numberFormat: 'shortNumber',
 	position: 'bottom',
 	scaleType: 'linear',
 	subLabels: [],

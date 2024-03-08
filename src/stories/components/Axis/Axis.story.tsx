@@ -24,6 +24,20 @@ import timeData from './timeData.json';
 export default {
 	title: 'RSC/Axis',
 	component: Axis,
+	argTypes: {
+		lineType: {
+			control: 'select',
+			options: ['solid', 'dashed', 'dotted', 'dotDash', 'shortDash', 'longDash', 'twoDash'],
+		},
+		lineWidth: {
+			control: 'inline-radio',
+			options: ['XS', 'S', 'M', 'L', 'XL'],
+		},
+		numberFormat: {
+			control: 'select',
+			options: ['currency', 'shortCurrency', 'shortNumber', 'standardNumber', '$,.2f', ',.2%', '.3s'],
+		},
+	},
 };
 
 const data = [
@@ -191,13 +205,14 @@ NonLinearAxis.args = {
 
 const NumberFormat = bindWithProps(AxisStory);
 NumberFormat.args = {
-	numberFormat: '$,.2f',
+	numberFormat: 'shortCurrency',
 	position: 'left',
 	baseline: true,
 	grid: true,
 	labelFormat: 'linear',
 	ticks: true,
 	title: 'Price',
+	range: [0, 2000000],
 };
 
 const CustomXRange = bindWithProps(LinearAxisStory);

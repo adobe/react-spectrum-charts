@@ -15,6 +15,7 @@ import {
 	getLabelAnchorValues,
 	getLabelAngle,
 	getLabelFormat,
+	getLabelNumberFormat,
 	getLabelOffset,
 	getLabelValue,
 	labelIsParallelToAxis,
@@ -166,9 +167,7 @@ describe('getLabelFormat()', () => {
 		expect(labelFormat[0]).toEqual({ test: 'isNumber(datum.value)', signal: "format(datum.value, '.2f')" });
 	});
 	test('should not include the number format test if numberFormat does not exist or is an empty string', () => {
-		expect(
-			getLabelFormat({ ...defaultAxisProps, labelFormat: 'linear', numberFormat: undefined }, 'xLinear')
-		).toHaveLength(3);
+		expect(getLabelFormat({ ...defaultAxisProps, labelFormat: 'linear' }, 'xLinear')).toHaveLength(3);
 		expect(
 			getLabelFormat({ ...defaultAxisProps, labelFormat: 'linear', numberFormat: '' }, 'xLinear')
 		).toHaveLength(3);
@@ -202,5 +201,24 @@ describe('getLabelFormat()', () => {
 			'signal',
 			'formatTimeDurationLabels(datum)'
 		);
+	});
+});
+
+describe('getLabelNumberFormat()', () => {
+	test('should return correct signal for shortNumber', () => {
+		expect(getLabelNumberFormat('shortNumber')).toHaveProperty(
+			'signal',
+			"upper(replace(format(datum.value, '.3~s'), /(\\d+)G/, '$1B'))"
+		);
+	});
+	test('should return correct signal for shortCurrency', () => {
+		expect(getLabelNumberFormat('shortCurrency')).toHaveProperty(
+			'signal',
+			"upper(replace(format(datum.value, '$.3~s'), /(\\d+)G/, '$1B'))"
+		);
+	});
+	test('should return correct signal for string specifier', () => {
+		const numberFormat = '.2f';
+		expect(getLabelNumberFormat(numberFormat)).toHaveProperty('signal', `format(datum.value, '${numberFormat}')`);
 	});
 });
