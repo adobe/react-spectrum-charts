@@ -82,11 +82,7 @@ describe('getDefaultAxis()', () => {
 						text: [
 							{
 								test: 'isNumber(datum.value) && abs(datum.value) >= 1000',
-								signal: "upper(replace(format(datum.value, '.3~s'), 'G', 'B'))",
-							},
-							{
-								test: 'isNumber(datum.value)',
-								signal: 'format(datum.value, ",")',
+								signal: "upper(replace(format(datum.value, '.3~s'), /(\\d+)G/, '$1B'))",
 							},
 							{
 								signal: 'datum.value',
@@ -146,11 +142,7 @@ describe('getDefaultAxis()', () => {
 						text: [
 							{
 								test: 'isNumber(datum.value) && abs(datum.value) >= 1000',
-								signal: "upper(replace(format(datum.value, '.3~s'), 'G', 'B'))",
-							},
-							{
-								test: 'isNumber(datum.value)',
-								signal: 'format(datum.value, ",")',
+								signal: "upper(replace(format(datum.value, '.3~s'), /(\\d+)G/, '$1B'))",
 							},
 							{
 								signal: 'datum.value',
