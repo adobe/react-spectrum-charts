@@ -17,9 +17,10 @@ import {
 	getLineWidthProductionRule,
 	getOpacityProductionRule,
 	getStrokeDashProductionRule,
+	getStrokeOpacityAnimationRules,
 	getTooltip,
 	getXProductionRule,
-	hasPopover,
+	hasPopover
 } from '@specBuilder/marks/markUtils';
 import { MarkChildElement, OpacityFacet, ScaleType } from 'types';
 import { LineMark, Mark, NumericValueRef, PathMark, ProductionRule, RuleMark, SymbolMark } from 'vega';
@@ -71,6 +72,7 @@ export const getLineStrokeOpacity = ({
 	interactiveMarkName,
 	opacity,
 	popoverMarkName,
+	animations,
 }: LineMarkProps): ProductionRule<NumericValueRef> => {
 	const baseRule = getOpacityProductionRule(displayOnHover ? { value: 0 } : opacity);
 	if (!interactiveMarkName) return [baseRule];
@@ -78,6 +80,12 @@ export const getLineStrokeOpacity = ({
 
 	// add a rule that will lower the opacity of the line if there is a hovered series, but this line is not the one hovered
 	const hoverSignal = `${interactiveMarkName}_hoveredSeries`;
+	//TODO: add comments/tests/etc
+	if (animations == true) {
+		const hoverSignalPrev = `${interactiveMarkName}_hoveredSeries_prev`
+		return getStrokeOpacityAnimationRules(hoverSignal, hoverSignalPrev, baseRule);
+	}
+
 	strokeOpacityRules.push({
 		test: `${hoverSignal} && ${hoverSignal} !== datum.${SERIES_ID}`,
 		...getHighlightOpacityValue(baseRule),

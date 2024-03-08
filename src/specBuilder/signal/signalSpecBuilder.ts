@@ -127,6 +127,9 @@ const getRSCAnimation = (): Signal => {
 
 //TODO: add documentation
 const getRSCColorAnimationDirection = (name: string): Signal => {
+	if (name === 'line0') {
+		name = name.concat('_voronoi')
+	}
 	return {
 		name: 'rscColorAnimationDirection',
 		value: -1,
@@ -167,5 +170,17 @@ const getPrevHoverSignal = (name: string): Signal => {
 const getSelectedID = (name: string): Signal => {
 	return {
 		name: `${name}_selectedId`, value: null
+	}
+}
+
+//TODO: add doc/test/etc
+export const getLineUniqueOpacityAnimationSignals = (name: string): Signal => {
+	return {
+		name: `${name}_hoveredSeries_prev`,
+		value: null,
+		on: [
+			{events: `@${name}_voronoi:mouseover`,
+			update: `datum.datum.${SERIES_ID}`}
+		]
 	}
 }

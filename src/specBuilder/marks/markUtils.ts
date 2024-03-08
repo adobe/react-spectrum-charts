@@ -15,7 +15,12 @@ import { ChartPopover } from '@components/ChartPopover';
 import { ChartTooltip } from '@components/ChartTooltip';
 import { MetricRange } from '@components/MetricRange';
 import { Trendline } from '@components/Trendline';
-import { BACKGROUND_COLOR, DEFAULT_TRANSFORMED_TIME_DIMENSION, HIGHLIGHT_CONTRAST_RATIO } from '@constants';
+import {
+	BACKGROUND_COLOR,
+	DEFAULT_TRANSFORMED_TIME_DIMENSION,
+	HIGHLIGHT_CONTRAST_RATIO,
+	SERIES_ID
+} from '@constants';
 import {
 	getColorValue,
 	getLineWidthPixelsFromLineWidth,
@@ -176,13 +181,6 @@ export const getHighlightOpacityValue = (opacityValue: { signal: string } | { va
 	return { value: opacityValue.value / HIGHLIGHT_CONTRAST_RATIO };
 };
 
-//TODO: Add documentation
-export const getHighlightOpacityAnimationValue = (opacityValue: { signal: string } | { value: number }): { signal: string }  => {
-		if ('signal' in opacityValue) {
-			return { signal: `max(1-rscColorAnimation, ${opacityValue.signal} / ${HIGHLIGHT_CONTRAST_RATIO})` }
-		}
-		return { signal: `max(1-rscColorAnimation, ${opacityValue.value} / ${HIGHLIGHT_CONTRAST_RATIO})`}
-};
 /**
  * gets the correct x encoding for marks that support scaleType
  * @param scaleType
@@ -197,3 +195,40 @@ export const getXProductionRule = (scaleType: ScaleType, dimension: string): Pro
 	}
 	return { scale: 'xPoint', field: dimension };
 };
+
+//TODO: Add documentation
+export const getHighlightOpacityAnimationValue = (opacityValue: { signal: string } | { value: number }): { signal: string }  => {
+	if ('signal' in opacityValue) {
+		return { signal: `max(1-rscColorAnimation, ${opacityValue.signal} / ${HIGHLIGHT_CONTRAST_RATIO})` }
+	}
+	return { signal: `max(1-rscColorAnimation, ${opacityValue.value} / ${HIGHLIGHT_CONTRAST_RATIO})`}
+};
+
+//TODO: Add documentation/tests/etc
+export const getStrokeOpacityAnimationRules = (
+	hoveredSignal: string,
+	hoveredSignalPrev: string,
+	opacityValue: { signal: string } | { value: number }
+): ProductionRule<NumericValueRef> => {
+	return [
+		{
+			test: `${hoveredSignal} && ${hoveredSignal} === datum.${SERIES_ID}`,
+			value: 1
+		},
+		{
+			test: `!${hoveredSignal} && ${hoveredSignalPrev} === datum.${SERIES_ID}`,
+			value: 1
+		},
+		{
+			test: `${hoveredSignal} && ${hoveredSignal} !== datum.${SERIES_ID}`,
+			...getHighlightOpacityAnimationValue(opacityValue)
+		},
+		{
+			test: `!${hoveredSignal} && ${hoveredSignal} !== datum.${SERIES_ID}`,
+			...getHighlightOpacityAnimationValue(opacityValue)
+		},
+		{
+			value: 1
+		}
+	]
+}

@@ -29,12 +29,19 @@ import { ChartData, ColorScheme, LineProps, LineSpecProps, MarkChildElement } fr
 import { Data, Mark, Scale, Signal, Spec } from 'vega';
 
 import { addTimeTransform, getTableData } from '../data/dataUtils';
-import { addContinuousDimensionScale, addFieldToFacetScaleDomain, addMetricScale } from '../scale/scaleSpecBuilder';
 import {
+	addContinuousDimensionScale,
+	addFieldToFacetScaleDomain,
+	addMetricScale,
+	getRSCAnimationScales
+} from '../scale/scaleSpecBuilder';
+import {
+	getAnimationSignals,
 	getGenericSignal,
+	getLineUniqueOpacityAnimationSignals,
 	getSeriesHoveredSignal,
 	getUncontrolledHoverSignal,
-	hasSignalByName,
+	hasSignalByName
 } from '../signal/signalSpecBuilder';
 import { getLineHighlightedData, getLineStaticPointData } from './lineDataUtils';
 import { getLineHoverMarks, getLineMark } from './lineMarkUtils';
@@ -100,11 +107,16 @@ export const addData = produce<Data[], [LineSpecProps]>((data, props) => {
 });
 
 export const addSignals = produce<Signal[], [LineSpecProps]>((signals, props) => {
-	const { children, name } = props;
+	const { children, name, animations } = props;
 	signals.push(...getTrendlineSignals(props));
 	signals.push(...getMetricRangeSignals(props));
 
 	if (!hasInteractiveChildren(children)) return;
+	//TODO: Add comments/tests/etc
+	if (animations == true) {
+		signals.push(...getAnimationSignals(name));
+		signals.push(getLineUniqueOpacityAnimationSignals(name))
+	}
 	if (!hasSignalByName(signals, `${name}_hoveredId`)) {
 		signals.push(getUncontrolledHoverSignal(`${name}`, true, `${name}_voronoi`));
 	}
@@ -120,7 +132,11 @@ export const addSignals = produce<Signal[], [LineSpecProps]>((signals, props) =>
 });
 
 export const setScales = produce<Scale[], [LineSpecProps]>((scales, props) => {
-	const { metric, dimension, color, lineType, opacity, padding, scaleType, children, name } = props;
+	const { metric, dimension, color, lineType, opacity, padding, scaleType, children, name, animations } = props;
+	//TODO: Add comments/documentation/tests
+	if ( animations == true ) {
+		getRSCAnimationScales(scales)
+	}
 	// add dimension scale
 	addContinuousDimensionScale(scales, { scaleType, dimension, padding });
 	// add color to the color domain
