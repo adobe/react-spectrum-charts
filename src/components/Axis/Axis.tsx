@@ -34,7 +34,7 @@ const Axis: FC<AxisProps> = ({
 	labelFormat,
 	labelOrientation = DEFAULT_LABEL_ORIENTATION,
 	labels,
-	numberFormat,
+	numberFormat = 'shortNumber',
 	range = undefined,
 	subLabels,
 	ticks = false,

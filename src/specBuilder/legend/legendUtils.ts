@@ -9,7 +9,17 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { HIGHLIGHT_CONTRAST_RATIO } from '@constants';
+import {
+	COLOR_SCALE,
+	DEFAULT_OPACITY_RULE,
+	HIGHLIGHTED_SERIES,
+	HIGHLIGHT_CONTRAST_RATIO,
+	LINE_TYPE_SCALE,
+	LINE_WIDTH_SCALE,
+	OPACITY_SCALE,
+	SYMBOL_SHAPE_SCALE,
+	SYMBOL_SIZE_SCALE,
+} from '@constants';
 import { getColorValue, getPathFromSymbolShape } from '@specBuilder/specUtils';
 import { spectrumColors } from '@themes';
 import merge from 'deepmerge';
@@ -27,6 +37,7 @@ import {
 	Color,
 	ColorValueRef,
 	FilterTransform,
+	GuideEncodeEntry,
 	LegendEncode,
 	NumericValueRef,
 	ProductionRule,
@@ -117,13 +128,12 @@ const getHoverEncodings = (facets: Facet[], props: LegendSpecProps): LegendEncod
 			},
 			labels: {
 				update: {
-					fillOpacity: getOpacityEncoding(props),
+					opacity: getOpacityEncoding(props),
 				},
 			},
 			symbols: {
 				update: {
-					fillOpacity: getSymbolOpacityEncoding(facets, props),
-					strokeOpacity: getOpacityEncoding(props),
+					opacity: getOpacityEncoding(props),
 				},
 			},
 		};
@@ -160,100 +170,65 @@ export const getOpacityEncoding = ({
 	keys,
 	name,
 }: LegendSpecProps): ProductionRule<NumericValueRef> | undefined => {
-	const highlightSignalName = keys ? `${name}_highlight` : 'highlightedSeries';
+	const highlightSignalName = keys ? `${name}_highlight` : HIGHLIGHTED_SERIES;
 	// only add symbol opacity if highlight is true or highlightedSeries is defined
 	if (highlight || highlightedSeries) {
-		return getHighlightOpacityEncoding({ value: 1 / HIGHLIGHT_CONTRAST_RATIO }, { value: 1 }, highlightSignalName);
+		return [
+			{
+				test: `${highlightSignalName} && datum.value !== ${highlightSignalName}`,
+				value: 1 / HIGHLIGHT_CONTRAST_RATIO,
+			},
+			DEFAULT_OPACITY_RULE,
+		];
 	}
 	return undefined;
-};
-
-/**
- * Combines the opacity facet encodings with the highlight behavior which halves the opacity of non-highlighted legend entries
- * @param highlight
- * @param opacity
- * @param facets
- * @returns
- */
-export const getSymbolOpacityEncoding = (
-	facets: Facet[],
-	{ highlight, highlightedSeries, keys, name, opacity }: LegendSpecProps
-): ProductionRule<NumericValueRef> | undefined => {
-	const highlightSignalName = keys ? `${name}_highlight` : 'highlightedSeries';
-	// only add symbol opacity if highlight is true or highlightedSeries is defined
-	if (highlight || highlightedSeries) {
-		if (facets || opacity) {
-			const opacityEncoding = getSymbolFacetEncoding<number>({
-				facets,
-				facetType: 'opacity',
-				customValue: opacity,
-				name,
-			}) ?? { value: 1 };
-			if ('signal' in opacityEncoding) {
-				return getHighlightOpacityEncoding(
-					{ signal: opacityEncoding.signal + ` / ${HIGHLIGHT_CONTRAST_RATIO}` },
-					opacityEncoding,
-					highlightSignalName
-				);
-			}
-			if ('value' in opacityEncoding && typeof opacityEncoding.value === 'number') {
-				return getHighlightOpacityEncoding(
-					{ value: opacityEncoding.value / HIGHLIGHT_CONTRAST_RATIO },
-					opacityEncoding,
-					highlightSignalName
-				);
-			}
-		}
-		return getHighlightOpacityEncoding({ value: 1 / HIGHLIGHT_CONTRAST_RATIO }, { value: 1 }, highlightSignalName);
-	}
-	return undefined;
-};
-
-const getHighlightOpacityEncoding = (
-	highlightOpacity: BaseValueRef<number>,
-	defaultOpacity: BaseValueRef<number>,
-	highlightSignalName: string
-): ProductionRule<NumericValueRef> => {
-	return [
-		{
-			test: `${highlightSignalName} && datum.value !== ${highlightSignalName}`,
-			...highlightOpacity,
-		},
-		defaultOpacity,
-	];
 };
 
 export const getSymbolEncodings = (facets: Facet[], props: LegendSpecProps): LegendEncode => {
 	const { color, lineType, lineWidth, name, opacity, symbolShape, colorScheme } = props;
-	let update: SymbolEncodeEntry = {
+	const enter: SymbolEncodeEntry = {
+		fillOpacity: getSymbolFacetEncoding<number>({ facets, facetType: OPACITY_SCALE, customValue: opacity, name }),
+		shape: getSymbolFacetEncoding<string>({
+			facets,
+			facetType: SYMBOL_SHAPE_SCALE,
+			customValue: symbolShape,
+			name,
+		}),
+		size: getSymbolFacetEncoding<number>({ facets, facetType: SYMBOL_SIZE_SCALE, name }),
+		strokeDash: getSymbolFacetEncoding<number[]>({
+			facets,
+			facetType: LINE_TYPE_SCALE,
+			customValue: lineType,
+			name,
+		}),
+		strokeWidth: getSymbolFacetEncoding<number>({
+			facets,
+			facetType: LINE_WIDTH_SCALE,
+			customValue: lineWidth,
+			name,
+		}),
+	};
+	const update: SymbolEncodeEntry = {
 		fill: [
 			...getHiddenSeriesColorRule(props, 'gray-300'),
-			getSymbolFacetEncoding<Color>({ facets, facetType: 'color', customValue: color, name }) ?? {
+			getSymbolFacetEncoding<Color>({ facets, facetType: COLOR_SCALE, customValue: color, name }) ?? {
 				value: spectrumColors[colorScheme]['categorical-100'],
 			},
 		],
-		fillOpacity: getSymbolFacetEncoding<number>({ facets, facetType: 'opacity', customValue: opacity, name }),
-		size: getSymbolFacetEncoding<number>({ facets, facetType: 'symbolSize', name }),
 		stroke: [
 			...getHiddenSeriesColorRule(props, 'gray-300'),
-			getSymbolFacetEncoding<Color>({ facets, facetType: 'color', customValue: color, name }) ?? {
+			getSymbolFacetEncoding<Color>({ facets, facetType: COLOR_SCALE, customValue: color, name }) ?? {
 				value: spectrumColors[colorScheme]['categorical-100'],
 			},
 		],
-		strokeDash: getSymbolFacetEncoding<number[]>({ facets, facetType: 'lineType', customValue: lineType, name }),
-		strokeOpacity: getSymbolFacetEncoding<number>({ facets, facetType: 'opacity', name }),
-		strokeWidth: getSymbolFacetEncoding<number>({ facets, facetType: 'lineWidth', customValue: lineWidth, name }),
-		shape: getSymbolFacetEncoding<string>({ facets, facetType: 'symbolShape', customValue: symbolShape, name }),
 	};
 	// Remove undefined values
-	update = JSON.parse(JSON.stringify(update));
+	const symbols: GuideEncodeEntry<SymbolEncodeEntry> = JSON.parse(JSON.stringify({ enter, update }));
 	return {
 		entries: {
 			name: `${name}_legendEntry`,
 		},
-		symbols: {
-			update,
-		},
+		symbols,
 	};
 };
 
@@ -279,6 +254,7 @@ const getSymbolFacetEncoding = <T>({
 
 	const secondaryFacetMapping: { [key in FacetType]: { scale: SecondaryFacetType; signal: string } } = {
 		color: { scale: 'secondaryColor', signal: 'colors' },
+		linearColor: { scale: 'secondaryColor', signal: 'colors' },
 		lineType: { scale: 'secondaryLineType', signal: 'lineTypes' },
 		lineWidth: { scale: 'secondaryLineWidth', signal: 'lineWidths' },
 		opacity: { scale: 'secondaryOpacity', signal: 'opacities' },

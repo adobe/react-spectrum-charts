@@ -15,7 +15,17 @@ import {
 	DEFAULT_COLOR_SCHEME,
 	DEFAULT_LINE_TYPES,
 	FILTERED_TABLE,
+	HIGHLIGHTED_ITEM,
+	HIGHLIGHTED_SERIES,
+	LINEAR_COLOR_SCALE,
+	LINE_TYPE_SCALE,
+	LINE_WIDTH_SCALE,
+	OPACITY_SCALE,
+	SELECTED_ITEM,
+	SELECTED_SERIES,
 	SERIES_ID,
+	SYMBOL_SHAPE_SCALE,
+	SYMBOL_SIZE_SCALE,
 	TABLE,
 } from '@constants';
 import { Area, Axis, Bar, Legend, Line, Scatter, Title } from '@rsc';
@@ -54,8 +64,9 @@ import { addDonut } from './donut/donutSpecBuilder';
 import { setHoverOpacityForMarks } from './legend/legendHighlightUtils';
 import { addLegend } from './legend/legendSpecBuilder';
 import { addLine } from './line/lineSpecBuilder';
+import { getOrdinalScale } from './scale/scaleSpecBuilder';
 import { addScatter } from './scatter/scatterSpecBuilder';
-import { getGenericSignal, hasSignalByName } from './signal/signalSpecBuilder';
+import { getGenericSignal } from './signal/signalSpecBuilder';
 import {
 	getColorValue,
 	getFacetsFromScales,
@@ -86,7 +97,15 @@ export function buildSpec({
 	title,
 }: SanitizedSpecProps) {
 	let spec = initializeSpec(null, { backgroundColor, colorScheme, description, title });
-	spec.signals = getDefaultSignals(backgroundColor, colors, colorScheme, lineTypes, opacities, hiddenSeries);
+	spec.signals = getDefaultSignals(
+		backgroundColor,
+		colors,
+		colorScheme,
+		lineTypes,
+		opacities,
+		hiddenSeries,
+		highlightedSeries
+	);
 	spec.scales = getDefaultScales(colors, colorScheme, lineTypes, lineWidths, opacities, symbolShapes, symbolSizes);
 
 	// need to build the spec in a specific order
@@ -178,8 +197,8 @@ export function buildSpec({
 	spec.data = addData(spec.data ?? [], { facets: getFacetsFromScales(spec.scales) });
 
 	// add signals and update marks for controlled highlighting if there isn't a legend with highlight enabled
-	if (highlightedSeries && !hasSignalByName(spec.signals ?? [], 'highlightedSeries')) {
-		spec = addHighlight(spec, { children, hiddenSeries, highlightedSeries });
+	if (highlightedSeries) {
+		setHoverOpacityForMarks(spec.marks ?? []);
 	}
 
 	// clear out all scales that don't have any fields on the domain
@@ -187,12 +206,6 @@ export function buildSpec({
 
 	return spec;
 }
-
-export const addHighlight = produce<Spec, [SanitizedSpecProps]>((spec, { highlightedSeries }) => {
-	if (!spec.signals) spec.signals = [];
-	spec.signals.push(getGenericSignal(`highlightedSeries`, highlightedSeries));
-	setHoverOpacityForMarks(spec.marks ?? []);
-});
 
 export const removeUnusedScales = produce<Spec>((spec) => {
 	spec.scales = spec.scales?.filter((scale) => {
@@ -221,7 +234,8 @@ export const getDefaultSignals = (
 	colorScheme: ColorScheme,
 	lineTypes: LineTypes,
 	opacities: Opacities | undefined,
-	hiddenSeries?: string[]
+	hiddenSeries?: string[],
+	highlightedSeries?: string
 ): Signal[] => {
 	// if the background color is transparent, then we want to set the signal background color to gray-50
 	// if the signal background color were transparent then backgroundMarks and annotation fill would also be transparent
@@ -233,6 +247,10 @@ export const getDefaultSignals = (
 		getGenericSignal('lineTypes', getTwoDimensionalLineTypes(lineTypes)),
 		getGenericSignal('opacities', getTwoDimensionalOpacities(opacities)),
 		getGenericSignal('hiddenSeries', hiddenSeries ?? []),
+		getGenericSignal(HIGHLIGHTED_ITEM),
+		getGenericSignal(HIGHLIGHTED_SERIES, highlightedSeries),
+		getGenericSignal(SELECTED_ITEM),
+		getGenericSignal(SELECTED_SERIES),
 	];
 };
 
@@ -280,6 +298,7 @@ const getDefaultScales = (
 	symbolSizes: [SymbolSize, SymbolSize]
 ): Scale[] => [
 	getColorScale(colors, colorScheme),
+	getLinearColorScale(colors, colorScheme),
 	getLineTypeScale(lineTypes),
 	getLineWidthScale(lineWidths),
 	getOpacityScale(opacities),
@@ -290,9 +309,15 @@ const getDefaultScales = (
 export const getColorScale = (colors: ChartColors, colorScheme: ColorScheme): OrdinalScale => {
 	// if a two dimensional scale was provided, then just grab the first color in each scale and set that as the scale range
 	const range = isColors(colors) ? getColors(colors, colorScheme) : colors.map((c) => getColors(c, colorScheme)[0]);
+	return getOrdinalScale('color', range);
+};
+
+export const getLinearColorScale = (colors: ChartColors, colorScheme: ColorScheme): LinearScale => {
+	// if a two dimensional scale was provided, then just grab the first color in each scale and set that as the scale range
+	const range = isColors(colors) ? getColors(colors, colorScheme) : colors.map((c) => getColors(c, colorScheme)[0]);
 	return {
-		name: 'color',
-		type: 'ordinal',
+		name: LINEAR_COLOR_SCALE,
+		type: 'linear',
 		range,
 		domain: { data: TABLE, fields: [] },
 	};
@@ -303,24 +328,15 @@ export const getLineTypeScale = (lineTypes: LineTypes): OrdinalScale => {
 	const range = isLineTypeArray(lineTypes)
 		? getStrokeDashesFromLineTypes(lineTypes)
 		: lineTypes.map((lineTypesArray) => getStrokeDashFromLineType(lineTypesArray[0]));
-	return {
-		name: 'lineType',
-		type: 'ordinal',
-		range,
-		domain: { data: TABLE, fields: [] },
-	};
+	return getOrdinalScale(LINE_TYPE_SCALE, range);
 };
+
 export const getSymbolShapeScale = (symbolShapes: SymbolShapes): OrdinalScale => {
 	// if a two dimensional scale was provided, then just grab the first color in each scale and set that as the scale range
 	const range = isSymbolShapeArray(symbolShapes)
 		? getPathsFromSymbolShapes(symbolShapes)
 		: symbolShapes.map((symbolShape) => getPathFromSymbolShape(symbolShape[0]));
-	return {
-		name: 'symbolShape',
-		type: 'ordinal',
-		range,
-		domain: { data: TABLE, fields: [] },
-	};
+	return getOrdinalScale(SYMBOL_SHAPE_SCALE, range);
 };
 
 /**
@@ -329,32 +345,25 @@ export const getSymbolShapeScale = (symbolShapes: SymbolShapes): OrdinalScale =>
  * @returns LinearScale
  */
 export const getSymbolSizeScale = (symbolSizes: [SymbolSize, SymbolSize]): LinearScale => ({
-	name: 'symbolSize',
+	name: SYMBOL_SIZE_SCALE,
 	type: 'linear',
 	zero: false,
 	range: symbolSizes.map((symbolSize) => getVegaSymbolSizeFromRscSymbolSize(symbolSize)),
 	domain: { data: TABLE, fields: [] },
 });
 
-export const getLineWidthScale = (lineWidths: LineWidth[]): OrdinalScale => ({
-	name: 'lineWidth',
-	type: 'ordinal',
-	range: lineWidths.map((lineWidth) => getLineWidthPixelsFromLineWidth(lineWidth)),
-	domain: { data: TABLE, fields: [] },
-});
+export const getLineWidthScale = (lineWidths: LineWidth[]): OrdinalScale => {
+	const range = lineWidths.map((lineWidth) => getLineWidthPixelsFromLineWidth(lineWidth));
+	return getOrdinalScale(LINE_WIDTH_SCALE, range);
+};
 
 export const getOpacityScale = (opacities?: Opacities): OrdinalScale | PointScale => {
 	if (opacities?.length) {
 		const range = isNumberArray(opacities) ? opacities : opacities.map((opacityArray) => opacityArray[0]);
-		return {
-			name: 'opacity',
-			type: 'ordinal',
-			range: range,
-			domain: { data: TABLE, fields: [] },
-		};
+		return getOrdinalScale(OPACITY_SCALE, range);
 	}
 	return {
-		name: 'opacity',
+		name: OPACITY_SCALE,
 		type: 'point',
 		range: [1, 0],
 		padding: 1,
@@ -365,7 +374,7 @@ export const getOpacityScale = (opacities?: Opacities): OrdinalScale | PointScal
 
 function getColors(colors: Colors, colorScheme: ColorScheme): string[] {
 	if (Array.isArray(colors)) {
-		return colors.map((color) => getColorValue(color, colorScheme));
+		return colors.map((color: string) => getColorValue(color, colorScheme));
 	}
 	return colorSchemes[colors];
 }

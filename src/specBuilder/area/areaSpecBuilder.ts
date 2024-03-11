@@ -12,17 +12,19 @@
 import { ChartPopover } from '@components/ChartPopover';
 import {
 	BACKGROUND_COLOR,
+	COLOR_SCALE,
 	DEFAULT_COLOR,
 	DEFAULT_COLOR_SCHEME,
 	DEFAULT_METRIC,
 	DEFAULT_TIME_DIMENSION,
 	FILTERED_TABLE,
-	MARK_ID
+	MARK_ID,
+	SELECTED_ITEM,
+	SELECTED_SERIES,
 } from '@constants';
 import {
+	addHighlightedSeriesSignalEvents,
 	getControlledHoverSignal,
-	getGenericSignal,
-	getSeriesHoveredSignal,
 	hasSignalByName,
 } from '@specBuilder/signal/signalSpecBuilder';
 import { spectrumColors } from '@themes';
@@ -123,7 +125,6 @@ export const addData = produce<Data[], [AreaSpecProps]>(
 		}
 
 		if (children.length) {
-			const selectSignal = `${name}_selectedId`;
 			const hoverSignal = `${name}_controlledHoveredId`;
 			data.push({
 				name: `${name}_highlightedDataPoint`,
@@ -131,20 +132,19 @@ export const addData = produce<Data[], [AreaSpecProps]>(
 				transform: [
 					{
 						type: 'filter',
-						expr: `${selectSignal} && ${selectSignal} === datum.${MARK_ID} || !${selectSignal} && ${hoverSignal} && ${hoverSignal} === datum.${MARK_ID}`,
+						expr: `${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${MARK_ID} || !${SELECTED_ITEM} && ${hoverSignal} && ${hoverSignal} === datum.${MARK_ID}`,
 					},
 				],
 			});
 
 			if (children.some((child) => child.type === ChartPopover)) {
-				const selectSeriesSignal = `${name}_selectedSeries`;
 				data.push({
 					name: `${name}_selectedDataSeries`,
 					source: FILTERED_TABLE,
 					transform: [
 						{
 							type: 'filter',
-							expr: `${selectSeriesSignal} && ${selectSeriesSignal} === datum.${color}`,
+							expr: `${SELECTED_SERIES} && ${SELECTED_SERIES} === datum.${color}`,
 						},
 					],
 				});
@@ -158,15 +158,7 @@ export const addSignals = produce<Signal[], [AreaSpecProps]>((signals, { childre
 	if (!hasSignalByName(signals, `${name}_controlledHoveredId`)) {
 		signals.push(getControlledHoverSignal(name));
 	}
-	if (!hasSignalByName(signals, `${name}_hoveredSeries`)) {
-		signals.push(getSeriesHoveredSignal(name));
-	}
-	if (!hasSignalByName(signals, `${name}_selectedId`)) {
-		signals.push(getGenericSignal(`${name}_selectedId`));
-	}
-	if (!hasSignalByName(signals, `${name}_selectedSeries`)) {
-		signals.push(getGenericSignal(`${name}_selectedSeries`));
-	}
+	addHighlightedSeriesSignalEvents(signals, name);
 });
 
 export const setScales = produce<Scale[], [AreaSpecProps]>(
@@ -174,7 +166,7 @@ export const setScales = produce<Scale[], [AreaSpecProps]>(
 		// add dimension scale
 		addContinuousDimensionScale(scales, { scaleType, dimension, padding });
 		// add color to the color domain
-		addFieldToFacetScaleDomain(scales, 'color', color);
+		addFieldToFacetScaleDomain(scales, COLOR_SCALE, color);
 		// find the linear scale and add our field to it
 		if (!metricEnd || !metricStart) {
 			metricStart = `${metric}0`;
@@ -285,7 +277,7 @@ const getHoverMarks = ({ children, name, dimension, metric, color, scaleType }: 
 			encode: {
 				enter: {
 					y: { scale: 'yLinear', field: `${metric}1` },
-					stroke: { scale: 'color', field: color },
+					stroke: { scale: COLOR_SCALE, field: color },
 					fill: { signal: BACKGROUND_COLOR },
 				},
 				update: {
@@ -328,7 +320,7 @@ const getSelectedAreaMarks = ({
 					y: { scale: 'yLinear', field: metricStart },
 					y2: { scale: 'yLinear', field: metricEnd },
 					// need to fill this so the white border doesn't slightly bleed around the blue select border
-					fill: { scale: 'color', field: color },
+					fill: { scale: COLOR_SCALE, field: color },
 					stroke: { value: spectrumColors.light['static-blue'] },
 					strokeWidth: { value: 2 },
 					strokeJoin: { value: 'round' },

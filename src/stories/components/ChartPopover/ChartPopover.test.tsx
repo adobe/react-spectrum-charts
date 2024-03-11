@@ -13,8 +13,9 @@ import React from 'react';
 
 import { HIGHLIGHT_CONTRAST_RATIO } from '@constants';
 import '@matchMediaMock';
-import { ChartPopover } from '@rsc';
+import { ChartPopover, spectrumColors } from '@rsc';
 import {
+	allElementsHaveAttributeValue,
 	clickNthElement,
 	findAllMarksByGroupName,
 	findChart,
@@ -96,12 +97,11 @@ describe('ChartPopover', () => {
 
 		bars = getAllMarksByGroupName(chart, 'bar0');
 		// validate the highlight visuals are present
-		expect(bars[1]).toHaveAttribute('fill-opacity', `${1 / HIGHLIGHT_CONTRAST_RATIO}`);
-		expect(bars[1]).toHaveAttribute('stroke-opacity', `${1 / HIGHLIGHT_CONTRAST_RATIO}`);
-		expect(bars[0]).toHaveAttribute('fill-opacity', '1');
-		expect(bars[0]).toHaveAttribute('stroke', 'rgb(20, 115, 230)');
-		expect(bars[0]).toHaveAttribute('stroke-opacity', '1');
+		expect(bars[0]).toHaveAttribute('opacity', '1');
+		expect(bars[0]).toHaveAttribute('stroke', spectrumColors.light['static-blue']);
 		expect(bars[0]).toHaveAttribute('stroke-width', '2');
+		// all other bars should be faded
+		expect(allElementsHaveAttributeValue(bars.slice(1), 'opacity', 1 / HIGHLIGHT_CONTRAST_RATIO)).toBeTruthy();
 	});
 
 	test('Line popover opens and closes corectly when clicking on the chart', async () => {
@@ -142,18 +142,15 @@ describe('ChartPopover', () => {
 		// lines should have full opacity
 		const lines = await findAllMarksByGroupName(chart, 'line0');
 		expect(lines).toHaveLength(3);
-		expect(lines[0]).toHaveAttribute('stroke-opacity', '1');
-		expect(lines[1]).toHaveAttribute('stroke-opacity', '1');
-		expect(lines[2]).toHaveAttribute('stroke-opacity', '1');
+		expect(allElementsHaveAttributeValue(lines, 'opacity', 1)).toBeTruthy();
 
 		// click on the first line
 		const points = await findAllMarksByGroupName(chart, 'line0_voronoi');
 		await clickNthElement(points, 0);
 
 		// validate the first line is still full opacity, but the other lines are faded
-		expect(lines[0]).toHaveAttribute('stroke-opacity', '1');
-		expect(lines[1]).toHaveAttribute('stroke-opacity', '0.2');
-		expect(lines[2]).toHaveAttribute('stroke-opacity', '0.2');
+		expect(lines[0]).toHaveAttribute('opacity', '1');
+		expect(allElementsHaveAttributeValue(lines.slice(1), 'opacity', 1 / HIGHLIGHT_CONTRAST_RATIO)).toBeTruthy();
 	});
 
 	test('Dodged bar popover opens on mark click and closes when clicking outside', async () => {
@@ -176,11 +173,9 @@ describe('ChartPopover', () => {
 		bars = getAllMarksByGroupName(chart, 'bar0');
 
 		// validate the highlight visuals are present
-		expect(bars[0]).toHaveAttribute('fill-opacity', `${1 / HIGHLIGHT_CONTRAST_RATIO}`);
-		expect(bars[0]).toHaveAttribute('stroke-opacity', `${1 / HIGHLIGHT_CONTRAST_RATIO}`);
-		expect(bars[4]).toHaveAttribute('fill-opacity', '1');
-		expect(bars[4]).toHaveAttribute('stroke', 'rgb(20, 115, 230)');
-		expect(bars[4]).toHaveAttribute('stroke-opacity', '1');
+		expect(bars[0]).toHaveAttribute('opacity', `${1 / HIGHLIGHT_CONTRAST_RATIO}`);
+		expect(bars[4]).toHaveAttribute('opacity', '1');
+		expect(bars[4]).toHaveAttribute('stroke', spectrumColors.light['static-blue']);
 		expect(bars[4]).toHaveAttribute('stroke-width', '2');
 	});
 });

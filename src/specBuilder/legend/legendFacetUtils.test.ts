@@ -9,8 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
-import { DEFAULT_COLOR, TABLE } from '@constants';
+import { COLOR_SCALE, DEFAULT_COLOR, LINE_TYPE_SCALE, SYMBOL_SIZE_SCALE, TABLE } from '@constants';
 import { Scale } from 'vega';
 
 import { getFacets, getFacetsFromKeys } from './legendFacetUtils';
@@ -19,16 +18,16 @@ describe('getFacets()', () => {
 	test('should correctly identify continuous and categorical facets', () => {
 		const scales: Scale[] = [
 			{
-				name: 'color',
+				name: COLOR_SCALE,
 				type: 'ordinal',
 				domain: { data: TABLE, fields: [DEFAULT_COLOR] },
 			},
 			{
-				name: 'lineType',
+				name: LINE_TYPE_SCALE,
 				type: 'ordinal',
 			},
 			{
-				name: 'symbolSize',
+				name: SYMBOL_SIZE_SCALE,
 				type: 'linear',
 				domain: { data: TABLE, fields: ['weight'] },
 			},
@@ -43,16 +42,16 @@ describe('getFacetsFromKeys()', () => {
 	test('should find the correct facets from the provided keys', () => {
 		const scales: Scale[] = [
 			{
-				name: 'color',
+				name: COLOR_SCALE,
 				type: 'ordinal',
 				domain: { data: TABLE, fields: [DEFAULT_COLOR] },
 			},
 			{
-				name: 'lineType',
+				name: LINE_TYPE_SCALE,
 				type: 'ordinal',
 			},
 			{
-				name: 'symbolSize',
+				name: SYMBOL_SIZE_SCALE,
 				type: 'linear',
 				domain: { data: TABLE, fields: ['weight'] },
 			},

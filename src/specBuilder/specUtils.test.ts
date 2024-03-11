@@ -10,10 +10,12 @@
  * governing permissions and limitations under the License.
  */
 import {
+	COLOR_SCALE,
 	DEFAULT_CATEGORICAL_DIMENSION,
 	DEFAULT_COLOR,
 	DEFAULT_SECONDARY_COLOR,
 	DEFAULT_TRANSFORMED_TIME_DIMENSION,
+	LINE_TYPE_SCALE,
 	TABLE,
 } from '@constants';
 import { ROUNDED_SQUARE_PATH } from 'svgPaths';
@@ -21,6 +23,7 @@ import { BandScale, OrdinalScale } from 'vega';
 
 import {
 	getColorValue,
+	getD3FormatSpecifierFromNumberFormat,
 	getDimensionField,
 	getFacetsFromProps,
 	getFacetsFromScales,
@@ -31,17 +34,17 @@ import {
 } from './specUtils';
 
 const defaultColorScale: OrdinalScale = {
-	name: 'color',
+	name: COLOR_SCALE,
 	type: 'ordinal',
 	domain: { data: TABLE, fields: [DEFAULT_COLOR] },
 };
 const defaultLineTypeScale: OrdinalScale = {
-	name: 'lineType',
+	name: LINE_TYPE_SCALE,
 	type: 'ordinal',
 	domain: { data: TABLE, fields: [DEFAULT_SECONDARY_COLOR] },
 };
 const defaultOpacityScale: BandScale = {
-	name: 'lineType',
+	name: LINE_TYPE_SCALE,
 	type: 'band',
 	domain: { data: TABLE, fields: [DEFAULT_SECONDARY_COLOR] },
 };
@@ -191,6 +194,14 @@ describe('specUtils', () => {
 			expect(getDimensionField(DEFAULT_CATEGORICAL_DIMENSION, 'time')).toEqual(
 				DEFAULT_TRANSFORMED_TIME_DIMENSION
 			);
+		});
+	});
+
+	describe('getD3FormatSpecifierFromNumberFormat()', () => {
+		test('should return proper formats', () => {
+			expect(getD3FormatSpecifierFromNumberFormat('currency')).toEqual('$,.2f');
+			expect(getD3FormatSpecifierFromNumberFormat('standardNumber')).toEqual(',');
+			expect(getD3FormatSpecifierFromNumberFormat(',.2f')).toEqual(',.2f');
 		});
 	});
 });

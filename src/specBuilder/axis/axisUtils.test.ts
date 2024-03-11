@@ -49,6 +49,7 @@ describe('getDefaultAxis()', () => {
 					labelOrientation: 'horizontal',
 					labels: [],
 					name: 'axis0',
+					numberFormat: 'shortNumber',
 					position: 'left',
 					scaleType: 'linear',
 					subLabels: [],
@@ -81,11 +82,7 @@ describe('getDefaultAxis()', () => {
 						text: [
 							{
 								test: 'isNumber(datum.value) && abs(datum.value) >= 1000',
-								signal: "upper(replace(format(datum.value, '.3~s'), 'G', 'B'))",
-							},
-							{
-								test: 'isNumber(datum.value)',
-								signal: 'format(datum.value, ",")',
+								signal: "upper(replace(format(datum.value, '.3~s'), /(\\d+)G/, '$1B'))",
 							},
 							{
 								signal: 'datum.value',
@@ -112,6 +109,7 @@ describe('getDefaultAxis()', () => {
 					labelOrientation: 'horizontal',
 					labels: [],
 					name: 'axis0',
+					numberFormat: 'shortNumber',
 					position: 'left',
 					scaleType: 'point',
 					subLabels: [],
@@ -144,11 +142,7 @@ describe('getDefaultAxis()', () => {
 						text: [
 							{
 								test: 'isNumber(datum.value) && abs(datum.value) >= 1000',
-								signal: "upper(replace(format(datum.value, '.3~s'), 'G', 'B'))",
-							},
-							{
-								test: 'isNumber(datum.value)',
-								signal: 'format(datum.value, ",")',
+								signal: "upper(replace(format(datum.value, '.3~s'), /(\\d+)G/, '$1B'))",
 							},
 							{
 								signal: 'datum.value',

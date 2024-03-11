@@ -10,16 +10,18 @@
  * governing permissions and limitations under the License.
  */
 import {
+	COLOR_SCALE,
 	DEFAULT_CATEGORICAL_DIMENSION,
 	DEFAULT_COLOR_SCHEME,
 	DEFAULT_METRIC, FILTERED_PREVIOUS_TABLE,
 	FILTERED_TABLE,
+	LINE_TYPE_SCALE,
+	OPACITY_SCALE,
 	PADDING_RATIO,
 	STACK_ID,
 	TRELLIS_PADDING
 } from '@constants';
 import { getTransformSort } from '@specBuilder/data/dataUtils';
-import { hasPopover } from '@specBuilder/marks/markUtils';
 import {
 	addDomainFields,
 	addFieldToFacetScaleDomain,
@@ -29,7 +31,7 @@ import {
 	getScaleIndexByName,
 	getScaleIndexByType,
 } from '@specBuilder/scale/scaleSpecBuilder';
-import { getGenericSignal, getUncontrolledHoverSignal, hasSignalByName } from '@specBuilder/signal/signalSpecBuilder';
+import { addHighlightedItemSignalEvents, getGenericSignal } from '@specBuilder/signal/signalSpecBuilder';
 import { getFacetsFromProps } from '@specBuilder/specUtils';
 import { sanitizeMarkChildren, toCamelCase } from '@utils';
 import { produce } from 'immer';
@@ -109,14 +111,7 @@ export const addSignals = produce<Signal[], [BarSpecProps]>(
 		if (!children.length) {
 			return;
 		}
-		if (!hasSignalByName(signals, `${name}_hoveredId`)) {
-			signals.push(getUncontrolledHoverSignal(name));
-		}
-		if (hasPopover(children)) {
-			if (!hasSignalByName(signals, `${name}_selectedId`)) {
-				signals.push(getGenericSignal(`${name}_selectedId`));
-			}
-		}
+		addHighlightedItemSignalEvents(signals, name);
 	}
 );
 
@@ -226,9 +221,9 @@ export const addScales = produce<Scale[], [BarSpecProps]>((scales, props) => {
 	addMetricScale(scales, getScaleValues(props), orientation === 'vertical' ? 'y' : 'x');
 	addDimensionScale(scales, props);
 	addTrellisScale(scales, props);
-	addFieldToFacetScaleDomain(scales, 'color', color);
-	addFieldToFacetScaleDomain(scales, 'lineType', lineType);
-	addFieldToFacetScaleDomain(scales, 'opacity', opacity);
+	addFieldToFacetScaleDomain(scales, COLOR_SCALE, color);
+	addFieldToFacetScaleDomain(scales, LINE_TYPE_SCALE, lineType);
+	addFieldToFacetScaleDomain(scales, OPACITY_SCALE, opacity);
 	addSecondaryScales(scales, props);
 });
 

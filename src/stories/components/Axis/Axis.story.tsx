@@ -24,6 +24,20 @@ import timeData from './timeData.json';
 export default {
 	title: 'RSC/Axis',
 	component: Axis,
+	argTypes: {
+		lineType: {
+			control: 'select',
+			options: ['solid', 'dashed', 'dotted', 'dotDash', 'shortDash', 'longDash', 'twoDash'],
+		},
+		lineWidth: {
+			control: 'inline-radio',
+			options: ['XS', 'S', 'M', 'L', 'XL'],
+		},
+		numberFormat: {
+			control: 'select',
+			options: ['currency', 'shortCurrency', 'shortNumber', 'standardNumber', '$,.2f', ',.2%', '.3s'],
+		},
+	},
 };
 
 const data = [
@@ -81,6 +95,17 @@ const LinearAxisStory: StoryFn<typeof Axis> = (args): ReactElement => {
 	);
 };
 
+const DurationStory: StoryFn<typeof Axis> = (args): ReactElement => {
+	const chartProps = useChartProps({ data: workspaceTrendsData, width: 600 });
+	return (
+		<Chart {...chartProps}>
+			<Axis {...args} />
+			<Axis position="bottom" labelFormat="time" />
+			<Line color="series" dimension="datetime" scaleType="time" />
+		</Chart>
+	);
+};
+
 const NonLinearAxisStory: StoryFn<typeof Axis> = (args): ReactElement => {
 	const chartProps = useChartProps({ data: workspaceTrendsData, width: 600 });
 	return (
@@ -120,6 +145,14 @@ Basic.args = {
 	labelFormat: 'percentage',
 	ticks: true,
 	title: 'Conversion Rate',
+};
+
+const DurationLabelFormat = bindWithProps(DurationStory);
+DurationLabelFormat.args = {
+	position: 'left',
+	grid: true,
+	labelFormat: 'duration',
+	title: 'Time spent',
 };
 
 const Time = bindWithProps(TimeAxisStory);
@@ -172,13 +205,14 @@ NonLinearAxis.args = {
 
 const NumberFormat = bindWithProps(AxisStory);
 NumberFormat.args = {
-	numberFormat: '$,.2f',
+	numberFormat: 'shortCurrency',
 	position: 'left',
 	baseline: true,
 	grid: true,
 	labelFormat: 'linear',
 	ticks: true,
 	title: 'Price',
+	range: [0, 2000000],
 };
 
 const CustomXRange = bindWithProps(LinearAxisStory);
@@ -204,6 +238,7 @@ export {
 	Basic,
 	ControlledLabels,
 	CustomXRange,
+	DurationLabelFormat,
 	NonLinearAxis,
 	NumberFormat,
 	SubLabels,

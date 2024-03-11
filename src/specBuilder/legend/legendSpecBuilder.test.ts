@@ -9,18 +9,32 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { DEFAULT_COLOR, DEFAULT_COLOR_SCHEME, DEFAULT_SECONDARY_COLOR, TABLE } from '@constants';
+import {
+	COLOR_SCALE,
+	DEFAULT_COLOR,
+	DEFAULT_COLOR_SCHEME,
+	DEFAULT_SECONDARY_COLOR,
+	HIGHLIGHTED_SERIES,
+	LINEAR_COLOR_SCALE,
+	TABLE,
+} from '@constants';
+import {
+	defaultHighlightedItemSignal,
+	defaultHighlightedSeriesSignal,
+	defaultSelectedItemSignal,
+	defaultSelectedSeriesSignal,
+	defaultSignals,
+} from '@specBuilder/specTestUtils';
 import { Data, Legend, LegendEncode, Scale, Spec, SymbolEncodeEntry } from 'vega';
 
-import { defaultHighlightSignal } from '../signal/signalSpecBuilder.test';
-import { addData, addLegend, addSignals, formatFacetRefsWithPresets } from './legendSpecBuilder';
+import { addData, addLegend, addSignals, formatFacetRefsWithPresets, getContinuousLegend } from './legendSpecBuilder';
 import { defaultLegendProps, opacityEncoding } from './legendTestUtils';
 
 const defaultSpec: Spec = {
-	signals: [],
+	signals: defaultSignals,
 	scales: [
 		{
-			name: 'color',
+			name: COLOR_SCALE,
 			type: 'ordinal',
 			domain: { data: TABLE, fields: [DEFAULT_COLOR] },
 		},
@@ -28,7 +42,7 @@ const defaultSpec: Spec = {
 	marks: [],
 };
 
-const colorEncoding = { signal: `scale('color', data('legend0Aggregate')[datum.index].${DEFAULT_COLOR})` };
+const colorEncoding = { signal: `scale('${COLOR_SCALE}', data('legend0Aggregate')[datum.index].${DEFAULT_COLOR})` };
 const hiddenSeriesEncoding = {
 	test: 'indexof(hiddenSeries, datum.value) !== -1',
 	value: 'rgb(213, 213, 213)',
@@ -56,8 +70,8 @@ const defaultTooltipLegendEncoding: LegendEncode = {
 		enter: { tooltip: { signal: "merge(datum, {'rscComponentName': 'legend0'})" } },
 		update: { fill: { value: 'transparent' } },
 	},
-	labels: { update: { ...hiddenSeriesLabelUpdateEncoding, fillOpacity: undefined } },
-	symbols: { update: { ...defaultSymbolUpdateEncodings, fillOpacity: undefined, strokeOpacity: undefined } },
+	labels: { update: { ...hiddenSeriesLabelUpdateEncoding, opacity: undefined } },
+	symbols: { enter: {}, update: { ...defaultSymbolUpdateEncodings, opacity: undefined } },
 };
 
 const defaultHighlightLegendEncoding: LegendEncode = {
@@ -67,12 +81,12 @@ const defaultHighlightLegendEncoding: LegendEncode = {
 		enter: { tooltip: undefined },
 		update: { fill: { value: 'transparent' } },
 	},
-	labels: { update: { ...hiddenSeriesLabelUpdateEncoding, fillOpacity: opacityEncoding } },
+	labels: { update: { ...hiddenSeriesLabelUpdateEncoding, opacity: opacityEncoding } },
 	symbols: {
+		enter: {},
 		update: {
 			...defaultSymbolUpdateEncodings,
-			fillOpacity: opacityEncoding,
-			strokeOpacity: opacityEncoding,
+			opacity: opacityEncoding,
 		},
 	},
 };
@@ -82,7 +96,7 @@ const defaultLegend: Legend = {
 	encode: {
 		entries: { name: 'legend0_legendEntry' },
 		labels: { update: { ...hiddenSeriesLabelUpdateEncoding } },
-		symbols: { update: { ...defaultSymbolUpdateEncodings } },
+		symbols: { enter: {}, update: { ...defaultSymbolUpdateEncodings } },
 	},
 	fill: 'legend0Entries',
 	labelLimit: undefined,
@@ -113,6 +127,17 @@ const defaultLegendEntriesScale: Scale = {
 	domain: { data: 'legend0Aggregate', field: 'legend0Entries' },
 };
 
+const defaultHighlightSeriesSignal = {
+	...defaultHighlightedSeriesSignal,
+	on: [
+		{
+			events: '@legend0_legendEntry:mouseover',
+			update: 'indexof(hiddenSeries, domain("legend0Entries")[datum.index]) === -1 ? domain("legend0Entries")[datum.index] : null',
+		},
+		{ events: '@legend0_legendEntry:mouseout', update: 'null' },
+	],
+};
+
 describe('addLegend()', () => {
 	describe('no initial legend', () => {
 		test('no props, should setup default legend', () => {
@@ -140,7 +165,12 @@ describe('addLegend()', () => {
 				...defaultSpec,
 				data: [defaultLegendAggregateData],
 				scales: [...(defaultSpec.scales || []), defaultLegendEntriesScale],
-				signals: [defaultHighlightSignal],
+				signals: [
+					defaultHighlightedItemSignal,
+					defaultHighlightSeriesSignal,
+					defaultSelectedItemSignal,
+					defaultSelectedSeriesSignal,
+				],
 				legends: [{ ...defaultLegend, encode: defaultHighlightLegendEncoding }],
 			});
 		});
@@ -181,7 +211,7 @@ describe('addLegend()', () => {
 						],
 					},
 				},
-				symbols: { update: { ...defaultSymbolUpdateEncodings } },
+				symbols: { enter: {}, update: { ...defaultSymbolUpdateEncodings } },
 			});
 		});
 
@@ -222,6 +252,7 @@ describe('addLegend()', () => {
 					],
 				}).signals
 			).toStrictEqual([
+				...defaultSignals,
 				{
 					name: 'legendLabels',
 					value: [
@@ -248,12 +279,12 @@ describe('addLegend()', () => {
 
 		test('should add fields to scales if they have not been added', () => {
 			const legendSpec = addLegend(
-				{ ...defaultSpec, scales: [{ name: 'color', type: 'ordinal' }] },
+				{ ...defaultSpec, scales: [{ name: COLOR_SCALE, type: 'ordinal' }] },
 				{ color: 'series' }
 			);
 			expect(legendSpec.scales).toEqual([
 				{
-					name: 'color',
+					name: COLOR_SCALE,
 					type: 'ordinal',
 					domain: { data: 'table', fields: ['series'] },
 				},
@@ -336,23 +367,39 @@ describe('formatFacetRefsWithPresets()', () => {
 });
 
 describe('addSignals()', () => {
-	test('should add highlightedSeries signal if highlight is true', () => {
-		expect(
-			addSignals([], { ...defaultLegendProps, highlight: true }).find(
-				(signal) => signal.name === 'highlightedSeries'
-			)
-		).toBeDefined();
+	test('should add highlightedSeries signal events if highlight is true', () => {
+		const highlightSignal = addSignals(defaultSignals, { ...defaultLegendProps, highlight: true }).find(
+			(signal) => signal.name === HIGHLIGHTED_SERIES
+		);
+		expect(highlightSignal?.on).toHaveLength(2);
+		expect(highlightSignal?.on?.[0]).toHaveProperty('events', '@legend0_legendEntry:mouseover');
 	});
 	test('should add legendLabels signal if legendLabels are defined', () => {
 		expect(
-			addSignals([], { ...defaultLegendProps, legendLabels: [] }).find((signal) => signal.name === 'legendLabels')
+			addSignals(defaultSignals, { ...defaultLegendProps, legendLabels: [] }).find(
+				(signal) => signal.name === 'legendLabels'
+			)
 		).toBeDefined();
 	});
 	test('should NOT add hiddenSeries signal if isToggleable is false', () => {
 		expect(
-			addSignals([], { ...defaultLegendProps, isToggleable: false }).find(
+			addSignals(defaultSignals, { ...defaultLegendProps, isToggleable: false }).find(
 				(signal) => signal.name === 'hiddenSeries'
 			)
 		).toBeUndefined();
+	});
+});
+
+describe('getContinuousLegend()', () => {
+	test('should return symbolSize legend if facetType is symbolSize', () => {
+		expect(getContinuousLegend({ facetType: 'symbolSize', field: 'weight' }, defaultLegendProps)).toHaveProperty(
+			'size',
+			'symbolSize'
+		);
+	});
+	test('should return linearColor scale if facetType is linearColor', () => {
+		expect(
+			getContinuousLegend({ facetType: LINEAR_COLOR_SCALE, field: 'weight' }, defaultLegendProps)
+		).toHaveProperty('fill', LINEAR_COLOR_SCALE);
 	});
 });

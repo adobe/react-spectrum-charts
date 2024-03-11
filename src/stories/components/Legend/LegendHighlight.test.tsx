@@ -11,7 +11,16 @@
  */
 import React from 'react';
 
-import { findAllMarksByGroupName, findChart, getAllLegendEntries, hoverNthElement, render, screen } from '@test-utils';
+import { HIGHLIGHT_CONTRAST_RATIO } from '@constants';
+import {
+	allElementsHaveAttributeValue,
+	findAllMarksByGroupName,
+	findChart,
+	getAllLegendEntries,
+	hoverNthElement,
+	render,
+	screen,
+} from '@test-utils';
 
 import { Basic, Controlled } from './LegendHighlight.story';
 
@@ -22,13 +31,9 @@ describe('Controlled', () => {
 
 		const bars = await findAllMarksByGroupName(chart, 'bar0');
 		expect(bars.length).toEqual(9);
-		expect(bars[0]).toHaveAttribute('fill-opacity', '0.2');
-		expect(bars[1]).toHaveAttribute('fill-opacity', '1');
-		expect(bars[2]).toHaveAttribute('fill-opacity', '0.2');
-
-		expect(bars[0]).toHaveAttribute('stroke-opacity', '0.2');
-		expect(bars[1]).toHaveAttribute('stroke-opacity', '1');
-		expect(bars[2]).toHaveAttribute('stroke-opacity', '0.2');
+		expect(bars[0]).toHaveAttribute('opacity', `${1 / HIGHLIGHT_CONTRAST_RATIO}`);
+		expect(bars[1]).toHaveAttribute('opacity', '1');
+		expect(bars[2]).toHaveAttribute('opacity', `${1 / HIGHLIGHT_CONTRAST_RATIO}`);
 	});
 
 	test('non highlighted series legend symbols should have opacity applied', async () => {
@@ -37,13 +42,9 @@ describe('Controlled', () => {
 
 		const legendSymbols = await findAllMarksByGroupName(chart, 'role-legend-symbol');
 		expect(legendSymbols.length).toEqual(3);
-		expect(legendSymbols[0]).toHaveAttribute('fill-opacity', '0.2');
-		expect(legendSymbols[1]).toHaveAttribute('fill-opacity', '1');
-		expect(legendSymbols[2]).toHaveAttribute('fill-opacity', '0.2');
-
-		expect(legendSymbols[0]).toHaveAttribute('stroke-opacity', '0.2');
-		expect(legendSymbols[1]).toHaveAttribute('stroke-opacity', '1');
-		expect(legendSymbols[2]).toHaveAttribute('stroke-opacity', '0.2');
+		expect(legendSymbols[0]).toHaveAttribute('opacity', `${1 / HIGHLIGHT_CONTRAST_RATIO}`);
+		expect(legendSymbols[1]).toHaveAttribute('opacity', '1');
+		expect(legendSymbols[2]).toHaveAttribute('opacity', `${1 / HIGHLIGHT_CONTRAST_RATIO}`);
 	});
 
 	test('non highlighted series legend labels should have opacity applied', async () => {
@@ -52,9 +53,9 @@ describe('Controlled', () => {
 
 		const legendLabels = await findAllMarksByGroupName(chart, 'role-legend-symbol');
 		expect(legendLabels.length).toEqual(3);
-		expect(legendLabels[0]).toHaveAttribute('fill-opacity', '0.2');
-		expect(legendLabels[1]).toHaveAttribute('fill-opacity', '1');
-		expect(legendLabels[2]).toHaveAttribute('fill-opacity', '0.2');
+		expect(legendLabels[0]).toHaveAttribute('opacity', `${1 / HIGHLIGHT_CONTRAST_RATIO}`);
+		expect(legendLabels[1]).toHaveAttribute('opacity', '1');
+		expect(legendLabels[2]).toHaveAttribute('opacity', `${1 / HIGHLIGHT_CONTRAST_RATIO}`);
 	});
 });
 
@@ -71,25 +72,15 @@ describe('Uncontrolled', () => {
 
 		let bars = await findAllMarksByGroupName(chart, 'bar0');
 		expect(bars.length).toEqual(9);
-		expect(bars[0]).toHaveAttribute('fill-opacity', '1');
-		expect(bars[1]).toHaveAttribute('fill-opacity', '1');
-		expect(bars[2]).toHaveAttribute('fill-opacity', '1');
-
-		expect(bars[0]).toHaveAttribute('stroke-opacity', '1');
-		expect(bars[1]).toHaveAttribute('stroke-opacity', '1');
-		expect(bars[2]).toHaveAttribute('stroke-opacity', '1');
+		expect(allElementsHaveAttributeValue(bars, 'opacity', 1)).toBeTruthy();
 
 		const legendEntries = getAllLegendEntries(chart);
 		await hoverNthElement(legendEntries, 0);
 
 		bars = await findAllMarksByGroupName(chart, 'bar0');
-		expect(bars[0]).toHaveAttribute('fill-opacity', '1');
-		expect(bars[1]).toHaveAttribute('fill-opacity', '0.2');
-		expect(bars[2]).toHaveAttribute('fill-opacity', '0.2');
-
-		expect(bars[0]).toHaveAttribute('stroke-opacity', '1');
-		expect(bars[1]).toHaveAttribute('stroke-opacity', '0.2');
-		expect(bars[2]).toHaveAttribute('stroke-opacity', '0.2');
+		expect(bars[0]).toHaveAttribute('opacity', '1');
+		expect(bars[1]).toHaveAttribute('opacity', `${1 / HIGHLIGHT_CONTRAST_RATIO}`);
+		expect(bars[2]).toHaveAttribute('opacity', `${1 / HIGHLIGHT_CONTRAST_RATIO}`);
 	});
 
 	test('hovering over legend items adds opacity to the non hovered legend symbols', async () => {
@@ -98,25 +89,16 @@ describe('Uncontrolled', () => {
 
 		let legendSymbols = await findAllMarksByGroupName(chart, 'role-legend-symbol');
 		expect(legendSymbols.length).toEqual(3);
-		expect(legendSymbols[0]).toHaveAttribute('fill-opacity', '1');
-		expect(legendSymbols[1]).toHaveAttribute('fill-opacity', '1');
-		expect(legendSymbols[2]).toHaveAttribute('fill-opacity', '1');
-
-		expect(legendSymbols[0]).toHaveAttribute('stroke-opacity', '1');
-		expect(legendSymbols[1]).toHaveAttribute('stroke-opacity', '1');
-		expect(legendSymbols[2]).toHaveAttribute('stroke-opacity', '1');
+		expect(allElementsHaveAttributeValue(legendSymbols, 'opacity', 1)).toBeTruthy();
 
 		const legendEntries = getAllLegendEntries(chart);
 		await hoverNthElement(legendEntries, 0);
 
 		legendSymbols = await findAllMarksByGroupName(chart, 'role-legend-symbol');
-		expect(legendSymbols[0]).toHaveAttribute('fill-opacity', '1');
-		expect(legendSymbols[1]).toHaveAttribute('fill-opacity', '0.2');
-		expect(legendSymbols[2]).toHaveAttribute('fill-opacity', '0.2');
-
-		expect(legendSymbols[0]).toHaveAttribute('stroke-opacity', '1');
-		expect(legendSymbols[1]).toHaveAttribute('stroke-opacity', '0.2');
-		expect(legendSymbols[2]).toHaveAttribute('stroke-opacity', '0.2');
+		expect(legendSymbols[0]).toHaveAttribute('opacity', '1');
+		expect(
+			allElementsHaveAttributeValue(legendSymbols.slice(1), 'opacity', 1 / HIGHLIGHT_CONTRAST_RATIO)
+		).toBeTruthy();
 	});
 
 	test('hovering over legend items adds opacity to the non hovered legend labels', async () => {
@@ -125,17 +107,16 @@ describe('Uncontrolled', () => {
 
 		let legendLabels = await findAllMarksByGroupName(chart, 'role-legend-symbol');
 		expect(legendLabels.length).toEqual(3);
-		expect(legendLabels[0]).toHaveAttribute('fill-opacity', '1');
-		expect(legendLabels[1]).toHaveAttribute('fill-opacity', '1');
-		expect(legendLabels[2]).toHaveAttribute('fill-opacity', '1');
+		expect(allElementsHaveAttributeValue(legendLabels, 'opacity', 1)).toBeTruthy();
 
 		const legendEntries = getAllLegendEntries(chart);
 		await hoverNthElement(legendEntries, 0);
 
 		legendLabels = await findAllMarksByGroupName(chart, 'role-legend-symbol');
 		expect(legendLabels.length).toEqual(3);
-		expect(legendLabels[0]).toHaveAttribute('fill-opacity', '1');
-		expect(legendLabels[1]).toHaveAttribute('fill-opacity', '0.2');
-		expect(legendLabels[2]).toHaveAttribute('fill-opacity', '0.2');
+		expect(legendLabels[0]).toHaveAttribute('opacity', '1');
+		expect(
+			allElementsHaveAttributeValue(legendLabels.slice(1), 'opacity', 1 / HIGHLIGHT_CONTRAST_RATIO)
+		).toBeTruthy();
 	});
 });
