@@ -40,7 +40,7 @@ import { getAnimationMarks } from '@specBuilder/specUtils';
  */
 
 export const getLineMark = (lineMarkProps: LineMarkProps, dataSource: string): LineMark => {
-	const { name, color, colorScheme, opacity, metric, dimension, scaleType, lineType, lineWidth, colorScheme, data, previousData, animations } = lineMarkProps;
+	const { name, color, opacity, metric, dimension, scaleType, lineType, lineWidth, colorScheme, data, previousData, animations } = lineMarkProps;
 
 	return {
 		name,
