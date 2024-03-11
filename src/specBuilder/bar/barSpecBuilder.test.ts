@@ -215,6 +215,11 @@ const defaultSpec: Spec = {
 			name: PREVIOUS_TABLE,
 			values: [],
 		},
+		{
+			name: FILTERED_PREVIOUS_TABLE,
+			source: PREVIOUS_TABLE,
+			transform: defaultStackedTransforms,
+		},
 		defaultStacksData,
 	],
 	signals: [defaultPaddingSignal],

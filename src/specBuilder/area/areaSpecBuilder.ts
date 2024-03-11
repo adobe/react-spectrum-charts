@@ -16,8 +16,7 @@ import {
 	DEFAULT_COLOR,
 	DEFAULT_COLOR_SCHEME,
 	DEFAULT_METRIC,
-	DEFAULT_TIME_DIMENSION, 
-	FILTERED_PREVIOUS_TABLE,
+	DEFAULT_TIME_DIMENSION,
 	FILTERED_TABLE,
 	MARK_ID
 } from '@constants';
@@ -127,7 +126,7 @@ export const addData = produce<Data[], [AreaSpecProps]>(
 		if (children.length) {
 			const selectSignal = `${name}_selectedId`;
 			const hoverSignal = `${name}_controlledHoveredId`;
-			const highlightedDataPoint: Data = {
+			data.push({
 				name: `${name}_highlightedDataPoint`,
 				source: FILTERED_TABLE,
 				transform: [
@@ -136,14 +135,11 @@ export const addData = produce<Data[], [AreaSpecProps]>(
 						expr: `${selectSignal} && ${selectSignal} === datum.${MARK_ID} || !${selectSignal} && ${hoverSignal} && ${hoverSignal} === datum.${MARK_ID}`,
 					},
 				],
-			};
-			data.push(highlightedDataPoint);
-			highlightedDataPoint.source = FILTERED_PREVIOUS_TABLE;
-			data.push(highlightedDataPoint);
+			});
 
 			if (children.some((child) => child.type === ChartPopover)) {
 				const selectSeriesSignal = `${name}_selectedSeries`;
-				const selectedDataSeries: Data = {
+				data.push({
 					name: `${name}_selectedDataSeries`,
 					source: FILTERED_TABLE,
 					transform: [
@@ -152,10 +148,7 @@ export const addData = produce<Data[], [AreaSpecProps]>(
 							expr: `${selectSeriesSignal} && ${selectSeriesSignal} === datum.${color}`,
 						},
 					],
-				}
-				data.push(selectedDataSeries);
-				selectedDataSeries.source = FILTERED_PREVIOUS_TABLE;
-				data.push(selectedDataSeries);
+				});
 			}
 		}
 	},
