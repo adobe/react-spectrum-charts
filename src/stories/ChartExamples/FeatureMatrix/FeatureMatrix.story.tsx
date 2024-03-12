@@ -91,7 +91,7 @@ const TimeCompareFeatureMatrixStory: StoryFn<typeof Chart> = (args): ReactElemen
 				<Trendline {...trendlineProps} displayOnHover orientation="vertical">
 					<TrendlineAnnotation prefix="Median %DAU" numberFormat=".2%" />
 				</Trendline>
-				<ScatterPath groupBy={['event', 'segment']} pathWidth="trailSize" opacity={0.2} />
+				<ScatterPath groupBy={['event', 'segment']} pathWidth="pathWidth" opacity={0.2} />
 			</Scatter>
 			<Legend position="bottom" highlight />
 		</Chart>
