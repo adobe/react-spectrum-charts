@@ -12,11 +12,11 @@
 import { ReactElement } from 'react';
 
 import useChartProps from '@hooks/useChartProps';
-import { Axis, Chart, Legend, Scatter, Trendline, TrendlineAnnotation, TrendlineProps } from '@rsc';
+import { Axis, Chart, Legend, Scatter, ScatterPath, Trendline, TrendlineAnnotation, TrendlineProps } from '@rsc';
 import { StoryFn } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
 
-import { basicFeatureMatrixData, multipleSegmentFeatureMatrixData } from './data';
+import { basicFeatureMatrixData, multipleSegmentFeatureMatrixData, timeCompareFeatureMatrixData } from './data';
 
 export default {
 	title: 'RSC/Chart/Examples',
@@ -59,11 +59,39 @@ const MultipleSegmentFeatureMatrixStory: StoryFn<typeof Chart> = (args): ReactEl
 			<Axis position="left" ticks grid title="Average number of times per day" />
 			<Scatter dimension="dauPercent" metric="countAvg" color="segment">
 				<Trendline {...trendlineProps} displayOnHover orientation="horizontal">
-					<TrendlineAnnotation badge prefix="Median times" numberFormat=".3" />
+					<TrendlineAnnotation prefix="Median times" numberFormat=".3" />
 				</Trendline>
 				<Trendline {...trendlineProps} displayOnHover orientation="vertical">
-					<TrendlineAnnotation badge prefix="Median %DAU" numberFormat=".2%" />
+					<TrendlineAnnotation prefix="Median %DAU" numberFormat=".2%" />
 				</Trendline>
+			</Scatter>
+			<Legend position="bottom" highlight />
+		</Chart>
+	);
+};
+
+const TimeCompareFeatureMatrixStory: StoryFn<typeof Chart> = (args): ReactElement => {
+	const chartProps = useChartProps(args);
+
+	return (
+		<Chart {...chartProps}>
+			<Axis position="bottom" ticks grid title="Percentage of daily users (DAU)" labelFormat="percentage" />
+			<Axis position="left" ticks grid title="Average number of times per day" />
+			<Scatter
+				dimension="dauPercent"
+				metric="countAvg"
+				color="segment"
+				lineType="period"
+				opacity="period"
+				lineWidth={{ value: 1 }}
+			>
+				<Trendline {...trendlineProps} displayOnHover orientation="horizontal">
+					<TrendlineAnnotation prefix="Median times" numberFormat=".3" />
+				</Trendline>
+				<Trendline {...trendlineProps} displayOnHover orientation="vertical">
+					<TrendlineAnnotation prefix="Median %DAU" numberFormat=".2%" />
+				</Trendline>
+				<ScatterPath groupBy={['event', 'segment']} pathWidth="trailSize" opacity={0.2} />
 			</Scatter>
 			<Legend position="bottom" highlight />
 		</Chart>
@@ -86,4 +114,15 @@ MultipleSegmentFeatureMatrix.args = {
 	data: multipleSegmentFeatureMatrixData,
 };
 
-export { FeatureMatrix, MultipleSegmentFeatureMatrix };
+const TimeCompareFeatureMatrix = bindWithProps(TimeCompareFeatureMatrixStory);
+TimeCompareFeatureMatrix.args = {
+	width: 'auto',
+	maxWidth: 850,
+	height: 500,
+	lineTypes: ['dotted', 'solid'],
+	opacities: [0.5, 1],
+	symbolSizes: [1, 'M'],
+	data: timeCompareFeatureMatrixData,
+};
+
+export { FeatureMatrix, MultipleSegmentFeatureMatrix, TimeCompareFeatureMatrix };

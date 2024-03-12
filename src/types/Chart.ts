@@ -30,6 +30,7 @@ export type ChartTooltipElement = ReactElement<ChartTooltipProps, JSXElementCons
 export type DonutElement = ReactElement<DonutProps, JSXElementConstructor<DonutProps>>;
 export type LegendElement = ReactElement<LegendProps, JSXElementConstructor<LegendProps>>;
 export type LineElement = ReactElement<LineProps, JSXElementConstructor<LineProps>>;
+export type ScatterPathElement = ReactElement<ScatterPathProps, JSXElementConstructor<ScatterPathProps>>;
 export type MetricRangeElement = ReactElement<MetricRangeProps, JSXElementConstructor<MetricRangeProps>>;
 export type ReferenceLineElement = ReactElement<ReferenceLineProps, JSXElementConstructor<ReferenceLineProps>>;
 export type ScatterElement = ReactElement<ScatterProps, JSXElementConstructor<ScatterProps>>;
@@ -278,7 +279,15 @@ export interface MarkProps extends BaseProps {
 
 export type StaticValue<T> = { value: T };
 
-export type FacetType = 'color' | 'linearColor' | 'lineType' | 'lineWidth' | 'opacity' | 'symbolShape' | 'symbolSize';
+export type FacetType =
+	| 'color'
+	| 'linearColor'
+	| 'lineType'
+	| 'lineWidth'
+	| 'opacity'
+	| 'symbolShape'
+	| 'symbolSize'
+	| 'symbolTrailSize';
 
 export type SecondaryFacetType =
 	| 'secondaryColor'
@@ -286,7 +295,8 @@ export type SecondaryFacetType =
 	| 'secondaryLineWidth'
 	| 'secondaryOpacity'
 	| 'secondarySymbolShape'
-	| 'secondarySymbolSize';
+	| 'secondarySymbolSize'
+	| 'secondarySymbolTrailSize';
 
 export type FacetRef<T> = string | StaticValue<T>;
 
@@ -294,6 +304,7 @@ export type ColorFacet = FacetRef<string | SpectrumColor>;
 export type LineTypeFacet = FacetRef<LineType>;
 export type LineWidthFacet = FacetRef<LineWidth>;
 export type OpacityFacet = FacetRef<number>;
+export type TrailSizeFacet = FacetRef<TrailSize>;
 export type SymbolShapeFacet = FacetRef<ChartSymbolShape>;
 
 export type DualFacet = [string, string]; // two keys used for a secondary facet on Bar charts
@@ -397,6 +408,17 @@ export interface ScatterProps extends Omit<MarkProps, 'color'> {
 	size?: SymbolSizeFacet;
 }
 
+export interface ScatterPathProps {
+	/** The color of the links.*/
+	color?: SpectrumColor | string;
+	/** The width on the links. Link width can vary by point. */
+	pathWidth?: TrailSizeFacet;
+	/** Data keys that should be used to create the groups that get connected by links. */
+	groupBy?: string[];
+	/** The opacity of the links. */
+	opacity?: number;
+}
+
 export type TitlePosition = 'start' | 'middle' | 'end';
 export type TitleOrient = 'top' | 'bottom' | 'left' | 'right';
 
@@ -436,6 +458,17 @@ export type LineType = 'solid' | 'dashed' | 'dotted' | 'dotDash' | 'shortDash' |
  * XL: 4px
  * */
 export type LineWidth = 'XS' | 'S' | 'M' | 'L' | 'XL' | number;
+
+/**
+ * Width of the trail in pixels
+ *
+ * XS: 6px,
+ * S: 8px,
+ * M: 10px,
+ * L: 12px,
+ * XL: 16px
+ * */
+export type TrailSize = 'XS' | 'S' | 'M' | 'L' | 'XL' | number;
 
 /**
  * Width of the symbol in pixels
@@ -668,6 +701,7 @@ export type MarkChildElement =
 	| AnnotationElement
 	| ChartTooltipElement
 	| ChartPopoverElement
+	| ScatterPathElement
 	| MetricRangeElement
 	| TrendlineElement;
 export type RscElement = ChartChildElement | MarkChildElement;

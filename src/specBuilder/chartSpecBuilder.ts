@@ -26,6 +26,7 @@ import {
 	SERIES_ID,
 	SYMBOL_SHAPE_SCALE,
 	SYMBOL_SIZE_SCALE,
+	SYMBOL_TRAIL_SIZE_SCALE,
 	TABLE,
 } from '@constants';
 import { Area, Axis, Bar, Legend, Line, Scatter, Title } from '@rsc';
@@ -73,6 +74,7 @@ import {
 	getLineWidthPixelsFromLineWidth,
 	getPathFromSymbolShape,
 	getStrokeDashFromLineType,
+	getSymbolWidthFromRscSymbolSize,
 	getVegaSymbolSizeFromRscSymbolSize,
 	initializeSpec,
 } from './specUtils';
@@ -270,6 +272,7 @@ const getDefaultScales = (
 	getOpacityScale(opacities),
 	getSymbolShapeScale(symbolShapes),
 	getSymbolSizeScale(symbolSizes),
+	getSymbolTrailSizeScale(symbolSizes),
 ];
 
 export const getColorScale = (colors: ChartColors, colorScheme: ColorScheme): OrdinalScale => {
@@ -315,6 +318,19 @@ export const getSymbolSizeScale = (symbolSizes: [SymbolSize, SymbolSize]): Linea
 	type: 'linear',
 	zero: false,
 	range: symbolSizes.map((symbolSize) => getVegaSymbolSizeFromRscSymbolSize(symbolSize)),
+	domain: { data: TABLE, fields: [] },
+});
+
+/**
+ * returns the symbol size scale
+ * @param symbolSizes
+ * @returns LinearScale
+ */
+export const getSymbolTrailSizeScale = (symbolSizes: [SymbolSize, SymbolSize]): LinearScale => ({
+	name: SYMBOL_TRAIL_SIZE_SCALE,
+	type: 'linear',
+	zero: false,
+	range: symbolSizes.map((symbolSize) => getSymbolWidthFromRscSymbolSize(symbolSize)),
 	domain: { data: TABLE, fields: [] },
 });
 

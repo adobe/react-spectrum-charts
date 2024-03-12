@@ -260,6 +260,7 @@ const getSymbolFacetEncoding = <T>({
 		opacity: { scale: 'secondaryOpacity', signal: 'opacities' },
 		symbolShape: { scale: 'secondarySymbolShape', signal: 'symbolShapes' },
 		symbolSize: { scale: 'secondarySymbolSize', signal: 'symbolSizes' },
+		symbolTrailSize: { scale: 'secondarySymbolTrailSize', signal: 'symbolTrailSizes' },
 	};
 
 	const facet = facets.find((f) => f.facetType === facetType);

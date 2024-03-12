@@ -30,7 +30,10 @@ export const getInteractiveMarkName = (children: MarkChildElement[], name: strin
 	// if there is a trendline with an interactive component on the line, then the trendline is the target for the interactive component
 	if (
 		children.some(
-			(child) => child.type === Trendline && hasInteractiveChildren(sanitizeMarkChildren(child.props.children))
+			(child) =>
+				child.type === Trendline &&
+				'children' in child.props &&
+				hasInteractiveChildren(sanitizeMarkChildren(child.props.children))
 		)
 	) {
 		return `${name}Trendline`;
@@ -43,7 +46,14 @@ export const getPopoverMarkName = (children: MarkChildElement[], name: string): 
 		return name;
 	}
 	// if there is a trendline with a popover on this line, then the trendline is the target for the popover
-	if (children.some((child) => child.type === Trendline && hasPopover(sanitizeMarkChildren(child.props.children)))) {
+	if (
+		children.some(
+			(child) =>
+				child.type === Trendline &&
+				'children' in child.props &&
+				hasPopover(sanitizeMarkChildren(child.props.children))
+		)
+	) {
 		return `${name}Trendline`;
 	}
 };
