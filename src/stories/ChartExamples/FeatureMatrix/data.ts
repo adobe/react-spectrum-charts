@@ -132,7 +132,7 @@ export const timeCompareFeatureMatrixData = [
 		dauPercent: 0.1834,
 		countAvg: 1.62,
 		period: 'past',
-		trailSize: 0,
+		pathWidth: 0,
 	},
 	{
 		event: 'View-express-home',
@@ -140,7 +140,7 @@ export const timeCompareFeatureMatrixData = [
 		dauPercent: 0.2327,
 		countAvg: 2.66,
 		period: 'past',
-		trailSize: 0,
+		pathWidth: 0,
 	},
 	{
 		event: 'View-quickaction-editor',
@@ -148,7 +148,7 @@ export const timeCompareFeatureMatrixData = [
 		dauPercent: 0.0083,
 		countAvg: 2.95,
 		period: 'past',
-		trailSize: 0,
+		pathWidth: 0,
 	},
 	{
 		event: 'Generate-image',
@@ -156,7 +156,7 @@ export const timeCompareFeatureMatrixData = [
 		dauPercent: 0.0015,
 		countAvg: 2.84,
 		period: 'past',
-		trailSize: 0,
+		pathWidth: 0,
 	},
 	{
 		event: 'Generate-text-effects',
@@ -164,7 +164,7 @@ export const timeCompareFeatureMatrixData = [
 		dauPercent: 0.1277,
 		countAvg: 2.25,
 		period: 'past',
-		trailSize: 0,
+		pathWidth: 0,
 	},
 	{
 		event: 'Search-inspire',
@@ -172,7 +172,7 @@ export const timeCompareFeatureMatrixData = [
 		dauPercent: 0.0563,
 		countAvg: 5.28,
 		period: 'past',
-		trailSize: 0,
+		pathWidth: 0,
 	},
 	{
 		event: 'Open-editor',
@@ -180,7 +180,7 @@ export const timeCompareFeatureMatrixData = [
 		dauPercent: 0.1144,
 		countAvg: 3.75,
 		period: 'past',
-		trailSize: 0,
+		pathWidth: 0,
 	},
 	{
 		event: 'View-express-home',
@@ -188,7 +188,7 @@ export const timeCompareFeatureMatrixData = [
 		dauPercent: 0.1236,
 		countAvg: 0.84,
 		period: 'past',
-		trailSize: 0,
+		pathWidth: 0,
 	},
 	{
 		event: 'View-quickaction-editor',
@@ -196,7 +196,7 @@ export const timeCompareFeatureMatrixData = [
 		dauPercent: 0.1167,
 		countAvg: 2.27,
 		period: 'past',
-		trailSize: 0,
+		pathWidth: 0,
 	},
 	{
 		event: 'Generate-image',
@@ -204,7 +204,7 @@ export const timeCompareFeatureMatrixData = [
 		dauPercent: 0.0658,
 		countAvg: 2.4,
 		period: 'past',
-		trailSize: 0,
+		pathWidth: 0,
 	},
 	{
 		event: 'Generate-text-effects',
@@ -212,7 +212,7 @@ export const timeCompareFeatureMatrixData = [
 		dauPercent: 0.0172,
 		countAvg: 2.21,
 		period: 'past',
-		trailSize: 0,
+		pathWidth: 0,
 	},
 	{
 		event: 'Search-inspire',
@@ -220,7 +220,7 @@ export const timeCompareFeatureMatrixData = [
 		dauPercent: 0.1049,
 		countAvg: 5.6,
 		period: 'past',
-		trailSize: 0,
+		pathWidth: 0,
 	},
 	{
 		event: 'Open-editor',
@@ -228,7 +228,7 @@ export const timeCompareFeatureMatrixData = [
 		dauPercent: 0.1565,
 		countAvg: 6.68,
 		period: 'past',
-		trailSize: 0,
+		pathWidth: 0,
 	},
 	{
 		event: 'View-express-home',
@@ -236,7 +236,7 @@ export const timeCompareFeatureMatrixData = [
 		dauPercent: 0.0964,
 		countAvg: 4.22,
 		period: 'past',
-		trailSize: 0,
+		pathWidth: 0,
 	},
 	{
 		event: 'View-quickaction-editor',
@@ -244,7 +244,7 @@ export const timeCompareFeatureMatrixData = [
 		dauPercent: 0.0715,
 		countAvg: 1.59,
 		period: 'past',
-		trailSize: 0,
+		pathWidth: 0,
 	},
 	{
 		event: 'Generate-image',
@@ -252,7 +252,7 @@ export const timeCompareFeatureMatrixData = [
 		dauPercent: 0.0678,
 		countAvg: 2.5,
 		period: 'past',
-		trailSize: 0,
+		pathWidth: 0,
 	},
 	{
 		event: 'Generate-text-effects',
@@ -260,7 +260,7 @@ export const timeCompareFeatureMatrixData = [
 		dauPercent: 0.0583,
 		countAvg: 0.75,
 		period: 'past',
-		trailSize: 0,
+		pathWidth: 0,
 	},
 	{
 		event: 'Search-inspire',
@@ -268,9 +268,9 @@ export const timeCompareFeatureMatrixData = [
 		dauPercent: 0.1098,
 		countAvg: 3.98,
 		period: 'past',
-		trailSize: 0,
+		pathWidth: 0,
 	},
-	...multipleSegmentFeatureMatrixData.map((d) => ({ ...d, period: 'present', trailSize: 1 })),
+	...multipleSegmentFeatureMatrixData.map((d) => ({ ...d, period: 'present', pathWidth: 1 })),
 ]
 	.sort((a, b) => {
 		if (a.event > b.event) return 1;

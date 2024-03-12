@@ -9,14 +9,13 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
 import { createElement } from 'react';
 
 import { ScatterPath } from '@components/ScatterPath';
-import { DEFAULT_COLOR, SYMBOL_TRAIL_SIZE_SCALE } from '@constants';
+import { DEFAULT_COLOR, SYMBOL_PATH_WIDTH_SCALE } from '@constants';
 import { defaultScatterProps } from '@specBuilder/scatter/scatterTestUtils';
 
-import { getScatterPathMarks, getScatterPathSpecProps, getTrailSize } from './scatterPathUtils';
+import { getPathWidth, getScatterPathMarks, getScatterPathSpecProps } from './scatterPathUtils';
 
 describe('getScatterPathSpecProps()', () => {
 	test('should apply defaults', () => {
@@ -61,18 +60,18 @@ describe('getScatterPathMarks()', () => {
 	});
 });
 
-describe('getTrailSize()', () => {
+describe('getPathWidth()', () => {
 	test('should use scale if pathWidth is a string', () => {
-		const trailSize = getTrailSize('size');
-		expect(trailSize).toHaveProperty('scale', SYMBOL_TRAIL_SIZE_SCALE);
-		expect(trailSize).toHaveProperty('field', 'size');
+		const pathWidth = getPathWidth('size');
+		expect(pathWidth).toHaveProperty('scale', SYMBOL_PATH_WIDTH_SCALE);
+		expect(pathWidth).toHaveProperty('field', 'size');
 	});
 	test('should convert named pathWidths', () => {
-		const trailSize = getTrailSize({ value: 'M' });
-		expect(trailSize).toHaveProperty('value', 2);
+		const pathWidth = getPathWidth({ value: 'M' });
+		expect(pathWidth).toHaveProperty('value', 2);
 	});
 	test('should pass through static number values', () => {
-		const trailSize = getTrailSize({ value: 3 });
-		expect(trailSize).toHaveProperty('value', 3);
+		const pathWidth = getPathWidth({ value: 3 });
+		expect(pathWidth).toHaveProperty('value', 3);
 	});
 });

@@ -51,14 +51,14 @@ GroupBy.args = {
 	groupBy: ['weight'],
 };
 
-const PathWidth = bindWithProps(ScatterPathStory);
-PathWidth.args = {
-	pathWidth: 'weight',
-};
-
 const Opacity = bindWithProps(ScatterPathStory);
 Opacity.args = {
 	opacity: 1,
 };
 
-export { Basic, Color, GroupBy, PathWidth, Opacity };
+const PathWidth = bindWithProps(ScatterPathStory);
+PathWidth.args = {
+	pathWidth: 'weight',
+};
+
+export { Basic, Color, GroupBy, Opacity, PathWidth };

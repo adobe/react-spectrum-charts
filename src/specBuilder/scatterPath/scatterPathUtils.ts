@@ -18,7 +18,7 @@ import {
 	HIGHLIGHT_CONTRAST_RATIO,
 	SELECTED_ITEM,
 	SELECTED_SERIES,
-	SYMBOL_TRAIL_SIZE_SCALE,
+	SYMBOL_PATH_WIDTH_SCALE,
 } from '@constants';
 import { getXProductionRule } from '@specBuilder/marks/markUtils';
 import { addFieldToFacetScaleDomain } from '@specBuilder/scale/scaleSpecBuilder';
@@ -85,7 +85,7 @@ export const setScatterPathScales = (scales: Scale[], scatterProps: ScatterSpecP
 	const paths = getScatterPaths(scatterProps);
 
 	paths.forEach((path) => {
-		addFieldToFacetScaleDomain(scales, SYMBOL_TRAIL_SIZE_SCALE, path.pathWidth);
+		addFieldToFacetScaleDomain(scales, SYMBOL_PATH_WIDTH_SCALE, path.pathWidth);
 	});
 };
 
@@ -132,7 +132,7 @@ export const getScatterPathTrailMark = ({
 					value: getColorValue(color, colorScheme),
 				},
 				fillOpacity: { value: opacity },
-				size: getTrailSize(pathWidth),
+				size: getPathWidth(pathWidth),
 			},
 			update: {
 				opacity: getOpacity(),
@@ -162,9 +162,9 @@ export const getOpacity = (): ({ test?: string } & NumericValueRef)[] => {
 	];
 };
 
-export const getTrailSize = (pathWidth: LineWidthFacet): NumericValueRef => {
+export const getPathWidth = (pathWidth: LineWidthFacet): NumericValueRef => {
 	if (typeof pathWidth === 'string') {
-		return { scale: SYMBOL_TRAIL_SIZE_SCALE, field: pathWidth };
+		return { scale: SYMBOL_PATH_WIDTH_SCALE, field: pathWidth };
 	}
 	return { value: getLineWidthPixelsFromLineWidth(pathWidth.value) };
 };

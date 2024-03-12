@@ -24,9 +24,9 @@ import {
 	SELECTED_ITEM,
 	SELECTED_SERIES,
 	SERIES_ID,
+	SYMBOL_PATH_WIDTH_SCALE,
 	SYMBOL_SHAPE_SCALE,
 	SYMBOL_SIZE_SCALE,
-	SYMBOL_TRAIL_SIZE_SCALE,
 	TABLE,
 } from '@constants';
 import { Area, Axis, Bar, Legend, Line, Scatter, Title } from '@rsc';
@@ -272,7 +272,7 @@ const getDefaultScales = (
 	getOpacityScale(opacities),
 	getSymbolShapeScale(symbolShapes),
 	getSymbolSizeScale(symbolSizes),
-	getSymbolTrailSizeScale(symbolSizes),
+	getSymbolPathWidthScale(symbolSizes),
 ];
 
 export const getColorScale = (colors: ChartColors, colorScheme: ColorScheme): OrdinalScale => {
@@ -322,12 +322,12 @@ export const getSymbolSizeScale = (symbolSizes: [SymbolSize, SymbolSize]): Linea
 });
 
 /**
- * returns the symbol size scale
+ * returns the path width scale
  * @param symbolSizes
  * @returns LinearScale
  */
-export const getSymbolTrailSizeScale = (symbolSizes: [SymbolSize, SymbolSize]): LinearScale => ({
-	name: SYMBOL_TRAIL_SIZE_SCALE,
+export const getSymbolPathWidthScale = (symbolSizes: [SymbolSize, SymbolSize]): LinearScale => ({
+	name: SYMBOL_PATH_WIDTH_SCALE,
 	type: 'linear',
 	zero: false,
 	range: symbolSizes.map((symbolSize) => getSymbolWidthFromRscSymbolSize(symbolSize)),

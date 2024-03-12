@@ -287,7 +287,7 @@ export type FacetType =
 	| 'opacity'
 	| 'symbolShape'
 	| 'symbolSize'
-	| 'symbolTrailSize';
+	| 'symbolPathWidth';
 
 export type SecondaryFacetType =
 	| 'secondaryColor'
@@ -296,7 +296,7 @@ export type SecondaryFacetType =
 	| 'secondaryOpacity'
 	| 'secondarySymbolShape'
 	| 'secondarySymbolSize'
-	| 'secondarySymbolTrailSize';
+	| 'secondarySymbolPathWidth';
 
 export type FacetRef<T> = string | StaticValue<T>;
 
@@ -304,7 +304,7 @@ export type ColorFacet = FacetRef<string | SpectrumColor>;
 export type LineTypeFacet = FacetRef<LineType>;
 export type LineWidthFacet = FacetRef<LineWidth>;
 export type OpacityFacet = FacetRef<number>;
-export type TrailSizeFacet = FacetRef<TrailSize>;
+export type PathWidthFacet = FacetRef<PathWidth>;
 export type SymbolShapeFacet = FacetRef<ChartSymbolShape>;
 
 export type DualFacet = [string, string]; // two keys used for a secondary facet on Bar charts
@@ -412,7 +412,7 @@ export interface ScatterPathProps {
 	/** The color of the links.*/
 	color?: SpectrumColor | string;
 	/** The width on the links. Link width can vary by point. */
-	pathWidth?: TrailSizeFacet;
+	pathWidth?: PathWidthFacet;
 	/** Data keys that should be used to create the groups that get connected by links. */
 	groupBy?: string[];
 	/** The opacity of the links. */
@@ -468,7 +468,7 @@ export type LineWidth = 'XS' | 'S' | 'M' | 'L' | 'XL' | number;
  * L: 12px,
  * XL: 16px
  * */
-export type TrailSize = 'XS' | 'S' | 'M' | 'L' | 'XL' | number;
+export type PathWidth = 'XS' | 'S' | 'M' | 'L' | 'XL' | number;
 
 /**
  * Width of the symbol in pixels
