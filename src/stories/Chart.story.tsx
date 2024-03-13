@@ -18,8 +18,7 @@ import { bindWithProps } from '@test-utils';
 
 import './Chart.story.css';
 import { ChartBarStory } from './ChartBarStory';
-import { areaData, data, newDataArray1, newDataArray1WithStaticPoints, workspaceTrendsData } from './data/data';
-import { barData } from '@stories/components/Bar/data';
+import { data, workspaceTrendsData } from './data/data';
 
 export default {
 	title: 'RSC/Chart',
@@ -27,7 +26,7 @@ export default {
 };
 
 const ChartLineStory: StoryFn<typeof Chart> = (args): ReactElement => {
-	const props = useChartProps(args);
+	const props = useChartProps({ ...args, animations: false });
 	return (
 		<Chart {...props}>
 			<Axis position="bottom" baseline ticks />
@@ -38,7 +37,7 @@ const ChartLineStory: StoryFn<typeof Chart> = (args): ReactElement => {
 };
 
 const ChartTimeStory: StoryFn<typeof Chart> = (args): ReactElement => {
-	const props = useChartProps(args);
+	const props = useChartProps({ ...args, animations: false });
 	return (
 		<Chart {...props} width={500}>
 			<Axis position="bottom" baseline ticks labelFormat="time" />

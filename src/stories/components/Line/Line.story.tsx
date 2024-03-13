@@ -58,7 +58,7 @@ const historicalCompareData = [
 	{ datetime: 1668409200000, users: 4913, series: 'Add Freeform table', period: 'Current' },
 ];
 
-const defaultChartProps: ChartProps = { data: workspaceTrendsData, minWidth: 400, maxWidth: 800, height: 400 };
+const defaultChartProps: ChartProps = { data: workspaceTrendsData, minWidth: 400, maxWidth: 800, height: 400, animations: false };
 
 const sparklineChartProps: ChartProps = { data: simpleSparklineData, minWidth: 50, maxWidth: 200, height: 50 };
 
