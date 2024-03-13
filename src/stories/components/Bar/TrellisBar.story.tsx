@@ -91,7 +91,7 @@ Dodged.args = {
 	trellisOrientation: 'horizontal',
 	orientation: 'horizontal',
 	animations: false
-} as BarPropsWithAnimations
+} as BarPropsWithAnimations;
 
 const HorizontalBarHorizontalTrellis = bindWithProps<BarProps>(BarStory);
 HorizontalBarHorizontalTrellis.storyName = 'Horizontal Bar, Horizontal Trellis';
