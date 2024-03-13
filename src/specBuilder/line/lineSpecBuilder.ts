@@ -38,7 +38,7 @@ import {
 import {
 	getAnimationSignals,
 	getGenericSignal,
-	getLineUniqueOpacityAnimationSignals,
+	getHoveredSeriesPrevSignal,
 	getSeriesHoveredSignal,
 	getUncontrolledHoverSignal,
 	hasSignalByName
@@ -115,7 +115,7 @@ export const addSignals = produce<Signal[], [LineSpecProps]>((signals, props) =>
 	//TODO: Add comments/tests/etc
 	if (animations == true) {
 		signals.push(...getAnimationSignals(name));
-		signals.push(getLineUniqueOpacityAnimationSignals(name))
+		signals.push(getHoveredSeriesPrevSignal(name, true))
 	}
 	if (!hasSignalByName(signals, `${name}_hoveredId`)) {
 		signals.push(getUncontrolledHoverSignal(`${name}`, true, `${name}_voronoi`));

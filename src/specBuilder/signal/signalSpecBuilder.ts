@@ -174,24 +174,15 @@ const getSelectedID = (name: string): Signal => {
 }
 
 //TODO: add doc/test/etc
-export const getLineUniqueOpacityAnimationSignals = (name: string): Signal => {
+export const getHoveredSeriesPrevSignal =(name: string, nestedDatum?: boolean): Signal => {
 	return {
 		name: `${name}_hoveredSeries_prev`,
 		value: null,
 		on: [
-			{events: `@${name}_voronoi:mouseover`,
-			update: `datum.datum.${SERIES_ID}`}
-		]
-	}
-}
-
-export const getHoveredSeriesPrevSignal =(name: string): Signal => {
-	return {
-		name: `${name}_hoveredSeries_prev`,
-		value: null,
-		on: [
-			{events: `@${name}:mouseover`,
-				update: `datum.${SERIES_ID}`}
+			{
+				events: `@${name == 'line0' || name.includes('Trendline') ? '_voronoi': ''}:mouseover`,
+				update: `${nestedDatum ? 'datum.' : ''}datum.${SERIES_ID}`
+			}
 		]
 	}
 }

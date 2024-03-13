@@ -26,7 +26,7 @@ import {
 import {
 	getAnimationSignals,
 	getGenericSignal,
-	getLineUniqueOpacityAnimationSignals,
+	getHoveredSeriesPrevSignal,
 	getSeriesHoveredSignal,
 	getUncontrolledHoverSignal, hasSignalByName
 } from '@specBuilder/signal/signalSpecBuilder';
@@ -708,5 +708,5 @@ const getTrendlineAnimations = (name: string, signals: Signal[], trendlines: Tre
 	if (!hasSignalByName(signals, 'rscAnimation') && (trendlines.some((trendline) => hasTooltip(trendline.children) || hasPopover(trendline.children)))) {
 		signals.push(...getAnimationSignals(name));
 	}
-	signals.push(getLineUniqueOpacityAnimationSignals(`${name}Trendline`))
+	signals.push(getHoveredSeriesPrevSignal(`${name}Trendline`, true))
 }
