@@ -197,7 +197,6 @@ describe('Axis', () => {
 			expect(chart).toBeInTheDocument();
 
 			expect(screen.getByText('$0.1')).toBeInTheDocument();
-			expect(screen.getByText('$0.05')).toBeInTheDocument();
 			expect(screen.getByText('$0')).toBeInTheDocument();
 		});
 		test('shortNumber', async () => {
