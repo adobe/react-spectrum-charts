@@ -191,6 +191,15 @@ describe('Axis', () => {
 			expect(screen.getByText('$2M')).toBeInTheDocument();
 			expect(screen.getByText('$500K')).toBeInTheDocument();
 		});
+		test('shortCurrency with small range', async () => {
+			render(<NumberFormat {...NumberFormat.args} numberFormat="shortCurrency" range={[0, 0.1]} />);
+			const chart = await findChart();
+			expect(chart).toBeInTheDocument();
+
+			expect(screen.getByText('$0.1')).toBeInTheDocument();
+			expect(screen.getByText('$0.05')).toBeInTheDocument();
+			expect(screen.getByText('$0')).toBeInTheDocument();
+		});
 		test('shortNumber', async () => {
 			render(<NumberFormat {...NumberFormat.args} numberFormat="shortNumber" />);
 			const chart = await findChart();
