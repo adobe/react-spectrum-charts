@@ -45,7 +45,6 @@ import {
 	Scale,
 	Signal,
 	Spec,
-	Transform,
 	Transforms
 } from 'vega';
 
