@@ -133,7 +133,6 @@ export interface LineSpecProps extends PartiallyRequired<LineProps, LinePropsWit
 	children: MarkChildElement[];
 	data?: ChartData[],
 	previousData?: ChartData[],
-	animations?: boolean,
 	colorScheme: ColorScheme;
 	index: number;
 	interactiveMarkName: string | undefined;

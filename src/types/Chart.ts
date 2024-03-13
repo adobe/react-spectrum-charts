@@ -242,6 +242,7 @@ export interface MarkProps extends BaseProps {
 	children?: Children<MarkChildElement>;
 	color?: string;
 	metric?: string;
+	animations?: boolean;
 }
 
 export type StaticValue<T> = { value: T };
@@ -309,6 +310,7 @@ export interface LineProps extends Omit<MarkProps, 'color'> {
 	padding?: number;
 	scaleType?: ScaleType; // sets the type of scale that should be used for the trend
 	staticPoint?: string; // key in the data that if it exists and the value resolves to true for each data object, a point will be drawn for that data point on the line.
+
 }
 
 export interface ScatterProps extends Omit<MarkProps, 'color'> {

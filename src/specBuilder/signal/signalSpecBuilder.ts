@@ -184,3 +184,14 @@ export const getLineUniqueOpacityAnimationSignals = (name: string): Signal => {
 		]
 	}
 }
+
+export const getHoveredSeriesPrevSignal =(name: string): Signal => {
+	return {
+		name: `${name}_hoveredSeries_prev`,
+		value: null,
+		on: [
+			{events: `@${name}:mouseover`,
+				update: `datum.${SERIES_ID}`}
+		]
+	}
+}

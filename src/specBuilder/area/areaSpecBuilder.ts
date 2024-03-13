@@ -20,10 +20,12 @@ import {
 	MARK_ID,
 } from '@constants';
 import {
+	getAnimationSignals,
+	getHoveredSeriesPrevSignal,
 	getControlledHoverSignal,
 	getGenericSignal,
 	getSeriesHoveredSignal,
-	hasSignalByName,
+	hasSignalByName
 } from '@specBuilder/signal/signalSpecBuilder';
 import { spectrumColors } from '@themes';
 import { sanitizeMarkChildren, toCamelCase } from '@utils';
@@ -32,8 +34,14 @@ import { AreaProps, AreaSpecProps, ChartData, ColorScheme, MarkChildElement, Sca
 import { Data, Mark, Scale, Signal, Spec } from 'vega';
 
 import { addTimeTransform, getFilteredTableData, getTableData, getTransformSort } from '../data/dataUtils';
-import { addContinuousDimensionScale, addFieldToFacetScaleDomain, addMetricScale } from '../scale/scaleSpecBuilder';
+import {
+	addContinuousDimensionScale,
+	addFieldToFacetScaleDomain,
+	addMetricScale,
+	getRSCAnimationScales
+} from '../scale/scaleSpecBuilder';
 import { getAreaMark, getX } from './areaUtils';
+import { hasInteractiveChildren } from '@specBuilder/marks/markUtils';
 
 export const addArea = produce<Spec, [AreaProps & { colorScheme?: ColorScheme; index?: number, previousData?: ChartData[], data?: ChartData[], animations?: boolean }]>(
 	(
@@ -141,8 +149,12 @@ export const addData = produce<Data[], [AreaSpecProps]>(
 	}
 );
 
-export const addSignals = produce<Signal[], [AreaSpecProps]>((signals, { children, name }) => {
+export const addSignals = produce<Signal[], [AreaSpecProps]>((signals, { children, name, animations }) => {
 	if (!children.length) return;
+	if (animations == true) {
+		signals.push(...getAnimationSignals(name));
+		signals.push(getHoveredSeriesPrevSignal(name))
+	}
 	if (!hasSignalByName(signals, `${name}_controlledHoveredId`)) {
 		signals.push(getControlledHoverSignal(name));
 	}
@@ -158,7 +170,11 @@ export const addSignals = produce<Signal[], [AreaSpecProps]>((signals, { childre
 });
 
 export const setScales = produce<Scale[], [AreaSpecProps]>(
-	(scales, { metric, metricEnd, metricStart, dimension, color, scaleType, padding }) => {
+	(scales, { metric, metricEnd, metricStart, dimension, color, scaleType, padding, animations, children }) => {
+		//TODO: add comments/tests/etc
+		if (animations == true && hasInteractiveChildren(children)) {
+			getRSCAnimationScales(scales);
+		}
 		// add dimension scale
 		addContinuousDimensionScale(scales, { scaleType, dimension, padding });
 		// add color to the color domain

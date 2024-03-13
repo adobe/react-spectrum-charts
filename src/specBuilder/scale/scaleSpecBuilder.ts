@@ -202,8 +202,10 @@ const isScaleMultiFieldsRef = (
 };
 
 export const getRSCAnimationScales = (scales: Scale[]) => {
-	scales.push(getRSCAnimationCurve());
-	scales.push(getRSCAnimationCurveInverse());
+	if (!hasScaleByName(scales, 'rscAnimationCurve')) {
+		scales.push(getRSCAnimationCurve());
+		scales.push(getRSCAnimationCurveInverse());
+	}
 }
 
 //TODO: Add documentation
@@ -226,4 +228,8 @@ const getRSCAnimationCurveInverse = (): Scale => {
 			range: [0, 1],
 			clamp: true
 	}
+}
+
+export const hasScaleByName = (scales: Scale[], name: string) => {
+	return scales.some((scale) => scale.name == name);
 }

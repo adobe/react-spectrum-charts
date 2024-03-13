@@ -107,7 +107,7 @@ export const addSignals = produce<Signal[], [BarSpecProps]>(
 		}
 		//TODO: add comments
 		if (animations == true) {
-			getAnimationSignals(name).forEach((signal) => signals.push(signal))
+			signals.push(...getAnimationSignals(name));
 		}
 
 		if (!hasSignalByName(signals, `${name}_hoveredId`)) {

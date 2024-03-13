@@ -17,7 +17,7 @@ import {
 	getLineWidthProductionRule,
 	getOpacityProductionRule,
 	getStrokeDashProductionRule,
-	getStrokeOpacityAnimationRules,
+	getStrokeFillOpacityAnimationRules,
 	getTooltip,
 	getXProductionRule,
 	hasPopover
@@ -83,7 +83,7 @@ export const getLineStrokeOpacity = ({
 	//TODO: add comments/tests/etc
 	if (animations == true) {
 		const hoverSignalPrev = `${interactiveMarkName}_hoveredSeries_prev`
-		return getStrokeOpacityAnimationRules(hoverSignal, hoverSignalPrev, baseRule);
+		return getStrokeFillOpacityAnimationRules(hoverSignal, hoverSignalPrev, baseRule, 1);
 	}
 
 	strokeOpacityRules.push({

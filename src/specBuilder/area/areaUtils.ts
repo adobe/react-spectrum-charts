@@ -16,7 +16,8 @@ import {
 	getColorProductionRule,
 	getCursor,
 	getInteractive,
-	getTooltip,
+	getStrokeFillOpacityAnimationRules,
+	getTooltip
 } from '@specBuilder/marks/markUtils';
 import { ChartData, ColorFacet, ColorScheme, MarkChildElement, ScaleType } from 'types';
 import { AreaMark, NumericValueRef, ProductionRule } from 'vega';
@@ -82,7 +83,7 @@ export const getAreaMark = ({
 			}),
 			x: getX(scaleType, dimension),
 			cursor: getCursor(children),
-			fillOpacity: getFillOpacity(name, color, opacity, children, isMetricRange, parentName, displayOnHover),
+			fillOpacity: getFillOpacity(name, color, opacity, children, isMetricRange, parentName, displayOnHover, animations),
 		},
 	},
 });
@@ -94,7 +95,8 @@ export function getFillOpacity(
 	children: MarkChildElement[],
 	isMetricRange?: boolean,
 	parentName?: string,
-	displayOnHover?: boolean
+	displayOnHover?: boolean,
+	animations?: boolean
 ): ProductionRule<NumericValueRef> | undefined {
 	const hoverSignal = isMetricRange && parentName ? `${parentName}_hoveredSeries` : `${name}_hoveredSeries`;
 	const selectSignal = `${name}_selectedSeries`;
@@ -113,6 +115,12 @@ export function getFillOpacity(
 	// no children means no interactive elements
 	if (!children.length) {
 		return [{ value: opacity }];
+	}
+
+	//TODO: add comments/tests/etc
+	if ( animations == true ) {
+		const hoverSignalPrev = `${name}_hoveredSeries_prev`
+		return getStrokeFillOpacityAnimationRules(hoverSignal, hoverSignalPrev, { value: opacity }, opacity)
 	}
 
 	// if an area is hovered or selected, all other areas should have half opacity

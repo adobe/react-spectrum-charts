@@ -205,30 +205,23 @@ export const getHighlightOpacityAnimationValue = (opacityValue: { signal: string
 };
 
 //TODO: Add documentation/tests/etc
-export const getStrokeOpacityAnimationRules = (
+export const getStrokeFillOpacityAnimationRules = (
 	hoveredSignal: string,
 	hoveredSignalPrev: string,
-	opacityValue: { signal: string } | { value: number }
+	opacityValue: { signal: string } | { value: number },
+	defaultValue: number
 ): ProductionRule<NumericValueRef> => {
 	return [
-		{
-			test: `${hoveredSignal} && ${hoveredSignal} === datum.${SERIES_ID}`,
-			value: 1
-		},
-		{
-			test: `!${hoveredSignal} && ${hoveredSignalPrev} === datum.${SERIES_ID}`,
-			value: 1
-		},
 		{
 			test: `${hoveredSignal} && ${hoveredSignal} !== datum.${SERIES_ID}`,
 			...getHighlightOpacityAnimationValue(opacityValue)
 		},
 		{
-			test: `!${hoveredSignal} && ${hoveredSignal} !== datum.${SERIES_ID}`,
+			test: `!${hoveredSignal} && ${hoveredSignalPrev} !== datum.${SERIES_ID}`,
 			...getHighlightOpacityAnimationValue(opacityValue)
 		},
 		{
-			value: 1
+			value: defaultValue
 		}
 	]
 }

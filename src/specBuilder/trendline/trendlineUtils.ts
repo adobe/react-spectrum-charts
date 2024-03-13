@@ -24,9 +24,11 @@ import {
 	hasTooltip,
 } from '@specBuilder/marks/markUtils';
 import {
+	getAnimationSignals,
 	getGenericSignal,
+	getLineUniqueOpacityAnimationSignals,
 	getSeriesHoveredSignal,
-	getUncontrolledHoverSignal,
+	getUncontrolledHoverSignal, hasSignalByName
 } from '@specBuilder/signal/signalSpecBuilder';
 import { getDimensionField, getFacetsFromProps } from '@specBuilder/specUtils';
 import { sanitizeTrendlineChildren } from '@utils';
@@ -170,7 +172,7 @@ const getLineMarkProps = (
 	{ displayOnHover, lineWidth, metric, name, opacity }: TrendlineSpecProps,
 	override?: Partial<LineMarkProps>
 ): LineMarkProps => {
-	const { children, color, colorScheme, dimension, interactiveMarkName, lineType } = markProps;
+	const { children, color, colorScheme, dimension, interactiveMarkName, lineType, animations } = markProps;
 	const popoverMarkName = 'popoverMarkName' in markProps ? markProps.popoverMarkName : undefined;
 	const scaleType = getScaleType(markProps);
 	const staticPoint = 'staticPoint' in markProps ? markProps.staticPoint : undefined;
@@ -180,6 +182,7 @@ const getLineMarkProps = (
 		colorScheme,
 		dimension,
 		displayOnHover,
+		animations,
 		interactiveMarkName,
 		lineType,
 		lineWidth: { value: lineWidth },
@@ -673,7 +676,7 @@ export const getMovingAverageTransform = (
 
 export const getTrendlineSignals = (markProps: TrendlineParentProps): Signal[] => {
 	const signals: Signal[] = [];
-	const { children, name: markName } = markProps;
+	const { children, name: markName, animations } = markProps;
 	const trendlines = getTrendlines(children, markName);
 
 	if (trendlines.some((trendline) => hasTooltip(trendline.children))) {
@@ -690,9 +693,20 @@ export const getTrendlineSignals = (markProps: TrendlineParentProps): Signal[] =
 		signals.push(getGenericSignal(`${markName}Trendline_selectedSeries`));
 	}
 
+	if (animations == true) {
+		getTrendlineAnimations(markName, signals, trendlines);
+	}
+
 	return signals;
 };
 
 const getScaleType = (markProps: TrendlineParentProps): RscScaleType => {
 	return 'scaleType' in markProps ? markProps.scaleType : markProps.dimensionScaleType;
 };
+
+const getTrendlineAnimations = (name: string, signals: Signal[], trendlines: TrendlineSpecProps[] ) => {
+	if (!hasSignalByName(signals, 'rscAnimation') && (trendlines.some((trendline) => hasTooltip(trendline.children) || hasPopover(trendline.children)))) {
+		signals.push(...getAnimationSignals(name));
+	}
+	signals.push(getLineUniqueOpacityAnimationSignals(`${name}Trendline`))
+}
