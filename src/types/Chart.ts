@@ -97,9 +97,9 @@ export interface SharedChartProps extends SpecProps {
 	config?: Config;
 	/** Chart data array. */
 	data: ChartData[];
-	/** Enables debug mode which will console log things like the generated vega spec and the datums for tooltips. */
 	previousData?: ChartData[];
 	animations?: boolean;
+	/** Enables debug mode which will console log things like the generated vega spec and the datums for tooltips. */
 	debug?: boolean;
 	/** Chart height */
 	height?: number;
