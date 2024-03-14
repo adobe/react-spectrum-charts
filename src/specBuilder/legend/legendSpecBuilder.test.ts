@@ -22,51 +22,64 @@ const defaultSpec: Spec = {
 		{
 			name: 'color',
 			type: 'ordinal',
-			domain: { data: TABLE, fields: [DEFAULT_COLOR] },
-		},
+			domain: { data: TABLE, fields: [DEFAULT_COLOR] }
+		}
 	],
-	marks: [],
+	marks: []
 };
 
 const colorEncoding = { signal: `scale('color', data('legend0Aggregate')[datum.index].${DEFAULT_COLOR})` };
 const hiddenSeriesEncoding = {
 	test: 'indexof(hiddenSeries, datum.value) !== -1',
-	value: 'rgb(213, 213, 213)',
+	value: 'rgb(213, 213, 213)'
 };
 
-const defaultAnimationsSignal: Signal = {
-	name: 'rscColorAnimationDirection',
-	value: '-1',
-	on: [
-		{ events: '@bar0:mouseover', update: '1' },
-		{ events: '@bar0:mouseout', update: '-1' },
-	]
-};
+
+const defaultAnimationsSignals: Signal[] = [
+	{
+		name: 'rscColorAnimationDirection',
+		value: '-1',
+		on: [
+			{ events: '@bar0:mouseover', update: '1' },
+			{ events: '@bar0:mouseout', update: '-1' }
+		]
+	},
+	{
+		name: 'rscColorAnimation',
+		value: 0,
+		on: [
+			{
+				events: "timer{16.666666666666668}",
+				update: "scale('rscAnimationCurve', scale('rscAnimationCurveInverse', rscColorAnimation) + 0.06 * rscColorAnimationDirection)"
+			}
+		]
+	}
+];
 
 const defaultSymbolUpdateEncodings: SymbolEncodeEntry = {
 	fill: [hiddenSeriesEncoding, colorEncoding],
-	stroke: [hiddenSeriesEncoding, colorEncoding],
+	stroke: [hiddenSeriesEncoding, colorEncoding]
 };
 const hiddenSeriesLabelUpdateEncoding = {
 	fill: [
 		{
 			test: 'indexof(hiddenSeries, datum.value) !== -1',
-			value: 'rgb(144, 144, 144)',
+			value: 'rgb(144, 144, 144)'
 		},
 		{
-			value: 'rgb(70, 70, 70)',
-		},
-	],
+			value: 'rgb(70, 70, 70)'
+		}
+	]
 };
 const defaultTooltipLegendEncoding: LegendEncode = {
 	entries: {
 		name: 'legend0_legendEntry',
 		interactive: true,
-		enter: { tooltip: { signal: "merge(datum, {'rscComponentName': 'legend0'})" } },
-		update: { fill: { value: 'transparent' } },
+		enter: { tooltip: { signal: 'merge(datum, {\'rscComponentName\': \'legend0\'})' } },
+		update: { fill: { value: 'transparent' } }
 	},
 	labels: { update: { ...hiddenSeriesLabelUpdateEncoding, fillOpacity: undefined } },
-	symbols: { update: { ...defaultSymbolUpdateEncodings, fillOpacity: undefined, strokeOpacity: undefined } },
+	symbols: { update: { ...defaultSymbolUpdateEncodings, fillOpacity: undefined, strokeOpacity: undefined } }
 };
 
 const defaultHighlightLegendEncoding: LegendEncode = {
@@ -74,16 +87,16 @@ const defaultHighlightLegendEncoding: LegendEncode = {
 		name: 'legend0_legendEntry',
 		interactive: true,
 		enter: { tooltip: undefined },
-		update: { fill: { value: 'transparent' } },
+		update: { fill: { value: 'transparent' } }
 	},
 	labels: { update: { ...hiddenSeriesLabelUpdateEncoding, fillOpacity: opacityEncoding } },
 	symbols: {
 		update: {
 			...defaultSymbolUpdateEncodings,
 			fillOpacity: opacityEncoding,
-			strokeOpacity: opacityEncoding,
-		},
-	},
+			strokeOpacity: opacityEncoding
+		}
+	}
 };
 
 const defaultLegend: Legend = {
@@ -91,13 +104,13 @@ const defaultLegend: Legend = {
 	encode: {
 		entries: { name: 'legend0_legendEntry' },
 		labels: { update: { ...hiddenSeriesLabelUpdateEncoding } },
-		symbols: { update: { ...defaultSymbolUpdateEncodings } },
+		symbols: { update: { ...defaultSymbolUpdateEncodings } }
 	},
 	fill: 'legend0Entries',
 	labelLimit: undefined,
 	orient: 'bottom',
 	title: undefined,
-	columns: { signal: 'floor(width / 220)' },
+	columns: { signal: 'floor(width / 220)' }
 };
 
 const defaultLegendAggregateData: Data = {
@@ -106,20 +119,20 @@ const defaultLegendAggregateData: Data = {
 	transform: [
 		{
 			type: 'aggregate',
-			groupby: [DEFAULT_COLOR],
+			groupby: [DEFAULT_COLOR]
 		},
 		{
 			type: 'formula',
 			as: 'legend0Entries',
-			expr: `datum.${DEFAULT_COLOR}`,
-		},
-	],
+			expr: `datum.${DEFAULT_COLOR}`
+		}
+	]
 };
 
 const defaultLegendEntriesScale: Scale = {
 	name: 'legend0Entries',
 	type: 'ordinal',
-	domain: { data: 'legend0Aggregate', field: 'legend0Entries' },
+	domain: { data: 'legend0Aggregate', field: 'legend0Entries' }
 };
 
 describe('addLegend()', () => {
@@ -129,7 +142,7 @@ describe('addLegend()', () => {
 				...defaultSpec,
 				data: [defaultLegendAggregateData],
 				scales: [...(defaultSpec.scales || []), defaultLegendEntriesScale],
-				legends: [defaultLegend],
+				legends: [defaultLegend]
 			});
 		});
 
@@ -140,7 +153,7 @@ describe('addLegend()', () => {
 				...defaultSpec,
 				data: [defaultLegendAggregateData],
 				scales: [...(defaultSpec.scales || []), defaultLegendEntriesScale],
-				legends: [{ ...defaultLegend, encode: defaultTooltipLegendEncoding }],
+				legends: [{ ...defaultLegend, encode: defaultTooltipLegendEncoding }]
 			});
 		});
 
@@ -150,13 +163,13 @@ describe('addLegend()', () => {
 				data: [defaultLegendAggregateData],
 				scales: [...(defaultSpec.scales || []), defaultLegendEntriesScale],
 				signals: [defaultHighlightSignal],
-				legends: [{ ...defaultLegend, encode: defaultHighlightLegendEncoding }],
+				legends: [{ ...defaultLegend, encode: defaultHighlightLegendEncoding }]
 			});
 		});
 
 		test('position, should set the orientation correctly', () => {
 			expect(addLegend(defaultSpec, { position: 'left' }).legends).toStrictEqual([
-				{ ...defaultLegend, orient: 'left', direction: 'vertical', columns: undefined, labelLimit: undefined },
+				{ ...defaultLegend, orient: 'left', direction: 'vertical', columns: undefined, labelLimit: undefined }
 			]);
 		});
 
@@ -169,28 +182,28 @@ describe('addLegend()', () => {
 				addLegend(defaultSpec, {
 					legendLabels: [
 						{ seriesName: 1, label: 'Any event' },
-						{ seriesName: 2, label: 'Any event' },
-					],
+						{ seriesName: 2, label: 'Any event' }
+					]
 				}).legends?.[0].encode
 			).toStrictEqual({
 				entries: {
-					name: 'legend0_legendEntry',
+					name: 'legend0_legendEntry'
 				},
 				labels: {
 					update: {
 						...hiddenSeriesLabelUpdateEncoding,
 						text: [
 							{
-								test: "indexof(pluck(legendLabels, 'seriesName'), datum.value) > -1",
-								signal: "legendLabels[indexof(pluck(legendLabels, 'seriesName'), datum.value)].label",
+								test: 'indexof(pluck(legendLabels, \'seriesName\'), datum.value) > -1',
+								signal: 'legendLabels[indexof(pluck(legendLabels, \'seriesName\'), datum.value)].label'
 							},
 							{
-								signal: 'datum.value',
-							},
-						],
-					},
+								signal: 'datum.value'
+							}
+						]
+					}
 				},
-				symbols: { update: { ...defaultSymbolUpdateEncodings } },
+				symbols: { update: { ...defaultSymbolUpdateEncodings } }
 			});
 		});
 
@@ -200,8 +213,8 @@ describe('addLegend()', () => {
 					highlight: true,
 					legendLabels: [
 						{ seriesName: 1, label: 'Any event' },
-						{ seriesName: 2, label: 'Any event' },
-					],
+						{ seriesName: 2, label: 'Any event' }
+					]
 				}).legends?.[0].encode
 			).toStrictEqual({
 				...defaultHighlightLegendEncoding,
@@ -210,15 +223,15 @@ describe('addLegend()', () => {
 						...defaultHighlightLegendEncoding.labels?.update,
 						text: [
 							{
-								test: "indexof(pluck(legendLabels, 'seriesName'), datum.value) > -1",
-								signal: "legendLabels[indexof(pluck(legendLabels, 'seriesName'), datum.value)].label",
+								test: 'indexof(pluck(legendLabels, \'seriesName\'), datum.value) > -1',
+								signal: 'legendLabels[indexof(pluck(legendLabels, \'seriesName\'), datum.value)].label'
 							},
 							{
-								signal: 'datum.value',
-							},
-						],
-					},
-				},
+								signal: 'datum.value'
+							}
+						]
+					}
+				}
 			});
 		});
 
@@ -227,29 +240,29 @@ describe('addLegend()', () => {
 				addLegend(defaultSpec, {
 					legendLabels: [
 						{ seriesName: 1, label: 'Any event' },
-						{ seriesName: 2, label: 'Any event' },
-					],
+						{ seriesName: 2, label: 'Any event' }
+					]
 				}).signals
 			).toStrictEqual([
 				{
 					name: 'legendLabels',
 					value: [
 						{ seriesName: 1, label: 'Any event' },
-						{ seriesName: 2, label: 'Any event' },
-					],
-				},
+						{ seriesName: 2, label: 'Any event' }
+					]
+				}
 			]);
 		});
 
 		test('should add labelLimit if provided', () => {
 			const legendSpec = addLegend(defaultSpec, {
 				descriptions: [{ seriesName: 'test', description: 'test' }],
-				labelLimit: 300,
+				labelLimit: 300
 			});
 			const legend = legendSpec.legends?.[0];
 			expect(legend?.labelLimit).toBe(300);
 			expect(legendSpec.legends).toEqual([
-				{ ...defaultLegend, labelLimit: 300, encode: defaultTooltipLegendEncoding },
+				{ ...defaultLegend, labelLimit: 300, encode: defaultTooltipLegendEncoding }
 			]);
 			expect(legendSpec.data).toEqual([defaultLegendAggregateData]);
 			expect(legendSpec.scales).toEqual([...(defaultSpec.scales || []), defaultLegendEntriesScale]);
@@ -264,16 +277,16 @@ describe('addLegend()', () => {
 				{
 					name: 'color',
 					type: 'ordinal',
-					domain: { data: 'table', fields: ['series'] },
+					domain: { data: 'table', fields: ['series'] }
 				},
 				{
 					name: 'legend0Entries',
 					type: 'ordinal',
 					domain: {
 						data: 'legend0Aggregate',
-						field: 'legend0Entries',
-					},
-				},
+						field: 'legend0Entries'
+					}
+				}
 			]);
 		});
 	});
@@ -282,7 +295,7 @@ describe('addLegend()', () => {
 describe('addData()', () => {
 	test('should add legend0Aggregate data', () => {
 		expect(addData([], { ...defaultLegendProps, facets: [DEFAULT_COLOR] })).toStrictEqual([
-			defaultLegendAggregateData,
+			defaultLegendAggregateData
 		]);
 	});
 	test('should join multiple facets', () => {
@@ -295,10 +308,10 @@ describe('addData()', () => {
 					{
 						as: 'legend0Entries',
 						expr: `datum.${DEFAULT_COLOR} + " | " + datum.${DEFAULT_SECONDARY_COLOR}`,
-						type: 'formula',
-					},
-				],
-			},
+						type: 'formula'
+					}
+				]
+			}
 		]);
 	});
 });
@@ -367,8 +380,8 @@ describe('addSignals()', () => {
 
 	test('should update colorAnimationDirection signal if animations are true', () => {
 		defaultSpec.signals = new Array<Signal>;
-		defaultSpec.signals.push(defaultAnimationsSignal);
-		expect(addLegend(defaultSpec, {...defaultLegendProps, animations: true}).signals)
+		defaultSpec.signals.push(...defaultAnimationsSignals);
+		expect(addLegend(defaultSpec, { ...defaultLegendProps, animations: true }).signals)
 			.toStrictEqual([
 				{
 					name: 'rscColorAnimationDirection',
@@ -379,7 +392,28 @@ describe('addSignals()', () => {
 						{ events: '@legend0_legendEntry:mouseover', update: '1' },
 						{ events: '@legend0_legendEntry:mouseout', update: '-1' }
 					]
-				}]
-			)
-	})
+				},
+				{
+					name: 'rscColorAnimation',
+					value: 0,
+					on: [
+						{
+							events: "timer{16.666666666666668}",
+							update: "scale('rscAnimationCurve', scale('rscAnimationCurveInverse', rscColorAnimation) + 0.06 * rscColorAnimationDirection)"
+						}
+					]
+				},
+				{
+					name: "highlightedSeries_prev",
+					value: null,
+					on: [
+						{
+							events: "@legend0_legendEntry:mouseover",
+							update: "indexof(hiddenSeries, domain(\"legend0Entries\")[datum.index]) === -1 ? domain(\"legend0Entries\")[datum.index] : \"\"",
+						}
+					]
+				}
+				]
+			);
+	});
 });

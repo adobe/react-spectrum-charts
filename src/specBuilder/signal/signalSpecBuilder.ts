@@ -60,20 +60,23 @@ export const getSeriesHoveredSignal = (name: string, nestedDatum?: boolean, even
 	};
 };
 
+//TODO: add documentation
 /**
  * Returns the highlighted series signal
  */
-export const getHighlightSeriesSignal = (name: string, includeHiddenSeries: boolean, keys?: string[]): Signal => {
+export const getHighlightSeriesSignal = (name: string, includeHiddenSeries: boolean, keys?: string[], isPrev?: boolean): Signal => {
 	const hoveredSeries = `domain("${name}Entries")[datum.index]`;
 	const update = includeHiddenSeries
 		? `indexof(hiddenSeries, ${hoveredSeries}) === -1 ? ${hoveredSeries} : ""`
 		: hoveredSeries;
 	return {
-		name: keys ? `${name}_highlight` : 'highlightedSeries',
+		name: keys ? `${name}_highlight` : isPrev == true ? 'highlightedSeries_prev': `highlightedSeries`,
 		value: null,
-		on: [
+		on: !isPrev ? [
 			{ events: `@${name}_legendEntry:mouseover`, update },
 			{ events: `@${name}_legendEntry:mouseout`, update: '""' }
+		] : [
+			{ events: `@${name}_legendEntry:mouseover`, update }
 		]
 	};
 };
@@ -174,13 +177,13 @@ const getSelectedID = (name: string): Signal => {
 }
 
 //TODO: add doc/test/etc
-export const getHoveredSeriesPrevSignal =(name: string, nestedDatum?: boolean): Signal => {
+export const getHoveredSeriesPrevSignal = (name: string, nestedDatum?: boolean): Signal => {
 	return {
 		name: `${name}_hoveredSeries_prev`,
 		value: null,
 		on: [
 			{
-				events: `@${name == 'line0' || name.includes('Trendline') ? '_voronoi': ''}:mouseover`,
+				events: `@${name == 'line0' || name.includes('Trendline') ? `${name}_voronoi`: `${name}`}:mouseover`,
 				update: `${nestedDatum ? 'datum.' : ''}datum.${SERIES_ID}`
 			}
 		]

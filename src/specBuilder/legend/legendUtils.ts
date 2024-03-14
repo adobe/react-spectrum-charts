@@ -35,6 +35,7 @@ import {
 } from 'vega';
 
 import { ColorValueV6 } from '@react-types/shared';
+import { getHighlightOpacityAnimationValue } from '@specBuilder/marks/markUtils';
 
 export interface Facet {
 	facetType: FacetType | SecondaryFacetType;
@@ -177,7 +178,7 @@ export const getOpacityEncoding = ({
  */
 export const getSymbolOpacityEncoding = (
 	facets: Facet[],
-	{ highlight, highlightedSeries, keys, name, opacity }: LegendSpecProps
+	{ highlight, highlightedSeries, keys, name, opacity, animations }: LegendSpecProps
 ): ProductionRule<NumericValueRef> | undefined => {
 	const highlightSignalName = keys ? `${name}_highlight` : 'highlightedSeries';
 	// only add symbol opacity if highlight is true or highlightedSeries is defined
@@ -189,6 +190,14 @@ export const getSymbolOpacityEncoding = (
 				customValue: opacity,
 				name,
 			}) ?? { value: 1 };
+			//TODO: add comments/tests/etc
+			if (animations == true) {
+				return getHighlightOpacityAnimationEncoding(
+					getHighlightOpAnimationValue(opacityEncoding),
+					opacityEncoding,
+					highlightSignalName
+				);
+			}
 			if ('signal' in opacityEncoding) {
 				return getHighlightOpacityEncoding(
 					{ signal: opacityEncoding.signal + ` / ${HIGHLIGHT_CONTRAST_RATIO}` },
@@ -222,6 +231,31 @@ const getHighlightOpacityEncoding = (
 		defaultOpacity,
 	];
 };
+//TODO: add comments/tests/etc
+const getHighlightOpAnimationValue = (opacityEncoding: BaseValueRef<number>,): { signal: string } => {
+	if ('signal' in opacityEncoding) {
+		return getHighlightOpacityAnimationValue(opacityEncoding);
+	}
+	return getHighlightOpacityAnimationValue({ value: 1 })
+}
+//TODO: add comments/tests/etc
+const getHighlightOpacityAnimationEncoding = (
+	highlightOpacity: BaseValueRef<number>,
+	defaultOpacity: BaseValueRef<number>,
+	highlightSignalName: string,
+	): ProductionRule<NumericValueRef> => {
+	return [
+		{
+			test: `${highlightSignalName} && datum.value !== ${highlightSignalName}`,
+			...highlightOpacity
+		},
+		{
+			test: `!${highlightSignalName} && datum.value !== ${highlightSignalName}_prev`,
+			...highlightOpacity
+		},
+		defaultOpacity,
+	]
+}
 
 export const getSymbolEncodings = (facets: Facet[], props: LegendSpecProps): LegendEncode => {
 	const { color, lineType, lineWidth, name, opacity, symbolShape, colorScheme } = props;

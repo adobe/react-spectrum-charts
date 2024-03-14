@@ -151,7 +151,7 @@ export const addData = produce<Data[], [AreaSpecProps]>(
 
 export const addSignals = produce<Signal[], [AreaSpecProps]>((signals, { children, name, animations }) => {
 	if (!children.length) return;
-	if (animations == true) {
+	if (animations == true && hasInteractiveChildren(children)) {
 		signals.push(...getAnimationSignals(name));
 		signals.push(getHoveredSeriesPrevSignal(name))
 	}

@@ -707,6 +707,6 @@ const getScaleType = (markProps: TrendlineParentProps): RscScaleType => {
 const getTrendlineAnimations = (name: string, signals: Signal[], trendlines: TrendlineSpecProps[] ) => {
 	if (!hasSignalByName(signals, 'rscAnimation') && (trendlines.some((trendline) => hasTooltip(trendline.children) || hasPopover(trendline.children)))) {
 		signals.push(...getAnimationSignals(name));
+		signals.push(getHoveredSeriesPrevSignal(`${name}Trendline`, true));
 	}
-	signals.push(getHoveredSeriesPrevSignal(`${name}Trendline`, true))
 }

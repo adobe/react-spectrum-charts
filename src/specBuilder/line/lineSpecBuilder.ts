@@ -134,7 +134,7 @@ export const addSignals = produce<Signal[], [LineSpecProps]>((signals, props) =>
 export const setScales = produce<Scale[], [LineSpecProps]>((scales, props) => {
 	const { metric, dimension, color, lineType, opacity, padding, scaleType, children, name, animations } = props;
 	//TODO: Add comments/documentation/tests
-	if ( animations == true ) {
+	if ( animations == true && hasInteractiveChildren(children)) {
 		getRSCAnimationScales(scales)
 	}
 	// add dimension scale

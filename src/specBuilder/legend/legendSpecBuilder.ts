@@ -114,6 +114,10 @@ export const addLegend = produce<
 			spec.signals = addSignals(spec.signals ?? [], legendProps);
 			spec.marks = addMarks(spec.marks ?? [], legendProps);
 
+			//TODO: add documentation
+			if (!spec.signals.some((signal) => signal.name == 'rscColorAnimation')) {
+				legendProps.animations = false;
+			}
 			// add the legend
 			legends.push(getCategoricalLegend(ordinalFacets, legendProps));
 		}
@@ -264,18 +268,19 @@ export const addData = produce<Data[], [LegendSpecProps & { facets: string[] }]>
 );
 
 export const addSignals = produce<Signal[], [LegendSpecProps]>(
-	(signals, { hiddenSeries, highlight, isToggleable, keys, legendLabels, name, animations}) => {
-		if (animations == true) {
-			const signalName = 'rscColorAnimationDirection';
-			if (hasSignalByName(signals, signalName)) {
-				signals.find((sig) => sig.name == signalName)?.on?.push(...getRSCLegendColorAnimationDirection(name))
-			}
-		}
-
+	(signals, { hiddenSeries, highlight, isToggleable, keys, legendLabels, name, animations }) => {
 		if (highlight) {
 			const signalName = keys ? `${name}_highlighted` : 'highlightedSeries';
 			if (!hasSignalByName(signals, signalName)) {
 				signals.push(getHighlightSeriesSignal(name, Boolean(isToggleable || hiddenSeries), keys));
+			}
+		}
+		//TODO: add documentation
+		if (animations == true) {
+			const signalName = 'rscColorAnimationDirection';
+			if (hasSignalByName(signals, signalName)) {
+				signals.find((sig) => sig.name == signalName)?.on?.push(...getRSCLegendColorAnimationDirection(name));
+				signals.push(getHighlightSeriesSignal(name, Boolean (isToggleable || hiddenSeries), undefined, true));
 			}
 		}
 

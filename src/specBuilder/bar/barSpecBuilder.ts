@@ -19,7 +19,7 @@ import {
 	TRELLIS_PADDING,
 } from '@constants';
 import { getTransformSort } from '@specBuilder/data/dataUtils';
-import { hasPopover } from '@specBuilder/marks/markUtils';
+import { hasInteractiveChildren, hasPopover } from '@specBuilder/marks/markUtils';
 import {
 	addDomainFields,
 	addFieldToFacetScaleDomain,
@@ -106,7 +106,7 @@ export const addSignals = produce<Signal[], [BarSpecProps]>(
 			return;
 		}
 		//TODO: add comments
-		if (animations == true) {
+		if (animations == true && hasInteractiveChildren(children)) {
 			signals.push(...getAnimationSignals(name));
 		}
 
@@ -196,10 +196,10 @@ export const getDodgeGroupTransform = ({ color, lineType, name, opacity, type }:
 };
 
 export const addScales = produce<Scale[], [BarSpecProps]>((scales, props) => {
-	const { color, lineType, opacity, orientation, animations } = props;
+	const { color, lineType, opacity, orientation, animations, children } = props;
 
 	//TODO add comments
-	if (animations == true) {
+	if (animations == true && hasInteractiveChildren(children)) {
 		getRSCAnimationScales(scales)
 	}
 	addMetricScale(scales, getScaleValues(props), orientation === 'vertical' ? 'y' : 'x');
