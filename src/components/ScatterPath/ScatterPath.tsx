@@ -10,20 +10,22 @@
  * governing permissions and limitations under the License.
  */
 
-export * from './Annotation';
-export * from './Area';
-export * from './Axis';
-export * from './AxisAnnotation';
-export * from './Bar';
-export * from './ChartPopover';
-export * from './ChartTooltip';
-export * from './EmptyState';
-export * from './Legend';
-export * from './Line';
-export * from './ScatterPath';
-export * from './MetricRange';
-export * from './ReferenceLine';
-export * from './Title';
-export * from './Trendline';
-export * from './TrendlineAnnotation';
-export * from './Scatter';
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import { FC } from 'react';
+
+import { ScatterPathProps } from '../../types';
+
+// destructure props here and set defaults so that storybook can pick them up
+const ScatterPath: FC<ScatterPathProps> = ({
+	color = 'gray-500',
+	groupBy,
+	pathWidth = { value: 'M' },
+	opacity = 0.5,
+}) => {
+	return null;
+};
+
+// displayName is used to validate the component type in the spec builder
+ScatterPath.displayName = 'ScatterPath';
+
+export { ScatterPath };

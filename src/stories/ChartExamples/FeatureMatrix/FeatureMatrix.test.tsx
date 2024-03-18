@@ -10,6 +10,7 @@
  * governing permissions and limitations under the License.
  */
 import {
+	allElementsHaveAttributeValue,
 	findAllMarksByGroupName,
 	findChart,
 	findMarksByGroupName,
@@ -20,7 +21,7 @@ import {
 } from '@test-utils';
 import { spectrumColors } from '@themes';
 
-import { FeatureMatrix, MultipleSegmentFeatureMatrix } from './FeatureMatrix.story';
+import { FeatureMatrix, MultipleSegmentFeatureMatrix, TimeCompareFeatureMatrix } from './FeatureMatrix.story';
 
 const colors = spectrumColors.light;
 
@@ -148,5 +149,28 @@ describe('MultipleSegmentFeatureMatrix', () => {
 		await hoverNthElement(hoverAreas, 12);
 		expect(screen.getByText('Median times 2.59')).toBeInTheDocument();
 		expect(screen.getByText('Median %DAU 8.96%')).toBeInTheDocument();
+	});
+});
+
+describe('TimeCompareFeatureMatrix', () => {
+	test('should render time comparison correctly', async () => {
+		render(<TimeCompareFeatureMatrix {...TimeCompareFeatureMatrix.args} />);
+		const chart = await findChart();
+		expect(chart).toBeInTheDocument();
+
+		// point styling
+		const points = await findAllMarksByGroupName(chart, 'scatter0');
+		expect(points).toHaveLength(36);
+		expect(points[0]).toHaveAttribute('fill-opacity', '0.5');
+		expect(points[1]).toHaveAttribute('fill-opacity', '1');
+		expect(points[0]).toHaveAttribute('stroke-dasharray', '2,3');
+		expect(points[1]).toHaveAttribute('stroke-dasharray', '');
+		expect(allElementsHaveAttributeValue(points, 'stroke-width', '1')).toBe(true);
+
+		// path styling
+		const paths = await findAllMarksByGroupName(chart, 'scatter0Path0');
+		expect(paths).toHaveLength(18);
+		expect(allElementsHaveAttributeValue(paths, 'fill-opacity', '0.2')).toBe(true);
+		expect(allElementsHaveAttributeValue(paths, 'fill', spectrumColors.light['gray-500'])).toBe(true);
 	});
 });
