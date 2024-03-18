@@ -16,7 +16,7 @@ import { Axis, Bar, Chart } from '@rsc';
 import { StoryFn } from '@storybook/react';
 
 export const ChartBarStory: StoryFn<typeof Chart> = (args): ReactElement => {
-	const props = useChartProps({...args, animations: false});
+	const props = useChartProps({...args});
 	return (
 		<Chart {...props}>
 			<Axis position="bottom" baseline />

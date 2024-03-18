@@ -27,6 +27,10 @@ export default {
 	component: Bar,
 };
 
+interface BarPropsAndAnimation extends Partial<BarProps> {
+	animations?: boolean;
+}
+
 const colors: SpectrumColor[] = [
 	'sequential-magma-200',
 	'sequential-magma-400',
@@ -37,7 +41,7 @@ const colors: SpectrumColor[] = [
 	'sequential-magma-1400',
 ];
 
-const BarStory: StoryFn<typeof Bar> = (args: BarProps): ReactElement => {
+const BarStory: StoryFn<typeof Bar> = (args: BarPropsAndAnimation): ReactElement => {
 	const chartProps = useChartProps({
 		data: generateMockDataForTrellis({
 			property1: ['All users', 'Roku', 'Chromecast', 'Amazon Fire', 'Apple TV'],
@@ -51,7 +55,7 @@ const BarStory: StoryFn<typeof Bar> = (args: BarProps): ReactElement => {
 		width: 800,
 		height: 800,
 		debug: true,
-		animations: false
+		animations: args.animations
 	});
 
 	const dialog = (item: Datum) => {
@@ -77,7 +81,7 @@ const BarStory: StoryFn<typeof Bar> = (args: BarProps): ReactElement => {
 	);
 };
 
-const Dodged = bindWithProps<BarProps>(BarStory);
+const Dodged = bindWithProps<BarPropsAndAnimation>(BarStory);
 Dodged.args = {
 	type: 'dodged',
 	dimension: 'segment',

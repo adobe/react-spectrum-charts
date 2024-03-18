@@ -248,7 +248,7 @@ export const initializeSpec = (spec: Spec | null = {}, chartProps: Partial<Sanit
 		description,
 		autosize: { type: 'fit', contains: 'padding', resize: true },
 		data: isVegaData(data) ? data : baseData,
-		background: backgroundColor ? getColorValue(backgroundColor, colorScheme) : undefined,
+		background: backgroundColor ? getColorValue(backgroundColor, colorScheme) : undefined
 	};
 
 	return { ...baseSpec, ...(spec || {}) };
