@@ -76,9 +76,10 @@ export const getLineMark = (lineMarkProps: LineMarkProps, dataSource: string): L
 				// this has to be in update because when you resize the window that doesn't rebuild the spec
 				// but it may change the x position if it causes the chart to resize
 				x: getXProductionRule(scaleType, dimension),
-				strokeOpacity: getLineStrokeOpacity(lineMarkProps),
         y: animations !== false ? getAnimationMarks(dimension, metric, data, previousData) : undefined,
 				...(popoverWithDimensionHighlightExists ? {} : { opacity: getLineOpacity(lineMarkProps) }),
+				strokeOpacity: getLineStrokeOpacity(lineMarkProps),
+				opacity: getLineOpacity(lineMarkProps),
 			},
 		},
 	};
