@@ -9,7 +9,6 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
 import { TimeLocaleCode } from 'types/locales';
 import { TimeLocale } from 'vega';
 
@@ -48,7 +47,7 @@ import ukua from './uk-UA.json';
 import zhcn from './zh-CN.json';
 import zhtw from './zh-TW.json';
 
-export const timeLocale: Record<TimeLocaleCode, TimeLocale> = {
+export const timeLocales: Record<TimeLocaleCode, TimeLocale> = {
 	['ar-EG']: areg as TimeLocale,
 	['ar-SY']: arsy as TimeLocale,
 	['ca-ES']: caes as TimeLocale,

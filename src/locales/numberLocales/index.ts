@@ -9,7 +9,6 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
 import { NumberLocaleCode } from 'types/locales';
 import { NumberLocale } from 'vega';
 
@@ -69,7 +68,7 @@ import svse from './sv-SE.json';
 import ukua from './uk-UA.json';
 import zhcn from './zh-CN.json';
 
-export const numberLocale: Record<NumberLocaleCode, NumberLocale> = {
+export const numberLocales: Record<NumberLocaleCode, NumberLocale> = {
 	['ar-AE']: arae as NumberLocale,
 	['ar-BH']: arbh as NumberLocale,
 	['ar-DJ']: ardj as NumberLocale,

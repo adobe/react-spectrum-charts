@@ -11,6 +11,7 @@
  */
 import React from 'react';
 
+import { HIGHLIGHT_CONTRAST_RATIO } from '@constants';
 import '@matchMediaMock';
 import {
 	clickNthElement,
@@ -25,7 +26,6 @@ import {
 import { spectrumColors } from '@themes';
 
 import { DefaultHiddenSeries, HiddenSeries, IsToggleable } from './LegendHideShow.story';
-import { HIGHLIGHT_CONTRAST_RATIO } from '@constants';
 
 const colors = spectrumColors.light;
 

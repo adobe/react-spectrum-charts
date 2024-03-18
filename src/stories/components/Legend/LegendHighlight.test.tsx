@@ -11,6 +11,7 @@
  */
 import React from 'react';
 
+import { HIGHLIGHT_CONTRAST_RATIO } from '@constants';
 import {
 	allElementsHaveAttributeValue,
 	findAllMarksByGroupName,
@@ -22,7 +23,6 @@ import {
 } from '@test-utils';
 
 import { Basic, Controlled } from './LegendHighlight.story';
-import { HIGHLIGHT_CONTRAST_RATIO } from '@constants';
 
 describe('Controlled', () => {
 	test('non highlighted series bars should have opacity applied', async () => {
@@ -97,7 +97,7 @@ describe('Uncontrolled', () => {
 		legendSymbols = await findAllMarksByGroupName(chart, 'role-legend-symbol');
 		expect(legendSymbols[0]).toHaveAttribute('opacity', '1');
 		expect(
-			allElementsHaveAttributeValue(legendSymbols.slice(1), 'opacity', 1 / HIGHLIGHT_CONTRAST_RATIO),
+			allElementsHaveAttributeValue(legendSymbols.slice(1), 'opacity', 1 / HIGHLIGHT_CONTRAST_RATIO)
 		).toBeTruthy();
 	});
 
@@ -116,7 +116,7 @@ describe('Uncontrolled', () => {
 		expect(legendLabels.length).toEqual(3);
 		expect(legendLabels[0]).toHaveAttribute('opacity', '1');
 		expect(
-			allElementsHaveAttributeValue(legendLabels.slice(1), 'opacity', 1 / HIGHLIGHT_CONTRAST_RATIO),
+			allElementsHaveAttributeValue(legendLabels.slice(1), 'opacity', 1 / HIGHLIGHT_CONTRAST_RATIO)
 		).toBeTruthy();
 	});
 });

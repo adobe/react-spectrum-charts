@@ -10,5 +10,5 @@
  * governing permissions and limitations under the License.
  */
 
-export * from './numberLocales/numberLocales';
-export * from './timeLocales/timeLocales';
+export * from './numberLocales';
+export * from './timeLocales';

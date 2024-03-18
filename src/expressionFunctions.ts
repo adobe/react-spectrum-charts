@@ -9,7 +9,9 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { numberLocales } from '@locales';
 import { ADOBE_CLEAN_FONT } from '@themes/spectrumTheme';
+import { FormatLocaleDefinition, formatLocale } from 'd3-format';
 import { FontWeight } from 'vega';
 
 interface LabelDatum {
@@ -28,6 +30,25 @@ const formatPrimaryTimeLabels = () => {
 		const showLabel = datum.index === 0 || prevLabel !== datum.label;
 		prevLabel = datum.label;
 		return showLabel ? datum.label : '';
+	};
+};
+
+/**
+ * Formats a duration in seconds as HH:MM:SS.
+ * Function is initialized with a number locale. This ensures that the thousands separator is correct for the locale
+ * @param numberLocale
+ * @returns formatted sting (HH:MM:SS)
+ */
+export const formatTimeDurationLabels = (numberLocale: FormatLocaleDefinition = numberLocales['en-US']) => {
+	const d3 = formatLocale(numberLocale);
+	// 0 padded, minimum 2 digits, thousands separator, integer format
+	const formatDuration = d3.format('02,d');
+	return ({ value }: LabelDatum) => {
+		if (typeof value === 'string') return value;
+		const seconds = formatDuration(Math.floor(value % 60));
+		const minutes = formatDuration(Math.floor((value / 60) % 60));
+		const hours = formatDuration(Math.floor(value / 60 / 60));
+		return `${hours}:${minutes}:${seconds}`;
 	};
 };
 

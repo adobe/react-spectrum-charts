@@ -25,7 +25,7 @@ import {
 	TrendlineSpecProps,
 	WindowMethod,
 } from 'types';
-import { ScaleType, SignalRef } from 'vega';
+import { SignalRef } from 'vega';
 
 /** These are all the spec props that currently support trendlines */
 export type TrendlineParentProps = LineSpecProps | ScatterSpecProps;
@@ -52,6 +52,7 @@ export const applyTrendlinePropDefaults = (
 	markProps: TrendlineParentProps,
 	{
 		children,
+		color,
 		dimensionExtent,
 		dimensionRange = [null, null],
 		displayOnHover = false,
@@ -63,23 +64,40 @@ export const applyTrendlinePropDefaults = (
 		orientation = 'horizontal',
 		...props
 	}: TrendlineProps,
-	index: number,
-): TrendlineSpecProps => ({
-	children: sanitizeTrendlineChildren(children),
-	displayOnHover,
-	dimensionExtent: dimensionExtent ?? dimensionRange,
-	dimensionRange,
-	dimensionScaleType: getTrendlineScaleType(markProps, orientation),
-	highlightRawPoint,
-	lineType,
-	lineWidth,
-	method,
-	metric: TRENDLINE_VALUE,
-	name: `${markProps.name}Trendline${index}`,
-	opacity,
-	orientation,
-	...props,
-});
+	index: number
+): TrendlineSpecProps => {
+	const dimensionScaleType = getTrendlineScaleType(markProps, orientation);
+	const isDimensionNormalized =
+		dimensionScaleType === 'time' && isRegressionMethod(method) && orientation === 'horizontal';
+	const { trendlineDimension, trendlineMetric } = getTrendlineDimensionMetric(
+		markProps.dimension,
+		markProps.metric,
+		orientation,
+		isDimensionNormalized
+	);
+	const trendlineColor = color ? { value: color } : markProps.color;
+	return {
+		children: sanitizeTrendlineChildren(children),
+		colorScheme: markProps.colorScheme,
+		displayOnHover,
+		dimensionExtent: dimensionExtent ?? dimensionRange,
+		dimensionRange,
+		dimensionScaleType,
+		highlightRawPoint,
+		isDimensionNormalized,
+		lineType,
+		lineWidth,
+		method,
+		metric: TRENDLINE_VALUE,
+		name: `${markProps.name}Trendline${index}`,
+		opacity,
+		orientation,
+		trendlineColor,
+		trendlineDimension,
+		trendlineMetric,
+		...props,
+	};
+};
 
 /**
  * Gets the metric and dimension for the trendline, taking into account the orientation.
@@ -94,17 +112,17 @@ export const getTrendlineDimensionMetric = (
 	dimension: string,
 	metric: string,
 	orientation: Orientation,
-	isDimensionNormalized: boolean,
+	isDimensionNormalized: boolean
 ): { trendlineDimension: string; trendlineMetric: string } => {
 	return orientation === 'horizontal'
 		? {
 				trendlineDimension: normalizeTrendlineDimensionName(dimension, isDimensionNormalized),
 				trendlineMetric: metric,
-			}
+		  }
 		: {
 				trendlineDimension: metric,
 				trendlineMetric: dimension,
-			};
+		  };
 };
 
 /**
@@ -153,15 +171,6 @@ export const isPolynomialMethod = (method: TrendlineMethod): boolean =>
 	method.startsWith('polynomial-') || ['linear', 'quadratic'].includes(method);
 
 /**
- * determines if the supplied method is a regression method that uses the normalized dimension
- * @see https://vega.github.io/vega/docs/transforms/regression/
- * @param method
- * @returns boolean
- */
-export const trendlineUsesNormalizedDimension = (method: TrendlineMethod, scaleType: ScaleType | undefined): boolean =>
-	scaleType === 'time' && isRegressionMethod(method);
-
-/**
  * determines if any trendlines use the normalized dimension
  * @param markProps
  * @returns boolean
@@ -171,7 +180,7 @@ export const hasTrendlineWithNormalizedDimension = (markProps: TrendlineParentPr
 
 	// only need to add the normalized dimension transform if there is a regression trendline and the dimension scale type is time
 	return trendlines.some(
-		({ dimensionScaleType, method }) => isRegressionMethod(method) && dimensionScaleType === 'time',
+		({ dimensionScaleType, method }) => isRegressionMethod(method) && dimensionScaleType === 'time'
 	);
 };
 
@@ -209,7 +218,7 @@ export const getPolynomialOrder = (method: TrendlineMethod): number => {
 export const getRegressionExtent = (
 	dimensionExtent: TrendlineSpecProps['dimensionExtent'],
 	name: string,
-	isNormalized: boolean,
+	isNormalized: boolean
 ): SignalRef => {
 	const extentName = `${name}_extent`;
 	const extentSignal = dimensionExtent
@@ -234,7 +243,7 @@ export const getRegressionExtent = (
 
 export const getTrendlineScaleType = (
 	markProps: TrendlineParentProps,
-	trendlineOrientation: Orientation,
+	trendlineOrientation: Orientation
 ): RscScaleType => {
 	// y axis only support linear... for now...
 	if (trendlineOrientation === 'vertical') return 'linear';

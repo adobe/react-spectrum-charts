@@ -9,11 +9,12 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
 import { createElement } from 'react';
+
+import { Trendline } from '@components/Trendline';
+
 import { getTrendlineScales } from './trendlineScaleUtils';
 import { defaultLineProps } from './trendlineTestUtils';
-import { Trendline } from '@components/Trendline';
 
 describe('getTrendlineScales()', () => {
 	test('should return the xTrendline scale if the scaleType is time and there is a regression trendline', () => {

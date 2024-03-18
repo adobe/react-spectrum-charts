@@ -9,19 +9,20 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
+import { HIGHLIGHT_CONTRAST_RATIO } from '@constants';
 import '@matchMediaMock';
 import { Trendline } from '@rsc';
 import {
 	allElementsHaveAttributeValue,
 	findAllMarksByGroupName,
 	findChart,
+	findMarksByGroupName,
 	getAllLegendEntries,
 	hoverNthElement,
+	queryMarksByGroupName,
 	render,
 } from '@test-utils';
 
-import { HIGHLIGHT_CONTRAST_RATIO } from '@constants';
 import {
 	Basic,
 	DisplayOnHover,
@@ -93,40 +94,58 @@ describe('Trendline', () => {
 			const lines = await findAllMarksByGroupName(chart, 'line0');
 			expect(lines).toHaveLength(4);
 
-			const trendlines = await findAllMarksByGroupName(chart, 'line0Trendline0');
-			expect(trendlines).toHaveLength(4);
-
-			// trendlines should be hidden by default
-			expect(trendlines[0]).toHaveAttribute('opacity', '0');
+			// shouldn't be any trendlines visible
+			let trendline = queryMarksByGroupName(chart, 'line0Trendline0');
+			expect(trendline).not.toBeInTheDocument();
 
 			// hover over the first point on the first line
 			const hoverAreas = await findAllMarksByGroupName(chart, 'line0_voronoi');
 			await hoverNthElement(hoverAreas, 0);
 
-			// first trendline should be visible
-			expect(trendlines[0]).toHaveAttribute('opacity', '1');
-			// second trendline should still be hidden
-			expect(trendlines[1]).toHaveAttribute('opacity', '0');
+			// trendline should be visible
+			trendline = await findMarksByGroupName(chart, 'line0Trendline0');
+			expect(trendline).toBeInTheDocument();
+			expect(trendline).toHaveAttribute('opacity', '1');
 		});
 
 		test('should display trendlines on legend hover', async () => {
 			render(<DisplayOnHover {...DisplayOnHover.args} />);
 			const chart = await findChart();
 
-			const trendlines = await findAllMarksByGroupName(chart, 'line0Trendline0');
-			expect(trendlines).toHaveLength(4);
-
-			// trendlines should be hidden by default
-			expect(trendlines[0]).toHaveAttribute('opacity', '0');
+			// shouldn't be any trendlines visible
+			let trendline = queryMarksByGroupName(chart, 'line0Trendline0');
+			expect(trendline).not.toBeInTheDocument();
 
 			// hover over the first point on the first line
 			const legendEntries = getAllLegendEntries(chart);
 			await hoverNthElement(legendEntries, 0);
 
-			// first trendline should be visible
-			expect(trendlines[0]).toHaveAttribute('opacity', '1');
-			// second trendline should still be hidden
-			expect(trendlines[1]).toHaveAttribute('opacity', '0');
+			// trendline should be visible
+			trendline = await findMarksByGroupName(chart, 'line0Trendline0');
+			expect(trendline).toBeInTheDocument();
+			expect(trendline).toHaveAttribute('opacity', '1');
+		});
+
+		test('should display on hover for window methods', async () => {
+			render(<DisplayOnHover {...DisplayOnHover.args} method="movingAverage-2" />);
+			const chart = await findChart();
+			expect(chart).toBeInTheDocument();
+
+			const lines = await findAllMarksByGroupName(chart, 'line0');
+			expect(lines).toHaveLength(4);
+
+			// shouldn't be any trendlines visible
+			let trendline = queryMarksByGroupName(chart, 'line0Trendline0');
+			expect(trendline).not.toBeInTheDocument();
+
+			// hover over the first point on the first line
+			const hoverAreas = await findAllMarksByGroupName(chart, 'line0_voronoi');
+			await hoverNthElement(hoverAreas, 0);
+
+			// trendline should be visible
+			trendline = await findMarksByGroupName(chart, 'line0Trendline0');
+			expect(trendline).toBeInTheDocument();
+			expect(trendline).toHaveAttribute('opacity', '1');
 		});
 	});
 
@@ -167,7 +186,7 @@ describe('Trendline', () => {
 
 			// other lines and trendlines are faded
 			expect(
-				allElementsHaveAttributeValue([lines[1], trendlines[1]], 'opacity', 1 / HIGHLIGHT_CONTRAST_RATIO),
+				allElementsHaveAttributeValue([lines[1], trendlines[1]], 'opacity', 1 / HIGHLIGHT_CONTRAST_RATIO)
 			).toBeTruthy();
 		});
 	});

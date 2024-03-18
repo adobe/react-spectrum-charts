@@ -9,7 +9,14 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { DEFAULT_COLOR, DEFAULT_OPACITY_RULE, HIGHLIGHT_CONTRAST_RATIO, OPACITY_SCALE, SERIES_ID } from '@constants';
+import {
+	DEFAULT_COLOR,
+	DEFAULT_OPACITY_RULE,
+	HIGHLIGHTED_SERIES,
+	HIGHLIGHT_CONTRAST_RATIO,
+	OPACITY_SCALE,
+	SERIES_ID,
+} from '@constants';
 import { Mark } from 'vega';
 
 import { getHighlightOpacityRule, getOpacityRule, setHoverOpacityForMarks } from './legendHighlightUtils';
@@ -58,7 +65,7 @@ describe('getHighlightOpacityRule()', () => {
 	});
 	test('should use the highlighedSeries in the test if keys do not', () => {
 		const { test } = getHighlightOpacityRule({});
-		expect(test).toContain('highlightedSeries');
+		expect(test).toContain(HIGHLIGHTED_SERIES);
 	});
 });
 
@@ -66,7 +73,7 @@ describe('getOpacityRule()', () => {
 	test('array, should return the last value', () => {
 		expect(getOpacityRule([{ value: 0.5 }])).toStrictEqual({ value: 0.5 });
 		expect(
-			getOpacityRule([{ value: 0.5 }, { signal: `scale('${OPACITY_SCALE}', datum.${DEFAULT_COLOR})` }]),
+			getOpacityRule([{ value: 0.5 }, { signal: `scale('${OPACITY_SCALE}', datum.${DEFAULT_COLOR})` }])
 		).toStrictEqual({
 			signal: `scale('${OPACITY_SCALE}', datum.${DEFAULT_COLOR})`,
 		});
@@ -105,7 +112,7 @@ describe('setHoverOpacityForMarks()', () => {
 						...defaultMark,
 						encode: { ...defaultMark.encode, update: { opacity: [DEFAULT_OPACITY_RULE] } },
 					},
-				]),
+				])
 			);
 			setHoverOpacityForMarks(marks);
 			expect(marks).toStrictEqual([

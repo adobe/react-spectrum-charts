@@ -10,11 +10,11 @@
  * governing permissions and limitations under the License.
  */
 import { MetricRange } from '@components/MetricRange';
-import { DEFAULT_METRIC, FILTERED_TABLE } from '@constants';
+import { DEFAULT_METRIC, FILTERED_TABLE, HIGHLIGHTED_SERIES, SELECTED_SERIES, SERIES_ID } from '@constants';
 import { AreaMarkProps, getAreaMark } from '@specBuilder/area/areaUtils';
 import { getLineMark } from '@specBuilder/line/lineMarkUtils';
 import { LineMarkProps } from '@specBuilder/line/lineUtils';
-import { getSeriesHoveredSignal } from '@specBuilder/signal/signalSpecBuilder';
+import { addHighlightedSeriesSignalEvents } from '@specBuilder/signal/signalSpecBuilder';
 import { getFacetsFromProps } from '@specBuilder/specUtils';
 import { LineSpecProps, MarkChildElement, MetricRangeElement, MetricRangeProps, MetricRangeSpecProps } from 'types';
 import { AreaMark, GroupMark, LineMark, Signal, SourceData } from 'vega';
@@ -30,7 +30,7 @@ export const applyMetricRangePropDefaults = (
 	{
 		lineType = 'dashed',
 		lineWidth = 'S',
-		rangeOpacity = 0.8,
+		rangeOpacity = 0.2,
 		metric = DEFAULT_METRIC,
 		displayOnHover = false,
 		...props
@@ -53,21 +53,24 @@ export const applyMetricRangePropDefaults = (
  * @param lineMarkProps
  */
 export const getMetricRangeGroupMarks = (lineMarkProps: LineSpecProps): GroupMark[] => {
-	const { children, color, lineType, name } = lineMarkProps;
+	const { children, color, lineType, name: lineName } = lineMarkProps;
 	const { facets } = getFacetsFromProps({ color, lineType });
 
 	const marks: GroupMark[] = [];
-	const metricRanges = getMetricRanges(children, name);
+	const metricRanges = getMetricRanges(children, lineName);
 
 	for (const metricRangeProps of metricRanges) {
+		const { displayOnHover, name } = metricRangeProps;
+		// if displayOnHover is true, use the highlightedData source, otherwise use the filtered table
+		const data = displayOnHover ? `${name}_highlightedData` : FILTERED_TABLE;
 		marks.push({
-			name: `${metricRangeProps.name}_group`,
+			name: `${name}_group`,
 			type: 'group',
 			clip: true,
 			from: {
 				facet: {
-					name: `${metricRangeProps.name}_facet`,
-					data: FILTERED_TABLE,
+					name: `${name}_facet`,
+					data,
 					groupby: facets,
 				},
 			},
@@ -88,7 +91,7 @@ export const getMetricRangeMark = (
 	metricRangeProps: MetricRangeSpecProps
 ): (LineMark | AreaMark)[] => {
 	const areaProps: AreaMarkProps = {
-		name: metricRangeProps.name,
+		name: `${metricRangeProps.name}_area`,
 		color: lineMarkProps.color,
 		colorScheme: lineMarkProps.colorScheme,
 		opacity: metricRangeProps.rangeOpacity,
@@ -105,6 +108,7 @@ export const getMetricRangeMark = (
 	};
 	const lineProps: LineMarkProps = {
 		...lineMarkProps,
+		name: `${metricRangeProps.name}_line`,
 		color: metricRangeProps.color ? { value: metricRangeProps.color } : lineMarkProps.color,
 		metric: metricRangeProps.metric,
 		lineType: { value: metricRangeProps.lineType },
@@ -112,8 +116,9 @@ export const getMetricRangeMark = (
 		displayOnHover: metricRangeProps.displayOnHover,
 	};
 
-	const lineMark = getLineMark(lineProps, `${metricRangeProps.name}_facet`);
-	const areaMark = getAreaMark(areaProps);
+	const dataSource = `${metricRangeProps.name}_facet`;
+	const lineMark = getLineMark(lineProps, dataSource);
+	const areaMark = getAreaMark(areaProps, dataSource);
 
 	return [lineMark, areaMark];
 };
@@ -128,11 +133,20 @@ export const getMetricRangeData = (markProps: LineSpecProps): SourceData[] => {
 	const metricRanges = getMetricRanges(children, markName);
 
 	for (const metricRangeProps of metricRanges) {
-		const { name } = metricRangeProps;
-		data.push({
-			name: `${name}_data`,
-			source: FILTERED_TABLE,
-		});
+		const { displayOnHover, name } = metricRangeProps;
+		// if displayOnHover is true, add a data source for the highlighted data
+		if (displayOnHover) {
+			data.push({
+				name: `${name}_highlightedData`,
+				source: FILTERED_TABLE,
+				transform: [
+					{
+						type: 'filter',
+						expr: `${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES} === datum.${SERIES_ID} || ${SELECTED_SERIES} && ${SELECTED_SERIES} === datum.${SERIES_ID}`,
+					},
+				],
+			});
+		}
 	}
 
 	return data;
@@ -148,7 +162,7 @@ export const getMetricRangeSignals = (markProps: LineSpecProps): Signal[] => {
 	const metricRanges = getMetricRanges(children, markName);
 
 	if (metricRanges.length) {
-		signals.push(getSeriesHoveredSignal(markName, true, `${markName}_voronoi`));
+		addHighlightedSeriesSignalEvents(signals, `${markName}_voronoi`, 2);
 	}
 
 	return signals;

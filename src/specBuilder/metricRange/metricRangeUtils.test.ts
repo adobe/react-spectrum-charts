@@ -70,7 +70,7 @@ const defaultLineProps: LineSpecProps = {
 
 const basicMetricRangeMarks = [
 	{
-		name: 'line0',
+		name: 'line0MetricRange0_line',
 		type: 'line',
 		from: {
 			data: 'line0MetricRange0_facet',
@@ -94,7 +94,7 @@ const basicMetricRangeMarks = [
 		},
 	},
 	{
-		name: 'line0MetricRange0',
+		name: 'line0MetricRange0_area',
 		type: 'area',
 		from: {
 			data: 'line0MetricRange0_facet',
@@ -119,14 +119,14 @@ const basicMetricRangeMarks = [
 describe('applyMetricRangePropDefaults', () => {
 	test('applies defaults', () => {
 		expect(
-			applyMetricRangePropDefaults({ metricEnd: 'metricStart', metricStart: 'metricEnd' }, 'line0', 0),
+			applyMetricRangePropDefaults({ metricEnd: 'metricStart', metricStart: 'metricEnd' }, 'line0', 0)
 		).toEqual({
 			children: {},
 			displayOnHover: false,
 			lineType: 'dashed',
 			lineWidth: 'S',
 			name: 'line0MetricRange0',
-			rangeOpacity: 0.8,
+			rangeOpacity: 0.2,
 			metricEnd: 'metricStart',
 			metricStart: 'metricEnd',
 			metric: 'value',
@@ -145,8 +145,8 @@ describe('applyMetricRangePropDefaults', () => {
 					displayOnHover: true,
 				},
 				'line0',
-				0,
-			),
+				0
+			)
 		).toEqual({
 			children: {},
 			displayOnHover: true,
@@ -189,11 +189,11 @@ describe('getMetricRangeGroupMarks', () => {
 
 describe('getMetricRangeData', () => {
 	test('creates metric range data from basic input', () => {
-		expect(getMetricRangeData(defaultLineProps)).toEqual([
-			{
-				name: 'line0MetricRange0_data',
-				source: FILTERED_TABLE,
-			},
-		]);
+		const data = getMetricRangeData({
+			...defaultLineProps,
+			children: [createElement(MetricRange, { ...defaultMetricRangeProps, displayOnHover: true })],
+		});
+		expect(data).toHaveLength(1);
+		expect(data[0]).toHaveProperty('name', 'line0MetricRange0_highlightedData');
 	});
 });

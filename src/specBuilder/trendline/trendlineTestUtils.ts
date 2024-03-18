@@ -9,10 +9,10 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { createElement } from 'react';
 
 import { Trendline } from '@components/Trendline';
 import { DEFAULT_COLOR, DEFAULT_COLOR_SCHEME, DEFAULT_METRIC, DEFAULT_TIME_DIMENSION } from '@constants';
-import { createElement } from 'react';
 import { LineSpecProps, TrendlineSpecProps } from 'types';
 
 export const defaultLineProps: LineSpecProps = {
@@ -32,11 +32,13 @@ export const defaultLineProps: LineSpecProps = {
 
 export const defaultTrendlineProps: TrendlineSpecProps = {
 	children: [],
+	colorScheme: DEFAULT_COLOR_SCHEME,
 	dimensionExtent: [null, null],
 	dimensionRange: [null, null],
 	dimensionScaleType: 'time',
 	displayOnHover: false,
 	highlightRawPoint: false,
+	isDimensionNormalized: false,
 	lineType: 'dashed',
 	lineWidth: 'M',
 	method: 'average',
@@ -44,4 +46,7 @@ export const defaultTrendlineProps: TrendlineSpecProps = {
 	name: 'line0Trendline0',
 	opacity: 1,
 	orientation: 'horizontal',
+	trendlineColor: DEFAULT_COLOR,
+	trendlineDimension: DEFAULT_TIME_DIMENSION,
+	trendlineMetric: DEFAULT_METRIC,
 };

@@ -9,6 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { HIGHLIGHT_CONTRAST_RATIO } from '@constants';
 import { Scatter, spectrumColors } from '@rsc';
 import {
 	allElementsHaveAttributeValue,
@@ -22,10 +23,9 @@ import {
 	screen,
 	within,
 } from '@test-utils';
+import userEvent from '@testing-library/user-event';
 
 import { Basic, Color, ColorScaleType, LineType, Opacity, Popover, Size, Tooltip } from './Scatter.story';
-import { HIGHLIGHT_CONTRAST_RATIO } from '@constants';
-import userEvent from '@testing-library/user-event';
 
 const colors = spectrumColors.light;
 
@@ -140,7 +140,7 @@ describe('Scatter', () => {
 
 			// make sure all points after the first have reduced opacity
 			expect(
-				allElementsHaveAttributeValue(points.slice(1), 'opacity', 1 / HIGHLIGHT_CONTRAST_RATIO),
+				allElementsHaveAttributeValue(points.slice(1), 'opacity', 1 / HIGHLIGHT_CONTRAST_RATIO)
 			).toBeTruthy();
 
 			// find the select ring
@@ -201,7 +201,7 @@ describe('Scatter', () => {
 
 			// make sure all points after the first have reduced opacity
 			expect(
-				allElementsHaveAttributeValue(points.slice(1), 'opacity', 1 / HIGHLIGHT_CONTRAST_RATIO),
+				allElementsHaveAttributeValue(points.slice(1), 'opacity', 1 / HIGHLIGHT_CONTRAST_RATIO)
 			).toBeTruthy();
 		});
 	});

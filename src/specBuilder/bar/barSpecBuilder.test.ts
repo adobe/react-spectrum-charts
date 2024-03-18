@@ -31,7 +31,7 @@ import {
 	STACK_ID,
 	TABLE
 } from '@constants';
-import { getUncontrolledHoverSignal } from '@specBuilder/signal/signalSpecBuilder';
+import { defaultSignals } from '@specBuilder/specTestUtils';
 import { spectrumColors } from '@themes';
 import {
 	AggregateTransform,
@@ -243,16 +243,6 @@ const defaultSpec: Spec = {
 	],
 };
 
-const defaultHoverSignal = {
-	name: 'bar0_hoveredId',
-	on: [
-		{ events: '@bar0:mouseover', update: `datum.${MARK_ID}` },
-		{ events: '@bar0:mouseout', update: 'null' },
-	],
-	value: null,
-};
-const defaultSelectSignal = { name: 'bar0_selectedId', value: null };
-
 describe('barSpecBuilder', () => {
 	describe('addBar()', () => {
 		test('no props', () => {
@@ -261,47 +251,16 @@ describe('barSpecBuilder', () => {
 	});
 
 	describe('addSignals()', () => {
-		describe('no initial state', () => {
-			test('default props, should return padding signal', () => {
-				expect(addSignals([], defaultBarProps)).toStrictEqual([defaultPaddingSignal]);
-			});
-			test('ChartTooltip, should add hover signal', () => {
-				const tooltip = createElement(ChartTooltip);
-				expect(addSignals([], { ...defaultBarProps, children: [tooltip] })).toStrictEqual([
-					defaultPaddingSignal,
-					defaultHoverSignal,
-				]);
-			});
-			test('ChartPopover, should add hover and select signal', () => {
-				const popover = createElement(ChartPopover);
-				expect(addSignals([], { ...defaultBarProps, children: [popover] })).toStrictEqual([
-					defaultPaddingSignal,
-					defaultHoverSignal,
-					defaultSelectSignal,
-				]);
-			});
+		test('should add padding signal', () => {
+			const signals = addSignals(defaultSignals, defaultBarProps);
+			expect(signals).toHaveLength(5);
+			expect(signals.at(-1)).toHaveProperty('name', 'paddingInner');
 		});
-		describe('existing signals', () => {
-			test('default props, should return original signal', () => {
-				expect(addSignals([getUncontrolledHoverSignal('bar0')], defaultBarProps)).toStrictEqual([
-					getUncontrolledHoverSignal('bar0'),
-					defaultPaddingSignal,
-				]);
-			});
-			test('existing hover and select signals, should do nothing', () => {
-				const popover = createElement(ChartPopover);
-				expect(
-					addSignals([getUncontrolledHoverSignal('bar0'), defaultHoverSignal, defaultSelectSignal], {
-						...defaultBarProps,
-						children: [popover],
-					}),
-				).toStrictEqual([
-					getUncontrolledHoverSignal('bar0'),
-					defaultHoverSignal,
-					defaultSelectSignal,
-					defaultPaddingSignal,
-				]);
-			});
+		test('should add hover events if tooltip is present', () => {
+			const signals = addSignals(defaultSignals, { ...defaultBarProps, children: [createElement(ChartTooltip)] });
+			expect(signals[0]).toHaveProperty('on');
+			expect(signals[0].on).toHaveLength(2);
+			expect(signals[0].on?.[0]).toHaveProperty('events', '@bar0:mouseover');
 		});
 	});
 
@@ -317,7 +276,7 @@ describe('barSpecBuilder', () => {
 
 			test('secondary series, should add default scales', () => {
 				expect(
-					addScales([{ name: COLOR_SCALE, type: 'ordinal' }], defaultBarPropsWithSecondayColor),
+					addScales([{ name: COLOR_SCALE, type: 'ordinal' }], defaultBarPropsWithSecondayColor)
 				).toStrictEqual([
 					defaultColorScale,
 					defaultMetricScale,
@@ -348,8 +307,8 @@ describe('barSpecBuilder', () => {
 							...defaultBarProps,
 							lineType: DEFAULT_COLOR,
 							opacity: DEFAULT_COLOR,
-						},
-					),
+						}
+					)
 				).toStrictEqual([
 					defaultColorScale,
 					{ domain: { data: TABLE, fields: [DEFAULT_COLOR] }, name: LINE_TYPE_SCALE, type: 'ordinal' },
@@ -366,7 +325,7 @@ describe('barSpecBuilder', () => {
 						trellis: 'event',
 						trellisOrientation: 'vertical',
 						trellisPadding: 0.5,
-					}),
+					})
 				).toStrictEqual([
 					defaultColorScale,
 					defaultMetricScale,
@@ -459,7 +418,7 @@ describe('barSpecBuilder', () => {
 					addMarks([], {
 						...defaultBarProps,
 						children: [...defaultBarProps.children, annotation],
-					}),
+					})
 				).toStrictEqual([...defaultStackedBarMarks, ...stackedAnnotationMarks]);
 			});
 		});
@@ -491,7 +450,7 @@ describe('barSpecBuilder', () => {
 		describe('existing data "table"', () => {
 			test('new transform should be added to the data table', () => {
 				expect(
-					addData(defaultData, { ...defaultBarProps, metric: 'views', dimension: 'browser' }),
+					addData(defaultData, { ...defaultBarProps, metric: 'views', dimension: 'browser' })
 				).toStrictEqual([
 					defaultTableData,
 					{
@@ -602,7 +561,7 @@ describe('barSpecBuilder', () => {
 				const popover = createElement(ChartPopover);
 				expect(addData(baseData, { ...defaultBarProps, children: [popover] })[1]).toHaveProperty(
 					'transform',
-					defaultStackedTransforms,
+					defaultStackedTransforms
 				);
 			});
 		});
@@ -613,7 +572,7 @@ describe('barSpecBuilder', () => {
 					...defaultBarProps,
 					type: 'dodged',
 					color: [DEFAULT_COLOR, DEFAULT_SECONDARY_COLOR],
-				}),
+				})
 			).toStrictEqual([
 				defaultTableData,
 				{
@@ -674,7 +633,7 @@ describe('barSpecBuilder', () => {
 		});
 		test('stacked dodged', () => {
 			expect(
-				addData(defaultData, { ...defaultBarProps, color: [DEFAULT_COLOR, DEFAULT_SECONDARY_COLOR] }),
+				addData(defaultData, { ...defaultBarProps, color: [DEFAULT_COLOR, DEFAULT_SECONDARY_COLOR] })
 			).toStrictEqual([
 				defaultTableData,
 				{
@@ -775,7 +734,7 @@ describe('barSpecBuilder', () => {
 			});
 
 			expect(
-				getStackIdTransform({ ...defaultBarProps, type: 'dodged', opacity: DEFAULT_SECONDARY_COLOR }),
+				getStackIdTransform({ ...defaultBarProps, type: 'dodged', opacity: DEFAULT_SECONDARY_COLOR })
 			).toStrictEqual({
 				as: STACK_ID,
 				expr: `datum.${DEFAULT_CATEGORICAL_DIMENSION} + "," + datum.${DEFAULT_COLOR} + "," + datum.${DEFAULT_SECONDARY_COLOR}`,
@@ -787,7 +746,7 @@ describe('barSpecBuilder', () => {
 	describe('getDodgeGroupTransform()', () => {
 		test('should join facets together', () => {
 			expect(
-				getDodgeGroupTransform({ ...defaultBarProps, type: 'dodged', opacity: DEFAULT_SECONDARY_COLOR }),
+				getDodgeGroupTransform({ ...defaultBarProps, type: 'dodged', opacity: DEFAULT_SECONDARY_COLOR })
 			).toStrictEqual({
 				as: 'bar0_dodgeGroup',
 				expr: `datum.${DEFAULT_COLOR} + "," + datum.${DEFAULT_SECONDARY_COLOR}`,
@@ -799,18 +758,18 @@ describe('barSpecBuilder', () => {
 	describe('getRepeatedScale()', () => {
 		test('should return a linear scale if the bar and trellis orientations are the same', () => {
 			expect(
-				getRepeatedScale({ ...defaultBarProps, orientation: 'horizontal', trellisOrientation: 'horizontal' }),
+				getRepeatedScale({ ...defaultBarProps, orientation: 'horizontal', trellisOrientation: 'horizontal' })
 			).toHaveProperty('type', 'linear');
 			expect(
-				getRepeatedScale({ ...defaultBarProps, orientation: 'vertical', trellisOrientation: 'vertical' }),
+				getRepeatedScale({ ...defaultBarProps, orientation: 'vertical', trellisOrientation: 'vertical' })
 			).toHaveProperty('type', 'linear');
 		});
 		test('should return a band scale if the bar and trellis orientations are not the same', () => {
 			expect(
-				getRepeatedScale({ ...defaultBarProps, orientation: 'horizontal', trellisOrientation: 'vertical' }),
+				getRepeatedScale({ ...defaultBarProps, orientation: 'horizontal', trellisOrientation: 'vertical' })
 			).toHaveProperty('type', 'band');
 			expect(
-				getRepeatedScale({ ...defaultBarProps, orientation: 'vertical', trellisOrientation: 'horizontal' }),
+				getRepeatedScale({ ...defaultBarProps, orientation: 'vertical', trellisOrientation: 'horizontal' })
 			).toHaveProperty('type', 'band');
 		});
 	});

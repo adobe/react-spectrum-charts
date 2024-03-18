@@ -38,7 +38,7 @@ const ChartWithToggleableData = ({ ChartComponent, initialData, secondaryData }:
 
 	return (
 		<div>
-			<Chart data={currentData} {...remaingProps} debug />
+			<Chart data={currentData} {...remaingProps}/>
 			<Button onPress={toggleDataSource} variant={'primary'}>
 				Toggle Data
 			</Button>

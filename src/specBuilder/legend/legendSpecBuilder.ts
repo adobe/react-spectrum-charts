@@ -38,7 +38,11 @@ import {
 } from 'types';
 import { Data, Legend, Mark, Scale, Signal, Spec } from 'vega';
 
-import { getHighlightSeriesSignal, getLegendLabelsSeriesSignal, hasSignalByName } from '../signal/signalSpecBuilder';
+import {
+	addHighlighSignalLegendHoverEvents,
+	getLegendLabelsSeriesSignal,
+	hasSignalByName,
+} from '../signal/signalSpecBuilder';
 import { getFacets, getFacetsFromKeys } from './legendFacetUtils';
 import { setHoverOpacityForMarks } from './legendHighlightUtils';
 import { Facet, getColumns, getEncodings, getHiddenEntriesFilter, getSymbolType } from './legendUtils';
@@ -64,7 +68,7 @@ export const addLegend = produce<
 			title,
 			colorScheme = DEFAULT_COLOR_SCHEME,
 			...props
-		},
+		}
 	) => {
 		const { formattedColor, formattedLineType, formattedLineWidth, formattedSymbolShape } =
 			formatFacetRefsWithPresets(color, lineType, lineWidth, symbolShape, colorScheme);
@@ -132,7 +136,7 @@ export const addLegend = produce<
 			spec.legends = [];
 		}
 		spec.legends.push(...legends);
-	},
+	}
 );
 
 /**
@@ -148,7 +152,7 @@ export const formatFacetRefsWithPresets = (
 	lineType: LineTypeFacet | undefined,
 	lineWidth: LineWidthFacet | undefined,
 	symbolShape: SymbolShapeFacet | undefined,
-	colorScheme: ColorScheme,
+	colorScheme: ColorScheme
 ) => {
 	let formattedColor: FacetRef<string> | undefined;
 	if (color && typeof color === 'object') {
@@ -270,16 +274,13 @@ export const addData = produce<Data[], [LegendSpecProps & { facets: string[] }]>
 				...getHiddenEntriesFilter(hiddenEntries, name),
 			],
 		});
-	},
+	}
 );
 
 export const addSignals = produce<Signal[], [LegendSpecProps]>(
-	(signals, { hiddenSeries, highlight, isToggleable, keys, legendLabels, name }) => {
+	(signals, { hiddenSeries, highlight, isToggleable, legendLabels, name }) => {
 		if (highlight) {
-			const signalName = keys ? `${name}_highlighted` : 'highlightedSeries';
-			if (!hasSignalByName(signals, signalName)) {
-				signals.push(getHighlightSeriesSignal(name, Boolean(isToggleable || hiddenSeries), keys));
-			}
+			addHighlighSignalLegendHoverEvents(signals, name, Boolean(isToggleable || hiddenSeries));
 		}
 
 		if (legendLabels) {
@@ -287,5 +288,5 @@ export const addSignals = produce<Signal[], [LegendSpecProps]>(
 				signals.push(getLegendLabelsSeriesSignal(legendLabels));
 			}
 		}
-	},
+	}
 );

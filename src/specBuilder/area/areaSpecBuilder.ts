@@ -18,12 +18,13 @@ import {
 	DEFAULT_METRIC,
 	DEFAULT_TIME_DIMENSION,
 	FILTERED_TABLE,
-	MARK_ID
+	MARK_ID,
+	SELECTED_ITEM,
+	SELECTED_SERIES,
 } from '@constants';
 import {
+	addHighlightedSeriesSignalEvents,
 	getControlledHoverSignal,
-	getGenericSignal,
-	getSeriesHoveredSignal,
 	hasSignalByName,
 } from '@specBuilder/signal/signalSpecBuilder';
 import { spectrumColors } from '@themes';
@@ -58,7 +59,7 @@ export const addArea = produce<Spec, [AreaProps & { colorScheme?: ColorScheme; i
 			opacity = 0.8,
 			scaleType = 'time',
 			...props
-		},
+		}
 	) => {
 		// put props back together now that all defaults are set
 		const areaProps: AreaSpecProps = {
@@ -81,7 +82,7 @@ export const addArea = produce<Spec, [AreaProps & { colorScheme?: ColorScheme; i
 			console.error(
 				`${metricEnd ? 'metricEnd' : 'metricStart'} is defined but ${
 					metricEnd ? 'metricStart' : 'metricEnd'
-				} is not. Both must be defined in order to use the "start and end" method. Defaulting back to 'metric = ${metric}'`,
+				} is not. Both must be defined in order to use the "start and end" method. Defaulting back to 'metric = ${metric}'`
 			);
 			areaProps.metricEnd = undefined;
 			areaProps.metricStart = undefined;
@@ -93,7 +94,7 @@ export const addArea = produce<Spec, [AreaProps & { colorScheme?: ColorScheme; i
 		spec.marks = addAreaMarks(spec.marks ?? [], areaProps);
 
 		return spec;
-	},
+	}
 );
 
 export const addData = produce<Data[], [AreaSpecProps]>(
@@ -124,7 +125,6 @@ export const addData = produce<Data[], [AreaSpecProps]>(
 		}
 
 		if (children.length) {
-			const selectSignal = `${name}_selectedId`;
 			const hoverSignal = `${name}_controlledHoveredId`;
 			data.push({
 				name: `${name}_highlightedDataPoint`,
@@ -132,26 +132,25 @@ export const addData = produce<Data[], [AreaSpecProps]>(
 				transform: [
 					{
 						type: 'filter',
-						expr: `${selectSignal} && ${selectSignal} === datum.${MARK_ID} || !${selectSignal} && ${hoverSignal} && ${hoverSignal} === datum.${MARK_ID}`,
+						expr: `${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${MARK_ID} || !${SELECTED_ITEM} && ${hoverSignal} && ${hoverSignal} === datum.${MARK_ID}`,
 					},
 				],
 			});
 
 			if (children.some((child) => child.type === ChartPopover)) {
-				const selectSeriesSignal = `${name}_selectedSeries`;
 				data.push({
 					name: `${name}_selectedDataSeries`,
 					source: FILTERED_TABLE,
 					transform: [
 						{
 							type: 'filter',
-							expr: `${selectSeriesSignal} && ${selectSeriesSignal} === datum.${color}`,
+							expr: `${SELECTED_SERIES} && ${SELECTED_SERIES} === datum.${color}`,
 						},
 					],
 				});
 			}
 		}
-	},
+	}
 );
 
 export const addSignals = produce<Signal[], [AreaSpecProps]>((signals, { children, name }) => {
@@ -159,15 +158,7 @@ export const addSignals = produce<Signal[], [AreaSpecProps]>((signals, { childre
 	if (!hasSignalByName(signals, `${name}_controlledHoveredId`)) {
 		signals.push(getControlledHoverSignal(name));
 	}
-	if (!hasSignalByName(signals, `${name}_hoveredSeries`)) {
-		signals.push(getSeriesHoveredSignal(name));
-	}
-	if (!hasSignalByName(signals, `${name}_selectedId`)) {
-		signals.push(getGenericSignal(`${name}_selectedId`));
-	}
-	if (!hasSignalByName(signals, `${name}_selectedSeries`)) {
-		signals.push(getGenericSignal(`${name}_selectedSeries`));
-	}
+	addHighlightedSeriesSignalEvents(signals, name);
 });
 
 export const setScales = produce<Scale[], [AreaSpecProps]>(
@@ -183,7 +174,7 @@ export const setScales = produce<Scale[], [AreaSpecProps]>(
 		}
 		addMetricScale(scales, [metricStart, metricEnd]);
 		return scales;
-	},
+	}
 );
 
 export const addAreaMarks = produce<Mark[], [AreaSpecProps]>((marks, props) => {
@@ -226,7 +217,7 @@ export const addAreaMarks = produce<Mark[], [AreaSpecProps]>((marks, props) => {
 			],
 		},
 		...getSelectedAreaMarks({ children, name, scaleType, color, dimension, metricEnd, metricStart }),
-		...getHoverMarks(props),
+		...getHoverMarks(props)
 	);
 	return marks;
 });

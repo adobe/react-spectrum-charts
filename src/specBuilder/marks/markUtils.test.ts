@@ -32,6 +32,7 @@ import {
 
 import {
 	getColorProductionRule,
+	getColorProductionRuleSignalString,
 	getHighlightOpacityValue,
 	getLineWidthProductionRule,
 	getOpacityProductionRule,
@@ -54,7 +55,7 @@ describe('getColorProductionRule', () => {
 	test('should use linear scale if colorScaleType is linear', () => {
 		expect(getColorProductionRule(DEFAULT_COLOR, DEFAULT_COLOR_SCHEME, 'linear')).toHaveProperty(
 			'scale',
-			LINEAR_COLOR_SCALE,
+			LINEAR_COLOR_SCALE
 		);
 	});
 
@@ -194,5 +195,24 @@ describe('getXProductionRule()', () => {
 			scale: 'xPoint',
 			field: DEFAULT_TIME_DIMENSION,
 		});
+	});
+});
+
+describe('getColorProductionRuleSignalString()', () => {
+	test('should return signal reference if color is an array', () => {
+		expect(
+			getColorProductionRuleSignalString([DEFAULT_COLOR, DEFAULT_SECONDARY_COLOR], DEFAULT_COLOR_SCHEME)
+		).toStrictEqual(
+			`scale('colors', datum.${DEFAULT_COLOR})[indexof(domain('secondaryColor'), datum.${DEFAULT_SECONDARY_COLOR})% length(scale('colors', datum.${DEFAULT_COLOR}))]`
+		);
+	});
+	test('should return scale reference if color is a string', () => {
+		expect(getColorProductionRuleSignalString(DEFAULT_COLOR, DEFAULT_COLOR_SCHEME)).toStrictEqual(
+			`scale('${COLOR_SCALE}', datum.${DEFAULT_COLOR})`
+		);
+	});
+	test('should return static value if static value is provided', () => {
+		const color = 'rgb(125, 125, 125)';
+		expect(getColorProductionRuleSignalString({ value: color }, DEFAULT_COLOR_SCHEME)).toStrictEqual(`'${color}'`);
 	});
 });

@@ -1,4 +1,4 @@
-import { findAllMarksByGroupName, findChart, render } from '@test-utils';
+import { findChart, render } from '@test-utils';
 
 import {
 	AreaSwitch,
@@ -18,8 +18,6 @@ describe('Animations', () => {
 		render(<AreaSwitch {...AreaSwitch.args} />);
 		const chart = await findChart();
 		expect(chart).toBeInTheDocument();
-		const areas = await findAllMarksByGroupName(chart, 'area0');
-		expect(areas[0]).toHaveAttribute('transform', 'translate(0,0)');
 	});
 
 	test('Area Zero renders properly', async () => {

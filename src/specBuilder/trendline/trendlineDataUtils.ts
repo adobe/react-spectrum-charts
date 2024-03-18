@@ -9,14 +9,22 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
-import { FILTERED_TABLE, MARK_ID } from '@constants';
+import {
+	FILTERED_TABLE,
+	HIGHLIGHTED_ITEM,
+	HIGHLIGHTED_SERIES,
+	MARK_ID,
+	SELECTED_ITEM,
+	SELECTED_SERIES,
+	SERIES_ID,
+} from '@constants';
 import { getSeriesIdTransform, getTableData } from '@specBuilder/data/dataUtils';
-import { hasInteractiveChildren, hasPopover } from '@specBuilder/marks/markUtils';
+import { hasInteractiveChildren } from '@specBuilder/marks/markUtils';
 import { getFacetsFromProps } from '@specBuilder/specUtils';
 import { produce } from 'immer';
-import { TrendlineSpecProps } from 'types';
+import { TrendlineMethod, TrendlineSpecProps } from 'types';
 import { Data, SourceData, Transforms } from 'vega';
+
 import {
 	getAggregateTransform,
 	getNormalizedDimensionTransform,
@@ -35,7 +43,6 @@ import {
 	isAggregateMethod,
 	isRegressionMethod,
 	isWindowMethod,
-	trendlineUsesNormalizedDimension,
 } from './trendlineUtils';
 
 /**
@@ -68,7 +75,7 @@ export const getTrendlineData = (markProps: TrendlineParentProps): SourceData[] 
 	};
 
 	for (const trendlineProps of trendlines) {
-		const { children: trendlineChildren, method, name } = trendlineProps;
+		const { displayOnHover, method, name, children: trendlineChildren } = trendlineProps;
 		const { facets } = getFacetsFromProps({ color, lineType });
 
 		if (isRegressionMethod(method)) {
@@ -78,6 +85,9 @@ export const getTrendlineData = (markProps: TrendlineParentProps): SourceData[] 
 		} else if (isWindowMethod(method)) {
 			data.push(getWindowTrendlineData(markProps, trendlineProps));
 		}
+		if (displayOnHover) {
+			data.push(getTrendlineDisplayOnHoverData(name, method));
+		}
 		if (hasInteractiveChildren(trendlineChildren)) {
 			concatenatedTrendlineData.source.push(`${name}_data`);
 		}
@@ -85,7 +95,7 @@ export const getTrendlineData = (markProps: TrendlineParentProps): SourceData[] 
 
 	if (trendlines.some((trendline) => hasInteractiveChildren(trendline.children))) {
 		data.push(concatenatedTrendlineData);
-		data.push(getHighlightTrendlineData(markName, trendlines));
+		data.push(getHighlightTrendlineData(markName));
 	}
 
 	return data;
@@ -101,12 +111,10 @@ export const getTrendlineData = (markProps: TrendlineParentProps): SourceData[] 
 export const getAggregateTrendlineData = (
 	markProps: TrendlineParentProps,
 	trendlineProps: TrendlineSpecProps,
-	facets: string[],
+	facets: string[]
 ) => {
 	const data: SourceData[] = [];
-	const { dimension, metric } = markProps;
-	const { dimensionRange, name, orientation, children: trendlineChildren } = trendlineProps;
-	const { trendlineDimension } = getTrendlineDimensionMetric(dimension, metric, orientation, false);
+	const { dimensionRange, name, children: trendlineChildren, trendlineDimension } = trendlineProps;
 	const dimensionRangeTransforms = getTrendlineDimensionRangeTransforms(trendlineDimension, dimensionRange);
 	// high resolution data used for drawing the rule marks
 	data.push({
@@ -142,28 +150,25 @@ export const getAggregateTrendlineData = (
 export const getRegressionTrendlineData = (
 	markProps: TrendlineParentProps,
 	trendlineProps: TrendlineSpecProps,
-	facets: string[],
+	facets: string[]
 ) => {
 	const data: SourceData[] = [];
 	const { dimension, metric } = markProps;
 	const {
 		dimensionRange,
-		dimensionScaleType,
 		method,
 		name,
 		orientation,
 		children: trendlineChildren,
+		trendlineDimension,
 	} = trendlineProps;
 	const { trendlineDimension: standardTrendlineDimension } = getTrendlineDimensionMetric(
 		dimension,
 		metric,
 		orientation,
-		false,
+		false
 	);
 	const dimensionRangeTransforms = getTrendlineDimensionRangeTransforms(standardTrendlineDimension, dimensionRange);
-	const isDimensionNormalized =
-		trendlineUsesNormalizedDimension(method, dimensionScaleType) && orientation === 'horizontal';
-	const { trendlineDimension } = getTrendlineDimensionMetric(dimension, metric, orientation, isDimensionNormalized);
 	// high resolution data used for drawing the smooth trendline
 	data.push({
 		name: `${name}_highResolutionData`,
@@ -194,7 +199,7 @@ export const getRegressionTrendlineData = (
 					getTrendlineParamLookupTransform(markProps, trendlineProps),
 					...getTrendlineParamFormulaTransforms(trendlineDimension, method),
 				],
-			},
+			}
 		);
 	}
 	return data;
@@ -221,13 +226,8 @@ const getWindowTrendlineData = (markProps: TrendlineParentProps, trendlineProps:
  * @param trendlines
  * @returns Data
  */
-const getHighlightTrendlineData = (markName: string, trendlines: TrendlineSpecProps[]): SourceData => {
-	const selectSignal = `${markName}Trendline_selectedId`;
-	const hoverSignal = `${markName}Trendline_hoveredId`;
-	const trendlineHasPopover = trendlines.some((trendline) => hasPopover(trendline.children));
-	const expr = trendlineHasPopover
-		? `${selectSignal} === datum.${MARK_ID} || !${selectSignal} && ${hoverSignal} === datum.${MARK_ID}`
-		: `${hoverSignal} === datum.${MARK_ID}`;
+const getHighlightTrendlineData = (markName: string): SourceData => {
+	const expr = `${SELECTED_ITEM} === datum.${MARK_ID} || !${SELECTED_ITEM} && ${HIGHLIGHTED_ITEM} === datum.${MARK_ID}`;
 
 	return {
 		name: `${markName}Trendline_highlightedData`,
@@ -250,10 +250,9 @@ const getHighlightTrendlineData = (markName: string, trendlines: TrendlineSpecPr
 export const getTrendlineStatisticalTransforms = (
 	markProps: TrendlineParentProps,
 	trendlineProps: TrendlineSpecProps,
-	isHighResolutionData: boolean,
+	isHighResolutionData: boolean
 ): Transforms[] => {
-	const { dimension, metric } = markProps;
-	const { method, orientation } = trendlineProps;
+	const { method, trendlineDimension } = trendlineProps;
 
 	if (isAggregateMethod(method)) {
 		return [getAggregateTransform(markProps, trendlineProps, isHighResolutionData)];
@@ -262,7 +261,6 @@ export const getTrendlineStatisticalTransforms = (
 		return [getRegressionTransform(markProps, trendlineProps, isHighResolutionData)];
 	}
 	if (isWindowMethod(method)) {
-		const { trendlineDimension } = getTrendlineDimensionMetric(dimension, metric, orientation, false);
 		return [getSortTransform(trendlineDimension), getWindowTransform(markProps, trendlineProps)];
 	}
 
@@ -278,24 +276,47 @@ export const addTableDataTransforms = produce<Transforms[], [TrendlineParentProp
 	const { dimension, metric } = markProps;
 
 	const trendlines = getTrendlines(markProps);
-	for (const { dimensionScaleType, method, name, orientation } of trendlines) {
+	for (const { isDimensionNormalized, method, name, orientation, trendlineDimension } of trendlines) {
 		if (isRegressionMethod(method)) {
 			// time scales need to be normalized for regression trendlines
-			const isDimensionNormalized = dimensionScaleType === 'time';
-			let { trendlineDimension } = getTrendlineDimensionMetric(dimension, metric, orientation, false);
+			const { trendlineDimension: standardTrendlinDimension } = getTrendlineDimensionMetric(
+				dimension,
+				metric,
+				orientation,
+				false
+			);
 
 			if (isDimensionNormalized) {
 				if (
 					!transforms.some(
-						(transform) => 'as' in transform && transform.as === `${trendlineDimension}Normalized`,
+						(transform) => 'as' in transform && transform.as === `${standardTrendlinDimension}Normalized`
 					)
 				) {
-					transforms.push(...getNormalizedDimensionTransform(trendlineDimension));
+					transforms.push(...getNormalizedDimensionTransform(standardTrendlinDimension));
 				}
-				trendlineDimension += 'Normalized';
 			}
 			// add the extent transform
 			transforms.push(getRegressionExtentTransform(trendlineDimension, name));
 		}
 	}
 });
+
+/**
+ * Gets the data source and transforms for displaying the trendline on hover
+ * @param trendlineName
+ * @param method
+ * @returns SourceData
+ */
+export const getTrendlineDisplayOnHoverData = (trendlineName: string, method: TrendlineMethod): SourceData => {
+	const source = isWindowMethod(method) ? `${trendlineName}_data` : `${trendlineName}_highResolutionData`;
+	return {
+		name: `${trendlineName}_highlightedData`,
+		source,
+		transform: [
+			{
+				type: 'filter',
+				expr: `datum.${SERIES_ID} === ${HIGHLIGHTED_SERIES} || datum.${SERIES_ID} === ${SELECTED_SERIES}`,
+			},
+		],
+	};
+};
