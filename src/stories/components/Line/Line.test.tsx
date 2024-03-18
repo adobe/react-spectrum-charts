@@ -187,8 +187,10 @@ describe('Line', () => {
 
 			const lines = await findAllMarksByGroupName(chart, 'line0');
 			expect(lines).toHaveLength(4);
-			expect(lines[0]).toHaveAttribute('opacity', '1');
-			expect(lines[1]).toHaveAttribute('opacity', '1');
+			console.log('Lines', lines[0]);
+
+			expect(lines[0]).toHaveAttribute('stroke-opacity', '1');
+			expect(lines[1]).toHaveAttribute('stroke-opacity', '1');
 
 			// get voronoi paths
 			const paths = await findAllMarksByGroupName(chart, 'line0_voronoi');
