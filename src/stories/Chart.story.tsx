@@ -26,7 +26,7 @@ export default {
 };
 
 const ChartLineStory: StoryFn<typeof Chart> = (args): ReactElement => {
-	const props = useChartProps({ ...args, animations: false });
+	const props = useChartProps({ ...args });
 	return (
 		<Chart {...props}>
 			<Axis position="bottom" baseline ticks />
@@ -37,7 +37,7 @@ const ChartLineStory: StoryFn<typeof Chart> = (args): ReactElement => {
 };
 
 const ChartTimeStory: StoryFn<typeof Chart> = (args): ReactElement => {
-	const props = useChartProps({ ...args, animations: false });
+	const props = useChartProps({ ...args });
 	return (
 		<Chart {...props} width={500}>
 			<Axis position="bottom" baseline ticks labelFormat="time" />

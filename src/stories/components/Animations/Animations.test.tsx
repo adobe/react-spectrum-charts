@@ -63,7 +63,7 @@ describe('Animations', () => {
 	});
 
 	test('Trellis Horizontal Bar Switch renders properly', async () => {
-		render(<TrellisHorizontalBarSwitch {...TrellisHorizontalBasprSwitch.args} />);
+		render(<TrellisHorizontalBarSwitch {...TrellisHorizontalBarSwitch.args} />);
 		const chart = await findChart();
 		expect(chart).toBeInTheDocument();
 	});
