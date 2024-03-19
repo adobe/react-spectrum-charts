@@ -155,8 +155,6 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 		const tooltips = useTooltips(sanitizedChildren);
 		const popovers = usePopovers(sanitizedChildren);
 
-		console.log('popovers', popovers);
-
 		// gets the correct css style to display the anchor in the correct position
 		const targetStyle = usePopoverAnchorStyle(
 			popoverIsOpen,
