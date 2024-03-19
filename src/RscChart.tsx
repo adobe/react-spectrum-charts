@@ -155,6 +155,8 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 		const tooltips = useTooltips(sanitizedChildren);
 		const popovers = usePopovers(sanitizedChildren);
 
+		console.log('popovers', popovers);
+
 		// gets the correct css style to display the anchor in the correct position
 		const targetStyle = usePopoverAnchorStyle(
 			popoverIsOpen,
@@ -163,7 +165,9 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 			padding
 		);
 
-		const tooltipConfig: TooltipOptions = { theme: colorScheme };
+		const tooltipConfig: TooltipOptions = useMemo(() => {
+			return { theme: colorScheme }
+		}, [colorScheme]);
 
 		if (tooltips.length || legendDescriptions) {
 			tooltipConfig.formatTooltip = (value) => {
@@ -211,16 +215,12 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 			return signals;
 		}, [colorScheme, hiddenSeriesState, legendIsToggleable]);
 
-		return (
-			<>
-				<div
-					id={`${chartId.current}-popover-anchor`}
-					data-testid="rsc-popover-anchor"
-					ref={popoverAnchorRef}
-					style={targetStyle}
-				/>
+		const newSpec = JSON.stringify(spec);
+
+		const chart = useMemo(() => {
+			return (
 				<VegaChart
-					spec={spec}
+					spec={JSON.parse(newSpec)}
 					config={chartConfig}
 					data={data}
 					previousData={previousData ? previousData : []}
@@ -280,6 +280,24 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 						// this will trigger the autosize calculation making sure that everything is correct size
 					}}
 				/>
+			);
+		}, 	[newSpec, chartConfig, data, previousData, debug, renderer, chartWidth, height, locale,
+			padding, signals, tooltipConfig, chartView, popovers.length, legendIsToggleable, onLegendClick,
+			onLegendMouseOver, onLegendMouseOut, hiddenSeriesState, chartId, setHiddenSeries])
+
+			// [spec, chartConfig, data, previousData, debug, renderer, chartWidth, height, locale,
+			// padding, signals, tooltipConfig, chartView, popovers.length, legendIsToggleable, onLegendClick,
+			// onLegendMouseOver, onLegendMouseOut, hiddenSeriesState, chartId, setHiddenSeries]
+
+		return (
+			<>
+				<div
+					id={`${chartId.current}-popover-anchor`}
+					data-testid="rsc-popover-anchor"
+					ref={popoverAnchorRef}
+					style={targetStyle}
+				/>
+				{chart}
 				<ChartDialog
 					datum={selectedData.current}
 					targetElement={popoverAnchorRef}
