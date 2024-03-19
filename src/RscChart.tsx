@@ -169,8 +169,6 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 		const popovers = usePopovers(sanitizedChildren);
 		const markClickDetails = useMarkOnClickDetails(sanitizedChildren);
 
-		console.log('popovers', popovers);
-
 		// gets the correct css style to display the anchor in the correct position
 		const targetStyle = usePopoverAnchorStyle(
 			isPopoverOpen,
