@@ -281,11 +281,7 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 			);
 		}, 	[newSpec, chartConfig, data, previousData, debug, renderer, chartWidth, height, locale,
 			padding, signals, tooltipConfig, chartView, popovers.length, legendIsToggleable, onLegendClick,
-			onLegendMouseOver, onLegendMouseOut, hiddenSeriesState, chartId, setHiddenSeries])
-
-			// [spec, chartConfig, data, previousData, debug, renderer, chartWidth, height, locale,
-			// padding, signals, tooltipConfig, chartView, popovers.length, legendIsToggleable, onLegendClick,
-			// onLegendMouseOver, onLegendMouseOut, hiddenSeriesState, chartId, setHiddenSeries]
+			onLegendMouseOver, onLegendMouseOut, hiddenSeriesState, chartId, setHiddenSeries]);
 
 		return (
 			<>
