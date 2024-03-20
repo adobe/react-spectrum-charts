@@ -29,7 +29,7 @@ import usePopovers, { PopoverDetail } from '@hooks/usePopovers';
 import useSpec from '@hooks/useSpec';
 import useSpecProps from '@hooks/useSpecProps';
 import useTooltips from '@hooks/useTooltips';
-import { getColorValue } from '@specBuilder/specUtils';
+import { getColorValue, removeAnimationMarks } from '@specBuilder/specUtils';
 import { getChartConfig } from '@themes/spectrumTheme';
 import {
 	debugLog,
@@ -105,7 +105,7 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 		const sanitizedChildren = sanitizeRscChartChildren(props.children);
 
 		// THE MAGIC, builds our spec
-		const spec = useSpec({
+		const [spec, setSpec] = useState(useSpec({
 			backgroundColor,
 			children: sanitizedChildren,
 			colors,
@@ -123,12 +123,35 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 			colorScheme,
 			title,
 			UNSAFE_vegaSpec,
-		});
+		}));
 
 		const { controlledHoverSignal } = useSpecProps(spec);
 		const chartConfig = useMemo(() => getChartConfig(config, colorScheme), [config, colorScheme]);
 
+		const specNoAnimations = useSpec({
+			backgroundColor,
+			children: sanitizedChildren,
+			colors,
+			data,
+			previousData,
+			animations: false,
+			description,
+			hiddenSeries,
+			highlightedSeries,
+			symbolShapes,
+			symbolSizes,
+			lineTypes,
+			lineWidths,
+			opacities,
+			colorScheme,
+			title,
+			UNSAFE_vegaSpec,
+		});
+
 		useEffect(() => {
+			if (popoverIsOpen) {
+				setSpec(specNoAnimations);
+			}
 			const tooltipElement = document.getElementById('vg-tooltip-element');
 			if (!tooltipElement) return;
 			// Hide tooltips on all charts when a popover is open
@@ -139,6 +162,8 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 				selectedData.current = null;
 			}
 		}, [popoverIsOpen]);
+
+		// console.log(spec.marks[0].marks[0].encode.update.y);
 
 		useChartImperativeHandle(forwardedRef, { chartView, title });
 
@@ -213,12 +238,16 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 			return signals;
 		}, [colorScheme, hiddenSeriesState, legendIsToggleable]);
 
-		const newSpec = JSON.stringify(spec);
-
-		const chart = useMemo(() => {
-			return (
+		return (
+			<>
+				<div
+					id={`${chartId.current}-popover-anchor`}
+					data-testid="rsc-popover-anchor"
+					ref={popoverAnchorRef}
+					style={targetStyle}
+				/>
 				<VegaChart
-					spec={JSON.parse(newSpec)}
+					spec={spec}
 					config={chartConfig}
 					data={data}
 					previousData={previousData ? previousData : []}
@@ -278,20 +307,6 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 						// this will trigger the autosize calculation making sure that everything is correct size
 					}}
 				/>
-			);
-		}, 	[newSpec, chartConfig, data, previousData, debug, renderer, chartWidth, height, locale,
-			padding, signals, tooltipConfig, chartView, popovers.length, legendIsToggleable, onLegendClick,
-			onLegendMouseOver, onLegendMouseOut, hiddenSeriesState, chartId, setHiddenSeries]);
-
-		return (
-			<>
-				<div
-					id={`${chartId.current}-popover-anchor`}
-					data-testid="rsc-popover-anchor"
-					ref={popoverAnchorRef}
-					style={targetStyle}
-				/>
-				{chart}
 				<ChartDialog
 					datum={selectedData.current}
 					targetElement={popoverAnchorRef}
