@@ -356,8 +356,11 @@ export const getAnimationMarks = (
 		scale,
 		signal: `datum.${metric} * ${easingFunction}`,
 	};
+	console.log('Data', data);
+	console.log('Previous data', previousData);
 	if (data && previousData) {
 		const hasSameDimensions = data !== previousData && data.every((d) => previousData.some((pd) => d[dimension] === pd[dimension])) && data.length == previousData.length;
+		console.log('Has same dimensions?', hasSameDimensions);
 		if (hasSameDimensions) {
 			// If data isn't similar enough, keep the animation from zero as shown above
 			markUpdate = {
@@ -366,5 +369,6 @@ export const getAnimationMarks = (
 			};
 		}
 	}
+	console.log('markUpdate about to be returned', markUpdate);
 	return markUpdate;
 };

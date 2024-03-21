@@ -28,7 +28,7 @@ import usePopovers, { PopoverDetail } from '@hooks/usePopovers';
 import useSpec from '@hooks/useSpec';
 import useSpecProps from '@hooks/useSpecProps';
 import useTooltips from '@hooks/useTooltips';
-import { getColorValue, removeAnimationMarks } from '@specBuilder/specUtils';
+import { getColorValue } from '@specBuilder/specUtils';
 import { getChartConfig } from '@themes/spectrumTheme';
 import {
 	debugLog,
@@ -116,7 +116,27 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 		const sanitizedChildren = sanitizeRscChartChildren(props.children);
 
 		// THE MAGIC, builds our spec
-		const [spec, setSpec] = useState(useSpec({
+		// const [spec, setSpec] = useState(useSpec({
+		// 	backgroundColor,
+		// 	children: sanitizedChildren,
+		// 	colors,
+		// 	data,
+		// 	previousData,
+		// 	animations,
+		// 	description,
+		// 	hiddenSeries,
+		// 	highlightedSeries,
+		// 	symbolShapes,
+		// 	symbolSizes,
+		// 	lineTypes,
+		// 	lineWidths,
+		// 	opacities,
+		// 	colorScheme,
+		// 	title,
+		// 	UNSAFE_vegaSpec,
+		// }));
+
+		let spec = useSpec({
 			backgroundColor,
 			children: sanitizedChildren,
 			colors,
@@ -136,7 +156,9 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 			colorScheme,
 			title,
 			UNSAFE_vegaSpec,
-		}));
+		});
+
+		// console.log('Spec animation marks:', spec.marks[0].marks[0].encode.update);
 
 		const { controlledHoveredIdSignal, controlledHoveredGroupSignal } = useSpecProps(spec);
 		const chartConfig = useMemo(() => getChartConfig(config, colorScheme), [config, colorScheme]);
@@ -163,7 +185,7 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 
 		useEffect(() => {
 			if (popoverIsOpen) {
-				setSpec(specNoAnimations);
+				spec = specNoAnimations;
 			}
 			const tooltipElement = document.getElementById('vg-tooltip-element');
 			if (!tooltipElement) return;
