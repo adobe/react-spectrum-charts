@@ -69,7 +69,7 @@ const SingleLineWithStaticPointsStory: StoryFn<typeof Chart> = (args): ReactElem
 const BasicAreaStory: StoryFn<typeof Chart> = (args): ReactElement => {
 	const chartProps = useChartProps(args);
 	return (
-		<Chart {...chartProps} debug>
+		<Chart {...chartProps}>
 			<Area metric='maxTemperature' />
 		</Chart>
 	);
@@ -78,7 +78,7 @@ const BasicAreaStory: StoryFn<typeof Chart> = (args): ReactElement => {
 const BasicBarStory: StoryFn<typeof Chart> = (args): ReactElement => {
 	const chartProps = useChartProps(args);
 	return (
-		<Chart {...chartProps} debug>
+		<Chart {...chartProps}>
 			<Axis position="bottom" baseline title="Browser" />
 			<Axis position="left" grid title="Downloads" />
 			<Bar dimension="browser" metric="downloads" />
