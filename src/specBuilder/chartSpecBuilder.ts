@@ -11,6 +11,8 @@
  */
 import {
 	BACKGROUND_COLOR,
+	DATA_ANIMATION_DURATION_FRAMES,
+	DATA_ANIMATION_MILLISECONDS_PER_FRAME,
 	DEFAULT_BACKGROUND_COLOR,
 	DEFAULT_COLOR_SCHEME,
 	DEFAULT_LINE_TYPES,
@@ -258,7 +260,7 @@ export const getTimer = () => {
 	return {
 		name: 'timerValue',
 		value: '0',
-		on: [{ events: 'timer{16}', update: 'min(1, timerValue + (1 / 60))' }],
+		on: [{ events: `timer{${DATA_ANIMATION_MILLISECONDS_PER_FRAME}}`, update: `min(1, timerValue + (1 / ${DATA_ANIMATION_DURATION_FRAMES}))` }],
 	};
 };
 
