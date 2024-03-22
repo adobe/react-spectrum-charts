@@ -11,10 +11,22 @@
  */
 import { Fragment, ReactFragment } from 'react';
 
-import { MARK_ID, SERIES_ID } from '@constants';
+import { MARK_ID, SELECTED_ITEM, SELECTED_SERIES, SERIES_ID } from '@constants';
 import { View } from 'vega';
 
-import { Area, Axis, AxisAnnotation, Bar, BigNumber, ChartPopover, ChartTooltip, Legend, Line, Trendline } from '..';
+import {
+	Area,
+	Axis,
+	AxisAnnotation,
+	Bar,
+	BigNumber,
+	ChartPopover,
+	ChartTooltip,
+	Legend,
+	Line,
+	Scatter,
+	Trendline,
+} from '..';
 import { Donut } from '../alpha';
 import {
 	AxisAnnotationChildElement,
@@ -42,6 +54,7 @@ type ElementCounts = {
 	donut: number;
 	legend: number;
 	line: number;
+	scatter: number;
 };
 
 // coerces a value that could be a single value or an array of that value to an array
@@ -58,18 +71,19 @@ export const sanitizeRscChartChildren = (children: Children<RscElement> | undefi
 		.filter((child): child is ChartChildElement => isChartChildElement(child));
 };
 
-export const sanitizeBigNumberChildren = (children: Children<BigNumberChildElement> | undefined): BigNumberChildElement[] => {
+export const sanitizeBigNumberChildren = (
+	children: Children<BigNumberChildElement> | undefined,
+): BigNumberChildElement[] => {
 	const sanitizedChildren = toArray(children)
 		.flat()
 		.filter((child): child is BigNumberChildElement => isChartChildElement(child));
-	return sanitizedChildren.filter(c => c.type == Line)
+	return sanitizedChildren.filter((c) => c.type == Line);
 };
 
 export const chartContainsBigNumber = (children: Children<ChartChildElement> | undefined): ChartChildElement[] => {
 	const sanitizedChildren = sanitizeRscChartChildren(children);
-	return sanitizedChildren.filter(child => child.type == BigNumber);
-}
-
+	return sanitizedChildren.filter((child) => child.type == BigNumber);
+};
 
 export const sanitizeMarkChildren = (children: Children<MarkChildElement> | undefined): MarkChildElement[] => {
 	return toArray(children)
@@ -84,14 +98,14 @@ export const sanitizeAxisChildren = (children: Children<AxisChildElement> | unde
 };
 
 export const sanitizeAxisAnnotationChildren = (
-	children: Children<AxisAnnotationChildElement> | undefined
+	children: Children<AxisAnnotationChildElement> | undefined,
 ): AxisAnnotationChildElement[] => {
 	return toArray(children)
 		.flat()
 		.filter((child): child is AxisAnnotationChildElement => isMarkChildElement(child));
 };
 export const sanitizeTrendlineChildren = (
-	children: Children<ChartTooltipElement> | undefined
+	children: Children<ChartTooltipElement> | undefined,
 ): ChartTooltipElement[] => {
 	return toArray(children)
 		.flat()
@@ -104,7 +118,7 @@ const isChartChildElement = (child: ChildElement<ChartChildElement> | undefined)
 };
 
 const isMarkChildElement = <T extends MarkChildElement = MarkChildElement>(
-	child: ChildElement<T> | undefined
+	child: ChildElement<T> | undefined,
 ): child is T => {
 	return isRscComponent(child);
 };
@@ -120,7 +134,7 @@ const isRscComponent = (child?: ChildElement<RscElement>): boolean => {
 			typeof child !== 'boolean' &&
 			'type' in child &&
 			child.type !== Fragment &&
-			'displayName' in child.type
+			'displayName' in child.type,
 	);
 };
 
@@ -165,7 +179,14 @@ export function getElement(
 		| string
 		| ReactFragment
 		| undefined,
-	type: typeof Axis | typeof Legend | typeof Line | typeof Bar | typeof ChartTooltip | typeof ChartPopover
+	type:
+		| typeof Axis
+		| typeof Bar
+		| typeof ChartPopover
+		| typeof ChartTooltip
+		| typeof Legend
+		| typeof Line
+		| typeof Scatter,
 ): ChartElement | RscElement | undefined {
 	// if the element is undefined or 'type' doesn't exist on the element, stop searching
 	if (
@@ -201,9 +222,17 @@ export function getElement(
  */
 export const getAllElements = (
 	target: Children<ChartElement | RscElement>,
-	source: typeof Axis | typeof Legend | typeof Line | typeof Bar | typeof ChartTooltip | typeof ChartPopover | typeof BigNumber,
+	source:
+		| typeof Axis
+		| typeof Bar
+		| typeof BigNumber
+		| typeof ChartPopover
+		| typeof ChartTooltip
+		| typeof Legend
+		| typeof Line
+		| typeof Scatter,
 	elements: MappedElement[] = [],
-	name: string = ''
+	name: string = '',
 ): MappedElement[] => {
 	if (
 		!target ||
@@ -255,6 +284,9 @@ const getElementName = (element: ChildElement<RscElement>, elementCounts: Elemen
 		case Line.displayName:
 			elementCounts.line++;
 			return getComponentName(element, `line${elementCounts.line}`);
+		case Scatter.displayName:
+			elementCounts.scatter++;
+			return getComponentName(element, `scatter${elementCounts.scatter}`);
 		case Trendline.displayName:
 			return getComponentName(element, 'Trendline');
 		default:
@@ -277,6 +309,7 @@ const initElementCounts = (): ElementCounts => ({
 	donut: -1,
 	legend: -1,
 	line: -1,
+	scatter: -1,
 });
 
 /**
@@ -284,7 +317,7 @@ const initElementCounts = (): ElementCounts => ({
  */
 export function debugLog(
 	debug: boolean | undefined,
-	{ title = '', contents }: { contents?: unknown; title?: string }
+	{ title = '', contents }: { contents?: unknown; title?: string },
 ): void {
 	if (debug) {
 		const rainbow = String.fromCodePoint(0x1f308);
@@ -296,21 +329,7 @@ export function debugLog(
  * Sets the values of the selectedId and selectedSeries signals
  * @param param0
  */
-export const setSelectedSignals = ({
-	selectedData,
-	selectedIdSignalName,
-	selectedSeriesSignalName,
-	view,
-}: {
-	selectedData: Datum | null;
-	selectedIdSignalName: string | null;
-	selectedSeriesSignalName: string | null;
-	view: View;
-}) => {
-	if (selectedIdSignalName) {
-		view.signal(selectedIdSignalName, selectedData?.[MARK_ID] ?? null);
-	}
-	if (selectedSeriesSignalName) {
-		view.signal(selectedSeriesSignalName, selectedData?.[SERIES_ID] ?? null);
-	}
+export const setSelectedSignals = ({ selectedData, view }: { selectedData: Datum | null; view: View }) => {
+	view.signal(SELECTED_ITEM, selectedData?.[MARK_ID] ?? null);
+	view.signal(SELECTED_SERIES, selectedData?.[SERIES_ID] ?? null);
 };

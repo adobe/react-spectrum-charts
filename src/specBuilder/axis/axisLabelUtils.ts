@@ -9,7 +9,8 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { AxisSpecProps, Granularity, Label, LabelAlign, Orientation, Position } from 'types';
+import { getD3FormatSpecifierFromNumberFormat } from '@specBuilder/specUtils';
+import { AxisSpecProps, Granularity, Label, LabelAlign, NumberFormat, Orientation, Position } from 'types';
 import {
 	Align,
 	Baseline,
@@ -237,22 +238,51 @@ export const getLabelFormat = (
 	if (labelFormat === 'percentage') {
 		return [{ test: 'isNumber(datum.value)', signal: "format(datum.value, '~%')" }, { signal: 'datum.value' }];
 	}
+	if (labelFormat === 'duration') {
+		return { signal: 'formatTimeDurationLabels(datum)' };
+	}
 
-	// if it's a number and greater than or equal to 1000, we want to format it in scientific notation (but with B instead of G) ex. 1K, 20M, 1.3B
 	return [
-		...(numberFormat ? [{ test: 'isNumber(datum.value)', signal: `format(datum.value, '${numberFormat}')` }] : []),
-		{
-			test: 'isNumber(datum.value) && abs(datum.value) >= 1000',
-			signal: "upper(replace(format(datum.value, '.3~s'), 'G', 'B'))",
-		},
-		{
-			test: 'isNumber(datum.value)',
-			signal: 'format(datum.value, ",")',
-		},
+		...getLabelNumberFormat(numberFormat),
 		...(truncateLabels && scaleName.includes('Band') && labelIsParallelToAxis(position, labelOrientation)
 			? [{ signal: 'truncateText(datum.value, bandwidth("xBand")/(1- paddingInner), "normal", 14)' }]
 			: [{ signal: 'datum.value' }]),
 	];
+};
+
+/**
+ * gets the number format tests and signals based on the numberFormat
+ * @param numberFormat
+ * @returns
+ */
+export const getLabelNumberFormat = (
+	numberFormat: NumberFormat | string
+): ({
+	test?: string;
+} & TextValueRef)[] => {
+	const test = 'isNumber(datum.value)';
+	if (numberFormat === 'shortNumber') {
+		return [
+			{
+				test: `${test} && abs(datum.value) >= 1000`,
+				signal: "upper(replace(format(datum.value, '.3~s'), /(\\d+)G/, '$1B'))",
+			},
+		];
+	}
+	if (numberFormat === 'shortCurrency') {
+		return [
+			{
+				test: `${test} && abs(datum.value) >= 1000`,
+				signal: "upper(replace(format(datum.value, '$.3~s'), /(\\d+)G/, '$1B'))",
+			},
+			{
+				test,
+				signal: "format(datum.value, '$')",
+			},
+		];
+	}
+	const d3FormatSpecifier = getD3FormatSpecifierFromNumberFormat(numberFormat);
+	return [{ test, signal: `format(datum.value, '${d3FormatSpecifier}')` }];
 };
 
 /**

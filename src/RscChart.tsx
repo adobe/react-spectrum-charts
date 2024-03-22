@@ -18,6 +18,8 @@ import {
 	DEFAULT_LOCALE,
 	LEGEND_TOOLTIP_DELAY,
 	MARK_ID,
+	SELECTED_ITEM,
+	SELECTED_SERIES,
 	SERIES_ID,
 } from '@constants';
 import useChartImperativeHandle from '@hooks/useChartImperativeHandle';
@@ -119,7 +121,7 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 			UNSAFE_vegaSpec,
 		});
 
-		const { controlledHoverSignal, selectedIdSignalName, selectedSeriesSignalName } = useSpecProps(spec);
+		const { controlledHoverSignal } = useSpecProps(spec);
 		const chartConfig = useMemo(() => getChartConfig(config, colorScheme), [config, colorScheme]);
 
 		useEffect(() => {
@@ -199,15 +201,11 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 			if (legendIsToggleable) {
 				signals.hiddenSeries = hiddenSeriesState;
 			}
-			if (selectedIdSignalName) {
-				signals[selectedIdSignalName] = selectedData?.[MARK_ID] ?? null;
-			}
-			if (selectedSeriesSignalName) {
-				signals[selectedSeriesSignalName] = selectedData?.[SERIES_ID] ?? null;
-			}
+			signals[SELECTED_ITEM] = selectedData?.[MARK_ID] ?? null;
+			signals[SELECTED_SERIES] = selectedData?.[SERIES_ID] ?? null;
 
 			return signals;
-		}, [colorScheme, hiddenSeriesState, legendIsToggleable, selectedIdSignalName, selectedSeriesSignalName]);
+		}, [colorScheme, hiddenSeriesState, legendIsToggleable]);
 
 		return (
 			<>
@@ -255,8 +253,6 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 							}
 							setSelectedSignals({
 								selectedData: selectedData.current,
-								selectedIdSignalName,
-								selectedSeriesSignalName,
 								view,
 							});
 							view.addEventListener(

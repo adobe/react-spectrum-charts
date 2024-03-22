@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { MARK_ID } from '@constants';
+import { HIGHLIGHTED_ITEM, MARK_ID, SELECTED_ITEM } from '@constants';
 import { SourceData } from 'vega';
 
 /**
@@ -19,11 +19,9 @@ import { SourceData } from 'vega';
  * @returns
  */
 export const getLineHighlightedData = (name: string, source: string, hasPopover: boolean): SourceData => {
-	const selectSignal = `${name}_selectedId`;
-	const hoverSignal = `${name}_hoveredId`;
 	const expr = hasPopover
-		? `${selectSignal} && ${selectSignal} === datum.${MARK_ID} || !${selectSignal} && ${hoverSignal} && ${hoverSignal} === datum.${MARK_ID}`
-		: `${hoverSignal} && ${hoverSignal} === datum.${MARK_ID}`;
+		? `${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${MARK_ID} || !${SELECTED_ITEM} && ${HIGHLIGHTED_ITEM} && ${HIGHLIGHTED_ITEM} === datum.${MARK_ID}`
+		: `${HIGHLIGHTED_ITEM} && ${HIGHLIGHTED_ITEM} === datum.${MARK_ID}`;
 	return {
 		name: `${name}_highlightedData`,
 		source,

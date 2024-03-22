@@ -10,38 +10,43 @@
  * governing permissions and limitations under the License.
  */
 import {
+	COLOR_SCALE,
 	DEFAULT_COLOR_SCHEME,
 	DEFAULT_DIMENSION_SCALE_TYPE,
 	DEFAULT_LINEAR_DIMENSION,
 	DEFAULT_METRIC,
 	FILTERED_TABLE,
+	LINEAR_COLOR_SCALE,
+	LINE_TYPE_SCALE,
+	LINE_WIDTH_SCALE,
+	MARK_ID,
+	OPACITY_SCALE,
+	SELECTED_ITEM,
+	SYMBOL_SIZE_SCALE,
 } from '@constants';
 import { addTimeTransform, getTableData } from '@specBuilder/data/dataUtils';
 import { getInteractiveMarkName } from '@specBuilder/line/lineUtils';
-import {
-	getColorProductionRule,
-	getLineWidthProductionRule,
-	getOpacityProductionRule,
-	getStrokeDashProductionRule,
-	getSymbolSizeProductionRule,
-	getXProductionRule,
-} from '@specBuilder/marks/markUtils';
+import { hasInteractiveChildren, hasPopover } from '@specBuilder/marks/markUtils';
 import {
 	addContinuousDimensionScale,
 	addFieldToFacetScaleDomain,
 	addMetricScale,
 } from '@specBuilder/scale/scaleSpecBuilder';
-import {
-	addTrendlineData,
-	getTrendlineMarks,
-	getTrendlineScales,
-	getTrendlineSignals,
-} from '@specBuilder/trendline/trendlineUtils';
+import { setScatterPathScales } from '@specBuilder/scatterPath';
+import { addHighlightedItemSignalEvents } from '@specBuilder/signal/signalSpecBuilder';
+import { addTrendlineData, getTrendlineScales, setTrendlineSignals } from '@specBuilder/trendline';
 import { sanitizeMarkChildren, toCamelCase } from '@utils';
 import { produce } from 'immer';
 import { ColorScheme, ScatterProps, ScatterSpecProps } from 'types';
-import { Data, GroupMark, Mark, Scale, Signal, Spec, SymbolMark } from 'vega';
+import { Data, Scale, Signal, Spec } from 'vega';
 
+import { addScatterMarks } from './scatterMarkUtils';
+
+/**
+ * Adds all the necessary parts of a scatter to the spec
+ * @param spec Spec
+ * @param scatterProps ScatterProps
+ */
 export const addScatter = produce<Spec, [ScatterProps & { colorScheme?: ColorScheme; index?: number }]>(
 	(
 		spec,
@@ -91,87 +96,68 @@ export const addScatter = produce<Spec, [ScatterProps & { colorScheme?: ColorSch
 );
 
 export const addData = produce<Data[], [ScatterSpecProps]>((data, props) => {
-	const { dimension, dimensionScaleType } = props;
+	const { children, dimension, dimensionScaleType, name } = props;
 	if (dimensionScaleType === 'time') {
 		const tableData = getTableData(data);
 		tableData.transform = addTimeTransform(tableData.transform ?? [], dimension);
 	}
+	if (hasPopover(children)) {
+		data.push({
+			name: `${name}_selectedData`,
+			source: FILTERED_TABLE,
+			transform: [
+				{
+					type: 'filter',
+					expr: `${SELECTED_ITEM} === datum.${MARK_ID}`,
+				},
+			],
+		});
+	}
 	addTrendlineData(data, props);
 });
 
+/**
+ * Adds the signals for scatter to the signals array
+ * @param signals Signal[]
+ * @param scatterProps ScatterSpecProps
+ */
 export const addSignals = produce<Signal[], [ScatterSpecProps]>((signals, props) => {
-	signals.push(...getTrendlineSignals(props));
+	const { children, name } = props;
+	// trendline signals
+	setTrendlineSignals(signals, props);
+
+	if (!hasInteractiveChildren(children)) return;
+	// interactive signals
+	addHighlightedItemSignalEvents(signals, `${name}_voronoi`, 2);
 });
 
+/**
+ * Sets up all the scales for scatter on the scales array
+ * @param scales Scale[]
+ * @param scatterProps ScatterSpecProps
+ */
 export const setScales = produce<Scale[], [ScatterSpecProps]>((scales, props) => {
-	const { color, dimension, dimensionScaleType, lineType, lineWidth, metric, opacity, size } = props;
+	const { color, colorScaleType, dimension, dimensionScaleType, lineType, lineWidth, metric, opacity, size } = props;
 	// add dimension scale
 	addContinuousDimensionScale(scales, { scaleType: dimensionScaleType, dimension });
 	// add metric scale
 	addMetricScale(scales, [metric]);
-	// add color to the color domain
-	addFieldToFacetScaleDomain(scales, 'color', color);
+	if (colorScaleType === 'linear') {
+		// add color to the color domain
+		addFieldToFacetScaleDomain(scales, LINEAR_COLOR_SCALE, color);
+	} else {
+		// add color to the color domain
+		addFieldToFacetScaleDomain(scales, COLOR_SCALE, color);
+	}
 	// add lineType to the lineType domain
-	addFieldToFacetScaleDomain(scales, 'lineType', lineType);
+	addFieldToFacetScaleDomain(scales, LINE_TYPE_SCALE, lineType);
 	// add lineWidth to the lineWidth domain
-	addFieldToFacetScaleDomain(scales, 'lineWidth', lineWidth);
+	addFieldToFacetScaleDomain(scales, LINE_WIDTH_SCALE, lineWidth);
 	// add opacity to the opacity domain
-	addFieldToFacetScaleDomain(scales, 'opacity', opacity);
+	addFieldToFacetScaleDomain(scales, OPACITY_SCALE, opacity);
 	// add size to the size domain
-	addFieldToFacetScaleDomain(scales, 'symbolSize', size);
+	addFieldToFacetScaleDomain(scales, SYMBOL_SIZE_SCALE, size);
 
+	setScatterPathScales(scales, props);
 	scales.push(...getTrendlineScales(props));
-});
-
-export const addScatterMarks = produce<Mark[], [ScatterSpecProps]>((marks, props) => {
-	const { name } = props;
-
-	const scatterGroup: GroupMark = {
-		name: `${name}_group`,
-		type: 'group',
-		marks: [getScatterMark(props)],
-	};
-
-	marks.push(scatterGroup);
-	marks.push(...getTrendlineMarks(props));
-});
-
-export const getScatterMark = ({
-	color,
-	colorScheme,
-	dimension,
-	dimensionScaleType,
-	lineType,
-	lineWidth,
-	metric,
-	name,
-	opacity,
-	size,
-}: ScatterSpecProps): SymbolMark => ({
-	name,
-	type: 'symbol',
-	from: {
-		data: FILTERED_TABLE,
-	},
-	encode: {
-		enter: {
-			/**
-			 * the blend mode makes it possible to tell when there are overlapping points
-			 * in light mode, the points are darker when they overlap (multiply)
-			 * in dark mode, the points are lighter when they overlap (screen)
-			 */
-			blend: { value: colorScheme === 'light' ? 'multiply' : 'screen' },
-			fill: getColorProductionRule(color, colorScheme),
-			shape: { value: 'circle' },
-			strokeDash: getStrokeDashProductionRule(lineType),
-			strokeWidth: getLineWidthProductionRule(lineWidth),
-			stroke: getColorProductionRule(color, colorScheme),
-			size: getSymbolSizeProductionRule(size),
-		},
-		update: {
-			fillOpacity: [getOpacityProductionRule(opacity)],
-			x: getXProductionRule(dimensionScaleType, dimension),
-			y: { scale: 'yLinear', field: metric },
-		},
-	},
 });

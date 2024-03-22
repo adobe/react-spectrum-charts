@@ -20,6 +20,7 @@ import {
 	LineType,
 	LineTypeFacet,
 	LineWidth,
+	NumberFormat,
 	OpacityFacet,
 	SpectrumColor,
 	SymbolSize,
@@ -27,7 +28,15 @@ import {
 } from 'types';
 import { Data, Scale, ScaleType, Spec, ValuesData } from 'vega';
 
-import { DEFAULT_TRANSFORMED_TIME_DIMENSION, FILTERED_TABLE, MARK_ID, TABLE } from '../constants';
+import {
+	COLOR_SCALE,
+	DEFAULT_TRANSFORMED_TIME_DIMENSION,
+	FILTERED_TABLE,
+	LINE_TYPE_SCALE,
+	MARK_ID,
+	OPACITY_SCALE,
+	TABLE,
+} from '../constants';
 import { SanitizedSpecProps } from '../types';
 
 /**
@@ -69,16 +78,20 @@ export const getFacetsFromProps = ({
  * @returns
  */
 export const getFacetsFromScales = (scales: Scale[] = []): string[] => {
-	const facets = ['color', 'lineType', 'opacity', 'secondaryColor', 'secondaryLineType', 'secondaryOpacity'].reduce(
-		(acc, cur) => {
-			const scale = scales.find((scale) => scale.name === cur);
-			if (scale?.domain && 'fields' in scale.domain && scale.domain.fields.length) {
-				return [...acc, scale.domain.fields[0].toString()];
-			}
-			return acc;
-		},
-		[] as string[]
-	);
+	const facets = [
+		COLOR_SCALE,
+		LINE_TYPE_SCALE,
+		OPACITY_SCALE,
+		'secondaryColor',
+		'secondaryLineType',
+		'secondaryOpacity',
+	].reduce((acc, cur) => {
+		const scale = scales.find((scale) => scale.name === cur);
+		if (scale?.domain && 'fields' in scale.domain && scale.domain.fields.length) {
+			return [...acc, scale.domain.fields[0].toString()];
+		}
+		return acc;
+	}, [] as string[]);
 
 	// only want the unique facets
 	return [...new Set(facets)];
@@ -169,28 +182,39 @@ export const getPathFromIcon = (icon: Icon | string): string => {
 	return supportedIcons[icon] || icon;
 };
 
+/**
+ * Converts a symbolSize to the vega size
+ * RSC uses the width of the symbol to determine the size
+ * Vega uses the area of the symbol to determine the size
+ * @param symbolSize
+ * @returns size in square pixels
+ */
 export const getVegaSymbolSizeFromRscSymbolSize = (symbolSize: SymbolSize): number => {
+	return Math.pow(getSymbolWidthFromRscSymbolSize(symbolSize), 2);
+};
+
+/**
+ * Gets the width of the symbol or trail from the symbolSize
+ * @param symbolSize
+ * @returns width in pixels
+ */
+export const getSymbolWidthFromRscSymbolSize = (symbolSize: SymbolSize): number => {
 	if (typeof symbolSize === 'number') {
-		return Math.pow(symbolSize, 2);
+		return symbolSize;
 	}
 
 	switch (symbolSize) {
 		case 'XS':
-			// 6 x 6
-			return 36;
+			return 6;
 		case 'S':
-			// 8 x 8
-			return 64;
+			return 8;
 		case 'L':
-			// 12 x 12
-			return 144;
+			return 12;
 		case 'XL':
-			// 16 x 16
-			return 256;
+			return 16;
 		case 'M':
 		default:
-			// 10 x 10
-			return 100;
+			return 10;
 	}
 };
 
@@ -281,4 +305,21 @@ export const mergeValuesIntoData = (data, values) => {
  */
 export const getDimensionField = (dimension: string, scaleType?: ScaleType) => {
 	return scaleType === 'time' ? DEFAULT_TRANSFORMED_TIME_DIMENSION : dimension;
+};
+
+/**
+ * Gets the d3 format specifier for named number formats.
+ * shortNumber and shortCurrency are not included since these require additional logic
+ * @param numberFormat
+ * @returns
+ */
+export const getD3FormatSpecifierFromNumberFormat = (numberFormat: NumberFormat | string): string => {
+	switch (numberFormat) {
+		case 'currency':
+			return '$,.2f'; // currency format
+		case 'standardNumber':
+			return ','; // standard number format
+		default:
+			return numberFormat;
+	}
 };

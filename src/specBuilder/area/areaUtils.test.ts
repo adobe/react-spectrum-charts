@@ -9,7 +9,13 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { BACKGROUND_COLOR, DEFAULT_COLOR_SCHEME, DEFAULT_TRANSFORMED_TIME_DIMENSION } from '@constants';
+import {
+	BACKGROUND_COLOR,
+	COLOR_SCALE,
+	DEFAULT_COLOR,
+	DEFAULT_COLOR_SCHEME,
+	DEFAULT_TRANSFORMED_TIME_DIMENSION,
+} from '@constants';
 
 import { getAreaMark } from './areaUtils';
 
@@ -18,7 +24,7 @@ describe('getAreaMark', () => {
 		expect(
 			getAreaMark({
 				name: 'area0',
-				color: 'color',
+				color: DEFAULT_COLOR,
 				colorScheme: DEFAULT_COLOR_SCHEME,
 				children: [],
 				metricStart: 'metricStart',
@@ -48,8 +54,8 @@ describe('getAreaMark', () => {
 					tooltip: undefined,
 
 					fill: {
-						scale: 'color',
-						field: 'color',
+						scale: COLOR_SCALE,
+						field: DEFAULT_COLOR,
 					},
 				},
 				update: {
@@ -72,7 +78,7 @@ describe('getAreaMark', () => {
 		expect(
 			getAreaMark({
 				name: 'area0',
-				color: 'color',
+				color: DEFAULT_COLOR,
 				colorScheme: DEFAULT_COLOR_SCHEME,
 				children: [],
 				metricStart: 'metricStart',
@@ -101,8 +107,8 @@ describe('getAreaMark', () => {
 						field: 'metricEnd',
 					},
 					fill: {
-						scale: 'color',
-						field: 'color',
+						scale: COLOR_SCALE,
+						field: DEFAULT_COLOR,
 					},
 					stroke: {
 						signal: BACKGROUND_COLOR,
@@ -134,7 +140,7 @@ describe('getAreaMark', () => {
 		expect(
 			getAreaMark({
 				name: 'area0',
-				color: 'color',
+				color: DEFAULT_COLOR,
 				colorScheme: DEFAULT_COLOR_SCHEME,
 				children: [],
 				metricStart: 'metricStart',
@@ -164,8 +170,8 @@ describe('getAreaMark', () => {
 						field: 'metricEnd',
 					},
 					fill: {
-						scale: 'color',
-						field: 'color',
+						scale: COLOR_SCALE,
+						field: DEFAULT_COLOR,
 					},
 				},
 				update: {
@@ -188,7 +194,7 @@ describe('getAreaMark', () => {
 		expect(
 			getAreaMark({
 				name: 'area0',
-				color: 'color',
+				color: DEFAULT_COLOR,
 				colorScheme: DEFAULT_COLOR_SCHEME,
 				children: [],
 				metricStart: 'metricStart',
@@ -217,8 +223,8 @@ describe('getAreaMark', () => {
 						field: 'metricEnd',
 					},
 					fill: {
-						scale: 'color',
-						field: 'color',
+						scale: COLOR_SCALE,
+						field: DEFAULT_COLOR,
 					},
 				},
 				update: {

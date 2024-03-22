@@ -10,7 +10,13 @@
  * governing permissions and limitations under the License.
  */
 import { ChartPopover } from '@components/ChartPopover';
-import { DEFAULT_TRANSFORMED_TIME_DIMENSION, HIGHLIGHT_CONTRAST_RATIO, SERIES_ID } from '@constants';
+import {
+	DEFAULT_TRANSFORMED_TIME_DIMENSION,
+	HIGHLIGHTED_SERIES,
+	HIGHLIGHT_CONTRAST_RATIO,
+	SELECTED_SERIES,
+	SERIES_ID,
+} from '@constants';
 import {
 	getBorderStrokeEncodings,
 	getColorProductionRule,
@@ -37,24 +43,27 @@ export interface AreaMarkProps {
 	displayOnHover?: boolean;
 }
 
-export const getAreaMark = ({
-	name,
-	color,
-	colorScheme,
-	children,
-	metricStart,
-	metricEnd,
-	isStacked,
-	scaleType,
-	dimension,
-	opacity,
-	isMetricRange,
-	parentName,
-	displayOnHover,
-}: AreaMarkProps): AreaMark => ({
+export const getAreaMark = (
+	{
+		name,
+		color,
+		colorScheme,
+		children,
+		metricStart,
+		metricEnd,
+		isStacked,
+		scaleType,
+		dimension,
+		opacity,
+		isMetricRange,
+		parentName,
+		displayOnHover,
+	}: AreaMarkProps,
+	dataSource: string = `${name}_facet`
+): AreaMark => ({
 	name,
 	type: 'area',
-	from: { data: `${name}_facet` },
+	from: { data: dataSource },
 	interactive: getInteractive(children),
 	encode: {
 		enter: {
@@ -83,16 +92,12 @@ export function getFillOpacity(
 	parentName?: string,
 	displayOnHover?: boolean
 ): ProductionRule<NumericValueRef> | undefined {
-	const hoverSignal = isMetricRange && parentName ? `${parentName}_hoveredSeries` : `${name}_hoveredSeries`;
-	const selectSignal = `${name}_selectedSeries`;
-	const metricRangeSelectSignal = isMetricRange && parentName ? `${parentName}_selectedSeries` : selectSignal;
-
 	// if metric ranges only display when hovering, we don't need to include other hover rules for this specific area
 	if (isMetricRange && displayOnHover) {
 		return [
-			{ test: `${hoverSignal} && ${hoverSignal} === datum.${color}`, value: opacity },
-			{ test: `${metricRangeSelectSignal} && ${metricRangeSelectSignal} === datum.${color}`, value: opacity },
-			{ test: `highlightedSeries && highlightedSeries === datum.${SERIES_ID}`, value: opacity },
+			{ test: `${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES} === datum.${color}`, value: opacity },
+			{ test: `${SELECTED_SERIES} && ${SELECTED_SERIES} === datum.${color}`, value: opacity },
+			{ test: `${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES} === datum.${SERIES_ID}`, value: opacity },
 			{ value: 0 },
 		];
 	}
@@ -106,20 +111,23 @@ export function getFillOpacity(
 	if (children.some((child) => child.type === ChartPopover && !isMetricRange)) {
 		return [
 			{
-				test: `!${selectSignal} && ${hoverSignal} && ${hoverSignal} !== datum.${color}`,
+				test: `!${SELECTED_SERIES} && ${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES} !== datum.${color}`,
 				value: opacity / HIGHLIGHT_CONTRAST_RATIO,
 			},
 			{
-				test: `${selectSignal} && ${selectSignal} !== datum.${color}`,
+				test: `${SELECTED_SERIES} && ${SELECTED_SERIES} !== datum.${color}`,
 				value: opacity / HIGHLIGHT_CONTRAST_RATIO,
 			},
-			{ test: `${selectSignal} && ${selectSignal} === datum.${color}`, value: opacity },
+			{ test: `${SELECTED_SERIES} && ${SELECTED_SERIES} === datum.${color}`, value: opacity },
 			{ value: opacity },
 		];
 	}
 
 	return [
-		{ test: `${hoverSignal} && ${hoverSignal} !== datum.${color}`, value: opacity / HIGHLIGHT_CONTRAST_RATIO },
+		{
+			test: `${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES} !== datum.${color}`,
+			value: opacity / HIGHLIGHT_CONTRAST_RATIO,
+		},
 		{ value: opacity },
 	];
 }

@@ -17,7 +17,7 @@ import {
 	AxisAnnotationProps,
 	AxisProps,
 	BarProps,
-	ChartTooltipElement,
+	ColorFacet,
 	ColorScheme,
 	DonutProps,
 	FacetRef,
@@ -26,7 +26,12 @@ import {
 	LineWidth,
 	MarkChildElement,
 	MetricRangeProps,
+	Orientation,
+	ScaleType as RscScaleType,
+	ScatterPathProps,
 	ScatterProps,
+	TrendlineAnnotationProps,
+	TrendlineChildElement,
 	TrendlineProps,
 } from './Chart';
 
@@ -50,6 +55,7 @@ type AxisPropsWithDefaults =
 	| 'labelFontWeight'
 	| 'labelOrientation'
 	| 'labels'
+	| 'numberFormat'
 	| 'subLabels'
 	| 'ticks';
 
@@ -154,11 +160,23 @@ export interface ScatterSpecProps extends PartiallyRequired<ScatterProps, Scatte
 	interactiveMarkName: string | undefined;
 }
 
+type ScatterPathPropsWithDefaults = 'color' | 'groupBy' | 'pathWidth' | 'opacity';
+
+export interface ScatterPathSpecProps extends PartiallyRequired<ScatterPathProps, ScatterPathPropsWithDefaults> {
+	colorScheme: ColorScheme;
+	dimension: string;
+	dimensionScaleType: RscScaleType;
+	metric: string;
+	index: number;
+	name: string;
+}
+
 type MetricRangePropsWithDefaults = 'lineType' | 'lineWidth' | 'rangeOpacity' | 'metricEnd' | 'metricStart' | 'metric';
 export interface MetricRangeSpecProps
 	extends PartiallyRequired<MetricRangeProps & { name: string }, MetricRangePropsWithDefaults> {}
 
 type TrendlinePropsWithDefaults =
+	| 'dimensionExtent'
 	| 'dimensionRange'
 	| 'displayOnHover'
 	| 'highlightRawPoint'
@@ -166,9 +184,34 @@ type TrendlinePropsWithDefaults =
 	| 'lineWidth'
 	| 'method'
 	| 'metric'
-	| 'opacity';
+	| 'opacity'
+	| 'orientation';
 
 export interface TrendlineSpecProps
-	extends PartiallyRequired<TrendlineProps & { metric?: string; name: string }, TrendlinePropsWithDefaults> {
-	children: ChartTooltipElement[];
+	extends PartiallyRequired<TrendlineProps & { metric?: string }, TrendlinePropsWithDefaults> {
+	children: TrendlineChildElement[];
+	colorScheme: ColorScheme;
+	dimensionScaleType: RscScaleType;
+	isDimensionNormalized: boolean;
+	name: string;
+	trendlineColor: ColorFacet;
+	trendlineDimension: string;
+	trendlineMetric: string;
+}
+
+type TrendlineAnnotationPropsWithDefaults = 'badge' | 'dimensionValue' | 'numberFormat' | 'prefix';
+
+export interface TrendlineAnnotationSpecProps
+	extends PartiallyRequired<TrendlineAnnotationProps, TrendlineAnnotationPropsWithDefaults> {
+	colorScheme: ColorScheme;
+	displayOnHover: boolean;
+	markName: string;
+	name: string;
+	trendlineColor: ColorFacet;
+	trendlineDimension: string;
+	trendlineDimensionExtent: TrendlineSpecProps['dimensionExtent'];
+	trendlineDimensionScaleType: RscScaleType;
+	trendlineName: string;
+	trendlineOrientation: Orientation;
+	trendlineWidth: number;
 }

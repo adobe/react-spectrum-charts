@@ -10,3 +10,14 @@ updates:
     schedule:
       interval: "daily"
     open-pull-requests-limit: 5
+    ignore:
+      - dependency-name: "prettier"
+    groups:
+      storybook:
+        patterns:
+          - "storybook"
+          - "@storybook/*"
+      react:
+        patterns:
+          - "*react"
+          - "*react-dom"

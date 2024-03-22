@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { HIGHLIGHT_CONTRAST_RATIO, SERIES_ID } from '@constants';
+import { COLOR_SCALE, HIGHLIGHTED_SERIES, HIGHLIGHT_CONTRAST_RATIO, SERIES_ID } from '@constants';
 import { GroupMark, Mark, NumericValueRef, ProductionRule } from 'vega';
 
 /**
@@ -28,33 +28,20 @@ export const setHoverOpacityForMarks = (marks: Mark[], keys?: string[], name?: s
 			mark.encode.update = {};
 		}
 		const { update } = mark.encode;
-		const { fillOpacity, strokeOpacity } = update;
+		const { opacity } = update;
 
-		if ('fillOpacity' in update) {
+		if (opacity !== undefined) {
 			// the production rule that sets the fill opacity for this mark
-			const fillOpacityRule = getOpacityRule(fillOpacity);
+			const opacityRule = getOpacityRule(opacity);
 			// the new production rule for highlighting
-			const highlightFillOpacityRule = getHighlightOpacityRule(fillOpacityRule, keys, name);
+			const highlightOpacityRule = getHighlightOpacityRule(opacityRule, keys, name);
 
-			if (!Array.isArray(update.fillOpacity)) {
-				update.fillOpacity = [];
+			if (!Array.isArray(update.opacity)) {
+				update.opacity = [];
 			}
-			// // need to insert the new test in the second to last slot
-			const fillRuleInsertIndex = Math.max(update.fillOpacity.length - 1, 0);
-			update.fillOpacity.splice(fillRuleInsertIndex, 0, highlightFillOpacityRule);
-		}
-
-		if ('strokeOpacity' in update) {
-			// the production rule that sets the stroke opacity for this mark
-			const strokeOpacityRule = getOpacityRule(strokeOpacity);
-			// the new production rule for highlighting
-			const highlightStrokeOpacityRule = getHighlightOpacityRule(strokeOpacityRule, keys, name);
-			if (!Array.isArray(update.strokeOpacity)) {
-				update.strokeOpacity = [];
-			}
-			// // need to insert the new test in the second to last slot
-			const strokeRuleInsertIndex = Math.max(update.strokeOpacity.length - 1, 0);
-			update.strokeOpacity.splice(strokeRuleInsertIndex, 0, highlightStrokeOpacityRule);
+			// need to insert the new test in the second to last slot
+			const opacityRuleInsertIndex = Math.max(update.opacity.length - 1, 0);
+			update.opacity.splice(opacityRuleInsertIndex, 0, highlightOpacityRule);
 		}
 	});
 };
@@ -80,7 +67,7 @@ export const getHighlightOpacityRule = (
 	keys?: string[],
 	name?: string
 ): { test?: string } & NumericValueRef => {
-	let test = `highlightedSeries && highlightedSeries !== datum.${SERIES_ID}`;
+	let test = `${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES} !== datum.${SERIES_ID}`;
 	if (keys) {
 		test = `${name}_highlight && ${name}_highlight !== datum.${keys[0]}`;
 	}
@@ -109,14 +96,14 @@ export const markUsesSeriesColorScale = (mark: Mark): boolean => {
 	const enter = mark.encode?.enter;
 	if (!enter) return false;
 	const { fill, stroke } = enter;
-	if (fill && 'scale' in fill && fill.scale === 'color') {
+	if (fill && 'scale' in fill && fill.scale === COLOR_SCALE) {
 		return true;
 	}
 	// some marks use a 2d color scale, these will use a signal expression to get the color for that series
 	if (fill && 'signal' in fill && fill.signal.includes("scale('colors',")) {
 		return true;
 	}
-	if (stroke && 'scale' in stroke && stroke.scale === 'color') {
+	if (stroke && 'scale' in stroke && stroke.scale === COLOR_SCALE) {
 		return true;
 	}
 	return false;

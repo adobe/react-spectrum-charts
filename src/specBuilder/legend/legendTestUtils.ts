@@ -10,10 +10,13 @@
  * governing permissions and limitations under the License.
  */
 import {
+	COLOR_SCALE,
 	DEFAULT_CATEGORICAL_DIMENSION,
 	DEFAULT_COLOR,
 	DEFAULT_METRIC,
+	DEFAULT_OPACITY_RULE,
 	FILTERED_TABLE,
+	HIGHLIGHTED_SERIES,
 	HIGHLIGHT_CONTRAST_RATIO,
 	LEGEND_TOOLTIP_DELAY,
 } from '@constants';
@@ -38,8 +41,8 @@ export const cleanupTooltips = () => {
 };
 
 export const opacityEncoding = [
-	{ test: 'highlightedSeries && datum.value !== highlightedSeries', value: 1 / HIGHLIGHT_CONTRAST_RATIO },
-	{ value: 1 },
+	{ test: `${HIGHLIGHTED_SERIES} && datum.value !== ${HIGHLIGHTED_SERIES}`, value: 1 / HIGHLIGHT_CONTRAST_RATIO },
+	DEFAULT_OPACITY_RULE,
 ];
 
 export const defaultMark: LineMark = {
@@ -52,11 +55,10 @@ export const defaultMark: LineMark = {
 		enter: {
 			x: { scale: 'x', field: DEFAULT_CATEGORICAL_DIMENSION },
 			y: { scale: 'y', field: DEFAULT_METRIC },
-			stroke: { scale: 'color', field: DEFAULT_COLOR },
+			stroke: { scale: COLOR_SCALE, field: DEFAULT_COLOR },
 		},
 		update: {
-			strokeOpacity: [],
-			fillOpacity: [],
+			opacity: [],
 		},
 	},
 };

@@ -13,7 +13,16 @@ import '@matchMediaMock';
 import { Axis } from '@rsc';
 import { findChart, getAllAxisLabels, render, screen, within } from '@test-utils';
 
-import { Basic, ControlledLabels, NonLinearAxis, NumberFormat, SubLabels, TickMinStep, Time } from './Axis.story';
+import {
+	Basic,
+	ControlledLabels,
+	DurationLabelFormat,
+	NonLinearAxis,
+	NumberFormat,
+	SubLabels,
+	TickMinStep,
+	Time,
+} from './Axis.story';
 
 describe('Axis', () => {
 	test('Renders properly', async () => {
@@ -159,12 +168,64 @@ describe('Axis', () => {
 
 	describe('NumberFormat', () => {
 		test('Should render the number format provided', async () => {
-			render(<NumberFormat {...NumberFormat.args} numberFormat="$,.2f" />);
+			render(<NumberFormat {...NumberFormat.args} numberFormat=",.2f" />);
 			const chart = await findChart();
 			expect(chart).toBeInTheDocument();
 
-			expect(screen.getByText('$1.00')).toBeInTheDocument();
+			expect(screen.getByText('2,000,000.00')).toBeInTheDocument();
+			expect(screen.getByText('0.00')).toBeInTheDocument();
+		});
+		test('currency', async () => {
+			render(<NumberFormat {...NumberFormat.args} numberFormat="currency" />);
+			const chart = await findChart();
+			expect(chart).toBeInTheDocument();
+
+			expect(screen.getByText('$2,000,000.00')).toBeInTheDocument();
 			expect(screen.getByText('$0.00')).toBeInTheDocument();
+		});
+		test('shortCurrency', async () => {
+			render(<NumberFormat {...NumberFormat.args} numberFormat="shortCurrency" />);
+			const chart = await findChart();
+			expect(chart).toBeInTheDocument();
+
+			expect(screen.getByText('$2M')).toBeInTheDocument();
+			expect(screen.getByText('$500K')).toBeInTheDocument();
+		});
+		test('shortCurrency with small range', async () => {
+			render(<NumberFormat {...NumberFormat.args} numberFormat="shortCurrency" range={[0, 0.1]} />);
+			const chart = await findChart();
+			expect(chart).toBeInTheDocument();
+
+			expect(screen.getByText('$0.1')).toBeInTheDocument();
+			expect(screen.getByText('$0')).toBeInTheDocument();
+		});
+		test('shortNumber', async () => {
+			render(<NumberFormat {...NumberFormat.args} numberFormat="shortNumber" />);
+			const chart = await findChart();
+			expect(chart).toBeInTheDocument();
+
+			expect(screen.getByText('2M')).toBeInTheDocument();
+			expect(screen.getByText('500K')).toBeInTheDocument();
+		});
+		test('standardNumber', async () => {
+			render(<NumberFormat {...NumberFormat.args} numberFormat="standardNumber" />);
+			const chart = await findChart();
+			expect(chart).toBeInTheDocument();
+
+			expect(screen.getByText('2,000,000')).toBeInTheDocument();
+			expect(screen.getByText('500,000')).toBeInTheDocument();
+		});
+	});
+
+	describe('DurationLabelFormat', () => {
+		test('should render duration labels correctly', async () => {
+			render(<DurationLabelFormat {...DurationLabelFormat.args} />);
+			const chart = await findChart();
+			expect(chart).toBeInTheDocument();
+
+			expect(screen.getByText('00:00:00')).toBeInTheDocument();
+			expect(screen.getByText('01:23:20')).toBeInTheDocument();
+			expect(screen.getByText('02:46:40')).toBeInTheDocument();
 		});
 	});
 });

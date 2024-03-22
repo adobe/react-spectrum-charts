@@ -14,8 +14,10 @@ import { createElement } from 'react';
 import { Annotation } from '@components/Annotation';
 import {
 	BACKGROUND_COLOR,
+	COLOR_SCALE,
 	DEFAULT_CATEGORICAL_DIMENSION,
 	DEFAULT_COLOR,
+	DEFAULT_OPACITY_RULE,
 	DEFAULT_SECONDARY_COLOR,
 	FILTERED_TABLE,
 } from '@constants';
@@ -23,7 +25,6 @@ import { GroupMark, Mark, RectEncodeEntry } from 'vega';
 
 import {
 	defaultBarEnterEncodings,
-	defaultBarFillOpacity,
 	defaultBarProps,
 	defaultBarStrokeEncodings,
 	stackedAnnotationMarks,
@@ -53,13 +54,13 @@ const defaultMark = {
 	encode: {
 		enter: {
 			...defaultBarEnterEncodings,
-			fill: { field: DEFAULT_COLOR, scale: 'color' },
+			fill: { field: DEFAULT_COLOR, scale: COLOR_SCALE },
+			fillOpacity: DEFAULT_OPACITY_RULE,
 			tooltip: undefined,
 		},
 		update: {
 			cursor: undefined,
-			fillOpacity: defaultBarFillOpacity,
-			strokeOpacity: defaultBarFillOpacity,
+			opacity: [DEFAULT_OPACITY_RULE],
 			...defaultStackedBarXEncondings,
 			...defaultBarStrokeEncodings,
 		},
