@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { COLOR_SCALE, HIGHLIGHT_CONTRAST_RATIO, SERIES_ID } from '@constants';
+import { COLOR_SCALE, HIGHLIGHT_CONTRAST_RATIO, HIGHLIGHTED_SERIES, SERIES_ID } from '@constants';
 import { GroupMark, Mark, NumericValueRef, ProductionRule } from 'vega';
 
 /**
@@ -67,7 +67,7 @@ export const getHighlightOpacityRule = (
 	keys?: string[],
 	name?: string
 ): { test?: string } & NumericValueRef => {
-	let test = `highlightedSeries && highlightedSeries !== datum.${SERIES_ID}`;
+	let test = `${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES} !== datum.${SERIES_ID}`;
 	if (keys) {
 		test = `${name}_highlight && ${name}_highlight !== datum.${keys[0]}`;
 	}

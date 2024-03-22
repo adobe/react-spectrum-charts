@@ -26,7 +26,7 @@ import {
 	LINE_WIDTH_SCALE,
 	OPACITY_SCALE,
 	SYMBOL_SIZE_SCALE,
-	SERIES_ID
+	SERIES_ID, HIGHLIGHTED_SERIES
 } from '@constants';
 import { getScaleName } from '@specBuilder/scale/scaleSpecBuilder';
 import {
@@ -285,23 +285,35 @@ export const getHighlightOpacityAnimationValue = (opacityValue: { signal: string
 };
 
 //TODO: Add documentation/tests/etc
-export const getStrokeFillOpacityAnimationRules = (
-	hoveredSignal: string,
-	hoveredSignalPrev: string,
-	opacityValue: { signal: string } | { value: number },
-	defaultValue: number
+export const getOpacityAnimationRules = (
+	opacityValue?: { signal: string } | { value: number },
 ): ProductionRule<NumericValueRef> => {
+	if (!opacityValue) {
+		opacityValue = DEFAULT_OPACITY_RULE;
+	}
 	return [
 		{
-			test: `${hoveredSignal} && ${hoveredSignal} !== datum.${SERIES_ID}`,
+			test: `${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES} !== datum.${SERIES_ID}`,
 			...getHighlightOpacityAnimationValue(opacityValue)
 		},
 		{
-			test: `!${hoveredSignal} && ${hoveredSignalPrev} !== datum.${SERIES_ID}`,
+			test: `!${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES}_prev !== datum.${SERIES_ID}`,
 			...getHighlightOpacityAnimationValue(opacityValue)
 		},
+		DEFAULT_OPACITY_RULE
+	]
+}
+
+export const getLegendOpacityRules = (): ProductionRule<NumericValueRef> => {
+	return [
 		{
-			value: defaultValue
-		}
+			test: `${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES} !== datum.value`,
+			...getHighlightOpacityAnimationValue(DEFAULT_OPACITY_RULE)
+		},
+		{
+			test: `!${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES}_prev !== datum.value`,
+			...getHighlightOpacityAnimationValue(DEFAULT_OPACITY_RULE)
+		},
+		DEFAULT_OPACITY_RULE
 	]
 }

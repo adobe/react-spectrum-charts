@@ -25,13 +25,13 @@ import {
 } from '@constants';
 import {
 	getColorProductionRule,
-	getCursor,
+	getCursor, getHighlightOpacityAnimationValue,
 	getHighlightOpacityValue,
 	getOpacityProductionRule,
 	getStrokeDashProductionRule,
 	getTooltip,
 	hasInteractiveChildren,
-	hasPopover,
+	hasPopover
 } from '@specBuilder/marks/markUtils';
 import { getAnimationMarks, getColorValue, getLineWidthPixelsFromLineWidth } from '@specBuilder/specUtils';
 import { sanitizeMarkChildren } from '@utils';

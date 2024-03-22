@@ -16,7 +16,7 @@ import {
 	LINE_TYPE_SCALE,
 	OPACITY_SCALE,
 	SYMBOL_SHAPE_SCALE,
-	SYMBOL_SIZE_SCALE,
+	SYMBOL_SIZE_SCALE, HIGHLIGHTED_SERIES
 } from '@constants';
 import { addFieldToFacetScaleDomain } from '@specBuilder/scale/scaleSpecBuilder';
 import {
@@ -39,7 +39,7 @@ import {
 import { Data, Legend, Mark, Scale, Signal, Spec } from 'vega';
 
 import {
-	addHighlighSignalLegendHoverEvents,
+	addHighlightSignalLegendHoverEvents,
 	getLegendLabelsSeriesSignal,
 	getRSCLegendColorAnimationDirection,
 	hasSignalByName,
@@ -285,15 +285,11 @@ export const addData = produce<Data[], [LegendSpecProps & { facets: string[] }]>
 export const addSignals = produce<Signal[], [LegendSpecProps]>(
 	(signals, { hiddenSeries, highlight, isToggleable, legendLabels, name, animations }) => {
 		if (highlight) {
-			addHighlighSignalLegendHoverEvents(signals, name, Boolean(isToggleable || hiddenSeries));
+			addHighlightSignalLegendHoverEvents(signals, name, Boolean(isToggleable || hiddenSeries));
 		}
 		//TODO: add documentation
 		if (animations == true) {
-			const signalName = 'rscColorAnimationDirection';
-			if (hasSignalByName(signals, signalName)) {
-				signals.find((sig) => sig.name == signalName)?.on?.push(...getRSCLegendColorAnimationDirection(name));
-				signals.push(getHighlightSeriesSignal(name, Boolean (isToggleable || hiddenSeries), undefined, true));
-			}
+				signals.find((sig) => sig.name == 'rscColorAnimationDirection')?.on?.push(...getRSCLegendColorAnimationDirection(name));
 		}
 
 		if (legendLabels) {

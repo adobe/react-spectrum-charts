@@ -16,17 +16,23 @@ import {
 	DEFAULT_TIME_DIMENSION,
 	FILTERED_TABLE,
 	LINE_TYPE_SCALE,
-	OPACITY_SCALE,
+	OPACITY_SCALE, RSC_ANIMATION
 } from '@constants';
 import { hasInteractiveChildren, hasPopover } from '@specBuilder/marks/markUtils';
 import {
 	getMetricRangeData,
 	getMetricRangeGroupMarks,
 	getMetricRangeSignals,
-	getMetricRanges,
+	getMetricRanges
 } from '@specBuilder/metricRange/metricRangeUtils';
 import { getFacetsFromProps } from '@specBuilder/specUtils';
-import { addTrendlineData, getTrendlineMarks, getTrendlineScales, setTrendlineSignals } from '@specBuilder/trendline';
+import {
+	checkTrendlineAnimationScales,
+	addTrendlineData,
+	getTrendlineMarks,
+	getTrendlineScales,
+	setTrendlineSignals
+} from '@specBuilder/trendline';
 import { sanitizeMarkChildren, toCamelCase } from '@utils';
 import { produce } from 'immer';
 import { ChartData, ColorScheme, LineProps, LineSpecProps, MarkChildElement } from 'types';
@@ -37,20 +43,26 @@ import {
 	addContinuousDimensionScale,
 	addFieldToFacetScaleDomain,
 	addMetricScale,
-	getRSCAnimationScales
+	addRSCAnimationScales
 } from '../scale/scaleSpecBuilder';
 import {
 	getAnimationSignals,
 	addHighlightedItemSignalEvents,
 	addHighlightedSeriesSignalEvents,
-	getHoveredSeriesPrevSignal,
+	hasSignalByName
 } from '../signal/signalSpecBuilder';
 import { getLineHighlightedData, getLineStaticPointData } from './lineDataUtils';
 import { getLineHoverMarks, getLineMark } from './lineMarkUtils';
 import { getLineStaticPoint } from './linePointUtils';
 import { getInteractiveMarkName, getPopoverMarkName } from './lineUtils';
 
-export const addLine = produce<Spec, [LineProps & { colorScheme?: ColorScheme; index?: number, data?: ChartData[], previousData?: ChartData[], animations?: boolean}]>(
+export const addLine = produce<Spec, [LineProps & {
+	colorScheme?: ColorScheme;
+	index?: number,
+	data?: ChartData[],
+	previousData?: ChartData[],
+	animations?: boolean
+}]>(
 	(
 		spec,
 		{
@@ -83,7 +95,7 @@ export const addLine = produce<Spec, [LineProps & { colorScheme?: ColorScheme; i
 			opacity,
 			popoverMarkName: getPopoverMarkName(sanitizedChildren, lineName),
 			scaleType,
-			...props,
+			...props
 		};
 
 		spec.data = addData(spec.data ?? [], lineProps);
@@ -115,9 +127,9 @@ export const addSignals = produce<Signal[], [LineSpecProps]>((signals, props) =>
 	signals.push(...getMetricRangeSignals(props));
 
 	if (!hasInteractiveChildren(children)) return;
-	if (animations == true) {
-		signals.push(...getAnimationSignals(name));
-		signals.push(getHoveredSeriesPrevSignal(name, true))
+	//TODO: Add comments/documentation/tests
+	if (animations == true && !hasSignalByName(signals, RSC_ANIMATION)) {
+		signals.push(...getAnimationSignals(name, true));
 	}
 	addHighlightedItemSignalEvents(signals, `${name}_voronoi`, 2);
 	addHighlightedSeriesSignalEvents(signals, `${name}_voronoi`, 2);
@@ -126,8 +138,8 @@ export const addSignals = produce<Signal[], [LineSpecProps]>((signals, props) =>
 export const setScales = produce<Scale[], [LineSpecProps]>((scales, props) => {
 	const { metric, dimension, color, lineType, opacity, padding, scaleType, children, name, animations } = props;
 	//TODO: Add comments/documentation/tests
-	if ( animations == true && hasInteractiveChildren(children)) {
-		getRSCAnimationScales(scales)
+	if (animations == true && hasInteractiveChildren(children)) {
+		addRSCAnimationScales(scales);
 	}
 	// add dimension scale
 	addContinuousDimensionScale(scales, { scaleType, dimension, padding });
@@ -139,6 +151,9 @@ export const setScales = produce<Scale[], [LineSpecProps]>((scales, props) => {
 	addFieldToFacetScaleDomain(scales, OPACITY_SCALE, opacity);
 	// find the linear scale and add our fields to it
 	addMetricScale(scales, getMetricKeys(metric, children, name));
+	//TODO: Add comments/docs/tests/etc
+	checkTrendlineAnimationScales(name, scales, props);
+
 	// add trendline scales
 	scales.push(...getTrendlineScales(props));
 	return scales;
@@ -159,10 +174,10 @@ export const addLineMarks = produce<Mark[], [LineSpecProps]>((marks, props) => {
 			facet: {
 				name: `${name}_facet`,
 				data: FILTERED_TABLE,
-				groupby: facets,
-			},
+				groupby: facets
+			}
 		},
-		marks: [getLineMark(props, `${name}_facet`)],
+		marks: [getLineMark(props, `${name}_facet`)]
 	});
 	if (staticPoint) marks.push(getLineStaticPoint(props));
 	marks.push(...getMetricRangeGroupMarks(props));

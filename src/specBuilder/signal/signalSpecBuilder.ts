@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { HIGHLIGHTED_ITEM, HIGHLIGHTED_SERIES, MARK_ID, SERIES_ID } from '@constants';
+import { HIGHLIGHTED_ITEM, HIGHLIGHTED_SERIES, MARK_ID, RSC_ANIMATION, SERIES_ID } from '@constants';
 import { Signal } from 'vega';
 
 /**
@@ -34,16 +34,17 @@ export const getControlledHoverSignal = (name: string): Signal => {
 /**
  * Returns the highlighted series signal
  */
-export const addHighlighSignalLegendHoverEvents = (
+export const addHighlightSignalLegendHoverEvents = (
 	signals: Signal[],
 	legendName: string,
-	includeHiddenSeries: boolean
+	includeHiddenSeries: boolean,
 ) => {
 	const highlightedItemSignal = signals.find((signal) => signal.name === HIGHLIGHTED_SERIES);
 	if (highlightedItemSignal) {
 		if (highlightedItemSignal.on === undefined) {
 			highlightedItemSignal.on = [];
 		}
+		const highlightedItemSignalPrev = signals.find((signal) => signal.name === `${HIGHLIGHTED_SERIES}_prev`)
 		const hoveredSeries = `domain("${legendName}Entries")[datum.index]`;
 		const update = includeHiddenSeries
 			? `indexof(hiddenSeries, ${hoveredSeries}) === -1 ? ${hoveredSeries} : null`
@@ -54,6 +55,11 @@ export const addHighlighSignalLegendHoverEvents = (
 				{ events: `@${legendName}_legendEntry:mouseout`, update: 'null' },
 			]
 		);
+		if (highlightedItemSignalPrev) {
+			highlightedItemSignalPrev.on?.push(
+				{ events: `@${legendName}_legendEntry:mouseover`, update }
+			)
+		}
 	}
 };
 
@@ -121,37 +127,42 @@ export const addHighlightedSeriesSignalEvents = (signals: Signal[], markName: st
 		);
 	}
 };
-
 //TODO: Add documentation
-export const getAnimationSignals = (name: string): Signal[] => {
+export const getAnimationSignals = (name: string, nestedDatum?: boolean): Signal[] => {
 	return [
 		getRSCAnimation(),
 		getRSCColorAnimationDirection(name),
 		getRSCColorAnimation(),
-		getPrevHoverSignal(name),
-		getSelectedID(name)
+		getRSCHighlightedItemPrevSignal(name),
+		getSelectedID(name),
+		getRSCHighlightedSeriesPrevSignal(name, nestedDatum)
 	]
 }
-
+//TODO: Add documentation
 export const getRSCLegendColorAnimationDirection = (name: string): ({ update: string; events: string })[] => {
 	return [
 		{ events: `@${name}_legendEntry:mouseover`, update: '1' },
 		{ events: `@${name}_legendEntry:mouseout`, update: '-1' }
 	];
 };
-
+//TODO: Add documentation
+export const getRSCTrendlineColorAnimationDirection = (name: string): ({ events: string, update: string })[] => {
+	return [
+		{ events: `@${name}_voronoi:mouseover`, update: '1' },
+		{ events: `@${name}_voronoi:mouseout`, update: '-1' }
+	]
+}
 //TODO: add documentation
 const getRSCAnimation = (): Signal => {
 	return {
-		name: 'rscAnimation',
+		name: RSC_ANIMATION,
 		value: 0,
 		on: [{
 			events: 'timer{16}',
-			update: 'scale(\'rscAnimationCurve\', scale(\'rscAnimationCurveInverse\', rscAnimation) + 0.03333333333333334)'
+			update: `scale('rscAnimationCurve', scale('rscAnimationCurveInverse', ${RSC_ANIMATION}) + 0.03333333333333334)`
 		}]
 	};
 };
-
 //TODO: add documentation
 const getRSCColorAnimationDirection = (name: string): Signal => {
 	if (name === 'line0') {
@@ -166,7 +177,6 @@ const getRSCColorAnimationDirection = (name: string): Signal => {
 		]
 	};
 };
-
 //TODO: add documentation
 const getRSCColorAnimation = (): Signal => {
 	return {
@@ -181,29 +191,26 @@ const getRSCColorAnimation = (): Signal => {
 		]
 	};
 };
-
 //TODO add documentation
-const getPrevHoverSignal = (name: string): Signal => {
+const getRSCHighlightedItemPrevSignal = (name: string): Signal => {
 	return {
-		"name": `${name}_hoveredId_prev`,
-		"value": null,
-		"on": [
-			{ "events": `@${name}:mouseover`, "update": `datum.${MARK_ID}` },
+		name: `${HIGHLIGHTED_ITEM}_prev`,
+		value: null,
+		on: [
+			{ events: `@${name}:mouseover`, update: `datum.${MARK_ID}` },
 		]
 	}
 }
-
 //TODO: add documentation
 const getSelectedID = (name: string): Signal => {
 	return {
 		name: `${name}_selectedId`, value: null
 	}
 }
-
 //TODO: add doc/test/etc
-export const getHoveredSeriesPrevSignal = (name: string, nestedDatum?: boolean): Signal => {
+const getRSCHighlightedSeriesPrevSignal = (name: string, nestedDatum?: boolean): Signal => {
 	return {
-		name: `${name}_hoveredSeries_prev`,
+		name: `${HIGHLIGHTED_SERIES}_prev`,
 		value: null,
 		on: [
 			{

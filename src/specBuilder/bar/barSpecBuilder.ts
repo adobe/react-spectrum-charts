@@ -31,7 +31,7 @@ import {
 	getMetricScale,
 	getScaleIndexByName,
 	getScaleIndexByType,
-	getRSCAnimationScales,
+	addRSCAnimationScales,
 } from '@specBuilder/scale/scaleSpecBuilder';
 import { addHighlightedItemSignalEvents, getGenericSignal, getAnimationSignals } from '@specBuilder/signal/signalSpecBuilder';
 import { getFacetsFromProps } from '@specBuilder/specUtils';
@@ -47,7 +47,6 @@ import {
 	Scale,
 	Signal,
 	Spec,
-	Transform,
 	Transforms
 } from 'vega';
 
@@ -227,7 +226,7 @@ export const addScales = produce<Scale[], [BarSpecProps]>((scales, props) => {
 
 	//TODO add comments
 	if (animations == true && hasInteractiveChildren(children)) {
-		getRSCAnimationScales(scales)
+		addRSCAnimationScales(scales)
 	}
 	addMetricScale(scales, getScaleValues(props), orientation === 'vertical' ? 'y' : 'x');
 	addDimensionScale(scales, props);

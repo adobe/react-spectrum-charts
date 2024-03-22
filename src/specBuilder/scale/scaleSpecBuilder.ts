@@ -216,7 +216,7 @@ const isScaleMultiFieldsRef = (
 	return Boolean(domain && !Array.isArray(domain) && 'data' in domain && 'fields' in domain);
 };
 
-export const getRSCAnimationScales = (scales: Scale[]) => {
+export const addRSCAnimationScales = (scales: Scale[]) => {
 	if (!hasScaleByName(scales, 'rscAnimationCurve')) {
 		scales.push(getRSCAnimationCurve());
 		scales.push(getRSCAnimationCurveInverse());

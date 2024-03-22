@@ -28,7 +28,7 @@ import {
 	TrendlineSpecProps,
 	WindowMethod,
 } from 'types';
-import { SignalRef } from 'vega';
+import {  SignalRef } from 'vega';
 
 /** These are all the spec props that currently support trendlines */
 export type TrendlineParentProps = LineSpecProps | ScatterSpecProps;
@@ -252,10 +252,3 @@ export const getTrendlineScaleType = (
 	if (trendlineOrientation === 'vertical') return 'linear';
 	return 'scaleType' in markProps ? markProps.scaleType : markProps.dimensionScaleType;
 };
-
-const getTrendlineAnimations = (name: string, signals: Signal[], trendlines: TrendlineSpecProps[] ) => {
-	if (!hasSignalByName(signals, 'rscAnimation') && (trendlines.some((trendline) => hasTooltip(trendline.children) || hasPopover(trendline.children)))) {
-		signals.push(...getAnimationSignals(name));
-		signals.push(getHoveredSeriesPrevSignal(`${name}Trendline`, true));
-	}
-}

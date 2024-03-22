@@ -16,7 +16,7 @@ import {
 	getLineWidthProductionRule,
 	getOpacityProductionRule,
 	getStrokeDashProductionRule,
-	getStrokeFillOpacityAnimationRules,
+	getOpacityAnimationRules,
 	getVoronoiPath,
 	getXProductionRule,
 	hasPopover,
@@ -76,14 +76,11 @@ export const getLineOpacity = ({
 	if (!interactiveMarkName || displayOnHover) return [DEFAULT_OPACITY_RULE];
 	const strokeOpacityRules: ProductionRule<NumericValueRef> = [];
 
-	// add a rule that will lower the opacity of the line if there is a hovered series, but this line is not the one hovered
-
 	//TODO: add comments/tests/etc
 	if (animations == true) {
-		const hoverSignalPrev = `${interactiveMarkName}_hoveredSeries_prev`
-		return getStrokeFillOpacityAnimationRules(hoverSignal, hoverSignalPrev, DEFAULT_OPACITY_RULE, 1);
+		return getOpacityAnimationRules();
 	}
-
+	// add a rule that will lower the opacity of the line if there is a hovered series, but this line is not the one hovered
 	strokeOpacityRules.push({
 		test: `${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES} !== datum.${SERIES_ID}`,
 		...getHighlightOpacityValue(DEFAULT_OPACITY_RULE),
