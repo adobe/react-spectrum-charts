@@ -14,17 +14,23 @@ import { createElement } from 'react';
 import { ChartTooltip } from '@components/ChartTooltip';
 import {
 	BACKGROUND_COLOR,
+	COLOR_SCALE,
 	DEFAULT_COLOR,
 	DEFAULT_COLOR_SCHEME,
 	DEFAULT_METRIC,
 	DEFAULT_TIME_DIMENSION,
 	DEFAULT_TRANSFORMED_TIME_DIMENSION,
-	FILTERED_TABLE,
-	MARK_ID,
 	PREVIOUS_TABLE,
-	SERIES_ID,
-	TABLE,
+	FILTERED_PREVIOUS_TABLE,
+	FILTERED_TABLE,
+	HIGHLIGHTED_ITEM,
+	HIGHLIGHTED_SERIES,
+	MARK_ID,
+	SELECTED_ITEM,
+	SELECTED_SERIES,
+	TABLE
 } from '@constants';
+import { defaultSignals } from '@specBuilder/specTestUtils';
 import { AreaSpecProps } from 'types';
 import { Data, GroupMark, Spec } from 'vega';
 
@@ -32,7 +38,7 @@ import { initializeSpec } from '../specUtils';
 import { addArea, addAreaMarks, addData, addSignals, setScales } from './areaSpecBuilder';
 
 const startingSpec: Spec = initializeSpec({
-	scales: [{ name: 'color', type: 'ordinal' }]
+	scales: [{ name: COLOR_SCALE, type: 'ordinal' }]
 });
 
 const defaultAreaProps: AreaSpecProps = {
@@ -78,8 +84,30 @@ const defaultSpec = initializeSpec({
 		},
 		{
 			name: PREVIOUS_TABLE,
+			transform: [
+				{ as: MARK_ID, type: 'identifier' },
+				{
+					as: [DEFAULT_TRANSFORMED_TIME_DIMENSION, `${DEFAULT_TIME_DIMENSION}1`],
+					field: DEFAULT_TIME_DIMENSION,
+					type: 'timeunit',
+					units: ['year', 'month', 'date', 'hours', 'minutes'],
+				},
+			],
 			values: [],
 		},
+		{
+			name: FILTERED_PREVIOUS_TABLE,
+			source: PREVIOUS_TABLE,
+			transform: [
+				{
+					as: ['value0', 'value1'],
+					field: DEFAULT_METRIC,
+					groupby: [DEFAULT_TIME_DIMENSION],
+					sort: undefined,
+					type: 'stack',
+				},
+			],
+		}
 	],
 	marks: [
 		{
@@ -90,7 +118,7 @@ const defaultSpec = initializeSpec({
 				{
 					encode: {
 						enter: {
-							fill: { field: DEFAULT_COLOR, scale: 'color' },
+							fill: { field: DEFAULT_COLOR, scale: COLOR_SCALE },
 							y: { field: 'value0', scale: 'yLinear' },
 							y2: { field: 'value1', scale: 'yLinear' },
 							stroke: { signal: BACKGROUND_COLOR },
@@ -117,7 +145,7 @@ const defaultSpec = initializeSpec({
 	scales: [
 		{
 			domain: { data: TABLE, fields: [DEFAULT_COLOR] },
-			name: 'color',
+			name: COLOR_SCALE,
 			type: 'ordinal',
 		},
 		{
@@ -154,20 +182,6 @@ const defaultPointScale = {
 	range: 'width',
 	type: 'point',
 };
-
-const defaultSignals = [
-	{ name: 'area0_controlledHoveredId', on: [{ events: '@area0:mouseout', update: 'null' }], value: null },
-	{
-		name: 'area0_hoveredSeries',
-		on: [
-			{ events: '@area0:mouseover', update: `datum.${SERIES_ID}` },
-			{ events: '@area0:mouseout', update: 'null' },
-		],
-		value: null,
-	},
-	{ name: 'area0_selectedId', value: null },
-	{ name: 'area0_selectedSeries', value: null },
-];
 
 describe('areaSpecBuilder', () => {
 	describe('addArea()', () => {
@@ -206,14 +220,19 @@ describe('areaSpecBuilder', () => {
 
 	describe('addSignals()', () => {
 		test('no children: should return nothing', () => {
-			expect(addSignals(startingSpec.signals ?? [], defaultAreaProps)).toStrictEqual([]);
+			expect(addSignals(defaultSignals, defaultAreaProps)).toStrictEqual(defaultSignals);
 		});
 
 		test('children: should add signals', () => {
 			const tooltip = createElement(ChartTooltip);
-			expect(addSignals(startingSpec.signals ?? [], { ...defaultAreaProps, children: [tooltip] })).toStrictEqual(
-				defaultSignals
-			);
+			const signals = addSignals(defaultSignals, { ...defaultAreaProps, children: [tooltip] });
+			expect(signals).toHaveLength(5);
+			expect(signals[0]).toHaveProperty('name', HIGHLIGHTED_ITEM);
+			expect(signals[1]).toHaveProperty('name', HIGHLIGHTED_SERIES);
+			expect(signals[1].on).toHaveLength(2);
+			expect(signals[2]).toHaveProperty('name', SELECTED_ITEM);
+			expect(signals[3]).toHaveProperty('name', SELECTED_SERIES);
+			expect(signals[4]).toHaveProperty('name', 'area0_controlledHoveredId');
 		});
 	});
 

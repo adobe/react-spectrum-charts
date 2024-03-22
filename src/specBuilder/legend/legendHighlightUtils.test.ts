@@ -9,7 +9,14 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { DEFAULT_COLOR, HIGHLIGHT_CONTRAST_RATIO, SERIES_ID } from '@constants';
+import {
+	DEFAULT_COLOR,
+	DEFAULT_OPACITY_RULE,
+	HIGHLIGHTED_SERIES,
+	HIGHLIGHT_CONTRAST_RATIO,
+	OPACITY_SCALE,
+	SERIES_ID,
+} from '@constants';
 import { Mark } from 'vega';
 
 import { getHighlightOpacityRule, getOpacityRule, setHoverOpacityForMarks } from './legendHighlightUtils';
@@ -21,25 +28,22 @@ const defaultGroupMark: Mark = {
 };
 
 const defaultOpacityEncoding = {
-	fillOpacity: [
-		{ test: `highlightedSeries && highlightedSeries !== datum.${SERIES_ID}`, value: 1 / HIGHLIGHT_CONTRAST_RATIO },
-	],
-	strokeOpacity: [
+	opacity: [
 		{ test: `highlightedSeries && highlightedSeries !== datum.${SERIES_ID}`, value: 1 / HIGHLIGHT_CONTRAST_RATIO },
 	],
 };
 
 describe('getHighlightOpacityRule()', () => {
 	test('scale ref should divide by highlight contrast ratio', () => {
-		expect(getHighlightOpacityRule({ scale: 'opacity', field: DEFAULT_COLOR })).toStrictEqual({
+		expect(getHighlightOpacityRule({ scale: OPACITY_SCALE, field: DEFAULT_COLOR })).toStrictEqual({
 			test: `highlightedSeries && highlightedSeries !== datum.${SERIES_ID}`,
-			signal: `scale('opacity', datum.${DEFAULT_COLOR}) / ${HIGHLIGHT_CONTRAST_RATIO}`,
+			signal: `scale('${OPACITY_SCALE}', datum.${DEFAULT_COLOR}) / ${HIGHLIGHT_CONTRAST_RATIO}`,
 		});
 	});
 	test('signal ref should divide by highlight contrast ratio', () => {
-		expect(getHighlightOpacityRule({ signal: `scale('opacity', datum.${DEFAULT_COLOR})` })).toStrictEqual({
+		expect(getHighlightOpacityRule({ signal: `scale('${OPACITY_SCALE}', datum.${DEFAULT_COLOR})` })).toStrictEqual({
 			test: `highlightedSeries && highlightedSeries !== datum.${SERIES_ID}`,
-			signal: `scale('opacity', datum.${DEFAULT_COLOR}) / ${HIGHLIGHT_CONTRAST_RATIO}`,
+			signal: `scale('${OPACITY_SCALE}', datum.${DEFAULT_COLOR}) / ${HIGHLIGHT_CONTRAST_RATIO}`,
 		});
 	});
 	test('value ref should divide by highlight contrast ratio', () => {
@@ -61,15 +65,17 @@ describe('getHighlightOpacityRule()', () => {
 	});
 	test('should use the highlighedSeries in the test if keys do not', () => {
 		const { test } = getHighlightOpacityRule({});
-		expect(test).toContain('highlightedSeries');
+		expect(test).toContain(HIGHLIGHTED_SERIES);
 	});
 });
 
 describe('getOpacityRule()', () => {
 	test('array, should return the last value', () => {
 		expect(getOpacityRule([{ value: 0.5 }])).toStrictEqual({ value: 0.5 });
-		expect(getOpacityRule([{ value: 0.5 }, { signal: `scale('opacity', datum.${DEFAULT_COLOR})` }])).toStrictEqual({
-			signal: `scale('opacity', datum.${DEFAULT_COLOR})`,
+		expect(
+			getOpacityRule([{ value: 0.5 }, { signal: `scale('${OPACITY_SCALE}', datum.${DEFAULT_COLOR})` }])
+		).toStrictEqual({
+			signal: `scale('${OPACITY_SCALE}', datum.${DEFAULT_COLOR})`,
 		});
 	});
 	test('empty array, should return default value', () => {
@@ -92,19 +98,19 @@ describe('setHoverOpacityForMarks()', () => {
 		});
 	});
 	describe('bar mark initial state', () => {
-		test('encoding should be added for fillOpacity and strokOpacity', () => {
+		test('encoding should be added for opacity', () => {
 			const marks = JSON.parse(JSON.stringify([defaultMark]));
 			setHoverOpacityForMarks(marks);
 			expect(marks).toStrictEqual([
 				{ ...defaultMark, encode: { ...defaultMark.encode, update: defaultOpacityEncoding } },
 			]);
 		});
-		test('fillOpacity encoding already exists, rules should be added in the correct spot', () => {
+		test('opacity encoding already exists, rules should be added in the correct spot', () => {
 			const marks = JSON.parse(
 				JSON.stringify([
 					{
 						...defaultMark,
-						encode: { ...defaultMark.encode, update: { strokeOpacity: [], fillOpacity: [{ value: 1 }] } },
+						encode: { ...defaultMark.encode, update: { opacity: [DEFAULT_OPACITY_RULE] } },
 					},
 				])
 			);
@@ -116,7 +122,7 @@ describe('setHoverOpacityForMarks()', () => {
 						...defaultMark.encode,
 						update: {
 							...defaultOpacityEncoding,
-							fillOpacity: [...defaultOpacityEncoding.fillOpacity, { value: 1 }],
+							opacity: [...defaultOpacityEncoding.opacity, DEFAULT_OPACITY_RULE],
 						},
 					},
 				},
@@ -124,7 +130,7 @@ describe('setHoverOpacityForMarks()', () => {
 		});
 	});
 	describe('group mark initial state', () => {
-		test('encoding should be added for fillOpacity and strokOpacity', () => {
+		test('encoding should be added for opacity', () => {
 			const marks = JSON.parse(JSON.stringify([defaultGroupMark]));
 			setHoverOpacityForMarks(marks);
 			expect(marks).toStrictEqual([

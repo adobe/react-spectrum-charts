@@ -29,6 +29,7 @@ module.exports = {
 		'\\.(css)$': 'identity-obj-proxy',
 		'single-spa-react/parcel': 'single-spa-react/lib/cjs/parcel.cjs',
 		'^.+\\.(css|less|scss)$': 'babel-jest',
+		'^d3-format$': '<rootDir>/node_modules/d3-format/dist/d3-format.js',
 		...pathsToModuleNameMapper(compilerOptions.paths),
 	},
 	setupFilesAfterEnv: ['@testing-library/jest-dom', 'jest-canvas-mock'],

@@ -12,7 +12,15 @@
 import { createElement } from 'react';
 
 import { ChartPopover } from '@components/ChartPopover';
-import { BACKGROUND_COLOR, DEFAULT_COLOR, DEFAULT_SYMBOL_SIZE, DEFAULT_SYMBOL_STROKE_WIDTH, MARK_ID } from '@constants';
+import {
+	BACKGROUND_COLOR,
+	COLOR_SCALE,
+	DEFAULT_COLOR,
+	DEFAULT_SYMBOL_SIZE,
+	DEFAULT_SYMBOL_STROKE_WIDTH,
+	MARK_ID,
+	SELECTED_ITEM,
+} from '@constants';
 
 import {
 	getHighlightPointFill,
@@ -40,10 +48,7 @@ describe('getHighlightPointFill()', () => {
 	test('should include selection rule if hasPopover', () => {
 		const rules = getHighlightPointFill({ ...defaultLineMarkProps, children: [createElement(ChartPopover)] });
 		expect(rules).toHaveLength(2);
-		expect(rules[0]).toHaveProperty(
-			'test',
-			`${defaultLineMarkProps.name}_selectedId && ${defaultLineMarkProps.name}_selectedId === datum.${MARK_ID}`
-		);
+		expect(rules[0]).toHaveProperty('test', `${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${MARK_ID}`);
 	});
 });
 
@@ -51,7 +56,7 @@ describe('getHighlightPointStroke()', () => {
 	test('should return simple series color rule with default props', () => {
 		const rules = getHighlightPointStroke(defaultLineMarkProps);
 		expect(rules).toHaveLength(1);
-		expect(rules[0]).toEqual({ scale: 'color', field: DEFAULT_COLOR });
+		expect(rules[0]).toEqual({ scale: COLOR_SCALE, field: DEFAULT_COLOR });
 	});
 
 	test('should include a static point rule if staticPoint is set', () => {
@@ -64,10 +69,7 @@ describe('getHighlightPointStroke()', () => {
 	test('should include selection rule if hasPopover', () => {
 		const rules = getHighlightPointStroke({ ...defaultLineMarkProps, children: [createElement(ChartPopover)] });
 		expect(rules).toHaveLength(2);
-		expect(rules[0]).toHaveProperty(
-			'test',
-			`${defaultLineMarkProps.name}_selectedId && ${defaultLineMarkProps.name}_selectedId === datum.${MARK_ID}`
-		);
+		expect(rules[0]).toHaveProperty('test', `${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${MARK_ID}`);
 	});
 });
 

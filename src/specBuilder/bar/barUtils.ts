@@ -15,16 +15,18 @@ import {
 	ANNOTATION_FONT_WEIGHT,
 	BACKGROUND_COLOR,
 	CORNER_RADIUS,
+	DEFAULT_OPACITY_RULE,
 	DISCRETE_PADDING,
 	FILTERED_TABLE,
+	HIGHLIGHTED_ITEM,
 	MARK_ID,
+	SELECTED_ITEM,
 	STACK_ID,
 } from '@constants';
 import {
 	getColorProductionRule,
 	getCursor,
 	getHighlightOpacityValue,
-	getHighlightOpacityAnimationValue,
 	getOpacityProductionRule,
 	getStrokeDashProductionRule,
 	getTooltip,
@@ -109,7 +111,7 @@ export const getDodgedDimensionEncodings = (props: BarSpecProps): RectEncodeEntr
 	const endMetric = `${metric}1`;
 
 	const endAnimations = isStacked ? getAnimationMarks(dimension, endMetric, data, previousData, scaleKey)
-		: { scale: 'yLinear', signal: "0" }
+		: { scale: scaleKey, signal: "0" }
 
 	const endKey = `${startKey}2`;
 
@@ -383,143 +385,110 @@ export const getBaseBarEnterEncodings = (props: BarSpecProps): EncodeEntry => ({
 	...getCornerRadiusEncodings(props),
 });
 
-export const getBarEnterEncodings = ({ children, color, colorScheme, name }: BarSpecProps): EncodeEntry => ({
+export const getBarEnterEncodings = ({ children, color, colorScheme, name, opacity }: BarSpecProps): EncodeEntry => ({
 	fill: getColorProductionRule(color, colorScheme),
+	fillOpacity: getOpacityProductionRule(opacity),
 	tooltip: getTooltip(children, name),
 });
 
-export const getBarUpdateEncodings = (props: BarSpecProps): EncodeEntry => (
-	{
+export const getBarUpdateEncodings = (props: BarSpecProps): EncodeEntry => ({
 	cursor: getCursor(props.children),
-	fillOpacity: getFillStrokeOpacity(props),
+	opacity: getBarOpacity(props),
 	stroke: getStroke(props),
 	strokeDash: getStrokeDash(props),
-	strokeOpacity: getFillStrokeOpacity(props, true),
 	strokeWidth: getStrokeWidth(props),
 });
 
-export const getFillStrokeOpacity = (
-	{ children, name, opacity, animations, }: BarSpecProps,
-	isStrokeOpacity?: boolean
-): ProductionRule<NumericValueRef> => {
-	const defaultProductionRule = getOpacityProductionRule(opacity);
-	// ignore annotations
+export const getBarOpacity = ({ children, animations }: BarSpecProps): ProductionRule<NumericValueRef> => {
+	// if there aren't any interactive components, then we don't need to add special opacity rules
 	if (!hasInteractiveChildren(children)) {
-		return [defaultProductionRule];
+		return [DEFAULT_OPACITY_RULE];
 	}
-
-	// if a bar is hovered/selected, all other bars should be half opacity
-	const hoverSignal = `${name}_hoveredId`;
-	const selectSignal = `${name}_selectedId`;
 
 	if (animations == true) {
-		return getAnimationsFillOpacity(selectSignal, hoverSignal, defaultProductionRule, isStrokeOpacity)
+		return getAnimationsFillOpacity();
 	}
 
+	// if a bar is hovered/selected, all other bars should have reduced opacity
 	if (hasPopover(children)) {
-		// if this is for a stroke opacity, we want the value to be 1 when selected regardless of the opacity value
-		const selectedMarkRule = isStrokeOpacity ? { value: 1 } : defaultProductionRule;
 		return [
 			{
-				test: `!${selectSignal} && ${hoverSignal} && ${hoverSignal} !== datum.${MARK_ID}`,
-				...getHighlightOpacityValue(defaultProductionRule),
+				test: `!${SELECTED_ITEM} && ${HIGHLIGHTED_ITEM} && ${HIGHLIGHTED_ITEM} !== datum.${MARK_ID}`,
+				...getHighlightOpacityValue(DEFAULT_OPACITY_RULE),
 			},
 			{
-				test: `${selectSignal} && ${selectSignal} !== datum.${MARK_ID}`,
-				...getHighlightOpacityValue(defaultProductionRule),
+				test: `${SELECTED_ITEM} && ${SELECTED_ITEM} !== datum.${MARK_ID}`,
+				...getHighlightOpacityValue(DEFAULT_OPACITY_RULE),
 			},
-			{ test: `${selectSignal} && ${selectSignal} === datum.${MARK_ID}`, ...selectedMarkRule },
-			defaultProductionRule,
+			{ test: `${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${MARK_ID}`, ...DEFAULT_OPACITY_RULE },
+			DEFAULT_OPACITY_RULE,
 		];
 	}
 	return [
 		{
-			test: `${hoverSignal} && ${hoverSignal} !== datum.${MARK_ID}`,
-			...getHighlightOpacityValue(defaultProductionRule),
+			test: `${HIGHLIGHTED_ITEM} && ${HIGHLIGHTED_ITEM} !== datum.${MARK_ID}`,
+			...getHighlightOpacityValue(),
 		},
-		defaultProductionRule,
+		DEFAULT_OPACITY_RULE,
 	];
 };
 
-const getAnimationsFillOpacity = (
-	selectSignal: string,
-	hoverSignal: string,
-	defaultProductionRule: { signal: string } | { value: number },
-	isStrokeOpacity?: boolean,
-): ProductionRule<NumericValueRef> => {
+const getAnimationsFillOpacity = (): ProductionRule<NumericValueRef> => {
 	return [
 		{
-			test: `!${selectSignal} && ${hoverSignal} && ${hoverSignal} !== datum.${MARK_ID}`,
-			...getHighlightOpacityAnimationValue(defaultProductionRule)
+			test: `!${SELECTED_ITEM} && ${HIGHLIGHTED_ITEM} && ${HIGHLIGHTED_ITEM} !== datum.${MARK_ID}`,
+			...getHighlightOpacityAnimationValue(DEFAULT_OPACITY_RULE)
 		},
 		{
-			test: `${selectSignal} && ${selectSignal} !== datum.${MARK_ID}`,
-			...getHighlightOpacityAnimationValue(defaultProductionRule)
+			test: `${SELECTED_ITEM} && ${SELECTED_ITEM} !== datum.${MARK_ID}`,
+			...getHighlightOpacityAnimationValue(DEFAULT_OPACITY_RULE)
 		},
-		...getAnimationProductionRule(hoverSignal, selectSignal, defaultProductionRule, isStrokeOpacity),
+		...getAnimationProductionRule(),
 		{ value: 1 }
 	];
 };
 
-const getAnimationProductionRule = (
-	hoverSignal: string,
-	selectedSignal: string,
-	defaultProductionRule: { signal: string } | { value: number },
-	isStrokeOpacity?: boolean
-): [{ test: string, signal: string } | { test: string, value: number }] => {
-	if (isStrokeOpacity == true) {
-		return [
-			{
-				test: `${selectedSignal} && ${selectedSignal} === datum.${MARK_ID}`,
-				value: 1
-			}
-		];
-	} else {
-		return [
-			{
-				test: `${hoverSignal}_prev !== datum.${MARK_ID} && rscColorAnimationDirection === -1`,
-			    ...getHighlightOpacityAnimationValue(defaultProductionRule)
-			}
-		];
-	}
+const getAnimationProductionRule = (): [
+	{ test: string, signal: string } | { test: string, value: number }] => {
+	return [
+		{
+			test: `${HIGHLIGHTED_ITEM}_prev !== datum.${MARK_ID} && rscColorAnimationDirection === -1`,
+			...getHighlightOpacityAnimationValue(DEFAULT_OPACITY_RULE)
+		}];
 }
-
-export const getStroke = ({ children, color, colorScheme, name }: BarSpecProps): ProductionRule<ColorValueRef> => {
+export const getStroke = ({ children, color, colorScheme }: BarSpecProps): ProductionRule<ColorValueRef> => {
 	const defaultProductionRule = getColorProductionRule(color, colorScheme);
 	if (!hasPopover(children)) {
 		return [defaultProductionRule];
 	}
 
-	const selectSignal = `${name}_selectedId`;
 	return [
 		{
-			test: `${selectSignal} && ${selectSignal} === datum.${MARK_ID}`,
+			test: `${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${MARK_ID}`,
 			value: getColorValue('static-blue', colorScheme),
 		},
 		defaultProductionRule,
 	];
 };
 
-export const getStrokeDash = ({ children, lineType, name }: BarSpecProps): ProductionRule<ArrayValueRef> => {
+export const getStrokeDash = ({ children, lineType }: BarSpecProps): ProductionRule<ArrayValueRef> => {
 	const defaultProductionRule = getStrokeDashProductionRule(lineType);
 	if (!hasPopover(children)) {
 		return [defaultProductionRule];
 	}
 
-	const selectSignal = `${name}_selectedId`;
-	return [{ test: `${selectSignal} && ${selectSignal} === datum.${MARK_ID}`, value: [] }, defaultProductionRule];
+	return [{ test: `${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${MARK_ID}`, value: [] }, defaultProductionRule];
 };
 
-export const getStrokeWidth = ({ children, lineWidth, name }: BarSpecProps): ProductionRule<NumericValueRef> => {
+export const getStrokeWidth = ({ children, lineWidth }: BarSpecProps): ProductionRule<NumericValueRef> => {
 	const lineWidthValue = getLineWidthPixelsFromLineWidth(lineWidth);
 	const defaultProductionRule = { value: lineWidthValue };
 	if (!hasPopover(children)) {
 		return [defaultProductionRule];
 	}
 
-	const selectSignal = `${name}_selectedId`;
 	return [
-		{ test: `${selectSignal} && ${selectSignal} === datum.${MARK_ID}`, value: Math.max(lineWidthValue, 2) },
+		{ test: `${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${MARK_ID}`, value: Math.max(lineWidthValue, 2) },
 		defaultProductionRule,
 	];
 };

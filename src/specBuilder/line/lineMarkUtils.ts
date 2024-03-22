@@ -9,21 +9,20 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { SERIES_ID } from '@constants';
+import { DEFAULT_OPACITY_RULE, HIGHLIGHTED_SERIES, SELECTED_SERIES, SERIES_ID } from '@constants';
 import {
 	getColorProductionRule,
-	getCursor,
 	getHighlightOpacityValue,
 	getLineWidthProductionRule,
 	getOpacityProductionRule,
 	getStrokeDashProductionRule,
 	getStrokeFillOpacityAnimationRules,
-	getTooltip,
+	getVoronoiPath,
 	getXProductionRule,
-	hasPopover
+	hasPopover,
 } from '@specBuilder/marks/markUtils';
-import { MarkChildElement, OpacityFacet, ScaleType } from 'types';
-import { LineMark, Mark, NumericValueRef, PathMark, ProductionRule, RuleMark, SymbolMark } from 'vega';
+import { ScaleType } from 'types';
+import { LineMark, Mark, NumericValueRef, ProductionRule, RuleMark, SymbolMark } from 'vega';
 
 import {
 	getHighlightBackgroundPoint,
@@ -42,7 +41,7 @@ import { getAnimationMarks } from '@specBuilder/specUtils';
  */
 
 export const getLineMark = (lineMarkProps: LineMarkProps, dataSource: string): LineMark => {
-	const { name, color, metric, dimension, scaleType, lineType, lineWidth, colorScheme, data, previousData, animations } = lineMarkProps;
+	const { name, color, opacity, metric, dimension, scaleType, lineType, lineWidth, colorScheme, data, previousData, animations } = lineMarkProps;
 
 	return {
 		name,
@@ -54,72 +53,52 @@ export const getLineMark = (lineMarkProps: LineMarkProps, dataSource: string): L
 				y: { scale: 'yLinear', field: metric },
 				stroke: getColorProductionRule(color, colorScheme),
 				strokeDash: getStrokeDashProductionRule(lineType),
+				strokeOpacity: getOpacityProductionRule(opacity),
 				strokeWidth: getLineWidthProductionRule(lineWidth),
 			},
 			update: {
 				// this has to be in update because when you resize the window that doesn't rebuild the spec
 				// but it may change the x position if it causes the chart to resize
 				x: getXProductionRule(scaleType, dimension),
-				strokeOpacity: getLineStrokeOpacity(lineMarkProps),
+				opacity: getLineOpacity(lineMarkProps),
 				...(animations !== false && { y: getAnimationMarks(dimension, metric, data, previousData) })
 			},
 		},
 	};
 };
 
-export const getLineStrokeOpacity = ({
+export const getLineOpacity = ({
 	displayOnHover,
 	interactiveMarkName,
-	opacity,
 	popoverMarkName,
 	animations,
 }: LineMarkProps): ProductionRule<NumericValueRef> => {
-	const baseRule = getOpacityProductionRule(displayOnHover ? { value: 0 } : opacity);
-	if (!interactiveMarkName) return [baseRule];
+	if (!interactiveMarkName || displayOnHover) return [DEFAULT_OPACITY_RULE];
 	const strokeOpacityRules: ProductionRule<NumericValueRef> = [];
 
 	// add a rule that will lower the opacity of the line if there is a hovered series, but this line is not the one hovered
-	const hoverSignal = `${interactiveMarkName}_hoveredSeries`;
+
 	//TODO: add comments/tests/etc
 	if (animations == true) {
 		const hoverSignalPrev = `${interactiveMarkName}_hoveredSeries_prev`
-		return getStrokeFillOpacityAnimationRules(hoverSignal, hoverSignalPrev, baseRule, 1);
+		return getStrokeFillOpacityAnimationRules(hoverSignal, hoverSignalPrev, DEFAULT_OPACITY_RULE, 1);
 	}
 
 	strokeOpacityRules.push({
-		test: `${hoverSignal} && ${hoverSignal} !== datum.${SERIES_ID}`,
-		...getHighlightOpacityValue(baseRule),
+		test: `${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES} !== datum.${SERIES_ID}`,
+		...getHighlightOpacityValue(DEFAULT_OPACITY_RULE),
 	});
 
 	if (popoverMarkName) {
-		const selectSignal = `${interactiveMarkName}_selectedSeries`;
 		strokeOpacityRules.push({
-			test: `${selectSignal} && ${selectSignal} !== datum.${SERIES_ID}`,
-			...getHighlightOpacityValue(baseRule),
+			test: `${SELECTED_SERIES} && ${SELECTED_SERIES} !== datum.${SERIES_ID}`,
+			...getHighlightOpacityValue(DEFAULT_OPACITY_RULE),
 		});
 	}
-
-	if (displayOnHover) {
-		strokeOpacityRules.push(...getDisplayOnHoverRules(interactiveMarkName, opacity));
-	}
 	// This allows us to only show the metric range when hovering over the parent line component.
-	strokeOpacityRules.push(baseRule);
+	strokeOpacityRules.push(DEFAULT_OPACITY_RULE);
 
 	return strokeOpacityRules;
-};
-
-const getDisplayOnHoverRules = (name: string, opacity: OpacityFacet) => {
-	const opacityRule = getOpacityProductionRule(opacity);
-	const hoverRule = {
-		test: `${name}_hoveredSeries && ${name}_hoveredSeries === datum.${SERIES_ID}`,
-		...opacityRule,
-	};
-	const selectRule = {
-		test: `${name}_selectedSeries && ${name}_selectedSeries === datum.${SERIES_ID}`,
-		...opacityRule,
-	};
-	const legendRule = { test: `highlightedSeries && highlightedSeries === datum.${SERIES_ID}`, ...opacityRule };
-	return [hoverRule, selectRule, legendRule];
 };
 
 /**
@@ -149,7 +128,7 @@ export const getLineHoverMarks = (
 		// points used for the voronoi transform
 		getPointsForVoronoi(dataSource, dimension, metric, name, scaleType),
 		// voronoi transform used to get nearest point paths
-		getVoronoiPath(children, name),
+		getVoronoiPath(children, `${name}_pointsForVoronoi`, name),
 	];
 };
 
@@ -194,34 +173,5 @@ const getPointsForVoronoi = (
 				x: getXProductionRule(scaleType, dimension),
 			},
 		},
-	};
-};
-
-const getVoronoiPath = (children: MarkChildElement[], name: string): PathMark => {
-	return {
-		name: `${name}_voronoi`,
-		type: 'path',
-		from: { data: `${name}_pointsForVoronoi` },
-		encode: {
-			enter: {
-				fill: { value: 'transparent' },
-				stroke: { value: 'transparent' },
-				isVoronoi: { value: true },
-				// Don't add a tooltip if there are no interactive children. We only want the other hover marks for metric ranges.
-				tooltip: getTooltip(children, name, true),
-			},
-			update: {
-				cursor: getCursor(children),
-			},
-		},
-		transform: [
-			{
-				type: 'voronoi',
-				x: `datum.x`,
-				y: `datum.y`,
-				// on initial render, width/height could be 0 which causes problems
-				size: [{ signal: 'max(width, 1)' }, { signal: 'max(height, 1)' }],
-			},
-		],
 	};
 };

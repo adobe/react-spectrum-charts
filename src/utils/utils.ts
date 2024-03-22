@@ -11,10 +11,10 @@
  */
 import { Fragment, ReactFragment } from 'react';
 
-import { MARK_ID, SERIES_ID } from '@constants';
+import { MARK_ID, SELECTED_ITEM, SELECTED_SERIES, SERIES_ID } from '@constants';
 import { View } from 'vega';
 
-import { Area, Axis, AxisAnnotation, Bar, ChartPopover, ChartTooltip, Legend, Line, Trendline } from '..';
+import { Area, Axis, AxisAnnotation, Bar, ChartPopover, ChartTooltip, Legend, Line, Scatter, Trendline } from '..';
 import { Donut } from '../alpha';
 import {
 	AxisAnnotationChildElement,
@@ -41,6 +41,7 @@ type ElementCounts = {
 	donut: number;
 	legend: number;
 	line: number;
+	scatter: number;
 };
 
 // coerces a value that could be a single value or an array of that value to an array
@@ -149,7 +150,14 @@ export function getElement(
 		| string
 		| ReactFragment
 		| undefined,
-	type: typeof Axis | typeof Legend | typeof Line | typeof Bar | typeof ChartTooltip | typeof ChartPopover
+	type:
+		| typeof Axis
+		| typeof Bar
+		| typeof ChartPopover
+		| typeof ChartTooltip
+		| typeof Legend
+		| typeof Line
+		| typeof Scatter
 ): ChartElement | RscElement | undefined {
 	// if the element is undefined or 'type' doesn't exist on the element, stop searching
 	if (
@@ -185,7 +193,14 @@ export function getElement(
  */
 export const getAllElements = (
 	target: Children<ChartElement | RscElement>,
-	source: typeof Axis | typeof Legend | typeof Line | typeof Bar | typeof ChartTooltip | typeof ChartPopover,
+	source:
+		| typeof Axis
+		| typeof Bar
+		| typeof ChartPopover
+		| typeof ChartTooltip
+		| typeof Legend
+		| typeof Line
+		| typeof Scatter,
 	elements: MappedElement[] = [],
 	name: string = ''
 ): MappedElement[] => {
@@ -239,6 +254,9 @@ const getElementName = (element: ChildElement<RscElement>, elementCounts: Elemen
 		case Line.displayName:
 			elementCounts.line++;
 			return getComponentName(element, `line${elementCounts.line}`);
+		case Scatter.displayName:
+			elementCounts.scatter++;
+			return getComponentName(element, `scatter${elementCounts.scatter}`);
 		case Trendline.displayName:
 			return getComponentName(element, 'Trendline');
 		default:
@@ -261,6 +279,7 @@ const initElementCounts = (): ElementCounts => ({
 	donut: -1,
 	legend: -1,
 	line: -1,
+	scatter: -1,
 });
 
 /**
@@ -280,21 +299,7 @@ export function debugLog(
  * Sets the values of the selectedId and selectedSeries signals
  * @param param0
  */
-export const setSelectedSignals = ({
-	selectedData,
-	selectedIdSignalName,
-	selectedSeriesSignalName,
-	view,
-}: {
-	selectedData: Datum | null;
-	selectedIdSignalName: string | null;
-	selectedSeriesSignalName: string | null;
-	view: View;
-}) => {
-	if (selectedIdSignalName) {
-		view.signal(selectedIdSignalName, selectedData?.[MARK_ID] ?? null);
-	}
-	if (selectedSeriesSignalName) {
-		view.signal(selectedSeriesSignalName, selectedData?.[SERIES_ID] ?? null);
-	}
+export const setSelectedSignals = ({ selectedData, view }: { selectedData: Datum | null; view: View }) => {
+	view.signal(SELECTED_ITEM, selectedData?.[MARK_ID] ?? null);
+	view.signal(SELECTED_SERIES, selectedData?.[SERIES_ID] ?? null);
 };

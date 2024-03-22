@@ -15,7 +15,7 @@ import { getDimensionField } from '@specBuilder/specUtils';
 import { toCamelCase } from '@utils';
 import { produce } from 'immer';
 import { DualFacet, FacetRef, FacetType, Orientation } from 'types';
-import { Scale, ScaleData, ScaleMultiFieldsRef, SignalRef } from 'vega';
+import { OrdinalScale, Scale, ScaleData, ScaleMultiFieldsRef, SignalRef } from 'vega';
 
 type AxisType = 'x' | 'y';
 type SupportedScaleType = 'linear' | 'point' | 'band' | 'time' | 'ordinal';
@@ -194,6 +194,21 @@ export const getPadding = (type: SupportedScaleType | 'band') => {
 			return {};
 	}
 };
+
+/**
+ * Gets the name of the scale based on the axis and type
+ * @param axis
+ * @param type
+ * @returns scale name
+ */
+export const getScaleName = (axis: AxisType, type: SupportedScaleType) => toCamelCase(`${axis} ${type}`);
+
+export const getOrdinalScale = (name: string, range: OrdinalScale['range']): OrdinalScale => ({
+	name,
+	type: 'ordinal',
+	range,
+	domain: { data: TABLE, fields: [] },
+});
 
 const isScaleMultiFieldsRef = (
 	domain: (null | string | number | boolean | SignalRef)[] | ScaleData | SignalRef | undefined

@@ -23,6 +23,7 @@ import {
 	LineType,
 	LineTypeFacet,
 	LineWidth,
+	NumberFormat,
 	OpacityFacet,
 	SpectrumColor,
 	SymbolSize,
@@ -31,11 +32,15 @@ import {
 import { Data, Scale, ScaleType, Spec, ValuesData } from 'vega';
 
 import {
+	COLOR_SCALE,
 	DEFAULT_TRANSFORMED_TIME_DIMENSION,
-	EASE_OUT_CUBIC,
 	FILTERED_TABLE,
-	MARK_ID,
+	EASE_OUT_CUBIC,
+	FILTERED_PREVIOUS_TABLE,
 	PREVIOUS_TABLE,
+	LINE_TYPE_SCALE,
+	MARK_ID,
+	OPACITY_SCALE,
 	TABLE,
 } from '../constants';
 import { SanitizedSpecProps } from '../types';
@@ -79,16 +84,20 @@ export const getFacetsFromProps = ({
  * @returns
  */
 export const getFacetsFromScales = (scales: Scale[] = []): string[] => {
-	const facets = ['color', 'lineType', 'opacity', 'secondaryColor', 'secondaryLineType', 'secondaryOpacity'].reduce(
-		(acc, cur) => {
-			const scale = scales.find((scale) => scale.name === cur);
-			if (scale?.domain && 'fields' in scale.domain && scale.domain.fields.length) {
-				return [...acc, scale.domain.fields[0].toString()];
-			}
-			return acc;
-		},
-		[] as string[]
-	);
+	const facets = [
+		COLOR_SCALE,
+		LINE_TYPE_SCALE,
+		OPACITY_SCALE,
+		'secondaryColor',
+		'secondaryLineType',
+		'secondaryOpacity',
+	].reduce((acc, cur) => {
+		const scale = scales.find((scale) => scale.name === cur);
+		if (scale?.domain && 'fields' in scale.domain && scale.domain.fields.length) {
+			return [...acc, scale.domain.fields[0].toString()];
+		}
+		return acc;
+	}, [] as string[]);
 
 	// only want the unique facets
 	return [...new Set(facets)];
@@ -211,6 +220,7 @@ export const baseData: Data[] = [
 	{ name: TABLE, values: [], transform: [{ type: 'identifier', as: MARK_ID }] },
 	{ name: FILTERED_TABLE, source: TABLE },
 	{ name: PREVIOUS_TABLE, values: [] },
+	{ name: FILTERED_PREVIOUS_TABLE, source: PREVIOUS_TABLE }
 ];
 
 /**
@@ -294,6 +304,23 @@ export const getDimensionField = (dimension: string, scaleType?: ScaleType) => {
 	return scaleType === 'time' ? DEFAULT_TRANSFORMED_TIME_DIMENSION : dimension;
 };
 
+/**
+ * Gets the d3 format specifier for named number formats.
+ * shortNumber and shortCurrency are not included since these require additional logic
+ * @param numberFormat
+ * @returns
+ */
+export const getD3FormatSpecifierFromNumberFormat = (numberFormat: NumberFormat | string): string => {
+	switch (numberFormat) {
+		case 'currency':
+			return '$,.2f'; // currency format
+		case 'standardNumber':
+			return ','; // standard number format
+		default:
+			return numberFormat;
+	}
+};
+
 export const usePreviousChartData = <T>(data: T) => {
 	const ref = useRef<T>();
 
@@ -323,7 +350,7 @@ export const getAnimationMarks = (
 			// If data isn't similar enough, keep the animation from zero as shown above
 			markUpdate = {
 				scale,
-				signal: `(data('${PREVIOUS_TABLE}')[indexof(pluck(data('${PREVIOUS_TABLE}'), '${dimension}'), datum.${dimension})].${metric} * (1 - ${easingFunction})) + (datum.${metric} * ${easingFunction})`,
+				signal: `(data('${FILTERED_PREVIOUS_TABLE}')[indexof(pluck(data('${FILTERED_PREVIOUS_TABLE}'), '${dimension}'), datum.${dimension})].${metric} * (1 - ${easingFunction})) + (datum.${metric} * ${easingFunction})`,
 			};
 		}
 	}

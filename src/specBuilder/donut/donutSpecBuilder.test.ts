@@ -9,38 +9,35 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
 import { createElement } from 'react';
 
-import { ChartPopover } from '@components/ChartPopover';
-import { FILTERED_TABLE, MARK_ID } from '@constants';
+import { ChartTooltip } from '@components/ChartTooltip';
+import { COLOR_SCALE, FILTERED_TABLE, HIGHLIGHTED_ITEM } from '@constants';
+import { defaultSignals } from '@specBuilder/specTestUtils';
 import { DonutSpecProps } from 'types';
 
-import { addData } from './donutSpecBuilder';
-import { addMarks } from './donutSpecBuilder';
-import { addSignals } from './donutSpecBuilder';
-import { addScales } from './donutSpecBuilder';
-import { addDonut } from './donutSpecBuilder';
+import { addData, addDonut, addMarks, addScales, addSignals } from './donutSpecBuilder';
 import { getAggregateMetricMark, getArcMark, getDirectLabelMark, getPercentMetricMark } from './donutUtils';
+
+const defaultDonutProps: DonutSpecProps = {
+	index: 0,
+	colorScheme: 'light',
+	metric: 'testMetric',
+	startAngle: 0,
+	name: 'testName',
+	isBoolean: false,
+	segment: 'testSegment',
+	color: 'testColor',
+	holeRatio: 0.5,
+	metricLabel: 'testLabel',
+	hasDirectLabels: true,
+	children: [],
+};
 
 describe('addData', () => {
 	test('should add data correctly for boolean donut', () => {
 		const data = [{ name: FILTERED_TABLE }];
-		const props: DonutSpecProps = {
-			index: 0,
-			colorScheme: 'light',
-			metric: 'testMetric',
-			startAngle: 0,
-			name: 'testName',
-			isBoolean: true,
-			segment: 'testSegment',
-			color: 'testColor',
-			holeRatio: 0.5,
-			metricLabel: 'testLabel',
-			hasDirectLabels: true,
-			children: [],
-		};
-		const result = addData(data, props);
+		const result = addData(data, { ...defaultDonutProps, isBoolean: true });
 		expect(result).toEqual([
 			{
 				name: FILTERED_TABLE,
@@ -73,21 +70,7 @@ describe('addData', () => {
 
 	test('should add data correctly for non-boolean donut', () => {
 		const data = [{ name: 'filteredTable' }];
-		const props: DonutSpecProps = {
-			index: 0,
-			colorScheme: 'light',
-			metric: 'testMetric',
-			startAngle: 1.7,
-			name: 'testName',
-			isBoolean: false,
-			segment: 'testSegment',
-			color: 'testColor',
-			holeRatio: 0.5,
-			metricLabel: 'testLabel',
-			hasDirectLabels: true,
-			children: [],
-		};
-		const result = addData(data, props);
+		const result = addData(data, defaultDonutProps);
 		expect(result).toEqual([
 			{
 				name: FILTERED_TABLE,
@@ -95,8 +78,8 @@ describe('addData', () => {
 					{
 						type: 'pie',
 						field: 'testMetric',
-						startAngle: 1.7,
-						endAngle: { signal: '1.7 + 2 * PI' },
+						startAngle: 0,
+						endAngle: { signal: '0 + 2 * PI' },
 					},
 				],
 			},
@@ -119,20 +102,7 @@ describe('addData', () => {
 describe('addMarks', () => {
 	test('should add marks correctly for boolean donut', () => {
 		const marks = [];
-		const props: DonutSpecProps = {
-			index: 0,
-			colorScheme: 'light',
-			metric: 'testMetric',
-			startAngle: 0,
-			name: 'testName',
-			isBoolean: true,
-			segment: 'testSegment',
-			color: 'testColor',
-			holeRatio: 0.5,
-			metricLabel: 'testLabel',
-			hasDirectLabels: true,
-			children: [],
-		};
+		const props = { ...defaultDonutProps, isBoolean: true };
 		const result = addMarks(marks, props);
 		const expectedMarks = [
 			getArcMark(props.name, props.holeRatio, 'min(width, height) / 2', props.children),
@@ -149,31 +119,27 @@ describe('addMarks', () => {
 
 	test('should add marks correctly for non-boolean donut', () => {
 		const marks = [];
-		const props: DonutSpecProps = {
-			index: 0,
-			colorScheme: 'light',
-			metric: 'testMetric',
-			startAngle: 1.7,
-			name: 'testName',
-			isBoolean: false,
-			segment: 'testSegment',
-			color: 'testColor',
-			holeRatio: 0.5,
-			metricLabel: 'testLabel',
-			hasDirectLabels: true,
-			children: [],
-		};
-		const result = addMarks(marks, props);
+		const result = addMarks(marks, defaultDonutProps);
 		const expectedMarks = [
-			getArcMark(props.name, props.holeRatio, 'min(width, height) / 2', props.children),
-			getAggregateMetricMark(
-				props.name,
-				props.metric,
+			getArcMark(
+				defaultDonutProps.name,
+				defaultDonutProps.holeRatio,
 				'min(width, height) / 2',
-				props.holeRatio,
-				props.metricLabel
+				defaultDonutProps.children
 			),
-			getDirectLabelMark(props.name, 'min(width, height) / 2', props.metric, props.segment!),
+			getAggregateMetricMark(
+				defaultDonutProps.name,
+				defaultDonutProps.metric,
+				'min(width, height) / 2',
+				defaultDonutProps.holeRatio,
+				defaultDonutProps.metricLabel
+			),
+			getDirectLabelMark(
+				defaultDonutProps.name,
+				'min(width, height) / 2',
+				defaultDonutProps.metric,
+				defaultDonutProps.segment!
+			),
 		];
 		expect(result).toEqual(expectedMarks);
 	});
@@ -200,205 +166,33 @@ describe('addMarks', () => {
 	});
 });
 
-describe('donutSpecBuilder', () => {
-	test('should add signals correctly when there is no popover', () => {
-		const signals = [];
-		const props: DonutSpecProps = {
-			index: 0,
-			colorScheme: 'light',
-			metric: 'testMetric',
-			startAngle: 1.7,
-			name: 'testName',
-			isBoolean: false,
-			segment: 'testSegment',
-			color: 'testColor',
-			holeRatio: 0.5,
-			metricLabel: 'testLabel',
-			hasDirectLabels: true,
-			children: [],
-		};
-		const result = addSignals(signals, props);
-		const expectedSignals = [
-			{
-				name: 'testName_hoveredId',
-				value: null,
-				on: [
-					{
-						events: '@testName:mouseover',
-						update: `datum.${MARK_ID}`,
-					},
-					{
-						events: '@testName:mouseout',
-						update: 'null',
-					},
-				],
-			},
-		];
-		expect(result).toEqual(expectedSignals);
+describe('addSignals()', () => {
+	test('should not add signals when there are not interactive children', () => {
+		const signals = addSignals(defaultSignals, defaultDonutProps);
+		expect(signals).toStrictEqual(defaultSignals);
 	});
 
-	test('doesnt double add hovoredId signal', () => {
-		const signals = [
-			{
-				name: 'testName_hoveredId',
-				value: null,
-				on: [
-					{
-						events: '@testName:mouseover',
-						update: `datum.${MARK_ID}`,
-					},
-					{
-						events: '@testName:mouseout',
-						update: 'null',
-					},
-				],
-			},
-		];
-		const props: DonutSpecProps = {
-			index: 0,
-			colorScheme: 'light',
-			metric: 'testMetric',
-			startAngle: 1.7,
-			name: 'testName',
-			isBoolean: false,
-			segment: 'testSegment',
-			color: 'testColor',
-			holeRatio: 0.5,
-			metricLabel: 'testLabel',
-			hasDirectLabels: true,
-			children: [],
-		};
-		const result = addSignals(signals, props);
-		const expectedSignals = [
-			{
-				name: 'testName_hoveredId',
-				value: null,
-				on: [
-					{
-						events: '@testName:mouseover',
-						update: `datum.${MARK_ID}`,
-					},
-					{
-						events: '@testName:mouseout',
-						update: 'null',
-					},
-				],
-			},
-		];
-		expect(result).toEqual(expectedSignals);
-	});
-
-	test('should add signals correctly when there is a popover', () => {
-		const signals = [];
-		const props: DonutSpecProps = {
-			index: 0,
-			colorScheme: 'light',
-			metric: 'testMetric',
-			startAngle: 1.7,
-			name: 'testName',
-			isBoolean: false,
-			segment: 'testSegment',
-			color: 'testColor',
-			holeRatio: 0.5,
-			metricLabel: 'testLabel',
-			hasDirectLabels: true,
-			children: [createElement(ChartPopover)],
-		};
-		const result = addSignals(signals, props);
-		const expectedSignals = [
-			{
-				name: 'testName_hoveredId',
-				value: null,
-				on: [
-					{
-						events: '@testName:mouseover',
-						update: `datum.${MARK_ID}`,
-					},
-					{
-						events: '@testName:mouseout',
-						update: 'null',
-					},
-				],
-			},
-			{
-				name: 'testName_selectedId',
-				value: null,
-			},
-		];
-		expect(result).toEqual(expectedSignals);
-	});
-
-	test('doesnt double add selectedId signal', () => {
-		const signals = [
-			{
-				name: 'testName_selectedId',
-				value: null,
-			},
-		];
-		const props: DonutSpecProps = {
-			index: 0,
-			colorScheme: 'light',
-			metric: 'testMetric',
-			startAngle: 1.7,
-			name: 'testName',
-			isBoolean: false,
-			segment: 'testSegment',
-			color: 'testColor',
-			holeRatio: 0.5,
-			metricLabel: 'testLabel',
-			hasDirectLabels: true,
-			children: [createElement(ChartPopover)],
-		};
-		const result = addSignals(signals, props);
-		const expectedSignals = [
-			{
-				name: 'testName_selectedId',
-				value: null,
-			},
-			{
-				name: 'testName_hoveredId',
-				value: null,
-				on: [
-					{
-						events: '@testName:mouseover',
-						update: `datum.${MARK_ID}`,
-					},
-					{
-						events: '@testName:mouseout',
-						update: 'null',
-					},
-				],
-			},
-		];
-		expect(result).toEqual(expectedSignals);
+	test('should add hover events when tooltip is present', () => {
+		const signals = addSignals(defaultSignals, { ...defaultDonutProps, children: [createElement(ChartTooltip)] });
+		expect(signals).toHaveLength(4);
+		expect(signals[0]).toHaveProperty('name', HIGHLIGHTED_ITEM);
+		expect(signals[0].on).toHaveLength(2);
+		expect(signals[0].on?.[0]).toHaveProperty('events', '@testName:mouseover');
+		expect(signals[0].on?.[1]).toHaveProperty('events', '@testName:mouseout');
 	});
 });
 
 describe('donutSpecBuilder', () => {
 	test('should add scales correctly', () => {
 		const scales = [];
-		const props: DonutSpecProps = {
-			index: 0,
-			colorScheme: 'light',
-			metric: 'testMetric',
-			startAngle: 0,
-			name: 'testName',
-			isBoolean: false,
-			segment: 'testSegment',
-			color: 'testColor',
-			holeRatio: 0.5,
-			metricLabel: 'testLabel',
-			hasDirectLabels: true,
-			children: [],
-		};
-		const result = addScales(scales, props);
+		const result = addScales(scales, defaultDonutProps);
 		const expectedScales = [
 			{
 				domain: {
 					data: 'table',
 					fields: ['testColor'],
 				},
-				name: 'color',
+				name: COLOR_SCALE,
 				type: undefined,
 			},
 		];
@@ -409,19 +203,7 @@ describe('donutSpecBuilder', () => {
 describe('donutSpecBuilder', () => {
 	test('should add donut correctly', () => {
 		const spec = { data: [{ name: FILTERED_TABLE }] };
-		const props: DonutSpecProps = {
-			children: [],
-			color: 'testColor',
-			colorScheme: 'light',
-			index: 0,
-			metric: 'testMetric',
-			name: 'testName',
-			startAngle: 0,
-			holeRatio: 0.85,
-			segment: 'testSegment',
-			hasDirectLabels: false,
-			isBoolean: false,
-		};
+		const props = { ...defaultDonutProps, holeRatio: 0.85 };
 		const result = addDonut(spec, props);
 		const expectedSpec = {
 			data: addData(spec.data, props),

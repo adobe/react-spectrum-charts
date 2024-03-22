@@ -15,14 +15,18 @@ import { Annotation } from '@components/Annotation';
 import { ChartPopover } from '@components/ChartPopover';
 import { ChartTooltip } from '@components/ChartTooltip';
 import {
+	COLOR_SCALE,
 	CORNER_RADIUS,
 	DEFAULT_CATEGORICAL_DIMENSION,
 	DEFAULT_COLOR,
 	DEFAULT_METRIC,
+	DEFAULT_OPACITY_RULE,
 	FILTERED_TABLE,
+	HIGHLIGHTED_ITEM,
 	HIGHLIGHT_CONTRAST_RATIO,
 	MARK_ID,
 	PADDING_RATIO,
+	SELECTED_ITEM,
 	STACK_ID,
 } from '@constants';
 import { BarSpecProps } from 'types';
@@ -30,7 +34,7 @@ import { RectEncodeEntry } from 'vega';
 
 import {
 	defaultBarEnterEncodings,
-	defaultBarPopoverFillOpacity,
+	defaultBarPopoverOpacity,
 	defaultBarProps,
 	defaultBarPropsWithSecondayColor,
 	defaultCornerRadiusEncodings,
@@ -50,12 +54,12 @@ import {
 	getAnnotationMarks,
 	getAnnotationMetricAxisPosition,
 	getAnnotationPositionOffset,
+	getBarOpacity,
 	getBarPadding,
 	getBaseBarEnterEncodings,
 	getCornerRadiusEncodings,
 	getDodgedDimensionEncodings,
 	getDodgedGroupMark,
-	getFillStrokeOpacity,
 	getMetricEncodings,
 	getOrientationProperties,
 	getStackedCornerRadiusEncodings,
@@ -280,33 +284,23 @@ describe('barUtils', () => {
 		});
 	});
 
-	describe('getFillStrokeOpacity()', () => {
-		test('no children, should use provided opacity', () => {
-			expect(getFillStrokeOpacity(defaultBarProps)).toStrictEqual([{ value: 1 }]);
-		});
-		test('no children, series key for opacity, should use scale and field for opacity', () => {
-			expect(getFillStrokeOpacity({ ...defaultBarProps, opacity: DEFAULT_COLOR })).toStrictEqual([
-				{ signal: "scale('opacity', datum.series)" },
-			]);
+	describe('getBarOpacity()', () => {
+		test('no children, should use default opacity', () => {
+			expect(getBarOpacity(defaultBarProps)).toStrictEqual([DEFAULT_OPACITY_RULE]);
 		});
 		test('Tooltip child, should return tests for hover and default to opacity', () => {
 			const tooltip = createElement(ChartTooltip);
-			expect(getFillStrokeOpacity({ ...defaultBarProps, children: [tooltip] })).toStrictEqual([
-				{ test: `bar0_hoveredId && bar0_hoveredId !== datum.${MARK_ID}`, value: 1 / HIGHLIGHT_CONTRAST_RATIO },
-				{ value: 1 },
+			expect(getBarOpacity({ ...defaultBarProps, children: [tooltip] })).toStrictEqual([
+				{
+					test: `${HIGHLIGHTED_ITEM} && ${HIGHLIGHTED_ITEM} !== datum.${MARK_ID}`,
+					value: 1 / HIGHLIGHT_CONTRAST_RATIO,
+				},
+				DEFAULT_OPACITY_RULE,
 			]);
 		});
 		test('Popover child, should return tests for hover and select and default to opacity', () => {
 			const popover = createElement(ChartPopover);
-			expect(getFillStrokeOpacity({ ...defaultBarProps, children: [popover] })).toStrictEqual(
-				defaultBarPopoverFillOpacity
-			);
-		});
-		test('isStrokeOpacity with popover, should set opacity to 1 when mark is selected', () => {
-			const popover = createElement(ChartPopover);
-			const rule = getFillStrokeOpacity({ ...defaultBarProps, children: [popover] }, true);
-			expect(rule).toHaveLength(4);
-			expect(rule[2]).toEqual({ test: `bar0_selectedId && bar0_selectedId === datum.${MARK_ID}`, value: 1 });
+			expect(getBarOpacity({ ...defaultBarProps, children: [popover] })).toStrictEqual(defaultBarPopoverOpacity);
 		});
 	});
 
@@ -314,14 +308,14 @@ describe('barUtils', () => {
 		test('should return production rule with one item in array if there is not a popover', () => {
 			const strokeRule = getStroke(defaultBarProps);
 			expect(strokeRule).toHaveLength(1);
-			expect(strokeRule[0]).toStrictEqual({ scale: 'color', field: DEFAULT_COLOR });
+			expect(strokeRule[0]).toStrictEqual({ scale: COLOR_SCALE, field: DEFAULT_COLOR });
 		});
 		test('should return rules for selected data if popover exists', () => {
 			const popover = createElement(ChartPopover);
 			const strokeRule = getStroke({ ...defaultBarProps, children: [popover] });
 			expect(strokeRule).toHaveLength(2);
 			expect(strokeRule[0]).toStrictEqual({
-				test: `bar0_selectedId && bar0_selectedId === datum.${MARK_ID}`,
+				test: `${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${MARK_ID}`,
 				value: 'rgb(20, 115, 230)',
 			});
 		});
@@ -338,7 +332,7 @@ describe('barUtils', () => {
 			const strokeRule = getStrokeDash({ ...defaultBarProps, children: [popover] });
 			expect(strokeRule).toHaveLength(2);
 			expect(strokeRule[0]).toStrictEqual({
-				test: `bar0_selectedId && bar0_selectedId === datum.${MARK_ID}`,
+				test: `${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${MARK_ID}`,
 				value: [],
 			});
 		});
@@ -355,7 +349,7 @@ describe('barUtils', () => {
 			const strokeRule = getStrokeWidth({ ...defaultBarProps, children: [popover] });
 			expect(strokeRule).toHaveLength(2);
 			expect(strokeRule[0]).toStrictEqual({
-				test: `bar0_selectedId && bar0_selectedId === datum.${MARK_ID}`,
+				test: `${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${MARK_ID}`,
 				value: 2,
 			});
 		});

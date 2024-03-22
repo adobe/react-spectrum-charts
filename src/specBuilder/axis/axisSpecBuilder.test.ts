@@ -49,11 +49,7 @@ const defaultAxis: Axis = {
 				text: [
 					{
 						test: 'isNumber(datum.value) && abs(datum.value) >= 1000',
-						signal: "upper(replace(format(datum.value, '.3~s'), 'G', 'B'))",
-					},
-					{
-						test: 'isNumber(datum.value)',
-						signal: 'format(datum.value, ",")',
+						signal: "upper(replace(format(datum.value, '.3~s'), /(\\d+)G/, '$1B'))",
 					},
 					{ signal: 'datum.value' },
 				],
@@ -279,7 +275,7 @@ describe('Spec builder, Axis', () => {
 				scaleName: 'xLinear',
 				scaleType: 'linear',
 			})[0].encode?.labels?.update?.text as ProductionRule<TextValueRef>;
-			expect(labelTextEncoding).toHaveLength(4);
+			expect(labelTextEncoding).toHaveLength(3);
 			expect(labelTextEncoding[0]).toEqual({
 				test: "abs(scale('xLinear', 10) - scale('xLinear', datum.value)) < 30",
 				value: '',
@@ -296,8 +292,8 @@ describe('Spec builder, Axis', () => {
 				scaleType: 'linear',
 			})[0].encode?.labels?.update?.text as ProductionRule<TextValueRef>;
 
-			// 2 tests for the two reference lines plus 3 default tests = 5 tests
-			expect(labelTextEncoding).toHaveLength(5);
+			// 2 tests for the two reference lines plus 2 default tests = 4 tests
+			expect(labelTextEncoding).toHaveLength(4);
 		});
 		test('should set the values on the axis if labels is set', () => {
 			const axes = addAxes([], {

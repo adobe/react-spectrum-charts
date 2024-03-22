@@ -41,11 +41,31 @@ export const TABLE = 'table';
 export const FILTERED_TABLE = 'filteredTable';
 export const PREVIOUS_TABLE = 'previousTable';
 
+export const FILTERED_PREVIOUS_TABLE = 'filteredPreviousTable';
+
 // vega data field names
 export const SERIES_ID = 'rscSeriesId';
 export const MARK_ID = 'rscMarkId';
 export const TRENDLINE_VALUE = 'rscTrendlineValue';
 export const STACK_ID = 'rscStackId';
+
+// signal names
+export const HIGHLIGHTED_ITEM = 'highlightedItem'; // data point
+export const HIGHLIGHTED_SERIES = 'highlightedSeries'; // series
+export const SELECTED_ITEM = 'selectedItem'; // data point
+export const SELECTED_SERIES = 'selectedSeries'; // series
+
+// scale names
+export const COLOR_SCALE = 'color';
+export const LINE_TYPE_SCALE = 'lineType';
+export const LINEAR_COLOR_SCALE = 'linearColor';
+export const LINE_WIDTH_SCALE = 'lineWidth';
+export const OPACITY_SCALE = 'opacity';
+export const SYMBOL_SHAPE_SCALE = 'symbolShape';
+export const SYMBOL_SIZE_SCALE = 'symbolSize';
+
+// encode rules
+export const DEFAULT_OPACITY_RULE = { value: 1 };
 
 // corner radius
 export const CORNER_RADIUS = 6;

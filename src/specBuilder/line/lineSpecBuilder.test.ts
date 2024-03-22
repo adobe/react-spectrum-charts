@@ -11,23 +11,27 @@
  */
 import { createElement } from 'react';
 
-import { ChartPopover } from '@components/ChartPopover';
 import { MetricRange } from '@components/MetricRange';
 import { Trendline } from '@components/Trendline';
 import {
 	BACKGROUND_COLOR,
+	COLOR_SCALE,
 	DEFAULT_COLOR,
 	DEFAULT_COLOR_SCHEME,
 	DEFAULT_METRIC,
+	DEFAULT_OPACITY_RULE,
 	DEFAULT_TIME_DIMENSION,
-	DEFAULT_TRANSFORMED_TIME_DIMENSION,
+	DEFAULT_TRANSFORMED_TIME_DIMENSION, FILTERED_PREVIOUS_TABLE,
 	FILTERED_TABLE,
+	HIGHLIGHTED_ITEM,
+	HIGHLIGHTED_SERIES,
 	MARK_ID,
 	PREVIOUS_TABLE,
 	SERIES_ID,
 	TABLE,
-	TRENDLINE_VALUE,
+	TRENDLINE_VALUE
 } from '@constants';
+import { defaultSignals } from '@specBuilder/specTestUtils';
 import { LineSpecProps, MetricRangeElement, MetricRangeProps } from 'types';
 import { Data, Spec } from 'vega';
 
@@ -59,7 +63,7 @@ const getMetricRangeElement = (props?: Partial<MetricRangeProps>): MetricRangeEl
 	});
 
 const startingSpec: Spec = initializeSpec({
-	scales: [{ name: 'color', type: 'ordinal' }],
+	scales: [{ name: COLOR_SCALE, type: 'ordinal' }],
 });
 
 const defaultSpec = initializeSpec({
@@ -85,6 +89,10 @@ const defaultSpec = initializeSpec({
 			name: PREVIOUS_TABLE,
 			values: [],
 		},
+		{
+			name: FILTERED_PREVIOUS_TABLE,
+			source: PREVIOUS_TABLE,
+		},
 	],
 	marks: [
 		{
@@ -93,14 +101,15 @@ const defaultSpec = initializeSpec({
 				{
 					encode: {
 						enter: {
-							stroke: { field: DEFAULT_COLOR, scale: 'color' },
+							stroke: { field: DEFAULT_COLOR, scale: COLOR_SCALE },
 							strokeDash: { value: [] },
+							strokeOpacity: DEFAULT_OPACITY_RULE,
 							strokeWidth: undefined,
 							y: { field: 'value', scale: 'yLinear' },
 						},
 						update: {
 							x: { field: DEFAULT_TRANSFORMED_TIME_DIMENSION, scale: 'xTime' },
-							strokeOpacity: [{ value: 1 }],
+							opacity: [DEFAULT_OPACITY_RULE],
 						},
 					},
 					from: { data: 'line0_facet' },
@@ -114,7 +123,7 @@ const defaultSpec = initializeSpec({
 		},
 	],
 	scales: [
-		{ domain: { data: TABLE, fields: [DEFAULT_COLOR] }, name: 'color', type: 'ordinal' },
+		{ domain: { data: TABLE, fields: [DEFAULT_COLOR] }, name: COLOR_SCALE, type: 'ordinal' },
 		{
 			domain: { data: FILTERED_TABLE, fields: [DEFAULT_TRANSFORMED_TIME_DIMENSION] },
 			name: 'xTime',
@@ -170,29 +179,15 @@ const line0_groupMark = {
 			interactive: false,
 			encode: {
 				enter: {
-					y: {
-						scale: 'yLinear',
-						field: 'value',
-					},
-					stroke: {
-						scale: 'color',
-						field: 'series',
-					},
-					strokeDash: {
-						value: [],
-					},
+					y: { scale: 'yLinear', field: 'value' },
+					stroke: { scale: COLOR_SCALE, field: 'series' },
+					strokeDash: { value: [] },
+					strokeOpacity: DEFAULT_OPACITY_RULE,
 					strokeWidth: undefined,
 				},
 				update: {
-					x: {
-						scale: 'xTime',
-						field: DEFAULT_TRANSFORMED_TIME_DIMENSION,
-					},
-					strokeOpacity: [
-						{
-							value: 1,
-						},
-					],
+					x: { scale: 'xTime', field: DEFAULT_TRANSFORMED_TIME_DIMENSION },
+					opacity: [DEFAULT_OPACITY_RULE],
 				},
 			},
 		},
@@ -212,7 +207,7 @@ const metricRangeGroupMark = {
 	},
 	marks: [
 		{
-			name: 'line0',
+			name: 'line0MetricRange0_line',
 			type: 'line',
 			from: {
 				data: 'line0MetricRange0_facet',
@@ -225,12 +220,13 @@ const metricRangeGroupMark = {
 						field: 'value',
 					},
 					stroke: {
-						scale: 'color',
+						scale: COLOR_SCALE,
 						field: 'series',
 					},
 					strokeDash: {
 						value: [7, 4],
 					},
+					strokeOpacity: DEFAULT_OPACITY_RULE,
 					strokeWidth: {
 						value: 1.5,
 					},
@@ -240,16 +236,12 @@ const metricRangeGroupMark = {
 						scale: 'xTime',
 						field: DEFAULT_TRANSFORMED_TIME_DIMENSION,
 					},
-					strokeOpacity: [
-						{
-							value: 1,
-						},
-					],
+					opacity: [DEFAULT_OPACITY_RULE],
 				},
 			},
 		},
 		{
-			name: 'line0MetricRange0',
+			name: 'line0MetricRange0_area',
 			type: 'area',
 			from: {
 				data: 'line0MetricRange0_facet',
@@ -267,7 +259,7 @@ const metricRangeGroupMark = {
 						scale: 'yLinear',
 					},
 					fill: {
-						scale: 'color',
+						scale: COLOR_SCALE,
 						field: 'series',
 					},
 					tooltip: undefined,
@@ -280,7 +272,7 @@ const metricRangeGroupMark = {
 					},
 					fillOpacity: [
 						{
-							value: 0.8,
+							value: 0.2,
 						},
 					],
 				},
@@ -307,7 +299,7 @@ const metricRangeWithDisplayPointMarks = [
 					field: 'value',
 				},
 				fill: {
-					scale: 'color',
+					scale: COLOR_SCALE,
 					field: 'series',
 				},
 				stroke: {
@@ -341,7 +333,7 @@ const displayPointMarks = [
 					field: 'value',
 				},
 				fill: {
-					scale: 'color',
+					scale: COLOR_SCALE,
 					field: 'series',
 				},
 				stroke: {
@@ -377,30 +369,30 @@ describe('lineSpecBuilder', () => {
 		});
 
 		test('scaleTypes "point" and "linear" should return the original data', () => {
-			expect(addData([], { ...defaultLineProps, scaleType: 'point' })).toEqual([]);
-			expect(addData([], { ...defaultLineProps, scaleType: 'linear' })).toEqual([]);
+			expect(addData(baseData, { ...defaultLineProps, scaleType: 'point' })).toEqual(baseData);
+			expect(addData(baseData, { ...defaultLineProps, scaleType: 'linear' })).toEqual(baseData);
 		});
 
 		test('should add trendline transform', () => {
+			const testAddData = addData(baseData, {
+				...defaultLineProps,
+				children: [createElement(Trendline, { method: 'average' })],
+			});
+			console.warn(testAddData);
 			expect(
 				addData(baseData, {
 					...defaultLineProps,
 					children: [createElement(Trendline, { method: 'average' })],
-				})[3].transform
+				})[4].transform
 			).toStrictEqual([
 				{
-					type: 'collect',
-					sort: {
-						field: DEFAULT_TRANSFORMED_TIME_DIMENSION,
-					},
+					as: [TRENDLINE_VALUE, `${DEFAULT_TIME_DIMENSION}Min`, `${DEFAULT_TIME_DIMENSION}Max`],
+					fields: [DEFAULT_METRIC, DEFAULT_TIME_DIMENSION, DEFAULT_TIME_DIMENSION],
+					groupby: [DEFAULT_COLOR],
+					ops: ['mean', 'min', 'max'],
+					type: 'aggregate',
 				},
-				{
-					type: 'joinaggregate',
-					groupby: ['series'],
-					fields: ['value'],
-					ops: ['mean'],
-					as: [TRENDLINE_VALUE],
-				},
+				{ as: SERIES_ID, expr: `datum.${DEFAULT_COLOR}`, type: 'formula' },
 			]);
 		});
 
@@ -480,14 +472,15 @@ describe('lineSpecBuilder', () => {
 						{
 							encode: {
 								enter: {
-									stroke: { field: DEFAULT_COLOR, scale: 'color' },
+									stroke: { field: DEFAULT_COLOR, scale: COLOR_SCALE },
+									strokeOpacity: DEFAULT_OPACITY_RULE,
 									strokeDash: { value: [8, 8] },
 									strokeWidth: undefined,
 									y: { field: 'value', scale: 'yLinear' },
 								},
 								update: {
 									x: { field: DEFAULT_TRANSFORMED_TIME_DIMENSION, scale: 'xTime' },
-									strokeOpacity: [{ value: 1 }],
+									opacity: [DEFAULT_OPACITY_RULE],
 								},
 							},
 							from: { data: 'line0_facet' },
@@ -552,64 +545,16 @@ describe('lineSpecBuilder', () => {
 			expect(hasSignalByNameSpy).not.toHaveBeenCalled();
 		});
 
-		test('does not add selected series if it already exists and there are interactive children', () => {
-			const getGenericSignalSpy = jest.spyOn(signalSpecBuilder, 'getGenericSignal');
-
-			addSignals(
-				[
-					{
-						name: 'line0_selectedSeries',
-						value: null,
-					},
-				],
-				{ ...defaultLineProps, children: [createElement(ChartPopover)] }
-			);
-
-			expect(getGenericSignalSpy).toHaveBeenCalledTimes(1);
-			expect(getGenericSignalSpy).not.toHaveBeenCalledWith('line0_selectedSeries');
-		});
-
 		test('hover signals with metric range', () => {
-			expect(
-				addSignals([], { ...defaultLineProps, children: [getMetricRangeElement({ displayOnHover: true })] })
-			).toStrictEqual([
-				{
-					name: 'line0_hoveredSeries',
-					value: null,
-					on: [
-						{
-							events: '@line0_voronoi:mouseover',
-							update: `datum.datum.${SERIES_ID}`,
-						},
-						{
-							events: '@line0_voronoi:mouseout',
-							update: 'null',
-						},
-					],
-				},
-				{
-					name: 'line0_hoveredId',
-					value: null,
-					on: [
-						{
-							events: '@line0_voronoi:mouseover',
-							update: `datum.datum.${MARK_ID}`,
-						},
-						{
-							events: '@line0_voronoi:mouseout',
-							update: 'null',
-						},
-					],
-				},
-				{
-					name: 'line0_selectedId',
-					value: null,
-				},
-				{
-					name: 'line0_selectedSeries',
-					value: null,
-				},
-			]);
+			const signals = addSignals(defaultSignals, {
+				...defaultLineProps,
+				children: [getMetricRangeElement({ displayOnHover: true })],
+			});
+			expect(signals).toHaveLength(4);
+			expect(signals[0]).toHaveProperty('name', HIGHLIGHTED_ITEM);
+			expect(signals[0].on).toHaveLength(2);
+			expect(signals[1]).toHaveProperty('name', HIGHLIGHTED_SERIES);
+			expect(signals[1].on).toHaveLength(2);
 		});
 
 		test('adds hover signals when displayPointMark is not undefined', () => {
@@ -617,50 +562,16 @@ describe('lineSpecBuilder', () => {
 		});
 
 		test('adds hover signals with metric range when displayPointMark is not undefined', () => {
-			expect(
-				addSignals([], {
-					...defaultLineProps,
-					staticPoint: 'staticPoint',
-					children: [getMetricRangeElement({ displayOnHover: true })],
-				})
-			).toStrictEqual([
-				{
-					name: 'line0_hoveredSeries',
-					value: null,
-					on: [
-						{
-							events: '@line0_voronoi:mouseover',
-							update: `datum.datum.${SERIES_ID}`,
-						},
-						{
-							events: '@line0_voronoi:mouseout',
-							update: 'null',
-						},
-					],
-				},
-				{
-					name: 'line0_hoveredId',
-					value: null,
-					on: [
-						{
-							events: '@line0_voronoi:mouseover',
-							update: `datum.datum.${MARK_ID}`,
-						},
-						{
-							events: '@line0_voronoi:mouseout',
-							update: 'null',
-						},
-					],
-				},
-				{
-					name: 'line0_selectedId',
-					value: null,
-				},
-				{
-					name: 'line0_selectedSeries',
-					value: null,
-				},
-			]);
+			const signals = addSignals(defaultSignals, {
+				...defaultLineProps,
+				staticPoint: 'staticPoint',
+				children: [getMetricRangeElement({ displayOnHover: true })],
+			});
+			expect(signals).toHaveLength(4);
+			expect(signals[0]).toHaveProperty('name', HIGHLIGHTED_ITEM);
+			expect(signals[0].on).toHaveLength(2);
+			expect(signals[1]).toHaveProperty('name', HIGHLIGHTED_SERIES);
+			expect(signals[1].on).toHaveLength(2);
 		});
 	});
 });

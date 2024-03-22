@@ -14,7 +14,7 @@ import { FC, useEffect, useMemo, useRef } from 'react';
 import { PREVIOUS_TABLE, TABLE } from '@constants';
 import { useDebugSpec } from '@hooks/useDebugSpec';
 import { extractValues, isVegaData } from '@specBuilder/specUtils';
-import { expressionFunctions } from 'expressionFunctions';
+import { expressionFunctions, formatTimeDurationLabels } from 'expressionFunctions';
 import { ChartData, ChartProps } from 'types';
 import { getLocale } from 'utils/locale';
 import { Config, Padding, Renderers, Spec, View } from 'vega';
@@ -108,7 +108,10 @@ export const VegaChart: FC<VegaChartProps> = ({
 			embed(containerRef.current, specCopy, {
 				actions: false,
 				config,
-				expressionFunctions: expressionFunctions,
+				expressionFunctions: {
+					...expressionFunctions,
+					formatTimeDurationLabels: formatTimeDurationLabels(numberLocale),
+				},
 				formatLocale: numberLocale as unknown as Record<string, unknown>, // these are poorly typed by vega-embed
 				height,
 				padding,

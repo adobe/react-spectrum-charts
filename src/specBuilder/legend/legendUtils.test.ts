@@ -9,25 +9,11 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { DEFAULT_COLOR, DEFAULT_COLOR_SCHEME, HIGHLIGHT_CONTRAST_RATIO } from '@constants';
+import { DEFAULT_COLOR_SCHEME } from '@constants';
 import { spectrumColors } from '@themes';
 
-import { defaultLegendProps, opacityEncoding } from './legendTestUtils';
-import {
-	getShowHideEncodings,
-	getSymbolEncodings,
-	getSymbolOpacityEncoding,
-	getSymbolType,
-	mergeLegendEncodings,
-} from './legendUtils';
-
-const defaultOpacitySignalEncoding = [
-	{
-		test: 'highlightedSeries && datum.value !== highlightedSeries',
-		signal: `scale('opacity', data('legend0Aggregate')[datum.index].${DEFAULT_COLOR}) / 5`,
-	},
-	{ signal: `scale('opacity', data('legend0Aggregate')[datum.index].${DEFAULT_COLOR})` },
-];
+import { defaultLegendProps } from './legendTestUtils';
+import { getShowHideEncodings, getSymbolEncodings, getSymbolType, mergeLegendEncodings } from './legendUtils';
 
 const hiddenSeriesEncoding = {
 	test: 'indexof(hiddenSeries, datum.value) !== -1',
@@ -48,48 +34,6 @@ const hiddenSeriesLabelUpdateEncoding = {
 	},
 };
 
-describe('getSymbolOpacityEncoding()', () => {
-	test('should return undefined if highlight is false', () => {
-		expect(getSymbolOpacityEncoding([], defaultLegendProps)).toBeUndefined();
-	});
-
-	test('should return default highlight encoding if opacity and facets are undefined', () => {
-		expect(getSymbolOpacityEncoding([], { ...defaultLegendProps, highlight: true })).toStrictEqual(opacityEncoding);
-	});
-
-	test('should return signal-based encoding if facets includes opacity facet when opacity id undefined', () => {
-		expect(
-			getSymbolOpacityEncoding([{ facetType: 'opacity', field: DEFAULT_COLOR }], {
-				...defaultLegendProps,
-				highlight: true,
-			})
-		).toStrictEqual(defaultOpacitySignalEncoding);
-	});
-
-	test('should return value-based encoding if opacity exists and is a static value', () => {
-		const opacity = 0.5;
-		expect(
-			getSymbolOpacityEncoding([], { ...defaultLegendProps, highlight: true, opacity: { value: opacity } })
-		).toStrictEqual([
-			{
-				test: 'highlightedSeries && datum.value !== highlightedSeries',
-				value: opacity / HIGHLIGHT_CONTRAST_RATIO,
-			},
-			{ value: opacity },
-		]);
-	});
-
-	test('should return signal based highlight encodings if opacity is a signal ref', () => {
-		expect(
-			getSymbolOpacityEncoding([{ facetType: 'opacity', field: 'testing' }], {
-				...defaultLegendProps,
-				highlight: true,
-				opacity: DEFAULT_COLOR,
-			})
-		).toStrictEqual(defaultOpacitySignalEncoding);
-	});
-});
-
 describe('getSymbolEncodings()', () => {
 	test('no factes and no custom values, should return all the defaults', () => {
 		expect(
@@ -106,6 +50,7 @@ describe('getSymbolEncodings()', () => {
 		).toStrictEqual({
 			entries: { name: 'legend0_legendEntry' },
 			symbols: {
+				enter: {},
 				update: {
 					fill: [hiddenSeriesEncoding, { value: spectrumColors.light['categorical-100'] }],
 					stroke: [hiddenSeriesEncoding, { value: spectrumColors.light['categorical-100'] }],

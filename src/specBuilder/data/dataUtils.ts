@@ -11,10 +11,10 @@
  */
 import {
 	DEFAULT_TIME_DIMENSION,
-	DEFAULT_TRANSFORMED_TIME_DIMENSION,
-	FILTERED_TABLE,
+	DEFAULT_TRANSFORMED_TIME_DIMENSION, FILTERED_PREVIOUS_TABLE,
+	FILTERED_TABLE, PREVIOUS_TABLE,
 	SERIES_ID,
-	TABLE,
+	TABLE
 } from '@constants';
 import { produce } from 'immer';
 import { Compare, Data, FormulaTransform, SourceData, Transforms, ValuesData } from 'vega';
@@ -45,6 +45,11 @@ export const getTableData = (data: Data[]): ValuesData => {
 	// ok to cast this here because we know that the data array will always have table data of type ValuesData
 	return data.find((d) => d.name === TABLE) as ValuesData;
 };
+
+export const getPreviousTableData = (data: Data[]): ValuesData => {
+	// ok to cast this here because we know that the data array will always have table data of type ValuesData
+	return data.find((d) => d.name === PREVIOUS_TABLE) as ValuesData;
+};
 /**
  * gets the filtered table data from the data array
  * @param data
@@ -53,6 +58,11 @@ export const getTableData = (data: Data[]): ValuesData => {
 export const getFilteredTableData = (data: Data[]): SourceData => {
 	// ok to cast this here because we know that the data array will always have table data of type SourceData
 	return data.find((d) => d.name === FILTERED_TABLE) as SourceData;
+};
+
+export const getFilteredPreviousTableData = (data: Data[]): SourceData => {
+	// ok to cast this here because we know that the data array will always have table data of type SourceData
+	return data.find((d) => d.name === FILTERED_PREVIOUS_TABLE) as SourceData;
 };
 
 export const getSeriesIdTransform = (facets: string[]): FormulaTransform => {

@@ -15,6 +15,7 @@ import { HIGHLIGHT_CONTRAST_RATIO } from '@constants';
 import '@matchMediaMock';
 import { ChartTooltip } from '@rsc';
 import {
+	allElementsHaveAttributeValue,
 	findAllMarksByGroupName,
 	findChart,
 	findMarksByGroupName,
@@ -47,11 +48,11 @@ describe('ChartTooltip', () => {
 		const tooltip = await screen.findByTestId('rsc-tooltip');
 		expect(tooltip).toBeInTheDocument();
 		expect(within(tooltip).getByText('Operating system: Windows')).toBeInTheDocument();
-		expect(bars[1].getAttribute('fill-opacity')).toEqual(`${1 / HIGHLIGHT_CONTRAST_RATIO}`);
+		expect(bars[1].getAttribute('opacity')).toEqual(`${1 / HIGHLIGHT_CONTRAST_RATIO}`);
 
 		// unhover and validate the highlights go away
 		await unhoverNthElement(bars, 0);
-		expect(bars[1].getAttribute('fill-opacity')).toEqual('1');
+		expect(bars[1].getAttribute('opacity')).toEqual('1');
 	});
 
 	test('Line renders properly and hover works as expected', async () => {
@@ -98,11 +99,10 @@ describe('ChartTooltip', () => {
 		expect(within(tooltip).getByText('Users: 3')).toBeInTheDocument();
 
 		// validate the highlight visuals are present
-		expect(bars[0]).toHaveAttribute('fill-opacity', `${1 / HIGHLIGHT_CONTRAST_RATIO}`);
-		expect(bars[4]).toHaveAttribute('fill-opacity', '1');
+		expect(bars[0]).toHaveAttribute('opacity', `${1 / HIGHLIGHT_CONTRAST_RATIO}`);
+		expect(bars[4]).toHaveAttribute('opacity', '1');
 
 		await unhoverNthElement(bars, 4);
-		expect(bars[0]).toHaveAttribute('fill-opacity', '1');
-		expect(bars[4]).toHaveAttribute('fill-opacity', '1');
+		expect(allElementsHaveAttributeValue(bars, 'opacity', 1)).toBeTruthy();
 	});
 });

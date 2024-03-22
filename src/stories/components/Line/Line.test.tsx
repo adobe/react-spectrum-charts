@@ -15,6 +15,7 @@ import { HIGHLIGHT_CONTRAST_RATIO } from '@constants';
 import '@matchMediaMock';
 import { Chart, Line } from '@rsc';
 import {
+	allElementsHaveAttributeValue,
 	clickNthElement,
 	findAllMarksByGroupName,
 	findChart,
@@ -119,6 +120,7 @@ describe('Line', () => {
 	});
 
 	test('Hovering over the entries on HistoricalCompare should highlight hovered series', async () => {
+		const reducedOpacity = 1 / HIGHLIGHT_CONTRAST_RATIO;
 		render(<HistoricalCompare {...HistoricalCompare.args} />);
 		const chart = await findChart();
 		expect(chart).toBeInTheDocument();
@@ -127,44 +129,28 @@ describe('Line', () => {
 		expect(entries.length).toEqual(4);
 		await hoverNthElement(entries, 0);
 
-		// symbol stroke and fill opacity should be divided by the HIGHLIGHT_CONTRAST_RATIO for all but the first symbol
+		// symbol opacity should be reduced for all but the first symbol
 		let symbols = getAllLegendSymbols(chart);
-		expect(symbols[0]).toHaveAttribute('fill-opacity', '0.5');
-		expect(symbols[0]).toHaveAttribute('stroke-opacity', '1');
-		expect(symbols[1]).toHaveAttribute('fill-opacity', `${1 / HIGHLIGHT_CONTRAST_RATIO}`);
-		expect(symbols[1]).toHaveAttribute('stroke-opacity', `${1 / HIGHLIGHT_CONTRAST_RATIO}`);
-		expect(symbols[2]).toHaveAttribute('fill-opacity', `${0.5 / HIGHLIGHT_CONTRAST_RATIO}`);
-		expect(symbols[2]).toHaveAttribute('stroke-opacity', `${1 / HIGHLIGHT_CONTRAST_RATIO}`);
-		expect(symbols[3]).toHaveAttribute('fill-opacity', `${1 / HIGHLIGHT_CONTRAST_RATIO}`);
-		expect(symbols[3]).toHaveAttribute('stroke-opacity', `${1 / HIGHLIGHT_CONTRAST_RATIO}`);
+		expect(symbols[0]).toHaveAttribute('opacity', '1');
+		expect(allElementsHaveAttributeValue(symbols.slice(1), 'opacity', reducedOpacity)).toBeTruthy();
 
-		// stroke opacity should be divided by the HIGHLIGHT_CONTRAST_RATIO for all but the first line
+		// line opacity should be reduced for all but the first line
 		let lines = await findAllMarksByGroupName(chart, 'line0');
-		expect(lines[0]).toHaveAttribute('stroke-opacity', '1');
-		expect(lines[1]).toHaveAttribute('stroke-opacity', `${1 / HIGHLIGHT_CONTRAST_RATIO}`);
-		expect(lines[2]).toHaveAttribute('stroke-opacity', `${1 / HIGHLIGHT_CONTRAST_RATIO}`);
-		expect(lines[3]).toHaveAttribute('stroke-opacity', `${1 / HIGHLIGHT_CONTRAST_RATIO}`);
+		expect(lines[0]).toHaveAttribute('opacity', '1');
+		expect(allElementsHaveAttributeValue(lines.slice(1), 'opacity', reducedOpacity)).toBeTruthy();
 
 		await unhoverNthElement(entries, 0);
 		await hoverNthElement(entries, 3);
 
-		// symbol stroke and fill opacity should be divided by the HIGHLIGHT_CONTRAST_RATIO for all but the last symbol
+		// symbol opacity should be reduced for all but the last symbol
 		symbols = getAllLegendSymbols(chart);
-		expect(symbols[0]).toHaveAttribute('fill-opacity', `${0.5 / HIGHLIGHT_CONTRAST_RATIO}`);
-		expect(symbols[0]).toHaveAttribute('stroke-opacity', `${1 / HIGHLIGHT_CONTRAST_RATIO}`);
-		expect(symbols[1]).toHaveAttribute('fill-opacity', `${1 / HIGHLIGHT_CONTRAST_RATIO}`);
-		expect(symbols[1]).toHaveAttribute('stroke-opacity', `${1 / HIGHLIGHT_CONTRAST_RATIO}`);
-		expect(symbols[2]).toHaveAttribute('fill-opacity', `${0.5 / HIGHLIGHT_CONTRAST_RATIO}`);
-		expect(symbols[2]).toHaveAttribute('stroke-opacity', `${1 / HIGHLIGHT_CONTRAST_RATIO}`);
-		expect(symbols[3]).toHaveAttribute('fill-opacity', '1');
-		expect(symbols[3]).toHaveAttribute('stroke-opacity', '1');
+		expect(allElementsHaveAttributeValue(symbols.slice(0, 3), 'opacity', reducedOpacity)).toBeTruthy();
+		expect(symbols[3]).toHaveAttribute('opacity', '1');
 
-		// stroke opacity should be divided by the HIGHLIGHT_CONTRAST_RATIO for all but the last line
+		// line opacity should be reduced for all but the last line
 		lines = await findAllMarksByGroupName(chart, 'line0');
-		expect(lines[0]).toHaveAttribute('stroke-opacity', `${1 / HIGHLIGHT_CONTRAST_RATIO}`);
-		expect(lines[1]).toHaveAttribute('stroke-opacity', `${1 / HIGHLIGHT_CONTRAST_RATIO}`);
-		expect(lines[2]).toHaveAttribute('stroke-opacity', `${1 / HIGHLIGHT_CONTRAST_RATIO}`);
-		expect(lines[3]).toHaveAttribute('stroke-opacity', '1');
+		expect(allElementsHaveAttributeValue(lines.slice(0, 3), 'opacity', reducedOpacity)).toBeTruthy();
+		expect(lines[3]).toHaveAttribute('opacity', '1');
 	});
 
 	test('Trend scale renders', async () => {
@@ -201,8 +187,8 @@ describe('Line', () => {
 
 			const lines = await findAllMarksByGroupName(chart, 'line0');
 			expect(lines).toHaveLength(4);
-			expect(lines[0]).toHaveAttribute('stroke-opacity', '1');
-			expect(lines[1]).toHaveAttribute('stroke-opacity', '1');
+			expect(lines[0]).toHaveAttribute('opacity', '1');
+			expect(lines[1]).toHaveAttribute('opacity', '1');
 
 			// get voronoi paths
 			const paths = await findAllMarksByGroupName(chart, 'line0_voronoi');
@@ -210,8 +196,8 @@ describe('Line', () => {
 			// hover and validate all hover components are visible
 			await hoverNthElement(paths, 0);
 
-			expect(lines[0]).toHaveAttribute('stroke-opacity', '1');
-			expect(lines[1]).toHaveAttribute('stroke-opacity', '0.2');
+			expect(lines[0]).toHaveAttribute('opacity', '1');
+			expect(lines[1]).toHaveAttribute('opacity', '0.2');
 		});
 	});
 

@@ -9,8 +9,14 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
-import { FILTERED_TABLE, HIGHLIGHT_CONTRAST_RATIO, MARK_ID } from '@constants';
+import {
+	COLOR_SCALE,
+	FILTERED_TABLE,
+	HIGHLIGHTED_ITEM,
+	HIGHLIGHT_CONTRAST_RATIO,
+	MARK_ID,
+	SELECTED_ITEM,
+} from '@constants';
 import { getTooltip, hasPopover } from '@specBuilder/marks/markUtils';
 import { MarkChildElement } from 'types';
 import {
@@ -31,7 +37,7 @@ export const getArcMark = (name: string, holeRatio: number, radius: string, chil
 		from: { data: FILTERED_TABLE },
 		encode: {
 			enter: {
-				fill: { scale: 'color', field: 'id' },
+				fill: { scale: COLOR_SCALE, field: 'id' },
 				x: { signal: 'width / 2' },
 				y: { signal: 'height / 2' },
 				tooltip: getTooltip(children, name),
@@ -50,12 +56,10 @@ export const getArcMark = (name: string, holeRatio: number, radius: string, chil
 
 export const getOpacityRules = (name: string, children: MarkChildElement[]): ProductionRule<NumericValueRef> => {
 	const lowOpacity = 1 / HIGHLIGHT_CONTRAST_RATIO;
-	const hoveredSignal = `${name}_hoveredId`;
-	const selectedSignal = `${name}_selectedId`;
 
 	const opacityRules = [
 		{
-			test: `${hoveredSignal} && datum.${MARK_ID} !== ${hoveredSignal}`,
+			test: `${HIGHLIGHTED_ITEM} && datum.${MARK_ID} !== ${HIGHLIGHTED_ITEM}`,
 			value: lowOpacity,
 		},
 		{
@@ -64,7 +68,7 @@ export const getOpacityRules = (name: string, children: MarkChildElement[]): Pro
 	];
 	if (hasPopover(children)) {
 		opacityRules.splice(1, 0, {
-			test: `${selectedSignal} && datum.${MARK_ID} !== ${selectedSignal}`,
+			test: `${SELECTED_ITEM} && datum.${MARK_ID} !== ${SELECTED_ITEM}`,
 			value: lowOpacity,
 		});
 	}

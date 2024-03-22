@@ -24,4 +24,5 @@ export * from './MetricRange';
 export * from './ReferenceLine';
 export * from './Title';
 export * from './Trendline';
+export * from './TrendlineAnnotation';
 export * from './Scatter';

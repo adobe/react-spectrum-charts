@@ -9,20 +9,24 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { DEFAULT_COLOR_SCHEME, DEFAULT_METRIC, DEFAULT_TIME_DIMENSION, FILTERED_TABLE } from '@constants';
+import {
+	COLOR_SCALE,
+	DEFAULT_COLOR_SCHEME,
+	DEFAULT_METRIC,
+	DEFAULT_TIME_DIMENSION,
+	FILTERED_TABLE,
+	LINE_TYPE_SCALE,
+	OPACITY_SCALE,
+} from '@constants';
 import { hasInteractiveChildren, hasPopover } from '@specBuilder/marks/markUtils';
 import {
+	getMetricRangeData,
 	getMetricRangeGroupMarks,
 	getMetricRangeSignals,
 	getMetricRanges,
 } from '@specBuilder/metricRange/metricRangeUtils';
 import { getFacetsFromProps } from '@specBuilder/specUtils';
-import {
-	addTrendlineData,
-	getTrendlineMarks,
-	getTrendlineScales,
-	getTrendlineSignals,
-} from '@specBuilder/trendline/trendlineUtils';
+import { addTrendlineData, getTrendlineMarks, getTrendlineScales, setTrendlineSignals } from '@specBuilder/trendline';
 import { sanitizeMarkChildren, toCamelCase } from '@utils';
 import { produce } from 'immer';
 import { ChartData, ColorScheme, LineProps, LineSpecProps, MarkChildElement } from 'types';
@@ -37,11 +41,9 @@ import {
 } from '../scale/scaleSpecBuilder';
 import {
 	getAnimationSignals,
-	getGenericSignal,
+	addHighlightedItemSignalEvents,
+	addHighlightedSeriesSignalEvents,
 	getHoveredSeriesPrevSignal,
-	getSeriesHoveredSignal,
-	getUncontrolledHoverSignal,
-	hasSignalByName
 } from '../signal/signalSpecBuilder';
 import { getLineHighlightedData, getLineStaticPointData } from './lineDataUtils';
 import { getLineHoverMarks, getLineMark } from './lineMarkUtils';
@@ -104,31 +106,21 @@ export const addData = produce<Data[], [LineSpecProps]>((data, props) => {
 	}
 	if (staticPoint) data.push(getLineStaticPointData(name, staticPoint, FILTERED_TABLE));
 	addTrendlineData(data, props);
+	data.push(...getMetricRangeData(props));
 });
 
 export const addSignals = produce<Signal[], [LineSpecProps]>((signals, props) => {
 	const { children, name, animations } = props;
-	signals.push(...getTrendlineSignals(props));
+	setTrendlineSignals(signals, props);
 	signals.push(...getMetricRangeSignals(props));
 
 	if (!hasInteractiveChildren(children)) return;
-	//TODO: Add comments/tests/etc
 	if (animations == true) {
 		signals.push(...getAnimationSignals(name));
 		signals.push(getHoveredSeriesPrevSignal(name, true))
 	}
-	if (!hasSignalByName(signals, `${name}_hoveredId`)) {
-		signals.push(getUncontrolledHoverSignal(`${name}`, true, `${name}_voronoi`));
-	}
-	if (!hasSignalByName(signals, `${name}_hoveredSeries`)) {
-		signals.push(getSeriesHoveredSignal(`${name}`, true, `${name}_voronoi`));
-	}
-	if (!hasSignalByName(signals, `${name}_selectedId`)) {
-		signals.push(getGenericSignal(`${name}_selectedId`));
-	}
-	if (!hasSignalByName(signals, `${name}_selectedSeries`)) {
-		signals.push(getGenericSignal(`${name}_selectedSeries`));
-	}
+	addHighlightedItemSignalEvents(signals, `${name}_voronoi`, 2);
+	addHighlightedSeriesSignalEvents(signals, `${name}_voronoi`, 2);
 });
 
 export const setScales = produce<Scale[], [LineSpecProps]>((scales, props) => {
@@ -140,11 +132,11 @@ export const setScales = produce<Scale[], [LineSpecProps]>((scales, props) => {
 	// add dimension scale
 	addContinuousDimensionScale(scales, { scaleType, dimension, padding });
 	// add color to the color domain
-	addFieldToFacetScaleDomain(scales, 'color', color);
+	addFieldToFacetScaleDomain(scales, COLOR_SCALE, color);
 	// add lineType to the lineType domain
-	addFieldToFacetScaleDomain(scales, 'lineType', lineType);
+	addFieldToFacetScaleDomain(scales, LINE_TYPE_SCALE, lineType);
 	// add opacity to the opacity domain
-	addFieldToFacetScaleDomain(scales, 'opacity', opacity);
+	addFieldToFacetScaleDomain(scales, OPACITY_SCALE, opacity);
 	// find the linear scale and add our fields to it
 	addMetricScale(scales, getMetricKeys(metric, children, name));
 	// add trendline scales

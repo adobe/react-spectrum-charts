@@ -9,7 +9,14 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
+import {
+	COLOR_SCALE,
+	LINEAR_COLOR_SCALE,
+	LINE_TYPE_SCALE,
+	OPACITY_SCALE,
+	SYMBOL_SHAPE_SCALE,
+	SYMBOL_SIZE_SCALE,
+} from '@constants';
 import { FacetType, SecondaryFacetType } from 'types';
 import { Scale, ScaleMultiFieldsRef } from 'vega';
 
@@ -19,15 +26,16 @@ import { Facet } from './legendUtils';
  * These are all the scale names that are used for facets
  */
 const facetScaleNames: (FacetType | SecondaryFacetType)[] = [
-	'color',
-	'lineType',
-	'opacity',
+	COLOR_SCALE,
+	LINE_TYPE_SCALE,
+	LINEAR_COLOR_SCALE,
+	OPACITY_SCALE,
 	'secondaryColor',
 	'secondaryLineType',
 	'secondaryOpacity',
 	'secondarySymbolShape',
-	'symbolShape',
-	'symbolSize',
+	SYMBOL_SHAPE_SCALE,
+	SYMBOL_SIZE_SCALE,
 ];
 
 /**

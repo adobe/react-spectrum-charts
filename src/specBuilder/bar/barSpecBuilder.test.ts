@@ -16,17 +16,21 @@ import { ChartPopover } from '@components/ChartPopover';
 import { ChartTooltip } from '@components/ChartTooltip';
 import {
 	BACKGROUND_COLOR,
+	COLOR_SCALE,
 	DEFAULT_CATEGORICAL_DIMENSION,
 	DEFAULT_COLOR,
 	DEFAULT_METRIC,
-	DEFAULT_SECONDARY_COLOR,
+	DEFAULT_OPACITY_RULE,
+	DEFAULT_SECONDARY_COLOR, FILTERED_PREVIOUS_TABLE,
 	FILTERED_TABLE,
+	LINE_TYPE_SCALE,
 	MARK_ID,
 	PREVIOUS_TABLE,
+	OPACITY_SCALE,
 	STACK_ID,
-	TABLE,
+	TABLE
 } from '@constants';
-import { getUncontrolledHoverSignal } from '@specBuilder/signal/signalSpecBuilder';
+import { defaultSignals } from '@specBuilder/specTestUtils';
 import { spectrumColors } from '@themes';
 import {
 	AggregateTransform,
@@ -65,7 +69,7 @@ import {
 import { defaultDodgedMark } from './dodgedBarUtils.test';
 
 const startingSpec: Spec = initializeSpec({
-	scales: [{ name: 'color', type: 'ordinal' }],
+	scales: [{ name: COLOR_SCALE, type: 'ordinal' }],
 });
 
 const defaultMetricScaleDomain: ScaleData = { data: FILTERED_TABLE, fields: ['value1'] };
@@ -90,7 +94,7 @@ const defaultDimensionScale: Scale = {
 
 const defaultColorScaleDomain: ScaleData = { data: TABLE, fields: [DEFAULT_COLOR] };
 const defaultColorScale: Scale = {
-	name: 'color',
+	name: COLOR_SCALE,
 	type: 'ordinal',
 	domain: defaultColorScaleDomain,
 };
@@ -100,9 +104,19 @@ const defaultTableData: ValuesData = {
 	values: [],
 	transform: [{ type: 'identifier', as: MARK_ID }],
 };
+
+const defaultPreviousTableData: ValuesData = {
+	name: PREVIOUS_TABLE,
+	values: [],
+	transform: [{ type: 'identifier', as: MARK_ID }],
+};
+
 const defaultFilteredTableData: SourceData = { name: FILTERED_TABLE, source: TABLE };
 
-const defaultData: Data[] = [defaultTableData, defaultFilteredTableData];
+const defaultFilteredPreviousTableData: SourceData = { name: FILTERED_PREVIOUS_TABLE, source: PREVIOUS_TABLE };
+
+
+const defaultData: Data[] = [defaultTableData, defaultFilteredTableData, defaultPreviousTableData, defaultFilteredPreviousTableData];
 
 const defaultStacksTransforms: Transforms[] = [
 	{
@@ -165,16 +179,16 @@ const defaultStackedMark: Mark = {
 		enter: {
 			...defaultStackedYEncodings,
 			...defaultCornerRadiusEncodings,
-			fill: { scale: 'color', field: DEFAULT_COLOR },
+			fill: { scale: COLOR_SCALE, field: DEFAULT_COLOR },
+			fillOpacity: DEFAULT_OPACITY_RULE,
 			tooltip: undefined,
 		},
 		update: {
-			x: { scale: 'xBand', field: DEFAULT_CATEGORICAL_DIMENSION },
 			...defaultBarStrokeEncodings,
-			width: { scale: 'xBand', band: 1 },
 			cursor: undefined,
-			fillOpacity: [{ value: 1 }],
-			strokeOpacity: [{ value: 1 }],
+			opacity: [DEFAULT_OPACITY_RULE],
+			width: { scale: 'xBand', band: 1 },
+			x: { scale: 'xBand', field: DEFAULT_CATEGORICAL_DIMENSION },
 		},
 	},
 };
@@ -200,10 +214,15 @@ const defaultSpec: Spec = {
 			name: PREVIOUS_TABLE,
 			values: [],
 		},
+		{
+			name: FILTERED_PREVIOUS_TABLE,
+			source: PREVIOUS_TABLE,
+			transform: defaultStackedTransforms,
+		},
 		defaultStacksData,
 	],
 	signals: [defaultPaddingSignal],
-	scales: [{ name: 'color', type: 'ordinal' }, defaultMetricScale, defaultDimensionScale],
+	scales: [{ name: COLOR_SCALE, type: 'ordinal' }, defaultMetricScale, defaultDimensionScale],
 	marks: [
 		defaultBackgroundStackedMark,
 		{
@@ -223,16 +242,6 @@ const defaultSpec: Spec = {
 	],
 };
 
-const defaultHoverSignal = {
-	name: 'bar0_hoveredId',
-	on: [
-		{ events: '@bar0:mouseover', update: `datum.${MARK_ID}` },
-		{ events: '@bar0:mouseout', update: 'null' },
-	],
-	value: null,
-};
-const defaultSelectSignal = { name: 'bar0_selectedId', value: null };
-
 describe('barSpecBuilder', () => {
 	describe('addBar()', () => {
 		test('no props', () => {
@@ -241,54 +250,23 @@ describe('barSpecBuilder', () => {
 	});
 
 	describe('addSignals()', () => {
-		describe('no initial state', () => {
-			test('default props, should return padding signal', () => {
-				expect(addSignals([], defaultBarProps)).toStrictEqual([defaultPaddingSignal]);
-			});
-			test('ChartTooltip, should add hover signal', () => {
-				const tooltip = createElement(ChartTooltip);
-				expect(addSignals([], { ...defaultBarProps, children: [tooltip] })).toStrictEqual([
-					defaultPaddingSignal,
-					defaultHoverSignal,
-				]);
-			});
-			test('ChartPopover, should add hover and select signal', () => {
-				const popover = createElement(ChartPopover);
-				expect(addSignals([], { ...defaultBarProps, children: [popover] })).toStrictEqual([
-					defaultPaddingSignal,
-					defaultHoverSignal,
-					defaultSelectSignal,
-				]);
-			});
+		test('should add padding signal', () => {
+			const signals = addSignals(defaultSignals, defaultBarProps);
+			expect(signals).toHaveLength(5);
+			expect(signals.at(-1)).toHaveProperty('name', 'paddingInner');
 		});
-		describe('existing signals', () => {
-			test('default props, should return original signal', () => {
-				expect(addSignals([getUncontrolledHoverSignal('bar0')], defaultBarProps)).toStrictEqual([
-					getUncontrolledHoverSignal('bar0'),
-					defaultPaddingSignal,
-				]);
-			});
-			test('existing hover and select signals, should do nothing', () => {
-				const popover = createElement(ChartPopover);
-				expect(
-					addSignals([getUncontrolledHoverSignal('bar0'), defaultHoverSignal, defaultSelectSignal], {
-						...defaultBarProps,
-						children: [popover],
-					})
-				).toStrictEqual([
-					getUncontrolledHoverSignal('bar0'),
-					defaultHoverSignal,
-					defaultSelectSignal,
-					defaultPaddingSignal,
-				]);
-			});
+		test('should add hover events if tooltip is present', () => {
+			const signals = addSignals(defaultSignals, { ...defaultBarProps, children: [createElement(ChartTooltip)] });
+			expect(signals[0]).toHaveProperty('on');
+			expect(signals[0].on).toHaveLength(2);
+			expect(signals[0].on?.[0]).toHaveProperty('events', '@bar0:mouseover');
 		});
 	});
 
 	describe('addScales()', () => {
 		describe('no initial state', () => {
 			test('default props, should add default scales', () => {
-				expect(addScales([{ name: 'color', type: 'ordinal' }], defaultBarProps)).toStrictEqual([
+				expect(addScales([{ name: COLOR_SCALE, type: 'ordinal' }], defaultBarProps)).toStrictEqual([
 					defaultColorScale,
 					defaultMetricScale,
 					defaultDimensionScale,
@@ -296,33 +274,33 @@ describe('barSpecBuilder', () => {
 			});
 
 			test('secondary series, should add default scales', () => {
-				expect(addScales([{ name: 'color', type: 'ordinal' }], defaultBarPropsWithSecondayColor)).toStrictEqual(
-					[
-						defaultColorScale,
-						defaultMetricScale,
-						defaultDimensionScale,
-						{
-							name: 'secondaryColor',
-							type: 'ordinal',
-							domain: { data: TABLE, fields: [DEFAULT_SECONDARY_COLOR] },
-						},
-						{
-							name: 'colors',
-							type: 'ordinal',
-							range: { signal: 'colors' },
-							domain: { data: TABLE, fields: [DEFAULT_COLOR] },
-						},
-					]
-				);
+				expect(
+					addScales([{ name: COLOR_SCALE, type: 'ordinal' }], defaultBarPropsWithSecondayColor)
+				).toStrictEqual([
+					defaultColorScale,
+					defaultMetricScale,
+					defaultDimensionScale,
+					{
+						name: 'secondaryColor',
+						type: 'ordinal',
+						domain: { data: TABLE, fields: [DEFAULT_SECONDARY_COLOR] },
+					},
+					{
+						name: 'colors',
+						type: 'ordinal',
+						range: { signal: 'colors' },
+						domain: { data: TABLE, fields: [DEFAULT_COLOR] },
+					},
+				]);
 			});
 
 			test('should add facet scales', () => {
 				expect(
 					addScales(
 						[
-							{ name: 'color', type: 'ordinal' },
-							{ name: 'lineType', type: 'ordinal' },
-							{ name: 'opacity', type: 'point' },
+							{ name: COLOR_SCALE, type: 'ordinal' },
+							{ name: LINE_TYPE_SCALE, type: 'ordinal' },
+							{ name: OPACITY_SCALE, type: 'point' },
 						],
 						{
 							...defaultBarProps,
@@ -332,8 +310,8 @@ describe('barSpecBuilder', () => {
 					)
 				).toStrictEqual([
 					defaultColorScale,
-					{ domain: { data: TABLE, fields: [DEFAULT_COLOR] }, name: 'lineType', type: 'ordinal' },
-					{ domain: { data: TABLE, fields: [DEFAULT_COLOR] }, name: 'opacity', type: 'point' },
+					{ domain: { data: TABLE, fields: [DEFAULT_COLOR] }, name: LINE_TYPE_SCALE, type: 'ordinal' },
+					{ domain: { data: TABLE, fields: [DEFAULT_COLOR] }, name: OPACITY_SCALE, type: 'point' },
 					defaultMetricScale,
 					defaultDimensionScale,
 				]);
@@ -341,7 +319,7 @@ describe('barSpecBuilder', () => {
 
 			test('should add trellis scales', () => {
 				expect(
-					addScales([{ name: 'color', type: 'ordinal' }], {
+					addScales([{ name: COLOR_SCALE, type: 'ordinal' }], {
 						...defaultBarProps,
 						trellis: 'event',
 						trellisOrientation: 'vertical',
@@ -486,6 +464,19 @@ describe('barSpecBuilder', () => {
 							{ ...defaultStackedTransforms[1], expr: 'datum.browser' },
 						],
 					},
+					defaultPreviousTableData,
+					{
+						...defaultFilteredPreviousTableData,
+						transform: [
+							{
+								...defaultStackedTransforms[0],
+								groupby: ['browser'],
+								field: 'views',
+								as: ['views0', 'views1'],
+							},
+							{ ...defaultStackedTransforms[1], expr: 'datum.browser' },
+						],
+					},
 					{
 						...defaultStacksData,
 						transform: [
@@ -501,6 +492,11 @@ describe('barSpecBuilder', () => {
 					defaultTableData,
 					{
 						...defaultFilteredTableData,
+						transform: defaultStackedTransforms,
+					},
+					defaultPreviousTableData,
+					{
+						...defaultFilteredPreviousTableData,
 						transform: defaultStackedTransforms,
 					},
 					defaultStacksData,
@@ -522,6 +518,19 @@ describe('barSpecBuilder', () => {
 							defaultStackedTransforms[1],
 						],
 					},
+					defaultPreviousTableData,
+					{
+						...defaultFilteredPreviousTableData,
+						transform: [
+							{
+								...defaultStackedTransforms[0],
+								sort: {
+									field: 'order',
+								},
+							},
+							defaultStackedTransforms[1],
+						],
+					},
 					defaultStacksData,
 				]);
 			});
@@ -530,10 +539,15 @@ describe('barSpecBuilder', () => {
 		describe('transform already exists', () => {
 			test('no props, new transform should be pushed onto the end with default values', () => {
 				expect(
-					addData([{ ...defaultFilteredTableData, transform: defaultStackedTransforms }], defaultBarProps)
+					addData([{ ...defaultFilteredTableData, transform: defaultStackedTransforms },
+						{...defaultFilteredPreviousTableData, transform: defaultStackedTransforms}], defaultBarProps)
 				).toStrictEqual([
 					{
 						...defaultFilteredTableData,
+						transform: [...defaultStackedTransforms, ...defaultStackedTransforms],
+					},
+					{
+						...defaultFilteredPreviousTableData,
 						transform: [...defaultStackedTransforms, ...defaultStackedTransforms],
 					},
 					defaultStacksData,
@@ -578,6 +592,25 @@ describe('barSpecBuilder', () => {
 						{ as: 'bar0_dodgeGroup', expr: `datum.${DEFAULT_COLOR}`, type: 'formula' },
 					],
 				},
+				defaultPreviousTableData,
+				{
+					...defaultFilteredPreviousTableData,
+					transform: [
+						{
+							as: [`${DEFAULT_METRIC}0`, `${DEFAULT_METRIC}1`],
+							field: DEFAULT_METRIC,
+							groupby: [DEFAULT_CATEGORICAL_DIMENSION, DEFAULT_COLOR],
+							sort: undefined,
+							type: 'stack',
+						},
+						{
+							as: STACK_ID,
+							expr: `datum.${DEFAULT_CATEGORICAL_DIMENSION} + "," + datum.${DEFAULT_COLOR}`,
+							type: 'formula',
+						},
+						{ as: 'bar0_dodgeGroup', expr: `datum.${DEFAULT_COLOR}`, type: 'formula' },
+					],
+				},
 				{
 					name: 'bar0_stacks',
 					source: FILTERED_TABLE,
@@ -604,6 +637,25 @@ describe('barSpecBuilder', () => {
 				defaultTableData,
 				{
 					...defaultFilteredTableData,
+					transform: [
+						{
+							as: [`${DEFAULT_METRIC}0`, `${DEFAULT_METRIC}1`],
+							field: DEFAULT_METRIC,
+							groupby: [DEFAULT_CATEGORICAL_DIMENSION, DEFAULT_SECONDARY_COLOR],
+							sort: undefined,
+							type: 'stack',
+						},
+						{
+							as: STACK_ID,
+							expr: `datum.${DEFAULT_CATEGORICAL_DIMENSION} + "," + datum.${DEFAULT_SECONDARY_COLOR}`,
+							type: 'formula',
+						},
+						{ as: 'bar0_dodgeGroup', expr: `datum.${DEFAULT_SECONDARY_COLOR}`, type: 'formula' },
+					],
+				},
+				defaultPreviousTableData,
+				{
+					...defaultFilteredPreviousTableData,
 					transform: [
 						{
 							as: [`${DEFAULT_METRIC}0`, `${DEFAULT_METRIC}1`],

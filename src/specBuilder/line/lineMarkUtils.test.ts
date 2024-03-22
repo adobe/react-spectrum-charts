@@ -13,9 +13,16 @@ import { createElement } from 'react';
 
 import { ChartPopover } from '@components/ChartPopover';
 import { ChartTooltip } from '@components/ChartTooltip';
-import { DEFAULT_TRANSFORMED_TIME_DIMENSION, SERIES_ID } from '@constants';
+import {
+	COLOR_SCALE,
+	DEFAULT_OPACITY_RULE,
+	DEFAULT_TRANSFORMED_TIME_DIMENSION,
+	HIGHLIGHTED_SERIES,
+	SELECTED_SERIES,
+	SERIES_ID,
+} from '@constants';
 
-import { getLineHoverMarks, getLineMark, getLineStrokeOpacity } from './lineMarkUtils';
+import { getLineHoverMarks, getLineMark, getLineOpacity } from './lineMarkUtils';
 import { defaultLineMarkProps } from './lineTestUtils';
 
 describe('getLineMark()', () => {
@@ -28,14 +35,15 @@ describe('getLineMark()', () => {
 			interactive: false,
 			encode: {
 				enter: {
-					stroke: { field: 'series', scale: 'color' },
+					stroke: { field: 'series', scale: COLOR_SCALE },
 					strokeDash: { value: [] },
+					strokeOpacity: DEFAULT_OPACITY_RULE,
 					strokeWidth: { value: 1 },
 					y: { field: 'value', scale: 'yLinear' },
 				},
 				update: {
 					x: { field: DEFAULT_TRANSFORMED_TIME_DIMENSION, scale: 'xTime' },
-					strokeOpacity: [{ value: 1 }],
+					opacity: [DEFAULT_OPACITY_RULE],
 				},
 			},
 		});
@@ -51,27 +59,12 @@ describe('getLineMark()', () => {
 			{ ...defaultLineMarkProps, interactiveMarkName: 'line0', displayOnHover: true },
 			'line0_facet'
 		);
-		expect(lineMark.encode?.update?.strokeOpacity).toEqual([
-			{
-				test: `line0_hoveredSeries && line0_hoveredSeries !== datum.${SERIES_ID}`,
-				value: 0,
-			},
-			{
-				test: `line0_hoveredSeries && line0_hoveredSeries === datum.${SERIES_ID}`,
-				value: 1,
-			},
-			{
-				test: `line0_selectedSeries && line0_selectedSeries === datum.${SERIES_ID}`,
-				value: 1,
-			},
-			{ test: `highlightedSeries && highlightedSeries === datum.${SERIES_ID}`, value: 1 },
-			{ value: 0 },
-		]);
+		expect(lineMark.encode?.update?.opacity).toEqual([DEFAULT_OPACITY_RULE]);
 	});
 
 	test('does not add metric range opacity rules if displayOnHover is false and isMetricRange', () => {
 		const lineMark = getLineMark({ ...defaultLineMarkProps, displayOnHover: false }, 'line0_facet');
-		expect(lineMark.encode?.update?.strokeOpacity).toEqual([{ value: 1 }]);
+		expect(lineMark.encode?.update?.opacity).toEqual([{ value: 1 }]);
 	});
 });
 
@@ -81,50 +74,44 @@ describe('getLineHoverMarks()', () => {
 	});
 });
 
-describe('getLineStrokeOpacity()', () => {
+describe('getLineOpacity()', () => {
 	test('should return a basic opacity rule when using default line props', () => {
-		const opacityRule = getLineStrokeOpacity(defaultLineMarkProps);
+		const opacityRule = getLineOpacity(defaultLineMarkProps);
 		expect(opacityRule).toEqual([{ value: 1 }]);
 	});
 
 	test('should include hover rules if line has a tooltip', () => {
-		const opacityRule = getLineStrokeOpacity({
+		const opacityRule = getLineOpacity({
 			...defaultLineMarkProps,
 			interactiveMarkName: 'line0',
 			children: [createElement(ChartTooltip)],
 		});
 		expect(opacityRule).toEqual([
-			{ test: `line0_hoveredSeries && line0_hoveredSeries !== datum.${SERIES_ID}`, value: 0.2 },
+			{ test: `${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES} !== datum.${SERIES_ID}`, value: 0.2 },
 			{ value: 1 },
 		]);
 	});
 
 	test('should include select rules if line has a popover', () => {
-		const opacityRule = getLineStrokeOpacity({
+		const opacityRule = getLineOpacity({
 			...defaultLineMarkProps,
 			interactiveMarkName: 'line0',
 			popoverMarkName: 'line0',
 			children: [createElement(ChartPopover)],
 		});
 		expect(opacityRule).toEqual([
-			{ test: `line0_hoveredSeries && line0_hoveredSeries !== datum.${SERIES_ID}`, value: 0.2 },
-			{ test: `line0_selectedSeries && line0_selectedSeries !== datum.${SERIES_ID}`, value: 0.2 },
+			{ test: `${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES} !== datum.${SERIES_ID}`, value: 0.2 },
+			{ test: `${SELECTED_SERIES} && ${SELECTED_SERIES} !== datum.${SERIES_ID}`, value: 0.2 },
 			{ value: 1 },
 		]);
 	});
 
 	test('should include displayOnHover rules if displayOnHover is true', () => {
-		const opacityRule = getLineStrokeOpacity({
+		const opacityRule = getLineOpacity({
 			...defaultLineMarkProps,
 			interactiveMarkName: 'line0',
 			displayOnHover: true,
 		});
-		expect(opacityRule).toEqual([
-			{ test: `line0_hoveredSeries && line0_hoveredSeries !== datum.${SERIES_ID}`, value: 0 },
-			{ test: `line0_hoveredSeries && line0_hoveredSeries === datum.${SERIES_ID}`, value: 1 },
-			{ test: `line0_selectedSeries && line0_selectedSeries === datum.${SERIES_ID}`, value: 1 },
-			{ test: `highlightedSeries && highlightedSeries === datum.${SERIES_ID}`, value: 1 },
-			{ value: 0 },
-		]);
+		expect(opacityRule).toEqual([DEFAULT_OPACITY_RULE]);
 	});
 });
