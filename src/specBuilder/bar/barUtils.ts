@@ -405,6 +405,7 @@ export const getBarOpacity = ({ children, animations }: BarSpecProps): Productio
 		return [DEFAULT_OPACITY_RULE];
 	}
 
+	//TODO: Add documentation
 	if (animations == true) {
 		return getAnimationsFillOpacity();
 	}
@@ -433,6 +434,7 @@ export const getBarOpacity = ({ children, animations }: BarSpecProps): Productio
 	];
 };
 
+//TODO: Add documentation
 const getAnimationsFillOpacity = (): ProductionRule<NumericValueRef> => {
 	return [
 		{
@@ -448,6 +450,7 @@ const getAnimationsFillOpacity = (): ProductionRule<NumericValueRef> => {
 	];
 };
 
+//TODO: Add documentation
 const getAnimationProductionRule = (): [
 	{ test: string, signal: string } | { test: string, value: number }] => {
 	return [

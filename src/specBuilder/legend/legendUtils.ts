@@ -175,6 +175,7 @@ export const getOpacityEncoding = ({
 	const highlightSignalName = keys ? `${name}_highlight` : HIGHLIGHTED_SERIES;
 	// only add symbol opacity if highlight is true or highlightedSeries is defined
 	if (highlight || highlightedSeries) {
+		//TODO: Add documentation
 		if (animations == true) {
 			return getLegendOpacityRules();
 		}

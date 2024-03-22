@@ -44,6 +44,7 @@ export const addHighlightSignalLegendHoverEvents = (
 		if (highlightedItemSignal.on === undefined) {
 			highlightedItemSignal.on = [];
 		}
+		//TODO: Add documentation
 		const highlightedItemSignalPrev = signals.find((signal) => signal.name === `${HIGHLIGHTED_SERIES}_prev`)
 		const hoveredSeries = `domain("${legendName}Entries")[datum.index]`;
 		const update = includeHiddenSeries
@@ -55,6 +56,7 @@ export const addHighlightSignalLegendHoverEvents = (
 				{ events: `@${legendName}_legendEntry:mouseout`, update: 'null' },
 			]
 		);
+		//TODO: Add documentation
 		if (highlightedItemSignalPrev) {
 			highlightedItemSignalPrev.on?.push(
 				{ events: `@${legendName}_legendEntry:mouseover`, update }

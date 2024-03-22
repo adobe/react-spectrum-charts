@@ -304,6 +304,7 @@ export const getOpacityAnimationRules = (
 	]
 }
 
+//TODO: add comments/tests/etc
 export const getLegendOpacityRules = (): ProductionRule<NumericValueRef> => {
 	return [
 		{

@@ -40,6 +40,7 @@ export const getTrendlineScales = (props: TrendlineParentProps): Scale[] => {
 	return [];
 };
 
+//TODO: Add documentation
 export const checkTrendlineAnimationScales = (name: string, scales: Scale[], props: TrendlineParentProps) => {
 	if (!hasScaleByName(scales, 'rscAnimationCurve') && (getTrendlines(props).some((trendline) => hasTooltip(trendline.children) || hasPopover(trendline.children)))) {
 		addRSCAnimationScales(scales);
