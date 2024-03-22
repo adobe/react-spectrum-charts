@@ -46,9 +46,9 @@ import {
 	addRSCAnimationScales
 } from '../scale/scaleSpecBuilder';
 import {
-	getAnimationSignals,
 	addHighlightedItemSignalEvents,
 	addHighlightedSeriesSignalEvents,
+	getRSCAnimationSignals,
 	hasSignalByName
 } from '../signal/signalSpecBuilder';
 import { getLineHighlightedData, getLineStaticPointData } from './lineDataUtils';
@@ -129,7 +129,7 @@ export const addSignals = produce<Signal[], [LineSpecProps]>((signals, props) =>
 	if (!hasInteractiveChildren(children)) return;
 	//TODO: Add comments/documentation/tests
 	if (animations == true && !hasSignalByName(signals, RSC_ANIMATION)) {
-		signals.push(...getAnimationSignals(name, true));
+		signals.push(...getRSCAnimationSignals(name, true));
 	}
 	addHighlightedItemSignalEvents(signals, `${name}_voronoi`, 2);
 	addHighlightedSeriesSignalEvents(signals, `${name}_voronoi`, 2);

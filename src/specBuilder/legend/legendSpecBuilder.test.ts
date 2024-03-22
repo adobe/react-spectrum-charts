@@ -25,7 +25,7 @@ import {
 	defaultSelectedSeriesSignal,
 	defaultSignals,
 } from '@specBuilder/specTestUtils';
-import { Data, Legend, LegendEncode, Scale, Signal, Spec, SymbolEncodeEntry } from 'vega';
+import { Data, Legend, LegendEncode, Scale, Spec, SymbolEncodeEntry } from 'vega';
 
 import { addData, addLegend, addSignals, formatFacetRefsWithPresets, getContinuousLegend } from './legendSpecBuilder';
 import { defaultLegendProps, opacityEncoding } from './legendTestUtils';
@@ -47,28 +47,6 @@ const hiddenSeriesEncoding = {
 	test: 'indexof(hiddenSeries, datum.value) !== -1',
 	value: 'rgb(213, 213, 213)',
 };
-
-
-const defaultAnimationsSignals: Signal[] = [
-	{
-		name: 'rscColorAnimationDirection',
-		value: '-1',
-		on: [
-			{ events: '@bar0:mouseover', update: '1' },
-			{ events: '@bar0:mouseout', update: '-1' }
-		]
-	},
-	{
-		name: 'rscColorAnimation',
-		value: 0,
-		on: [
-			{
-				events: "timer{16.666666666666668}",
-				update: "scale('rscAnimationCurve', scale('rscAnimationCurveInverse', rscColorAnimation) + 0.06 * rscColorAnimationDirection)"
-			}
-		]
-	}
-];
 
 const defaultSymbolUpdateEncodings: SymbolEncodeEntry = {
 	fill: [hiddenSeriesEncoding, colorEncoding],
@@ -409,45 +387,6 @@ describe('addSignals()', () => {
 				(signal) => signal.name === 'hiddenSeries'
 			)
 		).toBeUndefined();
-	});
-
-	test('should update colorAnimationDirection signal if animations are true', () => {
-		defaultSpec.signals = new Array<Signal>;
-		defaultSpec.signals.push(...defaultAnimationsSignals);
-		expect(addLegend(defaultSpec, { ...defaultLegendProps, animations: true }).signals)
-			.toStrictEqual([
-				{
-					name: 'rscColorAnimationDirection',
-					value: '-1',
-					on: [
-						{ events: '@bar0:mouseover', update: '1' },
-						{ events: '@bar0:mouseout', update: '-1' },
-						{ events: '@legend0_legendEntry:mouseover', update: '1' },
-						{ events: '@legend0_legendEntry:mouseout', update: '-1' }
-					]
-				},
-				{
-					name: 'rscColorAnimation',
-					value: 0,
-					on: [
-						{
-							events: "timer{16.666666666666668}",
-							update: "scale('rscAnimationCurve', scale('rscAnimationCurveInverse', rscColorAnimation) + 0.06 * rscColorAnimationDirection)"
-						}
-					]
-				},
-				{
-					name: "highlightedSeries_prev",
-					value: null,
-					on: [
-						{
-							events: "@legend0_legendEntry:mouseover",
-							update: "indexof(hiddenSeries, domain(\"legend0Entries\")[datum.index]) === -1 ? domain(\"legend0Entries\")[datum.index] : \"\"",
-						}
-					]
-				}
-				]
-			);
 	});
 });
 

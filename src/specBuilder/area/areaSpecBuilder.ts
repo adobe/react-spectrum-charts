@@ -24,7 +24,7 @@ import {
 } from '@constants';
 import {
 	addHighlightedSeriesSignalEvents,
-	getAnimationSignals,
+	getRSCAnimationSignals,
 	getControlledHoverSignal,
 	hasSignalByName,
 } from '@specBuilder/signal/signalSpecBuilder';
@@ -165,7 +165,7 @@ export const addSignals = produce<Signal[], [AreaSpecProps]>((signals, { childre
 	if (!children.length) return;
 	//TODO: add comments/tests/etc
 	if (animations == true && hasInteractiveChildren(children)) {
-		signals.push(...getAnimationSignals(name));
+		signals.push(...getRSCAnimationSignals(name));
 	}
 	if (!hasSignalByName(signals, `${name}_controlledHoveredId`)) {
 		signals.push(getControlledHoverSignal(name));

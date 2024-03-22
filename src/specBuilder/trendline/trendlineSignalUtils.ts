@@ -13,7 +13,8 @@ import { hasPopover, hasTooltip } from '@specBuilder/marks/markUtils';
 import {
 	addHighlightedItemSignalEvents,
 	addHighlightedSeriesSignalEvents,
-	getAnimationSignals, getRSCTrendlineColorAnimationDirection,
+	getRSCAnimationSignals,
+	getRSCTrendlineColorAnimationDirection,
 	hasSignalByName
 } from '@specBuilder/signal/signalSpecBuilder';
 import { Signal } from 'vega';
@@ -42,7 +43,7 @@ export const setTrendlineSignals = (signals: Signal[], markProps: TrendlineParen
 //TODO: Add comments/documentation/tests
 const checkRSCTrendlineAnimationSignals = (name: string, signals: Signal[], trendlines: TrendlineSpecProps[] ) => {
 	if (!hasSignalByName(signals, RSC_ANIMATION) && (trendlines.some((trendline) => hasTooltip(trendline.children) || hasPopover(trendline.children)))) {
-		signals.push(...getAnimationSignals(`${name}Trendline`, true));
+		signals.push(...getRSCAnimationSignals(`${name}Trendline`, true));
 		signals.find((sig) => sig.name == 'rscColorAnimationDirection')?.on?.push(...getRSCTrendlineColorAnimationDirection(`${name}Trendline`))
 	}
 }

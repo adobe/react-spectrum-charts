@@ -78,10 +78,10 @@ export interface SpecProps {
 
 export interface SanitizedSpecProps extends SpecProps {
 	/** Children with all non-RSC components removed */
-	children: ChartChildElement[];
-	previousData?: ChartData[];
-	data?: ChartData[];
 	animations?: boolean;
+	children: ChartChildElement[];
+	data?: ChartData[];
+	previousData?: ChartData[];
 }
 
 export type Orientation = 'vertical' | 'horizontal';
@@ -462,6 +462,7 @@ export type LegendDescription = { seriesName: string; description: string; title
 export type LegendLabel = { seriesName: string | number; label: string; maxLength?: number };
 
 export interface LegendProps extends BaseProps {
+	animations?: boolean;
 	/** color or key in the data that is used as the color facet for the symbols */
 	color?: ColorFacet;
 	/** series that should be hidden by default (uncontrolled) */

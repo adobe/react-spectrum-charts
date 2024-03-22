@@ -33,7 +33,7 @@ import {
 	getScaleIndexByType,
 	addRSCAnimationScales,
 } from '@specBuilder/scale/scaleSpecBuilder';
-import { addHighlightedItemSignalEvents, getGenericSignal, getAnimationSignals } from '@specBuilder/signal/signalSpecBuilder';
+import { addHighlightedItemSignalEvents, getGenericSignal, getRSCAnimationSignals } from '@specBuilder/signal/signalSpecBuilder';
 import { getFacetsFromProps } from '@specBuilder/specUtils';
 import { sanitizeMarkChildren, toCamelCase } from '@utils';
 import { produce } from 'immer';
@@ -114,7 +114,7 @@ export const addSignals = produce<Signal[], [BarSpecProps]>(
 		}
 		//TODO: add comments
 		if (animations == true && hasInteractiveChildren(children)) {
-			signals.push(...getAnimationSignals(name));
+			signals.push(...getRSCAnimationSignals(name));
 		}
 		addHighlightedItemSignalEvents(signals, name);
 	}

@@ -128,7 +128,7 @@ export const addHighlightedSeriesSignalEvents = (signals: Signal[], markName: st
 	}
 };
 //TODO: Add documentation
-export const getAnimationSignals = (name: string, nestedDatum?: boolean): Signal[] => {
+export const getRSCAnimationSignals = (name: string, nestedDatum?: boolean): Signal[] => {
 	return [
 		getRSCAnimation(),
 		getRSCColorAnimationDirection(name),
@@ -214,7 +214,7 @@ const getRSCHighlightedSeriesPrevSignal = (name: string, nestedDatum?: boolean):
 		value: null,
 		on: [
 			{
-				events: `@${name == 'line0' || name.includes('Trendline') ? `${name}_voronoi`: `${name}`}:mouseover`,
+				events: `@${name == 'line0' || name.includes('Trendline') ? `${name}_voronoi` : `${name}`}:mouseover`,
 				update: `${nestedDatum ? 'datum.' : ''}datum.${SERIES_ID}`
 			}
 		]

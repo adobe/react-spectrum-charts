@@ -16,9 +16,14 @@ import {
 	LINE_TYPE_SCALE,
 	OPACITY_SCALE,
 	SYMBOL_SHAPE_SCALE,
-	SYMBOL_SIZE_SCALE, HIGHLIGHTED_SERIES
+	SYMBOL_SIZE_SCALE,
+	RSC_ANIMATION
 } from '@constants';
-import { addFieldToFacetScaleDomain } from '@specBuilder/scale/scaleSpecBuilder';
+import {
+	addFieldToFacetScaleDomain,
+	addRSCAnimationScales,
+	hasScaleByName
+} from '@specBuilder/scale/scaleSpecBuilder';
 import {
 	getColorValue,
 	getLineWidthPixelsFromLineWidth,
@@ -41,8 +46,9 @@ import { Data, Legend, Mark, Scale, Signal, Spec } from 'vega';
 import {
 	addHighlightSignalLegendHoverEvents,
 	getLegendLabelsSeriesSignal,
+	getRSCAnimationSignals,
 	getRSCLegendColorAnimationDirection,
-	hasSignalByName,
+	hasSignalByName
 } from '../signal/signalSpecBuilder';
 import { getFacets, getFacetsFromKeys } from './legendFacetUtils';
 import { setHoverOpacityForMarks } from './legendHighlightUtils';
@@ -239,18 +245,22 @@ const getLegendLayout = ({ position, title }: LegendSpecProps): Partial<Legend> 
 /**
  * Adds a new scale that is used to create the legend entries
  */
-const addScales = produce<Scale[], [LegendSpecProps]>((scales, { color, lineType, opacity, symbolShape }) => {
+const addScales = produce<Scale[], [LegendSpecProps]>((scales, { color, lineType, opacity, symbolShape, animations }) => {
 	// it is possible to define fields to facet the data off of on the legend
 	// if these fields are not already defined on the scales, we need to add them
+	//TODO: add doc/comment/etc
+	if (animations == true && !hasScaleByName(scales, 'rscAnimationCurve')) {
+		addRSCAnimationScales(scales);
+	}
 	addFieldToFacetScaleDomain(scales, COLOR_SCALE, color);
 	addFieldToFacetScaleDomain(scales, LINE_TYPE_SCALE, lineType);
 	addFieldToFacetScaleDomain(scales, OPACITY_SCALE, opacity);
 	addFieldToFacetScaleDomain(scales, SYMBOL_SHAPE_SCALE, symbolShape);
 });
 
-const addMarks = produce<Mark[], [LegendSpecProps]>((marks, { highlight, keys, name }) => {
+const addMarks = produce<Mark[], [LegendSpecProps]>((marks, { highlight, keys, name, animations }) => {
 	if (highlight) {
-		setHoverOpacityForMarks(marks, keys, name);
+		setHoverOpacityForMarks(marks, keys, name, animations);
 	}
 });
 
@@ -284,12 +294,16 @@ export const addData = produce<Data[], [LegendSpecProps & { facets: string[] }]>
 
 export const addSignals = produce<Signal[], [LegendSpecProps]>(
 	(signals, { hiddenSeries, highlight, isToggleable, legendLabels, name, animations }) => {
-		if (highlight) {
-			addHighlightSignalLegendHoverEvents(signals, name, Boolean(isToggleable || hiddenSeries));
-		}
 		//TODO: add documentation
 		if (animations == true) {
-				signals.find((sig) => sig.name == 'rscColorAnimationDirection')?.on?.push(...getRSCLegendColorAnimationDirection(name));
+			if (!hasSignalByName(signals, RSC_ANIMATION)) {
+				signals.push(...getRSCAnimationSignals(name));
+			}
+			signals.find((sig) => sig.name == 'rscColorAnimationDirection')?.on?.push(...getRSCLegendColorAnimationDirection(name));
+		}
+
+		if (highlight) {
+			addHighlightSignalLegendHoverEvents(signals, name, Boolean(isToggleable || hiddenSeries));
 		}
 
 		if (legendLabels) {
