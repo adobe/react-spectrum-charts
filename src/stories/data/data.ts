@@ -1035,3 +1035,27 @@ export const stockPriceData = [
 	{ date: 'June 28, 2023', timestamp: 1687910400000, price: 482.429993, stock: 'ADBE' },
 	{ date: 'June 29, 2023', timestamp: 1687996800000, price: 483.769989, stock: 'ADBE' },
 ];
+
+export const simpleSparklineData = [
+	{ x: 0, y: 28 },
+	{ x: 1, y: 43 },
+	{ x: 2, y: 81 },
+	{ x: 3, y: 19 },
+	{ x: 4, y: 52 },
+	{ x: 5, y: 24 },
+	{ x: 6, y: 87 },
+	{ x: 7, y: 17 },
+	{ x: 8, y: 68 },
+	{ x: 9, y: 25 },
+	{ x: 10, y: 50 },
+	{ x: 11, y: 75 },
+	{ x: 12, y: 30 },
+	{ x: 13, y: 60 },
+	{ x: 14, y: 45 },
+	{ x: 15, y: 82 },
+	{ x: 16, y: 14 },
+	{ x: 17, y: 70 },
+	{ x: 18, y: 35 },
+	{ x: 19, y: 55 },
+	{ x: 20, y: 90 }
+];
