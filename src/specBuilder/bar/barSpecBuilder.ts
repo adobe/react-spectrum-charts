@@ -114,7 +114,7 @@ export const addSignals = produce<Signal[], [BarSpecProps]>(
 			return;
 		}
 		//TODO: add comments
-		if (animations && hasInteractiveChildren(children)) {
+		if (animations !== false && hasInteractiveChildren(children)) {
 			signals.push(...getRSCAnimationSignals(name));
 		}
 		addHighlightedItemSignalEvents(signals, name);
@@ -226,7 +226,7 @@ export const addScales = produce<Scale[], [BarSpecProps]>((scales, props) => {
 	const { color, lineType, opacity, orientation, animations, children } = props;
 
 	//TODO add comments
-	if (animations && hasInteractiveChildren(children)) {
+	if (animations !== false && hasInteractiveChildren(children)) {
 		addRSCAnimationScales(scales)
 	}
 	addMetricScale(scales, getScaleValues(props), orientation === 'vertical' ? 'y' : 'x');

@@ -28,7 +28,7 @@ export const setTrendlineSignals = (signals: Signal[], markProps: TrendlineParen
 	const trendlines = getTrendlines(markProps);
 
 	//TODO: Add comments/documentation/tests
-	if (animations) {
+	if (animations !== false) {
 		checkRSCTrendlineAnimationSignals(markName, signals, trendlines);
 	}
 	if (trendlines.some((trendline) => hasTooltip(trendline.children))) {
