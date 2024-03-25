@@ -406,7 +406,7 @@ export const getBarOpacity = ({ children, animations }: BarSpecProps): Productio
 	}
 
 	//TODO: Add documentation
-	if (animations == true) {
+	if ( animations ) {
 		return getAnimationsFillOpacity();
 	}
 
