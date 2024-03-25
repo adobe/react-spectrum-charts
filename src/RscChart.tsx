@@ -26,7 +26,7 @@ import useChartImperativeHandle from '@hooks/useChartImperativeHandle';
 import useLegend from '@hooks/useLegend';
 import usePopoverAnchorStyle from '@hooks/usePopoverAnchorStyle';
 import usePopovers, { PopoverDetail } from '@hooks/usePopovers';
-import useSpec from '@hooks/useSpec';
+import createSpec from '@hooks/createSpec';
 import useSpecProps from '@hooks/useSpecProps';
 import useTooltips from '@hooks/useTooltips';
 import { getColorValue } from '@specBuilder/specUtils';
@@ -40,7 +40,7 @@ import {
 } from '@utils';
 import { VegaChart } from 'VegaChart';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { Item, Spec } from 'vega';
+import { Item } from 'vega';
 import { Handler, Options as TooltipOptions } from 'vega-tooltip';
 
 import { ActionButton, Dialog, DialogTrigger, View as SpectrumView } from '@adobe/react-spectrum';
@@ -104,28 +104,7 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 
 		const sanitizedChildren = sanitizeRscChartChildren(props.children);
 
-		// THE MAGIC, builds our spec
-		// const [spec, setSpec] = useState(useSpec({
-		// 	backgroundColor,
-		// 	children: sanitizedChildren,
-		// 	colors,
-		// 	data,
-		// 	previousData,
-		// 	animations,
-		// 	description,
-		// 	hiddenSeries,
-		// 	highlightedSeries,
-		// 	symbolShapes,
-		// 	symbolSizes,
-		// 	lineTypes,
-		// 	lineWidths,
-		// 	opacities,
-		// 	colorScheme,
-		// 	title,
-		// 	UNSAFE_vegaSpec,
-		// }));
-
-		let spec = useSpec({
+		const initSpec = () => createSpec({
 			backgroundColor,
 			children: sanitizedChildren,
 			colors,
@@ -145,12 +124,7 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 			UNSAFE_vegaSpec,
 		});
 
-		// console.log('Spec animation marks:', spec.marks[0].marks[0].encode.update);
-
-		const { controlledHoverSignal } = useSpecProps(spec);
-		const chartConfig = useMemo(() => getChartConfig(config, colorScheme), [config, colorScheme]);
-
-		const specNoAnimations = useSpec({
+		const initSpecNoAnimations = () => createSpec({
 			backgroundColor,
 			children: sanitizedChildren,
 			colors,
@@ -170,9 +144,36 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 			UNSAFE_vegaSpec,
 		});
 
+		const [spec, setSpec] = useState(initSpec);
+
+		useEffect(() => {
+			setSpec(initSpec());
+		}, [
+			backgroundColor,
+			sanitizedChildren.length,
+			colors,
+			colorScheme,
+			data,
+			previousData,
+			animations,
+			description,
+			hiddenSeries,
+			highlightedSeries,
+			lineTypes,
+			lineWidths,
+			opacities,
+			symbolShapes,
+			symbolSizes,
+			title,
+			UNSAFE_vegaSpec,
+		]);
+
+		const { controlledHoverSignal } = useSpecProps(spec);
+		const chartConfig = useMemo(() => getChartConfig(config, colorScheme), [config, colorScheme]);
+
 		useEffect(() => {
 			if (popoverIsOpen) {
-				spec = specNoAnimations;
+				setSpec(initSpecNoAnimations());
 			}
 			const tooltipElement = document.getElementById('vg-tooltip-element');
 			if (!tooltipElement) return;
@@ -184,8 +185,6 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 				selectedData.current = null;
 			}
 		}, [popoverIsOpen]);
-
-		// console.log(spec.marks[0].marks[0].encode.update.y);
 
 		useChartImperativeHandle(forwardedRef, { chartView, title });
 

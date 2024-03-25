@@ -9,15 +9,13 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { useMemo } from 'react';
-
 import { SanitizedSpecProps } from 'types';
 import { Spec } from 'vega';
 
 import { buildSpec } from '../specBuilder';
 import { initializeSpec } from '../specBuilder/specUtils';
 
-export default function useSpec({
+export default function createSpec({
 	backgroundColor,
 	children,
 	colors,
@@ -36,7 +34,7 @@ export default function useSpec({
 	title,
 	UNSAFE_vegaSpec,
 }: SanitizedSpecProps): Spec {
-	return useMemo(() => {
+
 		// They already supplied a spec, fill it in with defaults
 		if (UNSAFE_vegaSpec) {
 			const vegaSpecWithDefaults = initializeSpec(UNSAFE_vegaSpec, {
@@ -75,23 +73,4 @@ export default function useSpec({
 				})
 			)
 		);
-	}, [
-		backgroundColor,
-		children,
-		colors,
-		colorScheme,
-		data,
-		previousData,
-		animations,
-		description,
-		hiddenSeries,
-		highlightedSeries,
-		lineTypes,
-		lineWidths,
-		opacities,
-		symbolShapes,
-		symbolSizes,
-		title,
-		UNSAFE_vegaSpec,
-	]);
 }
