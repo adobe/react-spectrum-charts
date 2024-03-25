@@ -41,7 +41,7 @@ export const setHoverOpacityForMarks = (marks: Mark[], keys?: string[], name?: s
 				update.opacity = [];
 			}
 			//TODO: add comment/doc/etc
-			if (animations == true) {
+			if (animations) {
 				update.opacity = getOpacityAnimationRules();
 			} else {
 				// need to insert the new test in the second to last slot

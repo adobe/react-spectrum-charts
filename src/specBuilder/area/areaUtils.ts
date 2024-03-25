@@ -123,7 +123,7 @@ export function getFillOpacity(
 	}
 
 	//TODO: add comments/tests/etc
-	if ( animations == true ) {
+	if ( animations ) {
 		return getOpacityAnimationRules({ value: opacity })
 	}
 

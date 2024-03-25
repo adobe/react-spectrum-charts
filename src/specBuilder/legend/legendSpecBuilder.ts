@@ -130,7 +130,7 @@ export const addLegend = produce<
 
 			//TODO: add documentation
 			if (!spec.signals.some((signal) => signal.name == 'rscColorAnimation')) {
-				legendProps.animations = false;
+				legendProps.animations = undefined;
 			}
 			// add the legend
 			legends.push(getCategoricalLegend(ordinalFacets, legendProps));
@@ -249,7 +249,7 @@ const addScales = produce<Scale[], [LegendSpecProps]>((scales, { color, lineType
 	// it is possible to define fields to facet the data off of on the legend
 	// if these fields are not already defined on the scales, we need to add them
 	//TODO: add doc/comment/etc
-	if (animations == true && !hasScaleByName(scales, 'rscAnimationCurve')) {
+	if (animations  && !hasScaleByName(scales, 'rscAnimationCurve')) {
 		addRSCAnimationScales(scales);
 	}
 	addFieldToFacetScaleDomain(scales, COLOR_SCALE, color);
@@ -295,7 +295,7 @@ export const addData = produce<Data[], [LegendSpecProps & { facets: string[] }]>
 export const addSignals = produce<Signal[], [LegendSpecProps]>(
 	(signals, { hiddenSeries, highlight, isToggleable, legendLabels, name, animations }) => {
 		//TODO: add documentation
-		if (animations == true) {
+		if (animations) {
 			if (!hasSignalByName(signals, RSC_ANIMATION)) {
 				signals.push(...getRSCAnimationSignals(name));
 			}
