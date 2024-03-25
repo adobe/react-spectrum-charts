@@ -25,13 +25,13 @@ import {
 } from '@constants';
 import {
 	getColorProductionRule,
-	getCursor,
+	getCursor, getHighlightOpacityAnimationValue,
 	getHighlightOpacityValue,
 	getOpacityProductionRule,
 	getStrokeDashProductionRule,
 	getTooltip,
 	hasInteractiveChildren,
-	hasPopover,
+	hasPopover
 } from '@specBuilder/marks/markUtils';
 import { getAnimationMarks, getColorValue, getLineWidthPixelsFromLineWidth } from '@specBuilder/specUtils';
 import { sanitizeMarkChildren } from '@utils';
@@ -399,10 +399,15 @@ export const getBarUpdateEncodings = (props: BarSpecProps): EncodeEntry => ({
 	strokeWidth: getStrokeWidth(props),
 });
 
-export const getBarOpacity = ({ children }: BarSpecProps): ProductionRule<NumericValueRef> => {
+export const getBarOpacity = ({ children, animations }: BarSpecProps): ProductionRule<NumericValueRef> => {
 	// if there aren't any interactive components, then we don't need to add special opacity rules
 	if (!hasInteractiveChildren(children)) {
 		return [DEFAULT_OPACITY_RULE];
+	}
+
+	//TODO: Add documentation
+	if (animations == true) {
+		return getAnimationsFillOpacity();
 	}
 
 	// if a bar is hovered/selected, all other bars should have reduced opacity
@@ -429,6 +434,31 @@ export const getBarOpacity = ({ children }: BarSpecProps): ProductionRule<Numeri
 	];
 };
 
+//TODO: Add documentation
+const getAnimationsFillOpacity = (): ProductionRule<NumericValueRef> => {
+	return [
+		{
+			test: `!${SELECTED_ITEM} && ${HIGHLIGHTED_ITEM} && ${HIGHLIGHTED_ITEM} !== datum.${MARK_ID}`,
+			...getHighlightOpacityAnimationValue(DEFAULT_OPACITY_RULE)
+		},
+		{
+			test: `${SELECTED_ITEM} && ${SELECTED_ITEM} !== datum.${MARK_ID}`,
+			...getHighlightOpacityAnimationValue(DEFAULT_OPACITY_RULE)
+		},
+		...getAnimationProductionRule(),
+		{ value: 1 }
+	];
+};
+
+//TODO: Add documentation
+const getAnimationProductionRule = (): [
+	{ test: string, signal: string } | { test: string, value: number }] => {
+	return [
+		{
+			test: `${HIGHLIGHTED_ITEM}_prev !== datum.${MARK_ID} && rscColorAnimationDirection === -1`,
+			...getHighlightOpacityAnimationValue(DEFAULT_OPACITY_RULE)
+		}];
+}
 export const getStroke = ({ children, color, colorScheme }: BarSpecProps): ProductionRule<ColorValueRef> => {
 	const defaultProductionRule = getColorProductionRule(color, colorScheme);
 	if (!hasPopover(children)) {

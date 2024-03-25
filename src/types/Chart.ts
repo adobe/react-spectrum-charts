@@ -79,10 +79,10 @@ export interface SpecProps {
 
 export interface SanitizedSpecProps extends SpecProps {
 	/** Children with all non-RSC components removed */
-	children: ChartChildElement[];
-	previousData?: ChartData[];
-	data?: ChartData[];
 	animations?: boolean;
+	children: ChartChildElement[];
+	data?: ChartData[];
+	previousData?: ChartData[];
 }
 
 export type Orientation = 'vertical' | 'horizontal';
@@ -274,6 +274,7 @@ export type SubLabel = {
 };
 
 export interface MarkProps extends BaseProps {
+	animations?: boolean;
 	children?: Children<MarkChildElement>;
 	/** Key in the data that is used as the color facet */
 	color?: string;
@@ -323,6 +324,7 @@ export interface AnnotationStyleProps extends MarkProps {
 }
 
 export interface BarProps extends Omit<MarkProps, 'color'> {
+	animations?: boolean;
 	/** Bar color or key in the data that is used as the color facet */
 	color?: ColorFacet | DualFacet;
 	/** Data field used for the bar categories (x-axis for a vertical bar) */
@@ -493,6 +495,7 @@ export type LegendDescription = { seriesName: string; description: string; title
 export type LegendLabel = { seriesName: string | number; label: string; maxLength?: number };
 
 export interface LegendProps extends BaseProps {
+	animations?: boolean;
 	/** color or key in the data that is used as the color facet for the symbols */
 	color?: ColorFacet;
 	/** series that should be hidden by default (uncontrolled) */

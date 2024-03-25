@@ -23,6 +23,7 @@ import {
 	TRELLIS_PADDING
 } from '@constants';
 import { getTransformSort } from '@specBuilder/data/dataUtils';
+import { hasInteractiveChildren } from '@specBuilder/marks/markUtils';
 import {
 	addDomainFields,
 	addFieldToFacetScaleDomain,
@@ -31,8 +32,9 @@ import {
 	getMetricScale,
 	getScaleIndexByName,
 	getScaleIndexByType,
+	addRSCAnimationScales,
 } from '@specBuilder/scale/scaleSpecBuilder';
-import { addHighlightedItemSignalEvents, getGenericSignal } from '@specBuilder/signal/signalSpecBuilder';
+import { addHighlightedItemSignalEvents, getGenericSignal, getRSCAnimationSignals } from '@specBuilder/signal/signalSpecBuilder';
 import { getFacetsFromProps } from '@specBuilder/specUtils';
 import { sanitizeMarkChildren, toCamelCase } from '@utils';
 import { produce } from 'immer';
@@ -103,13 +105,17 @@ export const addBar = produce<Spec, [BarProps & { colorScheme?: ColorScheme; ind
 );
 
 export const addSignals = produce<Signal[], [BarSpecProps]>(
-	(signals, { children, name, paddingRatio, paddingOuter: barPaddingOuter }) => {
+	(signals, { children, name, paddingRatio, paddingOuter: barPaddingOuter, animations }) => {
 		// We use this value to calculate ReferenceLine positions.
 		const { paddingInner } = getBarPadding(paddingRatio, barPaddingOuter);
 		signals.push(getGenericSignal('paddingInner', paddingInner));
 
 		if (!children.length) {
 			return;
+		}
+		//TODO: add comments
+		if (animations == true && hasInteractiveChildren(children)) {
+			signals.push(...getRSCAnimationSignals(name));
 		}
 		addHighlightedItemSignalEvents(signals, name);
 	}
@@ -217,7 +223,12 @@ export const getDodgeGroupTransform = ({ color, lineType, name, opacity, type }:
 };
 
 export const addScales = produce<Scale[], [BarSpecProps]>((scales, props) => {
-	const { color, lineType, opacity, orientation } = props;
+	const { color, lineType, opacity, orientation, animations, children } = props;
+
+	//TODO add comments
+	if (animations == true && hasInteractiveChildren(children)) {
+		addRSCAnimationScales(scales)
+	}
 	addMetricScale(scales, getScaleValues(props), orientation === 'vertical' ? 'y' : 'x');
 	addDimensionScale(scales, props);
 	addTrellisScale(scales, props);

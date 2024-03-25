@@ -82,7 +82,7 @@ const AreaTimeStory: StoryFn<typeof Area> = (args): ReactElement => {
 const TooltipStory: StoryFn<typeof Area> = (args): ReactElement => {
 	const chartProps = useChartProps(defaultChartProps);
 	return (
-		<Chart {...chartProps} debug>
+		<Chart {...chartProps}>
 			<Axis position="bottom" baseline />
 			<Axis position="left" grid />
 			<Area {...args}>
