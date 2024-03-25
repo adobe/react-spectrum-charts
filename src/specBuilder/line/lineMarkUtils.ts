@@ -77,7 +77,7 @@ export const getLineOpacity = ({
 	const strokeOpacityRules: ProductionRule<NumericValueRef> = [];
 
 	//TODO: add comments/tests/etc
-	if (animations) {
+	if (animations !== false) {
 		return getOpacityAnimationRules();
 	}
 	// add a rule that will lower the opacity of the line if there is a hovered series, but this line is not the one hovered
