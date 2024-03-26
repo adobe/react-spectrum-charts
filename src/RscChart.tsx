@@ -108,13 +108,13 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 
 		const [rerender, setRerender] = useState<boolean>(true);
 
+		const invertRerender = useRef(() => setRerender(!rerender));
+
 		useEffect(() => {
 			doAnimateFromZero.current = true;
 			// ensure a rerender so the current chart has animations again.
-			setRerender(!rerender);
-		}, [
-			data
-		]);
+			invertRerender.current();
+		}, [data]);
 
 
 		const spec = useSpec({
