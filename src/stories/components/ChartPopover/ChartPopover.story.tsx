@@ -12,7 +12,7 @@
 import React, { ReactElement } from 'react';
 
 import useChartProps from '@hooks/useChartProps';
-import { Area, Axis, Bar, Chart, ChartPopover, ChartProps, ChartTooltip, Legend, Line } from '@rsc';
+import { Area, Axis, Bar, Chart, ChartPopover, ChartPopoverProps, ChartProps, ChartTooltip, Legend, Line } from '@rsc';
 import { browserData as data } from '@stories/data/data';
 import { StoryFn } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
@@ -42,6 +42,10 @@ const dialogContent = (datum) => (
 
 const defaultChartProps: ChartProps = { data, renderer: 'svg', width: 600 };
 
+interface ChartPopoverPropsWithAnimations extends Partial<ChartPopoverProps> {
+	animations?: boolean;
+}
+
 const ChartPopoverCanvasStory: StoryFn<typeof ChartPopover> = (args): ReactElement => {
 	const chartProps = useChartProps({ data, renderer: 'canvas', width: 600 });
 	return (
@@ -66,10 +70,10 @@ const ChartPopoverSvgStory: StoryFn<typeof ChartPopover> = (args): ReactElement 
 	);
 };
 
-const ChartPopoverDodgedBarStory: StoryFn<typeof ChartPopover> = (args): ReactElement => {
+const ChartPopoverDodgedBarStory: StoryFn<typeof ChartPopover> = (args: ChartPopoverPropsWithAnimations): ReactElement => {
 	const chartProps = useChartProps(defaultChartProps);
 	return (
-		<Chart {...chartProps}>
+		<Chart {...chartProps} animations={args.animations}>
 			<Bar color="series" type="dodged">
 				<ChartTooltip>{dialogContent}</ChartTooltip>
 				<ChartPopover {...args} />

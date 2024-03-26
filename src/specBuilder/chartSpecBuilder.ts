@@ -90,6 +90,7 @@ export function buildSpec({
 	data,
 	previousData,
 	animations,
+	animateFromZero,
 	hiddenSeries,
 	highlightedSeries,
 	lineTypes = DEFAULT_LINE_TYPES,
@@ -161,6 +162,7 @@ export function buildSpec({
 						previousData,
 						data,
 						animations,
+						animateFromZero
 					});
 				case Donut.displayName:
 					donutCount++;

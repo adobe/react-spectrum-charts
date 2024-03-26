@@ -41,7 +41,7 @@ import {
 	LINE_TYPE_SCALE,
 	MARK_ID,
 	OPACITY_SCALE,
-	TABLE,
+	TABLE, EASE_IN_CUBIC
 } from '../constants';
 import { SanitizedSpecProps } from '../types';
 

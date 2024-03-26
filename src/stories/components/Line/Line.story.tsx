@@ -13,7 +13,7 @@ import React, { ReactElement, createElement } from 'react';
 
 import { ReferenceLine } from '@components/ReferenceLine';
 import useChartProps from '@hooks/useChartProps';
-import { Axis, Bar, Chart, ChartPopover, ChartTooltip, Legend, Line } from '@rsc';
+import { Axis, Bar, BarProps, Chart, ChartPopover, ChartTooltip, Legend, Line, LineProps } from '@rsc';
 import {
 	newDataArray1,
 	workspaceTrendsData,
@@ -64,6 +64,10 @@ const defaultChartProps: ChartProps = { data: workspaceTrendsData, minWidth: 400
 
 const singleLineChartProps: ChartProps = { data: newDataArray1, minWidth: 400, maxWidth: 800, height: 400 };
 
+interface LinePropsAndAnimation extends Partial<LineProps> {
+	animations?: boolean;
+}
+
 const SingleLineStory: StoryFn<typeof Line> = (args): ReactElement => {
 	const chartProps = useChartProps(singleLineChartProps);
 	return (
@@ -73,10 +77,10 @@ const SingleLineStory: StoryFn<typeof Line> = (args): ReactElement => {
 	);
 }
 
-const BasicLineStory: StoryFn<typeof Line> = (args): ReactElement => {
+const BasicLineStory: StoryFn<typeof Line> = (args: LinePropsAndAnimation): ReactElement => {
 	const chartProps = useChartProps(defaultChartProps);
 	return (
-		<Chart {...chartProps}>
+		<Chart {...chartProps} animations={args.animations}>
 			<Line {...args} />
 			<Legend lineWidth={{ value: 0 }} />
 		</Chart>
@@ -120,7 +124,7 @@ const ComboStory: StoryFn<typeof Line> = (args): ReactElement => {
 	);
 };
 
-const HistoricalCompareStory: StoryFn<typeof Line> = (args): ReactElement => {
+const HistoricalCompareStory: StoryFn<typeof Line> = (args: LinePropsAndAnimation): ReactElement => {
 	const chartProps = useChartProps({
 		...defaultChartProps,
 		data: historicalCompareData,
@@ -129,7 +133,7 @@ const HistoricalCompareStory: StoryFn<typeof Line> = (args): ReactElement => {
 		lineTypes: ['dotted', 'solid'],
 	});
 	return (
-		<Chart {...chartProps}>
+		<Chart {...chartProps} animations={args.animations}>
 			<Axis position="left" grid title="Users" />
 			<Axis position="bottom" labelFormat="time" baseline ticks />
 			<Line {...args} />

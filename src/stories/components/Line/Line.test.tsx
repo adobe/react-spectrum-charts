@@ -121,7 +121,7 @@ describe('Line', () => {
 
 	test('Hovering over the entries on HistoricalCompare should highlight hovered series', async () => {
 		const reducedOpacity = 1 / HIGHLIGHT_CONTRAST_RATIO;
-		render(<HistoricalCompare {...HistoricalCompare.args} />);
+		render(<HistoricalCompare {...HistoricalCompare.args} animations={false} />);
 		const chart = await findChart();
 		expect(chart).toBeInTheDocument();
 
@@ -181,7 +181,7 @@ describe('Line', () => {
 			expect(within(tooltip).getByText('Nov 8')).toBeInTheDocument();
 		});
 		test('should fade the opacity of non-hovered lines', async () => {
-			render(<Tooltip {...Tooltip.args} />);
+			render(<Tooltip {...Tooltip.args} animations={false} />);
 			const chart = await findChart();
 			expect(chart).toBeInTheDocument();
 

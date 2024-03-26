@@ -96,3 +96,12 @@ export const MS_PER_DAY = 86400000;
 export const DATA_ANIMATION_DURATION_FRAMES = 78; // 60 fps * 1.3 seconds = 78 frames
 export const DATA_ANIMATION_MILLISECONDS_PER_FRAME = 1000 / 60; // 60fps
 export const EASE_OUT_CUBIC = '(1 - pow(1 - timerValue, 3))';
+
+export const EASE_IN_CUBIC = '(pow(timerValue, 3))';
+
+export const EASE_OUT_ELASTIC =
+	'timerValue === 0\n' +
+	'  ? 0\n' +
+	'  : timerValue === 1\n' +
+	'  ? 1\n' +
+	'  : pow(2, -10 * timerValue) * sin((timerValue * 10 - 0.75) * ((2 * 3.14) / 3)) + 1;';

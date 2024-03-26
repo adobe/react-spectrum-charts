@@ -26,7 +26,7 @@ import useChartImperativeHandle from '@hooks/useChartImperativeHandle';
 import useLegend from '@hooks/useLegend';
 import usePopoverAnchorStyle from '@hooks/usePopoverAnchorStyle';
 import usePopovers, { PopoverDetail } from '@hooks/usePopovers';
-import createSpec from '@hooks/createSpec';
+import useSpec from '@hooks/useSpec';
 import useSpecProps from '@hooks/useSpecProps';
 import useTooltips from '@hooks/useTooltips';
 import { getColorValue } from '@specBuilder/specUtils';
@@ -95,6 +95,8 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 		forwardedRef
 	) => {
 		// uuid is used to make a unique id so there aren't duplicate ids if there is more than one Chart component in the document
+		const doAnimateFromZero = useRef(true);
+
 		const selectedData = useRef<Datum | null>(null); // data that is currently selected, get's set on click if a popover exists
 		const selectedDataName = useRef<string>();
 		const selectedDataBounds = useRef<MarkBounds>();
@@ -104,77 +106,42 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 
 		const sanitizedChildren = sanitizeRscChartChildren(props.children);
 
-		const initSpec = () => createSpec({
-			backgroundColor,
-			children: sanitizedChildren,
-			colors,
-			data,
-			previousData,
-			animations,
-			description,
-			hiddenSeries,
-			highlightedSeries,
-			symbolShapes,
-			symbolSizes,
-			lineTypes,
-			lineWidths,
-			opacities,
-			colorScheme,
-			title,
-			UNSAFE_vegaSpec,
-		});
-
-		const initSpecNoAnimations = () => createSpec({
-			backgroundColor,
-			children: sanitizedChildren,
-			colors,
-			data,
-			previousData,
-			animations: false,
-			description,
-			hiddenSeries,
-			highlightedSeries,
-			symbolShapes,
-			symbolSizes,
-			lineTypes,
-			lineWidths,
-			opacities,
-			colorScheme,
-			title,
-			UNSAFE_vegaSpec,
-		});
-
-		const [spec, setSpec] = useState(initSpec);
+		const [rerender, setRerender] = useState<boolean>(true);
 
 		useEffect(() => {
-			setSpec(initSpec());
+			doAnimateFromZero.current = true;
+			// ensure a rerender so the current chart has animations again.
+			setRerender(!rerender);
 		}, [
+			data
+		]);
+
+
+		const spec = useSpec({
 			backgroundColor,
-			sanitizedChildren.length,
+			children: sanitizedChildren,
 			colors,
-			colorScheme,
 			data,
 			previousData,
 			animations,
+			animateFromZero: doAnimateFromZero.current,
 			description,
 			hiddenSeries,
 			highlightedSeries,
+			symbolShapes,
+			symbolSizes,
 			lineTypes,
 			lineWidths,
 			opacities,
-			symbolShapes,
-			symbolSizes,
+			colorScheme,
 			title,
 			UNSAFE_vegaSpec,
-		]);
+		});
 
 		const { controlledHoverSignal } = useSpecProps(spec);
 		const chartConfig = useMemo(() => getChartConfig(config, colorScheme), [config, colorScheme]);
 
 		useEffect(() => {
-			if (popoverIsOpen) {
-				setSpec(initSpecNoAnimations());
-			}
 			const tooltipElement = document.getElementById('vg-tooltip-element');
 			if (!tooltipElement) return;
 			// Hide tooltips on all charts when a popover is open
@@ -183,6 +150,9 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 			// if the popover is closed, reset the selected data
 			if (!popoverIsOpen) {
 				selectedData.current = null;
+			} else {
+				doAnimateFromZero.current = false;
+				setRerender(!rerender);
 			}
 		}, [popoverIsOpen]);
 

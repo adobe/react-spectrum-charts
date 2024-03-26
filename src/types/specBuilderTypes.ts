@@ -102,7 +102,7 @@ type BarPropsWithDefaults =
 	| 'type';
 
 export interface BarSpecProps
-	extends PartiallyRequired<BarProps & { colorScheme: ColorScheme; index: number, data?: ChartData[], previousData?: ChartData[], animations?: boolean }, BarPropsWithDefaults> {
+	extends PartiallyRequired<BarProps & { colorScheme: ColorScheme; index: number, data?: ChartData[], previousData?: ChartData[], animations?: boolean, animateFromZero: boolean }, BarPropsWithDefaults> {
 	children: MarkChildElement[];
 }
 
