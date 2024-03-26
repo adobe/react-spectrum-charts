@@ -116,7 +116,6 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 			invertRerender.current();
 		}, [data]);
 
-
 		const spec = useSpec({
 			backgroundColor,
 			children: sanitizedChildren,
