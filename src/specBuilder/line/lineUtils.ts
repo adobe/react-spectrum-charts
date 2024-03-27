@@ -79,7 +79,7 @@ export interface LineMarkProps {
 	data?: ChartData[],
 	previousData?: ChartData[],
 	animations?: boolean,
-	animateFromZero: boolean,
+	animateFromZero?: boolean,
 	displayOnHover?: boolean;
 	highlightedItem?: HighlightedItem;
 	idKey: string;

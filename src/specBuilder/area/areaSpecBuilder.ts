@@ -53,7 +53,7 @@ import {
 import { addContinuousDimensionScale, addFieldToFacetScaleDomain, addMetricScale } from '../scale/scaleSpecBuilder';
 import { getAreaMark, getX } from './areaUtils';
 
-export const addArea = produce<Spec, [AreaProps & { animations?: boolean; animateFromZero: boolean; colorScheme?: ColorScheme; highlightedItem?: HighlightedItem; index?: number, idKey: string; previousData: ChartData[] | undefined, data: ChartData[] | undefined }]>(
+export const addArea = produce<Spec, [AreaProps & { animations?: boolean; animateFromZero: boolean; colorScheme?: ColorScheme; highlightedItem?: HighlightedItem; index?: number, idKey: string; previousData: ChartData[], data: ChartData[] }]>(
 	(
 		spec,
 		{

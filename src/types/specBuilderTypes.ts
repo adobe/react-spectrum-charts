@@ -58,7 +58,7 @@ export interface AreaSpecProps extends PartiallyRequired<AreaProps, AreaPropsWit
 	index: number;
 	previousData?: ChartData[],
 	animations?: boolean,
-	animateFromZero: boolean,
+	animateFromZero?: boolean,
 	children: MarkChildElement[];
 	markType: 'area';
 }
@@ -192,7 +192,7 @@ export interface LineSpecProps extends PartiallyRequired<LineProps, LinePropsWit
 	data?: ChartData[],
 	previousData?: ChartData[],
 	animations?: boolean,
-	animateFromZero: boolean,
+	animateFromZero?: boolean,
 	colorScheme: ColorScheme;
 	highlightedItem?: HighlightedItem;
 	idKey: string;
