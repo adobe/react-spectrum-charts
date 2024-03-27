@@ -44,6 +44,7 @@ export interface AreaSpecProps
 	data?: ChartData[],
 	previousData?: ChartData[],
 	animations?: boolean,
+	animateFromZero: boolean,
 	children: MarkChildElement[];
 }
 

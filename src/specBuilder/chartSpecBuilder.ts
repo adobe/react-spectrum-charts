@@ -149,6 +149,7 @@ export function buildSpec({
 						previousData,
 						data,
 						animations,
+						animateFromZero
 					});
 				case Axis.displayName:
 					axisCount++;
