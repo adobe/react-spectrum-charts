@@ -63,6 +63,7 @@ export const LINE_WIDTH_SCALE = 'lineWidth';
 export const OPACITY_SCALE = 'opacity';
 export const SYMBOL_SHAPE_SCALE = 'symbolShape';
 export const SYMBOL_SIZE_SCALE = 'symbolSize';
+export const SYMBOL_PATH_WIDTH_SCALE = 'symbolPathWidth';
 
 // encode rules
 export const DEFAULT_OPACITY_RULE = { value: 1 };

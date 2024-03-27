@@ -24,6 +24,7 @@ import {
 	SELECTED_ITEM,
 	SELECTED_SERIES,
 	SERIES_ID,
+	SYMBOL_PATH_WIDTH_SCALE,
 	SYMBOL_SHAPE_SCALE,
 	SYMBOL_SIZE_SCALE,
 	TABLE,
@@ -73,6 +74,7 @@ import {
 	getLineWidthPixelsFromLineWidth,
 	getPathFromSymbolShape,
 	getStrokeDashFromLineType,
+	getSymbolWidthFromRscSymbolSize,
 	getVegaSymbolSizeFromRscSymbolSize,
 	initializeSpec,
 } from './specUtils';
@@ -304,6 +306,7 @@ const getDefaultScales = (
 	getOpacityScale(opacities),
 	getSymbolShapeScale(symbolShapes),
 	getSymbolSizeScale(symbolSizes),
+	getSymbolPathWidthScale(symbolSizes),
 ];
 
 export const getColorScale = (colors: ChartColors, colorScheme: ColorScheme): OrdinalScale => {
@@ -349,6 +352,19 @@ export const getSymbolSizeScale = (symbolSizes: [SymbolSize, SymbolSize]): Linea
 	type: 'linear',
 	zero: false,
 	range: symbolSizes.map((symbolSize) => getVegaSymbolSizeFromRscSymbolSize(symbolSize)),
+	domain: { data: TABLE, fields: [] },
+});
+
+/**
+ * returns the path width scale
+ * @param symbolSizes
+ * @returns LinearScale
+ */
+export const getSymbolPathWidthScale = (symbolSizes: [SymbolSize, SymbolSize]): LinearScale => ({
+	name: SYMBOL_PATH_WIDTH_SCALE,
+	type: 'linear',
+	zero: false,
+	range: symbolSizes.map((symbolSize) => getSymbolWidthFromRscSymbolSize(symbolSize)),
 	domain: { data: TABLE, fields: [] },
 });
 
