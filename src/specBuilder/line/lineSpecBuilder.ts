@@ -127,8 +127,6 @@ export const setScales = produce<Scale[], [LineSpecProps]>((scales, props) => {
 });
 
 // The order that marks are added is important since it determines the draw order.
-// TODO: LineProps & { colorScheme?: ColorScheme; index?: number }. Do we need this? If we move the useRef previousData check up is this still important?
-
 export const addLineMarks = produce<Mark[], [LineSpecProps]>((marks, props) => {
 	const { name, children, color, lineType, opacity, staticPoint } = props;
 
