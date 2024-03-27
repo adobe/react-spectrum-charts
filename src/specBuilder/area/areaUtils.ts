@@ -42,6 +42,7 @@ export interface AreaMarkProps {
 	isMetricRange?: boolean;
 	isStacked: boolean;
 	animations?: boolean;
+	animateFromZero: boolean;
 	data?: ChartData[];
 	previousData?: ChartData[];
 	metricStart: string;

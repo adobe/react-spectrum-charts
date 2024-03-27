@@ -51,7 +51,7 @@ import { getAnimationMarks } from '@specBuilder/specUtils';
  */
 
 export const getLineMark = (lineMarkProps: LineMarkProps, dataSource: string): LineMark => {
-	const { animations, color, colorScheme, data, dimension, lineType, lineWidth, metric, metricAxis, name, opacity, previousData, scaleType } =
+	const { animations, animateFromatZero, color, colorScheme, data, dimension, lineType, lineWidth, metric, metricAxis, name, opacity, previousData, scaleType } =
 		lineMarkProps;
 	const popovers = getPopovers(lineMarkProps);
 	const popoverWithDimensionHighlightExists = popovers.some(
@@ -80,6 +80,7 @@ export const getLineMark = (lineMarkProps: LineMarkProps, dataSource: string): L
 				...(popoverWithDimensionHighlightExists ? {} : { opacity: getLineOpacity(lineMarkProps) }),
 				strokeOpacity: getLineStrokeOpacity(lineMarkProps),
 				opacity: getLineOpacity(lineMarkProps),
+				...(animations !== false && animateFromZero && { y: getAnimationMarks(dimension, metric, data, previousData) })
 			},
 		},
 	};

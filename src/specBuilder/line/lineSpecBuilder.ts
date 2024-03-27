@@ -45,7 +45,7 @@ import { getInteractiveMarkName, getPopoverMarkName } from './lineUtils';
 
 export const addLine = produce<
 	Spec,
-  [LineProps & { colorScheme?: ColorScheme; data: ChartData[] | undefined; animations?: boolean; highlightedItem?: HighlightedItem; index?: number; idKey: string, previousData: ChartData[] | undefined }]
+  [LineProps & { colorScheme?: ColorScheme; data: ChartData[] | undefined; animations?: boolean; animateFromZero: boolean; highlightedItem?: HighlightedItem; index?: number; idKey: string, previousData: ChartData[] | undefined }]
 >(
 	(
 		spec,

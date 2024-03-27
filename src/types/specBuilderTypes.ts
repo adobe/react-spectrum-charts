@@ -51,13 +51,14 @@ type PartiallyRequired<T, K extends keyof T> = Omit<T, K> & Required<Pick<T, K>>
 type AreaPropsWithDefaults = 'name' | 'dimension' | 'metric' | 'color' | 'scaleType' | 'opacity';
 
 export interface AreaSpecProps extends PartiallyRequired<AreaProps, AreaPropsWithDefaults> {
-  animations?: boolean,
 	colorScheme: ColorScheme;
 	data?: ChartData[],
 	highlightedItem?: HighlightedItem;
 	idKey: string;
 	index: number;
 	previousData?: ChartData[],
+	animations?: boolean,
+	animateFromZero: boolean,
 	children: MarkChildElement[];
 	markType: 'area';
 }
@@ -114,6 +115,7 @@ type BarPropsWithDefaults =
 
 export interface BarSpecProps extends PartiallyRequired<BarProps, BarPropsWithDefaults> {
   animations?: boolean,
+  animateFromZero: boolean,
 	children: MarkChildElement[];
 	colorScheme: ColorScheme;
 	data?: ChartData[],
@@ -190,6 +192,7 @@ export interface LineSpecProps extends PartiallyRequired<LineProps, LinePropsWit
 	data?: ChartData[],
 	previousData?: ChartData[],
 	animations?: boolean,
+	animateFromZero: boolean,
 	colorScheme: ColorScheme;
 	highlightedItem?: HighlightedItem;
 	idKey: string;

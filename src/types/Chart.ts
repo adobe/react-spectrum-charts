@@ -112,6 +112,7 @@ export interface SanitizedSpecProps extends PartiallyRequired<SpecProps, SpecPro
 	previousData?: ChartData[];
 	data?: ChartData[];
 	animations?: boolean;
+	animateFromZero: boolean;
 }
 
 export type Orientation = 'vertical' | 'horizontal';

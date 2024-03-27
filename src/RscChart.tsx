@@ -115,34 +115,20 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 
 		const sanitizedChildren = sanitizeRscChartChildren(props.children);
 
-		// THE MAGIC, builds our spec
-		// const [spec, setSpec] = useState(useSpec({
-		// 	backgroundColor,
-		// 	children: sanitizedChildren,
-		// 	colors,
-		// 	data,
-		// 	previousData,
-		// 	animations,
-		// 	description,
-		// 	hiddenSeries,
-		// 	highlightedSeries,
-		// 	symbolShapes,
-		// 	symbolSizes,
-		// 	lineTypes,
-		// 	lineWidths,
-		// 	opacities,
-		// 	colorScheme,
-		// 	title,
-		// 	UNSAFE_vegaSpec,
-		// }));
+		// when data changes, make sure that we are animating from zero (especially in the case where a popover was just
+		// opened and closed)
+		useEffect(() => {
+			setAnimateFromZero(true);
+		}, [data]);
 
-		let spec = useSpec({
+		const spec = useSpec({
 			backgroundColor,
 			children: sanitizedChildren,
 			colors,
 			data,
 			previousData,
 			animations,
+			animateFromZero,
 			description,
 			idKey,
 			hiddenSeries,
@@ -163,30 +149,7 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 		const { controlledHoveredIdSignal, controlledHoveredGroupSignal } = useSpecProps(spec);
 		const chartConfig = useMemo(() => getChartConfig(config, colorScheme), [config, colorScheme]);
 
-		const specNoAnimations = useSpec({
-			backgroundColor,
-			children: sanitizedChildren,
-			colors,
-			data,
-			previousData,
-			animations: false,
-			description,
-			hiddenSeries,
-			highlightedSeries,
-			symbolShapes,
-			symbolSizes,
-			lineTypes,
-			lineWidths,
-			opacities,
-			colorScheme,
-			title,
-			UNSAFE_vegaSpec,
-		});
-
 		useEffect(() => {
-			if (popoverIsOpen) {
-				spec = specNoAnimations;
-			}
 			const tooltipElement = document.getElementById('vg-tooltip-element');
 			if (!tooltipElement) return;
 			// Hide tooltips on all charts when a popover is open
@@ -195,10 +158,10 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 			// if the popover is closed, reset the selected data
 			if (!isPopoverOpen) {
 				selectedData.current = null;
+			} else {
+				setAnimateFromZero(false);
 			}
 		}, [isPopoverOpen]);
-
-		// console.log(spec.marks[0].marks[0].encode.update.y);
 
 		useChartImperativeHandle(forwardedRef, { chartView, title });
 
@@ -273,6 +236,7 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 			const signals: Record<string, unknown> = {
 				backgroundColor: getColorValue('gray-50', colorScheme),
 			};
+
 			if (legendIsToggleable) {
 				signals.hiddenSeries = legendHiddenSeries;
 			}
@@ -439,4 +403,3 @@ const LegendTooltip: FC<LegendTooltipProps> = ({ value, descriptions, domain }) 
 
 const itemIsLegendItem = (item: Item<unknown>): boolean => {
 	return 'name' in item.mark && typeof item.mark.name === 'string' && item.mark.name.includes('legend');
-};

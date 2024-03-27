@@ -60,7 +60,7 @@ import { addTrellisScale, getTrellisGroupMark, isTrellised } from './trellisedBa
 
 export const addBar = produce<
 	Spec,
-  [BarProps & { data?: ChartData[]; colorScheme?: ColorScheme; highlightedItem?: HighlightedItem; index?: number; idKey: string; previousData?: ChartData[]; animations?: boolean }]
+  [BarProps & { data?: ChartData[]; colorScheme?: ColorScheme; highlightedItem?: HighlightedItem; index?: number; idKey: string; previousData?: ChartData[]; animations?: boolean; animateFromZero: boolean }]
 >(
 	(
 		spec,

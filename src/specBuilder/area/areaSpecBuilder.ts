@@ -53,7 +53,7 @@ import {
 import { addContinuousDimensionScale, addFieldToFacetScaleDomain, addMetricScale } from '../scale/scaleSpecBuilder';
 import { getAreaMark, getX } from './areaUtils';
 
-export const addArea = produce<Spec, [AreaProps & { animations?: boolean; colorScheme?: ColorScheme; highlightedItem?: HighlightedItem; index?: number, idKey: string; previousData: ChartData[] | undefined, data: ChartData[] | undefined }]>(
+export const addArea = produce<Spec, [AreaProps & { animations?: boolean; animateFromZero: boolean; colorScheme?: ColorScheme; highlightedItem?: HighlightedItem; index?: number, idKey: string; previousData: ChartData[] | undefined, data: ChartData[] | undefined }]>(
 	(
 		spec,
 		{
@@ -237,7 +237,7 @@ export const setScales = produce<Scale[], [AreaSpecProps]>(
 );
 
 export const addAreaMarks = produce<Mark[], [AreaSpecProps]>((marks, props) => {
-	const { animations, children, color, colorScheme, data, dimension, highlightedItem, metric, name, opacity, previousData, scaleType } = props;
+	const { animations, animateFromZero, children, color, colorScheme, data, dimension, highlightedItem, metric, name, opacity, previousData, scaleType } = props;
 	let { metricStart, metricEnd } = props;
 	let isStacked = false;
 	if (!metricEnd || !metricStart) {
@@ -269,6 +269,7 @@ export const addAreaMarks = produce<Mark[], [AreaSpecProps]>((marks, props) => {
 					metricEnd,
 					animations,
 					name,
+					animateFromZero,
 					data,
 					previousData,
 					isStacked,

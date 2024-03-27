@@ -94,6 +94,7 @@ import { addTitle } from './title/titleSpecBuilder';
 export function buildSpec(props: SanitizedSpecProps) {
 	const {
 	  animations,
+		animateFromZero,
 		backgroundColor,
 		children,
 		colors,
