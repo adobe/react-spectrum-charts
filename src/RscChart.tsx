@@ -97,7 +97,7 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 		// uuid is used to make a unique id so there aren't duplicate ids if there is more than one Chart component in the document
 
 		// state variable for storing if chart should reanimate from zero / animate across data sets
-		const [doAnimateFromZero, setAnimateFromZero] = useState(true);
+		const [animateFromZero, setAnimateFromZero] = useState(true);
 		const selectedData = useRef<Datum | null>(null); // data that is currently selected, get's set on click if a popover exists
 		const selectedDataName = useRef<string>();
 		const selectedDataBounds = useRef<MarkBounds>();
@@ -120,7 +120,7 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 			data,
 			previousData,
 			animations,
-			animateFromZero: doAnimateFromZero,
+			animateFromZero,
 			description,
 			hiddenSeries,
 			highlightedSeries,

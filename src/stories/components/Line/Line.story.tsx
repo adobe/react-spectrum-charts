@@ -13,7 +13,7 @@ import React, { ReactElement, createElement } from 'react';
 
 import { ReferenceLine } from '@components/ReferenceLine';
 import useChartProps from '@hooks/useChartProps';
-import { Axis, Bar, BarProps, Chart, ChartPopover, ChartTooltip, Legend, Line, LineProps } from '@rsc';
+import { Axis, Bar, Chart, ChartPopover, ChartTooltip, Legend, Line, LineProps } from '@rsc';
 import {
 	newDataArray1,
 	workspaceTrendsData,

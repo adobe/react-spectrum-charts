@@ -47,44 +47,6 @@ const ChartTimeStory: StoryFn<typeof Chart> = (args): ReactElement => {
 	);
 };
 
-const SingleLineStory: StoryFn<typeof Chart> = (args): ReactElement => {
-	const props = useChartProps(args);
-	return (
-		<Chart {...props}>
-			<Line metric="y" dimension="x" scaleType="linear"/>
-		</Chart>
-	);
-}
-
-const SingleLineWithStaticPointsStory: StoryFn<typeof Chart> = (args): ReactElement => {
-	const props = useChartProps(args);
-	return (
-		<Chart {...props}>
-			<Line metric="y" dimension="x" scaleType="linear" staticPoint="point"/>
-		</Chart>
-	);
-}
-
-const BasicAreaStory: StoryFn<typeof Chart> = (args): ReactElement => {
-	const chartProps = useChartProps(args);
-	return (
-		<Chart {...chartProps} debug>
-			<Area metric='maxTemperature' />
-		</Chart>
-	);
-};
-
-const BasicBarStory: StoryFn<typeof Chart> = (args): ReactElement => {
-	const chartProps = useChartProps(args);
-	return (
-		<Chart {...chartProps} debug>
-			<Axis position="bottom" baseline title="Browser" />
-			<Axis position="left" grid title="Downloads" />
-			<Bar dimension="browser" metric="downloads" />
-		</Chart>
-	);
-};
-
 const Basic = bindWithProps(ChartLineStory);
 
 // Story specific props are passed here

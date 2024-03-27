@@ -46,7 +46,7 @@ import {
 } from 'vega';
 
 import { ColorValueV6 } from '@react-types/shared';
-import { getLegendOpacityRules, getOpacityAnimationRules } from '@specBuilder/marks/markUtils';
+import { getLegendOpacityRules } from '@specBuilder/marks/markUtils';
 
 export interface Facet {
 	facetType: FacetType | SecondaryFacetType;
