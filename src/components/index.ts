@@ -20,6 +20,7 @@ export * from './ChartTooltip';
 export * from './EmptyState';
 export * from './Legend';
 export * from './Line';
+export * from './ScatterPath';
 export * from './MetricRange';
 export * from './ReferenceLine';
 export * from './Title';

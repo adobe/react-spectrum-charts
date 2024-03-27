@@ -32,6 +32,7 @@ import {
 	addFieldToFacetScaleDomain,
 	addMetricScale,
 } from '@specBuilder/scale/scaleSpecBuilder';
+import { setScatterPathScales } from '@specBuilder/scatterPath';
 import { addHighlightedItemSignalEvents } from '@specBuilder/signal/signalSpecBuilder';
 import { addTrendlineData, getTrendlineScales, setTrendlineSignals } from '@specBuilder/trendline';
 import { sanitizeMarkChildren, toCamelCase } from '@utils';
@@ -157,5 +158,6 @@ export const setScales = produce<Scale[], [ScatterSpecProps]>((scales, props) =>
 	// add size to the size domain
 	addFieldToFacetScaleDomain(scales, SYMBOL_SIZE_SCALE, size);
 
+	setScatterPathScales(scales, props);
 	scales.push(...getTrendlineScales(props));
 });

@@ -243,7 +243,7 @@ export const getLabelFormat = (
 	}
 
 	return [
-		getLabelNumberFormat(numberFormat),
+		...getLabelNumberFormat(numberFormat),
 		...(truncateLabels && scaleName.includes('Band') && labelIsParallelToAxis(position, labelOrientation)
 			? [{ signal: 'truncateText(datum.value, bandwidth("xBand")/(1- paddingInner), "normal", 14)' }]
 			: [{ signal: 'datum.value' }]),
@@ -257,24 +257,32 @@ export const getLabelFormat = (
  */
 export const getLabelNumberFormat = (
 	numberFormat: NumberFormat | string
-): {
+): ({
 	test?: string;
-} & TextValueRef => {
-	const defaultTest = 'isNumber(datum.value)';
+} & TextValueRef)[] => {
+	const test = 'isNumber(datum.value)';
 	if (numberFormat === 'shortNumber') {
-		return {
-			test: `${defaultTest} && abs(datum.value) >= 1000`,
-			signal: "upper(replace(format(datum.value, '.3~s'), /(\\d+)G/, '$1B'))",
-		};
+		return [
+			{
+				test: `${test} && abs(datum.value) >= 1000`,
+				signal: "upper(replace(format(datum.value, '.3~s'), /(\\d+)G/, '$1B'))",
+			},
+		];
 	}
 	if (numberFormat === 'shortCurrency') {
-		return {
-			test: `${defaultTest} && abs(datum.value) >= 1000`,
-			signal: "upper(replace(format(datum.value, '$.3~s'), /(\\d+)G/, '$1B'))",
-		};
+		return [
+			{
+				test: `${test} && abs(datum.value) >= 1000`,
+				signal: "upper(replace(format(datum.value, '$.3~s'), /(\\d+)G/, '$1B'))",
+			},
+			{
+				test,
+				signal: "format(datum.value, '$')",
+			},
+		];
 	}
 	const d3FormatSpecifier = getD3FormatSpecifierFromNumberFormat(numberFormat);
-	return { test: defaultTest, signal: `format(datum.value, '${d3FormatSpecifier}')` };
+	return [{ test, signal: `format(datum.value, '${d3FormatSpecifier}')` }];
 };
 
 /**

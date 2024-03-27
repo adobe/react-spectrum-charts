@@ -28,6 +28,7 @@ import {
 	hasInteractiveChildren,
 	hasPopover,
 } from '@specBuilder/marks/markUtils';
+import { getScatterPathMarks } from '@specBuilder/scatterPath/scatterPathUtils';
 import { getTrendlineMarks } from '@specBuilder/trendline';
 import { spectrumColors } from '@themes';
 import { produce } from 'immer';
@@ -43,6 +44,7 @@ export const addScatterMarks = produce<Mark[], [ScatterSpecProps]>((marks, props
 		marks: [getScatterMark(props), ...getScatterHoverMarks(props), ...getScatterSelectMarks(props)],
 	};
 
+	marks.push(...getScatterPathMarks(props));
 	marks.push(scatterGroup);
 	marks.push(...getTrendlineMarks(props));
 });

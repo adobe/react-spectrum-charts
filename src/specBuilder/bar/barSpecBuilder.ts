@@ -13,7 +13,8 @@ import {
 	COLOR_SCALE,
 	DEFAULT_CATEGORICAL_DIMENSION,
 	DEFAULT_COLOR_SCHEME,
-	DEFAULT_METRIC, FILTERED_PREVIOUS_TABLE,
+	DEFAULT_METRIC, 
+	FILTERED_PREVIOUS_TABLE,
 	FILTERED_TABLE,
 	LINE_TYPE_SCALE,
 	OPACITY_SCALE,
@@ -45,7 +46,6 @@ import {
 	Scale,
 	Signal,
 	Spec,
-	Transform,
 	Transforms
 } from 'vega';
 
@@ -54,7 +54,7 @@ import { getDodgedMark } from './dodgedBarUtils';
 import { getDodgedAndStackedBarMark, getStackedBarMarks } from './stackedBarUtils';
 import { addTrellisScale, getTrellisGroupMark, isTrellised } from './trellisedBarUtils';
 
-export const addBar = produce<Spec, [BarProps & { colorScheme?: ColorScheme; index?: number, data?: ChartData[], previousData?: ChartData[], animations?: boolean }]>(
+export const addBar = produce<Spec, [BarProps & { colorScheme?: ColorScheme; index?: number, data?: ChartData[], previousData?: ChartData[], animations?: boolean, animateFromZero?: boolean }]>(
 	(
 		spec,
 		{
@@ -280,7 +280,6 @@ export const addSecondaryScales = (scales: Scale[], props: BarSpecProps) => {
 
 export const addMarks = produce<Mark[], [BarSpecProps]>((marks, props) => {
 	const barMarks: Mark[] = [];
-	console.log('Bar type', props.type);
 	if (isDodgedAndStacked(props)) {
 		barMarks.push(getDodgedAndStackedBarMark(props));
 	} else if (props.type === 'stacked') {
@@ -292,8 +291,6 @@ export const addMarks = produce<Mark[], [BarSpecProps]>((marks, props) => {
 	// if this is a trellis plot, we add the bars and the repeated scale to the trellis group
 	if (isTrellised(props)) {
 		const repeatedScale = getRepeatedScale(props);
-		console.log('Current barMarks up to this point', barMarks);
-		console.log(getTrellisGroupMark(props, barMarks, repeatedScale));
 		marks.push(getTrellisGroupMark(props, barMarks, repeatedScale));
 	} else {
 		marks.push(...barMarks);

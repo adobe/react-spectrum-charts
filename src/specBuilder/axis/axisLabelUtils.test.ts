@@ -192,19 +192,19 @@ describe('getLabelFormat()', () => {
 
 describe('getLabelNumberFormat()', () => {
 	test('should return correct signal for shortNumber', () => {
-		expect(getLabelNumberFormat('shortNumber')).toHaveProperty(
-			'signal',
-			"upper(replace(format(datum.value, '.3~s'), /(\\d+)G/, '$1B'))"
-		);
+		const format = getLabelNumberFormat('shortNumber');
+		expect(format).toHaveLength(1);
+		expect(format[0]).toHaveProperty('signal', "upper(replace(format(datum.value, '.3~s'), /(\\d+)G/, '$1B'))");
 	});
 	test('should return correct signal for shortCurrency', () => {
-		expect(getLabelNumberFormat('shortCurrency')).toHaveProperty(
-			'signal',
-			"upper(replace(format(datum.value, '$.3~s'), /(\\d+)G/, '$1B'))"
-		);
+		const format = getLabelNumberFormat('shortCurrency');
+		expect(format).toHaveLength(2);
+		expect(format[0]).toHaveProperty('signal', "upper(replace(format(datum.value, '$.3~s'), /(\\d+)G/, '$1B'))");
 	});
 	test('should return correct signal for string specifier', () => {
 		const numberFormat = '.2f';
-		expect(getLabelNumberFormat(numberFormat)).toHaveProperty('signal', `format(datum.value, '${numberFormat}')`);
+		const format = getLabelNumberFormat(numberFormat);
+		expect(format).toHaveLength(1);
+		expect(format[0]).toHaveProperty('signal', `format(datum.value, '${numberFormat}')`);
 	});
 });

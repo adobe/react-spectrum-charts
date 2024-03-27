@@ -34,7 +34,7 @@ const defaultChartProps: ChartProps = { data: areaData, minWidth: 400, maxWidth:
 const BasicStory: StoryFn<typeof Area> = (args): ReactElement => {
 	const chartProps = useChartProps({ ...defaultChartProps });
 	return (
-		<Chart {...chartProps} debug>
+		<Chart {...chartProps}>
 			<Area {...args} />
 		</Chart>
 	);

@@ -16,6 +16,7 @@ import {
 	DEFAULT_METRIC,
 	DEFAULT_OPACITY_RULE,
 	FILTERED_TABLE,
+	HIGHLIGHTED_SERIES,
 	HIGHLIGHT_CONTRAST_RATIO,
 	LEGEND_TOOLTIP_DELAY,
 } from '@constants';
@@ -40,7 +41,7 @@ export const cleanupTooltips = () => {
 };
 
 export const opacityEncoding = [
-	{ test: 'highlightedSeries && datum.value !== highlightedSeries', value: 1 / HIGHLIGHT_CONTRAST_RATIO },
+	{ test: `${HIGHLIGHTED_SERIES} && datum.value !== ${HIGHLIGHTED_SERIES}`, value: 1 / HIGHLIGHT_CONTRAST_RATIO },
 	DEFAULT_OPACITY_RULE,
 ];
 

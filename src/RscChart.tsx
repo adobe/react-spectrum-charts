@@ -95,6 +95,9 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 		forwardedRef
 	) => {
 		// uuid is used to make a unique id so there aren't duplicate ids if there is more than one Chart component in the document
+
+		// state variable for storing if chart should reanimate from zero / animate across data sets
+		const [animateFromZero, setAnimateFromZero] = useState(true);
 		const selectedData = useRef<Datum | null>(null); // data that is currently selected, get's set on click if a popover exists
 		const selectedDataName = useRef<string>();
 		const selectedDataBounds = useRef<MarkBounds>();
@@ -104,7 +107,12 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 
 		const sanitizedChildren = sanitizeRscChartChildren(props.children);
 
-		// THE MAGIC, builds our spec
+		// when data changes, make sure that we are animating from zero (especially in the case where a popover was just
+		// opened and closed)
+		useEffect(() => {
+			setAnimateFromZero(true);
+		}, [data]);
+
 		const spec = useSpec({
 			backgroundColor,
 			children: sanitizedChildren,
@@ -112,6 +120,7 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 			data,
 			previousData,
 			animations,
+			animateFromZero,
 			description,
 			hiddenSeries,
 			highlightedSeries,
@@ -134,8 +143,11 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 			// Hide tooltips on all charts when a popover is open
 			tooltipElement.hidden = popoverIsOpen;
 
-			// if the popover is closed, reset the selected data
-			if (!popoverIsOpen) {
+
+			if (popoverIsOpen) {
+				setAnimateFromZero(false);
+			} else {
+				// if the popover is closed, reset the selected data
 				selectedData.current = null;
 			}
 		}, [popoverIsOpen]);
@@ -202,6 +214,7 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 			const signals: Record<string, unknown> = {
 				backgroundColor: getColorValue('gray-50', colorScheme),
 			};
+
 			if (legendIsToggleable) {
 				signals.hiddenSeries = hiddenSeriesState;
 			}
@@ -223,7 +236,7 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 					spec={spec}
 					config={chartConfig}
 					data={data}
-					previousData={previousData ? previousData : []}
+					previousData={previousData ?? []}
 					debug={debug}
 					renderer={renderer}
 					width={chartWidth}

@@ -98,7 +98,7 @@ export const getDodgedGroupMark = (props: BarSpecProps): GroupMark => {
 };
 
 export const getDodgedDimensionEncodings = (props: BarSpecProps): RectEncodeEntry => {
-	const { animations, dimension, metric, previousData, data} = props;
+	const { animations, animateFromZero, dimension, metric, previousData, data} = props;
 
 	const { dimensionAxis, metricAxis: startKey, rangeScale, metricScaleKey: scaleKey } = getOrientationProperties(props.orientation);
 
@@ -116,7 +116,7 @@ export const getDodgedDimensionEncodings = (props: BarSpecProps): RectEncodeEntr
 	const endKey = `${startKey}2`;
 
 	return {
-		...(animations !== false && {
+		...(animations !== false && animateFromZero && {
 			[startKey]: getAnimationMarks(dimension, startMetric, data, previousData, scaleKey),
 			[endKey]: endAnimations
 		}),

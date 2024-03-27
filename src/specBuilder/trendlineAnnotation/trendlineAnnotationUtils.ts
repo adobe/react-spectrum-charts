@@ -35,7 +35,7 @@ import { ColorValueRef, GroupMark, NumericValueRef, ProductionRule, RectMark, Sy
  * @param markName
  * @returns TrendlineAnnotationSpecProps
  */
-export const applyTrendlineAnnotationDefaults = (
+export const getTrendlineAnnotationSpecProps = (
 	{ badge = false, dimensionValue = 'end', numberFormat = '', prefix = '' }: TrendlineAnnotationProps,
 	index: number,
 	{
@@ -82,7 +82,7 @@ export const getTrendlineAnnotations = (
 		(child) => child.type === TrendlineAnnotation
 	) as TrendlineAnnotationElement[];
 	return annotationElements.map((annotation, index) =>
-		applyTrendlineAnnotationDefaults(annotation.props, index, trendlineProps, markName)
+		getTrendlineAnnotationSpecProps(annotation.props, index, trendlineProps, markName)
 	);
 };
 
