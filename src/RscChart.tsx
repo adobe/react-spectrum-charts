@@ -143,11 +143,12 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 			// Hide tooltips on all charts when a popover is open
 			tooltipElement.hidden = popoverIsOpen;
 
-			// if the popover is closed, reset the selected data
-			if (!popoverIsOpen) {
-				selectedData.current = null;
-			} else {
+
+			if (popoverIsOpen) {
 				setAnimateFromZero(false);
+			} else {
+				// if the popover is closed, reset the selected data
+				selectedData.current = null;
 			}
 		}, [popoverIsOpen]);
 

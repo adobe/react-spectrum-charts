@@ -67,7 +67,7 @@ export interface LineMarkProps {
 	data?: ChartData[],
 	previousData?: ChartData[],
 	animations?: boolean,
-	animateFromZero: boolean,
+	animateFromZero?: boolean,
 	displayOnHover?: boolean;
 	interactiveMarkName?: string; // optional name of the mark that is used for hover and click interactions
 	lineType: LineTypeFacet;

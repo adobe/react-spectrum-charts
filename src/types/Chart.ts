@@ -83,7 +83,7 @@ export interface SanitizedSpecProps extends SpecProps {
 	previousData?: ChartData[];
 	data?: ChartData[];
 	animations?: boolean;
-	animateFromZero: boolean;
+	animateFromZero?: boolean;
 }
 
 export type Orientation = 'vertical' | 'horizontal';

@@ -44,7 +44,7 @@ export interface AreaSpecProps
 	data?: ChartData[],
 	previousData?: ChartData[],
 	animations?: boolean,
-	animateFromZero: boolean,
+	animateFromZero?: boolean,
 	children: MarkChildElement[];
 }
 
@@ -103,7 +103,7 @@ type BarPropsWithDefaults =
 	| 'type';
 
 export interface BarSpecProps
-	extends PartiallyRequired<BarProps & { colorScheme: ColorScheme; index: number, data?: ChartData[], previousData?: ChartData[], animations?: boolean, animateFromZero: boolean }, BarPropsWithDefaults> {
+	extends PartiallyRequired<BarProps & { colorScheme: ColorScheme; index: number, data?: ChartData[], previousData?: ChartData[], animations?: boolean, animateFromZero?: boolean }, BarPropsWithDefaults> {
 	children: MarkChildElement[];
 }
 
@@ -141,7 +141,7 @@ export interface LineSpecProps extends PartiallyRequired<LineProps, LinePropsWit
 	data?: ChartData[],
 	previousData?: ChartData[],
 	animations?: boolean,
-	animateFromZero: boolean,
+	animateFromZero?: boolean,
 	colorScheme: ColorScheme;
 	index: number;
 	interactiveMarkName: string | undefined;

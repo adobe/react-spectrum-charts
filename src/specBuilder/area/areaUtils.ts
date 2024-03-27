@@ -34,7 +34,7 @@ export interface AreaMarkProps {
 	colorScheme: ColorScheme;
 	children: MarkChildElement[];
 	animations?: boolean;
-	animateFromZero: boolean;
+	animateFromZero?: boolean;
 	data?: ChartData[];
 	previousData?: ChartData[];
 	metricStart: string;
