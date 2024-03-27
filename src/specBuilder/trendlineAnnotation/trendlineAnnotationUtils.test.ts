@@ -19,13 +19,13 @@ import { spectrumColors } from '@themes';
 import { TrendlineAnnotationSpecProps } from 'types';
 
 import {
-	applyTrendlineAnnotationDefaults,
 	getColorKey,
 	getTextFill,
 	getTrendlineAnnotationBadgeMark,
 	getTrendlineAnnotationMarks,
 	getTrendlineAnnotationPointX,
 	getTrendlineAnnotationPointY,
+	getTrendlineAnnotationSpecProps,
 	getTrendlineAnnotationTextMark,
 	getTrendlineAnnotations,
 } from './trendlineAnnotationUtils';
@@ -52,7 +52,7 @@ const colors = spectrumColors.light;
 
 describe('applyTrendlineAnnotationDefaults()', () => {
 	test('should apply all defaults', () => {
-		const annotationProps = applyTrendlineAnnotationDefaults({}, 0, defaultTrendlineProps, 'line0');
+		const annotationProps = getTrendlineAnnotationSpecProps({}, 0, defaultTrendlineProps, 'line0');
 		expect(annotationProps).toEqual(defaultAnnotationProps);
 	});
 });
