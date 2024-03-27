@@ -88,6 +88,7 @@ export function buildSpec({
 	data,
 	previousData,
 	animations,
+	animateFromZero,
 	hiddenSeries,
 	highlightedSeries,
 	lineTypes = DEFAULT_LINE_TYPES,
@@ -146,6 +147,7 @@ export function buildSpec({
 						previousData,
 						data,
 						animations,
+						animateFromZero
 					});
 				case Axis.displayName:
 					axisCount++;
@@ -159,6 +161,7 @@ export function buildSpec({
 						previousData,
 						data,
 						animations,
+						animateFromZero
 					});
 				case Donut.displayName:
 					donutCount++;
@@ -181,6 +184,7 @@ export function buildSpec({
 						data,
 						previousData,
 						animations,
+						animateFromZero
 					});
 				case Scatter.displayName:
 					scatterCount++;

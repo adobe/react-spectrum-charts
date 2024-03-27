@@ -40,7 +40,7 @@ import {
 } from '@utils';
 import { VegaChart } from 'VegaChart';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { Item, Spec } from 'vega';
+import { Item } from 'vega';
 import { Handler, Options as TooltipOptions } from 'vega-tooltip';
 
 import { ActionButton, Dialog, DialogTrigger, View as SpectrumView } from '@adobe/react-spectrum';
@@ -95,6 +95,9 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 		forwardedRef
 	) => {
 		// uuid is used to make a unique id so there aren't duplicate ids if there is more than one Chart component in the document
+
+		// state variable for storing if chart should reanimate from zero / animate across data sets
+		const [animateFromZero, setAnimateFromZero] = useState(true);
 		const selectedData = useRef<Datum | null>(null); // data that is currently selected, get's set on click if a popover exists
 		const selectedDataName = useRef<string>();
 		const selectedDataBounds = useRef<MarkBounds>();
@@ -104,34 +107,20 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 
 		const sanitizedChildren = sanitizeRscChartChildren(props.children);
 
-		// THE MAGIC, builds our spec
-		// const [spec, setSpec] = useState(useSpec({
-		// 	backgroundColor,
-		// 	children: sanitizedChildren,
-		// 	colors,
-		// 	data,
-		// 	previousData,
-		// 	animations,
-		// 	description,
-		// 	hiddenSeries,
-		// 	highlightedSeries,
-		// 	symbolShapes,
-		// 	symbolSizes,
-		// 	lineTypes,
-		// 	lineWidths,
-		// 	opacities,
-		// 	colorScheme,
-		// 	title,
-		// 	UNSAFE_vegaSpec,
-		// }));
+		// when data changes, make sure that we are animating from zero (especially in the case where a popover was just
+		// opened and closed)
+		useEffect(() => {
+			setAnimateFromZero(true);
+		}, [data]);
 
-		let spec = useSpec({
+		const spec = useSpec({
 			backgroundColor,
 			children: sanitizedChildren,
 			colors,
 			data,
 			previousData,
 			animations,
+			animateFromZero,
 			description,
 			hiddenSeries,
 			highlightedSeries,
@@ -144,36 +133,11 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 			title,
 			UNSAFE_vegaSpec,
 		});
-
-		// console.log('Spec animation marks:', spec.marks[0].marks[0].encode.update);
 
 		const { controlledHoverSignal } = useSpecProps(spec);
 		const chartConfig = useMemo(() => getChartConfig(config, colorScheme), [config, colorScheme]);
 
-		const specNoAnimations = useSpec({
-			backgroundColor,
-			children: sanitizedChildren,
-			colors,
-			data,
-			previousData,
-			animations: false,
-			description,
-			hiddenSeries,
-			highlightedSeries,
-			symbolShapes,
-			symbolSizes,
-			lineTypes,
-			lineWidths,
-			opacities,
-			colorScheme,
-			title,
-			UNSAFE_vegaSpec,
-		});
-
 		useEffect(() => {
-			if (popoverIsOpen) {
-				spec = specNoAnimations;
-			}
 			const tooltipElement = document.getElementById('vg-tooltip-element');
 			if (!tooltipElement) return;
 			// Hide tooltips on all charts when a popover is open
@@ -182,10 +146,10 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 			// if the popover is closed, reset the selected data
 			if (!popoverIsOpen) {
 				selectedData.current = null;
+			} else {
+				setAnimateFromZero(false);
 			}
 		}, [popoverIsOpen]);
-
-		// console.log(spec.marks[0].marks[0].encode.update.y);
 
 		useChartImperativeHandle(forwardedRef, { chartView, title });
 
@@ -210,9 +174,7 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 			padding
 		);
 
-		const tooltipConfig: TooltipOptions = useMemo(() => {
-			return { theme: colorScheme }
-		}, [colorScheme]);
+		const tooltipConfig: TooltipOptions = { theme: colorScheme };
 
 		if (tooltips.length || legendDescriptions) {
 			tooltipConfig.formatTooltip = (value) => {
@@ -251,6 +213,7 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 			const signals: Record<string, unknown> = {
 				backgroundColor: getColorValue('gray-50', colorScheme),
 			};
+
 			if (legendIsToggleable) {
 				signals.hiddenSeries = hiddenSeriesState;
 			}
