@@ -95,6 +95,8 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 		forwardedRef
 	) => {
 		// uuid is used to make a unique id so there aren't duplicate ids if there is more than one Chart component in the document
+
+		// ref for storing if, on rerender, the chart should reanimate from zero or across data points
 		const doAnimateFromZero = useRef(true);
 
 		const selectedData = useRef<Datum | null>(null); // data that is currently selected, get's set on click if a popover exists
@@ -106,13 +108,15 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 
 		const sanitizedChildren = sanitizeRscChartChildren(props.children);
 
+		// state variable that allows us to "short-circuit" the rendering when animateFromZero is updated
 		const [rerender, setRerender] = useState<boolean>(true);
 
-		const invertRerender = useRef(() => setRerender(!rerender));
-
+		// when data changes, make sure that we are animating from zero (especially in the case where a popover was just
+		// opened and closed)
 		useEffect(() => {
 			doAnimateFromZero.current = true;
-			invertRerender.current();
+			// invertRerender.current();
+			setRerender(!rerender);
 		}, [data]);
 
 		const spec = useSpec({
@@ -149,6 +153,7 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 			if (!popoverIsOpen) {
 				selectedData.current = null;
 			} else {
+				// when the popover is closed, a rerender occurs, but we do not want the chart to reanimate from zero.
 				doAnimateFromZero.current = false;
 				setRerender(!rerender);
 			}
@@ -177,9 +182,7 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 			padding
 		);
 
-		const tooltipConfig: TooltipOptions = useMemo(() => {
-			return { theme: colorScheme }
-		}, [colorScheme]);
+		const tooltipConfig: TooltipOptions = { theme: colorScheme };
 
 		if (tooltips.length || legendDescriptions) {
 			tooltipConfig.formatTooltip = (value) => {

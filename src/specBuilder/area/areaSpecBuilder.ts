@@ -202,23 +202,6 @@ export const addAreaMarks = produce<Mark[], [AreaSpecProps]>((marks, props) => {
 		metricStart = `${metric}0`;
 		metricEnd = `${metric}1`;
 	}
-	const areaMarks = getAreaMark({
-		name,
-		color,
-		colorScheme,
-		children,
-		metricStart,
-		metricEnd,
-		animations,
-		animateFromZero,
-		data,
-		previousData,
-		isStacked,
-		dimension,
-		scaleType,
-		opacity,
-	});
-	console.log('Area marks', areaMarks);
 	marks.push(
 		{
 			name: `${name}_group`,
@@ -231,7 +214,22 @@ export const addAreaMarks = produce<Mark[], [AreaSpecProps]>((marks, props) => {
 				},
 			},
 			marks: [
-				areaMarks,
+				getAreaMark({
+					name,
+					color,
+					colorScheme,
+					children,
+					metricStart,
+					metricEnd,
+					animations,
+					animateFromZero,
+					data,
+					previousData,
+					isStacked,
+					dimension,
+					scaleType,
+					opacity,
+				}),
 				...getAnchorPointMark(props),
 			],
 		},
