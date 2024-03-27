@@ -24,6 +24,7 @@ import {
 } from '@constants';
 import {
 	addHighlightedSeriesSignalEvents,
+	getRSCAnimationSignals,
 	getControlledHoverSignal,
 	hasSignalByName,
 } from '@specBuilder/signal/signalSpecBuilder';
@@ -34,14 +35,21 @@ import { AreaProps, AreaSpecProps, ChartData, ColorScheme, MarkChildElement, Sca
 import { Data, Mark, Scale, Signal, Spec, Transforms } from 'vega';
 
 import {
-	addTimeTransform, getFilteredPreviousTableData,
+	addTimeTransform,
+	getFilteredPreviousTableData,
 	getFilteredTableData,
 	getPreviousTableData,
 	getTableData,
 	getTransformSort
 } from '../data/dataUtils';
-import { addContinuousDimensionScale, addFieldToFacetScaleDomain, addMetricScale } from '../scale/scaleSpecBuilder';
+import {
+	addContinuousDimensionScale,
+	addFieldToFacetScaleDomain,
+	addMetricScale,
+	addRSCAnimationScales
+} from '../scale/scaleSpecBuilder';
 import { getAreaMark, getX } from './areaUtils';
+import { hasInteractiveChildren } from '@specBuilder/marks/markUtils';
 
 export const addArea = produce<Spec, [AreaProps & { colorScheme?: ColorScheme; index?: number, previousData?: ChartData[], data?: ChartData[], animations?: boolean }]>(
 	(
@@ -109,7 +117,7 @@ export const addData = produce<Data[], [AreaSpecProps]>(
 		if (!metricEnd || !metricStart) {
 			const filteredTableData = getFilteredTableData(data);
 			const filteredPreviousTableData = getFilteredPreviousTableData(data);
-			// if metricEnd and metricStart don't exist, then we are using metric so we will support stacked
+			// if metricEnd and metricStart don't exist, then we are using metric, so we will support stacked
 			const transform: Transforms[] = [
 				...(filteredTableData.transform ?? []),
 				{
@@ -153,8 +161,12 @@ export const addData = produce<Data[], [AreaSpecProps]>(
 	}
 );
 
-export const addSignals = produce<Signal[], [AreaSpecProps]>((signals, { children, name }) => {
+export const addSignals = produce<Signal[], [AreaSpecProps]>((signals, { children, name, animations }) => {
 	if (!children.length) return;
+	//TODO: add comments/tests/etc
+	if (animations !== false && hasInteractiveChildren(children)) {
+		signals.push(...getRSCAnimationSignals(name));
+	}
 	if (!hasSignalByName(signals, `${name}_controlledHoveredId`)) {
 		signals.push(getControlledHoverSignal(name));
 	}
@@ -162,7 +174,11 @@ export const addSignals = produce<Signal[], [AreaSpecProps]>((signals, { childre
 });
 
 export const setScales = produce<Scale[], [AreaSpecProps]>(
-	(scales, { metric, metricEnd, metricStart, dimension, color, scaleType, padding }) => {
+	(scales, { metric, metricEnd, metricStart, dimension, color, scaleType, padding, animations, children }) => {
+		//TODO: add comments/tests/etc
+		if (animations !== false && hasInteractiveChildren(children)) {
+			addRSCAnimationScales(scales);
+		}
 		// add dimension scale
 		addContinuousDimensionScale(scales, { scaleType, dimension, padding });
 		// add color to the color domain
@@ -326,7 +342,7 @@ const getSelectedAreaMarks = ({
 					strokeJoin: { value: 'round' },
 				},
 				update: {
-					// this has to be in update because when you resize the window that doesn't rebuild the spec
+					// this has to be in update because when you resize the window that doesn't rebuild the spec,
 					// but it may change the x position if it causes the chart to resize
 					x: getX(scaleType, dimension),
 				},

@@ -9,13 +9,14 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { COLOR_SCALE, HIGHLIGHT_CONTRAST_RATIO, SERIES_ID } from '@constants';
+import { COLOR_SCALE, HIGHLIGHT_CONTRAST_RATIO, HIGHLIGHTED_SERIES, SERIES_ID } from '@constants';
 import { GroupMark, Mark, NumericValueRef, ProductionRule } from 'vega';
+import { getOpacityAnimationRules } from '@specBuilder/marks/markUtils';
 
 /**
  * Adds opacity tests for the fill and stroke of marks that use the color scale to set the fill or stroke value.
  */
-export const setHoverOpacityForMarks = (marks: Mark[], keys?: string[], name?: string) => {
+export const setHoverOpacityForMarks = (marks: Mark[], keys?: string[], name?: string, animations?: boolean) => {
 	if (!marks.length) return;
 	const flatMarks = flattenMarks(marks);
 	const seriesMarks = flatMarks.filter(markUsesSeriesColorScale);
@@ -39,9 +40,14 @@ export const setHoverOpacityForMarks = (marks: Mark[], keys?: string[], name?: s
 			if (!Array.isArray(update.opacity)) {
 				update.opacity = [];
 			}
-			// need to insert the new test in the second to last slot
-			const opacityRuleInsertIndex = Math.max(update.opacity.length - 1, 0);
-			update.opacity.splice(opacityRuleInsertIndex, 0, highlightOpacityRule);
+			//TODO: add comment/doc/etc
+			if (animations !== false) {
+				update.opacity = getOpacityAnimationRules();
+			} else {
+				// need to insert the new test in the second to last slot
+				const opacityRuleInsertIndex = Math.max(update.opacity.length - 1, 0);
+				update.opacity.splice(opacityRuleInsertIndex, 0, highlightOpacityRule);
+			}
 		}
 	});
 };
@@ -67,7 +73,7 @@ export const getHighlightOpacityRule = (
 	keys?: string[],
 	name?: string
 ): { test?: string } & NumericValueRef => {
-	let test = `highlightedSeries && highlightedSeries !== datum.${SERIES_ID}`;
+	let test = `${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES} !== datum.${SERIES_ID}`;
 	if (keys) {
 		test = `${name}_highlight && ${name}_highlight !== datum.${keys[0]}`;
 	}

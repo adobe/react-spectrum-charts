@@ -123,7 +123,7 @@ type LegendPropsWithDefaults = 'hiddenEntries' | 'highlight' | 'isToggleable' | 
 
 export interface LegendSpecProps
 	extends PartiallyRequired<
-		LegendProps & { colorScheme: ColorScheme; index: number; hiddenSeries: string[]; highlightedSeries?: string },
+		LegendProps & { colorScheme: ColorScheme; index: number; hiddenSeries: string[]; highlightedSeries?: string; animations?: boolean },
 		LegendPropsWithDefaults
 	> {
 	color?: FacetRef<string>;
@@ -138,7 +138,6 @@ export interface LineSpecProps extends PartiallyRequired<LineProps, LinePropsWit
 	children: MarkChildElement[];
 	data?: ChartData[],
 	previousData?: ChartData[],
-	animations?: boolean,
 	colorScheme: ColorScheme;
 	index: number;
 	interactiveMarkName: string | undefined;

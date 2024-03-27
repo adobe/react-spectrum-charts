@@ -215,3 +215,38 @@ const isScaleMultiFieldsRef = (
 ): domain is ScaleMultiFieldsRef => {
 	return Boolean(domain && !Array.isArray(domain) && 'data' in domain && 'fields' in domain);
 };
+
+//TODO: Add documentation
+export const addRSCAnimationScales = (scales: Scale[]) => {
+	if (!hasScaleByName(scales, 'rscAnimationCurve')) {
+		scales.push(getRSCAnimationCurve());
+		scales.push(getRSCAnimationCurveInverse());
+	}
+}
+
+//TODO: Add documentation
+const getRSCAnimationCurve = (): Scale => {
+	return {
+		name: 'rscAnimationCurve',
+		type: 'linear',
+		domain: [0, 1],
+		range: [0, 1],
+		clamp: true
+	}
+}
+
+//TODO: Add documentation
+const getRSCAnimationCurveInverse = (): Scale => {
+	return {
+			name: 'rscAnimationCurveInverse',
+			type: 'linear',
+			domain: [0, 1],
+			range: [0, 1],
+			clamp: true
+	}
+}
+
+//TODO: Add documentation
+export const hasScaleByName = (scales: Scale[], name: string) => {
+	return scales.some((scale) => scale.name == name);
+}

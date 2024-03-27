@@ -202,6 +202,7 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 			const signals: Record<string, unknown> = {
 				backgroundColor: getColorValue('gray-50', colorScheme),
 			};
+
 			if (legendIsToggleable) {
 				signals.hiddenSeries = hiddenSeriesState;
 			}
