@@ -47,15 +47,14 @@ export interface AreaMarkProps {
 	displayOnHover?: boolean;
 }
 
-export const getAreaMark = (
-	{
-		name,
-		color,
-		colorScheme,
-		children,
-		metricStart,
-		metricEnd,
-		animations,
+export const getAreaMark = ({
+	name,
+	color,
+	colorScheme,
+	children,
+	metricStart,
+	metricEnd,
+	animations,
 	data,
 	previousData,
 	isStacked,

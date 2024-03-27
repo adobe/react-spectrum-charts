@@ -50,7 +50,7 @@ const BarStory: StoryFn<typeof Bar> = (args: BarProps): ReactElement => {
 		colors,
 		width: 800,
 		height: 800,
-		debug: true
+		animations: false,
 	});
 
 	const dialog = (item: Datum) => {

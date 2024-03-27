@@ -21,7 +21,7 @@ import {
 	DEFAULT_METRIC,
 	DEFAULT_OPACITY_RULE,
 	DEFAULT_TIME_DIMENSION,
-	DEFAULT_TRANSFORMED_TIME_DIMENSION, FILTERED_PREVIOUS_TABLE,
+	DEFAULT_TRANSFORMED_TIME_DIMENSION, EASE_OUT_CUBIC, FILTERED_PREVIOUS_TABLE,
 	FILTERED_TABLE,
 	HIGHLIGHTED_ITEM,
 	HIGHLIGHTED_SERIES,
@@ -350,6 +350,80 @@ const displayPointMarks = [
 	},
 ];
 
+const displayPointWithAnimationMarks = [
+	{
+		name: 'line0_group',
+		type: 'group',
+		from: {
+			facet: {
+				name: 'line0_facet',
+				data: FILTERED_TABLE,
+				groupby: ['series'],
+			},
+		},
+		marks: [
+			{
+				name: 'line0',
+				type: 'line',
+				from: {
+					data: 'line0_facet',
+				},
+				interactive: false,
+				encode: {
+					enter: {
+						y: { scale: 'yLinear', field: 'value' },
+						stroke: { scale: COLOR_SCALE, field: 'series' },
+						strokeDash: { value: [] },
+						strokeOpacity: DEFAULT_OPACITY_RULE,
+						strokeWidth: undefined,
+					},
+					update: {
+						x: { scale: 'xTime', field: DEFAULT_TRANSFORMED_TIME_DIMENSION },
+						y: {
+							scale: 'yLinear',
+							signal: `datum.value * ${EASE_OUT_CUBIC}`,
+						},
+						opacity: [DEFAULT_OPACITY_RULE],
+					},
+				},
+			},
+		],
+	},
+	{
+		name: 'line0_staticPoints',
+		type: 'symbol',
+		from: {
+			data: 'line0_staticPointData',
+		},
+		interactive: false,
+		encode: {
+			enter: {
+				y: {
+					scale: 'yLinear',
+					field: 'value',
+				},
+				fill: {
+					scale: COLOR_SCALE,
+					field: 'series',
+				},
+				stroke: {
+					signal: BACKGROUND_COLOR,
+				},
+			},
+			update: {
+				x: {
+					scale: 'xTime',
+					field: DEFAULT_TRANSFORMED_TIME_DIMENSION,
+				},
+				y: {
+					scale: 'yLinear',
+					signal: `datum.value * ${EASE_OUT_CUBIC}`,
+				}
+			},
+		},
+	},
+];
+
 describe('lineSpecBuilder', () => {
 	describe('addLine()', () => {
 		test('should add line', () => {
@@ -504,6 +578,12 @@ describe('lineSpecBuilder', () => {
 		test('with displayPointMark', () => {
 			expect(addLineMarks([], { ...defaultLineProps, staticPoint: 'staticPoint' })).toStrictEqual(
 				displayPointMarks
+			);
+		});
+
+		test('with displayPointMark with animations', () => {
+			expect(addLineMarks([], { ...defaultLineProps, staticPoint: 'staticPoint', animations: true })).toStrictEqual(
+				displayPointWithAnimationMarks
 			);
 		});
 

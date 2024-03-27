@@ -19,6 +19,7 @@ import {
 	DEFAULT_COLOR,
 	DEFAULT_OPACITY_RULE,
 	DEFAULT_SECONDARY_COLOR,
+	EASE_OUT_CUBIC,
 	FILTERED_TABLE,
 } from '@constants';
 import { GroupMark, Mark, RectEncodeEntry } from 'vega';
@@ -169,6 +170,41 @@ describe('stackedBarUtils', () => {
 			).toStrictEqual({
 				width: { band: 1, scale: 'bar0_position' },
 				x: { field: 'bar0_dodgeGroup', scale: 'bar0_position' },
+			});
+		});
+
+		test('should return x and width encodings with animations', () => {
+			expect(getStackedDimensionEncodings({...defaultBarProps, animations: true})).toStrictEqual({
+				...defaultStackedBarXEncodings,
+				y: {
+					scale: 'yLinear',
+					signal: `datum.value0 * ${EASE_OUT_CUBIC}`,
+				},
+				y2: {
+					scale: 'yLinear',
+					signal: `datum.value1 * ${EASE_OUT_CUBIC}`,
+				},
+			});
+		});
+
+		test('should get dodged x encoding if stacked/dodged with animations', () => {
+			expect(
+				getStackedDimensionEncodings({
+					...defaultBarProps,
+					color: [DEFAULT_COLOR, DEFAULT_SECONDARY_COLOR],
+					animations: true
+				})
+			).toStrictEqual({
+				width: { band: 1, scale: 'bar0_position' },
+				x: { field: 'bar0_dodgeGroup', scale: 'bar0_position' },
+				y: {
+					scale: 'yLinear',
+					signal: `datum.value0 * ${EASE_OUT_CUBIC}`,
+				},
+				y2: {
+					scale: 'yLinear',
+					signal: `datum.value1 * ${EASE_OUT_CUBIC}`,
+				},
 			});
 		});
 	});
