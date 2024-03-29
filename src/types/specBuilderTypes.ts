@@ -28,6 +28,7 @@ import {
 	MetricRangeProps,
 	Orientation,
 	ScaleType as RscScaleType,
+	ScatterPathProps,
 	ScatterProps,
 	TrendlineAnnotationProps,
 	TrendlineChildElement,
@@ -40,10 +41,11 @@ type AreaPropsWithDefaults = 'name' | 'dimension' | 'metric' | 'color' | 'scaleT
 
 export interface AreaSpecProps
 	extends PartiallyRequired<AreaProps & { colorScheme: ColorScheme; index: number }, AreaPropsWithDefaults> {
-	data?: ChartData[],
-	previousData?: ChartData[],
+	animateFromZero?: boolean,
 	animations?: boolean,
 	children: MarkChildElement[];
+	data?: ChartData[],
+	previousData?: ChartData[],
 }
 
 type AxisPropsWithDefaults =
@@ -101,7 +103,7 @@ type BarPropsWithDefaults =
 	| 'type';
 
 export interface BarSpecProps
-	extends PartiallyRequired<BarProps & { colorScheme: ColorScheme; index: number, data?: ChartData[], previousData?: ChartData[], animations?: boolean }, BarPropsWithDefaults> {
+	extends PartiallyRequired<BarProps & { colorScheme: ColorScheme; index: number, data?: ChartData[], previousData?: ChartData[], animations?: boolean, animateFromZero?: boolean }, BarPropsWithDefaults> {
 	children: MarkChildElement[];
 }
 
@@ -135,14 +137,16 @@ export interface LegendSpecProps
 type LinePropsWithDefaults = 'name' | 'dimension' | 'metric' | 'color' | 'scaleType' | 'lineType' | 'opacity';
 
 export interface LineSpecProps extends PartiallyRequired<LineProps, LinePropsWithDefaults> {
+	animateFromZero?: boolean,
+	animations?: boolean,
 	children: MarkChildElement[];
-	data?: ChartData[],
-	previousData?: ChartData[],
 	colorScheme: ColorScheme;
+	data?: ChartData[],
 	index: number;
 	interactiveMarkName: string | undefined;
 	lineWidth?: FacetRef<LineWidth>;
 	popoverMarkName: string | undefined;
+	previousData?: ChartData[],
 }
 
 type ScatterPropsWithDefaults =
@@ -162,6 +166,17 @@ export interface ScatterSpecProps extends PartiallyRequired<ScatterProps, Scatte
 	colorScheme: ColorScheme;
 	index: number;
 	interactiveMarkName: string | undefined;
+}
+
+type ScatterPathPropsWithDefaults = 'color' | 'groupBy' | 'pathWidth' | 'opacity';
+
+export interface ScatterPathSpecProps extends PartiallyRequired<ScatterPathProps, ScatterPathPropsWithDefaults> {
+	colorScheme: ColorScheme;
+	dimension: string;
+	dimensionScaleType: RscScaleType;
+	metric: string;
+	index: number;
+	name: string;
 }
 
 type MetricRangePropsWithDefaults = 'lineType' | 'lineWidth' | 'rangeOpacity' | 'metricEnd' | 'metricStart' | 'metric';

@@ -33,7 +33,7 @@ describe('getAreaMark', () => {
 				dimension: 'dimension',
 				scaleType: 'linear',
 				opacity: 0.5,
-				animations: false,
+				animations: false
 			})
 		).toStrictEqual({
 			name: 'area0',
@@ -88,7 +88,7 @@ describe('getAreaMark', () => {
 				dimension: 'dimension',
 				scaleType: 'linear',
 				opacity: 0.5,
-				animations: false,
+				animations: false
 			})
 		).toStrictEqual({
 			name: 'area0',
@@ -151,7 +151,7 @@ describe('getAreaMark', () => {
 				dimension: 'dimension',
 				scaleType: 'time',
 				opacity: 0.5,
-				animations: false,
+				animations: false
 			})
 		).toStrictEqual({
 			name: 'area0',
@@ -206,7 +206,7 @@ describe('getAreaMark', () => {
 				dimension: 'dimension',
 				scaleType: 'point',
 				opacity: 0.5,
-				animations: false,
+				animations: false
 			})
 		).toStrictEqual({
 			name: 'area0',

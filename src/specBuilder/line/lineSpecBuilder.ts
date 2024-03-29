@@ -16,19 +16,20 @@ import {
 	DEFAULT_TIME_DIMENSION,
 	FILTERED_TABLE,
 	LINE_TYPE_SCALE,
-	OPACITY_SCALE, RSC_ANIMATION
+	OPACITY_SCALE,
+	RSC_ANIMATION,
 } from '@constants';
 import { hasInteractiveChildren, hasPopover } from '@specBuilder/marks/markUtils';
 import {
 	getMetricRangeData,
 	getMetricRangeGroupMarks,
 	getMetricRangeSignals,
-	getMetricRanges
+	getMetricRanges,
 } from '@specBuilder/metricRange/metricRangeUtils';
 import { getFacetsFromProps } from '@specBuilder/specUtils';
 import {
-	checkTrendlineAnimationScales,
 	addTrendlineData,
+	checkTrendlineAnimationScales,
 	getTrendlineMarks,
 	getTrendlineScales,
 	setTrendlineSignals
@@ -43,13 +44,13 @@ import {
 	addContinuousDimensionScale,
 	addFieldToFacetScaleDomain,
 	addMetricScale,
-	addRSCAnimationScales
+	addRSCAnimationScales,
 } from '../scale/scaleSpecBuilder';
 import {
 	addHighlightedItemSignalEvents,
 	addHighlightedSeriesSignalEvents,
 	getRSCAnimationSignals,
-	hasSignalByName
+	hasSignalByName,
 } from '../signal/signalSpecBuilder';
 import { getLineHighlightedData, getLineStaticPointData } from './lineDataUtils';
 import { getLineHoverMarks, getLineMark } from './lineMarkUtils';
@@ -57,11 +58,12 @@ import { getLineStaticPoint } from './linePointUtils';
 import { getInteractiveMarkName, getPopoverMarkName } from './lineUtils';
 
 export const addLine = produce<Spec, [LineProps & {
-	colorScheme?: ColorScheme;
-	index?: number,
-	data?: ChartData[],
-	previousData?: ChartData[],
+	animateFromZero?: boolean
 	animations?: boolean
+	colorScheme?: ColorScheme;
+	data?: ChartData[],
+	index?: number,
+	previousData?: ChartData[],
 }]>(
 	(
 		spec,
@@ -95,7 +97,7 @@ export const addLine = produce<Spec, [LineProps & {
 			opacity,
 			popoverMarkName: getPopoverMarkName(sanitizedChildren, lineName),
 			scaleType,
-			...props
+			...props,
 		};
 
 		spec.data = addData(spec.data ?? [], lineProps);
@@ -122,7 +124,7 @@ export const addData = produce<Data[], [LineSpecProps]>((data, props) => {
 });
 
 export const addSignals = produce<Signal[], [LineSpecProps]>((signals, props) => {
-	const { children, name, animations } = props;
+	const { children, name, animations, } = props;
 	setTrendlineSignals(signals, props);
 	signals.push(...getMetricRangeSignals(props));
 
@@ -160,8 +162,6 @@ export const setScales = produce<Scale[], [LineSpecProps]>((scales, props) => {
 });
 
 // The order that marks are added is important since it determines the draw order.
-// TODO: LineProps & { colorScheme?: ColorScheme; index?: number }. Do we need this? If we move the useRef previousData check up is this still important?
-
 export const addLineMarks = produce<Mark[], [LineSpecProps]>((marks, props) => {
 	const { name, children, color, lineType, opacity, staticPoint } = props;
 
@@ -174,10 +174,10 @@ export const addLineMarks = produce<Mark[], [LineSpecProps]>((marks, props) => {
 			facet: {
 				name: `${name}_facet`,
 				data: FILTERED_TABLE,
-				groupby: facets
-			}
+				groupby: facets,
+			},
 		},
-		marks: [getLineMark(props, `${name}_facet`)]
+		marks: [getLineMark(props, `${name}_facet`)],
 	});
 	if (staticPoint) marks.push(getLineStaticPoint(props));
 	marks.push(...getMetricRangeGroupMarks(props));

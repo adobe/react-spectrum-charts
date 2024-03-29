@@ -63,6 +63,7 @@ export const LINE_WIDTH_SCALE = 'lineWidth';
 export const OPACITY_SCALE = 'opacity';
 export const SYMBOL_SHAPE_SCALE = 'symbolShape';
 export const SYMBOL_SIZE_SCALE = 'symbolSize';
+export const SYMBOL_PATH_WIDTH_SCALE = 'symbolPathWidth';
 
 // encode rules
 export const DEFAULT_OPACITY_RULE = { value: 1 };
@@ -91,5 +92,7 @@ export const BACKGROUND_COLOR = 'chartBackgroundColor';
 // time constants
 export const MS_PER_DAY = 86400000;
 
-// chart animation easing functions
+// chart animation constants
+export const DATA_ANIMATION_DURATION_FRAMES = 78; // 60 fps * 1.3 seconds = 78 frames
+export const DATA_ANIMATION_MILLISECONDS_PER_FRAME = 1000 / 60; // 60fps
 export const EASE_OUT_CUBIC = '(1 - pow(1 - timerValue, 3))';

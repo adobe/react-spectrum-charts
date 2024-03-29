@@ -1,6 +1,6 @@
 {
 	"name": "@adobe/react-spectrum-charts",
-	"version": "v1.2.0",
+	"version": "v1.4.0",
 	"description": "Declarative library for composing Spectrum visualizations in React.",
 	"browser": "./dist/index.js",
 	"module": "./dist/index.js",

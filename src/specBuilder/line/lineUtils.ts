@@ -31,7 +31,10 @@ export const getInteractiveMarkName = (children: MarkChildElement[], name: strin
 	// if there is a trendline with an interactive component on the line, then the trendline is the target for the interactive component
 	if (
 		children.some(
-			(child) => child.type === Trendline && hasInteractiveChildren(sanitizeMarkChildren(child.props.children))
+			(child) =>
+				child.type === Trendline &&
+				'children' in child.props &&
+				hasInteractiveChildren(sanitizeMarkChildren(child.props.children))
 		)
 	) {
 		return `${name}Trendline`;
@@ -44,19 +47,26 @@ export const getPopoverMarkName = (children: MarkChildElement[], name: string): 
 		return name;
 	}
 	// if there is a trendline with a popover on this line, then the trendline is the target for the popover
-	if (children.some((child) => child.type === Trendline && hasPopover(sanitizeMarkChildren(child.props.children)))) {
+	if (
+		children.some(
+			(child) =>
+				child.type === Trendline &&
+				'children' in child.props &&
+				hasPopover(sanitizeMarkChildren(child.props.children))
+		)
+	) {
 		return `${name}Trendline`;
 	}
 };
 
 export interface LineMarkProps {
+	animateFromZero?: boolean,
 	animations?: boolean;
 	children: MarkChildElement[];
 	color: ColorFacet;
 	colorScheme: ColorScheme;
+	data?: ChartData[],
 	dimension: string;
-	data?: ChartData[];
-	previousData?: ChartData[];
 	displayOnHover?: boolean;
 	interactiveMarkName?: string; // optional name of the mark that is used for hover and click interactions
 	lineType: LineTypeFacet;
@@ -65,6 +75,7 @@ export interface LineMarkProps {
 	name: string;
 	opacity: OpacityFacet;
 	popoverMarkName?: string;
+	previousData?: ChartData[],
 	scaleType: ScaleType;
 	staticPoint?: string;
 }
