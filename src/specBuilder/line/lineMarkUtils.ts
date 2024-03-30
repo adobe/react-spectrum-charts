@@ -61,7 +61,7 @@ export const getLineMark = (lineMarkProps: LineMarkProps, dataSource: string): L
 				// but it may change the x position if it causes the chart to resize
 				x: getXProductionRule(scaleType, dimension),
 				opacity: getLineOpacity(lineMarkProps),
-				...(animations !== false && { y: getAnimationMarks(dimension, metric, data, previousData) })
+				...(animations && { y: getAnimationMarks(dimension, metric, data, previousData) })
 			},
 		},
 	};
@@ -77,7 +77,7 @@ export const getLineOpacity = ({
 	const strokeOpacityRules: ProductionRule<NumericValueRef> = [];
 
 	//TODO: add comments/tests/etc
-	if (animations !== false) {
+	if (animations) {
 		return getOpacityAnimationRules();
 	}
 	// add a rule that will lower the opacity of the line if there is a hovered series, but this line is not the one hovered

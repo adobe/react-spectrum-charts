@@ -49,8 +49,7 @@ const BarStory: StoryFn<typeof Bar> = (args: BarProps): ReactElement => {
 		}),
 		colors,
 		width: 800,
-		height: 800,
-		animations: false,
+		height: 800,	
 	});
 
 	const dialog = (item: Datum) => {

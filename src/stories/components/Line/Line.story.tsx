@@ -61,7 +61,6 @@ const defaultChartProps: ChartProps = {
 	minWidth: 400,
 	maxWidth: 800,
 	height: 400,
-	animations: false,
 };
 
 const singleLineChartProps: ChartProps = {
@@ -69,7 +68,6 @@ const singleLineChartProps: ChartProps = {
 	minWidth: 400,
 	maxWidth: 800,
 	height: 40,
-	animations: false,
 };
 
 const SingleLineStory: StoryFn<typeof Line> = (args): ReactElement => {

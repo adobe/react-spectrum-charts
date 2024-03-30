@@ -128,7 +128,7 @@ export const addSignals = produce<Signal[], [LineSpecProps]>((signals, props) =>
 
 	if (!hasInteractiveChildren(children)) return;
 	//TODO: Add comments/documentation/tests
-	if (animations !== false && !hasSignalByName(signals, RSC_ANIMATION)) {
+	if (animations && !hasSignalByName(signals, RSC_ANIMATION)) {
 		signals.push(...getRSCAnimationSignals(name, true));
 	}
 	addHighlightedItemSignalEvents(signals, `${name}_voronoi`, 2);
@@ -138,7 +138,7 @@ export const addSignals = produce<Signal[], [LineSpecProps]>((signals, props) =>
 export const setScales = produce<Scale[], [LineSpecProps]>((scales, props) => {
 	const { metric, dimension, color, lineType, opacity, padding, scaleType, children, name, animations } = props;
 	//TODO: Add comments/documentation/tests
-	if (animations !== false && hasInteractiveChildren(children)) {
+	if (animations && hasInteractiveChildren(children)) {
 		addRSCAnimationScales(scales);
 	}
 	// add dimension scale
