@@ -54,6 +54,7 @@ import {
 	PathMark,
 	ScaledValueRef,
 	SignalRef,
+	SymbolMark,
 } from 'vega';
 
 /**
@@ -239,6 +240,40 @@ export const getXProductionRule = (scaleType: ScaleType, dimension: string): Num
 		return { scale, field: DEFAULT_TRANSFORMED_TIME_DIMENSION };
 	}
 	return { scale, field: dimension };
+};
+
+/**
+ * Gets the points used for the voronoi calculation
+ * @param dataSource the name of the data source that will be used in the voronoi calculation
+ * @param dimension the dimension for the x encoding
+ * @param metric the metric for the y encoding
+ * @param name the name of the component the voronoi is associated with, i.e. `scatter0`
+ * @param scaleType the scale type for the x encoding
+ * @returns SymbolMark
+ */
+export const getPointsForVoronoi = (
+	dataSource: string,
+	dimension: string,
+	metric: string,
+	name: string,
+	scaleType: ScaleType
+): SymbolMark => {
+	return {
+		name: `${name}_pointsForVoronoi`,
+		type: 'symbol',
+		from: { data: dataSource },
+		interactive: false,
+		encode: {
+			enter: {
+				y: { scale: 'yLinear', field: metric },
+				fill: { value: 'transparent' },
+				stroke: { value: 'transparent' },
+			},
+			update: {
+				x: getXProductionRule(scaleType, dimension),
+			},
+		},
+	};
 };
 
 /**

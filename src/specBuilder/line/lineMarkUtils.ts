@@ -15,6 +15,7 @@ import {
 	getHighlightOpacityValue,
 	getLineWidthProductionRule,
 	getOpacityProductionRule,
+	getPointsForVoronoi,
 	getStrokeDashProductionRule,
 	getVoronoiPath,
 	getXProductionRule,
@@ -131,31 +132,6 @@ const getHoverRule = (dimension: string, name: string, scaleType: ScaleType): Ru
 				y: { value: 0 },
 				y2: { signal: 'height' },
 				strokeWidth: { value: 1 },
-			},
-			update: {
-				x: getXProductionRule(scaleType, dimension),
-			},
-		},
-	};
-};
-
-const getPointsForVoronoi = (
-	dataSource: string,
-	dimension: string,
-	metric: string,
-	name: string,
-	scaleType: ScaleType
-): SymbolMark => {
-	return {
-		name: `${name}_pointsForVoronoi`,
-		type: 'symbol',
-		from: { data: dataSource },
-		interactive: false,
-		encode: {
-			enter: {
-				y: { scale: 'yLinear', field: metric },
-				fill: { value: 'transparent' },
-				stroke: { value: 'transparent' },
 			},
 			update: {
 				x: getXProductionRule(scaleType, dimension),
