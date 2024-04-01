@@ -86,7 +86,7 @@ export const addLine = produce<Spec, [LineProps & { colorScheme?: ColorScheme; i
 );
 
 export const addData = produce<Data[], [LineSpecProps]>((data, props) => {
-	const { dimension, scaleType, children, name, staticPoint, animations, animateFromZero } = props;
+	const { dimension, scaleType, children, name, staticPoint } = props;
 	if (scaleType === 'time') {
 		const tableData = getTableData(data);
 		tableData.transform = addTimeTransform(tableData.transform ?? [], dimension);

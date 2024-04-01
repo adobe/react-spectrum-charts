@@ -13,7 +13,7 @@ import React, { ReactElement } from 'react';
 
 import { ChartTooltip } from '@components/ChartTooltip/ChartTooltip';
 import useChartProps from '@hooks/useChartProps';
-import { Area, Bar, Chart, ChartTooltipProps, Datum, Line } from '@rsc';
+import { Area, Bar, Chart, Datum, Line } from '@rsc';
 import { browserData as data } from '@stories/data/data';
 import { formatTimestamp } from '@stories/storyUtils';
 import { StoryFn } from '@storybook/react';
@@ -31,10 +31,6 @@ export default {
 		},
 	},
 };
-
-interface ChartTooltipPropsAndAnimations extends ChartTooltipProps {
-	animations?: boolean;
-}
 
 const StackedBarTooltipStory: StoryFn<typeof ChartTooltip> = (args): ReactElement => {
 	const chartProps = useChartProps({ data, width: 600 });
