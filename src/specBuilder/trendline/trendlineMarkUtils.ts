@@ -317,30 +317,37 @@ const getLineYAnimationMarks = (
 	const { method, name, trendlineDimension } = trendlineProps;
 	const { data, previousData } = markProps;
 
-	if (data && previousData) {
-		const hasSameDimensions =
-			data !== previousData &&
-			data.every((d) => previousData.some((pd) => d[trendlineDimension] === pd[trendlineDimension]));
-		if (hasSameDimensions) {
-			// If data isn't similar enough, keep the animation from zero as shown above
-			if (isRegressionMethod(method)) {
-				return {
-					scale,
-					signal: `(data('previous_${name}_highResolutionData')[indexof(pluck(data('previous_${name}_highResolutionData'), '${trendlineDimension}'), datum.${trendlineDimension})].${TRENDLINE_VALUE} * (1 - ${easingFunction})) + (datum.${TRENDLINE_VALUE} * ${easingFunction})`,
-				};
-			} else if (isWindowMethod(method)) {
-				return {
-					scale,
-					signal: `(data('previous_${name}_data')[indexof(pluck(data('previous_${name}_data'), '${trendlineDimension}'), datum.${trendlineDimension})].${TRENDLINE_VALUE} * (1 - ${easingFunction})) + (datum.${TRENDLINE_VALUE} * ${easingFunction})`,
-				};
-			}
-		}
-	}
-
-	return {
+	const animationFromZeroMark = {
 		scale,
 		signal: `datum.${TRENDLINE_VALUE} * ${easingFunction}`,
 	};
+
+	const hasNoPreviousData = !(data && previousData);
+	if (hasNoPreviousData) {
+		return animationFromZeroMark;
+	}
+
+	const hasDifferentDimensions = !(
+		data !== previousData &&
+		data.every((d) => previousData.some((pd) => d[trendlineDimension] === pd[trendlineDimension]))
+	);
+	if (hasDifferentDimensions) {
+		return animationFromZeroMark;
+	}
+
+	const tableSuffix = isRegressionMethod(method) ? 'highResolutionData' : 'data';
+	const animationFromPreviousDataMark = {
+		scale,
+		signal: `
+			(data('previous_${name}_${tableSuffix}')
+			[indexof(
+				pluck(data('previous_${name}_${tableSuffix}'), '${trendlineDimension}'),
+				datum.${trendlineDimension}
+			)].${TRENDLINE_VALUE} * (1 - ${easingFunction})
+			) + (datum.${TRENDLINE_VALUE} * ${easingFunction})
+		`,
+	};
+	return animationFromPreviousDataMark;
 };
 
 const getTrendlineHoverMarks = (markProps: TrendlineParentProps, highlightRawPoint: boolean): GroupMark => {
