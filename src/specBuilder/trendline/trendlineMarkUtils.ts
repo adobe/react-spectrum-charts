@@ -10,7 +10,7 @@
  * governing permissions and limitations under the License.
  */
 import { ChartTooltip } from '@components/ChartTooltip';
-import { TRENDLINE_VALUE } from '@constants';
+import { EASE_OUT_CUBIC, TRENDLINE_VALUE } from '@constants';
 import { getLineHoverMarks, getLineOpacity } from '@specBuilder/line/lineMarkUtils';
 import { LineMarkProps } from '@specBuilder/line/lineUtils';
 import {
@@ -26,7 +26,13 @@ import { getTrendlineAnnotationMarks } from '@specBuilder/trendlineAnnotation';
 import { ChartTooltipElement, Orientation, ScaleType, TrendlineMethod, TrendlineSpecProps } from 'types';
 import { EncodeEntry, GroupMark, LineMark, NumericValueRef, RuleMark } from 'vega';
 
-import { TrendlineParentProps, getTrendlines, isAggregateMethod, isRegressionMethod } from './trendlineUtils';
+import {
+	TrendlineParentProps,
+	getTrendlines,
+	isAggregateMethod,
+	isRegressionMethod,
+	isWindowMethod,
+} from './trendlineUtils';
 
 export const getTrendlineMarks = (markProps: TrendlineParentProps): (GroupMark | RuleMark)[] => {
 	const { color, lineType } = markProps;
@@ -250,6 +256,7 @@ export const getTrendlineLineMark = (markProps: TrendlineParentProps, trendlineP
 			},
 			update: {
 				x: getLineXProductionRule(trendlineDimension, dimensionScaleType, orientation, isDimensionNormalized),
+				...(markProps.animations !== false && { y: getLineYAnimationMarks(markProps, trendlineProps) }),
 				opacity: getLineOpacity(getLineMarkProps(markProps, trendlineProps)),
 			},
 		},
@@ -291,6 +298,49 @@ export const getLineXProductionRule = (
 	return isDimensionNormalized
 		? { scale: 'xTrendline', field: trendlineDimension }
 		: { scale, field: trendlineDimension };
+};
+
+/**
+ * Gets the marks needed to show trendline animations
+ * @param markProps
+ * @param trendlineProps
+ * @param easingFunction
+ * @param scale
+ * @returns
+ */
+const getLineYAnimationMarks = (
+	markProps: TrendlineParentProps,
+	trendlineProps: TrendlineSpecProps,
+	easingFunction: string = EASE_OUT_CUBIC,
+	scale: string = 'yLinear'
+) => {
+	const { method, name, trendlineDimension } = trendlineProps;
+	const { data, previousData } = markProps;
+
+	if (data && previousData) {
+		const hasSameDimensions =
+			data !== previousData &&
+			data.every((d) => previousData.some((pd) => d[trendlineDimension] === pd[trendlineDimension]));
+		if (hasSameDimensions) {
+			// If data isn't similar enough, keep the animation from zero as shown above
+			if (isRegressionMethod(method)) {
+				return {
+					scale,
+					signal: `(data('previous_${name}_highResolutionData')[indexof(pluck(data('previous_${name}_highResolutionData'), '${trendlineDimension}'), datum.${trendlineDimension})].${TRENDLINE_VALUE} * (1 - ${easingFunction})) + (datum.${TRENDLINE_VALUE} * ${easingFunction})`,
+				};
+			} else if (isWindowMethod(method)) {
+				return {
+					scale,
+					signal: `(data('previous_${name}_data')[indexof(pluck(data('previous_${name}_data'), '${trendlineDimension}'), datum.${trendlineDimension})].${TRENDLINE_VALUE} * (1 - ${easingFunction})) + (datum.${TRENDLINE_VALUE} * ${easingFunction})`,
+				};
+			}
+		}
+	}
+
+	return {
+		scale,
+		signal: `datum.${TRENDLINE_VALUE} * ${easingFunction}`,
+	};
 };
 
 const getTrendlineHoverMarks = (markProps: TrendlineParentProps, highlightRawPoint: boolean): GroupMark => {

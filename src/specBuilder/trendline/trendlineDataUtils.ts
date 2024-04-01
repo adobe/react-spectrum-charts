@@ -10,6 +10,7 @@
  * governing permissions and limitations under the License.
  */
 import {
+	FILTERED_PREVIOUS_TABLE,
 	FILTERED_TABLE,
 	HIGHLIGHTED_ITEM,
 	HIGHLIGHTED_SERIES,
@@ -18,7 +19,7 @@ import {
 	SELECTED_SERIES,
 	SERIES_ID,
 } from '@constants';
-import { getSeriesIdTransform, getTableData } from '@specBuilder/data/dataUtils';
+import { getPreviousTableData, getSeriesIdTransform, getTableData } from '@specBuilder/data/dataUtils';
 import { hasInteractiveChildren } from '@specBuilder/marks/markUtils';
 import { getFacetsFromProps } from '@specBuilder/specUtils';
 import { produce } from 'immer';
@@ -56,6 +57,11 @@ export const addTrendlineData = (data: Data[], markProps: TrendlineParentProps) 
 
 	const tableData = getTableData(data);
 	tableData.transform = addTableDataTransforms(tableData.transform ?? [], markProps);
+
+	if (markProps.animations !== false) {
+		const previousTableData = getPreviousTableData(data);
+		previousTableData.transform = addPreviousTableDataTransforms(previousTableData.transform ?? [], markProps);
+	}
 };
 
 /**
@@ -80,10 +86,16 @@ export const getTrendlineData = (markProps: TrendlineParentProps): SourceData[] 
 
 		if (isRegressionMethod(method)) {
 			data.push(...getRegressionTrendlineData(markProps, trendlineProps, facets));
+			if (markProps.animations !== false) {
+				data.push(...getPreviousTableRegressionTrendlineData(markProps, trendlineProps, facets));
+			}
 		} else if (isAggregateMethod(method)) {
 			data.push(...getAggregateTrendlineData(markProps, trendlineProps, facets));
 		} else if (isWindowMethod(method)) {
 			data.push(getWindowTrendlineData(markProps, trendlineProps));
+			if (markProps.animations !== false) {
+				data.push(getPreviousTableWindowTrendlineData(markProps, trendlineProps));
+			}
 		}
 		if (displayOnHover) {
 			data.push(getTrendlineDisplayOnHoverData(name, method));
@@ -206,6 +218,71 @@ export const getRegressionTrendlineData = (
 };
 
 /**
+ * Gets the data sources and transforms for the "previous data" of animated regression trendlines (linear, power, polynomial-x, etc.)
+ * @param markProps
+ * @param trendlineProps
+ * @param facets
+ * @returns Data[]
+ */
+export const getPreviousTableRegressionTrendlineData = (
+	markProps: TrendlineParentProps,
+	trendlineProps: TrendlineSpecProps,
+	facets: string[]
+) => {
+	const data: SourceData[] = [];
+	const { dimension, metric } = markProps;
+	const {
+		dimensionRange,
+		method,
+		name,
+		orientation,
+		children: trendlineChildren,
+		trendlineDimension,
+	} = trendlineProps;
+	const { trendlineDimension: standardTrendlineDimension } = getTrendlineDimensionMetric(
+		dimension,
+		metric,
+		orientation,
+		false
+	);
+	const dimensionRangeTransforms = getTrendlineDimensionRangeTransforms(standardTrendlineDimension, dimensionRange);
+	// high resolution data used for drawing the smooth trendline
+	data.push({
+		name: `previous_${name}_highResolutionData`,
+		source: FILTERED_PREVIOUS_TABLE,
+		transform: [
+			...dimensionRangeTransforms,
+			...getTrendlineStatisticalTransforms(markProps, trendlineProps, true),
+			getSeriesIdTransform(facets),
+		],
+	});
+	if (hasInteractiveChildren(trendlineChildren)) {
+		// params and data used for each of the trendline data points
+		// the high resolution data has too much detail and we don't want a tooltip at each high resolution point
+		data.push(
+			{
+				name: `previous_${name}_params`,
+				source: FILTERED_PREVIOUS_TABLE,
+				transform: [
+					...dimensionRangeTransforms,
+					...getTrendlineStatisticalTransforms(markProps, trendlineProps, false),
+				],
+			},
+			{
+				name: `previous_${name}_data`,
+				source: FILTERED_PREVIOUS_TABLE,
+				transform: [
+					...dimensionRangeTransforms,
+					getTrendlineParamLookupTransform(markProps, trendlineProps),
+					...getTrendlineParamFormulaTransforms(trendlineDimension, method),
+				],
+			}
+		);
+	}
+	return data;
+};
+
+export /**
  * Gets the data source and transforms for window trendlines (movingAverage-x)
  * @param markProps
  * @param trendlineProps
@@ -214,6 +291,24 @@ export const getRegressionTrendlineData = (
 const getWindowTrendlineData = (markProps: TrendlineParentProps, trendlineProps: TrendlineSpecProps): SourceData => ({
 	name: `${trendlineProps.name}_data`,
 	source: FILTERED_TABLE,
+	transform: [
+		...getTrendlineStatisticalTransforms(markProps, trendlineProps, false),
+		...getTrendlineDimensionRangeTransforms(markProps.dimension, trendlineProps.dimensionRange),
+	],
+});
+
+/**
+ * Gets the data source and transforms for the "previous data" of animated window trendlines (movingAverage-x)
+ * @param markProps
+ * @param trendlineProps
+ * @returns
+ */
+const getPreviousTableWindowTrendlineData = (
+	markProps: TrendlineParentProps,
+	trendlineProps: TrendlineSpecProps
+): SourceData => ({
+	name: `previous_${trendlineProps.name}_data`,
+	source: FILTERED_PREVIOUS_TABLE,
 	transform: [
 		...getTrendlineStatisticalTransforms(markProps, trendlineProps, false),
 		...getTrendlineDimensionRangeTransforms(markProps.dimension, trendlineProps.dimensionRange),
@@ -297,6 +392,40 @@ export const addTableDataTransforms = produce<Transforms[], [TrendlineParentProp
 			}
 			// add the extent transform
 			transforms.push(getRegressionExtentTransform(trendlineDimension, name));
+		}
+	}
+});
+
+/**
+ * Adds the table data transforms needed for the "previous data" of animated trendlines
+ * @param transforms
+ * @param markProps
+ */
+export const addPreviousTableDataTransforms = produce<Transforms[], [TrendlineParentProps]>((transforms, markProps) => {
+	const { dimension, metric } = markProps;
+
+	const trendlines = getTrendlines(markProps);
+	for (const { isDimensionNormalized, method, name, orientation, trendlineDimension } of trendlines) {
+		if (isRegressionMethod(method)) {
+			// time scales need to be normalized for regression trendlines
+			const { trendlineDimension: standardTrendlinDimension } = getTrendlineDimensionMetric(
+				dimension,
+				metric,
+				orientation,
+				false
+			);
+
+			if (isDimensionNormalized) {
+				if (
+					!transforms.some(
+						(transform) => 'as' in transform && transform.as === `${standardTrendlinDimension}Normalized`
+					)
+				) {
+					transforms.push(...getNormalizedDimensionTransform(standardTrendlinDimension));
+				}
+			}
+			// add the extent transform
+			transforms.push(getRegressionExtentTransform(trendlineDimension, `previous_${name}`));
 		}
 	}
 });

@@ -91,6 +91,7 @@ describe('addTrendlineData()', () => {
 		const trendlineData = getDefaultData();
 		addTrendlineData(trendlineData, {
 			...defaultLineProps,
+			animations: false,
 			children: [createElement(Trendline, {}, createElement(ChartTooltip))],
 		});
 		expect(trendlineData).toHaveLength(9);
@@ -103,6 +104,7 @@ describe('addTrendlineData()', () => {
 
 		addTrendlineData(trendlineData, {
 			...defaultLineProps,
+			animations: false,
 			children: [createElement(Trendline, { method: 'linear' })],
 		});
 		expect(trendlineData).toHaveLength(5);
@@ -114,6 +116,7 @@ describe('addTrendlineData()', () => {
 
 		addTrendlineData(trendlineData, {
 			...defaultLineProps,
+			animations: false,
 			children: [createElement(Trendline, { method: 'linear' }, createElement(ChartTooltip))],
 		});
 		expect(trendlineData).toHaveLength(9);
@@ -125,6 +128,7 @@ describe('addTrendlineData()', () => {
 		const trendlineData = getDefaultData();
 		addTrendlineData(trendlineData, {
 			...defaultLineProps,
+			animations: false,
 			children: [createElement(Trendline, { method: 'movingAverage-3', dimensionRange: [1, 2] })],
 		});
 		expect(trendlineData).toHaveLength(5);
