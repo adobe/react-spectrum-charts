@@ -85,9 +85,19 @@ export const getTrendlineData = (markProps: TrendlineParentProps): SourceData[] 
 		const { facets } = getFacetsFromProps({ color, lineType });
 
 		if (isRegressionMethod(method)) {
-			data.push(...getRegressionTrendlineData(markProps, trendlineProps, facets));
+			data.push(
+				...getRegressionTrendlineData(markProps, trendlineProps, facets, trendlineProps.name, FILTERED_TABLE)
+			);
 			if (markProps.animations !== false) {
-				data.push(...getPreviousTableRegressionTrendlineData(markProps, trendlineProps, facets));
+				data.push(
+					...getRegressionTrendlineData(
+						markProps,
+						trendlineProps,
+						facets,
+						`previous_${trendlineProps.name}`,
+						FILTERED_PREVIOUS_TABLE
+					)
+				);
 			}
 		} else if (isAggregateMethod(method)) {
 			data.push(...getAggregateTrendlineData(markProps, trendlineProps, facets));
@@ -162,18 +172,13 @@ export const getAggregateTrendlineData = (
 export const getRegressionTrendlineData = (
 	markProps: TrendlineParentProps,
 	trendlineProps: TrendlineSpecProps,
-	facets: string[]
+	facets: string[],
+	trendlineName: string,
+	source: string
 ) => {
 	const data: SourceData[] = [];
 	const { dimension, metric } = markProps;
-	const {
-		dimensionRange,
-		method,
-		name,
-		orientation,
-		children: trendlineChildren,
-		trendlineDimension,
-	} = trendlineProps;
+	const { dimensionRange, method, orientation, children: trendlineChildren, trendlineDimension } = trendlineProps;
 	const { trendlineDimension: standardTrendlineDimension } = getTrendlineDimensionMetric(
 		dimension,
 		metric,
@@ -183,8 +188,8 @@ export const getRegressionTrendlineData = (
 	const dimensionRangeTransforms = getTrendlineDimensionRangeTransforms(standardTrendlineDimension, dimensionRange);
 	// high resolution data used for drawing the smooth trendline
 	data.push({
-		name: `${name}_highResolutionData`,
-		source: FILTERED_TABLE,
+		name: `${trendlineName}_highResolutionData`,
+		source,
 		transform: [
 			...dimensionRangeTransforms,
 			...getTrendlineStatisticalTransforms(markProps, trendlineProps, true),
@@ -196,81 +201,16 @@ export const getRegressionTrendlineData = (
 		// the high resolution data has too much detail and we don't want a tooltip at each high resolution point
 		data.push(
 			{
-				name: `${name}_params`,
-				source: FILTERED_TABLE,
+				name: `${trendlineName}_params`,
+				source,
 				transform: [
 					...dimensionRangeTransforms,
 					...getTrendlineStatisticalTransforms(markProps, trendlineProps, false),
 				],
 			},
 			{
-				name: `${name}_data`,
-				source: FILTERED_TABLE,
-				transform: [
-					...dimensionRangeTransforms,
-					getTrendlineParamLookupTransform(markProps, trendlineProps),
-					...getTrendlineParamFormulaTransforms(trendlineDimension, method),
-				],
-			}
-		);
-	}
-	return data;
-};
-
-/**
- * Gets the data sources and transforms for the "previous data" of animated regression trendlines (linear, power, polynomial-x, etc.)
- * @param markProps
- * @param trendlineProps
- * @param facets
- * @returns Data[]
- */
-export const getPreviousTableRegressionTrendlineData = (
-	markProps: TrendlineParentProps,
-	trendlineProps: TrendlineSpecProps,
-	facets: string[]
-) => {
-	const data: SourceData[] = [];
-	const { dimension, metric } = markProps;
-	const {
-		dimensionRange,
-		method,
-		name,
-		orientation,
-		children: trendlineChildren,
-		trendlineDimension,
-	} = trendlineProps;
-	const { trendlineDimension: standardTrendlineDimension } = getTrendlineDimensionMetric(
-		dimension,
-		metric,
-		orientation,
-		false
-	);
-	const dimensionRangeTransforms = getTrendlineDimensionRangeTransforms(standardTrendlineDimension, dimensionRange);
-	// high resolution data used for drawing the smooth trendline
-	data.push({
-		name: `previous_${name}_highResolutionData`,
-		source: FILTERED_PREVIOUS_TABLE,
-		transform: [
-			...dimensionRangeTransforms,
-			...getTrendlineStatisticalTransforms(markProps, trendlineProps, true),
-			getSeriesIdTransform(facets),
-		],
-	});
-	if (hasInteractiveChildren(trendlineChildren)) {
-		// params and data used for each of the trendline data points
-		// the high resolution data has too much detail and we don't want a tooltip at each high resolution point
-		data.push(
-			{
-				name: `previous_${name}_params`,
-				source: FILTERED_PREVIOUS_TABLE,
-				transform: [
-					...dimensionRangeTransforms,
-					...getTrendlineStatisticalTransforms(markProps, trendlineProps, false),
-				],
-			},
-			{
-				name: `previous_${name}_data`,
-				source: FILTERED_PREVIOUS_TABLE,
+				name: `${trendlineName}_data`,
+				source,
 				transform: [
 					...dimensionRangeTransforms,
 					getTrendlineParamLookupTransform(markProps, trendlineProps),

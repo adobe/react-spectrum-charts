@@ -26,13 +26,7 @@ import { getTrendlineAnnotationMarks } from '@specBuilder/trendlineAnnotation';
 import { ChartTooltipElement, Orientation, ScaleType, TrendlineMethod, TrendlineSpecProps } from 'types';
 import { EncodeEntry, GroupMark, LineMark, NumericValueRef, RuleMark } from 'vega';
 
-import {
-	TrendlineParentProps,
-	getTrendlines,
-	isAggregateMethod,
-	isRegressionMethod,
-	isWindowMethod,
-} from './trendlineUtils';
+import { TrendlineParentProps, getTrendlines, isAggregateMethod, isRegressionMethod } from './trendlineUtils';
 
 export const getTrendlineMarks = (markProps: TrendlineParentProps): (GroupMark | RuleMark)[] => {
 	const { color, lineType } = markProps;
