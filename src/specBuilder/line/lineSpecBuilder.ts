@@ -86,7 +86,7 @@ export const addLine = produce<Spec, [LineProps & { colorScheme?: ColorScheme; i
 );
 
 export const addData = produce<Data[], [LineSpecProps]>((data, props) => {
-	const { dimension, scaleType, children, name, staticPoint } = props;
+	const { dimension, scaleType, children, name, staticPoint, isSparkline, isMethodLast } = props;
 	if (scaleType === 'time') {
 		const tableData = getTableData(data);
 		tableData.transform = addTimeTransform(tableData.transform ?? [], dimension);
@@ -94,7 +94,7 @@ export const addData = produce<Data[], [LineSpecProps]>((data, props) => {
 	if (hasInteractiveChildren(children)) {
 		data.push(getLineHighlightedData(name, FILTERED_TABLE, hasPopover(children)));
 	}
-	if (staticPoint) data.push(getLineStaticPointData(name, staticPoint, FILTERED_TABLE));
+	if (staticPoint || isSparkline) data.push(getLineStaticPointData(name, staticPoint, FILTERED_TABLE, isSparkline, isMethodLast));
 	addTrendlineData(data, props);
 	data.push(...getMetricRangeData(props));
 });
@@ -128,7 +128,7 @@ export const setScales = produce<Scale[], [LineSpecProps]>((scales, props) => {
 
 // The order that marks are added is important since it determines the draw order.
 export const addLineMarks = produce<Mark[], [LineSpecProps]>((marks, props) => {
-	const { name, children, color, lineType, opacity, staticPoint } = props;
+	const { name, children, color, lineType, opacity, staticPoint, isSparkline } = props;
 
 	const { facets } = getFacetsFromProps({ color, lineType, opacity });
 
@@ -144,7 +144,7 @@ export const addLineMarks = produce<Mark[], [LineSpecProps]>((marks, props) => {
 		},
 		marks: [getLineMark(props, `${name}_facet`)],
 	});
-	if (staticPoint) marks.push(getLineStaticPoint(props));
+	if (staticPoint || isSparkline) marks.push(getLineStaticPoint(props));
 	marks.push(...getMetricRangeGroupMarks(props));
 	if (hasInteractiveChildren(children)) {
 		marks.push(...getLineHoverMarks(props, FILTERED_TABLE));

@@ -38,6 +38,8 @@ export const getLineStaticPoint = ({
 	colorScheme,
 	scaleType,
 	dimension,
+	isSparkline,
+	pointSize = 125
 }: LineSpecProps): SymbolMark => {
 	return {
 		name: `${name}_staticPoints`,
@@ -46,9 +48,10 @@ export const getLineStaticPoint = ({
 		interactive: false,
 		encode: {
 			enter: {
+				size: { value: pointSize } ,
 				y: { scale: 'yLinear', field: metric },
-				fill: getColorProductionRule(color, colorScheme),
-				stroke: { signal: BACKGROUND_COLOR },
+				fill: isSparkline ? { signal: BACKGROUND_COLOR } : getColorProductionRule(color, colorScheme),
+				stroke: isSparkline ? getColorProductionRule(color, colorScheme) : { signal: BACKGROUND_COLOR }
 			},
 			update: {
 				x: getXProductionRule(scaleType, dimension),

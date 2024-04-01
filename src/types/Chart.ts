@@ -14,6 +14,7 @@ import { JSXElementConstructor, MutableRefObject, ReactElement, ReactFragment, R
 import { MARK_ID, SERIES_ID, TRENDLINE_VALUE } from '@constants';
 import { Config, Data, FontWeight, Locale, NumberLocale, Padding, Spec, SymbolShape, TimeLocale, View } from 'vega';
 
+import { Icon, IconProps } from '@adobe/react-spectrum';
 import { Theme } from '@react-types/provider';
 
 import { Colors, SpectrumColor } from './SpectrumVizColors';
@@ -30,6 +31,11 @@ export type ChartTooltipElement = ReactElement<ChartTooltipProps, JSXElementCons
 export type DonutElement = ReactElement<DonutProps, JSXElementConstructor<DonutProps>>;
 export type LegendElement = ReactElement<LegendProps, JSXElementConstructor<LegendProps>>;
 export type LineElement = ReactElement<LineProps, JSXElementConstructor<LineProps>>;
+export type BigNumberElement = ReactElement<BigNumberProps, JSXElementConstructor<BigNumberProps>>;
+export type IconElement = ReactElement<
+	IconProps | Omit<IconProps, 'children'>,
+	JSXElementConstructor<IconProps | Omit<IconProps, 'children'>>
+>;
 export type ScatterPathElement = ReactElement<ScatterPathProps, JSXElementConstructor<ScatterPathProps>>;
 export type MetricRangeElement = ReactElement<MetricRangeProps, JSXElementConstructor<MetricRangeProps>>;
 export type ReferenceLineElement = ReactElement<ReferenceLineProps, JSXElementConstructor<ReferenceLineProps>>;
@@ -238,6 +244,21 @@ export interface AxisProps extends BaseProps {
 	truncateLabels?: boolean;
 }
 
+export interface BigNumberProps {
+	readonly orientation: Orientation;
+	readonly label: string;
+	readonly dataKey: string;
+	readonly children?: Children<BigNumberChildElement>;
+	readonly rscChartProps?: RscChartProps;
+	readonly numberFormat?: string;
+	readonly numberType?: BigNumberNumberType;
+	readonly method?: BigNumberMethod;
+	readonly icon?: IconElement;
+}
+
+export type BigNumberNumberType = 'linear' | 'percentage';
+export type BigNumberMethod = 'sum' | 'avg' | 'last';
+
 export type Granularity = 'minute' | 'hour' | 'day' | 'week' | 'month' | 'quarter';
 /**
  * `center` will set the align to `center` for horizontal axes and the baseline to `middle` for vertical axes.
@@ -362,10 +383,11 @@ export interface LineProps extends Omit<MarkProps, 'color'> {
 	opacity?: OpacityFacet;
 	/** Sets the chart area padding, this is a ratio from 0 to 1 for categorical scales (point) and a pixel value for continuous scales (time, linear) */
 	padding?: number;
-	/** Sets the type of scale that should be used for the trend */
-	scaleType?: ScaleType;
-	/** Key in the data that if it exists and the value resolves to true for each data object, a point will be drawn for that data point on the line. */
-	staticPoint?: string;
+	scaleType?: ScaleType; // sets the type of scale that should be used for the trend
+	staticPoint?: string; // key in the data that if it exists and the value resolves to true for each data object, a point will be drawn for that data point on the line.
+	pointSize?: number;
+	isSparkline?: boolean; // line to be interpreted and rendered as a sparkline. Changes the fill of static points, for example
+	isMethodLast?: boolean; // sparkline's method is last - meaning that last element of data has the static point
 }
 
 export interface ScatterProps extends Omit<MarkProps, 'color'> {
@@ -688,11 +710,15 @@ export type Children<T> = ChildElement<T> | ChildElement<T>[];
 
 export type AxisChildElement = ReferenceLineElement | AxisAnnotationElement;
 export type AxisAnnotationChildElement = ChartTooltipElement | ChartPopoverElement;
+
+export type BigNumberChildElement = LineElement | IconElement;
+
 export type TrendlineChildElement = ChartTooltipElement | TrendlineAnnotationElement;
 export type ChartChildElement =
 	| AreaElement
 	| AxisElement
 	| BarElement
+	| BigNumberElement
 	| LegendElement
 	| LineElement
 	| ScatterElement

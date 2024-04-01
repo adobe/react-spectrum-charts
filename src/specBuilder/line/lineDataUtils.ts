@@ -37,17 +37,23 @@ export const getLineHighlightedData = (name: string, source: string, hasPopover:
 /**
  * gets the data used for displaying points
  * @param name
+ * @param staticPoint
  * @param source
+ * @param isSparkline
+ * @param isMethodLast
  * @returns
  */
-export const getLineStaticPointData = (name: string, staticPoint: string, source: string): SourceData => {
+export const getLineStaticPointData = (name: string, staticPoint: string | undefined, source: string, isSparkline: boolean | undefined, isMethodLast: boolean | undefined): SourceData => {
+	const expr = isSparkline && isMethodLast ?
+		'datum === data(\'table\')[data(\'table\').length - 1]' :
+		`datum.${staticPoint} === true`;
 	return {
 		name: `${name}_staticPointData`,
 		source,
 		transform: [
 			{
 				type: 'filter',
-				expr: `datum.${staticPoint} === true`,
+				expr
 			},
 		],
 	};

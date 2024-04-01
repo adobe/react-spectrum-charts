@@ -29,7 +29,7 @@ import {
 	SYMBOL_SIZE_SCALE,
 	TABLE,
 } from '@constants';
-import { Area, Axis, Bar, Legend, Line, Scatter, Title } from '@rsc';
+import { Area, Axis, Bar, BigNumber, Legend, Line, Scatter, Title } from '@rsc';
 import { Donut } from '@rsc/alpha';
 import colorSchemes from '@themes/colorSchemes';
 import { produce } from 'immer';
@@ -163,6 +163,9 @@ export function buildSpec({
 				case Title.displayName:
 					// No title count. There can only be one title.
 					return addTitle(acc, { ...(cur as TitleElement).props });
+				case BigNumber.displayName:
+					// Do nothing and do not throw an error
+					return acc;
 				default:
 					console.error(`Invalid component type: ${cur.type.displayName} is not a supported <Chart> child`);
 					return acc;
@@ -186,10 +189,7 @@ export function buildSpec({
 
 export const removeUnusedScales = produce<Spec>((spec) => {
 	spec.scales = spec.scales?.filter((scale) => {
-		if ('domain' in scale && scale.domain && 'fields' in scale.domain && scale.domain.fields.length === 0) {
-			return false;
-		}
-		return true;
+		return !('domain' in scale && scale.domain && 'fields' in scale.domain && scale.domain.fields.length === 0);
 	});
 });
 

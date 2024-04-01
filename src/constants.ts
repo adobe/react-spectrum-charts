@@ -40,6 +40,9 @@ export const DEFAULT_TITLE_FONT_WEIGHT = 'bold';
 export const TABLE = 'table';
 export const FILTERED_TABLE = 'filteredTable';
 
+// big number aspect ratio
+export const BIG_NUMBER_ASPECT_RATIO = 16 / 9
+
 // vega data field names
 export const SERIES_ID = 'rscSeriesId';
 export const MARK_ID = 'rscMarkId';
