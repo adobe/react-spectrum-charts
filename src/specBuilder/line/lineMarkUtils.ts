@@ -160,6 +160,10 @@ export const getLineHoverMarks = (
 		...(secondaryHighlightedMetric ? [getSecondaryHighlightPoint(lineProps, secondaryHighlightedMetric)] : []),
 		// get interactive marks for the line
 		...getInteractiveMarks(dataSource, lineProps),
+		// points used for the voronoi transform
+		getPointsForVoronoi(dataSource, dimension, metric, name, scaleType),
+		// voronoi transform used to get nearest point paths
+		getVoronoiPath(children, `${name}_pointsForVoronoi`, name, animations, animateFromZero),
 	];
 };
 

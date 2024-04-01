@@ -146,9 +146,7 @@ export const addSignals = produce<Signal[], [ScatterSpecProps]>((signals, props)
 
 	if (!hasInteractiveChildren(children)) return;
 	// interactive signals
-	addHighlightedItemSignalEvents(signals, `${name}_voronoi`, idKey, 2);
-	addTooltipSignals(signals, props);
-	addHighlightedItemSignalEvents({ signals, markName: `${name}_voronoi`, datumOrder: 2 });
+	addHighlightedItemSignalEvents({ signals, markName: `${name}_voronoi`, idKey, datumOrder: 2 });
 });
 
 /**

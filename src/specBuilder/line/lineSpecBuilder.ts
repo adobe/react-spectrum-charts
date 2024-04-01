@@ -111,7 +111,7 @@ export const addLine = produce<
 );
 
 export const addData = produce<Data[], [LineSpecProps]>((data, props) => {
-	const { children, dimension, highlightedItem, isSparkline, isMethodLast, name, scaleType, staticPoint } = props;
+	const { animations, animateFromZero, children, dimension, highlightedItem, isSparkline, isMethodLast, name, scaleType, staticPoint } = props;
 	if (scaleType === 'time') {
 		const tableData = getTableData(data);
 		tableData.transform = addTimeTransform(tableData.transform ?? [], dimension);

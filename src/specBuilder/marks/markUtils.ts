@@ -99,13 +99,13 @@ export function isInteractive(children: MarkChildElement[], props?: ClickableCha
  * If a tooltip or popover exists on the mark, then set tooltip to true.
  */
 export function getTooltip(
-  {
-  children,
-  name,
-  nestedDatum = false,
-  animations = false,
-  isBar = false
-  }: {
+	{
+		children,
+		name,
+		nestedDatum = false,
+		animations = false,
+		isBar = false
+	}: {
 	children: MarkChildElement[],
 	name: string,
 	nestedDatum?: boolean,

@@ -129,18 +129,17 @@ export const addHighlightedItemSignalEvents = (
 		markName,
 		idKey,
 		excludeDataKeys,
-		datumOrder = 1,
 		animations = false,
 		animateFromZero = false,
+		datumOrder = 1,
 	}: {
 		signals: Signal[],
 		markName: string,
 		idKey: string,
 		excludeDataKeys?: string[],
-		datumOrder?: number,
 		animations?: boolean,
 		animateFromZero?: boolean,
-		needsDisable?: boolean
+		datumOrder?: number
 	}
 ) => {
 	const highlightedItemSignal = signals.find((signal) => signal.name === HIGHLIGHTED_ITEM);
