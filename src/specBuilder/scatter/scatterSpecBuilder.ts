@@ -103,7 +103,7 @@ export const addData = produce<Data[], [ScatterSpecProps]>((data, props) => {
 		tableData.transform = addTimeTransform(tableData.transform ?? [], dimension);
 	}
 
-	if (hasTooltip(children)) {
+	if (hasInteractiveChildren(children)) {
 		data.push(getFilteredTooltipData(name, children));
 	}
 

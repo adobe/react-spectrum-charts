@@ -13,7 +13,7 @@ import React, { ReactElement } from 'react';
 
 import { ChartTooltip } from '@components/ChartTooltip/ChartTooltip';
 import useChartProps from '@hooks/useChartProps';
-import { Area, Bar, Chart, Datum, Line } from '@rsc';
+import { Area, Bar, categorical12, Chart, Datum, Line } from '@rsc';
 import { browserData as data } from '@stories/data/data';
 import { formatTimestamp } from '@stories/storyUtils';
 import { StoryFn } from '@storybook/react';
@@ -70,8 +70,22 @@ const lineData = [
 	{ datetime: 1668409200000, point: 25, value: 10932, users: 4913, series: 'Add Freeform table' },
 ];
 
+const disabledLineData = lineData.map(datum => datum.series === 'Add Fallout' ? { ...datum, excludeFromTooltip: true } : datum);
+
 const LineTooltipStory: StoryFn<typeof ChartTooltip> = (args): ReactElement => {
 	const chartProps = useChartProps({ data: lineData, width: 600 });
+	return (
+		<Chart {...chartProps}>
+			<Line color="series">
+				<ChartTooltip {...args} />
+			</Line>
+		</Chart>
+	);
+};
+
+
+const DisabledSeriesLineTooltipStory: StoryFn<typeof ChartTooltip> = (args): ReactElement => {
+	const chartProps = useChartProps({ data: disabledLineData, width: 600, colors: ['gray-500', ...categorical12]});
 	return (
 		<Chart {...chartProps}>
 			<Line color="series">
@@ -147,4 +161,17 @@ AreaChart.args = {
 	),
 };
 
-export { AreaChart, DodgedBarChart, LineChart, StackedBarChart };
+const DisabledSeriesLineChart = bindWithProps(DisabledSeriesLineTooltipStory);
+DisabledSeriesLineChart.args = {
+	children: (datum: LineData) => (
+		<div className="bar-tooltip">
+			<div>{formatTimestamp(datum.datetime as number)}</div>
+			<div>Event: {datum.series}</div>
+			<div>Count: {Number(datum.value).toLocaleString()}</div>
+			<div>Users: {Number(datum.users).toLocaleString()}</div>
+		</div>
+	),
+	excludeDataKey: 'excludeFromTooltip',
+};
+
+export { AreaChart, DodgedBarChart, LineChart, StackedBarChart, DisabledSeriesLineChart };

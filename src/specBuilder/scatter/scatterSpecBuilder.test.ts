@@ -69,8 +69,8 @@ describe('addData()', () => {
 			...defaultScatterProps,
 			children: [createElement(ChartPopover)],
 		});
-		expect(data).toHaveLength(3);
-		expect(data[2].name).toBe('scatter0_selectedData');
+		expect(data).toHaveLength(4);
+		expect(data[3].name).toBe('scatter0_selectedData');
 	});
 	test('should add trendline data if trendline exists as a child', () => {
 		const data = addData(initializeSpec().data ?? [], {
