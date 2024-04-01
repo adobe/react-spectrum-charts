@@ -29,6 +29,7 @@ import {
 	MetricRangeProps,
 	Orientation,
 	ScaleType as RscScaleType,
+	ScatterPathProps,
 	ScatterProps,
 	TrendlineAnnotationProps,
 	TrendlineChildElement,
@@ -44,6 +45,7 @@ export interface AreaSpecProps
 	data?: ChartData[];
 	previousData?: ChartData[];
 	animations?: boolean;
+	animateFromZero?: boolean;
 	children: MarkChildElement[];
 }
 
@@ -109,6 +111,7 @@ export interface BarSpecProps
 			data?: ChartData[];
 			previousData?: ChartData[];
 			animations?: boolean;
+			animateFromZero?: boolean;
 		},
 		BarPropsWithDefaults
 	> {
@@ -149,6 +152,7 @@ export interface LineSpecProps extends PartiallyRequired<LineProps, LinePropsWit
 	data?: ChartData[];
 	previousData?: ChartData[];
 	animations?: boolean;
+	animateFromZero?: boolean;
 	colorScheme: ColorScheme;
 	index: number;
 	interactiveMarkName: string | undefined;
@@ -176,6 +180,17 @@ export interface ScatterSpecProps extends PartiallyRequired<ScatterProps, Scatte
 	previousData?: ChartData[]; // currently unused, but in place for future Scatter animations work
 	index: number;
 	interactiveMarkName: string | undefined;
+}
+
+type ScatterPathPropsWithDefaults = 'color' | 'groupBy' | 'pathWidth' | 'opacity';
+
+export interface ScatterPathSpecProps extends PartiallyRequired<ScatterPathProps, ScatterPathPropsWithDefaults> {
+	colorScheme: ColorScheme;
+	dimension: string;
+	dimensionScaleType: RscScaleType;
+	metric: string;
+	index: number;
+	name: string;
 }
 
 type MetricRangePropsWithDefaults = 'lineType' | 'lineWidth' | 'rangeOpacity' | 'metricEnd' | 'metricStart' | 'metric';

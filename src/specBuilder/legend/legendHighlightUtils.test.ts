@@ -29,32 +29,35 @@ const defaultGroupMark: Mark = {
 
 const defaultOpacityEncoding = {
 	opacity: [
-		{ test: `highlightedSeries && highlightedSeries !== datum.${SERIES_ID}`, value: 1 / HIGHLIGHT_CONTRAST_RATIO },
+		{
+			test: `${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES} !== datum.${SERIES_ID}`,
+			value: 1 / HIGHLIGHT_CONTRAST_RATIO,
+		},
 	],
 };
 
 describe('getHighlightOpacityRule()', () => {
 	test('scale ref should divide by highlight contrast ratio', () => {
 		expect(getHighlightOpacityRule({ scale: OPACITY_SCALE, field: DEFAULT_COLOR })).toStrictEqual({
-			test: `highlightedSeries && highlightedSeries !== datum.${SERIES_ID}`,
+			test: `${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES} !== datum.${SERIES_ID}`,
 			signal: `scale('${OPACITY_SCALE}', datum.${DEFAULT_COLOR}) / ${HIGHLIGHT_CONTRAST_RATIO}`,
 		});
 	});
 	test('signal ref should divide by highlight contrast ratio', () => {
 		expect(getHighlightOpacityRule({ signal: `scale('${OPACITY_SCALE}', datum.${DEFAULT_COLOR})` })).toStrictEqual({
-			test: `highlightedSeries && highlightedSeries !== datum.${SERIES_ID}`,
+			test: `${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES} !== datum.${SERIES_ID}`,
 			signal: `scale('${OPACITY_SCALE}', datum.${DEFAULT_COLOR}) / ${HIGHLIGHT_CONTRAST_RATIO}`,
 		});
 	});
 	test('value ref should divide by highlight contrast ratio', () => {
 		expect(getHighlightOpacityRule({ value: 0.5 })).toStrictEqual({
-			test: `highlightedSeries && highlightedSeries !== datum.${SERIES_ID}`,
+			test: `${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES} !== datum.${SERIES_ID}`,
 			value: 0.5 / HIGHLIGHT_CONTRAST_RATIO,
 		});
 	});
 	test('empty ref should return default rule', () => {
 		expect(getHighlightOpacityRule({})).toStrictEqual({
-			test: `highlightedSeries && highlightedSeries !== datum.${SERIES_ID}`,
+			test: `${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES} !== datum.${SERIES_ID}`,
 			value: 1 / HIGHLIGHT_CONTRAST_RATIO,
 		});
 	});

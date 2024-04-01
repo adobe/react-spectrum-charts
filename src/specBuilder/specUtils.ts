@@ -188,28 +188,39 @@ export const getPathFromIcon = (icon: Icon | string): string => {
 	return supportedIcons[icon] || icon;
 };
 
+/**
+ * Converts a symbolSize to the vega size
+ * RSC uses the width of the symbol to determine the size
+ * Vega uses the area of the symbol to determine the size
+ * @param symbolSize
+ * @returns size in square pixels
+ */
 export const getVegaSymbolSizeFromRscSymbolSize = (symbolSize: SymbolSize): number => {
+	return Math.pow(getSymbolWidthFromRscSymbolSize(symbolSize), 2);
+};
+
+/**
+ * Gets the width of the symbol or trail from the symbolSize
+ * @param symbolSize
+ * @returns width in pixels
+ */
+export const getSymbolWidthFromRscSymbolSize = (symbolSize: SymbolSize): number => {
 	if (typeof symbolSize === 'number') {
-		return Math.pow(symbolSize, 2);
+		return symbolSize;
 	}
 
 	switch (symbolSize) {
 		case 'XS':
-			// 6 x 6
-			return 36;
+			return 6;
 		case 'S':
-			// 8 x 8
-			return 64;
+			return 8;
 		case 'L':
-			// 12 x 12
-			return 144;
+			return 12;
 		case 'XL':
-			// 16 x 16
-			return 256;
+			return 16;
 		case 'M':
 		default:
-			// 10 x 10
-			return 100;
+			return 10;
 	}
 };
 
@@ -238,7 +249,7 @@ export const initializeSpec = (spec: Spec | null = {}, chartProps: Partial<Sanit
 		description,
 		autosize: { type: 'fit', contains: 'padding', resize: true },
 		data: isVegaData(data) ? data : baseData,
-		background: backgroundColor ? getColorValue(backgroundColor, colorScheme) : undefined,
+		background: backgroundColor ? getColorValue(backgroundColor, colorScheme) : undefined
 	};
 
 	return { ...baseSpec, ...(spec || {}) };
@@ -323,7 +334,6 @@ export const getD3FormatSpecifierFromNumberFormat = (numberFormat: NumberFormat 
 
 export const usePreviousChartData = <T>(data: T) => {
 	const ref = useRef<T>();
-
 	useEffect(() => {
 		ref.current = data;
 	}, [data]);
@@ -345,7 +355,7 @@ export const getAnimationMarks = (
 		signal: `datum.${metric} * ${easingFunction}`,
 	};
 	if (data && previousData) {
-		const hasSameDimensions = data !== previousData && data.every((d) => previousData.some((pd) => d[dimension] === pd[dimension]));
+		const hasSameDimensions = data !== previousData && data.every((d) => previousData.some((pd) => d[dimension] === pd[dimension])) && data.length == previousData.length;
 		if (hasSameDimensions) {
 			// If data isn't similar enough, keep the animation from zero as shown above
 			markUpdate = {
@@ -355,4 +365,4 @@ export const getAnimationMarks = (
 		}
 	}
 	return markUpdate;
-};
+}

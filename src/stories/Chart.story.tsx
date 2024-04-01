@@ -12,14 +12,13 @@
 import React, { ReactElement } from 'react';
 
 import useChartProps from '@hooks/useChartProps';
-import { Area, Axis, Bar, Chart, Line } from '@rsc';
+import { Axis, Chart, Line } from '@rsc';
 import { StoryFn } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
 
 import './Chart.story.css';
 import { ChartBarStory } from './ChartBarStory';
-import { areaData, data, newDataArray1, newDataArray1WithStaticPoints, workspaceTrendsData } from './data/data';
-import { barData } from '@stories/components/Bar/data';
+import { data, workspaceTrendsData } from './data/data';
 
 export default {
 	title: 'RSC/Chart',
@@ -27,7 +26,7 @@ export default {
 };
 
 const ChartLineStory: StoryFn<typeof Chart> = (args): ReactElement => {
-	const props = useChartProps(args);
+	const props = useChartProps({ ...args });
 	return (
 		<Chart {...props}>
 			<Axis position="bottom" baseline ticks />
@@ -38,50 +37,12 @@ const ChartLineStory: StoryFn<typeof Chart> = (args): ReactElement => {
 };
 
 const ChartTimeStory: StoryFn<typeof Chart> = (args): ReactElement => {
-	const props = useChartProps(args);
+	const props = useChartProps({ ...args });
 	return (
 		<Chart {...props} width={500}>
 			<Axis position="bottom" baseline ticks labelFormat="time" />
 			<Axis position="left" grid numberFormat=",.2f" />
 			<Line dimension="datetime" metric="value" color="series" scaleType="time" />
-		</Chart>
-	);
-};
-
-const SingleLineStory: StoryFn<typeof Chart> = (args): ReactElement => {
-	const props = useChartProps(args);
-	return (
-		<Chart {...props}>
-			<Line metric="y" dimension="x" scaleType="linear"/>
-		</Chart>
-	);
-}
-
-const SingleLineWithStaticPointsStory: StoryFn<typeof Chart> = (args): ReactElement => {
-	const props = useChartProps(args);
-	return (
-		<Chart {...props}>
-			<Line metric="y" dimension="x" scaleType="linear" staticPoint="point"/>
-		</Chart>
-	);
-}
-
-const BasicAreaStory: StoryFn<typeof Chart> = (args): ReactElement => {
-	const chartProps = useChartProps(args);
-	return (
-		<Chart {...chartProps} debug>
-			<Area metric='maxTemperature' />
-		</Chart>
-	);
-};
-
-const BasicBarStory: StoryFn<typeof Chart> = (args): ReactElement => {
-	const chartProps = useChartProps(args);
-	return (
-		<Chart {...chartProps} debug>
-			<Axis position="bottom" baseline title="Browser" />
-			<Axis position="left" grid title="Downloads" />
-			<Bar dimension="browser" metric="downloads" />
 		</Chart>
 	);
 };
@@ -122,24 +83,4 @@ Width.args = {
 	data,
 };
 
-const SingleLine = bindWithProps(SingleLineStory);
-SingleLine.args = {
-	data: newDataArray1
-}
-
-const SingleLineWithStaticPoints = bindWithProps(SingleLineWithStaticPointsStory);
-SingleLineWithStaticPoints.args = { data: newDataArray1WithStaticPoints };
-
-const BasicArea = bindWithProps(BasicAreaStory);
-BasicArea.args = {
-	data: areaData
-}
-
-const BasicBar = bindWithProps(BasicBarStory);
-BasicBar.args = {
-	data: barData,
-	width: 600,
-	height: 600
-}
-
-export { Basic, BackgroundColor, Config, Locale, Width, SingleLine, SingleLineWithStaticPoints, BasicArea, BasicBar };
+export { Basic, BackgroundColor, Config, Locale, Width };
