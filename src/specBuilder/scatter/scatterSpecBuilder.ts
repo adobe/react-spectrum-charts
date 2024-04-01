@@ -128,7 +128,7 @@ export const addSignals = produce<Signal[], [ScatterSpecProps]>((signals, props)
 
 	if (!hasInteractiveChildren(children)) return;
 	// interactive signals
-	addHighlightedItemSignalEvents(signals, `${name}_voronoi`, 2);
+	addHighlightedItemSignalEvents({ signals, markName: `${name}_voronoi`, datumOrder: 2 });
 });
 
 /**
