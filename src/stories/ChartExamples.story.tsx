@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import React, { Dispatch, ReactElement, SetStateAction, useState } from 'react';
+import { Dispatch, ReactElement, SetStateAction, useState } from 'react';
 
 import { Annotation } from '@components/Annotation';
 import { ReferenceLine } from '@components/ReferenceLine';
@@ -28,6 +28,7 @@ import {
 	Trendline,
 	categorical16,
 } from '@rsc';
+import { action } from '@storybook/addon-actions';
 import { StoryFn } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
 import { ChartData, ChartProps, Colors, Datum, LegendDescription, LegendLabel, SpectrumColor, SubLabel } from 'types';
@@ -102,8 +103,8 @@ const UserGrowthBarStory: StoryFn<typeof Chart> = (args): ReactElement => {
 			<Axis position="bottom" baseline />
 			<Axis position="left" grid title="Users" />
 			<Bar dimension="x" metric="y" color="series" order="order">
-				<ChartTooltip>{dialogCallback}</ChartTooltip>
-				<ChartPopover width={200}>{dialogCallback}</ChartPopover>
+				<ChartTooltip>{generateCallback('tooltip')}</ChartTooltip>
+				<ChartPopover width={200}>{generateCallback('popover')}</ChartPopover>
 			</Bar>
 			<Legend highlight descriptions={userGrowthDescriptions} />
 		</Chart>
@@ -127,8 +128,8 @@ const UserGrowthBarTimeComparisonStory: StoryFn<typeof Chart> = (args): ReactEle
 				paddingRatio={0.3}
 				groupedPadding={0.12}
 			>
-				<ChartTooltip>{dialogCallback}</ChartTooltip>
-				<ChartPopover width={200}>{dialogCallback}</ChartPopover>
+				<ChartTooltip>{generateCallback('tooltip')}</ChartTooltip>
+				<ChartPopover width={200}>{generateCallback('popover')}</ChartPopover>
 			</Bar>
 			<Legend highlight descriptions={userGrowthDescriptions} />
 		</Chart>
@@ -142,56 +143,71 @@ const UserGrowthAreaStory: StoryFn<typeof Chart> = (args): ReactElement => {
 			<Axis position="bottom" baseline />
 			<Axis position="left" grid title="Users" />
 			<Area dimension="x" metric="y" order="order" scaleType="point">
-				<ChartTooltip>{dialogCallback}</ChartTooltip>
-				<ChartPopover width={200}>{dialogCallback}</ChartPopover>
+				<ChartTooltip>{generateCallback('tooltip')}</ChartTooltip>
+				<ChartPopover width={200}>{generateCallback('popover')}</ChartPopover>
 			</Area>
 			<Legend highlight descriptions={userGrowthDescriptions} />
 		</Chart>
 	);
 };
 
-const dialogCallback = (datum: Datum, close?: () => void) => {
-	return (
-		<Content UNSAFE_className="userGrowth-dialog">
-			<Flex direction="column">
-				<Flex direction="row" justifyContent="space-between">
-					<div>
-						<div>{datum.x}</div>
-						<div>{datum.series}</div>
-						<div>{Math.abs(datum.y as number).toLocaleString()} users</div>
-					</div>
+/** Generates identical return callbacks but each has a custom Storybook Action Name for a better dev experience. */
+const generateCallback = (variant: 'popover' | 'tooltip') => {
+	const actionName = {
+		popover: 'ChartPopover',
+		tooltip: 'ChartTooltip',
+	};
+
+	const callback = (datum: Datum, close?: () => void) => {
+		action(`${actionName[variant]}:callback`)(datum);
+		return (
+			<Content UNSAFE_className="userGrowth-dialog">
+				<Flex direction="column">
+					<Flex direction="row" justifyContent="space-between">
+						<div>
+							<div>{datum.x}</div>
+							<div>{datum.series}</div>
+							<div>{Math.abs(datum.y as number).toLocaleString()} users</div>
+						</div>
+						{close !== undefined && (
+							<ActionButton isQuiet onPress={close}>
+								<Close />
+							</ActionButton>
+						)}
+					</Flex>
 					{close !== undefined && (
-						<ActionButton isQuiet onPress={close}>
-							<Close />
-						</ActionButton>
+						<>
+							<Divider />
+							<ActionGroup
+								isQuiet
+								onAction={close}
+								orientation="vertical"
+								UNSAFE_className="dialog-actions"
+							>
+								<Item key="create-segment">
+									<UsersAdd />
+									<Text>Create segment</Text>
+								</Item>
+								<Item key="user-paths">
+									<GraphPathing />
+									<Text>Show user paths</Text>
+								</Item>
+								<Item key="view-users">
+									<ViewDetail />
+									<Text>View users</Text>
+								</Item>
+								<Item key="download-users">
+									<Download />
+									<Text>Download users</Text>
+								</Item>
+							</ActionGroup>
+						</>
 					)}
 				</Flex>
-				{close !== undefined && (
-					<>
-						<Divider />
-						<ActionGroup isQuiet onAction={close} orientation="vertical" UNSAFE_className="dialog-actions">
-							<Item key="create-segment">
-								<UsersAdd />
-								<Text>Create segment</Text>
-							</Item>
-							<Item key="user-paths">
-								<GraphPathing />
-								<Text>Show user paths</Text>
-							</Item>
-							<Item key="view-users">
-								<ViewDetail />
-								<Text>View users</Text>
-							</Item>
-							<Item key="download-users">
-								<Download />
-								<Text>Download users</Text>
-							</Item>
-						</ActionGroup>
-					</>
-				)}
-			</Flex>
-		</Content>
-	);
+			</Content>
+		);
+	};
+	return callback;
 };
 
 const FunnelConversionStory: StoryFn<typeof Chart> = (args): ReactElement => {

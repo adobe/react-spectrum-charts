@@ -9,13 +9,14 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import React, { ReactElement, createElement } from 'react';
+import { ReactElement, createElement } from 'react';
 
 import { ReferenceLine } from '@components/ReferenceLine';
 import useChartProps from '@hooks/useChartProps';
 import { Axis, Bar, Chart, ChartPopover, ChartTooltip, Legend, Line } from '@rsc';
 import { workspaceTrendsData, workspaceTrendsDataWithVisiblePoints } from '@stories/data/data';
 import { formatTimestamp } from '@stories/storyUtils';
+import { action } from '@storybook/addon-actions';
 import { StoryFn } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
 import { ChartProps } from 'types';
@@ -213,13 +214,25 @@ WithStaticPoints.args = {
 	staticPoint: 'staticPoint',
 };
 
-const dialogCallback = (datum) => (
-	<div className="bar-tooltip">
-		<div>{formatTimestamp(datum.datetime as number)}</div>
-		<div>Event: {datum.series}</div>
-		<div>Users: {Number(datum.value).toLocaleString()}</div>
-	</div>
-);
+/** Generates identical return callbacks but each has a custom Storybook Action Name for a better dev experience. */
+const generateCallback = (variant: 'popover' | 'tooltip') => {
+	const actionName = {
+		popover: 'ChartPopover',
+		tooltip: 'ChartTooltip',
+	};
+
+	const callback = (datum) => {
+		action(`${actionName[variant]}:callback`)(datum);
+		return (
+			<div className="bar-tooltip">
+				<div>{formatTimestamp(datum.datetime as number)}</div>
+				<div>Event: {datum.series}</div>
+				<div>Users: {Number(datum.value).toLocaleString()}</div>
+			</div>
+		);
+	};
+	return callback;
+};
 
 const WithStaticPointsAndDialogs = bindWithProps(LineWithVisiblePointsStory);
 WithStaticPointsAndDialogs.args = {
@@ -229,7 +242,10 @@ WithStaticPointsAndDialogs.args = {
 	name: 'line0',
 	scaleType: 'time',
 	staticPoint: 'staticPoint',
-	children: [createElement(ChartTooltip, {}, dialogCallback), createElement(ChartPopover, {}, dialogCallback)],
+	children: [
+		createElement(ChartTooltip, {}, generateCallback('tooltip')),
+		createElement(ChartPopover, {}, generateCallback('popover')),
+	],
 };
 
 export {
