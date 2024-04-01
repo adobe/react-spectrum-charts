@@ -24,9 +24,9 @@ import {
 	SELECTED_ITEM,
 	SYMBOL_SIZE_SCALE,
 } from '@constants';
-import { addTimeTransform, getTableData } from '@specBuilder/data/dataUtils';
+import { addTimeTransform, getFilteredTooltipData, getTableData } from '@specBuilder/data/dataUtils';
 import { getInteractiveMarkName } from '@specBuilder/line/lineUtils';
-import { hasInteractiveChildren, hasPopover } from '@specBuilder/marks/markUtils';
+import { hasInteractiveChildren, hasPopover, hasTooltip } from '@specBuilder/marks/markUtils';
 import {
 	addContinuousDimensionScale,
 	addFieldToFacetScaleDomain,
@@ -37,10 +37,11 @@ import { addHighlightedItemSignalEvents } from '@specBuilder/signal/signalSpecBu
 import { addTrendlineData, getTrendlineScales, setTrendlineSignals } from '@specBuilder/trendline';
 import { sanitizeMarkChildren, toCamelCase } from '@utils';
 import { produce } from 'immer';
-import { ColorScheme, ScatterProps, ScatterSpecProps } from 'types';
+import { ChartTooltipProps, ColorScheme, ScatterProps, ScatterSpecProps } from 'types';
 import { Data, Scale, Signal, Spec } from 'vega';
 
 import { addScatterMarks } from './scatterMarkUtils';
+import { ChartTooltip } from '@components/ChartTooltip';
 
 /**
  * Adds all the necessary parts of a scatter to the spec
@@ -101,6 +102,11 @@ export const addData = produce<Data[], [ScatterSpecProps]>((data, props) => {
 		const tableData = getTableData(data);
 		tableData.transform = addTimeTransform(tableData.transform ?? [], dimension);
 	}
+
+	if (hasTooltip(children)) {
+		data.push(getFilteredTooltipData(name, children));
+	}
+
 	if (hasPopover(children)) {
 		data.push({
 			name: `${name}_selectedData`,

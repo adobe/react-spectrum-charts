@@ -37,6 +37,33 @@ describe('addData()', () => {
 		expect(data[0].transform).toHaveLength(2);
 		expect(data[0].transform?.[1].type).toBe('timeunit');
 	});
+	test('should add additional filteredData if tooltip exists', () => {
+		const data = addData(initializeSpec().data ?? [], {
+			...defaultScatterProps,
+			children: [createElement(ChartTooltip)],
+		});
+		expect(data).toHaveLength(3);
+		expect(data[2].name).toBe('scatter0_filteredTable');
+	});
+	test('tooltipFilteredData has undefined transform by default', () => {
+		const data = addData(initializeSpec().data ?? [], {
+			...defaultScatterProps,
+			children: [createElement(ChartTooltip)],
+		});
+
+		expect(data[2].transform).toBeUndefined();
+	});
+	test('tooltipFilteredData has undefined transform by default', () => {
+		const data = addData(initializeSpec().data ?? [], {
+			...defaultScatterProps,
+			children: [createElement(ChartTooltip, { excludeDataKey: 'exclude' })],
+		});
+
+		expect(data[2].transform).toStrictEqual([{
+			type: 'filter',
+			expr: '!datum.exclude',
+		}]);
+	});
 	test('should add selectedData if popover exists', () => {
 		const data = addData(initializeSpec().data ?? [], {
 			...defaultScatterProps,

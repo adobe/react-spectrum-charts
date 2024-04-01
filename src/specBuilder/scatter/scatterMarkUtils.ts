@@ -9,6 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { ChartTooltip } from '@components/index';
 import {
 	DEFAULT_OPACITY_RULE,
 	FILTERED_TABLE,
@@ -21,6 +22,7 @@ import {
 	getColorProductionRule,
 	getLineWidthProductionRule,
 	getOpacityProductionRule,
+	getPointsForVoronoi,
 	getStrokeDashProductionRule,
 	getSymbolSizeProductionRule,
 	getVoronoiPath,
@@ -32,7 +34,7 @@ import { getScatterPathMarks } from '@specBuilder/scatterPath/scatterPathUtils';
 import { getTrendlineMarks } from '@specBuilder/trendline';
 import { spectrumColors } from '@themes';
 import { produce } from 'immer';
-import { ScatterSpecProps, SymbolSizeFacet } from 'types';
+import { ChartTooltipProps, ScatterSpecProps, SymbolSizeFacet } from 'types';
 import { GroupMark, Mark, NumericValueRef, PathMark, SymbolMark } from 'vega';
 
 export const addScatterMarks = produce<Mark[], [ScatterSpecProps]>((marks, props) => {
@@ -131,13 +133,18 @@ export const getOpacity = ({ children }: ScatterSpecProps): ({ test?: string } &
 /**
  * Gets the vornoi path mark if there are any interactive children
  * @param scatterProps ScatterSpecProps
- * @returns PathMark[]
+ * @returns Mark[]
  */
-export const getScatterHoverMarks = ({ children, name }: ScatterSpecProps): PathMark[] => {
+export const getScatterHoverMarks = ({ children, name, metric, dimension, dimensionScaleType }: ScatterSpecProps): Mark[] => {
+
 	if (!hasInteractiveChildren(children)) {
 		return [];
 	}
-	return [getVoronoiPath(children, name, name)];
+
+	return [
+		getPointsForVoronoi(`${name}_${FILTERED_TABLE}`, dimension, metric, name, dimensionScaleType),
+		getVoronoiPath(children, `${name}_pointsForVoronoi`, name)
+	];
 };
 
 const getScatterSelectMarks = ({
