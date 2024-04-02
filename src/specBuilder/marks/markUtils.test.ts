@@ -43,6 +43,8 @@ import {
 	hasMetricRange,
 	hasTooltip,
 } from './markUtils';
+import { SignalRef } from 'vega';
+import { ProductionRuleTests } from 'types';
 
 describe('getColorProductionRule', () => {
 	test('should return scale reference if color is a string', () => {
@@ -163,8 +165,19 @@ describe('getTooltip()', () => {
 		expect(rule).toHaveProperty('signal');
 	});
 	test('should reference a nested datum if nestedDatum is true', () => {
-		const rule = getTooltip([createElement(ChartTooltip)], 'line0', true);
-		expect(rule?.signal).toContain('datum.datum');
+		const rule = getTooltip([createElement(ChartTooltip)], 'line0', true) as SignalRef;
+		expect(rule.signal).toContain('datum.datum');
+	});
+	test('should add condition test when excludeDataKey is present', () => {
+		const rule = getTooltip([createElement(ChartTooltip, { excludeDataKey: 'excludeFromTooltip' })], 'line0', false) as ProductionRuleTests<SignalRef>;
+		expect(rule).toHaveLength(2);
+		expect(rule[0].test).toBe('datum.excludeFromTooltip');
+		expect(rule[0].signal).toBe('false');
+	});
+	test('should have default tooltip as second item when excludeDataKey is present', () => {
+		const rule = getTooltip([createElement(ChartTooltip, { excludeDataKey: 'excludeFromTooltip' })], 'line0', false) as ProductionRuleTests<SignalRef>;
+		expect(rule).toHaveLength(2);
+		expect(rule[1]).toHaveProperty('signal');
 	});
 });
 

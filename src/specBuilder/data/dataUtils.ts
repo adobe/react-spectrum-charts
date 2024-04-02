@@ -9,7 +9,6 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { ChartTooltip } from '@components/index';
 import {
 	DEFAULT_TIME_DIMENSION,
 	DEFAULT_TRANSFORMED_TIME_DIMENSION,
@@ -17,8 +16,9 @@ import {
 	SERIES_ID,
 	TABLE,
 } from '@constants';
+import { getTooltipProps } from '@specBuilder/marks/markUtils';
 import { produce } from 'immer';
-import { ChartTooltipProps, MarkChildElement } from 'types';
+import { MarkChildElement } from 'types';
 import { Compare, Data, FormulaTransform, SourceData, Transforms, ValuesData } from 'vega';
 
 export const addTimeTransform = produce<Transforms[], [string]>((transforms, dimension) => {
@@ -67,18 +67,13 @@ export const getSeriesIdTransform = (facets: string[]): FormulaTransform => {
 };
 
 /**
- * 
- * @param name the name of the component, i.e. `scatter0`
  * @param children 
  * @returns spec data that filters out items where the `excludeDataKey` is true
  */
 export const getFilteredTooltipData = (children: MarkChildElement[]) => {
-	const tooltipElement = children.find((child) => child.type === ChartTooltip && (child.props as ChartTooltipProps).excludeDataKey); 
-	const tooltipProps = tooltipElement?.props as ChartTooltipProps | undefined;
-
 	let transform: { type: 'filter'; expr: string }[] | undefined;
-	if (tooltipProps?.excludeDataKey) {
-		const excludeDataKey = tooltipProps.excludeDataKey;
+	const excludeDataKey = getTooltipProps(children)?.excludeDataKey;
+	if (excludeDataKey) {
 		transform = [
 			{
 			  type: 'filter',

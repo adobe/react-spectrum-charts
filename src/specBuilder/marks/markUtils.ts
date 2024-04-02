@@ -35,6 +35,7 @@ import {
 	getVegaSymbolSizeFromRscSymbolSize,
 } from '@specBuilder/specUtils';
 import {
+	ChartTooltipProps,
 	ColorFacet,
 	ColorScheme,
 	DualFacet,
@@ -42,6 +43,7 @@ import {
 	LineWidthFacet,
 	MarkChildElement,
 	OpacityFacet,
+	ProductionRuleTests,
 	ScaleType,
 	SymbolSizeFacet,
 } from 'types';
@@ -78,11 +80,22 @@ export function getInteractive(children: MarkChildElement[]): boolean {
 /**
  * If a tooltip or popover exists on the mark, then set tooltip to true.
  */
-export function getTooltip(children: MarkChildElement[], name: string, nestedDatum?: boolean): SignalRef | undefined {
+export function getTooltip(children: MarkChildElement[], name: string, nestedDatum?: boolean): ProductionRuleTests<SignalRef> | SignalRef | undefined {
 	// skip annotations
 	if (hasTooltip(children)) {
-		return { signal: `merge(datum${nestedDatum ? '.datum' : ''}, {'rscComponentName': '${name}'})` };
+		const defaultTooltip = { signal: `merge(datum${nestedDatum ? '.datum' : ''}, {'rscComponentName': '${name}'})` };
+		// if the tooltip has an excludeDataKey prop, then disable the tooltip where that key is present
+		const excludeDataKey = getTooltipProps(children)?.excludeDataKey;
+		if (excludeDataKey) {
+			return [{ test: `datum.${excludeDataKey}`, signal: 'false' }, defaultTooltip];
+		}
+
+		return defaultTooltip;
 	}
+}
+
+export function getTooltipProps(children: MarkChildElement[]): ChartTooltipProps | undefined {
+	return children.find((child) => child.type === ChartTooltip)?.props as ChartTooltipProps | undefined;
 }
 
 /**

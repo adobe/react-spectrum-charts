@@ -205,6 +205,15 @@ describe('areaSpecBuilder', () => {
 			expect(signals[3]).toHaveProperty('name', SELECTED_SERIES);
 			expect(signals[4]).toHaveProperty('name', 'area0_controlledHoveredId');
 		});
+
+		test('should exclude data with key from update if tooltip has excludeDataKey', () => {
+			const tooltip = createElement(ChartTooltip, { excludeDataKey: 'excludeFromTooltip' });
+			const signals = addSignals(defaultSignals, { ...defaultAreaProps, children: [tooltip] });
+			expect(signals).toHaveLength(5);
+			expect(signals[1]).toHaveProperty('name', HIGHLIGHTED_SERIES);
+			expect(signals[1].on?.[0]).toHaveProperty('events', '@area0:mouseover');
+			expect(signals[1].on?.[0]).toHaveProperty('update', 'datum.excludeFromTooltip ? null : datum.rscSeriesId');
+		});
 	});
 
 	describe('setScales()', () => {

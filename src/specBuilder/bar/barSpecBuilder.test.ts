@@ -241,6 +241,13 @@ describe('barSpecBuilder', () => {
 			expect(signals[0].on).toHaveLength(2);
 			expect(signals[0].on?.[0]).toHaveProperty('events', '@bar0:mouseover');
 		});
+		test('should exclude data with key from update if tooltip has excludeDataKey', () => {
+			const signals = addSignals(defaultSignals, { ...defaultBarProps, children: [createElement(ChartTooltip, { excludeDataKey: 'excludeFromTooltip' })] });
+			expect(signals[0]).toHaveProperty('on');
+			expect(signals[0].on).toHaveLength(2);
+			expect(signals[0].on?.[0]).toHaveProperty('events', '@bar0:mouseover');
+			expect(signals[0].on?.[0]).toHaveProperty('update', 'datum.excludeFromTooltip ? null : datum.rscMarkId');
+		});
 	});
 
 	describe('addScales()', () => {
