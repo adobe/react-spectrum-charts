@@ -109,7 +109,7 @@ interface LineData extends Datum {
 const AreaTooltipStory: StoryFn<typeof ChartTooltip> = (args): ReactElement => {
 	const chartProps = useChartProps({ data: disabledLineData, width: 600 });
 	return (
-		<Chart {...chartProps} debug>
+		<Chart {...chartProps}>
 			<Area>
 				<ChartTooltip {...args} />
 			</Area>
