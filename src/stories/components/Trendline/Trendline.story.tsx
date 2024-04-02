@@ -58,7 +58,7 @@ export default {
 	},
 };
 
-const defaultChartProps: ChartProps = { data: workspaceTrendsData, minWidth: 400, maxWidth: 800, height: 400 };
+const defaultChartProps: ChartProps = { animations: false, data: workspaceTrendsData, minWidth: 400, maxWidth: 800, height: 400 };
 
 const TrendlineStory: StoryFn<typeof Trendline> = (args): ReactElement => {
 	const chartProps = useChartProps(defaultChartProps);

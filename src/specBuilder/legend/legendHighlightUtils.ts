@@ -16,7 +16,7 @@ import { getOpacityAnimationRules } from '@specBuilder/marks/markUtils';
 /**
  * Adds opacity tests for the fill and stroke of marks that use the color scale to set the fill or stroke value.
  */
-export const setHoverOpacityForMarks = (marks: Mark[], keys?: string[], name?: string, animations?: boolean) => {
+export const setHoverOpacityForMarks = (marks: Mark[], animations?: boolean, keys?: string[], name?: string) => {
 	if (!marks.length) return;
 	const flatMarks = flattenMarks(marks);
 	const seriesMarks = flatMarks.filter(markUsesSeriesColorScale);
@@ -42,6 +42,7 @@ export const setHoverOpacityForMarks = (marks: Mark[], keys?: string[], name?: s
 			}
 			//TODO: add comment/doc/etc
 			if (animations !== false) {
+				console.warn(animations?.valueOf())
 				update.opacity = getOpacityAnimationRules();
 			} else {
 				// need to insert the new test in the second to last slot
