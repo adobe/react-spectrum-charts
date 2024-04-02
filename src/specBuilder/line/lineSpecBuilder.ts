@@ -93,7 +93,7 @@ export const addData = produce<Data[], [LineSpecProps]>((data, props) => {
 	}
 	if (hasInteractiveChildren(children)) {
 		data.push(getLineHighlightedData(name, FILTERED_TABLE, hasPopover(children)));
-		data.push(getFilteredTooltipData(name, children));
+		data.push(getFilteredTooltipData(children));
 	}
 	if (staticPoint) data.push(getLineStaticPointData(name, staticPoint, FILTERED_TABLE));
 	addTrendlineData(data, props);

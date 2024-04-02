@@ -104,7 +104,7 @@ export const addData = produce<Data[], [ScatterSpecProps]>((data, props) => {
 	}
 
 	if (hasInteractiveChildren(children)) {
-		data.push(getFilteredTooltipData(name, children));
+		data.push(getFilteredTooltipData(children));
 	}
 
 	if (hasPopover(children)) {

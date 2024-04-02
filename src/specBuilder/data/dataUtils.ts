@@ -72,7 +72,7 @@ export const getSeriesIdTransform = (facets: string[]): FormulaTransform => {
  * @param children 
  * @returns spec data that filters out items where the `excludeDataKey` is true
  */
-export const getFilteredTooltipData = (name: string, children: MarkChildElement[]) => {
+export const getFilteredTooltipData = (children: MarkChildElement[]) => {
 	const tooltipElement = children.find((child) => child.type === ChartTooltip && (child.props as ChartTooltipProps).excludeDataKey); 
 	const tooltipProps = tooltipElement?.props as ChartTooltipProps | undefined;
 
