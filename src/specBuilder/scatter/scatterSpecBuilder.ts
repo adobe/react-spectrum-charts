@@ -26,7 +26,7 @@ import {
 } from '@constants';
 import { addTimeTransform, getFilteredTooltipData, getTableData } from '@specBuilder/data/dataUtils';
 import { getInteractiveMarkName } from '@specBuilder/line/lineUtils';
-import { hasInteractiveChildren, hasPopover, hasTooltip } from '@specBuilder/marks/markUtils';
+import { hasInteractiveChildren, hasPopover } from '@specBuilder/marks/markUtils';
 import {
 	addContinuousDimensionScale,
 	addFieldToFacetScaleDomain,
@@ -37,11 +37,10 @@ import { addHighlightedItemSignalEvents } from '@specBuilder/signal/signalSpecBu
 import { addTrendlineData, getTrendlineScales, setTrendlineSignals } from '@specBuilder/trendline';
 import { sanitizeMarkChildren, toCamelCase } from '@utils';
 import { produce } from 'immer';
-import { ChartTooltipProps, ColorScheme, ScatterProps, ScatterSpecProps } from 'types';
+import { ColorScheme, ScatterProps, ScatterSpecProps } from 'types';
 import { Data, Scale, Signal, Spec } from 'vega';
 
 import { addScatterMarks } from './scatterMarkUtils';
-import { ChartTooltip } from '@components/ChartTooltip';
 
 /**
  * Adds all the necessary parts of a scatter to the spec

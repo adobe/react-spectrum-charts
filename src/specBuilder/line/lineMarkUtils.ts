@@ -22,7 +22,7 @@ import {
 	hasPopover,
 } from '@specBuilder/marks/markUtils';
 import { ScaleType } from 'types';
-import { LineMark, Mark, NumericValueRef, ProductionRule, RuleMark, SymbolMark } from 'vega';
+import { LineMark, Mark, NumericValueRef, ProductionRule, RuleMark } from 'vega';
 
 import {
 	getHighlightBackgroundPoint,

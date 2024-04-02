@@ -9,7 +9,6 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { ChartTooltip } from '@components/index';
 import {
 	DEFAULT_OPACITY_RULE,
 	FILTERED_TABLE,
@@ -34,8 +33,8 @@ import { getScatterPathMarks } from '@specBuilder/scatterPath/scatterPathUtils';
 import { getTrendlineMarks } from '@specBuilder/trendline';
 import { spectrumColors } from '@themes';
 import { produce } from 'immer';
-import { ChartTooltipProps, ScatterSpecProps, SymbolSizeFacet } from 'types';
-import { GroupMark, Mark, NumericValueRef, PathMark, SymbolMark } from 'vega';
+import { ScatterSpecProps, SymbolSizeFacet } from 'types';
+import { GroupMark, Mark, NumericValueRef, SymbolMark } from 'vega';
 
 export const addScatterMarks = produce<Mark[], [ScatterSpecProps]>((marks, props) => {
 	const { name } = props;
