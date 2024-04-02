@@ -142,7 +142,7 @@ export const getScatterHoverMarks = ({ children, name, metric, dimension, dimens
 	}
 
 	return [
-		getPointsForVoronoi(`${name}_${FILTERED_TABLE}`, dimension, metric, name, dimensionScaleType),
+		getPointsForVoronoi(`${FILTERED_TABLE}ForTooltip`, dimension, metric, name, dimensionScaleType),
 		getVoronoiPath(children, `${name}_pointsForVoronoi`, name)
 	];
 };

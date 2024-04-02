@@ -148,7 +148,7 @@ export const addLineMarks = produce<Mark[], [LineSpecProps]>((marks, props) => {
 	if (staticPoint) marks.push(getLineStaticPoint(props));
 	marks.push(...getMetricRangeGroupMarks(props));
 	if (hasInteractiveChildren(children)) {
-		marks.push(...getLineHoverMarks(props, `${name}_${FILTERED_TABLE}`));
+		marks.push(...getLineHoverMarks(props, `${FILTERED_TABLE}ForTooltip`));
 	}
 	marks.push(...getTrendlineMarks(props));
 });

@@ -88,7 +88,7 @@ export const getFilteredTooltipData = (name: string, children: MarkChildElement[
 	}
 
 	return {
-		name: `${name}_${FILTERED_TABLE}`,
+		name: `${FILTERED_TABLE}ForTooltip`,
 		source: FILTERED_TABLE,
 		transform,
 	};
