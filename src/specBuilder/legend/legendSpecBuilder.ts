@@ -127,11 +127,6 @@ export const addLegend = produce<
 			spec.data = addData(spec.data ?? [], { ...legendProps, facets: uniqueFacetFields });
 			spec.signals = addSignals(spec.signals ?? [], legendProps);
 			spec.marks = addMarks(spec.marks ?? [], legendProps);
-
-			//TODO: add documentation
-			if (!spec.signals.some((signal) => signal.name == 'rscColorAnimation')) {
-				legendProps.animations = undefined;
-			}
 			// add the legend
 			legends.push(getCategoricalLegend(ordinalFacets, legendProps));
 		}
