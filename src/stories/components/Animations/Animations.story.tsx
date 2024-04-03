@@ -1,10 +1,7 @@
-import React, { createElement, ReactElement, useState } from 'react';
+import React, { ReactElement, useState } from 'react';
 
 import {
-	COLOR_SCALE,
-	LINE_TYPE_SCALE,
 	MARK_ID,
-	OPACITY_SCALE,
 	TRENDLINE_VALUE
 } from '@constants';
 import useChartProps from '@hooks/useChartProps';
@@ -14,19 +11,14 @@ import {
 	Axis,
 	Bar,
 	Chart,
-	ChartColors,
 	ChartPopover,
 	ChartProps,
 	ChartTooltip,
 	Legend,
-	LegendProps,
 	Line,
-	Scatter,
-	ScatterProps,
-	Title,
 	Trendline
 } from '@rsc';
-import { areaData, browserData as data, newDataArray1WithStaticPoints, workspaceTrendsData } from '@stories/data/data';
+import { areaData, newDataArray1WithStaticPoints, workspaceTrendsData } from '@stories/data/data';
 import { StoryFn } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
 import { ChartData, ChartElement, Datum, SpectrumColor } from 'types';
@@ -34,7 +26,6 @@ import { ChartData, ChartElement, Datum, SpectrumColor } from 'types';
 import { Button, Content, Text, View } from '@adobe/react-spectrum';
 
 import { barData, barSubSeriesData, generateMockDataForTrellis,  } from '../Bar/data';
-import { characterData } from '@stories/data/marioKartData';
 
 export default {
 	title: 'RSC/Animations',
@@ -50,57 +41,6 @@ interface ChartWithToggleableDataProps extends ToggleableDataProps {
 }
 
 const defaultChartProps: ChartProps = { data: [], minWidth: 400, maxWidth: 800, height: 400 };
-
-const dialogContent = (datum) => (
-	<Content>
-		<div>Operating system: {datum.series}</div>
-		<div>Browser: {datum.category}</div>
-		<div>Users: {datum.value}</div>
-	</Content>
-);
-
-type MarioDataKey = keyof (typeof characterData)[0];
-
-const marioKeyTitle: Record<Exclude<MarioDataKey, 'character'>, string> = {
-	weightClass: 'Weight class',
-	speedNormal: 'Speed (normal)',
-	speedAntigravity: 'Speed (antigravity)',
-	speedWater: 'Speed (water)',
-	speedAir: 'Speed (air)',
-	acceleration: 'Acceleration',
-	weight: 'Weight',
-	handlingNormal: 'Handling (normal)',
-	handlingAntigravity: 'Handling (antigravity)',
-	handlingWater: 'Handling (water)',
-	handlingAir: 'Handling (air)',
-	grip: 'Grip',
-	miniTurbo: 'Mini-turbo',
-};
-
-const areaStoryData = [
-	{ browser: 'Chrome', value: 5, operatingSystem: 'Windows', order: 2 },
-	{ browser: 'Chrome', value: 3, operatingSystem: 'Mac', order: 1 },
-	{ browser: 'Chrome', value: 2, operatingSystem: 'Other', order: 0 },
-	{ browser: 'Firefox', value: 3, operatingSystem: 'Windows', order: 2 },
-	{ browser: 'Firefox', value: 3, operatingSystem: 'Mac', order: 1 },
-	{ browser: 'Firefox', value: 1, operatingSystem: 'Other', order: 0 },
-	{ browser: 'Safari', value: 3, operatingSystem: 'Windows', order: 2 },
-	{ browser: 'Safari', value: 0, operatingSystem: 'Mac', order: 1 },
-	{ browser: 'Safari', value: 1, operatingSystem: 'Other', order: 0 },
-];
-
-const getLegendProps = (args: ScatterProps): LegendProps => {
-	const facets = [COLOR_SCALE, LINE_TYPE_SCALE, OPACITY_SCALE, 'size'];
-	const legendKey = args[facets.find((key) => args[key] !== undefined) ?? COLOR_SCALE];
-	const legendProps: LegendProps = {
-		position: 'right',
-		title: marioKeyTitle[legendKey],
-	};
-	if (typeof args.opacity === 'object') {
-		legendProps.opacity = args.opacity;
-	}
-	return legendProps;
-};
 
 const ChartWithToggleableData = ({ ChartComponent, initialData, secondaryData }: ChartWithToggleableDataProps) => {
 	const [dataSource, setDataSource] = useState(true);
@@ -138,7 +78,6 @@ const dialog = (item: Datum) => {
 		</Content>
 	);
 };
-
 const AreaStory: StoryFn<ToggleableDataProps> = (args): ReactElement => {
 	const chartProps = useChartProps( defaultChartProps );
 	return (
@@ -155,22 +94,6 @@ const AreaStory: StoryFn<ToggleableDataProps> = (args): ReactElement => {
 		/>
 	);
 };
-
-const AreaPopoverStory: StoryFn<typeof Area> = (args): ReactElement => {
-	const chartProps = useChartProps({ data: areaStoryData, minWidth: 400, maxWidth: 800, height: 400 });
-	return (
-		<Chart {...chartProps}>
-			<Axis position="bottom" baseline />
-			<Axis position="left" grid />
-			<Area {...args}>
-				<ChartTooltip>{dialogContent}</ChartTooltip>
-				<ChartPopover>{dialogContent}</ChartPopover>
-			</Area>
-			<Legend highlight />
-		</Chart>
-	);
-};
-
 const SingleLineStory: StoryFn<ToggleableDataProps> = (args): ReactElement => {
 	const chartProps = useChartProps(defaultChartProps);
 	return (
@@ -187,22 +110,6 @@ const SingleLineStory: StoryFn<ToggleableDataProps> = (args): ReactElement => {
 		/>
 	);
 };
-
-const LineStory: StoryFn<typeof ChartPopover> = (args): ReactElement => {
-	const chartProps = useChartProps({ ...defaultChartProps, data });
-	return (
-		<Chart {...chartProps}>
-			<Axis position="bottom" baseline />
-			<Axis position="left" grid />
-			<Line scaleType="point" dimension="category" color="series">
-				<ChartTooltip>{dialogContent}</ChartTooltip>
-				<ChartPopover {...args} />
-			</Line>
-			<Legend highlight/>
-		</Chart>
-	);
-};
-
 const BarStory: StoryFn<ToggleableDataProps> = (args): ReactElement => {
 	const chartProps = useChartProps(defaultChartProps);
 	return (
@@ -251,22 +158,6 @@ const DodgedBarStory: StoryFn<ToggleableDataProps> = (args): ReactElement => {
 			}
 			{...args}
 		/>
-	);
-};
-
-const ScatterStory: StoryFn<typeof Scatter> = (args): ReactElement => {
-	const colors: ChartColors = args.colorScaleType === 'linear' ? 'sequentialViridis5' : 'categorical16';
-	const chartProps = useChartProps({ data: characterData, height: 500, width: 500, lineWidths: [1, 2, 3], colors });
-	const legendProps = getLegendProps(args);
-
-	return (
-		<Chart {...chartProps}>
-			<Axis position="bottom" grid ticks baseline title={marioKeyTitle[args.dimension as MarioDataKey]} />
-			<Axis position="left" grid ticks baseline title={marioKeyTitle[args.metric as MarioDataKey]} />
-			<Scatter {...args} />
-			<Legend {...legendProps} highlight />
-			<Title text="Mario Kart 8 Character Data" />
-		</Chart>
 	);
 };
 
@@ -368,16 +259,6 @@ AreaZero.args = {
 	}),
 };
 
-const AreaPopover = bindWithProps(AreaPopoverStory);
-AreaPopover.args = {
-	dimension: 'browser',
-	color: 'operatingSystem',
-	scaleType: 'point',
-};
-
-const LineChart = bindWithProps(LineStory);
-LineChart.args = { children: dialogContent };
-
 const SingleLineSwitch = bindWithProps(SingleLineStory);
 SingleLineSwitch.args = {
 	initialData: newDataArray1WithStaticPoints,
@@ -473,14 +354,6 @@ DodgedBarZero.args = {
 	]),
 };
 
-const ScatterPopover = bindWithProps(ScatterStory);
-ScatterPopover.args = {
-	color: 'weightClass',
-	dimension: 'speedNormal',
-	metric: 'handlingNormal',
-	children: [createElement(ChartTooltip, {}, dialog), createElement(ChartPopover, { width: 200 }, dialog)],
-};
-
 const trellisData = generateMockDataForTrellis({
 	property1: ['All users', 'Roku', 'Chromecast', 'Amazon Fire', 'Apple TV'],
 	property2: ['A. Sign up', 'B. Watch a video', 'C. Add to MyList'],
@@ -514,15 +387,12 @@ TrellisHorizontalBarZero.args = {
 };
 
 export {
-	AreaPopover,
 	AreaSwitch,
 	AreaZero,
 	BarSwitch,
 	BarZero,
 	DodgedBarSwitch,
 	DodgedBarZero,
-	LineChart,
-	ScatterPopover,
 	SingleLineSwitch,
 	SingleLineZero,
 	TrellisHorizontalBarSwitch,

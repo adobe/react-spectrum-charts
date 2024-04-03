@@ -100,6 +100,7 @@ const TimeCompareFeatureMatrixStory: StoryFn<typeof Chart> = (args): ReactElemen
 
 const FeatureMatrix = bindWithProps(FeatureMatrixStory);
 FeatureMatrix.args = {
+	animations: false,
 	width: 'auto',
 	maxWidth: 850,
 	height: 500,
@@ -108,6 +109,7 @@ FeatureMatrix.args = {
 
 const MultipleSegmentFeatureMatrix = bindWithProps(MultipleSegmentFeatureMatrixStory);
 MultipleSegmentFeatureMatrix.args = {
+	animations: false,
 	width: 'auto',
 	maxWidth: 850,
 	height: 500,
@@ -116,6 +118,7 @@ MultipleSegmentFeatureMatrix.args = {
 
 const TimeCompareFeatureMatrix = bindWithProps(TimeCompareFeatureMatrixStory);
 TimeCompareFeatureMatrix.args = {
+	animations: false,
 	width: 'auto',
 	maxWidth: 850,
 	height: 500,

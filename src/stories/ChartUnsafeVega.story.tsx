@@ -33,6 +33,7 @@ const UnsafeVegaSpecStory: StoryFn<typeof Chart> = (args): ReactElement => {
 
 const BasicBar = bindWithProps(UnsafeVegaSpecStory);
 BasicBar.args = {
+	animations: false,
 	data: barData,
 	height: 500,
 	maxWidth: 400,
@@ -105,6 +106,7 @@ BasicBar.args = {
 
 const PackedBubbleChart = bindWithProps(UnsafeVegaSpecStory);
 PackedBubbleChart.args = {
+	animations: false,
 	data: packedBubbleData,
 	height: 500,
 	maxWidth: 400,
@@ -196,6 +198,7 @@ PackedBubbleChart.args = {
 
 const ContourPlot = bindWithProps(UnsafeVegaSpecStory);
 ContourPlot.args = {
+	animations: false,
 	data: [
 		{
 			name: 'source',

@@ -22,24 +22,28 @@ export default {
 
 const SpectrumColorNames = bindWithProps(ChartBarStory);
 SpectrumColorNames.args = {
+	animations: false,
 	colors: ['gray-800', 'gray-700', 'gray-600', 'gray-500'],
 	data,
 };
 
 const SpectrumDivergentColorScheme = bindWithProps(ChartBarStory);
 SpectrumDivergentColorScheme.args = {
+	animations: false,
 	colors: 'divergentOrangeYellowSeafoam5',
 	data,
 };
 
 const SpectrumSequentialColorScheme = bindWithProps(ChartBarStory);
 SpectrumSequentialColorScheme.args = {
+	animations: false,
 	colors: 'sequentialCerulean5',
 	data,
 };
 
 const CssColors = bindWithProps(ChartBarStory);
 CssColors.args = {
+	animations: false,
 	colors: ['purple', 'rgb(38, 142, 108)', '#0d66d0', 'hsl(32deg, 86%, 46%)'],
 	data,
 };

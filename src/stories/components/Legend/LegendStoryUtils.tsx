@@ -62,5 +62,6 @@ export const LegendDisconnectedStory: StoryFn<typeof Legend> = (args): ReactElem
 };
 
 export const defaultProps: LegendProps = {
+	animations: false,
 	onClick: undefined,
 };
