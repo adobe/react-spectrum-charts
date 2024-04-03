@@ -1,9 +1,9 @@
-import { ReactElement, useState } from 'react';
+import React, { ReactElement, useState } from 'react';
 
 import { MARK_ID } from '@constants';
 import useChartProps from '@hooks/useChartProps';
-import { Annotation, Area, Axis, Bar, Chart, ChartPopover, ChartTooltip, Legend, Line } from '@rsc';
-import { areaData, newDataArray1WithStaticPoints } from '@stories/data/data';
+import { Annotation, Area, Axis, Bar, Chart, ChartPopover, ChartProps, ChartTooltip, Legend, Line } from '@rsc';
+import { areaData, browserData as data, newDataArray1WithStaticPoints } from '@stories/data/data';
 import { StoryFn } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
 import { ChartData, ChartElement, Datum, SpectrumColor } from 'types';
@@ -24,6 +24,28 @@ interface ToggleableDataProps {
 interface ChartWithToggleableDataProps extends ToggleableDataProps {
 	ChartComponent: ChartElement;
 }
+
+const defaultChartProps: ChartProps = { data: [], minWidth: 400, maxWidth: 800, height: 400 };
+
+const dialogContent = (datum) => (
+	<Content>
+		<div>Operating system: {datum.series}</div>
+		<div>Browser: {datum.category}</div>
+		<div>Users: {datum.value}</div>
+	</Content>
+);
+
+const areaStoryData = [
+	{ browser: 'Chrome', value: 5, operatingSystem: 'Windows', order: 2 },
+	{ browser: 'Chrome', value: 3, operatingSystem: 'Mac', order: 1 },
+	{ browser: 'Chrome', value: 2, operatingSystem: 'Other', order: 0 },
+	{ browser: 'Firefox', value: 3, operatingSystem: 'Windows', order: 2 },
+	{ browser: 'Firefox', value: 3, operatingSystem: 'Mac', order: 1 },
+	{ browser: 'Firefox', value: 1, operatingSystem: 'Other', order: 0 },
+	{ browser: 'Safari', value: 3, operatingSystem: 'Windows', order: 2 },
+	{ browser: 'Safari', value: 0, operatingSystem: 'Mac', order: 1 },
+	{ browser: 'Safari', value: 1, operatingSystem: 'Other', order: 0 },
+];
 
 const ChartWithToggleableData = ({ ChartComponent, initialData, secondaryData }: ChartWithToggleableDataProps) => {
 	const [dataSource, setDataSource] = useState(true);
@@ -53,7 +75,7 @@ const manipulateData = (data: number): number => {
 };
 
 const AreaStory: StoryFn<ToggleableDataProps> = (args): ReactElement => {
-	const chartProps = useChartProps({ data: [], minWidth: 400, maxWidth: 800, height: 400 });
+	const chartProps = useChartProps( defaultChartProps );
 	return (
 		<ChartWithToggleableData
 			ChartComponent={
@@ -66,8 +88,23 @@ const AreaStory: StoryFn<ToggleableDataProps> = (args): ReactElement => {
 	);
 };
 
+const AreaPopoverStory: StoryFn<typeof Area> = (args): ReactElement => {
+	const chartProps = useChartProps({ data: areaStoryData, minWidth: 400, maxWidth: 800, height: 400 });
+	return (
+		<Chart {...chartProps}>
+			<Axis position="bottom" baseline />
+			<Axis position="left" grid />
+			<Area {...args}>
+				<ChartTooltip>{dialogContent}</ChartTooltip>
+				<ChartPopover>{dialogContent}</ChartPopover>
+			</Area>
+			<Legend highlight />
+		</Chart>
+	);
+};
+
 const SingleLineStory: StoryFn<ToggleableDataProps> = (args): ReactElement => {
-	const chartProps = useChartProps({ data: [], minWidth: 400, maxWidth: 800, height: 400 });
+	const chartProps = useChartProps(defaultChartProps);
 	return (
 		<ChartWithToggleableData
 			ChartComponent={
@@ -80,8 +117,23 @@ const SingleLineStory: StoryFn<ToggleableDataProps> = (args): ReactElement => {
 	);
 };
 
+const LineStory: StoryFn<typeof ChartPopover> = (args): ReactElement => {
+	const chartProps = useChartProps({ ...defaultChartProps, data });
+	return (
+		<Chart {...chartProps}>
+			<Axis position="bottom" baseline />
+			<Axis position="left" grid />
+			<Line scaleType="point" dimension="category" color="series">
+				<ChartTooltip>{dialogContent}</ChartTooltip>
+				<ChartPopover {...args} />
+			</Line>
+			<Legend highlight/>
+		</Chart>
+	);
+};
+
 const BarStory: StoryFn<ToggleableDataProps> = (args): ReactElement => {
-	const chartProps = useChartProps({ data: [], minWidth: 400, maxWidth: 800, height: 400 });
+	const chartProps = useChartProps(defaultChartProps);
 	return (
 		<ChartWithToggleableData
 			ChartComponent={
@@ -102,7 +154,7 @@ const DodgedBarStory: StoryFn<ToggleableDataProps> = (args): ReactElement => {
 		['#575de8', '#8489fd'],
 		['#d16100', '#fa8b1a'],
 	];
-	const chartProps = useChartProps({ data: [], minWidth: 400, maxWidth: 800, height: 400, colors });
+	const chartProps = useChartProps({ ...defaultChartProps,  colors });
 	return (
 		<ChartWithToggleableData
 			ChartComponent={
@@ -115,6 +167,7 @@ const DodgedBarStory: StoryFn<ToggleableDataProps> = (args): ReactElement => {
 						color={['operatingSystem', 'version']}
 						paddingRatio={0.1}
 					>
+						<ChartPopover/>
 						<Annotation textKey="percentLabel" />
 					</Bar>
 					<Legend title="Operating system" highlight />
@@ -136,7 +189,7 @@ const TrellisHorizontalBarStory: StoryFn<ToggleableDataProps> = (args): ReactEle
 		'sequential-magma-1400',
 	];
 
-	const chartProps = useChartProps({ data: [], minWidth: 400, maxWidth: 800, height: 400, colors });
+	const chartProps = useChartProps({ ...defaultChartProps, colors });
 
 	const dialog = (item: Datum) => {
 		return (
@@ -196,6 +249,16 @@ AreaZero.args = {
 		series: 'Add Fallout',
 	}),
 };
+
+const AreaPopover = bindWithProps(AreaPopoverStory);
+AreaPopover.args = {
+	dimension: 'browser',
+	color: 'operatingSystem',
+	scaleType: 'point',
+};
+
+const LineChart = bindWithProps(LineStory);
+LineChart.args = { children: dialogContent };
 
 const SingleLineSwitch = bindWithProps(SingleLineStory);
 SingleLineSwitch.args = {
@@ -302,14 +365,16 @@ TrellisHorizontalBarZero.args = {
 };
 
 export {
+	AreaPopover,
 	AreaSwitch,
 	AreaZero,
-	SingleLineSwitch,
-	SingleLineZero,
 	BarSwitch,
 	BarZero,
 	DodgedBarSwitch,
 	DodgedBarZero,
+	LineChart,
+	SingleLineSwitch,
+	SingleLineZero,
 	TrellisHorizontalBarSwitch,
 	TrellisHorizontalBarZero,
 };

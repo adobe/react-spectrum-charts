@@ -22,7 +22,7 @@ import {
 	getColorProductionRule,
 	getCursor,
 	getInteractive,
-	getOpacityAnimationRules,
+	getSeriesAnimationOpacityRules,
 	getTooltip
 } from '@specBuilder/marks/markUtils';
 import { ChartData, ColorFacet, ColorScheme, MarkChildElement, ScaleType } from 'types';
@@ -126,7 +126,7 @@ export function getFillOpacity(
 
 	//TODO: add comments/tests/etc
 	if ( animations !== false ) {
-		return getOpacityAnimationRules({ value: opacity })
+		return getSeriesAnimationOpacityRules({ value: opacity })
 	}
 
 	// if an area is hovered or selected, all other areas should have half opacity

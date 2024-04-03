@@ -16,7 +16,7 @@ import {
 	getLineWidthProductionRule,
 	getOpacityProductionRule,
 	getStrokeDashProductionRule,
-	getOpacityAnimationRules,
+	getSeriesAnimationOpacityRules,
 	getVoronoiPath,
 	getXProductionRule,
 	hasPopover,
@@ -78,7 +78,7 @@ export const getLineOpacity = ({
 
 	//TODO: add comments/tests/etc
 	if (animations !== false) {
-		return getOpacityAnimationRules();
+		return getSeriesAnimationOpacityRules();
 	}
 	// add a rule that will lower the opacity of the line if there is a hovered series, but this line is not the one hovered
 	strokeOpacityRules.push({

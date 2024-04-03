@@ -1,19 +1,27 @@
 import { findChart, render } from '@test-utils';
 
 import {
+	AreaPopover,
 	AreaSwitch,
 	AreaZero,
 	BarSwitch,
 	BarZero,
 	DodgedBarSwitch,
 	DodgedBarZero,
+	LineChart,
 	SingleLineSwitch,
 	SingleLineZero,
 	TrellisHorizontalBarSwitch,
-	TrellisHorizontalBarZero,
+	TrellisHorizontalBarZero
 } from './Animations.story';
 
 describe('Animations', () => {
+	test('Area Popover renders properly', async () => {
+		render(<AreaPopover {...AreaPopover.args} />);
+		const chart = await findChart();
+		expect(chart).toBeInTheDocument();
+	})
+
 	test('Area Switch renders properly', async () => {
 		render(<AreaSwitch {...AreaSwitch.args} />);
 		const chart = await findChart();
@@ -25,6 +33,12 @@ describe('Animations', () => {
 		const chart = await findChart();
 		expect(chart).toBeInTheDocument();
 	});
+
+	test('Line Chart renders properly', async () => {
+		render(<LineChart {...LineChart.args}/>);
+		const chart = await findChart();
+		expect(chart).toBeInTheDocument();
+	})
 
 	test('Single Line Switch renders properly', async () => {
 		render(<SingleLineSwitch {...SingleLineSwitch.args} />);

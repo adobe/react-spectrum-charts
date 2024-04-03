@@ -11,7 +11,8 @@
  */
 import { COLOR_SCALE, HIGHLIGHT_CONTRAST_RATIO, HIGHLIGHTED_SERIES, SERIES_ID } from '@constants';
 import { GroupMark, Mark, NumericValueRef, ProductionRule } from 'vega';
-import { getOpacityAnimationRules } from '@specBuilder/marks/markUtils';
+import { getNonSeriesAnimationOpacityRules, getSeriesAnimationOpacityRules } from '@specBuilder/marks/markUtils';
+
 
 /**
  * Adds opacity tests for the fill and stroke of marks that use the color scale to set the fill or stroke value.
@@ -42,8 +43,11 @@ export const setHoverOpacityForMarks = (marks: Mark[], animations?: boolean, key
 			}
 			//TODO: add comment/doc/etc
 			if (animations !== false) {
-				console.warn(animations?.valueOf())
-				update.opacity = getOpacityAnimationRules();
+				if (mark.name == 'bar0') {
+					update.opacity = getNonSeriesAnimationOpacityRules();
+				} else {
+					update.opacity = getSeriesAnimationOpacityRules();
+				}
 			} else {
 				// need to insert the new test in the second to last slot
 				const opacityRuleInsertIndex = Math.max(update.opacity.length - 1, 0);

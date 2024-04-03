@@ -115,7 +115,7 @@ export const addSignals = produce<Signal[], [BarSpecProps]>(
 		}
 		//TODO: add comments
 		if (animations !== false && hasInteractiveChildren(children)) {
-			signals.push(...getRSCAnimationSignals(name));
+			signals.push(...getRSCAnimationSignals(name, undefined, true));
 		}
 		addHighlightedItemSignalEvents(signals, name);
 	}

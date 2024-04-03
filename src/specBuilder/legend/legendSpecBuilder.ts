@@ -17,7 +17,8 @@ import {
 	OPACITY_SCALE,
 	SYMBOL_SHAPE_SCALE,
 	SYMBOL_SIZE_SCALE,
-	RSC_ANIMATION
+	RSC_ANIMATION,
+	HIGHLIGHTED_ITEM
 } from '@constants';
 import {
 	addFieldToFacetScaleDomain,
@@ -48,6 +49,7 @@ import {
 	getLegendLabelsSeriesSignal,
 	getRSCAnimationSignals,
 	getRSCLegendColorAnimationDirection,
+	getRSCLegendHighlightedItemPrev,
 	hasSignalByName
 } from '../signal/signalSpecBuilder';
 import { getFacets, getFacetsFromKeys } from './legendFacetUtils';
@@ -295,6 +297,7 @@ export const addSignals = produce<Signal[], [LegendSpecProps]>(
 				signals.push(...getRSCAnimationSignals(name));
 			}
 			signals.find((sig) => sig.name == 'rscColorAnimationDirection')?.on?.push(...getRSCLegendColorAnimationDirection(name));
+			signals.find((sig) => sig.name == `${HIGHLIGHTED_ITEM}_prev`)?.on?.push(...getRSCLegendHighlightedItemPrev(name));
 		}
 
 		if (highlight) {

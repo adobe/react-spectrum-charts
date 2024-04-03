@@ -46,7 +46,7 @@ import {
 } from 'vega';
 
 import { ColorValueV6 } from '@react-types/shared';
-import { getLegendOpacityRules, getOpacityAnimationRules } from '@specBuilder/marks/markUtils';
+import { getLegendMarkOpacityRules, getLegendSeriesOpacityRules } from '@specBuilder/marks/markUtils';
 
 export interface Facet {
 	facetType: FacetType | SecondaryFacetType;
@@ -175,9 +175,13 @@ export const getOpacityEncoding = ({
 	const highlightSignalName = keys ? `${name}_highlight` : HIGHLIGHTED_SERIES;
 	// only add symbol opacity if highlight is true or highlightedSeries is defined
 	if (highlight || highlightedSeries) {
-		//TODO: Add documentation
 		if (animations !== false) {
-			return getLegendOpacityRules();
+			if (highlightedSeries) {
+				//TODO: Add documentation
+				return getLegendSeriesOpacityRules();
+			} else {
+				return getLegendMarkOpacityRules();
+			}
 		}
 		return [
 			{

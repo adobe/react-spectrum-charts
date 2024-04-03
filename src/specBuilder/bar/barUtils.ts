@@ -25,8 +25,9 @@ import {
 } from '@constants';
 import {
 	getColorProductionRule,
-	getCursor, getHighlightOpacityAnimationValue,
+	getCursor,
 	getHighlightOpacityValue,
+	getNonSeriesAnimationOpacityRules,
 	getOpacityProductionRule,
 	getStrokeDashProductionRule,
 	getTooltip,
@@ -407,7 +408,7 @@ export const getBarOpacity = ({ children, animations }: BarSpecProps): Productio
 
 	//TODO: Add documentation
 	if ( animations !== false ) {
-		return getAnimationsFillOpacity();
+		return getNonSeriesAnimationOpacityRules();
 	}
 
 	// if a bar is hovered/selected, all other bars should have reduced opacity
@@ -434,31 +435,6 @@ export const getBarOpacity = ({ children, animations }: BarSpecProps): Productio
 	];
 };
 
-//TODO: Add documentation
-const getAnimationsFillOpacity = (): ProductionRule<NumericValueRef> => {
-	return [
-		{
-			test: `!${SELECTED_ITEM} && ${HIGHLIGHTED_ITEM} && ${HIGHLIGHTED_ITEM} !== datum.${MARK_ID}`,
-			...getHighlightOpacityAnimationValue(DEFAULT_OPACITY_RULE)
-		},
-		{
-			test: `${SELECTED_ITEM} && ${SELECTED_ITEM} !== datum.${MARK_ID}`,
-			...getHighlightOpacityAnimationValue(DEFAULT_OPACITY_RULE)
-		},
-		...getAnimationProductionRule(),
-		{ value: 1 }
-	];
-};
-
-//TODO: Add documentation
-const getAnimationProductionRule = (): [
-	{ test: string, signal: string } | { test: string, value: number }] => {
-	return [
-		{
-			test: `${HIGHLIGHTED_ITEM}_prev !== datum.${MARK_ID} && rscColorAnimationDirection === -1`,
-			...getHighlightOpacityAnimationValue(DEFAULT_OPACITY_RULE)
-		}];
-}
 export const getStroke = ({ children, color, colorScheme }: BarSpecProps): ProductionRule<ColorValueRef> => {
 	const defaultProductionRule = getColorProductionRule(color, colorScheme);
 	if (!hasPopover(children)) {

@@ -26,7 +26,11 @@ import {
 	LINE_WIDTH_SCALE,
 	OPACITY_SCALE,
 	SYMBOL_SIZE_SCALE,
-	SERIES_ID, HIGHLIGHTED_SERIES
+	SERIES_ID,
+	HIGHLIGHTED_SERIES,
+	SELECTED_ITEM,
+	HIGHLIGHTED_ITEM,
+	MARK_ID
 } from '@constants';
 import { getScaleName } from '@specBuilder/scale/scaleSpecBuilder';
 import {
@@ -285,7 +289,7 @@ export const getHighlightOpacityAnimationValue = (opacityValue: { signal: string
 };
 
 //TODO: Add documentation/tests/etc
-export const getOpacityAnimationRules = (
+export const getSeriesAnimationOpacityRules = (
 	opacityValue?: { signal: string } | { value: number },
 ): ProductionRule<NumericValueRef> => {
 	if (!opacityValue) {
@@ -302,10 +306,36 @@ export const getOpacityAnimationRules = (
 		},
 		DEFAULT_OPACITY_RULE
 	]
+};
+//TODO: add comments/tests/etc
+export const getNonSeriesAnimationOpacityRules = (): ProductionRule<NumericValueRef> => {
+	return [
+		{
+			// If there is no current selection, but there is a hover and the hover is NOT for the current bar
+			test: `!${SELECTED_ITEM} && ${HIGHLIGHTED_ITEM} && ${HIGHLIGHTED_ITEM} !== datum.${MARK_ID}`,
+			...getHighlightOpacityAnimationValue(DEFAULT_OPACITY_RULE)
+		},
+		{
+			// If there is a highlighted series and the highlighted series is NOT the series of the current bar
+			test: `${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES} !== datum.${SERIES_ID}`,
+			...getHighlightOpacityAnimationValue(DEFAULT_OPACITY_RULE)
+		},
+		{
+			// If there is no highlighted series and the previously highlighted series is the series of the current bar
+			test: `!${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES}_prev == datum.${SERIES_ID}`,
+			value: 1
+		},
+		{
+			// If the previously hovered bar is NOT the current bar and the color animation direction is reversed (fading in)
+			test: `${HIGHLIGHTED_ITEM}_prev !== datum.${MARK_ID} && rscColorAnimationDirection === -1`,
+			...getHighlightOpacityAnimationValue(DEFAULT_OPACITY_RULE)
+		},
+		{ value: 1 }
+	];
 }
 
 //TODO: add comments/tests/etc
-export const getLegendOpacityRules = (): ProductionRule<NumericValueRef> => {
+export const getLegendSeriesOpacityRules = (): ProductionRule<NumericValueRef> => {
 	return [
 		{
 			test: `${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES} !== datum.value`,
@@ -318,3 +348,20 @@ export const getLegendOpacityRules = (): ProductionRule<NumericValueRef> => {
 		DEFAULT_OPACITY_RULE
 	]
 }
+//TODO: add comments/tests/etc
+export const getLegendMarkOpacityRules = (): ProductionRule<NumericValueRef> => {
+	return [
+		{
+			// If there is a highlighted series, and it is NOT equal to the current series
+			test: `${HIGHLIGHTED_SERIES} && datum.value !== ${HIGHLIGHTED_SERIES}`,
+			...getHighlightOpacityAnimationValue(DEFAULT_OPACITY_RULE)
+		},
+		{
+			// If there is NOT a highlighted series and NOT a previously highlighted bar, and the previously highlighted series is NOT equal to the current series
+			test: `!${HIGHLIGHTED_SERIES} && !${HIGHLIGHTED_ITEM}_prev && datum.value !== ${HIGHLIGHTED_SERIES}_prev`,
+			...getHighlightOpacityAnimationValue(DEFAULT_OPACITY_RULE)
+		},
+		DEFAULT_OPACITY_RULE
+	]
+}
+
