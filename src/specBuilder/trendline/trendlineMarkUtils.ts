@@ -10,7 +10,7 @@
  * governing permissions and limitations under the License.
  */
 import { ChartTooltip } from '@components/ChartTooltip';
-import { TRENDLINE_VALUE } from '@constants';
+import { EASE_OUT_CUBIC, PREVIOUS_PREFIX, TRENDLINE_VALUE } from '@constants';
 import { getLineHoverMarks, getLineOpacity } from '@specBuilder/line/lineMarkUtils';
 import { LineMarkProps } from '@specBuilder/line/lineUtils';
 import {
@@ -250,6 +250,7 @@ export const getTrendlineLineMark = (markProps: TrendlineParentProps, trendlineP
 			},
 			update: {
 				x: getLineXProductionRule(trendlineDimension, dimensionScaleType, orientation, isDimensionNormalized),
+				...(markProps.animations !== false && { y: getLineYAnimationMarks(markProps, trendlineProps) }),
 				opacity: getLineOpacity(getLineMarkProps(markProps, trendlineProps)),
 			},
 		},
@@ -291,6 +292,56 @@ export const getLineXProductionRule = (
 	return isDimensionNormalized
 		? { scale: 'xTrendline', field: trendlineDimension }
 		: { scale, field: trendlineDimension };
+};
+
+/**
+ * Gets the marks needed to show trendline animations
+ * @param markProps
+ * @param trendlineProps
+ * @param easingFunction
+ * @param scale
+ * @returns
+ */
+const getLineYAnimationMarks = (
+	markProps: TrendlineParentProps,
+	trendlineProps: TrendlineSpecProps,
+	easingFunction: string = EASE_OUT_CUBIC,
+	scale: string = 'yLinear'
+) => {
+	const { method, name, trendlineDimension } = trendlineProps;
+	const { data, previousData } = markProps;
+
+	const animationFromZeroMark = {
+		scale,
+		signal: `datum.${TRENDLINE_VALUE} * ${easingFunction}`,
+	};
+
+	const hasNoPreviousData = !(data && previousData);
+	if (hasNoPreviousData) {
+		return animationFromZeroMark;
+	}
+
+	const hasDifferentDimensions = !(
+		data !== previousData &&
+		data.every((d) => previousData.some((pd) => d[trendlineDimension] === pd[trendlineDimension]))
+	);
+	if (hasDifferentDimensions) {
+		return animationFromZeroMark;
+	}
+
+	const tableSuffix = isRegressionMethod(method) ? 'highResolutionData' : 'data';
+	const animationFromPreviousDataMark = {
+		scale,
+		signal: `
+			(data('${PREVIOUS_PREFIX}${name}_${tableSuffix}')
+			[indexof(
+				pluck(data('${PREVIOUS_PREFIX}${name}_${tableSuffix}'), '${trendlineDimension}'),
+				datum.${trendlineDimension}
+			)].${TRENDLINE_VALUE} * (1 - ${easingFunction})
+			) + (datum.${TRENDLINE_VALUE} * ${easingFunction})
+		`,
+	};
+	return animationFromPreviousDataMark;
 };
 
 const getTrendlineHoverMarks = (markProps: TrendlineParentProps, highlightRawPoint: boolean): GroupMark => {

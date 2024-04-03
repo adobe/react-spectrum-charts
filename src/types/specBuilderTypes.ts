@@ -16,7 +16,8 @@ import {
 	AxisAnnotationChildElement,
 	AxisAnnotationProps,
 	AxisProps,
-	BarProps, ChartData,
+	BarProps,
+	ChartData,
 	ColorFacet,
 	ColorScheme,
 	DonutProps,
@@ -32,7 +33,7 @@ import {
 	ScatterProps,
 	TrendlineAnnotationProps,
 	TrendlineChildElement,
-	TrendlineProps
+	TrendlineProps,
 } from './Chart';
 
 type PartiallyRequired<T, K extends keyof T> = Omit<T, K> & Required<Pick<T, K>>;
@@ -41,10 +42,10 @@ type AreaPropsWithDefaults = 'name' | 'dimension' | 'metric' | 'color' | 'scaleT
 
 export interface AreaSpecProps
 	extends PartiallyRequired<AreaProps & { colorScheme: ColorScheme; index: number }, AreaPropsWithDefaults> {
-	data?: ChartData[],
-	previousData?: ChartData[],
-	animations?: boolean,
-	animateFromZero?: boolean,
+	data?: ChartData[];
+	previousData?: ChartData[];
+	animations?: boolean;
+	animateFromZero?: boolean;
 	children: MarkChildElement[];
 }
 
@@ -103,7 +104,17 @@ type BarPropsWithDefaults =
 	| 'type';
 
 export interface BarSpecProps
-	extends PartiallyRequired<BarProps & { colorScheme: ColorScheme; index: number, data?: ChartData[], previousData?: ChartData[], animations?: boolean, animateFromZero?: boolean }, BarPropsWithDefaults> {
+	extends PartiallyRequired<
+		BarProps & {
+			colorScheme: ColorScheme;
+			index: number;
+			data?: ChartData[];
+			previousData?: ChartData[];
+			animations?: boolean;
+			animateFromZero?: boolean;
+		},
+		BarPropsWithDefaults
+	> {
 	children: MarkChildElement[];
 }
 
@@ -138,10 +149,10 @@ type LinePropsWithDefaults = 'name' | 'dimension' | 'metric' | 'color' | 'scaleT
 
 export interface LineSpecProps extends PartiallyRequired<LineProps, LinePropsWithDefaults> {
 	children: MarkChildElement[];
-	data?: ChartData[],
-	previousData?: ChartData[],
-	animations?: boolean,
-	animateFromZero?: boolean,
+	data?: ChartData[];
+	previousData?: ChartData[];
+	animations?: boolean;
+	animateFromZero?: boolean;
 	colorScheme: ColorScheme;
 	index: number;
 	interactiveMarkName: string | undefined;
@@ -162,8 +173,11 @@ type ScatterPropsWithDefaults =
 	| 'size';
 
 export interface ScatterSpecProps extends PartiallyRequired<ScatterProps, ScatterPropsWithDefaults> {
+	animations?: boolean;
 	children: MarkChildElement[];
 	colorScheme: ColorScheme;
+	data?: ChartData[]; // currently unused, but in place for future Scatter animations work
+	previousData?: ChartData[]; // currently unused, but in place for future Scatter animations work
 	index: number;
 	interactiveMarkName: string | undefined;
 }
