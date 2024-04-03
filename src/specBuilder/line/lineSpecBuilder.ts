@@ -26,21 +26,48 @@ import {
 	getMetricRanges,
 } from '@specBuilder/metricRange/metricRangeUtils';
 import { getFacetsFromProps } from '@specBuilder/specUtils';
-import { addTrendlineData, getTrendlineMarks, getTrendlineScales, setTrendlineSignals } from '@specBuilder/trendline';
+import {
+	addTrendlineData,
+	checkTrendlineAnimationScales,
+	getTrendlineMarks,
+	getTrendlineScales,
+	setTrendlineSignals,
+} from '@specBuilder/trendline';
 import { sanitizeMarkChildren, toCamelCase } from '@utils';
 import { produce } from 'immer';
 import { ChartData, ColorScheme, LineProps, LineSpecProps, MarkChildElement } from 'types';
 import { Data, Mark, Scale, Signal, Spec } from 'vega';
 
 import { addTimeTransform, getTableData } from '../data/dataUtils';
-import { addContinuousDimensionScale, addFieldToFacetScaleDomain, addMetricScale } from '../scale/scaleSpecBuilder';
-import { addHighlightedItemSignalEvents, addHighlightedSeriesSignalEvents } from '../signal/signalSpecBuilder';
+import {
+	addContinuousDimensionScale,
+	addFieldToFacetScaleDomain,
+	addMetricScale,
+	addRscAnimationScales,
+} from '../scale/scaleSpecBuilder';
+import {
+	addHighlightedItemSignalEvents,
+	addHighlightedSeriesSignalEvents,
+	getRscAnimationSignals,
+} from '../signal/signalSpecBuilder';
 import { getLineHighlightedData, getLineStaticPointData } from './lineDataUtils';
 import { getLineHoverMarks, getLineMark } from './lineMarkUtils';
 import { getLineStaticPoint } from './linePointUtils';
 import { getInteractiveMarkName, getPopoverMarkName } from './lineUtils';
 
-export const addLine = produce<Spec, [LineProps & { colorScheme?: ColorScheme; index?: number, data?: ChartData[], previousData?: ChartData[], animations?: boolean, animateFromZero?: boolean }]>(
+export const addLine = produce<
+	Spec,
+	[
+		LineProps & {
+			animateFromZero?: boolean;
+			animations?: boolean;
+			colorScheme?: ColorScheme;
+			data?: ChartData[];
+			index?: number;
+			previousData?: ChartData[];
+		}
+	]
+>(
 	(
 		spec,
 		{
@@ -105,12 +132,29 @@ export const addSignals = produce<Signal[], [LineSpecProps]>((signals, props) =>
 	signals.push(...getMetricRangeSignals(props));
 
 	if (!hasInteractiveChildren(children)) return;
-	addHighlightedItemSignalEvents({ signals, markName: `${name}_voronoi`, datumOrder: 2, animations, animateFromZero });
+	// if animations are enabled, push all necessary animation signals. Line charts have voronoi points and have nested datum
+	//TODO: add tests
+	if (animations !== false) {
+		signals.push(...getRscAnimationSignals(name, true));
+	}
+
+	addHighlightedItemSignalEvents({
+		signals,
+		markName: `${name}_voronoi`,
+		datumOrder: 2,
+		animations,
+		animateFromZero,
+	});
 	addHighlightedSeriesSignalEvents(signals, `${name}_voronoi`, 2);
 });
 
 export const setScales = produce<Scale[], [LineSpecProps]>((scales, props) => {
-	const { metric, dimension, color, lineType, opacity, padding, scaleType, children, name } = props;
+	const { metric, dimension, color, lineType, opacity, padding, scaleType, children, name, animations } = props;
+	// if animations are enabled, add all necessary animation scales.
+	//TODO: Add tests
+	if (animations !== false && hasInteractiveChildren(children)) {
+		addRscAnimationScales(scales);
+	}
 	// add dimension scale
 	addContinuousDimensionScale(scales, { scaleType, dimension, padding });
 	// add color to the color domain
@@ -121,6 +165,10 @@ export const setScales = produce<Scale[], [LineSpecProps]>((scales, props) => {
 	addFieldToFacetScaleDomain(scales, OPACITY_SCALE, opacity);
 	// find the linear scale and add our fields to it
 	addMetricScale(scales, getMetricKeys(metric, children, name));
+	// check to see if trend lines have interactive children and if animation scales are already added.
+	//TODO: Add tests
+	checkTrendlineAnimationScales(name, scales, props);
+
 	// add trendline scales
 	scales.push(...getTrendlineScales(props));
 	return scales;

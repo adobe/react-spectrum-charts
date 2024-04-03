@@ -13,48 +13,56 @@ import {
 	COLOR_SCALE,
 	DEFAULT_CATEGORICAL_DIMENSION,
 	DEFAULT_COLOR_SCHEME,
-	DEFAULT_METRIC, 
+	DEFAULT_METRIC,
 	FILTERED_PREVIOUS_TABLE,
 	FILTERED_TABLE,
 	LINE_TYPE_SCALE,
 	OPACITY_SCALE,
 	PADDING_RATIO,
 	STACK_ID,
-	TRELLIS_PADDING
+	TRELLIS_PADDING,
 } from '@constants';
 import { getTransformSort } from '@specBuilder/data/dataUtils';
+import { hasInteractiveChildren } from '@specBuilder/marks/markUtils';
 import {
 	addDomainFields,
 	addFieldToFacetScaleDomain,
 	addMetricScale,
+	addRscAnimationScales,
 	getDefaultScale,
 	getMetricScale,
 	getScaleIndexByName,
 	getScaleIndexByType,
 } from '@specBuilder/scale/scaleSpecBuilder';
-import { addHighlightedItemSignalEvents, getGenericSignal } from '@specBuilder/signal/signalSpecBuilder';
+import {
+	addHighlightedItemSignalEvents,
+	getGenericSignal,
+	getRscAnimationSignals,
+} from '@specBuilder/signal/signalSpecBuilder';
 import { getFacetsFromProps } from '@specBuilder/specUtils';
 import { sanitizeMarkChildren, toCamelCase } from '@utils';
 import { produce } from 'immer';
 import { BarProps, BarSpecProps, ChartData, ColorScheme } from 'types';
-import {
-	BandScale,
-	Data,
-	FormulaTransform,
-	Mark,
-	OrdinalScale,
-	Scale,
-	Signal,
-	Spec,
-	Transforms
-} from 'vega';
+import { BandScale, Data, FormulaTransform, Mark, OrdinalScale, Scale, Signal, Spec, Transforms } from 'vega';
 
 import { getBarPadding, getScaleValues, isDodgedAndStacked } from './barUtils';
 import { getDodgedMark } from './dodgedBarUtils';
 import { getDodgedAndStackedBarMark, getStackedBarMarks } from './stackedBarUtils';
 import { addTrellisScale, getTrellisGroupMark, isTrellised } from './trellisedBarUtils';
 
-export const addBar = produce<Spec, [BarProps & { colorScheme?: ColorScheme; index?: number, data?: ChartData[], previousData?: ChartData[], animations?: boolean, animateFromZero?: boolean }]>(
+export const addBar = produce<
+	Spec,
+	[
+		BarProps & {
+			colorScheme?: ColorScheme;
+			index?: number;
+			data?: ChartData[];
+			previousData?: ChartData[];
+			animations?: boolean;
+			animateFromZero?: boolean;
+		}
+	]
+>(
 	(
 		spec,
 		{
@@ -111,7 +119,13 @@ export const addSignals = produce<Signal[], [BarSpecProps]>(
 		if (!children.length) {
 			return;
 		}
-		addHighlightedItemSignalEvents({ signals, markName: name, animations, animateFromZero, needsDisable: true});
+
+		// if animations are enabled, push all necessary animation signals.
+		//TODO: add tests
+		if (animations !== false && hasInteractiveChildren(children)) {
+			signals.push(...getRscAnimationSignals(name, undefined, true));
+		}
+		addHighlightedItemSignalEvents({ signals, markName: name, animations, animateFromZero, needsDisable: true });
 	}
 );
 
@@ -217,7 +231,12 @@ export const getDodgeGroupTransform = ({ color, lineType, name, opacity, type }:
 };
 
 export const addScales = produce<Scale[], [BarSpecProps]>((scales, props) => {
-	const { color, lineType, opacity, orientation } = props;
+	const { color, lineType, opacity, orientation, animations, children } = props;
+	// if animations are enabled and the chart has interactive children, get all animation scales.
+	//TODO add tests
+	if (animations !== false && hasInteractiveChildren(children)) {
+		addRscAnimationScales(scales);
+	}
 	addMetricScale(scales, getScaleValues(props), orientation === 'vertical' ? 'y' : 'x');
 	addDimensionScale(scales, props);
 	addTrellisScale(scales, props);

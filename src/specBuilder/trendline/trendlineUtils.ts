@@ -10,7 +10,10 @@
  * governing permissions and limitations under the License.
  */
 import { Trendline } from '@components/Trendline';
-import { FILTERED_TABLE, MS_PER_DAY, TRENDLINE_VALUE } from '@constants';
+import {
+	FILTERED_TABLE,
+	MS_PER_DAY,
+	TRENDLINE_VALUE } from '@constants';
 import { sanitizeTrendlineChildren } from '@utils';
 import {
 	AggregateMethod,
@@ -25,7 +28,7 @@ import {
 	TrendlineSpecProps,
 	WindowMethod,
 } from 'types';
-import { SignalRef } from 'vega';
+import {  SignalRef } from 'vega';
 
 /** These are all the spec props that currently support trendlines */
 export type TrendlineParentProps = LineSpecProps | ScatterSpecProps;

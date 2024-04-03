@@ -22,7 +22,7 @@ export default {
 	component: Title,
 };
 
-const defaultChartProps: ChartProps = { data, minWidth: 400, maxWidth: 800, height: 400 };
+const defaultChartProps: ChartProps = { animations: false, data, minWidth: 400, maxWidth: 800, height: 400 };
 
 const TitleBarStory: StoryFn<typeof Title> = (args): ReactElement => {
 	const chartProps = useChartProps(defaultChartProps);

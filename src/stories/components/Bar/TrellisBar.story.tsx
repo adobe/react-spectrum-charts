@@ -83,6 +83,7 @@ const BarStory: StoryFn<typeof Bar> = (args: BarPropsAndAnimation): ReactElement
 
 const Dodged = bindWithProps<BarPropsAndAnimation>(BarStory);
 Dodged.args = {
+	animations: false,
 	type: 'dodged',
 	dimension: 'segment',
 	order: 'order',
@@ -95,6 +96,7 @@ Dodged.args = {
 const HorizontalBarHorizontalTrellis = bindWithProps<BarProps>(BarStory);
 HorizontalBarHorizontalTrellis.storyName = 'Horizontal Bar, Horizontal Trellis';
 HorizontalBarHorizontalTrellis.args = {
+	animations: false,
 	type: 'stacked',
 	trellis: 'event',
 	dimension: 'segment',
@@ -108,6 +110,7 @@ const HorizontalBarVerticalTrellis = bindWithProps<BarProps>(BarStory);
 HorizontalBarVerticalTrellis.storyName = 'Horizontal Bar, Vertical Trellis';
 HorizontalBarVerticalTrellis.args = {
 	...HorizontalBarHorizontalTrellis.args,
+	animations: false,
 	trellisOrientation: 'vertical',
 };
 
@@ -115,6 +118,7 @@ const VerticalBarHorizontalTrellis = bindWithProps<BarProps>(BarStory);
 VerticalBarHorizontalTrellis.storyName = 'Vertical Bar, Horizontal Trellis';
 VerticalBarHorizontalTrellis.args = {
 	...HorizontalBarHorizontalTrellis.args,
+	animations: false,
 	orientation: 'vertical',
 	trellisOrientation: 'horizontal',
 };
@@ -123,6 +127,7 @@ const VerticalBarVerticalTrellis = bindWithProps<BarProps>(BarStory);
 VerticalBarVerticalTrellis.storyName = 'Vertical Bar, Vertical Trellis';
 VerticalBarVerticalTrellis.args = {
 	...HorizontalBarVerticalTrellis.args,
+	animations: false,
 	orientation: 'vertical',
 	trellisOrientation: 'vertical',
 };
@@ -130,6 +135,7 @@ VerticalBarVerticalTrellis.args = {
 const WithCustomTrellisPadding = bindWithProps<BarProps>(BarStory);
 WithCustomTrellisPadding.args = {
 	...HorizontalBarVerticalTrellis.args,
+	animations: false,
 	orientation: 'vertical',
 	trellisPadding: 0.33,
 };

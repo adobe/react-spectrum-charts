@@ -22,9 +22,11 @@ import {
 	SELECTED_ITEM,
 	SELECTED_SERIES,
 } from '@constants';
+import { hasInteractiveChildren } from '@specBuilder/marks/markUtils';
 import {
 	addHighlightedSeriesSignalEvents,
 	getControlledHoverSignal,
+	getRscAnimationSignals,
 	hasSignalByName,
 } from '@specBuilder/signal/signalSpecBuilder';
 import { spectrumColors } from '@themes';
@@ -34,16 +36,34 @@ import { AreaProps, AreaSpecProps, ChartData, ColorScheme, MarkChildElement, Sca
 import { Data, Mark, Scale, Signal, Spec, Transforms } from 'vega';
 
 import {
-	addTimeTransform, getFilteredPreviousTableData,
+	addTimeTransform,
+	getFilteredPreviousTableData,
 	getFilteredTableData,
 	getPreviousTableData,
 	getTableData,
-	getTransformSort
+	getTransformSort,
 } from '../data/dataUtils';
-import { addContinuousDimensionScale, addFieldToFacetScaleDomain, addMetricScale } from '../scale/scaleSpecBuilder';
+import {
+	addContinuousDimensionScale,
+	addFieldToFacetScaleDomain,
+	addMetricScale,
+	addRscAnimationScales,
+} from '../scale/scaleSpecBuilder';
 import { getAreaMark, getX } from './areaUtils';
 
-export const addArea = produce<Spec, [AreaProps & { colorScheme?: ColorScheme; index?: number, previousData?: ChartData[], data?: ChartData[], animations?: boolean, animateFromZero?: boolean }]>(
+export const addArea = produce<
+	Spec,
+	[
+		AreaProps & {
+			colorScheme?: ColorScheme;
+			index?: number;
+			previousData?: ChartData[];
+			data?: ChartData[];
+			animations?: boolean;
+			animateFromZero?: boolean;
+		}
+	]
+>(
 	(
 		spec,
 		{
@@ -109,7 +129,7 @@ export const addData = produce<Data[], [AreaSpecProps]>(
 		if (!metricEnd || !metricStart) {
 			const filteredTableData = getFilteredTableData(data);
 			const filteredPreviousTableData = getFilteredPreviousTableData(data);
-			// if metricEnd and metricStart don't exist, then we are using metric so we will support stacked
+			// if metricEnd and metricStart don't exist, then we are using metric, so we will support stacked
 			const transform: Transforms[] = [
 				...(filteredTableData.transform ?? []),
 				{
@@ -153,8 +173,14 @@ export const addData = produce<Data[], [AreaSpecProps]>(
 	}
 );
 
-export const addSignals = produce<Signal[], [AreaSpecProps]>((signals, { children, name }) => {
+export const addSignals = produce<Signal[], [AreaSpecProps]>((signals, { children, name, animations }) => {
 	if (!children.length) return;
+
+	// If animations is enabled and has hover functionality, add all the necessary animation signals.
+	// TODO: add tests
+	if (animations !== false && hasInteractiveChildren(children)) {
+		signals.push(...getRscAnimationSignals(name));
+	}
 	if (!hasSignalByName(signals, `${name}_controlledHoveredId`)) {
 		signals.push(getControlledHoverSignal(name));
 	}
@@ -162,7 +188,12 @@ export const addSignals = produce<Signal[], [AreaSpecProps]>((signals, { childre
 });
 
 export const setScales = produce<Scale[], [AreaSpecProps]>(
-	(scales, { metric, metricEnd, metricStart, dimension, color, scaleType, padding }) => {
+	(scales, { metric, metricEnd, metricStart, dimension, color, scaleType, padding, animations, children }) => {
+		// If animations is enabled and has hover functionality, add all the necessary animation scales.
+		//TODO: add tests
+		if (animations !== false && hasInteractiveChildren(children)) {
+			addRscAnimationScales(scales);
+		}
 		// add dimension scale
 		addContinuousDimensionScale(scales, { scaleType, dimension, padding });
 		// add color to the color domain
@@ -178,7 +209,20 @@ export const setScales = produce<Scale[], [AreaSpecProps]>(
 );
 
 export const addAreaMarks = produce<Mark[], [AreaSpecProps]>((marks, props) => {
-	const { name, color, colorScheme, metric, dimension, scaleType, opacity, children, animations, animateFromZero, data, previousData } = props;
+	const {
+		name,
+		color,
+		colorScheme,
+		metric,
+		dimension,
+		scaleType,
+		opacity,
+		children,
+		animations,
+		animateFromZero,
+		data,
+		previousData,
+	} = props;
 	let { metricStart, metricEnd } = props;
 	let isStacked = false;
 	if (!metricEnd || !metricStart) {
@@ -327,7 +371,7 @@ const getSelectedAreaMarks = ({
 					strokeJoin: { value: 'round' },
 				},
 				update: {
-					// this has to be in update because when you resize the window that doesn't rebuild the spec
+					// this has to be in update because when you resize the window that doesn't rebuild the spec,
 					// but it may change the x position if it causes the chart to resize
 					x: getX(scaleType, dimension),
 				},
