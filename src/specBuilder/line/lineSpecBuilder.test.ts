@@ -31,7 +31,7 @@ import {
 	PREVIOUS_TABLE,
 	SERIES_ID,
 	TABLE,
-	TRENDLINE_VALUE
+	TRENDLINE_VALUE,
 } from '@constants';
 import { defaultSignals } from '@specBuilder/specTestUtils';
 import { LineSpecProps, MetricRangeElement, MetricRangeProps } from 'types';
@@ -54,7 +54,7 @@ const defaultLineProps: LineSpecProps = {
 	colorScheme: DEFAULT_COLOR_SCHEME,
 	interactiveMarkName: undefined,
 	popoverMarkName: undefined,
-	animations: false
+	animations: false,
 };
 
 const getMetricRangeElement = (props?: Partial<MetricRangeProps>): MetricRangeElement =>
@@ -420,7 +420,7 @@ const displayPointWithAnimationMarks = [
 				y: {
 					scale: 'yLinear',
 					signal: `datum.value * ${EASE_OUT_CUBIC}`,
-				}
+				},
 			},
 		},
 	},
@@ -584,9 +584,14 @@ describe('lineSpecBuilder', () => {
 		});
 
 		test('with displayPointMark with animations', () => {
-			expect(addLineMarks([], { animateFromZero: true, animations: true, ...defaultLineProps, staticPoint: 'staticPoint' })).toStrictEqual(
-				displayPointWithAnimationMarks
-			);
+			expect(
+				addLineMarks([], {
+					...defaultLineProps,
+					animateFromZero: true,
+					animations: true, // defaultLineProps has animations: false, so it's crucial that we add this animations: true AFTER spreading defaultLineProps
+					staticPoint: 'staticPoint',
+				})
+			).toStrictEqual(displayPointWithAnimationMarks);
 		});
 
 		test('with displayPointMark and metric range', () => {
