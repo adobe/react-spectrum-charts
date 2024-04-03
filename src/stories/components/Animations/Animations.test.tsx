@@ -8,7 +8,7 @@ import {
 	BarZero,
 	DodgedBarSwitch,
 	DodgedBarZero,
-	LineChart,
+	LineChart, ScatterPopover,
 	SingleLineSwitch,
 	SingleLineZero,
 	TrellisHorizontalBarSwitch,
@@ -75,6 +75,12 @@ describe('Animations', () => {
 		const chart = await findChart();
 		expect(chart).toBeInTheDocument();
 	});
+
+	test('Scatter renders properly', async () => {
+		render(<ScatterPopover {...ScatterPopover.args} />);
+		const chart = await findChart();
+		expect(chart).toBeInTheDocument();
+	})
 
 	test('Trellis Horizontal Bar Switch renders properly', async () => {
 		render(<TrellisHorizontalBarSwitch {...TrellisHorizontalBarSwitch.args} />);
