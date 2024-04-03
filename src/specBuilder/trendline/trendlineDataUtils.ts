@@ -117,7 +117,6 @@ const pushAggregateTrendlineData = (
  * @param data
  * @param markProps
  * @param trendlineProps
- * @param facets
  */
 const pushWindowTrendlineData = (
 	data: SourceData[],
