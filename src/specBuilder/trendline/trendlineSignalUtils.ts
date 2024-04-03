@@ -23,7 +23,7 @@ export const setTrendlineSignals = (signals: Signal[], markProps: TrendlineParen
 	const trendlines = getTrendlines(markProps);
 
 	if (trendlines.some((trendline) => hasTooltip(trendline.children))) {
-		addHighlightedItemSignalEvents(signals, `${markName}Trendline_voronoi`, 2);
+		addHighlightedItemSignalEvents({ signals, markName: `${markName}Trendline_voronoi`, datumOrder: 2 });
 		addHighlightedSeriesSignalEvents(signals, `${markName}Trendline_voronoi`, 2);
 	}
 

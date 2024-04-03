@@ -469,7 +469,7 @@ describe('getArcMark', () => {
 					fill: { scale: COLOR_SCALE, field: 'id' },
 					x: { signal: 'width / 2' },
 					y: { signal: 'height / 2' },
-					tooltip: getTooltip(children, 'Test'),
+					tooltip: getTooltip({children, name: 'Test'}),
 				},
 				update: {
 					startAngle: { field: 'startAngle' },

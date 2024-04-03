@@ -100,12 +100,12 @@ export const addData = produce<Data[], [LineSpecProps]>((data, props) => {
 });
 
 export const addSignals = produce<Signal[], [LineSpecProps]>((signals, props) => {
-	const { children, name } = props;
+	const { children, name, animations, animateFromZero } = props;
 	setTrendlineSignals(signals, props);
 	signals.push(...getMetricRangeSignals(props));
 
 	if (!hasInteractiveChildren(children)) return;
-	addHighlightedItemSignalEvents(signals, `${name}_voronoi`, 2);
+	addHighlightedItemSignalEvents({ signals, markName: `${name}_voronoi`, datumOrder: 2, animations, animateFromZero });
 	addHighlightedSeriesSignalEvents(signals, `${name}_voronoi`, 2);
 });
 

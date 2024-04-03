@@ -85,6 +85,7 @@ export default function useSpec({
 		data,
 		previousData,
 		animations,
+		animateFromZero,
 		description,
 		hiddenSeries,
 		highlightedSeries,

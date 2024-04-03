@@ -60,7 +60,7 @@ const historicalCompareData = [
 	{ datetime: 1668409200000, users: 4913, series: 'Add Freeform table', period: 'Current' },
 ];
 
-const defaultChartProps: ChartProps = { data: workspaceTrendsData, minWidth: 400, maxWidth: 800, height: 400 };
+const defaultChartProps: ChartProps = { data: workspaceTrendsData, minWidth: 400, maxWidth: 800, height: 400, animations: false };
 
 const singleLineChartProps: ChartProps = { data: newDataArray1, minWidth: 400, maxWidth: 800, height: 400 };
 
@@ -141,7 +141,7 @@ const HistoricalCompareStory: StoryFn<typeof Line> = (args): ReactElement => {
 const LineWithVisiblePointsStory: StoryFn<typeof Line> = (args): ReactElement => {
 	const chartProps = useChartProps({ ...defaultChartProps, data: workspaceTrendsDataWithVisiblePoints });
 	return (
-		<Chart {...chartProps}>
+		<Chart {...chartProps} animations={false}>
 			<Axis position="left" grid title="Users" />
 			<Axis position="bottom" labelFormat="time" baseline ticks />
 			<Line {...args} />
