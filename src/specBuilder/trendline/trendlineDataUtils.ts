@@ -102,9 +102,16 @@ export const getTrendlineData = (markProps: TrendlineParentProps): SourceData[] 
 		} else if (isAggregateMethod(method)) {
 			data.push(...getAggregateTrendlineData(markProps, trendlineProps, facets));
 		} else if (isWindowMethod(method)) {
-			data.push(getWindowTrendlineData(markProps, trendlineProps));
+			data.push(getWindowTrendlineData(markProps, trendlineProps, trendlineProps.name, FILTERED_TABLE));
 			if (markProps.animations !== false) {
-				data.push(getPreviousTableWindowTrendlineData(markProps, trendlineProps));
+				data.push(
+					getWindowTrendlineData(
+						markProps,
+						trendlineProps,
+						`previous_${trendlineProps.name}`,
+						FILTERED_PREVIOUS_TABLE
+					)
+				);
 			}
 		}
 		if (displayOnHover) {
@@ -228,27 +235,14 @@ export /**
  * @param trendlineProps
  * @returns Data
  */
-const getWindowTrendlineData = (markProps: TrendlineParentProps, trendlineProps: TrendlineSpecProps): SourceData => ({
-	name: `${trendlineProps.name}_data`,
-	source: FILTERED_TABLE,
-	transform: [
-		...getTrendlineStatisticalTransforms(markProps, trendlineProps, false),
-		...getTrendlineDimensionRangeTransforms(markProps.dimension, trendlineProps.dimensionRange),
-	],
-});
-
-/**
- * Gets the data source and transforms for the "previous data" of animated window trendlines (movingAverage-x)
- * @param markProps
- * @param trendlineProps
- * @returns
- */
-const getPreviousTableWindowTrendlineData = (
+const getWindowTrendlineData = (
 	markProps: TrendlineParentProps,
-	trendlineProps: TrendlineSpecProps
+	trendlineProps: TrendlineSpecProps,
+	name: string,
+	source: string
 ): SourceData => ({
-	name: `previous_${trendlineProps.name}_data`,
-	source: FILTERED_PREVIOUS_TABLE,
+	name: `${name}_data`,
+	source,
 	transform: [
 		...getTrendlineStatisticalTransforms(markProps, trendlineProps, false),
 		...getTrendlineDimensionRangeTransforms(markProps.dimension, trendlineProps.dimensionRange),
