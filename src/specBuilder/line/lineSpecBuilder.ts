@@ -17,7 +17,6 @@ import {
 	FILTERED_TABLE,
 	LINE_TYPE_SCALE,
 	OPACITY_SCALE,
-	RSC_ANIMATION,
 } from '@constants';
 import { hasInteractiveChildren, hasPopover } from '@specBuilder/marks/markUtils';
 import {
@@ -50,7 +49,6 @@ import {
 	addHighlightedItemSignalEvents,
 	addHighlightedSeriesSignalEvents,
 	getRSCAnimationSignals,
-	hasSignalByName,
 } from '../signal/signalSpecBuilder';
 import { getLineHighlightedData, getLineStaticPointData } from './lineDataUtils';
 import { getLineHoverMarks, getLineMark } from './lineMarkUtils';

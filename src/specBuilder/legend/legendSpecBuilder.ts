@@ -23,7 +23,6 @@ import {
 import {
 	addFieldToFacetScaleDomain,
 	addRSCAnimationScales,
-	hasScaleByName
 } from '@specBuilder/scale/scaleSpecBuilder';
 import {
 	getColorValue,
