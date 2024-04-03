@@ -91,6 +91,7 @@ describe('addTrendlineData()', () => {
 		const trendlineData = getDefaultData();
 		addTrendlineData(trendlineData, {
 			...defaultLineProps,
+			animations: false,
 			children: [createElement(Trendline, {}, createElement(ChartTooltip))],
 		});
 		expect(trendlineData).toHaveLength(9);
@@ -103,6 +104,7 @@ describe('addTrendlineData()', () => {
 
 		addTrendlineData(trendlineData, {
 			...defaultLineProps,
+			animations: false,
 			children: [createElement(Trendline, { method: 'linear' })],
 		});
 		expect(trendlineData).toHaveLength(5);
@@ -114,6 +116,7 @@ describe('addTrendlineData()', () => {
 
 		addTrendlineData(trendlineData, {
 			...defaultLineProps,
+			animations: false,
 			children: [createElement(Trendline, { method: 'linear' }, createElement(ChartTooltip))],
 		});
 		expect(trendlineData).toHaveLength(9);
@@ -125,6 +128,7 @@ describe('addTrendlineData()', () => {
 		const trendlineData = getDefaultData();
 		addTrendlineData(trendlineData, {
 			...defaultLineProps,
+			animations: false,
 			children: [createElement(Trendline, { method: 'movingAverage-3', dimensionRange: [1, 2] })],
 		});
 		expect(trendlineData).toHaveLength(5);
@@ -155,7 +159,13 @@ describe('getAggregateTrendlineData()', () => {
 
 describe('getRegressionTrendlineData()', () => {
 	test('should return one data source if there are not any interactive children', () => {
-		const data = getRegressionTrendlineData(defaultLineProps, defaultTrendlineProps, [DEFAULT_COLOR]);
+		const data = getRegressionTrendlineData(
+			defaultLineProps,
+			defaultTrendlineProps,
+			[DEFAULT_COLOR],
+			defaultTrendlineProps.name,
+			FILTERED_TABLE
+		);
 		expect(data).toHaveLength(1);
 		expect(data[0]).toHaveProperty('name', 'line0Trendline0_highResolutionData');
 	});
@@ -163,7 +173,9 @@ describe('getRegressionTrendlineData()', () => {
 		const data = getRegressionTrendlineData(
 			defaultLineProps,
 			{ ...defaultTrendlineProps, children: [createElement(ChartTooltip)] },
-			[DEFAULT_COLOR]
+			[DEFAULT_COLOR],
+			defaultTrendlineProps.name,
+			FILTERED_TABLE
 		);
 		expect(data).toHaveLength(3);
 		expect(data[1]).toHaveProperty('name', 'line0Trendline0_params');
