@@ -42,19 +42,11 @@ type AreaPropsWithDefaults = 'name' | 'dimension' | 'metric' | 'color' | 'scaleT
 
 export interface AreaSpecProps
 	extends PartiallyRequired<AreaProps & { colorScheme: ColorScheme; index: number }, AreaPropsWithDefaults> {
-<<<<<<< HEAD
-	animateFromZero?: boolean,
-	animations?: boolean,
+	animateFromZero?: boolean;
+	animations?: boolean;
 	children: MarkChildElement[];
-	data?: ChartData[],
-	previousData?: ChartData[],
-=======
 	data?: ChartData[];
 	previousData?: ChartData[];
-	animations?: boolean;
-	animateFromZero?: boolean;
-	children: MarkChildElement[];
->>>>>>> animations
 }
 
 type AxisPropsWithDefaults =
@@ -144,7 +136,13 @@ type LegendPropsWithDefaults = 'hiddenEntries' | 'highlight' | 'isToggleable' | 
 
 export interface LegendSpecProps
 	extends PartiallyRequired<
-		LegendProps & { colorScheme: ColorScheme; index: number; hiddenSeries: string[]; highlightedSeries?: string; animations?: boolean },
+		LegendProps & {
+			colorScheme: ColorScheme;
+			index: number;
+			hiddenSeries: string[];
+			highlightedSeries?: string;
+			animations?: boolean;
+		},
 		LegendPropsWithDefaults
 	> {
 	color?: FacetRef<string>;
@@ -156,24 +154,16 @@ export interface LegendSpecProps
 type LinePropsWithDefaults = 'name' | 'dimension' | 'metric' | 'color' | 'scaleType' | 'lineType' | 'opacity';
 
 export interface LineSpecProps extends PartiallyRequired<LineProps, LinePropsWithDefaults> {
-<<<<<<< HEAD
-	animateFromZero?: boolean,
-	animations?: boolean,
-	children: MarkChildElement[];
-=======
-	children: MarkChildElement[];
-	data?: ChartData[];
-	previousData?: ChartData[];
-	animations?: boolean;
 	animateFromZero?: boolean;
->>>>>>> animations
+	animations?: boolean;
+	children: MarkChildElement[];
 	colorScheme: ColorScheme;
-	data?: ChartData[],
+	data?: ChartData[];
 	index: number;
 	interactiveMarkName: string | undefined;
 	lineWidth?: FacetRef<LineWidth>;
 	popoverMarkName: string | undefined;
-	previousData?: ChartData[],
+	previousData?: ChartData[];
 }
 
 type ScatterPropsWithDefaults =
