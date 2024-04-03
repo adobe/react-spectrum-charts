@@ -39,7 +39,7 @@ const data = [
 	{ browser: 'Safari', value: 0, operatingSystem: 'Mac', order: 1 },
 	{ browser: 'Safari', value: 1, operatingSystem: 'Other', order: 0 },
 ];
-const defaultChartProps: ChartProps = { animations: false, data, minWidth: 400, maxWidth: 800, height: 400 };
+const defaultChartProps: ChartProps = { data, minWidth: 400, maxWidth: 800, height: 400, animations: false };
 
 const AreaStory: StoryFn<typeof Area> = (args): ReactElement => {
 	const chartProps = useChartProps(defaultChartProps);
