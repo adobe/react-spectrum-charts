@@ -37,7 +37,7 @@ export const getControlledHoverSignal = (name: string): Signal => {
 export const addHighlightSignalLegendHoverEvents = (
 	signals: Signal[],
 	legendName: string,
-	includeHiddenSeries: boolean,
+	includeHiddenSeries: boolean
 ) => {
 	const highlightedSeriesSignal = signals.find((signal) => signal.name === HIGHLIGHTED_SERIES);
 	if (highlightedSeriesSignal) {
@@ -45,7 +45,7 @@ export const addHighlightSignalLegendHoverEvents = (
 			highlightedSeriesSignal.on = [];
 		}
 		//TODO: Add documentation
-		const highlightedSeriesSignalPrev = signals.find((signal) => signal.name === `${HIGHLIGHTED_SERIES}_prev`)
+		const highlightedSeriesSignalPrev = signals.find((signal) => signal.name === `${HIGHLIGHTED_SERIES}_prev`);
 		const hoveredSeries = `domain("${legendName}Entries")[datum.index]`;
 		const update = includeHiddenSeries
 			? `indexof(hiddenSeries, ${hoveredSeries}) === -1 ? ${hoveredSeries} : null`
@@ -58,9 +58,7 @@ export const addHighlightSignalLegendHoverEvents = (
 		);
 		//TODO: Add documentation
 		if (highlightedSeriesSignalPrev) {
-			highlightedSeriesSignalPrev.on?.push(
-				{ events: `@${legendName}_legendEntry:mouseover`, update }
-			)
+			highlightedSeriesSignalPrev.on?.push({ events: `@${legendName}_legendEntry:mouseover`, update });
 		}
 	}
 };
@@ -91,23 +89,21 @@ export const getGenericSignal = (name: string, value: unknown = null): Signal =>
  * @param animateFromZero
  * @param needsDisable
  */
-export const addHighlightedItemSignalEvents = (
-	{
-		signals,
-		markName,
-		datumOrder = 1,
-		animations = false,
-		animateFromZero = false,
-		needsDisable = false
-	}: {
-		signals: Signal[],
-		markName: string,
-		datumOrder?: number,
-		animations?: boolean,
-		animateFromZero?: boolean,
-		needsDisable?: boolean
-	}
-) => {
+export const addHighlightedItemSignalEvents = ({
+	signals,
+	markName,
+	datumOrder = 1,
+	animations = false,
+	animateFromZero = false,
+	needsDisable = false,
+}: {
+	signals: Signal[];
+	markName: string;
+	datumOrder?: number;
+	animations?: boolean;
+	animateFromZero?: boolean;
+	needsDisable?: boolean;
+}) => {
 	const highlightedItemSignal = signals.find((signal) => signal.name === HIGHLIGHTED_ITEM);
 	const highlightedUpdate = `${new Array(datumOrder).fill('datum.').join('')}${MARK_ID}`;
 	if (highlightedItemSignal) {
@@ -118,8 +114,10 @@ export const addHighlightedItemSignalEvents = (
 			...[
 				{
 					events: `@${markName}:mouseover`,
-					update: animations && animateFromZero && !needsDisable ? `timerValue === 1 ? ${highlightedUpdate} : null`
-						: highlightedUpdate,
+					update:
+						animations && animateFromZero && !needsDisable
+							? `timerValue === 1 ? ${highlightedUpdate} : null`
+							: highlightedUpdate,
 				},
 				{ events: `@${markName}:mouseout`, update: 'null' },
 			]
@@ -158,24 +156,24 @@ export const addHighlightedSeriesSignalEvents = (signals: Signal[], markName: st
  * @returns Signal[]
  */
 //TODO: Add tests
-export const getRSCAnimationSignals = (name: string, nestedDatum?: boolean, isNull?: boolean): Signal[] => {
+export const getRscAnimationSignals = (name: string, nestedDatum?: boolean, isNull?: boolean): Signal[] => {
 	return [
-		getRSCAnimation(),
-		getRSCColorAnimationDirection(name),
-		getRSCColorAnimation(),
-		getRSCHighlightedItemPrevSignal(name, nestedDatum),
-		getRSCHighlightedSeriesPrevSignal(name, nestedDatum, isNull),
-	]
-}
+		getRscAnimation(),
+		getRscColorAnimationDirection(name),
+		getRscColorAnimation(),
+		getRscHighlightedItemPrevSignal(name, nestedDatum),
+		getRscHighlightedSeriesPrevSignal(name, nestedDatum, isNull),
+	];
+};
 /**
  * gets the animations direction signal events for legends
  * @param name
  */
 //TODO: Add tests
-export const getRSCLegendColorAnimationDirection = (name: string): ({ update: string; events: string })[] => {
+export const getRscLegendColorAnimationDirection = (name: string): { update: string; events: string }[] => {
 	return [
 		{ events: `@${name}_legendEntry:mouseover`, update: '1' },
-		{ events: `@${name}_legendEntry:mouseout`, update: '-1' }
+		{ events: `@${name}_legendEntry:mouseout`, update: '-1' },
 	];
 };
 /**
@@ -183,35 +181,35 @@ export const getRSCLegendColorAnimationDirection = (name: string): ({ update: st
  * @param name
  */
 //TODO: Add tests
-export const getRSCTrendlineColorAnimationDirection = (name: string): ({ events: string, update: string })[] => {
+export const getRscTrendlineColorAnimationDirection = (name: string): { events: string; update: string }[] => {
 	return [
 		{ events: `@${name}_voronoi:mouseover`, update: '1' },
-		{ events: `@${name}_voronoi:mouseout`, update: '-1' }
-	]
-}
+		{ events: `@${name}_voronoi:mouseout`, update: '-1' },
+	];
+};
 /**
  * gets the previous highlighted item events for legends
  * @param name
  */
 //TODO: Add tests
-export const getRSCLegendHighlightedItemPrev = (name: string): ({ events: string, update: string})[] => {
-	return [
-		{ events: `@${name}_legendEntry:mouseover`, update: 'null'}
-	]
-}
+export const getRscLegendHighlightedItemPrev = (name: string): { events: string; update: string }[] => {
+	return [{ events: `@${name}_legendEntry:mouseover`, update: 'null' }];
+};
 /**
  * gets the animation signal for Opacity animations
  * @returns Signal
  */
 //TODO: add tests
-const getRSCAnimation = (): Signal => {
+const getRscAnimation = (): Signal => {
 	return {
 		name: RSC_ANIMATION,
 		value: 0,
-		on: [{
-			events: 'timer{16.666666666666668}',
-			update: `scale('rscAnimationCurve', scale('rscAnimationCurveInverse', ${RSC_ANIMATION}) + 0.03333333333333334)`
-		}]
+		on: [
+			{
+				events: 'timer{16.666666666666668}',
+				update: `scale('rscAnimationCurve', scale('rscAnimationCurveInverse', ${RSC_ANIMATION}) + 0.03333333333333334)`,
+			},
+		],
 	};
 };
 /**
@@ -220,14 +218,14 @@ const getRSCAnimation = (): Signal => {
  * @returns Signal
  */
 //TODO: add tests
-const getRSCColorAnimationDirection = (name: string): Signal => {
+const getRscColorAnimationDirection = (name: string): Signal => {
 	return {
 		name: 'rscColorAnimationDirection',
 		value: -1,
 		on: [
 			{ events: `@${concatName(name)}:mouseover`, update: '1' },
 			{ events: `@${concatName(name)}:mouseout`, update: '-1' },
-		]
+		],
 	};
 };
 /**
@@ -235,17 +233,18 @@ const getRSCColorAnimationDirection = (name: string): Signal => {
  * @returns Signal
  */
 //TODO: add tests
-const getRSCColorAnimation = (): Signal => {
+const getRscColorAnimation = (): Signal => {
 	return {
 		name: 'rscColorAnimation',
 		value: 0,
 		on: [
 			{
 				events: 'timer{16.666666666666668}',
-				update: 'scale(\'rscAnimationCurve\', scale(\'rscAnimationCurveInverse\', rscColorAnimation) ' +
-					'+ 0.06 * rscColorAnimationDirection)'
-			}
-		]
+				update:
+					"scale('rscAnimationCurve', scale('rscAnimationCurveInverse', rscColorAnimation) " +
+					'+ 0.06 * rscColorAnimationDirection)',
+			},
+		],
 	};
 };
 /**
@@ -256,15 +255,13 @@ const getRSCColorAnimation = (): Signal => {
  * @returns Signal
  */
 //TODO add test
-const getRSCHighlightedItemPrevSignal = (name: string, nestedDatum?: boolean): Signal => {
+const getRscHighlightedItemPrevSignal = (name: string, nestedDatum?: boolean): Signal => {
 	return {
 		name: `${HIGHLIGHTED_ITEM}_prev`,
 		value: null,
-		on: [
-			{ events: `@${concatName(name)}:mouseover`, update: `${nestedDatum ? 'datum.' : ''}datum.${MARK_ID}` },
-		]
-	}
-}
+		on: [{ events: `@${concatName(name)}:mouseover`, update: `${nestedDatum ? 'datum.' : ''}datum.${MARK_ID}` }],
+	};
+};
 /**
  * Gets the previous highlighted Series signal. Important for when there is no hovering over
  * legends with highlighting enabled.
@@ -274,18 +271,18 @@ const getRSCHighlightedItemPrevSignal = (name: string, nestedDatum?: boolean): S
  * @returns Signal
  */
 //TODO: add tests
-const getRSCHighlightedSeriesPrevSignal = (name: string, nestedDatum?: boolean, isNull?: boolean): Signal => {
+const getRscHighlightedSeriesPrevSignal = (name: string, nestedDatum?: boolean, isNull?: boolean): Signal => {
 	return {
 		name: `${HIGHLIGHTED_SERIES}_prev`,
 		value: null,
 		on: [
 			{
 				events: `@${concatName(name)}:mouseover`,
-				update: isNull ? 'null' : `${nestedDatum ? 'datum.' : ''}datum.${SERIES_ID}`
-			}
-		]
-	}
-}
+				update: isNull ? 'null' : `${nestedDatum ? 'datum.' : ''}datum.${SERIES_ID}`,
+			},
+		],
+	};
+};
 
 /**
  * Concatenates the name if the mark has voronoi marks
@@ -295,7 +292,7 @@ const getRSCHighlightedSeriesPrevSignal = (name: string, nestedDatum?: boolean, 
 //TODO: add tests
 const concatName = (name: string): string => {
 	if (name == 'line0' || name == 'scatter0' || name.includes('Trendline')) {
-		name = name.concat('_voronoi')
+		name = name.concat('_voronoi');
 	}
-	return name
-}
+	return name;
+};

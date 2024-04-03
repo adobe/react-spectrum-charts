@@ -31,7 +31,7 @@ import {
 	checkTrendlineAnimationScales,
 	getTrendlineMarks,
 	getTrendlineScales,
-	setTrendlineSignals
+	setTrendlineSignals,
 } from '@specBuilder/trendline';
 import { sanitizeMarkChildren, toCamelCase } from '@utils';
 import { produce } from 'immer';
@@ -43,26 +43,31 @@ import {
 	addContinuousDimensionScale,
 	addFieldToFacetScaleDomain,
 	addMetricScale,
-	addRSCAnimationScales,
+	addRscAnimationScales,
 } from '../scale/scaleSpecBuilder';
 import {
 	addHighlightedItemSignalEvents,
 	addHighlightedSeriesSignalEvents,
-	getRSCAnimationSignals,
+	getRscAnimationSignals,
 } from '../signal/signalSpecBuilder';
 import { getLineHighlightedData, getLineStaticPointData } from './lineDataUtils';
 import { getLineHoverMarks, getLineMark } from './lineMarkUtils';
 import { getLineStaticPoint } from './linePointUtils';
 import { getInteractiveMarkName, getPopoverMarkName } from './lineUtils';
 
-export const addLine = produce<Spec, [LineProps & {
-	animateFromZero?: boolean
-	animations?: boolean
-	colorScheme?: ColorScheme;
-	data?: ChartData[],
-	index?: number,
-	previousData?: ChartData[],
-}]>(
+export const addLine = produce<
+	Spec,
+	[
+		LineProps & {
+			animateFromZero?: boolean;
+			animations?: boolean;
+			colorScheme?: ColorScheme;
+			data?: ChartData[];
+			index?: number;
+			previousData?: ChartData[];
+		}
+	]
+>(
 	(
 		spec,
 		{
@@ -130,10 +135,16 @@ export const addSignals = produce<Signal[], [LineSpecProps]>((signals, props) =>
 	// if animations are enabled, push all necessary animation signals. Line charts have voronoi points and have nested datum
 	//TODO: add tests
 	if (animations !== false) {
-		signals.push(...getRSCAnimationSignals(name, true));
+		signals.push(...getRscAnimationSignals(name, true));
 	}
 
-	addHighlightedItemSignalEvents({ signals, markName: `${name}_voronoi`, datumOrder: 2, animations, animateFromZero });
+	addHighlightedItemSignalEvents({
+		signals,
+		markName: `${name}_voronoi`,
+		datumOrder: 2,
+		animations,
+		animateFromZero,
+	});
 	addHighlightedSeriesSignalEvents(signals, `${name}_voronoi`, 2);
 });
 
@@ -142,7 +153,7 @@ export const setScales = produce<Scale[], [LineSpecProps]>((scales, props) => {
 	// if animations are enabled, add all necessary animation scales.
 	//TODO: Add tests
 	if (animations !== false && hasInteractiveChildren(children)) {
-		addRSCAnimationScales(scales);
+		addRscAnimationScales(scales);
 	}
 	// add dimension scale
 	addContinuousDimensionScale(scales, { scaleType, dimension, padding });

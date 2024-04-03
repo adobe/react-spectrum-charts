@@ -31,10 +31,10 @@ import {
 	addContinuousDimensionScale,
 	addFieldToFacetScaleDomain,
 	addMetricScale,
-	addRSCAnimationScales
+	addRscAnimationScales,
 } from '@specBuilder/scale/scaleSpecBuilder';
 import { setScatterPathScales } from '@specBuilder/scatterPath';
-import { addHighlightedItemSignalEvents, getRSCAnimationSignals } from '@specBuilder/signal/signalSpecBuilder';
+import { addHighlightedItemSignalEvents, getRscAnimationSignals } from '@specBuilder/signal/signalSpecBuilder';
 import { addTrendlineData, getTrendlineScales, setTrendlineSignals } from '@specBuilder/trendline';
 import { sanitizeMarkChildren, toCamelCase } from '@utils';
 import { produce } from 'immer';
@@ -129,7 +129,7 @@ export const addSignals = produce<Signal[], [ScatterSpecProps]>((signals, props)
 	// if animations are enabled, push opacity animation signals to spec
 	// TODO: add tests
 	if (animations !== false) {
-		signals.push(...getRSCAnimationSignals(name, true, true));
+		signals.push(...getRscAnimationSignals(name, true, true));
 	}
 	// trendline signals
 	setTrendlineSignals(signals, props);
@@ -145,11 +145,22 @@ export const addSignals = produce<Signal[], [ScatterSpecProps]>((signals, props)
  * @param scatterProps ScatterSpecProps
  */
 export const setScales = produce<Scale[], [ScatterSpecProps]>((scales, props) => {
-	const { animations, color, colorScaleType, dimension, dimensionScaleType, lineType, lineWidth, metric, opacity, size } = props;
+	const {
+		animations,
+		color,
+		colorScaleType,
+		dimension,
+		dimensionScaleType,
+		lineType,
+		lineWidth,
+		metric,
+		opacity,
+		size,
+	} = props;
 	// if animations are enabled, add Opacity animation scales to spec
 	// TODO: add tests
 	if (animations !== false) {
-		addRSCAnimationScales(scales);
+		addRscAnimationScales(scales);
 	}
 	// add dimension scale
 	addContinuousDimensionScale(scales, { scaleType: dimensionScaleType, dimension });
