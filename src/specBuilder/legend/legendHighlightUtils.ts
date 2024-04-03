@@ -11,7 +11,7 @@
  */
 import { COLOR_SCALE, HIGHLIGHT_CONTRAST_RATIO, HIGHLIGHTED_SERIES, SERIES_ID } from '@constants';
 import { GroupMark, Mark, NumericValueRef, ProductionRule } from 'vega';
-import { getNonSeriesAnimationOpacityRules, getSeriesAnimationOpacityRules } from '@specBuilder/marks/markUtils';
+import { getMarkWithLegendHighlightOpacityRules, getSeriesAnimationOpacityRules } from '@specBuilder/marks/markUtils';
 
 
 /**
@@ -43,8 +43,8 @@ export const setHoverOpacityForMarks = (marks: Mark[], animations?: boolean, key
 			}
 			//TODO: add comment/doc/etc
 			if (animations !== false) {
-				if (mark.name == 'bar0') {
-					update.opacity = getNonSeriesAnimationOpacityRules();
+				if (mark.name == 'bar0' || mark.name == 'scatter0') {
+					update.opacity = getMarkWithLegendHighlightOpacityRules();
 				} else {
 					update.opacity = getSeriesAnimationOpacityRules();
 				}

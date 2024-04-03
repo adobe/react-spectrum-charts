@@ -297,7 +297,7 @@ export const getSeriesAnimationOpacityRules = (
 	}
 	return [
 		{
-			test: `${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES} !== datum.${SERIES_ID}`,
+			...getHighlightedSeriesTest(),
 			...getHighlightOpacityAnimationValue(opacityValue)
 		},
 		{
@@ -308,16 +308,29 @@ export const getSeriesAnimationOpacityRules = (
 	]
 };
 //TODO: add comments/tests/etc
-export const getNonSeriesAnimationOpacityRules = (): ProductionRule<NumericValueRef> => {
+export const getMarkHighlightOpacityRules = (): ProductionRule<NumericValueRef> => {
+	return [
+		{
+			...getMarkHighlightedItemTest(),
+			...getHighlightOpacityAnimationValue(DEFAULT_OPACITY_RULE)
+		},
+		{
+			test: `!${HIGHLIGHTED_ITEM} && ${HIGHLIGHTED_ITEM}_prev !== datum.${MARK_ID}`,
+			...getHighlightOpacityAnimationValue(DEFAULT_OPACITY_RULE)
+		}
+	]
+}
+//TODO: add comments/tests/etc
+export const getMarkWithLegendHighlightOpacityRules = (): ProductionRule<NumericValueRef> => {
 	return [
 		{
 			// If there is no current selection, but there is a hover and the hover is NOT for the current bar
-			test: `!${SELECTED_ITEM} && ${HIGHLIGHTED_ITEM} && ${HIGHLIGHTED_ITEM} !== datum.${MARK_ID}`,
+			...getMarkHighlightedItemTest(),
 			...getHighlightOpacityAnimationValue(DEFAULT_OPACITY_RULE)
 		},
 		{
 			// If there is a highlighted series and the highlighted series is NOT the series of the current bar
-			test: `${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES} !== datum.${SERIES_ID}`,
+			...getHighlightedSeriesTest(),
 			...getHighlightOpacityAnimationValue(DEFAULT_OPACITY_RULE)
 		},
 		{
@@ -333,12 +346,11 @@ export const getNonSeriesAnimationOpacityRules = (): ProductionRule<NumericValue
 		{ value: 1 }
 	];
 }
-
 //TODO: add comments/tests/etc
 export const getLegendSeriesOpacityRules = (): ProductionRule<NumericValueRef> => {
 	return [
 		{
-			test: `${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES} !== datum.value`,
+			...getLegendHighlightedSeriesTest(),
 			...getHighlightOpacityAnimationValue(DEFAULT_OPACITY_RULE)
 		},
 		{
@@ -353,7 +365,7 @@ export const getLegendMarkOpacityRules = (): ProductionRule<NumericValueRef> => 
 	return [
 		{
 			// If there is a highlighted series, and it is NOT equal to the current series
-			test: `${HIGHLIGHTED_SERIES} && datum.value !== ${HIGHLIGHTED_SERIES}`,
+			...getLegendHighlightedSeriesTest(),
 			...getHighlightOpacityAnimationValue(DEFAULT_OPACITY_RULE)
 		},
 		{
@@ -364,4 +376,23 @@ export const getLegendMarkOpacityRules = (): ProductionRule<NumericValueRef> => 
 		DEFAULT_OPACITY_RULE
 	]
 }
+//TODO: add comments/tests/etc
+export const getHighlightedSeriesTest = (): { test: string } => {
+	return {
+		test: `${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES} !== datum.${SERIES_ID}`
+	}
+}
+//TODO: add comments/tests/etc
+const getLegendHighlightedSeriesTest = (): { test: string } => {
+	return {
+		test: `${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES} !== datum.value`
+	}
+}
+//TODO: add comments/tests/etc
+export const getMarkHighlightedItemTest = (): { test: string } => {
+	return {
+		test: `${HIGHLIGHTED_ITEM} && ${HIGHLIGHTED_ITEM} !== datum.${MARK_ID}`
+	}
+}
+
 

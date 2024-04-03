@@ -135,7 +135,7 @@ export const getRSCAnimationSignals = (name: string, nestedDatum?: boolean, isNu
 		getRSCAnimation(),
 		getRSCColorAnimationDirection(name),
 		getRSCColorAnimation(),
-		getRSCHighlightedItemPrevSignal(name),
+		getRSCHighlightedItemPrevSignal(name, nestedDatum),
 		getRSCHighlightedSeriesPrevSignal(name, nestedDatum, isNull),
 	]
 }
@@ -172,15 +172,12 @@ const getRSCAnimation = (): Signal => {
 };
 //TODO: add documentation
 const getRSCColorAnimationDirection = (name: string): Signal => {
-	if (name === 'line0') {
-		name = name.concat('_voronoi')
-	}
 	return {
 		name: 'rscColorAnimationDirection',
 		value: -1,
 		on: [
-			{ events: `@${name}:mouseover`, update: '1' },
-			{ events: `@${name}:mouseout`, update: '-1' },
+			{ events: `@${concatName(name)}:mouseover`, update: '1' },
+			{ events: `@${concatName(name)}:mouseout`, update: '-1' },
 		]
 	};
 };
@@ -199,12 +196,12 @@ const getRSCColorAnimation = (): Signal => {
 	};
 };
 //TODO add documentation
-const getRSCHighlightedItemPrevSignal = (name: string): Signal => {
+const getRSCHighlightedItemPrevSignal = (name: string, nestedDatum?: boolean): Signal => {
 	return {
 		name: `${HIGHLIGHTED_ITEM}_prev`,
 		value: null,
 		on: [
-			{ events: `@${name}:mouseover`, update: `datum.${MARK_ID}` },
+			{ events: `@${concatName(name)}:mouseover`, update: `${nestedDatum ? 'datum.' : ''}datum.${MARK_ID}` },
 		]
 	}
 }
@@ -215,9 +212,16 @@ const getRSCHighlightedSeriesPrevSignal = (name: string, nestedDatum?: boolean, 
 		value: null,
 		on: [
 			{
-				events: `@${name == 'line0' || name.includes('Trendline') ? `${name}_voronoi` : `${name}`}:mouseover`,
+				events: `@${concatName(name)}:mouseover`,
 				update: isNull ? 'null' : `${nestedDatum ? 'datum.' : ''}datum.${SERIES_ID}`
 			}
 		]
 	}
+}
+
+const concatName = (name: string): string => {
+	if (name == 'line0' || name == 'scatter0' || name.includes('Trendline')) {
+		name = name.concat('_voronoi')
+	}
+	return name
 }

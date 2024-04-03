@@ -27,7 +27,8 @@ import {
 	getColorProductionRule,
 	getCursor,
 	getHighlightOpacityValue,
-	getNonSeriesAnimationOpacityRules,
+	getMarkHighlightedItemTest,
+	getMarkHighlightOpacityRules,
 	getOpacityProductionRule,
 	getStrokeDashProductionRule,
 	getTooltip,
@@ -408,7 +409,7 @@ export const getBarOpacity = ({ children, animations }: BarSpecProps): Productio
 
 	//TODO: Add documentation
 	if ( animations !== false ) {
-		return getNonSeriesAnimationOpacityRules();
+		return getMarkHighlightOpacityRules();
 	}
 
 	// if a bar is hovered/selected, all other bars should have reduced opacity
@@ -428,7 +429,7 @@ export const getBarOpacity = ({ children, animations }: BarSpecProps): Productio
 	}
 	return [
 		{
-			test: `${HIGHLIGHTED_ITEM} && ${HIGHLIGHTED_ITEM} !== datum.${MARK_ID}`,
+			...getMarkHighlightedItemTest(),
 			...getHighlightOpacityValue(),
 		},
 		DEFAULT_OPACITY_RULE,

@@ -18,7 +18,7 @@ import {
 	SYMBOL_SHAPE_SCALE,
 	SYMBOL_SIZE_SCALE,
 	RSC_ANIMATION,
-	HIGHLIGHTED_ITEM
+	HIGHLIGHTED_ITEM,
 } from '@constants';
 import {
 	addFieldToFacetScaleDomain,

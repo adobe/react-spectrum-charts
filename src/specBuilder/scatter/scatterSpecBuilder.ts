@@ -31,9 +31,10 @@ import {
 	addContinuousDimensionScale,
 	addFieldToFacetScaleDomain,
 	addMetricScale,
+	addRSCAnimationScales
 } from '@specBuilder/scale/scaleSpecBuilder';
 import { setScatterPathScales } from '@specBuilder/scatterPath';
-import { addHighlightedItemSignalEvents } from '@specBuilder/signal/signalSpecBuilder';
+import { addHighlightedItemSignalEvents, getRSCAnimationSignals } from '@specBuilder/signal/signalSpecBuilder';
 import { addTrendlineData, getTrendlineScales, setTrendlineSignals } from '@specBuilder/trendline';
 import { sanitizeMarkChildren, toCamelCase } from '@utils';
 import { produce } from 'immer';
@@ -51,6 +52,7 @@ export const addScatter = produce<Spec, [ScatterProps & { colorScheme?: ColorSch
 	(
 		spec,
 		{
+			animations,
 			children,
 			color = { value: 'categorical-100' },
 			colorScaleType = 'ordinal',
@@ -71,6 +73,7 @@ export const addScatter = produce<Spec, [ScatterProps & { colorScheme?: ColorSch
 		const scatterName = toCamelCase(name || `scatter${index}`);
 		// put props back together now that all the defaults have been set
 		const scatterProps: ScatterSpecProps = {
+			animations,
 			children: sanitizedChildren,
 			color,
 			colorScaleType,
@@ -122,7 +125,11 @@ export const addData = produce<Data[], [ScatterSpecProps]>((data, props) => {
  * @param scatterProps ScatterSpecProps
  */
 export const addSignals = produce<Signal[], [ScatterSpecProps]>((signals, props) => {
-	const { children, name } = props;
+	const { animations, children, name } = props;
+	// Opacity animation signals TODO: add tests
+	if (animations !== false) {
+		signals.push(...getRSCAnimationSignals(name, true, true));
+	}
 	// trendline signals
 	setTrendlineSignals(signals, props);
 
@@ -137,7 +144,11 @@ export const addSignals = produce<Signal[], [ScatterSpecProps]>((signals, props)
  * @param scatterProps ScatterSpecProps
  */
 export const setScales = produce<Scale[], [ScatterSpecProps]>((scales, props) => {
-	const { color, colorScaleType, dimension, dimensionScaleType, lineType, lineWidth, metric, opacity, size } = props;
+	const { animations, color, colorScaleType, dimension, dimensionScaleType, lineType, lineWidth, metric, opacity, size } = props;
+	// add Opacity animation scales //TODO: add tests
+	if (animations !== false) {
+		addRSCAnimationScales(scales);
+	}
 	// add dimension scale
 	addContinuousDimensionScale(scales, { scaleType: dimensionScaleType, dimension });
 	// add metric scale

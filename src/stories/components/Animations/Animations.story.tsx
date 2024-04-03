@@ -1,16 +1,29 @@
-import React, { ReactElement, useState } from 'react';
+import React, { createElement, ReactElement, useState } from 'react';
 
-import { MARK_ID } from '@constants';
+import { COLOR_SCALE, LINE_TYPE_SCALE, MARK_ID, OPACITY_SCALE } from '@constants';
 import useChartProps from '@hooks/useChartProps';
-import { Annotation, Area, Axis, Bar, Chart, ChartPopover, ChartProps, ChartTooltip, Legend, Line } from '@rsc';
+import {
+	Annotation,
+	Area,
+	Axis,
+	Bar,
+	Chart, ChartColors,
+	ChartPopover,
+	ChartProps,
+	ChartTooltip,
+	Legend, LegendProps,
+	Line,
+	Scatter, ScatterProps, Title
+} from '@rsc';
 import { areaData, browserData as data, newDataArray1WithStaticPoints } from '@stories/data/data';
 import { StoryFn } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
 import { ChartData, ChartElement, Datum, SpectrumColor } from 'types';
 
-import { Button, Content, Text, View } from '@adobe/react-spectrum';
+import { Button, Content, Flex, Text, View } from '@adobe/react-spectrum';
 
 import { barData, barSubSeriesData, generateMockDataForTrellis } from '../Bar/data';
+import { characterData } from '@stories/data/marioKartData';
 
 export default {
 	title: 'RSC/Animations',
@@ -35,6 +48,40 @@ const dialogContent = (datum) => (
 	</Content>
 );
 
+type MarioDataKey = keyof (typeof characterData)[0];
+
+const marioKeyTitle: Record<Exclude<MarioDataKey, 'character'>, string> = {
+	weightClass: 'Weight class',
+	speedNormal: 'Speed (normal)',
+	speedAntigravity: 'Speed (antigravity)',
+	speedWater: 'Speed (water)',
+	speedAir: 'Speed (air)',
+	acceleration: 'Acceleration',
+	weight: 'Weight',
+	handlingNormal: 'Handling (normal)',
+	handlingAntigravity: 'Handling (antigravity)',
+	handlingWater: 'Handling (water)',
+	handlingAir: 'Handling (air)',
+	grip: 'Grip',
+	miniTurbo: 'Mini-turbo',
+};
+
+const dialog = (item: Datum) => {
+	return (
+		<Content>
+			<Flex direction="column">
+				<div style={{ fontWeight: 'bold' }}>{(item.character as string[]).join(', ')}</div>
+				<div>
+					{marioKeyTitle.speedNormal}: {item.speedNormal}
+				</div>
+				<div>
+					{marioKeyTitle.handlingNormal}: {item.handlingNormal}
+				</div>
+			</Flex>
+		</Content>
+	);
+};
+
 const areaStoryData = [
 	{ browser: 'Chrome', value: 5, operatingSystem: 'Windows', order: 2 },
 	{ browser: 'Chrome', value: 3, operatingSystem: 'Mac', order: 1 },
@@ -46,6 +93,19 @@ const areaStoryData = [
 	{ browser: 'Safari', value: 0, operatingSystem: 'Mac', order: 1 },
 	{ browser: 'Safari', value: 1, operatingSystem: 'Other', order: 0 },
 ];
+
+const getLegendProps = (args: ScatterProps): LegendProps => {
+	const facets = [COLOR_SCALE, LINE_TYPE_SCALE, OPACITY_SCALE, 'size'];
+	const legendKey = args[facets.find((key) => args[key] !== undefined) ?? COLOR_SCALE];
+	const legendProps: LegendProps = {
+		position: 'right',
+		title: marioKeyTitle[legendKey],
+	};
+	if (typeof args.opacity === 'object') {
+		legendProps.opacity = args.opacity;
+	}
+	return legendProps;
+};
 
 const ChartWithToggleableData = ({ ChartComponent, initialData, secondaryData }: ChartWithToggleableDataProps) => {
 	const [dataSource, setDataSource] = useState(true);
@@ -175,6 +235,22 @@ const DodgedBarStory: StoryFn<ToggleableDataProps> = (args): ReactElement => {
 			}
 			{...args}
 		/>
+	);
+};
+
+const ScatterStory: StoryFn<typeof Scatter> = (args): ReactElement => {
+	const colors: ChartColors = args.colorScaleType === 'linear' ? 'sequentialViridis5' : 'categorical16';
+	const chartProps = useChartProps({ data: characterData, height: 500, width: 500, lineWidths: [1, 2, 3], colors });
+	const legendProps = getLegendProps(args);
+
+	return (
+		<Chart {...chartProps}>
+			<Axis position="bottom" grid ticks baseline title={marioKeyTitle[args.dimension as MarioDataKey]} />
+			<Axis position="left" grid ticks baseline title={marioKeyTitle[args.metric as MarioDataKey]} />
+			<Scatter {...args} />
+			<Legend {...legendProps} highlight />
+			<Title text="Mario Kart 8 Character Data" />
+		</Chart>
 	);
 };
 
@@ -332,6 +408,14 @@ DodgedBarZero.args = {
 	]),
 };
 
+const ScatterPopover = bindWithProps(ScatterStory);
+ScatterPopover.args = {
+	color: 'weightClass',
+	dimension: 'speedNormal',
+	metric: 'handlingNormal',
+	children: [createElement(ChartTooltip, {}, dialog), createElement(ChartPopover, { width: 200 }, dialog)],
+};
+
 const trellisData = generateMockDataForTrellis({
 	property1: ['All users', 'Roku', 'Chromecast', 'Amazon Fire', 'Apple TV'],
 	property2: ['A. Sign up', 'B. Watch a video', 'C. Add to MyList'],
@@ -373,6 +457,7 @@ export {
 	DodgedBarSwitch,
 	DodgedBarZero,
 	LineChart,
+	ScatterPopover,
 	SingleLineSwitch,
 	SingleLineZero,
 	TrellisHorizontalBarSwitch,

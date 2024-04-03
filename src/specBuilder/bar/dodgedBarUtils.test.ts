@@ -206,7 +206,7 @@ describe('dodgedBarUtils', () => {
 		test('with annotation', () => {
 			const annotationElement = createElement(Annotation, { textKey: 'textLabel' });
 			expect(
-				getDodgedMark({
+				getDodgedMark({ animations: false,
 					...defaultDodgedProps,
 					children: [...defaultDodgedProps.children, annotationElement],
 				})
