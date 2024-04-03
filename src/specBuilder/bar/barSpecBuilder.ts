@@ -226,7 +226,7 @@ export const addScales = produce<Scale[], [BarSpecProps]>((scales, props) => {
 	const { color, lineType, opacity, orientation, animations, children } = props;
 
 	//TODO add comments
-	if (animations&& hasInteractiveChildren(children)) {
+	if (animations && hasInteractiveChildren(children)) {
 		addRSCAnimationScales(scales)
 	}
 	addMetricScale(scales, getScaleValues(props), orientation === 'vertical' ? 'y' : 'x');

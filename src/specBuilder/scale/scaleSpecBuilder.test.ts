@@ -16,6 +16,7 @@ import {
 	addContinuousDimensionScale,
 	addDomainFields,
 	addFieldToFacetScaleDomain,
+	addRSCAnimationScales,
 	getPadding,
 	getScaleName,
 } from './scaleSpecBuilder';
@@ -25,6 +26,23 @@ const defaultColorScale: OrdinalScale = {
 	name: COLOR_SCALE,
 	type: 'ordinal',
 };
+
+export const defaultAnimationScales = [
+	{
+		name: 'rscAnimationCurve',
+		type: 'linear',
+		domain: [0, 1],
+		range: [0, 1],
+		clamp: true
+	},
+	{
+		name: 'rscAnimationCurveInverse',
+		type: 'linear',
+		domain: [0, 1],
+		range: [0, 1],
+		clamp: true
+	}
+]
 
 describe('addDomainFields()', () => {
 	test('no domain fields', () => {
@@ -103,5 +121,13 @@ describe('getScaleName()', () => {
 	test('should return correct scale name', () => {
 		expect(getScaleName('x', 'linear')).toBe('xLinear');
 		expect(getScaleName('y', 'band')).toBe('yBand');
+	});
+});
+
+describe('addRSCAnimationScales()', () => {
+	test('should return correct scale name', () => {
+		const scales = []
+		addRSCAnimationScales(scales)
+		expect(scales).toStrictEqual(defaultAnimationScales)
 	});
 });

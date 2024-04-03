@@ -14,8 +14,10 @@ import {
 	DEFAULT_COLOR,
 	DEFAULT_COLOR_SCHEME,
 	DEFAULT_SECONDARY_COLOR,
+	HIGHLIGHTED_ITEM,
 	HIGHLIGHTED_SERIES,
 	LINEAR_COLOR_SCALE,
+	RSC_ANIMATION,
 	TABLE,
 } from '@constants';
 import {
@@ -29,6 +31,7 @@ import { Data, Legend, LegendEncode, Scale, Spec, SymbolEncodeEntry } from 'vega
 
 import { addData, addLegend, addSignals, formatFacetRefsWithPresets, getContinuousLegend } from './legendSpecBuilder';
 import { defaultLegendProps, opacityEncoding } from './legendTestUtils';
+import { defaultAnimationScales } from '@specBuilder/scale/scaleSpecBuilder.test';
 
 const defaultSpec: Spec = {
 	signals: defaultSignals,
@@ -298,6 +301,29 @@ describe('addLegend()', () => {
 				},
 			]);
 		});
+
+		test('should add fields to scales if they have not been added with animations', () => {
+			const legendSpec = addLegend(
+				{ ...defaultSpec, scales: [{ name: COLOR_SCALE, type: 'ordinal' }] },
+				{ color: 'series', animations: true }
+			);
+			expect(legendSpec.scales).toEqual([
+				{
+					name: COLOR_SCALE,
+					type: 'ordinal',
+					domain: { data: 'table', fields: ['series'] },
+				},
+				...defaultAnimationScales,
+				{
+					name: 'legend0Entries',
+					type: 'ordinal',
+					domain: {
+						data: 'legend0Aggregate',
+						field: 'legend0Entries',
+					},
+				},
+			]);
+		});
 	});
 });
 
@@ -376,10 +402,27 @@ describe('addSignals()', () => {
 	});
 	test('should add legendLabels signal if legendLabels are defined', () => {
 		expect(
-			addSignals(defaultSignals, { ...defaultLegendProps, legendLabels: [] }).find(
+			addSignals(defaultSignals, { ...defaultLegendProps, legendLabels: []}).find(
 				(signal) => signal.name === 'legendLabels'
 			)
 		).toBeDefined();
+	});
+	test('should add animation signals if animations is true', () => {
+		const signals = addSignals(defaultSignals, { ...defaultLegendProps, animations: true })
+		expect(signals).toBeDefined()
+		expect(signals).toHaveLength(10);
+		console.log(signals)
+		expect(signals[4]).toHaveProperty('name', RSC_ANIMATION);
+		expect(signals[4].on).toHaveLength(1);
+		expect(signals[5]).toHaveProperty('name', 'rscColorAnimationDirection');
+		expect(signals[5].on).toHaveLength(4);
+		expect(signals[6]).toHaveProperty('name', 'rscColorAnimation');
+		expect(signals[6].on).toHaveLength(1);
+		expect(signals[7]).toHaveProperty('name', `${HIGHLIGHTED_ITEM}_prev`);
+		expect(signals[7].on).toHaveLength(1);
+		expect(signals[8]).toHaveProperty('name', 'legend0_selectedId');
+		expect(signals[9]).toHaveProperty('name', `${HIGHLIGHTED_SERIES}_prev`);
+		expect(signals[9].on).toHaveLength(1);
 	});
 	test('should NOT add hiddenSeries signal if isToggleable is false', () => {
 		expect(

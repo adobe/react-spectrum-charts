@@ -19,22 +19,28 @@ import {
 	COLOR_SCALE,
 	DEFAULT_COLOR,
 	DEFAULT_COLOR_SCHEME,
+	DEFAULT_OPACITY_RULE,
 	DEFAULT_SECONDARY_COLOR,
 	DEFAULT_TIME_DIMENSION,
 	DEFAULT_TRANSFORMED_TIME_DIMENSION,
+	HIGHLIGHTED_SERIES,
 	HIGHLIGHT_CONTRAST_RATIO,
 	LINEAR_COLOR_SCALE,
 	LINE_TYPE_SCALE,
 	LINE_WIDTH_SCALE,
 	OPACITY_SCALE,
+	SERIES_ID,
 	SYMBOL_SIZE_SCALE,
 } from '@constants';
 
 import {
 	getColorProductionRule,
 	getColorProductionRuleSignalString,
+	getHighlightOpacityAnimationValue,
 	getHighlightOpacityValue,
+	getLegendOpacityRules,
 	getLineWidthProductionRule,
+	getOpacityAnimationRules,
 	getOpacityProductionRule,
 	getStrokeDashProductionRule,
 	getSymbolSizeProductionRule,
@@ -216,3 +222,59 @@ describe('getColorProductionRuleSignalString()', () => {
 		expect(getColorProductionRuleSignalString({ value: color }, DEFAULT_COLOR_SCHEME)).toStrictEqual(`'${color}'`);
 	});
 });
+
+describe('getHighlightOpacityAnimationValue()', () => {
+	test('should receive signal highlight opacity animation value', () => {
+		expect(getHighlightOpacityAnimationValue({signal: "test"})).toStrictEqual({ signal: `max(1-rscColorAnimation, test / ${HIGHLIGHT_CONTRAST_RATIO})` })
+	})
+
+	test('should receive value hightlight opacity animation value', () => {
+		expect(getHighlightOpacityAnimationValue({value: 1})).toStrictEqual({ signal: `max(1-rscColorAnimation, 1 / ${HIGHLIGHT_CONTRAST_RATIO})` })
+	})
+})
+
+describe('getOpacityAnimationRules()', () => {
+	test('should receive signal opacity animation rules', () => {
+		expect(getOpacityAnimationRules({signal: "test"})).toStrictEqual([
+			{
+				test: `${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES} !== datum.${SERIES_ID}`,
+				signal: `max(1-rscColorAnimation, test / ${HIGHLIGHT_CONTRAST_RATIO})`
+			},
+			{
+				test: `!${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES}_prev !== datum.${SERIES_ID}`,
+				signal: `max(1-rscColorAnimation, test / ${HIGHLIGHT_CONTRAST_RATIO})`
+			},
+			DEFAULT_OPACITY_RULE
+		])
+	})
+
+	test('should receive default opacity animation rules', () => {
+		expect(getOpacityAnimationRules()).toStrictEqual([
+			{
+				test: `${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES} !== datum.${SERIES_ID}`,
+				signal: `max(1-rscColorAnimation, 1 / ${HIGHLIGHT_CONTRAST_RATIO})`
+			},
+			{
+				test: `!${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES}_prev !== datum.${SERIES_ID}`,
+				signal: `max(1-rscColorAnimation, 1 / ${HIGHLIGHT_CONTRAST_RATIO})`
+			},
+			DEFAULT_OPACITY_RULE
+		])
+	})
+})
+
+describe('getOpacityAnimationRules()', () => {
+	test('should receive default legend opacity animation rules', () => {
+		expect(getLegendOpacityRules()).toStrictEqual([
+			{
+				test: `${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES} !== datum.value`,
+				signal: `max(1-rscColorAnimation, 1 / ${HIGHLIGHT_CONTRAST_RATIO})`
+			},
+			{
+				test: `!${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES}_prev !== datum.value`,
+				signal: `max(1-rscColorAnimation, 1 / ${HIGHLIGHT_CONTRAST_RATIO})`
+			},
+			DEFAULT_OPACITY_RULE
+		])
+	})
+})
