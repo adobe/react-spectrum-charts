@@ -39,6 +39,7 @@ export const getTrendlineMarks = (markProps: TrendlineParentProps): (GroupMark |
 	const { color, lineType } = markProps;
 	const { facets } = getFacetsFromProps({ color, lineType });
 
+
 	const marks: (GroupMark | RuleMark)[] = [];
 	const trendlines = getTrendlines(markProps);
 	for (const trendlineProps of trendlines) {
@@ -380,10 +381,11 @@ const getLineMarkProps = (
 	{ dimensionScaleType, displayOnHover, lineWidth, metric, name, opacity }: TrendlineSpecProps,
 	override?: Partial<LineMarkProps>
 ): LineMarkProps => {
-	const { children, color, colorScheme, dimension, idKey, interactiveMarkName, lineType } = markProps;
+	const { children, color, colorScheme, dimension, idKey, interactiveMarkName, lineType, animations } = markProps;
 	const popoverMarkName = 'popoverMarkName' in markProps ? markProps.popoverMarkName : undefined;
 	const staticPoint = 'staticPoint' in markProps ? markProps.staticPoint : undefined;
 	return {
+		animations,
 		children,
 		color: getTrendlineColorFromMarkProps(color),
 		colorScheme,

@@ -24,6 +24,7 @@ import {
 	SELECTED_SERIES,
 	MARK_ID
 } from '@constants';
+import { hasInteractiveChildren } from '@specBuilder/marks/markUtils';
 import {
 	addTooltipData,
 	addTooltipSignals,
@@ -35,6 +36,9 @@ import {
 	addHighlightedSeriesSignalEvents,
 	getControlledHoveredGroupSignal,
 	getControlledHoveredIdSignal,
+	getControlledHoverSignal,
+	getRscAnimationSignals,
+	hasSignalByName,
 } from '@specBuilder/signal/signalSpecBuilder';
 import { spectrumColors } from '@themes';
 import { sanitizeMarkChildren, toCamelCase } from '@utils';
@@ -48,9 +52,14 @@ import {
 	getFilteredTableData,
 	getPreviousTableData,
 	getTableData,
-	getTransformSort
+	getTransformSort,
 } from '../data/dataUtils';
-import { addContinuousDimensionScale, addFieldToFacetScaleDomain, addMetricScale } from '../scale/scaleSpecBuilder';
+import {
+	addContinuousDimensionScale,
+	addFieldToFacetScaleDomain,
+	addMetricScale,
+	addRscAnimationScales,
+} from '../scale/scaleSpecBuilder';
 import { getAreaMark, getX } from './areaUtils';
 
 export const addArea = produce<Spec, [AreaProps & { animations?: boolean; animateFromZero: boolean; colorScheme?: ColorScheme; highlightedItem?: HighlightedItem; index?: number, idKey: string; previousData: ChartData[], data: ChartData[] }]>(
@@ -156,6 +165,20 @@ export const addData = produce<Data[], [AreaSpecProps]>((data, props) => {
 		}
 	}
 	addTooltipData(data, props, false);
+);
+
+export const addSignals = produce<Signal[], [AreaSpecProps]>((signals, { children, name, animations }) => {
+	if (!children.length) return;
+
+	// If animations is enabled and has hover functionality, add all the necessary animation signals.
+	// TODO: add tests
+	if (animations !== false && hasInteractiveChildren(children)) {
+		signals.push(...getRscAnimationSignals(name));
+	}
+	if (!hasSignalByName(signals, `${name}_controlledHoveredId`)) {
+		signals.push(getControlledHoverSignal(name));
+	}
+	addHighlightedSeriesSignalEvents(signals, name);
 });
 
 export const getAreaHighlightedData = (
@@ -221,7 +244,12 @@ export const addHighlightedItemEvents = (signals: Signal[], areaName: string) =>
 };
 
 export const setScales = produce<Scale[], [AreaSpecProps]>(
-	(scales, { metric, metricEnd, metricStart, dimension, color, scaleType, padding }) => {
+	(scales, { metric, metricEnd, metricStart, dimension, color, scaleType, padding, animations, children }) => {
+		// If animations is enabled and has hover functionality, add all the necessary animation scales.
+		//TODO: add tests
+		if (animations !== false && hasInteractiveChildren(children)) {
+			addRscAnimationScales(scales);
+		}
 		// add dimension scale
 		addContinuousDimensionScale(scales, { scaleType, dimension, padding });
 		// add color to the color domain
@@ -395,7 +423,7 @@ const getSelectedAreaMarks = ({
 					strokeJoin: { value: 'round' },
 				},
 				update: {
-					// this has to be in update because when you resize the window that doesn't rebuild the spec
+					// this has to be in update because when you resize the window that doesn't rebuild the spec,
 					// but it may change the x position if it causes the chart to resize
 					x: getX(scaleType, dimension),
 				},

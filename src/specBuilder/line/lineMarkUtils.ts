@@ -25,6 +25,7 @@ import {
 	getOpacityProductionRule,
 	getPointsForVoronoi,
 	getStrokeDashProductionRule,
+	getSeriesAnimationOpacityRules,
 	getVoronoiPath,
 	getXProductionRule,
 	getYProductionRule,
@@ -92,6 +93,7 @@ export const getLineOpacity = ({
 	popoverMarkName,
 	isHighlightedByGroup,
 	highlightedItem,
+	animations,
 }: LineMarkProps): ProductionRule<NumericValueRef> => {
 	if ((!interactiveMarkName || displayOnHover) && highlightedItem === undefined) return [DEFAULT_OPACITY_RULE];
 	const strokeOpacityRules: ProductionRule<NumericValueRef> = [];
@@ -103,6 +105,11 @@ export const getLineOpacity = ({
 		});
 	}
 
+	//if animations are enabled, set opacity rules for line mark.
+	//TODO: add tests
+	if (animations !== false) {
+		return getSeriesAnimationOpacityRules();
+	}
 	// add a rule that will lower the opacity of the line if there is a hovered series, but this line is not the one hovered
 	strokeOpacityRules.push(
 		{

@@ -25,7 +25,7 @@ export default {
 };
 
 const LegendBarStory: StoryFn<typeof Legend> = (args): ReactElement => {
-	const chartProps = useChartProps({ data, width: 700, symbolShapes: ['square', 'triangle', ROUNDED_SQUARE_PATH] });
+	const chartProps = useChartProps({ animations: false, data, width: 700, symbolShapes: ['square', 'triangle', ROUNDED_SQUARE_PATH] });
 	return (
 		<Chart {...chartProps}>
 			<Bar color="series" />
@@ -34,7 +34,7 @@ const LegendBarStory: StoryFn<typeof Legend> = (args): ReactElement => {
 	);
 };
 const LegendLineStory: StoryFn<typeof Legend> = (args): ReactElement => {
-	const chartProps = useChartProps({ data, width: 700 });
+	const chartProps = useChartProps({ animations: false, data, width: 700 });
 	return (
 		<Chart {...chartProps}>
 			<Line dimension="category" lineType="series" color="series" scaleType="point" />

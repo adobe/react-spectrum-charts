@@ -29,6 +29,7 @@ import { NumericValueRef, ProductionRule, RectEncodeEntry } from 'vega';
 import { BarSpecProps } from '../../types';
 
 export const defaultBarProps: BarSpecProps = {
+	animations: false,
 	children: [],
 	color: DEFAULT_COLOR,
 	colorScheme: DEFAULT_COLOR_SCHEME,
@@ -45,11 +46,11 @@ export const defaultBarProps: BarSpecProps = {
 	name: 'bar0',
 	orientation: 'vertical',
 	opacity: { value: 1 },
+	orientation: 'vertical',
 	paddingRatio: PADDING_RATIO,
 	trellisOrientation: 'horizontal',
 	trellisPadding: TRELLIS_PADDING,
 	type: 'stacked',
-	animations: false
 };
 
 export const defaultBarPropsWithSecondayColor: BarSpecProps = {

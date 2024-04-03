@@ -9,11 +9,19 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { DEFAULT_OPACITY_RULE, FILTERED_TABLE, HIGHLIGHT_CONTRAST_RATIO, SELECTED_ITEM } from '@constants';
 import { addHighlightMarkOpacityRules } from '@specBuilder/chartTooltip/chartTooltipUtils';
+import {
+	DEFAULT_OPACITY_RULE,
+	FILTERED_TABLE,
+	HIGHLIGHT_CONTRAST_RATIO,
+	HIGHLIGHTED_ITEM,
+	MARK_ID,
+	SELECTED_ITEM
+} from '@constants';
 import {
 	getColorProductionRule,
 	getLineWidthProductionRule,
+	getMarkHighlightOpacityRules,
 	getOpacityProductionRule,
 	getPointsForVoronoi,
 	getStrokeDashProductionRule,
@@ -21,15 +29,15 @@ import {
 	getVoronoiPath,
 	getXProductionRule,
 	hasInteractiveChildren,
-	hasPopover,
+	hasPopover
 } from '@specBuilder/marks/markUtils';
 import { getScatterPathMarks } from '@specBuilder/scatterPath/scatterPathUtils';
 import { getTrendlineMarks } from '@specBuilder/trendline';
 import { spectrumColors } from '@themes';
 import { produce } from 'immer';
-import { GroupMark, Mark, NumericValueRef, SymbolMark } from 'vega';
 
 import { ScatterSpecProps, SymbolSizeFacet } from '../../types';
+import { GroupMark, Mark, NumericValueRef, PathMark, ProductionRule, SymbolMark } from 'vega';
 
 export const addScatterMarks = produce<Mark[], [ScatterSpecProps]>((marks, props) => {
 	const { name } = props;
@@ -103,9 +111,14 @@ export const getScatterMark = (props: ScatterSpecProps): SymbolMark => {
  * @returns opacity production rule
  */
 export const getOpacity = (props: ScatterSpecProps): ({ test?: string } & NumericValueRef)[] => {
-	const { children, highlightedItem, idKey } = props;
+	const { children, highlightedItem, idKey, animations } = props;
 	if (!hasInteractiveChildren(children) && highlightedItem === undefined) {
 		return [DEFAULT_OPACITY_RULE];
+	}
+	// if animations are enabled, set opacity animation rules for scatter mark
+	//TODO: Add Tests
+	if (animations !== false) {
+		return getMarkHighlightOpacityRules();
 	}
 	// if a point is hovered or selected, all other points should be reduced opacity
 	const fadedValue = 1 / HIGHLIGHT_CONTRAST_RATIO;

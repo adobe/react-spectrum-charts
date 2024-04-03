@@ -89,7 +89,7 @@ const marioKeyTitle: Record<Exclude<MarioDataKey, 'character'>, string> = {
 	miniTurbo: 'Mini-turbo',
 };
 
-const defaultChartProps: ChartProps = { data: characterData, height: 500, width: 500, lineWidths: [1, 2, 3] };
+const defaultChartProps: ChartProps = { animations: false, data: characterData, height: 500, width: 500, lineWidths: [1, 2, 3] };
 
 const getLegendProps = (args: ScatterProps): LegendProps => {
 	const facets = [COLOR_SCALE, LINE_TYPE_SCALE, OPACITY_SCALE, 'size'];

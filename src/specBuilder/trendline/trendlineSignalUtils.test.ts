@@ -28,6 +28,7 @@ describe('getTrendlineSignals()', () => {
 	test('should add voronoi hover signal events if ChartTooltip exists', () => {
 		setTrendlineSignals(signals, {
 			...defaultLineProps,
+			animations: false,
 			children: [createElement(Trendline, {}, createElement(ChartTooltip))],
 		});
 		expect(signals).toHaveLength(defaultSignals.length);

@@ -18,6 +18,8 @@ import {
 	DEFAULT_CATEGORICAL_DIMENSION,
 	DEFAULT_COLOR,
 	DEFAULT_METRIC,
+	DEFAULT_OPACITY_RULE,
+	EASE_OUT_CUBIC,
 	FILTERED_TABLE,
 	MARK_ID,
 	PADDING_RATIO,
@@ -493,6 +495,16 @@ describe('barUtils', () => {
 	describe('getDodgedDimensionEncodings()', () => {
 		test('should return x and width', () => {
 			expect(getDodgedDimensionEncodings(defaultBarProps)).toStrictEqual(defaultDodgedXEncodings);
+		});
+		test('should return x and width with animations', () => {
+			expect(getDodgedDimensionEncodings({...defaultBarProps, animations: true, animateFromZero: true})).toStrictEqual({
+				...defaultDodgedXEncodings, 	
+				y: {
+					scale: 'yLinear',
+					signal: `datum.value * ${EASE_OUT_CUBIC}`,
+				},
+				y2: { scale: 'yLinear', signal: "0" },
+			});
 		});
 	});
 

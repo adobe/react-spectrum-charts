@@ -103,6 +103,7 @@ Basic.args = { data, renderer: 'svg', height: 300 };
 
 const BackgroundColor = bindWithProps(ChartLineStory);
 BackgroundColor.args = {
+	animations: false,
 	backgroundColor: 'gray-50',
 	padding: 32,
 	data,
@@ -110,6 +111,7 @@ BackgroundColor.args = {
 
 const Config = bindWithProps(ChartBarStory);
 Config.args = {
+	animations: false,
 	config: {
 		rect: {
 			strokeWidth: 2,
@@ -120,12 +122,14 @@ Config.args = {
 
 const Locale = bindWithProps(ChartTimeStory);
 Locale.args = {
+	animations: false,
 	locale: 'de-DE',
 	data: workspaceTrendsData,
 };
 
 const Width = bindWithProps(ChartBarStory);
 Width.args = {
+	animations: false,
 	width: '50%',
 	minWidth: 300,
 	maxWidth: 600,

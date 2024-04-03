@@ -27,6 +27,7 @@ export default {
 };
 
 const defaultChartProps: ChartProps = {
+  animations: false,
 	data: basicDonutData,
 	width: 350,
 	height: 350,

@@ -222,6 +222,12 @@ describe('dodgedBarUtils', () => {
 			expect(annotationGroup.marks).toHaveLength(2);
 			expect(annotationGroup.marks?.[0].name).toEqual('bar0_annotationText');
 			expect(annotationGroup.marks?.[1].name).toEqual('bar0_annotationBackground');
+			expect(
+				getDodgedMark({ animations: false,
+					...defaultDodgedProps,
+					children: [...defaultDodgedProps.children, annotationElement],
+				})
+			).toStrictEqual(annotationDodgedMarks);
 		});
 		test('should add tooltip keys if ChartTooltip exists as child', () => {
 			expect(getDodgedMark({ ...defaultDodgedProps, children: [createElement(ChartTooltip)] })).toStrictEqual({

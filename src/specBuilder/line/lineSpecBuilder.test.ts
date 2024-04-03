@@ -22,7 +22,9 @@ import {
 	DEFAULT_METRIC,
 	DEFAULT_OPACITY_RULE,
 	DEFAULT_TIME_DIMENSION,
-	DEFAULT_TRANSFORMED_TIME_DIMENSION, FILTERED_PREVIOUS_TABLE,
+	DEFAULT_TRANSFORMED_TIME_DIMENSION,
+	EASE_OUT_CUBIC,
+	FILTERED_PREVIOUS_TABLE,
 	FILTERED_TABLE,
 	HIGHLIGHTED_ITEM,
 	HIGHLIGHTED_SERIES,
@@ -31,7 +33,7 @@ import {
 	PREVIOUS_TABLE,
 	SERIES_ID,
 	TABLE,
-	TRENDLINE_VALUE
+	TRENDLINE_VALUE,
 } from '@constants';
 import { defaultSignals } from '@specBuilder/specTestUtils';
 import { Data, Spec } from 'vega';
@@ -56,7 +58,7 @@ const defaultLineProps: LineSpecProps = {
 	colorScheme: DEFAULT_COLOR_SCHEME,
 	interactiveMarkName: undefined,
 	popoverMarkName: undefined,
-	animations: false
+	animations: false,
 };
 
 const getMetricRangeElement = (props?: Partial<MetricRangeProps>): MetricRangeElement =>
@@ -367,6 +369,80 @@ const displayPointMarks = [
 	},
 ];
 
+const displayPointWithAnimationMarks = [
+	{
+		name: 'line0_group',
+		type: 'group',
+		from: {
+			facet: {
+				name: 'line0_facet',
+				data: FILTERED_TABLE,
+				groupby: ['series'],
+			},
+		},
+		marks: [
+			{
+				name: 'line0',
+				type: 'line',
+				from: {
+					data: 'line0_facet',
+				},
+				interactive: false,
+				encode: {
+					enter: {
+						y: { scale: 'yLinear', field: 'value' },
+						stroke: { scale: COLOR_SCALE, field: 'series' },
+						strokeDash: { value: [] },
+						strokeOpacity: DEFAULT_OPACITY_RULE,
+						strokeWidth: undefined,
+					},
+					update: {
+						x: { scale: 'xTime', field: DEFAULT_TRANSFORMED_TIME_DIMENSION },
+						y: {
+							scale: 'yLinear',
+							signal: `datum.value * ${EASE_OUT_CUBIC}`,
+						},
+						opacity: [DEFAULT_OPACITY_RULE],
+					},
+				},
+			},
+		],
+	},
+	{
+		name: 'line0_staticPoints',
+		type: 'symbol',
+		from: {
+			data: 'line0_staticPointData',
+		},
+		interactive: false,
+		encode: {
+			enter: {
+				y: {
+					scale: 'yLinear',
+					field: 'value',
+				},
+				fill: {
+					scale: COLOR_SCALE,
+					field: 'series',
+				},
+				stroke: {
+					signal: BACKGROUND_COLOR,
+				},
+			},
+			update: {
+				x: {
+					scale: 'xTime',
+					field: DEFAULT_TRANSFORMED_TIME_DIMENSION,
+				},
+				y: {
+					scale: 'yLinear',
+					signal: `datum.value * ${EASE_OUT_CUBIC}`,
+				},
+			},
+		},
+	},
+];
+
 describe('lineSpecBuilder', () => {
 	describe('addLine()', () => {
 		test('should add line', () => {
@@ -523,6 +599,17 @@ describe('lineSpecBuilder', () => {
 			expect(addLineMarks([], { ...defaultLineProps, staticPoint: 'staticPoint' })).toStrictEqual(
 				displayPointMarks
 			);
+		});
+
+		test('with displayPointMark with animations', () => {
+			expect(
+				addLineMarks([], {
+					...defaultLineProps,
+					animateFromZero: true,
+					animations: true, // defaultLineProps has animations: false, so it's crucial that we add this animations: true AFTER spreading defaultLineProps
+					staticPoint: 'staticPoint',
+				})
+			).toStrictEqual(displayPointWithAnimationMarks);
 		});
 
 		test('with displayPointMark and metric range', () => {

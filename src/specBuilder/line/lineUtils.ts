@@ -72,14 +72,13 @@ export const getPopoverMarkName = (children: MarkChildElement[], name: string): 
 };
 
 export interface LineMarkProps {
+	animateFromZero?: boolean,
+	animations?: boolean;
 	children: MarkChildElement[];
 	color: ColorFacet;
 	colorScheme: ColorScheme;
-	dimension: string;
 	data?: ChartData[],
-	previousData?: ChartData[],
-	animations?: boolean,
-	animateFromZero?: boolean,
+	dimension: string;
 	displayOnHover?: boolean;
 	highlightedItem?: HighlightedItem;
 	idKey: string;
@@ -93,6 +92,7 @@ export interface LineMarkProps {
 	name: string;
 	opacity: OpacityFacet;
 	popoverMarkName?: string;
+	previousData?: ChartData[],
 	scaleType: ScaleType;
 	staticPoint?: string;
 	interactionMode?: InteractionMode;

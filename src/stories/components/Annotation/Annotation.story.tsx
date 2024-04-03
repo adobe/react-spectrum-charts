@@ -46,7 +46,7 @@ const barArgs: BarProps = { dimension: 'browser', order: 'order', color: 'operat
 const BarAnnotationStory: StoryFn<
 	AnnotationProps & { barOrientation?: Orientation; chartHeight?: number; chartWidth?: number }
 > = (args): ReactElement => {
-	const chartProps = useChartProps({ data: data });
+  const chartProps = useChartProps({ animations: false, data: data, width: 600, height: 600 });
 	const { barOrientation = 'vertical', chartHeight = 300, chartWidth = 300, ...annotationProps } = args;
 	return (
 		<Chart {...chartProps} height={chartHeight} width={chartWidth}>

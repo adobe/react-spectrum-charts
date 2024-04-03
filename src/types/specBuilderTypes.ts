@@ -175,6 +175,7 @@ export interface SegmentLabelSpecProps extends PartiallyRequired<SegmentLabelPro
 type LegendPropsWithDefaults = 'hiddenEntries' | 'highlight' | 'isToggleable' | 'position' | 'name';
 
 export interface LegendSpecProps extends PartiallyRequired<LegendProps, LegendPropsWithDefaults> {
+  animations?: boolean;
 	color?: FacetRef<string>;
 	colorScheme: ColorScheme;
 	hiddenSeries: string[];
@@ -188,14 +189,13 @@ export interface LegendSpecProps extends PartiallyRequired<LegendProps, LegendPr
 type LinePropsWithDefaults = 'name' | 'dimension' | 'metric' | 'color' | 'scaleType' | 'lineType' | 'opacity';
 
 export interface LineSpecProps extends PartiallyRequired<LineProps, LinePropsWithDefaults> {
-	children: MarkChildElement[];
-	data?: ChartData[];
-	previousData?: ChartData[];
-	animations?: boolean;
 	animateFromZero?: boolean;
+	animations?: boolean;
+	children: MarkChildElement[];
 	colorScheme: ColorScheme;
 	highlightedItem?: HighlightedItem;
 	idKey: string;
+	data?: ChartData[];
 	index: number;
 	interactiveMarkName: string | undefined;
 	isHighlightedByGroup?: boolean;
@@ -203,6 +203,7 @@ export interface LineSpecProps extends PartiallyRequired<LineProps, LinePropsWit
 	markType: 'line';
 	popoverMarkName: string | undefined;
 	interactionMode?: InteractionMode;
+	previousData?: ChartData[];
 }
 
 type ScatterPropsWithDefaults =

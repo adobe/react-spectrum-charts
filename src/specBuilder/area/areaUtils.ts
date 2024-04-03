@@ -23,8 +23,10 @@ import {
 	getBorderStrokeEncodings,
 	getColorProductionRule,
 	getCursor,
-	getTooltip,
 	isInteractive,
+	getInteractive,
+	getSeriesAnimationOpacityRules,
+	getTooltip
 } from '@specBuilder/marks/markUtils';
 import { AreaMark, NumericValueRef, ProductionRule } from 'vega';
 import { getAnimationMarks } from '@specBuilder/specUtils';
@@ -85,7 +87,9 @@ export const getAreaMark = (areaProps: AreaMarkProps, dataSource: string = `${ar
 };
 
 export function getAreaOpacity({
+  animations,
 	children,
+	opacity,
 	displayOnHover,
 	isHighlightedByGroup,
 	isMetricRange,
@@ -108,6 +112,10 @@ export function getAreaOpacity({
 	// no children means no interactive elements
 	if (!children.length && !highlightedItem) {
 		return [DEFAULT_OPACITY_RULE];
+	}
+	// if animations are enabled, get opacity rules for charts that highlight according to series ID
+	if ( animations !== false ) {
+		return getSeriesAnimationOpacityRules({ value: opacity })
 	}
 
 	const opacityRules: ProductionRule<NumericValueRef> = [];

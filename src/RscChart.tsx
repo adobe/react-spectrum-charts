@@ -247,16 +247,12 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 			return signals;
 		}, [colorScheme, idKey, legendHiddenSeries, legendIsToggleable]);
 
-		return (
-			<>
-				<div
-					id={`${chartId.current}-popover-anchor`}
-					data-testid="rsc-popover-anchor"
-					ref={popoverAnchorRef}
-					style={targetStyle}
-				/>
+		const newSpec = JSON.stringify(spec);
+
+		const chart = useMemo(() => {
+			return (
 				<VegaChart
-					spec={spec}
+					spec={JSON.parse(newSpec)}
 					config={chartConfig}
 					data={data}
 					previousData={previousData ?? []}

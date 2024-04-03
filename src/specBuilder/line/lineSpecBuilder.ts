@@ -29,15 +29,30 @@ import {
 	getMetricRanges,
 } from '@specBuilder/metricRange/metricRangeUtils';
 import { getFacetsFromProps } from '@specBuilder/specUtils';
-import { addTrendlineData, getTrendlineMarks, getTrendlineScales, setTrendlineSignals } from '@specBuilder/trendline';
+import {
+	addTrendlineData,
+	checkTrendlineAnimationScales,
+	getTrendlineMarks,
+	getTrendlineScales,
+	setTrendlineSignals,
+} from '@specBuilder/trendline';
 import { sanitizeMarkChildren, toCamelCase } from '@utils';
 import { produce } from 'immer';
 import { Data, Mark, Scale, Signal, Spec } from 'vega';
 
 import { ChartData, ColorScheme, HighlightedItem, LineProps, LineSpecProps, MarkChildElement } from '../../types';
 import { addTimeTransform, getFilteredTooltipData, getTableData } from '../data/dataUtils';
-import { addContinuousDimensionScale, addFieldToFacetScaleDomain, addMetricScale } from '../scale/scaleSpecBuilder';
-import { addHighlightedItemSignalEvents, addHighlightedSeriesSignalEvents } from '../signal/signalSpecBuilder';
+import {
+	addContinuousDimensionScale,
+	addFieldToFacetScaleDomain,
+	addMetricScale,
+	addRscAnimationScales,
+} from '../scale/scaleSpecBuilder';
+import {
+	addHighlightedItemSignalEvents,
+	addHighlightedSeriesSignalEvents,
+	getRscAnimationSignals,
+} from '../signal/signalSpecBuilder';
 import { getLineHighlightedData, getLineStaticPointData } from './lineDataUtils';
 import { getLineHoverMarks, getLineMark } from './lineMarkUtils';
 import { getLineStaticPoint } from './linePointUtils';
@@ -45,7 +60,7 @@ import { getInteractiveMarkName, getPopoverMarkName } from './lineUtils';
 
 export const addLine = produce<
 	Spec,
-  [LineProps & { colorScheme?: ColorScheme; data: ChartData[]; animations?: boolean; animateFromZero: boolean; highlightedItem?: HighlightedItem; index?: number; idKey: string, previousData: ChartData[] }]
+  [LineProps & { colorScheme?: ColorScheme; data: ChartData[]; animations?: boolean; animateFromZero?: boolean; highlightedItem?: HighlightedItem; index?: number; idKey: string, previousData: ChartData[] }]
 >(
 	(
 		spec,
@@ -120,15 +135,34 @@ export const addSignals = produce<Signal[], [LineSpecProps]>((signals, props) =>
 	setTrendlineSignals(signals, props);
 	signals.push(...getMetricRangeSignals(props));
 
-	if (!hasInteractiveChildren(children, props)) return;
-	addHighlightedItemSignalEvents({ signals, markName: `${name}_voronoi`, idKey, datumOrder: 2, animations, animateFromZero });
+	if (!hasInteractiveChildren(children)) return;
+	// if animations are enabled, push all necessary animation signals. Line charts have voronoi points and have nested datum
+	//TODO: add tests
+	if (animations !== false) {
+		signals.push(...getRscAnimationSignals(name, true));
+	}
+
+	addHighlightedItemSignalEvents({
+		signals,
+		markName: `${name}_voronoi`,
+		idKey,
+		datumOrder: 2,
+		animations,
+		animateFromZero,
+	});
 	addHighlightedSeriesSignalEvents(signals, `${name}_voronoi`, 2);
 	addHoverSignals(signals, props);
 	addTooltipSignals(signals, props);
 });
 
 export const setScales = produce<Scale[], [LineSpecProps]>((scales, props) => {
-	const { metric, metricAxis, dimension, color, lineType, opacity, padding, scaleType, children, name } = props;
+	const { metric, metricAxis, dimension, color, lineType, opacity, padding, scaleType, children, name, animations } = props;
+
+	// if animations are enabled, add all necessary animation scales.
+	//TODO: Add tests
+	if (animations !== false && hasInteractiveChildren(children)) {
+		addRscAnimationScales(scales);
+	}
 	// add dimension scale
 	addContinuousDimensionScale(scales, { scaleType, dimension, padding });
 	// add color to the color domain
@@ -143,6 +177,10 @@ export const setScales = produce<Scale[], [LineSpecProps]>((scales, props) => {
 	if (metricAxis) {
 		addMetricScale(scales, getMetricKeys(metric, children, name), 'y', metricAxis);
 	}
+	// check to see if trend lines have interactive children and if animation scales are already added.
+	//TODO: Add tests
+	checkTrendlineAnimationScales(name, scales, props);
+
 	// add trendline scales
 	scales.push(...getTrendlineScales(props));
 	return scales;

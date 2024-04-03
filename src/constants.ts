@@ -102,6 +102,8 @@ export const DONUT_SUMMARY_MIN_RADIUS = 45;
 // ratio that each opacity is divded by when hovering or highlighting from legend
 export const HIGHLIGHT_CONTRAST_RATIO = 5;
 
+export const RSC_ANIMATION = `rscAnimation`;
+
 // legend tooltips
 export const LEGEND_TOOLTIP_DELAY = 350;
 
