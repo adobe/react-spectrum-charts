@@ -83,10 +83,25 @@ export function getInteractive(children: MarkChildElement[]): boolean {
 /**
  * If a tooltip or popover exists on the mark, then set tooltip to true.
  */
-export function getTooltip(children: MarkChildElement[], name: string, nestedDatum?: boolean): SignalRef | undefined {
+export function getTooltip(
+	{
+		children,
+		name,
+		nestedDatum = false,
+		animations = false,
+		isBar = false
+	}: {
+	children: MarkChildElement[],
+	name: string,
+	nestedDatum?: boolean,
+	animations?: boolean,
+	isBar?: boolean
+}): SignalRef | undefined {
 	// skip annotations
 	if (hasTooltip(children)) {
-		return { signal: `merge(datum${nestedDatum ? '.datum' : ''}, {'rscComponentName': '${name}'})` };
+		const merge = `merge(datum${nestedDatum ? '.datum' : ''}, {'rscComponentName': '${name}'})`;
+		const signal = animations && !isBar? `timerValue === 1 ? ${merge} : null` : merge;
+		return { signal };
 	}
 }
 
@@ -252,9 +267,11 @@ export const getXProductionRule = (scaleType: ScaleType, dimension: string): Num
  * @param children
  * @param dataSource name of the point data source the voronoi is based on
  * @param markName
+ * @param animations whether animations are currently on for the chart
+ * @param animateFromZero whether an animation from zero is occurring (false if a popover was just closed)
  * @returns PathMark
  */
-export const getVoronoiPath = (children: MarkChildElement[], dataSource: string, markName: string): PathMark => ({
+export const getVoronoiPath = (children: MarkChildElement[], dataSource: string, markName: string, animations?: boolean, animateFromZero?: boolean): PathMark => ({
 	name: `${markName}_voronoi`,
 	type: 'path',
 	from: { data: dataSource },
@@ -263,10 +280,15 @@ export const getVoronoiPath = (children: MarkChildElement[], dataSource: string,
 			fill: { value: 'transparent' },
 			stroke: { value: 'transparent' },
 			isVoronoi: { value: true },
-			tooltip: getTooltip(children, markName, true),
+			...(!animations && {
+				tooltip: getTooltip({ children, name: markName, nestedDatum: true })
+			}),
 		},
 		update: {
 			cursor: getCursor(children),
+			...(animations && animateFromZero && {
+				tooltip: getTooltip({ children, name: markName, nestedDatum: true, animations })
+			}),
 		},
 	},
 	transform: [

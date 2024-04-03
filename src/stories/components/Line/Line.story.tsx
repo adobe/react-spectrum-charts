@@ -256,8 +256,8 @@ const SingleLine = bindWithProps(SingleLineStory);
 SingleLine.args = {
 	dimension: 'x',
 	metric: 'y',
-	scaleType: 'linear',
-};
+	scaleType: 'linear'
+}
 
 export {
 	Basic,
@@ -270,5 +270,5 @@ export {
 	Tooltip,
 	WithStaticPoints,
 	WithStaticPointsAndDialogs,
-	SingleLine,
+	SingleLine
 };

@@ -77,20 +77,21 @@ export const getAreaMark = (
 	interactive: getInteractive(children),
 	encode: {
 		enter: {
-			...((animations === false || !animateFromZero) && {
+			...((!animations || !animateFromZero) && {
 				y: { scale: 'yLinear', field: metricStart },
 				y2: { scale: 'yLinear', field: metricEnd },
+				tooltip: getTooltip({children, name}),
 			}),
 			fill: getColorProductionRule(color, colorScheme),
-			tooltip: getTooltip(children, name),
 			...getBorderStrokeEncodings(isStacked, true),
 		},
 		update: {
 			// this has to be in update because when you resize the window that doesn't rebuild the spec
 			// but it may change the x position if it causes the chart to resize
-			...(animations !== false && animateFromZero && {
+			...(animations && animateFromZero && {
 				y: getAnimationMarks(dimension, metricStart, data, previousData),
-				y2: getAnimationMarks(dimension, metricEnd, data, previousData)
+				y2: getAnimationMarks(dimension, metricEnd, data, previousData),
+				tooltip: getTooltip({children, name, animations}),
 			}),
 			x: getX(scaleType, dimension),
 			cursor: getCursor(children),

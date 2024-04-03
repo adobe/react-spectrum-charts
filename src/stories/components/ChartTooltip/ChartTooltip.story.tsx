@@ -73,7 +73,7 @@ const lineData = [
 const LineTooltipStory: StoryFn<typeof ChartTooltip> = (args): ReactElement => {
 	const chartProps = useChartProps({ animations: false, data: lineData, width: 600 });
 	return (
-		<Chart {...chartProps}>
+		<Chart {...chartProps} animations={false}>
 			<Line color="series">
 				<ChartTooltip {...args} />
 			</Line>

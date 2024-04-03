@@ -105,7 +105,7 @@ export const addBar = produce<Spec, [BarProps & { colorScheme?: ColorScheme; ind
 );
 
 export const addSignals = produce<Signal[], [BarSpecProps]>(
-	(signals, { children, name, paddingRatio, paddingOuter: barPaddingOuter, animations }) => {
+	(signals, { children, name, animations, animateFromZero, paddingRatio, paddingOuter: barPaddingOuter }) => {
 		// We use this value to calculate ReferenceLine positions.
 		const { paddingInner } = getBarPadding(paddingRatio, barPaddingOuter);
 		signals.push(getGenericSignal('paddingInner', paddingInner));
@@ -117,7 +117,7 @@ export const addSignals = produce<Signal[], [BarSpecProps]>(
 		if (animations !== false && hasInteractiveChildren(children)) {
 			signals.push(...getRSCAnimationSignals(name, undefined, true));
 		}
-		addHighlightedItemSignalEvents(signals, name);
+		addHighlightedItemSignalEvents({ signals, markName: name, animations, animateFromZero, needsDisable: true});
 	}
 );
 

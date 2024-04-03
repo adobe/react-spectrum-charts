@@ -97,7 +97,7 @@ export const addLine = produce<Spec, [LineProps & {
 			opacity,
 			popoverMarkName: getPopoverMarkName(sanitizedChildren, lineName),
 			scaleType,
-			...props
+			...props,
 		};
 
 		spec.data = addData(spec.data ?? [], lineProps);
@@ -124,7 +124,7 @@ export const addData = produce<Data[], [LineSpecProps]>((data, props) => {
 });
 
 export const addSignals = produce<Signal[], [LineSpecProps]>((signals, props) => {
-	const { children, name, animations } = props;
+	const { children, name, animations, animateFromZero } = props;
 	setTrendlineSignals(signals, props);
 	signals.push(...getMetricRangeSignals(props));
 
@@ -133,7 +133,8 @@ export const addSignals = produce<Signal[], [LineSpecProps]>((signals, props) =>
 	if (animations !== false && !hasSignalByName(signals, RSC_ANIMATION)) {
 		signals.push(...getRSCAnimationSignals(name, true));
 	}
-	addHighlightedItemSignalEvents(signals, `${name}_voronoi`, 2);
+
+	addHighlightedItemSignalEvents({ signals, markName: `${name}_voronoi`, datumOrder: 2, animations, animateFromZero });
 	addHighlightedSeriesSignalEvents(signals, `${name}_voronoi`, 2);
 });
 
@@ -174,10 +175,10 @@ export const addLineMarks = produce<Mark[], [LineSpecProps]>((marks, props) => {
 			facet: {
 				name: `${name}_facet`,
 				data: FILTERED_TABLE,
-				groupby: facets
-			}
+				groupby: facets,
+			},
 		},
-		marks: [getLineMark(props, `${name}_facet`)]
+		marks: [getLineMark(props, `${name}_facet`)],
 	});
 	if (staticPoint) marks.push(getLineStaticPoint(props));
 	marks.push(...getMetricRangeGroupMarks(props));

@@ -87,9 +87,29 @@ export const getGenericSignal = (name: string, value: unknown = null): Signal =>
  * @param signals
  * @param markName
  * @param datumOrder how deep the datum is nested (i.e. 1 becomes datum.rscMarkId, 2 becomes datum.datum.rscMarkId, etc.)
+ * @param animations
+ * @param animateFromZero
+ * @param needsDisable
  */
-export const addHighlightedItemSignalEvents = (signals: Signal[], markName: string, datumOrder = 1) => {
+export const addHighlightedItemSignalEvents = (
+	{
+		signals,
+		markName,
+		datumOrder = 1,
+		animations = false,
+		animateFromZero = false,
+		needsDisable = false
+	}: {
+		signals: Signal[],
+		markName: string,
+		datumOrder?: number,
+		animations?: boolean,
+		animateFromZero?: boolean,
+		needsDisable?: boolean
+	}
+) => {
 	const highlightedItemSignal = signals.find((signal) => signal.name === HIGHLIGHTED_ITEM);
+	const highlightedUpdate = `${new Array(datumOrder).fill('datum.').join('')}${MARK_ID}`;
 	if (highlightedItemSignal) {
 		if (highlightedItemSignal.on === undefined) {
 			highlightedItemSignal.on = [];
@@ -98,7 +118,8 @@ export const addHighlightedItemSignalEvents = (signals: Signal[], markName: stri
 			...[
 				{
 					events: `@${markName}:mouseover`,
-					update: `${new Array(datumOrder).fill('datum.').join('')}${MARK_ID}`,
+					update: animations && animateFromZero && !needsDisable ? `timerValue === 1 ? ${highlightedUpdate} : null`
+						: highlightedUpdate,
 				},
 				{ events: `@${markName}:mouseout`, update: 'null' },
 			]

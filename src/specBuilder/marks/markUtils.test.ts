@@ -155,15 +155,15 @@ describe('hasMetricRange()', () => {
 
 describe('getTooltip()', () => {
 	test('should return undefined if there are not any interactive children', () => {
-		expect(getTooltip([createElement(Annotation)], 'line0')).toBeUndefined();
-		expect(getTooltip([], 'line0')).toBeUndefined();
+		expect(getTooltip({ children: [createElement(Annotation)], name: 'line0' })).toBeUndefined();
+		expect(getTooltip({ children: [], name: 'line0' })).toBeUndefined();
 	});
 	test('should return signal ref if there are interactive children', () => {
-		const rule = getTooltip([createElement(ChartTooltip)], 'line0');
+		const rule = getTooltip({ children: [createElement(ChartTooltip)], name: 'line0' });
 		expect(rule).toHaveProperty('signal');
 	});
 	test('should reference a nested datum if nestedDatum is true', () => {
-		const rule = getTooltip([createElement(ChartTooltip)], 'line0', true);
+		const rule = getTooltip({ children: [createElement(ChartTooltip)], name: 'line0', nestedDatum: true });
 		expect(rule?.signal).toContain('datum.datum');
 	});
 });

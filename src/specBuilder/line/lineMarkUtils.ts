@@ -111,7 +111,7 @@ export const getLineHoverMarks = (
 	dataSource: string,
 	secondaryHighlightedMetric?: string
 ): Mark[] => {
-	const { children, dimension, metric, name, scaleType } = lineProps;
+	const { children, dimension, metric, name, scaleType, animations, animateFromZero } = lineProps;
 	return [
 		// vertical rule shown for the hovered or selected point
 		getHoverRule(dimension, name, scaleType),
@@ -126,7 +126,7 @@ export const getLineHoverMarks = (
 		// points used for the voronoi transform
 		getPointsForVoronoi(dataSource, dimension, metric, name, scaleType),
 		// voronoi transform used to get nearest point paths
-		getVoronoiPath(children, `${name}_pointsForVoronoi`, name),
+		getVoronoiPath(children, `${name}_pointsForVoronoi`, name, animations, animateFromZero),
 	];
 };
 
