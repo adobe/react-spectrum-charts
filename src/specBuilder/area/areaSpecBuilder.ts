@@ -51,7 +51,7 @@ import {
 import { getAreaMark, getX } from './areaUtils';
 import { hasInteractiveChildren } from '@specBuilder/marks/markUtils';
 
-export const addArea = produce<Spec, [AreaProps & { colorScheme?: ColorScheme; index?: number, previousData?: ChartData[], data?: ChartData[], animations?: boolean }]>(
+export const addArea = produce<Spec, [AreaProps & { colorScheme?: ColorScheme; index?: number, previousData?: ChartData[], data?: ChartData[], animations?: boolean, animateFromZero?: boolean }]>(
 	(
 		spec,
 		{
@@ -194,7 +194,7 @@ export const setScales = produce<Scale[], [AreaSpecProps]>(
 );
 
 export const addAreaMarks = produce<Mark[], [AreaSpecProps]>((marks, props) => {
-	const { name, color, colorScheme, metric, dimension, scaleType, opacity, children, animations, data, previousData } = props;
+	const { name, color, colorScheme, metric, dimension, scaleType, opacity, children, animations, animateFromZero, data, previousData } = props;
 	let { metricStart, metricEnd } = props;
 	let isStacked = false;
 	if (!metricEnd || !metricStart) {
@@ -222,6 +222,7 @@ export const addAreaMarks = produce<Mark[], [AreaSpecProps]>((marks, props) => {
 					metricStart,
 					metricEnd,
 					animations,
+					animateFromZero,
 					data,
 					previousData,
 					isStacked,

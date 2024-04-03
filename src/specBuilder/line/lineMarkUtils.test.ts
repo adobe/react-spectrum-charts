@@ -51,7 +51,7 @@ describe('getLineMark()', () => {
 	});
 
 	test('should return line mark with animations', () => {
-		const lineMark = getLineMark({...defaultLineMarkProps, animations: true}, 'line0_facet');
+		const lineMark = getLineMark({...defaultLineMarkProps, animations: true, animateFromZero: true}, 'line0_facet');
 		expect(lineMark).toEqual({
 			name: 'line0',
 			type: 'line',

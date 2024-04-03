@@ -2,7 +2,7 @@ import { ReactElement, useState } from 'react';
 
 import { MARK_ID, TRENDLINE_VALUE } from '@constants';
 import useChartProps from '@hooks/useChartProps';
-import { Annotation, Area, Axis, Bar, Chart, ChartPopover, Legend, Line, Trendline } from '@rsc';
+import { Annotation, Area, Axis, Bar, Chart, ChartPopover, ChartTooltip, Legend, Line, Trendline } from '@rsc';
 import { areaData, newDataArray1WithStaticPoints, workspaceTrendsData } from '@stories/data/data';
 import { StoryFn } from '@storybook/react';
 import { bindWithProps, manipulateData } from '@test-utils';
@@ -28,7 +28,7 @@ interface ChartWithToggleableDataProps extends ToggleableDataProps {
 const ChartWithToggleableData = ({ ChartComponent, initialData, secondaryData }: ChartWithToggleableDataProps) => {
 	const [dataSource, setDataSource] = useState(true);
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
-	const { data, ...remaingProps } = ChartComponent.props;
+	const { data, animations, ...remaingProps } = ChartComponent.props;
 
 	const toggleDataSource = () => {
 		setDataSource(!dataSource);
@@ -38,7 +38,7 @@ const ChartWithToggleableData = ({ ChartComponent, initialData, secondaryData }:
 
 	return (
 		<div>
-			<Chart data={currentData} {...remaingProps} />
+			<Chart data={currentData} animations={true} {...remaingProps} />
 			<Button onPress={toggleDataSource} variant={'primary'}>
 				Toggle Data
 			</Button>
@@ -63,6 +63,7 @@ const AreaStory: StoryFn<ToggleableDataProps> = (args): ReactElement => {
 			ChartComponent={
 				<Chart {...chartProps}>
 					<Area metric="maxTemperature">
+						<ChartTooltip>{dialog}</ChartTooltip>
 						<ChartPopover>{dialog}</ChartPopover>
 					</Area>
 				</Chart>
@@ -79,6 +80,7 @@ const SingleLineStory: StoryFn<ToggleableDataProps> = (args): ReactElement => {
 			ChartComponent={
 				<Chart {...chartProps}>
 					<Line metric="y" dimension="x" scaleType="linear" staticPoint="point">
+						<ChartTooltip>{dialog}</ChartTooltip>
 						<ChartPopover>{dialog}</ChartPopover>
 					</Line>
 				</Chart>
@@ -97,8 +99,10 @@ const BarStory: StoryFn<ToggleableDataProps> = (args): ReactElement => {
 					<Axis position={'bottom'} baseline title="Browser" />
 					<Axis position={'left'} grid title="Downloads" />
 					<Bar dimension={'browser'} metric={'downloads'}>
+						<ChartTooltip>{dialog}</ChartTooltip>
 						<ChartPopover>{dialog}</ChartPopover>
 					</Bar>
+					<Legend highlight />
 				</Chart>
 			}
 			{...args}
@@ -126,6 +130,7 @@ const DodgedBarStory: StoryFn<ToggleableDataProps> = (args): ReactElement => {
 						paddingRatio={0.1}
 					>
 						<Annotation textKey="percentLabel" />
+						<ChartTooltip>{dialog}</ChartTooltip>
 						<ChartPopover>{dialog}</ChartPopover>
 					</Bar>
 					<Legend title="Operating system" highlight />
@@ -149,16 +154,6 @@ const TrellisHorizontalBarStory: StoryFn<ToggleableDataProps> = (args): ReactEle
 
 	const chartProps = useChartProps({ data: [], minWidth: 400, maxWidth: 800, height: 400, colors });
 
-	const dialog = (item: Datum) => {
-		return (
-			<Content>
-				<View>
-					<Text>{item[MARK_ID]}</Text>
-				</View>
-			</Content>
-		);
-	};
-
 	return (
 		<ChartWithToggleableData
 			ChartComponent={
@@ -174,9 +169,10 @@ const TrellisHorizontalBarStory: StoryFn<ToggleableDataProps> = (args): ReactEle
 						orientation="horizontal"
 						trellisOrientation="horizontal"
 					>
+						<ChartTooltip>{dialog}</ChartTooltip>
 						<ChartPopover>{dialog}</ChartPopover>
 					</Bar>
-					<Legend />
+					<Legend highlight />
 				</Chart>
 			}
 			{...args}
@@ -201,6 +197,7 @@ const TrendlineStory: StoryFn<ToggleableDataProps> = (args): ReactElement => {
 							highlightRawPoint={true}
 							dimensionExtent={['domain', 'domain']}
 						>
+							<ChartTooltip>{dialog}</ChartTooltip>
 							<ChartPopover>
 								{(item) => (
 									<>

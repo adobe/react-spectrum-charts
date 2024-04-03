@@ -582,7 +582,7 @@ describe('lineSpecBuilder', () => {
 		});
 
 		test('with displayPointMark with animations', () => {
-			expect(addLineMarks([], { ...defaultLineProps, staticPoint: 'staticPoint', animations: true })).toStrictEqual(
+			expect(addLineMarks([], { ...defaultLineProps, staticPoint: 'staticPoint', animations: true, animateFromZero: true })).toStrictEqual(
 				displayPointWithAnimationMarks
 			);
 		});

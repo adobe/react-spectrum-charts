@@ -60,13 +60,14 @@ export const getPopoverMarkName = (children: MarkChildElement[], name: string): 
 };
 
 export interface LineMarkProps {
-	animations?: boolean;
 	children: MarkChildElement[];
 	color: ColorFacet;
 	colorScheme: ColorScheme;
 	dimension: string;
-	data?: ChartData[];
-	previousData?: ChartData[];
+	data?: ChartData[],
+	previousData?: ChartData[],
+	animations?: boolean,
+	animateFromZero?: boolean,
 	displayOnHover?: boolean;
 	interactiveMarkName?: string; // optional name of the mark that is used for hover and click interactions
 	lineType: LineTypeFacet;

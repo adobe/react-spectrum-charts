@@ -174,7 +174,7 @@ describe('stackedBarUtils', () => {
 		});
 
 		test('should return x and width encodings with animations', () => {
-			expect(getStackedDimensionEncodings({...defaultBarProps, animations: true})).toStrictEqual({
+			expect(getStackedDimensionEncodings({...defaultBarProps, animations: true, animateFromZero: true,})).toStrictEqual({
 				...defaultStackedBarXEncodings,
 				y: {
 					scale: 'yLinear',
@@ -192,7 +192,8 @@ describe('stackedBarUtils', () => {
 				getStackedDimensionEncodings({
 					...defaultBarProps,
 					color: [DEFAULT_COLOR, DEFAULT_SECONDARY_COLOR],
-					animations: true
+					animations: true,
+					animateFromZero: true,
 				})
 			).toStrictEqual({
 				width: { band: 1, scale: 'bar0_position' },

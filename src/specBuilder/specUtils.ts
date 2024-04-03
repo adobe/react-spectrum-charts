@@ -34,14 +34,14 @@ import { Data, Scale, ScaleType, Spec, ValuesData } from 'vega';
 import {
 	COLOR_SCALE,
 	DEFAULT_TRANSFORMED_TIME_DIMENSION,
-	EASE_OUT_CUBIC, 
+	EASE_OUT_CUBIC,
 	FILTERED_PREVIOUS_TABLE,
 	FILTERED_TABLE,
 	LINE_TYPE_SCALE,
 	MARK_ID,
 	OPACITY_SCALE,
 	PREVIOUS_TABLE,
-	TABLE
+	TABLE,
 } from '../constants';
 import { SanitizedSpecProps } from '../types';
 
@@ -249,7 +249,7 @@ export const initializeSpec = (spec: Spec | null = {}, chartProps: Partial<Sanit
 		description,
 		autosize: { type: 'fit', contains: 'padding', resize: true },
 		data: isVegaData(data) ? data : baseData,
-		background: backgroundColor ? getColorValue(backgroundColor, colorScheme) : undefined,
+		background: backgroundColor ? getColorValue(backgroundColor, colorScheme) : undefined
 	};
 
 	return { ...baseSpec, ...(spec || {}) };

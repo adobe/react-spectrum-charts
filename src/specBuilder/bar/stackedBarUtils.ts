@@ -106,7 +106,7 @@ export const getStackedBar = (props: BarSpecProps): RectMark => {
 };
 
 export const getStackedDimensionEncodings = (props: BarSpecProps): RectEncodeEntry => {
-	const { dimension, orientation, previousData, data, animations, metric } = props;
+	const { dimension, orientation, previousData, data, animations, animateFromZero, metric } = props;
 	if (isDodgedAndStacked(props)) {
 		return getDodgedDimensionEncodings(props);
 	}
@@ -116,7 +116,7 @@ export const getStackedDimensionEncodings = (props: BarSpecProps): RectEncodeEnt
 	const endKey = `${startKey}2`;
 
 	return {
-		...(animations && {
+		...(animations && animateFromZero && {
 			[startKey]: getAnimationMarks(dimension, `${metric}0`, data, previousData, scaleKey),
 			[endKey]: getAnimationMarks(dimension, `${metric}1`, data, previousData, scaleKey)
 		}),

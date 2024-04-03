@@ -228,7 +228,7 @@ describe('getMetricRangeMark', () => {
 
 describe('getMetricRangeMarkWithAnimations', () => {
 	test('creates MetricRange mark from basic input', () => {
-		expect(getMetricRangeMark({...defaultLineProps, animations: true}, defaultMetricRangeSpecProps)).toEqual(basicMetricRangeMarksWithAnimatons);
+		expect(getMetricRangeMark({...defaultLineProps, animations: true, animateFromZero: true}, defaultMetricRangeSpecProps)).toEqual(basicMetricRangeMarksWithAnimatons);
 	});
 });
 
@@ -254,7 +254,7 @@ describe('getMetricRangeGroupMarks', () => {
 
 describe('getMetricRangeGroupMarksWithAnimatons', () => {
 	test('creates MetricRange group mark from basic input', () => {
-		expect(getMetricRangeGroupMarks({...defaultLineProps, animations: true})).toEqual([
+		expect(getMetricRangeGroupMarks({...defaultLineProps, animations: true, animateFromZero: true })).toEqual([
 			{
 				name: 'line0MetricRange0_group',
 				type: 'group',

@@ -588,7 +588,7 @@ describe('barUtils', () => {
 			expect(getDodgedDimensionEncodings(defaultBarProps)).toStrictEqual(defaultDodgedXEncodings);
 		});
 		test('should return x and width with animations', () => {
-			expect(getDodgedDimensionEncodings({...defaultBarProps, animations: true})).toStrictEqual({
+			expect(getDodgedDimensionEncodings({...defaultBarProps, animations: true, animateFromZero: true})).toStrictEqual({
 				...defaultDodgedXEncodings, 	
 				y: {
 					scale: 'yLinear',
