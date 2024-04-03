@@ -62,7 +62,12 @@ const historicalCompareData = [
 
 const defaultChartProps: ChartProps = { animations: false, data: workspaceTrendsData, minWidth: 400, maxWidth: 800, height: 400 };
 
-const singleLineChartProps: ChartProps = { data: newDataArray1, minWidth: 400, maxWidth: 800, height: 400 };
+const singleLineChartProps: ChartProps = {
+	data: newDataArray1,
+	minWidth: 400,
+	maxWidth: 800,
+	height: 40,
+};
 
 const SingleLineStory: StoryFn<typeof Line> = (args): ReactElement => {
 	const chartProps = useChartProps(singleLineChartProps);
@@ -71,7 +76,7 @@ const SingleLineStory: StoryFn<typeof Line> = (args): ReactElement => {
 			<Line {...args} />
 		</Chart>
 	);
-}
+};
 
 const BasicLineStory: StoryFn<typeof Line> = (args): ReactElement => {
 	const chartProps = useChartProps(defaultChartProps);
@@ -251,8 +256,8 @@ const SingleLine = bindWithProps(SingleLineStory);
 SingleLine.args = {
 	dimension: 'x',
 	metric: 'y',
-	scaleType: 'linear'
-}
+	scaleType: 'linear',
+};
 
 export {
 	Basic,
@@ -265,5 +270,5 @@ export {
 	Tooltip,
 	WithStaticPoints,
 	WithStaticPointsAndDialogs,
-	SingleLine
+	SingleLine,
 };

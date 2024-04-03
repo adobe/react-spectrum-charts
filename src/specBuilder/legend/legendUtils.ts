@@ -189,9 +189,9 @@ export const getOpacityEncoding = ({
 		return [
 			{
 				test: `${highlightSignalName} && datum.value !== ${highlightSignalName}`,
-				value: 1 / HIGHLIGHT_CONTRAST_RATIO,
+				value: 1 / HIGHLIGHT_CONTRAST_RATIO
 			},
-			DEFAULT_OPACITY_RULE,
+			DEFAULT_OPACITY_RULE
 		];
 	}
 	return undefined;
@@ -205,43 +205,43 @@ export const getSymbolEncodings = (facets: Facet[], props: LegendSpecProps): Leg
 			facets,
 			facetType: SYMBOL_SHAPE_SCALE,
 			customValue: symbolShape,
-			name,
+			name
 		}),
 		size: getSymbolFacetEncoding<number>({ facets, facetType: SYMBOL_SIZE_SCALE, name }),
 		strokeDash: getSymbolFacetEncoding<number[]>({
 			facets,
 			facetType: LINE_TYPE_SCALE,
 			customValue: lineType,
-			name,
+			name
 		}),
 		strokeWidth: getSymbolFacetEncoding<number>({
 			facets,
 			facetType: LINE_WIDTH_SCALE,
 			customValue: lineWidth,
-			name,
-		}),
+			name
+		})
 	};
 	const update: SymbolEncodeEntry = {
 		fill: [
 			...getHiddenSeriesColorRule(props, 'gray-300'),
 			getSymbolFacetEncoding<Color>({ facets, facetType: COLOR_SCALE, customValue: color, name }) ?? {
-				value: spectrumColors[colorScheme]['categorical-100'],
-			},
+				value: spectrumColors[colorScheme]['categorical-100']
+			}
 		],
 		stroke: [
 			...getHiddenSeriesColorRule(props, 'gray-300'),
 			getSymbolFacetEncoding<Color>({ facets, facetType: COLOR_SCALE, customValue: color, name }) ?? {
-				value: spectrumColors[colorScheme]['categorical-100'],
-			},
-		],
+				value: spectrumColors[colorScheme]['categorical-100']
+			}
+		]
 	};
 	// Remove undefined values
 	const symbols: GuideEncodeEntry<SymbolEncodeEntry> = JSON.parse(JSON.stringify({ enter, update }));
 	return {
 		entries: {
-			name: `${name}_legendEntry`,
+			name: `${name}_legendEntry`
 		},
-		symbols,
+		symbols
 	};
 };
 
@@ -315,10 +315,10 @@ export const getShowHideEncodings = (props: LegendSpecProps): LegendEncode => {
 				update: {
 					fill: [
 						...getHiddenSeriesColorRule(props, 'gray-500'),
-						{ value: getColorValue('gray-700', colorScheme) },
-					],
-				},
-			},
+						{ value: getColorValue('gray-700', colorScheme) }
+					]
+				}
+			}
 		};
 	}
 
@@ -330,9 +330,9 @@ export const getShowHideEncodings = (props: LegendSpecProps): LegendEncode => {
 				interactive: true,
 				enter: {
 					fill: { value: 'transparent' },
-					cursor: { value: 'pointer' },
-				},
-			},
+					cursor: { value: 'pointer' }
+				}
+			}
 		};
 	}
 	return mergeLegendEncodings([hiddenSeriesEncode, clickEncode]);

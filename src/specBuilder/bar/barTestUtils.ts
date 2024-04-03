@@ -47,7 +47,6 @@ export const defaultBarProps: BarSpecProps = {
 	trellisPadding: TRELLIS_PADDING,
 	type: 'stacked',
 	orientation: 'vertical',
-	animations: false
 };
 
 export const defaultBarPropsWithSecondayColor: BarSpecProps = {
