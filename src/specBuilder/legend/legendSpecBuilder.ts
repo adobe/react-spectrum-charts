@@ -130,7 +130,7 @@ export const addLegend = produce<
 			spec.signals = addSignals(spec.signals ?? [], legendProps);
 			spec.marks = addMarks(spec.marks ?? [], legendProps);
 			// add the legend
-			legends.push(getCategoricalLegend(ordinalFacets, legendProps));
+			legends.push(getCategoricalLegend(ordinalFacets, legendProps, spec.marks));
 		}
 
 		// continuous legends cannot be combined with any other legends
@@ -198,14 +198,14 @@ export const formatFacetRefsWithPresets = (
  * @param props
  * @returns
  */
-const getCategoricalLegend = (facets: Facet[], props: LegendSpecProps): Legend => {
+const getCategoricalLegend = (facets: Facet[], props: LegendSpecProps, marks: Mark[]): Legend => {
 	const { name, position, title, labelLimit } = props;
 	return {
 		fill: `${name}Entries`,
 		direction: ['top', 'bottom'].includes(position) ? 'horizontal' : 'vertical',
 		orient: position,
 		title,
-		encode: getEncodings(facets, props),
+		encode: getEncodings(facets, props, marks),
 		columns: getColumns(position),
 		labelLimit,
 	};
