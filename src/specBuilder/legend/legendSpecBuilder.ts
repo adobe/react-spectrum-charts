@@ -130,6 +130,10 @@ export const addLegend = produce<
 			spec.signals = addSignals(spec.signals ?? [], legendProps);
 			spec.marks = addMarks(spec.marks ?? [], legendProps);
 			// add the legend
+			/*
+			  marks had to be pushed to getCategoricalLegend to check which marks are being update as
+			  the legend opacity rules change depending on chart type.
+			 */
 			legends.push(getCategoricalLegend(ordinalFacets, legendProps, spec.marks));
 		}
 
@@ -243,12 +247,13 @@ const getLegendLayout = ({ position, title }: LegendSpecProps): Partial<Legend> 
  * Adds a new scale that is used to create the legend entries
  */
 const addScales = produce<Scale[], [LegendSpecProps]>((scales, { color, lineType, opacity, symbolShape, animations }) => {
-	// it is possible to define fields to facet the data off of on the legend
-	// if these fields are not already defined on the scales, we need to add them
-	//TODO: add doc/comment/etc
-	if (animations !== false && !hasScaleByName(scales, 'rscAnimationCurve')) {
+	// if animations are enabled, add all necessary animation scales.
+	//TODO: add tests
+	if (animations !== false) {
 		addRSCAnimationScales(scales);
 	}
+	// it is possible to define fields to facet the data off of on the legend
+	// if these fields are not already defined on the scales, we need to add them
 	addFieldToFacetScaleDomain(scales, COLOR_SCALE, color);
 	addFieldToFacetScaleDomain(scales, LINE_TYPE_SCALE, lineType);
 	addFieldToFacetScaleDomain(scales, OPACITY_SCALE, opacity);
@@ -291,8 +296,11 @@ export const addData = produce<Data[], [LegendSpecProps & { facets: string[] }]>
 
 export const addSignals = produce<Signal[], [LegendSpecProps]>(
 	(signals, { hiddenSeries, highlight, isToggleable, legendLabels, name, animations }) => {
-		//TODO: add documentation
+		// if animations are enabled, add all necessary animation signals.
+		//TODO: add tests
 		if (animations !== false) {
+			// we don't want to add the signals if they already exist.
+			// Since they come as a package, we only need to check if one animation signal is present.
 			if (!hasSignalByName(signals, RSC_ANIMATION)) {
 				signals.push(...getRSCAnimationSignals(name));
 			}

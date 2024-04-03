@@ -150,7 +150,14 @@ export const addHighlightedSeriesSignalEvents = (signals: Signal[], markName: st
 		);
 	}
 };
-//TODO: Add documentation
+/**
+ * get all signals required for opacity animations
+ * @param name
+ * @param nestedDatum
+ * @param isNull
+ * @returns Signal[]
+ */
+//TODO: Add tests
 export const getRSCAnimationSignals = (name: string, nestedDatum?: boolean, isNull?: boolean): Signal[] => {
 	return [
 		getRSCAnimation(),
@@ -160,27 +167,43 @@ export const getRSCAnimationSignals = (name: string, nestedDatum?: boolean, isNu
 		getRSCHighlightedSeriesPrevSignal(name, nestedDatum, isNull),
 	]
 }
-//TODO: Add documentation
+/**
+ * gets the animations direction signal events for legends
+ * @param name
+ */
+//TODO: Add tests
 export const getRSCLegendColorAnimationDirection = (name: string): ({ update: string; events: string })[] => {
 	return [
 		{ events: `@${name}_legendEntry:mouseover`, update: '1' },
 		{ events: `@${name}_legendEntry:mouseout`, update: '-1' }
 	];
 };
-//TODO: Add documentation
+/**
+ * gets the animations direction signal events for trend lines
+ * @param name
+ */
+//TODO: Add tests
 export const getRSCTrendlineColorAnimationDirection = (name: string): ({ events: string, update: string })[] => {
 	return [
 		{ events: `@${name}_voronoi:mouseover`, update: '1' },
 		{ events: `@${name}_voronoi:mouseout`, update: '-1' }
 	]
 }
-//TODO: Add documentation
+/**
+ * gets the previous highlighted item events for legends
+ * @param name
+ */
+//TODO: Add tests
 export const getRSCLegendHighlightedItemPrev = (name: string): ({ events: string, update: string})[] => {
 	return [
 		{ events: `@${name}_legendEntry:mouseover`, update: 'null'}
 	]
 }
-//TODO: add documentation
+/**
+ * gets the animation signal for Opacity animations
+ * @returns Signal
+ */
+//TODO: add tests
 const getRSCAnimation = (): Signal => {
 	return {
 		name: RSC_ANIMATION,
@@ -191,7 +214,12 @@ const getRSCAnimation = (): Signal => {
 		}]
 	};
 };
-//TODO: add documentation
+/**
+ * gets the Color animation direction signal for Opacity animations
+ * @param name
+ * @returns Signal
+ */
+//TODO: add tests
 const getRSCColorAnimationDirection = (name: string): Signal => {
 	return {
 		name: 'rscColorAnimationDirection',
@@ -202,7 +230,11 @@ const getRSCColorAnimationDirection = (name: string): Signal => {
 		]
 	};
 };
-//TODO: add documentation
+/**
+ * gets the color animation signal for Opacity animations
+ * @returns Signal
+ */
+//TODO: add tests
 const getRSCColorAnimation = (): Signal => {
 	return {
 		name: 'rscColorAnimation',
@@ -216,7 +248,14 @@ const getRSCColorAnimation = (): Signal => {
 		]
 	};
 };
-//TODO add documentation
+/**
+ * Gets the previous highlighted item signal for opacity animations. This signal is important for easing out
+ * when there is no hovering over the chart.
+ * @param name
+ * @param nestedDatum
+ * @returns Signal
+ */
+//TODO add test
 const getRSCHighlightedItemPrevSignal = (name: string, nestedDatum?: boolean): Signal => {
 	return {
 		name: `${HIGHLIGHTED_ITEM}_prev`,
@@ -226,7 +265,15 @@ const getRSCHighlightedItemPrevSignal = (name: string, nestedDatum?: boolean): S
 		]
 	}
 }
-//TODO: add doc/test/etc
+/**
+ * Gets the previous highlighted Series signal. Important for when there is no hovering over
+ * legends with highlighting enabled.
+ * @param name
+ * @param nestedDatum
+ * @param isNull
+ * @returns Signal
+ */
+//TODO: add tests
 const getRSCHighlightedSeriesPrevSignal = (name: string, nestedDatum?: boolean, isNull?: boolean): Signal => {
 	return {
 		name: `${HIGHLIGHTED_SERIES}_prev`,
@@ -240,6 +287,12 @@ const getRSCHighlightedSeriesPrevSignal = (name: string, nestedDatum?: boolean, 
 	}
 }
 
+/**
+ * Concatenates the name if the mark has voronoi marks
+ * @param name
+ * @returns string
+ */
+//TODO: add tests
 const concatName = (name: string): string => {
 	if (name == 'line0' || name == 'scatter0' || name.includes('Trendline')) {
 		name = name.concat('_voronoi')

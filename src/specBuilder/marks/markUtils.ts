@@ -28,7 +28,6 @@ import {
 	SYMBOL_SIZE_SCALE,
 	SERIES_ID,
 	HIGHLIGHTED_SERIES,
-	SELECTED_ITEM,
 	HIGHLIGHTED_ITEM,
 	MARK_ID
 } from '@constants';
@@ -301,16 +300,24 @@ export const getVoronoiPath = (children: MarkChildElement[], dataSource: string,
 		},
 	],
 });
-
-//TODO: Add documentation
+/**
+ * the signal that triggers the opacity ease in and out
+ * @param opacityValue
+ * @returns { signal: string}
+ */
+//TODO: Add tests
 export const getHighlightOpacityAnimationValue = (opacityValue: { signal: string } | { value: number }): { signal: string }  => {
 	if ('signal' in opacityValue) {
 		return { signal: `max(1-rscColorAnimation, ${opacityValue.signal} / ${HIGHLIGHT_CONTRAST_RATIO})` }
 	}
 	return { signal: `max(1-rscColorAnimation, ${opacityValue.value} / ${HIGHLIGHT_CONTRAST_RATIO})`}
 };
-
-//TODO: Add documentation/tests/etc
+/**
+ * animation opacity rules for charts that highlight from series ID
+ * @param opacityValue
+ * @returns ProductionRule<NumericValueRef>
+ */
+//TODO: Add tests
 export const getSeriesAnimationOpacityRules = (
 	opacityValue?: { signal: string } | { value: number },
 ): ProductionRule<NumericValueRef> => {
@@ -319,7 +326,7 @@ export const getSeriesAnimationOpacityRules = (
 	}
 	return [
 		{
-			...getHighlightedSeriesTest(),
+			test: `${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES} !== datum.${SERIES_ID}`,
 			...getHighlightOpacityAnimationValue(opacityValue)
 		},
 		{
@@ -329,11 +336,15 @@ export const getSeriesAnimationOpacityRules = (
 		DEFAULT_OPACITY_RULE
 	]
 };
-//TODO: add comments/tests/etc
+/**
+ * animation opacity rules for charts that highlight from mark ID
+ * @returns ProductionRule<NumericValueRef>
+ */
+//TODO: add tests
 export const getMarkHighlightOpacityRules = (): ProductionRule<NumericValueRef> => {
 	return [
 		{
-			...getMarkHighlightedItemTest(),
+			test: `${HIGHLIGHTED_ITEM} && ${HIGHLIGHTED_ITEM} !== datum.${MARK_ID}`,
 			...getHighlightOpacityAnimationValue(DEFAULT_OPACITY_RULE)
 		},
 		{
@@ -342,17 +353,22 @@ export const getMarkHighlightOpacityRules = (): ProductionRule<NumericValueRef> 
 		}
 	]
 }
-//TODO: add comments/tests/etc
+/**
+ * Opacity animation rules for marks when the chart marks are highlighted with the mark ID and legends are present
+ * with highlight enabled
+ * @returns ProductionRule<NumericValueRef>
+ */
+//TODO: add tests
 export const getMarkWithLegendHighlightOpacityRules = (): ProductionRule<NumericValueRef> => {
 	return [
 		{
 			// If there is no current selection, but there is a hover and the hover is NOT for the current bar
-			...getMarkHighlightedItemTest(),
+			test: `${HIGHLIGHTED_ITEM} && ${HIGHLIGHTED_ITEM} !== datum.${MARK_ID}`,
 			...getHighlightOpacityAnimationValue(DEFAULT_OPACITY_RULE)
 		},
 		{
 			// If there is a highlighted series and the highlighted series is NOT the series of the current bar
-			...getHighlightedSeriesTest(),
+			test: `${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES} !== datum.${SERIES_ID}`,
 			...getHighlightOpacityAnimationValue(DEFAULT_OPACITY_RULE)
 		},
 		{
@@ -368,11 +384,15 @@ export const getMarkWithLegendHighlightOpacityRules = (): ProductionRule<Numeric
 		{ value: 1 }
 	];
 }
-//TODO: add comments/tests/etc
+/**
+ * Opacity animation rules for the legend symbols and labels when marks are highlighted by series ID
+ * @returns  ProductionRule<NumericValueRef>
+ */
+//TODO: add tests
 export const getLegendSeriesOpacityRules = (): ProductionRule<NumericValueRef> => {
 	return [
 		{
-			...getLegendHighlightedSeriesTest(),
+			test: `${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES} !== datum.value`,
 			...getHighlightOpacityAnimationValue(DEFAULT_OPACITY_RULE)
 		},
 		{
@@ -382,12 +402,16 @@ export const getLegendSeriesOpacityRules = (): ProductionRule<NumericValueRef> =
 		DEFAULT_OPACITY_RULE
 	]
 }
-//TODO: add comments/tests/etc
+/**
+ * Opacity animation rules for legend symbols and labels if the chart marks are highlighted by mark ID
+ * @returns ProductionRule<NumericValueRef>
+ */
+//TODO: add tests
 export const getLegendMarkOpacityRules = (): ProductionRule<NumericValueRef> => {
 	return [
 		{
 			// If there is a highlighted series, and it is NOT equal to the current series
-			...getLegendHighlightedSeriesTest(),
+			test: `${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES} !== datum.value`,
 			...getHighlightOpacityAnimationValue(DEFAULT_OPACITY_RULE)
 		},
 		{
@@ -397,24 +421,6 @@ export const getLegendMarkOpacityRules = (): ProductionRule<NumericValueRef> => 
 		},
 		DEFAULT_OPACITY_RULE
 	]
-}
-//TODO: add comments/tests/etc
-export const getHighlightedSeriesTest = (): { test: string } => {
-	return {
-		test: `${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES} !== datum.${SERIES_ID}`
-	}
-}
-//TODO: add comments/tests/etc
-const getLegendHighlightedSeriesTest = (): { test: string } => {
-	return {
-		test: `${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES} !== datum.value`
-	}
-}
-//TODO: add comments/tests/etc
-export const getMarkHighlightedItemTest = (): { test: string } => {
-	return {
-		test: `${HIGHLIGHTED_ITEM} && ${HIGHLIGHTED_ITEM} !== datum.${MARK_ID}`
-	}
-}
+};
 
 

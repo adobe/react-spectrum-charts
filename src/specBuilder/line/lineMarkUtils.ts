@@ -9,11 +9,10 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { DEFAULT_OPACITY_RULE, SELECTED_SERIES, SERIES_ID } from '@constants';
+import { DEFAULT_OPACITY_RULE, HIGHLIGHTED_SERIES, SELECTED_SERIES, SERIES_ID } from '@constants';
 import {
 	getColorProductionRule,
 	getHighlightOpacityValue,
-	getHighlightedSeriesTest,
 	getLineWidthProductionRule,
 	getOpacityProductionRule,
 	getStrokeDashProductionRule,
@@ -76,14 +75,14 @@ export const getLineOpacity = ({
 }: LineMarkProps): ProductionRule<NumericValueRef> => {
 	if (!interactiveMarkName || displayOnHover) return [DEFAULT_OPACITY_RULE];
 	const strokeOpacityRules: ProductionRule<NumericValueRef> = [];
-
-	//TODO: add comments/tests/etc
+	//if animations are enabled, set opacity rules for line mark.
+	//TODO: add tests
 	if (animations !== false) {
 		return getSeriesAnimationOpacityRules();
 	}
 	// add a rule that will lower the opacity of the line if there is a hovered series, but this line is not the one hovered
 	strokeOpacityRules.push({
-		...getHighlightedSeriesTest(),
+		test: `${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES} !== datum.${SERIES_ID}`,
 		...getHighlightOpacityValue(DEFAULT_OPACITY_RULE),
 	});
 

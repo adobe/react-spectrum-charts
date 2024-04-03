@@ -27,7 +27,6 @@ import {
 	getColorProductionRule,
 	getCursor,
 	getHighlightOpacityValue,
-	getMarkHighlightedItemTest,
 	getMarkHighlightOpacityRules,
 	getOpacityProductionRule,
 	getStrokeDashProductionRule,
@@ -406,8 +405,8 @@ export const getBarOpacity = ({ children, animations }: BarSpecProps): Productio
 	if (!hasInteractiveChildren(children)) {
 		return [DEFAULT_OPACITY_RULE];
 	}
-
-	//TODO: Add documentation
+	// if animations are enabled, get opacity rules for charts that use the mark ID as the highlighted item.
+	//TODO: Add tests
 	if ( animations !== false ) {
 		return getMarkHighlightOpacityRules();
 	}
@@ -429,8 +428,8 @@ export const getBarOpacity = ({ children, animations }: BarSpecProps): Productio
 	}
 	return [
 		{
-			...getMarkHighlightedItemTest(),
-			...getHighlightOpacityValue(),
+			test: `${HIGHLIGHTED_ITEM} && ${HIGHLIGHTED_ITEM} !== datum.${MARK_ID}`,
+			...getHighlightOpacityValue(DEFAULT_OPACITY_RULE),
 		},
 		DEFAULT_OPACITY_RULE,
 	];

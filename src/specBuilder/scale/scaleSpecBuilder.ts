@@ -216,15 +216,24 @@ const isScaleMultiFieldsRef = (
 	return Boolean(domain && !Array.isArray(domain) && 'data' in domain && 'fields' in domain);
 };
 
-//TODO: Add documentation
+/**
+ * push all Opacity animation scales
+ * @param scales
+ */
+//TODO: Add tests
 export const addRSCAnimationScales = (scales: Scale[]) => {
+	//if the scales are already present, no need to add them.
 	if (!hasScaleByName(scales, 'rscAnimationCurve')) {
 		scales.push(getRSCAnimationCurve());
 		scales.push(getRSCAnimationCurveInverse());
 	}
 }
 
-//TODO: Add documentation
+/**
+ * The ease-in curves for opacity animations
+ * @returns Scale
+ */
+//TODO: Add tests
 const getRSCAnimationCurve = (): Scale => {
 	return {
 		name: 'rscAnimationCurve',
@@ -235,7 +244,11 @@ const getRSCAnimationCurve = (): Scale => {
 	}
 }
 
-//TODO: Add documentation
+/**
+ * The ease-out curves for opacity animations
+ * @returns Scale
+ */
+//TODO: Add tests
 const getRSCAnimationCurveInverse = (): Scale => {
 	return {
 			name: 'rscAnimationCurveInverse',
@@ -246,7 +259,13 @@ const getRSCAnimationCurveInverse = (): Scale => {
 	}
 }
 
-//TODO: Add documentation
+/**
+ * checks if a particular scale is in the spec.
+ * @param scales
+ * @param name
+ * @returns boolean
+ */
+//TODO: Add tests
 export const hasScaleByName = (scales: Scale[], name: string) => {
 	return scales.some((scale) => scale.name == name);
 }

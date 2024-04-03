@@ -12,14 +12,13 @@
 import {
 	DEFAULT_OPACITY_RULE,
 	FILTERED_TABLE,
-	HIGHLIGHT_CONTRAST_RATIO,
+	HIGHLIGHT_CONTRAST_RATIO, HIGHLIGHTED_ITEM,
 	MARK_ID,
-	SELECTED_ITEM,
+	SELECTED_ITEM
 } from '@constants';
 import {
 	getColorProductionRule,
 	getLineWidthProductionRule,
-	getMarkHighlightedItemTest,
 	getMarkHighlightOpacityRules,
 	getOpacityProductionRule,
 	getStrokeDashProductionRule,
@@ -110,6 +109,8 @@ export const getOpacity = ({ animations, children }: ScatterSpecProps): Producti
 	if (!hasInteractiveChildren(children)) {
 		return [DEFAULT_OPACITY_RULE];
 	}
+	// if animations are enabled, set opacity animation rules for scatter mark
+	//TODO: Add Tests
 	if (animations !== false) {
 		return getMarkHighlightOpacityRules();
 	}
@@ -118,7 +119,7 @@ export const getOpacity = ({ animations, children }: ScatterSpecProps): Producti
 
 	const rules = [
 		{
-			...getMarkHighlightedItemTest(),
+			test: `${HIGHLIGHTED_ITEM} && ${HIGHLIGHTED_ITEM} !== datum.${MARK_ID}`,
 			value: fadedValue,
 		},
 	];

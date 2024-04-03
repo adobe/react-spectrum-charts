@@ -124,8 +124,8 @@ export function getFillOpacity(
 	if (!children.length) {
 		return [{ value: opacity }];
 	}
-
-	//TODO: add comments/tests/etc
+	// if animations are enabled, get opacity rules for charts that highlight according to series ID
+	//TODO: add tests
 	if ( animations !== false ) {
 		return getSeriesAnimationOpacityRules({ value: opacity })
 	}

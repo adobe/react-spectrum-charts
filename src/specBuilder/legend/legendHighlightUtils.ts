@@ -41,11 +41,14 @@ export const setHoverOpacityForMarks = (marks: Mark[], animations?: boolean, key
 			if (!Array.isArray(update.opacity)) {
 				update.opacity = [];
 			}
-			//TODO: add comment/doc/etc
+			// if animations are enabled, update the opacity rules for the mark.
+			//TODO: add tests
 			if (animations !== false) {
+				// bar and scatter have different rules due to using the mark ID for highlighting
 				if (mark.name == 'bar0' || mark.name == 'scatter0') {
 					update.opacity = getMarkWithLegendHighlightOpacityRules();
 				} else {
+					// the mark rules for charts using the series ID for highlighting (line, area).
 					update.opacity = getSeriesAnimationOpacityRules();
 				}
 			} else {

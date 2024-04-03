@@ -126,7 +126,8 @@ export const addData = produce<Data[], [ScatterSpecProps]>((data, props) => {
  */
 export const addSignals = produce<Signal[], [ScatterSpecProps]>((signals, props) => {
 	const { animations, children, name } = props;
-	// Opacity animation signals TODO: add tests
+	// if animations are enabled, push opacity animation signals to spec
+	// TODO: add tests
 	if (animations !== false) {
 		signals.push(...getRSCAnimationSignals(name, true, true));
 	}
@@ -145,7 +146,8 @@ export const addSignals = produce<Signal[], [ScatterSpecProps]>((signals, props)
  */
 export const setScales = produce<Scale[], [ScatterSpecProps]>((scales, props) => {
 	const { animations, color, colorScaleType, dimension, dimensionScaleType, lineType, lineWidth, metric, opacity, size } = props;
-	// add Opacity animation scales //TODO: add tests
+	// if animations are enabled, add Opacity animation scales to spec
+	// TODO: add tests
 	if (animations !== false) {
 		addRSCAnimationScales(scales);
 	}

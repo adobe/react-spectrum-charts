@@ -22,7 +22,6 @@ import { barSeriesData } from '@stories/components/Bar/data';
 
 export default {
 	title: 'RSC/Animations/Opacity',
-	component: Animation
 };
 
 const defaultChartProps: ChartProps = { data: [], minWidth: 400, maxWidth: 800, height: 400 };

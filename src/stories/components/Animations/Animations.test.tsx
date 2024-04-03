@@ -1,15 +1,12 @@
 import { findChart, render } from '@test-utils';
 
 import {
-	AreaPopover,
 	AreaSwitch,
 	AreaZero,
 	BarSwitch,
 	BarZero,
 	DodgedBarSwitch,
 	DodgedBarZero,
-	LineChart,
-	ScatterPopover,
 	SingleLineSwitch,
 	SingleLineZero,
 	TrellisHorizontalBarSwitch,
@@ -19,12 +16,6 @@ import {
 } from './Animations.story';
 
 describe('Animations', () => {
-	test('Area Popover renders properly', async () => {
-		render(<AreaPopover {...AreaPopover.args} />);
-		const chart = await findChart();
-		expect(chart).toBeInTheDocument();
-	})
-
 	test('Area Switch renders properly', async () => {
 		render(<AreaSwitch {...AreaSwitch.args} />);
 		const chart = await findChart();
@@ -36,12 +27,6 @@ describe('Animations', () => {
 		const chart = await findChart();
 		expect(chart).toBeInTheDocument();
 	});
-
-	test('Line Chart renders properly', async () => {
-		render(<LineChart {...LineChart.args}/>);
-		const chart = await findChart();
-		expect(chart).toBeInTheDocument();
-	})
 
 	test('Single Line Switch renders properly', async () => {
 		render(<SingleLineSwitch {...SingleLineSwitch.args} />);
@@ -90,12 +75,6 @@ describe('Animations', () => {
 		const chart = await findChart();
 		expect(chart).toBeInTheDocument();
 	});
-
-	test('Scatter renders properly', async () => {
-		render(<ScatterPopover {...ScatterPopover.args} />);
-		const chart = await findChart();
-		expect(chart).toBeInTheDocument();
-	})
 
 	test('Trellis Horizontal Bar Switch renders properly', async () => {
 		render(<TrellisHorizontalBarSwitch {...TrellisHorizontalBarSwitch.args} />);

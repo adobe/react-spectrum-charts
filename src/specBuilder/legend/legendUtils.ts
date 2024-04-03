@@ -178,11 +178,19 @@ export const getOpacityEncoding = ({
 	const highlightSignalName = keys ? `${name}_highlight` : HIGHLIGHTED_SERIES;
 	// only add symbol opacity if highlight is true or highlightedSeries is defined
 	if (highlight || highlightedSeries) {
-		//TODO: Add documentation
+
+		//If animations are enabled, set legend animation opacity rules
+		//TODO: Add tests
 		if (animations !== false) {
+			/*
+			this is the check for chart type and is the reason the spec.marks had to be pushed to
+			getCategoricalLegend in legendSpecBuilder
+			 */
 			if (marks.some((mark) => mark.name == 'line0_group' || mark.name == 'area0_group')) {
+				// get opacity rules for legend if the chart relies on Series ID for highlighting
 				return getLegendSeriesOpacityRules();
 			} else {
+				// get opacity rules for legend if the chart relies on Mark ID for highlighting
 				return getLegendMarkOpacityRules();
 			}
 		}

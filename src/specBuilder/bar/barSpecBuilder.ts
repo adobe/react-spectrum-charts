@@ -113,7 +113,9 @@ export const addSignals = produce<Signal[], [BarSpecProps]>(
 		if (!children.length) {
 			return;
 		}
-		//TODO: add comments
+
+		// if animations are enabled, push all necessary animation signals.
+		//TODO: add tests
 		if (animations !== false && hasInteractiveChildren(children)) {
 			signals.push(...getRSCAnimationSignals(name, undefined, true));
 		}
@@ -224,8 +226,8 @@ export const getDodgeGroupTransform = ({ color, lineType, name, opacity, type }:
 
 export const addScales = produce<Scale[], [BarSpecProps]>((scales, props) => {
 	const { color, lineType, opacity, orientation, animations, children } = props;
-
-	//TODO add comments
+	// if animations are enabled and the chart has interactive children, get all animation scales.
+	//TODO add tests
 	if (animations !== false && hasInteractiveChildren(children)) {
 		addRSCAnimationScales(scales)
 	}

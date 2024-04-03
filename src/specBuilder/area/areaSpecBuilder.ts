@@ -163,7 +163,9 @@ export const addData = produce<Data[], [AreaSpecProps]>(
 
 export const addSignals = produce<Signal[], [AreaSpecProps]>((signals, { children, name, animations }) => {
 	if (!children.length) return;
-	//TODO: add comments/tests/etc
+
+	// If animations is enabled and has hover functionality, add all the necessary animation signals.
+	// TODO: add tests
 	if (animations !== false && hasInteractiveChildren(children)) {
 		signals.push(...getRSCAnimationSignals(name));
 	}
@@ -175,7 +177,8 @@ export const addSignals = produce<Signal[], [AreaSpecProps]>((signals, { childre
 
 export const setScales = produce<Scale[], [AreaSpecProps]>(
 	(scales, { metric, metricEnd, metricStart, dimension, color, scaleType, padding, animations, children }) => {
-		//TODO: add comments/tests/etc
+		// If animations is enabled and has hover functionality, add all the necessary animation scales.
+		//TODO: add tests
 		if (animations !== false && hasInteractiveChildren(children)) {
 			addRSCAnimationScales(scales);
 		}

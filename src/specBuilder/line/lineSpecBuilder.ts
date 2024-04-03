@@ -129,8 +129,9 @@ export const addSignals = produce<Signal[], [LineSpecProps]>((signals, props) =>
 	signals.push(...getMetricRangeSignals(props));
 
 	if (!hasInteractiveChildren(children)) return;
-	//TODO: Add comments/documentation/tests
-	if (animations !== false && !hasSignalByName(signals, RSC_ANIMATION)) {
+	// if animations are enabled, push all necessary animation signals. Line charts have voronoi points and have nested datum
+	//TODO: add tests
+	if (animations !== false) {
 		signals.push(...getRSCAnimationSignals(name, true));
 	}
 
@@ -140,7 +141,8 @@ export const addSignals = produce<Signal[], [LineSpecProps]>((signals, props) =>
 
 export const setScales = produce<Scale[], [LineSpecProps]>((scales, props) => {
 	const { metric, dimension, color, lineType, opacity, padding, scaleType, children, name, animations } = props;
-	//TODO: Add comments/documentation/tests
+	// if animations are enabled, add all necessary animation scales.
+	//TODO: Add tests
 	if (animations !== false && hasInteractiveChildren(children)) {
 		addRSCAnimationScales(scales);
 	}
@@ -154,7 +156,8 @@ export const setScales = produce<Scale[], [LineSpecProps]>((scales, props) => {
 	addFieldToFacetScaleDomain(scales, OPACITY_SCALE, opacity);
 	// find the linear scale and add our fields to it
 	addMetricScale(scales, getMetricKeys(metric, children, name));
-	//TODO: Add comments/docs/tests/etc
+	// check to see if trend lines have interactive children and if animation scales are already added.
+	//TODO: Add tests
 	checkTrendlineAnimationScales(name, scales, props);
 
 	// add trendline scales
