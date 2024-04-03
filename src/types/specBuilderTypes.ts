@@ -43,7 +43,7 @@ import {
 	SegmentLabelProps,
 	TrendlineAnnotationProps,
 	TrendlineChildElement,
-	TrendlineProps
+	TrendlineProps,
 } from './Chart';
 
 type PartiallyRequired<T, K extends keyof T> = Omit<T, K> & Required<Pick<T, K>>;
@@ -189,10 +189,10 @@ type LinePropsWithDefaults = 'name' | 'dimension' | 'metric' | 'color' | 'scaleT
 
 export interface LineSpecProps extends PartiallyRequired<LineProps, LinePropsWithDefaults> {
 	children: MarkChildElement[];
-	data?: ChartData[],
-	previousData?: ChartData[],
-	animations?: boolean,
-	animateFromZero?: boolean,
+	data?: ChartData[];
+	previousData?: ChartData[];
+	animations?: boolean;
+	animateFromZero?: boolean;
 	colorScheme: ColorScheme;
 	highlightedItem?: HighlightedItem;
 	idKey: string;
@@ -218,10 +218,13 @@ type ScatterPropsWithDefaults =
 	| 'size';
 
 export interface ScatterSpecProps extends PartiallyRequired<ScatterProps, ScatterPropsWithDefaults> {
+	animations?: boolean;
 	children: MarkChildElement[];
 	colorScheme: ColorScheme;
 	highlightedItem?: HighlightedItem;
 	idKey: string;
+	data?: ChartData[]; // currently unused, but in place for future Scatter animations work
+	previousData?: ChartData[]; // currently unused, but in place for future Scatter animations work
 	index: number;
 	interactiveMarkName: string | undefined;
 	markType: 'scatter';
