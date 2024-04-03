@@ -21,7 +21,9 @@ import {
 	DEFAULT_METRIC,
 	DEFAULT_OPACITY_RULE,
 	DEFAULT_TIME_DIMENSION,
-	DEFAULT_TRANSFORMED_TIME_DIMENSION, EASE_OUT_CUBIC, FILTERED_PREVIOUS_TABLE,
+	DEFAULT_TRANSFORMED_TIME_DIMENSION,
+	EASE_OUT_CUBIC,
+	FILTERED_PREVIOUS_TABLE,
 	FILTERED_TABLE,
 	HIGHLIGHTED_ITEM,
 	HIGHLIGHTED_SERIES,
@@ -582,7 +584,7 @@ describe('lineSpecBuilder', () => {
 		});
 
 		test('with displayPointMark with animations', () => {
-			expect(addLineMarks([], { ...defaultLineProps, staticPoint: 'staticPoint', animations: true, animateFromZero: true })).toStrictEqual(
+			expect(addLineMarks([], { animateFromZero: true, animations: true, ...defaultLineProps, staticPoint: 'staticPoint' })).toStrictEqual(
 				displayPointWithAnimationMarks
 			);
 		});

@@ -1102,3 +1102,16 @@ export const areaData = [
 	{ datetime: 1668322800000, maxTemperature: 60, minTemperature: 45, series: 'Add Fallout' },
 	{ datetime: 1668409200000, maxTemperature: 64, minTemperature: 43, series: 'Add Fallout' },
 ];
+
+export const areaData3 = [
+	{ datetime: 1667890800000, maxTemperature: 100, minTemperature: 47, series: 'Add Fallout' },
+	{ datetime: 1667977200000, maxTemperature: 81, minTemperature: 48, series: 'Add Fallout' },
+	{ datetime: 1668063600000, maxTemperature: 15, minTemperature: 48, series: 'Add Fallout' },
+	{ datetime: 1668150000000, maxTemperature: 31, minTemperature: 20, series: 'Add Fallout' },
+	{ datetime: 1668236400000, maxTemperature: 49, minTemperature: 18, series: 'Add Fallout' },
+	{ datetime: 1668322800000, maxTemperature: 90, minTemperature: 45, series: 'Add Fallout' },
+	{ datetime: 1668409200000, maxTemperature: 104, minTemperature: 43, series: 'Add Fallout' },
+	{ datetime: 1668520200000, maxTemperature: 90, minTemperature: 30, series: 'Add Fallout' },
+];
+
+
