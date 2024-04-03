@@ -10,7 +10,7 @@
  * governing permissions and limitations under the License.
  */
 import { ChartTooltip } from '@components/ChartTooltip';
-import { EASE_OUT_CUBIC, TRENDLINE_VALUE } from '@constants';
+import { EASE_OUT_CUBIC, PREVIOUS_PREFIX, TRENDLINE_VALUE } from '@constants';
 import { getLineHoverMarks, getLineOpacity } from '@specBuilder/line/lineMarkUtils';
 import { LineMarkProps } from '@specBuilder/line/lineUtils';
 import {
@@ -333,9 +333,9 @@ const getLineYAnimationMarks = (
 	const animationFromPreviousDataMark = {
 		scale,
 		signal: `
-			(data('previous_${name}_${tableSuffix}')
+			(data('${PREVIOUS_PREFIX}${name}_${tableSuffix}')
 			[indexof(
-				pluck(data('previous_${name}_${tableSuffix}'), '${trendlineDimension}'),
+				pluck(data('${PREVIOUS_PREFIX}${name}_${tableSuffix}'), '${trendlineDimension}'),
 				datum.${trendlineDimension}
 			)].${TRENDLINE_VALUE} * (1 - ${easingFunction})
 			) + (datum.${TRENDLINE_VALUE} * ${easingFunction})
