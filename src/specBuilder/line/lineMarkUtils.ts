@@ -139,7 +139,7 @@ export const getLineHoverMarks = (
 	dataSource: string,
 	secondaryHighlightedMetric?: string
 ): Mark[] => {
-	const { children, dimension, name, scaleType } = lineProps;
+	const { children, dimension, metric, name, scaleType, animations, animateFromZero } = lineProps;
 	return [
 		// vertical rule shown for the hovered or selected point
 		getHoverRule(dimension, name, scaleType),

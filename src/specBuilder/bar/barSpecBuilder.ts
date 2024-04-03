@@ -118,15 +118,16 @@ export const addBar = produce<
 	}
 );
 
-export const addSignals = produce<Signal[], [BarSpecProps]>((signals, props) => {
-	const { children, idKey, name, paddingRatio, paddingOuter: barPaddingOuter } = props;
-	// We use this value to calculate ReferenceLine positions.
-	const { paddingInner } = getBarPadding(paddingRatio, barPaddingOuter);
-	signals.push(getGenericValueSignal('paddingInner', paddingInner));
+export const addSignals = produce<Signal[], [BarSpecProps]>(
+	(signals, { children, name, animations, animateFromZero, paddingRatio, paddingOuter: barPaddingOuter }) => {
+		// We use this value to calculate ReferenceLine positions.
+		const { paddingInner } = getBarPadding(paddingRatio, barPaddingOuter);
+		signals.push(getGenericValueSignal('paddingInner', paddingInner));
 
-	if (!children.length) {
-		return;
-	}
+		if (!children.length) {
+			return;
+		}
+	addHighlightedItemSignalEvents({ signals, markName: name, animations, animateFromZero, needsDisable: true});
 	addHighlightedItemSignalEvents(signals, name, idKey, 1, getTooltipProps(children)?.excludeDataKeys);
 	addTooltipSignals(signals, props);
 	setTrendlineSignals(signals, props);

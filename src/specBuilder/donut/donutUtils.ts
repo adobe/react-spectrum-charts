@@ -30,6 +30,7 @@ export const getArcMark = (props: DonutSpecProps): ArcMark => {
 				y: { signal: 'height / 2' },
 				tooltip: getTooltip(children, name),
 				stroke: { value: getColorValue('static-blue', colorScheme) },
+				tooltip: getTooltip({ children, name }),
 			},
 			update: {
 				startAngle: { field: `${name}_startAngle` },

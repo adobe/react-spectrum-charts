@@ -89,6 +89,7 @@ export default function useSpec({
 		colorScheme,
 		previousData,
 		animations,
+		animateFromZero,
 		description,
 		hiddenSeries,
 		highlightedItem,

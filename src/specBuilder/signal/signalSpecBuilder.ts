@@ -112,14 +112,30 @@ export const getGenericUpdateSignal = (name: string, update: string): Signal => 
  * @param signals
  * @param markName
  * @param datumOrder how deep the datum is nested (i.e. 1 becomes datum.rscMarkId, 2 becomes datum.datum.rscMarkId, etc.)
+ * @param animations
+ * @param animateFromZero
+ * @param needsDisable
  * @param excludeDataKey data items with a truthy value for this key will be excluded from the signal
  */
 export const addHighlightedItemSignalEvents = (
-	signals: Signal[],
-	markName: string,
-	idKey: string,
-	datumOrder = 1,
-	excludeDataKeys?: string[]
+	{
+		signals,
+		markName,
+		idKey,
+		excludeDataKeys,
+		datumOrder = 1,
+		animations = false,
+		animateFromZero = false,
+	}: {
+		signals: Signal[],
+		markName: string,
+		idKey: string,
+		excludeDataKeys?: string[],
+		datumOrder?: number,
+		animations?: boolean,
+		animateFromZero?: boolean,
+		needsDisable?: boolean
+	}
 ) => {
 	const highlightedItemSignal = signals.find((signal) => signal.name === HIGHLIGHTED_ITEM);
 	if (highlightedItemSignal) {
@@ -128,6 +144,7 @@ export const addHighlightedItemSignalEvents = (
 		}
 		const datum = new Array(datumOrder).fill('datum.').join('');
 
+    const update = animations && animateFromZero ? `timerValue === 1 ? ${datum}${idKey} : null` : `${datum}${idKey}`;
 		const excludeDataKeysCondition = excludeDataKeys
 			?.map((excludeDataKey) => `${datum}${excludeDataKey}`)
 			.join(' || ');
@@ -136,8 +153,8 @@ export const addHighlightedItemSignalEvents = (
 				{
 					events: `@${markName}:mouseover`,
 					update: excludeDataKeys?.length
-						? `(${excludeDataKeysCondition}) ? null : ${datum}${idKey}`
-						: `${datum}${idKey}`,
+						? `(${excludeDataKeysCondition}) ? null : ${update}`
+						: update,
 				},
 				{ events: `@${markName}:mouseout`, update: 'null' },
 			]

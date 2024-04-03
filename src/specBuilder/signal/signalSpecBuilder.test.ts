@@ -32,6 +32,8 @@ describe('signalSpecBuilder', () => {
 		test('should add on events', () => {
 			addHighlightedItemSignalEvents(signals, 'line0', MARK_ID);
 			expect(signals).toHaveLength(defaultSignals.length);
+			addHighlightedItemSignalEvents({ signals, markName: 'line0' });
+			expect(signals).toHaveLength(4);
 			expect(signals[0]).toHaveProperty('name', HIGHLIGHTED_ITEM);
 			expect(signals[0].on).toHaveLength(2);
 			expect(signals[0]?.on?.[0]).toHaveProperty('events', '@line0:mouseover');
@@ -45,6 +47,7 @@ describe('signalSpecBuilder', () => {
 			const signals = JSON.parse(JSON.stringify([defaultHighlightedSeriesSignal]));
 			const signalsCopy = JSON.parse(JSON.stringify(signals));
 			addHighlightedItemSignalEvents(signals, 'line0', MARK_ID);
+			addHighlightedItemSignalEvents({ signals, markName: 'line0' });
 			expect(signals).toEqual(signalsCopy);
 		});
 		test('should include update condition if excludeDataKey is provided', () => {

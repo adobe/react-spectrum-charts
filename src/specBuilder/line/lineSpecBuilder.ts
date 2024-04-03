@@ -116,12 +116,12 @@ export const addData = produce<Data[], [LineSpecProps]>((data, props) => {
 });
 
 export const addSignals = produce<Signal[], [LineSpecProps]>((signals, props) => {
-	const { children, idKey, name } = props;
+	const { children, name, animations, idKey, animateFromZero } = props;
 	setTrendlineSignals(signals, props);
 	signals.push(...getMetricRangeSignals(props));
 
-	if (!isInteractive(children, props)) return;
-	addHighlightedItemSignalEvents(signals, `${name}_voronoi`, idKey, 2);
+	if (!hasInteractiveChildren(children, props)) return;
+	addHighlightedItemSignalEvents({ signals, markName: `${name}_voronoi`, idKey, datumOrder: 2, animations, animateFromZero });
 	addHighlightedSeriesSignalEvents(signals, `${name}_voronoi`, 2);
 	addHoverSignals(signals, props);
 	addTooltipSignals(signals, props);
