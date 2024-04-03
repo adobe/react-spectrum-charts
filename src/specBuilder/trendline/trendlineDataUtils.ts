@@ -70,6 +70,74 @@ export const addTrendlineData = (data: Data[], markProps: TrendlineParentProps) 
 };
 
 /**
+ * Helper function for getTrendlineData
+ * @param data
+ * @param markProps
+ * @param trendlineProps
+ * @param facets
+ */
+const pushRegressionTrendlineData = (
+	data: SourceData[],
+	markProps: TrendlineParentProps,
+	trendlineProps: TrendlineSpecProps,
+	facets: string[]
+) => {
+	data.push(...getRegressionTrendlineData(markProps, trendlineProps, facets, trendlineProps.name, FILTERED_TABLE));
+	if (markProps.animations !== false) {
+		data.push(
+			...getRegressionTrendlineData(
+				markProps,
+				trendlineProps,
+				facets,
+				`${PREVIOUS_PREFIX}${trendlineProps.name}`,
+				FILTERED_PREVIOUS_TABLE
+			)
+		);
+	}
+};
+
+/**
+ * Helper function for getTrendlineData
+ * @param data
+ * @param markProps
+ * @param trendlineProps
+ * @param facets
+ */
+const pushAggregateTrendlineData = (
+	data: SourceData[],
+	markProps: TrendlineParentProps,
+	trendlineProps: TrendlineSpecProps,
+	facets: string[]
+) => {
+	data.push(...getAggregateTrendlineData(markProps, trendlineProps, facets));
+};
+
+/**
+ * Helper function for getTrendlineData
+ * @param data
+ * @param markProps
+ * @param trendlineProps
+ * @param facets
+ */
+const pushWindowTrendlineData = (
+	data: SourceData[],
+	markProps: TrendlineParentProps,
+	trendlineProps: TrendlineSpecProps
+) => {
+	data.push(getWindowTrendlineData(markProps, trendlineProps, trendlineProps.name, FILTERED_TABLE));
+	if (markProps.animations !== false) {
+		data.push(
+			getWindowTrendlineData(
+				markProps,
+				trendlineProps,
+				`${PREVIOUS_PREFIX}${trendlineProps.name}`,
+				FILTERED_PREVIOUS_TABLE
+			)
+		);
+	}
+};
+
+/**
  * Gets all the data sources and transforms for all trendlines
  * @param data
  * @param markProps
@@ -90,35 +158,13 @@ export const getTrendlineData = (markProps: TrendlineParentProps): SourceData[] 
 		const { facets } = getFacetsFromProps({ color, lineType });
 
 		if (isRegressionMethod(method)) {
-			data.push(
-				...getRegressionTrendlineData(markProps, trendlineProps, facets, trendlineProps.name, FILTERED_TABLE)
-			);
-			if (markProps.animations !== false) {
-				data.push(
-					...getRegressionTrendlineData(
-						markProps,
-						trendlineProps,
-						facets,
-						`${PREVIOUS_PREFIX}${trendlineProps.name}`,
-						FILTERED_PREVIOUS_TABLE
-					)
-				);
-			}
+			pushRegressionTrendlineData(data, markProps, trendlineProps, facets);
 		} else if (isAggregateMethod(method)) {
-			data.push(...getAggregateTrendlineData(markProps, trendlineProps, facets));
+			pushAggregateTrendlineData(data, markProps, trendlineProps, facets);
 		} else if (isWindowMethod(method)) {
-			data.push(getWindowTrendlineData(markProps, trendlineProps, trendlineProps.name, FILTERED_TABLE));
-			if (markProps.animations !== false) {
-				data.push(
-					getWindowTrendlineData(
-						markProps,
-						trendlineProps,
-						`${PREVIOUS_PREFIX}${trendlineProps.name}`,
-						FILTERED_PREVIOUS_TABLE
-					)
-				);
-			}
+			pushWindowTrendlineData(data, markProps, trendlineProps);
 		}
+
 		if (displayOnHover) {
 			data.push(getTrendlineDisplayOnHoverData(name, method));
 		}
