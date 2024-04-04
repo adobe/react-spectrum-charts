@@ -25,7 +25,7 @@ import {
 } from '@constants';
 import {
 	getColorProductionRule,
-	getCursor, getHighlightOpacityAnimationValue,
+	getCursor,
 	getHighlightOpacityValue,
 	getMarkHighlightOpacityRules,
 	getOpacityProductionRule,
