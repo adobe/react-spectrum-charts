@@ -22,6 +22,7 @@ const Trendline: FC<TrendlineProps> = ({
 	dimensionExtent,
 	dimensionRange = [null, null],
 	displayOnHover = false,
+	excludeDataKey,
 	highlightRawPoint = false,
 	lineType = 'dashed',
 	lineWidth = 'M',

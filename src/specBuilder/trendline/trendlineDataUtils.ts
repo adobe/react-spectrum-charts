@@ -121,6 +121,7 @@ export const getAggregateTrendlineData = (
 		name: `${name}_highResolutionData`,
 		source: FILTERED_TABLE,
 		transform: [
+			...(trendlineProps.excludeDataKey ? [getExcludeDataKeyFilter(trendlineProps.excludeDataKey)] : []),
 			...dimensionRangeTransforms,
 			...getTrendlineStatisticalTransforms(markProps, trendlineProps, true),
 			getSeriesIdTransform(facets),
@@ -174,6 +175,7 @@ export const getRegressionTrendlineData = (
 		name: `${name}_highResolutionData`,
 		source: FILTERED_TABLE,
 		transform: [
+			...(trendlineProps.excludeDataKey ? [getExcludeDataKeyFilter(trendlineProps.excludeDataKey)] : []),
 			...dimensionRangeTransforms,
 			...getTrendlineStatisticalTransforms(markProps, trendlineProps, true),
 			getSeriesIdTransform(facets),
@@ -215,6 +217,7 @@ const getWindowTrendlineData = (markProps: TrendlineParentProps, trendlineProps:
 	name: `${trendlineProps.name}_data`,
 	source: FILTERED_TABLE,
 	transform: [
+		...(trendlineProps.excludeDataKey ? [getExcludeDataKeyFilter(trendlineProps.excludeDataKey)] : []),
 		...getTrendlineStatisticalTransforms(markProps, trendlineProps, false),
 		...getTrendlineDimensionRangeTransforms(markProps.dimension, trendlineProps.dimensionRange),
 	],
@@ -320,3 +323,8 @@ export const getTrendlineDisplayOnHoverData = (trendlineName: string, method: Tr
 		],
 	};
 };
+
+const getExcludeDataKeyFilter = (excludeDataKey: string): Transforms => ({
+	type: 'filter',
+	expr: `!datum.${excludeDataKey}`,
+});
