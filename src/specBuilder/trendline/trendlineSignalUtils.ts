@@ -9,30 +9,30 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { RSC_ANIMATION } from '@constants';
+import { TrendlineSpecProps } from '@rsc';
 import { hasPopover, hasTooltip } from '@specBuilder/marks/markUtils';
 import {
 	addHighlightedItemSignalEvents,
 	addHighlightedSeriesSignalEvents,
-	getRSCAnimationSignals,
-	getRSCTrendlineColorAnimationDirection,
-	hasSignalByName
+	getRscAnimationSignals,
+	getRscTrendlineColorAnimationDirection,
+	hasSignalByName,
 } from '@specBuilder/signal/signalSpecBuilder';
 import { Signal } from 'vega';
 
 import { TrendlineParentProps, getTrendlines } from './trendlineUtils';
-import { TrendlineSpecProps } from '@rsc';
-import { RSC_ANIMATION } from '@constants';
 
 export const setTrendlineSignals = (signals: Signal[], markProps: TrendlineParentProps): void => {
 	const { name: markName, animations } = markProps;
 	const trendlines = getTrendlines(markProps);
-
-	//TODO: Add comments/documentation/tests
+	// if animations are enabled, add necessary opacity animation signals
+	//TODO: Add tests
 	if (animations) {
 		checkRSCTrendlineAnimationSignals(markName, signals, trendlines);
 	}
 	if (trendlines.some((trendline) => hasTooltip(trendline.children))) {
-		addHighlightedItemSignalEvents(signals, `${markName}Trendline_voronoi`, 2);
+		addHighlightedItemSignalEvents({ signals, markName: `${markName}Trendline_voronoi`, datumOrder: 2 });
 		addHighlightedSeriesSignalEvents(signals, `${markName}Trendline_voronoi`, 2);
 	}
 
@@ -40,10 +40,21 @@ export const setTrendlineSignals = (signals: Signal[], markProps: TrendlineParen
 		addHighlightedSeriesSignalEvents(signals, `${markName}_voronoi`, 2);
 	}
 };
-//TODO: Add comments/documentation/tests
-const checkRSCTrendlineAnimationSignals = (name: string, signals: Signal[], trendlines: TrendlineSpecProps[] ) => {
-	if (!hasSignalByName(signals, RSC_ANIMATION) && (trendlines.some((trendline) => hasTooltip(trendline.children) || hasPopover(trendline.children)))) {
-		signals.push(...getRSCAnimationSignals(`${name}Trendline`, true));
-		signals.find((sig) => sig.name == 'rscColorAnimationDirection')?.on?.push(...getRSCTrendlineColorAnimationDirection(`${name}Trendline`))
+/**
+ * add signals and signal events to spec if signals are not present already and if trend line has highlighted enabled.
+ * @param name
+ * @param signals
+ * @param trendlines
+ */
+//TODO: Add tests
+const checkRSCTrendlineAnimationSignals = (name: string, signals: Signal[], trendlines: TrendlineSpecProps[]) => {
+	if (
+		!hasSignalByName(signals, RSC_ANIMATION) &&
+		trendlines.some((trendline) => hasTooltip(trendline.children) || hasPopover(trendline.children))
+	) {
+		signals.push(...getRscAnimationSignals(`${name}Trendline`, true));
+		signals
+			.find((sig) => sig.name == 'rscColorAnimationDirection')
+			?.on?.push(...getRscTrendlineColorAnimationDirection(`${name}Trendline`));
 	}
-}
+};

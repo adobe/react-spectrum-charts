@@ -27,6 +27,7 @@ import {
 	getColorProductionRule,
 	getCursor, getHighlightOpacityAnimationValue,
 	getHighlightOpacityValue,
+	getMarkHighlightOpacityRules,
 	getOpacityProductionRule,
 	getStrokeDashProductionRule,
 	getTooltip,
@@ -385,10 +386,10 @@ export const getBaseBarEnterEncodings = (props: BarSpecProps): EncodeEntry => ({
 	...getCornerRadiusEncodings(props),
 });
 
-export const getBarEnterEncodings = ({ children, color, colorScheme, name, opacity }: BarSpecProps): EncodeEntry => ({
+export const getBarEnterEncodings = ({ children, color, colorScheme, name, opacity, animations }: BarSpecProps): EncodeEntry => ({
 	fill: getColorProductionRule(color, colorScheme),
 	fillOpacity: getOpacityProductionRule(opacity),
-	tooltip: getTooltip(children, name),
+	tooltip: getTooltip({children, name, animations, isBar: true}),
 });
 
 export const getBarUpdateEncodings = (props: BarSpecProps): EncodeEntry => ({
@@ -404,9 +405,14 @@ export const getBarOpacity = ({ children, animations }: BarSpecProps): Productio
 	if (!hasInteractiveChildren(children)) {
 		return [DEFAULT_OPACITY_RULE];
 	}
+	// if animations are enabled, get opacity rules for charts that use the mark ID as the highlighted item.
+	//TODO: Add tests
+	if (animations) {
+		return getMarkHighlightOpacityRules();
+	}
 
 	//TODO: Add documentation
-	if ( animations ) {
+	if (animations) {
 		return getAnimationsFillOpacity();
 	}
 
@@ -428,7 +434,7 @@ export const getBarOpacity = ({ children, animations }: BarSpecProps): Productio
 	return [
 		{
 			test: `${HIGHLIGHTED_ITEM} && ${HIGHLIGHTED_ITEM} !== datum.${MARK_ID}`,
-			...getHighlightOpacityValue(),
+			...getHighlightOpacityValue(DEFAULT_OPACITY_RULE),
 		},
 		DEFAULT_OPACITY_RULE,
 	];

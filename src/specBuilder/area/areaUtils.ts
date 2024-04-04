@@ -22,7 +22,7 @@ import {
 	getColorProductionRule,
 	getCursor,
 	getInteractive,
-	getOpacityAnimationRules,
+	getSeriesAnimationOpacityRules,
 	getTooltip
 } from '@specBuilder/marks/markUtils';
 import { ChartData, ColorFacet, ColorScheme, MarkChildElement, ScaleType } from 'types';
@@ -80,9 +80,9 @@ export const getAreaMark = (
 			...((!animations || !animateFromZero) && {
 				y: { scale: 'yLinear', field: metricStart },
 				y2: { scale: 'yLinear', field: metricEnd },
+				tooltip: getTooltip({children, name}),
 			}),
 			fill: getColorProductionRule(color, colorScheme),
-			tooltip: getTooltip(children, name),
 			...getBorderStrokeEncodings(isStacked, true),
 		},
 		update: {
@@ -90,7 +90,8 @@ export const getAreaMark = (
 			// but it may change the x position if it causes the chart to resize
 			...(animations && animateFromZero && {
 				y: getAnimationMarks(dimension, metricStart, data, previousData),
-				y2: getAnimationMarks(dimension, metricEnd, data, previousData)
+				y2: getAnimationMarks(dimension, metricEnd, data, previousData),
+				tooltip: getTooltip({children, name, animations}),
 			}),
 			x: getX(scaleType, dimension),
 			cursor: getCursor(children),
@@ -123,10 +124,10 @@ export function getFillOpacity(
 	if (!children.length) {
 		return [{ value: opacity }];
 	}
-
-	//TODO: add comments/tests/etc
-	if ( animations ) {
-		return getOpacityAnimationRules({ value: opacity })
+	// if animations are enabled, get opacity rules for charts that highlight according to series ID
+	//TODO: add tests
+	if (animations) {
+		return getSeriesAnimationOpacityRules({ value: opacity })
 	}
 
 	// if an area is hovered or selected, all other areas should have half opacity

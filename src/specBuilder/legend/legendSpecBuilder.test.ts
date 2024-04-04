@@ -144,7 +144,7 @@ const defaultHighlightSeriesSignal = {
 describe('addLegend()', () => {
 	describe('no initial legend', () => {
 		test('no props, should setup default legend', () => {
-			expect(addLegend(defaultSpec, {})).toStrictEqual({
+			expect(addLegend(defaultSpec, {animations: false,})).toStrictEqual({
 				...defaultSpec,
 				data: [defaultLegendAggregateData],
 				scales: [...(defaultSpec.scales || []), defaultLegendEntriesScale],
@@ -154,7 +154,7 @@ describe('addLegend()', () => {
 
 		test('descriptions, should add encoding', () => {
 			expect(
-				addLegend(defaultSpec, { descriptions: [{ seriesName: 'test', description: 'test' }] })
+				addLegend(defaultSpec, { animations: false, descriptions: [{ seriesName: 'test', description: 'test' }] })
 			).toStrictEqual({
 				...defaultSpec,
 				data: [defaultLegendAggregateData],
@@ -164,7 +164,7 @@ describe('addLegend()', () => {
 		});
 
 		test('highlight, should add encoding', () => {
-			expect(addLegend(defaultSpec, { highlight: true })).toStrictEqual({
+			expect(addLegend(defaultSpec, { animations: false, highlight: true })).toStrictEqual({
 				...defaultSpec,
 				data: [defaultLegendAggregateData],
 				scales: [...(defaultSpec.scales || []), defaultLegendEntriesScale],
@@ -179,7 +179,7 @@ describe('addLegend()', () => {
 		});
 
 		test('position, should set the orientation correctly', () => {
-			expect(addLegend(defaultSpec, { position: 'left' }).legends).toStrictEqual([
+			expect(addLegend(defaultSpec, { animations: false, position: 'left' }).legends).toStrictEqual([
 				{ ...defaultLegend, orient: 'left', direction: 'vertical', columns: undefined, labelLimit: undefined },
 			]);
 		});
@@ -191,6 +191,7 @@ describe('addLegend()', () => {
 		test('should add labels to signals using legendLabels', () => {
 			expect(
 				addLegend(defaultSpec, {
+					animations: false,
 					legendLabels: [
 						{ seriesName: 1, label: 'Any event' },
 						{ seriesName: 2, label: 'Any event' },
@@ -221,6 +222,7 @@ describe('addLegend()', () => {
 		test('should have both labels and highlight encoding', () => {
 			expect(
 				addLegend(defaultSpec, {
+					animations: false,
 					highlight: true,
 					legendLabels: [
 						{ seriesName: 1, label: 'Any event' },
@@ -249,6 +251,7 @@ describe('addLegend()', () => {
 		test('should add custom labels to encoding based on legendLabels', () => {
 			expect(
 				addLegend(defaultSpec, {
+					animations: false,
 					legendLabels: [
 						{ seriesName: 1, label: 'Any event' },
 						{ seriesName: 2, label: 'Any event' },
@@ -268,6 +271,7 @@ describe('addLegend()', () => {
 
 		test('should add labelLimit if provided', () => {
 			const legendSpec = addLegend(defaultSpec, {
+				animations: false,
 				descriptions: [{ seriesName: 'test', description: 'test' }],
 				labelLimit: 300,
 			});
@@ -283,7 +287,7 @@ describe('addLegend()', () => {
 		test('should add fields to scales if they have not been added', () => {
 			const legendSpec = addLegend(
 				{ ...defaultSpec, scales: [{ name: COLOR_SCALE, type: 'ordinal' }] },
-				{ color: 'series' }
+				{ animations: false, color: 'series' }
 			);
 			expect(legendSpec.scales).toEqual([
 				{
@@ -410,7 +414,7 @@ describe('addSignals()', () => {
 	test('should add animation signals if animations is true', () => {
 		const signals = addSignals(defaultSignals, { ...defaultLegendProps, animations: true })
 		expect(signals).toBeDefined()
-		expect(signals).toHaveLength(10);
+		expect(signals).toHaveLength(9);
 		console.log(signals)
 		expect(signals[4]).toHaveProperty('name', RSC_ANIMATION);
 		expect(signals[4].on).toHaveLength(1);
@@ -419,10 +423,9 @@ describe('addSignals()', () => {
 		expect(signals[6]).toHaveProperty('name', 'rscColorAnimation');
 		expect(signals[6].on).toHaveLength(1);
 		expect(signals[7]).toHaveProperty('name', `${HIGHLIGHTED_ITEM}_prev`);
-		expect(signals[7].on).toHaveLength(1);
-		expect(signals[8]).toHaveProperty('name', 'legend0_selectedId');
-		expect(signals[9]).toHaveProperty('name', `${HIGHLIGHTED_SERIES}_prev`);
-		expect(signals[9].on).toHaveLength(1);
+		expect(signals[7].on).toHaveLength(2);
+		expect(signals[8]).toHaveProperty('name', `${HIGHLIGHTED_SERIES}_prev`);
+		expect(signals[8].on).toHaveLength(1);
 	});
 	test('should NOT add hiddenSeries signal if isToggleable is false', () => {
 		expect(

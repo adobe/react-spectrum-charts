@@ -46,7 +46,7 @@ const data = [
 ];
 
 const AxisStory: StoryFn<typeof Axis> = (args): ReactElement => {
-	const chartProps = useChartProps({ data, width: 600 });
+	const chartProps = useChartProps({ animations: false, data, width: 600 });
 	return (
 		<Chart {...chartProps}>
 			<Axis {...args} />
@@ -55,7 +55,7 @@ const AxisStory: StoryFn<typeof Axis> = (args): ReactElement => {
 };
 
 const TimeAxisStory: StoryFn<typeof Axis> = (args): ReactElement => {
-	const chartProps = useChartProps({ data: timeData[args.granularity ?? DEFAULT_GRANULARITY], width: 'auto' });
+	const chartProps = useChartProps({animations: false, data: timeData[args.granularity ?? DEFAULT_GRANULARITY], width: 'auto' });
 	return (
 		<Chart {...chartProps}>
 			<Axis {...args} />
@@ -65,7 +65,7 @@ const TimeAxisStory: StoryFn<typeof Axis> = (args): ReactElement => {
 };
 
 const SubLabelStory: StoryFn<typeof Axis> = (args): ReactElement => {
-	const chartProps = useChartProps({ data: barData, width: 600 });
+	const chartProps = useChartProps({ animations: false, data: barData, width: 600 });
 	return (
 		<Chart {...chartProps}>
 			<Axis {...args} />
@@ -75,7 +75,7 @@ const SubLabelStory: StoryFn<typeof Axis> = (args): ReactElement => {
 };
 
 const TruncatedLabelStory: StoryFn<typeof Axis> = (args): ReactElement => {
-	const chartProps = useChartProps({ data: barDataLongLabels, width: 450 });
+	const chartProps = useChartProps({ animations: false, data: barDataLongLabels, width: 450 });
 	return (
 		<Chart {...chartProps}>
 			<Axis {...args} />
@@ -85,7 +85,7 @@ const TruncatedLabelStory: StoryFn<typeof Axis> = (args): ReactElement => {
 };
 
 const LinearAxisStory: StoryFn<typeof Axis> = (args): ReactElement => {
-	const chartProps = useChartProps({ data: workspaceTrendsData, width: 600 });
+	const chartProps = useChartProps({ animations: false, data: workspaceTrendsData, width: 600 });
 	return (
 		<Chart {...chartProps}>
 			<Axis position="left" grid title="Users" />
@@ -96,7 +96,7 @@ const LinearAxisStory: StoryFn<typeof Axis> = (args): ReactElement => {
 };
 
 const DurationStory: StoryFn<typeof Axis> = (args): ReactElement => {
-	const chartProps = useChartProps({ data: workspaceTrendsData, width: 600 });
+	const chartProps = useChartProps({ animations: false, data: workspaceTrendsData, width: 600 });
 	return (
 		<Chart {...chartProps}>
 			<Axis {...args} />
@@ -107,7 +107,7 @@ const DurationStory: StoryFn<typeof Axis> = (args): ReactElement => {
 };
 
 const NonLinearAxisStory: StoryFn<typeof Axis> = (args): ReactElement => {
-	const chartProps = useChartProps({ data: workspaceTrendsData, width: 600 });
+	const chartProps = useChartProps({ animations: false, data: workspaceTrendsData, width: 600 });
 	return (
 		<Chart {...chartProps}>
 			<Axis position="bottom" ticks baseline labelFormat="time" />
@@ -118,7 +118,7 @@ const NonLinearAxisStory: StoryFn<typeof Axis> = (args): ReactElement => {
 };
 
 const SparkLineStory: StoryFn<typeof Axis> = (args): ReactElement => {
-	const chartProps = useChartProps({ data: stockPriceData, width: 200, height: 100 });
+	const chartProps = useChartProps({ animations: false, data: stockPriceData, width: 200, height: 100 });
 	return (
 		<Chart {...chartProps}>
 			<Axis {...args} />

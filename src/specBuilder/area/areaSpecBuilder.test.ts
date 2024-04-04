@@ -240,7 +240,7 @@ describe('areaSpecBuilder', () => {
 		test('children: should add signals with animations', () => {
 			const tooltip = createElement(ChartTooltip);
 			const signals = addSignals(defaultSignals, { ...defaultAreaProps, children: [tooltip], animations: true });
-			expect(signals).toHaveLength(11);
+			expect(signals).toHaveLength(10);
 			expect(signals[0]).toHaveProperty('name', HIGHLIGHTED_ITEM);
 			expect(signals[1]).toHaveProperty('name', HIGHLIGHTED_SERIES);
 			expect(signals[1].on).toHaveLength(2);
@@ -254,10 +254,9 @@ describe('areaSpecBuilder', () => {
 			expect(signals[6].on).toHaveLength(1);
 			expect(signals[7]).toHaveProperty('name', `${HIGHLIGHTED_ITEM}_prev`);
 			expect(signals[7].on).toHaveLength(1);
-			expect(signals[8]).toHaveProperty('name', 'area0_selectedId');
-			expect(signals[9]).toHaveProperty('name', `${HIGHLIGHTED_SERIES}_prev`);
-			expect(signals[9].on).toHaveLength(1);
-			expect(signals[10]).toHaveProperty('name', 'area0_controlledHoveredId');
+			expect(signals[8]).toHaveProperty('name', `${HIGHLIGHTED_SERIES}_prev`);
+			expect(signals[8].on).toHaveLength(1);
+			expect(signals[9]).toHaveProperty('name', 'area0_controlledHoveredId');
 		});
 	});
 

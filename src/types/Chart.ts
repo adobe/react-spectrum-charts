@@ -78,11 +78,12 @@ export interface SpecProps {
 }
 
 export interface SanitizedSpecProps extends SpecProps {
-	/** Children with all non-RSC components removed */
-	data?: ChartData[];
-	previousData: ChartData[];
-	animations?: boolean;
 	animateFromZero?: boolean;
+	animations?: boolean;
+	data?: ChartData[];
+	/** Children with all non-RSC components removed */
+	children: ChartChildElement[];
+	previousData?: ChartData[];
 }
 
 export type Orientation = 'vertical' | 'horizontal';
@@ -94,12 +95,11 @@ export type ChartSymbolShape = 'rounded-square' | SymbolShape;
 export type NumberFormat = 'currency' | 'shortCurrency' | 'shortNumber' | 'standardNumber';
 
 export interface SharedChartProps extends SpecProps {
+	animations?: boolean;
 	/** Vega config that can be used to tweak the style of the chart. @see https://vega.github.io/vega/docs/config/ */
 	config?: Config;
 	/** Chart data array. */
 	data: ChartData[];
-	previousData?: ChartData[];
-	animations?: boolean;
 	/** Enables debug mode which will console log things like the generated vega spec and the datums for tooltips. */
 	debug?: boolean;
 	/** Chart height */
@@ -109,6 +109,7 @@ export interface SharedChartProps extends SpecProps {
 	/** Chart padding */
 	padding?: Padding;
 	/** Method to use for rendering the chart. 'canvas' is ideal for large data sets. */
+	previousData?: ChartData[];
 	renderer?: 'svg' | 'canvas';
 }
 

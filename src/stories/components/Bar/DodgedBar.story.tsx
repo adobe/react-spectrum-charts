@@ -36,7 +36,7 @@ const DodgedBarStory: StoryFn<typeof Bar> = (args): ReactElement => {
 		  ]
 		: categorical6;
 	const data = Array.isArray(color) ? barSubSeriesData : barSeriesData;
-	const chartProps = useChartProps({ data, width: 800, height: 600, colors });
+	const chartProps = useChartProps({ animations: false, data, width: 800, height: 600, colors });
 	return (
 		<Chart {...chartProps}>
 			<Axis position={args.orientation === 'horizontal' ? 'left' : 'bottom'} baseline title="Browser" />
@@ -56,7 +56,7 @@ const dialogContent = (datum) => (
 );
 
 const DodgedBarPopoverStory: StoryFn<typeof Bar> = (args): ReactElement => {
-	const chartProps = useChartProps({ data: barSeriesData, width: 800, height: 600 });
+	const chartProps = useChartProps({ animations: false, data: barSeriesData, width: 800, height: 600 });
 	return (
 		<Chart {...chartProps}>
 			<Axis position={args.orientation === 'horizontal' ? 'left' : 'bottom'} baseline title="Browser" />
@@ -71,7 +71,7 @@ const DodgedBarPopoverStory: StoryFn<typeof Bar> = (args): ReactElement => {
 };
 
 const DodgedBarLineTypeStory: StoryFn<typeof Bar> = (args): ReactElement => {
-	const chartProps = useChartProps({ data: barSeriesData, width: 800, height: 600 });
+	const chartProps = useChartProps({ animations: false, data: barSeriesData, width: 800, height: 600 });
 	return (
 		<Chart {...chartProps}>
 			<Axis position={args.orientation === 'horizontal' ? 'left' : 'bottom'} baseline title="Browser" />

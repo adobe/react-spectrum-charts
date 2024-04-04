@@ -39,6 +39,7 @@ import {
 	FilterTransform,
 	GuideEncodeEntry,
 	LegendEncode,
+	Mark,
 	NumericValueRef,
 	ProductionRule,
 	SignalRef,
@@ -46,7 +47,7 @@ import {
 } from 'vega';
 
 import { ColorValueV6 } from '@react-types/shared';
-import { getLegendOpacityRules } from '@specBuilder/marks/markUtils';
+import { getLegendMarkOpacityRules, getLegendSeriesOpacityRules } from '@specBuilder/marks/markUtils';
 
 export interface Facet {
 	facetType: FacetType | SecondaryFacetType;
@@ -82,11 +83,12 @@ export const getHiddenEntriesFilter = (hiddenEntries: string[], name: string): F
  * Get the legend encodings
  * @param facets
  * @param legendProps
+ * @param marks
  * @returns
  */
-export const getEncodings = (facets: Facet[], legendProps: LegendSpecProps): LegendEncode => {
+export const getEncodings = (facets: Facet[], legendProps: LegendSpecProps, marks: Mark[]): LegendEncode => {
 	const symbolEncodings = getSymbolEncodings(facets, legendProps);
-	const hoverEncodings = getHoverEncodings(facets, legendProps);
+	const hoverEncodings = getHoverEncodings(facets, legendProps, marks);
 	const legendLabelsEncodings = getLegendLabelsEncodings(legendProps.legendLabels);
 	const showHideEncodings = getShowHideEncodings(legendProps);
 	// merge the encodings together
@@ -113,8 +115,8 @@ const getLegendLabelsEncodings = (legendLabels: LegendLabel[] | undefined): Lege
 	return {};
 };
 
-const getHoverEncodings = (facets: Facet[], props: LegendSpecProps): LegendEncode => {
-	const { highlight, highlightedSeries, name, onMouseOver, onMouseOut, descriptions,  } = props;
+const getHoverEncodings = (facets: Facet[], props: LegendSpecProps, marks: Mark[]): LegendEncode => {
+	const { highlight, highlightedSeries, name, onMouseOver, onMouseOut, descriptions } = props;
 	if (highlight || highlightedSeries || descriptions) {
 		return {
 			entries: {
@@ -129,14 +131,14 @@ const getHoverEncodings = (facets: Facet[], props: LegendSpecProps): LegendEncod
 			},
 			labels: {
 				update: {
-					opacity: getOpacityEncoding(props)
-				}
+					opacity: getOpacityEncoding(props, marks),
+				},
 			},
 			symbols: {
 				update: {
-					opacity: getOpacityEncoding(props)
-				}
-			}
+					opacity: getOpacityEncoding(props, marks),
+				},
+			},
 		};
 	} else if (onMouseOver || onMouseOut) {
 		return {
@@ -163,21 +165,34 @@ const getTooltip = (descriptions: LegendDescription[] | undefined, name: string)
 /**
  * simple opacity encoding for legend labels and the symbol stroke opacity
  * @param legendProps
- * @returns opactiy encoding
+ * @returns opacity encoding
+ * @param marks
  */
 export const getOpacityEncoding = ({
 	animations,
 	highlight,
 	highlightedSeries,
 	keys,
-	name
-	}: LegendSpecProps): ProductionRule<NumericValueRef> | undefined => {
+	name,
+}: LegendSpecProps, marks: Mark[]): ProductionRule<NumericValueRef> | undefined => {
 	const highlightSignalName = keys ? `${name}_highlight` : HIGHLIGHTED_SERIES;
 	// only add symbol opacity if highlight is true or highlightedSeries is defined
 	if (highlight || highlightedSeries) {
-		//TODO: Add documentation
+
+		//If animations are enabled, set legend animation opacity rules
+		//TODO: Add tests
 		if (animations) {
-			return getLegendOpacityRules();
+			/*
+			this is the check for chart type and is the reason the spec.marks had to be pushed to
+			getCategoricalLegend in legendSpecBuilder
+			 */
+			if (marks.some((mark) => mark.name == 'line0_group' || mark.name == 'area0_group')) {
+				// get opacity rules for legend if the chart relies on Series ID for highlighting
+				return getLegendSeriesOpacityRules();
+			} else {
+				// get opacity rules for legend if the chart relies on Mark ID for highlighting
+				return getLegendMarkOpacityRules();
+			}
 		}
 		return [
 			{

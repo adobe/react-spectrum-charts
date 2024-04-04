@@ -16,7 +16,7 @@ import {
 	addContinuousDimensionScale,
 	addDomainFields,
 	addFieldToFacetScaleDomain,
-	addRSCAnimationScales,
+	addRscAnimationScales,
 	getPadding,
 	getScaleName,
 } from './scaleSpecBuilder';
@@ -124,10 +124,10 @@ describe('getScaleName()', () => {
 	});
 });
 
-describe('addRSCAnimationScales()', () => {
+describe('addRscAnimationScales()', () => {
 	test('should return correct scale name', () => {
 		const scales = []
-		addRSCAnimationScales(scales)
+		addRscAnimationScales(scales)
 		expect(scales).toStrictEqual(defaultAnimationScales)
 	});
 });

@@ -26,7 +26,10 @@ import {
 	LINE_WIDTH_SCALE,
 	OPACITY_SCALE,
 	SYMBOL_SIZE_SCALE,
-	SERIES_ID, HIGHLIGHTED_SERIES
+	SERIES_ID,
+	HIGHLIGHTED_SERIES,
+	HIGHLIGHTED_ITEM,
+	MARK_ID
 } from '@constants';
 import { getScaleName } from '@specBuilder/scale/scaleSpecBuilder';
 import {
@@ -79,10 +82,25 @@ export function getInteractive(children: MarkChildElement[]): boolean {
 /**
  * If a tooltip or popover exists on the mark, then set tooltip to true.
  */
-export function getTooltip(children: MarkChildElement[], name: string, nestedDatum?: boolean): SignalRef | undefined {
+export function getTooltip(
+	{
+		children,
+		name,
+		nestedDatum = false,
+		animations = false,
+		isBar = false
+	}: {
+	children: MarkChildElement[],
+	name: string,
+	nestedDatum?: boolean,
+	animations?: boolean,
+	isBar?: boolean
+}): SignalRef | undefined {
 	// skip annotations
 	if (hasTooltip(children)) {
-		return { signal: `merge(datum${nestedDatum ? '.datum' : ''}, {'rscComponentName': '${name}'})` };
+		const merge = `merge(datum${nestedDatum ? '.datum' : ''}, {'rscComponentName': '${name}'})`;
+		const signal = animations && !isBar? `timerValue === 1 ? ${merge} : null` : merge;
+		return { signal };
 	}
 }
 
@@ -248,9 +266,11 @@ export const getXProductionRule = (scaleType: ScaleType, dimension: string): Num
  * @param children
  * @param dataSource name of the point data source the voronoi is based on
  * @param markName
+ * @param animations whether animations are currently on for the chart
+ * @param animateFromZero whether an animation from zero is occurring (false if a popover was just closed)
  * @returns PathMark
  */
-export const getVoronoiPath = (children: MarkChildElement[], dataSource: string, markName: string): PathMark => ({
+export const getVoronoiPath = (children: MarkChildElement[], dataSource: string, markName: string, animations?: boolean, animateFromZero?: boolean): PathMark => ({
 	name: `${markName}_voronoi`,
 	type: 'path',
 	from: { data: dataSource },
@@ -259,10 +279,15 @@ export const getVoronoiPath = (children: MarkChildElement[], dataSource: string,
 			fill: { value: 'transparent' },
 			stroke: { value: 'transparent' },
 			isVoronoi: { value: true },
-			tooltip: getTooltip(children, markName, true),
+			...(!animations && {
+				tooltip: getTooltip({ children, name: markName, nestedDatum: true })
+			}),
 		},
 		update: {
 			cursor: getCursor(children),
+			...(animations && animateFromZero && {
+				tooltip: getTooltip({ children, name: markName, nestedDatum: true, animations })
+			}),
 		},
 	},
 	transform: [
@@ -275,17 +300,25 @@ export const getVoronoiPath = (children: MarkChildElement[], dataSource: string,
 		},
 	],
 });
-
-//TODO: Add documentation
+/**
+ * the signal that triggers the opacity ease in and out
+ * @param opacityValue
+ * @returns { signal: string}
+ */
+//TODO: Add tests
 export const getHighlightOpacityAnimationValue = (opacityValue: { signal: string } | { value: number }): { signal: string }  => {
 	if ('signal' in opacityValue) {
 		return { signal: `max(1-rscColorAnimation, ${opacityValue.signal} / ${HIGHLIGHT_CONTRAST_RATIO})` }
 	}
 	return { signal: `max(1-rscColorAnimation, ${opacityValue.value} / ${HIGHLIGHT_CONTRAST_RATIO})`}
 };
-
-//TODO: Add documentation/tests/etc
-export const getOpacityAnimationRules = (
+/**
+ * animation opacity rules for charts that highlight from series ID
+ * @param opacityValue
+ * @returns ProductionRule<NumericValueRef>
+ */
+//TODO: Add tests
+export const getSeriesAnimationOpacityRules = (
 	opacityValue?: { signal: string } | { value: number },
 ): ProductionRule<NumericValueRef> => {
 	if (!opacityValue) {
@@ -302,10 +335,61 @@ export const getOpacityAnimationRules = (
 		},
 		DEFAULT_OPACITY_RULE
 	]
+};
+/**
+ * animation opacity rules for charts that highlight from mark ID
+ * @returns ProductionRule<NumericValueRef>
+ */
+//TODO: add tests
+export const getMarkHighlightOpacityRules = (): ProductionRule<NumericValueRef> => {
+	return [
+		{
+			test: `${HIGHLIGHTED_ITEM} && ${HIGHLIGHTED_ITEM} !== datum.${MARK_ID}`,
+			...getHighlightOpacityAnimationValue(DEFAULT_OPACITY_RULE)
+		},
+		{
+			test: `!${HIGHLIGHTED_ITEM} && ${HIGHLIGHTED_ITEM}_prev !== datum.${MARK_ID}`,
+			...getHighlightOpacityAnimationValue(DEFAULT_OPACITY_RULE)
+		}
+	]
 }
-
-//TODO: add comments/tests/etc
-export const getLegendOpacityRules = (): ProductionRule<NumericValueRef> => {
+/**
+ * Opacity animation rules for marks when the chart marks are highlighted with the mark ID and legends are present
+ * with highlight enabled
+ * @returns ProductionRule<NumericValueRef>
+ */
+//TODO: add tests
+export const getMarkWithLegendHighlightOpacityRules = (): ProductionRule<NumericValueRef> => {
+	return [
+		{
+			// If there is no current selection, but there is a hover and the hover is NOT for the current bar
+			test: `${HIGHLIGHTED_ITEM} && ${HIGHLIGHTED_ITEM} !== datum.${MARK_ID}`,
+			...getHighlightOpacityAnimationValue(DEFAULT_OPACITY_RULE)
+		},
+		{
+			// If there is a highlighted series and the highlighted series is NOT the series of the current bar
+			test: `${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES} !== datum.${SERIES_ID}`,
+			...getHighlightOpacityAnimationValue(DEFAULT_OPACITY_RULE)
+		},
+		{
+			// If there is no highlighted series and the previously highlighted series is the series of the current bar
+			test: `!${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES}_prev == datum.${SERIES_ID}`,
+			value: 1
+		},
+		{
+			// If the previously hovered bar is NOT the current bar and the color animation direction is reversed (fading in)
+			test: `${HIGHLIGHTED_ITEM}_prev !== datum.${MARK_ID} && rscColorAnimationDirection === -1`,
+			...getHighlightOpacityAnimationValue(DEFAULT_OPACITY_RULE)
+		},
+		{ value: 1 }
+	];
+}
+/**
+ * Opacity animation rules for the legend symbols and labels when marks are highlighted by series ID
+ * @returns  ProductionRule<NumericValueRef>
+ */
+//TODO: add tests
+export const getLegendSeriesOpacityRules = (): ProductionRule<NumericValueRef> => {
 	return [
 		{
 			test: `${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES} !== datum.value`,
@@ -318,3 +402,25 @@ export const getLegendOpacityRules = (): ProductionRule<NumericValueRef> => {
 		DEFAULT_OPACITY_RULE
 	]
 }
+/**
+ * Opacity animation rules for legend symbols and labels if the chart marks are highlighted by mark ID
+ * @returns ProductionRule<NumericValueRef>
+ */
+//TODO: add tests
+export const getLegendMarkOpacityRules = (): ProductionRule<NumericValueRef> => {
+	return [
+		{
+			// If there is a highlighted series, and it is NOT equal to the current series
+			test: `${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES} !== datum.value`,
+			...getHighlightOpacityAnimationValue(DEFAULT_OPACITY_RULE)
+		},
+		{
+			// If there is NOT a highlighted series and NOT a previously highlighted bar, and the previously highlighted series is NOT equal to the current series
+			test: `!${HIGHLIGHTED_SERIES} && !${HIGHLIGHTED_ITEM}_prev && datum.value !== ${HIGHLIGHTED_SERIES}_prev`,
+			...getHighlightOpacityAnimationValue(DEFAULT_OPACITY_RULE)
+		},
+		DEFAULT_OPACITY_RULE
+	]
+};
+
+

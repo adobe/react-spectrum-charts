@@ -21,6 +21,7 @@ export default {
 
 const EmptyState = bindWithProps(ChartBarStory);
 EmptyState.args = {
+	animations: false,
 	data: [],
 	height: 500,
 	emptyStateText: 'No data found',
@@ -28,6 +29,7 @@ EmptyState.args = {
 
 const LoadingState = bindWithProps(ChartBarStory);
 LoadingState.args = {
+	animations: false,
 	data: [],
 	height: 500,
 	loading: true,

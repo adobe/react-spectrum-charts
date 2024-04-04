@@ -17,7 +17,7 @@ import {
 } from '@specBuilder/specTestUtils';
 import { Signal } from 'vega';
 
-import { addHighlightedItemSignalEvents, addHighlightedSeriesSignalEvents, getRSCAnimationSignals } from './signalSpecBuilder';
+import { addHighlightedItemSignalEvents, addHighlightedSeriesSignalEvents, getRscAnimationSignals } from './signalSpecBuilder';
 
 describe('signalSpecBuilder', () => {
 	let signals: Signal[];
@@ -26,7 +26,7 @@ describe('signalSpecBuilder', () => {
 	});
 	describe('addHighlightedItemSignalEvents()', () => {
 		test('should add on events', () => {
-			addHighlightedItemSignalEvents(signals, 'line0');
+			addHighlightedItemSignalEvents({ signals, markName: 'line0' });
 			expect(signals).toHaveLength(4);
 			expect(signals[0]).toHaveProperty('name', HIGHLIGHTED_ITEM);
 			expect(signals[0].on).toHaveLength(2);
@@ -39,7 +39,7 @@ describe('signalSpecBuilder', () => {
 		test('should not do anything if the highlight signal is not found', () => {
 			const signals = JSON.parse(JSON.stringify([defaultHighlightedSeriesSignal]));
 			const signalsCopy = JSON.parse(JSON.stringify(signals));
-			addHighlightedItemSignalEvents(signals, 'line0');
+			addHighlightedItemSignalEvents({ signals, markName: 'line0' });
 			expect(signals).toEqual(signalsCopy);
 		});
 	});
@@ -64,10 +64,10 @@ describe('signalSpecBuilder', () => {
 		});
 	});
 
-	describe('getRSCAnimationSignals()', () => {
+	describe('getRscAnimationSignals()', () => {
 		test('should add on events', () => {
-			const signals = getRSCAnimationSignals('line0');
-			expect(signals).toHaveLength(6);
+			const signals = getRscAnimationSignals('line0');
+			expect(signals).toHaveLength(5);
 			expect(signals[0]).toHaveProperty('name', RSC_ANIMATION);
 			expect(signals[0].on).toHaveLength(1);
 			expect(signals[1]).toHaveProperty('name', 'rscColorAnimationDirection');
@@ -76,9 +76,8 @@ describe('signalSpecBuilder', () => {
 			expect(signals[2].on).toHaveLength(1);
 			expect(signals[3]).toHaveProperty('name', `${HIGHLIGHTED_ITEM}_prev`);
 			expect(signals[3].on).toHaveLength(1);
-			expect(signals[4]).toHaveProperty('name', 'line0_selectedId');
-			expect(signals[5]).toHaveProperty('name', `${HIGHLIGHTED_SERIES}_prev`);
-			expect(signals[5].on).toHaveLength(1);
+			expect(signals[4]).toHaveProperty('name', `${HIGHLIGHTED_SERIES}_prev`);
+			expect(signals[4].on).toHaveLength(1);
 		});
 		test('should not do anything if the highlight signal is not found', () => {
 			const signals = JSON.parse(JSON.stringify([defaultHighlightedItemSignal]));

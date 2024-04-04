@@ -33,7 +33,7 @@ const colors: SpectrumColor[] = [
 ];
 
 const BarStory: StoryFn<typeof Bar> = (args): ReactElement => {
-	const chartProps = useChartProps({ data: barSeriesData, colors, width: 800, height: 600 });
+	const chartProps = useChartProps({ animations: false, data: barSeriesData, colors, width: 800, height: 600 });
 	return (
 		<Chart {...chartProps}>
 			<Axis position={args.orientation === 'horizontal' ? 'left' : 'bottom'} baseline title="Browser" />
@@ -45,7 +45,7 @@ const BarStory: StoryFn<typeof Bar> = (args): ReactElement => {
 };
 
 const NegativeBarStory: StoryFn<typeof Bar> = (args): ReactElement => {
-	const chartProps = useChartProps({ data: negativeBarSeriesData, width: 800, height: 600 });
+	const chartProps = useChartProps({ animations: false, data: negativeBarSeriesData, width: 800, height: 600 });
 	return (
 		<Chart {...chartProps}>
 			<Axis position={args.orientation === 'horizontal' ? 'left' : 'bottom'} baseline title="Browser" />

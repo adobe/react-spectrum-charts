@@ -21,7 +21,9 @@ import {
 	DEFAULT_METRIC,
 	DEFAULT_OPACITY_RULE,
 	DEFAULT_TIME_DIMENSION,
-	DEFAULT_TRANSFORMED_TIME_DIMENSION, EASE_OUT_CUBIC, FILTERED_PREVIOUS_TABLE,
+	DEFAULT_TRANSFORMED_TIME_DIMENSION,
+	EASE_OUT_CUBIC,
+	FILTERED_PREVIOUS_TABLE,
 	FILTERED_TABLE,
 	HIGHLIGHTED_ITEM,
 	HIGHLIGHTED_SERIES,
@@ -30,7 +32,7 @@ import {
 	RSC_ANIMATION,
 	SERIES_ID,
 	TABLE,
-	TRENDLINE_VALUE
+	TRENDLINE_VALUE,
 } from '@constants';
 import { defaultSignals } from '@specBuilder/specTestUtils';
 import { LineSpecProps, MetricRangeElement, MetricRangeProps } from 'types';
@@ -55,7 +57,7 @@ const defaultLineProps: LineSpecProps = {
 	colorScheme: DEFAULT_COLOR_SCHEME,
 	interactiveMarkName: undefined,
 	popoverMarkName: undefined,
-	animations: false
+	animations: false,
 };
 
 const getMetricRangeElement = (props?: Partial<MetricRangeProps>): MetricRangeElement =>
@@ -421,7 +423,7 @@ const displayPointWithAnimationMarks = [
 				y: {
 					scale: 'yLinear',
 					signal: `datum.value * ${EASE_OUT_CUBIC}`,
-				}
+				},
 			},
 		},
 	},
@@ -626,9 +628,14 @@ describe('lineSpecBuilder', () => {
 		});
 
 		test('with displayPointMark with animations', () => {
-			expect(addLineMarks([], { ...defaultLineProps, staticPoint: 'staticPoint', animations: true, animateFromZero: true })).toStrictEqual(
-				displayPointWithAnimationMarks
-			);
+			expect(
+				addLineMarks([], {
+					...defaultLineProps,
+					animateFromZero: true,
+					animations: true,
+					staticPoint: 'staticPoint',
+				})
+			).toStrictEqual(displayPointWithAnimationMarks);
 		});
 
 		test('with displayPointMark and metric range', () => {
@@ -687,7 +694,7 @@ describe('lineSpecBuilder', () => {
 				animations: true,
 				children: [getMetricRangeElement({ displayOnHover: true })],
 			});
-			expect(signals).toHaveLength(10);
+			expect(signals).toHaveLength(9);
 			expect(signals[0]).toHaveProperty('name', HIGHLIGHTED_ITEM);
 			expect(signals[0].on).toHaveLength(2);
 			expect(signals[1]).toHaveProperty('name', HIGHLIGHTED_SERIES);
@@ -700,9 +707,8 @@ describe('lineSpecBuilder', () => {
 			expect(signals[6].on).toHaveLength(1);
 			expect(signals[7]).toHaveProperty('name', `${HIGHLIGHTED_ITEM}_prev`);
 			expect(signals[7].on).toHaveLength(1);
-			expect(signals[8]).toHaveProperty('name', 'line0_selectedId');
-			expect(signals[9]).toHaveProperty('name', `${HIGHLIGHTED_SERIES}_prev`);
-			expect(signals[9].on).toHaveLength(1);
+			expect(signals[8]).toHaveProperty('name', `${HIGHLIGHTED_SERIES}_prev`);
+			expect(signals[8].on).toHaveLength(1);
 		});
 
 		test('adds hover signals when displayPointMark is not undefined', () => {
@@ -729,7 +735,7 @@ describe('lineSpecBuilder', () => {
 				animations: true,
 				children: [getMetricRangeElement({ displayOnHover: true })],
 			});
-			expect(signals).toHaveLength(10);
+			expect(signals).toHaveLength(9);
 			expect(signals[0]).toHaveProperty('name', HIGHLIGHTED_ITEM);
 			expect(signals[0].on).toHaveLength(2);
 			expect(signals[1]).toHaveProperty('name', HIGHLIGHTED_SERIES);
@@ -742,9 +748,8 @@ describe('lineSpecBuilder', () => {
 			expect(signals[6].on).toHaveLength(1);
 			expect(signals[7]).toHaveProperty('name', `${HIGHLIGHTED_ITEM}_prev`);
 			expect(signals[7].on).toHaveLength(1);
-			expect(signals[8]).toHaveProperty('name', 'line0_selectedId');
-			expect(signals[9]).toHaveProperty('name', `${HIGHLIGHTED_SERIES}_prev`);
-			expect(signals[9].on).toHaveLength(1);
+			expect(signals[8]).toHaveProperty('name', `${HIGHLIGHTED_SERIES}_prev`);
+			expect(signals[8].on).toHaveLength(1);
 		});
 	});
 });

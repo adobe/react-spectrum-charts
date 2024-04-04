@@ -1,8 +1,23 @@
-import { ReactElement, useState } from 'react';
+import React, { ReactElement, useState } from 'react';
 
-import { MARK_ID, TRENDLINE_VALUE } from '@constants';
+import {
+	MARK_ID,
+	TRENDLINE_VALUE
+} from '@constants';
 import useChartProps from '@hooks/useChartProps';
-import { Annotation, Area, Axis, Bar, Chart, ChartPopover, ChartTooltip, Legend, Line, Trendline } from '@rsc';
+import {
+	Annotation,
+	Area,
+	Axis,
+	Bar,
+	Chart,
+	ChartPopover,
+	ChartProps,
+	ChartTooltip,
+	Legend,
+	Line,
+	Trendline
+} from '@rsc';
 import { areaData, newDataArray1WithStaticPoints, workspaceTrendsData } from '@stories/data/data';
 import { StoryFn } from '@storybook/react';
 import { bindWithProps, manipulateData } from '@test-utils';
@@ -10,7 +25,7 @@ import { ChartData, ChartElement, Datum, SpectrumColor } from 'types';
 
 import { Button, Content, Text, View } from '@adobe/react-spectrum';
 
-import { barData, barSubSeriesData, generateMockDataForTrellis } from '../Bar/data';
+import { barData, barSubSeriesData, generateMockDataForTrellis,  } from '../Bar/data';
 
 export default {
 	title: 'RSC/Animations',
@@ -24,6 +39,8 @@ interface ToggleableDataProps {
 interface ChartWithToggleableDataProps extends ToggleableDataProps {
 	ChartComponent: ChartElement;
 }
+
+const defaultChartProps: ChartProps = { data: [], minWidth: 400, maxWidth: 800, height: 400, animations: true };
 
 const ChartWithToggleableData = ({ ChartComponent, initialData, secondaryData }: ChartWithToggleableDataProps) => {
 	const [dataSource, setDataSource] = useState(true);
@@ -55,9 +72,8 @@ const dialog = (item: Datum) => {
 		</Content>
 	);
 };
-
 const AreaStory: StoryFn<ToggleableDataProps> = (args): ReactElement => {
-	const chartProps = useChartProps({ data: [], minWidth: 400, maxWidth: 800, height: 400 });
+	const chartProps = useChartProps( defaultChartProps );
 	return (
 		<ChartWithToggleableData
 			ChartComponent={
@@ -72,9 +88,8 @@ const AreaStory: StoryFn<ToggleableDataProps> = (args): ReactElement => {
 		/>
 	);
 };
-
 const SingleLineStory: StoryFn<ToggleableDataProps> = (args): ReactElement => {
-	const chartProps = useChartProps({ data: [], minWidth: 400, maxWidth: 800, height: 400 });
+	const chartProps = useChartProps(defaultChartProps);
 	return (
 		<ChartWithToggleableData
 			ChartComponent={
@@ -89,9 +104,8 @@ const SingleLineStory: StoryFn<ToggleableDataProps> = (args): ReactElement => {
 		/>
 	);
 };
-
 const BarStory: StoryFn<ToggleableDataProps> = (args): ReactElement => {
-	const chartProps = useChartProps({ data: [], minWidth: 400, maxWidth: 800, height: 400 });
+	const chartProps = useChartProps(defaultChartProps);
 	return (
 		<ChartWithToggleableData
 			ChartComponent={
@@ -116,7 +130,7 @@ const DodgedBarStory: StoryFn<ToggleableDataProps> = (args): ReactElement => {
 		['#575de8', '#8489fd'],
 		['#d16100', '#fa8b1a'],
 	];
-	const chartProps = useChartProps({ data: [], minWidth: 400, maxWidth: 800, height: 400, colors });
+	const chartProps = useChartProps({ ...defaultChartProps,  colors });
 	return (
 		<ChartWithToggleableData
 			ChartComponent={
@@ -152,7 +166,7 @@ const TrellisHorizontalBarStory: StoryFn<ToggleableDataProps> = (args): ReactEle
 		'sequential-magma-1400',
 	];
 
-	const chartProps = useChartProps({ data: [], minWidth: 400, maxWidth: 800, height: 400, colors });
+	const chartProps = useChartProps({ ...defaultChartProps, colors });
 
 	return (
 		<ChartWithToggleableData
@@ -369,14 +383,14 @@ TrellisHorizontalBarZero.args = {
 export {
 	AreaSwitch,
 	AreaZero,
-	SingleLineSwitch,
-	SingleLineZero,
-	TrendlineSwitch,
-	TrendlineZero,
 	BarSwitch,
 	BarZero,
 	DodgedBarSwitch,
 	DodgedBarZero,
+	SingleLineSwitch,
+	SingleLineZero,
+	TrendlineSwitch,
+	TrendlineZero,
 	TrellisHorizontalBarSwitch,
 	TrellisHorizontalBarZero,
 };
