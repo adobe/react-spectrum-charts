@@ -117,7 +117,7 @@ export const getOpacity = (props: ScatterSpecProps): ({ test?: string } & Numeri
 	}
 	// if animations are enabled, set opacity animation rules for scatter mark
 	//TODO: Add Tests
-	if (animations !== false) {
+	if (animations) {
 		return getMarkHighlightOpacityRules();
 	}
 	// if a point is hovered or selected, all other points should be reduced opacity

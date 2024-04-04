@@ -54,13 +54,8 @@ import {
 	getTableData,
 	getTransformSort,
 } from '../data/dataUtils';
-import {
-	addContinuousDimensionScale,
-	addFieldToFacetScaleDomain,
-	addMetricScale,
-	addRscAnimationScales,
-} from '../scale/scaleSpecBuilder';
 import { getAreaMark, getX } from './areaUtils';
+import { addContinuousDimensionScale, addFieldToFacetScaleDomain, addMetricScale, addRscAnimationScales } from '@specBuilder/scale/scaleSpecBuilder';
 
 export const addArea = produce<Spec, [AreaProps & { animations?: boolean; animateFromZero: boolean; colorScheme?: ColorScheme; highlightedItem?: HighlightedItem; index?: number, idKey: string; previousData: ChartData[], data: ChartData[] }]>(
 	(
@@ -172,7 +167,7 @@ export const addSignals = produce<Signal[], [AreaSpecProps]>((signals, { childre
 
 	// If animations is enabled and has hover functionality, add all the necessary animation signals.
 	// TODO: add tests
-	if (animations !== false && hasInteractiveChildren(children)) {
+	if (animations && hasInteractiveChildren(children)) {
 		signals.push(...getRscAnimationSignals(name));
 	}
 	if (!hasSignalByName(signals, `${name}_controlledHoveredId`)) {
@@ -247,7 +242,7 @@ export const setScales = produce<Scale[], [AreaSpecProps]>(
 	(scales, { metric, metricEnd, metricStart, dimension, color, scaleType, padding, animations, children }) => {
 		// If animations is enabled and has hover functionality, add all the necessary animation scales.
 		//TODO: add tests
-		if (animations !== false && hasInteractiveChildren(children)) {
+		if (animations && hasInteractiveChildren(children)) {
 			addRscAnimationScales(scales);
 		}
 		// add dimension scale

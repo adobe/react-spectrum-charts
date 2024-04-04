@@ -104,7 +104,7 @@ export const getDodgedDimensionEncodings = (props: BarSpecProps): RectEncodeEntr
 	const endKey = `${startKey}2`;
 
 	return {
-		...(animations !== false && animateFromZero && {
+		...(animations && animateFromZero && {
 			[startKey]: getAnimationMarks(dimension, startMetric, data, previousData, scaleKey),
 			[endKey]: endAnimations
 		}),
@@ -260,7 +260,7 @@ export const getBarUpdateEncodings = (props: BarSpecProps): EncodeEntry => ({
 });
 
 export const getStroke = ({
-	name,
+  name,
 	children,
 	color,
 	colorScheme,

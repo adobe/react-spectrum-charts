@@ -29,7 +29,10 @@ import {
 	OPACITY_SCALE,
 	PREVIOUS_TABLE,
 	STACK_ID,
-	TABLE
+	TABLE,
+	HIGHLIGHTED_ITEM,
+	HIGHLIGHTED_SERIES,
+	RSC_ANIMATION
 } from '@constants';
 import { defaultSignals } from '@specBuilder/specTestUtils';
 import { spectrumColors } from '@themes';
@@ -68,6 +71,7 @@ import {
 	defaultStackedYEncodings,
 } from './barTestUtils';
 import { defaultDodgedMark } from './dodgedBarUtils.test';
+import { defaultAnimationScales } from '@specBuilder/scale/scaleSpecBuilder.test';
 
 const startingSpec: Spec = initializeSpec({
 	scales: [{ name: COLOR_SCALE, type: 'ordinal' }]
@@ -272,15 +276,35 @@ describe('barSpecBuilder', () => {
 			expect(signals[0].on).toHaveLength(2);
 			expect(signals[0].on?.[0]).toHaveProperty('events', '@bar0:mouseover');
 		});
-		test('should exclude data with key from update if tooltip has excludeDataKey', () => {
-			const signals = addSignals(defaultSignals, {
-				...defaultBarProps,
-				children: [createElement(ChartTooltip, { excludeDataKeys: ['excludeFromTooltip'] })],
-			});
+    test('should exclude data with key from update if tooltip has excludeDataKey', () => {
+      const signals = addSignals(defaultSignals, {
+        ...defaultBarProps,
+        children: [createElement(ChartTooltip, { excludeDataKeys: ['excludeFromTooltip'] })],
+      });
+      expect(signals[0]).toHaveProperty('on');
+      expect(signals[0].on).toHaveLength(2);
+      expect(signals[0].on?.[0]).toHaveProperty('events', '@bar0:mouseover');
+      expect(signals[0].on?.[0]).toHaveProperty('update', '(datum.excludeFromTooltip) ? null : datum.rscMarkId');
+    })
+		test('should add hover events if tooltip is present with animations', () => {
+			const signals = addSignals(defaultSignals, { ...defaultBarProps, animations: true, children: [createElement(ChartTooltip)] });
+			expect(signals).toHaveLength(10);
+			console.log(signals)
+			expect(signals[0]).toHaveProperty('name', HIGHLIGHTED_ITEM);
 			expect(signals[0]).toHaveProperty('on');
 			expect(signals[0].on).toHaveLength(2);
 			expect(signals[0].on?.[0]).toHaveProperty('events', '@bar0:mouseover');
-			expect(signals[0].on?.[0]).toHaveProperty('update', '(datum.excludeFromTooltip) ? null : datum.rscMarkId');
+			expect(signals[1]).toHaveProperty('name', HIGHLIGHTED_SERIES);
+			expect(signals[5]).toHaveProperty('name', RSC_ANIMATION);
+			expect(signals[5].on).toHaveLength(1);
+			expect(signals[6]).toHaveProperty('name', 'rscColorAnimationDirection');
+			expect(signals[6].on).toHaveLength(2);
+			expect(signals[7]).toHaveProperty('name', 'rscColorAnimation');
+			expect(signals[7].on).toHaveLength(1);
+			expect(signals[8]).toHaveProperty('name', `${HIGHLIGHTED_ITEM}_prev`);
+			expect(signals[8].on).toHaveLength(1);
+			expect(signals[9]).toHaveProperty('name', `${HIGHLIGHTED_SERIES}_prev`);
+			expect(signals[9].on).toHaveLength(1);
 		});
 	});
 
@@ -348,6 +372,31 @@ describe('barSpecBuilder', () => {
 					})
 				).toStrictEqual([
 					defaultColorScale,
+					defaultMetricScale,
+					defaultDimensionScale,
+					{
+						name: 'yTrellisBand',
+						type: 'band',
+						domain: { data: TABLE, fields: ['event'] },
+						range: 'height',
+						paddingInner: 0.5,
+					},
+				]);
+			});
+
+			test('should add trellis scales with animations', () => {
+				expect(
+					addScales([{ name: COLOR_SCALE, type: 'ordinal' }], {
+						...defaultBarProps,
+						trellis: 'event',
+						trellisOrientation: 'vertical',
+						trellisPadding: 0.5,
+						animations: true,
+						children: [createElement(ChartPopover)]
+					})
+				).toStrictEqual([
+					defaultColorScale,
+					...defaultAnimationScales,
 					defaultMetricScale,
 					defaultDimensionScale,
 					{

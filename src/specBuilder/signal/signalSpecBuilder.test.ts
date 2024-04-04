@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { FILTERED_TABLE, HIGHLIGHTED_ITEM, HIGHLIGHTED_SERIES, MARK_ID } from '@constants';
+import { FILTERED_TABLE, HIGHLIGHTED_ITEM, RSC_ANIMATION, HIGHLIGHTED_SERIES, MARK_ID } from '@constants';
 import {
 	defaultHighlightedItemSignal,
 	defaultHighlightedSeriesSignal,
@@ -17,11 +17,7 @@ import {
 } from '@specBuilder/specTestUtils';
 import { Signal } from 'vega';
 
-import {
-	addHighlightedItemSignalEvents,
-	addHighlightedSeriesSignalEvents,
-	getHighlightSignalUpdateExpression,
-} from './signalSpecBuilder';
+import { addHighlightedItemSignalEvents, addHighlightedSeriesSignalEvents, getRscAnimationSignals, getHighlightSignalUpdateExpression } from './signalSpecBuilder';
 
 describe('signalSpecBuilder', () => {
 	let signals: Signal[];
@@ -116,6 +112,29 @@ describe('signalSpecBuilder', () => {
 		test('should referende hiddenSeries if there are not keys', () => {
 			const update = getHighlightSignalUpdateExpression('legend0', true, []);
 			expect(update).toContain('hiddenSeries');
+		});
+	});
+
+	describe('getRscAnimationSignals()', () => {
+		test('should add on events', () => {
+			const signals = getRscAnimationSignals('line0');
+			expect(signals).toHaveLength(5);
+			expect(signals[0]).toHaveProperty('name', RSC_ANIMATION);
+			expect(signals[0].on).toHaveLength(1);
+			expect(signals[1]).toHaveProperty('name', 'rscColorAnimationDirection');
+			expect(signals[1].on).toHaveLength(2);
+			expect(signals[2]).toHaveProperty('name', 'rscColorAnimation');
+			expect(signals[2].on).toHaveLength(1);
+			expect(signals[3]).toHaveProperty('name', `${HIGHLIGHTED_ITEM}_prev`);
+			expect(signals[3].on).toHaveLength(1);
+			expect(signals[4]).toHaveProperty('name', `${HIGHLIGHTED_SERIES}_prev`);
+			expect(signals[4].on).toHaveLength(1);
+		});
+		test('should not do anything if the highlight signal is not found', () => {
+			const signals = JSON.parse(JSON.stringify([defaultHighlightedItemSignal]));
+			const signalsCopy = JSON.parse(JSON.stringify(signals));
+			addHighlightedSeriesSignalEvents(signals, 'line0');
+			expect(signals).toEqual(signalsCopy);
 		});
 	});
 });

@@ -21,7 +21,7 @@ import {
 	LINE_WIDTH_SCALE,
 	OPACITY_SCALE,
 	SYMBOL_SHAPE_SCALE,
-	SYMBOL_SIZE_SCALE,
+	SYMBOL_SIZE_SCALE
 } from '@constants';
 import { getColorValue, getPathFromSymbolShape } from '@specBuilder/specUtils';
 import { spectrumColors } from '@themes';
@@ -78,8 +78,8 @@ export const getHiddenEntriesFilter = (hiddenEntries: string[], name: string): F
 	return [
 		{
 			type: 'filter',
-			expr: `indexof(${JSON.stringify(hiddenEntries)}, datum.${name}Entries) === -1`,
-		},
+			expr: `indexof(${JSON.stringify(hiddenEntries)}, datum.${name}Entries) === -1`
+		}
 	];
 };
 
@@ -110,10 +110,10 @@ const getLegendLabelsEncodings = (name: string, legendLabels: LegendLabel[] | un
 							test: `indexof(pluck(${name}_labels, 'seriesName'), datum.value) > -1`,
 							signal: `${name}_labels[indexof(pluck(${name}_labels, 'seriesName'), datum.value)].label`,
 						},
-						{ signal: 'datum.value' },
-					],
-				},
-			},
+						{ signal: 'datum.value' }
+					]
+				}
+			}
 		};
 	}
 	return {};
@@ -127,11 +127,11 @@ const getHoverEncodings = (facets: Facet[], props: LegendSpecProps, marks: Mark[
 				name: `${name}_legendEntry`,
 				interactive: true,
 				enter: {
-					tooltip: getTooltip(descriptions, name), // only add tooltip if descriptions exist
+					tooltip: getTooltip(descriptions, name) // only add tooltip if descriptions exist
 				},
 				update: {
-					fill: { value: 'transparent' }, // need something here to trigger the tooltip
-				},
+					fill: { value: 'transparent' } // need something here to trigger the tooltip
+				}
 			},
 			labels: {
 				update: {
@@ -150,9 +150,9 @@ const getHoverEncodings = (facets: Facet[], props: LegendSpecProps, marks: Mark[
 				name: `${name}_legendEntry`,
 				interactive: true,
 				enter: {
-					fill: { value: 'transparent' },
-				},
-			},
+					fill: { value: 'transparent' }
+				}
+			}
 		};
 	}
 
@@ -184,7 +184,7 @@ export const getOpacityEncoding = ({
 
 		//If animations are enabled, set legend animation opacity rules
 		//TODO: Add tests
-		if (animations !== false) {
+		if (animations) {
 			/*
 			this is the check for chart type and is the reason the spec.marks had to be pushed to
 			getCategoricalLegend in legendSpecBuilder
@@ -257,11 +257,11 @@ export const getSymbolEncodings = (facets: Facet[], props: LegendSpecProps): Leg
 };
 
 const getSymbolFacetEncoding = <T>({
-	customValue,
-	facets,
-	facetType,
-	name,
-}: {
+		customValue,
+		facets,
+		facetType,
+		name
+	}: {
 	customValue?: FacetRef<T>;
 	facets?: Facet[];
 	facetType: FacetType;
@@ -293,7 +293,7 @@ const getSymbolFacetEncoding = <T>({
 	if (secondaryFacet) {
 		const { scale, signal } = secondaryFacetMapping[facetType];
 		return {
-			signal: `scale('${signal}', data('${name}Aggregate')[datum.index].${facet.field})[indexof(domain('${scale}'), data('${name}Aggregate')[datum.index].${secondaryFacet.field})% length(scale('${signal}', data('${name}Aggregate')[datum.index].${facet.field}))]`,
+			signal: `scale('${signal}', data('${name}Aggregate')[datum.index].${facet.field})[indexof(domain('${scale}'), data('${name}Aggregate')[datum.index].${secondaryFacet.field})% length(scale('${signal}', data('${name}Aggregate')[datum.index].${facet.field}))]`
 		};
 	}
 

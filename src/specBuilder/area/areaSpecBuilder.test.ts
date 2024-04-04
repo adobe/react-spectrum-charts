@@ -31,7 +31,8 @@ import {
 	SELECTED_SERIES,
 	PREVIOUS_TABLE,
 	SERIES_ID,
-	TABLE
+	TABLE,
+	RSC_ANIMATION
 } from '@constants';
 import { getGenericValueSignal } from '@specBuilder/signal/signalSpecBuilder';
 import { defaultSignals } from '@specBuilder/specTestUtils';
@@ -40,6 +41,7 @@ import { Data, GroupMark, Spec } from 'vega';
 import { AreaSpecProps } from '../../types';
 import { initializeSpec } from '../specUtils';
 import { addArea, addAreaMarks, addData, addHighlightedItemEvents, addSignals, setScales } from './areaSpecBuilder';
+import { defaultAnimationScales } from '@specBuilder/scale/scaleSpecBuilder.test';
 
 const startingSpec: Spec = initializeSpec({
 	scales: [{ name: COLOR_SCALE, type: 'ordinal' }],
@@ -297,6 +299,28 @@ describe('areaSpecBuilder', () => {
 			addHighlightedItemEvents(signals, 'area0');
 			expect(signals[0].on).toHaveLength(2);
 		});
+
+		test('children: should add signals with animations', () => {
+			const tooltip = createElement(ChartTooltip);
+			const signals = addSignals(defaultSignals, { ...defaultAreaProps, children: [tooltip], animations: true });
+			expect(signals).toHaveLength(10);
+			expect(signals[0]).toHaveProperty('name', HIGHLIGHTED_ITEM);
+			expect(signals[1]).toHaveProperty('name', HIGHLIGHTED_SERIES);
+			expect(signals[1].on).toHaveLength(2);
+			expect(signals[2]).toHaveProperty('name', SELECTED_ITEM);
+			expect(signals[3]).toHaveProperty('name', SELECTED_SERIES);
+			expect(signals[4]).toHaveProperty('name', RSC_ANIMATION);
+			expect(signals[4].on).toHaveLength(1);
+			expect(signals[5]).toHaveProperty('name', 'rscColorAnimationDirection');
+			expect(signals[5].on).toHaveLength(2);
+			expect(signals[6]).toHaveProperty('name', 'rscColorAnimation');
+			expect(signals[6].on).toHaveLength(1);
+			expect(signals[7]).toHaveProperty('name', `${HIGHLIGHTED_ITEM}_prev`);
+			expect(signals[7].on).toHaveLength(1);
+			expect(signals[8]).toHaveProperty('name', `${HIGHLIGHTED_SERIES}_prev`);
+			expect(signals[8].on).toHaveLength(1);
+			expect(signals[9]).toHaveProperty('name', 'area0_controlledHoveredId');
+		});
 	});
 
 	describe('setScales()', () => {
@@ -307,6 +331,15 @@ describe('areaSpecBuilder', () => {
 		test('linear', () => {
 			expect(setScales(startingSpec.scales ?? [], { ...defaultAreaProps, scaleType: 'linear' })).toStrictEqual([
 				defaultSpec.scales?.[0],
+				defaultLinearScale,
+				defaultSpec.scales?.[2],
+			]);
+		});
+
+		test('linear with animations', () => {
+			expect(setScales(startingSpec.scales ?? [], { ...defaultAreaProps, scaleType: 'linear', children: [createElement(ChartTooltip)], animations: true })).toStrictEqual([
+				defaultSpec.scales?.[0],
+				...defaultAnimationScales,
 				defaultLinearScale,
 				defaultSpec.scales?.[2],
 			]);

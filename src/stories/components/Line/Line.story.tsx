@@ -14,7 +14,7 @@ import { ReactElement } from 'react';
 import { ReferenceLine } from '@components/ReferenceLine';
 import useChartProps from '@hooks/useChartProps';
 import { Axis, Bar, Chart, ChartPopover, ChartTooltip, Legend, Line } from '@rsc';
-import { simpleSparklineData, workspaceTrendsData, workspaceTrendsDataWithVisiblePoints } from '@stories/data/data';
+import { newDataArray1, simpleSparklineData, workspaceTrendsData, workspaceTrendsDataWithVisiblePoints } from '@stories/data/data';
 import { formatTimestamp } from '@stories/storyUtils';
 import { action } from '@storybook/addon-actions';
 import { StoryFn } from '@storybook/react';
@@ -58,7 +58,12 @@ const historicalCompareData = [
 	{ datetime: 1668409200000, users: 4913, series: 'Add Freeform table', period: 'Current' },
 ];
 
-const defaultChartProps: ChartProps = { animations: false, data: workspaceTrendsData, minWidth: 400, maxWidth: 800, height: 400 };
+const defaultChartProps: ChartProps = {
+	data: workspaceTrendsData,
+	minWidth: 400,
+	maxWidth: 800,
+	height: 400,
+};
 
 const sparklineChartProps: ChartProps = { data: simpleSparklineData, minWidth: 50, maxWidth: 200, height: 50 };
 

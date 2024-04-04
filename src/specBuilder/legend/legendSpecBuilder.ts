@@ -256,7 +256,7 @@ const addScales = produce<Scale[], [LegendSpecProps]>(
 	(scales, { color, lineType, opacity, symbolShape, animations }) => {
 		// if animations are enabled, add all necessary animation scales.
 		//TODO: add tests
-		if (animations !== false) {
+		if (animations) {
 			addRscAnimationScales(scales);
 		}
 		// it is possible to define fields to facet the data off of on the legend
@@ -319,6 +319,8 @@ export const addSignals = produce<Signal[], [LegendSpecProps]>(
 		// if animations are enabled, add all necessary animation signals.
 		//TODO: add tests
 		if (animations) {
+			// we don't want to add the signals if they already exist.
+			// Since they come as a package, we only need to check if one animation signal is present.
 			if (!hasSignalByName(signals, RSC_ANIMATION)) {
 				signals.push(...getRscAnimationSignals(name));
 			}
@@ -335,4 +337,3 @@ export const addSignals = produce<Signal[], [LegendSpecProps]>(
 			signals.push(getGenericValueSignal(`${name}_labels`, legendLabels));
 		}
 	}
-);
