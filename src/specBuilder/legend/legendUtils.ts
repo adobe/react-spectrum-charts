@@ -254,11 +254,11 @@ export const getSymbolEncodings = (facets: Facet[], props: LegendSpecProps): Leg
 };
 
 const getSymbolFacetEncoding = <T>({
-									   customValue,
-									   facets,
-									   facetType,
-									   name
-								   }: {
+		customValue,
+		facets,
+		facetType,
+		name
+	}: {
 	customValue?: FacetRef<T>;
 	facets?: Facet[];
 	facetType: FacetType;
