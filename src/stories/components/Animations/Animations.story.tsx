@@ -20,7 +20,7 @@ import {
 } from '@rsc';
 import { areaData, newDataArray1WithStaticPoints, workspaceTrendsData } from '@stories/data/data';
 import { StoryFn } from '@storybook/react';
-import { bindWithProps } from '@test-utils';
+import { bindWithProps, manipulateData } from '@test-utils';
 import { ChartData, ChartElement, Datum, SpectrumColor } from 'types';
 
 import { Button, Content, Text, View } from '@adobe/react-spectrum';
@@ -40,7 +40,7 @@ interface ChartWithToggleableDataProps extends ToggleableDataProps {
 	ChartComponent: ChartElement;
 }
 
-const defaultChartProps: ChartProps = { data: [], minWidth: 400, maxWidth: 800, height: 400 };
+const defaultChartProps: ChartProps = { data: [], minWidth: 400, maxWidth: 800, height: 400, animations: true };
 
 const ChartWithToggleableData = ({ ChartComponent, initialData, secondaryData }: ChartWithToggleableDataProps) => {
 	const [dataSource, setDataSource] = useState(true);
@@ -55,18 +55,12 @@ const ChartWithToggleableData = ({ ChartComponent, initialData, secondaryData }:
 
 	return (
 		<div>
-			<Chart data={currentData} {...remaingProps} />
+			<Chart data={currentData} animations={true} {...remaingProps} />
 			<Button onPress={toggleDataSource} variant={'primary'}>
 				Toggle Data
 			</Button>
 		</div>
 	);
-};
-
-const manipulateData = (data: number): number => {
-	const randomFactor = Math.random() * (1.15 - 0.85) + 0.85;
-	const result = data * randomFactor;
-	return Math.round(result);
 };
 
 const dialog = (item: Datum) => {
@@ -395,8 +389,8 @@ export {
 	DodgedBarZero,
 	SingleLineSwitch,
 	SingleLineZero,
-	TrellisHorizontalBarSwitch,
-	TrellisHorizontalBarZero,
 	TrendlineSwitch,
 	TrendlineZero,
+	TrellisHorizontalBarSwitch,
+	TrellisHorizontalBarZero,
 };

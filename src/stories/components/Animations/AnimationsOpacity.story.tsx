@@ -1,30 +1,37 @@
-import { Content, Flex } from '@adobe/react-spectrum';
-import React, { createElement, ReactElement } from 'react';
-import { characterData } from '@stories/data/marioKartData';
+import React, { ReactElement, createElement } from 'react';
+
+import { COLOR_SCALE, LINE_TYPE_SCALE, OPACITY_SCALE } from '@constants';
+import useChartProps from '@hooks/useChartProps';
 import {
 	Area,
-	Axis, Bar,
-	Chart, ChartColors,
+	Axis,
+	Bar,
+	Chart,
+	ChartColors,
 	ChartPopover,
 	ChartProps,
-	ChartTooltip, Datum,
+	ChartTooltip,
+	Datum,
 	Legend,
 	LegendProps,
-	Line, Scatter,
-	ScatterProps, Title
+	Line,
+	Scatter,
+	ScatterProps,
+	Title,
 } from '@rsc';
-import { COLOR_SCALE, LINE_TYPE_SCALE, OPACITY_SCALE } from '@constants';
-import { StoryFn } from '@storybook/react';
-import useChartProps from '@hooks/useChartProps';
-import { browserData as data } from '@stories/data/data';
-import { bindWithProps } from '@test-utils';
 import { barSeriesData } from '@stories/components/Bar/data';
+import { browserData as data } from '@stories/data/data';
+import { characterData } from '@stories/data/marioKartData';
+import { StoryFn } from '@storybook/react';
+import { bindWithProps } from '@test-utils';
+
+import { Content, Flex } from '@adobe/react-spectrum';
 
 export default {
 	title: 'RSC/Animations/Opacity',
 };
 
-const defaultChartProps: ChartProps = { data: [], minWidth: 400, maxWidth: 800, height: 400 };
+const defaultChartProps: ChartProps = { data: [], minWidth: 400, maxWidth: 800, height: 400, animations: true };
 const dialogContent = (datum) => (
 	<Content>
 		<div>Operating system: {datum.series}</div>
@@ -93,7 +100,7 @@ const getLegendProps = (args: ScatterProps): LegendProps => {
 };
 
 const AreaPopoverStory: StoryFn<typeof Area> = (args): ReactElement => {
-	const chartProps = useChartProps({ data: areaStoryData, minWidth: 400, maxWidth: 800, height: 400 });
+	const chartProps = useChartProps({ data: areaStoryData, minWidth: 400, maxWidth: 800, height: 400, animations: true });
 	return (
 		<Chart {...chartProps}>
 			<Axis position="bottom" baseline />
@@ -108,7 +115,7 @@ const AreaPopoverStory: StoryFn<typeof Area> = (args): ReactElement => {
 };
 
 const DodgedBarPopoverStory: StoryFn<typeof Bar> = (args): ReactElement => {
-	const chartProps = useChartProps({ data: barSeriesData, width: 800, height: 600 });
+	const chartProps = useChartProps({ data: barSeriesData, width: 800, height: 600, animations: true });
 	return (
 		<Chart {...chartProps}>
 			<Axis position={args.orientation === 'horizontal' ? 'left' : 'bottom'} baseline title="Browser" />
@@ -132,14 +139,21 @@ const LineStory: StoryFn<typeof ChartPopover> = (args): ReactElement => {
 				<ChartTooltip>{dialogContent}</ChartTooltip>
 				<ChartPopover {...args} />
 			</Line>
-			<Legend highlight/>
+			<Legend highlight />
 		</Chart>
 	);
 };
 
 const ScatterStory: StoryFn<typeof Scatter> = (args): ReactElement => {
 	const colors: ChartColors = args.colorScaleType === 'linear' ? 'sequentialViridis5' : 'categorical16';
-	const chartProps = useChartProps({ data: characterData, height: 500, width: 500, lineWidths: [1, 2, 3], colors });
+	const chartProps = useChartProps({
+		data: characterData,
+		height: 500,
+		width: 500,
+		lineWidths: [1, 2, 3],
+		colors,
+		animations: true,
+	});
 	const legendProps = getLegendProps(args);
 
 	return (
@@ -179,9 +193,4 @@ ScatterPopover.args = {
 	children: [createElement(ChartTooltip, {}, dialog), createElement(ChartPopover, { width: 200 }, dialog)],
 };
 
-export {
-	AreaPopover,
-	BarPopover,
-	LineChart,
-	ScatterPopover
-}
+export { AreaPopover, BarPopover, LineChart, ScatterPopover };

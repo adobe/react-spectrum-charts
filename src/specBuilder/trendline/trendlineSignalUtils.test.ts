@@ -13,7 +13,7 @@ import { createElement } from 'react';
 
 import { ChartTooltip } from '@components/ChartTooltip';
 import { Trendline } from '@components/Trendline';
-import { HIGHLIGHTED_ITEM, HIGHLIGHTED_SERIES } from '@constants';
+import { HIGHLIGHTED_ITEM, HIGHLIGHTED_SERIES, RSC_ANIMATION } from '@constants';
 import { defaultSignals } from '@specBuilder/specTestUtils';
 import { Signal } from 'vega';
 
@@ -37,6 +37,30 @@ describe('getTrendlineSignals()', () => {
 		expect(signals[1]).toHaveProperty('name', HIGHLIGHTED_SERIES);
 		expect(signals[1].on).toHaveLength(2);
 	});
+
+	test('should add voronoi hover signal events if ChartTooltip exists with Animations', () => {
+		setTrendlineSignals(signals, {
+			...defaultLineProps,
+			animations: true,
+			children: [createElement(Trendline, {}, createElement(ChartTooltip))],
+		});
+		expect(signals).toHaveLength(9);
+		expect(signals[0]).toHaveProperty('name', HIGHLIGHTED_ITEM);
+		expect(signals[0].on).toHaveLength(2);
+		expect(signals[1]).toHaveProperty('name', HIGHLIGHTED_SERIES);
+		expect(signals[1].on).toHaveLength(2);
+		expect(signals[4]).toHaveProperty('name', RSC_ANIMATION);
+		expect(signals[4].on).toHaveLength(1);
+		expect(signals[5]).toHaveProperty('name', 'rscColorAnimationDirection');
+		expect(signals[5].on).toHaveLength(4);
+		expect(signals[6]).toHaveProperty('name', 'rscColorAnimation');
+		expect(signals[6].on).toHaveLength(1);
+		expect(signals[7]).toHaveProperty('name', `${HIGHLIGHTED_ITEM}_prev`);
+		expect(signals[7].on).toHaveLength(1);
+		expect(signals[8]).toHaveProperty('name', `${HIGHLIGHTED_SERIES}_prev`);
+		expect(signals[8].on).toHaveLength(1);
+	});
+
 
 	test('should not modify any signals if there is not a ChartTooltip', () => {
 		setTrendlineSignals(signals, defaultLineProps);

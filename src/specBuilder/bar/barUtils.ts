@@ -117,7 +117,7 @@ export const getDodgedDimensionEncodings = (props: BarSpecProps): RectEncodeEntr
 	const endKey = `${startKey}2`;
 
 	return {
-		...(animations !== false && animateFromZero && {
+		...(animations && animateFromZero && {
 			[startKey]: getAnimationMarks(dimension, startMetric, data, previousData, scaleKey),
 			[endKey]: endAnimations
 		}),
@@ -340,7 +340,7 @@ export const getAnnotationMarks = (
 					],
 					width: annotationWidth,
 				},
-				...(animations !== false && {
+				...(animations && {
 					update: {
 						fillOpacity: {
 							signal: 'timerValue === 1 ? 1 : 0'
@@ -368,7 +368,7 @@ export const getAnnotationMarks = (
 					baseline: { value: 'middle' },
 					align: { value: 'center' },
 				},
-				...(animations !== false && {
+				...(animations && {
 					update: {
 						fillOpacity: {
 							signal: 'timerValue === 1 ? 1 : 0'
@@ -407,7 +407,7 @@ export const getBarOpacity = ({ children, animations }: BarSpecProps): Productio
 	}
 	// if animations are enabled, get opacity rules for charts that use the mark ID as the highlighted item.
 	//TODO: Add tests
-	if ( animations !== false ) {
+	if (animations) {
 		return getMarkHighlightOpacityRules();
 	}
 

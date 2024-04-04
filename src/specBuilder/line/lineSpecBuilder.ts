@@ -23,7 +23,7 @@ import {
 	getMetricRangeData,
 	getMetricRangeGroupMarks,
 	getMetricRangeSignals,
-	getMetricRanges,
+	getMetricRanges
 } from '@specBuilder/metricRange/metricRangeUtils';
 import { getFacetsFromProps } from '@specBuilder/specUtils';
 import {
@@ -100,7 +100,7 @@ export const addLine = produce<
 			opacity,
 			popoverMarkName: getPopoverMarkName(sanitizedChildren, lineName),
 			scaleType,
-			...props,
+			...props
 		};
 
 		spec.data = addData(spec.data ?? [], lineProps);
@@ -134,7 +134,7 @@ export const addSignals = produce<Signal[], [LineSpecProps]>((signals, props) =>
 	if (!hasInteractiveChildren(children)) return;
 	// if animations are enabled, push all necessary animation signals. Line charts have voronoi points and have nested datum
 	//TODO: add tests
-	if (animations !== false) {
+	if (animations) {
 		signals.push(...getRscAnimationSignals(name, true));
 	}
 
@@ -152,7 +152,7 @@ export const setScales = produce<Scale[], [LineSpecProps]>((scales, props) => {
 	const { metric, dimension, color, lineType, opacity, padding, scaleType, children, name, animations } = props;
 	// if animations are enabled, add all necessary animation scales.
 	//TODO: Add tests
-	if (animations !== false && hasInteractiveChildren(children)) {
+	if (animations && hasInteractiveChildren(children)) {
 		addRscAnimationScales(scales);
 	}
 	// add dimension scale
@@ -187,10 +187,10 @@ export const addLineMarks = produce<Mark[], [LineSpecProps]>((marks, props) => {
 			facet: {
 				name: `${name}_facet`,
 				data: FILTERED_TABLE,
-				groupby: facets,
-			},
+				groupby: facets
+			}
 		},
-		marks: [getLineMark(props, `${name}_facet`)],
+		marks: [getLineMark(props, `${name}_facet`)]
 	});
 	if (staticPoint) marks.push(getLineStaticPoint(props));
 	marks.push(...getMetricRangeGroupMarks(props));

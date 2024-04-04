@@ -251,7 +251,7 @@ export const getTrendlineLineMark = (markProps: TrendlineParentProps, trendlineP
 			},
 			update: {
 				x: getLineXProductionRule(trendlineDimension, dimensionScaleType, orientation, isDimensionNormalized),
-				...(markProps.animations !== false && { y: getLineYAnimationMarks(markProps, trendlineProps) }),
+				...(markProps.animations && { y: getLineYAnimationMarks(markProps, trendlineProps) }),
 				opacity: getLineOpacity(getLineMarkProps(markProps, trendlineProps)),
 			},
 		},

@@ -28,7 +28,7 @@ export const setTrendlineSignals = (signals: Signal[], markProps: TrendlineParen
 	const trendlines = getTrendlines(markProps);
 	// if animations are enabled, add necessary opacity animation signals
 	//TODO: Add tests
-	if (animations !== false) {
+	if (animations) {
 		checkRSCTrendlineAnimationSignals(markName, signals, trendlines);
 	}
 	if (trendlines.some((trendline) => hasTooltip(trendline.children))) {

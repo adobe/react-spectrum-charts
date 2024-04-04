@@ -122,7 +122,7 @@ export const addSignals = produce<Signal[], [BarSpecProps]>(
 
 		// if animations are enabled, push all necessary animation signals.
 		//TODO: add tests
-		if (animations !== false && hasInteractiveChildren(children)) {
+		if (animations && hasInteractiveChildren(children)) {
 			signals.push(...getRscAnimationSignals(name, undefined, true));
 		}
 		addHighlightedItemSignalEvents({ signals, markName: name, animations, animateFromZero, needsDisable: true });
@@ -234,7 +234,7 @@ export const addScales = produce<Scale[], [BarSpecProps]>((scales, props) => {
 	const { color, lineType, opacity, orientation, animations, children } = props;
 	// if animations are enabled and the chart has interactive children, get all animation scales.
 	//TODO add tests
-	if (animations !== false && hasInteractiveChildren(children)) {
+	if (animations && hasInteractiveChildren(children)) {
 		addRscAnimationScales(scales);
 	}
 	addMetricScale(scales, getScaleValues(props), orientation === 'vertical' ? 'y' : 'x');

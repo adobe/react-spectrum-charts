@@ -43,7 +43,7 @@ export const setHoverOpacityForMarks = (marks: Mark[], animations?: boolean, key
 			}
 			// if animations are enabled, update the opacity rules for the mark.
 			//TODO: add tests
-			if (animations !== false) {
+			if (animations) {
 				// bar and scatter have different rules due to using the mark ID for highlighting
 				if (mark.name == 'bar0' || mark.name == 'scatter0') {
 					update.opacity = getMarkWithLegendHighlightOpacityRules();

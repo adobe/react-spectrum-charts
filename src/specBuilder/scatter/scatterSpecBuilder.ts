@@ -128,7 +128,7 @@ export const addSignals = produce<Signal[], [ScatterSpecProps]>((signals, props)
 	const { animations, children, name } = props;
 	// if animations are enabled, push opacity animation signals to spec
 	// TODO: add tests
-	if (animations !== false) {
+	if (animations) {
 		signals.push(...getRscAnimationSignals(name, true, true));
 	}
 	// trendline signals
@@ -159,7 +159,7 @@ export const setScales = produce<Scale[], [ScatterSpecProps]>((scales, props) =>
 	} = props;
 	// if animations are enabled, add Opacity animation scales to spec
 	// TODO: add tests
-	if (animations !== false) {
+	if (animations) {
 		addRscAnimationScales(scales);
 	}
 	// add dimension scale

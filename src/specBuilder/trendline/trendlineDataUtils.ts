@@ -59,7 +59,7 @@ export const addTrendlineData = (data: Data[], markProps: TrendlineParentProps) 
 	const tableData = getTableData(data);
 	tableData.transform = addTableDataTransforms(tableData.transform ?? [], markProps);
 
-	if (markProps.animations !== false) {
+	if (markProps.animations) {
 		const previousTableData = getPreviousTableData(data);
 		previousTableData.transform = addTableDataTransforms(
 			previousTableData.transform ?? [],
@@ -83,7 +83,7 @@ const pushRegressionTrendlineData = (
 	facets: string[]
 ) => {
 	data.push(...getRegressionTrendlineData(markProps, trendlineProps, facets, trendlineProps.name, FILTERED_TABLE));
-	if (markProps.animations !== false) {
+	if (markProps.animations) {
 		data.push(
 			...getRegressionTrendlineData(
 				markProps,
@@ -124,7 +124,7 @@ const pushWindowTrendlineData = (
 	trendlineProps: TrendlineSpecProps
 ) => {
 	data.push(getWindowTrendlineData(markProps, trendlineProps, trendlineProps.name, FILTERED_TABLE));
-	if (markProps.animations !== false) {
+	if (markProps.animations) {
 		data.push(
 			getWindowTrendlineData(
 				markProps,

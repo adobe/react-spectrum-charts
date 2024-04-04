@@ -37,7 +37,7 @@ export const getControlledHoverSignal = (name: string): Signal => {
 export const addHighlightSignalLegendHoverEvents = (
 	signals: Signal[],
 	legendName: string,
-	includeHiddenSeries: boolean
+	includeHiddenSeries: boolean,
 ) => {
 	const highlightedSeriesSignal = signals.find((signal) => signal.name === HIGHLIGHTED_SERIES);
 	if (highlightedSeriesSignal) {
