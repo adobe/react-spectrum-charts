@@ -61,7 +61,7 @@ export const getLineMark = (lineMarkProps: LineMarkProps, dataSource: string): L
 				// but it may change the x position if it causes the chart to resize
 				x: getXProductionRule(scaleType, dimension),
 				opacity: getLineOpacity(lineMarkProps),
-				...(animations && animateFromZero && { y: getAnimationMarks(dimension, metric, data, previousData) })
+				...(animations && animateFromZero && { y: getAnimationMarks(dimension, metric, false, data, previousData) })
 			},
 		},
 	};

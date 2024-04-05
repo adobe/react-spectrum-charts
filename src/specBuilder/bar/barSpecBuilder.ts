@@ -125,7 +125,7 @@ export const addSignals = produce<Signal[], [BarSpecProps]>(
 		if (animations && hasInteractiveChildren(children)) {
 			signals.push(...getRscAnimationSignals(name, undefined, true));
 		}
-		addHighlightedItemSignalEvents({ signals, markName: name, animations, animateFromZero, needsDisable: true });
+		addHighlightedItemSignalEvents({ signals, markName: name, animations, animateFromZero, needsDisable: true});
 	}
 );
 
