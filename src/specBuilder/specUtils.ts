@@ -230,7 +230,7 @@ export const getSymbolWidthFromRscSymbolSize = (symbolSize: SymbolSize): number 
 export const baseData: Data[] = [
 	{ name: TABLE, values: [], transform: [{ type: 'identifier', as: MARK_ID }] },
 	{ name: FILTERED_TABLE, source: TABLE },
-	{ name: PREVIOUS_TABLE, values: [] },
+	{ name: PREVIOUS_TABLE, values: [], transform: [{ type: 'identifier', as: MARK_ID }] },
 	{ name: FILTERED_PREVIOUS_TABLE, source: PREVIOUS_TABLE }
 ];
 
@@ -344,6 +344,7 @@ export const usePreviousChartData = <T>(data: T) => {
 export const getAnimationMarks = (
 	dimension: string,
 	metric: string,
+	isStacked: boolean,
 	data?: ChartData[],
 	previousData?: ChartData[],
 	scale = 'yLinear'
@@ -358,9 +359,10 @@ export const getAnimationMarks = (
 		const hasSameDimensions = data !== previousData && data.every((d) => previousData.some((pd) => d[dimension] === pd[dimension])) && data.length == previousData.length;
 		if (hasSameDimensions) {
 			// If data isn't similar enough, keep the animation from zero as shown above
+			const datumVal = isStacked ? `(datum.${MARK_ID} + ${data.length})` : `datum.${dimension}`;
 			markUpdate = {
 				scale,
-				signal: `(data('${FILTERED_PREVIOUS_TABLE}')[indexof(pluck(data('${FILTERED_PREVIOUS_TABLE}'), '${dimension}'), datum.${dimension})].${metric} * (1 - ${easingFunction})) + (datum.${metric} * ${easingFunction})`,
+				signal: `(data('${FILTERED_PREVIOUS_TABLE}')[indexof(pluck(data('${FILTERED_PREVIOUS_TABLE}'), '${isStacked ? MARK_ID : dimension}'), ${datumVal})].${metric} * (1 - ${easingFunction})) + (datum.${metric} * ${easingFunction})`,
 			};
 		}
 	}

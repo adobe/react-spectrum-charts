@@ -110,14 +110,14 @@ export const getDodgedDimensionEncodings = (props: BarSpecProps): RectEncodeEntr
 	const startMetric = isStacked ? `${metric}0` : metric;
 	const endMetric = `${metric}1`;
 
-	const endAnimations = isStacked ? getAnimationMarks(dimension, endMetric, data, previousData, scaleKey)
+	const endAnimations = isStacked ? getAnimationMarks(dimension, endMetric, true, data, previousData, scaleKey)
 		: { scale: scaleKey, signal: "0" }
 
 	const endKey = `${startKey}2`;
 
 	return {
 		...(animations !== false && animateFromZero && {
-			[startKey]: getAnimationMarks(dimension, startMetric, data, previousData, scaleKey),
+			[startKey]: getAnimationMarks(dimension, startMetric, true, data, previousData, scaleKey),
 			[endKey]: endAnimations
 		}),
 		[dimensionAxis]: { scale, field },

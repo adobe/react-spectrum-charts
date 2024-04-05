@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { BACKGROUND_COLOR, FILTERED_TABLE } from '@constants';
+import { BACKGROUND_COLOR, FILTERED_TABLE, MARK_ID } from '@constants';
 import { getInteractive } from '@specBuilder/marks/markUtils';
 import { BarSpecProps } from 'types';
 import { Mark, RectEncodeEntry, RectMark } from 'vega';
@@ -117,8 +117,8 @@ export const getStackedDimensionEncodings = (props: BarSpecProps): RectEncodeEnt
 
 	return {
 		...(animations !== false && animateFromZero && {
-			[startKey]: getAnimationMarks(dimension, `${metric}0`, data, previousData, scaleKey),
-			[endKey]: getAnimationMarks(dimension, `${metric}1`, data, previousData, scaleKey)
+			[startKey]: getAnimationMarks(dimension, `${metric}0`, true, data, previousData, scaleKey),
+			[endKey]: getAnimationMarks(dimension, `${metric}1`, true, data, previousData, scaleKey)
 		}),
 		[dimensionAxis]: { scale: dimensionScaleKey, field: dimension },
 		[rangeScale]: { scale: dimensionScaleKey, band: 1 },

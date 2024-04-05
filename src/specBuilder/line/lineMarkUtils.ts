@@ -42,6 +42,7 @@ import { getAnimationMarks } from '@specBuilder/specUtils';
 export const getLineMark = (lineMarkProps: LineMarkProps, dataSource: string): LineMark => {
 	const { name, color, opacity, metric, dimension, scaleType, lineType, lineWidth, colorScheme, data, previousData, animations, animateFromZero } = lineMarkProps;
 
+	console.log('Animations', animations, ' animate from zero', animateFromZero);
 	return {
 		name,
 		type: 'line',
@@ -60,7 +61,7 @@ export const getLineMark = (lineMarkProps: LineMarkProps, dataSource: string): L
 				// but it may change the x position if it causes the chart to resize
 				x: getXProductionRule(scaleType, dimension),
 				opacity: getLineOpacity(lineMarkProps),
-				...(animations !== false && animateFromZero && { y: getAnimationMarks(dimension, metric, data, previousData) })
+				...(animations !== false && animateFromZero && { y: getAnimationMarks(dimension, metric, false, data, previousData) })
 			},
 		},
 	};

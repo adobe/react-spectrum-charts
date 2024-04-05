@@ -1,9 +1,9 @@
-import { ReactElement, useState } from 'react';
+import React, { ReactElement, useState } from 'react';
 
 import { MARK_ID } from '@constants';
 import useChartProps from '@hooks/useChartProps';
 import { Annotation, Area, Axis, Bar, Chart, ChartPopover, ChartTooltip, Legend, Line } from '@rsc';
-import { areaData, newDataArray1WithStaticPoints } from '@stories/data/data';
+import { areaData, newDataArray1WithStaticPoints, stackedAreaData } from '@stories/data/data';
 import { StoryFn } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
 import { ChartData, ChartElement, Datum, SpectrumColor } from 'types';
@@ -38,7 +38,7 @@ const ChartWithToggleableData = ({ ChartComponent, initialData, secondaryData }:
 
 	return (
 		<div>
-			<Chart data={currentData} {...remaingProps} debug />
+			<Chart data={currentData} {...remaingProps} />
 			<Button onPress={toggleDataSource} variant={'primary'}>
 				Toggle Data
 			</Button>
@@ -47,9 +47,8 @@ const ChartWithToggleableData = ({ ChartComponent, initialData, secondaryData }:
 };
 
 const manipulateData = (data: number): number => {
-	const randomFactor = Math.random() * (1.15 - 0.85) + 0.85;
-	const result = data * randomFactor;
-	return Math.round(result);
+	const randomFactor = Math.random() * (1.25 - 0.75) + 0.75;
+	return Number((data * randomFactor).toFixed(1));
 };
 
 const AreaStory: StoryFn<ToggleableDataProps> = (args): ReactElement => {
@@ -65,6 +64,20 @@ const AreaStory: StoryFn<ToggleableDataProps> = (args): ReactElement => {
 		/>
 	);
 };
+
+const StackedAreaStory: StoryFn<ToggleableDataProps> = (args): ReactElement => {
+	const chartProps = useChartProps({ data: [], minWidth: 400, maxWidth: 800, height: 400 });
+	return (
+		<ChartWithToggleableData
+			ChartComponent={
+				<Chart {...chartProps}>
+					<Area dimension="browser" color="operatingSystem" scaleType="point" />
+				</Chart>
+			}
+			{ ...args}
+		/>
+	);
+}
 
 const SingleLineStory: StoryFn<ToggleableDataProps> = (args): ReactElement => {
 	const chartProps = useChartProps({ data: [], minWidth: 400, maxWidth: 800, height: 400 });
@@ -197,6 +210,17 @@ AreaZero.args = {
 	}),
 };
 
+const StackedAreaSwitch = bindWithProps(StackedAreaStory);
+StackedAreaSwitch.args = {
+	initialData: stackedAreaData,
+	secondaryData: stackedAreaData.map((data) => {
+		return {
+			...data,
+			value: manipulateData(data.value),
+		};
+	}),
+};
+
 const SingleLineSwitch = bindWithProps(SingleLineStory);
 SingleLineSwitch.args = {
 	initialData: newDataArray1WithStaticPoints,
@@ -282,8 +306,8 @@ TrellisHorizontalBarSwitch.args = {
 	initialData: trellisData,
 	secondaryData: trellisData.map((data) => {
 		return {
-			value: manipulateData(data.value as number),
 			...data,
+			value: manipulateData(data.value as number),
 		};
 	}),
 };
@@ -304,6 +328,7 @@ TrellisHorizontalBarZero.args = {
 export {
 	AreaSwitch,
 	AreaZero,
+	StackedAreaSwitch,
 	SingleLineSwitch,
 	SingleLineZero,
 	BarSwitch,
