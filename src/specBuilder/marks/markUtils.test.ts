@@ -19,23 +19,34 @@ import {
 	COLOR_SCALE,
 	DEFAULT_COLOR,
 	DEFAULT_COLOR_SCHEME,
+	DEFAULT_OPACITY_RULE,
 	DEFAULT_SECONDARY_COLOR,
 	DEFAULT_TIME_DIMENSION,
 	DEFAULT_TRANSFORMED_TIME_DIMENSION,
+	HIGHLIGHTED_ITEM,
+	HIGHLIGHTED_SERIES,
 	HIGHLIGHT_CONTRAST_RATIO,
 	LINEAR_COLOR_SCALE,
 	LINE_TYPE_SCALE,
 	LINE_WIDTH_SCALE,
+	MARK_ID,
 	OPACITY_SCALE,
+	SERIES_ID,
 	SYMBOL_SIZE_SCALE,
 } from '@constants';
 
 import {
 	getColorProductionRule,
 	getColorProductionRuleSignalString,
+	getHighlightOpacityAnimationValue,
 	getHighlightOpacityValue,
+	getLegendMarkOpacityRules,
+	getLegendSeriesOpacityRules,
 	getLineWidthProductionRule,
+	getMarkHighlightOpacityRules,
+	getMarkWithLegendHighlightOpacityRules,
 	getOpacityProductionRule,
+	getSeriesAnimationOpacityRules,
 	getStrokeDashProductionRule,
 	getSymbolSizeProductionRule,
 	getTooltip,
@@ -216,3 +227,121 @@ describe('getColorProductionRuleSignalString()', () => {
 		expect(getColorProductionRuleSignalString({ value: color }, DEFAULT_COLOR_SCHEME)).toStrictEqual(`'${color}'`);
 	});
 });
+
+describe('getHighlightOpacityAnimationValue()', () => {
+	test('should receive signal highlight opacity animation value', () => {
+		expect(getHighlightOpacityAnimationValue({signal: "test"})).toStrictEqual({ signal: `max(1-rscColorAnimation, test / ${HIGHLIGHT_CONTRAST_RATIO})` })
+	})
+
+	test('should receive value hightlight opacity animation value', () => {
+		expect(getHighlightOpacityAnimationValue({value: 1})).toStrictEqual({ signal: `max(1-rscColorAnimation, 1 / ${HIGHLIGHT_CONTRAST_RATIO})` })
+	})
+})
+
+describe(' getSeriesAnimationOpacityRules()', () => {
+	test('should receive signal series opacity animation rules', () => {
+		expect( getSeriesAnimationOpacityRules({signal: "test"})).toStrictEqual([
+			{
+				test: `${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES} !== datum.${SERIES_ID}`,
+				signal: `max(1-rscColorAnimation, test / ${HIGHLIGHT_CONTRAST_RATIO})`
+			},
+			{
+				test: `!${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES}_prev !== datum.${SERIES_ID}`,
+				signal: `max(1-rscColorAnimation, test / ${HIGHLIGHT_CONTRAST_RATIO})`
+			},
+			DEFAULT_OPACITY_RULE
+		])
+	})
+
+	test('should receive default series opacity animation rules', () => {
+		expect( getSeriesAnimationOpacityRules()).toStrictEqual([
+			{
+				test: `${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES} !== datum.${SERIES_ID}`,
+				signal: `max(1-rscColorAnimation, 1 / ${HIGHLIGHT_CONTRAST_RATIO})`
+			},
+			{
+				test: `!${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES}_prev !== datum.${SERIES_ID}`,
+				signal: `max(1-rscColorAnimation, 1 / ${HIGHLIGHT_CONTRAST_RATIO})`
+			},
+			DEFAULT_OPACITY_RULE
+		])
+	})
+})
+
+describe(' getMarkHighlightOpacityRules()', () => {
+	test('should receive default mark highlight opacity rules', () => {
+		expect( getMarkHighlightOpacityRules()).toStrictEqual([
+			{
+				test: `${HIGHLIGHTED_ITEM} && ${HIGHLIGHTED_ITEM} !== datum.${MARK_ID}`,
+				signal: `max(1-rscColorAnimation, 1 / ${HIGHLIGHT_CONTRAST_RATIO})`
+			},
+			{
+				test: `!${HIGHLIGHTED_ITEM} && ${HIGHLIGHTED_ITEM}_prev !== datum.${MARK_ID}`,
+				signal: `max(1-rscColorAnimation, 1 / ${HIGHLIGHT_CONTRAST_RATIO})`
+			},
+		])
+	})
+
+})
+
+describe('getMarkWithLegendHighlightOpacityRules()', () => {
+	test('should receive default mark and highlight legend opacity animation rules', () => {
+		expect(getMarkWithLegendHighlightOpacityRules()).toStrictEqual([
+			{
+				// If there is no current selection, but there is a hover and the hover is NOT for the current bar
+				test: `${HIGHLIGHTED_ITEM} && ${HIGHLIGHTED_ITEM} !== datum.${MARK_ID}`,
+				signal: `max(1-rscColorAnimation, 1 / ${HIGHLIGHT_CONTRAST_RATIO})`
+			},
+			{
+				// If there is a highlighted series and the highlighted series is NOT the series of the current bar
+				test: `${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES} !== datum.${SERIES_ID}`,
+				signal: `max(1-rscColorAnimation, 1 / ${HIGHLIGHT_CONTRAST_RATIO})`
+			},
+			{
+				// If there is no highlighted series and the previously highlighted series is the series of the current bar
+				test: `!${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES}_prev == datum.${SERIES_ID}`,
+				value: 1
+			},
+			{
+				// If the previously hovered bar is NOT the current bar and the color animation direction is reversed (fading in)
+				test: `${HIGHLIGHTED_ITEM}_prev !== datum.${MARK_ID} && rscColorAnimationDirection === -1`,
+				signal: `max(1-rscColorAnimation, 1 / ${HIGHLIGHT_CONTRAST_RATIO})`
+			},
+			{ value: 1 }
+		])
+	})
+})
+
+describe('getLegendSeriesOpacityRules()', () => {
+	test('should receive default series legend opacity animation rules', () => {
+		expect(getLegendSeriesOpacityRules()).toStrictEqual([
+			{
+				test: `${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES} !== datum.value`,
+				signal: `max(1-rscColorAnimation, 1 / ${HIGHLIGHT_CONTRAST_RATIO})`
+			},
+			{
+				test: `!${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES}_prev !== datum.value`,
+				signal: `max(1-rscColorAnimation, 1 / ${HIGHLIGHT_CONTRAST_RATIO})`
+			},
+			DEFAULT_OPACITY_RULE
+		])
+	})
+})
+
+describe('getLegendMarkOpacityRules()', () => {
+	test('should receive default mark legend opacity animation rules', () => {
+		expect(getLegendMarkOpacityRules()).toStrictEqual([
+			{
+				// If there is a highlighted series, and it is NOT equal to the current series
+				test: `${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES} !== datum.value`,
+				signal: `max(1-rscColorAnimation, 1 / ${HIGHLIGHT_CONTRAST_RATIO})`
+			},
+			{
+				// If there is NOT a highlighted series and NOT a previously highlighted bar, and the previously highlighted series is NOT equal to the current series
+				test: `!${HIGHLIGHTED_SERIES} && !${HIGHLIGHTED_ITEM}_prev && datum.value !== ${HIGHLIGHTED_SERIES}_prev`,
+				signal: `max(1-rscColorAnimation, 1 / ${HIGHLIGHT_CONTRAST_RATIO})`
+			},
+			DEFAULT_OPACITY_RULE
+		])
+	})
+})

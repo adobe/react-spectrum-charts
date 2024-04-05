@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { HIGHLIGHTED_ITEM, HIGHLIGHTED_SERIES } from '@constants';
+import { HIGHLIGHTED_ITEM, HIGHLIGHTED_SERIES, RSC_ANIMATION } from '@constants';
 import {
 	defaultHighlightedItemSignal,
 	defaultHighlightedSeriesSignal,
@@ -17,7 +17,7 @@ import {
 } from '@specBuilder/specTestUtils';
 import { Signal } from 'vega';
 
-import { addHighlightedItemSignalEvents, addHighlightedSeriesSignalEvents } from './signalSpecBuilder';
+import { addHighlightedItemSignalEvents, addHighlightedSeriesSignalEvents, getRscAnimationSignals } from './signalSpecBuilder';
 
 describe('signalSpecBuilder', () => {
 	let signals: Signal[];
@@ -55,6 +55,29 @@ describe('signalSpecBuilder', () => {
 			expect(signals[1]?.on?.[1]).toHaveProperty('events', '@line0:mouseout');
 			expect(signals[2].on).toBeUndefined();
 			expect(signals[3].on).toBeUndefined();
+		});
+		test('should not do anything if the highlight signal is not found', () => {
+			const signals = JSON.parse(JSON.stringify([defaultHighlightedItemSignal]));
+			const signalsCopy = JSON.parse(JSON.stringify(signals));
+			addHighlightedSeriesSignalEvents(signals, 'line0');
+			expect(signals).toEqual(signalsCopy);
+		});
+	});
+
+	describe('getRscAnimationSignals()', () => {
+		test('should add on events', () => {
+			const signals = getRscAnimationSignals('line0');
+			expect(signals).toHaveLength(5);
+			expect(signals[0]).toHaveProperty('name', RSC_ANIMATION);
+			expect(signals[0].on).toHaveLength(1);
+			expect(signals[1]).toHaveProperty('name', 'rscColorAnimationDirection');
+			expect(signals[1].on).toHaveLength(2);
+			expect(signals[2]).toHaveProperty('name', 'rscColorAnimation');
+			expect(signals[2].on).toHaveLength(1);
+			expect(signals[3]).toHaveProperty('name', `${HIGHLIGHTED_ITEM}_prev`);
+			expect(signals[3].on).toHaveLength(1);
+			expect(signals[4]).toHaveProperty('name', `${HIGHLIGHTED_SERIES}_prev`);
+			expect(signals[4].on).toHaveLength(1);
 		});
 		test('should not do anything if the highlight signal is not found', () => {
 			const signals = JSON.parse(JSON.stringify([defaultHighlightedItemSignal]));

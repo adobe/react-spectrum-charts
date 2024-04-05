@@ -10,9 +10,11 @@
  * governing permissions and limitations under the License.
  */
 import { FILTERED_TABLE, LINEAR_PADDING } from '@constants';
+import { hasPopover, hasTooltip } from '@specBuilder/marks/markUtils';
+import { addRscAnimationScales, hasScaleByName } from '@specBuilder/scale/scaleSpecBuilder';
 import { Scale } from 'vega';
 
-import { TrendlineParentProps, hasTrendlineWithNormalizedDimension } from './trendlineUtils';
+import { TrendlineParentProps, getTrendlines, hasTrendlineWithNormalizedDimension } from './trendlineUtils';
 
 /**
  * Gets all the scales used for trendlines
@@ -21,7 +23,6 @@ import { TrendlineParentProps, hasTrendlineWithNormalizedDimension } from './tre
  */
 export const getTrendlineScales = (props: TrendlineParentProps): Scale[] => {
 	const { dimension } = props;
-
 	// if there is a trendline that requires a normalized dimension, add the scale
 	if (hasTrendlineWithNormalizedDimension(props)) {
 		return [
@@ -37,4 +38,20 @@ export const getTrendlineScales = (props: TrendlineParentProps): Scale[] => {
 		];
 	}
 	return [];
+};
+
+/**
+ * Adds scales to spec if the scales are not already present and if trend lines have a highlighting enabled.
+ * @param name
+ * @param scales
+ * @param props
+ */
+//TODO: Add tests
+export const checkTrendlineAnimationScales = (name: string, scales: Scale[], props: TrendlineParentProps) => {
+	if (
+		!hasScaleByName(scales, 'rscAnimationCurve') &&
+		getTrendlines(props).some((trendline) => hasTooltip(trendline.children) || hasPopover(trendline.children))
+	) {
+		addRscAnimationScales(scales);
+	}
 };

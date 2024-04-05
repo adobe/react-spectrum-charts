@@ -44,7 +44,7 @@ const data = [
 const barArgs: BarProps = { dimension: 'browser', order: 'order', color: 'operatingSystem' };
 
 const BarAnnotationStory: StoryFn<typeof Annotation> = (args): ReactElement => {
-	const chartProps = useChartProps({ data: data, width: 600, height: 600 });
+	const chartProps = useChartProps({ animations: false, data: data, width: 600, height: 600 });
 	return (
 		<Chart {...chartProps}>
 			<Bar {...barArgs}>

@@ -42,6 +42,7 @@ export const FILTERED_TABLE = 'filteredTable';
 export const PREVIOUS_TABLE = 'previousTable';
 
 export const FILTERED_PREVIOUS_TABLE = 'filteredPreviousTable';
+export const PREVIOUS_PREFIX = 'previous_';
 
 // vega data field names
 export const SERIES_ID = 'rscSeriesId';
@@ -79,6 +80,8 @@ export const TRELLIS_PADDING = 0.2;
 
 // ratio that each opacity is divded by when hovering or highlighting from legend
 export const HIGHLIGHT_CONTRAST_RATIO = 5;
+
+export const RSC_ANIMATION = `rscAnimation`;
 
 // legend tooltips
 export const LEGEND_TOOLTIP_DELAY = 350;

@@ -1,16 +1,31 @@
 import React, { ReactElement, useState } from 'react';
 
-import { MARK_ID } from '@constants';
+import {
+	MARK_ID,
+	TRENDLINE_VALUE
+} from '@constants';
 import useChartProps from '@hooks/useChartProps';
-import { Annotation, Area, Axis, Bar, Chart, ChartPopover, ChartTooltip, Legend, Line } from '@rsc';
-import { areaData, newDataArray1WithStaticPoints, stackedAreaData } from '@stories/data/data';
+import {
+	Annotation,
+	Area,
+	Axis,
+	Bar,
+	Chart,
+	ChartPopover,
+	ChartProps,
+	ChartTooltip,
+	Legend,
+	Line,
+	Trendline
+} from '@rsc';
+import { areaData, newDataArray1WithStaticPoints, stackedAreaData, workspaceTrendsData } from '@stories/data/data';
 import { StoryFn } from '@storybook/react';
-import { bindWithProps } from '@test-utils';
+import { bindWithProps, manipulateData } from '@test-utils';
 import { ChartData, ChartElement, Datum, SpectrumColor } from 'types';
 
 import { Button, Content, Text, View } from '@adobe/react-spectrum';
 
-import { barData, barSubSeriesData, generateMockDataForTrellis } from '../Bar/data';
+import { barData, barSubSeriesData, generateMockDataForTrellis,  } from '../Bar/data';
 
 export default {
 	title: 'RSC/Animations',
@@ -25,10 +40,12 @@ interface ChartWithToggleableDataProps extends ToggleableDataProps {
 	ChartComponent: ChartElement;
 }
 
+const defaultChartProps: ChartProps = { data: [], minWidth: 400, maxWidth: 800, height: 400, animations: true };
+
 const ChartWithToggleableData = ({ ChartComponent, initialData, secondaryData }: ChartWithToggleableDataProps) => {
 	const [dataSource, setDataSource] = useState(true);
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
-	const { data, ...remaingProps } = ChartComponent.props;
+	const { data, animations, ...remaingProps } = ChartComponent.props;
 
 	const toggleDataSource = () => {
 		setDataSource(!dataSource);
@@ -38,7 +55,7 @@ const ChartWithToggleableData = ({ ChartComponent, initialData, secondaryData }:
 
 	return (
 		<div>
-			<Chart data={currentData} {...remaingProps} />
+			<Chart data={currentData} animations={true} {...remaingProps} />
 			<Button onPress={toggleDataSource} variant={'primary'}>
 				Toggle Data
 			</Button>
@@ -46,18 +63,29 @@ const ChartWithToggleableData = ({ ChartComponent, initialData, secondaryData }:
 	);
 };
 
+const dialog = (item: Datum) => {
+	return (
+		<Content>
+			<View>
+				<Text>{item[MARK_ID]}</Text>
+			</View>
+		</Content>
+	);
 const manipulateData = (data: number): number => {
 	const randomFactor = Math.random() * (1.25 - 0.75) + 0.75;
 	return Number((data * randomFactor).toFixed(1));
 };
 
 const AreaStory: StoryFn<ToggleableDataProps> = (args): ReactElement => {
-	const chartProps = useChartProps({ data: [], minWidth: 400, maxWidth: 800, height: 400 });
+	const chartProps = useChartProps( defaultChartProps );
 	return (
 		<ChartWithToggleableData
 			ChartComponent={
 				<Chart {...chartProps}>
-					<Area metric="maxTemperature" />
+					<Area metric="maxTemperature">
+						<ChartTooltip>{dialog}</ChartTooltip>
+						<ChartPopover>{dialog}</ChartPopover>
+					</Area>
 				</Chart>
 			}
 			{...args}
@@ -80,28 +108,34 @@ const StackedAreaStory: StoryFn<ToggleableDataProps> = (args): ReactElement => {
 }
 
 const SingleLineStory: StoryFn<ToggleableDataProps> = (args): ReactElement => {
-	const chartProps = useChartProps({ data: [], minWidth: 400, maxWidth: 800, height: 400 });
+	const chartProps = useChartProps(defaultChartProps);
 	return (
 		<ChartWithToggleableData
 			ChartComponent={
 				<Chart {...chartProps}>
-					<Line metric="y" dimension="x" scaleType="linear" staticPoint="point" />
+					<Line metric="y" dimension="x" scaleType="linear" staticPoint="point">
+						<ChartTooltip>{dialog}</ChartTooltip>
+						<ChartPopover>{dialog}</ChartPopover>
+					</Line>
 				</Chart>
 			}
 			{...args}
 		/>
 	);
 };
-
 const BarStory: StoryFn<ToggleableDataProps> = (args): ReactElement => {
-	const chartProps = useChartProps({ data: [], minWidth: 400, maxWidth: 800, height: 400 });
+	const chartProps = useChartProps(defaultChartProps);
 	return (
 		<ChartWithToggleableData
 			ChartComponent={
 				<Chart {...chartProps}>
 					<Axis position={'bottom'} baseline title="Browser" />
 					<Axis position={'left'} grid title="Downloads" />
-					<Bar dimension={'browser'} metric={'downloads'} />
+					<Bar dimension={'browser'} metric={'downloads'}>
+						<ChartTooltip>{dialog}</ChartTooltip>
+						<ChartPopover>{dialog}</ChartPopover>
+					</Bar>
+					<Legend highlight />
 				</Chart>
 			}
 			{...args}
@@ -115,7 +149,7 @@ const DodgedBarStory: StoryFn<ToggleableDataProps> = (args): ReactElement => {
 		['#575de8', '#8489fd'],
 		['#d16100', '#fa8b1a'],
 	];
-	const chartProps = useChartProps({ data: [], minWidth: 400, maxWidth: 800, height: 400, colors });
+	const chartProps = useChartProps({ ...defaultChartProps,  colors });
 	return (
 		<ChartWithToggleableData
 			ChartComponent={
@@ -129,6 +163,8 @@ const DodgedBarStory: StoryFn<ToggleableDataProps> = (args): ReactElement => {
 						paddingRatio={0.1}
 					>
 						<Annotation textKey="percentLabel" />
+						<ChartTooltip>{dialog}</ChartTooltip>
+						<ChartPopover>{dialog}</ChartPopover>
 					</Bar>
 					<Legend title="Operating system" highlight />
 				</Chart>
@@ -149,17 +185,7 @@ const TrellisHorizontalBarStory: StoryFn<ToggleableDataProps> = (args): ReactEle
 		'sequential-magma-1400',
 	];
 
-	const chartProps = useChartProps({ data: [], minWidth: 400, maxWidth: 800, height: 400, colors });
-
-	const dialog = (item: Datum) => {
-		return (
-			<Content>
-				<View>
-					<Text>{item[MARK_ID]}</Text>
-				</View>
-			</Content>
-		);
-	};
+	const chartProps = useChartProps({ ...defaultChartProps, colors });
 
 	return (
 		<ChartWithToggleableData
@@ -179,7 +205,43 @@ const TrellisHorizontalBarStory: StoryFn<ToggleableDataProps> = (args): ReactEle
 						<ChartTooltip>{dialog}</ChartTooltip>
 						<ChartPopover>{dialog}</ChartPopover>
 					</Bar>
-					<Legend />
+					<Legend highlight />
+				</Chart>
+			}
+			{...args}
+		/>
+	);
+};
+
+const TrendlineStory: StoryFn<ToggleableDataProps> = (args): ReactElement => {
+	const chartProps = useChartProps({ data: [], minWidth: 400, maxWidth: 800, height: 400 });
+	return (
+		<ChartWithToggleableData
+			ChartComponent={
+				<Chart {...chartProps}>
+					<Axis position="left" grid title="Users" />
+					<Axis position="bottom" labelFormat="time" baseline ticks />
+					<Line color="series">
+						<Trendline
+							{...args}
+							method={'linear'}
+							lineType={'dashed'}
+							lineWidth={'S'}
+							highlightRawPoint={true}
+							dimensionExtent={['domain', 'domain']}
+						>
+							<ChartTooltip>{dialog}</ChartTooltip>
+							<ChartPopover>
+								{(item) => (
+									<>
+										<div>Trendline value: {item[TRENDLINE_VALUE]}</div>
+										<div>Line value: {item.value}</div>
+									</>
+								)}
+							</ChartPopover>
+						</Trendline>
+					</Line>
+					<Legend lineWidth={{ value: 0 }} highlight />
 				</Chart>
 			}
 			{...args}
@@ -236,6 +298,29 @@ const SingleLineZero = bindWithProps(SingleLineStory);
 SingleLineZero.args = {
 	initialData: newDataArray1WithStaticPoints,
 	secondaryData: newDataArray1WithStaticPoints.concat({ x: 16, y: 55, point: true }),
+};
+
+const TrendlineSwitch = bindWithProps(TrendlineStory);
+TrendlineSwitch.args = {
+	initialData: workspaceTrendsData,
+	secondaryData: workspaceTrendsData.map((data) => {
+		return {
+			...data,
+			value: manipulateData(data.value),
+			users: manipulateData(data.users),
+		};
+	}),
+};
+
+const TrendlineZero = bindWithProps(TrendlineStory);
+TrendlineZero.args = {
+	initialData: workspaceTrendsData,
+	secondaryData: workspaceTrendsData.concat(
+		{ datetime: 1668410200000, point: 27, value: 648, users: 438, series: 'Add Fallout' },
+		{ datetime: 1668410200000, point: 27, value: 10932, users: 4913, series: 'Add Freeform table' },
+		{ datetime: 1668410200000, point: 27, value: 1932, users: 1413, series: 'Add Line viz' },
+		{ datetime: 1668410200000, point: 27, value: 6932, users: 3493, series: 'Add Bar viz' }
+	),
 };
 
 const BarSwitch = bindWithProps(BarStory);
@@ -335,6 +420,8 @@ export {
 	BarZero,
 	DodgedBarSwitch,
 	DodgedBarZero,
+	TrendlineSwitch,
+	TrendlineZero,
 	TrellisHorizontalBarSwitch,
 	TrellisHorizontalBarZero,
 };

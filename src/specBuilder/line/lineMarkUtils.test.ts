@@ -17,6 +17,7 @@ import {
 	COLOR_SCALE,
 	DEFAULT_OPACITY_RULE,
 	DEFAULT_TRANSFORMED_TIME_DIMENSION,
+	EASE_OUT_CUBIC,
 	HIGHLIGHTED_SERIES,
 	SELECTED_SERIES,
 	SERIES_ID,
@@ -42,6 +43,33 @@ describe('getLineMark()', () => {
 					y: { field: 'value', scale: 'yLinear' },
 				},
 				update: {
+					x: { field: DEFAULT_TRANSFORMED_TIME_DIMENSION, scale: 'xTime' },
+					opacity: [DEFAULT_OPACITY_RULE],
+				},
+			},
+		});
+	});
+
+	test('should return line mark with animations', () => {
+		const lineMark = getLineMark({...defaultLineMarkProps, animations: true, animateFromZero: true}, 'line0_facet');
+		expect(lineMark).toEqual({
+			name: 'line0',
+			type: 'line',
+			from: { data: 'line0_facet' },
+			interactive: false,
+			encode: {
+				enter: {
+					stroke: { field: 'series', scale: COLOR_SCALE },
+					strokeDash: { value: [] },
+					strokeOpacity: DEFAULT_OPACITY_RULE,
+					strokeWidth: { value: 1 },
+					y: { field: 'value', scale: 'yLinear' },
+				},
+				update: {
+					y: {
+						scale: 'yLinear',
+						signal: `datum.value * ${EASE_OUT_CUBIC}`
+					},
 					x: { field: DEFAULT_TRANSFORMED_TIME_DIMENSION, scale: 'xTime' },
 					opacity: [DEFAULT_OPACITY_RULE],
 				},

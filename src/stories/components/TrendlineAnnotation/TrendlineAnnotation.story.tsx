@@ -29,7 +29,7 @@ const trendlineProps: TrendlineProps = {
 };
 
 const TrendlineAnnotationStory: StoryFn<typeof TrendlineAnnotation> = (args): ReactElement => {
-	const chartProps = useChartProps({ data: characterData, height: 500, width: 500, lineWidths: [1, 2, 3] });
+	const chartProps = useChartProps({ animations: false, data: characterData, height: 500, width: 500, lineWidths: [1, 2, 3] });
 
 	return (
 		<Chart {...chartProps}>

@@ -96,14 +96,14 @@ describe('setHoverOpacityForMarks()', () => {
 	describe('no initial state', () => {
 		test('should not modify the marks', () => {
 			const marks = [];
-			setHoverOpacityForMarks(marks);
+			setHoverOpacityForMarks(marks, false);
 			expect(marks).toEqual([]);
 		});
 	});
 	describe('bar mark initial state', () => {
 		test('encoding should be added for opacity', () => {
 			const marks = JSON.parse(JSON.stringify([defaultMark]));
-			setHoverOpacityForMarks(marks);
+			setHoverOpacityForMarks(marks, false);
 			expect(marks).toStrictEqual([
 				{ ...defaultMark, encode: { ...defaultMark.encode, update: defaultOpacityEncoding } },
 			]);
@@ -117,7 +117,7 @@ describe('setHoverOpacityForMarks()', () => {
 					},
 				])
 			);
-			setHoverOpacityForMarks(marks);
+			setHoverOpacityForMarks(marks, false);
 			expect(marks).toStrictEqual([
 				{
 					...defaultMark,
@@ -135,7 +135,7 @@ describe('setHoverOpacityForMarks()', () => {
 	describe('group mark initial state', () => {
 		test('encoding should be added for opacity', () => {
 			const marks = JSON.parse(JSON.stringify([defaultGroupMark]));
-			setHoverOpacityForMarks(marks);
+			setHoverOpacityForMarks(marks, false);
 			expect(marks).toStrictEqual([
 				{
 					...defaultGroupMark,

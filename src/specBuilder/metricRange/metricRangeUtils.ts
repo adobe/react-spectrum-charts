@@ -91,29 +91,30 @@ export const getMetricRangeMark = (
 	metricRangeProps: MetricRangeSpecProps
 ): (LineMark | AreaMark)[] => {
 	const areaProps: AreaMarkProps = {
-		name: `${metricRangeProps.name}_area`,
+		animations: lineMarkProps.animations,
+		animateFromZero: lineMarkProps.animateFromZero,
+		children: [],
 		color: lineMarkProps.color,
 		colorScheme: lineMarkProps.colorScheme,
-		opacity: metricRangeProps.rangeOpacity,
-		children: [],
+		dimension: lineMarkProps.dimension,
+		displayOnHover: metricRangeProps.displayOnHover,
+		isMetricRange: true,
+		isStacked: false,
 		metricStart: metricRangeProps.metricStart,
 		metricEnd: metricRangeProps.metricEnd,
-		isStacked: false,
-		scaleType: 'time',
-		dimension: lineMarkProps.dimension,
-		isMetricRange: true,
+		name: `${metricRangeProps.name}_area`,
+		opacity: metricRangeProps.rangeOpacity,
 		parentName: lineMarkProps.name,
-		displayOnHover: metricRangeProps.displayOnHover,
-		animations: lineMarkProps.animations
+		scaleType: 'time',
 	};
 	const lineProps: LineMarkProps = {
 		...lineMarkProps,
-		name: `${metricRangeProps.name}_line`,
 		color: metricRangeProps.color ? { value: metricRangeProps.color } : lineMarkProps.color,
-		metric: metricRangeProps.metric,
+		displayOnHover: metricRangeProps.displayOnHover,
 		lineType: { value: metricRangeProps.lineType },
 		lineWidth: { value: metricRangeProps.lineWidth },
-		displayOnHover: metricRangeProps.displayOnHover,
+		metric: metricRangeProps.metric,
+		name: `${metricRangeProps.name}_line`,
 	};
 
 	const dataSource = `${metricRangeProps.name}_facet`;

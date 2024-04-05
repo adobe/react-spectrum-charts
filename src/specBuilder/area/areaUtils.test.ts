@@ -15,6 +15,7 @@ import {
 	DEFAULT_COLOR,
 	DEFAULT_COLOR_SCHEME,
 	DEFAULT_TRANSFORMED_TIME_DIMENSION,
+	EASE_OUT_CUBIC,
 } from '@constants';
 
 import { getAreaMark } from './areaUtils';
@@ -33,7 +34,7 @@ describe('getAreaMark', () => {
 				dimension: 'dimension',
 				scaleType: 'linear',
 				opacity: 0.5,
-				animations: false
+				animations: false,
 			})
 		).toStrictEqual({
 			name: 'area0',
@@ -88,7 +89,7 @@ describe('getAreaMark', () => {
 				dimension: 'dimension',
 				scaleType: 'linear',
 				opacity: 0.5,
-				animations: false
+				animations: false,
 			})
 		).toStrictEqual({
 			name: 'area0',
@@ -151,7 +152,7 @@ describe('getAreaMark', () => {
 				dimension: 'dimension',
 				scaleType: 'time',
 				opacity: 0.5,
-				animations: false
+				animations: false,
 			})
 		).toStrictEqual({
 			name: 'area0',
@@ -206,7 +207,7 @@ describe('getAreaMark', () => {
 				dimension: 'dimension',
 				scaleType: 'point',
 				opacity: 0.5,
-				animations: false
+				animations: false,
 			})
 		).toStrictEqual({
 			name: 'area0',
@@ -242,6 +243,61 @@ describe('getAreaMark', () => {
 							value: 0.5,
 						},
 					],
+				},
+			},
+		});
+	});
+
+	test('basic props with animations', () => {
+		expect(
+			getAreaMark({
+				name: 'area0',
+				color: DEFAULT_COLOR,
+				colorScheme: DEFAULT_COLOR_SCHEME,
+				children: [],
+				metricStart: 'metricStart',
+				metricEnd: 'metricEnd',
+				isStacked: false,
+				dimension: 'dimension',
+				scaleType: 'linear',
+				opacity: 0.5,
+				animations: true,
+				animateFromZero: true,
+			})
+		).toStrictEqual({
+			name: 'area0',
+			type: 'area',
+			from: {
+				data: 'area0_facet',
+			},
+			interactive: false,
+			encode: {
+				enter: {
+					fill: {
+						scale: COLOR_SCALE,
+						field: DEFAULT_COLOR,
+					},
+				},
+				update: {
+					y: {
+						scale: 'yLinear',
+						signal: `datum.${'metricStart'} * ${EASE_OUT_CUBIC}`,
+					},
+					y2: {
+						scale: 'yLinear',
+						signal: `datum.${'metricEnd'} * ${EASE_OUT_CUBIC}`,
+					},
+					cursor: undefined,
+					x: {
+						scale: 'xLinear',
+						field: 'dimension',
+					},
+					fillOpacity: [
+						{
+							value: 0.5,
+						},
+					],
+					tooltip: undefined,
 				},
 			},
 		});

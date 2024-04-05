@@ -33,7 +33,7 @@ export default {
 };
 
 const StackedBarTooltipStory: StoryFn<typeof ChartTooltip> = (args): ReactElement => {
-	const chartProps = useChartProps({ data, width: 600 });
+	const chartProps = useChartProps({ animations: false, data, width: 600 });
 	return (
 		<Chart {...chartProps}>
 			<Bar color="series">
@@ -43,7 +43,7 @@ const StackedBarTooltipStory: StoryFn<typeof ChartTooltip> = (args): ReactElemen
 	);
 };
 const DodgedBarTooltipStory: StoryFn<typeof ChartTooltip> = (args): ReactElement => {
-	const chartProps = useChartProps({ data, width: 600 });
+	const chartProps = useChartProps({ animations: false, data, width: 600 });
 	return (
 		<Chart {...chartProps}>
 			<Bar type="dodged" color="series">
@@ -71,9 +71,9 @@ const lineData = [
 ];
 
 const LineTooltipStory: StoryFn<typeof ChartTooltip> = (args): ReactElement => {
-	const chartProps = useChartProps({ data: lineData, width: 600 });
+	const chartProps = useChartProps({ animations: false, data: lineData, width: 600 });
 	return (
-		<Chart {...chartProps} >
+		<Chart {...chartProps} animations={false}>
 			<Line color="series">
 				<ChartTooltip {...args} />
 			</Line>
@@ -91,7 +91,7 @@ interface LineData extends Datum {
 }
 
 const AreaTooltipStory: StoryFn<typeof ChartTooltip> = (args): ReactElement => {
-	const chartProps = useChartProps({ data: lineData, width: 600 });
+	const chartProps = useChartProps({ animations: false, data: lineData, width: 600 });
 	return (
 		<Chart {...chartProps}>
 			<Area>

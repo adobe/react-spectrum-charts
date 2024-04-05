@@ -23,7 +23,7 @@ export default {
 };
 
 const ScatterPathStory: StoryFn<typeof ScatterPath> = (args): ReactElement => {
-	const chartProps = useChartProps({ data: characterData, height: 500, width: 500 });
+	const chartProps = useChartProps({ animations: false, data: characterData, height: 500, width: 500 });
 
 	return (
 		<Chart {...chartProps}>

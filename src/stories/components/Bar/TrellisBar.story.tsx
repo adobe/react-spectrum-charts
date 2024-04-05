@@ -27,10 +27,6 @@ export default {
 	component: Bar,
 };
 
-interface BarPropsAndAnimation extends Partial<BarProps> {
-	animations?: boolean;
-}
-
 const colors: SpectrumColor[] = [
 	'sequential-magma-200',
 	'sequential-magma-400',
@@ -41,7 +37,7 @@ const colors: SpectrumColor[] = [
 	'sequential-magma-1400',
 ];
 
-const BarStory: StoryFn<typeof Bar> = (args: BarPropsAndAnimation): ReactElement => {
+const BarStory: StoryFn<typeof Bar> = (args: Partial<BarProps>): ReactElement => {
 	const chartProps = useChartProps({
 		data: generateMockDataForTrellis({
 			property1: ['All users', 'Roku', 'Chromecast', 'Amazon Fire', 'Apple TV'],
@@ -54,8 +50,6 @@ const BarStory: StoryFn<typeof Bar> = (args: BarPropsAndAnimation): ReactElement
 		colors,
 		width: 800,
 		height: 800,
-		debug: true,
-		animations: args.animations
 	});
 
 	const dialog = (item: Datum) => {
@@ -81,20 +75,22 @@ const BarStory: StoryFn<typeof Bar> = (args: BarPropsAndAnimation): ReactElement
 	);
 };
 
-const Dodged = bindWithProps<BarPropsAndAnimation>(BarStory);
+const Dodged = bindWithProps<Partial<BarProps>>(BarStory);
 Dodged.args = {
+	animations: false,
 	type: 'dodged',
 	dimension: 'segment',
 	order: 'order',
 	color: 'bucket',
 	trellis: 'event',
 	trellisOrientation: 'horizontal',
-	orientation: 'horizontal'
+	orientation: 'horizontal',
 };
 
 const HorizontalBarHorizontalTrellis = bindWithProps<BarProps>(BarStory);
 HorizontalBarHorizontalTrellis.storyName = 'Horizontal Bar, Horizontal Trellis';
 HorizontalBarHorizontalTrellis.args = {
+	animations: false,
 	type: 'stacked',
 	trellis: 'event',
 	dimension: 'segment',
@@ -108,6 +104,7 @@ const HorizontalBarVerticalTrellis = bindWithProps<BarProps>(BarStory);
 HorizontalBarVerticalTrellis.storyName = 'Horizontal Bar, Vertical Trellis';
 HorizontalBarVerticalTrellis.args = {
 	...HorizontalBarHorizontalTrellis.args,
+	animations: false,
 	trellisOrientation: 'vertical',
 };
 
@@ -115,6 +112,7 @@ const VerticalBarHorizontalTrellis = bindWithProps<BarProps>(BarStory);
 VerticalBarHorizontalTrellis.storyName = 'Vertical Bar, Horizontal Trellis';
 VerticalBarHorizontalTrellis.args = {
 	...HorizontalBarHorizontalTrellis.args,
+	animations: false,
 	orientation: 'vertical',
 	trellisOrientation: 'horizontal',
 };
@@ -123,6 +121,7 @@ const VerticalBarVerticalTrellis = bindWithProps<BarProps>(BarStory);
 VerticalBarVerticalTrellis.storyName = 'Vertical Bar, Vertical Trellis';
 VerticalBarVerticalTrellis.args = {
 	...HorizontalBarVerticalTrellis.args,
+	animations: false,
 	orientation: 'vertical',
 	trellisOrientation: 'vertical',
 };
@@ -130,6 +129,7 @@ VerticalBarVerticalTrellis.args = {
 const WithCustomTrellisPadding = bindWithProps<BarProps>(BarStory);
 WithCustomTrellisPadding.args = {
 	...HorizontalBarVerticalTrellis.args,
+	animations: false,
 	orientation: 'vertical',
 	trellisPadding: 0.33,
 };

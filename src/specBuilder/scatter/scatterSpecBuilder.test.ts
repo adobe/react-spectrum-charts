@@ -48,6 +48,7 @@ describe('addData()', () => {
 	test('should add trendline data if trendline exists as a child', () => {
 		const data = addData(initializeSpec().data ?? [], {
 			...defaultScatterProps,
+			animations: false,
 			children: [createElement(Trendline)],
 		});
 		expect(data).toHaveLength(5);

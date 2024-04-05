@@ -21,15 +21,18 @@ import {
 	DEFAULT_METRIC,
 	DEFAULT_OPACITY_RULE,
 	DEFAULT_TIME_DIMENSION,
-	DEFAULT_TRANSFORMED_TIME_DIMENSION, FILTERED_PREVIOUS_TABLE,
+	DEFAULT_TRANSFORMED_TIME_DIMENSION,
+	EASE_OUT_CUBIC,
+	FILTERED_PREVIOUS_TABLE,
 	FILTERED_TABLE,
 	HIGHLIGHTED_ITEM,
 	HIGHLIGHTED_SERIES,
 	MARK_ID,
 	PREVIOUS_TABLE,
+	RSC_ANIMATION,
 	SERIES_ID,
 	TABLE,
-	TRENDLINE_VALUE
+	TRENDLINE_VALUE,
 } from '@constants';
 import { defaultSignals } from '@specBuilder/specTestUtils';
 import { LineSpecProps, MetricRangeElement, MetricRangeProps } from 'types';
@@ -38,6 +41,8 @@ import { Data, Spec } from 'vega';
 import * as signalSpecBuilder from '../signal/signalSpecBuilder';
 import { initializeSpec } from '../specUtils';
 import { addData, addLine, addLineMarks, addSignals, setScales } from './lineSpecBuilder';
+import { ChartTooltip } from '@components/ChartTooltip';
+import { defaultAnimationScales } from '@specBuilder/scale/scaleSpecBuilder.test';
 
 const defaultLineProps: LineSpecProps = {
 	children: [],
@@ -52,7 +57,7 @@ const defaultLineProps: LineSpecProps = {
 	colorScheme: DEFAULT_COLOR_SCHEME,
 	interactiveMarkName: undefined,
 	popoverMarkName: undefined,
-	animations: false
+	animations: false,
 };
 
 const getMetricRangeElement = (props?: Partial<MetricRangeProps>): MetricRangeElement =>
@@ -350,6 +355,80 @@ const displayPointMarks = [
 	},
 ];
 
+const displayPointWithAnimationMarks = [
+	{
+		name: 'line0_group',
+		type: 'group',
+		from: {
+			facet: {
+				name: 'line0_facet',
+				data: FILTERED_TABLE,
+				groupby: ['series'],
+			},
+		},
+		marks: [
+			{
+				name: 'line0',
+				type: 'line',
+				from: {
+					data: 'line0_facet',
+				},
+				interactive: false,
+				encode: {
+					enter: {
+						y: { scale: 'yLinear', field: 'value' },
+						stroke: { scale: COLOR_SCALE, field: 'series' },
+						strokeDash: { value: [] },
+						strokeOpacity: DEFAULT_OPACITY_RULE,
+						strokeWidth: undefined,
+					},
+					update: {
+						x: { scale: 'xTime', field: DEFAULT_TRANSFORMED_TIME_DIMENSION },
+						y: {
+							scale: 'yLinear',
+							signal: `datum.value * ${EASE_OUT_CUBIC}`,
+						},
+						opacity: [DEFAULT_OPACITY_RULE],
+					},
+				},
+			},
+		],
+	},
+	{
+		name: 'line0_staticPoints',
+		type: 'symbol',
+		from: {
+			data: 'line0_staticPointData',
+		},
+		interactive: false,
+		encode: {
+			enter: {
+				y: {
+					scale: 'yLinear',
+					field: 'value',
+				},
+				fill: {
+					scale: COLOR_SCALE,
+					field: 'series',
+				},
+				stroke: {
+					signal: BACKGROUND_COLOR,
+				},
+			},
+			update: {
+				x: {
+					scale: 'xTime',
+					field: DEFAULT_TRANSFORMED_TIME_DIMENSION,
+				},
+				y: {
+					scale: 'yLinear',
+					signal: `datum.value * ${EASE_OUT_CUBIC}`,
+				},
+			},
+		},
+	},
+];
+
 describe('lineSpecBuilder', () => {
 	describe('addLine()', () => {
 		test('should add line', () => {
@@ -421,6 +500,17 @@ describe('lineSpecBuilder', () => {
 	describe('setScales()', () => {
 		test('time', () => {
 			expect(setScales(startingSpec.scales ?? [], defaultLineProps)).toStrictEqual(defaultSpec.scales);
+		})
+
+		test('linear trenline with hover and animations', () => {
+			expect(
+				setScales(startingSpec.scales ?? [], {
+					...defaultLineProps,
+					scaleType: 'linear',
+					children: [createElement(Trendline, { displayOnHover: true })],
+					animations: true,
+				})
+			).toStrictEqual([defaultSpec.scales?.[0], ...defaultAnimationScales, defaultLinearScale, defaultSpec.scales?.[2]]);
 		});
 
 		test('linear', () => {
@@ -441,6 +531,18 @@ describe('lineSpecBuilder', () => {
 			).toStrictEqual([defaultSpec.scales?.[0], defaultPointScale, defaultSpec.scales?.[2]]);
 		});
 
+		test('point with animations and tooltip', () => {
+			expect(
+				setScales(startingSpec.scales ?? [], {
+					...defaultLineProps,
+					scaleType: 'point',
+					animations: true,
+					children: [createElement(ChartTooltip)]
+				})
+			).toStrictEqual([defaultSpec.scales?.[0], ...defaultAnimationScales, defaultPointScale, defaultSpec.scales?.[2]]);
+		});
+
+
 		test('with metric range fields', () => {
 			const [metricStart, metricEnd] = ['metricStart', 'metricEnd'];
 			const metricRangeMetricScale = {
@@ -456,6 +558,24 @@ describe('lineSpecBuilder', () => {
 					children: [createElement(MetricRange, { scaleAxisToFit: true, metricEnd, metricStart })],
 				})
 			).toStrictEqual([defaultSpec.scales?.[0], defaultSpec.scales?.[1], metricRangeMetricScale]);
+		});
+
+		test('with metric range fields and animations', () => {
+			const [metricStart, metricEnd] = ['metricStart', 'metricEnd'];
+			const metricRangeMetricScale = {
+				...defaultSpec.scales?.[2],
+				domain: {
+					...defaultSpec.scales?.[2].domain,
+					fields: ['value', metricStart, metricEnd],
+				},
+			};
+			expect(
+				setScales(startingSpec.scales ?? [], {
+					...defaultLineProps,
+					children: [createElement(MetricRange, { scaleAxisToFit: true, metricEnd, metricStart, displayOnHover: true })],
+					animations: true
+				})
+			).toStrictEqual([defaultSpec.scales?.[0], ...defaultAnimationScales, defaultSpec.scales?.[1], metricRangeMetricScale]);
 		});
 	});
 
@@ -505,6 +625,17 @@ describe('lineSpecBuilder', () => {
 			expect(addLineMarks([], { ...defaultLineProps, staticPoint: 'staticPoint' })).toStrictEqual(
 				displayPointMarks
 			);
+		});
+
+		test('with displayPointMark with animations', () => {
+			expect(
+				addLineMarks([], {
+					...defaultLineProps,
+					animateFromZero: true,
+					animations: true,
+					staticPoint: 'staticPoint',
+				})
+			).toStrictEqual(displayPointWithAnimationMarks);
 		});
 
 		test('with displayPointMark and metric range', () => {
@@ -557,6 +688,29 @@ describe('lineSpecBuilder', () => {
 			expect(signals[1].on).toHaveLength(2);
 		});
 
+		test('hover signals with metric range with animations', () => {
+			const signals = addSignals(defaultSignals, {
+				...defaultLineProps,
+				animations: true,
+				children: [getMetricRangeElement({ displayOnHover: true })],
+			});
+			expect(signals).toHaveLength(9);
+			expect(signals[0]).toHaveProperty('name', HIGHLIGHTED_ITEM);
+			expect(signals[0].on).toHaveLength(2);
+			expect(signals[1]).toHaveProperty('name', HIGHLIGHTED_SERIES);
+			expect(signals[1].on).toHaveLength(2);
+			expect(signals[4]).toHaveProperty('name', RSC_ANIMATION);
+			expect(signals[4].on).toHaveLength(1);
+			expect(signals[5]).toHaveProperty('name', 'rscColorAnimationDirection');
+			expect(signals[5].on).toHaveLength(2);
+			expect(signals[6]).toHaveProperty('name', 'rscColorAnimation');
+			expect(signals[6].on).toHaveLength(1);
+			expect(signals[7]).toHaveProperty('name', `${HIGHLIGHTED_ITEM}_prev`);
+			expect(signals[7].on).toHaveLength(1);
+			expect(signals[8]).toHaveProperty('name', `${HIGHLIGHTED_SERIES}_prev`);
+			expect(signals[8].on).toHaveLength(1);
+		});
+
 		test('adds hover signals when displayPointMark is not undefined', () => {
 			expect(addSignals([], { ...defaultLineProps, staticPoint: 'staticPoint' })).toStrictEqual([]);
 		});
@@ -572,6 +726,30 @@ describe('lineSpecBuilder', () => {
 			expect(signals[0].on).toHaveLength(2);
 			expect(signals[1]).toHaveProperty('name', HIGHLIGHTED_SERIES);
 			expect(signals[1].on).toHaveLength(2);
+		});
+
+		test('adds hover signals with metric range when displayPointMark with animations', () => {
+			const signals = addSignals(defaultSignals, {
+				...defaultLineProps,
+				staticPoint: 'staticPoint',
+				animations: true,
+				children: [getMetricRangeElement({ displayOnHover: true })],
+			});
+			expect(signals).toHaveLength(9);
+			expect(signals[0]).toHaveProperty('name', HIGHLIGHTED_ITEM);
+			expect(signals[0].on).toHaveLength(2);
+			expect(signals[1]).toHaveProperty('name', HIGHLIGHTED_SERIES);
+			expect(signals[1].on).toHaveLength(2);
+			expect(signals[4]).toHaveProperty('name', RSC_ANIMATION);
+			expect(signals[4].on).toHaveLength(1);
+			expect(signals[5]).toHaveProperty('name', 'rscColorAnimationDirection');
+			expect(signals[5].on).toHaveLength(2);
+			expect(signals[6]).toHaveProperty('name', 'rscColorAnimation');
+			expect(signals[6].on).toHaveLength(1);
+			expect(signals[7]).toHaveProperty('name', `${HIGHLIGHTED_ITEM}_prev`);
+			expect(signals[7].on).toHaveLength(1);
+			expect(signals[8]).toHaveProperty('name', `${HIGHLIGHTED_SERIES}_prev`);
+			expect(signals[8].on).toHaveLength(1);
 		});
 	});
 });

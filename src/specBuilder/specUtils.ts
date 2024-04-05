@@ -34,13 +34,13 @@ import { Data, Scale, ScaleType, Spec, ValuesData } from 'vega';
 import {
 	COLOR_SCALE,
 	DEFAULT_TRANSFORMED_TIME_DIMENSION,
-	FILTERED_TABLE,
 	EASE_OUT_CUBIC,
 	FILTERED_PREVIOUS_TABLE,
-	PREVIOUS_TABLE,
+	FILTERED_TABLE,
 	LINE_TYPE_SCALE,
 	MARK_ID,
 	OPACITY_SCALE,
+	PREVIOUS_TABLE,
 	TABLE,
 } from '../constants';
 import { SanitizedSpecProps } from '../types';

@@ -27,11 +27,12 @@ import {
 	getColorProductionRule,
 	getCursor,
 	getHighlightOpacityValue,
+	getMarkHighlightOpacityRules,
 	getOpacityProductionRule,
 	getStrokeDashProductionRule,
 	getTooltip,
 	hasInteractiveChildren,
-	hasPopover,
+	hasPopover
 } from '@specBuilder/marks/markUtils';
 import { getAnimationMarks, getColorValue, getLineWidthPixelsFromLineWidth } from '@specBuilder/specUtils';
 import { sanitizeMarkChildren } from '@utils';
@@ -116,7 +117,7 @@ export const getDodgedDimensionEncodings = (props: BarSpecProps): RectEncodeEntr
 	const endKey = `${startKey}2`;
 
 	return {
-		...(animations !== false && animateFromZero && {
+		...(animations && animateFromZero && {
 			[startKey]: getAnimationMarks(dimension, startMetric, true, data, previousData, scaleKey),
 			[endKey]: endAnimations
 		}),
@@ -339,7 +340,7 @@ export const getAnnotationMarks = (
 					],
 					width: annotationWidth,
 				},
-				...(animations !== false && {
+				...(animations && {
 					update: {
 						fillOpacity: {
 							signal: 'timerValue === 1 ? 1 : 0'
@@ -367,7 +368,7 @@ export const getAnnotationMarks = (
 					baseline: { value: 'middle' },
 					align: { value: 'center' },
 				},
-				...(animations !== false && {
+				...(animations && {
 					update: {
 						fillOpacity: {
 							signal: 'timerValue === 1 ? 1 : 0'
@@ -399,10 +400,15 @@ export const getBarUpdateEncodings = (props: BarSpecProps): EncodeEntry => ({
 	strokeWidth: getStrokeWidth(props),
 });
 
-export const getBarOpacity = ({ children }: BarSpecProps): ProductionRule<NumericValueRef> => {
+export const getBarOpacity = ({ children, animations }: BarSpecProps): ProductionRule<NumericValueRef> => {
 	// if there aren't any interactive components, then we don't need to add special opacity rules
 	if (!hasInteractiveChildren(children)) {
 		return [DEFAULT_OPACITY_RULE];
+	}
+	// if animations are enabled, get opacity rules for charts that use the mark ID as the highlighted item.
+	//TODO: Add tests
+	if (animations) {
+		return getMarkHighlightOpacityRules();
 	}
 
 	// if a bar is hovered/selected, all other bars should have reduced opacity
@@ -423,7 +429,7 @@ export const getBarOpacity = ({ children }: BarSpecProps): ProductionRule<Numeri
 	return [
 		{
 			test: `${HIGHLIGHTED_ITEM} && ${HIGHLIGHTED_ITEM} !== datum.${MARK_ID}`,
-			...getHighlightOpacityValue(),
+			...getHighlightOpacityValue(DEFAULT_OPACITY_RULE),
 		},
 		DEFAULT_OPACITY_RULE,
 	];
