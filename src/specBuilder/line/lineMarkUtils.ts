@@ -43,7 +43,6 @@ import { getAnimationMarks } from '@specBuilder/specUtils';
 export const getLineMark = (lineMarkProps: LineMarkProps, dataSource: string): LineMark => {
 	const { name, color, opacity, metric, dimension, scaleType, lineType, lineWidth, colorScheme, data, previousData, animations, animateFromZero } = lineMarkProps;
 
-	console.log('Animations', animations, ' animate from zero', animateFromZero);
 	return {
 		name,
 		type: 'line',

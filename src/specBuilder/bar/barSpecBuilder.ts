@@ -300,13 +300,10 @@ export const addSecondaryScales = (scales: Scale[], props: BarSpecProps) => {
 export const addMarks = produce<Mark[], [BarSpecProps]>((marks, props) => {
 	const barMarks: Mark[] = [];
 	if (isDodgedAndStacked(props)) {
-		console.log('Is dodged and stacked');
 		barMarks.push(getDodgedAndStackedBarMark(props));
 	} else if (props.type === 'stacked') {
-		console.log('Is stacked');
 		barMarks.push(...getStackedBarMarks(props));
 	} else {
-		console.log('Is dodged');
 		barMarks.push(getDodgedMark(props));
 	}
 

@@ -104,23 +104,6 @@ export const addHighlightedItemSignalEvents = ({
 	animateFromZero?: boolean;
 	needsDisable?: boolean;
 }) => {
-export const addHighlightedItemSignalEvents = (
-	{
-		signals,
-		markName,
-		datumOrder = 1,
-		animations = false,
-		animateFromZero = false,
-		needsDisable = false
-	}: {
-		signals: Signal[],
-		markName: string,
-		datumOrder?: number,
-		animations?: boolean,
-		animateFromZero?: boolean,
-		needsDisable?: boolean
-	}
-) => {
 	const highlightedItemSignal = signals.find((signal) => signal.name === HIGHLIGHTED_ITEM);
 	const highlightedUpdate = `${new Array(datumOrder).fill('datum.').join('')}${MARK_ID}`;
 	if (highlightedItemSignal) {
@@ -133,7 +116,7 @@ export const addHighlightedItemSignalEvents = (
 					events: `@${markName}:mouseover`,
 					update:
 						animations && animateFromZero && !needsDisable ? `timerValue === 1 ? ${highlightedUpdate} : null`
-						: highlightedUpdate,
+							: highlightedUpdate,
 				},
 				{ events: `@${markName}:mouseout`, update: 'null' },
 			]
