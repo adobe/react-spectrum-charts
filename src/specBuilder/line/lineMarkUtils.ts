@@ -59,7 +59,6 @@ export const getLineMark = (lineMarkProps: LineMarkProps, dataSource: string): L
 		({ UNSAFE_highlightBy }) => UNSAFE_highlightBy === 'dimension'
 	);
 
-	console.log('Animations', animations, ' animate from zero', animateFromZero);
 	return {
 		name,
 		description: name,
