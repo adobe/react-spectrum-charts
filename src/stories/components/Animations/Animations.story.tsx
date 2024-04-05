@@ -371,7 +371,7 @@ const TrellisHorizontalBarZero = bindWithProps(TrellisHorizontalBarStory);
 TrellisHorizontalBarZero.args = {
 	initialData: trellisData,
 	secondaryData: generateMockDataForTrellis({
-		property1: ['All users', 'Roku', 'Chromecast', 'Amazon Fire', 'Apple TV'],
+		property1: ['All users', 'Roku', 'Chromecast', 'Amazon Fire', 'Apple TV', 'LG Smart TV'],
 		property2: ['A. Sign up', 'B. Watch a video', 'C. Add to MyList'],
 		property3: ['1-5 times', '6-10 times', '11-15 times', '16-20 times', '21-25 times', '26+ times'],
 		propertyNames: ['segment', 'event', 'bucket'],
