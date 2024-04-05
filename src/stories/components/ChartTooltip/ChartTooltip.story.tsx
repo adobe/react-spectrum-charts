@@ -96,7 +96,7 @@ const LineTooltipStory: StoryFn<typeof ChartTooltip> = (args): ReactElement => {
 const DisabledSeriesLineTooltipStory: StoryFn<typeof ChartTooltip> = (args): ReactElement => {
 	const chartProps = useChartProps({ data: disabledLineData, width: 600, colors: ['gray-300', ...categorical12] });
 	return (
-		<Chart {...chartProps} animations={false}>
+		<Chart {...chartProps} >
 			<Line color="series">
 				<ChartTooltip {...args} />
 			</Line>

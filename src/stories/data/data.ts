@@ -1108,3 +1108,17 @@ export const areaData = [
 	{ datetime: 1668322800000, maxTemperature: 60, minTemperature: 45, series: 'Add Fallout' },
 	{ datetime: 1668409200000, maxTemperature: 64, minTemperature: 43, series: 'Add Fallout' },
 ];
+
+export const stackedAreaData = [
+	{ browser: 'Chrome', value: 5, operatingSystem: 'Windows', order: 2 },
+	{ browser: 'Chrome', value: 3, operatingSystem: 'Mac', order: 1 },
+	{ browser: 'Chrome', value: 2, operatingSystem: 'Other', order: 0 },
+	{ browser: 'Firefox', value: 3, operatingSystem: 'Windows', order: 2 },
+	{ browser: 'Firefox', value: 3, operatingSystem: 'Mac', order: 1 },
+	{ browser: 'Firefox', value: 1, operatingSystem: 'Other', order: 0 },
+	{ browser: 'Safari', value: 3, operatingSystem: 'Windows', order: 2 },
+	{ browser: 'Safari', value: 0, operatingSystem: 'Mac', order: 1 },
+	{ browser: 'Safari', value: 1, operatingSystem: 'Other', order: 0 },
+];
+
+

@@ -64,13 +64,17 @@ const ChartWithToggleableData = ({ ChartComponent, initialData, secondaryData }:
 };
 
 const dialog = (item: Datum) => {
-	return (
-		<Content>
-			<View>
-				<Text>{item[MARK_ID]}</Text>
-			</View>
-		</Content>
-	);
+  return (
+    <Content>
+      <View>
+        <Text>{item[MARK_ID]}</Text>
+      </View>
+    </Content>
+  );
+};
+const manipulateData = (data: number): number => {
+	const randomFactor = Math.random() * (1.25 - 0.75) + 0.75;
+	return Number((data * randomFactor).toFixed(1));
 };
 const AreaStory: StoryFn<ToggleableDataProps> = (args): ReactElement => {
 	const chartProps = useChartProps( defaultChartProps );
@@ -88,6 +92,21 @@ const AreaStory: StoryFn<ToggleableDataProps> = (args): ReactElement => {
 		/>
 	);
 };
+
+const StackedAreaStory: StoryFn<ToggleableDataProps> = (args): ReactElement => {
+	const chartProps = useChartProps({ data: [], minWidth: 400, maxWidth: 800, height: 400 });
+	return (
+		<ChartWithToggleableData
+			ChartComponent={
+				<Chart {...chartProps}>
+					<Area dimension="browser" color="operatingSystem" scaleType="point" />
+				</Chart>
+			}
+			{ ...args}
+		/>
+	);
+}
+
 const SingleLineStory: StoryFn<ToggleableDataProps> = (args): ReactElement => {
 	const chartProps = useChartProps(defaultChartProps);
 	return (
@@ -253,6 +272,17 @@ AreaZero.args = {
 	}),
 };
 
+const StackedAreaSwitch = bindWithProps(StackedAreaStory);
+StackedAreaSwitch.args = {
+	initialData: stackedAreaData,
+	secondaryData: stackedAreaData.map((data) => {
+		return {
+			...data,
+			value: manipulateData(data.value),
+		};
+	}),
+};
+
 const SingleLineSwitch = bindWithProps(SingleLineStory);
 SingleLineSwitch.args = {
 	initialData: newDataArray1WithStaticPoints,
@@ -361,8 +391,8 @@ TrellisHorizontalBarSwitch.args = {
 	initialData: trellisData,
 	secondaryData: trellisData.map((data) => {
 		return {
-			value: manipulateData(data.value as number),
 			...data,
+			value: manipulateData(data.value as number),
 		};
 	}),
 };
@@ -383,6 +413,9 @@ TrellisHorizontalBarZero.args = {
 export {
 	AreaSwitch,
 	AreaZero,
+	StackedAreaSwitch,
+	SingleLineSwitch,
+	SingleLineZero,
 	BarSwitch,
 	BarZero,
 	DodgedBarSwitch,

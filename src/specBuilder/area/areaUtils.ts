@@ -79,8 +79,8 @@ export const getAreaMark = (areaProps: AreaMarkProps, dataSource: string = `${ar
 				// this has to be in update because when you resize the window that doesn't rebuild the spec
 				// but it may change the x position if it causes the chart to resize
         ...(animations && animateFromZero && {
-          y: getAnimationMarks(dimension, metricStart, data, previousData),
-          y2: getAnimationMarks(dimension, metricEnd, data, previousData),
+          y: getAnimationMarks(dimension, metricStart, isStacked, data, previousData),
+          y2: getAnimationMarks(dimension, metricEnd, isStacked, data, previousData),
           tooltip: getTooltip({ children, name, animations }),
         }),
 				x: getX(scaleType, dimension),

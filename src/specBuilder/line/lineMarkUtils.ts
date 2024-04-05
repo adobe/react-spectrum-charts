@@ -59,6 +59,7 @@ export const getLineMark = (lineMarkProps: LineMarkProps, dataSource: string): L
 		({ UNSAFE_highlightBy }) => UNSAFE_highlightBy === 'dimension'
 	);
 
+	console.log('Animations', animations, ' animate from zero', animateFromZero);
 	return {
 		name,
 		description: name,
@@ -81,7 +82,7 @@ export const getLineMark = (lineMarkProps: LineMarkProps, dataSource: string): L
 				...(popoverWithDimensionHighlightExists ? {} : { opacity: getLineOpacity(lineMarkProps) }),
 				strokeOpacity: getLineStrokeOpacity(lineMarkProps),
 				opacity: getLineOpacity(lineMarkProps),
-				...(animations && animateFromZero && { y: getAnimationMarks(dimension, metric, data, previousData) })
+				...(animations && animateFromZero && { y: getAnimationMarks(dimension, metric, false, data, previousData) })
 			},
 		},
 	};
