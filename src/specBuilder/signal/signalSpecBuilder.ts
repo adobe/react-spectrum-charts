@@ -115,8 +115,7 @@ export const addHighlightedItemSignalEvents = ({
 				{
 					events: `@${markName}:mouseover`,
 					update:
-						animations && animateFromZero && !needsDisable
-							? `timerValue === 1 ? ${highlightedUpdate} : null`
+						animations && animateFromZero && !needsDisable ? `timerValue === 1 ? ${highlightedUpdate} : null`
 							: highlightedUpdate,
 				},
 				{ events: `@${markName}:mouseout`, update: 'null' },

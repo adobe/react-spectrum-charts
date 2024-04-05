@@ -147,7 +147,7 @@ const HistoricalCompareStory: StoryFn<typeof Line> = (args): ReactElement => {
 const LineWithVisiblePointsStory: StoryFn<typeof Line> = (args): ReactElement => {
 	const chartProps = useChartProps({ ...defaultChartProps, data: workspaceTrendsDataWithVisiblePoints });
 	return (
-		<Chart {...chartProps}>
+		<Chart {...chartProps} animations={false}>
 			<Axis position="left" grid title="Users" />
 			<Axis position="bottom" labelFormat="time" baseline ticks />
 			<Line {...args} />
