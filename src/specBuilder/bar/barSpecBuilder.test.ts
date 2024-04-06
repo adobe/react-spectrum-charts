@@ -227,6 +227,7 @@ const defaultSpec: Spec = {
 		},
 		{
 			name: PREVIOUS_TABLE,
+			transform: [{ type: 'identifier', as: MARK_ID }],
 			values: [],
 		},
 		{

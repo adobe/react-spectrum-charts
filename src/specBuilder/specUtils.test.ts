@@ -18,6 +18,7 @@ import {
 	EASE_OUT_CUBIC,
 	FILTERED_PREVIOUS_TABLE,
 	LINE_TYPE_SCALE,
+	MARK_ID,
 	TABLE,
 } from '@constants';
 import { ROUNDED_SQUARE_PATH } from '@svgPaths';
@@ -212,7 +213,7 @@ describe('specUtils', () => {
 
 	describe('getAnimationMarks()', () => {
 		test('should return default', () => {
-			const animationMarks = getAnimationMarks("dimension", "maxTemperature", areaData, [], "linear")
+			const animationMarks = getAnimationMarks("dimension", "maxTemperature", false, areaData, [], "linear")
 			expect(animationMarks).toStrictEqual({
 				scale: 'linear',
 				signal: `datum.maxTemperature * ${EASE_OUT_CUBIC}`,
@@ -222,7 +223,8 @@ describe('specUtils', () => {
 			const animationMarks = 
 				getAnimationMarks(
 					"dimension", 
-					"maxTemperature", 
+					"maxTemperature",
+					false,
 					areaData,  
 					areaData.map((data) => {
 						return {
@@ -237,11 +239,32 @@ describe('specUtils', () => {
 				signal: `(data('${FILTERED_PREVIOUS_TABLE}')[indexof(pluck(data('${FILTERED_PREVIOUS_TABLE}'), 'dimension'), datum.dimension)].maxTemperature * (1 - ${EASE_OUT_CUBIC})) + (datum.maxTemperature * ${EASE_OUT_CUBIC})`,
 			})
 		});
+		test('should return same dimensions and is stacked', () => {
+			const animationMarks = 
+				getAnimationMarks(
+					"dimension", 
+					"maxTemperature",
+					true,
+					areaData,  
+					areaData.map((data) => {
+						return {
+							...data,
+							minTemperature: manipulateData(data.minTemperature),
+							maxTemperature: manipulateData(data.maxTemperature),
+						};
+					}), 
+					"linear")
+			expect(animationMarks).toStrictEqual({
+				scale: 'linear',
+				signal: `(data('${FILTERED_PREVIOUS_TABLE}')[indexof(pluck(data('${FILTERED_PREVIOUS_TABLE}'), '${MARK_ID}'), (datum.${MARK_ID} + ${areaData.length}))].maxTemperature * (1 - ${EASE_OUT_CUBIC})) + (datum.maxTemperature * ${EASE_OUT_CUBIC})`,
+			})
+		});
 		test('should return different dimensions (one extra data point)', () => {
 			const animationMarks = 
 				getAnimationMarks(
 					"dimension", 
 					"maxTemperature", 
+					false,
 					areaData, 
 					areaData.concat({
 						datetime: 1668509200000,
@@ -259,7 +282,8 @@ describe('specUtils', () => {
 			const animationMarks = 
 				getAnimationMarks(
 					"dimension", 
-					"maxTemperature", 
+					"maxTemperature",
+					false,
 					areaData.concat({
 						datetime: 1668509200000,
 						minTemperature: 5,
