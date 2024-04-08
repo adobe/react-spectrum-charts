@@ -151,7 +151,7 @@ const ScatterStory: StoryFn<typeof Trendline> = (args): ReactElement => {
 	);
 };
 
-export const excludeSeriesData = [
+const excludeSeriesData = [
 	{ datetime: 1667890800000, point: 1, value: 3738, users: 477, series: 'Add Fallout', excludeFromTrendline: true },
 	{ datetime: 1667977200000, point: 2, value: 2704, users: 481, series: 'Add Fallout', excludeFromTrendline: true },
 	{ datetime: 1668063600000, point: 3, value: 1730, users: 483, series: 'Add Fallout', excludeFromTrendline: true },
@@ -242,7 +242,7 @@ ExcludeSeriesFromTrendline.args = {
 	method: 'linear',
 	lineType: 'dashed',
 	lineWidth: 'S',
-	excludeDataKey: 'excludeFromTrendline',
+	excludeDataKeys: ['excludeFromTrendline'],
 };
 
 export {
