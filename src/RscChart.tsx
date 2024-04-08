@@ -224,12 +224,12 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 			return signals;
 		}, [colorScheme, hiddenSeriesState, legendIsToggleable]);
 
-		const newSpec = JSON.stringify(spec);
+		const newSpec = structuredClone(spec);
 
 		const chart = useMemo(() => {
 			return (
 				<VegaChart
-					spec={JSON.parse(newSpec)}
+					spec={newSpec}
 					config={chartConfig}
 					data={data}
 					previousData={previousData ?? []}
@@ -292,7 +292,7 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 			);
 		}, 	[newSpec, chartConfig, data, previousData, debug, renderer, chartWidth, height, locale,
 			padding, signals, tooltipConfig, chartView, popovers.length, legendIsToggleable, onLegendClick,
-			onLegendMouseOver, onLegendMouseOut, hiddenSeriesState, chartId, setHiddenSeries, colorScheme]);
+			onLegendMouseOver, onLegendMouseOut, hiddenSeriesState, chartId, setHiddenSeries]);
 
 		return (
 			<>

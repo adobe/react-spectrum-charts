@@ -29,7 +29,7 @@ export const setTrendlineSignals = (signals: Signal[], markProps: TrendlineParen
 	// if animations are enabled, add necessary opacity animation signals
 	//TODO: Add tests
 	if (animations) {
-		checkRSCTrendlineAnimationSignals(markName, signals, trendlines);
+		addRSCTrendlineAnimationSignals(markName, signals, trendlines);
 	}
 	if (trendlines.some((trendline) => hasTooltip(trendline.children))) {
 		addHighlightedItemSignalEvents({ signals, markName: `${markName}Trendline_voronoi`, datumOrder: 2 });
@@ -47,7 +47,7 @@ export const setTrendlineSignals = (signals: Signal[], markProps: TrendlineParen
  * @param trendlines
  */
 //TODO: Add tests
-const checkRSCTrendlineAnimationSignals = (name: string, signals: Signal[], trendlines: TrendlineSpecProps[]) => {
+const addRSCTrendlineAnimationSignals = (name: string, signals: Signal[], trendlines: TrendlineSpecProps[]) => {
 	if (
 		!hasSignalByName(signals, RSC_ANIMATION) &&
 		trendlines.some((trendline) => hasTooltip(trendline.children) || hasPopover(trendline.children))

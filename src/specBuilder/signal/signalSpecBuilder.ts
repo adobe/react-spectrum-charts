@@ -9,7 +9,14 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { HIGHLIGHTED_ITEM, HIGHLIGHTED_SERIES, MARK_ID, RSC_ANIMATION, SERIES_ID } from '@constants';
+import {
+	DATA_ANIMATION_MILLISECONDS_PER_FRAME,
+	HIGHLIGHTED_ITEM,
+	HIGHLIGHTED_SERIES,
+	MARK_ID, OPACITY_ANIMATION_FRAMES,
+	RSC_ANIMATION,
+	SERIES_ID
+} from '@constants';
 import { Signal } from 'vega';
 
 /**
@@ -95,14 +102,14 @@ export const addHighlightedItemSignalEvents = ({
 	datumOrder = 1,
 	animations = false,
 	animateFromZero = false,
-	needsDisable = false,
+	isEnabled = true,
 }: {
 	signals: Signal[];
 	markName: string;
 	datumOrder?: number;
 	animations?: boolean;
 	animateFromZero?: boolean;
-	needsDisable?: boolean;
+	isEnabled?: boolean;
 }) => {
 	const highlightedItemSignal = signals.find((signal) => signal.name === HIGHLIGHTED_ITEM);
 	const highlightedUpdate = `${new Array(datumOrder).fill('datum.').join('')}${MARK_ID}`;
@@ -115,7 +122,7 @@ export const addHighlightedItemSignalEvents = ({
 				{
 					events: `@${markName}:mouseover`,
 					update:
-						animations && animateFromZero && !needsDisable ? `timerValue === 1 ? ${highlightedUpdate} : null`
+						animations && animateFromZero && isEnabled ? `timerValue === 1 ? ${highlightedUpdate} : null`
 							: highlightedUpdate,
 				},
 				{ events: `@${markName}:mouseout`, update: 'null' },
@@ -205,8 +212,8 @@ const getRscAnimation = (): Signal => {
 		value: 0,
 		on: [
 			{
-				events: 'timer{16.666666666666668}',
-				update: `scale('rscAnimationCurve', scale('rscAnimationCurveInverse', ${RSC_ANIMATION}) + 0.03333333333333334)`,
+				events: `timer{${DATA_ANIMATION_MILLISECONDS_PER_FRAME}}`,
+				update: `scale('rscAnimationCurve', scale('rscAnimationCurveInverse', ${RSC_ANIMATION}) + ${OPACITY_ANIMATION_FRAMES})`,
 			},
 		],
 	};

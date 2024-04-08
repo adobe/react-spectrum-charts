@@ -125,7 +125,7 @@ export const addSignals = produce<Signal[], [BarSpecProps]>(
 		if (animations && hasInteractiveChildren(children)) {
 			signals.push(...getRscAnimationSignals(name, undefined, true));
 		}
-		addHighlightedItemSignalEvents({ signals, markName: name, animations, animateFromZero, needsDisable: true});
+		addHighlightedItemSignalEvents({ signals, markName: name, animations, animateFromZero, isEnabled: false});
 	}
 );
 
@@ -149,8 +149,10 @@ export const addData = produce<Data[], [BarSpecProps]>((data, props) => {
 		data[filteredIndex].transform?.push(stackedDataGroup);
 		data[filteredPreviousIndex].transform?.push(stackedDataGroup);
 
-		data[filteredIndex].transform?.push(getStackIdTransform(props));
-		data[filteredPreviousIndex].transform?.push(getStackIdTransform(props));
+		const stackIdTransform = getStackIdTransform(props);
+
+		data[filteredIndex].transform?.push(stackIdTransform);
+		data[filteredPreviousIndex].transform?.push(stackIdTransform);
 
 		data.push(getStackAggregateData(props));
 	}
