@@ -71,9 +71,8 @@ export const getSeriesIdTransform = (facets: string[]): FormulaTransform => {
  * @returns spec data that filters out items where the `excludeDataKey` is true
  */
 export const getFilteredTooltipData = (children: MarkChildElement[]) => {
-	let transform: { type: 'filter'; expr: string }[] | undefined;
 	const excludeDataKeys = getTooltipProps(children)?.excludeDataKeys;
-	transform = excludeDataKeys?.map((excludeDataKey) => ({
+	const transform = excludeDataKeys?.map((excludeDataKey) => ({
 		type: 'filter',
 		expr: `!datum.${excludeDataKey}`
 	}));
