@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { FILTERED_TABLE, HIGHLIGHTED_GROUP, MARK_ID, RSC_ANIMATION, HIGHLIGHTED_ITEM, HIGHLIGHTED_SERIES, SERIES_ID } from '@constants';
+import { DATA_ANIMATION_MILLISECONDS_PER_FRAME, OPACITY_ANIMATION_FRAMES, FILTERED_TABLE, HIGHLIGHTED_GROUP, MARK_ID, RSC_ANIMATION, HIGHLIGHTED_ITEM, HIGHLIGHTED_SERIES, SERIES_ID } from '@constants';
 import { Signal } from 'vega';
 
 /**
@@ -132,6 +132,7 @@ export const addHighlightedItemSignalEvents = (
 		animations = false,
 		animateFromZero = false,
 		datumOrder = 1,
+		isEnabled = true,
 	}: {
 		signals: Signal[],
 		markName: string,
@@ -139,7 +140,8 @@ export const addHighlightedItemSignalEvents = (
 		excludeDataKeys?: string[],
 		animations?: boolean,
 		animateFromZero?: boolean,
-		datumOrder?: number
+		datumOrder?: number,
+		isEnabled?: boolean
 	}
 ) => {
 	const highlightedItemSignal = signals.find((signal) => signal.name === HIGHLIGHTED_ITEM);
@@ -149,7 +151,7 @@ export const addHighlightedItemSignalEvents = (
 		}
 		const datum = new Array(datumOrder).fill('datum.').join('');
 
-    const update = animations && animateFromZero ? `timerValue === 1 ? ${datum}${idKey} : null` : `${datum}${idKey}`;
+    const update = animations && animateFromZero && isEnabled ? `timerValue === 1 ? ${datum}${idKey} : null` : `${datum}${idKey}`;
 		const excludeDataKeysCondition = excludeDataKeys
 			?.map((excludeDataKey) => `${datum}${excludeDataKey}`)
 			.join(' || ');
@@ -261,8 +263,8 @@ const getRscAnimation = (): Signal => {
 		value: 0,
 		on: [
 			{
-				events: 'timer{16.666666666666668}',
-				update: `scale('rscAnimationCurve', scale('rscAnimationCurveInverse', ${RSC_ANIMATION}) + 0.03333333333333334)`,
+				events: `timer{${DATA_ANIMATION_MILLISECONDS_PER_FRAME}}`,
+				update: `scale('rscAnimationCurve', scale('rscAnimationCurveInverse', ${RSC_ANIMATION}) + ${OPACITY_ANIMATION_FRAMES})`,
 			},
 		],
 	};

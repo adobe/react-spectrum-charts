@@ -125,5 +125,7 @@ export const HOVER_SHAPE = 'diamond';
 // chart animation easing functions
 // chart animation constants
 export const DATA_ANIMATION_DURATION_FRAMES = 78; // 60 fps * 1.3 seconds = 78 frames
-export const DATA_ANIMATION_MILLISECONDS_PER_FRAME = 1000 / 60; // 60fps
+export const DATA_ANIMATION_MILLISECONDS_PER_FRAME = 1000 / 60;  // 60fps
+
+export const OPACITY_ANIMATION_FRAMES = 1 / 30;  // 0.033 - 30fps
 export const EASE_OUT_CUBIC = '(1 - pow(1 - timerValue, 3))';

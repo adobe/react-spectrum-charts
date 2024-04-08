@@ -112,7 +112,7 @@ export const addBar = produce<
 );
 
 export const addSignals = produce<Signal[], [BarSpecProps]>(
-	(signals, { children, name, animations, animateFromZero, paddingRatio, paddingOuter: barPaddingOuter }) => {
+	(signals, { children, name, animations, animateFromZero, paddingRatio, idKey, paddingOuter: barPaddingOuter }) => {
 		// We use this value to calculate ReferenceLine positions.
 		const { paddingInner } = getBarPadding(paddingRatio, barPaddingOuter);
 		signals.push(getGenericValueSignal('paddingInner', paddingInner));
@@ -125,8 +125,8 @@ export const addSignals = produce<Signal[], [BarSpecProps]>(
 		if (animations && hasInteractiveChildren(children)) {
 			signals.push(...getRscAnimationSignals(name, undefined, true));
 		}
-	addHighlightedItemSignalEvents({ signals, markName: name, animations, animateFromZero, needsDisable: true});
-	addHighlightedItemSignalEvents(signals, name, idKey, 1, getTooltipProps(children)?.excludeDataKeys);
+	const excludeDataKeys = getTooltipProps(children)?.excludeDataKeys;
+	addHighlightedItemSignalEvents({ signals, markName: name, excludeDataKeys, idKey, animations, animateFromZero, datumOrder: 1});
 	addTooltipSignals(signals, props);
 	setTrendlineSignals(signals, props);
 });
@@ -151,8 +151,10 @@ export const addData = produce<Data[], [BarSpecProps]>((data, props) => {
 		data[filteredIndex].transform?.push(stackedDataGroup);
 		data[filteredPreviousIndex].transform?.push(stackedDataGroup);
 
-		data[filteredIndex].transform?.push(getStackIdTransform(props));
-		data[filteredPreviousIndex].transform?.push(getStackIdTransform(props));
+		const stackIdTransform = getStackIdTransform(props);
+
+		data[filteredIndex].transform?.push(stackIdTransform);
+		data[filteredPreviousIndex].transform?.push(stackIdTransform);
 
 		data.push(getStackAggregateData(props));
 	}

@@ -138,6 +138,5 @@ export const addSignals = produce<Signal[], [DonutSpecProps]>((signals, props) =
 	const { children, idKey, name } = props;
 	signals.push(...getDonutSummarySignals(props));
 	if (!hasInteractiveChildren(children)) return;
-	addHighlightedItemSignalEvents(signals, name, idKey, 1, getTooltipProps(children)?.excludeDataKeys);
-	addHighlightedItemSignalEvents({ signals, markName: name, needsDisable: true });
+	addHighlightedItemSignalEvents({ signals, markName: name, idKey, datumOrder: 1, excludeDataKeys: getTooltipProps(children)?.excludeDataKeys });
 });

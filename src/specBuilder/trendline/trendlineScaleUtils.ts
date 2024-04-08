@@ -41,7 +41,7 @@ export const getTrendlineScales = (props: TrendlineParentProps): Scale[] => {
 };
 
 /**
- * Adds scales to spec if the scales are not already present and if trend lines have a highlighting enabled.
+ * Adds scales to spec if the scales are not already present and if trend lines have highlighting enabled.
  * @param name
  * @param scales
  * @param props

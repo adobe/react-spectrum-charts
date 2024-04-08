@@ -247,12 +247,12 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 			return signals;
 		}, [colorScheme, idKey, legendHiddenSeries, legendIsToggleable]);
 
-		const newSpec = JSON.stringify(spec);
+		const newSpec = structuredClone(spec);
 
 		const chart = useMemo(() => {
 			return (
 				<VegaChart
-					spec={JSON.parse(newSpec)}
+					spec={newSpec}
 					config={chartConfig}
 					data={data}
 					previousData={previousData ?? []}
