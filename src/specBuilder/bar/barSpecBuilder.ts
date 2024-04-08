@@ -159,8 +159,10 @@ export const addData = produce<Data[], [BarSpecProps]>((data, props) => {
 		data.push(getStackAggregateData(props));
 	}
 	if (type === 'dodged' || isDodgedAndStacked(props)) {
-		data[filteredIndex].transform?.push(getDodgeGroupTransform(props));
-		data[filteredPreviousIndex].transform?.push(getDodgeGroupTransform(props));
+		const dodgeGroupTransform = getDodgeGroupTransform(props);
+
+		data[filteredIndex].transform?.push(dodgeGroupTransform);
+		data[filteredPreviousIndex].transform?.push(dodgeGroupTransform);
 	}
 	addTrendlineData(data, props);
 	addTooltipData(data, props);
