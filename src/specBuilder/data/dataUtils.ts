@@ -72,7 +72,7 @@ export const getSeriesIdTransform = (facets: string[]): FormulaTransform => {
  */
 export const getFilteredTooltipData = (children: MarkChildElement[]) => {
 	const excludeDataKeys = getTooltipProps(children)?.excludeDataKeys;
-	const transform = excludeDataKeys?.map((excludeDataKey) => ({
+	const transform: { type: 'filter'; expr: string }[] | undefined = excludeDataKeys?.map((excludeDataKey) => ({
 		type: 'filter',
 		expr: `!datum.${excludeDataKey}`
 	}));
