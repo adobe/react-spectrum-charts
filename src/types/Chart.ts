@@ -592,6 +592,8 @@ export interface TrendlineProps {
 	dimensionRange?: [number | null, number | null];
 	/** Whether the trendline should only be visible when hovering over the parent line */
 	displayOnHover?: boolean;
+	/** Data points where these keys have truthy values will not be included in the trendline calculation */
+	excludeDataKeys?: string[];
 	/** If there is a tooltip on this trendline, then this will highlight the raw point in addition to the hovered trendline point. */
 	highlightRawPoint?: boolean;
 	/** The line type of the trend line. */
