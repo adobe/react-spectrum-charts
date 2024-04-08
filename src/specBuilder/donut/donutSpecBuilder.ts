@@ -132,5 +132,5 @@ export const addMarks = produce<Mark[], [DonutSpecProps]>((marks, props) => {
 export const addSignals = produce<Signal[], [DonutSpecProps]>((signals, props) => {
 	const { name, children } = props;
 	if (!hasInteractiveChildren(children)) return;
-	addHighlightedItemSignalEvents(signals, name, 1, getTooltipProps(children)?.excludeDataKey);
+	addHighlightedItemSignalEvents(signals, name, 1, getTooltipProps(children)?.excludeDataKeys);
 });

@@ -56,7 +56,7 @@ describe('addData()', () => {
 	test('tooltipFilteredData has undefined transform by default', () => {
 		const data = addData(initializeSpec().data ?? [], {
 			...defaultScatterProps,
-			children: [createElement(ChartTooltip, { excludeDataKey: 'exclude' })],
+			children: [createElement(ChartTooltip, { excludeDataKeys: ['exclude'] })],
 		});
 
 		expect(data[2].transform).toStrictEqual([{

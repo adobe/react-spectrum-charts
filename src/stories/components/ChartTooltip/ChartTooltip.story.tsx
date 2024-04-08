@@ -126,7 +126,7 @@ StackedBarChart.args = {
 			<div>Users: {datum.value}</div>
 		</div>
 	),
-	excludeDataKey: '',
+	excludeDataKeys: [],
 };
 
 const DodgedBarChart = DodgedBarTooltipStory.bind({});
@@ -138,7 +138,7 @@ DodgedBarChart.args = {
 			<div>Users: {datum.value}</div>
 		</div>
 	),
-	excludeDataKey: '',
+	excludeDataKeys: [],
 };
 
 const LineChart = bindWithProps(LineTooltipStory);
@@ -151,7 +151,7 @@ LineChart.args = {
 			<div>Users: {Number(datum.users).toLocaleString()}</div>
 		</div>
 	),
-	excludeDataKey: '',
+	excludeDataKeys: [],
 };
 
 const AreaChart = bindWithProps(AreaTooltipStory);
@@ -164,7 +164,7 @@ AreaChart.args = {
 			<div>Users: {Number(datum.users).toLocaleString()}</div>
 		</div>
 	),
-	excludeDataKey: '',
+	excludeDataKeys: [],
 };
 
 const DisabledSeriesLineChart = bindWithProps(DisabledSeriesLineTooltipStory);
@@ -177,7 +177,7 @@ DisabledSeriesLineChart.args = {
 			<div>Users: {Number(datum.users).toLocaleString()}</div>
 		</div>
 	),
-	excludeDataKey: 'excludeFromTooltip',
+	excludeDataKeys: ['excludeFromTooltip'],
 };
 
 export { AreaChart, DodgedBarChart, LineChart, StackedBarChart, DisabledSeriesLineChart };

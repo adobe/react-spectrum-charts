@@ -81,18 +81,20 @@ export const getGenericSignal = (name: string, value: unknown = null): Signal =>
  * @param datumOrder how deep the datum is nested (i.e. 1 becomes datum.rscMarkId, 2 becomes datum.datum.rscMarkId, etc.)
  * @param excludeDataKey data items with a truthy value for this key will be excluded from the signal
  */
-export const addHighlightedItemSignalEvents = (signals: Signal[], markName: string, datumOrder = 1, excludeDataKey = '') => {
+export const addHighlightedItemSignalEvents = (signals: Signal[], markName: string, datumOrder = 1, excludeDataKeys?: string[]) => {
 	const highlightedItemSignal = signals.find((signal) => signal.name === HIGHLIGHTED_ITEM);
 	if (highlightedItemSignal) {
 		if (highlightedItemSignal.on === undefined) {
 			highlightedItemSignal.on = [];
 		}
 		const datum = new Array(datumOrder).fill('datum.').join('');
+
+		const excludeDataKeysCondition = excludeDataKeys?.map((excludeDataKey) => `${datum}${excludeDataKey}`).join(' || ');
 		highlightedItemSignal.on.push(
 			...[
 				{
 					events: `@${markName}:mouseover`,
-					update: excludeDataKey ? `${datum}${excludeDataKey} ? null : ${datum}${MARK_ID}` : `${datum}${MARK_ID}`,
+					update: excludeDataKeys?.length ? `(${excludeDataKeysCondition}) ? null : ${datum}${MARK_ID}` : `${datum}${MARK_ID}`,
 				},
 				{ events: `@${markName}:mouseout`, update: 'null' },
 			]
@@ -107,18 +109,20 @@ export const addHighlightedItemSignalEvents = (signals: Signal[], markName: stri
  * @param datumOrder how deep the datum is nested (i.e. 1 becomes datum.rscMarkId, 2 becomes datum.datum.rscMarkId, etc.)
  * @param excludeDataKey data items with a truthy value for this key will be excluded from the signal
  */
-export const addHighlightedSeriesSignalEvents = (signals: Signal[], markName: string, datumOrder = 1, excludeDataKey = '') => {
+export const addHighlightedSeriesSignalEvents = (signals: Signal[], markName: string, datumOrder = 1, excludeDataKeys?: string[]) => {
 	const highlightedSeriesSignal = signals.find((signal) => signal.name === HIGHLIGHTED_SERIES);
 	if (highlightedSeriesSignal) {
 		if (highlightedSeriesSignal.on === undefined) {
 			highlightedSeriesSignal.on = [];
 		}
 		const datum = new Array(datumOrder).fill('datum.').join('');
+
+		const excludeDataKeysCondition = excludeDataKeys?.map((excludeDataKey) => `${datum}${excludeDataKey}`).join(' || ');
 		highlightedSeriesSignal.on.push(
 			...[
 				{
 					events: `@${markName}:mouseover`,
-					update: excludeDataKey ? `${datum}${excludeDataKey} ? null : ${datum}${SERIES_ID}` : `${datum}${SERIES_ID}`,
+					update: excludeDataKeys?.length ? `(${excludeDataKeysCondition}) ? null : ${datum}${SERIES_ID}` : `${datum}${SERIES_ID}`,
 				},
 				{ events: `@${markName}:mouseout`, update: 'null' },
 			]

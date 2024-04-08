@@ -85,9 +85,9 @@ export function getTooltip(children: MarkChildElement[], name: string, nestedDat
 	if (hasTooltip(children)) {
 		const defaultTooltip = { signal: `merge(datum${nestedDatum ? '.datum' : ''}, {'rscComponentName': '${name}'})` };
 		// if the tooltip has an excludeDataKey prop, then disable the tooltip where that key is present
-		const excludeDataKey = getTooltipProps(children)?.excludeDataKey;
-		if (excludeDataKey) {
-			return [{ test: `datum.${excludeDataKey}`, signal: 'false' }, defaultTooltip];
+		const excludeDataKeys = getTooltipProps(children)?.excludeDataKeys;
+		if (excludeDataKeys?.length) {
+			return [...excludeDataKeys.map(excludeDataKey => ({ test: `datum.${excludeDataKey}`, signal: 'false' })), defaultTooltip];
 		}
 
 		return defaultTooltip;

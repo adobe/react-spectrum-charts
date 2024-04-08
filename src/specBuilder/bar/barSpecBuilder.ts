@@ -102,7 +102,7 @@ export const addSignals = produce<Signal[], [BarSpecProps]>(
 		if (!children.length) {
 			return;
 		}
-		addHighlightedItemSignalEvents(signals, name, 1, getTooltipProps(children)?.excludeDataKey);
+		addHighlightedItemSignalEvents(signals, name, 1, getTooltipProps(children)?.excludeDataKeys);
 	}
 );
 

@@ -207,12 +207,12 @@ describe('areaSpecBuilder', () => {
 		});
 
 		test('should exclude data with key from update if tooltip has excludeDataKey', () => {
-			const tooltip = createElement(ChartTooltip, { excludeDataKey: 'excludeFromTooltip' });
+			const tooltip = createElement(ChartTooltip, { excludeDataKeys: ['excludeFromTooltip'] });
 			const signals = addSignals(defaultSignals, { ...defaultAreaProps, children: [tooltip] });
 			expect(signals).toHaveLength(5);
 			expect(signals[1]).toHaveProperty('name', HIGHLIGHTED_SERIES);
 			expect(signals[1].on?.[0]).toHaveProperty('events', '@area0:mouseover');
-			expect(signals[1].on?.[0]).toHaveProperty('update', 'datum.excludeFromTooltip ? null : datum.rscSeriesId');
+			expect(signals[1].on?.[0]).toHaveProperty('update', '(datum.excludeFromTooltip) ? null : datum.rscSeriesId');
 		});
 	});
 

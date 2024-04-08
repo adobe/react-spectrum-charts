@@ -147,7 +147,7 @@ export const addSignals = produce<Signal[], [AreaSpecProps]>((signals, { childre
 	if (!hasSignalByName(signals, `${name}_controlledHoveredId`)) {
 		signals.push(getControlledHoverSignal(name));
 	}
-	addHighlightedSeriesSignalEvents(signals, name, 1, getTooltipProps(children)?.excludeDataKey);
+	addHighlightedSeriesSignalEvents(signals, name, 1, getTooltipProps(children)?.excludeDataKeys);
 });
 
 export const setScales = produce<Scale[], [AreaSpecProps]>(

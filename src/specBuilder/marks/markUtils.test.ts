@@ -169,13 +169,13 @@ describe('getTooltip()', () => {
 		expect(rule.signal).toContain('datum.datum');
 	});
 	test('should add condition test when excludeDataKey is present', () => {
-		const rule = getTooltip([createElement(ChartTooltip, { excludeDataKey: 'excludeFromTooltip' })], 'line0', false) as ProductionRuleTests<SignalRef>;
+		const rule = getTooltip([createElement(ChartTooltip, { excludeDataKeys: ['excludeFromTooltip'] })], 'line0', false) as ProductionRuleTests<SignalRef>;
 		expect(rule).toHaveLength(2);
 		expect(rule[0].test).toBe('datum.excludeFromTooltip');
 		expect(rule[0].signal).toBe('false');
 	});
 	test('should have default tooltip as second item when excludeDataKey is present', () => {
-		const rule = getTooltip([createElement(ChartTooltip, { excludeDataKey: 'excludeFromTooltip' })], 'line0', false) as ProductionRuleTests<SignalRef>;
+		const rule = getTooltip([createElement(ChartTooltip, { excludeDataKeys: ['excludeFromTooltip'] })], 'line0', false) as ProductionRuleTests<SignalRef>;
 		expect(rule).toHaveLength(2);
 		expect(rule[1]).toHaveProperty('signal');
 	});
