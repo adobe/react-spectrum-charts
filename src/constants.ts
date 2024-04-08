@@ -99,3 +99,5 @@ export const DATA_ANIMATION_MILLISECONDS_PER_FRAME = 1000 / 60;  // 60fps
 
 export const OPACITY_ANIMATION_FRAMES = 1 / 30;  // 0.033 - 30fps
 export const EASE_OUT_CUBIC = '(1 - pow(1 - timerValue, 3))';
+
+export const annotationFillOpacity = 'timerValue === 1 ? 1 : 0';

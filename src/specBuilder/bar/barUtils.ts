@@ -12,7 +12,7 @@
 import { Annotation } from '@components/Annotation';
 import {
 	ANNOTATION_FONT_SIZE,
-	ANNOTATION_FONT_WEIGHT,
+	ANNOTATION_FONT_WEIGHT, annotationFillOpacity,
 	BACKGROUND_COLOR,
 	CORNER_RADIUS,
 	DEFAULT_OPACITY_RULE,
@@ -21,7 +21,7 @@ import {
 	HIGHLIGHTED_ITEM,
 	MARK_ID,
 	SELECTED_ITEM,
-	STACK_ID,
+	STACK_ID
 } from '@constants';
 import {
 	getColorProductionRule,
@@ -343,7 +343,7 @@ export const getAnnotationMarks = (
 				...(animations && {
 					update: {
 						fillOpacity: {
-							signal: 'timerValue === 1 ? 1 : 0'
+							signal: annotationFillOpacity
 						}
 					}
 				})
@@ -371,7 +371,7 @@ export const getAnnotationMarks = (
 				...(animations && {
 					update: {
 						fillOpacity: {
-							signal: 'timerValue === 1 ? 1 : 0'
+							signal: annotationFillOpacity
 						}
 					}
 				})
