@@ -21,6 +21,7 @@ import {
 	getColorProductionRule,
 	getLineWidthProductionRule,
 	getOpacityProductionRule,
+	getPointsForVoronoi,
 	getStrokeDashProductionRule,
 	getSymbolSizeProductionRule,
 	getVoronoiPath,
@@ -33,7 +34,7 @@ import { getTrendlineMarks } from '@specBuilder/trendline';
 import { spectrumColors } from '@themes';
 import { produce } from 'immer';
 import { ScatterSpecProps, SymbolSizeFacet } from 'types';
-import { GroupMark, Mark, NumericValueRef, PathMark, SymbolMark } from 'vega';
+import { GroupMark, Mark, NumericValueRef, SymbolMark } from 'vega';
 
 export const addScatterMarks = produce<Mark[], [ScatterSpecProps]>((marks, props) => {
 	const { name } = props;
@@ -131,13 +132,18 @@ export const getOpacity = ({ children }: ScatterSpecProps): ({ test?: string } &
 /**
  * Gets the vornoi path mark if there are any interactive children
  * @param scatterProps ScatterSpecProps
- * @returns PathMark[]
+ * @returns Mark[]
  */
-export const getScatterHoverMarks = ({ children, name }: ScatterSpecProps): PathMark[] => {
+export const getScatterHoverMarks = ({ children, name, metric, dimension, dimensionScaleType }: ScatterSpecProps): Mark[] => {
+
 	if (!hasInteractiveChildren(children)) {
 		return [];
 	}
-	return [getVoronoiPath(children, name, name)];
+
+	return [
+		getPointsForVoronoi(`${FILTERED_TABLE}ForTooltip`, dimension, metric, name, dimensionScaleType),
+		getVoronoiPath(children, `${name}_pointsForVoronoi`, name)
+	];
 };
 
 const getScatterSelectMarks = ({

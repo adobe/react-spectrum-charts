@@ -35,6 +35,7 @@ import {
 	getVegaSymbolSizeFromRscSymbolSize,
 } from '@specBuilder/specUtils';
 import {
+	ChartTooltipProps,
 	ColorFacet,
 	ColorScheme,
 	DualFacet,
@@ -42,6 +43,7 @@ import {
 	LineWidthFacet,
 	MarkChildElement,
 	OpacityFacet,
+	ProductionRuleTests,
 	ScaleType,
 	SymbolSizeFacet,
 } from 'types';
@@ -54,6 +56,7 @@ import {
 	PathMark,
 	ScaledValueRef,
 	SignalRef,
+	SymbolMark,
 } from 'vega';
 
 /**
@@ -77,11 +80,22 @@ export function getInteractive(children: MarkChildElement[]): boolean {
 /**
  * If a tooltip or popover exists on the mark, then set tooltip to true.
  */
-export function getTooltip(children: MarkChildElement[], name: string, nestedDatum?: boolean): SignalRef | undefined {
+export function getTooltip(children: MarkChildElement[], name: string, nestedDatum?: boolean): ProductionRuleTests<SignalRef> | SignalRef | undefined {
 	// skip annotations
 	if (hasTooltip(children)) {
-		return { signal: `merge(datum${nestedDatum ? '.datum' : ''}, {'rscComponentName': '${name}'})` };
+		const defaultTooltip = { signal: `merge(datum${nestedDatum ? '.datum' : ''}, {'rscComponentName': '${name}'})` };
+		// if the tooltip has an excludeDataKey prop, then disable the tooltip where that key is present
+		const excludeDataKeys = getTooltipProps(children)?.excludeDataKeys;
+		if (excludeDataKeys?.length) {
+			return [...excludeDataKeys.map(excludeDataKey => ({ test: `datum.${excludeDataKey}`, signal: 'false' })), defaultTooltip];
+		}
+
+		return defaultTooltip;
 	}
+}
+
+export function getTooltipProps(children: MarkChildElement[]): ChartTooltipProps | undefined {
+	return children.find((child) => child.type === ChartTooltip)?.props as ChartTooltipProps | undefined;
 }
 
 /**
@@ -239,6 +253,40 @@ export const getXProductionRule = (scaleType: ScaleType, dimension: string): Num
 		return { scale, field: DEFAULT_TRANSFORMED_TIME_DIMENSION };
 	}
 	return { scale, field: dimension };
+};
+
+/**
+ * Gets the points used for the voronoi calculation
+ * @param dataSource the name of the data source that will be used in the voronoi calculation
+ * @param dimension the dimension for the x encoding
+ * @param metric the metric for the y encoding
+ * @param name the name of the component the voronoi is associated with, i.e. `scatter0`
+ * @param scaleType the scale type for the x encoding
+ * @returns SymbolMark
+ */
+export const getPointsForVoronoi = (
+	dataSource: string,
+	dimension: string,
+	metric: string,
+	name: string,
+	scaleType: ScaleType
+): SymbolMark => {
+	return {
+		name: `${name}_pointsForVoronoi`,
+		type: 'symbol',
+		from: { data: dataSource },
+		interactive: false,
+		encode: {
+			enter: {
+				y: { scale: 'yLinear', field: metric },
+				fill: { value: 'transparent' },
+				stroke: { value: 'transparent' },
+			},
+			update: {
+				x: getXProductionRule(scaleType, dimension),
+			},
+		},
+	};
 };
 
 /**

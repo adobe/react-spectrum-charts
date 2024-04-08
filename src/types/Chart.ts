@@ -531,6 +531,8 @@ export type DialogProps = ChartTooltipProps | ChartPopoverProps;
 
 export interface ChartTooltipProps {
 	children?: TooltipHandler;
+	/** The keys in the data that will disable the tooltip if they have truthy values */
+	excludeDataKeys?: string[];
 }
 export interface ChartPopoverProps {
 	children?: PopoverHandler;

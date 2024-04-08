@@ -32,7 +32,7 @@ import { produce } from 'immer';
 import { ColorScheme, LineProps, LineSpecProps, MarkChildElement } from 'types';
 import { Data, Mark, Scale, Signal, Spec } from 'vega';
 
-import { addTimeTransform, getTableData } from '../data/dataUtils';
+import { addTimeTransform, getFilteredTooltipData, getTableData } from '../data/dataUtils';
 import { addContinuousDimensionScale, addFieldToFacetScaleDomain, addMetricScale } from '../scale/scaleSpecBuilder';
 import { addHighlightedItemSignalEvents, addHighlightedSeriesSignalEvents } from '../signal/signalSpecBuilder';
 import { getLineHighlightedData, getLineStaticPointData } from './lineDataUtils';
@@ -93,6 +93,7 @@ export const addData = produce<Data[], [LineSpecProps]>((data, props) => {
 	}
 	if (hasInteractiveChildren(children)) {
 		data.push(getLineHighlightedData(name, FILTERED_TABLE, hasPopover(children)));
+		data.push(getFilteredTooltipData(children));
 	}
 	if (staticPoint) data.push(getLineStaticPointData(name, staticPoint, FILTERED_TABLE));
 	addTrendlineData(data, props);
@@ -147,7 +148,7 @@ export const addLineMarks = produce<Mark[], [LineSpecProps]>((marks, props) => {
 	if (staticPoint) marks.push(getLineStaticPoint(props));
 	marks.push(...getMetricRangeGroupMarks(props));
 	if (hasInteractiveChildren(children)) {
-		marks.push(...getLineHoverMarks(props, FILTERED_TABLE));
+		marks.push(...getLineHoverMarks(props, `${FILTERED_TABLE}ForTooltip`));
 	}
 	marks.push(...getTrendlineMarks(props));
 });

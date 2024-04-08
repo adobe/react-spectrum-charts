@@ -180,6 +180,15 @@ describe('addSignals()', () => {
 		expect(signals[0].on?.[0]).toHaveProperty('events', '@testName:mouseover');
 		expect(signals[0].on?.[1]).toHaveProperty('events', '@testName:mouseout');
 	});
+	test('should exclude data with key from update if tooltip has excludeDataKey', () => {
+		const signals = addSignals(defaultSignals, { ...defaultDonutProps, children: [createElement(ChartTooltip, { excludeDataKeys: ['excludeFromTooltip'] })] });
+		expect(signals).toHaveLength(4);
+		expect(signals[0]).toHaveProperty('name', HIGHLIGHTED_ITEM);
+		expect(signals[0].on).toHaveLength(2);
+		expect(signals[0].on?.[0]).toHaveProperty('events', '@testName:mouseover');
+		expect(signals[0].on?.[0]).toHaveProperty('update', '(datum.excludeFromTooltip) ? null : datum.rscMarkId');
+		expect(signals[0].on?.[1]).toHaveProperty('events', '@testName:mouseout');
+	});
 });
 
 describe('donutSpecBuilder', () => {

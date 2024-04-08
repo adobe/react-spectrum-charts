@@ -36,6 +36,7 @@ import { Data, Mark, Scale, Signal, Spec } from 'vega';
 import { addTimeTransform, getFilteredTableData, getTableData, getTransformSort } from '../data/dataUtils';
 import { addContinuousDimensionScale, addFieldToFacetScaleDomain, addMetricScale } from '../scale/scaleSpecBuilder';
 import { getAreaMark, getX } from './areaUtils';
+import { getTooltipProps } from '@specBuilder/marks/markUtils';
 
 export const addArea = produce<Spec, [AreaProps & { colorScheme?: ColorScheme; index?: number }]>(
 	(
@@ -146,7 +147,7 @@ export const addSignals = produce<Signal[], [AreaSpecProps]>((signals, { childre
 	if (!hasSignalByName(signals, `${name}_controlledHoveredId`)) {
 		signals.push(getControlledHoverSignal(name));
 	}
-	addHighlightedSeriesSignalEvents(signals, name);
+	addHighlightedSeriesSignalEvents(signals, name, 1, getTooltipProps(children)?.excludeDataKeys);
 });
 
 export const setScales = produce<Scale[], [AreaSpecProps]>(

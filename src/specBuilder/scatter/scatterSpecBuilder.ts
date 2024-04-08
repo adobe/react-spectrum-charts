@@ -24,7 +24,7 @@ import {
 	SELECTED_ITEM,
 	SYMBOL_SIZE_SCALE,
 } from '@constants';
-import { addTimeTransform, getTableData } from '@specBuilder/data/dataUtils';
+import { addTimeTransform, getFilteredTooltipData, getTableData } from '@specBuilder/data/dataUtils';
 import { getInteractiveMarkName } from '@specBuilder/line/lineUtils';
 import { hasInteractiveChildren, hasPopover } from '@specBuilder/marks/markUtils';
 import {
@@ -101,6 +101,11 @@ export const addData = produce<Data[], [ScatterSpecProps]>((data, props) => {
 		const tableData = getTableData(data);
 		tableData.transform = addTimeTransform(tableData.transform ?? [], dimension);
 	}
+
+	if (hasInteractiveChildren(children)) {
+		data.push(getFilteredTooltipData(children));
+	}
+
 	if (hasPopover(children)) {
 		data.push({
 			name: `${name}_selectedData`,

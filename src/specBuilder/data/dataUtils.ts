@@ -16,7 +16,9 @@ import {
 	SERIES_ID,
 	TABLE,
 } from '@constants';
+import { getTooltipProps } from '@specBuilder/marks/markUtils';
 import { produce } from 'immer';
+import { MarkChildElement } from 'types';
 import { Compare, Data, FormulaTransform, SourceData, Transforms, ValuesData } from 'vega';
 
 export const addTimeTransform = produce<Transforms[], [string]>((transforms, dimension) => {
@@ -61,5 +63,23 @@ export const getSeriesIdTransform = (facets: string[]): FormulaTransform => {
 		type: 'formula',
 		as: SERIES_ID,
 		expr,
+	};
+};
+
+/**
+ * @param children 
+ * @returns spec data that filters out items where the `excludeDataKey` is true
+ */
+export const getFilteredTooltipData = (children: MarkChildElement[]) => {
+	const excludeDataKeys = getTooltipProps(children)?.excludeDataKeys;
+	const transform: { type: 'filter'; expr: string }[] | undefined = excludeDataKeys?.map((excludeDataKey) => ({
+		type: 'filter',
+		expr: `!datum.${excludeDataKey}`
+	}));
+
+	return {
+		name: `${FILTERED_TABLE}ForTooltip`,
+		source: FILTERED_TABLE,
+		transform,
 	};
 };

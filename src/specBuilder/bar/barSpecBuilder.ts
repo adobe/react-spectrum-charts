@@ -42,6 +42,7 @@ import { getBarPadding, getScaleValues, isDodgedAndStacked } from './barUtils';
 import { getDodgedMark } from './dodgedBarUtils';
 import { getDodgedAndStackedBarMark, getStackedBarMarks } from './stackedBarUtils';
 import { addTrellisScale, getTrellisGroupMark, isTrellised } from './trellisedBarUtils';
+import { getTooltipProps } from '@specBuilder/marks/markUtils';
 
 export const addBar = produce<Spec, [BarProps & { colorScheme?: ColorScheme; index?: number }]>(
 	(
@@ -101,7 +102,7 @@ export const addSignals = produce<Signal[], [BarSpecProps]>(
 		if (!children.length) {
 			return;
 		}
-		addHighlightedItemSignalEvents(signals, name);
+		addHighlightedItemSignalEvents(signals, name, 1, getTooltipProps(children)?.excludeDataKeys);
 	}
 );
 
