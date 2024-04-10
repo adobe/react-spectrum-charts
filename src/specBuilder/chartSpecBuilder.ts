@@ -103,6 +103,7 @@ export function buildSpec({
 }: SanitizedSpecProps) {
 	let spec = initializeSpec(null, { backgroundColor, colorScheme, description, title });
 	spec.signals = getDefaultSignals(
+		animations,
 		backgroundColor,
 		colors,
 		colorScheme,
@@ -238,6 +239,7 @@ const initializeComponentCounts = () => {
 };
 
 export const getDefaultSignals = (
+	animations: boolean,
 	backgroundColor: string,
 	colors: ChartColors,
 	colorScheme: ColorScheme,
@@ -249,8 +251,7 @@ export const getDefaultSignals = (
 	// if the background color is transparent, then we want to set the signal background color to gray-50
 	// if the signal background color were transparent then backgroundMarks and annotation fill would also be transparent
 	const signalBackgroundColor = backgroundColor === 'transparent' ? 'gray-50' : backgroundColor;
-	return [
-		getTimer(),
+	const signals = [
 		getGenericSignal(BACKGROUND_COLOR, getColorValue(signalBackgroundColor, colorScheme)),
 		getGenericSignal('colors', getTwoDimensionalColorScheme(colors, colorScheme)),
 		getGenericSignal('lineTypes', getTwoDimensionalLineTypes(lineTypes)),
@@ -261,6 +262,10 @@ export const getDefaultSignals = (
 		getGenericSignal(SELECTED_ITEM),
 		getGenericSignal(SELECTED_SERIES),
 	];
+	if (animations) {
+		signals.push(getTimer());
+	}
+	return signals;
 };
 
 export const getTimer = () => {
