@@ -20,7 +20,7 @@ import {
 	DEFAULT_OPACITY_RULE,
 	DEFAULT_TIME_DIMENSION,
 	DEFAULT_TRANSFORMED_TIME_DIMENSION,
-	EASE_OUT_CUBIC,
+	ANIMATION_FUNCTION,
 	FILTERED_TABLE,
 } from '@constants';
 import { LineSpecProps, MetricRangeProps, MetricRangeSpecProps } from 'types';
@@ -140,7 +140,7 @@ const basicMetricRangeMarksWithAnimatons = [
 				},
 				y: {
 					scale: 'yLinear',
-					signal: `datum.metric * ${EASE_OUT_CUBIC}`,
+					signal: `datum.metric * ${ANIMATION_FUNCTION}`,
 				},
 				opacity: [DEFAULT_OPACITY_RULE],
 			},
@@ -163,11 +163,11 @@ const basicMetricRangeMarksWithAnimatons = [
 				x: { scale: 'xTime', field: DEFAULT_TRANSFORMED_TIME_DIMENSION },
 				y: {
 					scale: 'yLinear',
-					signal: `datum.metricStart * ${EASE_OUT_CUBIC}`,
+					signal: `datum.metricStart * ${ANIMATION_FUNCTION}`,
 				},
 				y2: {
 					scale: 'yLinear',
-					signal: `datum.metricEnd * ${EASE_OUT_CUBIC}`,
+					signal: `datum.metricEnd * ${ANIMATION_FUNCTION}`,
 				},
 				fillOpacity: [{ value: 0.2 }],
 			},

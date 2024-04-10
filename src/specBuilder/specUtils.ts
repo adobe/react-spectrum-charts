@@ -32,16 +32,16 @@ import {
 import { Data, Scale, ScaleType, Spec, ValuesData } from 'vega';
 
 import {
+	ANIMATION_FUNCTION,
 	COLOR_SCALE,
 	DEFAULT_TRANSFORMED_TIME_DIMENSION,
-	EASE_OUT_CUBIC,
 	FILTERED_PREVIOUS_TABLE,
 	FILTERED_TABLE,
 	LINE_TYPE_SCALE,
 	MARK_ID,
 	OPACITY_SCALE,
 	PREVIOUS_TABLE,
-	TABLE,
+	TABLE
 } from '../constants';
 import { SanitizedSpecProps } from '../types';
 
@@ -349,7 +349,7 @@ export const getAnimationMarks = (
 	previousData?: ChartData[],
 	scale = 'yLinear'
 ) => {
-	const easingFunction = EASE_OUT_CUBIC;
+	const easingFunction = ANIMATION_FUNCTION;
 
 	let markUpdate = {
 		scale,

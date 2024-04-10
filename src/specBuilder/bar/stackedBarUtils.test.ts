@@ -19,7 +19,7 @@ import {
 	DEFAULT_COLOR,
 	DEFAULT_OPACITY_RULE,
 	DEFAULT_SECONDARY_COLOR,
-	EASE_OUT_CUBIC,
+	ANIMATION_FUNCTION,
 	FILTERED_TABLE,
 } from '@constants';
 import { GroupMark, Mark, RectEncodeEntry } from 'vega';
@@ -178,11 +178,11 @@ describe('stackedBarUtils', () => {
 				...defaultStackedBarXEncodings,
 				y: {
 					scale: 'yLinear',
-					signal: `datum.value0 * ${EASE_OUT_CUBIC}`,
+					signal: `datum.value0 * ${ANIMATION_FUNCTION}`,
 				},
 				y2: {
 					scale: 'yLinear',
-					signal: `datum.value1 * ${EASE_OUT_CUBIC}`,
+					signal: `datum.value1 * ${ANIMATION_FUNCTION}`,
 				},
 			});
 		});
@@ -200,11 +200,11 @@ describe('stackedBarUtils', () => {
 				x: { field: 'bar0_dodgeGroup', scale: 'bar0_position' },
 				y: {
 					scale: 'yLinear',
-					signal: `datum.value0 * ${EASE_OUT_CUBIC}`,
+					signal: `datum.value0 * ${ANIMATION_FUNCTION}`,
 				},
 				y2: {
 					scale: 'yLinear',
-					signal: `datum.value1 * ${EASE_OUT_CUBIC}`,
+					signal: `datum.value1 * ${ANIMATION_FUNCTION}`,
 				},
 			});
 		});
