@@ -126,7 +126,7 @@ export type TooltipAnchor = 'cursor' | 'mark';
 export type TooltipPlacement = 'top' | 'bottom' | 'left' | 'right';
 
 export interface SharedChartProps extends SpecProps {
-	animations: boolean;
+	animations?: boolean;
 	/** Vega config that can be used to tweak the style of the chart. @see https://vega.github.io/vega/docs/config/ */
 	config?: Config;
 	/** Chart data array. */
@@ -502,6 +502,7 @@ export interface LineProps extends Omit<MarkProps & ClickableChartProps, 'color'
 export type InteractionMode = `${INTERACTION_MODE}`;
 
 export interface ScatterProps extends Omit<MarkProps, 'color'> {
+	animations?: boolean;
 	/**
 	 * point fill and stroke color
 	 * uses a key in the data that will map to the color scale or a static color value
@@ -671,7 +672,8 @@ export interface ChartTooltipProps {
 	highlightBy?: 'series' | 'dimension' | 'item' | string[];
 }
 export interface ChartPopoverProps {
-	/** Callback used to control the content rendered in the popover */
+	animations?: boolean,
+  /** Callback used to control the content rendered in the popover */
 	children?: PopoverHandler;
 	/** Width of the popover */
 	width?: number | 'auto';
