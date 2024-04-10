@@ -261,7 +261,7 @@ export const getDefaultSignals = (
 		getGenericSignal(HIGHLIGHTED_SERIES, highlightedSeries),
 		getGenericSignal(SELECTED_ITEM),
 		getGenericSignal(SELECTED_SERIES),
-	];
+	]
 	if (animations) {
 		signals.push(getTimer());
 	}

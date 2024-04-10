@@ -154,7 +154,7 @@ const DodgedBarStory: StoryFn<ToggleableDataProps> = (args): ReactElement => {
 	return (
 		<ChartWithToggleableData
 			ChartComponent={
-				<Chart {...chartProps}>
+				<Chart {...chartProps} debug>
 					<Axis position={'bottom'} baseline title="Browser" />
 					<Axis position={'left'} grid title="Downloads" />
 					<Bar
