@@ -116,7 +116,8 @@ export function getTooltip(
 	// skip annotations
 	if (hasTooltip(children)) {
 	const merge = `merge(datum${nestedDatum ? '.datum' : ''}, {'${COMPONENT_NAME}': '${name}'})`;
-	const signal = animations && !isBar? `timerValue === 1 ? ${merge} : null` : merge;
+	const animatedTooltipSignal = `timerValue === 1 ? ${merge} : null`;
+	const signal = animations && !isBar ? animatedTooltipSignal : merge;
 		const defaultTooltip = { signal };
 		// if the tooltip has an excludeDataKey prop, then disable the tooltip where that key is present
 		const excludeDataKeys = getTooltipProps(children)?.excludeDataKeys;
@@ -598,5 +599,3 @@ export const getLegendMarkOpacityRules = (): ProductionRule<NumericValueRef> => 
 		DEFAULT_OPACITY_RULE
 	]
 };
-
-
