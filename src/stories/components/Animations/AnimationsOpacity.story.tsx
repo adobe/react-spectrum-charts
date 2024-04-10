@@ -152,7 +152,7 @@ const ScatterStory: StoryFn<typeof Scatter> = (args): ReactElement => {
 		width: 500,
 		lineWidths: [1, 2, 3],
 		colors,
-		animations: true,
+		animations: args.animations,
 	});
 	const legendProps = getLegendProps(args);
 
@@ -191,6 +191,7 @@ ScatterPopover.args = {
 	dimension: 'speedNormal',
 	metric: 'handlingNormal',
 	children: [createElement(ChartTooltip, {}, dialog), createElement(ChartPopover, { width: 200 }, dialog)],
+	animations: true
 };
 
 export { AreaPopover, BarPopover, LineChart, ScatterPopover };
