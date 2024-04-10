@@ -458,7 +458,6 @@ describe('lineSpecBuilder', () => {
 				...defaultLineProps,
 				children: [createElement(Trendline, { method: 'average' })],
 			});
-			console.warn(testAddData);
 			expect(
 				addData(baseData, {
 					...defaultLineProps,
