@@ -98,7 +98,7 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 
 		// state variable for storing if chart should reanimate from zero / animate across data sets
 		const [animateFromZero, setAnimateFromZero] = useState(true);
-		const selectedData = useRef<Datum | null>(null); // data that is currently selected, get's set on click if a popover exists
+		const selectedData = useRef<Datum | null>(null); // data that is currently selected, gets set on click if a popover exists
 		const selectedDataName = useRef<string>();
 		const selectedDataBounds = useRef<MarkBounds>();
 		const popoverAnchorRef = useRef<HTMLDivElement>(null);

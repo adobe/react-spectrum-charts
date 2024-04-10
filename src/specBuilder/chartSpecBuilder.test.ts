@@ -384,6 +384,7 @@ describe('Chart spec builder', () => {
 				colorScheme: 'light',
 				hiddenSeries: undefined,
 				highlightedSeries: 'Chrome',
+				animations: false
 			});
 
 			expect(spec.signals?.find((signal) => signal.name === HIGHLIGHTED_SERIES)).toStrictEqual({
@@ -402,6 +403,7 @@ describe('Chart spec builder', () => {
 				colorScheme: 'light',
 				hiddenSeries: undefined,
 				highlightedSeries: 'Chrome',
+				animations: false
 			});
 
 			expect(spec.signals?.find((signal) => signal.name === HIGHLIGHTED_SERIES)).toStrictEqual({
@@ -420,6 +422,7 @@ describe('Chart spec builder', () => {
 				colorScheme: 'light',
 				hiddenSeries: undefined,
 				highlightedSeries: undefined,
+				animations: false
 			});
 			const uncontrolledHighlightSignal = {
 				name: HIGHLIGHTED_SERIES,
@@ -444,11 +447,6 @@ describe('Chart spec builder', () => {
 
 	describe('getDefaultSignals()', () => {
 		const beginningSignals = [
-			{
-				name: 'timerValue',
-				value: '0',
-				on: [{ events: `timer{${DATA_ANIMATION_MILLISECONDS_PER_FRAME}}`, update: `min(1, timerValue + (1 / ${DATA_ANIMATION_DURATION_FRAMES}))` }],
-			},
 			{ name: BACKGROUND_COLOR, value: 'rgb(255, 255, 255)' },
 			{
 				name: 'colors',
@@ -475,14 +473,14 @@ describe('Chart spec builder', () => {
 
 		test('hiddenSeries is empty when no hidden series', () => {
 			expect(
-				getDefaultSignals(DEFAULT_BACKGROUND_COLOR, 'categorical12', 'light', ['dashed'], [1])
+				getDefaultSignals(false, DEFAULT_BACKGROUND_COLOR, 'categorical12', 'light', ['dashed'], [1])
 			).toStrictEqual([...beginningSignals, { name: 'hiddenSeries', value: [] }, ...endSignals]);
 		});
 
 		test('hiddenSeries contains provided hidden series', () => {
 			const hiddenSeries = ['test'];
 			expect(
-				getDefaultSignals(DEFAULT_BACKGROUND_COLOR, 'categorical12', 'light', ['dashed'], [1], hiddenSeries)
+				getDefaultSignals(false, DEFAULT_BACKGROUND_COLOR, 'categorical12', 'light', ['dashed'], [1], hiddenSeries)
 			).toStrictEqual([...beginningSignals, { name: 'hiddenSeries', value: hiddenSeries }, ...endSignals]);
 		});
 	});
