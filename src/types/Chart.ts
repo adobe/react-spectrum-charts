@@ -95,7 +95,7 @@ export type ChartSymbolShape = 'rounded-square' | SymbolShape;
 export type NumberFormat = 'currency' | 'shortCurrency' | 'shortNumber' | 'standardNumber';
 
 export interface SharedChartProps extends SpecProps {
-	animations: boolean;
+	animations?: boolean;
 	/** Vega config that can be used to tweak the style of the chart. @see https://vega.github.io/vega/docs/config/ */
 	config?: Config;
 	/** Chart data array. */
@@ -376,6 +376,7 @@ export interface LineProps extends Omit<MarkProps, 'color'> {
 }
 
 export interface ScatterProps extends Omit<MarkProps, 'color'> {
+	animations?: boolean;
 	/**
 	 * point fill and stroke color
 	 * uses a key in the data that will map to the color scale or a static color value
@@ -541,6 +542,7 @@ export interface ChartTooltipProps {
 	children?: TooltipHandler;
 }
 export interface ChartPopoverProps {
+	animations?: boolean,
 	children?: PopoverHandler;
 	width?: number;
 }

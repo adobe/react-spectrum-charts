@@ -100,7 +100,7 @@ const getLegendProps = (args: ScatterProps): LegendProps => {
 };
 
 const AreaPopoverStory: StoryFn<typeof Area> = (args): ReactElement => {
-	const chartProps = useChartProps({ data: areaStoryData, minWidth: 400, maxWidth: 800, height: 400, animations: true });
+	const chartProps = useChartProps({ data: areaStoryData, minWidth: 400, maxWidth: 800, height: 400, animations: args.animations });
 	return (
 		<Chart {...chartProps}>
 			<Axis position="bottom" baseline />
@@ -115,7 +115,7 @@ const AreaPopoverStory: StoryFn<typeof Area> = (args): ReactElement => {
 };
 
 const DodgedBarPopoverStory: StoryFn<typeof Bar> = (args): ReactElement => {
-	const chartProps = useChartProps({ data: barSeriesData, width: 800, height: 600, animations: true });
+	const chartProps = useChartProps({ data: barSeriesData, width: 800, height: 600, animations: args.animations });
 	return (
 		<Chart {...chartProps}>
 			<Axis position={args.orientation === 'horizontal' ? 'left' : 'bottom'} baseline title="Browser" />
@@ -130,7 +130,7 @@ const DodgedBarPopoverStory: StoryFn<typeof Bar> = (args): ReactElement => {
 };
 
 const LineStory: StoryFn<typeof ChartPopover> = (args): ReactElement => {
-	const chartProps = useChartProps({ ...defaultChartProps, data });
+	const chartProps = useChartProps({ ...defaultChartProps, data, animations: args.animations });
 	return (
 		<Chart {...chartProps}>
 			<Axis position="bottom" baseline />
@@ -172,6 +172,7 @@ AreaPopover.args = {
 	dimension: 'browser',
 	color: 'operatingSystem',
 	scaleType: 'point',
+	animations: true
 };
 
 const BarPopover = bindWithProps(DodgedBarPopoverStory);
@@ -180,17 +181,18 @@ BarPopover.args = {
 	dimension: 'browser',
 	order: 'order',
 	color: 'operatingSystem',
+	animations: true
 };
 
 const LineChart = bindWithProps(LineStory);
-LineChart.args = { children: dialogContent };
+LineChart.args = { children: dialogContent, animations: true };
 
 const ScatterPopover = bindWithProps(ScatterStory);
 ScatterPopover.args = {
 	color: 'weightClass',
 	dimension: 'speedNormal',
 	metric: 'handlingNormal',
-	children: [createElement(ChartTooltip, {}, dialog), createElement(ChartPopover, { width: 200 }, dialog)],
+	children: [createElement(ChartTooltip, {}, dialog), createElement(ChartPopover, { width: 200, animations:true }, dialog)],
 	animations: true
 };
 
