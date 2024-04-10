@@ -69,6 +69,7 @@ export const addScatter = produce<Spec, [ScatterProps & { colorScheme?: ColorSch
 			...props
 		}
 	) => {
+		console.log('Animations in scatter spec builder', animations);
 		const sanitizedChildren = sanitizeMarkChildren(children);
 		const scatterName = toCamelCase(name || `scatter${index}`);
 		// put props back together now that all the defaults have been set
@@ -129,6 +130,7 @@ export const addSignals = produce<Signal[], [ScatterSpecProps]>((signals, props)
 	// if animations are enabled, push opacity animation signals to spec
 	// TODO: add tests
 	if (animations) {
+		console.log('Animations are true');
 		signals.push(...getRscAnimationSignals(name, true, true));
 	}
 	// trendline signals
