@@ -401,6 +401,7 @@ describe('Chart spec builder', () => {
 				...defaultSpecProps,
 				children: [createBar()],
 				highlightedSeries: 'Chrome',
+				animations: false
 			});
 
 			expect(spec.signals?.find((signal) => signal.name === HIGHLIGHTED_SERIES)).toStrictEqual({
@@ -414,6 +415,7 @@ describe('Chart spec builder', () => {
 				...defaultSpecProps,
 				children: [createBar(), createLegend(false)],
 				highlightedSeries: 'Chrome',
+				animations: false
 			});
 
 			expect(spec.signals?.find((signal) => signal.name === HIGHLIGHTED_SERIES)).toStrictEqual({
@@ -426,6 +428,14 @@ describe('Chart spec builder', () => {
 			const spec = buildSpec({
 				...defaultSpecProps,
 				children: [createBar(), createLegend(true)],
+				colors: 'categorical12',
+				lineTypes: ['solid', 'dashed', 'dotted', 'dotDash', 'longDash', 'twoDash'],
+				lineWidths: ['M'],
+				symbolShapes: ['rounded-square'],
+				colorScheme: 'light',
+				hiddenSeries: undefined,
+				highlightedSeries: undefined,
+				animations: false
 			});
 			const uncontrolledHighlightSignal = {
 				name: HIGHLIGHTED_SERIES,
@@ -450,11 +460,6 @@ describe('Chart spec builder', () => {
 
 	describe('getDefaultSignals()', () => {
 		const beginningSignals = [
-			{
-				name: 'timerValue',
-				value: '0',
-				on: [{ events: `timer{${DATA_ANIMATION_MILLISECONDS_PER_FRAME}}`, update: `min(1, timerValue + (1 / ${DATA_ANIMATION_DURATION_FRAMES}))` }],
-			},
 			{ name: BACKGROUND_COLOR, value: 'rgb(255, 255, 255)' },
 			{
 				name: 'colors',
