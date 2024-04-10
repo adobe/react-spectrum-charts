@@ -10,7 +10,7 @@
  * governing permissions and limitations under the License.
  */
 import { ChartTooltip } from '@components/ChartTooltip';
-import { EASE_OUT_CUBIC, PREVIOUS_PREFIX, TRENDLINE_VALUE } from '@constants';
+import { ANIMATION_FUNCTION, PREVIOUS_PREFIX, TRENDLINE_VALUE } from '@constants';
 import { getLineHoverMarks, getLineOpacity } from '@specBuilder/line/lineMarkUtils';
 import { LineMarkProps } from '@specBuilder/line/lineUtils';
 import {
@@ -313,7 +313,7 @@ export const getLineXProductionRule = (
 const getLineYAnimationMarks = (
 	markProps: TrendlineParentProps,
 	trendlineProps: TrendlineSpecProps,
-	easingFunction: string = EASE_OUT_CUBIC,
+	easingFunction: string = ANIMATION_FUNCTION,
 	scale: string = 'yLinear'
 ) => {
 	const { method, name, trendlineDimension } = trendlineProps;

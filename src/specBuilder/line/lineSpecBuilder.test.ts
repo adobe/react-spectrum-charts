@@ -15,6 +15,7 @@ import { ChartTooltip } from '@components/ChartTooltip';
 import { MetricRange } from '@components/MetricRange';
 import { Trendline } from '@components/Trendline';
 import {
+	ANIMATION_FUNCTION,
 	BACKGROUND_COLOR,
 	COLOR_SCALE,
 	DEFAULT_COLOR,
@@ -23,7 +24,6 @@ import {
 	DEFAULT_OPACITY_RULE,
 	DEFAULT_TIME_DIMENSION,
 	DEFAULT_TRANSFORMED_TIME_DIMENSION,
-	EASE_OUT_CUBIC,
 	FILTERED_PREVIOUS_TABLE,
 	FILTERED_TABLE,
 	HIGHLIGHTED_ITEM,
@@ -404,7 +404,7 @@ const displayPointWithAnimationMarks = [
 						x: { scale: 'xTime', field: DEFAULT_TRANSFORMED_TIME_DIMENSION },
 						y: {
 							scale: 'yLinear',
-							signal: `datum.value * ${EASE_OUT_CUBIC}`,
+							signal: `datum.value * ${ANIMATION_FUNCTION}`,
 						},
 						opacity: [DEFAULT_OPACITY_RULE],
 					},
@@ -440,7 +440,7 @@ const displayPointWithAnimationMarks = [
 				},
 				y: {
 					scale: 'yLinear',
-					signal: `datum.value * ${EASE_OUT_CUBIC}`,
+					signal: `datum.value * ${ANIMATION_FUNCTION}`,
 				},
 			},
 		},

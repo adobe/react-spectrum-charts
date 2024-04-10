@@ -10,16 +10,16 @@
  * governing permissions and limitations under the License.
  */
 import {
+	ANIMATION_FUNCTION,
 	COLOR_SCALE,
 	DEFAULT_CATEGORICAL_DIMENSION,
 	DEFAULT_COLOR,
 	DEFAULT_SECONDARY_COLOR,
 	DEFAULT_TRANSFORMED_TIME_DIMENSION,
-	EASE_OUT_CUBIC,
 	FILTERED_PREVIOUS_TABLE,
 	LINE_TYPE_SCALE,
 	MARK_ID,
-	TABLE,
+	TABLE
 } from '@constants';
 import { ROUNDED_SQUARE_PATH } from '@svgPaths';
 import { BandScale, OrdinalScale } from 'vega';
@@ -216,7 +216,7 @@ describe('specUtils', () => {
 			const animationMarks = getAnimationMarks("dimension", "maxTemperature", false, areaData, [], "linear")
 			expect(animationMarks).toStrictEqual({
 				scale: 'linear',
-				signal: `datum.maxTemperature * ${EASE_OUT_CUBIC}`,
+				signal: `datum.maxTemperature * ${ANIMATION_FUNCTION}`,
 			})
 		});
 		test('should return same dimensions', () => {
@@ -236,7 +236,7 @@ describe('specUtils', () => {
 					"linear")
 			expect(animationMarks).toStrictEqual({
 				scale: 'linear',
-				signal: `(data('${FILTERED_PREVIOUS_TABLE}')[indexof(pluck(data('${FILTERED_PREVIOUS_TABLE}'), 'dimension'), datum.dimension)].maxTemperature * (1 - ${EASE_OUT_CUBIC})) + (datum.maxTemperature * ${EASE_OUT_CUBIC})`,
+				signal: `(data('${FILTERED_PREVIOUS_TABLE}')[indexof(pluck(data('${FILTERED_PREVIOUS_TABLE}'), 'dimension'), datum.dimension)].maxTemperature * (1 - ${ANIMATION_FUNCTION})) + (datum.maxTemperature * ${ANIMATION_FUNCTION})`,
 			})
 		});
 		test('should return same dimensions and is stacked', () => {
@@ -256,7 +256,7 @@ describe('specUtils', () => {
 					"linear")
 			expect(animationMarks).toStrictEqual({
 				scale: 'linear',
-				signal: `(data('${FILTERED_PREVIOUS_TABLE}')[indexof(pluck(data('${FILTERED_PREVIOUS_TABLE}'), '${MARK_ID}'), (datum.${MARK_ID} + ${areaData.length}))].maxTemperature * (1 - ${EASE_OUT_CUBIC})) + (datum.maxTemperature * ${EASE_OUT_CUBIC})`,
+				signal: `(data('${FILTERED_PREVIOUS_TABLE}')[indexof(pluck(data('${FILTERED_PREVIOUS_TABLE}'), '${MARK_ID}'), (datum.${MARK_ID} + ${areaData.length}))].maxTemperature * (1 - ${ANIMATION_FUNCTION})) + (datum.maxTemperature * ${ANIMATION_FUNCTION})`,
 			})
 		});
 		test('should return different dimensions (one extra data point)', () => {
@@ -275,7 +275,7 @@ describe('specUtils', () => {
 					"linear")
 			expect(animationMarks).toStrictEqual({
 				scale: 'linear',
-				signal: `datum.maxTemperature * ${EASE_OUT_CUBIC}`,
+				signal: `datum.maxTemperature * ${ANIMATION_FUNCTION}`,
 			})
 		});
 		test('should return different dimensions (one less data point)', () => {
@@ -294,7 +294,7 @@ describe('specUtils', () => {
 					"linear")
 			expect(animationMarks).toStrictEqual({
 				scale: 'linear',
-				signal: `datum.maxTemperature * ${EASE_OUT_CUBIC}`,
+				signal: `datum.maxTemperature * ${ANIMATION_FUNCTION}`,
 			})
 		});
 	});

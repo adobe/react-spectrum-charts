@@ -14,10 +14,10 @@ import { createElement } from 'react';
 import { ChartPopover } from '@components/ChartPopover';
 import { ChartTooltip } from '@components/ChartTooltip';
 import {
+	ANIMATION_FUNCTION,
 	COLOR_SCALE,
 	DEFAULT_OPACITY_RULE,
 	DEFAULT_TRANSFORMED_TIME_DIMENSION,
-	EASE_OUT_CUBIC,
 	HIGHLIGHTED_SERIES,
 	SELECTED_SERIES,
 	SERIES_ID,
@@ -77,7 +77,7 @@ describe('getLineMark()', () => {
 				update: {
 					y: {
 						scale: 'yLinear',
-						signal: `datum.value * ${EASE_OUT_CUBIC}`
+						signal: `datum.value * ${ANIMATION_FUNCTION}`
 					},
 					x: { field: DEFAULT_TRANSFORMED_TIME_DIMENSION, scale: 'xTime' },
 					opacity: [DEFAULT_OPACITY_RULE],

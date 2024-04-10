@@ -16,7 +16,7 @@ import {
 	DEFAULT_COLOR_SCHEME,
 	DEFAULT_OPACITY_RULE,
 	DEFAULT_TRANSFORMED_TIME_DIMENSION,
-	EASE_OUT_CUBIC,
+	ANIMATION_FUNCTION,
 } from '@constants';
 
 import { getAreaMark } from './areaUtils';
@@ -282,11 +282,11 @@ describe('getAreaMark', () => {
 				update: {
 					y: {
 						scale: 'yLinear',
-						signal: `datum.${'metricStart'} * ${EASE_OUT_CUBIC}`,
+						signal: `datum.${'metricStart'} * ${ANIMATION_FUNCTION}`,
 					},
 					y2: {
 						scale: 'yLinear',
-						signal: `datum.${'metricEnd'} * ${EASE_OUT_CUBIC}`,
+						signal: `datum.${'metricEnd'} * ${ANIMATION_FUNCTION}`,
 					},
 					cursor: undefined,
 					x: {
