@@ -332,15 +332,6 @@ export const getD3FormatSpecifierFromNumberFormat = (numberFormat: NumberFormat 
 	}
 };
 
-export const usePreviousChartData = <T>(data: T) => {
-	const ref = useRef<T>();
-	useEffect(() => {
-		ref.current = data;
-	}, [data]);
-
-	return ref.current;
-};
-
 export const getAnimationMarks = (
 	dimension: string,
 	metric: string,
