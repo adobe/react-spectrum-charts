@@ -24,7 +24,8 @@ import useChartHeight from '@hooks/useChartHeight';
 import { getColorValue } from '@specBuilder/specUtils';
 import { getBigNumberElementsFromChildren, toArray } from '@utils';
 import { BigNumberInternal } from 'rc/components/BigNumber/BigNumber';
-	PREVIOUS_TABLE
+import {
+	PREVIOUS_TABLE,
 	DEFAULT_LOCALE
 } from '@constants';
 import useChartImperativeHandle from '@hooks/useChartImperativeHandle';
@@ -39,6 +40,7 @@ import { Theme } from '@react-types/provider';
 import './Chart.css';
 import { RscChart } from './RscChart';
 import { ChartData, ChartHandle, ChartProps, LineType, RscChartProps } from './types';
+import usePreviousChartData from '@hooks/usePreviousChartData';
 
 interface PlaceholderContentProps {
 	data: ChartData[];
