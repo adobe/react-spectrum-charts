@@ -79,7 +79,7 @@ export interface SpecProps {
 
 export interface SanitizedSpecProps extends SpecProps {
 	animateFromZero?: boolean;
-	animations?: boolean;
+	animations: boolean;
 	data?: ChartData[];
 	/** Children with all non-RSC components removed */
 	children: ChartChildElement[];

@@ -99,7 +99,8 @@ export function getTooltip(
 	// skip annotations
 	if (hasTooltip(children)) {
 		const merge = `merge(datum${nestedDatum ? '.datum' : ''}, {'rscComponentName': '${name}'})`;
-		const signal = animations && !isBar? `timerValue === 1 ? ${merge} : null` : merge;
+		const animatedTooltipSignal = `timerValue === 1 ? ${merge} : null`;
+		const signal = animations && !isBar ? animatedTooltipSignal : merge;
 		return { signal };
 	}
 }

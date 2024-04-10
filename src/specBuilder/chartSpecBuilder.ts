@@ -192,7 +192,7 @@ export function buildSpec({
 					});
 				case Scatter.displayName:
 					scatterCount++;
-					return addScatter(acc, { ...(cur as ScatterElement).props, colorScheme, index: scatterCount });
+					return addScatter(acc, { ...(cur as ScatterElement).props, colorScheme, index: scatterCount, animations });
 				case Title.displayName:
 					// No title count. There can only be one title.
 					return addTitle(acc, { ...(cur as TitleElement).props });
@@ -261,7 +261,7 @@ export const getDefaultSignals = (
 		getGenericSignal(HIGHLIGHTED_SERIES, highlightedSeries),
 		getGenericSignal(SELECTED_ITEM),
 		getGenericSignal(SELECTED_SERIES),
-	];
+	]
 	if (animations) {
 		signals.push(getTimer());
 	}
