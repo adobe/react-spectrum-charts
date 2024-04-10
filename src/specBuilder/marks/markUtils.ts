@@ -305,7 +305,6 @@ export const getVoronoiPath = (children: MarkChildElement[], dataSource: string,
  * @param opacityValue
  * @returns { signal: string}
  */
-//TODO: Add tests
 export const getHighlightOpacityAnimationValue = (opacityValue: { signal: string } | { value: number }): { signal: string }  => {
 	if ('signal' in opacityValue) {
 		return { signal: `max(1-rscColorAnimation, ${opacityValue.signal} / ${HIGHLIGHT_CONTRAST_RATIO})` }
@@ -317,7 +316,6 @@ export const getHighlightOpacityAnimationValue = (opacityValue: { signal: string
  * @param opacityValue
  * @returns ProductionRule<NumericValueRef>
  */
-//TODO: Add tests
 export const getSeriesAnimationOpacityRules = (
 	opacityValue?: { signal: string } | { value: number },
 ): ProductionRule<NumericValueRef> => {
@@ -340,7 +338,6 @@ export const getSeriesAnimationOpacityRules = (
  * animation opacity rules for charts that highlight from mark ID
  * @returns ProductionRule<NumericValueRef>
  */
-//TODO: add tests
 export const getMarkHighlightOpacityRules = (): ProductionRule<NumericValueRef> => {
 	return [
 		{
@@ -358,7 +355,6 @@ export const getMarkHighlightOpacityRules = (): ProductionRule<NumericValueRef> 
  * with highlight enabled
  * @returns ProductionRule<NumericValueRef>
  */
-//TODO: add tests
 export const getMarkWithLegendHighlightOpacityRules = (): ProductionRule<NumericValueRef> => {
 	return [
 		{
