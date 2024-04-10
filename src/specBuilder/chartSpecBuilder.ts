@@ -224,6 +224,7 @@ const initializeComponentCounts = () => {
 };
 
 export const getDefaultSignals = ({
+  animations,
 	backgroundColor,
 	colors,
 	colorScheme,
@@ -236,7 +237,7 @@ export const getDefaultSignals = ({
 	// if the background color is transparent, then we want to set the signal background color to gray-50
 	// if the signal background color were transparent then backgroundMarks and annotation fill would also be transparent
 	const signalBackgroundColor = backgroundColor === 'transparent' ? 'gray-50' : backgroundColor;
-	return [
+	const signals = [
 		getGenericValueSignal(BACKGROUND_COLOR, getColorValue(signalBackgroundColor, colorScheme)),
 		getGenericValueSignal('colors', getTwoDimensionalColorScheme(colors, colorScheme)),
 		getGenericValueSignal('lineTypes', getTwoDimensionalLineTypes(lineTypes)),
@@ -248,8 +249,11 @@ export const getDefaultSignals = ({
 		getGenericValueSignal(SELECTED_ITEM),
 		getGenericValueSignal(SELECTED_SERIES),
 		getGenericValueSignal(SELECTED_GROUP),
-		getTimer(),
 	];
+	if (animations) {
+		signals.push(getTimer());
+	}
+	return signals;
 };
 
 export const getTimer = () => {
