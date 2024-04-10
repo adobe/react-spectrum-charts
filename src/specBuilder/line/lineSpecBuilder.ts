@@ -137,7 +137,6 @@ export const addSignals = produce<Signal[], [LineSpecProps]>((signals, props) =>
 
 	if (!hasInteractiveChildren(children)) return;
 	// if animations are enabled, push all necessary animation signals. Line charts have voronoi points and have nested datum
-	//TODO: add tests
 	if (animations) {
 		signals.push(...getRscAnimationSignals(name, true));
 	}
@@ -159,7 +158,6 @@ export const setScales = produce<Scale[], [LineSpecProps]>((scales, props) => {
 	const { metric, metricAxis, dimension, color, lineType, opacity, padding, scaleType, children, name, animations } = props;
 
 	// if animations are enabled, add all necessary animation scales.
-	//TODO: Add tests
 	if (animations && hasInteractiveChildren(children)) {
 		addRscAnimationScales(scales);
 	}
@@ -178,7 +176,6 @@ export const setScales = produce<Scale[], [LineSpecProps]>((scales, props) => {
 		addMetricScale(scales, getMetricKeys(metric, children, name), 'y', metricAxis);
 	}
 	// check to see if trend lines have interactive children and if animation scales are already added.
-	//TODO: Add tests
 	checkTrendlineAnimationScales(name, scales, props);
 
 	// add trendline scales

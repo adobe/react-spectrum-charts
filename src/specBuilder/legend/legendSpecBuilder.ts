@@ -317,7 +317,6 @@ export const addData = produce<Data[], [LegendSpecProps & { facets: string[] }]>
 export const addSignals = produce<Signal[], [LegendSpecProps]>(
 	(signals, { hiddenSeries, highlight, isToggleable, legendLabels, keys, name, animations }) => {
 		// if animations are enabled, add all necessary animation signals.
-		//TODO: add tests
 		if (animations) {
 			// we don't want to add the signals if they already exist.
 			// Since they come as a package, we only need to check if one animation signal is present.

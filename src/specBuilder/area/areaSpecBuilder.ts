@@ -166,7 +166,6 @@ export const addSignals = produce<Signal[], [AreaSpecProps]>((signals, { childre
 	if (!children.length) return;
 
 	// If animations is enabled and has hover functionality, add all the necessary animation signals.
-	// TODO: add tests
 	if (animations && hasInteractiveChildren(children)) {
 		signals.push(...getRscAnimationSignals(name));
 	}
@@ -241,7 +240,6 @@ export const addHighlightedItemEvents = (signals: Signal[], areaName: string) =>
 export const setScales = produce<Scale[], [AreaSpecProps]>(
 	(scales, { metric, metricEnd, metricStart, dimension, color, scaleType, padding, animations, children }) => {
 		// If animations is enabled and has hover functionality, add all the necessary animation scales.
-		//TODO: add tests
 		if (animations && hasInteractiveChildren(children)) {
 			addRscAnimationScales(scales);
 		}

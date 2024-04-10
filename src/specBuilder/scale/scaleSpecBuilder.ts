@@ -232,7 +232,6 @@ const isScaleMultiFieldsRef = (
  * push all Opacity animation scales
  * @param scales
  */
-//TODO: Add tests
 export const addRscAnimationScales = (scales: Scale[]) => {
 	//if the scales are already present, no need to add them.
 	if (!hasScaleByName(scales, 'rscAnimationCurve')) {
@@ -245,7 +244,6 @@ export const addRscAnimationScales = (scales: Scale[]) => {
  * The ease-in curves for opacity animations
  * @returns Scale
  */
-//TODO: Add tests
 const getRscAnimationCurve = (): Scale => {
 	return {
 		name: 'rscAnimationCurve',
@@ -260,7 +258,6 @@ const getRscAnimationCurve = (): Scale => {
  * The ease-out curves for opacity animations
  * @returns Scale
  */
-//TODO: Add tests
 const getRscAnimationCurveInverse = (): Scale => {
 	return {
 		name: 'rscAnimationCurveInverse',
@@ -277,7 +274,6 @@ const getRscAnimationCurveInverse = (): Scale => {
  * @param name
  * @returns boolean
  */
-//TODO: Add tests
 export const hasScaleByName = (scales: Scale[], name: string) => {
 	return scales.some((scale) => scale.name == name);
 };

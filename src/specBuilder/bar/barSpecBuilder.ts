@@ -120,8 +120,8 @@ export const addSignals = produce<Signal[], [BarSpecProps]>(
 		if (!children.length) {
 			return;
 		}
-  // if animations are enabled, push all necessary animation signals.
-		//TODO: add tests
+
+		// if animations are enabled, push all necessary animation signals.
 		if (animations && hasInteractiveChildren(children)) {
 			signals.push(...getRscAnimationSignals(name, undefined, true));
 		}
