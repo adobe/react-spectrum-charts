@@ -16,8 +16,6 @@ import { Legend } from '@components/Legend';
 import {
 	BACKGROUND_COLOR,
 	COLOR_SCALE,
-	DATA_ANIMATION_DURATION_FRAMES,
-	DATA_ANIMATION_MILLISECONDS_PER_FRAME,
 	DEFAULT_BACKGROUND_COLOR,
 	DEFAULT_COLOR,
 	DEFAULT_SECONDARY_COLOR,
@@ -384,7 +382,7 @@ describe('Chart spec builder', () => {
 				colorScheme: 'light',
 				hiddenSeries: undefined,
 				highlightedSeries: 'Chrome',
-				animations: false
+				animations: false,
 			});
 
 			expect(spec.signals?.find((signal) => signal.name === HIGHLIGHTED_SERIES)).toStrictEqual({
@@ -403,7 +401,7 @@ describe('Chart spec builder', () => {
 				colorScheme: 'light',
 				hiddenSeries: undefined,
 				highlightedSeries: 'Chrome',
-				animations: false
+				animations: false,
 			});
 
 			expect(spec.signals?.find((signal) => signal.name === HIGHLIGHTED_SERIES)).toStrictEqual({
@@ -422,7 +420,7 @@ describe('Chart spec builder', () => {
 				colorScheme: 'light',
 				hiddenSeries: undefined,
 				highlightedSeries: undefined,
-				animations: false
+				animations: false,
 			});
 			const uncontrolledHighlightSignal = {
 				name: HIGHLIGHTED_SERIES,
@@ -480,7 +478,15 @@ describe('Chart spec builder', () => {
 		test('hiddenSeries contains provided hidden series', () => {
 			const hiddenSeries = ['test'];
 			expect(
-				getDefaultSignals(false, DEFAULT_BACKGROUND_COLOR, 'categorical12', 'light', ['dashed'], [1], hiddenSeries)
+				getDefaultSignals(
+					false,
+					DEFAULT_BACKGROUND_COLOR,
+					'categorical12',
+					'light',
+					['dashed'],
+					[1],
+					hiddenSeries
+				)
 			).toStrictEqual([...beginningSignals, { name: 'hiddenSeries', value: hiddenSeries }, ...endSignals]);
 		});
 	});

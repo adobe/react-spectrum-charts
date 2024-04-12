@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { BACKGROUND_COLOR, FILTERED_TABLE, MARK_ID } from '@constants';
+import { BACKGROUND_COLOR, FILTERED_TABLE } from '@constants';
 import { getInteractive } from '@specBuilder/marks/markUtils';
 import { getAnimationMarks } from '@specBuilder/specUtils';
 import { BarSpecProps } from 'types';
