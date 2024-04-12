@@ -270,6 +270,13 @@ export const getStrokeDashProductionRule = (lineType: LineTypeFacet | DualFacet)
 	return { value: getStrokeDashFromLineType(lineType.value) };
 };
 
+// export const getHighlightOpacityValue = (
+// 	opacityValue: { signal: string } | { value: number } = DEFAULT_OPACITY_RULE
+// ): NumericValueRef => {
+// 	const opacity = 'signal' in opacityValue ? opacityValue.signal : opacityValue.value;
+// 	return { signal: `max(1-rscColorAnimation, ${opacity} / ${HIGHLIGHT_CONTRAST_RATIO})`};
+// };
+
 export const getHighlightOpacityValue = (
 	opacityValue: { signal: string } | { value: number } = DEFAULT_OPACITY_RULE
 ): NumericValueRef => {
