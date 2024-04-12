@@ -189,7 +189,6 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 						<LegendTooltip
 							value={value}
 							descriptions={legendDescriptions}
-							// TODO: support multiple legends
 							domain={chartView.current?.scale('legend0Entries').domain()}
 						/>
 					);
