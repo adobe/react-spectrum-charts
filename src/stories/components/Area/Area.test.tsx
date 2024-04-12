@@ -95,7 +95,6 @@ describe('Area', () => {
 	});
 
 	test('Area with Popover renders properly', async () => {
-		console.warn('Popover args are', Popover.args);
 		render(<Popover {...Popover.args} />);
 		const chart = await findChart();
 		expect(chart).toBeInTheDocument();
