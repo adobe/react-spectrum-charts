@@ -17,6 +17,7 @@ import {
 	DEFAULT_COLOR,
 	DEFAULT_TIME_DIMENSION,
 	FILTERED_TABLE,
+	MARK_ID,
 	MS_PER_DAY,
 	SERIES_ID,
 	TRENDLINE_VALUE,
@@ -64,10 +65,10 @@ describe('addTrendlineData()', () => {
 
 	test('should add datasource for trendline', () => {
 		const trendlineData = getDefaultData();
-		expect(trendlineData).toHaveLength(2);
+		expect(trendlineData).toHaveLength(4);
 		addTrendlineData(trendlineData, defaultLineProps);
-		expect(trendlineData).toHaveLength(3);
-		expect(trendlineData[2]).toStrictEqual({
+		expect(trendlineData).toHaveLength(5);
+		expect(trendlineData[4]).toStrictEqual({
 			name: 'line0Trendline0_highResolutionData',
 			source: FILTERED_TABLE,
 			transform: [
@@ -83,6 +84,10 @@ describe('addTrendlineData()', () => {
 					expr: `datum.${DEFAULT_COLOR}`,
 					as: SERIES_ID,
 				},
+				{
+					type: 'identifier',
+					as: MARK_ID,
+				},
 			],
 		});
 	});
@@ -91,11 +96,12 @@ describe('addTrendlineData()', () => {
 		const trendlineData = getDefaultData();
 		addTrendlineData(trendlineData, {
 			...defaultLineProps,
+			animations: false,
 			children: [createElement(Trendline, {}, createElement(ChartTooltip))],
 		});
-		expect(trendlineData).toHaveLength(7);
-		expect(trendlineData[5]).toHaveProperty('name', 'line0_allTrendlineData');
-		expect(trendlineData[6]).toHaveProperty('name', 'line0Trendline_highlightedData');
+		expect(trendlineData).toHaveLength(9);
+		expect(trendlineData[7]).toHaveProperty('name', 'line0_allTrendlineData');
+		expect(trendlineData[8]).toHaveProperty('name', 'line0Trendline_highlightedData');
 	});
 
 	test('should add _highResolutionData if doing a regression method', () => {
@@ -103,10 +109,11 @@ describe('addTrendlineData()', () => {
 
 		addTrendlineData(trendlineData, {
 			...defaultLineProps,
+			animations: false,
 			children: [createElement(Trendline, { method: 'linear' })],
 		});
-		expect(trendlineData).toHaveLength(3);
-		expect(trendlineData[2]).toHaveProperty('name', 'line0Trendline0_highResolutionData');
+		expect(trendlineData).toHaveLength(5);
+		expect(trendlineData[4]).toHaveProperty('name', 'line0Trendline0_highResolutionData');
 	});
 
 	test('should add _params and _data if doing a regression method and there is a tooltip on the trendline', () => {
@@ -114,25 +121,27 @@ describe('addTrendlineData()', () => {
 
 		addTrendlineData(trendlineData, {
 			...defaultLineProps,
+			animations: false,
 			children: [createElement(Trendline, { method: 'linear' }, createElement(ChartTooltip))],
 		});
-		expect(trendlineData).toHaveLength(7);
-		expect(trendlineData[3]).toHaveProperty('name', 'line0Trendline0_params');
-		expect(trendlineData[4]).toHaveProperty('name', 'line0Trendline0_data');
+		expect(trendlineData).toHaveLength(9);
+		expect(trendlineData[5]).toHaveProperty('name', 'line0Trendline0_params');
+		expect(trendlineData[6]).toHaveProperty('name', 'line0Trendline0_data');
 	});
 
 	test('should add sort transform, then window trandform, and then dimension range filter transform for movingAverage', () => {
 		const trendlineData = getDefaultData();
 		addTrendlineData(trendlineData, {
 			...defaultLineProps,
+			animations: false,
 			children: [createElement(Trendline, { method: 'movingAverage-3', dimensionRange: [1, 2] })],
 		});
-		expect(trendlineData).toHaveLength(3);
-		expect(trendlineData[2]).toHaveProperty('name', 'line0Trendline0_data');
-		expect(trendlineData[2].transform).toHaveLength(3);
-		expect(trendlineData[2].transform?.[0]).toHaveProperty('type', 'collect');
-		expect(trendlineData[2].transform?.[1]).toHaveProperty('type', 'window');
-		expect(trendlineData[2].transform?.[2]).toHaveProperty('type', 'filter');
+		expect(trendlineData).toHaveLength(5);
+		expect(trendlineData[4]).toHaveProperty('name', 'line0Trendline0_data');
+		expect(trendlineData[4].transform).toHaveLength(3);
+		expect(trendlineData[4].transform?.[0]).toHaveProperty('type', 'collect');
+		expect(trendlineData[4].transform?.[1]).toHaveProperty('type', 'window');
+		expect(trendlineData[4].transform?.[2]).toHaveProperty('type', 'filter');
 	});
 });
 
@@ -155,7 +164,13 @@ describe('getAggregateTrendlineData()', () => {
 
 describe('getRegressionTrendlineData()', () => {
 	test('should return one data source if there are not any interactive children', () => {
-		const data = getRegressionTrendlineData(defaultLineProps, defaultTrendlineProps, [DEFAULT_COLOR]);
+		const data = getRegressionTrendlineData(
+			defaultLineProps,
+			defaultTrendlineProps,
+			[DEFAULT_COLOR],
+			defaultTrendlineProps.name,
+			FILTERED_TABLE
+		);
 		expect(data).toHaveLength(1);
 		expect(data[0]).toHaveProperty('name', 'line0Trendline0_highResolutionData');
 	});
@@ -163,7 +178,9 @@ describe('getRegressionTrendlineData()', () => {
 		const data = getRegressionTrendlineData(
 			defaultLineProps,
 			{ ...defaultTrendlineProps, children: [createElement(ChartTooltip)] },
-			[DEFAULT_COLOR]
+			[DEFAULT_COLOR],
+			defaultTrendlineProps.name,
+			FILTERED_TABLE
 		);
 		expect(data).toHaveLength(3);
 		expect(data[1]).toHaveProperty('name', 'line0Trendline0_params');

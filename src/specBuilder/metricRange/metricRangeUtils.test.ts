@@ -20,6 +20,7 @@ import {
 	DEFAULT_OPACITY_RULE,
 	DEFAULT_TIME_DIMENSION,
 	DEFAULT_TRANSFORMED_TIME_DIMENSION,
+	ANIMATION_FUNCTION,
 	FILTERED_TABLE,
 } from '@constants';
 import { LineSpecProps, MetricRangeProps, MetricRangeSpecProps } from 'types';
@@ -65,6 +66,7 @@ const defaultLineProps: LineSpecProps = {
 	colorScheme: DEFAULT_COLOR_SCHEME,
 	interactiveMarkName: undefined,
 	popoverMarkName: undefined,
+	animations: false
 };
 
 const basicMetricRangeMarks = [
@@ -109,6 +111,64 @@ const basicMetricRangeMarks = [
 			update: {
 				cursor: undefined,
 				x: { scale: 'xTime', field: DEFAULT_TRANSFORMED_TIME_DIMENSION },
+				fillOpacity: [{ value: 0.2 }],
+			},
+		},
+	},
+];
+
+const basicMetricRangeMarksWithAnimatons = [
+	{
+		name: 'line0MetricRange0_line',
+		type: 'line',
+		from: {
+			data: 'line0MetricRange0_facet',
+		},
+		interactive: false,
+		encode: {
+			enter: {
+				y: { scale: 'yLinear', field: 'metric' },
+				stroke: { scale: COLOR_SCALE, field: 'series' },
+				strokeDash: { value: [3, 4] },
+				strokeOpacity: DEFAULT_OPACITY_RULE,
+				strokeWidth: { value: 1.5 },
+			},
+			update: {
+				x: {
+					scale: 'xTime',
+					field: DEFAULT_TRANSFORMED_TIME_DIMENSION,
+				},
+				y: {
+					scale: 'yLinear',
+					signal: `datum.metric * ${ANIMATION_FUNCTION}`,
+				},
+				opacity: [DEFAULT_OPACITY_RULE],
+			},
+		},
+	},
+	{
+		name: 'line0MetricRange0_area',
+		type: 'area',
+		from: {
+			data: 'line0MetricRange0_facet',
+		},
+		interactive: false,
+		encode: {
+			enter: {
+				tooltip: undefined,
+				fill: { scale: COLOR_SCALE, field: 'series' },
+			},
+			update: {
+				cursor: undefined,
+				x: { scale: 'xTime', field: DEFAULT_TRANSFORMED_TIME_DIMENSION },
+				y: {
+					scale: 'yLinear',
+					signal: `datum.metricStart * ${ANIMATION_FUNCTION}`,
+				},
+				y2: {
+					scale: 'yLinear',
+					signal: `datum.metricEnd * ${ANIMATION_FUNCTION}`,
+				},
 				fillOpacity: [{ value: 0.2 }],
 			},
 		},
@@ -166,6 +226,12 @@ describe('getMetricRangeMark', () => {
 	});
 });
 
+describe('getMetricRangeMarkWithAnimations', () => {
+	test('creates MetricRange mark from basic input', () => {
+		expect(getMetricRangeMark({...defaultLineProps, animations: true, animateFromZero: true}, defaultMetricRangeSpecProps)).toEqual(basicMetricRangeMarksWithAnimatons);
+	});
+});
+
 describe('getMetricRangeGroupMarks', () => {
 	test('creates MetricRange group mark from basic input', () => {
 		expect(getMetricRangeGroupMarks(defaultLineProps)).toEqual([
@@ -181,6 +247,26 @@ describe('getMetricRangeGroupMarks', () => {
 					},
 				},
 				marks: basicMetricRangeMarks,
+			},
+		]);
+	});
+});
+
+describe('getMetricRangeGroupMarksWithAnimatons', () => {
+	test('creates MetricRange group mark from basic input', () => {
+		expect(getMetricRangeGroupMarks({...defaultLineProps, animations: true, animateFromZero: true })).toEqual([
+			{
+				name: 'line0MetricRange0_group',
+				type: 'group',
+				clip: true,
+				from: {
+					facet: {
+						name: 'line0MetricRange0_facet',
+						data: FILTERED_TABLE,
+						groupby: ['series'],
+					},
+				},
+				marks: basicMetricRangeMarksWithAnimatons,
 			},
 		]);
 	});

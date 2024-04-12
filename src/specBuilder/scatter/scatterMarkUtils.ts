@@ -12,28 +12,28 @@
 import {
 	DEFAULT_OPACITY_RULE,
 	FILTERED_TABLE,
-	HIGHLIGHTED_ITEM,
-	HIGHLIGHT_CONTRAST_RATIO,
+	HIGHLIGHT_CONTRAST_RATIO, HIGHLIGHTED_ITEM,
 	MARK_ID,
-	SELECTED_ITEM,
+	SELECTED_ITEM
 } from '@constants';
 import {
 	getColorProductionRule,
 	getLineWidthProductionRule,
+	getMarkHighlightOpacityRules,
 	getOpacityProductionRule,
 	getStrokeDashProductionRule,
 	getSymbolSizeProductionRule,
 	getVoronoiPath,
 	getXProductionRule,
 	hasInteractiveChildren,
-	hasPopover,
+	hasPopover
 } from '@specBuilder/marks/markUtils';
 import { getScatterPathMarks } from '@specBuilder/scatterPath/scatterPathUtils';
 import { getTrendlineMarks } from '@specBuilder/trendline';
 import { spectrumColors } from '@themes';
 import { produce } from 'immer';
 import { ScatterSpecProps, SymbolSizeFacet } from 'types';
-import { GroupMark, Mark, NumericValueRef, PathMark, SymbolMark } from 'vega';
+import { GroupMark, Mark, NumericValueRef, PathMark, ProductionRule, SymbolMark } from 'vega';
 
 export const addScatterMarks = produce<Mark[], [ScatterSpecProps]>((marks, props) => {
 	const { name } = props;
@@ -105,9 +105,14 @@ export const getScatterMark = (props: ScatterSpecProps): SymbolMark => {
  * @param scatterProps ScatterSpecProps
  * @returns opacity production rule
  */
-export const getOpacity = ({ children }: ScatterSpecProps): ({ test?: string } & NumericValueRef)[] => {
+export const getOpacity = ({ animations, children }: ScatterSpecProps): ProductionRule<NumericValueRef> => {
 	if (!hasInteractiveChildren(children)) {
 		return [DEFAULT_OPACITY_RULE];
+	}
+	// if animations are enabled, set opacity animation rules for scatter mark
+	
+	if (animations) {
+		return getMarkHighlightOpacityRules();
 	}
 	// if a point is hovered or selected, all other points should be reduced opacity
 	const fadedValue = 1 / HIGHLIGHT_CONTRAST_RATIO;

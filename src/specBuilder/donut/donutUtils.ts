@@ -40,7 +40,7 @@ export const getArcMark = (name: string, holeRatio: number, radius: string, chil
 				fill: { scale: COLOR_SCALE, field: 'id' },
 				x: { signal: 'width / 2' },
 				y: { signal: 'height / 2' },
-				tooltip: getTooltip(children, name),
+				tooltip: getTooltip({ children, name }),
 			},
 			update: {
 				startAngle: { field: 'startAngle' },

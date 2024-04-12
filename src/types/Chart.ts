@@ -78,9 +78,12 @@ export interface SpecProps {
 }
 
 export interface SanitizedSpecProps extends SpecProps {
+	animateFromZero?: boolean;
+	animations: boolean;
+	data?: ChartData[];
 	/** Children with all non-RSC components removed */
 	children: ChartChildElement[];
-	data?: ChartData[];
+	previousData?: ChartData[];
 }
 
 export type Orientation = 'vertical' | 'horizontal';
@@ -92,6 +95,7 @@ export type ChartSymbolShape = 'rounded-square' | SymbolShape;
 export type NumberFormat = 'currency' | 'shortCurrency' | 'shortNumber' | 'standardNumber';
 
 export interface SharedChartProps extends SpecProps {
+	animations?: boolean;
 	/** Vega config that can be used to tweak the style of the chart. @see https://vega.github.io/vega/docs/config/ */
 	config?: Config;
 	/** Chart data array. */
@@ -105,6 +109,7 @@ export interface SharedChartProps extends SpecProps {
 	/** Chart padding */
 	padding?: Padding;
 	/** Method to use for rendering the chart. 'canvas' is ideal for large data sets. */
+	previousData?: ChartData[];
 	renderer?: 'svg' | 'canvas';
 }
 
@@ -270,6 +275,7 @@ export type SubLabel = {
 };
 
 export interface MarkProps extends BaseProps {
+	animations?: boolean;
 	children?: Children<MarkChildElement>;
 	/** Key in the data that is used as the color facet */
 	color?: string;
@@ -319,6 +325,7 @@ export interface AnnotationStyleProps extends MarkProps {
 }
 
 export interface BarProps extends Omit<MarkProps, 'color'> {
+	animations?: boolean;
 	/** Bar color or key in the data that is used as the color facet */
 	color?: ColorFacet | DualFacet;
 	/** Data field used for the bar categories (x-axis for a vertical bar) */
@@ -369,6 +376,7 @@ export interface LineProps extends Omit<MarkProps, 'color'> {
 }
 
 export interface ScatterProps extends Omit<MarkProps, 'color'> {
+	animations?: boolean;
 	/**
 	 * point fill and stroke color
 	 * uses a key in the data that will map to the color scale or a static color value
@@ -489,6 +497,7 @@ export type LegendDescription = { seriesName: string; description: string; title
 export type LegendLabel = { seriesName: string | number; label: string; maxLength?: number };
 
 export interface LegendProps extends BaseProps {
+	animations?: boolean;
 	/** color or key in the data that is used as the color facet for the symbols */
 	color?: ColorFacet;
 	/** series that should be hidden by default (uncontrolled) */
@@ -533,6 +542,7 @@ export interface ChartTooltipProps {
 	children?: TooltipHandler;
 }
 export interface ChartPopoverProps {
+	animations?: boolean,
 	children?: PopoverHandler;
 	width?: number;
 }

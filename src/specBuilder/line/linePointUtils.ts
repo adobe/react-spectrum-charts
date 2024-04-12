@@ -17,7 +17,7 @@ import {
 	getXProductionRule,
 	hasPopover,
 } from '@specBuilder/marks/markUtils';
-import { getColorValue } from '@specBuilder/specUtils';
+import { getAnimationMarks, getColorValue } from '@specBuilder/specUtils';
 import { LineSpecProps, ProductionRuleTests } from 'types';
 import { ColorValueRef, NumericValueRef, SymbolMark } from 'vega';
 
@@ -33,6 +33,9 @@ const selectedTest = `${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${MARK_ID}`
  */
 export const getLineStaticPoint = ({
 	name,
+	data,
+	previousData,
+	animations,
 	metric,
 	color,
 	colorScheme,
@@ -52,6 +55,7 @@ export const getLineStaticPoint = ({
 			},
 			update: {
 				x: getXProductionRule(scaleType, dimension),
+				...(animations && { y: getAnimationMarks(dimension, metric, data, previousData) }),
 			},
 		},
 	};

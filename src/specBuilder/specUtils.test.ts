@@ -10,18 +10,24 @@
  * governing permissions and limitations under the License.
  */
 import {
+	ANIMATION_FUNCTION,
 	COLOR_SCALE,
 	DEFAULT_CATEGORICAL_DIMENSION,
 	DEFAULT_COLOR,
 	DEFAULT_SECONDARY_COLOR,
 	DEFAULT_TRANSFORMED_TIME_DIMENSION,
+	FILTERED_PREVIOUS_TABLE,
 	LINE_TYPE_SCALE,
+	MARK_ID,
 	TABLE,
 } from '@constants';
+import { areaData } from '@stories/data/data';
+import { manipulateData } from '@test-utils';
 import { ROUNDED_SQUARE_PATH } from 'svgPaths';
 import { BandScale, OrdinalScale } from 'vega';
 
 import {
+	getAnimationMarks,
 	getColorValue,
 	getD3FormatSpecifierFromNumberFormat,
 	getDimensionField,
@@ -202,6 +208,71 @@ describe('specUtils', () => {
 			expect(getD3FormatSpecifierFromNumberFormat('currency')).toEqual('$,.2f');
 			expect(getD3FormatSpecifierFromNumberFormat('standardNumber')).toEqual(',');
 			expect(getD3FormatSpecifierFromNumberFormat(',.2f')).toEqual(',.2f');
+		});
+	});
+
+	describe('getAnimationMarks()', () => {
+		test('should return default', () => {
+			const animationMarks = getAnimationMarks('dimension', 'maxTemperature', areaData, [], 'linear');
+			expect(animationMarks).toStrictEqual({
+				scale: 'linear',
+				signal: `datum.maxTemperature * ${ANIMATION_FUNCTION}`,
+			});
+		});
+		test('should return same dimensions', () => {
+			const animationMarks = getAnimationMarks(
+				'dimension',
+				'maxTemperature',
+				areaData,
+				areaData.map((data) => {
+					return {
+						...data,
+						minTemperature: manipulateData(data.minTemperature),
+						maxTemperature: manipulateData(data.maxTemperature),
+					};
+				}),
+				'linear'
+			);
+			expect(animationMarks).toStrictEqual({
+				scale: 'linear',
+				signal: `(data('${FILTERED_PREVIOUS_TABLE}')[indexof(pluck(data('${FILTERED_PREVIOUS_TABLE}'), '${MARK_ID}'), (datum.${MARK_ID} + length(data('${FILTERED_PREVIOUS_TABLE}'))))].maxTemperature * (1 - ${ANIMATION_FUNCTION})) + (datum.maxTemperature * ${ANIMATION_FUNCTION})`,
+			});
+		});
+		test('should return different dimensions (one extra data point)', () => {
+			const animationMarks = getAnimationMarks(
+				'dimension',
+				'maxTemperature',
+				areaData,
+				areaData.concat({
+					datetime: 1668509200000,
+					minTemperature: 5,
+					maxTemperature: 32,
+					series: 'Add Fallout',
+				}),
+				'linear'
+			);
+			expect(animationMarks).toStrictEqual({
+				scale: 'linear',
+				signal: `datum.maxTemperature * ${ANIMATION_FUNCTION}`,
+			});
+		});
+		test('should return different dimensions (one less data point)', () => {
+			const animationMarks = getAnimationMarks(
+				'dimension',
+				'maxTemperature',
+				areaData.concat({
+					datetime: 1668509200000,
+					minTemperature: 5,
+					maxTemperature: 32,
+					series: 'Add Fallout',
+				}),
+				areaData,
+				'linear'
+			);
+			expect(animationMarks).toStrictEqual({
+				scale: 'linear',
+				signal: `datum.maxTemperature * ${ANIMATION_FUNCTION}`,
+			});
 		});
 	});
 });

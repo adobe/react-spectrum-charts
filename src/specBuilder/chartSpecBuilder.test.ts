@@ -382,6 +382,7 @@ describe('Chart spec builder', () => {
 				colorScheme: 'light',
 				hiddenSeries: undefined,
 				highlightedSeries: 'Chrome',
+				animations: false,
 			});
 
 			expect(spec.signals?.find((signal) => signal.name === HIGHLIGHTED_SERIES)).toStrictEqual({
@@ -400,6 +401,7 @@ describe('Chart spec builder', () => {
 				colorScheme: 'light',
 				hiddenSeries: undefined,
 				highlightedSeries: 'Chrome',
+				animations: false,
 			});
 
 			expect(spec.signals?.find((signal) => signal.name === HIGHLIGHTED_SERIES)).toStrictEqual({
@@ -418,6 +420,7 @@ describe('Chart spec builder', () => {
 				colorScheme: 'light',
 				hiddenSeries: undefined,
 				highlightedSeries: undefined,
+				animations: false,
 			});
 			const uncontrolledHighlightSignal = {
 				name: HIGHLIGHTED_SERIES,
@@ -468,14 +471,22 @@ describe('Chart spec builder', () => {
 
 		test('hiddenSeries is empty when no hidden series', () => {
 			expect(
-				getDefaultSignals(DEFAULT_BACKGROUND_COLOR, 'categorical12', 'light', ['dashed'], [1])
+				getDefaultSignals(false, DEFAULT_BACKGROUND_COLOR, 'categorical12', 'light', ['dashed'], [1])
 			).toStrictEqual([...beginningSignals, { name: 'hiddenSeries', value: [] }, ...endSignals]);
 		});
 
 		test('hiddenSeries contains provided hidden series', () => {
 			const hiddenSeries = ['test'];
 			expect(
-				getDefaultSignals(DEFAULT_BACKGROUND_COLOR, 'categorical12', 'light', ['dashed'], [1], hiddenSeries)
+				getDefaultSignals(
+					false,
+					DEFAULT_BACKGROUND_COLOR,
+					'categorical12',
+					'light',
+					['dashed'],
+					[1],
+					hiddenSeries
+				)
 			).toStrictEqual([...beginningSignals, { name: 'hiddenSeries', value: hiddenSeries }, ...endSignals]);
 		});
 	});

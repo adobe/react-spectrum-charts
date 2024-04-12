@@ -15,11 +15,13 @@ import {
 	getHighlightOpacityValue,
 	getLineWidthProductionRule,
 	getOpacityProductionRule,
+	getSeriesAnimationOpacityRules,
 	getStrokeDashProductionRule,
 	getVoronoiPath,
 	getXProductionRule,
 	hasPopover,
 } from '@specBuilder/marks/markUtils';
+import { getAnimationMarks } from '@specBuilder/specUtils';
 import { ScaleType } from 'types';
 import { LineMark, Mark, NumericValueRef, ProductionRule, RuleMark, SymbolMark } from 'vega';
 
@@ -37,8 +39,23 @@ import { LineMarkProps } from './lineUtils';
  * @param dataSource
  * @returns LineMark
  */
+
 export const getLineMark = (lineMarkProps: LineMarkProps, dataSource: string): LineMark => {
-	const { color, colorScheme, dimension, lineType, lineWidth, metric, name, opacity, scaleType } = lineMarkProps;
+	const {
+		name,
+		color,
+		opacity,
+		metric,
+		dimension,
+		scaleType,
+		lineType,
+		lineWidth,
+		colorScheme,
+		data,
+		previousData,
+		animations,
+		animateFromZero,
+	} = lineMarkProps;
 
 	return {
 		name,
@@ -58,6 +75,7 @@ export const getLineMark = (lineMarkProps: LineMarkProps, dataSource: string): L
 				// but it may change the x position if it causes the chart to resize
 				x: getXProductionRule(scaleType, dimension),
 				opacity: getLineOpacity(lineMarkProps),
+				...(animations && animateFromZero && { y: getAnimationMarks(dimension, metric, data, previousData) }),
 			},
 		},
 	};
@@ -67,10 +85,15 @@ export const getLineOpacity = ({
 	displayOnHover,
 	interactiveMarkName,
 	popoverMarkName,
+	animations,
 }: LineMarkProps): ProductionRule<NumericValueRef> => {
 	if (!interactiveMarkName || displayOnHover) return [DEFAULT_OPACITY_RULE];
 	const strokeOpacityRules: ProductionRule<NumericValueRef> = [];
-
+	//if animations are enabled, set opacity rules for line mark.
+	
+	if (animations) {
+		return getSeriesAnimationOpacityRules();
+	}
 	// add a rule that will lower the opacity of the line if there is a hovered series, but this line is not the one hovered
 	strokeOpacityRules.push({
 		test: `${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES} !== datum.${SERIES_ID}`,
@@ -101,7 +124,7 @@ export const getLineHoverMarks = (
 	dataSource: string,
 	secondaryHighlightedMetric?: string
 ): Mark[] => {
-	const { children, dimension, metric, name, scaleType } = lineProps;
+	const { children, dimension, metric, name, scaleType, animations, animateFromZero } = lineProps;
 	return [
 		// vertical rule shown for the hovered or selected point
 		getHoverRule(dimension, name, scaleType),
@@ -116,7 +139,7 @@ export const getLineHoverMarks = (
 		// points used for the voronoi transform
 		getPointsForVoronoi(dataSource, dimension, metric, name, scaleType),
 		// voronoi transform used to get nearest point paths
-		getVoronoiPath(children, `${name}_pointsForVoronoi`, name),
+		getVoronoiPath(children, `${name}_pointsForVoronoi`, name, animations, animateFromZero),
 	];
 };
 

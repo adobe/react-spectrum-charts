@@ -27,7 +27,7 @@ export default {
 };
 
 const DonutStory: StoryFn<typeof Donut> = (args): ReactElement => {
-	const chartProps = useChartProps({ data: basicDonutData, width: 350, height: 350 });
+	const chartProps = useChartProps({ animations: false, data: basicDonutData, width: 350, height: 350 });
 	return (
 		<Chart {...chartProps}>
 			<Donut {...args} />

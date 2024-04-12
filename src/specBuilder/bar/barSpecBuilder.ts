@@ -14,6 +14,7 @@ import {
 	DEFAULT_CATEGORICAL_DIMENSION,
 	DEFAULT_COLOR_SCHEME,
 	DEFAULT_METRIC,
+	FILTERED_PREVIOUS_TABLE,
 	FILTERED_TABLE,
 	LINE_TYPE_SCALE,
 	OPACITY_SCALE,
@@ -22,28 +23,46 @@ import {
 	TRELLIS_PADDING,
 } from '@constants';
 import { getTransformSort } from '@specBuilder/data/dataUtils';
+import { hasInteractiveChildren } from '@specBuilder/marks/markUtils';
 import {
 	addDomainFields,
 	addFieldToFacetScaleDomain,
 	addMetricScale,
+	addRscAnimationScales,
 	getDefaultScale,
 	getMetricScale,
 	getScaleIndexByName,
 	getScaleIndexByType,
 } from '@specBuilder/scale/scaleSpecBuilder';
-import { addHighlightedItemSignalEvents, getGenericSignal } from '@specBuilder/signal/signalSpecBuilder';
+import {
+	addHighlightedItemSignalEvents,
+	getGenericSignal,
+	getRscAnimationSignals,
+} from '@specBuilder/signal/signalSpecBuilder';
 import { getFacetsFromProps } from '@specBuilder/specUtils';
 import { sanitizeMarkChildren, toCamelCase } from '@utils';
 import { produce } from 'immer';
-import { BarProps, BarSpecProps, ColorScheme } from 'types';
-import { BandScale, Data, FormulaTransform, Mark, OrdinalScale, Scale, Signal, Spec } from 'vega';
+import { BarProps, BarSpecProps, ChartData, ColorScheme } from 'types';
+import { BandScale, Data, FormulaTransform, Mark, OrdinalScale, Scale, Signal, Spec, Transforms } from 'vega';
 
 import { getBarPadding, getScaleValues, isDodgedAndStacked } from './barUtils';
 import { getDodgedMark } from './dodgedBarUtils';
 import { getDodgedAndStackedBarMark, getStackedBarMarks } from './stackedBarUtils';
 import { addTrellisScale, getTrellisGroupMark, isTrellised } from './trellisedBarUtils';
 
-export const addBar = produce<Spec, [BarProps & { colorScheme?: ColorScheme; index?: number }]>(
+export const addBar = produce<
+	Spec,
+	[
+		BarProps & {
+			colorScheme?: ColorScheme;
+			index?: number;
+			data?: ChartData[];
+			previousData?: ChartData[];
+			animations?: boolean;
+			animateFromZero?: boolean;
+		}
+	]
+>(
 	(
 		spec,
 		{
@@ -84,7 +103,6 @@ export const addBar = produce<Spec, [BarProps & { colorScheme?: ColorScheme; ind
 			type,
 			...props,
 		};
-
 		spec.data = addData(spec.data ?? [], barProps);
 		spec.signals = addSignals(spec.signals ?? [], barProps);
 		spec.scales = addScales(spec.scales ?? [], barProps);
@@ -93,7 +111,7 @@ export const addBar = produce<Spec, [BarProps & { colorScheme?: ColorScheme; ind
 );
 
 export const addSignals = produce<Signal[], [BarSpecProps]>(
-	(signals, { children, name, paddingRatio, paddingOuter: barPaddingOuter }) => {
+	(signals, { children, name, animations, animateFromZero, paddingRatio, paddingOuter: barPaddingOuter }) => {
 		// We use this value to calculate ReferenceLine positions.
 		const { paddingInner } = getBarPadding(paddingRatio, barPaddingOuter);
 		signals.push(getGenericSignal('paddingInner', paddingInner));
@@ -101,28 +119,47 @@ export const addSignals = produce<Signal[], [BarSpecProps]>(
 		if (!children.length) {
 			return;
 		}
-		addHighlightedItemSignalEvents(signals, name);
+
+		// if animations are enabled, push all necessary animation signals.
+		if (animations && hasInteractiveChildren(children)) {
+			signals.push(...getRscAnimationSignals(name, undefined, true));
+		}
+		addHighlightedItemSignalEvents({ signals, markName: name, animations, animateFromZero, isEnabled: false});
 	}
 );
 
 export const addData = produce<Data[], [BarSpecProps]>((data, props) => {
 	const { metric, order, type } = props;
-	const index = data.findIndex((d) => d.name === FILTERED_TABLE);
-	data[index].transform = data[index].transform ?? [];
+
+	const filteredIndex = data.findIndex((d) => d.name === FILTERED_TABLE);
+	const filteredPreviousIndex = data.findIndex((d) => d.name === FILTERED_PREVIOUS_TABLE);
+
+	data[filteredIndex].transform = data[filteredIndex].transform ?? [];
+	data[filteredPreviousIndex].transform = data[filteredPreviousIndex].transform ?? [];
 	if (type === 'stacked' || isDodgedAndStacked(props)) {
-		data[index].transform?.push({
+		const stackedDataGroup: Transforms = {
 			type: 'stack',
 			groupby: getStackFields(props),
 			field: metric,
 			sort: getTransformSort(order),
 			as: [`${metric}0`, `${metric}1`],
-		});
+		};
 
-		data[index].transform?.push(getStackIdTransform(props));
+		data[filteredIndex].transform?.push(stackedDataGroup);
+		data[filteredPreviousIndex].transform?.push(stackedDataGroup);
+
+		const stackIdTransform = getStackIdTransform(props);
+
+		data[filteredIndex].transform?.push(stackIdTransform);
+		data[filteredPreviousIndex].transform?.push(stackIdTransform);
+
 		data.push(getStackAggregateData(props));
 	}
 	if (type === 'dodged' || isDodgedAndStacked(props)) {
-		data[index].transform?.push(getDodgeGroupTransform(props));
+		const dodgeGroupTransform = getDodgeGroupTransform(props);
+
+		data[filteredIndex].transform?.push(dodgeGroupTransform);
+		data[filteredPreviousIndex].transform?.push(dodgeGroupTransform);
 	}
 });
 
@@ -138,6 +175,23 @@ export const getStackAggregateData = (props: BarSpecProps): Data => {
 	return {
 		name: `${name}_stacks`,
 		source: FILTERED_TABLE,
+		transform: [
+			{
+				type: 'aggregate',
+				groupby: getStackFields(props),
+				fields: [`${metric}1`, `${metric}1`],
+				ops: ['min', 'max'],
+			},
+			getStackIdTransform(props),
+		],
+	};
+};
+
+export const getPreviousStackAggregateData = (props: BarSpecProps): Data => {
+	const { metric, name } = props;
+	return {
+		name: `${name}_stacks`,
+		source: FILTERED_PREVIOUS_TABLE,
 		transform: [
 			{
 				type: 'aggregate',
@@ -180,7 +234,11 @@ export const getDodgeGroupTransform = ({ color, lineType, name, opacity, type }:
 };
 
 export const addScales = produce<Scale[], [BarSpecProps]>((scales, props) => {
-	const { color, lineType, opacity, orientation } = props;
+	const { color, lineType, opacity, orientation, animations, children } = props;
+	// if animations are enabled and the chart has interactive children, get all animation scales.
+	if (animations && hasInteractiveChildren(children)) {
+		addRscAnimationScales(scales);
+	}
 	addMetricScale(scales, getScaleValues(props), orientation === 'vertical' ? 'y' : 'x');
 	addDimensionScale(scales, props);
 	addTrellisScale(scales, props);

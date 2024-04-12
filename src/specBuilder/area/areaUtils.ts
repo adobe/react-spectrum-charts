@@ -22,9 +22,11 @@ import {
 	getColorProductionRule,
 	getCursor,
 	getInteractive,
+	getSeriesAnimationOpacityRules,
 	getTooltip,
 } from '@specBuilder/marks/markUtils';
-import { ColorFacet, ColorScheme, MarkChildElement, ScaleType } from 'types';
+import { getAnimationMarks } from '@specBuilder/specUtils';
+import { ChartData, ColorFacet, ColorScheme, MarkChildElement, ScaleType } from 'types';
 import { AreaMark, NumericValueRef, ProductionRule } from 'vega';
 
 export interface AreaMarkProps {
@@ -32,6 +34,10 @@ export interface AreaMarkProps {
 	color: ColorFacet;
 	colorScheme: ColorScheme;
 	children: MarkChildElement[];
+	animations?: boolean;
+	animateFromZero?: boolean;
+	data?: ChartData[];
+	previousData?: ChartData[];
 	metricStart: string;
 	metricEnd: string;
 	isStacked: boolean;
@@ -51,6 +57,10 @@ export const getAreaMark = (
 		children,
 		metricStart,
 		metricEnd,
+		animations,
+		animateFromZero,
+		data,
+		previousData,
 		isStacked,
 		scaleType,
 		dimension,
@@ -67,18 +77,35 @@ export const getAreaMark = (
 	interactive: getInteractive(children),
 	encode: {
 		enter: {
-			y: { scale: 'yLinear', field: metricStart },
-			y2: { scale: 'yLinear', field: metricEnd },
+			...((!animations || !animateFromZero) && {
+				y: { scale: 'yLinear', field: metricStart },
+				y2: { scale: 'yLinear', field: metricEnd },
+				tooltip: getTooltip({ children, name }),
+			}),
 			fill: getColorProductionRule(color, colorScheme),
-			tooltip: getTooltip(children, name),
 			...getBorderStrokeEncodings(isStacked, true),
 		},
 		update: {
 			// this has to be in update because when you resize the window that doesn't rebuild the spec
 			// but it may change the x position if it causes the chart to resize
+			...(animations &&
+				animateFromZero && {
+					y: getAnimationMarks(dimension, metricStart, data, previousData),
+					y2: getAnimationMarks(dimension, metricEnd, data, previousData),
+					tooltip: getTooltip({ children, name, animations }),
+				}),
 			x: getX(scaleType, dimension),
 			cursor: getCursor(children),
-			fillOpacity: getFillOpacity(name, color, opacity, children, isMetricRange, parentName, displayOnHover),
+			fillOpacity: getFillOpacity(
+				name,
+				color,
+				opacity,
+				children,
+				isMetricRange,
+				parentName,
+				displayOnHover,
+				animations
+			),
 		},
 	},
 });
@@ -90,7 +117,8 @@ export function getFillOpacity(
 	children: MarkChildElement[],
 	isMetricRange?: boolean,
 	parentName?: string,
-	displayOnHover?: boolean
+	displayOnHover?: boolean,
+	animations?: boolean
 ): ProductionRule<NumericValueRef> | undefined {
 	// if metric ranges only display when hovering, we don't need to include other hover rules for this specific area
 	if (isMetricRange && displayOnHover) {
@@ -105,6 +133,10 @@ export function getFillOpacity(
 	// no children means no interactive elements
 	if (!children.length) {
 		return [{ value: opacity }];
+	}
+	// if animations are enabled, get opacity rules for charts that highlight according to series ID
+	if (animations) {
+		return getSeriesAnimationOpacityRules({ value: opacity });
 	}
 
 	// if an area is hovered or selected, all other areas should have half opacity

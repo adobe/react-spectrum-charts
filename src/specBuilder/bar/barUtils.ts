@@ -22,18 +22,20 @@ import {
 	MARK_ID,
 	SELECTED_ITEM,
 	STACK_ID,
+	annotationFillOpacity,
 } from '@constants';
 import {
 	getColorProductionRule,
 	getCursor,
 	getHighlightOpacityValue,
+	getMarkHighlightOpacityRules,
 	getOpacityProductionRule,
 	getStrokeDashProductionRule,
 	getTooltip,
 	hasInteractiveChildren,
 	hasPopover,
 } from '@specBuilder/marks/markUtils';
-import { getColorValue, getLineWidthPixelsFromLineWidth } from '@specBuilder/specUtils';
+import { getAnimationMarks, getColorValue, getLineWidthPixelsFromLineWidth } from '@specBuilder/specUtils';
 import { sanitizeMarkChildren } from '@utils';
 import { AnnotationElement, AnnotationStyleProps, BarSpecProps, Orientation } from 'types';
 import {
@@ -98,12 +100,35 @@ export const getDodgedGroupMark = (props: BarSpecProps): GroupMark => {
 };
 
 export const getDodgedDimensionEncodings = (props: BarSpecProps): RectEncodeEntry => {
-	const { dimensionAxis, rangeScale } = getOrientationProperties(props.orientation);
+	const { animations, animateFromZero, dimension, metric, previousData, data } = props;
+
+	const {
+		dimensionAxis,
+		metricAxis: startKey,
+		rangeScale,
+		metricScaleKey: scaleKey,
+	} = getOrientationProperties(props.orientation);
 
 	const scale = `${props.name}_position`;
 	const field = `${props.name}_dodgeGroup`;
 
+	const isStacked = isDodgedAndStacked(props);
+
+	const startMetric = isStacked ? `${metric}0` : metric;
+	const endMetric = `${metric}1`;
+
+	const endAnimations = isStacked
+		? getAnimationMarks(dimension, endMetric, data, previousData, scaleKey)
+		: { scale: scaleKey, signal: '0' };
+
+	const endKey = `${startKey}2`;
+
 	return {
+		...(animations &&
+			animateFromZero && {
+				[startKey]: getAnimationMarks(dimension, startMetric, data, previousData, scaleKey),
+				[endKey]: endAnimations,
+			}),
 		[dimensionAxis]: { scale, field },
 		[rangeScale]: { scale, band: 1 },
 	};
@@ -296,7 +321,7 @@ export const getAnnotationMarks = (
 	// bar only supports one annotation
 	const annotation = children.find((el) => el.type === Annotation) as AnnotationElement;
 	if (annotation?.props.textKey) {
-		const { orientation, name } = barProps;
+		const { orientation, name, animations } = barProps;
 		const { textKey, style } = annotation.props;
 		const { metricAxis, dimensionAxis } = getOrientationProperties(orientation);
 		const annotationWidth = getAnnotationWidth(textKey, style);
@@ -323,6 +348,13 @@ export const getAnnotationMarks = (
 					],
 					width: annotationWidth,
 				},
+				...(animations && {
+					update: {
+						fillOpacity: {
+							signal: annotationFillOpacity,
+						},
+					},
+				}),
 			},
 		});
 		marks.push({
@@ -344,6 +376,13 @@ export const getAnnotationMarks = (
 					baseline: { value: 'middle' },
 					align: { value: 'center' },
 				},
+				...(animations && {
+					update: {
+						fillOpacity: {
+							signal: annotationFillOpacity,
+						},
+					},
+				}),
 			},
 		});
 	}
@@ -355,10 +394,17 @@ export const getBaseBarEnterEncodings = (props: BarSpecProps): EncodeEntry => ({
 	...getCornerRadiusEncodings(props),
 });
 
-export const getBarEnterEncodings = ({ children, color, colorScheme, name, opacity }: BarSpecProps): EncodeEntry => ({
+export const getBarEnterEncodings = ({
+	children,
+	color,
+	colorScheme,
+	name,
+	opacity,
+	animations,
+}: BarSpecProps): EncodeEntry => ({
 	fill: getColorProductionRule(color, colorScheme),
 	fillOpacity: getOpacityProductionRule(opacity),
-	tooltip: getTooltip(children, name),
+	tooltip: getTooltip({ children, name, animations, isBar: true }),
 });
 
 export const getBarUpdateEncodings = (props: BarSpecProps): EncodeEntry => ({
@@ -369,10 +415,14 @@ export const getBarUpdateEncodings = (props: BarSpecProps): EncodeEntry => ({
 	strokeWidth: getStrokeWidth(props),
 });
 
-export const getBarOpacity = ({ children }: BarSpecProps): ProductionRule<NumericValueRef> => {
+export const getBarOpacity = ({ children, animations }: BarSpecProps): ProductionRule<NumericValueRef> => {
 	// if there aren't any interactive components, then we don't need to add special opacity rules
 	if (!hasInteractiveChildren(children)) {
 		return [DEFAULT_OPACITY_RULE];
+	}
+	// if animations are enabled, get opacity rules for charts that use the mark ID as the highlighted item.
+	if (animations) {
+		return getMarkHighlightOpacityRules();
 	}
 
 	// if a bar is hovered/selected, all other bars should have reduced opacity
@@ -393,7 +443,7 @@ export const getBarOpacity = ({ children }: BarSpecProps): ProductionRule<Numeri
 	return [
 		{
 			test: `${HIGHLIGHTED_ITEM} && ${HIGHLIGHTED_ITEM} !== datum.${MARK_ID}`,
-			...getHighlightOpacityValue(),
+			...getHighlightOpacityValue(DEFAULT_OPACITY_RULE),
 		},
 		DEFAULT_OPACITY_RULE,
 	];

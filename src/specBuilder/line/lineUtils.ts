@@ -13,13 +13,14 @@ import { Trendline } from '@components/Trendline';
 import { hasInteractiveChildren, hasPopover } from '@specBuilder/marks/markUtils';
 import { sanitizeMarkChildren } from '@utils';
 import {
+	ChartData,
 	ColorFacet,
 	ColorScheme,
 	LineTypeFacet,
 	LineWidthFacet,
 	MarkChildElement,
 	OpacityFacet,
-	ScaleType,
+	ScaleType
 } from 'types';
 
 export const getInteractiveMarkName = (children: MarkChildElement[], name: string): string | undefined => {
@@ -59,9 +60,12 @@ export const getPopoverMarkName = (children: MarkChildElement[], name: string): 
 };
 
 export interface LineMarkProps {
+	animateFromZero?: boolean,
+	animations?: boolean;
 	children: MarkChildElement[];
 	color: ColorFacet;
 	colorScheme: ColorScheme;
+	data?: ChartData[],
 	dimension: string;
 	displayOnHover?: boolean;
 	interactiveMarkName?: string; // optional name of the mark that is used for hover and click interactions
@@ -71,6 +75,7 @@ export interface LineMarkProps {
 	name: string;
 	opacity: OpacityFacet;
 	popoverMarkName?: string;
+	previousData?: ChartData[],
 	scaleType: ScaleType;
 	staticPoint?: string;
 }

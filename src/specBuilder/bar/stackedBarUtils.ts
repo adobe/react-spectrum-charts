@@ -11,6 +11,7 @@
  */
 import { BACKGROUND_COLOR, FILTERED_TABLE } from '@constants';
 import { getInteractive } from '@specBuilder/marks/markUtils';
+import { getAnimationMarks } from '@specBuilder/specUtils';
 import { BarSpecProps } from 'types';
 import { Mark, RectEncodeEntry, RectMark } from 'vega';
 
@@ -105,14 +106,27 @@ export const getStackedBar = (props: BarSpecProps): RectMark => {
 };
 
 export const getStackedDimensionEncodings = (props: BarSpecProps): RectEncodeEntry => {
-	const { dimension, orientation } = props;
+	const { dimension, orientation, previousData, data, animations, animateFromZero, metric } = props;
 	if (isDodgedAndStacked(props)) {
 		return getDodgedDimensionEncodings(props);
 	}
 
-	const { dimensionAxis, rangeScale, dimensionScaleKey } = getOrientationProperties(orientation);
+	const {
+		dimensionAxis,
+		rangeScale,
+		dimensionScaleKey,
+		metricScaleKey: scaleKey,
+		metricAxis: startKey,
+	} = getOrientationProperties(orientation);
+
+	const endKey = `${startKey}2`;
 
 	return {
+		...(animations &&
+			animateFromZero && {
+				[startKey]: getAnimationMarks(dimension, `${metric}0`, data, previousData, scaleKey),
+				[endKey]: getAnimationMarks(dimension, `${metric}1`, data, previousData, scaleKey),
+			}),
 		[dimensionAxis]: { scale: dimensionScaleKey, field: dimension },
 		[rangeScale]: { scale: dimensionScaleKey, band: 1 },
 	};

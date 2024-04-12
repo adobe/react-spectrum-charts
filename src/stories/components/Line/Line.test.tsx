@@ -13,7 +13,7 @@ import React from 'react';
 
 import { HIGHLIGHT_CONTRAST_RATIO } from '@constants';
 import '@matchMediaMock';
-import { Line } from '@rsc';
+import { Chart, Line } from '@rsc';
 import {
 	allElementsHaveAttributeValue,
 	clickNthElement,
@@ -39,8 +39,9 @@ import {
 	Tooltip,
 	TrendScale,
 	WithStaticPoints,
-	WithStaticPointsAndDialogs,
+	WithStaticPointsAndDialogs
 } from './Line.story';
+import { newDataArray1, newDataArray2 } from '@stories/data/data';
 
 describe('Line', () => {
 	// Line is not a real React component. This is test just provides test coverage for sonarqube
@@ -186,6 +187,7 @@ describe('Line', () => {
 
 			const lines = await findAllMarksByGroupName(chart, 'line0');
 			expect(lines).toHaveLength(4);
+
 			expect(lines[0]).toHaveAttribute('opacity', '1');
 			expect(lines[1]).toHaveAttribute('opacity', '1');
 
@@ -365,4 +367,20 @@ describe('Line', () => {
 			expect(point.getAttribute('stroke-width')).toEqual('2');
 		});
 	});
+
+	describe('Line animation tests', () => {
+		test('Line animates between congruent datasets', async () => {
+			const chartProps = {
+				data: newDataArray1
+			}
+			render(
+				<Chart {...chartProps}>
+					<Line dimension="x" metric="y"/>
+				</Chart>
+			);
+			setTimeout(() => {
+				chartProps.data = newDataArray2;
+			}, 3000);
+		});
+	})
 });

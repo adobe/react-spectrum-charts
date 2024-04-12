@@ -56,7 +56,7 @@ const popoverContent = (datum) => (
 	</Content>
 );
 
-const defaultChartLineProps: ChartProps = { data: annotationAxisData, minWidth: 400, maxWidth: 800, height: 400 };
+const defaultChartLineProps: ChartProps = { animations: false, data: annotationAxisData, minWidth: 400, maxWidth: 800, height: 400 };
 
 const BasicAxisAnnotationStory: StoryFn<typeof AxisAnnotation> = (args): ReactElement => {
 	const chartProps = useChartProps(defaultChartLineProps);

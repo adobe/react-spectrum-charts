@@ -12,6 +12,7 @@
 import { spectrumColors } from '@themes';
 import { DATE_PATH, ROUNDED_SQUARE_PATH } from 'svgPaths';
 import {
+	ChartData,
 	ChartSymbolShape,
 	ColorFacet,
 	ColorScheme,
@@ -29,15 +30,19 @@ import {
 import { Data, Scale, ScaleType, Spec, ValuesData } from 'vega';
 
 import {
+	ANIMATION_FUNCTION,
 	COLOR_SCALE,
 	DEFAULT_TRANSFORMED_TIME_DIMENSION,
+	FILTERED_PREVIOUS_TABLE,
 	FILTERED_TABLE,
 	LINE_TYPE_SCALE,
 	MARK_ID,
 	OPACITY_SCALE,
+	PREVIOUS_TABLE,
 	TABLE,
 } from '../constants';
 import { SanitizedSpecProps } from '../types';
+import { getIdentifierTransform } from './data/dataUtils';
 
 /**
  * gets all the keys that are used to facet by
@@ -222,8 +227,10 @@ export const getSymbolWidthFromRscSymbolSize = (symbolSize: SymbolSize): number 
  * base data that gets initialized with every uncontrolled spec
  */
 export const baseData: Data[] = [
-	{ name: TABLE, values: [], transform: [{ type: 'identifier', as: MARK_ID }] },
+	{ name: TABLE, values: [], transform: [getIdentifierTransform()] },
 	{ name: FILTERED_TABLE, source: TABLE },
+	{ name: PREVIOUS_TABLE, values: [], transform: [getIdentifierTransform()] },
+	{ name: FILTERED_PREVIOUS_TABLE, source: PREVIOUS_TABLE },
 ];
 
 /**
@@ -322,4 +329,35 @@ export const getD3FormatSpecifierFromNumberFormat = (numberFormat: NumberFormat 
 		default:
 			return numberFormat;
 	}
+};
+
+export const getAnimationMarks = (
+	dimension: string,
+	metric: string,
+	data?: ChartData[],
+	previousData?: ChartData[],
+	scale = 'yLinear'
+) => {
+	const easingFunction = ANIMATION_FUNCTION;
+
+	let markUpdate = {
+		scale,
+		signal: `datum.${metric} * ${easingFunction}`,
+	};
+
+	if (data && previousData) {
+		const hasSameDimensions =
+			data !== previousData &&
+			data.every((d) => previousData.some((pd) => d[dimension] === pd[dimension])) &&
+			data.length == previousData.length;
+		if (hasSameDimensions) {
+			// If data isn't similar enough, keep the animation from zero as shown above
+			const datumVal = `(datum.${MARK_ID} + length(data('${FILTERED_PREVIOUS_TABLE}')))`;
+			markUpdate = {
+				scale,
+				signal: `(data('${FILTERED_PREVIOUS_TABLE}')[indexof(pluck(data('${FILTERED_PREVIOUS_TABLE}'), '${MARK_ID}'), ${datumVal})].${metric} * (1 - ${easingFunction})) + (datum.${metric} * ${easingFunction})`,
+			};
+		}
+	}
+	return markUpdate;
 };

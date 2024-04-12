@@ -1035,3 +1035,84 @@ export const stockPriceData = [
 	{ date: 'June 28, 2023', timestamp: 1687910400000, price: 482.429993, stock: 'ADBE' },
 	{ date: 'June 29, 2023', timestamp: 1687996800000, price: 483.769989, stock: 'ADBE' },
 ];
+
+export const newDataArray1 = [
+	{ x: 0, y: 92 },
+	{ x: 1, y: 56 },
+	{ x: 2, y: 84 },
+	{ x: 3, y: 37 },
+	{ x: 4, y: 49 },
+	{ x: 5, y: 67 },
+	{ x: 6, y: 95 },
+	{ x: 7, y: 77 },
+	{ x: 8, y: 92 },
+	{ x: 9, y: 56 },
+	{ x: 10, y: 84 },
+	{ x: 11, y: 37 },
+	{ x: 12, y: 49 },
+	{ x: 13, y: 67 },
+	{ x: 14, y: 95 },
+	{ x: 15, y: 77 },
+];
+
+export const newDataArray2 = [
+	{ x: 0, y: 50 },
+	{ x: 1, y: 10 },
+	{ x: 2, y: 24 },
+	{ x: 3, y: 99 },
+	{ x: 4, y: 8 },
+	{ x: 5, y: 12 },
+	{ x: 6, y: 17 },
+	{ x: 7, y: 76 },
+	{ x: 8, y: 100 },
+	{ x: 9, y: 65 },
+	{ x: 10, y: 48 },
+	{ x: 11, y: 73 },
+	{ x: 12, y: 94 },
+	{ x: 13, y: 49 },
+	{ x: 14, y: 59 },
+	{ x: 15, y: 70 },
+];
+
+export const newDataArray1WithStaticPoints = [
+	{ x: 0, y: 92, point: true },
+	{ x: 1, y: 56, point: true },
+	{ x: 2, y: 84, point: true },
+	{ x: 3, y: 37, point: true },
+	{ x: 4, y: 49, point: true },
+	{ x: 5, y: 67, point: true },
+	{ x: 6, y: 95, point: true },
+	{ x: 7, y: 77, point: true },
+	{ x: 8, y: 92, point: true },
+	{ x: 9, y: 56, point: true },
+	{ x: 10, y: 84, point: true },
+	{ x: 11, y: 37, point: true },
+	{ x: 12, y: 49, point: true },
+	{ x: 13, y: 67, point: true },
+	{ x: 14, y: 95, point: true },
+	{ x: 15, y: 77, point: true},
+]
+
+export const areaData = [
+	{ datetime: 1667890800000, maxTemperature: 73, minTemperature: 47, series: 'Add Fallout' },
+	{ datetime: 1667977200000, maxTemperature: 70, minTemperature: 48, series: 'Add Fallout' },
+	{ datetime: 1668063600000, maxTemperature: 73, minTemperature: 48, series: 'Add Fallout' },
+	{ datetime: 1668150000000, maxTemperature: 56, minTemperature: 31, series: 'Add Fallout' },
+	{ datetime: 1668236400000, maxTemperature: 41, minTemperature: 18, series: 'Add Fallout' },
+	{ datetime: 1668322800000, maxTemperature: 60, minTemperature: 45, series: 'Add Fallout' },
+	{ datetime: 1668409200000, maxTemperature: 64, minTemperature: 43, series: 'Add Fallout' },
+];
+
+export const stackedAreaData = [
+	{ browser: 'Chrome', value: 5, operatingSystem: 'Windows', order: 2 },
+	{ browser: 'Chrome', value: 3, operatingSystem: 'Mac', order: 1 },
+	{ browser: 'Chrome', value: 2, operatingSystem: 'Other', order: 0 },
+	{ browser: 'Firefox', value: 3, operatingSystem: 'Windows', order: 2 },
+	{ browser: 'Firefox', value: 3, operatingSystem: 'Mac', order: 1 },
+	{ browser: 'Firefox', value: 1, operatingSystem: 'Other', order: 0 },
+	{ browser: 'Safari', value: 3, operatingSystem: 'Windows', order: 2 },
+	{ browser: 'Safari', value: 0, operatingSystem: 'Mac', order: 1 },
+	{ browser: 'Safari', value: 1, operatingSystem: 'Other', order: 0 },
+];
+
+

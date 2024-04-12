@@ -11,7 +11,7 @@
  */
 import { FC, useEffect, useMemo, useRef } from 'react';
 
-import { TABLE } from '@constants';
+import { PREVIOUS_TABLE, TABLE } from '@constants';
 import { useDebugSpec } from '@hooks/useDebugSpec';
 import { extractValues, isVegaData } from '@specBuilder/specUtils';
 import { expressionFunctions, formatTimeDurationLabels } from 'expressionFunctions';
@@ -25,6 +25,7 @@ export interface VegaChartProps {
 	config: Config;
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	data: ChartData[];
+	previousData: ChartData[];
 	debug: boolean;
 	height: number;
 	locale: ChartProps['locale'];
@@ -40,6 +41,7 @@ export interface VegaChartProps {
 export const VegaChart: FC<VegaChartProps> = ({
 	config,
 	data,
+	previousData,
 	debug,
 	height,
 	locale,
@@ -58,7 +60,7 @@ export const VegaChart: FC<VegaChartProps> = ({
 
 	// Need to de a deep copy of the data because vega tries to transform the data
 	const chartData = useMemo(() => {
-		const clonedData = JSON.parse(JSON.stringify(data));
+		const clonedData = structuredClone(data);
 
 		// We received a full Vega data array with potentially multiple dataset objects
 		if (isVegaData(clonedData)) {
@@ -69,7 +71,19 @@ export const VegaChart: FC<VegaChartProps> = ({
 		return { [TABLE]: clonedData };
 	}, [data]);
 
-	useDebugSpec(debug, spec, chartData, width, height, config);
+	const previousChartData = useMemo(() => {
+		const clonedData = structuredClone(previousData);
+
+		// We received a full Vega data array with potentially multiple dataset objects
+		if (isVegaData(clonedData)) {
+			return extractValues(clonedData);
+		}
+
+		// We received a simple array of data and we'll set a default key of 'table' to reference internally
+		return { [PREVIOUS_TABLE]: clonedData };
+	}, [previousData]);
+
+	useDebugSpec(debug, spec, { ...previousChartData, ...chartData }, width, height, config);
 
 	useEffect(() => {
 		if (width && height && containerRef.current) {
@@ -77,6 +91,10 @@ export const VegaChart: FC<VegaChartProps> = ({
 			const tableData = specCopy.data?.find((d) => d.name === TABLE);
 			if (tableData && 'values' in tableData) {
 				tableData.values = chartData.table;
+			}
+			const previousTableData = specCopy.data?.find((d) => d.name === PREVIOUS_TABLE);
+			if (previousTableData && 'values' in previousTableData) {
+				previousTableData.values = previousChartData ? previousChartData.previousTable : [];
 			}
 			if (signals) {
 				specCopy.signals = specCopy.signals?.map((signal) => {
@@ -86,6 +104,7 @@ export const VegaChart: FC<VegaChartProps> = ({
 					return signal;
 				});
 			}
+
 			embed(containerRef.current, specCopy, {
 				actions: false,
 				config,
@@ -116,8 +135,10 @@ export const VegaChart: FC<VegaChartProps> = ({
 		};
 	}, [
 		chartData.table,
+		previousChartData,
 		config,
 		data,
+		previousData,
 		height,
 		numberLocale,
 		timeLocale,

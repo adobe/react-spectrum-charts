@@ -19,6 +19,7 @@ import {
 	DEFAULT_COLOR,
 	DEFAULT_OPACITY_RULE,
 	DEFAULT_SECONDARY_COLOR,
+	ANIMATION_FUNCTION,
 	FILTERED_TABLE,
 } from '@constants';
 import { GroupMark, Mark, RectEncodeEntry } from 'vega';
@@ -31,7 +32,7 @@ import {
 } from './barTestUtils';
 import { getDodgedAndStackedBarMark, getStackedBarMarks, getStackedDimensionEncodings } from './stackedBarUtils';
 
-const defaultStackedBarXEncondings: RectEncodeEntry = {
+const defaultStackedBarXEncodings: RectEncodeEntry = {
 	x: { scale: 'xBand', field: DEFAULT_CATEGORICAL_DIMENSION },
 	width: { scale: 'xBand', band: 1 },
 };
@@ -42,7 +43,7 @@ const defaultBackgroundMark: Mark = {
 			...defaultBarEnterEncodings,
 			fill: { signal: BACKGROUND_COLOR },
 		},
-		update: defaultStackedBarXEncondings,
+		update: defaultStackedBarXEncodings,
 	},
 	from: { data: FILTERED_TABLE },
 	interactive: false,
@@ -61,7 +62,7 @@ const defaultMark = {
 		update: {
 			cursor: undefined,
 			opacity: [DEFAULT_OPACITY_RULE],
-			...defaultStackedBarXEncondings,
+			...defaultStackedBarXEncodings,
 			...defaultBarStrokeEncodings,
 		},
 	},
@@ -157,7 +158,7 @@ describe('stackedBarUtils', () => {
 
 	describe('getStackedDimensionEncodings()', () => {
 		test('should return x and width encodings', () => {
-			expect(getStackedDimensionEncodings(defaultBarProps)).toStrictEqual(defaultStackedBarXEncondings);
+			expect(getStackedDimensionEncodings(defaultBarProps)).toStrictEqual(defaultStackedBarXEncodings);
 		});
 
 		test('should get dodged x encoding if stacked/dodged', () => {
@@ -169,6 +170,42 @@ describe('stackedBarUtils', () => {
 			).toStrictEqual({
 				width: { band: 1, scale: 'bar0_position' },
 				x: { field: 'bar0_dodgeGroup', scale: 'bar0_position' },
+			});
+		});
+
+		test('should return x and width encodings with animations', () => {
+			expect(getStackedDimensionEncodings({...defaultBarProps, animations: true, animateFromZero: true,})).toStrictEqual({
+				...defaultStackedBarXEncodings,
+				y: {
+					scale: 'yLinear',
+					signal: `datum.value0 * ${ANIMATION_FUNCTION}`,
+				},
+				y2: {
+					scale: 'yLinear',
+					signal: `datum.value1 * ${ANIMATION_FUNCTION}`,
+				},
+			});
+		});
+
+		test('should get dodged x encoding if stacked/dodged with animations', () => {
+			expect(
+				getStackedDimensionEncodings({
+					...defaultBarProps,
+					color: [DEFAULT_COLOR, DEFAULT_SECONDARY_COLOR],
+					animations: true,
+					animateFromZero: true,
+				})
+			).toStrictEqual({
+				width: { band: 1, scale: 'bar0_position' },
+				x: { field: 'bar0_dodgeGroup', scale: 'bar0_position' },
+				y: {
+					scale: 'yLinear',
+					signal: `datum.value0 * ${ANIMATION_FUNCTION}`,
+				},
+				y2: {
+					scale: 'yLinear',
+					signal: `datum.value1 * ${ANIMATION_FUNCTION}`,
+				},
 			});
 		});
 	});

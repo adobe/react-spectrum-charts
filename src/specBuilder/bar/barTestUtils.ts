@@ -32,8 +32,10 @@ import { BarSpecProps } from 'types';
 import { NumericValueRef, ProductionRule, RectEncodeEntry } from 'vega';
 
 export const defaultBarProps: BarSpecProps = {
+	animations: false,
 	children: [],
 	color: DEFAULT_COLOR,
+	colorScheme: DEFAULT_COLOR_SCHEME,
 	dimension: DEFAULT_CATEGORICAL_DIMENSION,
 	index: 0,
 	lineType: { value: 'solid' },
@@ -41,12 +43,11 @@ export const defaultBarProps: BarSpecProps = {
 	metric: DEFAULT_METRIC,
 	name: 'bar0',
 	opacity: { value: 1 },
+	orientation: 'vertical',
 	paddingRatio: PADDING_RATIO,
-	colorScheme: DEFAULT_COLOR_SCHEME,
 	trellisOrientation: 'horizontal',
 	trellisPadding: TRELLIS_PADDING,
 	type: 'stacked',
-	orientation: 'vertical',
 };
 
 export const defaultBarPropsWithSecondayColor: BarSpecProps = {
@@ -204,7 +205,7 @@ export const stackedLabelText = {
 			baseline: { value: 'middle' },
 			align: { value: 'center' },
 		},
-	},
+	}
 };
 
 export const dodgedLabelWithStyles = {

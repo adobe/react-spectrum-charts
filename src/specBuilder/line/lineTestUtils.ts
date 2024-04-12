@@ -14,6 +14,7 @@ import { DEFAULT_COLOR, DEFAULT_COLOR_SCHEME, DEFAULT_METRIC, DEFAULT_TIME_DIMEN
 import { LineMarkProps } from './lineUtils';
 
 export const defaultLineMarkProps: LineMarkProps = {
+	animations: false,
 	children: [],
 	color: DEFAULT_COLOR,
 	colorScheme: DEFAULT_COLOR_SCHEME,

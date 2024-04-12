@@ -15,6 +15,7 @@ import { Annotation } from '@components/Annotation';
 import { ChartPopover } from '@components/ChartPopover';
 import { ChartTooltip } from '@components/ChartTooltip';
 import {
+	ANIMATION_FUNCTION,
 	COLOR_SCALE,
 	CORNER_RADIUS,
 	DEFAULT_CATEGORICAL_DIMENSION,
@@ -585,6 +586,16 @@ describe('barUtils', () => {
 	describe('getDodgedDimensionEncodings()', () => {
 		test('should return x and width', () => {
 			expect(getDodgedDimensionEncodings(defaultBarProps)).toStrictEqual(defaultDodgedXEncodings);
+		});
+		test('should return x and width with animations', () => {
+			expect(getDodgedDimensionEncodings({...defaultBarProps, animations: true, animateFromZero: true})).toStrictEqual({
+				...defaultDodgedXEncodings, 	
+				y: {
+					scale: 'yLinear',
+					signal: `datum.value * ${ANIMATION_FUNCTION}`,
+				},
+				y2: { scale: 'yLinear', signal: "0" },
+			});
 		});
 	});
 

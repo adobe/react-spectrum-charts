@@ -188,7 +188,8 @@ export const defaultDodgedMark = {
 			type: 'band',
 		},
 	],
-	encode: { enter: { x: { field: DEFAULT_CATEGORICAL_DIMENSION, scale: 'xBand' } } },
+	encode: {
+		enter: { x: { field: DEFAULT_CATEGORICAL_DIMENSION, scale: 'xBand' } } },
 	marks: [defaultBackgroundMark, defaultMark],
 };
 
@@ -205,7 +206,7 @@ describe('dodgedBarUtils', () => {
 		test('with annotation', () => {
 			const annotationElement = createElement(Annotation, { textKey: 'textLabel' });
 			expect(
-				getDodgedMark({
+				getDodgedMark({ animations: false,
 					...defaultDodgedProps,
 					children: [...defaultDodgedProps.children, annotationElement],
 				})

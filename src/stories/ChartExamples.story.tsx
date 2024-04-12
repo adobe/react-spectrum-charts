@@ -524,11 +524,12 @@ UserGrowthBarGrowth.args = {
 	height: 500,
 	minWidth: 600,
 	maxWidth: 1600,
-	width: 'auto',
+	width: 'auto'
 };
 
 const UserGrowthTimeComparisonBarGrowth = bindWithProps(UserGrowthBarTimeComparisonStory);
 UserGrowthTimeComparisonBarGrowth.args = {
+	animations: false,
 	data: userGrowthTimeComparisonData,
 	colors: userGrowthColors,
 	height: 500,
@@ -541,6 +542,7 @@ UserGrowthTimeComparisonBarGrowth.args = {
 
 const UserGrowthAreaGrowth = bindWithProps(UserGrowthAreaStory);
 UserGrowthAreaGrowth.args = {
+	animations: false,
 	data: userGrowthData,
 	colors: userGrowthColors,
 	height: 500,
@@ -552,6 +554,7 @@ UserGrowthAreaGrowth.args = {
 const FunnelConversion = bindWithProps(FunnelConversionStory);
 const funnelColors: Colors[] = categorical16.map((color) => [color, 'gray-300']);
 FunnelConversion.args = {
+	animations: false,
 	data: funnelConversionData,
 	colors: funnelColors,
 	height: 500,
@@ -563,6 +566,7 @@ FunnelConversion.args = {
 const FunnelTimeComparison = bindWithProps(FunnelTimeComparisonStory);
 const funnelTimeComparisonColors: Colors[] = categorical16.map((color) => [color, 'gray-300']);
 FunnelTimeComparison.args = {
+	animations: false,
 	data: funnelConversionTimeComparisonData,
 	colors: funnelTimeComparisonColors,
 	height: 500,
@@ -574,6 +578,7 @@ FunnelTimeComparison.args = {
 
 const ReleaseImpact = bindWithProps(ReleaseImpactStory);
 ReleaseImpact.args = {
+	animations: false,
 	data: releaseImpactData,
 	height: 500,
 	minWidth: 840,
@@ -581,6 +586,7 @@ ReleaseImpact.args = {
 
 const ReleaseImpactBar = bindWithProps(ReleaseImpactBarStory);
 ReleaseImpactBar.args = {
+	animations: false,
 	data: releaseImpactBarData,
 	height: 250,
 	minWidth: 840,
@@ -588,6 +594,7 @@ ReleaseImpactBar.args = {
 
 const TrendsTimeComparisonBar = bindWithProps(TrendsTimeComparisonBarStory);
 TrendsTimeComparisonBar.args = {
+	animations: false,
 	data: trendsTimeComparisonData,
 	height: 500,
 	minWidth: 840,
@@ -598,6 +605,7 @@ TrendsTimeComparisonBar.args = {
 
 const TrendsTimeComparisonStackedBar = bindWithProps(TrendsTimeComparisonStackedBarStory);
 TrendsTimeComparisonStackedBar.args = {
+	animations: false,
 	data: trendsTimeComparisonData,
 	height: 500,
 	minWidth: 840,
@@ -608,6 +616,7 @@ TrendsTimeComparisonStackedBar.args = {
 
 const TrendsTimeComparisonLine = bindWithProps(TrendsTimeComparisonLineStory);
 TrendsTimeComparisonLine.args = {
+	animations: false,
 	data: trendsTimeComparisonData,
 	height: 500,
 	minWidth: 840,
@@ -618,6 +627,7 @@ TrendsTimeComparisonLine.args = {
 
 const StackOverflowTrends = bindWithProps(StackOverflowStory);
 StackOverflowTrends.args = {
+	animations: false,
 	data: stackOverflowData,
 	height: 500,
 	minWidth: 840,

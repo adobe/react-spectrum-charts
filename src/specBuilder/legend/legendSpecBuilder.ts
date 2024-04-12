@@ -12,13 +12,15 @@
 import {
 	COLOR_SCALE,
 	DEFAULT_COLOR_SCHEME,
+	HIGHLIGHTED_ITEM,
 	LINEAR_COLOR_SCALE,
 	LINE_TYPE_SCALE,
 	OPACITY_SCALE,
+	RSC_ANIMATION,
 	SYMBOL_SHAPE_SCALE,
 	SYMBOL_SIZE_SCALE,
 } from '@constants';
-import { addFieldToFacetScaleDomain } from '@specBuilder/scale/scaleSpecBuilder';
+import { addFieldToFacetScaleDomain, addRscAnimationScales } from '@specBuilder/scale/scaleSpecBuilder';
 import {
 	getColorValue,
 	getLineWidthPixelsFromLineWidth,
@@ -39,8 +41,11 @@ import {
 import { Data, Legend, Mark, Scale, Signal, Spec } from 'vega';
 
 import {
-	addHighlighSignalLegendHoverEvents,
+	addHighlightSignalLegendHoverEvents,
 	getLegendLabelsSeriesSignal,
+	getRscAnimationSignals,
+	getRscLegendColorAnimationDirection,
+	getRscLegendHighlightedItemPrev,
 	hasSignalByName,
 } from '../signal/signalSpecBuilder';
 import { getFacets, getFacetsFromKeys } from './legendFacetUtils';
@@ -49,7 +54,15 @@ import { Facet, getColumns, getEncodings, getHiddenEntriesFilter, getSymbolType 
 
 export const addLegend = produce<
 	Spec,
-	[LegendProps & { colorScheme?: ColorScheme; index?: number; hiddenSeries?: string[]; highlightedSeries?: string }]
+	[
+		LegendProps & {
+			colorScheme?: ColorScheme;
+			index?: number;
+			hiddenSeries?: string[];
+			highlightedSeries?: string;
+			animations?: boolean;
+		}
+	]
 >(
 	(
 		spec,
@@ -120,9 +133,12 @@ export const addLegend = produce<
 			spec.data = addData(spec.data ?? [], { ...legendProps, facets: uniqueFacetFields });
 			spec.signals = addSignals(spec.signals ?? [], legendProps);
 			spec.marks = addMarks(spec.marks ?? [], legendProps);
-
 			// add the legend
-			legends.push(getCategoricalLegend(ordinalFacets, legendProps));
+			/*
+			  marks had to be pushed to getCategoricalLegend to check which marks are being update as
+			  the legend opacity rules change depending on chart type.
+			 */
+			legends.push(getCategoricalLegend(ordinalFacets, legendProps, spec.marks));
 		}
 
 		// continuous legends cannot be combined with any other legends
@@ -190,14 +206,14 @@ export const formatFacetRefsWithPresets = (
  * @param props
  * @returns
  */
-const getCategoricalLegend = (facets: Facet[], props: LegendSpecProps): Legend => {
+const getCategoricalLegend = (facets: Facet[], props: LegendSpecProps, marks: Mark[]): Legend => {
 	const { name, position, title, labelLimit } = props;
 	return {
 		fill: `${name}Entries`,
 		direction: ['top', 'bottom'].includes(position) ? 'horizontal' : 'vertical',
 		orient: position,
 		title,
-		encode: getEncodings(facets, props),
+		encode: getEncodings(facets, props, marks),
 		columns: getColumns(position),
 		labelLimit,
 	};
@@ -234,18 +250,25 @@ const getLegendLayout = ({ position, title }: LegendSpecProps): Partial<Legend> 
 /**
  * Adds a new scale that is used to create the legend entries
  */
-const addScales = produce<Scale[], [LegendSpecProps]>((scales, { color, lineType, opacity, symbolShape }) => {
-	// it is possible to define fields to facet the data off of on the legend
-	// if these fields are not already defined on the scales, we need to add them
-	addFieldToFacetScaleDomain(scales, COLOR_SCALE, color);
-	addFieldToFacetScaleDomain(scales, LINE_TYPE_SCALE, lineType);
-	addFieldToFacetScaleDomain(scales, OPACITY_SCALE, opacity);
-	addFieldToFacetScaleDomain(scales, SYMBOL_SHAPE_SCALE, symbolShape);
-});
+const addScales = produce<Scale[], [LegendSpecProps]>(
+	(scales, { color, lineType, opacity, symbolShape, animations }) => {
+		// if animations are enabled, add all necessary animation scales.
+		
+		if (animations) {
+			addRscAnimationScales(scales);
+		}
+		// it is possible to define fields to facet the data off of on the legend
+		// if these fields are not already defined on the scales, we need to add them
+		addFieldToFacetScaleDomain(scales, COLOR_SCALE, color);
+		addFieldToFacetScaleDomain(scales, LINE_TYPE_SCALE, lineType);
+		addFieldToFacetScaleDomain(scales, OPACITY_SCALE, opacity);
+		addFieldToFacetScaleDomain(scales, SYMBOL_SHAPE_SCALE, symbolShape);
+	}
+);
 
-const addMarks = produce<Mark[], [LegendSpecProps]>((marks, { highlight, keys, name }) => {
+const addMarks = produce<Mark[], [LegendSpecProps]>((marks, { highlight, keys, name, animations }) => {
 	if (highlight) {
-		setHoverOpacityForMarks(marks, keys, name);
+		setHoverOpacityForMarks(marks, animations, keys, name);
 	}
 });
 
@@ -278,9 +301,24 @@ export const addData = produce<Data[], [LegendSpecProps & { facets: string[] }]>
 );
 
 export const addSignals = produce<Signal[], [LegendSpecProps]>(
-	(signals, { hiddenSeries, highlight, isToggleable, legendLabels, name }) => {
+	(signals, { hiddenSeries, highlight, isToggleable, legendLabels, name, animations }) => {
+		// if animations are enabled, add all necessary animation signals.
+		if (animations) {
+			// we don't want to add the signals if they already exist.
+			// Since they come as a package, we only need to check if one animation signal is present.
+			if (!hasSignalByName(signals, RSC_ANIMATION)) {
+				signals.push(...getRscAnimationSignals(name));
+			}
+			signals
+				.find((sig) => sig.name == 'rscColorAnimationDirection')
+				?.on?.push(...getRscLegendColorAnimationDirection(name));
+			signals
+				.find((sig) => sig.name == `${HIGHLIGHTED_ITEM}_prev`)
+				?.on?.push(...getRscLegendHighlightedItemPrev(name));
+		}
+
 		if (highlight) {
-			addHighlighSignalLegendHoverEvents(signals, name, Boolean(isToggleable || hiddenSeries));
+			addHighlightSignalLegendHoverEvents(signals, name, Boolean(isToggleable || hiddenSeries));
 		}
 
 		if (legendLabels) {

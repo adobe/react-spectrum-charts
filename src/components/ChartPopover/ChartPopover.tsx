@@ -14,7 +14,7 @@ import { FC } from 'react';
 import { ChartPopoverProps } from '../../types';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const ChartPopover: FC<ChartPopoverProps> = ({ children, width = 250 }) => {
+const ChartPopover: FC<ChartPopoverProps> = ({ children, width = 250, animations }) => {
 	return null;
 };
 
