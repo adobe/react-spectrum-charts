@@ -270,7 +270,6 @@ describe('barSpecBuilder', () => {
 		test('should add hover events if tooltip is present with animations', () => {
 			const signals = addSignals(defaultSignals, { ...defaultBarProps, animations: true, children: [createElement(ChartTooltip)] });
 			expect(signals).toHaveLength(10);
-			console.log(signals)
 			expect(signals[0]).toHaveProperty('name', HIGHLIGHTED_ITEM);
 			expect(signals[0]).toHaveProperty('on');
 			expect(signals[0].on).toHaveLength(2);

@@ -187,7 +187,6 @@ describe('Line', () => {
 
 			const lines = await findAllMarksByGroupName(chart, 'line0');
 			expect(lines).toHaveLength(4);
-			console.log('Lines', lines[0]);
 
 			expect(lines[0]).toHaveAttribute('opacity', '1');
 			expect(lines[1]).toHaveAttribute('opacity', '1');
