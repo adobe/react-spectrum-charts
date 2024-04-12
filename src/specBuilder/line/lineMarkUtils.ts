@@ -15,12 +15,13 @@ import {
 	getHighlightOpacityValue,
 	getLineWidthProductionRule,
 	getOpacityProductionRule,
-	getStrokeDashProductionRule,
 	getSeriesAnimationOpacityRules,
+	getStrokeDashProductionRule,
 	getVoronoiPath,
 	getXProductionRule,
 	hasPopover,
 } from '@specBuilder/marks/markUtils';
+import { getAnimationMarks } from '@specBuilder/specUtils';
 import { ScaleType } from 'types';
 import { LineMark, Mark, NumericValueRef, ProductionRule, RuleMark, SymbolMark } from 'vega';
 
@@ -31,7 +32,6 @@ import {
 	getSelectRingPoint,
 } from './linePointUtils';
 import { LineMarkProps } from './lineUtils';
-import { getAnimationMarks } from '@specBuilder/specUtils';
 
 /**
  * generates a line mark
@@ -41,7 +41,21 @@ import { getAnimationMarks } from '@specBuilder/specUtils';
  */
 
 export const getLineMark = (lineMarkProps: LineMarkProps, dataSource: string): LineMark => {
-	const { name, color, opacity, metric, dimension, scaleType, lineType, lineWidth, colorScheme, data, previousData, animations, animateFromZero } = lineMarkProps;
+	const {
+		name,
+		color,
+		opacity,
+		metric,
+		dimension,
+		scaleType,
+		lineType,
+		lineWidth,
+		colorScheme,
+		data,
+		previousData,
+		animations,
+		animateFromZero,
+	} = lineMarkProps;
 
 	return {
 		name,
@@ -61,7 +75,7 @@ export const getLineMark = (lineMarkProps: LineMarkProps, dataSource: string): L
 				// but it may change the x position if it causes the chart to resize
 				x: getXProductionRule(scaleType, dimension),
 				opacity: getLineOpacity(lineMarkProps),
-				...(animations && animateFromZero && { y: getAnimationMarks(dimension, metric, false, data, previousData) })
+				...(animations && animateFromZero && { y: getAnimationMarks(dimension, metric, data, previousData) }),
 			},
 		},
 	};

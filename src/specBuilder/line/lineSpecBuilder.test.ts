@@ -11,6 +11,7 @@
  */
 import { createElement } from 'react';
 
+import { ChartTooltip } from '@components/ChartTooltip';
 import { MetricRange } from '@components/MetricRange';
 import { Trendline } from '@components/Trendline';
 import {
@@ -34,6 +35,7 @@ import {
 	TABLE,
 	TRENDLINE_VALUE,
 } from '@constants';
+import { defaultAnimationScales } from '@specBuilder/scale/scaleSpecBuilder.test';
 import { defaultSignals } from '@specBuilder/specTestUtils';
 import { LineSpecProps, MetricRangeElement, MetricRangeProps } from 'types';
 import { Data, Spec } from 'vega';
@@ -41,8 +43,6 @@ import { Data, Spec } from 'vega';
 import * as signalSpecBuilder from '../signal/signalSpecBuilder';
 import { initializeSpec } from '../specUtils';
 import { addData, addLine, addLineMarks, addSignals, setScales } from './lineSpecBuilder';
-import { ChartTooltip } from '@components/ChartTooltip';
-import { defaultAnimationScales } from '@specBuilder/scale/scaleSpecBuilder.test';
 
 const defaultLineProps: LineSpecProps = {
 	children: [],
@@ -472,6 +472,10 @@ describe('lineSpecBuilder', () => {
 					type: 'aggregate',
 				},
 				{ as: SERIES_ID, expr: `datum.${DEFAULT_COLOR}`, type: 'formula' },
+				{
+					type: 'identifier',
+					as: MARK_ID,
+				},
 			]);
 		});
 
@@ -500,7 +504,7 @@ describe('lineSpecBuilder', () => {
 	describe('setScales()', () => {
 		test('time', () => {
 			expect(setScales(startingSpec.scales ?? [], defaultLineProps)).toStrictEqual(defaultSpec.scales);
-		})
+		});
 
 		test('linear trenline with hover and animations', () => {
 			expect(
@@ -510,7 +514,12 @@ describe('lineSpecBuilder', () => {
 					children: [createElement(Trendline, { displayOnHover: true })],
 					animations: true,
 				})
-			).toStrictEqual([defaultSpec.scales?.[0], ...defaultAnimationScales, defaultLinearScale, defaultSpec.scales?.[2]]);
+			).toStrictEqual([
+				defaultSpec.scales?.[0],
+				...defaultAnimationScales,
+				defaultLinearScale,
+				defaultSpec.scales?.[2],
+			]);
 		});
 
 		test('linear', () => {
@@ -537,11 +546,15 @@ describe('lineSpecBuilder', () => {
 					...defaultLineProps,
 					scaleType: 'point',
 					animations: true,
-					children: [createElement(ChartTooltip)]
+					children: [createElement(ChartTooltip)],
 				})
-			).toStrictEqual([defaultSpec.scales?.[0], ...defaultAnimationScales, defaultPointScale, defaultSpec.scales?.[2]]);
+			).toStrictEqual([
+				defaultSpec.scales?.[0],
+				...defaultAnimationScales,
+				defaultPointScale,
+				defaultSpec.scales?.[2],
+			]);
 		});
-
 
 		test('with metric range fields', () => {
 			const [metricStart, metricEnd] = ['metricStart', 'metricEnd'];
@@ -572,10 +585,22 @@ describe('lineSpecBuilder', () => {
 			expect(
 				setScales(startingSpec.scales ?? [], {
 					...defaultLineProps,
-					children: [createElement(MetricRange, { scaleAxisToFit: true, metricEnd, metricStart, displayOnHover: true })],
-					animations: true
+					children: [
+						createElement(MetricRange, {
+							scaleAxisToFit: true,
+							metricEnd,
+							metricStart,
+							displayOnHover: true,
+						}),
+					],
+					animations: true,
 				})
-			).toStrictEqual([defaultSpec.scales?.[0], ...defaultAnimationScales, defaultSpec.scales?.[1], metricRangeMetricScale]);
+			).toStrictEqual([
+				defaultSpec.scales?.[0],
+				...defaultAnimationScales,
+				defaultSpec.scales?.[1],
+				metricRangeMetricScale,
+			]);
 		});
 	});
 
