@@ -255,7 +255,7 @@ const getLegendLayout = ({ position, title }: LegendSpecProps): Partial<Legend> 
 const addScales = produce<Scale[], [LegendSpecProps]>(
 	(scales, { color, lineType, opacity, symbolShape, animations }) => {
 		// if animations are enabled, add all necessary animation scales.
-		//TODO: add tests
+		
 		if (animations) {
 			addRscAnimationScales(scales);
 		}

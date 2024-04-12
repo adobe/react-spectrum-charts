@@ -106,7 +106,7 @@ export const getLineOpacity = ({
 	}
 
 	//if animations are enabled, set opacity rules for line mark.
-	//TODO: add tests
+	
 	if (animations) {
 		return getSeriesAnimationOpacityRules();
 	}

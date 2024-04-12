@@ -183,7 +183,7 @@ export const getOpacityEncoding = ({
 	if (highlight || highlightedSeries) {
 
 		//If animations are enabled, set legend animation opacity rules
-		//TODO: Add tests
+		
 		if (animations) {
 			/*
 			this is the check for chart type and is the reason the spec.marks had to be pushed to

@@ -46,7 +46,7 @@ export const getTrendlineScales = (props: TrendlineParentProps): Scale[] => {
  * @param scales
  * @param props
  */
-//TODO: Add tests
+
 export const checkTrendlineAnimationScales = (name: string, scales: Scale[], props: TrendlineParentProps) => {
 	if (
 		!hasScaleByName(scales, 'rscAnimationCurve') &&

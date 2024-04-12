@@ -558,7 +558,7 @@ export const getMarkWithLegendHighlightOpacityRules = (): ProductionRule<Numeric
  * Opacity animation rules for the legend symbols and labels when marks are highlighted by series ID
  * @returns  ProductionRule<NumericValueRef>
  */
-//TODO: add tests
+
 export const getLegendSeriesOpacityRules = (): ProductionRule<NumericValueRef> => {
 	return [
 		{
@@ -576,7 +576,7 @@ export const getLegendSeriesOpacityRules = (): ProductionRule<NumericValueRef> =
  * Opacity animation rules for legend symbols and labels if the chart marks are highlighted by mark ID
  * @returns ProductionRule<NumericValueRef>
  */
-//TODO: add tests
+
 export const getLegendMarkOpacityRules = (): ProductionRule<NumericValueRef> => {
 	return [
 		{
