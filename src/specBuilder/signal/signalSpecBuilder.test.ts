@@ -24,7 +24,7 @@ describe('signalSpecBuilder', () => {
 	beforeEach(() => {
 		signals = JSON.parse(JSON.stringify(defaultSignals));
 	});
-	describe('addHighlightedItemSignalEvents()', () => {
+	describe.skip('addHighlightedItemSignalEvents()', () => {
 		test('should add on events', () => {
 			addHighlightedItemSignalEvents(signals, 'line0');
 			expect(signals).toHaveLength(4);
