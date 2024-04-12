@@ -69,7 +69,6 @@ export const addHighlightSignalLegendHoverEvents = (
 		]
 	);
 		const highlightedItemSignalPrev = signals.find((signal) => signal.name === `${signalName}_prev`);
-		//TODO: Add documentation
 		if (highlightedItemSignalPrev) {
 			highlightedItemSignalPrev.on?.push({ events: `@${legendName}_legendEntry:mouseover`, update });
 		}
