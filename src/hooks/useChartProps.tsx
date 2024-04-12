@@ -15,5 +15,5 @@ import { ChartProps } from '../types';
 
 export default function useChartProps(props: ChartProps): ChartProps {
 	const darkMode = useDarkMode();
-	return { colorScheme: darkMode ? 'dark' : 'light', animations: false, ...props };
+	return { animations: false, colorScheme: darkMode ? 'dark' : 'light', ...props };
 }

@@ -131,7 +131,7 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 			colors,
 			data,
 			previousData,
-			animations,
+			animations: animations === undefined ? true : animations,
 			animateFromZero,
 			description,
 			idKey,
@@ -299,7 +299,7 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 			view.addEventListener('mouseover', getOnMouseInputCallback(onLegendMouseOver));
 			view.addEventListener('mouseout', getOnMouseInputCallback(onLegendMouseOut));
 			// this will trigger the autosize calculation making sure that everything is correct size
-		}
+		};
 
 		return (
 			<>

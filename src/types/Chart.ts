@@ -126,7 +126,7 @@ export type TooltipAnchor = 'cursor' | 'mark';
 export type TooltipPlacement = 'top' | 'bottom' | 'left' | 'right';
 
 export interface SharedChartProps extends SpecProps {
-	animations: boolean;
+	animations?: boolean;
 	/** Vega config that can be used to tweak the style of the chart. @see https://vega.github.io/vega/docs/config/ */
 	config?: Config;
 	/** Chart data array. */
