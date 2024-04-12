@@ -72,7 +72,6 @@ export const addScatter = produce<
 			...props
 		}
 	) => {
-		console.log('Animations in scatter spec builder', animations);
 		const sanitizedChildren = sanitizeMarkChildren(children);
 		const scatterName = toCamelCase(name || `scatter${index}`);
 		// put props back together now that all the defaults have been set

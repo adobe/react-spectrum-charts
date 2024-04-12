@@ -426,7 +426,6 @@ describe('addSignals()', () => {
 		const signals = addSignals(defaultSignals, { ...defaultLegendProps, animations: true })
 		expect(signals).toBeDefined()
 		expect(signals).toHaveLength(9);
-		console.log(signals)
 		expect(signals[4]).toHaveProperty('name', RSC_ANIMATION);
 		expect(signals[4].on).toHaveLength(1);
 		expect(signals[5]).toHaveProperty('name', 'rscColorAnimationDirection');
