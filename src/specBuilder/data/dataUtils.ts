@@ -11,15 +11,16 @@
  */
 import {
 	DEFAULT_TIME_DIMENSION,
-	DEFAULT_TRANSFORMED_TIME_DIMENSION, 
+	DEFAULT_TRANSFORMED_TIME_DIMENSION,
 	FILTERED_PREVIOUS_TABLE,
-	FILTERED_TABLE, 
+	FILTERED_TABLE,
+	MARK_ID,
 	PREVIOUS_TABLE,
 	SERIES_ID,
-	TABLE
+	TABLE,
 } from '@constants';
 import { produce } from 'immer';
-import { Compare, Data, FormulaTransform, SourceData, Transforms, ValuesData } from 'vega';
+import { Compare, Data, FormulaTransform, IdentifierTransform, SourceData, Transforms, ValuesData } from 'vega';
 
 export const addTimeTransform = produce<Transforms[], [string]>((transforms, dimension) => {
 	if (transforms.findIndex((transform) => transform.type === 'timeunit') === -1) {
@@ -73,5 +74,12 @@ export const getSeriesIdTransform = (facets: string[]): FormulaTransform => {
 		type: 'formula',
 		as: SERIES_ID,
 		expr,
+	};
+};
+
+export const getIdentifierTransform = (): IdentifierTransform => {
+	return {
+		type: 'identifier',
+		as: MARK_ID,
 	};
 };

@@ -52,7 +52,7 @@ describe('addData()', () => {
 			children: [createElement(Trendline)],
 		});
 		expect(data).toHaveLength(5);
-		expect(data[4].transform).toHaveLength(2);
+		expect(data[4].transform).toHaveLength(3);
 		expect(data[4].transform?.[0].type).toBe('regression');
 	});
 });
