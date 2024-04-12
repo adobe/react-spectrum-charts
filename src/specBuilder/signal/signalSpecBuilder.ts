@@ -307,10 +307,11 @@ const getRscColorAnimation = (): Signal => {
  * @returns Signal
  */
 const getRscHighlightedItemPrevSignal = (name: string, nestedDatum?: boolean): Signal => {
+	const nestedPrefix = nestedDatum ? 'datum.' : ''
 	return {
 		name: `${HIGHLIGHTED_ITEM}_prev`,
 		value: null,
-		on: [{ events: `@${concatName(name)}:mouseover`, update: `${nestedDatum ? 'datum.' : ''}datum.${MARK_ID}` }],
+		on: [{ events: `@${concatName(name)}:mouseover`, update: `${nestedPrefix}datum.${MARK_ID}` }],
 	};
 };
 /**
@@ -322,13 +323,14 @@ const getRscHighlightedItemPrevSignal = (name: string, nestedDatum?: boolean): S
  * @returns Signal
  */
 const getRscHighlightedSeriesPrevSignal = (name: string, nestedDatum?: boolean, isNull?: boolean): Signal => {
+	const nestedPrefix = nestedDatum ? 'datum.' : ''
 	return {
 		name: `${HIGHLIGHTED_SERIES}_prev`,
 		value: null,
 		on: [
 			{
 				events: `@${concatName(name)}:mouseover`,
-				update: isNull ? 'null' : `${nestedDatum ? 'datum.' : ''}datum.${SERIES_ID}`,
+				update: isNull ? 'null' : `${nestedPrefix}datum.${SERIES_ID}`,
 			},
 		],
 	};
