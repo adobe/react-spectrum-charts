@@ -76,7 +76,7 @@ export const getLineOpacity = ({
 	if (!interactiveMarkName || displayOnHover) return [DEFAULT_OPACITY_RULE];
 	const strokeOpacityRules: ProductionRule<NumericValueRef> = [];
 	//if animations are enabled, set opacity rules for line mark.
-	//TODO: add tests
+	
 	if (animations) {
 		return getSeriesAnimationOpacityRules();
 	}

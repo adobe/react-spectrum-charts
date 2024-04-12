@@ -174,7 +174,7 @@ export const getRscAnimationSignals = (name: string, nestedDatum?: boolean, isNu
  * gets the animations direction signal events for legends
  * @param name
  */
-//TODO: Add tests
+
 export const getRscLegendColorAnimationDirection = (name: string): { update: string; events: string }[] => {
 	return [
 		{ events: `@${name}_legendEntry:mouseover`, update: '1' },
@@ -185,7 +185,7 @@ export const getRscLegendColorAnimationDirection = (name: string): { update: str
  * gets the animations direction signal events for trend lines
  * @param name
  */
-//TODO: Add tests
+
 export const getRscTrendlineColorAnimationDirection = (name: string): { events: string; update: string }[] => {
 	return [
 		{ events: `@${name}_voronoi:mouseover`, update: '1' },
@@ -196,7 +196,7 @@ export const getRscTrendlineColorAnimationDirection = (name: string): { events: 
  * gets the previous highlighted item events for legends
  * @param name
  */
-//TODO: Add tests
+
 export const getRscLegendHighlightedItemPrev = (name: string): { events: string; update: string }[] => {
 	return [{ events: `@${name}_legendEntry:mouseover`, update: 'null' }];
 };
