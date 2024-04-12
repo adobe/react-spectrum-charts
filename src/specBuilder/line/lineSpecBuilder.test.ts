@@ -454,11 +454,10 @@ describe('lineSpecBuilder', () => {
 		});
 
 		test('should add trendline transform', () => {
-			const testAddData = addData(baseData, {
+			addData(baseData, {
 				...defaultLineProps,
 				children: [createElement(Trendline, { method: 'average' })],
 			});
-			console.warn(testAddData);
 			expect(
 				addData(baseData, {
 					...defaultLineProps,

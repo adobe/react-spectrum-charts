@@ -161,7 +161,6 @@ export const addHighlightedSeriesSignalEvents = (signals: Signal[], markName: st
  * @param isNull
  * @returns Signal[]
  */
-//TODO: Add tests
 export const getRscAnimationSignals = (name: string, nestedDatum?: boolean, isNull?: boolean): Signal[] => {
 	return [
 		getRscAnimation(),
@@ -205,7 +204,6 @@ export const getRscLegendHighlightedItemPrev = (name: string): { events: string;
  * gets the animation signal for Opacity animations
  * @returns Signal
  */
-//TODO: add tests
 const getRscAnimation = (): Signal => {
 	return {
 		name: RSC_ANIMATION,
@@ -223,7 +221,6 @@ const getRscAnimation = (): Signal => {
  * @param name
  * @returns Signal
  */
-//TODO: add tests
 const getRscColorAnimationDirection = (name: string): Signal => {
 	return {
 		name: 'rscColorAnimationDirection',
@@ -238,14 +235,13 @@ const getRscColorAnimationDirection = (name: string): Signal => {
  * gets the color animation signal for Opacity animations
  * @returns Signal
  */
-//TODO: add tests
 const getRscColorAnimation = (): Signal => {
 	return {
 		name: 'rscColorAnimation',
 		value: 0,
 		on: [
 			{
-				events: 'timer{16.666666666666668}',
+				events: `timer{${DATA_ANIMATION_MILLISECONDS_PER_FRAME}}`,
 				update:
 					"scale('rscAnimationCurve', scale('rscAnimationCurveInverse', rscColorAnimation) " +
 					'+ 0.06 * rscColorAnimationDirection)',
@@ -260,7 +256,6 @@ const getRscColorAnimation = (): Signal => {
  * @param nestedDatum
  * @returns Signal
  */
-//TODO add test
 const getRscHighlightedItemPrevSignal = (name: string, nestedDatum?: boolean): Signal => {
 	return {
 		name: `${HIGHLIGHTED_ITEM}_prev`,
@@ -276,7 +271,6 @@ const getRscHighlightedItemPrevSignal = (name: string, nestedDatum?: boolean): S
  * @param isNull
  * @returns Signal
  */
-//TODO: add tests
 const getRscHighlightedSeriesPrevSignal = (name: string, nestedDatum?: boolean, isNull?: boolean): Signal => {
 	return {
 		name: `${HIGHLIGHTED_SERIES}_prev`,
@@ -295,7 +289,6 @@ const getRscHighlightedSeriesPrevSignal = (name: string, nestedDatum?: boolean, 
  * @param name
  * @returns string
  */
-//TODO: add tests
 const concatName = (name: string): string => {
 	if (name == 'line0' || name == 'scatter0' || name.includes('Trendline')) {
 		name = name.concat('_voronoi');

@@ -99,7 +99,8 @@ export function getTooltip(
 	// skip annotations
 	if (hasTooltip(children)) {
 		const merge = `merge(datum${nestedDatum ? '.datum' : ''}, {'rscComponentName': '${name}'})`;
-		const signal = animations && !isBar? `timerValue === 1 ? ${merge} : null` : merge;
+		const animatedTooltipSignal = `timerValue === 1 ? ${merge} : null`;
+		const signal = animations && !isBar ? animatedTooltipSignal : merge;
 		return { signal };
 	}
 }
@@ -305,25 +306,20 @@ export const getVoronoiPath = (children: MarkChildElement[], dataSource: string,
  * @param opacityValue
  * @returns { signal: string}
  */
-//TODO: Add tests
 export const getHighlightOpacityAnimationValue = (opacityValue: { signal: string } | { value: number }): { signal: string }  => {
-	if ('signal' in opacityValue) {
-		return { signal: `max(1-rscColorAnimation, ${opacityValue.signal} / ${HIGHLIGHT_CONTRAST_RATIO})` }
-	}
-	return { signal: `max(1-rscColorAnimation, ${opacityValue.value} / ${HIGHLIGHT_CONTRAST_RATIO})`}
+	const opacity = 'signal' in opacityValue ? opacityValue.signal : opacityValue.value
+	return { signal: `max(1-rscColorAnimation, ${opacity} / ${HIGHLIGHT_CONTRAST_RATIO})` }
 };
 /**
  * animation opacity rules for charts that highlight from series ID
  * @param opacityValue
  * @returns ProductionRule<NumericValueRef>
  */
-//TODO: Add tests
 export const getSeriesAnimationOpacityRules = (
 	opacityValue?: { signal: string } | { value: number },
 ): ProductionRule<NumericValueRef> => {
-	if (!opacityValue) {
-		opacityValue = DEFAULT_OPACITY_RULE;
-	}
+	opacityValue = opacityValue ?? DEFAULT_OPACITY_RULE;
+
 	return [
 		{
 			test: `${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES} !== datum.${SERIES_ID}`,
@@ -340,7 +336,6 @@ export const getSeriesAnimationOpacityRules = (
  * animation opacity rules for charts that highlight from mark ID
  * @returns ProductionRule<NumericValueRef>
  */
-//TODO: add tests
 export const getMarkHighlightOpacityRules = (): ProductionRule<NumericValueRef> => {
 	return [
 		{
@@ -358,7 +353,6 @@ export const getMarkHighlightOpacityRules = (): ProductionRule<NumericValueRef> 
  * with highlight enabled
  * @returns ProductionRule<NumericValueRef>
  */
-//TODO: add tests
 export const getMarkWithLegendHighlightOpacityRules = (): ProductionRule<NumericValueRef> => {
 	return [
 		{

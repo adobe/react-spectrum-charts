@@ -376,6 +376,7 @@ export interface LineProps extends Omit<MarkProps, 'color'> {
 }
 
 export interface ScatterProps extends Omit<MarkProps, 'color'> {
+	animations?: boolean;
 	/**
 	 * point fill and stroke color
 	 * uses a key in the data that will map to the color scale or a static color value
@@ -541,6 +542,7 @@ export interface ChartTooltipProps {
 	children?: TooltipHandler;
 }
 export interface ChartPopoverProps {
+	animations?: boolean,
 	children?: PopoverHandler;
 	width?: number;
 }

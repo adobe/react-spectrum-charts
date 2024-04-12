@@ -22,7 +22,7 @@ import {
 import useChartImperativeHandle from '@hooks/useChartImperativeHandle';
 import useChartWidth from '@hooks/useChartWidth';
 import { useResizeObserver } from '@hooks/useResizeObserver';
-import { getColorValue, usePreviousChartData } from '@specBuilder/specUtils';
+import { getColorValue } from '@specBuilder/specUtils';
 import { RscChart } from 'RscChart';
 import { v4 as uuid } from 'uuid';
 import { View } from 'vega';
@@ -32,6 +32,7 @@ import { Theme } from '@react-types/provider';
 
 import './Chart.css';
 import { ChartData, ChartHandle, ChartProps } from './types';
+import usePreviousChartData from '@hooks/usePreviousChartData';
 
 interface PlaceholderContentProps {
 	data: ChartData[];
