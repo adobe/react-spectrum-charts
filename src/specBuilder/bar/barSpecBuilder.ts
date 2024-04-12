@@ -244,7 +244,6 @@ export const addScales = produce<Scale[], [BarSpecProps]>((scales, props) => {
 	const axisType = orientation === 'vertical' ? 'y' : 'x';
 	addMetricScale(scales, getScaleValues(props), axisType);
 	// if animations are enabled and the chart has interactive children, get all animation scales.
-	//TODO add tests
 	if (animations && hasInteractiveChildren(children)) {
 		addRscAnimationScales(scales);
 	}

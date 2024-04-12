@@ -27,7 +27,6 @@ export const setTrendlineSignals = (signals: Signal[], markProps: TrendlineParen
 	const { idKey, name: markName, animations } = markProps;
 	const trendlines = getTrendlines(markProps);
 	// if animations are enabled, add necessary opacity animation signals
-	//TODO: Add tests
 	if (animations) {
 		addRSCTrendlineAnimationSignals(markName, signals, trendlines);
 	}
@@ -45,7 +44,6 @@ export const setTrendlineSignals = (signals: Signal[], markProps: TrendlineParen
  * @param signals
  * @param trendlines
  */
-//TODO: Add tests
 const addRSCTrendlineAnimationSignals = (name: string, signals: Signal[], trendlines: TrendlineSpecProps[]) => {
 	if (
 		!hasSignalByName(signals, RSC_ANIMATION) &&
