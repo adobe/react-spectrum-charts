@@ -225,8 +225,14 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 
 		const newSpec = structuredClone(spec);
 
-		const chart = useMemo(() => {
-			return (
+		return (
+			<>
+				<div
+					id={`${chartId.current}-popover-anchor`}
+					data-testid="rsc-popover-anchor"
+					ref={popoverAnchorRef}
+					style={targetStyle}
+				/>
 				<VegaChart
 					spec={newSpec}
 					config={chartConfig}
@@ -288,20 +294,6 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 						// this will trigger the autosize calculation making sure that everything is correct size
 					}}
 				/>
-			);
-		}, 	[newSpec, chartConfig, data, previousData, debug, renderer, chartWidth, height, locale,
-			padding, signals, tooltipConfig, chartView, popovers.length, legendIsToggleable, onLegendClick,
-			onLegendMouseOver, onLegendMouseOut, hiddenSeriesState, chartId, setHiddenSeries]);
-
-		return (
-			<>
-				<div
-					id={`${chartId.current}-popover-anchor`}
-					data-testid="rsc-popover-anchor"
-					ref={popoverAnchorRef}
-					style={targetStyle}
-				/>
-				{chart}
 				<ChartDialog
 					datum={selectedData.current}
 					targetElement={popoverAnchorRef}
