@@ -20,7 +20,12 @@ import {
 	SELECTED_SERIES,
 	SERIES_ID,
 } from '@constants';
-import { getPreviousTableData, getSeriesIdTransform, getTableData } from '@specBuilder/data/dataUtils';
+import {
+	getIdentifierTransform,
+	getPreviousTableData,
+	getSeriesIdTransform,
+	getTableData,
+} from '@specBuilder/data/dataUtils';
 import { hasInteractiveChildren } from '@specBuilder/marks/markUtils';
 import { getFacetsFromProps } from '@specBuilder/specUtils';
 import { produce } from 'immer';
@@ -203,6 +208,7 @@ export const getAggregateTrendlineData = (
 			...dimensionRangeTransforms,
 			...getTrendlineStatisticalTransforms(markProps, trendlineProps, true),
 			getSeriesIdTransform(facets),
+			getIdentifierTransform(),
 		],
 	});
 	if (hasInteractiveChildren(trendlineChildren)) {
@@ -213,6 +219,7 @@ export const getAggregateTrendlineData = (
 			transform: [
 				...dimensionRangeTransforms,
 				...getTrendlineStatisticalTransforms(markProps, trendlineProps, false),
+				getIdentifierTransform(),
 			],
 		});
 	}
@@ -251,6 +258,7 @@ export const getRegressionTrendlineData = (
 			...dimensionRangeTransforms,
 			...getTrendlineStatisticalTransforms(markProps, trendlineProps, true),
 			getSeriesIdTransform(facets),
+			getIdentifierTransform(),
 		],
 	});
 	if (hasInteractiveChildren(trendlineChildren)) {
@@ -272,6 +280,7 @@ export const getRegressionTrendlineData = (
 					...dimensionRangeTransforms,
 					getTrendlineParamLookupTransform(markProps, trendlineProps),
 					...getTrendlineParamFormulaTransforms(trendlineDimension, method),
+					getIdentifierTransform(),
 				],
 			}
 		);

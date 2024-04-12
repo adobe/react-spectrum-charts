@@ -236,7 +236,6 @@ export const getDodgeGroupTransform = ({ color, lineType, name, opacity, type }:
 export const addScales = produce<Scale[], [BarSpecProps]>((scales, props) => {
 	const { color, lineType, opacity, orientation, animations, children } = props;
 	// if animations are enabled and the chart has interactive children, get all animation scales.
-	//TODO add tests
 	if (animations && hasInteractiveChildren(children)) {
 		addRscAnimationScales(scales);
 	}

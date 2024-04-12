@@ -314,10 +314,8 @@ export const getVoronoiPath = (children: MarkChildElement[], dataSource: string,
  * @returns { signal: string}
  */
 export const getHighlightOpacityAnimationValue = (opacityValue: { signal: string } | { value: number }): { signal: string }  => {
-	if ('signal' in opacityValue) {
-		return { signal: `max(1-rscColorAnimation, ${opacityValue.signal} / ${HIGHLIGHT_CONTRAST_RATIO})` }
-	}
-	return { signal: `max(1-rscColorAnimation, ${opacityValue.value} / ${HIGHLIGHT_CONTRAST_RATIO})`}
+	const opacity = 'signal' in opacityValue ? opacityValue.signal : opacityValue.value
+	return { signal: `max(1-rscColorAnimation, ${opacity} / ${HIGHLIGHT_CONTRAST_RATIO})` }
 };
 /**
  * animation opacity rules for charts that highlight from series ID
@@ -327,9 +325,8 @@ export const getHighlightOpacityAnimationValue = (opacityValue: { signal: string
 export const getSeriesAnimationOpacityRules = (
 	opacityValue?: { signal: string } | { value: number },
 ): ProductionRule<NumericValueRef> => {
-	if (!opacityValue) {
-		opacityValue = DEFAULT_OPACITY_RULE;
-	}
+	opacityValue = opacityValue ?? DEFAULT_OPACITY_RULE;
+
 	return [
 		{
 			test: `${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES} !== datum.${SERIES_ID}`,
@@ -392,7 +389,7 @@ export const getMarkWithLegendHighlightOpacityRules = (): ProductionRule<Numeric
  * Opacity animation rules for the legend symbols and labels when marks are highlighted by series ID
  * @returns  ProductionRule<NumericValueRef>
  */
-//TODO: add tests
+
 export const getLegendSeriesOpacityRules = (): ProductionRule<NumericValueRef> => {
 	return [
 		{
@@ -410,7 +407,7 @@ export const getLegendSeriesOpacityRules = (): ProductionRule<NumericValueRef> =
  * Opacity animation rules for legend symbols and labels if the chart marks are highlighted by mark ID
  * @returns ProductionRule<NumericValueRef>
  */
-//TODO: add tests
+
 export const getLegendMarkOpacityRules = (): ProductionRule<NumericValueRef> => {
 	return [
 		{

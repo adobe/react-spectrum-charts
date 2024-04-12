@@ -23,11 +23,11 @@ import {
 	getCursor,
 	getInteractive,
 	getSeriesAnimationOpacityRules,
-	getTooltip
+	getTooltip,
 } from '@specBuilder/marks/markUtils';
+import { getAnimationMarks } from '@specBuilder/specUtils';
 import { ChartData, ColorFacet, ColorScheme, MarkChildElement, ScaleType } from 'types';
 import { AreaMark, NumericValueRef, ProductionRule } from 'vega';
-import { getAnimationMarks } from '@specBuilder/specUtils';
 
 export interface AreaMarkProps {
 	name: string;
@@ -80,7 +80,7 @@ export const getAreaMark = (
 			...((!animations || !animateFromZero) && {
 				y: { scale: 'yLinear', field: metricStart },
 				y2: { scale: 'yLinear', field: metricEnd },
-				tooltip: getTooltip({children, name}),
+				tooltip: getTooltip({ children, name }),
 			}),
 			fill: getColorProductionRule(color, colorScheme),
 			...getBorderStrokeEncodings(isStacked, true),
@@ -88,14 +88,24 @@ export const getAreaMark = (
 		update: {
 			// this has to be in update because when you resize the window that doesn't rebuild the spec
 			// but it may change the x position if it causes the chart to resize
-			...(animations && animateFromZero && {
-				y: getAnimationMarks(dimension, metricStart, isStacked, data, previousData),
-				y2: getAnimationMarks(dimension, metricEnd, isStacked, data, previousData),
-				tooltip: getTooltip({children, name, animations}),
-			}),
+			...(animations &&
+				animateFromZero && {
+					y: getAnimationMarks(dimension, metricStart, data, previousData),
+					y2: getAnimationMarks(dimension, metricEnd, data, previousData),
+					tooltip: getTooltip({ children, name, animations }),
+				}),
 			x: getX(scaleType, dimension),
 			cursor: getCursor(children),
-			fillOpacity: getFillOpacity(name, color, opacity, children, isMetricRange, parentName, displayOnHover, animations),
+			fillOpacity: getFillOpacity(
+				name,
+				color,
+				opacity,
+				children,
+				isMetricRange,
+				parentName,
+				displayOnHover,
+				animations
+			),
 		},
 	},
 });
@@ -125,9 +135,8 @@ export function getFillOpacity(
 		return [{ value: opacity }];
 	}
 	// if animations are enabled, get opacity rules for charts that highlight according to series ID
-	//TODO: add tests
 	if (animations) {
-		return getSeriesAnimationOpacityRules({ value: opacity })
+		return getSeriesAnimationOpacityRules({ value: opacity });
 	}
 
 	// if an area is hovered or selected, all other areas should have half opacity

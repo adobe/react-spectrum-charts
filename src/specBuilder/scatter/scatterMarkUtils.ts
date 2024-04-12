@@ -110,7 +110,7 @@ export const getOpacity = ({ animations, children }: ScatterSpecProps): Producti
 		return [DEFAULT_OPACITY_RULE];
 	}
 	// if animations are enabled, set opacity animation rules for scatter mark
-	//TODO: Add Tests
+	
 	if (animations) {
 		return getMarkHighlightOpacityRules();
 	}
