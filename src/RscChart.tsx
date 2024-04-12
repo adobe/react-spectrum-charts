@@ -131,7 +131,7 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 			colors,
 			data,
 			previousData,
-			animations: animations === undefined ? true : animations,
+			animations: animations ?? true,
 			animateFromZero,
 			description,
 			idKey,
