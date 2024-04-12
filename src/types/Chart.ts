@@ -95,7 +95,7 @@ export type ChartSymbolShape = 'rounded-square' | SymbolShape;
 export type NumberFormat = 'currency' | 'shortCurrency' | 'shortNumber' | 'standardNumber';
 
 export interface SharedChartProps extends SpecProps {
-	animations: boolean;
+	animations?: boolean;
 	/** Vega config that can be used to tweak the style of the chart. @see https://vega.github.io/vega/docs/config/ */
 	config?: Config;
 	/** Chart data array. */

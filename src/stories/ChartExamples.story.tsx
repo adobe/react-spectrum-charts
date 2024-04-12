@@ -508,7 +508,7 @@ UserGrowthBarGrowth.args = {
 	height: 500,
 	minWidth: 600,
 	maxWidth: 1600,
-	width: 'auto',
+	width: 'auto'
 };
 
 const UserGrowthTimeComparisonBarGrowth = bindWithProps(UserGrowthBarTimeComparisonStory);
