@@ -241,7 +241,6 @@ const getRscColorAnimation = (): Signal => {
 		value: 0,
 		on: [
 			{
-
 				events: `timer{${DATA_ANIMATION_MILLISECONDS_PER_FRAME}}`,
 				update:
 					"scale('rscAnimationCurve', scale('rscAnimationCurveInverse', rscColorAnimation) " +
