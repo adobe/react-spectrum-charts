@@ -17,6 +17,7 @@ import {
 	DEFAULT_COLOR,
 	DEFAULT_TIME_DIMENSION,
 	FILTERED_TABLE,
+	MARK_ID,
 	MS_PER_DAY,
 	SERIES_ID,
 	TRENDLINE_VALUE,
@@ -82,6 +83,10 @@ describe('addTrendlineData()', () => {
 					type: 'formula',
 					expr: `datum.${DEFAULT_COLOR}`,
 					as: SERIES_ID,
+				},
+				{
+					type: 'identifier',
+					as: MARK_ID,
 				},
 			],
 		});

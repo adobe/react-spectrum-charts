@@ -10,7 +10,7 @@
  * governing permissions and limitations under the License.
  */
 import { ChartTooltip } from '@components/ChartTooltip';
-import { ANIMATION_FUNCTION, PREVIOUS_PREFIX, TRENDLINE_VALUE } from '@constants';
+import { ANIMATION_FUNCTION, MARK_ID, PREVIOUS_PREFIX, TRENDLINE_VALUE } from '@constants';
 import { getLineHoverMarks, getLineOpacity } from '@specBuilder/line/lineMarkUtils';
 import { LineMarkProps } from '@specBuilder/line/lineUtils';
 import {
@@ -38,7 +38,6 @@ import {
 export const getTrendlineMarks = (markProps: TrendlineParentProps): (GroupMark | RuleMark)[] => {
 	const { color, lineType } = markProps;
 	const { facets } = getFacetsFromProps({ color, lineType });
-
 
 	const marks: (GroupMark | RuleMark)[] = [];
 	const trendlines = getTrendlines(markProps);
@@ -331,6 +330,7 @@ const getLineYAnimationMarks = (
 
 	const hasDifferentDimensions = !(
 		data !== previousData &&
+		data.length == previousData.length &&
 		data.every((d) => previousData.some((pd) => d[trendlineDimension] === pd[trendlineDimension]))
 	);
 	if (hasDifferentDimensions) {
@@ -338,13 +338,14 @@ const getLineYAnimationMarks = (
 	}
 
 	const tableSuffix = isRegressionMethod(method) ? 'highResolutionData' : 'data';
+	const trendlineFullName = `${PREVIOUS_PREFIX}${name}_${tableSuffix}`;
 	const animationFromPreviousDataMark = {
 		scale,
 		signal: `
-			(data('${PREVIOUS_PREFIX}${name}_${tableSuffix}')
+			(data('${trendlineFullName}')
 			[indexof(
-				pluck(data('${PREVIOUS_PREFIX}${name}_${tableSuffix}'), '${trendlineDimension}'),
-				datum.${trendlineDimension}
+				pluck(data('${trendlineFullName}'), '${MARK_ID}'),
+				datum.${MARK_ID} + length(data('${trendlineFullName}'))
 			)].${TRENDLINE_VALUE} * (1 - ${easingFunction})
 			) + (datum.${TRENDLINE_VALUE} * ${easingFunction})
 		`,

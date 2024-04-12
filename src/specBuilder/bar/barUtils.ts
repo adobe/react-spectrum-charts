@@ -14,7 +14,6 @@ import { Annotation } from '@components/Annotation';
 import {
 	ANNOTATION_FONT_SIZE,
 	ANNOTATION_FONT_WEIGHT,
-	annotationFillOpacity,
 	BACKGROUND_COLOR,
 	SELECTED_GROUP,
 	CORNER_RADIUS,
@@ -24,7 +23,8 @@ import {
 	HIGHLIGHTED_ITEM,
 	MARK_ID,
 	SELECTED_ITEM,
-	STACK_ID
+	STACK_ID,
+	annotationFillOpacity,
 } from '@constants';
 import {
 	getColorProductionRule,
@@ -36,7 +36,7 @@ import {
 	getStrokeDashProductionRule,
 	getTooltip,
 	hasInteractiveChildren,
-	hasPopover
+	hasPopover,
 } from '@specBuilder/marks/markUtils';
 import { getAnimationMarks, getColorValue, getLineWidthPixelsFromLineWidth } from '@specBuilder/specUtils';
 import { sanitizeMarkChildren } from '@utils';
@@ -101,9 +101,14 @@ export const getDodgedGroupMark = (props: BarSpecProps): GroupMark => {
 };
 
 export const getDodgedDimensionEncodings = (props: BarSpecProps): RectEncodeEntry => {
-	const { animations, animateFromZero, dimension, metric, previousData, data} = props;
+	const { animations, animateFromZero, dimension, metric, previousData, data } = props;
 
-	const { dimensionAxis, metricAxis: startKey, rangeScale, metricScaleKey: scaleKey } = getOrientationProperties(props.orientation);
+	const {
+		dimensionAxis,
+		metricAxis: startKey,
+		rangeScale,
+		metricScaleKey: scaleKey,
+	} = getOrientationProperties(props.orientation);
 
 	const scale = `${props.name}_position`;
 	const field = `${props.name}_dodgeGroup`;
@@ -113,16 +118,18 @@ export const getDodgedDimensionEncodings = (props: BarSpecProps): RectEncodeEntr
 	const startMetric = isStacked ? `${metric}0` : metric;
 	const endMetric = `${metric}1`;
 
-	const endAnimations = isStacked ? getAnimationMarks(dimension, endMetric, true, data, previousData, scaleKey)
-		: { scale: scaleKey, signal: "0" }
+	const endAnimations = isStacked
+		? getAnimationMarks(dimension, endMetric, data, previousData, scaleKey)
+		: { scale: scaleKey, signal: '0' };
 
 	const endKey = `${startKey}2`;
 
 	return {
-		...(animations && animateFromZero && {
-			[startKey]: getAnimationMarks(dimension, startMetric, true, data, previousData, scaleKey),
-			[endKey]: endAnimations
-		}),
+		...(animations &&
+			animateFromZero && {
+				[startKey]: getAnimationMarks(dimension, startMetric, data, previousData, scaleKey),
+				[endKey]: endAnimations,
+			}),
 		[dimensionAxis]: { scale, field },
 		[rangeScale]: { scale, band: 1 },
 	};
@@ -356,10 +363,10 @@ export const getAnnotationMarks = (
 				...(animations && {
 					update: {
 						fillOpacity: {
-							signal: annotationFillOpacity
-						}
-					}
-				})
+							signal: annotationFillOpacity,
+						},
+					},
+				}),
 			},
 		});
 		marks.push({
@@ -384,10 +391,10 @@ export const getAnnotationMarks = (
 				...(animations && {
 					update: {
 						fillOpacity: {
-							signal: annotationFillOpacity
-						}
-					}
-				})
+							signal: annotationFillOpacity,
+						},
+					},
+				}),
 			},
 		});
 	}
@@ -399,10 +406,17 @@ export const getBaseBarEnterEncodings = (props: BarSpecProps): EncodeEntry => ({
 	...getCornerRadiusEncodings(props),
 });
 
-export const getBarEnterEncodings = ({ children, color, colorScheme, name, opacity, animations }: BarSpecProps): EncodeEntry => ({
+export const getBarEnterEncodings = ({
+	children,
+	color,
+	colorScheme,
+	name,
+	opacity,
+	animations,
+}: BarSpecProps): EncodeEntry => ({
 	fill: getColorProductionRule(color, colorScheme),
 	fillOpacity: getOpacityProductionRule(opacity),
-	tooltip: getTooltip({children, name, animations, isBar: true}),
+	tooltip: getTooltip({ children, name, animations, isBar: true }),
 });
 
 export const getBarUpdateEncodings = (props: BarSpecProps): EncodeEntry => ({

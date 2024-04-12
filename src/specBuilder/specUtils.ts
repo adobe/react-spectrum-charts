@@ -49,8 +49,9 @@ import {
 	MARK_ID,
 	OPACITY_SCALE,
 	PREVIOUS_TABLE,
-	TABLE
+	TABLE,
 } from '../constants';
+import { getIdentifierTransform } from './data/dataUtils';
 
 /**
  * gets all the keys that are used to facet by
@@ -238,10 +239,10 @@ export const getSymbolWidthFromRscSymbolSize = (symbolSize: SymbolSize): number 
  * base data that gets initialized with every uncontrolled spec
  */
 export const baseData: Data[] = [
-	{ name: TABLE, values: [], transform: [{ type: 'identifier', as: MARK_ID }] },
+	{ name: TABLE, values: [], transform: [getIdentifierTransform()] },
 	{ name: FILTERED_TABLE, source: TABLE },
-	{ name: PREVIOUS_TABLE, values: [], transform: [{ type: 'identifier', as: MARK_ID }] },
-	{ name: FILTERED_PREVIOUS_TABLE, source: PREVIOUS_TABLE }
+	{ name: PREVIOUS_TABLE, values: [], transform: [getIdentifierTransform()] },
+	{ name: FILTERED_PREVIOUS_TABLE, source: PREVIOUS_TABLE },
 ];
 
 /**
@@ -259,7 +260,7 @@ export const initializeSpec = (spec: Spec | null = {}, chartProps: Partial<Sanit
 		description,
 		autosize: { type: 'fit', contains: 'padding', resize: true },
 		data: isVegaData(data) ? data : baseData,
-		background: backgroundColor ? getColorValue(backgroundColor, colorScheme) : undefined
+		background: backgroundColor ? getColorValue(backgroundColor, colorScheme) : undefined,
 	};
 
 	return { ...baseSpec, ...(spec || {}) };
@@ -346,7 +347,6 @@ export const getD3FormatSpecifierFromNumberFormat = (numberFormat: NumberFormat 
 export const getAnimationMarks = (
 	dimension: string,
 	metric: string,
-	isStacked: boolean,
 	data?: ChartData[],
 	previousData?: ChartData[],
 	scale = 'yLinear'
@@ -357,14 +357,18 @@ export const getAnimationMarks = (
 		scale,
 		signal: `datum.${metric} * ${easingFunction}`,
 	};
+
 	if (data && previousData) {
-		const hasSameDimensions = data !== previousData && data.every((d) => previousData.some((pd) => d[dimension] === pd[dimension])) && data.length == previousData.length;
+		const hasSameDimensions =
+			data !== previousData &&
+			data.every((d) => previousData.some((pd) => d[dimension] === pd[dimension])) &&
+			data.length == previousData.length;
 		if (hasSameDimensions) {
 			// If data isn't similar enough, keep the animation from zero as shown above
-			const datumVal = isStacked ? `(datum.${MARK_ID} + ${data.length})` : `datum.${dimension}`;
+			const datumVal = `(datum.${MARK_ID} + length(data('${FILTERED_PREVIOUS_TABLE}')))`;
 			markUpdate = {
 				scale,
-				signal: `(data('${FILTERED_PREVIOUS_TABLE}')[indexof(pluck(data('${FILTERED_PREVIOUS_TABLE}'), '${isStacked ? MARK_ID : dimension}'), ${datumVal})].${metric} * (1 - ${easingFunction})) + (datum.${metric} * ${easingFunction})`,
+				signal: `(data('${FILTERED_PREVIOUS_TABLE}')[indexof(pluck(data('${FILTERED_PREVIOUS_TABLE}'), '${MARK_ID}'), ${datumVal})].${metric} * (1 - ${easingFunction})) + (datum.${metric} * ${easingFunction})`,
 			};
 		}
 	}

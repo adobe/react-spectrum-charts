@@ -31,7 +31,8 @@ import {
 	getYProductionRule,
 	hasPopover,
 } from '@specBuilder/marks/markUtils';
-import { LineMark, Mark, NumericValueRef, ProductionRule, RuleMark } from 'vega';
+import { getAnimationMarks } from '@specBuilder/specUtils';
+import { LineMark, Mark, NumericValueRef, ProductionRule, RuleMark, SymbolMark } from 'vega';
 
 import { ScaleType } from '../../types';
 import {
@@ -42,7 +43,6 @@ import {
 	getSelectionPoint,
 } from './linePointUtils';
 import { LineMarkProps } from './lineUtils';
-import { getAnimationMarks } from '@specBuilder/specUtils';
 
 /**
  * generates a line mark
@@ -52,7 +52,7 @@ import { getAnimationMarks } from '@specBuilder/specUtils';
  */
 
 export const getLineMark = (lineMarkProps: LineMarkProps, dataSource: string): LineMark => {
-	const { animations, animateFromatZero, color, colorScheme, data, dimension, lineType, lineWidth, metric, metricAxis, name, opacity, previousData, scaleType } =
+	const { animations, animateFromZero, color, colorScheme, data, dimension, lineType, lineWidth, metric, metricAxis, name, opacity, previousData, scaleType } =
 		lineMarkProps;
 	const popovers = getPopovers(lineMarkProps);
 	const popoverWithDimensionHighlightExists = popovers.some(
@@ -81,7 +81,7 @@ export const getLineMark = (lineMarkProps: LineMarkProps, dataSource: string): L
 				...(popoverWithDimensionHighlightExists ? {} : { opacity: getLineOpacity(lineMarkProps) }),
 				strokeOpacity: getLineStrokeOpacity(lineMarkProps),
 				opacity: getLineOpacity(lineMarkProps),
-				...(animations && animateFromZero && { y: getAnimationMarks(dimension, metric, false, data, previousData) })
+				...(animations && animateFromZero && { y: getAnimationMarks(dimension, metric, data, previousData) }),
 			},
 		},
 	};
@@ -106,7 +106,7 @@ export const getLineOpacity = ({
 	}
 
 	//if animations are enabled, set opacity rules for line mark.
-	
+
 	if (animations) {
 		return getSeriesAnimationOpacityRules();
 	}

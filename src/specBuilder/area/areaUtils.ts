@@ -26,10 +26,10 @@ import {
 	isInteractive,
 	getInteractive,
 	getSeriesAnimationOpacityRules,
-	getTooltip
+	getTooltip,
 } from '@specBuilder/marks/markUtils';
-import { AreaMark, NumericValueRef, ProductionRule } from 'vega';
 import { getAnimationMarks } from '@specBuilder/specUtils';
+import { AreaMark, NumericValueRef, ProductionRule } from 'vega';
 
 import { ChartData, ColorFacet, ColorScheme, HighlightedItem, MarkChildElement, ScaleType } from '../../types';
 
@@ -69,7 +69,7 @@ export const getAreaMark = (areaProps: AreaMarkProps, dataSource: string = `${ar
 			...((!animations || !animateFromZero) && {
 				y: { scale: 'yLinear', field: metricStart },
 				y2: { scale: 'yLinear', field: metricEnd },
-				tooltip: getTooltip({children, name}),
+				tooltip: getTooltip({ children, name }),
 			}),
 				fill: getColorProductionRule(color, colorScheme),
 				tooltip: getTooltip(children, name),
@@ -121,7 +121,7 @@ export function getAreaOpacity({
 	}
 	// if animations are enabled, get opacity rules for charts that highlight according to series ID
 	if (animations) {
-		return getSeriesAnimationOpacityRules({ value: opacity })
+		return getSeriesAnimationOpacityRules({ value: opacity });
 	}
 
 	const opacityRules: ProductionRule<NumericValueRef> = [];
