@@ -253,8 +253,14 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 
 		const newSpec = structuredClone(spec);
 
-		const chart = useMemo(() => {
-			return (
+		return (
+			<>
+				<div
+					id={`${chartId.current}-popover-anchor`}
+					data-testid="rsc-popover-anchor"
+					ref={popoverAnchorRef}
+					style={targetStyle}
+				/>
 				<VegaChart
 					spec={newSpec}
 					config={chartConfig}
