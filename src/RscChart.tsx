@@ -225,6 +225,54 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 
 		const newSpec = structuredClone(spec);
 
+		const onNewView = (view) => {
+			chartView.current = view;
+			// Add a delay before displaying legend tooltips on hover.
+			let tooltipTimeout: NodeJS.Timeout | undefined;
+			view.tooltip((_, event, item, value) => {
+				const tooltipHandler = new Handler(tooltipConfig);
+				// Cancel delayed tooltips if the mouse moves before the delay is resolved.
+				if (tooltipTimeout) {
+					clearTimeout(tooltipTimeout);
+					tooltipTimeout = undefined;
+				}
+				if (event && event.type === 'pointermove' && itemIsLegendItem(item) && 'tooltip' in item) {
+					tooltipTimeout = setTimeout(() => {
+						tooltipHandler.call(this, event, item, value);
+						tooltipTimeout = undefined;
+					}, LEGEND_TOOLTIP_DELAY);
+				} else {
+					tooltipHandler.call(this, event, item, value);
+				}
+			});
+			if (popovers.length || legendIsToggleable || onLegendClick) {
+				if (legendIsToggleable) {
+					view.signal('hiddenSeries', hiddenSeriesState);
+				}
+				setSelectedSignals({
+					selectedData: selectedData.current,
+					view,
+				});
+				view.addEventListener(
+					'click',
+					getOnMarkClickCallback(
+						chartView,
+						hiddenSeriesState,
+						chartId,
+						selectedData,
+						selectedDataBounds,
+						selectedDataName,
+						setHiddenSeries,
+						legendIsToggleable,
+						onLegendClick
+					)
+				);
+			}
+			view.addEventListener('mouseover', getOnMouseInputCallback(onLegendMouseOver));
+			view.addEventListener('mouseout', getOnMouseInputCallback(onLegendMouseOut));
+			// this will trigger the autosize calculation making sure that everything is correct size
+		}
+
 		return (
 			<>
 				<div
@@ -246,53 +294,7 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 					padding={padding}
 					signals={signals}
 					tooltip={tooltipConfig} // legend show/hide relies on this
-					onNewView={(view) => {
-						chartView.current = view;
-						// Add a delay before displaying legend tooltips on hover.
-						let tooltipTimeout: NodeJS.Timeout | undefined;
-						view.tooltip((_, event, item, value) => {
-							const tooltipHandler = new Handler(tooltipConfig);
-							// Cancel delayed tooltips if the mouse moves before the delay is resolved.
-							if (tooltipTimeout) {
-								clearTimeout(tooltipTimeout);
-								tooltipTimeout = undefined;
-							}
-							if (event && event.type === 'pointermove' && itemIsLegendItem(item) && 'tooltip' in item) {
-								tooltipTimeout = setTimeout(() => {
-									tooltipHandler.call(this, event, item, value);
-									tooltipTimeout = undefined;
-								}, LEGEND_TOOLTIP_DELAY);
-							} else {
-								tooltipHandler.call(this, event, item, value);
-							}
-						});
-						if (popovers.length || legendIsToggleable || onLegendClick) {
-							if (legendIsToggleable) {
-								view.signal('hiddenSeries', hiddenSeriesState);
-							}
-							setSelectedSignals({
-								selectedData: selectedData.current,
-								view,
-							});
-							view.addEventListener(
-								'click',
-								getOnMarkClickCallback(
-									chartView,
-									hiddenSeriesState,
-									chartId,
-									selectedData,
-									selectedDataBounds,
-									selectedDataName,
-									setHiddenSeries,
-									legendIsToggleable,
-									onLegendClick
-								)
-							);
-						}
-						view.addEventListener('mouseover', getOnMouseInputCallback(onLegendMouseOver));
-						view.addEventListener('mouseout', getOnMouseInputCallback(onLegendMouseOut));
-						// this will trigger the autosize calculation making sure that everything is correct size
-					}}
+					onNewView={onNewView}
 				/>
 				<ChartDialog
 					datum={selectedData.current}
