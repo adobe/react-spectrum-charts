@@ -406,7 +406,6 @@ export const getBarOpacity = ({ children, animations }: BarSpecProps): Productio
 		return [DEFAULT_OPACITY_RULE];
 	}
 	// if animations are enabled, get opacity rules for charts that use the mark ID as the highlighted item.
-	//TODO: Add tests
 	if (animations) {
 		return getMarkHighlightOpacityRules();
 	}
