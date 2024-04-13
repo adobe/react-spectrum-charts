@@ -86,5 +86,3 @@ export const BACKGROUND_COLOR = 'chartBackgroundColor';
 
 // time constants
 export const MS_PER_DAY = 86400000;
-
-const TEST = 123;
