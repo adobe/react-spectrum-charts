@@ -16,7 +16,7 @@ import { Axis, Bar, Chart, ChartHandle, ChartTooltip, Line } from '@rsc';
 import { findChart, getAllMarksByGroupName, render, screen } from '@test-utils';
 import { getElement } from '@utils';
 
-import { BackgroundColor, Basic, Config, Locale, Width } from './Chart.story';
+import { BackgroundColor, Basic, Config, Height, Locale, Width } from './Chart.story';
 import {
 	CssColors,
 	SpectrumColorNames,
@@ -84,6 +84,18 @@ describe('Chart', () => {
 
 	test('Width renders properly with invalid width', async () => {
 		render(<Width {...Width.args} width="50.2%" />);
+		const chart = await findChart();
+		expect(chart).toBeInTheDocument();
+	});
+
+	test('Height renders properly', async () => {
+		render(<Height {...Height.args} />);
+		const chart = await findChart();
+		expect(chart).toBeInTheDocument();
+	});
+
+	test('Height renders properly with invalid Height', async () => {
+		render(<Height {...Height.args} height="50.2%" />);
 		const chart = await findChart();
 		expect(chart).toBeInTheDocument();
 	});

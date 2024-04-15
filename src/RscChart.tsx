@@ -73,7 +73,6 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 			config,
 			description,
 			debug = false,
-			height = 300,
 			hiddenSeries = [],
 			highlightedSeries,
 			lineTypes = DEFAULT_LINE_TYPES,
@@ -85,6 +84,7 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 			symbolShapes,
 			symbolSizes,
 			title,
+			chartHeight = 300,
 			chartWidth,
 			UNSAFE_vegaSpec,
 			chartId,
@@ -222,7 +222,7 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 					debug={debug}
 					renderer={renderer}
 					width={chartWidth}
-					height={height}
+					height={chartHeight}
 					locale={locale}
 					padding={padding}
 					signals={signals}

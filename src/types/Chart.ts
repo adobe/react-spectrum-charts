@@ -98,8 +98,6 @@ export interface SharedChartProps extends SpecProps {
 	data: ChartData[];
 	/** Enables debug mode which will console log things like the generated vega spec and the datums for tooltips. */
 	debug?: boolean;
-	/** Chart height */
-	height?: number;
 	/** Number and time locales to use */
 	locale?: Locale | LocaleCode | { number?: NumberLocaleCode | NumberLocale; time?: TimeLocaleCode | TimeLocale };
 	/** Chart padding */
@@ -112,6 +110,7 @@ export interface RscChartProps extends SharedChartProps {
 	chartId: MutableRefObject<string>;
 	chartView: MutableRefObject<View | undefined>;
 	chartWidth: number;
+	chartHeight: number;
 	popoverIsOpen?: boolean;
 }
 
@@ -126,6 +125,12 @@ export interface ChartProps extends SharedChartProps {
 	maxWidth?: number;
 	/** Minimum chart width. */
 	minWidth?: number;
+	/** Chart height */
+	height?: Height;
+	/** Maximum height of the chart */
+	maxHeight?: number;
+	/** Minimum height of the chart */
+	minHeight?: number;
 	/** react-spectrum theme. This sets the react-spectrum theming on tooltips and popovers. */
 	theme?: Theme;
 	/** Chart width */
@@ -138,6 +143,7 @@ export interface BaseProps {
 }
 
 export type Width = number | string | 'auto';
+export type Height = number | `${number}%`;
 
 export interface ChartHandle {
 	copy: () => Promise<string>;

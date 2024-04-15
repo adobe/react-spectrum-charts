@@ -14,6 +14,7 @@ import { FC, forwardRef, useEffect, useMemo, useRef, useState } from 'react';
 import { EmptyState } from '@components/EmptyState';
 import { LoadingState } from '@components/LoadingState';
 import { DEFAULT_BACKGROUND_COLOR, DEFAULT_COLOR_SCHEME, DEFAULT_LINE_TYPES, DEFAULT_LOCALE } from '@constants';
+import useChartHeight from '@hooks/useChartHeight';
 import useChartImperativeHandle from '@hooks/useChartImperativeHandle';
 import useChartWidth from '@hooks/useChartWidth';
 import { useResizeObserver } from '@hooks/useResizeObserver';
@@ -54,6 +55,8 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 			lineWidths = ['M'],
 			loading,
 			locale = DEFAULT_LOCALE,
+			minHeight = 100,
+			maxHeight = Infinity,
 			minWidth = 100,
 			maxWidth = Infinity,
 			opacities,
@@ -74,14 +77,21 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 		// The view returned by vega. This is above RscChart so it can be used for downloading and copying to clipboard.
 		const chartView = useRef<View>();
 		const [containerWidth, setContainerWidth] = useState<number>(0);
+		const [containerHeight, setContainerHeight] = useState<number>(0);
 
 		useChartImperativeHandle(forwardedRef, { chartView, title });
 
 		const containerRef = useResizeObserver<HTMLDivElement>((_target, entry) => {
-			if (typeof width === 'number') return;
-			setContainerWidth(entry.contentRect.width);
+			if (typeof width !== 'number') {
+				setContainerWidth(entry.contentRect.width);
+			}
+
+			if (typeof height !== 'number') {
+				setContainerHeight(entry.contentRect.height);
+			}
 		});
 		const chartWidth = useChartWidth(containerWidth, maxWidth, minWidth, width); // calculates the width the vega chart should be
+		const chartHeight = useChartHeight(containerHeight, maxHeight, minHeight, height); // calculates the height the vega chart should be
 
 		const showPlaceholderContent = useMemo(() => Boolean(loading ?? !data.length), [loading, data]);
 		useEffect(() => {
@@ -109,19 +119,20 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 				colorScheme={colorScheme}
 				theme={isValidTheme(theme) ? theme : defaultTheme}
 				UNSAFE_style={{ backgroundColor: 'transparent' }}
+				height="100%"
 			>
 				<div
 					ref={containerRef}
 					id={chartId.current}
 					data-testid={dataTestId}
 					className="rsc-container"
-					style={{ backgroundColor: getColorValue(backgroundColor, colorScheme) }}
+					style={{ backgroundColor: getColorValue(backgroundColor, colorScheme), height: '100%' }}
 				>
 					{showPlaceholderContent ? (
 						<PlaceholderContent
 							loading={loading}
 							data={data}
-							height={height}
+							height={chartHeight}
 							emptyStateText={emptyStateText}
 						/>
 					) : (
@@ -135,7 +146,6 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 							config={config}
 							description={description}
 							debug={debug}
-							height={height}
 							hiddenSeries={hiddenSeries}
 							highlightedSeries={highlightedSeries}
 							lineTypes={lineTypes}
@@ -147,6 +157,7 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 							symbolShapes={symbolShapes}
 							symbolSizes={symbolSizes}
 							title={title}
+							chartHeight={chartHeight}
 							chartWidth={chartWidth}
 							UNSAFE_vegaSpec={UNSAFE_vegaSpec}
 						>

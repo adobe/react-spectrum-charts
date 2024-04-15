@@ -14,7 +14,7 @@ const decorators: Decorator[] = [
 		const darkMode = useDarkMode();
 		return (
 			<Provider theme={defaultTheme} colorScheme={darkMode ? 'dark' : 'light'} locale="en-US" height="100vh">
-				<View padding="size-300">
+				<View padding="size-300" height="100%">
 					<Story />
 				</View>
 			</Provider>
