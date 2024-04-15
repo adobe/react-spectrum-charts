@@ -121,49 +121,45 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 				UNSAFE_style={{ backgroundColor: 'transparent' }}
 				height="100%"
 			>
-				<div
-					ref={containerRef}
-					id={chartId.current}
-					data-testid={dataTestId}
-					className="rsc-container"
-					style={{ backgroundColor: getColorValue(backgroundColor, colorScheme), height: '100%' }}
-				>
-					{showPlaceholderContent ? (
-						<PlaceholderContent
-							loading={loading}
-							data={data}
-							height={chartHeight}
-							emptyStateText={emptyStateText}
-						/>
-					) : (
-						<RscChart
-							chartView={chartView}
-							chartId={chartId}
-							data={data}
-							backgroundColor={backgroundColor}
-							colors={colors}
-							colorScheme={colorScheme}
-							config={config}
-							description={description}
-							debug={debug}
-							hiddenSeries={hiddenSeries}
-							highlightedSeries={highlightedSeries}
-							lineTypes={lineTypes}
-							lineWidths={lineWidths}
-							locale={locale}
-							opacities={opacities}
-							padding={padding}
-							renderer={renderer}
-							symbolShapes={symbolShapes}
-							symbolSizes={symbolSizes}
-							title={title}
-							chartHeight={chartHeight}
-							chartWidth={chartWidth}
-							UNSAFE_vegaSpec={UNSAFE_vegaSpec}
-						>
-							{props.children}
-						</RscChart>
-					)}
+				<div ref={containerRef} id={chartId.current} data-testid={dataTestId} className="rsc-container">
+					<div style={{ backgroundColor: getColorValue(backgroundColor, colorScheme) }}>
+						{showPlaceholderContent ? (
+							<PlaceholderContent
+								loading={loading}
+								data={data}
+								height={chartHeight}
+								emptyStateText={emptyStateText}
+							/>
+						) : (
+							<RscChart
+								chartView={chartView}
+								chartId={chartId}
+								data={data}
+								backgroundColor={backgroundColor}
+								colors={colors}
+								colorScheme={colorScheme}
+								config={config}
+								description={description}
+								debug={debug}
+								hiddenSeries={hiddenSeries}
+								highlightedSeries={highlightedSeries}
+								lineTypes={lineTypes}
+								lineWidths={lineWidths}
+								locale={locale}
+								opacities={opacities}
+								padding={padding}
+								renderer={renderer}
+								symbolShapes={symbolShapes}
+								symbolSizes={symbolSizes}
+								title={title}
+								chartHeight={chartHeight}
+								chartWidth={chartWidth}
+								UNSAFE_vegaSpec={UNSAFE_vegaSpec}
+							>
+								{props.children}
+							</RscChart>
+						)}
+					</div>
 				</div>
 			</Provider>
 		);
