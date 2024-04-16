@@ -35,7 +35,7 @@ jobs:
               run: yarn test
 
             - name: SonarCloud 🔬
-              uses: sonarsource/sonarcloud-github-action@master
+              uses: sonarsource/sonarcloud-github-action@2.1.0
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
                   SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
