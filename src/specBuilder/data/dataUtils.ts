@@ -25,7 +25,7 @@ export const addTimeTransform = produce<Transforms[], [string]>((transforms, dim
 	if (transforms.findIndex((transform) => transform.type === 'timeunit') === -1) {
 		transforms.push({
 			type: 'formula',
-			expr: `toDate(datum[\"${dimension}\"])`,
+			expr: `toDate(datum["${dimension}"])`,
 			as: dimension
 		});
 		transforms.push({
