@@ -71,6 +71,11 @@ const defaultSpec = initializeSpec({
 			transform: [
 				{ as: MARK_ID, type: 'identifier' },
 				{
+					type: 'formula',
+					expr: `toDate(datum[\"${DEFAULT_TIME_DIMENSION}\"])`,
+					as: DEFAULT_TIME_DIMENSION,
+				},
+				{
 					as: [DEFAULT_TRANSFORMED_TIME_DIMENSION, `${DEFAULT_TIME_DIMENSION}1`],
 					field: DEFAULT_TIME_DIMENSION,
 					type: 'timeunit',
@@ -387,7 +392,7 @@ describe('lineSpecBuilder', () => {
 					...defaultLineProps,
 					children: [createElement(Trendline, { method: 'movingAverage-7' })],
 				})[0].transform
-			).toHaveLength(2);
+			).toHaveLength(3);
 		});
 
 		test('adds point data if displayPointMark is not undefined', () => {

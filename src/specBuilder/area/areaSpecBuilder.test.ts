@@ -58,6 +58,11 @@ const defaultSpec = initializeSpec({
 			transform: [
 				{ as: MARK_ID, type: 'identifier' },
 				{
+					type: 'formula',
+					expr: `toDate(datum[\"${DEFAULT_TIME_DIMENSION}\"])`,
+					as: DEFAULT_TIME_DIMENSION,
+				},
+				{
 					as: [DEFAULT_TRANSFORMED_TIME_DIMENSION, `${DEFAULT_TIME_DIMENSION}1`],
 					field: DEFAULT_TIME_DIMENSION,
 					type: 'timeunit',

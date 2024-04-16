@@ -93,6 +93,18 @@ const LineStory: StoryFn<typeof Line> = (args): ReactElement => {
 	);
 };
 
+const LineStoryWithUTCData: StoryFn<typeof Line> = (args): ReactElement => {
+	const chartProps = useChartProps({ ...defaultChartProps, data: workspaceTrendsData.map(d => ({ ...d, datetime: new Date(d.datetime).toISOString() })) });
+	return (
+		<Chart {...chartProps}>
+			<Axis position="left" grid title="Users" />
+			<Axis position="bottom" labelFormat="time" baseline ticks />
+			<Line {...args} />
+			<Legend highlight />
+		</Chart>
+	);
+};
+
 const ComboStory: StoryFn<typeof Line> = (args): ReactElement => {
 	const chartProps = useChartProps(defaultChartProps);
 	return (
@@ -147,6 +159,15 @@ Basic.args = {
 
 const LineWithAxisAndLegend = bindWithProps(LineStory);
 LineWithAxisAndLegend.args = {
+	color: 'series',
+	dimension: 'datetime',
+	metric: 'users',
+	name: 'line0',
+	scaleType: 'time',
+};
+
+const LineWithUTCDatetimeFormat = bindWithProps(LineStoryWithUTCData);
+LineWithUTCDatetimeFormat.args = {
 	color: 'series',
 	dimension: 'datetime',
 	metric: 'users',
@@ -251,6 +272,7 @@ WithStaticPointsAndDialogs.args = {
 export {
 	Basic,
 	LineWithAxisAndLegend,
+	LineWithUTCDatetimeFormat,
 	LineType,
 	Opacity,
 	TrendScale,

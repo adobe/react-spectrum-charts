@@ -24,6 +24,11 @@ import { Compare, Data, FormulaTransform, SourceData, Transforms, ValuesData } f
 export const addTimeTransform = produce<Transforms[], [string]>((transforms, dimension) => {
 	if (transforms.findIndex((transform) => transform.type === 'timeunit') === -1) {
 		transforms.push({
+			type: 'formula',
+			expr: `toDate(datum["${dimension}"])`,
+			as: dimension
+		});
+		transforms.push({
 			type: 'timeunit',
 			field: dimension,
 			units: ['year', 'month', 'date', 'hours', 'minutes'],
