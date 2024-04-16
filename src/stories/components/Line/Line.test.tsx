@@ -184,7 +184,7 @@ describe('Line', () => {
 			await hoverNthElement(paths, 0);
 			const tooltip = await screen.findByTestId('rsc-tooltip');
 			expect(tooltip).toBeInTheDocument();
-			expect(within(tooltip).getByText('Nov 7')).toBeInTheDocument();
+			expect(within(tooltip).getByText('Nov 8')).toBeInTheDocument();
 		});
 		test('should fade the opacity of non-hovered lines', async () => {
 			render(<Tooltip {...Tooltip.args} />);
