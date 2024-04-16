@@ -188,7 +188,7 @@ describe('Chart', () => {
 			const svg = chart.querySelector('svg');
 			expect(svg).toHaveStyle('background-color: rgb(255, 255, 255);');
 
-			const container = document.querySelector('.rsc-container');
+			const container = document.querySelector('.rsc-container > div');
 			expect(container).toHaveStyle('background-color: rgb(255, 255, 255);');
 		});
 	});

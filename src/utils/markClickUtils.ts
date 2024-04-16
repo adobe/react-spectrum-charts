@@ -58,6 +58,7 @@ export const getOnMarkClickCallback = (
 		}
 		// verify that the user didn't click on a legend, legend marktype = 'group'
 		if (isItemSceneItem(item) && item.mark.marktype !== 'group' && chartView.current) {
+			console.log('popover item');
 			// clicking the button will trigger a new view since it will cause a rerender
 			// this means we don't need to set the signal value since it would just be cleared on rerender
 			// instead, the rerender will set the value of the signal to the selectedData
@@ -65,7 +66,7 @@ export const getOnMarkClickCallback = (
 			// we need to anchor the popover to a div that we move to the same location as the selected mark
 			selectedDataBounds.current = getItemBounds(item);
 			selectedDataName.current = getItemName(item);
-			(document.querySelector(`#${chartId.current} > button`) as HTMLButtonElement)?.click();
+			(document.querySelector(`#${chartId.current} > div > button`) as HTMLButtonElement)?.click();
 		}
 	};
 };
