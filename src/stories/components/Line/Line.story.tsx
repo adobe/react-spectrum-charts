@@ -57,9 +57,7 @@ const historicalCompareData = [
 	{ datetime: 1668409200000, users: 4913, series: 'Add Freeform table', period: 'Current' },
 ];
 
-// Next line is a temporary change to test out datetime data input (eg, "2022-11-08T07:00:00.000Z")
-const transformedData = workspaceTrendsData.map(d => ({ ...d, datetime: new Date(d.datetime).toISOString() }));
-const defaultChartProps: ChartProps = { data: transformedData, minWidth: 400, maxWidth: 800, height: 400 };
+const defaultChartProps: ChartProps = { data: workspaceTrendsData, minWidth: 400, maxWidth: 800, height: 400 };
 
 const BasicLineStory: StoryFn<typeof Line> = (args): ReactElement => {
 	const chartProps = useChartProps(defaultChartProps);
@@ -86,7 +84,19 @@ const LinearStory: StoryFn<typeof Line> = (args): ReactElement => {
 const LineStory: StoryFn<typeof Line> = (args): ReactElement => {
 	const chartProps = useChartProps(defaultChartProps);
 	return (
-		<Chart {...chartProps} debug>
+		<Chart {...chartProps}>
+			<Axis position="left" grid title="Users" />
+			<Axis position="bottom" labelFormat="time" baseline ticks />
+			<Line {...args} />
+			<Legend highlight />
+		</Chart>
+	);
+};
+
+const LineStoryWithUTCData: StoryFn<typeof Line> = (args): ReactElement => {
+	const chartProps = useChartProps({ ...defaultChartProps, data: workspaceTrendsData.map(d => ({ ...d, datetime: new Date(d.datetime).toISOString() }))});
+	return (
+		<Chart {...chartProps}>
 			<Axis position="left" grid title="Users" />
 			<Axis position="bottom" labelFormat="time" baseline ticks />
 			<Line {...args} />
@@ -149,6 +159,15 @@ Basic.args = {
 
 const LineWithAxisAndLegend = bindWithProps(LineStory);
 LineWithAxisAndLegend.args = {
+	color: 'series',
+	dimension: 'datetime',
+	metric: 'users',
+	name: 'line0',
+	scaleType: 'time',
+};
+
+const LineWithUTCDatetimeFormat = bindWithProps(LineStoryWithUTCData);
+LineWithUTCDatetimeFormat.args = {
 	color: 'series',
 	dimension: 'datetime',
 	metric: 'users',
@@ -253,6 +272,7 @@ WithStaticPointsAndDialogs.args = {
 export {
 	Basic,
 	LineWithAxisAndLegend,
+	LineWithUTCDatetimeFormat,
 	LineType,
 	Opacity,
 	TrendScale,

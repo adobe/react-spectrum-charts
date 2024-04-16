@@ -9,9 +9,28 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { TABLE } from '@constants';
+import { 	DEFAULT_TIME_DIMENSION, DEFAULT_TRANSFORMED_TIME_DIMENSION, TABLE } from '@constants';
 
-import { getTableData } from './dataUtils';
+import { addTimeTransform, getTableData } from './dataUtils';
+
+describe('addTimeTransform()', () => {
+	test('should return the time transforms', () => {
+		const inputTransforms = [];
+		const dimension = 'datetime';
+		const outputTransforms = [{
+			type: 'formula',
+			expr: `toDate(datum[\"${dimension}\"])`,
+			as: dimension
+		},
+		{
+			type: 'timeunit',
+			field: dimension,
+			units: ['year', 'month', 'date', 'hours', 'minutes'],
+			as: [DEFAULT_TRANSFORMED_TIME_DIMENSION, `${DEFAULT_TIME_DIMENSION}1`],
+		}];
+		expect(addTimeTransform(inputTransforms, dimension)).toEqual(outputTransforms);
+	});
+});
 
 describe('getTableData()', () => {
 	test('should return the table data', () => {
