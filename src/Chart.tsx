@@ -82,6 +82,7 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 		useChartImperativeHandle(forwardedRef, { chartView, title });
 
 		const containerRef = useResizeObserver<HTMLDivElement>((_target, entry) => {
+
 			if (typeof width !== 'number') {
 				setContainerWidth(entry.contentRect.width);
 			}
