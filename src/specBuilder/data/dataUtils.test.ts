@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { 	DEFAULT_TIME_DIMENSION, DEFAULT_TRANSFORMED_TIME_DIMENSION, TABLE } from '@constants';
+import { DEFAULT_TIME_DIMENSION, DEFAULT_TRANSFORMED_TIME_DIMENSION, TABLE } from '@constants';
 
 import { addTimeTransform, getTableData } from './dataUtils';
 

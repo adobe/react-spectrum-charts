@@ -94,7 +94,7 @@ const LineStory: StoryFn<typeof Line> = (args): ReactElement => {
 };
 
 const LineStoryWithUTCData: StoryFn<typeof Line> = (args): ReactElement => {
-	const chartProps = useChartProps({ ...defaultChartProps, data: workspaceTrendsData.map(d => ({ ...d, datetime: new Date(d.datetime).toISOString() }))});
+	const chartProps = useChartProps({ ...defaultChartProps, data: workspaceTrendsData.map(d => ({ ...d, datetime: new Date(d.datetime).toISOString() })) });
 	return (
 		<Chart {...chartProps}>
 			<Axis position="left" grid title="Users" />
