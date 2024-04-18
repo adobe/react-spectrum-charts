@@ -61,8 +61,8 @@ describe('addData()', () => {
 
 		expect(data[2].transform).toStrictEqual([
 			{
-			type: 'filter',
-			expr: '!datum.exclude',
+				type: 'filter',
+				expr: '!datum.exclude',
 			},
 		]);
 	});
@@ -91,7 +91,7 @@ describe('addSignals()', () => {
 			...defaultScatterProps,
 			children: [createElement(ChartTooltip)],
 		});
-		expect(signals).toHaveLength(4);
+		expect(signals).toHaveLength(defaultSignals.length);
 		expect(signals[0].name).toBe(HIGHLIGHTED_ITEM);
 		expect(signals[0].on).toHaveLength(2);
 	});
@@ -100,7 +100,7 @@ describe('addSignals()', () => {
 			...defaultScatterProps,
 			children: [createElement(Trendline, { displayOnHover: true })],
 		});
-		expect(signals).toHaveLength(4);
+		expect(signals).toHaveLength(defaultSignals.length);
 		expect(signals[0].name).toBe(HIGHLIGHTED_ITEM);
 		expect(signals[0].on).toHaveLength(2);
 	});

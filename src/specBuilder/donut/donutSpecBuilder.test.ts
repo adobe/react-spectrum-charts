@@ -176,7 +176,7 @@ describe('addSignals()', () => {
 
 	test('should add hover events when tooltip is present', () => {
 		const signals = addSignals(defaultSignals, { ...defaultDonutProps, children: [createElement(ChartTooltip)] });
-		expect(signals).toHaveLength(4);
+		expect(signals).toHaveLength(defaultSignals.length);
 		expect(signals[0]).toHaveProperty('name', HIGHLIGHTED_ITEM);
 		expect(signals[0].on).toHaveLength(2);
 		expect(signals[0].on?.[0]).toHaveProperty('events', '@testName:mouseover');
@@ -187,7 +187,7 @@ describe('addSignals()', () => {
 			...defaultDonutProps,
 			children: [createElement(ChartTooltip, { excludeDataKeys: ['excludeFromTooltip'] })],
 		});
-		expect(signals).toHaveLength(4);
+		expect(signals).toHaveLength(defaultSignals.length);
 		expect(signals[0]).toHaveProperty('name', HIGHLIGHTED_ITEM);
 		expect(signals[0].on).toHaveLength(2);
 		expect(signals[0].on?.[0]).toHaveProperty('events', '@testName:mouseover');

@@ -27,7 +27,7 @@ describe('signalSpecBuilder', () => {
 	describe('addHighlightedItemSignalEvents()', () => {
 		test('should add on events', () => {
 			addHighlightedItemSignalEvents(signals, 'line0');
-			expect(signals).toHaveLength(4);
+			expect(signals).toHaveLength(defaultSignals.length);
 			expect(signals[0]).toHaveProperty('name', HIGHLIGHTED_ITEM);
 			expect(signals[0].on).toHaveLength(2);
 			expect(signals[0]?.on?.[0]).toHaveProperty('events', '@line0:mouseover');
@@ -35,6 +35,7 @@ describe('signalSpecBuilder', () => {
 			expect(signals[1].on).toBeUndefined();
 			expect(signals[2].on).toBeUndefined();
 			expect(signals[3].on).toBeUndefined();
+			expect(signals[4].on).toBeUndefined();
 		});
 		test('should not do anything if the highlight signal is not found', () => {
 			const signals = JSON.parse(JSON.stringify([defaultHighlightedSeriesSignal]));
@@ -44,7 +45,7 @@ describe('signalSpecBuilder', () => {
 		});
 		test('should include update condition if excludeDataKey is provided', () => {
 			addHighlightedItemSignalEvents(signals, 'bar0', 1, ['excludeFromTooltip']);
-			expect(signals).toHaveLength(4);
+			expect(signals).toHaveLength(defaultSignals.length);
 			expect(signals[0]).toHaveProperty('name', HIGHLIGHTED_ITEM);
 			expect(signals[0].on).toHaveLength(2);
 			expect(signals[0]?.on?.[0]).toHaveProperty('events', '@bar0:mouseover');
@@ -52,20 +53,22 @@ describe('signalSpecBuilder', () => {
 			expect(signals[1].on).toBeUndefined();
 			expect(signals[2].on).toBeUndefined();
 			expect(signals[3].on).toBeUndefined();
+			expect(signals[4].on).toBeUndefined();
 		});
 	});
 
 	describe('addHighlightedSeriesSignalEvents()', () => {
 		test('should add on events', () => {
 			addHighlightedSeriesSignalEvents(signals, 'line0');
-			expect(signals).toHaveLength(4);
+			expect(signals).toHaveLength(defaultSignals.length);
 			expect(signals[0].on).toBeUndefined();
-			expect(signals[1]).toHaveProperty('name', HIGHLIGHTED_SERIES);
-			expect(signals[1].on).toHaveLength(2);
-			expect(signals[1]?.on?.[0]).toHaveProperty('events', '@line0:mouseover');
-			expect(signals[1]?.on?.[1]).toHaveProperty('events', '@line0:mouseout');
-			expect(signals[2].on).toBeUndefined();
+			expect(signals[1].on).toBeUndefined();
+			expect(signals[2]).toHaveProperty('name', HIGHLIGHTED_SERIES);
+			expect(signals[2].on).toHaveLength(2);
+			expect(signals[2]?.on?.[0]).toHaveProperty('events', '@line0:mouseover');
+			expect(signals[2]?.on?.[1]).toHaveProperty('events', '@line0:mouseout');
 			expect(signals[3].on).toBeUndefined();
+			expect(signals[4].on).toBeUndefined();
 		});
 		test('should not do anything if the highlight signal is not found', () => {
 			const signals = JSON.parse(JSON.stringify([defaultHighlightedItemSignal]));
@@ -75,16 +78,20 @@ describe('signalSpecBuilder', () => {
 		});
 		test('should include update condition if excludeDataKey is provided', () => {
 			addHighlightedSeriesSignalEvents(signals, 'bar0', 1, ['excludeFromTooltip']);
-			expect(signals).toHaveLength(4);
+			expect(signals).toHaveLength(defaultSignals.length);
 			expect(signals[0].on).toBeUndefined();
-			expect(signals[1]).toHaveProperty('name', HIGHLIGHTED_SERIES);
-			expect(signals[1].on).toHaveLength(2);
-			expect(signals[1]?.on?.[0]).toHaveProperty('events', '@bar0:mouseover');
-			expect(signals[1]?.on?.[0]).toHaveProperty('update', '(datum.excludeFromTooltip) ? null : datum.rscSeriesId');
-			expect(signals[1]?.on?.[1]).toHaveProperty('events', '@bar0:mouseout');
-			expect(signals[1]?.on?.[1]).toHaveProperty('update', 'null');
-			expect(signals[2].on).toBeUndefined();
+			expect(signals[1].on).toBeUndefined();
+			expect(signals[2]).toHaveProperty('name', HIGHLIGHTED_SERIES);
+			expect(signals[2].on).toHaveLength(2);
+			expect(signals[2]?.on?.[0]).toHaveProperty('events', '@bar0:mouseover');
+			expect(signals[2]?.on?.[0]).toHaveProperty(
+				'update',
+				'(datum.excludeFromTooltip) ? null : datum.rscSeriesId'
+			);
+			expect(signals[2]?.on?.[1]).toHaveProperty('events', '@bar0:mouseout');
+			expect(signals[2]?.on?.[1]).toHaveProperty('update', 'null');
 			expect(signals[3].on).toBeUndefined();
+			expect(signals[4].on).toBeUndefined();
 		});
 	});
 });
