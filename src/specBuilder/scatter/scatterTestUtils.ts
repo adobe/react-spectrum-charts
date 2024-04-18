@@ -28,6 +28,7 @@ export const defaultScatterProps: ScatterSpecProps = {
 	interactiveMarkName: 'scatter0',
 	lineType: { value: 'solid' },
 	lineWidth: { value: 0 },
+	markType: 'scatter',
 	metric: DEFAULT_METRIC,
 	name: 'scatter0',
 	opacity: { value: 1 },

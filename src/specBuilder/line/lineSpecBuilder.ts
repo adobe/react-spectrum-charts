@@ -68,6 +68,7 @@ export const addLine = produce<Spec, [LineProps & { colorScheme?: ColorScheme; i
 			index,
 			interactiveMarkName: getInteractiveMarkName(sanitizedChildren, lineName),
 			lineType,
+			markType: 'line',
 			metric,
 			name: lineName,
 			opacity,

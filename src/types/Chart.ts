@@ -539,6 +539,8 @@ export interface ChartTooltipProps {
 	children?: TooltipHandler;
 	/** The keys in the data that will disable the tooltip if they have truthy values */
 	excludeDataKeys?: string[];
+	/** Sets which marks should be highlighted when a tooltip is visible */
+	highlightBy?: 'series' | 'dimension' | 'item' | string[];
 }
 export interface ChartPopoverProps {
 	children?: PopoverHandler;

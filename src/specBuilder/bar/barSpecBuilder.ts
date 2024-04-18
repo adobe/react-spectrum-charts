@@ -76,6 +76,7 @@ export const addBar = produce<Spec, [BarProps & { colorScheme?: ColorScheme; ind
 			index,
 			lineType,
 			lineWidth,
+			markType: 'bar',
 			metric,
 			name: toCamelCase(name || `bar${index}`),
 			opacity,

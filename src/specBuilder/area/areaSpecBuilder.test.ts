@@ -45,6 +45,7 @@ const defaultAreaProps: AreaSpecProps = {
 	color: DEFAULT_COLOR,
 	dimension: DEFAULT_TIME_DIMENSION,
 	index: 0,
+	markType: 'area',
 	metric: DEFAULT_METRIC,
 	name: 'area0',
 	opacity: 0.8,
@@ -202,22 +203,25 @@ describe('areaSpecBuilder', () => {
 		test('children: should add signals', () => {
 			const tooltip = createElement(ChartTooltip);
 			const signals = addSignals(defaultSignals, { ...defaultAreaProps, children: [tooltip] });
-			expect(signals).toHaveLength(5);
+			expect(signals).toHaveLength(defaultSignals.length + 1);
 			expect(signals[0]).toHaveProperty('name', HIGHLIGHTED_ITEM);
-			expect(signals[1]).toHaveProperty('name', HIGHLIGHTED_SERIES);
-			expect(signals[1].on).toHaveLength(2);
-			expect(signals[2]).toHaveProperty('name', SELECTED_ITEM);
-			expect(signals[3]).toHaveProperty('name', SELECTED_SERIES);
-			expect(signals[4]).toHaveProperty('name', 'area0_controlledHoveredId');
+			expect(signals[2]).toHaveProperty('name', HIGHLIGHTED_SERIES);
+			expect(signals[2].on).toHaveLength(2);
+			expect(signals[3]).toHaveProperty('name', SELECTED_ITEM);
+			expect(signals[4]).toHaveProperty('name', SELECTED_SERIES);
+			expect(signals[5]).toHaveProperty('name', 'area0_controlledHoveredId');
 		});
 
 		test('should exclude data with key from update if tooltip has excludeDataKey', () => {
 			const tooltip = createElement(ChartTooltip, { excludeDataKeys: ['excludeFromTooltip'] });
 			const signals = addSignals(defaultSignals, { ...defaultAreaProps, children: [tooltip] });
-			expect(signals).toHaveLength(5);
-			expect(signals[1]).toHaveProperty('name', HIGHLIGHTED_SERIES);
-			expect(signals[1].on?.[0]).toHaveProperty('events', '@area0:mouseover');
-			expect(signals[1].on?.[0]).toHaveProperty('update', '(datum.excludeFromTooltip) ? null : datum.rscSeriesId');
+			expect(signals).toHaveLength(defaultSignals.length + 1);
+			expect(signals[2]).toHaveProperty('name', HIGHLIGHTED_SERIES);
+			expect(signals[2].on?.[0]).toHaveProperty('events', '@area0:mouseover');
+			expect(signals[2].on?.[0]).toHaveProperty(
+				'update',
+				'(datum.excludeFromTooltip) ? null : datum.rscSeriesId'
+			);
 		});
 	});
 

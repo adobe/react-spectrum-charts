@@ -382,7 +382,7 @@ const ReleaseImpactBarStory: StoryFn<typeof Chart> = (args): ReactElement => {
 	const displayThirdSeries = !hiddenSeries?.find((s) => s === thirdSeriesKey);
 
 	const displayedSeriesCount = [displayFirstSeries, displaySecondSeries, displayThirdSeries].filter(
-		(display) => display === true
+		(display) => display === true,
 	);
 
 	const isSingleSeries = displayedSeriesCount.length === 1;

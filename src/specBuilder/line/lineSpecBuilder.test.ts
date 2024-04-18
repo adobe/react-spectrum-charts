@@ -43,6 +43,7 @@ const defaultLineProps: LineSpecProps = {
 	name: 'line0',
 	dimension: DEFAULT_TIME_DIMENSION,
 	index: 0,
+	markType: 'line',
 	metric: DEFAULT_METRIC,
 	color: DEFAULT_COLOR,
 	scaleType: 'time',
@@ -540,11 +541,11 @@ describe('lineSpecBuilder', () => {
 				...defaultLineProps,
 				children: [getMetricRangeElement({ displayOnHover: true })],
 			});
-			expect(signals).toHaveLength(4);
+			expect(signals).toHaveLength(defaultSignals.length);
 			expect(signals[0]).toHaveProperty('name', HIGHLIGHTED_ITEM);
 			expect(signals[0].on).toHaveLength(2);
-			expect(signals[1]).toHaveProperty('name', HIGHLIGHTED_SERIES);
-			expect(signals[1].on).toHaveLength(2);
+			expect(signals[2]).toHaveProperty('name', HIGHLIGHTED_SERIES);
+			expect(signals[2].on).toHaveLength(2);
 		});
 
 		test('adds hover signals when displayPointMark is not undefined', () => {
@@ -557,11 +558,11 @@ describe('lineSpecBuilder', () => {
 				staticPoint: 'staticPoint',
 				children: [getMetricRangeElement({ displayOnHover: true })],
 			});
-			expect(signals).toHaveLength(4);
+			expect(signals).toHaveLength(defaultSignals.length);
 			expect(signals[0]).toHaveProperty('name', HIGHLIGHTED_ITEM);
 			expect(signals[0].on).toHaveLength(2);
-			expect(signals[1]).toHaveProperty('name', HIGHLIGHTED_SERIES);
-			expect(signals[1].on).toHaveLength(2);
+			expect(signals[2]).toHaveProperty('name', HIGHLIGHTED_SERIES);
+			expect(signals[2].on).toHaveLength(2);
 		});
 	});
 });

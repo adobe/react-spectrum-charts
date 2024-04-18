@@ -17,6 +17,7 @@ import {
 	AxisAnnotationProps,
 	AxisProps,
 	BarProps,
+	ChartTooltipProps,
 	ColorFacet,
 	ColorScheme,
 	DonutProps,
@@ -42,6 +43,7 @@ type AreaPropsWithDefaults = 'name' | 'dimension' | 'metric' | 'color' | 'scaleT
 export interface AreaSpecProps
 	extends PartiallyRequired<AreaProps & { colorScheme: ColorScheme; index: number }, AreaPropsWithDefaults> {
 	children: MarkChildElement[];
+	markType: 'area';
 }
 
 type AxisPropsWithDefaults =
@@ -100,7 +102,14 @@ type BarPropsWithDefaults =
 
 export interface BarSpecProps
 	extends PartiallyRequired<BarProps & { colorScheme: ColorScheme; index: number }, BarPropsWithDefaults> {
+	markType: 'bar';
 	children: MarkChildElement[];
+}
+
+type ChartTooltipPropsWithDefaults = 'highlightBy';
+
+export interface ChartTooltipSpecProps extends PartiallyRequired<ChartTooltipProps, ChartTooltipPropsWithDefaults> {
+	markName: string;
 }
 
 type DonutPropsWithDefaults =
@@ -115,6 +124,7 @@ type DonutPropsWithDefaults =
 export interface DonutSpecProps
 	extends PartiallyRequired<DonutProps & { colorScheme: ColorScheme; index: number }, DonutPropsWithDefaults> {
 	children: MarkChildElement[];
+	markType: 'donut';
 }
 
 type LegendPropsWithDefaults = 'hiddenEntries' | 'highlight' | 'isToggleable' | 'position' | 'name';
@@ -138,6 +148,7 @@ export interface LineSpecProps extends PartiallyRequired<LineProps, LinePropsWit
 	index: number;
 	interactiveMarkName: string | undefined;
 	lineWidth?: FacetRef<LineWidth>;
+	markType: 'line';
 	popoverMarkName: string | undefined;
 }
 
@@ -158,6 +169,7 @@ export interface ScatterSpecProps extends PartiallyRequired<ScatterProps, Scatte
 	colorScheme: ColorScheme;
 	index: number;
 	interactiveMarkName: string | undefined;
+	markType: 'scatter';
 }
 
 type ScatterPathPropsWithDefaults = 'color' | 'groupBy' | 'pathWidth' | 'opacity';

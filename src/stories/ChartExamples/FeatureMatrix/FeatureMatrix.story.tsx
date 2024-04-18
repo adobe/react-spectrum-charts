@@ -12,11 +12,27 @@
 import { ReactElement } from 'react';
 
 import useChartProps from '@hooks/useChartProps';
-import { Axis, categorical12, Chart, ChartTooltip, Legend, Scatter, ScatterPath, Trendline, TrendlineAnnotation, TrendlineProps } from '@rsc';
+import {
+	Axis,
+	categorical12,
+	Chart,
+	ChartTooltip,
+	Legend,
+	Scatter,
+	ScatterPath,
+	Trendline,
+	TrendlineAnnotation,
+	TrendlineProps,
+} from '@rsc';
 import { StoryFn } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
 
-import { basicFeatureMatrixData, multipleSegmentFeatureMatrixData, timeCompareFeatureMatrixData, topEventsFeatureMatrixData } from './data';
+import {
+	basicFeatureMatrixData,
+	multipleSegmentFeatureMatrixData,
+	timeCompareFeatureMatrixData,
+	topEventsFeatureMatrixData,
+} from './data';
 
 export default {
 	title: 'RSC/Chart/Examples',
@@ -110,13 +126,25 @@ const EventOverlayFeatureMatrixStory: StoryFn<typeof Chart> = (args): ReactEleme
 				<Trendline {...trendlineProps} excludeDataKeys={['isTopItem']} displayOnHover orientation="horizontal">
 					<TrendlineAnnotation prefix="Median times" numberFormat=".3" />
 				</Trendline>
-				<Trendline {...trendlineProps} excludeDataKeys={['isTopItem']} displayOnHover orientation="vertical" >
+				<Trendline {...trendlineProps} excludeDataKeys={['isTopItem']} displayOnHover orientation="vertical">
 					<TrendlineAnnotation prefix="Median %DAU" numberFormat=".2%" dimensionValue="start" />
 				</Trendline>
-				<Trendline {...trendlineProps} excludeDataKeys={['isSegmentData']} orientation="horizontal" color='gray-700' opacity={0.7}>
+				<Trendline
+					{...trendlineProps}
+					excludeDataKeys={['isSegmentData']}
+					orientation="horizontal"
+					color="gray-700"
+					opacity={0.7}
+				>
 					<TrendlineAnnotation prefix="Top events median times" numberFormat=".3" />
 				</Trendline>
-				<Trendline {...trendlineProps} excludeDataKeys={['isSegmentData']} orientation="vertical" color='gray-700' opacity={0.7} >
+				<Trendline
+					{...trendlineProps}
+					excludeDataKeys={['isSegmentData']}
+					orientation="vertical"
+					color="gray-700"
+					opacity={0.7}
+				>
 					<TrendlineAnnotation prefix="Top events median %DAU" numberFormat=".2%" />
 				</Trendline>
 			</Scatter>

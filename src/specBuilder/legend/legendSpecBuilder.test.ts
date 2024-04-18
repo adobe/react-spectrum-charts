@@ -19,6 +19,7 @@ import {
 	TABLE,
 } from '@constants';
 import {
+	defaultHighlightedGroupSignal,
 	defaultHighlightedItemSignal,
 	defaultHighlightedSeriesSignal,
 	defaultSelectedItemSignal,
@@ -167,6 +168,7 @@ describe('addLegend()', () => {
 				scales: [...(defaultSpec.scales || []), defaultLegendEntriesScale],
 				signals: [
 					defaultHighlightedItemSignal,
+					defaultHighlightedGroupSignal,
 					defaultHighlightSeriesSignal,
 					defaultSelectedItemSignal,
 					defaultSelectedSeriesSignal,
