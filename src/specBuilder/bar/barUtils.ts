@@ -18,7 +18,6 @@ import {
 	DEFAULT_OPACITY_RULE,
 	DISCRETE_PADDING,
 	FILTERED_TABLE,
-	HIGHLIGHTED_ITEM,
 	HIGHLIGHT_CONTRAST_RATIO,
 	MARK_ID,
 	SELECTED_ITEM,
@@ -388,10 +387,6 @@ export const getBarOpacity = (props: BarSpecProps): ProductionRule<NumericValueR
 				value: 1 / HIGHLIGHT_CONTRAST_RATIO,
 			},
 			{ test: `${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${MARK_ID}`, ...DEFAULT_OPACITY_RULE },
-			{
-				test: `${HIGHLIGHTED_ITEM} && ${HIGHLIGHTED_ITEM} !== datum.${MARK_ID}`,
-				value: 1 / HIGHLIGHT_CONTRAST_RATIO,
-			},
 			...rules,
 		];
 	}

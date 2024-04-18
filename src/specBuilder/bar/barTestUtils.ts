@@ -113,12 +113,9 @@ export const defaultDodgedCornerRadiusEncodings: RectEncodeEntry = {
 export const defaultBarFillOpacity: ProductionRule<NumericValueRef> = [{ value: 1 }];
 
 export const defaultBarPopoverOpacity: ProductionRule<NumericValueRef> = [
-	{
-		test: `!${SELECTED_ITEM} && ${HIGHLIGHTED_ITEM} && ${HIGHLIGHTED_ITEM} !== datum.${MARK_ID}`,
-		value: 1 / HIGHLIGHT_CONTRAST_RATIO,
-	},
 	{ test: `${SELECTED_ITEM} && ${SELECTED_ITEM} !== datum.${MARK_ID}`, value: 1 / HIGHLIGHT_CONTRAST_RATIO },
 	{ test: `${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${MARK_ID}`, value: 1 },
+	{ test: `${HIGHLIGHTED_ITEM} && ${HIGHLIGHTED_ITEM} !== datum.${MARK_ID}`, value: 1 / HIGHLIGHT_CONTRAST_RATIO },
 	DEFAULT_OPACITY_RULE,
 ];
 
