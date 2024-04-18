@@ -43,6 +43,7 @@ export const addDonut = produce<Spec, [DonutProps & { colorScheme?: ColorScheme;
 			colorScheme,
 			index,
 			color,
+			markType: 'donut',
 			metric,
 			name: toCamelCase(name ?? `donut${index}`),
 			startAngle,

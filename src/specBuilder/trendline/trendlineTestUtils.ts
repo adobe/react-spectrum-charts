@@ -22,6 +22,7 @@ export const defaultLineProps: LineSpecProps = {
 	dimension: DEFAULT_TIME_DIMENSION,
 	index: 0,
 	lineType: { value: 'solid' },
+	markType: 'line',
 	metric: DEFAULT_METRIC,
 	name: 'line0',
 	opacity: { value: 1 },

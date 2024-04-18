@@ -81,6 +81,7 @@ export const addScatter = produce<Spec, [ScatterProps & { colorScheme?: ColorSch
 			interactiveMarkName: getInteractiveMarkName(sanitizedChildren, scatterName),
 			lineType,
 			lineWidth,
+			markType: 'scatter',
 			metric,
 			name: scatterName,
 			opacity,

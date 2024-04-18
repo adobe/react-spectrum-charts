@@ -45,6 +45,7 @@ const defaultAreaProps: AreaSpecProps = {
 	color: DEFAULT_COLOR,
 	dimension: DEFAULT_TIME_DIMENSION,
 	index: 0,
+	markType: 'area',
 	metric: DEFAULT_METRIC,
 	name: 'area0',
 	opacity: 0.8,
@@ -212,7 +213,10 @@ describe('areaSpecBuilder', () => {
 			expect(signals).toHaveLength(5);
 			expect(signals[1]).toHaveProperty('name', HIGHLIGHTED_SERIES);
 			expect(signals[1].on?.[0]).toHaveProperty('events', '@area0:mouseover');
-			expect(signals[1].on?.[0]).toHaveProperty('update', '(datum.excludeFromTooltip) ? null : datum.rscSeriesId');
+			expect(signals[1].on?.[0]).toHaveProperty(
+				'update',
+				'(datum.excludeFromTooltip) ? null : datum.rscSeriesId'
+			);
 		});
 	});
 

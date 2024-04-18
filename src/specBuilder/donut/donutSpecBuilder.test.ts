@@ -22,6 +22,7 @@ import { getAggregateMetricMark, getArcMark, getDirectLabelMark, getPercentMetri
 const defaultDonutProps: DonutSpecProps = {
 	index: 0,
 	colorScheme: 'light',
+	markType: 'donut',
 	metric: 'testMetric',
 	startAngle: 0,
 	name: 'testName',
@@ -149,6 +150,7 @@ describe('addMarks', () => {
 		const props: DonutSpecProps = {
 			index: 0,
 			colorScheme: 'light',
+			markType: 'donut',
 			metric: 'testMetric',
 			startAngle: 1.7,
 			name: 'testName',
@@ -181,7 +183,10 @@ describe('addSignals()', () => {
 		expect(signals[0].on?.[1]).toHaveProperty('events', '@testName:mouseout');
 	});
 	test('should exclude data with key from update if tooltip has excludeDataKey', () => {
-		const signals = addSignals(defaultSignals, { ...defaultDonutProps, children: [createElement(ChartTooltip, { excludeDataKeys: ['excludeFromTooltip'] })] });
+		const signals = addSignals(defaultSignals, {
+			...defaultDonutProps,
+			children: [createElement(ChartTooltip, { excludeDataKeys: ['excludeFromTooltip'] })],
+		});
 		expect(signals).toHaveLength(4);
 		expect(signals[0]).toHaveProperty('name', HIGHLIGHTED_ITEM);
 		expect(signals[0].on).toHaveLength(2);

@@ -34,19 +34,20 @@ import { NumericValueRef, ProductionRule, RectEncodeEntry } from 'vega';
 export const defaultBarProps: BarSpecProps = {
 	children: [],
 	color: DEFAULT_COLOR,
+	colorScheme: DEFAULT_COLOR_SCHEME,
 	dimension: DEFAULT_CATEGORICAL_DIMENSION,
 	index: 0,
 	lineType: { value: 'solid' },
 	lineWidth: 0,
+	markType: 'bar',
 	metric: DEFAULT_METRIC,
 	name: 'bar0',
+	orientation: 'vertical',
 	opacity: { value: 1 },
 	paddingRatio: PADDING_RATIO,
-	colorScheme: DEFAULT_COLOR_SCHEME,
 	trellisOrientation: 'horizontal',
 	trellisPadding: TRELLIS_PADDING,
 	type: 'stacked',
-	orientation: 'vertical',
 };
 
 export const defaultBarPropsWithSecondayColor: BarSpecProps = {

@@ -48,6 +48,7 @@ export const STACK_ID = 'rscStackId';
 
 // signal names
 export const HIGHLIGHTED_ITEM = 'highlightedItem'; // data point
+export const HIGHLIGHTED_GROUP = 'highlightedGroup'; // data point
 export const HIGHLIGHTED_SERIES = 'highlightedSeries'; // series
 export const SELECTED_ITEM = 'selectedItem'; // data point
 export const SELECTED_SERIES = 'selectedSeries'; // series

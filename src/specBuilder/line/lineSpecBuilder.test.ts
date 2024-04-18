@@ -43,6 +43,7 @@ const defaultLineProps: LineSpecProps = {
 	name: 'line0',
 	dimension: DEFAULT_TIME_DIMENSION,
 	index: 0,
+	markType: 'line',
 	metric: DEFAULT_METRIC,
 	color: DEFAULT_COLOR,
 	scaleType: 'time',

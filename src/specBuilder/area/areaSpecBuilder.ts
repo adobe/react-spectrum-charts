@@ -63,6 +63,7 @@ export const addArea = produce<Spec, [AreaProps & { colorScheme?: ColorScheme; i
 			colorScheme,
 			dimension,
 			index,
+			markType: 'area',
 			metric,
 			name: toCamelCase(name || `area${index}`),
 			scaleType,

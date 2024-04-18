@@ -59,10 +59,12 @@ describe('addData()', () => {
 			children: [createElement(ChartTooltip, { excludeDataKeys: ['exclude'] })],
 		});
 
-		expect(data[2].transform).toStrictEqual([{
+		expect(data[2].transform).toStrictEqual([
+			{
 			type: 'filter',
 			expr: '!datum.exclude',
-		}]);
+			},
+		]);
 	});
 	test('should add selectedData if popover exists', () => {
 		const data = addData(initializeSpec().data ?? [], {
