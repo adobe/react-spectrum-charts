@@ -19,14 +19,15 @@ import {
 	DISCRETE_PADDING,
 	FILTERED_TABLE,
 	HIGHLIGHTED_ITEM,
+	HIGHLIGHT_CONTRAST_RATIO,
 	MARK_ID,
 	SELECTED_ITEM,
 	STACK_ID,
 } from '@constants';
+import { addTooltipMarkOpacityRules } from '@specBuilder/chartTooltip/chartTooltipUtils';
 import {
 	getColorProductionRule,
 	getCursor,
-	getHighlightOpacityValue,
 	getOpacityProductionRule,
 	getStrokeDashProductionRule,
 	getTooltip,
@@ -369,34 +370,32 @@ export const getBarUpdateEncodings = (props: BarSpecProps): EncodeEntry => ({
 	strokeWidth: getStrokeWidth(props),
 });
 
-export const getBarOpacity = ({ children }: BarSpecProps): ProductionRule<NumericValueRef> => {
+export const getBarOpacity = (props: BarSpecProps): ProductionRule<NumericValueRef> => {
+	const { children } = props;
+	const rules: ({ test?: string } & NumericValueRef)[] = [DEFAULT_OPACITY_RULE];
 	// if there aren't any interactive components, then we don't need to add special opacity rules
 	if (!hasInteractiveChildren(children)) {
-		return [DEFAULT_OPACITY_RULE];
+		return rules;
 	}
+
+	addTooltipMarkOpacityRules(rules, props);
 
 	// if a bar is hovered/selected, all other bars should have reduced opacity
 	if (hasPopover(children)) {
 		return [
 			{
-				test: `!${SELECTED_ITEM} && ${HIGHLIGHTED_ITEM} && ${HIGHLIGHTED_ITEM} !== datum.${MARK_ID}`,
-				...getHighlightOpacityValue(DEFAULT_OPACITY_RULE),
-			},
-			{
 				test: `${SELECTED_ITEM} && ${SELECTED_ITEM} !== datum.${MARK_ID}`,
-				...getHighlightOpacityValue(DEFAULT_OPACITY_RULE),
+				value: 1 / HIGHLIGHT_CONTRAST_RATIO,
 			},
 			{ test: `${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${MARK_ID}`, ...DEFAULT_OPACITY_RULE },
-			DEFAULT_OPACITY_RULE,
+			{
+				test: `${HIGHLIGHTED_ITEM} && ${HIGHLIGHTED_ITEM} !== datum.${MARK_ID}`,
+				value: 1 / HIGHLIGHT_CONTRAST_RATIO,
+			},
+			...rules,
 		];
 	}
-	return [
-		{
-			test: `${HIGHLIGHTED_ITEM} && ${HIGHLIGHTED_ITEM} !== datum.${MARK_ID}`,
-			...getHighlightOpacityValue(),
-		},
-		DEFAULT_OPACITY_RULE,
-	];
+	return rules;
 };
 
 export const getStroke = ({ children, color, colorScheme }: BarSpecProps): ProductionRule<ColorValueRef> => {
