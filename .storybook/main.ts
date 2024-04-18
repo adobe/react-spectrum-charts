@@ -5,11 +5,11 @@ const config: StorybookConfig = {
 	stories: ['../src/**/*.story.mdx', '../src/**/*.story.@(js|jsx|ts|tsx)'],
 
 	addons: [
-        '@storybook/addon-links',
-        '@storybook/addon-essentials',
-        'storybook-dark-mode',
-        '@storybook/addon-webpack5-compiler-babel'
-    ],
+		'@storybook/addon-links',
+		'@storybook/addon-essentials',
+		'storybook-dark-mode',
+		'@storybook/addon-webpack5-compiler-babel',
+	],
 
 	framework: {
 		name: '@storybook/react-webpack5',

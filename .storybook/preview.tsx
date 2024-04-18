@@ -23,7 +23,6 @@ const decorators: Decorator[] = [
 ];
 
 const parameters: Parameters = {
-	actions: { argTypesRegex: '^on[A-Z].*' },
 	controls: {
 		expanded: true,
 		// data is huge so we don't want to show it in the controls
