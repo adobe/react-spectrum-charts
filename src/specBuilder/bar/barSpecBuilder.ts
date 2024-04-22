@@ -21,7 +21,9 @@ import {
 	STACK_ID,
 	TRELLIS_PADDING,
 } from '@constants';
+import { addTooltipData, addTooltipSignals } from '@specBuilder/chartTooltip/chartTooltipUtils';
 import { getTransformSort } from '@specBuilder/data/dataUtils';
+import { getTooltipProps } from '@specBuilder/marks/markUtils';
 import {
 	addDomainFields,
 	addFieldToFacetScaleDomain,
@@ -42,7 +44,6 @@ import { getBarPadding, getScaleValues, isDodgedAndStacked } from './barUtils';
 import { getDodgedMark } from './dodgedBarUtils';
 import { getDodgedAndStackedBarMark, getStackedBarMarks } from './stackedBarUtils';
 import { addTrellisScale, getTrellisGroupMark, isTrellised } from './trellisedBarUtils';
-import { getTooltipProps } from '@specBuilder/marks/markUtils';
 
 export const addBar = produce<Spec, [BarProps & { colorScheme?: ColorScheme; index?: number }]>(
 	(
@@ -94,18 +95,18 @@ export const addBar = produce<Spec, [BarProps & { colorScheme?: ColorScheme; ind
 	}
 );
 
-export const addSignals = produce<Signal[], [BarSpecProps]>(
-	(signals, { children, name, paddingRatio, paddingOuter: barPaddingOuter }) => {
-		// We use this value to calculate ReferenceLine positions.
-		const { paddingInner } = getBarPadding(paddingRatio, barPaddingOuter);
-		signals.push(getGenericSignal('paddingInner', paddingInner));
+export const addSignals = produce<Signal[], [BarSpecProps]>((signals, props) => {
+	const { children, name, paddingRatio, paddingOuter: barPaddingOuter } = props;
+	// We use this value to calculate ReferenceLine positions.
+	const { paddingInner } = getBarPadding(paddingRatio, barPaddingOuter);
+	signals.push(getGenericSignal('paddingInner', paddingInner));
 
-		if (!children.length) {
-			return;
-		}
-		addHighlightedItemSignalEvents(signals, name, 1, getTooltipProps(children)?.excludeDataKeys);
+	if (!children.length) {
+		return;
 	}
-);
+	addHighlightedItemSignalEvents(signals, name, 1, getTooltipProps(children)?.excludeDataKeys);
+	addTooltipSignals(signals, props);
+});
 
 export const addData = produce<Data[], [BarSpecProps]>((data, props) => {
 	const { metric, order, type } = props;
@@ -126,6 +127,7 @@ export const addData = produce<Data[], [BarSpecProps]>((data, props) => {
 	if (type === 'dodged' || isDodgedAndStacked(props)) {
 		data[index].transform?.push(getDodgeGroupTransform(props));
 	}
+	addTooltipData(data, props);
 });
 
 /**

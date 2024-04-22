@@ -13,7 +13,7 @@ import React, { ReactElement } from 'react';
 
 import { ChartTooltip } from '@components/ChartTooltip/ChartTooltip';
 import useChartProps from '@hooks/useChartProps';
-import { Area, Bar, categorical12, Chart, Datum, Line } from '@rsc';
+import { Area, Bar, Chart, Datum, Line, categorical12 } from '@rsc';
 import { browserData } from '@stories/data/data';
 import { formatTimestamp } from '@stories/storyUtils';
 import { StoryFn } from '@storybook/react';
@@ -32,7 +32,9 @@ export default {
 	},
 };
 
-const barData = browserData.map(datum => datum.category === 'Chrome' ? ({ ...datum, excludeFromTooltip: true }) : datum);
+const barData = browserData.map((datum) =>
+	datum.category === 'Chrome' ? { ...datum, excludeFromTooltip: true } : datum
+);
 
 const StackedBarTooltipStory: StoryFn<typeof ChartTooltip> = (args): ReactElement => {
 	const chartProps = useChartProps({ data: barData, width: 600 });
@@ -72,7 +74,9 @@ const lineData = [
 	{ datetime: 1668409200000, point: 25, value: 10932, users: 4913, series: 'Add Freeform table' },
 ];
 
-const disabledLineData = lineData.map(datum => datum.series === 'Add Fallout' ? { ...datum, excludeFromTooltip: true } : datum);
+const disabledLineData = lineData.map((datum) =>
+	datum.series === 'Add Fallout' ? { ...datum, excludeFromTooltip: true } : datum
+);
 
 const LineTooltipStory: StoryFn<typeof ChartTooltip> = (args): ReactElement => {
 	const chartProps = useChartProps({ data: lineData, width: 600 });
@@ -85,9 +89,8 @@ const LineTooltipStory: StoryFn<typeof ChartTooltip> = (args): ReactElement => {
 	);
 };
 
-
 const DisabledSeriesLineTooltipStory: StoryFn<typeof ChartTooltip> = (args): ReactElement => {
-	const chartProps = useChartProps({ data: disabledLineData, width: 600, colors: ['gray-300', ...categorical12]});
+	const chartProps = useChartProps({ data: disabledLineData, width: 600, colors: ['gray-300', ...categorical12] });
 	return (
 		<Chart {...chartProps}>
 			<Line color="series">
@@ -126,7 +129,6 @@ StackedBarChart.args = {
 			<div>Users: {datum.value}</div>
 		</div>
 	),
-	excludeDataKeys: [],
 };
 
 const DodgedBarChart = DodgedBarTooltipStory.bind({});
@@ -138,7 +140,6 @@ DodgedBarChart.args = {
 			<div>Users: {datum.value}</div>
 		</div>
 	),
-	excludeDataKeys: [],
 };
 
 const LineChart = bindWithProps(LineTooltipStory);
@@ -151,7 +152,6 @@ LineChart.args = {
 			<div>Users: {Number(datum.users).toLocaleString()}</div>
 		</div>
 	),
-	excludeDataKeys: [],
 };
 
 const AreaChart = bindWithProps(AreaTooltipStory);
@@ -164,7 +164,6 @@ AreaChart.args = {
 			<div>Users: {Number(datum.users).toLocaleString()}</div>
 		</div>
 	),
-	excludeDataKeys: [],
 };
 
 const DisabledSeriesLineChart = bindWithProps(DisabledSeriesLineTooltipStory);
