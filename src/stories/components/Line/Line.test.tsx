@@ -34,6 +34,7 @@ import {
 	HistoricalCompare,
 	LineType,
 	LineWithAxisAndLegend,
+	LineWithUTCDatetimeFormat,
 	LinearTrendScale,
 	Opacity,
 	Tooltip,
@@ -69,6 +70,12 @@ describe('Line', () => {
 		const lines = await within(lineGroup).findAllByRole('graphics-symbol');
 		expect(lines.length).toEqual(4);
 		expect(lines[0]).toBeInTheDocument();
+	});
+
+	test('Line with UTC datetime format renders', async () => {
+		render(<LineWithUTCDatetimeFormat {...LineWithAxisAndLegend.args} />);
+		expect(await screen.findByText('Nov')).toBeInTheDocument();
+		expect(await screen.findByText('11')).toBeInTheDocument();
 	});
 
 	test('LineType renders', async () => {

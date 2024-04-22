@@ -83,4 +83,12 @@ Width.args = {
 	data,
 };
 
-export { Basic, BackgroundColor, Config, Locale, Width };
+const Height = bindWithProps(ChartBarStory);
+Height.args = {
+	height: '50%',
+	minHeight: 300,
+	maxHeight: 600,
+	data,
+};
+
+export { Basic, BackgroundColor, Config, Locale, Width, Height };

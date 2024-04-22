@@ -34,8 +34,8 @@ describe('addData()', () => {
 	test('should add time transform is dimensionScaleType === "time"', () => {
 		const data = addData(initializeSpec().data ?? [], { ...defaultScatterProps, dimensionScaleType: 'time' });
 		expect(data).toHaveLength(2);
-		expect(data[0].transform).toHaveLength(2);
-		expect(data[0].transform?.[1].type).toBe('timeunit');
+		expect(data[0].transform).toHaveLength(3);
+		expect(data[0].transform?.[2].type).toBe('timeunit');
 	});
 	test('should add additional filteredData if tooltip exists', () => {
 		const data = addData(initializeSpec().data ?? [], {
