@@ -4,6 +4,7 @@
 	"description": "Declarative library for composing Spectrum visualizations in React.",
 	"browser": "./dist/index.js",
 	"module": "./dist/index.js",
+	"main": "./dist/index.js",
 	"exports": {
 		".": "./dist/index.js",
 		"./alpha": "./dist/alpha.js"
