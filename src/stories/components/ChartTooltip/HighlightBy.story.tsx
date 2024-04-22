@@ -40,7 +40,7 @@ interface LineData extends Datum {
 const StackedBarTooltipStory: StoryFn<typeof ChartTooltip> = (args): ReactElement => {
 	const chartProps = useChartProps({ data: browserData, width: 600 });
 	return (
-		<Chart {...chartProps} debug>
+		<Chart {...chartProps}>
 			<Bar color="series">
 				<ChartTooltip {...args} />
 			</Bar>
