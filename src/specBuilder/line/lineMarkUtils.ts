@@ -73,9 +73,17 @@ export const getLineOpacity = ({
 	displayOnHover,
 	interactiveMarkName,
 	popoverMarkName,
+	isHighlightedByGroup,
 }: LineMarkProps): ProductionRule<NumericValueRef> => {
 	if (!interactiveMarkName || displayOnHover) return [DEFAULT_OPACITY_RULE];
 	const strokeOpacityRules: ProductionRule<NumericValueRef> = [];
+
+	if (isHighlightedByGroup) {
+		strokeOpacityRules.push({
+			test: `indexof(pluck(data('${interactiveMarkName}_highlightedData'), '${SERIES_ID}'), datum.${SERIES_ID}) !== -1`,
+			value: 1,
+		});
+	}
 
 	// add a rule that will lower the opacity of the line if there is a hovered series, but this line is not the one hovered
 	strokeOpacityRules.push({

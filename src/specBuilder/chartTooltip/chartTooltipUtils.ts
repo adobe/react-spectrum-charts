@@ -1,6 +1,7 @@
 import { ChartTooltip } from '@components/ChartTooltip';
 import {
 	DEFAULT_OPACITY_RULE,
+	FILTERED_TABLE,
 	HIGHLIGHTED_GROUP,
 	HIGHLIGHTED_ITEM,
 	HIGHLIGHT_CONTRAST_RATIO,
@@ -18,7 +19,7 @@ import {
 	LineSpecProps,
 	ScatterSpecProps,
 } from 'types';
-import { Data, FormulaTransform, NumericValueRef, Signal } from 'vega';
+import { Data, FormulaTransform, NumericValueRef, Signal, SourceData } from 'vega';
 
 type TooltipParentProps = AreaSpecProps | BarSpecProps | DonutSpecProps | LineSpecProps | ScatterSpecProps;
 
@@ -57,7 +58,7 @@ export const applyTooltipPropDefaults = (
  * @param data
  * @param chartTooltipProps
  */
-export const addTooltipData = (data: Data[], markProps: TooltipParentProps) => {
+export const addTooltipData = (data: Data[], markProps: TooltipParentProps, addHighlightedData = true) => {
 	const tooltips = getTooltips(markProps);
 	for (const { highlightBy, markName } of tooltips) {
 		if (highlightBy === 'item') return;
@@ -67,12 +68,14 @@ export const addTooltipData = (data: Data[], markProps: TooltipParentProps) => {
 		}
 		if (highlightBy === 'dimension' && markProps.markType !== 'donut') {
 			filteredTable.transform.push(getGroupIdTransform([markProps.dimension], markName));
-		}
-		if (highlightBy === 'series') {
+		} else if (highlightBy === 'series') {
 			filteredTable.transform.push(getGroupIdTransform([SERIES_ID], markName));
-		}
-		if (Array.isArray(highlightBy)) {
+		} else if (Array.isArray(highlightBy)) {
 			filteredTable.transform.push(getGroupIdTransform(highlightBy, markName));
+		}
+
+		if (addHighlightedData) {
+			data.push(getMarkHighlightedData(markName));
 		}
 	}
 };
@@ -90,6 +93,22 @@ export const getGroupIdTransform = (highlightBy: string[], markName: string): Fo
 		expr: highlightBy.map((facet) => `datum.${facet}`).join(' + " | " + '),
 	};
 };
+
+/**
+ * Gets the highlighted data for a mark
+ * @param markName
+ * @returns
+ */
+const getMarkHighlightedData = (markName: string): SourceData => ({
+	name: `${markName}_highlightedData`,
+	source: FILTERED_TABLE,
+	transform: [
+		{
+			type: 'filter',
+			expr: `${HIGHLIGHTED_GROUP} === datum.${markName}_groupId`,
+		},
+	],
+});
 
 export const isHighlightedByGroup = (markProps: TooltipParentProps) => {
 	const tooltips = getTooltips(markProps);

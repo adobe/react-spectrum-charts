@@ -114,4 +114,18 @@ describe('getLineOpacity()', () => {
 		});
 		expect(opacityRule).toEqual([DEFAULT_OPACITY_RULE]);
 	});
+
+	test('should add highlightedData rule for multiple series if isHighlightedByGroup is true', () => {
+		const opacityRule = getLineOpacity({
+			...defaultLineMarkProps,
+			interactiveMarkName: 'line0',
+			children: [createElement(ChartTooltip)],
+			isHighlightedByGroup: true,
+		});
+		expect(opacityRule).toHaveLength(3);
+		expect(opacityRule[0]).toHaveProperty(
+			'test',
+			`indexof(pluck(data('line0_highlightedData'), '${SERIES_ID}'), datum.${SERIES_ID}) !== -1`
+		);
+	});
 });
