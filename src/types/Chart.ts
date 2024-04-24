@@ -331,6 +331,8 @@ export interface BarProps extends Omit<MarkProps, 'color'> {
 	dimension?: string;
 	/** Sets the inner padding between bars in a group */
 	groupedPadding?: number;
+	/** Should the top-left and top-right corners of the bars be square? Round by default */
+	hasSquareCorners?: boolean;
 	/** Line type or key in the data that is used as the line type facet */
 	lineType?: LineTypeFacet | DualFacet;
 	/** Border width of the bar */
