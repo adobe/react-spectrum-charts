@@ -89,6 +89,7 @@ export interface AxisAnnotationSpecProps
 type BarPropsWithDefaults =
 	| 'color'
 	| 'dimension'
+	| 'hasSquareCorners'
 	| 'lineType'
 	| 'lineWidth'
 	| 'metric'

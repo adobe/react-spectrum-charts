@@ -180,8 +180,8 @@ export const getStackedMetricEncodings = (props: BarSpecProps): RectEncodeEntry 
 };
 
 export const getCornerRadiusEncodings = (props: BarSpecProps): RectEncodeEntry => {
-	const { type, lineWidth, metric } = props;
-	const value = Math.max(1, CORNER_RADIUS - getLineWidthPixelsFromLineWidth(lineWidth) / 2);
+	const { type, lineWidth, metric, hasSquareCorners } = props;
+	const value = hasSquareCorners ? 0 : Math.max(1, CORNER_RADIUS - getLineWidthPixelsFromLineWidth(lineWidth) / 2);
 
 	let rectEncodeEntry: RectEncodeEntry;
 
@@ -199,10 +199,15 @@ export const getCornerRadiusEncodings = (props: BarSpecProps): RectEncodeEntry =
 	return rotateRectClockwiseIfNeeded(rectEncodeEntry, props);
 };
 
-export const getStackedCornerRadiusEncodings = ({ name, metric, lineWidth }: BarSpecProps): RectEncodeEntry => {
+export const getStackedCornerRadiusEncodings = ({
+	name,
+	metric,
+	lineWidth,
+	hasSquareCorners,
+}: BarSpecProps): RectEncodeEntry => {
 	const topTestString = `datum.${metric}1 > 0 && data('${name}_stacks')[indexof(pluck(data('${name}_stacks'), '${STACK_ID}'), datum.${STACK_ID})].max_${metric}1 === datum.${metric}1`;
 	const bottomTestString = `datum.${metric}1 < 0 && data('${name}_stacks')[indexof(pluck(data('${name}_stacks'), '${STACK_ID}'), datum.${STACK_ID})].min_${metric}1 === datum.${metric}1`;
-	const value = Math.max(1, CORNER_RADIUS - getLineWidthPixelsFromLineWidth(lineWidth) / 2);
+	const value = hasSquareCorners ? 0 : Math.max(1, CORNER_RADIUS - getLineWidthPixelsFromLineWidth(lineWidth) / 2);
 
 	return {
 		cornerRadiusTopLeft: [{ test: topTestString, value }, { value: 0 }],

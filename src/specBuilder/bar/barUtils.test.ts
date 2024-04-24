@@ -230,6 +230,27 @@ describe('barUtils', () => {
 			expect(horizontal?.cornerRadiusBottomRight).toEqual(vertical?.cornerRadiusTopRight);
 			expect(horizontal?.cornerRadiusBottomLeft).toEqual(vertical?.cornerRadiusBottomRight);
 		});
+		test('corner radius should be 0 when the hasSquareCorners prop is true', () => {
+			const squareRadius = getCornerRadiusEncodings({ ...defaultBarProps, hasSquareCorners: true });
+
+			// Square radius should have values of 0
+			expect(squareRadius).toEqual(
+				expect.objectContaining({
+					cornerRadiusTopLeft: expect.arrayContaining([expect.objectContaining({ value: 0 })]),
+					cornerRadiusTopRight: expect.arrayContaining([expect.objectContaining({ value: 0 })]),
+				})
+			);
+
+			const roundRadius = getCornerRadiusEncodings({ ...defaultBarProps });
+
+			// Round radius should have values of 6
+			expect(roundRadius).toEqual(
+				expect.objectContaining({
+					cornerRadiusTopLeft: expect.arrayContaining([expect.objectContaining({ value: CORNER_RADIUS })]),
+					cornerRadiusTopRight: expect.arrayContaining([expect.objectContaining({ value: CORNER_RADIUS })]),
+				})
+			);
+		});
 	});
 
 	describe('getStackedCorderRadiusEncodings()', () => {
@@ -260,6 +281,28 @@ describe('barUtils', () => {
 				},
 				{ value: 0 },
 			]);
+		});
+
+		test('corner radius should be 0 when the hasSquareCorners prop is true', () => {
+			const squareRadius = getStackedCornerRadiusEncodings({ ...defaultBarProps, hasSquareCorners: true });
+
+			// Square radius should have values of 0
+			expect(squareRadius).toEqual(
+				expect.objectContaining({
+					cornerRadiusTopLeft: expect.arrayContaining([expect.objectContaining({ value: 0 })]),
+					cornerRadiusTopRight: expect.arrayContaining([expect.objectContaining({ value: 0 })]),
+				})
+			);
+
+			const roundRadius = getStackedCornerRadiusEncodings({ ...defaultBarProps });
+
+			// Round radius should have values of 6
+			expect(roundRadius).toEqual(
+				expect.objectContaining({
+					cornerRadiusTopLeft: expect.arrayContaining([expect.objectContaining({ value: CORNER_RADIUS })]),
+					cornerRadiusTopRight: expect.arrayContaining([expect.objectContaining({ value: CORNER_RADIUS })]),
+				})
+			);
 		});
 	});
 

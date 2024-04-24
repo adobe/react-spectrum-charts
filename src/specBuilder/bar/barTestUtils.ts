@@ -36,6 +36,7 @@ export const defaultBarProps: BarSpecProps = {
 	color: DEFAULT_COLOR,
 	colorScheme: DEFAULT_COLOR_SCHEME,
 	dimension: DEFAULT_CATEGORICAL_DIMENSION,
+	hasSquareCorners: false,
 	index: 0,
 	lineType: { value: 'solid' },
 	lineWidth: 0,
