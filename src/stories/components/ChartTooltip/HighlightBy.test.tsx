@@ -7,7 +7,7 @@ import {
 	render,
 } from '@test-utils';
 
-import { Basic, Dimension, Keys, LineChart, Series } from './HighlightBy.story';
+import { Basic, Dimension, Keys, LineChart, ScatterChart, Series } from './HighlightBy.story';
 
 describe('Basic', () => {
 	test('Only the hovered element should be highlighted', async () => {
@@ -109,14 +109,35 @@ describe('LineChart', () => {
 		const lines = await findAllMarksByGroupName(chart, 'line0');
 		expect(lines).toHaveLength(3);
 
-		const lineHoverPoints = await findAllMarksByGroupName(chart, 'line0_voronoi');
-		expect(lineHoverPoints).toHaveLength(9);
+		const lineHoverAreas = await findAllMarksByGroupName(chart, 'line0_voronoi');
+		expect(lineHoverAreas).toHaveLength(9);
 
-		await hoverNthElement(lineHoverPoints, 0);
+		await hoverNthElement(lineHoverAreas, 0);
 
 		const highlightedPoints = await findAllMarksByGroupName(chart, 'line0_point');
 		expect(highlightedPoints).toHaveLength(3);
 
 		expect(allElementsHaveAttributeValue(lines, 'opacity', '1')).toBe(true);
+	});
+});
+
+describe('ScatterChart', () => {
+	test('All points with the same weigth class should be highlighted', async () => {
+		render(<ScatterChart {...ScatterChart.args} />);
+
+		const chart = await findChart();
+		expect(chart).toBeInTheDocument();
+
+		const points = await findAllMarksByGroupName(chart, 'scatter0');
+		expect(points).toHaveLength(16);
+		expect(allElementsHaveAttributeValue(points, 'opacity', 1)).toBe(true);
+
+		const scatterHoverAreas = await findAllMarksByGroupName(chart, 'scatter0_voronoi');
+		await hoverNthElement(scatterHoverAreas, 0);
+
+		// highlighted points
+		expect(allElementsHaveAttributeValue(points.slice(0, 6), 'opacity', '1')).toBe(true);
+		// all other points
+		expect(allElementsHaveAttributeValue(points.slice(6), 'opacity', 1 / HIGHLIGHT_CONTRAST_RATIO)).toBe(true);
 	});
 });

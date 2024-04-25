@@ -9,14 +9,8 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import {
-	DEFAULT_OPACITY_RULE,
-	FILTERED_TABLE,
-	HIGHLIGHTED_ITEM,
-	HIGHLIGHT_CONTRAST_RATIO,
-	MARK_ID,
-	SELECTED_ITEM,
-} from '@constants';
+import { DEFAULT_OPACITY_RULE, FILTERED_TABLE, HIGHLIGHT_CONTRAST_RATIO, MARK_ID, SELECTED_ITEM } from '@constants';
+import { addTooltipMarkOpacityRules } from '@specBuilder/chartTooltip/chartTooltipUtils';
 import {
 	getColorProductionRule,
 	getLineWidthProductionRule,
@@ -106,19 +100,16 @@ export const getScatterMark = (props: ScatterSpecProps): SymbolMark => {
  * @param scatterProps ScatterSpecProps
  * @returns opacity production rule
  */
-export const getOpacity = ({ children }: ScatterSpecProps): ({ test?: string } & NumericValueRef)[] => {
+export const getOpacity = (props: ScatterSpecProps): ({ test?: string } & NumericValueRef)[] => {
+	const { children } = props;
 	if (!hasInteractiveChildren(children)) {
 		return [DEFAULT_OPACITY_RULE];
 	}
 	// if a point is hovered or selected, all other points should be reduced opacity
 	const fadedValue = 1 / HIGHLIGHT_CONTRAST_RATIO;
 
-	const rules = [
-		{
-			test: `${HIGHLIGHTED_ITEM} && ${HIGHLIGHTED_ITEM} !== datum.${MARK_ID}`,
-			value: fadedValue,
-		},
-	];
+	const rules: ({ test?: string } & NumericValueRef)[] = [];
+	addTooltipMarkOpacityRules(rules, props);
 	if (hasPopover(children)) {
 		rules.push({
 			test: `${SELECTED_ITEM} && ${SELECTED_ITEM} !== datum.${MARK_ID}`,
@@ -134,15 +125,20 @@ export const getOpacity = ({ children }: ScatterSpecProps): ({ test?: string } &
  * @param scatterProps ScatterSpecProps
  * @returns Mark[]
  */
-export const getScatterHoverMarks = ({ children, name, metric, dimension, dimensionScaleType }: ScatterSpecProps): Mark[] => {
-
+export const getScatterHoverMarks = ({
+	children,
+	name,
+	metric,
+	dimension,
+	dimensionScaleType,
+}: ScatterSpecProps): Mark[] => {
 	if (!hasInteractiveChildren(children)) {
 		return [];
 	}
 
 	return [
 		getPointsForVoronoi(`${FILTERED_TABLE}ForTooltip`, dimension, metric, name, dimensionScaleType),
-		getVoronoiPath(children, `${name}_pointsForVoronoi`, name)
+		getVoronoiPath(children, `${name}_pointsForVoronoi`, name),
 	];
 };
 

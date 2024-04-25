@@ -13,8 +13,9 @@ import { ReactElement } from 'react';
 
 import { ChartTooltip } from '@components/ChartTooltip/ChartTooltip';
 import useChartProps from '@hooks/useChartProps';
-import { Bar, Chart, Datum, Line } from '@rsc';
+import { Bar, Chart, Datum, Line, Scatter } from '@rsc';
 import { browserData } from '@stories/data/data';
+import { characterData } from '@stories/data/marioKartData';
 import { StoryFn } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
 
@@ -35,6 +36,13 @@ interface LineData extends Datum {
 	value?: number;
 	series?: string;
 	category?: string;
+}
+
+interface MarioData extends Datum {
+	character?: string[];
+	speedNormal?: number;
+	handlingNormal?: number;
+	weightClass?: string;
 }
 
 const StackedBarTooltipStory: StoryFn<typeof ChartTooltip> = (args): ReactElement => {
@@ -59,11 +67,32 @@ const BasicLineTooltipStory: StoryFn<typeof ChartTooltip> = (args): ReactElement
 	);
 };
 
+const ScatterStory: StoryFn<typeof ChartTooltip> = (args): ReactElement => {
+	const chartProps = useChartProps({ data: characterData, width: 400 });
+
+	return (
+		<Chart {...chartProps} debug>
+			<Scatter dimension="speedNormal" metric="handlingNormal">
+				<ChartTooltip {...args} />
+			</Scatter>
+		</Chart>
+	);
+};
+
 const dialogCallback = (datum: LineData) => (
-	<div className="bar-tooltip">
+	<div className="browser-data-tooltip">
 		<div>Operating system: {datum.series}</div>
 		<div>Browser: {datum.category}</div>
 		<div>Users: {datum.value}</div>
+	</div>
+);
+
+const marioDialogCallback = (datum: MarioData) => (
+	<div className="mario-tooltip">
+		<div>Characters: {datum.character?.join(', ')}</div>
+		<div>Weight class: {datum.weightClass}</div>
+		<div>Handling: {datum.handlingNormal}</div>
+		<div>Speed: {datum.speedNormal}</div>
 	</div>
 );
 
@@ -97,4 +126,10 @@ LineChart.args = {
 	children: dialogCallback,
 };
 
-export { Basic, Dimension, Series, Keys, LineChart };
+const ScatterChart = bindWithProps(ScatterStory);
+ScatterChart.args = {
+	highlightBy: ['weightClass'],
+	children: marioDialogCallback,
+};
+
+export { Basic, Dimension, Keys, LineChart, ScatterChart, Series };
