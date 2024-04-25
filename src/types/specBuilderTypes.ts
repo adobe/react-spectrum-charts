@@ -148,6 +148,7 @@ export interface LineSpecProps extends PartiallyRequired<LineProps, LinePropsWit
 	colorScheme: ColorScheme;
 	index: number;
 	interactiveMarkName: string | undefined;
+	isHighlightedByGroup?: boolean;
 	lineWidth?: FacetRef<LineWidth>;
 	markType: 'line';
 	popoverMarkName: string | undefined;

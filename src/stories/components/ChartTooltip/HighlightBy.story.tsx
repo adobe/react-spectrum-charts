@@ -13,7 +13,7 @@ import { ReactElement } from 'react';
 
 import { ChartTooltip } from '@components/ChartTooltip/ChartTooltip';
 import useChartProps from '@hooks/useChartProps';
-import { Bar, Chart, Datum } from '@rsc';
+import { Bar, Chart, Datum, Line } from '@rsc';
 import { browserData } from '@stories/data/data';
 import { StoryFn } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
@@ -44,6 +44,17 @@ const StackedBarTooltipStory: StoryFn<typeof ChartTooltip> = (args): ReactElemen
 			<Bar color="series">
 				<ChartTooltip {...args} />
 			</Bar>
+		</Chart>
+	);
+};
+
+const BasicLineTooltipStory: StoryFn<typeof ChartTooltip> = (args): ReactElement => {
+	const chartProps = useChartProps({ data: browserData, width: 600 });
+	return (
+		<Chart {...chartProps}>
+			<Line color="series" dimension="category" scaleType="point">
+				<ChartTooltip {...args} />
+			</Line>
 		</Chart>
 	);
 };
@@ -80,4 +91,10 @@ Keys.args = {
 	children: dialogCallback,
 };
 
-export { Basic, Dimension, Series, Keys };
+const LineChart = bindWithProps(BasicLineTooltipStory);
+LineChart.args = {
+	highlightBy: 'dimension',
+	children: dialogCallback,
+};
+
+export { Basic, Dimension, Series, Keys, LineChart };

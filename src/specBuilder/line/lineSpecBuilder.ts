@@ -18,6 +18,7 @@ import {
 	LINE_TYPE_SCALE,
 	OPACITY_SCALE,
 } from '@constants';
+import { addTooltipData, addTooltipSignals, isHighlightedByGroup } from '@specBuilder/chartTooltip/chartTooltipUtils';
 import { hasInteractiveChildren, hasPopover } from '@specBuilder/marks/markUtils';
 import {
 	getMetricRangeData,
@@ -76,6 +77,7 @@ export const addLine = produce<Spec, [LineProps & { colorScheme?: ColorScheme; i
 			scaleType,
 			...props,
 		};
+		lineProps.isHighlightedByGroup = isHighlightedByGroup(lineProps);
 
 		spec.data = addData(spec.data ?? [], lineProps);
 		spec.signals = addSignals(spec.signals ?? [], lineProps);
@@ -93,11 +95,12 @@ export const addData = produce<Data[], [LineSpecProps]>((data, props) => {
 		tableData.transform = addTimeTransform(tableData.transform ?? [], dimension);
 	}
 	if (hasInteractiveChildren(children)) {
-		data.push(getLineHighlightedData(name, FILTERED_TABLE, hasPopover(children)));
+		data.push(getLineHighlightedData(name, FILTERED_TABLE, hasPopover(children), isHighlightedByGroup(props)));
 		data.push(getFilteredTooltipData(children));
 	}
 	if (staticPoint) data.push(getLineStaticPointData(name, staticPoint, FILTERED_TABLE));
 	addTrendlineData(data, props);
+	addTooltipData(data, props, false);
 	data.push(...getMetricRangeData(props));
 });
 
@@ -109,6 +112,7 @@ export const addSignals = produce<Signal[], [LineSpecProps]>((signals, props) =>
 	if (!hasInteractiveChildren(children)) return;
 	addHighlightedItemSignalEvents(signals, `${name}_voronoi`, 2);
 	addHighlightedSeriesSignalEvents(signals, `${name}_voronoi`, 2);
+	addTooltipSignals(signals, props);
 });
 
 export const setScales = produce<Scale[], [LineSpecProps]>((scales, props) => {

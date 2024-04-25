@@ -72,6 +72,13 @@ describe('addTooltipData()', () => {
 		expect(data[1].transform?.length).toBe(1);
 		expect(data[1].transform?.[0]).toHaveProperty('as', 'bar0_groupId');
 	});
+	test('should not add highlightedData for the mark if false', () => {
+		const dataLength = data.length;
+		const markProps = getDefautltMarkProps({ highlightBy: 'series' });
+		addTooltipData(data, markProps, false);
+		// length sholdn't be changed
+		expect(data).toHaveLength(dataLength);
+	});
 });
 
 describe('isHighlightedByGroup()', () => {

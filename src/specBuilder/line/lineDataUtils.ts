@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { HIGHLIGHTED_ITEM, MARK_ID, SELECTED_ITEM } from '@constants';
+import { HIGHLIGHTED_GROUP, HIGHLIGHTED_ITEM, MARK_ID, SELECTED_ITEM } from '@constants';
 import { SourceData } from 'vega';
 
 /**
@@ -18,10 +18,18 @@ import { SourceData } from 'vega';
  * @param source
  * @returns
  */
-export const getLineHighlightedData = (name: string, source: string, hasPopover: boolean): SourceData => {
+export const getLineHighlightedData = (
+	name: string,
+	source: string,
+	hasPopover: boolean,
+	hasGroupId: boolean
+): SourceData => {
+	const highlightedExpr = hasGroupId
+		? `${HIGHLIGHTED_GROUP} === datum.${name}_groupId`
+		: `${HIGHLIGHTED_ITEM} === datum.${MARK_ID}`;
 	const expr = hasPopover
-		? `${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${MARK_ID} || !${SELECTED_ITEM} && ${HIGHLIGHTED_ITEM} && ${HIGHLIGHTED_ITEM} === datum.${MARK_ID}`
-		: `${HIGHLIGHTED_ITEM} && ${HIGHLIGHTED_ITEM} === datum.${MARK_ID}`;
+		? `${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${MARK_ID} || !${SELECTED_ITEM} && ${highlightedExpr}`
+		: highlightedExpr;
 	return {
 		name: `${name}_highlightedData`,
 		source,

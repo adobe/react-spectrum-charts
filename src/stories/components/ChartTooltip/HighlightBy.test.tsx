@@ -7,7 +7,7 @@ import {
 	render,
 } from '@test-utils';
 
-import { Basic, Dimension, Keys, Series } from './HighlightBy.story';
+import { Basic, Dimension, Keys, LineChart, Series } from './HighlightBy.story';
 
 describe('Basic', () => {
 	test('Only the hovered element should be highlighted', async () => {
@@ -96,5 +96,27 @@ describe('Keys', () => {
 				1 / HIGHLIGHT_CONTRAST_RATIO
 			)
 		).toBe(true);
+	});
+});
+
+describe('LineChart', () => {
+	test('All lines should be highlighted and the points for each dimension should be highlighted', async () => {
+		render(<LineChart {...LineChart.args} />);
+
+		const chart = await findChart();
+		expect(chart).toBeInTheDocument();
+
+		const lines = await findAllMarksByGroupName(chart, 'line0');
+		expect(lines).toHaveLength(3);
+
+		const lineHoverPoints = await findAllMarksByGroupName(chart, 'line0_voronoi');
+		expect(lineHoverPoints).toHaveLength(9);
+
+		await hoverNthElement(lineHoverPoints, 0);
+
+		const highlightedPoints = await findAllMarksByGroupName(chart, 'line0_point');
+		expect(highlightedPoints).toHaveLength(3);
+
+		expect(allElementsHaveAttributeValue(lines, 'opacity', '1')).toBe(true);
 	});
 });
