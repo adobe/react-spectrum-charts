@@ -80,7 +80,7 @@ describe('addData()', () => {
 			children: [createElement(Trendline)],
 		});
 		expect(data).toHaveLength(3);
-		expect(data[2].transform).toHaveLength(2);
+		expect(data[2].transform).toHaveLength(1);
 		expect(data[2].transform?.[0].type).toBe('regression');
 	});
 });
