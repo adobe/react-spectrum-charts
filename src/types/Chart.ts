@@ -680,10 +680,16 @@ export interface MarkBounds {
 	y2: number;
 }
 
+const DatumPredefinedKey = {
+	markId: MARK_ID,
+	seriesId: SERIES_ID,
+	trendlineValue: TRENDLINE_VALUE,
+} as const;
+
 export interface Datum {
-	[MARK_ID]: number;
-	[SERIES_ID]: string;
-	[TRENDLINE_VALUE]?: number;
+	[DatumPredefinedKey.markId]: number;
+	[DatumPredefinedKey.seriesId]: string;
+	[DatumPredefinedKey.trendlineValue]?: number;
 	[key: string]: unknown;
 }
 
