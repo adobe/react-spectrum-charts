@@ -14,7 +14,6 @@ import { ReactElement } from 'react';
 import useChartProps from '@hooks/useChartProps';
 import {
 	Axis,
-	categorical12,
 	Chart,
 	ChartTooltip,
 	Legend,
@@ -23,6 +22,7 @@ import {
 	Trendline,
 	TrendlineAnnotation,
 	TrendlineProps,
+	categorical12,
 } from '@rsc';
 import { StoryFn } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
@@ -50,7 +50,7 @@ const FeatureMatrixStory: StoryFn<typeof Chart> = (args): ReactElement => {
 	const chartProps = useChartProps(args);
 
 	return (
-		<Chart {...chartProps}>
+		<Chart {...chartProps} debug>
 			<Axis position="bottom" ticks grid title="Percentage of daily users (DAU)" labelFormat="percentage" />
 			<Axis position="left" ticks grid title="Average number of times per day" />
 			<Scatter dimension="dauPercent" metric="countAvg" color="segment">
@@ -70,7 +70,7 @@ const MultipleSegmentFeatureMatrixStory: StoryFn<typeof Chart> = (args): ReactEl
 	const chartProps = useChartProps(args);
 
 	return (
-		<Chart {...chartProps}>
+		<Chart {...chartProps} debug>
 			<Axis position="bottom" ticks grid title="Percentage of daily users (DAU)" labelFormat="percentage" />
 			<Axis position="left" ticks grid title="Average number of times per day" />
 			<Scatter dimension="dauPercent" metric="countAvg" color="segment">
@@ -90,7 +90,7 @@ const TimeCompareFeatureMatrixStory: StoryFn<typeof Chart> = (args): ReactElemen
 	const chartProps = useChartProps(args);
 
 	return (
-		<Chart {...chartProps}>
+		<Chart {...chartProps} debug>
 			<Axis position="bottom" ticks grid title="Percentage of daily users (DAU)" labelFormat="percentage" />
 			<Axis position="left" ticks grid title="Average number of times per day" />
 			<Scatter
@@ -101,6 +101,7 @@ const TimeCompareFeatureMatrixStory: StoryFn<typeof Chart> = (args): ReactElemen
 				opacity="period"
 				lineWidth={{ value: 1 }}
 			>
+				<ChartTooltip highlightBy={['event', 'segment']} />
 				<Trendline {...trendlineProps} displayOnHover orientation="horizontal">
 					<TrendlineAnnotation prefix="Median times" numberFormat=".3" />
 				</Trendline>
@@ -118,7 +119,7 @@ const EventOverlayFeatureMatrixStory: StoryFn<typeof Chart> = (args): ReactEleme
 	const chartProps = useChartProps(args);
 
 	return (
-		<Chart {...chartProps}>
+		<Chart {...chartProps} debug>
 			<Axis position="bottom" ticks grid title="Percentage of daily users (DAU)" labelFormat="percentage" />
 			<Axis position="left" ticks grid title="Average number of times per day" />
 			<Scatter dimension="dauPercent" metric="countAvg" color="segment" opacity="segment">

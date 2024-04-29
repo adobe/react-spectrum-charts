@@ -37,7 +37,7 @@ describe('MetricRange', () => {
 		expect(chart).toBeInTheDocument();
 
 		const areas = await findAllMarksByGroupName(chart, 'line0MetricRange0_area');
-		expect(areas[0]).toHaveAttribute('opacity', '0.8');
+		expect(areas[0]).toHaveAttribute('opacity', '1');
 		expect(areas[0]).toHaveAttribute('fill-opacity', '0.2');
 		expect(areas[0]).toHaveAttribute('fill', colors['categorical-100']);
 		expect(areas[1]).toHaveAttribute('fill', colors['categorical-200']);
@@ -89,7 +89,7 @@ describe('MetricRange', () => {
 		await clickNthElement(points, 0);
 
 		const metricRangeAreas = await findAllMarksByGroupName(chart, 'line0MetricRange0_area');
-		expect(metricRangeAreas[0]).toHaveAttribute('opacity', '0.8');
+		expect(metricRangeAreas[0]).toHaveAttribute('opacity', '1');
 		expect(metricRangeAreas[0]).toHaveAttribute('fill-opacity', '0.2');
 
 		const metricRangeLines = await findAllMarksByGroupName(chart, 'line0MetricRange0_line');

@@ -121,7 +121,7 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 			UNSAFE_vegaSpec,
 		});
 
-		const { controlledHoverSignal } = useSpecProps(spec);
+		const { controlledHoveredIdSignal, controlledHoveredGroupSignal } = useSpecProps(spec);
 		const chartConfig = useMemo(() => getChartConfig(config, colorScheme), [config, colorScheme]);
 
 		useEffect(() => {
@@ -181,8 +181,14 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 				// get the correct tooltip to render based on the hovered item
 				const tooltip = tooltips.find((t) => t.name === value.rscComponentName)?.callback;
 				if (tooltip && !('index' in value)) {
-					if (controlledHoverSignal) {
-						chartView.current?.signal(controlledHoverSignal.name, value?.[MARK_ID] ?? null);
+					if (controlledHoveredIdSignal) {
+						chartView.current?.signal(controlledHoveredIdSignal.name, value?.[MARK_ID] ?? null);
+					}
+					if (controlledHoveredGroupSignal) {
+						const key = Object.keys(value).find((k) => k.endsWith('_groupId'));
+						if (key) {
+							chartView.current?.signal(controlledHoveredGroupSignal.name, value[key]);
+						}
 					}
 					return renderToStaticMarkup(
 						<div className="rsc-tooltip" data-testid="rsc-tooltip">

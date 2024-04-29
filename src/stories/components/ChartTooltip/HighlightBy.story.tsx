@@ -13,7 +13,7 @@ import { ReactElement } from 'react';
 
 import { ChartTooltip } from '@components/ChartTooltip/ChartTooltip';
 import useChartProps from '@hooks/useChartProps';
-import { Bar, Chart, Datum, Line, Scatter } from '@rsc';
+import { Area, Bar, Chart, Datum, Line, Scatter } from '@rsc';
 import { browserData } from '@stories/data/data';
 import { characterData } from '@stories/data/marioKartData';
 import { StoryFn } from '@storybook/react';
@@ -56,10 +56,21 @@ const StackedBarTooltipStory: StoryFn<typeof ChartTooltip> = (args): ReactElemen
 	);
 };
 
-const BasicLineTooltipStory: StoryFn<typeof ChartTooltip> = (args): ReactElement => {
+const AreaStory: StoryFn<typeof ChartTooltip> = (args): ReactElement => {
 	const chartProps = useChartProps({ data: browserData, width: 600 });
 	return (
-		<Chart {...chartProps}>
+		<Chart {...chartProps} debug>
+			<Area color="series" dimension="category" scaleType="point">
+				<ChartTooltip {...args} />
+			</Area>
+		</Chart>
+	);
+};
+
+const LineStory: StoryFn<typeof ChartTooltip> = (args): ReactElement => {
+	const chartProps = useChartProps({ data: browserData, width: 600 });
+	return (
+		<Chart {...chartProps} debug>
 			<Line color="series" dimension="category" scaleType="point">
 				<ChartTooltip {...args} />
 			</Line>
@@ -71,7 +82,7 @@ const ScatterStory: StoryFn<typeof ChartTooltip> = (args): ReactElement => {
 	const chartProps = useChartProps({ data: characterData, width: 400 });
 
 	return (
-		<Chart {...chartProps} debug>
+		<Chart {...chartProps}>
 			<Scatter dimension="speedNormal" metric="handlingNormal">
 				<ChartTooltip {...args} />
 			</Scatter>
@@ -120,7 +131,13 @@ Keys.args = {
 	children: dialogCallback,
 };
 
-const LineChart = bindWithProps(BasicLineTooltipStory);
+const AreaChart = bindWithProps(AreaStory);
+AreaChart.args = {
+	highlightBy: 'dimension',
+	children: dialogCallback,
+};
+
+const LineChart = bindWithProps(LineStory);
 LineChart.args = {
 	highlightBy: 'dimension',
 	children: dialogCallback,
@@ -132,4 +149,4 @@ ScatterChart.args = {
 	children: marioDialogCallback,
 };
 
-export { Basic, Dimension, Keys, LineChart, ScatterChart, Series };
+export { Basic, Dimension, Keys, Series, AreaChart, LineChart, ScatterChart };

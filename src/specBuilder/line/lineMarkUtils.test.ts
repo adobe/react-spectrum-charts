@@ -70,7 +70,9 @@ describe('getLineMark()', () => {
 
 describe('getLineHoverMarks()', () => {
 	test('should return 4 marks', () => {
-		expect(getLineHoverMarks({ ...defaultLineMarkProps, children: [] }, 'line0_facet')).toHaveLength(5);
+		expect(
+			getLineHoverMarks({ ...defaultLineMarkProps, isHighlightedByDimension: true, children: [] }, 'line0_facet')
+		).toHaveLength(5);
 	});
 });
 
