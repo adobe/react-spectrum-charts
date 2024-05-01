@@ -13,9 +13,9 @@ import { createElement, useMemo } from 'react';
 
 import { ChartTooltip } from '@components/ChartTooltip';
 import { getAllElements } from '@utils';
-import { ChartChildElement, ChartTooltipElement, TooltipHandler } from 'types';
 
 import { Chart } from '../Chart';
+import { ChartChildElement, ChartTooltipElement, TooltipHandler } from '../types';
 
 type MappedTooltip = { name: string; element: ChartTooltipElement };
 

@@ -9,8 +9,19 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { DATE_PATH, ROUNDED_SQUARE_PATH } from '@svgPaths';
 import { spectrumColors } from '@themes';
-import { DATE_PATH, ROUNDED_SQUARE_PATH } from 'svgPaths';
+import { Data, Scale, ScaleType, Spec, ValuesData } from 'vega';
+
+import {
+	COLOR_SCALE,
+	DEFAULT_TRANSFORMED_TIME_DIMENSION,
+	FILTERED_TABLE,
+	LINE_TYPE_SCALE,
+	MARK_ID,
+	OPACITY_SCALE,
+	TABLE,
+} from '../constants';
 import {
 	ChartSymbolShape,
 	ColorFacet,
@@ -25,18 +36,7 @@ import {
 	SpectrumColor,
 	SymbolSize,
 	SymbolSizeFacet,
-} from 'types';
-import { Data, Scale, ScaleType, Spec, ValuesData } from 'vega';
-
-import {
-	COLOR_SCALE,
-	DEFAULT_TRANSFORMED_TIME_DIMENSION,
-	FILTERED_TABLE,
-	LINE_TYPE_SCALE,
-	MARK_ID,
-	OPACITY_SCALE,
-	TABLE,
-} from '../constants';
+} from '../types';
 import { SanitizedSpecProps } from '../types';
 
 /**

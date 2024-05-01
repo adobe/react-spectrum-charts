@@ -11,7 +11,7 @@
  */
 import { useMemo } from 'react';
 
-import { Height } from 'types';
+import { Height } from '../types';
 
 export default function useChartHeight(containerHeight: number, maxHeight: number, minHeight: number, height: Height) {
 	return useMemo(() => {

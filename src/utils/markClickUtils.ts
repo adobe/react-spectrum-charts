@@ -12,8 +12,9 @@
 import { MutableRefObject } from 'react';
 
 import { toggleStringArrayValue } from '@utils';
-import { Datum, MarkBounds } from 'types';
 import { Item, Scene, SceneGroup, SceneItem, ScenegraphEvent, View } from 'vega';
+
+import { Datum, MarkBounds } from '../types';
 
 export type ActionItem = Item | undefined | null;
 

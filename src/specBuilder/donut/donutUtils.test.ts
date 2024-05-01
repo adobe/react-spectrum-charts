@@ -21,8 +21,8 @@ import {
 	SELECTED_ITEM,
 } from '@constants';
 import { getTooltip } from '@specBuilder/marks/markUtils';
-import { MarkChildElement } from 'types';
 
+import { MarkChildElement } from '../../types';
 import {
 	fontBreakpoints,
 	getAggregateMetricBaseline,

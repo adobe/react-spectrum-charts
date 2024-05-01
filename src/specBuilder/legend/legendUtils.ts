@@ -24,15 +24,6 @@ import { getColorValue, getPathFromSymbolShape } from '@specBuilder/specUtils';
 import { spectrumColors } from '@themes';
 import merge from 'deepmerge';
 import {
-	FacetRef,
-	FacetType,
-	LegendDescription,
-	LegendLabel,
-	LegendSpecProps,
-	Position,
-	SecondaryFacetType,
-} from 'types';
-import {
 	BaseValueRef,
 	Color,
 	ColorValueRef,
@@ -46,6 +37,16 @@ import {
 } from 'vega';
 
 import { ColorValueV6 } from '@react-types/shared';
+
+import {
+	FacetRef,
+	FacetType,
+	LegendDescription,
+	LegendLabel,
+	LegendSpecProps,
+	Position,
+	SecondaryFacetType,
+} from '../../types';
 
 export interface Facet {
 	facetType: FacetType | SecondaryFacetType;

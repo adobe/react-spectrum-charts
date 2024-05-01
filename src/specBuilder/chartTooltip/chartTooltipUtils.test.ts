@@ -7,9 +7,9 @@ import { defaultBarProps } from '@specBuilder/bar/barTestUtils';
 import { defaultScatterProps } from '@specBuilder/scatter/scatterTestUtils';
 import { defaultSignals } from '@specBuilder/specTestUtils';
 import { baseData } from '@specBuilder/specUtils';
-import { BarSpecProps, ChartTooltipProps } from 'types';
 import { Data, Signal } from 'vega';
 
+import { BarSpecProps, ChartTooltipProps } from '../../types';
 import {
 	addTooltipData,
 	addTooltipMarkOpacityRules,

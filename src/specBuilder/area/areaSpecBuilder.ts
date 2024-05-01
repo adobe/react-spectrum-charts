@@ -22,6 +22,7 @@ import {
 	SELECTED_ITEM,
 	SELECTED_SERIES,
 } from '@constants';
+import { getTooltipProps } from '@specBuilder/marks/markUtils';
 import {
 	addHighlightedSeriesSignalEvents,
 	getControlledHoverSignal,
@@ -30,13 +31,12 @@ import {
 import { spectrumColors } from '@themes';
 import { sanitizeMarkChildren, toCamelCase } from '@utils';
 import { produce } from 'immer';
-import { AreaProps, AreaSpecProps, ColorScheme, MarkChildElement, ScaleType } from 'types';
 import { Data, Mark, Scale, Signal, Spec } from 'vega';
 
+import { AreaProps, AreaSpecProps, ColorScheme, MarkChildElement, ScaleType } from '../../types';
 import { addTimeTransform, getFilteredTableData, getTableData, getTransformSort } from '../data/dataUtils';
 import { addContinuousDimensionScale, addFieldToFacetScaleDomain, addMetricScale } from '../scale/scaleSpecBuilder';
 import { getAreaMark, getX } from './areaUtils';
-import { getTooltipProps } from '@specBuilder/marks/markUtils';
 
 export const addArea = produce<Spec, [AreaProps & { colorScheme?: ColorScheme; index?: number }]>(
 	(

@@ -26,9 +26,9 @@ import {
 	getXProductionRule,
 	hasPopover,
 } from '@specBuilder/marks/markUtils';
-import { ScaleType } from 'types';
 import { LineMark, Mark, NumericValueRef, ProductionRule, RuleMark } from 'vega';
 
+import { ScaleType } from '../../types';
 import {
 	getHighlightBackgroundPoint,
 	getHighlightPoint,

@@ -10,7 +10,8 @@
  * governing permissions and limitations under the License.
  */
 import { useDarkMode } from 'storybook-dark-mode';
-import { ChartProps } from 'types';
+
+import { ChartProps } from '../types';
 
 export default function useChartProps(props: ChartProps): ChartProps {
 	const darkMode = useDarkMode();

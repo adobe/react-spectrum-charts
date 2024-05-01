@@ -24,8 +24,9 @@ import {
 	getInteractive,
 	getTooltip,
 } from '@specBuilder/marks/markUtils';
-import { ColorFacet, ColorScheme, MarkChildElement, ScaleType } from 'types';
 import { AreaMark, NumericValueRef, ProductionRule } from 'vega';
+
+import { ColorFacet, ColorScheme, MarkChildElement, ScaleType } from '../../types';
 
 export interface AreaMarkProps {
 	name: string;

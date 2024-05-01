@@ -23,8 +23,15 @@ import {
 import { getXProductionRule } from '@specBuilder/marks/markUtils';
 import { addFieldToFacetScaleDomain } from '@specBuilder/scale/scaleSpecBuilder';
 import { getColorValue, getFacetsFromProps, getLineWidthPixelsFromLineWidth } from '@specBuilder/specUtils';
-import { LineWidthFacet, ScatterPathElement, ScatterPathProps, ScatterPathSpecProps, ScatterSpecProps } from 'types';
 import { GroupMark, NumericValueRef, Scale, TrailMark } from 'vega';
+
+import {
+	LineWidthFacet,
+	ScatterPathElement,
+	ScatterPathProps,
+	ScatterPathSpecProps,
+	ScatterSpecProps,
+} from '../../types';
 
 /**
  * Gets the path spec props, applying defaults.

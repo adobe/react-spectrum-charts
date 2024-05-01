@@ -19,9 +19,9 @@ import {
 	DEFAULT_LABEL_FONT_WEIGHT,
 	DEFAULT_LABEL_ORIENTATION,
 } from '@constants';
-import { DATE_PATH } from 'svgPaths';
-import { AxisSpecProps, ReferenceLineProps } from 'types';
+import { DATE_PATH } from '@svgPaths';
 
+import { AxisSpecProps, ReferenceLineProps } from '../../types';
 import {
 	getPositionRule,
 	getReferenceLineRuleMark,

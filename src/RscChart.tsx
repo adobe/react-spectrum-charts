@@ -38,7 +38,6 @@ import {
 	sanitizeRscChartChildren,
 	setSelectedSignals,
 } from '@utils';
-import { VegaChart } from 'VegaChart';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { Item } from 'vega';
 import { Handler, Options as TooltipOptions } from 'vega-tooltip';
@@ -46,7 +45,8 @@ import { Handler, Options as TooltipOptions } from 'vega-tooltip';
 import { ActionButton, Dialog, DialogTrigger, View as SpectrumView } from '@adobe/react-spectrum';
 
 import './Chart.css';
-import { ChartHandle, Datum, LegendDescription, MarkBounds, RscChartProps } from './types';
+import { VegaChart } from './VegaChart';
+import { ChartHandle, Datum, LegendDescription, LineType, MarkBounds, RscChartProps } from './types';
 
 interface ChartDialogProps {
 	datum: Datum | null;
@@ -75,7 +75,7 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 			debug = false,
 			hiddenSeries = [],
 			highlightedSeries,
-			lineTypes = DEFAULT_LINE_TYPES,
+			lineTypes = DEFAULT_LINE_TYPES as LineType[],
 			lineWidths = ['M'],
 			locale = DEFAULT_LOCALE,
 			opacities,

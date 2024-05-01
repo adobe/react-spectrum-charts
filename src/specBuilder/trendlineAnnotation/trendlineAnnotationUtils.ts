@@ -18,14 +18,15 @@ import {
 	getEndDimensionExtentProductionRule,
 	getStartDimensionExtentProductionRule,
 } from '@specBuilder/trendline/trendlineMarkUtils';
+import { ColorValueRef, GroupMark, NumericValueRef, ProductionRule, RectMark, SymbolMark, TextMark } from 'vega';
+
 import {
 	ColorFacet,
 	TrendlineAnnotationElement,
 	TrendlineAnnotationProps,
 	TrendlineAnnotationSpecProps,
 	TrendlineSpecProps,
-} from 'types';
-import { ColorValueRef, GroupMark, NumericValueRef, ProductionRule, RectMark, SymbolMark, TextMark } from 'vega';
+} from '../../types';
 
 /**
  * Applies all trendline annotation defaults

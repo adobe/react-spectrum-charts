@@ -28,8 +28,9 @@ import {
 	STACK_ID,
 	TRELLIS_PADDING,
 } from '@constants';
-import { BarSpecProps } from 'types';
 import { NumericValueRef, ProductionRule, RectEncodeEntry } from 'vega';
+
+import { BarSpecProps } from '../../types';
 
 export const defaultBarProps: BarSpecProps = {
 	children: [],

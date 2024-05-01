@@ -18,9 +18,9 @@ import {
 	hasPopover,
 } from '@specBuilder/marks/markUtils';
 import { getColorValue } from '@specBuilder/specUtils';
-import { LineSpecProps, ProductionRuleTests } from 'types';
 import { ColorValueRef, NumericValueRef, SymbolMark } from 'vega';
 
+import { LineSpecProps, ProductionRuleTests } from '../../types';
 import { LineMarkProps } from './lineUtils';
 
 const staticPointTest = (staticPoint: string) => `datum.${staticPoint} && datum.${staticPoint} === true`;

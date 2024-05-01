@@ -9,6 +9,8 @@ import {
 	SERIES_ID,
 } from '@constants';
 import { getFilteredTableData } from '@specBuilder/data/dataUtils';
+import { Data, FormulaTransform, NumericValueRef, Signal, SourceData } from 'vega';
+
 import {
 	AreaSpecProps,
 	BarSpecProps,
@@ -18,8 +20,7 @@ import {
 	DonutSpecProps,
 	LineSpecProps,
 	ScatterSpecProps,
-} from 'types';
-import { Data, FormulaTransform, NumericValueRef, Signal, SourceData } from 'vega';
+} from '../../types';
 
 type TooltipParentProps = AreaSpecProps | BarSpecProps | DonutSpecProps | LineSpecProps | ScatterSpecProps;
 

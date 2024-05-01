@@ -13,9 +13,9 @@ import { createElement } from 'react';
 
 import { ReferenceLine } from '@components/ReferenceLine';
 import { DEFAULT_LABEL_FONT_WEIGHT, FILTERED_TABLE } from '@constants';
-import { SubLabel } from 'types';
 import { Axis, GroupMark, ProductionRule, Scale, Signal, TextValueRef } from 'vega';
 
+import { SubLabel } from '../../types';
 import {
 	addAxes,
 	addAxesMarks,

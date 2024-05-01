@@ -18,7 +18,6 @@ import {
 	SELECTED_ITEM,
 } from '@constants';
 import { getTooltip, hasPopover } from '@specBuilder/marks/markUtils';
-import { MarkChildElement } from 'types';
 import {
 	ArcMark,
 	EncodeEntryName,
@@ -29,6 +28,8 @@ import {
 	TextEncodeEntry,
 	TextValueRef,
 } from 'vega';
+
+import { MarkChildElement } from '../../types';
 
 export const getArcMark = (name: string, holeRatio: number, radius: string, children: MarkChildElement[]): ArcMark => {
 	return {

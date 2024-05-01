@@ -29,9 +29,9 @@ import {
 	SELECTED_ITEM,
 	STACK_ID,
 } from '@constants';
-import { BarSpecProps } from 'types';
 import { RectEncodeEntry } from 'vega';
 
+import { BarSpecProps } from '../../types';
 import {
 	defaultBarEnterEncodings,
 	defaultBarPopoverOpacity,

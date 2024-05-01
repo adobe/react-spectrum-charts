@@ -10,9 +10,9 @@
  * governing permissions and limitations under the License.
  */
 import { FILTERED_TABLE, TABLE, TRELLIS_PADDING } from '@constants';
-import { BarSpecProps } from 'types';
 import { Scale } from 'vega';
 
+import { BarSpecProps } from '../../types';
 import { defaultBarProps } from './barTestUtils';
 import { getTrellisGroupMark, getTrellisProperties, getTrellisedEncodeEntries, isTrellised } from './trellisedBarUtils';
 
