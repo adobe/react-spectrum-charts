@@ -33,11 +33,11 @@ import {
 	LineWidth,
 	NumberFormat,
 	OpacityFacet,
+	SanitizedSpecProps,
 	SpectrumColor,
 	SymbolSize,
 	SymbolSizeFacet,
 } from '../types';
-import { SanitizedSpecProps } from '../types';
 
 /**
  * gets all the keys that are used to facet by
