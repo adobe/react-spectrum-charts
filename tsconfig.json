@@ -30,6 +30,7 @@
 			"@rsc/alpha": ["alpha"],
 			"@specBuilder/*": ["specBuilder/*"],
 			"@stories/*": ["stories/*"],
+			"@svgPaths": ["svgPaths"],
 			"@test-utils": ["test-utils"],
 			"@themes": ["themes"],
 			"@themes/*": ["themes/*"],

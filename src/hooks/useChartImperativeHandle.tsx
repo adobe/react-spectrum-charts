@@ -11,8 +11,9 @@
  */
 import { MutableRefObject, Ref, useImperativeHandle } from 'react';
 
-import { ChartHandle } from 'types';
 import { View } from 'vega';
+
+import { ChartHandle } from '../types';
 
 interface ChartImperativeHandleProps {
 	chartView: MutableRefObject<View | undefined>;

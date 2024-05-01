@@ -18,7 +18,7 @@ import {
 	LINE_TYPE_SCALE,
 	TABLE,
 } from '@constants';
-import { ROUNDED_SQUARE_PATH } from 'svgPaths';
+import { ROUNDED_SQUARE_PATH } from '@svgPaths';
 import { BandScale, OrdinalScale } from 'vega';
 
 import {

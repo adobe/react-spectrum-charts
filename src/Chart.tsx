@@ -19,7 +19,6 @@ import useChartImperativeHandle from '@hooks/useChartImperativeHandle';
 import useChartWidth from '@hooks/useChartWidth';
 import { useResizeObserver } from '@hooks/useResizeObserver';
 import { getColorValue } from '@specBuilder/specUtils';
-import { RscChart } from 'RscChart';
 import { v4 as uuid } from 'uuid';
 import { View } from 'vega';
 
@@ -27,7 +26,8 @@ import { Provider, defaultTheme } from '@adobe/react-spectrum';
 import { Theme } from '@react-types/provider';
 
 import './Chart.css';
-import { ChartData, ChartHandle, ChartProps } from './types';
+import { RscChart } from './RscChart';
+import { ChartData, ChartHandle, ChartProps, LineType } from './types';
 
 interface PlaceholderContentProps {
 	data: ChartData[];
@@ -51,7 +51,7 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 			height = 300,
 			hiddenSeries = [],
 			highlightedSeries,
-			lineTypes = DEFAULT_LINE_TYPES,
+			lineTypes = DEFAULT_LINE_TYPES as LineType[],
 			lineWidths = ['M'],
 			loading,
 			locale = DEFAULT_LOCALE,
@@ -82,7 +82,6 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 		useChartImperativeHandle(forwardedRef, { chartView, title });
 
 		const containerRef = useResizeObserver<HTMLDivElement>((_target, entry) => {
-
 			if (typeof width !== 'number') {
 				setContainerWidth(entry.contentRect.width);
 			}

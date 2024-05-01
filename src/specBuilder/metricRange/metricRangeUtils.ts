@@ -16,8 +16,15 @@ import { getLineMark } from '@specBuilder/line/lineMarkUtils';
 import { LineMarkProps } from '@specBuilder/line/lineUtils';
 import { addHighlightedSeriesSignalEvents } from '@specBuilder/signal/signalSpecBuilder';
 import { getFacetsFromProps } from '@specBuilder/specUtils';
-import { LineSpecProps, MarkChildElement, MetricRangeElement, MetricRangeProps, MetricRangeSpecProps } from 'types';
 import { AreaMark, GroupMark, LineMark, Signal, SourceData } from 'vega';
+
+import {
+	LineSpecProps,
+	MarkChildElement,
+	MetricRangeElement,
+	MetricRangeProps,
+	MetricRangeSpecProps,
+} from '../../types';
 
 export const getMetricRanges = (children: MarkChildElement[], markName: string): MetricRangeSpecProps[] => {
 	const metricRangeElements = children.filter((child) => child.type === MetricRange) as MetricRangeElement[];

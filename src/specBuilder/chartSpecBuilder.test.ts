@@ -30,12 +30,12 @@ import {
 	SYMBOL_SIZE_SCALE,
 	TABLE,
 } from '@constants';
+import { ROUNDED_SQUARE_PATH } from '@svgPaths';
 import { spectrumColors } from '@themes';
 import colorSchemes from '@themes/colorSchemes';
-import { ROUNDED_SQUARE_PATH } from 'svgPaths';
-import { BarProps, LegendProps } from 'types';
 import { Data } from 'vega';
 
+import { BarProps, LegendProps } from '../types';
 import {
 	addData,
 	buildSpec,

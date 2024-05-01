@@ -16,10 +16,10 @@ import useChartProps from '@hooks/useChartProps';
 import { Axis, Bar, Chart, ChartPopover, ChartTooltip, Legend } from '@rsc';
 import { StoryFn } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
-import { BarProps, Datum, SpectrumColor } from 'types';
 
 import { Content, Text, View } from '@adobe/react-spectrum';
 
+import { BarProps, Datum, SpectrumColor } from '../../../types';
 import { generateMockDataForTrellis } from './data';
 
 export default {

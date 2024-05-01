@@ -11,7 +11,6 @@
  */
 import { MS_PER_DAY, TRENDLINE_VALUE } from '@constants';
 import { getFacetsFromProps } from '@specBuilder/specUtils';
-import { AggregateMethod, TrendlineMethod, TrendlineSpecProps } from 'types';
 import {
 	AggregateOp,
 	AggregateTransform,
@@ -27,6 +26,7 @@ import {
 	WindowTransform,
 } from 'vega';
 
+import { AggregateMethod, TrendlineMethod, TrendlineSpecProps } from '../../types';
 import { TrendlineParentProps, getPolynomialOrder, getRegressionExtent, isPolynomialMethod } from './trendlineUtils';
 
 /**

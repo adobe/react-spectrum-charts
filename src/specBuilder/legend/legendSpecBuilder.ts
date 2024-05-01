@@ -26,6 +26,8 @@ import {
 	getStrokeDashFromLineType,
 } from '@specBuilder/specUtils';
 import { produce } from 'immer';
+import { Data, Legend, Mark, Scale, Signal, Spec } from 'vega';
+
 import {
 	ColorFacet,
 	ColorScheme,
@@ -35,9 +37,7 @@ import {
 	LineTypeFacet,
 	LineWidthFacet,
 	SymbolShapeFacet,
-} from 'types';
-import { Data, Legend, Mark, Scale, Signal, Spec } from 'vega';
-
+} from '../../types';
 import {
 	addHighlighSignalLegendHoverEvents,
 	getLegendLabelsSeriesSignal,

@@ -20,8 +20,9 @@ import {
 	HIGHLIGHT_CONTRAST_RATIO,
 	LEGEND_TOOLTIP_DELAY,
 } from '@constants';
-import { LegendSpecProps } from 'types';
 import { LineMark } from 'vega';
+
+import { LegendSpecProps } from '../../types';
 
 /**
  * Wait for the the duration of the legend tooltip hover delay.

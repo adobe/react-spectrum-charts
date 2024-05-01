@@ -11,9 +11,9 @@
  */
 import { BACKGROUND_COLOR } from '@constants';
 import { getInteractive } from '@specBuilder/marks/markUtils';
-import { BarSpecProps } from 'types';
 import { Mark } from 'vega';
 
+import { BarSpecProps } from '../../types';
 import {
 	getAnnotationMarks,
 	getBarEnterEncodings,

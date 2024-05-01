@@ -35,6 +35,18 @@ import {
 	getVegaSymbolSizeFromRscSymbolSize,
 } from '@specBuilder/specUtils';
 import {
+	AreaEncodeEntry,
+	ArrayValueRef,
+	ColorValueRef,
+	Cursor,
+	NumericValueRef,
+	PathMark,
+	ScaledValueRef,
+	SignalRef,
+	SymbolMark,
+} from 'vega';
+
+import {
 	ChartTooltipProps,
 	ColorFacet,
 	ColorScheme,
@@ -46,18 +58,7 @@ import {
 	ProductionRuleTests,
 	ScaleType,
 	SymbolSizeFacet,
-} from 'types';
-import {
-	AreaEncodeEntry,
-	ArrayValueRef,
-	ColorValueRef,
-	Cursor,
-	NumericValueRef,
-	PathMark,
-	ScaledValueRef,
-	SignalRef,
-	SymbolMark,
-} from 'vega';
+} from '../../types';
 
 /**
  * If a popover exists on the mark, then set the cursor to a pointer.
@@ -80,14 +81,23 @@ export function getInteractive(children: MarkChildElement[]): boolean {
 /**
  * If a tooltip or popover exists on the mark, then set tooltip to true.
  */
-export function getTooltip(children: MarkChildElement[], name: string, nestedDatum?: boolean): ProductionRuleTests<SignalRef> | SignalRef | undefined {
+export function getTooltip(
+	children: MarkChildElement[],
+	name: string,
+	nestedDatum?: boolean
+): ProductionRuleTests<SignalRef> | SignalRef | undefined {
 	// skip annotations
 	if (hasTooltip(children)) {
-		const defaultTooltip = { signal: `merge(datum${nestedDatum ? '.datum' : ''}, {'rscComponentName': '${name}'})` };
+		const defaultTooltip = {
+			signal: `merge(datum${nestedDatum ? '.datum' : ''}, {'rscComponentName': '${name}'})`,
+		};
 		// if the tooltip has an excludeDataKey prop, then disable the tooltip where that key is present
 		const excludeDataKeys = getTooltipProps(children)?.excludeDataKeys;
 		if (excludeDataKeys?.length) {
-			return [...excludeDataKeys.map(excludeDataKey => ({ test: `datum.${excludeDataKey}`, signal: 'false' })), defaultTooltip];
+			return [
+				...excludeDataKeys.map((excludeDataKey) => ({ test: `datum.${excludeDataKey}`, signal: 'false' })),
+				defaultTooltip,
+			];
 		}
 
 		return defaultTooltip;

@@ -12,6 +12,8 @@
 import { Trendline } from '@components/Trendline';
 import { FILTERED_TABLE, MS_PER_DAY, TRENDLINE_VALUE } from '@constants';
 import { sanitizeTrendlineChildren } from '@utils';
+import { SignalRef } from 'vega';
+
 import {
 	AggregateMethod,
 	LineSpecProps,
@@ -24,8 +26,7 @@ import {
 	TrendlineProps,
 	TrendlineSpecProps,
 	WindowMethod,
-} from 'types';
-import { SignalRef } from 'vega';
+} from '../../types';
 
 /** These are all the spec props that currently support trendlines */
 export type TrendlineParentProps = LineSpecProps | ScatterSpecProps;

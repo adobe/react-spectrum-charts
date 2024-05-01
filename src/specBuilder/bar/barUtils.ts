@@ -35,7 +35,6 @@ import {
 } from '@specBuilder/marks/markUtils';
 import { getColorValue, getLineWidthPixelsFromLineWidth } from '@specBuilder/specUtils';
 import { sanitizeMarkChildren } from '@utils';
-import { AnnotationElement, AnnotationStyleProps, BarSpecProps, Orientation } from 'types';
 import {
 	ArrayValueRef,
 	ColorValueRef,
@@ -47,6 +46,7 @@ import {
 	RectEncodeEntry,
 } from 'vega';
 
+import { AnnotationElement, AnnotationStyleProps, BarSpecProps, Orientation } from '../../types';
 import { getTrellisProperties, isTrellised } from './trellisedBarUtils';
 
 const LABEL_HEIGHT = 22;

@@ -23,9 +23,9 @@ import {
 import { getScaleName } from '@specBuilder/scale/scaleSpecBuilder';
 import { getFacetsFromProps } from '@specBuilder/specUtils';
 import { getTrendlineAnnotationMarks } from '@specBuilder/trendlineAnnotation';
-import { ChartTooltipElement, Orientation, ScaleType, TrendlineMethod, TrendlineSpecProps } from 'types';
 import { EncodeEntry, GroupMark, LineMark, NumericValueRef, RuleMark } from 'vega';
 
+import { ChartTooltipElement, Orientation, ScaleType, TrendlineMethod, TrendlineSpecProps } from '../../types';
 import { TrendlineParentProps, getTrendlines, isAggregateMethod, isRegressionMethod } from './trendlineUtils';
 
 export const getTrendlineMarks = (markProps: TrendlineParentProps): (GroupMark | RuleMark)[] => {
