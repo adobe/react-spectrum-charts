@@ -31,7 +31,7 @@ const descriptions = [
 ];
 
 const Descriptions = LegendBarStory.bind({});
-Descriptions.args = { descriptions: descriptions, ...defaultProps };
+Descriptions.args = { descriptions, ...defaultProps };
 
 const Disconnected = LegendDisconnectedStory.bind({});
 Disconnected.args = { ...defaultProps, color: 'series' };
