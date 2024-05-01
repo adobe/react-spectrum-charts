@@ -13,7 +13,7 @@ import React, { ReactElement } from 'react';
 
 import useChartProps from '@hooks/useChartProps';
 import { Axis, Bar, Chart, Legend, LegendProps } from '@rsc';
-import { browserData as data, longTitleShortDescriptionLegendData } from '@stories/data/data';
+import { browserData as data } from '@stories/data/data';
 import { StoryFn } from '@storybook/react';
 
 export const LegendBarStory: StoryFn<typeof Legend> = (args): ReactElement => {
@@ -57,18 +57,6 @@ export const LegendDisconnectedStory: StoryFn<typeof Legend> = (args): ReactElem
 	return (
 		<Chart {...chartProps}>
 			<Legend {...args} />
-		</Chart>
-	);
-};
-
-export const LegendWithTitleWithDescriptions: StoryFn<typeof Legend> = (args): ReactElement => {
-	const chartProps = useChartProps({ data: longTitleShortDescriptionLegendData, width: 700 });
-	return (
-		<Chart {...chartProps}>
-			<Bar color="series" />
-			<Legend {...args} />
-			<Axis position="bottom" baseline />
-			<Axis position="left" grid />
 		</Chart>
 	);
 };
