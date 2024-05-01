@@ -9,6 +9,13 @@
 	"plugins": ["prettier", "@typescript-eslint", "jest", "jsdoc", "react"],
 	"rules": {
 		"react/jsx-uses-vars": "error",
-		"react/jsx-uses-react": "error"
+		"react/jsx-uses-react": "error",
+		"no-restricted-imports": [
+			"error",
+			{
+				"name": "types",
+				"message": "Please use relative path import for types instead (ex. ../types)."
+			}
+		]
 	}
 }
