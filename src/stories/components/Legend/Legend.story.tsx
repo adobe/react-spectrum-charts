@@ -11,7 +11,12 @@
  */
 import { Legend } from '@rsc';
 
-import { LegendBarStory, LegendDisconnectedStory, defaultProps } from './LegendStoryUtils';
+import {
+	LegendBarStory,
+	LegendDisconnectedStory,
+	LegendWithTitleWithDescriptions,
+	defaultProps,
+} from './LegendStoryUtils';
 
 export default {
 	title: 'RSC/Legend',
@@ -30,8 +35,21 @@ const descriptions = [
 	{ seriesName: 'Other', description: 'Linux accounts for the majority of "other" operating systems' },
 ];
 
+const longTitleShortDescriptions = [
+	{
+		seriesName: 'Windows - but this is a longer title',
+		description:
+			'Most popular operating system, especially in business. It is the most popular operating system in the world, with a 70% market share as of March 2023',
+	},
+	{ seriesName: 'Mac', description: 'Popular for content creation, home and development' },
+	{ seriesName: 'Other', description: 'Linux accounts for the majority of "other" operating systems' },
+];
+
 const Descriptions = LegendBarStory.bind({});
-Descriptions.args = { descriptions, ...defaultProps };
+Descriptions.args = { descriptions: descriptions, ...defaultProps };
+
+const WithLongNameAndDescriptions = LegendWithTitleWithDescriptions.bind({});
+WithLongNameAndDescriptions.args = { descriptions: longTitleShortDescriptions, ...defaultProps };
 
 const Disconnected = LegendDisconnectedStory.bind({});
 Disconnected.args = { ...defaultProps, color: 'series' };
@@ -72,4 +90,15 @@ Supreme.args = {
 	title: 'Operating system',
 };
 
-export { Basic, Descriptions, Disconnected, Labels, LabelLimit, OnClick, Position, Title, Supreme };
+export {
+	Basic,
+	Descriptions,
+	WithLongNameAndDescriptions,
+	Disconnected,
+	Labels,
+	LabelLimit,
+	OnClick,
+	Position,
+	Title,
+	Supreme,
+};

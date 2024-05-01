@@ -1035,3 +1035,15 @@ export const stockPriceData = [
 	{ date: 'June 28, 2023', timestamp: 1687910400000, price: 482.429993, stock: 'ADBE' },
 	{ date: 'June 29, 2023', timestamp: 1687996800000, price: 483.769989, stock: 'ADBE' },
 ];
+
+export const longTitleShortDescriptionLegendData = [
+	{ category: 'Chrome', value: 5, series: 'Windows - but this is a longer title' },
+	{ category: 'Chrome', value: 3, series: 'Mac' },
+	{ category: 'Chrome', value: 2, series: 'Other' },
+	{ category: 'Firefox', value: 3, series: 'Windows - but this is a longer title' },
+	{ category: 'Firefox', value: 3, series: 'Mac' },
+	{ category: 'Firefox', value: 1, series: 'Other' },
+	{ category: 'Safari', value: 3, series: 'Windows - but this is a longer title' },
+	{ category: 'Safari', value: 0, series: 'Mac' },
+	{ category: 'Safari', value: 1, series: 'Other' },
+];
