@@ -6,9 +6,10 @@ import {
 	hoverNthElement,
 	queryAllMarksByGroupName,
 	render,
+	screen,
 } from '@test-utils';
 
-import { AreaChart, Basic, Dimension, Keys, LineChart, ScatterChart, Series } from './HighlightBy.story';
+import { AreaChart, Basic, Dimension, GroupData, Keys, LineChart, ScatterChart, Series } from './HighlightBy.story';
 
 describe('Basic', () => {
 	test('Only the hovered element should be highlighted', async () => {
@@ -189,5 +190,35 @@ describe('AreaChart', () => {
 		expect(
 			allElementsHaveAttributeValue(areas.slice(1), 'opacity', (1 / HIGHLIGHT_CONTRAST_RATIO).toString())
 		).toBe(true);
+	});
+});
+
+describe('GroupData', () => {
+	test('Should have all group data available to the toolitp', async () => {
+		render(<GroupData {...GroupData.args} />);
+
+		const chart = await findChart();
+		expect(chart).toBeInTheDocument();
+
+		const scatterHoverAreas = await findAllMarksByGroupName(chart, 'scatter0_voronoi');
+		await hoverNthElement(scatterHoverAreas, 0);
+
+		expect(screen.getByText('Baby Peach')).toBeInTheDocument();
+		expect(screen.getByText('Baby Daisy')).toBeInTheDocument();
+		expect(screen.getByText('Baby Rosalina')).toBeInTheDocument();
+		expect(screen.getByText('Lemmy')).toBeInTheDocument();
+		expect(screen.getByText('Baby Mario')).toBeInTheDocument();
+		expect(screen.getByText('Baby Luigi')).toBeInTheDocument();
+		expect(screen.getByText('Dry Bones')).toBeInTheDocument();
+		expect(screen.getByText('Light Mii')).toBeInTheDocument();
+		expect(screen.getByText('Koopa Troopa')).toBeInTheDocument();
+		expect(screen.getByText('Lakitu')).toBeInTheDocument();
+		expect(screen.getByText('Bowser Jr.')).toBeInTheDocument();
+		expect(screen.getByText('Toadette')).toBeInTheDocument();
+		expect(screen.getByText('Wendy')).toBeInTheDocument();
+		expect(screen.getByText('Isabelle')).toBeInTheDocument();
+		expect(screen.getByText('Toad')).toBeInTheDocument();
+		expect(screen.getByText('Shy Guy')).toBeInTheDocument();
+		expect(screen.getByText('Larry')).toBeInTheDocument();
 	});
 });
