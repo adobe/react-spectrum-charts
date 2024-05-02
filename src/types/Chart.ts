@@ -11,7 +11,7 @@
  */
 import { JSXElementConstructor, MutableRefObject, ReactElement, ReactFragment, ReactNode } from 'react';
 
-import { MARK_ID, SERIES_ID, TRENDLINE_VALUE } from '@constants';
+import { GROUP_DATA, MARK_ID, SERIES_ID, TRENDLINE_VALUE } from '@constants';
 import { Config, Data, FontWeight, Locale, NumberLocale, Padding, Spec, SymbolShape, TimeLocale, View } from 'vega';
 
 import { Theme } from '@react-types/provider';
@@ -684,12 +684,14 @@ const DatumPredefinedKey = {
 	markId: MARK_ID,
 	seriesId: SERIES_ID,
 	trendlineValue: TRENDLINE_VALUE,
+	groupData: GROUP_DATA,
 } as const;
 
 export interface Datum {
 	[DatumPredefinedKey.markId]: number;
 	[DatumPredefinedKey.seriesId]: string;
 	[DatumPredefinedKey.trendlineValue]?: number;
+	[DatumPredefinedKey.groupData]?: Datum[];
 	[key: string]: unknown;
 }
 
