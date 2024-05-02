@@ -13,8 +13,11 @@ import { AxisAnnotation } from '@components/AxisAnnotation';
 import { DEFAULT_AXIS_ANNOTATION_COLOR, DEFAULT_AXIS_ANNOTATION_OFFSET, FILTERED_TABLE } from '@constants';
 import { getCursor } from '@specBuilder/marks/markUtils';
 import { getColorValue } from '@specBuilder/specUtils';
+import { ANNOTATION_RANGED_ICON_SVG, ANNOTATION_SINGLE_ICON_SVG } from '@svgPaths';
 import { sanitizeAxisAnnotationChildren, toArray } from '@utils';
-import { ANNOTATION_RANGED_ICON_SVG, ANNOTATION_SINGLE_ICON_SVG } from 'svgPaths';
+import { Axis, Data, Mark, Signal, SourceData, ValuesData } from 'vega';
+import { ScaleType } from 'vega-lite/build/src/scale';
+
 import {
 	AxisAnnotationElement,
 	AxisAnnotationProps,
@@ -22,9 +25,7 @@ import {
 	AxisSpecProps,
 	ColorScheme,
 	Position,
-} from 'types';
-import { Axis, Data, Mark, Signal, SourceData, ValuesData } from 'vega';
-import { ScaleType } from 'vega-lite/build/src/scale';
+} from '../../types';
 
 /**
  * Adds the required data for axis annotations.

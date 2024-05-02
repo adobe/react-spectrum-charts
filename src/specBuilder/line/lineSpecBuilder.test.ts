@@ -31,9 +31,9 @@ import {
 	TRENDLINE_VALUE,
 } from '@constants';
 import { defaultSignals } from '@specBuilder/specTestUtils';
-import { LineSpecProps, MetricRangeElement, MetricRangeProps } from 'types';
 import { Data, Spec } from 'vega';
 
+import { LineSpecProps, MetricRangeElement, MetricRangeProps } from '../../types';
 import * as signalSpecBuilder from '../signal/signalSpecBuilder';
 import { initializeSpec } from '../specUtils';
 import { addData, addLine, addLineMarks, addSignals, setScales } from './lineSpecBuilder';

@@ -10,10 +10,10 @@
  * governing permissions and limitations under the License.
  */
 import { DEFAULT_BACKGROUND_COLOR, DEFAULT_SYMBOL_SIZE, DEFAULT_SYMBOL_STROKE_WIDTH } from '@constants';
-import { ROUNDED_SQUARE_PATH } from 'svgPaths';
-import { ColorScheme } from 'types';
+import { ROUNDED_SQUARE_PATH } from '@svgPaths';
 import { BaseLegendLayout, Config, mergeConfig } from 'vega';
 
+import { ColorScheme } from '../types';
 import { categorical16 } from './categoricalColorPalette';
 import { divergentOrangeYellowSeafoam15 } from './divergingColorPalette';
 import { sequentialViridis16 } from './sequentialColorPalette';

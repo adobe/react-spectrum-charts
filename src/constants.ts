@@ -9,7 +9,6 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { LineType } from 'types';
 
 // prop defaults
 export const ANNOTATION_FONT_SIZE = 12;
@@ -25,7 +24,7 @@ export const DEFAULT_GRANULARITY = 'day';
 export const DEFAULT_LABEL_ALIGN = 'center';
 export const DEFAULT_LABEL_FONT_WEIGHT = 'normal';
 export const DEFAULT_LABEL_ORIENTATION = 'horizontal';
-export const DEFAULT_LINE_TYPES: LineType[] = ['solid', 'dashed', 'dotted', 'dotDash', 'longDash', 'twoDash'];
+export const DEFAULT_LINE_TYPES = ['solid', 'dashed', 'dotted', 'dotDash', 'longDash', 'twoDash'];
 export const DEFAULT_LINEAR_DIMENSION = 'x';
 export const DEFAULT_LOCALE = 'en-US';
 export const DEFAULT_METRIC = 'value';

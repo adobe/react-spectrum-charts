@@ -37,9 +37,9 @@ import {
 import { spectrumColors } from '@themes';
 import { sanitizeMarkChildren, toCamelCase } from '@utils';
 import { produce } from 'immer';
-import { AreaProps, AreaSpecProps, ColorScheme, MarkChildElement, ScaleType } from 'types';
 import { Data, Mark, Scale, Signal, SourceData, Spec } from 'vega';
 
+import { AreaProps, AreaSpecProps, ColorScheme, MarkChildElement, ScaleType } from '../../types';
 import { addTimeTransform, getFilteredTableData, getTableData, getTransformSort } from '../data/dataUtils';
 import { addContinuousDimensionScale, addFieldToFacetScaleDomain, addMetricScale } from '../scale/scaleSpecBuilder';
 import { getAreaMark, getX } from './areaUtils';

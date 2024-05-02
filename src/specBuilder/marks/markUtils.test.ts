@@ -29,7 +29,9 @@ import {
 	OPACITY_SCALE,
 	SYMBOL_SIZE_SCALE,
 } from '@constants';
+import { SignalRef } from 'vega';
 
+import { ProductionRuleTests } from '../../types';
 import {
 	getColorProductionRule,
 	getColorProductionRuleSignalString,
@@ -43,8 +45,6 @@ import {
 	hasMetricRange,
 	hasTooltip,
 } from './markUtils';
-import { SignalRef } from 'vega';
-import { ProductionRuleTests } from 'types';
 
 describe('getColorProductionRule', () => {
 	test('should return scale reference if color is a string', () => {
@@ -169,13 +169,21 @@ describe('getTooltip()', () => {
 		expect(rule.signal).toContain('datum.datum');
 	});
 	test('should add condition test when excludeDataKey is present', () => {
-		const rule = getTooltip([createElement(ChartTooltip, { excludeDataKeys: ['excludeFromTooltip'] })], 'line0', false) as ProductionRuleTests<SignalRef>;
+		const rule = getTooltip(
+			[createElement(ChartTooltip, { excludeDataKeys: ['excludeFromTooltip'] })],
+			'line0',
+			false
+		) as ProductionRuleTests<SignalRef>;
 		expect(rule).toHaveLength(2);
 		expect(rule[0].test).toBe('datum.excludeFromTooltip');
 		expect(rule[0].signal).toBe('false');
 	});
 	test('should have default tooltip as second item when excludeDataKey is present', () => {
-		const rule = getTooltip([createElement(ChartTooltip, { excludeDataKeys: ['excludeFromTooltip'] })], 'line0', false) as ProductionRuleTests<SignalRef>;
+		const rule = getTooltip(
+			[createElement(ChartTooltip, { excludeDataKeys: ['excludeFromTooltip'] })],
+			'line0',
+			false
+		) as ProductionRuleTests<SignalRef>;
 		expect(rule).toHaveLength(2);
 		expect(rule[1]).toHaveProperty('signal');
 	});

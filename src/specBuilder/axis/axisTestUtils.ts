@@ -16,8 +16,9 @@ import {
 	DEFAULT_LABEL_FONT_WEIGHT,
 	DEFAULT_LABEL_ORIENTATION,
 } from '@constants';
-import { AxisSpecProps } from 'types';
 import { Mark } from 'vega';
+
+import { AxisSpecProps } from '../../types';
 
 export const defaultXBaselineMark: Mark = {
 	name: 'xBaseline',

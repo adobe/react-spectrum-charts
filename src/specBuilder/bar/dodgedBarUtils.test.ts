@@ -27,9 +27,9 @@ import {
 	HIGHLIGHT_CONTRAST_RATIO,
 	MARK_ID,
 } from '@constants';
-import { BarSpecProps } from 'types';
 import { Mark, RectEncodeEntry } from 'vega';
 
+import { BarSpecProps } from '../../types';
 import {
 	defaultBarProps,
 	defaultBarStrokeEncodings,

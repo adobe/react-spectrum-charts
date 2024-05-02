@@ -16,8 +16,8 @@ import useChartProps from '@hooks/useChartProps';
 import { Axis, Bar, Chart, Legend } from '@rsc';
 import { StoryFn } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
-import { SpectrumColor } from 'types';
 
+import { SpectrumColor } from '../../../types';
 import { barSeriesData, negativeBarSeriesData } from './data';
 
 export default {

@@ -10,7 +10,6 @@
  * governing permissions and limitations under the License.
  */
 import { getD3FormatSpecifierFromNumberFormat } from '@specBuilder/specUtils';
-import { AxisSpecProps, Granularity, Label, LabelAlign, NumberFormat, Orientation, Position } from 'types';
 import {
 	Align,
 	Baseline,
@@ -24,6 +23,7 @@ import {
 	TickCount,
 } from 'vega';
 
+import { AxisSpecProps, Granularity, Label, LabelAlign, NumberFormat, Orientation, Position } from '../../types';
 import { isVerticalAxis } from './axisUtils';
 
 /**

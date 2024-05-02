@@ -27,8 +27,9 @@ import { getScatterPathMarks } from '@specBuilder/scatterPath/scatterPathUtils';
 import { getTrendlineMarks } from '@specBuilder/trendline';
 import { spectrumColors } from '@themes';
 import { produce } from 'immer';
-import { ScatterSpecProps, SymbolSizeFacet } from 'types';
 import { GroupMark, Mark, NumericValueRef, SymbolMark } from 'vega';
+
+import { ScatterSpecProps, SymbolSizeFacet } from '../../types';
 
 export const addScatterMarks = produce<Mark[], [ScatterSpecProps]>((marks, props) => {
 	const { name } = props;

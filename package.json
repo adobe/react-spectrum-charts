@@ -1,12 +1,21 @@
 {
 	"name": "@adobe/react-spectrum-charts",
-	"version": "v1.6.1",
+	"version": "v1.7.1",
 	"description": "Declarative library for composing Spectrum visualizations in React.",
 	"browser": "./dist/index.js",
 	"module": "./dist/index.js",
+	"main": "./dist/index.js",
 	"exports": {
-		".": "./dist/index.js",
-		"./alpha": "./dist/alpha.js"
+		".": {
+			"import": "./dist/index.js",
+			"types": "./dist/@types/index.d.ts",
+			"default": "./dist/index.js"
+		},
+		"./alpha": {
+			"import": "./dist/alpha.js",
+			"types": "./dist/@types/alpha/index.d.ts",
+			"default": "./dist/alpha.js"
+		}
 	},
 	"typesVersions": {
 		"*": {

@@ -22,8 +22,8 @@ import {
 	DEFAULT_TRANSFORMED_TIME_DIMENSION,
 	FILTERED_TABLE,
 } from '@constants';
-import { LineSpecProps, MetricRangeProps, MetricRangeSpecProps } from 'types';
 
+import { LineSpecProps, MetricRangeProps, MetricRangeSpecProps } from '../../types';
 import {
 	applyMetricRangePropDefaults,
 	getMetricRangeData,

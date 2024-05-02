@@ -11,8 +11,9 @@
  */
 import { DEFAULT_TITLE_FONT_WEIGHT } from '@constants';
 import { produce } from 'immer';
-import { TitleProps } from 'types';
 import { Spec } from 'vega';
+
+import { TitleProps } from '../../types';
 
 export const addTitle = produce<Spec, [TitleProps]>(
 	(spec, { text, fontWeight = DEFAULT_TITLE_FONT_WEIGHT, position = 'middle', orient = 'top' }) => {

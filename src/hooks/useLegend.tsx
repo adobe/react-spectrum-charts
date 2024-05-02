@@ -12,10 +12,10 @@
 import { createElement, useMemo, useState } from 'react';
 
 import { getElement } from '@utils';
-import { ChartChildElement, LegendDescription, LegendElement } from 'types';
 
 import { Chart } from '../Chart';
 import { Legend } from '../components/Legend';
+import { ChartChildElement, LegendDescription, LegendElement } from '../types';
 
 interface UseLegendProps {
 	hiddenSeriesState: string[];

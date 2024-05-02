@@ -331,6 +331,8 @@ export interface BarProps extends Omit<MarkProps, 'color'> {
 	dimension?: string;
 	/** Sets the inner padding between bars in a group */
 	groupedPadding?: number;
+	/** Should the top-left and top-right corners of the bars be square? Round by default */
+	hasSquareCorners?: boolean;
 	/** Line type or key in the data that is used as the line type facet */
 	lineType?: LineTypeFacet | DualFacet;
 	/** Border width of the bar */
@@ -678,10 +680,16 @@ export interface MarkBounds {
 	y2: number;
 }
 
+const DatumPredefinedKey = {
+	markId: MARK_ID,
+	seriesId: SERIES_ID,
+	trendlineValue: TRENDLINE_VALUE,
+} as const;
+
 export interface Datum {
-	[MARK_ID]: number;
-	[SERIES_ID]: string;
-	[TRENDLINE_VALUE]?: number;
+	[DatumPredefinedKey.markId]: number;
+	[DatumPredefinedKey.seriesId]: string;
+	[DatumPredefinedKey.trendlineValue]?: number;
 	[key: string]: unknown;
 }
 

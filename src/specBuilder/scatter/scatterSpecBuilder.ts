@@ -38,9 +38,9 @@ import { addHighlightedItemSignalEvents } from '@specBuilder/signal/signalSpecBu
 import { addTrendlineData, getTrendlineScales, setTrendlineSignals } from '@specBuilder/trendline';
 import { sanitizeMarkChildren, toCamelCase } from '@utils';
 import { produce } from 'immer';
-import { ColorScheme, ScatterProps, ScatterSpecProps } from 'types';
 import { Data, Scale, Signal, Spec } from 'vega';
 
+import { ColorScheme, ScatterProps, ScatterSpecProps } from '../../types';
 import { addScatterMarks } from './scatterMarkUtils';
 
 /**

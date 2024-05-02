@@ -30,9 +30,9 @@ import {
 	TABLE,
 } from '@constants';
 import { defaultSignals } from '@specBuilder/specTestUtils';
-import { AreaSpecProps } from 'types';
 import { Data, GroupMark, Spec } from 'vega';
 
+import { AreaSpecProps } from '../../types';
 import { initializeSpec } from '../specUtils';
 import { addArea, addAreaMarks, addData, addSignals, setScales } from './areaSpecBuilder';
 

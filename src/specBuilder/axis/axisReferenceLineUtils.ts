@@ -13,7 +13,6 @@ import { ReferenceLine } from '@components/ReferenceLine';
 import { DEFAULT_LABEL_FONT_WEIGHT } from '@constants';
 import { getColorValue, getPathFromIcon } from '@specBuilder/specUtils';
 import { toArray } from '@utils';
-import { AxisChildElement, AxisSpecProps, Children, Position, ReferenceLineElement, ReferenceLineProps } from 'types';
 import {
 	EncodeEntry,
 	FontWeight,
@@ -29,6 +28,14 @@ import {
 	TextMark,
 } from 'vega';
 
+import {
+	AxisChildElement,
+	AxisSpecProps,
+	Children,
+	Position,
+	ReferenceLineElement,
+	ReferenceLineProps,
+} from '../../types';
 import { isVerticalAxis } from './axisUtils';
 
 export const getReferenceLinesFromChildren = (

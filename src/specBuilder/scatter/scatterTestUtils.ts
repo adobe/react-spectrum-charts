@@ -15,7 +15,8 @@ import {
 	DEFAULT_LINEAR_DIMENSION,
 	DEFAULT_METRIC,
 } from '@constants';
-import { ScatterSpecProps } from 'types';
+
+import { ScatterSpecProps } from '../../types';
 
 export const defaultScatterProps: ScatterSpecProps = {
 	children: [],

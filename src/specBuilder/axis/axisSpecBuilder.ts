@@ -26,9 +26,9 @@ import {
 import { getGenericSignal } from '@specBuilder/signal/signalSpecBuilder';
 import { sanitizeAxisChildren } from '@utils';
 import { produce } from 'immer';
-import { AxisProps, AxisSpecProps, ColorScheme, Label, Orientation, Position } from 'types';
 import { Axis, Data, GroupMark, Mark, ScaleType, Signal, Spec } from 'vega';
 
+import { AxisProps, AxisSpecProps, ColorScheme, Label, Orientation, Position } from '../../types';
 import { getAxisLabelsEncoding, getControlledLabelAnchorValues, getLabelValue } from './axisLabelUtils';
 import {
 	getReferenceLineMarks,

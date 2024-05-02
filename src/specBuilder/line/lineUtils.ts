@@ -12,6 +12,7 @@
 import { Trendline } from '@components/Trendline';
 import { hasInteractiveChildren, hasPopover } from '@specBuilder/marks/markUtils';
 import { sanitizeMarkChildren } from '@utils';
+
 import {
 	ColorFacet,
 	ColorScheme,
@@ -20,7 +21,7 @@ import {
 	MarkChildElement,
 	OpacityFacet,
 	ScaleType,
-} from 'types';
+} from '../../types';
 
 export const getInteractiveMarkName = (children: MarkChildElement[], name: string): string | undefined => {
 	// if the line has an interactive component, this line is the target for the interactive component

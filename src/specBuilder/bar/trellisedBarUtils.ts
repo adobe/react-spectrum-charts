@@ -11,9 +11,9 @@
  */
 import { FILTERED_TABLE } from '@constants';
 import { addDomainFields, getScaleIndexByName } from '@specBuilder/scale/scaleSpecBuilder';
-import { BarSpecProps } from 'types';
 import { GroupMark, Mark, Scale } from 'vega';
 
+import { BarSpecProps } from '../../types';
 import { getDodgedDimensionEncodings, getTrellisedDimensionEncodings, isDodgedAndStacked } from './barUtils';
 
 /**

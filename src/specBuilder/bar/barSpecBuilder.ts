@@ -37,9 +37,9 @@ import { addHighlightedItemSignalEvents, getGenericSignal } from '@specBuilder/s
 import { getFacetsFromProps } from '@specBuilder/specUtils';
 import { sanitizeMarkChildren, toCamelCase } from '@utils';
 import { produce } from 'immer';
-import { BarProps, BarSpecProps, ColorScheme } from 'types';
 import { BandScale, Data, FormulaTransform, Mark, OrdinalScale, Scale, Signal, Spec } from 'vega';
 
+import { BarProps, BarSpecProps, ColorScheme } from '../../types';
 import { getBarPadding, getScaleValues, isDodgedAndStacked } from './barUtils';
 import { getDodgedMark } from './dodgedBarUtils';
 import { getDodgedAndStackedBarMark, getStackedBarMarks } from './stackedBarUtils';
@@ -53,6 +53,7 @@ export const addBar = produce<Spec, [BarProps & { colorScheme?: ColorScheme; ind
 			color = { value: 'categorical-100' },
 			colorScheme = DEFAULT_COLOR_SCHEME,
 			dimension = DEFAULT_CATEGORICAL_DIMENSION,
+			hasSquareCorners = false,
 			index = 0,
 			lineType = { value: 'solid' },
 			lineWidth = 0,
@@ -74,6 +75,7 @@ export const addBar = produce<Spec, [BarProps & { colorScheme?: ColorScheme; ind
 			color,
 			colorScheme,
 			dimension,
+			hasSquareCorners,
 			index,
 			lineType,
 			lineWidth,

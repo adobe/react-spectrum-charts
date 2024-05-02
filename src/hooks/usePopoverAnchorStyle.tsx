@@ -11,8 +11,9 @@
  */
 import { CSSProperties, useMemo } from 'react';
 
-import { MarkBounds } from 'types';
 import { Padding, View } from 'vega';
+
+import { MarkBounds } from '../types';
 
 export default function usePopoverAnchorStyle(
 	popoverIsOpen: boolean,

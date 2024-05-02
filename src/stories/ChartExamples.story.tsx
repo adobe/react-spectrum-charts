@@ -31,7 +31,6 @@ import {
 import { action } from '@storybook/addon-actions';
 import { StoryFn } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
-import { ChartData, ChartProps, Colors, Datum, LegendDescription, LegendLabel, SpectrumColor, SubLabel } from 'types';
 
 import { ActionButton, ActionGroup, Content, Divider, Flex, Item, Text, View } from '@adobe/react-spectrum';
 import Close from '@spectrum-icons/workflow/Close';
@@ -40,6 +39,16 @@ import GraphPathing from '@spectrum-icons/workflow/GraphPathing';
 import UsersAdd from '@spectrum-icons/workflow/UsersAdd';
 import ViewDetail from '@spectrum-icons/workflow/ViewDetail';
 
+import {
+	ChartData,
+	ChartProps,
+	Colors,
+	Datum,
+	LegendDescription,
+	LegendLabel,
+	SpectrumColor,
+	SubLabel,
+} from '../types';
 import {
 	funnelConversionData,
 	funnelConversionTimeComparisonData,
@@ -382,7 +391,7 @@ const ReleaseImpactBarStory: StoryFn<typeof Chart> = (args): ReactElement => {
 	const displayThirdSeries = !hiddenSeries?.find((s) => s === thirdSeriesKey);
 
 	const displayedSeriesCount = [displayFirstSeries, displaySecondSeries, displayThirdSeries].filter(
-		(display) => display === true,
+		(display) => display === true
 	);
 
 	const isSingleSeries = displayedSeriesCount.length === 1;

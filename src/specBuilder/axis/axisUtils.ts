@@ -9,9 +9,9 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { AxisSpecProps, Position } from 'types';
 import { Axis, Mark, Scale, SignalRef } from 'vega';
 
+import { AxisSpecProps, Position } from '../../types';
 import {
 	getAxisLabelsEncoding,
 	getLabelAnchorValues,

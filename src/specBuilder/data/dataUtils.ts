@@ -18,8 +18,9 @@ import {
 } from '@constants';
 import { getTooltipProps } from '@specBuilder/marks/markUtils';
 import { produce } from 'immer';
-import { MarkChildElement } from 'types';
 import { Compare, Data, FormulaTransform, SourceData, Transforms, ValuesData } from 'vega';
+
+import { MarkChildElement } from '../../types';
 
 export const addTimeTransform = produce<Transforms[], [string]>((transforms, dimension) => {
 	if (transforms.findIndex((transform) => transform.type === 'timeunit') === -1) {

@@ -17,9 +17,9 @@ import {
 	SYMBOL_SHAPE_SCALE,
 	SYMBOL_SIZE_SCALE,
 } from '@constants';
-import { FacetType, SecondaryFacetType } from 'types';
 import { Scale, ScaleMultiFieldsRef } from 'vega';
 
+import { FacetType, SecondaryFacetType } from '../../types';
 import { Facet } from './legendUtils';
 
 /**

@@ -34,6 +34,8 @@ import { Area, Axis, Bar, Legend, Line, Scatter, Title } from '@rsc';
 import { Donut } from '@rsc/alpha';
 import colorSchemes from '@themes/colorSchemes';
 import { produce } from 'immer';
+import { Data, LinearScale, OrdinalScale, PointScale, Scale, Signal, Spec } from 'vega';
+
 import {
 	AreaElement,
 	AxisElement,
@@ -55,9 +57,7 @@ import {
 	SymbolShapes,
 	SymbolSize,
 	TitleElement,
-} from 'types';
-import { Data, LinearScale, OrdinalScale, PointScale, Scale, Signal, Spec } from 'vega';
-
+} from '../types';
 import { addArea } from './area/areaSpecBuilder';
 import { addAxis } from './axis/axisSpecBuilder';
 import { addBar } from './bar/barSpecBuilder';
@@ -88,7 +88,7 @@ export function buildSpec({
 	description,
 	hiddenSeries,
 	highlightedSeries,
-	lineTypes = DEFAULT_LINE_TYPES,
+	lineTypes = DEFAULT_LINE_TYPES as LineType[],
 	lineWidths = ['M'],
 	opacities,
 	symbolShapes = ['rounded-square'],

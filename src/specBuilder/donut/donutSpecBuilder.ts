@@ -15,9 +15,9 @@ import { addFieldToFacetScaleDomain } from '@specBuilder/scale/scaleSpecBuilder'
 import { addHighlightedItemSignalEvents } from '@specBuilder/signal/signalSpecBuilder';
 import { sanitizeMarkChildren, toCamelCase } from '@utils';
 import { produce } from 'immer';
-import { ColorScheme, DonutProps, DonutSpecProps } from 'types';
 import { Data, Mark, Scale, Signal, Spec } from 'vega';
 
+import { ColorScheme, DonutProps, DonutSpecProps } from '../../types';
 import { getAggregateMetricMark, getArcMark, getDirectLabelMark, getPercentMetricMark } from './donutUtils';
 
 export const addDonut = produce<Spec, [DonutProps & { colorScheme?: ColorScheme; index?: number }]>(

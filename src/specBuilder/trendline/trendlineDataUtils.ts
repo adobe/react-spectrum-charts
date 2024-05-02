@@ -23,9 +23,9 @@ import { getSeriesIdTransform, getTableData } from '@specBuilder/data/dataUtils'
 import { hasInteractiveChildren } from '@specBuilder/marks/markUtils';
 import { getFacetsFromProps } from '@specBuilder/specUtils';
 import { produce } from 'immer';
-import { TrendlineMethod, TrendlineSpecProps } from 'types';
 import { Data, SourceData, Transforms } from 'vega';
 
+import { TrendlineMethod, TrendlineSpecProps } from '../../types';
 import {
 	getAggregateTransform,
 	getNormalizedDimensionTransform,

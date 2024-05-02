@@ -78,4 +78,11 @@ WithAnnotation.args = {
 	metric: 'downloads',
 };
 
-export { Basic, Horizontal, LineType, Opacity, PaddingRatio, WithAnnotation };
+const HasSquareCorners = bindWithProps(BarStory);
+HasSquareCorners.args = {
+	dimension: 'browser',
+	metric: 'downloads',
+	hasSquareCorners: true,
+};
+
+export { Basic, Horizontal, LineType, Opacity, PaddingRatio, WithAnnotation, HasSquareCorners };

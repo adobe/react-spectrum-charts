@@ -14,8 +14,8 @@ import { createElement } from 'react';
 import { ChartTooltip } from '@components/ChartTooltip';
 import { COLOR_SCALE, FILTERED_TABLE, HIGHLIGHTED_ITEM } from '@constants';
 import { defaultSignals } from '@specBuilder/specTestUtils';
-import { DonutSpecProps } from 'types';
 
+import { DonutSpecProps } from '../../types';
 import { addData, addDonut, addMarks, addScales, addSignals } from './donutSpecBuilder';
 import { getAggregateMetricMark, getArcMark, getDirectLabelMark, getPercentMetricMark } from './donutUtils';
 

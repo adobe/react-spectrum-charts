@@ -16,8 +16,8 @@ import { TrendlineAnnotation } from '@components/TrendlineAnnotation';
 import { DEFAULT_COLOR, DEFAULT_COLOR_SCHEME, DEFAULT_TIME_DIMENSION, TRENDLINE_VALUE } from '@constants';
 import { defaultTrendlineProps } from '@specBuilder/trendline/trendlineTestUtils';
 import { spectrumColors } from '@themes';
-import { TrendlineAnnotationSpecProps } from 'types';
 
+import { TrendlineAnnotationSpecProps } from '../../types';
 import {
 	getColorKey,
 	getTextFill,
