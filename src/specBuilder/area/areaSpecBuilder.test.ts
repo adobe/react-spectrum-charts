@@ -18,6 +18,7 @@ import {
 	DEFAULT_COLOR,
 	DEFAULT_COLOR_SCHEME,
 	DEFAULT_METRIC,
+	DEFAULT_OPACITY_RULE,
 	DEFAULT_TIME_DIMENSION,
 	DEFAULT_TRANSFORMED_TIME_DIMENSION,
 	FILTERED_TABLE,
@@ -106,7 +107,8 @@ const defaultSpec = initializeSpec({
 						update: {
 							x: { field: DEFAULT_TRANSFORMED_TIME_DIMENSION, scale: 'xTime' },
 							cursor: undefined,
-							fillOpacity: [{ value: 0.8 }],
+							fillOpacity: { value: 0.8 },
+							opacity: [DEFAULT_OPACITY_RULE],
 						},
 					},
 					interactive: false,

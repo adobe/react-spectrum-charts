@@ -66,6 +66,7 @@ export interface LineMarkProps {
 	dimension: string;
 	displayOnHover?: boolean;
 	interactiveMarkName?: string; // optional name of the mark that is used for hover and click interactions
+	isHighlightedByDimension?: boolean;
 	isHighlightedByGroup?: boolean;
 	lineType: LineTypeFacet;
 	lineWidth?: LineWidthFacet;

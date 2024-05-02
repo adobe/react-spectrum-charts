@@ -14,7 +14,6 @@ import { ReactElement } from 'react';
 import useChartProps from '@hooks/useChartProps';
 import {
 	Axis,
-	categorical12,
 	Chart,
 	ChartTooltip,
 	Legend,
@@ -23,6 +22,7 @@ import {
 	Trendline,
 	TrendlineAnnotation,
 	TrendlineProps,
+	categorical12,
 } from '@rsc';
 import { StoryFn } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
@@ -101,6 +101,7 @@ const TimeCompareFeatureMatrixStory: StoryFn<typeof Chart> = (args): ReactElemen
 				opacity="period"
 				lineWidth={{ value: 1 }}
 			>
+				<ChartTooltip highlightBy={['event', 'segment']} />
 				<Trendline {...trendlineProps} displayOnHover orientation="horizontal">
 					<TrendlineAnnotation prefix="Median times" numberFormat=".3" />
 				</Trendline>

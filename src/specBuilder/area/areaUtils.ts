@@ -11,6 +11,7 @@
  */
 import { ChartPopover } from '@components/ChartPopover';
 import {
+	DEFAULT_OPACITY_RULE,
 	DEFAULT_TRANSFORMED_TIME_DIMENSION,
 	HIGHLIGHTED_SERIES,
 	HIGHLIGHT_CONTRAST_RATIO,
@@ -42,94 +43,91 @@ export interface AreaMarkProps {
 	isMetricRange?: boolean;
 	parentName?: string; // Optional name of mark that this area is a child of. Used for metric ranges.
 	displayOnHover?: boolean;
+	isHighlightedByGroup?: boolean;
 }
 
-export const getAreaMark = (
-	{
+export const getAreaMark = (areaProps: AreaMarkProps, dataSource: string = `${areaProps.name}_facet`): AreaMark => {
+	const { name, color, colorScheme, children, metricStart, metricEnd, isStacked, scaleType, dimension, opacity } =
+		areaProps;
+	return {
 		name,
-		color,
-		colorScheme,
-		children,
-		metricStart,
-		metricEnd,
-		isStacked,
-		scaleType,
-		dimension,
-		opacity,
-		isMetricRange,
-		parentName,
-		displayOnHover,
-	}: AreaMarkProps,
-	dataSource: string = `${name}_facet`
-): AreaMark => ({
-	name,
-	type: 'area',
-	from: { data: dataSource },
-	interactive: getInteractive(children),
-	encode: {
-		enter: {
-			y: { scale: 'yLinear', field: metricStart },
-			y2: { scale: 'yLinear', field: metricEnd },
-			fill: getColorProductionRule(color, colorScheme),
-			tooltip: getTooltip(children, name),
-			...getBorderStrokeEncodings(isStacked, true),
+		type: 'area',
+		from: { data: dataSource },
+		interactive: getInteractive(children),
+		encode: {
+			enter: {
+				y: { scale: 'yLinear', field: metricStart },
+				y2: { scale: 'yLinear', field: metricEnd },
+				fill: getColorProductionRule(color, colorScheme),
+				tooltip: getTooltip(children, name),
+				...getBorderStrokeEncodings(isStacked, true),
+			},
+			update: {
+				// this has to be in update because when you resize the window that doesn't rebuild the spec
+				// but it may change the x position if it causes the chart to resize
+				x: getX(scaleType, dimension),
+				cursor: getCursor(children),
+				fillOpacity: { value: opacity },
+				opacity: getAreaOpacity(areaProps),
+			},
 		},
-		update: {
-			// this has to be in update because when you resize the window that doesn't rebuild the spec
-			// but it may change the x position if it causes the chart to resize
-			x: getX(scaleType, dimension),
-			cursor: getCursor(children),
-			fillOpacity: getFillOpacity(name, color, opacity, children, isMetricRange, parentName, displayOnHover),
-		},
-	},
-});
+	};
+};
 
-export function getFillOpacity(
-	name: string,
-	color: ColorFacet,
-	opacity: number,
-	children: MarkChildElement[],
-	isMetricRange?: boolean,
-	parentName?: string,
-	displayOnHover?: boolean
-): ProductionRule<NumericValueRef> | undefined {
+export function getAreaOpacity({
+	color,
+	children,
+	displayOnHover,
+	isHighlightedByGroup,
+	isMetricRange,
+	name,
+}: AreaMarkProps): ProductionRule<NumericValueRef> | undefined {
 	// if metric ranges only display when hovering, we don't need to include other hover rules for this specific area
 	if (isMetricRange && displayOnHover) {
 		return [
-			{ test: `${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES} === datum.${color}`, value: opacity },
-			{ test: `${SELECTED_SERIES} && ${SELECTED_SERIES} === datum.${color}`, value: opacity },
-			{ test: `${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES} === datum.${SERIES_ID}`, value: opacity },
+			{ test: `${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES} === datum.${color}`, value: 1 },
+			{ test: `${SELECTED_SERIES} && ${SELECTED_SERIES} === datum.${color}`, value: 1 },
+			{ test: `${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES} === datum.${SERIES_ID}`, value: 1 },
 			{ value: 0 },
 		];
 	}
 
 	// no children means no interactive elements
 	if (!children.length) {
-		return [{ value: opacity }];
+		return [DEFAULT_OPACITY_RULE];
 	}
 
+	const opacityRules: ProductionRule<NumericValueRef> = [];
+	if (isHighlightedByGroup) {
+		opacityRules.push({
+			test: `indexof(pluck(data('${name}_highlightedData'), '${SERIES_ID}'), datum.${SERIES_ID}) !== -1`,
+			value: 1,
+		});
+	}
+	const fadedOpacity = 1 / HIGHLIGHT_CONTRAST_RATIO;
 	// if an area is hovered or selected, all other areas should have half opacity
 	if (children.some((child) => child.type === ChartPopover && !isMetricRange)) {
 		return [
+			...opacityRules,
 			{
 				test: `!${SELECTED_SERIES} && ${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES} !== datum.${color}`,
-				value: opacity / HIGHLIGHT_CONTRAST_RATIO,
+				value: fadedOpacity,
 			},
 			{
 				test: `${SELECTED_SERIES} && ${SELECTED_SERIES} !== datum.${color}`,
-				value: opacity / HIGHLIGHT_CONTRAST_RATIO,
+				value: fadedOpacity,
 			},
-			{ test: `${SELECTED_SERIES} && ${SELECTED_SERIES} === datum.${color}`, value: opacity },
-			{ value: opacity },
+			DEFAULT_OPACITY_RULE,
 		];
 	}
 
 	return [
+		...opacityRules,
 		{
 			test: `${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES} !== datum.${color}`,
-			value: opacity / HIGHLIGHT_CONTRAST_RATIO,
+			value: fadedOpacity,
 		},
-		{ value: opacity },
+		DEFAULT_OPACITY_RULE,
 	];
 }
 

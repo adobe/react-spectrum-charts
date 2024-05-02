@@ -117,6 +117,18 @@ export const isHighlightedByGroup = (markProps: TooltipParentProps) => {
 };
 
 /**
+ * Tooltip highlights by item or dimension
+ * @param markProps
+ * @returns
+ */
+export const isHighlightedByDimension = (markProps: TooltipParentProps) => {
+	const tooltips = getTooltips(markProps);
+	return tooltips.some(
+		({ highlightBy }) => typeof highlightBy === 'string' && ['dimension', 'item'].includes(highlightBy)
+	);
+};
+
+/**
  * adds the appropriate signals for tooltips
  *
  * NOTE: this function mutates the signals array so it should only be called from a produce function

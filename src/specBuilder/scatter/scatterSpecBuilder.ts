@@ -24,6 +24,7 @@ import {
 	SELECTED_ITEM,
 	SYMBOL_SIZE_SCALE,
 } from '@constants';
+import { addTooltipData, addTooltipSignals } from '@specBuilder/chartTooltip/chartTooltipUtils';
 import { addTimeTransform, getFilteredTooltipData, getTableData } from '@specBuilder/data/dataUtils';
 import { getInteractiveMarkName } from '@specBuilder/line/lineUtils';
 import { hasInteractiveChildren, hasPopover } from '@specBuilder/marks/markUtils';
@@ -119,6 +120,7 @@ export const addData = produce<Data[], [ScatterSpecProps]>((data, props) => {
 			],
 		});
 	}
+	addTooltipData(data, props);
 	addTrendlineData(data, props);
 });
 
@@ -135,6 +137,7 @@ export const addSignals = produce<Signal[], [ScatterSpecProps]>((signals, props)
 	if (!hasInteractiveChildren(children)) return;
 	// interactive signals
 	addHighlightedItemSignalEvents(signals, `${name}_voronoi`, 2);
+	addTooltipSignals(signals, props);
 });
 
 /**

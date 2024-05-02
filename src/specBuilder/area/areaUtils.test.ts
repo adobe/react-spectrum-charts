@@ -14,6 +14,7 @@ import {
 	COLOR_SCALE,
 	DEFAULT_COLOR,
 	DEFAULT_COLOR_SCHEME,
+	DEFAULT_OPACITY_RULE,
 	DEFAULT_TRANSFORMED_TIME_DIMENSION,
 } from '@constants';
 
@@ -64,11 +65,10 @@ describe('getAreaMark', () => {
 						scale: 'xLinear',
 						field: 'dimension',
 					},
-					fillOpacity: [
-						{
-							value: 0.5,
-						},
-					],
+					fillOpacity: {
+						value: 0.5,
+					},
+					opacity: [DEFAULT_OPACITY_RULE],
 				},
 			},
 		});
@@ -126,11 +126,10 @@ describe('getAreaMark', () => {
 						scale: 'xLinear',
 						field: 'dimension',
 					},
-					fillOpacity: [
-						{
-							value: 0.5,
-						},
-					],
+					fillOpacity: {
+						value: 0.5,
+					},
+					opacity: [DEFAULT_OPACITY_RULE],
 				},
 			},
 		});
@@ -180,11 +179,10 @@ describe('getAreaMark', () => {
 						scale: 'xTime',
 						field: DEFAULT_TRANSFORMED_TIME_DIMENSION,
 					},
-					fillOpacity: [
-						{
-							value: 0.5,
-						},
-					],
+					fillOpacity: {
+						value: 0.5,
+					},
+					opacity: [DEFAULT_OPACITY_RULE],
 				},
 			},
 		});
@@ -233,11 +231,10 @@ describe('getAreaMark', () => {
 						scale: 'xPoint',
 						field: 'dimension',
 					},
-					fillOpacity: [
-						{
-							value: 0.5,
-						},
-					],
+					fillOpacity: {
+						value: 0.5,
+					},
+					opacity: [DEFAULT_OPACITY_RULE],
 				},
 			},
 		});

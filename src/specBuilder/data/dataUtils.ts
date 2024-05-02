@@ -63,13 +63,16 @@ export const getFilteredTableData = (data: Data[]): SourceData => {
 	return data.find((d) => d.name === FILTERED_TABLE) as SourceData;
 };
 
-export const getSeriesIdTransform = (facets: string[]): FormulaTransform => {
+export const getSeriesIdTransform = (facets: string[]): FormulaTransform[] => {
+	if (facets.length === 0) return [];
 	const expr = facets.map((facet) => `datum.${facet}`).join(' + " | " + ');
-	return {
-		type: 'formula',
-		as: SERIES_ID,
-		expr,
-	};
+	return [
+		{
+			type: 'formula',
+			as: SERIES_ID,
+			expr,
+		},
+	];
 };
 
 /**

@@ -247,7 +247,6 @@ const metricRangeGroupMark = {
 				enter: {
 					y: {
 						field: 'start',
-
 						scale: 'yLinear',
 					},
 					y2: {
@@ -266,11 +265,8 @@ const metricRangeGroupMark = {
 						scale: 'xTime',
 						field: DEFAULT_TRANSFORMED_TIME_DIMENSION,
 					},
-					fillOpacity: [
-						{
-							value: 0.2,
-						},
-					],
+					fillOpacity: { value: 0.2 },
+					opacity: [DEFAULT_OPACITY_RULE],
 				},
 			},
 		},

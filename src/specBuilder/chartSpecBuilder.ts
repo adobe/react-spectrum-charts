@@ -376,7 +376,7 @@ function getPathsFromSymbolShapes(symbolShapes: ChartSymbolShape[]) {
  */
 export const addData = produce<Data[], [{ facets: string[] }]>((data, { facets }) => {
 	if (facets.length === 0) return;
-	data[0]?.transform?.push(getSeriesIdTransform(facets));
+	data[0]?.transform?.push(...getSeriesIdTransform(facets));
 
 	// add a filter transform to the TABLE data that filters out any hidden series
 	const index = data.findIndex((datum) => datum.name === FILTERED_TABLE);

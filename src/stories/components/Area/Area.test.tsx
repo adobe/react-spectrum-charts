@@ -11,6 +11,7 @@
  */
 import React from 'react';
 
+import { HIGHLIGHT_CONTRAST_RATIO } from '@constants';
 import '@matchMediaMock';
 import { Area } from '@rsc';
 import {
@@ -79,7 +80,7 @@ describe('Area', () => {
 		const tooltip = await screen.findByTestId('rsc-tooltip');
 		expect(tooltip).toBeInTheDocument();
 		expect(within(tooltip).getByText('OS: Windows')).toBeInTheDocument();
-		expect(areas[1].getAttribute('fill-opacity')).toEqual('0.16');
+		expect(areas[1].getAttribute('opacity')).toEqual((1 / HIGHLIGHT_CONTRAST_RATIO).toString());
 
 		const highlightRule = await findMarksByGroupName(chart, 'area0_rule', 'line');
 		expect(highlightRule).toBeInTheDocument();
