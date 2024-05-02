@@ -50,7 +50,7 @@ const FeatureMatrixStory: StoryFn<typeof Chart> = (args): ReactElement => {
 	const chartProps = useChartProps(args);
 
 	return (
-		<Chart {...chartProps} debug>
+		<Chart {...chartProps}>
 			<Axis position="bottom" ticks grid title="Percentage of daily users (DAU)" labelFormat="percentage" />
 			<Axis position="left" ticks grid title="Average number of times per day" />
 			<Scatter dimension="dauPercent" metric="countAvg" color="segment">
@@ -70,7 +70,7 @@ const MultipleSegmentFeatureMatrixStory: StoryFn<typeof Chart> = (args): ReactEl
 	const chartProps = useChartProps(args);
 
 	return (
-		<Chart {...chartProps} debug>
+		<Chart {...chartProps}>
 			<Axis position="bottom" ticks grid title="Percentage of daily users (DAU)" labelFormat="percentage" />
 			<Axis position="left" ticks grid title="Average number of times per day" />
 			<Scatter dimension="dauPercent" metric="countAvg" color="segment">
@@ -90,7 +90,7 @@ const TimeCompareFeatureMatrixStory: StoryFn<typeof Chart> = (args): ReactElemen
 	const chartProps = useChartProps(args);
 
 	return (
-		<Chart {...chartProps} debug>
+		<Chart {...chartProps}>
 			<Axis position="bottom" ticks grid title="Percentage of daily users (DAU)" labelFormat="percentage" />
 			<Axis position="left" ticks grid title="Average number of times per day" />
 			<Scatter
@@ -119,7 +119,7 @@ const EventOverlayFeatureMatrixStory: StoryFn<typeof Chart> = (args): ReactEleme
 	const chartProps = useChartProps(args);
 
 	return (
-		<Chart {...chartProps} debug>
+		<Chart {...chartProps}>
 			<Axis position="bottom" ticks grid title="Percentage of daily users (DAU)" labelFormat="percentage" />
 			<Axis position="left" ticks grid title="Average number of times per day" />
 			<Scatter dimension="dauPercent" metric="countAvg" color="segment" opacity="segment">

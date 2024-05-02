@@ -59,7 +59,7 @@ const StackedBarTooltipStory: StoryFn<typeof ChartTooltip> = (args): ReactElemen
 const AreaStory: StoryFn<typeof ChartTooltip> = (args): ReactElement => {
 	const chartProps = useChartProps({ data: browserData, width: 600 });
 	return (
-		<Chart {...chartProps} debug>
+		<Chart {...chartProps}>
 			<Area color="series" dimension="category" scaleType="point">
 				<ChartTooltip {...args} />
 			</Area>
@@ -70,7 +70,7 @@ const AreaStory: StoryFn<typeof ChartTooltip> = (args): ReactElement => {
 const LineStory: StoryFn<typeof ChartTooltip> = (args): ReactElement => {
 	const chartProps = useChartProps({ data: browserData, width: 600 });
 	return (
-		<Chart {...chartProps} debug>
+		<Chart {...chartProps}>
 			<Line color="series" dimension="category" scaleType="point">
 				<ChartTooltip {...args} />
 			</Line>

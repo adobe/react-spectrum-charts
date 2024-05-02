@@ -4,10 +4,11 @@ import {
 	findAllMarksByGroupName,
 	findChart,
 	hoverNthElement,
+	queryAllMarksByGroupName,
 	render,
 } from '@test-utils';
 
-import { Basic, Dimension, Keys, LineChart, ScatterChart, Series } from './HighlightBy.story';
+import { AreaChart, Basic, Dimension, Keys, LineChart, ScatterChart, Series } from './HighlightBy.story';
 
 describe('Basic', () => {
 	test('Only the hovered element should be highlighted', async () => {
@@ -139,5 +140,54 @@ describe('ScatterChart', () => {
 		expect(allElementsHaveAttributeValue(points.slice(0, 6), 'opacity', '1')).toBe(true);
 		// all other points
 		expect(allElementsHaveAttributeValue(points.slice(6), 'opacity', 1 / HIGHLIGHT_CONTRAST_RATIO)).toBe(true);
+	});
+});
+
+describe('AreaChart', () => {
+	test('All points with the same dimension should be highlighted', async () => {
+		render(<AreaChart {...AreaChart.args} />);
+
+		const chart = await findChart();
+		expect(chart).toBeInTheDocument();
+
+		const areas = await findAllMarksByGroupName(chart, 'area0');
+		expect(areas).toHaveLength(3);
+		expect(allElementsHaveAttributeValue(areas, 'opacity', '1')).toBe(true);
+
+		await hoverNthElement(areas, 0);
+
+		// 3 highlight points should be visible
+		const highlightedPoints = await findAllMarksByGroupName(chart, 'area0_point');
+		expect(highlightedPoints).toHaveLength(3);
+
+		// 3 vertical rules should be visible
+		const highlightVerticalRules = await findAllMarksByGroupName(chart, 'area0_rule', 'line');
+		expect(highlightVerticalRules).toHaveLength(3);
+
+		expect(allElementsHaveAttributeValue(areas, 'opacity', '1')).toBe(true);
+	});
+
+	test('All points in the series should be highlighted', async () => {
+		render(<AreaChart {...AreaChart.args} highlightBy="series" />);
+
+		const chart = await findChart();
+		expect(chart).toBeInTheDocument();
+
+		const areas = await findAllMarksByGroupName(chart, 'area0');
+		expect(areas).toHaveLength(3);
+		expect(allElementsHaveAttributeValue(areas, 'opacity', '1')).toBe(true);
+
+		await hoverNthElement(areas, 0);
+
+		// 3 highlight points should be visible
+		const highlightedPoints = await findAllMarksByGroupName(chart, 'area0_point');
+		expect(highlightedPoints).toHaveLength(3);
+		// vertical rules should not be visible for the highlighted series
+		const highlightVerticalRules = queryAllMarksByGroupName(chart, 'area0_rule', 'line');
+		expect(highlightVerticalRules).toHaveLength(0);
+		expect(areas[0]).toHaveAttribute('opacity', '1');
+		expect(
+			allElementsHaveAttributeValue(areas.slice(1), 'opacity', (1 / HIGHLIGHT_CONTRAST_RATIO).toString())
+		).toBe(true);
 	});
 });
