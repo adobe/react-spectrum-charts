@@ -147,6 +147,16 @@ Basic.args = {
 	title: 'Conversion Rate',
 };
 
+const MultilineTitle = bindWithProps(AxisStory);
+MultilineTitle.args = {
+	position: 'left',
+	baseline: true,
+	grid: true,
+	labelFormat: 'percentage',
+	ticks: true,
+	title: ['Conversion Rate', '(converted users / total active users)'],
+};
+
 const DurationLabelFormat = bindWithProps(DurationStory);
 DurationLabelFormat.args = {
 	position: 'left',
@@ -239,6 +249,7 @@ export {
 	ControlledLabels,
 	CustomXRange,
 	DurationLabelFormat,
+	MultilineTitle,
 	NonLinearAxis,
 	NumberFormat,
 	SubLabels,
