@@ -18,6 +18,7 @@ import {
 	DEFAULT_OPACITY_RULE,
 	DEFAULT_TRANSFORMED_TIME_DIMENSION,
 	HIGHLIGHTED_SERIES,
+	HIGHLIGHT_CONTRAST_RATIO,
 	SELECTED_SERIES,
 	SERIES_ID,
 } from '@constants';
@@ -59,7 +60,13 @@ describe('getLineMark()', () => {
 			{ ...defaultLineMarkProps, interactiveMarkName: 'line0', displayOnHover: true },
 			'line0_facet'
 		);
-		expect(lineMark.encode?.update?.opacity).toEqual([DEFAULT_OPACITY_RULE]);
+		expect(lineMark.encode?.update?.opacity).toEqual([
+			{
+				test: `${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES} !== datum.${SERIES_ID}`,
+				value: 1 / HIGHLIGHT_CONTRAST_RATIO,
+			},
+			DEFAULT_OPACITY_RULE,
+		]);
 	});
 
 	test('does not add metric range opacity rules if displayOnHover is false and isMetricRange', () => {
@@ -89,7 +96,10 @@ describe('getLineOpacity()', () => {
 			children: [createElement(ChartTooltip)],
 		});
 		expect(opacityRule).toEqual([
-			{ test: `${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES} !== datum.${SERIES_ID}`, value: 0.2 },
+			{
+				test: `${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES} !== datum.${SERIES_ID}`,
+				value: 1 / HIGHLIGHT_CONTRAST_RATIO,
+			},
 			{ value: 1 },
 		]);
 	});
@@ -102,8 +112,14 @@ describe('getLineOpacity()', () => {
 			children: [createElement(ChartPopover)],
 		});
 		expect(opacityRule).toEqual([
-			{ test: `${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES} !== datum.${SERIES_ID}`, value: 0.2 },
-			{ test: `${SELECTED_SERIES} && ${SELECTED_SERIES} !== datum.${SERIES_ID}`, value: 0.2 },
+			{
+				test: `${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES} !== datum.${SERIES_ID}`,
+				value: 1 / HIGHLIGHT_CONTRAST_RATIO,
+			},
+			{
+				test: `${SELECTED_SERIES} && ${SELECTED_SERIES} !== datum.${SERIES_ID}`,
+				value: 1 / HIGHLIGHT_CONTRAST_RATIO,
+			},
 			{ value: 1 },
 		]);
 	});
@@ -114,7 +130,13 @@ describe('getLineOpacity()', () => {
 			interactiveMarkName: 'line0',
 			displayOnHover: true,
 		});
-		expect(opacityRule).toEqual([DEFAULT_OPACITY_RULE]);
+		expect(opacityRule).toEqual([
+			{
+				test: `${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES} !== datum.${SERIES_ID}`,
+				value: 1 / HIGHLIGHT_CONTRAST_RATIO,
+			},
+			DEFAULT_OPACITY_RULE,
+		]);
 	});
 
 	test('should add highlightedData rule for multiple series if isHighlightedByGroup is true', () => {
