@@ -70,12 +70,11 @@ export const getLineMark = (lineMarkProps: LineMarkProps, dataSource: string): L
 };
 
 export const getLineOpacity = ({
-	displayOnHover,
 	interactiveMarkName,
 	popoverMarkName,
 	isHighlightedByGroup,
 }: LineMarkProps): ProductionRule<NumericValueRef> => {
-	if (!interactiveMarkName || displayOnHover) return [DEFAULT_OPACITY_RULE];
+	if (!interactiveMarkName) return [DEFAULT_OPACITY_RULE];
 	const strokeOpacityRules: ProductionRule<NumericValueRef> = [];
 
 	if (isHighlightedByGroup) {

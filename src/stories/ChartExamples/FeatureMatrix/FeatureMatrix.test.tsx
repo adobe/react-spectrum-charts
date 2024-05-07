@@ -9,11 +9,15 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { HIGHLIGHT_CONTRAST_RATIO } from '@constants';
 import {
 	allElementsHaveAttributeValue,
+	findAllLegendEntries,
 	findAllMarksByGroupName,
 	findChart,
 	findMarksByGroupName,
+	getAllLegendEntries,
+	getAllLegendSymbols,
 	hoverNthElement,
 	queryMarksByGroupName,
 	render,
@@ -172,5 +176,39 @@ describe('TimeCompareFeatureMatrix', () => {
 		expect(paths).toHaveLength(18);
 		expect(allElementsHaveAttributeValue(paths, 'fill-opacity', '0.2')).toBe(true);
 		expect(allElementsHaveAttributeValue(paths, 'fill', spectrumColors.light['gray-500'])).toBe(true);
+	});
+
+	test('highlighting a point should highlight both current and present points, trendlines and legend series', async () => {
+		render(<TimeCompareFeatureMatrix {...TimeCompareFeatureMatrix.args} />);
+		const chart = await findChart();
+		expect(chart).toBeInTheDocument();
+
+		const hoverAreas = await findAllMarksByGroupName(chart, 'scatter0_voronoi');
+		expect(hoverAreas).toHaveLength(36);
+
+		await hoverNthElement(hoverAreas, 0);
+		const points = await findAllMarksByGroupName(chart, 'scatter0');
+
+		// first and second points should be highlighted
+		expect(points[0]).toHaveAttribute('opacity', '1');
+		expect(points[1]).toHaveAttribute('opacity', '1');
+		expect(
+			allElementsHaveAttributeValue(points.slice(2), 'opacity', (1 / HIGHLIGHT_CONTRAST_RATIO).toString())
+		).toBe(true);
+
+		// four trendlines should be visible (2 vertical, 2 horizontal)
+		const horizontalTrendlines = await findAllMarksByGroupName(chart, 'scatter0Trendline0', 'line');
+		expect(horizontalTrendlines).toHaveLength(2);
+		const verticalTrendlines = await findAllMarksByGroupName(chart, 'scatter0Trendline1', 'line');
+		expect(verticalTrendlines).toHaveLength(2);
+
+		// first and second legend series should be highlighted
+		const legendSymbols = getAllLegendSymbols(chart);
+		expect(legendSymbols).toHaveLength(6);
+		expect(legendSymbols[0]).toHaveAttribute('opacity', '1');
+		expect(legendSymbols[1]).toHaveAttribute('opacity', '1');
+		expect(
+			allElementsHaveAttributeValue(legendSymbols.slice(2), 'opacity', (1 / HIGHLIGHT_CONTRAST_RATIO).toString())
+		).toBe(true);
 	});
 });

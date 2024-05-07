@@ -23,7 +23,7 @@ const [
 	getMarksByGroupName,
 	findAllMarksByGroupName,
 	findMarksByGroupName,
-] = buildQueries(queryAllMarksByGroupName, getMultipleError, getMissingError);
+] = buildQueries<[string, string?]>(queryAllMarksByGroupName, getMultipleError, getMissingError);
 
 export {
 	queryMarksByGroupName,
@@ -41,7 +41,7 @@ const getMultipleLegendError = () => `Found multiple legend entries`;
 const getMissingLegendError = () => `Unable to find any legend entries`;
 
 const [queryLegendEntries, getAllLegendEntries, getLegendEntries, findAllLegendEntries, findLegendEntries] =
-	buildQueries(queryAllLegendEntries, getMultipleLegendError, getMissingLegendError);
+	buildQueries<[]>(queryAllLegendEntries, getMultipleLegendError, getMissingLegendError);
 
 export {
 	queryLegendEntries,

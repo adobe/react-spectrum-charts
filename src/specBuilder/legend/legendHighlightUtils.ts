@@ -10,7 +10,7 @@
  * governing permissions and limitations under the License.
  */
 import { COLOR_SCALE, HIGHLIGHTED_SERIES, HIGHLIGHT_CONTRAST_RATIO, SERIES_ID } from '@constants';
-import { GroupMark, Mark, NumericValueRef, ProductionRule } from 'vega';
+import { GroupMark, Mark, NumericValueRef } from 'vega';
 
 /**
  * Adds opacity tests for the fill and stroke of marks that use the color scale to set the fill or stroke value.
@@ -31,10 +31,8 @@ export const setHoverOpacityForMarks = (marks: Mark[], keys?: string[], name?: s
 		const { opacity } = update;
 
 		if (opacity !== undefined) {
-			// the production rule that sets the fill opacity for this mark
-			const opacityRule = getOpacityRule(opacity);
-			// the new production rule for highlighting
-			const highlightOpacityRule = getHighlightOpacityRule(opacityRule, keys, name);
+			// // the new production rule for highlighting
+			const highlightOpacityRule = getHighlightOpacityRule(keys, name);
 
 			if (!Array.isArray(update.opacity)) {
 				update.opacity = [];
@@ -46,42 +44,10 @@ export const setHoverOpacityForMarks = (marks: Mark[], keys?: string[], name?: s
 	});
 };
 
-export const getOpacityRule = (
-	opacityRule: ProductionRule<NumericValueRef> | undefined
-): ProductionRule<NumericValueRef> => {
-	if (opacityRule) {
-		// if it's an array and length > 0, get the last value
-		if (Array.isArray(opacityRule)) {
-			if (opacityRule.length > 0) {
-				return opacityRule[opacityRule.length - 1];
-			}
-		} else {
-			return opacityRule;
-		}
-	}
-	return { value: 1 };
-};
-
-export const getHighlightOpacityRule = (
-	opacityRule: ProductionRule<NumericValueRef>,
-	keys?: string[],
-	name?: string
-): { test?: string } & NumericValueRef => {
+export const getHighlightOpacityRule = (keys?: string[], name?: string): { test?: string } & NumericValueRef => {
 	let test = `${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES} !== datum.${SERIES_ID}`;
 	if (keys) {
 		test = `${name}_highlight && ${name}_highlight !== datum.${keys[0]}`;
-	}
-	if ('scale' in opacityRule && 'field' in opacityRule) {
-		return {
-			test,
-			signal: `scale('${opacityRule.scale}', datum.${opacityRule.field}) / ${HIGHLIGHT_CONTRAST_RATIO}`,
-		};
-	}
-	if ('signal' in opacityRule) {
-		return { test, signal: `${opacityRule.signal} / ${HIGHLIGHT_CONTRAST_RATIO}` };
-	}
-	if ('value' in opacityRule && typeof opacityRule.value === 'number') {
-		return { test, value: opacityRule.value / HIGHLIGHT_CONTRAST_RATIO };
 	}
 	return { test, value: 1 / HIGHLIGHT_CONTRAST_RATIO };
 };

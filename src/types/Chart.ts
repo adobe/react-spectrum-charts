@@ -513,7 +513,7 @@ export interface LegendProps extends BaseProps {
 	keys?: string[];
 	/** labels for each of the series */
 	legendLabels?: LegendLabel[];
-	/** max characters before truncating a legend label */
+	/** max width in pixels before truncating a legend label */
 	labelLimit?: number;
 	/** line type or key in the data that is used as the line type facet for the symbols */
 	lineType?: LineTypeFacet;

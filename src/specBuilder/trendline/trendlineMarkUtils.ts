@@ -11,6 +11,7 @@
  */
 import { ChartTooltip } from '@components/ChartTooltip';
 import { TRENDLINE_VALUE } from '@constants';
+import { isHighlightedByGroup } from '@specBuilder/chartTooltip/chartTooltipUtils';
 import { getLineHoverMarks, getLineOpacity } from '@specBuilder/line/lineMarkUtils';
 import { LineMarkProps } from '@specBuilder/line/lineUtils';
 import {
@@ -331,6 +332,7 @@ const getLineMarkProps = (
 		colorScheme,
 		dimension,
 		displayOnHover,
+		isHighlightedByGroup: isHighlightedByGroup(markProps),
 		interactiveMarkName,
 		lineType,
 		lineWidth: { value: lineWidth },

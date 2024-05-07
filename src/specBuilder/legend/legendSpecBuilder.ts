@@ -104,6 +104,10 @@ export const addLegend = produce<
 
 		const legends: Legend[] = [];
 
+		const highlightedDataTables = spec.data
+			?.filter((data) => data.name.endsWith('_highlightedData'))
+			.map((data) => data.name);
+
 		// if there are any categorical facets, add the legend and supporting data, signals and marks
 		if (ordinalFacets.length) {
 			// add the legendEntries scale
@@ -122,7 +126,7 @@ export const addLegend = produce<
 			spec.marks = addMarks(spec.marks ?? [], legendProps);
 
 			// add the legend
-			legends.push(getCategoricalLegend(ordinalFacets, legendProps));
+			legends.push(getCategoricalLegend(ordinalFacets, highlightedDataTables ?? [], legendProps));
 		}
 
 		// continuous legends cannot be combined with any other legends
@@ -190,14 +194,14 @@ export const formatFacetRefsWithPresets = (
  * @param props
  * @returns
  */
-const getCategoricalLegend = (facets: Facet[], props: LegendSpecProps): Legend => {
+const getCategoricalLegend = (facets: Facet[], highlightedDataTables: string[], props: LegendSpecProps): Legend => {
 	const { name, position, title, labelLimit } = props;
 	return {
 		fill: `${name}Entries`,
 		direction: ['top', 'bottom'].includes(position) ? 'horizontal' : 'vertical',
 		orient: position,
 		title,
-		encode: getEncodings(facets, props),
+		encode: getEncodings(facets, highlightedDataTables, props),
 		columns: getColumns(position),
 		labelLimit,
 	};

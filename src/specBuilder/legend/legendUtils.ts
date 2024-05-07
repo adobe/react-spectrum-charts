@@ -17,6 +17,7 @@ import {
 	LINE_TYPE_SCALE,
 	LINE_WIDTH_SCALE,
 	OPACITY_SCALE,
+	SERIES_ID,
 	SYMBOL_SHAPE_SCALE,
 	SYMBOL_SIZE_SCALE,
 } from '@constants';
@@ -84,9 +85,13 @@ export const getHiddenEntriesFilter = (hiddenEntries: string[], name: string): F
  * @param legendProps
  * @returns
  */
-export const getEncodings = (facets: Facet[], legendProps: LegendSpecProps): LegendEncode => {
+export const getEncodings = (
+	facets: Facet[],
+	highlightedDataTables: string[],
+	legendProps: LegendSpecProps
+): LegendEncode => {
 	const symbolEncodings = getSymbolEncodings(facets, legendProps);
-	const hoverEncodings = getHoverEncodings(facets, legendProps);
+	const hoverEncodings = getHoverEncodings(facets, highlightedDataTables, legendProps);
 	const legendLabelsEncodings = getLegendLabelsEncodings(legendProps.legendLabels);
 	const showHideEncodings = getShowHideEncodings(legendProps);
 	// merge the encodings together
@@ -113,7 +118,7 @@ const getLegendLabelsEncodings = (legendLabels: LegendLabel[] | undefined): Lege
 	return {};
 };
 
-const getHoverEncodings = (facets: Facet[], props: LegendSpecProps): LegendEncode => {
+const getHoverEncodings = (facets: Facet[], highlightedDataTables: string[], props: LegendSpecProps): LegendEncode => {
 	const { highlight, highlightedSeries, name, onMouseOver, onMouseOut, descriptions } = props;
 	if (highlight || highlightedSeries || descriptions) {
 		return {
@@ -129,12 +134,12 @@ const getHoverEncodings = (facets: Facet[], props: LegendSpecProps): LegendEncod
 			},
 			labels: {
 				update: {
-					opacity: getOpacityEncoding(props),
+					opacity: getOpacityEncoding(props, highlightedDataTables),
 				},
 			},
 			symbols: {
 				update: {
-					opacity: getOpacityEncoding(props),
+					opacity: getOpacityEncoding(props, highlightedDataTables),
 				},
 			},
 		};
@@ -165,16 +170,18 @@ const getTooltip = (descriptions: LegendDescription[] | undefined, name: string)
  * @param legendProps
  * @returns opactiy encoding
  */
-export const getOpacityEncoding = ({
-	highlight,
-	highlightedSeries,
-	keys,
-	name,
-}: LegendSpecProps): ProductionRule<NumericValueRef> | undefined => {
+export const getOpacityEncoding = (
+	{ highlight, highlightedSeries, keys, name }: LegendSpecProps,
+	highlightedDataTables: string[]
+): ProductionRule<NumericValueRef> | undefined => {
 	const highlightSignalName = keys ? `${name}_highlight` : HIGHLIGHTED_SERIES;
 	// only add symbol opacity if highlight is true or highlightedSeries is defined
 	if (highlight || highlightedSeries) {
 		return [
+			...highlightedDataTables.map((highlightedDataTable) => ({
+				test: `indexof(pluck(data('${highlightedDataTable}'), '${SERIES_ID}'), datum.value) !== -1`,
+				value: 1,
+			})),
 			{
 				test: `${highlightSignalName} && datum.value !== ${highlightSignalName}`,
 				value: 1 / HIGHLIGHT_CONTRAST_RATIO,

@@ -91,8 +91,8 @@ const TimeCompareFeatureMatrixStory: StoryFn<typeof Chart> = (args): ReactElemen
 
 	return (
 		<Chart {...chartProps}>
-			<Axis position="bottom" ticks grid title="Percentage of daily users (DAU)" labelFormat="percentage" />
-			<Axis position="left" ticks grid title="Average number of times per day" />
+			<Axis position="bottom" grid title="Percentage of daily users (DAU)" labelFormat="percentage" />
+			<Axis position="left" grid title="Average number of times per day" />
 			<Scatter
 				dimension="dauPercent"
 				metric="countAvg"
