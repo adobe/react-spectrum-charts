@@ -16,6 +16,8 @@ import {
 	DEFAULT_COLOR_SCHEME,
 	DEFAULT_LINE_TYPES,
 	DEFAULT_LOCALE,
+	FILTERED_TABLE,
+	GROUP_DATA,
 	LEGEND_TOOLTIP_DELAY,
 	MARK_ID,
 	SELECTED_ITEM,
@@ -179,8 +181,8 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 					);
 				}
 				// get the correct tooltip to render based on the hovered item
-				const tooltip = tooltips.find((t) => t.name === value.rscComponentName)?.callback;
-				if (tooltip && !('index' in value)) {
+				const tooltip = tooltips.find((t) => t.name === value.rscComponentName);
+				if (tooltip?.callback && !('index' in value)) {
 					if (controlledHoveredIdSignal) {
 						chartView.current?.signal(controlledHoveredIdSignal.name, value?.[MARK_ID] ?? null);
 					}
@@ -190,9 +192,14 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 							chartView.current?.signal(controlledHoveredGroupSignal.name, value[key]);
 						}
 					}
+					if (tooltip.highlightBy && tooltip.highlightBy !== 'item') {
+						const tableData = chartView.current?.data(FILTERED_TABLE);
+						const groupId = `${tooltip.name}_groupId`;
+						value[GROUP_DATA] = tableData?.filter((d) => d[groupId] === value[groupId]);
+					}
 					return renderToStaticMarkup(
 						<div className="rsc-tooltip" data-testid="rsc-tooltip">
-							{tooltip(value)}
+							{tooltip.callback(value)}
 						</div>
 					);
 				}

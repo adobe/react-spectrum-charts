@@ -19,6 +19,8 @@ import { characterData } from '@stories/data/marioKartData';
 import { StoryFn } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
 
+import { View } from '@adobe/react-spectrum';
+
 export default {
 	title: 'RSC/ChartTooltip/HighlightBy',
 	component: ChartTooltip,
@@ -131,6 +133,27 @@ Keys.args = {
 	children: dialogCallback,
 };
 
+const GroupData = bindWithProps(ScatterStory);
+GroupData.args = {
+	highlightBy: ['weightClass'],
+	children: (datum: MarioData) => (
+		<div className="mario-tooltip">
+			<div>Weight class: {datum.weightClass}</div>
+			<div>
+				Characters:
+				<View marginStart={6}>
+					{datum.rscGroupData
+						?.map((d) => d.character)
+						.flat()
+						.map((c, i) => (
+							<div key={i}>{c}</div>
+						))}
+				</View>
+			</div>
+		</div>
+	),
+};
+
 const AreaChart = bindWithProps(AreaStory);
 AreaChart.args = {
 	highlightBy: 'dimension',
@@ -149,4 +172,4 @@ ScatterChart.args = {
 	children: marioDialogCallback,
 };
 
-export { Basic, Dimension, Keys, Series, AreaChart, LineChart, ScatterChart };
+export { Basic, Dimension, Keys, Series, GroupData, AreaChart, LineChart, ScatterChart };

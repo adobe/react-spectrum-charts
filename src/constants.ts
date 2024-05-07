@@ -40,10 +40,11 @@ export const TABLE = 'table';
 export const FILTERED_TABLE = 'filteredTable';
 
 // vega data field names
-export const SERIES_ID = 'rscSeriesId';
+export const GROUP_DATA = 'rscGroupData';
 export const MARK_ID = 'rscMarkId';
-export const TRENDLINE_VALUE = 'rscTrendlineValue';
+export const SERIES_ID = 'rscSeriesId';
 export const STACK_ID = 'rscStackId';
+export const TRENDLINE_VALUE = 'rscTrendlineValue';
 
 // signal names
 export const HIGHLIGHTED_ITEM = 'highlightedItem'; // data point
