@@ -12,11 +12,9 @@
 import { HIGHLIGHT_CONTRAST_RATIO } from '@constants';
 import {
 	allElementsHaveAttributeValue,
-	findAllLegendEntries,
 	findAllMarksByGroupName,
 	findChart,
 	findMarksByGroupName,
-	getAllLegendEntries,
 	getAllLegendSymbols,
 	hoverNthElement,
 	queryMarksByGroupName,
