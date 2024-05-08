@@ -17,7 +17,8 @@ export default function useChartHeight(containerHeight: number, maxHeight: numbe
 	return useMemo(() => {
 		let targetHeight = minHeight;
 		if (typeof height === 'number') {
-			targetHeight = height;
+			// integers only, decimal values can cause performance issues with vega.
+			return Math.round(height);
 		} else if (/^\d+%$/.exec(height)) {
 			targetHeight = (containerHeight * Number(height.slice(0, -1))) / 100;
 		} else {
@@ -25,6 +26,7 @@ export default function useChartHeight(containerHeight: number, maxHeight: numbe
 				`height of ${height} is not a valid height. Please provide a valid number or percentage ex. 75%`
 			);
 		}
-		return targetHeight === 0 ? 0 : Math.min(maxHeight, Math.max(minHeight, targetHeight));
+		// integers only, decimal values can cause performance issues with vega.
+		return targetHeight === 0 ? 0 : Math.round(Math.min(maxHeight, Math.max(minHeight, targetHeight)));
 	}, [containerHeight, maxHeight, minHeight, height]);
 }

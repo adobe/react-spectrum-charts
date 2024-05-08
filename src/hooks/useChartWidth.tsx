@@ -20,7 +20,8 @@ export default function useChartWidth(
 	return useMemo(() => {
 		let targetWidth = minWidth;
 		if (typeof width === 'number') {
-			targetWidth = width;
+			// integers only, decimal values can cause performance issues with vega.
+			return Math.round(width);
 		} else if (width === 'auto') {
 			targetWidth = containerWidth;
 		} else if (width.match(/^\d+%$/)) {
@@ -30,6 +31,7 @@ export default function useChartWidth(
 				`width of ${width} is not a valid width. Please provide a valid number, 'auto' or percentage ex. 75%`
 			);
 		}
-		return targetWidth === 0 ? 0 : Math.min(maxWidth, Math.max(minWidth, targetWidth));
+		// integers only, decimal values can cause performance issues with vega.
+		return targetWidth === 0 ? 0 : Math.round(Math.min(maxWidth, Math.max(minWidth, targetWidth)));
 	}, [containerWidth, maxWidth, minWidth, width]);
 }
