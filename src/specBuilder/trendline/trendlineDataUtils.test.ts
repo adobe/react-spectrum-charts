@@ -22,14 +22,13 @@ import {
 	TRENDLINE_VALUE,
 } from '@constants';
 import { baseData } from '@specBuilder/specUtils';
-import { Data, FilterTransform } from 'vega';
+import { Data } from 'vega';
 
 import {
 	addTableDataTransforms,
 	addTrendlineData,
 	getAggregateTrendlineData,
 	getRegressionTrendlineData,
-	getTrendlineDisplayOnHoverData,
 	getTrendlineStatisticalTransforms,
 } from './trendlineDataUtils';
 import { defaultLineProps, defaultTrendlineProps } from './trendlineTestUtils';
@@ -343,18 +342,5 @@ describe('addTableDataTransforms()', () => {
 		});
 		expect(transforms).toHaveLength(1);
 		expect(transforms[0]).toHaveProperty('type', 'extent');
-	});
-});
-
-describe('getTrendlineDisplayOnHoverData()', () => {
-	test('should add highlighted group to expr if isHighlightedByGroup', () => {
-		const data = getTrendlineDisplayOnHoverData('line0Trendline0', 'linear', 'line0', true);
-		expect(
-			(data.transform?.[0] as FilterTransform).expr.includes(`indexof(pluck(data('line0_highlightedData')`)
-		).toBe(true);
-	});
-	test('should include high resolution data if not a widnow method', () => {
-		const data = getTrendlineDisplayOnHoverData('line0Trendline0', 'linear', 'line0', false);
-		expect(data.source).toBe('line0Trendline0_highResolutionData');
 	});
 });

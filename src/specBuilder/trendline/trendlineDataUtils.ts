@@ -18,7 +18,6 @@ import {
 	SELECTED_SERIES,
 	SERIES_ID,
 } from '@constants';
-import { isHighlightedByGroup } from '@specBuilder/chartTooltip/chartTooltipUtils';
 import { getSeriesIdTransform, getTableData } from '@specBuilder/data/dataUtils';
 import { hasInteractiveChildren } from '@specBuilder/marks/markUtils';
 import { getFacetsFromProps } from '@specBuilder/specUtils';
@@ -87,7 +86,7 @@ export const getTrendlineData = (markProps: TrendlineParentProps): SourceData[] 
 			data.push(getWindowTrendlineData(markProps, trendlineProps));
 		}
 		if (displayOnHover) {
-			data.push(getTrendlineDisplayOnHoverData(name, method, markName, isHighlightedByGroup(markProps)));
+			data.push(getTrendlineDisplayOnHoverData(name, method));
 		}
 		if (hasInteractiveChildren(trendlineChildren)) {
 			concatenatedTrendlineData.source.push(`${name}_data`);
@@ -310,24 +309,15 @@ export const addTableDataTransforms = produce<Transforms[], [TrendlineParentProp
  * @param method
  * @returns SourceData
  */
-export const getTrendlineDisplayOnHoverData = (
-	trendlineName: string,
-	method: TrendlineMethod,
-	markName: string,
-	isHighlightedByGroup: boolean
-): SourceData => {
+export const getTrendlineDisplayOnHoverData = (trendlineName: string, method: TrendlineMethod): SourceData => {
 	const source = isWindowMethod(method) ? `${trendlineName}_data` : `${trendlineName}_highResolutionData`;
-	let expr = `datum.${SERIES_ID} === ${HIGHLIGHTED_SERIES} || datum.${SERIES_ID} === ${SELECTED_SERIES}`;
-	if (isHighlightedByGroup) {
-		expr += ` || indexof(pluck(data('${markName}_highlightedData'), '${SERIES_ID}'), datum.${SERIES_ID}) !== -1`;
-	}
 	return {
 		name: `${trendlineName}_highlightedData`,
 		source,
 		transform: [
 			{
 				type: 'filter',
-				expr,
+				expr: `datum.${SERIES_ID} === ${HIGHLIGHTED_SERIES} || datum.${SERIES_ID} === ${SELECTED_SERIES}`,
 			},
 		],
 	};
