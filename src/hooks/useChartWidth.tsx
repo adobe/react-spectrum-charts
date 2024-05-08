@@ -21,7 +21,7 @@ export default function useChartWidth(
 		let targetWidth = minWidth;
 		if (typeof width === 'number') {
 			// integers only, decimal values can cause performance issues with vega.
-			targetWidth = Math.round(width);
+			return Math.round(width);
 		} else if (width === 'auto') {
 			targetWidth = containerWidth;
 		} else if (width.match(/^\d+%$/)) {
