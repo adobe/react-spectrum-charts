@@ -71,8 +71,8 @@ const MultipleSegmentFeatureMatrixStory: StoryFn<typeof Chart> = (args): ReactEl
 
 	return (
 		<Chart {...chartProps}>
-			<Axis position="bottom" ticks grid title="Percentage of daily users (DAU)" labelFormat="percentage" />
-			<Axis position="left" ticks grid title="Average number of times per day" />
+			<Axis position="bottom" grid title="Percentage of daily users (DAU)" labelFormat="percentage" />
+			<Axis position="left" grid title="Average number of times per day" />
 			<Scatter dimension="dauPercent" metric="countAvg" color="segment">
 				<Trendline {...trendlineProps} displayOnHover orientation="horizontal">
 					<TrendlineAnnotation prefix="Median times" numberFormat=".3" />
@@ -91,8 +91,8 @@ const TimeCompareFeatureMatrixStory: StoryFn<typeof Chart> = (args): ReactElemen
 
 	return (
 		<Chart {...chartProps}>
-			<Axis position="bottom" ticks grid title="Percentage of daily users (DAU)" labelFormat="percentage" />
-			<Axis position="left" ticks grid title="Average number of times per day" />
+			<Axis position="bottom" grid title="Percentage of daily users (DAU)" labelFormat="percentage" />
+			<Axis position="left" grid title="Average number of times per day" />
 			<Scatter
 				dimension="dauPercent"
 				metric="countAvg"
@@ -120,8 +120,8 @@ const EventOverlayFeatureMatrixStory: StoryFn<typeof Chart> = (args): ReactEleme
 
 	return (
 		<Chart {...chartProps}>
-			<Axis position="bottom" ticks grid title="Percentage of daily users (DAU)" labelFormat="percentage" />
-			<Axis position="left" ticks grid title="Average number of times per day" />
+			<Axis position="bottom" grid title="Percentage of daily users (DAU)" labelFormat="percentage" />
+			<Axis position="left" grid title="Average number of times per day" />
 			<Scatter dimension="dauPercent" metric="countAvg" color="segment" opacity="segment">
 				<ChartTooltip excludeDataKeys={['isTopItem']} />
 				<Trendline {...trendlineProps} excludeDataKeys={['isTopItem']} displayOnHover orientation="horizontal">
