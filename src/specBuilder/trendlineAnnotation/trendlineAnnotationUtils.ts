@@ -124,6 +124,7 @@ const getTrendlineAnnotationPoints = (annotationProps: TrendlineAnnotationSpecPr
 		name: `${name}_points`,
 		type: 'symbol',
 		from: { data },
+		interactive: false,
 		encode: {
 			enter: {
 				opacity: { value: 0 },
@@ -200,6 +201,7 @@ export const getTrendlineAnnotationTextMark = (annotation: TrendlineAnnotationSp
 		type: 'text',
 		from: { data: `${name}_points` },
 		zindex: 1, // this will draw the text in front of the badge
+		interactive: false,
 		encode: {
 			enter: {
 				text: { signal: `${textPrefix}format(datum.datum.${TRENDLINE_VALUE}, '${numberFormat}')` },
@@ -257,6 +259,7 @@ export const getTrendlineAnnotationBadgeMark = ({
 			name: `${name}_badge`,
 			type: 'rect',
 			from: { data: `${name}` },
+			interactive: false,
 			encode: {
 				enter: {
 					cornerRadius: { value: 2 },
