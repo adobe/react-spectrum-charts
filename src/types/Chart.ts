@@ -545,8 +545,20 @@ export interface ChartTooltipProps {
 	highlightBy?: 'series' | 'dimension' | 'item' | string[];
 }
 export interface ChartPopoverProps {
+	/** Callback used to control the content rendered in the popover */
 	children?: PopoverHandler;
-	width?: number;
+	/** Width of the popover */
+	width?: number | 'auto';
+	/** Minimum width of the popover */
+	minWidth?: number;
+	/** Maximum width of the popover */
+	maxWidth?: number;
+	/** Height of the popover */
+	height?: number | 'auto';
+	/** Minimum height of the popover */
+	minHeight?: number;
+	/** Maximum height of the popover */
+	maxHeight?: number;
 }
 
 export interface ReferenceLineProps {

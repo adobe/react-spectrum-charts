@@ -307,7 +307,8 @@ const ChartDialog = ({ datum, itemName, targetElement, setPopoverState, popovers
 	}
 	const popoverDetail = popovers.find((p) => p.name === itemName);
 	const popover = popoverDetail?.callback;
-	const width = popoverDetail?.width;
+	const dialogProps = popoverDetail?.dialogProps;
+	const minWidth = dialogProps?.minWidth ?? 0;
 	return (
 		<DialogTrigger
 			type="popover"
@@ -319,7 +320,7 @@ const ChartDialog = ({ datum, itemName, targetElement, setPopoverState, popovers
 		>
 			<ActionButton UNSAFE_style={{ display: 'none' }}>launch chart popover</ActionButton>
 			{(close) => (
-				<Dialog data-testid="rsc-popover" UNSAFE_className="rsc-popover" minWidth="size-1000" width={width}>
+				<Dialog data-testid="rsc-popover" UNSAFE_className="rsc-popover" {...dialogProps} minWidth={minWidth}>
 					<SpectrumView gridColumn="1/-1" gridRow="1/-1" margin={12}>
 						{popover && datum && popover(datum, close)}
 					</SpectrumView>

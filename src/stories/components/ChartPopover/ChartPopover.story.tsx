@@ -109,21 +109,27 @@ const AreaStory: StoryFn<typeof ChartPopover> = (args): ReactElement => {
 };
 
 const Canvas = bindWithProps(ChartPopoverCanvasStory);
-Canvas.args = { children: dialogContent, width: 250 };
+Canvas.args = { children: dialogContent, width: 'auto' };
 
 const Svg = bindWithProps(ChartPopoverSvgStory);
-Svg.args = { children: dialogContent, width: 250 };
+Svg.args = { children: dialogContent, width: 'auto' };
+
+const Size = bindWithProps(ChartPopoverSvgStory);
+Size.args = { children: dialogContent, width: 200, height: 100 };
+
+const MinWidth = bindWithProps(ChartPopoverSvgStory);
+MinWidth.args = { children: dialogContent, width: 'auto', minWidth: 250 };
 
 const AreaChart = bindWithProps(AreaStory);
-AreaChart.args = { children: dialogContent };
+AreaChart.args = { children: dialogContent, width: 'auto' };
 
 const DodgedBarChart = bindWithProps(ChartPopoverDodgedBarStory);
-DodgedBarChart.args = { children: dialogContent, width: 250 };
+DodgedBarChart.args = { children: dialogContent, width: 'auto' };
 
 const LineChart = bindWithProps(LineStory);
-LineChart.args = { children: dialogContent };
+LineChart.args = { children: dialogContent, width: 'auto' };
 
 const StackedBarChart = bindWithProps(ChartPopoverSvgStory);
-StackedBarChart.args = { children: dialogContent, width: 250 };
+StackedBarChart.args = { children: dialogContent, width: 'auto' };
 
-export { Canvas, Svg, AreaChart, DodgedBarChart, LineChart, StackedBarChart };
+export { Canvas, Svg, Size, MinWidth, AreaChart, DodgedBarChart, LineChart, StackedBarChart };
