@@ -109,21 +109,24 @@ const AreaStory: StoryFn<typeof ChartPopover> = (args): ReactElement => {
 };
 
 const Canvas = bindWithProps(ChartPopoverCanvasStory);
-Canvas.args = { children: dialogContent, width: 250 };
+Canvas.args = { children: dialogContent };
 
 const Svg = bindWithProps(ChartPopoverSvgStory);
-Svg.args = { children: dialogContent, width: 250 };
+Svg.args = { children: dialogContent };
+
+const Size = bindWithProps(ChartPopoverSvgStory);
+Size.args = { children: dialogContent, width: 200, height: 100, minWidth: 50 };
 
 const AreaChart = bindWithProps(AreaStory);
 AreaChart.args = { children: dialogContent };
 
 const DodgedBarChart = bindWithProps(ChartPopoverDodgedBarStory);
-DodgedBarChart.args = { children: dialogContent, width: 250 };
+DodgedBarChart.args = { children: dialogContent };
 
 const LineChart = bindWithProps(LineStory);
 LineChart.args = { children: dialogContent };
 
 const StackedBarChart = bindWithProps(ChartPopoverSvgStory);
-StackedBarChart.args = { children: dialogContent, width: 250 };
+StackedBarChart.args = { children: dialogContent };
 
-export { Canvas, Svg, AreaChart, DodgedBarChart, LineChart, StackedBarChart };
+export { Canvas, Svg, Size, AreaChart, DodgedBarChart, LineChart, StackedBarChart };

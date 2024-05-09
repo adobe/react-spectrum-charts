@@ -28,7 +28,7 @@ import {
 } from '@test-utils';
 import userEvent from '@testing-library/user-event';
 
-import { Canvas, DodgedBarChart, LineChart, StackedBarChart, Svg } from './ChartPopover.story';
+import { Canvas, DodgedBarChart, LineChart, Size, StackedBarChart, Svg } from './ChartPopover.story';
 
 describe('ChartPopover', () => {
 	// ChartPopover is not a real React component. This is test just provides test coverage for sonarqube
@@ -102,6 +102,21 @@ describe('ChartPopover', () => {
 		expect(bars[0]).toHaveAttribute('stroke-width', '2');
 		// all other bars should be faded
 		expect(allElementsHaveAttributeValue(bars.slice(1), 'opacity', 1 / HIGHLIGHT_CONTRAST_RATIO)).toBeTruthy();
+	});
+
+	test('Popover should be corrrect size', async () => {
+		render(<Size {...Size.args} />);
+
+		const chart = await findChart();
+		expect(chart).toBeInTheDocument();
+		const bars = getAllMarksByGroupName(chart, 'bar0');
+
+		// clicking the bar should open the popover
+		await clickNthElement(bars, 0);
+		const popover = await screen.findByTestId('rsc-popover');
+		await waitFor(() => expect(popover).toBeInTheDocument()); // waitFor to give the popover time to make sure it doesn't close
+
+		expect(popover).toHaveStyle('width: 200px; height: 100px; min-width: 50px;');
 	});
 
 	test('Line popover opens and closes corectly when clicking on the chart', async () => {
