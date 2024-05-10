@@ -9,24 +9,21 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { DEFAULT_COLOR_SCHEME } from '@constants';
+import { DEFAULT_COLOR_SCHEME, FILTERED_TABLE } from '@constants';
 import { spectrumColors } from '@themes';
 
 import { defaultLegendProps } from './legendTestUtils';
-import { getShowHideEncodings, getSymbolEncodings, getSymbolType, mergeLegendEncodings } from './legendUtils';
+import {
+	getHiddenSeriesColorRule,
+	getShowHideEncodings,
+	getSymbolEncodings,
+	getSymbolType,
+	mergeLegendEncodings,
+} from './legendUtils';
 
-const hiddenSeriesEncoding = {
-	test: 'indexof(hiddenSeries, datum.value) !== -1',
-	value: 'rgb(213, 213, 213)',
-};
-
-const hiddenSeriesLabelUpdateEncoding = {
+const labelUpdateEncoding = {
 	update: {
 		fill: [
-			{
-				test: 'indexof(hiddenSeries, datum.value) !== -1',
-				value: 'rgb(144, 144, 144)',
-			},
 			{
 				value: 'rgb(70, 70, 70)',
 			},
@@ -52,8 +49,8 @@ describe('getSymbolEncodings()', () => {
 			symbols: {
 				enter: {},
 				update: {
-					fill: [hiddenSeriesEncoding, { value: spectrumColors.light['categorical-100'] }],
-					stroke: [hiddenSeriesEncoding, { value: spectrumColors.light['categorical-100'] }],
+					fill: [{ value: spectrumColors.light['categorical-100'] }],
+					stroke: [{ value: spectrumColors.light['categorical-100'] }],
 				},
 			},
 		});
@@ -68,7 +65,7 @@ describe('getShowHideEncodings()', () => {
 				isToggleable: false,
 				onClick: undefined,
 			})
-		).toEqual({ labels: hiddenSeriesLabelUpdateEncoding });
+		).toEqual({ labels: labelUpdateEncoding });
 	});
 	test('should return encodings if isToggleable', () => {
 		const encoding = getShowHideEncodings({ ...defaultLegendProps, isToggleable: true });
@@ -84,7 +81,7 @@ describe('getShowHideEncodings()', () => {
 		const encoding = getShowHideEncodings({ ...defaultLegendProps, onClick: () => {} });
 		expect(encoding).toHaveProperty('entries');
 		expect(encoding).toHaveProperty('labels');
-		expect(encoding.labels).toStrictEqual(hiddenSeriesLabelUpdateEncoding);
+		expect(encoding.labels).toStrictEqual(labelUpdateEncoding);
 	});
 });
 
@@ -140,5 +137,24 @@ describe('getSymbolType()', () => {
 	});
 	test('should default to circle if static value is not provided', () => {
 		expect(getSymbolType('series')).toStrictEqual('circle');
+	});
+});
+
+describe('getHiddenSeriesColorRule()', () => {
+	test('should return empty array if not toggleable and no hiddenSeries', () => {
+		expect(getHiddenSeriesColorRule(defaultLegendProps, 'gray-300')).toEqual([]);
+	});
+
+	test('should use filteredTable if there are keys', () => {
+		const colorRules = getHiddenSeriesColorRule(
+			{ ...defaultLegendProps, isToggleable: true, keys: ['key1'] },
+			'gray-300'
+		);
+		expect(colorRules[0].test).toContain(FILTERED_TABLE);
+	});
+
+	test('should look at hiddenSeries if there are not any keys', () => {
+		const colorRules = getHiddenSeriesColorRule({ ...defaultLegendProps, isToggleable: true }, 'gray-300');
+		expect(colorRules[0].test).toContain('hiddenSeries');
 	});
 });

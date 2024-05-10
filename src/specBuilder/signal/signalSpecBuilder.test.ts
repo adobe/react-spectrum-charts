@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { HIGHLIGHTED_ITEM, HIGHLIGHTED_SERIES } from '@constants';
+import { FILTERED_TABLE, HIGHLIGHTED_ITEM, HIGHLIGHTED_SERIES } from '@constants';
 import {
 	defaultHighlightedItemSignal,
 	defaultHighlightedSeriesSignal,
@@ -17,7 +17,11 @@ import {
 } from '@specBuilder/specTestUtils';
 import { Signal } from 'vega';
 
-import { addHighlightedItemSignalEvents, addHighlightedSeriesSignalEvents } from './signalSpecBuilder';
+import {
+	addHighlightedItemSignalEvents,
+	addHighlightedSeriesSignalEvents,
+	getHighlightSignalUpdateExpression,
+} from './signalSpecBuilder';
 
 describe('signalSpecBuilder', () => {
 	let signals: Signal[];
@@ -92,6 +96,23 @@ describe('signalSpecBuilder', () => {
 			expect(signals[2]?.on?.[1]).toHaveProperty('update', 'null');
 			expect(signals[3].on).toBeUndefined();
 			expect(signals[4].on).toBeUndefined();
+		});
+	});
+
+	describe('getHighlightSignalUpdateExpression()', () => {
+		test('should return basic rule if there is no method of hidding series', () => {
+			const update = getHighlightSignalUpdateExpression('legend0', false);
+			expect(update).toBe(`domain("legend0Entries")[datum.index]`);
+		});
+
+		test('should reference filteredTable if there are keys', () => {
+			const update = getHighlightSignalUpdateExpression('legend0', true, ['key1', 'key2']);
+			expect(update).toContain(FILTERED_TABLE);
+		});
+
+		test('should referende hiddenSeries if there are not keys', () => {
+			const update = getHighlightSignalUpdateExpression('legend0', true, []);
+			expect(update).toContain('hiddenSeries');
 		});
 	});
 });

@@ -9,7 +9,14 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { HIGHLIGHTED_GROUP, HIGHLIGHTED_ITEM, HIGHLIGHTED_SERIES, MARK_ID, SERIES_ID } from '@constants';
+import {
+	FILTERED_TABLE,
+	HIGHLIGHTED_GROUP,
+	HIGHLIGHTED_ITEM,
+	HIGHLIGHTED_SERIES,
+	MARK_ID,
+	SERIES_ID,
+} from '@constants';
 import { Signal } from 'vega';
 
 /**
@@ -58,17 +65,29 @@ export const addHighlighSignalLegendHoverEvents = (
 		if (highlightedItemSignal.on === undefined) {
 			highlightedItemSignal.on = [];
 		}
-		const hoveredSeries = `domain("${legendName}Entries")[datum.index]`;
-		const update = includeHiddenSeries
-			? `indexof(hiddenSeries, ${hoveredSeries}) === -1 ? ${hoveredSeries} : null`
-			: hoveredSeries;
 		highlightedItemSignal.on.push(
 			...[
-				{ events: `@${legendName}_legendEntry:mouseover`, update },
+				{
+					events: `@${legendName}_legendEntry:mouseover`,
+					update: getHighlightSignalUpdateExpression(legendName, includeHiddenSeries, keys),
+				},
 				{ events: `@${legendName}_legendEntry:mouseout`, update: 'null' },
 			]
 		);
 	}
+};
+
+export const getHighlightSignalUpdateExpression = (
+	legendName: string,
+	includeHiddenSeries: boolean,
+	keys?: string[]
+) => {
+	const hoveredSeriesExpression = `domain("${legendName}Entries")[datum.index]`;
+	if (!includeHiddenSeries) return hoveredSeriesExpression;
+	if (keys?.length) {
+		return `indexof(pluck(data("${FILTERED_TABLE}"),"${legendName}_groupId"), ${hoveredSeriesExpression}) !== -1 ? ${hoveredSeriesExpression} : null`;
+	}
+	return `indexof(hiddenSeries, ${hoveredSeriesExpression}) === -1 ? ${hoveredSeriesExpression} : null`;
 };
 
 /**
