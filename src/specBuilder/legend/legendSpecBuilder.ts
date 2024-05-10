@@ -18,6 +18,7 @@ import {
 	SYMBOL_SHAPE_SCALE,
 	SYMBOL_SIZE_SCALE,
 } from '@constants';
+import { getTableData } from '@specBuilder/data/dataUtils';
 import { addFieldToFacetScaleDomain } from '@specBuilder/scale/scaleSpecBuilder';
 import {
 	getColorValue,
@@ -38,11 +39,7 @@ import {
 	LineWidthFacet,
 	SymbolShapeFacet,
 } from '../../types';
-import {
-	addHighlighSignalLegendHoverEvents,
-	getLegendLabelsSeriesSignal,
-	hasSignalByName,
-} from '../signal/signalSpecBuilder';
+import { addHighlighSignalLegendHoverEvents, getGenericSignal } from '../signal/signalSpecBuilder';
 import { getFacets, getFacetsFromKeys } from './legendFacetUtils';
 import { setHoverOpacityForMarks } from './legendHighlightUtils';
 import { Facet, getColumns, getEncodings, getHiddenEntriesFilter, getSymbolType } from './legendUtils';
@@ -255,7 +252,7 @@ const addMarks = produce<Mark[], [LegendSpecProps]>((marks, { highlight, keys, n
  * Each unique combination gets joined with a pipe to create a single string to use as legend entries
  */
 export const addData = produce<Data[], [LegendSpecProps & { facets: string[] }]>(
-	(data, { facets, hiddenEntries, name }) => {
+	(data, { facets, hiddenEntries, keys, name }) => {
 		// expression for combining all the facets into a single key
 		const expr = facets.map((facet) => `datum.${facet}`).join(' + " | " + ');
 		data.push({
@@ -274,19 +271,29 @@ export const addData = produce<Data[], [LegendSpecProps & { facets: string[] }]>
 				...getHiddenEntriesFilter(hiddenEntries, name),
 			],
 		});
+
+		if (keys?.length) {
+			const tableData = getTableData(data);
+			if (!tableData.transform) {
+				tableData.transform = [];
+			}
+			tableData.transform.push({
+				type: 'formula',
+				as: `${name}_groupId`,
+				expr: keys.map((key) => `datum.${key}`).join(' + " | " + '),
+			});
+		}
 	}
 );
 
 export const addSignals = produce<Signal[], [LegendSpecProps]>(
-	(signals, { hiddenSeries, highlight, isToggleable, legendLabels, name }) => {
+	(signals, { hiddenSeries, highlight, isToggleable, keys, legendLabels, name }) => {
 		if (highlight) {
-			addHighlighSignalLegendHoverEvents(signals, name, Boolean(isToggleable || hiddenSeries));
+			addHighlighSignalLegendHoverEvents(signals, name, Boolean(isToggleable || hiddenSeries), keys);
 		}
 
 		if (legendLabels) {
-			if (!hasSignalByName(signals, 'legendLabels')) {
-				signals.push(getLegendLabelsSeriesSignal(legendLabels));
-			}
+			signals.push(getGenericSignal(`${name}_labels`, legendLabels));
 		}
 	}
 );

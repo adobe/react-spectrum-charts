@@ -26,6 +26,7 @@ import {
 	defaultSelectedSeriesSignal,
 	defaultSignals,
 } from '@specBuilder/specTestUtils';
+import { baseData } from '@specBuilder/specUtils';
 import { Data, Legend, LegendEncode, Scale, Spec, SymbolEncodeEntry } from 'vega';
 
 import { addData, addLegend, addSignals, formatFacetRefsWithPresets, getContinuousLegend } from './legendSpecBuilder';
@@ -204,8 +205,8 @@ describe('addLegend()', () => {
 						...hiddenSeriesLabelUpdateEncoding,
 						text: [
 							{
-								test: "indexof(pluck(legendLabels, 'seriesName'), datum.value) > -1",
-								signal: "legendLabels[indexof(pluck(legendLabels, 'seriesName'), datum.value)].label",
+								test: "indexof(pluck(legend0_labels, 'seriesName'), datum.value) > -1",
+								signal: "legend0_labels[indexof(pluck(legend0_labels, 'seriesName'), datum.value)].label",
 							},
 							{
 								signal: 'datum.value',
@@ -233,8 +234,8 @@ describe('addLegend()', () => {
 						...defaultHighlightLegendEncoding.labels?.update,
 						text: [
 							{
-								test: "indexof(pluck(legendLabels, 'seriesName'), datum.value) > -1",
-								signal: "legendLabels[indexof(pluck(legendLabels, 'seriesName'), datum.value)].label",
+								test: "indexof(pluck(legend0_labels, 'seriesName'), datum.value) > -1",
+								signal: "legend0_labels[indexof(pluck(legend0_labels, 'seriesName'), datum.value)].label",
 							},
 							{
 								signal: 'datum.value',
@@ -256,7 +257,7 @@ describe('addLegend()', () => {
 			).toStrictEqual([
 				...defaultSignals,
 				{
-					name: 'legendLabels',
+					name: 'legend0_labels',
 					value: [
 						{ seriesName: 1, label: 'Any event' },
 						{ seriesName: 2, label: 'Any event' },
@@ -325,6 +326,19 @@ describe('addData()', () => {
 			},
 		]);
 	});
+	test('should add legend group Id if keys has length', () => {
+		const data = addData(baseData, { ...defaultLegendProps, facets: [DEFAULT_COLOR], keys: ['key1', 'key2'] });
+		expect(data[0].transform).toHaveLength(2);
+		expect(data[0].transform?.[1]).toHaveProperty('as', 'legend0_groupId');
+	});
+	test('should add transform to table if they do not exist', () => {
+		const data = addData([{ ...baseData[0], transform: undefined }, ...baseData], {
+			...defaultLegendProps,
+			facets: [DEFAULT_COLOR],
+			keys: ['key1', 'key2'],
+		});
+		expect(data[0].transform).toHaveLength(1);
+	});
 });
 
 describe('formatFacetRefsWithPresets()', () => {
@@ -379,7 +393,7 @@ describe('addSignals()', () => {
 	test('should add legendLabels signal if legendLabels are defined', () => {
 		expect(
 			addSignals(defaultSignals, { ...defaultLegendProps, legendLabels: [] }).find(
-				(signal) => signal.name === 'legendLabels'
+				(signal) => signal.name === 'legend0_labels'
 			)
 		).toBeDefined();
 	});
