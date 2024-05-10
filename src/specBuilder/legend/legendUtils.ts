@@ -12,6 +12,7 @@
 import {
 	COLOR_SCALE,
 	DEFAULT_OPACITY_RULE,
+	FILTERED_TABLE,
 	HIGHLIGHTED_GROUP,
 	HIGHLIGHTED_SERIES,
 	HIGHLIGHT_CONTRAST_RATIO,
@@ -278,13 +279,20 @@ const getSymbolFacetEncoding = <T>({
 };
 
 export const getHiddenSeriesColorRule = (
-	{ colorScheme, hiddenSeries, isToggleable, keys }: LegendSpecProps,
+	{ colorScheme, hiddenSeries, isToggleable, keys, name }: LegendSpecProps,
 	colorValue: ColorValueV6
 ): ({
 	test?: string;
 } & ColorValueRef)[] => {
-	// if the legend doesn't support hide/show or if it has custom keys, don't add the hidden series color rule
-	if ((!isToggleable && !hiddenSeries) || keys) return [];
+	if (!isToggleable && !hiddenSeries.length) return [];
+	if (keys?.length) {
+		return [
+			{
+				test: `indexof(pluck(data('${FILTERED_TABLE}'), '${name}_groupId'), datum.value) === -1`,
+				value: getColorValue(colorValue, colorScheme),
+			},
+		];
+	}
 	return [{ test: 'indexof(hiddenSeries, datum.value) !== -1', value: getColorValue(colorValue, colorScheme) }];
 };
 
@@ -297,7 +305,7 @@ export const getShowHideEncodings = (props: LegendSpecProps): LegendEncode => {
 	const { colorScheme, hiddenSeries, isToggleable, keys, name, onClick } = props;
 	let hiddenSeriesEncode: LegendEncode = {};
 	// if the legend supports hide/show and doesn't have custom keys, add the hidden series encodings
-	if ((hiddenSeries || isToggleable) && !keys) {
+	if (hiddenSeries || isToggleable) {
 		hiddenSeriesEncode = {
 			labels: {
 				update: {

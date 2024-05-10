@@ -45,21 +45,13 @@ const defaultSpec: Spec = {
 };
 
 const colorEncoding = { signal: `scale('${COLOR_SCALE}', data('legend0Aggregate')[datum.index].${DEFAULT_COLOR})` };
-const hiddenSeriesEncoding = {
-	test: 'indexof(hiddenSeries, datum.value) !== -1',
-	value: 'rgb(213, 213, 213)',
-};
 
 const defaultSymbolUpdateEncodings: SymbolEncodeEntry = {
-	fill: [hiddenSeriesEncoding, colorEncoding],
-	stroke: [hiddenSeriesEncoding, colorEncoding],
+	fill: [colorEncoding],
+	stroke: [colorEncoding],
 };
 const hiddenSeriesLabelUpdateEncoding = {
 	fill: [
-		{
-			test: 'indexof(hiddenSeries, datum.value) !== -1',
-			value: 'rgb(144, 144, 144)',
-		},
 		{
 			value: 'rgb(70, 70, 70)',
 		},
