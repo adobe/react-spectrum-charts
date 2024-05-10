@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { HIGHLIGHTED_ITEM, HIGHLIGHTED_SERIES, MARK_ID, SERIES_ID } from '@constants';
+import { HIGHLIGHTED_GROUP, HIGHLIGHTED_ITEM, HIGHLIGHTED_SERIES, MARK_ID, SERIES_ID } from '@constants';
 import { Signal } from 'vega';
 
 /**
@@ -49,9 +49,11 @@ export const getControlledHoveredGroupSignal = (name: string): Signal => {
 export const addHighlighSignalLegendHoverEvents = (
 	signals: Signal[],
 	legendName: string,
-	includeHiddenSeries: boolean
+	includeHiddenSeries: boolean,
+	keys?: string[]
 ) => {
-	const highlightedItemSignal = signals.find((signal) => signal.name === HIGHLIGHTED_SERIES);
+	const signalName = keys?.length ? HIGHLIGHTED_GROUP : HIGHLIGHTED_SERIES;
+	const highlightedItemSignal = signals.find((signal) => signal.name === signalName);
 	if (highlightedItemSignal) {
 		if (highlightedItemSignal.on === undefined) {
 			highlightedItemSignal.on = [];

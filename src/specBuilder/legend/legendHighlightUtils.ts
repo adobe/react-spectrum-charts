@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { COLOR_SCALE, HIGHLIGHTED_SERIES, HIGHLIGHT_CONTRAST_RATIO, SERIES_ID } from '@constants';
+import { COLOR_SCALE, HIGHLIGHTED_GROUP, HIGHLIGHTED_SERIES, HIGHLIGHT_CONTRAST_RATIO, SERIES_ID } from '@constants';
 import { GroupMark, Mark, NumericValueRef } from 'vega';
 
 /**
@@ -31,7 +31,7 @@ export const setHoverOpacityForMarks = (marks: Mark[], keys?: string[], name?: s
 		const { opacity } = update;
 
 		if (opacity !== undefined) {
-			// // the new production rule for highlighting
+			// the new production rule for highlighting
 			const highlightOpacityRule = getHighlightOpacityRule(keys, name);
 
 			if (!Array.isArray(update.opacity)) {
@@ -46,8 +46,8 @@ export const setHoverOpacityForMarks = (marks: Mark[], keys?: string[], name?: s
 
 export const getHighlightOpacityRule = (keys?: string[], name?: string): { test?: string } & NumericValueRef => {
 	let test = `${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES} !== datum.${SERIES_ID}`;
-	if (keys) {
-		test = `${name}_highlight && ${name}_highlight !== datum.${keys[0]}`;
+	if (keys?.length) {
+		test = `${HIGHLIGHTED_GROUP} && ${HIGHLIGHTED_GROUP} !== datum.${name}_groupId`;
 	}
 	return { test, value: 1 / HIGHLIGHT_CONTRAST_RATIO };
 };

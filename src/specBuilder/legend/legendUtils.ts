@@ -12,6 +12,7 @@
 import {
 	COLOR_SCALE,
 	DEFAULT_OPACITY_RULE,
+	HIGHLIGHTED_GROUP,
 	HIGHLIGHTED_SERIES,
 	HIGHLIGHT_CONTRAST_RATIO,
 	LINE_TYPE_SCALE,
@@ -87,13 +88,13 @@ export const getHiddenEntriesFilter = (hiddenEntries: string[], name: string): F
 export const getEncodings = (facets: Facet[], legendProps: LegendSpecProps): LegendEncode => {
 	const symbolEncodings = getSymbolEncodings(facets, legendProps);
 	const hoverEncodings = getHoverEncodings(facets, legendProps);
-	const legendLabelsEncodings = getLegendLabelsEncodings(legendProps.legendLabels);
+	const legendLabelsEncodings = getLegendLabelsEncodings(legendProps.name, legendProps.legendLabels);
 	const showHideEncodings = getShowHideEncodings(legendProps);
 	// merge the encodings together
 	return mergeLegendEncodings([symbolEncodings, legendLabelsEncodings, hoverEncodings, showHideEncodings]);
 };
 
-const getLegendLabelsEncodings = (legendLabels: LegendLabel[] | undefined): LegendEncode => {
+const getLegendLabelsEncodings = (name: string, legendLabels: LegendLabel[] | undefined): LegendEncode => {
 	if (legendLabels) {
 		return {
 			labels: {
@@ -101,8 +102,8 @@ const getLegendLabelsEncodings = (legendLabels: LegendLabel[] | undefined): Lege
 					text: [
 						{
 							// Test whether a legendLabel exists for the seriesName, if not use the seriesName
-							test: "indexof(pluck(legendLabels, 'seriesName'), datum.value) > -1",
-							signal: "legendLabels[indexof(pluck(legendLabels, 'seriesName'), datum.value)].label",
+							test: `indexof(pluck(${name}_labels, 'seriesName'), datum.value) > -1`,
+							signal: `${name}_labels[indexof(pluck(${name}_labels, 'seriesName'), datum.value)].label`,
 						},
 						{ signal: 'datum.value' },
 					],
@@ -169,9 +170,8 @@ export const getOpacityEncoding = ({
 	highlight,
 	highlightedSeries,
 	keys,
-	name,
 }: LegendSpecProps): ProductionRule<NumericValueRef> | undefined => {
-	const highlightSignalName = keys ? `${name}_highlight` : HIGHLIGHTED_SERIES;
+	const highlightSignalName = keys?.length ? HIGHLIGHTED_GROUP : HIGHLIGHTED_SERIES;
 	// only add symbol opacity if highlight is true or highlightedSeries is defined
 	if (highlight || highlightedSeries) {
 		return [

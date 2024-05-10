@@ -9,7 +9,13 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { DEFAULT_OPACITY_RULE, HIGHLIGHTED_SERIES, HIGHLIGHT_CONTRAST_RATIO, SERIES_ID } from '@constants';
+import {
+	DEFAULT_OPACITY_RULE,
+	HIGHLIGHTED_GROUP,
+	HIGHLIGHTED_SERIES,
+	HIGHLIGHT_CONTRAST_RATIO,
+	SERIES_ID,
+} from '@constants';
 import { Mark } from 'vega';
 
 import { getHighlightOpacityRule, setHoverOpacityForMarks } from './legendHighlightUtils';
@@ -38,8 +44,11 @@ describe('getHighlightOpacityRule()', () => {
 		);
 	});
 	test('should use keys in test if there are keys', () => {
-		const opacityRule = getHighlightOpacityRule(['key1'], 'scatter0');
-		expect(opacityRule).toHaveProperty('test', 'scatter0_highlight && scatter0_highlight !== datum.key1');
+		const opacityRule = getHighlightOpacityRule(['key1'], 'legend0');
+		expect(opacityRule).toHaveProperty(
+			'test',
+			`${HIGHLIGHTED_GROUP} && ${HIGHLIGHTED_GROUP} !== datum.legend0_groupId`
+		);
 	});
 });
 
