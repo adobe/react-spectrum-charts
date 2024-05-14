@@ -57,7 +57,7 @@
 		"skulk": "yarn watch --silent"
 	},
 	"devDependencies": {
-		"@adobe/react-spectrum": "^3.23.0",
+		"@adobe/react-spectrum": "3.34.1",
 		"@babel/cli": "^7.19.3",
 		"@babel/core": "^7.20.5",
 		"@babel/eslint-parser": "^7.19.1",
