@@ -142,8 +142,7 @@
 	},
 	"resolutions": {
 		"@types/react": "17.0.50",
-		"@types/react-dom": "17.0.17",
-		"jackspeak": "2.1.1"
+		"@types/react-dom": "17.0.17"
 	},
 	"bugs": {
 		"url": "https://github.com/adobe/react-spectrum-charts/issues"
