@@ -27,7 +27,7 @@
   resolved "https://registry.yarnpkg.com/@adobe/react-spectrum-workflow/-/react-spectrum-workflow-2.3.4.tgz#eec7f2c2d855e72196cbb7572905413a5005c7d9"
   integrity sha512-XPLzIBl58HdLF9WIPB7RDAvVXvCE3SjG+HaWQhW2P9MnxSz1DEA9O7mlTlYblJkMbfk10T/+RFaSupc1yoN+TA==
 
-"@adobe/react-spectrum@^3.23.0":
+"@adobe/react-spectrum@>= 3.23.0":
   version "3.35.0"
   resolved "https://artifactory.corp.adobe.com/artifactory/api/npm/npm-adobe-platform-release/@adobe/react-spectrum/-/react-spectrum-3.35.0.tgz#716a3c2c00973151203078173edee3be874c3f9f"
   integrity sha512-dhCKWKDS/xF02EpWluicH7Va6KAANbrUx4rb1UeeFT3czhwz44oCQ74ZYviVedNv6Bq7O22/kbMa20rDdyt/4A==
