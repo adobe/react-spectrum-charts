@@ -57,7 +57,7 @@
 		"skulk": "yarn watch --silent"
 	},
 	"devDependencies": {
-		"@adobe/react-spectrum": "^3.35.0",
+		"@adobe/react-spectrum": "^3.23.0",
 		"@babel/cli": "^7.19.3",
 		"@babel/core": "^7.20.5",
 		"@babel/eslint-parser": "^7.19.1",
@@ -128,7 +128,7 @@
 	},
 	"dependencies": {
 		"d3-format": "^3.1.0",
-		"immer": ">= 9.0.0",
+		"immer": "^9.0.0",
 		"uuid": ">= 9.0.0",
 		"vega-embed": ">= 6.24.0",
 		"vega-tooltip": ">= 0.26.0"
