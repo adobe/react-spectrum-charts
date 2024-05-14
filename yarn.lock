@@ -29,7 +29,7 @@
 
 "@adobe/react-spectrum@3.34.1":
   version "3.34.1"
-  resolved "https://artifactory.corp.adobe.com/artifactory/api/npm/npm-adobe-platform-release/@adobe/react-spectrum/-/react-spectrum-3.34.1.tgz#d1b334dd1297856a1f4ca13a190d4c731c1c116a"
+  resolved "https://registry.yarnpkg.com/@adobe/react-spectrum/-/react-spectrum-3.34.1.tgz#d1b334dd1297856a1f4ca13a190d4c731c1c116a"
   integrity sha512-J1HOjntW+H8xusfc5xLnIlUXNOzllp4f7qzh3LlDOsZuH8oBH8sIYmBVp4ijVhRFUKa10qg088role1On3UGbg==
   dependencies:
     "@internationalized/string" "^3.2.1"
