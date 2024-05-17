@@ -12,25 +12,27 @@
 </a>
 </p>
 
+![Scatter plot of penguin beak dimensions by species and body mass](https://github.com/adobe/react-spectrum-charts/wiki/images/penguins.png)
+
 ## Table of Contents
 
-- [React Spectrum Charts](#react-spectrum-charts)
-  - [Table of Contents](#table-of-contents)
-  - [Overview](#overview)
-    - [Key Features:](#key-features)
-  - [Installation](#installation)
-      - [npm](#npm)
-      - [yarn](#yarn)
-  - [Usage](#usage)
-    - [Example](#example)
-  - [Spectrum (Adobe Design System) Integration](#spectrum-adobe-design-system-integration)
-  - [API](#api)
-  - [Storybook](#storybook)
-  - [Support](#support)
-  - [Contributing](#contributing)
-  - [License](#license)
-    - [Apache License 2.0 Summary](#apache-license-20-summary)
-  - [Roadmap](#roadmap)
+-   [React Spectrum Charts](#react-spectrum-charts)
+    -   [Table of Contents](#table-of-contents)
+    -   [Overview](#overview)
+        -   [Key Features:](#key-features)
+    -   [Installation](#installation)
+        -   [npm](#npm)
+        -   [yarn](#yarn)
+    -   [Usage](#usage)
+        -   [Example](#example)
+    -   [Spectrum (Adobe Design System) Integration](#spectrum-adobe-design-system-integration)
+    -   [API](#api)
+    -   [Storybook](#storybook)
+    -   [Support](#support)
+    -   [Contributing](#contributing)
+    -   [License](#license)
+        -   [Apache License 2.0 Summary](#apache-license-20-summary)
+    -   [Roadmap](#roadmap)
 
 ## Overview
 
@@ -38,47 +40,26 @@
 
 ### Key Features:
 
--   **Responsive Charts:** `react-spectrum-charts` ensures that your charts adapt beautifully to different screen sizes and orientations, providing a seamless user experience on various devices.
+-   **Intuitive**: Developer experience comes first in the API design. The declarative API removes the need to understand advanced data visualization concepts. The code reads just like you would explain the chart to someone else.
 
--   **Interactive Charts:** Create engaging charts that respond to user interactions, such as hovering, clicking, and more. Enhance data exploration and understanding with interactive elements.
+-   **Configurable**: The component-based building blocks enable you to build the chart that solves your use case. The modular design makes it easy to compose complex visualizations with simple, easy to understand code.
 
--   **Supported Chart Types:**
+-   **Rational**: By leveraging Spectrum ([Adobe's Spectrum design system](https://spectrum.adobe.com/)) you get beautiful charts backed by research, user testing, and industry best practices.
 
-    -   **Area**
-    -   **Bar**
-    -   **Line**
-
--   **Supplemental Components:**
-
-    -   **Annotation:** Add callouts to your charts.
-    -   **Popover:** Add actions and additional content to selected data points.
-    -   **Tooltip:** Add tooltip content to hovered points.
-    -   **Trendline:** Add regressions or moving averages to your charts.
-
--   **Modular Components:**
-
-    -   **Axis**
-    -   **Legend**
-    -   **Title**
-
--   **Simple and Intuitive API:** We've designed an API that's easy to understand and work with, allowing you to create beautiful charts quickly. No need to delve into the complexities of the grammar of graphics or wrestle with low-level libraries.
-
--   **Built on Vega:** `react-spectrum-charts` is built on top of Vega, a robust and versatile visualization grammar for expressive, concise, and interactive data visualizations. This foundation ensures both flexibility and performance.
-
-`react-spectrum-charts` simplifies the charting process, making it accessible to a broader audience, including developers who may not have prior experience in data visualization. With just a few lines of code, you can create charts that meet the Adobe design system's standards, enriching your React applications with informative and visually appealing data representations.
+-   **International**: Support for 30+ date/number locales so that your users can view their data in the format that they would expect.
 
 ## Installation
 
 #### npm
 
 ```
-npm install @adobe/react-spectrum-charts vega vega-lite
+npm install @adobe/react-spectrum-charts @adobe/react-spectrum vega vega-lite
 ```
 
 #### yarn
 
 ```
-yarn add @adobe/react-spectrum-charts vega vega-lite
+yarn add @adobe/react-spectrum-charts @adobe/react-spectrum vega vega-lite
 ```
 
 ## Usage
