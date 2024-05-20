@@ -44,7 +44,7 @@
 
 -   **Configurable**: The component-based building blocks enable you to build the chart that solves your use case. The modular design makes it easy to compose complex visualizations with simple, easy to understand code.
 
--   **Rational**: By leveraging Spectrum ([Adobe's Spectrum design system](https://spectrum.adobe.com/)) you get beautiful charts backed by research, user testing, and industry best practices.
+-   **Proven**: By leveraging Spectrum ([Adobe's Spectrum design system](https://spectrum.adobe.com/)) you get beautiful charts backed by research, user testing, and industry best practices.
 
 -   **International**: Support for 30+ date/number locales so that your users can view their data in the format that they would expect.
 
