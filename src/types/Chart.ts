@@ -559,6 +559,8 @@ export interface ChartPopoverProps {
 	minHeight?: number;
 	/** Maximum height of the popover */
 	maxHeight?: number;
+	/** handler that is called when the popover's open state changes */
+	onOpenChange?: (isOpen: boolean) => void;
 }
 
 export interface ReferenceLineProps {

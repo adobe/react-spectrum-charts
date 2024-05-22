@@ -65,8 +65,9 @@ export const getOnMarkClickCallback = (
 			selectedData.current = item.datum;
 			// we need to anchor the popover to a div that we move to the same location as the selected mark
 			selectedDataBounds.current = getItemBounds(item);
-			selectedDataName.current = getItemName(item);
-			(document.querySelector(`#${chartId.current} > div > button`) as HTMLButtonElement)?.click();
+			const itemName = getItemName(item);
+			selectedDataName.current = itemName;
+			(document.querySelector(`#${chartId.current} > div > #${itemName}-button`) as HTMLButtonElement)?.click();
 		}
 	};
 };

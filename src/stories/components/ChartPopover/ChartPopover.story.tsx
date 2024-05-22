@@ -120,6 +120,15 @@ Size.args = { children: dialogContent, width: 200, height: 100 };
 const MinWidth = bindWithProps(ChartPopoverSvgStory);
 MinWidth.args = { children: dialogContent, width: 'auto', minWidth: 250 };
 
+const OnOpenChange = bindWithProps(ChartPopoverSvgStory);
+OnOpenChange.args = {
+	children: dialogContent,
+	width: 'auto',
+	onOpenChange: (isOpen) => {
+		console.log('isOpen', isOpen);
+	},
+};
+
 const AreaChart = bindWithProps(AreaStory);
 AreaChart.args = { children: dialogContent, width: 'auto' };
 
@@ -132,4 +141,4 @@ LineChart.args = { children: dialogContent, width: 'auto' };
 const StackedBarChart = bindWithProps(ChartPopoverSvgStory);
 StackedBarChart.args = { children: dialogContent, width: 'auto' };
 
-export { Canvas, Svg, Size, MinWidth, AreaChart, DodgedBarChart, LineChart, StackedBarChart };
+export { Canvas, Svg, Size, MinWidth, OnOpenChange, AreaChart, DodgedBarChart, LineChart, StackedBarChart };

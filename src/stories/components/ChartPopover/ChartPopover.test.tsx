@@ -28,7 +28,16 @@ import {
 } from '@test-utils';
 import userEvent from '@testing-library/user-event';
 
-import { Canvas, DodgedBarChart, LineChart, MinWidth, Size, StackedBarChart, Svg } from './ChartPopover.story';
+import {
+	Canvas,
+	DodgedBarChart,
+	LineChart,
+	MinWidth,
+	OnOpenChange,
+	Size,
+	StackedBarChart,
+	Svg,
+} from './ChartPopover.story';
 
 describe('ChartPopover', () => {
 	// ChartPopover is not a real React component. This is test just provides test coverage for sonarqube
@@ -207,5 +216,21 @@ describe('ChartPopover', () => {
 		expect(bars[4]).toHaveAttribute('opacity', '1');
 		expect(bars[4]).toHaveAttribute('stroke', spectrumColors.light['static-blue']);
 		expect(bars[4]).toHaveAttribute('stroke-width', '2');
+	});
+
+	test('should call onClick callback when selecting a legend entry', async () => {
+		const onOpenChange = jest.fn();
+		render(<OnOpenChange {...OnOpenChange.args} onOpenChange={onOpenChange} />);
+
+		const chart = await findChart();
+		expect(chart).toBeInTheDocument();
+		const bars = getAllMarksByGroupName(chart, 'bar0');
+
+		// clicking the bar should open the popover
+		await clickNthElement(bars, 0);
+		expect(onOpenChange).toHaveBeenCalledWith(true);
+
+		await clickNthElement(bars, 0);
+		expect(onOpenChange).toHaveBeenCalledWith(false);
 	});
 });
