@@ -121,13 +121,7 @@ const MinWidth = bindWithProps(ChartPopoverSvgStory);
 MinWidth.args = { children: dialogContent, width: 'auto', minWidth: 250 };
 
 const OnOpenChange = bindWithProps(ChartPopoverSvgStory);
-OnOpenChange.args = {
-	children: dialogContent,
-	width: 'auto',
-	onOpenChange: (isOpen) => {
-		console.log('isOpen', isOpen);
-	},
-};
+OnOpenChange.args = { children: dialogContent, width: 'auto' };
 
 const AreaChart = bindWithProps(AreaStory);
 AreaChart.args = { children: dialogContent, width: 'auto' };
