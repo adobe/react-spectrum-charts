@@ -52,10 +52,9 @@ import { ChartHandle, Datum, LegendDescription, LineType, MarkBounds, RscChartPr
 
 interface ChartDialogProps {
 	datum: Datum | null;
-	itemName?: string;
 	targetElement: MutableRefObject<HTMLElement | null>;
-	setPopoverState: (isOpen: boolean) => void;
-	popovers: PopoverDetail[];
+	setIsPopoverOpen: (isOpen: boolean) => void;
+	popover: PopoverDetail;
 }
 
 interface LegendTooltipProps {
@@ -100,7 +99,7 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 		const selectedDataBounds = useRef<MarkBounds>();
 		const popoverAnchorRef = useRef<HTMLDivElement>(null);
 
-		const [popoverIsOpen, setPopoverIsOpen] = useState<boolean>(false); // tracks the open/close state of the popover
+		const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false); // tracks the open/close state of the popover
 
 		const sanitizedChildren = sanitizeRscChartChildren(props.children);
 
@@ -130,13 +129,13 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 			const tooltipElement = document.getElementById('vg-tooltip-element');
 			if (!tooltipElement) return;
 			// Hide tooltips on all charts when a popover is open
-			tooltipElement.hidden = popoverIsOpen;
+			tooltipElement.hidden = isPopoverOpen;
 
 			// if the popover is closed, reset the selected data
-			if (!popoverIsOpen) {
+			if (!isPopoverOpen) {
 				selectedData.current = null;
 			}
-		}, [popoverIsOpen]);
+		}, [isPopoverOpen]);
 
 		useChartImperativeHandle(forwardedRef, { chartView, title });
 
@@ -155,7 +154,7 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 
 		// gets the correct css style to display the anchor in the correct position
 		const targetStyle = usePopoverAnchorStyle(
-			popoverIsOpen,
+			isPopoverOpen,
 			chartView.current,
 			selectedDataBounds.current,
 			padding
@@ -288,41 +287,45 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 						// this will trigger the autosize calculation making sure that everything is correct size
 					}}
 				/>
-				<ChartDialog
-					datum={selectedData.current}
-					targetElement={popoverAnchorRef}
-					setPopoverState={setPopoverIsOpen}
-					popovers={popovers}
-					itemName={selectedDataName.current}
-				/>
+				{popovers.map((popover) => (
+					<ChartDialog
+						key={popover.key}
+						datum={selectedData.current}
+						targetElement={popoverAnchorRef}
+						setIsPopoverOpen={setIsPopoverOpen}
+						popover={popover}
+					/>
+				))}
 			</>
 		);
 	}
 );
 RscChart.displayName = 'RscChart';
 
-const ChartDialog = ({ datum, itemName, targetElement, setPopoverState, popovers }: ChartDialogProps) => {
-	if (!popovers.length) {
-		return <></>;
-	}
-	const popoverDetail = popovers.find((p) => p.name === itemName);
-	const popover = popoverDetail?.callback;
-	const dialogProps = popoverDetail?.dialogProps;
-	const minWidth = dialogProps?.minWidth ?? 0;
+const ChartDialog = ({ datum, popover, setIsPopoverOpen, targetElement }: ChartDialogProps) => {
+	const { chartPopoverProps, name } = popover;
+	const { children, onOpenChange, ...dialogProps } = chartPopoverProps;
+	const minWidth = dialogProps.minWidth ?? 0;
+
 	return (
 		<DialogTrigger
 			type="popover"
 			mobileType="tray"
 			targetRef={targetElement}
-			onOpenChange={setPopoverState}
+			onOpenChange={(isOpen) => {
+				onOpenChange?.(isOpen);
+				setIsPopoverOpen(isOpen);
+			}}
 			placement="top"
 			hideArrow
 		>
-			<ActionButton UNSAFE_style={{ display: 'none' }}>launch chart popover</ActionButton>
+			<ActionButton id={`${name}-button`} UNSAFE_style={{ display: 'none' }}>
+				launch chart popover
+			</ActionButton>
 			{(close) => (
 				<Dialog data-testid="rsc-popover" UNSAFE_className="rsc-popover" {...dialogProps} minWidth={minWidth}>
 					<SpectrumView gridColumn="1/-1" gridRow="1/-1" margin={12}>
-						{popover && datum && popover(datum, close)}
+						{datum && children?.(datum, close)}
 					</SpectrumView>
 				</Dialog>
 			)}

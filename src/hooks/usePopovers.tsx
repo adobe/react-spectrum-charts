@@ -15,14 +15,14 @@ import { getAllElements } from '@utils';
 
 import { Chart } from '../Chart';
 import { ChartPopover } from '../components/ChartPopover';
-import { ChartChildElement, ChartPopoverElement, ChartPopoverProps, PopoverHandler } from '../types';
+import { ChartChildElement, ChartPopoverElement, ChartPopoverProps } from '../types';
 
 type MappedPopover = { name: string; element: ChartPopoverElement };
 
 export type PopoverDetail = {
+	chartPopoverProps: ChartPopoverProps;
+	key: string;
 	name: string;
-	callback: PopoverHandler;
-	dialogProps: Omit<ChartPopoverProps, 'children'>;
 };
 
 export default function usePopovers(children: ChartChildElement[]): PopoverDetail[] {
@@ -35,12 +35,11 @@ export default function usePopovers(children: ChartChildElement[]): PopoverDetai
 		() =>
 			popoverElements
 				.filter((popover) => popover.element.props.children)
-				.map((popover) => {
-					const { children, ...dialogProps } = popover.element.props;
+				.map((popover, index) => {
 					return {
+						chartPopoverProps: popover.element.props,
+						key: `${popover.name}Popover${index}`,
 						name: popover.name,
-						callback: children as PopoverHandler,
-						dialogProps,
 					};
 				}),
 		[popoverElements]
