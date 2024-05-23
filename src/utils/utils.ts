@@ -9,27 +9,49 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { Fragment, ReactFragment } from 'react';
+import { Fragment, ReactNode } from 'react';
 
 import { MARK_ID, SELECTED_ITEM, SELECTED_SERIES, SERIES_ID } from '@constants';
 import { View } from 'vega';
 
-import { Area, Axis, AxisAnnotation, Bar, ChartPopover, ChartTooltip, Legend, Line, Scatter, Trendline } from '..';
+import {
+	Annotation,
+	Area,
+	Axis,
+	AxisAnnotation,
+	Bar,
+	ChartPopover,
+	ChartTooltip,
+	Legend,
+	Line,
+	MetricRange,
+	ReferenceLine,
+	Scatter,
+	ScatterPath,
+	Title,
+	Trendline,
+	TrendlineAnnotation,
+} from '..';
 import { Donut } from '../alpha';
 import {
+	AreaElement,
 	AxisAnnotationChildElement,
+	AxisAnnotationElement,
 	AxisChildElement,
+	AxisElement,
+	BarElement,
 	ChartChildElement,
 	ChartElement,
 	ChartTooltipElement,
 	ChildElement,
-	Children,
 	Datum,
+	DonutElement,
 	LegendElement,
+	LineElement,
 	MarkChildElement,
-	PopoverHandler,
 	RscElement,
-	TooltipHandler,
+	ScatterElement,
+	TrendlineElement,
 } from '../types';
 
 type MappedElement = { name: string; element: ChartElement | RscElement };
@@ -51,62 +73,74 @@ export function toArray<Child>(children: Child | Child[] | undefined): Child[] {
 	return [children];
 }
 
+const getElementDisplayName = (element: unknown): string => {
+	if (
+		!element ||
+		typeof element !== 'object' ||
+		!('type' in element) ||
+		typeof element.type !== 'function' ||
+		!('displayName' in element.type) ||
+		typeof element.type.displayName !== 'string'
+	)
+		return 'no-display-name';
+	return element.type.displayName;
+};
+
 // removes all non-chart specific elements
-export const sanitizeRscChartChildren = (children: Children<RscElement> | undefined): ChartChildElement[] => {
+export const sanitizeRscChartChildren = (children: unknown): ChartChildElement[] => {
+	const chartChildDisplyNames = [
+		Area.displayName,
+		Axis.displayName,
+		Bar.displayName,
+		Legend.displayName,
+		Line.displayName,
+		Scatter.displayName,
+		Title.displayName,
+	] as string[];
 	return toArray(children)
 		.flat()
-		.filter((child): child is ChartChildElement => isChartChildElement(child));
+		.filter((child): child is ChartChildElement => chartChildDisplyNames.includes(getElementDisplayName(child)));
 };
 
-export const sanitizeMarkChildren = (children: Children<MarkChildElement> | undefined): MarkChildElement[] => {
+export const sanitizeMarkChildren = (children: unknown): MarkChildElement[] => {
+	const markChildDisplayNames = [
+		Annotation.displayName,
+		ChartTooltip.displayName,
+		ChartPopover.displayName,
+		ScatterPath.displayName,
+		MetricRange.displayName,
+		Trendline.displayName,
+	] as string[];
+
 	return toArray(children)
 		.flat()
-		.filter((child): child is MarkChildElement => isMarkChildElement(child));
+		.filter((child): child is MarkChildElement => markChildDisplayNames.includes(getElementDisplayName(child)));
 };
 
-export const sanitizeAxisChildren = (children: Children<AxisChildElement> | undefined): AxisChildElement[] => {
+export const sanitizeAxisChildren = (children: unknown): AxisChildElement[] => {
+	const axisChildDisplayNames = [AxisAnnotation.displayName, ReferenceLine.displayName] as string[];
 	return toArray(children)
 		.flat()
-		.filter((child): child is AxisChildElement => isMarkChildElement(child));
+		.filter((child): child is AxisChildElement => axisChildDisplayNames.includes(getElementDisplayName(child)));
 };
 
-export const sanitizeAxisAnnotationChildren = (
-	children: Children<AxisAnnotationChildElement> | undefined
-): AxisAnnotationChildElement[] => {
+export const sanitizeAxisAnnotationChildren = (children: ReactNode): AxisAnnotationChildElement[] => {
+	const axisAnnotationChildDisplayNames = [ChartTooltip.displayName, ChartPopover.displayName] as string[];
+
 	return toArray(children)
 		.flat()
-		.filter((child): child is AxisAnnotationChildElement => isMarkChildElement(child));
+		.filter((child): child is AxisAnnotationChildElement =>
+			axisAnnotationChildDisplayNames.includes(getElementDisplayName(child))
+		);
 };
-export const sanitizeTrendlineChildren = (
-	children: Children<ChartTooltipElement> | undefined
-): ChartTooltipElement[] => {
+
+export const sanitizeTrendlineChildren = (children: unknown): ChartTooltipElement[] => {
+	const trendlineChildDisplayNames = [ChartTooltip.displayName, TrendlineAnnotation.displayName] as string[];
 	return toArray(children)
 		.flat()
-		.filter((child): child is ChartTooltipElement => isMarkChildElement<ChartTooltipElement>(child));
-};
-
-const isChartChildElement = (child: ChildElement<ChartChildElement> | undefined): child is ChartChildElement => {
-	return isRscComponent(child);
-};
-const isMarkChildElement = <T extends MarkChildElement = MarkChildElement>(
-	child: ChildElement<T> | undefined
-): child is T => {
-	return isRscComponent(child);
-};
-
-const isRscElement = <T extends RscElement = RscElement>(child: ChildElement<T> | undefined): child is T => {
-	return isRscComponent(child);
-};
-
-const isRscComponent = (child?: ChildElement<RscElement>): boolean => {
-	return Boolean(
-		child &&
-			typeof child !== 'string' &&
-			typeof child !== 'boolean' &&
-			'type' in child &&
-			child.type !== Fragment &&
-			'displayName' in child.type
-	);
+		.filter((child): child is ChartTooltipElement =>
+			trendlineChildDisplayNames.includes(getElementDisplayName(child))
+		);
 };
 
 // converts any string to the camelcase equivalent
@@ -140,16 +174,7 @@ export const toggleStringArrayValue = (target: string[], value: string): string[
 
 // traverses the children to find the first element instance of the proivded type
 export function getElement(
-	element:
-		| ChartElement
-		| RscElement
-		| TooltipHandler
-		| PopoverHandler
-		| LegendElement
-		| boolean
-		| string
-		| ReactFragment
-		| undefined,
+	element: ReactNode | (() => void),
 	type:
 		| typeof Axis
 		| typeof Bar
@@ -160,18 +185,12 @@ export function getElement(
 		| typeof Scatter
 ): ChartElement | RscElement | undefined {
 	// if the element is undefined or 'type' doesn't exist on the element, stop searching
-	if (
-		!element ||
-		typeof element === 'boolean' ||
-		typeof element === 'string' ||
-		!('type' in element) ||
-		element.type === Fragment
-	) {
+	if (!element || typeof element !== 'object' || !('type' in element) || element.type === Fragment) {
 		return undefined;
 	}
 
 	// if the type matches, we found our element
-	if (element.type === type) return element;
+	if (element.type === type) return element as ChartElement | RscElement;
 
 	// if there aren't any more children to search, stop looking
 	if (!('children' in element.props)) return undefined;
@@ -192,7 +211,7 @@ export function getElement(
  * @returns
  */
 export const getAllElements = (
-	target: Children<ChartElement | RscElement>,
+	target: unknown,
 	source:
 		| typeof Axis
 		| typeof Bar
@@ -206,18 +225,20 @@ export const getAllElements = (
 ): MappedElement[] => {
 	if (
 		!target ||
-		typeof target === 'boolean' ||
-		typeof target === 'string' ||
+		typeof target !== 'object' ||
 		!('type' in target) ||
-		target.type === Fragment
+		typeof target.type !== 'function' ||
+		!('displayName' in target.type) ||
+		typeof target.type.displayName !== 'string'
 	) {
 		return elements;
 	}
 	// if the type matches, we found our element
-	if (target.type === source) return [...elements, { name, element: target }];
+	if (target.type === source) return [...elements, { name, element: target as ChartElement | RscElement }];
 
 	// if there aren't any more children to search, stop looking
-	if (!('children' in target.props)) return elements;
+	if (!('props' in target) || typeof target.props !== 'object' || !target.props || !('children' in target.props))
+		return elements;
 
 	const elementCounts = initElementCounts();
 	const desiredElements: MappedElement[] = [];
@@ -229,36 +250,44 @@ export const getAllElements = (
 	return [...elements, ...desiredElements];
 };
 
-const getElementName = (element: ChildElement<RscElement>, elementCounts: ElementCounts) => {
-	if (!(isRscElement(element) && 'displayName' in element.type)) return '';
+const getElementName = (element: unknown, elementCounts: ElementCounts) => {
+	if (
+		!element ||
+		typeof element !== 'object' ||
+		!('type' in element) ||
+		typeof element.type !== 'function' ||
+		!('displayName' in element.type) ||
+		typeof element.type.displayName !== 'string'
+	)
+		return '';
 	// use displayName since it is the olny way to check alpha and beta components
 	switch (element.type.displayName) {
 		case Area.displayName:
 			elementCounts.area++;
-			return getComponentName(element, `area${elementCounts.area}`);
+			return getComponentName(element as AreaElement, `area${elementCounts.area}`);
 		case Axis.displayName:
 			elementCounts.axis++;
-			return getComponentName(element, `axis${elementCounts.axis}`);
+			return getComponentName(element as AxisElement, `axis${elementCounts.axis}`);
 		case AxisAnnotation.displayName:
 			elementCounts.axisAnnotation++;
-			return getComponentName(element, `Annotation${elementCounts.axisAnnotation}`);
+			return getComponentName(element as AxisAnnotationElement, `Annotation${elementCounts.axisAnnotation}`);
 		case Bar.displayName:
 			elementCounts.bar++;
-			return getComponentName(element, `bar${elementCounts.bar}`);
+			return getComponentName(element as BarElement, `bar${elementCounts.bar}`);
 		case Donut.displayName:
 			elementCounts.donut++;
-			return getComponentName(element, `donut${elementCounts.donut}`);
+			return getComponentName(element as DonutElement, `donut${elementCounts.donut}`);
 		case Legend.displayName:
 			elementCounts.legend++;
-			return getComponentName(element, `legend${elementCounts.legend}`);
+			return getComponentName(element as LegendElement, `legend${elementCounts.legend}`);
 		case Line.displayName:
 			elementCounts.line++;
-			return getComponentName(element, `line${elementCounts.line}`);
+			return getComponentName(element as LineElement, `line${elementCounts.line}`);
 		case Scatter.displayName:
 			elementCounts.scatter++;
-			return getComponentName(element, `scatter${elementCounts.scatter}`);
+			return getComponentName(element as ScatterElement, `scatter${elementCounts.scatter}`);
 		case Trendline.displayName:
-			return getComponentName(element, 'Trendline');
+			return getComponentName(element as TrendlineElement, 'Trendline');
 		default:
 			return '';
 	}
