@@ -304,7 +304,7 @@ RscChart.displayName = 'RscChart';
 
 const ChartDialog = ({ datum, popover, setIsPopoverOpen, targetElement }: ChartDialogProps) => {
 	const { chartPopoverProps, name } = popover;
-	const { children, onOpenChange, ...dialogProps } = chartPopoverProps;
+	const { children, onOpenChange, containerPadding, ...dialogProps } = chartPopoverProps;
 	const minWidth = dialogProps.minWidth ?? 0;
 
 	return (
@@ -318,6 +318,7 @@ const ChartDialog = ({ datum, popover, setIsPopoverOpen, targetElement }: ChartD
 			}}
 			placement="top"
 			hideArrow
+			containerPadding={containerPadding}
 		>
 			<ActionButton id={`${name}-button`} UNSAFE_style={{ display: 'none' }}>
 				launch chart popover

@@ -561,6 +561,8 @@ export interface ChartPopoverProps {
 	maxHeight?: number;
 	/** handler that is called when the popover's open state changes */
 	onOpenChange?: (isOpen: boolean) => void;
+	/** The placement padding that should be applied between the popover and its surrounding container */
+	containerPadding?: number;
 }
 
 export interface ReferenceLineProps {
