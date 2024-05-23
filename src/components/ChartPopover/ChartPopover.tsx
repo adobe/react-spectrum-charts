@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+
 /*
  * Copyright 2023 Adobe. All rights reserved.
  * This file is licensed to you under the Apache License, Version 2.0 (the "License");
@@ -13,8 +15,17 @@ import { FC } from 'react';
 
 import { ChartPopoverProps } from '../../types';
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const ChartPopover: FC<ChartPopoverProps> = ({ children, width = 250 }) => {
+const ChartPopover: FC<ChartPopoverProps> = ({
+	children,
+	width = 250,
+	minWidth = 0,
+	maxWidth,
+	height,
+	minHeight,
+	maxHeight,
+	containerPadding = 12,
+	onOpenChange,
+}) => {
 	return null;
 };
 
