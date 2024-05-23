@@ -46,6 +46,7 @@ const parameters: Parameters = {
 const preview: Preview = {
 	decorators,
 	parameters,
+	tags: ['autodocs'],
 };
 
 export default preview;
