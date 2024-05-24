@@ -11,6 +11,7 @@
  */
 import {
 	COLOR_SCALE,
+	COMPONENT_NAME,
 	DEFAULT_COLOR,
 	DEFAULT_COLOR_SCHEME,
 	DEFAULT_SECONDARY_COLOR,
@@ -61,7 +62,7 @@ const defaultTooltipLegendEncoding: LegendEncode = {
 	entries: {
 		name: 'legend0_legendEntry',
 		interactive: true,
-		enter: { tooltip: { signal: "merge(datum, {'rscComponentName': 'legend0'})" } },
+		enter: { tooltip: { signal: `merge(datum, {'${COMPONENT_NAME}': 'legend0'})` } },
 		update: { fill: { value: 'transparent' } },
 	},
 	labels: { update: { ...hiddenSeriesLabelUpdateEncoding, opacity: undefined } },

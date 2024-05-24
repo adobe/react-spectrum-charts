@@ -44,6 +44,7 @@ export const GROUP_DATA = 'rscGroupData';
 export const MARK_ID = 'rscMarkId';
 export const SERIES_ID = 'rscSeriesId';
 export const STACK_ID = 'rscStackId';
+export const COMPONENT_NAME = 'rscComponentName';
 export const TRENDLINE_VALUE = 'rscTrendlineValue';
 
 // signal names

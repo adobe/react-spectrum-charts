@@ -12,6 +12,7 @@
 import { FC, MutableRefObject, forwardRef, useEffect, useMemo, useRef, useState } from 'react';
 
 import {
+	COMPONENT_NAME,
 	DEFAULT_BACKGROUND_COLOR,
 	DEFAULT_COLOR_SCHEME,
 	DEFAULT_LINE_TYPES,
@@ -165,7 +166,7 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 		if (tooltips.length || legendDescriptions) {
 			tooltipConfig.formatTooltip = (value) => {
 				debugLog(debug, { title: 'Tooltip datum', contents: value });
-				if (value.rscComponentName?.startsWith('legend') && legendDescriptions && 'index' in value) {
+				if (value[COMPONENT_NAME]?.startsWith('legend') && legendDescriptions && 'index' in value) {
 					debugLog(debug, {
 						title: 'Legend descriptions',
 						contents: legendDescriptions,
@@ -180,7 +181,7 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 					);
 				}
 				// get the correct tooltip to render based on the hovered item
-				const tooltip = tooltips.find((t) => t.name === value.rscComponentName);
+				const tooltip = tooltips.find((t) => t.name === value[COMPONENT_NAME]);
 				if (tooltip?.callback && !('index' in value)) {
 					if (controlledHoveredIdSignal) {
 						chartView.current?.signal(controlledHoveredIdSignal.name, value?.[MARK_ID] ?? null);
@@ -326,7 +327,7 @@ const ChartDialog = ({ datum, popover, setIsPopoverOpen, targetElement }: ChartD
 			{(close) => (
 				<Dialog data-testid="rsc-popover" UNSAFE_className="rsc-popover" {...dialogProps} minWidth={minWidth}>
 					<SpectrumView gridColumn="1/-1" gridRow="1/-1" margin={12}>
-						{datum && children?.(datum, close)}
+						{datum && datum[COMPONENT_NAME] === name && children?.(datum, close)}
 					</SpectrumView>
 				</Dialog>
 			)}

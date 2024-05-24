@@ -16,6 +16,7 @@ import { ChartTooltip } from '@components/ChartTooltip';
 import {
 	BACKGROUND_COLOR,
 	COLOR_SCALE,
+	COMPONENT_NAME,
 	CORNER_RADIUS,
 	DEFAULT_CATEGORICAL_DIMENSION,
 	DEFAULT_COLOR,
@@ -114,7 +115,7 @@ const defaultMarkWithTooltip: Mark = {
 			...defaultDodgedCornerRadiusEncodings,
 			fill: { field: DEFAULT_COLOR, scale: COLOR_SCALE },
 			fillOpacity: DEFAULT_OPACITY_RULE,
-			tooltip: { signal: "merge(datum, {'rscComponentName': 'bar0'})" },
+			tooltip: { signal: `merge(datum, {'${COMPONENT_NAME}': 'bar0'})` },
 		},
 		update: {
 			...defaultDodgedXEncodings,

@@ -18,6 +18,7 @@ import { Trendline } from '@components/Trendline';
 import {
 	BACKGROUND_COLOR,
 	COLOR_SCALE,
+	COMPONENT_NAME,
 	DEFAULT_OPACITY_RULE,
 	DEFAULT_TRANSFORMED_TIME_DIMENSION,
 	HIGHLIGHT_CONTRAST_RATIO,
@@ -89,7 +90,7 @@ export function getTooltip(
 	// skip annotations
 	if (hasTooltip(children)) {
 		const defaultTooltip = {
-			signal: `merge(datum${nestedDatum ? '.datum' : ''}, {'rscComponentName': '${name}'})`,
+			signal: `merge(datum${nestedDatum ? '.datum' : ''}, {'${COMPONENT_NAME}': '${name}'})`,
 		};
 		// if the tooltip has an excludeDataKey prop, then disable the tooltip where that key is present
 		const excludeDataKeys = getTooltipProps(children)?.excludeDataKeys;

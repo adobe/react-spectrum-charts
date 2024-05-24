@@ -11,6 +11,7 @@
  */
 import {
 	COLOR_SCALE,
+	COMPONENT_NAME,
 	DEFAULT_OPACITY_RULE,
 	FILTERED_TABLE,
 	HIGHLIGHTED_GROUP,
@@ -157,7 +158,7 @@ const getHoverEncodings = (facets: Facet[], props: LegendSpecProps): LegendEncod
 
 const getTooltip = (descriptions: LegendDescription[] | undefined, name: string) => {
 	if (descriptions?.length) {
-		return { signal: `merge(datum, {'rscComponentName': '${name}'})` };
+		return { signal: `merge(datum, {'${COMPONENT_NAME}': '${name}'})` };
 	}
 	return undefined;
 };
