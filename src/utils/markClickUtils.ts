@@ -11,6 +11,7 @@
  */
 import { MutableRefObject } from 'react';
 
+import { COMPONENT_NAME } from '@constants';
 import { toggleStringArrayValue } from '@utils';
 import { Item, Scene, SceneGroup, SceneItem, ScenegraphEvent, View } from 'vega';
 
@@ -62,10 +63,10 @@ export const getOnMarkClickCallback = (
 			// clicking the button will trigger a new view since it will cause a rerender
 			// this means we don't need to set the signal value since it would just be cleared on rerender
 			// instead, the rerender will set the value of the signal to the selectedData
-			selectedData.current = item.datum;
+			const itemName = getItemName(item);
+			selectedData.current = { [COMPONENT_NAME]: itemName, ...item.datum };
 			// we need to anchor the popover to a div that we move to the same location as the selected mark
 			selectedDataBounds.current = getItemBounds(item);
-			const itemName = getItemName(item);
 			selectedDataName.current = itemName;
 			(document.querySelector(`#${chartId.current} > div > #${itemName}-button`) as HTMLButtonElement)?.click();
 		}
