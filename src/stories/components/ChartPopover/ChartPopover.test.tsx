@@ -230,7 +230,7 @@ describe('ChartPopover', () => {
 		await clickNthElement(bars, 0);
 		expect(onOpenChange).toHaveBeenCalledWith(true);
 
-		await clickNthElement(bars, 0);
+		await userEvent.click(chart);
 		expect(onOpenChange).toHaveBeenCalledWith(false);
 	});
 });
