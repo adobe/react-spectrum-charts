@@ -77,8 +77,8 @@ const getElementDisplayName = (element: unknown): string => {
 	if (
 		!element ||
 		typeof element !== 'object' ||
-		!('type' in element) ||
-		typeof element.type !== 'function' ||
+		!('type' in element && element.type) ||
+		!(typeof element.type === 'object' || typeof element.type === 'function') ||
 		!('displayName' in element.type) ||
 		typeof element.type.displayName !== 'string'
 	)
@@ -92,6 +92,7 @@ export const sanitizeRscChartChildren = (children: unknown): ChartChildElement[]
 		Area.displayName,
 		Axis.displayName,
 		Bar.displayName,
+		Donut.displayName,
 		Legend.displayName,
 		Line.displayName,
 		Scatter.displayName,
@@ -226,8 +227,8 @@ export const getAllElements = (
 	if (
 		!target ||
 		typeof target !== 'object' ||
-		!('type' in target) ||
-		typeof target.type !== 'function' ||
+		!('type' in target && target.type) ||
+		!(typeof target.type === 'object' || typeof target.type === 'function') ||
 		!('displayName' in target.type) ||
 		typeof target.type.displayName !== 'string'
 	) {
@@ -254,8 +255,8 @@ const getElementName = (element: unknown, elementCounts: ElementCounts) => {
 	if (
 		!element ||
 		typeof element !== 'object' ||
-		!('type' in element) ||
-		typeof element.type !== 'function' ||
+		!('type' in element && element.type) ||
+		!(typeof element.type === 'object' || typeof element.type === 'function') ||
 		!('displayName' in element.type) ||
 		typeof element.type.displayName !== 'string'
 	)

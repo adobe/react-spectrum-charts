@@ -122,7 +122,6 @@ describe('applyMetricRangePropDefaults', () => {
 		expect(
 			applyMetricRangePropDefaults({ metricEnd: 'metricStart', metricStart: 'metricEnd' }, 'line0', 0)
 		).toEqual({
-			children: {},
 			displayOnHover: false,
 			lineType: 'dashed',
 			lineWidth: 'S',
@@ -149,7 +148,6 @@ describe('applyMetricRangePropDefaults', () => {
 				0
 			)
 		).toEqual({
-			children: {},
 			displayOnHover: true,
 			lineType: 'solid',
 			lineWidth: 'L',
