@@ -45,7 +45,6 @@ export const applyMetricRangePropDefaults = (
 	markName: string,
 	index: number
 ): MetricRangeSpecProps => ({
-	children: {},
 	lineType,
 	lineWidth,
 	name: `${markName}MetricRange${index}`,

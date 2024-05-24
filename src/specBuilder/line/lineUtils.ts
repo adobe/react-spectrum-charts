@@ -9,6 +9,8 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { ReactNode } from 'react';
+
 import { Trendline } from '@components/Trendline';
 import { hasInteractiveChildren, hasPopover } from '@specBuilder/marks/markUtils';
 import { sanitizeMarkChildren } from '@utils';
@@ -34,7 +36,7 @@ export const getInteractiveMarkName = (children: MarkChildElement[], name: strin
 			(child) =>
 				child.type === Trendline &&
 				'children' in child.props &&
-				hasInteractiveChildren(sanitizeMarkChildren(child.props.children))
+				hasInteractiveChildren(sanitizeMarkChildren(child.props.children as ReactNode))
 		)
 	) {
 		return `${name}Trendline`;
@@ -52,7 +54,7 @@ export const getPopoverMarkName = (children: MarkChildElement[], name: string): 
 			(child) =>
 				child.type === Trendline &&
 				'children' in child.props &&
-				hasPopover(sanitizeMarkChildren(child.props.children))
+				hasPopover(sanitizeMarkChildren(child.props.children as ReactNode))
 		)
 	) {
 		return `${name}Trendline`;

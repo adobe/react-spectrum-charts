@@ -41,6 +41,7 @@ const parameters: Parameters = {
 			return <DocsContainer {...props} />;
 		},
 	},
+	actions: { argTypesRegex: '^on[A-Z].*' },
 };
 
 const preview: Preview = {

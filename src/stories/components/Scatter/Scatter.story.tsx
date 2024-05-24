@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { ReactElement, createElement } from 'react';
+import { ReactElement, ReactNode } from 'react';
 
 import { COLOR_SCALE, LINE_TYPE_SCALE, OPACITY_SCALE } from '@constants';
 import useChartProps from '@hooks/useChartProps';
@@ -120,7 +120,7 @@ const ScatterStory: StoryFn<typeof Scatter> = (args): ReactElement => {
 	);
 };
 
-const dialog = (item: Datum) => {
+const dialog = (item: Datum): ReactNode => {
 	return (
 		<Content>
 			<Flex direction="column">
@@ -178,7 +178,12 @@ Popover.args = {
 	color: 'weightClass',
 	dimension: 'speedNormal',
 	metric: 'handlingNormal',
-	children: [createElement(ChartTooltip, {}, dialog), createElement(ChartPopover, { width: 200 }, dialog)],
+	children: [
+		<ChartTooltip key="0">{dialog}</ChartTooltip>,
+		<ChartPopover key="1" width="auto">
+			{dialog}
+		</ChartPopover>,
+	],
 };
 
 const Size = bindWithProps(ScatterStory);
@@ -193,7 +198,7 @@ Tooltip.args = {
 	color: 'weightClass',
 	dimension: 'speedNormal',
 	metric: 'handlingNormal',
-	children: [createElement(ChartTooltip, {}, dialog)],
+	children: <ChartTooltip>{dialog}</ChartTooltip>,
 };
 
 export { Basic, Color, ColorScaleType, LineType, Opacity, Popover, Size, Tooltip };

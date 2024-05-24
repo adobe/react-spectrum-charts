@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { JSXElementConstructor, MutableRefObject, ReactElement, ReactFragment, ReactNode } from 'react';
+import { JSXElementConstructor, MutableRefObject, ReactElement, ReactNode } from 'react';
 
 import { GROUP_DATA, MARK_ID, SERIES_ID, TRENDLINE_VALUE } from '@constants';
 import { Config, Data, FontWeight, Locale, NumberLocale, Padding, Spec, SymbolShape, TimeLocale, View } from 'vega';
@@ -703,13 +703,14 @@ const DatumPredefinedKey = {
 	groupData: GROUP_DATA,
 } as const;
 
-export interface Datum {
+export type Datum = object & {
 	[DatumPredefinedKey.markId]: number;
 	[DatumPredefinedKey.seriesId]: string;
 	[DatumPredefinedKey.trendlineValue]?: number;
 	[DatumPredefinedKey.groupData]?: Datum[];
-	[key: string]: unknown;
-}
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	[key: string]: any;
+};
 
 export type ColorScheme = 'light' | 'dark';
 
@@ -721,7 +722,7 @@ export type AxisAnnotationClickHandler = (annotations) => ReactNode;
 
 export type Position = 'left' | 'right' | 'top' | 'bottom';
 
-export type ChildElement<T> = T | string | boolean | ReactFragment;
+export type ChildElement<T> = T | string | boolean | Iterable<ReactNode>;
 export type Children<T> = ChildElement<T> | ChildElement<T>[];
 
 export type AxisChildElement = ReferenceLineElement | AxisAnnotationElement;

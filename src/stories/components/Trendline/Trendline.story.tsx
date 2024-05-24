@@ -13,7 +13,19 @@ import React, { ReactElement } from 'react';
 
 import { TRENDLINE_VALUE } from '@constants';
 import useChartProps from '@hooks/useChartProps';
-import { Axis, Chart, ChartPopover, ChartProps, ChartTooltip, Legend, Line, Scatter, Title, Trendline } from '@rsc';
+import {
+	Axis,
+	Chart,
+	ChartPopover,
+	ChartProps,
+	ChartTooltip,
+	Datum,
+	Legend,
+	Line,
+	Scatter,
+	Title,
+	Trendline,
+} from '@rsc';
 import { workspaceTrendsData } from '@stories/data/data';
 import { characterData } from '@stories/data/marioKartData';
 import { StoryFn } from '@storybook/react';
@@ -83,7 +95,7 @@ const TrendlineWithDialogsStory: StoryFn<typeof Trendline> = (args): ReactElemen
 			<Line color="series">
 				<Trendline {...args}>
 					<ChartTooltip>
-						{(item) => (
+						{(item: Datum) => (
 							<>
 								<div>Trendline value: {item[TRENDLINE_VALUE]}</div>
 								<div>Line value: {item.value}</div>
@@ -169,7 +181,11 @@ const excludeSeriesData = [
 ];
 
 const ExcludeSeriesTrendlineStory: StoryFn<typeof Trendline> = (args): ReactElement => {
-	const chartProps = useChartProps({ ...defaultChartProps, data: excludeSeriesData, colors: ['gray-300', 'seafoam-500']});
+	const chartProps = useChartProps({
+		...defaultChartProps,
+		data: excludeSeriesData,
+		colors: ['gray-300', 'seafoam-500'],
+	});
 	return (
 		<Chart {...chartProps}>
 			<Axis position="left" grid title="Users" />
@@ -180,7 +196,7 @@ const ExcludeSeriesTrendlineStory: StoryFn<typeof Trendline> = (args): ReactElem
 			<Legend lineWidth={{ value: 0 }} highlight />
 		</Chart>
 	);
-}
+};
 
 const Basic = bindWithProps(TrendlineStory);
 Basic.args = {
