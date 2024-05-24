@@ -12,7 +12,7 @@
 </a>
 </p>
 
-![Scatter plot of penguin beak dimensions by species and body mass](https://github.com/adobe/react-spectrum-charts/wiki/images/penguins.png)
+![Scatter plot of penguin bill dimensions by species and body mass](https://github.com/adobe/react-spectrum-charts/wiki/images/penguins.png)
 
 ## Table of Contents
 
