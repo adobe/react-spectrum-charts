@@ -20,5 +20,6 @@ module.exports = class CustomTestEnvironment extends Environment {
 		this.global.TextDecoder = TextDecoder;
 		this.global.Response = Response;
 		this.global.Request = Request;
+		this.global.structuredClone = structuredClone;
 	}
 };

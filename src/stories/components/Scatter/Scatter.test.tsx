@@ -105,22 +105,24 @@ describe('Scatter', () => {
 	});
 
 	describe('Popover', () => {
-		test('should render a popover on hover', async () => {
+		test('should render a popover on click', async () => {
 			render(<Popover {...Popover.args} />);
 
 			const chart = await findChart();
 			expect(chart).toBeInTheDocument();
 
-			const paths = await findAllMarksByGroupName(chart, 'scatter0_voronoi');
+			let paths = await findAllMarksByGroupName(chart, 'scatter0_voronoi');
 
 			await clickNthElement(paths, 0);
 			let popover = await screen.findByTestId('rsc-popover');
 			expect(popover).toBeInTheDocument();
 			expect(within(popover).getByText('Baby Peach, Baby Daisy')).toBeInTheDocument();
 
-			await userEvent.click(document.body);
+			await userEvent.click(chart);
 
+			paths = await findAllMarksByGroupName(chart, 'scatter0_voronoi');
 			await clickNthElement(paths, 12);
+
 			popover = await screen.findByTestId('rsc-popover');
 			expect(within(popover).getByText('Metal Mario, Gold Mario, Pink Gold Peach')).toBeInTheDocument();
 		});
