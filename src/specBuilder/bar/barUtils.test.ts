@@ -13,17 +13,13 @@ import { createElement } from 'react';
 
 import { Annotation } from '@components/Annotation';
 import { ChartPopover } from '@components/ChartPopover';
-import { ChartTooltip } from '@components/ChartTooltip';
 import {
 	COLOR_SCALE,
 	CORNER_RADIUS,
 	DEFAULT_CATEGORICAL_DIMENSION,
 	DEFAULT_COLOR,
 	DEFAULT_METRIC,
-	DEFAULT_OPACITY_RULE,
 	FILTERED_TABLE,
-	HIGHLIGHTED_ITEM,
-	HIGHLIGHT_CONTRAST_RATIO,
 	MARK_ID,
 	PADDING_RATIO,
 	SELECTED_ITEM,
@@ -34,7 +30,6 @@ import { RectEncodeEntry } from 'vega';
 import { BarSpecProps } from '../../types';
 import {
 	defaultBarEnterEncodings,
-	defaultBarPopoverOpacity,
 	defaultBarProps,
 	defaultBarPropsWithSecondayColor,
 	defaultCornerRadiusEncodings,
@@ -54,7 +49,6 @@ import {
 	getAnnotationMarks,
 	getAnnotationMetricAxisPosition,
 	getAnnotationPositionOffset,
-	getBarOpacity,
 	getBarPadding,
 	getBaseBarEnterEncodings,
 	getCornerRadiusEncodings,
@@ -324,26 +318,6 @@ describe('barUtils', () => {
 				dimensionScaleKey: 'yBand',
 				rangeScale: 'height',
 			});
-		});
-	});
-
-	describe('getBarOpacity()', () => {
-		test('no children, should use default opacity', () => {
-			expect(getBarOpacity(defaultBarProps)).toStrictEqual([DEFAULT_OPACITY_RULE]);
-		});
-		test('Tooltip child, should return tests for hover and default to opacity', () => {
-			const tooltip = createElement(ChartTooltip);
-			expect(getBarOpacity({ ...defaultBarProps, children: [tooltip] })).toStrictEqual([
-				{
-					test: `${HIGHLIGHTED_ITEM} && ${HIGHLIGHTED_ITEM} !== datum.${MARK_ID}`,
-					value: 1 / HIGHLIGHT_CONTRAST_RATIO,
-				},
-				DEFAULT_OPACITY_RULE,
-			]);
-		});
-		test('Popover child, should return tests for hover and select and default to opacity', () => {
-			const popover = createElement(ChartPopover);
-			expect(getBarOpacity({ ...defaultBarProps, children: [popover] })).toStrictEqual(defaultBarPopoverOpacity);
 		});
 	});
 

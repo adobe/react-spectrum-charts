@@ -76,6 +76,10 @@ export const PADDING_RATIO = 0.4;
 export const LINEAR_PADDING = 32;
 export const TRELLIS_PADDING = 0.2;
 
+// donut constants
+export const DONUT_RADIUS = 'min(width, height) / 2';
+export const DONUT_DIRECT_LABEL_MIN_ANGLE = 0.3;
+
 // ratio that each opacity is divded by when hovering or highlighting from legend
 export const HIGHLIGHT_CONTRAST_RATIO = 5;
 
