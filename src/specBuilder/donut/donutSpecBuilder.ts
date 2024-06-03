@@ -113,19 +113,18 @@ export const addScales = produce<Scale[], [DonutSpecProps]>((scales, props) => {
 });
 
 export const addMarks = produce<Mark[], [DonutSpecProps]>((marks, props) => {
-	const { holeRatio, name, metricLabel, metric, segment, hasDirectLabels, isBoolean, children } = props;
-	const radius = 'min(width, height) / 2';
+	const { segment, hasDirectLabels, isBoolean } = props;
 
-	marks.push(getArcMark(name, holeRatio, radius, children));
+	marks.push(getArcMark(props));
 	if (isBoolean) {
-		marks.push(getPercentMetricMark(name, metric, radius, holeRatio, metricLabel));
+		marks.push(getPercentMetricMark(props));
 	} else {
-		marks.push(getAggregateMetricMark(name, metric, radius, holeRatio, metricLabel));
+		marks.push(getAggregateMetricMark(props));
 		if (hasDirectLabels) {
 			if (!segment) {
 				throw new Error('If a Donut chart hasDirectLabels, a segment property name must be supplied.');
 			}
-			marks.push(getDirectLabelMark(name, radius, metric, segment));
+			marks.push(getDirectLabelMark({ ...props, segment }));
 		}
 	}
 });

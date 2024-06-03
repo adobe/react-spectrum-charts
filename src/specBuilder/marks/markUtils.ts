@@ -25,9 +25,12 @@ import {
 	LINEAR_COLOR_SCALE,
 	LINE_TYPE_SCALE,
 	LINE_WIDTH_SCALE,
+	MARK_ID,
 	OPACITY_SCALE,
+	SELECTED_ITEM,
 	SYMBOL_SIZE_SCALE,
 } from '@constants';
+import { addTooltipMarkOpacityRules } from '@specBuilder/chartTooltip/chartTooltipUtils';
 import { getScaleName } from '@specBuilder/scale/scaleSpecBuilder';
 import {
 	getColorValue,
@@ -48,9 +51,11 @@ import {
 } from 'vega';
 
 import {
+	BarSpecProps,
 	ChartTooltipProps,
 	ColorFacet,
 	ColorScheme,
+	DonutSpecProps,
 	DualFacet,
 	LineTypeFacet,
 	LineWidthFacet,
@@ -332,3 +337,33 @@ export const getVoronoiPath = (children: MarkChildElement[], dataSource: string,
 		},
 	],
 });
+
+/**
+ * Gets the opacity for the mark (used to highlight marks).
+ * This will take into account if there are any tooltips or popovers on the mark.
+ * @param props
+ * @returns
+ */
+export const getMarkOpacity = (props: BarSpecProps | DonutSpecProps): ({ test?: string } & NumericValueRef)[] => {
+	const { children } = props;
+	const rules: ({ test?: string } & NumericValueRef)[] = [DEFAULT_OPACITY_RULE];
+	// if there aren't any interactive components, then we don't need to add special opacity rules
+	if (!hasInteractiveChildren(children)) {
+		return rules;
+	}
+
+	addTooltipMarkOpacityRules(rules, props);
+
+	// if a bar is hovered/selected, all other bars should have reduced opacity
+	if (hasPopover(children)) {
+		return [
+			{
+				test: `${SELECTED_ITEM} && ${SELECTED_ITEM} !== datum.${MARK_ID}`,
+				value: 1 / HIGHLIGHT_CONTRAST_RATIO,
+			},
+			{ test: `${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${MARK_ID}`, ...DEFAULT_OPACITY_RULE },
+			...rules,
+		];
+	}
+	return rules;
+};

@@ -15,22 +15,19 @@ import {
 	ANNOTATION_FONT_WEIGHT,
 	BACKGROUND_COLOR,
 	CORNER_RADIUS,
-	DEFAULT_OPACITY_RULE,
 	DISCRETE_PADDING,
 	FILTERED_TABLE,
-	HIGHLIGHT_CONTRAST_RATIO,
 	MARK_ID,
 	SELECTED_ITEM,
 	STACK_ID,
 } from '@constants';
-import { addTooltipMarkOpacityRules } from '@specBuilder/chartTooltip/chartTooltipUtils';
 import {
 	getColorProductionRule,
 	getCursor,
+	getMarkOpacity,
 	getOpacityProductionRule,
 	getStrokeDashProductionRule,
 	getTooltip,
-	hasInteractiveChildren,
 	hasPopover,
 } from '@specBuilder/marks/markUtils';
 import { getColorValue, getLineWidthPixelsFromLineWidth } from '@specBuilder/specUtils';
@@ -368,35 +365,11 @@ export const getBarEnterEncodings = ({ children, color, colorScheme, name, opaci
 
 export const getBarUpdateEncodings = (props: BarSpecProps): EncodeEntry => ({
 	cursor: getCursor(props.children),
-	opacity: getBarOpacity(props),
+	opacity: getMarkOpacity(props),
 	stroke: getStroke(props),
 	strokeDash: getStrokeDash(props),
 	strokeWidth: getStrokeWidth(props),
 });
-
-export const getBarOpacity = (props: BarSpecProps): ProductionRule<NumericValueRef> => {
-	const { children } = props;
-	const rules: ({ test?: string } & NumericValueRef)[] = [DEFAULT_OPACITY_RULE];
-	// if there aren't any interactive components, then we don't need to add special opacity rules
-	if (!hasInteractiveChildren(children)) {
-		return rules;
-	}
-
-	addTooltipMarkOpacityRules(rules, props);
-
-	// if a bar is hovered/selected, all other bars should have reduced opacity
-	if (hasPopover(children)) {
-		return [
-			{
-				test: `${SELECTED_ITEM} && ${SELECTED_ITEM} !== datum.${MARK_ID}`,
-				value: 1 / HIGHLIGHT_CONTRAST_RATIO,
-			},
-			{ test: `${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${MARK_ID}`, ...DEFAULT_OPACITY_RULE },
-			...rules,
-		];
-	}
-	return rules;
-};
 
 export const getStroke = ({ children, color, colorScheme }: BarSpecProps): ProductionRule<ColorValueRef> => {
 	const defaultProductionRule = getColorProductionRule(color, colorScheme);

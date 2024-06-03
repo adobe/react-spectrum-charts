@@ -12,7 +12,7 @@
 import React, { ReactElement } from 'react';
 
 import useChartProps from '@hooks/useChartProps';
-import { Chart, ChartPopover, ChartTooltip, Legend } from '@rsc';
+import { Chart, ChartPopover, ChartProps, ChartTooltip, Datum, Legend } from '@rsc';
 import { Donut } from '@rsc/alpha';
 import { StoryFn } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
@@ -26,144 +26,49 @@ export default {
 	component: Donut,
 };
 
+const defaultChartProps: ChartProps = {
+	data: basicDonutData,
+	width: 350,
+	height: 350,
+};
+
 const DonutStory: StoryFn<typeof Donut> = (args): ReactElement => {
-	const chartProps = useChartProps({ data: basicDonutData, width: 350, height: 350 });
+	const chartProps = useChartProps(defaultChartProps);
 	return (
-		<Chart {...chartProps}>
+		<Chart {...chartProps} debug>
 			<Donut {...args} />
 		</Chart>
 	);
-};
-
-const Basic = bindWithProps(DonutStory);
-Basic.args = {
-	metric: 'count',
-	metricLabel: 'Visitors',
-	color: 'id',
-};
-
-const WithDirectLabels = bindWithProps(DonutStory);
-WithDirectLabels.args = {
-	metric: 'count',
-	metricLabel: 'Visitors',
-	segment: 'segment',
-	color: 'id',
-	hasDirectLabels: true,
-};
-
-const dialogContent = (datum) => {
-	return (
-		<Content>
-			<div>Browser: {datum.segment}</div>
-			<div>Visitors: {datum.count}</div>
-		</Content>
-	);
-};
-
-const DonutTooltipStory: StoryFn<typeof Donut> = (args): ReactElement => {
-	const chartProps = useChartProps({ data: basicDonutData, width: 350, height: 350 });
-	return (
-		<Chart {...chartProps}>
-			<Donut {...args}>
-				<ChartTooltip>{dialogContent}</ChartTooltip>
-				<ChartPopover width={150}>{dialogContent}</ChartPopover>
-			</Donut>
-		</Chart>
-	);
-};
-
-const WithPopover = bindWithProps(DonutTooltipStory);
-WithPopover.args = {
-	metric: 'count',
-	metricLabel: 'Visitors',
-	color: 'id',
 };
 
 const DonutLegendStory: StoryFn<typeof Donut> = (args): ReactElement => {
-	const chartProps = useChartProps({ data: basicDonutData, width: 400, height: 350 });
+	const chartProps = useChartProps({ ...defaultChartProps, width: 400 });
 	return (
 		<Chart {...chartProps}>
 			<Donut {...args} />
-			<Legend
-				title="Browsers"
-				position={'right'}
-				legendLabels={basicDonutData.map((d) => ({ label: d.segment, seriesName: d.id }))}
-				highlight
-				isToggleable
-			/>
+			<Legend title="Browsers" position={'right'} highlight isToggleable />
 		</Chart>
 	);
-};
-
-const WithLegend = bindWithProps(DonutLegendStory);
-WithLegend.args = {
-	metric: 'count',
-	metricLabel: 'Visitors',
-	color: 'id',
-};
-
-const EverythingBagel: StoryFn<typeof Donut> = (args): ReactElement => {
-	const chartProps = useChartProps({ data: basicDonutData, width: 400, height: 350 });
-	return (
-		<Chart {...chartProps}>
-			<Donut {...args}>
-				<ChartTooltip>{dialogContent}</ChartTooltip>
-				<ChartPopover width={150}>{dialogContent}</ChartPopover>
-			</Donut>
-			<Legend
-				title="Browsers"
-				position={'right'}
-				legendLabels={basicDonutData.map((d) => ({ label: d.segment, seriesName: d.id }))}
-				highlight
-				isToggleable
-			/>
-		</Chart>
-	);
-};
-
-const Everything = bindWithProps(EverythingBagel);
-Everything.args = {
-	metric: 'count',
-	metricLabel: 'Visitors',
-	segment: 'segment',
-	color: 'id',
-	hasDirectLabels: true,
-	holeRatio: 0.8,
 };
 
 const SliversStory: StoryFn<typeof Donut> = (args): ReactElement => {
-	const chartProps = useChartProps({ data: sliveredDonutData, width: 350, height: 350 });
+	const chartProps = useChartProps({ ...defaultChartProps, data: sliveredDonutData });
 	return (
-		<Chart {...chartProps}>
-			<Donut {...args}>
-				<ChartTooltip>{dialogContent}</ChartTooltip>
-				<ChartPopover width={150}>{dialogContent}</ChartPopover>
-			</Donut>
+		<Chart {...chartProps} debug>
+			<Donut {...args} />
 		</Chart>
 	);
-};
-
-const Slivers = bindWithProps(SliversStory);
-Slivers.args = {
-	metric: 'count',
-	metricLabel: 'Visitors',
-	segment: 'segment',
-	color: 'id',
-	hasDirectLabels: true,
-	holeRatio: 0.8,
 };
 
 const BooleanStory: StoryFn<typeof Donut> = (args): ReactElement => {
 	const positiveBooleanProps = useChartProps({
+		...defaultChartProps,
 		data: booleanDonutData,
-		width: 350,
-		height: 350,
 		colors: ['green-700', 'gray-200'],
 	});
 	const negativeBooleanProps = useChartProps({
+		...defaultChartProps,
 		data: [...booleanDonutData].reverse(),
-		width: 350,
-		height: 350,
 		colors: ['red-700', 'gray-200'],
 	});
 	return (
@@ -177,6 +82,76 @@ const BooleanStory: StoryFn<typeof Donut> = (args): ReactElement => {
 			</Chart>
 		</div>
 	);
+};
+
+// content for tooltip and popover
+const dialogContent = (datum: Datum) => {
+	return (
+		<Content>
+			<div>Browser: {datum.browser}</div>
+			<div>Visitors: {datum.count}</div>
+		</Content>
+	);
+};
+
+// tooltip and popover
+const interactiveChildren = [
+	<ChartTooltip key={0}>{dialogContent}</ChartTooltip>,
+	<ChartPopover width="auto" key={1}>
+		{dialogContent}
+	</ChartPopover>,
+];
+
+const Basic = bindWithProps(DonutStory);
+Basic.args = {
+	metric: 'count',
+	metricLabel: 'Visitors',
+	color: 'browser',
+};
+
+const WithDirectLabels = bindWithProps(DonutStory);
+WithDirectLabels.args = {
+	metric: 'count',
+	metricLabel: 'Visitors',
+	segment: 'browser',
+	color: 'browser',
+	hasDirectLabels: true,
+};
+
+const WithPopover = bindWithProps(DonutStory);
+WithPopover.args = {
+	metric: 'count',
+	metricLabel: 'Visitors',
+	color: 'browser',
+	children: interactiveChildren,
+};
+
+const WithLegend = bindWithProps(DonutLegendStory);
+WithLegend.args = {
+	metric: 'count',
+	metricLabel: 'Visitors',
+	color: 'browser',
+};
+
+const Everything = bindWithProps(DonutLegendStory);
+Everything.args = {
+	metric: 'count',
+	metricLabel: 'Visitors',
+	segment: 'browser',
+	color: 'browser',
+	hasDirectLabels: true,
+	holeRatio: 0.8,
+	children: interactiveChildren,
+};
+
+const Slivers = bindWithProps(SliversStory);
+Slivers.args = {
+	metric: 'count',
+	metricLabel: 'Visitors',
+	segment: 'browser',
+	color: 'browser',
+	hasDirectLabels: true,
+	holeRatio: 0.8,
 };
 
 const BooleanDonut = bindWithProps(BooleanStory);

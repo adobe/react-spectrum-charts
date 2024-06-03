@@ -17,23 +17,8 @@ import { defaultSignals } from '@specBuilder/specTestUtils';
 
 import { DonutSpecProps } from '../../types';
 import { addData, addDonut, addMarks, addScales, addSignals } from './donutSpecBuilder';
+import { defaultDonutProps } from './donutTestUtils';
 import { getAggregateMetricMark, getArcMark, getDirectLabelMark, getPercentMetricMark } from './donutUtils';
-
-const defaultDonutProps: DonutSpecProps = {
-	index: 0,
-	colorScheme: 'light',
-	markType: 'donut',
-	metric: 'testMetric',
-	startAngle: 0,
-	name: 'testName',
-	isBoolean: false,
-	segment: 'testSegment',
-	color: 'testColor',
-	holeRatio: 0.5,
-	metricLabel: 'testLabel',
-	hasDirectLabels: true,
-	children: [],
-};
 
 describe('addData', () => {
 	test('should add data correctly for boolean donut', () => {
@@ -105,16 +90,7 @@ describe('addMarks', () => {
 		const marks = [];
 		const props = { ...defaultDonutProps, isBoolean: true };
 		const result = addMarks(marks, props);
-		const expectedMarks = [
-			getArcMark(props.name, props.holeRatio, 'min(width, height) / 2', props.children),
-			getPercentMetricMark(
-				props.name,
-				props.metric,
-				'min(width, height) / 2',
-				props.holeRatio,
-				props.metricLabel
-			),
-		];
+		const expectedMarks = [getArcMark(props), getPercentMetricMark(props)];
 		expect(result).toEqual(expectedMarks);
 	});
 
@@ -122,25 +98,9 @@ describe('addMarks', () => {
 		const marks = [];
 		const result = addMarks(marks, defaultDonutProps);
 		const expectedMarks = [
-			getArcMark(
-				defaultDonutProps.name,
-				defaultDonutProps.holeRatio,
-				'min(width, height) / 2',
-				defaultDonutProps.children
-			),
-			getAggregateMetricMark(
-				defaultDonutProps.name,
-				defaultDonutProps.metric,
-				'min(width, height) / 2',
-				defaultDonutProps.holeRatio,
-				defaultDonutProps.metricLabel
-			),
-			getDirectLabelMark(
-				defaultDonutProps.name,
-				'min(width, height) / 2',
-				defaultDonutProps.metric,
-				defaultDonutProps.segment!
-			),
+			getArcMark(defaultDonutProps),
+			getAggregateMetricMark(defaultDonutProps),
+			getDirectLabelMark({ ...defaultDonutProps, segment: 'testSegment' }),
 		];
 		expect(result).toEqual(expectedMarks);
 	});

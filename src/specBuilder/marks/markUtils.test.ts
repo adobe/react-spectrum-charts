@@ -19,16 +19,20 @@ import {
 	COLOR_SCALE,
 	DEFAULT_COLOR,
 	DEFAULT_COLOR_SCHEME,
+	DEFAULT_OPACITY_RULE,
 	DEFAULT_SECONDARY_COLOR,
 	DEFAULT_TIME_DIMENSION,
 	DEFAULT_TRANSFORMED_TIME_DIMENSION,
+	HIGHLIGHTED_ITEM,
 	HIGHLIGHT_CONTRAST_RATIO,
 	LINEAR_COLOR_SCALE,
 	LINE_TYPE_SCALE,
 	LINE_WIDTH_SCALE,
 	OPACITY_SCALE,
+	SELECTED_ITEM,
 	SYMBOL_SIZE_SCALE,
 } from '@constants';
+import { defaultBarProps } from '@specBuilder/bar/barTestUtils';
 import { SignalRef } from 'vega';
 
 import { ProductionRuleTests } from '../../types';
@@ -37,6 +41,7 @@ import {
 	getColorProductionRuleSignalString,
 	getHighlightOpacityValue,
 	getLineWidthProductionRule,
+	getMarkOpacity,
 	getOpacityProductionRule,
 	getStrokeDashProductionRule,
 	getSymbolSizeProductionRule,
@@ -235,5 +240,27 @@ describe('getColorProductionRuleSignalString()', () => {
 	test('should return static value if static value is provided', () => {
 		const color = 'rgb(125, 125, 125)';
 		expect(getColorProductionRuleSignalString({ value: color }, DEFAULT_COLOR_SCHEME)).toStrictEqual(`'${color}'`);
+	});
+});
+
+describe('getMarkOpacity()', () => {
+	test('no children, should use default opacity', () => {
+		expect(getMarkOpacity(defaultBarProps)).toStrictEqual([DEFAULT_OPACITY_RULE]);
+	});
+	test('Tooltip child, should return tests for hover and default to opacity', () => {
+		const tooltip = createElement(ChartTooltip);
+		const opacity = getMarkOpacity({ ...defaultBarProps, children: [tooltip] });
+		expect(opacity).toHaveLength(2);
+		expect(opacity[0].test).toContain(HIGHLIGHTED_ITEM);
+		expect(opacity.at(-1)).toStrictEqual(DEFAULT_OPACITY_RULE);
+	});
+	test('Popover child, should return tests for hover and select and default to opacity', () => {
+		const popover = createElement(ChartPopover);
+		const opacity = getMarkOpacity({ ...defaultBarProps, children: [popover] });
+		expect(opacity).toHaveLength(4);
+		expect(opacity[0].test).toContain(`${SELECTED_ITEM} !==`);
+		expect(opacity[1].test).toContain(`${SELECTED_ITEM} ===`);
+		expect(opacity[2].test).toContain(HIGHLIGHTED_ITEM);
+		expect(opacity.at(-1)).toStrictEqual(DEFAULT_OPACITY_RULE);
 	});
 });

@@ -17,14 +17,9 @@ import {
 	DEFAULT_COLOR,
 	DEFAULT_COLOR_SCHEME,
 	DEFAULT_METRIC,
-	DEFAULT_OPACITY_RULE,
 	DEFAULT_SECONDARY_COLOR,
 	FILTERED_TABLE,
-	HIGHLIGHTED_ITEM,
-	HIGHLIGHT_CONTRAST_RATIO,
-	MARK_ID,
 	PADDING_RATIO,
-	SELECTED_ITEM,
 	STACK_ID,
 	TRELLIS_PADDING,
 } from '@constants';
@@ -113,13 +108,6 @@ export const defaultDodgedCornerRadiusEncodings: RectEncodeEntry = {
 };
 
 export const defaultBarFillOpacity: ProductionRule<NumericValueRef> = [{ value: 1 }];
-
-export const defaultBarPopoverOpacity: ProductionRule<NumericValueRef> = [
-	{ test: `${SELECTED_ITEM} && ${SELECTED_ITEM} !== datum.${MARK_ID}`, value: 1 / HIGHLIGHT_CONTRAST_RATIO },
-	{ test: `${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${MARK_ID}`, value: 1 },
-	{ test: `${HIGHLIGHTED_ITEM} && ${HIGHLIGHTED_ITEM} !== datum.${MARK_ID}`, value: 1 / HIGHLIGHT_CONTRAST_RATIO },
-	DEFAULT_OPACITY_RULE,
-];
 
 export const stackedXScale = 'xBand';
 export const dodgedXScale = `${defaultBarProps.name}_position`;

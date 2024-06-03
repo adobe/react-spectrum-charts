@@ -9,18 +9,12 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import {
-	COLOR_SCALE,
-	FILTERED_TABLE,
-	HIGHLIGHTED_ITEM,
-	HIGHLIGHT_CONTRAST_RATIO,
-	MARK_ID,
-	SELECTED_ITEM,
-} from '@constants';
-import { getTooltip, hasPopover } from '@specBuilder/marks/markUtils';
+import { DONUT_DIRECT_LABEL_MIN_ANGLE, DONUT_RADIUS, FILTERED_TABLE } from '@constants';
+import { getColorProductionRule, getMarkOpacity, getTooltip } from '@specBuilder/marks/markUtils';
 import {
 	ArcMark,
 	EncodeEntryName,
+	GroupMark,
 	Mark,
 	NumericValueRef,
 	ProductionRule,
@@ -29,16 +23,17 @@ import {
 	TextValueRef,
 } from 'vega';
 
-import { MarkChildElement } from '../../types';
+import { DonutSpecProps } from '../../types';
 
-export const getArcMark = (name: string, holeRatio: number, radius: string, children: MarkChildElement[]): ArcMark => {
+export const getArcMark = (props: DonutSpecProps): ArcMark => {
+	const { color, colorScheme, name, holeRatio, children } = props;
 	return {
 		type: 'arc',
 		name,
 		from: { data: FILTERED_TABLE },
 		encode: {
 			enter: {
-				fill: { scale: COLOR_SCALE, field: 'id' },
+				fill: getColorProductionRule(color, colorScheme),
 				x: { signal: 'width / 2' },
 				y: { signal: 'height / 2' },
 				tooltip: getTooltip(children, name),
@@ -47,51 +42,25 @@ export const getArcMark = (name: string, holeRatio: number, radius: string, chil
 				startAngle: { field: 'startAngle' },
 				endAngle: { field: 'endAngle' },
 				padAngle: { value: 0.01 },
-				innerRadius: { signal: `${holeRatio} * ${radius}` },
-				outerRadius: { signal: radius },
-				fillOpacity: getOpacityRules(name, children),
+				innerRadius: { signal: `${holeRatio} * ${DONUT_RADIUS}` },
+				outerRadius: { signal: DONUT_RADIUS },
+				opacity: getMarkOpacity(props),
 			},
 		},
 	};
 };
 
-export const getOpacityRules = (name: string, children: MarkChildElement[]): ProductionRule<NumericValueRef> => {
-	const lowOpacity = 1 / HIGHLIGHT_CONTRAST_RATIO;
-
-	const opacityRules = [
-		{
-			test: `${HIGHLIGHTED_ITEM} && datum.${MARK_ID} !== ${HIGHLIGHTED_ITEM}`,
-			value: lowOpacity,
-		},
-		{
-			value: 1,
-		},
-	];
-	if (hasPopover(children)) {
-		opacityRules.splice(1, 0, {
-			test: `${SELECTED_ITEM} && datum.${MARK_ID} !== ${SELECTED_ITEM}`,
-			value: lowOpacity,
-		});
-	}
-	return opacityRules;
-};
-
-export const getAggregateMetricMark = (
-	name: string,
-	metric: string,
-	radius: string,
-	holeRatio: number,
-	metricLabel: string | undefined
-): Mark => {
+export const getAggregateMetricMark = (props: DonutSpecProps): GroupMark => {
+	const { name, holeRatio, metricLabel } = props;
 	const groupMark: Mark = {
 		type: 'group',
-		name: `${name}_aggregateText`,
+		name: `${name}_aggregateMetricGroup`,
 		marks: [
 			{
 				type: 'text',
 				name: `${name}_aggregateMetricNumber`,
 				from: { data: `${name}_aggregateData` },
-				encode: getMetricNumberEncodeEnter(metric, radius, holeRatio, !!metricLabel, false),
+				encode: getMetricNumberEncodeEnter(props),
 			},
 		],
 	};
@@ -100,19 +69,14 @@ export const getAggregateMetricMark = (
 			type: 'text',
 			name: `${name}_aggregateMetricLabel`,
 			from: { data: `${name}_aggregateData` },
-			encode: getMetricLabelEncodeEnter(radius, holeRatio, metricLabel),
+			encode: getMetricLabelEncodeEnter(holeRatio, metricLabel),
 		});
 	}
 	return groupMark;
 };
 
-export const getPercentMetricMark = (
-	name: string,
-	metric: string,
-	radius: string,
-	holeRatio: number,
-	metricLabel: string | undefined
-): Mark => {
+export const getPercentMetricMark = (props: DonutSpecProps): GroupMark => {
+	const { name, holeRatio, metricLabel } = props;
 	const groupMark: Mark = {
 		type: 'group',
 		name: `${name}_percentText`,
@@ -121,7 +85,7 @@ export const getPercentMetricMark = (
 				type: 'text',
 				name: `${name}_percentMetricNumber`,
 				from: { data: `${name}_booleanData` },
-				encode: getMetricNumberEncodeEnter(metric, radius, holeRatio, !!metricLabel, true),
+				encode: getMetricNumberEncodeEnter(props),
 			},
 		],
 	};
@@ -130,27 +94,26 @@ export const getPercentMetricMark = (
 			type: 'text',
 			name: `${name}_percentMetricLabel`,
 			from: { data: `${name}_booleanData` },
-			encode: getMetricLabelEncodeEnter(radius, holeRatio, metricLabel),
+			encode: getMetricLabelEncodeEnter(holeRatio, metricLabel),
 		});
 	}
 	return groupMark;
 };
 
-export const getMetricNumberEncodeEnter = (
-	metric: string,
-	radius: string,
-	holeRatio: number,
-	showingLabel: boolean,
-	isBoolean: boolean
-): Partial<Record<EncodeEntryName, TextEncodeEntry>> => {
+export const getMetricNumberEncodeEnter = ({
+	metric,
+	holeRatio,
+	metricLabel,
+	isBoolean,
+}: DonutSpecProps): Partial<Record<EncodeEntryName, TextEncodeEntry>> => {
 	return {
 		enter: {
 			x: { signal: 'width / 2' },
 			y: { signal: 'height / 2' },
 			text: getMetricNumberText(metric, isBoolean),
-			fontSize: getFontSize(radius, holeRatio, true),
+			fontSize: getFontSize(DONUT_RADIUS, holeRatio, true),
 			align: { value: 'center' },
-			baseline: getAggregateMetricBaseline(radius, holeRatio, showingLabel),
+			baseline: getAggregateMetricBaseline(DONUT_RADIUS, holeRatio, !!metricLabel),
 		},
 	};
 };
@@ -163,16 +126,15 @@ export const getMetricNumberText = (metric: string, isBoolean: boolean): Product
 };
 
 export const getMetricLabelEncodeEnter = (
-	radius: string,
 	holeRatio: number,
 	metricLabel: string
 ): Partial<Record<EncodeEntryName, TextEncodeEntry>> => {
 	return {
 		enter: {
 			x: { signal: 'width / 2' },
-			y: getLabelYWithOffset(radius, holeRatio),
+			y: getLabelYWithOffset(DONUT_RADIUS, holeRatio),
 			text: { value: metricLabel },
-			fontSize: getFontSize(radius, holeRatio, false),
+			fontSize: getFontSize(DONUT_RADIUS, holeRatio, false),
 			align: { value: 'center' },
 			baseline: { value: 'top' },
 		},
@@ -233,7 +195,7 @@ export const getLabelYWithOffset = (radius: string, holeRatio: number): Producti
 	};
 };
 
-export const getDirectLabelMark = (name: string, radius: string, metric: string, segment: string): Mark => {
+export const getDirectLabelMark = ({ name, metric, segment }: DonutSpecProps & { segment: string }): Mark => {
 	return {
 		name: `${name}_directLabels`,
 		type: 'group',
@@ -243,7 +205,7 @@ export const getDirectLabelMark = (name: string, radius: string, metric: string,
 				name: `${name}_directLabelSegment`,
 				from: { data: FILTERED_TABLE },
 				encode: {
-					enter: getDirectLabelTextEntry(radius, segment, 'bottom'),
+					enter: getDirectLabelTextEntry(segment, 'bottom'),
 				},
 			},
 			{
@@ -251,7 +213,7 @@ export const getDirectLabelMark = (name: string, radius: string, metric: string,
 				name: `${name}_directLabelMetric`,
 				from: { data: FILTERED_TABLE },
 				encode: {
-					enter: getDirectLabelTextEntry(radius, metric, 'top', true),
+					enter: getDirectLabelTextEntry(metric, 'top', true),
 				},
 			},
 		],
@@ -259,36 +221,31 @@ export const getDirectLabelMark = (name: string, radius: string, metric: string,
 };
 
 export const getDirectLabelTextEntry = (
-	radius: string,
 	datumProperty: string,
 	baselinePosition: 'top' | 'bottom',
 	format: boolean = false
 ): TextEncodeEntry => {
 	return {
-		text: getDisplayTextForLargeSlice(radius, datumProperty, format),
+		text: getDisplayTextForLargeSlice(datumProperty, format),
 		x: { signal: 'width / 2' },
 		y: { signal: 'height / 2' },
-		radius: { signal: `${radius} + 15` },
-		theta: { signal: "(datum['startAngle'] + datum['endAngle']) / 2" },
+		radius: { signal: `${DONUT_RADIUS} + 15` },
+		theta: { signal: '(datum.startAngle + datum.endAngle) / 2' },
 		fontSize: { value: 14 },
 		width: { signal: `getLabelWidth(datum['${datumProperty}'], 'bold', '14') + 10` },
 		align: {
-			signal: "(datum['startAngle'] + datum['endAngle']) / 2 <= PI ? 'left' : 'right'",
+			signal: "(datum.startAngle + datum.endAngle) / 2 <= PI ? 'left' : 'right'",
 		},
 		baseline: { value: baselinePosition },
 	};
 };
 
-export const getDisplayTextForLargeSlice = (
-	radius: string,
-	datumProperty: string,
-	format: boolean,
-	minArcLength: number = 40 // minimum arc length to display text, in pixels
-): ProductionRule<TextValueRef> => {
-	return {
-		//if we want to go back to displaying based on radians rather than arc length, use this if statement:  if(datum['endAngle'] - datum['startAngle'] < 0.3
-		signal: `if((${radius} * (datum['endAngle'] - datum['startAngle'])) < ${minArcLength}, '', ${
-			format ? `format(datum['${datumProperty}'], ',')` : `datum['${datumProperty}']`
-		})`,
-	};
+export const getDisplayTextForLargeSlice = (datumProperty: string, format: boolean): ProductionRule<TextValueRef> => {
+	// need to use radians for this. 0.3 radians is about 17 degrees
+	// if we used arc length, then showing a label could shrink the overall donut size which could make the arc to small
+	// that would hide the label which would make the arc bigger which would show the label and so on
+	return [
+		{ test: `datum.endAngle - datum.startAngle < ${DONUT_DIRECT_LABEL_MIN_ANGLE}`, value: null },
+		{ signal: format ? `format(datum['${datumProperty}'], ',')` : `datum['${datumProperty}']` },
+	];
 };
