@@ -35,7 +35,7 @@ const defaultChartProps: ChartProps = {
 const DonutStory: StoryFn<typeof Donut> = (args): ReactElement => {
 	const chartProps = useChartProps(defaultChartProps);
 	return (
-		<Chart {...chartProps} debug>
+		<Chart {...chartProps}>
 			<Donut {...args} />
 		</Chart>
 	);
@@ -54,7 +54,7 @@ const DonutLegendStory: StoryFn<typeof Donut> = (args): ReactElement => {
 const SliversStory: StoryFn<typeof Donut> = (args): ReactElement => {
 	const chartProps = useChartProps({ ...defaultChartProps, data: sliveredDonutData });
 	return (
-		<Chart {...chartProps} debug>
+		<Chart {...chartProps}>
 			<Donut {...args} />
 		</Chart>
 	);
