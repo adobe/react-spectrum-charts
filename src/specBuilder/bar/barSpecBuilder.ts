@@ -33,7 +33,7 @@ import {
 	getScaleIndexByName,
 	getScaleIndexByType,
 } from '@specBuilder/scale/scaleSpecBuilder';
-import { addHighlightedItemSignalEvents, getGenericSignal } from '@specBuilder/signal/signalSpecBuilder';
+import { addHighlightedItemSignalEvents, getGenericValueSignal } from '@specBuilder/signal/signalSpecBuilder';
 import { getFacetsFromProps } from '@specBuilder/specUtils';
 import { sanitizeMarkChildren, toCamelCase } from '@utils';
 import { produce } from 'immer';
@@ -101,7 +101,7 @@ export const addSignals = produce<Signal[], [BarSpecProps]>((signals, props) => 
 	const { children, name, paddingRatio, paddingOuter: barPaddingOuter } = props;
 	// We use this value to calculate ReferenceLine positions.
 	const { paddingInner } = getBarPadding(paddingRatio, barPaddingOuter);
-	signals.push(getGenericSignal('paddingInner', paddingInner));
+	signals.push(getGenericValueSignal('paddingInner', paddingInner));
 
 	if (!children.length) {
 		return;

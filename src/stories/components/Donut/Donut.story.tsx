@@ -12,12 +12,12 @@
 import React, { ReactElement } from 'react';
 
 import useChartProps from '@hooks/useChartProps';
-import { Chart, ChartPopover, ChartProps, ChartTooltip, Datum, Legend } from '@rsc';
+import { Chart, ChartPopover, ChartProps, ChartTooltip, Datum, DonutProps, Legend } from '@rsc';
 import { Donut } from '@rsc/alpha';
 import { StoryFn } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
 
-import { Content } from '@adobe/react-spectrum';
+import { Content, View } from '@adobe/react-spectrum';
 
 import { basicDonutData, booleanDonutData, sliveredDonutData } from './data';
 
@@ -32,11 +32,12 @@ const defaultChartProps: ChartProps = {
 	height: 350,
 };
 
-const DonutStory: StoryFn<typeof Donut> = (args): ReactElement => {
-	const chartProps = useChartProps(defaultChartProps);
+const DonutStory: StoryFn<DonutProps & { width?: number; height?: number }> = (args): ReactElement => {
+	const { width, height, ...donutProps } = args;
+	const chartProps = useChartProps({ ...defaultChartProps, width: width ?? 350, height: height ?? 350 });
 	return (
 		<Chart {...chartProps}>
-			<Donut {...args} />
+			<Donut {...donutProps} />
 		</Chart>
 	);
 };
@@ -57,6 +58,28 @@ const SliversStory: StoryFn<typeof Donut> = (args): ReactElement => {
 		<Chart {...chartProps}>
 			<Donut {...args} />
 		</Chart>
+	);
+};
+
+const ResponsiveStory: StoryFn<typeof Donut> = (args): ReactElement => {
+	const chartProps = useChartProps({ ...defaultChartProps, width: '100%', height: '100%' });
+	return (
+		<View
+			backgroundColor="gray-50"
+			padding="size-600"
+			overflow="auto"
+			minHeight={50}
+			maxHeight={600}
+			width={600}
+			height={200}
+			UNSAFE_style={{
+				resize: 'vertical',
+			}}
+		>
+			<Chart {...chartProps} minHeight={50}>
+				<Donut {...args} />
+			</Chart>
+		</View>
 	);
 };
 
@@ -154,6 +177,13 @@ Slivers.args = {
 	holeRatio: 0.8,
 };
 
+const Responsive = bindWithProps(ResponsiveStory);
+Responsive.args = {
+	metric: 'count',
+	metricLabel: 'Visitors',
+	color: 'browser',
+};
+
 const BooleanDonut = bindWithProps(BooleanStory);
 BooleanDonut.args = {
 	metric: 'value',
@@ -162,4 +192,4 @@ BooleanDonut.args = {
 	isBoolean: true,
 };
 
-export { Basic, WithDirectLabels, WithPopover, WithLegend, Everything, Slivers, BooleanDonut };
+export { Basic, WithDirectLabels, WithPopover, WithLegend, Everything, Slivers, Responsive, BooleanDonut };

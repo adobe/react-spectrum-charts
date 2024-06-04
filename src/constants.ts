@@ -77,8 +77,18 @@ export const LINEAR_PADDING = 32;
 export const TRELLIS_PADDING = 0.2;
 
 // donut constants
+/** Calculation for donut radius */
 export const DONUT_RADIUS = 'min(width, height) / 2';
+/** Min arc angle radians to display a direct label. If the arc angle is less than this, the direct label will be hidden. */
 export const DONUT_DIRECT_LABEL_MIN_ANGLE = 0.3;
+/** Min font size for the donut summary metric value */
+export const DONUT_SUMMARY_MIN_FONT_SIZE = 28;
+/** Max font size for the donut summary metric value */
+export const DONUT_SUMMARY_MAX_FONT_SIZE = 60;
+/** Ratio of the donut summary matric value font size to the inner donut raidus */
+export const DONUT_SUMMARY_FONT_SIZE_RATIO = 0.35;
+/** Min inner radius to display the summary metric. If the inner radius is less than this, the summary metric is hidden. */
+export const DONUT_SUMMARY_MIN_RADIUS = 45;
 
 // ratio that each opacity is divded by when hovering or highlighting from legend
 export const HIGHLIGHT_CONTRAST_RATIO = 5;
