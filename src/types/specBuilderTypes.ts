@@ -120,7 +120,8 @@ type DonutPropsWithDefaults =
 	| 'startAngle'
 	| 'holeRatio'
 	| 'hasDirectLabels'
-	| 'isBoolean';
+	| 'isBoolean'
+	| 'metricSummaryNumberFormat';
 
 export interface DonutSpecProps
 	extends PartiallyRequired<DonutProps & { colorScheme: ColorScheme; index: number }, DonutPropsWithDefaults> {

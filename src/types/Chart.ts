@@ -185,6 +185,11 @@ export interface DonutProps extends MarkProps {
 	/** Determines if the center metric should be displayed as a percent. if true, data should only be two data points, which sum to 1
 	 * Also, if true, will display the first datapoint as a percent */
 	isBoolean?: boolean;
+	/** d3 number format specifier. Only valid if labelFormat is linear or undefined.
+	 *
+	 * see {@link https://d3js.org/d3-format#locale_format}
+	 */
+	metricSummaryNumberFormat?: NumberFormat | string;
 }
 
 export interface AxisProps extends BaseProps {

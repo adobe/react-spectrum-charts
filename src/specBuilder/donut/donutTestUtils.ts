@@ -9,7 +9,6 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
 import { DonutSpecProps } from '../../types';
 
 export const defaultDonutProps: DonutSpecProps = {
@@ -26,4 +25,5 @@ export const defaultDonutProps: DonutSpecProps = {
 	metricLabel: 'testLabel',
 	hasDirectLabels: true,
 	children: [],
+	metricSummaryNumberFormat: 'shortNumber',
 };

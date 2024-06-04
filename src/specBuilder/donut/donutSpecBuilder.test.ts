@@ -121,6 +121,7 @@ describe('addMarks', () => {
 			metricLabel: 'testLabel',
 			hasDirectLabels: true,
 			children: [],
+			metricSummaryNumberFormat: 'shortNumber',
 		};
 		expect(() => addMarks(marks, props)).toThrow(
 			'If a Donut chart hasDirectLabels, a segment property name must be supplied.'

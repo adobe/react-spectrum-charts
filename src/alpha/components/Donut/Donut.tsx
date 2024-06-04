@@ -29,6 +29,7 @@ const Donut: FC<DonutProps> = ({
 	name,
 	segment,
 	startAngle = 0,
+	metricSummaryNumberFormat = 'shortNumber',
 }) => {
 	return null;
 };
