@@ -9,10 +9,20 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { COLOR_SCALE, DEFAULT_COLOR, DEFAULT_COLOR_SCHEME, DEFAULT_METRIC, FILTERED_TABLE } from '@constants';
+import {
+	COLOR_SCALE,
+	DEFAULT_COLOR,
+	DEFAULT_COLOR_SCHEME,
+	DEFAULT_METRIC,
+	DONUT_RADIUS,
+	DONUT_SUMMARY_FONT_SIZE_RATIO,
+	DONUT_SUMMARY_MAX_FONT_SIZE,
+	DONUT_SUMMARY_MIN_FONT_SIZE,
+	FILTERED_TABLE,
+} from '@constants';
 import { getTooltipProps, hasInteractiveChildren } from '@specBuilder/marks/markUtils';
 import { addFieldToFacetScaleDomain } from '@specBuilder/scale/scaleSpecBuilder';
-import { addHighlightedItemSignalEvents } from '@specBuilder/signal/signalSpecBuilder';
+import { addHighlightedItemSignalEvents, getGenericUpdateSignal } from '@specBuilder/signal/signalSpecBuilder';
 import { sanitizeMarkChildren, toCamelCase } from '@utils';
 import { produce } from 'immer';
 import { Data, Mark, Scale, Signal, Spec } from 'vega';
@@ -130,7 +140,13 @@ export const addMarks = produce<Mark[], [DonutSpecProps]>((marks, props) => {
 });
 
 export const addSignals = produce<Signal[], [DonutSpecProps]>((signals, props) => {
-	const { name, children } = props;
+	const { name, holeRatio, children } = props;
+	signals.push(
+		getGenericUpdateSignal(
+			`${name}_summaryFontSize`,
+			`min(${DONUT_SUMMARY_MAX_FONT_SIZE}, max(${DONUT_SUMMARY_MIN_FONT_SIZE}, round(${DONUT_RADIUS} * ${holeRatio} * ${DONUT_SUMMARY_FONT_SIZE_RATIO})))`
+		)
+	);
 	if (!hasInteractiveChildren(children)) return;
 	addHighlightedItemSignalEvents(signals, name, 1, getTooltipProps(children)?.excludeDataKeys);
 });

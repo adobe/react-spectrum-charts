@@ -68,7 +68,7 @@ import { addLegend } from './legend/legendSpecBuilder';
 import { addLine } from './line/lineSpecBuilder';
 import { getOrdinalScale } from './scale/scaleSpecBuilder';
 import { addScatter } from './scatter/scatterSpecBuilder';
-import { getGenericSignal } from './signal/signalSpecBuilder';
+import { getGenericValueSignal } from './signal/signalSpecBuilder';
 import {
 	getColorValue,
 	getFacetsFromScales,
@@ -219,16 +219,16 @@ export const getDefaultSignals = (
 	// if the signal background color were transparent then backgroundMarks and annotation fill would also be transparent
 	const signalBackgroundColor = backgroundColor === 'transparent' ? 'gray-50' : backgroundColor;
 	return [
-		getGenericSignal(BACKGROUND_COLOR, getColorValue(signalBackgroundColor, colorScheme)),
-		getGenericSignal('colors', getTwoDimensionalColorScheme(colors, colorScheme)),
-		getGenericSignal('lineTypes', getTwoDimensionalLineTypes(lineTypes)),
-		getGenericSignal('opacities', getTwoDimensionalOpacities(opacities)),
-		getGenericSignal('hiddenSeries', hiddenSeries ?? []),
-		getGenericSignal(HIGHLIGHTED_ITEM),
-		getGenericSignal(HIGHLIGHTED_GROUP),
-		getGenericSignal(HIGHLIGHTED_SERIES, highlightedSeries),
-		getGenericSignal(SELECTED_ITEM),
-		getGenericSignal(SELECTED_SERIES),
+		getGenericValueSignal(BACKGROUND_COLOR, getColorValue(signalBackgroundColor, colorScheme)),
+		getGenericValueSignal('colors', getTwoDimensionalColorScheme(colors, colorScheme)),
+		getGenericValueSignal('lineTypes', getTwoDimensionalLineTypes(lineTypes)),
+		getGenericValueSignal('opacities', getTwoDimensionalOpacities(opacities)),
+		getGenericValueSignal('hiddenSeries', hiddenSeries ?? []),
+		getGenericValueSignal(HIGHLIGHTED_ITEM),
+		getGenericValueSignal(HIGHLIGHTED_GROUP),
+		getGenericValueSignal(HIGHLIGHTED_SERIES, highlightedSeries),
+		getGenericValueSignal(SELECTED_ITEM),
+		getGenericValueSignal(SELECTED_SERIES),
 	];
 };
 

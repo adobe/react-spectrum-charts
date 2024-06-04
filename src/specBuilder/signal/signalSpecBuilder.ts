@@ -101,10 +101,17 @@ export const getLegendLabelsSeriesSignal = (value: unknown = null): Signal => {
 };
 
 /**
- * Returns a basic signal
+ * Returns a basic value based signal
  */
-export const getGenericSignal = (name: string, value: unknown = null): Signal => {
+export const getGenericValueSignal = (name: string, value: unknown = null): Signal => {
 	return { name, value };
+};
+
+/**
+ * Returns a basic value based signal
+ */
+export const getGenericUpdateSignal = (name: string, update: string): Signal => {
+	return { name, update };
 };
 
 /**

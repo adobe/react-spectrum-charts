@@ -9,7 +9,8 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { findAllMarksByGroupName, findChart, render } from '@test-utils';
+import { DONUT_SUMMARY_MAX_FONT_SIZE, DONUT_SUMMARY_MIN_FONT_SIZE } from '@constants';
+import { findAllMarksByGroupName, findChart, render, screen } from '@test-utils';
 import { Donut } from 'alpha/components/Donut';
 
 import { Basic } from './Donut.story';
@@ -28,5 +29,33 @@ describe('Donut', () => {
 		// donut data has 7 segments
 		const bars = await findAllMarksByGroupName(chart, 'donut0');
 		expect(bars.length).toEqual(7);
+	});
+
+	describe('Summary text is correct size based on donut raidus', () => {
+		test('text should be target size', async () => {
+			render(<Basic {...Basic.args} width={300} height={300} />);
+			const metricValue = await screen.findByText('39K');
+			expect(metricValue).toHaveAttribute('font-size', '45px');
+		});
+
+		test('small donut, text should be min size', async () => {
+			render(<Basic {...Basic.args} width={100} height={100} />);
+			const metricValue = await screen.findByText('39K');
+			expect(metricValue).toHaveAttribute('font-size', `${DONUT_SUMMARY_MIN_FONT_SIZE}px`);
+		});
+
+		test('large donut, text should be max size', async () => {
+			render(<Basic {...Basic.args} width={600} height={600} />);
+			const metricValue = await screen.findByText('39K');
+			expect(metricValue).toHaveAttribute('font-size', `${DONUT_SUMMARY_MAX_FONT_SIZE}px`);
+		});
+	});
+
+	test('metric label text should be 1/2 the size of the metric value text', async () => {
+		render(<Basic {...Basic.args} width={200} height={200} />);
+		const metricValue = await screen.findByText('39K');
+		expect(metricValue).toHaveAttribute('font-size', '30px');
+		const metricLabel = await screen.findByText('Visitors');
+		expect(metricLabel).toHaveAttribute('font-size', '15px');
 	});
 });

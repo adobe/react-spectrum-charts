@@ -12,13 +12,13 @@
 import { HIGHLIGHTED_GROUP, HIGHLIGHTED_ITEM, HIGHLIGHTED_SERIES, SELECTED_ITEM, SELECTED_SERIES } from '@constants';
 import { Signal } from 'vega';
 
-import { getGenericSignal } from './signal/signalSpecBuilder';
+import { getGenericValueSignal } from './signal/signalSpecBuilder';
 
-export const defaultHighlightedItemSignal = getGenericSignal(HIGHLIGHTED_ITEM);
-export const defaultHighlightedGroupSignal = getGenericSignal(HIGHLIGHTED_GROUP);
-export const defaultHighlightedSeriesSignal = getGenericSignal(HIGHLIGHTED_SERIES);
-export const defaultSelectedItemSignal = getGenericSignal(SELECTED_ITEM);
-export const defaultSelectedSeriesSignal = getGenericSignal(SELECTED_SERIES);
+export const defaultHighlightedItemSignal = getGenericValueSignal(HIGHLIGHTED_ITEM);
+export const defaultHighlightedGroupSignal = getGenericValueSignal(HIGHLIGHTED_GROUP);
+export const defaultHighlightedSeriesSignal = getGenericValueSignal(HIGHLIGHTED_SERIES);
+export const defaultSelectedItemSignal = getGenericValueSignal(SELECTED_ITEM);
+export const defaultSelectedSeriesSignal = getGenericValueSignal(SELECTED_SERIES);
 
 export const defaultSignals: Signal[] = [
 	defaultHighlightedItemSignal,

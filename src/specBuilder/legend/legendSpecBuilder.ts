@@ -39,7 +39,7 @@ import {
 	LineWidthFacet,
 	SymbolShapeFacet,
 } from '../../types';
-import { addHighlighSignalLegendHoverEvents, getGenericSignal } from '../signal/signalSpecBuilder';
+import { addHighlighSignalLegendHoverEvents, getGenericValueSignal } from '../signal/signalSpecBuilder';
 import { getFacets, getFacetsFromKeys } from './legendFacetUtils';
 import { setHoverOpacityForMarks } from './legendHighlightUtils';
 import { Facet, getColumns, getEncodings, getHiddenEntriesFilter, getSymbolType } from './legendUtils';
@@ -293,7 +293,7 @@ export const addSignals = produce<Signal[], [LegendSpecProps]>(
 		}
 
 		if (legendLabels) {
-			signals.push(getGenericSignal(`${name}_labels`, legendLabels));
+			signals.push(getGenericValueSignal(`${name}_labels`, legendLabels));
 		}
 	}
 );
