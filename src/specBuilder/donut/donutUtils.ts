@@ -10,7 +10,7 @@
  * governing permissions and limitations under the License.
  */
 import { DONUT_DIRECT_LABEL_MIN_ANGLE, DONUT_RADIUS, DONUT_SUMMARY_MIN_RADIUS, FILTERED_TABLE } from '@constants';
-import { getColorProductionRule, getMarkOpacity, getTooltip } from '@specBuilder/marks/markUtils';
+import { getColorProductionRule, getCursor, getMarkOpacity, getTooltip } from '@specBuilder/marks/markUtils';
 import { getTextNumberFormat } from '@specBuilder/textUtils';
 import {
 	ArcMark,
@@ -45,6 +45,7 @@ export const getArcMark = (props: DonutSpecProps): ArcMark => {
 				innerRadius: { signal: `${holeRatio} * ${DONUT_RADIUS}` },
 				outerRadius: { signal: DONUT_RADIUS },
 				opacity: getMarkOpacity(props),
+				cursor: getCursor(children),
 			},
 		},
 	};
