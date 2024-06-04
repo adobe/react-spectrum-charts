@@ -71,7 +71,7 @@ const ResponsiveStory: StoryFn<typeof Donut> = (args): ReactElement => {
 			minHeight={50}
 			maxHeight={600}
 			width={600}
-			height={100}
+			height={200}
 			UNSAFE_style={{
 				resize: 'vertical',
 			}}
