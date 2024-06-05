@@ -11,6 +11,7 @@
  */
 import { DONUT_DIRECT_LABEL_MIN_ANGLE, DONUT_RADIUS, DONUT_SUMMARY_MIN_RADIUS, FILTERED_TABLE } from '@constants';
 import { getColorProductionRule, getCursor, getMarkOpacity, getTooltip } from '@specBuilder/marks/markUtils';
+import { getTextNumberFormat } from '@specBuilder/textUtils';
 import {
 	ArcMark,
 	EncodeEntryName,
@@ -100,17 +101,13 @@ export const getPercentMetricMark = (props: DonutSpecProps): GroupMark => {
 	return groupMark;
 };
 
-export const getMetricNumberEncode = ({
-	metric,
-	holeRatio,
-	isBoolean,
-	name,
-}: DonutSpecProps): Partial<Record<EncodeEntryName, TextEncodeEntry>> => {
+export const getMetricNumberEncode = (props: DonutSpecProps): Partial<Record<EncodeEntryName, TextEncodeEntry>> => {
+	const { holeRatio, name } = props;
 	return {
 		update: {
 			x: { signal: 'width / 2' },
 			y: { signal: 'height / 2' },
-			text: getMetricNumberText(metric, isBoolean),
+			text: getMetricNumberText(props),
 			fontSize: { signal: `${name}_summaryFontSize` },
 			align: { value: 'center' },
 			baseline: { value: 'alphabetic' },
@@ -122,11 +119,15 @@ export const getMetricNumberEncode = ({
 	};
 };
 
-export const getMetricNumberText = (metric: string, isBoolean: boolean): ProductionRule<TextValueRef> => {
+export const getMetricNumberText = ({
+	metric,
+	metricSummaryNumberFormat,
+	isBoolean,
+}: DonutSpecProps): ProductionRule<TextValueRef> => {
 	if (isBoolean) {
 		return { signal: `format(datum['${metric}'], '.0%')` };
 	}
-	return { signal: "upper(replace(format(datum.sum, '.3~s'), 'G', 'B'))" };
+	return [...getTextNumberFormat(metricSummaryNumberFormat, 'sum'), { field: 'sum' }];
 };
 
 export const getMetricLabelEncode = ({

@@ -39,6 +39,7 @@ export const addDonut = produce<Spec, [DonutProps & { colorScheme?: ColorScheme;
 			colorScheme = DEFAULT_COLOR_SCHEME,
 			index = 0,
 			metric = DEFAULT_METRIC,
+			metricSummaryNumberFormat = 'shortNumber',
 			name,
 			startAngle = 0,
 			holeRatio = 0.85,
@@ -50,16 +51,17 @@ export const addDonut = produce<Spec, [DonutProps & { colorScheme?: ColorScheme;
 		// put props back together now that all defaults are set
 		const donutProps: DonutSpecProps = {
 			children: sanitizeMarkChildren(children),
-			colorScheme,
-			index,
 			color,
+			colorScheme,
+			hasDirectLabels,
+			holeRatio,
+			index,
+			isBoolean,
 			markType: 'donut',
 			metric,
+			metricSummaryNumberFormat,
 			name: toCamelCase(name ?? `donut${index}`),
 			startAngle,
-			holeRatio,
-			hasDirectLabels,
-			isBoolean,
 			...props,
 		};
 

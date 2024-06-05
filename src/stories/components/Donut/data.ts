@@ -11,13 +11,13 @@
  */
 
 export const basicDonutData = [
-	{ count: 4000, browser: 'Other' },
-	{ count: 6000, browser: 'Opera' },
-	{ count: 10000, browser: 'Chrome' },
-	{ count: 3000, browser: 'Brave' },
-	{ count: 7000, browser: 'Safari' },
-	{ count: 8000, browser: 'Firefox' },
-	{ count: 1000, browser: 'Unknown' },
+	{ count: 10390, browser: 'Chrome' },
+	{ count: 8281, browser: 'Firefox' },
+	{ count: 7045, browser: 'Safari' },
+	{ count: 6166, browser: 'Opera' },
+	{ count: 4201, browser: 'Other' },
+	{ count: 3261, browser: 'Brave' },
+	{ count: 1021, browser: 'Unknown' },
 ];
 
 export const sliveredDonutData = [
