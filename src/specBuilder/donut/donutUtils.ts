@@ -9,8 +9,16 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { DONUT_DIRECT_LABEL_MIN_ANGLE, DONUT_RADIUS, DONUT_SUMMARY_MIN_RADIUS, FILTERED_TABLE } from '@constants';
+import {
+	DONUT_DIRECT_LABEL_MIN_ANGLE,
+	DONUT_RADIUS,
+	DONUT_SUMMARY_MIN_RADIUS,
+	FILTERED_TABLE,
+	MARK_ID,
+	SELECTED_ITEM,
+} from '@constants';
 import { getColorProductionRule, getCursor, getMarkOpacity, getTooltip } from '@specBuilder/marks/markUtils';
+import { getColorValue } from '@specBuilder/specUtils';
 import { getTextNumberFormat } from '@specBuilder/textUtils';
 import {
 	ArcMark,
@@ -37,6 +45,7 @@ export const getArcMark = (props: DonutSpecProps): ArcMark => {
 				x: { signal: 'width / 2' },
 				y: { signal: 'height / 2' },
 				tooltip: getTooltip(children, name),
+				stroke: { value: getColorValue('static-blue', colorScheme) },
 			},
 			update: {
 				startAngle: { field: 'startAngle' },
@@ -46,6 +55,7 @@ export const getArcMark = (props: DonutSpecProps): ArcMark => {
 				outerRadius: { signal: DONUT_RADIUS },
 				opacity: getMarkOpacity(props),
 				cursor: getCursor(children),
+				strokeWidth: [{ test: `${SELECTED_ITEM} === datum.${MARK_ID}`, value: 2 }, { value: 0 }],
 			},
 		},
 	};
