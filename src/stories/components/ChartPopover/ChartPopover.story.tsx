@@ -45,7 +45,7 @@ const defaultChartProps: ChartProps = { data, renderer: 'svg', width: 600 };
 const ChartPopoverCanvasStory: StoryFn<typeof ChartPopover> = (args): ReactElement => {
 	const chartProps = useChartProps({ data, renderer: 'canvas', width: 600 });
 	return (
-		<Chart {...chartProps}>
+		<Chart {...chartProps} debug>
 			<Bar color="series">
 				<ChartTooltip>{dialogContent}</ChartTooltip>
 				<ChartPopover {...args} />
