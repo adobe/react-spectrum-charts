@@ -31,6 +31,7 @@ import userEvent from '@testing-library/user-event';
 import {
 	Canvas,
 	DodgedBarChart,
+	DonutChart,
 	LineChart,
 	MinWidth,
 	OnOpenChange,
@@ -232,5 +233,31 @@ describe('ChartPopover', () => {
 
 		await userEvent.click(chart);
 		expect(onOpenChange).toHaveBeenCalledWith(false);
+	});
+
+	test('DonutChart', async () => {
+		render(<DonutChart {...DonutChart.args} />);
+
+		const chart = await findChart();
+		expect(chart).toBeInTheDocument();
+		let segments = getAllMarksByGroupName(chart, 'donut0');
+		expect(segments).toHaveLength(7);
+
+		// clicking the bar should open the popover
+		await clickNthElement(segments, 4);
+		const popover = await screen.findByTestId('rsc-popover');
+		await waitFor(() => expect(popover).toBeInTheDocument()); // waitFor to give the popover time to make sure it doesn't close
+
+		// check the content of the popover
+		expect(within(popover).getByText('Browser: Safari')).toBeInTheDocument();
+		expect(within(popover).getByText('Visitors: 7000')).toBeInTheDocument();
+
+		segments = getAllMarksByGroupName(chart, 'donut0');
+
+		// validate the highlight visuals are present
+		expect(segments[0]).toHaveAttribute('opacity', `${1 / HIGHLIGHT_CONTRAST_RATIO}`);
+		expect(segments[4]).toHaveAttribute('opacity', '1');
+		expect(segments[4]).toHaveAttribute('stroke', spectrumColors.light['static-blue']);
+		expect(segments[4]).toHaveAttribute('stroke-width', '2');
 	});
 });
