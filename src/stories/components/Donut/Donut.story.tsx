@@ -184,6 +184,14 @@ Responsive.args = {
 	color: 'browser',
 };
 
+const MetricSummaryNumberFormat = bindWithProps(DonutStory);
+MetricSummaryNumberFormat.args = {
+	metricSummaryNumberFormat: 'standardNumber',
+	metric: 'count',
+	metricLabel: 'Visitors',
+	color: 'browser',
+};
+
 const BooleanDonut = bindWithProps(BooleanStory);
 BooleanDonut.args = {
 	metric: 'value',
@@ -192,4 +200,14 @@ BooleanDonut.args = {
 	isBoolean: true,
 };
 
-export { Basic, WithDirectLabels, WithPopover, WithLegend, Everything, Slivers, Responsive, BooleanDonut };
+export {
+	Basic,
+	WithDirectLabels,
+	WithPopover,
+	WithLegend,
+	Everything,
+	Slivers,
+	Responsive,
+	MetricSummaryNumberFormat,
+	BooleanDonut,
+};

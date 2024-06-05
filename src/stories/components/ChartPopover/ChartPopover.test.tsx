@@ -249,8 +249,8 @@ describe('ChartPopover', () => {
 		await waitFor(() => expect(popover).toBeInTheDocument()); // waitFor to give the popover time to make sure it doesn't close
 
 		// check the content of the popover
-		expect(within(popover).getByText('Browser: Safari')).toBeInTheDocument();
-		expect(within(popover).getByText('Visitors: 7000')).toBeInTheDocument();
+		expect(within(popover).getByText('Browser: Other')).toBeInTheDocument();
+		expect(within(popover).getByText('Visitors: 4201')).toBeInTheDocument();
 
 		segments = getAllMarksByGroupName(chart, 'donut0');
 

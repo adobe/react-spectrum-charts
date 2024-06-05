@@ -48,13 +48,19 @@ describe('getPercentMetricMark()', () => {
 
 describe('getMetricNumberText()', () => {
 	test('should return the correct text for boolean metric', () => {
-		const result = getMetricNumberText('exampleMetric', true);
-		expect(result).toEqual({ signal: `format(datum['exampleMetric'], '.0%')` });
+		const result = getMetricNumberText({ ...defaultDonutProps, isBoolean: true });
+		expect(result).toEqual({ signal: `format(datum['testMetric'], '.0%')` });
 	});
 
 	test('should return the correct text for non-boolean metric', () => {
-		const result = getMetricNumberText('exampleMetric', false);
-		expect(result).toEqual({ signal: "upper(replace(format(datum.sum, '.3~s'), 'G', 'B'))" });
+		const result = getMetricNumberText(defaultDonutProps);
+		expect(result).toEqual([
+			{
+				signal: "upper(replace(format(datum['sum'], '.3~s'), /(\\d+)G/, '$1B'))",
+				test: "isNumber(datum['sum']) && abs(datum['sum']) >= 1000",
+			},
+			{ field: 'sum' },
+		]);
 	});
 });
 
