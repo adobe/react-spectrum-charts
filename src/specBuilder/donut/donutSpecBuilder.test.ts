@@ -18,7 +18,6 @@ import { defaultSignals } from '@specBuilder/specTestUtils';
 import { DonutSpecProps } from '../../types';
 import { addData, addDonut, addMarks, addScales, addSignals } from './donutSpecBuilder';
 import { defaultDonutProps } from './donutTestUtils';
-import { getAggregateMetricMark, getArcMark, getDirectLabelMark, getPercentMetricMark } from './donutUtils';
 
 describe('addData', () => {
 	test('should add data correctly for boolean donut', () => {
@@ -86,25 +85,6 @@ describe('addData', () => {
 });
 
 describe('addMarks', () => {
-	test('should add marks correctly for boolean donut', () => {
-		const marks = [];
-		const props = { ...defaultDonutProps, isBoolean: true };
-		const result = addMarks(marks, props);
-		const expectedMarks = [getArcMark(props), getPercentMetricMark(props)];
-		expect(result).toEqual(expectedMarks);
-	});
-
-	test('should add marks correctly for non-boolean donut', () => {
-		const marks = [];
-		const result = addMarks(marks, defaultDonutProps);
-		const expectedMarks = [
-			getArcMark(defaultDonutProps),
-			getAggregateMetricMark(defaultDonutProps),
-			getDirectLabelMark({ ...defaultDonutProps, segment: 'testSegment' }),
-		];
-		expect(result).toEqual(expectedMarks);
-	});
-
 	test('should throw error when hasDirectLabels is true but segment is not provided', () => {
 		const marks = [];
 		const props: DonutSpecProps = {
@@ -118,10 +98,8 @@ describe('addMarks', () => {
 			segment: undefined,
 			color: 'testColor',
 			holeRatio: 0.5,
-			metricLabel: 'testLabel',
 			hasDirectLabels: true,
 			children: [],
-			metricSummaryNumberFormat: 'shortNumber',
 		};
 		expect(() => addMarks(marks, props)).toThrow(
 			'If a Donut chart hasDirectLabels, a segment property name must be supplied.'

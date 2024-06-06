@@ -12,7 +12,19 @@
 import React, { ReactElement } from 'react';
 
 import useChartProps from '@hooks/useChartProps';
-import { Area, Axis, Bar, Chart, ChartPopover, ChartProps, ChartTooltip, Datum, Legend, Line } from '@rsc';
+import {
+	Area,
+	Axis,
+	Bar,
+	Chart,
+	ChartPopover,
+	ChartProps,
+	ChartTooltip,
+	Datum,
+	DonutSummary,
+	Legend,
+	Line,
+} from '@rsc';
 import { browserData as data } from '@stories/data/data';
 import { StoryFn } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
@@ -125,7 +137,8 @@ const DonutStory: StoryFn<typeof ChartPopover> = (args): ReactElement => {
 	const chartProps = useChartProps({ data: basicDonutData, width: 350, height: 350 });
 	return (
 		<Chart {...chartProps}>
-			<Donut metric="count" metricLabel="Visitors" color="browser">
+			<Donut metric="count" color="browser">
+				<DonutSummary label="Visitors" />
 				<ChartTooltip>{donutDialogContent}</ChartTooltip>
 				<ChartPopover {...args} />
 			</Donut>

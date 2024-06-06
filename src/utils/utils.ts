@@ -22,6 +22,7 @@ import {
 	Bar,
 	ChartPopover,
 	ChartTooltip,
+	DonutSummary,
 	Legend,
 	Line,
 	MetricRange,
@@ -110,6 +111,7 @@ export const sanitizeMarkChildren = (children: unknown): MarkChildElement[] => {
 		ChartPopover.displayName,
 		ScatterPath.displayName,
 		MetricRange.displayName,
+		DonutSummary.displayName,
 		Trendline.displayName,
 	] as string[];
 

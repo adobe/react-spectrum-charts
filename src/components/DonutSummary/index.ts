@@ -9,19 +9,4 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { DonutSpecProps } from '../../types';
-
-export const defaultDonutProps: DonutSpecProps = {
-	index: 0,
-	colorScheme: 'light',
-	markType: 'donut',
-	metric: 'testMetric',
-	startAngle: 0,
-	name: 'testName',
-	isBoolean: false,
-	segment: 'testSegment',
-	color: 'testColor',
-	holeRatio: 0.85,
-	hasDirectLabels: true,
-	children: [],
-};
+export * from './DonutSummary';

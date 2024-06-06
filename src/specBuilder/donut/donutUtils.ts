@@ -9,27 +9,10 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import {
-	DONUT_DIRECT_LABEL_MIN_ANGLE,
-	DONUT_RADIUS,
-	DONUT_SUMMARY_MIN_RADIUS,
-	FILTERED_TABLE,
-	MARK_ID,
-	SELECTED_ITEM,
-} from '@constants';
+import { DONUT_DIRECT_LABEL_MIN_ANGLE, DONUT_RADIUS, FILTERED_TABLE, MARK_ID, SELECTED_ITEM } from '@constants';
 import { getColorProductionRule, getCursor, getMarkOpacity, getTooltip } from '@specBuilder/marks/markUtils';
 import { getColorValue } from '@specBuilder/specUtils';
-import { getTextNumberFormat } from '@specBuilder/textUtils';
-import {
-	ArcMark,
-	EncodeEntryName,
-	GroupMark,
-	Mark,
-	ProductionRule,
-	TextBaselineValueRef,
-	TextEncodeEntry,
-	TextValueRef,
-} from 'vega';
+import { ArcMark, Mark, ProductionRule, TextEncodeEntry, TextValueRef } from 'vega';
 
 import { DonutSpecProps } from '../../types';
 
@@ -58,123 +41,6 @@ export const getArcMark = (props: DonutSpecProps): ArcMark => {
 				strokeWidth: [{ test: `${SELECTED_ITEM} === datum.${MARK_ID}`, value: 2 }, { value: 0 }],
 			},
 		},
-	};
-};
-
-export const getAggregateMetricMark = (props: DonutSpecProps): GroupMark => {
-	const { name, metricLabel } = props;
-	const groupMark: Mark = {
-		type: 'group',
-		name: `${name}_aggregateMetricGroup`,
-		marks: [
-			{
-				type: 'text',
-				name: `${name}_aggregateMetricNumber`,
-				from: { data: `${name}_aggregateData` },
-				encode: getMetricNumberEncode(props),
-			},
-		],
-	};
-	if (metricLabel) {
-		groupMark.marks!.push({
-			type: 'text',
-			name: `${name}_aggregateMetricLabel`,
-			from: { data: `${name}_aggregateData` },
-			encode: getMetricLabelEncode({ ...props, metricLabel }),
-		});
-	}
-	return groupMark;
-};
-
-export const getPercentMetricMark = (props: DonutSpecProps): GroupMark => {
-	const { name, metricLabel } = props;
-	const groupMark: Mark = {
-		type: 'group',
-		name: `${name}_percentText`,
-		marks: [
-			{
-				type: 'text',
-				name: `${name}_percentMetricNumber`,
-				from: { data: `${name}_booleanData` },
-				encode: getMetricNumberEncode(props),
-			},
-		],
-	};
-	if (metricLabel) {
-		groupMark.marks!.push({
-			type: 'text',
-			name: `${name}_percentMetricLabel`,
-			from: { data: `${name}_booleanData` },
-			encode: getMetricLabelEncode({ ...props, metricLabel }),
-		});
-	}
-	return groupMark;
-};
-
-export const getMetricNumberEncode = (props: DonutSpecProps): Partial<Record<EncodeEntryName, TextEncodeEntry>> => {
-	const { holeRatio, name } = props;
-	return {
-		update: {
-			x: { signal: 'width / 2' },
-			y: { signal: 'height / 2' },
-			text: getMetricNumberText(props),
-			fontSize: { signal: `${name}_summaryFontSize` },
-			align: { value: 'center' },
-			baseline: { value: 'alphabetic' },
-			fillOpacity: [{ test: `${DONUT_RADIUS} * ${holeRatio} < ${DONUT_SUMMARY_MIN_RADIUS}`, value: 0 }],
-			limit: {
-				signal: `2 * sqrt(pow(${DONUT_RADIUS} * ${holeRatio}, 2) - pow(${name}_summaryFontSize, 2))`,
-			},
-		},
-	};
-};
-
-export const getMetricNumberText = ({
-	metric,
-	metricSummaryNumberFormat,
-	isBoolean,
-}: DonutSpecProps): ProductionRule<TextValueRef> => {
-	if (isBoolean) {
-		return { signal: `format(datum['${metric}'], '.0%')` };
-	}
-	return [...getTextNumberFormat(metricSummaryNumberFormat, 'sum'), { field: 'sum' }];
-};
-
-export const getMetricLabelEncode = ({
-	holeRatio,
-	metricLabel,
-	name,
-}: DonutSpecProps & { metricLabel: string }): Partial<Record<EncodeEntryName, TextEncodeEntry>> => {
-	return {
-		update: {
-			x: { signal: 'width / 2' },
-			y: { signal: 'height / 2' },
-			dy: { signal: `ceil(${name}_summaryFontSize * 0.25)` },
-			text: { value: metricLabel },
-			fontSize: { signal: `ceil(${name}_summaryFontSize * 0.5)` },
-			align: { value: 'center' },
-			baseline: { value: 'top' },
-			fillOpacity: [{ test: `${DONUT_RADIUS} * ${holeRatio} < ${DONUT_SUMMARY_MIN_RADIUS}`, value: 0 }],
-			limit: {
-				signal: `2 * sqrt(pow(${DONUT_RADIUS} * ${holeRatio}, 2) - pow(${name}_summaryFontSize * 0.75, 2))`,
-			},
-		},
-	};
-};
-
-export const fontBreakpoints = [76, 64, 52, 40];
-export const metricNumberFontSizes = [72, 60, 48, 36];
-export const metricLabelFontSizes = [24, 18, 12, 0];
-
-export const getAggregateMetricBaseline = (
-	radius: string,
-	holeRatio: number,
-	showingLabel: boolean
-): ProductionRule<TextBaselineValueRef> => {
-	// whenever we aren't showing the label, the metric number should be in the middle
-	// we check if the radius * holeRatio is greater than the second breakpoint because after that point the label dissapears
-	return {
-		signal: showingLabel ? `${radius} * ${holeRatio} > ${fontBreakpoints[2]} ? 'alphabetic' : 'middle'` : 'middle',
 	};
 };
 

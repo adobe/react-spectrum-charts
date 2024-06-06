@@ -25,11 +25,9 @@ const Donut: FC<DonutProps> = ({
 	holeRatio = 0.85,
 	isBoolean = false,
 	metric = DEFAULT_METRIC,
-	metricLabel,
 	name,
 	segment,
 	startAngle = 0,
-	metricSummaryNumberFormat = 'shortNumber',
 }) => {
 	return null;
 };
