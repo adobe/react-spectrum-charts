@@ -28,7 +28,8 @@ import { produce } from 'immer';
 import { Data, Mark, Scale, Signal, Spec } from 'vega';
 
 import { ColorScheme, DonutProps, DonutSpecProps } from '../../types';
-import { getAggregateMetricMark, getArcMark, getDirectLabelMark, getPercentMetricMark } from './donutUtils';
+import { getMetricsSummaryMarks } from './donutSummaryUtils';
+import { getArcMark, getDirectLabelMark } from './donutUtils';
 
 export const addDonut = produce<Spec, [DonutProps & { colorScheme?: ColorScheme; index?: number }]>(
 	(
@@ -39,7 +40,6 @@ export const addDonut = produce<Spec, [DonutProps & { colorScheme?: ColorScheme;
 			colorScheme = DEFAULT_COLOR_SCHEME,
 			index = 0,
 			metric = DEFAULT_METRIC,
-			metricSummaryNumberFormat = 'shortNumber',
 			name,
 			startAngle = 0,
 			holeRatio = 0.85,
@@ -59,7 +59,6 @@ export const addDonut = produce<Spec, [DonutProps & { colorScheme?: ColorScheme;
 			isBoolean,
 			markType: 'donut',
 			metric,
-			metricSummaryNumberFormat,
 			name: toCamelCase(name ?? `donut${index}`),
 			startAngle,
 			...props,
@@ -128,10 +127,8 @@ export const addMarks = produce<Mark[], [DonutSpecProps]>((marks, props) => {
 	const { segment, hasDirectLabels, isBoolean } = props;
 
 	marks.push(getArcMark(props));
-	if (isBoolean) {
-		marks.push(getPercentMetricMark(props));
-	} else {
-		marks.push(getAggregateMetricMark(props));
+	marks.push(...getMetricsSummaryMarks(props));
+	if (!isBoolean) {
 		if (hasDirectLabels) {
 			if (!segment) {
 				throw new Error('If a Donut chart hasDirectLabels, a segment property name must be supplied.');

@@ -13,7 +13,7 @@ import { DONUT_SUMMARY_MAX_FONT_SIZE, DONUT_SUMMARY_MIN_FONT_SIZE } from '@const
 import { findAllMarksByGroupName, findChart, render, screen } from '@test-utils';
 import { Donut } from 'alpha/components/Donut';
 
-import { Basic, MetricSummaryNumberFormat } from './Donut.story';
+import { Basic } from './Donut.story';
 
 describe('Donut', () => {
 	// Donut is not a real React component. This is test just provides test coverage for sonarqube
@@ -57,26 +57,5 @@ describe('Donut', () => {
 		expect(metricValue).toHaveAttribute('font-size', '30px');
 		const metricLabel = await screen.findByText('Visitors');
 		expect(metricLabel).toHaveAttribute('font-size', '15px');
-	});
-
-	describe('should render the correct number format', () => {
-		test('shortCurrency', async () => {
-			render(
-				<MetricSummaryNumberFormat
-					{...MetricSummaryNumberFormat.args}
-					metricSummaryNumberFormat="shortCurrency"
-				/>
-			);
-			expect(await screen.findByText('$40.4K')).toBeInTheDocument();
-		});
-		test('standardNumber', async () => {
-			render(
-				<MetricSummaryNumberFormat
-					{...MetricSummaryNumberFormat.args}
-					metricSummaryNumberFormat="standardNumber"
-				/>
-			);
-			expect(await screen.findByText('40,365')).toBeInTheDocument();
-		});
 	});
 });

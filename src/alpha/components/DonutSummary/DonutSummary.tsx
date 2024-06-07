@@ -10,5 +10,17 @@
  * governing permissions and limitations under the License.
  */
 
-export * from './Donut';
-export * from './DonutSummary';
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import { FC } from 'react';
+
+import { DonutSummaryProps } from '../../../types';
+
+// destructure props here and set defaults so that storybook can pick them up
+const DonutSummary: FC<DonutSummaryProps> = ({ numberFormat = 'shortNumber', label }) => {
+	return null;
+};
+
+// displayName is used to validate the component type in the spec builder
+DonutSummary.displayName = 'DonutSummary';
+
+export { DonutSummary };

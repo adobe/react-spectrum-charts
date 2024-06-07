@@ -22,8 +22,6 @@ export const defaultDonutProps: DonutSpecProps = {
 	segment: 'testSegment',
 	color: 'testColor',
 	holeRatio: 0.85,
-	metricLabel: 'testLabel',
 	hasDirectLabels: true,
 	children: [],
-	metricSummaryNumberFormat: 'shortNumber',
 };

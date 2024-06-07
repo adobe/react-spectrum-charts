@@ -32,6 +32,7 @@ export type LegendElement = ReactElement<LegendProps, JSXElementConstructor<Lege
 export type LineElement = ReactElement<LineProps, JSXElementConstructor<LineProps>>;
 export type ScatterPathElement = ReactElement<ScatterPathProps, JSXElementConstructor<ScatterPathProps>>;
 export type MetricRangeElement = ReactElement<MetricRangeProps, JSXElementConstructor<MetricRangeProps>>;
+export type DonutSummaryElement = ReactElement<DonutSummaryProps, JSXElementConstructor<DonutSummaryProps>>;
 export type ReferenceLineElement = ReactElement<ReferenceLineProps, JSXElementConstructor<ReferenceLineProps>>;
 export type ScatterElement = ReactElement<ScatterProps, JSXElementConstructor<ScatterProps>>;
 export type TitleElement = ReactElement<TitleProps, JSXElementConstructor<TitleProps>>;
@@ -172,8 +173,6 @@ export interface AreaProps extends MarkProps {
 }
 
 export interface DonutProps extends MarkProps {
-	/** Text label for the metric total */
-	metricLabel?: string;
 	/** The datum property for segments of the data */
 	segment?: string;
 	/** Start angle of the donut in radians (0 is top dead center, and default) */
@@ -185,11 +184,16 @@ export interface DonutProps extends MarkProps {
 	/** Determines if the center metric should be displayed as a percent. if true, data should only be two data points, which sum to 1
 	 * Also, if true, will display the first datapoint as a percent */
 	isBoolean?: boolean;
+}
+
+export interface DonutSummaryProps {
 	/** d3 number format specifier. Only valid if labelFormat is linear or undefined.
 	 *
 	 * see {@link https://d3js.org/d3-format#locale_format}
 	 */
-	metricSummaryNumberFormat?: NumberFormat | string;
+	numberFormat?: NumberFormat | string;
+	/** Label for the metric summary */
+	label?: string;
 }
 
 export interface AxisProps extends BaseProps {
@@ -747,5 +751,6 @@ export type MarkChildElement =
 	| ChartPopoverElement
 	| ScatterPathElement
 	| MetricRangeElement
+	| DonutSummaryElement
 	| TrendlineElement;
 export type RscElement = ChartChildElement | MarkChildElement;

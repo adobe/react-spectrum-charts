@@ -21,6 +21,7 @@ import {
 	ColorFacet,
 	ColorScheme,
 	DonutProps,
+	DonutSummaryProps,
 	FacetRef,
 	LegendProps,
 	LineProps,
@@ -120,13 +121,18 @@ type DonutPropsWithDefaults =
 	| 'startAngle'
 	| 'holeRatio'
 	| 'hasDirectLabels'
-	| 'isBoolean'
-	| 'metricSummaryNumberFormat';
+	| 'isBoolean';
 
 export interface DonutSpecProps
 	extends PartiallyRequired<DonutProps & { colorScheme: ColorScheme; index: number }, DonutPropsWithDefaults> {
 	children: MarkChildElement[];
 	markType: 'donut';
+}
+
+type DonutSummaryPropsWithDefaults = 'numberFormat';
+
+export interface DonutSummarySpecProps extends PartiallyRequired<DonutSummaryProps, DonutSummaryPropsWithDefaults> {
+	donutProps: DonutSpecProps;
 }
 
 type LegendPropsWithDefaults = 'hiddenEntries' | 'highlight' | 'isToggleable' | 'position' | 'name';
