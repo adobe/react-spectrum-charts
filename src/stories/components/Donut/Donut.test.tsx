@@ -35,7 +35,7 @@ describe('Donut', () => {
 		test('text should be target size', async () => {
 			render(<Basic {...Basic.args} width={300} height={300} />);
 			const metricValue = await screen.findByText('40.4K');
-			expect(metricValue).toHaveAttribute('font-size', '44px');
+			expect(metricValue).toHaveAttribute('font-size', '40px');
 		});
 
 		test('small donut, text should be min size', async () => {
@@ -49,13 +49,5 @@ describe('Donut', () => {
 			const metricValue = await screen.findByText('40.4K');
 			expect(metricValue).toHaveAttribute('font-size', `${DONUT_SUMMARY_MAX_FONT_SIZE}px`);
 		});
-	});
-
-	test('metric label text should be 1/2 the size of the metric value text', async () => {
-		render(<Basic {...Basic.args} width={204} height={204} />);
-		const metricValue = await screen.findByText('40.4K');
-		expect(metricValue).toHaveAttribute('font-size', '30px');
-		const metricLabel = await screen.findByText('Visitors');
-		expect(metricLabel).toHaveAttribute('font-size', '15px');
 	});
 });

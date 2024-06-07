@@ -9,18 +9,27 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
+import { DONUT_RADIUS, DONUT_SUMMARY_FONT_SIZE_RATIO, DONUT_SUMMARY_MIN_RADIUS, FILTERED_TABLE } from '@constants';
 import { DonutSummary } from '@rsc/alpha';
-import { DONUT_RADIUS, DONUT_SUMMARY_MIN_RADIUS } from '@constants';
 import { getTextNumberFormat } from '@specBuilder/textUtils';
-import { EncodeEntryName, GroupMark, Mark, ProductionRule, TextEncodeEntry, TextValueRef } from 'vega';
+import {
+	EncodeEntryName,
+	GroupMark,
+	Mark,
+	ProductionRule,
+	Signal,
+	SourceData,
+	TextEncodeEntry,
+	TextValueRef,
+	ThresholdScale,
+} from 'vega';
 
 import { DonutSpecProps, DonutSummaryElement, DonutSummaryProps, DonutSummarySpecProps } from '../../types';
 
 /**
  * Gets the DonutSummary component from the children if one exists
  * @param donutProps
- * @returns 
+ * @returns
  */
 const getDonutSummary = (props: DonutSpecProps): DonutSummarySpecProps | undefined => {
 	const donutSummary = props.children.find((child) => child.type === DonutSummary) as DonutSummaryElement;
@@ -32,9 +41,9 @@ const getDonutSummary = (props: DonutSpecProps): DonutSummarySpecProps | undefin
 
 /**
  * Applies all default props, converting donutSummaryProps into donutSummarySpecProps
- * @param donutSummaryProps 
- * @param donutProps 
- * @returns 
+ * @param donutSummaryProps
+ * @param donutProps
+ * @returns
  */
 const applyDonutSummaryPropDefaults = (
 	{ numberFormat = 'shortNumber', ...props }: DonutSummaryProps,
@@ -46,8 +55,75 @@ const applyDonutSummaryPropDefaults = (
 });
 
 /**
+ * Gets the data for the donut summary
+ * @param donutProps
+ * @returns SourceData[]
+ */
+export const getDonutSummaryData = (donutProps: DonutSpecProps): SourceData[] => {
+	const donutSummary = getDonutSummary(donutProps);
+	if (!donutSummary || donutProps.isBoolean) {
+		return [];
+	}
+	return [
+		{
+			name: `${donutProps.name}_summaryData`,
+			source: FILTERED_TABLE,
+			transform: [
+				{
+					type: 'aggregate',
+					fields: [donutProps.metric],
+					ops: ['sum'],
+					as: ['sum'],
+				},
+			],
+		},
+	];
+};
+
+/**
+ * Gets the required scales for the donut summary
+ * @param donutProps
+ * @returns ThresholdScale[]
+ */
+export const getDonutSummaryScales = (donutProps: DonutSpecProps): ThresholdScale[] => {
+	const donutSummary = getDonutSummary(donutProps);
+	if (!donutSummary) {
+		return [];
+	}
+	return [
+		// This scale will snap the fontsize to the spectrum font sizes L - XXXXL
+		// 28 is the min, 60 is the max.
+		{
+			name: `${donutProps.name}_summaryFontSizeScale`,
+			type: 'threshold',
+			domain: [32, 36, 40, 45, 50, 60],
+			range: [28, 32, 36, 40, 45, 50, 60],
+		},
+	];
+};
+
+/**
+ * Gets the signals for the donut summary
+ * @param donutProps
+ * @returns Signal[]
+ */
+export const getDonutSummarySignals = (donutProps: DonutSpecProps): Signal[] => {
+	const donutSummary = getDonutSummary(donutProps);
+	if (!donutSummary) {
+		return [];
+	}
+	const { name: donutName, holeRatio } = donutProps;
+	return [
+		{
+			name: `${donutName}_summaryFontSize`,
+			update: `scale('${donutName}_summaryFontSizeScale', ${DONUT_RADIUS} * ${holeRatio} * ${DONUT_SUMMARY_FONT_SIZE_RATIO})`,
+		},
+	];
+};
+
+/**
  * Gets all the marks for the donut summary
- * @param donutProps 
+ * @param donutProps
  * @returns GroupMark[]
  */
 export const getDonutSummaryMarks = (props: DonutSpecProps): GroupMark[] => {
@@ -115,7 +191,6 @@ export const getBooleanDonutSummaryGroupMark = (props: DonutSummarySpecProps): G
 		],
 	};
 	if (label) {
-		
 		groupMark.marks?.push({
 			type: 'text',
 			name: `${donutProps.name}_booleanSummaryLabel`,
@@ -131,9 +206,7 @@ export const getBooleanDonutSummaryGroupMark = (props: DonutSummarySpecProps): G
  * @param donutSummaryProps
  * @returns encode
  */
-const getSummaryValueEncode = (
-	props: DonutSummarySpecProps
-): Partial<Record<EncodeEntryName, TextEncodeEntry>> => {
+const getSummaryValueEncode = (props: DonutSummarySpecProps): Partial<Record<EncodeEntryName, TextEncodeEntry>> => {
 	const { donutProps } = props;
 	return {
 		update: {
