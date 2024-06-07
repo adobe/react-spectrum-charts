@@ -22,7 +22,6 @@ import {
 	Bar,
 	ChartPopover,
 	ChartTooltip,
-	DonutSummary,
 	Legend,
 	Line,
 	MetricRange,
@@ -33,7 +32,7 @@ import {
 	Trendline,
 	TrendlineAnnotation,
 } from '..';
-import { Donut } from '../alpha';
+import { Donut, DonutSummary } from '../alpha';
 import {
 	AreaElement,
 	AxisAnnotationChildElement,

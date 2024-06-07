@@ -12,23 +12,11 @@
 import React, { ReactElement } from 'react';
 
 import useChartProps from '@hooks/useChartProps';
-import {
-	Area,
-	Axis,
-	Bar,
-	Chart,
-	ChartPopover,
-	ChartProps,
-	ChartTooltip,
-	Datum,
-	DonutSummary,
-	Legend,
-	Line,
-} from '@rsc';
+import { Area, Axis, Bar, Chart, ChartPopover, ChartProps, ChartTooltip, Datum, Legend, Line } from '@rsc';
 import { browserData as data } from '@stories/data/data';
 import { StoryFn } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
-import { Donut } from 'alpha/components';
+import { Donut, DonutSummary } from '@rsc/alpha';
 
 import { Content } from '@adobe/react-spectrum';
 

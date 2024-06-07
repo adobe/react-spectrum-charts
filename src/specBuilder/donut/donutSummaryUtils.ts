@@ -10,7 +10,7 @@
  * governing permissions and limitations under the License.
  */
 
-import { DonutSummary } from '@components/DonutSummary';
+import { DonutSummary } from '@rsc/alpha';
 import { DONUT_RADIUS, DONUT_SUMMARY_MIN_RADIUS } from '@constants';
 import { getTextNumberFormat } from '@specBuilder/textUtils';
 import { EncodeEntryName, GroupMark, Mark, ProductionRule, TextEncodeEntry, TextValueRef } from 'vega';

@@ -22,7 +22,6 @@ export * from './Legend';
 export * from './Line';
 export * from './ScatterPath';
 export * from './MetricRange';
-export * from './DonutSummary';
 export * from './ReferenceLine';
 export * from './Title';
 export * from './Trendline';

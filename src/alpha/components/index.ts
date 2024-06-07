@@ -11,3 +11,4 @@
  */
 
 export * from './Donut';
+export * from './DonutSummary';

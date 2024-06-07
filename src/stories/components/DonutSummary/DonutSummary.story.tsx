@@ -12,8 +12,8 @@
 import { ReactElement } from 'react';
 
 import useChartProps from '@hooks/useChartProps';
-import { Chart, ChartProps, DonutSummary, DonutSummaryProps } from '@rsc';
-import { Donut } from '@rsc/alpha';
+import { Chart, ChartProps, DonutSummaryProps } from '@rsc';
+import { Donut, DonutSummary } from '@rsc/alpha';
 import { StoryFn } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
 
