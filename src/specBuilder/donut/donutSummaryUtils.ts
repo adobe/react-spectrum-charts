@@ -17,7 +17,12 @@ import { EncodeEntryName, GroupMark, Mark, ProductionRule, TextEncodeEntry, Text
 
 import { DonutSpecProps, DonutSummaryElement, DonutSummaryProps, DonutSummarySpecProps } from '../../types';
 
-export const getDonutSummary = (props: DonutSpecProps): DonutSummarySpecProps | undefined => {
+/**
+ * Gets the DonutSummary component from the children if one exists
+ * @param donutProps
+ * @returns 
+ */
+const getDonutSummary = (props: DonutSpecProps): DonutSummarySpecProps | undefined => {
 	const donutSummary = props.children.find((child) => child.type === DonutSummary) as DonutSummaryElement;
 	if (!donutSummary) {
 		return;
@@ -25,6 +30,12 @@ export const getDonutSummary = (props: DonutSpecProps): DonutSummarySpecProps | 
 	return applyDonutSummaryPropDefaults(donutSummary.props, props);
 };
 
+/**
+ * Applies all default props, converting donutSummaryProps into donutSummarySpecProps
+ * @param donutSummaryProps 
+ * @param donutProps 
+ * @returns 
+ */
 const applyDonutSummaryPropDefaults = (
 	{ numberFormat = 'shortNumber', ...props }: DonutSummaryProps,
 	donutProps: DonutSpecProps
@@ -34,7 +45,12 @@ const applyDonutSummaryPropDefaults = (
 	...props,
 });
 
-export const getMetricsSummaryMarks = (props: DonutSpecProps): GroupMark[] => {
+/**
+ * Gets all the marks for the donut summary
+ * @param donutProps 
+ * @returns GroupMark[]
+ */
+export const getDonutSummaryMarks = (props: DonutSpecProps): GroupMark[] => {
 	const donutSummary = getDonutSummary(props);
 	if (!donutSummary) {
 		return [];
@@ -42,39 +58,49 @@ export const getMetricsSummaryMarks = (props: DonutSpecProps): GroupMark[] => {
 	const { donutProps } = donutSummary;
 	const marks: GroupMark[] = [];
 	if (donutProps.isBoolean) {
-		marks.push(getPercentMetricMark(donutSummary));
+		marks.push(getBooleanDonutSummaryGroupMark(donutSummary));
 	} else {
-		marks.push(getAggregateMetricMark(donutSummary));
+		marks.push(getDonutSummaryGroupMark(donutSummary));
 	}
 	return marks;
 };
 
-export const getAggregateMetricMark = (props: DonutSummarySpecProps): GroupMark => {
+/**
+ * Gets the group mark for the donut summary
+ * @param donutSummaryProps
+ * @returns GorupMark
+ */
+export const getDonutSummaryGroupMark = (props: DonutSummarySpecProps): GroupMark => {
 	const { donutProps, label } = props;
 	const groupMark: Mark = {
 		type: 'group',
-		name: `${donutProps.name}_aggregateMetricGroup`,
+		name: `${donutProps.name}_summaryGroup`,
 		marks: [
 			{
 				type: 'text',
-				name: `${donutProps.name}_aggregateMetricNumber`,
-				from: { data: `${donutProps.name}_aggregateData` },
-				encode: getMetricNumberEncode(props),
+				name: `${donutProps.name}_summaryValue`,
+				from: { data: `${donutProps.name}_summaryData` },
+				encode: getSummaryValueEncode(props),
 			},
 		],
 	};
 	if (label) {
-		groupMark.marks!.push({
+		groupMark.marks?.push({
 			type: 'text',
-			name: `${donutProps.name}_aggregateMetricLabel`,
-			from: { data: `${donutProps.name}_aggregateData` },
-			encode: getMetricLabelEncode({ ...props, label }),
+			name: `${donutProps.name}_summaryLabel`,
+			from: { data: `${donutProps.name}_summaryData` },
+			encode: getSummaryLabelEncode({ ...props, label }),
 		});
 	}
 	return groupMark;
 };
 
-export const getPercentMetricMark = (props: DonutSummarySpecProps): GroupMark => {
+/**
+ * Gets the group mark for a boolean donut summary
+ * @param donutSummaryProps
+ * @returns GroupMark
+ */
+export const getBooleanDonutSummaryGroupMark = (props: DonutSummarySpecProps): GroupMark => {
 	const { donutProps, label } = props;
 	const groupMark: Mark = {
 		type: 'group',
@@ -82,24 +108,30 @@ export const getPercentMetricMark = (props: DonutSummarySpecProps): GroupMark =>
 		marks: [
 			{
 				type: 'text',
-				name: `${donutProps.name}_percentMetricNumber`,
+				name: `${donutProps.name}_booleanSummaryValue`,
 				from: { data: `${donutProps.name}_booleanData` },
-				encode: getMetricNumberEncode(props),
+				encode: getSummaryValueEncode(props),
 			},
 		],
 	};
 	if (label) {
-		groupMark.marks!.push({
+		
+		groupMark.marks?.push({
 			type: 'text',
-			name: `${donutProps.name}_percentMetricLabel`,
+			name: `${donutProps.name}_booleanSummaryLabel`,
 			from: { data: `${donutProps.name}_booleanData` },
-			encode: getMetricLabelEncode({ ...props, label }),
+			encode: getSummaryLabelEncode({ ...props, label }),
 		});
 	}
 	return groupMark;
 };
 
-export const getMetricNumberEncode = (
+/**
+ * Gets the encode for the summary value
+ * @param donutSummaryProps
+ * @returns encode
+ */
+const getSummaryValueEncode = (
 	props: DonutSummarySpecProps
 ): Partial<Record<EncodeEntryName, TextEncodeEntry>> => {
 	const { donutProps } = props;
@@ -107,7 +139,7 @@ export const getMetricNumberEncode = (
 		update: {
 			x: { signal: 'width / 2' },
 			y: { signal: 'height / 2' },
-			text: getMetricNumberText(props),
+			text: getSummaryValueText(props),
 			fontSize: { signal: `${donutProps.name}_summaryFontSize` },
 			align: { value: 'center' },
 			baseline: { value: 'alphabetic' },
@@ -121,7 +153,12 @@ export const getMetricNumberEncode = (
 	};
 };
 
-export const getMetricNumberText = ({
+/**
+ * Gets the text value for the summary value
+ * @param donutSummaryProps
+ * @returns TextValueref
+ */
+export const getSummaryValueText = ({
 	donutProps,
 	numberFormat,
 }: DonutSummarySpecProps): ProductionRule<TextValueRef> => {
@@ -131,7 +168,12 @@ export const getMetricNumberText = ({
 	return [...getTextNumberFormat(numberFormat, 'sum'), { field: 'sum' }];
 };
 
-export const getMetricLabelEncode = ({
+/**
+ * Gets the encode for the metric label
+ * @param donutSummaryProps
+ * @returns encode
+ */
+export const getSummaryLabelEncode = ({
 	donutProps,
 	label,
 }: DonutSummarySpecProps & { label: string }): Partial<Record<EncodeEntryName, TextEncodeEntry>> => {

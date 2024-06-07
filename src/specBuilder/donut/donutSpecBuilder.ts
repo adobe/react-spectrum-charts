@@ -28,7 +28,7 @@ import { produce } from 'immer';
 import { Data, Mark, Scale, Signal, Spec } from 'vega';
 
 import { ColorScheme, DonutProps, DonutSpecProps } from '../../types';
-import { getMetricsSummaryMarks } from './donutSummaryUtils';
+import { getDonutSummaryMarks } from './donutSummaryUtils';
 import { getArcMark, getDirectLabelMark } from './donutUtils';
 
 export const addDonut = produce<Spec, [DonutProps & { colorScheme?: ColorScheme; index?: number }]>(
@@ -104,7 +104,7 @@ export const addData = produce<Data[], [DonutSpecProps]>((data, props) => {
 	} else {
 		//set up aggregate
 		data.push({
-			name: `${name}_aggregateData`,
+			name: `${name}_summaryData`,
 			source: FILTERED_TABLE,
 			transform: [
 				{
@@ -127,7 +127,7 @@ export const addMarks = produce<Mark[], [DonutSpecProps]>((marks, props) => {
 	const { segment, hasDirectLabels, isBoolean } = props;
 
 	marks.push(getArcMark(props));
-	marks.push(...getMetricsSummaryMarks(props));
+	marks.push(...getDonutSummaryMarks(props));
 	if (!isBoolean) {
 		if (hasDirectLabels) {
 			if (!segment) {

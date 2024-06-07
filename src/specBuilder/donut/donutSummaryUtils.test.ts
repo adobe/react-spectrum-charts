@@ -10,7 +10,7 @@
  * governing permissions and limitations under the License.
  */
 import { DonutSummarySpecProps } from '../../types';
-import { getAggregateMetricMark, getMetricNumberText, getPercentMetricMark } from './donutSummaryUtils';
+import { getDonutSummaryGroupMark, getSummaryValueText, getBooleanDonutSummaryGroupMark } from './donutSummaryUtils';
 import { defaultDonutProps } from './donutTestUtils';
 
 const defaultDonutSummaryProps: DonutSummarySpecProps = {
@@ -21,35 +21,35 @@ const defaultDonutSummaryProps: DonutSummarySpecProps = {
 
 describe('getAggregateMetricMark()', () => {
 	test('should return a single mark if label is undefined', () => {
-		const groupMark = getAggregateMetricMark({ ...defaultDonutSummaryProps, label: undefined });
+		const groupMark = getDonutSummaryGroupMark({ ...defaultDonutSummaryProps, label: undefined });
 		expect(groupMark.marks).toHaveLength(1);
-		expect(groupMark.marks![0].name).toEqual('testName_aggregateMetricNumber');
+		expect(groupMark.marks?.[0].name).toEqual('testName_aggregateMetricNumber');
 	});
 
 	test('should return a metric label if label is defined', () => {
-		const groupMark = getAggregateMetricMark(defaultDonutSummaryProps);
+		const groupMark = getDonutSummaryGroupMark(defaultDonutSummaryProps);
 		expect(groupMark.marks).toHaveLength(2);
-		expect(groupMark.marks![1].name).toEqual('testName_aggregateMetricLabel');
+		expect(groupMark.marks?.[1].name).toEqual('testName_aggregateMetricLabel');
 	});
 });
 
 describe('getPercentMetricMark()', () => {
 	test('should return a single mark if label is undefined', () => {
-		const groupMark = getPercentMetricMark({ ...defaultDonutSummaryProps, label: undefined });
+		const groupMark = getBooleanDonutSummaryGroupMark({ ...defaultDonutSummaryProps, label: undefined });
 		expect(groupMark.marks).toHaveLength(1);
-		expect(groupMark.marks![0].name).toEqual('testName_percentMetricNumber');
+		expect(groupMark.marks?.[0].name).toEqual('testName_percentMetricNumber');
 	});
 
 	test('should return a metric label if label is defined', () => {
-		const groupMark = getPercentMetricMark(defaultDonutSummaryProps);
+		const groupMark = getBooleanDonutSummaryGroupMark(defaultDonutSummaryProps);
 		expect(groupMark.marks).toHaveLength(2);
-		expect(groupMark.marks![1].name).toEqual('testName_percentMetricLabel');
+		expect(groupMark.marks?.[1].name).toEqual('testName_percentMetricLabel');
 	});
 });
 
 describe('getMetricNumberText()', () => {
 	test('should return the correct text for boolean metric', () => {
-		const result = getMetricNumberText({
+		const result = getSummaryValueText({
 			...defaultDonutSummaryProps,
 			donutProps: { ...defaultDonutProps, isBoolean: true },
 		});
@@ -57,7 +57,7 @@ describe('getMetricNumberText()', () => {
 	});
 
 	test('should return the correct text for non-boolean metric', () => {
-		const result = getMetricNumberText(defaultDonutSummaryProps);
+		const result = getSummaryValueText(defaultDonutSummaryProps);
 		expect(result).toEqual([
 			{
 				signal: "upper(replace(format(datum['sum'], '.3~s'), /(\\d+)G/, '$1B'))",
