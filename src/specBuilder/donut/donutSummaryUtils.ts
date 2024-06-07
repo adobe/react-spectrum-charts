@@ -213,12 +213,12 @@ const getSummaryValueEncode = (props: DonutSummarySpecProps): Partial<Record<Enc
 			x: { signal: 'width / 2' },
 			y: { signal: 'height / 2' },
 			text: getSummaryValueText(props),
-			fontSize: { signal: `${donutProps.name}_summaryFontSize` },
+			fontSize: [
+				{ test: `${DONUT_RADIUS} * ${donutProps.holeRatio} < ${DONUT_SUMMARY_MIN_RADIUS}`, value: 0 },
+				{ signal: `${donutProps.name}_summaryFontSize` },
+			],
 			align: { value: 'center' },
 			baseline: { value: 'alphabetic' },
-			fillOpacity: [
-				{ test: `${DONUT_RADIUS} * ${donutProps.holeRatio} < ${DONUT_SUMMARY_MIN_RADIUS}`, value: 0 },
-			],
 			limit: {
 				signal: `2 * sqrt(pow(${DONUT_RADIUS} * ${donutProps.holeRatio}, 2) - pow(${donutProps.name}_summaryFontSize, 2))`,
 			},
@@ -256,12 +256,12 @@ export const getSummaryLabelEncode = ({
 			y: { signal: 'height / 2' },
 			dy: { signal: `ceil(${donutProps.name}_summaryFontSize * 0.25)` },
 			text: { value: label },
-			fontSize: { signal: `ceil(${donutProps.name}_summaryFontSize * 0.5)` },
+			fontSize: [
+				{ test: `${DONUT_RADIUS} * ${donutProps.holeRatio} < ${DONUT_SUMMARY_MIN_RADIUS}`, value: 0 },
+				{ signal: `ceil(${donutProps.name}_summaryFontSize * 0.5)` },
+			],
 			align: { value: 'center' },
 			baseline: { value: 'top' },
-			fillOpacity: [
-				{ test: `${DONUT_RADIUS} * ${donutProps.holeRatio} < ${DONUT_SUMMARY_MIN_RADIUS}`, value: 0 },
-			],
 			limit: {
 				signal: `2 * sqrt(pow(${DONUT_RADIUS} * ${donutProps.holeRatio}, 2) - pow(${donutProps.name}_summaryFontSize * 0.75, 2))`,
 			},

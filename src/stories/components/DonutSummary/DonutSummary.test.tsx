@@ -9,6 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { DONUT_SUMMARY_MIN_RADIUS } from '@constants';
 import { DonutSummary } from '@rsc/alpha';
 import { render, screen } from '@test-utils';
 
@@ -93,5 +94,12 @@ describe('Responsive font sizes should snap to correct font size based on inner 
 		// this is greater than 60 so it should snap to 60
 		render(<Basic {...Basic.args} width={600} height={600} />);
 		expect(await screen.findByText('40.4K')).toHaveAttribute('font-size', '60px');
+	});
+});
+
+describe('Small radius', () => {
+	test('should hide the summary if the donut inner radius is < DONUT_SUMMARY_MIN_RADIUS', async () => {
+		render(<Basic {...Basic.args} width={DONUT_SUMMARY_MIN_RADIUS * 2} height={DONUT_SUMMARY_MIN_RADIUS * 2} />);
+		expect(await screen.findByText('40.4K')).toHaveAttribute('font-size', '0px');
 	});
 });
