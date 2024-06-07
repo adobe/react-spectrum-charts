@@ -16,7 +16,7 @@ import { FC } from 'react';
 import { DonutSummaryProps } from '../../types';
 
 // destructure props here and set defaults so that storybook can pick them up
-const DonutSummary: FC<DonutSummaryProps> = ({ numberFormat = 'shortNumber' }) => {
+const DonutSummary: FC<DonutSummaryProps> = ({ numberFormat = 'shortNumber', label }) => {
 	return null;
 };
 
