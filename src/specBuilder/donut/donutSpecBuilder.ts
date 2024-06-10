@@ -9,26 +9,21 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import {
-	COLOR_SCALE,
-	DEFAULT_COLOR,
-	DEFAULT_COLOR_SCHEME,
-	DEFAULT_METRIC,
-	DONUT_RADIUS,
-	DONUT_SUMMARY_FONT_SIZE_RATIO,
-	DONUT_SUMMARY_MAX_FONT_SIZE,
-	DONUT_SUMMARY_MIN_FONT_SIZE,
-	FILTERED_TABLE,
-} from '@constants';
+import { COLOR_SCALE, DEFAULT_COLOR, DEFAULT_COLOR_SCHEME, DEFAULT_METRIC, FILTERED_TABLE } from '@constants';
 import { getTooltipProps, hasInteractiveChildren } from '@specBuilder/marks/markUtils';
 import { addFieldToFacetScaleDomain } from '@specBuilder/scale/scaleSpecBuilder';
-import { addHighlightedItemSignalEvents, getGenericUpdateSignal } from '@specBuilder/signal/signalSpecBuilder';
+import { addHighlightedItemSignalEvents } from '@specBuilder/signal/signalSpecBuilder';
 import { sanitizeMarkChildren, toCamelCase } from '@utils';
 import { produce } from 'immer';
 import { Data, Mark, Scale, Signal, Spec } from 'vega';
 
 import { ColorScheme, DonutProps, DonutSpecProps } from '../../types';
-import { getMetricsSummaryMarks } from './donutSummaryUtils';
+import {
+	getDonutSummaryData,
+	getDonutSummaryMarks,
+	getDonutSummaryScales,
+	getDonutSummarySignals,
+} from './donutSummaryUtils';
 import { getArcMark, getDirectLabelMark } from './donutUtils';
 
 export const addDonut = produce<Spec, [DonutProps & { colorScheme?: ColorScheme; index?: number }]>(
@@ -101,33 +96,21 @@ export const addData = produce<Data[], [DonutSpecProps]>((data, props) => {
 				},
 			],
 		});
-	} else {
-		//set up aggregate
-		data.push({
-			name: `${name}_aggregateData`,
-			source: FILTERED_TABLE,
-			transform: [
-				{
-					type: 'aggregate',
-					fields: [metric],
-					ops: ['sum'],
-					as: ['sum'],
-				},
-			],
-		});
 	}
+	data.push(...getDonutSummaryData(props));
 });
 
 export const addScales = produce<Scale[], [DonutSpecProps]>((scales, props) => {
 	const { color } = props;
 	addFieldToFacetScaleDomain(scales, COLOR_SCALE, color);
+	scales.push(...getDonutSummaryScales(props));
 });
 
 export const addMarks = produce<Mark[], [DonutSpecProps]>((marks, props) => {
 	const { segment, hasDirectLabels, isBoolean } = props;
 
 	marks.push(getArcMark(props));
-	marks.push(...getMetricsSummaryMarks(props));
+	marks.push(...getDonutSummaryMarks(props));
 	if (!isBoolean) {
 		if (hasDirectLabels) {
 			if (!segment) {
@@ -139,13 +122,8 @@ export const addMarks = produce<Mark[], [DonutSpecProps]>((marks, props) => {
 });
 
 export const addSignals = produce<Signal[], [DonutSpecProps]>((signals, props) => {
-	const { name, holeRatio, children } = props;
-	signals.push(
-		getGenericUpdateSignal(
-			`${name}_summaryFontSize`,
-			`min(${DONUT_SUMMARY_MAX_FONT_SIZE}, max(${DONUT_SUMMARY_MIN_FONT_SIZE}, round(${DONUT_RADIUS} * ${holeRatio} * ${DONUT_SUMMARY_FONT_SIZE_RATIO})))`
-		)
-	);
+	const { name, children } = props;
+	signals.push(...getDonutSummarySignals(props));
 	if (!hasInteractiveChildren(children)) return;
 	addHighlightedItemSignalEvents(signals, name, 1, getTooltipProps(children)?.excludeDataKeys);
 });

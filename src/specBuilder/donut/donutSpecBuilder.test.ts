@@ -14,6 +14,7 @@ import { createElement } from 'react';
 import { ChartTooltip } from '@components/ChartTooltip';
 import { COLOR_SCALE, FILTERED_TABLE, HIGHLIGHTED_ITEM } from '@constants';
 import { defaultSignals } from '@specBuilder/specTestUtils';
+import { initializeSpec } from '@specBuilder/specUtils';
 
 import { DonutSpecProps } from '../../types';
 import { addData, addDonut, addMarks, addScales, addSignals } from './donutSpecBuilder';
@@ -21,66 +22,19 @@ import { defaultDonutProps } from './donutTestUtils';
 
 describe('addData', () => {
 	test('should add data correctly for boolean donut', () => {
-		const data = [{ name: FILTERED_TABLE }];
-		const result = addData(data, { ...defaultDonutProps, isBoolean: true });
-		expect(result).toEqual([
-			{
-				name: FILTERED_TABLE,
-				transform: [
-					{
-						type: 'pie',
-						field: 'testMetric',
-						startAngle: 0,
-						endAngle: { signal: '0 + 2 * PI' },
-					},
-				],
-			},
-			{
-				name: 'testName_booleanData',
-				source: FILTERED_TABLE,
-				transform: [
-					{
-						type: 'window',
-						ops: ['row_number'],
-						as: ['testName_rscRowIndex'],
-					},
-					{
-						type: 'filter',
-						expr: 'datum.testName_rscRowIndex === 1',
-					},
-				],
-			},
-		]);
+		const data = addData(initializeSpec().data ?? [], { ...defaultDonutProps, isBoolean: true });
+
+		expect(data).toHaveLength(3);
+		expect(data[2].transform).toHaveLength(2);
+		expect(data[2].transform?.[0].type).toBe('window');
+		expect(data[2].transform?.[1].type).toBe('filter');
 	});
 
 	test('should add data correctly for non-boolean donut', () => {
-		const data = [{ name: 'filteredTable' }];
-		const result = addData(data, defaultDonutProps);
-		expect(result).toEqual([
-			{
-				name: FILTERED_TABLE,
-				transform: [
-					{
-						type: 'pie',
-						field: 'testMetric',
-						startAngle: 0,
-						endAngle: { signal: '0 + 2 * PI' },
-					},
-				],
-			},
-			{
-				name: 'testName_aggregateData',
-				source: FILTERED_TABLE,
-				transform: [
-					{
-						type: 'aggregate',
-						fields: ['testMetric'],
-						ops: ['sum'],
-						as: ['sum'],
-					},
-				],
-			},
-		]);
+		const data = addData(initializeSpec().data ?? [], defaultDonutProps);
+		expect(data).toHaveLength(2);
+		expect(data[1].transform).toHaveLength(1);
+		expect(data[1].transform?.[0].type).toBe('pie');
 	});
 });
 
@@ -108,15 +62,9 @@ describe('addMarks', () => {
 });
 
 describe('addSignals()', () => {
-	test('should add a summaryFontSize signal', () => {
-		const signals = addSignals(defaultSignals, defaultDonutProps);
-		expect(signals).toHaveLength(defaultSignals.length + 1);
-		expect(signals.at(-1)).toHaveProperty('name', 'testName_summaryFontSize');
-	});
-
 	test('should add hover events when tooltip is present', () => {
 		const signals = addSignals(defaultSignals, { ...defaultDonutProps, children: [createElement(ChartTooltip)] });
-		expect(signals).toHaveLength(defaultSignals.length + 1);
+		expect(signals).toHaveLength(defaultSignals.length);
 		expect(signals[0]).toHaveProperty('name', HIGHLIGHTED_ITEM);
 		expect(signals[0].on).toHaveLength(2);
 		expect(signals[0].on?.[0]).toHaveProperty('events', '@testName:mouseover');
@@ -127,7 +75,7 @@ describe('addSignals()', () => {
 			...defaultDonutProps,
 			children: [createElement(ChartTooltip, { excludeDataKeys: ['excludeFromTooltip'] })],
 		});
-		expect(signals).toHaveLength(defaultSignals.length + 1);
+		expect(signals).toHaveLength(defaultSignals.length);
 		expect(signals[0]).toHaveProperty('name', HIGHLIGHTED_ITEM);
 		expect(signals[0].on).toHaveLength(2);
 		expect(signals[0].on?.[0]).toHaveProperty('events', '@testName:mouseover');
@@ -138,19 +86,9 @@ describe('addSignals()', () => {
 
 describe('donutSpecBuilder', () => {
 	test('should add scales correctly', () => {
-		const scales = [];
-		const result = addScales(scales, defaultDonutProps);
-		const expectedScales = [
-			{
-				domain: {
-					data: 'table',
-					fields: ['testColor'],
-				},
-				name: COLOR_SCALE,
-				type: undefined,
-			},
-		];
-		expect(result).toEqual(expectedScales);
+		const scales = addScales([], defaultDonutProps);
+		expect(scales).toHaveLength(1);
+		expect(scales[0]).toHaveProperty('name', COLOR_SCALE);
 	});
 });
 

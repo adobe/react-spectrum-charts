@@ -10,6 +10,7 @@
 	"rules": {
 		"react/jsx-uses-vars": "error",
 		"react/jsx-uses-react": "error",
+		"@typescript-eslint/no-non-null-assertion": "error",
 		"no-restricted-imports": [
 			"error",
 			{
