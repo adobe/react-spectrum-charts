@@ -2,7 +2,12 @@ import { SegmentLabel } from '@rsc/alpha';
 
 import { DonutSpecProps, SegmentLabelSpecProps } from '../../types';
 import { defaultDonutProps } from './donutTestUtils';
-import { getSegmentLabelMarks, getSegmentLabelValueText, getSegmentLabelValueTextMark } from './segmentLabelUtils';
+import {
+	getSegmentLabelMarks,
+	getSegmentLabelTextMark,
+	getSegmentLabelValueText,
+	getSegmentLabelValueTextMark,
+} from './segmentLabelUtils';
 
 const defaultDonutPropsWithSegmentLabel: DonutSpecProps = {
 	...defaultDonutProps,
@@ -82,5 +87,16 @@ describe('getSegmentLabelValueText()', () => {
 		expect(rules).toHaveLength(1);
 		expect(rules?.[0].signal).toContain('_arcPercent');
 		expect(rules?.[0].signal).toContain('testMetric');
+	});
+});
+
+describe('getSegmentLabelTextMark()', () => {
+	test('should define dy if value or percent are true', () => {
+		const mark = getSegmentLabelTextMark({ ...defaultSegmentLabelProps, value: true });
+		expect(mark.encode?.enter).toHaveProperty('dy');
+	});
+	test('should not define dy if value and percent are false', () => {
+		const mark = getSegmentLabelTextMark(defaultSegmentLabelProps);
+		expect(mark.encode?.enter?.dy).toBeUndefined();
 	});
 });
