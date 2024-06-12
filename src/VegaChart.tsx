@@ -106,6 +106,8 @@ export const VegaChart: FC<VegaChartProps> = ({
 				onNewView(view);
 				view.resize();
 				view.runAsync();
+				// One additional render to settle all resize calculations
+				setTimeout(() => view.runAsync(), 0);
 			});
 		}
 		return () => {

@@ -40,7 +40,7 @@ const getDonutSummary = (props: DonutSpecProps): DonutSummarySpecProps | undefin
 };
 
 /**
- * Applies all default props, converting donutSummaryProps into donutSummarySpecProps
+ * Applies all default props, converting DonutSummaryProps into DonutSummarySpecProps
  * @param donutSummaryProps
  * @param donutProps
  * @returns
@@ -131,9 +131,8 @@ export const getDonutSummaryMarks = (props: DonutSpecProps): GroupMark[] => {
 	if (!donutSummary) {
 		return [];
 	}
-	const { donutProps } = donutSummary;
 	const marks: GroupMark[] = [];
-	if (donutProps.isBoolean) {
+	if (props.isBoolean) {
 		marks.push(getBooleanDonutSummaryGroupMark(donutSummary));
 	} else {
 		marks.push(getDonutSummaryGroupMark(donutSummary));

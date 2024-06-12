@@ -79,8 +79,8 @@ export const TRELLIS_PADDING = 0.2;
 // donut constants
 /** Calculation for donut radius, subtract 2 pixels to make room for the selection ring */
 export const DONUT_RADIUS = '(min(width, height) / 2 - 2)';
-/** Min arc angle radians to display a direct label. If the arc angle is less than this, the direct label will be hidden. */
-export const DONUT_DIRECT_LABEL_MIN_ANGLE = 0.3;
+/** Min arc angle radians to display a segment label. If the arc angle is less than this, the segment label will be hidden. */
+export const DONUT_SEGMENT_LABEL_MIN_ANGLE = 0.3;
 /** Min font size for the donut summary metric value */
 export const DONUT_SUMMARY_MIN_FONT_SIZE = 28;
 /** Max font size for the donut summary metric value */

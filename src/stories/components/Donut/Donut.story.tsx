@@ -19,7 +19,7 @@ import { bindWithProps } from '@test-utils';
 
 import { Content } from '@adobe/react-spectrum';
 
-import { basicDonutData, booleanDonutData, sliveredDonutData } from './data';
+import { basicDonutData, booleanDonutData } from './data';
 
 export default {
 	title: 'RSC/Donut',
@@ -37,9 +37,7 @@ const DonutStory: StoryFn<DonutProps & { width?: number; height?: number }> = (a
 	const chartProps = useChartProps({ ...defaultChartProps, width: width ?? 350, height: height ?? 350 });
 	return (
 		<Chart {...chartProps}>
-			<Donut {...donutProps}>
-				<DonutSummary label="Visitors" />
-			</Donut>
+			<Donut {...donutProps} />
 		</Chart>
 	);
 };
@@ -50,15 +48,6 @@ const DonutLegendStory: StoryFn<typeof Donut> = (args): ReactElement => {
 		<Chart {...chartProps}>
 			<Donut {...args} />
 			<Legend title="Browsers" position={'right'} highlight isToggleable />
-		</Chart>
-	);
-};
-
-const SliversStory: StoryFn<typeof Donut> = (args): ReactElement => {
-	const chartProps = useChartProps({ ...defaultChartProps, data: sliveredDonutData });
-	return (
-		<Chart {...chartProps}>
-			<Donut {...args} />
 		</Chart>
 	);
 };
@@ -115,14 +104,6 @@ Basic.args = {
 	color: 'browser',
 };
 
-const WithDirectLabels = bindWithProps(DonutStory);
-WithDirectLabels.args = {
-	metric: 'count',
-	segment: 'browser',
-	color: 'browser',
-	hasDirectLabels: true,
-};
-
 const WithPopover = bindWithProps(DonutStory);
 WithPopover.args = {
 	metric: 'count',
@@ -136,15 +117,6 @@ WithLegend.args = {
 	color: 'browser',
 };
 
-const Slivers = bindWithProps(SliversStory);
-Slivers.args = {
-	metric: 'count',
-	segment: 'browser',
-	color: 'browser',
-	hasDirectLabels: true,
-	holeRatio: 0.8,
-};
-
 const BooleanDonut = bindWithProps(BooleanStory);
 BooleanDonut.args = {
 	metric: 'value',
@@ -155,11 +127,9 @@ BooleanDonut.args = {
 const Supreme = bindWithProps(DonutLegendStory);
 Supreme.args = {
 	metric: 'count',
-	segment: 'browser',
 	color: 'browser',
-	hasDirectLabels: true,
 	holeRatio: 0.8,
-	children: interactiveChildren,
+	children: [...interactiveChildren, <DonutSummary label="Visitors" key={0} />],
 };
 
-export { Basic, BooleanDonut, Slivers, Supreme, WithDirectLabels, WithLegend, WithPopover };
+export { Basic, BooleanDonut, Supreme, WithLegend, WithPopover };

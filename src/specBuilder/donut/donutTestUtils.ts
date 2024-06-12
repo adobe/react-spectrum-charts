@@ -19,9 +19,7 @@ export const defaultDonutProps: DonutSpecProps = {
 	startAngle: 0,
 	name: 'testName',
 	isBoolean: false,
-	segment: 'testSegment',
 	color: 'testColor',
 	holeRatio: 0.85,
-	hasDirectLabels: true,
 	children: [],
 };

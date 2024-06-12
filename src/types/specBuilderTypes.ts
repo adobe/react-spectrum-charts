@@ -32,6 +32,7 @@ import {
 	ScaleType as RscScaleType,
 	ScatterPathProps,
 	ScatterProps,
+	SegmentLabelProps,
 	TrendlineAnnotationProps,
 	TrendlineChildElement,
 	TrendlineProps,
@@ -114,14 +115,7 @@ export interface ChartTooltipSpecProps extends PartiallyRequired<ChartTooltipPro
 	markName: string;
 }
 
-type DonutPropsWithDefaults =
-	| 'color'
-	| 'metric'
-	| 'name'
-	| 'startAngle'
-	| 'holeRatio'
-	| 'hasDirectLabels'
-	| 'isBoolean';
+type DonutPropsWithDefaults = 'color' | 'metric' | 'name' | 'startAngle' | 'holeRatio' | 'isBoolean';
 
 export interface DonutSpecProps
 	extends PartiallyRequired<DonutProps & { colorScheme: ColorScheme; index: number }, DonutPropsWithDefaults> {
@@ -132,6 +126,12 @@ export interface DonutSpecProps
 type DonutSummaryPropsWithDefaults = 'numberFormat';
 
 export interface DonutSummarySpecProps extends PartiallyRequired<DonutSummaryProps, DonutSummaryPropsWithDefaults> {
+	donutProps: DonutSpecProps;
+}
+
+type SegmentLabelPropsWithDefaults = 'percent' | 'value' | 'valueFormat';
+
+export interface SegmentLabelSpecProps extends PartiallyRequired<SegmentLabelProps, SegmentLabelPropsWithDefaults> {
 	donutProps: DonutSpecProps;
 }
 

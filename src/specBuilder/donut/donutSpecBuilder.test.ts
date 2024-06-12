@@ -16,7 +16,6 @@ import { COLOR_SCALE, FILTERED_TABLE, HIGHLIGHTED_ITEM } from '@constants';
 import { defaultSignals } from '@specBuilder/specTestUtils';
 import { initializeSpec } from '@specBuilder/specUtils';
 
-import { DonutSpecProps } from '../../types';
 import { addData, addDonut, addMarks, addScales, addSignals } from './donutSpecBuilder';
 import { defaultDonutProps } from './donutTestUtils';
 
@@ -33,31 +32,11 @@ describe('addData', () => {
 	test('should add data correctly for non-boolean donut', () => {
 		const data = addData(initializeSpec().data ?? [], defaultDonutProps);
 		expect(data).toHaveLength(2);
-		expect(data[1].transform).toHaveLength(1);
+		expect(data[1].transform).toHaveLength(4);
 		expect(data[1].transform?.[0].type).toBe('pie');
-	});
-});
-
-describe('addMarks', () => {
-	test('should throw error when hasDirectLabels is true but segment is not provided', () => {
-		const marks = [];
-		const props: DonutSpecProps = {
-			index: 0,
-			colorScheme: 'light',
-			markType: 'donut',
-			metric: 'testMetric',
-			startAngle: 1.7,
-			name: 'testName',
-			isBoolean: false,
-			segment: undefined,
-			color: 'testColor',
-			holeRatio: 0.5,
-			hasDirectLabels: true,
-			children: [],
-		};
-		expect(() => addMarks(marks, props)).toThrow(
-			'If a Donut chart hasDirectLabels, a segment property name must be supplied.'
-		);
+		expect(data[1].transform?.[1]).toHaveProperty('as', 'testName_arcTheta');
+		expect(data[1].transform?.[2]).toHaveProperty('as', 'testName_arcLength');
+		expect(data[1].transform?.[3]).toHaveProperty('as', 'testName_arcPercent');
 	});
 });
 
