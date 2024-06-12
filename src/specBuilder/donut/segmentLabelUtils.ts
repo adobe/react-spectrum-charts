@@ -74,19 +74,25 @@ export const getSegmentLabelMarks = (donutProps: DonutSpecProps): GroupMark[] =>
  * @param segmentLabelProps
  * @returns TextMark
  */
-const getSegmentLabelTextMark = ({ labelKey, donutProps }: SegmentLabelSpecProps): TextMark => {
+export const getSegmentLabelTextMark = ({ labelKey, value, percent, donutProps }: SegmentLabelSpecProps): TextMark => {
 	const { name, color } = donutProps;
 	return {
 		type: 'text',
 		name: `${name}_segmentLabel`,
 		from: { data: FILTERED_TABLE },
 		encode: {
-			update: {
-				...getBaseSegmentLabelEntryEncode(name),
+			enter: {
+				...getBaseSegmentLabelEnterEncode(name),
 				text: { field: labelKey ?? color },
 				fontWeight: { value: 'bold' },
-				baseline: { value: 'bottom' },
+				dy:
+					value || percent
+						? {
+								signal: `datum['${name}_arcTheta'] <= 0.5 * PI || datum['${name}_arcTheta'] >= 1.5 * PI ? -16 : 0`,
+						  }
+						: undefined,
 			},
+			update: positionEncodings,
 		},
 	};
 };
@@ -107,10 +113,13 @@ export const getSegmentLabelValueTextMark = (props: SegmentLabelSpecProps): Text
 			from: { data: FILTERED_TABLE },
 			encode: {
 				enter: {
-					...getBaseSegmentLabelEntryEncode(donutProps.name),
+					...getBaseSegmentLabelEnterEncode(donutProps.name),
 					text: getSegmentLabelValueText(props),
-					baseline: { value: 'top' },
+					dy: {
+						signal: `datum['${donutProps.name}_arcTheta'] <= 0.5 * PI || datum['${donutProps.name}_arcTheta'] >= 1.5 * PI ? 0 : 16`,
+					},
 				},
+				update: positionEncodings,
 			},
 		},
 	];
@@ -121,16 +130,25 @@ export const getSegmentLabelValueTextMark = (props: SegmentLabelSpecProps): Text
  * @param name
  * @returns TextEncodeEntry
  */
-const getBaseSegmentLabelEntryEncode = (name: string): TextEncodeEntry => ({
-	x: { signal: 'width / 2' },
-	y: { signal: 'height / 2' },
-	radius: { signal: `${DONUT_RADIUS} + 15` },
+const getBaseSegmentLabelEnterEncode = (name: string): TextEncodeEntry => ({
+	radius: { signal: `${DONUT_RADIUS} + 6` },
 	theta: { field: `${name}_arcTheta` },
 	fontSize: getSegmentLabelFontSize(name),
 	align: {
 		signal: `datum['${name}_arcTheta'] <= PI ? 'left' : 'right'`,
 	},
+	baseline: {
+		// if the center of the arc is in the top half of the donut, the text baseline should be bottom, else top
+		signal: `datum['${name}_arcTheta'] <= 0.5 * PI || datum['${name}_arcTheta'] >= 1.5 * PI ? 'bottom' : 'top'`,
+	},
 });
+/**
+ * position encodings
+ */
+const positionEncodings: TextEncodeEntry = {
+	x: { signal: 'width / 2' },
+	y: { signal: 'height / 2' },
+};
 
 /**
  * Gets the text value ref for the segment label values (percent and/or value)
