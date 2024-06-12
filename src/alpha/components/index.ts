@@ -12,3 +12,4 @@
 
 export * from './Donut';
 export * from './DonutSummary';
+export * from './SegmentLabel';

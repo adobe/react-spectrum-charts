@@ -21,12 +21,10 @@ import { DonutProps } from '../../../types';
 const Donut: FC<DonutProps> = ({
 	children,
 	color = DEFAULT_COLOR,
-	hasDirectLabels = false,
 	holeRatio = 0.85,
 	isBoolean = false,
 	metric = DEFAULT_METRIC,
 	name,
-	segment,
 	startAngle = 0,
 }) => {
 	return null;

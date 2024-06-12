@@ -9,17 +9,23 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { DonutSpecProps } from '../../types';
 
-export const defaultDonutProps: DonutSpecProps = {
-	index: 0,
-	colorScheme: 'light',
-	markType: 'donut',
-	metric: 'testMetric',
-	startAngle: 0,
-	name: 'testName',
-	isBoolean: false,
-	color: 'testColor',
-	holeRatio: 0.85,
-	children: [],
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import { FC } from 'react';
+
+import { SegmentLabelProps } from '../../../types';
+
+// destructure props here and set defaults so that storybook can pick them up
+const SegmentLabel: FC<SegmentLabelProps> = ({
+	labelKey,
+	percent = false,
+	value = false,
+	valueFormat = 'standardNumber',
+}) => {
+	return null;
 };
+
+// displayName is used to validate the component type in the spec builder
+SegmentLabel.displayName = 'SegmentLabel';
+
+export { SegmentLabel };

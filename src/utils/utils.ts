@@ -32,7 +32,7 @@ import {
 	Trendline,
 	TrendlineAnnotation,
 } from '..';
-import { Donut, DonutSummary } from '../alpha';
+import { Donut, DonutSummary, SegmentLabel } from '../alpha';
 import {
 	AreaElement,
 	AxisAnnotationChildElement,
@@ -111,6 +111,7 @@ export const sanitizeMarkChildren = (children: unknown): MarkChildElement[] => {
 		ScatterPath.displayName,
 		MetricRange.displayName,
 		DonutSummary.displayName,
+		SegmentLabel.displayName,
 		Trendline.displayName,
 	] as string[];
 

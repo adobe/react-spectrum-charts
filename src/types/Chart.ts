@@ -28,11 +28,12 @@ export type ChartElement = ReactElement<ChartProps, JSXElementConstructor<ChartP
 export type ChartPopoverElement = ReactElement<ChartPopoverProps, JSXElementConstructor<ChartPopoverProps>>;
 export type ChartTooltipElement = ReactElement<ChartTooltipProps, JSXElementConstructor<ChartTooltipProps>>;
 export type DonutElement = ReactElement<DonutProps, JSXElementConstructor<DonutProps>>;
+export type DonutSummaryElement = ReactElement<DonutSummaryProps, JSXElementConstructor<DonutSummaryProps>>;
 export type LegendElement = ReactElement<LegendProps, JSXElementConstructor<LegendProps>>;
 export type LineElement = ReactElement<LineProps, JSXElementConstructor<LineProps>>;
 export type ScatterPathElement = ReactElement<ScatterPathProps, JSXElementConstructor<ScatterPathProps>>;
+export type SegmentLabelElement = ReactElement<SegmentLabelProps, JSXElementConstructor<SegmentLabelProps>>;
 export type MetricRangeElement = ReactElement<MetricRangeProps, JSXElementConstructor<MetricRangeProps>>;
-export type DonutSummaryElement = ReactElement<DonutSummaryProps, JSXElementConstructor<DonutSummaryProps>>;
 export type ReferenceLineElement = ReactElement<ReferenceLineProps, JSXElementConstructor<ReferenceLineProps>>;
 export type ScatterElement = ReactElement<ScatterProps, JSXElementConstructor<ScatterProps>>;
 export type TitleElement = ReactElement<TitleProps, JSXElementConstructor<TitleProps>>;
@@ -173,27 +174,41 @@ export interface AreaProps extends MarkProps {
 }
 
 export interface DonutProps extends MarkProps {
-	/** The datum property for segments of the data */
-	segment?: string;
 	/** Start angle of the donut in radians (0 is top dead center, and default) */
 	startAngle?: number;
 	/** Ratio of the donut inner radius / donut outer radius. 0 is a pie chart. 0.85 is the default. */
 	holeRatio?: number;
-	/** Determines if it should display direct labels. If true, must also supply 'segment' prop. Default is false */
-	hasDirectLabels?: boolean;
 	/** Determines if the center metric should be displayed as a percent. if true, data should only be two data points, which sum to 1
 	 * Also, if true, will display the first datapoint as a percent */
 	isBoolean?: boolean;
 }
 
 export interface DonutSummaryProps {
-	/** d3 number format specifier. Only valid if labelFormat is linear or undefined.
+	/** d3 number format specifier.
+	 * Sets the number format for the summary value.
 	 *
 	 * see {@link https://d3js.org/d3-format#locale_format}
 	 */
 	numberFormat?: NumberFormat | string;
 	/** Label for the metric summary */
 	label?: string;
+}
+
+export interface SegmentLabelProps {
+	/** Sets the key in the data that has the segment label. Defaults to the `color` key set on the `Donut` is undefined. */
+	labelKey?: string;
+	/** Shows the donut segment percentage */
+	percent?: boolean;
+	/** Shows the donut segment metric value */
+	value?: boolean;
+	/** d3 number format specifier.
+	 * Sets the number format for the segment metric value.
+	 *
+	 * @default 'standardNumber'
+	 *
+	 * see {@link https://d3js.org/d3-format#locale_format}
+	 */
+	valueFormat?: string;
 }
 
 export interface AxisProps extends BaseProps {
@@ -752,5 +767,6 @@ export type MarkChildElement =
 	| ScatterPathElement
 	| MetricRangeElement
 	| DonutSummaryElement
+	| SegmentLabelElement
 	| TrendlineElement;
 export type RscElement = ChartChildElement | MarkChildElement;

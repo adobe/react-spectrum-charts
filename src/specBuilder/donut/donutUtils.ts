@@ -9,10 +9,10 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { DONUT_DIRECT_LABEL_MIN_ANGLE, DONUT_RADIUS, FILTERED_TABLE, MARK_ID, SELECTED_ITEM } from '@constants';
+import { DONUT_RADIUS, FILTERED_TABLE, MARK_ID, SELECTED_ITEM } from '@constants';
 import { getColorProductionRule, getCursor, getMarkOpacity, getTooltip } from '@specBuilder/marks/markUtils';
 import { getColorValue } from '@specBuilder/specUtils';
-import { ArcMark, Mark, ProductionRule, TextEncodeEntry, TextValueRef } from 'vega';
+import { ArcMark } from 'vega';
 
 import { DonutSpecProps } from '../../types';
 
@@ -31,8 +31,8 @@ export const getArcMark = (props: DonutSpecProps): ArcMark => {
 				stroke: { value: getColorValue('static-blue', colorScheme) },
 			},
 			update: {
-				startAngle: { field: 'startAngle' },
-				endAngle: { field: 'endAngle' },
+				startAngle: { field: `${name}_startAngle` },
+				endAngle: { field: `${name}_endAngle` },
 				padAngle: { value: 0.01 },
 				innerRadius: { signal: `${holeRatio} * ${DONUT_RADIUS}` },
 				outerRadius: { signal: DONUT_RADIUS },
@@ -42,59 +42,4 @@ export const getArcMark = (props: DonutSpecProps): ArcMark => {
 			},
 		},
 	};
-};
-
-export const getDirectLabelMark = ({ name, metric, segment }: DonutSpecProps & { segment: string }): Mark => {
-	return {
-		name: `${name}_directLabels`,
-		type: 'group',
-		marks: [
-			{
-				type: 'text',
-				name: `${name}_directLabelSegment`,
-				from: { data: FILTERED_TABLE },
-				encode: {
-					enter: getDirectLabelTextEntry(segment, 'bottom'),
-				},
-			},
-			{
-				type: 'text',
-				name: `${name}_directLabelMetric`,
-				from: { data: FILTERED_TABLE },
-				encode: {
-					enter: getDirectLabelTextEntry(metric, 'top', true),
-				},
-			},
-		],
-	};
-};
-
-export const getDirectLabelTextEntry = (
-	datumProperty: string,
-	baselinePosition: 'top' | 'bottom',
-	format: boolean = false
-): TextEncodeEntry => {
-	return {
-		text: getDisplayTextForLargeSlice(datumProperty, format),
-		x: { signal: 'width / 2' },
-		y: { signal: 'height / 2' },
-		radius: { signal: `${DONUT_RADIUS} + 15` },
-		theta: { signal: '(datum.startAngle + datum.endAngle) / 2' },
-		fontSize: { value: 14 },
-		width: { signal: `getLabelWidth(datum['${datumProperty}'], 'bold', '14') + 10` },
-		align: {
-			signal: "(datum.startAngle + datum.endAngle) / 2 <= PI ? 'left' : 'right'",
-		},
-		baseline: { value: baselinePosition },
-	};
-};
-
-export const getDisplayTextForLargeSlice = (datumProperty: string, format: boolean): ProductionRule<TextValueRef> => {
-	// need to use radians for this. 0.3 radians is about 17 degrees
-	// if we used arc length, then showing a label could shrink the overall donut size which could make the arc to small
-	// that would hide the label which would make the arc bigger which would show the label and so on
-	return [
-		{ test: `datum.endAngle - datum.startAngle < ${DONUT_DIRECT_LABEL_MIN_ANGLE}`, value: null },
-		{ signal: format ? `format(datum['${datumProperty}'], ',')` : `datum['${datumProperty}']` },
-	];
 };
