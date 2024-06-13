@@ -25,7 +25,7 @@ import {
 	toggleStringArrayValue,
 } from '@utils';
 import { Chart } from 'Chart';
-import { Donut } from 'alpha/components/Donut';
+import { Donut } from 'rc/components/Donut';
 
 describe('utils', () => {
 	describe('toCamelCase()', () => {

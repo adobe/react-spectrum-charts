@@ -28,6 +28,8 @@
 			"@matchMediaMock": ["test-utils/__mocks__/matchMedia.mock"],
 			"@rsc": ["index.ts"],
 			"@rsc/alpha": ["alpha"],
+			"@rsc/beta": ["beta"],
+			"@rsc/rc": ["rc"],
 			"@specBuilder/*": ["specBuilder/*"],
 			"@stories/*": ["stories/*"],
 			"@svgPaths": ["svgPaths"],

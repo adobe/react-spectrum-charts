@@ -15,6 +15,16 @@
 			"import": "./dist/alpha.js",
 			"types": "./dist/@types/alpha/index.d.ts",
 			"default": "./dist/alpha.js"
+		},
+		"./beta": {
+			"import": "./dist/beta.js",
+			"types": "./dist/@types/beta/index.d.ts",
+			"default": "./dist/beta.js"
+		},
+		"./rc": {
+			"import": "./dist/rc.js",
+			"types": "./dist/@types/rc/index.d.ts",
+			"default": "./dist/rc.js"
 		}
 	},
 	"typesVersions": {
@@ -24,6 +34,12 @@
 			],
 			"alpha": [
 				"./dist/@types/alpha/index.d.ts"
+			],
+			"beta": [
+				"./dist/@types/beta/index.d.ts"
+			],
+			"rc": [
+				"./dist/@types/rc/index.d.ts"
 			]
 		}
 	},

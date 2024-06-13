@@ -10,7 +10,7 @@
  * governing permissions and limitations under the License.
  */
 import { DONUT_RADIUS, DONUT_SUMMARY_FONT_SIZE_RATIO, DONUT_SUMMARY_MIN_RADIUS, FILTERED_TABLE } from '@constants';
-import { DonutSummary } from '@rsc/alpha';
+import { DonutSummary } from '@rsc/rc';
 import { getTextNumberFormat } from '@specBuilder/textUtils';
 import {
 	EncodeEntryName,

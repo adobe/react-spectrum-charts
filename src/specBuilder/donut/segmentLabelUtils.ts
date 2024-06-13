@@ -10,7 +10,7 @@
  * governing permissions and limitations under the License.
  */
 import { DONUT_RADIUS, DONUT_SEGMENT_LABEL_MIN_ANGLE, FILTERED_TABLE } from '@constants';
-import { SegmentLabel } from '@rsc/alpha';
+import { SegmentLabel } from '@rsc/rc';
 import { getTextNumberFormat } from '@specBuilder/textUtils';
 import { GroupMark, NumericValueRef, ProductionRule, TextEncodeEntry, TextMark, TextValueRef } from 'vega';
 
