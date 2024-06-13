@@ -16,9 +16,11 @@ import {
 	EncodeEntryName,
 	GroupMark,
 	Mark,
+	NumericValueRef,
 	ProductionRule,
 	Signal,
 	SourceData,
+	TextBaselineValueRef,
 	TextEncodeEntry,
 	TextValueRef,
 	ThresholdScale,
@@ -206,7 +208,7 @@ export const getBooleanDonutSummaryGroupMark = (props: DonutSummarySpecProps): G
  * @returns encode
  */
 const getSummaryValueEncode = (props: DonutSummarySpecProps): Partial<Record<EncodeEntryName, TextEncodeEntry>> => {
-	const { donutProps } = props;
+	const { donutProps, label } = props;
 	return {
 		update: {
 			x: { signal: 'width / 2' },
@@ -217,10 +219,8 @@ const getSummaryValueEncode = (props: DonutSummarySpecProps): Partial<Record<Enc
 				{ signal: `${donutProps.name}_summaryFontSize` },
 			],
 			align: { value: 'center' },
-			baseline: { value: 'alphabetic' },
-			limit: {
-				signal: `2 * sqrt(pow(${DONUT_RADIUS} * ${donutProps.holeRatio}, 2) - pow(${donutProps.name}_summaryFontSize, 2))`,
-			},
+			baseline: getSummaryValueBaseline(label),
+			limit: getSummaryValueLimit(props),
 		},
 	};
 };
@@ -238,6 +238,38 @@ export const getSummaryValueText = ({
 		return { signal: `format(datum['${donutProps.metric}'], '.0%')` };
 	}
 	return [...getTextNumberFormat(numberFormat, 'sum'), { field: 'sum' }];
+};
+
+/**
+ * Gets the baseline for the summary value
+ * @param label
+ * @returns TextBaselineValueRef
+ */
+export const getSummaryValueBaseline = (label?: string): TextBaselineValueRef => {
+	if (label) {
+		return { value: 'alphabetic' };
+	}
+	// If there isn't a label, the text should be vertically centered
+	return { value: 'middle' };
+};
+
+/**
+ * Gets the limit for the summary value
+ * @param donutSummaryProps
+ * @returns NumericValueRef
+ */
+export const getSummaryValueLimit = ({ donutProps, label }: DonutSummarySpecProps): NumericValueRef => {
+	const { holeRatio, name } = donutProps;
+	// if there isn't a label, the height of the font from the center of the donut is 1/2 the font size
+	const fontHeight = label ? `${name}_summaryFontSize` : `${name}_summaryFontSize * 0.5`;
+	const donutInnerRadius = `${DONUT_RADIUS} * ${holeRatio}`;
+
+	return {
+		// This is the max length of the text that can be displayed in the donut summary
+		// If the text is longer than this, it will be truncated
+		// It is calculated using the Pythagorean theorem
+		signal: `2 * sqrt(pow(${donutInnerRadius}, 2) - pow(${fontHeight}, 2))`,
+	};
 };
 
 /**

@@ -18,6 +18,8 @@ import {
 	getDonutSummaryGroupMark,
 	getDonutSummaryScales,
 	getDonutSummarySignals,
+	getSummaryValueBaseline,
+	getSummaryValueLimit,
 	getSummaryValueText,
 } from './donutSummaryUtils';
 import { defaultDonutProps } from './donutTestUtils';
@@ -122,5 +124,31 @@ describe('getSummaryValueText()', () => {
 			},
 			{ field: 'sum' },
 		]);
+	});
+});
+
+describe('getSummaryValueBaseline()', () => {
+	test('should return alphabetic if label is truthy', () => {
+		const baseline = getSummaryValueBaseline('Visitors');
+		expect(baseline).toHaveProperty('value', 'alphabetic');
+	});
+
+	test('should return middle if label is falsey', () => {
+		const baseline = getSummaryValueBaseline(undefined);
+		expect(baseline).toHaveProperty('value', 'middle');
+	});
+});
+
+describe('getSummaryValueLimit()', () => {
+	test('should use full font size in signal if label is truthy', () => {
+		expect(getSummaryValueLimit({ ...defaultDonutSummaryProps, label: 'Visitors' })).toEqual({
+			signal: '2 * sqrt(pow((min(width, height) / 2 - 2) * 0.85, 2) - pow(testName_summaryFontSize, 2))',
+		});
+	});
+
+	test('should use 1/2 font size in signal if label is falsey', () => {
+		expect(getSummaryValueLimit({ ...defaultDonutSummaryProps, label: '' })).toEqual({
+			signal: '2 * sqrt(pow((min(width, height) / 2 - 2) * 0.85, 2) - pow(testName_summaryFontSize * 0.5, 2))',
+		});
 	});
 });
