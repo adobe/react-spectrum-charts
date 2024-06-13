@@ -10,7 +10,7 @@
  * governing permissions and limitations under the License.
  */
 import { findAllMarksByGroupName, findChart, render } from '@test-utils';
-import { Donut } from 'alpha/components/Donut';
+import { Donut } from 'rc/components/Donut';
 
 import { Basic } from './Donut.story';
 

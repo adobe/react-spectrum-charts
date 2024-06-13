@@ -13,7 +13,7 @@ import React, { ReactElement } from 'react';
 
 import useChartProps from '@hooks/useChartProps';
 import { Chart, ChartProps } from '@rsc';
-import { Donut, SegmentLabel } from '@rsc/alpha';
+import { Donut, SegmentLabel } from '@rsc/rc';
 import { StoryFn } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
 

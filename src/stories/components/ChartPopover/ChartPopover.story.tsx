@@ -13,10 +13,10 @@ import React, { ReactElement } from 'react';
 
 import useChartProps from '@hooks/useChartProps';
 import { Area, Axis, Bar, Chart, ChartPopover, ChartProps, ChartTooltip, Datum, Legend, Line } from '@rsc';
+import { Donut, DonutSummary } from '@rsc/rc';
 import { browserData as data } from '@stories/data/data';
 import { StoryFn } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
-import { Donut, DonutSummary } from '@rsc/alpha';
 
 import { Content } from '@adobe/react-spectrum';
 

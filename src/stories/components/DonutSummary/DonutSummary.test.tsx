@@ -10,7 +10,7 @@
  * governing permissions and limitations under the License.
  */
 import { DONUT_SUMMARY_MIN_RADIUS } from '@constants';
-import { DonutSummary } from '@rsc/alpha';
+import { DonutSummary } from '@rsc/rc';
 import { render, screen } from '@test-utils';
 
 import { Basic, NoLabel, NumberFormat } from './DonutSummary.story';

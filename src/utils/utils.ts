@@ -12,8 +12,6 @@
 import { Fragment, ReactNode } from 'react';
 
 import { MARK_ID, SELECTED_ITEM, SELECTED_SERIES, SERIES_ID } from '@constants';
-import { View } from 'vega';
-
 import {
 	Annotation,
 	Area,
@@ -31,8 +29,10 @@ import {
 	Title,
 	Trendline,
 	TrendlineAnnotation,
-} from '..';
-import { Donut, DonutSummary, SegmentLabel } from '../alpha';
+} from '@rsc';
+import { Donut, DonutSummary, SegmentLabel } from '@rsc/rc';
+import { View } from 'vega';
+
 import {
 	AreaElement,
 	AxisAnnotationChildElement,
