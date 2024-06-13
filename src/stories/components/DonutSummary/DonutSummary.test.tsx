@@ -13,21 +13,26 @@ import { DONUT_SUMMARY_MIN_RADIUS } from '@constants';
 import { DonutSummary } from '@rsc/alpha';
 import { render, screen } from '@test-utils';
 
-import { Basic, NumberFormat } from './DonutSummary.story';
+import { Basic, NoLabel, NumberFormat } from './DonutSummary.story';
 
-describe('should render the correct number format', () => {
+describe('DonutSummary renders properly', () => {
 	// Donut is not a real React component. This is test just provides test coverage for sonarqube
 	test('Donut pseudo element', () => {
 		render(<DonutSummary />);
 	});
 
-	test('shortCurrency', async () => {
-		render(<NumberFormat {...NumberFormat.args} numberFormat="shortCurrency" />);
-		expect(await screen.findByText('$40.4K')).toBeInTheDocument();
+	test('metric value should be centered if there is not a label', async () => {
+		render(<NoLabel {...NoLabel.args} />);
+		const metricValue = await screen.findByText('40.4K');
+		screen.debug(metricValue);
+		expect(metricValue).toHaveAttribute('transform', 'translate(175,190)');
 	});
-	test('standardNumber', async () => {
-		render(<NumberFormat {...NumberFormat.args} numberFormat="standardNumber" />);
-		expect(await screen.findByText('40,365')).toBeInTheDocument();
+
+	test('metric value should be above center if there is a label', async () => {
+		render(<Basic {...Basic.args} />);
+		const metricValue = await screen.findByText('40.4K');
+		screen.debug(metricValue);
+		expect(metricValue).toHaveAttribute('transform', 'translate(175,175)');
 	});
 
 	test('metric label text should be 1/2 the size of the metric value text', async () => {
@@ -36,6 +41,17 @@ describe('should render the correct number format', () => {
 		expect(metricValue).toHaveAttribute('font-size', '28px');
 		const metricLabel = await screen.findByText('Visitors');
 		expect(metricLabel).toHaveAttribute('font-size', '14px');
+	});
+});
+
+describe('NumberFormat ', () => {
+	test('shortCurrency', async () => {
+		render(<NumberFormat {...NumberFormat.args} numberFormat="shortCurrency" />);
+		expect(await screen.findByText('$40.4K')).toBeInTheDocument();
+	});
+	test('standardNumber', async () => {
+		render(<NumberFormat {...NumberFormat.args} numberFormat="standardNumber" />);
+		expect(await screen.findByText('40,365')).toBeInTheDocument();
 	});
 });
 

@@ -74,10 +74,8 @@ Basic.args = {
 	numberFormat: 'shortNumber',
 };
 
-const Responsive = bindWithProps(ResponsiveStory);
-Responsive.args = {
-	label: 'Visitors',
-};
+const NoLabel = bindWithProps(DonutStory);
+NoLabel.args = {};
 
 const NumberFormat = bindWithProps(DonutStory);
 NumberFormat.args = {
@@ -85,4 +83,9 @@ NumberFormat.args = {
 	label: 'Visitors',
 };
 
-export { Basic, NumberFormat, Responsive };
+const Responsive = bindWithProps(ResponsiveStory);
+Responsive.args = {
+	label: 'Visitors',
+};
+
+export { Basic, NoLabel, NumberFormat, Responsive };
