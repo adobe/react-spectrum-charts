@@ -12,6 +12,7 @@
 import { DONUT_RADIUS, DONUT_SEGMENT_LABEL_MIN_ANGLE, FILTERED_TABLE } from '@constants';
 import { SegmentLabel } from '@rsc/rc';
 import { getTextNumberFormat } from '@specBuilder/textUtils';
+import { getElementDisplayName } from '@utils';
 import { GroupMark, NumericValueRef, ProductionRule, TextEncodeEntry, TextMark, TextValueRef } from 'vega';
 
 import { DonutSpecProps, SegmentLabelElement, SegmentLabelProps, SegmentLabelSpecProps } from '../../types';
@@ -22,7 +23,9 @@ import { DonutSpecProps, SegmentLabelElement, SegmentLabelProps, SegmentLabelSpe
  * @returns segmentLabelProps
  */
 const getSegmentLabel = (props: DonutSpecProps): SegmentLabelSpecProps | undefined => {
-	const segmentLabel = props.children.find((child) => child.type === SegmentLabel) as SegmentLabelElement;
+	const segmentLabel = props.children.find(
+		(child) => getElementDisplayName(child) === SegmentLabel.displayName
+	) as SegmentLabelElement;
 	if (!segmentLabel) {
 		return;
 	}
