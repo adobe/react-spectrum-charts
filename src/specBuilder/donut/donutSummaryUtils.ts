@@ -12,6 +12,7 @@
 import { DONUT_RADIUS, DONUT_SUMMARY_FONT_SIZE_RATIO, DONUT_SUMMARY_MIN_RADIUS, FILTERED_TABLE } from '@constants';
 import { DonutSummary } from '@rsc/rc';
 import { getTextNumberFormat } from '@specBuilder/textUtils';
+import { getElementDisplayName } from '@utils';
 import {
 	EncodeEntryName,
 	GroupMark,
@@ -34,7 +35,9 @@ import { DonutSpecProps, DonutSummaryElement, DonutSummaryProps, DonutSummarySpe
  * @returns
  */
 const getDonutSummary = (props: DonutSpecProps): DonutSummarySpecProps | undefined => {
-	const donutSummary = props.children.find((child) => child.type === DonutSummary) as DonutSummaryElement;
+	const donutSummary = props.children.find(
+		(child) => getElementDisplayName(child) === DonutSummary.displayName
+	) as DonutSummaryElement;
 	if (!donutSummary) {
 		return;
 	}

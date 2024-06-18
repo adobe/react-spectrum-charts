@@ -73,7 +73,7 @@ export function toArray<Child>(children: Child | Child[] | undefined): Child[] {
 	return [children];
 }
 
-const getElementDisplayName = (element: unknown): string => {
+export const getElementDisplayName = (element: unknown): string => {
 	if (
 		!element ||
 		typeof element !== 'object' ||
