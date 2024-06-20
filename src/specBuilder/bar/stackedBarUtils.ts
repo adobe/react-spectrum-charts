@@ -11,11 +11,11 @@
  */
 import { BACKGROUND_COLOR, FILTERED_TABLE } from '@constants';
 import { getInteractive } from '@specBuilder/marks/markUtils';
-import { Mark, RectEncodeEntry, RectMark } from 'vega';
+import { GroupMark, Mark, RectEncodeEntry, RectMark } from 'vega';
 
 import { BarSpecProps } from '../../types';
+import { getAnnotationMarks } from './barAnnotationUtils';
 import {
-	getAnnotationMarks,
 	getBarEnterEncodings,
 	getBarUpdateEncodings,
 	getBaseBarEnterEncodings,
@@ -48,7 +48,7 @@ export const getStackedBarMarks = (props: BarSpecProps): Mark[] => {
 	return marks;
 };
 
-export const getDodgedAndStackedBarMark = (props: BarSpecProps): Mark => {
+export const getDodgedAndStackedBarMark = (props: BarSpecProps): GroupMark => {
 	const marks: Mark[] = [];
 	// add background marks
 	marks.push(getStackedBackgroundBar(props));

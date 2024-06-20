@@ -34,7 +34,7 @@ const SegmentLabelStory: StoryFn<typeof SegmentLabel> = (args): ReactElement => 
 	const chartProps = useChartProps(defaultChartProps);
 
 	return (
-		<Chart {...chartProps} debug>
+		<Chart {...chartProps}>
 			<Donut metric="count" color="browser">
 				<SegmentLabel {...args} />;
 			</Donut>

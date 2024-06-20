@@ -11,11 +11,11 @@
  */
 import { BACKGROUND_COLOR } from '@constants';
 import { getInteractive } from '@specBuilder/marks/markUtils';
-import { Mark } from 'vega';
+import { GroupMark } from 'vega';
 
 import { BarSpecProps } from '../../types';
+import { getAnnotationMarks } from './barAnnotationUtils';
 import {
-	getAnnotationMarks,
 	getBarEnterEncodings,
 	getBarUpdateEncodings,
 	getBaseBarEnterEncodings,
@@ -23,7 +23,7 @@ import {
 	getDodgedGroupMark,
 } from './barUtils';
 
-export const getDodgedMark = (props: BarSpecProps): Mark => {
+export const getDodgedMark = (props: BarSpecProps): GroupMark => {
 	const { children, name } = props;
 
 	return {

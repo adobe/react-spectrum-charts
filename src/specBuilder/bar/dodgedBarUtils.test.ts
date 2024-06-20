@@ -28,7 +28,7 @@ import {
 	HIGHLIGHT_CONTRAST_RATIO,
 	MARK_ID,
 } from '@constants';
-import { Mark, RectEncodeEntry } from 'vega';
+import { GroupMark, Mark, RectEncodeEntry } from 'vega';
 
 import { BarSpecProps } from '../../types';
 import {
@@ -205,12 +205,18 @@ describe('dodgedBarUtils', () => {
 		});
 		test('with annotation', () => {
 			const annotationElement = createElement(Annotation, { textKey: 'textLabel' });
-			expect(
-				getDodgedMark({
-					...defaultDodgedProps,
-					children: [...defaultDodgedProps.children, annotationElement],
-				})
-			).toStrictEqual(annotationDodgedMarks);
+			const mark = getDodgedMark({
+				...defaultDodgedProps,
+				children: [...defaultDodgedProps.children, annotationElement],
+			});
+			expect(mark.marks).toHaveLength(3);
+			expect(mark.marks?.[0].name).toEqual('bar0_background');
+			expect(mark.marks?.[1].name).toEqual('bar0');
+			const annotationGroup = mark.marks?.[2] as GroupMark;
+			expect(annotationGroup.name).toEqual('bar0_annotationGroup');
+			expect(annotationGroup.marks).toHaveLength(2);
+			expect(annotationGroup.marks?.[0].name).toEqual('bar0_annotationText');
+			expect(annotationGroup.marks?.[1].name).toEqual('bar0_annotationBackground');
 		});
 		test('should add tooltip keys if ChartTooltip exists as child', () => {
 			expect(getDodgedMark({ ...defaultDodgedProps, children: [createElement(ChartTooltip)] })).toStrictEqual({

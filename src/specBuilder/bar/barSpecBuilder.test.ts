@@ -63,7 +63,6 @@ import {
 	defaultBarStrokeEncodings,
 	defaultCornerRadiusEncodings,
 	defaultStackedYEncodings,
-	stackedAnnotationMarks,
 } from './barTestUtils';
 import { defaultDodgedMark } from './dodgedBarUtils.test';
 
@@ -403,12 +402,15 @@ describe('barSpecBuilder', () => {
 		describe('with annotations', () => {
 			test('default props', () => {
 				const annotation = createElement(Annotation, { textKey: 'textLabel' });
-				expect(
-					addMarks([], {
-						...defaultBarProps,
-						children: [...defaultBarProps.children, annotation],
-					})
-				).toStrictEqual([...defaultStackedBarMarks, ...stackedAnnotationMarks]);
+				const marks = addMarks([], {
+					...defaultBarProps,
+					children: [...defaultBarProps.children, annotation],
+				});
+
+				expect(marks).toHaveLength(3);
+				expect(marks[0].name).toEqual('bar0_background');
+				expect(marks[1].name).toEqual('bar0');
+				expect(marks[2].name).toEqual('bar0_annotationGroup');
 			});
 		});
 
@@ -423,7 +425,7 @@ describe('barSpecBuilder', () => {
 
 			expect(addedMarks).toHaveLength(1);
 			expect(addedMarks[0].name).toEqual('bar0_group');
-			expect((addedMarks[0] as GroupMark).marks).toHaveLength(4);
+			expect((addedMarks[0] as GroupMark).marks).toHaveLength(3);
 		});
 
 		test('should add trellis group mark if trellis prop is set', () => {

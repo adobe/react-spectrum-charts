@@ -13,6 +13,7 @@
 // prop defaults
 export const ANNOTATION_FONT_SIZE = 12;
 export const ANNOTATION_FONT_WEIGHT = 'bold';
+export const ANNOTATION_PADDING = 4;
 export const DEFAULT_AXIS_ANNOTATION_COLOR = 'gray-600';
 export const DEFAULT_AXIS_ANNOTATION_OFFSET = 80;
 export const DEFAULT_BACKGROUND_COLOR = 'transparent';
