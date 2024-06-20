@@ -23,12 +23,7 @@ import {
 } from '@constants';
 import { GroupMark, Mark, RectEncodeEntry } from 'vega';
 
-import {
-	defaultBarEnterEncodings,
-	defaultBarProps,
-	defaultBarStrokeEncodings,
-	stackedAnnotationMarks,
-} from './barTestUtils';
+import { defaultBarEnterEncodings, defaultBarProps, defaultBarStrokeEncodings } from './barTestUtils';
 import { getDodgedAndStackedBarMark, getStackedBarMarks, getStackedDimensionEncodings } from './stackedBarUtils';
 
 const defaultStackedBarXEncondings: RectEncodeEntry = {
@@ -78,18 +73,25 @@ describe('stackedBarUtils', () => {
 		});
 		test('with annotation', () => {
 			const annotationElement = createElement(Annotation, { textKey: 'textLabel' });
-			expect(
-				getStackedBarMarks({
-					...defaultBarProps,
-					children: [...defaultBarProps.children, annotationElement],
-				})
-			).toStrictEqual([defaultBackgroundMark, defaultMark, ...stackedAnnotationMarks]);
+			const marks = getStackedBarMarks({
+				...defaultBarProps,
+				children: [...defaultBarProps.children, annotationElement],
+			});
+
+			expect(marks).toHaveLength(3);
+			expect(marks[0].name).toEqual('bar0_background');
+			expect(marks[1].name).toEqual('bar0');
+			const annotationGroup = marks[2] as GroupMark;
+			expect(annotationGroup.name).toEqual('bar0_annotationGroup');
+			expect(annotationGroup.marks).toHaveLength(2);
+			expect(annotationGroup.marks?.[0].name).toEqual('bar0_annotationText');
+			expect(annotationGroup.marks?.[1].name).toEqual('bar0_annotationBackground');
 		});
 	});
 
 	describe('getDodgedAndStackedBarMark()', () => {
 		test('should return mark with dodged and stacked marks', () => {
-			const mark = getDodgedAndStackedBarMark(defaultBarProps) as GroupMark;
+			const mark = getDodgedAndStackedBarMark(defaultBarProps);
 
 			expect(mark.name).toEqual('bar0_group');
 			expect(mark.scales?.[0].name).toEqual('bar0_position');
@@ -103,27 +105,19 @@ describe('stackedBarUtils', () => {
 			const mark = getDodgedAndStackedBarMark({
 				...defaultBarProps,
 				children: [...defaultBarProps.children, createElement(Annotation, { textKey: 'textLabel' })],
-			}) as GroupMark;
+			});
 
 			expect(mark.name).toEqual('bar0_group');
 			expect(mark.scales?.[0].name).toEqual('bar0_position');
 
-			expect(mark.marks).toHaveLength(4);
+			expect(mark.marks).toHaveLength(3);
 			expect(mark.marks?.[0].name).toEqual('bar0_background');
 			expect(mark.marks?.[1].name).toEqual('bar0');
-			expect(mark.marks?.[2].name).toEqual('bar0_annotationBackground');
-			expect(mark.marks?.[3].name).toEqual('bar0_annotationText');
-
-			expect(mark.marks?.[2].encode?.enter?.xc).toEqual({
-				scale: 'bar0_position',
-				field: 'bar0_dodgeGroup',
-				band: 0.5,
-			});
-			expect(mark.marks?.[3].encode?.enter?.x).toEqual({
-				scale: 'bar0_position',
-				field: 'bar0_dodgeGroup',
-				band: 0.5,
-			});
+			const annotationGroup = mark.marks?.[2] as GroupMark;
+			expect(annotationGroup.name).toEqual('bar0_annotationGroup');
+			expect(annotationGroup.marks).toHaveLength(2);
+			expect(annotationGroup.marks?.[0].name).toEqual('bar0_annotationText');
+			expect(annotationGroup.marks?.[1].name).toEqual('bar0_annotationBackground');
 		});
 
 		test('should return mark with dodged and stacked marks, with annotation, horizontal', () => {
@@ -131,27 +125,19 @@ describe('stackedBarUtils', () => {
 				...defaultBarProps,
 				orientation: 'horizontal',
 				children: [...defaultBarProps.children, createElement(Annotation, { textKey: 'textLabel' })],
-			}) as GroupMark;
+			});
 
 			expect(mark.name).toEqual('bar0_group');
 			expect(mark.scales?.[0].name).toEqual('bar0_position');
 
-			expect(mark.marks).toHaveLength(4);
+			expect(mark.marks).toHaveLength(3);
 			expect(mark.marks?.[0].name).toEqual('bar0_background');
 			expect(mark.marks?.[1].name).toEqual('bar0');
-			expect(mark.marks?.[2].name).toEqual('bar0_annotationBackground');
-			expect(mark.marks?.[3].name).toEqual('bar0_annotationText');
-
-			expect(mark.marks?.[2].encode?.enter?.yc).toEqual({
-				scale: 'bar0_position',
-				field: 'bar0_dodgeGroup',
-				band: 0.5,
-			});
-			expect(mark.marks?.[3].encode?.enter?.y).toEqual({
-				scale: 'bar0_position',
-				field: 'bar0_dodgeGroup',
-				band: 0.5,
-			});
+			const annotationGroup = mark.marks?.[2] as GroupMark;
+			expect(annotationGroup.name).toEqual('bar0_annotationGroup');
+			expect(annotationGroup.marks).toHaveLength(2);
+			expect(annotationGroup.marks?.[0].name).toEqual('bar0_annotationText');
+			expect(annotationGroup.marks?.[1].name).toEqual('bar0_annotationBackground');
 		});
 	});
 

@@ -23,6 +23,7 @@ import {
 	Datum,
 	Legend,
 	LegendProps,
+	ReferenceLine,
 	Scatter,
 	ScatterProps,
 	Title,
@@ -136,6 +137,31 @@ const dialog = (item: Datum): ReactNode => {
 	);
 };
 
+const StripStory: StoryFn<typeof Scatter> = (args): ReactElement => {
+	const data = [
+		{ x: 0, y: 0 },
+		{ x: 0.05, y: 0 },
+		{ x: 0.1, y: 0 },
+		{ x: 0.2, y: 0 },
+		{ x: 0.5, y: 0 },
+		{ x: 0.65, y: 0 },
+		{ x: 1, y: 0 },
+	];
+
+	const chartProps = useChartProps({ data });
+
+	return (
+		<Chart {...chartProps} height={50} width={200}>
+			<Axis position="bottom" hideDefaultLabels>
+				<ReferenceLine value={0.45} />
+			</Axis>
+			<Scatter {...args}>
+				<ChartTooltip>{(item) => <div>Average: {item.x}</div>}</ChartTooltip>
+			</Scatter>
+		</Chart>
+	);
+};
+
 const Basic = bindWithProps(ScatterStory);
 Basic.args = {
 	dimension: 'speedNormal',
@@ -201,4 +227,11 @@ Tooltip.args = {
 	children: <ChartTooltip>{dialog}</ChartTooltip>,
 };
 
-export { Basic, Color, ColorScaleType, LineType, Opacity, Popover, Size, Tooltip };
+const Strip = bindWithProps(StripStory);
+Strip.args = {
+	dimension: 'x',
+	metric: 'y',
+	size: { value: 'XL' },
+};
+
+export { Basic, Color, ColorScaleType, LineType, Opacity, Popover, Size, Tooltip, Strip };

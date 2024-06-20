@@ -11,7 +11,6 @@
  */
 import { createElement } from 'react';
 
-import { Annotation } from '@components/Annotation';
 import { ChartPopover } from '@components/ChartPopover';
 import {
 	COLOR_SCALE,
@@ -36,19 +35,8 @@ import {
 	defaultDodgedCornerRadiusEncodings,
 	defaultDodgedYEncodings,
 	defaultStackedYEncodings,
-	dodgedAnnotationMarks,
-	dodgedAnnotationMarksWithStyles,
-	dodgedGroupField,
-	dodgedSubSeriesAnnotationMarks,
-	dodgedXScale,
-	stackedAnnotationMarks,
-	stackedAnnotationMarksWithStyles,
-	stackedXScale,
 } from './barTestUtils';
 import {
-	getAnnotationMarks,
-	getAnnotationMetricAxisPosition,
-	getAnnotationPositionOffset,
 	getBarPadding,
 	getBaseBarEnterEncodings,
 	getCornerRadiusEncodings,
@@ -369,187 +357,6 @@ describe('barUtils', () => {
 				test: `${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${MARK_ID}`,
 				value: 2,
 			});
-		});
-	});
-
-	describe('getAnnotationPositionOffset()', () => {
-		test('returns 13.5 for vertical orientation', () => {
-			expect(getAnnotationPositionOffset(defaultBarProps, { value: 12345 })).toEqual('13.5');
-		});
-
-		test('returns provided value / 2 + 2.5 when value is set and orientation is not vertical', () => {
-			expect(
-				getAnnotationPositionOffset({ ...defaultBarProps, orientation: 'horizontal' }, { value: 50 })
-			).toEqual('27.5');
-		});
-
-		test('returns the signal string wrapped with parens when signal is set and orientation is not vertical', () => {
-			expect(
-				getAnnotationPositionOffset({ ...defaultBarProps, orientation: 'horizontal' }, { signal: 'foo' })
-			).toEqual('((foo) / 2 + 2.5)');
-		});
-	});
-
-	describe('getAnnotationMetricAxisPosition()', () => {
-		const defaultAnnotationWidth = { value: 22 };
-
-		test("defaultBarProps, should return '${value}1' field", () => {
-			expect(getAnnotationMetricAxisPosition(defaultBarProps, defaultAnnotationWidth)).toStrictEqual([
-				{
-					signal: `max(scale('yLinear', datum.${defaultBarProps.metric}1), scale('yLinear', 0) + 13.5)`,
-					test: `datum.${defaultBarProps.metric}1 < 0`,
-				},
-				{ signal: `min(scale('yLinear', datum.${defaultBarProps.metric}1), scale('yLinear', 0) - 13.5)` },
-			]);
-		});
-		test('horizontal orientation, should return with xLinear scale and min/max properties flipped', () => {
-			expect(
-				getAnnotationMetricAxisPosition(
-					{ ...defaultBarProps, orientation: 'horizontal' },
-					defaultAnnotationWidth
-				)
-			).toStrictEqual([
-				{
-					test: `datum.${defaultBarProps.metric}1 < 0`,
-					signal: `min(scale('xLinear', datum.${defaultBarProps.metric}1), scale('xLinear', 0) - 13.5)`,
-				},
-				{ signal: `max(scale('xLinear', datum.${defaultBarProps.metric}1), scale('xLinear', 0) + 13.5)` },
-			]);
-		});
-		test("stacked with seconday scale, should return '${value}1' field", () => {
-			expect(
-				getAnnotationMetricAxisPosition(defaultBarPropsWithSecondayColor, defaultAnnotationWidth)
-			).toStrictEqual([
-				{
-					signal: `max(scale('yLinear', datum.${defaultBarProps.metric}1), scale('yLinear', 0) + 13.5)`,
-					test: `datum.${defaultBarProps.metric}1 < 0`,
-				},
-				{ signal: `min(scale('yLinear', datum.${defaultBarProps.metric}1), scale('yLinear', 0) - 13.5)` },
-			]);
-		});
-		test("dodged without secondary scale, should return 'value' field", () => {
-			expect(
-				getAnnotationMetricAxisPosition({ ...defaultBarProps, type: 'dodged' }, defaultAnnotationWidth)
-			).toStrictEqual([
-				{
-					signal: `max(scale('yLinear', datum.${defaultBarProps.metric}), scale('yLinear', 0) + 13.5)`,
-					test: `datum.${defaultBarProps.metric} < 0`,
-				},
-				{ signal: `min(scale('yLinear', datum.${defaultBarProps.metric}), scale('yLinear', 0) - 13.5)` },
-			]);
-		});
-		test("dodged with secondary scale, should return '${value}1' field", () => {
-			expect(
-				getAnnotationMetricAxisPosition(defaultBarPropsWithSecondayColor, defaultAnnotationWidth)
-			).toStrictEqual([
-				{
-					signal: `max(scale('yLinear', datum.${defaultBarProps.metric}1), scale('yLinear', 0) + 13.5)`,
-					test: `datum.${defaultBarProps.metric}1 < 0`,
-				},
-				{ signal: `min(scale('yLinear', datum.${defaultBarProps.metric}1), scale('yLinear', 0) - 13.5)` },
-			]);
-		});
-	});
-
-	describe('getAnnotationMarks()', () => {
-		const annotationElement = createElement(Annotation, { textKey: 'textLabel' });
-		const annotationChildren = [...defaultBarProps.children, annotationElement];
-
-		const annotationElementWithStyles = createElement(Annotation, { textKey: 'textLabel', style: { width: 48 } });
-		const annotationChildrenWithStyles = [...defaultBarProps.children, annotationElementWithStyles];
-		test('defaultBarProps should return text marks when passed with Annotation', () => {
-			expect(
-				getAnnotationMarks(
-					{ ...defaultBarProps, children: annotationChildren },
-					FILTERED_TABLE,
-					stackedXScale,
-					defaultBarProps.dimension
-				)
-			).toStrictEqual(stackedAnnotationMarks);
-		});
-		test('horizontal orientation should return xc and yc opposite of vertical orientation', () => {
-			const annotationWidthSignal = `getLabelWidth(datum.textLabel, 'bold', 12) + 10`;
-			const props: BarSpecProps = { ...defaultBarProps, orientation: 'horizontal', children: annotationChildren };
-			const annotationMarks = getAnnotationMarks(props, FILTERED_TABLE, 'yBand', defaultBarProps.dimension);
-
-			expect(annotationMarks[0].encode?.enter?.yc).toStrictEqual({
-				scale: 'yBand',
-				field: 'category',
-				band: 0.5,
-			});
-			expect(annotationMarks[0].encode?.enter?.xc).toStrictEqual(
-				getAnnotationMetricAxisPosition(props, { signal: annotationWidthSignal })
-			);
-
-			expect(annotationMarks[1].encode?.enter?.y).toStrictEqual({ scale: 'yBand', field: 'category', band: 0.5 });
-			expect(annotationMarks[1].encode?.enter?.x).toStrictEqual(
-				getAnnotationMetricAxisPosition(props, { signal: annotationWidthSignal })
-			);
-		});
-		test('defaultBarProps with secondary scale should return text marks when passed with Annotation', () => {
-			expect(
-				getAnnotationMarks(
-					{ ...defaultBarPropsWithSecondayColor, children: annotationChildren },
-					FILTERED_TABLE,
-					stackedXScale,
-					defaultBarProps.dimension
-				)
-			).toStrictEqual(stackedAnnotationMarks);
-		});
-		test('dodged should return text marks when passed with Annotation', () => {
-			expect(
-				getAnnotationMarks(
-					{ ...defaultBarProps, type: 'dodged', children: annotationChildren },
-					`${defaultBarProps.name}_facet`,
-					dodgedXScale,
-					dodgedGroupField
-				)
-			).toStrictEqual(dodgedAnnotationMarks);
-		});
-		test('dodged with secondary series should return text marks when passed with Annotation', () => {
-			expect(
-				getAnnotationMarks(
-					{
-						...defaultBarPropsWithSecondayColor,
-						type: 'dodged',
-						children: annotationChildren,
-					},
-					`${defaultBarProps.name}_facet`,
-					dodgedXScale,
-					dodgedGroupField
-				)
-			).toStrictEqual(dodgedSubSeriesAnnotationMarks);
-		});
-
-		test('defaultBarProps returns fixed width annotation background when Annotation has style.width', () => {
-			expect(
-				getAnnotationMarks(
-					{ ...defaultBarProps, children: annotationChildrenWithStyles },
-					FILTERED_TABLE,
-					stackedXScale,
-					defaultBarProps.dimension
-				)
-			).toStrictEqual(stackedAnnotationMarksWithStyles);
-		});
-		test('defaultBarProps with secondary scale returns fixed width annotation background when Annotation has style.width', () => {
-			expect(
-				getAnnotationMarks(
-					{ ...defaultBarPropsWithSecondayColor, children: annotationChildrenWithStyles },
-					FILTERED_TABLE,
-					stackedXScale,
-					defaultBarProps.dimension
-				)
-			).toStrictEqual(stackedAnnotationMarksWithStyles);
-		});
-		test('dodged should returns fixed width annotation background when Annotation has style.width', () => {
-			expect(
-				getAnnotationMarks(
-					{ ...defaultBarProps, type: 'dodged', children: annotationChildrenWithStyles },
-					`${defaultBarProps.name}_facet`,
-					dodgedXScale,
-					`${defaultBarProps.name}_dodgeGroup`
-				)
-			).toStrictEqual(dodgedAnnotationMarksWithStyles);
 		});
 	});
 

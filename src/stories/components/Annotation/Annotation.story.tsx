@@ -41,12 +41,12 @@ const data = [
 	{ browser: 'Safari', value: 1, operatingSystem: 'Other', order: 0, percentLabel: '25%' },
 ];
 
-const barArgs: BarProps = { dimension: 'browser', order: 'order', color: 'operatingSystem' };
+const barArgs: BarProps = { orientation: 'horizontal', dimension: 'browser', order: 'order', color: 'operatingSystem' };
 
 const BarAnnotationStory: StoryFn<typeof Annotation> = (args): ReactElement => {
-	const chartProps = useChartProps({ data: data, width: 600, height: 600 });
+	const chartProps = useChartProps({ data: data, width: 800, height: 200 });
 	return (
-		<Chart {...chartProps}>
+		<Chart {...chartProps} debug>
 			<Bar {...barArgs}>
 				<Annotation {...args} />
 			</Bar>

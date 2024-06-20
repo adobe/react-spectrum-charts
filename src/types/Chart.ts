@@ -341,6 +341,7 @@ export type DualFacet = [string, string]; // two keys used for a secondary facet
 
 export interface AnnotationProps extends MarkProps {
 	textKey?: string;
+	/** @deprecated */
 	style?: AnnotationStyleProps;
 }
 

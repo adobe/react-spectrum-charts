@@ -12,6 +12,7 @@
 import { Align, Baseline, NumberValue, ScaleType } from 'vega';
 
 import {
+	AnnotationProps,
 	AreaProps,
 	AxisAnnotationChildElement,
 	AxisAnnotationProps,
@@ -107,6 +108,15 @@ export interface BarSpecProps
 	extends PartiallyRequired<BarProps & { colorScheme: ColorScheme; index: number }, BarPropsWithDefaults> {
 	markType: 'bar';
 	children: MarkChildElement[];
+}
+
+type AnnotationPropsWithDefaults = 'textKey';
+
+export interface AnnotationSpecProps extends PartiallyRequired<AnnotationProps, AnnotationPropsWithDefaults> {
+	barProps: BarSpecProps;
+	dataName: string;
+	dimensionField: string;
+	dimensionScaleName: string;
 }
 
 type ChartTooltipPropsWithDefaults = 'highlightBy';
