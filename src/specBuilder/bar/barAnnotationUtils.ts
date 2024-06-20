@@ -9,7 +9,6 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
 import { Annotation } from '@components/Annotation';
 import { ANNOTATION_FONT_SIZE, ANNOTATION_FONT_WEIGHT, ANNOTATION_PADDING, BACKGROUND_COLOR } from '@constants';
 import { GroupMark, NumericValueRef, ProductionRule, RectEncodeEntry, RectMark, TextMark } from 'vega';
@@ -66,6 +65,14 @@ const applyAnnotationPropDefaults = (
 	...props,
 });
 
+/**
+ * Gets the annotation marks for the bar chart. Returns an empty array if no annotation is provided on the bar children.
+ * @param barProps
+ * @param dataName
+ * @param dimensionScaleName
+ * @param dimensionName
+ * @returns GroupMark[]
+ */
 export const getAnnotationMarks = (
 	barProps: BarSpecProps,
 
@@ -89,6 +96,11 @@ export const getAnnotationMarks = (
 	];
 };
 
+/**
+ * Gets the annotation text mark for the bar chart
+ * @param annotationProps
+ * @returns TextMark
+ */
 const getAnnotationTextMark = ({
 	barProps,
 	dataName,
@@ -130,6 +142,11 @@ const getAnnotationTextMark = ({
 	};
 };
 
+/**
+ * Gets the annotation background mark
+ * @param annotationProps
+ * @returns RectMark
+ */
 const getAnnotationBackgroundMark = ({
 	barProps,
 	dimensionScaleName,
@@ -158,9 +175,19 @@ const getAnnotationBackgroundMark = ({
 	},
 });
 
+/**
+ * Gets the minimum band width needed to display the annotations based on the bar orientation
+ * @param orientation
+ * @returns number
+ */
 export const getMinBandwidth = (orientation: Orientation): number =>
 	orientation === 'vertical' ? 48 : ANNOTATION_FONT_SIZE + 2 * ANNOTATION_PADDING;
 
+/**
+ * Gets the x position encoding for the annotation background
+ * @param width
+ * @returns RectEncodeEntry
+ */
 export const getAnnotationXEncode = (width?: number): RectEncodeEntry => {
 	if (width) {
 		return {
@@ -176,9 +203,19 @@ export const getAnnotationXEncode = (width?: number): RectEncodeEntry => {
 
 export const getAnnotationWidth = (textKey: string, style?: AnnotationStyleProps): AnnotationWidth => {
 	if (style?.width) return { value: style.width };
-	return { signal: `getLabelWidth(datum.${textKey}, '${ANNOTATION_FONT_WEIGHT}', ${ANNOTATION_FONT_SIZE}) + 10` };
+	return {
+		signal: `getLabelWidth(datum.${textKey}, '${ANNOTATION_FONT_WEIGHT}', ${ANNOTATION_FONT_SIZE}) + ${
+			2 * ANNOTATION_PADDING
+		}`,
+	};
 };
 
+/**
+ * Offset calculation to make sure the annotation does not overlap the baseline
+ * @param barProps
+ * @param annotationWidth
+ * @returns string
+ */
 export const getAnnotationPositionOffset = (
 	{ orientation }: BarSpecProps,
 	annotationWidth: AnnotationWidth
@@ -198,6 +235,13 @@ export const getAnnotationPositionOffset = (
 	return `((${annotationWidth.signal}) / 2 + ${pixelGapFromBaseline})`;
 };
 
+/**
+ * Gets the metric position for the annotation text.
+ * This ensures that the annotation does not overlap the baseline.
+ * @param barProps
+ * @param annotationWidth
+ * @returns NumericValueref
+ */
 export const getAnnotationMetricAxisPosition = (
 	props: BarSpecProps,
 	annotationWidth: AnnotationWidth
