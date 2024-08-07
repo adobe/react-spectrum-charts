@@ -10,4 +10,16 @@
  * governing permissions and limitations under the License.
  */
 
-export * from './Combo'
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import { FC } from 'react';
+
+import { ComboProps } from '../../../types';
+
+const Combo: FC<ComboProps> = ({ name = 'combo0' }) => {
+	return null;
+};
+
+// displayName is used to validate the component type in the spec builder
+Combo.displayName = 'Combo';
+
+export { Combo };
