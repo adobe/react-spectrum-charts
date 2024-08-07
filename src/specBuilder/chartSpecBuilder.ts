@@ -31,6 +31,7 @@ import {
 	TABLE,
 } from '@constants';
 import { Area, Axis, Bar, Legend, Line, Scatter, Title } from '@rsc';
+import { Combo } from '@rsc/alpha';
 import { Donut } from '@rsc/rc';
 import colorSchemes from '@themes/colorSchemes';
 import { produce } from 'immer';
@@ -45,6 +46,7 @@ import {
 	ColorScale,
 	ColorScheme,
 	Colors,
+	ComboElement,
 	DonutElement,
 	LegendElement,
 	LineElement,
@@ -61,6 +63,7 @@ import {
 import { addArea } from './area/areaSpecBuilder';
 import { addAxis } from './axis/axisSpecBuilder';
 import { addBar } from './bar/barSpecBuilder';
+import { addCombo } from './combo/comboSpecBuilder';
 import { getSeriesIdTransform } from './data/dataUtils';
 import { addDonut } from './donut/donutSpecBuilder';
 import { setHoverOpacityForMarks } from './legend/legendHighlightUtils';
@@ -115,6 +118,7 @@ export function buildSpec({
 	buildOrder.set(Line, 0);
 	buildOrder.set(Donut, 0);
 	buildOrder.set(Scatter, 0);
+	buildOrder.set(Combo, 0);
 	buildOrder.set(Legend, 1);
 	buildOrder.set(Axis, 2);
 	buildOrder.set(Title, 3);
@@ -164,6 +168,8 @@ export function buildSpec({
 				case Title.displayName:
 					// No title count. There can only be one title.
 					return addTitle(acc, { ...(cur as TitleElement).props });
+				case Combo.displayName:
+					return addCombo(acc, { ...(cur as ComboElement).props });
 				default:
 					console.error(`Invalid component type: ${cur.type.displayName} is not a supported <Chart> child`);
 					return acc;
