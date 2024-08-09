@@ -42,7 +42,6 @@ const BasicComboStory: StoryFn<typeof Combo> = (args): ReactElement => {
 			<Combo {...args}>
 				<Bar dimension="datetime" metric="people" />
 				<Line dimension="datetime" metric="adoptionRate" color={{ value: 'indigo-900' }} />
-				<Line dimension="datetime" metric="adoptionRate" color={{ value: 'indigo-900' }} />
 			</Combo>
 		</Chart>
 	);
