@@ -12,8 +12,6 @@ jobs:
             - name: Checkout PR code
               uses: actions/checkout@v4
               with:
-                  repository: ${{ github.event.workflow_run.head_repository.full_name }}
-                  ref: ${{ github.event.workflow_run.head_branch }}
                   fetch-depth: 0
 
             - name: 'Download code coverage'
@@ -67,9 +65,7 @@ jobs:
                   git config user.name "evargast"
                   git config user.email "52969178+evargast@users.noreply.github.com"
 
-                  echo "Setting up remote"
-                  git remote set-url "origin" git@github.com:adobe/react-spectrum-charts.git
-
+                  # Fetch the existing gh-pages branch
                   echo "Fetching the existing gh-pages branch"
                   git fetch origin gh-pages
                   # Fetch the existing gh-pages branch
