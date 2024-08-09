@@ -80,6 +80,7 @@ jobs:
                   # Add, commit, and push changes
                   git add "${PR_NUMBER}/."
                   git commit -m "Update Storybook for ${PR_NUMBER}"
+                  git remote set-url "origin" git@github.com:adobe/react-spectrum-charts.git
                   git push -f origin gh-pages
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
