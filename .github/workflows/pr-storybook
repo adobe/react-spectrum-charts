@@ -1,0 +1,98 @@
+name: PR Post-Build Storybook
+on:
+    workflow_run:
+        workflows: [PR Build]
+        types: [completed]
+jobs:
+    storybook:
+        runs-on: ubuntu-latest
+        timeout-minutes: 30
+        if: github.event.workflow_run.conclusion == 'success'
+        steps:
+            - name: Checkout PR code
+              uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+
+            - name: 'Download code coverage'
+              uses: actions/github-script@v6
+              with:
+                  script: |
+                      let allArtifacts = await github.rest.actions.listWorkflowRunArtifacts({
+                         owner: context.repo.owner,
+                         repo: context.repo.repo,
+                         run_id: context.payload.workflow_run.id,
+                      });
+                      let matchArtifact = allArtifacts.data.artifacts.filter((artifact) => {
+                        return artifact.name == "rsc-code-coverage"
+                      })[0];
+                      let download = await github.rest.actions.downloadArtifact({
+                         owner: context.repo.owner,
+                         repo: context.repo.repo,
+                         artifact_id: matchArtifact.id,
+                         archive_format: 'zip',
+                      });
+                      let fs = require('fs');
+                      fs.writeFileSync(`${process.env.GITHUB_WORKSPACE}/rsc-code-coverage.zip`, Buffer.from(download.data));
+
+            - name: 'Unzip code coverage'
+              run: unzip rsc-code-coverage.zip
+
+            - name: Create and Upload Storybook to PR directory
+              run: |
+                  # Load the PR number from the file
+                  PR_NUMBER="PR-$(<pr/pr_number)"
+                  echo "PR_NUMBER: ${PR_NUMBER}"
+
+                  echo "Setting up git"
+                  git config user.name "evargast"
+                  git config user.email "52969178+evargast@users.noreply.github.com"
+
+                  # Fetch the existing gh-pages branch
+                  echo "Fetching the existing gh-pages branch"
+                  git fetch origin gh-pages
+
+                  # Checkout the existing gh-pages branch
+                  echo "Checking out the existing gh-pages branch"
+                  git checkout gh-pages
+
+                  # Remove the PR directory if it exists
+                  echo "Removing the PR directory if it exists"
+                  rm -rf "${PR_NUMBER}"
+
+                  # Create the PR directory
+                  echo "Creating the PR directory"
+                  mkdir "${PR_NUMBER}"
+
+                  # Copy the contents of dist-storybook to the directory
+                  echo "Copying the contents of dist-storybook to the directory"
+                  cp -r dist-storybook/* "${PR_NUMBER}/"
+
+                  echo "Removing node_modules and dist-storybook directories"
+                  rm -rf node_modules  # Explicitly remove the node_modules directory
+                  rm -rf dist-storybook # Explicitly remove the dist-storybook directory
+
+                  # Add, commit, and push changes
+                  echo "Adding, committing, and pushing changes"
+                  git add "${PR_NUMBER}/."
+                  git commit -m "Update Storybook for ${PR_NUMBER}"
+                  git push -f origin gh-pages
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+            - name: Add comment to the PR with Storybook URL
+              run: |
+                  # Load the PR number from the file
+                  PR_NUMBER="$(<pr/pr_number)"
+                  echo "PR_NUMBER: ${PR_NUMBER}"
+
+                  COMMENT_BODY="🎨 Storybook -> https://opensource.adobe.com/react-spectrum-charts/PR-${PR_NUMBER}"
+
+                  curl -sSL \
+                    -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+                    -X POST \
+                    -d '{"body":"'"${COMMENT_BODY}"'"}' \
+                    "https://api.github.com/repos/${{ github.repository }}/issues/${PR_NUMBER}/comments"
+
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
