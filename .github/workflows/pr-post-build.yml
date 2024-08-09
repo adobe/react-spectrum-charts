@@ -68,7 +68,6 @@ jobs:
                   # Fetch the existing gh-pages branch
                   echo "Fetching the existing gh-pages branch"
                   git fetch origin gh-pages
-                  # Fetch the existing gh-pages branch
 
                   # Checkout the existing gh-pages branch
                   echo "Checking out the existing gh-pages branch"
