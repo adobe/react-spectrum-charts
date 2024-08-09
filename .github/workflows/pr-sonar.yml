@@ -55,12 +55,6 @@ jobs:
                   echo "::set-output name=pr_branch::${PR_BRANCH}"
                   echo "::set-output name=pr_base::${PR_BASE}"
 
-            - name: Print workflow variables
-              run: |
-                  echo "PR_NUMBER: ${{ steps.setupVariables.outputs.pr_number }}"
-                  echo "PR_BRANCH: ${{ steps.setupVariables.outputs.pr_branch }}"
-                  echo "PR_BASE: ${{ steps.setupVariables.outputs.pr_base }}"
-
             - name: SonarCloud Scan
               uses: sonarsource/sonarcloud-github-action@master
               env:
@@ -72,14 +66,3 @@ jobs:
                       -Dsonar.pullrequest.key=${{ steps.setupVariables.outputs.pr_number }}
                       -Dsonar.pullrequest.branch=${{ steps.setupVariables.outputs.pr_branch }}
                       -Dsonar.pullrequest.base=${{ steps.setupVariables.outputs.pr_base }}
-            # - name: SonarCloud Scan
-            #   uses: sonarsource/sonarcloud-github-action@master
-            #   env:
-            #       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-            #       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-            #   with:
-            #       args: >
-            #           -Dsonar.scm.revision=${{ github.event.workflow_run.head_sha }}
-            #           -Dsonar.pullrequest.key=${{ github.event.workflow_run.pull_requests[0].number }}
-            #           -Dsonar.pullrequest.branch=${{ github.event.workflow_run.pull_requests[0].head.ref }}
-            #           -Dsonar.pullrequest.base=${{ github.event.workflow_run.pull_requests[0].base.ref }}
