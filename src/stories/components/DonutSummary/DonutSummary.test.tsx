@@ -24,14 +24,12 @@ describe('DonutSummary renders properly', () => {
 	test('metric value should be centered if there is not a label', async () => {
 		render(<NoLabel {...NoLabel.args} />);
 		const metricValue = await screen.findByText('40.4K');
-		screen.debug(metricValue);
 		expect(metricValue).toHaveAttribute('transform', 'translate(175,190)');
 	});
 
 	test('metric value should be above center if there is a label', async () => {
 		render(<Basic {...Basic.args} />);
 		const metricValue = await screen.findByText('40.4K');
-		screen.debug(metricValue);
 		expect(metricValue).toHaveAttribute('transform', 'translate(175,175)');
 	});
 
