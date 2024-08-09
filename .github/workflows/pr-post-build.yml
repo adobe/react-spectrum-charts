@@ -55,7 +55,7 @@ jobs:
             - name: Create and Upload Storybook to PR directory
               run: |
                   # Load the PR number from the file
-                  PR_NUMBER="PR-$(<pr/pr_number)"
+                  echo PR_NUMBER="PR-$(<pr/pr_number)"
 
                   git config user.name "evargast"
                   git config user.email "52969178+evargast@users.noreply.github.com"
