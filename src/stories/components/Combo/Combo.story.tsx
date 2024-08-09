@@ -48,6 +48,7 @@ const BasicComboStory: StoryFn<typeof Combo> = (args): ReactElement => {
 };
 
 const Basic = bindWithProps(BasicComboStory);
+
 Basic.args = {};
 
 export { Basic };
