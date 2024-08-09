@@ -55,32 +55,42 @@ jobs:
             - name: Create and Upload Storybook to PR directory
               run: |
                   # Load the PR number from the file
-                  echo PR_NUMBER="PR-$(<pr/pr_number)"
+                  PR_NUMBER="PR-$(<pr/pr_number)"
+                  echo "PR_NUMBER: ${PR_NUMBER}"
 
+                  echo "Setting up git"
                   git config user.name "evargast"
                   git config user.email "52969178+evargast@users.noreply.github.com"
 
+                  echo "Setting up remote"
                   git remote set-url "origin" git@github.com:adobe/react-spectrum-charts.git
 
-                  # Fetch the existing gh-pages branch
+                  echo "Fetching the existing gh-pages branch"
                   git fetch origin gh-pages
+                  # Fetch the existing gh-pages branch
 
                   # Checkout the existing gh-pages branch
+                  echo "Checking out the existing gh-pages branch"
                   git checkout gh-pages
 
                   # Remove the PR directory if it exists
+                  echo "Removing the PR directory if it exists"
                   rm -rf "${PR_NUMBER}"
 
                   # Create the PR directory
+                  echo "Creating the PR directory"
                   mkdir "${PR_NUMBER}"
 
                   # Copy the contents of dist-storybook to the directory
+                  echo "Copying the contents of dist-storybook to the directory"
                   cp -r dist-storybook/* "${PR_NUMBER}/"
 
+                  echo "Removing node_modules and dist-storybook directories"
                   rm -rf node_modules  # Explicitly remove the node_modules directory
                   rm -rf dist-storybook # Explicitly remove the dist-storybook directory
 
                   # Add, commit, and push changes
+                  echo "Adding, committing, and pushing changes"
                   git add "${PR_NUMBER}/."
                   git commit -m "Update Storybook for ${PR_NUMBER}"
                   git push -f origin gh-pages
