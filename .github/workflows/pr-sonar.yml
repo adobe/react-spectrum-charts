@@ -43,7 +43,6 @@ jobs:
             - name: Setup workflow variables
               id: setupVariables
               run: |
-<<<<<<< HEAD
                   # Load the PR number from the file
                   PR_NUMBER="$(<pr/pr_number)"
                   echo "PR_NUMBER: ${PR_NUMBER}"
@@ -61,13 +60,6 @@ jobs:
                   echo "PR_NUMBER: ${{ steps.setupVariables.outputs.pr_number }}"
                   echo "PR_BRANCH: ${{ steps.setupVariables.outputs.pr_branch }}"
                   echo "PR_BASE: ${{ steps.setupVariables.outputs.pr_base }}"
-=======
-                  echo "workflow_run: ${{ github.event.workflow_run }}"
-                  echo "revision: ${{ github.event.workflow_run.head_sha }}"
-                  echo "pull request number: ${{ github.event.workflow_run.pull_requests[0].number }}"
-                  echo "pull request branch: ${{ github.event.workflow_run.pull_requests[0].head.ref }}"
-                  echo "pull request base: ${{ github.event.workflow_run.pull_requests[0].base.ref }}"
->>>>>>> main
 
             - name: SonarCloud Scan
               uses: sonarsource/sonarcloud-github-action@master
