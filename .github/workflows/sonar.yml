@@ -36,7 +36,7 @@ jobs:
                       let fs = require('fs');
                       fs.writeFileSync(`${process.env.GITHUB_WORKSPACE}/rsc-code-coverage.zip`, Buffer.from(download.data));
             - name: 'Unzip code coverage'
-              run: unzip rsc-code-coverage.zip -d coverage
+              run: unzip rsc-code-coverage.zip
             - name: SonarCloud Scan
               uses: sonarsource/sonarcloud-github-action@master
               env:

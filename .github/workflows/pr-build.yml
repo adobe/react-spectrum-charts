@@ -39,8 +39,8 @@ jobs:
               with:
                   name: rsc-code-coverage
                   path: |
-                    coverage/lcov.info
-                    test-report.xml
+                      coverage/lcov.info
+                      test-report.xml
 
             - name: Build 🛠️
               run: yarn build
