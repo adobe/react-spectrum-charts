@@ -40,6 +40,13 @@ jobs:
             - name: Build Storybook
               run: yarn build:storybook
 
+            - name: Save PR number
+              env:
+                  PR_NUMBER: ${{ github.event.number }}
+              run: |
+                  mkdir -p ./pr
+                  echo $PR_NUMBER > ./pr/pr_number
+
             - name: Upload code coverage and storybook
               uses: actions/upload-artifact@v4
               with:
@@ -48,6 +55,7 @@ jobs:
                       coverage/lcov.info
                       test-report.xml
                       dist-storybook/*
+                      pr/
 
             # - name: Create and Upload Storybook to PR directory
             #   run: |

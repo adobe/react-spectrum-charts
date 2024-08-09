@@ -54,10 +54,13 @@ jobs:
 
             - name: Create and Upload Storybook to PR directory
               run: |
-                  PR_NUMBER="PR-${{ github.event.workflow_run.pull_requests[0].number }}"
+                  # Load the PR number from the file
+                  PR_NUMBER="PR-$(<pr/pr_number)"
 
                   git config user.name "evargast"
                   git config user.email "52969178+evargast@users.noreply.github.com"
+
+                  git remote set-url "origin" git@github.com:adobe/react-spectrum-charts.git
 
                   # Fetch the existing gh-pages branch
                   git fetch origin gh-pages
@@ -80,14 +83,14 @@ jobs:
                   # Add, commit, and push changes
                   git add "${PR_NUMBER}/."
                   git commit -m "Update Storybook for ${PR_NUMBER}"
-                  git remote set-url "origin" git@github.com:adobe/react-spectrum-charts.git
                   git push -f origin gh-pages
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
             - name: Add comment to the PR with Storybook URL
               run: |
-                  PR_NUMBER="${{ github.event.workflow_run.pull_requests[0].number }}"
+                  # Load the PR number from the file
+                  PR_NUMBER="PR-$(<pr/pr_number)"
                   COMMENT_BODY="🎨 Storybook -> https://opensource.adobe.com/react-spectrum-charts/PR-${PR_NUMBER}"
 
                   curl -sSL \
