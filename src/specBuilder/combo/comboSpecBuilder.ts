@@ -21,17 +21,7 @@ export const addCombo = produce<Spec, [ComboProps & { colorScheme?: ColorScheme;
 		spec = [...sanitizedChildren]
 			.sort((a, b) => buildOrder.get(a.type) - buildOrder.get(b.type))
 			.reduce((acc: Spec, cur) => {
-				if (!('displayName' in cur.type)) {
-					console.error('Invalid component type. Component is missing display name.');
-					return acc;
-				}
-
-				/**
-				 * type.displayName is used because it doesn't get minified, unlike type.name
-				 * If we simply compare cur.type to the component,
-				 * that uses referential equality which fails in production when the component is imported from a different module like ./alpha
-				 */
-				const displayName = cur.type.displayName;
+				const displayName = (cur.type as React.ComponentType).displayName;
 				switch (displayName) {
 					case Bar.displayName:
 						barCount++;
