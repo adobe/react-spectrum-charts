@@ -22,10 +22,11 @@ export const addCombo = produce<Spec, [ComboProps & { colorScheme?: ColorScheme;
 			.sort((a, b) => buildOrder.get(a.type) - buildOrder.get(b.type))
 			.reduce((acc: Spec, cur) => {
 				const displayName = getDisplayName(cur);
+				const barElement = cur as BarElement;
+				const lineElement = cur as LineElement;
 				switch (displayName) {
 					case Bar.displayName:
 						barCount++;
-						const barElement = cur as BarElement;
 						return addBar(acc, {
 							...barElement.props,
 							colorScheme,
@@ -34,7 +35,6 @@ export const addCombo = produce<Spec, [ComboProps & { colorScheme?: ColorScheme;
 						});
 					case Line.displayName:
 						lineCount++;
-						const lineElement = cur as LineElement;
 						return addLine(acc, {
 							...lineElement.props,
 							colorScheme,
