@@ -54,7 +54,7 @@ jobs:
             - name: Upload code coverage and storybook
               uses: actions/upload-artifact@v4
               with:
-                  name: rsc-code-coverage
+                  name: rsc-pr-build-artifacts
                   path: |
                       coverage/lcov.info
                       test-report.xml
