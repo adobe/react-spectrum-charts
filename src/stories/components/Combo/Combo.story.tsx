@@ -21,7 +21,7 @@ import { bindWithProps } from '@test-utils';
 import { ChartProps } from '../../../types';
 
 export default {
-	title: 'RSC/Combo',
+	title: 'RSC/Combo (alpha)',
 	component: Combo,
 };
 
