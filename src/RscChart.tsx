@@ -141,8 +141,8 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 		useChartImperativeHandle(forwardedRef, { chartView, title });
 
 		const {
-			hiddenSeriesState,
-			setHiddenSeries,
+			legendHiddenSeries,
+			setLegendHiddenSeries,
 			descriptions: legendDescriptions,
 			isToggleable: legendIsToggleable,
 			onClick: onLegendClick,
@@ -175,7 +175,6 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 						<LegendTooltip
 							value={value}
 							descriptions={legendDescriptions}
-							// TODO: support multiple legends
 							domain={chartView.current?.scale('legend0Entries').domain()}
 						/>
 					);
@@ -212,13 +211,13 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 				backgroundColor: getColorValue('gray-50', colorScheme),
 			};
 			if (legendIsToggleable) {
-				signals.hiddenSeries = hiddenSeriesState;
+				signals.hiddenSeries = legendHiddenSeries;
 			}
 			signals[SELECTED_ITEM] = selectedData?.[MARK_ID] ?? null;
 			signals[SELECTED_SERIES] = selectedData?.[SERIES_ID] ?? null;
 
 			return signals;
-		}, [colorScheme, hiddenSeriesState, legendIsToggleable]);
+		}, [colorScheme, legendHiddenSeries, legendIsToggleable]);
 
 		return (
 			<>
@@ -262,7 +261,7 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 						});
 						if (popovers.length || legendIsToggleable || onLegendClick) {
 							if (legendIsToggleable) {
-								view.signal('hiddenSeries', hiddenSeriesState);
+								view.signal('hiddenSeries', legendHiddenSeries);
 							}
 							setSelectedSignals({
 								selectedData: selectedData.current,
@@ -272,12 +271,12 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 								'click',
 								getOnMarkClickCallback(
 									chartView,
-									hiddenSeriesState,
+									legendHiddenSeries,
 									chartId,
 									selectedData,
 									selectedDataBounds,
 									selectedDataName,
-									setHiddenSeries,
+									setLegendHiddenSeries,
 									legendIsToggleable,
 									onLegendClick
 								)
