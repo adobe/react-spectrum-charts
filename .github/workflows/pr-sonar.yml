@@ -26,7 +26,7 @@ jobs:
                          run_id: context.payload.workflow_run.id,
                       });
                       let matchArtifact = allArtifacts.data.artifacts.filter((artifact) => {
-                        return artifact.name == "rsc-code-coverage"
+                        return artifact.name == "rsc-pr-build-artifacts"
                       })[0];
                       let download = await github.rest.actions.downloadArtifact({
                          owner: context.repo.owner,
@@ -35,25 +35,25 @@ jobs:
                          archive_format: 'zip',
                       });
                       let fs = require('fs');
-                      fs.writeFileSync(`${process.env.GITHUB_WORKSPACE}/rsc-code-coverage.zip`, Buffer.from(download.data));
+                      fs.writeFileSync(`${process.env.GITHUB_WORKSPACE}/rsc-pr-build-artifacts.zip`, Buffer.from(download.data));
 
             - name: 'Unzip code coverage'
-              run: unzip rsc-code-coverage.zip
+              run: unzip rsc-pr-build-artifacts.zip
 
             - name: Setup workflow variables
               id: setupVariables
               run: |
                   # Load the PR number from the file
-                  PR_NUMBER="$(<pr/pr_number)"
-                  echo "PR_NUMBER: ${PR_NUMBER}"
-                  PR_BRANCH="$(<pr/pr_branch)"
-                  echo "PR_BRANCH: ${PR_BRANCH}"
-                  PR_BASE="$(<pr/pr_base)"
-                  echo "PR_BASE: ${PR_BASE}"
+                  pr_number="$(<pr/pr_number)"
+                  echo "PR_NUMBER: ${pr_number}"
+                  pr_branch="$(<pr/pr_branch)"
+                  echo "PR_BRANCH: ${pr_branch}"
+                  pr_base="$(<pr/pr_base)"
+                  echo "PR_BASE: ${pr_base}"
 
-                  echo "::set-output name=pr_number::${PR_NUMBER}"
-                  echo "::set-output name=pr_branch::${PR_BRANCH}"
-                  echo "::set-output name=pr_base::${PR_BASE}"
+                  echo "PR_NUMBER=${pr_number}" >> $GITHUB_ENV
+                  echo "PR_BRANCH=${pr_branch}" >> $GITHUB_ENV
+                  echo "PR_BASE=${pr_base}" >> $GITHUB_ENV
 
             - name: SonarCloud Scan
               uses: sonarsource/sonarcloud-github-action@master
@@ -63,6 +63,6 @@ jobs:
               with:
                   args: >
                       -Dsonar.scm.revision=${{ github.event.workflow_run.head_sha }}
-                      -Dsonar.pullrequest.key=${{ steps.setupVariables.outputs.pr_number }}
-                      -Dsonar.pullrequest.branch=${{ steps.setupVariables.outputs.pr_branch }}
-                      -Dsonar.pullrequest.base=${{ steps.setupVariables.outputs.pr_base }}
+                      -Dsonar.pullrequest.key=${{ env.PR_NUMBER }}
+                      -Dsonar.pullrequest.branch=${{ env.PR_BRANCH }}
+                      -Dsonar.pullrequest.base=${{ env.PR_BASE }}

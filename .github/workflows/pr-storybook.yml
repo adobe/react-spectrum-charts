@@ -24,7 +24,7 @@ jobs:
                          run_id: context.payload.workflow_run.id,
                       });
                       let matchArtifact = allArtifacts.data.artifacts.filter((artifact) => {
-                        return artifact.name == "rsc-code-coverage"
+                        return artifact.name == "rsc-pr-build-artifacts"
                       })[0];
                       let download = await github.rest.actions.downloadArtifact({
                          owner: context.repo.owner,
@@ -33,10 +33,10 @@ jobs:
                          archive_format: 'zip',
                       });
                       let fs = require('fs');
-                      fs.writeFileSync(`${process.env.GITHUB_WORKSPACE}/rsc-code-coverage.zip`, Buffer.from(download.data));
+                      fs.writeFileSync(`${process.env.GITHUB_WORKSPACE}/rsc-pr-build-artifacts.zip`, Buffer.from(download.data));
 
             - name: 'Unzip code coverage'
-              run: unzip rsc-code-coverage.zip
+              run: unzip rsc-pr-build-artifacts.zip
 
             - name: Create and Upload Storybook to PR directory
               run: |
