@@ -42,6 +42,7 @@ export type TrendlineAnnotationElement = ReactElement<
 	JSXElementConstructor<TrendlineAnnotationProps>
 >;
 export type TrendlineElement = ReactElement<TrendlineProps, JSXElementConstructor<TrendlineProps>>;
+export type ComboElement = ReactElement<ComboProps, JSXElementConstructor<ComboProps>>;
 
 export type SimpleData = { [key: string]: unknown };
 export type ChartData = SimpleData | Data;
@@ -714,6 +715,10 @@ export type AxisAnnotationOptions = {
 	color?: SpectrumColor | string;
 };
 
+export interface ComboProps extends BaseProps {
+	children?: Children<ComboChildElement>;
+}
+
 export interface MarkBounds {
 	x1: number;
 	x2: number;
@@ -760,7 +765,8 @@ export type ChartChildElement =
 	| LegendElement
 	| LineElement
 	| ScatterElement
-	| TitleElement;
+	| TitleElement
+	| ComboElement;
 export type MarkChildElement =
 	| AnnotationElement
 	| ChartTooltipElement
@@ -770,4 +776,5 @@ export type MarkChildElement =
 	| DonutSummaryElement
 	| SegmentLabelElement
 	| TrendlineElement;
+export type ComboChildElement = LineElement | BarElement;
 export type RscElement = ChartChildElement | MarkChildElement;

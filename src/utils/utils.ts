@@ -31,6 +31,7 @@ import {
 	TrendlineAnnotation,
 } from '@rsc';
 import { Donut, DonutSummary, SegmentLabel } from '@rsc/rc';
+import { Combo } from '@rsc/alpha';
 import { View } from 'vega';
 
 import {
@@ -97,6 +98,7 @@ export const sanitizeRscChartChildren = (children: unknown): ChartChildElement[]
 		Line.displayName,
 		Scatter.displayName,
 		Title.displayName,
+		Combo.displayName,
 	] as string[];
 	return toArray(children)
 		.flat()

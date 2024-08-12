@@ -1035,3 +1035,13 @@ export const stockPriceData = [
 	{ date: 'June 28, 2023', timestamp: 1687910400000, price: 482.429993, stock: 'ADBE' },
 	{ date: 'June 29, 2023', timestamp: 1687996800000, price: 483.769989, stock: 'ADBE' },
 ];
+
+export const peopleAdoptionComboData = [
+	{ datetime: 1667890800000, people: 1, adoptionRate: 0.2 },
+	{ datetime: 1667977200000, people: 2, adoptionRate: 0.4 },
+	{ datetime: 1668063600000, people: 3, adoptionRate: 0.6 },
+	{ datetime: 1668150000000, people: 2, adoptionRate: 0.4 },
+	{ datetime: 1668236400000, people: 1, adoptionRate: 0.4 },
+	{ datetime: 1668322800000, people: 3, adoptionRate: 0.8 },
+	{ datetime: 1668409200000, people: 2, adoptionRate: 0.6 },
+];
