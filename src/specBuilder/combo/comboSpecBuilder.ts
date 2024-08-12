@@ -6,7 +6,7 @@ import { sanitizeRscChartChildren, toCamelCase } from '@utils';
 import { produce } from 'immer';
 import { Spec } from 'vega';
 
-import { BarElement, ColorScheme, ComboChildElement, ComboProps, LineElement } from '../../types';
+import { BarElement, ChartChildElement, ColorScheme, ComboChildElement, ComboProps, LineElement } from '../../types';
 
 export const addCombo = produce<Spec, [ComboProps & { colorScheme?: ColorScheme; index?: number }]>(
 	(spec, { children = [], colorScheme = DEFAULT_COLOR_SCHEME, index = 0, name }) => {
@@ -21,7 +21,7 @@ export const addCombo = produce<Spec, [ComboProps & { colorScheme?: ColorScheme;
 		spec = [...sanitizedChildren]
 			.sort((a, b) => buildOrder.get(a.type) - buildOrder.get(b.type))
 			.reduce((acc: Spec, cur) => {
-				const displayName = (cur.type as React.ComponentType).displayName;
+				const displayName = getDisplayName(cur);
 				switch (displayName) {
 					case Bar.displayName:
 						barCount++;
@@ -59,6 +59,8 @@ export const getComboChildName = (cur: ComboChildElement, comboName: string, ind
 	if (cur.props.name) {
 		return cur.props.name;
 	}
-	const displayName = (cur.type as React.ComponentType).displayName;
+	const displayName = getDisplayName(cur);
 	return toCamelCase(`${comboName}_${displayName}${index}`);
 };
+
+const getDisplayName = (cur: ChartChildElement) => (cur.type as React.ComponentType).displayName;
