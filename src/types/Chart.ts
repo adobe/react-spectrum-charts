@@ -717,6 +717,8 @@ export type AxisAnnotationOptions = {
 
 export interface ComboProps extends BaseProps {
 	children?: Children<ComboChildElement>;
+	/** Data field that the metrics are trended against (x-axis for horizontal orientation) */
+	dimension?: string;
 }
 
 export interface MarkBounds {
