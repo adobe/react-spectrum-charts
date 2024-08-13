@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { DEFAULT_COLOR_SCHEME } from '@constants';
+import { DEFAULT_COLOR_SCHEME, DEFAULT_TIME_DIMENSION } from '@constants';
 import { Bar, Line } from '@rsc';
 import { addBar } from '@specBuilder/bar/barSpecBuilder';
 import { addLine } from '@specBuilder/line/lineSpecBuilder';
@@ -20,14 +20,17 @@ import { Spec } from 'vega';
 import { BarElement, ChartChildElement, ColorScheme, ComboChildElement, ComboProps, LineElement } from '../../types';
 
 export const addCombo = produce<Spec, [ComboProps & { colorScheme?: ColorScheme; index?: number }]>(
-	(spec, { children = [], colorScheme = DEFAULT_COLOR_SCHEME, index = 0, name }) => {
+	(
+		spec,
+		{ children = [], colorScheme = DEFAULT_COLOR_SCHEME, index = 0, name, dimension = DEFAULT_TIME_DIMENSION }
+	) => {
 		const buildOrder = new Map();
 		buildOrder.set(Bar, 0);
 		buildOrder.set(Line, 0);
 
 		let { barCount, lineCount } = initializeComponentCounts();
 		const sanitizedChildren = sanitizeRscChartChildren(children);
-		const comboName = toCamelCase(name || `combo${index}`);
+		const comboName = toCamelCase(name ?? `combo${index}`);
 
 		spec = [...sanitizedChildren]
 			.sort((a, b) => buildOrder.get(a.type) - buildOrder.get(b.type))
@@ -43,6 +46,7 @@ export const addCombo = produce<Spec, [ComboProps & { colorScheme?: ColorScheme;
 							colorScheme,
 							index: barCount,
 							name: getComboChildName(barElement, comboName, barCount),
+							dimension: getDimension(barElement, dimension),
 						});
 					case Line.displayName:
 						lineCount++;
@@ -51,6 +55,7 @@ export const addCombo = produce<Spec, [ComboProps & { colorScheme?: ColorScheme;
 							colorScheme,
 							index: lineCount,
 							name: getComboChildName(lineElement, comboName, lineCount),
+							dimension: getDimension(lineElement, dimension),
 						});
 					default:
 						console.error(`Invalid component type: ${displayName} is not a supported <Combo> child`);
@@ -75,3 +80,5 @@ export const getComboChildName = (cur: ComboChildElement, comboName: string, ind
 };
 
 const getDisplayName = (cur: ChartChildElement) => (cur.type as React.ComponentType).displayName;
+
+const getDimension = (cur: ComboChildElement, dimension?: string) => cur.props.dimension ?? dimension;
