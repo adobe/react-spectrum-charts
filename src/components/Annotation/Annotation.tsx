@@ -15,7 +15,7 @@ import { FC } from 'react';
 
 import { AnnotationProps } from '../../types';
 
-const Annotation: FC<AnnotationProps> = ({ textKey = 'annotation', style }) => {
+const Annotation: FC<AnnotationProps> = ({ textKey = 'annotation' }) => {
 	return null;
 };
 
