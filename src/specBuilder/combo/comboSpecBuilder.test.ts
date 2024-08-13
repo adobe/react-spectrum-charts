@@ -39,21 +39,22 @@ describe('comboSpecBuilder', () => {
 				{
 					children: [
 						createElement(Bar, {
-							dimension: 'datetime',
 							metric: 'people',
 						}),
-
 						createElement(Line, {
 							color: { value: 'indigo-900' },
-							dimension: 'datetime',
 							metric: 'adoptionRate',
 						}),
 					],
+					dimension: 'datetime',
 				}
 			);
 
 			expect(addBar).toHaveBeenCalledTimes(1);
+			expect(getCallParams(addBar).dimension).toEqual('datetime');
+
 			expect(addLine).toHaveBeenCalledTimes(1);
+			expect(getCallParams(addLine).dimension).toEqual('datetime');
 		});
 
 		it('should skip invalid children', () => {
@@ -63,6 +64,13 @@ describe('comboSpecBuilder', () => {
 					children: [createElement(Axis)],
 				}
 			);
+
+			expect(addBar).not.toHaveBeenCalled();
+			expect(addLine).not.toHaveBeenCalled();
+		});
+
+		it('should do nothing if no children', () => {
+			addCombo({}, {});
 
 			expect(addBar).not.toHaveBeenCalled();
 			expect(addLine).not.toHaveBeenCalled();
@@ -84,4 +92,6 @@ describe('comboSpecBuilder', () => {
 			expect(getComboChildName(child, 'combo1', 1)).toEqual('combo1Line1');
 		});
 	});
+
+	const getCallParams = (mockFn: unknown) => (mockFn as jest.Mock).mock.calls[0][1];
 });
