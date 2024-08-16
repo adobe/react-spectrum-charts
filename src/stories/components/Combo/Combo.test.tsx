@@ -18,7 +18,7 @@ import { findAllMarksByGroupName, findChart, render } from '@test-utils';
 import { Basic } from './Combo.story';
 
 describe('Combo', () => {
-	// Combo is not a real React component. This is test just provides test coverage for sonarqube
+	// Combo is not a real React component. This test just provides test coverage for sonarqube
 	test('Combo pseudo element', () => {
 		render(<Combo />);
 	});
