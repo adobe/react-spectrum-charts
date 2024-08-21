@@ -13,9 +13,11 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { FC } from 'react';
 
+import { DEFAULT_TIME_DIMENSION } from '@constants';
+
 import { ComboProps } from '../../../types';
 
-const Combo: FC<ComboProps> = ({ name = 'combo0' }) => {
+const Combo: FC<ComboProps> = ({ name = 'combo0', dimension = DEFAULT_TIME_DIMENSION }) => {
 	return null;
 };
 

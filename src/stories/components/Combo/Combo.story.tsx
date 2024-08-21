@@ -40,8 +40,8 @@ const BasicComboStory: StoryFn<typeof Combo> = (args): ReactElement => {
 			<Axis position="right" title="Adoption Rate" />
 			<Axis position="bottom" labelFormat="time" baseline ticks />
 			<Combo {...args}>
-				<Bar dimension="datetime" metric="people" />
-				<Line dimension="datetime" metric="adoptionRate" color={{ value: 'indigo-900' }} />
+				<Bar metric="people" />
+				<Line metric="adoptionRate" color={{ value: 'indigo-900' }} />
 			</Combo>
 		</Chart>
 	);
@@ -49,6 +49,9 @@ const BasicComboStory: StoryFn<typeof Combo> = (args): ReactElement => {
 
 const Basic = bindWithProps(BasicComboStory);
 
-Basic.args = {};
+Basic.args = {
+	name: 'combo0',
+	dimension: 'datetime',
+};
 
 export { Basic };
