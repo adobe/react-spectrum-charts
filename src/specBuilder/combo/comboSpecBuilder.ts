@@ -30,7 +30,7 @@ export const addCombo = produce<Spec, [ComboProps & { colorScheme?: ColorScheme;
 
 		let { barCount, lineCount } = initializeComponentCounts();
 		const sanitizedChildren = sanitizeRscChartChildren(children);
-		const comboName = toCamelCase(name ?? `combo${index}`);
+		const comboName = toCamelCase(name || `combo${index}`);
 
 		spec = [...sanitizedChildren]
 			.sort((a, b) => buildOrder.get(a.type) - buildOrder.get(b.type))
