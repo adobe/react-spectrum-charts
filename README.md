@@ -52,13 +52,13 @@
 
 #### npm
 
-```
+```bash
 npm install @adobe/react-spectrum-charts @adobe/react-spectrum vega vega-lite
 ```
 
 #### yarn
 
-```
+```bash
 yarn add @adobe/react-spectrum-charts @adobe/react-spectrum vega vega-lite
 ```
 
@@ -70,7 +70,7 @@ Each chart is wrapped in the `<Chart/>` component. The child components and thei
 
 ### Example
 
-```
+```ts
 import React from 'react';
 import {Axis, Bar, Legend, Chart} from '@adobe/react-spectrum-charts';
 
