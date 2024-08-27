@@ -116,7 +116,7 @@ export const stackedLabelWithStyles = {
 	type: 'rect',
 	from: { data: FILTERED_TABLE },
 	name: 'bar0_annotationBackground',
-	interactive: false,
+	interactive: true,
 
 	encode: {
 		enter: {
@@ -144,7 +144,7 @@ export const stackedLabelBackground = {
 	type: 'rect',
 	from: { data: FILTERED_TABLE },
 	name: 'bar0_annotationBackground',
-	interactive: false,
+	interactive: true,
 
 	encode: {
 		enter: {
@@ -172,7 +172,7 @@ export const stackedLabelText = {
 	type: 'text',
 	from: { data: FILTERED_TABLE },
 	name: 'bar0_annotationText',
-	interactive: false,
+	interactive: true,
 
 	encode: {
 		enter: {
