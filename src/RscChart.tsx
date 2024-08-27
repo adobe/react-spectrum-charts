@@ -27,6 +27,7 @@ import {
 } from '@constants';
 import useChartImperativeHandle from '@hooks/useChartImperativeHandle';
 import useLegend from '@hooks/useLegend';
+import useMarkOnClicks from '@hooks/useMarkOnClicks';
 import usePopoverAnchorStyle from '@hooks/usePopoverAnchorStyle';
 import usePopovers, { PopoverDetail } from '@hooks/usePopovers';
 import useSpec from '@hooks/useSpec';
@@ -152,6 +153,7 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 
 		const tooltips = useTooltips(sanitizedChildren);
 		const popovers = usePopovers(sanitizedChildren);
+		const markOnClickCallbacks = useMarkOnClicks(sanitizedChildren);
 
 		// gets the correct css style to display the anchor in the correct position
 		const targetStyle = usePopoverAnchorStyle(
@@ -259,7 +261,7 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 								tooltipHandler.call(this, event, item, value);
 							}
 						});
-						if (popovers.length || legendIsToggleable || onLegendClick) {
+						if (popovers.length || markOnClickCallbacks.length || legendIsToggleable || onLegendClick) {
 							if (legendIsToggleable) {
 								view.signal('hiddenSeries', legendHiddenSeries);
 							}
