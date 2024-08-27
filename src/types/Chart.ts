@@ -750,8 +750,6 @@ export type ColorScheme = 'light' | 'dark';
 
 export type TooltipHandler = (datum: Datum) => ReactNode;
 
-export type MarkClickHandler = (datum: Datum) => ReactNode;
-
 export type PopoverHandler = (datum: Datum, close: () => void) => ReactNode;
 
 export type AxisAnnotationClickHandler = (annotations) => ReactNode;

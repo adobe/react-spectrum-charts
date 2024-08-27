@@ -79,6 +79,7 @@ const Dodged = bindWithProps<BarProps>(BarStory);
 Dodged.args = {
 	type: 'dodged',
 	dimension: 'segment',
+	onClick: undefined,
 	order: 'order',
 	color: 'bucket',
 	trellis: 'event',
@@ -92,6 +93,7 @@ HorizontalBarHorizontalTrellis.args = {
 	type: 'stacked',
 	trellis: 'event',
 	dimension: 'segment',
+	onClick: undefined,
 	color: 'bucket',
 	order: 'order',
 	orientation: 'horizontal',

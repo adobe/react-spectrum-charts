@@ -39,12 +39,14 @@ const Basic = bindWithProps(BarStory);
 Basic.args = {
 	dimension: 'browser',
 	metric: 'downloads',
+	onClick: undefined,
 };
 
 const Horizontal = bindWithProps(BarStory);
 Horizontal.args = {
 	dimension: 'browser',
 	metric: 'downloads',
+	onClick: undefined,
 	orientation: 'horizontal',
 };
 
@@ -52,6 +54,7 @@ const LineType = bindWithProps(BarStory);
 LineType.args = {
 	dimension: 'browser',
 	metric: 'downloads',
+	onClick: undefined,
 	opacity: { value: 0.75 },
 	lineType: { value: 'dashed' },
 	lineWidth: 2,
@@ -61,6 +64,7 @@ const Opacity = bindWithProps(BarStory);
 Opacity.args = {
 	dimension: 'browser',
 	metric: 'downloads',
+	onClick: undefined,
 	opacity: { value: 0.75 },
 };
 
@@ -68,6 +72,7 @@ const PaddingRatio = bindWithProps(BarStory);
 PaddingRatio.args = {
 	dimension: 'browser',
 	metric: 'downloads',
+	onClick: undefined,
 	paddingRatio: 0.2,
 };
 
@@ -76,12 +81,14 @@ WithAnnotation.args = {
 	dimension: 'browser',
 	children: createElement(Annotation, { textKey: 'percentLabel' }),
 	metric: 'downloads',
+	onClick: undefined,
 };
 
 const HasSquareCorners = bindWithProps(BarStory);
 HasSquareCorners.args = {
 	dimension: 'browser',
 	metric: 'downloads',
+	onClick: undefined,
 	hasSquareCorners: true,
 };
 

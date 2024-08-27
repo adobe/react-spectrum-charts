@@ -60,6 +60,7 @@ const Basic = bindWithProps(BarStory);
 Basic.args = {
 	dimension: 'browser',
 	order: 'order',
+	onClick: undefined,
 	color: 'operatingSystem',
 };
 
@@ -67,6 +68,7 @@ const WithBarLabels = bindWithProps(BarStory);
 WithBarLabels.args = {
 	dimension: 'browser',
 	order: 'order',
+	onClick: undefined,
 	color: 'operatingSystem',
 	children: createElement(Annotation, { textKey: 'percentLabel' }),
 };
@@ -75,6 +77,7 @@ const NegativeStack = bindWithProps(NegativeBarStory);
 NegativeStack.args = {
 	dimension: 'browser',
 	order: 'order',
+	onClick: undefined,
 	color: 'operatingSystem',
 };
 

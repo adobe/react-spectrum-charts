@@ -15,12 +15,12 @@ import { getAllMarkElements } from '@utils';
 
 import { Chart } from '../Chart';
 import { Bar } from '../components/Bar';
-import { BarElement, ChartChildElement, Datum, MarkClickHandler } from '../types';
+import { BarElement, ChartChildElement, Datum } from '../types';
 
 type MappedMarkElement = {name: string, element: BarElement}
 
 export type MarkDetail = {
-    onClick: (datum: Datum) => void;
+    onClick?: (datum: Datum) => void;
 };
 
 export default function useMarkOnClicks(children: ChartChildElement[]): MarkDetail[] {

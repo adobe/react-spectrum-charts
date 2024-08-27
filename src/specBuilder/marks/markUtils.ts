@@ -76,10 +76,20 @@ export function getCursor(children: MarkChildElement[]): ScaledValueRef<Cursor> 
 }
 
 /**
+ * If there aren't any tooltips, popovers, or onClick props on the mark, 
+ * then set interactive to false. This prevents the mark from 
+ * interfering with other interactive marks.
+ */
+export function getInteractiveMark(props: BarSpecProps): boolean {
+	// skip annotations
+	return props.onClick? props.onClick !== undefined: false
+}
+
+/**
  * If there aren't any tooltips or popovers on the mark, then set interactive to false.
  * This prevents the mark from interfering with other interactive marks.
  */
-export function getInteractive(children: MarkChildElement[]): boolean {
+export function getInteractiveChildren(children: MarkChildElement[]): boolean {
 	// skip annotations
 	return hasInteractiveChildren(children);
 }
