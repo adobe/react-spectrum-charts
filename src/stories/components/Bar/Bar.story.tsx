@@ -89,7 +89,7 @@ const OnClick = bindWithProps(BarStory);
 OnClick.args = {
 	dimension: 'browser',
 	metric: 'downloads',
-	onClick: undefined
+	onClick: () => {},
 }
 
 export { Basic, Horizontal, LineType, Opacity, PaddingRatio, WithAnnotation, HasSquareCorners, OnClick };

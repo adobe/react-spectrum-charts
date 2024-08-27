@@ -364,7 +364,7 @@ export interface BarProps extends Omit<MarkProps, 'color'> {
 	/** Border width of the bar */
 	lineWidth?: LineWidth;
 	/** callback that will be run when a bar item is selected */
-	onClick?: (seriesName: string) => void;
+	onClick?: (datum: Datum) => void;
 	/** Optional field used to set the stack order of the bar (higher order = higher on bar) */
 	order?: string;
 	/** The direction of the bars. Defaults to "vertical". */

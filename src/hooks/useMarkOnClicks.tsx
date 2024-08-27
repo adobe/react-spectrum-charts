@@ -20,8 +20,6 @@ import { BarElement, ChartChildElement, Datum, MarkClickHandler } from '../types
 type MappedMarkElement = {name: string, element: BarElement}
 
 export type MarkDetail = {
-	name: string;
-	callback: MarkClickHandler;
     onClick: (datum: Datum) => void;
 };
 
@@ -31,12 +29,11 @@ export default function useMarkOnClicks(children: ChartChildElement[]): MarkDeta
 		[]
 	);
 	return useMemo(
-		() =>
+		() => 
 			markElements
-				.filter((mark) => mark.element.props.children)
+				.filter((mark) => mark.element.props.onClick)
 				.map((mark) => ({
-					name: mark.name,
-                    callback: mark.element.props
+					onClick: mark.element.props.onClick
 				})) as MarkDetail[],
 		[markElements]
 	);
