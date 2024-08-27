@@ -122,6 +122,7 @@ export const stackedLabelWithStyles = {
 		enter: {
 			align: { value: 'center' },
 			baseline: { value: 'middle' },
+			cursor: {value: 'pointer'},
 			fill: [{ test: `datum.textLabel && bandwidth('${stackedXScale}') >= 48`, signal: BACKGROUND_COLOR }],
 			height: { value: 22 },
 			width: { value: 48 },
@@ -150,6 +151,7 @@ export const stackedLabelBackground = {
 		enter: {
 			align: { value: 'center' },
 			baseline: { value: 'middle' },
+			cursor: {value: 'pointer'},
 			fill: [{ test: `datum.textLabel && bandwidth('${stackedXScale}') >= 48`, signal: BACKGROUND_COLOR }],
 			height: { value: 22 },
 			width: { signal: "getLabelWidth(datum.textLabel, 'bold', 12) + 10" },
@@ -176,6 +178,7 @@ export const stackedLabelText = {
 
 	encode: {
 		enter: {
+			cursor: {value: 'pointer'},
 			x: { scale: stackedXScale, field: defaultBarProps.dimension, band: 0.5 },
 			y: [
 				{

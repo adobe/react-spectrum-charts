@@ -39,6 +39,7 @@ export const getDodgedMark = (props: BarSpecProps): GroupMark => {
 					enter: {
 						...getBaseBarEnterEncodings(props),
 						fill: { signal: BACKGROUND_COLOR },
+						cursor: {value: 'pointer'},
 					},
 					update: {
 						...getDodgedDimensionEncodings(props),

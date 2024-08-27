@@ -41,7 +41,8 @@ export const getOnMarkClickCallback = (
 	selectedDataName: MutableRefObject<string | undefined>,
 	setHiddenSeries: (hiddenSeries: string[]) => void,
 	legendIsToggleable?: boolean,
-	onLegendClick?: (seriesName: string) => void
+	onLegendClick?: (seriesName: string) => void,
+	
 ): ((event: ScenegraphEvent, item: ActionItem) => void) => {
 	return (_event: ScenegraphEvent, item: ActionItem) => {
 		if (!item) return;

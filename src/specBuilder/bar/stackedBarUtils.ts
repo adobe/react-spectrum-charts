@@ -74,6 +74,7 @@ export const getStackedBackgroundBar = (props: BarSpecProps): RectMark => {
 		interactive: true,
 		encode: {
 			enter: {
+				cursor: {value: 'pointer'},
 				...getBaseBarEnterEncodings(props),
 				fill: { signal: BACKGROUND_COLOR },
 			},
