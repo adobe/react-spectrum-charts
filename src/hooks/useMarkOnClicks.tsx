@@ -11,7 +11,7 @@
  */
 import { createElement, useMemo } from 'react';
 
-import { getAllElements } from '@utils';
+import { getAllMarkElements } from '@utils';
 
 import { Chart } from '../Chart';
 import { Bar } from '../components/Bar';
@@ -26,11 +26,10 @@ export type MarkDetail = {
 };
 
 export default function useMarkOnClicks(children: ChartChildElement[]): MarkDetail[] {
-	const markElements = useMemo(
-		() => getAllElements(createElement(Chart, { data: [] }, children), Bar, []) as MappedMarkElement[],
-		[children]
+    const markElements = useMemo(
+		() => getAllMarkElements(createElement(Chart, { data: [] }, children), Bar, []) as MappedMarkElement[],
+		[]
 	);
-
 	return useMemo(
 		() =>
 			markElements
