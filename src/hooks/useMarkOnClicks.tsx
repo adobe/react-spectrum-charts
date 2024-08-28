@@ -26,7 +26,7 @@ export type MarkDetail = {
 export default function useMarkOnClicks(children: ChartChildElement[]): MarkDetail[] {
     const markElements = useMemo(
 		() => getAllMarkElements(createElement(Chart, { data: [] }, children), Bar, []) as MappedMarkElement[],
-		[]
+		[children]
 	);
 	return useMemo(
 		() => 
