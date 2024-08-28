@@ -13,7 +13,7 @@ import { CORNER_RADIUS, DISCRETE_PADDING, FILTERED_TABLE, MARK_ID, SELECTED_ITEM
 import {
 	getColorProductionRule,
 	getCursor,
-	getInteractiveMark,
+	getInteractive,
 	getMarkOpacity,
 	getOpacityProductionRule,
 	getStrokeDashProductionRule,
@@ -50,7 +50,7 @@ export const getDodgedGroupMark = (props: BarSpecProps): GroupMark => {
 	return {
 		name: `${name}_group`,
 		type: 'group',
-		interactive: getInteractiveMark(props),
+		interactive: getInteractive(props.children, props),
 		from: {
 			facet: {
 				data: isTrellised(props) ? getTrellisProperties(props).facetName : FILTERED_TABLE,
@@ -227,7 +227,7 @@ export const getBarEnterEncodings = ({ children, color, colorScheme, name, opaci
 });
 
 export const getBarUpdateEncodings = (props: BarSpecProps): EncodeEntry => ({
-	cursor: getCursor(props.children),
+	cursor: getCursor(props.children, props),
 	opacity: getMarkOpacity(props),
 	stroke: getStroke(props),
 	strokeDash: getStrokeDash(props),
