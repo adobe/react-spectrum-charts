@@ -138,4 +138,13 @@ DodgedStackedWithLabels.args = {
 	paddingRatio: 0.1,
 };
 
-export { Color, DodgedStacked, DodgedStackedWithLabels, LineType, Opacity, Popover };
+const OnClick = bindWithProps(DodgedBarStory);
+OnClick.args = {
+	type: 'dodged',
+	dimension: 'browser',
+	order: 'order',
+	color: 'operatingSystem',
+	onClick: () => {},
+};
+
+export { Color, DodgedStacked, DodgedStackedWithLabels, LineType, Opacity, Popover, OnClick };

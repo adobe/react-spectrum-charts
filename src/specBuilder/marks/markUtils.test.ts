@@ -47,6 +47,8 @@ import {
 	getSymbolSizeProductionRule,
 	getTooltip,
 	getXProductionRule,
+	getInteractiveChildren,
+	getInteractiveMark,
 	hasMetricRange,
 	hasTooltip,
 } from './markUtils';
@@ -223,6 +225,23 @@ describe('getXProductionRule()', () => {
 		});
 	});
 });
+
+describe('getInteractiveChildren()', () => {
+	const tooltip = createElement(ChartTooltip);
+	const popover = createElement(ChartPopover);
+	test('should return true based on having interactive children'), () => {
+		expect(getInteractiveChildren([tooltip])).toEqual(true);
+		expect(getInteractiveChildren([])).toEqual(false);
+		expect(getInteractiveChildren([tooltip, popover])).toEqual(true);
+	}
+})
+
+describe('getInteractiveMark()', () => {
+	test('should return true based on having onClick prop'), () => {
+		expect(getInteractiveMark(defaultBarProps)).toEqual(false);
+		expect(getInteractiveMark({...defaultBarProps, onClick: () => {}})).toEqual(true);
+	}
+})
 
 describe('getColorProductionRuleSignalString()', () => {
 	test('should return signal reference if color is an array', () => {

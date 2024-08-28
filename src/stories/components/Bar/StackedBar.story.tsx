@@ -81,4 +81,12 @@ NegativeStack.args = {
 	color: 'operatingSystem',
 };
 
-export { Basic, NegativeStack, WithBarLabels };
+const OnClick = bindWithProps(BarStory);
+OnClick.args = {
+	dimension: 'browser',
+	order: 'order',
+	color: 'operatingSystem',
+	onClick: () => {},
+};
+
+export { Basic, NegativeStack, WithBarLabels, OnClick };
