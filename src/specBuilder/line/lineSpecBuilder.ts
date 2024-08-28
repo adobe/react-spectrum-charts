@@ -15,11 +15,12 @@ import {
 	DEFAULT_METRIC,
 	DEFAULT_TIME_DIMENSION,
 	FILTERED_TABLE,
+	INTERACTION_MODE,
 	LINE_TYPE_SCALE,
 	OPACITY_SCALE,
 } from '@constants';
 import { addTooltipData, addTooltipSignals, isHighlightedByGroup } from '@specBuilder/chartTooltip/chartTooltipUtils';
-import { hasInteractiveChildren, hasPopover } from '@specBuilder/marks/markUtils';
+import { getHoverMarkNames, hasInteractiveChildren, hasPopover } from '@specBuilder/marks/markUtils';
 import {
 	getMetricRangeData,
 	getMetricRangeGroupMarks,
@@ -112,6 +113,7 @@ export const addSignals = produce<Signal[], [LineSpecProps]>((signals, props) =>
 	if (!hasInteractiveChildren(children)) return;
 	addHighlightedItemSignalEvents(signals, `${name}_voronoi`, 2);
 	addHighlightedSeriesSignalEvents(signals, `${name}_voronoi`, 2);
+	addHoverSignals(signals, props);
 	addTooltipSignals(signals, props);
 });
 
@@ -168,4 +170,13 @@ const getMetricKeys = (lineMetric: string, lineChildren: MarkChildElement[], lin
 	});
 
 	return metricKeys;
+};
+
+const addHoverSignals = (signals: Signal[], props: LineSpecProps) => {
+	const { interactionMode, name } = props;
+	if (interactionMode !== INTERACTION_MODE.ITEM) return;
+	getHoverMarkNames(name).forEach((hoverMarkName) => {
+		addHighlightedItemSignalEvents(signals, hoverMarkName, 1);
+		addHighlightedSeriesSignalEvents(signals, hoverMarkName, 1);
+	});
 };

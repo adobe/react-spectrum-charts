@@ -110,3 +110,6 @@ export enum INTERACTION_MODE {
 	NEAREST = 'nearest',
 	ITEM = 'item',
 }
+export const HOVER_SIZE = 3000;
+export const HOVER_SHAPE_COUNT = 3;
+export const HOVER_SHAPE = 'diamond';

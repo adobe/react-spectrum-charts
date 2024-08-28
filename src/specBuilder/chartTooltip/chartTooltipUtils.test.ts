@@ -9,19 +9,19 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
 import { createElement } from 'react';
 
 import { ChartPopover } from '@components/ChartPopover';
 import { ChartTooltip } from '@components/ChartTooltip';
 import { HIGHLIGHTED_GROUP } from '@constants';
 import { defaultBarProps } from '@specBuilder/bar/barTestUtils';
+import { defaultLineMarkProps } from '@specBuilder/line/lineTestUtils';
 import { defaultScatterProps } from '@specBuilder/scatter/scatterTestUtils';
 import { defaultSignals } from '@specBuilder/specTestUtils';
 import { baseData } from '@specBuilder/specUtils';
 import { Data, Signal } from 'vega';
 
-import { BarSpecProps, ChartTooltipProps } from '../../types';
+import { BarSpecProps, ChartTooltipProps, LineSpecProps } from '../../types';
 import {
 	addTooltipData,
 	addTooltipMarkOpacityRules,
@@ -146,6 +146,14 @@ describe('addTooltipSignals()', () => {
 			children: [createElement(ChartTooltip, { highlightBy: 'series' })],
 		});
 		expect(highlightedGroupSignal.on?.[0].events.toString().includes('_voronoi')).toBeTruthy();
+	});
+
+	test('should add on events if highlightBy is `series` and interactionMode is `item`', () => {
+		addTooltipSignals(signals, {
+			interactionMode: 'item',
+			children: [createElement(ChartTooltip, { highlightBy: 'series' })],
+		} as LineSpecProps);
+		expect(highlightedGroupSignal.on).toHaveLength(8);
 	});
 });
 

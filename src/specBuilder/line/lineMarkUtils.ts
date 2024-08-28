@@ -10,6 +10,7 @@
  * governing permissions and limitations under the License.
  */
 import {
+	DEFAULT_INTERACTION_MODE,
 	DEFAULT_OPACITY_RULE,
 	HIGHLIGHTED_SERIES,
 	HIGHLIGHT_CONTRAST_RATIO,
@@ -18,6 +19,7 @@ import {
 } from '@constants';
 import {
 	getColorProductionRule,
+	getItemHoverArea,
 	getLineWidthProductionRule,
 	getOpacityProductionRule,
 	getPointsForVoronoi,
@@ -127,10 +129,8 @@ export const getLineHoverMarks = (
 		getHighlightPoint(lineProps),
 		// additional point that gets highlighted like the trendline or raw line point
 		...(secondaryHighlightedMetric ? [getSecondaryHighlightPoint(lineProps, secondaryHighlightedMetric)] : []),
-		// points used for the voronoi transform
-		getPointsForVoronoi(dataSource, dimension, metric, name, scaleType),
-		// voronoi transform used to get nearest point paths
-		getVoronoiPath(children, `${name}_pointsForVoronoi`, name),
+		// get interactive marks for the line
+		...getInteractiveMarks(dataSource, lineProps),
 	];
 };
 
@@ -151,4 +151,35 @@ const getHoverRule = (dimension: string, name: string, scaleType: ScaleType): Ru
 			},
 		},
 	};
+};
+
+const getInteractiveMarks = (dataSource: string, lineProps: LineMarkProps): Mark[] => {
+	const { interactionMode = DEFAULT_INTERACTION_MODE } = lineProps;
+
+	const tooltipMarks = {
+		nearest: getVoronoiMarks,
+		item: getItemHoverMarks,
+	};
+
+	return tooltipMarks[interactionMode](dataSource, lineProps);
+};
+
+const getVoronoiMarks = (dataSource: string, lineProps: LineMarkProps): Mark[] => {
+	const { children, dimension, metric, name, scaleType } = lineProps;
+
+	return [
+		// points used for the voronoi transform
+		getPointsForVoronoi(dataSource, dimension, metric, name, scaleType),
+		// voronoi transform used to get nearest point paths
+		getVoronoiPath(children, `${name}_pointsForVoronoi`, name),
+	];
+};
+
+const getItemHoverMarks = (dataSource: string, lineProps: LineMarkProps): Mark[] => {
+	const { children, dimension, metric, name, scaleType } = lineProps;
+
+	return [
+		// area around item that triggers hover
+		getItemHoverArea(children, dataSource, dimension, metric, name, scaleType),
+	];
 };
