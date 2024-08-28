@@ -189,7 +189,7 @@ export const defaultDodgedMark = {
 			type: 'band',
 		},
 	],
-	encode: { enter: { x: { field: DEFAULT_CATEGORICAL_DIMENSION, scale: 'xBand' } } },
+	encode: { enter: { cursor: {value: 'pointer'}, x: { field: DEFAULT_CATEGORICAL_DIMENSION, scale: 'xBand' } } },
 	marks: [defaultBackgroundMark, defaultMark],
 };
 
