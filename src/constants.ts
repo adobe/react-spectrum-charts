@@ -35,6 +35,7 @@ export const DEFAULT_SYMBOL_STROKE_WIDTH = 2;
 export const DEFAULT_TIME_DIMENSION = 'datetime';
 export const DEFAULT_TRANSFORMED_TIME_DIMENSION = `${DEFAULT_TIME_DIMENSION}0`;
 export const DEFAULT_TITLE_FONT_WEIGHT = 'bold';
+export const DEFAULT_INTERACTION_MODE = 'nearest';
 
 // vega data table name
 export const TABLE = 'table';
@@ -103,3 +104,9 @@ export const BACKGROUND_COLOR = 'chartBackgroundColor';
 
 // time constants
 export const MS_PER_DAY = 86400000;
+
+// mark constants
+export enum INTERACTION_MODE {
+	NEAREST = 'nearest',
+	ITEM = 'item',
+}
