@@ -9,7 +9,6 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
 import { ChartTooltip } from '@components/ChartTooltip';
 import {
 	DEFAULT_OPACITY_RULE,
@@ -17,10 +16,12 @@ import {
 	HIGHLIGHTED_GROUP,
 	HIGHLIGHTED_ITEM,
 	HIGHLIGHT_CONTRAST_RATIO,
+	INTERACTION_MODE,
 	MARK_ID,
 	SERIES_ID,
 } from '@constants';
 import { getFilteredTableData } from '@specBuilder/data/dataUtils';
+import { getHoverMarkNames } from '@specBuilder/marks/markUtils';
 import { Data, FormulaTransform, NumericValueRef, Signal, SourceData } from 'vega';
 
 import {
@@ -150,26 +151,38 @@ export const isHighlightedByDimension = (markProps: TooltipParentProps) => {
 export const addTooltipSignals = (signals: Signal[], markProps: TooltipParentProps) => {
 	if (isHighlightedByGroup(markProps)) {
 		const highlightedGroupSignal = signals.find((signal) => signal.name === HIGHLIGHTED_GROUP) as Signal;
-		if (highlightedGroupSignal.on === undefined) {
-			highlightedGroupSignal.on = [];
-		}
 
 		let markName = markProps.name;
 		let update = `datum.${markName}_groupId`;
+
+		if ('interactionMode' in markProps && markProps.interactionMode === INTERACTION_MODE.ITEM) {
+			getHoverMarkNames(markName).forEach((name) => {
+				addMouseEvents(highlightedGroupSignal, name, update);
+			});
+		}
+
 		if (['scatter', 'line'].includes(markProps.markType)) {
 			update = `datum.${update}`;
 			markName += '_voronoi';
 		}
-		highlightedGroupSignal.on.push(
-			...[
-				{
-					events: `@${markName}:mouseover`,
-					update,
-				},
-				{ events: `@${markName}:mouseout`, update: 'null' },
-			]
-		);
+
+		addMouseEvents(highlightedGroupSignal, markName, update);
 	}
+};
+
+const addMouseEvents = (highlightedGroupSignal: Signal, markName: string, update: string) => {
+	if (highlightedGroupSignal.on === undefined) {
+		highlightedGroupSignal.on = [];
+	}
+	highlightedGroupSignal.on.push(
+		...[
+			{
+				events: `@${markName}:mouseover`,
+				update,
+			},
+			{ events: `@${markName}:mouseout`, update: 'null' },
+		]
+	);
 };
 
 /**
