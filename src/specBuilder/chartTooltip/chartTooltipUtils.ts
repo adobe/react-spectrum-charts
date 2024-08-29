@@ -155,7 +155,7 @@ export const addTooltipSignals = (signals: Signal[], markProps: TooltipParentPro
 		let markName = markProps.name;
 		let update = `datum.${markName}_groupId`;
 
-		if ((markProps as LineSpecProps).interactionMode === INTERACTION_MODE.ITEM) {
+		if ('interactionMode' in markProps && markProps.interactionMode === INTERACTION_MODE.ITEM) {
 			getHoverMarkNames(markName).forEach((name) => {
 				addMouseEvents(highlightedGroupSignal, name, update);
 			});
