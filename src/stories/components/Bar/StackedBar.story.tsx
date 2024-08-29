@@ -86,7 +86,6 @@ OnClick.args = {
 	dimension: 'browser',
 	order: 'order',
 	color: 'operatingSystem',
-	onClick: () => {},
 };
 
 export { Basic, NegativeStack, WithBarLabels, OnClick };

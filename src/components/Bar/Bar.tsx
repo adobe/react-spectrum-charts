@@ -29,6 +29,7 @@ const Bar: FC<BarProps> = ({
 	trellisPadding = TRELLIS_PADDING,
 	paddingRatio = PADDING_RATIO,
 	paddingOuter,
+	onClick,
 }) => {
 	return null;
 };

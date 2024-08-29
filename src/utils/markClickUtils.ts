@@ -12,6 +12,7 @@
 import { MutableRefObject } from 'react';
 
 import { COMPONENT_NAME } from '@constants';
+import { MarkDetail } from '@hooks/useMarkOnClicks';
 import { toggleStringArrayValue } from '@utils';
 import { Item, Scene, SceneGroup, SceneItem, ScenegraphEvent, View } from 'vega';
 
@@ -42,7 +43,7 @@ export const getOnMarkClickCallback = (
 	setHiddenSeries: (hiddenSeries: string[]) => void,
 	legendIsToggleable?: boolean,
 	onLegendClick?: (seriesName: string) => void,
-	
+	markClicks?: MarkDetail[]
 ): ((event: ScenegraphEvent, item: ActionItem) => void) => {
 	return (_event: ScenegraphEvent, item: ActionItem) => {
 		if (!item) return;
@@ -67,6 +68,7 @@ export const getOnMarkClickCallback = (
 			const itemName = getItemName(item);
 			selectedData.current = { [COMPONENT_NAME]: itemName, ...item.datum };
 			// we need to anchor the popover to a div that we move to the same location as the selected mark
+			markClicks?.find((click) => click.markName === itemName)?.onClick?.(item.datum);
 			selectedDataBounds.current = getItemBounds(item);
 			selectedDataName.current = itemName;
 			(document.querySelector(`#${chartId.current} > div > #${itemName}-button`) as HTMLButtonElement)?.click();

@@ -9,17 +9,14 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import React from 'react';
-
 import '@matchMediaMock';
 import { Bar } from '@rsc';
-import { findAllMarksByGroupName, findChart, render } from '@test-utils';
+import { clickNthElement, findAllMarksByGroupName, findChart, render } from '@test-utils';
 
-import { Basic, Opacity, PaddingRatio, WithAnnotation, OnClick } from './Bar.story';
+import { Basic, OnClick, Opacity, PaddingRatio, WithAnnotation } from './Bar.story';
 import { Color, DodgedStacked } from './DodgedBar.story';
 import { Basic as StackedBasic } from './StackedBar.story';
-import { clickNthElement } from '@test-utils';
-
+import { barData } from './data';
 
 describe('Bar', () => {
 	// Bar is not a real React component. This is test just provides test coverage for sonarqube
@@ -108,18 +105,18 @@ describe('Bar', () => {
 		const bars = await findAllMarksByGroupName(chart, 'bar0');
 
 		await clickNthElement(bars, 0);
-		expect(onClick).toHaveBeenCalledWith('Chrome');
+		expect(onClick).toHaveBeenLastCalledWith(expect.objectContaining(barData[0]));
 
 		await clickNthElement(bars, 1);
-		expect(onClick).toHaveBeenCalledWith('Firefox');
+		expect(onClick).toHaveBeenLastCalledWith(expect.objectContaining(barData[1]));
 
 		await clickNthElement(bars, 2);
-		expect(onClick).toHaveBeenCalledWith('Safari');
+		expect(onClick).toHaveBeenLastCalledWith(expect.objectContaining(barData[2]));
 
 		await clickNthElement(bars, 3);
-		expect(onClick).toHaveBeenCalledWith('Edge');
+		expect(onClick).toHaveBeenLastCalledWith(expect.objectContaining(barData[3]));
 
 		await clickNthElement(bars, 4);
-		expect(onClick).toHaveBeenCalledWith('Explorer');
+		expect(onClick).toHaveBeenLastCalledWith(expect.objectContaining(barData[4]));
 	});
 });

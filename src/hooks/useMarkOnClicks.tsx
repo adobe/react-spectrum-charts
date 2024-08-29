@@ -17,23 +17,25 @@ import { Chart } from '../Chart';
 import { Bar } from '../components/Bar';
 import { BarElement, ChartChildElement, Datum } from '../types';
 
-type MappedMarkElement = {name: string, element: BarElement}
+type MappedMarkElement = { name: string; element: BarElement };
 
 export type MarkDetail = {
-    onClick?: (datum: Datum) => void;
+	markName?: string;
+	onClick?: (datum: Datum) => void;
 };
 
 export default function useMarkOnClicks(children: ChartChildElement[]): MarkDetail[] {
-    const markElements = useMemo(
+	const markElements = useMemo(
 		() => getAllMarkElements(createElement(Chart, { data: [] }, children), Bar, []) as MappedMarkElement[],
 		[children]
 	);
 	return useMemo(
-		() => 
+		() =>
 			markElements
 				.filter((mark) => mark.element.props.onClick)
 				.map((mark) => ({
-					onClick: mark.element.props.onClick
+					markName: mark.name,
+					onClick: mark.element.props.onClick,
 				})) as MarkDetail[],
 		[markElements]
 	);
