@@ -15,7 +15,6 @@ import { ChartPopover } from '@components/ChartPopover';
 import { ChartTooltip } from '@components/ChartTooltip';
 import { HIGHLIGHTED_GROUP } from '@constants';
 import { defaultBarProps } from '@specBuilder/bar/barTestUtils';
-import { defaultLineMarkProps } from '@specBuilder/line/lineTestUtils';
 import { defaultScatterProps } from '@specBuilder/scatter/scatterTestUtils';
 import { defaultSignals } from '@specBuilder/specTestUtils';
 import { baseData } from '@specBuilder/specUtils';
