@@ -74,12 +74,12 @@ export const getStackedBackgroundBar = (props: BarSpecProps): RectMark => {
 		interactive: getInteractive(props.children, props),
 		encode: {
 			enter: {
-				cursor: {value: 'pointer'},
 				...getBaseBarEnterEncodings(props),
 				fill: { signal: BACKGROUND_COLOR },
 			},
 			update: {
 				...getStackedDimensionEncodings(props),
+				...getBarUpdateEncodings(props),
 			},
 		},
 	};

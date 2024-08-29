@@ -116,13 +116,11 @@ export const stackedLabelWithStyles = {
 	type: 'rect',
 	from: { data: FILTERED_TABLE },
 	name: 'bar0_annotationBackground',
-	interactive: true,
 
 	encode: {
 		enter: {
 			align: { value: 'center' },
 			baseline: { value: 'middle' },
-			cursor: {value: 'pointer'},
 			fill: [{ test: `datum.textLabel && bandwidth('${stackedXScale}') >= 48`, signal: BACKGROUND_COLOR }],
 			height: { value: 22 },
 			width: { value: 48 },
@@ -145,13 +143,11 @@ export const stackedLabelBackground = {
 	type: 'rect',
 	from: { data: FILTERED_TABLE },
 	name: 'bar0_annotationBackground',
-	interactive: true,
 
 	encode: {
 		enter: {
 			align: { value: 'center' },
 			baseline: { value: 'middle' },
-			cursor: {value: 'pointer'},
 			fill: [{ test: `datum.textLabel && bandwidth('${stackedXScale}') >= 48`, signal: BACKGROUND_COLOR }],
 			height: { value: 22 },
 			width: { signal: "getLabelWidth(datum.textLabel, 'bold', 12) + 10" },
@@ -174,11 +170,9 @@ export const stackedLabelText = {
 	type: 'text',
 	from: { data: FILTERED_TABLE },
 	name: 'bar0_annotationText',
-	interactive: true,
 
 	encode: {
 		enter: {
-			cursor: {value: 'pointer'},
 			x: { scale: stackedXScale, field: defaultBarProps.dimension, band: 0.5 },
 			y: [
 				{

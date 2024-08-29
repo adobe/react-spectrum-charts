@@ -60,7 +60,6 @@ export const getDodgedGroupMark = (props: BarSpecProps): GroupMark => {
 		},
 		encode: {
 			enter: {
-				cursor: {value: 'pointer'},
 				[dimensionAxis]: {
 					scale: dimensionScaleKey,
 					field: dimension,

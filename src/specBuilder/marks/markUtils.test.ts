@@ -232,7 +232,7 @@ describe('getInteractive()', () => {
 		expect(getInteractive([tooltip])).toEqual(true);
 		expect(getInteractive([])).toEqual(false);
 		expect(getInteractive([tooltip, popover])).toEqual(true);
-		expect(getInteractive(defaultBarProps.children, defaultBarProps)).toEqual(true);
+		expect(getInteractive(defaultBarProps.children, defaultBarProps)).toEqual(false);
 	});
 });
 
