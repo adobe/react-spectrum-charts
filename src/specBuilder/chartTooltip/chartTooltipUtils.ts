@@ -170,7 +170,7 @@ export const addTooltipSignals = (signals: Signal[], markProps: TooltipParentPro
 	}
 };
 
-function addMouseEvents(highlightedGroupSignal: Signal, markName: string, update: string) {
+const addMouseEvents = (highlightedGroupSignal: Signal, markName: string, update: string) => {
 	if (highlightedGroupSignal.on === undefined) {
 		highlightedGroupSignal.on = [];
 	}
@@ -183,7 +183,7 @@ function addMouseEvents(highlightedGroupSignal: Signal, markName: string, update
 			{ events: `@${markName}:mouseout`, update: 'null' },
 		]
 	);
-}
+};
 
 /**
  * adds the appropriate opacity rules to the beginning of the opacityRules array
