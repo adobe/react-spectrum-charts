@@ -50,7 +50,6 @@ export const getDodgedGroupMark = (props: BarSpecProps): GroupMark => {
 	return {
 		name: `${name}_group`,
 		type: 'group',
-		interactive: getInteractive(props.children, props),
 		from: {
 			facet: {
 				data: isTrellised(props) ? getTrellisProperties(props).facetName : FILTERED_TABLE,

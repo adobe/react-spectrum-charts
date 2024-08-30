@@ -42,7 +42,6 @@ export const getDodgedMark = (props: BarSpecProps): GroupMark => {
 					},
 					update: {
 						...getDodgedDimensionEncodings(props),
-						...getBarUpdateEncodings(props),
 					},
 				},
 			},
@@ -51,7 +50,7 @@ export const getDodgedMark = (props: BarSpecProps): GroupMark => {
 				name,
 				from: { data: `${name}_facet` },
 				type: 'rect',
-				interactive: getInteractive(children),
+				interactive: getInteractive(children, props),
 				encode: {
 					enter: {
 						...getBaseBarEnterEncodings(props),

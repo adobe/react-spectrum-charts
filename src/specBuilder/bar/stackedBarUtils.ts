@@ -10,7 +10,7 @@
  * governing permissions and limitations under the License.
  */
 import { BACKGROUND_COLOR, FILTERED_TABLE } from '@constants';
-import { getInteractive } from '@specBuilder/marks/markUtils';
+import { getCursor, getInteractive } from '@specBuilder/marks/markUtils';
 import { GroupMark, Mark, RectEncodeEntry, RectMark } from 'vega';
 
 import { BarSpecProps } from '../../types';
@@ -79,7 +79,7 @@ export const getStackedBackgroundBar = (props: BarSpecProps): RectMark => {
 			},
 			update: {
 				...getStackedDimensionEncodings(props),
-				...getBarUpdateEncodings(props),
+				cursor: getCursor(props.children, props),
 			},
 		},
 	};
