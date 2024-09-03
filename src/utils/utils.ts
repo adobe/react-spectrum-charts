@@ -210,6 +210,52 @@ export function getElement(
 }
 
 /**
+ * Traverses the mark elements finding all elements of the provided type and get the correct name for the element it is associated with
+ * @param element
+ * @param type
+ * @returns
+ */
+export const getAllMarkElements = (
+	target: unknown,
+	source:
+		| typeof Area
+		| typeof Bar
+		| typeof Donut
+		| typeof Line
+		| typeof Scatter,
+	elements: MappedElement[] = [],
+	name: string = ''
+): MappedElement[] => {
+	if (
+		!target ||
+		typeof target !== 'object' ||
+		!('type' in target && target.type) ||
+		!(typeof target.type === 'object' || typeof target.type === 'function') ||
+		!('displayName' in target.type) ||
+		typeof target.type.displayName !== 'string'
+	) {
+		return elements;
+	}
+	// if the type matches, we found our element
+	if (target.type === source) {
+		return [...elements, { name, element: target as ChartElement | RscElement }];
+	}
+
+	// if there aren't any more children to search, stop looking
+	if (!('props' in target) || typeof target.props !== 'object' || !target.props || !('children' in target.props))
+		return elements;
+
+	const elementCounts = initElementCounts();
+	const desiredElements: MappedElement[] = [];
+	for (const child of toArray(target.props.children)) {
+		const childName = getElementName(child, elementCounts);
+		desiredElements.push(...getAllMarkElements(child, source, elements, [name, childName].filter(Boolean).join('')));
+	}
+	// no element matches found, give up all hope...
+	return [...elements, ...desiredElements];
+};
+
+/**
  * Traverses the child elements finding all elements of the provided type and get the correct name for the element it is associated with
  * @param element
  * @param type

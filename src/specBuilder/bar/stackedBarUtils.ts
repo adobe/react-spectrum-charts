@@ -10,7 +10,7 @@
  * governing permissions and limitations under the License.
  */
 import { BACKGROUND_COLOR, FILTERED_TABLE } from '@constants';
-import { getInteractive } from '@specBuilder/marks/markUtils';
+import { getCursor, getInteractive } from '@specBuilder/marks/markUtils';
 import { GroupMark, Mark, RectEncodeEntry, RectMark } from 'vega';
 
 import { BarSpecProps } from '../../types';
@@ -71,7 +71,7 @@ export const getStackedBackgroundBar = (props: BarSpecProps): RectMark => {
 		name: `${name}_background`,
 		type: 'rect',
 		from: { data: isDodgedAndStacked(props) ? `${name}_facet` : getBaseDataSourceName(props) },
-		interactive: false,
+		interactive: getInteractive(props.children, props),
 		encode: {
 			enter: {
 				...getBaseBarEnterEncodings(props),
@@ -79,6 +79,7 @@ export const getStackedBackgroundBar = (props: BarSpecProps): RectMark => {
 			},
 			update: {
 				...getStackedDimensionEncodings(props),
+				cursor: getCursor(props.children, props),
 			},
 		},
 	};
@@ -113,6 +114,7 @@ export const getStackedDimensionEncodings = (props: BarSpecProps): RectEncodeEnt
 	const { dimensionAxis, rangeScale, dimensionScaleKey } = getOrientationProperties(orientation);
 
 	return {
+		cursor: getCursor(props.children, props),
 		[dimensionAxis]: { scale: dimensionScaleKey, field: dimension },
 		[rangeScale]: { scale: dimensionScaleKey, band: 1 },
 	};

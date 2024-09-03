@@ -13,7 +13,7 @@ import React, { ReactElement, createElement } from 'react';
 
 import { Annotation } from '@components/Annotation';
 import useChartProps from '@hooks/useChartProps';
-import { Axis, Bar, Chart } from '@rsc';
+import { Axis, Bar, BarProps, Chart } from '@rsc';
 import { StoryFn } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
 
@@ -35,23 +35,26 @@ const BarStory: StoryFn<typeof Bar> = (args): ReactElement => {
 	);
 };
 
-const Basic = bindWithProps(BarStory);
-Basic.args = {
+const defaultProps: BarProps = {
 	dimension: 'browser',
 	metric: 'downloads',
+	onClick: undefined,
+}
+
+const Basic = bindWithProps(BarStory);
+Basic.args = {
+	...defaultProps
 };
 
 const Horizontal = bindWithProps(BarStory);
 Horizontal.args = {
-	dimension: 'browser',
-	metric: 'downloads',
+	...defaultProps,
 	orientation: 'horizontal',
 };
 
 const LineType = bindWithProps(BarStory);
 LineType.args = {
-	dimension: 'browser',
-	metric: 'downloads',
+	...defaultProps,
 	opacity: { value: 0.75 },
 	lineType: { value: 'dashed' },
 	lineWidth: 2,
@@ -59,30 +62,32 @@ LineType.args = {
 
 const Opacity = bindWithProps(BarStory);
 Opacity.args = {
-	dimension: 'browser',
-	metric: 'downloads',
+	...defaultProps,
 	opacity: { value: 0.75 },
 };
 
 const PaddingRatio = bindWithProps(BarStory);
 PaddingRatio.args = {
-	dimension: 'browser',
-	metric: 'downloads',
+	...defaultProps,
 	paddingRatio: 0.2,
 };
 
 const WithAnnotation = bindWithProps(BarStory);
 WithAnnotation.args = {
-	dimension: 'browser',
+	...defaultProps,
 	children: createElement(Annotation, { textKey: 'percentLabel' }),
-	metric: 'downloads',
 };
 
 const HasSquareCorners = bindWithProps(BarStory);
 HasSquareCorners.args = {
-	dimension: 'browser',
-	metric: 'downloads',
+	...defaultProps,
 	hasSquareCorners: true,
 };
 
-export { Basic, Horizontal, LineType, Opacity, PaddingRatio, WithAnnotation, HasSquareCorners };
+const OnClick = bindWithProps(BarStory);
+OnClick.args = {
+	dimension: 'browser',
+	metric: 'downloads',
+}
+
+export { Basic, Horizontal, LineType, Opacity, PaddingRatio, WithAnnotation, HasSquareCorners, OnClick };
