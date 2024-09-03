@@ -153,7 +153,7 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 
 		const tooltips = useTooltips(sanitizedChildren);
 		const popovers = usePopovers(sanitizedChildren);
-		const markClicks = useMarkOnClicks(sanitizedChildren);
+		const onMarkClicks = useMarkOnClicks(sanitizedChildren);
 
 		// gets the correct css style to display the anchor in the correct position
 		const targetStyle = usePopoverAnchorStyle(
@@ -261,7 +261,7 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 								tooltipHandler.call(this, event, item, value);
 							}
 						});
-						if (popovers.length || markClicks.length || legendIsToggleable || onLegendClick) {
+						if (popovers.length || onMarkClicks.length || legendIsToggleable || onLegendClick) {
 							if (legendIsToggleable) {
 								view.signal('hiddenSeries', legendHiddenSeries);
 							}
@@ -281,6 +281,8 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 									setLegendHiddenSeries,
 									legendIsToggleable,
 									onLegendClick,
+									onMarkClicks,
+
 								)
 							);
 						}

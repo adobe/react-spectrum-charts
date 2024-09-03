@@ -17,9 +17,10 @@ import { Chart } from '../Chart';
 import { Bar } from '../components/Bar';
 import { BarElement, ChartChildElement, Datum } from '../types';
 
-type MappedMarkElement = {name: string, element: BarElement}
+type MappedMarkElement = { name: string; element: BarElement };
 
 export type MarkDetail = {
+	markName?: string;
     onClick?: (datum: Datum) => void;
 };
 
@@ -33,7 +34,8 @@ export default function useMarkOnClicks(children: ChartChildElement[]): MarkDeta
 			markElements
 				.filter((mark) => mark.element.props.onClick)
 				.map((mark) => ({
-					onClick: mark.element.props.onClick
+					markName: mark.name,
+					onClick: mark.element.props.onClick,
 				})) as MarkDetail[],
 		[markElements]
 	);
