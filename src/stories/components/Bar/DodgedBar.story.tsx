@@ -144,7 +144,6 @@ OnClick.args = {
 	dimension: 'browser',
 	order: 'order',
 	color: 'operatingSystem',
-	onClick: () => {},
 };
 
 export { Color, DodgedStacked, DodgedStackedWithLabels, LineType, Opacity, Popover, OnClick };

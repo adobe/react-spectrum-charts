@@ -70,7 +70,7 @@ import {
  * If a popover or onClick prop exists on the mark, then set the cursor to a pointer.
  */
 export function getCursor(children: MarkChildElement[], props?: BarSpecProps): ScaledValueRef<Cursor> | undefined {
-	if ((props && props.onClick !== undefined) || hasPopover(children)) {
+	if ((props?.onClick !== undefined) || hasPopover(children)) {
 		return { value: 'pointer' };
 	}
 }
@@ -81,7 +81,7 @@ export function getCursor(children: MarkChildElement[], props?: BarSpecProps): S
  */
 export function getInteractive(children: MarkChildElement[], props?: BarSpecProps): boolean {
 	// skip annotations
-	return (props && props.onClick !== undefined) || hasInteractiveChildren(children);
+	return (props?.onClick !== undefined) || hasInteractiveChildren(children);
 }
 
 /**
