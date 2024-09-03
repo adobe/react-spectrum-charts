@@ -13,7 +13,6 @@ import { CORNER_RADIUS, DISCRETE_PADDING, FILTERED_TABLE, MARK_ID, SELECTED_ITEM
 import {
 	getColorProductionRule,
 	getCursor,
-	getInteractive,
 	getMarkOpacity,
 	getOpacityProductionRule,
 	getStrokeDashProductionRule,
