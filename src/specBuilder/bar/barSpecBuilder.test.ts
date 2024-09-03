@@ -155,6 +155,7 @@ const defaultBackgroundStackedMark: Mark = {
 		update: {
 			x: { scale: 'xBand', field: DEFAULT_CATEGORICAL_DIMENSION },
 			width: { scale: 'xBand', band: 1 },
+			cursor: undefined,
 		},
 	},
 };
@@ -215,6 +216,7 @@ const defaultSpec: Spec = {
 				update: {
 					...defaultStackedMark.encode?.update,
 					stroke: [{ value: spectrumColors.light['categorical-100'] }],
+					cursor: undefined,
 				},
 			},
 		},

@@ -114,6 +114,7 @@ export const getStackedDimensionEncodings = (props: BarSpecProps): RectEncodeEnt
 	const { dimensionAxis, rangeScale, dimensionScaleKey } = getOrientationProperties(orientation);
 
 	return {
+		cursor: getCursor(props.children, props),
 		[dimensionAxis]: { scale: dimensionScaleKey, field: dimension },
 		[rangeScale]: { scale: dimensionScaleKey, band: 1 },
 	};
