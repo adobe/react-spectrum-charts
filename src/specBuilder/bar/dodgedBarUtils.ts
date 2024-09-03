@@ -34,7 +34,7 @@ export const getDodgedMark = (props: BarSpecProps): GroupMark => {
 				name: `${name}_background`,
 				from: { data: `${name}_facet` },
 				type: 'rect',
-				interactive: getInteractive(props.children, props),
+				interactive: false,
 				encode: {
 					enter: {
 						...getBaseBarEnterEncodings(props),
