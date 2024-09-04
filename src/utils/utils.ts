@@ -255,7 +255,6 @@ export const getAllMarkElements = (
 	return [...elements, ...desiredElements];
 };
 
-
 /**
  * Traverses the child elements finding all elements of the provided type and get the correct name for the element it is associated with
  * @param element
