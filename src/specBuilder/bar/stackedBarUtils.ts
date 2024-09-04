@@ -79,7 +79,6 @@ export const getStackedBackgroundBar = (props: BarSpecProps): RectMark => {
 			},
 			update: {
 				...getStackedDimensionEncodings(props),
-				cursor: getCursor(props.children, props),
 			},
 		},
 	};
