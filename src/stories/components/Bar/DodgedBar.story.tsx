@@ -13,7 +13,7 @@ import React, { ReactElement, createElement } from 'react';
 
 import { Annotation } from '@components/Annotation';
 import useChartProps from '@hooks/useChartProps';
-import { Axis, Bar, Chart, ChartPopover, ChartTooltip, Legend, categorical6 } from '@rsc';
+import { Axis, Bar, BarProps, Chart, ChartPopover, ChartTooltip, Legend, categorical6 } from '@rsc';
 import { StoryFn } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
 
@@ -82,28 +82,28 @@ const DodgedBarLineTypeStory: StoryFn<typeof Bar> = (args): ReactElement => {
 	);
 };
 
-const Color = bindWithProps(DodgedBarStory);
-Color.args = {
+const defaultProps: BarProps = {
 	type: 'dodged',
 	dimension: 'browser',
 	onClick: undefined,
+}
+
+const Color = bindWithProps(DodgedBarStory);
+Color.args = {
+	...defaultProps,
 	order: 'order',
 	color: 'operatingSystem',
 };
 
 const DodgedStacked = bindWithProps(DodgedBarStory);
 DodgedStacked.args = {
-	type: 'dodged',
-	dimension: 'browser',
-	onClick: undefined,
+	...defaultProps,
 	color: ['operatingSystem', 'version'],
 };
 
 const LineType = bindWithProps(DodgedBarLineTypeStory);
 LineType.args = {
-	type: 'dodged',
-	dimension: 'browser',
-	onClick: undefined,
+	...defaultProps,
 	order: 'order',
 	lineType: 'operatingSystem',
 	lineWidth: 2,
@@ -112,27 +112,21 @@ LineType.args = {
 
 const Opacity = bindWithProps(DodgedBarStory);
 Opacity.args = {
-	type: 'dodged',
-	dimension: 'browser',
-	onClick: undefined,
+	...defaultProps,
 	order: 'order',
 	opacity: 'operatingSystem',
 };
 
 const Popover = bindWithProps(DodgedBarPopoverStory);
 Popover.args = {
-	type: 'dodged',
-	dimension: 'browser',
-	onClick: undefined,
+	...defaultProps,
 	order: 'order',
 	color: 'operatingSystem',
 };
 
 const DodgedStackedWithLabels = bindWithProps(DodgedBarStory);
 DodgedStackedWithLabels.args = {
-	type: 'dodged',
-	dimension: 'browser',
-	onClick: undefined,
+	...defaultProps,
 	color: ['operatingSystem', 'version'],
 	children: createElement(Annotation, { textKey: 'percentLabel' }),
 	paddingRatio: 0.1,
