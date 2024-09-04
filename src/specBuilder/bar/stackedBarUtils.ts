@@ -10,7 +10,7 @@
  * governing permissions and limitations under the License.
  */
 import { BACKGROUND_COLOR, FILTERED_TABLE } from '@constants';
-import { getCursor, getInteractive } from '@specBuilder/marks/markUtils';
+import { getInteractive } from '@specBuilder/marks/markUtils';
 import { GroupMark, Mark, RectEncodeEntry, RectMark } from 'vega';
 
 import { BarSpecProps } from '../../types';
@@ -113,7 +113,6 @@ export const getStackedDimensionEncodings = (props: BarSpecProps): RectEncodeEnt
 	const { dimensionAxis, rangeScale, dimensionScaleKey } = getOrientationProperties(orientation);
 
 	return {
-		cursor: getCursor(props.children, props),
 		[dimensionAxis]: { scale: dimensionScaleKey, field: dimension },
 		[rangeScale]: { scale: dimensionScaleKey, band: 1 },
 	};

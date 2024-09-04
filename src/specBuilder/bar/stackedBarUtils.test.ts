@@ -29,7 +29,6 @@ import { getDodgedAndStackedBarMark, getStackedBarMarks, getStackedDimensionEnco
 const defaultStackedBarXEncondings: RectEncodeEntry = {
 	x: { scale: 'xBand', field: DEFAULT_CATEGORICAL_DIMENSION },
 	width: { scale: 'xBand', band: 1 },
-	cursor: undefined,
 };
 
 const defaultBackgroundMark: Mark = {
