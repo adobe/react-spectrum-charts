@@ -18,8 +18,8 @@ jobs:
             - name: Checkout code
               uses: actions/checkout@v4
               with:
-                  repository: ${{ github.event.workflow_run.head_repository.full_name }}
-                  ref: ${{ github.event.workflow_run.head_branch }}
+                  repository: ${{ github.event.repository.full_name }}
+                  ref: ${{ github.event.pull_request.head.ref }}
                   fetch-depth: 0
 
             - name: Setup Node.js
