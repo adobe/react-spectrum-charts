@@ -16,7 +16,7 @@ jobs:
                   ref: ${{ github.event.workflow_run.head_branch }}
                   fetch-depth: 0
 
-            - name: 'Download code coverage'
+            - name: Download artifacts 📥
               uses: actions/github-script@v6
               with:
                   script: |
@@ -37,10 +37,10 @@ jobs:
                       let fs = require('fs');
                       fs.writeFileSync(`${process.env.GITHUB_WORKSPACE}/rsc-pr-build-artifacts.zip`, Buffer.from(download.data));
 
-            - name: 'Unzip code coverage'
+            - name: Unzip code coverage 📁
               run: unzip rsc-pr-build-artifacts.zip
 
-            - name: Setup workflow variables
+            - name: Setup workflow variables 📝
               run: |
                   # Load the PR number from the file
                   pr_number="$(<pr/pr_number)"
@@ -54,7 +54,7 @@ jobs:
                   echo "PR_BRANCH=${pr_branch}" >> $GITHUB_ENV
                   echo "PR_BASE=${pr_base}" >> $GITHUB_ENV
 
-            - name: Checkout base branch
+            - name: Checkout base branch 🌳
               run: |
                   git remote add upstream ${{ github.event.repository.clone_url }}
                   git fetch upstream
@@ -62,7 +62,7 @@ jobs:
                   git checkout ${{ github.event.workflow_run.head_branch }}
                   git clean -ffdx && git reset --hard HEAD
 
-            - name: 'Download code coverage'
+            - name: Re-download artifacts 📥
               uses: actions/github-script@v6
               with:
                   script: |
@@ -83,24 +83,10 @@ jobs:
                       let fs = require('fs');
                       fs.writeFileSync(`${process.env.GITHUB_WORKSPACE}/rsc-pr-build-artifacts.zip`, Buffer.from(download.data));
 
-            - name: 'Unzip code coverage'
+            - name: Re-unzip code coverage 📁
               run: unzip rsc-pr-build-artifacts.zip
 
-            - name: Setup workflow variables
-              run: |
-                  # Load the PR number from the file
-                  pr_number="$(<pr/pr_number)"
-                  echo "PR_NUMBER: ${pr_number}"
-                  pr_branch="$(<pr/pr_branch)"
-                  echo "PR_BRANCH: ${pr_branch}"
-                  pr_base="$(<pr/pr_base)"
-                  echo "PR_BASE: ${pr_base}"
-
-                  echo "PR_NUMBER=${pr_number}" >> $GITHUB_ENV
-                  echo "PR_BRANCH=${pr_branch}" >> $GITHUB_ENV
-                  echo "PR_BASE=${pr_base}" >> $GITHUB_ENV
-
-            - name: SonarCloud Scan
+            - name: SonarCloud Scan 🔍
               uses: sonarsource/sonarcloud-github-action@master
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
