@@ -22,6 +22,9 @@ import {
 	DEFAULT_OPACITY_RULE,
 	DEFAULT_TRANSFORMED_TIME_DIMENSION,
 	HIGHLIGHT_CONTRAST_RATIO,
+	HOVER_SHAPE,
+	HOVER_SHAPE_COUNT,
+	HOVER_SIZE,
 	LINEAR_COLOR_SCALE,
 	LINE_TYPE_SCALE,
 	LINE_WIDTH_SCALE,
@@ -43,6 +46,7 @@ import {
 	ArrayValueRef,
 	ColorValueRef,
 	Cursor,
+	GroupMark,
 	NumericValueRef,
 	PathMark,
 	ScaledValueRef,
@@ -336,6 +340,59 @@ export const getVoronoiPath = (children: MarkChildElement[], dataSource: string,
 			size: [{ signal: 'max(width, 1)' }, { signal: 'max(height, 1)' }],
 		},
 	],
+});
+
+/**
+ * Gets the hover area for the mark
+ * @param children
+ * @param dataSource the name of the data source that will be used in the hover area calculation
+ * @param dimension the dimension for the x encoding
+ * @param metric the metric for the y encoding
+ * @param name the name of the component the hover area is associated with, i.e. `scatter0`
+ * @param scaleType the scale type for the x encoding
+ * @returns GroupMark
+ */
+export const getItemHoverArea = (
+	children: MarkChildElement[],
+	dataSource: string,
+	dimension: string,
+	metric: string,
+	name: string,
+	scaleType: ScaleType
+): GroupMark => {
+	return {
+		name: `${name}_hoverGroup`,
+		type: 'group',
+		marks: getHoverSizes().map((size, i) => ({
+			name: getHoverMarkName(name, i),
+			type: 'symbol',
+			from: { data: dataSource },
+			encode: {
+				enter: {
+					shape: { value: HOVER_SHAPE },
+					y: { scale: 'yLinear', field: metric },
+					fill: { value: 'transparent' },
+					stroke: { value: 'transparent' },
+					tooltip: getTooltip(children, name, false),
+					size: getHoverSizeSignal(size),
+				},
+				update: {
+					x: getXProductionRule(scaleType, dimension),
+				},
+			},
+		})),
+	};
+};
+
+export const getHoverMarkName = (name: string, index: number): string => `${name}_hover${index}`;
+
+export const getHoverSizes = (): number[] => [...new Array(HOVER_SHAPE_COUNT)].map((_, i) => HOVER_SIZE / 2 ** i);
+
+export const getHoverMarkNames = (markName: string): string[] =>
+	[...new Array(HOVER_SHAPE_COUNT)].map((_, i) => getHoverMarkName(markName, i));
+
+const getHoverSizeSignal = (size: number): SignalRef => ({
+	signal: `${size} * max(width, 1) / 1000`,
 });
 
 /**

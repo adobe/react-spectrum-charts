@@ -229,6 +229,12 @@ Tooltip.args = {
 	),
 };
 
+const ItemTooltip = bindWithProps(BasicLineStory);
+ItemTooltip.args = {
+	...Tooltip.args,
+	interactionMode: 'item',
+};
+
 const WithStaticPoints = bindWithProps(LineWithVisiblePointsStory);
 WithStaticPoints.args = {
 	color: 'series',
@@ -284,6 +290,7 @@ export {
 	LinearTrendScale,
 	Opacity,
 	Tooltip,
+	ItemTooltip,
 	TrendScale,
 	WithStaticPoints,
 	WithStaticPointsAndDialogs,

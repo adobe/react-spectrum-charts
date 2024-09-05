@@ -18,6 +18,7 @@ import { sanitizeMarkChildren } from '@utils';
 import {
 	ColorFacet,
 	ColorScheme,
+	InteractionMode,
 	LineTypeFacet,
 	LineWidthFacet,
 	MarkChildElement,
@@ -78,4 +79,5 @@ export interface LineMarkProps {
 	popoverMarkName?: string;
 	scaleType: ScaleType;
 	staticPoint?: string;
+	interactionMode?: InteractionMode;
 }

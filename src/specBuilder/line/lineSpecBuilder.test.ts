@@ -11,6 +11,7 @@
  */
 import { createElement } from 'react';
 
+import { ChartTooltip } from '@components/ChartTooltip';
 import { MetricRange } from '@components/MetricRange';
 import { Trendline } from '@components/Trendline';
 import {
@@ -559,6 +560,19 @@ describe('lineSpecBuilder', () => {
 			expect(signals[0].on).toHaveLength(2);
 			expect(signals[2]).toHaveProperty('name', HIGHLIGHTED_SERIES);
 			expect(signals[2].on).toHaveLength(2);
+		});
+
+		test('hover signals with interactionMode item', () => {
+			const signals = addSignals(defaultSignals, {
+				...defaultLineProps,
+				interactionMode: 'item',
+				children: [createElement(ChartTooltip)],
+			});
+			expect(signals).toHaveLength(defaultSignals.length);
+			expect(signals[0]).toHaveProperty('name', HIGHLIGHTED_ITEM);
+			expect(signals[0].on).toHaveLength(8);
+			expect(signals[2]).toHaveProperty('name', HIGHLIGHTED_SERIES);
+			expect(signals[2].on).toHaveLength(8);
 		});
 	});
 });

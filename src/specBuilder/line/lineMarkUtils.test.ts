@@ -69,10 +69,18 @@ describe('getLineMark()', () => {
 });
 
 describe('getLineHoverMarks()', () => {
-	test('should return 4 marks', () => {
+	test('should return 4 marks by default', () => {
 		expect(
 			getLineHoverMarks({ ...defaultLineMarkProps, isHighlightedByDimension: true, children: [] }, 'line0_facet')
 		).toHaveLength(5);
+	});
+	test('should return 4 marks if interactionMode is item', () => {
+		expect(
+			getLineHoverMarks(
+				{ ...defaultLineMarkProps, isHighlightedByDimension: true, children: [], interactionMode: 'item' },
+				'line0_facet'
+			)
+		).toHaveLength(4);
 	});
 });
 
