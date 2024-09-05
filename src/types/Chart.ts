@@ -11,7 +11,7 @@
  */
 import { JSXElementConstructor, MutableRefObject, ReactElement, ReactNode } from 'react';
 
-import { GROUP_DATA, MARK_ID, SERIES_ID, TRENDLINE_VALUE } from '@constants';
+import { GROUP_DATA, INTERACTION_MODE, MARK_ID, SERIES_ID, TRENDLINE_VALUE } from '@constants';
 import { Config, Data, FontWeight, Locale, NumberLocale, Padding, Spec, SymbolShape, TimeLocale, View } from 'vega';
 
 import { Theme } from '@react-types/provider';
@@ -402,7 +402,11 @@ export interface LineProps extends Omit<MarkProps, 'color'> {
 	scaleType?: ScaleType;
 	/** Key in the data that if it exists and the value resolves to true for each data object, a point will be drawn for that data point on the line. */
 	staticPoint?: string;
+	/** Sets the interaction mode for the line */
+	interactionMode?: InteractionMode;
 }
+
+export type InteractionMode = `${INTERACTION_MODE}`;
 
 export interface ScatterProps extends Omit<MarkProps, 'color'> {
 	/**

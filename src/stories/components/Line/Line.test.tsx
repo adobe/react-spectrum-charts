@@ -32,6 +32,7 @@ import {
 import {
 	Basic,
 	HistoricalCompare,
+	ItemTooltip,
 	LineType,
 	LineWithAxisAndLegend,
 	LineWithUTCDatetimeFormat,
@@ -205,6 +206,21 @@ describe('Line', () => {
 			expect(lines[0]).toHaveAttribute('opacity', '1');
 			expect(lines[1]).toHaveAttribute('opacity', '0.2');
 		});
+	});
+
+	test('Item tooltip renders', async () => {
+		render(<ItemTooltip {...ItemTooltip.args} />);
+		const chart = await findChart();
+		expect(chart).toBeInTheDocument();
+
+		// get item hover area
+		const hoverGroup = await findAllMarksByGroupName(chart, 'line0_hover0');
+
+		// hover and validate all hover components are visible
+		await hoverNthElement(hoverGroup, 0);
+		const tooltip = await screen.findByTestId('rsc-tooltip');
+		expect(tooltip).toBeInTheDocument();
+		expect(within(tooltip).getByText('Nov 8')).toBeInTheDocument();
 	});
 
 	test('Static points render', async () => {

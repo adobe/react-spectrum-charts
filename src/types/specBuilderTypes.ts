@@ -24,6 +24,7 @@ import {
 	DonutProps,
 	DonutSummaryProps,
 	FacetRef,
+	InteractionMode,
 	LegendProps,
 	LineProps,
 	LineWidth,
@@ -169,6 +170,7 @@ export interface LineSpecProps extends PartiallyRequired<LineProps, LinePropsWit
 	lineWidth?: FacetRef<LineWidth>;
 	markType: 'line';
 	popoverMarkName: string | undefined;
+	interactionMode?: InteractionMode;
 }
 
 type ScatterPropsWithDefaults =
