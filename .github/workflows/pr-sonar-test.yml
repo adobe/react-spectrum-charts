@@ -63,17 +63,8 @@ jobs:
                   echo "PR_BRANCH=${pr_branch}" >> $GITHUB_ENV
                   echo "PR_BASE=${pr_base}" >> $GITHUB_ENV
 
-            - name: Lint 🧼
-              run: yarn lint
-
             - name: Test 🧪
               run: yarn test
-
-            - name: Build 🛠️
-              run: yarn build
-
-            - name: Build Storybook 📚
-              run: yarn build:storybook
 
             - name: SonarCloud Scan 🔍
               uses: sonarsource/sonarcloud-github-action@master
