@@ -1,4 +1,4 @@
-name: PR Post-Build Sonar
+name: PR Post-Build Sonar (NEW)
 on:
     workflow_run:
         workflows: [PR Build]
