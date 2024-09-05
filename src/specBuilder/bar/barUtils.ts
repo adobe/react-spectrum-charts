@@ -224,7 +224,7 @@ export const getBarEnterEncodings = ({ children, color, colorScheme, name, opaci
 });
 
 export const getBarUpdateEncodings = (props: BarSpecProps): EncodeEntry => ({
-	cursor: getCursor(props.children),
+	cursor: getCursor(props.children, props),
 	opacity: getMarkOpacity(props),
 	stroke: getStroke(props),
 	strokeDash: getStrokeDash(props),

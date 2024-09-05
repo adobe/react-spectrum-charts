@@ -47,6 +47,7 @@ import {
 	getSymbolSizeProductionRule,
 	getTooltip,
 	getXProductionRule,
+	getInteractive,
 	hasMetricRange,
 	hasTooltip,
 } from './markUtils';
@@ -221,6 +222,17 @@ describe('getXProductionRule()', () => {
 			scale: 'xPoint',
 			field: DEFAULT_TIME_DIMENSION,
 		});
+	});
+});
+
+describe('getInteractive()', () => {
+	const tooltip = createElement(ChartTooltip);
+	const popover = createElement(ChartPopover);
+	test('should return true based on having interactive children', () => {
+		expect(getInteractive([tooltip])).toEqual(true);
+		expect(getInteractive([])).toEqual(false);
+		expect(getInteractive([tooltip, popover])).toEqual(true);
+		expect(getInteractive(defaultBarProps.children, defaultBarProps)).toEqual(false);
 	});
 });
 

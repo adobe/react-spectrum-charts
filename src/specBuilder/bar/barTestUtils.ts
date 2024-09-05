@@ -117,7 +117,6 @@ export const stackedLabelWithStyles = {
 	from: { data: FILTERED_TABLE },
 	name: 'bar0_annotationBackground',
 	interactive: false,
-
 	encode: {
 		enter: {
 			align: { value: 'center' },
@@ -145,7 +144,6 @@ export const stackedLabelBackground = {
 	from: { data: FILTERED_TABLE },
 	name: 'bar0_annotationBackground',
 	interactive: false,
-
 	encode: {
 		enter: {
 			align: { value: 'center' },
@@ -173,7 +171,6 @@ export const stackedLabelText = {
 	from: { data: FILTERED_TABLE },
 	name: 'bar0_annotationText',
 	interactive: false,
-
 	encode: {
 		enter: {
 			x: { scale: stackedXScale, field: defaultBarProps.dimension, band: 0.5 },

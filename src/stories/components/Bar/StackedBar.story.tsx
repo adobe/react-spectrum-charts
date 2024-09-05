@@ -13,7 +13,7 @@ import React, { ReactElement, createElement } from 'react';
 
 import { Annotation } from '@components/Annotation';
 import useChartProps from '@hooks/useChartProps';
-import { Axis, Bar, Chart, Legend } from '@rsc';
+import { Axis, Bar, BarProps, Chart, Legend } from '@rsc';
 import { StoryFn } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
 
@@ -56,26 +56,34 @@ const NegativeBarStory: StoryFn<typeof Bar> = (args): ReactElement => {
 	);
 };
 
-const Basic = bindWithProps(BarStory);
-Basic.args = {
+const defaultProps: BarProps = {
 	dimension: 'browser',
 	order: 'order',
 	color: 'operatingSystem',
+	onClick: undefined,
+}
+
+const Basic = bindWithProps(BarStory);
+Basic.args = {
+	...defaultProps,
 };
 
 const WithBarLabels = bindWithProps(BarStory);
 WithBarLabels.args = {
-	dimension: 'browser',
-	order: 'order',
-	color: 'operatingSystem',
+	...defaultProps,
 	children: createElement(Annotation, { textKey: 'percentLabel' }),
 };
 
 const NegativeStack = bindWithProps(NegativeBarStory);
 NegativeStack.args = {
+	...defaultProps,
+};
+
+const OnClick = bindWithProps(BarStory);
+OnClick.args = {
 	dimension: 'browser',
 	order: 'order',
 	color: 'operatingSystem',
 };
 
-export { Basic, NegativeStack, WithBarLabels };
+export { Basic, NegativeStack, WithBarLabels, OnClick };

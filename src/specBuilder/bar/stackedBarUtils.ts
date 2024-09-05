@@ -90,7 +90,7 @@ export const getStackedBar = (props: BarSpecProps): RectMark => {
 		name,
 		type: 'rect',
 		from: { data: isDodgedAndStacked(props) ? `${name}_facet` : getBaseDataSourceName(props) },
-		interactive: getInteractive(children),
+		interactive: getInteractive(children, props),
 		encode: {
 			enter: {
 				...getBaseBarEnterEncodings(props),
