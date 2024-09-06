@@ -1,4 +1,4 @@
-name: Run SonarCloud on main
+name: Main Sonar
 # This action runs when a branch has been merged to main.
 
 on:
