@@ -289,7 +289,7 @@ export const getHiddenSeriesColorRule = (
 	if (keys?.length) {
 		return [
 			{
-				test: `indexof(pluck(data('${FILTERED_TABLE}'), '${name}_groupId'), datum.value) === -1`,
+				test: `indexof(pluck(data('${FILTERED_TABLE}'), '${name}_highlightGroupId'), datum.value) === -1`,
 				value: getColorValue(colorValue, colorScheme),
 			},
 		];

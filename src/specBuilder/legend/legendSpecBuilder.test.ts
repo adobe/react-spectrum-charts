@@ -322,7 +322,7 @@ describe('addData()', () => {
 	test('should add legend group Id if keys has length', () => {
 		const data = addData(baseData, { ...defaultLegendProps, facets: [DEFAULT_COLOR], keys: ['key1', 'key2'] });
 		expect(data[0].transform).toHaveLength(2);
-		expect(data[0].transform?.[1]).toHaveProperty('as', 'legend0_groupId');
+		expect(data[0].transform?.[1]).toHaveProperty('as', 'legend0_highlightGroupId');
 	});
 	test('should add transform to table if they do not exist', () => {
 		const data = addData([{ ...baseData[0], transform: undefined }, ...baseData], {

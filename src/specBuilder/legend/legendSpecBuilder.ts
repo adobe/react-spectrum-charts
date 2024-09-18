@@ -279,7 +279,7 @@ export const addData = produce<Data[], [LegendSpecProps & { facets: string[] }]>
 			}
 			tableData.transform.push({
 				type: 'formula',
-				as: `${name}_groupId`,
+				as: `${name}_highlightGroupId`,
 				expr: keys.map((key) => `datum.${key}`).join(' + " | " + '),
 			});
 		}

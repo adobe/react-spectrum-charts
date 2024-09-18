@@ -188,14 +188,14 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 						chartView.current?.signal(controlledHoveredIdSignal.name, value?.[MARK_ID] ?? null);
 					}
 					if (controlledHoveredGroupSignal) {
-						const key = Object.keys(value).find((k) => k.endsWith('_groupId'));
+						const key = Object.keys(value).find((k) => k.endsWith('_highlightGroupId'));
 						if (key) {
 							chartView.current?.signal(controlledHoveredGroupSignal.name, value[key]);
 						}
 					}
 					if (tooltip.highlightBy && tooltip.highlightBy !== 'item') {
 						const tableData = chartView.current?.data(FILTERED_TABLE);
-						const groupId = `${tooltip.name}_groupId`;
+						const groupId = `${tooltip.name}_highlightGroupId`;
 						value[GROUP_DATA] = tableData?.filter((d) => d[groupId] === value[groupId]);
 					}
 					return renderToStaticMarkup(
@@ -281,8 +281,7 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 									setLegendHiddenSeries,
 									legendIsToggleable,
 									onLegendClick,
-									onMarkClicks,
-
+									onMarkClicks
 								)
 							);
 						}
