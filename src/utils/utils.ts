@@ -380,7 +380,7 @@ export const setSelectedSignals = ({ selectedData, view }: { selectedData: Datum
 	view.signal(SELECTED_ITEM, selectedData?.[MARK_ID] ?? null);
 	view.signal(SELECTED_SERIES, selectedData?.[SERIES_ID] ?? null);
 
-	const selectedGroupKey = Object.keys(selectedData || {}).find((k) => k.endsWith('_selectedGroupId'));
+	const selectedGroupKey = Object.keys(selectedData ?? {}).find((k) => k.endsWith('_selectedGroupId'));
 
 	if (selectedGroupKey) {
 		view.signal(SELECTED_GROUP, selectedData?.[selectedGroupKey] ?? null);
