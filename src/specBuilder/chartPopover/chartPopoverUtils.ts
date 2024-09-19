@@ -60,12 +60,12 @@ export const applyPopoverPropDefaults = (
  *
  * NOTE: this function mutates the data object so it should only be called from a produce function
  * @param data
- * @param chartTooltipProps
+ * @param markProps
  */
 export const addPopoverData = (data: Data[], markProps: PopoverParentProps, addHighlightedData = true) => {
-	const tooltips = getPopovers(markProps);
+	const popovers = getPopovers(markProps);
 
-	for (const { UNSAFE_highlightBy, markName } of tooltips) {
+	for (const { UNSAFE_highlightBy, markName } of popovers) {
 		if (UNSAFE_highlightBy === 'item') return;
 		const filteredTable = getFilteredTableData(data);
 		if (!filteredTable.transform) {
