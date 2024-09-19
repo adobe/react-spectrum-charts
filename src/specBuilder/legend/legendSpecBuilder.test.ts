@@ -23,6 +23,7 @@ import {
 	defaultHighlightedGroupSignal,
 	defaultHighlightedItemSignal,
 	defaultHighlightedSeriesSignal,
+	defaultSelectedGroupSignal,
 	defaultSelectedItemSignal,
 	defaultSelectedSeriesSignal,
 	defaultSignals,
@@ -166,6 +167,7 @@ describe('addLegend()', () => {
 					defaultHighlightSeriesSignal,
 					defaultSelectedItemSignal,
 					defaultSelectedSeriesSignal,
+					defaultSelectedGroupSignal,
 				],
 				legends: [{ ...defaultLegend, encode: defaultHighlightLegendEncoding }],
 			});

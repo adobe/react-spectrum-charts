@@ -63,7 +63,7 @@ const ChartPopoverSvgStory: StoryFn<typeof ChartPopover> = (args): ReactElement 
 		<Chart {...chartProps}>
 			<Bar color="series">
 				<ChartTooltip>{dialogContent}</ChartTooltip>
-				<ChartPopover {...args} />
+				<ChartPopover UNSAFE_highlightBy="item" {...args} />
 			</Bar>
 		</Chart>
 	);
@@ -72,10 +72,10 @@ const ChartPopoverSvgStory: StoryFn<typeof ChartPopover> = (args): ReactElement 
 const ChartPopoverDodgedBarStory: StoryFn<typeof ChartPopover> = (args): ReactElement => {
 	const chartProps = useChartProps(defaultChartProps);
 	return (
-		<Chart {...chartProps}>
+		<Chart {...chartProps} debug>
 			<Bar color="series" type="dodged">
 				<ChartTooltip>{dialogContent}</ChartTooltip>
-				<ChartPopover {...args} />
+				<ChartPopover UNSAFE_highlightBy="item" {...args} />
 			</Bar>
 		</Chart>
 	);

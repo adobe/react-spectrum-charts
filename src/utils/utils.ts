@@ -11,7 +11,7 @@
  */
 import { Fragment, ReactNode } from 'react';
 
-import { MARK_ID, SELECTED_ITEM, SELECTED_SERIES, SERIES_ID } from '@constants';
+import { MARK_ID, SELECTED_GROUP, SELECTED_ITEM, SELECTED_SERIES, SERIES_ID } from '@constants';
 import {
 	Annotation,
 	Area,
@@ -30,8 +30,8 @@ import {
 	Trendline,
 	TrendlineAnnotation,
 } from '@rsc';
-import { Donut, DonutSummary, SegmentLabel } from '@rsc/rc';
 import { Combo } from '@rsc/alpha';
+import { Donut, DonutSummary, SegmentLabel } from '@rsc/rc';
 import { View } from 'vega';
 
 import {
@@ -217,12 +217,7 @@ export function getElement(
  */
 export const getAllMarkElements = (
 	target: unknown,
-	source:
-		| typeof Area
-		| typeof Bar
-		| typeof Donut
-		| typeof Line
-		| typeof Scatter,
+	source: typeof Area | typeof Bar | typeof Donut | typeof Line | typeof Scatter,
 	elements: MappedElement[] = [],
 	name: string = ''
 ): MappedElement[] => {
@@ -249,7 +244,9 @@ export const getAllMarkElements = (
 	const desiredElements: MappedElement[] = [];
 	for (const child of toArray(target.props.children)) {
 		const childName = getElementName(child, elementCounts);
-		desiredElements.push(...getAllMarkElements(child, source, elements, [name, childName].filter(Boolean).join('')));
+		desiredElements.push(
+			...getAllMarkElements(child, source, elements, [name, childName].filter(Boolean).join(''))
+		);
 	}
 	// no element matches found, give up all hope...
 	return [...elements, ...desiredElements];
@@ -382,4 +379,10 @@ export function debugLog(
 export const setSelectedSignals = ({ selectedData, view }: { selectedData: Datum | null; view: View }) => {
 	view.signal(SELECTED_ITEM, selectedData?.[MARK_ID] ?? null);
 	view.signal(SELECTED_SERIES, selectedData?.[SERIES_ID] ?? null);
+
+	const selectedGroupKey = Object.keys(selectedData || {}).find((k) => k.endsWith('_selectedGroupId'));
+
+	if (selectedGroupKey) {
+		view.signal(SELECTED_GROUP, selectedData?.[selectedGroupKey] ?? null);
+	}
 };

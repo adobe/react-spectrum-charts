@@ -22,6 +22,7 @@ import {
 	LINE_TYPE_SCALE,
 	LINE_WIDTH_SCALE,
 	OPACITY_SCALE,
+	SELECTED_GROUP,
 	SELECTED_ITEM,
 	SELECTED_SERIES,
 	SERIES_ID,
@@ -235,6 +236,7 @@ export const getDefaultSignals = (
 		getGenericValueSignal(HIGHLIGHTED_SERIES, highlightedSeries),
 		getGenericValueSignal(SELECTED_ITEM),
 		getGenericValueSignal(SELECTED_SERIES),
+		getGenericValueSignal(SELECTED_GROUP),
 	];
 };
 

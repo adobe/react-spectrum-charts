@@ -21,6 +21,7 @@ import {
 	STACK_ID,
 	TRELLIS_PADDING,
 } from '@constants';
+import { addPopoverData } from '@specBuilder/chartPopover/chartPopoverUtils';
 import { addTooltipData, addTooltipSignals } from '@specBuilder/chartTooltip/chartTooltipUtils';
 import { getTransformSort } from '@specBuilder/data/dataUtils';
 import { getTooltipProps } from '@specBuilder/marks/markUtils';
@@ -130,6 +131,7 @@ export const addData = produce<Data[], [BarSpecProps]>((data, props) => {
 		data[index].transform?.push(getDodgeGroupTransform(props));
 	}
 	addTooltipData(data, props);
+	addPopoverData(data, props);
 });
 
 /**

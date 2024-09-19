@@ -9,7 +9,14 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { HIGHLIGHTED_GROUP, HIGHLIGHTED_ITEM, HIGHLIGHTED_SERIES, SELECTED_ITEM, SELECTED_SERIES } from '@constants';
+import {
+	HIGHLIGHTED_GROUP,
+	HIGHLIGHTED_ITEM,
+	HIGHLIGHTED_SERIES,
+	SELECTED_GROUP,
+	SELECTED_ITEM,
+	SELECTED_SERIES,
+} from '@constants';
 import { Signal } from 'vega';
 
 import { getGenericValueSignal } from './signal/signalSpecBuilder';
@@ -19,6 +26,7 @@ export const defaultHighlightedGroupSignal = getGenericValueSignal(HIGHLIGHTED_G
 export const defaultHighlightedSeriesSignal = getGenericValueSignal(HIGHLIGHTED_SERIES);
 export const defaultSelectedItemSignal = getGenericValueSignal(SELECTED_ITEM);
 export const defaultSelectedSeriesSignal = getGenericValueSignal(SELECTED_SERIES);
+export const defaultSelectedGroupSignal = getGenericValueSignal(SELECTED_GROUP);
 
 export const defaultSignals: Signal[] = [
 	defaultHighlightedItemSignal,
@@ -26,4 +34,5 @@ export const defaultSignals: Signal[] = [
 	defaultHighlightedSeriesSignal,
 	defaultSelectedItemSignal,
 	defaultSelectedSeriesSignal,
+	defaultSelectedGroupSignal,
 ];

@@ -9,7 +9,15 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { CORNER_RADIUS, DISCRETE_PADDING, FILTERED_TABLE, MARK_ID, SELECTED_ITEM, STACK_ID } from '@constants';
+import {
+	CORNER_RADIUS,
+	DISCRETE_PADDING,
+	FILTERED_TABLE,
+	MARK_ID,
+	SELECTED_GROUP,
+	SELECTED_ITEM,
+	STACK_ID,
+} from '@constants';
 import {
 	getColorProductionRule,
 	getCursor,
@@ -231,7 +239,7 @@ export const getBarUpdateEncodings = (props: BarSpecProps): EncodeEntry => ({
 	strokeWidth: getStrokeWidth(props),
 });
 
-export const getStroke = ({ children, color, colorScheme }: BarSpecProps): ProductionRule<ColorValueRef> => {
+export const getStroke = ({ name, children, color, colorScheme }: BarSpecProps): ProductionRule<ColorValueRef> => {
 	const defaultProductionRule = getColorProductionRule(color, colorScheme);
 	if (!hasPopover(children)) {
 		return [defaultProductionRule];
@@ -239,7 +247,7 @@ export const getStroke = ({ children, color, colorScheme }: BarSpecProps): Produ
 
 	return [
 		{
-			test: `${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${MARK_ID}`,
+			test: `(${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${MARK_ID}) || (${SELECTED_GROUP} && ${SELECTED_GROUP} === datum.${name}_selectedGroupId)`,
 			value: getColorValue('static-blue', colorScheme),
 		},
 		defaultProductionRule,
@@ -255,7 +263,7 @@ export const getStrokeDash = ({ children, lineType }: BarSpecProps): ProductionR
 	return [{ test: `${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${MARK_ID}`, value: [] }, defaultProductionRule];
 };
 
-export const getStrokeWidth = ({ children, lineWidth }: BarSpecProps): ProductionRule<NumericValueRef> => {
+export const getStrokeWidth = ({ name, children, lineWidth }: BarSpecProps): ProductionRule<NumericValueRef> => {
 	const lineWidthValue = getLineWidthPixelsFromLineWidth(lineWidth);
 	const defaultProductionRule = { value: lineWidthValue };
 	if (!hasPopover(children)) {
@@ -263,7 +271,10 @@ export const getStrokeWidth = ({ children, lineWidth }: BarSpecProps): Productio
 	}
 
 	return [
-		{ test: `${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${MARK_ID}`, value: Math.max(lineWidthValue, 2) },
+		{
+			test: `(${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${MARK_ID}) || (${SELECTED_GROUP} && ${SELECTED_GROUP} === datum.${name}_selectedGroupId)`,
+			value: Math.max(lineWidthValue, 2),
+		},
 		defaultProductionRule,
 	];
 };
