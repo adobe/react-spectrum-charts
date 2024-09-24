@@ -21,6 +21,7 @@ import {
 	FILTERED_TABLE,
 	MARK_ID,
 	PADDING_RATIO,
+	SELECTED_GROUP,
 	SELECTED_ITEM,
 	STACK_ID,
 } from '@constants';
@@ -320,7 +321,7 @@ describe('barUtils', () => {
 			const strokeRule = getStroke({ ...defaultBarProps, children: [popover] });
 			expect(strokeRule).toHaveLength(2);
 			expect(strokeRule[0]).toStrictEqual({
-				test: `${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${MARK_ID}`,
+				test: `(${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${MARK_ID}) || (${SELECTED_GROUP} && ${SELECTED_GROUP} === datum.bar0_selectedGroupId)`,
 				value: 'rgb(20, 115, 230)',
 			});
 		});
@@ -354,7 +355,7 @@ describe('barUtils', () => {
 			const strokeRule = getStrokeWidth({ ...defaultBarProps, children: [popover] });
 			expect(strokeRule).toHaveLength(2);
 			expect(strokeRule[0]).toStrictEqual({
-				test: `${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${MARK_ID}`,
+				test: `(${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${MARK_ID}) || (${SELECTED_GROUP} && ${SELECTED_GROUP} === datum.bar0_selectedGroupId)`,
 				value: 2,
 			});
 		});

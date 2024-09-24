@@ -47,7 +47,7 @@ export const setHoverOpacityForMarks = (marks: Mark[], keys?: string[], name?: s
 export const getHighlightOpacityRule = (keys?: string[], name?: string): { test?: string } & NumericValueRef => {
 	let test = `${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES} !== datum.${SERIES_ID}`;
 	if (keys?.length) {
-		test = `${HIGHLIGHTED_GROUP} && ${HIGHLIGHTED_GROUP} !== datum.${name}_groupId`;
+		test = `${HIGHLIGHTED_GROUP} && ${HIGHLIGHTED_GROUP} !== datum.${name}_highlightGroupId`;
 	}
 	return { test, value: 1 / HIGHLIGHT_CONTRAST_RATIO };
 };

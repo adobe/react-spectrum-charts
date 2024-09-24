@@ -55,6 +55,7 @@ export const HIGHLIGHTED_GROUP = 'highlightedGroup'; // data point
 export const HIGHLIGHTED_SERIES = 'highlightedSeries'; // series
 export const SELECTED_ITEM = 'selectedItem'; // data point
 export const SELECTED_SERIES = 'selectedSeries'; // series
+export const SELECTED_GROUP = 'selectedGroup'; // data point
 
 // scale names
 export const COLOR_SCALE = 'color';

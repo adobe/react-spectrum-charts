@@ -18,6 +18,7 @@ import {
 	AxisAnnotationProps,
 	AxisProps,
 	BarProps,
+	ChartPopoverProps,
 	ChartTooltipProps,
 	ColorFacet,
 	ColorScheme,
@@ -123,6 +124,12 @@ export interface AnnotationSpecProps extends PartiallyRequired<AnnotationProps, 
 type ChartTooltipPropsWithDefaults = 'highlightBy';
 
 export interface ChartTooltipSpecProps extends PartiallyRequired<ChartTooltipProps, ChartTooltipPropsWithDefaults> {
+	markName: string;
+}
+
+type ChartPopoverPropsWithDefaults = 'UNSAFE_highlightBy';
+
+export interface ChartPopoverSpecProps extends PartiallyRequired<ChartPopoverProps, ChartPopoverPropsWithDefaults> {
 	markName: string;
 }
 

@@ -25,6 +25,7 @@ import {
 	HIGHLIGHTED_ITEM,
 	HIGHLIGHTED_SERIES,
 	MARK_ID,
+	SELECTED_GROUP,
 	SELECTED_ITEM,
 	SELECTED_SERIES,
 	TABLE,
@@ -211,7 +212,8 @@ describe('areaSpecBuilder', () => {
 			expect(signals[2].on).toHaveLength(2);
 			expect(signals[3]).toHaveProperty('name', SELECTED_ITEM);
 			expect(signals[4]).toHaveProperty('name', SELECTED_SERIES);
-			expect(signals[5]).toHaveProperty('name', 'area0_controlledHoveredId');
+			expect(signals[5]).toHaveProperty('name', SELECTED_GROUP);
+			expect(signals[6]).toHaveProperty('name', 'area0_controlledHoveredId');
 		});
 
 		test('should exclude data with key from update if tooltip has excludeDataKey', () => {

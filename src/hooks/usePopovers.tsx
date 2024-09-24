@@ -23,6 +23,7 @@ export type PopoverDetail = {
 	chartPopoverProps: ChartPopoverProps;
 	key: string;
 	name: string;
+	UNSAFE_highlightBy: ChartPopoverProps['UNSAFE_highlightBy'];
 };
 
 export default function usePopovers(children: ChartChildElement[]): PopoverDetail[] {
@@ -40,6 +41,7 @@ export default function usePopovers(children: ChartChildElement[]): PopoverDetai
 						chartPopoverProps: popover.element.props,
 						key: `${popover.name}Popover${index}`,
 						name: popover.name,
+						UNSAFE_highlightBy: popover.element.props.UNSAFE_highlightBy,
 					};
 				}),
 		[popoverElements]

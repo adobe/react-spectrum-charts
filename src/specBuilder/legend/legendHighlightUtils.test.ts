@@ -47,7 +47,7 @@ describe('getHighlightOpacityRule()', () => {
 		const opacityRule = getHighlightOpacityRule(['key1'], 'legend0');
 		expect(opacityRule).toHaveProperty(
 			'test',
-			`${HIGHLIGHTED_GROUP} && ${HIGHLIGHTED_GROUP} !== datum.legend0_groupId`
+			`${HIGHLIGHTED_GROUP} && ${HIGHLIGHTED_GROUP} !== datum.legend0_highlightGroupId`
 		);
 	});
 });

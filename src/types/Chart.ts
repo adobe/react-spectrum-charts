@@ -595,6 +595,8 @@ export interface ChartPopoverProps {
 	onOpenChange?: (isOpen: boolean) => void;
 	/** The placement padding that should be applied between the popover and its surrounding container */
 	containerPadding?: number;
+	/** Sets which marks should be highlighted when a popover is visible.  This feature is incomplete. */
+	UNSAFE_highlightBy?: 'series' | 'dimension' | 'item' | string[];
 }
 
 export interface ReferenceLineProps {

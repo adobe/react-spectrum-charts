@@ -85,7 +85,7 @@ export const getHighlightSignalUpdateExpression = (
 	const hoveredSeriesExpression = `domain("${legendName}Entries")[datum.index]`;
 	if (!includeHiddenSeries) return hoveredSeriesExpression;
 	if (keys?.length) {
-		return `indexof(pluck(data("${FILTERED_TABLE}"),"${legendName}_groupId"), ${hoveredSeriesExpression}) !== -1 ? ${hoveredSeriesExpression} : null`;
+		return `indexof(pluck(data("${FILTERED_TABLE}"),"${legendName}_highlightGroupId"), ${hoveredSeriesExpression}) !== -1 ? ${hoveredSeriesExpression} : null`;
 	}
 	return `indexof(hiddenSeries, ${hoveredSeriesExpression}) === -1 ? ${hoveredSeriesExpression} : null`;
 };

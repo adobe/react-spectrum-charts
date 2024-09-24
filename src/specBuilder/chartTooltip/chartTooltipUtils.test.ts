@@ -69,19 +69,19 @@ describe('addTooltipData()', () => {
 		const markProps = getDefautltMarkProps({ highlightBy: 'dimension' });
 		addTooltipData(data, markProps);
 		expect(data[1].transform?.length).toBe(1);
-		expect(data[1].transform?.[0]).toHaveProperty('as', 'bar0_groupId');
+		expect(data[1].transform?.[0]).toHaveProperty('as', 'bar0_highlightGroupId');
 	});
 	test('should add the group id transform if highlightBy is `series`', () => {
 		const markProps = getDefautltMarkProps({ highlightBy: 'series' });
 		addTooltipData(data, markProps);
 		expect(data[1].transform?.length).toBe(1);
-		expect(data[1].transform?.[0]).toHaveProperty('as', 'bar0_groupId');
+		expect(data[1].transform?.[0]).toHaveProperty('as', 'bar0_highlightGroupId');
 	});
 	test('should add the group id transform if highlightBy is a key array', () => {
 		const markProps = getDefautltMarkProps({ highlightBy: ['operatingSystem'] });
 		addTooltipData(data, markProps);
 		expect(data[1].transform?.length).toBe(1);
-		expect(data[1].transform?.[0]).toHaveProperty('as', 'bar0_groupId');
+		expect(data[1].transform?.[0]).toHaveProperty('as', 'bar0_highlightGroupId');
 	});
 	test('should not add highlightedData for the mark if false', () => {
 		const dataLength = data.length;

@@ -142,7 +142,7 @@ export const addData = produce<Data[], [AreaSpecProps]>((data, props) => {
 
 export const getAreaHighlightedData = (name: string, hasPopover: boolean, hasGroupId: boolean): SourceData => {
 	const highlightedExpr = hasGroupId
-		? `${name}_controlledHoveredGroup === datum.${name}_groupId`
+		? `${name}_controlledHoveredGroup === datum.${name}_highlightGroupId`
 		: `${name}_controlledHoveredId === datum.${MARK_ID}`;
 	const expr = hasPopover
 		? `${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${MARK_ID} || !${SELECTED_ITEM} && ${highlightedExpr}`

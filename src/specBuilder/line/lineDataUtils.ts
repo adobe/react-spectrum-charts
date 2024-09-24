@@ -25,7 +25,7 @@ export const getLineHighlightedData = (
 	hasGroupId: boolean
 ): SourceData => {
 	const highlightedExpr = hasGroupId
-		? `${HIGHLIGHTED_GROUP} === datum.${name}_groupId`
+		? `${HIGHLIGHTED_GROUP} === datum.${name}_highlightGroupId`
 		: `${HIGHLIGHTED_ITEM} === datum.${MARK_ID}`;
 	const expr = hasPopover
 		? `${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${MARK_ID} || !${SELECTED_ITEM} && ${highlightedExpr}`

@@ -103,7 +103,7 @@ export const addTooltipData = (data: Data[], markProps: TooltipParentProps, addH
 export const getGroupIdTransform = (highlightBy: string[], markName: string): FormulaTransform => {
 	return {
 		type: 'formula',
-		as: `${markName}_groupId`,
+		as: `${markName}_highlightGroupId`,
 		expr: highlightBy.map((facet) => `datum.${facet}`).join(' + " | " + '),
 	};
 };
@@ -119,7 +119,7 @@ const getMarkHighlightedData = (markName: string): SourceData => ({
 	transform: [
 		{
 			type: 'filter',
-			expr: `${HIGHLIGHTED_GROUP} === datum.${markName}_groupId`,
+			expr: `${HIGHLIGHTED_GROUP} === datum.${markName}_highlightGroupId`,
 		},
 	],
 });
@@ -153,7 +153,7 @@ export const addTooltipSignals = (signals: Signal[], markProps: TooltipParentPro
 		const highlightedGroupSignal = signals.find((signal) => signal.name === HIGHLIGHTED_GROUP) as Signal;
 
 		let markName = markProps.name;
-		let update = `datum.${markName}_groupId`;
+		let update = `datum.${markName}_highlightGroupId`;
 
 		if ('interactionMode' in markProps && markProps.interactionMode === INTERACTION_MODE.ITEM) {
 			getHoverMarkNames(markName).forEach((name) => {
@@ -203,7 +203,7 @@ export const addTooltipMarkOpacityRules = (
 	if (isHighlightedByGroup(markProps)) {
 		const { name: markName } = markProps;
 		opacityRules.unshift({
-			test: `${HIGHLIGHTED_GROUP} === datum.${markName}_groupId`,
+			test: `${HIGHLIGHTED_GROUP} === datum.${markName}_highlightGroupId`,
 			...DEFAULT_OPACITY_RULE,
 		});
 	}

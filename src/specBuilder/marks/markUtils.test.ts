@@ -29,6 +29,7 @@ import {
 	LINE_TYPE_SCALE,
 	LINE_WIDTH_SCALE,
 	OPACITY_SCALE,
+	SELECTED_GROUP,
 	SELECTED_ITEM,
 	SYMBOL_SIZE_SCALE,
 } from '@constants';
@@ -40,6 +41,7 @@ import {
 	getColorProductionRule,
 	getColorProductionRuleSignalString,
 	getHighlightOpacityValue,
+	getInteractive,
 	getLineWidthProductionRule,
 	getMarkOpacity,
 	getOpacityProductionRule,
@@ -47,7 +49,6 @@ import {
 	getSymbolSizeProductionRule,
 	getTooltip,
 	getXProductionRule,
-	getInteractive,
 	hasMetricRange,
 	hasTooltip,
 } from './markUtils';
@@ -269,10 +270,14 @@ describe('getMarkOpacity()', () => {
 	test('Popover child, should return tests for hover and select and default to opacity', () => {
 		const popover = createElement(ChartPopover);
 		const opacity = getMarkOpacity({ ...defaultBarProps, children: [popover] });
-		expect(opacity).toHaveLength(4);
+		expect(opacity).toHaveLength(6);
 		expect(opacity[0].test).toContain(`${SELECTED_ITEM} !==`);
 		expect(opacity[1].test).toContain(`${SELECTED_ITEM} ===`);
-		expect(opacity[2].test).toContain(HIGHLIGHTED_ITEM);
+
+		expect(opacity[2].test).toContain(`${SELECTED_GROUP} ===`);
+		expect(opacity[3].test).toContain(`${SELECTED_GROUP} !==`);
+
+		expect(opacity[4].test).toContain(HIGHLIGHTED_ITEM);
 		expect(opacity.at(-1)).toStrictEqual(DEFAULT_OPACITY_RULE);
 	});
 });

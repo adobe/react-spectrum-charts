@@ -30,6 +30,7 @@ import {
 	LINE_WIDTH_SCALE,
 	MARK_ID,
 	OPACITY_SCALE,
+	SELECTED_GROUP,
 	SELECTED_ITEM,
 	SYMBOL_SIZE_SCALE,
 } from '@constants';
@@ -74,7 +75,7 @@ import {
  * If a popover or onClick prop exists on the mark, then set the cursor to a pointer.
  */
 export function getCursor(children: MarkChildElement[], props?: BarSpecProps): ScaledValueRef<Cursor> | undefined {
-	if ((props?.onClick !== undefined) || hasPopover(children)) {
+	if (props?.onClick !== undefined || hasPopover(children)) {
 		return { value: 'pointer' };
 	}
 }
@@ -85,7 +86,7 @@ export function getCursor(children: MarkChildElement[], props?: BarSpecProps): S
  */
 export function getInteractive(children: MarkChildElement[], props?: BarSpecProps): boolean {
 	// skip annotations
-	return (props?.onClick !== undefined) || hasInteractiveChildren(children);
+	return props?.onClick !== undefined || hasInteractiveChildren(children);
 }
 
 /**
@@ -402,7 +403,7 @@ const getHoverSizeSignal = (size: number): SignalRef => ({
  * @returns
  */
 export const getMarkOpacity = (props: BarSpecProps | DonutSpecProps): ({ test?: string } & NumericValueRef)[] => {
-	const { children } = props;
+	const { children, name: markName } = props;
 	const rules: ({ test?: string } & NumericValueRef)[] = [DEFAULT_OPACITY_RULE];
 	// if there aren't any interactive components, then we don't need to add special opacity rules
 	if (!hasInteractiveChildren(children)) {
@@ -415,10 +416,18 @@ export const getMarkOpacity = (props: BarSpecProps | DonutSpecProps): ({ test?: 
 	if (hasPopover(children)) {
 		return [
 			{
-				test: `${SELECTED_ITEM} && ${SELECTED_ITEM} !== datum.${MARK_ID}`,
+				test: `!${SELECTED_GROUP} && ${SELECTED_ITEM} && ${SELECTED_ITEM} !== datum.${MARK_ID}`,
 				value: 1 / HIGHLIGHT_CONTRAST_RATIO,
 			},
 			{ test: `${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${MARK_ID}`, ...DEFAULT_OPACITY_RULE },
+			{
+				test: `${SELECTED_GROUP} && ${SELECTED_GROUP} === datum.${markName}_selectedGroupId`,
+				value: 1,
+			},
+			{
+				test: `${SELECTED_GROUP} && ${SELECTED_GROUP} !== datum.${markName}_selectedGroupId`,
+				value: 1 / HIGHLIGHT_CONTRAST_RATIO,
+			},
 			...rules,
 		];
 	}
