@@ -9,12 +9,13 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import React, { ReactElement } from 'react';
+import { ReactElement } from 'react';
 
 import { TRENDLINE_VALUE } from '@constants';
 import useChartProps from '@hooks/useChartProps';
 import {
 	Axis,
+	Bar,
 	Chart,
 	ChartPopover,
 	ChartProps,
@@ -30,6 +31,8 @@ import { workspaceTrendsData } from '@stories/data/data';
 import { characterData } from '@stories/data/marioKartData';
 import { StoryFn } from '@storybook/react';
 import { bindWithProps } from 'test-utils/bindWithProps';
+
+import { barSeriesData } from '../Bar/data';
 
 export default {
 	title: 'RSC/Trendline',
@@ -163,6 +166,21 @@ const ScatterStory: StoryFn<typeof Trendline> = (args): ReactElement => {
 	);
 };
 
+const BarStory: StoryFn<typeof Trendline> = (args): ReactElement => {
+	const chartProps = useChartProps({ data: barSeriesData, height: 500, width: 500 });
+
+	return (
+		<Chart {...chartProps}>
+			<Axis position="bottom" baseline title="Browser" />
+			<Axis position="left" grid ticks title="Downloads" />
+			<Bar dimension="browser" metric="value" color="operatingSystem" type="dodged">
+				<Trendline {...args} />
+			</Bar>
+			<Legend title="Operating System" highlight position="right" />
+		</Chart>
+	);
+};
+
 const excludeSeriesData = [
 	{ datetime: 1667890800000, point: 1, value: 3738, users: 477, series: 'Add Fallout', excludeFromTrendline: true },
 	{ datetime: 1667977200000, point: 2, value: 2704, users: 481, series: 'Add Fallout', excludeFromTrendline: true },
@@ -253,6 +271,13 @@ TooltipAndPopoverOnParentLine.args = {
 	lineWidth: 'S',
 };
 
+const BarChart = bindWithProps(BarStory);
+BarChart.args = {
+	method: 'average',
+	lineType: 'dashed',
+	dimensionExtent: ['domain', 'domain'],
+};
+
 const ExcludeSeriesFromTrendline = bindWithProps(ExcludeSeriesTrendlineStory);
 ExcludeSeriesFromTrendline.args = {
 	method: 'linear',
@@ -262,12 +287,13 @@ ExcludeSeriesFromTrendline.args = {
 };
 
 export {
+	BarChart,
 	Basic,
 	DimensionExtent,
 	DimensionRange,
 	DisplayOnHover,
+	ExcludeSeriesFromTrendline,
 	Orientation,
 	TooltipAndPopover,
 	TooltipAndPopoverOnParentLine,
-	ExcludeSeriesFromTrendline,
 };

@@ -24,6 +24,7 @@ import {
 import { addPopoverData } from '@specBuilder/chartPopover/chartPopoverUtils';
 import { addTooltipData, addTooltipSignals } from '@specBuilder/chartTooltip/chartTooltipUtils';
 import { getTransformSort } from '@specBuilder/data/dataUtils';
+import { getInteractiveMarkName } from '@specBuilder/line/lineUtils';
 import { getTooltipProps } from '@specBuilder/marks/markUtils';
 import {
 	addDomainFields,
@@ -36,6 +37,7 @@ import {
 } from '@specBuilder/scale/scaleSpecBuilder';
 import { addHighlightedItemSignalEvents, getGenericValueSignal } from '@specBuilder/signal/signalSpecBuilder';
 import { getFacetsFromProps } from '@specBuilder/specUtils';
+import { addTrendlineData, getTrendlineMarks, setTrendlineSignals } from '@specBuilder/trendline';
 import { sanitizeMarkChildren, toCamelCase } from '@utils';
 import { produce } from 'immer';
 import { BandScale, Data, FormulaTransform, Mark, OrdinalScale, Scale, Signal, Spec } from 'vega';
@@ -69,20 +71,24 @@ export const addBar = produce<Spec, [BarProps & { colorScheme?: ColorScheme; ind
 			...props
 		}
 	) => {
+		const sanitizedChildren = sanitizeMarkChildren(children);
+		const barName = toCamelCase(name || `bar${index}`);
 		// put props back together now that all defaults are set
 		const barProps: BarSpecProps = {
-			children: sanitizeMarkChildren(children),
+			children: sanitizedChildren,
+			dimensionScaleType: 'band',
 			orientation,
 			color,
 			colorScheme,
 			dimension,
 			hasSquareCorners,
 			index,
+			interactiveMarkName: getInteractiveMarkName(sanitizedChildren, barName),
 			lineType,
 			lineWidth,
 			markType: 'bar',
 			metric,
-			name: toCamelCase(name || `bar${index}`),
+			name: barName,
 			opacity,
 			paddingRatio,
 			trellisOrientation,
@@ -109,6 +115,7 @@ export const addSignals = produce<Signal[], [BarSpecProps]>((signals, props) => 
 	}
 	addHighlightedItemSignalEvents(signals, name, 1, getTooltipProps(children)?.excludeDataKeys);
 	addTooltipSignals(signals, props);
+	setTrendlineSignals(signals, props);
 });
 
 export const addData = produce<Data[], [BarSpecProps]>((data, props) => {
@@ -130,6 +137,7 @@ export const addData = produce<Data[], [BarSpecProps]>((data, props) => {
 	if (type === 'dodged' || isDodgedAndStacked(props)) {
 		data[index].transform?.push(getDodgeGroupTransform(props));
 	}
+	addTrendlineData(data, props);
 	addTooltipData(data, props);
 	addPopoverData(data, props);
 });
@@ -266,6 +274,8 @@ export const addMarks = produce<Mark[], [BarSpecProps]>((marks, props) => {
 	} else {
 		marks.push(...barMarks);
 	}
+
+	marks.push(...getTrendlineMarks(props));
 });
 
 export const getRepeatedScale = (props: BarSpecProps): Scale => {

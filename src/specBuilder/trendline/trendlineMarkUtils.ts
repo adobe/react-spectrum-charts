@@ -26,7 +26,14 @@ import { getTrendlineAnnotationMarks } from '@specBuilder/trendlineAnnotation';
 import { EncodeEntry, GroupMark, LineMark, NumericValueRef, RuleMark } from 'vega';
 
 import { ChartTooltipElement, Orientation, ScaleType, TrendlineMethod, TrendlineSpecProps } from '../../types';
-import { TrendlineParentProps, getTrendlines, isAggregateMethod, isRegressionMethod } from './trendlineUtils';
+import {
+	TrendlineParentProps,
+	getTrendlineColorFromMarkProps,
+	getTrendlineLineTypeFromMarkProps,
+	getTrendlines,
+	isAggregateMethod,
+	isRegressionMethod,
+} from './trendlineUtils';
 
 export const getTrendlineMarks = (markProps: TrendlineParentProps): (GroupMark | RuleMark)[] => {
 	const { color, lineType } = markProps;
@@ -327,12 +334,12 @@ const getLineMarkProps = (
 	const staticPoint = 'staticPoint' in markProps ? markProps.staticPoint : undefined;
 	return {
 		children,
-		color,
+		color: getTrendlineColorFromMarkProps(color),
 		colorScheme,
 		dimension,
 		displayOnHover,
 		interactiveMarkName,
-		lineType,
+		lineType: getTrendlineLineTypeFromMarkProps(lineType),
 		lineWidth: { value: lineWidth },
 		metric,
 		name,

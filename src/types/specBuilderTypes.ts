@@ -110,6 +110,8 @@ export interface BarSpecProps
 	extends PartiallyRequired<BarProps & { colorScheme: ColorScheme; index: number }, BarPropsWithDefaults> {
 	markType: 'bar';
 	children: MarkChildElement[];
+	interactiveMarkName: string | undefined;
+	dimensionScaleType: 'band';
 }
 
 type AnnotationPropsWithDefaults = 'textKey';
