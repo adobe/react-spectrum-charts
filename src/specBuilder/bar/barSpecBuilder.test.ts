@@ -500,8 +500,12 @@ describe('barSpecBuilder', () => {
 		describe('transform already exists', () => {
 			test('no props, new transform should be pushed onto the end with default values', () => {
 				expect(
-					addData([{ ...defaultFilteredTableData, transform: defaultStackedTransforms }], defaultBarProps)
+					addData(
+						[defaultTableData, { ...defaultFilteredTableData, transform: defaultStackedTransforms }],
+						defaultBarProps
+					)
 				).toStrictEqual([
+					defaultTableData,
 					{
 						...defaultFilteredTableData,
 						transform: [...defaultStackedTransforms, ...defaultStackedTransforms],

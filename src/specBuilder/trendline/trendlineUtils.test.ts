@@ -16,7 +16,14 @@ import { Trendline } from '@components/Trendline';
 import { DEFAULT_METRIC, DEFAULT_TIME_DIMENSION, FILTERED_TABLE, MS_PER_DAY, TRENDLINE_VALUE } from '@constants';
 
 import { defaultLineProps } from './trendlineTestUtils';
-import { applyTrendlinePropDefaults, getPolynomialOrder, getRegressionExtent, getTrendlines } from './trendlineUtils';
+import {
+	applyTrendlinePropDefaults,
+	getPolynomialOrder,
+	getRegressionExtent,
+	getTrendlineColorFromMarkProps,
+	getTrendlineLineTypeFromMarkProps,
+	getTrendlines,
+} from './trendlineUtils';
 
 describe('getTrendlines()', () => {
 	test('should return an array of trendline props', () => {
@@ -81,5 +88,27 @@ describe('getRegressionExtent()', () => {
 			'signal',
 			`[${name}_extent[0] - (${name}_extent[1] - ${name}_extent[0]) * 0.3, ${name}_extent[1] + (${name}_extent[1] - ${name}_extent[0]) * 0.3]`
 		);
+	});
+});
+
+describe('getTrendlineColorFromMarkProps()', () => {
+	test('should return first facet if dual facet', () => {
+		expect(getTrendlineColorFromMarkProps(['series', 'subSeries'])).toEqual('series');
+	});
+
+	test('should return what was passed in if it is not a dual facet', () => {
+		expect(getTrendlineColorFromMarkProps('series')).toEqual('series');
+		expect(getTrendlineColorFromMarkProps({ value: 'red-500' })).toEqual({ value: 'red-500' });
+	});
+});
+
+describe('getTrendlineLineTypeFromMarkProps()', () => {
+	test('should return first facet if dual facet', () => {
+		expect(getTrendlineLineTypeFromMarkProps(['series', 'subSeries'])).toEqual('series');
+	});
+
+	test('should return what was passed in if it is not a dual facet', () => {
+		expect(getTrendlineLineTypeFromMarkProps('series')).toEqual('series');
+		expect(getTrendlineLineTypeFromMarkProps({ value: 'dashed' })).toEqual({ value: 'dashed' });
 	});
 });
