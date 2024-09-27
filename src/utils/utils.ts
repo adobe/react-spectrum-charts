@@ -45,6 +45,7 @@ import {
 	ChartElement,
 	ChartTooltipElement,
 	ChildElement,
+	ComboElement,
 	Datum,
 	DonutElement,
 	LegendElement,
@@ -65,6 +66,7 @@ type ElementCounts = {
 	legend: number;
 	line: number;
 	scatter: number;
+	combo: number;
 };
 
 // coerces a value that could be a single value or an array of that value to an array
@@ -336,6 +338,9 @@ const getElementName = (element: unknown, elementCounts: ElementCounts) => {
 			return getComponentName(element as ScatterElement, `scatter${elementCounts.scatter}`);
 		case Trendline.displayName:
 			return getComponentName(element as TrendlineElement, 'Trendline');
+		case Combo.displayName:
+			elementCounts.combo++;
+			return getComponentName(element as ComboElement, `combo${elementCounts.combo}`);
 		default:
 			return '';
 	}
@@ -357,6 +362,7 @@ const initElementCounts = (): ElementCounts => ({
 	legend: -1,
 	line: -1,
 	scatter: -1,
+	combo: -1,
 });
 
 /**
