@@ -246,9 +246,7 @@ export const getAllMarkElements = (
 	const desiredElements: MappedElement[] = [];
 	for (const child of toArray(target.props.children)) {
 		const childName = getElementName(child, elementCounts);
-		desiredElements.push(
-			...getAllMarkElements(child, source, elements, [name, childName].filter(Boolean).join(''))
-		);
+		desiredElements.push(...getAllMarkElements(child, source, elements, combineElementNames(name, childName)));
 	}
 	// no element matches found, give up all hope...
 	return [...elements, ...desiredElements];
@@ -294,7 +292,7 @@ export const getAllElements = (
 	const desiredElements: MappedElement[] = [];
 	for (const child of toArray(target.props.children)) {
 		const childName = getElementName(child, elementCounts);
-		desiredElements.push(...getAllElements(child, source, elements, [name, childName].filter(Boolean).join('')));
+		desiredElements.push(...getAllElements(child, source, elements, combineElementNames(name, childName)));
 	}
 	// no element matches found, give up all hope...
 	return [...elements, ...desiredElements];
@@ -351,6 +349,12 @@ export const getComponentName = (element: ChildElement<RscElement>, defaultName:
 		return toCamelCase(element.props.name);
 	}
 	return defaultName;
+};
+
+export const combineElementNames = (parentName: string | null, childName: string | null): string => {
+	const formattedChildName =
+		childName && parentName ? childName.charAt(0).toUpperCase() + childName.slice(1) : childName;
+	return [parentName, formattedChildName].filter(Boolean).join('');
 };
 
 const initElementCounts = (): ElementCounts => ({
