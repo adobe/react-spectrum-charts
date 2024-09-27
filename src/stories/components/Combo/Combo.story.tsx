@@ -12,9 +12,10 @@
 import { ReactElement } from 'react';
 
 import useChartProps from '@hooks/useChartProps';
-import { Axis, Bar, Chart, Line } from '@rsc';
+import { Axis, Bar, Chart, ChartTooltip, Line } from '@rsc';
 import { Combo } from '@rsc/alpha';
 import { peopleAdoptionComboData } from '@stories/data/data';
+import { formatTimestamp } from '@stories/storyUtils';
 import { StoryFn } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
 
@@ -41,17 +42,55 @@ const BasicComboStory: StoryFn<typeof Combo> = (args): ReactElement => {
 			<Axis position="bottom" labelFormat="time" baseline ticks />
 			<Combo {...args}>
 				<Bar metric="people" />
-				<Line metric="adoptionRate" color={{ value: 'indigo-900' }} />
+				<Line metric="adoptionRate" color={{ value: 'indigo-900' }} scaleType="point" />
+			</Combo>
+		</Chart>
+	);
+};
+
+const TooltipStory: StoryFn<typeof Combo> = (args): ReactElement => {
+	const chartProps = useChartProps(defaultChartProps);
+	return (
+		<Chart {...chartProps} debug>
+			<Axis position="left" title="People" grid />
+			<Axis position="right" title="Adoption Rate" />
+			<Axis position="bottom" labelFormat="time" baseline ticks />
+			<Combo {...args}>
+				<Bar metric="people">
+					<ChartTooltip>
+						{(datum) => (
+							<div className="bar-tooltip">
+								<div>{formatTimestamp(datum.datetime as number)}</div>
+								<div>People: {datum.people}</div>
+							</div>
+						)}
+					</ChartTooltip>
+				</Bar>
+				<Line metric="adoptionRate" color={{ value: 'indigo-900' }} interactionMode="item" scaleType="point">
+					<ChartTooltip>
+						{(datum) => (
+							<div className="line-tooltip">
+								<div>{formatTimestamp(datum.datetime as number)}</div>
+								<div>Adoption Rate: {datum.adoptionRate}</div>
+							</div>
+						)}
+					</ChartTooltip>
+				</Line>
 			</Combo>
 		</Chart>
 	);
 };
 
 const Basic = bindWithProps(BasicComboStory);
-
 Basic.args = {
 	name: 'combo0',
 	dimension: 'datetime',
 };
 
-export { Basic };
+const Tooltip = bindWithProps(TooltipStory);
+Tooltip.args = {
+	name: 'combo0',
+	dimension: 'datetime',
+};
+
+export { Basic, Tooltip };

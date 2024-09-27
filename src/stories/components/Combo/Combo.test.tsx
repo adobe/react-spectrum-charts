@@ -13,9 +13,9 @@ import React from 'react';
 
 import '@matchMediaMock';
 import { Combo } from '@rsc/alpha';
-import { findAllMarksByGroupName, findChart, render } from '@test-utils';
+import { findAllMarksByGroupName, findChart, hoverNthElement, render, screen, within } from '@test-utils';
 
-import { Basic } from './Combo.story';
+import { Basic, Tooltip } from './Combo.story';
 
 describe('Combo', () => {
 	// Combo is not a real React component. This test just provides test coverage for sonarqube
@@ -35,5 +35,27 @@ describe('Combo', () => {
 		// get lines
 		const lines = await findAllMarksByGroupName(chart, 'combo0Line0');
 		expect(lines.length).toEqual(1);
+	});
+
+	test('Tooltip renders properly', async () => {
+		render(<Tooltip {...Tooltip.args} />);
+		const chart = await findChart();
+		expect(chart).toBeInTheDocument();
+
+		// get bars
+		const bars = await findAllMarksByGroupName(chart, 'combo0Bar0');
+		expect(bars.length).toEqual(7);
+
+		// get lines
+		const lines = await findAllMarksByGroupName(chart, 'combo0Line0');
+		expect(lines.length).toEqual(1);
+
+		const paths = await findAllMarksByGroupName(chart, 'combo0Line0_hover0');
+
+		// hover and validate all hover components are visible
+		await hoverNthElement(paths, 0);
+		const tooltip = await screen.findByTestId('rsc-tooltip');
+		expect(tooltip).toBeInTheDocument();
+		expect(within(tooltip).getByText('Nov 8')).toBeInTheDocument();
 	});
 });
