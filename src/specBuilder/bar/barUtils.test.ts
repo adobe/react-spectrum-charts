@@ -25,8 +25,6 @@ import {
 	SELECTED_ITEM,
 	STACK_ID,
 } from '@constants';
-import { PaddingRatio } from '@stories/components/Bar/Bar.story';
-import colorSchemes from '@themes/colorSchemes';
 import { RectEncodeEntry } from 'vega';
 
 import { BarSpecProps } from '../../types';
