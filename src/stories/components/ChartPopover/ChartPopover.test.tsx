@@ -219,6 +219,40 @@ describe('ChartPopover', () => {
 		expect(bars[4]).toHaveAttribute('stroke-width', '2');
 	});
 
+	test('Dodged bar popover opens on dimension click and closes when clicking outside', async () => {
+		render(<DodgedBarChart {...DodgedBarChart.args} UNSAFE_highlightBy="dimension" />);
+
+		const chart = await findChart();
+		expect(chart).toBeInTheDocument();
+		let bars = getAllMarksByGroupName(chart, 'bar0');
+
+		// clicking the bar should open the popover
+		await clickNthElement(bars, 4);
+		const popover = await screen.findByTestId('rsc-popover');
+		await waitFor(() => expect(popover).toBeInTheDocument()); // waitFor to give the popover time to make sure it doesn't close
+
+		// check the content of the popover
+		expect(within(popover).getByText('Operating system: Mac')).toBeInTheDocument();
+		expect(within(popover).getByText('Browser: Firefox')).toBeInTheDocument();
+		expect(within(popover).getByText('Users: 3')).toBeInTheDocument();
+
+		bars = getAllMarksByGroupName(chart, 'bar0');
+
+		// validate the highlight visuals are present
+		expect(bars[0]).toHaveAttribute('opacity', `${1 / HIGHLIGHT_CONTRAST_RATIO}`);
+		expect(bars[4]).toHaveAttribute('opacity', '1');
+
+		const selectionRingMarks = getAllMarksByGroupName(chart, 'bar0_selectionRing');
+
+		expect(selectionRingMarks).toHaveLength(3);
+		expect(selectionRingMarks[0]).toHaveAttribute('stroke', spectrumColors.light['static-blue']);
+		expect(selectionRingMarks[1]).toHaveAttribute('stroke', spectrumColors.light['static-blue']);
+		expect(selectionRingMarks[2]).toHaveAttribute('stroke', spectrumColors.light['static-blue']);
+		expect(selectionRingMarks[0]).toHaveAttribute('stroke-width', '2');
+		expect(selectionRingMarks[1]).toHaveAttribute('stroke-width', '2');
+		expect(selectionRingMarks[2]).toHaveAttribute('stroke-width', '2');
+	});
+
 	test('should call onClick callback when selecting a legend entry', async () => {
 		const onOpenChange = jest.fn();
 		render(<OnOpenChange {...OnOpenChange.args} onOpenChange={onOpenChange} />);

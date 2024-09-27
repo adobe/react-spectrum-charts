@@ -25,6 +25,8 @@ import {
 	SELECTED_ITEM,
 	STACK_ID,
 } from '@constants';
+import { PaddingRatio } from '@stories/components/Bar/Bar.story';
+import colorSchemes from '@themes/colorSchemes';
 import { RectEncodeEntry } from 'vega';
 
 import { BarSpecProps } from '../../types';
@@ -41,6 +43,7 @@ import {
 	getBarPadding,
 	getBaseBarEnterEncodings,
 	getCornerRadiusEncodings,
+	getDimensionSelectionRing,
 	getDodgedDimensionEncodings,
 	getDodgedGroupMark,
 	getMetricEncodings,
@@ -327,6 +330,68 @@ describe('barUtils', () => {
 		});
 	});
 
+	describe('getDimensionSelectionRing()', () => {
+		const barProps: Partial<BarSpecProps> = {
+			name: 'bar0',
+			colorScheme: 'light',
+			orientation: 'vertical',
+			paddingRatio: 0.3,
+		};
+
+		test('should return vertical selection ring', () => {
+			const selectionRing = getDimensionSelectionRing(barProps as BarSpecProps);
+			expect(selectionRing).toStrictEqual({
+				encode: {
+					enter: {
+						cornerRadius: { value: 6 },
+						fill: { value: 'transparent' },
+						padding: { value: 5 },
+						stroke: { value: 'rgb(20, 115, 230)' },
+						strokeWidth: { value: 2 },
+					},
+					update: {
+						width: { signal: "bandwidth('xBand')/(1 - 0.3 / 2)" },
+						xc: { signal: "scale('xBand', datum.bar0_selectedGroupId) + bandwidth('xBand')/2" },
+						y: { value: -5 },
+						y2: { signal: 'height + 5' },
+					},
+				},
+				from: {
+					data: 'bar0_selectedData',
+				},
+				interactive: false,
+				name: 'bar0_selectionRing',
+				type: 'rect',
+			});
+		});
+		test('should return horizontal selection ring', () => {
+			const selectionRing = getDimensionSelectionRing({ ...barProps, orientation: 'horizontal' } as BarSpecProps);
+			expect(selectionRing).toStrictEqual({
+				encode: {
+					enter: {
+						cornerRadius: { value: 6 },
+						fill: { value: 'transparent' },
+						padding: { value: 5 },
+						stroke: { value: 'rgb(20, 115, 230)' },
+						strokeWidth: { value: 2 },
+					},
+					update: {
+						x: { value: -5 },
+						x2: { signal: 'width + 5' },
+						yc: { signal: `scale('yBand', datum.bar0_selectedGroupId) + bandwidth('yBand')/2` },
+						height: { signal: `bandwidth('yBand')/(1 - 0.3 / 2)` },
+					},
+				},
+				from: {
+					data: 'bar0_selectedData',
+				},
+				interactive: false,
+				name: 'bar0_selectionRing',
+				type: 'rect',
+			});
+		});
+	});
+
 	describe('getStrokeDash()', () => {
 		test('should return production rule with one item in array if there is not a popover', () => {
 			const strokeRule = getStrokeDash(defaultBarProps);
@@ -347,6 +412,14 @@ describe('barUtils', () => {
 	describe('getStrokeWidth()', () => {
 		test('should return production rule with one item in array if there is not a popover', () => {
 			const strokeRule = getStrokeWidth(defaultBarProps);
+			expect(strokeRule).toHaveLength(1);
+			expect(strokeRule[0]).toStrictEqual({ value: 0 });
+		});
+		test('should return production rule with one item in array if there is a popover that highlights by dimension', () => {
+			const strokeRule = getStrokeWidth({
+				...defaultBarProps,
+				children: [createElement(ChartPopover, { UNSAFE_highlightBy: 'dimension' })],
+			});
 			expect(strokeRule).toHaveLength(1);
 			expect(strokeRule[0]).toStrictEqual({ value: 0 });
 		});
