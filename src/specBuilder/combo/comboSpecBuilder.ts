@@ -13,7 +13,7 @@ import { DEFAULT_COLOR_SCHEME, DEFAULT_TIME_DIMENSION } from '@constants';
 import { Bar, Line } from '@rsc';
 import { addBar } from '@specBuilder/bar/barSpecBuilder';
 import { addLine } from '@specBuilder/line/lineSpecBuilder';
-import { sanitizeRscChartChildren, toCamelCase } from '@utils';
+import { combineElementNames, sanitizeRscChartChildren, toCamelCase } from '@utils';
 import { produce } from 'immer';
 import { Spec } from 'vega';
 
@@ -76,7 +76,7 @@ export const getComboChildName = (cur: ComboChildElement, comboName: string, ind
 		return cur.props.name;
 	}
 	const displayName = getDisplayName(cur);
-	return toCamelCase(`${comboName}_${displayName}${index}`);
+	return combineElementNames(comboName, `${displayName}${index}`);
 };
 
 const getDisplayName = (cur: ChartChildElement) => (cur.type as React.ComponentType).displayName;

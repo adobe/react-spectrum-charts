@@ -45,6 +45,7 @@ import {
 	ChartElement,
 	ChartTooltipElement,
 	ChildElement,
+	ComboElement,
 	Datum,
 	DonutElement,
 	LegendElement,
@@ -65,6 +66,7 @@ type ElementCounts = {
 	legend: number;
 	line: number;
 	scatter: number;
+	combo: number;
 };
 
 // coerces a value that could be a single value or an array of that value to an array
@@ -244,9 +246,7 @@ export const getAllMarkElements = (
 	const desiredElements: MappedElement[] = [];
 	for (const child of toArray(target.props.children)) {
 		const childName = getElementName(child, elementCounts);
-		desiredElements.push(
-			...getAllMarkElements(child, source, elements, [name, childName].filter(Boolean).join(''))
-		);
+		desiredElements.push(...getAllMarkElements(child, source, elements, combineElementNames(name, childName)));
 	}
 	// no element matches found, give up all hope...
 	return [...elements, ...desiredElements];
@@ -292,7 +292,7 @@ export const getAllElements = (
 	const desiredElements: MappedElement[] = [];
 	for (const child of toArray(target.props.children)) {
 		const childName = getElementName(child, elementCounts);
-		desiredElements.push(...getAllElements(child, source, elements, [name, childName].filter(Boolean).join('')));
+		desiredElements.push(...getAllElements(child, source, elements, combineElementNames(name, childName)));
 	}
 	// no element matches found, give up all hope...
 	return [...elements, ...desiredElements];
@@ -336,6 +336,9 @@ const getElementName = (element: unknown, elementCounts: ElementCounts) => {
 			return getComponentName(element as ScatterElement, `scatter${elementCounts.scatter}`);
 		case Trendline.displayName:
 			return getComponentName(element as TrendlineElement, 'Trendline');
+		case Combo.displayName:
+			elementCounts.combo++;
+			return getComponentName(element as ComboElement, `combo${elementCounts.combo}`);
 		default:
 			return '';
 	}
@@ -348,6 +351,12 @@ export const getComponentName = (element: ChildElement<RscElement>, defaultName:
 	return defaultName;
 };
 
+export const combineElementNames = (parentName: string | null, childName: string | null): string => {
+	const formattedChildName =
+		childName && parentName ? childName.charAt(0).toUpperCase() + childName.slice(1) : childName;
+	return [parentName, formattedChildName].filter(Boolean).join('');
+};
+
 const initElementCounts = (): ElementCounts => ({
 	area: -1,
 	axis: -1,
@@ -357,6 +366,7 @@ const initElementCounts = (): ElementCounts => ({
 	legend: -1,
 	line: -1,
 	scatter: -1,
+	combo: -1,
 });
 
 /**
