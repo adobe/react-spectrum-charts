@@ -343,15 +343,14 @@ describe('barUtils', () => {
 					enter: {
 						cornerRadius: { value: 6 },
 						fill: { value: 'transparent' },
-						padding: { value: 5 },
 						stroke: { value: 'rgb(20, 115, 230)' },
 						strokeWidth: { value: 2 },
 					},
 					update: {
 						width: { signal: "bandwidth('xBand')/(1 - 0.3 / 2)" },
 						xc: { signal: "scale('xBand', datum.bar0_selectedGroupId) + bandwidth('xBand')/2" },
-						y: { value: -5 },
-						y2: { signal: 'height + 5' },
+						y: { value: 0 },
+						y2: { signal: 'height' },
 					},
 				},
 				from: {
@@ -369,13 +368,12 @@ describe('barUtils', () => {
 					enter: {
 						cornerRadius: { value: 6 },
 						fill: { value: 'transparent' },
-						padding: { value: 5 },
 						stroke: { value: 'rgb(20, 115, 230)' },
 						strokeWidth: { value: 2 },
 					},
 					update: {
-						x: { value: -5 },
-						x2: { signal: 'width + 5' },
+						x: { value: 0 },
+						x2: { signal: 'width' },
 						yc: { signal: `scale('yBand', datum.bar0_selectedGroupId) + bandwidth('yBand')/2` },
 						height: { signal: `bandwidth('yBand')/(1 - 0.3 / 2)` },
 					},

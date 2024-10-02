@@ -262,14 +262,14 @@ export const getDimensionSelectionRing = (props: BarSpecProps): RectMark => {
 	const update =
 		orientation === 'vertical'
 			? {
-					y: { value: -5 },
-					y2: { signal: 'height + 5' },
+					y: { value: 0 },
+					y2: { signal: 'height' },
 					xc: { signal: `scale('xBand', datum.${name}_selectedGroupId) + bandwidth('xBand')/2` },
 					width: { signal: `bandwidth('xBand')/(1 - ${paddingRatio} / 2)` },
 			  }
 			: {
-					x: { value: -5 },
-					x2: { signal: 'width + 5' },
+					x: { value: 0 },
+					x2: { signal: 'width' },
 					yc: { signal: `scale('yBand', datum.${name}_selectedGroupId) + bandwidth('yBand')/2` },
 					height: { signal: `bandwidth('yBand')/(1 - ${paddingRatio} / 2)` },
 			  };
@@ -287,7 +287,6 @@ export const getDimensionSelectionRing = (props: BarSpecProps): RectMark => {
 				strokeWidth: { value: 2 },
 				stroke: { value: getColorValue('static-blue', colorScheme) },
 				cornerRadius: { value: 6 },
-				padding: { value: 5 },
 			},
 			update,
 		},
