@@ -14,6 +14,8 @@ import { ADOBE_CLEAN_FONT } from '@themes/spectrumTheme';
 import { FormatLocaleDefinition, formatLocale } from 'd3-format';
 import { FontWeight } from 'vega';
 
+import { Granularity } from './types';
+
 interface LabelDatum {
 	index: number;
 	label: string;
@@ -43,11 +45,19 @@ export const formatTimeDurationLabels = (numberLocale: FormatLocaleDefinition = 
 	const d3 = formatLocale(numberLocale);
 	// 0 padded, minimum 2 digits, thousands separator, integer format
 	const formatDuration = d3.format('02,d');
-	return ({ value }: LabelDatum) => {
+	return ({ value }: LabelDatum, granularity: Granularity) => {
 		if (typeof value === 'string') return value;
-		const seconds = formatDuration(Math.floor(value % 60));
-		const minutes = formatDuration(Math.floor((value / 60) % 60));
+
+		const absoluteValue = Math.abs(value);
+		const seconds = formatDuration(Math.floor(absoluteValue % 60));
+
+		if (granularity === 'minute') {
+			const minutes = formatDuration(Math.floor(value / 60));
+			return `${minutes}:${seconds}`;
+		}
+
 		const hours = formatDuration(Math.floor(value / 60 / 60));
+		const minutes = formatDuration(Math.floor((absoluteValue / 60) % 60));
 		return `${hours}:${minutes}:${seconds}`;
 	};
 };
