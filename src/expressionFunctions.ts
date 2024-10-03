@@ -44,21 +44,23 @@ const formatPrimaryTimeLabels = () => {
 export const formatTimeDurationLabels = (numberLocale: FormatLocaleDefinition = numberLocales['en-US']) => {
 	const d3 = formatLocale(numberLocale);
 	// 0 padded, minimum 2 digits, thousands separator, integer format
-	const formatDuration = d3.format('02,d');
+	const zeroPaddedFormat = d3.format('02,d');
+	const format = d3.format(',d');
 	return ({ value }: LabelDatum, granularity: Granularity) => {
 		if (typeof value === 'string') return value;
 
+		const sign = value < 0 ? '-' : '';
 		const absoluteValue = Math.abs(value);
-		const seconds = formatDuration(Math.floor(absoluteValue % 60));
+		const seconds = zeroPaddedFormat(Math.floor(absoluteValue % 60));
 
 		if (granularity === 'minute') {
-			const minutes = formatDuration(Math.floor(value / 60));
-			return `${minutes}:${seconds}`;
+			const minutes = format(Math.floor(absoluteValue / 60));
+			return `${sign}${minutes}:${seconds}`;
 		}
 
-		const hours = formatDuration(Math.floor(value / 60 / 60));
-		const minutes = formatDuration(Math.floor((absoluteValue / 60) % 60));
-		return `${hours}:${minutes}:${seconds}`;
+		const hours = format(Math.floor(absoluteValue / 60 / 60));
+		const minutes = zeroPaddedFormat(Math.floor((absoluteValue / 60) % 60));
+		return `${sign}${hours}:${minutes}:${seconds}`;
 	};
 };
 
