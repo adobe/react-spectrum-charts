@@ -236,19 +236,9 @@ describe('Axis', () => {
 			const chart = await findChart();
 			expect(chart).toBeInTheDocument();
 
-			expect(screen.getByText('0:00:00')).toBeInTheDocument();
+			expect(screen.getByText('0:00')).toBeInTheDocument();
 			expect(screen.getByText('1:23:20')).toBeInTheDocument();
 			expect(screen.getByText('2:46:40')).toBeInTheDocument();
-		});
-
-		test('should render duration labels in mm:ss if granularity is minutes', async () => {
-			render(<DurationLabelFormat {...DurationLabelFormat.args} granularity="minute" />);
-			const chart = await findChart();
-			expect(chart).toBeInTheDocument();
-
-			expect(screen.getByText('0:00')).toBeInTheDocument();
-			expect(screen.getByText('83:20')).toBeInTheDocument();
-			expect(screen.getByText('166:40')).toBeInTheDocument();
 		});
 	});
 });

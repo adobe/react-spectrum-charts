@@ -232,14 +232,14 @@ export const getLabelOffset = (
  * @returns
  */
 export const getLabelFormat = (
-	{ granularity, labelFormat, labelOrientation, numberFormat, position, truncateLabels }: AxisSpecProps,
+	{ labelFormat, labelOrientation, numberFormat, position, truncateLabels }: AxisSpecProps,
 	scaleName: string
 ): ProductionRule<TextValueRef> => {
 	if (labelFormat === 'percentage') {
 		return [{ test: 'isNumber(datum.value)', signal: "format(datum.value, '~%')" }, { signal: 'datum.value' }];
 	}
 	if (labelFormat === 'duration') {
-		return { signal: `formatTimeDurationLabels(datum, '${granularity}')` };
+		return { signal: 'formatTimeDurationLabels(datum)' };
 	}
 
 	return [
