@@ -184,7 +184,7 @@ describe('getLabelFormat()', () => {
 	test('should return duration formatter if labelFormat is duration', () => {
 		expect(getLabelFormat({ ...defaultAxisProps, labelFormat: 'duration' }, 'xLinear')).toHaveProperty(
 			'signal',
-			"formatTimeDurationLabels(datum, 'day')"
+			'formatTimeDurationLabels(datum)'
 		);
 	});
 });

@@ -34,28 +34,19 @@ describe('formatTimeDurationLabels()', () => {
 	const formatDurationsDeDe = formatTimeDurationLabels(numberLocales['de-DE']);
 
 	test('should format hour durations correctly', () => {
-		expect(formatDurationsEnUS({ index: 0, label: '0', value: 1 }, 'hour')).toBe('0:00:01');
-		expect(formatDurationsEnUS({ index: 0, label: '0', value: 61 }, 'hour')).toBe('0:01:01');
-		expect(formatDurationsEnUS({ index: 0, label: '0', value: 3661 }, 'hour')).toBe('1:01:01');
-		expect(formatDurationsEnUS({ index: 0, label: '0', value: -3661 }, 'hour')).toBe('-1:01:01');
-		expect(formatDurationsEnUS({ index: 0, label: '0', value: 3603661 }, 'hour')).toBe('1,001:01:01');
-		expect(formatDurationsFrFr({ index: 0, label: '0', value: 3603661 }, 'hour')).toBe('1\u00a0001:01:01');
-		expect(formatDurationsDeDe({ index: 0, label: '0', value: 3603661 }, 'hour')).toBe('1.001:01:01');
+		expect(formatDurationsEnUS({ index: 0, label: '0', value: 1 })).toBe('0:01');
+		expect(formatDurationsEnUS({ index: 0, label: '0', value: 61 })).toBe('1:01');
+		expect(formatDurationsEnUS({ index: 0, label: '0', value: 3661 })).toBe('1:01:01');
+		expect(formatDurationsEnUS({ index: 0, label: '0', value: -3661 })).toBe('-1:01:01');
+		expect(formatDurationsEnUS({ index: 0, label: '0', value: 3603661 })).toBe('1,001:01:01');
+		expect(formatDurationsFrFr({ index: 0, label: '0', value: 3603661 })).toBe('1\u00a0001:01:01');
+		expect(formatDurationsDeDe({ index: 0, label: '0', value: 3603661 })).toBe('1.001:01:01');
 	});
 	test('should default to using en-US', () => {
 		const formatDurations = formatTimeDurationLabels();
-		expect(formatDurations({ index: 0, label: '0', value: 3603661 }, 'hour')).toBe('1,001:01:01');
+		expect(formatDurations({ index: 0, label: '0', value: 3603661 })).toBe('1,001:01:01');
 	});
 	test('should return original string if type of value is string', () => {
-		expect(formatDurationsEnUS({ index: 0, label: '0', value: 'hello world!' }, 'hour')).toBe('hello world!');
-	});
-	test('should use minute format if granularity === minute', () => {
-		expect(formatDurationsEnUS({ index: 0, label: '0', value: 1 }, 'minute')).toBe('0:01');
-		expect(formatDurationsEnUS({ index: 0, label: '0', value: 61 }, 'minute')).toBe('1:01');
-		expect(formatDurationsEnUS({ index: 0, label: '0', value: 3661 }, 'minute')).toBe('61:01');
-		expect(formatDurationsEnUS({ index: 0, label: '0', value: -3661 }, 'minute')).toBe('-61:01');
-		expect(formatDurationsEnUS({ index: 0, label: '0', value: 3603661 }, 'minute')).toBe('60,061:01');
-		expect(formatDurationsFrFr({ index: 0, label: '0', value: 3603661 }, 'minute')).toBe('60\u00a0061:01');
-		expect(formatDurationsDeDe({ index: 0, label: '0', value: 3603661 }, 'minute')).toBe('60.061:01');
+		expect(formatDurationsEnUS({ index: 0, label: '0', value: 'hello world!' })).toBe('hello world!');
 	});
 });
