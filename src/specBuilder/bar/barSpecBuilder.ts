@@ -21,7 +21,7 @@ import {
 	STACK_ID,
 	TRELLIS_PADDING,
 } from '@constants';
-import { addPopoverData } from '@specBuilder/chartPopover/chartPopoverUtils';
+import { addPopoverData, getPopovers } from '@specBuilder/chartPopover/chartPopoverUtils';
 import { addTooltipData, addTooltipSignals } from '@specBuilder/chartTooltip/chartTooltipUtils';
 import { getTransformSort } from '@specBuilder/data/dataUtils';
 import { getInteractiveMarkName } from '@specBuilder/line/lineUtils';
@@ -43,7 +43,7 @@ import { produce } from 'immer';
 import { BandScale, Data, FormulaTransform, Mark, OrdinalScale, Scale, Signal, Spec } from 'vega';
 
 import { BarProps, BarSpecProps, ColorScheme } from '../../types';
-import { getBarPadding, getScaleValues, isDodgedAndStacked } from './barUtils';
+import { getBarPadding, getDimensionSelectionRing, getScaleValues, isDodgedAndStacked } from './barUtils';
 import { getDodgedMark } from './dodgedBarUtils';
 import { getDodgedAndStackedBarMark, getStackedBarMarks } from './stackedBarUtils';
 import { addTrellisScale, getTrellisGroupMark, isTrellised } from './trellisedBarUtils';
@@ -265,6 +265,11 @@ export const addMarks = produce<Mark[], [BarSpecProps]>((marks, props) => {
 		barMarks.push(...getStackedBarMarks(props));
 	} else {
 		barMarks.push(getDodgedMark(props));
+	}
+
+	const popovers = getPopovers(props);
+	if (popovers.some((popover) => popover.UNSAFE_highlightBy === 'dimension')) {
+		barMarks.push(getDimensionSelectionRing(props));
 	}
 
 	// if this is a trellis plot, we add the bars and the repeated scale to the trellis group

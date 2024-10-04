@@ -18,6 +18,7 @@ import {
 	SELECTED_ITEM,
 	STACK_ID,
 } from '@constants';
+import { getPopovers } from '@specBuilder/chartPopover/chartPopoverUtils';
 import {
 	getColorProductionRule,
 	getCursor,
@@ -36,6 +37,7 @@ import {
 	NumericValueRef,
 	ProductionRule,
 	RectEncodeEntry,
+	RectMark,
 } from 'vega';
 
 import { BarSpecProps, Orientation } from '../../types';
@@ -254,6 +256,43 @@ export const getStroke = ({ name, children, color, colorScheme }: BarSpecProps):
 	];
 };
 
+export const getDimensionSelectionRing = (props: BarSpecProps): RectMark => {
+	const { name, colorScheme, paddingRatio, orientation } = props;
+
+	const update =
+		orientation === 'vertical'
+			? {
+					y: { value: 0 },
+					y2: { signal: 'height' },
+					xc: { signal: `scale('xBand', datum.${name}_selectedGroupId) + bandwidth('xBand')/2` },
+					width: { signal: `bandwidth('xBand')/(1 - ${paddingRatio} / 2)` },
+			  }
+			: {
+					x: { value: 0 },
+					x2: { signal: 'width' },
+					yc: { signal: `scale('yBand', datum.${name}_selectedGroupId) + bandwidth('yBand')/2` },
+					height: { signal: `bandwidth('yBand')/(1 - ${paddingRatio} / 2)` },
+			  };
+
+	return {
+		name: `${name}_selectionRing`,
+		type: 'rect',
+		from: {
+			data: `${name}_selectedData`,
+		},
+		interactive: false,
+		encode: {
+			enter: {
+				fill: { value: 'transparent' },
+				strokeWidth: { value: 2 },
+				stroke: { value: getColorValue('static-blue', colorScheme) },
+				cornerRadius: { value: 6 },
+			},
+			update,
+		},
+	};
+};
+
 export const getStrokeDash = ({ children, lineType }: BarSpecProps): ProductionRule<ArrayValueRef> => {
 	const defaultProductionRule = getStrokeDashProductionRule(lineType);
 	if (!hasPopover(children)) {
@@ -263,10 +302,16 @@ export const getStrokeDash = ({ children, lineType }: BarSpecProps): ProductionR
 	return [{ test: `${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${MARK_ID}`, value: [] }, defaultProductionRule];
 };
 
-export const getStrokeWidth = ({ name, children, lineWidth }: BarSpecProps): ProductionRule<NumericValueRef> => {
+export const getStrokeWidth = (props: BarSpecProps): ProductionRule<NumericValueRef> => {
+	const { lineWidth, name } = props;
 	const lineWidthValue = getLineWidthPixelsFromLineWidth(lineWidth);
 	const defaultProductionRule = { value: lineWidthValue };
-	if (!hasPopover(children)) {
+	const popovers = getPopovers(props);
+	const popoverWithDimensionHighlightExists = popovers.some(
+		({ UNSAFE_highlightBy }) => UNSAFE_highlightBy === 'dimension'
+	);
+
+	if (popovers.length === 0 || popoverWithDimensionHighlightExists) {
 		return [defaultProductionRule];
 	}
 

@@ -36,6 +36,7 @@ import {
 	Data,
 	GroupMark,
 	Mark,
+	RectMark,
 	Scale,
 	ScaleData,
 	SourceData,
@@ -426,6 +427,18 @@ describe('barSpecBuilder', () => {
 			expect(addedMarks).toHaveLength(1);
 			expect(addedMarks[0].name).toEqual('bar0_group');
 			expect((addedMarks[0] as GroupMark).marks).toHaveLength(3);
+		});
+
+		test('should add dimension selection ring if a popover is highlighting by dimension', () => {
+			const marks = addMarks([], {
+				...defaultBarProps,
+				children: [createElement(ChartPopover, { UNSAFE_highlightBy: 'dimension' })],
+			});
+			expect(marks).toHaveLength(3);
+
+			const selectionRingMark = marks[2] as RectMark;
+			expect(selectionRingMark.type).toEqual('rect');
+			expect(selectionRingMark.name).toEqual('bar0_selectionRing');
 		});
 
 		test('should add trellis group mark if trellis prop is set', () => {
