@@ -14,6 +14,8 @@ import { ADOBE_CLEAN_FONT } from '@themes/spectrumTheme';
 import { FormatLocaleDefinition, formatLocale } from 'd3-format';
 import { FontWeight } from 'vega';
 
+import { Granularity } from './types';
+
 interface LabelDatum {
 	index: number;
 	label: string;
@@ -42,13 +44,23 @@ const formatPrimaryTimeLabels = () => {
 export const formatTimeDurationLabels = (numberLocale: FormatLocaleDefinition = numberLocales['en-US']) => {
 	const d3 = formatLocale(numberLocale);
 	// 0 padded, minimum 2 digits, thousands separator, integer format
-	const formatDuration = d3.format('02,d');
-	return ({ value }: LabelDatum) => {
+	const zeroPaddedFormat = d3.format('02,d');
+	const format = d3.format(',d');
+	return ({ value }: LabelDatum, granularity: Granularity) => {
 		if (typeof value === 'string') return value;
-		const seconds = formatDuration(Math.floor(value % 60));
-		const minutes = formatDuration(Math.floor((value / 60) % 60));
-		const hours = formatDuration(Math.floor(value / 60 / 60));
-		return `${hours}:${minutes}:${seconds}`;
+
+		const sign = value < 0 ? '-' : '';
+		const absoluteValue = Math.abs(value);
+		const seconds = zeroPaddedFormat(Math.floor(absoluteValue % 60));
+
+		if (granularity === 'minute') {
+			const minutes = format(Math.floor(absoluteValue / 60));
+			return `${sign}${minutes}:${seconds}`;
+		}
+
+		const hours = format(Math.floor(absoluteValue / 60 / 60));
+		const minutes = zeroPaddedFormat(Math.floor((absoluteValue / 60) % 60));
+		return `${sign}${hours}:${minutes}:${seconds}`;
 	};
 };
 
