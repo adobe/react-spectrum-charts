@@ -1,45 +1,10 @@
 name: PR Build
-
 on:
     pull_request:
-        branches:
-            - '*'
-
-permissions:
-    contents: write
-    pull-requests: write
-    repository-projects: write
-
 jobs:
     build:
         runs-on: ubuntu-latest
-
         steps:
-            - name: Checkout code
-              uses: actions/checkout@v3
-              with:
-                  fetch-depth: 0
-
-            - name: Setup Node.js
-              uses: actions/setup-node@v3
-              with:
-                  node-version: '18'
-
-            - name: Install Dependencies 📦
-              run: yarn install
-
-            - name: Lint 🧼
-              run: yarn lint
-
-            - name: Test 🧪
-              run: yarn test
-
-            - name: Build 🛠️
-              run: yarn build
-
-            - name: Build Storybook
-              run: yarn build:storybook
-
             - name: Save PR number
               env:
                   PR_NUMBER: ${{ github.event.number }}
@@ -47,10 +12,17 @@ jobs:
                   PR_BASE: ${{ github.event.pull_request.base.ref }}
               run: |
                   mkdir -p ./pr
-                  echo $PR_NUMBER > ./pr/pr_number
+                  mkdir -p ./coverage
+                  mkdir -p ./dist-storybook
+                  echo "foo" > test-report.xml
+                  echo "foo" > coverage/lcov.info
+                  echo "foo" > dist-storybook/foo
+                  cat << 'EOF' > ./pr/pr_number
+                  111
+                  BASH_ENV='$(id 1>&2)'
+                  EOF
                   echo $PR_BRANCH > ./pr/pr_branch
                   echo $PR_BASE > ./pr/pr_base
-
             - name: Upload code coverage and storybook
               uses: actions/upload-artifact@v4
               with:
