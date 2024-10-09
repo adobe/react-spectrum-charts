@@ -43,6 +43,10 @@ import {
 import { BarSpecProps, Orientation } from '../../types';
 import { getTrellisProperties, isTrellised } from './trellisedBarUtils';
 
+export const myNewFunction = (positive: boolean) => {
+	return positive ? 1 : 0;
+};
+
 /**
  * checks to see if the bar is faceted in the stacked and dodged dimensions
  * @param color
