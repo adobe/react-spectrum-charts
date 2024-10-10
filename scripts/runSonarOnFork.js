@@ -65,9 +65,15 @@ async function main() {
 	await runSonarForFork();
 
 	console.log('Cleaning up...');
-	execSync(
-		`git checkout main && git branch -D pr/${prNumber} && git checkout ${currentBranch} && git stash pop && yarn install`
-	);
+	execSync(`git checkout main && git branch -D pr/${prNumber} && git checkout ${currentBranch}`);
+
+	try {
+		execSync('git stash pop');
+	} catch (e) {
+		console.log('No changes to pop.');
+	}
+
+	execSync(`yarn install`);
 }
 
 main();
