@@ -12,6 +12,7 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 const { runSonarForBranch, askQuestion } = require('./sonarCloudUtils');
 const readline = require('readline');
+const { execSync } = require('child_process');
 
 async function main() {
 	// Create an interface to capture user input
@@ -33,7 +34,10 @@ async function main() {
 	// Close the readline interface
 	rl.close();
 
-	await runSonarForBranch();
+	console.log('Running tests...');
+	execSync('yarn test');
+
+	runSonarForBranch();
 }
 
 main();

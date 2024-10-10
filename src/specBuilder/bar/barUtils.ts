@@ -43,33 +43,6 @@ import {
 import { BarSpecProps, Orientation } from '../../types';
 import { getTrellisProperties, isTrellised } from './trellisedBarUtils';
 
-export const myNewFunction = (sentiment?: 'positive' | 'false') => {
-	const mySentiment = sentiment ?? 'positive';
-
-	console.log('mySentiment', mySentiment);
-	console.log('mySentiment', mySentiment);
-	console.log('mySentiment', mySentiment);
-	console.log('mySentiment', mySentiment);
-	console.log('mySentiment', mySentiment);
-	console.log('mySentiment', mySentiment);
-	console.log('mySentiment', mySentiment);
-	console.log('mySentiment', mySentiment);
-	console.log('mySentiment', mySentiment);
-	console.log('mySentiment', mySentiment);
-	console.log('mySentiment', mySentiment);
-	console.log('mySentiment', mySentiment);
-	console.log('mySentiment', mySentiment);
-	console.log('mySentiment', mySentiment);
-	console.log('mySentiment', mySentiment);
-	console.log('mySentiment', mySentiment);
-	console.log('mySentiment', mySentiment);
-	console.log('mySentiment', mySentiment);
-
-	if (mySentiment === 'positive') {
-		return 'I am happy';
-	}
-	return 'I am sad';
-};
 /**
  * checks to see if the bar is faceted in the stacked and dodged dimensions
  * @param color
