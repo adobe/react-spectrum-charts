@@ -135,7 +135,7 @@ async function runSonarForBranch() {
 
 	const prNumber = await getPrNumber(branchName);
 
-	runSonarCloud(prNumber, branch);
+	runSonarCloud(prNumber, branchName);
 }
 
 async function runSonarForFork() {
