@@ -44,7 +44,7 @@ import { BarSpecProps, Orientation } from '../../types';
 import { getTrellisProperties, isTrellised } from './trellisedBarUtils';
 
 export const myNewFunction = (sentiment?: 'positive' | 'false') => {
-	const mySentiment = sentiment || 'positive';
+	const mySentiment = sentiment ?? 'positive';
 
 	if (mySentiment === 'positive') {
 		return 'I am happy';
