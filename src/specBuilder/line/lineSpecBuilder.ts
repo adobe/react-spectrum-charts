@@ -53,6 +53,7 @@ export const addLine = produce<Spec, [LineProps & { colorScheme?: ColorScheme; i
 			index = 0,
 			lineType = { value: 'solid' },
 			metric = DEFAULT_METRIC,
+			metricAxis,
 			name,
 			opacity = { value: 1 },
 			scaleType = 'time',
@@ -72,6 +73,7 @@ export const addLine = produce<Spec, [LineProps & { colorScheme?: ColorScheme; i
 			lineType,
 			markType: 'line',
 			metric,
+			metricAxis,
 			name: lineName,
 			opacity,
 			popoverMarkName: getPopoverMarkName(sanitizedChildren, lineName),
@@ -118,7 +120,7 @@ export const addSignals = produce<Signal[], [LineSpecProps]>((signals, props) =>
 });
 
 export const setScales = produce<Scale[], [LineSpecProps]>((scales, props) => {
-	const { metric, dimension, color, lineType, opacity, padding, scaleType, children, name } = props;
+	const { metric, metricAxis, dimension, color, lineType, opacity, padding, scaleType, children, name } = props;
 	// add dimension scale
 	addContinuousDimensionScale(scales, { scaleType, dimension, padding });
 	// add color to the color domain
@@ -129,6 +131,10 @@ export const setScales = produce<Scale[], [LineSpecProps]>((scales, props) => {
 	addFieldToFacetScaleDomain(scales, OPACITY_SCALE, opacity);
 	// find the linear scale and add our fields to it
 	addMetricScale(scales, getMetricKeys(metric, children, name));
+	// add linear scale with custom name
+	if (metricAxis) {
+		addMetricScale(scales, getMetricKeys(metric, children, name), 'y', metricAxis);
+	}
 	// add trendline scales
 	scales.push(...getTrendlineScales(props));
 	return scales;

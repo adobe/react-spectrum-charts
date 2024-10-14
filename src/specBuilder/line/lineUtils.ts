@@ -74,6 +74,7 @@ export interface LineMarkProps {
 	lineType: LineTypeFacet;
 	lineWidth?: LineWidthFacet;
 	metric: string;
+	metricAxis?: string;
 	name: string;
 	opacity: OpacityFacet;
 	popoverMarkName?: string;

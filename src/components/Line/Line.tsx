@@ -21,6 +21,7 @@ const Line: FC<LineProps> = ({
 	name = 'line0',
 	dimension = DEFAULT_TIME_DIMENSION,
 	metric = DEFAULT_METRIC,
+	metricAxis,
 	color = { value: 'categorical-100' },
 	scaleType = 'time',
 	lineType = { value: 'solid' },

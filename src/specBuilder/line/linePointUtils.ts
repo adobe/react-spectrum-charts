@@ -15,6 +15,7 @@ import {
 	getHighlightOpacityValue,
 	getOpacityProductionRule,
 	getXProductionRule,
+	getYProductionRule,
 	hasPopover,
 } from '@specBuilder/marks/markUtils';
 import { getColorValue } from '@specBuilder/specUtils';
@@ -34,6 +35,7 @@ const selectedTest = `${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${MARK_ID}`
 export const getLineStaticPoint = ({
 	name,
 	metric,
+	metricAxis,
 	color,
 	colorScheme,
 	scaleType,
@@ -46,7 +48,7 @@ export const getLineStaticPoint = ({
 		interactive: false,
 		encode: {
 			enter: {
-				y: { scale: 'yLinear', field: metric },
+				y: getYProductionRule(metricAxis, metric),
 				fill: getColorProductionRule(color, colorScheme),
 				stroke: { signal: BACKGROUND_COLOR },
 			},
@@ -63,7 +65,7 @@ export const getLineStaticPoint = ({
  * @returns SymbolMark
  */
 export const getHighlightBackgroundPoint = (lineProps: LineMarkProps): SymbolMark => {
-	const { dimension, metric, name, scaleType } = lineProps;
+	const { dimension, metric, metricAxis, name, scaleType } = lineProps;
 	return {
 		name: `${name}_pointBackground`,
 		type: 'symbol',
@@ -71,7 +73,7 @@ export const getHighlightBackgroundPoint = (lineProps: LineMarkProps): SymbolMar
 		interactive: false,
 		encode: {
 			enter: {
-				y: { scale: 'yLinear', field: metric },
+				y: getYProductionRule(metricAxis, metric),
 				fill: { signal: BACKGROUND_COLOR },
 				stroke: { signal: BACKGROUND_COLOR },
 			},
@@ -90,7 +92,7 @@ export const getHighlightBackgroundPoint = (lineProps: LineMarkProps): SymbolMar
  * @returns SymbolMark
  */
 export const getHighlightPoint = (lineProps: LineMarkProps): SymbolMark => {
-	const { color, colorScheme, dimension, metric, name, scaleType } = lineProps;
+	const { color, colorScheme, dimension, metric, metricAxis, name, scaleType } = lineProps;
 	return {
 		name: `${name}_point`,
 		type: 'symbol',
@@ -98,7 +100,7 @@ export const getHighlightPoint = (lineProps: LineMarkProps): SymbolMark => {
 		interactive: false,
 		encode: {
 			enter: {
-				y: { scale: 'yLinear', field: metric },
+				y: getYProductionRule(metricAxis, metric),
 				stroke: getColorProductionRule(color, colorScheme),
 			},
 			update: {
@@ -123,7 +125,7 @@ export const getSecondaryHighlightPoint = (
 	lineProps: LineMarkProps,
 	secondaryHighlightedMetric: string
 ): SymbolMark => {
-	const { color, colorScheme, dimension, name, scaleType } = lineProps;
+	const { color, colorScheme, dimension, metricAxis, name, scaleType } = lineProps;
 	return {
 		name: `${name}_secondaryPoint`,
 		type: 'symbol',
@@ -131,7 +133,7 @@ export const getSecondaryHighlightPoint = (
 		interactive: false,
 		encode: {
 			enter: {
-				y: { scale: 'yLinear', field: secondaryHighlightedMetric },
+				y: getYProductionRule(metricAxis, secondaryHighlightedMetric),
 				fill: { signal: BACKGROUND_COLOR },
 				stroke: getColorProductionRule(color, colorScheme),
 			},
@@ -244,7 +246,7 @@ export const getHighlightPointStrokeWidth = ({ staticPoint }: LineMarkProps): Pr
  * @returns SymbolMark
  */
 export const getSelectRingPoint = (lineProps: LineMarkProps): SymbolMark => {
-	const { colorScheme, dimension, metric, name, scaleType } = lineProps;
+	const { colorScheme, dimension, metric, metricAxis, name, scaleType } = lineProps;
 	return {
 		name: `${name}_pointSelectRing`,
 		type: 'symbol',
@@ -252,7 +254,7 @@ export const getSelectRingPoint = (lineProps: LineMarkProps): SymbolMark => {
 		interactive: false,
 		encode: {
 			enter: {
-				y: { scale: 'yLinear', field: metric },
+				y: getYProductionRule(metricAxis, metric),
 				fill: { signal: BACKGROUND_COLOR },
 				stroke: { value: getColorValue('static-blue', colorScheme) },
 			},

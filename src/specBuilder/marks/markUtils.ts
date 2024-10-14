@@ -277,6 +277,16 @@ export const getXProductionRule = (scaleType: ScaleType, dimension: string): Num
 };
 
 /**
+ * Gets the y encoding for marks
+ * @param metricAxis
+ * @param metric
+ * @returns y encoding
+ */
+export const getYProductionRule = (metricAxis: string | undefined, metric: string): NumericValueRef => {
+	return { scale: metricAxis || 'yLinear', field: metric };
+};
+
+/**
  * Gets the points used for the voronoi calculation
  * @param dataSource the name of the data source that will be used in the voronoi calculation
  * @param dimension the dimension for the x encoding
@@ -290,7 +300,8 @@ export const getPointsForVoronoi = (
 	dimension: string,
 	metric: string,
 	name: string,
-	scaleType: ScaleType
+	scaleType: ScaleType,
+	metricAxis?: string
 ): SymbolMark => {
 	return {
 		name: `${name}_pointsForVoronoi`,
@@ -299,7 +310,7 @@ export const getPointsForVoronoi = (
 		interactive: false,
 		encode: {
 			enter: {
-				y: { scale: 'yLinear', field: metric },
+				y: getYProductionRule(metricAxis, metric),
 				fill: { value: 'transparent' },
 				stroke: { value: 'transparent' },
 			},
@@ -359,7 +370,8 @@ export const getItemHoverArea = (
 	dimension: string,
 	metric: string,
 	name: string,
-	scaleType: ScaleType
+	scaleType: ScaleType,
+	metricAxis?: string
 ): GroupMark => {
 	return {
 		name: `${name}_hoverGroup`,
@@ -371,7 +383,7 @@ export const getItemHoverArea = (
 			encode: {
 				enter: {
 					shape: { value: HOVER_SHAPE },
-					y: { scale: 'yLinear', field: metric },
+					y: getYProductionRule(metricAxis, metric),
 					fill: { value: 'transparent' },
 					stroke: { value: 'transparent' },
 					tooltip: getTooltip(children, name, false),
