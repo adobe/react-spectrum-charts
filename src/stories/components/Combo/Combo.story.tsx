@@ -38,11 +38,11 @@ const BasicComboStory: StoryFn<typeof Combo> = (args): ReactElement => {
 	return (
 		<Chart {...chartProps}>
 			<Axis position="left" title="People" grid />
-			<Axis position="right" title="Adoption Rate" />
+			<Axis position="right" name="adoption" title="Adoption Rate" />
 			<Axis position="bottom" labelFormat="time" baseline ticks />
 			<Combo {...args}>
 				<Bar metric="people" />
-				<Line metric="adoptionRate" color={{ value: 'indigo-900' }} scaleType="point" />
+				<Line metric="adoptionRate" metricAxis="adoption" color={{ value: 'indigo-900' }} scaleType="point" />
 			</Combo>
 		</Chart>
 	);
@@ -51,9 +51,9 @@ const BasicComboStory: StoryFn<typeof Combo> = (args): ReactElement => {
 const TooltipStory: StoryFn<typeof Combo> = (args): ReactElement => {
 	const chartProps = useChartProps(defaultChartProps);
 	return (
-		<Chart {...chartProps} debug>
+		<Chart {...chartProps}>
 			<Axis position="left" title="People" grid />
-			<Axis position="right" title="Adoption Rate" />
+			<Axis position="right" name="adoption" title="Adoption Rate" />
 			<Axis position="bottom" labelFormat="time" baseline ticks />
 			<Combo {...args}>
 				<Bar metric="people">
@@ -66,7 +66,13 @@ const TooltipStory: StoryFn<typeof Combo> = (args): ReactElement => {
 						)}
 					</ChartTooltip>
 				</Bar>
-				<Line metric="adoptionRate" color={{ value: 'indigo-900' }} interactionMode="item" scaleType="point">
+				<Line
+					metric="adoptionRate"
+					metricAxis="adoption"
+					color={{ value: 'indigo-900' }}
+					interactionMode="item"
+					scaleType="point"
+				>
 					<ChartTooltip>
 						{(datum) => (
 							<div className="line-tooltip">

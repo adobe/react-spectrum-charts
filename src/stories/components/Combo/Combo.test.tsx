@@ -35,6 +35,14 @@ describe('Combo', () => {
 		// get lines
 		const lines = await findAllMarksByGroupName(chart, 'combo0Line0');
 		expect(lines.length).toEqual(1);
+
+		// get axes
+		const axes = await screen.findAllByRole('graphics-symbol');
+		const axisText = (index: number, text: string) => within(axes[index]).getByText(text);
+		expect(axisText(0, 'People')).toBeInTheDocument();
+		expect(axisText(0, '30')).toBeInTheDocument();
+		expect(axisText(1, 'Adoption Rate')).toBeInTheDocument();
+		expect(axisText(1, '0.8')).toBeInTheDocument();
 	});
 
 	test('Tooltip renders properly', async () => {
