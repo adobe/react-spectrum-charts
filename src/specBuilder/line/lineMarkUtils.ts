@@ -26,6 +26,7 @@ import {
 	getStrokeDashProductionRule,
 	getVoronoiPath,
 	getXProductionRule,
+	getYProductionRule,
 	hasPopover,
 } from '@specBuilder/marks/markUtils';
 import { LineMark, Mark, NumericValueRef, ProductionRule, RuleMark } from 'vega';
@@ -46,7 +47,8 @@ import { LineMarkProps } from './lineUtils';
  * @returns LineMark
  */
 export const getLineMark = (lineMarkProps: LineMarkProps, dataSource: string): LineMark => {
-	const { color, colorScheme, dimension, lineType, lineWidth, metric, name, opacity, scaleType } = lineMarkProps;
+	const { color, colorScheme, dimension, lineType, lineWidth, metric, metricAxis, name, opacity, scaleType } =
+		lineMarkProps;
 
 	return {
 		name,
@@ -55,7 +57,7 @@ export const getLineMark = (lineMarkProps: LineMarkProps, dataSource: string): L
 		interactive: false,
 		encode: {
 			enter: {
-				y: { scale: 'yLinear', field: metric },
+				y: getYProductionRule(metricAxis, metric),
 				stroke: getColorProductionRule(color, colorScheme),
 				strokeDash: getStrokeDashProductionRule(lineType),
 				strokeOpacity: getOpacityProductionRule(opacity),
@@ -165,21 +167,21 @@ const getInteractiveMarks = (dataSource: string, lineProps: LineMarkProps): Mark
 };
 
 const getVoronoiMarks = (dataSource: string, lineProps: LineMarkProps): Mark[] => {
-	const { children, dimension, metric, name, scaleType } = lineProps;
+	const { children, dimension, metric, metricAxis, name, scaleType } = lineProps;
 
 	return [
 		// points used for the voronoi transform
-		getPointsForVoronoi(dataSource, dimension, metric, name, scaleType),
+		getPointsForVoronoi(dataSource, dimension, metric, name, scaleType, metricAxis),
 		// voronoi transform used to get nearest point paths
 		getVoronoiPath(children, `${name}_pointsForVoronoi`, name),
 	];
 };
 
 const getItemHoverMarks = (dataSource: string, lineProps: LineMarkProps): Mark[] => {
-	const { children, dimension, metric, name, scaleType } = lineProps;
+	const { children, dimension, metric, metricAxis, name, scaleType } = lineProps;
 
 	return [
 		// area around item that triggers hover
-		getItemHoverArea(children, dataSource, dimension, metric, name, scaleType),
+		getItemHoverArea(children, dataSource, dimension, metric, name, scaleType, metricAxis),
 	];
 };

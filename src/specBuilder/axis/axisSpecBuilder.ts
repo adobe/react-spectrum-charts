@@ -50,6 +50,7 @@ export const addAxis = produce<Spec, [AxisProps & { colorScheme?: ColorScheme; i
 	(
 		spec,
 		{
+			name,
 			baseline = false,
 			baselineOffset = 0,
 			children,
@@ -72,7 +73,8 @@ export const addAxis = produce<Spec, [AxisProps & { colorScheme?: ColorScheme; i
 	) => {
 		// get the scale that this axis will be associated with
 		const scale = getScale(spec.scales ?? [], position);
-		const { name: scaleName, type: scaleType } = scale;
+		const scaleName = name || scale.name;
+		const scaleType = scale.type;
 
 		// get the opposing scale
 		const opposingScaleType = getOpposingScaleType(spec.scales ?? [], position);

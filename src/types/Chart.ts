@@ -404,6 +404,8 @@ export interface LineProps extends Omit<MarkProps, 'color'> {
 	staticPoint?: string;
 	/** Sets the interaction mode for the line */
 	interactionMode?: InteractionMode;
+	/** Axis that the metric is trended against (y-axis) */
+	metricAxis?: string;
 }
 
 export type InteractionMode = `${INTERACTION_MODE}`;

@@ -49,6 +49,7 @@ import {
 	getSymbolSizeProductionRule,
 	getTooltip,
 	getXProductionRule,
+	getYProductionRule,
 	hasMetricRange,
 	hasTooltip,
 } from './markUtils';
@@ -222,6 +223,19 @@ describe('getXProductionRule()', () => {
 		expect(getXProductionRule('point', DEFAULT_TIME_DIMENSION)).toEqual({
 			scale: 'xPoint',
 			field: DEFAULT_TIME_DIMENSION,
+		});
+	});
+});
+
+describe('getYProductionRule()', () => {
+	test('should return the correct encoding based on metricAxis', () => {
+		expect(getYProductionRule('metricAxis1', 'metric1')).toEqual({
+			scale: 'metricAxis1',
+			field: 'metric1',
+		});
+		expect(getYProductionRule(undefined, 'metric2')).toEqual({
+			scale: 'yLinear',
+			field: 'metric2',
 		});
 	});
 });

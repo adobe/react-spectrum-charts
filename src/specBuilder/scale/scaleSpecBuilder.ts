@@ -28,12 +28,17 @@ type SupportedScaleType = 'linear' | 'point' | 'band' | 'time' | 'ordinal';
  *
  * NOTE: this should only be called from a 'produce' function since it mutates the scales
  */
-export const getScaleIndexByType = (scales: Scale[], type: SupportedScaleType, axis: AxisType): number => {
-	const name = toCamelCase(`${axis} ${type}`);
+export const getScaleIndexByType = (
+	scales: Scale[],
+	type: SupportedScaleType,
+	axis: AxisType,
+	scaleName?: string
+): number => {
+	const name = scaleName || toCamelCase(`${axis} ${type}`);
 	let index = scales.findIndex((scale) => scale.name === name);
 	if (index === -1) {
 		index = scales.length;
-		scales.push(generateScale(type, axis));
+		scales.push(generateScale(type, axis, { name }));
 	}
 	return index;
 };
@@ -100,9 +105,15 @@ const overridePadding = produce<Scale, [number]>((scale, padding) => {
  * @param scales
  * @param values
  * @param metricAxis
+ * @param scaleName
  */
-export const addMetricScale = (scales: Scale[], metricKeys: string[], metricAxis: AxisType = 'y') => {
-	const index = getScaleIndexByType(scales, 'linear', metricAxis);
+export const addMetricScale = (
+	scales: Scale[],
+	metricKeys: string[],
+	metricAxis: AxisType = 'y',
+	scaleName?: string
+) => {
+	const index = getScaleIndexByType(scales, 'linear', metricAxis, scaleName);
 	scales[index] = addDomainFields(scales[index], metricKeys);
 };
 
