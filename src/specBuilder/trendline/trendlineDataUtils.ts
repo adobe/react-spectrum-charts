@@ -22,9 +22,9 @@ import { getSeriesIdTransform, getTableData } from '@specBuilder/data/dataUtils'
 import { hasInteractiveChildren } from '@specBuilder/marks/markUtils';
 import { getFacetsFromProps } from '@specBuilder/specUtils';
 import { produce } from 'immer';
-import { TrendlineMethod, TrendlineSpecProps } from 'types';
 import { Data, SourceData, Transforms } from 'vega';
 
+import { TrendlineMethod, TrendlineSpecProps } from '../../types';
 import {
 	getAggregateTransform,
 	getNormalizedDimensionTransform,
@@ -121,9 +121,10 @@ export const getAggregateTrendlineData = (
 		name: `${name}_highResolutionData`,
 		source: FILTERED_TABLE,
 		transform: [
+			...getExcludeDataKeyTransforms(trendlineProps.excludeDataKeys),
 			...dimensionRangeTransforms,
 			...getTrendlineStatisticalTransforms(markProps, trendlineProps, true),
-			getSeriesIdTransform(facets),
+			...getSeriesIdTransform(facets),
 		],
 	});
 	if (hasInteractiveChildren(trendlineChildren)) {
@@ -174,9 +175,10 @@ export const getRegressionTrendlineData = (
 		name: `${name}_highResolutionData`,
 		source: FILTERED_TABLE,
 		transform: [
+			...getExcludeDataKeyTransforms(trendlineProps.excludeDataKeys),
 			...dimensionRangeTransforms,
 			...getTrendlineStatisticalTransforms(markProps, trendlineProps, true),
-			getSeriesIdTransform(facets),
+			...getSeriesIdTransform(facets),
 		],
 	});
 	if (hasInteractiveChildren(trendlineChildren)) {
@@ -215,6 +217,7 @@ const getWindowTrendlineData = (markProps: TrendlineParentProps, trendlineProps:
 	name: `${trendlineProps.name}_data`,
 	source: FILTERED_TABLE,
 	transform: [
+		...getExcludeDataKeyTransforms(trendlineProps.excludeDataKeys),
 		...getTrendlineStatisticalTransforms(markProps, trendlineProps, false),
 		...getTrendlineDimensionRangeTransforms(markProps.dimension, trendlineProps.dimensionRange),
 	],
@@ -228,7 +231,6 @@ const getWindowTrendlineData = (markProps: TrendlineParentProps, trendlineProps:
  */
 const getHighlightTrendlineData = (markName: string): SourceData => {
 	const expr = `${SELECTED_ITEM} === datum.${MARK_ID} || !${SELECTED_ITEM} && ${HIGHLIGHTED_ITEM} === datum.${MARK_ID}`;
-
 	return {
 		name: `${markName}Trendline_highlightedData`,
 		source: `${markName}_allTrendlineData`,
@@ -320,3 +322,9 @@ export const getTrendlineDisplayOnHoverData = (trendlineName: string, method: Tr
 		],
 	};
 };
+
+const getExcludeDataKeyTransforms = (excludeDataKeys?: string[]): Transforms[] =>
+	excludeDataKeys?.map((excludeDataKey) => ({
+		type: 'filter',
+		expr: `!datum.${excludeDataKey}`,
+	})) ?? [];

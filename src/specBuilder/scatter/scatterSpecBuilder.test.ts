@@ -34,16 +34,45 @@ describe('addData()', () => {
 	test('should add time transform is dimensionScaleType === "time"', () => {
 		const data = addData(initializeSpec().data ?? [], { ...defaultScatterProps, dimensionScaleType: 'time' });
 		expect(data).toHaveLength(2);
-		expect(data[0].transform).toHaveLength(2);
-		expect(data[0].transform?.[1].type).toBe('timeunit');
+		expect(data[0].transform).toHaveLength(3);
+		expect(data[0].transform?.[2].type).toBe('timeunit');
+	});
+	test('should add additional filteredData if tooltip exists', () => {
+		const data = addData(initializeSpec().data ?? [], {
+			...defaultScatterProps,
+			children: [createElement(ChartTooltip)],
+		});
+		expect(data).toHaveLength(3);
+		expect(data[2].name).toBe('filteredTableForTooltip');
+	});
+	test('tooltipFilteredData has undefined transform by default', () => {
+		const data = addData(initializeSpec().data ?? [], {
+			...defaultScatterProps,
+			children: [createElement(ChartTooltip)],
+		});
+
+		expect(data[2].transform).toBeUndefined();
+	});
+	test('tooltipFilteredData has undefined transform by default', () => {
+		const data = addData(initializeSpec().data ?? [], {
+			...defaultScatterProps,
+			children: [createElement(ChartTooltip, { excludeDataKeys: ['exclude'] })],
+		});
+
+		expect(data[2].transform).toStrictEqual([
+			{
+				type: 'filter',
+				expr: '!datum.exclude',
+			},
+		]);
 	});
 	test('should add selectedData if popover exists', () => {
 		const data = addData(initializeSpec().data ?? [], {
 			...defaultScatterProps,
 			children: [createElement(ChartPopover)],
 		});
-		expect(data).toHaveLength(3);
-		expect(data[2].name).toBe('scatter0_selectedData');
+		expect(data).toHaveLength(4);
+		expect(data[3].name).toBe('scatter0_selectedData');
 	});
 	test('should add trendline data if trendline exists as a child', () => {
 		const data = addData(initializeSpec().data ?? [], {
@@ -51,7 +80,7 @@ describe('addData()', () => {
 			children: [createElement(Trendline)],
 		});
 		expect(data).toHaveLength(3);
-		expect(data[2].transform).toHaveLength(2);
+		expect(data[2].transform).toHaveLength(1);
 		expect(data[2].transform?.[0].type).toBe('regression');
 	});
 });
@@ -62,7 +91,7 @@ describe('addSignals()', () => {
 			...defaultScatterProps,
 			children: [createElement(ChartTooltip)],
 		});
-		expect(signals).toHaveLength(4);
+		expect(signals).toHaveLength(defaultSignals.length);
 		expect(signals[0].name).toBe(HIGHLIGHTED_ITEM);
 		expect(signals[0].on).toHaveLength(2);
 	});
@@ -71,7 +100,7 @@ describe('addSignals()', () => {
 			...defaultScatterProps,
 			children: [createElement(Trendline, { displayOnHover: true })],
 		});
-		expect(signals).toHaveLength(4);
+		expect(signals).toHaveLength(defaultSignals.length);
 		expect(signals[0].name).toBe(HIGHLIGHTED_ITEM);
 		expect(signals[0].on).toHaveLength(2);
 	});

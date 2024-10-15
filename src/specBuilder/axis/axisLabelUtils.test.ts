@@ -15,7 +15,6 @@ import {
 	getLabelAnchorValues,
 	getLabelAngle,
 	getLabelFormat,
-	getLabelNumberFormat,
 	getLabelOffset,
 	getLabelValue,
 	labelIsParallelToAxis,
@@ -187,24 +186,5 @@ describe('getLabelFormat()', () => {
 			'signal',
 			'formatTimeDurationLabels(datum)'
 		);
-	});
-});
-
-describe('getLabelNumberFormat()', () => {
-	test('should return correct signal for shortNumber', () => {
-		const format = getLabelNumberFormat('shortNumber');
-		expect(format).toHaveLength(1);
-		expect(format[0]).toHaveProperty('signal', "upper(replace(format(datum.value, '.3~s'), /(\\d+)G/, '$1B'))");
-	});
-	test('should return correct signal for shortCurrency', () => {
-		const format = getLabelNumberFormat('shortCurrency');
-		expect(format).toHaveLength(2);
-		expect(format[0]).toHaveProperty('signal', "upper(replace(format(datum.value, '$.3~s'), /(\\d+)G/, '$1B'))");
-	});
-	test('should return correct signal for string specifier', () => {
-		const numberFormat = '.2f';
-		const format = getLabelNumberFormat(numberFormat);
-		expect(format).toHaveLength(1);
-		expect(format[0]).toHaveProperty('signal', `format(datum.value, '${numberFormat}')`);
 	});
 });

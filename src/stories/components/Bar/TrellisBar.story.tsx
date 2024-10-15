@@ -16,10 +16,10 @@ import useChartProps from '@hooks/useChartProps';
 import { Axis, Bar, Chart, ChartPopover, ChartTooltip, Legend } from '@rsc';
 import { StoryFn } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
-import { BarProps, Datum, SpectrumColor } from 'types';
 
 import { Content, Text, View } from '@adobe/react-spectrum';
 
+import { BarProps, Datum, SpectrumColor } from '../../../types';
 import { generateMockDataForTrellis } from './data';
 
 export default {
@@ -79,6 +79,7 @@ const Dodged = bindWithProps<BarProps>(BarStory);
 Dodged.args = {
 	type: 'dodged',
 	dimension: 'segment',
+	onClick: undefined,
 	order: 'order',
 	color: 'bucket',
 	trellis: 'event',
@@ -92,6 +93,7 @@ HorizontalBarHorizontalTrellis.args = {
 	type: 'stacked',
 	trellis: 'event',
 	dimension: 'segment',
+	onClick: undefined,
 	color: 'bucket',
 	order: 'order',
 	orientation: 'horizontal',

@@ -11,7 +11,10 @@
  */
 import {
 	COLOR_SCALE,
+	COMPONENT_NAME,
 	DEFAULT_OPACITY_RULE,
+	FILTERED_TABLE,
+	HIGHLIGHTED_GROUP,
 	HIGHLIGHTED_SERIES,
 	HIGHLIGHT_CONTRAST_RATIO,
 	LINE_TYPE_SCALE,
@@ -23,15 +26,6 @@ import {
 import { getColorValue, getPathFromSymbolShape } from '@specBuilder/specUtils';
 import { spectrumColors } from '@themes';
 import merge from 'deepmerge';
-import {
-	FacetRef,
-	FacetType,
-	LegendDescription,
-	LegendLabel,
-	LegendSpecProps,
-	Position,
-	SecondaryFacetType,
-} from 'types';
 import {
 	BaseValueRef,
 	Color,
@@ -46,6 +40,16 @@ import {
 } from 'vega';
 
 import { ColorValueV6 } from '@react-types/shared';
+
+import {
+	FacetRef,
+	FacetType,
+	LegendDescription,
+	LegendLabel,
+	LegendSpecProps,
+	Position,
+	SecondaryFacetType,
+} from '../../types';
 
 export interface Facet {
 	facetType: FacetType | SecondaryFacetType;
@@ -86,13 +90,13 @@ export const getHiddenEntriesFilter = (hiddenEntries: string[], name: string): F
 export const getEncodings = (facets: Facet[], legendProps: LegendSpecProps): LegendEncode => {
 	const symbolEncodings = getSymbolEncodings(facets, legendProps);
 	const hoverEncodings = getHoverEncodings(facets, legendProps);
-	const legendLabelsEncodings = getLegendLabelsEncodings(legendProps.legendLabels);
+	const legendLabelsEncodings = getLegendLabelsEncodings(legendProps.name, legendProps.legendLabels);
 	const showHideEncodings = getShowHideEncodings(legendProps);
 	// merge the encodings together
 	return mergeLegendEncodings([symbolEncodings, legendLabelsEncodings, hoverEncodings, showHideEncodings]);
 };
 
-const getLegendLabelsEncodings = (legendLabels: LegendLabel[] | undefined): LegendEncode => {
+const getLegendLabelsEncodings = (name: string, legendLabels: LegendLabel[] | undefined): LegendEncode => {
 	if (legendLabels) {
 		return {
 			labels: {
@@ -100,8 +104,8 @@ const getLegendLabelsEncodings = (legendLabels: LegendLabel[] | undefined): Lege
 					text: [
 						{
 							// Test whether a legendLabel exists for the seriesName, if not use the seriesName
-							test: "indexof(pluck(legendLabels, 'seriesName'), datum.value) > -1",
-							signal: "legendLabels[indexof(pluck(legendLabels, 'seriesName'), datum.value)].label",
+							test: `indexof(pluck(${name}_labels, 'seriesName'), datum.value) > -1`,
+							signal: `${name}_labels[indexof(pluck(${name}_labels, 'seriesName'), datum.value)].label`,
 						},
 						{ signal: 'datum.value' },
 					],
@@ -154,7 +158,7 @@ const getHoverEncodings = (facets: Facet[], props: LegendSpecProps): LegendEncod
 
 const getTooltip = (descriptions: LegendDescription[] | undefined, name: string) => {
 	if (descriptions?.length) {
-		return { signal: `merge(datum, {'rscComponentName': '${name}'})` };
+		return { signal: `merge(datum, {'${COMPONENT_NAME}': '${name}'})` };
 	}
 	return undefined;
 };
@@ -168,9 +172,8 @@ export const getOpacityEncoding = ({
 	highlight,
 	highlightedSeries,
 	keys,
-	name,
 }: LegendSpecProps): ProductionRule<NumericValueRef> | undefined => {
-	const highlightSignalName = keys ? `${name}_highlight` : HIGHLIGHTED_SERIES;
+	const highlightSignalName = keys?.length ? HIGHLIGHTED_GROUP : HIGHLIGHTED_SERIES;
 	// only add symbol opacity if highlight is true or highlightedSeries is defined
 	if (highlight || highlightedSeries) {
 		return [
@@ -277,13 +280,20 @@ const getSymbolFacetEncoding = <T>({
 };
 
 export const getHiddenSeriesColorRule = (
-	{ colorScheme, hiddenSeries, isToggleable, keys }: LegendSpecProps,
+	{ colorScheme, hiddenSeries, isToggleable, keys, name }: LegendSpecProps,
 	colorValue: ColorValueV6
 ): ({
 	test?: string;
 } & ColorValueRef)[] => {
-	// if the legend doesn't support hide/show or if it has custom keys, don't add the hidden series color rule
-	if ((!isToggleable && !hiddenSeries) || keys) return [];
+	if (!isToggleable && !hiddenSeries.length) return [];
+	if (keys?.length) {
+		return [
+			{
+				test: `indexof(pluck(data('${FILTERED_TABLE}'), '${name}_highlightGroupId'), datum.value) === -1`,
+				value: getColorValue(colorValue, colorScheme),
+			},
+		];
+	}
 	return [{ test: 'indexof(hiddenSeries, datum.value) !== -1', value: getColorValue(colorValue, colorScheme) }];
 };
 
@@ -296,7 +306,7 @@ export const getShowHideEncodings = (props: LegendSpecProps): LegendEncode => {
 	const { colorScheme, hiddenSeries, isToggleable, keys, name, onClick } = props;
 	let hiddenSeriesEncode: LegendEncode = {};
 	// if the legend supports hide/show and doesn't have custom keys, add the hidden series encodings
-	if ((hiddenSeries || isToggleable) && !keys) {
+	if (hiddenSeries || isToggleable) {
 		hiddenSeriesEncode = {
 			labels: {
 				update: {

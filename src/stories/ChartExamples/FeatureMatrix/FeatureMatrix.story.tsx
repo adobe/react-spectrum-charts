@@ -12,11 +12,27 @@
 import { ReactElement } from 'react';
 
 import useChartProps from '@hooks/useChartProps';
-import { Axis, Chart, Legend, Scatter, ScatterPath, Trendline, TrendlineAnnotation, TrendlineProps } from '@rsc';
+import {
+	Axis,
+	Chart,
+	ChartTooltip,
+	Legend,
+	Scatter,
+	ScatterPath,
+	Trendline,
+	TrendlineAnnotation,
+	TrendlineProps,
+	categorical12,
+} from '@rsc';
 import { StoryFn } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
 
-import { basicFeatureMatrixData, multipleSegmentFeatureMatrixData, timeCompareFeatureMatrixData } from './data';
+import {
+	basicFeatureMatrixData,
+	multipleSegmentFeatureMatrixData,
+	timeCompareFeatureMatrixData,
+	topEventsFeatureMatrixData,
+} from './data';
 
 export default {
 	title: 'RSC/Chart/Examples',
@@ -55,8 +71,8 @@ const MultipleSegmentFeatureMatrixStory: StoryFn<typeof Chart> = (args): ReactEl
 
 	return (
 		<Chart {...chartProps}>
-			<Axis position="bottom" ticks grid title="Percentage of daily users (DAU)" labelFormat="percentage" />
-			<Axis position="left" ticks grid title="Average number of times per day" />
+			<Axis position="bottom" grid title="Percentage of daily users (DAU)" labelFormat="percentage" />
+			<Axis position="left" grid title="Average number of times per day" />
 			<Scatter dimension="dauPercent" metric="countAvg" color="segment">
 				<Trendline {...trendlineProps} displayOnHover orientation="horizontal">
 					<TrendlineAnnotation prefix="Median times" numberFormat=".3" />
@@ -75,8 +91,8 @@ const TimeCompareFeatureMatrixStory: StoryFn<typeof Chart> = (args): ReactElemen
 
 	return (
 		<Chart {...chartProps}>
-			<Axis position="bottom" ticks grid title="Percentage of daily users (DAU)" labelFormat="percentage" />
-			<Axis position="left" ticks grid title="Average number of times per day" />
+			<Axis position="bottom" grid title="Percentage of daily users (DAU)" labelFormat="percentage" />
+			<Axis position="left" grid title="Average number of times per day" />
 			<Scatter
 				dimension="dauPercent"
 				metric="countAvg"
@@ -85,6 +101,7 @@ const TimeCompareFeatureMatrixStory: StoryFn<typeof Chart> = (args): ReactElemen
 				opacity="period"
 				lineWidth={{ value: 1 }}
 			>
+				<ChartTooltip highlightBy={['event', 'segment']} />
 				<Trendline {...trendlineProps} displayOnHover orientation="horizontal">
 					<TrendlineAnnotation prefix="Median times" numberFormat=".3" />
 				</Trendline>
@@ -94,6 +111,45 @@ const TimeCompareFeatureMatrixStory: StoryFn<typeof Chart> = (args): ReactElemen
 				<ScatterPath groupBy={['event', 'segment']} pathWidth="pathWidth" opacity={0.2} />
 			</Scatter>
 			<Legend position="bottom" highlight />
+		</Chart>
+	);
+};
+
+const EventOverlayFeatureMatrixStory: StoryFn<typeof Chart> = (args): ReactElement => {
+	const chartProps = useChartProps(args);
+
+	return (
+		<Chart {...chartProps}>
+			<Axis position="bottom" grid title="Percentage of daily users (DAU)" labelFormat="percentage" />
+			<Axis position="left" grid title="Average number of times per day" />
+			<Scatter dimension="dauPercent" metric="countAvg" color="segment" opacity="segment">
+				<ChartTooltip excludeDataKeys={['isTopItem']} />
+				<Trendline {...trendlineProps} excludeDataKeys={['isTopItem']} displayOnHover orientation="horizontal">
+					<TrendlineAnnotation prefix="Median times" numberFormat=".3" />
+				</Trendline>
+				<Trendline {...trendlineProps} excludeDataKeys={['isTopItem']} displayOnHover orientation="vertical">
+					<TrendlineAnnotation prefix="Median %DAU" numberFormat=".2%" dimensionValue="start" />
+				</Trendline>
+				<Trendline
+					{...trendlineProps}
+					excludeDataKeys={['isSegmentData']}
+					orientation="horizontal"
+					color="gray-700"
+					opacity={0.7}
+				>
+					<TrendlineAnnotation prefix="Top events median times" numberFormat=".3" />
+				</Trendline>
+				<Trendline
+					{...trendlineProps}
+					excludeDataKeys={['isSegmentData']}
+					orientation="vertical"
+					color="gray-700"
+					opacity={0.7}
+				>
+					<TrendlineAnnotation prefix="Top events median %DAU" numberFormat=".2%" />
+				</Trendline>
+			</Scatter>
+			<Legend position="bottom" highlight hiddenEntries={['top-events-overlay']} />
 		</Chart>
 	);
 };
@@ -125,4 +181,14 @@ TimeCompareFeatureMatrix.args = {
 	data: timeCompareFeatureMatrixData,
 };
 
-export { FeatureMatrix, MultipleSegmentFeatureMatrix, TimeCompareFeatureMatrix };
+const EventOverlayFeatureMatrix = bindWithProps(EventOverlayFeatureMatrixStory);
+EventOverlayFeatureMatrix.args = {
+	width: 'auto',
+	maxWidth: 850,
+	height: 500,
+	colors: ['gray-400', ...categorical12],
+	opacities: [0.5, 1, 1, 1],
+	data: topEventsFeatureMatrixData,
+};
+
+export { FeatureMatrix, MultipleSegmentFeatureMatrix, TimeCompareFeatureMatrix, EventOverlayFeatureMatrix };

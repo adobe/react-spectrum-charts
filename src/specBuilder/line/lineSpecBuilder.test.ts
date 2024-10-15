@@ -11,6 +11,7 @@
  */
 import { createElement } from 'react';
 
+import { ChartTooltip } from '@components/ChartTooltip';
 import { MetricRange } from '@components/MetricRange';
 import { Trendline } from '@components/Trendline';
 import {
@@ -31,9 +32,9 @@ import {
 	TRENDLINE_VALUE,
 } from '@constants';
 import { defaultSignals } from '@specBuilder/specTestUtils';
-import { LineSpecProps, MetricRangeElement, MetricRangeProps } from 'types';
 import { Data, Spec } from 'vega';
 
+import { LineSpecProps, MetricRangeElement, MetricRangeProps } from '../../types';
 import * as signalSpecBuilder from '../signal/signalSpecBuilder';
 import { initializeSpec } from '../specUtils';
 import { addData, addLine, addLineMarks, addSignals, setScales } from './lineSpecBuilder';
@@ -43,6 +44,7 @@ const defaultLineProps: LineSpecProps = {
 	name: 'line0',
 	dimension: DEFAULT_TIME_DIMENSION,
 	index: 0,
+	markType: 'line',
 	metric: DEFAULT_METRIC,
 	color: DEFAULT_COLOR,
 	scaleType: 'time',
@@ -70,6 +72,11 @@ const defaultSpec = initializeSpec({
 			name: TABLE,
 			transform: [
 				{ as: MARK_ID, type: 'identifier' },
+				{
+					type: 'formula',
+					expr: `toDate(datum[\"${DEFAULT_TIME_DIMENSION}\"])`,
+					as: DEFAULT_TIME_DIMENSION,
+				},
 				{
 					as: [DEFAULT_TRANSFORMED_TIME_DIMENSION, `${DEFAULT_TIME_DIMENSION}1`],
 					field: DEFAULT_TIME_DIMENSION,
@@ -241,7 +248,6 @@ const metricRangeGroupMark = {
 				enter: {
 					y: {
 						field: 'start',
-
 						scale: 'yLinear',
 					},
 					y2: {
@@ -260,11 +266,8 @@ const metricRangeGroupMark = {
 						scale: 'xTime',
 						field: DEFAULT_TRANSFORMED_TIME_DIMENSION,
 					},
-					fillOpacity: [
-						{
-							value: 0.2,
-						},
-					],
+					fillOpacity: { value: 0.2 },
+					opacity: [DEFAULT_OPACITY_RULE],
 				},
 			},
 		},
@@ -393,7 +396,7 @@ describe('lineSpecBuilder', () => {
 					...defaultLineProps,
 					children: [createElement(Trendline, { method: 'movingAverage-7' })],
 				})[0].transform
-			).toHaveLength(2);
+			).toHaveLength(3);
 		});
 
 		test('adds point data if displayPointMark is not undefined', () => {
@@ -541,11 +544,11 @@ describe('lineSpecBuilder', () => {
 				...defaultLineProps,
 				children: [getMetricRangeElement({ displayOnHover: true })],
 			});
-			expect(signals).toHaveLength(4);
+			expect(signals).toHaveLength(defaultSignals.length);
 			expect(signals[0]).toHaveProperty('name', HIGHLIGHTED_ITEM);
 			expect(signals[0].on).toHaveLength(2);
-			expect(signals[1]).toHaveProperty('name', HIGHLIGHTED_SERIES);
-			expect(signals[1].on).toHaveLength(2);
+			expect(signals[2]).toHaveProperty('name', HIGHLIGHTED_SERIES);
+			expect(signals[2].on).toHaveLength(2);
 		});
 
 		test('adds hover signals when displayPointMark is not undefined', () => {
@@ -558,11 +561,24 @@ describe('lineSpecBuilder', () => {
 				staticPoint: 'staticPoint',
 				children: [getMetricRangeElement({ displayOnHover: true })],
 			});
-			expect(signals).toHaveLength(4);
+			expect(signals).toHaveLength(defaultSignals.length);
 			expect(signals[0]).toHaveProperty('name', HIGHLIGHTED_ITEM);
 			expect(signals[0].on).toHaveLength(2);
-			expect(signals[1]).toHaveProperty('name', HIGHLIGHTED_SERIES);
-			expect(signals[1].on).toHaveLength(2);
+			expect(signals[2]).toHaveProperty('name', HIGHLIGHTED_SERIES);
+			expect(signals[2].on).toHaveLength(2);
+		});
+
+		test('hover signals with interactionMode item', () => {
+			const signals = addSignals(defaultSignals, {
+				...defaultLineProps,
+				interactionMode: 'item',
+				children: [createElement(ChartTooltip)],
+			});
+			expect(signals).toHaveLength(defaultSignals.length);
+			expect(signals[0]).toHaveProperty('name', HIGHLIGHTED_ITEM);
+			expect(signals[0].on).toHaveLength(8);
+			expect(signals[2]).toHaveProperty('name', HIGHLIGHTED_SERIES);
+			expect(signals[2].on).toHaveLength(8);
 		});
 	});
 });

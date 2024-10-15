@@ -22,6 +22,8 @@ const banner = `${name}@v${version}`;
 module.exports = {
 	entry: {
 		alpha: './src/alpha/index.ts',
+		beta: './src/beta/index.ts',
+		rc: './src/rc/index.ts',
 		index: './src/index.ts',
 	},
 	mode: 'production',

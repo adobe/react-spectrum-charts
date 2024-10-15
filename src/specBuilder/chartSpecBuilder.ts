@@ -15,12 +15,14 @@ import {
 	DEFAULT_COLOR_SCHEME,
 	DEFAULT_LINE_TYPES,
 	FILTERED_TABLE,
+	HIGHLIGHTED_GROUP,
 	HIGHLIGHTED_ITEM,
 	HIGHLIGHTED_SERIES,
 	LINEAR_COLOR_SCALE,
 	LINE_TYPE_SCALE,
 	LINE_WIDTH_SCALE,
 	OPACITY_SCALE,
+	SELECTED_GROUP,
 	SELECTED_ITEM,
 	SELECTED_SERIES,
 	SERIES_ID,
@@ -30,9 +32,12 @@ import {
 	TABLE,
 } from '@constants';
 import { Area, Axis, Bar, BigNumber, Legend, Line, Scatter, Title } from '@rsc';
-import { Donut } from '@rsc/alpha';
+import { Combo } from '@rsc/alpha';
+import { Donut } from '@rsc/rc';
 import colorSchemes from '@themes/colorSchemes';
 import { produce } from 'immer';
+import { Data, LinearScale, OrdinalScale, PointScale, Scale, Signal, Spec } from 'vega';
+
 import {
 	AreaElement,
 	AxisElement,
@@ -42,6 +47,7 @@ import {
 	ColorScale,
 	ColorScheme,
 	Colors,
+	ComboElement,
 	DonutElement,
 	LegendElement,
 	LineElement,
@@ -54,12 +60,11 @@ import {
 	SymbolShapes,
 	SymbolSize,
 	TitleElement,
-} from 'types';
-import { Data, LinearScale, OrdinalScale, PointScale, Scale, Signal, Spec } from 'vega';
-
+} from '../types';
 import { addArea } from './area/areaSpecBuilder';
 import { addAxis } from './axis/axisSpecBuilder';
 import { addBar } from './bar/barSpecBuilder';
+import { addCombo } from './combo/comboSpecBuilder';
 import { getSeriesIdTransform } from './data/dataUtils';
 import { addDonut } from './donut/donutSpecBuilder';
 import { setHoverOpacityForMarks } from './legend/legendHighlightUtils';
@@ -67,7 +72,7 @@ import { addLegend } from './legend/legendSpecBuilder';
 import { addLine } from './line/lineSpecBuilder';
 import { getOrdinalScale } from './scale/scaleSpecBuilder';
 import { addScatter } from './scatter/scatterSpecBuilder';
-import { getGenericSignal } from './signal/signalSpecBuilder';
+import { getGenericValueSignal } from './signal/signalSpecBuilder';
 import {
 	getColorValue,
 	getFacetsFromScales,
@@ -87,7 +92,7 @@ export function buildSpec({
 	description,
 	hiddenSeries,
 	highlightedSeries,
-	lineTypes = DEFAULT_LINE_TYPES,
+	lineTypes = DEFAULT_LINE_TYPES as LineType[],
 	lineWidths = ['M'],
 	opacities,
 	symbolShapes = ['rounded-square'],
@@ -114,6 +119,7 @@ export function buildSpec({
 	buildOrder.set(Line, 0);
 	buildOrder.set(Donut, 0);
 	buildOrder.set(Scatter, 0);
+	buildOrder.set(Combo, 0);
 	buildOrder.set(Legend, 1);
 	buildOrder.set(Axis, 2);
 	buildOrder.set(Title, 3);
@@ -166,6 +172,8 @@ export function buildSpec({
 				case BigNumber.displayName:
 					// Do nothing and do not throw an error
 					return acc;
+				case Combo.displayName:
+					return addCombo(acc, { ...(cur as ComboElement).props });
 				default:
 					console.error(`Invalid component type: ${cur.type.displayName} is not a supported <Chart> child`);
 					return acc;
@@ -218,15 +226,17 @@ export const getDefaultSignals = (
 	// if the signal background color were transparent then backgroundMarks and annotation fill would also be transparent
 	const signalBackgroundColor = backgroundColor === 'transparent' ? 'gray-50' : backgroundColor;
 	return [
-		getGenericSignal(BACKGROUND_COLOR, getColorValue(signalBackgroundColor, colorScheme)),
-		getGenericSignal('colors', getTwoDimensionalColorScheme(colors, colorScheme)),
-		getGenericSignal('lineTypes', getTwoDimensionalLineTypes(lineTypes)),
-		getGenericSignal('opacities', getTwoDimensionalOpacities(opacities)),
-		getGenericSignal('hiddenSeries', hiddenSeries ?? []),
-		getGenericSignal(HIGHLIGHTED_ITEM),
-		getGenericSignal(HIGHLIGHTED_SERIES, highlightedSeries),
-		getGenericSignal(SELECTED_ITEM),
-		getGenericSignal(SELECTED_SERIES),
+		getGenericValueSignal(BACKGROUND_COLOR, getColorValue(signalBackgroundColor, colorScheme)),
+		getGenericValueSignal('colors', getTwoDimensionalColorScheme(colors, colorScheme)),
+		getGenericValueSignal('lineTypes', getTwoDimensionalLineTypes(lineTypes)),
+		getGenericValueSignal('opacities', getTwoDimensionalOpacities(opacities)),
+		getGenericValueSignal('hiddenSeries', hiddenSeries ?? []),
+		getGenericValueSignal(HIGHLIGHTED_ITEM),
+		getGenericValueSignal(HIGHLIGHTED_GROUP),
+		getGenericValueSignal(HIGHLIGHTED_SERIES, highlightedSeries),
+		getGenericValueSignal(SELECTED_ITEM),
+		getGenericValueSignal(SELECTED_SERIES),
+		getGenericValueSignal(SELECTED_GROUP),
 	];
 };
 
@@ -374,7 +384,7 @@ function getPathsFromSymbolShapes(symbolShapes: ChartSymbolShape[]) {
  */
 export const addData = produce<Data[], [{ facets: string[] }]>((data, { facets }) => {
 	if (facets.length === 0) return;
-	data[0]?.transform?.push(getSeriesIdTransform(facets));
+	data[0]?.transform?.push(...getSeriesIdTransform(facets));
 
 	// add a filter transform to the TABLE data that filters out any hidden series
 	const index = data.findIndex((datum) => datum.name === FILTERED_TABLE);

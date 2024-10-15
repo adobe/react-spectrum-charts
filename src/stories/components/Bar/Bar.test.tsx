@@ -9,15 +9,14 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import React from 'react';
-
 import '@matchMediaMock';
 import { Bar } from '@rsc';
-import { findAllMarksByGroupName, findChart, render } from '@test-utils';
+import { clickNthElement, findAllMarksByGroupName, findChart, render } from '@test-utils';
 
-import { Basic, Opacity, PaddingRatio, WithAnnotation } from './Bar.story';
+import { Basic, Opacity, PaddingRatio, WithAnnotation, OnClick } from './Bar.story';
 import { Color, DodgedStacked } from './DodgedBar.story';
 import { Basic as StackedBasic } from './StackedBar.story';
+import { barData } from './data';
 
 describe('Bar', () => {
 	// Bar is not a real React component. This is test just provides test coverage for sonarqube
@@ -97,5 +96,27 @@ describe('Bar', () => {
 		// get bars
 		const bars = await findAllMarksByGroupName(chart, 'bar0');
 		expect(bars.length).toEqual(9);
+	});
+
+	test('should call onClick callback when selecting a bar item', async () => {
+		const onClick = jest.fn();
+		render(<OnClick {...OnClick.args} onClick={onClick} />);
+		const chart = await findChart();
+		const bars = await findAllMarksByGroupName(chart, 'bar0');
+
+		await clickNthElement(bars, 0);
+		expect(onClick).toHaveBeenCalledWith(expect.objectContaining(barData[0]));
+
+		await clickNthElement(bars, 1);
+		expect(onClick).toHaveBeenCalledWith(expect.objectContaining(barData[1]));
+
+		await clickNthElement(bars, 2);
+		expect(onClick).toHaveBeenCalledWith(expect.objectContaining(barData[2]));
+
+		await clickNthElement(bars, 3);
+		expect(onClick).toHaveBeenCalledWith(expect.objectContaining(barData[3]));
+
+		await clickNthElement(bars, 4);
+		expect(onClick).toHaveBeenCalledWith(expect.objectContaining(barData[4]));
 	});
 });

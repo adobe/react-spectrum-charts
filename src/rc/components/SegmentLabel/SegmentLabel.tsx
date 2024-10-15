@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Adobe. All rights reserved.
+ * Copyright 2024 Adobe. All rights reserved.
  * This file is licensed to you under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License. You may obtain a copy
  * of the License at http://www.apache.org/licenses/LICENSE-2.0
@@ -13,27 +13,19 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { FC } from 'react';
 
-import { DEFAULT_COLOR, DEFAULT_METRIC } from '@constants';
-
-import { DonutProps } from '../../../types';
+import { SegmentLabelProps } from '../../../types';
 
 // destructure props here and set defaults so that storybook can pick them up
-const Donut: FC<DonutProps> = ({
-	children,
-	color = DEFAULT_COLOR,
-	hasDirectLabels = false,
-	holeRatio = 0.85,
-	isBoolean = false,
-	metric = DEFAULT_METRIC,
-	metricLabel,
-	name,
-	segment,
-	startAngle = 0,
+const SegmentLabel: FC<SegmentLabelProps> = ({
+	labelKey,
+	percent = false,
+	value = false,
+	valueFormat = 'standardNumber',
 }) => {
 	return null;
 };
 
 // displayName is used to validate the component type in the spec builder
-Donut.displayName = 'Donut';
+SegmentLabel.displayName = 'SegmentLabel';
 
-export { Donut };
+export { SegmentLabel };

@@ -9,12 +9,23 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { FC } from 'react';
 
 import { ChartPopoverProps } from '../../types';
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const ChartPopover: FC<ChartPopoverProps> = ({ children, width = 250 }) => {
+const ChartPopover: FC<ChartPopoverProps> = ({
+	children,
+	width = 250,
+	minWidth = 0,
+	maxWidth,
+	height,
+	minHeight,
+	maxHeight,
+	containerPadding = 12,
+	onOpenChange,
+}) => {
 	return null;
 };
 

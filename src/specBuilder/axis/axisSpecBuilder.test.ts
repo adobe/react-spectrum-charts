@@ -13,9 +13,9 @@ import { createElement } from 'react';
 
 import { ReferenceLine } from '@components/ReferenceLine';
 import { DEFAULT_LABEL_FONT_WEIGHT, FILTERED_TABLE } from '@constants';
-import { SubLabel } from 'types';
 import { Axis, GroupMark, ProductionRule, Scale, Signal, TextValueRef } from 'vega';
 
+import { SubLabel } from '../../types';
 import {
 	addAxes,
 	addAxesMarks,
@@ -48,8 +48,8 @@ const defaultAxis: Axis = {
 			update: {
 				text: [
 					{
-						test: 'isNumber(datum.value) && abs(datum.value) >= 1000',
-						signal: "upper(replace(format(datum.value, '.3~s'), /(\\d+)G/, '$1B'))",
+						test: "isNumber(datum['value']) && abs(datum['value']) >= 1000",
+						signal: "upper(replace(format(datum['value'], '.3~s'), /(\\d+)G/, '$1B'))",
 					},
 					{ signal: 'datum.value' },
 				],

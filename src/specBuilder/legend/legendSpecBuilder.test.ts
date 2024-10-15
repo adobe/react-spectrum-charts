@@ -11,6 +11,7 @@
  */
 import {
 	COLOR_SCALE,
+	COMPONENT_NAME,
 	DEFAULT_COLOR,
 	DEFAULT_COLOR_SCHEME,
 	DEFAULT_SECONDARY_COLOR,
@@ -19,12 +20,15 @@ import {
 	TABLE,
 } from '@constants';
 import {
+	defaultHighlightedGroupSignal,
 	defaultHighlightedItemSignal,
 	defaultHighlightedSeriesSignal,
+	defaultSelectedGroupSignal,
 	defaultSelectedItemSignal,
 	defaultSelectedSeriesSignal,
 	defaultSignals,
 } from '@specBuilder/specTestUtils';
+import { baseData } from '@specBuilder/specUtils';
 import { Data, Legend, LegendEncode, Scale, Spec, SymbolEncodeEntry } from 'vega';
 
 import { addData, addLegend, addSignals, formatFacetRefsWithPresets, getContinuousLegend } from './legendSpecBuilder';
@@ -43,21 +47,13 @@ const defaultSpec: Spec = {
 };
 
 const colorEncoding = { signal: `scale('${COLOR_SCALE}', data('legend0Aggregate')[datum.index].${DEFAULT_COLOR})` };
-const hiddenSeriesEncoding = {
-	test: 'indexof(hiddenSeries, datum.value) !== -1',
-	value: 'rgb(213, 213, 213)',
-};
 
 const defaultSymbolUpdateEncodings: SymbolEncodeEntry = {
-	fill: [hiddenSeriesEncoding, colorEncoding],
-	stroke: [hiddenSeriesEncoding, colorEncoding],
+	fill: [colorEncoding],
+	stroke: [colorEncoding],
 };
 const hiddenSeriesLabelUpdateEncoding = {
 	fill: [
-		{
-			test: 'indexof(hiddenSeries, datum.value) !== -1',
-			value: 'rgb(144, 144, 144)',
-		},
 		{
 			value: 'rgb(70, 70, 70)',
 		},
@@ -67,7 +63,7 @@ const defaultTooltipLegendEncoding: LegendEncode = {
 	entries: {
 		name: 'legend0_legendEntry',
 		interactive: true,
-		enter: { tooltip: { signal: "merge(datum, {'rscComponentName': 'legend0'})" } },
+		enter: { tooltip: { signal: `merge(datum, {'${COMPONENT_NAME}': 'legend0'})` } },
 		update: { fill: { value: 'transparent' } },
 	},
 	labels: { update: { ...hiddenSeriesLabelUpdateEncoding, opacity: undefined } },
@@ -167,9 +163,11 @@ describe('addLegend()', () => {
 				scales: [...(defaultSpec.scales || []), defaultLegendEntriesScale],
 				signals: [
 					defaultHighlightedItemSignal,
+					defaultHighlightedGroupSignal,
 					defaultHighlightSeriesSignal,
 					defaultSelectedItemSignal,
 					defaultSelectedSeriesSignal,
+					defaultSelectedGroupSignal,
 				],
 				legends: [{ ...defaultLegend, encode: defaultHighlightLegendEncoding }],
 			});
@@ -202,8 +200,8 @@ describe('addLegend()', () => {
 						...hiddenSeriesLabelUpdateEncoding,
 						text: [
 							{
-								test: "indexof(pluck(legendLabels, 'seriesName'), datum.value) > -1",
-								signal: "legendLabels[indexof(pluck(legendLabels, 'seriesName'), datum.value)].label",
+								test: "indexof(pluck(legend0_labels, 'seriesName'), datum.value) > -1",
+								signal: "legend0_labels[indexof(pluck(legend0_labels, 'seriesName'), datum.value)].label",
 							},
 							{
 								signal: 'datum.value',
@@ -231,8 +229,8 @@ describe('addLegend()', () => {
 						...defaultHighlightLegendEncoding.labels?.update,
 						text: [
 							{
-								test: "indexof(pluck(legendLabels, 'seriesName'), datum.value) > -1",
-								signal: "legendLabels[indexof(pluck(legendLabels, 'seriesName'), datum.value)].label",
+								test: "indexof(pluck(legend0_labels, 'seriesName'), datum.value) > -1",
+								signal: "legend0_labels[indexof(pluck(legend0_labels, 'seriesName'), datum.value)].label",
 							},
 							{
 								signal: 'datum.value',
@@ -254,7 +252,7 @@ describe('addLegend()', () => {
 			).toStrictEqual([
 				...defaultSignals,
 				{
-					name: 'legendLabels',
+					name: 'legend0_labels',
 					value: [
 						{ seriesName: 1, label: 'Any event' },
 						{ seriesName: 2, label: 'Any event' },
@@ -323,6 +321,19 @@ describe('addData()', () => {
 			},
 		]);
 	});
+	test('should add legend group Id if keys has length', () => {
+		const data = addData(baseData, { ...defaultLegendProps, facets: [DEFAULT_COLOR], keys: ['key1', 'key2'] });
+		expect(data[0].transform).toHaveLength(2);
+		expect(data[0].transform?.[1]).toHaveProperty('as', 'legend0_highlightGroupId');
+	});
+	test('should add transform to table if they do not exist', () => {
+		const data = addData([{ ...baseData[0], transform: undefined }, ...baseData], {
+			...defaultLegendProps,
+			facets: [DEFAULT_COLOR],
+			keys: ['key1', 'key2'],
+		});
+		expect(data[0].transform).toHaveLength(1);
+	});
 });
 
 describe('formatFacetRefsWithPresets()', () => {
@@ -377,7 +388,7 @@ describe('addSignals()', () => {
 	test('should add legendLabels signal if legendLabels are defined', () => {
 		expect(
 			addSignals(defaultSignals, { ...defaultLegendProps, legendLabels: [] }).find(
-				(signal) => signal.name === 'legendLabels'
+				(signal) => signal.name === 'legend0_labels'
 			)
 		).toBeDefined();
 	});

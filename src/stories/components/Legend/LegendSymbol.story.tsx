@@ -15,7 +15,7 @@ import useChartProps from '@hooks/useChartProps';
 import { Bar, Chart, Legend, Line } from '@rsc';
 import { browserData as data } from '@stories/data/data';
 import { StoryFn } from '@storybook/react';
-import { ROUNDED_SQUARE_PATH } from 'svgPaths';
+import { ROUNDED_SQUARE_PATH } from '@svgPaths';
 
 import { defaultProps } from './LegendStoryUtils';
 

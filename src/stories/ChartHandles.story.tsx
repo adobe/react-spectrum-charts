@@ -9,10 +9,11 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import React, { ReactElement, useRef, useState } from 'react';
+import { ReactElement, useRef, useState } from 'react';
 
 import useChartProps from '@hooks/useChartProps';
 import { Axis, Chart, ChartHandle, Line } from '@rsc';
+import { action } from '@storybook/addon-actions';
 import { StoryFn } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
 
@@ -37,6 +38,12 @@ const HandleStory = ({ variant }: { variant: 'copy' | 'download' | 'getBase64Png
 		getBase64Png: 'Get base64 PNG',
 		getSvg: 'Get SVG',
 	};
+
+	const onPressHandler = () => {
+		action(variant)();
+		return ref?.current?.[variant]().then(console.log, console.warn);
+	};
+
 	return (
 		<Content>
 			<Chart {...props} ref={ref} loading={loading}>
@@ -45,10 +52,7 @@ const HandleStory = ({ variant }: { variant: 'copy' | 'download' | 'getBase64Png
 				<Line dimension="x" metric="y" color="series" scaleType="linear" />
 			</Chart>
 			<Flex direction="row" gap="size-100">
-				<ActionButton
-					onPress={() => ref?.current?.[variant]().then(console.log, console.warn)}
-					data-testid={variant}
-				>
+				<ActionButton onPress={onPressHandler} data-testid={variant}>
 					{buttonText[variant]}
 				</ActionButton>
 				<ActionButton onPress={() => setLoading(!loading)}>Toggle loading</ActionButton>

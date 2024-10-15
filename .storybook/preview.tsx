@@ -13,8 +13,8 @@ const decorators: Decorator[] = [
 	(Story) => {
 		const darkMode = useDarkMode();
 		return (
-			<Provider theme={defaultTheme} colorScheme={darkMode ? 'dark' : 'light'} locale="en-US" height="auto">
-				<View padding="size-300">
+			<Provider theme={defaultTheme} colorScheme={darkMode ? 'dark' : 'light'} locale="en-US" height="100vh">
+				<View padding={24} height="calc(100% - 48px)">
 					<Story />
 				</View>
 			</Provider>
@@ -23,7 +23,6 @@ const decorators: Decorator[] = [
 ];
 
 const parameters: Parameters = {
-	actions: { argTypesRegex: '^on[A-Z].*' },
 	controls: {
 		expanded: true,
 		// data is huge so we don't want to show it in the controls
@@ -42,11 +41,13 @@ const parameters: Parameters = {
 			return <DocsContainer {...props} />;
 		},
 	},
+	actions: { argTypesRegex: '^on[A-Z].*' },
 };
 
 const preview: Preview = {
 	decorators,
 	parameters,
+	tags: ['autodocs'],
 };
 
 export default preview;

@@ -14,12 +14,13 @@ import { FC, useEffect, useMemo, useRef } from 'react';
 import { TABLE } from '@constants';
 import { useDebugSpec } from '@hooks/useDebugSpec';
 import { extractValues, isVegaData } from '@specBuilder/specUtils';
-import { expressionFunctions, formatTimeDurationLabels } from 'expressionFunctions';
-import { ChartData, ChartProps } from 'types';
-import { getLocale } from 'utils/locale';
 import { Config, Padding, Renderers, Spec, View } from 'vega';
 import embed from 'vega-embed';
 import { Options as TooltipOptions } from 'vega-tooltip';
+
+import { expressionFunctions, formatTimeDurationLabels } from './expressionFunctions';
+import { ChartData, ChartProps } from './types';
+import { getLocale } from './utils/locale';
 
 export interface VegaChartProps {
 	config: Config;
@@ -105,6 +106,8 @@ export const VegaChart: FC<VegaChartProps> = ({
 				onNewView(view);
 				view.resize();
 				view.runAsync();
+				// One additional render to settle all resize calculations
+				setTimeout(() => view.runAsync(), 0);
 			});
 		}
 		return () => {

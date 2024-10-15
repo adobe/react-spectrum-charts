@@ -9,20 +9,29 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { DEFAULT_OPACITY_RULE, HIGHLIGHTED_SERIES, SELECTED_SERIES, SERIES_ID } from '@constants';
+import {
+	DEFAULT_INTERACTION_MODE,
+	DEFAULT_OPACITY_RULE,
+	HIGHLIGHTED_SERIES,
+	HIGHLIGHT_CONTRAST_RATIO,
+	SELECTED_SERIES,
+	SERIES_ID,
+} from '@constants';
 import {
 	getColorProductionRule,
-	getHighlightOpacityValue,
+	getItemHoverArea,
 	getLineWidthProductionRule,
 	getOpacityProductionRule,
+	getPointsForVoronoi,
 	getStrokeDashProductionRule,
 	getVoronoiPath,
 	getXProductionRule,
+	getYProductionRule,
 	hasPopover,
 } from '@specBuilder/marks/markUtils';
-import { ScaleType } from 'types';
-import { LineMark, Mark, NumericValueRef, ProductionRule, RuleMark, SymbolMark } from 'vega';
+import { LineMark, Mark, NumericValueRef, ProductionRule, RuleMark } from 'vega';
 
+import { ScaleType } from '../../types';
 import {
 	getHighlightBackgroundPoint,
 	getHighlightPoint,
@@ -38,7 +47,8 @@ import { LineMarkProps } from './lineUtils';
  * @returns LineMark
  */
 export const getLineMark = (lineMarkProps: LineMarkProps, dataSource: string): LineMark => {
-	const { color, colorScheme, dimension, lineType, lineWidth, metric, name, opacity, scaleType } = lineMarkProps;
+	const { color, colorScheme, dimension, lineType, lineWidth, metric, metricAxis, name, opacity, scaleType } =
+		lineMarkProps;
 
 	return {
 		name,
@@ -47,7 +57,7 @@ export const getLineMark = (lineMarkProps: LineMarkProps, dataSource: string): L
 		interactive: false,
 		encode: {
 			enter: {
-				y: { scale: 'yLinear', field: metric },
+				y: getYProductionRule(metricAxis, metric),
 				stroke: getColorProductionRule(color, colorScheme),
 				strokeDash: getStrokeDashProductionRule(lineType),
 				strokeOpacity: getOpacityProductionRule(opacity),
@@ -67,20 +77,28 @@ export const getLineOpacity = ({
 	displayOnHover,
 	interactiveMarkName,
 	popoverMarkName,
+	isHighlightedByGroup,
 }: LineMarkProps): ProductionRule<NumericValueRef> => {
 	if (!interactiveMarkName || displayOnHover) return [DEFAULT_OPACITY_RULE];
 	const strokeOpacityRules: ProductionRule<NumericValueRef> = [];
 
+	if (isHighlightedByGroup) {
+		strokeOpacityRules.push({
+			test: `indexof(pluck(data('${interactiveMarkName}_highlightedData'), '${SERIES_ID}'), datum.${SERIES_ID}) !== -1`,
+			value: 1,
+		});
+	}
+
 	// add a rule that will lower the opacity of the line if there is a hovered series, but this line is not the one hovered
 	strokeOpacityRules.push({
 		test: `${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES} !== datum.${SERIES_ID}`,
-		...getHighlightOpacityValue(DEFAULT_OPACITY_RULE),
+		value: 1 / HIGHLIGHT_CONTRAST_RATIO,
 	});
 
 	if (popoverMarkName) {
 		strokeOpacityRules.push({
 			test: `${SELECTED_SERIES} && ${SELECTED_SERIES} !== datum.${SERIES_ID}`,
-			...getHighlightOpacityValue(DEFAULT_OPACITY_RULE),
+			value: 1 / HIGHLIGHT_CONTRAST_RATIO,
 		});
 	}
 	// This allows us to only show the metric range when hovering over the parent line component.
@@ -101,7 +119,7 @@ export const getLineHoverMarks = (
 	dataSource: string,
 	secondaryHighlightedMetric?: string
 ): Mark[] => {
-	const { children, dimension, metric, name, scaleType } = lineProps;
+	const { children, dimension, name, scaleType } = lineProps;
 	return [
 		// vertical rule shown for the hovered or selected point
 		getHoverRule(dimension, name, scaleType),
@@ -113,10 +131,8 @@ export const getLineHoverMarks = (
 		getHighlightPoint(lineProps),
 		// additional point that gets highlighted like the trendline or raw line point
 		...(secondaryHighlightedMetric ? [getSecondaryHighlightPoint(lineProps, secondaryHighlightedMetric)] : []),
-		// points used for the voronoi transform
-		getPointsForVoronoi(dataSource, dimension, metric, name, scaleType),
-		// voronoi transform used to get nearest point paths
-		getVoronoiPath(children, `${name}_pointsForVoronoi`, name),
+		// get interactive marks for the line
+		...getInteractiveMarks(dataSource, lineProps),
 	];
 };
 
@@ -139,27 +155,33 @@ const getHoverRule = (dimension: string, name: string, scaleType: ScaleType): Ru
 	};
 };
 
-const getPointsForVoronoi = (
-	dataSource: string,
-	dimension: string,
-	metric: string,
-	name: string,
-	scaleType: ScaleType
-): SymbolMark => {
-	return {
-		name: `${name}_pointsForVoronoi`,
-		type: 'symbol',
-		from: { data: dataSource },
-		interactive: false,
-		encode: {
-			enter: {
-				y: { scale: 'yLinear', field: metric },
-				fill: { value: 'transparent' },
-				stroke: { value: 'transparent' },
-			},
-			update: {
-				x: getXProductionRule(scaleType, dimension),
-			},
-		},
+const getInteractiveMarks = (dataSource: string, lineProps: LineMarkProps): Mark[] => {
+	const { interactionMode = DEFAULT_INTERACTION_MODE } = lineProps;
+
+	const tooltipMarks = {
+		nearest: getVoronoiMarks,
+		item: getItemHoverMarks,
 	};
+
+	return tooltipMarks[interactionMode](dataSource, lineProps);
+};
+
+const getVoronoiMarks = (dataSource: string, lineProps: LineMarkProps): Mark[] => {
+	const { children, dimension, metric, metricAxis, name, scaleType } = lineProps;
+
+	return [
+		// points used for the voronoi transform
+		getPointsForVoronoi(dataSource, dimension, metric, name, scaleType, metricAxis),
+		// voronoi transform used to get nearest point paths
+		getVoronoiPath(children, `${name}_pointsForVoronoi`, name),
+	];
+};
+
+const getItemHoverMarks = (dataSource: string, lineProps: LineMarkProps): Mark[] => {
+	const { children, dimension, metric, metricAxis, name, scaleType } = lineProps;
+
+	return [
+		// area around item that triggers hover
+		getItemHoverArea(children, dataSource, dimension, metric, name, scaleType, metricAxis),
+	];
 };

@@ -9,18 +9,22 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { ReactNode } from 'react';
+
 import { Trendline } from '@components/Trendline';
 import { hasInteractiveChildren, hasPopover } from '@specBuilder/marks/markUtils';
 import { sanitizeMarkChildren } from '@utils';
+
 import {
 	ColorFacet,
 	ColorScheme,
+	InteractionMode,
 	LineTypeFacet,
 	LineWidthFacet,
 	MarkChildElement,
 	OpacityFacet,
 	ScaleType,
-} from 'types';
+} from '../../types';
 
 export const getInteractiveMarkName = (children: MarkChildElement[], name: string): string | undefined => {
 	// if the line has an interactive component, this line is the target for the interactive component
@@ -33,7 +37,7 @@ export const getInteractiveMarkName = (children: MarkChildElement[], name: strin
 			(child) =>
 				child.type === Trendline &&
 				'children' in child.props &&
-				hasInteractiveChildren(sanitizeMarkChildren(child.props.children))
+				hasInteractiveChildren(sanitizeMarkChildren(child.props.children as ReactNode))
 		)
 	) {
 		return `${name}Trendline`;
@@ -51,7 +55,7 @@ export const getPopoverMarkName = (children: MarkChildElement[], name: string): 
 			(child) =>
 				child.type === Trendline &&
 				'children' in child.props &&
-				hasPopover(sanitizeMarkChildren(child.props.children))
+				hasPopover(sanitizeMarkChildren(child.props.children as ReactNode))
 		)
 	) {
 		return `${name}Trendline`;
@@ -65,12 +69,16 @@ export interface LineMarkProps {
 	dimension: string;
 	displayOnHover?: boolean;
 	interactiveMarkName?: string; // optional name of the mark that is used for hover and click interactions
+	isHighlightedByDimension?: boolean;
+	isHighlightedByGroup?: boolean;
 	lineType: LineTypeFacet;
 	lineWidth?: LineWidthFacet;
 	metric: string;
+	metricAxis?: string;
 	name: string;
 	opacity: OpacityFacet;
 	popoverMarkName?: string;
 	scaleType: ScaleType;
 	staticPoint?: string;
+	interactionMode?: InteractionMode;
 }

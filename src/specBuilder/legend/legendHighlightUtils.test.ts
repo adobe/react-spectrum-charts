@@ -10,16 +10,15 @@
  * governing permissions and limitations under the License.
  */
 import {
-	DEFAULT_COLOR,
 	DEFAULT_OPACITY_RULE,
+	HIGHLIGHTED_GROUP,
 	HIGHLIGHTED_SERIES,
 	HIGHLIGHT_CONTRAST_RATIO,
-	OPACITY_SCALE,
 	SERIES_ID,
 } from '@constants';
 import { Mark } from 'vega';
 
-import { getHighlightOpacityRule, getOpacityRule, setHoverOpacityForMarks } from './legendHighlightUtils';
+import { getHighlightOpacityRule, setHoverOpacityForMarks } from './legendHighlightUtils';
 import { defaultMark } from './legendTestUtils';
 
 const defaultGroupMark: Mark = {
@@ -37,58 +36,19 @@ const defaultOpacityEncoding = {
 };
 
 describe('getHighlightOpacityRule()', () => {
-	test('scale ref should divide by highlight contrast ratio', () => {
-		expect(getHighlightOpacityRule({ scale: OPACITY_SCALE, field: DEFAULT_COLOR })).toStrictEqual({
-			test: `${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES} !== datum.${SERIES_ID}`,
-			signal: `scale('${OPACITY_SCALE}', datum.${DEFAULT_COLOR}) / ${HIGHLIGHT_CONTRAST_RATIO}`,
-		});
+	test('should use HIGHLIGHTED_SERIES in test if there are not any keys', () => {
+		const opacityRule = getHighlightOpacityRule();
+		expect(opacityRule).toHaveProperty(
+			'test',
+			`${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES} !== datum.${SERIES_ID}`
+		);
 	});
-	test('signal ref should divide by highlight contrast ratio', () => {
-		expect(getHighlightOpacityRule({ signal: `scale('${OPACITY_SCALE}', datum.${DEFAULT_COLOR})` })).toStrictEqual({
-			test: `${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES} !== datum.${SERIES_ID}`,
-			signal: `scale('${OPACITY_SCALE}', datum.${DEFAULT_COLOR}) / ${HIGHLIGHT_CONTRAST_RATIO}`,
-		});
-	});
-	test('value ref should divide by highlight contrast ratio', () => {
-		expect(getHighlightOpacityRule({ value: 0.5 })).toStrictEqual({
-			test: `${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES} !== datum.${SERIES_ID}`,
-			value: 0.5 / HIGHLIGHT_CONTRAST_RATIO,
-		});
-	});
-	test('empty ref should return default rule', () => {
-		expect(getHighlightOpacityRule({})).toStrictEqual({
-			test: `${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES} !== datum.${SERIES_ID}`,
-			value: 1 / HIGHLIGHT_CONTRAST_RATIO,
-		});
-	});
-	test('should use the legend name in the test if keys exist', () => {
-		const legendName = 'legend0';
-		const { test } = getHighlightOpacityRule({}, ['series'], legendName);
-		expect(test).toContain(legendName);
-	});
-	test('should use the highlighedSeries in the test if keys do not', () => {
-		const { test } = getHighlightOpacityRule({});
-		expect(test).toContain(HIGHLIGHTED_SERIES);
-	});
-});
-
-describe('getOpacityRule()', () => {
-	test('array, should return the last value', () => {
-		expect(getOpacityRule([{ value: 0.5 }])).toStrictEqual({ value: 0.5 });
-		expect(
-			getOpacityRule([{ value: 0.5 }, { signal: `scale('${OPACITY_SCALE}', datum.${DEFAULT_COLOR})` }])
-		).toStrictEqual({
-			signal: `scale('${OPACITY_SCALE}', datum.${DEFAULT_COLOR})`,
-		});
-	});
-	test('empty array, should return default value', () => {
-		expect(getOpacityRule([])).toStrictEqual({ value: 1 });
-	});
-	test('object, should return object', () => {
-		expect(getOpacityRule({ value: 0.5 })).toStrictEqual({ value: 0.5 });
-	});
-	test('undefined, should return default value', () => {
-		expect(getOpacityRule(undefined)).toStrictEqual({ value: 1 });
+	test('should use keys in test if there are keys', () => {
+		const opacityRule = getHighlightOpacityRule(['key1'], 'legend0');
+		expect(opacityRule).toHaveProperty(
+			'test',
+			`${HIGHLIGHTED_GROUP} && ${HIGHLIGHTED_GROUP} !== datum.legend0_highlightGroupId`
+		);
 	});
 });
 

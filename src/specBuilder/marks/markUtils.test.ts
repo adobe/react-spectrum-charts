@@ -19,27 +19,37 @@ import {
 	COLOR_SCALE,
 	DEFAULT_COLOR,
 	DEFAULT_COLOR_SCHEME,
+	DEFAULT_OPACITY_RULE,
 	DEFAULT_SECONDARY_COLOR,
 	DEFAULT_TIME_DIMENSION,
 	DEFAULT_TRANSFORMED_TIME_DIMENSION,
+	HIGHLIGHTED_ITEM,
 	HIGHLIGHT_CONTRAST_RATIO,
 	LINEAR_COLOR_SCALE,
 	LINE_TYPE_SCALE,
 	LINE_WIDTH_SCALE,
 	OPACITY_SCALE,
+	SELECTED_GROUP,
+	SELECTED_ITEM,
 	SYMBOL_SIZE_SCALE,
 } from '@constants';
+import { defaultBarProps } from '@specBuilder/bar/barTestUtils';
+import { SignalRef } from 'vega';
 
+import { ProductionRuleTests } from '../../types';
 import {
 	getColorProductionRule,
 	getColorProductionRuleSignalString,
 	getHighlightOpacityValue,
+	getInteractive,
 	getLineWidthProductionRule,
+	getMarkOpacity,
 	getOpacityProductionRule,
 	getStrokeDashProductionRule,
 	getSymbolSizeProductionRule,
 	getTooltip,
 	getXProductionRule,
+	getYProductionRule,
 	hasMetricRange,
 	hasTooltip,
 } from './markUtils';
@@ -163,8 +173,27 @@ describe('getTooltip()', () => {
 		expect(rule).toHaveProperty('signal');
 	});
 	test('should reference a nested datum if nestedDatum is true', () => {
-		const rule = getTooltip([createElement(ChartTooltip)], 'line0', true);
-		expect(rule?.signal).toContain('datum.datum');
+		const rule = getTooltip([createElement(ChartTooltip)], 'line0', true) as SignalRef;
+		expect(rule.signal).toContain('datum.datum');
+	});
+	test('should add condition test when excludeDataKey is present', () => {
+		const rule = getTooltip(
+			[createElement(ChartTooltip, { excludeDataKeys: ['excludeFromTooltip'] })],
+			'line0',
+			false
+		) as ProductionRuleTests<SignalRef>;
+		expect(rule).toHaveLength(2);
+		expect(rule[0].test).toBe('datum.excludeFromTooltip');
+		expect(rule[0].signal).toBe('false');
+	});
+	test('should have default tooltip as second item when excludeDataKey is present', () => {
+		const rule = getTooltip(
+			[createElement(ChartTooltip, { excludeDataKeys: ['excludeFromTooltip'] })],
+			'line0',
+			false
+		) as ProductionRuleTests<SignalRef>;
+		expect(rule).toHaveLength(2);
+		expect(rule[1]).toHaveProperty('signal');
 	});
 });
 
@@ -198,6 +227,30 @@ describe('getXProductionRule()', () => {
 	});
 });
 
+describe('getYProductionRule()', () => {
+	test('should return the correct encoding based on metricAxis', () => {
+		expect(getYProductionRule('metricAxis1', 'metric1')).toEqual({
+			scale: 'metricAxis1',
+			field: 'metric1',
+		});
+		expect(getYProductionRule(undefined, 'metric2')).toEqual({
+			scale: 'yLinear',
+			field: 'metric2',
+		});
+	});
+});
+
+describe('getInteractive()', () => {
+	const tooltip = createElement(ChartTooltip);
+	const popover = createElement(ChartPopover);
+	test('should return true based on having interactive children', () => {
+		expect(getInteractive([tooltip])).toEqual(true);
+		expect(getInteractive([])).toEqual(false);
+		expect(getInteractive([tooltip, popover])).toEqual(true);
+		expect(getInteractive(defaultBarProps.children, defaultBarProps)).toEqual(false);
+	});
+});
+
 describe('getColorProductionRuleSignalString()', () => {
 	test('should return signal reference if color is an array', () => {
 		expect(
@@ -214,5 +267,31 @@ describe('getColorProductionRuleSignalString()', () => {
 	test('should return static value if static value is provided', () => {
 		const color = 'rgb(125, 125, 125)';
 		expect(getColorProductionRuleSignalString({ value: color }, DEFAULT_COLOR_SCHEME)).toStrictEqual(`'${color}'`);
+	});
+});
+
+describe('getMarkOpacity()', () => {
+	test('no children, should use default opacity', () => {
+		expect(getMarkOpacity(defaultBarProps)).toStrictEqual([DEFAULT_OPACITY_RULE]);
+	});
+	test('Tooltip child, should return tests for hover and default to opacity', () => {
+		const tooltip = createElement(ChartTooltip);
+		const opacity = getMarkOpacity({ ...defaultBarProps, children: [tooltip] });
+		expect(opacity).toHaveLength(2);
+		expect(opacity[0].test).toContain(HIGHLIGHTED_ITEM);
+		expect(opacity.at(-1)).toStrictEqual(DEFAULT_OPACITY_RULE);
+	});
+	test('Popover child, should return tests for hover and select and default to opacity', () => {
+		const popover = createElement(ChartPopover);
+		const opacity = getMarkOpacity({ ...defaultBarProps, children: [popover] });
+		expect(opacity).toHaveLength(6);
+		expect(opacity[0].test).toContain(`${SELECTED_ITEM} !==`);
+		expect(opacity[1].test).toContain(`${SELECTED_ITEM} ===`);
+
+		expect(opacity[2].test).toContain(`${SELECTED_GROUP} ===`);
+		expect(opacity[3].test).toContain(`${SELECTED_GROUP} !==`);
+
+		expect(opacity[4].test).toContain(HIGHLIGHTED_ITEM);
+		expect(opacity.at(-1)).toStrictEqual(DEFAULT_OPACITY_RULE);
 	});
 });

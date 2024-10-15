@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import React, { ReactElement, createElement } from 'react';
+import { ReactElement } from 'react';
 
 import { ReferenceLine } from '@components/ReferenceLine';
 import useChartProps from '@hooks/useChartProps';
@@ -20,9 +20,11 @@ import {
 	workspaceTrendsDataWithVisiblePoints
 } from '@stories/data/data';
 import { formatTimestamp } from '@stories/storyUtils';
+import { action } from '@storybook/addon-actions';
 import { StoryFn } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
-import { ChartProps } from 'types';
+
+import { ChartProps } from '../../../types';
 
 export default {
 	title: 'RSC/Line',
@@ -88,6 +90,21 @@ const LinearStory: StoryFn<typeof Line> = (args): ReactElement => {
 
 const LineStory: StoryFn<typeof Line> = (args): ReactElement => {
 	const chartProps = useChartProps(defaultChartProps);
+	return (
+		<Chart {...chartProps}>
+			<Axis position="left" grid title="Users" />
+			<Axis position="bottom" labelFormat="time" baseline ticks />
+			<Line {...args} />
+			<Legend highlight />
+		</Chart>
+	);
+};
+
+const LineStoryWithUTCData: StoryFn<typeof Line> = (args): ReactElement => {
+	const chartProps = useChartProps({
+		...defaultChartProps,
+		data: workspaceTrendsData.map((d) => ({ ...d, datetime: new Date(d.datetime).toISOString() })),
+	});
 	return (
 		<Chart {...chartProps}>
 			<Axis position="left" grid title="Users" />
@@ -168,6 +185,15 @@ LineWithAxisAndLegend.args = {
 	scaleType: 'time',
 };
 
+const LineWithUTCDatetimeFormat = bindWithProps(LineStoryWithUTCData);
+LineWithUTCDatetimeFormat.args = {
+	color: 'series',
+	dimension: 'datetime',
+	metric: 'users',
+	name: 'line0',
+	scaleType: 'time',
+};
+
 const LineType = bindWithProps(BasicLineStory);
 LineType.args = {
 	color: 'series',
@@ -218,6 +244,12 @@ Tooltip.args = {
 	),
 };
 
+const ItemTooltip = bindWithProps(BasicLineStory);
+ItemTooltip.args = {
+	...Tooltip.args,
+	interactionMode: 'item',
+};
+
 const WithStaticPoints = bindWithProps(LineWithVisiblePointsStory);
 WithStaticPoints.args = {
 	color: 'series',
@@ -228,13 +260,25 @@ WithStaticPoints.args = {
 	staticPoint: 'staticPoint',
 };
 
-const dialogCallback = (datum) => (
-	<div className="bar-tooltip">
-		<div>{formatTimestamp(datum.datetime as number)}</div>
-		<div>Event: {datum.series}</div>
-		<div>Users: {Number(datum.value).toLocaleString()}</div>
-	</div>
-);
+/** Generates identical return callbacks but each has a custom Storybook Action Name for a better dev experience. */
+const generateCallback = (variant: 'popover' | 'tooltip') => {
+	const actionName = {
+		popover: 'ChartPopover',
+		tooltip: 'ChartTooltip',
+	};
+
+	const callback = (datum) => {
+		action(`${actionName[variant]}:callback`)(datum);
+		return (
+			<div className="bar-tooltip">
+				<div>{formatTimestamp(datum.datetime as number)}</div>
+				<div>Event: {datum.series}</div>
+				<div>Users: {Number(datum.value).toLocaleString()}</div>
+			</div>
+		);
+	};
+	return callback;
+};
 
 const WithStaticPointsAndDialogs = bindWithProps(LineWithVisiblePointsStory);
 WithStaticPointsAndDialogs.args = {
@@ -244,7 +288,12 @@ WithStaticPointsAndDialogs.args = {
 	name: 'line0',
 	scaleType: 'time',
 	staticPoint: 'staticPoint',
-	children: [createElement(ChartTooltip, {}, dialogCallback), createElement(ChartPopover, {}, dialogCallback)],
+	children: [
+		<ChartTooltip key={0}>{generateCallback('tooltip')}</ChartTooltip>,
+		<ChartPopover width="auto" key={1}>
+			{generateCallback('popover')}
+		</ChartPopover>,
+	],
 };
 
 const BasicSparkline = bindWithProps(PlainLineStory);
@@ -270,13 +319,15 @@ SparklineWithStaticPoint.args = {
 
 export {
 	Basic,
-	LineWithAxisAndLegend,
-	LineType,
-	Opacity,
-	TrendScale,
-	LinearTrendScale,
 	HistoricalCompare,
+	LineType,
+	LineWithAxisAndLegend,
+	LineWithUTCDatetimeFormat,
+	LinearTrendScale,
+	Opacity,
 	Tooltip,
+	ItemTooltip,
+	TrendScale,
 	WithStaticPoints,
 	WithStaticPointsAndDialogs,
 	BasicSparkline,

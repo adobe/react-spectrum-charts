@@ -12,14 +12,14 @@
 import { createElement, useMemo, useState } from 'react';
 
 import { getElement } from '@utils';
-import { ChartChildElement, LegendDescription, LegendElement } from 'types';
 
 import { Chart } from '../Chart';
 import { Legend } from '../components/Legend';
+import { ChartChildElement, LegendDescription, LegendElement } from '../types';
 
 interface UseLegendProps {
-	hiddenSeriesState: string[];
-	setHiddenSeries: (hiddenSeries: string[]) => void;
+	legendHiddenSeries: string[];
+	setLegendHiddenSeries: (legendHiddenSeries: string[]) => void;
 	descriptions?: LegendDescription[];
 	isToggleable?: boolean;
 	onClick?: (seriesName: string) => void;
@@ -31,8 +31,8 @@ export default function useLegend(children: ChartChildElement[]): UseLegendProps
 	const legend = useMemo(() => {
 		return getElement(createElement(Chart, { data: [] }, children), Legend);
 	}, [children]) as LegendElement;
-	const [hiddenSeriesState, setHiddenSeries] = useState<string[]>(legend?.props?.defaultHiddenSeries ?? []);
-	if (!legend) return { hiddenSeriesState, setHiddenSeries };
+	const [legendHiddenSeries, setLegendHiddenSeries] = useState<string[]>(legend?.props?.defaultHiddenSeries ?? []);
+	if (!legend) return { legendHiddenSeries, setLegendHiddenSeries };
 	const { descriptions, isToggleable, onClick, onMouseOut, onMouseOver } = legend.props;
-	return { hiddenSeriesState, setHiddenSeries, descriptions, isToggleable, onClick, onMouseOut, onMouseOver };
+	return { legendHiddenSeries, setLegendHiddenSeries, descriptions, isToggleable, onClick, onMouseOut, onMouseOver };
 }

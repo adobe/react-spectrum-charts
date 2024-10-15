@@ -12,9 +12,14 @@
 import { Trendline } from '@components/Trendline';
 import { FILTERED_TABLE, MS_PER_DAY, TRENDLINE_VALUE } from '@constants';
 import { sanitizeTrendlineChildren } from '@utils';
+import { SignalRef } from 'vega';
+
 import {
 	AggregateMethod,
+	BarSpecProps,
+	ColorFacet,
 	LineSpecProps,
+	LineTypeFacet,
 	Orientation,
 	RegressionMethod as RscRegressionMethod,
 	ScaleType as RscScaleType,
@@ -24,11 +29,10 @@ import {
 	TrendlineProps,
 	TrendlineSpecProps,
 	WindowMethod,
-} from 'types';
-import { SignalRef } from 'vega';
+} from '../../types';
 
 /** These are all the spec props that currently support trendlines */
-export type TrendlineParentProps = LineSpecProps | ScatterSpecProps;
+export type TrendlineParentProps = LineSpecProps | ScatterSpecProps | BarSpecProps;
 
 /**
  * gets all the trendlines from the children and applies all the default trendline props
@@ -75,7 +79,7 @@ export const applyTrendlinePropDefaults = (
 		orientation,
 		isDimensionNormalized
 	);
-	const trendlineColor = color ? { value: color } : markProps.color;
+	const trendlineColor = color ? { value: color } : getTrendlineColorFromMarkProps(markProps.color);
 	return {
 		children: sanitizeTrendlineChildren(children),
 		colorScheme: markProps.colorScheme,
@@ -97,6 +101,26 @@ export const applyTrendlinePropDefaults = (
 		trendlineMetric,
 		...props,
 	};
+};
+
+/**
+ * Gets the color from the parent props.
+ * Simplifies dual facet colors into a single facet
+ * @param color
+ * @returns color
+ */
+export const getTrendlineColorFromMarkProps = (color: TrendlineParentProps['color']): ColorFacet => {
+	return Array.isArray(color) ? color[0] : color;
+};
+
+/**
+ * Gets the color from the parent props.
+ * Simplifies dual facet colors into a single facet
+ * @param lineType
+ * @returns color
+ */
+export const getTrendlineLineTypeFromMarkProps = (lineType: TrendlineParentProps['lineType']): LineTypeFacet => {
+	return Array.isArray(lineType) ? lineType[0] : lineType;
 };
 
 /**

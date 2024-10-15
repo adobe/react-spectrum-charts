@@ -13,11 +13,11 @@ import React, { ReactElement } from 'react';
 
 import { Annotation } from '@components/Annotation/Annotation';
 import useChartProps from '@hooks/useChartProps';
-import { Bar, BarProps, Chart } from '@rsc';
+import { AnnotationProps, Bar, BarProps, Chart, Orientation } from '@rsc';
 import { StoryFn } from '@storybook/react';
 
 export default {
-	title: 'RSC/Annotation',
+	title: 'RSC/Bar/Annotation',
 	component: Annotation,
 	argTypes: {
 		children: {
@@ -43,21 +43,32 @@ const data = [
 
 const barArgs: BarProps = { dimension: 'browser', order: 'order', color: 'operatingSystem' };
 
-const BarAnnotationStory: StoryFn<typeof Annotation> = (args): ReactElement => {
-	const chartProps = useChartProps({ data: data, width: 600, height: 600 });
+const BarAnnotationStory: StoryFn<
+	AnnotationProps & { barOrientation?: Orientation; chartHeight?: number; chartWidth?: number }
+> = (args): ReactElement => {
+	const chartProps = useChartProps({ data: data });
+	const { barOrientation = 'vertical', chartHeight = 300, chartWidth = 300, ...annotationProps } = args;
 	return (
-		<Chart {...chartProps}>
-			<Bar {...barArgs}>
-				<Annotation {...args} />
+		<Chart {...chartProps} height={chartHeight} width={chartWidth}>
+			<Bar {...barArgs} orientation={barOrientation}>
+				<Annotation {...annotationProps} />
 			</Bar>
 		</Chart>
 	);
 };
 
-const BarChart = BarAnnotationStory.bind({});
-BarChart.args = {
+const HorizontalBarChart = BarAnnotationStory.bind({});
+HorizontalBarChart.args = {
 	textKey: 'percentLabel',
 	color: 'operatingSystem',
+	barOrientation: 'horizontal',
+};
+
+const VerticalBarChart = BarAnnotationStory.bind({});
+VerticalBarChart.args = {
+	textKey: 'percentLabel',
+	color: 'operatingSystem',
+	barOrientation: 'vertical',
 };
 
 const FixedWidthBar = BarAnnotationStory.bind({});
@@ -67,4 +78,4 @@ FixedWidthBar.args = {
 	color: 'operatingSystem',
 };
 
-export { BarChart, FixedWidthBar };
+export { HorizontalBarChart, VerticalBarChart, FixedWidthBar };

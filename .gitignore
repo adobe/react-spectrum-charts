@@ -19,3 +19,6 @@ test-report.xml
 .vscode/*
 !.vscode/reactSpectrumCharts.code-snippets
 .idea/
+
+# exclude sonar files
+.scannerwork

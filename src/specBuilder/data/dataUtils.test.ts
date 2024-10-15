@@ -9,9 +9,30 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { TABLE } from '@constants';
+import { DEFAULT_TIME_DIMENSION, DEFAULT_TRANSFORMED_TIME_DIMENSION, TABLE } from '@constants';
 
-import { getTableData } from './dataUtils';
+import { addTimeTransform, getSeriesIdTransform, getTableData } from './dataUtils';
+
+describe('addTimeTransform()', () => {
+	test('should return the time transforms', () => {
+		const inputTransforms = [];
+		const dimension = 'datetime';
+		const outputTransforms = [
+			{
+				type: 'formula',
+				expr: `toDate(datum[\"${dimension}\"])`,
+				as: dimension,
+			},
+			{
+				type: 'timeunit',
+				field: dimension,
+				units: ['year', 'month', 'date', 'hours', 'minutes'],
+				as: [DEFAULT_TRANSFORMED_TIME_DIMENSION, `${DEFAULT_TIME_DIMENSION}1`],
+			},
+		];
+		expect(addTimeTransform(inputTransforms, dimension)).toEqual(outputTransforms);
+	});
+});
 
 describe('getTableData()', () => {
 	test('should return the table data', () => {
@@ -20,5 +41,17 @@ describe('getTableData()', () => {
 			{ name: 'other', values: [] },
 		];
 		expect(getTableData(data)).toEqual(data[0]);
+	});
+});
+
+describe('getSeriesIdTransform()', () => {
+	test('should return empty array if there are not any facets', () => {
+		expect(getSeriesIdTransform([])).toEqual([]);
+	});
+	test('should return facets joined as expression', () => {
+		expect(getSeriesIdTransform(['facet1', 'facet2'])[0]).toHaveProperty(
+			'expr',
+			'datum.facet1 + " | " + datum.facet2'
+		);
 	});
 });

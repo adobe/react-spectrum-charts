@@ -12,15 +12,20 @@
 import { Align, Baseline, NumberValue, ScaleType } from 'vega';
 
 import {
+	AnnotationProps,
 	AreaProps,
 	AxisAnnotationChildElement,
 	AxisAnnotationProps,
 	AxisProps,
 	BarProps,
+	ChartPopoverProps,
+	ChartTooltipProps,
 	ColorFacet,
 	ColorScheme,
 	DonutProps,
+	DonutSummaryProps,
 	FacetRef,
+	InteractionMode,
 	LegendProps,
 	LineProps,
 	LineWidth,
@@ -30,6 +35,7 @@ import {
 	ScaleType as RscScaleType,
 	ScatterPathProps,
 	ScatterProps,
+	SegmentLabelProps,
 	TrendlineAnnotationProps,
 	TrendlineChildElement,
 	TrendlineProps,
@@ -42,6 +48,7 @@ type AreaPropsWithDefaults = 'name' | 'dimension' | 'metric' | 'color' | 'scaleT
 export interface AreaSpecProps
 	extends PartiallyRequired<AreaProps & { colorScheme: ColorScheme; index: number }, AreaPropsWithDefaults> {
 	children: MarkChildElement[];
+	markType: 'area';
 }
 
 type AxisPropsWithDefaults =
@@ -87,6 +94,7 @@ export interface AxisAnnotationSpecProps
 type BarPropsWithDefaults =
 	| 'color'
 	| 'dimension'
+	| 'hasSquareCorners'
 	| 'lineType'
 	| 'lineWidth'
 	| 'metric'
@@ -100,21 +108,51 @@ type BarPropsWithDefaults =
 
 export interface BarSpecProps
 	extends PartiallyRequired<BarProps & { colorScheme: ColorScheme; index: number }, BarPropsWithDefaults> {
+	markType: 'bar';
 	children: MarkChildElement[];
+	interactiveMarkName: string | undefined;
+	dimensionScaleType: 'band';
 }
 
-type DonutPropsWithDefaults =
-	| 'color'
-	| 'metric'
-	| 'name'
-	| 'startAngle'
-	| 'holeRatio'
-	| 'hasDirectLabels'
-	| 'isBoolean';
+type AnnotationPropsWithDefaults = 'textKey';
+
+export interface AnnotationSpecProps extends PartiallyRequired<AnnotationProps, AnnotationPropsWithDefaults> {
+	barProps: BarSpecProps;
+	dataName: string;
+	dimensionField: string;
+	dimensionScaleName: string;
+}
+
+type ChartTooltipPropsWithDefaults = 'highlightBy';
+
+export interface ChartTooltipSpecProps extends PartiallyRequired<ChartTooltipProps, ChartTooltipPropsWithDefaults> {
+	markName: string;
+}
+
+type ChartPopoverPropsWithDefaults = 'UNSAFE_highlightBy';
+
+export interface ChartPopoverSpecProps extends PartiallyRequired<ChartPopoverProps, ChartPopoverPropsWithDefaults> {
+	markName: string;
+}
+
+type DonutPropsWithDefaults = 'color' | 'metric' | 'name' | 'startAngle' | 'holeRatio' | 'isBoolean';
 
 export interface DonutSpecProps
 	extends PartiallyRequired<DonutProps & { colorScheme: ColorScheme; index: number }, DonutPropsWithDefaults> {
 	children: MarkChildElement[];
+	markType: 'donut';
+}
+
+type DonutSummaryPropsWithDefaults = 'numberFormat';
+
+export interface DonutSummarySpecProps extends PartiallyRequired<DonutSummaryProps, DonutSummaryPropsWithDefaults> {
+	donutProps: DonutSpecProps;
+}
+
+type SegmentLabelPropsWithDefaults = 'percent' | 'value' | 'valueFormat';
+
+export interface SegmentLabelSpecProps extends PartiallyRequired<SegmentLabelProps, SegmentLabelPropsWithDefaults> {
+	donutProps: DonutSpecProps;
 }
 
 type LegendPropsWithDefaults = 'hiddenEntries' | 'highlight' | 'isToggleable' | 'position' | 'name';
@@ -137,8 +175,11 @@ export interface LineSpecProps extends PartiallyRequired<LineProps, LinePropsWit
 	colorScheme: ColorScheme;
 	index: number;
 	interactiveMarkName: string | undefined;
+	isHighlightedByGroup?: boolean;
 	lineWidth?: FacetRef<LineWidth>;
+	markType: 'line';
 	popoverMarkName: string | undefined;
+	interactionMode?: InteractionMode;
 }
 
 type ScatterPropsWithDefaults =
@@ -158,6 +199,7 @@ export interface ScatterSpecProps extends PartiallyRequired<ScatterProps, Scatte
 	colorScheme: ColorScheme;
 	index: number;
 	interactiveMarkName: string | undefined;
+	markType: 'scatter';
 }
 
 type ScatterPathPropsWithDefaults = 'color' | 'groupBy' | 'pathWidth' | 'opacity';

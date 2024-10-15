@@ -24,7 +24,8 @@ import {
 	SELECTED_ITEM,
 	SYMBOL_SIZE_SCALE,
 } from '@constants';
-import { addTimeTransform, getTableData } from '@specBuilder/data/dataUtils';
+import { addTooltipData, addTooltipSignals } from '@specBuilder/chartTooltip/chartTooltipUtils';
+import { addTimeTransform, getFilteredTooltipData, getTableData } from '@specBuilder/data/dataUtils';
 import { getInteractiveMarkName } from '@specBuilder/line/lineUtils';
 import { hasInteractiveChildren, hasPopover } from '@specBuilder/marks/markUtils';
 import {
@@ -37,9 +38,9 @@ import { addHighlightedItemSignalEvents } from '@specBuilder/signal/signalSpecBu
 import { addTrendlineData, getTrendlineScales, setTrendlineSignals } from '@specBuilder/trendline';
 import { sanitizeMarkChildren, toCamelCase } from '@utils';
 import { produce } from 'immer';
-import { ColorScheme, ScatterProps, ScatterSpecProps } from 'types';
 import { Data, Scale, Signal, Spec } from 'vega';
 
+import { ColorScheme, ScatterProps, ScatterSpecProps } from '../../types';
 import { addScatterMarks } from './scatterMarkUtils';
 
 /**
@@ -81,6 +82,7 @@ export const addScatter = produce<Spec, [ScatterProps & { colorScheme?: ColorSch
 			interactiveMarkName: getInteractiveMarkName(sanitizedChildren, scatterName),
 			lineType,
 			lineWidth,
+			markType: 'scatter',
 			metric,
 			name: scatterName,
 			opacity,
@@ -101,6 +103,11 @@ export const addData = produce<Data[], [ScatterSpecProps]>((data, props) => {
 		const tableData = getTableData(data);
 		tableData.transform = addTimeTransform(tableData.transform ?? [], dimension);
 	}
+
+	if (hasInteractiveChildren(children)) {
+		data.push(getFilteredTooltipData(children));
+	}
+
 	if (hasPopover(children)) {
 		data.push({
 			name: `${name}_selectedData`,
@@ -113,6 +120,7 @@ export const addData = produce<Data[], [ScatterSpecProps]>((data, props) => {
 			],
 		});
 	}
+	addTooltipData(data, props);
 	addTrendlineData(data, props);
 });
 
@@ -129,6 +137,7 @@ export const addSignals = produce<Signal[], [ScatterSpecProps]>((signals, props)
 	if (!hasInteractiveChildren(children)) return;
 	// interactive signals
 	addHighlightedItemSignalEvents(signals, `${name}_voronoi`, 2);
+	addTooltipSignals(signals, props);
 });
 
 /**

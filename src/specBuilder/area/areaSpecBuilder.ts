@@ -23,16 +23,23 @@ import {
 	SELECTED_SERIES,
 } from '@constants';
 import {
+	addTooltipData,
+	addTooltipSignals,
+	isHighlightedByDimension,
+	isHighlightedByGroup,
+} from '@specBuilder/chartTooltip/chartTooltipUtils';
+import { getTooltipProps, hasPopover } from '@specBuilder/marks/markUtils';
+import {
 	addHighlightedSeriesSignalEvents,
-	getControlledHoverSignal,
-	hasSignalByName,
+	getControlledHoveredGroupSignal,
+	getControlledHoveredIdSignal,
 } from '@specBuilder/signal/signalSpecBuilder';
 import { spectrumColors } from '@themes';
 import { sanitizeMarkChildren, toCamelCase } from '@utils';
 import { produce } from 'immer';
-import { AreaProps, AreaSpecProps, ColorScheme, MarkChildElement, ScaleType } from 'types';
-import { Data, Mark, Scale, Signal, Spec } from 'vega';
+import { Data, Mark, Scale, Signal, SourceData, Spec } from 'vega';
 
+import { AreaProps, AreaSpecProps, ColorScheme, MarkChildElement, ScaleType } from '../../types';
 import { addTimeTransform, getFilteredTableData, getTableData, getTransformSort } from '../data/dataUtils';
 import { addContinuousDimensionScale, addFieldToFacetScaleDomain, addMetricScale } from '../scale/scaleSpecBuilder';
 import { getAreaMark, getX } from './areaUtils';
@@ -62,6 +69,7 @@ export const addArea = produce<Spec, [AreaProps & { colorScheme?: ColorScheme; i
 			colorScheme,
 			dimension,
 			index,
+			markType: 'area',
 			metric,
 			name: toCamelCase(name || `area${index}`),
 			scaleType,
@@ -91,62 +99,76 @@ export const addArea = produce<Spec, [AreaProps & { colorScheme?: ColorScheme; i
 	}
 );
 
-export const addData = produce<Data[], [AreaSpecProps]>(
-	(data, { name, dimension, scaleType, color, metric, metricEnd, metricStart, order, children }) => {
-		if (scaleType === 'time') {
-			const tableData = getTableData(data);
-			tableData.transform = addTimeTransform(tableData.transform ?? [], dimension);
-		}
+export const addData = produce<Data[], [AreaSpecProps]>((data, props) => {
+	const { children, color, dimension, metric, metricEnd, metricStart, name, order, scaleType } = props;
+	if (scaleType === 'time') {
+		const tableData = getTableData(data);
+		tableData.transform = addTimeTransform(tableData.transform ?? [], dimension);
+	}
 
-		if (!metricEnd || !metricStart) {
-			const filteredTableData = getFilteredTableData(data);
-			// if metricEnd and metricStart don't exist, then we are using metric so we will support stacked
-			filteredTableData.transform = [
-				...(filteredTableData.transform ?? []),
-				{
-					type: 'stack',
-					groupby: [dimension],
-					field: metric,
-					sort: getTransformSort(order),
-					as: [`${metric}0`, `${metric}1`],
-				},
-			];
-		}
+	if (!metricEnd || !metricStart) {
+		const filteredTableData = getFilteredTableData(data);
+		// if metricEnd and metricStart don't exist, then we are using metric so we will support stacked
+		filteredTableData.transform = [
+			...(filteredTableData.transform ?? []),
+			{
+				type: 'stack',
+				groupby: [dimension],
+				field: metric,
+				sort: getTransformSort(order),
+				as: [`${metric}0`, `${metric}1`],
+			},
+		];
+	}
 
-		if (children.length) {
-			const hoverSignal = `${name}_controlledHoveredId`;
+	if (children.length) {
+		const areaHasPopover = hasPopover(children);
+		data.push(getAreaHighlightedData(name, areaHasPopover, isHighlightedByGroup(props)));
+		if (areaHasPopover) {
 			data.push({
-				name: `${name}_highlightedDataPoint`,
+				name: `${name}_selectedDataSeries`,
 				source: FILTERED_TABLE,
 				transform: [
 					{
 						type: 'filter',
-						expr: `${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${MARK_ID} || !${SELECTED_ITEM} && ${hoverSignal} && ${hoverSignal} === datum.${MARK_ID}`,
+						expr: `${SELECTED_SERIES} && ${SELECTED_SERIES} === datum.${color}`,
 					},
 				],
 			});
-			if (children.some((child) => child.type === ChartPopover)) {
-				data.push({
-					name: `${name}_selectedDataSeries`,
-					source: FILTERED_TABLE,
-					transform: [
-						{
-							type: 'filter',
-							expr: `${SELECTED_SERIES} && ${SELECTED_SERIES} === datum.${color}`,
-						},
-					],
-				});
-			}
 		}
 	}
-);
+	addTooltipData(data, props, false);
+});
 
-export const addSignals = produce<Signal[], [AreaSpecProps]>((signals, { children, name }) => {
+export const getAreaHighlightedData = (name: string, hasPopover: boolean, hasGroupId: boolean): SourceData => {
+	const highlightedExpr = hasGroupId
+		? `${name}_controlledHoveredGroup === datum.${name}_highlightGroupId`
+		: `${name}_controlledHoveredId === datum.${MARK_ID}`;
+	const expr = hasPopover
+		? `${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${MARK_ID} || !${SELECTED_ITEM} && ${highlightedExpr}`
+		: highlightedExpr;
+	return {
+		name: `${name}_highlightedData`,
+		source: FILTERED_TABLE,
+		transform: [
+			{
+				type: 'filter',
+				expr,
+			},
+		],
+	};
+};
+
+export const addSignals = produce<Signal[], [AreaSpecProps]>((signals, props) => {
+	const { children, name } = props;
 	if (!children.length) return;
-	if (!hasSignalByName(signals, `${name}_controlledHoveredId`)) {
-		signals.push(getControlledHoverSignal(name));
+	addHighlightedSeriesSignalEvents(signals, name, 1, getTooltipProps(children)?.excludeDataKeys);
+	if (!isHighlightedByGroup(props)) {
+		signals.push(getControlledHoveredIdSignal(name));
+	} else {
+		signals.push(getControlledHoveredGroupSignal(name));
 	}
-	addHighlightedSeriesSignalEvents(signals, name);
+	addTooltipSignals(signals, props);
 });
 
 export const setScales = produce<Scale[], [AreaSpecProps]>(
@@ -187,16 +209,17 @@ export const addAreaMarks = produce<Mark[], [AreaSpecProps]>((marks, props) => {
 			},
 			marks: [
 				getAreaMark({
-					name,
 					color,
 					colorScheme,
 					children,
+					dimension,
+					isHighlightedByGroup: isHighlightedByGroup(props),
+					isStacked,
 					metricStart,
 					metricEnd,
-					isStacked,
-					dimension,
-					scaleType,
+					name,
 					opacity,
+					scaleType,
 				}),
 				...getAnchorPointMark(props),
 			],
@@ -216,7 +239,7 @@ const getAnchorPointMark = ({ children, name, dimension, metric, scaleType }: Ar
 		{
 			name: `${name}_anchorPoint`,
 			type: 'symbol',
-			from: { data: `${name}_highlightedDataPoint` },
+			from: { data: `${name}_highlightedData` },
 			interactive: false,
 			encode: {
 				enter: {
@@ -235,29 +258,14 @@ const getAnchorPointMark = ({ children, name, dimension, metric, scaleType }: Ar
 /**
  * returns a circle symbol and a rule on the hovered/selected point
  */
-const getHoverMarks = ({ children, name, dimension, metric, color, scaleType }: AreaSpecProps): Mark[] => {
+const getHoverMarks = (props: AreaSpecProps): Mark[] => {
+	const { children, name, dimension, metric, scaleType, color } = props;
 	if (!children.length) return [];
-	return [
-		{
-			name: `${name}_rule`,
-			type: 'rule',
-			from: { data: `${name}_highlightedDataPoint` },
-			interactive: false,
-			encode: {
-				enter: {
-					y: { value: 0 },
-					y2: { signal: 'height' },
-					strokeWidth: { value: 1 },
-				},
-				update: {
-					x: getX(scaleType, dimension),
-				},
-			},
-		},
+	const highlightMarks: Mark[] = [
 		{
 			name: `${name}_point`,
 			type: 'symbol',
-			from: { data: `${name}_highlightedDataPoint` },
+			from: { data: `${name}_highlightedData` },
 			interactive: false,
 			encode: {
 				enter: {
@@ -271,6 +279,25 @@ const getHoverMarks = ({ children, name, dimension, metric, color, scaleType }: 
 			},
 		},
 	];
+	if (isHighlightedByDimension(props)) {
+		highlightMarks.unshift({
+			name: `${name}_rule`,
+			type: 'rule',
+			from: { data: `${name}_highlightedData` },
+			interactive: false,
+			encode: {
+				enter: {
+					y: { value: 0 },
+					y2: { signal: 'height' },
+					strokeWidth: { value: 1 },
+				},
+				update: {
+					x: getX(scaleType, dimension),
+				},
+			},
+		});
+	}
+	return highlightMarks;
 };
 
 /**

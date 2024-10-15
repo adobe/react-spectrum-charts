@@ -9,11 +9,11 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { LineType } from 'types';
 
 // prop defaults
 export const ANNOTATION_FONT_SIZE = 12;
 export const ANNOTATION_FONT_WEIGHT = 'bold';
+export const ANNOTATION_PADDING = 4;
 export const DEFAULT_AXIS_ANNOTATION_COLOR = 'gray-600';
 export const DEFAULT_AXIS_ANNOTATION_OFFSET = 80;
 export const DEFAULT_BACKGROUND_COLOR = 'transparent';
@@ -25,7 +25,7 @@ export const DEFAULT_GRANULARITY = 'day';
 export const DEFAULT_LABEL_ALIGN = 'center';
 export const DEFAULT_LABEL_FONT_WEIGHT = 'normal';
 export const DEFAULT_LABEL_ORIENTATION = 'horizontal';
-export const DEFAULT_LINE_TYPES: LineType[] = ['solid', 'dashed', 'dotted', 'dotDash', 'longDash', 'twoDash'];
+export const DEFAULT_LINE_TYPES = ['solid', 'dashed', 'dotted', 'dotDash', 'longDash', 'twoDash'];
 export const DEFAULT_LINEAR_DIMENSION = 'x';
 export const DEFAULT_LOCALE = 'en-US';
 export const DEFAULT_METRIC = 'value';
@@ -35,6 +35,7 @@ export const DEFAULT_SYMBOL_STROKE_WIDTH = 2;
 export const DEFAULT_TIME_DIMENSION = 'datetime';
 export const DEFAULT_TRANSFORMED_TIME_DIMENSION = `${DEFAULT_TIME_DIMENSION}0`;
 export const DEFAULT_TITLE_FONT_WEIGHT = 'bold';
+export const DEFAULT_INTERACTION_MODE = 'nearest';
 
 // vega data table name
 export const TABLE = 'table';
@@ -44,16 +45,20 @@ export const FILTERED_TABLE = 'filteredTable';
 export const BIG_NUMBER_ASPECT_RATIO = 16 / 9
 
 // vega data field names
-export const SERIES_ID = 'rscSeriesId';
+export const GROUP_DATA = 'rscGroupData';
 export const MARK_ID = 'rscMarkId';
-export const TRENDLINE_VALUE = 'rscTrendlineValue';
+export const SERIES_ID = 'rscSeriesId';
 export const STACK_ID = 'rscStackId';
+export const COMPONENT_NAME = 'rscComponentName';
+export const TRENDLINE_VALUE = 'rscTrendlineValue';
 
 // signal names
 export const HIGHLIGHTED_ITEM = 'highlightedItem'; // data point
+export const HIGHLIGHTED_GROUP = 'highlightedGroup'; // data point
 export const HIGHLIGHTED_SERIES = 'highlightedSeries'; // series
 export const SELECTED_ITEM = 'selectedItem'; // data point
 export const SELECTED_SERIES = 'selectedSeries'; // series
+export const SELECTED_GROUP = 'selectedGroup'; // data point
 
 // scale names
 export const COLOR_SCALE = 'color';
@@ -77,6 +82,20 @@ export const PADDING_RATIO = 0.4;
 export const LINEAR_PADDING = 32;
 export const TRELLIS_PADDING = 0.2;
 
+// donut constants
+/** Calculation for donut radius, subtract 2 pixels to make room for the selection ring */
+export const DONUT_RADIUS = '(min(width, height) / 2 - 2)';
+/** Min arc angle radians to display a segment label. If the arc angle is less than this, the segment label will be hidden. */
+export const DONUT_SEGMENT_LABEL_MIN_ANGLE = 0.3;
+/** Min font size for the donut summary metric value */
+export const DONUT_SUMMARY_MIN_FONT_SIZE = 28;
+/** Max font size for the donut summary metric value */
+export const DONUT_SUMMARY_MAX_FONT_SIZE = 60;
+/** Ratio of the donut summary matric value font size to the inner donut raidus */
+export const DONUT_SUMMARY_FONT_SIZE_RATIO = 0.35;
+/** Min inner radius to display the summary metric. If the inner radius is less than this, the summary metric is hidden. */
+export const DONUT_SUMMARY_MIN_RADIUS = 45;
+
 // ratio that each opacity is divded by when hovering or highlighting from legend
 export const HIGHLIGHT_CONTRAST_RATIO = 5;
 
@@ -89,3 +108,12 @@ export const BACKGROUND_COLOR = 'chartBackgroundColor';
 
 // time constants
 export const MS_PER_DAY = 86400000;
+
+// mark constants
+export enum INTERACTION_MODE {
+	NEAREST = 'nearest',
+	ITEM = 'item',
+}
+export const HOVER_SIZE = 3000;
+export const HOVER_SHAPE_COUNT = 3;
+export const HOVER_SHAPE = 'diamond';

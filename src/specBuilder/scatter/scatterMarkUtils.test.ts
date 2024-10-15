@@ -62,12 +62,20 @@ describe('getOpacity()', () => {
 });
 
 describe('getScatterHoverMarks()', () => {
-	test('should retrurn the voronoi mark if there is a tooltip', () => {
+	test('should return the pointsForVoronoi mark if there is a tooltip', () => {
 		expect(getScatterHoverMarks(defaultScatterProps)).toHaveLength(0);
 
 		const marks = getScatterHoverMarks({ ...defaultScatterProps, children: [createElement(ChartTooltip)] });
-		expect(marks).toHaveLength(1);
-		expect(marks[0].name).toBe('scatter0_voronoi');
+		expect(marks).toHaveLength(2);
+		expect(marks[0].name).toBe('scatter0_pointsForVoronoi');
+	});
+
+	test('should return the voronoi mark if there is a tooltip', () => {
+		expect(getScatterHoverMarks(defaultScatterProps)).toHaveLength(0);
+
+		const marks = getScatterHoverMarks({ ...defaultScatterProps, children: [createElement(ChartTooltip)] });
+		expect(marks).toHaveLength(2);
+		expect(marks[1].name).toBe('scatter0_voronoi');
 	});
 });
 

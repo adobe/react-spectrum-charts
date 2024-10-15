@@ -14,189 +14,60 @@ import { createElement } from 'react';
 import { ChartTooltip } from '@components/ChartTooltip';
 import { COLOR_SCALE, FILTERED_TABLE, HIGHLIGHTED_ITEM } from '@constants';
 import { defaultSignals } from '@specBuilder/specTestUtils';
-import { DonutSpecProps } from 'types';
+import { initializeSpec } from '@specBuilder/specUtils';
 
 import { addData, addDonut, addMarks, addScales, addSignals } from './donutSpecBuilder';
-import { getAggregateMetricMark, getArcMark, getDirectLabelMark, getPercentMetricMark } from './donutUtils';
-
-const defaultDonutProps: DonutSpecProps = {
-	index: 0,
-	colorScheme: 'light',
-	metric: 'testMetric',
-	startAngle: 0,
-	name: 'testName',
-	isBoolean: false,
-	segment: 'testSegment',
-	color: 'testColor',
-	holeRatio: 0.5,
-	metricLabel: 'testLabel',
-	hasDirectLabels: true,
-	children: [],
-};
+import { defaultDonutProps } from './donutTestUtils';
 
 describe('addData', () => {
 	test('should add data correctly for boolean donut', () => {
-		const data = [{ name: FILTERED_TABLE }];
-		const result = addData(data, { ...defaultDonutProps, isBoolean: true });
-		expect(result).toEqual([
-			{
-				name: FILTERED_TABLE,
-				transform: [
-					{
-						type: 'pie',
-						field: 'testMetric',
-						startAngle: 0,
-						endAngle: { signal: '0 + 2 * PI' },
-					},
-				],
-			},
-			{
-				name: 'testName_booleanData',
-				source: FILTERED_TABLE,
-				transform: [
-					{
-						type: 'window',
-						ops: ['row_number'],
-						as: ['testName_rscRowIndex'],
-					},
-					{
-						type: 'filter',
-						expr: 'datum.testName_rscRowIndex === 1',
-					},
-				],
-			},
-		]);
+		const data = addData(initializeSpec().data ?? [], { ...defaultDonutProps, isBoolean: true });
+
+		expect(data).toHaveLength(3);
+		expect(data[2].transform).toHaveLength(2);
+		expect(data[2].transform?.[0].type).toBe('window');
+		expect(data[2].transform?.[1].type).toBe('filter');
 	});
 
 	test('should add data correctly for non-boolean donut', () => {
-		const data = [{ name: 'filteredTable' }];
-		const result = addData(data, defaultDonutProps);
-		expect(result).toEqual([
-			{
-				name: FILTERED_TABLE,
-				transform: [
-					{
-						type: 'pie',
-						field: 'testMetric',
-						startAngle: 0,
-						endAngle: { signal: '0 + 2 * PI' },
-					},
-				],
-			},
-			{
-				name: 'testName_aggregateData',
-				source: FILTERED_TABLE,
-				transform: [
-					{
-						type: 'aggregate',
-						fields: ['testMetric'],
-						ops: ['sum'],
-						as: ['sum'],
-					},
-				],
-			},
-		]);
-	});
-});
-
-describe('addMarks', () => {
-	test('should add marks correctly for boolean donut', () => {
-		const marks = [];
-		const props = { ...defaultDonutProps, isBoolean: true };
-		const result = addMarks(marks, props);
-		const expectedMarks = [
-			getArcMark(props.name, props.holeRatio, 'min(width, height) / 2', props.children),
-			getPercentMetricMark(
-				props.name,
-				props.metric,
-				'min(width, height) / 2',
-				props.holeRatio,
-				props.metricLabel
-			),
-		];
-		expect(result).toEqual(expectedMarks);
-	});
-
-	test('should add marks correctly for non-boolean donut', () => {
-		const marks = [];
-		const result = addMarks(marks, defaultDonutProps);
-		const expectedMarks = [
-			getArcMark(
-				defaultDonutProps.name,
-				defaultDonutProps.holeRatio,
-				'min(width, height) / 2',
-				defaultDonutProps.children
-			),
-			getAggregateMetricMark(
-				defaultDonutProps.name,
-				defaultDonutProps.metric,
-				'min(width, height) / 2',
-				defaultDonutProps.holeRatio,
-				defaultDonutProps.metricLabel
-			),
-			getDirectLabelMark(
-				defaultDonutProps.name,
-				'min(width, height) / 2',
-				defaultDonutProps.metric,
-				defaultDonutProps.segment!
-			),
-		];
-		expect(result).toEqual(expectedMarks);
-	});
-
-	test('should throw error when hasDirectLabels is true but segment is not provided', () => {
-		const marks = [];
-		const props: DonutSpecProps = {
-			index: 0,
-			colorScheme: 'light',
-			metric: 'testMetric',
-			startAngle: 1.7,
-			name: 'testName',
-			isBoolean: false,
-			segment: undefined,
-			color: 'testColor',
-			holeRatio: 0.5,
-			metricLabel: 'testLabel',
-			hasDirectLabels: true,
-			children: [],
-		};
-		expect(() => addMarks(marks, props)).toThrow(
-			'If a Donut chart hasDirectLabels, a segment property name must be supplied.'
-		);
+		const data = addData(initializeSpec().data ?? [], defaultDonutProps);
+		expect(data).toHaveLength(2);
+		expect(data[1].transform).toHaveLength(4);
+		expect(data[1].transform?.[0].type).toBe('pie');
+		expect(data[1].transform?.[1]).toHaveProperty('as', 'testName_arcTheta');
+		expect(data[1].transform?.[2]).toHaveProperty('as', 'testName_arcLength');
+		expect(data[1].transform?.[3]).toHaveProperty('as', 'testName_arcPercent');
 	});
 });
 
 describe('addSignals()', () => {
-	test('should not add signals when there are not interactive children', () => {
-		const signals = addSignals(defaultSignals, defaultDonutProps);
-		expect(signals).toStrictEqual(defaultSignals);
-	});
-
 	test('should add hover events when tooltip is present', () => {
 		const signals = addSignals(defaultSignals, { ...defaultDonutProps, children: [createElement(ChartTooltip)] });
-		expect(signals).toHaveLength(4);
+		expect(signals).toHaveLength(defaultSignals.length);
 		expect(signals[0]).toHaveProperty('name', HIGHLIGHTED_ITEM);
 		expect(signals[0].on).toHaveLength(2);
 		expect(signals[0].on?.[0]).toHaveProperty('events', '@testName:mouseover');
+		expect(signals[0].on?.[1]).toHaveProperty('events', '@testName:mouseout');
+	});
+	test('should exclude data with key from update if tooltip has excludeDataKey', () => {
+		const signals = addSignals(defaultSignals, {
+			...defaultDonutProps,
+			children: [createElement(ChartTooltip, { excludeDataKeys: ['excludeFromTooltip'] })],
+		});
+		expect(signals).toHaveLength(defaultSignals.length);
+		expect(signals[0]).toHaveProperty('name', HIGHLIGHTED_ITEM);
+		expect(signals[0].on).toHaveLength(2);
+		expect(signals[0].on?.[0]).toHaveProperty('events', '@testName:mouseover');
+		expect(signals[0].on?.[0]).toHaveProperty('update', '(datum.excludeFromTooltip) ? null : datum.rscMarkId');
 		expect(signals[0].on?.[1]).toHaveProperty('events', '@testName:mouseout');
 	});
 });
 
 describe('donutSpecBuilder', () => {
 	test('should add scales correctly', () => {
-		const scales = [];
-		const result = addScales(scales, defaultDonutProps);
-		const expectedScales = [
-			{
-				domain: {
-					data: 'table',
-					fields: ['testColor'],
-				},
-				name: COLOR_SCALE,
-				type: undefined,
-			},
-		];
-		expect(result).toEqual(expectedScales);
+		const scales = addScales([], defaultDonutProps);
+		expect(scales).toHaveLength(1);
+		expect(scales[0]).toHaveProperty('name', COLOR_SCALE);
 	});
 });
 

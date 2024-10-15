@@ -29,14 +29,15 @@ describe('truncateText()', () => {
 });
 
 describe('formatTimeDurationLabels()', () => {
-	test('should format durations correctly', () => {
-		const formatDurationsEnUS = formatTimeDurationLabels(numberLocales['en-US']);
-		const formatDurationsFrFr = formatTimeDurationLabels(numberLocales['fr-FR']);
-		const formatDurationsDeDe = formatTimeDurationLabels(numberLocales['de-DE']);
+	const formatDurationsEnUS = formatTimeDurationLabels(numberLocales['en-US']);
+	const formatDurationsFrFr = formatTimeDurationLabels(numberLocales['fr-FR']);
+	const formatDurationsDeDe = formatTimeDurationLabels(numberLocales['de-DE']);
 
-		expect(formatDurationsEnUS({ index: 0, label: '0', value: 1 })).toBe('00:00:01');
-		expect(formatDurationsEnUS({ index: 0, label: '0', value: 61 })).toBe('00:01:01');
-		expect(formatDurationsEnUS({ index: 0, label: '0', value: 3661 })).toBe('01:01:01');
+	test('should format hour durations correctly', () => {
+		expect(formatDurationsEnUS({ index: 0, label: '0', value: 1 })).toBe('0:01');
+		expect(formatDurationsEnUS({ index: 0, label: '0', value: 61 })).toBe('1:01');
+		expect(formatDurationsEnUS({ index: 0, label: '0', value: 3661 })).toBe('1:01:01');
+		expect(formatDurationsEnUS({ index: 0, label: '0', value: -3661 })).toBe('-1:01:01');
 		expect(formatDurationsEnUS({ index: 0, label: '0', value: 3603661 })).toBe('1,001:01:01');
 		expect(formatDurationsFrFr({ index: 0, label: '0', value: 3603661 })).toBe('1\u00a0001:01:01');
 		expect(formatDurationsDeDe({ index: 0, label: '0', value: 3603661 })).toBe('1.001:01:01');
@@ -45,8 +46,7 @@ describe('formatTimeDurationLabels()', () => {
 		const formatDurations = formatTimeDurationLabels();
 		expect(formatDurations({ index: 0, label: '0', value: 3603661 })).toBe('1,001:01:01');
 	});
-	test('should original string if type of value is string', () => {
-		const formatDurationsEnUS = formatTimeDurationLabels(numberLocales['en-US']);
+	test('should return original string if type of value is string', () => {
 		expect(formatDurationsEnUS({ index: 0, label: '0', value: 'hello world!' })).toBe('hello world!');
 	});
 });

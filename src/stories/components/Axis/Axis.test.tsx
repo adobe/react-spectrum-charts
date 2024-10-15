@@ -17,6 +17,7 @@ import {
 	Basic,
 	ControlledLabels,
 	DurationLabelFormat,
+	MultilineTitle,
 	NonLinearAxis,
 	NumberFormat,
 	SubLabels,
@@ -25,6 +26,11 @@ import {
 } from './Axis.story';
 
 describe('Axis', () => {
+	// Axis is not a real React component. This is test just provides test coverage for sonarqube
+	test('Render pseudo element', () => {
+		render(<Axis position="left" />);
+	});
+
 	test('Renders properly', async () => {
 		render(<Basic {...Basic.args} />);
 		const axes = await screen.findAllByRole('graphics-symbol');
@@ -32,9 +38,16 @@ describe('Axis', () => {
 		expect(axes.length).toEqual(2);
 	});
 
-	// Axis is not a real React component. This is test just provides test coverage for sonarqube
-	test('Render pseudo element', () => {
-		render(<Axis position="left" />);
+	describe('MultilineTitle', () => {
+		test('should render title on two lines', async () => {
+			render(<MultilineTitle {...MultilineTitle.args} />);
+			const chart = await findChart();
+			expect(chart).toBeInTheDocument();
+			// first line
+			expect(screen.getByText('Conversion Rate')).toBeInTheDocument();
+			// second line
+			expect(screen.getByText('(converted users / total active users)')).toBeInTheDocument();
+		});
 	});
 
 	describe('percentage', () => {
@@ -218,14 +231,14 @@ describe('Axis', () => {
 	});
 
 	describe('DurationLabelFormat', () => {
-		test('should render duration labels correctly', async () => {
+		test('should render duration labels in HH:mm:ss', async () => {
 			render(<DurationLabelFormat {...DurationLabelFormat.args} />);
 			const chart = await findChart();
 			expect(chart).toBeInTheDocument();
 
-			expect(screen.getByText('00:00:00')).toBeInTheDocument();
-			expect(screen.getByText('01:23:20')).toBeInTheDocument();
-			expect(screen.getByText('02:46:40')).toBeInTheDocument();
+			expect(screen.getByText('0:00')).toBeInTheDocument();
+			expect(screen.getByText('1:23:20')).toBeInTheDocument();
+			expect(screen.getByText('2:46:40')).toBeInTheDocument();
 		});
 	});
 });

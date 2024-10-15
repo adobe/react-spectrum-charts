@@ -17,36 +17,36 @@ import {
 	DEFAULT_COLOR,
 	DEFAULT_COLOR_SCHEME,
 	DEFAULT_METRIC,
-	DEFAULT_OPACITY_RULE,
 	DEFAULT_SECONDARY_COLOR,
 	FILTERED_TABLE,
-	HIGHLIGHTED_ITEM,
-	HIGHLIGHT_CONTRAST_RATIO,
-	MARK_ID,
 	PADDING_RATIO,
-	SELECTED_ITEM,
 	STACK_ID,
 	TRELLIS_PADDING,
 } from '@constants';
-import { BarSpecProps } from 'types';
 import { NumericValueRef, ProductionRule, RectEncodeEntry } from 'vega';
+
+import { BarSpecProps } from '../../types';
 
 export const defaultBarProps: BarSpecProps = {
 	children: [],
 	color: DEFAULT_COLOR,
+	colorScheme: DEFAULT_COLOR_SCHEME,
 	dimension: DEFAULT_CATEGORICAL_DIMENSION,
+	dimensionScaleType: 'band',
+	hasSquareCorners: false,
 	index: 0,
+	interactiveMarkName: 'bar0',
 	lineType: { value: 'solid' },
 	lineWidth: 0,
+	markType: 'bar',
 	metric: DEFAULT_METRIC,
 	name: 'bar0',
+	orientation: 'vertical',
 	opacity: { value: 1 },
 	paddingRatio: PADDING_RATIO,
-	colorScheme: DEFAULT_COLOR_SCHEME,
 	trellisOrientation: 'horizontal',
 	trellisPadding: TRELLIS_PADDING,
 	type: 'stacked',
-	orientation: 'vertical',
 };
 
 export const defaultBarPropsWithSecondayColor: BarSpecProps = {
@@ -111,16 +111,6 @@ export const defaultDodgedCornerRadiusEncodings: RectEncodeEntry = {
 
 export const defaultBarFillOpacity: ProductionRule<NumericValueRef> = [{ value: 1 }];
 
-export const defaultBarPopoverOpacity: ProductionRule<NumericValueRef> = [
-	{
-		test: `!${SELECTED_ITEM} && ${HIGHLIGHTED_ITEM} && ${HIGHLIGHTED_ITEM} !== datum.${MARK_ID}`,
-		value: 1 / HIGHLIGHT_CONTRAST_RATIO,
-	},
-	{ test: `${SELECTED_ITEM} && ${SELECTED_ITEM} !== datum.${MARK_ID}`, value: 1 / HIGHLIGHT_CONTRAST_RATIO },
-	{ test: `${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${MARK_ID}`, value: 1 },
-	DEFAULT_OPACITY_RULE,
-];
-
 export const stackedXScale = 'xBand';
 export const dodgedXScale = `${defaultBarProps.name}_position`;
 export const dodgedGroupField = `${defaultBarProps.name}_dodgeGroup`;
@@ -129,7 +119,6 @@ export const stackedLabelWithStyles = {
 	from: { data: FILTERED_TABLE },
 	name: 'bar0_annotationBackground',
 	interactive: false,
-
 	encode: {
 		enter: {
 			align: { value: 'center' },
@@ -157,7 +146,6 @@ export const stackedLabelBackground = {
 	from: { data: FILTERED_TABLE },
 	name: 'bar0_annotationBackground',
 	interactive: false,
-
 	encode: {
 		enter: {
 			align: { value: 'center' },
@@ -185,7 +173,6 @@ export const stackedLabelText = {
 	from: { data: FILTERED_TABLE },
 	name: 'bar0_annotationText',
 	interactive: false,
-
 	encode: {
 		enter: {
 			x: { scale: stackedXScale, field: defaultBarProps.dimension, band: 0.5 },

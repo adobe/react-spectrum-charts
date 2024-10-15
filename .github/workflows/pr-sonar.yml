@@ -1,0 +1,107 @@
+name: PR Post-Build Sonar
+on:
+    workflow_run:
+        workflows: [PR Build]
+        types: [completed]
+jobs:
+    sonar:
+        runs-on: ubuntu-latest
+        timeout-minutes: 30
+        if: github.event.workflow_run.conclusion == 'success'
+        steps:
+            # Checkout the code from the PR
+            - name: Checkout PR code
+              uses: actions/checkout@v3
+              with:
+                  repository: ${{ github.event.workflow_run.head_repository.full_name }}
+                  ref: ${{ github.event.workflow_run.head_branch }}
+                  fetch-depth: 0
+
+            # Download the artifacts from the PR build
+            - name: Download artifacts 📥
+              uses: actions/github-script@v6
+              with:
+                  script: |
+                      let allArtifacts = await github.rest.actions.listWorkflowRunArtifacts({
+                         owner: context.repo.owner,
+                         repo: context.repo.repo,
+                         run_id: context.payload.workflow_run.id,
+                      });
+                      let matchArtifact = allArtifacts.data.artifacts.filter((artifact) => {
+                        return artifact.name == "rsc-pr-build-artifacts"
+                      })[0];
+                      let download = await github.rest.actions.downloadArtifact({
+                         owner: context.repo.owner,
+                         repo: context.repo.repo,
+                         artifact_id: matchArtifact.id,
+                         archive_format: 'zip',
+                      });
+                      let fs = require('fs');
+                      fs.writeFileSync(`${process.env.GITHUB_WORKSPACE}/rsc-pr-build-artifacts.zip`, Buffer.from(download.data));
+
+            - name: Unzip artifacts 📁
+              run: unzip rsc-pr-build-artifacts.zip
+
+            # Save the PR number, branch, and base branch to the environment
+            - name: Setup workflow variables 📝
+              run: |
+                  # Load the PR number from the file
+                  pr_number="$(<pr/pr_number)"
+                  echo "PR_NUMBER: ${pr_number}"
+                  pr_branch="$(<pr/pr_branch)"
+                  echo "PR_BRANCH: ${pr_branch}"
+                  pr_base="$(<pr/pr_base)"
+                  echo "PR_BASE: ${pr_base}"
+
+                  echo "PR_NUMBER=${pr_number}" >> $GITHUB_ENV
+                  echo "PR_BRANCH=${pr_branch}" >> $GITHUB_ENV
+                  echo "PR_BASE=${pr_base}" >> $GITHUB_ENV
+
+            # Checkout the base branch
+            # SonarCloud requires the base branch to be checked out to properly compare the PR for code coverage details
+            - name: Checkout base branch 🌳
+              run: |
+                  git remote add upstream ${{ github.event.repository.clone_url }}
+                  git fetch upstream
+                  git checkout -B ${{ env.PR_BASE }} upstream/${{ env.PR_BASE }}
+                  git checkout ${{ github.event.workflow_run.head_branch }}
+                  git clean -ffdx && git reset --hard HEAD
+
+            # Download the artifacts from the PR build
+            # Have to do this again since checking out the base branch will remove the artifacts
+            # Need the coverage report for the sonar scan step
+            - name: Re-download artifacts 📥
+              uses: actions/github-script@v6
+              with:
+                  script: |
+                      let allArtifacts = await github.rest.actions.listWorkflowRunArtifacts({
+                         owner: context.repo.owner,
+                         repo: context.repo.repo,
+                         run_id: context.payload.workflow_run.id,
+                      });
+                      let matchArtifact = allArtifacts.data.artifacts.filter((artifact) => {
+                        return artifact.name == "rsc-pr-build-artifacts"
+                      })[0];
+                      let download = await github.rest.actions.downloadArtifact({
+                         owner: context.repo.owner,
+                         repo: context.repo.repo,
+                         artifact_id: matchArtifact.id,
+                         archive_format: 'zip',
+                      });
+                      let fs = require('fs');
+                      fs.writeFileSync(`${process.env.GITHUB_WORKSPACE}/rsc-pr-build-artifacts.zip`, Buffer.from(download.data));
+
+            - name: Re-unzip artifacts 📁
+              run: unzip rsc-pr-build-artifacts.zip
+
+            - name: SonarCloud Scan 🔍
+              uses: sonarsource/sonarcloud-github-action@master
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+              with:
+                  args: >
+                      -Dsonar.scm.revision=${{ github.event.workflow_run.head_sha }}
+                      -Dsonar.pullrequest.key=${{ env.PR_NUMBER }}
+                      -Dsonar.pullrequest.branch=${{ env.PR_BRANCH }}
+                      -Dsonar.pullrequest.base=${{ env.PR_BASE }}

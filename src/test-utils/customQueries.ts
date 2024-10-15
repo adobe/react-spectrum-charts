@@ -23,7 +23,7 @@ const [
 	getMarksByGroupName,
 	findAllMarksByGroupName,
 	findMarksByGroupName,
-] = buildQueries(queryAllMarksByGroupName, getMultipleError, getMissingError);
+] = buildQueries<[string, string?]>(queryAllMarksByGroupName, getMultipleError, getMissingError);
 
 export {
 	queryMarksByGroupName,

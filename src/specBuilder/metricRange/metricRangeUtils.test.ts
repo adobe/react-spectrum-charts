@@ -22,8 +22,8 @@ import {
 	DEFAULT_TRANSFORMED_TIME_DIMENSION,
 	FILTERED_TABLE,
 } from '@constants';
-import { LineSpecProps, MetricRangeProps, MetricRangeSpecProps } from 'types';
 
+import { LineSpecProps, MetricRangeProps, MetricRangeSpecProps } from '../../types';
 import {
 	applyMetricRangePropDefaults,
 	getMetricRangeData,
@@ -57,6 +57,7 @@ const defaultLineProps: LineSpecProps = {
 	name: 'line0',
 	dimension: DEFAULT_TIME_DIMENSION,
 	index: 0,
+	markType: 'line',
 	metric: DEFAULT_METRIC,
 	color: DEFAULT_COLOR,
 	scaleType: 'time',
@@ -109,7 +110,8 @@ const basicMetricRangeMarks = [
 			update: {
 				cursor: undefined,
 				x: { scale: 'xTime', field: DEFAULT_TRANSFORMED_TIME_DIMENSION },
-				fillOpacity: [{ value: 0.2 }],
+				fillOpacity: { value: 0.2 },
+				opacity: [DEFAULT_OPACITY_RULE],
 			},
 		},
 	},
@@ -120,7 +122,6 @@ describe('applyMetricRangePropDefaults', () => {
 		expect(
 			applyMetricRangePropDefaults({ metricEnd: 'metricStart', metricStart: 'metricEnd' }, 'line0', 0)
 		).toEqual({
-			children: {},
 			displayOnHover: false,
 			lineType: 'dashed',
 			lineWidth: 'S',
@@ -147,7 +148,6 @@ describe('applyMetricRangePropDefaults', () => {
 				0
 			)
 		).toEqual({
-			children: {},
 			displayOnHover: true,
 			lineType: 'solid',
 			lineWidth: 'L',

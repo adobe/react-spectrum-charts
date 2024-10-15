@@ -12,12 +12,15 @@
 import React, { ReactElement } from 'react';
 
 import useChartProps from '@hooks/useChartProps';
-import { Area, Axis, Bar, Chart, ChartPopover, ChartProps, ChartTooltip, Legend, Line } from '@rsc';
+import { Area, Axis, Bar, Chart, ChartPopover, ChartProps, ChartTooltip, Datum, Legend, Line } from '@rsc';
+import { Donut, DonutSummary } from '@rsc/rc';
 import { browserData as data } from '@stories/data/data';
 import { StoryFn } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
 
 import { Content } from '@adobe/react-spectrum';
+
+import { basicDonutData } from '../Donut/data';
 
 export default {
 	title: 'RSC/ChartPopover',
@@ -32,7 +35,7 @@ export default {
 	},
 };
 
-const dialogContent = (datum) => (
+const dialogContent = (datum: Datum) => (
 	<Content>
 		<div>Operating system: {datum.series}</div>
 		<div>Browser: {datum.category}</div>
@@ -108,22 +111,57 @@ const AreaStory: StoryFn<typeof ChartPopover> = (args): ReactElement => {
 	);
 };
 
+// content for tooltip and popover
+const donutDialogContent = (datum: Datum) => {
+	return (
+		<Content>
+			<div>Browser: {datum.browser}</div>
+			<div>Visitors: {datum.count}</div>
+		</Content>
+	);
+};
+
+const DonutStory: StoryFn<typeof ChartPopover> = (args): ReactElement => {
+	const chartProps = useChartProps({ data: basicDonutData, width: 350, height: 350 });
+	return (
+		<Chart {...chartProps}>
+			<Donut metric="count" color="browser">
+				<DonutSummary label="Visitors" />
+				<ChartTooltip>{donutDialogContent}</ChartTooltip>
+				<ChartPopover {...args} />
+			</Donut>
+		</Chart>
+	);
+};
+
 const Canvas = bindWithProps(ChartPopoverCanvasStory);
-Canvas.args = { children: dialogContent, width: 250 };
+Canvas.args = { children: dialogContent, width: 'auto' };
 
 const Svg = bindWithProps(ChartPopoverSvgStory);
-Svg.args = { children: dialogContent, width: 250 };
+Svg.args = { children: dialogContent, width: 'auto' };
+
+const Size = bindWithProps(ChartPopoverSvgStory);
+Size.args = { children: dialogContent, width: 200, height: 100 };
+
+const MinWidth = bindWithProps(ChartPopoverSvgStory);
+MinWidth.args = { children: dialogContent, width: 'auto', minWidth: 250 };
+
+const OnOpenChange = bindWithProps(ChartPopoverSvgStory);
+OnOpenChange.args = { children: dialogContent, width: 'auto' };
 
 const AreaChart = bindWithProps(AreaStory);
-AreaChart.args = { children: dialogContent };
+AreaChart.args = { children: dialogContent, width: 'auto' };
 
 const DodgedBarChart = bindWithProps(ChartPopoverDodgedBarStory);
-DodgedBarChart.args = { children: dialogContent, width: 250 };
+DodgedBarChart.args = { children: dialogContent, width: 'auto' };
 
 const LineChart = bindWithProps(LineStory);
-LineChart.args = { children: dialogContent };
+LineChart.args = { children: dialogContent, width: 'auto' };
 
 const StackedBarChart = bindWithProps(ChartPopoverSvgStory);
-StackedBarChart.args = { children: dialogContent, width: 250 };
+StackedBarChart.args = { children: dialogContent, width: 'auto' };
 
-export { Canvas, Svg, AreaChart, DodgedBarChart, LineChart, StackedBarChart };
+const DonutChart = bindWithProps(DonutStory);
+DonutChart.args = { children: donutDialogContent, width: 'auto' };
+
+export { Canvas, Svg, Size, MinWidth, OnOpenChange, AreaChart, DodgedBarChart, LineChart, StackedBarChart, DonutChart };

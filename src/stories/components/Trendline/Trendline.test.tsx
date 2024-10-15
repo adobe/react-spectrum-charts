@@ -11,7 +11,7 @@
  */
 import { HIGHLIGHT_CONTRAST_RATIO } from '@constants';
 import '@matchMediaMock';
-import { Trendline } from '@rsc';
+import { Trendline, spectrumColors } from '@rsc';
 import {
 	allElementsHaveAttributeValue,
 	findAllMarksByGroupName,
@@ -24,12 +24,15 @@ import {
 } from '@test-utils';
 
 import {
+	BarChart,
 	Basic,
 	DisplayOnHover,
 	Orientation,
 	TooltipAndPopover,
 	TooltipAndPopoverOnParentLine,
 } from './Trendline.story';
+
+const colors = spectrumColors.light;
 
 describe('Trendline', () => {
 	// Trendline is not a real React component. This is test just provides test coverage for sonarqube
@@ -214,6 +217,21 @@ describe('Trendline', () => {
 
 			// other lines and trendlines are faded
 			expect(lines[1]).toHaveAttribute('opacity', `${1 / HIGHLIGHT_CONTRAST_RATIO}`);
+		});
+	});
+
+	describe('BarChart', () => {
+		test('should display trendlines on bar charts', async () => {
+			render(<BarChart {...BarChart.args} />);
+			const chart = await findChart();
+			expect(chart).toBeInTheDocument();
+
+			const trendlines = await findAllMarksByGroupName(chart, 'bar0Trendline0', 'line');
+
+			expect(trendlines).toHaveLength(3);
+			expect(trendlines[0]).toHaveAttribute('stroke', colors['categorical-100']);
+			expect(trendlines[1]).toHaveAttribute('stroke', colors['categorical-200']);
+			expect(trendlines[2]).toHaveAttribute('stroke', colors['categorical-300']);
 		});
 	});
 });

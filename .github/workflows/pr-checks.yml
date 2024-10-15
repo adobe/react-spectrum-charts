@@ -35,7 +35,9 @@ jobs:
               run: yarn test
 
             - name: SonarCloud 🔬
-              uses: SonarSource/sonarcloud-github-action@master
+              # Don't run SonarCloud on PRs from forks
+              if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
+              uses: sonarsource/sonarcloud-github-action@v2.0.2
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
                   SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -44,9 +46,13 @@ jobs:
               run: yarn build
 
             - name: Build Storybook
+              # Don't run Storybook build on PRs from forks
+              if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
               run: yarn build:storybook
 
             - name: Create and Upload Storybook to PR directory
+              # Don't run Storybook upload on PRs from forks
+              if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
               run: |
                   PR_NUMBER="PR-${{ github.event.number }}"
 
@@ -79,6 +85,8 @@ jobs:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
             - name: Add comment to the PR with Storybook URL
+              # Don't add comment on PRs from forks
+              if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
               run: |
                   PR_NUMBER="${{ github.event.number }}"
                   COMMENT_BODY="🎨 Storybook -> https://opensource.adobe.com/react-spectrum-charts/PR-${PR_NUMBER}"

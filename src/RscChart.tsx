@@ -12,10 +12,13 @@
 import { FC, MutableRefObject, forwardRef, useEffect, useMemo, useRef, useState } from 'react';
 
 import {
+	COMPONENT_NAME,
 	DEFAULT_BACKGROUND_COLOR,
 	DEFAULT_COLOR_SCHEME,
 	DEFAULT_LINE_TYPES,
 	DEFAULT_LOCALE,
+	FILTERED_TABLE,
+	GROUP_DATA,
 	LEGEND_TOOLTIP_DELAY,
 	MARK_ID,
 	SELECTED_ITEM,
@@ -24,6 +27,7 @@ import {
 } from '@constants';
 import useChartImperativeHandle from '@hooks/useChartImperativeHandle';
 import useLegend from '@hooks/useLegend';
+import useMarkOnClicks from '@hooks/useMarkOnClicks';
 import usePopoverAnchorStyle from '@hooks/usePopoverAnchorStyle';
 import usePopovers, { PopoverDetail } from '@hooks/usePopovers';
 import useSpec from '@hooks/useSpec';
@@ -38,7 +42,6 @@ import {
 	sanitizeRscChartChildren,
 	setSelectedSignals,
 } from '@utils';
-import { VegaChart } from 'VegaChart';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { Item } from 'vega';
 import { Handler, Options as TooltipOptions } from 'vega-tooltip';
@@ -46,14 +49,14 @@ import { Handler, Options as TooltipOptions } from 'vega-tooltip';
 import { ActionButton, Dialog, DialogTrigger, View as SpectrumView } from '@adobe/react-spectrum';
 
 import './Chart.css';
-import { ChartHandle, Datum, LegendDescription, MarkBounds, RscChartProps } from './types';
+import { VegaChart } from './VegaChart';
+import { ChartHandle, Datum, LegendDescription, LineType, MarkBounds, RscChartProps } from './types';
 
 interface ChartDialogProps {
 	datum: Datum | null;
-	itemName?: string;
 	targetElement: MutableRefObject<HTMLElement | null>;
-	setPopoverState: (isOpen: boolean) => void;
-	popovers: PopoverDetail[];
+	setIsPopoverOpen: (isOpen: boolean) => void;
+	popover: PopoverDetail;
 }
 
 interface LegendTooltipProps {
@@ -73,10 +76,9 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 			config,
 			description,
 			debug = false,
-			height = 300,
 			hiddenSeries = [],
 			highlightedSeries,
-			lineTypes = DEFAULT_LINE_TYPES,
+			lineTypes = DEFAULT_LINE_TYPES as LineType[],
 			lineWidths = ['M'],
 			locale = DEFAULT_LOCALE,
 			opacities,
@@ -85,6 +87,7 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 			symbolShapes,
 			symbolSizes,
 			title,
+			chartHeight = 300,
 			chartWidth,
 			UNSAFE_vegaSpec,
 			chartId,
@@ -98,7 +101,7 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 		const selectedDataBounds = useRef<MarkBounds>();
 		const popoverAnchorRef = useRef<HTMLDivElement>(null);
 
-		const [popoverIsOpen, setPopoverIsOpen] = useState<boolean>(false); // tracks the open/close state of the popover
+		const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false); // tracks the open/close state of the popover
 
 		const sanitizedChildren = sanitizeRscChartChildren(props.children);
 
@@ -121,26 +124,26 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 			UNSAFE_vegaSpec,
 		});
 
-		const { controlledHoverSignal } = useSpecProps(spec);
+		const { controlledHoveredIdSignal, controlledHoveredGroupSignal } = useSpecProps(spec);
 		const chartConfig = useMemo(() => getChartConfig(config, colorScheme), [config, colorScheme]);
 
 		useEffect(() => {
 			const tooltipElement = document.getElementById('vg-tooltip-element');
 			if (!tooltipElement) return;
 			// Hide tooltips on all charts when a popover is open
-			tooltipElement.hidden = popoverIsOpen;
+			tooltipElement.hidden = isPopoverOpen;
 
 			// if the popover is closed, reset the selected data
-			if (!popoverIsOpen) {
+			if (!isPopoverOpen) {
 				selectedData.current = null;
 			}
-		}, [popoverIsOpen]);
+		}, [isPopoverOpen]);
 
 		useChartImperativeHandle(forwardedRef, { chartView, title });
 
 		const {
-			hiddenSeriesState,
-			setHiddenSeries,
+			legendHiddenSeries,
+			setLegendHiddenSeries,
 			descriptions: legendDescriptions,
 			isToggleable: legendIsToggleable,
 			onClick: onLegendClick,
@@ -150,10 +153,11 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 
 		const tooltips = useTooltips(sanitizedChildren);
 		const popovers = usePopovers(sanitizedChildren);
+		const onMarkClicks = useMarkOnClicks(sanitizedChildren);
 
 		// gets the correct css style to display the anchor in the correct position
 		const targetStyle = usePopoverAnchorStyle(
-			popoverIsOpen,
+			isPopoverOpen,
 			chartView.current,
 			selectedDataBounds.current,
 			padding
@@ -164,7 +168,7 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 		if (tooltips.length || legendDescriptions) {
 			tooltipConfig.formatTooltip = (value) => {
 				debugLog(debug, { title: 'Tooltip datum', contents: value });
-				if (value.rscComponentName?.startsWith('legend') && legendDescriptions && 'index' in value) {
+				if (value[COMPONENT_NAME]?.startsWith('legend') && legendDescriptions && 'index' in value) {
 					debugLog(debug, {
 						title: 'Legend descriptions',
 						contents: legendDescriptions,
@@ -173,20 +177,30 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 						<LegendTooltip
 							value={value}
 							descriptions={legendDescriptions}
-							// TODO: support multiple legends
 							domain={chartView.current?.scale('legend0Entries').domain()}
 						/>
 					);
 				}
 				// get the correct tooltip to render based on the hovered item
-				const tooltip = tooltips.find((t) => t.name === value.rscComponentName)?.callback;
-				if (tooltip && !('index' in value)) {
-					if (controlledHoverSignal) {
-						chartView.current?.signal(controlledHoverSignal.name, value?.[MARK_ID] ?? null);
+				const tooltip = tooltips.find((t) => t.name === value[COMPONENT_NAME]);
+				if (tooltip?.callback && !('index' in value)) {
+					if (controlledHoveredIdSignal) {
+						chartView.current?.signal(controlledHoveredIdSignal.name, value?.[MARK_ID] ?? null);
+					}
+					if (controlledHoveredGroupSignal) {
+						const key = Object.keys(value).find((k) => k.endsWith('_highlightGroupId'));
+						if (key) {
+							chartView.current?.signal(controlledHoveredGroupSignal.name, value[key]);
+						}
+					}
+					if (tooltip.highlightBy && tooltip.highlightBy !== 'item') {
+						const tableData = chartView.current?.data(FILTERED_TABLE);
+						const groupId = `${tooltip.name}_highlightGroupId`;
+						value[GROUP_DATA] = tableData?.filter((d) => d[groupId] === value[groupId]);
 					}
 					return renderToStaticMarkup(
 						<div className="rsc-tooltip" data-testid="rsc-tooltip">
-							{tooltip(value)}
+							{tooltip.callback(value)}
 						</div>
 					);
 				}
@@ -199,13 +213,13 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 				backgroundColor: getColorValue('gray-50', colorScheme),
 			};
 			if (legendIsToggleable) {
-				signals.hiddenSeries = hiddenSeriesState;
+				signals.hiddenSeries = legendHiddenSeries;
 			}
 			signals[SELECTED_ITEM] = selectedData?.[MARK_ID] ?? null;
 			signals[SELECTED_SERIES] = selectedData?.[SERIES_ID] ?? null;
 
 			return signals;
-		}, [colorScheme, hiddenSeriesState, legendIsToggleable]);
+		}, [colorScheme, legendHiddenSeries, legendIsToggleable]);
 
 		return (
 			<>
@@ -222,7 +236,7 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 					debug={debug}
 					renderer={renderer}
 					width={chartWidth}
-					height={height}
+					height={chartHeight}
 					locale={locale}
 					padding={padding}
 					signals={signals}
@@ -247,9 +261,9 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 								tooltipHandler.call(this, event, item, value);
 							}
 						});
-						if (popovers.length || legendIsToggleable || onLegendClick) {
+						if (popovers.length || onMarkClicks.length || legendIsToggleable || onLegendClick) {
 							if (legendIsToggleable) {
-								view.signal('hiddenSeries', hiddenSeriesState);
+								view.signal('hiddenSeries', legendHiddenSeries);
 							}
 							setSelectedSignals({
 								selectedData: selectedData.current,
@@ -259,14 +273,15 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 								'click',
 								getOnMarkClickCallback(
 									chartView,
-									hiddenSeriesState,
+									legendHiddenSeries,
 									chartId,
 									selectedData,
 									selectedDataBounds,
 									selectedDataName,
-									setHiddenSeries,
+									setLegendHiddenSeries,
 									legendIsToggleable,
-									onLegendClick
+									onLegendClick,
+									onMarkClicks
 								)
 							);
 						}
@@ -275,40 +290,46 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 						// this will trigger the autosize calculation making sure that everything is correct size
 					}}
 				/>
-				<ChartDialog
-					datum={selectedData.current}
-					targetElement={popoverAnchorRef}
-					setPopoverState={setPopoverIsOpen}
-					popovers={popovers}
-					itemName={selectedDataName.current}
-				/>
+				{popovers.map((popover) => (
+					<ChartDialog
+						key={popover.key}
+						datum={selectedData.current}
+						targetElement={popoverAnchorRef}
+						setIsPopoverOpen={setIsPopoverOpen}
+						popover={popover}
+					/>
+				))}
 			</>
 		);
 	}
 );
 RscChart.displayName = 'RscChart';
 
-const ChartDialog = ({ datum, itemName, targetElement, setPopoverState, popovers }: ChartDialogProps) => {
-	if (!popovers.length) {
-		return <></>;
-	}
-	const popoverDetail = popovers.find((p) => p.name === itemName);
-	const popover = popoverDetail?.callback;
-	const width = popoverDetail?.width;
+const ChartDialog = ({ datum, popover, setIsPopoverOpen, targetElement }: ChartDialogProps) => {
+	const { chartPopoverProps, name } = popover;
+	const { children, onOpenChange, containerPadding, ...dialogProps } = chartPopoverProps;
+	const minWidth = dialogProps.minWidth ?? 0;
+
 	return (
 		<DialogTrigger
 			type="popover"
 			mobileType="tray"
 			targetRef={targetElement}
-			onOpenChange={setPopoverState}
+			onOpenChange={(isOpen) => {
+				onOpenChange?.(isOpen);
+				setIsPopoverOpen(isOpen);
+			}}
 			placement="top"
 			hideArrow
+			containerPadding={containerPadding}
 		>
-			<ActionButton UNSAFE_style={{ display: 'none' }}>launch chart popover</ActionButton>
+			<ActionButton id={`${name}-button`} UNSAFE_style={{ display: 'none' }}>
+				launch chart popover
+			</ActionButton>
 			{(close) => (
-				<Dialog data-testid="rsc-popover" UNSAFE_className="rsc-popover" minWidth="size-1000" width={width}>
+				<Dialog data-testid="rsc-popover" UNSAFE_className="rsc-popover" {...dialogProps} minWidth={minWidth}>
 					<SpectrumView gridColumn="1/-1" gridRow="1/-1" margin={12}>
-						{popover && datum && popover(datum, close)}
+						{datum && datum[COMPONENT_NAME] === name && children?.(datum, close)}
 					</SpectrumView>
 				</Dialog>
 			)}

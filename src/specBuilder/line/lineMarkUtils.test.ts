@@ -69,8 +69,18 @@ describe('getLineMark()', () => {
 });
 
 describe('getLineHoverMarks()', () => {
-	test('should return 4 marks', () => {
-		expect(getLineHoverMarks({ ...defaultLineMarkProps, children: [] }, 'line0_facet')).toHaveLength(5);
+	test('should return 4 marks by default', () => {
+		expect(
+			getLineHoverMarks({ ...defaultLineMarkProps, isHighlightedByDimension: true, children: [] }, 'line0_facet')
+		).toHaveLength(5);
+	});
+	test('should return 4 marks if interactionMode is item', () => {
+		expect(
+			getLineHoverMarks(
+				{ ...defaultLineMarkProps, isHighlightedByDimension: true, children: [], interactionMode: 'item' },
+				'line0_facet'
+			)
+		).toHaveLength(4);
 	});
 });
 
@@ -113,5 +123,19 @@ describe('getLineOpacity()', () => {
 			displayOnHover: true,
 		});
 		expect(opacityRule).toEqual([DEFAULT_OPACITY_RULE]);
+	});
+
+	test('should add highlightedData rule for multiple series if isHighlightedByGroup is true', () => {
+		const opacityRule = getLineOpacity({
+			...defaultLineMarkProps,
+			interactiveMarkName: 'line0',
+			children: [createElement(ChartTooltip)],
+			isHighlightedByGroup: true,
+		});
+		expect(opacityRule).toHaveLength(3);
+		expect(opacityRule[0]).toHaveProperty(
+			'test',
+			`indexof(pluck(data('line0_highlightedData'), '${SERIES_ID}'), datum.${SERIES_ID}) !== -1`
+		);
 	});
 });

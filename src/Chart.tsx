@@ -14,13 +14,14 @@ import { FC, forwardRef, useEffect, useMemo, useRef, useState } from 'react';
 import { EmptyState } from '@components/EmptyState';
 import { LoadingState } from '@components/LoadingState';
 import { DEFAULT_BACKGROUND_COLOR, DEFAULT_COLOR_SCHEME, DEFAULT_LINE_TYPES, DEFAULT_LOCALE } from '@constants';
+import useChartHeight from '@hooks/useChartHeight';
 import useChartImperativeHandle from '@hooks/useChartImperativeHandle';
 import useChartWidth from '@hooks/useChartWidth';
 import { useResizeObserver } from '@hooks/useResizeObserver';
 import { BigNumber } from '@rsc';
 import { getColorValue } from '@specBuilder/specUtils';
 import { chartContainsBigNumber, toArray } from '@utils';
-import { RscChart } from 'RscChart';
+
 import { v4 as uuid } from 'uuid';
 import { View } from 'vega';
 
@@ -28,7 +29,9 @@ import { Provider, defaultTheme } from '@adobe/react-spectrum';
 import { Theme } from '@react-types/provider';
 
 import './Chart.css';
-import { BigNumberElement, ChartData, ChartHandle, ChartProps, RscChartProps } from './types';
+
+import { RscChart } from './RscChart';
+import { BigNumberElement, ChartData, ChartHandle, ChartProps, LineType, RscChartProps } from './types';
 
 interface PlaceholderContentProps {
 	data: ChartData[];
@@ -52,10 +55,12 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 			height = 300,
 			hiddenSeries = [],
 			highlightedSeries,
-			lineTypes = DEFAULT_LINE_TYPES,
+			lineTypes = DEFAULT_LINE_TYPES as LineType[],
 			lineWidths = ['M'],
 			loading,
 			locale = DEFAULT_LOCALE,
+			minHeight = 100,
+			maxHeight = Infinity,
 			minWidth = 100,
 			maxWidth = Infinity,
 			opacities,
@@ -76,14 +81,21 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 		// The view returned by vega. This is above RscChart so it can be used for downloading and copying to clipboard.
 		const chartView = useRef<View>();
 		const [containerWidth, setContainerWidth] = useState<number>(0);
+		const [containerHeight, setContainerHeight] = useState<number>(0);
 
 		useChartImperativeHandle(forwardedRef, { chartView, title });
 
 		const containerRef = useResizeObserver<HTMLDivElement>((_target, entry) => {
-			if (typeof width === 'number') return;
-			setContainerWidth(entry.contentRect.width);
+			if (typeof width !== 'number') {
+				setContainerWidth(entry.contentRect.width);
+			}
+
+			if (typeof height !== 'number') {
+				setContainerHeight(entry.contentRect.height);
+			}
 		});
 		const chartWidth = useChartWidth(containerWidth, maxWidth, minWidth, width); // calculates the width the vega chart should be
+		const chartHeight = useChartHeight(containerHeight, maxHeight, minHeight, height); // calculates the height the vega chart should be
 
 		const showPlaceholderContent = useMemo(() => Boolean(loading ?? !data.length), [loading, data]);
 
@@ -128,7 +140,6 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 			config: config,
 			description: description,
 			debug: debug,
-			height: height,
 			hiddenSeries: hiddenSeries,
 			highlightedSeries: highlightedSeries,
 			lineTypes: lineTypes,
@@ -141,6 +152,7 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 			symbolSizes: symbolSizes,
 			title: title,
 			chartWidth: chartWidth,
+      chartHeight: chartHeight,
 			UNSAFE_vegaSpec: UNSAFE_vegaSpec,
 		};
 
@@ -155,6 +167,7 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 				colorScheme={colorScheme}
 				theme={isValidTheme(theme) ? theme : defaultTheme}
 				UNSAFE_style={{ backgroundColor: 'transparent' }}
+				height="100%"
 			>
 				<div
 					ref={containerRef}

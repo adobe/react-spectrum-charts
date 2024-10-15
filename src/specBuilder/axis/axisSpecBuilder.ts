@@ -23,12 +23,12 @@ import {
 	addAxisAnnotationSignals,
 	getAxisAnnotationsFromChildren,
 } from '@specBuilder/axisAnnotation/axisAnnotationUtils';
-import { getGenericSignal } from '@specBuilder/signal/signalSpecBuilder';
+import { getGenericValueSignal } from '@specBuilder/signal/signalSpecBuilder';
 import { sanitizeAxisChildren } from '@utils';
 import { produce } from 'immer';
-import { AxisProps, AxisSpecProps, ColorScheme, Label, Orientation, Position } from 'types';
 import { Axis, Data, GroupMark, Mark, ScaleType, Signal, Spec } from 'vega';
 
+import { AxisProps, AxisSpecProps, ColorScheme, Label, Orientation, Position } from '../../types';
 import { getAxisLabelsEncoding, getControlledLabelAnchorValues, getLabelValue } from './axisLabelUtils';
 import {
 	getReferenceLineMarks,
@@ -50,6 +50,7 @@ export const addAxis = produce<Spec, [AxisProps & { colorScheme?: ColorScheme; i
 	(
 		spec,
 		{
+			name,
 			baseline = false,
 			baselineOffset = 0,
 			children,
@@ -72,7 +73,8 @@ export const addAxis = produce<Spec, [AxisProps & { colorScheme?: ColorScheme; i
 	) => {
 		// get the scale that this axis will be associated with
 		const scale = getScale(spec.scales ?? [], position);
-		const { name: scaleName, type: scaleType } = scale;
+		const scaleName = name || scale.name;
+		const scaleType = scale.type;
 
 		// get the opposing scale
 		const opposingScaleType = getOpposingScaleType(spec.scales ?? [], position);
@@ -140,12 +142,12 @@ export const addAxisSignals = produce<Signal[], [AxisSpecProps]>((signals, props
 	const { name, labels, position, subLabels, labelOrientation } = props;
 	if (labels?.length) {
 		// add all the label properties to a signal so that the axis encoding can use it to style each label correctly
-		signals.push(getGenericSignal(`${name}_labels`, getLabelSignalValue(labels, position, labelOrientation)));
+		signals.push(getGenericValueSignal(`${name}_labels`, getLabelSignalValue(labels, position, labelOrientation)));
 	}
 	if (hasSubLabels(props)) {
 		// add all the sublabel properties to a signal so that the axis encoding can use it to style each sublabel correctly
 		signals.push(
-			getGenericSignal(
+			getGenericValueSignal(
 				`${name}_subLabels`,
 				subLabels.map((label) => ({
 					...label,

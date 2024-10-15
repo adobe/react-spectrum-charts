@@ -1,4 +1,4 @@
-name: Run SonarCloud on main
+name: Main Sonar
 # This action runs when a branch has been merged to main.
 
 on:
@@ -31,7 +31,7 @@ jobs:
               run: yarn test
 
             - name: SonarCloud 🔬
-              uses: SonarSource/sonarcloud-github-action@master
+              uses: sonarSource/sonarcloud-github-action@v2.0.2
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
                   SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}

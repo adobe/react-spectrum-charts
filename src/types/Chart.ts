@@ -9,9 +9,9 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { JSXElementConstructor, MutableRefObject, ReactElement, ReactFragment, ReactNode } from 'react';
+import { JSXElementConstructor, MutableRefObject, ReactElement, ReactNode } from 'react';
 
-import { MARK_ID, SERIES_ID, TRENDLINE_VALUE } from '@constants';
+import { GROUP_DATA, INTERACTION_MODE, MARK_ID, SERIES_ID, TRENDLINE_VALUE } from '@constants';
 import { Config, Data, FontWeight, Locale, NumberLocale, Padding, Spec, SymbolShape, TimeLocale, View } from 'vega';
 
 import { Icon, IconProps } from '@adobe/react-spectrum';
@@ -29,6 +29,7 @@ export type ChartElement = ReactElement<ChartProps, JSXElementConstructor<ChartP
 export type ChartPopoverElement = ReactElement<ChartPopoverProps, JSXElementConstructor<ChartPopoverProps>>;
 export type ChartTooltipElement = ReactElement<ChartTooltipProps, JSXElementConstructor<ChartTooltipProps>>;
 export type DonutElement = ReactElement<DonutProps, JSXElementConstructor<DonutProps>>;
+export type DonutSummaryElement = ReactElement<DonutSummaryProps, JSXElementConstructor<DonutSummaryProps>>;
 export type LegendElement = ReactElement<LegendProps, JSXElementConstructor<LegendProps>>;
 export type LineElement = ReactElement<LineProps, JSXElementConstructor<LineProps>>;
 export type BigNumberElement = ReactElement<BigNumberProps, JSXElementConstructor<BigNumberProps>>;
@@ -37,6 +38,7 @@ export type IconElement = ReactElement<
 	JSXElementConstructor<IconProps | Omit<IconProps, 'children'>>
 >;
 export type ScatterPathElement = ReactElement<ScatterPathProps, JSXElementConstructor<ScatterPathProps>>;
+export type SegmentLabelElement = ReactElement<SegmentLabelProps, JSXElementConstructor<SegmentLabelProps>>;
 export type MetricRangeElement = ReactElement<MetricRangeProps, JSXElementConstructor<MetricRangeProps>>;
 export type ReferenceLineElement = ReactElement<ReferenceLineProps, JSXElementConstructor<ReferenceLineProps>>;
 export type ScatterElement = ReactElement<ScatterProps, JSXElementConstructor<ScatterProps>>;
@@ -46,6 +48,7 @@ export type TrendlineAnnotationElement = ReactElement<
 	JSXElementConstructor<TrendlineAnnotationProps>
 >;
 export type TrendlineElement = ReactElement<TrendlineProps, JSXElementConstructor<TrendlineProps>>;
+export type ComboElement = ReactElement<ComboProps, JSXElementConstructor<ComboProps>>;
 
 export type SimpleData = { [key: string]: unknown };
 export type ChartData = SimpleData | Data;
@@ -104,8 +107,6 @@ export interface SharedChartProps extends SpecProps {
 	data: ChartData[];
 	/** Enables debug mode which will console log things like the generated vega spec and the datums for tooltips. */
 	debug?: boolean;
-	/** Chart height */
-	height?: number;
 	/** Number and time locales to use */
 	locale?: Locale | LocaleCode | { number?: NumberLocaleCode | NumberLocale; time?: TimeLocaleCode | TimeLocale };
 	/** Chart padding */
@@ -118,6 +119,7 @@ export interface RscChartProps extends SharedChartProps {
 	chartId: MutableRefObject<string>;
 	chartView: MutableRefObject<View | undefined>;
 	chartWidth: number;
+	chartHeight: number;
 	popoverIsOpen?: boolean;
 }
 
@@ -132,6 +134,12 @@ export interface ChartProps extends SharedChartProps {
 	maxWidth?: number;
 	/** Minimum chart width. */
 	minWidth?: number;
+	/** Chart height */
+	height?: Height;
+	/** Maximum height of the chart */
+	maxHeight?: number;
+	/** Minimum height of the chart */
+	minHeight?: number;
 	/** react-spectrum theme. This sets the react-spectrum theming on tooltips and popovers. */
 	theme?: Theme;
 	/** Chart width */
@@ -144,6 +152,7 @@ export interface BaseProps {
 }
 
 export type Width = number | string | 'auto';
+export type Height = number | `${number}%`;
 
 export interface ChartHandle {
 	copy: () => Promise<string>;
@@ -172,19 +181,41 @@ export interface AreaProps extends MarkProps {
 }
 
 export interface DonutProps extends MarkProps {
-	/** Text label for the metric total */
-	metricLabel?: string;
-	/** The datum property for segments of the data */
-	segment?: string;
 	/** Start angle of the donut in radians (0 is top dead center, and default) */
 	startAngle?: number;
 	/** Ratio of the donut inner radius / donut outer radius. 0 is a pie chart. 0.85 is the default. */
 	holeRatio?: number;
-	/** Determines if it should display direct labels. If true, must also supply 'segment' prop. Default is false */
-	hasDirectLabels?: boolean;
 	/** Determines if the center metric should be displayed as a percent. if true, data should only be two data points, which sum to 1
 	 * Also, if true, will display the first datapoint as a percent */
 	isBoolean?: boolean;
+}
+
+export interface DonutSummaryProps {
+	/** d3 number format specifier.
+	 * Sets the number format for the summary value.
+	 *
+	 * see {@link https://d3js.org/d3-format#locale_format}
+	 */
+	numberFormat?: NumberFormat | string;
+	/** Label for the metric summary */
+	label?: string;
+}
+
+export interface SegmentLabelProps {
+	/** Sets the key in the data that has the segment label. Defaults to the `color` key set on the `Donut` is undefined. */
+	labelKey?: string;
+	/** Shows the donut segment percentage */
+	percent?: boolean;
+	/** Shows the donut segment metric value */
+	value?: boolean;
+	/** d3 number format specifier.
+	 * Sets the number format for the segment metric value.
+	 *
+	 * @default 'standardNumber'
+	 *
+	 * see {@link https://d3js.org/d3-format#locale_format}
+	 */
+	valueFormat?: string;
 }
 
 export interface AxisProps extends BaseProps {
@@ -239,7 +270,7 @@ export interface AxisProps extends BaseProps {
 	 */
 	tickMinStep?: number;
 	/** Sets the axis title */
-	title?: string;
+	title?: string | string[];
 	/** If the text is wider than the bandwidth that is labels, it will be truncated so that it stays within that bandwidth. */
 	truncateLabels?: boolean;
 }
@@ -332,6 +363,7 @@ export type DualFacet = [string, string]; // two keys used for a secondary facet
 
 export interface AnnotationProps extends MarkProps {
 	textKey?: string;
+	/** @deprecated */
 	style?: AnnotationStyleProps;
 }
 
@@ -346,10 +378,14 @@ export interface BarProps extends Omit<MarkProps, 'color'> {
 	dimension?: string;
 	/** Sets the inner padding between bars in a group */
 	groupedPadding?: number;
+	/** Should the top-left and top-right corners of the bars be square? Round by default */
+	hasSquareCorners?: boolean;
 	/** Line type or key in the data that is used as the line type facet */
 	lineType?: LineTypeFacet | DualFacet;
 	/** Border width of the bar */
 	lineWidth?: LineWidth;
+	/** callback that will be run when a bar item is selected */
+	onClick?: (datum: Datum) => void;
 	/** Optional field used to set the stack order of the bar (higher order = higher on bar) */
 	order?: string;
 	/** The direction of the bars. Defaults to "vertical". */
@@ -383,12 +419,22 @@ export interface LineProps extends Omit<MarkProps, 'color'> {
 	opacity?: OpacityFacet;
 	/** Sets the chart area padding, this is a ratio from 0 to 1 for categorical scales (point) and a pixel value for continuous scales (time, linear) */
 	padding?: number;
-	scaleType?: ScaleType; // sets the type of scale that should be used for the trend
-	staticPoint?: string; // key in the data that if it exists and the value resolves to true for each data object, a point will be drawn for that data point on the line.
 	pointSize?: number;
-	isSparkline?: boolean; // line to be interpreted and rendered as a sparkline. Changes the fill of static points, for example
-	isMethodLast?: boolean; // sparkline's method is last - meaning that last element of data has the static point
+  /** line to be interpreted and rendered as a sparkline. For example, Changes the fill of static points. */
+	isSparkline?: boolean;
+  /** sparkline's method is last - meaning that last element of data has the static point */
+	isMethodLast?: boolean;
+	/** Sets the type of scale that should be used for the trend */
+	scaleType?: ScaleType;
+	/** Key in the data that if it exists and the value resolves to true for each data object, a point will be drawn for that data point on the line. */
+	staticPoint?: string;
+	/** Sets the interaction mode for the line */
+	interactionMode?: InteractionMode;
+	/** Axis that the metric is trended against (y-axis) */
+	metricAxis?: string;
 }
+
+export type InteractionMode = `${INTERACTION_MODE}`;
 
 export interface ScatterProps extends Omit<MarkProps, 'color'> {
 	/**
@@ -505,7 +551,7 @@ export type SymbolSize = 'XS' | 'S' | 'M' | 'L' | 'XL' | number;
 
 export type SymbolSizeFacet = FacetRef<SymbolSize>;
 
-export type ScaleType = 'linear' | 'point' | 'time';
+export type ScaleType = 'linear' | 'point' | 'time' | 'band';
 export type LegendDescription = { seriesName: string; description: string; title?: string };
 
 export type LegendLabel = { seriesName: string | number; label: string; maxLength?: number };
@@ -527,7 +573,7 @@ export interface LegendProps extends BaseProps {
 	keys?: string[];
 	/** labels for each of the series */
 	legendLabels?: LegendLabel[];
-	/** max characters before truncating a legend label */
+	/** max width in pixels before truncating a legend label */
 	labelLimit?: number;
 	/** line type or key in the data that is used as the line type facet for the symbols */
 	lineType?: LineTypeFacet;
@@ -553,10 +599,32 @@ export type DialogProps = ChartTooltipProps | ChartPopoverProps;
 
 export interface ChartTooltipProps {
 	children?: TooltipHandler;
+	/** The keys in the data that will disable the tooltip if they have truthy values */
+	excludeDataKeys?: string[];
+	/** Sets which marks should be highlighted when a tooltip is visible */
+	highlightBy?: 'series' | 'dimension' | 'item' | string[];
 }
 export interface ChartPopoverProps {
+	/** Callback used to control the content rendered in the popover */
 	children?: PopoverHandler;
-	width?: number;
+	/** Width of the popover */
+	width?: number | 'auto';
+	/** Minimum width of the popover */
+	minWidth?: number;
+	/** Maximum width of the popover */
+	maxWidth?: number;
+	/** Height of the popover */
+	height?: number | 'auto';
+	/** Minimum height of the popover */
+	minHeight?: number;
+	/** Maximum height of the popover */
+	maxHeight?: number;
+	/** handler that is called when the popover's open state changes */
+	onOpenChange?: (isOpen: boolean) => void;
+	/** The placement padding that should be applied between the popover and its surrounding container */
+	containerPadding?: number;
+	/** Sets which marks should be highlighted when a popover is visible.  This feature is incomplete. */
+	UNSAFE_highlightBy?: 'series' | 'dimension' | 'item' | string[];
 }
 
 export interface ReferenceLineProps {
@@ -568,7 +636,7 @@ export interface ReferenceLineProps {
 	labelFontWeight?: FontWeight;
 }
 
-export type Icon = 'date';
+export type Icon = 'date' | 'sentimentNegative' | 'sentimentNeutral' | 'sentimentPositive';
 
 export interface MetricRangeProps {
 	children?: Children<ChartTooltipElement>;
@@ -612,6 +680,8 @@ export interface TrendlineProps {
 	dimensionRange?: [number | null, number | null];
 	/** Whether the trendline should only be visible when hovering over the parent line */
 	displayOnHover?: boolean;
+	/** Data points where these keys have truthy values will not be included in the trendline calculation */
+	excludeDataKeys?: string[];
 	/** If there is a tooltip on this trendline, then this will highlight the raw point in addition to the hovered trendline point. */
 	highlightRawPoint?: boolean;
 	/** The line type of the trend line. */
@@ -681,6 +751,12 @@ export type AxisAnnotationOptions = {
 	color?: SpectrumColor | string;
 };
 
+export interface ComboProps extends BaseProps {
+	children?: Children<ComboChildElement>;
+	/** Data field that the metrics are trended against (x-axis for horizontal orientation) */
+	dimension?: string;
+}
+
 export interface MarkBounds {
 	x1: number;
 	x2: number;
@@ -688,12 +764,21 @@ export interface MarkBounds {
 	y2: number;
 }
 
-export interface Datum {
-	[MARK_ID]: number;
-	[SERIES_ID]: string;
-	[TRENDLINE_VALUE]?: number;
-	[key: string]: unknown;
-}
+const DatumPredefinedKey = {
+	markId: MARK_ID,
+	seriesId: SERIES_ID,
+	trendlineValue: TRENDLINE_VALUE,
+	groupData: GROUP_DATA,
+} as const;
+
+export type Datum = object & {
+	[DatumPredefinedKey.markId]: number;
+	[DatumPredefinedKey.seriesId]: string;
+	[DatumPredefinedKey.trendlineValue]?: number;
+	[DatumPredefinedKey.groupData]?: Datum[];
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	[key: string]: any;
+};
 
 export type ColorScheme = 'light' | 'dark';
 
@@ -705,7 +790,7 @@ export type AxisAnnotationClickHandler = (annotations) => ReactNode;
 
 export type Position = 'left' | 'right' | 'top' | 'bottom';
 
-export type ChildElement<T> = T | string | boolean | ReactFragment;
+export type ChildElement<T> = T | string | boolean | Iterable<ReactNode>;
 export type Children<T> = ChildElement<T> | ChildElement<T>[];
 
 export type AxisChildElement = ReferenceLineElement | AxisAnnotationElement;
@@ -722,12 +807,16 @@ export type ChartChildElement =
 	| LegendElement
 	| LineElement
 	| ScatterElement
-	| TitleElement;
+	| TitleElement
+	| ComboElement;
 export type MarkChildElement =
 	| AnnotationElement
 	| ChartTooltipElement
 	| ChartPopoverElement
 	| ScatterPathElement
 	| MetricRangeElement
+	| DonutSummaryElement
+	| SegmentLabelElement
 	| TrendlineElement;
+export type ComboChildElement = LineElement | BarElement;
 export type RscElement = ChartChildElement | MarkChildElement;

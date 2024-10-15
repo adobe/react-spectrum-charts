@@ -42,13 +42,25 @@ const formatPrimaryTimeLabels = () => {
 export const formatTimeDurationLabels = (numberLocale: FormatLocaleDefinition = numberLocales['en-US']) => {
 	const d3 = formatLocale(numberLocale);
 	// 0 padded, minimum 2 digits, thousands separator, integer format
-	const formatDuration = d3.format('02,d');
+	const zeroPaddedFormat = d3.format('02,d');
+	// Thousands separator, integer format
+	const format = d3.format(',d');
 	return ({ value }: LabelDatum) => {
 		if (typeof value === 'string') return value;
-		const seconds = formatDuration(Math.floor(value % 60));
-		const minutes = formatDuration(Math.floor((value / 60) % 60));
-		const hours = formatDuration(Math.floor(value / 60 / 60));
-		return `${hours}:${minutes}:${seconds}`;
+
+		const sign = value < 0 ? '-' : '';
+		const absoluteValue = Math.abs(value);
+		const seconds = zeroPaddedFormat(Math.floor(absoluteValue % 60));
+
+		// If the duration is less than an hour, only show minutes and seconds
+		if (absoluteValue < 3600) {
+			const minutes = format(Math.floor(absoluteValue / 60));
+			return `${sign}${minutes}:${seconds}`;
+		}
+
+		const hours = format(Math.floor(absoluteValue / 60 / 60));
+		const minutes = zeroPaddedFormat(Math.floor((absoluteValue / 60) % 60));
+		return `${sign}${hours}:${minutes}:${seconds}`;
 	};
 };
 

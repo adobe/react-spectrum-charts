@@ -46,15 +46,17 @@ this removes transitions in the vega tooltip
 	background-color: #000;
 	color: #c8c8c8;
 }
+#vg-tooltip-element.vg-tooltip .legend-tooltip {
+	max-width: 150px;
+}
 #vg-tooltip-element.vg-tooltip .legend-tooltip .series {
 	font-weight: 700;
 }
 #vg-tooltip-element.vg-tooltip .legend-tooltip .series-description {
 	margin: 0px;
-	max-width: 150px;
 }
 .rsc-container {
 	position: relative;
 	width: auto;
-	height: auto;
+	height: 100%;
 }

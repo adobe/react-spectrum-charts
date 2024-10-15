@@ -21,7 +21,11 @@ import {
 	STACK_ID,
 	TRELLIS_PADDING,
 } from '@constants';
+import { addPopoverData, getPopovers } from '@specBuilder/chartPopover/chartPopoverUtils';
+import { addTooltipData, addTooltipSignals } from '@specBuilder/chartTooltip/chartTooltipUtils';
 import { getTransformSort } from '@specBuilder/data/dataUtils';
+import { getInteractiveMarkName } from '@specBuilder/line/lineUtils';
+import { getTooltipProps } from '@specBuilder/marks/markUtils';
 import {
 	addDomainFields,
 	addFieldToFacetScaleDomain,
@@ -31,14 +35,15 @@ import {
 	getScaleIndexByName,
 	getScaleIndexByType,
 } from '@specBuilder/scale/scaleSpecBuilder';
-import { addHighlightedItemSignalEvents, getGenericSignal } from '@specBuilder/signal/signalSpecBuilder';
+import { addHighlightedItemSignalEvents, getGenericValueSignal } from '@specBuilder/signal/signalSpecBuilder';
 import { getFacetsFromProps } from '@specBuilder/specUtils';
+import { addTrendlineData, getTrendlineMarks, setTrendlineSignals } from '@specBuilder/trendline';
 import { sanitizeMarkChildren, toCamelCase } from '@utils';
 import { produce } from 'immer';
-import { BarProps, BarSpecProps, ColorScheme } from 'types';
 import { BandScale, Data, FormulaTransform, Mark, OrdinalScale, Scale, Signal, Spec } from 'vega';
 
-import { getBarPadding, getScaleValues, isDodgedAndStacked } from './barUtils';
+import { BarProps, BarSpecProps, ColorScheme } from '../../types';
+import { getBarPadding, getDimensionSelectionRing, getScaleValues, isDodgedAndStacked } from './barUtils';
 import { getDodgedMark } from './dodgedBarUtils';
 import { getDodgedAndStackedBarMark, getStackedBarMarks } from './stackedBarUtils';
 import { addTrellisScale, getTrellisGroupMark, isTrellised } from './trellisedBarUtils';
@@ -51,6 +56,7 @@ export const addBar = produce<Spec, [BarProps & { colorScheme?: ColorScheme; ind
 			color = { value: 'categorical-100' },
 			colorScheme = DEFAULT_COLOR_SCHEME,
 			dimension = DEFAULT_CATEGORICAL_DIMENSION,
+			hasSquareCorners = false,
 			index = 0,
 			lineType = { value: 'solid' },
 			lineWidth = 0,
@@ -65,18 +71,24 @@ export const addBar = produce<Spec, [BarProps & { colorScheme?: ColorScheme; ind
 			...props
 		}
 	) => {
+		const sanitizedChildren = sanitizeMarkChildren(children);
+		const barName = toCamelCase(name || `bar${index}`);
 		// put props back together now that all defaults are set
 		const barProps: BarSpecProps = {
-			children: sanitizeMarkChildren(children),
+			children: sanitizedChildren,
+			dimensionScaleType: 'band',
 			orientation,
 			color,
 			colorScheme,
 			dimension,
+			hasSquareCorners,
 			index,
+			interactiveMarkName: getInteractiveMarkName(sanitizedChildren, barName),
 			lineType,
 			lineWidth,
+			markType: 'bar',
 			metric,
-			name: toCamelCase(name || `bar${index}`),
+			name: barName,
 			opacity,
 			paddingRatio,
 			trellisOrientation,
@@ -92,18 +104,19 @@ export const addBar = produce<Spec, [BarProps & { colorScheme?: ColorScheme; ind
 	}
 );
 
-export const addSignals = produce<Signal[], [BarSpecProps]>(
-	(signals, { children, name, paddingRatio, paddingOuter: barPaddingOuter }) => {
-		// We use this value to calculate ReferenceLine positions.
-		const { paddingInner } = getBarPadding(paddingRatio, barPaddingOuter);
-		signals.push(getGenericSignal('paddingInner', paddingInner));
+export const addSignals = produce<Signal[], [BarSpecProps]>((signals, props) => {
+	const { children, name, paddingRatio, paddingOuter: barPaddingOuter } = props;
+	// We use this value to calculate ReferenceLine positions.
+	const { paddingInner } = getBarPadding(paddingRatio, barPaddingOuter);
+	signals.push(getGenericValueSignal('paddingInner', paddingInner));
 
-		if (!children.length) {
-			return;
-		}
-		addHighlightedItemSignalEvents(signals, name);
+	if (!children.length) {
+		return;
 	}
-);
+	addHighlightedItemSignalEvents(signals, name, 1, getTooltipProps(children)?.excludeDataKeys);
+	addTooltipSignals(signals, props);
+	setTrendlineSignals(signals, props);
+});
 
 export const addData = produce<Data[], [BarSpecProps]>((data, props) => {
 	const { metric, order, type } = props;
@@ -124,6 +137,9 @@ export const addData = produce<Data[], [BarSpecProps]>((data, props) => {
 	if (type === 'dodged' || isDodgedAndStacked(props)) {
 		data[index].transform?.push(getDodgeGroupTransform(props));
 	}
+	addTrendlineData(data, props);
+	addTooltipData(data, props);
+	addPopoverData(data, props);
 });
 
 /**
@@ -251,6 +267,11 @@ export const addMarks = produce<Mark[], [BarSpecProps]>((marks, props) => {
 		barMarks.push(getDodgedMark(props));
 	}
 
+	const popovers = getPopovers(props);
+	if (popovers.some((popover) => popover.UNSAFE_highlightBy === 'dimension')) {
+		barMarks.push(getDimensionSelectionRing(props));
+	}
+
 	// if this is a trellis plot, we add the bars and the repeated scale to the trellis group
 	if (isTrellised(props)) {
 		const repeatedScale = getRepeatedScale(props);
@@ -258,6 +279,8 @@ export const addMarks = produce<Mark[], [BarSpecProps]>((marks, props) => {
 	} else {
 		marks.push(...barMarks);
 	}
+
+	marks.push(...getTrendlineMarks(props));
 });
 
 export const getRepeatedScale = (props: BarSpecProps): Scale => {

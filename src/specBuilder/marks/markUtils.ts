@@ -18,15 +18,23 @@ import { Trendline } from '@components/Trendline';
 import {
 	BACKGROUND_COLOR,
 	COLOR_SCALE,
+	COMPONENT_NAME,
 	DEFAULT_OPACITY_RULE,
 	DEFAULT_TRANSFORMED_TIME_DIMENSION,
 	HIGHLIGHT_CONTRAST_RATIO,
+	HOVER_SHAPE,
+	HOVER_SHAPE_COUNT,
+	HOVER_SIZE,
 	LINEAR_COLOR_SCALE,
 	LINE_TYPE_SCALE,
 	LINE_WIDTH_SCALE,
+	MARK_ID,
 	OPACITY_SCALE,
+	SELECTED_GROUP,
+	SELECTED_ITEM,
 	SYMBOL_SIZE_SCALE,
 } from '@constants';
+import { addTooltipMarkOpacityRules } from '@specBuilder/chartTooltip/chartTooltipUtils';
 import { getScaleName } from '@specBuilder/scale/scaleSpecBuilder';
 import {
 	getColorValue,
@@ -35,53 +43,80 @@ import {
 	getVegaSymbolSizeFromRscSymbolSize,
 } from '@specBuilder/specUtils';
 import {
+	AreaEncodeEntry,
+	ArrayValueRef,
+	ColorValueRef,
+	Cursor,
+	GroupMark,
+	NumericValueRef,
+	PathMark,
+	ScaledValueRef,
+	SignalRef,
+	SymbolMark,
+} from 'vega';
+
+import {
+	BarSpecProps,
+	ChartTooltipProps,
 	ColorFacet,
 	ColorScheme,
+	DonutSpecProps,
 	DualFacet,
 	LineTypeFacet,
 	LineWidthFacet,
 	MarkChildElement,
 	OpacityFacet,
+	ProductionRuleTests,
 	ScaleType,
 	SymbolSizeFacet,
-} from 'types';
-import {
-	AreaEncodeEntry,
-	ArrayValueRef,
-	ColorValueRef,
-	Cursor,
-	NumericValueRef,
-	PathMark,
-	ScaledValueRef,
-	SignalRef,
-} from 'vega';
+} from '../../types';
 
 /**
- * If a popover exists on the mark, then set the cursor to a pointer.
+ * If a popover or onClick prop exists on the mark, then set the cursor to a pointer.
  */
-export function getCursor(children: MarkChildElement[]): ScaledValueRef<Cursor> | undefined {
-	if (hasPopover(children)) {
+export function getCursor(children: MarkChildElement[], props?: BarSpecProps): ScaledValueRef<Cursor> | undefined {
+	if (props?.onClick !== undefined || hasPopover(children)) {
 		return { value: 'pointer' };
 	}
 }
 
 /**
- * If there aren't any tooltips or popovers on the mark, then set interactive to false.
+ * If there aren't any tooltips, popovers, or onClick props on the mark, then set interactive to false.
  * This prevents the mark from interfering with other interactive marks.
  */
-export function getInteractive(children: MarkChildElement[]): boolean {
+export function getInteractive(children: MarkChildElement[], props?: BarSpecProps): boolean {
 	// skip annotations
-	return hasInteractiveChildren(children);
+	return props?.onClick !== undefined || hasInteractiveChildren(children);
 }
 
 /**
  * If a tooltip or popover exists on the mark, then set tooltip to true.
  */
-export function getTooltip(children: MarkChildElement[], name: string, nestedDatum?: boolean): SignalRef | undefined {
+export function getTooltip(
+	children: MarkChildElement[],
+	name: string,
+	nestedDatum?: boolean
+): ProductionRuleTests<SignalRef> | SignalRef | undefined {
 	// skip annotations
 	if (hasTooltip(children)) {
-		return { signal: `merge(datum${nestedDatum ? '.datum' : ''}, {'rscComponentName': '${name}'})` };
+		const defaultTooltip = {
+			signal: `merge(datum${nestedDatum ? '.datum' : ''}, {'${COMPONENT_NAME}': '${name}'})`,
+		};
+		// if the tooltip has an excludeDataKey prop, then disable the tooltip where that key is present
+		const excludeDataKeys = getTooltipProps(children)?.excludeDataKeys;
+		if (excludeDataKeys?.length) {
+			return [
+				...excludeDataKeys.map((excludeDataKey) => ({ test: `datum.${excludeDataKey}`, signal: 'false' })),
+				defaultTooltip,
+			];
+		}
+
+		return defaultTooltip;
 	}
+}
+
+export function getTooltipProps(children: MarkChildElement[]): ChartTooltipProps | undefined {
+	return children.find((child) => child.type === ChartTooltip)?.props as ChartTooltipProps | undefined;
 }
 
 /**
@@ -242,6 +277,51 @@ export const getXProductionRule = (scaleType: ScaleType, dimension: string): Num
 };
 
 /**
+ * Gets the y encoding for marks
+ * @param metricAxis
+ * @param metric
+ * @returns y encoding
+ */
+export const getYProductionRule = (metricAxis: string | undefined, metric: string): NumericValueRef => {
+	return { scale: metricAxis || 'yLinear', field: metric };
+};
+
+/**
+ * Gets the points used for the voronoi calculation
+ * @param dataSource the name of the data source that will be used in the voronoi calculation
+ * @param dimension the dimension for the x encoding
+ * @param metric the metric for the y encoding
+ * @param name the name of the component the voronoi is associated with, i.e. `scatter0`
+ * @param scaleType the scale type for the x encoding
+ * @returns SymbolMark
+ */
+export const getPointsForVoronoi = (
+	dataSource: string,
+	dimension: string,
+	metric: string,
+	name: string,
+	scaleType: ScaleType,
+	metricAxis?: string
+): SymbolMark => {
+	return {
+		name: `${name}_pointsForVoronoi`,
+		type: 'symbol',
+		from: { data: dataSource },
+		interactive: false,
+		encode: {
+			enter: {
+				y: getYProductionRule(metricAxis, metric),
+				fill: { value: 'transparent' },
+				stroke: { value: 'transparent' },
+			},
+			update: {
+				x: getXProductionRule(scaleType, dimension),
+			},
+		},
+	};
+};
+
+/**
  * Gets the voronoi path used for tooltips and popovers
  * @param children
  * @param dataSource name of the point data source the voronoi is based on
@@ -273,3 +353,95 @@ export const getVoronoiPath = (children: MarkChildElement[], dataSource: string,
 		},
 	],
 });
+
+/**
+ * Gets the hover area for the mark
+ * @param children
+ * @param dataSource the name of the data source that will be used in the hover area calculation
+ * @param dimension the dimension for the x encoding
+ * @param metric the metric for the y encoding
+ * @param name the name of the component the hover area is associated with, i.e. `scatter0`
+ * @param scaleType the scale type for the x encoding
+ * @returns GroupMark
+ */
+export const getItemHoverArea = (
+	children: MarkChildElement[],
+	dataSource: string,
+	dimension: string,
+	metric: string,
+	name: string,
+	scaleType: ScaleType,
+	metricAxis?: string
+): GroupMark => {
+	return {
+		name: `${name}_hoverGroup`,
+		type: 'group',
+		marks: getHoverSizes().map((size, i) => ({
+			name: getHoverMarkName(name, i),
+			type: 'symbol',
+			from: { data: dataSource },
+			encode: {
+				enter: {
+					shape: { value: HOVER_SHAPE },
+					y: getYProductionRule(metricAxis, metric),
+					fill: { value: 'transparent' },
+					stroke: { value: 'transparent' },
+					tooltip: getTooltip(children, name, false),
+					size: getHoverSizeSignal(size),
+				},
+				update: {
+					x: getXProductionRule(scaleType, dimension),
+				},
+			},
+		})),
+	};
+};
+
+export const getHoverMarkName = (name: string, index: number): string => `${name}_hover${index}`;
+
+export const getHoverSizes = (): number[] => [...new Array(HOVER_SHAPE_COUNT)].map((_, i) => HOVER_SIZE / 2 ** i);
+
+export const getHoverMarkNames = (markName: string): string[] =>
+	[...new Array(HOVER_SHAPE_COUNT)].map((_, i) => getHoverMarkName(markName, i));
+
+const getHoverSizeSignal = (size: number): SignalRef => ({
+	signal: `${size} * max(width, 1) / 1000`,
+});
+
+/**
+ * Gets the opacity for the mark (used to highlight marks).
+ * This will take into account if there are any tooltips or popovers on the mark.
+ * @param props
+ * @returns
+ */
+export const getMarkOpacity = (props: BarSpecProps | DonutSpecProps): ({ test?: string } & NumericValueRef)[] => {
+	const { children, name: markName } = props;
+	const rules: ({ test?: string } & NumericValueRef)[] = [DEFAULT_OPACITY_RULE];
+	// if there aren't any interactive components, then we don't need to add special opacity rules
+	if (!hasInteractiveChildren(children)) {
+		return rules;
+	}
+
+	addTooltipMarkOpacityRules(rules, props);
+
+	// if a bar is hovered/selected, all other bars should have reduced opacity
+	if (hasPopover(children)) {
+		return [
+			{
+				test: `!${SELECTED_GROUP} && ${SELECTED_ITEM} && ${SELECTED_ITEM} !== datum.${MARK_ID}`,
+				value: 1 / HIGHLIGHT_CONTRAST_RATIO,
+			},
+			{ test: `${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${MARK_ID}`, ...DEFAULT_OPACITY_RULE },
+			{
+				test: `${SELECTED_GROUP} && ${SELECTED_GROUP} === datum.${markName}_selectedGroupId`,
+				value: 1,
+			},
+			{
+				test: `${SELECTED_GROUP} && ${SELECTED_GROUP} !== datum.${markName}_selectedGroupId`,
+				value: 1 / HIGHLIGHT_CONTRAST_RATIO,
+			},
+			...rules,
+		];
+	}
+	return rules;
+};

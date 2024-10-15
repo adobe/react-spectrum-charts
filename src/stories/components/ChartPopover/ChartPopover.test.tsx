@@ -28,7 +28,17 @@ import {
 } from '@test-utils';
 import userEvent from '@testing-library/user-event';
 
-import { Canvas, DodgedBarChart, LineChart, StackedBarChart, Svg } from './ChartPopover.story';
+import {
+	Canvas,
+	DodgedBarChart,
+	DonutChart,
+	LineChart,
+	MinWidth,
+	OnOpenChange,
+	Size,
+	StackedBarChart,
+	Svg,
+} from './ChartPopover.story';
 
 describe('ChartPopover', () => {
 	// ChartPopover is not a real React component. This is test just provides test coverage for sonarqube
@@ -104,6 +114,36 @@ describe('ChartPopover', () => {
 		expect(allElementsHaveAttributeValue(bars.slice(1), 'opacity', 1 / HIGHLIGHT_CONTRAST_RATIO)).toBeTruthy();
 	});
 
+	test('Popover should be corrrect size', async () => {
+		render(<Size {...Size.args} />);
+
+		const chart = await findChart();
+		expect(chart).toBeInTheDocument();
+		const bars = getAllMarksByGroupName(chart, 'bar0');
+
+		// clicking the bar should open the popover
+		await clickNthElement(bars, 0);
+		const popover = await screen.findByTestId('rsc-popover');
+		await waitFor(() => expect(popover).toBeInTheDocument()); // waitFor to give the popover time to make sure it doesn't close
+
+		expect(popover).toHaveStyle('width: 200px; height: 100px; min-width: 0px;');
+	});
+
+	test('should honor minWidth', async () => {
+		render(<MinWidth {...MinWidth.args} />);
+
+		const chart = await findChart();
+		expect(chart).toBeInTheDocument();
+		const bars = getAllMarksByGroupName(chart, 'bar0');
+
+		// clicking the bar should open the popover
+		await clickNthElement(bars, 0);
+		const popover = await screen.findByTestId('rsc-popover');
+		await waitFor(() => expect(popover).toBeInTheDocument()); // waitFor to give the popover time to make sure it doesn't close
+
+		expect(popover).toHaveStyle('width: auto; min-width: 250px;');
+	});
+
 	test('Line popover opens and closes corectly when clicking on the chart', async () => {
 		render(<LineChart {...LineChart.args} />);
 		// validate that the line drew
@@ -177,5 +217,81 @@ describe('ChartPopover', () => {
 		expect(bars[4]).toHaveAttribute('opacity', '1');
 		expect(bars[4]).toHaveAttribute('stroke', spectrumColors.light['static-blue']);
 		expect(bars[4]).toHaveAttribute('stroke-width', '2');
+	});
+
+	test('Dodged bar popover opens on dimension click and closes when clicking outside', async () => {
+		render(<DodgedBarChart {...DodgedBarChart.args} UNSAFE_highlightBy="dimension" />);
+
+		const chart = await findChart();
+		expect(chart).toBeInTheDocument();
+		let bars = getAllMarksByGroupName(chart, 'bar0');
+
+		// clicking the bar should open the popover
+		await clickNthElement(bars, 4);
+		const popover = await screen.findByTestId('rsc-popover');
+		await waitFor(() => expect(popover).toBeInTheDocument()); // waitFor to give the popover time to make sure it doesn't close
+
+		// check the content of the popover
+		expect(within(popover).getByText('Operating system: Mac')).toBeInTheDocument();
+		expect(within(popover).getByText('Browser: Firefox')).toBeInTheDocument();
+		expect(within(popover).getByText('Users: 3')).toBeInTheDocument();
+
+		bars = getAllMarksByGroupName(chart, 'bar0');
+
+		// validate the highlight visuals are present
+		expect(bars[0]).toHaveAttribute('opacity', `${1 / HIGHLIGHT_CONTRAST_RATIO}`);
+		expect(bars[4]).toHaveAttribute('opacity', '1');
+
+		const selectionRingMarks = getAllMarksByGroupName(chart, 'bar0_selectionRing');
+
+		expect(selectionRingMarks).toHaveLength(3);
+		expect(selectionRingMarks[0]).toHaveAttribute('stroke', spectrumColors.light['static-blue']);
+		expect(selectionRingMarks[1]).toHaveAttribute('stroke', spectrumColors.light['static-blue']);
+		expect(selectionRingMarks[2]).toHaveAttribute('stroke', spectrumColors.light['static-blue']);
+		expect(selectionRingMarks[0]).toHaveAttribute('stroke-width', '2');
+		expect(selectionRingMarks[1]).toHaveAttribute('stroke-width', '2');
+		expect(selectionRingMarks[2]).toHaveAttribute('stroke-width', '2');
+	});
+
+	test('should call onClick callback when selecting a legend entry', async () => {
+		const onOpenChange = jest.fn();
+		render(<OnOpenChange {...OnOpenChange.args} onOpenChange={onOpenChange} />);
+
+		const chart = await findChart();
+		expect(chart).toBeInTheDocument();
+		const bars = getAllMarksByGroupName(chart, 'bar0');
+
+		// clicking the bar should open the popover
+		await clickNthElement(bars, 0);
+		expect(onOpenChange).toHaveBeenCalledWith(true);
+
+		await userEvent.click(chart);
+		expect(onOpenChange).toHaveBeenCalledWith(false);
+	});
+
+	test('DonutChart', async () => {
+		render(<DonutChart {...DonutChart.args} />);
+
+		const chart = await findChart();
+		expect(chart).toBeInTheDocument();
+		let segments = getAllMarksByGroupName(chart, 'donut0');
+		expect(segments).toHaveLength(7);
+
+		// clicking the bar should open the popover
+		await clickNthElement(segments, 4);
+		const popover = await screen.findByTestId('rsc-popover');
+		await waitFor(() => expect(popover).toBeInTheDocument()); // waitFor to give the popover time to make sure it doesn't close
+
+		// check the content of the popover
+		expect(within(popover).getByText('Browser: Other')).toBeInTheDocument();
+		expect(within(popover).getByText('Visitors: 4201')).toBeInTheDocument();
+
+		segments = getAllMarksByGroupName(chart, 'donut0');
+
+		// validate the highlight visuals are present
+		expect(segments[0]).toHaveAttribute('opacity', `${1 / HIGHLIGHT_CONTRAST_RATIO}`);
+		expect(segments[4]).toHaveAttribute('opacity', '1');
+		expect(segments[4]).toHaveAttribute('stroke', spectrumColors.light['static-blue']);
+		expect(segments[4]).toHaveAttribute('stroke-width', '2');
 	});
 });

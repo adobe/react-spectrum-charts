@@ -9,47 +9,39 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { Annotation } from '@components/Annotation';
 import {
-	ANNOTATION_FONT_SIZE,
-	ANNOTATION_FONT_WEIGHT,
-	BACKGROUND_COLOR,
 	CORNER_RADIUS,
-	DEFAULT_OPACITY_RULE,
 	DISCRETE_PADDING,
 	FILTERED_TABLE,
-	HIGHLIGHTED_ITEM,
 	MARK_ID,
+	SELECTED_GROUP,
 	SELECTED_ITEM,
 	STACK_ID,
 } from '@constants';
+import { getPopovers } from '@specBuilder/chartPopover/chartPopoverUtils';
 import {
 	getColorProductionRule,
 	getCursor,
-	getHighlightOpacityValue,
+	getMarkOpacity,
 	getOpacityProductionRule,
 	getStrokeDashProductionRule,
 	getTooltip,
-	hasInteractiveChildren,
 	hasPopover,
 } from '@specBuilder/marks/markUtils';
 import { getColorValue, getLineWidthPixelsFromLineWidth } from '@specBuilder/specUtils';
-import { sanitizeMarkChildren } from '@utils';
-import { AnnotationElement, AnnotationStyleProps, BarSpecProps, Orientation } from 'types';
 import {
 	ArrayValueRef,
 	ColorValueRef,
 	EncodeEntry,
 	GroupMark,
-	Mark,
 	NumericValueRef,
 	ProductionRule,
 	RectEncodeEntry,
+	RectMark,
 } from 'vega';
 
+import { BarSpecProps, Orientation } from '../../types';
 import { getTrellisProperties, isTrellised } from './trellisedBarUtils';
-
-const LABEL_HEIGHT = 22;
 
 /**
  * checks to see if the bar is faceted in the stacked and dodged dimensions
@@ -180,8 +172,8 @@ export const getStackedMetricEncodings = (props: BarSpecProps): RectEncodeEntry 
 };
 
 export const getCornerRadiusEncodings = (props: BarSpecProps): RectEncodeEntry => {
-	const { type, lineWidth, metric } = props;
-	const value = Math.max(1, CORNER_RADIUS - getLineWidthPixelsFromLineWidth(lineWidth) / 2);
+	const { type, lineWidth, metric, hasSquareCorners } = props;
+	const value = hasSquareCorners ? 0 : Math.max(1, CORNER_RADIUS - getLineWidthPixelsFromLineWidth(lineWidth) / 2);
 
 	let rectEncodeEntry: RectEncodeEntry;
 
@@ -199,10 +191,15 @@ export const getCornerRadiusEncodings = (props: BarSpecProps): RectEncodeEntry =
 	return rotateRectClockwiseIfNeeded(rectEncodeEntry, props);
 };
 
-export const getStackedCornerRadiusEncodings = ({ name, metric, lineWidth }: BarSpecProps): RectEncodeEntry => {
+export const getStackedCornerRadiusEncodings = ({
+	name,
+	metric,
+	lineWidth,
+	hasSquareCorners,
+}: BarSpecProps): RectEncodeEntry => {
 	const topTestString = `datum.${metric}1 > 0 && data('${name}_stacks')[indexof(pluck(data('${name}_stacks'), '${STACK_ID}'), datum.${STACK_ID})].max_${metric}1 === datum.${metric}1`;
 	const bottomTestString = `datum.${metric}1 < 0 && data('${name}_stacks')[indexof(pluck(data('${name}_stacks'), '${STACK_ID}'), datum.${STACK_ID})].min_${metric}1 === datum.${metric}1`;
-	const value = Math.max(1, CORNER_RADIUS - getLineWidthPixelsFromLineWidth(lineWidth) / 2);
+	const value = hasSquareCorners ? 0 : Math.max(1, CORNER_RADIUS - getLineWidthPixelsFromLineWidth(lineWidth) / 2);
 
 	return {
 		cornerRadiusTopLeft: [{ test: topTestString, value }, { value: 0 }],
@@ -225,131 +222,6 @@ export const rotateRectClockwiseIfNeeded = (
 	};
 };
 
-export const getAnnotationMetricAxisPosition = (
-	props: BarSpecProps,
-	annotationWidth: AnnotationWidth
-): ProductionRule<NumericValueRef> => {
-	const { type, metric, orientation } = props;
-	const field = type === 'stacked' || isDodgedAndStacked(props) ? `${metric}1` : metric;
-	const { metricScaleKey: scaleKey } = getOrientationProperties(orientation);
-	const positionOffset = getAnnotationPositionOffset(props, annotationWidth);
-
-	if (orientation === 'vertical') {
-		return [
-			{
-				test: `datum.${field} < 0`,
-				signal: `max(scale('${scaleKey}', datum.${field}), scale('${scaleKey}', 0) + ${positionOffset})`,
-			},
-			{
-				signal: `min(scale('${scaleKey}', datum.${field}), scale('${scaleKey}', 0) - ${positionOffset})`,
-			},
-		];
-	}
-
-	return [
-		{
-			test: `datum.${field} < 0`,
-			signal: `min(scale('${scaleKey}', datum.${field}), scale('${scaleKey}', 0) - ${positionOffset})`,
-		},
-		{
-			signal: `max(scale('${scaleKey}', datum.${field}), scale('${scaleKey}', 0) + ${positionOffset})`,
-		},
-	];
-};
-
-export const getAnnotationPositionOffset = (
-	{ orientation }: BarSpecProps,
-	annotationWidth: AnnotationWidth
-): string => {
-	const pixelGapFromBaseline = 2.5;
-
-	if (orientation === 'vertical') {
-		return `${LABEL_HEIGHT / 2 + pixelGapFromBaseline}`;
-	}
-
-	if ('value' in annotationWidth) {
-		return `${annotationWidth.value / 2 + pixelGapFromBaseline}`;
-	}
-
-	// Need parens for order of operations
-	// Evaluate signal expression first, then divide by 2, then add extra offset
-	return `((${annotationWidth.signal}) / 2 + ${pixelGapFromBaseline})`;
-};
-
-type AnnotationWidth = { value: number } | { signal: string };
-const getAnnotationWidth = (textKey: string, style?: AnnotationStyleProps): AnnotationWidth => {
-	if (style?.width) return { value: style.width };
-	return { signal: `getLabelWidth(datum.${textKey}, '${ANNOTATION_FONT_WEIGHT}', ${ANNOTATION_FONT_SIZE}) + 10` };
-};
-
-export const getAnnotationMarks = (
-	barProps: BarSpecProps,
-
-	// These have to be local fields because it could be used in a group,
-	// in which case we don't want to use the "global" (full table) values.
-	localDataTableName: string,
-	localDimensionScaleKey: string,
-	localDimensionField: string
-) => {
-	const marks: Mark[] = [];
-	const children = sanitizeMarkChildren(barProps.children);
-	// bar only supports one annotation
-	const annotation = children.find((el) => el.type === Annotation) as AnnotationElement;
-	if (annotation?.props.textKey) {
-		const { orientation, name } = barProps;
-		const { textKey, style } = annotation.props;
-		const { metricAxis, dimensionAxis } = getOrientationProperties(orientation);
-		const annotationWidth = getAnnotationWidth(textKey, style);
-		const annotationPosition = getAnnotationMetricAxisPosition(barProps, annotationWidth);
-
-		marks.push({
-			name: `${name}_annotationBackground`,
-			type: 'rect',
-			from: { data: localDataTableName },
-			interactive: false,
-			encode: {
-				enter: {
-					align: { value: 'center' },
-					baseline: { value: 'middle' },
-					[`${dimensionAxis}c`]: { scale: localDimensionScaleKey, field: localDimensionField, band: 0.5 },
-					[`${metricAxis}c`]: annotationPosition,
-					cornerRadius: { value: 4 },
-					height: { value: LABEL_HEIGHT },
-					fill: [
-						{
-							test: `datum.${textKey} && bandwidth('${localDimensionScaleKey}') >= 48`,
-							signal: BACKGROUND_COLOR,
-						},
-					],
-					width: annotationWidth,
-				},
-			},
-		});
-		marks.push({
-			name: `${name}_annotationText`,
-			type: 'text',
-			from: { data: localDataTableName },
-			interactive: false,
-			encode: {
-				enter: {
-					[dimensionAxis]: {
-						scale: localDimensionScaleKey,
-						field: localDimensionField,
-						band: 0.5,
-					},
-					[metricAxis]: annotationPosition,
-					text: [{ test: `bandwidth('${localDimensionScaleKey}') >= 48`, field: textKey }],
-					fontSize: { value: ANNOTATION_FONT_SIZE },
-					fontWeight: { value: ANNOTATION_FONT_WEIGHT },
-					baseline: { value: 'middle' },
-					align: { value: 'center' },
-				},
-			},
-		});
-	}
-	return marks;
-};
-
 export const getBaseBarEnterEncodings = (props: BarSpecProps): EncodeEntry => ({
 	...getMetricEncodings(props),
 	...getCornerRadiusEncodings(props),
@@ -362,44 +234,14 @@ export const getBarEnterEncodings = ({ children, color, colorScheme, name, opaci
 });
 
 export const getBarUpdateEncodings = (props: BarSpecProps): EncodeEntry => ({
-	cursor: getCursor(props.children),
-	opacity: getBarOpacity(props),
+	cursor: getCursor(props.children, props),
+	opacity: getMarkOpacity(props),
 	stroke: getStroke(props),
 	strokeDash: getStrokeDash(props),
 	strokeWidth: getStrokeWidth(props),
 });
 
-export const getBarOpacity = ({ children }: BarSpecProps): ProductionRule<NumericValueRef> => {
-	// if there aren't any interactive components, then we don't need to add special opacity rules
-	if (!hasInteractiveChildren(children)) {
-		return [DEFAULT_OPACITY_RULE];
-	}
-
-	// if a bar is hovered/selected, all other bars should have reduced opacity
-	if (hasPopover(children)) {
-		return [
-			{
-				test: `!${SELECTED_ITEM} && ${HIGHLIGHTED_ITEM} && ${HIGHLIGHTED_ITEM} !== datum.${MARK_ID}`,
-				...getHighlightOpacityValue(DEFAULT_OPACITY_RULE),
-			},
-			{
-				test: `${SELECTED_ITEM} && ${SELECTED_ITEM} !== datum.${MARK_ID}`,
-				...getHighlightOpacityValue(DEFAULT_OPACITY_RULE),
-			},
-			{ test: `${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${MARK_ID}`, ...DEFAULT_OPACITY_RULE },
-			DEFAULT_OPACITY_RULE,
-		];
-	}
-	return [
-		{
-			test: `${HIGHLIGHTED_ITEM} && ${HIGHLIGHTED_ITEM} !== datum.${MARK_ID}`,
-			...getHighlightOpacityValue(),
-		},
-		DEFAULT_OPACITY_RULE,
-	];
-};
-
-export const getStroke = ({ children, color, colorScheme }: BarSpecProps): ProductionRule<ColorValueRef> => {
+export const getStroke = ({ name, children, color, colorScheme }: BarSpecProps): ProductionRule<ColorValueRef> => {
 	const defaultProductionRule = getColorProductionRule(color, colorScheme);
 	if (!hasPopover(children)) {
 		return [defaultProductionRule];
@@ -407,11 +249,48 @@ export const getStroke = ({ children, color, colorScheme }: BarSpecProps): Produ
 
 	return [
 		{
-			test: `${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${MARK_ID}`,
+			test: `(${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${MARK_ID}) || (${SELECTED_GROUP} && ${SELECTED_GROUP} === datum.${name}_selectedGroupId)`,
 			value: getColorValue('static-blue', colorScheme),
 		},
 		defaultProductionRule,
 	];
+};
+
+export const getDimensionSelectionRing = (props: BarSpecProps): RectMark => {
+	const { name, colorScheme, paddingRatio, orientation } = props;
+
+	const update =
+		orientation === 'vertical'
+			? {
+					y: { value: 0 },
+					y2: { signal: 'height' },
+					xc: { signal: `scale('xBand', datum.${name}_selectedGroupId) + bandwidth('xBand')/2` },
+					width: { signal: `bandwidth('xBand')/(1 - ${paddingRatio} / 2)` },
+			  }
+			: {
+					x: { value: 0 },
+					x2: { signal: 'width' },
+					yc: { signal: `scale('yBand', datum.${name}_selectedGroupId) + bandwidth('yBand')/2` },
+					height: { signal: `bandwidth('yBand')/(1 - ${paddingRatio} / 2)` },
+			  };
+
+	return {
+		name: `${name}_selectionRing`,
+		type: 'rect',
+		from: {
+			data: `${name}_selectedData`,
+		},
+		interactive: false,
+		encode: {
+			enter: {
+				fill: { value: 'transparent' },
+				strokeWidth: { value: 2 },
+				stroke: { value: getColorValue('static-blue', colorScheme) },
+				cornerRadius: { value: 6 },
+			},
+			update,
+		},
+	};
 };
 
 export const getStrokeDash = ({ children, lineType }: BarSpecProps): ProductionRule<ArrayValueRef> => {
@@ -423,15 +302,24 @@ export const getStrokeDash = ({ children, lineType }: BarSpecProps): ProductionR
 	return [{ test: `${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${MARK_ID}`, value: [] }, defaultProductionRule];
 };
 
-export const getStrokeWidth = ({ children, lineWidth }: BarSpecProps): ProductionRule<NumericValueRef> => {
+export const getStrokeWidth = (props: BarSpecProps): ProductionRule<NumericValueRef> => {
+	const { lineWidth, name } = props;
 	const lineWidthValue = getLineWidthPixelsFromLineWidth(lineWidth);
 	const defaultProductionRule = { value: lineWidthValue };
-	if (!hasPopover(children)) {
+	const popovers = getPopovers(props);
+	const popoverWithDimensionHighlightExists = popovers.some(
+		({ UNSAFE_highlightBy }) => UNSAFE_highlightBy === 'dimension'
+	);
+
+	if (popovers.length === 0 || popoverWithDimensionHighlightExists) {
 		return [defaultProductionRule];
 	}
 
 	return [
-		{ test: `${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${MARK_ID}`, value: Math.max(lineWidthValue, 2) },
+		{
+			test: `(${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${MARK_ID}) || (${SELECTED_GROUP} && ${SELECTED_GROUP} === datum.${name}_selectedGroupId)`,
+			value: Math.max(lineWidthValue, 2),
+		},
 		defaultProductionRule,
 	];
 };

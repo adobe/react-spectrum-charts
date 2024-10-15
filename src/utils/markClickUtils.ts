@@ -11,9 +11,12 @@
  */
 import { MutableRefObject } from 'react';
 
+import { COMPONENT_NAME } from '@constants';
+import { MarkDetail } from '@hooks/useMarkOnClicks';
 import { toggleStringArrayValue } from '@utils';
-import { Datum, MarkBounds } from 'types';
 import { Item, Scene, SceneGroup, SceneItem, ScenegraphEvent, View } from 'vega';
+
+import { Datum, MarkBounds } from '../types';
 
 export type ActionItem = Item | undefined | null;
 
@@ -39,7 +42,9 @@ export const getOnMarkClickCallback = (
 	selectedDataName: MutableRefObject<string | undefined>,
 	setHiddenSeries: (hiddenSeries: string[]) => void,
 	legendIsToggleable?: boolean,
-	onLegendClick?: (seriesName: string) => void
+	onLegendClick?: (seriesName: string) => void,
+	markClicks?: MarkDetail[]
+	
 ): ((event: ScenegraphEvent, item: ActionItem) => void) => {
 	return (_event: ScenegraphEvent, item: ActionItem) => {
 		if (!item) return;
@@ -61,11 +66,13 @@ export const getOnMarkClickCallback = (
 			// clicking the button will trigger a new view since it will cause a rerender
 			// this means we don't need to set the signal value since it would just be cleared on rerender
 			// instead, the rerender will set the value of the signal to the selectedData
-			selectedData.current = item.datum;
+			const itemName = getItemName(item);
+			selectedData.current = { [COMPONENT_NAME]: itemName, ...item.datum };
 			// we need to anchor the popover to a div that we move to the same location as the selected mark
+			markClicks?.find((click) => click.markName === itemName)?.onClick?.(item.datum);
 			selectedDataBounds.current = getItemBounds(item);
-			selectedDataName.current = getItemName(item);
-			(document.querySelector(`#${chartId.current} > button`) as HTMLButtonElement)?.click();
+			selectedDataName.current = itemName;
+			(document.querySelector(`#${chartId.current} > div > #${itemName}-button`) as HTMLButtonElement)?.click();
 		}
 	};
 };

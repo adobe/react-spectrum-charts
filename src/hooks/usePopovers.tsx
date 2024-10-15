@@ -12,14 +12,19 @@
 import { createElement, useMemo } from 'react';
 
 import { getAllElements } from '@utils';
-import { ChartChildElement, ChartPopoverElement, PopoverHandler } from 'types';
 
 import { Chart } from '../Chart';
 import { ChartPopover } from '../components/ChartPopover';
+import { ChartChildElement, ChartPopoverElement, ChartPopoverProps } from '../types';
 
 type MappedPopover = { name: string; element: ChartPopoverElement };
 
-export type PopoverDetail = { name: string; callback: PopoverHandler; width?: number };
+export type PopoverDetail = {
+	chartPopoverProps: ChartPopoverProps;
+	key: string;
+	name: string;
+	UNSAFE_highlightBy: ChartPopoverProps['UNSAFE_highlightBy'];
+};
 
 export default function usePopovers(children: ChartChildElement[]): PopoverDetail[] {
 	const popoverElements = useMemo(
@@ -31,11 +36,14 @@ export default function usePopovers(children: ChartChildElement[]): PopoverDetai
 		() =>
 			popoverElements
 				.filter((popover) => popover.element.props.children)
-				.map((popover) => ({
-					name: popover.name,
-					callback: popover.element.props.children,
-					width: popover.element.props.width,
-				})) as PopoverDetail[],
+				.map((popover, index) => {
+					return {
+						chartPopoverProps: popover.element.props,
+						key: `${popover.name}Popover${index}`,
+						name: popover.name,
+						UNSAFE_highlightBy: popover.element.props.UNSAFE_highlightBy,
+					};
+				}),
 		[popoverElements]
 	);
 }

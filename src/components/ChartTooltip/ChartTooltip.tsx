@@ -14,7 +14,7 @@ import { FC } from 'react';
 import { ChartTooltipProps } from '../../types';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const ChartTooltip: FC<ChartTooltipProps> = ({ children }) => {
+const ChartTooltip: FC<ChartTooltipProps> = ({ children, excludeDataKeys, highlightBy = 'item' }) => {
 	return null;
 };
 

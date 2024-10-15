@@ -17,12 +17,9 @@ module.exports = {
 	testResultsProcessor: 'jest-sonar-reporter',
 	collectCoverage: true,
 	coverageReporters: ['cobertura', 'html', 'text', 'lcov'],
-	testEnvironment: 'jsdom',
+	testEnvironment: './jest.environment.js',
 	transform: {
 		'^.+\\.(j|t)sx?$': 'babel-jest',
-	},
-	globals: {
-		structuredClone: (value) => JSON.parse(JSON.stringify(value)),
 	},
 	moduleDirectories: ['src', 'node_modules'],
 	moduleNameMapper: {

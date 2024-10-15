@@ -11,11 +11,11 @@
  */
 import { useMemo } from 'react';
 
-import { SanitizedSpecProps } from 'types';
 import { Spec } from 'vega';
 
 import { buildSpec } from '../specBuilder';
 import { initializeSpec } from '../specBuilder/specUtils';
+import { SanitizedSpecProps } from '../types';
 
 export default function useSpec({
 	backgroundColor,

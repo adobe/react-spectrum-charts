@@ -9,23 +9,14 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { spectrumColors } from '@themes';
-import { DATE_PATH, ROUNDED_SQUARE_PATH } from 'svgPaths';
 import {
-	ChartSymbolShape,
-	ColorFacet,
-	ColorScheme,
-	DualFacet,
-	Icon,
-	LineType,
-	LineTypeFacet,
-	LineWidth,
-	NumberFormat,
-	OpacityFacet,
-	SpectrumColor,
-	SymbolSize,
-	SymbolSizeFacet,
-} from 'types';
+	DATE_PATH,
+	ROUNDED_SQUARE_PATH,
+	SENTIMENT_NEGATIVE_PATH,
+	SENTIMENT_NEUTRAL_PATH,
+	SENTIMENT_POSITIVE_PATH,
+} from '@svgPaths';
+import { spectrumColors } from '@themes';
 import { Data, Scale, ScaleType, Spec, ValuesData } from 'vega';
 
 import {
@@ -37,7 +28,22 @@ import {
 	OPACITY_SCALE,
 	TABLE,
 } from '../constants';
-import { SanitizedSpecProps } from '../types';
+import {
+	ChartSymbolShape,
+	ColorFacet,
+	ColorScheme,
+	DualFacet,
+	Icon,
+	LineType,
+	LineTypeFacet,
+	LineWidth,
+	NumberFormat,
+	OpacityFacet,
+	SanitizedSpecProps,
+	SpectrumColor,
+	SymbolSize,
+	SymbolSizeFacet,
+} from '../types';
 
 /**
  * gets all the keys that are used to facet by
@@ -178,6 +184,9 @@ export const getPathFromSymbolShape = (symbolShape: ChartSymbolShape): string =>
 export const getPathFromIcon = (icon: Icon | string): string => {
 	const supportedIcons: { [key in Icon]: string } = {
 		date: DATE_PATH,
+		sentimentNegative: SENTIMENT_NEGATIVE_PATH,
+		sentimentNeutral: SENTIMENT_NEUTRAL_PATH,
+		sentimentPositive: SENTIMENT_POSITIVE_PATH,
 	};
 	return supportedIcons[icon] || icon;
 };

@@ -15,7 +15,8 @@ import {
 	DEFAULT_LINEAR_DIMENSION,
 	DEFAULT_METRIC,
 } from '@constants';
-import { ScatterSpecProps } from 'types';
+
+import { ScatterSpecProps } from '../../types';
 
 export const defaultScatterProps: ScatterSpecProps = {
 	children: [],
@@ -28,6 +29,7 @@ export const defaultScatterProps: ScatterSpecProps = {
 	interactiveMarkName: 'scatter0',
 	lineType: { value: 'solid' },
 	lineWidth: { value: 0 },
+	markType: 'scatter',
 	metric: DEFAULT_METRIC,
 	name: 'scatter0',
 	opacity: { value: 1 },

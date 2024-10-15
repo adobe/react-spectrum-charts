@@ -30,11 +30,11 @@ describe('getTrendlineSignals()', () => {
 			...defaultLineProps,
 			children: [createElement(Trendline, {}, createElement(ChartTooltip))],
 		});
-		expect(signals).toHaveLength(4);
+		expect(signals).toHaveLength(defaultSignals.length);
 		expect(signals[0]).toHaveProperty('name', HIGHLIGHTED_ITEM);
 		expect(signals[0].on).toHaveLength(2);
-		expect(signals[1]).toHaveProperty('name', HIGHLIGHTED_SERIES);
-		expect(signals[1].on).toHaveLength(2);
+		expect(signals[2]).toHaveProperty('name', HIGHLIGHTED_SERIES);
+		expect(signals[2].on).toHaveLength(2);
 	});
 
 	test('should not modify any signals if there is not a ChartTooltip', () => {
@@ -47,8 +47,8 @@ describe('getTrendlineSignals()', () => {
 			...defaultLineProps,
 			children: [createElement(Trendline, { displayOnHover: true })],
 		});
-		expect(signals).toHaveLength(4);
-		expect(signals[1]).toHaveProperty('name', HIGHLIGHTED_SERIES);
-		expect(signals[1].on).toHaveLength(2);
+		expect(signals).toHaveLength(defaultSignals.length);
+		expect(signals[2]).toHaveProperty('name', HIGHLIGHTED_SERIES);
+		expect(signals[2].on).toHaveLength(2);
 	});
 });

@@ -63,7 +63,7 @@ you are good to go!
 
 ## Where to start
 
-There are many places to dive into react-spectrum-charts to help out. Before you take on a feature or issue, make sure you become familiar with our developer [best practices]() and overview of [how `react-spectrum-charts` works]().
+There are many places to dive into react-spectrum-charts to help out. Before you take on a feature or issue, make sure you become familiar with our developer [best practices](https://github.com/adobe/react-spectrum-charts/wiki/Developer-Docs#best-practices) and overview of [how `react-spectrum-charts` works](https://github.com/adobe/react-spectrum-charts/wiki/Developer-Docs#how-it-works).
 
 If you are looking for place to start, consider the following options:
 

@@ -13,13 +13,18 @@ import { createElement, useMemo } from 'react';
 
 import { ChartTooltip } from '@components/ChartTooltip';
 import { getAllElements } from '@utils';
-import { ChartChildElement, ChartTooltipElement, TooltipHandler } from 'types';
 
 import { Chart } from '../Chart';
+import { ChartChildElement, ChartTooltipElement, ChartTooltipProps, TooltipHandler } from '../types';
 
 type MappedTooltip = { name: string; element: ChartTooltipElement };
 
-export type TooltipDetail = { name: string; callback: TooltipHandler; width?: number };
+export type TooltipDetail = {
+	name: string;
+	callback: TooltipHandler;
+	highlightBy: ChartTooltipProps['highlightBy'];
+	width?: number;
+};
 
 export default function useTooltips(children: ChartChildElement[]): TooltipDetail[] {
 	const tooltipElements = useMemo(
@@ -34,6 +39,7 @@ export default function useTooltips(children: ChartChildElement[]): TooltipDetai
 				.map((tooltip) => ({
 					name: tooltip.name,
 					callback: tooltip.element.props.children,
+					highlightBy: tooltip.element.props.highlightBy,
 				})) as TooltipDetail[],
 		[tooltipElements]
 	);

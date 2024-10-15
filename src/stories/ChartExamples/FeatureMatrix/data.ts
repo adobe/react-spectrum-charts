@@ -282,3 +282,77 @@ export const timeCompareFeatureMatrixData = [
 		if (a.segment < b.segment) return -1;
 		return 0;
 	});
+
+export const topEventsFeatureMatrixData = [
+	{
+		event: 'top-event-0',
+		segment: 'top-events-overlay',
+		dauPercent: 0.2336,
+		countAvg: 3.54,
+		isTopItem: true,
+	},
+	{
+		event: 'top-event-1',
+		segment: 'top-events-overlay',
+		dauPercent: 0.1236,
+		countAvg: 2.84,
+		isTopItem: true,
+	},
+	{
+		event: 'top-event-2',
+		segment: 'top-events-overlay',
+		dauPercent: 0.23,
+		countAvg: 0.84,
+		isTopItem: true,
+	},
+	{
+		event: 'top-event-3',
+		segment: 'top-events-overlay',
+		dauPercent: 0.03,
+		countAvg: 0.84,
+		isTopItem: true,
+	},
+	{
+		event: 'top-event-4',
+		segment: 'top-events-overlay',
+		dauPercent: 0.1,
+		countAvg: 1.4,
+		isTopItem: true,
+	},
+	{
+		event: 'top-event-5',
+		segment: 'top-events-overlay',
+		dauPercent: 0.075,
+		countAvg: 3.3,
+		isTopItem: true,
+	},
+	{
+		event: 'top-event-6',
+		segment: 'top-events-overlay',
+		dauPercent: 0.06,
+		countAvg: 0.2,
+		isTopItem: true,
+	},
+	{
+		event: 'top-event-7',
+		segment: 'top-events-overlay',
+		dauPercent: 0.15,
+		countAvg: 0.64,
+		isTopItem: true,
+	},
+	{
+		event: 'top-event-8',
+		segment: 'top-events-overlay',
+		dauPercent: 0.136,
+		countAvg: 2.84,
+		isTopItem: true,
+	},
+	{
+		event: 'top-event-9',
+		segment: 'top-events-overlay',
+		dauPercent: 0.099,
+		countAvg: 0.84,
+		isTopItem: true,
+	},
+	...multipleSegmentFeatureMatrixData.map((d) => ({ ...d, isSegmentData: true })),
+];

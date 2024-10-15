@@ -9,8 +9,9 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { AxisSpecProps } from 'types';
 import { Axis, GroupMark, Spec } from 'vega';
+
+import { AxisSpecProps } from '../../types';
 
 /**
  * Checks the spec to see if it is a trellised chart
@@ -34,7 +35,7 @@ export const getTrellisAxisProps = (scaleName: string): Partial<AxisSpecProps> =
 	if (scaleName.includes('TrellisBand')) {
 		// shift the labels up/left half the scale bandwidth
 		const labelOffsetSignal = `bandwidth('${scaleName}') / -2`;
-		const axisType = scaleName[0] === 'x' ? 'x' : 'y';
+		const axisType = scaleName.startsWith('x') ? 'x' : 'y';
 		trellisAxisProps = {
 			position: axisType === 'x' ? 'top' : 'left',
 			labelFontWeight: 'bold',

@@ -36,6 +36,7 @@ import {
 	Data,
 	GroupMark,
 	Mark,
+	RectMark,
 	Scale,
 	ScaleData,
 	SourceData,
@@ -63,7 +64,6 @@ import {
 	defaultBarStrokeEncodings,
 	defaultCornerRadiusEncodings,
 	defaultStackedYEncodings,
-	stackedAnnotationMarks,
 } from './barTestUtils';
 import { defaultDodgedMark } from './dodgedBarUtils.test';
 
@@ -232,7 +232,7 @@ describe('barSpecBuilder', () => {
 	describe('addSignals()', () => {
 		test('should add padding signal', () => {
 			const signals = addSignals(defaultSignals, defaultBarProps);
-			expect(signals).toHaveLength(5);
+			expect(signals).toHaveLength(defaultSignals.length + 1);
 			expect(signals.at(-1)).toHaveProperty('name', 'paddingInner');
 		});
 		test('should add hover events if tooltip is present', () => {
@@ -240,6 +240,16 @@ describe('barSpecBuilder', () => {
 			expect(signals[0]).toHaveProperty('on');
 			expect(signals[0].on).toHaveLength(2);
 			expect(signals[0].on?.[0]).toHaveProperty('events', '@bar0:mouseover');
+		});
+		test('should exclude data with key from update if tooltip has excludeDataKey', () => {
+			const signals = addSignals(defaultSignals, {
+				...defaultBarProps,
+				children: [createElement(ChartTooltip, { excludeDataKeys: ['excludeFromTooltip'] })],
+			});
+			expect(signals[0]).toHaveProperty('on');
+			expect(signals[0].on).toHaveLength(2);
+			expect(signals[0].on?.[0]).toHaveProperty('events', '@bar0:mouseover');
+			expect(signals[0].on?.[0]).toHaveProperty('update', '(datum.excludeFromTooltip) ? null : datum.rscMarkId');
 		});
 	});
 
@@ -393,12 +403,15 @@ describe('barSpecBuilder', () => {
 		describe('with annotations', () => {
 			test('default props', () => {
 				const annotation = createElement(Annotation, { textKey: 'textLabel' });
-				expect(
-					addMarks([], {
-						...defaultBarProps,
-						children: [...defaultBarProps.children, annotation],
-					})
-				).toStrictEqual([...defaultStackedBarMarks, ...stackedAnnotationMarks]);
+				const marks = addMarks([], {
+					...defaultBarProps,
+					children: [...defaultBarProps.children, annotation],
+				});
+
+				expect(marks).toHaveLength(3);
+				expect(marks[0].name).toEqual('bar0_background');
+				expect(marks[1].name).toEqual('bar0');
+				expect(marks[2].name).toEqual('bar0_annotationGroup');
 			});
 		});
 
@@ -413,7 +426,19 @@ describe('barSpecBuilder', () => {
 
 			expect(addedMarks).toHaveLength(1);
 			expect(addedMarks[0].name).toEqual('bar0_group');
-			expect((addedMarks[0] as GroupMark).marks).toHaveLength(4);
+			expect((addedMarks[0] as GroupMark).marks).toHaveLength(3);
+		});
+
+		test('should add dimension selection ring if a popover is highlighting by dimension', () => {
+			const marks = addMarks([], {
+				...defaultBarProps,
+				children: [createElement(ChartPopover, { UNSAFE_highlightBy: 'dimension' })],
+			});
+			expect(marks).toHaveLength(3);
+
+			const selectionRingMark = marks[2] as RectMark;
+			expect(selectionRingMark.type).toEqual('rect');
+			expect(selectionRingMark.name).toEqual('bar0_selectionRing');
 		});
 
 		test('should add trellis group mark if trellis prop is set', () => {
@@ -488,8 +513,12 @@ describe('barSpecBuilder', () => {
 		describe('transform already exists', () => {
 			test('no props, new transform should be pushed onto the end with default values', () => {
 				expect(
-					addData([{ ...defaultFilteredTableData, transform: defaultStackedTransforms }], defaultBarProps)
+					addData(
+						[defaultTableData, { ...defaultFilteredTableData, transform: defaultStackedTransforms }],
+						defaultBarProps
+					)
 				).toStrictEqual([
+					defaultTableData,
 					{
 						...defaultFilteredTableData,
 						transform: [...defaultStackedTransforms, ...defaultStackedTransforms],
