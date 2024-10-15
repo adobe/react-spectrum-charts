@@ -16,6 +16,7 @@ import {
 	AreaProps,
 	AxisAnnotationChildElement,
 	AxisAnnotationProps,
+	AxisChildElement,
 	AxisProps,
 	BarProps,
 	ChartPopoverProps,
@@ -32,6 +33,7 @@ import {
 	MarkChildElement,
 	MetricRangeProps,
 	Orientation,
+	ReferenceLineProps,
 	ScaleType as RscScaleType,
 	ScatterPathProps,
 	ScatterProps,
@@ -54,7 +56,6 @@ export interface AreaSpecProps
 type AxisPropsWithDefaults =
 	| 'baseline'
 	| 'baselineOffset'
-	| 'colorScheme'
 	| 'granularity'
 	| 'grid'
 	| 'hideDefaultLabels'
@@ -66,20 +67,17 @@ type AxisPropsWithDefaults =
 	| 'subLabels'
 	| 'ticks';
 
-/**
- * these are props that are used interally to control the axis spec
- */
-export interface InternalAxisProps {
+export interface AxisSpecProps extends PartiallyRequired<AxisProps, AxisPropsWithDefaults> {
+	name: string;
+	colorScheme: ColorScheme;
+	index: number;
+	scaleType: ScaleType;
+	children: AxisChildElement[];
 	vegaLabelAlign?: Align;
 	vegaLabelBaseline?: Baseline;
 	vegaLabelOffset?: NumberValue;
 	vegaLabelPadding?: number;
 }
-
-export type AxisSpecProps = PartiallyRequired<
-	AxisProps & { name: string; colorScheme: ColorScheme; index: number; scaleType: ScaleType } & InternalAxisProps,
-	AxisPropsWithDefaults
->;
 
 type AxisAnnotationPropsWithDefaults = 'name' | 'offset' | 'dataKey' | 'color' | 'options' | 'format';
 
@@ -256,4 +254,10 @@ export interface TrendlineAnnotationSpecProps
 	trendlineName: string;
 	trendlineOrientation: Orientation;
 	trendlineWidth: number;
+}
+type ReferenceLinePropsWithDefaults = 'color';
+
+export interface ReferenceLineSpecProps extends PartiallyRequired<ReferenceLineProps, ReferenceLinePropsWithDefaults> {
+	colorScheme: ColorScheme;
+	name: string;
 }

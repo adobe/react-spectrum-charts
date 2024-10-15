@@ -11,6 +11,7 @@
  */
 import { createElement } from 'react';
 
+import { AxisAnnotation } from '@components/AxisAnnotation';
 import { ReferenceLine } from '@components/ReferenceLine';
 import {
 	DEFAULT_COLOR_SCHEME,
@@ -20,26 +21,30 @@ import {
 	DEFAULT_LABEL_ORIENTATION,
 } from '@constants';
 import { DATE_PATH } from '@svgPaths';
+import { spectrumColors } from '@themes';
 
-import { AxisSpecProps, ReferenceLineProps } from '../../types';
+import { AxisSpecProps, ReferenceLineElement, ReferenceLineSpecProps } from '../../types';
 import {
-	getPositionRule,
+	getPositionEncoding,
 	getReferenceLineRuleMark,
 	getReferenceLineSymbolMark,
-	getReferenceLinesFromChildren,
+	getReferenceLines,
 	scaleTypeSupportsReferenceLines,
 } from './axisReferenceLineUtils';
 
-const defaultReferenceLineProps: ReferenceLineProps = {
+const defaultReferenceLineProps: ReferenceLineSpecProps = {
 	value: 10,
 	icon: 'date',
+	color: 'gray-900',
+	colorScheme: DEFAULT_COLOR_SCHEME,
+	name: 'axis0ReferenceLine0',
 };
 
 const defaultAxisProps: AxisSpecProps = {
 	name: 'axis0',
 	baseline: false,
 	baselineOffset: 0,
-	children: createElement(ReferenceLine, defaultReferenceLineProps),
+	children: [createElement(ReferenceLine, defaultReferenceLineProps)],
 	colorScheme: DEFAULT_COLOR_SCHEME,
 	granularity: DEFAULT_GRANULARITY,
 	grid: false,
@@ -56,18 +61,26 @@ const defaultAxisProps: AxisSpecProps = {
 	ticks: false,
 };
 
-describe('getReferenceLinesFromChildren()', () => {
+describe('getReferenceLines()', () => {
 	test('should return the props for all ReferenceLine elements', () => {
-		const referenceLines = getReferenceLinesFromChildren([
-			createElement(ReferenceLine, { value: 1 }),
-			createElement(ReferenceLine, { value: 0, icon: 'date' }),
-			createElement('div', { className: 'test' }),
-		]);
+		const referenceLines = getReferenceLines({
+			...defaultAxisProps,
+			children: [
+				createElement(ReferenceLine, { value: 1 }),
+				createElement(ReferenceLine, { value: 0, icon: 'date' }),
+				createElement('div', { className: 'test' }) as unknown as ReferenceLineElement,
+			],
+		});
 
 		expect(referenceLines).toHaveLength(2);
 		expect(referenceLines[0]).toHaveProperty('value', 1);
 		expect(referenceLines[1]).toHaveProperty('value', 0);
 		expect(referenceLines[1]).toHaveProperty('icon', 'date');
+	});
+
+	test('should return an empty array if there are no referenceLines', () => {
+		const children = [createElement(AxisAnnotation)];
+		expect(getReferenceLines({ ...defaultAxisProps, children })).toHaveLength(0);
 	});
 });
 
@@ -78,28 +91,29 @@ describe('scaleTypeSupportsRefenceLines()', () => {
 		expect(scaleTypeSupportsReferenceLines('time')).toBe(true);
 		expect(scaleTypeSupportsReferenceLines('utc')).toBe(true);
 		expect(scaleTypeSupportsReferenceLines('band')).toBe(true);
+		expect(scaleTypeSupportsReferenceLines('quantile')).toBe(false);
 	});
 });
 
-describe('getPositionRule()', () => {
+describe('getPositionEncoding()', () => {
 	test('creates the correct mark when value is a string', () => {
 		expect(
-			getPositionRule(defaultAxisProps, { ...defaultReferenceLineProps, value: 'test' }, 'xLinear')
+			getPositionEncoding(defaultAxisProps, { ...defaultReferenceLineProps, value: 'test' }, 'xLinear')
 		).toStrictEqual({ scale: 'xLinear', value: 'test' });
 	});
 
 	test('creates the correct mark when value is a number', () => {
-		expect(getPositionRule(defaultAxisProps, { ...defaultReferenceLineProps, value: 10 }, 'xLinear')).toStrictEqual(
-			{
-				scale: 'xLinear',
-				value: 10,
-			}
-		);
+		expect(
+			getPositionEncoding(defaultAxisProps, { ...defaultReferenceLineProps, value: 10 }, 'xLinear')
+		).toStrictEqual({
+			scale: 'xLinear',
+			value: 10,
+		});
 	});
 
 	test('creates the correct mark when value is a string and scaleType is band', () => {
 		expect(
-			getPositionRule(
+			getPositionEncoding(
 				{ ...defaultAxisProps, scaleType: 'band' },
 				{ ...defaultReferenceLineProps, value: 'value' },
 				'xBand'
@@ -109,7 +123,7 @@ describe('getPositionRule()', () => {
 
 	test('creates the correct mark when value is a number and scaleType is band', () => {
 		expect(
-			getPositionRule(
+			getPositionEncoding(
 				{ ...defaultAxisProps, scaleType: 'band' },
 				{ ...defaultReferenceLineProps, value: 10 },
 				'xBand'
@@ -120,11 +134,17 @@ describe('getPositionRule()', () => {
 
 describe('getReferenceLineRuleMark()', () => {
 	test('should generate rule mark', () => {
-		const rule = getReferenceLineRuleMark(defaultAxisProps, 0, { scale: 'xLinear', value: 10 });
+		const rule = getReferenceLineRuleMark(defaultAxisProps, defaultReferenceLineProps, {
+			scale: 'xLinear',
+			value: 10,
+		});
 		expect(rule).toStrictEqual({
-			encode: { update: { x: { scale: 'xLinear', value: 10 }, y: { value: 0 }, y2: { signal: 'height + 0' } } },
+			encode: {
+				enter: { stroke: { value: spectrumColors.light['gray-900'] } },
+				update: { x: { scale: 'xLinear', value: 10 }, y: { value: 0 }, y2: { signal: 'height + 0' } },
+			},
 			interactive: false,
-			name: 'axis0_xReferenceLineRule0',
+			name: 'axis0ReferenceLine0',
 			type: 'rule',
 		});
 	});
@@ -133,14 +153,17 @@ describe('getReferenceLineRuleMark()', () => {
 		const topAxisRule = getReferenceLineRuleMark(
 			{ ...defaultAxisProps, position: 'top' },
 
-			0,
+			defaultReferenceLineProps,
 			{ scale: 'xLinear', value: 10 }
 		);
 		expect(topAxisRule.encode?.update?.x).toStrictEqual({ scale: 'xLinear', value: 10 });
 		expect(topAxisRule.encode?.update?.y).toStrictEqual({ value: -0 });
 		expect(topAxisRule.encode?.update?.y2).toStrictEqual({ signal: 'height' });
 
-		const bottomAxisRule = getReferenceLineRuleMark(defaultAxisProps, 0, { scale: 'xLinear', value: 10 });
+		const bottomAxisRule = getReferenceLineRuleMark(defaultAxisProps, defaultReferenceLineProps, {
+			scale: 'xLinear',
+			value: 10,
+		});
 		expect(bottomAxisRule.encode?.update?.x).toStrictEqual({ scale: 'xLinear', value: 10 });
 		expect(bottomAxisRule.encode?.update?.y).toStrictEqual({ value: 0 });
 		expect(bottomAxisRule.encode?.update?.y2).toStrictEqual({ signal: 'height + 0' });
@@ -148,17 +171,21 @@ describe('getReferenceLineRuleMark()', () => {
 		const leftAxisRule = getReferenceLineRuleMark(
 			{ ...defaultAxisProps, position: 'left' },
 
-			0,
+			defaultReferenceLineProps,
 			{ scale: 'yLinear', value: 10 }
 		);
 		expect(leftAxisRule.encode?.update?.x).toStrictEqual({ value: -0 });
 		expect(leftAxisRule.encode?.update?.x2).toStrictEqual({ signal: 'width' });
 		expect(leftAxisRule.encode?.update?.y).toStrictEqual({ scale: 'yLinear', value: 10 });
 
-		const rightAxisRule = getReferenceLineRuleMark({ ...defaultAxisProps, position: 'right' }, 0, {
-			scale: 'yLinear',
-			value: 10,
-		});
+		const rightAxisRule = getReferenceLineRuleMark(
+			{ ...defaultAxisProps, position: 'right' },
+			defaultReferenceLineProps,
+			{
+				scale: 'yLinear',
+				value: 10,
+			}
+		);
 		expect(rightAxisRule.encode?.update?.x).toStrictEqual({ value: 0 });
 		expect(rightAxisRule.encode?.update?.x2).toStrictEqual({ signal: 'width + 0' });
 		expect(rightAxisRule.encode?.update?.y).toStrictEqual({ scale: 'yLinear', value: 10 });
@@ -168,7 +195,7 @@ describe('getReferenceLineRuleMark()', () => {
 		const bottomAxisRule = getReferenceLineRuleMark(
 			{ ...defaultAxisProps, ticks: true },
 
-			0,
+			defaultReferenceLineProps,
 			{ scale: 'xLinear', value: 10 }
 		);
 		expect(bottomAxisRule.encode?.update?.y2).toStrictEqual({ signal: 'height + 9' });
@@ -176,7 +203,7 @@ describe('getReferenceLineRuleMark()', () => {
 		const topAxisRule = getReferenceLineRuleMark(
 			{ ...defaultAxisProps, position: 'top', ticks: true },
 
-			0,
+			defaultReferenceLineProps,
 			{ scale: 'xLinear', value: 10 }
 		);
 		expect(topAxisRule.encode?.update?.y).toStrictEqual({ value: -9 });
@@ -188,13 +215,12 @@ describe('getReferenceLineSymbolMark()', () => {
 		const symbols = getReferenceLineSymbolMark(
 			defaultAxisProps,
 			{ ...defaultReferenceLineProps, icon: undefined },
-			0,
 			{ scale: 'xLinear', value: 10 }
 		);
 		expect(symbols).toHaveLength(0);
 	});
 	test('should generate symbol mark if icon id defined', () => {
-		const symbols = getReferenceLineSymbolMark(defaultAxisProps, defaultReferenceLineProps, 0, {
+		const symbols = getReferenceLineSymbolMark(defaultAxisProps, defaultReferenceLineProps, {
 			scale: 'xLinear',
 			value: 10,
 		});
@@ -213,7 +239,7 @@ describe('getReferenceLineSymbolMark()', () => {
 						y: { signal: 'height + 24' },
 					},
 				},
-				name: 'axis0_xReferenceLineSymbol0',
+				name: 'axis0ReferenceLine0_icon',
 				type: 'symbol',
 			},
 		]);
@@ -222,7 +248,6 @@ describe('getReferenceLineSymbolMark()', () => {
 		const topAxisSymbol = getReferenceLineSymbolMark(
 			{ ...defaultAxisProps, position: 'top' },
 			defaultReferenceLineProps,
-			0,
 			{ scale: 'xLinear', value: 10 }
 		)[0];
 		expect(topAxisSymbol.encode?.update).toStrictEqual({
@@ -230,7 +255,7 @@ describe('getReferenceLineSymbolMark()', () => {
 			y: { value: -24 },
 		});
 
-		const bottomAxisSymbol = getReferenceLineSymbolMark(defaultAxisProps, defaultReferenceLineProps, 0, {
+		const bottomAxisSymbol = getReferenceLineSymbolMark(defaultAxisProps, defaultReferenceLineProps, {
 			scale: 'xLinear',
 			value: 10,
 		})[0];
@@ -242,7 +267,6 @@ describe('getReferenceLineSymbolMark()', () => {
 		const leftAxisSymbol = getReferenceLineSymbolMark(
 			{ ...defaultAxisProps, position: 'left' },
 			defaultReferenceLineProps,
-			0,
 			{ scale: 'yLinear', value: 10 }
 		)[0];
 		expect(leftAxisSymbol.encode?.update).toStrictEqual({
@@ -253,7 +277,6 @@ describe('getReferenceLineSymbolMark()', () => {
 		const rightAxisSymbol = getReferenceLineSymbolMark(
 			{ ...defaultAxisProps, position: 'right' },
 			defaultReferenceLineProps,
-			0,
 			{ scale: 'yLinear', value: 10 }
 		)[0];
 		expect(rightAxisSymbol.encode?.update).toStrictEqual({
