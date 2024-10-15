@@ -610,7 +610,7 @@ export interface ReferenceLineProps {
 	labelFontWeight?: FontWeight;
 }
 
-export type Icon = 'date';
+export type Icon = 'date' | 'sentimentNegative' | 'sentimentNeutral' | 'sentimentPositive';
 
 export interface MetricRangeProps {
 	children?: Children<ChartTooltipElement>;

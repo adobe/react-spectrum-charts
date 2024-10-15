@@ -9,7 +9,13 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { DATE_PATH, ROUNDED_SQUARE_PATH } from '@svgPaths';
+import {
+	DATE_PATH,
+	ROUNDED_SQUARE_PATH,
+	SENTIMENT_NEGATIVE_PATH,
+	SENTIMENT_NEUTRAL_PATH,
+	SENTIMENT_POSITIVE_PATH,
+} from '@svgPaths';
 import { spectrumColors } from '@themes';
 import { Data, Scale, ScaleType, Spec, ValuesData } from 'vega';
 
@@ -178,6 +184,9 @@ export const getPathFromSymbolShape = (symbolShape: ChartSymbolShape): string =>
 export const getPathFromIcon = (icon: Icon | string): string => {
 	const supportedIcons: { [key in Icon]: string } = {
 		date: DATE_PATH,
+		sentimentNegative: SENTIMENT_NEGATIVE_PATH,
+		sentimentNeutral: SENTIMENT_NEUTRAL_PATH,
+		sentimentPositive: SENTIMENT_POSITIVE_PATH,
 	};
 	return supportedIcons[icon] || icon;
 };
