@@ -1045,3 +1045,13 @@ export const peopleAdoptionComboData = [
 	{ datetime: 1668322800000, people: 30, adoptionRate: 0.8 },
 	{ datetime: 1668409200000, people: 2, adoptionRate: 0.6 },
 ];
+
+export const peopleTotalComboData = [
+	{ datetime: 1667890800000, people: 10, total: 10 },
+	{ datetime: 1667977200000, people: 20, total: 30 },
+	{ datetime: 1668063600000, people: 30, total: 60 },
+	{ datetime: 1668150000000, people: 20, total: 80 },
+	{ datetime: 1668236400000, people: 10, total: 90 },
+	{ datetime: 1668322800000, people: 30, total: 120 },
+	{ datetime: 1668409200000, people: 2, total: 122 },
+];
