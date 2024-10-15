@@ -299,12 +299,26 @@ describe('barUtils', () => {
 				dimensionScaleKey: 'xBand',
 				rangeScale: 'width',
 			});
+			expect(getOrientationProperties('vertical', 'scale1')).toEqual({
+				metricAxis: 'y',
+				dimensionAxis: 'x',
+				metricScaleKey: 'scale1',
+				dimensionScaleKey: 'xBand',
+				rangeScale: 'width',
+			});
 		});
 		test('returns correct properties for horizontal orientation', () => {
 			expect(getOrientationProperties('horizontal')).toEqual({
 				metricAxis: 'x',
 				dimensionAxis: 'y',
 				metricScaleKey: 'xLinear',
+				dimensionScaleKey: 'yBand',
+				rangeScale: 'height',
+			});
+			expect(getOrientationProperties('horizontal', 'scale2')).toEqual({
+				metricAxis: 'x',
+				dimensionAxis: 'y',
+				metricScaleKey: 'scale2',
 				dimensionScaleKey: 'yBand',
 				rangeScale: 'height',
 			});

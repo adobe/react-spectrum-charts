@@ -21,6 +21,7 @@ const Bar: FC<BarProps> = ({
 	dimension = DEFAULT_CATEGORICAL_DIMENSION,
 	color = { value: 'categorical-100' },
 	metric = DEFAULT_METRIC,
+	metricAxis,
 	type = 'stacked',
 	opacity = { value: 1 },
 	lineType = { value: 'solid' },
