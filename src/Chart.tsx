@@ -171,23 +171,19 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 				UNSAFE_style={{ backgroundColor: 'transparent' }}
 				height="100%"
 			>
-				<div
-					ref={containerRef}
-					id={chartId.current}
-					data-testid={dataTestId}
-					className="rsc-container"
-					style={{ backgroundColor: getColorValue(backgroundColor, colorScheme) }}
-				>
-					{showPlaceholderContent ? (
-						<PlaceholderContent
-							loading={loading}
-							data={data}
-							height={chartHeight}
-							emptyStateText={emptyStateText}
-						/>
-					) : (
-						chartContent
-					)}
+				<div ref={containerRef} id={chartId.current} data-testid={dataTestId} className="rsc-container">
+					<div style={{ backgroundColor: getColorValue(backgroundColor, colorScheme) }}>
+						{showPlaceholderContent ? (
+							<PlaceholderContent
+								loading={loading}
+								data={data}
+								height={chartHeight}
+								emptyStateText={emptyStateText}
+							/>
+						) : (
+							chartContent
+						)}
+					</div>
 				</div>
 			</Provider>
 		);
