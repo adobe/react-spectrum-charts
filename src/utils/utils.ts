@@ -18,7 +18,7 @@ import {
 	Axis,
 	AxisAnnotation,
 	Bar,
-  BigNumber,
+	BigNumber,
 	ChartPopover,
 	ChartTooltip,
 	Legend,
@@ -40,9 +40,10 @@ import {
 	AxisAnnotationChildElement,
 	AxisAnnotationElement,
 	AxisChildElement,
-	BigNumberChildElement,
 	AxisElement,
 	BarElement,
+	BigNumberChildElement,
+	BigNumberElement,
 	ChartChildElement,
 	ChartElement,
 	ChartTooltipElement,
@@ -50,6 +51,7 @@ import {
 	ComboElement,
 	Datum,
 	DonutElement,
+	IconElement,
 	LegendElement,
 	LineElement,
 	MarkChildElement,
@@ -109,18 +111,16 @@ export const sanitizeRscChartChildren = (children: unknown): ChartChildElement[]
 		.filter((child): child is ChartChildElement => chartChildDisplyNames.includes(getElementDisplayName(child)));
 };
 
-export const sanitizeBigNumberChildren = (
-	children: Children<BigNumberChildElement> | undefined,
-): BigNumberChildElement[] => {
-	const sanitizedChildren = toArray(children)
+export const sanitizeBigNumberChildren = (children: unknown): BigNumberChildElement[] => {
+	return toArray(children)
 		.flat()
-		.filter((child): child is BigNumberChildElement => isChartChildElement(child));
-	return sanitizedChildren.filter((c) => c.type == Line);
+		.filter((child): child is BigNumberChildElement => getElementDisplayName(child) === Line.displayName);
 };
 
-export const chartContainsBigNumber = (children: Children<ChartChildElement> | undefined): ChartChildElement[] => {
-	const sanitizedChildren = sanitizeRscChartChildren(children);
-	return sanitizedChildren.filter((child) => child.type == BigNumber);
+export const getBigNumberElementsFromChildren = (children: unknown): BigNumberElement[] => {
+	return toArray(children)
+		.flat()
+		.filter((child): child is BigNumberElement => getElementDisplayName(child) === BigNumber.displayName);
 };
 
 export const sanitizeMarkChildren = (children: unknown): MarkChildElement[] => {
@@ -146,7 +146,6 @@ export const sanitizeAxisChildren = (children: unknown): AxisChildElement[] => {
 		.flat()
 		.filter((child): child is AxisChildElement => axisChildDisplayNames.includes(getElementDisplayName(child)));
 };
-
 
 export const sanitizeAxisAnnotationChildren = (children: ReactNode): AxisAnnotationChildElement[] => {
 	const axisAnnotationChildDisplayNames = [ChartTooltip.displayName, ChartPopover.displayName] as string[];
@@ -206,7 +205,7 @@ export function getElement(
 		| typeof ChartTooltip
 		| typeof Legend
 		| typeof Line
-		| typeof Scatter,
+		| typeof Scatter
 ): ChartElement | RscElement | undefined {
 	// if the element is undefined or 'type' doesn't exist on the element, stop searching
 	if (!element || typeof element !== 'object' || !('type' in element) || element.type === Fragment) {
@@ -287,7 +286,7 @@ export const getAllElements = (
 		| typeof Line
 		| typeof Scatter,
 	elements: MappedElement[] = [],
-	name: string = '',
+	name: string = ''
 ): MappedElement[] => {
 	if (
 		!target ||
@@ -392,7 +391,7 @@ const initElementCounts = (): ElementCounts => ({
  */
 export function debugLog(
 	debug: boolean | undefined,
-	{ title = '', contents }: { contents?: unknown; title?: string },
+	{ title = '', contents }: { contents?: unknown; title?: string }
 ): void {
 	if (debug) {
 		const rainbow = String.fromCodePoint(0x1f308);

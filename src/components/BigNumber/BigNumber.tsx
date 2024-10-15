@@ -46,9 +46,10 @@ const BigNumber: FC<BigNumberProps> = ({
 		chartId,
 		chartView,
 		chartWidth: 200,
+		chartHeight: 200,
 	};
 
-	const { chartWidth, height, locale, data, ...rscChartRemain } = rscChartProps;
+	const { chartWidth, chartHeight, locale, data, ...rscChartRemain } = rscChartProps;
 	const bigNumberValue = getBigNumberValue(data, dataKey, method);
 	const numberLocale = getLocale(locale).number;
 	const formattedValue = getFormattedString(bigNumberValue, numberType, numberFormat, numberLocale);
@@ -60,7 +61,7 @@ const BigNumber: FC<BigNumberProps> = ({
 	}
 
 	const { iconSize, labelSize, valueSize, pointSize, cWidth, cHeight, padding, textAlign, direction, iconDirection } =
-		getDynamicProperties(orientation, chartWidth, lineProps, height);
+		getDynamicProperties(orientation, chartWidth, lineProps, chartHeight);
 
 	const labelStyle: CSSProperties = { fontSize: labelSize, textAlign };
 	const valueStyle: CSSProperties = { fontSize: valueSize, textAlign };
@@ -72,11 +73,17 @@ const BigNumber: FC<BigNumberProps> = ({
 				justifyContent={'center'}
 				direction={direction}
 				width={chartWidth}
-				height={height}
+				height={chartHeight}
 			>
 				{lineProps && (
 					<Flex justifySelf={'center'} alignSelf={'center'} marginTop="5px">
-						<RscChart chartWidth={cWidth} height={cHeight} data={data} locale={locale} {...rscChartRemain}>
+						<RscChart
+							chartWidth={cWidth}
+							chartHeight={cHeight}
+							data={data}
+							locale={locale}
+							{...rscChartRemain}
+						>
 							<Line
 								{...lineProps}
 								isSparkline

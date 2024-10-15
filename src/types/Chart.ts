@@ -15,6 +15,7 @@ import { GROUP_DATA, INTERACTION_MODE, MARK_ID, SERIES_ID, TRENDLINE_VALUE } fro
 import { Config, Data, FontWeight, Locale, NumberLocale, Padding, Spec, SymbolShape, TimeLocale, View } from 'vega';
 
 import { Icon, IconProps } from '@adobe/react-spectrum';
+import { IconPropsWithoutChildren } from '@react-spectrum/icon';
 import { Theme } from '@react-types/provider';
 
 import { Colors, SpectrumColor } from './SpectrumVizColors';
@@ -34,8 +35,8 @@ export type LegendElement = ReactElement<LegendProps, JSXElementConstructor<Lege
 export type LineElement = ReactElement<LineProps, JSXElementConstructor<LineProps>>;
 export type BigNumberElement = ReactElement<BigNumberProps, JSXElementConstructor<BigNumberProps>>;
 export type IconElement = ReactElement<
-	IconProps | Omit<IconProps, 'children'>,
-	JSXElementConstructor<IconProps | Omit<IconProps, 'children'>>
+	IconProps | IconPropsWithoutChildren,
+	JSXElementConstructor<IconProps | IconPropsWithoutChildren>
 >;
 export type ScatterPathElement = ReactElement<ScatterPathProps, JSXElementConstructor<ScatterPathProps>>;
 export type SegmentLabelElement = ReactElement<SegmentLabelProps, JSXElementConstructor<SegmentLabelProps>>;
@@ -420,9 +421,9 @@ export interface LineProps extends Omit<MarkProps, 'color'> {
 	/** Sets the chart area padding, this is a ratio from 0 to 1 for categorical scales (point) and a pixel value for continuous scales (time, linear) */
 	padding?: number;
 	pointSize?: number;
-  /** line to be interpreted and rendered as a sparkline. For example, Changes the fill of static points. */
+	/** line to be interpreted and rendered as a sparkline. For example, Changes the fill of static points. */
 	isSparkline?: boolean;
-  /** sparkline's method is last - meaning that last element of data has the static point */
+	/** sparkline's method is last - meaning that last element of data has the static point */
 	isMethodLast?: boolean;
 	/** Sets the type of scale that should be used for the trend */
 	scaleType?: ScaleType;
@@ -796,7 +797,7 @@ export type Children<T> = ChildElement<T> | ChildElement<T>[];
 export type AxisChildElement = ReferenceLineElement | AxisAnnotationElement;
 export type AxisAnnotationChildElement = ChartTooltipElement | ChartPopoverElement;
 
-export type BigNumberChildElement = LineElement | IconElement;
+export type BigNumberChildElement = LineElement;
 
 export type TrendlineChildElement = ChartTooltipElement | TrendlineAnnotationElement;
 export type ChartChildElement =

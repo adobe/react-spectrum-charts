@@ -20,8 +20,7 @@ import useChartWidth from '@hooks/useChartWidth';
 import { useResizeObserver } from '@hooks/useResizeObserver';
 import { BigNumber } from '@rsc';
 import { getColorValue } from '@specBuilder/specUtils';
-import { chartContainsBigNumber, toArray } from '@utils';
-
+import { getBigNumberElementsFromChildren, toArray } from '@utils';
 import { v4 as uuid } from 'uuid';
 import { View } from 'vega';
 
@@ -29,7 +28,6 @@ import { Provider, defaultTheme } from '@adobe/react-spectrum';
 import { Theme } from '@react-types/provider';
 
 import './Chart.css';
-
 import { RscChart } from './RscChart';
 import { BigNumberElement, ChartData, ChartHandle, ChartProps, LineType, RscChartProps } from './types';
 
@@ -99,10 +97,10 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 
 		const showPlaceholderContent = useMemo(() => Boolean(loading ?? !data.length), [loading, data]);
 
-		const bigNumberChildren = chartContainsBigNumber(props.children);
+		const bigNumberElements = getBigNumberElementsFromChildren(props.children);
 
 		const bigNumberProps =
-			bigNumberChildren.length > 0 ? (bigNumberChildren[0] as BigNumberElement).props : undefined;
+			bigNumberElements.length > 0 ? (bigNumberElements[0] as BigNumberElement).props : undefined;
 
 		useEffect(() => {
 			// if placeholder content is displayed, clear out the chartview so it can't be downloaded or copied to clipboard
@@ -124,9 +122,13 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 			);
 		}
 
-		if (bigNumberProps && toArray(props.children).length != bigNumberChildren.length) {
+		const childrenCount = toArray(props.children).length;
+		const bigNumberCount = bigNumberElements.length;
+		if (bigNumberProps && childrenCount != bigNumberCount) {
 			console.warn(
-				'If passing BigNumber to Chart only the BigNumber will be displayed. All other elements will be ignored'
+				`Detected ${
+					childrenCount - bigNumberCount
+				} children in the chart that are not BigNumber. Only BigNumber will be displayed. All other elements will be ignored`
 			);
 		}
 
@@ -152,7 +154,7 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 			symbolSizes: symbolSizes,
 			title: title,
 			chartWidth: chartWidth,
-      chartHeight: chartHeight,
+			chartHeight: chartHeight,
 			UNSAFE_vegaSpec: UNSAFE_vegaSpec,
 		};
 
@@ -180,7 +182,7 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 						<PlaceholderContent
 							loading={loading}
 							data={data}
-							height={height}
+							height={chartHeight}
 							emptyStateText={emptyStateText}
 						/>
 					) : (

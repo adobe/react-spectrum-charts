@@ -52,7 +52,7 @@ export const getLineStaticPoint = ({
 			enter: {
 				size: { value: pointSize } ,
 				fill: isSparkline ? { signal: BACKGROUND_COLOR } : getColorProductionRule(color, colorScheme),
-				stroke: isSparkline ? getColorProductionRule(color, colorScheme) : { signal: BACKGROUND_COLOR }
+				stroke: isSparkline ? getColorProductionRule(color, colorScheme) : { signal: BACKGROUND_COLOR },
 				y: getYProductionRule(metricAxis, metric),
 			},
 			update: {
