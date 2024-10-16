@@ -45,7 +45,7 @@ const applyReferenceLinePropDefaults = (
 	index: number
 ): ReferenceLineSpecProps => ({
 	...props,
-	color: props.color || 'gray-900',
+	color: props.color ?? 'gray-900',
 	colorScheme: axisProps.colorScheme,
 	name: `${axisProps.name}ReferenceLine${index}`,
 });
