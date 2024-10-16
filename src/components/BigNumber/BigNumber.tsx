@@ -17,13 +17,13 @@ import { BIG_NUMBER_ASPECT_RATIO } from '@constants';
 import { Line } from '@rsc';
 import { sanitizeBigNumberChildren } from '@utils';
 import { RscChart } from 'RscChart';
-import { BigNumberMethod, BigNumberProps, ChartData, LineElement, LineProps, Orientation } from 'types';
 import { getLocale } from 'utils/locale';
 import { v4 as uuid } from 'uuid';
 import { View as VegaView } from 'vega';
 
 import { Flex, FlexProps, IconProps } from '@adobe/react-spectrum';
 
+import { BigNumberMethod, BigNumberProps, ChartData, LineElement, LineProps, Orientation } from '../../types';
 import './BigNumber.css';
 import { getFormattedString } from './bigNumberFormatUtils';
 

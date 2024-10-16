@@ -10,10 +10,11 @@
  * governing permissions and limitations under the License.
  */
 import { DEFAULT_LOCALE } from '@constants';
-import { BigNumberNumberType } from 'types';
 import { getLocale } from 'utils/locale';
 import { NumberLocale } from 'vega';
 import { numberFormatLocale } from 'vega-format';
+
+import { BigNumberNumberType } from '../../types';
 
 export const getFormattedString = (
 	value: number,

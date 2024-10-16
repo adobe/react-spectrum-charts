@@ -51,7 +51,6 @@ import {
 	ComboElement,
 	Datum,
 	DonutElement,
-	IconElement,
 	LegendElement,
 	LineElement,
 	MarkChildElement,
