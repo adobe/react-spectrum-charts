@@ -9,7 +9,14 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { DEFAULT_BACKGROUND_COLOR, DEFAULT_SYMBOL_SIZE, DEFAULT_SYMBOL_STROKE_WIDTH } from '@constants';
+import {
+	DEFAULT_BACKGROUND_COLOR,
+	DEFAULT_FONT_COLOR,
+	DEFAULT_FONT_SIZE,
+	DEFAULT_SYMBOL_SIZE,
+	DEFAULT_SYMBOL_STROKE_WIDTH,
+} from '@constants';
+import { getColorValue } from '@specBuilder/specUtils';
 import { ROUNDED_SQUARE_PATH } from '@svgPaths';
 import { BaseLegendLayout, Config, mergeConfig } from 'vega';
 
@@ -21,7 +28,6 @@ import spectrumColors from './spectrumColors.json';
 
 export const ADOBE_CLEAN_FONT =
 	"adobe-clean, 'Source Sans Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Ubuntu, 'Trebuchet MS', 'Lucida Grande', sans-serif";
-const FONT_SIZE = 14;
 
 export function getChartConfig(config: Config | undefined, colorScheme: ColorScheme): Config {
 	const defaultConfig = getSpectrumVegaConfig(colorScheme);
@@ -32,12 +38,12 @@ export function getChartConfig(config: Config | undefined, colorScheme: ColorSch
 }
 
 function getSpectrumVegaConfig(colorScheme: ColorScheme): Config {
+	const FONT_COLOR = getColorValue(DEFAULT_FONT_COLOR, colorScheme);
 	const {
 		'blue-400': blue400,
 		'gray-200': gray200,
 		'gray-300': gray300,
 		'gray-700': gray700,
-		'gray-800': gray800,
 		'gray-900': gray900,
 	} = spectrumColors[colorScheme];
 	const horizontalLegendLayout: BaseLegendLayout = {
@@ -67,11 +73,11 @@ function getSpectrumVegaConfig(colorScheme: ColorScheme): Config {
 			domainColor: gray900,
 			gridColor: gray200,
 			labelFont: ADOBE_CLEAN_FONT,
-			labelFontSize: FONT_SIZE,
+			labelFontSize: DEFAULT_FONT_SIZE,
 			labelFontWeight: 'normal',
 			labelPadding: 8,
 			labelOverlap: true,
-			labelColor: gray800,
+			labelColor: FONT_COLOR,
 			ticks: false,
 			tickColor: gray300,
 			tickRound: true,
@@ -79,9 +85,9 @@ function getSpectrumVegaConfig(colorScheme: ColorScheme): Config {
 			tickCap: 'round',
 			tickWidth: 1,
 			titleAnchor: 'middle',
-			titleColor: gray800,
+			titleColor: FONT_COLOR,
 			titleFont: ADOBE_CLEAN_FONT,
-			titleFontSize: FONT_SIZE,
+			titleFontSize: DEFAULT_FONT_SIZE,
 			titleFontWeight: 'bold',
 			titlePadding: 16,
 		},
@@ -97,9 +103,9 @@ function getSpectrumVegaConfig(colorScheme: ColorScheme): Config {
 		background: DEFAULT_BACKGROUND_COLOR,
 		legend: {
 			columnPadding: 20,
-			labelColor: gray700,
+			labelColor: FONT_COLOR,
 			labelFont: ADOBE_CLEAN_FONT,
-			labelFontSize: FONT_SIZE,
+			labelFontSize: DEFAULT_FONT_SIZE,
 			labelFontWeight: 'normal',
 			labelLimit: 184,
 			layout: {
@@ -112,9 +118,9 @@ function getSpectrumVegaConfig(colorScheme: ColorScheme): Config {
 			symbolSize: 250,
 			symbolType: ROUNDED_SQUARE_PATH,
 			symbolStrokeColor: gray700,
-			titleColor: gray800,
+			titleColor: FONT_COLOR,
 			titleFont: ADOBE_CLEAN_FONT,
-			titleFontSize: FONT_SIZE,
+			titleFontSize: DEFAULT_FONT_SIZE,
 			titlePadding: 8,
 		},
 		arc: {
@@ -149,15 +155,15 @@ function getSpectrumVegaConfig(colorScheme: ColorScheme): Config {
 			fill: defaultColor,
 		},
 		text: {
-			fill: gray800,
+			fill: FONT_COLOR,
 			font: ADOBE_CLEAN_FONT,
-			fontSize: FONT_SIZE,
+			fontSize: DEFAULT_FONT_SIZE,
 		},
 		title: {
 			offset: 10,
 			font: ADOBE_CLEAN_FONT,
 			fontSize: 18,
-			color: gray800,
+			color: FONT_COLOR,
 		},
 	};
 }

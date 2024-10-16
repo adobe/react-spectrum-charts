@@ -55,4 +55,34 @@ Icon.args = {
 	value: 0.5,
 };
 
-export { Basic, Color, Icon };
+const IconColor = bindWithProps(ReferenceLineStory);
+IconColor.args = {
+	icon: 'date',
+	iconColor: 'blue-500',
+	value: 0.5,
+};
+
+const Label = bindWithProps(ReferenceLineStory);
+Label.args = {
+	label: 'Middle',
+	value: 0.5,
+};
+
+const LabelColor = bindWithProps(ReferenceLineStory);
+LabelColor.args = {
+	label: 'Positive',
+	value: 0.5,
+	labelColor: 'green-700',
+};
+
+const Supreme = bindWithProps(ReferenceLineStory);
+Supreme.args = {
+	color: 'blue-500',
+	icon: 'sentimentPositive',
+	iconColor: 'yellow-700',
+	label: 'Good',
+	labelColor: 'green-700',
+	value: 0.5,
+};
+
+export { Basic, Color, Icon, IconColor, Label, LabelColor, Supreme };

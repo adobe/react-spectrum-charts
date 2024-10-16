@@ -10,11 +10,10 @@
  * governing permissions and limitations under the License.
  */
 import { ReferenceLine } from '@components/ReferenceLine';
-import { DEFAULT_LABEL_FONT_WEIGHT } from '@constants';
+import { DEFAULT_FONT_COLOR, DEFAULT_LABEL_FONT_WEIGHT } from '@constants';
 import { getColorValue, getPathFromIcon } from '@specBuilder/specUtils';
 import {
 	EncodeEntry,
-	FontWeight,
 	GuideEncodeEntry,
 	Mark,
 	NumericValueRef,
@@ -45,8 +44,11 @@ const applyReferenceLinePropDefaults = (
 	index: number
 ): ReferenceLineSpecProps => ({
 	...props,
-	color: props.color ?? 'gray-900',
+	color: props.color || 'gray-800',
 	colorScheme: axisProps.colorScheme,
+	iconColor: props.iconColor || DEFAULT_FONT_COLOR,
+	labelColor: props.labelColor || DEFAULT_FONT_COLOR,
+	labelFontWeight: props.labelFontWeight || DEFAULT_LABEL_FONT_WEIGHT,
 	name: `${axisProps.name}ReferenceLine${index}`,
 });
 
@@ -175,7 +177,7 @@ const getAdditiveMarkPositionProps = (
  */
 export const getReferenceLineSymbolMark = (
 	{ colorScheme, position }: AxisSpecProps,
-	{ icon, name }: ReferenceLineSpecProps,
+	{ icon, iconColor, name }: ReferenceLineSpecProps,
 	positionEncoding: ProductionRule<NumericValueRef> | SignalRef
 ): SymbolMark[] => {
 	if (!icon) return [];
@@ -194,7 +196,7 @@ export const getReferenceLineSymbolMark = (
 						value: getPathFromIcon(icon),
 					},
 					size: { value: 324 },
-					fill: { value: getColorValue('gray-900', colorScheme) },
+					fill: { value: getColorValue(iconColor, colorScheme) },
 				},
 				update: {
 					...positionProps[position],
@@ -213,17 +215,20 @@ export const getReferenceLineSymbolMark = (
  * @returns TextMark
  */
 export const getReferenceLineTextMark = (
-	{ position }: AxisSpecProps,
-	{ label, icon, labelFontWeight, name }: ReferenceLineSpecProps,
+	axisProps: AxisSpecProps,
+	referenceLineProps: ReferenceLineSpecProps,
 	positionEncoding: ProductionRule<NumericValueRef> | SignalRef
 ): TextMark[] => {
+	const { label, name } = referenceLineProps;
 	if (!label) return [];
 
 	return [
 		{
 			name: `${name}_label`,
 			type: 'text',
-			encode: { ...getReferenceLineLabelsEncoding(labelFontWeight, label, position, positionEncoding, icon) },
+			encode: {
+				...getReferenceLineLabelsEncoding(axisProps, { ...referenceLineProps, label }, positionEncoding),
+			},
 		},
 	];
 };
@@ -238,11 +243,9 @@ export const getReferenceLineTextMark = (
  * @returns updateEncoding
  */
 export const getReferenceLineLabelsEncoding = (
-	labelFontWeight: FontWeight | undefined,
-	label: string,
-	position: Position,
-	positionEncoding: ProductionRule<NumericValueRef> | SignalRef,
-	icon: string | undefined
+	{ position }: AxisSpecProps,
+	{ colorScheme, icon, label, labelColor, labelFontWeight }: ReferenceLineSpecProps & { label: string },
+	positionEncoding: ProductionRule<NumericValueRef> | SignalRef
 ): GuideEncodeEntry<TextEncodeEntry> => {
 	const VERTICAL_OFFSET = icon ? 48 : 26; // Position label outside of icon.
 	const HORIZONTAL_OFFSET = isVerticalAxis(position) && icon ? 24 : 12; // Position label outside of icon for horizontal orientation.
@@ -257,8 +260,9 @@ export const getReferenceLineLabelsEncoding = (
 			],
 			fontWeight: [
 				// default to the primary label font weight
-				{ value: labelFontWeight || DEFAULT_LABEL_FONT_WEIGHT },
+				{ value: labelFontWeight },
 			],
+			fill: { value: getColorValue(labelColor, colorScheme) },
 			...getEncodedLabelBaselineAlign(position),
 			...positionProps[position],
 		},
