@@ -16,7 +16,7 @@ import { numberFormatLocale } from 'vega-format';
 
 import { BigNumberNumberType } from '../../types';
 
-export const getFormattedString = (
+export const formatBigNumber = (
 	value: number,
 	numberType: BigNumberNumberType,
 	numberFormat?: string,

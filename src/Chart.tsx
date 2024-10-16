@@ -11,6 +11,7 @@
  */
 import { FC, forwardRef, useEffect, useMemo, useRef, useState } from 'react';
 
+import { BigNumberInternal } from '@components/BigNumber/BigNumber';
 import { EmptyState } from '@components/EmptyState';
 import { LoadingState } from '@components/LoadingState';
 import { DEFAULT_BACKGROUND_COLOR, DEFAULT_COLOR_SCHEME, DEFAULT_LINE_TYPES, DEFAULT_LOCALE } from '@constants';
@@ -18,7 +19,6 @@ import useChartHeight from '@hooks/useChartHeight';
 import useChartImperativeHandle from '@hooks/useChartImperativeHandle';
 import useChartWidth from '@hooks/useChartWidth';
 import { useResizeObserver } from '@hooks/useResizeObserver';
-import { BigNumber } from '@rsc';
 import { getColorValue } from '@specBuilder/specUtils';
 import { getBigNumberElementsFromChildren, toArray } from '@utils';
 import { v4 as uuid } from 'uuid';
@@ -29,7 +29,7 @@ import { Theme } from '@react-types/provider';
 
 import './Chart.css';
 import { RscChart } from './RscChart';
-import { BigNumberElement, ChartData, ChartHandle, ChartProps, LineType, RscChartProps } from './types';
+import { ChartData, ChartHandle, ChartProps, LineType, RscChartProps } from './types';
 
 interface PlaceholderContentProps {
 	data: ChartData[];
@@ -97,11 +97,6 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 
 		const showPlaceholderContent = useMemo(() => Boolean(loading ?? !data.length), [loading, data]);
 
-		const bigNumberElements = getBigNumberElementsFromChildren(props.children);
-
-		const bigNumberProps =
-			bigNumberElements.length > 0 ? (bigNumberElements[0] as BigNumberElement).props : undefined;
-
 		useEffect(() => {
 			// if placeholder content is displayed, clear out the chartview so it can't be downloaded or copied to clipboard
 			if (showPlaceholderContent) {
@@ -119,16 +114,6 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 		if (!props.children && !UNSAFE_vegaSpec) {
 			throw new Error(
 				'No children in the <Chart/> component. Chart is a collection components and requires children to draw correctly.'
-			);
-		}
-
-		const childrenCount = toArray(props.children).length;
-		const bigNumberCount = bigNumberElements.length;
-		if (bigNumberProps && childrenCount != bigNumberCount) {
-			console.warn(
-				`Detected ${
-					childrenCount - bigNumberCount
-				} children in the chart that are not BigNumber. Only BigNumber will be displayed. All other elements will be ignored`
 			);
 		}
 
@@ -158,8 +143,20 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 			UNSAFE_vegaSpec: UNSAFE_vegaSpec,
 		};
 
+		const bigNumberElements = getBigNumberElementsFromChildren(props.children);
+		// We only support the first big number provided to the chart.
+		const bigNumberProps = bigNumberElements.length ? bigNumberElements[0].props : undefined;
+		const childrenCount = toArray(props.children).length;
+		if (bigNumberProps && childrenCount > 1) {
+			console.warn(
+				`Detected ${
+					childrenCount - 1
+				} children in the chart that are not the first BigNumber. Only the first BigNumber will be displayed. All other elements will be ignored`
+			);
+		}
+
 		const chartContent = bigNumberProps ? (
-			<BigNumber {...bigNumberProps} rscChartProps={rscChartProps} />
+			<BigNumberInternal {...bigNumberProps} rscChartProps={rscChartProps} />
 		) : (
 			<RscChart {...rscChartProps}>{props.children}</RscChart>
 		);

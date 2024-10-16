@@ -277,15 +277,26 @@ export interface AxisProps extends BaseProps {
 }
 
 export interface BigNumberProps {
-	readonly orientation: Orientation;
-	readonly label: string;
-	readonly dataKey: string;
-	readonly children?: Children<BigNumberChildElement>;
-	readonly rscChartProps?: RscChartProps;
-	readonly numberFormat?: string;
-	readonly numberType?: BigNumberNumberType;
-	readonly method?: BigNumberMethod;
-	readonly icon?: IconElement;
+	orientation: Orientation;
+	label: string;
+	dataKey: string;
+	children?: Children<BigNumberChildElement>;
+	numberFormat?: string;
+	numberType?: BigNumberNumberType;
+	method?: BigNumberMethod;
+	icon?: IconElement;
+}
+
+export interface BigNumberInternalProps {
+	orientation: Orientation;
+	label: string;
+	dataKey: string;
+	children?: Children<BigNumberChildElement>;
+	rscChartProps: RscChartProps;
+	numberFormat?: string;
+	numberType?: BigNumberNumberType;
+	method?: BigNumberMethod;
+	icon?: IconElement;
 }
 
 export type BigNumberNumberType = 'linear' | 'percentage';

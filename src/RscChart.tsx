@@ -95,7 +95,6 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 		},
 		forwardedRef
 	) => {
-		// uuid is used to make a unique id so there aren't duplicate ids if there is more than one Chart component in the document
 		const selectedData = useRef<Datum | null>(null); // data that is currently selected, get's set on click if a popover exists
 		const selectedDataName = useRef<string>();
 		const selectedDataBounds = useRef<MarkBounds>();

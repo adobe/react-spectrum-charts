@@ -1,5 +1,3 @@
-/* eslint-disable react-hooks/rules-of-hooks */
-
 /*
  * Copyright 2024 Adobe. All rights reserved.
  * This file is licensed to you under the Apache License, Version 2.0 (the "License");
@@ -18,16 +16,32 @@ import { Line } from '@rsc';
 import { sanitizeBigNumberChildren } from '@utils';
 import { RscChart } from 'RscChart';
 import { getLocale } from 'utils/locale';
-import { v4 as uuid } from 'uuid';
-import { View as VegaView } from 'vega';
 
 import { Flex, FlexProps, IconProps } from '@adobe/react-spectrum';
 
-import { BigNumberMethod, BigNumberProps, ChartData, LineElement, LineProps, Orientation } from '../../types';
+import {
+	BigNumberInternalProps,
+	BigNumberMethod,
+	BigNumberProps,
+	ChartData,
+	LineElement,
+	LineProps,
+	Orientation,
+} from '../../types';
 import './BigNumber.css';
-import { getFormattedString } from './bigNumberFormatUtils';
+import { formatBigNumber } from './bigNumberFormatUtils';
 
-const BigNumber: FC<BigNumberProps> = ({
+// We expose this as the external big number, but all we do is take the props from it and pass them to our internal version alongside RscChartProps
+const BigNumber: FC<BigNumberProps> = () => {
+	return <></>;
+};
+
+/**
+ *  There are props such as rscChartProps that we don't want exposed externally.
+ *  We take the props from the external big number components and pass them to this internal component
+ *  alongside some additional props we add ourselves based on the RscChartProps so we can render the sparkline using an RSC line chart.
+ */
+const BigNumberInternal: FC<BigNumberInternalProps> = ({
 	dataKey,
 	label,
 	numberFormat,
@@ -38,21 +52,10 @@ const BigNumber: FC<BigNumberProps> = ({
 	numberType = 'linear',
 	method = 'last',
 }) => {
-	const chartId = useRef<string>(`rsc-${uuid()}`);
-	const chartView = useRef<VegaView>();
-
-	rscChartProps = rscChartProps ?? {
-		data: [],
-		chartId,
-		chartView,
-		chartWidth: 200,
-		chartHeight: 200,
-	};
-
-	const { chartWidth, chartHeight, locale, data, ...rscChartRemain } = rscChartProps;
+	const { chartWidth, chartHeight, locale, data, ...remainingChartProps } = rscChartProps;
 	const bigNumberValue = getBigNumberValue(data, dataKey, method);
 	const numberLocale = getLocale(locale).number;
-	const formattedValue = getFormattedString(bigNumberValue, numberType, numberFormat, numberLocale);
+	const formattedValue = formatBigNumber(bigNumberValue, numberType, numberFormat, numberLocale);
 	const lineElements = sanitizeBigNumberChildren(children);
 
 	let lineProps: LineProps | undefined;
@@ -82,7 +85,7 @@ const BigNumber: FC<BigNumberProps> = ({
 							chartHeight={cHeight}
 							data={data}
 							locale={locale}
-							{...rscChartRemain}
+							{...remainingChartProps}
 						>
 							<Line
 								{...lineProps}
@@ -132,6 +135,7 @@ const BigNumber: FC<BigNumberProps> = ({
 };
 
 BigNumber.displayName = 'BigNumber';
+BigNumberInternal.displayName = 'BigNumberInternal';
 
 function getDynamicProperties(
 	orientation: Orientation,
@@ -249,4 +253,4 @@ function getBigNumberValue(data: ChartData[], dataKey: string, method?: BigNumbe
 	}
 }
 
-export { BigNumber };
+export { BigNumber, BigNumberInternal };
