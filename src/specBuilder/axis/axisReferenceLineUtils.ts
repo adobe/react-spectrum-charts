@@ -186,7 +186,7 @@ export const getReferenceLineSymbolMark = (
 
 	return [
 		{
-			name: `${name}_icon`,
+			name: `${name}_symbol`,
 			type: 'symbol',
 			encode: {
 				enter: {

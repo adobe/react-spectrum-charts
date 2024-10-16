@@ -239,7 +239,7 @@ describe('getReferenceLineSymbolMark()', () => {
 						y: { signal: 'height + 24' },
 					},
 				},
-				name: 'axis0ReferenceLine0_icon',
+				name: 'axis0ReferenceLine0_symbol',
 				type: 'symbol',
 			},
 		]);

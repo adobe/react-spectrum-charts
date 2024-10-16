@@ -38,6 +38,7 @@ describe('getDefaultAxis()', () => {
 				{
 					baseline: false,
 					baselineOffset: 0,
+					children: [],
 					colorScheme: 'light',
 					granularity: 'day',
 					grid: true,
@@ -99,6 +100,7 @@ describe('getDefaultAxis()', () => {
 					baseline: false,
 					baselineOffset: 0,
 					colorScheme: 'light',
+					children: [],
 					granularity: 'day',
 					grid: true,
 					hideDefaultLabels: false,

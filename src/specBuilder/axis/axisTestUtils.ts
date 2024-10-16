@@ -50,6 +50,7 @@ export const defaultAxisProps: AxisSpecProps = {
 	name: 'axis0',
 	baseline: false,
 	baselineOffset: 0,
+	children: [],
 	colorScheme: DEFAULT_COLOR_SCHEME,
 	granularity: DEFAULT_GRANULARITY,
 	grid: false,

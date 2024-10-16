@@ -271,7 +271,7 @@ describe('Spec builder, Axis', () => {
 		test('should add test to hide labels if they would overlap the reference line icon', () => {
 			const labelTextEncoding = addAxes([], {
 				...defaultAxisProps,
-				children: createElement(ReferenceLine, { value: 10, icon: 'date' }),
+				children: [createElement(ReferenceLine, { value: 10, icon: 'date' })],
 				scaleName: 'xLinear',
 				scaleType: 'linear',
 			})[0].encode?.labels?.update?.text as ProductionRule<TextValueRef>;

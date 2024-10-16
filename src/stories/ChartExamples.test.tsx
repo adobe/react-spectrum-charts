@@ -246,10 +246,10 @@ describe('Time comparison stories', () => {
 			const chart = await findChart();
 			expect(chart).toBeInTheDocument();
 
-			const releaseLine = getMarksByGroupName(chart, 'axis0_xReferenceLineRule0', 'line');
+			const releaseLine = getMarksByGroupName(chart, 'axis0ReferenceLine0', 'line');
 			expect(releaseLine).toBeInTheDocument();
 
-			const releaseIcon = getMarksByGroupName(chart, 'axis0_xReferenceLineSymbol0');
+			const releaseIcon = getMarksByGroupName(chart, 'axis0ReferenceLine0_symbol');
 			expect(releaseIcon).toBeInTheDocument();
 		});
 

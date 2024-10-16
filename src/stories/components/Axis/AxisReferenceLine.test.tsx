@@ -50,7 +50,7 @@ describe('AxisReferenceLine', () => {
 		const chart = await findChart();
 		expect(chart).toBeInTheDocument();
 
-		const axisReferenceLineIcon = await findMarksByGroupName(chart, 'axis0ReferenceLine0_icon');
+		const axisReferenceLineIcon = await findMarksByGroupName(chart, 'axis0ReferenceLine0_symbol');
 		expect(axisReferenceLineIcon).toBeInTheDocument();
 	});
 });
