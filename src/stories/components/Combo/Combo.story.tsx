@@ -14,7 +14,7 @@ import { ReactElement } from 'react';
 import useChartProps from '@hooks/useChartProps';
 import { Axis, Bar, Chart, ChartTooltip, Line } from '@rsc';
 import { Combo } from '@rsc/alpha';
-import { peopleAdoptionComboData } from '@stories/data/data';
+import { peopleAdoptionComboData, peopleTotalComboData } from '@stories/data/data';
 import { formatTimestamp } from '@stories/storyUtils';
 import { StoryFn } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
@@ -87,6 +87,21 @@ const TooltipStory: StoryFn<typeof Combo> = (args): ReactElement => {
 	);
 };
 
+const DualAxisStory: StoryFn<typeof Combo> = (args): ReactElement => {
+	const chartProps = useChartProps({ ...defaultChartProps, data: peopleTotalComboData });
+	return (
+		<Chart {...chartProps}>
+			<Axis position="left" name="people" title="People" grid />
+			<Axis position="right" name="total" title="Total" />
+			<Axis position="bottom" labelFormat="time" baseline ticks />
+			<Combo {...args}>
+				<Bar metric="people" metricAxis="people" />
+				<Line metric="total" metricAxis="total" color={{ value: 'indigo-900' }} scaleType="point" />
+			</Combo>
+		</Chart>
+	);
+};
+
 const Basic = bindWithProps(BasicComboStory);
 Basic.args = {
 	name: 'combo0',
@@ -99,4 +114,10 @@ Tooltip.args = {
 	dimension: 'datetime',
 };
 
-export { Basic, Tooltip };
+const DualAxis = bindWithProps(DualAxisStory);
+DualAxis.args = {
+	name: 'combo0',
+	dimension: 'datetime',
+};
+
+export { Basic, Tooltip, DualAxis };

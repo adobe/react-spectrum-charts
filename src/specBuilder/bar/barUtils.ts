@@ -112,7 +112,10 @@ export const getTrellisedDimensionEncodings = (props: BarSpecProps): RectEncodeE
 
 export const getMetricEncodings = (props: BarSpecProps): RectEncodeEntry => {
 	const { metric, type } = props;
-	const { metricAxis: startKey, metricScaleKey: scaleKey } = getOrientationProperties(props.orientation);
+	const { metricAxis: startKey, metricScaleKey: scaleKey } = getOrientationProperties(
+		props.orientation,
+		props.metricAxis
+	);
 	const endKey = `${startKey}2`;
 
 	if (type === 'stacked' || isDodgedAndStacked(props)) {
@@ -126,7 +129,10 @@ export const getMetricEncodings = (props: BarSpecProps): RectEncodeEntry => {
 
 export const getStackedMetricEncodings = (props: BarSpecProps): RectEncodeEntry => {
 	const { metric, orientation } = props;
-	const { metricAxis: startKey, metricScaleKey: scaleKey } = getOrientationProperties(props.orientation);
+	const { metricAxis: startKey, metricScaleKey: scaleKey } = getOrientationProperties(
+		props.orientation,
+		props.metricAxis
+	);
 	const endKey = `${startKey}2`;
 
 	const startValue = `datum.${metric}0`;
@@ -339,24 +345,24 @@ export const getScaleValues = (props: BarSpecProps) => {
 export interface BarOrientationProperties {
 	metricAxis: 'x' | 'y';
 	dimensionAxis: 'x' | 'y';
-	metricScaleKey: 'yLinear' | 'xLinear';
+	metricScaleKey: string;
 	dimensionScaleKey: 'xBand' | 'yBand';
 	rangeScale: 'width' | 'height';
 }
 
-export const getOrientationProperties = (orientation: Orientation): BarOrientationProperties =>
+export const getOrientationProperties = (orientation: Orientation, scaleName?: string): BarOrientationProperties =>
 	orientation === 'vertical'
 		? {
 				metricAxis: 'y',
 				dimensionAxis: 'x',
-				metricScaleKey: 'yLinear',
+				metricScaleKey: scaleName || 'yLinear',
 				dimensionScaleKey: 'xBand',
 				rangeScale: 'width',
 		  }
 		: {
 				metricAxis: 'x',
 				dimensionAxis: 'y',
-				metricScaleKey: 'xLinear',
+				metricScaleKey: scaleName || 'xLinear',
 				dimensionScaleKey: 'yBand',
 				rangeScale: 'height',
 		  };

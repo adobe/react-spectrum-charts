@@ -383,6 +383,8 @@ export interface BarProps extends Omit<MarkProps, 'color'> {
 	trellisPadding?: number;
 	/** Bar type. */
 	type?: BarType;
+	/** Axis that the metric is trended against (y-axis for a vertical bar) */
+	metricAxis?: string;
 }
 
 export type BarType = 'dodged' | 'stacked';
