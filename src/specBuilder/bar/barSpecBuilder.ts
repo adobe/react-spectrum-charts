@@ -61,6 +61,7 @@ export const addBar = produce<Spec, [BarProps & { colorScheme?: ColorScheme; ind
 			lineType = { value: 'solid' },
 			lineWidth = 0,
 			metric = DEFAULT_METRIC,
+			metricAxis,
 			name,
 			opacity = { value: 1 },
 			orientation = 'vertical',
@@ -88,6 +89,7 @@ export const addBar = produce<Spec, [BarProps & { colorScheme?: ColorScheme; ind
 			lineWidth,
 			markType: 'bar',
 			metric,
+			metricAxis,
 			name: barName,
 			opacity,
 			paddingRatio,
@@ -196,8 +198,12 @@ export const getDodgeGroupTransform = ({ color, lineType, name, opacity, type }:
 };
 
 export const addScales = produce<Scale[], [BarSpecProps]>((scales, props) => {
-	const { color, lineType, opacity, orientation } = props;
-	addMetricScale(scales, getScaleValues(props), orientation === 'vertical' ? 'y' : 'x');
+	const { color, lineType, opacity, orientation, metricAxis } = props;
+	const axisType = orientation === 'vertical' ? 'y' : 'x';
+	addMetricScale(scales, getScaleValues(props), axisType);
+	if (metricAxis) {
+		addMetricScale(scales, getScaleValues(props), axisType, metricAxis);
+	}
 	addDimensionScale(scales, props);
 	addTrellisScale(scales, props);
 	addFieldToFacetScaleDomain(scales, COLOR_SCALE, color);

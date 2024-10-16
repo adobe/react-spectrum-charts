@@ -15,7 +15,7 @@ import '@matchMediaMock';
 import { Combo } from '@rsc/alpha';
 import { findAllMarksByGroupName, findChart, hoverNthElement, render, screen, within } from '@test-utils';
 
-import { Basic, Tooltip } from './Combo.story';
+import { Basic, DualAxis, Tooltip } from './Combo.story';
 
 describe('Combo', () => {
 	// Combo is not a real React component. This test just provides test coverage for sonarqube
@@ -38,7 +38,7 @@ describe('Combo', () => {
 
 		// get axes
 		const axes = await screen.findAllByRole('graphics-symbol');
-		const axisText = (index: number, text: string) => within(axes[index]).getByText(text);
+		const axisText = axisTextUtil(axes);
 		expect(axisText(0, 'People')).toBeInTheDocument();
 		expect(axisText(0, '30')).toBeInTheDocument();
 		expect(axisText(1, 'Adoption Rate')).toBeInTheDocument();
@@ -66,4 +66,28 @@ describe('Combo', () => {
 		expect(tooltip).toBeInTheDocument();
 		expect(within(tooltip).getByText('Nov 8')).toBeInTheDocument();
 	});
+
+	test('Dual Axis renders properly', async () => {
+		render(<DualAxis {...DualAxis.args} />);
+		const chart = await findChart();
+		expect(chart).toBeInTheDocument();
+
+		// get bars
+		const bars = await findAllMarksByGroupName(chart, 'combo0Bar0');
+		expect(bars.length).toEqual(7);
+
+		// get lines
+		const lines = await findAllMarksByGroupName(chart, 'combo0Line0');
+		expect(lines.length).toEqual(1);
+
+		// get axes
+		const axes = await screen.findAllByRole('graphics-symbol');
+		const axisText = axisTextUtil(axes);
+		expect(axisText(0, 'People')).toBeInTheDocument();
+		expect(axisText(0, '30')).toBeInTheDocument();
+		expect(axisText(1, 'Total')).toBeInTheDocument();
+		expect(axisText(1, '130')).toBeInTheDocument();
+	});
+
+	const axisTextUtil = (axes: HTMLElement[]) => (index: number, text: string) => within(axes[index]).getByText(text);
 });
