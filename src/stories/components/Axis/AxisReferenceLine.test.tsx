@@ -13,8 +13,9 @@ import React from 'react';
 
 import { ReferenceLine } from '@components/ReferenceLine';
 import { findChart, findMarksByGroupName, render } from '@test-utils';
+import { spectrumColors } from '@themes';
 
-import { Basic, Icon } from './AxisReferenceLine.story';
+import { Basic, Color, Icon } from './AxisReferenceLine.story';
 
 describe('AxisReferenceLine', () => {
 	// Axis is not a real React component. This is test just provides test coverage for sonarqube
@@ -28,8 +29,19 @@ describe('AxisReferenceLine', () => {
 		const chart = await findChart();
 		expect(chart).toBeInTheDocument();
 
-		const axisReferenceLine = await findMarksByGroupName(chart, 'axis0_xReferenceLineRule0', 'line');
+		const axisReferenceLine = await findMarksByGroupName(chart, 'axis0ReferenceLine0', 'line');
 		expect(axisReferenceLine).toBeInTheDocument();
+	});
+
+	test('Color renders', async () => {
+		render(<Color {...Color.args} />);
+
+		const chart = await findChart();
+		expect(chart).toBeInTheDocument();
+
+		const axisReferenceLine = await findMarksByGroupName(chart, 'axis0ReferenceLine0', 'line');
+		expect(axisReferenceLine).toBeInTheDocument();
+		expect(axisReferenceLine).toHaveAttribute('stroke', spectrumColors.light['blue-500']);
 	});
 
 	test('Icon renders', async () => {
@@ -38,7 +50,7 @@ describe('AxisReferenceLine', () => {
 		const chart = await findChart();
 		expect(chart).toBeInTheDocument();
 
-		const axisReferenceLineIcon = await findMarksByGroupName(chart, 'axis0_xReferenceLineSymbol0');
+		const axisReferenceLineIcon = await findMarksByGroupName(chart, 'axis0ReferenceLine0_symbol');
 		expect(axisReferenceLineIcon).toBeInTheDocument();
 	});
 });

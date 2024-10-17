@@ -43,10 +43,16 @@ Basic.args = {
 	value: 0.5,
 };
 
-const Icon = bindWithProps(ReferenceLineStory);
-Icon.args = {
+const Color = bindWithProps(ReferenceLineStory);
+Color.args = {
+	color: 'blue-500',
 	value: 0.5,
-	icon: 'date',
 };
 
-export { Basic, Icon };
+const Icon = bindWithProps(ReferenceLineStory);
+Icon.args = {
+	icon: 'date',
+	value: 0.5,
+};
+
+export { Basic, Color, Icon };

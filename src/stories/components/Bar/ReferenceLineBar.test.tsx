@@ -35,7 +35,7 @@ describe('AxisReferenceLine', () => {
 			const bars = await findAllMarksByGroupName(chart, 'bar0');
 			expect(bars.length).toEqual(5);
 
-			const axisReferenceLine = await findMarksByGroupName(chart, 'axis0_xReferenceLineRule0', 'line');
+			const axisReferenceLine = await findMarksByGroupName(chart, 'axis0ReferenceLine0', 'line');
 			expect(axisReferenceLine).toBeInTheDocument();
 			expect(axisReferenceLine).toHaveAttribute('transform', 'translate(298,0)');
 		});
@@ -50,7 +50,7 @@ describe('AxisReferenceLine', () => {
 			const bars = await findAllMarksByGroupName(chart, 'bar0');
 			expect(bars.length).toEqual(5);
 
-			const axisReferenceLineIcon = await findMarksByGroupName(chart, 'axis0_xReferenceLineSymbol0');
+			const axisReferenceLineIcon = await findMarksByGroupName(chart, 'axis0ReferenceLine0_symbol');
 			expect(axisReferenceLineIcon).toBeInTheDocument();
 			expect(axisReferenceLineIcon).toHaveAttribute('transform', 'translate(298,290)');
 		});
@@ -65,7 +65,7 @@ describe('AxisReferenceLine', () => {
 			const bars = await findAllMarksByGroupName(chart, 'bar0');
 			expect(bars.length).toEqual(5);
 
-			const axisReferenceLineLabel = await findMarksByGroupName(chart, 'axis0_xReferenceLineLabel0', 'text');
+			const axisReferenceLineLabel = await findMarksByGroupName(chart, 'axis0ReferenceLine0_label', 'text');
 			expect(axisReferenceLineLabel).toHaveAttribute('transform', 'translate(298,294)');
 		});
 
@@ -86,7 +86,7 @@ describe('AxisReferenceLine', () => {
 			const chart = await findChart();
 			expect(chart).toBeInTheDocument();
 
-			const axisReferenceLineIcon = await findMarksByGroupName(chart, 'axis0_xReferenceLineSymbol0');
+			const axisReferenceLineIcon = await findMarksByGroupName(chart, 'axis0ReferenceLine0_symbol');
 			expect(axisReferenceLineIcon).toBeInTheDocument();
 			expect(axisReferenceLineIcon).toHaveAttribute('transform', 'translate(298,271)');
 		});
@@ -97,7 +97,7 @@ describe('AxisReferenceLine', () => {
 			const chart = await findChart();
 			expect(chart).toBeInTheDocument();
 
-			const axisReferenceLineLabel = await findMarksByGroupName(chart, 'axis0_xReferenceLineLabel0', 'text');
+			const axisReferenceLineLabel = await findMarksByGroupName(chart, 'axis0ReferenceLine0_label', 'text');
 			expect(axisReferenceLineLabel).toHaveAttribute('transform', 'translate(298,295)');
 		});
 	});
@@ -113,7 +113,7 @@ describe('AxisReferenceLine', () => {
 			const bars = await findAllMarksByGroupName(chart, 'bar0');
 			expect(bars.length).toEqual(5);
 
-			const axisReferenceLine = await findMarksByGroupName(chart, 'axis0_xReferenceLineRule0', 'line');
+			const axisReferenceLine = await findMarksByGroupName(chart, 'axis0ReferenceLine0', 'line');
 			expect(axisReferenceLine).toBeInTheDocument();
 			expect(axisReferenceLine).toHaveAttribute('transform', 'translate(238.4,0)');
 		});
@@ -128,7 +128,7 @@ describe('AxisReferenceLine', () => {
 			const bars = await findAllMarksByGroupName(chart, 'bar0');
 			expect(bars.length).toEqual(5);
 
-			const axisReferenceLineIcon = await findMarksByGroupName(chart, 'axis0_xReferenceLineSymbol0');
+			const axisReferenceLineIcon = await findMarksByGroupName(chart, 'axis0ReferenceLine0_symbol');
 			expect(axisReferenceLineIcon).toBeInTheDocument();
 			expect(axisReferenceLineIcon).toHaveAttribute('transform', 'translate(238.4,290)');
 		});
@@ -143,7 +143,7 @@ describe('AxisReferenceLine', () => {
 			const bars = await findAllMarksByGroupName(chart, 'bar0');
 			expect(bars.length).toEqual(5);
 
-			const axisReferenceLineLabel = await findMarksByGroupName(chart, 'axis0_xReferenceLineLabel0', 'text');
+			const axisReferenceLineLabel = await findMarksByGroupName(chart, 'axis0ReferenceLine0_label', 'text');
 			expect(axisReferenceLineLabel).toHaveAttribute('transform', 'translate(238.4,294)');
 		});
 
@@ -164,7 +164,7 @@ describe('AxisReferenceLine', () => {
 			const chart = await findChart();
 			expect(chart).toBeInTheDocument();
 
-			const axisReferenceLineIcon = await findMarksByGroupName(chart, 'axis0_xReferenceLineSymbol0');
+			const axisReferenceLineIcon = await findMarksByGroupName(chart, 'axis0ReferenceLine0_symbol');
 			expect(axisReferenceLineIcon).toBeInTheDocument();
 			expect(axisReferenceLineIcon).toHaveAttribute('transform', 'translate(238.4,271)');
 		});
@@ -175,7 +175,7 @@ describe('AxisReferenceLine', () => {
 			const chart = await findChart();
 			expect(chart).toBeInTheDocument();
 
-			const axisReferenceLineLabel = await findMarksByGroupName(chart, 'axis0_xReferenceLineLabel0', 'text');
+			const axisReferenceLineLabel = await findMarksByGroupName(chart, 'axis0ReferenceLine0_label', 'text');
 			expect(axisReferenceLineLabel).toHaveAttribute('transform', 'translate(238.4,295)');
 		});
 	});
@@ -191,7 +191,7 @@ describe('AxisReferenceLine', () => {
 			const bars = await findAllMarksByGroupName(chart, 'bar0');
 			expect(bars.length).toEqual(5);
 
-			const axisReferenceLine = await findMarksByGroupName(chart, 'axis0_xReferenceLineRule0', 'line');
+			const axisReferenceLine = await findMarksByGroupName(chart, 'axis0ReferenceLine0', 'line');
 			expect(axisReferenceLine).toBeInTheDocument();
 			expect(axisReferenceLine).toHaveAttribute('transform', 'translate(357.59999999999997,0)');
 		});
@@ -206,7 +206,7 @@ describe('AxisReferenceLine', () => {
 			const bars = await findAllMarksByGroupName(chart, 'bar0');
 			expect(bars.length).toEqual(5);
 
-			const axisReferenceLineIcon = await findMarksByGroupName(chart, 'axis0_xReferenceLineSymbol0');
+			const axisReferenceLineIcon = await findMarksByGroupName(chart, 'axis0ReferenceLine0_symbol');
 			expect(axisReferenceLineIcon).toBeInTheDocument();
 			expect(axisReferenceLineIcon).toHaveAttribute('transform', 'translate(357.59999999999997,290)');
 		});
@@ -221,7 +221,7 @@ describe('AxisReferenceLine', () => {
 			const bars = await findAllMarksByGroupName(chart, 'bar0');
 			expect(bars.length).toEqual(5);
 
-			const axisReferenceLineLabel = await findMarksByGroupName(chart, 'axis0_xReferenceLineLabel0', 'text');
+			const axisReferenceLineLabel = await findMarksByGroupName(chart, 'axis0ReferenceLine0_label', 'text');
 			expect(axisReferenceLineLabel).toHaveAttribute('transform', 'translate(357.59999999999997,294)');
 		});
 
@@ -242,7 +242,7 @@ describe('AxisReferenceLine', () => {
 			const chart = await findChart();
 			expect(chart).toBeInTheDocument();
 
-			const axisReferenceLineIcon = await findMarksByGroupName(chart, 'axis0_xReferenceLineSymbol0');
+			const axisReferenceLineIcon = await findMarksByGroupName(chart, 'axis0ReferenceLine0_symbol');
 			expect(axisReferenceLineIcon).toBeInTheDocument();
 			expect(axisReferenceLineIcon).toHaveAttribute('transform', 'translate(357.59999999999997,271)');
 		});
@@ -253,7 +253,7 @@ describe('AxisReferenceLine', () => {
 			const chart = await findChart();
 			expect(chart).toBeInTheDocument();
 
-			const axisReferenceLineLabel = await findMarksByGroupName(chart, 'axis0_xReferenceLineLabel0', 'text');
+			const axisReferenceLineLabel = await findMarksByGroupName(chart, 'axis0ReferenceLine0_label', 'text');
 			expect(axisReferenceLineLabel).toHaveAttribute('transform', 'translate(357.59999999999997,295)');
 		});
 	});
@@ -269,7 +269,7 @@ describe('AxisReferenceLine', () => {
 			const bars = await findAllMarksByGroupName(chart, 'bar0');
 			expect(bars.length).toEqual(5);
 
-			const axisReferenceLineLabel = await findMarksByGroupName(chart, 'axis0_yReferenceLineLabel0', 'text');
+			const axisReferenceLineLabel = await findMarksByGroupName(chart, 'axis0ReferenceLine0_label', 'text');
 			expect(axisReferenceLineLabel).toHaveAttribute('transform', 'translate(-26,119.60000000000001)');
 		});
 
@@ -283,7 +283,7 @@ describe('AxisReferenceLine', () => {
 			const bars = await findAllMarksByGroupName(chart, 'bar0');
 			expect(bars.length).toEqual(5);
 
-			const axisReferenceLineIcon = await findMarksByGroupName(chart, 'axis0_yReferenceLineSymbol0');
+			const axisReferenceLineIcon = await findMarksByGroupName(chart, 'axis0ReferenceLine0_symbol');
 			expect(axisReferenceLineIcon).toBeInTheDocument();
 			expect(axisReferenceLineIcon).toHaveAttribute('transform', 'translate(-24,107.60000000000001)');
 		});
@@ -305,7 +305,7 @@ describe('AxisReferenceLine', () => {
 			const chart = await findChart();
 			expect(chart).toBeInTheDocument();
 
-			const axisReferenceLineIcon = await findMarksByGroupName(chart, 'axis0_yReferenceLineSymbol0');
+			const axisReferenceLineIcon = await findMarksByGroupName(chart, 'axis0ReferenceLine0_symbol');
 			expect(axisReferenceLineIcon).toBeInTheDocument();
 			expect(axisReferenceLineIcon).toHaveAttribute('transform', 'translate(-24,107.60000000000001)');
 		});
@@ -316,7 +316,7 @@ describe('AxisReferenceLine', () => {
 			const chart = await findChart();
 			expect(chart).toBeInTheDocument();
 
-			const axisReferenceLineLabel = await findMarksByGroupName(chart, 'axis0_yReferenceLineLabel0', 'text');
+			const axisReferenceLineLabel = await findMarksByGroupName(chart, 'axis0ReferenceLine0_label', 'text');
 			expect(axisReferenceLineLabel).toHaveAttribute('transform', 'translate(-48,131.60000000000002)');
 		});
 	});
@@ -328,7 +328,7 @@ describe('AxisReferenceLine', () => {
 			const chart = await findChart();
 			expect(chart).toBeInTheDocument();
 
-			const axisReferenceLineLabel = await findMarksByGroupName(chart, 'axis0_xReferenceLineLabel0', 'text');
+			const axisReferenceLineLabel = await findMarksByGroupName(chart, 'axis0ReferenceLine0_label', 'text');
 			expect(axisReferenceLineLabel).toHaveAttribute('font-weight', 'normal');
 		});
 
@@ -338,7 +338,7 @@ describe('AxisReferenceLine', () => {
 			const chart = await findChart();
 			expect(chart).toBeInTheDocument();
 
-			const axisReferenceLineLabel = await findMarksByGroupName(chart, 'axis0_xReferenceLineLabel0', 'text');
+			const axisReferenceLineLabel = await findMarksByGroupName(chart, 'axis0ReferenceLine0_label', 'text');
 			expect(axisReferenceLineLabel).toHaveAttribute('font-weight', 'bold');
 		});
 	});

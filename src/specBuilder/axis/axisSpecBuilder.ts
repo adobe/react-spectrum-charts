@@ -30,11 +30,7 @@ import { Axis, Data, GroupMark, Mark, ScaleType, Signal, Spec } from 'vega';
 
 import { AxisProps, AxisSpecProps, ColorScheme, Label, Orientation, Position } from '../../types';
 import { getAxisLabelsEncoding, getControlledLabelAnchorValues, getLabelValue } from './axisLabelUtils';
-import {
-	getReferenceLineMarks,
-	getReferenceLinesFromChildren,
-	scaleTypeSupportsReferenceLines,
-} from './axisReferenceLineUtils';
+import { getReferenceLineMarks, getReferenceLines, scaleTypeSupportsReferenceLines } from './axisReferenceLineUtils';
 import { encodeAxisTitle, getTrellisAxisProps, isTrellisedChart } from './axisTrellisUtils';
 import {
 	getBaselineRule,
@@ -233,7 +229,7 @@ export const addAxes = produce<Axis[], [AxisSpecProps & { scaleName: string; opp
 
 		if (scaleTypeSupportsReferenceLines(axisProps.scaleType)) {
 			// encode axis to hide labels that overlap reference line icons
-			const referenceLines = getReferenceLinesFromChildren(axisProps.children);
+			const referenceLines = getReferenceLines(axisProps);
 			referenceLines.forEach((referenceLineProps) => {
 				const { label: referenceLineLabel, icon, value, position: linePosition } = referenceLineProps;
 				const text = newAxes[0].encode?.labels?.update?.text;
@@ -265,15 +261,11 @@ export const addAxesMarks = produce<
 	Mark[],
 	[AxisSpecProps & { scaleName: string; scaleType?: ScaleType; opposingScaleType?: string }]
 >((marks, props) => {
-	const { baseline, baselineOffset, children, opposingScaleType, position, scaleName, scaleType } = props;
+	const { baseline, baselineOffset, opposingScaleType, position, scaleName, scaleType } = props;
 
 	// only add reference lines to linear or time scales
 	if (scaleTypeSupportsReferenceLines(scaleType)) {
-		const referenceLines = getReferenceLinesFromChildren(children);
-		referenceLines.forEach((referenceLineProps, referenceLineIndex) => {
-			const referenceLineMarks = getReferenceLineMarks(props, referenceLineProps, referenceLineIndex, scaleName);
-			marks.push(...referenceLineMarks);
-		});
+		marks.push(...getReferenceLineMarks(props, scaleName));
 	}
 
 	const trellisGroupMark = marks.find((mark) => mark.name?.includes('Trellis')) as GroupMark;
