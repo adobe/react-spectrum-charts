@@ -255,7 +255,8 @@ export interface TrendlineAnnotationSpecProps
 	trendlineOrientation: Orientation;
 	trendlineWidth: number;
 }
-type ReferenceLinePropsWithDefaults = 'color';
+
+type ReferenceLinePropsWithDefaults = 'color' | 'iconColor' | 'labelColor' | 'labelFontWeight';
 
 export interface ReferenceLineSpecProps extends PartiallyRequired<ReferenceLineProps, ReferenceLinePropsWithDefaults> {
 	colorScheme: ColorScheme;

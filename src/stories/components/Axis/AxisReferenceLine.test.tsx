@@ -12,10 +12,10 @@
 import React from 'react';
 
 import { ReferenceLine } from '@components/ReferenceLine';
-import { findChart, findMarksByGroupName, render } from '@test-utils';
+import { findChart, findMarksByGroupName, render, screen } from '@test-utils';
 import { spectrumColors } from '@themes';
 
-import { Basic, Color, Icon } from './AxisReferenceLine.story';
+import { Basic, Color, Icon, IconColor, Label, LabelColor } from './AxisReferenceLine.story';
 
 describe('AxisReferenceLine', () => {
 	// Axis is not a real React component. This is test just provides test coverage for sonarqube
@@ -33,7 +33,7 @@ describe('AxisReferenceLine', () => {
 		expect(axisReferenceLine).toBeInTheDocument();
 	});
 
-	test('Color renders', async () => {
+	test('Reference line gets the correct color', async () => {
 		render(<Color {...Color.args} />);
 
 		const chart = await findChart();
@@ -50,7 +50,39 @@ describe('AxisReferenceLine', () => {
 		const chart = await findChart();
 		expect(chart).toBeInTheDocument();
 
-		const axisReferenceLineIcon = await findMarksByGroupName(chart, 'axis0ReferenceLine0_symbol');
-		expect(axisReferenceLineIcon).toBeInTheDocument();
+		const icon = await findMarksByGroupName(chart, 'axis0ReferenceLine0_symbol');
+		expect(icon).toBeInTheDocument();
+	});
+
+	test('IconColor should apply the correct color to the label', async () => {
+		render(<IconColor {...IconColor.args} />);
+
+		const chart = await findChart();
+		expect(chart).toBeInTheDocument();
+
+		const icon = await findMarksByGroupName(chart, 'axis0ReferenceLine0_symbol');
+		expect(icon).toBeInTheDocument();
+		expect(icon).toHaveAttribute('fill', spectrumColors.light['blue-500']);
+	});
+
+	test('Label should display a custom label', async () => {
+		render(<Label {...Label.args} />);
+
+		const chart = await findChart();
+		expect(chart).toBeInTheDocument();
+
+		expect(screen.getByText('Middle')).toBeInTheDocument();
+	});
+
+	test('LabelColor should set custom color on label', async () => {
+		render(<LabelColor {...LabelColor.args} />);
+
+		const chart = await findChart();
+		expect(chart).toBeInTheDocument();
+
+		const text = screen.getByText('Positive');
+
+		expect(text).toBeInTheDocument();
+		expect(text).toHaveAttribute('fill', spectrumColors.light['green-700']);
 	});
 });

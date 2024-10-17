@@ -608,12 +608,16 @@ export interface ReferenceLineProps {
 	color?: SpectrumColor | string;
 	/** The value on the axis where the reference line should be drawn. */
 	value: number | string;
-	/** Adds an icon as the reference line label on the axis */
+	/** Adds an icon as the reference line label on the axis. */
 	icon?: Icon | string;
+	/** Color of the icon. */
+	iconColor?: SpectrumColor | string;
 	/** Position the line on the value, or between the previous/next value. Only supported in Bar visualizations. */
 	position?: 'before' | 'after' | 'center';
 	/** Axis text label. If not provided, the default label will be displayed. */
 	label?: string;
+	/** Color of the label. */
+	labelColor?: SpectrumColor | string;
 	/** Font weight of the label. */
 	labelFontWeight?: FontWeight;
 }
