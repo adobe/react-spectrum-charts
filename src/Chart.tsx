@@ -18,7 +18,9 @@ import useChartHeight from '@hooks/useChartHeight';
 import useChartImperativeHandle from '@hooks/useChartImperativeHandle';
 import useChartWidth from '@hooks/useChartWidth';
 import { useResizeObserver } from '@hooks/useResizeObserver';
+import { BigNumber } from '@rsc';
 import { getColorValue } from '@specBuilder/specUtils';
+import { getBigNumberElementsFromChildren, toArray } from '@utils';
 import { v4 as uuid } from 'uuid';
 import { View } from 'vega';
 
@@ -27,7 +29,7 @@ import { Theme } from '@react-types/provider';
 
 import './Chart.css';
 import { RscChart } from './RscChart';
-import { ChartData, ChartHandle, ChartProps, LineType } from './types';
+import { BigNumberElement, ChartData, ChartHandle, ChartProps, LineType, RscChartProps } from './types';
 
 interface PlaceholderContentProps {
 	data: ChartData[];
@@ -94,6 +96,12 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 		const chartHeight = useChartHeight(containerHeight, maxHeight, minHeight, height); // calculates the height the vega chart should be
 
 		const showPlaceholderContent = useMemo(() => Boolean(loading ?? !data.length), [loading, data]);
+
+		const bigNumberElements = getBigNumberElementsFromChildren(props.children);
+
+		const bigNumberProps =
+			bigNumberElements.length > 0 ? (bigNumberElements[0] as BigNumberElement).props : undefined;
+
 		useEffect(() => {
 			// if placeholder content is displayed, clear out the chartview so it can't be downloaded or copied to clipboard
 			if (showPlaceholderContent) {
@@ -114,6 +122,48 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 			);
 		}
 
+		const childrenCount = toArray(props.children).length;
+		const bigNumberCount = bigNumberElements.length;
+		if (bigNumberProps && childrenCount != bigNumberCount) {
+			console.warn(
+				`Detected ${
+					childrenCount - bigNumberCount
+				} children in the chart that are not BigNumber. Only BigNumber will be displayed. All other elements will be ignored`
+			);
+		}
+
+		const rscChartProps: RscChartProps = {
+			chartView: chartView,
+			chartId: chartId,
+			data: data,
+			backgroundColor: backgroundColor,
+			colors: colors,
+			colorScheme: colorScheme,
+			config: config,
+			description: description,
+			debug: debug,
+			hiddenSeries: hiddenSeries,
+			highlightedSeries: highlightedSeries,
+			lineTypes: lineTypes,
+			lineWidths: lineWidths,
+			locale: locale,
+			opacities: opacities,
+			padding: padding,
+			renderer: renderer,
+			symbolShapes: symbolShapes,
+			symbolSizes: symbolSizes,
+			title: title,
+			chartWidth: chartWidth,
+			chartHeight: chartHeight,
+			UNSAFE_vegaSpec: UNSAFE_vegaSpec,
+		};
+
+		const chartContent = bigNumberProps ? (
+			<BigNumber {...bigNumberProps} rscChartProps={rscChartProps} />
+		) : (
+			<RscChart {...rscChartProps}>{props.children}</RscChart>
+		);
+
 		return (
 			<Provider
 				colorScheme={colorScheme}
@@ -131,33 +181,7 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 								emptyStateText={emptyStateText}
 							/>
 						) : (
-							<RscChart
-								chartView={chartView}
-								chartId={chartId}
-								data={data}
-								backgroundColor={backgroundColor}
-								colors={colors}
-								colorScheme={colorScheme}
-								config={config}
-								description={description}
-								debug={debug}
-								hiddenSeries={hiddenSeries}
-								highlightedSeries={highlightedSeries}
-								lineTypes={lineTypes}
-								lineWidths={lineWidths}
-								locale={locale}
-								opacities={opacities}
-								padding={padding}
-								renderer={renderer}
-								symbolShapes={symbolShapes}
-								symbolSizes={symbolSizes}
-								title={title}
-								chartHeight={chartHeight}
-								chartWidth={chartWidth}
-								UNSAFE_vegaSpec={UNSAFE_vegaSpec}
-							>
-								{props.children}
-							</RscChart>
+							chartContent
 						)}
 					</div>
 				</div>

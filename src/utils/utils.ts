@@ -18,6 +18,7 @@ import {
 	Axis,
 	AxisAnnotation,
 	Bar,
+	BigNumber,
 	ChartPopover,
 	ChartTooltip,
 	Legend,
@@ -41,6 +42,8 @@ import {
 	AxisChildElement,
 	AxisElement,
 	BarElement,
+	BigNumberChildElement,
+	BigNumberElement,
 	ChartChildElement,
 	ChartElement,
 	ChartTooltipElement,
@@ -105,6 +108,18 @@ export const sanitizeRscChartChildren = (children: unknown): ChartChildElement[]
 	return toArray(children)
 		.flat()
 		.filter((child): child is ChartChildElement => chartChildDisplyNames.includes(getElementDisplayName(child)));
+};
+
+export const sanitizeBigNumberChildren = (children: unknown): BigNumberChildElement[] => {
+	return toArray(children)
+		.flat()
+		.filter((child): child is BigNumberChildElement => getElementDisplayName(child) === Line.displayName);
+};
+
+export const getBigNumberElementsFromChildren = (children: unknown): BigNumberElement[] => {
+	return toArray(children)
+		.flat()
+		.filter((child): child is BigNumberElement => getElementDisplayName(child) === BigNumber.displayName);
 };
 
 export const sanitizeMarkChildren = (children: unknown): MarkChildElement[] => {
@@ -263,6 +278,7 @@ export const getAllElements = (
 	source:
 		| typeof Axis
 		| typeof Bar
+		| typeof BigNumber
 		| typeof ChartPopover
 		| typeof ChartTooltip
 		| typeof Legend

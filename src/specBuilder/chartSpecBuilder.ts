@@ -31,7 +31,7 @@ import {
 	SYMBOL_SIZE_SCALE,
 	TABLE,
 } from '@constants';
-import { Area, Axis, Bar, Legend, Line, Scatter, Title } from '@rsc';
+import { Area, Axis, Bar, BigNumber, Legend, Line, Scatter, Title } from '@rsc';
 import { Combo } from '@rsc/alpha';
 import { Donut } from '@rsc/rc';
 import colorSchemes from '@themes/colorSchemes';
@@ -169,6 +169,9 @@ export function buildSpec({
 				case Title.displayName:
 					// No title count. There can only be one title.
 					return addTitle(acc, { ...(cur as TitleElement).props });
+				case BigNumber.displayName:
+					// Do nothing and do not throw an error
+					return acc;
 				case Combo.displayName:
 					return addCombo(acc, { ...(cur as ComboElement).props });
 				default:
@@ -194,10 +197,7 @@ export function buildSpec({
 
 export const removeUnusedScales = produce<Spec>((spec) => {
 	spec.scales = spec.scales?.filter((scale) => {
-		if ('domain' in scale && scale.domain && 'fields' in scale.domain && scale.domain.fields.length === 0) {
-			return false;
-		}
-		return true;
+		return !('domain' in scale && scale.domain && 'fields' in scale.domain && scale.domain.fields.length === 0);
 	});
 });
 
