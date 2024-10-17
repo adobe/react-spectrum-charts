@@ -25,7 +25,7 @@ export default {
 };
 
 const ErrorRateStory: StoryFn = (): ReactElement => {
-	const chartProps = useChartProps({ data: errorData, width: 600 });
+	const chartProps = useChartProps({ data: errorData, width: 800 });
 	return (
 		<Chart {...chartProps}>
 			<Line scaleType="linear" dimension="time" metric="errors" />
