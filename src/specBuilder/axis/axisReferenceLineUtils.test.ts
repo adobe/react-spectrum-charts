@@ -28,6 +28,7 @@ import { AxisSpecProps, ReferenceLineElement, ReferenceLineSpecProps } from '../
 import {
 	getPositionEncoding,
 	getReferenceLineLabelsEncoding,
+	getReferenceLineMarks,
 	getReferenceLineRuleMark,
 	getReferenceLineSymbolMark,
 	getReferenceLineTextMark,
@@ -43,6 +44,7 @@ const defaultReferenceLineProps: ReferenceLineSpecProps = {
 	iconColor: DEFAULT_FONT_COLOR,
 	labelColor: DEFAULT_FONT_COLOR,
 	labelFontWeight: DEFAULT_LABEL_FONT_WEIGHT,
+	layer: 'front',
 	name: 'axis0ReferenceLine0',
 };
 
@@ -138,6 +140,31 @@ describe('getPositionEncoding()', () => {
 				'xBand'
 			)
 		).toStrictEqual({ signal: "scale('xBand', 10) + bandwidth('xBand') / 2" });
+	});
+});
+
+describe('getReferenceLineMarks()', () => {
+	test('should put reference lines in the correct group based on layer', () => {
+		let referenceLines = getReferenceLineMarks(
+			{
+				...defaultAxisProps,
+				children: [createElement(ReferenceLine, { ...defaultReferenceLineProps, layer: 'back' })],
+			},
+			'xLinear'
+		);
+
+		expect(referenceLines.back.filter((mark) => mark.type === 'rule')).toHaveLength(1);
+		expect(referenceLines.front.filter((mark) => mark.type === 'rule')).toHaveLength(0);
+
+		referenceLines = getReferenceLineMarks(
+			{
+				...defaultAxisProps,
+				children: [createElement(ReferenceLine, { ...defaultReferenceLineProps, layer: 'front' })],
+			},
+			'xLinear'
+		);
+		expect(referenceLines.back.filter((mark) => mark.type === 'rule')).toHaveLength(0);
+		expect(referenceLines.front.filter((mark) => mark.type === 'rule')).toHaveLength(1);
 	});
 });
 
