@@ -616,6 +616,8 @@ export interface ReferenceLineProps {
 	position?: 'before' | 'after' | 'center';
 	/** Axis text label. If not provided, the default label will be displayed. */
 	label?: string;
+	/** Specifies what layer the reference line should be drawn on. `front` will render the reference line infront of other marks. `back` will draw the refence line behind other marks. */
+	layer?: 'back' | 'front';
 	/** Color of the label. */
 	labelColor?: SpectrumColor | string;
 	/** Font weight of the label. */

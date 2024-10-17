@@ -48,7 +48,8 @@ const applyReferenceLinePropDefaults = (
 	colorScheme: axisProps.colorScheme,
 	iconColor: props.iconColor || DEFAULT_FONT_COLOR,
 	labelColor: props.labelColor || DEFAULT_FONT_COLOR,
-	labelFontWeight: props.labelFontWeight || DEFAULT_LABEL_FONT_WEIGHT,
+	labelFontWeight: props.labelFontWeight ?? DEFAULT_LABEL_FONT_WEIGHT,
+	layer: props.layer ?? 'front',
 	name: `${axisProps.name}ReferenceLine${index}`,
 });
 
@@ -57,13 +58,14 @@ export const scaleTypeSupportsReferenceLines = (scaleType: ScaleType | undefined
 	return Boolean(scaleType && supportedScaleTypes.includes(scaleType));
 };
 
-export const getReferenceLineMarks = (axisProps: AxisSpecProps, scaleName: string): Mark[] => {
-	const referenceLineMarks: Mark[] = [];
+export const getReferenceLineMarks = (axisProps: AxisSpecProps, scaleName: string): { back: Mark[]; front: Mark[] } => {
+	const referenceLineMarks: { back: Mark[]; front: Mark[] } = { back: [], front: [] };
 	const referenceLines = getReferenceLines(axisProps);
 
 	for (const referenceLine of referenceLines) {
+		const { layer } = referenceLine;
 		const positionEncoding = getPositionEncoding(axisProps, referenceLine, scaleName);
-		referenceLineMarks.push(
+		referenceLineMarks[layer].push(
 			...[
 				getReferenceLineRuleMark(axisProps, referenceLine, positionEncoding),
 				...getReferenceLineSymbolMark(axisProps, referenceLine, positionEncoding),

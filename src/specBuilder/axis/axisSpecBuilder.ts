@@ -265,7 +265,9 @@ export const addAxesMarks = produce<
 
 	// only add reference lines to linear or time scales
 	if (scaleTypeSupportsReferenceLines(scaleType)) {
-		marks.push(...getReferenceLineMarks(props, scaleName));
+		const { back, front } = getReferenceLineMarks(props, scaleName);
+		marks.unshift(...back);
+		marks.push(...front);
 	}
 
 	const trellisGroupMark = marks.find((mark) => mark.name?.includes('Trellis')) as GroupMark;
