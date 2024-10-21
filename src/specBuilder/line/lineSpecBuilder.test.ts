@@ -26,6 +26,7 @@ import {
 	FILTERED_TABLE,
 	HIGHLIGHTED_ITEM,
 	HIGHLIGHTED_SERIES,
+	LINEAR_PADDING,
 	MARK_ID,
 	SERIES_ID,
 	TABLE,
@@ -124,7 +125,7 @@ const defaultSpec = initializeSpec({
 		{
 			domain: { data: FILTERED_TABLE, fields: [DEFAULT_TRANSFORMED_TIME_DIMENSION] },
 			name: 'xTime',
-			padding: 32,
+			padding: LINEAR_PADDING,
 			range: 'width',
 			type: 'time',
 		},
@@ -143,7 +144,7 @@ const defaultSpec = initializeSpec({
 const defaultLinearScale = {
 	domain: { data: FILTERED_TABLE, fields: [DEFAULT_TIME_DIMENSION] },
 	name: 'xLinear',
-	padding: 32,
+	padding: LINEAR_PADDING,
 	range: 'width',
 	type: 'linear',
 };

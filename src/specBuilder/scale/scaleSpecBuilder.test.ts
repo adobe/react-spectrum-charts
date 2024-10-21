@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { COLOR_SCALE, DEFAULT_COLOR } from '@constants';
+import { COLOR_SCALE, DEFAULT_COLOR, LINEAR_PADDING } from '@constants';
 import { OrdinalScale, Scale } from 'vega';
 
 import {
@@ -49,12 +49,12 @@ describe('addDomainFields()', () => {
 describe('getPadding()', () => {
 	test('time', () => {
 		expect(getPadding('time')).toStrictEqual({
-			padding: 32,
+			padding: LINEAR_PADDING,
 		});
 	});
 	test('linear', () => {
 		expect(getPadding('time')).toStrictEqual({
-			padding: 32,
+			padding: LINEAR_PADDING,
 		});
 	});
 	test('point', () => {

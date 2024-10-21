@@ -78,7 +78,7 @@ export const CORNER_RADIUS = 6;
 // padding constants
 export const DISCRETE_PADDING = 0.5;
 export const PADDING_RATIO = 0.4;
-export const LINEAR_PADDING = 32;
+export const LINEAR_PADDING = 0;
 export const TRELLIS_PADDING = 0.2;
 
 // donut constants
