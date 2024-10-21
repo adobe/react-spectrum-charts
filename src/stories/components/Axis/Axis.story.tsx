@@ -55,7 +55,7 @@ const AxisStory: StoryFn<typeof Axis> = (args): ReactElement => {
 };
 
 const TimeAxisStory: StoryFn<typeof Axis> = (args): ReactElement => {
-	const chartProps = useChartProps({ data: timeData[args.granularity ?? DEFAULT_GRANULARITY], width: 'auto' });
+	const chartProps = useChartProps({ data: timeData[args.granularity ?? DEFAULT_GRANULARITY], width: 600 });
 	return (
 		<Chart {...chartProps}>
 			<Axis {...args} />
