@@ -9,7 +9,14 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { BACKGROUND_COLOR, DEFAULT_SYMBOL_SIZE, DEFAULT_SYMBOL_STROKE_WIDTH, MARK_ID, SELECTED_ITEM } from '@constants';
+import {
+	BACKGROUND_COLOR,
+	DEFAULT_SYMBOL_SIZE,
+	DEFAULT_SYMBOL_STROKE_WIDTH,
+	MARK_ID,
+	SELECTED_GROUP,
+	SELECTED_ITEM,
+} from '@constants';
 import {
 	getColorProductionRule,
 	getHighlightOpacityValue,
@@ -25,7 +32,8 @@ import { LineSpecProps, ProductionRuleTests } from '../../types';
 import { LineMarkProps } from './lineUtils';
 
 const staticPointTest = (staticPoint: string) => `datum.${staticPoint} && datum.${staticPoint} === true`;
-const selectedTest = `${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${MARK_ID}`;
+const getSelectedTest = (name: string) =>
+	`(${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${MARK_ID}) || (${SELECTED_GROUP} && ${SELECTED_GROUP} === datum.${name}_selectedGroupId)`;
 
 /**
  * Gets the point mark for static points on a line chart.
@@ -86,17 +94,12 @@ export const getHighlightBackgroundPoint = (lineProps: LineMarkProps): SymbolMar
 	};
 };
 
-/**
- * Displays a point on hover or select on the line.
- * @param lineMarkProps
- * @returns SymbolMark
- */
-export const getHighlightPoint = (lineProps: LineMarkProps): SymbolMark => {
+const getHighlightOrSelectionPoint = (lineProps: LineMarkProps, useHighlightedData = true): SymbolMark => {
 	const { color, colorScheme, dimension, metric, metricAxis, name, scaleType } = lineProps;
 	return {
-		name: `${name}_point`,
+		name: `${name}_point_${useHighlightedData ? 'highlight' : 'select'}`,
 		type: 'symbol',
-		from: { data: `${name}_highlightedData` },
+		from: { data: `${name}${useHighlightedData ? '_highlightedData' : '_selectedData'}` },
 		interactive: false,
 		encode: {
 			enter: {
@@ -113,6 +116,24 @@ export const getHighlightPoint = (lineProps: LineMarkProps): SymbolMark => {
 			},
 		},
 	};
+};
+
+/**
+ * Displays a point on hover on the line.
+ * @param lineMarkProps
+ * @returns SymbolMark
+ */
+export const getHighlightPoint = (lineProps: LineMarkProps): SymbolMark => {
+	return getHighlightOrSelectionPoint(lineProps, true);
+};
+
+/**
+ * Displays a point on select on the line.
+ * @param lineMarkProps
+ * @returns SymbolMark
+ */
+export const getSelectionPoint = (lineProps: LineMarkProps): SymbolMark => {
+	return getHighlightOrSelectionPoint(lineProps, false);
 };
 
 /**
@@ -150,12 +171,15 @@ export const getSecondaryHighlightPoint = (
  * @returns fill rule
  */
 export const getHighlightPointFill = ({
+	name,
 	children,
 	color,
 	colorScheme,
 	staticPoint,
 }: LineMarkProps): ProductionRuleTests<ColorValueRef> => {
 	const fillRules: ProductionRuleTests<ColorValueRef> = [];
+	const selectedTest = getSelectedTest(name);
+
 	if (staticPoint) {
 		fillRules.push({ test: staticPointTest(staticPoint), ...getColorProductionRule(color, colorScheme) });
 	}
@@ -171,18 +195,22 @@ export const getHighlightPointFill = ({
  * @returns stroke rule
  */
 export const getHighlightPointStroke = ({
+	name,
 	children,
 	color,
 	colorScheme,
 	staticPoint,
 }: LineMarkProps): ProductionRuleTests<ColorValueRef> => {
 	const strokeRules: ProductionRuleTests<ColorValueRef> = [];
+	const selectedTest = getSelectedTest(name);
+
 	if (staticPoint) {
 		strokeRules.push({ test: staticPointTest(staticPoint), ...getColorProductionRule(color, colorScheme) });
 	}
 	if (hasPopover(children)) {
 		strokeRules.push({ test: selectedTest, signal: BACKGROUND_COLOR });
 	}
+
 	return [...strokeRules, getColorProductionRule(color, colorScheme)];
 };
 
@@ -247,10 +275,12 @@ export const getHighlightPointStrokeWidth = ({ staticPoint }: LineMarkProps): Pr
  */
 export const getSelectRingPoint = (lineProps: LineMarkProps): SymbolMark => {
 	const { colorScheme, dimension, metric, metricAxis, name, scaleType } = lineProps;
+	const selectedTest = getSelectedTest(name);
+
 	return {
 		name: `${name}_pointSelectRing`,
 		type: 'symbol',
-		from: { data: `${name}_highlightedData` },
+		from: { data: `${name}_selectedData` },
 		interactive: false,
 		encode: {
 			enter: {

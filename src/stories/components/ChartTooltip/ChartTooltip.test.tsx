@@ -72,7 +72,7 @@ describe('ChartTooltip', () => {
 
 		const highlightRule = await findMarksByGroupName(chart, 'line0_hoverRule', 'line');
 		expect(highlightRule).toBeInTheDocument();
-		const highlightPoint = await findMarksByGroupName(chart, 'line0_point');
+		const highlightPoint = await findMarksByGroupName(chart, 'line0_point_highlight');
 		expect(highlightPoint).toBeInTheDocument();
 
 		// unhover and validate the highlights go away

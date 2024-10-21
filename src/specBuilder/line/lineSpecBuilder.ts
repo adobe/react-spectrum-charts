@@ -19,6 +19,7 @@ import {
 	LINE_TYPE_SCALE,
 	OPACITY_SCALE,
 } from '@constants';
+import { addPopoverData } from '@specBuilder/chartPopover/chartPopoverUtils';
 import { addTooltipData, addTooltipSignals, isHighlightedByGroup } from '@specBuilder/chartTooltip/chartTooltipUtils';
 import { getHoverMarkNames, hasInteractiveChildren, hasPopover } from '@specBuilder/marks/markUtils';
 import {
@@ -104,6 +105,7 @@ export const addData = produce<Data[], [LineSpecProps]>((data, props) => {
 	if (staticPoint) data.push(getLineStaticPointData(name, staticPoint, FILTERED_TABLE));
 	addTrendlineData(data, props);
 	addTooltipData(data, props, false);
+	addPopoverData(data, props);
 	data.push(...getMetricRangeData(props));
 });
 

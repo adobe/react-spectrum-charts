@@ -10,22 +10,18 @@
  * governing permissions and limitations under the License.
  */
 import { ChartPopover } from '@components/ChartPopover';
-import { FILTERED_TABLE, SELECTED_GROUP, SERIES_ID } from '@constants';
+import { FILTERED_TABLE, MARK_ID, SELECTED_GROUP, SERIES_ID } from '@constants';
 import { getFilteredTableData } from '@specBuilder/data/dataUtils';
 import { Data, FormulaTransform, SourceData } from 'vega';
 
-import {
-	AreaSpecProps,
-	BarSpecProps,
-	ChartPopoverElement,
-	ChartPopoverProps,
-	ChartPopoverSpecProps,
-	DonutSpecProps,
-	LineSpecProps,
-	ScatterSpecProps,
-} from '../../types';
+import { ChartPopoverElement, ChartPopoverProps, ChartPopoverSpecProps, MarkChildElement } from '../../types';
 
-type PopoverParentProps = AreaSpecProps | BarSpecProps | DonutSpecProps | LineSpecProps | ScatterSpecProps;
+type PopoverParentProps = {
+	children: MarkChildElement[];
+	markType?: string;
+	name: string;
+	dimension: string;
+};
 
 /**
  * gets all the popovers
@@ -66,7 +62,6 @@ export const addPopoverData = (data: Data[], markProps: PopoverParentProps, addH
 	const popovers = getPopovers(markProps);
 
 	for (const { UNSAFE_highlightBy, markName } of popovers) {
-		if (UNSAFE_highlightBy === 'item') return;
 		const filteredTable = getFilteredTableData(data);
 		if (!filteredTable.transform) {
 			filteredTable.transform = [];
@@ -77,6 +72,8 @@ export const addPopoverData = (data: Data[], markProps: PopoverParentProps, addH
 			filteredTable.transform.push(getGroupIdTransform([SERIES_ID], markName));
 		} else if (Array.isArray(UNSAFE_highlightBy)) {
 			filteredTable.transform.push(getGroupIdTransform(UNSAFE_highlightBy, markName));
+		} else {
+			filteredTable.transform.push(getGroupIdTransform([MARK_ID], markName));
 		}
 
 		if (addHighlightedData) {

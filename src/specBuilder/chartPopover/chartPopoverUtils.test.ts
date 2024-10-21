@@ -47,12 +47,11 @@ describe('addPopoverData()', () => {
 	beforeEach(() => {
 		data = JSON.parse(JSON.stringify(baseData));
 	});
-	test('if highlightBy is `item` or undefined, no data should be added', () => {
-		const markProps = getDefautltMarkProps();
+	test('should add the group id transform if highlightBy is `item`', () => {
+		const markProps = getDefautltMarkProps({ UNSAFE_highlightBy: 'item' });
 		addPopoverData(data, markProps);
-		expect(data).toEqual(baseData);
-		addPopoverData(data, getDefautltMarkProps({ UNSAFE_highlightBy: 'item' }));
-		expect(data).toEqual(baseData);
+		expect(data[1].transform?.length).toBe(1);
+		expect(data[1].transform?.[0]).toHaveProperty('as', 'bar0_selectedGroupId');
 	});
 	test('should add the group id transform if highlightBy is `dimension`', () => {
 		const markProps = getDefautltMarkProps({ UNSAFE_highlightBy: 'dimension' });
