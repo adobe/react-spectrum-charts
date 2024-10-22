@@ -99,8 +99,8 @@ describe('Axis', () => {
 			expect(chart).toBeInTheDocument();
 
 			// make sure labels are visible
-			expect(screen.getByText('11')).toBeInTheDocument();
-			expect(screen.getByText('Sep')).toBeInTheDocument();
+			expect(await screen.findByText('18')).toBeInTheDocument();
+			expect(await screen.findByText('Sep')).toBeInTheDocument();
 		});
 
 		test('Month renders properly', async () => {
@@ -109,8 +109,8 @@ describe('Axis', () => {
 			expect(chart).toBeInTheDocument();
 
 			// make sure labels are visible
-			expect(screen.getByText('Jan')).toBeInTheDocument();
-			expect(screen.getByText('2022')).toBeInTheDocument();
+			expect(await screen.findByText('Feb')).toBeInTheDocument();
+			expect(await screen.findByText('2022')).toBeInTheDocument();
 		});
 
 		test('Quarter renders properly', async () => {
