@@ -98,6 +98,7 @@ describe('Axis', () => {
 			const chart = await findChart();
 			expect(chart).toBeInTheDocument();
 
+			screen.debug(chart, Infinity);
 			// make sure labels are visible
 			expect(screen.getByText('11')).toBeInTheDocument();
 			expect(screen.getByText('Sep')).toBeInTheDocument();
@@ -108,6 +109,7 @@ describe('Axis', () => {
 			const chart = await findChart();
 			expect(chart).toBeInTheDocument();
 
+			screen.debug(chart, Infinity);
 			// make sure labels are visible
 			expect(screen.getByText('Jan')).toBeInTheDocument();
 			expect(screen.getByText('2022')).toBeInTheDocument();
