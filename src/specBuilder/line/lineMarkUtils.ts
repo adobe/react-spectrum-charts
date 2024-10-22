@@ -17,6 +17,7 @@ import {
 	SELECTED_SERIES,
 	SERIES_ID,
 } from '@constants';
+import { getPopovers } from '@specBuilder/chartPopover/chartPopoverUtils';
 import {
 	getColorProductionRule,
 	getItemHoverArea,
@@ -37,6 +38,7 @@ import {
 	getHighlightPoint,
 	getSecondaryHighlightPoint,
 	getSelectRingPoint,
+	getSelectionPoint,
 } from './linePointUtils';
 import { LineMarkProps } from './lineUtils';
 
@@ -49,6 +51,10 @@ import { LineMarkProps } from './lineUtils';
 export const getLineMark = (lineMarkProps: LineMarkProps, dataSource: string): LineMark => {
 	const { color, colorScheme, dimension, lineType, lineWidth, metric, metricAxis, name, opacity, scaleType } =
 		lineMarkProps;
+	const popovers = getPopovers(lineMarkProps);
+	const popoverWithDimensionHighlightExists = popovers.some(
+		({ UNSAFE_highlightBy }) => UNSAFE_highlightBy === 'dimension'
+	);
 
 	return {
 		name,
@@ -67,7 +73,7 @@ export const getLineMark = (lineMarkProps: LineMarkProps, dataSource: string): L
 				// this has to be in update because when you resize the window that doesn't rebuild the spec
 				// but it may change the x position if it causes the chart to resize
 				x: getXProductionRule(scaleType, dimension),
-				opacity: getLineOpacity(lineMarkProps),
+				...(popoverWithDimensionHighlightExists ? {} : { opacity: getLineOpacity(lineMarkProps) }),
 			},
 		},
 	};
@@ -125,8 +131,8 @@ export const getLineHoverMarks = (
 		getHoverRule(dimension, name, scaleType),
 		// point behind the hovered or selected point used to prevent bacgorund elements from being visible through low opacity point
 		getHighlightBackgroundPoint(lineProps),
-		// if has popover, add selection ring,
-		...(hasPopover(children) ? [getSelectRingPoint(lineProps)] : []),
+		// if has popover, add selection ring and selection point
+		...(hasPopover(children) ? [getSelectRingPoint(lineProps), getSelectionPoint(lineProps)] : []),
 		// hover or select point
 		getHighlightPoint(lineProps),
 		// additional point that gets highlighted like the trendline or raw line point
@@ -150,6 +156,7 @@ const getHoverRule = (dimension: string, name: string, scaleType: ScaleType): Ru
 			},
 			update: {
 				x: getXProductionRule(scaleType, dimension),
+				opacity: { signal: `length(data('${name}_selectedData')) > 0 ? 0 : 1` },
 			},
 		},
 	};

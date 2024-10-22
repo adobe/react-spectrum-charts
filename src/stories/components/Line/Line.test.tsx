@@ -271,7 +271,7 @@ describe('Line', () => {
 			expect(backgroundPoints[0]).not.toHaveAttribute('fill-opacity');
 			expect(backgroundPoints[0]).not.toHaveAttribute('stroke-opacity');
 
-			const hoverPoints = await findAllMarksByGroupName(chart, 'line0_point');
+			const hoverPoints = await findAllMarksByGroupName(chart, 'line0_point_highlight');
 			expect(hoverPoints.length).toBe(1);
 			expect(hoverPoints[0].getAttribute('fill')).toEqual('rgb(255, 255, 255)');
 			expect(hoverPoints[0].getAttribute('stroke')).toEqual('rgb(15, 181, 174)');
@@ -321,7 +321,7 @@ describe('Line', () => {
 			expect(backgroundPoints[0]).not.toHaveAttribute('fill-opacity');
 			expect(backgroundPoints[0]).not.toHaveAttribute('stroke-opacity');
 
-			const hoverPoints = await findAllMarksByGroupName(chart, 'line0_point');
+			const hoverPoints = await findAllMarksByGroupName(chart, 'line0_point_highlight');
 			expect(hoverPoints.length).toBe(1);
 			expect(hoverPoints[0].getAttribute('fill')).toEqual('rgb(15, 181, 174)');
 			expect(hoverPoints[0].getAttribute('stroke')).toEqual('rgb(15, 181, 174)');
@@ -357,7 +357,7 @@ describe('Line', () => {
 			// select a static point
 			await clickNthElement(paths, 1);
 
-			const point = await findMarksByGroupName(chart, 'line0_point');
+			const point = await findMarksByGroupName(chart, 'line0_point_select');
 			expect(point).toBeInTheDocument();
 
 			// series color fill
@@ -377,7 +377,7 @@ describe('Line', () => {
 			// select a standard point
 			await clickNthElement(paths, 2);
 
-			const point = await findMarksByGroupName(chart, 'line0_point');
+			const point = await findMarksByGroupName(chart, 'line0_point_select');
 			expect(point).toBeInTheDocument();
 
 			// series color fill

@@ -49,6 +49,14 @@ describe('getLineMark()', () => {
 		});
 	});
 
+	test('should have no opacity rule for dimension popover highlighting', () => {
+		const lineMark = getLineMark(
+			{ ...defaultLineMarkProps, children: [createElement(ChartPopover, { UNSAFE_highlightBy: 'dimension' })] },
+			'line0_facet'
+		);
+		expect(lineMark.encode?.update?.opacity).toBeUndefined();
+	});
+
 	test('should have undefined strokeWidth if lineWidth if undefined', () => {
 		const lineMark = getLineMark({ ...defaultLineMarkProps, lineWidth: undefined }, 'line0_facet');
 		expect(lineMark.encode?.enter?.strokeWidth).toBeUndefined();
@@ -69,7 +77,7 @@ describe('getLineMark()', () => {
 });
 
 describe('getLineHoverMarks()', () => {
-	test('should return 4 marks by default', () => {
+	test('should return 5 marks by default', () => {
 		expect(
 			getLineHoverMarks({ ...defaultLineMarkProps, isHighlightedByDimension: true, children: [] }, 'line0_facet')
 		).toHaveLength(5);
@@ -81,6 +89,25 @@ describe('getLineHoverMarks()', () => {
 				'line0_facet'
 			)
 		).toHaveLength(4);
+	});
+	test('should return 7 marks if a popover is present', () => {
+		expect(
+			getLineHoverMarks(
+				{
+					...defaultLineMarkProps,
+					isHighlightedByDimension: true,
+					children: [createElement(ChartPopover, { UNSAFE_highlightBy: 'dimension' })],
+				},
+				'line0_facet'
+			)
+		).toHaveLength(7);
+	});
+	test('should have opacity of 0 if a selected item exists', () => {
+		const marks = getLineHoverMarks(
+			{ ...defaultLineMarkProps, isHighlightedByDimension: true, children: [createElement(ChartPopover)] },
+			'line0_facet'
+		);
+		expect(marks[0].encode?.update?.opacity).toEqual({ signal: "length(data('line0_selectedData')) > 0 ? 0 : 1" });
 	});
 });
 

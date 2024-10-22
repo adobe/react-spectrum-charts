@@ -163,7 +163,7 @@ describe('ChartPopover', () => {
 		// validate the highlight visuals are present
 		const highlightRule = await findMarksByGroupName(chart, 'line0_hoverRule', 'line');
 		expect(highlightRule).toBeInTheDocument();
-		const highlightPoint = await findMarksByGroupName(chart, 'line0_point');
+		const highlightPoint = await findMarksByGroupName(chart, 'line0_point_select');
 		expect(highlightPoint).toBeInTheDocument();
 
 		// click on chart which should hide the popover and the highlight visuals
