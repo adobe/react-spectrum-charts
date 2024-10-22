@@ -70,8 +70,8 @@
 		"sonar-fork-pr": "node ./scripts/runSonarOnFork.js",
 		"start": "yarn storybook",
 		"storybook": "cross-env NODE_OPTIONS=--openssl-legacy-provider && storybook dev -p 6009",
-		"test": "cross-env BABEL_ENV=test jest",
-		"watch": "cross-env BABEL_ENV=test jest --watch",
+		"test": "cross-env TZ=UTC BABEL_ENV=test jest",
+		"watch": "cross-env TZ=UTC BABEL_ENV=test jest --watch",
 		"skulk": "yarn watch --silent"
 	},
 	"devDependencies": {

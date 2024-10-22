@@ -99,7 +99,7 @@ describe('Axis', () => {
 			expect(chart).toBeInTheDocument();
 
 			// make sure labels are visible
-			expect(await screen.findByText('11')).toBeInTheDocument();
+			expect(await screen.findByText('18')).toBeInTheDocument();
 			expect(await screen.findByText('Sep')).toBeInTheDocument();
 		});
 
@@ -109,7 +109,7 @@ describe('Axis', () => {
 			expect(chart).toBeInTheDocument();
 
 			// make sure labels are visible
-			expect(await screen.findByText('Jan')).toBeInTheDocument();
+			expect(await screen.findByText('Feb')).toBeInTheDocument();
 			expect(await screen.findByText('2022')).toBeInTheDocument();
 		});
 
