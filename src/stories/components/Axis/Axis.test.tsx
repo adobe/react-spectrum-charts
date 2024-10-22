@@ -98,10 +98,9 @@ describe('Axis', () => {
 			const chart = await findChart();
 			expect(chart).toBeInTheDocument();
 
-			screen.debug(chart, Infinity);
 			// make sure labels are visible
-			expect(screen.getByText('11')).toBeInTheDocument();
-			expect(screen.getByText('Sep')).toBeInTheDocument();
+			expect(await screen.findByText('11')).toBeInTheDocument();
+			expect(await screen.findByText('Sep')).toBeInTheDocument();
 		});
 
 		test('Month renders properly', async () => {
@@ -109,10 +108,9 @@ describe('Axis', () => {
 			const chart = await findChart();
 			expect(chart).toBeInTheDocument();
 
-			screen.debug(chart, Infinity);
 			// make sure labels are visible
-			expect(screen.getByText('Jan')).toBeInTheDocument();
-			expect(screen.getByText('2022')).toBeInTheDocument();
+			expect(await screen.findByText('Jan')).toBeInTheDocument();
+			expect(await screen.findByText('2022')).toBeInTheDocument();
 		});
 
 		test('Quarter renders properly', async () => {
