@@ -27,6 +27,7 @@ import {
 	LineElement,
 	LineProps,
 	Orientation,
+	RscChartProps,
 } from '../../types';
 import './BigNumber.css';
 import { formatBigNumber } from './bigNumberFormatUtils';
@@ -52,7 +53,7 @@ const BigNumberInternal: FC<BigNumberInternalProps> = ({
 	numberType = 'linear',
 	method = 'last',
 }) => {
-	const { chartWidth, chartHeight, locale, data, ...remainingChartProps } = rscChartProps;
+	const { chartWidth, chartHeight, locale, data } = rscChartProps;
 	const bigNumberValue = getBigNumberValue(data, dataKey, method);
 	const numberLocale = getLocale(locale).number;
 	const formattedValue = formatBigNumber(bigNumberValue, numberType, numberFormat, numberLocale);
@@ -63,8 +64,8 @@ const BigNumberInternal: FC<BigNumberInternalProps> = ({
 		lineProps = (lineElements[0] as LineElement).props;
 	}
 
-	const { iconSize, labelSize, valueSize, pointSize, cWidth, cHeight, padding, textAlign, direction, iconDirection } =
-		getDynamicProperties(orientation, chartWidth, lineProps, chartHeight);
+	const { iconSize, labelSize, valueSize } = getIconAndFontSizes(chartWidth, lineProps, orientation);
+	const { textAlign, direction, iconDirection } = getLayoutSettings(orientation);
 
 	const labelStyle: CSSProperties = { fontSize: labelSize, textAlign };
 	const valueStyle: CSSProperties = { fontSize: valueSize, textAlign };
@@ -79,23 +80,12 @@ const BigNumberInternal: FC<BigNumberInternalProps> = ({
 				height={chartHeight}
 			>
 				{lineProps && (
-					<Flex justifySelf={'center'} alignSelf={'center'} marginTop="5px">
-						<RscChart
-							chartWidth={cWidth}
-							chartHeight={cHeight}
-							data={data}
-							locale={locale}
-							{...remainingChartProps}
-						>
-							<Line
-								{...lineProps}
-								isSparkline
-								isMethodLast={method === 'last'}
-								padding={padding}
-								pointSize={pointSize}
-							/>
-						</RscChart>
-					</Flex>
+					<BigNumberChart
+						rscChartProps={rscChartProps}
+						lineProps={lineProps}
+						method={method}
+						orientation={orientation}
+					/>
 				)}
 				{icon && !lineProps && (
 					<Flex direction={iconDirection} justifyContent={'center'}>
@@ -134,76 +124,99 @@ const BigNumberInternal: FC<BigNumberInternalProps> = ({
 	);
 };
 
-BigNumber.displayName = 'BigNumber';
-BigNumberInternal.displayName = 'BigNumberInternal';
+interface BigNumberChartProps {
+	rscChartProps: RscChartProps;
+	lineProps: LineProps;
+	method: BigNumberMethod;
+	orientation: Orientation;
+}
+const BigNumberChart: FC<BigNumberChartProps> = ({ rscChartProps, lineProps, method, orientation }) => {
+	const isVertical = orientation === 'vertical';
+	const { chartWidth, chartHeight } = rscChartProps;
+	const { cWidth, cHeight } = getBigNumberChartDimensions(chartWidth, chartHeight, isVertical);
+	return (
+		<Flex justifySelf={'center'} alignSelf={'center'} marginTop="5px">
+			<RscChart {...rscChartProps} chartWidth={cWidth} chartHeight={cHeight}>
+				<Line
+					{...lineProps}
+					isSparkline
+					isMethodLast={method === 'last'}
+					padding={isVertical ? 0 : 10}
+					pointSize={getPointSize(cWidth)}
+				/>
+			</RscChart>
+		</Flex>
+	);
+};
 
-function getDynamicProperties(
-	orientation: Orientation,
+function getBigNumberChartDimensions(
 	chartWidth: number,
-	lineProps?: LineProps,
-	height?: number
-): {
-	iconSize: IconProps['size'];
-	labelSize: CSSProperties['fontSize'];
-	valueSize: CSSProperties['fontSize'];
+	height: number | undefined,
+	isVertical: boolean
+): { cHeight: number; cWidth: number } {
+	const aspectRatio = BIG_NUMBER_ASPECT_RATIO;
+
+	if (isVertical) {
+		const cHeight = height ? height / 3 : (chartWidth / aspectRatio) * 1.2;
+		const cWidth = height ? cHeight * aspectRatio : chartWidth;
+		return { cHeight, cWidth };
+	}
+
+	// Height is relatively small compared to the width.
+	// Adjusts both dimensions to ensure the chart isn't overly wide for its height.
+	if (height && height < chartWidth / (2 * aspectRatio)) {
+		const cHeight = height / 1.5;
+		const cWidth = height * aspectRatio;
+		return { cHeight, cWidth };
+	}
+
+	// Default case for horizontal orientation
+	// Width is reduced for the chart to fit within BigNumber
+	// Height kep in same aspect ration as width.
+	const cWidth = chartWidth / 2.5;
+	const cHeight = cWidth / aspectRatio;
+	return { cHeight, cWidth };
+}
+
+function getLayoutSettings(orientation: Orientation): {
 	textAlign: CSSProperties['textAlign'];
 	direction: FlexProps['direction'];
 	iconDirection: FlexProps['direction'];
-	cHeight: number;
-	cWidth: number;
-	padding: number;
-	pointSize: number;
 } {
-	const aspectRatio = BIG_NUMBER_ASPECT_RATIO;
-
-	let cHeight, cWidth;
-
-	const fontSizes = determineFontSize(chartWidth * 0.75);
-	if (orientation == 'vertical') {
-		cHeight = height ? height / 3 : (chartWidth / aspectRatio) * 1.2;
-		cWidth = height ? cHeight * aspectRatio : chartWidth;
-		const pointSize = determinePointSize(cWidth);
-		const iconSize = determineIconSize(fontSizes.labelSize, lineProps != undefined);
+	if (orientation === 'vertical') {
 		return {
-			padding: 0,
 			textAlign: 'center',
 			direction: 'column',
 			iconDirection: 'row',
-			labelSize: fontSizes.labelSize,
-			valueSize: fontSizes.valueSize,
-			iconSize,
-			cHeight,
-			cWidth,
-			pointSize,
+		};
+	} else {
+		return {
+			textAlign: 'start',
+			direction: 'row',
+			iconDirection: 'column',
 		};
 	}
+}
 
-	if (height && height < chartWidth / (2 * aspectRatio)) {
-		cHeight = height / 1.5;
-		cWidth = height * aspectRatio;
-	} else {
-		cWidth = chartWidth / 2.5;
-		cHeight = cWidth / aspectRatio;
-	}
-	const pointSize = determinePointSize(cWidth);
-	const iconSize = determineIconSize(fontSizes.valueSize, lineProps != undefined);
+function getIconAndFontSizes(
+	chartWidth: number,
+	lineProps: LineProps | undefined,
+	orientation: Orientation
+): { iconSize: IconProps['size']; labelSize: string; valueSize: string } {
+	const fontSizes = getFontSize(chartWidth * 0.75);
+	const labelSize = fontSizes.labelSize;
+	const valueSize = fontSizes.valueSize;
+	const iconSize = getIconSize(orientation === 'vertical' ? labelSize : valueSize, lineProps != undefined);
 	return {
-		padding: 10,
-		textAlign: 'start',
-		direction: 'row',
-		iconDirection: 'column',
-		labelSize: fontSizes.labelSize,
-		valueSize: fontSizes.valueSize,
 		iconSize,
-		cHeight,
-		cWidth,
-		pointSize,
+		labelSize,
+		valueSize,
 	};
 }
 
-function determineFontSize(availableSpace: number): {
-	labelSize: CSSProperties['fontSize'];
-	valueSize: CSSProperties['fontSize'];
+function getFontSize(availableSpace: number): {
+	labelSize: string;
+	valueSize: string;
 } {
 	if (availableSpace <= 75) return { labelSize: 'medium', valueSize: 'large' };
 	else if (availableSpace <= 200) return { labelSize: 'large', valueSize: 'x-large' };
@@ -211,46 +224,59 @@ function determineFontSize(availableSpace: number): {
 	return { labelSize: 'xx-large', valueSize: 'xxx-large' };
 }
 
-function determinePointSize(availableSpace: number): number {
+function getPointSize(availableSpace: number): number {
 	if (availableSpace <= 150) return 50;
 	return 100;
 }
 
-function determineIconSize(textSize: CSSProperties['fontSize'], line: boolean): IconProps['size'] {
-	if (line) {
-		if (textSize == 'medium') {
+function getIconSize(textSize: CSSProperties['fontSize'], isLine: boolean): IconProps['size'] {
+	if (isLine) {
+		if (textSize === 'medium') {
 			return 'XXS';
-		} else if (textSize == 'large') {
+		} else if (textSize === 'large') {
 			return 'XS';
-		} else if (textSize == 'x-large') {
+		} else if (textSize === 'x-large') {
 			return 'S';
 		}
 		return 'M';
 	} else {
-		if (textSize == 'medium') {
+		if (textSize === 'medium') {
 			return 'M';
-		} else if (textSize == 'large') {
+		} else if (textSize === 'large') {
 			return 'L';
-		} else if (textSize == 'x-large') {
+		} else if (textSize === 'x-large') {
 			return 'XL';
 		}
 		return 'XXL';
 	}
 }
 
-function getBigNumberValue(data: ChartData[], dataKey: string, method?: BigNumberMethod) {
-	if (!method || method === 'last') {
-		return data[data.length - 1][dataKey];
+/**
+ * Traverses the chart data and accesses the value for each datum at the specified key.
+ * Then processes the values for each datum to return the big number value based on the calculation method.
+ * If the value in a datum is not a number it will be treated as 0.
+ * @param data The data to calculate the big number value with.
+ * @param dataKey The key in each datum that holds the value to be used for the big number calculation.
+ * @param method The method used to calculate the big number value.
+ * @returns The calculated big number value.
+ */
+function getBigNumberValue(data: ChartData[], dataKey: string, method: BigNumberMethod = 'last'): number {
+	if (method === 'last') {
+		const value = data[data.length - 1][dataKey];
+		return typeof value === 'number' ? value : 0; // Return 0 if the value is not a number
 	} else {
-		// this must be either 'sum' or 'avg'
+		// This must be either 'sum' or 'avg'
 		const value = data.reduce((sum, cur) => {
-			return sum + cur[dataKey];
+			const curValue = cur[dataKey];
+			return typeof curValue === 'number' ? sum + curValue : sum;
 		}, 0);
-		if (method === 'avg') {
-			return value / data.length;
-		}
+
+		if (method === 'avg') return value / data.length;
 		return value;
 	}
 }
+
+BigNumber.displayName = 'BigNumber';
+BigNumberInternal.displayName = 'BigNumberInternal';
 
 export { BigNumber, BigNumberInternal };
