@@ -41,9 +41,6 @@ export const DEFAULT_INTERACTION_MODE = 'nearest';
 export const TABLE = 'table';
 export const FILTERED_TABLE = 'filteredTable';
 
-// big number aspect ratio
-export const BIG_NUMBER_ASPECT_RATIO = 16 / 9
-
 // vega data field names
 export const GROUP_DATA = 'rscGroupData';
 export const MARK_ID = 'rscMarkId';

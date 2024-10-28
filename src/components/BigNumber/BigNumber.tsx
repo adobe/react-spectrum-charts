@@ -9,9 +9,8 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { CSSProperties, FC, cloneElement, useRef } from 'react';
+import { CSSProperties, FC, cloneElement } from 'react';
 
-import { BIG_NUMBER_ASPECT_RATIO } from '@constants';
 import { Line } from '@rsc';
 import { sanitizeBigNumberChildren } from '@utils';
 import { RscChart } from 'RscChart';
@@ -24,7 +23,6 @@ import {
 	BigNumberMethod,
 	BigNumberProps,
 	ChartData,
-	LineElement,
 	LineProps,
 	Orientation,
 	RscChartProps,
@@ -61,10 +59,11 @@ const BigNumberInternal: FC<BigNumberInternalProps> = ({
 
 	let lineProps: LineProps | undefined;
 	if (lineElements.length > 0) {
-		lineProps = (lineElements[0] as LineElement).props;
+		lineProps = lineElements[0].props;
 	}
 
-	const { iconSize, labelSize, valueSize } = getIconAndFontSizes(chartWidth, lineProps, orientation);
+	const bigNumberSize = getBigNumberSize(chartWidth, chartHeight);
+	const { iconSize, labelSize, valueSize } = getIconAndFontSizes(bigNumberSize, lineProps, orientation);
 	const { textAlign, direction, iconDirection } = getLayoutSettings(orientation);
 
 	const labelStyle: CSSProperties = { fontSize: labelSize, textAlign };
@@ -133,7 +132,8 @@ interface BigNumberChartProps {
 const BigNumberChart: FC<BigNumberChartProps> = ({ rscChartProps, lineProps, method, orientation }) => {
 	const isVertical = orientation === 'vertical';
 	const { chartWidth, chartHeight } = rscChartProps;
-	const { cWidth, cHeight } = getBigNumberChartDimensions(chartWidth, chartHeight, isVertical);
+	const bigNumberSize = getBigNumberSize(chartWidth, chartHeight);
+	const { cWidth, cHeight } = getBigNumberChartDimensions(bigNumberSize);
 	return (
 		<Flex justifySelf={'center'} alignSelf={'center'} marginTop="5px">
 			<RscChart {...rscChartProps} chartWidth={cWidth} chartHeight={cHeight}>
@@ -149,33 +149,29 @@ const BigNumberChart: FC<BigNumberChartProps> = ({ rscChartProps, lineProps, met
 	);
 };
 
-function getBigNumberChartDimensions(
-	chartWidth: number,
-	height: number | undefined,
-	isVertical: boolean
-): { cHeight: number; cWidth: number } {
-	const aspectRatio = BIG_NUMBER_ASPECT_RATIO;
+type BigNumberSize = 'small' | 'medium' | 'large' | 'x-large';
+export function getBigNumberSize(chartWidth: number, chartHeight: number): BigNumberSize {
+	if (chartWidth <= 100 || chartHeight <= 100) return 'small';
+	else if (chartWidth <= 266 || chartHeight <= 200) return 'medium';
+	else if (chartWidth <= 466 || chartHeight <= 300) return 'large';
+	return 'x-large';
+}
 
-	if (isVertical) {
-		const cHeight = height ? height / 3 : (chartWidth / aspectRatio) * 1.2;
-		const cWidth = height ? cHeight * aspectRatio : chartWidth;
-		return { cHeight, cWidth };
+export function getBigNumberChartDimensions(bigNumberSize: BigNumberSize): { cHeight: number; cWidth: number } {
+	let cWidth = 200;
+	let cHeight = 100;
+	if (bigNumberSize === 'small') {
+		cWidth = 75;
+		cHeight = 35;
+	} else if (bigNumberSize === 'medium') {
+		cWidth = 100;
+		cHeight = 50;
+	} else if (bigNumberSize === 'large') {
+		cWidth = 150;
+		cHeight = 75;
 	}
 
-	// Height is relatively small compared to the width.
-	// Adjusts both dimensions to ensure the chart isn't overly wide for its height.
-	if (height && height < chartWidth / (2 * aspectRatio)) {
-		const cHeight = height / 1.5;
-		const cWidth = height * aspectRatio;
-		return { cHeight, cWidth };
-	}
-
-	// Default case for horizontal orientation
-	// Width is reduced for the chart to fit within BigNumber
-	// Height kep in same aspect ration as width.
-	const cWidth = chartWidth / 2.5;
-	const cHeight = cWidth / aspectRatio;
-	return { cHeight, cWidth };
+	return { cWidth, cHeight };
 }
 
 function getLayoutSettings(orientation: Orientation): {
@@ -199,14 +195,17 @@ function getLayoutSettings(orientation: Orientation): {
 }
 
 function getIconAndFontSizes(
-	chartWidth: number,
+	bigNumberSize: BigNumberSize,
 	lineProps: LineProps | undefined,
 	orientation: Orientation
 ): { iconSize: IconProps['size']; labelSize: string; valueSize: string } {
-	const fontSizes = getFontSize(chartWidth * 0.75);
+	const fontSizes = getFontSize(bigNumberSize);
 	const labelSize = fontSizes.labelSize;
 	const valueSize = fontSizes.valueSize;
-	const iconSize = getIconSize(orientation === 'vertical' ? labelSize : valueSize, lineProps != undefined);
+
+	const fontSize = orientation === 'vertical' ? labelSize : valueSize;
+	const iconSize = lineProps !== undefined ? getIconSizeWithChart(fontSize) : getIconSize(fontSize);
+
 	return {
 		iconSize,
 		labelSize,
@@ -214,13 +213,13 @@ function getIconAndFontSizes(
 	};
 }
 
-function getFontSize(availableSpace: number): {
+export function getFontSize(bigNumberSize: BigNumberSize): {
 	labelSize: string;
 	valueSize: string;
 } {
-	if (availableSpace <= 75) return { labelSize: 'medium', valueSize: 'large' };
-	else if (availableSpace <= 200) return { labelSize: 'large', valueSize: 'x-large' };
-	else if (availableSpace <= 350) return { labelSize: 'x-large', valueSize: 'xx-large' };
+	if (bigNumberSize === 'small') return { labelSize: 'medium', valueSize: 'large' };
+	else if (bigNumberSize === 'medium') return { labelSize: 'large', valueSize: 'x-large' };
+	else if (bigNumberSize === 'large') return { labelSize: 'x-large', valueSize: 'xx-large' };
 	return { labelSize: 'xx-large', valueSize: 'xxx-large' };
 }
 
@@ -229,26 +228,26 @@ function getPointSize(availableSpace: number): number {
 	return 100;
 }
 
-function getIconSize(textSize: CSSProperties['fontSize'], isLine: boolean): IconProps['size'] {
-	if (isLine) {
-		if (textSize === 'medium') {
-			return 'XXS';
-		} else if (textSize === 'large') {
-			return 'XS';
-		} else if (textSize === 'x-large') {
-			return 'S';
-		}
-		return 'M';
-	} else {
-		if (textSize === 'medium') {
-			return 'M';
-		} else if (textSize === 'large') {
-			return 'L';
-		} else if (textSize === 'x-large') {
-			return 'XL';
-		}
-		return 'XXL';
+function getIconSizeWithChart(textSize: CSSProperties['fontSize']): IconProps['size'] {
+	if (textSize === 'medium') {
+		return 'XXS';
+	} else if (textSize === 'large') {
+		return 'XS';
+	} else if (textSize === 'x-large') {
+		return 'S';
 	}
+	return 'M';
+}
+
+function getIconSize(textSize: CSSProperties['fontSize']): IconProps['size'] {
+	if (textSize === 'medium') {
+		return 'M';
+	} else if (textSize === 'large') {
+		return 'L';
+	} else if (textSize === 'x-large') {
+		return 'XL';
+	}
+	return 'XXL';
 }
 
 /**

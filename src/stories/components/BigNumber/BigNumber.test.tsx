@@ -9,6 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { getBigNumberChartDimensions, getBigNumberSize, getFontSize } from '@components/BigNumber/BigNumber';
 import { BigNumber, Chart, Line } from '@rsc';
 import { simpleSparklineData } from '@stories/data/data';
 import { simpleSparklineData as data } from '@stories/data/data';
@@ -261,6 +262,86 @@ describe('BigNumber', () => {
 			render(<SparklineMethodLast {...SparklineMethodLast.args} method="avg" />);
 			const val = await screen.findByText('50');
 			expect(val).toBeInTheDocument();
+		});
+	});
+
+	describe('Sizing', () => {
+		describe('getBigNumberSize', () => {
+			// chart width
+			test('Returns small if chart width is 100', () => {
+				expect(getBigNumberSize(100, 1000)).toBe('small');
+			});
+			test('Returns small if chart width is less than 100', () => {
+				expect(getBigNumberSize(99, 1000)).toBe('small');
+			});
+			test('Returns medium if chart width is 266', () => {
+				expect(getBigNumberSize(266, 1000)).toBe('medium');
+			});
+			test('Returns medium if chart width is less than 266 and greater than 100', () => {
+				expect(getBigNumberSize(101, 1000)).toBe('medium');
+			});
+			test('Returns large if chart width is 466', () => {
+				expect(getBigNumberSize(466, 1000)).toBe('large');
+			});
+			test('Returns large if chart width is less than 466 and greater than 266', () => {
+				expect(getBigNumberSize(267, 1000)).toBe('large');
+			});
+			test('Returns x-large if chart width is greater than 466', () => {
+				expect(getBigNumberSize(467, 1000)).toBe('x-large');
+			});
+
+			// chart height
+			test('Returns small if chart height is 100', () => {
+				expect(getBigNumberSize(1000, 100)).toBe('small');
+			});
+			test('Returns small if chart height is less than 100', () => {
+				expect(getBigNumberSize(1000, 99)).toBe('small');
+			});
+			test('Returns medium if chart height is 200', () => {
+				expect(getBigNumberSize(1000, 200)).toBe('medium');
+			});
+			test('Returns medium if chart height is less than 200 and greather than 100', () => {
+				expect(getBigNumberSize(1000, 101)).toBe('medium');
+			});
+			test('Returns large if chart height is 300', () => {
+				expect(getBigNumberSize(1000, 300)).toBe('large');
+			});
+			test('Returns large if chart height is less than 300 and greather than 200', () => {
+				expect(getBigNumberSize(1000, 201)).toBe('large');
+			});
+			test('Returns x-large if chart height is greather than 300', () => {
+				expect(getBigNumberSize(1000, 301)).toBe('x-large');
+			});
+		});
+
+		describe('getBigNumberChartDimensions', () => {
+			test('small', () => {
+				expect(getBigNumberChartDimensions('small')).toEqual({ cWidth: 75, cHeight: 35 });
+			});
+			test('medium', () => {
+				expect(getBigNumberChartDimensions('medium')).toEqual({ cWidth: 100, cHeight: 50 });
+			});
+			test('large', () => {
+				expect(getBigNumberChartDimensions('large')).toEqual({ cWidth: 150, cHeight: 75 });
+			});
+			test('x-large', () => {
+				expect(getBigNumberChartDimensions('x-large')).toEqual({ cWidth: 200, cHeight: 100 });
+			});
+		});
+
+		describe('getFontSize', () => {
+			test('small', () => {
+				expect(getFontSize('small')).toEqual({ labelSize: 'medium', valueSize: 'large' });
+			});
+			test('medium', () => {
+				expect(getFontSize('medium')).toEqual({ labelSize: 'large', valueSize: 'x-large' });
+			});
+			test('large', () => {
+				expect(getFontSize('large')).toEqual({ labelSize: 'x-large', valueSize: 'xx-large' });
+			});
+			test('x-large', () => {
+				expect(getFontSize('x-large')).toEqual({ labelSize: 'xx-large', valueSize: 'xxx-large' });
+			});
 		});
 	});
 });

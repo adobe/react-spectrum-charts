@@ -280,7 +280,7 @@ export interface BigNumberProps {
 	orientation: Orientation;
 	label: string;
 	dataKey: string;
-	children?: Children<BigNumberChildElement>;
+	children?: Children<LineElement>;
 	numberFormat?: string;
 	numberType?: BigNumberNumberType;
 	method?: BigNumberMethod;
@@ -291,7 +291,7 @@ export interface BigNumberInternalProps {
 	orientation: Orientation;
 	label: string;
 	dataKey: string;
-	children?: Children<BigNumberChildElement>;
+	children?: Children<LineElement>;
 	rscChartProps: RscChartProps;
 	numberFormat?: string;
 	numberType?: BigNumberNumberType;
@@ -807,8 +807,6 @@ export type Children<T> = ChildElement<T> | ChildElement<T>[];
 
 export type AxisChildElement = ReferenceLineElement | AxisAnnotationElement;
 export type AxisAnnotationChildElement = ChartTooltipElement | ChartPopoverElement;
-
-export type BigNumberChildElement = LineElement;
 
 export type TrendlineChildElement = ChartTooltipElement | TrendlineAnnotationElement;
 export type ChartChildElement =

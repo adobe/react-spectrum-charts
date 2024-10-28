@@ -148,7 +148,7 @@ IconVertical.args = {
 	icon: <User data-testid="icon-user" />,
 	children: undefined,
 	orientation: 'vertical',
-	label: 'Visitor',
+	label: 'Visitors',
 };
 
 const SparklineHorizontal = bindWithProps(BigNumberLargeStory);
