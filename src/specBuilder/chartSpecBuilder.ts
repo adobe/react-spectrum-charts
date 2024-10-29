@@ -31,9 +31,9 @@ import {
 	SYMBOL_SIZE_SCALE,
 	TABLE,
 } from '@constants';
-import { Area, Axis, Bar, BigNumber, Legend, Line, Scatter, Title } from '@rsc';
+import { Area, Axis, Bar, Legend, Line, Scatter, Title } from '@rsc';
 import { Combo } from '@rsc/alpha';
-import { Donut } from '@rsc/rc';
+import { BigNumber, Donut } from '@rsc/rc';
 import colorSchemes from '@themes/colorSchemes';
 import { produce } from 'immer';
 import { Data, LinearScale, OrdinalScale, PointScale, Scale, Signal, Spec } from 'vega';

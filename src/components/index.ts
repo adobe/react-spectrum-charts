@@ -15,7 +15,6 @@ export * from './Area';
 export * from './Axis';
 export * from './AxisAnnotation';
 export * from './Bar';
-export * from './BigNumber'
 export * from './ChartPopover';
 export * from './ChartTooltip';
 export * from './EmptyState';

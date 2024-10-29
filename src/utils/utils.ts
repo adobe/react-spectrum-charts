@@ -18,7 +18,6 @@ import {
 	Axis,
 	AxisAnnotation,
 	Bar,
-	BigNumber,
 	ChartPopover,
 	ChartTooltip,
 	Legend,
@@ -32,7 +31,7 @@ import {
 	TrendlineAnnotation,
 } from '@rsc';
 import { Combo } from '@rsc/alpha';
-import { Donut, DonutSummary, SegmentLabel } from '@rsc/rc';
+import { BigNumber, Donut, DonutSummary, SegmentLabel } from '@rsc/rc';
 import { View } from 'vega';
 
 import {

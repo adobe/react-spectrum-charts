@@ -12,7 +12,8 @@
 import { ReactElement } from 'react';
 
 import useChartProps from '@hooks/useChartProps';
-import { BigNumber, Chart, Line } from '@rsc';
+import { Chart, Line } from '@rsc';
+import { BigNumber } from '@rsc/rc';
 import { StoryFn } from '@storybook/react';
 import { bindWithProps } from 'test-utils/bindWithProps';
 

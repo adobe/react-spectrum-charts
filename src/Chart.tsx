@@ -11,7 +11,6 @@
  */
 import { FC, forwardRef, useEffect, useMemo, useRef, useState } from 'react';
 
-import { BigNumberInternal } from '@components/BigNumber/BigNumber';
 import { EmptyState } from '@components/EmptyState';
 import { LoadingState } from '@components/LoadingState';
 import { DEFAULT_BACKGROUND_COLOR, DEFAULT_COLOR_SCHEME, DEFAULT_LINE_TYPES, DEFAULT_LOCALE } from '@constants';
@@ -21,6 +20,7 @@ import useChartWidth from '@hooks/useChartWidth';
 import { useResizeObserver } from '@hooks/useResizeObserver';
 import { getColorValue } from '@specBuilder/specUtils';
 import { getBigNumberElementsFromChildren, toArray } from '@utils';
+import { BigNumberInternal } from 'rc/components/BigNumber/BigNumber';
 import { v4 as uuid } from 'uuid';
 import { View } from 'vega';
 

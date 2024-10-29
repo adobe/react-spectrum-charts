@@ -26,7 +26,7 @@ import {
 	LineProps,
 	Orientation,
 	RscChartProps,
-} from '../../types';
+} from '../../../types';
 import './BigNumber.css';
 import { formatBigNumber } from './bigNumberFormatUtils';
 

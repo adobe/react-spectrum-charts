@@ -9,11 +9,12 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { getBigNumberChartDimensions, getBigNumberSize, getFontSize } from '@components/BigNumber/BigNumber';
-import { BigNumber, Chart, Line } from '@rsc';
+import { Chart, Line } from '@rsc';
+import { BigNumber } from '@rsc/rc';
 import { simpleSparklineData } from '@stories/data/data';
 import { simpleSparklineData as data } from '@stories/data/data';
 import { findAllMarksByGroupName, findChart, render, screen } from '@test-utils';
+import { getBigNumberChartDimensions, getBigNumberSize, getFontSize } from 'rc/components/BigNumber/BigNumber';
 
 import { Icon } from '@adobe/react-spectrum';
 
