@@ -36,6 +36,8 @@ interface PlaceholderContentProps {
 	emptyStateText: string;
 }
 
+// change for testing pipeline
+
 export const Chart = forwardRef<ChartHandle, ChartProps>(
 	(
 		{
