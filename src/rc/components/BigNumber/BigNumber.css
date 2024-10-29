@@ -10,7 +10,15 @@
  * governing permissions and limitations under the License.
  */
 
-export * from './Donut';
-export * from './DonutSummary';
-export * from './SegmentLabel';
-export * from './BigNumber';
+
+.big-number-data {
+    font-weight: bold;
+    margin: 0;
+    line-height: .9;
+}
+
+.big-number-label {
+    margin: 0;
+    align-self: center;
+    line-height: .9;
+}

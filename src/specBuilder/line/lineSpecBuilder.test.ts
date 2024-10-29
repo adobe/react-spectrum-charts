@@ -292,6 +292,9 @@ const metricRangeWithDisplayPointMarks = [
 					scale: 'yLinear',
 					field: 'value',
 				},
+				size:  {
+					value: 125,
+				},
 				fill: {
 					scale: COLOR_SCALE,
 					field: 'series',
@@ -325,6 +328,9 @@ const displayPointMarks = [
 				y: {
 					scale: 'yLinear',
 					field: 'value',
+				},
+				size:  {
+					value: 125,
 				},
 				fill: {
 					scale: COLOR_SCALE,
