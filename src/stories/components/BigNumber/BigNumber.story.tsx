@@ -194,6 +194,24 @@ SparklineMethodLast.args = {
 	label: 'Visitors',
 };
 
+const SparklineMethodSum = bindWithProps(BigNumberLargeStory);
+SparklineMethodSum.args = {
+	dataKey: 'y',
+	children: [<Line key="line" dimension="x" metric="y" scaleType="linear" />],
+	orientation: 'vertical',
+	label: 'Visitors',
+	method: 'sum',
+};
+
+const SparklineMethodAverage = bindWithProps(BigNumberLargeStory);
+SparklineMethodAverage.args = {
+	dataKey: 'y',
+	children: [<Line key="line" dimension="x" metric="y" scaleType="linear" />],
+	orientation: 'vertical',
+	label: 'Visitors',
+	method: 'avg',
+};
+
 const CurrencyFormat = bindWithProps(CurrencyFormatStory);
 CurrencyFormat.args = {
 	children: undefined,
@@ -257,6 +275,8 @@ export {
 	SparklineAndIconHorizontal,
 	SparklineAndIconVertical,
 	SparklineMethodLast,
+	SparklineMethodSum,
+	SparklineMethodAverage,
 	CurrencyFormat,
 	CompactFormat,
 	PercentageFormat,
