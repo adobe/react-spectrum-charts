@@ -19,6 +19,7 @@ import {
 	DEFAULT_SYMBOL_SIZE,
 	DEFAULT_SYMBOL_STROKE_WIDTH,
 	MARK_ID,
+	SELECTED_GROUP,
 	SELECTED_ITEM,
 } from '@constants';
 
@@ -48,7 +49,10 @@ describe('getHighlightPointFill()', () => {
 	test('should include selection rule if hasPopover', () => {
 		const rules = getHighlightPointFill({ ...defaultLineMarkProps, children: [createElement(ChartPopover)] });
 		expect(rules).toHaveLength(2);
-		expect(rules[0]).toHaveProperty('test', `${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${MARK_ID}`);
+		expect(rules[0]).toHaveProperty(
+			'test',
+			`(${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${MARK_ID}) || (${SELECTED_GROUP} && ${SELECTED_GROUP} === datum.line0_selectedGroupId)`
+		);
 	});
 });
 
@@ -69,7 +73,10 @@ describe('getHighlightPointStroke()', () => {
 	test('should include selection rule if hasPopover', () => {
 		const rules = getHighlightPointStroke({ ...defaultLineMarkProps, children: [createElement(ChartPopover)] });
 		expect(rules).toHaveLength(2);
-		expect(rules[0]).toHaveProperty('test', `${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${MARK_ID}`);
+		expect(rules[0]).toHaveProperty(
+			'test',
+			`(${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${MARK_ID}) || (${SELECTED_GROUP} && ${SELECTED_GROUP} === datum.line0_selectedGroupId)`
+		);
 	});
 });
 

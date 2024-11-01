@@ -142,6 +142,14 @@ const defaultStackedTransforms: Transforms[] = [
 	},
 ];
 
+const defaultSelectedGroupIdTransform: Transforms[] = [
+	{
+		type: 'formula',
+		expr: `datum.${MARK_ID}`,
+		as: 'bar0_selectedGroupId',
+	},
+];
+
 const defaultBackgroundStackedMark: Mark = {
 	name: 'bar0_background',
 	type: 'rect',
@@ -531,10 +539,10 @@ describe('barSpecBuilder', () => {
 		describe('no initial state', () => {
 			test('children, selectedData transform should be added to the filteredTable', () => {
 				const popover = createElement(ChartPopover);
-				expect(addData(baseData, { ...defaultBarProps, children: [popover] })[1]).toHaveProperty(
-					'transform',
-					defaultStackedTransforms
-				);
+				expect(addData(baseData, { ...defaultBarProps, children: [popover] })[1]).toHaveProperty('transform', [
+					...defaultStackedTransforms,
+					...defaultSelectedGroupIdTransform,
+				]);
 			});
 		});
 

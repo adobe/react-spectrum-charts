@@ -288,7 +288,7 @@ describe('Time comparison stories', () => {
 			expect(tooltip).toBeInTheDocument();
 			expect(screen.getByText(0.58)).toBeInTheDocument();
 
-			expect(await findMarksByGroupName(chart, 'line0Trendline_point')).toBeInTheDocument();
+			expect(await findMarksByGroupName(chart, 'line0Trendline_point_highlight')).toBeInTheDocument();
 			expect(await findMarksByGroupName(chart, 'line0Trendline_secondaryPoint')).toBeInTheDocument();
 		});
 	});

@@ -9,7 +9,6 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
 import { HIGHLIGHT_CONTRAST_RATIO } from '@constants';
 import {
 	allElementsHaveAttributeValue,
@@ -128,7 +127,7 @@ describe('LineChart', () => {
 
 		await hoverNthElement(lineHoverAreas, 0);
 
-		const highlightedPoints = await findAllMarksByGroupName(chart, 'line0_point');
+		const highlightedPoints = await findAllMarksByGroupName(chart, 'line0_point_highlight');
 		expect(highlightedPoints).toHaveLength(3);
 
 		expect(allElementsHaveAttributeValue(lines, 'opacity', '1')).toBe(true);
