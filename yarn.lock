@@ -12148,7 +12148,7 @@ vega-dataflow@^5.7.3, vega-dataflow@^5.7.5, vega-dataflow@~5.7.5:
     vega-loader "^4.5.1"
     vega-util "^1.17.1"
 
-"vega-embed@>= 6.24.0":
+"vega-embed@>= 6.27.0":
   version "6.28.0"
   resolved "https://registry.yarnpkg.com/vega-embed/-/vega-embed-6.28.0.tgz#18ea7ea24e12df4d6075496ce4dd601fca23ce0d"
   integrity sha512-QCjrNCDZPrSOZPG3UmfFZsd95mUQEZSYAWdoi2TOEnzBv/NzB+BX+Fc6jdpcAHsORn3TqxL0um/jktyjnV88zg==
@@ -12404,14 +12404,7 @@ vega-time@^2.1.1, vega-time@~2.1.1:
     d3-time "^3.1.0"
     vega-util "^1.17.1"
 
-"vega-tooltip@>= 0.26.0":
-  version "0.34.0"
-  resolved "https://registry.yarnpkg.com/vega-tooltip/-/vega-tooltip-0.34.0.tgz#e0aa4d9c9bcf155e257650ba7e670fad7b1ff5ab"
-  integrity sha512-TtxwkcLZ5aWQTvKGlfWDou8tISGuxmqAW1AgGZjrDpf75qsXvgtbPdRAAls2LZMqDxpr5T1kMEZs9XbSpiI8yw==
-  dependencies:
-    vega-util "^1.17.2"
-
-vega-tooltip@^0.35.1:
+"vega-tooltip@>= 0.35.1", vega-tooltip@^0.35.1:
   version "0.35.1"
   resolved "https://registry.yarnpkg.com/vega-tooltip/-/vega-tooltip-0.35.1.tgz#a789bda75b9ca79b41401bf3c045a6e0cc3a1ca2"
   integrity sha512-KpPa3H0tE3bTr0DFho1qJUygRLmVy8+iAnEnJvPaQIdI6QBcvFqrkHoA23QhTFtRLNdHaGzmuxoJNWJ1TcIyzg==

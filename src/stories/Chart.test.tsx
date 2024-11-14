@@ -13,10 +13,10 @@ import React, { createRef } from 'react';
 
 import '@matchMediaMock';
 import { Axis, Bar, Chart, ChartHandle, ChartTooltip, Line } from '@rsc';
-import { findChart, getAllMarksByGroupName, render, screen } from '@test-utils';
+import { findChart, getAllMarksByGroupName, hoverNthElement, render, screen } from '@test-utils';
 import { getElement } from '@utils';
 
-import { BackgroundColor, Basic, Config, Height, Locale, Width } from './Chart.story';
+import { BackgroundColor, Basic, Config, Height, Locale, TooltipAnchor, Width } from './Chart.story';
 import {
 	CssColors,
 	SpectrumColorNames,
@@ -296,6 +296,61 @@ describe('Chart', () => {
 
 		test("shouldn't find a line", () => {
 			expect(getElement(PopoverTest, Line)).toStrictEqual(undefined);
+		});
+	});
+
+	describe('TooltipAnchor()', () => {
+		// get the integer value from a px string
+		const getPxValue = (pxString: string) => parseInt(pxString.replace('px', ''), 10);
+
+		test('should render the tooltip relative to the cursor if `tooltipAnchor` is set to `cursor`', async () => {
+			render(<TooltipAnchor {...TooltipAnchor.args} tooltipAnchor="cursor" />);
+
+			const chart = await findChart();
+			expect(chart).toBeInTheDocument();
+			const bars = getAllMarksByGroupName(chart, 'bar0');
+
+			await hoverNthElement(bars, 0);
+			const tooltip = document.getElementById('vg-tooltip-element');
+			expect(tooltip).toBeInTheDocument();
+			if (!tooltip) return;
+
+			// will be at 10, 10 since the cursor is at 0, 0 and the offset is 10
+			expect(getPxValue(tooltip.style.getPropertyValue('top'))).toBe(10);
+			expect(getPxValue(tooltip.style.getPropertyValue('left'))).toBe(10);
+		});
+
+		describe('tooltipAnchor = mark', () => {});
+
+		test('should render the tooltip relative to the mark if `tooltipAnchor` is set to `mark`', async () => {
+			render(<TooltipAnchor {...TooltipAnchor.args} tooltipAnchor="mark" tooltipPlacement="top" />);
+
+			const chart = await findChart();
+			expect(chart).toBeInTheDocument();
+			const bars = getAllMarksByGroupName(chart, 'bar0');
+
+			await hoverNthElement(bars, 0);
+			const tooltip = document.getElementById('vg-tooltip-element');
+			expect(tooltip).toBeInTheDocument();
+			if (!tooltip) return;
+
+			expect(getPxValue(tooltip.style.getPropertyValue('top'))).toBe(239);
+			expect(getPxValue(tooltip.style.getPropertyValue('left'))).toBe(35);
+		});
+
+		test('should render the tooltip to the right of the mark if placement is right', async () => {
+			render(<TooltipAnchor {...TooltipAnchor.args} tooltipAnchor="mark" tooltipPlacement="bottom" />);
+			const chart = await findChart();
+			expect(chart).toBeInTheDocument();
+			const bars = getAllMarksByGroupName(chart, 'bar0');
+
+			await hoverNthElement(bars, 0);
+			const tooltip = document.getElementById('vg-tooltip-element');
+			expect(tooltip).toBeInTheDocument();
+			if (!tooltip) return;
+
+			expect(getPxValue(tooltip.style.getPropertyValue('top'))).toBe(284);
+			expect(getPxValue(tooltip.style.getPropertyValue('left'))).toBe(35);
 		});
 	});
 });

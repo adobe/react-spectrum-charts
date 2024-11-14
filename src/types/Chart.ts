@@ -100,6 +100,8 @@ export type Opacities = number[] | number[][];
 export type SymbolShapes = ChartSymbolShape[] | ChartSymbolShape[][];
 export type ChartSymbolShape = 'rounded-square' | SymbolShape;
 export type NumberFormat = 'currency' | 'shortCurrency' | 'shortNumber' | 'standardNumber';
+export type TooltipAnchor = 'cursor' | 'mark';
+export type TooltipPlacement = 'top' | 'bottom' | 'left' | 'right';
 
 export interface SharedChartProps extends SpecProps {
 	/** Vega config that can be used to tweak the style of the chart. @see https://vega.github.io/vega/docs/config/ */
@@ -114,6 +116,10 @@ export interface SharedChartProps extends SpecProps {
 	padding?: Padding;
 	/** Method to use for rendering the chart. 'canvas' is ideal for large data sets. */
 	renderer?: 'svg' | 'canvas';
+	/** Sets what the tooltip should be anchored to. Defaults to `cursor`. */
+	tooltipAnchor?: TooltipAnchor;
+	/** The placement of the tooltip with respect to the mark. Only applicable if `tooltipAnchor = 'mark'`. */
+	tooltipPlacement?: TooltipPlacement;
 }
 
 export interface RscChartProps extends SharedChartProps {

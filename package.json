@@ -153,7 +153,7 @@
 		"immer": ">= 9.0.0",
 		"uuid": ">= 9.0.0",
 		"vega-embed": ">= 6.27.0",
-		"vega-tooltip": ">= 0.26.0"
+		"vega-tooltip": ">= 0.35.1"
 	},
 	"peerDependencies": {
 		"@adobe/react-spectrum": ">=3.23.0",

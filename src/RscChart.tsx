@@ -44,13 +44,23 @@ import {
 } from '@utils';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { Item } from 'vega';
-import { Handler, Options as TooltipOptions } from 'vega-tooltip';
+import { Handler, Position, Options as TooltipOptions } from 'vega-tooltip';
 
 import { ActionButton, Dialog, DialogTrigger, View as SpectrumView } from '@adobe/react-spectrum';
 
 import './Chart.css';
 import { VegaChart } from './VegaChart';
-import { ChartHandle, Datum, LegendDescription, LineType, MarkBounds, RscChartProps } from './types';
+import {
+	ChartHandle,
+	ColorScheme,
+	Datum,
+	LegendDescription,
+	LineType,
+	MarkBounds,
+	RscChartProps,
+	TooltipAnchor,
+	TooltipPlacement,
+} from './types';
 
 interface ChartDialogProps {
 	datum: Datum | null;
@@ -87,6 +97,8 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 			symbolShapes,
 			symbolSizes,
 			title,
+			tooltipAnchor = 'cursor',
+			tooltipPlacement = 'top',
 			chartHeight = 300,
 			chartWidth,
 			UNSAFE_vegaSpec,
@@ -162,10 +174,10 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 			padding
 		);
 
-		const tooltipConfig: TooltipOptions = { theme: colorScheme };
+		const tooltipOptions = getTooltipOptions(colorScheme, tooltipAnchor, tooltipPlacement);
 
 		if (tooltips.length || legendDescriptions) {
-			tooltipConfig.formatTooltip = (value) => {
+			tooltipOptions.formatTooltip = (value) => {
 				debugLog(debug, { title: 'Tooltip datum', contents: value });
 				if (value[COMPONENT_NAME]?.startsWith('legend') && legendDescriptions && 'index' in value) {
 					debugLog(debug, {
@@ -239,13 +251,13 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 					locale={locale}
 					padding={padding}
 					signals={signals}
-					tooltip={tooltipConfig} // legend show/hide relies on this
+					tooltip={tooltipOptions} // legend show/hide relies on this
 					onNewView={(view) => {
 						chartView.current = view;
 						// Add a delay before displaying legend tooltips on hover.
 						let tooltipTimeout: NodeJS.Timeout | undefined;
-						view.tooltip((_, event, item, value) => {
-							const tooltipHandler = new Handler(tooltipConfig);
+						view.tooltip((viewRef, event, item, value) => {
+							const tooltipHandler = new Handler(tooltipOptions);
 							// Cancel delayed tooltips if the mouse moves before the delay is resolved.
 							if (tooltipTimeout) {
 								clearTimeout(tooltipTimeout);
@@ -253,11 +265,11 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 							}
 							if (event && event.type === 'pointermove' && itemIsLegendItem(item) && 'tooltip' in item) {
 								tooltipTimeout = setTimeout(() => {
-									tooltipHandler.call(this, event, item, value);
+									tooltipHandler.call(viewRef, event, item, value);
 									tooltipTimeout = undefined;
 								}, LEGEND_TOOLTIP_DELAY);
 							} else {
-								tooltipHandler.call(this, event, item, value);
+								tooltipHandler.call(viewRef, event, item, value);
 							}
 						});
 						if (popovers.length || onMarkClicks.length || legendIsToggleable || onLegendClick) {
@@ -334,6 +346,29 @@ const ChartDialog = ({ datum, popover, setIsPopoverOpen, targetElement }: ChartD
 			)}
 		</DialogTrigger>
 	);
+};
+
+const getTooltipOptions = (
+	colorScheme: ColorScheme,
+	tooltipAnchor: TooltipAnchor,
+	tooltipPlacement: TooltipPlacement
+): TooltipOptions => {
+	const position: Record<'top' | 'bottom' | 'right' | 'left', Position[]> = {
+		top: ['top', 'bottom', 'right', 'left', 'top-right', 'top-left', 'bottom-right', 'bottom-left'],
+		bottom: ['bottom', 'top', 'right', 'left', 'bottom-right', 'bottom-left', 'top-right', 'top-left'],
+		right: ['right', 'left', 'top', 'bottom', 'top-right', 'bottom-right', 'top-left', 'bottom-left'],
+		left: ['left', 'right', 'top', 'bottom', 'top-left', 'bottom-left', 'top-right', 'bottom-right'],
+	};
+
+	const offset = tooltipAnchor === 'cursor' ? 10 : 6;
+
+	return {
+		theme: colorScheme,
+		anchor: tooltipAnchor,
+		position: tooltipAnchor === 'mark' ? position[tooltipPlacement] : undefined,
+		offsetX: offset,
+		offsetY: offset,
+	};
 };
 
 const LegendTooltip: FC<LegendTooltipProps> = ({ value, descriptions, domain }) => {
