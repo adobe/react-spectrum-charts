@@ -22,7 +22,7 @@ export interface LabelDatum {
 
 /**
  * Hides labels that are the same as the previous label
- * @returns
+ * @returns string
  */
 export const formatHorizontalTimeAxisLabels = () => {
 	let prevLabel: string;
@@ -33,6 +33,10 @@ export const formatHorizontalTimeAxisLabels = () => {
 	};
 };
 
+/**
+ * Hides the larger granularity instead of repeating it for each tick
+ * @returns string
+ */
 export const formatVerticalAxisTimeLabels = () => {
 	let prevLabel: string;
 	return (datum: LabelDatum) => {

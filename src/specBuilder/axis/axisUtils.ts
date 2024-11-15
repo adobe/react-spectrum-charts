@@ -78,6 +78,14 @@ export const getTimeAxes = (scaleName: string, axisProps: AxisSpecProps): Axis[]
 	return [getSecondaryTimeAxis(scaleName, axisProps), ...getPrimaryTimeAxis(scaleName, axisProps)];
 };
 
+/**
+ * Generates the secondary time axis from the axis props
+ * This is the axis that shows the smaller granularity
+ * If this is a vertical axis, it will also show the larger granularity and will hide repeats of the larger granularity
+ * @param scaleName
+ * @param axisProps
+ * @returns axis
+ */
 const getSecondaryTimeAxis = (
 	scaleName: string,
 	{
@@ -130,6 +138,14 @@ const getSecondaryTimeAxisLabelFormatting = (granularity: Granularity, position:
 	};
 };
 
+/**
+ * Generates the primary time axis from the axis props
+ * This is the axis that shows the larger granularity and hides duplicate labels
+ * Only returns an axis for horizontal axes
+ * @param scaleName
+ * @param axisProps
+ * @returns axis
+ */
 const getPrimaryTimeAxis = (
 	scaleName: string,
 	{
