@@ -43,22 +43,24 @@ export const getLabelValue = (label: Label | number | string): string | number =
  * @param granularity
  * @returns [secondaryFormat, primaryFormat, tickCount]
  */
-export const getTimeLabelFormats = (granularity: Granularity): [string, string, TickCount] => {
+export const getTimeLabelFormats = (
+	granularity: Granularity
+): { secondaryLabelFormat: string; primaryLabelFormat: string; tickCount: TickCount } => {
 	switch (granularity) {
 		case 'minute':
-			return ['%-I:%M %p', '%b %-d', 'minute'];
+			return { secondaryLabelFormat: '%-I:%M %p', primaryLabelFormat: '%b %-d', tickCount: 'minute' };
 		case 'hour':
-			return ['%-I %p', '%b %-d', 'hour'];
+			return { secondaryLabelFormat: '%-I %p', primaryLabelFormat: '%b %-d', tickCount: 'hour' };
 		case 'day':
-			return ['%-d', '%b', 'day'];
+			return { secondaryLabelFormat: '%-d', primaryLabelFormat: '%b', tickCount: 'day' };
 		case 'week':
-			return ['%-d', '%b', 'week'];
+			return { secondaryLabelFormat: '%-d', primaryLabelFormat: '%b', tickCount: 'week' };
 		case 'month':
-			return ['%b', '%Y', 'month'];
+			return { secondaryLabelFormat: '%b', primaryLabelFormat: '%Y', tickCount: 'month' };
 		case 'quarter':
-			return ['Q%q', '%Y', { interval: 'month', step: 3 }];
+			return { secondaryLabelFormat: 'Q%q', primaryLabelFormat: '%Y', tickCount: { interval: 'month', step: 3 } };
 		default:
-			return ['%-d', '%b', 'day'];
+			return { secondaryLabelFormat: '%-d', primaryLabelFormat: '%b', tickCount: 'day' };
 	}
 };
 

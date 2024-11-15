@@ -11,7 +11,7 @@
  */
 import { Axis, Mark, Scale, SignalRef } from 'vega';
 
-import { AxisSpecProps, Position } from '../../types';
+import { AxisSpecProps, Granularity, Position } from '../../types';
 import {
 	getAxisLabelsEncoding,
 	getLabelAnchorValues,
@@ -74,13 +74,16 @@ export const getDefaultAxis = (axisProps: AxisSpecProps, scaleName: string): Axi
  * @param axisProps
  * @returns axes
  */
-export const getTimeAxes = (
+export const getTimeAxes = (scaleName: string, axisProps: AxisSpecProps): Axis[] => {
+	return [getSecondaryTimeAxis(scaleName, axisProps), ...getPrimaryTimeAxis(scaleName, axisProps)];
+};
+
+const getSecondaryTimeAxis = (
 	scaleName: string,
 	{
 		granularity,
 		grid,
 		labelAlign,
-		labelFontWeight,
 		labelOrientation,
 		position,
 		ticks,
@@ -88,27 +91,68 @@ export const getTimeAxes = (
 		vegaLabelAlign,
 		vegaLabelBaseline,
 	}: AxisSpecProps
+): Axis => {
+	const { tickCount } = getTimeLabelFormats(granularity);
+
+	return {
+		scale: scaleName,
+		orient: position,
+		grid,
+		ticks,
+		tickCount: scaleName.includes('Time') ? tickCount : undefined,
+		title,
+		formatType: 'time',
+		labelAngle: getLabelAngle(labelOrientation),
+		labelSeparation: 12,
+		...getSecondaryTimeAxisLabelFormatting(granularity, position),
+		...getLabelAnchorValues(position, labelOrientation, labelAlign, vegaLabelAlign, vegaLabelBaseline),
+	};
+};
+
+const getSecondaryTimeAxisLabelFormatting = (granularity: Granularity, position: Position): Partial<Axis> => {
+	const { secondaryLabelFormat, primaryLabelFormat } = getTimeLabelFormats(granularity);
+	const isVerticalAxis = ['left', 'right'].includes(position);
+	if (isVerticalAxis) {
+		return {
+			format: `${primaryLabelFormat}\u2000${secondaryLabelFormat}`,
+			encode: {
+				labels: {
+					update: {
+						text: { signal: 'formatVerticalAxisTimeLabels(datum)' },
+					},
+				},
+			},
+		};
+	}
+
+	return {
+		format: secondaryLabelFormat,
+	};
+};
+
+const getPrimaryTimeAxis = (
+	scaleName: string,
+	{
+		granularity,
+		labelAlign,
+		labelOrientation,
+		labelFontWeight,
+		position,
+		ticks,
+		vegaLabelAlign,
+		vegaLabelBaseline,
+	}: AxisSpecProps
 ): Axis[] => {
-	const [secondaryFormat, primaryFormat, tickGranularity] = getTimeLabelFormats(granularity);
+	if (['left', 'right'].includes(position)) {
+		return [];
+	}
+	const { primaryLabelFormat, tickCount } = getTimeLabelFormats(granularity);
 	return [
 		{
 			scale: scaleName,
 			orient: position,
-			grid,
-			ticks,
-			tickCount: scaleName.includes('Time') ? tickGranularity : undefined,
-			title,
-			format: secondaryFormat,
-			formatType: 'time',
-			labelAngle: getLabelAngle(labelOrientation),
-			labelSeparation: 12,
-			...getLabelAnchorValues(position, labelOrientation, labelAlign, vegaLabelAlign, vegaLabelBaseline),
-		},
-		{
-			scale: scaleName,
-			orient: position,
-			format: primaryFormat,
-			tickCount: scaleName.includes('Time') ? tickGranularity : undefined,
+			format: primaryLabelFormat,
+			tickCount: scaleName.includes('Time') ? tickCount : undefined,
 			formatType: 'time',
 			labelOverlap: 'greedy',
 			labelFontWeight,
@@ -120,7 +164,7 @@ export const getTimeAxes = (
 						dy: { value: (ticks ? 28 : 20) * (position === 'top' ? -1 : 1) }, // account for tick height
 					},
 					update: {
-						text: { signal: 'formatPrimaryTimeLabels(datum)' },
+						text: { signal: 'formatHorizontalTimeAxisLabels(datum)' },
 					},
 				},
 			},

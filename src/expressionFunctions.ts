@@ -14,7 +14,7 @@ import { ADOBE_CLEAN_FONT } from '@themes/spectrumTheme';
 import { FormatLocaleDefinition, formatLocale } from 'd3-format';
 import { FontWeight } from 'vega';
 
-interface LabelDatum {
+export interface LabelDatum {
 	index: number;
 	label: string;
 	value: string | number;
@@ -24,12 +24,24 @@ interface LabelDatum {
  * Hides labels that are the same as the previous label
  * @returns
  */
-const formatPrimaryTimeLabels = () => {
+export const formatHorizontalTimeAxisLabels = () => {
 	let prevLabel: string;
 	return (datum: LabelDatum) => {
 		const showLabel = datum.index === 0 || prevLabel !== datum.label;
 		prevLabel = datum.label;
 		return showLabel ? datum.label : '';
+	};
+};
+
+export const formatVerticalAxisTimeLabels = () => {
+	let prevLabel: string;
+	return (datum: LabelDatum) => {
+		const labels = datum.label.split('\u2000');
+		const label = labels[0];
+
+		const showLabel = datum.index === 0 || prevLabel !== label;
+		prevLabel = label;
+		return showLabel ? datum.label : labels[1];
 	};
 };
 
@@ -109,7 +121,8 @@ const truncateText = (text: string, maxWidth: number, fontWeight: FontWeight = '
 
 export const expressionFunctions = {
 	consoleLog,
-	formatPrimaryTimeLabels: formatPrimaryTimeLabels(),
+	formatHorizontalTimeAxisLabels: formatHorizontalTimeAxisLabels(),
+	formatVerticalAxisTimeLabels: formatVerticalAxisTimeLabels(),
 	getLabelWidth,
 	truncateText,
 };

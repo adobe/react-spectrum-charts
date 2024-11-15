@@ -64,6 +64,20 @@ const TimeAxisStory: StoryFn<typeof Axis> = (args): ReactElement => {
 	);
 };
 
+const VerticalTimeAxisStory: StoryFn<typeof Axis> = (args): ReactElement => {
+	const chartProps = useChartProps({
+		data: timeData[args.granularity ?? DEFAULT_GRANULARITY],
+		width: 600,
+		height: 800,
+	});
+	return (
+		<Chart {...chartProps}>
+			<Axis {...args} />
+			<Bar orientation="horizontal" dimension="datetime" />
+		</Chart>
+	);
+};
+
 const SubLabelStory: StoryFn<typeof Axis> = (args): ReactElement => {
 	const chartProps = useChartProps({ data: barData, width: 600 });
 	return (
@@ -244,6 +258,16 @@ ControlledLabels.args = {
 	],
 };
 
+const VerticalTimeAxis = bindWithProps(VerticalTimeAxisStory);
+VerticalTimeAxis.args = {
+	granularity: 'day',
+	position: 'left',
+	baseline: true,
+	labelFormat: 'time',
+	ticks: true,
+	labelAlign: 'center',
+};
+
 export {
 	Basic,
 	ControlledLabels,
@@ -256,4 +280,5 @@ export {
 	TickMinStep,
 	Time,
 	TruncateLabels,
+	VerticalTimeAxis,
 };
