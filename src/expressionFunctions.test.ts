@@ -11,7 +11,13 @@
  */
 import { numberLocales } from '@locales';
 
-import { expressionFunctions, formatTimeDurationLabels } from './expressionFunctions';
+import {
+	LabelDatum,
+	expressionFunctions,
+	formatHorizontalTimeAxisLabels,
+	formatTimeDurationLabels,
+	formatVerticalAxisTimeLabels,
+} from './expressionFunctions';
 
 describe('truncateText()', () => {
 	const longText =
@@ -48,5 +54,43 @@ describe('formatTimeDurationLabels()', () => {
 	});
 	test('should return original string if type of value is string', () => {
 		expect(formatDurationsEnUS({ index: 0, label: '0', value: 'hello world!' })).toBe('hello world!');
+	});
+});
+
+describe('formatHorizontalTimeAxisLabels()', () => {
+	let formatter: (datum: LabelDatum) => string;
+	beforeEach(() => {
+		formatter = formatHorizontalTimeAxisLabels();
+	});
+
+	test('should return label if index is 0', () => {
+		expect(formatter({ index: 0, label: '2024', value: 1 })).toBe('2024');
+		expect(formatter({ index: 0, label: 'Nov', value: 1 })).toBe('Nov');
+		expect(formatter({ index: 0, label: 'Nov', value: 2 })).toBe('Nov');
+		expect(formatter({ index: 0, label: 'Nov 15', value: 1 })).toBe('Nov 15');
+	});
+
+	test('should return "" when previous label was the same', () => {
+		expect(formatter({ index: 0, label: '2024', value: 2 })).toBe('2024');
+		expect(formatter({ index: 1, label: '2024', value: 2 })).toBe('');
+	});
+});
+
+describe('formatVerticalAxisTimeLabels()', () => {
+	let formatter: (datum: LabelDatum) => string;
+	beforeEach(() => {
+		formatter = formatVerticalAxisTimeLabels();
+	});
+
+	test('should return full label if index is 0', () => {
+		expect(formatter({ index: 0, label: '2024 \u2000Jan', value: 1 })).toBe('2024 \u2000Jan');
+		expect(formatter({ index: 0, label: 'Nov \u200015', value: 1 })).toBe('Nov \u200015');
+		expect(formatter({ index: 0, label: 'Nov \u200015', value: 2 })).toBe('Nov \u200015');
+		expect(formatter({ index: 0, label: 'Nov 15 \u200012 AM', value: 1 })).toBe('Nov 15 \u200012 AM');
+	});
+
+	test('should drop the larger time granularity when previous label was the same larger time granularity', () => {
+		expect(formatter({ index: 0, label: '2024 \u2000Jan', value: 1 })).toBe('2024 \u2000Jan');
+		expect(formatter({ index: 1, label: '2024 \u2000Feb', value: 1 })).toBe('Feb');
 	});
 });

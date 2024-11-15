@@ -23,6 +23,7 @@ import {
 	SubLabels,
 	TickMinStep,
 	Time,
+	VerticalTimeAxis,
 } from './Axis.story';
 
 describe('Axis', () => {
@@ -121,6 +122,68 @@ describe('Axis', () => {
 			// make sure labels are visible
 			expect(screen.getAllByText('Q1')[0]).toBeInTheDocument();
 			expect(screen.getByText('2020')).toBeInTheDocument();
+		});
+	});
+
+	describe('Time axis', () => {
+		test('Minute renders properly', async () => {
+			render(<VerticalTimeAxis {...VerticalTimeAxis.args} granularity="minute" />);
+			const chart = await findChart();
+			expect(chart).toBeInTheDocument();
+
+			// make sure labels are visible and Dec 2 is not repeated
+			expect(screen.getByText(/Dec 2.+6:31 PM/)).toBeInTheDocument();
+			expect(screen.getByText('6:32 PM')).toBeInTheDocument();
+		});
+
+		test('Hour renders properly', async () => {
+			render(<VerticalTimeAxis {...VerticalTimeAxis.args} granularity="hour" />);
+			const chart = await findChart();
+			expect(chart).toBeInTheDocument();
+
+			// make sure labels are visible
+			expect(screen.getByText(/Dec 1.+8 PM/)).toBeInTheDocument();
+			expect(screen.getByText('9 PM')).toBeInTheDocument();
+		});
+
+		test('Day renders properly', async () => {
+			render(<VerticalTimeAxis {...VerticalTimeAxis.args} />);
+			const chart = await findChart();
+			expect(chart).toBeInTheDocument();
+
+			// make sure labels are visible
+			expect(screen.getByText(/Nov.+3/)).toBeInTheDocument();
+			expect(screen.getByText('4')).toBeInTheDocument();
+		});
+
+		test('Week renders properly', async () => {
+			render(<VerticalTimeAxis {...VerticalTimeAxis.args} granularity="week" />);
+			const chart = await findChart();
+			expect(chart).toBeInTheDocument();
+
+			// make sure labels are visible
+			expect(await screen.findByText(/Sep.+11/)).toBeInTheDocument();
+			expect(await screen.findByText('18')).toBeInTheDocument();
+		});
+
+		test('Month renders properly', async () => {
+			render(<VerticalTimeAxis {...VerticalTimeAxis.args} granularity="month" />);
+			const chart = await findChart();
+			expect(chart).toBeInTheDocument();
+
+			// make sure labels are visible
+			expect(await screen.findByText(/2022.+Jan/)).toBeInTheDocument();
+			expect(await screen.findByText('Feb')).toBeInTheDocument();
+		});
+
+		test('Quarter renders properly', async () => {
+			render(<VerticalTimeAxis {...VerticalTimeAxis.args} granularity="quarter" />);
+			const chart = await findChart();
+			expect(chart).toBeInTheDocument();
+
+			// make sure labels are visible
+			expect(screen.getByText(/2020.+Q1/)).toBeInTheDocument();
+			expect(screen.getAllByText('Q2')[0]).toBeInTheDocument();
 		});
 	});
 
