@@ -21,6 +21,8 @@ import { Theme } from '@react-types/provider';
 import { Colors, SpectrumColor } from './SpectrumVizColors';
 import { LocaleCode, NumberLocaleCode, TimeLocaleCode } from './locales';
 
+export type PartiallyRequired<T, K extends keyof T> = Omit<T, K> & Required<Pick<T, K>>;
+
 export type AnnotationElement = ReactElement<AnnotationProps, JSXElementConstructor<AnnotationProps>>;
 export type AreaElement = ReactElement<AreaProps, JSXElementConstructor<AreaProps>>;
 export type AxisElement = ReactElement<AxisProps, JSXElementConstructor<AxisProps>>;
@@ -122,7 +124,21 @@ export interface SharedChartProps extends SpecProps {
 	tooltipPlacement?: TooltipPlacement;
 }
 
-export interface RscChartProps extends SharedChartProps {
+type ChartPropsWithDefaults =
+	| 'backgroundColor'
+	| 'colors'
+	| 'colorScheme'
+	| 'debug'
+	| 'locale'
+	| 'padding'
+	| 'renderer'
+	| 'lineTypes'
+	| 'lineWidths'
+	| 'hiddenSeries'
+	| 'tooltipAnchor'
+	| 'tooltipPlacement';
+
+export interface RscChartProps extends PartiallyRequired<SharedChartProps, ChartPropsWithDefaults> {
 	chartId: MutableRefObject<string>;
 	chartView: MutableRefObject<View | undefined>;
 	chartWidth: number;
