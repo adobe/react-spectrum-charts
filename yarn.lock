@@ -12404,7 +12404,16 @@ vega-time@^2.1.1, vega-time@~2.1.1:
     d3-time "^3.1.0"
     vega-util "^1.17.1"
 
-"vega-tooltip@>= 0.35.1", vega-tooltip@^0.35.1:
+"vega-tooltip@>= 0.35.2":
+  version "0.35.2"
+  resolved "https://registry.yarnpkg.com/vega-tooltip/-/vega-tooltip-0.35.2.tgz#a019133d481ce1e0876c0dc948a0a13703d48bcc"
+  integrity sha512-kuYcsAAKYn39ye5wKf2fq1BAxVcjoz0alvKp/G+7BWfIb94J0PHmwrJ5+okGefeStZnbXxINZEOKo7INHaj9GA==
+  dependencies:
+    vega-util "^1.17.2"
+  optionalDependencies:
+    "@rollup/rollup-linux-x64-gnu" "^4.24.4"
+
+vega-tooltip@^0.35.1:
   version "0.35.1"
   resolved "https://registry.yarnpkg.com/vega-tooltip/-/vega-tooltip-0.35.1.tgz#a789bda75b9ca79b41401bf3c045a6e0cc3a1ca2"
   integrity sha512-KpPa3H0tE3bTr0DFho1qJUygRLmVy8+iAnEnJvPaQIdI6QBcvFqrkHoA23QhTFtRLNdHaGzmuxoJNWJ1TcIyzg==
