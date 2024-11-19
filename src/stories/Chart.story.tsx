@@ -9,10 +9,10 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import React, { ReactElement } from 'react';
+import { ReactElement } from 'react';
 
 import useChartProps from '@hooks/useChartProps';
-import { Axis, Chart, Line } from '@rsc';
+import { Axis, Bar, Chart, ChartTooltip, Line } from '@rsc';
 import { StoryFn } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
 
@@ -43,6 +43,26 @@ const ChartTimeStory: StoryFn<typeof Chart> = (args): ReactElement => {
 			<Axis position="bottom" baseline ticks labelFormat="time" />
 			<Axis position="left" grid numberFormat=",.2f" />
 			<Line dimension="datetime" metric="value" color="series" scaleType="time" />
+		</Chart>
+	);
+};
+
+const ChartBarTooltipStory: StoryFn<typeof Chart> = (args): ReactElement => {
+	const props = useChartProps(args);
+	return (
+		<Chart {...props}>
+			<Axis position="bottom" baseline />
+			<Axis position="left" grid />
+			<Bar dimension="x" metric="y" color="series">
+				<ChartTooltip>
+					{(datum) => (
+						<div className="bar-tooltip">
+							<div>x: {datum.x}</div>
+							<div>y: {datum.y}</div>
+						</div>
+					)}
+				</ChartTooltip>
+			</Bar>
 		</Chart>
 	);
 };
@@ -91,4 +111,11 @@ Height.args = {
 	data,
 };
 
-export { Basic, BackgroundColor, Config, Locale, Width, Height };
+const TooltipAnchor = bindWithProps(ChartBarTooltipStory);
+TooltipAnchor.args = {
+	tooltipAnchor: 'mark',
+	tooltipPlacement: 'top',
+	data,
+};
+
+export { BackgroundColor, Basic, Config, Height, Locale, TooltipAnchor, Width };
