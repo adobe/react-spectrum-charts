@@ -19,10 +19,17 @@ import { Spec } from 'vega';
 
 import { BarElement, ChartChildElement, ColorScheme, ComboChildElement, ComboProps, LineElement } from '../../types';
 
-export const addCombo = produce<Spec, [ComboProps & { colorScheme?: ColorScheme; index?: number }]>(
+export const addCombo = produce<Spec, [ComboProps & { colorScheme?: ColorScheme; index?: number; idField: string }]>(
 	(
 		spec,
-		{ children = [], colorScheme = DEFAULT_COLOR_SCHEME, index = 0, name, dimension = DEFAULT_TIME_DIMENSION }
+		{
+			children = [],
+			colorScheme = DEFAULT_COLOR_SCHEME,
+			idField,
+			index = 0,
+			name,
+			dimension = DEFAULT_TIME_DIMENSION,
+		}
 	) => {
 		const buildOrder = new Map();
 		buildOrder.set(Bar, 0);
@@ -44,6 +51,7 @@ export const addCombo = produce<Spec, [ComboProps & { colorScheme?: ColorScheme;
 						return addBar(acc, {
 							...barElement.props,
 							colorScheme,
+							idField,
 							index: barCount,
 							name: getComboChildName(barElement, comboName, barCount),
 							dimension: getDimension(barElement, dimension),
@@ -53,6 +61,7 @@ export const addCombo = produce<Spec, [ComboProps & { colorScheme?: ColorScheme;
 						return addLine(acc, {
 							...lineElement.props,
 							colorScheme,
+							idField,
 							index: lineCount,
 							name: getComboChildName(lineElement, comboName, lineCount),
 							dimension: getDimension(lineElement, dimension),

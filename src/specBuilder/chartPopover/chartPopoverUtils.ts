@@ -10,7 +10,7 @@
  * governing permissions and limitations under the License.
  */
 import { ChartPopover } from '@components/ChartPopover';
-import { FILTERED_TABLE, MARK_ID, SELECTED_GROUP, SERIES_ID } from '@constants';
+import { FILTERED_TABLE, SELECTED_GROUP, SERIES_ID } from '@constants';
 import { getFilteredTableData } from '@specBuilder/data/dataUtils';
 import { Data, FormulaTransform, SourceData } from 'vega';
 
@@ -21,6 +21,7 @@ type PopoverParentProps = {
 	markType?: string;
 	name: string;
 	dimension: string;
+	idField: string;
 };
 
 /**
@@ -73,7 +74,7 @@ export const addPopoverData = (data: Data[], markProps: PopoverParentProps, addH
 		} else if (Array.isArray(UNSAFE_highlightBy)) {
 			filteredTable.transform.push(getGroupIdTransform(UNSAFE_highlightBy, markName));
 		} else {
-			filteredTable.transform.push(getGroupIdTransform([MARK_ID], markName));
+			filteredTable.transform.push(getGroupIdTransform([markProps.idField], markName));
 		}
 
 		if (addHighlightedData) {

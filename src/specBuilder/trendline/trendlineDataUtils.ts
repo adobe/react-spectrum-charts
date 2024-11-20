@@ -13,7 +13,6 @@ import {
 	FILTERED_TABLE,
 	HIGHLIGHTED_ITEM,
 	HIGHLIGHTED_SERIES,
-	MARK_ID,
 	SELECTED_ITEM,
 	SELECTED_SERIES,
 	SERIES_ID,
@@ -66,7 +65,7 @@ export const addTrendlineData = (data: Data[], markProps: TrendlineParentProps) 
  */
 export const getTrendlineData = (markProps: TrendlineParentProps): SourceData[] => {
 	const data: SourceData[] = [];
-	const { color, lineType, name: markName } = markProps;
+	const { color, idField, lineType, name: markName } = markProps;
 	const trendlines = getTrendlines(markProps);
 
 	const concatenatedTrendlineData: { name: string; source: string[] } = {
@@ -95,7 +94,7 @@ export const getTrendlineData = (markProps: TrendlineParentProps): SourceData[] 
 
 	if (trendlines.some((trendline) => hasInteractiveChildren(trendline.children))) {
 		data.push(concatenatedTrendlineData);
-		data.push(getHighlightTrendlineData(markName));
+		data.push(getHighlightTrendlineData(markName, idField));
 	}
 
 	return data;
@@ -229,8 +228,8 @@ const getWindowTrendlineData = (markProps: TrendlineParentProps, trendlineProps:
  * @param trendlines
  * @returns Data
  */
-const getHighlightTrendlineData = (markName: string): SourceData => {
-	const expr = `${SELECTED_ITEM} === datum.${MARK_ID} || !${SELECTED_ITEM} && ${HIGHLIGHTED_ITEM} === datum.${MARK_ID}`;
+const getHighlightTrendlineData = (markName: string, idField: string): SourceData => {
+	const expr = `${SELECTED_ITEM} === datum.${idField} || !${SELECTED_ITEM} && ${HIGHLIGHTED_ITEM} === datum.${idField}`;
 	return {
 		name: `${markName}Trendline_highlightedData`,
 		source: `${markName}_allTrendlineData`,

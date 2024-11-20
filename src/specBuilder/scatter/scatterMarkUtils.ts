@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { DEFAULT_OPACITY_RULE, FILTERED_TABLE, HIGHLIGHT_CONTRAST_RATIO, MARK_ID, SELECTED_ITEM } from '@constants';
+import { DEFAULT_OPACITY_RULE, FILTERED_TABLE, HIGHLIGHT_CONTRAST_RATIO, SELECTED_ITEM } from '@constants';
 import { addTooltipMarkOpacityRules } from '@specBuilder/chartTooltip/chartTooltipUtils';
 import {
 	getColorProductionRule,
@@ -102,7 +102,7 @@ export const getScatterMark = (props: ScatterSpecProps): SymbolMark => {
  * @returns opacity production rule
  */
 export const getOpacity = (props: ScatterSpecProps): ({ test?: string } & NumericValueRef)[] => {
-	const { children } = props;
+	const { children, idField } = props;
 	if (!hasInteractiveChildren(children)) {
 		return [DEFAULT_OPACITY_RULE];
 	}
@@ -113,7 +113,7 @@ export const getOpacity = (props: ScatterSpecProps): ({ test?: string } & Numeri
 	addTooltipMarkOpacityRules(rules, props);
 	if (hasPopover(children)) {
 		rules.push({
-			test: `${SELECTED_ITEM} && ${SELECTED_ITEM} !== datum.${MARK_ID}`,
+			test: `${SELECTED_ITEM} && ${SELECTED_ITEM} !== datum.${idField}`,
 			value: fadedValue,
 		});
 	}

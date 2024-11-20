@@ -16,7 +16,6 @@ import {
 	FILTERED_TABLE,
 	GROUP_DATA,
 	LEGEND_TOOLTIP_DELAY,
-	MARK_ID,
 	SELECTED_ITEM,
 	SELECTED_SERIES,
 	SERIES_ID,
@@ -98,6 +97,7 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 			chartWidth,
 			UNSAFE_vegaSpec,
 			chartId,
+			idField,
 			...props
 		},
 		forwardedRef
@@ -191,7 +191,7 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 				const tooltip = tooltips.find((t) => t.name === value[COMPONENT_NAME]);
 				if (tooltip?.callback && !('index' in value)) {
 					if (controlledHoveredIdSignal) {
-						chartView.current?.signal(controlledHoveredIdSignal.name, value?.[MARK_ID] ?? null);
+						chartView.current?.signal(controlledHoveredIdSignal.name, value?.[idField] ?? null);
 					}
 					if (controlledHoveredGroupSignal) {
 						const key = Object.keys(value).find((k) => k.endsWith('_highlightGroupId'));
@@ -221,11 +221,11 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 			if (legendIsToggleable) {
 				signals.hiddenSeries = legendHiddenSeries;
 			}
-			signals[SELECTED_ITEM] = selectedData?.[MARK_ID] ?? null;
+			signals[SELECTED_ITEM] = selectedData?.[idField] ?? null;
 			signals[SELECTED_SERIES] = selectedData?.[SERIES_ID] ?? null;
 
 			return signals;
-		}, [colorScheme, legendHiddenSeries, legendIsToggleable]);
+		}, [colorScheme, idField, legendHiddenSeries, legendIsToggleable]);
 
 		return (
 			<>
@@ -272,6 +272,7 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 								view.signal('hiddenSeries', legendHiddenSeries);
 							}
 							setSelectedSignals({
+								idField,
 								selectedData: selectedData.current,
 								view,
 							});

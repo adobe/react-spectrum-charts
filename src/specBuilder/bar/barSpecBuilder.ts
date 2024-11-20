@@ -48,7 +48,7 @@ import { getDodgedMark } from './dodgedBarUtils';
 import { getDodgedAndStackedBarMark, getStackedBarMarks } from './stackedBarUtils';
 import { addTrellisScale, getTrellisGroupMark, isTrellised } from './trellisedBarUtils';
 
-export const addBar = produce<Spec, [BarProps & { colorScheme?: ColorScheme; index?: number }]>(
+export const addBar = produce<Spec, [BarProps & { colorScheme?: ColorScheme; index?: number; idField: string }]>(
 	(
 		spec,
 		{
@@ -107,7 +107,7 @@ export const addBar = produce<Spec, [BarProps & { colorScheme?: ColorScheme; ind
 );
 
 export const addSignals = produce<Signal[], [BarSpecProps]>((signals, props) => {
-	const { children, name, paddingRatio, paddingOuter: barPaddingOuter } = props;
+	const { children, idField, name, paddingRatio, paddingOuter: barPaddingOuter } = props;
 	// We use this value to calculate ReferenceLine positions.
 	const { paddingInner } = getBarPadding(paddingRatio, barPaddingOuter);
 	signals.push(getGenericValueSignal('paddingInner', paddingInner));
@@ -115,7 +115,7 @@ export const addSignals = produce<Signal[], [BarSpecProps]>((signals, props) => 
 	if (!children.length) {
 		return;
 	}
-	addHighlightedItemSignalEvents(signals, name, 1, getTooltipProps(children)?.excludeDataKeys);
+	addHighlightedItemSignalEvents(signals, name, idField, 1, getTooltipProps(children)?.excludeDataKeys);
 	addTooltipSignals(signals, props);
 	setTrendlineSignals(signals, props);
 });

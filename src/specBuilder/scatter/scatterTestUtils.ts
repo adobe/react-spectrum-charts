@@ -14,6 +14,7 @@ import {
 	DEFAULT_DIMENSION_SCALE_TYPE,
 	DEFAULT_LINEAR_DIMENSION,
 	DEFAULT_METRIC,
+	MARK_ID,
 } from '@constants';
 
 import { ScatterSpecProps } from '../../types';
@@ -25,6 +26,7 @@ export const defaultScatterProps: ScatterSpecProps = {
 	colorScheme: DEFAULT_COLOR_SCHEME,
 	dimension: DEFAULT_LINEAR_DIMENSION,
 	dimensionScaleType: DEFAULT_DIMENSION_SCALE_TYPE,
+	idField: MARK_ID,
 	index: 0,
 	interactiveMarkName: 'scatter0',
 	lineType: { value: 'solid' },

@@ -11,7 +11,7 @@
  */
 import { Fragment, ReactNode } from 'react';
 
-import { MARK_ID, SELECTED_GROUP, SELECTED_ITEM, SELECTED_SERIES, SERIES_ID } from '@constants';
+import { SELECTED_GROUP, SELECTED_ITEM, SELECTED_SERIES, SERIES_ID } from '@constants';
 import {
 	Annotation,
 	Area,
@@ -400,8 +400,16 @@ export function debugLog(
  * Sets the values of the selectedId and selectedSeries signals
  * @param param0
  */
-export const setSelectedSignals = ({ selectedData, view }: { selectedData: Datum | null; view: View }) => {
-	view.signal(SELECTED_ITEM, selectedData?.[MARK_ID] ?? null);
+export const setSelectedSignals = ({
+	idField,
+	selectedData,
+	view,
+}: {
+	idField: string;
+	selectedData: Datum | null;
+	view: View;
+}) => {
+	view.signal(SELECTED_ITEM, selectedData?.[idField] ?? null);
 	view.signal(SELECTED_SERIES, selectedData?.[SERIES_ID] ?? null);
 
 	const selectedGroupKey = Object.keys(selectedData ?? {}).find((k) => k.endsWith('_selectedGroupId'));

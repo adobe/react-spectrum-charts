@@ -47,8 +47,10 @@ type PartiallyRequired<T, K extends keyof T> = Omit<T, K> & Required<Pick<T, K>>
 
 type AreaPropsWithDefaults = 'name' | 'dimension' | 'metric' | 'color' | 'scaleType' | 'opacity';
 
-export interface AreaSpecProps
-	extends PartiallyRequired<AreaProps & { colorScheme: ColorScheme; index: number }, AreaPropsWithDefaults> {
+export interface AreaSpecProps extends PartiallyRequired<AreaProps, AreaPropsWithDefaults> {
+	colorScheme: ColorScheme;
+	idField: string;
+	index: number;
 	children: MarkChildElement[];
 	markType: 'area';
 }
@@ -82,11 +84,10 @@ export interface AxisSpecProps extends PartiallyRequired<AxisProps, AxisPropsWit
 type AxisAnnotationPropsWithDefaults = 'name' | 'offset' | 'dataKey' | 'color' | 'options' | 'format';
 
 export interface AxisAnnotationSpecProps
-	extends PartiallyRequired<
-		AxisAnnotationProps & { axisName: string; colorScheme: ColorScheme },
-		AxisAnnotationPropsWithDefaults
-	> {
+	extends PartiallyRequired<AxisAnnotationProps, AxisAnnotationPropsWithDefaults> {
+	axisName: string;
 	children: AxisAnnotationChildElement[];
+	colorScheme: ColorScheme;
 }
 
 type BarPropsWithDefaults =
@@ -104,12 +105,14 @@ type BarPropsWithDefaults =
 	| 'trellisPadding'
 	| 'type';
 
-export interface BarSpecProps
-	extends PartiallyRequired<BarProps & { colorScheme: ColorScheme; index: number }, BarPropsWithDefaults> {
-	markType: 'bar';
+export interface BarSpecProps extends PartiallyRequired<BarProps, BarPropsWithDefaults> {
 	children: MarkChildElement[];
-	interactiveMarkName: string | undefined;
+	colorScheme: ColorScheme;
 	dimensionScaleType: 'band';
+	idField: string;
+	index: number;
+	interactiveMarkName: string | undefined;
+	markType: 'bar';
 }
 
 type AnnotationPropsWithDefaults = 'textKey';
@@ -135,9 +138,11 @@ export interface ChartPopoverSpecProps extends PartiallyRequired<ChartPopoverPro
 
 type DonutPropsWithDefaults = 'color' | 'metric' | 'name' | 'startAngle' | 'holeRatio' | 'isBoolean';
 
-export interface DonutSpecProps
-	extends PartiallyRequired<DonutProps & { colorScheme: ColorScheme; index: number }, DonutPropsWithDefaults> {
+export interface DonutSpecProps extends PartiallyRequired<DonutProps, DonutPropsWithDefaults> {
 	children: MarkChildElement[];
+	colorScheme: ColorScheme;
+	idField: string;
+	index: number;
 	markType: 'donut';
 }
 
@@ -155,12 +160,12 @@ export interface SegmentLabelSpecProps extends PartiallyRequired<SegmentLabelPro
 
 type LegendPropsWithDefaults = 'hiddenEntries' | 'highlight' | 'isToggleable' | 'position' | 'name';
 
-export interface LegendSpecProps
-	extends PartiallyRequired<
-		LegendProps & { colorScheme: ColorScheme; index: number; hiddenSeries: string[]; highlightedSeries?: string },
-		LegendPropsWithDefaults
-	> {
+export interface LegendSpecProps extends PartiallyRequired<LegendProps, LegendPropsWithDefaults> {
 	color?: FacetRef<string>;
+	colorScheme: ColorScheme;
+	hiddenSeries: string[];
+	highlightedSeries?: string;
+	index: number;
 	lineType?: FacetRef<number[]>;
 	lineWidth?: FacetRef<number>;
 	symbolShape?: FacetRef<string>;
@@ -171,6 +176,7 @@ type LinePropsWithDefaults = 'name' | 'dimension' | 'metric' | 'color' | 'scaleT
 export interface LineSpecProps extends PartiallyRequired<LineProps, LinePropsWithDefaults> {
 	children: MarkChildElement[];
 	colorScheme: ColorScheme;
+	idField: string;
 	index: number;
 	interactiveMarkName: string | undefined;
 	isHighlightedByGroup?: boolean;
@@ -195,6 +201,7 @@ type ScatterPropsWithDefaults =
 export interface ScatterSpecProps extends PartiallyRequired<ScatterProps, ScatterPropsWithDefaults> {
 	children: MarkChildElement[];
 	colorScheme: ColorScheme;
+	idField: string;
 	index: number;
 	interactiveMarkName: string | undefined;
 	markType: 'scatter';
@@ -212,8 +219,9 @@ export interface ScatterPathSpecProps extends PartiallyRequired<ScatterPathProps
 }
 
 type MetricRangePropsWithDefaults = 'lineType' | 'lineWidth' | 'rangeOpacity' | 'metricEnd' | 'metricStart' | 'metric';
-export interface MetricRangeSpecProps
-	extends PartiallyRequired<MetricRangeProps & { name: string }, MetricRangePropsWithDefaults> {}
+export interface MetricRangeSpecProps extends PartiallyRequired<MetricRangeProps, MetricRangePropsWithDefaults> {
+	name: string;
+}
 
 type TrendlinePropsWithDefaults =
 	| 'dimensionExtent'
@@ -223,16 +231,15 @@ type TrendlinePropsWithDefaults =
 	| 'lineType'
 	| 'lineWidth'
 	| 'method'
-	| 'metric'
 	| 'opacity'
 	| 'orientation';
 
-export interface TrendlineSpecProps
-	extends PartiallyRequired<TrendlineProps & { metric?: string }, TrendlinePropsWithDefaults> {
+export interface TrendlineSpecProps extends PartiallyRequired<TrendlineProps, TrendlinePropsWithDefaults> {
 	children: TrendlineChildElement[];
 	colorScheme: ColorScheme;
 	dimensionScaleType: RscScaleType;
 	isDimensionNormalized: boolean;
+	metric: string;
 	name: string;
 	trendlineColor: ColorFacet;
 	trendlineDimension: string;

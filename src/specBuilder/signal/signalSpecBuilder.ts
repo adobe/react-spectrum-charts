@@ -9,14 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import {
-	FILTERED_TABLE,
-	HIGHLIGHTED_GROUP,
-	HIGHLIGHTED_ITEM,
-	HIGHLIGHTED_SERIES,
-	MARK_ID,
-	SERIES_ID,
-} from '@constants';
+import { FILTERED_TABLE, HIGHLIGHTED_GROUP, HIGHLIGHTED_ITEM, HIGHLIGHTED_SERIES, SERIES_ID } from '@constants';
 import { Signal } from 'vega';
 
 /**
@@ -124,6 +117,7 @@ export const getGenericUpdateSignal = (name: string, update: string): Signal => 
 export const addHighlightedItemSignalEvents = (
 	signals: Signal[],
 	markName: string,
+	idField: string,
 	datumOrder = 1,
 	excludeDataKeys?: string[]
 ) => {
@@ -142,8 +136,8 @@ export const addHighlightedItemSignalEvents = (
 				{
 					events: `@${markName}:mouseover`,
 					update: excludeDataKeys?.length
-						? `(${excludeDataKeysCondition}) ? null : ${datum}${MARK_ID}`
-						: `${datum}${MARK_ID}`,
+						? `(${excludeDataKeysCondition}) ? null : ${datum}${idField}`
+						: `${datum}${idField}`,
 				},
 				{ events: `@${markName}:mouseout`, update: 'null' },
 			]

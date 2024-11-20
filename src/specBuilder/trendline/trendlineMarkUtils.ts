@@ -329,7 +329,7 @@ const getLineMarkProps = (
 	{ dimensionScaleType, displayOnHover, lineWidth, metric, name, opacity }: TrendlineSpecProps,
 	override?: Partial<LineMarkProps>
 ): LineMarkProps => {
-	const { children, color, colorScheme, dimension, interactiveMarkName, lineType } = markProps;
+	const { children, color, colorScheme, dimension, idField, interactiveMarkName, lineType } = markProps;
 	const popoverMarkName = 'popoverMarkName' in markProps ? markProps.popoverMarkName : undefined;
 	const staticPoint = 'staticPoint' in markProps ? markProps.staticPoint : undefined;
 	return {
@@ -338,6 +338,7 @@ const getLineMarkProps = (
 		colorScheme,
 		dimension,
 		displayOnHover,
+		idField,
 		interactiveMarkName,
 		lineType: getTrendlineLineTypeFromMarkProps(lineType),
 		lineWidth: { value: lineWidth },
