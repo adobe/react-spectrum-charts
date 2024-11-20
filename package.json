@@ -136,7 +136,7 @@
 		"storybook": "^8.4.1",
 		"storybook-addon-react-docgen": "^1.2.44",
 		"storybook-dark-mode": "^4.0.1",
-		"style-loader": "^3.3.3",
+		"style-loader": "^4.0.0",
 		"ts-jest": "^29.0.3",
 		"ts-loader": "^9.4.2",
 		"tsconfig-paths-webpack-plugin": "^4.0.0",
