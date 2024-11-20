@@ -401,15 +401,15 @@ export function debugLog(
  * @param param0
  */
 export const setSelectedSignals = ({
-	idField,
+	idKey,
 	selectedData,
 	view,
 }: {
-	idField: string;
+	idKey: string;
 	selectedData: Datum | null;
 	view: View;
 }) => {
-	view.signal(SELECTED_ITEM, selectedData?.[idField] ?? null);
+	view.signal(SELECTED_ITEM, selectedData?.[idKey] ?? null);
 	view.signal(SELECTED_SERIES, selectedData?.[SERIES_ID] ?? null);
 
 	const selectedGroupKey = Object.keys(selectedData ?? {}).find((k) => k.endsWith('_selectedGroupId'));

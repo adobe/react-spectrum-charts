@@ -19,11 +19,11 @@ import { Signal } from 'vega';
 import { TrendlineParentProps, getTrendlines } from './trendlineUtils';
 
 export const setTrendlineSignals = (signals: Signal[], markProps: TrendlineParentProps): void => {
-	const { idField, name: markName } = markProps;
+	const { idKey, name: markName } = markProps;
 	const trendlines = getTrendlines(markProps);
 
 	if (trendlines.some((trendline) => hasTooltip(trendline.children))) {
-		addHighlightedItemSignalEvents(signals, `${markName}Trendline_voronoi`, idField, 2);
+		addHighlightedItemSignalEvents(signals, `${markName}Trendline_voronoi`, idKey, 2);
 		addHighlightedSeriesSignalEvents(signals, `${markName}Trendline_voronoi`, 2);
 	}
 

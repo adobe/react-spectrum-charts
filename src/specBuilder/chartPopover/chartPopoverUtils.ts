@@ -21,7 +21,7 @@ type PopoverParentProps = {
 	markType?: string;
 	name: string;
 	dimension: string;
-	idField: string;
+	idKey: string;
 };
 
 /**
@@ -74,7 +74,7 @@ export const addPopoverData = (data: Data[], markProps: PopoverParentProps, addH
 		} else if (Array.isArray(UNSAFE_highlightBy)) {
 			filteredTable.transform.push(getGroupIdTransform(UNSAFE_highlightBy, markName));
 		} else {
-			filteredTable.transform.push(getGroupIdTransform([markProps.idField], markName));
+			filteredTable.transform.push(getGroupIdTransform([markProps.idKey], markName));
 		}
 
 		if (addHighlightedData) {

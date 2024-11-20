@@ -26,7 +26,7 @@ export const defaultScatterProps: ScatterSpecProps = {
 	colorScheme: DEFAULT_COLOR_SCHEME,
 	dimension: DEFAULT_LINEAR_DIMENSION,
 	dimensionScaleType: DEFAULT_DIMENSION_SCALE_TYPE,
-	idField: MARK_ID,
+	idKey: MARK_ID,
 	index: 0,
 	interactiveMarkName: 'scatter0',
 	lineType: { value: 'solid' },

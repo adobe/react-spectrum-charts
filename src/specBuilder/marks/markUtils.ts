@@ -414,7 +414,7 @@ const getHoverSizeSignal = (size: number): SignalRef => ({
  * @returns
  */
 export const getMarkOpacity = (props: BarSpecProps | DonutSpecProps): ({ test?: string } & NumericValueRef)[] => {
-	const { children, idField, name: markName } = props;
+	const { children, idKey, name: markName } = props;
 	const rules: ({ test?: string } & NumericValueRef)[] = [DEFAULT_OPACITY_RULE];
 	// if there aren't any interactive components, then we don't need to add special opacity rules
 	if (!hasInteractiveChildren(children)) {
@@ -427,10 +427,10 @@ export const getMarkOpacity = (props: BarSpecProps | DonutSpecProps): ({ test?: 
 	if (hasPopover(children)) {
 		return [
 			{
-				test: `!${SELECTED_GROUP} && ${SELECTED_ITEM} && ${SELECTED_ITEM} !== datum.${idField}`,
+				test: `!${SELECTED_GROUP} && ${SELECTED_ITEM} && ${SELECTED_ITEM} !== datum.${idKey}`,
 				value: 1 / HIGHLIGHT_CONTRAST_RATIO,
 			},
-			{ test: `${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${idField}`, ...DEFAULT_OPACITY_RULE },
+			{ test: `${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${idKey}`, ...DEFAULT_OPACITY_RULE },
 			{
 				test: `${SELECTED_GROUP} && ${SELECTED_GROUP} === datum.${markName}_selectedGroupId`,
 				value: 1,

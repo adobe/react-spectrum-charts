@@ -18,7 +18,7 @@ export const defaultDonutProps: DonutSpecProps = {
 	color: 'testColor',
 	colorScheme: 'light',
 	holeRatio: 0.85,
-	idField: MARK_ID,
+	idKey: MARK_ID,
 	index: 0,
 	isBoolean: false,
 	name: 'testName',

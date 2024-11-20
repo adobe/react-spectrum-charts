@@ -17,7 +17,7 @@ import { ArcMark } from 'vega';
 import { DonutSpecProps } from '../../types';
 
 export const getArcMark = (props: DonutSpecProps): ArcMark => {
-	const { children, color, colorScheme, holeRatio, idField, name } = props;
+	const { children, color, colorScheme, holeRatio, idKey, name } = props;
 	return {
 		type: 'arc',
 		name,
@@ -38,7 +38,7 @@ export const getArcMark = (props: DonutSpecProps): ArcMark => {
 				outerRadius: { signal: DONUT_RADIUS },
 				opacity: getMarkOpacity(props),
 				cursor: getCursor(children),
-				strokeWidth: [{ test: `${SELECTED_ITEM} === datum.${idField}`, value: 2 }, { value: 0 }],
+				strokeWidth: [{ test: `${SELECTED_ITEM} === datum.${idKey}`, value: 2 }, { value: 0 }],
 			},
 		},
 	};

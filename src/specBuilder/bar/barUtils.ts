@@ -244,7 +244,7 @@ export const getStroke = ({
 	children,
 	color,
 	colorScheme,
-	idField,
+	idKey,
 }: BarSpecProps): ProductionRule<ColorValueRef> => {
 	const defaultProductionRule = getColorProductionRule(color, colorScheme);
 	if (!hasPopover(children)) {
@@ -253,7 +253,7 @@ export const getStroke = ({
 
 	return [
 		{
-			test: `(${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${idField}) || (${SELECTED_GROUP} && ${SELECTED_GROUP} === datum.${name}_selectedGroupId)`,
+			test: `(${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${idKey}) || (${SELECTED_GROUP} && ${SELECTED_GROUP} === datum.${name}_selectedGroupId)`,
 			value: getColorValue('static-blue', colorScheme),
 		},
 		defaultProductionRule,
@@ -297,17 +297,17 @@ export const getDimensionSelectionRing = (props: BarSpecProps): RectMark => {
 	};
 };
 
-export const getStrokeDash = ({ children, idField, lineType }: BarSpecProps): ProductionRule<ArrayValueRef> => {
+export const getStrokeDash = ({ children, idKey, lineType }: BarSpecProps): ProductionRule<ArrayValueRef> => {
 	const defaultProductionRule = getStrokeDashProductionRule(lineType);
 	if (!hasPopover(children)) {
 		return [defaultProductionRule];
 	}
 
-	return [{ test: `${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${idField}`, value: [] }, defaultProductionRule];
+	return [{ test: `${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${idKey}`, value: [] }, defaultProductionRule];
 };
 
 export const getStrokeWidth = (props: BarSpecProps): ProductionRule<NumericValueRef> => {
-	const { idField, lineWidth, name } = props;
+	const { idKey, lineWidth, name } = props;
 	const lineWidthValue = getLineWidthPixelsFromLineWidth(lineWidth);
 	const defaultProductionRule = { value: lineWidthValue };
 	const popovers = getPopovers(props);
@@ -321,7 +321,7 @@ export const getStrokeWidth = (props: BarSpecProps): ProductionRule<NumericValue
 
 	return [
 		{
-			test: `(${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${idField}) || (${SELECTED_GROUP} && ${SELECTED_GROUP} === datum.${name}_selectedGroupId)`,
+			test: `(${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${idKey}) || (${SELECTED_GROUP} && ${SELECTED_GROUP} === datum.${name}_selectedGroupId)`,
 			value: Math.max(lineWidthValue, 2),
 		},
 		defaultProductionRule,

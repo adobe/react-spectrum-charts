@@ -196,7 +196,7 @@ export const addTooltipMarkOpacityRules = (
 	markProps: TooltipParentProps
 ) => {
 	opacityRules.unshift({
-		test: `${HIGHLIGHTED_ITEM} && ${HIGHLIGHTED_ITEM} !== datum.${markProps.idField}`,
+		test: `${HIGHLIGHTED_ITEM} && ${HIGHLIGHTED_ITEM} !== datum.${markProps.idKey}`,
 		value: 1 / HIGHLIGHT_CONTRAST_RATIO,
 	});
 	if (isHighlightedByGroup(markProps)) {

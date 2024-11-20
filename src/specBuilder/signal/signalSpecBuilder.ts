@@ -117,7 +117,7 @@ export const getGenericUpdateSignal = (name: string, update: string): Signal => 
 export const addHighlightedItemSignalEvents = (
 	signals: Signal[],
 	markName: string,
-	idField: string,
+	idKey: string,
 	datumOrder = 1,
 	excludeDataKeys?: string[]
 ) => {
@@ -136,8 +136,8 @@ export const addHighlightedItemSignalEvents = (
 				{
 					events: `@${markName}:mouseover`,
 					update: excludeDataKeys?.length
-						? `(${excludeDataKeysCondition}) ? null : ${datum}${idField}`
-						: `${datum}${idField}`,
+						? `(${excludeDataKeysCondition}) ? null : ${datum}${idKey}`
+						: `${datum}${idKey}`,
 				},
 				{ events: `@${markName}:mouseout`, update: 'null' },
 			]

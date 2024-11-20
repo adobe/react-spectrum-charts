@@ -49,7 +49,7 @@ type AreaPropsWithDefaults = 'name' | 'dimension' | 'metric' | 'color' | 'scaleT
 
 export interface AreaSpecProps extends PartiallyRequired<AreaProps, AreaPropsWithDefaults> {
 	colorScheme: ColorScheme;
-	idField: string;
+	idKey: string;
 	index: number;
 	children: MarkChildElement[];
 	markType: 'area';
@@ -109,7 +109,7 @@ export interface BarSpecProps extends PartiallyRequired<BarProps, BarPropsWithDe
 	children: MarkChildElement[];
 	colorScheme: ColorScheme;
 	dimensionScaleType: 'band';
-	idField: string;
+	idKey: string;
 	index: number;
 	interactiveMarkName: string | undefined;
 	markType: 'bar';
@@ -141,7 +141,7 @@ type DonutPropsWithDefaults = 'color' | 'metric' | 'name' | 'startAngle' | 'hole
 export interface DonutSpecProps extends PartiallyRequired<DonutProps, DonutPropsWithDefaults> {
 	children: MarkChildElement[];
 	colorScheme: ColorScheme;
-	idField: string;
+	idKey: string;
 	index: number;
 	markType: 'donut';
 }
@@ -176,7 +176,7 @@ type LinePropsWithDefaults = 'name' | 'dimension' | 'metric' | 'color' | 'scaleT
 export interface LineSpecProps extends PartiallyRequired<LineProps, LinePropsWithDefaults> {
 	children: MarkChildElement[];
 	colorScheme: ColorScheme;
-	idField: string;
+	idKey: string;
 	index: number;
 	interactiveMarkName: string | undefined;
 	isHighlightedByGroup?: boolean;
@@ -201,7 +201,7 @@ type ScatterPropsWithDefaults =
 export interface ScatterSpecProps extends PartiallyRequired<ScatterProps, ScatterPropsWithDefaults> {
 	children: MarkChildElement[];
 	colorScheme: ColorScheme;
-	idField: string;
+	idKey: string;
 	index: number;
 	interactiveMarkName: string | undefined;
 	markType: 'scatter';

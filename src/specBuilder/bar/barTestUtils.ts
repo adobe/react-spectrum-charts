@@ -35,7 +35,7 @@ export const defaultBarProps: BarSpecProps = {
 	dimension: DEFAULT_CATEGORICAL_DIMENSION,
 	dimensionScaleType: 'band',
 	hasSquareCorners: false,
-	idField: MARK_ID,
+	idKey: MARK_ID,
 	index: 0,
 	interactiveMarkName: 'bar0',
 	lineType: { value: 'solid' },

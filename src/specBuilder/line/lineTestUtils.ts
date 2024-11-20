@@ -18,7 +18,7 @@ export const defaultLineMarkProps: LineMarkProps = {
 	color: DEFAULT_COLOR,
 	colorScheme: DEFAULT_COLOR_SCHEME,
 	dimension: DEFAULT_TIME_DIMENSION,
-	idField: MARK_ID,
+	idKey: MARK_ID,
 	lineType: { value: 'solid' },
 	lineWidth: { value: 1 },
 	name: 'line0',

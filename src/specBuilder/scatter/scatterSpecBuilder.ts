@@ -47,10 +47,7 @@ import { addScatterMarks } from './scatterMarkUtils';
  * @param spec Spec
  * @param scatterProps ScatterProps
  */
-export const addScatter = produce<
-	Spec,
-	[ScatterProps & { colorScheme?: ColorScheme; index?: number; idField: string }]
->(
+export const addScatter = produce<Spec, [ScatterProps & { colorScheme?: ColorScheme; index?: number; idKey: string }]>(
 	(
 		spec,
 		{
@@ -100,7 +97,7 @@ export const addScatter = produce<
 );
 
 export const addData = produce<Data[], [ScatterSpecProps]>((data, props) => {
-	const { children, dimension, dimensionScaleType, idField, name } = props;
+	const { children, dimension, dimensionScaleType, idKey, name } = props;
 	if (dimensionScaleType === 'time') {
 		const tableData = getTableData(data);
 		tableData.transform = addTimeTransform(tableData.transform ?? [], dimension);
@@ -117,7 +114,7 @@ export const addData = produce<Data[], [ScatterSpecProps]>((data, props) => {
 			transform: [
 				{
 					type: 'filter',
-					expr: `${SELECTED_ITEM} === datum.${idField}`,
+					expr: `${SELECTED_ITEM} === datum.${idKey}`,
 				},
 			],
 		});
@@ -132,13 +129,13 @@ export const addData = produce<Data[], [ScatterSpecProps]>((data, props) => {
  * @param scatterProps ScatterSpecProps
  */
 export const addSignals = produce<Signal[], [ScatterSpecProps]>((signals, props) => {
-	const { children, idField, name } = props;
+	const { children, idKey, name } = props;
 	// trendline signals
 	setTrendlineSignals(signals, props);
 
 	if (!hasInteractiveChildren(children)) return;
 	// interactive signals
-	addHighlightedItemSignalEvents(signals, `${name}_voronoi`, idField, 2);
+	addHighlightedItemSignalEvents(signals, `${name}_voronoi`, idKey, 2);
 	addTooltipSignals(signals, props);
 });
 

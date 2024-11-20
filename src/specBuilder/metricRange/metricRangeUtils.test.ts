@@ -58,7 +58,7 @@ const defaultLineProps: LineSpecProps = {
 	color: DEFAULT_COLOR,
 	colorScheme: DEFAULT_COLOR_SCHEME,
 	dimension: DEFAULT_TIME_DIMENSION,
-	idField: MARK_ID,
+	idKey: MARK_ID,
 	index: 0,
 	interactiveMarkName: undefined,
 	lineType: { value: 'solid' },

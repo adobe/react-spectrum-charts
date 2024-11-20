@@ -43,7 +43,7 @@ import { addTimeTransform, getFilteredTableData, getTableData, getTransformSort 
 import { addContinuousDimensionScale, addFieldToFacetScaleDomain, addMetricScale } from '../scale/scaleSpecBuilder';
 import { getAreaMark, getX } from './areaUtils';
 
-export const addArea = produce<Spec, [AreaProps & { colorScheme?: ColorScheme; index?: number; idField: string }]>(
+export const addArea = produce<Spec, [AreaProps & { colorScheme?: ColorScheme; index?: number; idKey: string }]>(
 	(
 		spec,
 		{
@@ -122,7 +122,7 @@ export const addData = produce<Data[], [AreaSpecProps]>((data, props) => {
 
 	if (children.length) {
 		const areaHasPopover = hasPopover(children);
-		data.push(getAreaHighlightedData(name, props.idField, areaHasPopover, isHighlightedByGroup(props)));
+		data.push(getAreaHighlightedData(name, props.idKey, areaHasPopover, isHighlightedByGroup(props)));
 		if (areaHasPopover) {
 			data.push({
 				name: `${name}_selectedDataSeries`,
@@ -141,15 +141,15 @@ export const addData = produce<Data[], [AreaSpecProps]>((data, props) => {
 
 export const getAreaHighlightedData = (
 	name: string,
-	idField: string,
+	idKey: string,
 	hasPopover: boolean,
 	hasGroupId: boolean
 ): SourceData => {
 	const highlightedExpr = hasGroupId
 		? `${name}_controlledHoveredGroup === datum.${name}_highlightGroupId`
-		: `${name}_controlledHoveredId === datum.${idField}`;
+		: `${name}_controlledHoveredId === datum.${idKey}`;
 	const expr = hasPopover
-		? `${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${idField} || !${SELECTED_ITEM} && ${highlightedExpr}`
+		? `${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${idKey} || !${SELECTED_ITEM} && ${highlightedExpr}`
 		: highlightedExpr;
 	return {
 		name: `${name}_highlightedData`,

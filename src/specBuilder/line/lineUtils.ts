@@ -68,7 +68,7 @@ export interface LineMarkProps {
 	colorScheme: ColorScheme;
 	dimension: string;
 	displayOnHover?: boolean;
-	idField: string;
+	idKey: string;
 	interactiveMarkName?: string; // optional name of the mark that is used for hover and click interactions
 	isHighlightedByDimension?: boolean;
 	isHighlightedByGroup?: boolean;

@@ -38,7 +38,7 @@ describe('comboSpecBuilder', () => {
 			addCombo(
 				{},
 				{
-					idField: MARK_ID,
+					idKey: MARK_ID,
 					children: [
 						createElement(Bar, {
 							metric: 'people',
@@ -63,7 +63,7 @@ describe('comboSpecBuilder', () => {
 			addCombo(
 				{},
 				{
-					idField: MARK_ID,
+					idKey: MARK_ID,
 					children: [createElement(Axis)],
 				}
 			);
@@ -73,7 +73,7 @@ describe('comboSpecBuilder', () => {
 		});
 
 		it('should do nothing if no children', () => {
-			addCombo({}, { idField: MARK_ID });
+			addCombo({}, { idKey: MARK_ID });
 
 			expect(addBar).not.toHaveBeenCalled();
 			expect(addLine).not.toHaveBeenCalled();

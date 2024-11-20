@@ -94,7 +94,7 @@ export function buildSpec({
 	description,
 	hiddenSeries,
 	highlightedSeries,
-	idField = MARK_ID,
+	idKey = MARK_ID,
 	lineTypes = DEFAULT_LINE_TYPES as LineType[],
 	lineWidths = ['M'],
 	opacities,
@@ -128,7 +128,7 @@ export function buildSpec({
 
 	let { areaCount, axisCount, barCount, comboCount, donutCount, legendCount, lineCount, scatterCount } =
 		initializeComponentCounts();
-	const specProps = { colorScheme, idField };
+	const specProps = { colorScheme, idKey };
 	spec = [...children]
 		.sort((a, b) => buildOrder.get(a.type) - buildOrder.get(b.type))
 		.reduce((acc: Spec, cur) => {

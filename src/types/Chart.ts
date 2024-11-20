@@ -87,8 +87,8 @@ export interface SpecProps {
 	hiddenSeries?: string[];
 	/** Series name to highlight on the chart (controlled). */
 	highlightedSeries?: string;
-	/** Data field that contains a unique ID for each data point in the array. */
-	idField?: string;
+	/** Data key that contains a unique ID for each data point in the array. */
+	idKey?: string;
 }
 
 export interface SanitizedSpecProps extends SpecProps {
@@ -132,7 +132,7 @@ type ChartPropsWithDefaults =
 	| 'colorScheme'
 	| 'debug'
 	| 'hiddenSeries'
-	| 'idField'
+	| 'idKey'
 	| 'lineTypes'
 	| 'lineWidths'
 	| 'locale'

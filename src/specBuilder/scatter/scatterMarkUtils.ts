@@ -102,7 +102,7 @@ export const getScatterMark = (props: ScatterSpecProps): SymbolMark => {
  * @returns opacity production rule
  */
 export const getOpacity = (props: ScatterSpecProps): ({ test?: string } & NumericValueRef)[] => {
-	const { children, idField } = props;
+	const { children, idKey } = props;
 	if (!hasInteractiveChildren(children)) {
 		return [DEFAULT_OPACITY_RULE];
 	}
@@ -113,7 +113,7 @@ export const getOpacity = (props: ScatterSpecProps): ({ test?: string } & Numeri
 	addTooltipMarkOpacityRules(rules, props);
 	if (hasPopover(children)) {
 		rules.push({
-			test: `${SELECTED_ITEM} && ${SELECTED_ITEM} !== datum.${idField}`,
+			test: `${SELECTED_ITEM} && ${SELECTED_ITEM} !== datum.${idKey}`,
 			value: fadedValue,
 		});
 	}

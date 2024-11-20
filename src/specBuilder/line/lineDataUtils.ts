@@ -20,16 +20,16 @@ import { SourceData } from 'vega';
  */
 export const getLineHighlightedData = (
 	name: string,
-	idField: string,
+	idKey: string,
 	source: string,
 	hasPopover: boolean,
 	hasGroupId: boolean
 ): SourceData => {
 	const highlightedExpr = hasGroupId
 		? `${HIGHLIGHTED_GROUP} === datum.${name}_highlightGroupId`
-		: `${HIGHLIGHTED_ITEM} === datum.${idField}`;
+		: `${HIGHLIGHTED_ITEM} === datum.${idKey}`;
 	const expr = hasPopover
-		? `${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${idField} || !${SELECTED_ITEM} && ${highlightedExpr}`
+		? `${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${idKey} || !${SELECTED_ITEM} && ${highlightedExpr}`
 		: highlightedExpr;
 	return {
 		name: `${name}_highlightedData`,

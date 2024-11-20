@@ -43,7 +43,7 @@ import { getLineHoverMarks, getLineMark } from './lineMarkUtils';
 import { getLineStaticPoint } from './linePointUtils';
 import { getInteractiveMarkName, getPopoverMarkName } from './lineUtils';
 
-export const addLine = produce<Spec, [LineProps & { colorScheme?: ColorScheme; index?: number; idField: string }]>(
+export const addLine = produce<Spec, [LineProps & { colorScheme?: ColorScheme; index?: number; idKey: string }]>(
 	(
 		spec,
 		{
@@ -100,13 +100,7 @@ export const addData = produce<Data[], [LineSpecProps]>((data, props) => {
 	}
 	if (hasInteractiveChildren(children)) {
 		data.push(
-			getLineHighlightedData(
-				name,
-				props.idField,
-				FILTERED_TABLE,
-				hasPopover(children),
-				isHighlightedByGroup(props)
-			)
+			getLineHighlightedData(name, props.idKey, FILTERED_TABLE, hasPopover(children), isHighlightedByGroup(props))
 		);
 		data.push(getFilteredTooltipData(children));
 	}
@@ -119,12 +113,12 @@ export const addData = produce<Data[], [LineSpecProps]>((data, props) => {
 });
 
 export const addSignals = produce<Signal[], [LineSpecProps]>((signals, props) => {
-	const { children, idField, name } = props;
+	const { children, idKey, name } = props;
 	setTrendlineSignals(signals, props);
 	signals.push(...getMetricRangeSignals(props));
 
 	if (!hasInteractiveChildren(children)) return;
-	addHighlightedItemSignalEvents(signals, `${name}_voronoi`, idField, 2);
+	addHighlightedItemSignalEvents(signals, `${name}_voronoi`, idKey, 2);
 	addHighlightedSeriesSignalEvents(signals, `${name}_voronoi`, 2);
 	addHoverSignals(signals, props);
 	addTooltipSignals(signals, props);
@@ -190,10 +184,10 @@ const getMetricKeys = (lineMetric: string, lineChildren: MarkChildElement[], lin
 };
 
 const addHoverSignals = (signals: Signal[], props: LineSpecProps) => {
-	const { idField, interactionMode, name } = props;
+	const { idKey, interactionMode, name } = props;
 	if (interactionMode !== INTERACTION_MODE.ITEM) return;
 	getHoverMarkNames(name).forEach((hoverMarkName) => {
-		addHighlightedItemSignalEvents(signals, hoverMarkName, idField, 1);
+		addHighlightedItemSignalEvents(signals, hoverMarkName, idKey, 1);
 		addHighlightedSeriesSignalEvents(signals, hoverMarkName, 1);
 	});
 };

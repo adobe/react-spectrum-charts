@@ -44,7 +44,7 @@ const defaultLineProps: LineSpecProps = {
 	children: [],
 	name: 'line0',
 	dimension: DEFAULT_TIME_DIMENSION,
-	idField: MARK_ID,
+	idKey: MARK_ID,
 	index: 0,
 	markType: 'line',
 	metric: DEFAULT_METRIC,
@@ -354,7 +354,7 @@ const displayPointMarks = [
 describe('lineSpecBuilder', () => {
 	describe('addLine()', () => {
 		test('should add line', () => {
-			expect(addLine(startingSpec, { idField: MARK_ID, color: DEFAULT_COLOR })).toStrictEqual(defaultSpec);
+			expect(addLine(startingSpec, { idKey: MARK_ID, color: DEFAULT_COLOR })).toStrictEqual(defaultSpec);
 		});
 	});
 
