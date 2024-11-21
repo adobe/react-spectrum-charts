@@ -277,14 +277,14 @@ describe('getMarkOpacity()', () => {
 	test('Tooltip child, should return tests for hover and default to opacity', () => {
 		const tooltip = createElement(ChartTooltip);
 		const opacity = getMarkOpacity({ ...defaultBarProps, children: [tooltip] });
-		expect(opacity).toHaveLength(2);
+		expect(opacity).toHaveLength(3);
 		expect(opacity[0].test).toContain(HIGHLIGHTED_ITEM);
 		expect(opacity.at(-1)).toStrictEqual(DEFAULT_OPACITY_RULE);
 	});
 	test('Popover child, should return tests for hover and select and default to opacity', () => {
 		const popover = createElement(ChartPopover);
 		const opacity = getMarkOpacity({ ...defaultBarProps, children: [popover] });
-		expect(opacity).toHaveLength(6);
+		expect(opacity).toHaveLength(7);
 		expect(opacity[0].test).toContain(`${SELECTED_ITEM} !==`);
 		expect(opacity[1].test).toContain(`${SELECTED_ITEM} ===`);
 

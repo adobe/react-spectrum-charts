@@ -160,12 +160,12 @@ describe('addTooltipMarkOpacityRules()', () => {
 	test('should only add a simple item rule if not highlighted by group', () => {
 		const opacityRules = [];
 		addHighlightMarkOpacityRules(opacityRules, getDefautltMarkProps());
-		expect(opacityRules).toHaveLength(1);
+		expect(opacityRules).toHaveLength(2);
 	});
 
 	test('shold add highlight group rule if highlighted by group', () => {
 		const opacityRules = [];
 		addHighlightMarkOpacityRules(opacityRules, getDefautltMarkProps({ highlightBy: 'series' }));
-		expect(opacityRules).toHaveLength(2);
+		expect(opacityRules).toHaveLength(3);
 	});
 });

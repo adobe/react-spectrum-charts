@@ -229,7 +229,7 @@ const getWindowTrendlineData = (markProps: TrendlineParentProps, trendlineProps:
  * @returns Data
  */
 const getHighlightTrendlineData = (markName: string, idKey: string): SourceData => {
-	const expr = `${SELECTED_ITEM} === datum.${idKey} || !${SELECTED_ITEM} && ${HIGHLIGHTED_ITEM} === datum.${idKey}`;
+	const expr = `${SELECTED_ITEM} === datum.${idKey} || !isValid(${SELECTED_ITEM}) && (isArray(${HIGHLIGHTED_ITEM}) && indexof(${HIGHLIGHTED_ITEM}, datum.${idKey}) || ${HIGHLIGHTED_ITEM} === datum.${idKey})`;
 	return {
 		name: `${markName}Trendline_highlightedData`,
 		source: `${markName}_allTrendlineData`,

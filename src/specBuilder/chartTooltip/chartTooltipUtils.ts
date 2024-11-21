@@ -195,11 +195,16 @@ export const addHighlightMarkOpacityRules = (
 	opacityRules: ({ test?: string } & NumericValueRef)[],
 	markProps: TooltipParentProps
 ) => {
-	//TODO: add support for array of highlighted items
-	opacityRules.unshift({
-		test: `isValid(${HIGHLIGHTED_ITEM}) && ${HIGHLIGHTED_ITEM} !== datum.${markProps.idKey}`,
-		value: 1 / HIGHLIGHT_CONTRAST_RATIO,
-	});
+	opacityRules.unshift(
+		{
+			test: `isArray(${HIGHLIGHTED_ITEM}) && length(${HIGHLIGHTED_ITEM}) > 0 && indexof(${HIGHLIGHTED_ITEM}, datum.${markProps.idKey}) === -1`,
+			value: 1 / HIGHLIGHT_CONTRAST_RATIO,
+		},
+		{
+			test: `!isArray(${HIGHLIGHTED_ITEM}) && isValid(${HIGHLIGHTED_ITEM}) && ${HIGHLIGHTED_ITEM} !== datum.${markProps.idKey}`,
+			value: 1 / HIGHLIGHT_CONTRAST_RATIO,
+		}
+	);
 	if (isHighlightedByGroup(markProps)) {
 		const { name: markName } = markProps;
 		opacityRules.unshift({
