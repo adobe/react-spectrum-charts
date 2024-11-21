@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { HIGHLIGHTED_GROUP, HIGHLIGHTED_ITEM, MARK_ID, SELECTED_ITEM } from '@constants';
+import { HIGHLIGHTED_GROUP, HIGHLIGHTED_ITEM, SELECTED_ITEM } from '@constants';
 import { SourceData } from 'vega';
 
 /**
@@ -20,15 +20,16 @@ import { SourceData } from 'vega';
  */
 export const getLineHighlightedData = (
 	name: string,
+	idKey: string,
 	source: string,
 	hasPopover: boolean,
 	hasGroupId: boolean
 ): SourceData => {
 	const highlightedExpr = hasGroupId
 		? `${HIGHLIGHTED_GROUP} === datum.${name}_highlightGroupId`
-		: `${HIGHLIGHTED_ITEM} === datum.${MARK_ID}`;
+		: `${HIGHLIGHTED_ITEM} === datum.${idKey}`;
 	const expr = hasPopover
-		? `${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${MARK_ID} || !${SELECTED_ITEM} && ${highlightedExpr}`
+		? `${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${idKey} || !${SELECTED_ITEM} && ${highlightedExpr}`
 		: highlightedExpr;
 	return {
 		name: `${name}_highlightedData`,
@@ -51,17 +52,24 @@ export const getLineHighlightedData = (
  * @param isMethodLast
  * @returns
  */
-export const getLineStaticPointData = (name: string, staticPoint: string | undefined, source: string, isSparkline: boolean | undefined, isMethodLast: boolean | undefined): SourceData => {
-	const expr = isSparkline && isMethodLast ?
-		'datum === data(\'table\')[data(\'table\').length - 1]' :
-		`datum.${staticPoint} === true`;
+export const getLineStaticPointData = (
+	name: string,
+	staticPoint: string | undefined,
+	source: string,
+	isSparkline: boolean | undefined,
+	isMethodLast: boolean | undefined
+): SourceData => {
+	const expr =
+		isSparkline && isMethodLast
+			? "datum === data('table')[data('table').length - 1]"
+			: `datum.${staticPoint} === true`;
 	return {
 		name: `${name}_staticPointData`,
 		source,
 		transform: [
 			{
 				type: 'filter',
-				expr
+				expr,
 			},
 		],
 	};

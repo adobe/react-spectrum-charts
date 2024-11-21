@@ -21,6 +21,7 @@ import {
 	LINEAR_COLOR_SCALE,
 	LINE_TYPE_SCALE,
 	LINE_WIDTH_SCALE,
+	MARK_ID,
 	OPACITY_SCALE,
 	SELECTED_GROUP,
 	SELECTED_ITEM,
@@ -89,15 +90,16 @@ export function buildSpec({
 	backgroundColor = DEFAULT_BACKGROUND_COLOR,
 	children,
 	colors = 'categorical12',
+	colorScheme = DEFAULT_COLOR_SCHEME,
 	description,
 	hiddenSeries,
 	highlightedSeries,
+	idKey = MARK_ID,
 	lineTypes = DEFAULT_LINE_TYPES as LineType[],
 	lineWidths = ['M'],
 	opacities,
 	symbolShapes = ['rounded-square'],
 	symbolSizes = ['XS', 'XL'],
-	colorScheme = DEFAULT_COLOR_SCHEME,
 	title,
 }: SanitizedSpecProps) {
 	let spec = initializeSpec(null, { backgroundColor, colorScheme, description, title });
@@ -124,8 +126,9 @@ export function buildSpec({
 	buildOrder.set(Axis, 2);
 	buildOrder.set(Title, 3);
 
-	let { areaCount, axisCount, barCount, donutCount, legendCount, lineCount, scatterCount } =
+	let { areaCount, axisCount, barCount, comboCount, donutCount, legendCount, lineCount, scatterCount } =
 		initializeComponentCounts();
+	const specProps = { colorScheme, idKey };
 	spec = [...children]
 		.sort((a, b) => buildOrder.get(a.type) - buildOrder.get(b.type))
 		.reduce((acc: Spec, cur) => {
@@ -141,31 +144,31 @@ export function buildSpec({
 			switch (cur.type.displayName) {
 				case Area.displayName:
 					areaCount++;
-					return addArea(acc, { ...(cur as AreaElement).props, colorScheme, index: areaCount });
+					return addArea(acc, { ...(cur as AreaElement).props, ...specProps, index: areaCount });
 				case Axis.displayName:
 					axisCount++;
-					return addAxis(acc, { ...(cur as AxisElement).props, colorScheme, index: axisCount });
+					return addAxis(acc, { ...(cur as AxisElement).props, ...specProps, index: axisCount });
 				case Bar.displayName:
 					barCount++;
-					return addBar(acc, { ...(cur as BarElement).props, colorScheme, index: barCount });
+					return addBar(acc, { ...(cur as BarElement).props, ...specProps, index: barCount });
 				case Donut.displayName:
 					donutCount++;
-					return addDonut(acc, { ...(cur as DonutElement).props, colorScheme, index: donutCount });
+					return addDonut(acc, { ...(cur as DonutElement).props, ...specProps, index: donutCount });
 				case Legend.displayName:
 					legendCount++;
 					return addLegend(acc, {
 						...(cur as LegendElement).props,
-						colorScheme,
+						...specProps,
 						index: legendCount,
 						hiddenSeries,
 						highlightedSeries,
 					});
 				case Line.displayName:
 					lineCount++;
-					return addLine(acc, { ...(cur as LineElement).props, colorScheme, index: lineCount });
+					return addLine(acc, { ...(cur as LineElement).props, ...specProps, index: lineCount });
 				case Scatter.displayName:
 					scatterCount++;
-					return addScatter(acc, { ...(cur as ScatterElement).props, colorScheme, index: scatterCount });
+					return addScatter(acc, { ...(cur as ScatterElement).props, ...specProps, index: scatterCount });
 				case Title.displayName:
 					// No title count. There can only be one title.
 					return addTitle(acc, { ...(cur as TitleElement).props });
@@ -173,7 +176,8 @@ export function buildSpec({
 					// Do nothing and do not throw an error
 					return acc;
 				case Combo.displayName:
-					return addCombo(acc, { ...(cur as ComboElement).props });
+					comboCount++;
+					return addCombo(acc, { ...(cur as ComboElement).props, ...specProps, index: comboCount });
 				default:
 					console.error(`Invalid component type: ${cur.type.displayName} is not a supported <Chart> child`);
 					return acc;
@@ -206,6 +210,7 @@ const initializeComponentCounts = () => {
 		areaCount: -1,
 		axisCount: -1,
 		barCount: -1,
+		comboCount: -1,
 		donutCount: -1,
 		legendCount: -1,
 		lineCount: -1,

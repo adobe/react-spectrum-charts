@@ -47,6 +47,7 @@ const defaultAreaProps: AreaSpecProps = {
 	colorScheme: DEFAULT_COLOR_SCHEME,
 	color: DEFAULT_COLOR,
 	dimension: DEFAULT_TIME_DIMENSION,
+	idKey: MARK_ID,
 	index: 0,
 	markType: 'area',
 	metric: DEFAULT_METRIC,
@@ -167,11 +168,11 @@ const defaultPointScale = {
 describe('areaSpecBuilder', () => {
 	describe('addArea()', () => {
 		test('should add area', () => {
-			expect(addArea(startingSpec, {})).toStrictEqual(defaultSpec);
+			expect(addArea(startingSpec, { idKey: MARK_ID })).toStrictEqual(defaultSpec);
 		});
 
 		test('metricStart defined but valueEnd not defined, should default to value', () => {
-			expect(addArea(startingSpec, { metricStart: 'test' })).toStrictEqual(defaultSpec);
+			expect(addArea(startingSpec, { idKey: MARK_ID, metricStart: 'test' })).toStrictEqual(defaultSpec);
 		});
 	});
 

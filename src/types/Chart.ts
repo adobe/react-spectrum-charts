@@ -53,7 +53,7 @@ export type TrendlineAnnotationElement = ReactElement<
 export type TrendlineElement = ReactElement<TrendlineProps, JSXElementConstructor<TrendlineProps>>;
 export type ComboElement = ReactElement<ComboProps, JSXElementConstructor<ComboProps>>;
 
-export type SimpleData = { [key: string]: unknown };
+export type SimpleData = Record<string, unknown>;
 export type ChartData = SimpleData | Data;
 
 export interface SpecProps {
@@ -87,6 +87,8 @@ export interface SpecProps {
 	hiddenSeries?: string[];
 	/** Series name to highlight on the chart (controlled). */
 	highlightedSeries?: string;
+	/** Data key that contains a unique ID for each data point in the array. */
+	idKey?: string;
 }
 
 export interface SanitizedSpecProps extends SpecProps {
@@ -129,12 +131,13 @@ type ChartPropsWithDefaults =
 	| 'colors'
 	| 'colorScheme'
 	| 'debug'
+	| 'hiddenSeries'
+	| 'idKey'
+	| 'lineTypes'
+	| 'lineWidths'
 	| 'locale'
 	| 'padding'
 	| 'renderer'
-	| 'lineTypes'
-	| 'lineWidths'
-	| 'hiddenSeries'
 	| 'tooltipAnchor'
 	| 'tooltipPlacement';
 

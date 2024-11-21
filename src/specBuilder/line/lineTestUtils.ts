@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { DEFAULT_COLOR, DEFAULT_COLOR_SCHEME, DEFAULT_METRIC, DEFAULT_TIME_DIMENSION } from '@constants';
+import { DEFAULT_COLOR, DEFAULT_COLOR_SCHEME, DEFAULT_METRIC, DEFAULT_TIME_DIMENSION, MARK_ID } from '@constants';
 
 import { LineMarkProps } from './lineUtils';
 
@@ -18,6 +18,7 @@ export const defaultLineMarkProps: LineMarkProps = {
 	color: DEFAULT_COLOR,
 	colorScheme: DEFAULT_COLOR_SCHEME,
 	dimension: DEFAULT_TIME_DIMENSION,
+	idKey: MARK_ID,
 	lineType: { value: 'solid' },
 	lineWidth: { value: 1 },
 	name: 'line0',

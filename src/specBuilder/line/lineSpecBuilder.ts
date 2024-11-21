@@ -43,7 +43,7 @@ import { getLineHoverMarks, getLineMark } from './lineMarkUtils';
 import { getLineStaticPoint } from './linePointUtils';
 import { getInteractiveMarkName, getPopoverMarkName } from './lineUtils';
 
-export const addLine = produce<Spec, [LineProps & { colorScheme?: ColorScheme; index?: number }]>(
+export const addLine = produce<Spec, [LineProps & { colorScheme?: ColorScheme; index?: number; idKey: string }]>(
 	(
 		spec,
 		{
@@ -99,10 +99,13 @@ export const addData = produce<Data[], [LineSpecProps]>((data, props) => {
 		tableData.transform = addTimeTransform(tableData.transform ?? [], dimension);
 	}
 	if (hasInteractiveChildren(children)) {
-		data.push(getLineHighlightedData(name, FILTERED_TABLE, hasPopover(children), isHighlightedByGroup(props)));
+		data.push(
+			getLineHighlightedData(name, props.idKey, FILTERED_TABLE, hasPopover(children), isHighlightedByGroup(props))
+		);
 		data.push(getFilteredTooltipData(children));
 	}
-	if (staticPoint || isSparkline) data.push(getLineStaticPointData(name, staticPoint, FILTERED_TABLE, isSparkline, isMethodLast));
+	if (staticPoint || isSparkline)
+		data.push(getLineStaticPointData(name, staticPoint, FILTERED_TABLE, isSparkline, isMethodLast));
 	addTrendlineData(data, props);
 	addTooltipData(data, props, false);
 	addPopoverData(data, props);
@@ -110,12 +113,12 @@ export const addData = produce<Data[], [LineSpecProps]>((data, props) => {
 });
 
 export const addSignals = produce<Signal[], [LineSpecProps]>((signals, props) => {
-	const { children, name } = props;
+	const { children, idKey, name } = props;
 	setTrendlineSignals(signals, props);
 	signals.push(...getMetricRangeSignals(props));
 
 	if (!hasInteractiveChildren(children)) return;
-	addHighlightedItemSignalEvents(signals, `${name}_voronoi`, 2);
+	addHighlightedItemSignalEvents(signals, `${name}_voronoi`, idKey, 2);
 	addHighlightedSeriesSignalEvents(signals, `${name}_voronoi`, 2);
 	addHoverSignals(signals, props);
 	addTooltipSignals(signals, props);
@@ -181,10 +184,10 @@ const getMetricKeys = (lineMetric: string, lineChildren: MarkChildElement[], lin
 };
 
 const addHoverSignals = (signals: Signal[], props: LineSpecProps) => {
-	const { interactionMode, name } = props;
+	const { idKey, interactionMode, name } = props;
 	if (interactionMode !== INTERACTION_MODE.ITEM) return;
 	getHoverMarkNames(name).forEach((hoverMarkName) => {
-		addHighlightedItemSignalEvents(signals, hoverMarkName, 1);
+		addHighlightedItemSignalEvents(signals, hoverMarkName, idKey, 1);
 		addHighlightedSeriesSignalEvents(signals, hoverMarkName, 1);
 	});
 };

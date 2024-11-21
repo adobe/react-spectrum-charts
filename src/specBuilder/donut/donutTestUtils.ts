@@ -9,17 +9,20 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { MARK_ID } from '@constants';
+
 import { DonutSpecProps } from '../../types';
 
 export const defaultDonutProps: DonutSpecProps = {
-	index: 0,
+	children: [],
+	color: 'testColor',
 	colorScheme: 'light',
+	holeRatio: 0.85,
+	idKey: MARK_ID,
+	index: 0,
+	isBoolean: false,
+	name: 'testName',
 	markType: 'donut',
 	metric: 'testMetric',
 	startAngle: 0,
-	name: 'testName',
-	isBoolean: false,
-	color: 'testColor',
-	holeRatio: 0.85,
-	children: [],
 };

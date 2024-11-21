@@ -44,6 +44,7 @@ const defaultLineProps: LineSpecProps = {
 	children: [],
 	name: 'line0',
 	dimension: DEFAULT_TIME_DIMENSION,
+	idKey: MARK_ID,
 	index: 0,
 	markType: 'line',
 	metric: DEFAULT_METRIC,
@@ -292,7 +293,7 @@ const metricRangeWithDisplayPointMarks = [
 					scale: 'yLinear',
 					field: 'value',
 				},
-				size:  {
+				size: {
 					value: 125,
 				},
 				fill: {
@@ -329,7 +330,7 @@ const displayPointMarks = [
 					scale: 'yLinear',
 					field: 'value',
 				},
-				size:  {
+				size: {
 					value: 125,
 				},
 				fill: {
@@ -353,7 +354,7 @@ const displayPointMarks = [
 describe('lineSpecBuilder', () => {
 	describe('addLine()', () => {
 		test('should add line', () => {
-			expect(addLine(startingSpec, { color: DEFAULT_COLOR })).toStrictEqual(defaultSpec);
+			expect(addLine(startingSpec, { idKey: MARK_ID, color: DEFAULT_COLOR })).toStrictEqual(defaultSpec);
 		});
 	});
 

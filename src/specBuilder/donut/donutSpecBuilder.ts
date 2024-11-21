@@ -27,7 +27,7 @@ import {
 import { getArcMark } from './donutUtils';
 import { getSegmentLabelMarks } from './segmentLabelUtils';
 
-export const addDonut = produce<Spec, [DonutProps & { colorScheme?: ColorScheme; index?: number }]>(
+export const addDonut = produce<Spec, [DonutProps & { colorScheme?: ColorScheme; index?: number; idKey: string }]>(
 	(
 		spec,
 		{
@@ -132,8 +132,8 @@ export const addMarks = produce<Mark[], [DonutSpecProps]>((marks, props) => {
 });
 
 export const addSignals = produce<Signal[], [DonutSpecProps]>((signals, props) => {
-	const { name, children } = props;
+	const { children, idKey, name } = props;
 	signals.push(...getDonutSummarySignals(props));
 	if (!hasInteractiveChildren(children)) return;
-	addHighlightedItemSignalEvents(signals, name, 1, getTooltipProps(children)?.excludeDataKeys);
+	addHighlightedItemSignalEvents(signals, name, idKey, 1, getTooltipProps(children)?.excludeDataKeys);
 });

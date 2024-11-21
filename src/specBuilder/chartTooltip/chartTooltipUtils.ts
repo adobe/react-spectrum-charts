@@ -17,7 +17,6 @@ import {
 	HIGHLIGHTED_ITEM,
 	HIGHLIGHT_CONTRAST_RATIO,
 	INTERACTION_MODE,
-	MARK_ID,
 	SERIES_ID,
 } from '@constants';
 import { getFilteredTableData } from '@specBuilder/data/dataUtils';
@@ -197,7 +196,7 @@ export const addTooltipMarkOpacityRules = (
 	markProps: TooltipParentProps
 ) => {
 	opacityRules.unshift({
-		test: `${HIGHLIGHTED_ITEM} && ${HIGHLIGHTED_ITEM} !== datum.${MARK_ID}`,
+		test: `${HIGHLIGHTED_ITEM} && ${HIGHLIGHTED_ITEM} !== datum.${markProps.idKey}`,
 		value: 1 / HIGHLIGHT_CONTRAST_RATIO,
 	});
 	if (isHighlightedByGroup(markProps)) {

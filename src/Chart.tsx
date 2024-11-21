@@ -13,7 +13,13 @@ import { FC, forwardRef, useEffect, useMemo, useRef, useState } from 'react';
 
 import { EmptyState } from '@components/EmptyState';
 import { LoadingState } from '@components/LoadingState';
-import { DEFAULT_BACKGROUND_COLOR, DEFAULT_COLOR_SCHEME, DEFAULT_LINE_TYPES, DEFAULT_LOCALE } from '@constants';
+import {
+	DEFAULT_BACKGROUND_COLOR,
+	DEFAULT_COLOR_SCHEME,
+	DEFAULT_LINE_TYPES,
+	DEFAULT_LOCALE,
+	MARK_ID,
+} from '@constants';
 import useChartHeight from '@hooks/useChartHeight';
 import useChartImperativeHandle from '@hooks/useChartImperativeHandle';
 import useChartWidth from '@hooks/useChartWidth';
@@ -51,6 +57,7 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 			height = 300,
 			hiddenSeries = [],
 			highlightedSeries,
+			idKey = MARK_ID,
 			lineTypes = DEFAULT_LINE_TYPES as LineType[],
 			lineWidths = ['M'],
 			loading,
@@ -124,6 +131,7 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 			debug,
 			hiddenSeries,
 			highlightedSeries,
+			idKey,
 			lineTypes,
 			lineWidths,
 			locale,

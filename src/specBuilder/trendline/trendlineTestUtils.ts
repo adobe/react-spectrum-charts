@@ -12,7 +12,7 @@
 import { createElement } from 'react';
 
 import { Trendline } from '@components/Trendline';
-import { DEFAULT_COLOR, DEFAULT_COLOR_SCHEME, DEFAULT_METRIC, DEFAULT_TIME_DIMENSION } from '@constants';
+import { DEFAULT_COLOR, DEFAULT_COLOR_SCHEME, DEFAULT_METRIC, DEFAULT_TIME_DIMENSION, MARK_ID } from '@constants';
 
 import { LineSpecProps, TrendlineSpecProps } from '../../types';
 
@@ -21,6 +21,7 @@ export const defaultLineProps: LineSpecProps = {
 	color: DEFAULT_COLOR,
 	colorScheme: DEFAULT_COLOR_SCHEME,
 	dimension: DEFAULT_TIME_DIMENSION,
+	idKey: MARK_ID,
 	index: 0,
 	lineType: { value: 'solid' },
 	markType: 'line',

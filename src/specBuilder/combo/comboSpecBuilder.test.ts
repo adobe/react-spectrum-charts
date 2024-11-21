@@ -14,6 +14,7 @@ import { createElement } from 'react';
 import { Axis } from '@components/Axis';
 import { Bar } from '@components/Bar';
 import { Line } from '@components/Line';
+import { MARK_ID } from '@constants';
 import { addBar } from '@specBuilder/bar/barSpecBuilder';
 import { addLine } from '@specBuilder/line/lineSpecBuilder';
 
@@ -37,6 +38,7 @@ describe('comboSpecBuilder', () => {
 			addCombo(
 				{},
 				{
+					idKey: MARK_ID,
 					children: [
 						createElement(Bar, {
 							metric: 'people',
@@ -61,6 +63,7 @@ describe('comboSpecBuilder', () => {
 			addCombo(
 				{},
 				{
+					idKey: MARK_ID,
 					children: [createElement(Axis)],
 				}
 			);
@@ -70,7 +73,7 @@ describe('comboSpecBuilder', () => {
 		});
 
 		it('should do nothing if no children', () => {
-			addCombo({}, {});
+			addCombo({}, { idKey: MARK_ID });
 
 			expect(addBar).not.toHaveBeenCalled();
 			expect(addLine).not.toHaveBeenCalled();

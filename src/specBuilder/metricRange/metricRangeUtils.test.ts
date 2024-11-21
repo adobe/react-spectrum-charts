@@ -21,6 +21,7 @@ import {
 	DEFAULT_TIME_DIMENSION,
 	DEFAULT_TRANSFORMED_TIME_DIMENSION,
 	FILTERED_TABLE,
+	MARK_ID,
 } from '@constants';
 
 import { LineSpecProps, MetricRangeProps, MetricRangeSpecProps } from '../../types';
@@ -54,18 +55,19 @@ const defaultMetricRangeSpecProps: MetricRangeSpecProps = {
 
 const defaultLineProps: LineSpecProps = {
 	children: [createElement(MetricRange, defaultMetricRangeProps)],
-	name: 'line0',
+	color: DEFAULT_COLOR,
+	colorScheme: DEFAULT_COLOR_SCHEME,
 	dimension: DEFAULT_TIME_DIMENSION,
+	idKey: MARK_ID,
 	index: 0,
+	interactiveMarkName: undefined,
+	lineType: { value: 'solid' },
 	markType: 'line',
 	metric: DEFAULT_METRIC,
-	color: DEFAULT_COLOR,
-	scaleType: 'time',
-	lineType: { value: 'solid' },
+	name: 'line0',
 	opacity: { value: 1 },
-	colorScheme: DEFAULT_COLOR_SCHEME,
-	interactiveMarkName: undefined,
 	popoverMarkName: undefined,
+	scaleType: 'time',
 };
 
 const basicMetricRangeMarks = [

@@ -9,15 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import {
-	CORNER_RADIUS,
-	DISCRETE_PADDING,
-	FILTERED_TABLE,
-	MARK_ID,
-	SELECTED_GROUP,
-	SELECTED_ITEM,
-	STACK_ID,
-} from '@constants';
+import { CORNER_RADIUS, DISCRETE_PADDING, FILTERED_TABLE, SELECTED_GROUP, SELECTED_ITEM, STACK_ID } from '@constants';
 import { getPopovers } from '@specBuilder/chartPopover/chartPopoverUtils';
 import {
 	getColorProductionRule,
@@ -247,7 +239,13 @@ export const getBarUpdateEncodings = (props: BarSpecProps): EncodeEntry => ({
 	strokeWidth: getStrokeWidth(props),
 });
 
-export const getStroke = ({ name, children, color, colorScheme }: BarSpecProps): ProductionRule<ColorValueRef> => {
+export const getStroke = ({
+	name,
+	children,
+	color,
+	colorScheme,
+	idKey,
+}: BarSpecProps): ProductionRule<ColorValueRef> => {
 	const defaultProductionRule = getColorProductionRule(color, colorScheme);
 	if (!hasPopover(children)) {
 		return [defaultProductionRule];
@@ -255,7 +253,7 @@ export const getStroke = ({ name, children, color, colorScheme }: BarSpecProps):
 
 	return [
 		{
-			test: `(${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${MARK_ID}) || (${SELECTED_GROUP} && ${SELECTED_GROUP} === datum.${name}_selectedGroupId)`,
+			test: `(${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${idKey}) || (${SELECTED_GROUP} && ${SELECTED_GROUP} === datum.${name}_selectedGroupId)`,
 			value: getColorValue('static-blue', colorScheme),
 		},
 		defaultProductionRule,
@@ -299,17 +297,17 @@ export const getDimensionSelectionRing = (props: BarSpecProps): RectMark => {
 	};
 };
 
-export const getStrokeDash = ({ children, lineType }: BarSpecProps): ProductionRule<ArrayValueRef> => {
+export const getStrokeDash = ({ children, idKey, lineType }: BarSpecProps): ProductionRule<ArrayValueRef> => {
 	const defaultProductionRule = getStrokeDashProductionRule(lineType);
 	if (!hasPopover(children)) {
 		return [defaultProductionRule];
 	}
 
-	return [{ test: `${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${MARK_ID}`, value: [] }, defaultProductionRule];
+	return [{ test: `${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${idKey}`, value: [] }, defaultProductionRule];
 };
 
 export const getStrokeWidth = (props: BarSpecProps): ProductionRule<NumericValueRef> => {
-	const { lineWidth, name } = props;
+	const { idKey, lineWidth, name } = props;
 	const lineWidthValue = getLineWidthPixelsFromLineWidth(lineWidth);
 	const defaultProductionRule = { value: lineWidthValue };
 	const popovers = getPopovers(props);
@@ -323,7 +321,7 @@ export const getStrokeWidth = (props: BarSpecProps): ProductionRule<NumericValue
 
 	return [
 		{
-			test: `(${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${MARK_ID}) || (${SELECTED_GROUP} && ${SELECTED_GROUP} === datum.${name}_selectedGroupId)`,
+			test: `(${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${idKey}) || (${SELECTED_GROUP} && ${SELECTED_GROUP} === datum.${name}_selectedGroupId)`,
 			value: Math.max(lineWidthValue, 2),
 		},
 		defaultProductionRule,

@@ -13,7 +13,6 @@ import {
 	BACKGROUND_COLOR,
 	DEFAULT_SYMBOL_SIZE,
 	DEFAULT_SYMBOL_STROKE_WIDTH,
-	MARK_ID,
 	SELECTED_GROUP,
 	SELECTED_ITEM,
 } from '@constants';
@@ -32,8 +31,8 @@ import { LineSpecProps, ProductionRuleTests } from '../../types';
 import { LineMarkProps } from './lineUtils';
 
 const staticPointTest = (staticPoint: string) => `datum.${staticPoint} && datum.${staticPoint} === true`;
-const getSelectedTest = (name: string) =>
-	`(${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${MARK_ID}) || (${SELECTED_GROUP} && ${SELECTED_GROUP} === datum.${name}_selectedGroupId)`;
+const getSelectedTest = (name: string, idKey: string) =>
+	`(${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${idKey}) || (${SELECTED_GROUP} && ${SELECTED_GROUP} === datum.${name}_selectedGroupId)`;
 
 /**
  * Gets the point mark for static points on a line chart.
@@ -49,7 +48,7 @@ export const getLineStaticPoint = ({
 	scaleType,
 	dimension,
 	isSparkline,
-	pointSize = 125
+	pointSize = 125,
 }: LineSpecProps): SymbolMark => {
 	return {
 		name: `${name}_staticPoints`,
@@ -58,7 +57,7 @@ export const getLineStaticPoint = ({
 		interactive: false,
 		encode: {
 			enter: {
-				size: { value: pointSize } ,
+				size: { value: pointSize },
 				fill: isSparkline ? { signal: BACKGROUND_COLOR } : getColorProductionRule(color, colorScheme),
 				stroke: isSparkline ? getColorProductionRule(color, colorScheme) : { signal: BACKGROUND_COLOR },
 				y: getYProductionRule(metricAxis, metric),
@@ -174,14 +173,15 @@ export const getSecondaryHighlightPoint = (
  * @returns fill rule
  */
 export const getHighlightPointFill = ({
-	name,
 	children,
 	color,
 	colorScheme,
+	idKey,
+	name,
 	staticPoint,
 }: LineMarkProps): ProductionRuleTests<ColorValueRef> => {
 	const fillRules: ProductionRuleTests<ColorValueRef> = [];
-	const selectedTest = getSelectedTest(name);
+	const selectedTest = getSelectedTest(name, idKey);
 
 	if (staticPoint) {
 		fillRules.push({ test: staticPointTest(staticPoint), ...getColorProductionRule(color, colorScheme) });
@@ -198,14 +198,15 @@ export const getHighlightPointFill = ({
  * @returns stroke rule
  */
 export const getHighlightPointStroke = ({
-	name,
 	children,
 	color,
 	colorScheme,
+	idKey,
+	name,
 	staticPoint,
 }: LineMarkProps): ProductionRuleTests<ColorValueRef> => {
 	const strokeRules: ProductionRuleTests<ColorValueRef> = [];
-	const selectedTest = getSelectedTest(name);
+	const selectedTest = getSelectedTest(name, idKey);
 
 	if (staticPoint) {
 		strokeRules.push({ test: staticPointTest(staticPoint), ...getColorProductionRule(color, colorScheme) });
@@ -277,8 +278,8 @@ export const getHighlightPointStrokeWidth = ({ staticPoint }: LineMarkProps): Pr
  * @returns SymbolMark
  */
 export const getSelectRingPoint = (lineProps: LineMarkProps): SymbolMark => {
-	const { colorScheme, dimension, metric, metricAxis, name, scaleType } = lineProps;
-	const selectedTest = getSelectedTest(name);
+	const { colorScheme, dimension, idKey, metric, metricAxis, name, scaleType } = lineProps;
+	const selectedTest = getSelectedTest(name, idKey);
 
 	return {
 		name: `${name}_pointSelectRing`,

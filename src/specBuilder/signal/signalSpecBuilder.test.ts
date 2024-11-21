@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { FILTERED_TABLE, HIGHLIGHTED_ITEM, HIGHLIGHTED_SERIES } from '@constants';
+import { FILTERED_TABLE, HIGHLIGHTED_ITEM, HIGHLIGHTED_SERIES, MARK_ID } from '@constants';
 import {
 	defaultHighlightedItemSignal,
 	defaultHighlightedSeriesSignal,
@@ -30,7 +30,7 @@ describe('signalSpecBuilder', () => {
 	});
 	describe('addHighlightedItemSignalEvents()', () => {
 		test('should add on events', () => {
-			addHighlightedItemSignalEvents(signals, 'line0');
+			addHighlightedItemSignalEvents(signals, 'line0', MARK_ID);
 			expect(signals).toHaveLength(defaultSignals.length);
 			expect(signals[0]).toHaveProperty('name', HIGHLIGHTED_ITEM);
 			expect(signals[0].on).toHaveLength(2);
@@ -44,11 +44,11 @@ describe('signalSpecBuilder', () => {
 		test('should not do anything if the highlight signal is not found', () => {
 			const signals = JSON.parse(JSON.stringify([defaultHighlightedSeriesSignal]));
 			const signalsCopy = JSON.parse(JSON.stringify(signals));
-			addHighlightedItemSignalEvents(signals, 'line0');
+			addHighlightedItemSignalEvents(signals, 'line0', MARK_ID);
 			expect(signals).toEqual(signalsCopy);
 		});
 		test('should include update condition if excludeDataKey is provided', () => {
-			addHighlightedItemSignalEvents(signals, 'bar0', 1, ['excludeFromTooltip']);
+			addHighlightedItemSignalEvents(signals, 'bar0', MARK_ID, 1, ['excludeFromTooltip']);
 			expect(signals).toHaveLength(defaultSignals.length);
 			expect(signals[0]).toHaveProperty('name', HIGHLIGHTED_ITEM);
 			expect(signals[0].on).toHaveLength(2);
