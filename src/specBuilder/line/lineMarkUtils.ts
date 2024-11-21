@@ -84,8 +84,9 @@ export const getLineOpacity = ({
 	interactiveMarkName,
 	popoverMarkName,
 	isHighlightedByGroup,
+	highlightedItem,
 }: LineMarkProps): ProductionRule<NumericValueRef> => {
-	if (!interactiveMarkName || displayOnHover) return [DEFAULT_OPACITY_RULE];
+	if ((!interactiveMarkName || displayOnHover) && highlightedItem === undefined) return [DEFAULT_OPACITY_RULE];
 	const strokeOpacityRules: ProductionRule<NumericValueRef> = [];
 
 	if (isHighlightedByGroup) {
@@ -96,14 +97,20 @@ export const getLineOpacity = ({
 	}
 
 	// add a rule that will lower the opacity of the line if there is a hovered series, but this line is not the one hovered
-	strokeOpacityRules.push({
-		test: `${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES} !== datum.${SERIES_ID}`,
-		value: 1 / HIGHLIGHT_CONTRAST_RATIO,
-	});
+	strokeOpacityRules.push(
+		{
+			test: `isValid(${HIGHLIGHTED_SERIES}) && ${HIGHLIGHTED_SERIES} !== datum.${SERIES_ID}`,
+			value: 1 / HIGHLIGHT_CONTRAST_RATIO,
+		},
+		{
+			test: `length(data('${interactiveMarkName}_highlightedData')) > 0 && indexof(pluck(data('${interactiveMarkName}_highlightedData'), '${SERIES_ID}'), datum.${SERIES_ID}) === -1`,
+			value: 1 / HIGHLIGHT_CONTRAST_RATIO,
+		}
+	);
 
 	if (popoverMarkName) {
 		strokeOpacityRules.push({
-			test: `${SELECTED_SERIES} && ${SELECTED_SERIES} !== datum.${SERIES_ID}`,
+			test: `isValid(${SELECTED_SERIES}) && ${SELECTED_SERIES} !== datum.${SERIES_ID}`,
 			value: 1 / HIGHLIGHT_CONTRAST_RATIO,
 		});
 	}

@@ -34,7 +34,7 @@ import { sanitizeMarkChildren, toCamelCase } from '@utils';
 import { produce } from 'immer';
 import { Data, Mark, Scale, Signal, Spec } from 'vega';
 
-import { ColorScheme, LineProps, LineSpecProps, MarkChildElement } from '../../types';
+import { ColorScheme, HighlightedItem, LineProps, LineSpecProps, MarkChildElement } from '../../types';
 import { addTimeTransform, getFilteredTooltipData, getTableData } from '../data/dataUtils';
 import { addContinuousDimensionScale, addFieldToFacetScaleDomain, addMetricScale } from '../scale/scaleSpecBuilder';
 import { addHighlightedItemSignalEvents, addHighlightedSeriesSignalEvents } from '../signal/signalSpecBuilder';
@@ -43,7 +43,10 @@ import { getLineHoverMarks, getLineMark } from './lineMarkUtils';
 import { getLineStaticPoint } from './linePointUtils';
 import { getInteractiveMarkName, getPopoverMarkName } from './lineUtils';
 
-export const addLine = produce<Spec, [LineProps & { colorScheme?: ColorScheme; index?: number; idKey: string }]>(
+export const addLine = produce<
+	Spec,
+	[LineProps & { colorScheme?: ColorScheme; highlightedItem?: HighlightedItem; index?: number; idKey: string }]
+>(
 	(
 		spec,
 		{
@@ -70,7 +73,7 @@ export const addLine = produce<Spec, [LineProps & { colorScheme?: ColorScheme; i
 			colorScheme,
 			dimension,
 			index,
-			interactiveMarkName: getInteractiveMarkName(sanitizedChildren, lineName),
+			interactiveMarkName: getInteractiveMarkName(sanitizedChildren, lineName, props.highlightedItem),
 			lineType,
 			markType: 'line',
 			metric,
@@ -93,12 +96,12 @@ export const addLine = produce<Spec, [LineProps & { colorScheme?: ColorScheme; i
 );
 
 export const addData = produce<Data[], [LineSpecProps]>((data, props) => {
-	const { dimension, scaleType, children, name, staticPoint, isSparkline, isMethodLast } = props;
+	const { children, dimension, highlightedItem, isSparkline, isMethodLast, name, scaleType, staticPoint } = props;
 	if (scaleType === 'time') {
 		const tableData = getTableData(data);
 		tableData.transform = addTimeTransform(tableData.transform ?? [], dimension);
 	}
-	if (hasInteractiveChildren(children)) {
+	if (hasInteractiveChildren(children) || highlightedItem !== undefined) {
 		data.push(
 			getLineHighlightedData(name, props.idKey, FILTERED_TABLE, hasPopover(children), isHighlightedByGroup(props))
 		);
@@ -147,7 +150,7 @@ export const setScales = produce<Scale[], [LineSpecProps]>((scales, props) => {
 
 // The order that marks are added is important since it determines the draw order.
 export const addLineMarks = produce<Mark[], [LineSpecProps]>((marks, props) => {
-	const { name, children, color, lineType, opacity, staticPoint, isSparkline } = props;
+	const { children, color, highlightedItem, isSparkline, lineType, name, opacity, staticPoint } = props;
 
 	const { facets } = getFacetsFromProps({ color, lineType, opacity });
 
@@ -165,7 +168,7 @@ export const addLineMarks = produce<Mark[], [LineSpecProps]>((marks, props) => {
 	});
 	if (staticPoint || isSparkline) marks.push(getLineStaticPoint(props));
 	marks.push(...getMetricRangeGroupMarks(props));
-	if (hasInteractiveChildren(children)) {
+	if (hasInteractiveChildren(children) || highlightedItem !== undefined) {
 		marks.push(...getLineHoverMarks(props, `${FILTERED_TABLE}ForTooltip`));
 	}
 	marks.push(...getTrendlineMarks(props));

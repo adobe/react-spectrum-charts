@@ -124,7 +124,11 @@ describe('getLineOpacity()', () => {
 			children: [createElement(ChartTooltip)],
 		});
 		expect(opacityRule).toEqual([
-			{ test: `${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES} !== datum.${SERIES_ID}`, value: 0.2 },
+			{ test: `isValid(${HIGHLIGHTED_SERIES}) && ${HIGHLIGHTED_SERIES} !== datum.${SERIES_ID}`, value: 0.2 },
+			{
+				test: `length(data('line0_highlightedData')) > 0 && indexof(pluck(data('line0_highlightedData'), '${SERIES_ID}'), datum.${SERIES_ID}) === -1`,
+				value: 0.2,
+			},
 			{ value: 1 },
 		]);
 	});
@@ -137,8 +141,12 @@ describe('getLineOpacity()', () => {
 			children: [createElement(ChartPopover)],
 		});
 		expect(opacityRule).toEqual([
-			{ test: `${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES} !== datum.${SERIES_ID}`, value: 0.2 },
-			{ test: `${SELECTED_SERIES} && ${SELECTED_SERIES} !== datum.${SERIES_ID}`, value: 0.2 },
+			{ test: `isValid(${HIGHLIGHTED_SERIES}) && ${HIGHLIGHTED_SERIES} !== datum.${SERIES_ID}`, value: 0.2 },
+			{
+				test: `length(data('line0_highlightedData')) > 0 && indexof(pluck(data('line0_highlightedData'), '${SERIES_ID}'), datum.${SERIES_ID}) === -1`,
+				value: 0.2,
+			},
+			{ test: `isValid(${SELECTED_SERIES}) && ${SELECTED_SERIES} !== datum.${SERIES_ID}`, value: 0.2 },
 			{ value: 1 },
 		]);
 	});
@@ -159,7 +167,7 @@ describe('getLineOpacity()', () => {
 			children: [createElement(ChartTooltip)],
 			isHighlightedByGroup: true,
 		});
-		expect(opacityRule).toHaveLength(3);
+		expect(opacityRule).toHaveLength(4);
 		expect(opacityRule[0]).toHaveProperty(
 			'test',
 			`indexof(pluck(data('line0_highlightedData'), '${SERIES_ID}'), datum.${SERIES_ID}) !== -1`

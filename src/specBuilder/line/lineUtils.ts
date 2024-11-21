@@ -18,6 +18,7 @@ import { sanitizeMarkChildren } from '@utils';
 import {
 	ColorFacet,
 	ColorScheme,
+	HighlightedItem,
 	InteractionMode,
 	LineTypeFacet,
 	LineWidthFacet,
@@ -26,9 +27,13 @@ import {
 	ScaleType,
 } from '../../types';
 
-export const getInteractiveMarkName = (children: MarkChildElement[], name: string): string | undefined => {
+export const getInteractiveMarkName = (
+	children: MarkChildElement[],
+	name: string,
+	highlightedItem?: HighlightedItem
+): string | undefined => {
 	// if the line has an interactive component, this line is the target for the interactive component
-	if (hasInteractiveChildren(children)) {
+	if (hasInteractiveChildren(children) || highlightedItem !== undefined) {
 		return name;
 	}
 	// if there is a trendline with an interactive component on the line, then the trendline is the target for the interactive component
@@ -68,6 +73,7 @@ export interface LineMarkProps {
 	colorScheme: ColorScheme;
 	dimension: string;
 	displayOnHover?: boolean;
+	highlightedItem?: HighlightedItem;
 	idKey: string;
 	interactiveMarkName?: string; // optional name of the mark that is used for hover and click interactions
 	isHighlightedByDimension?: boolean;

@@ -17,9 +17,20 @@ import { combineElementNames, sanitizeRscChartChildren, toCamelCase } from '@uti
 import { produce } from 'immer';
 import { Spec } from 'vega';
 
-import { BarElement, ChartChildElement, ColorScheme, ComboChildElement, ComboProps, LineElement } from '../../types';
+import {
+	BarElement,
+	ChartChildElement,
+	ColorScheme,
+	ComboChildElement,
+	ComboProps,
+	HighlightedItem,
+	LineElement,
+} from '../../types';
 
-export const addCombo = produce<Spec, [ComboProps & { colorScheme?: ColorScheme; index?: number; idKey: string }]>(
+export const addCombo = produce<
+	Spec,
+	[ComboProps & { colorScheme?: ColorScheme; highlightedItem?: HighlightedItem; index?: number; idKey: string }]
+>(
 	(
 		spec,
 		{

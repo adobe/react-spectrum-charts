@@ -56,6 +56,8 @@ export type ComboElement = ReactElement<ComboProps, JSXElementConstructor<ComboP
 export type SimpleData = Record<string, unknown>;
 export type ChartData = SimpleData | Data;
 
+export type HighlightedItem = string | number | (string | number)[];
+
 export interface SpecProps {
 	/** Background color of the chart. */
 	backgroundColor?: string;
@@ -85,8 +87,10 @@ export interface SpecProps {
 	UNSAFE_vegaSpec?: Spec;
 	/** Series names to hide from the chart (controlled). */
 	hiddenSeries?: string[];
+	/** Data item id or ids that should be highlighted on the chart (controlled). Be sure to supply and `idKey` where each data point has a unique ID if you are using controlled highlighting of items. */
+	highlightedItem?: HighlightedItem;
 	/** Series name to highlight on the chart (controlled). */
-	highlightedSeries?: string;
+	highlightedSeries?: string | number;
 	/** Data key that contains a unique ID for each data point in the array. */
 	idKey?: string;
 }

@@ -42,13 +42,16 @@ import { sanitizeMarkChildren, toCamelCase } from '@utils';
 import { produce } from 'immer';
 import { BandScale, Data, FormulaTransform, Mark, OrdinalScale, Scale, Signal, Spec } from 'vega';
 
-import { BarProps, BarSpecProps, ColorScheme } from '../../types';
+import { BarProps, BarSpecProps, ColorScheme, HighlightedItem } from '../../types';
 import { getBarPadding, getDimensionSelectionRing, getScaleValues, isDodgedAndStacked } from './barUtils';
 import { getDodgedMark } from './dodgedBarUtils';
 import { getDodgedAndStackedBarMark, getStackedBarMarks } from './stackedBarUtils';
 import { addTrellisScale, getTrellisGroupMark, isTrellised } from './trellisedBarUtils';
 
-export const addBar = produce<Spec, [BarProps & { colorScheme?: ColorScheme; index?: number; idKey: string }]>(
+export const addBar = produce<
+	Spec,
+	[BarProps & { colorScheme?: ColorScheme; highlightedItem?: HighlightedItem; index?: number; idKey: string }]
+>(
 	(
 		spec,
 		{
@@ -84,7 +87,7 @@ export const addBar = produce<Spec, [BarProps & { colorScheme?: ColorScheme; ind
 			dimension,
 			hasSquareCorners,
 			index,
-			interactiveMarkName: getInteractiveMarkName(sanitizedChildren, barName),
+			interactiveMarkName: getInteractiveMarkName(sanitizedChildren, barName, props.highlightedItem),
 			lineType,
 			lineWidth,
 			markType: 'bar',

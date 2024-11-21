@@ -46,7 +46,14 @@ import { Facet, getColumns, getEncodings, getHiddenEntriesFilter, getSymbolType 
 
 export const addLegend = produce<
 	Spec,
-	[LegendProps & { colorScheme?: ColorScheme; index?: number; hiddenSeries?: string[]; highlightedSeries?: string }]
+	[
+		LegendProps & {
+			colorScheme?: ColorScheme;
+			index?: number;
+			hiddenSeries?: string[];
+			highlightedSeries?: string | number;
+		}
+	]
 >(
 	(
 		spec,

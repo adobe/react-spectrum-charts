@@ -185,18 +185,19 @@ const addMouseEvents = (highlightedGroupSignal: Signal, markName: string, update
 };
 
 /**
- * adds the appropriate opacity rules to the beginning of the opacityRules array
+ * Adds the appropriate opacity rules to the beginning of the opacityRules array
  *
  * NOTE: this function mutates the opacityRules array so it should only be called from a produce function
  * @param opacityRules
  * @param markProps
  */
-export const addTooltipMarkOpacityRules = (
+export const addHighlightMarkOpacityRules = (
 	opacityRules: ({ test?: string } & NumericValueRef)[],
 	markProps: TooltipParentProps
 ) => {
+	//TODO: add support for array of highlighted items
 	opacityRules.unshift({
-		test: `${HIGHLIGHTED_ITEM} && ${HIGHLIGHTED_ITEM} !== datum.${markProps.idKey}`,
+		test: `isValid(${HIGHLIGHTED_ITEM}) && ${HIGHLIGHTED_ITEM} !== datum.${markProps.idKey}`,
 		value: 1 / HIGHLIGHT_CONTRAST_RATIO,
 	});
 	if (isHighlightedByGroup(markProps)) {

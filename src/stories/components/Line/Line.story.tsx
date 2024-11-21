@@ -14,11 +14,7 @@ import { ReactElement } from 'react';
 import { ReferenceLine } from '@components/ReferenceLine';
 import useChartProps from '@hooks/useChartProps';
 import { Axis, Bar, Chart, ChartPopover, ChartTooltip, Legend, Line } from '@rsc';
-import {
-	simpleSparklineData,
-	workspaceTrendsData,
-	workspaceTrendsDataWithVisiblePoints
-} from '@stories/data/data';
+import { simpleSparklineData, workspaceTrendsData, workspaceTrendsDataWithVisiblePoints } from '@stories/data/data';
 import { formatTimestamp } from '@stories/storyUtils';
 import { action } from '@storybook/addon-actions';
 import { StoryFn } from '@storybook/react';
@@ -162,10 +158,10 @@ const PlainLineStory: StoryFn<typeof Line> = (args): ReactElement => {
 	const chartProps = useChartProps(sparklineChartProps);
 	return (
 		<Chart {...chartProps}>
-			<Line {...args}/>
+			<Line {...args} />
 		</Chart>
 	);
-}
+};
 
 const Basic = bindWithProps(BasicLineStory);
 Basic.args = {
@@ -303,8 +299,8 @@ BasicSparkline.args = {
 	dimension: 'x',
 	staticPoint: 'staticPoint',
 	scaleType: 'linear',
-	isSparkline: true
-}
+	isSparkline: true,
+};
 
 const SparklineWithStaticPoint = bindWithProps(PlainLineStory);
 SparklineWithStaticPoint.args = {
@@ -314,8 +310,8 @@ SparklineWithStaticPoint.args = {
 	staticPoint: 'staticPoint',
 	scaleType: 'linear',
 	isSparkline: true,
-	isMethodLast: true
-}
+	isMethodLast: true,
+};
 
 export {
 	Basic,
@@ -331,5 +327,5 @@ export {
 	WithStaticPoints,
 	WithStaticPointsAndDialogs,
 	BasicSparkline,
-	SparklineWithStaticPoint
+	SparklineWithStaticPoint,
 };

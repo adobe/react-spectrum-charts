@@ -22,8 +22,8 @@ import { Data, Signal } from 'vega';
 
 import { BarSpecProps, ChartTooltipProps, LineSpecProps } from '../../types';
 import {
+	addHighlightMarkOpacityRules,
 	addTooltipData,
-	addTooltipMarkOpacityRules,
 	addTooltipSignals,
 	applyTooltipPropDefaults,
 	getTooltips,
@@ -159,13 +159,13 @@ describe('addTooltipSignals()', () => {
 describe('addTooltipMarkOpacityRules()', () => {
 	test('should only add a simple item rule if not highlighted by group', () => {
 		const opacityRules = [];
-		addTooltipMarkOpacityRules(opacityRules, getDefautltMarkProps());
+		addHighlightMarkOpacityRules(opacityRules, getDefautltMarkProps());
 		expect(opacityRules).toHaveLength(1);
 	});
 
 	test('shold add highlight group rule if highlighted by group', () => {
 		const opacityRules = [];
-		addTooltipMarkOpacityRules(opacityRules, getDefautltMarkProps({ highlightBy: 'series' }));
+		addHighlightMarkOpacityRules(opacityRules, getDefautltMarkProps({ highlightBy: 'series' }));
 		expect(opacityRules).toHaveLength(2);
 	});
 });

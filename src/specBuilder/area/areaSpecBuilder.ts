@@ -38,12 +38,15 @@ import { sanitizeMarkChildren, toCamelCase } from '@utils';
 import { produce } from 'immer';
 import { Data, Mark, Scale, Signal, SourceData, Spec } from 'vega';
 
-import { AreaProps, AreaSpecProps, ColorScheme, MarkChildElement, ScaleType } from '../../types';
+import { AreaProps, AreaSpecProps, ColorScheme, HighlightedItem, MarkChildElement, ScaleType } from '../../types';
 import { addTimeTransform, getFilteredTableData, getTableData, getTransformSort } from '../data/dataUtils';
 import { addContinuousDimensionScale, addFieldToFacetScaleDomain, addMetricScale } from '../scale/scaleSpecBuilder';
 import { getAreaMark, getX } from './areaUtils';
 
-export const addArea = produce<Spec, [AreaProps & { colorScheme?: ColorScheme; index?: number; idKey: string }]>(
+export const addArea = produce<
+	Spec,
+	[AreaProps & { colorScheme?: ColorScheme; highlightedItem?: HighlightedItem; index?: number; idKey: string }]
+>(
 	(
 		spec,
 		{
@@ -130,7 +133,7 @@ export const addData = produce<Data[], [AreaSpecProps]>((data, props) => {
 				transform: [
 					{
 						type: 'filter',
-						expr: `${SELECTED_SERIES} && ${SELECTED_SERIES} === datum.${color}`,
+						expr: `isValid(${SELECTED_SERIES}) && ${SELECTED_SERIES} === datum.${color}`,
 					},
 				],
 			});

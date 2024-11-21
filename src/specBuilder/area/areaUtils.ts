@@ -85,9 +85,9 @@ export function getAreaOpacity({
 	// if metric ranges only display when hovering, we don't need to include other hover rules for this specific area
 	if (isMetricRange && displayOnHover) {
 		return [
-			{ test: `${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES} === datum.${color}`, value: 1 },
-			{ test: `${SELECTED_SERIES} && ${SELECTED_SERIES} === datum.${color}`, value: 1 },
-			{ test: `${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES} === datum.${SERIES_ID}`, value: 1 },
+			{ test: `isValid(${HIGHLIGHTED_SERIES}) && ${HIGHLIGHTED_SERIES} === datum.${color}`, value: 1 },
+			{ test: `isValid(${SELECTED_SERIES}) && ${SELECTED_SERIES} === datum.${color}`, value: 1 },
+			{ test: `isValid(${HIGHLIGHTED_SERIES}) && ${HIGHLIGHTED_SERIES} === datum.${SERIES_ID}`, value: 1 },
 			{ value: 0 },
 		];
 	}
@@ -110,11 +110,11 @@ export function getAreaOpacity({
 		return [
 			...opacityRules,
 			{
-				test: `!${SELECTED_SERIES} && ${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES} !== datum.${color}`,
+				test: `!isValid(${SELECTED_SERIES}) && isValid(${HIGHLIGHTED_SERIES}) && ${HIGHLIGHTED_SERIES} !== datum.${color}`,
 				value: fadedOpacity,
 			},
 			{
-				test: `${SELECTED_SERIES} && ${SELECTED_SERIES} !== datum.${color}`,
+				test: `isValid(${SELECTED_SERIES}) && ${SELECTED_SERIES} !== datum.${color}`,
 				value: fadedOpacity,
 			},
 			DEFAULT_OPACITY_RULE,
@@ -124,7 +124,7 @@ export function getAreaOpacity({
 	return [
 		...opacityRules,
 		{
-			test: `${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES} !== datum.${color}`,
+			test: `isValid(${HIGHLIGHTED_SERIES}) && ${HIGHLIGHTED_SERIES} !== datum.${color}`,
 			value: fadedOpacity,
 		},
 		DEFAULT_OPACITY_RULE,

@@ -29,7 +29,7 @@ const defaultGroupMark: Mark = {
 const defaultOpacityEncoding = {
 	opacity: [
 		{
-			test: `${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES} !== datum.${SERIES_ID}`,
+			test: `isValid(${HIGHLIGHTED_SERIES}) && ${HIGHLIGHTED_SERIES} !== datum.${SERIES_ID}`,
 			value: 1 / HIGHLIGHT_CONTRAST_RATIO,
 		},
 	],
@@ -40,14 +40,14 @@ describe('getHighlightOpacityRule()', () => {
 		const opacityRule = getHighlightOpacityRule();
 		expect(opacityRule).toHaveProperty(
 			'test',
-			`${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES} !== datum.${SERIES_ID}`
+			`isValid(${HIGHLIGHTED_SERIES}) && ${HIGHLIGHTED_SERIES} !== datum.${SERIES_ID}`
 		);
 	});
 	test('should use keys in test if there are keys', () => {
 		const opacityRule = getHighlightOpacityRule(['key1'], 'legend0');
 		expect(opacityRule).toHaveProperty(
 			'test',
-			`${HIGHLIGHTED_GROUP} && ${HIGHLIGHTED_GROUP} !== datum.legend0_highlightGroupId`
+			`isValid(${HIGHLIGHTED_GROUP}) && ${HIGHLIGHTED_GROUP} !== datum.legend0_highlightGroupId`
 		);
 	});
 });

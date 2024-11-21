@@ -17,7 +17,7 @@ import { sanitizeMarkChildren, toCamelCase } from '@utils';
 import { produce } from 'immer';
 import { Data, FormulaTransform, Mark, PieTransform, Scale, Signal, Spec } from 'vega';
 
-import { ColorScheme, DonutProps, DonutSpecProps } from '../../types';
+import { ColorScheme, DonutProps, DonutSpecProps, HighlightedItem } from '../../types';
 import {
 	getDonutSummaryData,
 	getDonutSummaryMarks,
@@ -27,7 +27,10 @@ import {
 import { getArcMark } from './donutUtils';
 import { getSegmentLabelMarks } from './segmentLabelUtils';
 
-export const addDonut = produce<Spec, [DonutProps & { colorScheme?: ColorScheme; index?: number; idKey: string }]>(
+export const addDonut = produce<
+	Spec,
+	[DonutProps & { colorScheme?: ColorScheme; highlightedItem?: HighlightedItem; index?: number; idKey: string }]
+>(
 	(
 		spec,
 		{

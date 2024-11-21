@@ -122,7 +122,7 @@ const defaultMarkWithTooltip: Mark = {
 			...defaultBarStrokeEncodings,
 			opacity: [
 				{
-					test: `${HIGHLIGHTED_ITEM} && ${HIGHLIGHTED_ITEM} !== datum.${MARK_ID}`,
+					test: `isValid(${HIGHLIGHTED_ITEM}) && ${HIGHLIGHTED_ITEM} !== datum.${MARK_ID}`,
 					value: 1 / HIGHLIGHT_CONTRAST_RATIO,
 				},
 				DEFAULT_OPACITY_RULE,

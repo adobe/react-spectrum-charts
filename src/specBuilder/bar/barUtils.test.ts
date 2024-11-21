@@ -413,7 +413,7 @@ describe('barUtils', () => {
 			const strokeRule = getStrokeDash({ ...defaultBarProps, children: [popover] });
 			expect(strokeRule).toHaveLength(2);
 			expect(strokeRule[0]).toStrictEqual({
-				test: `${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${MARK_ID}`,
+				test: `isValid(${SELECTED_ITEM}) && ${SELECTED_ITEM} === datum.${MARK_ID}`,
 				value: [],
 			});
 		});
@@ -438,7 +438,7 @@ describe('barUtils', () => {
 			const strokeRule = getStrokeWidth({ ...defaultBarProps, children: [popover] });
 			expect(strokeRule).toHaveLength(2);
 			expect(strokeRule[0]).toStrictEqual({
-				test: `(${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${MARK_ID}) || (${SELECTED_GROUP} && ${SELECTED_GROUP} === datum.bar0_selectedGroupId)`,
+				test: `(isValid(${SELECTED_ITEM}) && ${SELECTED_ITEM} === datum.${MARK_ID}) || (isValid(${SELECTED_GROUP}) && ${SELECTED_GROUP} === datum.bar0_selectedGroupId)`,
 				value: 2,
 			});
 		});

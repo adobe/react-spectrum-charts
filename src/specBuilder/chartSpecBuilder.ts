@@ -50,6 +50,7 @@ import {
 	Colors,
 	ComboElement,
 	DonutElement,
+	HighlightedItem,
 	LegendElement,
 	LineElement,
 	LineType,
@@ -93,6 +94,7 @@ export function buildSpec({
 	colorScheme = DEFAULT_COLOR_SCHEME,
 	description,
 	hiddenSeries,
+	highlightedItem,
 	highlightedSeries,
 	idKey = MARK_ID,
 	lineTypes = DEFAULT_LINE_TYPES as LineType[],
@@ -110,6 +112,7 @@ export function buildSpec({
 		lineTypes,
 		opacities,
 		hiddenSeries,
+		highlightedItem,
 		highlightedSeries
 	);
 	spec.scales = getDefaultScales(colors, colorScheme, lineTypes, lineWidths, opacities, symbolShapes, symbolSizes);
@@ -128,7 +131,7 @@ export function buildSpec({
 
 	let { areaCount, axisCount, barCount, comboCount, donutCount, legendCount, lineCount, scatterCount } =
 		initializeComponentCounts();
-	const specProps = { colorScheme, idKey };
+	const specProps = { colorScheme, idKey, highlightedItem };
 	spec = [...children]
 		.sort((a, b) => buildOrder.get(a.type) - buildOrder.get(b.type))
 		.reduce((acc: Spec, cur) => {
@@ -225,7 +228,8 @@ export const getDefaultSignals = (
 	lineTypes: LineTypes,
 	opacities: Opacities | undefined,
 	hiddenSeries?: string[],
-	highlightedSeries?: string
+	highlightedItem?: HighlightedItem,
+	highlightedSeries?: string | number
 ): Signal[] => {
 	// if the background color is transparent, then we want to set the signal background color to gray-50
 	// if the signal background color were transparent then backgroundMarks and annotation fill would also be transparent
@@ -236,7 +240,7 @@ export const getDefaultSignals = (
 		getGenericValueSignal('lineTypes', getTwoDimensionalLineTypes(lineTypes)),
 		getGenericValueSignal('opacities', getTwoDimensionalOpacities(opacities)),
 		getGenericValueSignal('hiddenSeries', hiddenSeries ?? []),
-		getGenericValueSignal(HIGHLIGHTED_ITEM),
+		getGenericValueSignal(HIGHLIGHTED_ITEM, highlightedItem),
 		getGenericValueSignal(HIGHLIGHTED_GROUP),
 		getGenericValueSignal(HIGHLIGHTED_SERIES, highlightedSeries),
 		getGenericValueSignal(SELECTED_ITEM),

@@ -147,7 +147,7 @@ export const getMetricRangeData = (markProps: LineSpecProps): SourceData[] => {
 				transform: [
 					{
 						type: 'filter',
-						expr: `${HIGHLIGHTED_SERIES} && ${HIGHLIGHTED_SERIES} === datum.${SERIES_ID} || ${SELECTED_SERIES} && ${SELECTED_SERIES} === datum.${SERIES_ID}`,
+						expr: `isValid(${HIGHLIGHTED_SERIES}) && ${HIGHLIGHTED_SERIES} === datum.${SERIES_ID} || isValid(${SELECTED_SERIES}) && ${SELECTED_SERIES} === datum.${SERIES_ID}`,
 					},
 				],
 			});
