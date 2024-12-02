@@ -89,6 +89,7 @@ export const VegaChart: FC<VegaChartProps> = ({
 			}
 			embed(containerRef.current, specCopy, {
 				actions: false,
+				ast: true,
 				config,
 				expressionFunctions: {
 					...expressionFunctions,
