@@ -12,5 +12,6 @@
 
 export * from './components';
 export * from './Chart';
+export * from './locales';
 export * from './themes';
 export * from './types/';
