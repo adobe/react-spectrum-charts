@@ -118,4 +118,10 @@ TooltipAnchor.args = {
 	data,
 };
 
-export { BackgroundColor, Basic, Config, Height, Locale, TooltipAnchor, Width };
+const HighlightedItem = bindWithProps(ChartBarTooltipStory);
+HighlightedItem.args = {
+	highlightedItem: 15,
+	data,
+};
+
+export { BackgroundColor, Basic, Config, Height, HighlightedItem, Locale, TooltipAnchor, Width };

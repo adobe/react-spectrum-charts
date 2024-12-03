@@ -87,7 +87,7 @@ export interface SpecProps {
 	UNSAFE_vegaSpec?: Spec;
 	/** Series names to hide from the chart (controlled). */
 	hiddenSeries?: string[];
-	/** Data item id or ids that should be highlighted on the chart (controlled). Be sure to supply and `idKey` where each data point has a unique ID if you are using controlled highlighting of items. */
+	/** Data item id or ids that should be highlighted on the chart (controlled). Be sure to supply an `idKey` where each data point has a unique ID if you are using controlled highlighting of items. */
 	highlightedItem?: HighlightedItem;
 	/** Series name to highlight on the chart (controlled). */
 	highlightedSeries?: string | number;
