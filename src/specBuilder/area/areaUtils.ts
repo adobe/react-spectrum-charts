@@ -13,6 +13,7 @@ import { ChartPopover } from '@components/ChartPopover';
 import {
 	DEFAULT_OPACITY_RULE,
 	DEFAULT_TRANSFORMED_TIME_DIMENSION,
+	HIGHLIGHTED_ITEM,
 	HIGHLIGHTED_SERIES,
 	HIGHLIGHT_CONTRAST_RATIO,
 	SELECTED_SERIES,
@@ -27,23 +28,24 @@ import {
 } from '@specBuilder/marks/markUtils';
 import { AreaMark, NumericValueRef, ProductionRule } from 'vega';
 
-import { ColorFacet, ColorScheme, MarkChildElement, ScaleType } from '../../types';
+import { ColorFacet, ColorScheme, HighlightedItem, MarkChildElement, ScaleType } from '../../types';
 
 export interface AreaMarkProps {
-	name: string;
 	color: ColorFacet;
 	colorScheme: ColorScheme;
 	children: MarkChildElement[];
+	dimension: string;
+	displayOnHover?: boolean;
+	highlightedItem?: HighlightedItem;
+	isHighlightedByGroup?: boolean;
+	isMetricRange?: boolean;
+	isStacked: boolean;
 	metricStart: string;
 	metricEnd: string;
-	isStacked: boolean;
-	dimension: string;
-	scaleType: ScaleType;
+	name: string;
 	opacity: number;
-	isMetricRange?: boolean;
 	parentName?: string; // Optional name of mark that this area is a child of. Used for metric ranges.
-	displayOnHover?: boolean;
-	isHighlightedByGroup?: boolean;
+	scaleType: ScaleType;
 }
 
 export const getAreaMark = (areaProps: AreaMarkProps, dataSource: string = `${areaProps.name}_facet`): AreaMark => {
@@ -75,25 +77,28 @@ export const getAreaMark = (areaProps: AreaMarkProps, dataSource: string = `${ar
 };
 
 export function getAreaOpacity({
-	color,
 	children,
 	displayOnHover,
 	isHighlightedByGroup,
 	isMetricRange,
+	highlightedItem,
 	name,
 }: AreaMarkProps): ProductionRule<NumericValueRef> | undefined {
 	// if metric ranges only display when hovering, we don't need to include other hover rules for this specific area
+	const fadedOpacity = 1 / HIGHLIGHT_CONTRAST_RATIO;
 	if (isMetricRange && displayOnHover) {
 		return [
-			{ test: `isValid(${HIGHLIGHTED_SERIES}) && ${HIGHLIGHTED_SERIES} === datum.${color}`, value: 1 },
-			{ test: `isValid(${SELECTED_SERIES}) && ${SELECTED_SERIES} === datum.${color}`, value: 1 },
 			{ test: `isValid(${HIGHLIGHTED_SERIES}) && ${HIGHLIGHTED_SERIES} === datum.${SERIES_ID}`, value: 1 },
+			{
+				test: `isValid(${HIGHLIGHTED_ITEM}) && indexof(pluck(data('${name}_highlightedData'), '${SERIES_ID}'), datum.${SERIES_ID}) > -1`,
+			},
+			{ test: `isValid(${SELECTED_SERIES}) && ${SELECTED_SERIES} === datum.${SERIES_ID}`, value: 1 },
 			{ value: 0 },
 		];
 	}
 
 	// no children means no interactive elements
-	if (!children.length) {
+	if (!children.length && !highlightedItem) {
 		return [DEFAULT_OPACITY_RULE];
 	}
 
@@ -104,17 +109,20 @@ export function getAreaOpacity({
 			value: 1,
 		});
 	}
-	const fadedOpacity = 1 / HIGHLIGHT_CONTRAST_RATIO;
 	// if an area is hovered or selected, all other areas should have half opacity
 	if (children.some((child) => child.type === ChartPopover && !isMetricRange)) {
 		return [
 			...opacityRules,
 			{
-				test: `!isValid(${SELECTED_SERIES}) && isValid(${HIGHLIGHTED_SERIES}) && ${HIGHLIGHTED_SERIES} !== datum.${color}`,
+				test: `!isValid(${SELECTED_SERIES}) && isValid(${HIGHLIGHTED_SERIES}) && ${HIGHLIGHTED_SERIES} !== datum.${SERIES_ID}`,
 				value: fadedOpacity,
 			},
 			{
-				test: `isValid(${SELECTED_SERIES}) && ${SELECTED_SERIES} !== datum.${color}`,
+				test: `!isValid(${SELECTED_SERIES}) && length(data('${name}_highlightedData')) > 0 && indexof(pluck(data('${name}_highlightedData'), '${SERIES_ID}'), datum.${SERIES_ID}) === -1`,
+				value: fadedOpacity,
+			},
+			{
+				test: `isValid(${SELECTED_SERIES}) && ${SELECTED_SERIES} !== datum.${SERIES_ID}`,
 				value: fadedOpacity,
 			},
 			DEFAULT_OPACITY_RULE,
@@ -124,7 +132,11 @@ export function getAreaOpacity({
 	return [
 		...opacityRules,
 		{
-			test: `isValid(${HIGHLIGHTED_SERIES}) && ${HIGHLIGHTED_SERIES} !== datum.${color}`,
+			test: `isValid(${HIGHLIGHTED_SERIES}) && ${HIGHLIGHTED_SERIES} !== datum.${SERIES_ID}`,
+			value: fadedOpacity,
+		},
+		{
+			test: `length(data('${name}_highlightedData')) > 0 && indexof(pluck(data('${name}_highlightedData'), '${SERIES_ID}'), datum.${SERIES_ID}) === -1`,
 			value: fadedOpacity,
 		},
 		DEFAULT_OPACITY_RULE,

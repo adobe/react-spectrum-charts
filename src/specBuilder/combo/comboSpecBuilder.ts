@@ -36,6 +36,7 @@ export const addCombo = produce<
 		{
 			children = [],
 			colorScheme = DEFAULT_COLOR_SCHEME,
+			highlightedItem,
 			idKey,
 			index = 0,
 			name,
@@ -62,6 +63,7 @@ export const addCombo = produce<
 						return addBar(acc, {
 							...barElement.props,
 							colorScheme,
+							highlightedItem,
 							idKey,
 							index: barCount,
 							name: getComboChildName(barElement, comboName, barCount),
@@ -72,6 +74,7 @@ export const addCombo = produce<
 						return addLine(acc, {
 							...lineElement.props,
 							colorScheme,
+							highlightedItem,
 							idKey,
 							index: lineCount,
 							name: getComboChildName(lineElement, comboName, lineCount),
