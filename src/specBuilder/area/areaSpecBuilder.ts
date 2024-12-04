@@ -183,12 +183,7 @@ export const addSignals = produce<Signal[], [AreaSpecProps]>((signals, props) =>
 	if (!children.length) return;
 	addHighlightedSeriesSignalEvents(signals, name, 1, getTooltipProps(children)?.excludeDataKeys);
 	if (props.highlightedItem) {
-		const highlightedItemSignal = signals.find((signal) => signal.name === HIGHLIGHTED_ITEM) as Signal;
-		if (highlightedItemSignal.on === undefined) {
-			highlightedItemSignal.on = [];
-		}
-		// as soon as the user mouses over the area, we want to null out the highlighted item
-		highlightedItemSignal.on.push(...[{ events: `@${props.name}:mouseover`, update: 'null' }]);
+		addHighlightedItemEvents(signals, name);
 	}
 	if (!isHighlightedByGroup(props)) {
 		signals.push(getControlledHoveredIdSignal(name));
@@ -197,6 +192,22 @@ export const addSignals = produce<Signal[], [AreaSpecProps]>((signals, props) =>
 	}
 	addTooltipSignals(signals, props);
 });
+
+/**
+ * Adds an on event that clears the controlled highlighted item signal value when the user mouses over the area.
+ * @param signals
+ * @param areaName
+ */
+export const addHighlightedItemEvents = (signals: Signal[], areaName: string) => {
+	const highlightedItemSignal = signals.find((signal) => signal.name === HIGHLIGHTED_ITEM);
+	if (highlightedItemSignal) {
+		if (highlightedItemSignal.on === undefined) {
+			highlightedItemSignal.on = [];
+		}
+		// as soon as the user mouses over the area, we want to null out the highlighted item
+		highlightedItemSignal.on.push(...[{ events: `@${areaName}:mouseover`, update: 'null' }]);
+	}
+};
 
 export const setScales = produce<Scale[], [AreaSpecProps]>(
 	(scales, { metric, metricEnd, metricStart, dimension, color, scaleType, padding }) => {

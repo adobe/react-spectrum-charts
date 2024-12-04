@@ -31,12 +31,13 @@ import {
 	SELECTED_SERIES,
 	TABLE,
 } from '@constants';
+import { getGenericValueSignal } from '@specBuilder/signal/signalSpecBuilder';
 import { defaultSignals } from '@specBuilder/specTestUtils';
 import { Data, GroupMark, Spec } from 'vega';
 
 import { AreaSpecProps } from '../../types';
 import { initializeSpec } from '../specUtils';
-import { addArea, addAreaMarks, addData, addSignals, setScales } from './areaSpecBuilder';
+import { addArea, addAreaMarks, addData, addHighlightedItemEvents, addSignals, setScales } from './areaSpecBuilder';
 
 const startingSpec: Spec = initializeSpec({
 	scales: [{ name: COLOR_SCALE, type: 'ordinal' }],
@@ -228,6 +229,43 @@ describe('areaSpecBuilder', () => {
 				'update',
 				'(datum.excludeFromTooltip) ? null : datum.rscSeriesId'
 			);
+		});
+
+		test('should add on event to HIGHLIGHTED_ITEM signal if highlightedItem is defined and there is a tooltip on the area', () => {
+			const tooltip = createElement(ChartTooltip);
+			const signals = addSignals(defaultSignals, {
+				...defaultAreaProps,
+				children: [tooltip],
+				highlightedItem: 'highlightedItem',
+			});
+			expect(signals).toHaveLength(defaultSignals.length + 1);
+			expect(signals[0]).toHaveProperty('name', HIGHLIGHTED_ITEM);
+			expect(signals[0]).toHaveProperty('on');
+			expect(signals[0].on).toHaveLength(1);
+		});
+	});
+
+	describe('addHighlightedItemEvents()', () => {
+		test('should do nothing if there is no highlightedItem signal', () => {
+			const signals = [];
+			expect(addHighlightedItemEvents(signals, 'area0'));
+			expect(signals).toHaveLength(0);
+		});
+
+		test('should add an on mouseover event', () => {
+			const signals = structuredClone(defaultSignals);
+			addHighlightedItemEvents(signals, 'area0');
+			expect(signals[0].on).toHaveLength(1);
+			expect(signals[0].on?.[0]).toStrictEqual({
+				events: '@area0:mouseover',
+				update: 'null',
+			});
+		});
+
+		test('should add not add the on property if it already exists', () => {
+			const signals = [{ ...getGenericValueSignal(HIGHLIGHTED_ITEM), on: [{ events: 'test', update: 'test' }] }];
+			addHighlightedItemEvents(signals, 'area0');
+			expect(signals[0].on).toHaveLength(2);
 		});
 	});
 
