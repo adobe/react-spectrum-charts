@@ -11,9 +11,6 @@
  */
 import {
 	BACKGROUND_COLOR,
-	DEFAULT_BACKGROUND_COLOR,
-	DEFAULT_COLOR_SCHEME,
-	DEFAULT_LINE_TYPES,
 	FILTERED_TABLE,
 	HIGHLIGHTED_GROUP,
 	HIGHLIGHTED_ITEM,
@@ -21,7 +18,6 @@ import {
 	LINEAR_COLOR_SCALE,
 	LINE_TYPE_SCALE,
 	LINE_WIDTH_SCALE,
-	MARK_ID,
 	OPACITY_SCALE,
 	SELECTED_GROUP,
 	SELECTED_ITEM,
@@ -50,7 +46,6 @@ import {
 	Colors,
 	ComboElement,
 	DonutElement,
-	HighlightedItem,
 	LegendElement,
 	LineElement,
 	LineType,
@@ -87,34 +82,26 @@ import {
 } from './specUtils';
 import { addTitle } from './title/titleSpecBuilder';
 
-export function buildSpec({
-	backgroundColor = DEFAULT_BACKGROUND_COLOR,
-	children,
-	colors = 'categorical12',
-	colorScheme = DEFAULT_COLOR_SCHEME,
-	description,
-	hiddenSeries,
-	highlightedItem,
-	highlightedSeries,
-	idKey = MARK_ID,
-	lineTypes = DEFAULT_LINE_TYPES as LineType[],
-	lineWidths = ['M'],
-	opacities,
-	symbolShapes = ['rounded-square'],
-	symbolSizes = ['XS', 'XL'],
-	title,
-}: SanitizedSpecProps) {
-	let spec = initializeSpec(null, { backgroundColor, colorScheme, description, title });
-	spec.signals = getDefaultSignals(
+export function buildSpec(props: SanitizedSpecProps) {
+	const {
 		backgroundColor,
+		children,
 		colors,
 		colorScheme,
-		lineTypes,
-		opacities,
+		description,
 		hiddenSeries,
 		highlightedItem,
-		highlightedSeries
-	);
+		highlightedSeries,
+		idKey,
+		lineTypes,
+		lineWidths,
+		opacities,
+		symbolShapes,
+		symbolSizes,
+		title,
+	} = props;
+	let spec = initializeSpec(null, { backgroundColor, colorScheme, description, title });
+	spec.signals = getDefaultSignals(props);
 	spec.scales = getDefaultScales(colors, colorScheme, lineTypes, lineWidths, opacities, symbolShapes, symbolSizes);
 
 	// need to build the spec in a specific order
@@ -221,16 +208,16 @@ const initializeComponentCounts = () => {
 	};
 };
 
-export const getDefaultSignals = (
-	backgroundColor: string,
-	colors: ChartColors,
-	colorScheme: ColorScheme,
-	lineTypes: LineTypes,
-	opacities: Opacities | undefined,
-	hiddenSeries?: string[],
-	highlightedItem?: HighlightedItem,
-	highlightedSeries?: string | number
-): Signal[] => {
+export const getDefaultSignals = ({
+	backgroundColor,
+	colors,
+	colorScheme,
+	lineTypes,
+	opacities,
+	hiddenSeries,
+	highlightedItem,
+	highlightedSeries,
+}: SanitizedSpecProps): Signal[] => {
 	// if the background color is transparent, then we want to set the signal background color to gray-50
 	// if the signal background color were transparent then backgroundMarks and annotation fill would also be transparent
 	const signalBackgroundColor = backgroundColor === 'transparent' ? 'gray-50' : backgroundColor;

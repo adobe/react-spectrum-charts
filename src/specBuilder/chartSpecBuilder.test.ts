@@ -18,6 +18,8 @@ import {
 	COLOR_SCALE,
 	DEFAULT_BACKGROUND_COLOR,
 	DEFAULT_COLOR,
+	DEFAULT_COLOR_SCHEME,
+	DEFAULT_LINE_TYPES,
 	DEFAULT_SECONDARY_COLOR,
 	FILTERED_TABLE,
 	HIGHLIGHTED_SERIES,
@@ -35,7 +37,7 @@ import { spectrumColors } from '@themes';
 import colorSchemes from '@themes/colorSchemes';
 import { Data } from 'vega';
 
-import { BarProps, LegendProps } from '../types';
+import { BarProps, LegendProps, LineType, SanitizedSpecProps } from '../types';
 import {
 	addData,
 	buildSpec,
@@ -55,6 +57,26 @@ import { defaultSignals } from './specTestUtils';
 import { baseData } from './specUtils';
 
 const defaultData: Data[] = [{ name: TABLE, values: [], transform: [{ type: 'identifier', as: MARK_ID }] }];
+
+const defaultSpecProps: SanitizedSpecProps = {
+	backgroundColor: DEFAULT_BACKGROUND_COLOR,
+	children: [],
+	colors: 'categorical12',
+	colorScheme: DEFAULT_COLOR_SCHEME,
+	data: defaultData,
+	description: '',
+	hiddenSeries: [],
+	highlightedItem: undefined,
+	highlightedSeries: undefined,
+	idKey: MARK_ID,
+	lineTypes: DEFAULT_LINE_TYPES as LineType[],
+	lineWidths: [1],
+	opacities: undefined,
+	symbolShapes: ['rounded-square'],
+	symbolSizes: ['XS', 'XL'],
+	title: '',
+	UNSAFE_vegaSpec: undefined,
+};
 
 function createBar(): React.FunctionComponentElement<BarProps> {
 	return React.createElement(Bar, {
@@ -374,13 +396,8 @@ describe('Chart spec builder', () => {
 	describe('controlled highlighting', () => {
 		test('adds highlightedSeries signal if there is a highlighted series', () => {
 			const spec = buildSpec({
+				...defaultSpecProps,
 				children: [createBar()],
-				colors: 'categorical12',
-				lineTypes: ['solid', 'dashed', 'dotted', 'dotDash', 'longDash', 'twoDash'],
-				lineWidths: ['M'],
-				symbolShapes: ['rounded-square'],
-				colorScheme: 'light',
-				hiddenSeries: undefined,
 				highlightedSeries: 'Chrome',
 			});
 
@@ -392,13 +409,8 @@ describe('Chart spec builder', () => {
 
 		test('adds highlightedSeries signal if there is a highlighted series and legend does not have highlight', () => {
 			const spec = buildSpec({
+				...defaultSpecProps,
 				children: [createBar(), createLegend(false)],
-				colors: 'categorical12',
-				lineTypes: ['solid', 'dashed', 'dotted', 'dotDash', 'longDash', 'twoDash'],
-				lineWidths: ['M'],
-				symbolShapes: ['rounded-square'],
-				colorScheme: 'light',
-				hiddenSeries: undefined,
 				highlightedSeries: 'Chrome',
 			});
 
@@ -410,14 +422,8 @@ describe('Chart spec builder', () => {
 
 		test('does not apply controlled highlighting if uncontrolled highlighting is applied', () => {
 			const spec = buildSpec({
+				...defaultSpecProps,
 				children: [createBar(), createLegend(true)],
-				colors: 'categorical12',
-				lineTypes: ['solid', 'dashed', 'dotted', 'dotDash', 'longDash', 'twoDash'],
-				lineWidths: ['M'],
-				symbolShapes: ['rounded-square'],
-				colorScheme: 'light',
-				hiddenSeries: undefined,
-				highlightedSeries: undefined,
 			});
 			const uncontrolledHighlightSignal = {
 				name: HIGHLIGHTED_SERIES,
@@ -467,16 +473,20 @@ describe('Chart spec builder', () => {
 		const endSignals = defaultSignals;
 
 		test('hiddenSeries is empty when no hidden series', () => {
-			expect(
-				getDefaultSignals(DEFAULT_BACKGROUND_COLOR, 'categorical12', 'light', ['dashed'], [1])
-			).toStrictEqual([...beginningSignals, { name: 'hiddenSeries', value: [] }, ...endSignals]);
+			expect(getDefaultSignals({ ...defaultSpecProps, lineTypes: ['dashed'] })).toStrictEqual([
+				...beginningSignals,
+				{ name: 'hiddenSeries', value: [] },
+				...endSignals,
+			]);
 		});
 
 		test('hiddenSeries contains provided hidden series', () => {
 			const hiddenSeries = ['test'];
-			expect(
-				getDefaultSignals(DEFAULT_BACKGROUND_COLOR, 'categorical12', 'light', ['dashed'], [1], hiddenSeries)
-			).toStrictEqual([...beginningSignals, { name: 'hiddenSeries', value: hiddenSeries }, ...endSignals]);
+			expect(getDefaultSignals({ ...defaultSpecProps, hiddenSeries, lineTypes: ['dashed'] })).toStrictEqual([
+				...beginningSignals,
+				{ name: 'hiddenSeries', value: hiddenSeries },
+				...endSignals,
+			]);
 		});
 	});
 });

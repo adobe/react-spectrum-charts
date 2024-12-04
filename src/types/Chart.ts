@@ -95,7 +95,18 @@ export interface SpecProps {
 	idKey?: string;
 }
 
-export interface SanitizedSpecProps extends SpecProps {
+type SpecPropsWithDefaults =
+	| 'backgroundColor'
+	| 'colors'
+	| 'colorScheme'
+	| 'hiddenSeries'
+	| 'idKey'
+	| 'lineTypes'
+	| 'lineWidths'
+	| 'symbolShapes'
+	| 'symbolSizes';
+
+export interface SanitizedSpecProps extends PartiallyRequired<SpecProps, SpecPropsWithDefaults> {
 	/** Children with all non-RSC components removed */
 	children: ChartChildElement[];
 	data?: ChartData[];

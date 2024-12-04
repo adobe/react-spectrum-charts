@@ -27,6 +27,7 @@ export default function useSpec({
 	hiddenSeries,
 	highlightedItem,
 	highlightedSeries,
+	idKey,
 	lineTypes,
 	lineWidths,
 	opacities,
@@ -63,6 +64,7 @@ export default function useSpec({
 					hiddenSeries,
 					highlightedItem,
 					highlightedSeries,
+					idKey,
 					lineTypes,
 					lineWidths,
 					opacities,
@@ -73,21 +75,22 @@ export default function useSpec({
 			)
 		);
 	}, [
+		UNSAFE_vegaSpec,
 		backgroundColor,
 		children,
 		colors,
 		colorScheme,
-		data,
 		description,
 		hiddenSeries,
 		highlightedItem,
 		highlightedSeries,
+		idKey,
 		lineTypes,
 		lineWidths,
 		opacities,
 		symbolShapes,
 		symbolSizes,
 		title,
-		UNSAFE_vegaSpec,
+		data,
 	]);
 }
