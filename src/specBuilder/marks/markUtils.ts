@@ -33,7 +33,7 @@ import {
 	SELECTED_ITEM,
 	SYMBOL_SIZE_SCALE,
 } from '@constants';
-import { addTooltipMarkOpacityRules } from '@specBuilder/chartTooltip/chartTooltipUtils';
+import { addHighlightMarkOpacityRules } from '@specBuilder/chartTooltip/chartTooltipUtils';
 import { getScaleName } from '@specBuilder/scale/scaleSpecBuilder';
 import {
 	getColorValue,
@@ -414,29 +414,28 @@ const getHoverSizeSignal = (size: number): SignalRef => ({
  * @returns
  */
 export const getMarkOpacity = (props: BarSpecProps | DonutSpecProps): ({ test?: string } & NumericValueRef)[] => {
-	const { children, idKey, name: markName } = props;
+	const { children, highlightedItem, idKey, name: markName } = props;
 	const rules: ({ test?: string } & NumericValueRef)[] = [DEFAULT_OPACITY_RULE];
 	// if there aren't any interactive components, then we don't need to add special opacity rules
-	if (!hasInteractiveChildren(children)) {
+	if (!hasInteractiveChildren(children) && highlightedItem === undefined) {
 		return rules;
 	}
 
-	addTooltipMarkOpacityRules(rules, props);
-
 	// if a bar is hovered/selected, all other bars should have reduced opacity
+	addHighlightMarkOpacityRules(rules, props);
 	if (hasPopover(children)) {
 		return [
 			{
-				test: `!${SELECTED_GROUP} && ${SELECTED_ITEM} && ${SELECTED_ITEM} !== datum.${idKey}`,
+				test: `!isValid(${SELECTED_GROUP}) && ${SELECTED_ITEM} && ${SELECTED_ITEM} !== datum.${idKey}`,
 				value: 1 / HIGHLIGHT_CONTRAST_RATIO,
 			},
-			{ test: `${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${idKey}`, ...DEFAULT_OPACITY_RULE },
+			{ test: `isValid(${SELECTED_ITEM}) && ${SELECTED_ITEM} === datum.${idKey}`, ...DEFAULT_OPACITY_RULE },
 			{
-				test: `${SELECTED_GROUP} && ${SELECTED_GROUP} === datum.${markName}_selectedGroupId`,
+				test: `isValid(${SELECTED_GROUP}) && ${SELECTED_GROUP} === datum.${markName}_selectedGroupId`,
 				value: 1,
 			},
 			{
-				test: `${SELECTED_GROUP} && ${SELECTED_GROUP} !== datum.${markName}_selectedGroupId`,
+				test: `isValid(${SELECTED_GROUP}) && ${SELECTED_GROUP} !== datum.${markName}_selectedGroupId`,
 				value: 1 / HIGHLIGHT_CONTRAST_RATIO,
 			},
 			...rules,

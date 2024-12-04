@@ -50,14 +50,28 @@ describe('getOpacity()', () => {
 	});
 	test('should include hover rules if tooltip exists', () => {
 		const opacity = getOpacity({ ...defaultScatterProps, children: [createElement(ChartTooltip)] });
-		expect(opacity).toHaveLength(2);
-		expect(opacity[0]).toHaveProperty('test', `${HIGHLIGHTED_ITEM} && ${HIGHLIGHTED_ITEM} !== datum.${MARK_ID}`);
+		expect(opacity).toHaveLength(3);
+		expect(opacity[0]).toHaveProperty(
+			'test',
+			`isArray(${HIGHLIGHTED_ITEM}) && length(${HIGHLIGHTED_ITEM}) > 0 && indexof(${HIGHLIGHTED_ITEM}, datum.${MARK_ID}) === -1`
+		);
+		expect(opacity[1]).toHaveProperty(
+			'test',
+			`!isArray(${HIGHLIGHTED_ITEM}) && isValid(${HIGHLIGHTED_ITEM}) && ${HIGHLIGHTED_ITEM} !== datum.${MARK_ID}`
+		);
 	});
 	test('should include select rule if popover exists', () => {
 		const opacity = getOpacity({ ...defaultScatterProps, children: [createElement(ChartPopover)] });
-		expect(opacity).toHaveLength(3);
-		expect(opacity[0]).toHaveProperty('test', `${HIGHLIGHTED_ITEM} && ${HIGHLIGHTED_ITEM} !== datum.${MARK_ID}`);
-		expect(opacity[1]).toHaveProperty('test', `${SELECTED_ITEM} && ${SELECTED_ITEM} !== datum.${MARK_ID}`);
+		expect(opacity).toHaveLength(4);
+		expect(opacity[0]).toHaveProperty(
+			'test',
+			`isArray(${HIGHLIGHTED_ITEM}) && length(${HIGHLIGHTED_ITEM}) > 0 && indexof(${HIGHLIGHTED_ITEM}, datum.${MARK_ID}) === -1`
+		);
+		expect(opacity[1]).toHaveProperty(
+			'test',
+			`!isArray(${HIGHLIGHTED_ITEM}) && isValid(${HIGHLIGHTED_ITEM}) && ${HIGHLIGHTED_ITEM} !== datum.${MARK_ID}`
+		);
+		expect(opacity[2]).toHaveProperty('test', `isValid(${SELECTED_ITEM}) && ${SELECTED_ITEM} !== datum.${MARK_ID}`);
 	});
 });
 

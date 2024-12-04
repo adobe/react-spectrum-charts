@@ -26,6 +26,7 @@ import {
 	DonutProps,
 	DonutSummaryProps,
 	FacetRef,
+	HighlightedItem,
 	InteractionMode,
 	LegendProps,
 	LineProps,
@@ -49,6 +50,7 @@ type AreaPropsWithDefaults = 'name' | 'dimension' | 'metric' | 'color' | 'scaleT
 
 export interface AreaSpecProps extends PartiallyRequired<AreaProps, AreaPropsWithDefaults> {
 	colorScheme: ColorScheme;
+	highlightedItem?: HighlightedItem;
 	idKey: string;
 	index: number;
 	children: MarkChildElement[];
@@ -109,6 +111,7 @@ export interface BarSpecProps extends PartiallyRequired<BarProps, BarPropsWithDe
 	children: MarkChildElement[];
 	colorScheme: ColorScheme;
 	dimensionScaleType: 'band';
+	highlightedItem?: HighlightedItem;
 	idKey: string;
 	index: number;
 	interactiveMarkName: string | undefined;
@@ -141,6 +144,7 @@ type DonutPropsWithDefaults = 'color' | 'metric' | 'name' | 'startAngle' | 'hole
 export interface DonutSpecProps extends PartiallyRequired<DonutProps, DonutPropsWithDefaults> {
 	children: MarkChildElement[];
 	colorScheme: ColorScheme;
+	highlightedItem?: HighlightedItem;
 	idKey: string;
 	index: number;
 	markType: 'donut';
@@ -164,7 +168,7 @@ export interface LegendSpecProps extends PartiallyRequired<LegendProps, LegendPr
 	color?: FacetRef<string>;
 	colorScheme: ColorScheme;
 	hiddenSeries: string[];
-	highlightedSeries?: string;
+	highlightedSeries?: string | number;
 	index: number;
 	lineType?: FacetRef<number[]>;
 	lineWidth?: FacetRef<number>;
@@ -176,6 +180,7 @@ type LinePropsWithDefaults = 'name' | 'dimension' | 'metric' | 'color' | 'scaleT
 export interface LineSpecProps extends PartiallyRequired<LineProps, LinePropsWithDefaults> {
 	children: MarkChildElement[];
 	colorScheme: ColorScheme;
+	highlightedItem?: HighlightedItem;
 	idKey: string;
 	index: number;
 	interactiveMarkName: string | undefined;
@@ -201,6 +206,7 @@ type ScatterPropsWithDefaults =
 export interface ScatterSpecProps extends PartiallyRequired<ScatterProps, ScatterPropsWithDefaults> {
 	children: MarkChildElement[];
 	colorScheme: ColorScheme;
+	highlightedItem?: HighlightedItem;
 	idKey: string;
 	index: number;
 	interactiveMarkName: string | undefined;

@@ -39,7 +39,7 @@ import { sanitizeMarkChildren, toCamelCase } from '@utils';
 import { produce } from 'immer';
 import { Data, Scale, Signal, Spec } from 'vega';
 
-import { ColorScheme, ScatterProps, ScatterSpecProps } from '../../types';
+import { ColorScheme, HighlightedItem, ScatterProps, ScatterSpecProps } from '../../types';
 import { addScatterMarks } from './scatterMarkUtils';
 
 /**
@@ -47,7 +47,10 @@ import { addScatterMarks } from './scatterMarkUtils';
  * @param spec Spec
  * @param scatterProps ScatterProps
  */
-export const addScatter = produce<Spec, [ScatterProps & { colorScheme?: ColorScheme; index?: number; idKey: string }]>(
+export const addScatter = produce<
+	Spec,
+	[ScatterProps & { colorScheme?: ColorScheme; highlightedItem?: HighlightedItem; index?: number; idKey: string }]
+>(
 	(
 		spec,
 		{
@@ -78,7 +81,7 @@ export const addScatter = produce<Spec, [ScatterProps & { colorScheme?: ColorSch
 			dimension,
 			dimensionScaleType,
 			index,
-			interactiveMarkName: getInteractiveMarkName(sanitizedChildren, scatterName),
+			interactiveMarkName: getInteractiveMarkName(sanitizedChildren, scatterName, props.highlightedItem),
 			lineType,
 			lineWidth,
 			markType: 'scatter',
@@ -97,13 +100,13 @@ export const addScatter = produce<Spec, [ScatterProps & { colorScheme?: ColorSch
 );
 
 export const addData = produce<Data[], [ScatterSpecProps]>((data, props) => {
-	const { children, dimension, dimensionScaleType, idKey, name } = props;
+	const { children, dimension, dimensionScaleType, highlightedItem, idKey, name } = props;
 	if (dimensionScaleType === 'time') {
 		const tableData = getTableData(data);
 		tableData.transform = addTimeTransform(tableData.transform ?? [], dimension);
 	}
 
-	if (hasInteractiveChildren(children)) {
+	if (hasInteractiveChildren(children) || highlightedItem !== undefined) {
 		data.push(getFilteredTooltipData(children));
 	}
 

@@ -162,7 +162,7 @@ export const getOpacity = (): ({ test?: string } & NumericValueRef)[] => {
 
 	return [
 		{
-			test: `${HIGHLIGHTED_SERIES} || ${HIGHLIGHTED_ITEM} || ${SELECTED_SERIES} || ${SELECTED_ITEM}`,
+			test: `isValid(${HIGHLIGHTED_SERIES}) || isValid(${HIGHLIGHTED_ITEM}) || isValid(${SELECTED_SERIES}) || isValid(${SELECTED_ITEM})`,
 			value: fadedValue,
 		},
 		DEFAULT_OPACITY_RULE,

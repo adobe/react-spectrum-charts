@@ -303,7 +303,10 @@ export const getStrokeDash = ({ children, idKey, lineType }: BarSpecProps): Prod
 		return [defaultProductionRule];
 	}
 
-	return [{ test: `${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${idKey}`, value: [] }, defaultProductionRule];
+	return [
+		{ test: `isValid(${SELECTED_ITEM}) && ${SELECTED_ITEM} === datum.${idKey}`, value: [] },
+		defaultProductionRule,
+	];
 };
 
 export const getStrokeWidth = (props: BarSpecProps): ProductionRule<NumericValueRef> => {
@@ -321,7 +324,7 @@ export const getStrokeWidth = (props: BarSpecProps): ProductionRule<NumericValue
 
 	return [
 		{
-			test: `(${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${idKey}) || (${SELECTED_GROUP} && ${SELECTED_GROUP} === datum.${name}_selectedGroupId)`,
+			test: `(isValid(${SELECTED_ITEM}) && ${SELECTED_ITEM} === datum.${idKey}) || (isValid(${SELECTED_GROUP}) && ${SELECTED_GROUP} === datum.${name}_selectedGroupId)`,
 			value: Math.max(lineWidthValue, 2),
 		},
 		defaultProductionRule,

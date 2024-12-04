@@ -10,7 +10,7 @@
  * governing permissions and limitations under the License.
  */
 import { DEFAULT_OPACITY_RULE, FILTERED_TABLE, HIGHLIGHT_CONTRAST_RATIO, SELECTED_ITEM } from '@constants';
-import { addTooltipMarkOpacityRules } from '@specBuilder/chartTooltip/chartTooltipUtils';
+import { addHighlightMarkOpacityRules } from '@specBuilder/chartTooltip/chartTooltipUtils';
 import {
 	getColorProductionRule,
 	getLineWidthProductionRule,
@@ -102,18 +102,18 @@ export const getScatterMark = (props: ScatterSpecProps): SymbolMark => {
  * @returns opacity production rule
  */
 export const getOpacity = (props: ScatterSpecProps): ({ test?: string } & NumericValueRef)[] => {
-	const { children, idKey } = props;
-	if (!hasInteractiveChildren(children)) {
+	const { children, highlightedItem, idKey } = props;
+	if (!hasInteractiveChildren(children) && highlightedItem === undefined) {
 		return [DEFAULT_OPACITY_RULE];
 	}
 	// if a point is hovered or selected, all other points should be reduced opacity
 	const fadedValue = 1 / HIGHLIGHT_CONTRAST_RATIO;
 
 	const rules: ({ test?: string } & NumericValueRef)[] = [];
-	addTooltipMarkOpacityRules(rules, props);
+	addHighlightMarkOpacityRules(rules, props);
 	if (hasPopover(children)) {
 		rules.push({
-			test: `${SELECTED_ITEM} && ${SELECTED_ITEM} !== datum.${idKey}`,
+			test: `isValid(${SELECTED_ITEM}) && ${SELECTED_ITEM} !== datum.${idKey}`,
 			value: fadedValue,
 		});
 	}
@@ -128,12 +128,13 @@ export const getOpacity = (props: ScatterSpecProps): ({ test?: string } & Numeri
  */
 export const getScatterHoverMarks = ({
 	children,
-	name,
-	metric,
 	dimension,
 	dimensionScaleType,
+	highlightedItem,
+	metric,
+	name,
 }: ScatterSpecProps): Mark[] => {
-	if (!hasInteractiveChildren(children)) {
+	if (!hasInteractiveChildren(children) && highlightedItem === undefined) {
 		return [];
 	}
 

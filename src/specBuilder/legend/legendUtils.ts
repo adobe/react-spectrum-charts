@@ -178,7 +178,7 @@ export const getOpacityEncoding = ({
 	if (highlight || highlightedSeries) {
 		return [
 			{
-				test: `${highlightSignalName} && datum.value !== ${highlightSignalName}`,
+				test: `isValid(${highlightSignalName}) && datum.value !== ${highlightSignalName}`,
 				value: 1 / HIGHLIGHT_CONTRAST_RATIO,
 			},
 			DEFAULT_OPACITY_RULE,

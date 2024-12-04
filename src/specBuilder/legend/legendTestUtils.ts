@@ -42,7 +42,10 @@ export const cleanupTooltips = () => {
 };
 
 export const opacityEncoding = [
-	{ test: `${HIGHLIGHTED_SERIES} && datum.value !== ${HIGHLIGHTED_SERIES}`, value: 1 / HIGHLIGHT_CONTRAST_RATIO },
+	{
+		test: `isValid(${HIGHLIGHTED_SERIES}) && datum.value !== ${HIGHLIGHTED_SERIES}`,
+		value: 1 / HIGHLIGHT_CONTRAST_RATIO,
+	},
 	DEFAULT_OPACITY_RULE,
 ];
 

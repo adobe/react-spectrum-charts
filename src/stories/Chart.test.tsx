@@ -11,12 +11,13 @@
  */
 import React, { createRef } from 'react';
 
+import { HIGHLIGHT_CONTRAST_RATIO } from '@constants';
 import '@matchMediaMock';
 import { Axis, Bar, Chart, ChartHandle, ChartTooltip, Line } from '@rsc';
 import { findChart, getAllMarksByGroupName, hoverNthElement, render, screen } from '@test-utils';
 import { getElement } from '@utils';
 
-import { BackgroundColor, Basic, Config, Height, Locale, TooltipAnchor, Width } from './Chart.story';
+import { BackgroundColor, Basic, Config, Height, HighlightedItem, Locale, TooltipAnchor, Width } from './Chart.story';
 import {
 	CssColors,
 	SpectrumColorNames,
@@ -320,8 +321,6 @@ describe('Chart', () => {
 			expect(getPxValue(tooltip.style.getPropertyValue('left'))).toBe(10);
 		});
 
-		describe('tooltipAnchor = mark', () => {});
-
 		test('should render the tooltip relative to the mark if `tooltipAnchor` is set to `mark`', async () => {
 			render(<TooltipAnchor {...TooltipAnchor.args} tooltipAnchor="mark" tooltipPlacement="top" />);
 
@@ -351,6 +350,19 @@ describe('Chart', () => {
 
 			expect(getPxValue(tooltip.style.getPropertyValue('top'))).toBe(284);
 			expect(getPxValue(tooltip.style.getPropertyValue('left'))).toBe(35);
+		});
+	});
+
+	describe('HighlightedItem', () => {
+		test('highlightedItem should be highlighted', async () => {
+			render(<HighlightedItem {...HighlightedItem.args} />);
+			const chart = await findChart();
+			expect(chart).toBeInTheDocument();
+			const bars = getAllMarksByGroupName(chart, 'bar0');
+
+			expect(bars[14]).toHaveAttribute('opacity', '1');
+			expect(bars[13]).toHaveAttribute('opacity', `${1 / HIGHLIGHT_CONTRAST_RATIO}`);
+			expect(bars[15]).toHaveAttribute('opacity', `${1 / HIGHLIGHT_CONTRAST_RATIO}`);
 		});
 	});
 });
