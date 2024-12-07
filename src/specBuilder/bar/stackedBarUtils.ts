@@ -70,6 +70,7 @@ export const getStackedBackgroundBar = (props: BarSpecProps): RectMark => {
 	return {
 		name: `${name}_background`,
 		type: 'rect',
+		description: 'test background bar group',
 		from: { data: isDodgedAndStacked(props) ? `${name}_facet` : getBaseDataSourceName(props) },
 		interactive: false,
 		encode: {
@@ -89,6 +90,7 @@ export const getStackedBar = (props: BarSpecProps): RectMark => {
 	return {
 		name,
 		type: 'rect',
+		description: 'test bar group',
 		from: { data: isDodgedAndStacked(props) ? `${name}_facet` : getBaseDataSourceName(props) },
 		interactive: getInteractive(children, props),
 		encode: {
