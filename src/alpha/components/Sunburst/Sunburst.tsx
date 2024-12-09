@@ -23,8 +23,8 @@ const Sunburst: FC<SunburstProps> = ({
 	color = DEFAULT_COLOR,
 	metric = DEFAULT_METRIC,
 	name,
-	key,
-	parentKey,
+	id,
+	parentId,
 }) => {
 	return null;
 };

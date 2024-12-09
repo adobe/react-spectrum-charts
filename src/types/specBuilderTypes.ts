@@ -39,6 +39,7 @@ import {
 	ScatterPathProps,
 	ScatterProps,
 	SegmentLabelProps,
+	SunburstProps,
 	TrendlineAnnotationProps,
 	TrendlineChildElement,
 	TrendlineProps,
@@ -148,6 +149,17 @@ export interface DonutSpecProps extends PartiallyRequired<DonutProps, DonutProps
 	idKey: string;
 	index: number;
 	markType: 'donut';
+}
+
+type SunburstPropsWithDefaults = 'color' | 'metric' | 'name' | 'parentId' | 'id';
+
+export interface SunburstSpecProps extends PartiallyRequired<SunburstProps, SunburstPropsWithDefaults> {
+	children: MarkChildElement[];
+	colorScheme: ColorScheme;
+	highlightedItem?: HighlightedItem;
+	idKey: string;
+	index: number;
+	markType: 'sunburst';
 }
 
 type DonutSummaryPropsWithDefaults = 'numberFormat';

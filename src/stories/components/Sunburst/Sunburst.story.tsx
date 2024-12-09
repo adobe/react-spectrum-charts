@@ -31,11 +31,11 @@ const defaultChartProps: ChartProps = {
 };
 
 const SunburstStory: StoryFn<SunburstProps & { width?: number; height?: number }> = (args): ReactElement => {
-	const { width, height, ...donutProps } = args;
+	const { width, height, ...sunburstProps } = args;
 	const chartProps = useChartProps({ ...defaultChartProps, width: width ?? 350, height: height ?? 350 });
 	return (
 		<Chart {...chartProps}>
-			<Sunburst {...donutProps} />
+			<Sunburst {...sunburstProps} />
 		</Chart>
 	);
 };
@@ -43,8 +43,8 @@ const SunburstStory: StoryFn<SunburstProps & { width?: number; height?: number }
 const Basic = bindWithProps(SunburstStory);
 Basic.args = {
 	metric: 'count',
-	parentKey: 'parent',
-	key: 'id',
+	parentId: 'parent',
+	id: 'id',
 };
 
 export { Basic };

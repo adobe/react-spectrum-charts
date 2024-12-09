@@ -32,6 +32,7 @@ export type ChartElement = ReactElement<ChartProps, JSXElementConstructor<ChartP
 export type ChartPopoverElement = ReactElement<ChartPopoverProps, JSXElementConstructor<ChartPopoverProps>>;
 export type ChartTooltipElement = ReactElement<ChartTooltipProps, JSXElementConstructor<ChartTooltipProps>>;
 export type DonutElement = ReactElement<DonutProps, JSXElementConstructor<DonutProps>>;
+export type SunburstElement = ReactElement<SunburstProps, JSXElementConstructor<SunburstProps>>;
 export type DonutSummaryElement = ReactElement<DonutSummaryProps, JSXElementConstructor<DonutSummaryProps>>;
 export type LegendElement = ReactElement<LegendProps, JSXElementConstructor<LegendProps>>;
 export type LineElement = ReactElement<LineProps, JSXElementConstructor<LineProps>>;
@@ -244,10 +245,10 @@ export interface DonutSummaryProps {
 
 export interface SunburstProps extends MarkProps {
 	/** identifier for a data element */
-	key: string;
+	id: string;
 
 	/** identifies the key of this elements parent, if any parent exists */
-	parentKey: string;
+	parentId: string;
 }
 
 export interface SegmentLabelProps {
@@ -880,6 +881,8 @@ export type ChartChildElement =
 	| LineElement
 	| ScatterElement
 	| TitleElement
+	| DonutElement
+	| SunburstElement
 	| ComboElement;
 export type MarkChildElement =
 	| AnnotationElement
