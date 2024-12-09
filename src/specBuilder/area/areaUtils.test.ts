@@ -37,6 +37,7 @@ describe('getAreaMark', () => {
 			})
 		).toStrictEqual({
 			name: 'area0',
+			description: 'area0',
 			type: 'area',
 			from: {
 				data: 'area0_facet',
@@ -90,6 +91,7 @@ describe('getAreaMark', () => {
 			})
 		).toStrictEqual({
 			name: 'area0',
+			description: 'area0',
 			type: 'area',
 			from: {
 				data: 'area0_facet',
@@ -151,6 +153,7 @@ describe('getAreaMark', () => {
 			})
 		).toStrictEqual({
 			name: 'area0',
+			description: 'area0',
 			type: 'area',
 			from: {
 				data: 'area0_facet',
@@ -204,6 +207,7 @@ describe('getAreaMark', () => {
 			})
 		).toStrictEqual({
 			name: 'area0',
+			description: 'area0',
 			type: 'area',
 			from: {
 				data: 'area0_facet',

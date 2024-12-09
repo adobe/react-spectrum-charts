@@ -21,6 +21,7 @@ export const getArcMark = (props: DonutSpecProps): ArcMark => {
 	return {
 		type: 'arc',
 		name,
+		description: name,
 		from: { data: FILTERED_TABLE },
 		encode: {
 			enter: {

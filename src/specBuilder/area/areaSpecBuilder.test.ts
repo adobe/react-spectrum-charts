@@ -118,6 +118,7 @@ const defaultSpec = initializeSpec({
 					interactive: false,
 					from: { data: 'area0_facet' },
 					name: 'area0',
+					description: 'area0',
 					type: 'area',
 				},
 			],

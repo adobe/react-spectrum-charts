@@ -304,6 +304,7 @@ export const getPointsForVoronoi = (
 ): SymbolMark => {
 	return {
 		name: `${name}_pointsForVoronoi`,
+		description: `${name}_pointsForVoronoi`,
 		type: 'symbol',
 		from: { data: dataSource },
 		interactive: false,
@@ -329,6 +330,7 @@ export const getPointsForVoronoi = (
  */
 export const getVoronoiPath = (children: MarkChildElement[], dataSource: string, markName: string): PathMark => ({
 	name: `${markName}_voronoi`,
+	description: `${markName}_voronoi`,
 	type: 'path',
 	from: { data: dataSource },
 	encode: {

@@ -42,6 +42,7 @@ const defaultBackgroundMark: Mark = {
 	from: { data: FILTERED_TABLE },
 	interactive: false,
 	name: 'bar0_background',
+	description: 'bar0_background',
 	type: 'rect',
 };
 
@@ -63,6 +64,7 @@ const defaultMark = {
 	from: { data: FILTERED_TABLE },
 	interactive: false,
 	name: 'bar0',
+	description: 'bar0',
 	type: 'rect',
 };
 

@@ -66,6 +66,7 @@ export const getScatterMark = (props: ScatterSpecProps): SymbolMark => {
 	} = props;
 	return {
 		name,
+		description: name,
 		type: 'symbol',
 		from: {
 			data: FILTERED_TABLE,
