@@ -367,6 +367,7 @@ export const getBaselineRule = (baselineOffset: number, position: Position): Mar
 
 	return {
 		name: `${orientation}Baseline`,
+		description: `${orientation}Baseline`,
 		type: 'rule',
 		interactive: false,
 		encode: {

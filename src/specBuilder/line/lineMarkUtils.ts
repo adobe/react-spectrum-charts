@@ -58,6 +58,7 @@ export const getLineMark = (lineMarkProps: LineMarkProps, dataSource: string): L
 
 	return {
 		name,
+		description: name,
 		type: 'line',
 		from: { data: dataSource },
 		interactive: false,
@@ -152,6 +153,7 @@ export const getLineHoverMarks = (
 const getHoverRule = (dimension: string, name: string, scaleType: ScaleType): RuleMark => {
 	return {
 		name: `${name}_hoverRule`,
+		description: `${name}_hoverRule`,
 		type: 'rule',
 		from: { data: `${name}_highlightedData` },
 		interactive: false,
