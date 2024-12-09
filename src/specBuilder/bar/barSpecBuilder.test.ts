@@ -152,6 +152,7 @@ const defaultSelectedGroupIdTransform: Transforms[] = [
 
 const defaultBackgroundStackedMark: Mark = {
 	name: 'bar0_background',
+	description: 'bar0_background',
 	type: 'rect',
 	from: { data: FILTERED_TABLE },
 	interactive: false,
@@ -169,6 +170,7 @@ const defaultBackgroundStackedMark: Mark = {
 };
 const defaultStackedMark: Mark = {
 	name: 'bar0',
+	description: 'bar0',
 	type: 'rect',
 	from: { data: FILTERED_TABLE },
 	interactive: false,

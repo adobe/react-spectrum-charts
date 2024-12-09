@@ -73,6 +73,7 @@ const defaultLineProps: LineSpecProps = {
 const basicMetricRangeMarks = [
 	{
 		name: 'line0MetricRange0_line',
+		description: 'line0MetricRange0_line',
 		type: 'line',
 		from: {
 			data: 'line0MetricRange0_facet',
@@ -97,6 +98,7 @@ const basicMetricRangeMarks = [
 	},
 	{
 		name: 'line0MetricRange0_area',
+		description: 'line0MetricRange0_area',
 		type: 'area',
 		from: {
 			data: 'line0MetricRange0_facet',

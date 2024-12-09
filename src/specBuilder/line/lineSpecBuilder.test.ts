@@ -113,6 +113,7 @@ const defaultSpec = initializeSpec({
 					},
 					from: { data: 'line0_facet' },
 					name: 'line0',
+					description: 'line0',
 					type: 'line',
 					interactive: false,
 				},
@@ -171,6 +172,7 @@ const line0_groupMark = {
 	marks: [
 		{
 			name: 'line0',
+			description: 'line0',
 			type: 'line',
 			from: {
 				data: 'line0_facet',
@@ -207,6 +209,7 @@ const metricRangeGroupMark = {
 	marks: [
 		{
 			name: 'line0MetricRange0_line',
+			description: 'line0MetricRange0_line',
 			type: 'line',
 			from: {
 				data: 'line0MetricRange0_facet',
@@ -241,6 +244,7 @@ const metricRangeGroupMark = {
 		},
 		{
 			name: 'line0MetricRange0_area',
+			description: 'line0MetricRange0_area',
 			type: 'area',
 			from: {
 				data: 'line0MetricRange0_facet',
@@ -282,6 +286,7 @@ const metricRangeWithDisplayPointMarks = [
 	line0_groupMark,
 	{
 		name: 'line0_staticPoints',
+		description: 'line0_staticPoints',
 		type: 'symbol',
 		from: {
 			data: 'line0_staticPointData',
@@ -319,6 +324,7 @@ const displayPointMarks = [
 	line0_groupMark,
 	{
 		name: 'line0_staticPoints',
+		description:  'line0_staticPoints',
 		type: 'symbol',
 		from: {
 			data: 'line0_staticPointData',
@@ -481,6 +487,7 @@ describe('lineSpecBuilder', () => {
 							},
 							from: { data: 'line0_facet' },
 							name: 'line0',
+							description: 'line0',
 							type: 'line',
 							interactive: false,
 						},
