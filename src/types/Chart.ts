@@ -242,6 +242,14 @@ export interface DonutSummaryProps {
 	label?: string;
 }
 
+export interface SunburstProps extends MarkProps {
+	/** identifier for a data element */
+	key: string;
+
+	/** identifies the key of this elements parent, if any parent exists */
+	parentKey: string;
+}
+
 export interface SegmentLabelProps {
 	/** Sets the key in the data that has the segment label. Defaults to the `color` key set on the `Donut` is undefined. */
 	labelKey?: string;

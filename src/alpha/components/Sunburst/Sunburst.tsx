@@ -10,5 +10,26 @@
  * governing permissions and limitations under the License.
  */
 
-export * from './Combo';
-export * from './Sunburst';
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import { FC } from 'react';
+
+import { DEFAULT_COLOR, DEFAULT_METRIC } from '@constants';
+
+import { SunburstProps } from '../../../types';
+
+// destructure props here and set defaults so that storybook can pick them up
+const Sunburst: FC<SunburstProps> = ({
+	children,
+	color = DEFAULT_COLOR,
+	metric = DEFAULT_METRIC,
+	name,
+	key,
+	parentKey,
+}) => {
+	return null;
+};
+
+// displayName is used to validate the component type in the spec builder
+Sunburst.displayName = 'Sunburst';
+
+export { Sunburst };
