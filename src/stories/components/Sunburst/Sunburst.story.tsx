@@ -32,9 +32,9 @@ const defaultChartProps: ChartProps = {
 
 const SunburstStory: StoryFn<SunburstProps & { width?: number; height?: number }> = (args): ReactElement => {
 	const { width, height, ...sunburstProps } = args;
-	const chartProps = useChartProps({ ...defaultChartProps, width: width ?? 350, height: height ?? 350 });
+	const chartProps = useChartProps({ ...defaultChartProps, width: width ?? 600, height: height ?? 600 });
 	return (
-		<Chart {...chartProps}>
+		<Chart {...chartProps} debug>
 			<Sunburst {...sunburstProps} />
 		</Chart>
 	);

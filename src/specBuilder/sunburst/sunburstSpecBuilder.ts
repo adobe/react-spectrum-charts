@@ -9,10 +9,11 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { DEFAULT_COLOR, DEFAULT_COLOR_SCHEME, DEFAULT_METRIC, FILTERED_TABLE } from '@constants';
+import { DEFAULT_COLOR, DEFAULT_COLOR_SCHEME, DEFAULT_METRIC, TABLE } from '@constants';
+import { addFieldToFacetScaleDomain } from '@specBuilder/scale/scaleSpecBuilder';
 import { sanitizeMarkChildren, toCamelCase } from '@utils';
 import { produce } from 'immer';
-import { Data, Mark, PartitionTransform, Spec, StratifyTransform } from 'vega';
+import { Data, Mark, PartitionTransform, Scale, Spec, StratifyTransform } from 'vega';
 
 import { ColorScheme, HighlightedItem, SunburstProps, SunburstSpecProps } from '../../types';
 import { getArcMark } from './sunburstMarkUtils';
@@ -50,14 +51,13 @@ export const addSunburst = produce<
 		};
 
 		spec.data = addData(spec.data ?? [], sunburstProps);
+		spec.scales = addScales(spec.scales ?? [], sunburstProps);
 		spec.marks = addMarks(spec.marks ?? [], sunburstProps);
-
-		console.log('spec is', JSON.stringify(spec, null, 2));
 	}
 );
 
 export const addData = produce<Data[], [SunburstSpecProps]>((data, props) => {
-	const filteredTableIndex = data.findIndex((d) => d.name === FILTERED_TABLE);
+	const filteredTableIndex = data.findIndex((d) => d.name === TABLE);
 
 	//set up transforms
 	data[filteredTableIndex].transform = data[filteredTableIndex].transform ?? [];
@@ -82,6 +82,10 @@ const getSunburstDataTransforms = ({
 		as: ['a0', 'r0', 'a1', 'r1', 'depth', 'children'],
 	},
 ];
+
+export const addScales = produce<Scale[], [SunburstSpecProps]>((scales) => {
+	addFieldToFacetScaleDomain(scales, 'opacity', 'depth');
+});
 
 export const addMarks = produce<Mark[], [SunburstSpecProps]>((marks, props) => {
 	marks.push(getArcMark(props));

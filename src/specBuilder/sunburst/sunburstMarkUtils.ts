@@ -9,24 +9,23 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { FILTERED_TABLE } from '@constants';
-import { getTooltip } from '@specBuilder/marks/markUtils';
+import { TABLE } from '@constants';
 import { ArcMark } from 'vega';
 
 import { SunburstSpecProps } from '../../types';
 
 export const getArcMark = (props: SunburstSpecProps): ArcMark => {
-	const { children, name } = props;
+	const { name } = props;
 	return {
 		type: 'arc',
 		name,
-		from: { data: FILTERED_TABLE },
+		from: { data: TABLE },
 		encode: {
 			enter: {
 				x: { signal: 'width / 2' },
 				y: { signal: 'height / 2' },
-				fill: { scale: 'color', field: 'depth' },
-				tooltip: getTooltip(children, name),
+				fill: { value: 'red' },
+				fillOpacity: { scale: 'opacity', field: 'depth' },
 			},
 			update: {
 				startAngle: { field: 'a0' },
@@ -36,11 +35,6 @@ export const getArcMark = (props: SunburstSpecProps): ArcMark => {
 				stroke: { value: 'white' },
 				strokeWidth: { value: 0.5 },
 				zindex: { value: 0 },
-			},
-			hover: {
-				stroke: { value: 'red' },
-				strokeWidth: { value: 2 },
-				zindex: { value: 1 },
 			},
 		},
 	};
