@@ -33,6 +33,7 @@ export const addSunburst = produce<
 			name,
 			id = 'id',
 			parentId = 'parent',
+			segmentKey = 'segment',
 			...props
 		}
 	) => {
@@ -46,6 +47,7 @@ export const addSunburst = produce<
 			metric,
 			id,
 			parentId,
+			segmentKey,
 			name: toCamelCase(name ?? `sunburst${index}`),
 			...props,
 		};
@@ -57,11 +59,11 @@ export const addSunburst = produce<
 );
 
 export const addData = produce<Data[], [SunburstSpecProps]>((data, props) => {
-	const filteredTableIndex = data.findIndex((d) => d.name === TABLE);
+	const tableIndex = data.findIndex((d) => d.name === TABLE);
 
 	//set up transforms
-	data[filteredTableIndex].transform = data[filteredTableIndex].transform ?? [];
-	data[filteredTableIndex].transform?.push(...getSunburstDataTransforms(props));
+	data[tableIndex].transform = data[tableIndex].transform ?? [];
+	data[tableIndex].transform?.push(...getSunburstDataTransforms(props));
 });
 
 const getSunburstDataTransforms = ({
@@ -83,8 +85,10 @@ const getSunburstDataTransforms = ({
 	},
 ];
 
-export const addScales = produce<Scale[], [SunburstSpecProps]>((scales) => {
+export const addScales = produce<Scale[], [SunburstSpecProps]>((scales, props) => {
+	const { segmentKey } = props;
 	addFieldToFacetScaleDomain(scales, 'opacity', 'depth');
+	addFieldToFacetScaleDomain(scales, 'color', segmentKey);
 });
 
 export const addMarks = produce<Mark[], [SunburstSpecProps]>((marks, props) => {

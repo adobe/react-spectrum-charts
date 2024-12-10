@@ -15,7 +15,7 @@ import { ArcMark } from 'vega';
 import { SunburstSpecProps } from '../../types';
 
 export const getArcMark = (props: SunburstSpecProps): ArcMark => {
-	const { name } = props;
+	const { name, segmentKey } = props;
 	return {
 		type: 'arc',
 		name,
@@ -24,7 +24,10 @@ export const getArcMark = (props: SunburstSpecProps): ArcMark => {
 			enter: {
 				x: { signal: 'width / 2' },
 				y: { signal: 'height / 2' },
-				fill: { value: 'red' },
+				fill: {
+					scale: 'color',
+					field: segmentKey,
+				},
 				fillOpacity: { scale: 'opacity', field: 'depth' },
 			},
 			update: {

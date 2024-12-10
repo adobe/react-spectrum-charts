@@ -45,6 +45,7 @@ Basic.args = {
 	metric: 'value',
 	parentId: 'parent',
 	id: 'id',
+	segmentKey: 'segment',
 };
 
 export { Basic };
