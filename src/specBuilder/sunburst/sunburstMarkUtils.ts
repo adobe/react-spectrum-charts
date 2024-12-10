@@ -10,12 +10,13 @@
  * governing permissions and limitations under the License.
  */
 import { TABLE } from '@constants';
+import { getTooltip } from '@specBuilder/marks/markUtils';
 import { ArcMark } from 'vega';
 
 import { SunburstSpecProps } from '../../types';
 
 export const getArcMark = (props: SunburstSpecProps): ArcMark => {
-	const { name, segmentKey } = props;
+	const { name, children, segmentKey } = props;
 	return {
 		type: 'arc',
 		name,
@@ -29,6 +30,7 @@ export const getArcMark = (props: SunburstSpecProps): ArcMark => {
 					field: segmentKey,
 				},
 				fillOpacity: { scale: 'opacity', field: 'depth' },
+				tooltip: getTooltip(children, name),
 			},
 			update: {
 				startAngle: { field: 'a0' },

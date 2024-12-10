@@ -344,7 +344,7 @@ const getElementName = (element: unknown, elementCounts: ElementCounts) => {
 			return getComponentName(element as DonutElement, `donut${elementCounts.donut}`);
 		case Sunburst.displayName:
 			elementCounts.sunburst++;
-			return getComponentName(element as SunburstElement, `sunburst${elementCounts.donut}`);
+			return getComponentName(element as SunburstElement, `sunburst${elementCounts.sunburst}`);
 		case Legend.displayName:
 			elementCounts.legend++;
 			return getComponentName(element as LegendElement, `legend${elementCounts.legend}`);

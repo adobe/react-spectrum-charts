@@ -10,10 +10,12 @@
  * governing permissions and limitations under the License.
  */
 import { DEFAULT_COLOR, DEFAULT_COLOR_SCHEME, DEFAULT_METRIC, TABLE } from '@constants';
+import { getTooltipProps, hasInteractiveChildren } from '@specBuilder/marks/markUtils';
 import { addFieldToFacetScaleDomain } from '@specBuilder/scale/scaleSpecBuilder';
+import { addHighlightedItemSignalEvents } from '@specBuilder/signal/signalSpecBuilder';
 import { sanitizeMarkChildren, toCamelCase } from '@utils';
 import { produce } from 'immer';
-import { Data, Mark, PartitionTransform, Scale, Spec, StratifyTransform } from 'vega';
+import { Data, Mark, PartitionTransform, Scale, Signal, Spec, StratifyTransform } from 'vega';
 
 import { ColorScheme, HighlightedItem, SunburstProps, SunburstSpecProps } from '../../types';
 import { getArcMark } from './sunburstMarkUtils';
@@ -55,6 +57,7 @@ export const addSunburst = produce<
 		spec.data = addData(spec.data ?? [], sunburstProps);
 		spec.scales = addScales(spec.scales ?? [], sunburstProps);
 		spec.marks = addMarks(spec.marks ?? [], sunburstProps);
+		spec.signals = addSignals(spec.signals ?? [], sunburstProps);
 	}
 );
 
@@ -93,4 +96,10 @@ export const addScales = produce<Scale[], [SunburstSpecProps]>((scales, props) =
 
 export const addMarks = produce<Mark[], [SunburstSpecProps]>((marks, props) => {
 	marks.push(getArcMark(props));
+});
+
+export const addSignals = produce<Signal[], [SunburstSpecProps]>((signals, props) => {
+	const { children, idKey, name } = props;
+	if (!hasInteractiveChildren(children)) return;
+	addHighlightedItemSignalEvents(signals, name, idKey, 1, getTooltipProps(children)?.excludeDataKeys);
 });

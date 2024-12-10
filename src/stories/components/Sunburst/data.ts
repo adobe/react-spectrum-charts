@@ -25,7 +25,6 @@ export const basicSunburstData = [
 		id: 3,
 		name: 'V 130',
 		parent: 2,
-		value: 200,
 		segment: 'chrome',
 	},
 	{
@@ -52,21 +51,18 @@ export const basicSunburstData = [
 		id: 7,
 		parent: 6,
 		name: 'Alpha',
-		value: 100,
 		segment: 'firefox',
 	},
 	{
 		id: 8,
 		parent: 6,
 		name: 'Beta',
-		value: 200,
 		segment: 'firefox',
 	},
 	{
 		id: 9,
 		parent: 6,
 		name: 'Prod',
-		value: 300,
 		segment: 'firefox',
 	},
 	{
@@ -127,14 +123,12 @@ export const basicSunburstData = [
 		id: 18,
 		parent: 14,
 		name: '4',
-		value: 200,
 		segment: 'edge',
 	},
 	{
 		id: 19,
 		parent: 18,
 		name: '4.1',
-		value: 85,
 		segment: 'edge',
 	},
 	{

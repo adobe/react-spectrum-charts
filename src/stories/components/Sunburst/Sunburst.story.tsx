@@ -12,10 +12,12 @@
 import { ReactElement } from 'react';
 
 import useChartProps from '@hooks/useChartProps';
-import { Chart, ChartProps, SunburstProps } from '@rsc';
+import { Chart, ChartPopover, ChartProps, ChartTooltip, Datum, SunburstProps } from '@rsc';
 import { Sunburst } from '@rsc/alpha';
 import { StoryFn } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
+
+import { Content } from '@adobe/react-spectrum';
 
 import { basicSunburstData } from './data';
 
@@ -40,6 +42,22 @@ const SunburstStory: StoryFn<SunburstProps & { width?: number; height?: number }
 	);
 };
 
+const dialogContent = (datum: Datum) => {
+	return (
+		<Content>
+			<div>Browser: {datum.segment}</div>
+			<div>Users: {datum.value}</div>
+		</Content>
+	);
+};
+
+const interactiveChildren = [
+	<ChartTooltip key={0}>{dialogContent}</ChartTooltip>,
+	<ChartPopover width="auto" key={1}>
+		{dialogContent}
+	</ChartPopover>,
+];
+
 const Basic = bindWithProps(SunburstStory);
 Basic.args = {
 	metric: 'value',
@@ -48,4 +66,13 @@ Basic.args = {
 	segmentKey: 'segment',
 };
 
-export { Basic };
+const WithPopovers = bindWithProps(SunburstStory);
+WithPopovers.args = {
+	metric: 'value',
+	parentId: 'parent',
+	id: 'id',
+	segmentKey: 'segment',
+	children: interactiveChildren,
+};
+
+export { Basic, WithPopovers };
