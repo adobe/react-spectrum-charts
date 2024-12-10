@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Adobe. All rights reserved.
+ * Copyright 2024 Adobe. All rights reserved.
  * This file is licensed to you under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License. You may obtain a copy
  * of the License at http://www.apache.org/licenses/LICENSE-2.0
@@ -12,9 +12,10 @@
 import { DEFAULT_COLOR, DEFAULT_COLOR_SCHEME, DEFAULT_METRIC, FILTERED_TABLE } from '@constants';
 import { sanitizeMarkChildren, toCamelCase } from '@utils';
 import { produce } from 'immer';
-import { Data, PartitionTransform, Spec, StratifyTransform } from 'vega';
+import { Data, Mark, PartitionTransform, Spec, StratifyTransform } from 'vega';
 
 import { ColorScheme, HighlightedItem, SunburstProps, SunburstSpecProps } from '../../types';
+import { getArcMark } from './sunburstMarkUtils';
 
 export const addSunburst = produce<
 	Spec,
@@ -44,11 +45,14 @@ export const addSunburst = produce<
 			metric,
 			id,
 			parentId,
-			name: toCamelCase(name ?? `donut${index}`),
+			name: toCamelCase(name ?? `sunburst${index}`),
 			...props,
 		};
 
 		spec.data = addData(spec.data ?? [], sunburstProps);
+		spec.marks = addMarks(spec.marks ?? [], sunburstProps);
+
+		console.log('spec is', JSON.stringify(spec, null, 2));
 	}
 );
 
@@ -78,3 +82,7 @@ const getSunburstDataTransforms = ({
 		as: ['a0', 'r0', 'a1', 'r1', 'depth', 'children'],
 	},
 ];
+
+export const addMarks = produce<Mark[], [SunburstSpecProps]>((marks, props) => {
+	marks.push(getArcMark(props));
+});
