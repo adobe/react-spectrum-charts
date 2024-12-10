@@ -42,7 +42,7 @@ const SunburstStory: StoryFn<SunburstProps & { width?: number; height?: number }
 
 const Basic = bindWithProps(SunburstStory);
 Basic.args = {
-	metric: 'count',
+	metric: 'value',
 	parentId: 'parent',
 	id: 'id',
 };

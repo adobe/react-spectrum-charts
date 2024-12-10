@@ -13,7 +13,7 @@
 export const basicSunburstData = [
 	{
 		id: 1,
-		name: 'Root',
+		name: 'Browsers',
 	},
 	{
 		id: 2,

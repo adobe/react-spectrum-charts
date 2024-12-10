@@ -244,7 +244,7 @@ export interface DonutSummaryProps {
 }
 
 export interface SunburstProps extends MarkProps {
-	/** identifier for a data element */
+	/** key for a data element */
 	id: string;
 
 	/** identifies the key of this elements parent, if any parent exists */

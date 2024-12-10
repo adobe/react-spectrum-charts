@@ -9,10 +9,10 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { DEFAULT_COLOR, DEFAULT_COLOR_SCHEME, DEFAULT_METRIC } from '@constants';
+import { DEFAULT_COLOR, DEFAULT_COLOR_SCHEME, DEFAULT_METRIC, FILTERED_TABLE } from '@constants';
 import { sanitizeMarkChildren, toCamelCase } from '@utils';
 import { produce } from 'immer';
-import { Spec } from 'vega';
+import { Data, PartitionTransform, Spec, StratifyTransform } from 'vega';
 
 import { ColorScheme, HighlightedItem, SunburstProps, SunburstSpecProps } from '../../types';
 
@@ -48,6 +48,33 @@ export const addSunburst = produce<
 			...props,
 		};
 
-		console.log('props are', sunburstProps);
+		spec.data = addData(spec.data ?? [], sunburstProps);
 	}
 );
+
+export const addData = produce<Data[], [SunburstSpecProps]>((data, props) => {
+	const filteredTableIndex = data.findIndex((d) => d.name === FILTERED_TABLE);
+
+	//set up transforms
+	data[filteredTableIndex].transform = data[filteredTableIndex].transform ?? [];
+	data[filteredTableIndex].transform?.push(...getSunburstDataTransforms(props));
+});
+
+const getSunburstDataTransforms = ({
+	id,
+	parentId,
+	metric,
+}: SunburstSpecProps): (StratifyTransform | PartitionTransform)[] => [
+	{
+		type: 'stratify',
+		key: id,
+		parentKey: parentId,
+	},
+	{
+		type: 'partition',
+		field: metric,
+		sort: { field: metric },
+		size: [{ signal: '2 * PI' }, { signal: 'width / 2' }],
+		as: ['a0', 'r0', 'a1', 'r1', 'depth', 'children'],
+	},
+];
