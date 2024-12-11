@@ -31,6 +31,7 @@ export type BarElement = ReactElement<BarProps, JSXElementConstructor<BarProps>>
 export type ChartElement = ReactElement<ChartProps, JSXElementConstructor<ChartProps>>;
 export type ChartPopoverElement = ReactElement<ChartPopoverProps, JSXElementConstructor<ChartPopoverProps>>;
 export type ChartTooltipElement = ReactElement<ChartTooltipProps, JSXElementConstructor<ChartTooltipProps>>;
+export type TreemapElement = ReactElement<TreemapProps, JSXElementConstructor<TreemapProps>>;
 export type DonutElement = ReactElement<DonutProps, JSXElementConstructor<DonutProps>>;
 export type DonutSummaryElement = ReactElement<DonutSummaryProps, JSXElementConstructor<DonutSummaryProps>>;
 export type LegendElement = ReactElement<LegendProps, JSXElementConstructor<LegendProps>>;
@@ -219,6 +220,19 @@ export interface AreaProps extends MarkProps {
 	metricStart?: string;
 	/** Data field for the end of the area */
 	metricEnd?: string;
+}
+
+export interface TreemapProps extends MarkProps {
+	// /** Field to determine rectanle size */
+	size: string;
+	// /** Field to encode color (optional) */
+	// colorField?: string;
+	// /** Vega color scheme (e.g., 'category10', 'blues') */
+	// colorScheme?: string;
+	// /**  Space between rectangles */
+	// padding?: number;
+	// /** Treemap algorithm */
+	layout?: 'squarify' | 'binary' | 'slice-dice';
 }
 
 export interface DonutProps extends MarkProps {
@@ -872,7 +886,8 @@ export type ChartChildElement =
 	| LineElement
 	| ScatterElement
 	| TitleElement
-	| ComboElement;
+	| ComboElement
+	| TreemapElement;
 export type MarkChildElement =
 	| AnnotationElement
 	| ChartTooltipElement

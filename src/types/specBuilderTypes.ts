@@ -39,6 +39,7 @@ import {
 	ScatterPathProps,
 	ScatterProps,
 	SegmentLabelProps,
+	TreemapProps,
 	TrendlineAnnotationProps,
 	TrendlineChildElement,
 	TrendlineProps,
@@ -151,6 +152,16 @@ export interface DonutSpecProps extends PartiallyRequired<DonutProps, DonutProps
 }
 
 type DonutSummaryPropsWithDefaults = 'numberFormat';
+
+type TreemapPropsWithDefaults = 'size'; // Replace 'name' with a valid key from TreemapProps
+
+export interface TreemapSpecProps extends PartiallyRequired<TreemapProps, TreemapPropsWithDefaults> {
+	children: MarkChildElement[];
+	colorScheme: ColorScheme;
+	highlightedItem?: HighlightedItem;
+	idKey: string;
+	index: number;
+}
 
 export interface DonutSummarySpecProps extends PartiallyRequired<DonutSummaryProps, DonutSummaryPropsWithDefaults> {
 	donutProps: DonutSpecProps;

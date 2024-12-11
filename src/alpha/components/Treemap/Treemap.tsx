@@ -10,5 +10,17 @@
  * governing permissions and limitations under the License.
  */
 
-export * from './Combo';
-export * from './Treemap';
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import { FC } from 'react';
+
+// import { DEFAULT_TIME_DIMENSION } from '@constants';
+import { TreemapProps } from '../../../types';
+
+const Treemap: FC<TreemapProps> = ({}) => {
+	return null;
+};
+
+// displayName is used to validate the component type in the spec builder
+Treemap.displayName = 'Treemap';
+
+export { Treemap };
