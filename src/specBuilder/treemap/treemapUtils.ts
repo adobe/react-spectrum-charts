@@ -144,20 +144,22 @@ export const getLeavesText = (props: TreemapSpecProps): TextMark => {
 			enter: {
 				font: { value: 'Helvetica Neue, Arial' },
 				x: { signal: '(datum.x0 + datum.x1) / 2' },
-				y: { signal: '(datum.y0 + datum.y1) / 2' },
+				y: { signal: 'datum.y0 + (datum.y1 - datum.y0) * 0.5 - 2' },
 				align: { value: 'center' },
-				baseline: { value: 'alphabetical', scale: 'color' },
+				baseline: { value: 'middle' },
 				fill: { value: '#387381' },
 				text: { field: 'name' },
-				limit: { signal: 'datum.x1 - datum.x0' },
+				limit: { signal: 'datum.x1 - datum.x0 > 40 ? (datum.x1 - datum.x0) * 0.9 : datum.x1 - datum.x0 - 2' },
 				width: { signal: 'datum.x1 - datum.x0' },
-				// fontSize: { scale: 'size', field: 'depth' },
 				fillOpacity: { scale: 'opacity', field: 'depth' },
-				tooltip: { signal: `datum.name` },
+				fontSize: {
+					signal: '((datum.x1 - datum.x0 > 40) && (datum.y1 - datum.y0 > 20)) ? clamp((datum.x1 - datum.x0) * 0.1, 10, 20) : 0',
+				},
+				tooltip: { signal: 'datum.name' },
 			},
 			update: {
 				x: { signal: '0.5 * (datum.x0 + datum.x1)' },
-				y: { signal: '0.5 * (datum.y0 + datum.y1)' },
+				y: { signal: '0.5 * (datum.y0 + datum.y1) - 2' }, // Adding slight padding
 			},
 		},
 		transform: [
@@ -166,7 +168,6 @@ export const getLeavesText = (props: TreemapSpecProps): TextMark => {
 				avoidBaseMark: false,
 				avoidMarks: ['trunkText', 'nodesText'],
 				anchor: ['middle'],
-				// offset: [1],
 				size: { signal: '[width, height]' },
 			},
 		],

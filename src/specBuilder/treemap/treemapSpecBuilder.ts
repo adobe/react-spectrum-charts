@@ -29,6 +29,7 @@ import { OrdinalScale, StratifyTransform } from 'vega';
 import { Data, Mark, Scale, Spec, TreemapTransform } from 'vega';
 
 import { ColorScheme, HighlightedItem, TreemapProps, TreemapSpecProps } from '../../types';
+import { getLeavesMarks, getLeavesText, getNodeMarks, getNodesText, getRootText } from './treemapUtils';
 
 export const addTreemap = produce<
 	Spec,
@@ -167,150 +168,10 @@ export const getTreemapOpacityScales = ({ colorScheme }: TreemapSpecProps): Ordi
 	range: [0.15, 0.5, 0.8, 1.0],
 });
 
-export const addMarks = produce<Mark[], [TreemapSpecProps]>((marks) => {
-	// const { name } = props;
-
-	const marksArr = [
-		{
-			type: 'rect',
-			from: { data: 'nodes' },
-			interactive: false,
-			encode: {
-				enter: {
-					fill: { scale: 'color', field: 'name' },
-				},
-				update: {
-					x: { field: 'x0' },
-					y: { field: 'y0' },
-					x2: { field: 'x1' },
-					y2: { field: 'y1' },
-				},
-				hover: {
-					fill: { value: '#ada1a2' },
-				},
-			},
-		},
-		{
-			type: 'rect',
-			from: { data: 'leaves' },
-			encode: {
-				enter: {
-					stroke: { value: '#fff' },
-					strokeWidth: { value: 1 },
-					tooltip: { signal: `datum.name` },
-				},
-				update: {
-					x: { field: 'x0' },
-					y: { field: 'y0' },
-					x2: { field: 'x1' },
-					y2: { field: 'y1' },
-					fill: { value: 'transparent' },
-				},
-				hover: {
-					fill: { value: '#fda1a2' },
-				},
-			},
-		},
-		{
-			type: 'text',
-			name: 'trunkText',
-			from: { data: 'trunk' },
-			interactive: false,
-			encode: {
-				enter: {
-					font: { value: 'Helvetica Neue, Arial' },
-					x: { signal: '(datum.x0 + datum.x1) / 2' },
-					y: { signal: '(datum.y0 + datum.y1) / 2' },
-					align: { value: 'center' },
-					baseline: { value: 'middle' },
-					fill: { value: '#700503' },
-					text: { field: 'name' },
-					fontSize: { value: 72 },
-					// fillOpacity: { field: 'value' },
-					// fontSize: { scale: 'size', field: 'depth' },
-					fillOpacity: { scale: 'opacity', field: 'depth' },
-					opactiy: { value: 0.5 },
-				},
-				update: {
-					x: { signal: 'width / 2' },
-					y: { signal: 'height / 2' },
-				},
-			},
-		},
-		{
-			type: 'text',
-			name: 'nodesText',
-			from: { data: 'nodes' },
-			interactive: false,
-			encode: {
-				enter: {
-					font: { value: 'Helvetica Neue, Arial' },
-					x: { signal: '(datum.x0 + datum.x1) / 2' },
-					y: { signal: '(datum.y0 + datum.y1) / 2' },
-					align: { value: 'center' },
-					baseline: { value: 'alphabetical', scale: 'color' },
-					fill: { value: '#b10c0c' },
-					text: { field: 'name' },
-					// fontSize: { scale: 'size', field: 'depth' },
-					fillOpacity: { field: 'value' },
-				},
-				update: {
-					x: { signal: '0.5 * (datum.x0 + datum.x1)' },
-					y: { signal: '0.5 * (datum.y0 + datum.y1)' },
-				},
-				hover: {
-					fill: { value: '#fda1a2' },
-				},
-			},
-			transform: [
-				{
-					type: 'label',
-					avoidMarks: ['trunkText'],
-					avoidBaseMark: false,
-					anchor: ['middle'],
-					// offset: [1],
-					size: { signal: '[width, height]' },
-				},
-			],
-		},
-
-		{
-			type: 'text',
-			name: 'leavesText',
-			from: { data: 'leaves' },
-			interactive: true,
-			encode: {
-				enter: {
-					font: { value: 'Helvetica Neue, Arial' },
-					x: { signal: '(datum.x0 + datum.x1) / 2' },
-					y: { signal: '(datum.y0 + datum.y1) / 2' },
-					align: { value: 'center' },
-					baseline: { value: 'alphabetical' },
-					fill: { value: '#387381' },
-					text: { field: 'name' },
-					limit: { signal: 'datum.x1 - datum.x0' },
-					width: { signal: 'datum.x1 - datum.x0' },
-					// fontSize: { scale: 'size', field: 'depth' },
-					fillOpacity: { scale: 'opacity', field: 'depth' },
-					tooltip: { signal: `datum.name` },
-				},
-				update: {
-					x: { signal: '0.5 * (datum.x0 + datum.x1)' },
-					y: { signal: '0.5 * (datum.y0 + datum.y1)' },
-				},
-			},
-			transform: [
-				{
-					type: 'label',
-					avoidBaseMark: false,
-					avoidMarks: ['trunkText', 'nodesText'],
-					anchor: ['middle'],
-					// offset: [1],
-					size: { signal: '[width, height]' },
-				},
-			],
-		},
-	];
-
-	marks.push(...(marksArr as Mark[]));
+export const addMarks = produce<Mark[], [TreemapSpecProps]>((marks, props) => {
+	marks.push(getNodeMarks(props));
+	marks.push(getLeavesMarks(props));
+	marks.push(getRootText(props));
+	marks.push(getNodesText(props));
+	marks.push(getLeavesText(props));
 });
