@@ -111,8 +111,10 @@ export const getNodesText = (props: TreemapSpecProps): TextMark => {
 				baseline: { value: 'alphabetical', scale: 'color' },
 				fill: { value: '#b10c0c' },
 				text: { field: 'name' },
-				// fontSize: { scale: 'size', field: 'depth' },
 				fillOpacity: { field: 'value' },
+				fontSize: {
+					signal: '((datum.x1 - datum.x0 > 40) && (datum.y1 - datum.y0 > 20)) ? clamp((datum.x1 - datum.x0) * 0.12, 12, 25) : 0',
+				},
 			},
 			update: {
 				x: { signal: '0.5 * (datum.x0 + datum.x1)' },
@@ -125,7 +127,6 @@ export const getNodesText = (props: TreemapSpecProps): TextMark => {
 				avoidMarks: ['trunkText'],
 				avoidBaseMark: false,
 				anchor: ['middle'],
-				// offset: [1],
 				size: { signal: '[width, height]' },
 			},
 		],
