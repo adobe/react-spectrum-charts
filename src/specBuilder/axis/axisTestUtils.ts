@@ -22,6 +22,7 @@ import { AxisSpecProps } from '../../types';
 
 export const defaultXBaselineMark: Mark = {
 	name: 'xBaseline',
+	description: 'xBaseline',
 	type: 'rule',
 	interactive: false,
 	encode: {
@@ -35,6 +36,7 @@ export const defaultXBaselineMark: Mark = {
 
 export const defaultYBaselineMark: Mark = {
 	name: 'yBaseline',
+	description: 'yBaseline',
 	type: 'rule',
 	interactive: false,
 	encode: {

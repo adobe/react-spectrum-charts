@@ -257,6 +257,7 @@ export const getTrendlineAnnotationBadgeMark = ({
 	return [
 		{
 			name: `${name}_badge`,
+			description: `${name}_badge`,
 			type: 'rect',
 			from: { data: `${name}` },
 			interactive: false,

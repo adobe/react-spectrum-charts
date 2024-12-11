@@ -52,6 +52,7 @@ export const getLineStaticPoint = ({
 }: LineSpecProps): SymbolMark => {
 	return {
 		name: `${name}_staticPoints`,
+		description: `${name}_staticPoints`,
 		type: 'symbol',
 		from: { data: `${name}_staticPointData` },
 		interactive: false,
@@ -78,6 +79,7 @@ export const getHighlightBackgroundPoint = (lineProps: LineMarkProps): SymbolMar
 	const { dimension, metric, metricAxis, name, scaleType } = lineProps;
 	return {
 		name: `${name}_pointBackground`,
+		description: `${name}_pointBackground`,
 		type: 'symbol',
 		from: { data: `${name}_highlightedData` },
 		interactive: false,

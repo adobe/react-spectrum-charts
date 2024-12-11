@@ -154,6 +154,7 @@ const getAnnotationBackgroundMark = ({
 	style,
 }: AnnotationSpecProps): RectMark => ({
 	name: `${barProps.name}_annotationBackground`,
+	description: `${barProps.name}_annotationBackground`,
 	type: 'rect',
 	from: { data: `${barProps.name}_annotationText` },
 	interactive: false,

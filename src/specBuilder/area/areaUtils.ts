@@ -53,6 +53,7 @@ export const getAreaMark = (areaProps: AreaMarkProps, dataSource: string = `${ar
 		areaProps;
 	return {
 		name,
+		description: name,
 		type: 'area',
 		from: { data: dataSource },
 		interactive: getInteractive(children),
