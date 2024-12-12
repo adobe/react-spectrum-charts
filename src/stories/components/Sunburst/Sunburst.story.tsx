@@ -12,7 +12,7 @@
 import { ReactElement } from 'react';
 
 import useChartProps from '@hooks/useChartProps';
-import { Chart, ChartPopover, ChartProps, ChartTooltip, Datum, SunburstProps } from '@rsc';
+import { Chart, ChartPopover, ChartProps, ChartTooltip, Datum, Legend, SunburstProps } from '@rsc';
 import { Sunburst } from '@rsc/alpha';
 import { StoryFn } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
@@ -38,22 +38,32 @@ const smallChartProps: ChartProps = {
 	height: 350,
 };
 
-const SunburstStory: StoryFn<SunburstProps & { width?: number; height?: number }> = (args): ReactElement => {
+const SimpleSunburstStory: StoryFn<SunburstProps & { width?: number; height?: number }> = (args): ReactElement => {
 	const { width, height, ...sunburstProps } = args;
-	const chartProps = useChartProps({ ...defaultChartProps, width: width ?? 600, height: height ?? 600 });
+	const chartProps = useChartProps({ ...smallChartProps, width: width ?? 600, height: height ?? 600 });
 	return (
-		<Chart {...chartProps} debug>
+		<Chart {...chartProps}>
 			<Sunburst {...sunburstProps} />
 		</Chart>
 	);
 };
 
-const SmallSunburstStory: StoryFn<SunburstProps & { width?: number; height?: number }> = (args): ReactElement => {
+const SunburstStory: StoryFn<SunburstProps & { width?: number; height?: number }> = (args): ReactElement => {
 	const { width, height, ...sunburstProps } = args;
-	const chartProps = useChartProps({ ...smallChartProps, width: width ?? 600, height: height ?? 600 });
+	const chartProps = useChartProps({ ...defaultChartProps, width: width ?? 600, height: height ?? 600 });
+	return (
+		<Chart {...chartProps}>
+			<Sunburst {...sunburstProps} />
+		</Chart>
+	);
+};
+
+const SunburstLegendStory: StoryFn<typeof Sunburst> = (args): ReactElement => {
+	const chartProps = useChartProps({ ...defaultChartProps, height: 400, width: 600 });
 	return (
 		<Chart {...chartProps} debug>
-			<Sunburst {...sunburstProps} />
+			<Sunburst {...args} />
+			<Legend title="Browsers" position={'left'} highlight isToggleable />
 		</Chart>
 	);
 };
@@ -61,8 +71,9 @@ const SmallSunburstStory: StoryFn<SunburstProps & { width?: number; height?: num
 const dialogContent = (datum: Datum) => {
 	return (
 		<Content>
-			<div>Browser: {datum.segment}</div>
+			<div>Browser: {datum.name}</div>
 			<div>Users: {datum.value}</div>
+			{datum.segment && <div>Details: {datum.segment}</div>}
 		</Content>
 	);
 };
@@ -74,7 +85,7 @@ const interactiveChildren = [
 	</ChartPopover>,
 ];
 
-const Basic = bindWithProps(SunburstStory);
+const Basic = bindWithProps(SimpleSunburstStory);
 Basic.args = {
 	metric: 'value',
 	parentId: 'parent',
@@ -82,13 +93,12 @@ Basic.args = {
 	segmentKey: 'segment',
 };
 
-const Small = bindWithProps(SmallSunburstStory);
-Small.args = {
+const Complex = bindWithProps(SunburstStory);
+Complex.args = {
 	metric: 'value',
 	parentId: 'parent',
 	id: 'id',
 	segmentKey: 'segment',
-	children: interactiveChildren,
 };
 
 const WithPopovers = bindWithProps(SunburstStory);
@@ -100,4 +110,23 @@ WithPopovers.args = {
 	children: interactiveChildren,
 };
 
-export { Small, Basic, WithPopovers };
+const WithLegend = bindWithProps(SunburstLegendStory);
+WithLegend.args = {
+	metric: 'value',
+	parentId: 'parent',
+	id: 'id',
+	segmentKey: 'segment',
+	children: interactiveChildren,
+};
+
+const WithLegendAndMuting = bindWithProps(SunburstLegendStory);
+WithLegendAndMuting.args = {
+	metric: 'value',
+	parentId: 'parent',
+	id: 'id',
+	segmentKey: 'segment',
+	muteElementsOnHover: true,
+	children: interactiveChildren,
+};
+
+export { Basic, Complex, WithPopovers, WithLegend, WithLegendAndMuting };

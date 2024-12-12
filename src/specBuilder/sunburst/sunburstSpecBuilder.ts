@@ -36,6 +36,7 @@ export const addSunburst = produce<
 			id = 'id',
 			parentId = 'parent',
 			segmentKey = 'segment',
+			muteElementsOnHover = false,
 			...props
 		}
 	) => {
@@ -51,6 +52,7 @@ export const addSunburst = produce<
 			parentId,
 			segmentKey,
 			name: toCamelCase(name ?? `sunburst${index}`),
+			muteElementsOnHover,
 			...props,
 		};
 

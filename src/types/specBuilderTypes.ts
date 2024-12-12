@@ -151,7 +151,7 @@ export interface DonutSpecProps extends PartiallyRequired<DonutProps, DonutProps
 	markType: 'donut';
 }
 
-type SunburstPropsWithDefaults = 'color' | 'metric' | 'name' | 'parentId' | 'id' | 'segmentKey';
+type SunburstPropsWithDefaults = 'color' | 'metric' | 'name' | 'parentId' | 'id' | 'segmentKey' | 'muteElementsOnHover';
 
 export interface SunburstSpecProps extends PartiallyRequired<SunburstProps, SunburstPropsWithDefaults> {
 	children: MarkChildElement[];

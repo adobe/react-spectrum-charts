@@ -252,6 +252,9 @@ export interface SunburstProps extends MarkProps {
 
 	/** identifies which segment each element is part of */
 	segmentKey: string;
+
+	/** determines if other elements are muted when hovering a given element */
+	muteElementsOnHover?: boolean;
 }
 
 export interface SegmentLabelProps {
