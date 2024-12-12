@@ -61,7 +61,7 @@ const SunburstStory: StoryFn<SunburstProps & { width?: number; height?: number }
 const SunburstLegendStory: StoryFn<typeof Sunburst> = (args): ReactElement => {
 	const chartProps = useChartProps({ ...defaultChartProps, height: 400, width: 600 });
 	return (
-		<Chart {...chartProps} debug>
+		<Chart {...chartProps}>
 			<Sunburst {...args} />
 			<Legend title="Browsers" position={'left'} highlight isToggleable />
 		</Chart>
