@@ -88,7 +88,7 @@ const interactiveChildren = [
 const Basic = bindWithProps(SimpleSunburstStory);
 Basic.args = {
 	metric: 'value',
-	parentId: 'parent',
+	parentKey: 'parent',
 	id: 'id',
 	segmentKey: 'segment',
 };
@@ -96,7 +96,7 @@ Basic.args = {
 const Complex = bindWithProps(SunburstStory);
 Complex.args = {
 	metric: 'value',
-	parentId: 'parent',
+	parentKey: 'parent',
 	id: 'id',
 	segmentKey: 'segment',
 };
@@ -104,7 +104,7 @@ Complex.args = {
 const WithPopovers = bindWithProps(SunburstStory);
 WithPopovers.args = {
 	metric: 'value',
-	parentId: 'parent',
+	parentKey: 'parent',
 	id: 'id',
 	segmentKey: 'segment',
 	children: interactiveChildren,
@@ -113,7 +113,7 @@ WithPopovers.args = {
 const WithLegend = bindWithProps(SunburstLegendStory);
 WithLegend.args = {
 	metric: 'value',
-	parentId: 'parent',
+	parentKey: 'parent',
 	id: 'id',
 	segmentKey: 'segment',
 	children: interactiveChildren,
@@ -122,7 +122,7 @@ WithLegend.args = {
 const WithLegendAndMuting = bindWithProps(SunburstLegendStory);
 WithLegendAndMuting.args = {
 	metric: 'value',
-	parentId: 'parent',
+	parentKey: 'parent',
 	id: 'id',
 	segmentKey: 'segment',
 	muteElementsOnHover: true,

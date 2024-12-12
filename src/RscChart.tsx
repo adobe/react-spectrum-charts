@@ -120,8 +120,8 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 		sanitizedChildren.forEach((child) => {
 			if (child.type.name === Sunburst.displayName) {
 				const sunburstProps = child.props as unknown as SunburstProps;
-				const { id, parentId, metric = 'value' } = sunburstProps;
-				createLeafValues(data, id, parentId, metric);
+				const { id, parentKey, metric = 'value' } = sunburstProps;
+				createLeafValues(data, id, parentKey, metric);
 			}
 		});
 

@@ -11,10 +11,10 @@
  */
 import { Datum } from 'vega';
 
-export const createLeafValues = (data: Datum[], id: string, parentId: string, metric: string) => {
+export const createLeafValues = (data: Datum[], id: string, parentKey: string, metric: string) => {
 	data.forEach((element) => {
 		element[`${metric}_childSum`] = data
-			.filter((e) => e[parentId] === element[id])
+			.filter((e) => e[parentKey] === element[id])
 			.reduce((acc, e) => acc + e[metric], 0);
 	});
 	data.forEach((element) => {

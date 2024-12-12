@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { DEFAULT_COLOR, DEFAULT_COLOR_SCHEME, DEFAULT_METRIC, TABLE } from '@constants';
+import { COLOR_SCALE, DEFAULT_COLOR, DEFAULT_COLOR_SCHEME, DEFAULT_METRIC, OPACITY_SCALE, TABLE } from '@constants';
 import { getTooltipProps, hasInteractiveChildren } from '@specBuilder/marks/markUtils';
 import { addFieldToFacetScaleDomain } from '@specBuilder/scale/scaleSpecBuilder';
 import { addHighlightedItemSignalEvents } from '@specBuilder/signal/signalSpecBuilder';
@@ -34,7 +34,7 @@ export const addSunburst = produce<
 			metric = DEFAULT_METRIC,
 			name,
 			id = 'id',
-			parentId = 'parent',
+			parentKey = 'parent',
 			segmentKey = 'segment',
 			muteElementsOnHover = false,
 			...props
@@ -49,7 +49,7 @@ export const addSunburst = produce<
 			markType: 'sunburst',
 			metric,
 			id,
-			parentId,
+			parentKey,
 			segmentKey,
 			name: toCamelCase(name ?? `sunburst${index}`),
 			muteElementsOnHover,
@@ -73,13 +73,13 @@ export const addData = produce<Data[], [SunburstSpecProps]>((data, props) => {
 
 const getSunburstDataTransforms = ({
 	id,
-	parentId,
+	parentKey,
 	metric,
 }: SunburstSpecProps): (StratifyTransform | PartitionTransform)[] => [
 	{
 		type: 'stratify',
 		key: id,
-		parentKey: parentId,
+		parentKey: parentKey,
 	},
 	{
 		type: 'partition',
@@ -92,8 +92,8 @@ const getSunburstDataTransforms = ({
 
 export const addScales = produce<Scale[], [SunburstSpecProps]>((scales, props) => {
 	const { segmentKey } = props;
-	addFieldToFacetScaleDomain(scales, 'opacity', 'depth');
-	addFieldToFacetScaleDomain(scales, 'color', segmentKey);
+	addFieldToFacetScaleDomain(scales, OPACITY_SCALE, 'depth');
+	addFieldToFacetScaleDomain(scales, COLOR_SCALE, segmentKey);
 });
 
 export const addMarks = produce<Mark[], [SunburstSpecProps]>((marks, props) => {

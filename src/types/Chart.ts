@@ -248,7 +248,7 @@ export interface SunburstProps extends MarkProps {
 	id: string;
 
 	/** identifies the key of this elements parent, if any parent exists */
-	parentId: string;
+	parentKey: string;
 
 	/** identifies which segment each element is part of */
 	segmentKey: string;

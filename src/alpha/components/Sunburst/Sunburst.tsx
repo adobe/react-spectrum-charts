@@ -24,7 +24,7 @@ const Sunburst: FC<SunburstProps> = ({
 	metric = DEFAULT_METRIC,
 	name,
 	id,
-	parentId,
+	parentKey,
 }) => {
 	return null;
 };
