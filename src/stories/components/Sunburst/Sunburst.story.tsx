@@ -19,7 +19,7 @@ import { bindWithProps } from '@test-utils';
 
 import { Content } from '@adobe/react-spectrum';
 
-import { basicSunburstData } from './data';
+import { basicSunburstData, simpleSunburstData } from './data';
 
 export default {
 	title: 'RSC/Sunburst',
@@ -32,9 +32,25 @@ const defaultChartProps: ChartProps = {
 	height: 350,
 };
 
+const smallChartProps: ChartProps = {
+	data: simpleSunburstData,
+	width: 350,
+	height: 350,
+};
+
 const SunburstStory: StoryFn<SunburstProps & { width?: number; height?: number }> = (args): ReactElement => {
 	const { width, height, ...sunburstProps } = args;
 	const chartProps = useChartProps({ ...defaultChartProps, width: width ?? 600, height: height ?? 600 });
+	return (
+		<Chart {...chartProps} debug>
+			<Sunburst {...sunburstProps} />
+		</Chart>
+	);
+};
+
+const SmallSunburstStory: StoryFn<SunburstProps & { width?: number; height?: number }> = (args): ReactElement => {
+	const { width, height, ...sunburstProps } = args;
+	const chartProps = useChartProps({ ...smallChartProps, width: width ?? 600, height: height ?? 600 });
 	return (
 		<Chart {...chartProps} debug>
 			<Sunburst {...sunburstProps} />
@@ -66,6 +82,15 @@ Basic.args = {
 	segmentKey: 'segment',
 };
 
+const Small = bindWithProps(SmallSunburstStory);
+Small.args = {
+	metric: 'value',
+	parentId: 'parent',
+	id: 'id',
+	segmentKey: 'segment',
+	children: interactiveChildren,
+};
+
 const WithPopovers = bindWithProps(SunburstStory);
 WithPopovers.args = {
 	metric: 'value',
@@ -75,4 +100,4 @@ WithPopovers.args = {
 	children: interactiveChildren,
 };
 
-export { Basic, WithPopovers };
+export { Small, Basic, WithPopovers };

@@ -81,7 +81,7 @@ const getSunburstDataTransforms = ({
 	},
 	{
 		type: 'partition',
-		field: metric,
+		field: `${metric}_leafValue`,
 		sort: { field: metric },
 		size: [{ signal: '2 * PI' }, { signal: 'width / 2' }],
 		as: ['a0', 'r0', 'a1', 'r1', 'depth', 'children'],
