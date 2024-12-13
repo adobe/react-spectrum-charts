@@ -63,8 +63,9 @@ describe('sunburstSpecBuilder', () => {
 		//more tests are specified in the sunburstMarkUtils.test.ts
 		test('should add arc marks correctly', () => {
 			const marks = addMarks(initializeSpec().marks ?? [], defaultSunburstProps);
-			expect(marks).toHaveLength(1);
+			expect(marks).toHaveLength(2);
 			expect(marks[0]).toHaveProperty('type', 'arc');
+			expect(marks[1]).toHaveProperty('type', 'text');
 		});
 	});
 
