@@ -9,6 +9,21 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { MARK_ID } from '@constants';
 
-export * from './Combo';
-export * from './Sunburst';
+import { SunburstSpecProps } from '../../types';
+
+export const defaultSunburstProps: SunburstSpecProps = {
+	children: [],
+	color: 'testColor',
+	colorScheme: 'light',
+	idKey: MARK_ID,
+	index: 0,
+	markType: 'sunburst',
+	metric: 'value',
+	parentKey: 'parent',
+	id: 'id',
+	segmentKey: 'segment',
+	muteElementsOnHover: false,
+	name: 'testName',
+};
