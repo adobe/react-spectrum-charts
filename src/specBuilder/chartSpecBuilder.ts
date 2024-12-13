@@ -29,7 +29,7 @@ import {
 	TABLE,
 } from '@constants';
 import { Area, Axis, Bar, Legend, Line, Scatter, Title } from '@rsc';
-import { Combo } from '@rsc/alpha';
+import { Combo, Treemap } from '@rsc/alpha';
 import { BigNumber, Donut } from '@rsc/rc';
 import colorSchemes from '@themes/colorSchemes';
 import { produce } from 'immer';
@@ -57,6 +57,7 @@ import {
 	SymbolShapes,
 	SymbolSize,
 	TitleElement,
+	TreemapElement,
 } from '../types';
 import { addArea } from './area/areaSpecBuilder';
 import { addAxis } from './axis/axisSpecBuilder';
@@ -81,6 +82,7 @@ import {
 	initializeSpec,
 } from './specUtils';
 import { addTitle } from './title/titleSpecBuilder';
+import { addTreemap } from './treemap/treemapSpecBuilder';
 
 export function buildSpec(props: SanitizedSpecProps) {
 	const {
@@ -112,11 +114,12 @@ export function buildSpec(props: SanitizedSpecProps) {
 	buildOrder.set(Donut, 0);
 	buildOrder.set(Scatter, 0);
 	buildOrder.set(Combo, 0);
+	buildOrder.set(Treemap, 0);
 	buildOrder.set(Legend, 1);
 	buildOrder.set(Axis, 2);
 	buildOrder.set(Title, 3);
 
-	let { areaCount, axisCount, barCount, comboCount, donutCount, legendCount, lineCount, scatterCount } =
+	let { areaCount, axisCount, barCount, comboCount, donutCount, treemapCount, legendCount, lineCount, scatterCount } =
 		initializeComponentCounts();
 	const specProps = { colorScheme, idKey, highlightedItem };
 	spec = [...children]
@@ -144,6 +147,9 @@ export function buildSpec(props: SanitizedSpecProps) {
 				case Donut.displayName:
 					donutCount++;
 					return addDonut(acc, { ...(cur as DonutElement).props, ...specProps, index: donutCount });
+				case Treemap.displayName:
+					treemapCount++;
+					return addTreemap(acc, { ...(cur as TreemapElement).props, ...specProps, index: treemapCount });
 				case Legend.displayName:
 					legendCount++;
 					return addLegend(acc, {
@@ -202,6 +208,7 @@ const initializeComponentCounts = () => {
 		barCount: -1,
 		comboCount: -1,
 		donutCount: -1,
+		treemapCount: -1,
 		legendCount: -1,
 		lineCount: -1,
 		scatterCount: -1,
