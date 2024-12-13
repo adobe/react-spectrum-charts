@@ -17,7 +17,7 @@ import { Basic } from './Treemap.story';
 describe('Donut', () => {
 	// Donut is not a real React component. This is test just provides test coverage for sonarqube
 	test('Donut pseudo element', () => {
-		render(<Treemap size="size" />);
+		render(<Treemap />);
 	});
 
 	test('Basic renders properly', async () => {
