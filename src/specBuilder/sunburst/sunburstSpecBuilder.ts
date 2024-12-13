@@ -18,7 +18,7 @@ import { produce } from 'immer';
 import { Data, Mark, PartitionTransform, Scale, Signal, Spec, StratifyTransform } from 'vega';
 
 import { ColorScheme, HighlightedItem, SunburstProps, SunburstSpecProps } from '../../types';
-import { getArcMark } from './sunburstMarkUtils';
+import { getArcMark, getTextMark } from './sunburstMarkUtils';
 
 export const addSunburst = produce<
 	Spec,
@@ -98,6 +98,7 @@ export const addScales = produce<Scale[], [SunburstSpecProps]>((scales, props) =
 
 export const addMarks = produce<Mark[], [SunburstSpecProps]>((marks, props) => {
 	marks.push(getArcMark(props));
+	marks.push(getTextMark(props));
 });
 
 export const addSignals = produce<Signal[], [SunburstSpecProps]>((signals, props) => {
