@@ -13,10 +13,20 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { FC } from 'react';
 
-// import { DEFAULT_TIME_DIMENSION } from '@constants';
 import { TreemapProps } from '../../../types';
 
-const Treemap: FC<TreemapProps> = ({}) => {
+const Treemap: FC<TreemapProps> = ({
+	color,
+	segmentKey,
+	colorScheme,
+	paddingInner,
+	paddingOuter,
+	aspectRatio,
+	layout,
+	colorScaleType,
+	children,
+	...props
+}) => {
 	return null;
 };
 

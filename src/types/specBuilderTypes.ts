@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { Align, Baseline, NumberValue, ScaleType } from 'vega';
+import { Align, Baseline, FieldRef, NumberValue, ScaleType } from 'vega';
 
 import {
 	AnnotationProps,
@@ -153,11 +153,22 @@ export interface DonutSpecProps extends PartiallyRequired<DonutProps, DonutProps
 
 type DonutSummaryPropsWithDefaults = 'numberFormat';
 
-type TreemapPropsWithDefaults = 'size'; // Replace 'name' with a valid key from TreemapProps
+type TreemapPropsWithDefaults = 'layout'; // Replace 'name' with a valid key from TreemapProps
 
 export interface TreemapSpecProps extends PartiallyRequired<TreemapProps, TreemapPropsWithDefaults> {
 	children: MarkChildElement[];
 	colorScheme: ColorScheme;
+	segmentKey?: string;
+	parent?: FieldRef;
+	paddingInner?: number;
+	paddingOuter?: number;
+	aspectRatio?: number;
+	borderColor?: string;
+	name?: string;
+	textColor?: string;
+	rootTextColor?: string;
+	nodesBorderWidth?: number;
+	leavesBorderWidth?: number;
 	highlightedItem?: HighlightedItem;
 	idKey: string;
 	index: number;

@@ -12,7 +12,7 @@
 import { ReactElement } from 'react';
 
 import useChartProps from '@hooks/useChartProps';
-import { Chart, ChartProps, TreemapProps, categorical6 } from '@rsc';
+import { Chart, ChartProps, SpectrumColor, TreemapProps } from '@rsc';
 import { Treemap } from '@rsc/alpha';
 import { StoryFn } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
@@ -30,15 +30,20 @@ const defaultChartProps: ChartProps = {
 	height: 600,
 };
 
+const colors: SpectrumColor[] = [
+	'sequential-magma-200',
+	'sequential-magma-400',
+	'sequential-magma-600',
+	'sequential-magma-800',
+	'sequential-magma-1000',
+	'sequential-magma-1200',
+	'sequential-magma-1400',
+	'sequential-magma-1600',
+];
+
 const TreemapStory: StoryFn<TreemapProps & { width?: number; height?: number }> = (args): ReactElement => {
-	const { width, height, color, ...treemapProps } = args;
-	const colors = Array.isArray(color)
-		? [
-				['#00a6a0', '#4bcec7'],
-				['#575de8', '#8489fd'],
-				['#d16100', '#fa8b1a'],
-		  ]
-		: categorical6;
+	const { width, height, ...treemapProps } = args;
+
 	const chartProps = useChartProps({ ...defaultChartProps, colors, width: width ?? 600, height: height ?? 600 });
 	return (
 		<Chart {...chartProps} debug>
@@ -51,9 +56,29 @@ const TreemapStory: StoryFn<TreemapProps & { width?: number; height?: number }> 
 
 const Basic = bindWithProps(TreemapStory);
 Basic.args = {
-	metric: 'count',
-	color: 'browser',
-	size: 'count',
+	layout: 'squarify',
 };
 
-export { Basic };
+const Binary = bindWithProps(TreemapStory);
+Binary.args = {
+	layout: 'binary',
+};
+
+const SliceDice = bindWithProps(TreemapStory);
+SliceDice.args = {
+	layout: 'slicedice',
+};
+
+const HighAspectRatio = bindWithProps(TreemapStory);
+HighAspectRatio.args = {
+	layout: 'squarify',
+	aspectRatio: 1.5,
+};
+
+const LowAspectRatio = bindWithProps(TreemapStory);
+LowAspectRatio.args = {
+	layout: 'squarify',
+	aspectRatio: 0.5,
+};
+
+export { Basic, Binary, SliceDice, HighAspectRatio, LowAspectRatio };

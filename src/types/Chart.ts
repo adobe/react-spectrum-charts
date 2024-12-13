@@ -12,7 +12,19 @@
 import { JSXElementConstructor, MutableRefObject, ReactElement, ReactNode } from 'react';
 
 import { GROUP_DATA, INTERACTION_MODE, MARK_ID, SERIES_ID, TRENDLINE_VALUE } from '@constants';
-import { Config, Data, FontWeight, Locale, NumberLocale, Padding, Spec, SymbolShape, TimeLocale, View } from 'vega';
+import {
+	Config,
+	Data,
+	FieldRef,
+	FontWeight,
+	Locale,
+	NumberLocale,
+	Padding,
+	Spec,
+	SymbolShape,
+	TimeLocale,
+	View,
+} from 'vega';
 
 import { Icon, IconProps } from '@adobe/react-spectrum';
 import { IconPropsWithoutChildren } from '@react-spectrum/icon';
@@ -223,16 +235,39 @@ export interface AreaProps extends MarkProps {
 }
 
 export interface TreemapProps extends MarkProps {
-	// /** Field to determine rectanle size */
-	size: string;
-	// /** Field to encode color (optional) */
-	// colorField?: string;
-	// /** Vega color scheme (e.g., 'category10', 'blues') */
-	// colorScheme?: string;
-	// /**  Space between rectangles */
-	// padding?: number;
-	// /** Treemap algorithm */
-	layout?: 'squarify' | 'binary' | 'slice-dice';
+	children?: Children<ChartTooltipElement>;
+	/**
+	 * type of color scale that should be used for the points
+	 * use ordinal if the key used for `color` maps to string values ('UT', 'CA', 'NY', etc.)
+	 * use linear if the key used for `color` maps to numeric values (0, 1, 2, etc.)
+	 */
+	colorScaleType?: 'linear' | 'ordinal';
+	/** Key to to match the the hierarchy of the domains in the scales of the treemap, i.e. the highest parent that isn't root */
+	segmentKey?: string;
+	/** Key in the data that is used to id parent node */
+	parent?: FieldRef;
+	/** Vega color scheme (e.g., 'category10', 'blues') */
+	colorScheme?: string;
+	/**  Space between rectangles */
+	paddingInner?: number;
+	/**  Space around rectangles */
+	paddingOuter?: number;
+	/** Aspect ratio of the treemap */
+	aspectRatio?: number;
+	/** Color of the borders */
+	borderColor?: string;
+	/** Color of nodes and leaves text */
+	textColor?: string;
+	/** Name of the chart */
+	name?: string;
+	/** Color of the text in the root node */
+	rootTextColor?: string;
+	/** Width of the node borders */
+	nodesBorderWidth?: number;
+	/** Width of the leaf borders */
+	leavesBorderWidth?: number;
+	/** Treemap algorithm */
+	layout?: 'squarify' | 'binary' | 'slicedice';
 }
 
 export interface DonutProps extends MarkProps {

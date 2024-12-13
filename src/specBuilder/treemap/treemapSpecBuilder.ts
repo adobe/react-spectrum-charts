@@ -25,7 +25,7 @@ import { COLOR_SCALE, DEFAULT_COLOR, DEFAULT_COLOR_SCHEME, DEFAULT_METRIC, TABLE
 import { addFieldToFacetScaleDomain } from '@specBuilder/scale/scaleSpecBuilder';
 import { sanitizeMarkChildren, toCamelCase } from '@utils';
 import { produce } from 'immer';
-import { OrdinalScale, StratifyTransform } from 'vega';
+import { LinearScale, StratifyTransform } from 'vega';
 import { Data, Mark, Scale, Spec, TreemapTransform } from 'vega';
 
 import { ColorScheme, HighlightedItem, TreemapProps, TreemapSpecProps } from '../../types';
@@ -44,17 +44,18 @@ export const addTreemap = produce<
 			index = 0,
 			metric = DEFAULT_METRIC,
 			name,
+			segmentKey = 'segment',
 			layout = 'binary',
 			...props
 		}
 	) => {
-		// put props back together now that all defaults are set
 		const treemapProps: TreemapSpecProps = {
 			children: sanitizeMarkChildren(children),
 			color,
 			colorScheme,
 			index,
 			metric,
+			segmentKey,
 			name: toCamelCase(name ?? `treemap${index}`),
 			layout,
 			...props,
@@ -62,13 +63,8 @@ export const addTreemap = produce<
 
 		// need to add the treemap to the spec
 		spec.data = addData(spec.data ?? [], treemapProps);
-		console.log('spec data', spec.data);
 		spec.scales = addScales(spec.scales ?? [], treemapProps);
-		console.log('spec scales', spec.scales);
 		spec.marks = addMarks(spec.marks ?? [], treemapProps);
-		console.log('spec marks', spec.marks);
-
-		// console.log('I made it', treemapProps, JSON.stringify(spec));
 	}
 );
 
@@ -99,73 +95,41 @@ export const addData = produce<Data[], [TreemapSpecProps]>((data, props) => {
 
 export const getTreemapTransforms = ({
 	idKey,
-	size,
-	metric,
+	parent,
+	paddingInner,
+	paddingOuter,
+	aspectRatio,
+	layout,
 }: TreemapSpecProps): (StratifyTransform | TreemapTransform)[] => [
 	{
 		type: 'stratify',
-		key: idKey, // might be undefined, hardcodeing for now
-		parentKey: 'parent',
+		key: idKey,
+		parentKey: parent ?? 'parent',
 	},
 	{
 		type: 'treemap',
 		field: 'size',
 		sort: { field: 'value' },
-		paddingInner: 1,
-		// paddingOuter: 5,
+		paddingInner: paddingInner ?? 1,
+		paddingOuter: paddingOuter ?? 1,
 		round: true,
-		method: 'squarify', // hard coded
-		// ratio: 1,
+		method: layout ?? 'squarify',
+		ratio: aspectRatio ?? 1,
 		size: [{ signal: 'width' }, { signal: 'height' }],
 	},
 ];
 
 export const addScales = produce<Scale[], [TreemapSpecProps]>((scales, props) => {
-	const { color } = props;
-	// addFieldToFacetScaleDomain(scales, COLOR_SCALE, color);
-	scales.push({
-		name: 'color',
-		type: 'ordinal',
-		domain: { data: 'nodes', field: 'name' },
-		range: [
-			'#3182bd',
-			'#6baed6',
-			'#9ecae1',
-			'#c6dbef',
-			'#e6550d',
-			'#fd8d3c',
-			'#fdae6b',
-			'#fdd0a2',
-			'#31a354',
-			'#74c476',
-			'#a1d99b',
-			'#c7e9c0',
-			'#756bb1',
-			'#9e9ac8',
-			'#bcbddc',
-			'#dadaeb',
-			'#636363',
-			'#969696',
-			'#bdbdbd',
-			'#d9d9d9',
-		],
-	});
-	scales.push(getTreemapOrdinalScales(props)); // do we need these 2?
+	const { segmentKey } = props;
+	addFieldToFacetScaleDomain(scales, COLOR_SCALE, segmentKey);
 	scales.push(getTreemapOpacityScales(props));
 });
 
-export const getTreemapOrdinalScales = ({ colorScheme }: TreemapSpecProps): OrdinalScale => ({
-	name: 'color2',
-	type: 'ordinal',
-	domain: [0, 1, 2, 3],
-	range: [256, 28, 20, 14],
-});
-
-export const getTreemapOpacityScales = ({ colorScheme }: TreemapSpecProps): OrdinalScale => ({
-	name: 'opacity',
-	type: 'ordinal',
-	domain: [0, 1, 2, 3],
-	range: [0.15, 0.5, 0.8, 1.0],
+export const getTreemapOpacityScales = ({}: TreemapSpecProps): LinearScale => ({
+	name: 'opacityScale',
+	type: 'linear',
+	domain: [2, 3, 4, 5, 6, 7],
+	range: [0.75, 1, 0.75, 1, 0.75, 1],
 });
 
 export const addMarks = produce<Mark[], [TreemapSpecProps]>((marks, props) => {
