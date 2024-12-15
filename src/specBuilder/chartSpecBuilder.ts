@@ -34,6 +34,8 @@ import { BigNumber, Donut } from '@rsc/rc';
 import colorSchemes from '@themes/colorSchemes';
 import { produce } from 'immer';
 import { Data, LinearScale, OrdinalScale, PointScale, Scale, Signal, Spec } from 'vega';
+import {default as DataNavigator} from 'data-navigator'
+import {StructureOptions, DimensionList, DimensionDatum, Structure, NavigationRules, Dimensions} from '../../node_modules/data-navigator/dist/src/data-navigator'
 
 import {
 	AreaElement,
@@ -98,6 +100,7 @@ export function buildSpec(props: SanitizedSpecProps) {
 		opacities,
 		symbolShapes,
 		symbolSizes,
+		chartLayers,
 		title,
 	} = props;
 	let spec = initializeSpec(null, { backgroundColor, colorScheme, description, title });
@@ -119,6 +122,7 @@ export function buildSpec(props: SanitizedSpecProps) {
 	let { areaCount, axisCount, barCount, comboCount, donutCount, legendCount, lineCount, scatterCount } =
 		initializeComponentCounts();
 	const specProps = { colorScheme, idKey, highlightedItem };
+	// const chartLayers: DimensionList = []
 	spec = [...children]
 		.sort((a, b) => buildOrder.get(a.type) - buildOrder.get(b.type))
 		.reduce((acc: Spec, cur) => {
@@ -134,18 +138,25 @@ export function buildSpec(props: SanitizedSpecProps) {
 			switch (cur.type.displayName) {
 				case Area.displayName:
 					areaCount++;
+					addLayer(chartLayers, {acc,cur,index:areaCount})
 					return addArea(acc, { ...(cur as AreaElement).props, ...specProps, index: areaCount });
 				case Axis.displayName:
 					axisCount++;
+					// console.log("AXIS! What do we do here?")
+					// addLayer(chartLayers, {acc,cur,index:axisCount})
 					return addAxis(acc, { ...(cur as AxisElement).props, ...specProps, index: axisCount });
 				case Bar.displayName:
 					barCount++;
+					addLayer(chartLayers, {acc,cur,index:barCount})
 					return addBar(acc, { ...(cur as BarElement).props, ...specProps, index: barCount });
 				case Donut.displayName:
 					donutCount++;
+					addLayer(chartLayers, {acc,cur,index:donutCount})
 					return addDonut(acc, { ...(cur as DonutElement).props, ...specProps, index: donutCount });
 				case Legend.displayName:
 					legendCount++;
+					// console.log("LEGEND! What do we do here?")
+					// addLayer(chartLayers, {acc,cur,index:legendCount})
 					return addLegend(acc, {
 						...(cur as LegendElement).props,
 						...specProps,
@@ -155,18 +166,24 @@ export function buildSpec(props: SanitizedSpecProps) {
 					});
 				case Line.displayName:
 					lineCount++;
+					addLayer(chartLayers, {acc,cur,index:lineCount})
 					return addLine(acc, { ...(cur as LineElement).props, ...specProps, index: lineCount });
 				case Scatter.displayName:
 					scatterCount++;
+					addLayer(chartLayers, {acc,cur,index:scatterCount})
 					return addScatter(acc, { ...(cur as ScatterElement).props, ...specProps, index: scatterCount });
 				case Title.displayName:
 					// No title count. There can only be one title.
+					// console.log("TITLE! What do we do here?")
+					// addLayer(chartLayers, {acc,cur,index:0})
 					return addTitle(acc, { ...(cur as TitleElement).props });
 				case BigNumber.displayName:
 					// Do nothing and do not throw an error
 					return acc;
 				case Combo.displayName:
 					comboCount++;
+					// console.log("COMBO! What do we do here?")
+					// addLayer(chartLayers, {acc,cur,index:comboCount})
 					return addCombo(acc, { ...(cur as ComboElement).props, ...specProps, index: comboCount });
 				default:
 					console.error(`Invalid component type: ${cur.type.displayName} is not a supported <Chart> child`);
@@ -187,6 +204,104 @@ export function buildSpec(props: SanitizedSpecProps) {
 	spec = removeUnusedScales(spec);
 
 	return spec;
+}
+
+export const addLayer = (chartLayers: DimensionList, newLayer) => {
+	if (newLayer.cur.type.displayName === Line.displayName) {
+		// console.log("we have a line! how do we want to deal with this??")
+	}
+	const dimensions: Record<string, DimensionDatum> = {
+		dimension: {
+			dimensionKey: "",
+			operations: {
+				createNumericalSubdivisions: newLayer.cur.type.displayName === Scatter.displayName ? 4 : 1
+			},
+			behavior: {
+				extents: "circular"
+			}
+		},
+		metric: {
+			dimensionKey: "",
+			operations: {
+				createNumericalSubdivisions: newLayer.cur.type.displayName === Scatter.displayName ? 4 : 1
+			},
+			type: "numerical",
+			behavior: {
+				extents: "terminal"
+			}
+		},
+		color: {
+			dimensionKey: "",
+			type: "categorical",
+			behavior: {
+				extents: "circular"
+			}
+		}
+	}
+	if (newLayer.cur?.props) {
+		const dimensionKeys = Object.keys(dimensions)
+		if (newLayer.cur.props.metric_start || newLayer.cur.props.metric_end) {
+			// console.log("uh oh! a range!")
+		}
+		dimensionKeys.forEach(k => {
+			const dimensionKey = newLayer.cur.props[k]
+			if (dimensionKey) {
+				const newDimension: DimensionDatum = {
+					...dimensions[k],
+					dimensionKey, 
+					navigationRules: {
+						parent_child: ["parent-"+dimensionKey,"child"],
+						sibling_sibling: ["previous-"+dimensionKey,"next-"+dimensionKey]
+					},
+					divisionOptions: {
+						// sortFunction: , // no idea if we want to sort or not
+						divisionNodeIds: (dimensionKey, keyValue, i) => dimensionKey + keyValue + i
+					}
+				};
+				chartLayers.push(newDimension)
+			}
+		})
+	}
+}
+
+export const buildNavigationStructure = (data, props, chartLayers) : Structure => {
+	// to do:
+		// if "props.list" then we create a new dimension here
+		// figure out keysForIdGeneration
+		// set dimensions options (below)
+		// use data + vega lite view to finalize structure and render info
+		// generate descriptions
+		// build structure+input in RscChart
+		// append element after <VegaChart> in RscChart for navigation (the rendered thing)
+		// append an exit element within the appended parent element for our navigation stuff
+	const layers = props.list ? "" : chartLayers
+	const structureOptions : StructureOptions = {
+		data,
+		idKey: "dnNodeId"/*(d) => {
+			console.log("trying to find Id",d)
+			if (d && d.rscMarkId) {
+				return "rscMarkId"
+			}
+			return "rscStackId"
+		}*/,
+		addIds: true,
+		keysForIdGeneration: [],
+		dimensions: {
+			values: layers
+		}
+	}
+
+	// now we build with data navigator:
+	return DataNavigator.structure(structureOptions)
+}
+
+export const buildStructureHandler = (structure: Structure, navigationRules: NavigationRules, dimensions: Dimensions) => {
+	return DataNavigator.input({
+		structure,
+		navigationRules,
+		entryPoint: dimensions[Object.keys(dimensions)[0]].nodeId,
+		// exitPoint
+	})
 }
 
 export const removeUnusedScales = produce<Spec>((spec) => {

@@ -45,6 +45,8 @@ import { ActionButton, Dialog, DialogTrigger, View as SpectrumView } from '@adob
 
 import './Chart.css';
 import { VegaChart } from './VegaChart';
+import { Navigator } from 'Navigator';
+
 import {
 	ChartHandle,
 	ColorScheme,
@@ -53,7 +55,7 @@ import {
 	MarkBounds,
 	RscChartProps,
 	TooltipAnchor,
-	TooltipPlacement,
+	TooltipPlacement
 } from './types';
 
 interface ChartDialogProps {
@@ -111,7 +113,7 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 		const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false); // tracks the open/close state of the popover
 
 		const sanitizedChildren = sanitizeRscChartChildren(props.children);
-
+		const chartLayers = [];
 		// THE MAGIC, builds our spec
 		const spec = useSpec({
 			backgroundColor,
@@ -130,6 +132,7 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 			opacities,
 			colorScheme,
 			title,
+			chartLayers,
 			UNSAFE_vegaSpec,
 		});
 
@@ -149,7 +152,7 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 		}, [isPopoverOpen]);
 
 		useChartImperativeHandle(forwardedRef, { chartView, title });
-
+		
 		const {
 			legendHiddenSeries,
 			setLegendHiddenSeries,
@@ -309,6 +312,14 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 						popover={popover}
 					/>
 				))}
+				<Navigator
+					// navigation={navigation}
+					data={data}
+					chartView={chartView}
+					chartLayers={chartLayers}
+					// setNavigationElement={setNavigationElement}
+					// structureNavigationHandler={structureNavigationHandler}
+				></Navigator>
 			</>
 		);
 	}

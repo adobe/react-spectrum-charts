@@ -13,6 +13,7 @@ import { JSXElementConstructor, MutableRefObject, ReactElement, ReactNode } from
 
 import { GROUP_DATA, INTERACTION_MODE, MARK_ID, SERIES_ID, TRENDLINE_VALUE } from '@constants';
 import { Config, Data, FontWeight, Locale, NumberLocale, Padding, Spec, SymbolShape, TimeLocale, View } from 'vega';
+import { DimensionList } from '../../node_modules/data-navigator/dist/src/data-navigator'
 
 import { Icon, IconProps } from '@adobe/react-spectrum';
 import { IconPropsWithoutChildren } from '@react-spectrum/icon';
@@ -93,6 +94,7 @@ export interface SpecProps {
 	highlightedSeries?: string | number;
 	/** Data key that contains a unique ID for each data point in the array. */
 	idKey?: string;
+
 }
 
 type SpecPropsWithDefaults =
@@ -109,6 +111,7 @@ type SpecPropsWithDefaults =
 export interface SanitizedSpecProps extends PartiallyRequired<SpecProps, SpecPropsWithDefaults> {
 	/** Children with all non-RSC components removed */
 	children: ChartChildElement[];
+	chartLayers: DimensionList;
 	data?: ChartData[];
 }
 
