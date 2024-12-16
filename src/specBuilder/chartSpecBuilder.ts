@@ -27,7 +27,8 @@ import {
 	SYMBOL_SHAPE_SCALE,
 	SYMBOL_SIZE_SCALE,
 	TABLE,
-	NAVIGATION_ID_KEY
+	NAVIGATION_ID_KEY,
+	NAVIGATION_PAIRS
 } from '@constants';
 import { Area, Axis, Bar, Legend, Line, Scatter, Title } from '@rsc';
 import { Combo } from '@rsc/alpha';
@@ -36,7 +37,7 @@ import colorSchemes from '@themes/colorSchemes';
 import { produce } from 'immer';
 import { Data, LinearScale, OrdinalScale, PointScale, Scale, Signal, Spec } from 'vega';
 import {default as DataNavigator} from 'data-navigator'
-import {StructureOptions, DimensionList, DimensionDatum, Structure, NavigationRules, Dimensions} from '../../node_modules/data-navigator/dist/src/data-navigator'
+import {StructureOptions, DimensionList, DimensionDatum, Structure, NavigationRules, Dimensions, DimensionNavigationRules} from '../../node_modules/data-navigator/dist/src/data-navigator'
 
 import {
 	AreaElement,
@@ -215,28 +216,36 @@ export const addLayer = (chartLayers: DimensionList, newLayer) => {
 		dimension: {
 			dimensionKey: "",
 			operations: {
-				createNumericalSubdivisions: newLayer.cur.type.displayName === Scatter.displayName ? 4 : 1
+				createNumericalSubdivisions: newLayer.cur.type.displayName === Scatter.displayName ? 4 : 1,
+				compressSparseDivisions: true
 			},
 			behavior: {
 				extents: "circular"
-			}
+			},
+			navigationRules: NAVIGATION_PAIRS.DIMENSION as DimensionNavigationRules
 		},
 		metric: {
 			dimensionKey: "",
 			operations: {
-				createNumericalSubdivisions: newLayer.cur.type.displayName === Scatter.displayName ? 4 : 1
+				createNumericalSubdivisions: newLayer.cur.type.displayName === Scatter.displayName ? 4 : 1,
+				compressSparseDivisions: true
 			},
 			type: "numerical",
 			behavior: {
 				extents: "terminal"
-			}
+			},
+			navigationRules: NAVIGATION_PAIRS.METRIC as DimensionNavigationRules
 		},
 		color: {
 			dimensionKey: "",
 			type: "categorical",
 			behavior: {
 				extents: "circular"
-			}
+			},
+			operations: {
+				compressSparseDivisions: true
+			},
+			navigationRules: NAVIGATION_PAIRS.COLOR as DimensionNavigationRules
 		}
 	}
 	if (newLayer.cur?.props) {
@@ -249,11 +258,7 @@ export const addLayer = (chartLayers: DimensionList, newLayer) => {
 			if (dimensionKey) {
 				const newDimension: DimensionDatum = {
 					...dimensions[k],
-					dimensionKey, 
-					navigationRules: {
-						parent_child: ["parent-"+dimensionKey,"child"],
-						sibling_sibling: ["previous-"+dimensionKey,"next-"+dimensionKey]
-					},
+					dimensionKey,
 					divisionOptions: {
 						// sortFunction: , // no idea if we want to sort or not
 						divisionNodeIds: (dimensionKey, keyValue, i) => dimensionKey + keyValue + i
@@ -266,15 +271,6 @@ export const addLayer = (chartLayers: DimensionList, newLayer) => {
 }
 
 export const buildNavigationStructure = (data, props, chartLayers) : Structure => {
-	// to do:
-		// if "props.list" then we create a new dimension here
-		// figure out keysForIdGeneration
-		// set dimensions options (below)
-		// use data + vega lite view to finalize structure and render info
-		// generate descriptions
-		// build structure+input in RscChart
-		// append element after <VegaChart> in RscChart for navigation (the rendered thing)
-		// append an exit element within the appended parent element for our navigation stuff
 	const layers = props.list ? "" : chartLayers
 
 	const structureOptions : StructureOptions = {

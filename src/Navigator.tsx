@@ -10,13 +10,13 @@
  * governing permissions and limitations under the License.
  */
 import { FC, useEffect, useRef, useState, MutableRefObject } from 'react'
-import { DimensionList, NodeObject } from '../node_modules/data-navigator/dist/src/data-navigator'
+import { DimensionList, NavigationRules, NodeObject } from '../node_modules/data-navigator/dist/src/data-navigator'
 import { describeNode } from '../node_modules/data-navigator/dist/utilities.js'
 import { buildNavigationStructure, buildStructureHandler } from '@specBuilder/chartSpecBuilder';
 import { Navigation, CurrentNodeDetails, ChartData, SpatialProperties} from './types'
 import { View } from 'vega-view'
 import { Scenegraph } from 'vega-scenegraph';
-import { NAVIGATION_ID_KEY } from '@constants'
+import { NAVIGATION_ID_KEY, NAVIGATION_RULES, NAVIGATION_SEMANTICS } from '@constants'
 
 export interface NavigationProps {
     data: ChartData[];
@@ -38,7 +38,7 @@ export const Navigator: FC<NavigationProps> = ({data, chartView, chartLayers}) =
             nodes: navigationStructure.nodes,
             edges: navigationStructure.edges,
         },
-        navigationStructure.navigationRules || {}, 
+        NAVIGATION_RULES as NavigationRules, 
         navigationStructure.dimensions || {}
     )
 
@@ -67,7 +67,6 @@ export const Navigator: FC<NavigationProps> = ({data, chartView, chartLayers}) =
 
     const setNavigationElement = (target) => {
         console.log("changing to new target",target.id,target)
-        // console.log("navigationStructure.navigationRules",navigationStructure.navigationRules)
         setNavigation({
             transform: "",
             buttonTransform: "",
@@ -88,16 +87,11 @@ export const Navigator: FC<NavigationProps> = ({data, chartView, chartLayers}) =
             }
         })
     }
-    // setNavigationElement(entryPoint)
     
     useEffect(()=>{
         if (willFocusAfterRender.current && focusedElement.current.id !== navigation.current.id) {
             focusedElement.current = {id: navigation.current.id}
             willFocusAfterRender.current = false
-            // console.log("firstRef",firstRef)
-            // console.log("secondRef",secondRef)
-            // console.log("navigation.current.id",navigation)
-            // console.log("focusedElement",focusedElement)
             if (firstRef.current?.id === navigation.current.id) {
                 firstRef.current.focus()
             } else if (secondRef.current?.id === navigation.current.id) {
@@ -109,7 +103,6 @@ export const Navigator: FC<NavigationProps> = ({data, chartView, chartLayers}) =
     const initializeRenderingProperties = (id: string): SpatialProperties | void => {
         const nodeToCheck: NodeObject = navigationStructure.nodes[id]
         if (!nodeToCheck.spatialProperties) {
-            console.log("INITIALIZING PROPERTIES!")
             if (!chartView.current) {
                 // I want to do this, but will leave it out for now
                 // window.setTimeout(()=>{
@@ -118,6 +111,7 @@ export const Navigator: FC<NavigationProps> = ({data, chartView, chartLayers}) =
             } else {
                 const root: Scenegraph = chartView.current.scenegraph().root
                 const items = root.items
+                const offset = -root.bounds.x1
                 if (items.length !== 1) {
                     console.log("what is in items??",items)
                 }
@@ -129,12 +123,77 @@ export const Navigator: FC<NavigationProps> = ({data, chartView, chartLayers}) =
                     dimensions.forEach(d=>{
                         keysToMatch.push(navigationStructure.dimensions?.[d].dimensionKey || "")
                     })
+                    const setDimensionSpatialProperties = (i, semanticKey) => {
+                        dimensions.forEach(d=>{
+                            if (navigationStructure.dimensions && navigationStructure.dimensions[d]) {
+                                const dimension = navigationStructure.dimensions[d]
+                                const dimensionNode = navigationStructure.nodes[dimension.nodeId]
+                                const divisions = Object.keys(dimension.divisions)
+                                const hasDivisions = divisions.length !== 1
+                                const childrenCount = hasDivisions ? divisions.length : Object.keys(dimension.divisions[divisions[0]].values).length
+                                const isPlural = childrenCount === 1 ? "" : "s"
+                                dimensionNode.spatialProperties = {
+                                    width: `${i.bounds.x2 - i.bounds.x1}px`,
+                                    height: `${i.bounds.y2 - i.bounds.y1}px`,
+                                    left: `${i.bounds.x1 + offset}px`,
+                                    top: `${i.bounds.y1}px`,
+                                }
+                                dimensionNode.semantics = {
+                                    label: `${navigationStructure.dimensions?.[d].dimensionKey}. Contains ${childrenCount} ${hasDivisions ? NAVIGATION_SEMANTICS[semanticKey].DIVISION : NAVIGATION_SEMANTICS[semanticKey].CHILD}${isPlural}. Press ${NAVIGATION_RULES.child.key} key to navigate.`
+                                }
+                            }
+                        })
+                    }
+                    const setDivisionSpatialProperties = (i, semanticKey) => {
+                        dimensions.forEach(d => {
+                            if (navigationStructure.dimensions && navigationStructure.dimensions[d]) {
+                                const dimension = navigationStructure.dimensions[d]
+                                const divisions = Object.keys(dimension.divisions)
+                                if (divisions.length > 1) {
+                                    divisions.forEach(div => {
+                                        const division = dimension.divisions[div]
+                                        const children = Object.keys(division.values)
+                                        const childrenCount = children.length
+                                        const divisionNode = navigationStructure.nodes[division.id]
+                                        const isPlural = childrenCount === 1 ? "" : "s"
+                                        const spatialBounds = {
+                                            x1: 0,
+                                            x2: 0,
+                                            y1: 0,
+                                            y2: 0
+                                        }
+                                        children.forEach(c => {
+                                            const child = navigationStructure.nodes[c]
+                                            if (child.spatialProperties) {
+                                                const left = +child.spatialProperties.left.replace(/px/g,'')
+                                                const right = +child.spatialProperties.width.replace(/px/g,'') + left
+                                                const top = +child.spatialProperties.top.replace(/px/g,'')
+                                                const bottom = +child.spatialProperties.height.replace(/px/g,'') + top
+                                                spatialBounds.x1 = left < spatialBounds.x1 ? left : spatialBounds.x1
+                                                spatialBounds.x2 = right > spatialBounds.x2 ? right : spatialBounds.x2
+                                                spatialBounds.y1 = top < spatialBounds.y1 ? top : spatialBounds.y1
+                                                spatialBounds.y2 = bottom > spatialBounds.y2 ? bottom : spatialBounds.y2
+                                            }
+                                        })
+                                        divisionNode.spatialProperties = {
+                                            width: `${spatialBounds.x1 + spatialBounds.x2}px`,
+                                            height: `${spatialBounds.y1 + spatialBounds.y2}px`,
+                                            left: `${spatialBounds.x1 + offset}px`,
+                                            top: `${spatialBounds.y1}px`,
+                                        }
+                                        divisionNode.semantics = {
+                                            label: `${NAVIGATION_SEMANTICS[semanticKey].DIVISION} of ${navigationStructure.dimensions?.[d].dimensionKey}. Contains ${childrenCount} ${NAVIGATION_SEMANTICS[semanticKey].CHILD}${isPlural}. Press ${NAVIGATION_RULES.child.key} key to navigate.`
+                                        }
+                                    })
+                                }
+                            }
+                        })
+                    }
                     root.items[0].items.forEach((i) => {
                         if (i.marktype === "rect" && i.role === "mark" && i.name.indexOf("_background") === -1) {
                             // these are the bars in a bar chart!
-                            // console.log("bars",i)
+                            setDimensionSpatialProperties(i, "BAR")
                             i.items.forEach(bar => {
-                                // console.log("bar", bar, bar.datum)
                                 const datum = {}
                                 keysToMatch.forEach(key => {
                                     datum[key] = bar.datum[key]
@@ -145,15 +204,15 @@ export const Navigator: FC<NavigationProps> = ({data, chartView, chartLayers}) =
                                     correspondingNode.spatialProperties = {
                                         width: `${bar.width}px`,
                                         height: `${bar.height}px`,
-                                        left: `${bar.x}px`,
+                                        left: `${bar.x + offset}px`,
                                         top: `${bar.y}px`,
                                     }
                                     correspondingNode.semantics = {
-                                        label: describeNode(datum, {semanticLabel: "Bar."})
+                                        label: describeNode(datum, {semanticLabel: NAVIGATION_SEMANTICS.BAR.CHILD + '.'})
                                     }
-                                    console.log("correspondingNode",correspondingNode)
                                 }
                             })
+                            setDivisionSpatialProperties(i, "BAR")
                         } else if (i.marktype === "arc" && i.role === "mark") {
                             // this is a pie chart!
                             // console.log("pie slices",i)
@@ -173,25 +232,35 @@ export const Navigator: FC<NavigationProps> = ({data, chartView, chartLayers}) =
                                 // l.items[0].items
                         }
                     })
+                    dimensions.forEach(d=>{
+                        const dimension = navigationStructure.dimensions?.[d]
+                        if (dimension && dimension.divisions) {
+                            
+                        }
+                    })
                 }
             }
         }
     }
 
     const enterChart = () => {
+        /* 
+            this is a brain-melting problem but on chrome, entering the chart with a mouse click doesn't show the focus indication at first
+            this works on firefox! so this likely has to do with how chrome interprets focus-visible versus focus (you can play with these 
+            options in dev tools, via toggling focus versus focus-visible, to see)
+        */
         initializeRenderingProperties(navigation.current.id)
         setInitialization(true)
         setNavigationElement(navigationStructure.nodes[navigation.current.id]);
         willFocusAfterRender.current = true
-        // document.getElementById(navigation.current.id)?.focus()
     }
     const handleFocus = (e) => {
-        console.log("focused",e)
+        console.log("focused",e,e.target)
         initializeRenderingProperties(e.target.id)
         focusedElement.current = {id: e.target.id}
     }
     const handleBlur = (e) => {
-        console.log("bluring at parent",e)
+        console.log("blurring at parent",e)
         focusedElement.current = {id: ""}
     }
     const handleKeydown = (e) => {
@@ -228,18 +297,19 @@ export const Navigator: FC<NavigationProps> = ({data, chartView, chartLayers}) =
     )
     /* 
         goals:
-            - fix over-initialization (on every focus)
-            - fix off placement of focus
+            - add *real* focus indicators (using signals in vega)
+            - add event handling between vega and navigator
             - fix bugs in line, combo, and area
             - [dn work] create dataNavigator functions to:
-                - compress divisions if all divisions of a dimension only have a single child (as an option), aka make a "list" within that dimension (this is good for regular bar charts, as an example)
-                    - create a function to hide a particular division/dimension parent? this would be helpful for some cases like a bar chart, where you want sorted numerical nav at the child level, but not division/dimension parents
                 - nest n divisions within divisions (make this a much smarter process)
                 - add type for what Input returns, improve consistency of those functions
-            - create semantics for axes, legends, groups, etc
-            - create spatialProperties for axes, legends, groups, etc
+            - create semantics for axes, legends, etc
+            - create spatialProperties for axes, legends, etc
             - add alt text to root chart element
                 - possibly also hide vega's stuff
+            - append an exit element within the appended parent element for our navigation stuff
+            - add help menu and "return to chart" button?
+            - add handling for resizing/etc
     */
 	return (
         <>

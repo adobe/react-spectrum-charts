@@ -75,6 +75,7 @@ const defaultSpecProps: SanitizedSpecProps = {
 	symbolShapes: ['rounded-square'],
 	symbolSizes: ['XS', 'XL'],
 	title: '',
+	chartLayers: [],
 	UNSAFE_vegaSpec: undefined,
 };
 

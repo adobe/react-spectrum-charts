@@ -119,3 +119,92 @@ export const HOVER_SHAPE = 'diamond';
 
 // navigation
 export const NAVIGATION_ID_KEY = "dnNodeId"
+export const NAVIGATION_SEMANTICS = {
+	BAR: {
+		CHILD: "Bar",
+		DIVISION: "Division",
+		CHART: "Bar chart"
+	},
+	LINE: {
+		CHILD: "Line",
+		DIVISION: "Division",
+		CHART: "Line chart"
+	},
+	AREA: {
+		CHILD: "Area",
+		DIVISION: "Division",
+		CHART: "Area chart"
+	},
+	PIE: {
+		CHILD: "Slice",
+		DIVISION: "Division",
+		CHART: "Pie chart"
+	},
+	STACK: {
+		CHILD: "Stack",
+		DIVISION: "Division",
+		CHART: "Stacked bar chart"
+	},
+	SCATTER: {
+		CHILD: "Data point",
+		DIVISION: "Division",
+		CHART: "Scatter plot"
+	},
+	DODGE: {
+		CHILD: "Group",
+		DIVISION: "Division",
+		CHART: "Dodged bar chart"
+	},
+	COMBO: {
+		CHILD: "Group",
+		DIVISION: "Division",
+		CHART: "Combo chart"
+	}
+}
+export const NAVIGATION_RULES = {
+	// utility keybinds
+	"exit": {key: 'Escape', direction: 'target'},
+	"help": {key: 'Quote', direction: 'target'},
+	"undo": {key: 'SemiColon', direction: 'target'},
+	// generics
+	"left": {key: 'Period', direction: 'source'},
+	"right": {key: 'Comma', direction: 'target'},
+	"child": {key: 'Enter', direction: 'target'},
+	// dimension
+	"previous-dimension": {direction: 'source', key: 'ArrowLeft'},
+	"next-dimension": {direction: 'target', key: 'ArrowRight'},
+	"parent-dimension": {direction: 'source', key: 'Backspace'},
+	// metric
+	"previous-metric": {direction: 'source', key: 'ArrowUp'},
+	"next-metric": {direction: 'target', key: 'ArrowDown'},
+	"parent-metric": {direction: 'source', key: 'Slash'},
+	// color
+	"previous-color": {direction: 'source', key: 'BracketLeft'},
+	"next-color": {direction: 'target', key: 'BracketRight'},
+	"parent-color": {direction: 'source', key: 'BackSlash'}
+}
+export const NAVIGATION_PAIRS = {
+	DIMENSION: {
+		parent_child: ["parent-dimension","child"],
+		sibling_sibling: ["previous-dimension","next-dimension"],
+	},
+	METRIC: {
+		parent_child: ["parent-metric","child"],
+		sibling_sibling: ["previous-metric","next-metric"],
+	},
+	COLOR: {
+		parent_child: ["parent-color","child"],
+		sibling_sibling: ["previous-color","next-color"],
+	}
+}
+/*
+	child : {key: 'Enter', direction: 'target'}
+	left : {key: 'ArrowLeft', direction: 'source'}
+	next-browser : {direction: 'target', key: 'RightBracket'}
+	next-downloads : {direction: 'target', key: 'Backslash'}
+	parent-browser : {direction: 'source', key: 'KeyW'}
+	parent-downloads : {direction: 'source', key: 'KeyJ'}
+	previous-browser : {direction: 'source', key: 'LeftBracket'}
+	previous-downloads : {direction: 'source', key: 'Slash'}
+	right : {key: 'ArrowRight', direction: 'target'}
+*/
