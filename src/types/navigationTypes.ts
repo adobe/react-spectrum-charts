@@ -9,10 +9,26 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+export type Navigation = {
+    transform: string;
+    buttonTransform: string;
+    current: CurrentNodeDetails;
+}
 
-export * from './Chart';
-export * from './specBuilderTypes';
-export * from './SpectrumVizColors';
-export * from './supplementalVegaTypes';
-export * from './navigationTypes';
-export * from './locales';
+export type SpatialProperties = {
+    height?: string;
+    width?: string;
+    left?: string;
+    top?: string;
+}
+
+export type CurrentNodeDetails = {
+    id: string;
+    figureRole?: "figure";
+    imageRole?: "image";
+    hasInteractivity?: boolean;
+    spatialProperties?: SpatialProperties;
+    semantics?: {
+        label: string
+    };
+}
