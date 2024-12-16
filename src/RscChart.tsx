@@ -313,12 +313,9 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 					/>
 				))}
 				<Navigator
-					// navigation={navigation}
 					data={data}
 					chartView={chartView}
 					chartLayers={chartLayers}
-					// setNavigationElement={setNavigationElement}
-					// structureNavigationHandler={structureNavigationHandler}
 				></Navigator>
 			</>
 		);

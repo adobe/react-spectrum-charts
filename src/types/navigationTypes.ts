@@ -15,17 +15,19 @@ export type Navigation = {
     current: CurrentNodeDetails;
 }
 
+export type SpatialProperties = {
+    height?: string;
+    width?: string;
+    left?: string;
+    top?: string;
+}
+
 export type CurrentNodeDetails = {
     id: string;
     figureRole?: "figure";
     imageRole?: "image";
     hasInteractivity?: boolean;
-    spatialProperties?: {
-        height?: string;
-        width?: string;
-        left?: string;
-        top?: string;
-    };
+    spatialProperties?: SpatialProperties;
     semantics?: {
         label: string
     };

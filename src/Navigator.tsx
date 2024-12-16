@@ -10,13 +10,15 @@
  * governing permissions and limitations under the License.
  */
 import { FC, useEffect, useRef, useState, MutableRefObject } from 'react'
-import { DimensionList } from '../node_modules/data-navigator/dist/src/data-navigator'
+import { DimensionList, NodeObject } from '../node_modules/data-navigator/dist/src/data-navigator'
+import { describeNode } from '../node_modules/data-navigator/dist/utilities.js'
 import { buildNavigationStructure, buildStructureHandler } from '@specBuilder/chartSpecBuilder';
-import { Navigation, CurrentNodeDetails, ChartData} from './types'
-import { View } from 'vega';
+import { Navigation, CurrentNodeDetails, ChartData, SpatialProperties} from './types'
+import { View } from 'vega-view'
+import { Scenegraph } from 'vega-scenegraph';
 
 export interface NavigationProps {
-    data: ChartData;
+    data: ChartData[];
     chartView: MutableRefObject<View | undefined>;
     chartLayers: DimensionList;
 }
@@ -102,8 +104,55 @@ export const Navigator: FC<NavigationProps> = ({data, chartView, chartLayers}) =
         }
     }, [navigation])
 
+    const roles = ["mark", "legend", "axis", "scope"]
+    const marktypes = ["rect", "group", "arc"]
+    const checkForSpatialProperties = (id: string): SpatialProperties | void => {
+        const nodeToCheck: NodeObject = navigationStructure.nodes[id]
+        if (!nodeToCheck.spatialProperties) {
+            console.log("nodeToCheck",nodeToCheck)
+            if (!chartView.current) {
+                // I want to do this, but will leave it out for now
+                // window.setTimeout(()=>{
+                //     checkForSpatialProperties(id)
+                // }, 500)
+            } else {
+                const root: Scenegraph = chartView.current.scenegraph().root
+                console.log(root)
+                const items = root.items
+                if (items.length !== 1) {
+                    console.log("what is in items??",items)
+                }
+                if (root.items[0]?.items?.length) {
+                    root.items[0].items.forEach((i) => {
+                        console.log(i.marktype, i.role, i.name, i)
+                        // needs a name
+                        // name should not have "_background" added
+                        // marktypes === group: legend, axis, scatter, line
+                        // role === scope: scatter, area, line or line(metric group aka name === "line0MetricRange0_group")
+                        // marktype === rect | arc: bar or pie (easy)
+                        // ** if scatter: i.items[0].items[0].items
+                        // ** if line: i.items are lines, forEach(l) :
+                            // l.items[0].items
+                        
+                        /* each child datum looks something like this:
+                            browser: "Chrome"
+                            downloads: 27000
+                            downloads0: 0
+                            downloads1: 27000
+                            percentLabel: "53.1%"
+                            rscMarkId: 1 // this is the id
+                            rscStackId: "Chrome" // this id is used for x axis grouping (if stacking?)
+                            Symbol(vega_id): 13367
+                        */
+                    })
+                }
+            }
+        }
+    }
+
     const handleFocus = (e) => {
         console.log("focused",e)
+        checkForSpatialProperties(e.target.id)
         focusedElement.current = {id: e.target.id}
     }
     const handleBlur = (e) => {
@@ -111,7 +160,6 @@ export const Navigator: FC<NavigationProps> = ({data, chartView, chartLayers}) =
         focusedElement.current = {id: ""}
     }
     const handleKeydown = (e) => {
-        // console.log("keydown",e)
         const direction = structureNavigationHandler.keydownValidator(e);
         console.log("direction",direction)
         if (direction) {
@@ -124,7 +172,29 @@ export const Navigator: FC<NavigationProps> = ({data, chartView, chartLayers}) =
         }
     }
     const setSpatialProperties = () => {
+        /* 
+            goals:
+                - fix bugs in line, combo, and area
+                - [dn work] create dataNavigator functions to:
+                    - compress divisions if all divisions of a dimension only have a single child (as an option), aka make a "list" within that dimension (this is good for regular bar charts, as an example)
+                        - create a function to hide a particular division/dimension parent? this would be helpful for some cases like a bar chart, where you want sorted numerical nav at the child level, but not division/dimension parents
+                    - nest n divisions within divisions (make this a much smarter process)
+                    - add type for what Input returns, improve consistency of those functions
+                - create semantics for axes, legends, groups, elements, etc
+                - create spatialProperties for axes, legends, groups, elements, etc
+                - add alt text to root chart element
+                    - possibly also hide vega's stuff
+        */
         console.log(chartView?.current)
+        console.log(navigationStructure.nodes)
+        console.log(describeNode)
+
+        if (chartView.current) {
+            console.log("we got room with a view",chartView.current)
+        } else {
+            console.log("describeNode",describeNode)
+            console.log("hmm",chartView)
+        }
     }
 
     const dummySpecs: Navigation = {

@@ -103,44 +103,6 @@ export const VegaChart: FC<VegaChartProps> = ({
 				tooltip,
 				width,
 			}).then(({ view }) => {
-				// c/onsole.log("~~~~")
-				// c/onsole.log("~~~~")
-				// c/onsole.log("view!", view)
-				// c/onsole.log("specCopy!", specCopy)
-				// c/onsole.log("tableData!", tableData)
-				// c/onsole.log("config!", config)
-				// c/onsole.log("containerRef.current",containerRef.current)
-				// view._scenegraph.root.items[0].items[3].source.value[0].datum //
-				// items[0] of 0 // not sure what this level is
-					// items[2] of 4 // role === "mark", name === "bar0_background"
-					// items[3] of 4 // role === "mark", name === "bar0"
-						// source.value // this is an array of the bars in a bar chart now
-						// value[i].datum // this contains the data used to render the bar
-						// value[i].x // & y, width, & height are the rendered mark's info
-						/*
-							browser: "Chrome"
-							downloads: 27000
-							downloads0: 0
-							downloads1: 27000
-							percentLabel: "53.1%"
-							rscMarkId: 1 // this is the id
-							rscStackId: "Chrome" // this id is used for x axis grouping (if stacking?)
-							Symbol(vega_id): 13367
-						*/
-				/* 
-					goals:
-						- use tableData to construct dimensions: dimension, metric, and color are all used as encoding props. Note: dimension can sometimes be numerical or categorical
-						- figure out how to intercept which dimensions are used to encode the chart, use only those
-						- create structure: grouped or list based on encoding type, include rendered info
-							- view._scenegraph.root.items[0].items[3].source.value[0].datum is where x/y/width/eight are stored
-							- what about other mark types?
-						- create semantics for axes, legends, groups, elements, etc
-						- export the structure and semantics to ghost element renderer
-						- add alt text to root chart element
-						- on user input:
-							- render ghost element
-							- show signal in chart
-				*/
 				chartView.current = view;
 				onNewView(view);
 				view.resize();
