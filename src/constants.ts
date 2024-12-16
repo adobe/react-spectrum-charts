@@ -116,3 +116,6 @@ export enum INTERACTION_MODE {
 export const HOVER_SIZE = 3000;
 export const HOVER_SHAPE_COUNT = 3;
 export const HOVER_SHAPE = 'diamond';
+
+// navigation
+export const NAVIGATION_ID_KEY = "dnNodeId"

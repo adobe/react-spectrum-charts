@@ -27,6 +27,7 @@ import {
 	SYMBOL_SHAPE_SCALE,
 	SYMBOL_SIZE_SCALE,
 	TABLE,
+	NAVIGATION_ID_KEY
 } from '@constants';
 import { Area, Axis, Bar, Legend, Line, Scatter, Title } from '@rsc';
 import { Combo } from '@rsc/alpha';
@@ -275,17 +276,12 @@ export const buildNavigationStructure = (data, props, chartLayers) : Structure =
 		// append element after <VegaChart> in RscChart for navigation (the rendered thing)
 		// append an exit element within the appended parent element for our navigation stuff
 	const layers = props.list ? "" : chartLayers
+
 	const structureOptions : StructureOptions = {
 		data,
-		idKey: "dnNodeId"/*(d) => {
-			console.log("trying to find Id",d)
-			if (d && d.rscMarkId) {
-				return "rscMarkId"
-			}
-			return "rscStackId"
-		}*/,
-		addIds: true,
-		keysForIdGeneration: [],
+		idKey: NAVIGATION_ID_KEY,
+		// addIds: true,
+		// keysForIdGeneration: [],
 		dimensions: {
 			values: layers
 		}

@@ -19,6 +19,7 @@ import {
 	SELECTED_ITEM,
 	SELECTED_SERIES,
 	SERIES_ID,
+	NAVIGATION_ID_KEY
 } from '@constants';
 import useChartImperativeHandle from '@hooks/useChartImperativeHandle';
 import useLegend from '@hooks/useLegend';
@@ -40,6 +41,7 @@ import {
 import { renderToStaticMarkup } from 'react-dom/server';
 import { Item } from 'vega';
 import { Handler, Position, Options as TooltipOptions } from 'vega-tooltip';
+import { addSimpleDataIDs as addNavigationIds } from '../node_modules/data-navigator/dist/structure.js'
 
 import { ActionButton, Dialog, DialogTrigger, View as SpectrumView } from '@adobe/react-spectrum';
 
@@ -113,7 +115,19 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 		const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false); // tracks the open/close state of the popover
 
 		const sanitizedChildren = sanitizeRscChartChildren(props.children);
+
+		/* 
+			chartLayers and addNavigationIds ensure that our Navigator can correctly build and use both data 
+			and vega's view (rendered) properties for each datum, adding NAVIGATION_ID_KEY allows us to link
+			the data in our navigation structure to the rendering data vega creates from the spec
+			Note: chartLayers is mutated/populated by useSpec and addNavigationIds mutates the input data
+		*/
 		const chartLayers = [];
+		addNavigationIds({
+			idKey: NAVIGATION_ID_KEY,
+			data,
+			addIds:true
+		})
 		// THE MAGIC, builds our spec
 		const spec = useSpec({
 			backgroundColor,

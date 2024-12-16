@@ -60,3 +60,33 @@ this removes transitions in the vega tooltip
 	width: auto;
 	height: 100%;
 }
+
+/* navigation elements */
+.dn-root {
+    position: relative;
+}
+.dn-wrapper {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+}
+.dn-node {
+    position: absolute;
+    padding: 0px;
+    margin: 0px;
+    overflow: visible;
+}
+.dn-node-svg {
+    position: absolute;
+    pointer-events: none;
+}
+.dn-node-path {
+    fill: none;
+    stroke: #000000;
+    stroke-width: 4px;
+    transform: translateY(2px);
+}
+.dn-entry-button {
+    position: relative;
+    top: -21px;
+}

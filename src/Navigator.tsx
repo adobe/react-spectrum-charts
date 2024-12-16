@@ -16,6 +16,7 @@ import { buildNavigationStructure, buildStructureHandler } from '@specBuilder/ch
 import { Navigation, CurrentNodeDetails, ChartData, SpatialProperties} from './types'
 import { View } from 'vega-view'
 import { Scenegraph } from 'vega-scenegraph';
+import { NAVIGATION_ID_KEY } from '@constants'
 
 export interface NavigationProps {
     data: ChartData[];
@@ -31,7 +32,7 @@ export const Navigator: FC<NavigationProps> = ({data, chartView, chartLayers}) =
     const firstRef = useRef<HTMLElement>(null);
     const secondRef = useRef<HTMLElement>(null);
 
-    const navigationStructure = buildNavigationStructure(data, {}, chartLayers)
+    const navigationStructure = buildNavigationStructure(data, {NAVIGATION_ID_KEY}, chartLayers)
     const structureNavigationHandler = buildStructureHandler(
         {
             nodes: navigationStructure.nodes,
@@ -62,10 +63,11 @@ export const Navigator: FC<NavigationProps> = ({data, chartView, chartLayers}) =
         }
     })
 
+    const [childrenInitialized, setInitialization] = useState<boolean>(false)
+
     const setNavigationElement = (target) => {
-        console.log("changing to new target",target.id)
+        console.log("changing to new target",target.id,target)
         // console.log("navigationStructure.navigationRules",navigationStructure.navigationRules)
-        setSpatialProperties()
         setNavigation({
             transform: "",
             buttonTransform: "",
@@ -74,14 +76,14 @@ export const Navigator: FC<NavigationProps> = ({data, chartView, chartLayers}) =
                 figureRole: "figure",
                 imageRole: "image",
                 hasInteractivity: true,
-                spatialProperties: {
+                spatialProperties: target.spatialProperties || {
                     width: "",
                     height: "",
                     left: "",
                     top: ""
                 },
                 semantics: {
-                    label: "testing semantics!"
+                    label: target.semantics?.label || "no label yet"
                 }
             }
         })
@@ -92,8 +94,8 @@ export const Navigator: FC<NavigationProps> = ({data, chartView, chartLayers}) =
         if (willFocusAfterRender.current && focusedElement.current.id !== navigation.current.id) {
             focusedElement.current = {id: navigation.current.id}
             willFocusAfterRender.current = false
-            console.log("firstRef",firstRef)
-            console.log("secondRef",secondRef)
+            // console.log("firstRef",firstRef)
+            // console.log("secondRef",secondRef)
             // console.log("navigation.current.id",navigation)
             // console.log("focusedElement",focusedElement)
             if (firstRef.current?.id === navigation.current.id) {
@@ -104,55 +106,88 @@ export const Navigator: FC<NavigationProps> = ({data, chartView, chartLayers}) =
         }
     }, [navigation])
 
-    const roles = ["mark", "legend", "axis", "scope"]
-    const marktypes = ["rect", "group", "arc"]
-    const checkForSpatialProperties = (id: string): SpatialProperties | void => {
+    const initializeRenderingProperties = (id: string): SpatialProperties | void => {
         const nodeToCheck: NodeObject = navigationStructure.nodes[id]
         if (!nodeToCheck.spatialProperties) {
-            console.log("nodeToCheck",nodeToCheck)
+            console.log("INITIALIZING PROPERTIES!")
             if (!chartView.current) {
                 // I want to do this, but will leave it out for now
                 // window.setTimeout(()=>{
-                //     checkForSpatialProperties(id)
+                //     initializeRenderingProperties(id)
                 // }, 500)
             } else {
                 const root: Scenegraph = chartView.current.scenegraph().root
-                console.log(root)
                 const items = root.items
                 if (items.length !== 1) {
                     console.log("what is in items??",items)
                 }
                 if (root.items[0]?.items?.length) {
+                    // const roles = ["mark", "legend", "axis", "scope"]
+                    // const marktypes = ["rect", "group", "arc"]
+                    const dimensions = Object.keys(navigationStructure.dimensions || {})
+                    const keysToMatch: string[] = []
+                    dimensions.forEach(d=>{
+                        keysToMatch.push(navigationStructure.dimensions?.[d].dimensionKey || "")
+                    })
                     root.items[0].items.forEach((i) => {
-                        console.log(i.marktype, i.role, i.name, i)
-                        // needs a name
-                        // name should not have "_background" added
-                        // marktypes === group: legend, axis, scatter, line
-                        // role === scope: scatter, area, line or line(metric group aka name === "line0MetricRange0_group")
-                        // marktype === rect | arc: bar or pie (easy)
-                        // ** if scatter: i.items[0].items[0].items
-                        // ** if line: i.items are lines, forEach(l) :
-                            // l.items[0].items
-                        
-                        /* each child datum looks something like this:
-                            browser: "Chrome"
-                            downloads: 27000
-                            downloads0: 0
-                            downloads1: 27000
-                            percentLabel: "53.1%"
-                            rscMarkId: 1 // this is the id
-                            rscStackId: "Chrome" // this id is used for x axis grouping (if stacking?)
-                            Symbol(vega_id): 13367
-                        */
+                        if (i.marktype === "rect" && i.role === "mark" && i.name.indexOf("_background") === -1) {
+                            // these are the bars in a bar chart!
+                            // console.log("bars",i)
+                            i.items.forEach(bar => {
+                                // console.log("bar", bar, bar.datum)
+                                const datum = {}
+                                keysToMatch.forEach(key => {
+                                    datum[key] = bar.datum[key]
+                                })
+                                if (bar.datum[NAVIGATION_ID_KEY] && navigationStructure.nodes[bar.datum[NAVIGATION_ID_KEY]]) {
+                                    const correspondingNode = navigationStructure.nodes[bar.datum[NAVIGATION_ID_KEY]];
+                                    
+                                    correspondingNode.spatialProperties = {
+                                        width: `${bar.width}px`,
+                                        height: `${bar.height}px`,
+                                        left: `${bar.x}px`,
+                                        top: `${bar.y}px`,
+                                    }
+                                    correspondingNode.semantics = {
+                                        label: describeNode(datum, {semanticLabel: "Bar."})
+                                    }
+                                    console.log("correspondingNode",correspondingNode)
+                                }
+                            })
+                        } else if (i.marktype === "arc" && i.role === "mark") {
+                            // this is a pie chart!
+                            // console.log("pie slices",i)
+                        } else if (i.role === "axis") {
+                            // this is an axis!
+                            // console.log(i.role, i)
+                        } else if (i.role === "legend") {
+                            // this is a legend!
+                            // console.log(i.role, i)
+                        } else if (i.marktype === "rule" && i.role === "mark" && i.name) {
+                            // this is a special mark?
+                            // console.log("TBD: possible baseline/etc mark", i)
+                        } else if (i.role === "scope" && i.marktype === "group" && i.name) {
+                            // console.log("TBD: need to determine if combo, line, or area")
+                            // ** if scatter: i.items[0].items[0].items
+                            // ** if line: i.items are lines, forEach(l) :
+                                // l.items[0].items
+                        }
                     })
                 }
             }
         }
     }
 
+    const enterChart = () => {
+        initializeRenderingProperties(navigation.current.id)
+        setInitialization(true)
+        setNavigationElement(navigationStructure.nodes[navigation.current.id]);
+        willFocusAfterRender.current = true
+        // document.getElementById(navigation.current.id)?.focus()
+    }
     const handleFocus = (e) => {
         console.log("focused",e)
-        checkForSpatialProperties(e.target.id)
+        initializeRenderingProperties(e.target.id)
         focusedElement.current = {id: e.target.id}
     }
     const handleBlur = (e) => {
@@ -171,31 +206,6 @@ export const Navigator: FC<NavigationProps> = ({data, chartView, chartLayers}) =
             }
         }
     }
-    const setSpatialProperties = () => {
-        /* 
-            goals:
-                - fix bugs in line, combo, and area
-                - [dn work] create dataNavigator functions to:
-                    - compress divisions if all divisions of a dimension only have a single child (as an option), aka make a "list" within that dimension (this is good for regular bar charts, as an example)
-                        - create a function to hide a particular division/dimension parent? this would be helpful for some cases like a bar chart, where you want sorted numerical nav at the child level, but not division/dimension parents
-                    - nest n divisions within divisions (make this a much smarter process)
-                    - add type for what Input returns, improve consistency of those functions
-                - create semantics for axes, legends, groups, elements, etc
-                - create spatialProperties for axes, legends, groups, elements, etc
-                - add alt text to root chart element
-                    - possibly also hide vega's stuff
-        */
-        console.log(chartView?.current)
-        console.log(navigationStructure.nodes)
-        console.log(describeNode)
-
-        if (chartView.current) {
-            console.log("we got room with a view",chartView.current)
-        } else {
-            console.log("describeNode",describeNode)
-            console.log("hmm",chartView)
-        }
-    }
 
     const dummySpecs: Navigation = {
         ...navigation
@@ -206,16 +216,36 @@ export const Navigator: FC<NavigationProps> = ({data, chartView, chartLayers}) =
     const firstProps = !firstRef.current || focusedElement.current.id !== firstRef.current.id ? navigation : dummySpecs
     const secondProps = firstProps.current.id === navigation.current.id ? dummySpecs : navigation
 
+    const figures = (
+        <div>
+            <figure ref={firstRef} role={firstProps.current.figureRole || "presentation"} id={firstProps.current.id} className="dn-node dn-test-class" tabIndex={firstProps.current.hasInteractivity ? 0 : undefined} style={firstProps.current.spatialProperties} onFocus={firstProps.current.hasInteractivity ? handleFocus : undefined} onKeyDown={firstProps.current.hasInteractivity ? handleKeydown : undefined}>
+                <div role={firstProps.current.imageRole || "presentation"} className="dn-node-text" aria-label={firstProps.current.semantics?.label || undefined}></div>
+            </figure>
+            <figure ref={secondRef} role={secondProps.current.figureRole || "presentation"} id={secondProps.current.id} className="dn-node dn-test-class" tabIndex={secondProps.current.hasInteractivity ? 0 : undefined} style={secondProps.current.spatialProperties} onFocus={secondProps.current.hasInteractivity ? handleFocus : undefined} onKeyDown={secondProps.current.hasInteractivity ? handleKeydown : undefined}>
+                <div role={secondProps.current.imageRole || "presentation"} className="dn-node-text" aria-label={secondProps.current.semantics?.label || undefined}></div>
+            </figure>
+        </div>
+    )
+    /* 
+        goals:
+            - fix over-initialization (on every focus)
+            - fix off placement of focus
+            - fix bugs in line, combo, and area
+            - [dn work] create dataNavigator functions to:
+                - compress divisions if all divisions of a dimension only have a single child (as an option), aka make a "list" within that dimension (this is good for regular bar charts, as an example)
+                    - create a function to hide a particular division/dimension parent? this would be helpful for some cases like a bar chart, where you want sorted numerical nav at the child level, but not division/dimension parents
+                - nest n divisions within divisions (make this a much smarter process)
+                - add type for what Input returns, improve consistency of those functions
+            - create semantics for axes, legends, groups, etc
+            - create spatialProperties for axes, legends, groups, etc
+            - add alt text to root chart element
+                - possibly also hide vega's stuff
+    */
 	return (
         <>
             <div id="dn-wrapper-data-navigator-schema" role="application" aria-label="Data navigation structure" aria-activedescendant={focusedElement.current ? focusedElement.current.id : ""} className="dn-wrapper" style={{width: "100%", transform: navigation.transform}} onBlur={handleBlur}>
-                    {/* <button id="dn-entry-button-data-navigator-schema" className="dn-entry-button" style={{transform: navigation.buttonTransform}}>Enter navigation area</button> */}
-                    <figure ref={firstRef} role={firstProps.current.figureRole || "presentation"} id={firstProps.current.id} className="dn-node dn-test-class" tabIndex={firstProps.current.hasInteractivity ? 0 : undefined} style={firstProps.current.spatialProperties} onFocus={firstProps.current.hasInteractivity ? handleFocus : undefined} onKeyDown={firstProps.current.hasInteractivity ? handleKeydown : undefined}>
-                        <div role={firstProps.current.imageRole || "presentation"} className="dn-node-text" aria-label={firstProps.current.semantics?.label || undefined}></div>
-                    </figure>
-                    <figure ref={secondRef} role={secondProps.current.figureRole || "presentation"} id={secondProps.current.id} className="dn-node dn-test-class" tabIndex={secondProps.current.hasInteractivity ? 0 : undefined} style={secondProps.current.spatialProperties} onFocus={secondProps.current.hasInteractivity ? handleFocus : undefined} onKeyDown={secondProps.current.hasInteractivity ? handleKeydown : undefined}>
-                        <div role={secondProps.current.imageRole || "presentation"} className="dn-node-text" aria-label={secondProps.current.semantics?.label || undefined}></div>
-                    </figure>
+                    <button id="dn-entry-button-data-navigator-schema" className="dn-entry-button" style={{transform: navigation.buttonTransform}} onClick={enterChart}>Enter navigation area</button>
+                    {childrenInitialized ? figures : null}
             </div>
         </>
     )
