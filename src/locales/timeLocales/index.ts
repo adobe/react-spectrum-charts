@@ -9,9 +9,9 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { TimeLocaleCode } from 'types/locales';
 import { TimeLocale } from 'vega';
 
+import { TimeLocaleCode } from '../../types/locales';
 import areg from './ar-EG.json';
 import arsy from './ar-SY.json';
 import caes from './ca-ES.json';

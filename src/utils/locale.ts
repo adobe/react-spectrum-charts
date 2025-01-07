@@ -10,10 +10,10 @@
  * governing permissions and limitations under the License.
  */
 import { numberLocales, timeLocales } from '@locales';
-import { NumberLocaleCode, TimeLocaleCode } from 'types/locales';
 import { Locale, NumberLocale, TimeLocale } from 'vega';
 
 import { ChartProps } from '../types';
+import { NumberLocaleCode, TimeLocaleCode } from '../types/locales';
 
 export const getLocale = (locale: ChartProps['locale'] = 'en-US'): Locale => {
 	if (typeof locale === 'string') {
