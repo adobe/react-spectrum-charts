@@ -28,6 +28,10 @@ module.exports = {
 				name: 'types',
 				message: 'Please use relative path import for types instead (ex. ../types).',
 			},
+			{
+				name: 'types/locales',
+				message: 'Please use relative path import for types instead (ex. ../types/locales).',
+			},
 		],
 		'header/header': [
 			2,
