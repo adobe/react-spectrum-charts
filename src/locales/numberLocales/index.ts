@@ -9,9 +9,9 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { NumberLocaleCode } from 'types/locales';
 import { NumberLocale } from 'vega';
 
+import { NumberLocaleCode } from '../../types/locales';
 import arae from './ar-AE.json';
 import arbh from './ar-BH.json';
 import ardj from './ar-DJ.json';
