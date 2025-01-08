@@ -41,7 +41,6 @@ import {
 	getColorProductionRule,
 	getColorProductionRuleSignalString,
 	getHighlightOpacityValue,
-	getInteractive,
 	getLineWidthProductionRule,
 	getMarkOpacity,
 	getOpacityProductionRule,
@@ -52,6 +51,7 @@ import {
 	getYProductionRule,
 	hasMetricRange,
 	hasTooltip,
+	isInteractive,
 } from './markUtils';
 
 describe('getColorProductionRule', () => {
@@ -240,14 +240,14 @@ describe('getYProductionRule()', () => {
 	});
 });
 
-describe('getInteractive()', () => {
+describe('isInteractive()', () => {
 	const tooltip = createElement(ChartTooltip);
 	const popover = createElement(ChartPopover);
 	test('should return true based on having interactive children', () => {
-		expect(getInteractive([tooltip])).toEqual(true);
-		expect(getInteractive([])).toEqual(false);
-		expect(getInteractive([tooltip, popover])).toEqual(true);
-		expect(getInteractive(defaultBarProps.children, defaultBarProps)).toEqual(false);
+		expect(isInteractive([tooltip])).toEqual(true);
+		expect(isInteractive([])).toEqual(false);
+		expect(isInteractive([tooltip, popover])).toEqual(true);
+		expect(isInteractive(defaultBarProps.children, defaultBarProps)).toEqual(false);
 	});
 });
 

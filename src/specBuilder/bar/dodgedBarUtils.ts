@@ -10,7 +10,7 @@
  * governing permissions and limitations under the License.
  */
 import { BACKGROUND_COLOR } from '@constants';
-import { getInteractive } from '@specBuilder/marks/markUtils';
+import { isInteractive } from '@specBuilder/marks/markUtils';
 import { GroupMark } from 'vega';
 
 import { BarSpecProps } from '../../types';
@@ -50,7 +50,7 @@ export const getDodgedMark = (props: BarSpecProps): GroupMark => {
 				name,
 				from: { data: `${name}_facet` },
 				type: 'rect',
-				interactive: getInteractive(children, props),
+				interactive: isInteractive(children, props),
 				encode: {
 					enter: {
 						...getBaseBarEnterEncodings(props),

@@ -84,10 +84,9 @@ export function getCursor(
 }
 
 /**
- * If there aren't any tooltips, popovers, or onClick props on the mark, then set interactive to false.
- * This prevents the mark from interfering with other interactive marks.
+ * Returns true if there are any popovers or tooltips in the children, or if props.onClick is defined.
  */
-export function getInteractive(children: MarkChildElement[], props?: ClickableChartProps): boolean {
+export function isInteractive(children: MarkChildElement[], props?: ClickableChartProps): boolean {
 	return props?.onClick !== undefined || hasInteractiveChildren(children);
 }
 
