@@ -69,6 +69,12 @@ export const getOnMarkClickCallback = (
 	};
 };
 
+/**
+ * Returns the callback to be used for the `onClick` prop on a mark.
+ * @param chartView - The mutable ref object containing the chart view.
+ * @param onClickMarkDetails - The details for all marks with the onClick prop.
+ * @returns The callback to be used for the `onClick` prop on a mark.
+ */
 export const getOnChartMarkClickCallback = (
 	chartView: MutableRefObject<View | undefined>,
 	onClickMarkDetails?: MarkOnClickDetail[]

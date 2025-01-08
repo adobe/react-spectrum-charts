@@ -292,7 +292,6 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 									setLegendHiddenSeries,
 									legendIsToggleable,
 									onLegendClick
-									// onMarkClicks
 								)
 							);
 						}
