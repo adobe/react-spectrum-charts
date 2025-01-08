@@ -323,6 +323,12 @@ OnClick.args = {
 	onClick: action('onClick'),
 };
 
+const OnClickWithTooltip = bindWithProps(BasicLineStory);
+OnClickWithTooltip.args = {
+	...Tooltip.args,
+	...OnClick.args,
+};
+
 export {
 	Basic,
 	HistoricalCompare,
@@ -339,4 +345,5 @@ export {
 	BasicSparkline,
 	SparklineWithStaticPoint,
 	OnClick,
+	OnClickWithTooltip,
 };
