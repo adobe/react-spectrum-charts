@@ -424,7 +424,12 @@ export interface AnnotationStyleProps extends MarkProps {
 	width?: number;
 }
 
-export interface BarProps extends Omit<MarkProps, 'color'> {
+export interface ClickableChartProps {
+	/** Callback that will be run when a point/section is clicked */
+	onClick?: OnClickCallback;
+}
+
+export interface BarProps extends Omit<MarkProps & ClickableChartProps, 'color'> {
 	/** Bar color or key in the data that is used as the color facet */
 	color?: ColorFacet | DualFacet;
 	/** Data field used for the bar categories (x-axis for a vertical bar) */
@@ -437,8 +442,6 @@ export interface BarProps extends Omit<MarkProps, 'color'> {
 	lineType?: LineTypeFacet | DualFacet;
 	/** Border width of the bar */
 	lineWidth?: LineWidth;
-	/** Callback that will be run when a bar item is selected */
-	onClick?: OnClickCallback;
 	/** Optional field used to set the stack order of the bar (higher order = higher on bar) */
 	order?: string;
 	/** The direction of the bars. Defaults to "vertical". */
@@ -463,15 +466,13 @@ export interface BarProps extends Omit<MarkProps, 'color'> {
 
 export type BarType = 'dodged' | 'stacked';
 
-export interface LineProps extends Omit<MarkProps, 'color'> {
+export interface LineProps extends Omit<MarkProps & ClickableChartProps, 'color'> {
 	/** Line color or key in the data that is used as the color facet */
 	color?: ColorFacet;
 	/** Data field that the value is trended against (x-axis) */
 	dimension?: string;
 	/** Line type or key in the data that is used as the line type facet */
 	lineType?: LineTypeFacet;
-	/** Callback that will be run when a line point is selected */
-	onClick?: OnClickCallback;
 	/** Opacity or key in the data that is used as the opacity facet */
 	opacity?: OpacityFacet;
 	/** Sets the chart area padding, this is a ratio from 0 to 1 for categorical scales (point) and a pixel value for continuous scales (time, linear) */
