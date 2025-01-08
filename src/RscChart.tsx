@@ -282,17 +282,17 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 							});
 							view.addEventListener(
 								'click',
-								getOnMarkClickCallback(
+								getOnMarkClickCallback({
 									chartView,
-									legendHiddenSeries,
+									hiddenSeries: legendHiddenSeries,
 									chartId,
 									selectedData,
 									selectedDataBounds,
 									selectedDataName,
-									setLegendHiddenSeries,
+									setHiddenSeries: setLegendHiddenSeries,
 									legendIsToggleable,
-									onLegendClick
-								)
+									onLegendClick,
+								})
 							);
 						}
 						view.addEventListener('click', getOnChartMarkClickCallback(chartView, markClickDetails));

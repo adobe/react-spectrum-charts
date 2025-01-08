@@ -21,6 +21,18 @@ import { Datum, MarkBounds } from '../types';
 export type ActionItem = Item | undefined | null;
 type ViewEventCallback = (event: ScenegraphEvent, item: ActionItem) => void;
 
+interface GetOnMarkClickCallbackArgs {
+	chartView: MutableRefObject<View | undefined>;
+	hiddenSeries: string[];
+	chartId: MutableRefObject<string>;
+	selectedData: MutableRefObject<Datum | null>;
+	selectedDataBounds: MutableRefObject<MarkBounds | undefined>;
+	selectedDataName: MutableRefObject<string | undefined>;
+	setHiddenSeries: (hiddenSeries: string[]) => void;
+	legendIsToggleable?: boolean;
+	onLegendClick?: (seriesName: string) => void;
+}
+
 /**
  * Generates the callback for the mark click handler
  * @param chartView
@@ -34,17 +46,17 @@ type ViewEventCallback = (event: ScenegraphEvent, item: ActionItem) => void;
  * @param onLegendClick
  * @returns
  */
-export const getOnMarkClickCallback = (
-	chartView: MutableRefObject<View | undefined>,
-	hiddenSeries: string[],
-	chartId: MutableRefObject<string>,
-	selectedData: MutableRefObject<Datum | null>,
-	selectedDataBounds: MutableRefObject<MarkBounds | undefined>,
-	selectedDataName: MutableRefObject<string | undefined>,
-	setHiddenSeries: (hiddenSeries: string[]) => void,
-	legendIsToggleable?: boolean,
-	onLegendClick?: (seriesName: string) => void
-): ViewEventCallback => {
+export const getOnMarkClickCallback = ({
+	chartView,
+	hiddenSeries,
+	chartId,
+	selectedData,
+	selectedDataBounds,
+	selectedDataName,
+	setHiddenSeries,
+	legendIsToggleable,
+	onLegendClick,
+}: GetOnMarkClickCallbackArgs): ViewEventCallback => {
 	return (_event, item) => {
 		if (!item) return;
 		if (isLegendItem(item)) {
