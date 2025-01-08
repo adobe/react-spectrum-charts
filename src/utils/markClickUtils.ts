@@ -12,13 +12,14 @@
 import { MutableRefObject } from 'react';
 
 import { COMPONENT_NAME } from '@constants';
-import { MarkDetail } from '@hooks/useMarkOnClicks';
+import { MarkOnClickDetail } from '@hooks/useMarkOnClickDetails';
 import { toggleStringArrayValue } from '@utils';
 import { Item, Scene, SceneGroup, SceneItem, ScenegraphEvent, View } from 'vega';
 
 import { Datum, MarkBounds } from '../types';
 
 export type ActionItem = Item | undefined | null;
+type ViewEventCallback = (event: ScenegraphEvent, item: ActionItem) => void;
 
 /**
  * Generates the callback for the mark click handler
@@ -42,39 +43,65 @@ export const getOnMarkClickCallback = (
 	selectedDataName: MutableRefObject<string | undefined>,
 	setHiddenSeries: (hiddenSeries: string[]) => void,
 	legendIsToggleable?: boolean,
-	onLegendClick?: (seriesName: string) => void,
-	markClicks?: MarkDetail[]
-	
-): ((event: ScenegraphEvent, item: ActionItem) => void) => {
-	return (_event: ScenegraphEvent, item: ActionItem) => {
+	onLegendClick?: (seriesName: string) => void
+): ViewEventCallback => {
+	return (_event, item) => {
 		if (!item) return;
 		if (isLegendItem(item)) {
 			handleLegendItemClick(item, hiddenSeries, setHiddenSeries, legendIsToggleable, onLegendClick);
 			return;
 		}
 
-		// if they clicked on a mark group then we want to go down an additional level
-		if (isGroupMarkItem(item)) {
-			item = item.datum;
-		}
-		if (isAreaMarkItem(item)) {
-			// for area, we want to use the hovered data not the entire area
-			item = getItemForAreaMark(item);
-		}
-		// verify that the user didn't click on a legend, legend marktype = 'group'
-		if (isItemSceneItem(item) && item.mark.marktype !== 'group' && chartView.current) {
+		item = getGroupOrAreaMarkItemFromItem(item);
+
+		// ensure that the current chartView is still defined
+		if (userDidNotClickOnLegend(item) && chartView.current) {
 			// clicking the button will trigger a new view since it will cause a rerender
 			// this means we don't need to set the signal value since it would just be cleared on rerender
 			// instead, the rerender will set the value of the signal to the selectedData
 			const itemName = getItemName(item);
 			selectedData.current = { [COMPONENT_NAME]: itemName, ...item.datum };
 			// we need to anchor the popover to a div that we move to the same location as the selected mark
-			markClicks?.find((click) => click.markName === itemName)?.onClick?.(item.datum);
 			selectedDataBounds.current = getItemBounds(item);
 			selectedDataName.current = itemName;
 			(document.querySelector(`#${chartId.current} > div > #${itemName}-button`) as HTMLButtonElement)?.click();
 		}
 	};
+};
+
+export const getOnChartMarkClickCallback = (
+	chartView: MutableRefObject<View | undefined>,
+	onClickMarkDetails?: MarkOnClickDetail[]
+): ViewEventCallback => {
+	return (_event, item) => {
+		if (!item || !onClickMarkDetails?.length || isLegendItem(item) || !chartView.current) return;
+
+		item = getGroupOrAreaMarkItemFromItem(item);
+
+		if (userDidNotClickOnLegend(item) && chartView.current) {
+			const itemName = getItemName(item);
+			onClickMarkDetails.find((details) => details.markName === itemName)?.onClick?.(item.datum);
+		}
+	};
+};
+
+const getGroupOrAreaMarkItemFromItem = (item: NonNullable<ActionItem>) => {
+	// if they clicked on a mark group then we want to go down an additional level
+	if (isGroupMarkItem(item)) {
+		item = item.datum;
+	}
+
+	// for area, we want to use the hovered data not the entire area
+	if (isAreaMarkItem(item)) {
+		item = getItemForAreaMark(item) as NonNullable<Item>;
+	}
+
+	return item;
+};
+
+const userDidNotClickOnLegend = (item: unknown): item is Item & SceneItem => {
+	// verify that the user didn't click on a legend, legend marktype = 'group'
+	return isItemSceneItem(item) && item.mark.marktype !== 'group';
 };
 
 /**
@@ -99,10 +126,8 @@ export const handleLegendItemMouseInput = (
  * @param onLegendMouseInput
  * @returns
  */
-export const getOnMouseInputCallback = (
-	onMouseInput?: (seriesName: string) => void
-): ((event: ScenegraphEvent, item: ActionItem) => void) => {
-	return (_event: ScenegraphEvent, item: ActionItem) => {
+export const getOnMouseInputCallback = (onMouseInput?: (seriesName: string) => void): ViewEventCallback => {
+	return (_event, item) => {
 		if (!item) return;
 		if (isLegendItem(item)) {
 			handleLegendItemMouseInput(item, onMouseInput);

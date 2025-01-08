@@ -189,7 +189,7 @@ const getVoronoiMarks = (dataSource: string, lineProps: LineMarkProps): Mark[] =
 		// points used for the voronoi transform
 		getPointsForVoronoi(dataSource, dimension, metric, name, scaleType, metricAxis),
 		// voronoi transform used to get nearest point paths
-		getVoronoiPath(children, `${name}_pointsForVoronoi`, name),
+		getVoronoiPath(children, `${name}_pointsForVoronoi`, name, lineProps),
 	];
 };
 
