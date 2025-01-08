@@ -11,32 +11,32 @@
  */
 import { createElement, useMemo } from 'react';
 
+import { Bar, BarElement, Chart, ChartChildElement, Line, LineElement, OnClickCallback } from '@rsc';
 import { getAllMarkElements } from '@utils';
 
-import { Chart } from '../Chart';
-import { Bar } from '../components/Bar';
-import { BarElement, ChartChildElement, Datum } from '../types';
+type MappedMarkElement = { name: string; element: BarElement | LineElement };
 
-type MappedMarkElement = { name: string; element: BarElement };
-
-export type MarkDetail = {
+export type MarkOnClickDetail = {
 	markName?: string;
-    onClick?: (datum: Datum) => void;
+	onClick?: OnClickCallback;
 };
 
-export default function useMarkOnClicks(children: ChartChildElement[]): MarkDetail[] {
-    const markElements = useMemo(
-		() => getAllMarkElements(createElement(Chart, { data: [] }, children), Bar, []) as MappedMarkElement[],
-		[children]
-	);
+export default function useMarkOnClickDetails(children: ChartChildElement[]): MarkOnClickDetail[] {
+	const markElements = useMemo(() => {
+		return [
+			...getAllMarkElements(createElement(Chart, { data: [] }, children), Bar, []),
+			...getAllMarkElements(createElement(Chart, { data: [] }, children), Line, []),
+		] as MappedMarkElement[];
+	}, [children]);
+
 	return useMemo(
-		() => 
+		() =>
 			markElements
 				.filter((mark) => mark.element.props.onClick)
 				.map((mark) => ({
 					markName: mark.name,
 					onClick: mark.element.props.onClick,
-				})) as MarkDetail[],
+				})) as MarkOnClickDetail[],
 		[markElements]
 	);
 }

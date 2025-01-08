@@ -22,7 +22,7 @@ import {
 } from '@constants';
 import useChartImperativeHandle from '@hooks/useChartImperativeHandle';
 import useLegend from '@hooks/useLegend';
-import useMarkOnClicks from '@hooks/useMarkOnClicks';
+import useMarkOnClickDetails from '@hooks/useMarkOnClickDetails';
 import usePopoverAnchorStyle from '@hooks/usePopoverAnchorStyle';
 import usePopovers, { PopoverDetail } from '@hooks/usePopovers';
 import useSpec from '@hooks/useSpec';
@@ -162,7 +162,7 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 
 		const tooltips = useTooltips(sanitizedChildren);
 		const popovers = usePopovers(sanitizedChildren);
-		const onMarkClicks = useMarkOnClicks(sanitizedChildren);
+		const onMarkClicks = useMarkOnClickDetails(sanitizedChildren);
 
 		// gets the correct css style to display the anchor in the correct position
 		const targetStyle = usePopoverAnchorStyle(
