@@ -436,7 +436,7 @@ export interface BarProps extends Omit<MarkProps, 'color'> {
 	lineType?: LineTypeFacet | DualFacet;
 	/** Border width of the bar */
 	lineWidth?: LineWidth;
-	/** callback that will be run when a bar item is selected */
+	/** Callback that will be run when a bar item is selected */
 	onClick?: (datum: Datum) => void;
 	/** Optional field used to set the stack order of the bar (higher order = higher on bar) */
 	order?: string;
@@ -469,14 +469,16 @@ export interface LineProps extends Omit<MarkProps, 'color'> {
 	dimension?: string;
 	/** Line type or key in the data that is used as the line type facet */
 	lineType?: LineTypeFacet;
+	/** Callback that will be run when a line point is selected */
+	onClick?: (datum: Datum) => void;
 	/** Opacity or key in the data that is used as the opacity facet */
 	opacity?: OpacityFacet;
 	/** Sets the chart area padding, this is a ratio from 0 to 1 for categorical scales (point) and a pixel value for continuous scales (time, linear) */
 	padding?: number;
 	pointSize?: number;
-	/** line to be interpreted and rendered as a sparkline. For example, Changes the fill of static points. */
+	/** Line to be interpreted and rendered as a sparkline. For example, Changes the fill of static points. */
 	isSparkline?: boolean;
-	/** sparkline's method is last - meaning that last element of data has the static point */
+	/** Sparkline's method is last - meaning that last element of data has the static point */
 	isMethodLast?: boolean;
 	/** Sets the type of scale that should be used for the trend */
 	scaleType?: ScaleType;
