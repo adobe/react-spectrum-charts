@@ -410,6 +410,7 @@ export type LineWidthFacet = FacetRef<LineWidth>;
 export type OpacityFacet = FacetRef<number>;
 export type PathWidthFacet = FacetRef<PathWidth>;
 export type SymbolShapeFacet = FacetRef<ChartSymbolShape>;
+export type OnClickCallback = (datum: Datum) => void;
 
 export type DualFacet = [string, string]; // two keys used for a secondary facet on Bar charts
 
@@ -437,7 +438,7 @@ export interface BarProps extends Omit<MarkProps, 'color'> {
 	/** Border width of the bar */
 	lineWidth?: LineWidth;
 	/** Callback that will be run when a bar item is selected */
-	onClick?: (datum: Datum) => void;
+	onClick?: OnClickCallback;
 	/** Optional field used to set the stack order of the bar (higher order = higher on bar) */
 	order?: string;
 	/** The direction of the bars. Defaults to "vertical". */
@@ -470,7 +471,7 @@ export interface LineProps extends Omit<MarkProps, 'color'> {
 	/** Line type or key in the data that is used as the line type facet */
 	lineType?: LineTypeFacet;
 	/** Callback that will be run when a line point is selected */
-	onClick?: (datum: Datum) => void;
+	onClick?: OnClickCallback;
 	/** Opacity or key in the data that is used as the opacity facet */
 	opacity?: OpacityFacet;
 	/** Sets the chart area padding, this is a ratio from 0 to 1 for categorical scales (point) and a pixel value for continuous scales (time, linear) */
