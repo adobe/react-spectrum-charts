@@ -324,7 +324,7 @@ const displayPointMarks = [
 	line0_groupMark,
 	{
 		name: 'line0_staticPoints',
-		description:  'line0_staticPoints',
+		description: 'line0_staticPoints',
 		type: 'symbol',
 		from: {
 			data: 'line0_staticPointData',
@@ -518,6 +518,17 @@ describe('lineSpecBuilder', () => {
 					children: [getMetricRangeElement()],
 				})
 			).toStrictEqual(metricRangeWithDisplayPointMarks);
+		});
+
+		test('with onClick should add hover marks', () => {
+			const marks = addLineMarks([], { ...defaultLineProps, onClick: jest.fn() });
+
+			const voronoiPathMark = marks.at(-1);
+			expect(voronoiPathMark?.description).toBe('line0_voronoi');
+			expect(voronoiPathMark?.encode?.update?.cursor).toStrictEqual({ value: 'pointer' });
+
+			const voronoiPointsMark = marks.at(-2);
+			expect(voronoiPointsMark?.description).toBe('line0_pointsForVoronoi');
 		});
 	});
 

@@ -26,6 +26,12 @@ describe('getInteractiveMarkName()', () => {
 		expect(getInteractiveMarkName([createElement(ChartTooltip)], 'line0')).toEqual('line0');
 		expect(getInteractiveMarkName([createElement(ChartPopover)], 'line0')).toEqual('line0');
 	});
+	test('should return the name provided if props.onClick is defined', () => {
+		expect(getInteractiveMarkName([], 'line0', undefined, { onClick: jest.fn() })).toEqual('line0');
+	});
+	test('should return the name provided if highlightedItem is defined', () => {
+		expect(getInteractiveMarkName([], 'line0', 'someItem0')).toEqual('line0');
+	});
 	test('should return the aggregated trendline name if the line has a trendline with any interactive children', () => {
 		expect(getInteractiveMarkName([createElement(Trendline, {}, createElement(ChartTooltip))], 'line0')).toEqual(
 			'line0Trendline'

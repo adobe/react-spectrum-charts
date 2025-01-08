@@ -9,11 +9,10 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import React from 'react';
-
 import { HIGHLIGHT_CONTRAST_RATIO } from '@constants';
 import '@matchMediaMock';
 import { Line } from '@rsc';
+import { workspaceTrendsData } from '@stories/data/data';
 import {
 	allElementsHaveAttributeValue,
 	clickNthElement,
@@ -37,6 +36,7 @@ import {
 	LineWithAxisAndLegend,
 	LineWithUTCDatetimeFormat,
 	LinearTrendScale,
+	OnClick as OnClickStory,
 	Opacity,
 	Tooltip,
 	TrendScale,
@@ -386,6 +386,22 @@ describe('Line', () => {
 			expect(point.getAttribute('stroke')).toEqual('rgb(255, 255, 255)');
 			expect(point.getAttribute('stroke-opacity')).toEqual('1');
 			expect(point.getAttribute('stroke-width')).toEqual('2');
+		});
+	});
+
+	describe('onClick callback', () => {
+		test('should call the onClick function with the expected data', async () => {
+			const onClick = jest.fn();
+			render(<OnClickStory {...OnClickStory.args} onClick={onClick} />);
+
+			const chart = await findChart();
+			expect(chart).toBeInTheDocument();
+
+			const paths = await findAllMarksByGroupName(chart, 'line0_voronoi');
+			await clickNthElement(paths, 4);
+
+			expect(onClick).toHaveBeenCalledTimes(1);
+			expect(onClick).toHaveBeenCalledWith(expect.objectContaining(workspaceTrendsData[4]));
 		});
 	});
 });

@@ -40,6 +40,7 @@ import { ProductionRuleTests } from '../../types';
 import {
 	getColorProductionRule,
 	getColorProductionRuleSignalString,
+	getCursor,
 	getHighlightOpacityValue,
 	getLineWidthProductionRule,
 	getMarkOpacity,
@@ -247,7 +248,25 @@ describe('isInteractive()', () => {
 		expect(isInteractive([tooltip])).toEqual(true);
 		expect(isInteractive([])).toEqual(false);
 		expect(isInteractive([tooltip, popover])).toEqual(true);
-		expect(isInteractive(defaultBarProps.children, defaultBarProps)).toEqual(false);
+	});
+
+	test('should return true if props.onClick is defined', () => {
+		expect(isInteractive([], { onClick: jest.fn() })).toEqual(true);
+	});
+});
+
+describe('getCursor()', () => {
+	test('should return pointer object if children have popover element', () => {
+		expect(getCursor([createElement(ChartPopover)])).toEqual({ value: 'pointer' });
+	});
+
+	test('should return pointer object if props.onClick is defined', () => {
+		expect(getCursor([], { onClick: jest.fn() })).toEqual({ value: 'pointer' });
+	});
+
+	test('should return falsy value if children do not have popover element and onClick is not defined', () => {
+		expect(getCursor([])).toBeFalsy();
+		expect(getCursor([createElement(ChartTooltip)], {})).toBeFalsy();
 	});
 });
 
