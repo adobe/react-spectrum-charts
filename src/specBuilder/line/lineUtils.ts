@@ -12,10 +12,11 @@
 import { ReactNode } from 'react';
 
 import { Trendline } from '@components/Trendline';
-import { hasInteractiveChildren, hasPopover } from '@specBuilder/marks/markUtils';
+import { hasPopover, isInteractive } from '@specBuilder/marks/markUtils';
 import { sanitizeMarkChildren } from '@utils';
 
 import {
+	ClickableChartProps,
 	ColorFacet,
 	ColorScheme,
 	HighlightedItem,
@@ -23,6 +24,7 @@ import {
 	LineTypeFacet,
 	LineWidthFacet,
 	MarkChildElement,
+	OnClickCallback,
 	OpacityFacet,
 	ScaleType,
 } from '../../types';
@@ -30,10 +32,11 @@ import {
 export const getInteractiveMarkName = (
 	children: MarkChildElement[],
 	name: string,
-	highlightedItem?: HighlightedItem
+	highlightedItem?: HighlightedItem,
+	props?: ClickableChartProps
 ): string | undefined => {
 	// if the line has an interactive component, this line is the target for the interactive component
-	if (hasInteractiveChildren(children) || highlightedItem !== undefined) {
+	if (isInteractive(children, props) || highlightedItem !== undefined) {
 		return name;
 	}
 	// if there is a trendline with an interactive component on the line, then the trendline is the target for the interactive component
@@ -42,7 +45,7 @@ export const getInteractiveMarkName = (
 			(child) =>
 				child.type === Trendline &&
 				'children' in child.props &&
-				hasInteractiveChildren(sanitizeMarkChildren(child.props.children as ReactNode))
+				isInteractive(sanitizeMarkChildren(child.props.children as ReactNode), props)
 		)
 	) {
 		return `${name}Trendline`;
@@ -88,4 +91,5 @@ export interface LineMarkProps {
 	scaleType: ScaleType;
 	staticPoint?: string;
 	interactionMode?: InteractionMode;
+	onClick?: OnClickCallback;
 }

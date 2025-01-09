@@ -22,7 +22,7 @@ import {
 } from '@constants';
 import useChartImperativeHandle from '@hooks/useChartImperativeHandle';
 import useLegend from '@hooks/useLegend';
-import useMarkOnClicks from '@hooks/useMarkOnClicks';
+import useMarkOnClickDetails from '@hooks/useMarkOnClickDetails';
 import usePopoverAnchorStyle from '@hooks/usePopoverAnchorStyle';
 import usePopovers, { PopoverDetail } from '@hooks/usePopovers';
 import useSpec from '@hooks/useSpec';
@@ -32,6 +32,7 @@ import { getColorValue } from '@specBuilder/specUtils';
 import { getChartConfig } from '@themes/spectrumTheme';
 import {
 	debugLog,
+	getOnChartMarkClickCallback,
 	getOnMarkClickCallback,
 	getOnMouseInputCallback,
 	sanitizeRscChartChildren,
@@ -162,7 +163,7 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 
 		const tooltips = useTooltips(sanitizedChildren);
 		const popovers = usePopovers(sanitizedChildren);
-		const onMarkClicks = useMarkOnClicks(sanitizedChildren);
+		const markClickDetails = useMarkOnClickDetails(sanitizedChildren);
 
 		// gets the correct css style to display the anchor in the correct position
 		const targetStyle = usePopoverAnchorStyle(
@@ -270,7 +271,7 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 								tooltipHandler.call(viewRef, event, item, value);
 							}
 						});
-						if (popovers.length || onMarkClicks.length || legendIsToggleable || onLegendClick) {
+						if (popovers.length || legendIsToggleable || onLegendClick) {
 							if (legendIsToggleable) {
 								view.signal('hiddenSeries', legendHiddenSeries);
 							}
@@ -281,20 +282,20 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 							});
 							view.addEventListener(
 								'click',
-								getOnMarkClickCallback(
+								getOnMarkClickCallback({
 									chartView,
-									legendHiddenSeries,
+									hiddenSeries: legendHiddenSeries,
 									chartId,
 									selectedData,
 									selectedDataBounds,
 									selectedDataName,
-									setLegendHiddenSeries,
+									setHiddenSeries: setLegendHiddenSeries,
 									legendIsToggleable,
 									onLegendClick,
-									onMarkClicks
-								)
+								})
 							);
 						}
+						view.addEventListener('click', getOnChartMarkClickCallback(chartView, markClickDetails));
 						view.addEventListener('mouseover', getOnMouseInputCallback(onLegendMouseOver));
 						view.addEventListener('mouseout', getOnMouseInputCallback(onLegendMouseOut));
 						// this will trigger the autosize calculation making sure that everything is correct size

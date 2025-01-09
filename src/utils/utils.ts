@@ -246,14 +246,16 @@ export const getAllMarkElements = (
 	) {
 		return elements;
 	}
+
 	// if the type matches, we found our element
 	if (target.type === source) {
 		return [...elements, { name, element: target as ChartElement | RscElement }];
 	}
 
 	// if there aren't any more children to search, stop looking
-	if (!('props' in target) || typeof target.props !== 'object' || !target.props || !('children' in target.props))
+	if (!('props' in target) || typeof target.props !== 'object' || !target.props || !('children' in target.props)) {
 		return elements;
+	}
 
 	const elementCounts = initElementCounts();
 	const desiredElements: MappedElement[] = [];
@@ -261,6 +263,7 @@ export const getAllMarkElements = (
 		const childName = getElementName(child, elementCounts);
 		desiredElements.push(...getAllMarkElements(child, source, elements, combineElementNames(name, childName)));
 	}
+
 	// no element matches found, give up all hope...
 	return [...elements, ...desiredElements];
 };

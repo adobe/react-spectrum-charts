@@ -410,6 +410,7 @@ export type LineWidthFacet = FacetRef<LineWidth>;
 export type OpacityFacet = FacetRef<number>;
 export type PathWidthFacet = FacetRef<PathWidth>;
 export type SymbolShapeFacet = FacetRef<ChartSymbolShape>;
+export type OnClickCallback = (datum: Datum) => void;
 
 export type DualFacet = [string, string]; // two keys used for a secondary facet on Bar charts
 
@@ -423,7 +424,12 @@ export interface AnnotationStyleProps extends MarkProps {
 	width?: number;
 }
 
-export interface BarProps extends Omit<MarkProps, 'color'> {
+export interface ClickableChartProps {
+	/** Callback that will be run when a point/section is clicked */
+	onClick?: OnClickCallback;
+}
+
+export interface BarProps extends Omit<MarkProps & ClickableChartProps, 'color'> {
 	/** Bar color or key in the data that is used as the color facet */
 	color?: ColorFacet | DualFacet;
 	/** Data field used for the bar categories (x-axis for a vertical bar) */
@@ -436,8 +442,6 @@ export interface BarProps extends Omit<MarkProps, 'color'> {
 	lineType?: LineTypeFacet | DualFacet;
 	/** Border width of the bar */
 	lineWidth?: LineWidth;
-	/** callback that will be run when a bar item is selected */
-	onClick?: (datum: Datum) => void;
 	/** Optional field used to set the stack order of the bar (higher order = higher on bar) */
 	order?: string;
 	/** The direction of the bars. Defaults to "vertical". */
@@ -462,7 +466,7 @@ export interface BarProps extends Omit<MarkProps, 'color'> {
 
 export type BarType = 'dodged' | 'stacked';
 
-export interface LineProps extends Omit<MarkProps, 'color'> {
+export interface LineProps extends Omit<MarkProps & ClickableChartProps, 'color'> {
 	/** Line color or key in the data that is used as the color facet */
 	color?: ColorFacet;
 	/** Data field that the value is trended against (x-axis) */
@@ -474,9 +478,9 @@ export interface LineProps extends Omit<MarkProps, 'color'> {
 	/** Sets the chart area padding, this is a ratio from 0 to 1 for categorical scales (point) and a pixel value for continuous scales (time, linear) */
 	padding?: number;
 	pointSize?: number;
-	/** line to be interpreted and rendered as a sparkline. For example, Changes the fill of static points. */
+	/** Line to be interpreted and rendered as a sparkline. For example, Changes the fill of static points. */
 	isSparkline?: boolean;
-	/** sparkline's method is last - meaning that last element of data has the static point */
+	/** Sparkline's method is last - meaning that last element of data has the static point */
 	isMethodLast?: boolean;
 	/** Sets the type of scale that should be used for the trend */
 	scaleType?: ScaleType;

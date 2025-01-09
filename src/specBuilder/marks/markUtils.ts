@@ -57,6 +57,7 @@ import {
 import {
 	BarSpecProps,
 	ChartTooltipProps,
+	ClickableChartProps,
 	ColorFacet,
 	ColorScheme,
 	DonutSpecProps,
@@ -73,18 +74,19 @@ import {
 /**
  * If a popover or onClick prop exists on the mark, then set the cursor to a pointer.
  */
-export function getCursor(children: MarkChildElement[], props?: BarSpecProps): ScaledValueRef<Cursor> | undefined {
+export function getCursor(
+	children: MarkChildElement[],
+	props?: ClickableChartProps
+): ScaledValueRef<Cursor> | undefined {
 	if (props?.onClick !== undefined || hasPopover(children)) {
 		return { value: 'pointer' };
 	}
 }
 
 /**
- * If there aren't any tooltips, popovers, or onClick props on the mark, then set interactive to false.
- * This prevents the mark from interfering with other interactive marks.
+ * Returns true if there are any popovers or tooltips in the children, or if props.onClick is defined.
  */
-export function getInteractive(children: MarkChildElement[], props?: BarSpecProps): boolean {
-	// skip annotations
+export function isInteractive(children: MarkChildElement[], props?: ClickableChartProps): boolean {
 	return props?.onClick !== undefined || hasInteractiveChildren(children);
 }
 
@@ -328,7 +330,12 @@ export const getPointsForVoronoi = (
  * @param markName
  * @returns PathMark
  */
-export const getVoronoiPath = (children: MarkChildElement[], dataSource: string, markName: string): PathMark => ({
+export const getVoronoiPath = (
+	children: MarkChildElement[],
+	dataSource: string,
+	markName: string,
+	props?: ClickableChartProps
+): PathMark => ({
 	name: `${markName}_voronoi`,
 	description: `${markName}_voronoi`,
 	type: 'path',
@@ -341,7 +348,7 @@ export const getVoronoiPath = (children: MarkChildElement[], dataSource: string,
 			tooltip: getTooltip(children, markName, true),
 		},
 		update: {
-			cursor: getCursor(children),
+			cursor: getCursor(children, props),
 		},
 	},
 	transform: [

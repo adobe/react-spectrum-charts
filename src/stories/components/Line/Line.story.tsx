@@ -163,61 +163,64 @@ const PlainLineStory: StoryFn<typeof Line> = (args): ReactElement => {
 	);
 };
 
+const defaultArgs = {
+	color: 'series',
+	name: 'line0',
+	onClick: undefined,
+};
+
 const Basic = bindWithProps(BasicLineStory);
 Basic.args = {
-	color: 'series',
+	...defaultArgs,
 	dimension: 'datetime',
 	metric: 'value',
-	name: 'line0',
 	scaleType: 'time',
 };
 
 const LineWithAxisAndLegend = bindWithProps(LineStory);
 LineWithAxisAndLegend.args = {
-	color: 'series',
+	...defaultArgs,
 	dimension: 'datetime',
 	metric: 'users',
-	name: 'line0',
 	scaleType: 'time',
 };
 
 const LineWithUTCDatetimeFormat = bindWithProps(LineStoryWithUTCData);
 LineWithUTCDatetimeFormat.args = {
-	color: 'series',
+	...defaultArgs,
 	dimension: 'datetime',
 	metric: 'users',
-	name: 'line0',
 	scaleType: 'time',
 };
 
 const LineType = bindWithProps(BasicLineStory);
 LineType.args = {
-	color: 'series',
+	...defaultArgs,
 	lineType: 'series',
 };
 
 const Opacity = bindWithProps(BasicLineStory);
 Opacity.args = {
-	color: 'series',
+	...defaultArgs,
 	opacity: { value: 0.6 },
 };
 
 const TrendScale = bindWithProps(ComboStory);
 TrendScale.args = {
-	color: 'series',
+	...defaultArgs,
 	scaleType: 'point',
 };
 
 const LinearTrendScale = bindWithProps(LinearStory);
 LinearTrendScale.args = {
-	color: 'series',
+	...defaultArgs,
 	dimension: 'point',
 	scaleType: 'linear',
 };
 
 const HistoricalCompare = bindWithProps(HistoricalCompareStory);
 HistoricalCompare.args = {
-	color: 'series',
+	...defaultArgs,
 	dimension: 'datetime',
 	lineType: 'period',
 	metric: 'users',
@@ -226,7 +229,7 @@ HistoricalCompare.args = {
 
 const Tooltip = bindWithProps(BasicLineStory);
 Tooltip.args = {
-	color: 'series',
+	...defaultArgs,
 	children: (
 		<ChartTooltip>
 			{(datum) => (
@@ -248,10 +251,9 @@ ItemTooltip.args = {
 
 const WithStaticPoints = bindWithProps(LineWithVisiblePointsStory);
 WithStaticPoints.args = {
-	color: 'series',
+	...defaultArgs,
 	dimension: 'datetime',
 	metric: 'value',
-	name: 'line0',
 	scaleType: 'linear',
 	staticPoint: 'staticPoint',
 };
@@ -278,10 +280,9 @@ const generateCallback = (variant: 'popover' | 'tooltip') => {
 
 const WithStaticPointsAndDialogs = bindWithProps(LineWithVisiblePointsStory);
 WithStaticPointsAndDialogs.args = {
-	color: 'series',
+	...defaultArgs,
 	dimension: 'datetime',
 	metric: 'value',
-	name: 'line0',
 	scaleType: 'time',
 	staticPoint: 'staticPoint',
 	children: [
@@ -294,8 +295,8 @@ WithStaticPointsAndDialogs.args = {
 
 const BasicSparkline = bindWithProps(PlainLineStory);
 BasicSparkline.args = {
+	...defaultArgs,
 	metric: 'y',
-	name: 'line0',
 	dimension: 'x',
 	staticPoint: 'staticPoint',
 	scaleType: 'linear',
@@ -304,13 +305,28 @@ BasicSparkline.args = {
 
 const SparklineWithStaticPoint = bindWithProps(PlainLineStory);
 SparklineWithStaticPoint.args = {
+	...defaultArgs,
 	metric: 'y',
-	name: 'line0',
 	dimension: 'x',
 	staticPoint: 'staticPoint',
 	scaleType: 'linear',
 	isSparkline: true,
 	isMethodLast: true,
+};
+
+const OnClick = bindWithProps(BasicLineStory);
+OnClick.args = {
+	...defaultArgs,
+	dimension: 'datetime',
+	metric: 'value',
+	scaleType: 'time',
+	onClick: action('onClick'),
+};
+
+const OnClickWithTooltip = bindWithProps(BasicLineStory);
+OnClickWithTooltip.args = {
+	...Tooltip.args,
+	...OnClick.args,
 };
 
 export {
@@ -328,4 +344,6 @@ export {
 	WithStaticPointsAndDialogs,
 	BasicSparkline,
 	SparklineWithStaticPoint,
+	OnClick,
+	OnClickWithTooltip,
 };

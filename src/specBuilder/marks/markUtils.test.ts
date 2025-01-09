@@ -40,8 +40,8 @@ import { ProductionRuleTests } from '../../types';
 import {
 	getColorProductionRule,
 	getColorProductionRuleSignalString,
+	getCursor,
 	getHighlightOpacityValue,
-	getInteractive,
 	getLineWidthProductionRule,
 	getMarkOpacity,
 	getOpacityProductionRule,
@@ -52,6 +52,7 @@ import {
 	getYProductionRule,
 	hasMetricRange,
 	hasTooltip,
+	isInteractive,
 } from './markUtils';
 
 describe('getColorProductionRule', () => {
@@ -240,14 +241,32 @@ describe('getYProductionRule()', () => {
 	});
 });
 
-describe('getInteractive()', () => {
+describe('isInteractive()', () => {
 	const tooltip = createElement(ChartTooltip);
 	const popover = createElement(ChartPopover);
 	test('should return true based on having interactive children', () => {
-		expect(getInteractive([tooltip])).toEqual(true);
-		expect(getInteractive([])).toEqual(false);
-		expect(getInteractive([tooltip, popover])).toEqual(true);
-		expect(getInteractive(defaultBarProps.children, defaultBarProps)).toEqual(false);
+		expect(isInteractive([tooltip])).toEqual(true);
+		expect(isInteractive([])).toEqual(false);
+		expect(isInteractive([tooltip, popover])).toEqual(true);
+	});
+
+	test('should return true if props.onClick is defined', () => {
+		expect(isInteractive([], { onClick: jest.fn() })).toEqual(true);
+	});
+});
+
+describe('getCursor()', () => {
+	test('should return pointer object if children have popover element', () => {
+		expect(getCursor([createElement(ChartPopover)])).toEqual({ value: 'pointer' });
+	});
+
+	test('should return pointer object if props.onClick is defined', () => {
+		expect(getCursor([], { onClick: jest.fn() })).toEqual({ value: 'pointer' });
+	});
+
+	test('should return falsy value if children do not have popover element and onClick is not defined', () => {
+		expect(getCursor([])).toBeFalsy();
+		expect(getCursor([createElement(ChartTooltip)], {})).toBeFalsy();
 	});
 });
 

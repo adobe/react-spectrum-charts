@@ -87,7 +87,7 @@ export const addBar = produce<
 			dimension,
 			hasSquareCorners,
 			index,
-			interactiveMarkName: getInteractiveMarkName(sanitizedChildren, barName, props.highlightedItem),
+			interactiveMarkName: getInteractiveMarkName(sanitizedChildren, barName, props.highlightedItem, props),
 			lineType,
 			lineWidth,
 			markType: 'bar',

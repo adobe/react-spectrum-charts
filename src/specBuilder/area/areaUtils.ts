@@ -23,8 +23,8 @@ import {
 	getBorderStrokeEncodings,
 	getColorProductionRule,
 	getCursor,
-	getInteractive,
 	getTooltip,
+	isInteractive,
 } from '@specBuilder/marks/markUtils';
 import { AreaMark, NumericValueRef, ProductionRule } from 'vega';
 
@@ -56,7 +56,7 @@ export const getAreaMark = (areaProps: AreaMarkProps, dataSource: string = `${ar
 		description: name,
 		type: 'area',
 		from: { data: dataSource },
-		interactive: getInteractive(children),
+		interactive: isInteractive(children),
 		encode: {
 			enter: {
 				y: { scale: 'yLinear', field: metricStart },
