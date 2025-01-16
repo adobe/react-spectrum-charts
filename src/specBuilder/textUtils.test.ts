@@ -28,4 +28,27 @@ describe('getTextNumberFormat()', () => {
 		expect(format).toHaveLength(1);
 		expect(format[0]).toHaveProperty('signal', `format(datum['value'], '${numberFormat}')`);
 	});
+	test('should return correct signal for string specifier with currencyCode and locale', () => {
+		const currencyCode = 'JPY';
+		const locale = 'fr-FR';
+		const numberFormat = '.4f';
+		const format = getTextNumberFormat(numberFormat, 'value', locale, currencyCode);
+		expect(format).toHaveLength(1);
+		expect(format[0]).toHaveProperty(
+			'signal',
+			`formatLocaleCurrency(datum, \"${locale}\", \"${currencyCode}\", \"${numberFormat}\")`
+		);
+	});
+	test('should return correct signal for string specifier if no currencyCode', () => {
+		const numberFormat = '.2f';
+		const format = getTextNumberFormat(numberFormat, 'value', 'fr-FR');
+		expect(format).toHaveLength(1);
+		expect(format[0]).toHaveProperty('signal', `format(datum['value'], '${numberFormat}')`);
+	});
+	test('should return correct signal for string specifier if no currencyLocale', () => {
+		const numberFormat = '.2f';
+		const format = getTextNumberFormat(numberFormat, 'value', undefined, 'USD');
+		expect(format).toHaveLength(1);
+		expect(format[0]).toHaveProperty('signal', `format(datum['value'], '${numberFormat}')`);
+	});
 });

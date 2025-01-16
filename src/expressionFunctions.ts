@@ -14,11 +14,49 @@ import { ADOBE_CLEAN_FONT } from '@themes/spectrumTheme';
 import { FormatLocaleDefinition, formatLocale } from 'd3-format';
 import { FontWeight } from 'vega';
 
+import { NumberFormat } from './types';
+
 export interface LabelDatum {
 	index: number;
 	label: string;
 	value: string | number;
 }
+
+/**
+ * Formats currency values using a currency specific locale and currency code for the position and
+ * type of currency symbol.
+ * Applies thousands and decimal separators based on the numberFormat.
+ * @returns string
+ */
+export const formatLocaleCurrency = (numberLocale: FormatLocaleDefinition = numberLocales['en-US']) => {
+	return ({ value }: LabelDatum, currencyLocale: string, currencyCode: string, numberFormat: NumberFormat) => {
+		if (typeof value === 'string') return value;
+
+		try {
+			const formatOptions: Intl.NumberFormatOptions = {
+				style: 'currency',
+				currency: currencyCode,
+				maximumFractionDigits: 0,
+			};
+			// Get currency template with positioning and symbol based on currencyLocale and currencyCode.
+			const currencyTemplate = new Intl.NumberFormat(currencyLocale, formatOptions).format(0);
+
+			let precision = 2;
+			// Parse the precision if numberFormat is a format string.
+			if (numberFormat !== 'currency') {
+				precision = parseInt(numberFormat.split('.')[1].replace('f', ''));
+			}
+
+			// Format the value using the chart locale and the precision, then swap it into the currency template.
+			const d3Formatter = formatLocale(numberLocale);
+			return currencyTemplate.replace('0', d3Formatter.format(`,.${precision}f`)(value));
+		} catch (error) {
+			console.error('Error formatting currency: ', error);
+			// Fallback to chart locale formatting.
+			return formatLocale(numberLocale).format('$,.2f')(value);
+		}
+	};
+};
 
 /**
  * Hides labels that are the same as the previous label

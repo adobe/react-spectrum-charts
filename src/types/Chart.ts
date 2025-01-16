@@ -118,7 +118,7 @@ export type LineTypes = LineType[] | LineType[][];
 export type Opacities = number[] | number[][];
 export type SymbolShapes = ChartSymbolShape[] | ChartSymbolShape[][];
 export type ChartSymbolShape = 'rounded-square' | SymbolShape;
-export type NumberFormat = 'currency' | 'shortCurrency' | 'shortNumber' | 'standardNumber';
+export type NumberFormat = 'currency' | 'shortCurrency' | 'shortNumber' | 'standardNumber' | string;
 export type TooltipAnchor = 'cursor' | 'mark';
 export type TooltipPlacement = 'top' | 'bottom' | 'left' | 'right';
 
@@ -237,7 +237,7 @@ export interface DonutSummaryProps {
 	 *
 	 * see {@link https://d3js.org/d3-format#locale_format}
 	 */
-	numberFormat?: NumberFormat | string;
+	numberFormat?: NumberFormat;
 	/** Label for the metric summary */
 	label?: string;
 }
@@ -292,7 +292,7 @@ export interface AxisProps extends BaseProps {
 	 *
 	 * see {@link https://d3js.org/d3-format#locale_format}
 	 */
-	numberFormat?: NumberFormat | string;
+	numberFormat?: NumberFormat;
 	/** The minimum and maximum values for the axis, for example: `[-10, 10]`.
 	 *
 	 * Note: This prop is only supported for axes with `linear` or `time` scale types.
@@ -314,6 +314,28 @@ export interface AxisProps extends BaseProps {
 	title?: string | string[];
 	/** If the text is wider than the bandwidth that is labels, it will be truncated so that it stays within that bandwidth. */
 	truncateLabels?: boolean;
+	/**
+	 * Set the locale for currency formatting (affects symbol position and spacing).
+	 *
+	 * ⚠️ Limited Support:
+	 * Support for and changes to this prop will be limited.
+	 * Only use this if you need to override the currency locale formatting from the chart locale.
+	 *
+	 * **Important:** This prop requires 'currencyCode' prop to take effect.
+	 *
+	 * Example: 'en-US' ($100) vs 'de-DE' (100 $)
+	 */
+	currencyLocale?: string;
+	/**
+	 * Override the currency symbol from the chart locale with a specific currency code.
+	 *
+	 * ⚠️ Limited Support:
+	 * Support for and changes to this prop will be limited.
+	 * Only use this if you need to override the currency symbol from the chart locale.
+	 *
+	 * **Important:** This prop requires 'currencyLocale' prop to take effect.
+	 */
+	currencyCode?: string;
 }
 
 export interface BigNumberProps {
