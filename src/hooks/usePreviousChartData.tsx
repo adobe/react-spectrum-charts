@@ -10,6 +10,7 @@
  * governing permissions and limitations under the License.
  */
 import { useEffect, useRef } from 'react';
+
 import { ChartData } from '@rsc';
 
 export function usePreviousChartData(data: ChartData[]): ChartData[] | undefined {

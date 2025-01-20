@@ -10,13 +10,13 @@
  * governing permissions and limitations under the License.
  */
 import {
+	ANIMATION_FUNCTION,
 	BACKGROUND_COLOR,
 	COLOR_SCALE,
 	DEFAULT_COLOR,
 	DEFAULT_COLOR_SCHEME,
 	DEFAULT_OPACITY_RULE,
 	DEFAULT_TRANSFORMED_TIME_DIMENSION,
-	ANIMATION_FUNCTION,
 } from '@constants';
 
 import { getAreaMark } from './areaUtils';

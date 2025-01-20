@@ -449,7 +449,9 @@ const displayPointWithAnimationMarks = [
 describe('lineSpecBuilder', () => {
 	describe('addLine()', () => {
 		test('should add line', () => {
-			expect(addLine(startingSpec, { idKey: MARK_ID, color: DEFAULT_COLOR, animations: false })).toStrictEqual(defaultSpec);
+			expect(addLine(startingSpec, { idKey: MARK_ID, color: DEFAULT_COLOR, animations: false })).toStrictEqual(
+				defaultSpec
+			);
 		});
 	});
 

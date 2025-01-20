@@ -13,8 +13,8 @@ import React, { ReactElement } from 'react';
 
 import { ChartTooltip } from '@components/ChartTooltip/ChartTooltip';
 import useChartProps from '@hooks/useChartProps';
+import { Area, Bar, Chart, Datum, Line, categorical12 } from '@rsc';
 import { browserData } from '@stories/data/data';
-import { Area, Bar, Chart, categorical12, Datum, Line } from '@rsc';
 import { formatTimestamp } from '@stories/storyUtils';
 import { StoryFn } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
@@ -92,7 +92,7 @@ const LineTooltipStory: StoryFn<typeof ChartTooltip> = (args): ReactElement => {
 const DisabledSeriesLineTooltipStory: StoryFn<typeof ChartTooltip> = (args): ReactElement => {
 	const chartProps = useChartProps({ data: disabledLineData, width: 600, colors: ['gray-300', ...categorical12] });
 	return (
-		<Chart {...chartProps} >
+		<Chart {...chartProps}>
 			<Line color="series">
 				<ChartTooltip {...args} />
 			</Line>

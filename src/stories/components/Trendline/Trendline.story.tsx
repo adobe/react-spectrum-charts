@@ -73,7 +73,13 @@ export default {
 	},
 };
 
-const defaultChartProps: ChartProps = { animations: false, data: workspaceTrendsData, minWidth: 400, maxWidth: 800, height: 400 };
+const defaultChartProps: ChartProps = {
+	animations: false,
+	data: workspaceTrendsData,
+	minWidth: 400,
+	maxWidth: 800,
+	height: 400,
+};
 
 const TrendlineStory: StoryFn<typeof Trendline> = (args): ReactElement => {
 	const chartProps = useChartProps(defaultChartProps);
@@ -151,7 +157,13 @@ const TrendlineWithDialogsOnParentStory: StoryFn<typeof Trendline> = (args): Rea
 };
 
 const ScatterStory: StoryFn<typeof Trendline> = (args): ReactElement => {
-	const chartProps = useChartProps({ animations: false, data: characterData, height: 500, width: 500, lineWidths: [1, 2, 3] });
+	const chartProps = useChartProps({
+		animations: false,
+		data: characterData,
+		height: 500,
+		width: 500,
+		lineWidths: [1, 2, 3],
+	});
 
 	return (
 		<Chart {...chartProps}>

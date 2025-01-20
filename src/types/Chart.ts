@@ -436,7 +436,7 @@ export interface ClickableChartProps {
 }
 
 export interface BarProps extends Omit<MarkProps & ClickableChartProps, 'color'> {
-  animations?: boolean;
+	animations?: boolean;
 	/** Bar color or key in the data that is used as the color facet */
 	color?: ColorFacet | DualFacet;
 	/** Data field used for the bar categories (x-axis for a vertical bar) */
@@ -672,8 +672,8 @@ export interface ChartTooltipProps {
 	highlightBy?: 'series' | 'dimension' | 'item' | string[];
 }
 export interface ChartPopoverProps {
-	animations?: boolean,
-  /** Callback used to control the content rendered in the popover */
+	animations?: boolean;
+	/** Callback used to control the content rendered in the popover */
 	children?: PopoverHandler;
 	/** Width of the popover */
 	width?: number | 'auto';

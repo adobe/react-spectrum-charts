@@ -21,12 +21,13 @@ import {
 	MARK_ID,
 } from '@constants';
 import useChartHeight from '@hooks/useChartHeight';
+import useChartImperativeHandle from '@hooks/useChartImperativeHandle';
+import useChartWidth from '@hooks/useChartWidth';
+import { usePreviousChartData } from '@hooks/usePreviousChartData';
+import { useResizeObserver } from '@hooks/useResizeObserver';
 import { getColorValue } from '@specBuilder/specUtils';
 import { getBigNumberElementsFromChildren, toArray } from '@utils';
 import { BigNumberInternal } from 'rc/components/BigNumber/BigNumber';
-import useChartImperativeHandle from '@hooks/useChartImperativeHandle';
-import useChartWidth from '@hooks/useChartWidth';
-import { useResizeObserver } from '@hooks/useResizeObserver';
 import { v4 as uuid } from 'uuid';
 import { View } from 'vega';
 
@@ -36,7 +37,6 @@ import { Theme } from '@react-types/provider';
 import './Chart.css';
 import { RscChart } from './RscChart';
 import { ChartData, ChartHandle, ChartProps, LineType, RscChartProps } from './types';
-import { usePreviousChartData } from '@hooks/usePreviousChartData';
 
 interface PlaceholderContentProps {
 	data: ChartData[];
@@ -125,8 +125,8 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 		}
 
 		const rscChartProps: RscChartProps = {
-	    animations,
-		  chartView,
+			animations,
+			chartView,
 			chartId,
 			data,
 			backgroundColor,
@@ -139,7 +139,7 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 			lineWidths,
 			locale,
 			padding,
-      previousData,
+			previousData,
 			renderer,
 			title,
 			tooltipAnchor,

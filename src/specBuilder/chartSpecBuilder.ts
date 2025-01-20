@@ -11,9 +11,10 @@
  */
 import {
 	BACKGROUND_COLOR,
-	HIGHLIGHTED_GROUP,
 	DATA_ANIMATION_DURATION_FRAMES,
 	DATA_ANIMATION_MILLISECONDS_PER_FRAME,
+	FILTERED_TABLE,
+	HIGHLIGHTED_GROUP,
 	HIGHLIGHTED_ITEM,
 	HIGHLIGHTED_SERIES,
 	LINEAR_COLOR_SCALE,
@@ -23,11 +24,10 @@ import {
 	SELECTED_GROUP,
 	SELECTED_ITEM,
 	SELECTED_SERIES,
+	SERIES_ID,
 	SYMBOL_PATH_WIDTH_SCALE,
 	SYMBOL_SHAPE_SCALE,
 	SYMBOL_SIZE_SCALE,
-	FILTERED_TABLE,
-	SERIES_ID,
 	TABLE,
 } from '@constants';
 import { Area, Axis, Bar, Legend, Line, Scatter, Title } from '@rsc';
@@ -86,7 +86,7 @@ import { addTitle } from './title/titleSpecBuilder';
 
 export function buildSpec(props: SanitizedSpecProps) {
 	const {
-	  animations,
+		animations,
 		animateFromZero,
 		backgroundColor,
 		children,
@@ -217,7 +217,7 @@ const initializeComponentCounts = () => {
 };
 
 export const getDefaultSignals = ({
-  animations,
+	animations,
 	backgroundColor,
 	colors,
 	colorScheme,
@@ -253,7 +253,12 @@ export const getTimer = () => {
 	return {
 		name: 'timerValue',
 		value: '0',
-		on: [{ events: `timer{${DATA_ANIMATION_MILLISECONDS_PER_FRAME}}`, update: `min(1, timerValue + (1 / ${DATA_ANIMATION_DURATION_FRAMES}))` }],
+		on: [
+			{
+				events: `timer{${DATA_ANIMATION_MILLISECONDS_PER_FRAME}}`,
+				update: `min(1, timerValue + (1 / ${DATA_ANIMATION_DURATION_FRAMES}))`,
+			},
+		],
 	};
 };
 

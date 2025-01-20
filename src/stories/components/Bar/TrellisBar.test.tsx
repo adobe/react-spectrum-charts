@@ -33,7 +33,7 @@ import {
 
 describe('TrellisBar', () => {
 	test('Dodged renders properly', async () => {
-		render(<Dodged {...Dodged.args } animations={false} />);
+		render(<Dodged {...Dodged.args} animations={false} />);
 		const chart = await findChart();
 		expect(chart).toBeInTheDocument();
 

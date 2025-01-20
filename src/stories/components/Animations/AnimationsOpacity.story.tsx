@@ -111,7 +111,13 @@ const getLegendProps = (args: ScatterProps): LegendProps => {
 };
 
 const AreaPopoverStory: StoryFn<typeof Area> = (args): ReactElement => {
-	const chartProps = useChartProps({ data: areaStoryData, minWidth: 400, maxWidth: 800, height: 400, animations: args.animations });
+	const chartProps = useChartProps({
+		data: areaStoryData,
+		minWidth: 400,
+		maxWidth: 800,
+		height: 400,
+		animations: args.animations,
+	});
 	return (
 		<Chart {...chartProps}>
 			<Axis position="bottom" baseline />
@@ -183,7 +189,7 @@ AreaPopover.args = {
 	dimension: 'browser',
 	color: 'operatingSystem',
 	scaleType: 'point',
-	animations: true
+	animations: true,
 };
 
 const BarPopover = bindWithProps(DodgedBarPopoverStory);
@@ -192,7 +198,7 @@ BarPopover.args = {
 	dimension: 'browser',
 	order: 'order',
 	color: 'operatingSystem',
-	animations: true
+	animations: true,
 };
 
 const LineChart = bindWithProps(LineStory);
@@ -205,11 +211,11 @@ ScatterPopover.args = {
 	metric: 'handlingNormal',
 	children: [
 		<ChartTooltip key="0">{dialog}</ChartTooltip>,
-		<ChartPopover key="1" width="auto" animations >
+		<ChartPopover key="1" width="auto" animations>
 			{dialog}
 		</ChartPopover>,
 	],
-	animations: true
+	animations: true,
 };
 
 export { AreaPopover, BarPopover, LineChart, ScatterPopover };

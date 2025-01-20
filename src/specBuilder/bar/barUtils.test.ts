@@ -497,13 +497,15 @@ describe('barUtils', () => {
 			expect(getDodgedDimensionEncodings(defaultBarProps)).toStrictEqual(defaultDodgedXEncodings);
 		});
 		test('should return x and width with animations', () => {
-			expect(getDodgedDimensionEncodings({...defaultBarProps, animations: true, animateFromZero: true})).toStrictEqual({
-				...defaultDodgedXEncodings, 	
+			expect(
+				getDodgedDimensionEncodings({ ...defaultBarProps, animations: true, animateFromZero: true })
+			).toStrictEqual({
+				...defaultDodgedXEncodings,
 				y: {
 					scale: 'yLinear',
 					signal: `datum.value * ${ANIMATION_FUNCTION}`,
 				},
-				y2: { scale: 'yLinear', signal: "0" },
+				y2: { scale: 'yLinear', signal: '0' },
 			});
 		});
 	});

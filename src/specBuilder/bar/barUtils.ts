@@ -9,15 +9,8 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { CORNER_RADIUS, DISCRETE_PADDING, FILTERED_TABLE, SELECTED_GROUP, SELECTED_ITEM, STACK_ID } from '@constants';
 import { getPopovers } from '@specBuilder/chartPopover/chartPopoverUtils';
-import {
-	SELECTED_GROUP,
-	CORNER_RADIUS,
-	DISCRETE_PADDING,
-	FILTERED_TABLE,
-	SELECTED_ITEM,
-	STACK_ID,
-} from '@constants';
 import {
 	getColorProductionRule,
 	getCursor,
@@ -277,7 +270,7 @@ export const getBarUpdateEncodings = (props: BarSpecProps): EncodeEntry => ({
 });
 
 export const getStroke = ({
-  name,
+	name,
 	children,
 	color,
 	colorScheme,

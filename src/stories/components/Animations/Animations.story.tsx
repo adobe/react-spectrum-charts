@@ -11,10 +11,7 @@
  */
 import React, { ReactElement, useState } from 'react';
 
-import {
-	MARK_ID,
-	TRENDLINE_VALUE
-} from '@constants';
+import { MARK_ID, TRENDLINE_VALUE } from '@constants';
 import useChartProps from '@hooks/useChartProps';
 import {
 	Annotation,
@@ -27,16 +24,16 @@ import {
 	ChartTooltip,
 	Legend,
 	Line,
-	Trendline
+	Trendline,
 } from '@rsc';
-import { areaData, stackedAreaData, newDataArray1WithStaticPoints, workspaceTrendsData } from '@stories/data/data';
+import { areaData, newDataArray1WithStaticPoints, stackedAreaData, workspaceTrendsData } from '@stories/data/data';
 import { StoryFn } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
-import { ChartData, ChartElement, Datum, SpectrumColor } from '../../../types';
 
 import { Button, Content, Text, View } from '@adobe/react-spectrum';
 
-import { barData, barSubSeriesData, generateMockDataForTrellis,  } from '../Bar/data';
+import { ChartData, ChartElement, Datum, SpectrumColor } from '../../../types';
+import { barData, barSubSeriesData, generateMockDataForTrellis } from '../Bar/data';
 
 export default {
 	title: 'RSC/Animations',
@@ -82,13 +79,13 @@ const dialog = (item: Datum) => {
 			</View>
 		</Content>
 	);
-}
+};
 const manipulateData = (data: number): number => {
 	const randomFactor = Math.random() * (1.25 - 0.75) + 0.75;
 	return Number((data * randomFactor).toFixed(1));
 };
 const AreaStory: StoryFn<ToggleableDataProps> = (args): ReactElement => {
-	const chartProps = useChartProps( defaultChartProps );
+	const chartProps = useChartProps(defaultChartProps);
 	return (
 		<ChartWithToggleableData
 			ChartComponent={
@@ -113,7 +110,7 @@ const StackedAreaStory: StoryFn<ToggleableDataProps> = (args): ReactElement => {
 					<Area dimension="browser" color="operatingSystem" scaleType="point" />
 				</Chart>
 			}
-			{ ...args}
+			{...args}
 		/>
 	);
 };
@@ -160,7 +157,7 @@ const DodgedBarStory: StoryFn<ToggleableDataProps> = (args): ReactElement => {
 		['#575de8', '#8489fd'],
 		['#d16100', '#fa8b1a'],
 	];
-	const chartProps = useChartProps({ ...defaultChartProps,  colors });
+	const chartProps = useChartProps({ ...defaultChartProps, colors });
 	return (
 		<ChartWithToggleableData
 			ChartComponent={

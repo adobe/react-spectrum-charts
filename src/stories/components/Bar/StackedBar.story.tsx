@@ -61,7 +61,7 @@ const defaultProps: BarProps = {
 	order: 'order',
 	color: 'operatingSystem',
 	onClick: undefined,
-}
+};
 
 const Basic = bindWithProps(BarStory);
 Basic.args = {

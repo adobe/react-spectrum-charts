@@ -128,7 +128,7 @@ describe('Scatter', () => {
 		});
 
 		test('should highlight hovered points', async () => {
-			render(<Popover {...Popover.args} animations={false}/>);
+			render(<Popover {...Popover.args} animations={false} />);
 
 			const chart = await findChart();
 			expect(chart).toBeInTheDocument();
@@ -189,7 +189,7 @@ describe('Scatter', () => {
 			expect(within(tooltip).getByText('Metal Mario, Gold Mario, Pink Gold Peach')).toBeInTheDocument();
 		});
 		test('should highlight hovered points', async () => {
-			render(<Tooltip { ...Tooltip.args } animations={false} />);
+			render(<Tooltip {...Tooltip.args} animations={false} />);
 
 			const chart = await findChart();
 			expect(chart).toBeInTheDocument();

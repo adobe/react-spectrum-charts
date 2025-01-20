@@ -1,10 +1,10 @@
-import { findChart, render } from '@test-utils';
 import {
 	AreaPopover,
 	BarPopover,
 	LineChart,
-	ScatterPopover
+	ScatterPopover,
 } from '@stories/components/Animations/AnimationsOpacity.story';
+import { findChart, render } from '@test-utils';
 
 describe('Opacity Animations', () => {
 	test('Area Popover renders properly', async () => {
@@ -14,13 +14,13 @@ describe('Opacity Animations', () => {
 	});
 
 	test('Bar Chart renders properly', async () => {
-		render(<BarPopover {...BarPopover.args}/>);
-		const chart = await  findChart();
+		render(<BarPopover {...BarPopover.args} />);
+		const chart = await findChart();
 		expect(chart).toBeInTheDocument();
-	})
+	});
 
 	test('Line Chart renders properly', async () => {
-		render(<LineChart {...LineChart.args}/>);
+		render(<LineChart {...LineChart.args} />);
 		const chart = await findChart();
 		expect(chart).toBeInTheDocument();
 	});
@@ -30,5 +30,4 @@ describe('Opacity Animations', () => {
 		const chart = await findChart();
 		expect(chart).toBeInTheDocument();
 	});
-
 });

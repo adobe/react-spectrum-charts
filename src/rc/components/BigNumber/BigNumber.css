@@ -10,15 +10,14 @@
  * governing permissions and limitations under the License.
  */
 
-
 .big-number-data {
-    font-weight: bold;
-    margin: 0;
-    line-height: .9;
+	font-weight: bold;
+	margin: 0;
+	line-height: 0.9;
 }
 
 .big-number-label {
-    margin: 0;
-    align-self: center;
-    line-height: .9;
+	margin: 0;
+	align-self: center;
+	line-height: 0.9;
 }

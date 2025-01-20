@@ -51,16 +51,19 @@ describe('getLineMark()', () => {
 		});
 	});
 
-  test('should have no opacity rule for dimension popover highlighting', () => {
-    const lineMark = getLineMark(
-      { ...defaultLineMarkProps, children: [createElement(ChartPopover, { UNSAFE_highlightBy: 'dimension' })] },
-      'line0_facet'
-    );
-    expect(lineMark.encode?.update?.opacity).toBeUndefined();
-  })
+	test('should have no opacity rule for dimension popover highlighting', () => {
+		const lineMark = getLineMark(
+			{ ...defaultLineMarkProps, children: [createElement(ChartPopover, { UNSAFE_highlightBy: 'dimension' })] },
+			'line0_facet'
+		);
+		expect(lineMark.encode?.update?.opacity).toBeUndefined();
+	});
 
-  test('should return line mark with animations', () => {
-		const lineMark = getLineMark({...defaultLineMarkProps, animations: true, animateFromZero: true}, 'line0_facet');
+	test('should return line mark with animations', () => {
+		const lineMark = getLineMark(
+			{ ...defaultLineMarkProps, animations: true, animateFromZero: true },
+			'line0_facet'
+		);
 		expect(lineMark).toEqual({
 			name: 'line0',
 			description: 'line0',
@@ -78,7 +81,7 @@ describe('getLineMark()', () => {
 				update: {
 					y: {
 						scale: 'yLinear',
-						signal: `datum.value * ${ANIMATION_FUNCTION}`
+						signal: `datum.value * ${ANIMATION_FUNCTION}`,
 					},
 					x: { field: DEFAULT_TRANSFORMED_TIME_DIMENSION, scale: 'xTime' },
 					opacity: [DEFAULT_OPACITY_RULE],

@@ -19,15 +19,9 @@ import {
 	SELECTED_SERIES,
 	SERIES_ID,
 } from '@constants';
-import {
-	getPreviousTableData,
-	getSeriesIdTransform,
-	getTableData,
-} from '@specBuilder/data/dataUtils';
+import { getPreviousTableData, getSeriesIdTransform, getTableData } from '@specBuilder/data/dataUtils';
 import { hasInteractiveChildren } from '@specBuilder/marks/markUtils';
-import { getFacetsFromProps,
-  getIdentifierTransform,
-} from '@specBuilder/specUtils';
+import { getFacetsFromProps, getIdentifierTransform } from '@specBuilder/specUtils';
 import { produce } from 'immer';
 import { Data, SourceData, Transforms } from 'vega';
 

@@ -11,8 +11,9 @@
  */
 import { HIGHLIGHT_CONTRAST_RATIO } from '@constants';
 import '@matchMediaMock';
-import { workspaceTrendsData } from '@stories/data/data';
 import { Chart, Line } from '@rsc';
+import { workspaceTrendsData } from '@stories/data/data';
+import { animationTransitionDataAfter, animationTransitionDataBefore } from '@stories/data/data';
 import {
 	allElementsHaveAttributeValue,
 	clickNthElement,
@@ -41,9 +42,8 @@ import {
 	Tooltip,
 	TrendScale,
 	WithStaticPoints,
-	WithStaticPointsAndDialogs
+	WithStaticPointsAndDialogs,
 } from './Line.story';
-import { animationTransitionDataBefore, animationTransitionDataAfter } from '@stories/data/data';
 
 describe('Line', () => {
 	// Line is not a real React component. This is test just provides test coverage for sonarqube
@@ -391,34 +391,34 @@ describe('Line', () => {
 		});
 	});
 
-  describe('onClick callback', () => {
-    test('should call the onClick function with the expected data', async () => {
-      const onClick = jest.fn();
-      render(<OnClickStory {...OnClickStory.args} onClick={onClick} />);
+	describe('onClick callback', () => {
+		test('should call the onClick function with the expected data', async () => {
+			const onClick = jest.fn();
+			render(<OnClickStory {...OnClickStory.args} onClick={onClick} />);
 
-      const chart = await findChart();
-      expect(chart).toBeInTheDocument();
+			const chart = await findChart();
+			expect(chart).toBeInTheDocument();
 
-      const paths = await findAllMarksByGroupName(chart, 'line0_voronoi');
-      await clickNthElement(paths, 4);
+			const paths = await findAllMarksByGroupName(chart, 'line0_voronoi');
+			await clickNthElement(paths, 4);
 
-      expect(onClick).toHaveBeenCalledTimes(1);
-      expect(onClick).toHaveBeenCalledWith(expect.objectContaining(workspaceTrendsData[4]));
-    });
-  });
+			expect(onClick).toHaveBeenCalledTimes(1);
+			expect(onClick).toHaveBeenCalledWith(expect.objectContaining(workspaceTrendsData[4]));
+		});
+	});
 	describe('Line animation tests', () => {
 		test('Line animates between congruent datasets', async () => {
 			const chartProps = {
-				data: animationTransitionDataBefore
-			}
+				data: animationTransitionDataBefore,
+			};
 			render(
 				<Chart {...chartProps}>
-					<Line dimension="x" metric="y"/>
+					<Line dimension="x" metric="y" />
 				</Chart>
 			);
 			setTimeout(() => {
 				chartProps.data = animationTransitionDataAfter;
 			}, 3000);
 		});
-  });
+	});
 });

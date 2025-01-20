@@ -39,11 +39,11 @@ const defaultProps: BarProps = {
 	dimension: 'browser',
 	metric: 'downloads',
 	onClick: undefined,
-}
+};
 
 const Basic = bindWithProps(BarStory);
 Basic.args = {
-	...defaultProps
+	...defaultProps,
 };
 
 const Horizontal = bindWithProps(BarStory);
@@ -88,6 +88,6 @@ const OnClick = bindWithProps(BarStory);
 OnClick.args = {
 	dimension: 'browser',
 	metric: 'downloads',
-}
+};
 
 export { Basic, Horizontal, LineType, Opacity, PaddingRatio, WithAnnotation, HasSquareCorners, OnClick };

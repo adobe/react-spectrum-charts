@@ -194,7 +194,7 @@ export const stackedLabelText = {
 			baseline: { value: 'middle' },
 			align: { value: 'center' },
 		},
-	}
+	},
 };
 
 export const dodgedLabelWithStyles = {

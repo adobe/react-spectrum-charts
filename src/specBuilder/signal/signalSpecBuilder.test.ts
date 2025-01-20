@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { FILTERED_TABLE, HIGHLIGHTED_ITEM, RSC_ANIMATION, HIGHLIGHTED_SERIES, MARK_ID } from '@constants';
+import { FILTERED_TABLE, HIGHLIGHTED_ITEM, HIGHLIGHTED_SERIES, MARK_ID, RSC_ANIMATION } from '@constants';
 import {
 	defaultHighlightedItemSignal,
 	defaultHighlightedSeriesSignal,
@@ -17,7 +17,12 @@ import {
 } from '@specBuilder/specTestUtils';
 import { Signal } from 'vega';
 
-import { addHighlightedItemSignalEvents, addHighlightedSeriesSignalEvents, getRscAnimationSignals, getHighlightSignalUpdateExpression } from './signalSpecBuilder';
+import {
+	addHighlightedItemSignalEvents,
+	addHighlightedSeriesSignalEvents,
+	getHighlightSignalUpdateExpression,
+	getRscAnimationSignals,
+} from './signalSpecBuilder';
 
 describe('signalSpecBuilder', () => {
 	let signals: Signal[];
@@ -44,7 +49,13 @@ describe('signalSpecBuilder', () => {
 			expect(signals).toEqual(signalsCopy);
 		});
 		test('should include update condition if excludeDataKey is provided', () => {
-      addHighlightedItemSignalEvents({ signals, markName: 'bar0', idKey: MARK_ID, datumOrder: 1, excludeDataKeys: ['excludeFromTooltip'] });
+			addHighlightedItemSignalEvents({
+				signals,
+				markName: 'bar0',
+				idKey: MARK_ID,
+				datumOrder: 1,
+				excludeDataKeys: ['excludeFromTooltip'],
+			});
 			expect(signals).toHaveLength(defaultSignals.length);
 			expect(signals[0]).toHaveProperty('name', HIGHLIGHTED_ITEM);
 			expect(signals[0].on).toHaveLength(2);

@@ -24,8 +24,8 @@ import {
 	getLineWidthProductionRule,
 	getOpacityProductionRule,
 	getPointsForVoronoi,
-	getStrokeDashProductionRule,
 	getSeriesAnimationOpacityRules,
+	getStrokeDashProductionRule,
 	getVoronoiPath,
 	getXProductionRule,
 	getYProductionRule,
@@ -52,8 +52,22 @@ import { LineMarkProps } from './lineUtils';
  */
 
 export const getLineMark = (lineMarkProps: LineMarkProps, dataSource: string): LineMark => {
-	const { animations, animateFromZero, color, colorScheme, data, dimension, lineType, lineWidth, metric, metricAxis, name, opacity, previousData, scaleType } =
-		lineMarkProps;
+	const {
+		animations,
+		animateFromZero,
+		color,
+		colorScheme,
+		data,
+		dimension,
+		lineType,
+		lineWidth,
+		metric,
+		metricAxis,
+		name,
+		opacity,
+		previousData,
+		scaleType,
+	} = lineMarkProps;
 	const popovers = getPopovers(lineMarkProps);
 	const popoverWithDimensionHighlightExists = popovers.some(
 		({ UNSAFE_highlightBy }) => UNSAFE_highlightBy === 'dimension'
@@ -108,34 +122,32 @@ export const getLineOpacity = ({
 		return getSeriesAnimationOpacityRules();
 	}
 	const fadedValue = 1 / HIGHLIGHT_CONTRAST_RATIO;
-	const animationOpacitySignal = { signal: `max(1-rscColorAnimation, ${fadedValue})` }
+	const animationOpacitySignal = { signal: `max(1-rscColorAnimation, ${fadedValue})` };
 	const opacityParameter = animations ? animationOpacitySignal : { value: fadedValue };
 
 	// add a rule that will lower the opacity of the line if there is a hovered series, but this line is not the one hovered
 	strokeOpacityRules.push(
 		{
 			test: `isValid(${HIGHLIGHTED_SERIES}) && ${HIGHLIGHTED_SERIES} !== datum.${SERIES_ID}`,
-			...opacityParameter
+			...opacityParameter,
 		},
 		{
 			test: `length(data('${interactiveMarkName}_highlightedData')) > 0 && indexof(pluck(data('${interactiveMarkName}_highlightedData'), '${SERIES_ID}'), datum.${SERIES_ID}) === -1`,
-			...opacityParameter
+			...opacityParameter,
 		}
-
 	);
 
-  if (animations) {
-    strokeOpacityRules.push(
-      {
+	if (animations) {
+		strokeOpacityRules.push({
 			test: `isValid(${HIGHLIGHTED_SERIES}) && ${HIGHLIGHTED_SERIES}_prev !== datum.${SERIES_ID}`,
-			...opacityParameter
-		}
-    )}
+			...opacityParameter,
+		});
+	}
 
 	if (popoverMarkName) {
 		strokeOpacityRules.push({
 			test: `isValid(${SELECTED_SERIES}) && ${SELECTED_SERIES} !== datum.${SERIES_ID}`,
-			...opacityParameter
+			...opacityParameter,
 		});
 	}
 	// This allows us to only show the metric range when hovering over the parent line component.

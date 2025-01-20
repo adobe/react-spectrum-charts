@@ -13,7 +13,7 @@ import '@matchMediaMock';
 import { Bar } from '@rsc';
 import { clickNthElement, findAllMarksByGroupName, findChart, render } from '@test-utils';
 
-import { Basic, Opacity, PaddingRatio, WithAnnotation, OnClick } from './Bar.story';
+import { Basic, OnClick, Opacity, PaddingRatio, WithAnnotation } from './Bar.story';
 import { Color, DodgedStacked } from './DodgedBar.story';
 import { Basic as StackedBasic } from './StackedBar.story';
 import { barData } from './data';

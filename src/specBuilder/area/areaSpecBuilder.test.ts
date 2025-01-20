@@ -20,19 +20,21 @@ import {
 	DEFAULT_METRIC,
 	DEFAULT_OPACITY_RULE,
 	DEFAULT_TIME_DIMENSION,
-	DEFAULT_TRANSFORMED_TIME_DIMENSION, FILTERED_PREVIOUS_TABLE,
+	DEFAULT_TRANSFORMED_TIME_DIMENSION,
+	FILTERED_PREVIOUS_TABLE,
 	FILTERED_TABLE,
 	HIGHLIGHTED_ITEM,
 	HIGHLIGHTED_SERIES,
 	LINEAR_PADDING,
 	MARK_ID,
+	PREVIOUS_TABLE,
+	RSC_ANIMATION,
 	SELECTED_GROUP,
 	SELECTED_ITEM,
 	SELECTED_SERIES,
-	PREVIOUS_TABLE,
 	TABLE,
-	RSC_ANIMATION
 } from '@constants';
+import { defaultAnimationScales } from '@specBuilder/scale/scaleSpecBuilder.test';
 import { getGenericValueSignal } from '@specBuilder/signal/signalSpecBuilder';
 import { defaultSignals } from '@specBuilder/specTestUtils';
 import { Data, GroupMark, Spec } from 'vega';
@@ -40,7 +42,6 @@ import { Data, GroupMark, Spec } from 'vega';
 import { AreaSpecProps } from '../../types';
 import { initializeSpec } from '../specUtils';
 import { addArea, addAreaMarks, addData, addHighlightedItemEvents, addSignals, setScales } from './areaSpecBuilder';
-import { defaultAnimationScales } from '@specBuilder/scale/scaleSpecBuilder.test';
 
 const startingSpec: Spec = initializeSpec({
 	scales: [{ name: COLOR_SCALE, type: 'ordinal' }],
@@ -58,7 +59,7 @@ const defaultAreaProps: AreaSpecProps = {
 	name: 'area0',
 	opacity: 0.8,
 	scaleType: 'time',
-	animations: false
+	animations: false,
 };
 
 const defaultSpec = initializeSpec({
@@ -119,7 +120,7 @@ const defaultSpec = initializeSpec({
 					type: 'stack',
 				},
 			],
-		}
+		},
 	],
 	marks: [
 		{
@@ -204,7 +205,9 @@ describe('areaSpecBuilder', () => {
 		});
 
 		test('metricStart defined but valueEnd not defined, should default to value', () => {
-			expect(addArea(startingSpec, { idKey: MARK_ID, metricStart: 'test', animations: false })).toStrictEqual(defaultSpec);
+			expect(addArea(startingSpec, { idKey: MARK_ID, metricStart: 'test', animations: false })).toStrictEqual(
+				defaultSpec
+			);
 		});
 	});
 
@@ -336,7 +339,14 @@ describe('areaSpecBuilder', () => {
 		});
 
 		test('linear with animations', () => {
-			expect(setScales(startingSpec.scales ?? [], { ...defaultAreaProps, scaleType: 'linear', children: [createElement(ChartTooltip)], animations: true })).toStrictEqual([
+			expect(
+				setScales(startingSpec.scales ?? [], {
+					...defaultAreaProps,
+					scaleType: 'linear',
+					children: [createElement(ChartTooltip)],
+					animations: true,
+				})
+			).toStrictEqual([
 				defaultSpec.scales?.[0],
 				...defaultAnimationScales,
 				defaultLinearScale,

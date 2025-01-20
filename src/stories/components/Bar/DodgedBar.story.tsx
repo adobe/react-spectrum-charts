@@ -86,7 +86,7 @@ const defaultProps: BarProps = {
 	type: 'dodged',
 	dimension: 'browser',
 	onClick: undefined,
-}
+};
 
 const Color = bindWithProps(DodgedBarStory);
 Color.args = {

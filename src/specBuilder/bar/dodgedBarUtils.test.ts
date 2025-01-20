@@ -194,7 +194,8 @@ export const defaultDodgedMark = {
 		},
 	],
 	encode: {
-		enter: { x: { field: DEFAULT_CATEGORICAL_DIMENSION, scale: 'xBand' } } },
+		enter: { x: { field: DEFAULT_CATEGORICAL_DIMENSION, scale: 'xBand' } },
+	},
 	marks: [defaultBackgroundMark, defaultMark],
 };
 
@@ -223,7 +224,8 @@ describe('dodgedBarUtils', () => {
 			expect(annotationGroup.marks?.[0].name).toEqual('bar0_annotationText');
 			expect(annotationGroup.marks?.[1].name).toEqual('bar0_annotationBackground');
 			expect(
-				getDodgedMark({ animations: false,
+				getDodgedMark({
+					animations: false,
 					...defaultDodgedProps,
 					children: [...defaultDodgedProps.children, annotationElement],
 				})

@@ -13,6 +13,7 @@ import { createElement } from 'react';
 
 import { MetricRange } from '@components/MetricRange';
 import {
+	ANIMATION_FUNCTION,
 	COLOR_SCALE,
 	DEFAULT_COLOR,
 	DEFAULT_COLOR_SCHEME,
@@ -20,7 +21,6 @@ import {
 	DEFAULT_OPACITY_RULE,
 	DEFAULT_TIME_DIMENSION,
 	DEFAULT_TRANSFORMED_TIME_DIMENSION,
-	ANIMATION_FUNCTION,
 	FILTERED_TABLE,
 	MARK_ID,
 } from '@constants';
@@ -69,7 +69,7 @@ const defaultLineProps: LineSpecProps = {
 	opacity: { value: 1 },
 	popoverMarkName: undefined,
 	scaleType: 'time',
-	animations: false
+	animations: false,
 };
 
 const basicMetricRangeMarks = [
@@ -232,7 +232,12 @@ describe('getMetricRangeMark', () => {
 
 describe('getMetricRangeMarkWithAnimations', () => {
 	test('creates MetricRange mark from basic input', () => {
-		expect(getMetricRangeMark({...defaultLineProps, animations: true, animateFromZero: true}, defaultMetricRangeSpecProps)).toEqual(basicMetricRangeMarksWithAnimatons);
+		expect(
+			getMetricRangeMark(
+				{ ...defaultLineProps, animations: true, animateFromZero: true },
+				defaultMetricRangeSpecProps
+			)
+		).toEqual(basicMetricRangeMarksWithAnimatons);
 	});
 });
 
@@ -258,7 +263,7 @@ describe('getMetricRangeGroupMarks', () => {
 
 describe('getMetricRangeGroupMarksWithAnimatons', () => {
 	test('creates MetricRange group mark from basic input', () => {
-		expect(getMetricRangeGroupMarks({...defaultLineProps, animations: true, animateFromZero: true })).toEqual([
+		expect(getMetricRangeGroupMarks({ ...defaultLineProps, animations: true, animateFromZero: true })).toEqual([
 			{
 				name: 'line0MetricRange0_group',
 				type: 'group',

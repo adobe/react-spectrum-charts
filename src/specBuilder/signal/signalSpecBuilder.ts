@@ -9,7 +9,17 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { DATA_ANIMATION_MILLISECONDS_PER_FRAME, OPACITY_ANIMATION_FRAMES, FILTERED_TABLE, HIGHLIGHTED_GROUP, MARK_ID, RSC_ANIMATION, HIGHLIGHTED_ITEM, HIGHLIGHTED_SERIES, SERIES_ID } from '@constants';
+import {
+	DATA_ANIMATION_MILLISECONDS_PER_FRAME,
+	FILTERED_TABLE,
+	HIGHLIGHTED_GROUP,
+	HIGHLIGHTED_ITEM,
+	HIGHLIGHTED_SERIES,
+	MARK_ID,
+	OPACITY_ANIMATION_FRAMES,
+	RSC_ANIMATION,
+	SERIES_ID,
+} from '@constants';
 import { Signal } from 'vega';
 
 /**
@@ -60,14 +70,14 @@ export const addHighlightSignalLegendHoverEvents = (
 		}
 		const update = getHighlightSignalUpdateExpression(legendName, includeHiddenSeries, keys);
 		highlightedItemSignal.on.push(
-		...[
-			{
-				events: `@${legendName}_legendEntry:mouseover`,
-				update
-			},
-			{ events: `@${legendName}_legendEntry:mouseout`, update: 'null' },
-		]
-	);
+			...[
+				{
+					events: `@${legendName}_legendEntry:mouseover`,
+					update,
+				},
+				{ events: `@${legendName}_legendEntry:mouseout`, update: 'null' },
+			]
+		);
 		const highlightedItemSignalPrev = signals.find((signal) => signal.name === `${signalName}_prev`);
 		if (highlightedItemSignalPrev) {
 			highlightedItemSignalPrev.on?.push({ events: `@${legendName}_legendEntry:mouseover`, update });
@@ -122,27 +132,25 @@ export const getGenericUpdateSignal = (name: string, update: string): Signal => 
  * @param needsDisable
  * @param excludeDataKey data items with a truthy value for this key will be excluded from the signal
  */
-export const addHighlightedItemSignalEvents = (
-	{
-		signals,
-		markName,
-		idKey,
-		excludeDataKeys,
-		animations = false,
-		animateFromZero = false,
-		datumOrder = 1,
-		isEnabled = true,
-	}: {
-		signals: Signal[],
-		markName: string,
-		idKey: string,
-		excludeDataKeys?: string[],
-		animations?: boolean,
-		animateFromZero?: boolean,
-		datumOrder?: number,
-		isEnabled?: boolean
-	}
-) => {
+export const addHighlightedItemSignalEvents = ({
+	signals,
+	markName,
+	idKey,
+	excludeDataKeys,
+	animations = false,
+	animateFromZero = false,
+	datumOrder = 1,
+	isEnabled = true,
+}: {
+	signals: Signal[];
+	markName: string;
+	idKey: string;
+	excludeDataKeys?: string[];
+	animations?: boolean;
+	animateFromZero?: boolean;
+	datumOrder?: number;
+	isEnabled?: boolean;
+}) => {
 	const highlightedItemSignal = signals.find((signal) => signal.name === HIGHLIGHTED_ITEM);
 	if (highlightedItemSignal) {
 		if (highlightedItemSignal.on === undefined) {
@@ -150,7 +158,10 @@ export const addHighlightedItemSignalEvents = (
 		}
 		const datum = new Array(datumOrder).fill('datum.').join('');
 
-    const update = animations && animateFromZero && isEnabled ? `timerValue === 1 ? ${datum}${idKey} : null` : `${datum}${idKey}`;
+		const update =
+			animations && animateFromZero && isEnabled
+				? `timerValue === 1 ? ${datum}${idKey} : null`
+				: `${datum}${idKey}`;
 		const excludeDataKeysCondition = excludeDataKeys
 			?.map((excludeDataKey) => `${datum}${excludeDataKey}`)
 			.join(' || ');
@@ -158,9 +169,7 @@ export const addHighlightedItemSignalEvents = (
 			...[
 				{
 					events: `@${markName}:mouseover`,
-					update: excludeDataKeys?.length
-						? `(${excludeDataKeysCondition}) ? null : ${update}`
-						: update,
+					update: excludeDataKeys?.length ? `(${excludeDataKeysCondition}) ? null : ${update}` : update,
 				},
 				{ events: `@${markName}:mouseout`, update: 'null' },
 			]
@@ -308,7 +317,7 @@ const getRscColorAnimation = (): Signal => {
  * @returns Signal
  */
 const getRscHighlightedItemPrevSignal = (name: string, nestedDatum?: boolean): Signal => {
-	const nestedPrefix = nestedDatum ? 'datum.' : ''
+	const nestedPrefix = nestedDatum ? 'datum.' : '';
 	return {
 		name: `${HIGHLIGHTED_ITEM}_prev`,
 		value: null,
@@ -324,7 +333,7 @@ const getRscHighlightedItemPrevSignal = (name: string, nestedDatum?: boolean): S
  * @returns Signal
  */
 const getRscHighlightedSeriesPrevSignal = (name: string, nestedDatum?: boolean, isNull?: boolean): Signal => {
-	const nestedPrefix = nestedDatum ? 'datum.' : ''
+	const nestedPrefix = nestedDatum ? 'datum.' : '';
 	return {
 		name: `${HIGHLIGHTED_SERIES}_prev`,
 		value: null,

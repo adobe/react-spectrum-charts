@@ -167,7 +167,7 @@ export const setScales = produce<Scale[], [ScatterSpecProps]>((scales, props) =>
 		opacity,
 		size,
 	} = props;
-	// if animations are enabled, add Opacity animation scales to spec	
+	// if animations are enabled, add Opacity animation scales to spec
 	if (animations) {
 		addRscAnimationScales(scales);
 	}

@@ -33,16 +33,16 @@ export const defaultAnimationScales = [
 		type: 'linear',
 		domain: [0, 1],
 		range: [0, 1],
-		clamp: true
+		clamp: true,
 	},
 	{
 		name: 'rscAnimationCurveInverse',
 		type: 'linear',
 		domain: [0, 1],
 		range: [0, 1],
-		clamp: true
-	}
-]
+		clamp: true,
+	},
+];
 
 describe('addDomainFields()', () => {
 	test('no domain fields', () => {
@@ -126,8 +126,8 @@ describe('getScaleName()', () => {
 
 describe('addRscAnimationScales()', () => {
 	test('should return correct scale name', () => {
-		const scales = []
-		addRscAnimationScales(scales)
-		expect(scales).toStrictEqual(defaultAnimationScales)
+		const scales = [];
+		addRscAnimationScales(scales);
+		expect(scales).toStrictEqual(defaultAnimationScales);
 	});
 });

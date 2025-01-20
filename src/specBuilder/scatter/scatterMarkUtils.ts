@@ -9,13 +9,8 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { DEFAULT_OPACITY_RULE, FILTERED_TABLE, HIGHLIGHT_CONTRAST_RATIO, SELECTED_ITEM } from '@constants';
 import { addHighlightMarkOpacityRules } from '@specBuilder/chartTooltip/chartTooltipUtils';
-import {
-	DEFAULT_OPACITY_RULE,
-	FILTERED_TABLE,
-	HIGHLIGHT_CONTRAST_RATIO,
-	SELECTED_ITEM
-} from '@constants';
 import {
 	getColorProductionRule,
 	getLineWidthProductionRule,
@@ -26,15 +21,15 @@ import {
 	getVoronoiPath,
 	getXProductionRule,
 	hasInteractiveChildren,
-	hasPopover
+	hasPopover,
 } from '@specBuilder/marks/markUtils';
 import { getScatterPathMarks } from '@specBuilder/scatterPath/scatterPathUtils';
 import { getTrendlineMarks } from '@specBuilder/trendline';
 import { spectrumColors } from '@themes';
 import { produce } from 'immer';
+import { GroupMark, Mark, NumericValueRef, SymbolMark } from 'vega';
 
 import { ScatterSpecProps, SymbolSizeFacet } from '../../types';
-import { GroupMark, Mark, NumericValueRef, SymbolMark } from 'vega';
 
 export const addScatterMarks = produce<Mark[], [ScatterSpecProps]>((marks, props) => {
 	const { name } = props;
@@ -115,7 +110,7 @@ export const getOpacity = (props: ScatterSpecProps): ({ test?: string } & Numeri
 
 	// if a point is hovered or selected, all other points should be reduced opacity
 	const fadedValue = 1 / HIGHLIGHT_CONTRAST_RATIO;
-	const animationOpacitySignal = { signal: `max(1-rscColorAnimation, ${fadedValue})` }
+	const animationOpacitySignal = { signal: `max(1-rscColorAnimation, ${fadedValue})` };
 	const opacityParameter = animations ? animationOpacitySignal : { value: fadedValue };
 
 	const rules: ({ test?: string } & NumericValueRef)[] = [];
@@ -123,7 +118,7 @@ export const getOpacity = (props: ScatterSpecProps): ({ test?: string } & Numeri
 	if (hasPopover(children)) {
 		rules.push({
 			test: `isValid(${SELECTED_ITEM}) && ${SELECTED_ITEM} !== datum.${idKey}`,
-      ...opacityParameter
+			...opacityParameter,
 		});
 	}
 

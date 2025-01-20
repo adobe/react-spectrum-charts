@@ -22,14 +22,20 @@ import {
 	SELECTED_ITEM,
 	SELECTED_SERIES,
 } from '@constants';
-import { hasInteractiveChildren } from '@specBuilder/marks/markUtils';
 import {
 	addTooltipData,
 	addTooltipSignals,
 	isHighlightedByDimension,
 	isHighlightedByGroup,
 } from '@specBuilder/chartTooltip/chartTooltipUtils';
+import { hasInteractiveChildren } from '@specBuilder/marks/markUtils';
 import { getTooltipProps, hasPopover, hasTooltip } from '@specBuilder/marks/markUtils';
+import {
+	addContinuousDimensionScale,
+	addFieldToFacetScaleDomain,
+	addMetricScale,
+	addRscAnimationScales,
+} from '@specBuilder/scale/scaleSpecBuilder';
 import {
 	addHighlightedSeriesSignalEvents,
 	getControlledHoveredGroupSignal,
@@ -41,7 +47,15 @@ import { sanitizeMarkChildren, toCamelCase } from '@utils';
 import { produce } from 'immer';
 import { Data, Mark, Scale, Signal, SourceData, Spec, Transforms } from 'vega';
 
-import { AreaProps, AreaSpecProps, ChartData, ColorScheme, HighlightedItem, MarkChildElement, ScaleType } from '../../types';
+import {
+	AreaProps,
+	AreaSpecProps,
+	ChartData,
+	ColorScheme,
+	HighlightedItem,
+	MarkChildElement,
+	ScaleType,
+} from '../../types';
 import {
 	addTimeTransform,
 	getFilteredPreviousTableData,
@@ -51,9 +65,22 @@ import {
 	getTransformSort,
 } from '../data/dataUtils';
 import { getAreaMark, getX } from './areaUtils';
-import { addContinuousDimensionScale, addFieldToFacetScaleDomain, addMetricScale, addRscAnimationScales } from '@specBuilder/scale/scaleSpecBuilder';
 
-export const addArea = produce<Spec, [AreaProps & { animations?: boolean; animateFromZero?: boolean; colorScheme?: ColorScheme; data?: ChartData[]; highlightedItem?: HighlightedItem; index?: number, idKey: string; previousData?: ChartData[] }]>(
+export const addArea = produce<
+	Spec,
+	[
+		AreaProps & {
+			animations?: boolean;
+			animateFromZero?: boolean;
+			colorScheme?: ColorScheme;
+			data?: ChartData[];
+			highlightedItem?: HighlightedItem;
+			index?: number;
+			idKey: string;
+			previousData?: ChartData[];
+		}
+	]
+>(
 	(
 		spec,
 		{
@@ -109,53 +136,53 @@ export const addArea = produce<Spec, [AreaProps & { animations?: boolean; animat
 );
 
 export const addData = produce<Data[], [AreaSpecProps]>((data, props) => {
-  const { children, color, dimension, highlightedItem, metric, metricEnd, metricStart, name, order, scaleType } =
-    props;
-  if (scaleType === 'time') {
-    const tableData = getTableData(data);
-    const previousTableData = getPreviousTableData(data);
-    tableData.transform = addTimeTransform(tableData.transform ?? [], dimension);
-    previousTableData.transform = addTimeTransform(tableData.transform ?? [], dimension);
-  }
+	const { children, color, dimension, highlightedItem, metric, metricEnd, metricStart, name, order, scaleType } =
+		props;
+	if (scaleType === 'time') {
+		const tableData = getTableData(data);
+		const previousTableData = getPreviousTableData(data);
+		tableData.transform = addTimeTransform(tableData.transform ?? [], dimension);
+		previousTableData.transform = addTimeTransform(tableData.transform ?? [], dimension);
+	}
 
-  if (!metricEnd || !metricStart) {
-    const filteredTableData = getFilteredTableData(data);
-    const filteredPreviousTableData = getFilteredPreviousTableData(data);
-    // if metricEnd and metricStart don't exist, then we are using metric so we will support stacked
-    const transform: Transforms[] = [
-      ...(filteredTableData.transform ?? []),
-      {
-        type: 'stack',
-        groupby: [dimension],
-        field: metric,
-        sort: getTransformSort(order),
-        as: [`${metric}0`, `${metric}1`],
-      },
-    ];
-    filteredTableData.transform = transform;
-    filteredPreviousTableData.transform = transform;
-  }
+	if (!metricEnd || !metricStart) {
+		const filteredTableData = getFilteredTableData(data);
+		const filteredPreviousTableData = getFilteredPreviousTableData(data);
+		// if metricEnd and metricStart don't exist, then we are using metric so we will support stacked
+		const transform: Transforms[] = [
+			...(filteredTableData.transform ?? []),
+			{
+				type: 'stack',
+				groupby: [dimension],
+				field: metric,
+				sort: getTransformSort(order),
+				as: [`${metric}0`, `${metric}1`],
+			},
+		];
+		filteredTableData.transform = transform;
+		filteredPreviousTableData.transform = transform;
+	}
 
-  if (children.length || highlightedItem !== undefined) {
-    const areaHasPopover = hasPopover(children);
-    const areaHasTooltip = hasTooltip(children);
-    data.push(
-      getAreaHighlightedData(name, props.idKey, areaHasTooltip, areaHasPopover, isHighlightedByGroup(props))
-    );
-    if (areaHasPopover) {
-      data.push({
-        name: `${name}_selectedDataSeries`,
-        source: FILTERED_TABLE,
-        transform: [
-          {
-            type: 'filter',
-            expr: `isValid(${SELECTED_SERIES}) && ${SELECTED_SERIES} === datum.${color}`,
-          },
-        ],
-      });
-    }
-  }
-  addTooltipData(data, props, false);
+	if (children.length || highlightedItem !== undefined) {
+		const areaHasPopover = hasPopover(children);
+		const areaHasTooltip = hasTooltip(children);
+		data.push(
+			getAreaHighlightedData(name, props.idKey, areaHasTooltip, areaHasPopover, isHighlightedByGroup(props))
+		);
+		if (areaHasPopover) {
+			data.push({
+				name: `${name}_selectedDataSeries`,
+				source: FILTERED_TABLE,
+				transform: [
+					{
+						type: 'filter',
+						expr: `isValid(${SELECTED_SERIES}) && ${SELECTED_SERIES} === datum.${color}`,
+					},
+				],
+			});
+		}
+	}
+	addTooltipData(data, props, false);
 });
 
 export const addSignals = produce<Signal[], [AreaSpecProps]>((signals, props) => {
@@ -244,7 +271,21 @@ export const setScales = produce<Scale[], [AreaSpecProps]>(
 );
 
 export const addAreaMarks = produce<Mark[], [AreaSpecProps]>((marks, props) => {
-	const { animations, animateFromZero, children, color, colorScheme, data, dimension, highlightedItem, metric, name, opacity, previousData, scaleType } = props;
+	const {
+		animations,
+		animateFromZero,
+		children,
+		color,
+		colorScheme,
+		data,
+		dimension,
+		highlightedItem,
+		metric,
+		name,
+		opacity,
+		previousData,
+		scaleType,
+	} = props;
 	let { metricStart, metricEnd } = props;
 	let isStacked = false;
 	if (!metricEnd || !metricStart) {

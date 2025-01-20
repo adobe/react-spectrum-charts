@@ -174,25 +174,27 @@ describe('getTooltip()', () => {
 		expect(rule).toHaveProperty('signal');
 	});
 	test('should reference a nested datum if nestedDatum is true', () => {
-    const rule = getTooltip({ children: [createElement(ChartTooltip)], name: 'line0', nestedDatum: true }) as SignalRef;
+		const rule = getTooltip({
+			children: [createElement(ChartTooltip)],
+			name: 'line0',
+			nestedDatum: true,
+		}) as SignalRef;
 		expect(rule.signal).toContain('datum.datum');
 	});
 	test('should add condition test when excludeDataKey is present', () => {
-		const rule = getTooltip(
-      {
-        children: [createElement(ChartTooltip, { excludeDataKeys: ['excludeFromTooltip'] })],
-        name: 'line0',
-			}
-		) as ProductionRuleTests<SignalRef>;
+		const rule = getTooltip({
+			children: [createElement(ChartTooltip, { excludeDataKeys: ['excludeFromTooltip'] })],
+			name: 'line0',
+		}) as ProductionRuleTests<SignalRef>;
 		expect(rule).toHaveLength(2);
 		expect(rule[0].test).toBe('datum.excludeFromTooltip');
 		expect(rule[0].signal).toBe('false');
 	});
 	test('should have default tooltip as second item when excludeDataKey is present', () => {
-    const rule = getTooltip({
-      children: [createElement(ChartTooltip, { excludeDataKeys: ['excludeFromTooltip'] })],
-      name: 'line0',
-    }) as ProductionRuleTests<SignalRef>;
+		const rule = getTooltip({
+			children: [createElement(ChartTooltip, { excludeDataKeys: ['excludeFromTooltip'] })],
+			name: 'line0',
+		}) as ProductionRuleTests<SignalRef>;
 		expect(rule).toHaveLength(2);
 		expect(rule[1].signal).toBe('false');
 	});

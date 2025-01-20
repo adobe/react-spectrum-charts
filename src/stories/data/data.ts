@@ -1057,8 +1057,8 @@ export const simpleSparklineData = [
 	{ x: 17, y: 70 },
 	{ x: 18, y: 35 },
 	{ x: 19, y: 55 },
-	{ x: 20, y: 90 }
-]
+	{ x: 20, y: 90 },
+];
 
 export const peopleAdoptionComboData = [
 	{ datetime: 1667890800000, people: 10, adoptionRate: 0.2 },
@@ -1071,16 +1071,16 @@ export const peopleAdoptionComboData = [
 ];
 
 export const peopleTotalComboData = [
-  { datetime: 1667890800000, people: 10, total: 10 },
-  { datetime: 1667977200000, people: 20, total: 30 },
-  { datetime: 1668063600000, people: 30, total: 60 },
-  { datetime: 1668150000000, people: 20, total: 80 },
-  { datetime: 1668236400000, people: 10, total: 90 },
-  { datetime: 1668322800000, people: 30, total: 120 },
-  { datetime: 1668409200000, people: 2, total: 122 },
+	{ datetime: 1667890800000, people: 10, total: 10 },
+	{ datetime: 1667977200000, people: 20, total: 30 },
+	{ datetime: 1668063600000, people: 30, total: 60 },
+	{ datetime: 1668150000000, people: 20, total: 80 },
+	{ datetime: 1668236400000, people: 10, total: 90 },
+	{ datetime: 1668322800000, people: 30, total: 120 },
+	{ datetime: 1668409200000, people: 2, total: 122 },
 ];
 
-	export const newDataArray1WithStaticPoints = [
+export const newDataArray1WithStaticPoints = [
 	{ x: 0, y: 92, point: true },
 	{ x: 1, y: 56, point: true },
 	{ x: 2, y: 84, point: true },
@@ -1096,8 +1096,8 @@ export const peopleTotalComboData = [
 	{ x: 12, y: 49, point: true },
 	{ x: 13, y: 67, point: true },
 	{ x: 14, y: 95, point: true },
-	{ x: 15, y: 77, point: true},
-]
+	{ x: 15, y: 77, point: true },
+];
 
 export const areaData = [
 	{ datetime: 1667890800000, maxTemperature: 73, minTemperature: 47, series: 'Add Fallout' },

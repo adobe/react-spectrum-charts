@@ -24,16 +24,17 @@ import {
 	DEFAULT_SECONDARY_COLOR,
 	FILTERED_PREVIOUS_TABLE,
 	FILTERED_TABLE,
+	HIGHLIGHTED_ITEM,
+	HIGHLIGHTED_SERIES,
 	LINE_TYPE_SCALE,
 	MARK_ID,
 	OPACITY_SCALE,
 	PREVIOUS_TABLE,
+	RSC_ANIMATION,
 	STACK_ID,
 	TABLE,
-	HIGHLIGHTED_ITEM,
-	HIGHLIGHTED_SERIES,
-	RSC_ANIMATION
 } from '@constants';
+import { defaultAnimationScales } from '@specBuilder/scale/scaleSpecBuilder.test';
 import { defaultSignals } from '@specBuilder/specTestUtils';
 import { spectrumColors } from '@themes';
 import {
@@ -71,10 +72,9 @@ import {
 	defaultStackedYEncodings,
 } from './barTestUtils';
 import { defaultDodgedMark } from './dodgedBarUtils.test';
-import { defaultAnimationScales } from '@specBuilder/scale/scaleSpecBuilder.test';
 
 const startingSpec: Spec = initializeSpec({
-	scales: [{ name: COLOR_SCALE, type: 'ordinal' }]
+	scales: [{ name: COLOR_SCALE, type: 'ordinal' }],
 });
 
 const defaultMetricScaleDomain: ScaleData = { data: FILTERED_TABLE, fields: ['value1'] };
@@ -120,8 +120,12 @@ const defaultFilteredTableData: SourceData = { name: FILTERED_TABLE, source: TAB
 
 const defaultFilteredPreviousTableData: SourceData = { name: FILTERED_PREVIOUS_TABLE, source: PREVIOUS_TABLE };
 
-
-const defaultData: Data[] = [defaultTableData, defaultFilteredTableData, defaultPreviousTableData, defaultFilteredPreviousTableData];
+const defaultData: Data[] = [
+	defaultTableData,
+	defaultFilteredTableData,
+	defaultPreviousTableData,
+	defaultFilteredPreviousTableData,
+];
 
 const defaultStacksTransforms: Transforms[] = [
 	{
@@ -277,18 +281,22 @@ describe('barSpecBuilder', () => {
 			expect(signals[0].on).toHaveLength(2);
 			expect(signals[0].on?.[0]).toHaveProperty('events', '@bar0:mouseover');
 		});
-    test('should exclude data with key from update if tooltip has excludeDataKey', () => {
-      const signals = addSignals(defaultSignals, {
-        ...defaultBarProps,
-        children: [createElement(ChartTooltip, { excludeDataKeys: ['excludeFromTooltip'] })],
-      });
-      expect(signals[0]).toHaveProperty('on');
-      expect(signals[0].on).toHaveLength(2);
-      expect(signals[0].on?.[0]).toHaveProperty('events', '@bar0:mouseover');
-      expect(signals[0].on?.[0]).toHaveProperty('update', '(datum.excludeFromTooltip) ? null : datum.rscMarkId');
-    })
+		test('should exclude data with key from update if tooltip has excludeDataKey', () => {
+			const signals = addSignals(defaultSignals, {
+				...defaultBarProps,
+				children: [createElement(ChartTooltip, { excludeDataKeys: ['excludeFromTooltip'] })],
+			});
+			expect(signals[0]).toHaveProperty('on');
+			expect(signals[0].on).toHaveLength(2);
+			expect(signals[0].on?.[0]).toHaveProperty('events', '@bar0:mouseover');
+			expect(signals[0].on?.[0]).toHaveProperty('update', '(datum.excludeFromTooltip) ? null : datum.rscMarkId');
+		});
 		test('should add hover events if tooltip is present with animations', () => {
-			const signals = addSignals(defaultSignals, { ...defaultBarProps, animations: true, children: [createElement(ChartTooltip)] });
+			const signals = addSignals(defaultSignals, {
+				...defaultBarProps,
+				animations: true,
+				children: [createElement(ChartTooltip)],
+			});
 			expect(signals).toHaveLength(10);
 			expect(signals[0]).toHaveProperty('name', HIGHLIGHTED_ITEM);
 			expect(signals[0]).toHaveProperty('on');
@@ -392,7 +400,7 @@ describe('barSpecBuilder', () => {
 						trellisOrientation: 'vertical',
 						trellisPadding: 0.5,
 						animations: true,
-						children: [createElement(ChartPopover)]
+						children: [createElement(ChartPopover)],
 					})
 				).toStrictEqual([
 					defaultColorScale,
@@ -624,8 +632,13 @@ describe('barSpecBuilder', () => {
 		describe('transform already exists', () => {
 			test('no props, new transform should be pushed onto the end with default values', () => {
 				expect(
-					addData([{ ...defaultFilteredTableData, transform: defaultStackedTransforms },
-						{...defaultFilteredPreviousTableData, transform: defaultStackedTransforms}], defaultBarProps)
+					addData(
+						[
+							{ ...defaultFilteredTableData, transform: defaultStackedTransforms },
+							{ ...defaultFilteredPreviousTableData, transform: defaultStackedTransforms },
+						],
+						defaultBarProps
+					)
 				).toStrictEqual([
 					defaultTableData,
 					{

@@ -13,13 +13,13 @@ import { createElement } from 'react';
 
 import { Annotation } from '@components/Annotation';
 import {
+	ANIMATION_FUNCTION,
 	BACKGROUND_COLOR,
 	COLOR_SCALE,
 	DEFAULT_CATEGORICAL_DIMENSION,
 	DEFAULT_COLOR,
 	DEFAULT_OPACITY_RULE,
 	DEFAULT_SECONDARY_COLOR,
-	ANIMATION_FUNCTION,
 	FILTERED_TABLE,
 } from '@constants';
 import { GroupMark, Mark, RectEncodeEntry } from 'vega';
@@ -162,7 +162,9 @@ describe('stackedBarUtils', () => {
 		});
 
 		test('should return x and width encodings with animations', () => {
-			expect(getStackedDimensionEncodings({...defaultBarProps, animations: true, animateFromZero: true,})).toStrictEqual({
+			expect(
+				getStackedDimensionEncodings({ ...defaultBarProps, animations: true, animateFromZero: true })
+			).toStrictEqual({
 				...defaultStackedBarXEncodings,
 				y: {
 					scale: 'yLinear',

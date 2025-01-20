@@ -38,7 +38,11 @@ import {
 	getScaleIndexByName,
 	getScaleIndexByType,
 } from '@specBuilder/scale/scaleSpecBuilder';
-import { addHighlightedItemSignalEvents, getGenericValueSignal, getRscAnimationSignals } from '@specBuilder/signal/signalSpecBuilder';
+import {
+	addHighlightedItemSignalEvents,
+	getGenericValueSignal,
+	getRscAnimationSignals,
+} from '@specBuilder/signal/signalSpecBuilder';
 import { getFacetsFromProps } from '@specBuilder/specUtils';
 import { addTrendlineData, getTrendlineMarks, setTrendlineSignals } from '@specBuilder/trendline';
 import { sanitizeMarkChildren, toCamelCase } from '@utils';
@@ -53,7 +57,18 @@ import { addTrellisScale, getTrellisGroupMark, isTrellised } from './trellisedBa
 
 export const addBar = produce<
 	Spec,
-  [BarProps & { data?: ChartData[]; colorScheme?: ColorScheme; highlightedItem?: HighlightedItem; index?: number; idKey: string; previousData?: ChartData[]; animations?: boolean; animateFromZero?: boolean }]
+	[
+		BarProps & {
+			data?: ChartData[];
+			colorScheme?: ColorScheme;
+			highlightedItem?: HighlightedItem;
+			index?: number;
+			idKey: string;
+			previousData?: ChartData[];
+			animations?: boolean;
+			animateFromZero?: boolean;
+		}
+	]
 >(
 	(
 		spec,
@@ -111,23 +126,30 @@ export const addBar = produce<
 	}
 );
 
-export const addSignals = produce<Signal[], [BarSpecProps]>(
-	(signals, props) => {
-		const { children, idKey, name, paddingRatio, paddingOuter: barPaddingOuter, animations, animateFromZero } = props;
-		// We use this value to calculate ReferenceLine positions.
-		const { paddingInner } = getBarPadding(paddingRatio, barPaddingOuter);
-		signals.push(getGenericValueSignal('paddingInner', paddingInner));
+export const addSignals = produce<Signal[], [BarSpecProps]>((signals, props) => {
+	const { children, idKey, name, paddingRatio, paddingOuter: barPaddingOuter, animations, animateFromZero } = props;
+	// We use this value to calculate ReferenceLine positions.
+	const { paddingInner } = getBarPadding(paddingRatio, barPaddingOuter);
+	signals.push(getGenericValueSignal('paddingInner', paddingInner));
 
-		if (!children.length) {
-			return;
-		}
+	if (!children.length) {
+		return;
+	}
 
-		// if animations are enabled, push all necessary animation signals.
-		if (animations && hasInteractiveChildren(children)) {
-			signals.push(...getRscAnimationSignals(name, undefined, true));
-		}
+	// if animations are enabled, push all necessary animation signals.
+	if (animations && hasInteractiveChildren(children)) {
+		signals.push(...getRscAnimationSignals(name, undefined, true));
+	}
 	const excludeDataKeys = getTooltipProps(children)?.excludeDataKeys;
-	addHighlightedItemSignalEvents({ signals, markName: name, excludeDataKeys, idKey, animations, animateFromZero, datumOrder: 1});
+	addHighlightedItemSignalEvents({
+		signals,
+		markName: name,
+		excludeDataKeys,
+		idKey,
+		animations,
+		animateFromZero,
+		datumOrder: 1,
+	});
 	addTooltipSignals(signals, props);
 	setTrendlineSignals(signals, props);
 });

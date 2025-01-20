@@ -43,7 +43,7 @@ const dialogContent = (datum: Datum) => (
 	</Content>
 );
 
-const defaultChartProps: ChartProps = {animations: false, data, renderer: 'svg', width: 600 };
+const defaultChartProps: ChartProps = { animations: false, data, renderer: 'svg', width: 600 };
 
 const ChartPopoverCanvasStory: StoryFn<typeof ChartPopover> = (args): ReactElement => {
 	const chartProps = useChartProps({ animations: false, data, renderer: 'canvas', width: 600 });

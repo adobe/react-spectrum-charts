@@ -13,9 +13,9 @@ import React, { ReactElement } from 'react';
 
 import useChartProps from '@hooks/useChartProps';
 import { Area, Axis, Chart, ChartProps } from '@rsc';
+import { areaData } from '@stories/data/data';
 import { StoryFn } from '@storybook/react';
 import { bindWithProps } from 'test-utils/bindWithProps';
-import { areaData } from '@stories/data/data';
 
 export default {
 	title: 'RSC/Area',
@@ -29,7 +29,7 @@ export default {
 	},
 };
 
-const defaultChartProps: ChartProps = { data: areaData, minWidth: 400, maxWidth: 800, height: 400};
+const defaultChartProps: ChartProps = { data: areaData, minWidth: 400, maxWidth: 800, height: 400 };
 
 const BasicStory: StoryFn<typeof Area> = (args): ReactElement => {
 	const chartProps = useChartProps({ ...defaultChartProps });

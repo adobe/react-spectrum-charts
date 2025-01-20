@@ -40,13 +40,12 @@ import {
 	LineWidthFacet,
 	SymbolShapeFacet,
 } from '../../types';
-
 import {
 	addHighlightSignalLegendHoverEvents,
+	getGenericValueSignal,
 	getRscAnimationSignals,
 	getRscLegendColorAnimationDirection,
 	hasSignalByName,
-	getGenericValueSignal,
 } from '../signal/signalSpecBuilder';
 import { getFacets, getFacetsFromKeys } from './legendFacetUtils';
 import { setHoverOpacityForMarks } from './legendHighlightUtils';
@@ -333,4 +332,5 @@ export const addSignals = produce<Signal[], [LegendSpecProps]>(
 		if (legendLabels) {
 			signals.push(getGenericValueSignal(`${name}_labels`, legendLabels));
 		}
-	})
+	}
+);

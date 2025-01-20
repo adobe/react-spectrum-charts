@@ -16,10 +16,21 @@ import {
 	SENTIMENT_NEUTRAL_PATH,
 	SENTIMENT_POSITIVE_PATH,
 } from '@svgPaths';
-
 import { spectrumColors } from '@themes';
-import { IdentifierTransform, Data, Scale, ScaleType, Spec, ValuesData } from 'vega';
+import { Data, IdentifierTransform, Scale, ScaleType, Spec, ValuesData } from 'vega';
 
+import {
+	ANIMATION_FUNCTION,
+	COLOR_SCALE,
+	DEFAULT_TRANSFORMED_TIME_DIMENSION,
+	FILTERED_PREVIOUS_TABLE,
+	FILTERED_TABLE,
+	LINE_TYPE_SCALE,
+	MARK_ID,
+	OPACITY_SCALE,
+	PREVIOUS_TABLE,
+	TABLE,
+} from '../constants';
 import {
 	ChartData,
 	ChartSymbolShape,
@@ -37,19 +48,6 @@ import {
 	SymbolSize,
 	SymbolSizeFacet,
 } from '../types';
-
-import {
-	ANIMATION_FUNCTION,
-	COLOR_SCALE,
-	DEFAULT_TRANSFORMED_TIME_DIMENSION,
-	FILTERED_PREVIOUS_TABLE,
-	FILTERED_TABLE,
-	LINE_TYPE_SCALE,
-	MARK_ID,
-	OPACITY_SCALE,
-	PREVIOUS_TABLE,
-	TABLE,
-} from '../constants';
 
 /**
  * gets all the keys that are used to facet by
@@ -244,7 +242,7 @@ export const getIdentifierTransform = (): IdentifierTransform => {
  * base data that gets initialized with every uncontrolled spec
  */
 export const baseData: Data[] = [
-  { name: TABLE, values: [], transform: [getIdentifierTransform()] },
+	{ name: TABLE, values: [], transform: [getIdentifierTransform()] },
 	{ name: FILTERED_TABLE, source: TABLE },
 	{ name: PREVIOUS_TABLE, values: [], transform: [getIdentifierTransform()] },
 	{ name: FILTERED_PREVIOUS_TABLE, source: PREVIOUS_TABLE },
@@ -312,7 +310,7 @@ export const extractValues = (data) =>
  * @returns An array of Vega datasets with the values from the values object merged in
  */
 export const mergeValuesIntoData = (data, values) => {
-	console.log(data, values)
+	console.log(data, values);
 	return data.map((dataset) => {
 		const datasetValues = values[dataset.name];
 		if (datasetValues) {

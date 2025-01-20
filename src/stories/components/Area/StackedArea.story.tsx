@@ -13,9 +13,9 @@ import React, { ReactElement } from 'react';
 
 import useChartProps from '@hooks/useChartProps';
 import { Area, Axis, Chart, ChartPopover, ChartProps, ChartTooltip, Legend } from '@rsc';
+import { stackedAreaData } from '@stories/data/data';
 import { StoryFn } from '@storybook/react';
 import { bindWithProps } from 'test-utils/bindWithProps';
-import { stackedAreaData } from '@stories/data/data';
 
 export default {
 	title: 'RSC/Area/StackedArea',
@@ -29,7 +29,13 @@ export default {
 	},
 };
 
-const defaultChartProps: ChartProps = { data: stackedAreaData, minWidth: 400, maxWidth: 800, height: 400, animations: false };
+const defaultChartProps: ChartProps = {
+	data: stackedAreaData,
+	minWidth: 400,
+	maxWidth: 800,
+	height: 400,
+	animations: false,
+};
 
 const AreaStory: StoryFn<typeof Area> = (args): ReactElement => {
 	const chartProps = useChartProps(defaultChartProps);

@@ -10,10 +10,7 @@
  * governing permissions and limitations under the License.
  */
 import { Trendline } from '@components/Trendline';
-import {
-	FILTERED_TABLE,
-	MS_PER_DAY,
-	TRENDLINE_VALUE } from '@constants';
+import { FILTERED_TABLE, MS_PER_DAY, TRENDLINE_VALUE } from '@constants';
 import { sanitizeTrendlineChildren } from '@utils';
 import { SignalRef } from 'vega';
 
@@ -269,10 +266,10 @@ export const getRegressionExtent = (
 };
 
 export const getTrendlineScaleType = (
-  markProps: TrendlineParentProps,
-  trendlineOrientation: Orientation
+	markProps: TrendlineParentProps,
+	trendlineOrientation: Orientation
 ): RscScaleType => {
-  // y axis only support linear... for now...
-  if (trendlineOrientation === 'vertical') return 'linear';
-  return 'scaleType' in markProps ? markProps.scaleType : markProps.dimensionScaleType;
+	// y axis only support linear... for now...
+	if (trendlineOrientation === 'vertical') return 'linear';
+	return 'scaleType' in markProps ? markProps.scaleType : markProps.dimensionScaleType;
 };

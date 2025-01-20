@@ -194,16 +194,16 @@ const addMouseEvents = (highlightedGroupSignal: Signal, markName: string, update
 export const addHighlightMarkOpacityRules = (
 	opacityRules: ({ test?: string } & NumericValueRef)[],
 	markProps: TooltipParentProps,
-  opacityParameter: { signal: string } | { value: number } = { value: 1 / HIGHLIGHT_CONTRAST_RATIO }
+	opacityParameter: { signal: string } | { value: number } = { value: 1 / HIGHLIGHT_CONTRAST_RATIO }
 ) => {
 	opacityRules.unshift(
 		{
 			test: `isArray(${HIGHLIGHTED_ITEM}) && length(${HIGHLIGHTED_ITEM}) > 0 && indexof(${HIGHLIGHTED_ITEM}, datum.${markProps.idKey}) === -1`,
-			...opacityParameter
+			...opacityParameter,
 		},
 		{
 			test: `!isArray(${HIGHLIGHTED_ITEM}) && isValid(${HIGHLIGHTED_ITEM}) && ${HIGHLIGHTED_ITEM} !== datum.${markProps.idKey}`,
-			...opacityParameter
+			...opacityParameter,
 		}
 	);
 	if (isHighlightedByGroup(markProps)) {

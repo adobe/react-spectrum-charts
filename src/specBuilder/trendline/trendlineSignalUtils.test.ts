@@ -33,7 +33,7 @@ describe('getTrendlineSignals()', () => {
 		});
 		const defaultSignalsLength = defaultSignals.length;
 		console.log('defaultSignalsLength', defaultSignalsLength);
-		console.log(JSON.stringify(signals, null, 2))
+		console.log(JSON.stringify(signals, null, 2));
 		expect(signals).toHaveLength(defaultSignals.length);
 		expect(signals[0]).toHaveProperty('name', HIGHLIGHTED_ITEM);
 		expect(signals[0].on).toHaveLength(2);
@@ -63,7 +63,6 @@ describe('getTrendlineSignals()', () => {
 		expect(signals[8]).toHaveProperty('name', `${HIGHLIGHTED_SERIES}_prev`);
 		expect(signals[8].on).toHaveLength(1);
 	});
-
 
 	test('should not modify any signals if there is not a ChartTooltip', () => {
 		setTrendlineSignals(signals, defaultLineProps);

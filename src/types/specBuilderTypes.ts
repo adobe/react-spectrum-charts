@@ -18,11 +18,11 @@ import {
 	AxisAnnotationProps,
 	AxisChildElement,
 	AxisProps,
+	BarProps,
+	ChartData,
 	ChartPopoverProps,
 	ChartTooltipProps,
 	ColorFacet,
-	BarProps,
-  ChartData,
 	ColorScheme,
 	DonutProps,
 	DonutSummaryProps,
@@ -51,13 +51,13 @@ type AreaPropsWithDefaults = 'name' | 'dimension' | 'metric' | 'color' | 'scaleT
 
 export interface AreaSpecProps extends PartiallyRequired<AreaProps, AreaPropsWithDefaults> {
 	colorScheme: ColorScheme;
-	data?: ChartData[],
+	data?: ChartData[];
 	highlightedItem?: HighlightedItem;
 	idKey: string;
 	index: number;
-	previousData?: ChartData[],
-	animations?: boolean,
-	animateFromZero?: boolean,
+	previousData?: ChartData[];
+	animations?: boolean;
+	animateFromZero?: boolean;
 	children: MarkChildElement[];
 	markType: 'area';
 }
@@ -113,18 +113,18 @@ type BarPropsWithDefaults =
 	| 'type';
 
 export interface BarSpecProps extends PartiallyRequired<BarProps, BarPropsWithDefaults> {
-  animations?: boolean,
-  animateFromZero?: boolean,
+	animations?: boolean;
+	animateFromZero?: boolean;
 	children: MarkChildElement[];
 	colorScheme: ColorScheme;
-	data?: ChartData[],
+	data?: ChartData[];
 	dimensionScaleType: 'band';
 	highlightedItem?: HighlightedItem;
 	idKey: string;
 	index: number;
 	interactiveMarkName: string | undefined;
 	markType: 'bar';
-	previousData?: ChartData[],
+	previousData?: ChartData[];
 }
 
 type AnnotationPropsWithDefaults = 'textKey';
@@ -174,7 +174,7 @@ export interface SegmentLabelSpecProps extends PartiallyRequired<SegmentLabelPro
 type LegendPropsWithDefaults = 'hiddenEntries' | 'highlight' | 'isToggleable' | 'position' | 'name';
 
 export interface LegendSpecProps extends PartiallyRequired<LegendProps, LegendPropsWithDefaults> {
-  animations?: boolean;
+	animations?: boolean;
 	color?: FacetRef<string>;
 	colorScheme: ColorScheme;
 	hiddenSeries: string[];

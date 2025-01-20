@@ -59,8 +59,8 @@ import { baseData } from './specUtils';
 const defaultData: Data[] = [{ name: TABLE, values: [], transform: [{ type: 'identifier', as: MARK_ID }] }];
 
 const defaultSpecProps: SanitizedSpecProps = {
-  animations: false,
-  backgroundColor: DEFAULT_BACKGROUND_COLOR,
+	animations: false,
+	backgroundColor: DEFAULT_BACKGROUND_COLOR,
 	children: [],
 	colors: 'categorical12',
 	colorScheme: DEFAULT_COLOR_SCHEME,

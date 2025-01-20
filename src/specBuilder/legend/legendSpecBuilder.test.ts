@@ -21,6 +21,7 @@ import {
 	RSC_ANIMATION,
 	TABLE,
 } from '@constants';
+import { defaultAnimationScales } from '@specBuilder/scale/scaleSpecBuilder.test';
 import {
 	defaultHighlightedGroupSignal,
 	defaultHighlightedItemSignal,
@@ -35,7 +36,6 @@ import { Data, Legend, LegendEncode, Scale, Spec, SymbolEncodeEntry } from 'vega
 
 import { addData, addLegend, addSignals, formatFacetRefsWithPresets, getContinuousLegend } from './legendSpecBuilder';
 import { defaultLegendProps, opacityEncoding } from './legendTestUtils';
-import { defaultAnimationScales } from '@specBuilder/scale/scaleSpecBuilder.test';
 
 const defaultSpec: Spec = {
 	signals: defaultSignals,
@@ -140,7 +140,7 @@ const defaultHighlightSeriesSignal = {
 describe('addLegend()', () => {
 	describe('no initial legend', () => {
 		test('no props, should setup default legend', () => {
-			expect(addLegend(defaultSpec, {animations: false,})).toStrictEqual({
+			expect(addLegend(defaultSpec, { animations: false })).toStrictEqual({
 				...defaultSpec,
 				data: [defaultLegendAggregateData],
 				scales: [...(defaultSpec.scales || []), defaultLegendEntriesScale],
@@ -150,7 +150,10 @@ describe('addLegend()', () => {
 
 		test('descriptions, should add encoding', () => {
 			expect(
-				addLegend(defaultSpec, { animations: false, descriptions: [{ seriesName: 'test', description: 'test' }] })
+				addLegend(defaultSpec, {
+					animations: false,
+					descriptions: [{ seriesName: 'test', description: 'test' }],
+				})
 			).toStrictEqual({
 				...defaultSpec,
 				data: [defaultLegendAggregateData],
@@ -417,14 +420,14 @@ describe('addSignals()', () => {
 	});
 	test('should add legendLabels signal if legendLabels are defined', () => {
 		expect(
-			addSignals(defaultSignals, { ...defaultLegendProps, legendLabels: []}).find(
+			addSignals(defaultSignals, { ...defaultLegendProps, legendLabels: [] }).find(
 				(signal) => signal.name === 'legendLabels'
 			)
 		).toBeDefined();
 	});
 	test('should add animation signals if animations is true', () => {
-		const signals = addSignals(defaultSignals, { ...defaultLegendProps, animations: true })
-		expect(signals).toBeDefined()
+		const signals = addSignals(defaultSignals, { ...defaultLegendProps, animations: true });
+		expect(signals).toBeDefined();
 		expect(signals).toHaveLength(9);
 		expect(signals[4]).toHaveProperty('name', RSC_ANIMATION);
 		expect(signals[4].on).toHaveLength(1);
