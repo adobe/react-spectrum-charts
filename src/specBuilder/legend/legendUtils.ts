@@ -92,7 +92,7 @@ export const getHiddenEntriesFilter = (hiddenEntries: string[], name: string): F
  */
 export const getEncodings = (facets: Facet[], legendProps: LegendSpecProps, marks: Mark[]): LegendEncode => {
 	const symbolEncodings = getSymbolEncodings(facets, legendProps);
-	const hoverEncodings = getHoverEncodings(facets, legendProps);
+	const hoverEncodings = getHoverEncodings(facets, legendProps, marks);
 	const legendLabelsEncodings = getLegendLabelsEncodings(legendProps.name, legendProps.legendLabels);
 	const showHideEncodings = getShowHideEncodings(legendProps);
 	// merge the encodings together
@@ -177,13 +177,13 @@ export const getOpacityEncoding = ({
 	highlight,
 	highlightedSeries,
 	keys,
-}: LegendSpecProps): ProductionRule<NumericValueRef> | undefined => {
+}: LegendSpecProps, marks: Mark[]): ProductionRule<NumericValueRef> | undefined => {
 	const highlightSignalName = keys?.length ? HIGHLIGHTED_GROUP : HIGHLIGHTED_SERIES;
 	// only add symbol opacity if highlight is true or highlightedSeries is defined
 	if (highlight || highlightedSeries) {
 
 		//If animations are enabled, set legend animation opacity rules
-		
+
 		if (animations) {
 			/*
 			this is the check for chart type and is the reason the spec.marks had to be pushed to

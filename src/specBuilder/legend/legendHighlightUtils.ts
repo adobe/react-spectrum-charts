@@ -10,7 +10,7 @@
  * governing permissions and limitations under the License.
  */
 import { COLOR_SCALE, HIGHLIGHTED_GROUP, HIGHLIGHTED_SERIES, HIGHLIGHT_CONTRAST_RATIO, SERIES_ID } from '@constants';
-import { GroupMark, Mark, NumericValueRef, ProductionRule } from 'vega';
+import { GroupMark, Mark, NumericValueRef } from 'vega';
 import { getMarkWithLegendHighlightOpacityRules, getSeriesAnimationOpacityRules } from '@specBuilder/marks/markUtils';
 
 

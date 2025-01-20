@@ -32,7 +32,7 @@ import {
 	hasPopover,
 } from '@specBuilder/marks/markUtils';
 import { getAnimationMarks } from '@specBuilder/specUtils';
-import { LineMark, Mark, NumericValueRef, ProductionRule, RuleMark, SymbolMark } from 'vega';
+import { LineMark, Mark, NumericValueRef, ProductionRule, RuleMark } from 'vega';
 
 import { ScaleType } from '../../types';
 import {
@@ -77,11 +77,9 @@ export const getLineMark = (lineMarkProps: LineMarkProps, dataSource: string): L
 				// this has to be in update because when you resize the window that doesn't rebuild the spec
 				// but it may change the x position if it causes the chart to resize
 				x: getXProductionRule(scaleType, dimension),
-        y: animations !== false ? getAnimationMarks(dimension, metric, data, previousData) : undefined,
-				...(popoverWithDimensionHighlightExists ? {} : { opacity: getLineOpacity(lineMarkProps) }),
-				strokeOpacity: getLineStrokeOpacity(lineMarkProps),
-				opacity: getLineOpacity(lineMarkProps),
 				...(animations && animateFromZero && { y: getAnimationMarks(dimension, metric, data, previousData) }),
+				...(popoverWithDimensionHighlightExists ? {} : { opacity: getLineOpacity(lineMarkProps) }),
+				opacity: getLineOpacity(lineMarkProps),
 			},
 		},
 	};
@@ -106,26 +104,38 @@ export const getLineOpacity = ({
 	}
 
 	//if animations are enabled, set opacity rules for line mark.
-
 	if (animations) {
 		return getSeriesAnimationOpacityRules();
 	}
+	const fadedValue = 1 / HIGHLIGHT_CONTRAST_RATIO;
+	const animationOpacitySignal = { signal: `max(1-rscColorAnimation, ${fadedValue})` }
+	const opacityParameter = animations ? animationOpacitySignal : { value: fadedValue };
+
 	// add a rule that will lower the opacity of the line if there is a hovered series, but this line is not the one hovered
 	strokeOpacityRules.push(
 		{
 			test: `isValid(${HIGHLIGHTED_SERIES}) && ${HIGHLIGHTED_SERIES} !== datum.${SERIES_ID}`,
-			value: 1 / HIGHLIGHT_CONTRAST_RATIO,
+			...opacityParameter
 		},
 		{
 			test: `length(data('${interactiveMarkName}_highlightedData')) > 0 && indexof(pluck(data('${interactiveMarkName}_highlightedData'), '${SERIES_ID}'), datum.${SERIES_ID}) === -1`,
-			value: 1 / HIGHLIGHT_CONTRAST_RATIO,
+			...opacityParameter
 		}
+
 	);
+
+  if (animations) {
+    strokeOpacityRules.push(
+      {
+			test: `isValid(${HIGHLIGHTED_SERIES}) && ${HIGHLIGHTED_SERIES}_prev !== datum.${SERIES_ID}`,
+			...opacityParameter
+		}
+    )}
 
 	if (popoverMarkName) {
 		strokeOpacityRules.push({
 			test: `isValid(${SELECTED_SERIES}) && ${SELECTED_SERIES} !== datum.${SERIES_ID}`,
-			value: 1 / HIGHLIGHT_CONTRAST_RATIO,
+			...opacityParameter
 		});
 	}
 	// This allows us to only show the metric range when hovering over the parent line component.
@@ -146,7 +156,7 @@ export const getLineHoverMarks = (
 	dataSource: string,
 	secondaryHighlightedMetric?: string
 ): Mark[] => {
-	const { children, dimension, metric, name, scaleType, animations, animateFromZero } = lineProps;
+	const { children, dimension, name, scaleType } = lineProps;
 	return [
 		// vertical rule shown for the hovered or selected point
 		getHoverRule(dimension, name, scaleType),
@@ -160,10 +170,6 @@ export const getLineHoverMarks = (
 		...(secondaryHighlightedMetric ? [getSecondaryHighlightPoint(lineProps, secondaryHighlightedMetric)] : []),
 		// get interactive marks for the line
 		...getInteractiveMarks(dataSource, lineProps),
-		// points used for the voronoi transform
-		getPointsForVoronoi(dataSource, dimension, metric, name, scaleType),
-		// voronoi transform used to get nearest point paths
-		getVoronoiPath(children, `${name}_pointsForVoronoi`, name, animations, animateFromZero),
 	];
 };
 
@@ -200,13 +206,12 @@ const getInteractiveMarks = (dataSource: string, lineProps: LineMarkProps): Mark
 };
 
 const getVoronoiMarks = (dataSource: string, lineProps: LineMarkProps): Mark[] => {
-	const { children, dimension, metric, metricAxis, name, scaleType } = lineProps;
-
+	const { animations, animateFromZero, children, dimension, metric, metricAxis, name, scaleType } = lineProps;
 	return [
 		// points used for the voronoi transform
 		getPointsForVoronoi(dataSource, dimension, metric, name, scaleType, metricAxis),
 		// voronoi transform used to get nearest point paths
-		getVoronoiPath(children, `${name}_pointsForVoronoi`, name, lineProps),
+		getVoronoiPath(children, `${name}_pointsForVoronoi`, name, animations, animateFromZero, lineProps),
 	];
 };
 

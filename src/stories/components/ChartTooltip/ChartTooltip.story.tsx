@@ -14,8 +14,7 @@ import React, { ReactElement } from 'react';
 import { ChartTooltip } from '@components/ChartTooltip/ChartTooltip';
 import useChartProps from '@hooks/useChartProps';
 import { browserData } from '@stories/data/data';
-import { Area, Bar, Chart, ChartTooltipProps, categorical12, Datum, Line } from '@rsc';
-import { browserData as data } from '@stories/data/data';
+import { Area, Bar, Chart, categorical12, Datum, Line } from '@rsc';
 import { formatTimestamp } from '@stories/storyUtils';
 import { StoryFn } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
@@ -36,9 +35,6 @@ export default {
 const barData = browserData.map((datum) =>
 	datum.category === 'Chrome' ? { ...datum, excludeFromTooltip: true } : datum
 );
-interface ChartTooltipPropsAndAnimations extends ChartTooltipProps {
-	animations?: boolean;
-}
 
 const StackedBarTooltipStory: StoryFn<typeof ChartTooltip> = (args): ReactElement => {
 	const chartProps = useChartProps({ animations: false, data: barData, width: 600 });

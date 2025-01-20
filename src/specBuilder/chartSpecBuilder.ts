@@ -14,9 +14,6 @@ import {
 	HIGHLIGHTED_GROUP,
 	DATA_ANIMATION_DURATION_FRAMES,
 	DATA_ANIMATION_MILLISECONDS_PER_FRAME,
-	DEFAULT_BACKGROUND_COLOR,
-	DEFAULT_COLOR_SCHEME,
-	DEFAULT_LINE_TYPES,
 	HIGHLIGHTED_ITEM,
 	HIGHLIGHTED_SERIES,
 	LINEAR_COLOR_SCALE,
@@ -29,11 +26,7 @@ import {
 	SYMBOL_PATH_WIDTH_SCALE,
 	SYMBOL_SHAPE_SCALE,
 	SYMBOL_SIZE_SCALE,
-	DEFAULT_BACKGROUND_COLOR,
-	DEFAULT_COLOR_SCHEME,
-	DEFAULT_LINE_TYPES,
 	FILTERED_TABLE,
-	PREVIOUS_TABLE,
 	SERIES_ID,
 	TABLE,
 } from '@constants';
@@ -131,7 +124,7 @@ export function buildSpec(props: SanitizedSpecProps) {
 
 	let { areaCount, axisCount, barCount, comboCount, donutCount, legendCount, lineCount, scatterCount } =
 		initializeComponentCounts();
-	const specProps = { animations, colorScheme, data, idKey, highlightedItem, previousData };
+	const specProps = { animations, animateFromZero, colorScheme, data, idKey, highlightedItem, previousData };
 	spec = [...children]
 		.sort((a, b) => buildOrder.get(a.type) - buildOrder.get(b.type))
 		.reduce((acc: Spec, cur) => {

@@ -13,8 +13,8 @@ import { ReactElement } from 'react';
 
 import { ReferenceLine } from '@components/ReferenceLine';
 import useChartProps from '@hooks/useChartProps';
-import { newDataArray1, simpleSparklineData, workspaceTrendsData, workspaceTrendsDataWithVisiblePoints } from '@stories/data/data';
-import { Axis, Bar, Chart, ChartPopover, ChartTooltip, Legend, Line, LineProps } from '@rsc';
+import { simpleSparklineData, workspaceTrendsData, workspaceTrendsDataWithVisiblePoints } from '@stories/data/data';
+import { Axis, Bar, Chart, ChartPopover, ChartTooltip, Legend, Line } from '@rsc';
 import { formatTimestamp } from '@stories/storyUtils';
 import { action } from '@storybook/addon-actions';
 import { StoryFn } from '@storybook/react';

@@ -122,15 +122,11 @@ export enum INTERACTION_MODE {
 export const HOVER_SIZE = 3000;
 export const HOVER_SHAPE_COUNT = 3;
 export const HOVER_SHAPE = 'diamond';
-// chart animation easing functions
 // chart animation constants
 export const DATA_ANIMATION_DURATION_FRAMES = 78; // 60 fps * 1.3 seconds = 78 frames
 export const DATA_ANIMATION_MILLISECONDS_PER_FRAME = 1000 / 60;  // 60fps
-
 export const OPACITY_ANIMATION_FRAMES = 1 / 30;  // 0.033 - 30fps
-
+export const ANNOTATION_ANIMATION_OPACITY = 'timerValue === 1 ? 1 : 0';
+// chart animation easing functions
 const EASE_OUT_CUBIC = '(1 - pow(1 - timerValue, 3))';
-
 export const ANIMATION_FUNCTION = EASE_OUT_CUBIC;
-
-export const annotationFillOpacity = 'timerValue === 1 ? 1 : 0';

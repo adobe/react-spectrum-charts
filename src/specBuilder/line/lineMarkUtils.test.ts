@@ -63,6 +63,7 @@ describe('getLineMark()', () => {
 		const lineMark = getLineMark({...defaultLineMarkProps, animations: true, animateFromZero: true}, 'line0_facet');
 		expect(lineMark).toEqual({
 			name: 'line0',
+			description: 'line0',
 			type: 'line',
 			from: { data: 'line0_facet' },
 			interactive: false,

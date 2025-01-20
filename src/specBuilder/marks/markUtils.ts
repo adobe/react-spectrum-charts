@@ -419,7 +419,7 @@ export const getItemHoverArea = (
 					y: getYProductionRule(metricAxis, metric),
 					fill: { value: 'transparent' },
 					stroke: { value: 'transparent' },
-					tooltip: getTooltip(children, name, false),
+          tooltip: getTooltip({ children, name, nestedDatum: false }),
 					size: getHoverSizeSignal(size),
 				},
 				update: {
@@ -508,6 +508,7 @@ export const getSeriesAnimationOpacityRules = (
 		DEFAULT_OPACITY_RULE
 	]
 };
+
 /**
  * animation opacity rules for charts that highlight from mark ID
  * @returns ProductionRule<NumericValueRef>

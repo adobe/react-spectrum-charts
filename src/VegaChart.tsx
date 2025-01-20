@@ -13,7 +13,7 @@ import { FC, useEffect, useMemo, useRef } from 'react';
 
 import { PREVIOUS_TABLE, TABLE } from '@constants';
 import { useDebugSpec } from '@hooks/useDebugSpec';
-import { extractValues, isVegaData, usePreviousChartData } from '@specBuilder/specUtils';
+import { extractValues, isVegaData } from '@specBuilder/specUtils';
 import { Config, Padding, Renderers, Spec, View } from 'vega';
 import embed from 'vega-embed';
 import { Options as TooltipOptions } from 'vega-tooltip';
@@ -72,7 +72,17 @@ export const VegaChart: FC<VegaChartProps> = ({
 		return { [TABLE]: clonedData };
 	}, [data]);
 
-	const previousChartData = usePreviousChartData({ [PREVIOUS_TABLE]: chartData.table });
+	const previousChartData = useMemo(() => {
+		const clonedData = structuredClone(previousData);
+
+		// We received a full Vega data array with potentially multiple dataset objects
+		if (isVegaData(clonedData)) {
+			return extractValues(clonedData);
+		}
+
+		// We received a simple array of data and we'll set a default key of 'table' to reference internally
+		return { [PREVIOUS_TABLE]: clonedData };
+	}, [previousData]);
 
 	useDebugSpec(debug, spec, { ...previousChartData, ...chartData }, width, height, config);
 

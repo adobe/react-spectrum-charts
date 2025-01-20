@@ -1121,4 +1121,40 @@ export const stackedAreaData = [
 	{ browser: 'Safari', value: 1, operatingSystem: 'Other', order: 0 },
 ];
 
+export const animationTransitionDataBefore = [
+	{ x: 0, y: 92 },
+	{ x: 1, y: 56 },
+	{ x: 2, y: 84 },
+	{ x: 3, y: 37 },
+	{ x: 4, y: 49 },
+	{ x: 5, y: 67 },
+	{ x: 6, y: 95 },
+	{ x: 7, y: 77 },
+	{ x: 8, y: 92 },
+	{ x: 9, y: 56 },
+	{ x: 10, y: 84 },
+	{ x: 11, y: 37 },
+	{ x: 12, y: 49 },
+	{ x: 13, y: 67 },
+	{ x: 14, y: 95 },
+	{ x: 15, y: 77 },
+];
 
+export const animationTransitionDataAfter = [
+	{ x: 0, y: 50 },
+	{ x: 1, y: 10 },
+	{ x: 2, y: 24 },
+	{ x: 3, y: 99 },
+	{ x: 4, y: 8 },
+	{ x: 5, y: 12 },
+	{ x: 6, y: 17 },
+	{ x: 7, y: 76 },
+	{ x: 8, y: 100 },
+	{ x: 9, y: 65 },
+	{ x: 10, y: 48 },
+	{ x: 11, y: 73 },
+	{ x: 12, y: 94 },
+	{ x: 13, y: 49 },
+	{ x: 14, y: 59 },
+	{ x: 15, y: 70 },
+];

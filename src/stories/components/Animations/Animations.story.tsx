@@ -1,3 +1,14 @@
+/*
+ * Copyright 2025 Adobe. All rights reserved.
+ * This file is licensed to you under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy
+ * of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under
+ * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+ * OF ANY KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
+ */
 import React, { ReactElement, useState } from 'react';
 
 import {
@@ -18,10 +29,10 @@ import {
 	Line,
 	Trendline
 } from '@rsc';
-import { areaData, newDataArray1WithStaticPoints, workspaceTrendsData } from '@stories/data/data';
+import { areaData, stackedAreaData, newDataArray1WithStaticPoints, workspaceTrendsData } from '@stories/data/data';
 import { StoryFn } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
-import { ChartData, ChartElement, Datum, SpectrumColor } from 'types';
+import { ChartData, ChartElement, Datum, SpectrumColor } from '../../../types';
 
 import { Button, Content, Text, View } from '@adobe/react-spectrum';
 
@@ -218,7 +229,7 @@ const TrendlineStory: StoryFn<ToggleableDataProps> = (args): ReactElement => {
 	return (
 		<ChartWithToggleableData
 			ChartComponent={
-				<Chart {...chartProps}>
+				<Chart {...chartProps} debug>
 					<Axis position="left" grid title="Users" />
 					<Axis position="bottom" labelFormat="time" baseline ticks />
 					<Line color="series">
@@ -420,8 +431,6 @@ export {
 	BarZero,
 	DodgedBarSwitch,
 	DodgedBarZero,
-	SingleLineSwitch,
-	SingleLineZero,
 	TrendlineSwitch,
 	TrendlineZero,
 	TrellisHorizontalBarSwitch,

@@ -11,7 +11,7 @@
  */
 import { isInteractive } from '@specBuilder/marks/markUtils';
 import { GroupMark, Mark, RectEncodeEntry, RectMark } from 'vega';
-import { BACKGROUND_COLOR, FILTERED_TABLE, MARK_ID } from '@constants';
+import { BACKGROUND_COLOR, FILTERED_TABLE } from '@constants';
 import { getAnimationMarks } from '@specBuilder/specUtils';
 
 import { BarSpecProps } from '../../types';

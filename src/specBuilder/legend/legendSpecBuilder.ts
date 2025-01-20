@@ -12,7 +12,6 @@
 import {
 	COLOR_SCALE,
 	DEFAULT_COLOR_SCHEME,
-	HIGHLIGHTED_ITEM,
 	LINEAR_COLOR_SCALE,
 	LINE_TYPE_SCALE,
 	OPACITY_SCALE,
@@ -44,11 +43,10 @@ import {
 
 import {
 	addHighlightSignalLegendHoverEvents,
-	getLegendLabelsSeriesSignal,
 	getRscAnimationSignals,
 	getRscLegendColorAnimationDirection,
-	getRscLegendHighlightedItemPrev,
 	hasSignalByName,
+	getGenericValueSignal,
 } from '../signal/signalSpecBuilder';
 import { getFacets, getFacetsFromKeys } from './legendFacetUtils';
 import { setHoverOpacityForMarks } from './legendHighlightUtils';
@@ -255,7 +253,7 @@ const getLegendLayout = ({ position, title }: LegendSpecProps): Partial<Legend> 
 const addScales = produce<Scale[], [LegendSpecProps]>(
 	(scales, { color, lineType, opacity, symbolShape, animations }) => {
 		// if animations are enabled, add all necessary animation scales.
-		
+
 		if (animations) {
 			addRscAnimationScales(scales);
 		}
@@ -335,4 +333,4 @@ export const addSignals = produce<Signal[], [LegendSpecProps]>(
 		if (legendLabels) {
 			signals.push(getGenericValueSignal(`${name}_labels`, legendLabels));
 		}
-	}
+	})

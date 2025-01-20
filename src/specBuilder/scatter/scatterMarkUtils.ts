@@ -14,14 +14,11 @@ import {
 	DEFAULT_OPACITY_RULE,
 	FILTERED_TABLE,
 	HIGHLIGHT_CONTRAST_RATIO,
-	HIGHLIGHTED_ITEM,
-	MARK_ID,
 	SELECTED_ITEM
 } from '@constants';
 import {
 	getColorProductionRule,
 	getLineWidthProductionRule,
-	getMarkHighlightOpacityRules,
 	getOpacityProductionRule,
 	getPointsForVoronoi,
 	getStrokeDashProductionRule,
@@ -37,7 +34,7 @@ import { spectrumColors } from '@themes';
 import { produce } from 'immer';
 
 import { ScatterSpecProps, SymbolSizeFacet } from '../../types';
-import { GroupMark, Mark, NumericValueRef, PathMark, ProductionRule, SymbolMark } from 'vega';
+import { GroupMark, Mark, NumericValueRef, SymbolMark } from 'vega';
 
 export const addScatterMarks = produce<Mark[], [ScatterSpecProps]>((marks, props) => {
 	const { name } = props;
@@ -115,20 +112,18 @@ export const getOpacity = (props: ScatterSpecProps): ({ test?: string } & Numeri
 	if (!hasInteractiveChildren(children) && highlightedItem === undefined) {
 		return [DEFAULT_OPACITY_RULE];
 	}
-	// if animations are enabled, set opacity animation rules for scatter mark
-	
-	if (animations) {
-		return getMarkHighlightOpacityRules();
-	}
+
 	// if a point is hovered or selected, all other points should be reduced opacity
 	const fadedValue = 1 / HIGHLIGHT_CONTRAST_RATIO;
+	const animationOpacitySignal = { signal: `max(1-rscColorAnimation, ${fadedValue})` }
+	const opacityParameter = animations ? animationOpacitySignal : { value: fadedValue };
 
 	const rules: ({ test?: string } & NumericValueRef)[] = [];
-	addHighlightMarkOpacityRules(rules, props);
+	addHighlightMarkOpacityRules(rules, props, opacityParameter);
 	if (hasPopover(children)) {
 		rules.push({
 			test: `isValid(${SELECTED_ITEM}) && ${SELECTED_ITEM} !== datum.${idKey}`,
-			value: fadedValue,
+      ...opacityParameter
 		});
 	}
 

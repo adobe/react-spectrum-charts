@@ -204,6 +204,7 @@ export const addHighlightedSeriesSignalEvents = (
 		);
 	}
 };
+
 /**
  * get all signals required for opacity animations
  * @param name

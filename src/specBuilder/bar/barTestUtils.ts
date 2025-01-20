@@ -46,7 +46,6 @@ export const defaultBarProps: BarSpecProps = {
 	name: 'bar0',
 	orientation: 'vertical',
 	opacity: { value: 1 },
-	orientation: 'vertical',
 	paddingRatio: PADDING_RATIO,
 	trellisOrientation: 'horizontal',
 	trellisPadding: TRELLIS_PADDING,

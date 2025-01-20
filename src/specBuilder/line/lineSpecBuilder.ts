@@ -60,7 +60,7 @@ import { getInteractiveMarkName, getPopoverMarkName } from './lineUtils';
 
 export const addLine = produce<
 	Spec,
-  [LineProps & { colorScheme?: ColorScheme; data: ChartData[]; animations?: boolean; animateFromZero?: boolean; highlightedItem?: HighlightedItem; index?: number; idKey: string, previousData: ChartData[] }]
+  [LineProps & { colorScheme?: ColorScheme; data?: ChartData[]; animations?: boolean; animateFromZero?: boolean; highlightedItem?: HighlightedItem; index?: number; idKey: string, previousData?: ChartData[] }]
 >(
 	(
 		spec,
@@ -111,7 +111,7 @@ export const addLine = produce<
 );
 
 export const addData = produce<Data[], [LineSpecProps]>((data, props) => {
-	const { animations, animateFromZero, children, dimension, highlightedItem, isSparkline, isMethodLast, name, scaleType, staticPoint } = props;
+	const { children, dimension, highlightedItem, isSparkline, isMethodLast, name, scaleType, staticPoint } = props;
 	if (scaleType === 'time') {
 		const tableData = getTableData(data);
 		tableData.transform = addTimeTransform(tableData.transform ?? [], dimension);
@@ -135,7 +135,7 @@ export const addSignals = produce<Signal[], [LineSpecProps]>((signals, props) =>
 	setTrendlineSignals(signals, props);
 	signals.push(...getMetricRangeSignals(props));
 
-	if (!hasInteractiveChildren(children)) return;
+	if (!isInteractive(children, props)) return;
 	// if animations are enabled, push all necessary animation signals. Line charts have voronoi points and have nested datum
 	if (animations) {
 		signals.push(...getRscAnimationSignals(name, true));
@@ -158,7 +158,7 @@ export const setScales = produce<Scale[], [LineSpecProps]>((scales, props) => {
 	const { metric, metricAxis, dimension, color, lineType, opacity, padding, scaleType, children, name, animations } = props;
 
 	// if animations are enabled, add all necessary animation scales.
-	if (animations && hasInteractiveChildren(children)) {
+	if (animations && isInteractive(children, props)) {
 		addRscAnimationScales(scales);
 	}
 	// add dimension scale
@@ -225,7 +225,7 @@ const addHoverSignals = (signals: Signal[], props: LineSpecProps) => {
 	const { idKey, interactionMode, name } = props;
 	if (interactionMode !== INTERACTION_MODE.ITEM) return;
 	getHoverMarkNames(name).forEach((hoverMarkName) => {
-		addHighlightedItemSignalEvents(signals, hoverMarkName, idKey, 1);
+    addHighlightedItemSignalEvents({ signals, markName: hoverMarkName, idKey, datumOrder: 1});
 		addHighlightedSeriesSignalEvents(signals, hoverMarkName, 1);
 	});
 };

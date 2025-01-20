@@ -12,7 +12,7 @@
 import { ReactElement } from 'react';
 
 import useChartProps from '@hooks/useChartProps';
-import { Area, Axis, Bar, Chart, ChartTooltip, Line } from '@rsc';
+import { Axis, Bar, Chart, ChartTooltip, Line } from '@rsc';
 import { StoryFn } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
 
@@ -63,35 +63,6 @@ const ChartBarTooltipStory: StoryFn<typeof Chart> = (args): ReactElement => {
 					)}
 				</ChartTooltip>
 			</Bar>
-		</Chart>
-	);
-};
-
-const SingleLineWithStaticPointsStory: StoryFn<typeof Chart> = (args): ReactElement => {
-	const props = useChartProps(args);
-	return (
-		<Chart {...props}>
-			<Line metric="y" dimension="x" scaleType="linear" staticPoint="point"/>
-		</Chart>
-	);
-}
-
-const BasicAreaStory: StoryFn<typeof Chart> = (args): ReactElement => {
-	const chartProps = useChartProps(args);
-	return (
-		<Chart {...chartProps}>
-			<Area metric='maxTemperature' />
-		</Chart>
-	);
-};
-
-const BasicBarStory: StoryFn<typeof Chart> = (args): ReactElement => {
-	const chartProps = useChartProps(args);
-	return (
-		<Chart {...chartProps}>
-			<Axis position="bottom" baseline title="Browser" />
-			<Axis position="left" grid title="Downloads" />
-			<Bar dimension="browser" metric="downloads" />
 		</Chart>
 	);
 };
@@ -151,19 +122,10 @@ TooltipAnchor.args = {
 	data,
 };
 
-const SingleLineWithStaticPoints = bindWithProps(SingleLineWithStaticPointsStory);
-SingleLineWithStaticPoints.args = { data: newDataArray1WithStaticPoints };
-
 const HighlightedItem = bindWithProps(ChartBarTooltipStory);
 HighlightedItem.args = {
 	highlightedItem: 15,
 	data,
 };
 
-const BasicArea = bindWithProps(BasicAreaStory);
-BasicArea.args = {
-	data: areaData
-}
-
-
-export { BasicArea, BackgroundColor, Basic, Config, Height, HighlightedItem, Locale, TooltipAnchor, Width, SingleLineWithStaticPoints};
+export { BackgroundColor, Basic, Config, Height, HighlightedItem, Locale, TooltipAnchor, Width };

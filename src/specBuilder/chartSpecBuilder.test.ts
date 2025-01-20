@@ -59,7 +59,8 @@ import { baseData } from './specUtils';
 const defaultData: Data[] = [{ name: TABLE, values: [], transform: [{ type: 'identifier', as: MARK_ID }] }];
 
 const defaultSpecProps: SanitizedSpecProps = {
-	backgroundColor: DEFAULT_BACKGROUND_COLOR,
+  animations: false,
+  backgroundColor: DEFAULT_BACKGROUND_COLOR,
 	children: [],
 	colors: 'categorical12',
 	colorScheme: DEFAULT_COLOR_SCHEME,
@@ -426,14 +427,6 @@ describe('Chart spec builder', () => {
 			const spec = buildSpec({
 				...defaultSpecProps,
 				children: [createBar(), createLegend(true)],
-				colors: 'categorical12',
-				lineTypes: ['solid', 'dashed', 'dotted', 'dotDash', 'longDash', 'twoDash'],
-				lineWidths: ['M'],
-				symbolShapes: ['rounded-square'],
-				colorScheme: 'light',
-				hiddenSeries: undefined,
-				highlightedSeries: undefined,
-				animations: false,
 			});
 			const uncontrolledHighlightSignal = {
 				name: HIGHLIGHTED_SERIES,

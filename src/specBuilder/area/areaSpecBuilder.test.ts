@@ -30,7 +30,6 @@ import {
 	SELECTED_ITEM,
 	SELECTED_SERIES,
 	PREVIOUS_TABLE,
-	SERIES_ID,
 	TABLE,
 	RSC_ANIMATION
 } from '@constants';

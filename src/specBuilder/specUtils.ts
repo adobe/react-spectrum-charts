@@ -16,10 +16,9 @@ import {
 	SENTIMENT_NEUTRAL_PATH,
 	SENTIMENT_POSITIVE_PATH,
 } from '@svgPaths';
-import { useEffect, useRef } from 'react';
 
 import { spectrumColors } from '@themes';
-import { Data, Scale, ScaleType, Spec, ValuesData } from 'vega';
+import { IdentifierTransform, Data, Scale, ScaleType, Spec, ValuesData } from 'vega';
 
 import {
 	ChartData,
@@ -51,7 +50,6 @@ import {
 	PREVIOUS_TABLE,
 	TABLE,
 } from '../constants';
-import { getIdentifierTransform } from './data/dataUtils';
 
 /**
  * gets all the keys that are used to facet by
@@ -235,11 +233,18 @@ export const getSymbolWidthFromRscSymbolSize = (symbolSize: SymbolSize): number 
 	}
 };
 
+export const getIdentifierTransform = (): IdentifierTransform => {
+	return {
+		type: 'identifier',
+		as: MARK_ID,
+	};
+};
+
 /**
  * base data that gets initialized with every uncontrolled spec
  */
 export const baseData: Data[] = [
-	{ name: TABLE, values: [], transform: [getIdentifierTransform()] },
+  { name: TABLE, values: [], transform: [getIdentifierTransform()] },
 	{ name: FILTERED_TABLE, source: TABLE },
 	{ name: PREVIOUS_TABLE, values: [], transform: [getIdentifierTransform()] },
 	{ name: FILTERED_PREVIOUS_TABLE, source: PREVIOUS_TABLE },

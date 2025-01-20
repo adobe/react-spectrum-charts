@@ -23,7 +23,6 @@ import {
 	ColorFacet,
 	BarProps,
   ChartData,
-	ChartTooltipElement,
 	ColorScheme,
 	DonutProps,
 	DonutSummaryProps,
@@ -115,7 +114,7 @@ type BarPropsWithDefaults =
 
 export interface BarSpecProps extends PartiallyRequired<BarProps, BarPropsWithDefaults> {
   animations?: boolean,
-  animateFromZero: boolean,
+  animateFromZero?: boolean,
 	children: MarkChildElement[];
 	colorScheme: ColorScheme;
 	data?: ChartData[],

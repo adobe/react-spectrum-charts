@@ -160,7 +160,7 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 			tooltipElement.hidden = isPopoverOpen;
 
 
-			if (popoverIsOpen) {
+			if (isPopoverOpen) {
 				setAnimateFromZero(false);
 			} else {
 				// if the popover is closed, reset the selected data
@@ -252,54 +252,55 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 		}, [colorScheme, idKey, legendHiddenSeries, legendIsToggleable]);
 
 		const newSpec = structuredClone(spec);
-
 		const onNewView = (view) => {
-			chartView.current = view;
-			// Add a delay before displaying legend tooltips on hover.
-			let tooltipTimeout: NodeJS.Timeout | undefined;
-			view.tooltip((_, event, item, value) => {
-				const tooltipHandler = new Handler(tooltipConfig);
-				// Cancel delayed tooltips if the mouse moves before the delay is resolved.
-				if (tooltipTimeout) {
-					clearTimeout(tooltipTimeout);
-					tooltipTimeout = undefined;
-				}
-				if (event && event.type === 'pointermove' && itemIsLegendItem(item) && 'tooltip' in item) {
-					tooltipTimeout = setTimeout(() => {
-						tooltipHandler.call(this, event, item, value);
-						tooltipTimeout = undefined;
-					}, LEGEND_TOOLTIP_DELAY);
-				} else {
-					tooltipHandler.call(this, event, item, value);
-				}
-			});
-			if (popovers.length || legendIsToggleable || onLegendClick) {
-				if (legendIsToggleable) {
-					view.signal('hiddenSeries', hiddenSeriesState);
-				}
-				setSelectedSignals({
-					selectedData: selectedData.current,
-					view,
-				});
-				view.addEventListener(
-					'click',
-					getOnMarkClickCallback(
-						chartView,
-						hiddenSeriesState,
-						chartId,
-						selectedData,
-						selectedDataBounds,
-						selectedDataName,
-						setHiddenSeries,
-						legendIsToggleable,
-						onLegendClick
-					)
-				);
-			}
-			view.addEventListener('mouseover', getOnMouseInputCallback(onLegendMouseOver));
-			view.addEventListener('mouseout', getOnMouseInputCallback(onLegendMouseOut));
-			// this will trigger the autosize calculation making sure that everything is correct size
-		};
+		chartView.current = view;
+					// Add a delay before displaying legend tooltips on hover.
+					let tooltipTimeout: NodeJS.Timeout | undefined;
+					view.tooltip((viewRef, event, item, value) => {
+						const tooltipHandler = new Handler(tooltipOptions);
+						// Cancel delayed tooltips if the mouse moves before the delay is resolved.
+						if (tooltipTimeout) {
+							clearTimeout(tooltipTimeout);
+							tooltipTimeout = undefined;
+						}
+						if (event && event.type === 'pointermove' && itemIsLegendItem(item) && 'tooltip' in item) {
+							tooltipTimeout = setTimeout(() => {
+								tooltipHandler.call(viewRef, event, item, value);
+								tooltipTimeout = undefined;
+							}, LEGEND_TOOLTIP_DELAY);
+						} else {
+							tooltipHandler.call(viewRef, event, item, value);
+						}
+					});
+					if (popovers.length || legendIsToggleable || onLegendClick) {
+						if (legendIsToggleable) {
+							view.signal('hiddenSeries', legendHiddenSeries);
+						}
+						setSelectedSignals({
+							idKey,
+							selectedData: selectedData.current,
+							view,
+						});
+						view.addEventListener(
+							'click',
+							getOnMarkClickCallback({
+								chartView,
+								hiddenSeries: legendHiddenSeries,
+								chartId,
+								selectedData,
+								selectedDataBounds,
+								selectedDataName,
+								setHiddenSeries: setLegendHiddenSeries,
+								legendIsToggleable,
+								onLegendClick,
+							})
+						);
+					}
+					view.addEventListener('click', getOnChartMarkClickCallback(chartView, markClickDetails));
+					view.addEventListener('mouseover', getOnMouseInputCallback(onLegendMouseOver));
+					view.addEventListener('mouseout', getOnMouseInputCallback(onLegendMouseOut));
+					// this will trigger the autosize calculation making sure that everything is correct size
+		}
 
 		return (
 			<>
@@ -322,55 +323,7 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 					padding={padding}
 					signals={signals}
 					tooltip={tooltipOptions} // legend show/hide relies on this
-					onNewView={(view) => {
-						chartView.current = view;
-						// Add a delay before displaying legend tooltips on hover.
-						let tooltipTimeout: NodeJS.Timeout | undefined;
-						view.tooltip((viewRef, event, item, value) => {
-							const tooltipHandler = new Handler(tooltipOptions);
-							// Cancel delayed tooltips if the mouse moves before the delay is resolved.
-							if (tooltipTimeout) {
-								clearTimeout(tooltipTimeout);
-								tooltipTimeout = undefined;
-							}
-							if (event && event.type === 'pointermove' && itemIsLegendItem(item) && 'tooltip' in item) {
-								tooltipTimeout = setTimeout(() => {
-									tooltipHandler.call(viewRef, event, item, value);
-									tooltipTimeout = undefined;
-								}, LEGEND_TOOLTIP_DELAY);
-							} else {
-								tooltipHandler.call(viewRef, event, item, value);
-							}
-						});
-						if (popovers.length || legendIsToggleable || onLegendClick) {
-							if (legendIsToggleable) {
-								view.signal('hiddenSeries', legendHiddenSeries);
-							}
-							setSelectedSignals({
-								idKey,
-								selectedData: selectedData.current,
-								view,
-							});
-							view.addEventListener(
-								'click',
-								getOnMarkClickCallback({
-									chartView,
-									hiddenSeries: legendHiddenSeries,
-									chartId,
-									selectedData,
-									selectedDataBounds,
-									selectedDataName,
-									setHiddenSeries: setLegendHiddenSeries,
-									legendIsToggleable,
-									onLegendClick,
-								})
-							);
-						}
-						view.addEventListener('click', getOnChartMarkClickCallback(chartView, markClickDetails));
-						view.addEventListener('mouseover', getOnMouseInputCallback(onLegendMouseOver));
-						view.addEventListener('mouseout', getOnMouseInputCallback(onLegendMouseOut));
-						// this will trigger the autosize calculation making sure that everything is correct size
-					}}
+          onNewView={onNewView}
 				/>
 				{popovers.map((popover) => (
 					<ChartDialog
@@ -457,4 +410,5 @@ const LegendTooltip: FC<LegendTooltipProps> = ({ value, descriptions, domain }) 
 };
 
 const itemIsLegendItem = (item: Item<unknown>): boolean => {
-	return 'name' in item.mark && typeof item.mark.name === 'string' && item.mark.name.includes('legend');
+  return 'name' in item.mark && typeof item.mark.name === 'string' && item.mark.name.includes('legend');
+}

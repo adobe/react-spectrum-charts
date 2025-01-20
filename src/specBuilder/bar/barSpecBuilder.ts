@@ -38,7 +38,7 @@ import {
 	getScaleIndexByName,
 	getScaleIndexByType,
 } from '@specBuilder/scale/scaleSpecBuilder';
-import { addHighlightedItemSignalEvents, getGenericValueSignal } from '@specBuilder/signal/signalSpecBuilder';
+import { addHighlightedItemSignalEvents, getGenericValueSignal, getRscAnimationSignals } from '@specBuilder/signal/signalSpecBuilder';
 import { getFacetsFromProps } from '@specBuilder/specUtils';
 import { addTrendlineData, getTrendlineMarks, setTrendlineSignals } from '@specBuilder/trendline';
 import { sanitizeMarkChildren, toCamelCase } from '@utils';
@@ -53,7 +53,7 @@ import { addTrellisScale, getTrellisGroupMark, isTrellised } from './trellisedBa
 
 export const addBar = produce<
 	Spec,
-  [BarProps & { data?: ChartData[]; colorScheme?: ColorScheme; highlightedItem?: HighlightedItem; index?: number; idKey: string; previousData?: ChartData[]; animations?: boolean; animateFromZero: boolean }]
+  [BarProps & { data?: ChartData[]; colorScheme?: ColorScheme; highlightedItem?: HighlightedItem; index?: number; idKey: string; previousData?: ChartData[]; animations?: boolean; animateFromZero?: boolean }]
 >(
 	(
 		spec,
@@ -112,7 +112,8 @@ export const addBar = produce<
 );
 
 export const addSignals = produce<Signal[], [BarSpecProps]>(
-	(signals, { children, name, animations, animateFromZero, paddingRatio, idKey, paddingOuter: barPaddingOuter }) => {
+	(signals, props) => {
+		const { children, idKey, name, paddingRatio, paddingOuter: barPaddingOuter, animations, animateFromZero } = props;
 		// We use this value to calculate ReferenceLine positions.
 		const { paddingInner } = getBarPadding(paddingRatio, barPaddingOuter);
 		signals.push(getGenericValueSignal('paddingInner', paddingInner));
@@ -311,7 +312,6 @@ export const addSecondaryScales = (scales: Scale[], props: BarSpecProps) => {
 
 export const addMarks = produce<Mark[], [BarSpecProps]>((marks, props) => {
 	const barMarks: Mark[] = [];
-	console.log('Bar type', props.type);
 	if (isDodgedAndStacked(props)) {
 		barMarks.push(getDodgedAndStackedBarMark(props));
 	} else if (props.type === 'stacked') {

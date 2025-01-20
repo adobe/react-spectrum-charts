@@ -26,7 +26,7 @@ describe('signalSpecBuilder', () => {
 	});
 	describe('addHighlightedItemSignalEvents()', () => {
 		test('should add on events', () => {
-			addHighlightedItemSignalEvents({ signals, markName: 'line0' });
+			addHighlightedItemSignalEvents({ signals, markName: 'line0', idKey: MARK_ID });
 			expect(signals).toHaveLength(4);
 			expect(signals[0]).toHaveProperty('name', HIGHLIGHTED_ITEM);
 			expect(signals[0].on).toHaveLength(2);
@@ -40,11 +40,11 @@ describe('signalSpecBuilder', () => {
 		test('should not do anything if the highlight signal is not found', () => {
 			const signals = JSON.parse(JSON.stringify([defaultHighlightedSeriesSignal]));
 			const signalsCopy = JSON.parse(JSON.stringify(signals));
-			addHighlightedItemSignalEvents({ signals, markName: 'line0' });
+			addHighlightedItemSignalEvents({ signals, markName: 'line0', idKey: MARK_ID });
 			expect(signals).toEqual(signalsCopy);
 		});
 		test('should include update condition if excludeDataKey is provided', () => {
-			addHighlightedItemSignalEvents(signals, 'bar0', MARK_ID, 1, ['excludeFromTooltip']);
+      addHighlightedItemSignalEvents({ signals, markName: 'bar0', idKey: MARK_ID, datumOrder: 1, excludeDataKeys: ['excludeFromTooltip'] });
 			expect(signals).toHaveLength(defaultSignals.length);
 			expect(signals[0]).toHaveProperty('name', HIGHLIGHTED_ITEM);
 			expect(signals[0].on).toHaveLength(2);

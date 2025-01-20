@@ -14,14 +14,14 @@ import {
 	DEFAULT_TRANSFORMED_TIME_DIMENSION,
 	FILTERED_PREVIOUS_TABLE,
 	FILTERED_TABLE,
-	MARK_ID,
 	PREVIOUS_TABLE,
 	SERIES_ID,
 	TABLE,
 } from '@constants';
 import { getTooltipProps } from '@specBuilder/marks/markUtils';
 import { produce } from 'immer';
-import { Compare, Data, FormulaTransform, IdentifierTransform, SourceData, Transforms, ValuesData } from 'vega';
+import { Compare, Data, FormulaTransform, SourceData, Transforms, ValuesData } from 'vega';
+
 
 import { MarkChildElement } from '../../types';
 
@@ -103,12 +103,5 @@ export const getFilteredTooltipData = (children: MarkChildElement[]) => {
 		name: `${FILTERED_TABLE}ForTooltip`,
 		source: FILTERED_TABLE,
 		transform,
-	};
-};
-
-export const getIdentifierTransform = (): IdentifierTransform => {
-	return {
-		type: 'identifier',
-		as: MARK_ID,
 	};
 };

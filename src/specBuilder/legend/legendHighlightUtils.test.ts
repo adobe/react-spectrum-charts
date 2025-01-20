@@ -16,7 +16,6 @@ import {
 	HIGHLIGHTED_SERIES,
 	HIGHLIGHT_CONTRAST_RATIO,
 	MARK_ID,
-	OPACITY_SCALE,
 	SERIES_ID,
 } from '@constants';
 import { Mark } from 'vega';

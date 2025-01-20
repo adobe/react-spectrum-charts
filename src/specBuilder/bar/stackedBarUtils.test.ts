@@ -58,7 +58,7 @@ const defaultMark = {
 		update: {
 			cursor: undefined,
 			opacity: [DEFAULT_OPACITY_RULE],
-			...defaultStackedBarXEncondings,
+			...defaultStackedBarXEncodings,
 			...defaultBarStrokeEncodings,
 		},
 	},

@@ -17,7 +17,6 @@ import {
 	DEFAULT_COLOR,
 	DEFAULT_TIME_DIMENSION,
 	FILTERED_TABLE,
-	MARK_ID,
 	MS_PER_DAY,
 	SERIES_ID,
 	TRENDLINE_VALUE,
@@ -84,10 +83,6 @@ describe('addTrendlineData()', () => {
 					expr: `datum.${DEFAULT_COLOR}`,
 					as: SERIES_ID,
 				},
-				{
-					type: 'identifier',
-					as: MARK_ID,
-				},
 			],
 		});
 	});
@@ -151,13 +146,13 @@ describe('addTrendlineData()', () => {
 			...defaultLineProps,
 			children: [createElement(Trendline, { method: 'linear', excludeDataKeys: ['exclude1', 'exclude2'] })],
 		});
-		expect(trendlineData[2]).toHaveProperty('name', 'line0Trendline0_highResolutionData');
-		expect(trendlineData[2].transform).toHaveLength(4);
-		expect(trendlineData[2].transform?.[0]).toStrictEqual({
+		expect(trendlineData[4]).toHaveProperty('name', 'line0Trendline0_highResolutionData');
+		expect(trendlineData[4].transform).toHaveLength(4);
+		expect(trendlineData[4].transform?.[0]).toStrictEqual({
 			type: 'filter',
 			expr: '!datum.exclude1',
 		});
-		expect(trendlineData[2].transform?.[1]).toStrictEqual({
+		expect(trendlineData[4].transform?.[1]).toStrictEqual({
 			type: 'filter',
 			expr: '!datum.exclude2',
 		});
@@ -170,9 +165,9 @@ describe('addTrendlineData()', () => {
 			...defaultLineProps,
 			children: [createElement(Trendline, { method: 'linear' })],
 		});
-		expect(trendlineData[2]).toHaveProperty('name', 'line0Trendline0_highResolutionData');
-		expect(trendlineData[2].transform).toHaveLength(2);
-		expect(trendlineData[2].transform).not.toContain(expect.objectContaining({ type: 'filter' }));
+		expect(trendlineData[4]).toHaveProperty('name', 'line0Trendline0_highResolutionData');
+		expect(trendlineData[4].transform).toHaveLength(2);
+		expect(trendlineData[4].transform).not.toContain(expect.objectContaining({ type: 'filter' }));
 	});
 
 	test('should add filter transforms for aggregate method if trendline has excludeDataKey', () => {
@@ -182,13 +177,13 @@ describe('addTrendlineData()', () => {
 			...defaultLineProps,
 			children: [createElement(Trendline, { method: 'median', excludeDataKeys: ['exclude1', 'exclude2'] })],
 		});
-		expect(trendlineData[2]).toHaveProperty('name', 'line0Trendline0_highResolutionData');
-		expect(trendlineData[2].transform).toHaveLength(4);
-		expect(trendlineData[2].transform?.[0]).toStrictEqual({
+		expect(trendlineData[4]).toHaveProperty('name', 'line0Trendline0_highResolutionData');
+		expect(trendlineData[4].transform).toHaveLength(4);
+		expect(trendlineData[4].transform?.[0]).toStrictEqual({
 			type: 'filter',
 			expr: '!datum.exclude1',
 		});
-		expect(trendlineData[2].transform?.[1]).toStrictEqual({
+		expect(trendlineData[4].transform?.[1]).toStrictEqual({
 			type: 'filter',
 			expr: '!datum.exclude2',
 		});
@@ -201,9 +196,9 @@ describe('addTrendlineData()', () => {
 			...defaultLineProps,
 			children: [createElement(Trendline, { method: 'median' })],
 		});
-		expect(trendlineData[2]).toHaveProperty('name', 'line0Trendline0_highResolutionData');
-		expect(trendlineData[2].transform).toHaveLength(2);
-		expect(trendlineData[2].transform).not.toContain(expect.objectContaining({ type: 'filter' }));
+		expect(trendlineData[4]).toHaveProperty('name', 'line0Trendline0_highResolutionData');
+		expect(trendlineData[4].transform).toHaveLength(2);
+		expect(trendlineData[4].transform).not.toContain(expect.objectContaining({ type: 'filter' }));
 	});
 
 	test('should add filter transform for window method if trendline has excludeDataKey', () => {
@@ -215,13 +210,13 @@ describe('addTrendlineData()', () => {
 				createElement(Trendline, { method: 'movingAverage-2', excludeDataKeys: ['exclude1', 'exclude2'] }),
 			],
 		});
-		expect(trendlineData[2]).toHaveProperty('name', 'line0Trendline0_data');
-		expect(trendlineData[2].transform).toHaveLength(4);
-		expect(trendlineData[2].transform?.[0]).toStrictEqual({
+		expect(trendlineData[4]).toHaveProperty('name', 'line0Trendline0_data');
+		expect(trendlineData[4].transform).toHaveLength(4);
+		expect(trendlineData[4].transform?.[0]).toStrictEqual({
 			type: 'filter',
 			expr: '!datum.exclude1',
 		});
-		expect(trendlineData[2].transform?.[1]).toStrictEqual({
+		expect(trendlineData[4].transform?.[1]).toStrictEqual({
 			type: 'filter',
 			expr: '!datum.exclude2',
 		});
@@ -234,9 +229,9 @@ describe('addTrendlineData()', () => {
 			...defaultLineProps,
 			children: [createElement(Trendline, { method: 'movingAverage-2' })],
 		});
-		expect(trendlineData[2]).toHaveProperty('name', 'line0Trendline0_data');
-		expect(trendlineData[2].transform).toHaveLength(2);
-		expect(trendlineData[2].transform).not.toContain(expect.objectContaining({ type: 'filter' }));
+		expect(trendlineData[4]).toHaveProperty('name', 'line0Trendline0_data');
+		expect(trendlineData[4].transform).toHaveLength(2);
+		expect(trendlineData[4].transform).not.toContain(expect.objectContaining({ type: 'filter' }));
 	});
 });
 

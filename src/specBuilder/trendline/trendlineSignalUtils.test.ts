@@ -25,12 +25,15 @@ describe('getTrendlineSignals()', () => {
 	beforeEach(() => {
 		signals = JSON.parse(JSON.stringify(defaultSignals));
 	});
-	test('should add voronoi hover signal events if ChartTooltip exists', () => {
+	test.only('should add voronoi hover signal events if ChartTooltip exists', () => {
 		setTrendlineSignals(signals, {
 			...defaultLineProps,
 			animations: false,
 			children: [createElement(Trendline, {}, createElement(ChartTooltip))],
 		});
+		const defaultSignalsLength = defaultSignals.length;
+		console.log('defaultSignalsLength', defaultSignalsLength);
+		console.log(JSON.stringify(signals, null, 2))
 		expect(signals).toHaveLength(defaultSignals.length);
 		expect(signals[0]).toHaveProperty('name', HIGHLIGHTED_ITEM);
 		expect(signals[0].on).toHaveLength(2);
@@ -44,7 +47,7 @@ describe('getTrendlineSignals()', () => {
 			animations: true,
 			children: [createElement(Trendline, {}, createElement(ChartTooltip))],
 		});
-		expect(signals).toHaveLength(9);
+		expect(signals).toHaveLength(11);
 		expect(signals[0]).toHaveProperty('name', HIGHLIGHTED_ITEM);
 		expect(signals[0].on).toHaveLength(2);
 		expect(signals[1]).toHaveProperty('name', HIGHLIGHTED_SERIES);

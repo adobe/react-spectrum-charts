@@ -10,7 +10,7 @@
  * governing permissions and limitations under the License.
  */
 import { Annotation } from '@components/Annotation';
-import { ANNOTATION_FONT_SIZE, ANNOTATION_FONT_WEIGHT, ANNOTATION_PADDING, BACKGROUND_COLOR } from '@constants';
+import { ANNOTATION_ANIMATION_OPACITY, ANNOTATION_FONT_SIZE, ANNOTATION_FONT_WEIGHT, ANNOTATION_PADDING, BACKGROUND_COLOR } from '@constants';
 import { GroupMark, NumericValueRef, ProductionRule, RectEncodeEntry, RectMark, TextMark } from 'vega';
 
 import {
@@ -138,6 +138,12 @@ const getAnnotationTextMark = ({
 				baseline: { value: 'middle' },
 				align: { value: 'center' },
 			},
+      ...(barProps.animations && {
+        update: {
+          fillOpacity: { signal: ANNOTATION_ANIMATION_OPACITY },
+        }
+      })
+
 		},
 	};
 };
@@ -173,6 +179,11 @@ const getAnnotationBackgroundMark = ({
 				},
 			],
 		},
+		...(barProps.animations && {
+        update: {
+          fillOpacity: { signal: ANNOTATION_ANIMATION_OPACITY },
+        }
+      })
 	},
 });
 

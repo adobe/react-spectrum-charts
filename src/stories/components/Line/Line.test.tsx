@@ -12,7 +12,7 @@
 import { HIGHLIGHT_CONTRAST_RATIO } from '@constants';
 import '@matchMediaMock';
 import { workspaceTrendsData } from '@stories/data/data';
-import { Line } from '@rsc';
+import { Chart, Line } from '@rsc';
 import {
 	allElementsHaveAttributeValue,
 	clickNthElement,
@@ -43,7 +43,7 @@ import {
 	WithStaticPoints,
 	WithStaticPointsAndDialogs
 } from './Line.story';
-import { newDataArray1, newDataArray2 } from '@stories/data/data';
+import { animationTransitionDataBefore, animationTransitionDataAfter } from '@stories/data/data';
 
 describe('Line', () => {
 	// Line is not a real React component. This is test just provides test coverage for sonarqube
@@ -409,7 +409,7 @@ describe('Line', () => {
 	describe('Line animation tests', () => {
 		test('Line animates between congruent datasets', async () => {
 			const chartProps = {
-				data: newDataArray1
+				data: animationTransitionDataBefore
 			}
 			render(
 				<Chart {...chartProps}>
@@ -417,7 +417,7 @@ describe('Line', () => {
 				</Chart>
 			);
 			setTimeout(() => {
-				chartProps.data = newDataArray2;
+				chartProps.data = animationTransitionDataAfter;
 			}, 3000);
 		});
   });
