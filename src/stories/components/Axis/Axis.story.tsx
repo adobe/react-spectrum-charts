@@ -268,6 +268,30 @@ VerticalTimeAxis.args = {
 	labelAlign: 'center',
 };
 
+const CurrencyLocale = bindWithProps(AxisStory);
+CurrencyLocale.args = {
+	position: 'left',
+	baseline: true,
+	grid: true,
+	currencyCode: 'EUR',
+	currencyLocale: 'en-US',
+	numberFormat: 'currency',
+	ticks: true,
+	title: 'Conversion Rate',
+};
+
+const CurrencyFormatSpecifier = bindWithProps(AxisStory);
+CurrencyFormatSpecifier.args = {
+	position: 'left',
+	baseline: true,
+	grid: true,
+	currencyCode: 'EUR',
+	currencyLocale: 'en-US',
+	numberFormat: ',.6f',
+	ticks: true,
+	title: 'Conversion Rate',
+};
+
 export {
 	Basic,
 	ControlledLabels,
@@ -281,4 +305,6 @@ export {
 	Time,
 	TruncateLabels,
 	VerticalTimeAxis,
+	CurrencyLocale,
+	CurrencyFormatSpecifier,
 };

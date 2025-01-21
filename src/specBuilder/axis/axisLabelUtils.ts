@@ -234,7 +234,15 @@ export const getLabelOffset = (
  * @returns
  */
 export const getLabelFormat = (
-	{ labelFormat, labelOrientation, numberFormat, position, truncateLabels }: AxisSpecProps,
+	{
+		labelFormat,
+		labelOrientation,
+		numberFormat,
+		position,
+		truncateLabels,
+		currencyLocale,
+		currencyCode,
+	}: AxisSpecProps,
 	scaleName: string
 ): ProductionRule<TextValueRef> => {
 	if (labelFormat === 'percentage') {
@@ -245,7 +253,7 @@ export const getLabelFormat = (
 	}
 
 	return [
-		...getTextNumberFormat(numberFormat),
+		...getTextNumberFormat(numberFormat, undefined, currencyLocale, currencyCode),
 		...(truncateLabels && scaleName.includes('Band') && labelIsParallelToAxis(position, labelOrientation)
 			? [{ signal: 'truncateText(datum.value, bandwidth("xBand")/(1- paddingInner), "normal", 14)' }]
 			: [{ signal: 'datum.value' }]),

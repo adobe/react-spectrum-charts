@@ -18,7 +18,7 @@ import { Config, Padding, Renderers, Spec, View } from 'vega';
 import embed from 'vega-embed';
 import { Options as TooltipOptions } from 'vega-tooltip';
 
-import { expressionFunctions, formatTimeDurationLabels } from './expressionFunctions';
+import { expressionFunctions, formatLocaleCurrency, formatTimeDurationLabels } from './expressionFunctions';
 import { ChartData, ChartProps } from './types';
 import { getLocale } from './utils/locale';
 
@@ -94,6 +94,7 @@ export const VegaChart: FC<VegaChartProps> = ({
 				expressionFunctions: {
 					...expressionFunctions,
 					formatTimeDurationLabels: formatTimeDurationLabels(numberLocale),
+					formatLocaleCurrency: formatLocaleCurrency(numberLocale),
 				},
 				formatLocale: numberLocale as unknown as Record<string, unknown>, // these are poorly typed by vega-embed
 				height,

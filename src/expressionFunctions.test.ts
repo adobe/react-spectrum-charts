@@ -15,9 +15,73 @@ import {
 	LabelDatum,
 	expressionFunctions,
 	formatHorizontalTimeAxisLabels,
+	formatLocaleCurrency,
 	formatTimeDurationLabels,
 	formatVerticalAxisTimeLabels,
 } from './expressionFunctions';
+
+describe('formatLocaleCurrency()', () => {
+	test('formats US currency correctly', () => {
+		const formatter = formatLocaleCurrency();
+		const datum: LabelDatum = { index: 0, label: '', value: 1234.56 };
+
+		expect(formatter(datum, 'en-US', 'USD', 'currency')).toBe('$1,234.56');
+	});
+	test('formats US currency position with EUR currencyCode', () => {
+		const formatter = formatLocaleCurrency();
+		const datum: LabelDatum = { index: 0, label: '', value: 1234.56 };
+
+		expect(formatter(datum, 'en-US', 'EUR', 'currency')).toBe('€1,234.56');
+	});
+	test('formats US currency position with JPY currencyCode and fr-FR separators', () => {
+		const formatter = formatLocaleCurrency(numberLocales['fr-FR']);
+		const datum: LabelDatum = { index: 0, label: '', value: 1234.56 };
+
+		expect(formatter(datum, 'en-US', 'JPY', 'currency')).toBe('¥1 234,56');
+	});
+	test('formats FR currency position with JPY currencyCode and de-DE separators', () => {
+		const formatter = formatLocaleCurrency(numberLocales['de-DE']);
+		const datum: LabelDatum = { index: 0, label: '', value: 1234.56 };
+
+		expect(formatter(datum, 'fr-FR', 'JPY', 'currency')).toBe('1.234,56 JPY');
+	});
+	test('rounds decimals to 2 places', () => {
+		const formatter = formatLocaleCurrency(numberLocales['de-DE']);
+		const datum: LabelDatum = { index: 0, label: '', value: 1234.5678 };
+
+		expect(formatter(datum, 'fr-FR', 'JPY', 'currency')).toBe('1.234,57 JPY');
+	});
+	test('adds custom number format precision', () => {
+		const formatter = formatLocaleCurrency(numberLocales['de-DE']);
+		const datum: LabelDatum = { index: 0, label: '', value: 1234.5678 };
+
+		expect(formatter(datum, 'fr-FR', 'JPY', ',.4f')).toBe('1.234,5678 JPY');
+	});
+	test('returns value if value is a string', () => {
+		const formatter = formatLocaleCurrency(numberLocales['de-DE']);
+		const datum: LabelDatum = { index: 0, label: '', value: '1234.56' };
+
+		expect(formatter(datum, 'fr-FR', 'JPY', 'currency')).toBe('1234.56');
+	});
+
+	describe('error handling', () => {
+		beforeEach(() => {
+			jest.spyOn(console, 'error').mockImplementation(() => {});
+		});
+
+		afterEach(() => {
+			jest.restoreAllMocks();
+		});
+
+		test('invalid format falls back to default value', () => {
+			const formatter = formatLocaleCurrency(numberLocales['de-DE']);
+			const datum: LabelDatum = { index: 0, label: '', value: 1234.56 };
+
+			expect(formatter(datum, 'en-US', 'JPY', '.invalidf')).toBe('1.234,56 €');
+			expect(console.error).toHaveBeenCalled();
+		});
+	});
+});
 
 describe('truncateText()', () => {
 	const longText =

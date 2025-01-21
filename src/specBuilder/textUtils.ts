@@ -21,7 +21,9 @@ import { getD3FormatSpecifierFromNumberFormat } from './specUtils';
  */
 export const getTextNumberFormat = (
 	numberFormat: NumberFormat | string,
-	datumProperty: string = 'value'
+	datumProperty: string = 'value',
+	currencyLocale?: string,
+	currencyCode?: string
 ): ({
 	test?: string;
 } & TextValueRef)[] => {
@@ -44,6 +46,11 @@ export const getTextNumberFormat = (
 				test,
 				signal: `format(datum['${datumProperty}'], '$')`,
 			},
+		];
+	}
+	if (currencyCode && currencyLocale) {
+		return [
+			{ test, signal: `formatLocaleCurrency(datum, "${currencyLocale}", "${currencyCode}", "${numberFormat}")` },
 		];
 	}
 	const d3FormatSpecifier = getD3FormatSpecifierFromNumberFormat(numberFormat);
