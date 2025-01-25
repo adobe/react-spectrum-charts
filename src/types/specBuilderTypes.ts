@@ -24,6 +24,7 @@ import {
 	ColorFacet,
 	ColorScheme,
 	DonutProps,
+	BulletProps,
 	DonutSummaryProps,
 	FacetRef,
 	HighlightedItem,
@@ -137,6 +138,20 @@ type ChartPopoverPropsWithDefaults = 'UNSAFE_highlightBy';
 
 export interface ChartPopoverSpecProps extends PartiallyRequired<ChartPopoverProps, ChartPopoverPropsWithDefaults> {
 	markName: string;
+}
+
+type BulletPropsWithDefaults = 'current';
+
+export interface BulletSpecProps {
+    current?: number;
+    // children?: MarkChildElement[];
+    color?: string;
+    metric?: string;
+    idKey: string;
+    colorScheme: ColorScheme;
+    index: number;
+    markType: "bullet";
+    name: string;
 }
 
 type DonutPropsWithDefaults = 'color' | 'metric' | 'name' | 'startAngle' | 'holeRatio' | 'isBoolean';

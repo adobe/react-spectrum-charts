@@ -10,5 +10,16 @@
  * governing permissions and limitations under the License.
  */
 
-export * from './Combo'
-export * from './Bullet'
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import { FC } from 'react';
+
+import { BulletProps } from '../../../types';
+
+const Bullet: FC<BulletProps> = ({ name = 'bullet0', current = 23 }) => {
+	return null;
+};
+
+// displayName is used to validate the component type in the spec builder
+Bullet.displayName = 'Bullet';
+
+export { Bullet };

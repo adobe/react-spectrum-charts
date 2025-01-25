@@ -231,6 +231,18 @@ export interface DonutProps extends MarkProps {
 	isBoolean?: boolean;
 }
 
+export interface BulletProps extends MarkProps {
+	/** The name of the data */
+	current?: number;
+	markType?: string;
+
+	//Other data needed:
+	/** target value (position of notch) */
+	/** current value */
+	/** line color */
+
+}
+
 export interface DonutSummaryProps {
 	/** d3 number format specifier.
 	 * Sets the number format for the summary value.
