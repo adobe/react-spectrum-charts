@@ -91,9 +91,6 @@ function getSpectrumVegaConfig(colorScheme: ColorScheme): Config {
 			titleFontWeight: 'bold',
 			titlePadding: 16,
 		},
-		axisY: {
-			labelLimit: 180,
-		},
 		range: {
 			category: categorical16,
 			diverging: divergentOrangeYellowSeafoam15,
