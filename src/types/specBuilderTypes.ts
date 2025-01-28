@@ -144,14 +144,15 @@ type BulletPropsWithDefaults = 'current';
 
 export interface BulletSpecProps {
     current?: number;
-    // children?: MarkChildElement[];
     color?: string;
     metric?: string;
     idKey: string;
     colorScheme: ColorScheme;
     index: number;
     markType: "bullet";
-    name: string;
+    currentAmount?: number;
+	graphLabel?: string;
+	target?: number;
 }
 
 type DonutPropsWithDefaults = 'color' | 'metric' | 'name' | 'startAngle' | 'holeRatio' | 'isBoolean';

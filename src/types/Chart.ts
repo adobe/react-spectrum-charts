@@ -32,6 +32,7 @@ export type ChartElement = ReactElement<ChartProps, JSXElementConstructor<ChartP
 export type ChartPopoverElement = ReactElement<ChartPopoverProps, JSXElementConstructor<ChartPopoverProps>>;
 export type ChartTooltipElement = ReactElement<ChartTooltipProps, JSXElementConstructor<ChartTooltipProps>>;
 export type DonutElement = ReactElement<DonutProps, JSXElementConstructor<DonutProps>>;
+export type BulletElement = ReactElement<BulletProps, JSXElementConstructor<BulletProps>>;
 export type DonutSummaryElement = ReactElement<DonutSummaryProps, JSXElementConstructor<DonutSummaryProps>>;
 export type LegendElement = ReactElement<LegendProps, JSXElementConstructor<LegendProps>>;
 export type LineElement = ReactElement<LineProps, JSXElementConstructor<LineProps>>;
@@ -233,13 +234,10 @@ export interface DonutProps extends MarkProps {
 
 export interface BulletProps extends MarkProps {
 	/** The name of the data */
-	current?: number;
+	currentAmount?: number;
+	graphLabel?: string;
+	target?: number;
 	markType?: string;
-
-	//Other data needed:
-	/** target value (position of notch) */
-	/** current value */
-	/** line color */
 
 }
 

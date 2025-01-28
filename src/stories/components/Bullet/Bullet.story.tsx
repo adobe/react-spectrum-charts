@@ -21,7 +21,7 @@ const defaultChartProps = {
 // Basic Bullet chart story
 const BulletChart: StoryFn = (): ReactElement => {
     return (
-        <Chart {...defaultChartProps}>
+        <Chart {...defaultChartProps} debug>
             <Bullet name="bulletChart" markType="bullet" />
         </Chart>
     );

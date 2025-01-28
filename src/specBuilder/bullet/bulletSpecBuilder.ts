@@ -24,20 +24,26 @@ export const addBullet = produce<
         {
             colorScheme = DEFAULT_COLOR_SCHEME,
             index = 0,
-            name,
-            markType = 'bullet', // Correct assignment of markType
+            graphLabel,
+            currentAmount,
+            target,
+            markType = 'bullet',
             ...props
         }
     ) => {
         const bulletProps: BulletSpecProps = {
             colorScheme,
             index,
-            markType: "bullet", // Correct assignment of markType
-            name: toCamelCase(name ?? `bullet${index}`), // Ensure name is correctly assigned
+            graphLabel,
+            target,
+            markType: "bullet",
+            name: toCamelCase(name ?? `bullet${index}`),
             ...props,
         };
         spec.data = getBulletData();
         spec.marks = getBulletMarks();
+        spec.scales = getBulletScales();
+        console.log(spec)
     }
 );
 
@@ -50,23 +56,12 @@ function getBulletMarks(): Mark[] {
       "encode": {
         "enter": {
           "x": {"value": 0},
-          "y": {"field": "index", "mult": 60, "offset": -50},
-          "width": {"signal": "width"},
-          "height": {"value": 18},
-          "fill": {"value": "lightgrey"}
-        }
-      }
-    },
-    {
-      "type": "rect",
-      "from": {"data": "table"},
-      "encode": {
-        "enter": {
-          "x": {"value": 0},
           "y": {"field": "index", "mult": 60, "offset": -44},
-          "width": {"field": "amount"},
+          "width": {"scale": "xscale", "field": "currentAmount"},
           "height": {"value": 6},
-          "fill": {"value": "steelblue"}
+          "fill": {"value": "steelblue"},
+          "cornerRadiusTopRight": {"value": 2},
+          "cornerRadiusBottomRight": {"value": 2}
         }
       }
     },
@@ -77,7 +72,7 @@ function getBulletMarks(): Mark[] {
         "enter": {
           "x": {"value": 0},
           "y": {"field": "index", "mult": 60, "offset": -60},
-          "text": {"field": "category"},
+          "text": {"field": "graphLabel"},
           "align": {"value": "left"},
           "baseline": {"value": "bottom"},
           "fontSize": {"value": 11.5},
@@ -92,7 +87,7 @@ function getBulletMarks(): Mark[] {
         "enter": {
           "x": {"signal": "width"},
           "y": {"field": "index", "mult": 60, "offset": -60},
-          "text": {"field": "myvalue"},
+          "text": {"field": "currentAmount"},
           "align": {"value": "right"},
           "baseline": {"value": "bottom"},
           "fontSize": {"value": 11.5},
@@ -105,11 +100,11 @@ function getBulletMarks(): Mark[] {
       "from": {"data": "table"},
       "encode": {
         "enter": {
-          "x": {"field": "tickposition"},
+          "x": {"scale": "xscale", "field": "target"},
           "y": {"field": "index", "mult": 60, "offset": -53},
           "y2": {"field": "index", "mult": 60, "offset": -29},
           "stroke": {"value": "black"},
-          "strokeWidth": {"value": 2}
+          "strokeWidth": {"value": 2},
         }
       }
     }
@@ -118,20 +113,44 @@ function getBulletMarks(): Mark[] {
 
 function getBulletData(): Data[] {
     // Implementation of addBulletMarks
-    return [
+
+    let bulletData: Data[] = [
       {
         "name": "table",
         "values": [
-          {"category": "New Customer Count", "amount": 180, "myvalue": "20", "tickposition": 150},
-          {"category": "Downloads of Adobe Acrobat", "amount": 180, "myvalue": "1.42 M", "tickposition": 170},
-          {"category": "Third Customer", "amount": 140, "myvalue": "15", "tickposition": 50},
-          {"category": "Fourth Customer", "amount": 90, "myvalue": "15", "tickposition": 100}
+          {"graphLabel": "New Customer Count", "currentAmount": 400, "target": 450},
+          {"graphLabel": "Downloads of Adobe Acrobat", "currentAmount": 180, "target": 170},
+          {"graphLabel": "Third Customer", "currentAmount": 140, "target": 50},
+          {"graphLabel": "Fourth Customer", "currentAmount": 90, "target": 100},
+          {"graphLabel": "Hey yall", "currentAmount": 100, "target": 400}
         ],
         "transform": [
           {"type": "window", "ops": ["row_number"], "as": ["index"]}
         ]
       }
-    ];
+    ]
+
+    return bulletData;
+}
+
+function getBulletScales(): Scale[] {
+  // Implementation of addBulletMarks
+
+  let bulletScale: Scale[] = [
+    {
+      "name": "xscale",
+      "type": "linear",
+      "domain": {
+        "fields": [
+          {"data": "table", "field": "currentAmount"},
+          {"data": "table", "field": "target"}
+        ]
+      },
+      "range": [0, {"signal": "width"}]
+    }
+  ]
+
+  return bulletScale;
 }
 
 function toCamelCase(str: string): string {
