@@ -32,7 +32,6 @@ const BulletStory: StoryFn<BulletProps & { width?: number; height?: number }> = 
 const Basic = bindWithProps(BulletStory);
 Basic.args = {
 	metric: 'currentAmount',
-	color: 'graphLabel',
 };
 
 export { Basic };

@@ -27,7 +27,7 @@ export const addBullet = produce<
             graphLabel = 'Bullet Graph',
             // currentAmount,
             // target,
-            markType = 'bullet',
+            // markType = 'bullet',
             ...props
         }
     ) => {
@@ -117,13 +117,7 @@ function getBulletData(): Data[] {
     let bulletData: Data[] = [
       {
         "name": "table",
-        "values": [
-          {"graphLabel": "New Customer Count", "currentAmount": 400, "target": 450},
-          {"graphLabel": "Downloads of Adobe Acrobat", "currentAmount": 180, "target": 170},
-          {"graphLabel": "Third Customer", "currentAmount": 140, "target": 50},
-          {"graphLabel": "Fourth Customer", "currentAmount": 90, "target": 100},
-          {"graphLabel": "Hey yall", "currentAmount": 100, "target": 400}
-        ],
+        "values": [],
         "transform": [
           {"type": "window", "ops": ["row_number"], "as": ["index"]}
         ]
