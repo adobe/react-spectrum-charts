@@ -12,7 +12,7 @@
 
 import { DEFAULT_COLOR_SCHEME } from '@constants';
 import { produce } from 'immer';
-import { Spec, Data, Mark, Scale, Signal } from 'vega';
+import { Spec, Data, Mark, Scale } from 'vega';
 import { ColorScheme, BulletProps, BulletSpecProps } from '../../types';
 
 export const addBullet = produce<
@@ -24,9 +24,9 @@ export const addBullet = produce<
         {
             colorScheme = DEFAULT_COLOR_SCHEME,
             index = 0,
-            graphLabel,
-            currentAmount,
-            target,
+            graphLabel = 'Bullet Graph',
+            // currentAmount,
+            // target,
             markType = 'bullet',
             ...props
         }
@@ -35,7 +35,7 @@ export const addBullet = produce<
             colorScheme,
             index,
             graphLabel,
-            target,
+            // target,
             markType: "bullet",
             name: toCamelCase(name ?? `bullet${index}`),
             ...props,

@@ -140,19 +140,16 @@ export interface ChartPopoverSpecProps extends PartiallyRequired<ChartPopoverPro
 	markName: string;
 }
 
-type BulletPropsWithDefaults = 'current';
+type BulletPropsWithDefaults = 'graphLabel';
 
-export interface BulletSpecProps {
-    current?: number;
-    color?: string;
-    metric?: string;
+export interface BulletSpecProps extends PartiallyRequired<BulletProps, BulletPropsWithDefaults> {
     idKey: string;
     colorScheme: ColorScheme;
     index: number;
     markType: "bullet";
-    currentAmount?: number;
-	graphLabel?: string;
-	target?: number;
+    // currentAmount?: number;
+	// graphLabel?: string;
+	// target?: number;
 }
 
 type DonutPropsWithDefaults = 'color' | 'metric' | 'name' | 'startAngle' | 'holeRatio' | 'isBoolean';

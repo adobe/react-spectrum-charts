@@ -233,12 +233,10 @@ export interface DonutProps extends MarkProps {
 }
 
 export interface BulletProps extends MarkProps {
-	/** The name of the data */
-	currentAmount?: number;
+	/** How should we name the graph? */
 	graphLabel?: string;
-	target?: number;
+	/** idk what this is for */
 	markType?: string;
-
 }
 
 export interface DonutSummaryProps {

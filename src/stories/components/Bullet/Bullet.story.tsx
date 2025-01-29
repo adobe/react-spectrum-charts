@@ -1,36 +1,38 @@
 import { ReactElement } from 'react';
 import { StoryFn } from '@storybook/react';
 import { Bullet } from '@rsc/alpha'; // Assuming Bullet chart is a component in the @rsc/rc library
-import { Chart } from '@rsc';
+import { Chart, BulletProps } from '@rsc';
+import useChartProps from '@hooks/useChartProps';
+import { bindWithProps } from '@test-utils';
+import { basicBulletData } from './data';
 
-// Sample data for the Bullet chart
-const bulletChartData = [
-    { category: 'New Customer Count', amount: 180, myvalue: '20', tickposition: 150 },
-    { category: 'Downloads of Adobe Acrobat', amount: 180, myvalue: '1.42 M', tickposition: 170 },
-    { category: 'Third Customer', amount: 140, myvalue: '15', tickposition: 50 },
-    { category: 'Fourth Customer', amount: 90, myvalue: '15', tickposition: 100 }
-];
+export default {
+    title: 'RSC/Bullet',
+    component: Bullet,
+};
 
 // Default chart properties
 const defaultChartProps = {
-    data: bulletChartData,
+    data: basicBulletData,
     width: 600,
     height: 400,
 };
 
 // Basic Bullet chart story
-const BulletChart: StoryFn = (): ReactElement => {
+const BulletStory: StoryFn<BulletProps & { width?: number; height?: number }> = (args): ReactElement => {
+    const { width, height, ...bulletProps } = args;
+    const chartProps = useChartProps({ ...defaultChartProps, width: width ?? 350, height: height ?? 350 });
     return (
-        <Chart {...defaultChartProps} debug>
-            <Bullet name="bulletChart" markType="bullet" />
+        <Chart {...chartProps} debug>
+            <Bullet {...bulletProps} />
         </Chart>
     );
 };
 
-// Exporting the story
-export default {
-    title: 'RSC/Bullet',
-    component: BulletChart,
+const Basic = bindWithProps(BulletStory);
+Basic.args = {
+	metric: 'currentAmount',
+	color: 'graphLabel',
 };
 
-export { BulletChart };
+export { Basic };
