@@ -14,4 +14,4 @@ export * from './Chart';
 export * from './specBuilder.types';
 export * from './SpectrumVizColor.types';
 export * from './supplementalVega.types';
-export * from './locales';
+export * from './locale.types';

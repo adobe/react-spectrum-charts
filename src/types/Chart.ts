@@ -19,7 +19,7 @@ import { IconPropsWithoutChildren } from '@react-spectrum/icon';
 import { Theme } from '@react-types/provider';
 
 import { Colors, SpectrumColor } from './SpectrumVizColor.types';
-import { LocaleCode, NumberLocaleCode, TimeLocaleCode } from './locales';
+import { LocaleCode, NumberLocaleCode, TimeLocaleCode } from './locale.types';
 
 export type PartiallyRequired<T, K extends keyof T> = Omit<T, K> & Required<Pick<T, K>>;
 

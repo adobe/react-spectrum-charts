@@ -15,7 +15,7 @@ import { INTERACTION_MODE } from '@constants';
 
 import { ChartPopoverElement, ChartPopoverOptions } from '../dialogs/chartPopover.types';
 import { ChartTooltipElement, ChartTooltipOptions } from '../dialogs/chartTooltip.types';
-import { Children, ColorFacet, LineTypeFacet, OpacityFacet, ScaleType } from '../util.types';
+import { Children, ColorFacet, LineTypeFacet, OnClickCallback, OpacityFacet, ScaleType } from '../util.types';
 import { MetricRangeElement, MetricRangeOptions } from './supplemental/metricRange.types';
 import { TrendlineElement, TrendlineOptions } from './supplemental/trendline.types';
 
@@ -30,6 +30,8 @@ export interface LineOptions {
 	color?: ColorFacet;
 	/** Data field that the value is trended against (x-axis) */
 	dimension?: string;
+	/** `true` if BarProps has an onClick callback. Will add the mouse pointer to the bar on hover. */
+	hasOnClick?: boolean;
 	/** Line type or key in the data that is used as the line type facet */
 	lineType?: LineTypeFacet;
 	/** Opacity or key in the data that is used as the opacity facet */
@@ -57,8 +59,10 @@ export interface LineOptions {
 	trendlines?: TrendlineOptions[];
 }
 
-export interface LineProps extends Omit<LineOptions, 'chartTooltips' | 'chartPopovers' | 'trendlines'> {
+export interface LineProps extends Omit<LineOptions, 'chartTooltips' | 'chartPopovers' | 'hasOnClick' | 'trendlines'> {
 	children?: Children<ChartTooltipElement | ChartPopoverElement | MetricRangeElement | TrendlineElement>;
+	/** Callback that will be run when a point/section is clicked */
+	onClick?: OnClickCallback;
 }
 
 export type LineElement = ReactElement<LineProps, JSXElementConstructor<LineProps>>;

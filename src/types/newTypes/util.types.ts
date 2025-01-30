@@ -18,6 +18,7 @@ import { SpectrumVizColor } from '../SpectrumVizColor.types';
 
 export type ChildElement<T> = T | string | boolean | Iterable<ReactNode>;
 export type Children<T> = ChildElement<T> | ChildElement<T>[];
+export type OnClickCallback = (datum: Datum) => void;
 
 const DatumPredefinedKey = {
 	markId: MARK_ID,

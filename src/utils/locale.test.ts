@@ -15,7 +15,7 @@ import enNumber from '../locales/numberLocales/en-US.json';
 import frNumber from '../locales/numberLocales/fr-FR.json';
 import enTime from '../locales/timeLocales/en-US.json';
 import frTime from '../locales/timeLocales/fr-FR.json';
-import { LocaleCode, NumberLocaleCode, TimeLocaleCode } from '../types/locales';
+import { LocaleCode, NumberLocaleCode, TimeLocaleCode } from '../types/locale.types';
 import { getLocale } from './locale';
 
 describe('getLocale()', () => {

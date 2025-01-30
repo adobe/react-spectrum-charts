@@ -15,6 +15,7 @@ import { ChartPopoverElement, ChartPopoverOptions } from '../dialogs/chartPopove
 import { ChartTooltipElement, ChartTooltipOptions } from '../dialogs/chartTooltip.types';
 import { Children } from '../util.types';
 import { DonutSummaryElement, DonutSummaryOptions } from './supplemental/dountSummary.types';
+import { SegmentLabelOptions } from './supplemental/segmentLabel.types';
 
 export interface DonutOptions {
 	/** Key in the data that is used as the color facet */
@@ -35,10 +36,12 @@ export interface DonutOptions {
 	chartPopovers?: ChartPopoverOptions[];
 	chartTooltips?: ChartTooltipOptions[];
 	donutSummaries?: DonutSummaryOptions[];
+	segmenbtLabels?: SegmentLabelOptions[];
 }
 
-export interface DonutProps extends Omit<DonutOptions, 'chartPopovers' | 'chartTooltips' | 'donutSummaries'> {
-	children?: Children<ChartPopoverElement | ChartTooltipElement | DonutSummaryElement>;
+export interface DonutProps
+	extends Omit<DonutOptions, 'chartPopovers' | 'chartTooltips' | 'donutSummaries' | 'segmentLabels'> {
+	children?: Children<ChartPopoverElement | ChartTooltipElement | DonutSummaryElement | SegmentLabelOptions>;
 }
 
 export type DonutElement = ReactElement<DonutProps, JSXElementConstructor<DonutProps>>;

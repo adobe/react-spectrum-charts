@@ -16,13 +16,17 @@ import { ColorFacet, LineTypeFacet, LineWidthFacet, OpacityFacet, Position, Symb
 export type LegendDescription = { seriesName: string; description: string; title?: string };
 export type LegendLabel = { seriesName: string | number; label: string; maxLength?: number };
 
-export interface LegendProps {
+export interface LegendOptions {
 	/** color or key in the data that is used as the color facet for the symbols */
 	color?: ColorFacet;
 	/** series that should be hidden by default (uncontrolled) */
 	defaultHiddenSeries?: string[];
 	/** descriptions for each of the series */
 	descriptions?: LegendDescription[];
+	/** `true` if there is a onMouseOut of onMouseOver on the LegendProps. */
+	hasMouseInteraction?: boolean;
+	/** `true` if there is an onClick on the LegendProps */
+	hasOnClick?: boolean;
 	/** series names to hide from the legend */
 	hiddenEntries?: string[];
 	/** whether or not to include highlight interactions (controlled) */
@@ -41,12 +45,6 @@ export interface LegendProps {
 	lineWidth?: LineWidthFacet;
 	/** Sets the name of the component. */
 	name?: string;
-	/** callback that will be run when a legend item is selected */
-	onClick?: (seriesName: string) => void;
-	/** callback that will be run when mousing out of a legend item */
-	onMouseOut?: (seriesName: string) => void;
-	/** callback that will be run when mousing over a legend item */
-	onMouseOver?: (seriesName: string) => void;
 	/** opacity or key in the data that is used as the opacity facet for the symbols */
 	opacity?: OpacityFacet;
 	/** where the legend should be displayed */
@@ -55,6 +53,15 @@ export interface LegendProps {
 	symbolShape?: SymbolShapeFacet;
 	/** legend title */
 	title?: string;
+}
+
+export interface LegendProps extends Omit<LegendOptions, 'hasOnClick' | 'hasMouseInteraction'> {
+	/** callback that will be run when a legend item is selected */
+	onClick?: (seriesName: string) => void;
+	/** callback that will be run when mousing out of a legend item */
+	onMouseOut?: (seriesName: string) => void;
+	/** callback that will be run when mousing over a legend item */
+	onMouseOver?: (seriesName: string) => void;
 }
 
 export type LegendElement = ReactElement<LegendProps, JSXElementConstructor<LegendProps>>;

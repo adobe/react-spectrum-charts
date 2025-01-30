@@ -13,7 +13,15 @@ import { JSXElementConstructor, ReactElement } from 'react';
 
 import { ChartPopoverElement, ChartPopoverOptions } from '../dialogs/chartPopover.types';
 import { ChartTooltipElement, ChartTooltipOptions } from '../dialogs/chartTooltip.types';
-import { Children, ColorFacet, LineTypeFacet, LineWidth, OpacityFacet, Orientation } from '../util.types';
+import {
+	Children,
+	ColorFacet,
+	LineTypeFacet,
+	LineWidth,
+	OnClickCallback,
+	OpacityFacet,
+	Orientation,
+} from '../util.types';
 import { BarAnnotationElement, BarAnnotationOptions } from './supplemental/barAnnotation.types';
 import { TrendlineElement, TrendlineOptions } from './supplemental/trendline.types';
 
@@ -29,6 +37,8 @@ export interface BarOptions {
 	dimension?: string;
 	/** Sets the inner padding between bars in a group */
 	groupedPadding?: number;
+	/** `true` if BarProps has an onClick callback. Will add the mouse pointer to the bar on hover. */
+	hasOnClick?: boolean;
 	/** Should the top-left and top-right corners of the bars be square? Round by default */
 	hasSquareCorners?: boolean;
 	/** Line type or key in the data that is used as the line type facet */
@@ -64,8 +74,10 @@ export interface BarOptions {
 }
 
 export interface BarProps
-	extends Omit<BarOptions, 'barAnnotations' | 'chartPopovers' | 'chartTooltips' | 'trendlines'> {
+	extends Omit<BarOptions, 'barAnnotations' | 'chartPopovers' | 'chartTooltips' | 'hasOnClick' | 'trendlines'> {
 	children?: Children<BarAnnotationElement | ChartPopoverElement | ChartTooltipElement | TrendlineElement>;
+	/** Callback that will be run when a point/section is clicked */
+	onClick?: OnClickCallback;
 }
 
 export type BarElement = ReactElement<BarProps, JSXElementConstructor<BarProps>>;
