@@ -16,9 +16,18 @@ import { SymbolShape } from 'vega';
 
 import { SpectrumVizColor } from '../SpectrumVizColor.types';
 
+export type PartiallyRequired<T, K extends keyof T> = Omit<T, K> & Required<Pick<T, K>>;
+
 export type ChildElement<T> = T | string | boolean | Iterable<ReactNode>;
 export type Children<T> = ChildElement<T> | ChildElement<T>[];
 export type OnClickCallback = (datum: Datum) => void;
+
+export interface MarkBounds {
+	x1: number;
+	x2: number;
+	y1: number;
+	y2: number;
+}
 
 const DatumPredefinedKey = {
 	markId: MARK_ID,
@@ -100,3 +109,22 @@ export type OpacityFacet = FacetRef<number>;
 export type PathWidthFacet = FacetRef<PathWidth>;
 export type SymbolSizeFacet = FacetRef<SymbolSize>;
 export type SymbolShapeFacet = FacetRef<ChartSymbolShape>;
+
+export type FacetType =
+	| 'color'
+	| 'linearColor'
+	| 'lineType'
+	| 'lineWidth'
+	| 'opacity'
+	| 'symbolShape'
+	| 'symbolSize'
+	| 'symbolPathWidth';
+
+export type SecondaryFacetType =
+	| 'secondaryColor'
+	| 'secondaryLineType'
+	| 'secondaryLineWidth'
+	| 'secondaryOpacity'
+	| 'secondarySymbolShape'
+	| 'secondarySymbolSize'
+	| 'secondarySymbolPathWidth';

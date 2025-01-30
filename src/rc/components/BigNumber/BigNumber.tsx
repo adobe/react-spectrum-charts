@@ -18,15 +18,7 @@ import { getLocale } from 'utils/locale';
 
 import { Flex, FlexProps, IconProps } from '@adobe/react-spectrum';
 
-import {
-	BigNumberInternalProps,
-	BigNumberMethod,
-	BigNumberProps,
-	ChartData,
-	LineProps,
-	Orientation,
-	RscChartProps,
-} from '../../../types';
+import { BigNumberMethod, BigNumberProps, ChartData, LineProps, Orientation, RscChartProps } from '../../../types';
 import './BigNumber.css';
 import { formatBigNumber } from './bigNumberFormatUtils';
 
@@ -40,7 +32,7 @@ const BigNumber: FC<BigNumberProps> = () => {
  *  We take the props from the external big number components and pass them to this internal component
  *  alongside some additional props we add ourselves based on the RscChartProps so we can render the sparkline using an RSC line chart.
  */
-const BigNumberInternal: FC<BigNumberInternalProps> = ({
+const BigNumberInternal: FC<BigNumberProps & { rscChartProps: RscChartProps }> = ({
 	dataKey,
 	label,
 	numberFormat,

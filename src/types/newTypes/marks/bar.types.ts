@@ -45,6 +45,8 @@ export interface BarOptions {
 	lineType?: LineTypeFacet | DualFacet;
 	/** Border width of the bar */
 	lineWidth?: LineWidth;
+	/** Sets the name of the component. */
+	name?: string;
 	/** Optional field used to set the stack order of the bar (higher order = higher on bar) */
 	order?: string;
 	/** The direction of the bars. Defaults to "vertical". */

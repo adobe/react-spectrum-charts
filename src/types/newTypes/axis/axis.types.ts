@@ -135,9 +135,11 @@ export interface AxisOptions {
 	referenceLines?: ReferenceLineOptions[];
 }
 
+export type AxisChildElement = AxisAnnotationElement | ReferenceLineElement;
+
 export interface AxisProps extends Omit<AxisOptions, 'axisAnnotations' | 'referenceLines'> {
 	/** Child components that add supplemental content to the axis */
-	children?: Children<AxisAnnotationElement | ReferenceLineElement>;
+	children?: Children<AxisChildElement>;
 }
 
 export type AxisElement = ReactElement<AxisProps, JSXElementConstructor<AxisProps>>;

@@ -9,9 +9,9 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { JSXElementConstructor, ReactElement } from 'react';
+import { JSXElementConstructor, MutableRefObject, ReactElement } from 'react';
 
-import { Config, Data, Locale, NumberLocale, Padding, Spec, TimeLocale } from 'vega';
+import { Config, Data, Locale, NumberLocale, Padding, Spec, TimeLocale, View } from 'vega';
 
 import { Theme } from '@react-types/provider';
 
@@ -21,9 +21,12 @@ import { AxisElement, AxisOptions } from './axis/axis.types';
 import { LegendElement, LegendOptions } from './legend.types';
 import { AreaElement, AreaOptions } from './marks/area.types';
 import { BarElement, BarOptions } from './marks/bar.types';
+import { BigNumberOptions } from './marks/bigNumber.types';
+import { ComboElement, ComboOptions } from './marks/combo.types';
 import { LineElement, LineOptions } from './marks/line.types';
 import { ScatterElement, ScatterOptions } from './marks/scatter.types';
-import { ChartSymbolShape, Children, LineType, LineWidth, SymbolSize } from './util.types';
+import { TitleElement, TitleOptions } from './title.types';
+import { ChartSymbolShape, Children, LineType, LineWidth, PartiallyRequired, SymbolSize } from './util.types';
 
 export type SimpleData = Record<string, unknown>;
 
@@ -39,6 +42,13 @@ export type ChartColors = Colors | Colors[];
 export type LineTypes = LineType[] | LineType[][];
 export type Opacities = number[] | number[][];
 export type SymbolShapes = ChartSymbolShape[] | ChartSymbolShape[][];
+
+export interface ChartHandle {
+	copy: () => Promise<string>;
+	download: (customFileName?: string) => Promise<string>;
+	getBase64Png: () => Promise<string>;
+	getSvg: () => Promise<string>;
+}
 
 // These are the vega spec specific types
 // Notice that things like data and width/height are not included here
@@ -79,16 +89,42 @@ export interface ChartOptions {
 	areas?: AreaOptions[];
 	axes?: AxisOptions[];
 	bars?: BarOptions[];
+	bigNumbers?: BigNumberOptions[];
+	combos?: ComboOptions[];
 	legends?: LegendOptions[];
 	lines?: LineOptions[];
 	scatters?: ScatterOptions[];
+	titles?: TitleOptions[];
 }
 
-export interface ChartProps extends Omit<ChartOptions, 'areas' | 'axes' | 'bars' | 'legends' | 'lines' | 'scatters'> {
+export type ChartChildElement =
+	| AreaElement
+	| AxisElement
+	| BarElement
+	| ComboElement
+	| LegendElement
+	| LineElement
+	| ScatterElement
+	| TitleElement;
+
+export interface SharedChartProps
+	extends Omit<
+		ChartOptions,
+		'areas' | 'axes' | 'bars' | 'bigNumbers' | 'combos' | 'legends' | 'lines' | 'scatters' | 'titles'
+	> {
 	// children is optional because it is a pain to make this required with how children get defined in stories
 	// we have a check at the beginning of Chart to make sure this isn't undefined
 	// if it is undefined, we log an error and render a fragment
-	children?: Children<AreaElement | AxisElement | BarElement | LegendElement | LineElement | ScatterElement>;
+	children?: Children<
+		| AreaElement
+		| AxisElement
+		| BarElement
+		| ComboElement
+		| LegendElement
+		| LineElement
+		| ScatterElement
+		| TitleElement
+	>;
 	/** Vega config that can be used to tweak the style of the chart. @see https://vega.github.io/vega/docs/config/ */
 	config?: Config;
 	/** Chart data array. */
@@ -105,6 +141,32 @@ export interface ChartProps extends Omit<ChartOptions, 'areas' | 'axes' | 'bars'
 	tooltipAnchor?: TooltipAnchor;
 	/** The placement of the tooltip with respect to the mark. Only applicable if `tooltipAnchor = 'mark'`. */
 	tooltipPlacement?: TooltipPlacement;
+}
+
+type RscChartPropsWithDefaults =
+	| 'backgroundColor'
+	| 'colors'
+	| 'colorScheme'
+	| 'debug'
+	| 'hiddenSeries'
+	| 'idKey'
+	| 'lineTypes'
+	| 'lineWidths'
+	| 'locale'
+	| 'padding'
+	| 'renderer'
+	| 'tooltipAnchor'
+	| 'tooltipPlacement';
+
+export interface RscChartProps extends PartiallyRequired<SharedChartProps, RscChartPropsWithDefaults> {
+	chartId: MutableRefObject<string>;
+	chartView: MutableRefObject<View | undefined>;
+	chartWidth: number;
+	chartHeight: number;
+	popoverIsOpen?: boolean;
+}
+
+export interface ChartProps extends SharedChartProps {
 	/** Test id */
 	dataTestId?: string;
 	/** Optional text to display when the data set is empty and loading is complete. */

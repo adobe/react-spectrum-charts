@@ -40,22 +40,48 @@ import {
 	AxisAnnotationElement,
 	AxisChildElement,
 	AxisElement,
+	BarAnnotationElement,
 	BarElement,
 	BigNumberElement,
 	ChartChildElement,
 	ChartElement,
+	ChartPopoverElement,
 	ChartTooltipElement,
 	ChildElement,
 	ComboElement,
 	Datum,
 	DonutElement,
+	DonutSummaryElement,
 	LegendElement,
 	LineElement,
-	MarkChildElement,
-	RscElement,
+	MetricRangeElement,
 	ScatterElement,
+	ScatterPathElement,
+	SegmentLabelElement,
+	TitleElement,
 	TrendlineElement,
 } from '../types';
+
+type MarkChildElement =
+	| BarAnnotationElement
+	| ChartTooltipElement
+	| ChartPopoverElement
+	| ScatterPathElement
+	| MetricRangeElement
+	| DonutSummaryElement
+	| SegmentLabelElement
+	| TrendlineElement;
+type RscElement =
+	| MarkChildElement
+	| AreaElement
+	| AxisElement
+	| BarElement
+	| BigNumberElement
+	| LegendElement
+	| LineElement
+	| ScatterElement
+	| TitleElement
+	| ComboElement;
 
 type MappedElement = { name: string; element: ChartElement | RscElement };
 type ElementCounts = {

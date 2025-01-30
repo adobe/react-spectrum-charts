@@ -349,16 +349,8 @@ export interface BigNumberProps {
 	icon?: IconElement;
 }
 
-export interface BigNumberInternalProps {
-	orientation: Orientation;
-	label: string;
-	dataKey: string;
-	children?: Children<LineElement>;
+export interface BigNumberInternalProps extends BigNumberProps {
 	rscChartProps: RscChartProps;
-	numberFormat?: string;
-	numberType?: BigNumberNumberType;
-	method?: BigNumberMethod;
-	icon?: IconElement;
 }
 
 export type BigNumberNumberType = 'linear' | 'percentage';
