@@ -14,11 +14,11 @@ import { JSXElementConstructor, MutableRefObject, ReactElement, ReactNode } from
 import { GROUP_DATA, INTERACTION_MODE, MARK_ID, SERIES_ID, TRENDLINE_VALUE } from '@constants';
 import { Config, Data, FontWeight, Locale, NumberLocale, Padding, Spec, SymbolShape, TimeLocale, View } from 'vega';
 
-import { Icon, IconProps } from '@adobe/react-spectrum';
+import { IconProps } from '@adobe/react-spectrum';
 import { IconPropsWithoutChildren } from '@react-spectrum/icon';
 import { Theme } from '@react-types/provider';
 
-import { Colors, SpectrumColor } from './SpectrumVizColors';
+import { Colors, SpectrumColor } from './SpectrumVizColor.types';
 import { LocaleCode, NumberLocaleCode, TimeLocaleCode } from './locales';
 
 export type PartiallyRequired<T, K extends keyof T> = Omit<T, K> & Required<Pick<T, K>>;
@@ -902,9 +902,9 @@ export type ChartChildElement =
 export type MarkChildElement =
 	| AnnotationElement
 	| ChartTooltipElement
+	| MetricRangeElement
 	| ChartPopoverElement
 	| ScatterPathElement
-	| MetricRangeElement
 	| DonutSummaryElement
 	| SegmentLabelElement
 	| TrendlineElement;
