@@ -14,10 +14,10 @@ import { ANNOTATION_FONT_SIZE, ANNOTATION_FONT_WEIGHT, ANNOTATION_PADDING, BACKG
 import { GroupMark, NumericValueRef, ProductionRule, RectEncodeEntry, RectMark, TextMark } from 'vega';
 
 import {
-	AnnotationElement,
-	AnnotationProps,
 	AnnotationSpecProps,
-	AnnotationStyleProps,
+	BarAnnotationElement,
+	BarAnnotationProps,
+	BarAnnotationStyleProps,
 	BarSpecProps,
 	Orientation,
 } from '../../types';
@@ -36,7 +36,7 @@ const getAnnotation = (
 	dimensionScaleName: string,
 	dimensionField: string
 ): AnnotationSpecProps | undefined => {
-	const annotation = props.children.find((child) => child.type === Annotation) as AnnotationElement;
+	const annotation = props.children.find((child) => child.type === Annotation) as BarAnnotationElement;
 
 	if (!annotation) {
 		return;
@@ -45,13 +45,13 @@ const getAnnotation = (
 };
 
 /**
- * Applies all default props, converting AnnotationProps into AnnotationSpecProps
+ * Applies all default props, converting BarAnnotationProps into AnnotationSpecProps
  * @param annotationProps
  * @param barProps
  * @returns AnnotationSpecProps
  */
 const applyAnnotationPropDefaults = (
-	{ textKey, ...props }: AnnotationProps,
+	{ textKey, ...props }: BarAnnotationProps,
 	barProps: BarSpecProps,
 	dataName: string,
 	dimensionScaleName: string,
@@ -202,7 +202,7 @@ export const getAnnotationXEncode = (width?: number): RectEncodeEntry => {
 	};
 };
 
-export const getAnnotationWidth = (textKey: string, style?: AnnotationStyleProps): AnnotationWidth => {
+export const getAnnotationWidth = (textKey: string, style?: BarAnnotationStyleProps): AnnotationWidth => {
 	if (style?.width) return { value: style.width };
 	return {
 		signal: `getLabelWidth(datum.${textKey}, '${ANNOTATION_FONT_WEIGHT}', ${ANNOTATION_FONT_SIZE}) + ${

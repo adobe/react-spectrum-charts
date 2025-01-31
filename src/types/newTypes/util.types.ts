@@ -22,6 +22,11 @@ export type ChildElement<T> = T | string | boolean | Iterable<ReactNode>;
 export type Children<T> = ChildElement<T> | ChildElement<T>[];
 export type OnClickCallback = (datum: Datum) => void;
 
+export interface ClickableChartProps {
+	/** Callback that will be run when a point/section is clicked */
+	onClick?: OnClickCallback;
+}
+
 export interface MarkBounds {
 	x1: number;
 	x2: number;

@@ -18,8 +18,18 @@ import { Theme } from '@react-types/provider';
 import { Colors } from '../SpectrumVizColor.types';
 import { LocaleCode, NumberLocaleCode, TimeLocaleCode } from '../locale.types';
 import { AxisElement, AxisOptions } from './axis/axis.types';
+import { ChartPopoverElement, ChartTooltipElement } from './dialogs';
 import { LegendElement, LegendOptions } from './legend.types';
-import { DonutElement, DonutOptions } from './marks';
+import {
+	BarAnnotationElement,
+	DonutElement,
+	DonutOptions,
+	DonutSummaryElement,
+	MetricRangeElement,
+	ScatterPathElement,
+	SegmentLabelElement,
+	TrendlineElement,
+} from './marks';
 import { AreaElement, AreaOptions } from './marks/area.types';
 import { BarElement, BarOptions } from './marks/bar.types';
 import { BigNumberElement, BigNumberOptions } from './marks/bigNumber.types';
@@ -120,21 +130,21 @@ export type ChartChildElement =
 	| LineElement
 	| ScatterElement
 	| TitleElement;
+export type MarkChildElement =
+	| BarAnnotationElement
+	| ChartPopoverElement
+	| ChartTooltipElement
+	| DonutSummaryElement
+	| MetricRangeElement
+	| ScatterPathElement
+	| SegmentLabelElement
+	| TrendlineElement;
 
 export interface SharedChartProps extends Omit<ChartOptions, 'axes' | 'legends' | 'marks' | 'titles'> {
 	// children is optional because it is a pain to make this required with how children get defined in stories
 	// we have a check at the beginning of Chart to make sure this isn't undefined
 	// if it is undefined, we log an error and render a fragment
-	children?: Children<
-		| AreaElement
-		| AxisElement
-		| BarElement
-		| ComboElement
-		| LegendElement
-		| LineElement
-		| ScatterElement
-		| TitleElement
-	>;
+	children?: Children<ChartChildElement>;
 	/** Vega config that can be used to tweak the style of the chart. @see https://vega.github.io/vega/docs/config/ */
 	config?: Config;
 	/** Chart data array. */
@@ -174,6 +184,24 @@ export interface RscChartProps extends PartiallyRequired<SharedChartProps, RscCh
 	chartWidth: number;
 	chartHeight: number;
 	popoverIsOpen?: boolean;
+}
+
+type SpecPropsWithDefaults =
+	| 'backgroundColor'
+	| 'colors'
+	| 'colorScheme'
+	| 'hiddenSeries'
+	| 'idKey'
+	| 'lineTypes'
+	| 'lineWidths'
+	| 'symbolShapes'
+	| 'symbolSizes';
+
+export interface SanitizedSpecProps
+	extends PartiallyRequired<Omit<ChartOptions, 'axes' | 'legends' | 'marks' | 'titles'>, SpecPropsWithDefaults> {
+	/** Children with all non-RSC components removed */
+	children: ChartChildElement[];
+	data?: ChartData[];
 }
 
 export interface ChartProps extends SharedChartProps {

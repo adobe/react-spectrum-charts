@@ -11,11 +11,15 @@
  */
 import { JSXElementConstructor, ReactElement } from 'react';
 
+export interface BarAnnotationStyleProps {
+	width?: number;
+}
+
 export interface BarAnnotationOptions {
 	/** The key in the data that has the text to display */
 	textKey?: string;
 	/** @deprecated */
-	style?: { width?: number };
+	style?: BarAnnotationStyleProps;
 }
 
 export interface BarAnnotationProps extends BarAnnotationOptions {}

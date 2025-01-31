@@ -33,10 +33,6 @@ import { Combo } from '@rsc/alpha';
 import { BigNumber, Donut } from '@rsc/rc';
 import colorSchemes from '@themes/colorSchemes';
 import { produce } from 'immer';
-import { AxisOptions } from 'types/newTypes/axis/axis.types';
-import { AreaOptions } from 'types/newTypes/marks/area.types';
-import { LineOptions } from 'types/newTypes/marks/line.types';
-import { ScatterOptions } from 'types/newTypes/marks/scatter.types';
 import { Data, LinearScale, OrdinalScale, PointScale, Scale, Signal, Spec } from 'vega';
 
 import {
@@ -50,9 +46,7 @@ import {
 	Colors,
 	ComboElement,
 	DonutElement,
-	HighlightedItem,
 	LegendElement,
-	LegendProps,
 	LineElement,
 	LineType,
 	LineTypes,
@@ -64,7 +58,6 @@ import {
 	SymbolSize,
 	TitleElement,
 } from '../types';
-import { BarOptions } from '../types/newTypes/marks/bar.types';
 import { addArea } from './area/areaSpecBuilder';
 import { addAxis } from './axis/axisSpecBuilder';
 import { addBar } from './bar/barSpecBuilder';
@@ -88,43 +81,6 @@ import {
 	initializeSpec,
 } from './specUtils';
 import { addTitle } from './title/titleSpecBuilder';
-
-interface SpecBuilderOptions {
-	backgroundColor?: string;
-	colors?: ChartColors;
-	colorScheme?: ColorScheme;
-	description?: string;
-	hiddenSeries?: string[];
-	highlightedItem?: HighlightedItem;
-	highlightedSeries?: string | number;
-	idKey?: string;
-	lineTypes?: LineTypes;
-	lineWidths?: LineWidth[];
-	opacities?: Opacities;
-	symbolShapes?: SymbolShapes;
-	symbolSizes?: [SymbolSize, SymbolSize];
-	title?: string;
-
-	// marks
-	areas?: AreaOptions[];
-	bars?: BarOptions[];
-	// combos?: ComboProps[];
-	// donuts?: DonutProps[];
-	lines?: LineOptions[];
-	scatters?: ScatterOptions[];
-
-	// supplementary
-	axes?: AxisOptions[];
-	legends?: LegendProps[];
-	// titles?: TitleProps[];
-}
-
-const opts: SpecBuilderOptions = {
-	bars: [{ type: 'dodged' }],
-	axes: [{ position: 'bottom' }],
-};
-
-console.log('opts:', opts);
 
 export interface ChartSpecBuilder {
 	buildSpec: (props: SanitizedSpecProps) => Spec;
