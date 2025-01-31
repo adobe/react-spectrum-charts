@@ -42,7 +42,7 @@ import {
 	TrendlineAnnotationProps,
 	TrendlineChildElement,
 	TrendlineProps,
-} from './newTypes';
+} from '.';
 
 type PartiallyRequired<T, K extends keyof T> = Omit<T, K> & Required<Pick<T, K>>;
 
