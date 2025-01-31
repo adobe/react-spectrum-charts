@@ -19,6 +19,7 @@ import {
 	AxisChildElement,
 	AxisProps,
 	BarProps,
+	BulletProps,
 	ChartPopoverProps,
 	ChartTooltipProps,
 	ColorFacet,
@@ -128,6 +129,34 @@ export interface AnnotationSpecProps extends PartiallyRequired<AnnotationProps, 
 }
 
 type ChartTooltipPropsWithDefaults = 'highlightBy';
+
+type BulletPropsWithDefaults =
+	| 'ranges'
+	| 'measures'
+	| 'target'
+	| 'measureColor'
+	| 'rangeColor'
+	| 'targetColor'
+	| 'orientation'
+	| 'label';
+
+export interface BulletSpecProps extends BulletProps {
+	children: MarkChildElement[];
+	colorScheme: ColorScheme;
+	idKey: string;
+	index: number;
+	markType: 'bullet';
+
+	// Ensure required properties have default values
+	ranges: string | number[];
+	measures: string | number[];
+	target: string | number;
+	measureColor: string;
+	rangeColor: string;
+	targetColor: string;
+	orientation: 'horizontal' | 'vertical';
+	label: string;
+}
 
 export interface ChartTooltipSpecProps extends PartiallyRequired<ChartTooltipProps, ChartTooltipPropsWithDefaults> {
 	markName: string;

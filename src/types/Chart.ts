@@ -28,6 +28,7 @@ export type AreaElement = ReactElement<AreaProps, JSXElementConstructor<AreaProp
 export type AxisElement = ReactElement<AxisProps, JSXElementConstructor<AxisProps>>;
 export type AxisAnnotationElement = ReactElement<AxisAnnotationProps, JSXElementConstructor<AxisAnnotationProps>>;
 export type BarElement = ReactElement<BarProps, JSXElementConstructor<BarProps>>;
+export type BulletElement = ReactElement<BulletProps, JSXElementConstructor<BulletProps>>;
 export type ChartElement = ReactElement<ChartProps, JSXElementConstructor<ChartProps>>;
 export type ChartPopoverElement = ReactElement<ChartPopoverProps, JSXElementConstructor<ChartPopoverProps>>;
 export type ChartTooltipElement = ReactElement<ChartTooltipProps, JSXElementConstructor<ChartTooltipProps>>;

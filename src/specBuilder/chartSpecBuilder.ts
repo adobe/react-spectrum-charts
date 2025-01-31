@@ -32,6 +32,7 @@ import { Area, Axis, Bar, Legend, Line, Scatter, Title } from '@rsc';
 import { Combo } from '@rsc/alpha';
 import { BigNumber, Donut } from '@rsc/rc';
 import colorSchemes from '@themes/colorSchemes';
+import { Bullet } from 'alpha/components/Bullet';
 import { produce } from 'immer';
 import { Data, LinearScale, OrdinalScale, PointScale, Scale, Signal, Spec } from 'vega';
 
@@ -39,6 +40,7 @@ import {
 	AreaElement,
 	AxisElement,
 	BarElement,
+	BulletElement,
 	ChartColors,
 	ChartSymbolShape,
 	ColorScale,
@@ -61,6 +63,7 @@ import {
 import { addArea } from './area/areaSpecBuilder';
 import { addAxis } from './axis/axisSpecBuilder';
 import { addBar } from './bar/barSpecBuilder';
+import { addBullet } from './bullet/bulletSpecBuilder';
 import { addCombo } from './combo/comboSpecBuilder';
 import { getSeriesIdTransform } from './data/dataUtils';
 import { addDonut } from './donut/donutSpecBuilder';
@@ -116,7 +119,7 @@ export function buildSpec(props: SanitizedSpecProps) {
 	buildOrder.set(Axis, 2);
 	buildOrder.set(Title, 3);
 
-	let { areaCount, axisCount, barCount, comboCount, donutCount, legendCount, lineCount, scatterCount } =
+	let { areaCount, axisCount, barCount, bulletCount, comboCount, donutCount, legendCount, lineCount, scatterCount } =
 		initializeComponentCounts();
 	const specProps = { colorScheme, idKey, highlightedItem };
 	spec = [...children]
@@ -141,6 +144,9 @@ export function buildSpec(props: SanitizedSpecProps) {
 				case Bar.displayName:
 					barCount++;
 					return addBar(acc, { ...(cur as BarElement).props, ...specProps, index: barCount });
+				case Bullet.displayName:
+					bulletCount++;
+					return addBullet(acc, { ...(cur as BulletElement).props, ...specProps, index: bulletCount });
 				case Donut.displayName:
 					donutCount++;
 					return addDonut(acc, { ...(cur as DonutElement).props, ...specProps, index: donutCount });
@@ -200,6 +206,7 @@ const initializeComponentCounts = () => {
 		areaCount: -1,
 		axisCount: -1,
 		barCount: -1,
+		bulletCount: -1,
 		comboCount: -1,
 		donutCount: -1,
 		legendCount: -1,
