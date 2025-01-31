@@ -14,6 +14,7 @@ import {
 	DEFAULT_CATEGORICAL_DIMENSION,
 	DEFAULT_COLOR_SCHEME,
 	DEFAULT_METRIC,
+	FILTERED_PREVIOUS_TABLE,
 	FILTERED_TABLE,
 	LINE_TYPE_SCALE,
 	OPACITY_SCALE,
@@ -26,23 +27,29 @@ import { addTooltipData, addTooltipSignals } from '@specBuilder/chartTooltip/cha
 import { getTransformSort } from '@specBuilder/data/dataUtils';
 import { getInteractiveMarkName } from '@specBuilder/line/lineUtils';
 import { getTooltipProps } from '@specBuilder/marks/markUtils';
+import { hasInteractiveChildren } from '@specBuilder/marks/markUtils';
 import {
 	addDomainFields,
 	addFieldToFacetScaleDomain,
 	addMetricScale,
+	addRscAnimationScales,
 	getDefaultScale,
 	getMetricScale,
 	getScaleIndexByName,
 	getScaleIndexByType,
 } from '@specBuilder/scale/scaleSpecBuilder';
-import { addHighlightedItemSignalEvents, getGenericValueSignal } from '@specBuilder/signal/signalSpecBuilder';
+import {
+	addHighlightedItemSignalEvents,
+	getGenericValueSignal,
+	getRscAnimationSignals,
+} from '@specBuilder/signal/signalSpecBuilder';
 import { getFacetsFromProps } from '@specBuilder/specUtils';
 import { addTrendlineData, getTrendlineMarks, setTrendlineSignals } from '@specBuilder/trendline';
 import { sanitizeMarkChildren, toCamelCase } from '@utils';
 import { produce } from 'immer';
-import { BandScale, Data, FormulaTransform, Mark, OrdinalScale, Scale, Signal, Spec } from 'vega';
+import { BandScale, Data, FormulaTransform, Mark, OrdinalScale, Scale, Signal, Spec, Transforms } from 'vega';
 
-import { BarProps, BarSpecProps, ColorScheme, HighlightedItem } from '../../types';
+import { BarProps, BarSpecProps, ChartData, ColorScheme, HighlightedItem } from '../../types';
 import { getBarPadding, getDimensionSelectionRing, getScaleValues, isDodgedAndStacked } from './barUtils';
 import { getDodgedMark } from './dodgedBarUtils';
 import { getDodgedAndStackedBarMark, getStackedBarMarks } from './stackedBarUtils';
@@ -50,7 +57,18 @@ import { addTrellisScale, getTrellisGroupMark, isTrellised } from './trellisedBa
 
 export const addBar = produce<
 	Spec,
-	[BarProps & { colorScheme?: ColorScheme; highlightedItem?: HighlightedItem; index?: number; idKey: string }]
+	[
+		BarProps & {
+			data?: ChartData[];
+			colorScheme?: ColorScheme;
+			highlightedItem?: HighlightedItem;
+			index?: number;
+			idKey: string;
+			previousData?: ChartData[];
+			animations?: boolean;
+			animateFromZero?: boolean;
+		}
+	]
 >(
 	(
 		spec,
@@ -101,7 +119,6 @@ export const addBar = produce<
 			type,
 			...props,
 		};
-
 		spec.data = addData(spec.data ?? [], barProps);
 		spec.signals = addSignals(spec.signals ?? [], barProps);
 		spec.scales = addScales(spec.scales ?? [], barProps);
@@ -110,7 +127,7 @@ export const addBar = produce<
 );
 
 export const addSignals = produce<Signal[], [BarSpecProps]>((signals, props) => {
-	const { children, idKey, name, paddingRatio, paddingOuter: barPaddingOuter } = props;
+	const { children, idKey, name, paddingRatio, paddingOuter: barPaddingOuter, animations, animateFromZero } = props;
 	// We use this value to calculate ReferenceLine positions.
 	const { paddingInner } = getBarPadding(paddingRatio, barPaddingOuter);
 	signals.push(getGenericValueSignal('paddingInner', paddingInner));
@@ -118,29 +135,57 @@ export const addSignals = produce<Signal[], [BarSpecProps]>((signals, props) => 
 	if (!children.length) {
 		return;
 	}
-	addHighlightedItemSignalEvents(signals, name, idKey, 1, getTooltipProps(children)?.excludeDataKeys);
+
+	// if animations are enabled, push all necessary animation signals.
+	if (animations && hasInteractiveChildren(children)) {
+		signals.push(...getRscAnimationSignals(name, undefined, true));
+	}
+	const excludeDataKeys = getTooltipProps(children)?.excludeDataKeys;
+	addHighlightedItemSignalEvents({
+		signals,
+		markName: name,
+		excludeDataKeys,
+		idKey,
+		animations,
+		animateFromZero,
+		datumOrder: 1,
+	});
 	addTooltipSignals(signals, props);
 	setTrendlineSignals(signals, props);
 });
 
 export const addData = produce<Data[], [BarSpecProps]>((data, props) => {
 	const { metric, order, type } = props;
-	const index = data.findIndex((d) => d.name === FILTERED_TABLE);
-	data[index].transform = data[index].transform ?? [];
+
+	const filteredIndex = data.findIndex((d) => d.name === FILTERED_TABLE);
+	const filteredPreviousIndex = data.findIndex((d) => d.name === FILTERED_PREVIOUS_TABLE);
+
+	data[filteredIndex].transform = data[filteredIndex].transform ?? [];
+	data[filteredPreviousIndex].transform = data[filteredPreviousIndex].transform ?? [];
 	if (type === 'stacked' || isDodgedAndStacked(props)) {
-		data[index].transform?.push({
+		const stackedDataGroup: Transforms = {
 			type: 'stack',
 			groupby: getStackFields(props),
 			field: metric,
 			sort: getTransformSort(order),
 			as: [`${metric}0`, `${metric}1`],
-		});
+		};
 
-		data[index].transform?.push(getStackIdTransform(props));
+		data[filteredIndex].transform?.push(stackedDataGroup);
+		data[filteredPreviousIndex].transform?.push(stackedDataGroup);
+
+		const stackIdTransform = getStackIdTransform(props);
+
+		data[filteredIndex].transform?.push(stackIdTransform);
+		data[filteredPreviousIndex].transform?.push(stackIdTransform);
+
 		data.push(getStackAggregateData(props));
 	}
 	if (type === 'dodged' || isDodgedAndStacked(props)) {
-		data[index].transform?.push(getDodgeGroupTransform(props));
+		const dodgeGroupTransform = getDodgeGroupTransform(props);
+
+		data[filteredIndex].transform?.push(dodgeGroupTransform);
+		data[filteredPreviousIndex].transform?.push(dodgeGroupTransform);
 	}
 	addTrendlineData(data, props);
 	addTooltipData(data, props);
@@ -159,6 +204,23 @@ export const getStackAggregateData = (props: BarSpecProps): Data => {
 	return {
 		name: `${name}_stacks`,
 		source: FILTERED_TABLE,
+		transform: [
+			{
+				type: 'aggregate',
+				groupby: getStackFields(props),
+				fields: [`${metric}1`, `${metric}1`],
+				ops: ['min', 'max'],
+			},
+			getStackIdTransform(props),
+		],
+	};
+};
+
+export const getPreviousStackAggregateData = (props: BarSpecProps): Data => {
+	const { metric, name } = props;
+	return {
+		name: `${name}_stacks`,
+		source: FILTERED_PREVIOUS_TABLE,
 		transform: [
 			{
 				type: 'aggregate',
@@ -201,9 +263,13 @@ export const getDodgeGroupTransform = ({ color, lineType, name, opacity, type }:
 };
 
 export const addScales = produce<Scale[], [BarSpecProps]>((scales, props) => {
-	const { color, lineType, opacity, orientation, metricAxis } = props;
+	const { color, lineType, opacity, orientation, metricAxis, animations, children } = props;
 	const axisType = orientation === 'vertical' ? 'y' : 'x';
 	addMetricScale(scales, getScaleValues(props), axisType);
+	// if animations are enabled and the chart has interactive children, get all animation scales.
+	if (animations && hasInteractiveChildren(children)) {
+		addRscAnimationScales(scales);
+	}
 	if (metricAxis) {
 		addMetricScale(scales, getScaleValues(props), axisType, metricAxis);
 	}
@@ -280,10 +346,14 @@ export const addMarks = produce<Mark[], [BarSpecProps]>((marks, props) => {
 	if (popovers.some((popover) => popover.UNSAFE_highlightBy === 'dimension')) {
 		barMarks.push(getDimensionSelectionRing(props));
 	}
+	// TODO: ADD ANIMATION MARK CHANGE - (choose scale/animation property on data if not given one)
+	// TODO: Determine animation method (from zero or from old data)
 
 	// if this is a trellis plot, we add the bars and the repeated scale to the trellis group
 	if (isTrellised(props)) {
 		const repeatedScale = getRepeatedScale(props);
+		console.log('Current barMarks up to this point', barMarks);
+		console.log(getTrellisGroupMark(props, barMarks, repeatedScale));
 		marks.push(getTrellisGroupMark(props, barMarks, repeatedScale));
 	} else {
 		marks.push(...barMarks);

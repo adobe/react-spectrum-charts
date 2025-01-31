@@ -20,6 +20,7 @@ import {
 import { ScatterSpecProps } from '../../types';
 
 export const defaultScatterProps: ScatterSpecProps = {
+	animations: false,
 	children: [],
 	color: { value: 'categorical-100' },
 	colorScaleType: 'ordinal',

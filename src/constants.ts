@@ -42,6 +42,10 @@ export const DEFAULT_INTERACTION_MODE = 'nearest';
 // vega data table name
 export const TABLE = 'table';
 export const FILTERED_TABLE = 'filteredTable';
+export const PREVIOUS_TABLE = 'previousTable';
+
+export const FILTERED_PREVIOUS_TABLE = 'filteredPreviousTable';
+export const PREVIOUS_PREFIX = 'previous_';
 
 // vega data field names
 export const GROUP_DATA = 'rscGroupData';
@@ -98,6 +102,8 @@ export const DONUT_SUMMARY_MIN_RADIUS = 45;
 // ratio that each opacity is divded by when hovering or highlighting from legend
 export const HIGHLIGHT_CONTRAST_RATIO = 5;
 
+export const RSC_ANIMATION = `rscAnimation`;
+
 // legend tooltips
 export const LEGEND_TOOLTIP_DELAY = 350;
 
@@ -116,3 +122,11 @@ export enum INTERACTION_MODE {
 export const HOVER_SIZE = 3000;
 export const HOVER_SHAPE_COUNT = 3;
 export const HOVER_SHAPE = 'diamond';
+// chart animation constants
+export const DATA_ANIMATION_DURATION_FRAMES = 78; // 60 fps * 1.3 seconds = 78 frames
+export const DATA_ANIMATION_MILLISECONDS_PER_FRAME = 1000 / 60; // 60fps
+export const OPACITY_ANIMATION_FRAMES = 1 / 30; // 0.033 - 30fps
+export const ANNOTATION_ANIMATION_OPACITY = 'timerValue === 1 ? 1 : 0';
+// chart animation easing functions
+const EASE_OUT_CUBIC = '(1 - pow(1 - timerValue, 3))';
+export const ANIMATION_FUNCTION = EASE_OUT_CUBIC;

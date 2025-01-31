@@ -28,7 +28,7 @@ const data = [
 ];
 
 const ReferenceLineStory: StoryFn<typeof ReferenceLine> = (args): ReactElement => {
-	const chartProps = useChartProps({ data, width: 600 });
+	const chartProps = useChartProps({ animations: false, data, width: 600 });
 	return (
 		<Chart {...chartProps}>
 			<Axis position="bottom" baseline ticks>

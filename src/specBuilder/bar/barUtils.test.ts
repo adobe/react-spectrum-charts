@@ -13,11 +13,13 @@ import { createElement } from 'react';
 
 import { ChartPopover } from '@components/ChartPopover';
 import {
+	ANIMATION_FUNCTION,
 	COLOR_SCALE,
 	CORNER_RADIUS,
 	DEFAULT_CATEGORICAL_DIMENSION,
 	DEFAULT_COLOR,
 	DEFAULT_METRIC,
+	DEFAULT_OPACITY_RULE,
 	FILTERED_TABLE,
 	MARK_ID,
 	PADDING_RATIO,
@@ -493,6 +495,18 @@ describe('barUtils', () => {
 	describe('getDodgedDimensionEncodings()', () => {
 		test('should return x and width', () => {
 			expect(getDodgedDimensionEncodings(defaultBarProps)).toStrictEqual(defaultDodgedXEncodings);
+		});
+		test('should return x and width with animations', () => {
+			expect(
+				getDodgedDimensionEncodings({ ...defaultBarProps, animations: true, animateFromZero: true })
+			).toStrictEqual({
+				...defaultDodgedXEncodings,
+				y: {
+					scale: 'yLinear',
+					signal: `datum.value * ${ANIMATION_FUNCTION}`,
+				},
+				y2: { scale: 'yLinear', signal: '0' },
+			});
 		});
 	});
 

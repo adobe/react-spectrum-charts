@@ -16,6 +16,7 @@ import { hasPopover, isInteractive } from '@specBuilder/marks/markUtils';
 import { sanitizeMarkChildren } from '@utils';
 
 import {
+	ChartData,
 	ClickableChartProps,
 	ColorFacet,
 	ColorScheme,
@@ -71,9 +72,12 @@ export const getPopoverMarkName = (children: MarkChildElement[], name: string): 
 };
 
 export interface LineMarkProps {
+	animateFromZero?: boolean;
+	animations?: boolean;
 	children: MarkChildElement[];
 	color: ColorFacet;
 	colorScheme: ColorScheme;
+	data?: ChartData[];
 	dimension: string;
 	displayOnHover?: boolean;
 	highlightedItem?: HighlightedItem;
@@ -88,6 +92,7 @@ export interface LineMarkProps {
 	name: string;
 	opacity: OpacityFacet;
 	popoverMarkName?: string;
+	previousData?: ChartData[];
 	scaleType: ScaleType;
 	staticPoint?: string;
 	interactionMode?: InteractionMode;

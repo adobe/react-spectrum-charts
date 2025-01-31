@@ -30,3 +30,9 @@ export const clickNthElement = async (elements: HTMLElement[], index: number) =>
 
 export const allElementsHaveAttributeValue = (elements: HTMLElement[], attribute: string, value: number | string) =>
 	elements.every((element) => element.getAttribute(attribute) === value.toString());
+
+export const manipulateData = (data: number): number => {
+	const randomFactor = Math.random() * (1.15 - 0.85) + 0.85;
+	const result = data * randomFactor;
+	return Math.round(result);
+};

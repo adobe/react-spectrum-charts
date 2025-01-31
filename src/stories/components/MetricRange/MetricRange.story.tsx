@@ -25,6 +25,7 @@ export default {
 };
 
 const defaultChartProps: ChartProps = {
+	animations: false,
 	data: workspaceTrendsDataWithAnomalies,
 	minWidth: 400,
 	maxWidth: 800,

@@ -26,7 +26,7 @@ export default {
 };
 
 const ChartLineStory: StoryFn<typeof Chart> = (args): ReactElement => {
-	const props = useChartProps(args);
+	const props = useChartProps({ ...args });
 	return (
 		<Chart {...props}>
 			<Axis position="bottom" baseline ticks />
@@ -37,7 +37,7 @@ const ChartLineStory: StoryFn<typeof Chart> = (args): ReactElement => {
 };
 
 const ChartTimeStory: StoryFn<typeof Chart> = (args): ReactElement => {
-	const props = useChartProps(args);
+	const props = useChartProps({ ...args });
 	return (
 		<Chart {...props} width={500}>
 			<Axis position="bottom" baseline ticks labelFormat="time" />
@@ -74,6 +74,7 @@ Basic.args = { data, renderer: 'svg', height: 300 };
 
 const BackgroundColor = bindWithProps(ChartLineStory);
 BackgroundColor.args = {
+	animations: false,
 	backgroundColor: 'gray-50',
 	padding: 32,
 	data,
@@ -81,6 +82,7 @@ BackgroundColor.args = {
 
 const Config = bindWithProps(ChartBarStory);
 Config.args = {
+	animations: false,
 	config: {
 		rect: {
 			strokeWidth: 2,
@@ -91,12 +93,14 @@ Config.args = {
 
 const Locale = bindWithProps(ChartTimeStory);
 Locale.args = {
+	animations: false,
 	locale: 'de-DE',
 	data: workspaceTrendsData,
 };
 
 const Width = bindWithProps(ChartBarStory);
 Width.args = {
+	animations: false,
 	width: '50%',
 	minWidth: 300,
 	maxWidth: 600,

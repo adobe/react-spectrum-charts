@@ -28,25 +28,58 @@ import {
 	isHighlightedByDimension,
 	isHighlightedByGroup,
 } from '@specBuilder/chartTooltip/chartTooltipUtils';
+import { hasInteractiveChildren } from '@specBuilder/marks/markUtils';
 import { getTooltipProps, hasPopover, hasTooltip } from '@specBuilder/marks/markUtils';
+import {
+	addContinuousDimensionScale,
+	addFieldToFacetScaleDomain,
+	addMetricScale,
+	addRscAnimationScales,
+} from '@specBuilder/scale/scaleSpecBuilder';
 import {
 	addHighlightedSeriesSignalEvents,
 	getControlledHoveredGroupSignal,
 	getControlledHoveredIdSignal,
+	getRscAnimationSignals,
 } from '@specBuilder/signal/signalSpecBuilder';
 import { spectrumColors } from '@themes';
 import { sanitizeMarkChildren, toCamelCase } from '@utils';
 import { produce } from 'immer';
-import { Data, Mark, Scale, Signal, SourceData, Spec } from 'vega';
+import { Data, Mark, Scale, Signal, SourceData, Spec, Transforms } from 'vega';
 
-import { AreaProps, AreaSpecProps, ColorScheme, HighlightedItem, MarkChildElement, ScaleType } from '../../types';
-import { addTimeTransform, getFilteredTableData, getTableData, getTransformSort } from '../data/dataUtils';
-import { addContinuousDimensionScale, addFieldToFacetScaleDomain, addMetricScale } from '../scale/scaleSpecBuilder';
+import {
+	AreaProps,
+	AreaSpecProps,
+	ChartData,
+	ColorScheme,
+	HighlightedItem,
+	MarkChildElement,
+	ScaleType,
+} from '../../types';
+import {
+	addTimeTransform,
+	getFilteredPreviousTableData,
+	getFilteredTableData,
+	getPreviousTableData,
+	getTableData,
+	getTransformSort,
+} from '../data/dataUtils';
 import { getAreaMark, getX } from './areaUtils';
 
 export const addArea = produce<
 	Spec,
-	[AreaProps & { colorScheme?: ColorScheme; highlightedItem?: HighlightedItem; index?: number; idKey: string }]
+	[
+		AreaProps & {
+			animations?: boolean;
+			animateFromZero?: boolean;
+			colorScheme?: ColorScheme;
+			data?: ChartData[];
+			highlightedItem?: HighlightedItem;
+			index?: number;
+			idKey: string;
+			previousData?: ChartData[];
+		}
+	]
 >(
 	(
 		spec,
@@ -107,13 +140,16 @@ export const addData = produce<Data[], [AreaSpecProps]>((data, props) => {
 		props;
 	if (scaleType === 'time') {
 		const tableData = getTableData(data);
+		const previousTableData = getPreviousTableData(data);
 		tableData.transform = addTimeTransform(tableData.transform ?? [], dimension);
+		previousTableData.transform = addTimeTransform(tableData.transform ?? [], dimension);
 	}
 
 	if (!metricEnd || !metricStart) {
 		const filteredTableData = getFilteredTableData(data);
+		const filteredPreviousTableData = getFilteredPreviousTableData(data);
 		// if metricEnd and metricStart don't exist, then we are using metric so we will support stacked
-		filteredTableData.transform = [
+		const transform: Transforms[] = [
 			...(filteredTableData.transform ?? []),
 			{
 				type: 'stack',
@@ -123,6 +159,8 @@ export const addData = produce<Data[], [AreaSpecProps]>((data, props) => {
 				as: [`${metric}0`, `${metric}1`],
 			},
 		];
+		filteredTableData.transform = transform;
+		filteredPreviousTableData.transform = transform;
 	}
 
 	if (children.length || highlightedItem !== undefined) {
@@ -145,6 +183,24 @@ export const addData = produce<Data[], [AreaSpecProps]>((data, props) => {
 		}
 	}
 	addTooltipData(data, props, false);
+});
+
+export const addSignals = produce<Signal[], [AreaSpecProps]>((signals, props) => {
+	const { children, name, animations } = props;
+	if (!children.length) return;
+	addHighlightedSeriesSignalEvents(signals, name, 1, getTooltipProps(children)?.excludeDataKeys);
+	if (props.highlightedItem) {
+		addHighlightedItemEvents(signals, name);
+	}
+	if (animations && hasInteractiveChildren(children)) {
+		signals.push(...getRscAnimationSignals(name));
+	}
+	if (!isHighlightedByGroup(props)) {
+		signals.push(getControlledHoveredIdSignal(name));
+	} else {
+		signals.push(getControlledHoveredGroupSignal(name));
+	}
+	addTooltipSignals(signals, props);
 });
 
 export const getAreaHighlightedData = (
@@ -178,21 +234,6 @@ export const getAreaHighlightedData = (
 	};
 };
 
-export const addSignals = produce<Signal[], [AreaSpecProps]>((signals, props) => {
-	const { children, name } = props;
-	if (!children.length) return;
-	addHighlightedSeriesSignalEvents(signals, name, 1, getTooltipProps(children)?.excludeDataKeys);
-	if (props.highlightedItem) {
-		addHighlightedItemEvents(signals, name);
-	}
-	if (!isHighlightedByGroup(props)) {
-		signals.push(getControlledHoveredIdSignal(name));
-	} else {
-		signals.push(getControlledHoveredGroupSignal(name));
-	}
-	addTooltipSignals(signals, props);
-});
-
 /**
  * Adds an on event that clears the controlled highlighted item signal value when the user mouses over the area.
  * @param signals
@@ -210,7 +251,11 @@ export const addHighlightedItemEvents = (signals: Signal[], areaName: string) =>
 };
 
 export const setScales = produce<Scale[], [AreaSpecProps]>(
-	(scales, { metric, metricEnd, metricStart, dimension, color, scaleType, padding }) => {
+	(scales, { metric, metricEnd, metricStart, dimension, color, scaleType, padding, animations, children }) => {
+		// If animations is enabled and has hover functionality, add all the necessary animation scales.
+		if (animations && hasInteractiveChildren(children)) {
+			addRscAnimationScales(scales);
+		}
 		// add dimension scale
 		addContinuousDimensionScale(scales, { scaleType, dimension, padding });
 		// add color to the color domain
@@ -226,7 +271,21 @@ export const setScales = produce<Scale[], [AreaSpecProps]>(
 );
 
 export const addAreaMarks = produce<Mark[], [AreaSpecProps]>((marks, props) => {
-	const { children, color, colorScheme, dimension, highlightedItem, metric, name, opacity, scaleType } = props;
+	const {
+		animations,
+		animateFromZero,
+		children,
+		color,
+		colorScheme,
+		data,
+		dimension,
+		highlightedItem,
+		metric,
+		name,
+		opacity,
+		previousData,
+		scaleType,
+	} = props;
 	let { metricStart, metricEnd } = props;
 	let isStacked = false;
 	if (!metricEnd || !metricStart) {
@@ -256,9 +315,13 @@ export const addAreaMarks = produce<Mark[], [AreaSpecProps]>((marks, props) => {
 					highlightedItem,
 					metricStart,
 					metricEnd,
+					animations,
 					name,
-					opacity,
+					animateFromZero,
+					data,
+					previousData,
 					scaleType,
+					opacity,
 				}),
 				...getAnchorPointMark(props),
 			],
@@ -377,7 +440,7 @@ const getSelectedAreaMarks = ({
 					strokeJoin: { value: 'round' },
 				},
 				update: {
-					// this has to be in update because when you resize the window that doesn't rebuild the spec
+					// this has to be in update because when you resize the window that doesn't rebuild the spec,
 					// but it may change the x position if it causes the chart to resize
 					x: getX(scaleType, dimension),
 				},

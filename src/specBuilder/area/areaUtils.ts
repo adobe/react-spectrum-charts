@@ -23,12 +23,14 @@ import {
 	getBorderStrokeEncodings,
 	getColorProductionRule,
 	getCursor,
+	getSeriesAnimationOpacityRules,
 	getTooltip,
 	isInteractive,
 } from '@specBuilder/marks/markUtils';
+import { getAnimationMarks } from '@specBuilder/specUtils';
 import { AreaMark, NumericValueRef, ProductionRule } from 'vega';
 
-import { ColorFacet, ColorScheme, HighlightedItem, MarkChildElement, ScaleType } from '../../types';
+import { ChartData, ColorFacet, ColorScheme, HighlightedItem, MarkChildElement, ScaleType } from '../../types';
 
 export interface AreaMarkProps {
 	color: ColorFacet;
@@ -40,6 +42,10 @@ export interface AreaMarkProps {
 	isHighlightedByGroup?: boolean;
 	isMetricRange?: boolean;
 	isStacked: boolean;
+	animations?: boolean;
+	animateFromZero?: boolean;
+	data?: ChartData[];
+	previousData?: ChartData[];
 	metricStart: string;
 	metricEnd: string;
 	name: string;
@@ -49,8 +55,22 @@ export interface AreaMarkProps {
 }
 
 export const getAreaMark = (areaProps: AreaMarkProps, dataSource: string = `${areaProps.name}_facet`): AreaMark => {
-	const { name, color, colorScheme, children, metricStart, metricEnd, isStacked, scaleType, dimension, opacity } =
-		areaProps;
+	const {
+		animations,
+		name,
+		color,
+		colorScheme,
+		children,
+		metricStart,
+		metricEnd,
+		isStacked,
+		scaleType,
+		dimension,
+		opacity,
+		animateFromZero,
+		data,
+		previousData,
+	} = areaProps;
 	return {
 		name,
 		description: name,
@@ -59,15 +79,24 @@ export const getAreaMark = (areaProps: AreaMarkProps, dataSource: string = `${ar
 		interactive: isInteractive(children),
 		encode: {
 			enter: {
-				y: { scale: 'yLinear', field: metricStart },
-				y2: { scale: 'yLinear', field: metricEnd },
+				...((!animations || !animateFromZero) && {
+					y: { scale: 'yLinear', field: metricStart },
+					y2: { scale: 'yLinear', field: metricEnd },
+					tooltip: getTooltip({ children, name }),
+				}),
 				fill: getColorProductionRule(color, colorScheme),
-				tooltip: getTooltip(children, name),
+				tooltip: getTooltip({ children, name }),
 				...getBorderStrokeEncodings(isStacked, true),
 			},
 			update: {
 				// this has to be in update because when you resize the window that doesn't rebuild the spec
 				// but it may change the x position if it causes the chart to resize
+				...(animations &&
+					animateFromZero && {
+						y: getAnimationMarks(dimension, metricStart, data, previousData),
+						y2: getAnimationMarks(dimension, metricEnd, data, previousData),
+						tooltip: getTooltip({ children, name, animations }),
+					}),
 				x: getX(scaleType, dimension),
 				cursor: getCursor(children),
 				fillOpacity: { value: opacity },
@@ -78,7 +107,9 @@ export const getAreaMark = (areaProps: AreaMarkProps, dataSource: string = `${ar
 };
 
 export function getAreaOpacity({
+	animations,
 	children,
+	opacity,
 	displayOnHover,
 	isHighlightedByGroup,
 	isMetricRange,
@@ -101,6 +132,10 @@ export function getAreaOpacity({
 	// no children means no interactive elements
 	if (!children.length && !highlightedItem) {
 		return [DEFAULT_OPACITY_RULE];
+	}
+	// if animations are enabled, get opacity rules for charts that highlight according to series ID
+	if (animations) {
+		return getSeriesAnimationOpacityRules({ value: opacity });
 	}
 
 	const opacityRules: ProductionRule<NumericValueRef> = [];

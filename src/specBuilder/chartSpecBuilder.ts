@@ -11,6 +11,8 @@
  */
 import {
 	BACKGROUND_COLOR,
+	DATA_ANIMATION_DURATION_FRAMES,
+	DATA_ANIMATION_MILLISECONDS_PER_FRAME,
 	FILTERED_TABLE,
 	HIGHLIGHTED_GROUP,
 	HIGHLIGHTED_ITEM,
@@ -84,10 +86,13 @@ import { addTitle } from './title/titleSpecBuilder';
 
 export function buildSpec(props: SanitizedSpecProps) {
 	const {
+		animations,
+		animateFromZero,
 		backgroundColor,
 		children,
 		colors,
 		colorScheme,
+		data,
 		description,
 		hiddenSeries,
 		highlightedItem,
@@ -96,6 +101,7 @@ export function buildSpec(props: SanitizedSpecProps) {
 		lineTypes,
 		lineWidths,
 		opacities,
+		previousData,
 		symbolShapes,
 		symbolSizes,
 		title,
@@ -118,7 +124,7 @@ export function buildSpec(props: SanitizedSpecProps) {
 
 	let { areaCount, axisCount, barCount, comboCount, donutCount, legendCount, lineCount, scatterCount } =
 		initializeComponentCounts();
-	const specProps = { colorScheme, idKey, highlightedItem };
+	const specProps = { animations, animateFromZero, colorScheme, data, idKey, highlightedItem, previousData };
 	spec = [...children]
 		.sort((a, b) => buildOrder.get(a.type) - buildOrder.get(b.type))
 		.reduce((acc: Spec, cur) => {
@@ -131,6 +137,7 @@ export function buildSpec(props: SanitizedSpecProps) {
 			 * If we simply compare cur.type to the component,
 			 * that uses referential equailty which fails in production when the component is imported from a different module like ./alpha
 			 */
+
 			switch (cur.type.displayName) {
 				case Area.displayName:
 					areaCount++;
@@ -152,6 +159,7 @@ export function buildSpec(props: SanitizedSpecProps) {
 						index: legendCount,
 						hiddenSeries,
 						highlightedSeries,
+						animations,
 					});
 				case Line.displayName:
 					lineCount++;
@@ -180,7 +188,7 @@ export function buildSpec(props: SanitizedSpecProps) {
 
 	// add signals and update marks for controlled highlighting if there isn't a legend with highlight enabled
 	if (highlightedSeries) {
-		setHoverOpacityForMarks(spec.marks ?? []);
+		setHoverOpacityForMarks(spec.marks ?? [], animations);
 	}
 
 	// clear out all scales that don't have any fields on the domain
@@ -209,6 +217,7 @@ const initializeComponentCounts = () => {
 };
 
 export const getDefaultSignals = ({
+	animations,
 	backgroundColor,
 	colors,
 	colorScheme,
@@ -221,7 +230,7 @@ export const getDefaultSignals = ({
 	// if the background color is transparent, then we want to set the signal background color to gray-50
 	// if the signal background color were transparent then backgroundMarks and annotation fill would also be transparent
 	const signalBackgroundColor = backgroundColor === 'transparent' ? 'gray-50' : backgroundColor;
-	return [
+	const signals = [
 		getGenericValueSignal(BACKGROUND_COLOR, getColorValue(signalBackgroundColor, colorScheme)),
 		getGenericValueSignal('colors', getTwoDimensionalColorScheme(colors, colorScheme)),
 		getGenericValueSignal('lineTypes', getTwoDimensionalLineTypes(lineTypes)),
@@ -234,6 +243,23 @@ export const getDefaultSignals = ({
 		getGenericValueSignal(SELECTED_SERIES),
 		getGenericValueSignal(SELECTED_GROUP),
 	];
+	if (animations) {
+		signals.push(getTimer());
+	}
+	return signals;
+};
+
+export const getTimer = () => {
+	return {
+		name: 'timerValue',
+		value: '0',
+		on: [
+			{
+				events: `timer{${DATA_ANIMATION_MILLISECONDS_PER_FRAME}}`,
+				update: `min(1, timerValue + (1 / ${DATA_ANIMATION_DURATION_FRAMES}))`,
+			},
+		],
+	};
 };
 
 export const getTwoDimensionalColorScheme = (colors: ChartColors, colorScheme: ColorScheme): string[][] => {

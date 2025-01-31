@@ -19,7 +19,12 @@ export default {
 };
 
 const DefaultHiddenSeries = LegendBarStory.bind({});
-DefaultHiddenSeries.args = { defaultHiddenSeries: ['Other'], isToggleable: true, highlight: true, ...defaultProps };
+DefaultHiddenSeries.args = {
+	defaultHiddenSeries: ['Other'],
+	isToggleable: true,
+	highlight: true,
+	...defaultProps,
+};
 DefaultHiddenSeries.storyName = 'Default Hidden Series (uncontrolled)';
 
 const HiddenSeries = LegendBarHiddenSeriesStory.bind({});

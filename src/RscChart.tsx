@@ -73,11 +73,13 @@ interface LegendTooltipProps {
 export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 	(
 		{
+			animations,
 			chartView,
 			backgroundColor,
 			data,
 			colors,
 			colorScheme,
+			previousData,
 			config,
 			description,
 			debug,
@@ -104,7 +106,11 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 		},
 		forwardedRef
 	) => {
-		const selectedData = useRef<Datum | null>(null); // data that is currently selected, get's set on click if a popover exists
+		// uuid is used to make a unique id so there aren't duplicate ids if there is more than one Chart component in the document
+
+		// state variable for storing if chart should reanimate from zero / animate across data sets
+		const [animateFromZero, setAnimateFromZero] = useState(true);
+		const selectedData = useRef<Datum | null>(null); // data that is currently selected, gets set on click if a popover exists
 		const selectedDataName = useRef<string>();
 		const selectedDataBounds = useRef<MarkBounds>();
 		const popoverAnchorRef = useRef<HTMLDivElement>(null);
@@ -113,12 +119,20 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 
 		const sanitizedChildren = sanitizeRscChartChildren(props.children);
 
-		// THE MAGIC, builds our spec
+		// when data changes, make sure that we are animating from zero (especially in the case where a popover was just
+		// opened and closed)
+		useEffect(() => {
+			setAnimateFromZero(true);
+		}, [data]);
+
 		const spec = useSpec({
 			backgroundColor,
 			children: sanitizedChildren,
 			colors,
 			data,
+			previousData,
+			animations: animations ?? true,
+			animateFromZero,
 			description,
 			idKey,
 			hiddenSeries,
@@ -134,6 +148,8 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 			UNSAFE_vegaSpec,
 		});
 
+		// console.log('Spec animation marks:', spec.marks[0].marks[0].encode.update);
+
 		const { controlledHoveredIdSignal, controlledHoveredGroupSignal } = useSpecProps(spec);
 		const chartConfig = useMemo(() => getChartConfig(config, colorScheme), [config, colorScheme]);
 
@@ -143,8 +159,10 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 			// Hide tooltips on all charts when a popover is open
 			tooltipElement.hidden = isPopoverOpen;
 
-			// if the popover is closed, reset the selected data
-			if (!isPopoverOpen) {
+			if (isPopoverOpen) {
+				setAnimateFromZero(false);
+			} else {
+				// if the popover is closed, reset the selected data
 				selectedData.current = null;
 			}
 		}, [isPopoverOpen]);
@@ -222,6 +240,7 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 			const signals: Record<string, unknown> = {
 				backgroundColor: getColorValue('gray-50', colorScheme),
 			};
+
 			if (legendIsToggleable) {
 				signals.hiddenSeries = legendHiddenSeries;
 			}
@@ -230,6 +249,57 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 
 			return signals;
 		}, [colorScheme, idKey, legendHiddenSeries, legendIsToggleable]);
+
+		const newSpec = structuredClone(spec);
+		const onNewView = (view) => {
+			chartView.current = view;
+			// Add a delay before displaying legend tooltips on hover.
+			let tooltipTimeout: NodeJS.Timeout | undefined;
+			view.tooltip((viewRef, event, item, value) => {
+				const tooltipHandler = new Handler(tooltipOptions);
+				// Cancel delayed tooltips if the mouse moves before the delay is resolved.
+				if (tooltipTimeout) {
+					clearTimeout(tooltipTimeout);
+					tooltipTimeout = undefined;
+				}
+				if (event && event.type === 'pointermove' && itemIsLegendItem(item) && 'tooltip' in item) {
+					tooltipTimeout = setTimeout(() => {
+						tooltipHandler.call(viewRef, event, item, value);
+						tooltipTimeout = undefined;
+					}, LEGEND_TOOLTIP_DELAY);
+				} else {
+					tooltipHandler.call(viewRef, event, item, value);
+				}
+			});
+			if (popovers.length || legendIsToggleable || onLegendClick) {
+				if (legendIsToggleable) {
+					view.signal('hiddenSeries', legendHiddenSeries);
+				}
+				setSelectedSignals({
+					idKey,
+					selectedData: selectedData.current,
+					view,
+				});
+				view.addEventListener(
+					'click',
+					getOnMarkClickCallback({
+						chartView,
+						hiddenSeries: legendHiddenSeries,
+						chartId,
+						selectedData,
+						selectedDataBounds,
+						selectedDataName,
+						setHiddenSeries: setLegendHiddenSeries,
+						legendIsToggleable,
+						onLegendClick,
+					})
+				);
+			}
+			view.addEventListener('click', getOnChartMarkClickCallback(chartView, markClickDetails));
+			view.addEventListener('mouseover', getOnMouseInputCallback(onLegendMouseOver));
+			view.addEventListener('mouseout', getOnMouseInputCallback(onLegendMouseOut));
+			// this will trigger the autosize calculation making sure that everything is correct size
+		};
 
 		return (
 			<>
@@ -240,9 +310,10 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 					style={targetStyle}
 				/>
 				<VegaChart
-					spec={spec}
+					spec={newSpec}
 					config={chartConfig}
 					data={data}
+					previousData={previousData ?? []}
 					debug={debug}
 					renderer={renderer}
 					width={chartWidth}
@@ -251,55 +322,7 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 					padding={padding}
 					signals={signals}
 					tooltip={tooltipOptions} // legend show/hide relies on this
-					onNewView={(view) => {
-						chartView.current = view;
-						// Add a delay before displaying legend tooltips on hover.
-						let tooltipTimeout: NodeJS.Timeout | undefined;
-						view.tooltip((viewRef, event, item, value) => {
-							const tooltipHandler = new Handler(tooltipOptions);
-							// Cancel delayed tooltips if the mouse moves before the delay is resolved.
-							if (tooltipTimeout) {
-								clearTimeout(tooltipTimeout);
-								tooltipTimeout = undefined;
-							}
-							if (event && event.type === 'pointermove' && itemIsLegendItem(item) && 'tooltip' in item) {
-								tooltipTimeout = setTimeout(() => {
-									tooltipHandler.call(viewRef, event, item, value);
-									tooltipTimeout = undefined;
-								}, LEGEND_TOOLTIP_DELAY);
-							} else {
-								tooltipHandler.call(viewRef, event, item, value);
-							}
-						});
-						if (popovers.length || legendIsToggleable || onLegendClick) {
-							if (legendIsToggleable) {
-								view.signal('hiddenSeries', legendHiddenSeries);
-							}
-							setSelectedSignals({
-								idKey,
-								selectedData: selectedData.current,
-								view,
-							});
-							view.addEventListener(
-								'click',
-								getOnMarkClickCallback({
-									chartView,
-									hiddenSeries: legendHiddenSeries,
-									chartId,
-									selectedData,
-									selectedDataBounds,
-									selectedDataName,
-									setHiddenSeries: setLegendHiddenSeries,
-									legendIsToggleable,
-									onLegendClick,
-								})
-							);
-						}
-						view.addEventListener('click', getOnChartMarkClickCallback(chartView, markClickDetails));
-						view.addEventListener('mouseover', getOnMouseInputCallback(onLegendMouseOver));
-						view.addEventListener('mouseout', getOnMouseInputCallback(onLegendMouseOut));
-						// this will trigger the autosize calculation making sure that everything is correct size
-					}}
+					onNewView={onNewView}
 				/>
 				{popovers.map((popover) => (
 					<ChartDialog

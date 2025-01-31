@@ -20,7 +20,7 @@ import {
 	getTooltip,
 	hasPopover,
 } from '@specBuilder/marks/markUtils';
-import { getColorValue, getLineWidthPixelsFromLineWidth } from '@specBuilder/specUtils';
+import { getAnimationMarks, getColorValue, getLineWidthPixelsFromLineWidth } from '@specBuilder/specUtils';
 import {
 	ArrayValueRef,
 	ColorValueRef,
@@ -82,12 +82,35 @@ export const getDodgedGroupMark = (props: BarSpecProps): GroupMark => {
 };
 
 export const getDodgedDimensionEncodings = (props: BarSpecProps): RectEncodeEntry => {
-	const { dimensionAxis, rangeScale } = getOrientationProperties(props.orientation);
+	const { animations, animateFromZero, dimension, metric, previousData, data } = props;
+
+	const {
+		dimensionAxis,
+		metricAxis: startKey,
+		rangeScale,
+		metricScaleKey: scaleKey,
+	} = getOrientationProperties(props.orientation);
 
 	const scale = `${props.name}_position`;
 	const field = `${props.name}_dodgeGroup`;
 
+	const isStacked = isDodgedAndStacked(props);
+
+	const startMetric = isStacked ? `${metric}0` : metric;
+	const endMetric = `${metric}1`;
+
+	const endAnimations = isStacked
+		? getAnimationMarks(dimension, endMetric, data, previousData, scaleKey)
+		: { scale: scaleKey, signal: '0' };
+
+	const endKey = `${startKey}2`;
+
 	return {
+		...(animations &&
+			animateFromZero && {
+				[startKey]: getAnimationMarks(dimension, startMetric, data, previousData, scaleKey),
+				[endKey]: endAnimations,
+			}),
 		[dimensionAxis]: { scale, field },
 		[rangeScale]: { scale, band: 1 },
 	};
@@ -225,10 +248,17 @@ export const getBaseBarEnterEncodings = (props: BarSpecProps): EncodeEntry => ({
 	...getCornerRadiusEncodings(props),
 });
 
-export const getBarEnterEncodings = ({ children, color, colorScheme, name, opacity }: BarSpecProps): EncodeEntry => ({
+export const getBarEnterEncodings = ({
+	children,
+	color,
+	colorScheme,
+	name,
+	opacity,
+	animations,
+}: BarSpecProps): EncodeEntry => ({
 	fill: getColorProductionRule(color, colorScheme),
 	fillOpacity: getOpacityProductionRule(opacity),
-	tooltip: getTooltip(children, name),
+	tooltip: getTooltip({ children, name, animations, isBar: true }),
 });
 
 export const getBarUpdateEncodings = (props: BarSpecProps): EncodeEntry => ({

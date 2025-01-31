@@ -29,6 +29,7 @@ import { NumericValueRef, ProductionRule, RectEncodeEntry } from 'vega';
 import { BarSpecProps } from '../../types';
 
 export const defaultBarProps: BarSpecProps = {
+	animations: false,
 	children: [],
 	color: DEFAULT_COLOR,
 	colorScheme: DEFAULT_COLOR_SCHEME,

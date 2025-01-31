@@ -29,7 +29,7 @@ const data = [
 ];
 
 const AxisLabelStory: StoryFn<typeof Axis> = (args): ReactElement => {
-	const chartProps = useChartProps({ data, width: 600 });
+	const chartProps = useChartProps({ animations: false, data, width: 600 });
 	return (
 		<Chart {...chartProps}>
 			<Axis {...args}></Axis>

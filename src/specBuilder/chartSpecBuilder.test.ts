@@ -59,6 +59,7 @@ import { baseData } from './specUtils';
 const defaultData: Data[] = [{ name: TABLE, values: [], transform: [{ type: 'identifier', as: MARK_ID }] }];
 
 const defaultSpecProps: SanitizedSpecProps = {
+	animations: false,
 	backgroundColor: DEFAULT_BACKGROUND_COLOR,
 	children: [],
 	colors: 'categorical12',
@@ -399,6 +400,7 @@ describe('Chart spec builder', () => {
 				...defaultSpecProps,
 				children: [createBar()],
 				highlightedSeries: 'Chrome',
+				animations: false,
 			});
 
 			expect(spec.signals?.find((signal) => signal.name === HIGHLIGHTED_SERIES)).toStrictEqual({
@@ -412,6 +414,7 @@ describe('Chart spec builder', () => {
 				...defaultSpecProps,
 				children: [createBar(), createLegend(false)],
 				highlightedSeries: 'Chrome',
+				animations: false,
 			});
 
 			expect(spec.signals?.find((signal) => signal.name === HIGHLIGHTED_SERIES)).toStrictEqual({

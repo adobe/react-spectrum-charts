@@ -28,8 +28,8 @@ export const getArcMark = (props: DonutSpecProps): ArcMark => {
 				fill: getColorProductionRule(color, colorScheme),
 				x: { signal: 'width / 2' },
 				y: { signal: 'height / 2' },
-				tooltip: getTooltip(children, name),
 				stroke: { value: getColorValue('static-blue', colorScheme) },
+				tooltip: getTooltip({ children, name }),
 			},
 			update: {
 				startAngle: { field: `${name}_startAngle` },

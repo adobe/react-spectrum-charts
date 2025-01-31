@@ -25,7 +25,7 @@ export default {
 };
 
 const BarStory: StoryFn<typeof Bar> = (args): ReactElement => {
-	const chartProps = useChartProps({ data: barData, width: 600, height: 600 });
+	const chartProps = useChartProps({ animations: false, data: barData, width: 600, height: 600 });
 	return (
 		<Chart {...chartProps}>
 			<Axis position={args.orientation === 'horizontal' ? 'left' : 'bottom'} baseline title="Browser" />
@@ -39,11 +39,11 @@ const defaultProps: BarProps = {
 	dimension: 'browser',
 	metric: 'downloads',
 	onClick: undefined,
-}
+};
 
 const Basic = bindWithProps(BarStory);
 Basic.args = {
-	...defaultProps
+	...defaultProps,
 };
 
 const Horizontal = bindWithProps(BarStory);
@@ -88,6 +88,6 @@ const OnClick = bindWithProps(BarStory);
 OnClick.args = {
 	dimension: 'browser',
 	metric: 'downloads',
-}
+};
 
 export { Basic, Horizontal, LineType, Opacity, PaddingRatio, WithAnnotation, HasSquareCorners, OnClick };

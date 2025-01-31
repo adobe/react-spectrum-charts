@@ -17,18 +17,22 @@ import {
 	SENTIMENT_POSITIVE_PATH,
 } from '@svgPaths';
 import { spectrumColors } from '@themes';
-import { Data, Scale, ScaleType, Spec, ValuesData } from 'vega';
+import { Data, IdentifierTransform, Scale, ScaleType, Spec, ValuesData } from 'vega';
 
 import {
+	ANIMATION_FUNCTION,
 	COLOR_SCALE,
 	DEFAULT_TRANSFORMED_TIME_DIMENSION,
+	FILTERED_PREVIOUS_TABLE,
 	FILTERED_TABLE,
 	LINE_TYPE_SCALE,
 	MARK_ID,
 	OPACITY_SCALE,
+	PREVIOUS_TABLE,
 	TABLE,
 } from '../constants';
 import {
+	ChartData,
 	ChartSymbolShape,
 	ColorFacet,
 	ColorScheme,
@@ -227,12 +231,21 @@ export const getSymbolWidthFromRscSymbolSize = (symbolSize: SymbolSize): number 
 	}
 };
 
+export const getIdentifierTransform = (): IdentifierTransform => {
+	return {
+		type: 'identifier',
+		as: MARK_ID,
+	};
+};
+
 /**
  * base data that gets initialized with every uncontrolled spec
  */
 export const baseData: Data[] = [
-	{ name: TABLE, values: [], transform: [{ type: 'identifier', as: MARK_ID }] },
+	{ name: TABLE, values: [], transform: [getIdentifierTransform()] },
 	{ name: FILTERED_TABLE, source: TABLE },
+	{ name: PREVIOUS_TABLE, values: [], transform: [getIdentifierTransform()] },
+	{ name: FILTERED_PREVIOUS_TABLE, source: PREVIOUS_TABLE },
 ];
 
 /**
@@ -297,6 +310,7 @@ export const extractValues = (data) =>
  * @returns An array of Vega datasets with the values from the values object merged in
  */
 export const mergeValuesIntoData = (data, values) => {
+	console.log(data, values);
 	return data.map((dataset) => {
 		const datasetValues = values[dataset.name];
 		if (datasetValues) {
@@ -331,4 +345,35 @@ export const getD3FormatSpecifierFromNumberFormat = (numberFormat: NumberFormat 
 		default:
 			return numberFormat;
 	}
+};
+
+export const getAnimationMarks = (
+	dimension: string,
+	metric: string,
+	data?: ChartData[],
+	previousData?: ChartData[],
+	scale = 'yLinear'
+) => {
+	const easingFunction = ANIMATION_FUNCTION;
+
+	let markUpdate = {
+		scale,
+		signal: `datum.${metric} * ${easingFunction}`,
+	};
+
+	if (data && previousData) {
+		const hasSameDimensions =
+			data !== previousData &&
+			data.every((d) => previousData.some((pd) => d[dimension] === pd[dimension])) &&
+			data.length == previousData.length;
+		if (hasSameDimensions) {
+			// If data isn't similar enough, keep the animation from zero as shown above
+			const datumVal = `(datum.${MARK_ID} + length(data('${FILTERED_PREVIOUS_TABLE}')))`;
+			markUpdate = {
+				scale,
+				signal: `(data('${FILTERED_PREVIOUS_TABLE}')[indexof(pluck(data('${FILTERED_PREVIOUS_TABLE}'), '${MARK_ID}'), ${datumVal})].${metric} * (1 - ${easingFunction})) + (datum.${metric} * ${easingFunction})`,
+			};
+		}
+	}
+	return markUpdate;
 };

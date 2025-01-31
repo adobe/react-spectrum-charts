@@ -103,19 +103,22 @@ export const getScatterMark = (props: ScatterSpecProps): SymbolMark => {
  * @returns opacity production rule
  */
 export const getOpacity = (props: ScatterSpecProps): ({ test?: string } & NumericValueRef)[] => {
-	const { children, highlightedItem, idKey } = props;
+	const { children, highlightedItem, idKey, animations } = props;
 	if (!hasInteractiveChildren(children) && highlightedItem === undefined) {
 		return [DEFAULT_OPACITY_RULE];
 	}
+
 	// if a point is hovered or selected, all other points should be reduced opacity
 	const fadedValue = 1 / HIGHLIGHT_CONTRAST_RATIO;
+	const animationOpacitySignal = { signal: `max(1-rscColorAnimation, ${fadedValue})` };
+	const opacityParameter = animations ? animationOpacitySignal : { value: fadedValue };
 
 	const rules: ({ test?: string } & NumericValueRef)[] = [];
-	addHighlightMarkOpacityRules(rules, props);
+	addHighlightMarkOpacityRules(rules, props, opacityParameter);
 	if (hasPopover(children)) {
 		rules.push({
 			test: `isValid(${SELECTED_ITEM}) && ${SELECTED_ITEM} !== datum.${idKey}`,
-			value: fadedValue,
+			...opacityParameter,
 		});
 	}
 

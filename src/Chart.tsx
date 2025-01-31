@@ -23,6 +23,7 @@ import {
 import useChartHeight from '@hooks/useChartHeight';
 import useChartImperativeHandle from '@hooks/useChartImperativeHandle';
 import useChartWidth from '@hooks/useChartWidth';
+import { usePreviousChartData } from '@hooks/usePreviousChartData';
 import { useResizeObserver } from '@hooks/useResizeObserver';
 import { getColorValue } from '@specBuilder/specUtils';
 import { getBigNumberElementsFromChildren, toArray } from '@utils';
@@ -49,6 +50,7 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 		{
 			backgroundColor = DEFAULT_BACKGROUND_COLOR,
 			data,
+			animations = true,
 			colors = 'categorical12',
 			colorScheme = DEFAULT_COLOR_SCHEME,
 			dataTestId,
@@ -86,6 +88,8 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 
 		useChartImperativeHandle(forwardedRef, { chartView, title });
 
+		const previousData = usePreviousChartData(data);
+
 		const containerRef = useResizeObserver<HTMLDivElement>((_target, entry) => {
 			if (typeof width !== 'number') {
 				setContainerWidth(entry.contentRect.width);
@@ -121,6 +125,7 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 		}
 
 		const rscChartProps: RscChartProps = {
+			animations,
 			chartView,
 			chartId,
 			data,
@@ -134,6 +139,7 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 			lineWidths,
 			locale,
 			padding,
+			previousData,
 			renderer,
 			title,
 			tooltipAnchor,

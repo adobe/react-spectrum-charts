@@ -11,8 +11,9 @@
  */
 import { HIGHLIGHT_CONTRAST_RATIO } from '@constants';
 import '@matchMediaMock';
-import { Line } from '@rsc';
+import { Chart, Line } from '@rsc';
 import { workspaceTrendsData } from '@stories/data/data';
+import { animationTransitionDataAfter, animationTransitionDataBefore } from '@stories/data/data';
 import {
 	allElementsHaveAttributeValue,
 	clickNthElement,
@@ -194,6 +195,7 @@ describe('Line', () => {
 
 			const lines = await findAllMarksByGroupName(chart, 'line0');
 			expect(lines).toHaveLength(4);
+
 			expect(lines[0]).toHaveAttribute('opacity', '1');
 			expect(lines[1]).toHaveAttribute('opacity', '1');
 
@@ -402,6 +404,21 @@ describe('Line', () => {
 
 			expect(onClick).toHaveBeenCalledTimes(1);
 			expect(onClick).toHaveBeenCalledWith(expect.objectContaining(workspaceTrendsData[4]));
+		});
+	});
+	describe('Line animation tests', () => {
+		test('Line animates between congruent datasets', async () => {
+			const chartProps = {
+				data: animationTransitionDataBefore,
+			};
+			render(
+				<Chart {...chartProps}>
+					<Line dimension="x" metric="y" />
+				</Chart>
+			);
+			setTimeout(() => {
+				chartProps.data = animationTransitionDataAfter;
+			}, 3000);
 		});
 	});
 });

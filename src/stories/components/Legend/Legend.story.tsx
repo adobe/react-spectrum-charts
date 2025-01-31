@@ -65,6 +65,7 @@ Title.args = { title: 'Operating system', ...defaultProps };
 
 const Supreme = LegendBarStory.bind({});
 Supreme.args = {
+	animations: false,
 	descriptions,
 	highlight: true,
 	legendLabels,

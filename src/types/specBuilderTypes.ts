@@ -19,6 +19,7 @@ import {
 	AxisChildElement,
 	AxisProps,
 	BarProps,
+	ChartData,
 	ChartPopoverProps,
 	ChartTooltipProps,
 	ColorFacet,
@@ -50,9 +51,13 @@ type AreaPropsWithDefaults = 'name' | 'dimension' | 'metric' | 'color' | 'scaleT
 
 export interface AreaSpecProps extends PartiallyRequired<AreaProps, AreaPropsWithDefaults> {
 	colorScheme: ColorScheme;
+	data?: ChartData[];
 	highlightedItem?: HighlightedItem;
 	idKey: string;
 	index: number;
+	previousData?: ChartData[];
+	animations?: boolean;
+	animateFromZero?: boolean;
 	children: MarkChildElement[];
 	markType: 'area';
 }
@@ -108,14 +113,18 @@ type BarPropsWithDefaults =
 	| 'type';
 
 export interface BarSpecProps extends PartiallyRequired<BarProps, BarPropsWithDefaults> {
+	animations?: boolean;
+	animateFromZero?: boolean;
 	children: MarkChildElement[];
 	colorScheme: ColorScheme;
+	data?: ChartData[];
 	dimensionScaleType: 'band';
 	highlightedItem?: HighlightedItem;
 	idKey: string;
 	index: number;
 	interactiveMarkName: string | undefined;
 	markType: 'bar';
+	previousData?: ChartData[];
 }
 
 type AnnotationPropsWithDefaults = 'textKey';
@@ -165,6 +174,7 @@ export interface SegmentLabelSpecProps extends PartiallyRequired<SegmentLabelPro
 type LegendPropsWithDefaults = 'hiddenEntries' | 'highlight' | 'isToggleable' | 'position' | 'name';
 
 export interface LegendSpecProps extends PartiallyRequired<LegendProps, LegendPropsWithDefaults> {
+	animations?: boolean;
 	color?: FacetRef<string>;
 	colorScheme: ColorScheme;
 	hiddenSeries: string[];
@@ -178,10 +188,13 @@ export interface LegendSpecProps extends PartiallyRequired<LegendProps, LegendPr
 type LinePropsWithDefaults = 'name' | 'dimension' | 'metric' | 'color' | 'scaleType' | 'lineType' | 'opacity';
 
 export interface LineSpecProps extends PartiallyRequired<LineProps, LinePropsWithDefaults> {
+	animateFromZero?: boolean;
+	animations?: boolean;
 	children: MarkChildElement[];
 	colorScheme: ColorScheme;
 	highlightedItem?: HighlightedItem;
 	idKey: string;
+	data?: ChartData[];
 	index: number;
 	interactiveMarkName: string | undefined;
 	isHighlightedByGroup?: boolean;
@@ -189,6 +202,7 @@ export interface LineSpecProps extends PartiallyRequired<LineProps, LinePropsWit
 	markType: 'line';
 	popoverMarkName: string | undefined;
 	interactionMode?: InteractionMode;
+	previousData?: ChartData[];
 }
 
 type ScatterPropsWithDefaults =
@@ -204,10 +218,13 @@ type ScatterPropsWithDefaults =
 	| 'size';
 
 export interface ScatterSpecProps extends PartiallyRequired<ScatterProps, ScatterPropsWithDefaults> {
+	animations?: boolean;
 	children: MarkChildElement[];
 	colorScheme: ColorScheme;
 	highlightedItem?: HighlightedItem;
 	idKey: string;
+	data?: ChartData[]; // currently unused, but in place for future Scatter animations work
+	previousData?: ChartData[]; // currently unused, but in place for future Scatter animations work
 	index: number;
 	interactiveMarkName: string | undefined;
 	markType: 'scatter';

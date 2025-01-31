@@ -21,16 +21,20 @@ import {
 	DEFAULT_OPACITY_RULE,
 	DEFAULT_TIME_DIMENSION,
 	DEFAULT_TRANSFORMED_TIME_DIMENSION,
+	FILTERED_PREVIOUS_TABLE,
 	FILTERED_TABLE,
 	HIGHLIGHTED_ITEM,
 	HIGHLIGHTED_SERIES,
 	LINEAR_PADDING,
 	MARK_ID,
+	PREVIOUS_TABLE,
+	RSC_ANIMATION,
 	SELECTED_GROUP,
 	SELECTED_ITEM,
 	SELECTED_SERIES,
 	TABLE,
 } from '@constants';
+import { defaultAnimationScales } from '@specBuilder/scale/scaleSpecBuilder.test';
 import { getGenericValueSignal } from '@specBuilder/signal/signalSpecBuilder';
 import { defaultSignals } from '@specBuilder/specTestUtils';
 import { Data, GroupMark, Spec } from 'vega';
@@ -55,6 +59,7 @@ const defaultAreaProps: AreaSpecProps = {
 	name: 'area0',
 	opacity: 0.8,
 	scaleType: 'time',
+	animations: false,
 };
 
 const defaultSpec = initializeSpec({
@@ -90,6 +95,32 @@ const defaultSpec = initializeSpec({
 				},
 			],
 		},
+		{
+			name: PREVIOUS_TABLE,
+			transform: [
+				{ as: MARK_ID, type: 'identifier' },
+				{
+					as: [DEFAULT_TRANSFORMED_TIME_DIMENSION, `${DEFAULT_TIME_DIMENSION}1`],
+					field: DEFAULT_TIME_DIMENSION,
+					type: 'timeunit',
+					units: ['year', 'month', 'date', 'hours', 'minutes'],
+				},
+			],
+			values: [],
+		},
+		{
+			name: FILTERED_PREVIOUS_TABLE,
+			source: PREVIOUS_TABLE,
+			transform: [
+				{
+					as: ['value0', 'value1'],
+					field: DEFAULT_METRIC,
+					groupby: [DEFAULT_TIME_DIMENSION],
+					sort: undefined,
+					type: 'stack',
+				},
+			],
+		},
 	],
 	marks: [
 		{
@@ -100,7 +131,7 @@ const defaultSpec = initializeSpec({
 				{
 					encode: {
 						enter: {
-							fill: { field: DEFAULT_COLOR, scale: COLOR_SCALE },
+							fill: { field: DEFAULT_COLOR, scale: 'color' },
 							y: { field: 'value0', scale: 'yLinear' },
 							y2: { field: 'value1', scale: 'yLinear' },
 							stroke: { signal: BACKGROUND_COLOR },
@@ -170,11 +201,13 @@ const defaultPointScale = {
 describe('areaSpecBuilder', () => {
 	describe('addArea()', () => {
 		test('should add area', () => {
-			expect(addArea(startingSpec, { idKey: MARK_ID })).toStrictEqual(defaultSpec);
+			expect(addArea(startingSpec, { idKey: MARK_ID, animations: false })).toStrictEqual(defaultSpec);
 		});
 
 		test('metricStart defined but valueEnd not defined, should default to value', () => {
-			expect(addArea(startingSpec, { idKey: MARK_ID, metricStart: 'test' })).toStrictEqual(defaultSpec);
+			expect(addArea(startingSpec, { idKey: MARK_ID, metricStart: 'test', animations: false })).toStrictEqual(
+				defaultSpec
+			);
 		});
 	});
 
@@ -268,6 +301,28 @@ describe('areaSpecBuilder', () => {
 			addHighlightedItemEvents(signals, 'area0');
 			expect(signals[0].on).toHaveLength(2);
 		});
+
+		test('children: should add signals with animations', () => {
+			const tooltip = createElement(ChartTooltip);
+			const signals = addSignals(defaultSignals, { ...defaultAreaProps, children: [tooltip], animations: true });
+			expect(signals).toHaveLength(10);
+			expect(signals[0]).toHaveProperty('name', HIGHLIGHTED_ITEM);
+			expect(signals[1]).toHaveProperty('name', HIGHLIGHTED_SERIES);
+			expect(signals[1].on).toHaveLength(2);
+			expect(signals[2]).toHaveProperty('name', SELECTED_ITEM);
+			expect(signals[3]).toHaveProperty('name', SELECTED_SERIES);
+			expect(signals[4]).toHaveProperty('name', RSC_ANIMATION);
+			expect(signals[4].on).toHaveLength(1);
+			expect(signals[5]).toHaveProperty('name', 'rscColorAnimationDirection');
+			expect(signals[5].on).toHaveLength(2);
+			expect(signals[6]).toHaveProperty('name', 'rscColorAnimation');
+			expect(signals[6].on).toHaveLength(1);
+			expect(signals[7]).toHaveProperty('name', `${HIGHLIGHTED_ITEM}_prev`);
+			expect(signals[7].on).toHaveLength(1);
+			expect(signals[8]).toHaveProperty('name', `${HIGHLIGHTED_SERIES}_prev`);
+			expect(signals[8].on).toHaveLength(1);
+			expect(signals[9]).toHaveProperty('name', 'area0_controlledHoveredId');
+		});
 	});
 
 	describe('setScales()', () => {
@@ -278,6 +333,22 @@ describe('areaSpecBuilder', () => {
 		test('linear', () => {
 			expect(setScales(startingSpec.scales ?? [], { ...defaultAreaProps, scaleType: 'linear' })).toStrictEqual([
 				defaultSpec.scales?.[0],
+				defaultLinearScale,
+				defaultSpec.scales?.[2],
+			]);
+		});
+
+		test('linear with animations', () => {
+			expect(
+				setScales(startingSpec.scales ?? [], {
+					...defaultAreaProps,
+					scaleType: 'linear',
+					children: [createElement(ChartTooltip)],
+					animations: true,
+				})
+			).toStrictEqual([
+				defaultSpec.scales?.[0],
+				...defaultAnimationScales,
 				defaultLinearScale,
 				defaultSpec.scales?.[2],
 			]);
