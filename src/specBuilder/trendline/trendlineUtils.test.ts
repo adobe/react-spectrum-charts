@@ -9,59 +9,52 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { createElement } from 'react';
-
-import { Annotation } from '@components/Annotation';
-import { Trendline } from '@components/Trendline';
 import { DEFAULT_METRIC, DEFAULT_TIME_DIMENSION, FILTERED_TABLE, MS_PER_DAY, TRENDLINE_VALUE } from '@constants';
 
-import { defaultLineProps } from './trendlineTestUtils';
+import { defaultLineOptions } from './trendlineTestUtils';
 import {
 	applyTrendlinePropDefaults,
 	getPolynomialOrder,
 	getRegressionExtent,
-	getTrendlineColorFromMarkProps,
-	getTrendlineLineTypeFromMarkProps,
+	getTrendlineColorFromMarkOptions,
+	getTrendlineLineTypeFromMarkOptions,
 	getTrendlines,
 } from './trendlineUtils';
 
 describe('getTrendlines()', () => {
 	test('should return an array of trendline props', () => {
-		const children = [
-			createElement(Annotation),
-			createElement(Trendline, { method: 'average' }),
-			createElement(Trendline, { method: 'linear' }),
-		];
-		const trendlines = getTrendlines({ ...defaultLineProps, children });
+		const trendlines = getTrendlines({
+			...defaultLineOptions,
+			trendlines: [{ method: 'average' }, { method: 'linear' }],
+		});
 		expect(trendlines).toHaveLength(2);
 		expect(trendlines[0]).toHaveProperty('method', 'average');
 		expect(trendlines[1]).toHaveProperty('method', 'linear');
 	});
 
 	test('should return an empty array if there are not any trendline child elements', () => {
-		const children = [createElement(Annotation)];
-		const trendlines = getTrendlines({ ...defaultLineProps, children });
+		const trendlines = getTrendlines({ ...defaultLineOptions, trendlines: [] });
 		expect(trendlines).toHaveLength(0);
 	});
 });
 
 describe('applyTrendlinePropDefaults()', () => {
 	test('should add defaults', () => {
-		const props = applyTrendlinePropDefaults(defaultLineProps, {}, 0);
+		const props = applyTrendlinePropDefaults(defaultLineOptions, {}, 0);
 		expect(props).toHaveProperty('method', 'linear');
 		expect(props).toHaveProperty('dimensionRange', [null, null]);
 		expect(props).toHaveProperty('lineType', 'dashed');
 		expect(props).toHaveProperty('lineWidth', 'M');
 		expect(props).toHaveProperty('metric', TRENDLINE_VALUE);
-		expect(props).toHaveProperty('trendlineColor', defaultLineProps.color);
+		expect(props).toHaveProperty('trendlineColor', defaultLineOptions.color);
 	});
 	test('should swap dimension and metric if orientation is vertical', () => {
-		const props = applyTrendlinePropDefaults(defaultLineProps, { orientation: 'vertical' }, 0);
+		const props = applyTrendlinePropDefaults(defaultLineOptions, { orientation: 'vertical' }, 0);
 		expect(props).toHaveProperty('trendlineDimension', DEFAULT_METRIC);
 		expect(props).toHaveProperty('trendlineMetric', DEFAULT_TIME_DIMENSION);
 	});
 	test('should use color from trendline if defined', () => {
-		const props = applyTrendlinePropDefaults(defaultLineProps, { color: 'gray-700' }, 0);
+		const props = applyTrendlinePropDefaults(defaultLineOptions, { color: 'gray-700' }, 0);
 		expect(props).toHaveProperty('trendlineColor', { value: 'gray-700' });
 	});
 });
@@ -91,24 +84,24 @@ describe('getRegressionExtent()', () => {
 	});
 });
 
-describe('getTrendlineColorFromMarkProps()', () => {
+describe('getTrendlineColorFromMarkOptions()', () => {
 	test('should return first facet if dual facet', () => {
-		expect(getTrendlineColorFromMarkProps(['series', 'subSeries'])).toEqual('series');
+		expect(getTrendlineColorFromMarkOptions(['series', 'subSeries'])).toEqual('series');
 	});
 
 	test('should return what was passed in if it is not a dual facet', () => {
-		expect(getTrendlineColorFromMarkProps('series')).toEqual('series');
-		expect(getTrendlineColorFromMarkProps({ value: 'red-500' })).toEqual({ value: 'red-500' });
+		expect(getTrendlineColorFromMarkOptions('series')).toEqual('series');
+		expect(getTrendlineColorFromMarkOptions({ value: 'red-500' })).toEqual({ value: 'red-500' });
 	});
 });
 
-describe('getTrendlineLineTypeFromMarkProps()', () => {
+describe('getTrendlineLineTypeFromMarkOptions()', () => {
 	test('should return first facet if dual facet', () => {
-		expect(getTrendlineLineTypeFromMarkProps(['series', 'subSeries'])).toEqual('series');
+		expect(getTrendlineLineTypeFromMarkOptions(['series', 'subSeries'])).toEqual('series');
 	});
 
 	test('should return what was passed in if it is not a dual facet', () => {
-		expect(getTrendlineLineTypeFromMarkProps('series')).toEqual('series');
-		expect(getTrendlineLineTypeFromMarkProps({ value: 'dashed' })).toEqual({ value: 'dashed' });
+		expect(getTrendlineLineTypeFromMarkOptions('series')).toEqual('series');
+		expect(getTrendlineLineTypeFromMarkOptions({ value: 'dashed' })).toEqual({ value: 'dashed' });
 	});
 });

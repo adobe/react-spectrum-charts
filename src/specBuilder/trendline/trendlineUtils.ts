@@ -9,40 +9,39 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { Trendline } from '@components/Trendline';
 import { FILTERED_TABLE, MS_PER_DAY, TRENDLINE_VALUE } from '@constants';
-import { sanitizeTrendlineChildren } from '@utils';
 import { SignalRef } from 'vega';
 
 import {
 	AggregateMethod,
-	BarSpecProps,
+	BarSpecOptions,
 	ColorFacet,
-	LineSpecProps,
+	LineSpecOptions,
 	LineTypeFacet,
 	Orientation,
 	RegressionMethod as RscRegressionMethod,
 	ScaleType as RscScaleType,
-	ScatterSpecProps,
-	TrendlineElement,
+	ScatterSpecOptions,
 	TrendlineMethod,
-	TrendlineProps,
-	TrendlineSpecProps,
+	TrendlineOptions,
+	TrendlineSpecOptions,
 	WindowMethod,
 } from '../../types';
 
-/** These are all the spec props that currently support trendlines */
-export type TrendlineParentProps = LineSpecProps | ScatterSpecProps | BarSpecProps;
+/** These are all the spec options that currently support trendlines */
+export type TrendlineParentOptions = LineSpecOptions | ScatterSpecOptions | BarSpecOptions;
 
 /**
  * gets all the trendlines from the children and applies all the default trendline props
  * @param children
  * @param markName
- * @returns TrendlineSpecProps[]
+ * @returns TrendlineSpecOptions[]
  */
-export const getTrendlines = (markProps: TrendlineParentProps): TrendlineSpecProps[] => {
-	const trendlineElements = markProps.children.filter((child) => child.type === Trendline) as TrendlineElement[];
-	return trendlineElements.map((trendline, index) => applyTrendlinePropDefaults(markProps, trendline.props, index));
+export const getTrendlines = (markOptions: TrendlineParentOptions): TrendlineSpecOptions[] => {
+	return markOptions.trendlines.map((trendline, index) => applyTrendlinePropDefaults(markOptions, trendline, index));
+
+	// const trendlineElements = markProps.children.filter((child) => child.type === Trendline) as TrendlineElement[];
+	// return trendlineElements.map((trendline, index) => applyTrendlinePropDefaults(markProps, trendline.props, index));
 };
 
 /**
@@ -53,9 +52,9 @@ export const getTrendlines = (markProps: TrendlineParentProps): TrendlineSpecPro
  * @returns TrendlineSpecProps
  */
 export const applyTrendlinePropDefaults = (
-	markProps: TrendlineParentProps,
+	markOptions: TrendlineParentOptions,
 	{
-		children,
+		chartTooltips = [],
 		color,
 		dimensionExtent,
 		dimensionRange = [null, null],
@@ -66,23 +65,24 @@ export const applyTrendlinePropDefaults = (
 		method = 'linear',
 		opacity = 1,
 		orientation = 'horizontal',
-		...props
-	}: TrendlineProps,
+		trendlineAnnotations = [],
+		...opts
+	}: TrendlineOptions,
 	index: number
-): TrendlineSpecProps => {
-	const dimensionScaleType = getTrendlineScaleType(markProps, orientation);
+): TrendlineSpecOptions => {
+	const dimensionScaleType = getTrendlineScaleType(markOptions, orientation);
 	const isDimensionNormalized =
 		dimensionScaleType === 'time' && isRegressionMethod(method) && orientation === 'horizontal';
 	const { trendlineDimension, trendlineMetric } = getTrendlineDimensionMetric(
-		markProps.dimension,
-		markProps.metric,
+		markOptions.dimension,
+		markOptions.metric,
 		orientation,
 		isDimensionNormalized
 	);
-	const trendlineColor = color ? { value: color } : getTrendlineColorFromMarkProps(markProps.color);
+	const trendlineColor = color ? { value: color } : getTrendlineColorFromMarkOptions(markOptions.color);
 	return {
-		children: sanitizeTrendlineChildren(children),
-		colorScheme: markProps.colorScheme,
+		chartTooltips,
+		colorScheme: markOptions.colorScheme,
 		displayOnHover,
 		dimensionExtent: dimensionExtent ?? dimensionRange,
 		dimensionRange,
@@ -93,33 +93,34 @@ export const applyTrendlinePropDefaults = (
 		lineWidth,
 		method,
 		metric: TRENDLINE_VALUE,
-		name: `${markProps.name}Trendline${index}`,
+		name: `${markOptions.name}Trendline${index}`,
 		opacity,
 		orientation,
+		trendlineAnnotations,
 		trendlineColor,
 		trendlineDimension,
 		trendlineMetric,
-		...props,
+		...opts,
 	};
 };
 
 /**
- * Gets the color from the parent props.
+ * Gets the color from the parent options.
  * Simplifies dual facet colors into a single facet
  * @param color
  * @returns color
  */
-export const getTrendlineColorFromMarkProps = (color: TrendlineParentProps['color']): ColorFacet => {
+export const getTrendlineColorFromMarkOptions = (color: TrendlineParentOptions['color']): ColorFacet => {
 	return Array.isArray(color) ? color[0] : color;
 };
 
 /**
- * Gets the color from the parent props.
+ * Gets the color from the parent options.
  * Simplifies dual facet colors into a single facet
  * @param lineType
  * @returns color
  */
-export const getTrendlineLineTypeFromMarkProps = (lineType: TrendlineParentProps['lineType']): LineTypeFacet => {
+export const getTrendlineLineTypeFromMarkOptions = (lineType: TrendlineParentOptions['lineType']): LineTypeFacet => {
 	return Array.isArray(lineType) ? lineType[0] : lineType;
 };
 
@@ -196,11 +197,11 @@ export const isPolynomialMethod = (method: TrendlineMethod): boolean =>
 
 /**
  * determines if any trendlines use the normalized dimension
- * @param markProps
+ * @param markOptions
  * @returns boolean
  */
-export const hasTrendlineWithNormalizedDimension = (markProps: TrendlineParentProps): boolean => {
-	const trendlines = getTrendlines(markProps);
+export const hasTrendlineWithNormalizedDimension = (markOptions: TrendlineParentOptions): boolean => {
+	const trendlines = getTrendlines(markOptions);
 
 	// only need to add the normalized dimension transform if there is a regression trendline and the dimension scale type is time
 	return trendlines.some(
@@ -240,7 +241,7 @@ export const getPolynomialOrder = (method: TrendlineMethod): number => {
  * @returns
  */
 export const getRegressionExtent = (
-	dimensionExtent: TrendlineSpecProps['dimensionExtent'],
+	dimensionExtent: TrendlineSpecOptions['dimensionExtent'],
 	name: string,
 	isNormalized: boolean
 ): SignalRef => {
@@ -266,10 +267,10 @@ export const getRegressionExtent = (
 };
 
 export const getTrendlineScaleType = (
-	markProps: TrendlineParentProps,
+	markOptions: TrendlineParentOptions,
 	trendlineOrientation: Orientation
 ): RscScaleType => {
 	// y axis only support linear... for now...
 	if (trendlineOrientation === 'vertical') return 'linear';
-	return 'scaleType' in markProps ? markProps.scaleType : markProps.dimensionScaleType;
+	return 'scaleType' in markOptions ? markOptions.scaleType : markOptions.dimensionScaleType;
 };
