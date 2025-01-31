@@ -22,8 +22,8 @@ export default {
 
 const BulletStory: StoryFn<typeof Bullet> = (args): ReactElement => {
   return (
-    <Chart data={bulletData} width={600} height={100}>
-      <Axis position="left" baseline title="Value" />
+    <Chart data={bulletData} width={600} height={100} debug>
+      <Axis position='left' baseline title="Value`" />
       <Bullet {...args} />
     </Chart>
   );
@@ -39,6 +39,11 @@ const defaultProps: BulletProps = {
   targetColor: 'black',
   orientation: 'horizontal',
   label: bulletData[0].title,
+};
+
+export const BulletChart = BulletStory.bind({});
+BulletChart.args = {
+  ...defaultProps,
 };
 
 const Basic = BulletStory.bind({});
