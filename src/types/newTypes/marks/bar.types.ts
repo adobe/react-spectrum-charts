@@ -29,6 +29,8 @@ export type DualFacet = [string, string]; // two keys used for a secondary facet
 export type BarType = 'dodged' | 'stacked';
 
 export interface BarOptions {
+	markType: 'bar';
+
 	/** Key in the data that is used as the metric */
 	metric?: string;
 	/** Bar color or key in the data that is used as the color facet */
@@ -76,7 +78,10 @@ export interface BarOptions {
 }
 
 export interface BarProps
-	extends Omit<BarOptions, 'barAnnotations' | 'chartPopovers' | 'chartTooltips' | 'hasOnClick' | 'trendlines'> {
+	extends Omit<
+		BarOptions,
+		'barAnnotations' | 'chartPopovers' | 'chartTooltips' | 'hasOnClick' | 'markType' | 'trendlines'
+	> {
 	children?: Children<BarAnnotationElement | ChartPopoverElement | ChartTooltipElement | TrendlineElement>;
 	/** Callback that will be run when a point/section is clicked */
 	onClick?: OnClickCallback;

@@ -19,9 +19,10 @@ import { Colors } from '../SpectrumVizColor.types';
 import { LocaleCode, NumberLocaleCode, TimeLocaleCode } from '../locale.types';
 import { AxisElement, AxisOptions } from './axis/axis.types';
 import { LegendElement, LegendOptions } from './legend.types';
+import { DonutElement, DonutOptions } from './marks';
 import { AreaElement, AreaOptions } from './marks/area.types';
 import { BarElement, BarOptions } from './marks/bar.types';
-import { BigNumberOptions } from './marks/bigNumber.types';
+import { BigNumberElement, BigNumberOptions } from './marks/bigNumber.types';
 import { ComboElement, ComboOptions } from './marks/combo.types';
 import { LineElement, LineOptions } from './marks/line.types';
 import { ScatterElement, ScatterOptions } from './marks/scatter.types';
@@ -49,6 +50,15 @@ export interface ChartHandle {
 	getBase64Png: () => Promise<string>;
 	getSvg: () => Promise<string>;
 }
+
+export type MarkOptions =
+	| AreaOptions
+	| BarOptions
+	| BigNumberOptions
+	| ComboOptions
+	| DonutOptions
+	| LineOptions
+	| ScatterOptions;
 
 // These are the vega spec specific types
 // Notice that things like data and width/height are not included here
@@ -86,14 +96,16 @@ export interface ChartOptions {
 	idKey?: string;
 
 	// children
-	areas?: AreaOptions[];
+	marks: MarkOptions[];
+	// areas?: AreaOptions[];
 	axes?: AxisOptions[];
-	bars?: BarOptions[];
-	bigNumbers?: BigNumberOptions[];
-	combos?: ComboOptions[];
+	// bars?: BarOptions[];
+	// bigNumbers?: BigNumberOptions[];
+	// combos?: ComboOptions[];
+	// donuts?: DonutOptions[];
 	legends?: LegendOptions[];
-	lines?: LineOptions[];
-	scatters?: ScatterOptions[];
+	// lines?: LineOptions[];
+	// scatters?: ScatterOptions[];
 	titles?: TitleOptions[];
 }
 
@@ -101,17 +113,15 @@ export type ChartChildElement =
 	| AreaElement
 	| AxisElement
 	| BarElement
+	| BigNumberElement
+	| DonutElement
 	| ComboElement
 	| LegendElement
 	| LineElement
 	| ScatterElement
 	| TitleElement;
 
-export interface SharedChartProps
-	extends Omit<
-		ChartOptions,
-		'areas' | 'axes' | 'bars' | 'bigNumbers' | 'combos' | 'legends' | 'lines' | 'scatters' | 'titles'
-	> {
+export interface SharedChartProps extends Omit<ChartOptions, 'axes' | 'legends' | 'marks' | 'titles'> {
 	// children is optional because it is a pain to make this required with how children get defined in stories
 	// we have a check at the beginning of Chart to make sure this isn't undefined
 	// if it is undefined, we log an error and render a fragment

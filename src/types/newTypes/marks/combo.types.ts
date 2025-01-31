@@ -16,6 +16,8 @@ import { BarElement, BarOptions } from './bar.types';
 import { LineElement, LineOptions } from './line.types';
 
 export interface ComboOptions {
+	markType: 'combo';
+
 	/** Data field that the metrics are trended against (x-axis for horizontal orientation) */
 	dimension?: string;
 	/** Sets the name of the component. */
@@ -28,7 +30,7 @@ export interface ComboOptions {
 
 export type ComboChildElement = BarElement | LineElement;
 
-export interface ComboProps extends ComboOptions {
+export interface ComboProps extends Omit<ComboOptions, 'markType'> {
 	children?: Children<ComboChildElement>;
 }
 

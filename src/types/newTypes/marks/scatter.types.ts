@@ -19,6 +19,8 @@ import { ScatterPathElement, ScatterPathOptions } from './supplemental/scatterPa
 import { TrendlineElement, TrendlineOptions } from './supplemental/trendline.types';
 
 export interface ScatterOptions {
+	markType: 'scatter';
+
 	/** Sets the name of the component. */
 	name?: string;
 	/** Key in the data that is used as the metric */
@@ -69,7 +71,7 @@ export interface ScatterOptions {
 }
 
 export interface ScatterProps
-	extends Omit<ScatterOptions, 'chartPopovers' | 'chartTooltips' | 'scatterPaths' | 'trendlines'> {
+	extends Omit<ScatterOptions, 'chartPopovers' | 'chartTooltips' | 'markType' | 'scatterPaths' | 'trendlines'> {
 	children?: Children<ChartPopoverElement | ChartTooltipElement | ScatterPathElement | TrendlineElement>;
 }
 

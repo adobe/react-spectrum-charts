@@ -26,6 +26,8 @@ export type BigNumberNumberType = 'linear' | 'percentage';
 export type BigNumberMethod = 'sum' | 'avg' | 'last';
 
 export interface BigNumberOptions {
+	markType: 'bigNumber';
+
 	orientation: Orientation;
 	label: string;
 	dataKey: string;
@@ -37,7 +39,7 @@ export interface BigNumberOptions {
 	lines?: LineOptions[];
 }
 
-export interface BigNumberProps extends Omit<BigNumberOptions, 'lines'> {
+export interface BigNumberProps extends Omit<BigNumberOptions, 'lines' | 'markType'> {
 	children?: Children<LineElement>;
 	// Can't have react elements like this in the options interface
 	icon?: IconElement;

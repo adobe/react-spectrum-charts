@@ -22,6 +22,8 @@ import { TrendlineElement, TrendlineOptions } from './supplemental/trendline.typ
 export type InteractionMode = `${INTERACTION_MODE}`;
 
 export interface LineOptions {
+	markType: 'line';
+
 	/** Sets the name of the component. */
 	name?: string;
 	/** Key in the data that is used as the metric */
@@ -59,7 +61,8 @@ export interface LineOptions {
 	trendlines?: TrendlineOptions[];
 }
 
-export interface LineProps extends Omit<LineOptions, 'chartTooltips' | 'chartPopovers' | 'hasOnClick' | 'trendlines'> {
+export interface LineProps
+	extends Omit<LineOptions, 'chartTooltips' | 'chartPopovers' | 'hasOnClick' | 'markType' | 'trendlines'> {
 	children?: Children<ChartTooltipElement | ChartPopoverElement | MetricRangeElement | TrendlineElement>;
 	/** Callback that will be run when a point/section is clicked */
 	onClick?: OnClickCallback;

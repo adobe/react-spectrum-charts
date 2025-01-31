@@ -18,6 +18,8 @@ import { DonutSummaryElement, DonutSummaryOptions } from './supplemental/dountSu
 import { SegmentLabelOptions } from './supplemental/segmentLabel.types';
 
 export interface DonutOptions {
+	markType: 'donut';
+
 	/** Key in the data that is used as the color facet */
 	color?: string;
 	/** Ratio of the donut inner radius / donut outer radius. 0 is a pie chart. 0.85 is the default. */
@@ -40,7 +42,7 @@ export interface DonutOptions {
 }
 
 export interface DonutProps
-	extends Omit<DonutOptions, 'chartPopovers' | 'chartTooltips' | 'donutSummaries' | 'segmentLabels'> {
+	extends Omit<DonutOptions, 'chartPopovers' | 'chartTooltips' | 'donutSummaries' | 'markType' | 'segmentLabels'> {
 	children?: Children<ChartPopoverElement | ChartTooltipElement | DonutSummaryElement | SegmentLabelOptions>;
 }
 

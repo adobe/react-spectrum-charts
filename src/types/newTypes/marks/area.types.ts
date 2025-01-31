@@ -16,6 +16,8 @@ import { ChartTooltipElement, ChartTooltipOptions } from '../dialogs/chartToolti
 import { Children, ScaleType } from '../util.types';
 
 export interface AreaOptions {
+	markType: 'area';
+
 	/** Sets the name of the component. */
 	name?: string;
 	/** Key in the data that is used as the color facet */
@@ -46,7 +48,7 @@ export interface AreaOptions {
 	chartTooltips?: ChartTooltipOptions[];
 }
 
-export interface AreaProps extends Omit<AreaOptions, 'chartPopovers' | 'chartTooltips'> {
+export interface AreaProps extends Omit<AreaOptions, 'chartPopovers' | 'chartTooltips' | 'markType'> {
 	children?: Children<ChartPopoverElement | ChartTooltipElement>;
 }
 
