@@ -14,7 +14,7 @@ import { createElement } from 'react';
 import { Trendline } from '@components/Trendline';
 import { DEFAULT_COLOR, DEFAULT_COLOR_SCHEME, DEFAULT_METRIC, DEFAULT_TIME_DIMENSION, MARK_ID } from '@constants';
 
-import { LineSpecProps, TrendlineSpecProps } from '../../types';
+import { LineSpecProps, TrendlineSpecOptions, TrendlineSpecProps } from '../../types';
 
 export const defaultLineProps: LineSpecProps = {
 	children: [createElement(Trendline, { method: 'average' })],
@@ -49,6 +49,28 @@ export const defaultTrendlineProps: TrendlineSpecProps = {
 	name: 'line0Trendline0',
 	opacity: 1,
 	orientation: 'horizontal',
+	trendlineColor: DEFAULT_COLOR,
+	trendlineDimension: DEFAULT_TIME_DIMENSION,
+	trendlineMetric: DEFAULT_METRIC,
+};
+
+export const defaultTrendlineOptions: TrendlineSpecOptions = {
+	chartTooltips: [],
+	colorScheme: DEFAULT_COLOR_SCHEME,
+	dimensionExtent: [null, null],
+	dimensionRange: [null, null],
+	dimensionScaleType: 'time',
+	displayOnHover: false,
+	highlightRawPoint: false,
+	isDimensionNormalized: false,
+	lineType: 'dashed',
+	lineWidth: 'M',
+	method: 'average',
+	metric: DEFAULT_METRIC,
+	name: 'line0Trendline0',
+	opacity: 1,
+	orientation: 'horizontal',
+	trendlineAnnotations: [],
 	trendlineColor: DEFAULT_COLOR,
 	trendlineDimension: DEFAULT_TIME_DIMENSION,
 	trendlineMetric: DEFAULT_METRIC,

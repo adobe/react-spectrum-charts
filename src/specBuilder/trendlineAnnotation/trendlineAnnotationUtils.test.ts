@@ -9,15 +9,11 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { createElement } from 'react';
-
-import { ChartTooltip } from '@components/ChartTooltip';
-import { TrendlineAnnotation } from '@components/TrendlineAnnotation';
 import { DEFAULT_COLOR, DEFAULT_COLOR_SCHEME, DEFAULT_TIME_DIMENSION, TRENDLINE_VALUE } from '@constants';
-import { defaultTrendlineProps } from '@specBuilder/trendline/trendlineTestUtils';
+import { defaultTrendlineOptions } from '@specBuilder/trendline/trendlineTestUtils';
 import { spectrumColors } from '@themes';
 
-import { TrendlineAnnotationSpecProps } from '../../types';
+import { TrendlineAnnotationSpecOptions } from '../../types';
 import {
 	getColorKey,
 	getTextFill,
@@ -25,12 +21,12 @@ import {
 	getTrendlineAnnotationMarks,
 	getTrendlineAnnotationPointX,
 	getTrendlineAnnotationPointY,
-	getTrendlineAnnotationSpecProps,
+	getTrendlineAnnotationSpecOptions,
 	getTrendlineAnnotationTextMark,
 	getTrendlineAnnotations,
 } from './trendlineAnnotationUtils';
 
-const defaultAnnotationProps: TrendlineAnnotationSpecProps = {
+const defaultAnnotationOptions: TrendlineAnnotationSpecOptions = {
 	badge: false,
 	colorScheme: DEFAULT_COLOR_SCHEME,
 	displayOnHover: false,
@@ -52,8 +48,8 @@ const colors = spectrumColors.light;
 
 describe('applyTrendlineAnnotationDefaults()', () => {
 	test('should apply all defaults', () => {
-		const annotationProps = getTrendlineAnnotationSpecProps({}, 0, defaultTrendlineProps, 'line0');
-		expect(annotationProps).toEqual(defaultAnnotationProps);
+		const annotationProps = getTrendlineAnnotationSpecOptions({}, 0, defaultTrendlineOptions, 'line0');
+		expect(annotationProps).toEqual(defaultAnnotationOptions);
 	});
 });
 
@@ -62,8 +58,9 @@ describe('getTrendlineAnnotations()', () => {
 		expect(
 			getTrendlineAnnotations(
 				{
-					...defaultTrendlineProps,
-					children: [createElement(TrendlineAnnotation), createElement(ChartTooltip)],
+					...defaultTrendlineOptions,
+					chartTooltips: [{}],
+					trendlineAnnotations: [{}],
 				},
 				'line0'
 			)
@@ -73,9 +70,9 @@ describe('getTrendlineAnnotations()', () => {
 
 describe('getTrendlineAnnotationMarks()', () => {
 	test('should return the marks for trendline annotations', () => {
-		expect(getTrendlineAnnotationMarks(defaultTrendlineProps, 'line0')).toHaveLength(0);
+		expect(getTrendlineAnnotationMarks(defaultTrendlineOptions, 'line0')).toHaveLength(0);
 		const annotationGroups = getTrendlineAnnotationMarks(
-			{ ...defaultTrendlineProps, children: [createElement(TrendlineAnnotation)] },
+			{ ...defaultTrendlineOptions, trendlineAnnotations: [{}] },
 			'line0'
 		);
 		expect(annotationGroups).toHaveLength(1);
@@ -86,32 +83,32 @@ describe('getTrendlineAnnotationMarks()', () => {
 
 describe('getTrendlineAnnotationPointX()', () => {
 	test('should return rule for TRENDLINE_VALUE if vertical', () => {
-		const xRule = getTrendlineAnnotationPointX({ ...defaultAnnotationProps, trendlineOrientation: 'vertical' });
+		const xRule = getTrendlineAnnotationPointX({ ...defaultAnnotationOptions, trendlineOrientation: 'vertical' });
 		expect(xRule).toHaveProperty('scale', 'xTime');
 		expect(xRule).toHaveProperty('field', TRENDLINE_VALUE);
 	});
 	test('should get end rule if dimensionValue is "end"', () => {
-		const xRule = getTrendlineAnnotationPointX({ ...defaultAnnotationProps, dimensionValue: 'end' });
+		const xRule = getTrendlineAnnotationPointX({ ...defaultAnnotationOptions, dimensionValue: 'end' });
 		expect(xRule).toHaveProperty('field', `${DEFAULT_TIME_DIMENSION}Max`);
 	});
 	test('should get start rule if dimensionValue is "start"', () => {
-		const xRule = getTrendlineAnnotationPointX({ ...defaultAnnotationProps, dimensionValue: 'start' });
+		const xRule = getTrendlineAnnotationPointX({ ...defaultAnnotationOptions, dimensionValue: 'start' });
 		expect(xRule).toHaveProperty('field', `${DEFAULT_TIME_DIMENSION}Min`);
 	});
 	test('should use dimensionValue as value if it is a number', () => {
-		const xRule = getTrendlineAnnotationPointX({ ...defaultAnnotationProps, dimensionValue: 1 });
+		const xRule = getTrendlineAnnotationPointX({ ...defaultAnnotationOptions, dimensionValue: 1 });
 		expect(xRule).toHaveProperty('value', 1);
 	});
 });
 
 describe('getTrendlineAnnotationPointY()', () => {
 	test('should return rule for TRENDLINE_VALUE if horizontal', () => {
-		const xRule = getTrendlineAnnotationPointY({ ...defaultAnnotationProps, trendlineOrientation: 'horizontal' });
+		const xRule = getTrendlineAnnotationPointY({ ...defaultAnnotationOptions, trendlineOrientation: 'horizontal' });
 		expect(xRule).toHaveProperty('field', TRENDLINE_VALUE);
 	});
 	test('should get end rule if dimensionValue is "end"', () => {
 		const xRule = getTrendlineAnnotationPointY({
-			...defaultAnnotationProps,
+			...defaultAnnotationOptions,
 			trendlineOrientation: 'vertical',
 			dimensionValue: 'end',
 		});
@@ -119,7 +116,7 @@ describe('getTrendlineAnnotationPointY()', () => {
 	});
 	test('should get start rule if dimensionValue is "start"', () => {
 		const xRule = getTrendlineAnnotationPointY({
-			...defaultAnnotationProps,
+			...defaultAnnotationOptions,
 			trendlineOrientation: 'vertical',
 			dimensionValue: 'start',
 		});
@@ -127,7 +124,7 @@ describe('getTrendlineAnnotationPointY()', () => {
 	});
 	test('should use dimensionValue as value if it is a number', () => {
 		const xRule = getTrendlineAnnotationPointY({
-			...defaultAnnotationProps,
+			...defaultAnnotationOptions,
 			trendlineOrientation: 'vertical',
 			dimensionValue: 1,
 		});
@@ -137,7 +134,7 @@ describe('getTrendlineAnnotationPointY()', () => {
 
 describe('getTrendlineAnnotationTextMark()', () => {
 	test('should return text mark', () => {
-		const textMark = getTrendlineAnnotationTextMark(defaultAnnotationProps);
+		const textMark = getTrendlineAnnotationTextMark(defaultAnnotationOptions);
 		expect(textMark).toHaveProperty('type', 'text');
 		expect(textMark).toHaveProperty('name', 'line0Trendline0Annotation0');
 		expect(textMark.transform).toHaveLength(1);
@@ -145,21 +142,21 @@ describe('getTrendlineAnnotationTextMark()', () => {
 	});
 	test('should add the prefix if it is a valid string', () => {
 		const prefix = 'Median times';
-		const textMark = getTrendlineAnnotationTextMark({ ...defaultAnnotationProps, prefix });
+		const textMark = getTrendlineAnnotationTextMark({ ...defaultAnnotationOptions, prefix });
 		expect(textMark.encode?.enter?.text).toHaveProperty(
 			'signal',
 			`'${prefix} ' + format(datum.datum.${TRENDLINE_VALUE}, '')`
 		);
 	});
 	test('should not add the prefix if it is not a valid string', () => {
-		const textMark = getTrendlineAnnotationTextMark({ ...defaultAnnotationProps, prefix: '' });
+		const textMark = getTrendlineAnnotationTextMark({ ...defaultAnnotationOptions, prefix: '' });
 		expect(textMark.encode?.enter?.text).toHaveProperty('signal', `format(datum.datum.${TRENDLINE_VALUE}, '')`);
 	});
 });
 
 describe('getTextFill()', () => {
 	test('should return the correct fill for the text', () => {
-		expect(getTextFill({ ...defaultAnnotationProps, badge: true })).toEqual([
+		expect(getTextFill({ ...defaultAnnotationOptions, badge: true })).toEqual([
 			{
 				test: `contrast(scale('color', datum.datum.${DEFAULT_COLOR}), '${colors['gray-50']}') >= 4.5`,
 				value: colors['gray-50'],
@@ -168,18 +165,18 @@ describe('getTextFill()', () => {
 		]);
 	});
 	test('should return undefined if badge is false', () => {
-		expect(getTextFill(defaultAnnotationProps)).toBeUndefined();
+		expect(getTextFill(defaultAnnotationOptions)).toBeUndefined();
 	});
 });
 
 describe('getTrendlineAnnotationBadgeMark()', () => {
 	test('should return the badge mark', () => {
-		const badgeMark = getTrendlineAnnotationBadgeMark({ ...defaultAnnotationProps, badge: true });
+		const badgeMark = getTrendlineAnnotationBadgeMark({ ...defaultAnnotationOptions, badge: true });
 		expect(badgeMark).toHaveLength(1);
 		expect(badgeMark[0]).toHaveProperty('type', 'rect');
 	});
 	test('should return empty array if badge is false', () => {
-		expect(getTrendlineAnnotationBadgeMark(defaultAnnotationProps)).toHaveLength(0);
+		expect(getTrendlineAnnotationBadgeMark(defaultAnnotationOptions)).toHaveLength(0);
 	});
 });
 
