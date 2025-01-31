@@ -18,7 +18,7 @@ import {
 	getLineWidthProductionRule,
 	getOpacityProductionRule,
 	getStrokeDashProductionRule,
-	hasTooltip,
+	hasTooltip_depracated,
 } from '@specBuilder/marks/markUtils';
 import { getScaleName } from '@specBuilder/scale/scaleSpecBuilder';
 import { getFacetsFromProps } from '@specBuilder/specUtils';
@@ -64,7 +64,7 @@ export const getTrendlineMarks = (markProps: TrendlineParentProps): (GroupMark |
 		marks.push(...getTrendlineAnnotationMarks(trendlineProps, markProps.name));
 	}
 
-	if (trendlines.some((trendline) => hasTooltip(trendline.children))) {
+	if (trendlines.some((trendline) => hasTooltip_depracated(trendline.children))) {
 		marks.push(
 			getTrendlineHoverMarks(
 				markProps,

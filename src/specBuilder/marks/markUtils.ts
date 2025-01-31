@@ -55,6 +55,7 @@ import {
 } from 'vega';
 
 import {
+	BarSpecOptions,
 	BarSpecProps,
 	ChartTooltipProps,
 	ClickableChartProps,
@@ -62,13 +63,16 @@ import {
 	ColorScheme,
 	DonutSpecProps,
 	DualFacet,
+	LineSpecOptions,
 	LineTypeFacet,
 	LineWidthFacet,
 	MarkChildElement,
 	OpacityFacet,
 	ProductionRuleTests,
 	ScaleType,
+	ScatterSpecOptions,
 	SymbolSizeFacet,
+	TrendlineSpecOptions,
 } from '../../types';
 
 /**
@@ -99,7 +103,7 @@ export function getTooltip(
 	nestedDatum?: boolean
 ): ProductionRuleTests<SignalRef> | SignalRef | undefined {
 	// skip annotations
-	if (hasTooltip(children)) {
+	if (hasTooltip_depracated(children)) {
 		const defaultTooltip = {
 			signal: `merge(datum${nestedDatum ? '.datum' : ''}, {'${COMPONENT_NAME}': '${name}'})`,
 		};
@@ -150,9 +154,15 @@ export const hasInteractiveChildren = (children: ReactElement[]): boolean => {
 export const hasMetricRange = (children: ReactElement[]): boolean =>
 	children.some((child) => child.type === MetricRange);
 export const hasPopover = (children: ReactElement[]): boolean => children.some((child) => child.type === ChartPopover);
-export const hasTooltip = (children: ReactElement[]): boolean => children.some((child) => child.type === ChartTooltip);
+export const hasTooltip_depracated = (children: ReactElement[]): boolean =>
+	children.some((child) => child.type === ChartTooltip);
+
+export const hasTooltip = (
+	opts: BarSpecOptions | LineSpecOptions | ScatterSpecOptions | TrendlineSpecOptions
+): boolean => Boolean(opts.chartTooltips.length);
+
 export const childHasTooltip = (children: ReactElement[]): boolean =>
-	children.some((child) => hasTooltip(child.props.children));
+	children.some((child) => hasTooltip_depracated(child.props.children));
 
 /**
  * Gets the color encoding

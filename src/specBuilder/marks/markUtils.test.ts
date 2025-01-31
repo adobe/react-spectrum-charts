@@ -51,7 +51,7 @@ import {
 	getXProductionRule,
 	getYProductionRule,
 	hasMetricRange,
-	hasTooltip,
+	hasTooltip_depracated,
 	isInteractive,
 } from './markUtils';
 
@@ -144,12 +144,12 @@ describe('getSymbolSizeProductionRule()', () => {
 
 describe('hasTooltip()', () => {
 	test('should be true if ChartTooltip exists in children', () => {
-		expect(hasTooltip([createElement(ChartTooltip)])).toBeTruthy();
-		expect(hasTooltip([createElement(ChartTooltip), createElement('div')])).toBeTruthy();
+		expect(hasTooltip_depracated([createElement(ChartTooltip)])).toBeTruthy();
+		expect(hasTooltip_depracated([createElement(ChartTooltip), createElement('div')])).toBeTruthy();
 	});
 	test('should be false if ChartTooltip does not exist in children', () => {
-		expect(hasTooltip([createElement(ChartPopover)])).toBeFalsy();
-		expect(hasTooltip([createElement(ChartPopover), createElement('div')])).toBeFalsy();
+		expect(hasTooltip_depracated([createElement(ChartPopover)])).toBeFalsy();
+		expect(hasTooltip_depracated([createElement(ChartPopover), createElement('div')])).toBeFalsy();
 	});
 });
 

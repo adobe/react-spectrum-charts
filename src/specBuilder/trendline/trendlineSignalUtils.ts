@@ -16,13 +16,13 @@ import {
 } from '@specBuilder/signal/signalSpecBuilder';
 import { Signal } from 'vega';
 
-import { TrendlineParentProps, getTrendlines } from './trendlineUtils';
+import { TrendlineParentOptions, getTrendlines } from './trendlineUtils';
 
-export const setTrendlineSignals = (signals: Signal[], markProps: TrendlineParentProps): void => {
-	const { idKey, name: markName } = markProps;
-	const trendlines = getTrendlines(markProps);
+export const setTrendlineSignals = (signals: Signal[], markOptions: TrendlineParentOptions): void => {
+	const { idKey, name: markName } = markOptions;
+	const trendlines = getTrendlines(markOptions);
 
-	if (trendlines.some((trendline) => hasTooltip(trendline.children))) {
+	if (trendlines.some((trendline) => hasTooltip(trendline))) {
 		addHighlightedItemSignalEvents(signals, `${markName}Trendline_voronoi`, idKey, 2);
 		addHighlightedSeriesSignalEvents(signals, `${markName}Trendline_voronoi`, 2);
 	}

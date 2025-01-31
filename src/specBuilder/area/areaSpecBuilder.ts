@@ -28,7 +28,7 @@ import {
 	isHighlightedByDimension,
 	isHighlightedByGroup,
 } from '@specBuilder/chartTooltip/chartTooltipUtils';
-import { getTooltipProps, hasPopover, hasTooltip } from '@specBuilder/marks/markUtils';
+import { getTooltipProps, hasPopover, hasTooltip_depracated } from '@specBuilder/marks/markUtils';
 import {
 	addHighlightedSeriesSignalEvents,
 	getControlledHoveredGroupSignal,
@@ -127,7 +127,7 @@ export const addData = produce<Data[], [AreaSpecProps]>((data, props) => {
 
 	if (children.length || highlightedItem !== undefined) {
 		const areaHasPopover = hasPopover(children);
-		const areaHasTooltip = hasTooltip(children);
+		const areaHasTooltip = hasTooltip_depracated(children);
 		data.push(
 			getAreaHighlightedData(name, props.idKey, areaHasTooltip, areaHasPopover, isHighlightedByGroup(props))
 		);
