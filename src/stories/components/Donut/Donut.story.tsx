@@ -36,7 +36,7 @@ const DonutStory: StoryFn<DonutProps & { width?: number; height?: number }> = (a
 	const { width, height, ...donutProps } = args;
 	const chartProps = useChartProps({ ...defaultChartProps, width: width ?? 350, height: height ?? 350 });
 	return (
-		<Chart {...chartProps}>
+		<Chart {...chartProps} debug>
 			<Donut {...donutProps} />
 		</Chart>
 	);

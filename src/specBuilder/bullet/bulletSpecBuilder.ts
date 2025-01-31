@@ -14,6 +14,7 @@ import { DEFAULT_COLOR_SCHEME } from '@constants';
 import { produce } from 'immer';
 import { Spec, Data, Mark, Scale } from 'vega';
 import { ColorScheme, BulletProps, BulletSpecProps } from '../../types';
+import { sanitizeMarkChildren } from '../../utils';
 
 export const addBullet = produce<
     Spec,
@@ -22,9 +23,11 @@ export const addBullet = produce<
     (
         spec,
         {
+            children,
             colorScheme = DEFAULT_COLOR_SCHEME,
             index = 0,
             graphLabel = 'Bullet Graph',
+            name,
             // currentAmount,
             // target,
             // markType = 'bullet',
@@ -32,6 +35,7 @@ export const addBullet = produce<
         }
     ) => {
         const bulletProps: BulletSpecProps = {
+            children: sanitizeMarkChildren(children),
             colorScheme,
             index,
             graphLabel,
@@ -41,18 +45,20 @@ export const addBullet = produce<
             ...props,
         };
         spec.data = getBulletData();
-        spec.marks = getBulletMarks();
+        spec.marks = getBulletMarks(bulletProps);
         spec.scales = getBulletScales();
-        console.log(spec)
+        console.log('index: ', index)
+        // console.log(spec)
     }
 );
 
-function getBulletMarks(): Mark[] {
+function getBulletMarks(props: BulletSpecProps): Mark[] {
   // Implementation of addBulletMarks
   return [
     {
       "type": "rect",
       "from": {"data": "table"},
+      "description": `${props.name}`,
       "encode": {
         "enter": {
           "x": {"value": 0},
@@ -68,6 +74,7 @@ function getBulletMarks(): Mark[] {
     {
       "type": "text",
       "from": {"data": "table"},
+      "description": `${props.name}`,
       "encode": {
         "enter": {
           "x": {"value": 0},
@@ -83,6 +90,7 @@ function getBulletMarks(): Mark[] {
     {
       "type": "text",
       "from": {"data": "table"},
+      "description": `${props.name}`,
       "encode": {
         "enter": {
           "x": {"signal": "width"},
@@ -98,6 +106,7 @@ function getBulletMarks(): Mark[] {
     {
       "type": "rule",
       "from": {"data": "table"},
+      "description": `${props.name}`,
       "encode": {
         "enter": {
           "x": {"scale": "xscale", "field": "target"},

@@ -40,6 +40,7 @@ import {
 	AreaElement,
 	AxisElement,
 	BarElement,
+	BulletElement,
 	ChartColors,
 	ChartSymbolShape,
 	ColorScale,
@@ -146,8 +147,8 @@ export function buildSpec(props: SanitizedSpecProps) {
 					return addBar(acc, { ...(cur as BarElement).props, ...specProps, index: barCount });
 				case Bullet.displayName:
 					bulletCount++;
-					// return addDonut(acc, { ...(cur as DonutElement).props, ...specProps, index: donutCount });
-					const myBullet = addBullet(acc, { ...(cur as DonutElement).props, ...specProps, index: donutCount });
+					// return addDonut(acc, { ...(cur as BulletElement).props, ...specProps, index: donutCount });
+					const myBullet = addBullet(acc, { ...(cur as BulletElement).props, ...specProps, index: bulletCount });
 					console.log('myBullet:', myBullet);
 					return myBullet;
 				case Donut.displayName:

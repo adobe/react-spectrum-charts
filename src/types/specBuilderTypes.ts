@@ -140,9 +140,10 @@ export interface ChartPopoverSpecProps extends PartiallyRequired<ChartPopoverPro
 	markName: string;
 }
 
-type BulletPropsWithDefaults = 'graphLabel';
+type BulletPropsWithDefaults = 'graphLabel' | 'name';
 
 export interface BulletSpecProps extends PartiallyRequired<BulletProps, BulletPropsWithDefaults> {
+	children: MarkChildElement[];
     idKey: string;
     colorScheme: ColorScheme;
     index: number;
