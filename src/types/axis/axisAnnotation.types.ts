@@ -40,12 +40,12 @@ export interface AxisAnnotationOptions {
 	options?: Option[];
 
 	// children
-	chartTooltips?: ChartTooltipOptions[];
 	chartPopovers?: ChartPopoverOptions[];
+	chartTooltips?: ChartTooltipOptions[];
 }
 
-export type AxisAnnotationChildElement = ChartTooltipElement | ChartPopoverElement;
+export type AxisAnnotationChildElement = ChartPopoverElement | ChartTooltipElement;
 
-export interface AxisAnnotationProps extends Omit<AxisAnnotationOptions, 'chartTooltips' | 'chartPopovers'> {
+export interface AxisAnnotationProps extends Omit<AxisAnnotationOptions, 'chartPopovers' | 'chartTooltips'> {
 	children?: Children<AxisAnnotationChildElement>;
 }

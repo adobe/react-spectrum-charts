@@ -38,7 +38,7 @@ export interface DonutOptions {
 	chartPopovers?: ChartPopoverOptions[];
 	chartTooltips?: ChartTooltipOptions[];
 	donutSummaries?: DonutSummaryOptions[];
-	segmenbtLabels?: SegmentLabelOptions[];
+	segmentLabels?: SegmentLabelOptions[];
 }
 
 export interface DonutProps

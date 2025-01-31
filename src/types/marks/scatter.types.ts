@@ -77,9 +77,11 @@ export interface ScatterOptions {
 	trendlines?: TrendlineOptions[];
 }
 
+type ScatterChildElement = ChartPopoverElement | ChartTooltipElement | ScatterPathElement | TrendlineElement;
+
 export interface ScatterProps
 	extends Omit<ScatterOptions, 'chartPopovers' | 'chartTooltips' | 'markType' | 'scatterPaths' | 'trendlines'> {
-	children?: Children<ChartPopoverElement | ChartTooltipElement | ScatterPathElement | TrendlineElement>;
+	children?: Children<ScatterChildElement>;
 }
 
 export type ScatterElement = ReactElement<ScatterProps, JSXElementConstructor<ScatterProps>>;

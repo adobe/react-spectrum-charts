@@ -61,9 +61,13 @@ export interface LineOptions {
 	trendlines?: TrendlineOptions[];
 }
 
+type LineChildElement = ChartTooltipElement | ChartPopoverElement | MetricRangeElement | TrendlineElement;
 export interface LineProps
-	extends Omit<LineOptions, 'chartTooltips' | 'chartPopovers' | 'hasOnClick' | 'markType' | 'trendlines'> {
-	children?: Children<ChartTooltipElement | ChartPopoverElement | MetricRangeElement | TrendlineElement>;
+	extends Omit<
+		LineOptions,
+		'chartTooltips' | 'chartPopovers' | 'hasOnClick' | 'markRanges' | 'markType' | 'trendlines'
+	> {
+	children?: Children<LineChildElement>;
 	/** Callback that will be run when a point/section is clicked */
 	onClick?: OnClickCallback;
 }

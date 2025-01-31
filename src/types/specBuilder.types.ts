@@ -12,32 +12,48 @@
 import { Align, Baseline, NumberValue, ScaleType } from 'vega';
 
 import {
+	AreaOptions,
 	AreaProps,
 	AxisAnnotationChildElement,
+	AxisAnnotationOptions,
 	AxisAnnotationProps,
 	AxisChildElement,
+	AxisOptions,
 	AxisProps,
+	BarAnnotationOptions,
 	BarAnnotationProps,
+	BarOptions,
 	BarProps,
+	ChartPopoverOptions,
 	ChartPopoverProps,
+	ChartTooltipOptions,
 	ChartTooltipProps,
 	ColorFacet,
 	ColorScheme,
+	DonutOptions,
 	DonutProps,
+	DonutSummaryOptions,
 	DonutSummaryProps,
 	FacetRef,
 	HighlightedItem,
 	InteractionMode,
+	LegendOptions,
 	LegendProps,
+	LineOptions,
 	LineProps,
 	LineWidth,
 	MarkChildElement,
+	MetricRangeOptions,
 	MetricRangeProps,
 	Orientation,
+	ReferenceLineOptions,
 	ReferenceLineProps,
 	ScaleType as RscScaleType,
+	ScatterOptions,
+	ScatterPathOptions,
 	ScatterPathProps,
 	ScatterProps,
+	SegmentLabelOptions,
 	SegmentLabelProps,
 	TrendlineAnnotationOptions,
 	TrendlineAnnotationProps,
@@ -57,6 +73,23 @@ export interface AreaSpecProps extends PartiallyRequired<AreaProps, AreaPropsWit
 	index: number;
 	children: MarkChildElement[];
 	markType: 'area';
+}
+
+type AreaOptionsWithDefaults =
+	| 'chartTooltips'
+	| 'chartPopovers'
+	| 'color'
+	| 'dimension'
+	| 'metric'
+	| 'name'
+	| 'opacity'
+	| 'scaleType';
+
+export interface AreaSpecOptions extends PartiallyRequired<AreaOptions, AreaOptionsWithDefaults> {
+	colorScheme: ColorScheme;
+	highlightedItem?: HighlightedItem;
+	idKey: string;
+	index: number;
 }
 
 type AxisPropsWithDefaults =
@@ -85,12 +118,55 @@ export interface AxisSpecProps extends PartiallyRequired<AxisProps, AxisPropsWit
 	vegaLabelPadding?: number;
 }
 
+type AxisOptionsWithDefaults =
+	| 'axisAnnotations'
+	| 'baseline'
+	| 'baselineOffset'
+	| 'granularity'
+	| 'grid'
+	| 'hideDefaultLabels'
+	| 'labelAlign'
+	| 'labelFontWeight'
+	| 'labelOrientation'
+	| 'labels'
+	| 'numberFormat'
+	| 'referenceLines'
+	| 'subLabels'
+	| 'ticks';
+
+export interface AxisSpecOptions extends PartiallyRequired<AxisOptions, AxisOptionsWithDefaults> {
+	name: string;
+	colorScheme: ColorScheme;
+	index: number;
+	scaleType: ScaleType;
+	vegaLabelAlign?: Align;
+	vegaLabelBaseline?: Baseline;
+	vegaLabelOffset?: NumberValue;
+	vegaLabelPadding?: number;
+}
+
 type AxisAnnotationPropsWithDefaults = 'name' | 'offset' | 'dataKey' | 'color' | 'options' | 'format';
 
 export interface AxisAnnotationSpecProps
 	extends PartiallyRequired<AxisAnnotationProps, AxisAnnotationPropsWithDefaults> {
 	axisName: string;
 	children: AxisAnnotationChildElement[];
+	colorScheme: ColorScheme;
+}
+
+type AxisAnnotationOptionsWithDefaults =
+	| 'chartPopovers'
+	| 'chartTooltips'
+	| 'color'
+	| 'dataKey'
+	| 'format'
+	| 'name'
+	| 'offset'
+	| 'options';
+
+export interface AxisAnnotationSpecOptions
+	extends PartiallyRequired<AxisAnnotationOptions, AxisAnnotationOptionsWithDefaults> {
+	axisName: string;
 	colorScheme: ColorScheme;
 }
 
@@ -120,10 +196,48 @@ export interface BarSpecProps extends PartiallyRequired<BarProps, BarPropsWithDe
 	markType: 'bar';
 }
 
+type BarOptionsWithDefaults =
+	| 'barAnnotations'
+	| 'color'
+	| 'chartPopovers'
+	| 'chartTooltips'
+	| 'dimension'
+	| 'hasSquareCorners'
+	| 'lineType'
+	| 'lineWidth'
+	| 'metric'
+	| 'name'
+	| 'opacity'
+	| 'paddingRatio'
+	| 'orientation'
+	| 'trellisOrientation'
+	| 'trellisPadding'
+	| 'trendlines'
+	| 'type';
+
+export interface BarSpecOptions extends PartiallyRequired<BarOptions, BarOptionsWithDefaults> {
+	colorScheme: ColorScheme;
+	dimensionScaleType: 'band';
+	highlightedItem?: HighlightedItem;
+	idKey: string;
+	index: number;
+	interactiveMarkName: string | undefined;
+}
+
 type AnnotationPropsWithDefaults = 'textKey';
 
 export interface AnnotationSpecProps extends PartiallyRequired<BarAnnotationProps, AnnotationPropsWithDefaults> {
 	barProps: BarSpecProps;
+	dataName: string;
+	dimensionField: string;
+	dimensionScaleName: string;
+}
+
+type BarAnnotationOptionsWithDefaults = 'textKey';
+
+export interface BarAnnotationSpecOptions
+	extends PartiallyRequired<BarAnnotationOptions, BarAnnotationOptionsWithDefaults> {
+	barOptions: BarSpecOptions;
 	dataName: string;
 	dimensionField: string;
 	dimensionScaleName: string;
@@ -135,9 +249,23 @@ export interface ChartTooltipSpecProps extends PartiallyRequired<ChartTooltipPro
 	markName: string;
 }
 
+type ChartTooltipOptionsWithDefaults = 'highlightBy';
+
+export interface ChartTooltipSpecOptions
+	extends PartiallyRequired<ChartTooltipOptions, ChartTooltipOptionsWithDefaults> {
+	markName: string;
+}
+
 type ChartPopoverPropsWithDefaults = 'UNSAFE_highlightBy';
 
 export interface ChartPopoverSpecProps extends PartiallyRequired<ChartPopoverProps, ChartPopoverPropsWithDefaults> {
+	markName: string;
+}
+
+type ChartPopoverOptionsWithDefaults = 'UNSAFE_highlightBy';
+
+export interface ChartPopoverSpecOptions
+	extends PartiallyRequired<ChartPopoverOptions, ChartPopoverOptionsWithDefaults> {
 	markName: string;
 }
 
@@ -152,10 +280,37 @@ export interface DonutSpecProps extends PartiallyRequired<DonutProps, DonutProps
 	markType: 'donut';
 }
 
+type DonutOptionsWithDefaults =
+	| 'chartPopovers'
+	| 'chartTooltips'
+	| 'color'
+	| 'donutSummaries'
+	| 'holeRatio'
+	| 'isBoolean'
+	| 'metric'
+	| 'name'
+	| 'segmentLabels'
+	| 'startAngle';
+
+export interface DonutSpecOptions extends PartiallyRequired<DonutOptions, DonutOptionsWithDefaults> {
+	colorScheme: ColorScheme;
+	highlightedItem?: HighlightedItem;
+	idKey: string;
+	index: number;
+	markType: 'donut';
+}
+
 type DonutSummaryPropsWithDefaults = 'numberFormat';
 
 export interface DonutSummarySpecProps extends PartiallyRequired<DonutSummaryProps, DonutSummaryPropsWithDefaults> {
 	donutProps: DonutSpecProps;
+}
+
+type DonutSummaryOptionsWithDefaults = 'numberFormat';
+
+export interface DonutSummarySpecOptions
+	extends PartiallyRequired<DonutSummaryOptions, DonutSummaryOptionsWithDefaults> {
+	donutOptions: DonutSpecOptions;
 }
 
 type SegmentLabelPropsWithDefaults = 'percent' | 'value' | 'valueFormat';
@@ -164,9 +319,36 @@ export interface SegmentLabelSpecProps extends PartiallyRequired<SegmentLabelPro
 	donutProps: DonutSpecProps;
 }
 
+type SegmentLabelOptionsWithDefaults = 'percent' | 'value' | 'valueFormat';
+
+export interface SegmentLabelSpecOptions
+	extends PartiallyRequired<SegmentLabelOptions, SegmentLabelOptionsWithDefaults> {
+	donutOptions: DonutSpecOptions;
+}
+
 type LegendPropsWithDefaults = 'hiddenEntries' | 'highlight' | 'isToggleable' | 'position' | 'name';
 
 export interface LegendSpecProps extends PartiallyRequired<LegendProps, LegendPropsWithDefaults> {
+	color?: FacetRef<string>;
+	colorScheme: ColorScheme;
+	hiddenSeries: string[];
+	highlightedSeries?: string | number;
+	index: number;
+	lineType?: FacetRef<number[]>;
+	lineWidth?: FacetRef<number>;
+	symbolShape?: FacetRef<string>;
+}
+
+type LegendOptionsWithDefaults =
+	| 'hasMouseInteraction'
+	| 'hasOnClick'
+	| 'hiddenEntries'
+	| 'highlight'
+	| 'isToggleable'
+	| 'position'
+	| 'name';
+
+export interface LegendSpecOptions extends PartiallyRequired<LegendOptions, LegendOptionsWithDefaults> {
 	color?: FacetRef<string>;
 	colorScheme: ColorScheme;
 	hiddenSeries: string[];
@@ -193,6 +375,32 @@ export interface LineSpecProps extends PartiallyRequired<LineProps, LinePropsWit
 	interactionMode?: InteractionMode;
 }
 
+type LineOptionsWithDefaults =
+	| 'chartPopovers'
+	| 'chartTooltips'
+	| 'color'
+	| 'dimension'
+	| 'hasOnClick'
+	| 'lineType'
+	| 'metric'
+	| 'metricRanges'
+	| 'name'
+	| 'opacity'
+	| 'scaleType'
+	| 'trendlines';
+
+export interface LineSpecOptions extends PartiallyRequired<LineOptions, LineOptionsWithDefaults> {
+	colorScheme: ColorScheme;
+	highlightedItem?: HighlightedItem;
+	idKey: string;
+	index: number;
+	interactiveMarkName: string | undefined;
+	isHighlightedByGroup?: boolean;
+	lineWidth?: FacetRef<LineWidth>;
+	popoverMarkName: string | undefined;
+	interactionMode?: InteractionMode;
+}
+
 type ScatterPropsWithDefaults =
 	| 'color'
 	| 'colorScaleType'
@@ -215,6 +423,30 @@ export interface ScatterSpecProps extends PartiallyRequired<ScatterProps, Scatte
 	markType: 'scatter';
 }
 
+type ScatterOptionsWithDefaults =
+	| 'chartPopovers'
+	| 'chartTooltips'
+	| 'color'
+	| 'colorScaleType'
+	| 'dimension'
+	| 'dimensionScaleType'
+	| 'lineType'
+	| 'lineWidth'
+	| 'metric'
+	| 'name'
+	| 'opacity'
+	| 'size'
+	| 'scatterPaths'
+	| 'trendlines';
+
+export interface ScatterSpecOptions extends PartiallyRequired<ScatterOptions, ScatterOptionsWithDefaults> {
+	colorScheme: ColorScheme;
+	highlightedItem?: HighlightedItem;
+	idKey: string;
+	index: number;
+	interactiveMarkName: string | undefined;
+}
+
 type ScatterPathPropsWithDefaults = 'color' | 'groupBy' | 'pathWidth' | 'opacity';
 
 export interface ScatterPathSpecProps extends PartiallyRequired<ScatterPathProps, ScatterPathPropsWithDefaults> {
@@ -226,8 +458,33 @@ export interface ScatterPathSpecProps extends PartiallyRequired<ScatterPathProps
 	name: string;
 }
 
+type ScatterPathOptionsWithDefaults = 'color' | 'groupBy' | 'pathWidth' | 'opacity';
+
+export interface ScatterPathSpecOptions extends PartiallyRequired<ScatterPathOptions, ScatterPathOptionsWithDefaults> {
+	colorScheme: ColorScheme;
+	dimension: string;
+	dimensionScaleType: RscScaleType;
+	metric: string;
+	index: number;
+	name: string;
+}
+
 type MetricRangePropsWithDefaults = 'lineType' | 'lineWidth' | 'rangeOpacity' | 'metricEnd' | 'metricStart' | 'metric';
+
 export interface MetricRangeSpecProps extends PartiallyRequired<MetricRangeProps, MetricRangePropsWithDefaults> {
+	name: string;
+}
+
+type MetricRangeOptionsWithDefaults =
+	| 'chartTooltips'
+	| 'lineType'
+	| 'lineWidth'
+	| 'metric'
+	| 'metricEnd'
+	| 'metricStart'
+	| 'rangeOpacity';
+
+export interface MetricRangeSpecOptions extends PartiallyRequired<MetricRangeOptions, MetricRangeOptionsWithDefaults> {
 	name: string;
 }
 
@@ -315,6 +572,14 @@ export interface TrendlineAnnotationSpecOptions
 type ReferenceLinePropsWithDefaults = 'color' | 'iconColor' | 'labelColor' | 'layer' | 'labelFontWeight';
 
 export interface ReferenceLineSpecProps extends PartiallyRequired<ReferenceLineProps, ReferenceLinePropsWithDefaults> {
+	colorScheme: ColorScheme;
+	name: string;
+}
+
+type ReferenceLineOptionsWithDefaults = 'color' | 'iconColor' | 'labelColor' | 'layer' | 'labelFontWeight';
+
+export interface ReferenceLineSpecOptions
+	extends PartiallyRequired<ReferenceLineOptions, ReferenceLineOptionsWithDefaults> {
 	colorScheme: ColorScheme;
 	name: string;
 }
