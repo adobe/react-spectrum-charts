@@ -47,8 +47,6 @@ export const addBullet = produce<
         spec.data = getBulletData();
         spec.marks = getBulletMarks(bulletProps);
         spec.scales = getBulletScales();
-        console.log('index: ', index)
-        // console.log(spec)
     }
 );
 
@@ -57,6 +55,7 @@ function getBulletMarks(props: BulletSpecProps): Mark[] {
   return [
     {
       "type": "rect",
+      "name": `${props.name}rect`,
       "from": {"data": "table"},
       "description": `${props.name}`,
       "encode": {
@@ -73,6 +72,7 @@ function getBulletMarks(props: BulletSpecProps): Mark[] {
     },
     {
       "type": "text",
+      "name": `${props.name}barlabel`,
       "from": {"data": "table"},
       "description": `${props.name}`,
       "encode": {
@@ -90,6 +90,7 @@ function getBulletMarks(props: BulletSpecProps): Mark[] {
     {
       "type": "text",
       "from": {"data": "table"},
+      "name": `${props.name}amountlabel`,
       "description": `${props.name}`,
       "encode": {
         "enter": {
@@ -106,6 +107,7 @@ function getBulletMarks(props: BulletSpecProps): Mark[] {
     {
       "type": "rule",
       "from": {"data": "table"},
+      "name": `${props.name}rule`,
       "description": `${props.name}`,
       "encode": {
         "enter": {

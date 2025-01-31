@@ -149,7 +149,6 @@ export function buildSpec(props: SanitizedSpecProps) {
 					bulletCount++;
 					// return addDonut(acc, { ...(cur as BulletElement).props, ...specProps, index: donutCount });
 					const myBullet = addBullet(acc, { ...(cur as BulletElement).props, ...specProps, index: bulletCount });
-					console.log('myBullet:', myBullet);
 					return myBullet;
 				case Donut.displayName:
 					donutCount++;

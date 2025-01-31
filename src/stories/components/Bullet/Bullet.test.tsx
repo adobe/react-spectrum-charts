@@ -25,14 +25,16 @@ describe('Bullet', () => {
 		const chart = await findChart();
 		expect(chart).toBeInTheDocument();
 
-		// bullet` data has 7 segments
-		const rects = await findAllMarksByGroupName(chart, 'mark-rect');
+		const rects = await findAllMarksByGroupName(chart, 'bullet0rect');
 		expect(rects.length).toEqual(6);
 
-		// const rules = await findAllMarksByGroupName(chart, 'mark-rule');
-		// expect(rules.length).toEqual(7);
+		const barLabels = await findAllMarksByGroupName(chart, 'bullet0barlabel', 'text');
+		expect(barLabels.length).toEqual(6);
 
-		// const bars = await findAllMarksByGroupName(chart, 'mark-rect');
-		// expect(bars.length).toEqual(6);
+		const amountLabels = await findAllMarksByGroupName(chart, 'bullet0amountlabel', 'text');
+		expect(amountLabels.length).toEqual(6);
+
+		const rules = await findAllMarksByGroupName(chart, 'bullet0rule', 'line');
+		expect(rules.length).toEqual(6);
 	});
 });
