@@ -12,12 +12,12 @@
 import { Align, Baseline, NumberValue, ScaleType } from 'vega';
 
 import {
-	AnnotationProps,
 	AreaProps,
 	AxisAnnotationChildElement,
 	AxisAnnotationProps,
 	AxisChildElement,
 	AxisProps,
+	BarAnnotationProps,
 	BarProps,
 	ChartPopoverProps,
 	ChartTooltipProps,
@@ -42,7 +42,7 @@ import {
 	TrendlineAnnotationProps,
 	TrendlineChildElement,
 	TrendlineProps,
-} from './Chart';
+} from './newTypes';
 
 type PartiallyRequired<T, K extends keyof T> = Omit<T, K> & Required<Pick<T, K>>;
 
@@ -120,7 +120,7 @@ export interface BarSpecProps extends PartiallyRequired<BarProps, BarPropsWithDe
 
 type AnnotationPropsWithDefaults = 'textKey';
 
-export interface AnnotationSpecProps extends PartiallyRequired<AnnotationProps, AnnotationPropsWithDefaults> {
+export interface AnnotationSpecProps extends PartiallyRequired<BarAnnotationProps, AnnotationPropsWithDefaults> {
 	barProps: BarSpecProps;
 	dataName: string;
 	dimensionField: string;

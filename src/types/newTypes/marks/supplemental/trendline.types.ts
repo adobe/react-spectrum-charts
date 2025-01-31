@@ -71,8 +71,10 @@ export interface TrendlineOptions {
 	trendlineAnnotations?: TrendlineAnnotationOptions[];
 }
 
+export type TrendlineChildElement = ChartTooltipElement | TrendlineAnnotationElement;
+
 export interface TrendlineProps extends Omit<TrendlineOptions, 'chartTooltips' | 'trendlineAnnotations'> {
-	children?: Children<ChartTooltipElement | TrendlineAnnotationElement>;
+	children?: Children<TrendlineChildElement>;
 }
 
 export type TrendlineElement = ReactElement<TrendlineProps, JSXElementConstructor<TrendlineProps>>;
