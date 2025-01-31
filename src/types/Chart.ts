@@ -488,6 +488,25 @@ export interface BarProps extends Omit<MarkProps & ClickableChartProps, 'color'>
 
 export type BarType = 'dodged' | 'stacked';
 
+export interface BulletProps extends Omit<MarkProps & ClickableChartProps, 'color'> {
+	/** Data field used for the qualitative ranges of the bullet chart */
+	ranges?: string | number[];
+	/** Data field used for the primary measure (progress bar) */
+	measures?: string | number[];
+	/** Data field used for the target value */
+	target?: string | number;
+	/** Data field used for the qualitative measure */
+	measureColor?: ColorFacet;
+	/** Color for the qualitative ranges */
+	rangeColor?: ColorFacet;
+	/** Color for the target marker */
+	targetColor?: ColorFacet;
+	/** Orientation of the bullet chart. Defaults to "horizontal". */
+	orientation?: Orientation;
+	/** Label for the bullet chart (e.g., "New Customer Count") */
+	label?: string;
+}
+
 export interface LineProps extends Omit<MarkProps & ClickableChartProps, 'color'> {
 	/** Line color or key in the data that is used as the color facet */
 	color?: ColorFacet;
