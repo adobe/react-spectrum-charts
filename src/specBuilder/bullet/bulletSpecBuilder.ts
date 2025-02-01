@@ -26,10 +26,8 @@ export const addBullet = produce<
             children,
             colorScheme = DEFAULT_COLOR_SCHEME,
             index = 0,
-            graphLabel = 'Bullet Graph',
+            chartLabel: chartLabel = 'My Bullet Graph',
             name,
-            // currentAmount,
-            // target,
             // markType = 'bullet',
             ...props
         }
@@ -38,8 +36,7 @@ export const addBullet = produce<
             children: sanitizeMarkChildren(children),
             colorScheme,
             index,
-            graphLabel,
-            // target,
+            chartLabel: chartLabel,
             markType: "bullet",
             name: toCamelCase(name ?? `bullet${index}`),
             ...props,
@@ -47,6 +44,7 @@ export const addBullet = produce<
         spec.data = getBulletData();
         spec.marks = getBulletMarks(bulletProps);
         spec.scales = getBulletScales();
+        console.log(bulletProps.chartLabel)
     }
 );
 
