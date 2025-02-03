@@ -10,9 +10,7 @@
  * governing permissions and limitations under the License.
  */
 import { DONUT_RADIUS, DONUT_SUMMARY_FONT_SIZE_RATIO, DONUT_SUMMARY_MIN_RADIUS, FILTERED_TABLE } from '@constants';
-import { DonutSummary } from '@rsc/rc';
 import { getTextNumberFormat } from '@specBuilder/textUtils';
-import { getElementDisplayName } from '@utils';
 import {
 	EncodeEntryName,
 	GroupMark,
@@ -27,56 +25,53 @@ import {
 	ThresholdScale,
 } from 'vega';
 
-import { DonutSpecProps, DonutSummaryElement, DonutSummaryProps, DonutSummarySpecProps } from '../../types';
+import { DonutSpecOptions, DonutSummaryOptions, DonutSummarySpecOptions } from '../../types';
 
 /**
  * Gets the DonutSummary component from the children if one exists
- * @param donutProps
+ * @param donutOptions
  * @returns
  */
-const getDonutSummary = (props: DonutSpecProps): DonutSummarySpecProps | undefined => {
-	const donutSummary = props.children.find(
-		(child) => getElementDisplayName(child) === DonutSummary.displayName
-	) as DonutSummaryElement;
-	if (!donutSummary) {
+const getDonutSummary = (options: DonutSpecOptions): DonutSummarySpecOptions | undefined => {
+	if (!options.donutSummaries.length) {
 		return;
 	}
-	return applyDonutSummaryPropDefaults(donutSummary.props, props);
+	return applyDonutSummaryPropDefaults(options.donutSummaries[0], options);
 };
 
 /**
- * Applies all default props, converting DonutSummaryProps into DonutSummarySpecProps
- * @param donutSummaryProps
- * @param donutProps
+ * Applies all default options, converting DonutSummaryOptions into DonutSummarySpecOptions
+ * @param donutSummaryOptions
+ * @param donutOptions
  * @returns
  */
 const applyDonutSummaryPropDefaults = (
-	{ numberFormat = 'shortNumber', ...props }: DonutSummaryProps,
-	donutProps: DonutSpecProps
-): DonutSummarySpecProps => ({
-	donutProps,
+	{ numberFormat = 'shortNumber', ...options }: DonutSummaryOptions,
+	donutOptions: DonutSpecOptions
+): DonutSummarySpecOptions => ({
+	donutOptions,
 	numberFormat,
-	...props,
+	...options,
 });
 
 /**
  * Gets the data for the donut summary
- * @param donutProps
+ * @param donutOptions
  * @returns SourceData[]
  */
-export const getDonutSummaryData = (donutProps: DonutSpecProps): SourceData[] => {
-	const donutSummary = getDonutSummary(donutProps);
-	if (!donutSummary || donutProps.isBoolean) {
+export const getDonutSummaryData = (donutOptions: DonutSpecOptions): SourceData[] => {
+	const donutSummary = getDonutSummary(donutOptions);
+	if (!donutSummary || donutOptions.isBoolean) {
 		return [];
 	}
 	return [
 		{
-			name: `${donutProps.name}_summaryData`,
+			name: `${donutOptions.name}_summaryData`,
 			source: FILTERED_TABLE,
 			transform: [
 				{
 					type: 'aggregate',
-					fields: [donutProps.metric],
+					fields: [donutOptions.metric],
 					ops: ['sum'],
 					as: ['sum'],
 				},
@@ -87,11 +82,11 @@ export const getDonutSummaryData = (donutProps: DonutSpecProps): SourceData[] =>
 
 /**
  * Gets the required scales for the donut summary
- * @param donutProps
+ * @param donutOptions
  * @returns ThresholdScale[]
  */
-export const getDonutSummaryScales = (donutProps: DonutSpecProps): ThresholdScale[] => {
-	const donutSummary = getDonutSummary(donutProps);
+export const getDonutSummaryScales = (donutOptions: DonutSpecOptions): ThresholdScale[] => {
+	const donutSummary = getDonutSummary(donutOptions);
 	if (!donutSummary) {
 		return [];
 	}
@@ -99,7 +94,7 @@ export const getDonutSummaryScales = (donutProps: DonutSpecProps): ThresholdScal
 		// This scale will snap the fontsize to the spectrum font sizes L - XXXXL
 		// 28 is the min, 60 is the max.
 		{
-			name: `${donutProps.name}_summaryFontSizeScale`,
+			name: `${donutOptions.name}_summaryFontSizeScale`,
 			type: 'threshold',
 			domain: [32, 36, 40, 45, 50, 60],
 			range: [28, 32, 36, 40, 45, 50, 60],
@@ -109,15 +104,15 @@ export const getDonutSummaryScales = (donutProps: DonutSpecProps): ThresholdScal
 
 /**
  * Gets the signals for the donut summary
- * @param donutProps
+ * @param donutOptions
  * @returns Signal[]
  */
-export const getDonutSummarySignals = (donutProps: DonutSpecProps): Signal[] => {
-	const donutSummary = getDonutSummary(donutProps);
+export const getDonutSummarySignals = (donutOptions: DonutSpecOptions): Signal[] => {
+	const donutSummary = getDonutSummary(donutOptions);
 	if (!donutSummary) {
 		return [];
 	}
-	const { name: donutName, holeRatio } = donutProps;
+	const { name: donutName, holeRatio } = donutOptions;
 	return [
 		{
 			name: `${donutName}_summaryFontSize`,
@@ -128,16 +123,16 @@ export const getDonutSummarySignals = (donutProps: DonutSpecProps): Signal[] => 
 
 /**
  * Gets all the marks for the donut summary
- * @param donutProps
+ * @param donutOptions
  * @returns GroupMark[]
  */
-export const getDonutSummaryMarks = (props: DonutSpecProps): GroupMark[] => {
-	const donutSummary = getDonutSummary(props);
+export const getDonutSummaryMarks = (options: DonutSpecOptions): GroupMark[] => {
+	const donutSummary = getDonutSummary(options);
 	if (!donutSummary) {
 		return [];
 	}
 	const marks: GroupMark[] = [];
-	if (props.isBoolean) {
+	if (options.isBoolean) {
 		marks.push(getBooleanDonutSummaryGroupMark(donutSummary));
 	} else {
 		marks.push(getDonutSummaryGroupMark(donutSummary));
@@ -147,29 +142,29 @@ export const getDonutSummaryMarks = (props: DonutSpecProps): GroupMark[] => {
 
 /**
  * Gets the group mark for the donut summary
- * @param donutSummaryProps
+ * @param donutSummaryOptions
  * @returns GorupMark
  */
-export const getDonutSummaryGroupMark = (props: DonutSummarySpecProps): GroupMark => {
-	const { donutProps, label } = props;
+export const getDonutSummaryGroupMark = (options: DonutSummarySpecOptions): GroupMark => {
+	const { donutOptions, label } = options;
 	const groupMark: Mark = {
 		type: 'group',
-		name: `${donutProps.name}_summaryGroup`,
+		name: `${donutOptions.name}_summaryGroup`,
 		marks: [
 			{
 				type: 'text',
-				name: `${donutProps.name}_summaryValue`,
-				from: { data: `${donutProps.name}_summaryData` },
-				encode: getSummaryValueEncode(props),
+				name: `${donutOptions.name}_summaryValue`,
+				from: { data: `${donutOptions.name}_summaryData` },
+				encode: getSummaryValueEncode(options),
 			},
 		],
 	};
 	if (label) {
 		groupMark.marks?.push({
 			type: 'text',
-			name: `${donutProps.name}_summaryLabel`,
-			from: { data: `${donutProps.name}_summaryData` },
-			encode: getSummaryLabelEncode({ ...props, label }),
+			name: `${donutOptions.name}_summaryLabel`,
+			from: { data: `${donutOptions.name}_summaryData` },
+			encode: getSummaryLabelEncode({ ...options, label }),
 		});
 	}
 	return groupMark;
@@ -177,29 +172,29 @@ export const getDonutSummaryGroupMark = (props: DonutSummarySpecProps): GroupMar
 
 /**
  * Gets the group mark for a boolean donut summary
- * @param donutSummaryProps
+ * @param donutSummaryOptions
  * @returns GroupMark
  */
-export const getBooleanDonutSummaryGroupMark = (props: DonutSummarySpecProps): GroupMark => {
-	const { donutProps, label } = props;
+export const getBooleanDonutSummaryGroupMark = (options: DonutSummarySpecOptions): GroupMark => {
+	const { donutOptions, label } = options;
 	const groupMark: Mark = {
 		type: 'group',
-		name: `${donutProps.name}_percentText`,
+		name: `${donutOptions.name}_percentText`,
 		marks: [
 			{
 				type: 'text',
-				name: `${donutProps.name}_booleanSummaryValue`,
-				from: { data: `${donutProps.name}_booleanData` },
-				encode: getSummaryValueEncode(props),
+				name: `${donutOptions.name}_booleanSummaryValue`,
+				from: { data: `${donutOptions.name}_booleanData` },
+				encode: getSummaryValueEncode(options),
 			},
 		],
 	};
 	if (label) {
 		groupMark.marks?.push({
 			type: 'text',
-			name: `${donutProps.name}_booleanSummaryLabel`,
-			from: { data: `${donutProps.name}_booleanData` },
-			encode: getSummaryLabelEncode({ ...props, label }),
+			name: `${donutOptions.name}_booleanSummaryLabel`,
+			from: { data: `${donutOptions.name}_booleanData` },
+			encode: getSummaryLabelEncode({ ...options, label }),
 		});
 	}
 	return groupMark;
@@ -207,38 +202,38 @@ export const getBooleanDonutSummaryGroupMark = (props: DonutSummarySpecProps): G
 
 /**
  * Gets the encode for the summary value
- * @param donutSummaryProps
+ * @param donutSummaryOptions
  * @returns encode
  */
-const getSummaryValueEncode = (props: DonutSummarySpecProps): Partial<Record<EncodeEntryName, TextEncodeEntry>> => {
-	const { donutProps, label } = props;
+const getSummaryValueEncode = (options: DonutSummarySpecOptions): Partial<Record<EncodeEntryName, TextEncodeEntry>> => {
+	const { donutOptions, label } = options;
 	return {
 		update: {
 			x: { signal: 'width / 2' },
 			y: { signal: 'height / 2' },
-			text: getSummaryValueText(props),
+			text: getSummaryValueText(options),
 			fontSize: [
-				{ test: `${DONUT_RADIUS} * ${donutProps.holeRatio} < ${DONUT_SUMMARY_MIN_RADIUS}`, value: 0 },
-				{ signal: `${donutProps.name}_summaryFontSize` },
+				{ test: `${DONUT_RADIUS} * ${donutOptions.holeRatio} < ${DONUT_SUMMARY_MIN_RADIUS}`, value: 0 },
+				{ signal: `${donutOptions.name}_summaryFontSize` },
 			],
 			align: { value: 'center' },
 			baseline: getSummaryValueBaseline(label),
-			limit: getSummaryValueLimit(props),
+			limit: getSummaryValueLimit(options),
 		},
 	};
 };
 
 /**
  * Gets the text value for the summary value
- * @param donutSummaryProps
+ * @param donutSummaryOptions
  * @returns TextValueref
  */
 export const getSummaryValueText = ({
-	donutProps,
+	donutOptions,
 	numberFormat,
-}: DonutSummarySpecProps): ProductionRule<TextValueRef> => {
-	if (donutProps.isBoolean) {
-		return { signal: `format(datum['${donutProps.metric}'], '.0%')` };
+}: DonutSummarySpecOptions): ProductionRule<TextValueRef> => {
+	if (donutOptions.isBoolean) {
+		return { signal: `format(datum['${donutOptions.metric}'], '.0%')` };
 	}
 	return [...getTextNumberFormat(numberFormat, 'sum'), { field: 'sum' }];
 };
@@ -258,11 +253,11 @@ export const getSummaryValueBaseline = (label?: string): TextBaselineValueRef =>
 
 /**
  * Gets the limit for the summary value
- * @param donutSummaryProps
+ * @param donutSummaryOptions
  * @returns NumericValueRef
  */
-export const getSummaryValueLimit = ({ donutProps, label }: DonutSummarySpecProps): NumericValueRef => {
-	const { holeRatio, name } = donutProps;
+export const getSummaryValueLimit = ({ donutOptions, label }: DonutSummarySpecOptions): NumericValueRef => {
+	const { holeRatio, name } = donutOptions;
 	// if there isn't a label, the height of the font from the center of the donut is 1/2 the font size
 	const fontHeight = label ? `${name}_summaryFontSize` : `${name}_summaryFontSize * 0.5`;
 	const donutInnerRadius = `${DONUT_RADIUS} * ${holeRatio}`;
@@ -277,27 +272,27 @@ export const getSummaryValueLimit = ({ donutProps, label }: DonutSummarySpecProp
 
 /**
  * Gets the encode for the metric label
- * @param donutSummaryProps
+ * @param donutSummaryOptions
  * @returns encode
  */
 export const getSummaryLabelEncode = ({
-	donutProps,
+	donutOptions,
 	label,
-}: DonutSummarySpecProps & { label: string }): Partial<Record<EncodeEntryName, TextEncodeEntry>> => {
+}: DonutSummarySpecOptions & { label: string }): Partial<Record<EncodeEntryName, TextEncodeEntry>> => {
 	return {
 		update: {
 			x: { signal: 'width / 2' },
 			y: { signal: 'height / 2' },
-			dy: { signal: `ceil(${donutProps.name}_summaryFontSize * 0.25)` },
+			dy: { signal: `ceil(${donutOptions.name}_summaryFontSize * 0.25)` },
 			text: { value: label },
 			fontSize: [
-				{ test: `${DONUT_RADIUS} * ${donutProps.holeRatio} < ${DONUT_SUMMARY_MIN_RADIUS}`, value: 0 },
-				{ signal: `ceil(${donutProps.name}_summaryFontSize * 0.5)` },
+				{ test: `${DONUT_RADIUS} * ${donutOptions.holeRatio} < ${DONUT_SUMMARY_MIN_RADIUS}`, value: 0 },
+				{ signal: `ceil(${donutOptions.name}_summaryFontSize * 0.5)` },
 			],
 			align: { value: 'center' },
 			baseline: { value: 'top' },
 			limit: {
-				signal: `2 * sqrt(pow(${DONUT_RADIUS} * ${donutProps.holeRatio}, 2) - pow(${donutProps.name}_summaryFontSize * 0.75, 2))`,
+				signal: `2 * sqrt(pow(${DONUT_RADIUS} * ${donutOptions.holeRatio}, 2) - pow(${donutOptions.name}_summaryFontSize * 0.75, 2))`,
 			},
 		},
 	};

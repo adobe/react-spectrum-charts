@@ -25,7 +25,7 @@ import { addPopoverData, getPopovers } from '@specBuilder/chartPopover/chartPopo
 import { addTooltipData, addTooltipSignals } from '@specBuilder/chartTooltip/chartTooltipUtils';
 import { getTransformSort } from '@specBuilder/data/dataUtils';
 import { getInteractiveMarkName } from '@specBuilder/line/lineUtils';
-import { getTooltipProps } from '@specBuilder/marks/markUtils';
+import { getTooltipProps_DEPRECATED } from '@specBuilder/marks/markUtils';
 import {
 	addDomainFields,
 	addFieldToFacetScaleDomain,
@@ -118,7 +118,7 @@ export const addSignals = produce<Signal[], [BarSpecProps]>((signals, props) => 
 	if (!children.length) {
 		return;
 	}
-	addHighlightedItemSignalEvents(signals, name, idKey, 1, getTooltipProps(children)?.excludeDataKeys);
+	addHighlightedItemSignalEvents(signals, name, idKey, 1, getTooltipProps_DEPRECATED(children)?.excludeDataKeys);
 	addTooltipSignals(signals, props);
 	setTrendlineSignals(signals, props);
 });

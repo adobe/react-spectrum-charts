@@ -67,6 +67,7 @@ import {
 	ClickableChartProps,
 	ColorFacet,
 	ColorScheme,
+	DonutSpecOptions,
 	DonutSpecProps,
 	DualFacet,
 	LineSpecOptions,
@@ -126,7 +127,7 @@ export function getTooltip_DEPRECATED(
 			signal: `merge(datum${nestedDatum ? '.datum' : ''}, {'${COMPONENT_NAME}': '${name}'})`,
 		};
 		// if the tooltip has an excludeDataKey prop, then disable the tooltip where that key is present
-		const excludeDataKeys = getTooltipProps(children)?.excludeDataKeys;
+		const excludeDataKeys = getTooltipProps_DEPRECATED(children)?.excludeDataKeys;
 		if (excludeDataKeys?.length) {
 			return [
 				...excludeDataKeys.map((excludeDataKey) => ({ test: `datum.${excludeDataKey}`, signal: 'false' })),
@@ -164,7 +165,7 @@ export function getTooltip(
 	}
 }
 
-export function getTooltipProps(children: MarkChildElement[]): ChartTooltipProps | undefined {
+export function getTooltipProps_DEPRECATED(children: MarkChildElement[]): ChartTooltipProps | undefined {
 	return children.find((child) => child.type === ChartTooltip)?.props as ChartTooltipProps | undefined;
 }
 
@@ -206,6 +207,7 @@ export const isInteractive = (
 		| AreaMarkOptions
 		| AreaSpecOptions
 		| BarSpecOptions
+		| DonutSpecOptions
 		| LineMarkOptions
 		| LineSpecOptions
 		| TrendlineSpecOptions
@@ -243,6 +245,7 @@ export const hasPopover = (
 		| AreaMarkOptions
 		| AreaSpecOptions
 		| BarSpecOptions
+		| DonutSpecOptions
 		| LineSpecOptions
 		| LineMarkOptions
 		| ScatterSpecOptions
@@ -254,6 +257,7 @@ export const hasTooltip = (
 		| AreaMarkOptions
 		| AreaSpecOptions
 		| BarSpecOptions
+		| DonutSpecOptions
 		| LineMarkOptions
 		| LineSpecOptions
 		| ScatterSpecOptions
@@ -526,20 +530,20 @@ const getHoverSizeSignal = (size: number): SignalRef => ({
 /**
  * Gets the opacity for the mark (used to highlight marks).
  * This will take into account if there are any tooltips or popovers on the mark.
- * @param props
+ * @param options
  * @returns
  */
-export const getMarkOpacity = (props: BarSpecProps | DonutSpecProps): ({ test?: string } & NumericValueRef)[] => {
-	const { children, highlightedItem, idKey, name: markName } = props;
+export const getMarkOpacity = (options: BarSpecOptions | DonutSpecOptions): ({ test?: string } & NumericValueRef)[] => {
+	const { highlightedItem, idKey, name: markName } = options;
 	const rules: ({ test?: string } & NumericValueRef)[] = [DEFAULT_OPACITY_RULE];
 	// if there aren't any interactive components, then we don't need to add special opacity rules
-	if (!hasInteractiveChildren_DEPRECATED(children) && highlightedItem === undefined) {
+	if (!isInteractive(options) && highlightedItem === undefined) {
 		return rules;
 	}
 
 	// if a bar is hovered/selected, all other bars should have reduced opacity
-	addHighlightMarkOpacityRules(rules, props);
-	if (hasPopover_DEPRECATED(children)) {
+	addHighlightMarkOpacityRules(rules, options);
+	if (hasPopover(options)) {
 		return [
 			{
 				test: `!isValid(${SELECTED_GROUP}) && ${SELECTED_ITEM} && ${SELECTED_ITEM} !== datum.${idKey}`,

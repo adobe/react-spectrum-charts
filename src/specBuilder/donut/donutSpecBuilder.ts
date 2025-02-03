@@ -10,14 +10,14 @@
  * governing permissions and limitations under the License.
  */
 import { COLOR_SCALE, DEFAULT_COLOR, DEFAULT_COLOR_SCHEME, DEFAULT_METRIC, FILTERED_TABLE } from '@constants';
-import { getTooltipProps, hasInteractiveChildren_DEPRECATED } from '@specBuilder/marks/markUtils';
+import { isInteractive } from '@specBuilder/marks/markUtils';
 import { addFieldToFacetScaleDomain } from '@specBuilder/scale/scaleSpecBuilder';
 import { addHighlightedItemSignalEvents } from '@specBuilder/signal/signalSpecBuilder';
-import { sanitizeMarkChildren, toCamelCase } from '@utils';
+import { toCamelCase } from '@utils';
 import { produce } from 'immer';
 import { Data, FormulaTransform, Mark, PieTransform, Scale, Signal, Spec } from 'vega';
 
-import { ColorScheme, DonutProps, DonutSpecProps, HighlightedItem } from '../../types';
+import { ColorScheme, DonutOptions, DonutSpecOptions, HighlightedItem } from '../../types';
 import {
 	getDonutSummaryData,
 	getDonutSummaryMarks,
@@ -29,52 +29,57 @@ import { getSegmentLabelMarks } from './segmentLabelUtils';
 
 export const addDonut = produce<
 	Spec,
-	[DonutProps & { colorScheme?: ColorScheme; highlightedItem?: HighlightedItem; index?: number; idKey: string }]
+	[DonutOptions & { colorScheme?: ColorScheme; highlightedItem?: HighlightedItem; index?: number; idKey: string }]
 >(
 	(
 		spec,
 		{
-			children,
+			chartPopovers = [],
+			chartTooltips = [],
 			color = DEFAULT_COLOR,
 			colorScheme = DEFAULT_COLOR_SCHEME,
+			donutSummaries = [],
 			index = 0,
 			metric = DEFAULT_METRIC,
 			name,
 			startAngle = 0,
 			holeRatio = 0.85,
 			isBoolean = false,
-			...props
+			segmentLabels = [],
+			...options
 		}
 	) => {
-		// put props back together now that all defaults are set
-		const donutProps: DonutSpecProps = {
-			children: sanitizeMarkChildren(children),
+		// put options back together now that all defaults are set
+		const donutOptions: DonutSpecOptions = {
+			chartPopovers,
+			chartTooltips,
 			color,
 			colorScheme,
+			donutSummaries,
 			holeRatio,
 			index,
 			isBoolean,
-			markType: 'donut',
 			metric,
 			name: toCamelCase(name ?? `donut${index}`),
+			segmentLabels,
 			startAngle,
-			...props,
+			...options,
 		};
 
-		spec.data = addData(spec.data ?? [], donutProps);
-		spec.scales = addScales(spec.scales ?? [], donutProps);
-		spec.marks = addMarks(spec.marks ?? [], donutProps);
-		spec.signals = addSignals(spec.signals ?? [], donutProps);
+		spec.data = addData(spec.data ?? [], donutOptions);
+		spec.scales = addScales(spec.scales ?? [], donutOptions);
+		spec.marks = addMarks(spec.marks ?? [], donutOptions);
+		spec.signals = addSignals(spec.signals ?? [], donutOptions);
 	}
 );
 
-export const addData = produce<Data[], [DonutSpecProps]>((data, props) => {
-	const { name, isBoolean } = props;
+export const addData = produce<Data[], [DonutSpecOptions]>((data, options) => {
+	const { name, isBoolean } = options;
 	const filteredTableIndex = data.findIndex((d) => d.name === FILTERED_TABLE);
 
 	//set up transform
 	data[filteredTableIndex].transform = data[filteredTableIndex].transform ?? [];
-	data[filteredTableIndex].transform?.push(...getPieTransforms(props));
+	data[filteredTableIndex].transform?.push(...getPieTransforms(options));
 
 	if (isBoolean) {
 		//select first data point for our boolean value
@@ -94,10 +99,10 @@ export const addData = produce<Data[], [DonutSpecProps]>((data, props) => {
 			],
 		});
 	}
-	data.push(...getDonutSummaryData(props));
+	data.push(...getDonutSummaryData(options));
 });
 
-const getPieTransforms = ({ startAngle, metric, name }: DonutSpecProps): (FormulaTransform | PieTransform)[] => [
+const getPieTransforms = ({ startAngle, metric, name }: DonutSpecOptions): (FormulaTransform | PieTransform)[] => [
 	{
 		type: 'pie',
 		field: metric,
@@ -122,21 +127,21 @@ const getPieTransforms = ({ startAngle, metric, name }: DonutSpecProps): (Formul
 	},
 ];
 
-export const addScales = produce<Scale[], [DonutSpecProps]>((scales, props) => {
-	const { color } = props;
+export const addScales = produce<Scale[], [DonutSpecOptions]>((scales, options) => {
+	const { color } = options;
 	addFieldToFacetScaleDomain(scales, COLOR_SCALE, color);
-	scales.push(...getDonutSummaryScales(props));
+	scales.push(...getDonutSummaryScales(options));
 });
 
-export const addMarks = produce<Mark[], [DonutSpecProps]>((marks, props) => {
-	marks.push(getArcMark(props));
-	marks.push(...getDonutSummaryMarks(props));
-	marks.push(...getSegmentLabelMarks(props));
+export const addMarks = produce<Mark[], [DonutSpecOptions]>((marks, options) => {
+	marks.push(getArcMark(options));
+	marks.push(...getDonutSummaryMarks(options));
+	marks.push(...getSegmentLabelMarks(options));
 });
 
-export const addSignals = produce<Signal[], [DonutSpecProps]>((signals, props) => {
-	const { children, idKey, name } = props;
-	signals.push(...getDonutSummarySignals(props));
-	if (!hasInteractiveChildren_DEPRECATED(children)) return;
-	addHighlightedItemSignalEvents(signals, name, idKey, 1, getTooltipProps(children)?.excludeDataKeys);
+export const addSignals = produce<Signal[], [DonutSpecOptions]>((signals, options) => {
+	const { chartTooltips, idKey, name } = options;
+	signals.push(...getDonutSummarySignals(options));
+	if (!isInteractive(options)) return;
+	addHighlightedItemSignalEvents(signals, name, idKey, 1, chartTooltips[0]?.excludeDataKeys);
 });

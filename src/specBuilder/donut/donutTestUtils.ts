@@ -11,12 +11,14 @@
  */
 import { MARK_ID } from '@constants';
 
-import { DonutSpecProps } from '../../types';
+import { DonutSpecOptions } from '../../types';
 
-export const defaultDonutProps: DonutSpecProps = {
-	children: [],
+export const defaultDonutOptions: DonutSpecOptions = {
+	chartPopovers: [],
+	chartTooltips: [],
 	color: 'testColor',
 	colorScheme: 'light',
+	donutSummaries: [],
 	holeRatio: 0.85,
 	idKey: MARK_ID,
 	index: 0,
@@ -24,5 +26,6 @@ export const defaultDonutProps: DonutSpecProps = {
 	name: 'testName',
 	markType: 'donut',
 	metric: 'testMetric',
+	segmentLabels: [],
 	startAngle: 0,
 };

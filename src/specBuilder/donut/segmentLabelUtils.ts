@@ -10,56 +10,51 @@
  * governing permissions and limitations under the License.
  */
 import { DONUT_RADIUS, DONUT_SEGMENT_LABEL_MIN_ANGLE, FILTERED_TABLE } from '@constants';
-import { SegmentLabel } from '@rsc/rc';
 import { getTextNumberFormat } from '@specBuilder/textUtils';
-import { getElementDisplayName } from '@utils';
 import { GroupMark, NumericValueRef, ProductionRule, TextEncodeEntry, TextMark, TextValueRef } from 'vega';
 
-import { DonutSpecProps, SegmentLabelElement, SegmentLabelProps, SegmentLabelSpecProps } from '../../types';
+import { DonutSpecOptions, SegmentLabelOptions, SegmentLabelSpecOptions } from '../../types';
 
 /**
  * Gets the SegmentLabel component from the children if one exists
- * @param donutProps
- * @returns segmentLabelProps
+ * @param donutOptions
+ * @returns segmentLabelOptions
  */
-const getSegmentLabel = (props: DonutSpecProps): SegmentLabelSpecProps | undefined => {
-	const segmentLabel = props.children.find(
-		(child) => getElementDisplayName(child) === SegmentLabel.displayName
-	) as SegmentLabelElement;
-	if (!segmentLabel) {
+const getSegmentLabel = (options: DonutSpecOptions): SegmentLabelSpecOptions | undefined => {
+	if (!options.segmentLabels.length) {
 		return;
 	}
-	return applySegmentLabelPropDefaults(segmentLabel.props, props);
+	return applySegmentLabelPropDefaults(options.segmentLabels[0], options);
 };
 
 /**
- * Applies all default props, converting SegmentLabelProps into SegmentLabelSpecProps
- * @param segmentLabelProps
- * @param donutProps
- * @returns SegmentLabelSpecProps
+ * Applies all default options, converting SegmentLabelOptions into SegmentLabelSpecOptions
+ * @param segmentLabelOptions
+ * @param donutOptions
+ * @returns SegmentLabelSpecOptions
  */
 const applySegmentLabelPropDefaults = (
-	{ percent = false, value = false, valueFormat = 'standardNumber', ...props }: SegmentLabelProps,
-	donutProps: DonutSpecProps
-): SegmentLabelSpecProps => ({
-	donutProps,
+	{ percent = false, value = false, valueFormat = 'standardNumber', ...options }: SegmentLabelOptions,
+	donutOptions: DonutSpecOptions
+): SegmentLabelSpecOptions => ({
+	donutOptions,
 	percent,
 	value,
 	valueFormat,
-	...props,
+	...options,
 });
 
 /**
  * Gets the marks for the segment label. If there isn't a segment label, an empty array is returned.
- * @param donutProps
+ * @param donutOptions
  * @returns GroupMark[]
  */
-export const getSegmentLabelMarks = (donutProps: DonutSpecProps): GroupMark[] => {
-	const { isBoolean, name } = donutProps;
+export const getSegmentLabelMarks = (donutOptions: DonutSpecOptions): GroupMark[] => {
+	const { isBoolean, name } = donutOptions;
 	// segment labels are not supported for boolean variants
 	if (isBoolean) return [];
 
-	const segmentLabel = getSegmentLabel(donutProps);
+	const segmentLabel = getSegmentLabel(donutOptions);
 	// if there isn't a segment label, we don't need to do anything
 	if (!segmentLabel) return [];
 
@@ -74,11 +69,16 @@ export const getSegmentLabelMarks = (donutProps: DonutSpecProps): GroupMark[] =>
 
 /**
  * Gets the text mark for the segment label
- * @param segmentLabelProps
+ * @param segmentLabelOptions
  * @returns TextMark
  */
-export const getSegmentLabelTextMark = ({ labelKey, value, percent, donutProps }: SegmentLabelSpecProps): TextMark => {
-	const { name, color } = donutProps;
+export const getSegmentLabelTextMark = ({
+	labelKey,
+	value,
+	percent,
+	donutOptions,
+}: SegmentLabelSpecOptions): TextMark => {
+	const { name, color } = donutOptions;
 	return {
 		type: 'text',
 		name: `${name}_segmentLabel`,
@@ -102,24 +102,24 @@ export const getSegmentLabelTextMark = ({ labelKey, value, percent, donutProps }
 
 /**
  * Gets the text mark for the segment label values (percent and/or value)
- * @param segmentLabelProps
+ * @param segmentLabelOptions
  * @returns TextMark[]
  */
-export const getSegmentLabelValueTextMark = (props: SegmentLabelSpecProps): TextMark[] => {
-	if (!props.value && !props.percent) return [];
-	const { donutProps } = props;
+export const getSegmentLabelValueTextMark = (options: SegmentLabelSpecOptions): TextMark[] => {
+	if (!options.value && !options.percent) return [];
+	const { donutOptions } = options;
 
 	return [
 		{
 			type: 'text',
-			name: `${donutProps.name}_segmentLabelValue`,
+			name: `${donutOptions.name}_segmentLabelValue`,
 			from: { data: FILTERED_TABLE },
 			encode: {
 				enter: {
-					...getBaseSegmentLabelEnterEncode(donutProps.name),
-					text: getSegmentLabelValueText(props),
+					...getBaseSegmentLabelEnterEncode(donutOptions.name),
+					text: getSegmentLabelValueText(options),
 					dy: {
-						signal: `datum['${donutProps.name}_arcTheta'] <= 0.5 * PI || datum['${donutProps.name}_arcTheta'] >= 1.5 * PI ? 0 : 16`,
+						signal: `datum['${donutOptions.name}_arcTheta'] <= 0.5 * PI || datum['${donutOptions.name}_arcTheta'] >= 1.5 * PI ? 0 : 16`,
 					},
 				},
 				update: positionEncodings,
@@ -155,19 +155,19 @@ const positionEncodings: TextEncodeEntry = {
 
 /**
  * Gets the text value ref for the segment label values (percent and/or value)
- * @param segmentLabelProps
+ * @param segmentLabelOptions
  * @returns TextValueRef
  */
 export const getSegmentLabelValueText = ({
-	donutProps,
+	donutOptions,
 	percent,
 	value,
 	valueFormat,
-}: SegmentLabelSpecProps): ProductionRule<TextValueRef> | undefined => {
-	const percentSignal = `format(datum['${donutProps.name}_arcPercent'], '.0%')`;
+}: SegmentLabelSpecOptions): ProductionRule<TextValueRef> | undefined => {
+	const percentSignal = `format(datum['${donutOptions.name}_arcPercent'], '.0%')`;
 	if (value) {
 		// to support `shortNumber` and `shortCurrency` we need to use the consistent logic
-		const rules = getTextNumberFormat(valueFormat, donutProps.metric) as { test?: string; signal: string }[];
+		const rules = getTextNumberFormat(valueFormat, donutOptions.metric) as { test?: string; signal: string }[];
 		if (percent) {
 			// rules will be an array so we need to add the percent to each signal
 			return rules.map((rule) => ({
