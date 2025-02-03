@@ -10,7 +10,7 @@
  * governing permissions and limitations under the License.
  */
 import { MS_PER_DAY, TRENDLINE_VALUE } from '@constants';
-import { getFacetsFromProps } from '@specBuilder/specUtils';
+import { getFacetsFromOptions } from '@specBuilder/specUtils';
 import {
 	AggregateOp,
 	AggregateTransform,
@@ -26,23 +26,23 @@ import {
 	WindowTransform,
 } from 'vega';
 
-import { AggregateMethod, TrendlineMethod, TrendlineSpecProps } from '../../types';
-import { TrendlineParentProps, getPolynomialOrder, getRegressionExtent, isPolynomialMethod } from './trendlineUtils';
+import { AggregateMethod, TrendlineMethod, TrendlineSpecOptions } from '../../types';
+import { TrendlineParentOptions, getPolynomialOrder, getRegressionExtent, isPolynomialMethod } from './trendlineUtils';
 
 /**
  * Gets the aggreagate transform used for calculating the average trendline
- * @param markProps
- * @param trendlineSpecProps
+ * @param markOptions
+ * @param trendlineSpecOptions
  * @param isHighResolutionData
  * @returns transform
  */
 export const getAggregateTransform = (
-	markProps: TrendlineParentProps,
-	{ method, trendlineDimension, trendlineMetric }: TrendlineSpecProps,
+	markOptions: TrendlineParentOptions,
+	{ method, trendlineDimension, trendlineMetric }: TrendlineSpecOptions,
 	isHighResolutionData: boolean
 ): AggregateTransform | JoinAggregateTransform => {
-	const { color, lineType } = markProps;
-	const { facets } = getFacetsFromProps({ color, lineType });
+	const { color, lineType } = markOptions;
+	const { facets } = getFacetsFromOptions({ color, lineType });
 	const operations: Record<AggregateMethod, AggregateOp> = {
 		average: 'mean',
 		median: 'median',
@@ -69,20 +69,20 @@ export const getAggregateTransform = (
  * Gets the regression transform used for calculating the regression trendline.
  * Regression trendlines are ones that use the x value as a parameter
  * @see https://vega.github.io/vega/docs/transforms/regression/
- * @param markProps
+ * @param markOptions
  * @param method
  * @param isHighResolutionData
  * @returns
  */
 export const getRegressionTransform = (
-	markProps: TrendlineParentProps,
-	trendlineProps: TrendlineSpecProps,
+	markOptions: TrendlineParentOptions,
+	trendlineOptions: TrendlineSpecOptions,
 	isHighResolutionData: boolean
 ): RegressionTransform => {
-	const { color, lineType } = markProps;
+	const { color, lineType } = markOptions;
 	const { dimensionExtent, isDimensionNormalized, method, name, trendlineDimension, trendlineMetric } =
-		trendlineProps;
-	const { facets } = getFacetsFromProps({ color, lineType });
+		trendlineOptions;
+	const { facets } = getFacetsFromOptions({ color, lineType });
 
 	let regressionMethod: RegressionMethod | undefined;
 	let order: number | undefined;
@@ -118,18 +118,18 @@ export const getRegressionTransform = (
 
 /**
  * Gets the window transform used for calculating the moving average trendline.
- * @param markProps
+ * @param markOptions
  * @param method
  * @returns
  */
 export const getWindowTransform = (
-	markProps: TrendlineParentProps,
-	{ method, trendlineMetric }: TrendlineSpecProps
+	markOptions: TrendlineParentOptions,
+	{ method, trendlineMetric }: TrendlineSpecOptions
 ): WindowTransform => {
 	const frameWidth = parseInt(method.split('-')[1]);
 
-	const { color, lineType } = markProps;
-	const { facets } = getFacetsFromProps({ color, lineType });
+	const { color, lineType } = markOptions;
+	const { facets } = getFacetsFromOptions({ color, lineType });
 
 	if (isNaN(frameWidth) || frameWidth < 1) {
 		throw new Error(
@@ -260,15 +260,15 @@ export const getTrendlineParamFormulaTransforms = (
 
 /**
  * Gets the lookup transform that will be used to lookup the coef for regression trendlines
- * @param markProps
- * @param trendlineProps
+ * @param markOptions
+ * @param trendlineOptions
  * @returns LookupTransform
  */
 export const getTrendlineParamLookupTransform = (
-	{ color, lineType }: TrendlineParentProps,
-	{ name }: TrendlineSpecProps
+	{ color, lineType }: TrendlineParentOptions,
+	{ name }: TrendlineSpecOptions
 ): LookupTransform => {
-	const { facets } = getFacetsFromProps({ color, lineType });
+	const { facets } = getFacetsFromOptions({ color, lineType });
 	return {
 		type: 'lookup',
 		from: `${name}_params`,

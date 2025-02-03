@@ -12,21 +12,29 @@
 import { ReactNode } from 'react';
 
 import { Trendline } from '@components/Trendline';
-import { hasPopover, isInteractive } from '@specBuilder/marks/markUtils';
+import { hasPopover_DEPRECATED, isInteractive } from '@specBuilder/marks/markUtils';
 import { sanitizeMarkChildren } from '@utils';
 
 import {
+	BarAnnotationOptions,
+	ChartPopoverOptions,
+	ChartTooltipOptions,
 	ClickableChartProps,
 	ColorFacet,
 	ColorScheme,
+	DonutSummaryOptions,
 	HighlightedItem,
 	InteractionMode,
 	LineTypeFacet,
 	LineWidthFacet,
 	MarkChildElement,
+	MetricRangeOptions,
 	OnClickCallback,
 	OpacityFacet,
 	ScaleType,
+	ScatterPathOptions,
+	SegmentLabelOptions,
+	TrendlineOptions,
 } from '../../types';
 
 export const getInteractiveMarkName = (
@@ -54,7 +62,7 @@ export const getInteractiveMarkName = (
 
 export const getPopoverMarkName = (children: MarkChildElement[], name: string): string | undefined => {
 	// if the line has a popover, this line is the target for the popover
-	if (hasPopover(children)) {
+	if (hasPopover_DEPRECATED(children)) {
 		return name;
 	}
 	// if there is a trendline with a popover on this line, then the trendline is the target for the popover
@@ -63,7 +71,7 @@ export const getPopoverMarkName = (children: MarkChildElement[], name: string): 
 			(child) =>
 				child.type === Trendline &&
 				'children' in child.props &&
-				hasPopover(sanitizeMarkChildren(child.props.children as ReactNode))
+				hasPopover_DEPRECATED(sanitizeMarkChildren(child.props.children as ReactNode))
 		)
 	) {
 		return `${name}Trendline`;
@@ -92,4 +100,35 @@ export interface LineMarkProps {
 	staticPoint?: string;
 	interactionMode?: InteractionMode;
 	onClick?: OnClickCallback;
+}
+
+export interface LineMarkOptions {
+	barAnnotations?: BarAnnotationOptions[];
+	chartPopovers?: ChartPopoverOptions[];
+	chartTooltips?: ChartTooltipOptions[];
+	color: ColorFacet;
+	colorScheme: ColorScheme;
+	dimension: string;
+	displayOnHover?: boolean;
+	donutSummaries?: DonutSummaryOptions[];
+	hasOnClick?: boolean;
+	highlightedItem?: HighlightedItem;
+	idKey: string;
+	interactiveMarkName?: string; // optional name of the mark that is used for hover and click interactions
+	interactionMode?: InteractionMode;
+	isHighlightedByDimension?: boolean;
+	isHighlightedByGroup?: boolean;
+	lineType: LineTypeFacet;
+	lineWidth?: LineWidthFacet;
+	metric: string;
+	metricAxis?: string;
+	metricRanges?: MetricRangeOptions[];
+	name: string;
+	opacity: OpacityFacet;
+	popoverMarkName?: string;
+	scaleType: ScaleType;
+	scatterPaths?: ScatterPathOptions[];
+	segmentLabels?: SegmentLabelOptions[];
+	staticPoint?: string;
+	trendlines?: TrendlineOptions[];
 }

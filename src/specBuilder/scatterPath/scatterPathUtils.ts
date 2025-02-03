@@ -22,7 +22,7 @@ import {
 } from '@constants';
 import { getXProductionRule } from '@specBuilder/marks/markUtils';
 import { addFieldToFacetScaleDomain } from '@specBuilder/scale/scaleSpecBuilder';
-import { getColorValue, getFacetsFromProps, getLineWidthPixelsFromLineWidth } from '@specBuilder/specUtils';
+import { getColorValue, getFacetsFromOptions, getLineWidthPixelsFromLineWidth } from '@specBuilder/specUtils';
 import { GroupMark, NumericValueRef, Scale, TrailMark } from 'vega';
 
 import {
@@ -56,7 +56,7 @@ export const getScatterPathSpecProps = (
 		size,
 	}: ScatterSpecProps
 ): ScatterPathSpecProps => {
-	const { facets } = getFacetsFromProps({ color: scatterColor, lineType, size, opacity: scatterOpacity });
+	const { facets } = getFacetsFromOptions({ color: scatterColor, lineType, size, opacity: scatterOpacity });
 	return {
 		color,
 		colorScheme,

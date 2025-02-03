@@ -22,7 +22,7 @@ import {
 	SERIES_ID,
 } from '@constants';
 
-import { getLineHoverMarks, getLineMark, getLineOpacity } from './lineMarkUtils';
+import { getLineHoverMarks_DEPRACATED, getLineMark, getLineOpacity } from './lineMarkUtils';
 import { defaultLineMarkProps } from './lineTestUtils';
 
 describe('getLineMark()', () => {
@@ -80,12 +80,15 @@ describe('getLineMark()', () => {
 describe('getLineHoverMarks()', () => {
 	test('should return 5 marks by default', () => {
 		expect(
-			getLineHoverMarks({ ...defaultLineMarkProps, isHighlightedByDimension: true, children: [] }, 'line0_facet')
+			getLineHoverMarks_DEPRACATED(
+				{ ...defaultLineMarkProps, isHighlightedByDimension: true, children: [] },
+				'line0_facet'
+			)
 		).toHaveLength(5);
 	});
 	test('should return 4 marks if interactionMode is item', () => {
 		expect(
-			getLineHoverMarks(
+			getLineHoverMarks_DEPRACATED(
 				{ ...defaultLineMarkProps, isHighlightedByDimension: true, children: [], interactionMode: 'item' },
 				'line0_facet'
 			)
@@ -93,7 +96,7 @@ describe('getLineHoverMarks()', () => {
 	});
 	test('should return 7 marks if a popover is present', () => {
 		expect(
-			getLineHoverMarks(
+			getLineHoverMarks_DEPRACATED(
 				{
 					...defaultLineMarkProps,
 					isHighlightedByDimension: true,
@@ -104,7 +107,7 @@ describe('getLineHoverMarks()', () => {
 		).toHaveLength(7);
 	});
 	test('should have opacity of 0 if a selected item exists', () => {
-		const marks = getLineHoverMarks(
+		const marks = getLineHoverMarks_DEPRACATED(
 			{ ...defaultLineMarkProps, isHighlightedByDimension: true, children: [createElement(ChartPopover)] },
 			'line0_facet'
 		);

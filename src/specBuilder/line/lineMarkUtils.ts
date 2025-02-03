@@ -29,6 +29,7 @@ import {
 	getXProductionRule,
 	getYProductionRule,
 	hasPopover,
+	hasPopover_DEPRECATED,
 } from '@specBuilder/marks/markUtils';
 import { LineMark, Mark, NumericValueRef, ProductionRule, RuleMark } from 'vega';
 
@@ -40,7 +41,7 @@ import {
 	getSelectRingPoint,
 	getSelectionPoint,
 } from './linePointUtils';
-import { LineMarkProps } from './lineUtils';
+import { LineMarkOptions, LineMarkProps } from './lineUtils';
 
 /**
  * generates a line mark
@@ -86,7 +87,7 @@ export const getLineOpacity = ({
 	popoverMarkName,
 	isHighlightedByGroup,
 	highlightedItem,
-}: LineMarkProps): ProductionRule<NumericValueRef> => {
+}: LineMarkOptions): ProductionRule<NumericValueRef> => {
 	if ((!interactiveMarkName || displayOnHover) && highlightedItem === undefined) return [DEFAULT_OPACITY_RULE];
 	const strokeOpacityRules: ProductionRule<NumericValueRef> = [];
 
@@ -128,7 +129,7 @@ export const getLineOpacity = ({
  * @param secondaryHighlightedMetric
  * @returns
  */
-export const getLineHoverMarks = (
+export const getLineHoverMarks_DEPRACATED = (
 	lineProps: LineMarkProps,
 	dataSource: string,
 	secondaryHighlightedMetric?: string
@@ -140,13 +141,42 @@ export const getLineHoverMarks = (
 		// point behind the hovered or selected point used to prevent bacgorund elements from being visible through low opacity point
 		getHighlightBackgroundPoint(lineProps),
 		// if has popover, add selection ring and selection point
-		...(hasPopover(children) ? [getSelectRingPoint(lineProps), getSelectionPoint(lineProps)] : []),
+		...(hasPopover_DEPRECATED(children) ? [getSelectRingPoint(lineProps), getSelectionPoint(lineProps)] : []),
 		// hover or select point
 		getHighlightPoint(lineProps),
 		// additional point that gets highlighted like the trendline or raw line point
 		...(secondaryHighlightedMetric ? [getSecondaryHighlightPoint(lineProps, secondaryHighlightedMetric)] : []),
 		// get interactive marks for the line
 		...getInteractiveMarks(dataSource, lineProps),
+	];
+};
+
+/**
+ * All the marks that get displayed when hovering or selecting a point on a line
+ * @param lineMarkOptions
+ * @param dataSource
+ * @param secondaryHighlightedMetric
+ * @returns
+ */
+export const getLineHoverMarks = (
+	lineOptions: LineMarkOptions,
+	dataSource: string,
+	secondaryHighlightedMetric?: string
+): Mark[] => {
+	const { dimension, name, scaleType } = lineOptions;
+	return [
+		// vertical rule shown for the hovered or selected point
+		getHoverRule(dimension, name, scaleType),
+		// point behind the hovered or selected point used to prevent bacgorund elements from being visible through low opacity point
+		getHighlightBackgroundPoint(lineOptions),
+		// if has popover, add selection ring and selection point
+		...(hasPopover(lineOptions) ? [getSelectRingPoint(lineOptions), getSelectionPoint(lineOptions)] : []),
+		// hover or select point
+		getHighlightPoint(lineOptions),
+		// additional point that gets highlighted like the trendline or raw line point
+		...(secondaryHighlightedMetric ? [getSecondaryHighlightPoint(lineOptions, secondaryHighlightedMetric)] : []),
+		// get interactive marks for the line
+		...getInteractiveMarks(dataSource, lineOptions),
 	];
 };
 
@@ -171,30 +201,30 @@ const getHoverRule = (dimension: string, name: string, scaleType: ScaleType): Ru
 	};
 };
 
-const getInteractiveMarks = (dataSource: string, lineProps: LineMarkProps): Mark[] => {
-	const { interactionMode = DEFAULT_INTERACTION_MODE } = lineProps;
+const getInteractiveMarks = (dataSource: string, lineOptions: LineMarkOptions): Mark[] => {
+	const { interactionMode = DEFAULT_INTERACTION_MODE } = lineOptions;
 
 	const tooltipMarks = {
 		nearest: getVoronoiMarks,
 		item: getItemHoverMarks,
 	};
 
-	return tooltipMarks[interactionMode](dataSource, lineProps);
+	return tooltipMarks[interactionMode](lineOptions, dataSource);
 };
 
-const getVoronoiMarks = (dataSource: string, lineProps: LineMarkProps): Mark[] => {
-	const { children, dimension, metric, metricAxis, name, scaleType } = lineProps;
+const getVoronoiMarks = (lineOptions: LineMarkOptions, dataSource: string): Mark[] => {
+	const { dimension, metric, metricAxis, name, scaleType } = lineOptions;
 
 	return [
 		// points used for the voronoi transform
 		getPointsForVoronoi(dataSource, dimension, metric, name, scaleType, metricAxis),
 		// voronoi transform used to get nearest point paths
-		getVoronoiPath(children, `${name}_pointsForVoronoi`, name, lineProps),
+		getVoronoiPath(lineOptions, `${name}_pointsForVoronoi`),
 	];
 };
 
-const getItemHoverMarks = (dataSource: string, lineProps: LineMarkProps): Mark[] => {
-	const { children, dimension, metric, metricAxis, name, scaleType } = lineProps;
+const getItemHoverMarks = (lineOptions: LineMarkOptions, dataSource: string): Mark[] => {
+	const { dimension, metric, metricAxis, name, scaleType } = lineOptions;
 
 	return [
 		// area around item that triggers hover

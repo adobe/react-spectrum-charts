@@ -15,7 +15,7 @@ import { AreaMarkProps, getAreaMark } from '@specBuilder/area/areaUtils';
 import { getLineMark } from '@specBuilder/line/lineMarkUtils';
 import { LineMarkProps } from '@specBuilder/line/lineUtils';
 import { addHighlightedSeriesSignalEvents } from '@specBuilder/signal/signalSpecBuilder';
-import { getFacetsFromProps } from '@specBuilder/specUtils';
+import { getFacetsFromOptions } from '@specBuilder/specUtils';
 import { AreaMark, GroupMark, LineMark, Signal, SourceData } from 'vega';
 
 import {
@@ -60,7 +60,7 @@ export const applyMetricRangePropDefaults = (
  */
 export const getMetricRangeGroupMarks = (lineMarkProps: LineSpecProps): GroupMark[] => {
 	const { children, color, lineType, name: lineName } = lineMarkProps;
-	const { facets } = getFacetsFromProps({ color, lineType });
+	const { facets } = getFacetsFromOptions({ color, lineType });
 
 	const marks: GroupMark[] = [];
 	const metricRanges = getMetricRanges(children, lineName);

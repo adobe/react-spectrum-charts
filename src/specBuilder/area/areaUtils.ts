@@ -22,8 +22,8 @@ import {
 import {
 	getBorderStrokeEncodings,
 	getColorProductionRule,
-	getCursor,
-	getTooltip,
+	getCursor_DEPRECATED,
+	getTooltip_DEPRECATED,
 	isInteractive,
 } from '@specBuilder/marks/markUtils';
 import { AreaMark, NumericValueRef, ProductionRule } from 'vega';
@@ -62,14 +62,14 @@ export const getAreaMark = (areaProps: AreaMarkProps, dataSource: string = `${ar
 				y: { scale: 'yLinear', field: metricStart },
 				y2: { scale: 'yLinear', field: metricEnd },
 				fill: getColorProductionRule(color, colorScheme),
-				tooltip: getTooltip(children, name),
+				tooltip: getTooltip_DEPRECATED(children, name),
 				...getBorderStrokeEncodings(isStacked, true),
 			},
 			update: {
 				// this has to be in update because when you resize the window that doesn't rebuild the spec
 				// but it may change the x position if it causes the chart to resize
 				x: getX(scaleType, dimension),
-				cursor: getCursor(children),
+				cursor: getCursor_DEPRECATED(children),
 				fillOpacity: { value: opacity },
 				opacity: getAreaOpacity(areaProps),
 			},

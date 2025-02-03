@@ -9,35 +9,34 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { ChartTooltip } from '@components/ChartTooltip';
 import { TRENDLINE_VALUE } from '@constants';
 import { getLineHoverMarks, getLineOpacity } from '@specBuilder/line/lineMarkUtils';
-import { LineMarkProps } from '@specBuilder/line/lineUtils';
+import { LineMarkOptions } from '@specBuilder/line/lineUtils';
 import {
 	getColorProductionRule,
 	getLineWidthProductionRule,
 	getOpacityProductionRule,
 	getStrokeDashProductionRule,
-	hasTooltip_depracated,
+	hasTooltip,
 } from '@specBuilder/marks/markUtils';
 import { getScaleName } from '@specBuilder/scale/scaleSpecBuilder';
-import { getFacetsFromProps } from '@specBuilder/specUtils';
+import { getFacetsFromOptions } from '@specBuilder/specUtils';
 import { getTrendlineAnnotationMarks } from '@specBuilder/trendlineAnnotation';
 import { EncodeEntry, GroupMark, LineMark, NumericValueRef, RuleMark } from 'vega';
 
-import { ChartTooltipElement, Orientation, ScaleType, TrendlineMethod, TrendlineSpecProps } from '../../types';
+import { Orientation, ScaleType, TrendlineMethod, TrendlineSpecOptions, TrendlineSpecProps } from '../../types';
 import {
-	TrendlineParentProps,
-	getTrendlineColorFromMarkProps,
-	getTrendlineLineTypeFromMarkProps,
+	TrendlineParentOptions,
+	getTrendlineColorFromMarkOptions,
+	getTrendlineLineTypeFromMarkOptions,
 	getTrendlines,
 	isAggregateMethod,
 	isRegressionMethod,
 } from './trendlineUtils';
 
-export const getTrendlineMarks = (markProps: TrendlineParentProps): (GroupMark | RuleMark)[] => {
+export const getTrendlineMarks = (markProps: TrendlineParentOptions): (GroupMark | RuleMark)[] => {
 	const { color, lineType } = markProps;
-	const { facets } = getFacetsFromProps({ color, lineType });
+	const { facets } = getFacetsFromOptions({ color, lineType });
 
 	const marks: (GroupMark | RuleMark)[] = [];
 	const trendlines = getTrendlines(markProps);
@@ -64,7 +63,7 @@ export const getTrendlineMarks = (markProps: TrendlineParentProps): (GroupMark |
 		marks.push(...getTrendlineAnnotationMarks(trendlineProps, markProps.name));
 	}
 
-	if (trendlines.some((trendline) => hasTooltip_depracated(trendline.children))) {
+	if (trendlines.some((trendline) => hasTooltip(trendline))) {
 		marks.push(
 			getTrendlineHoverMarks(
 				markProps,
@@ -84,12 +83,15 @@ const getDataSourceName = (trendlineName: string, method: TrendlineMethod, displ
 
 /**
  * gets the trendline rule mark used for aggregate methods (mean, median)
- * @param markProps
- * @param trendlineProps
+ * @param markOptions
+ * @param trendlineOptions
  * @returns rule mark
  */
-export const getTrendlineRuleMark = (markProps: TrendlineParentProps, trendlineProps: TrendlineSpecProps): RuleMark => {
-	const { colorScheme } = markProps;
+export const getTrendlineRuleMark = (
+	markOptions: TrendlineParentOptions,
+	trendlineOptions: TrendlineSpecOptions
+): RuleMark => {
+	const { colorScheme } = markOptions;
 	const {
 		dimensionExtent,
 		dimensionScaleType,
@@ -100,7 +102,7 @@ export const getTrendlineRuleMark = (markProps: TrendlineParentProps, trendlineP
 		orientation,
 		trendlineColor,
 		trendlineDimension,
-	} = trendlineProps;
+	} = trendlineOptions;
 
 	const data = displayOnHover ? `${name}_highlightedData` : `${name}_highResolutionData`;
 
@@ -117,12 +119,12 @@ export const getTrendlineRuleMark = (markProps: TrendlineParentProps, trendlineP
 				...getRuleYEncodings(dimensionExtent, trendlineDimension, orientation),
 				stroke: getColorProductionRule(trendlineColor, colorScheme),
 				strokeDash: getStrokeDashProductionRule({ value: lineType }),
-				strokeOpacity: getOpacityProductionRule({ value: trendlineProps.opacity }),
+				strokeOpacity: getOpacityProductionRule({ value: trendlineOptions.opacity }),
 				strokeWidth: getLineWidthProductionRule({ value: lineWidth }),
 			},
 			update: {
 				...getRuleXEncodings(dimensionExtent, trendlineDimension, dimensionScaleType, orientation),
-				opacity: getLineOpacity(getLineMarkProps(markProps, trendlineProps)),
+				opacity: getLineOpacity(getLineMarkOptions(markOptions, trendlineOptions)),
 			},
 		},
 	};
@@ -225,12 +227,15 @@ export const getEndDimensionExtentProductionRule = (
 
 /**
  * gets the trendline line mark used for regression and window methods
- * @param markProps
- * @param trendlineProps
+ * @param markOptions
+ * @param trendlineOptions
  * @returns
  */
-export const getTrendlineLineMark = (markProps: TrendlineParentProps, trendlineProps: TrendlineSpecProps): LineMark => {
-	const { colorScheme } = markProps;
+export const getTrendlineLineMark = (
+	markOptions: TrendlineParentOptions,
+	trendlineOptions: TrendlineSpecOptions
+): LineMark => {
+	const { colorScheme } = markOptions;
 	const {
 		dimensionScaleType,
 		isDimensionNormalized,
@@ -240,7 +245,7 @@ export const getTrendlineLineMark = (markProps: TrendlineParentProps, trendlineP
 		orientation,
 		trendlineColor,
 		trendlineDimension,
-	} = trendlineProps;
+	} = trendlineOptions;
 
 	return {
 		name,
@@ -252,12 +257,12 @@ export const getTrendlineLineMark = (markProps: TrendlineParentProps, trendlineP
 				y: getLineYProductionRule(trendlineDimension, orientation),
 				stroke: getColorProductionRule(trendlineColor, colorScheme),
 				strokeDash: getStrokeDashProductionRule({ value: lineType }),
-				strokeOpacity: getOpacityProductionRule({ value: trendlineProps.opacity }),
+				strokeOpacity: getOpacityProductionRule({ value: trendlineOptions.opacity }),
 				strokeWidth: getLineWidthProductionRule({ value: lineWidth }),
 			},
 			update: {
 				x: getLineXProductionRule(trendlineDimension, dimensionScaleType, orientation, isDimensionNormalized),
-				opacity: getLineOpacity(getLineMarkProps(markProps, trendlineProps)),
+				opacity: getLineOpacity(getLineMarkOptions(markOptions, trendlineOptions)),
 			},
 		},
 	};
@@ -300,15 +305,12 @@ export const getLineXProductionRule = (
 		: { scale, field: trendlineDimension };
 };
 
-const getTrendlineHoverMarks = (markProps: TrendlineParentProps, highlightRawPoint: boolean): GroupMark => {
-	const { metric, name } = markProps;
-	const trendlines = getTrendlines(markProps);
-	const trendlineHoverProps: LineMarkProps = getLineMarkProps(markProps, trendlines[0], {
+const getTrendlineHoverMarks = (markOptions: TrendlineParentOptions, highlightRawPoint: boolean): GroupMark => {
+	const { metric, name } = markOptions;
+	const trendlines = getTrendlines(markOptions);
+	const trendlineHoverProps = getLineMarkOptions(markOptions, trendlines[0], {
 		name: `${name}Trendline`,
-		children: trendlines
-			.map((trendline) => trendline.children)
-			.flat()
-			.filter((child) => child.type === ChartTooltip) as ChartTooltipElement[],
+		chartTooltips: trendlines.map((trendline) => trendline.chartTooltips).flat(),
 		metric: TRENDLINE_VALUE,
 	});
 
@@ -324,23 +326,19 @@ const getTrendlineHoverMarks = (markProps: TrendlineParentProps, highlightRawPoi
 	};
 };
 
-const getLineMarkProps = (
-	markProps: TrendlineParentProps,
-	{ dimensionScaleType, displayOnHover, lineWidth, metric, name, opacity }: TrendlineSpecProps,
-	override?: Partial<LineMarkProps>
-): LineMarkProps => {
-	const { children, color, colorScheme, dimension, idKey, interactiveMarkName, lineType } = markProps;
-	const popoverMarkName = 'popoverMarkName' in markProps ? markProps.popoverMarkName : undefined;
-	const staticPoint = 'staticPoint' in markProps ? markProps.staticPoint : undefined;
+const getLineMarkOptions = (
+	markOptions: TrendlineParentOptions,
+	{ dimensionScaleType, displayOnHover, lineWidth, metric, name, opacity }: TrendlineSpecOptions,
+	override?: Partial<LineMarkOptions>
+): LineMarkOptions => {
+	const { color, lineType } = markOptions;
+	const popoverMarkName = 'popoverMarkName' in markOptions ? markOptions.popoverMarkName : undefined;
+	const staticPoint = 'staticPoint' in markOptions ? markOptions.staticPoint : undefined;
 	return {
-		children,
-		color: getTrendlineColorFromMarkProps(color),
-		colorScheme,
-		dimension,
+		...markOptions,
+		color: getTrendlineColorFromMarkOptions(color),
 		displayOnHover,
-		idKey,
-		interactiveMarkName,
-		lineType: getTrendlineLineTypeFromMarkProps(lineType),
+		lineType: getTrendlineLineTypeFromMarkOptions(lineType),
 		lineWidth: { value: lineWidth },
 		metric,
 		name,
@@ -348,6 +346,7 @@ const getLineMarkProps = (
 		popoverMarkName,
 		scaleType: dimensionScaleType,
 		staticPoint,
+
 		...override,
 	};
 };

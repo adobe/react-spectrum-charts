@@ -34,6 +34,7 @@ import {
 	SYMBOL_SIZE_SCALE,
 } from '@constants';
 import { addHighlightMarkOpacityRules } from '@specBuilder/chartTooltip/chartTooltipUtils';
+import { LineMarkOptions } from '@specBuilder/line/lineUtils';
 import { getScaleName } from '@specBuilder/scale/scaleSpecBuilder';
 import {
 	getColorValue,
@@ -46,6 +47,7 @@ import {
 	ArrayValueRef,
 	ColorValueRef,
 	Cursor,
+	EncodeEntry,
 	GroupMark,
 	NumericValueRef,
 	PathMark,
@@ -57,6 +59,8 @@ import {
 import {
 	BarSpecOptions,
 	BarSpecProps,
+	ChartPopoverOptions,
+	ChartTooltipOptions,
 	ChartTooltipProps,
 	ClickableChartProps,
 	ColorFacet,
@@ -78,37 +82,75 @@ import {
 /**
  * If a popover or onClick prop exists on the mark, then set the cursor to a pointer.
  */
-export function getCursor(
+export function getCursor_DEPRECATED(
 	children: MarkChildElement[],
 	props?: ClickableChartProps
 ): ScaledValueRef<Cursor> | undefined {
-	if (props?.onClick !== undefined || hasPopover(children)) {
+	if (props?.onClick !== undefined || hasPopover_DEPRECATED(children)) {
 		return { value: 'pointer' };
 	}
 }
 
 /**
+ * If a popover or onClick prop exists on the mark, then set the cursor to a pointer.
+ * @param chartPopovers
+ * @param hasOnClick
+ * @returns cursor encoding
+ */
+export const getCursor = (chartPopovers: ChartPopoverOptions[], hasOnClick?: boolean): EncodeEntry['cursor'] => {
+	if (hasOnClick || chartPopovers.length) {
+		return { value: 'pointer' };
+	}
+};
+
+/**
  * Returns true if there are any popovers or tooltips in the children, or if props.onClick is defined.
  */
 export function isInteractive(children: MarkChildElement[], props?: ClickableChartProps): boolean {
-	return props?.onClick !== undefined || hasInteractiveChildren(children);
+	return props?.onClick !== undefined || hasInteractiveChildren_DEPRECATED(children);
 }
 
 /**
  * If a tooltip or popover exists on the mark, then set tooltip to true.
  */
-export function getTooltip(
+export function getTooltip_DEPRECATED(
 	children: MarkChildElement[],
 	name: string,
 	nestedDatum?: boolean
 ): ProductionRuleTests<SignalRef> | SignalRef | undefined {
 	// skip annotations
-	if (hasTooltip_depracated(children)) {
+	if (hasTooltip_DEPRECATED(children)) {
 		const defaultTooltip = {
 			signal: `merge(datum${nestedDatum ? '.datum' : ''}, {'${COMPONENT_NAME}': '${name}'})`,
 		};
 		// if the tooltip has an excludeDataKey prop, then disable the tooltip where that key is present
 		const excludeDataKeys = getTooltipProps(children)?.excludeDataKeys;
+		if (excludeDataKeys?.length) {
+			return [
+				...excludeDataKeys.map((excludeDataKey) => ({ test: `datum.${excludeDataKey}`, signal: 'false' })),
+				defaultTooltip,
+			];
+		}
+
+		return defaultTooltip;
+	}
+}
+
+/**
+ * If a tooltip exists on the mark, then set tooltip to true.
+ */
+export function getTooltip(
+	chartTooltips: ChartTooltipOptions[],
+	name: string,
+	nestedDatum?: boolean
+): ProductionRuleTests<SignalRef> | SignalRef | undefined {
+	// skip annotations
+	if (chartTooltips.length) {
+		const defaultTooltip = {
+			signal: `merge(datum${nestedDatum ? '.datum' : ''}, {'${COMPONENT_NAME}': '${name}'})`,
+		};
+		// if the tooltip has an excludeDataKey prop, then disable the tooltip where that key is present
+		const excludeDataKeys = chartTooltips[0].excludeDataKeys;
 		if (excludeDataKeys?.length) {
 			return [
 				...excludeDataKeys.map((excludeDataKey) => ({ test: `datum.${excludeDataKey}`, signal: 'false' })),
@@ -142,7 +184,7 @@ export const getBorderStrokeEncodings = (isStacked: boolean, isArea = false): Ar
  * @param children
  * @returns
  */
-export const hasInteractiveChildren = (children: ReactElement[]): boolean => {
+export const hasInteractiveChildren_DEPRECATED = (children: ReactElement[]): boolean => {
 	return children.some(
 		(child) =>
 			child.type === ChartTooltip ||
@@ -151,18 +193,51 @@ export const hasInteractiveChildren = (children: ReactElement[]): boolean => {
 			(child.type === MetricRange && child.props.displayOnHover)
 	);
 };
+
+/**
+ * Checks if there are any tooltips or popovers on the mark
+ * @param children
+ * @returns
+ */
+export const hasInteractiveOptions = (
+	options: TrendlineSpecOptions | BarSpecOptions | LineMarkOptions | LineSpecOptions
+): boolean => {
+	const trendlines = ('trendlines' in options && options.trendlines) || [];
+	const metricRanges = ('metricRanges' in options && options.metricRanges) || [];
+
+	return (
+		hasPopover(options) ||
+		hasTooltip(options) ||
+		trendlines.some((trendline) => trendline.displayOnHover) ||
+		metricRanges.some((metricRange) => metricRange.displayOnHover)
+	);
+
+	// return children.some(
+	// 	(child) =>
+	// 		child.type === ChartTooltip ||
+	// 		child.type === ChartPopover ||
+	// 		(child.type === Trendline && child.props.displayOnHover) ||
+	// 		(child.type === MetricRange && child.props.displayOnHover)
+	// );
+};
+
 export const hasMetricRange = (children: ReactElement[]): boolean =>
 	children.some((child) => child.type === MetricRange);
-export const hasPopover = (children: ReactElement[]): boolean => children.some((child) => child.type === ChartPopover);
-export const hasTooltip_depracated = (children: ReactElement[]): boolean =>
+export const hasPopover_DEPRECATED = (children: ReactElement[]): boolean =>
+	children.some((child) => child.type === ChartPopover);
+export const hasTooltip_DEPRECATED = (children: ReactElement[]): boolean =>
 	children.some((child) => child.type === ChartTooltip);
 
+export const hasPopover = (
+	options: BarSpecOptions | LineSpecOptions | LineMarkOptions | ScatterSpecOptions | TrendlineSpecOptions
+): boolean => Boolean('chartPopovers' in options && options.chartPopovers && options.chartPopovers.length);
+
 export const hasTooltip = (
-	opts: BarSpecOptions | LineSpecOptions | ScatterSpecOptions | TrendlineSpecOptions
-): boolean => Boolean(opts.chartTooltips.length);
+	options: BarSpecOptions | LineMarkOptions | LineSpecOptions | ScatterSpecOptions | TrendlineSpecOptions
+): boolean => Boolean('chartTooltips' in options && options.chartTooltips && options.chartTooltips.length);
 
 export const childHasTooltip = (children: ReactElement[]): boolean =>
-	children.some((child) => hasTooltip_depracated(child.props.children));
+	children.some((child) => hasTooltip_DEPRECATED(child.props.children));
 
 /**
  * Gets the color encoding
@@ -335,42 +410,40 @@ export const getPointsForVoronoi = (
 
 /**
  * Gets the voronoi path used for tooltips and popovers
- * @param children
+ * @param markOptions
  * @param dataSource name of the point data source the voronoi is based on
- * @param markName
  * @returns PathMark
  */
-export const getVoronoiPath = (
-	children: MarkChildElement[],
-	dataSource: string,
-	markName: string,
-	props?: ClickableChartProps
-): PathMark => ({
-	name: `${markName}_voronoi`,
-	description: `${markName}_voronoi`,
-	type: 'path',
-	from: { data: dataSource },
-	encode: {
-		enter: {
-			fill: { value: 'transparent' },
-			stroke: { value: 'transparent' },
-			isVoronoi: { value: true },
-			tooltip: getTooltip(children, markName, true),
+export const getVoronoiPath = (markOptions: LineMarkOptions | ScatterSpecOptions, dataSource: string): PathMark => {
+	const { chartPopovers, chartTooltips, name: markName } = markOptions;
+	const hasOnClick = 'hasOnClick' in markOptions && markOptions.hasOnClick;
+	return {
+		name: `${markName}_voronoi`,
+		description: `${markName}_voronoi`,
+		type: 'path',
+		from: { data: dataSource },
+		encode: {
+			enter: {
+				fill: { value: 'transparent' },
+				stroke: { value: 'transparent' },
+				isVoronoi: { value: true },
+				tooltip: getTooltip(chartTooltips ?? [], markName, true),
+			},
+			update: {
+				cursor: getCursor(chartPopovers ?? [], hasOnClick),
+			},
 		},
-		update: {
-			cursor: getCursor(children, props),
-		},
-	},
-	transform: [
-		{
-			type: 'voronoi',
-			x: `datum.x`,
-			y: `datum.y`,
-			// on initial render, width/height could be 0 which causes problems
-			size: [{ signal: 'max(width, 1)' }, { signal: 'max(height, 1)' }],
-		},
-	],
-});
+		transform: [
+			{
+				type: 'voronoi',
+				x: `datum.x`,
+				y: `datum.y`,
+				// on initial render, width/height could be 0 which causes problems
+				size: [{ signal: 'max(width, 1)' }, { signal: 'max(height, 1)' }],
+			},
+		],
+	};
+};
 
 /**
  * Gets the hover area for the mark
@@ -404,7 +477,7 @@ export const getItemHoverArea = (
 					y: getYProductionRule(metricAxis, metric),
 					fill: { value: 'transparent' },
 					stroke: { value: 'transparent' },
-					tooltip: getTooltip(children, name, false),
+					tooltip: getTooltip_DEPRECATED(children, name, false),
 					size: getHoverSizeSignal(size),
 				},
 				update: {
@@ -436,13 +509,13 @@ export const getMarkOpacity = (props: BarSpecProps | DonutSpecProps): ({ test?: 
 	const { children, highlightedItem, idKey, name: markName } = props;
 	const rules: ({ test?: string } & NumericValueRef)[] = [DEFAULT_OPACITY_RULE];
 	// if there aren't any interactive components, then we don't need to add special opacity rules
-	if (!hasInteractiveChildren(children) && highlightedItem === undefined) {
+	if (!hasInteractiveChildren_DEPRECATED(children) && highlightedItem === undefined) {
 		return rules;
 	}
 
 	// if a bar is hovered/selected, all other bars should have reduced opacity
 	addHighlightMarkOpacityRules(rules, props);
-	if (hasPopover(children)) {
+	if (hasPopover_DEPRECATED(children)) {
 		return [
 			{
 				test: `!isValid(${SELECTED_GROUP}) && ${SELECTED_ITEM} && ${SELECTED_ITEM} !== datum.${idKey}`,

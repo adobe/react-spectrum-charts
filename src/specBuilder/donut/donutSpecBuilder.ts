@@ -10,7 +10,7 @@
  * governing permissions and limitations under the License.
  */
 import { COLOR_SCALE, DEFAULT_COLOR, DEFAULT_COLOR_SCHEME, DEFAULT_METRIC, FILTERED_TABLE } from '@constants';
-import { getTooltipProps, hasInteractiveChildren } from '@specBuilder/marks/markUtils';
+import { getTooltipProps, hasInteractiveChildren_DEPRECATED } from '@specBuilder/marks/markUtils';
 import { addFieldToFacetScaleDomain } from '@specBuilder/scale/scaleSpecBuilder';
 import { addHighlightedItemSignalEvents } from '@specBuilder/signal/signalSpecBuilder';
 import { sanitizeMarkChildren, toCamelCase } from '@utils';
@@ -137,6 +137,6 @@ export const addMarks = produce<Mark[], [DonutSpecProps]>((marks, props) => {
 export const addSignals = produce<Signal[], [DonutSpecProps]>((signals, props) => {
 	const { children, idKey, name } = props;
 	signals.push(...getDonutSummarySignals(props));
-	if (!hasInteractiveChildren(children)) return;
+	if (!hasInteractiveChildren_DEPRECATED(children)) return;
 	addHighlightedItemSignalEvents(signals, name, idKey, 1, getTooltipProps(children)?.excludeDataKeys);
 });

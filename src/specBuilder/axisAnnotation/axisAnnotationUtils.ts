@@ -11,7 +11,7 @@
  */
 import { AxisAnnotation } from '@components/AxisAnnotation';
 import { DEFAULT_AXIS_ANNOTATION_COLOR, DEFAULT_AXIS_ANNOTATION_OFFSET, FILTERED_TABLE } from '@constants';
-import { getCursor } from '@specBuilder/marks/markUtils';
+import { getCursor_DEPRECATED } from '@specBuilder/marks/markUtils';
 import { getColorValue } from '@specBuilder/specUtils';
 import { ANNOTATION_RANGED_ICON_SVG, ANNOTATION_SINGLE_ICON_SVG } from '@svgPaths';
 import { sanitizeAxisAnnotationChildren, toArray } from '@utils';
@@ -273,7 +273,7 @@ export const getAxisAnnotationSummaryMarks = ({ children, name, offset }: AxisAn
 						// adding a 2px transparent border increases the area of the icon so it's easier to hover
 						stroke: { value: 'transparent' },
 						strokeWidth: { value: 2 },
-						cursor: getCursor(children),
+						cursor: getCursor_DEPRECATED(children),
 					},
 					update: {
 						path: {
@@ -395,7 +395,7 @@ export const getAxisAnnotationSpanMarks = (
 						// adding a 2px transparent border increases the area of the icon so it's easier to hover
 						stroke: { value: 'transparent' },
 						strokeWidth: { value: 2 },
-						cursor: getCursor(children),
+						cursor: getCursor_DEPRECATED(children),
 					},
 					update: {
 						path: {

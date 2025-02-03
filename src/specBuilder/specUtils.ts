@@ -50,7 +50,7 @@ import {
  * @param facetProps
  * @returns facets
  */
-export const getFacetsFromProps = ({
+export const getFacetsFromOptions = ({
 	color,
 	lineType,
 	opacity,

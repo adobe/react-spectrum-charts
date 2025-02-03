@@ -18,15 +18,15 @@ import {
 	getTrendlineParamFormulaTransforms,
 	getWindowTransform,
 } from './trendlineDataTransformUtils';
-import { defaultLineProps, defaultTrendlineProps } from './trendlineTestUtils';
+import { defaultLineOptions, defaultTrendlineOptions } from './trendlineTestUtils';
 
 describe('getAggregateTransform()', () => {
 	test('should return the correct method', () => {
 		expect(
-			getAggregateTransform(defaultLineProps, { ...defaultTrendlineProps, method: 'average' }, false)
+			getAggregateTransform(defaultLineOptions, { ...defaultTrendlineOptions, method: 'average' }, false)
 		).toHaveProperty('ops', ['mean']);
 		expect(
-			getAggregateTransform(defaultLineProps, { ...defaultTrendlineProps, method: 'median' }, false)
+			getAggregateTransform(defaultLineOptions, { ...defaultTrendlineOptions, method: 'median' }, false)
 		).toHaveProperty('ops', ['median']);
 	});
 });
@@ -34,49 +34,49 @@ describe('getAggregateTransform()', () => {
 describe('getRegressionTransform()', () => {
 	test('should return the correct regression method', () => {
 		expect(
-			getRegressionTransform(defaultLineProps, { ...defaultTrendlineProps, method: 'exponential' }, false)
+			getRegressionTransform(defaultLineOptions, { ...defaultTrendlineOptions, method: 'exponential' }, false)
 		).toHaveProperty('method', 'exp');
 		expect(
-			getRegressionTransform(defaultLineProps, { ...defaultTrendlineProps, method: 'logarithmic' }, false)
+			getRegressionTransform(defaultLineOptions, { ...defaultTrendlineOptions, method: 'logarithmic' }, false)
 		).toHaveProperty('method', 'log');
 		expect(
-			getRegressionTransform(defaultLineProps, { ...defaultTrendlineProps, method: 'power' }, false)
+			getRegressionTransform(defaultLineOptions, { ...defaultTrendlineOptions, method: 'power' }, false)
 		).toHaveProperty('method', 'pow');
 		expect(
-			getRegressionTransform(defaultLineProps, { ...defaultTrendlineProps, method: 'linear' }, false)
+			getRegressionTransform(defaultLineOptions, { ...defaultTrendlineOptions, method: 'linear' }, false)
 		).toHaveProperty('method', 'poly');
 		expect(
-			getRegressionTransform(defaultLineProps, { ...defaultTrendlineProps, method: 'quadratic' }, false)
+			getRegressionTransform(defaultLineOptions, { ...defaultTrendlineOptions, method: 'quadratic' }, false)
 		).toHaveProperty('method', 'poly');
 		expect(
-			getRegressionTransform(defaultLineProps, { ...defaultTrendlineProps, method: 'polynomial-4' }, false)
+			getRegressionTransform(defaultLineOptions, { ...defaultTrendlineOptions, method: 'polynomial-4' }, false)
 		).toHaveProperty('method', 'poly');
 		expect(
-			getRegressionTransform(defaultLineProps, { ...defaultTrendlineProps, method: 'polynomial-25' }, false)
+			getRegressionTransform(defaultLineOptions, { ...defaultTrendlineOptions, method: 'polynomial-25' }, false)
 		).toHaveProperty('method', 'poly');
 	});
 	test('should return the correct order for polynomials', () => {
 		expect(
-			getRegressionTransform(defaultLineProps, { ...defaultTrendlineProps, method: 'linear' }, false)
+			getRegressionTransform(defaultLineOptions, { ...defaultTrendlineOptions, method: 'linear' }, false)
 		).toHaveProperty('order', 1);
 		expect(
-			getRegressionTransform(defaultLineProps, { ...defaultTrendlineProps, method: 'quadratic' }, false)
+			getRegressionTransform(defaultLineOptions, { ...defaultTrendlineOptions, method: 'quadratic' }, false)
 		).toHaveProperty('order', 2);
 		expect(
-			getRegressionTransform(defaultLineProps, { ...defaultTrendlineProps, method: 'polynomial-4' }, false)
+			getRegressionTransform(defaultLineOptions, { ...defaultTrendlineOptions, method: 'polynomial-4' }, false)
 		).toHaveProperty('order', 4);
 		expect(
-			getRegressionTransform(defaultLineProps, { ...defaultTrendlineProps, method: 'polynomial-25' }, false)
+			getRegressionTransform(defaultLineOptions, { ...defaultTrendlineOptions, method: 'polynomial-25' }, false)
 		).toHaveProperty('order', 25);
 		expect(
-			getRegressionTransform(defaultLineProps, { ...defaultTrendlineProps, method: 'power' }, false).order
+			getRegressionTransform(defaultLineOptions, { ...defaultTrendlineOptions, method: 'power' }, false).order
 		).toBeUndefined();
 	});
 	test('should use ${dimension}Normalized as ouput dimension if scaleType is time', () => {
 		const transform = getRegressionTransform(
-			{ ...defaultLineProps, dimension: 'x', scaleType: 'time' },
+			{ ...defaultLineOptions, dimension: 'x', scaleType: 'time' },
 			{
-				...defaultTrendlineProps,
+				...defaultTrendlineOptions,
 				dimensionScaleType: 'time',
 				isDimensionNormalized: true,
 				method: 'linear',
@@ -89,8 +89,8 @@ describe('getRegressionTransform()', () => {
 	});
 	test('should have params on transform and no `as` property when isHighResolutionData is false', () => {
 		const transform = getRegressionTransform(
-			defaultLineProps,
-			{ ...defaultTrendlineProps, method: 'linear' },
+			defaultLineOptions,
+			{ ...defaultTrendlineOptions, method: 'linear' },
 			false
 		);
 		expect(transform.as).toBeUndefined();
@@ -100,16 +100,19 @@ describe('getRegressionTransform()', () => {
 
 describe('getWindowTransform()', () => {
 	test('should return a window transform with the correct frame', () => {
-		const transform = getWindowTransform(defaultLineProps, { ...defaultTrendlineProps, method: 'movingAverage-7' });
+		const transform = getWindowTransform(defaultLineOptions, {
+			...defaultTrendlineOptions,
+			method: 'movingAverage-7',
+		});
 		expect(transform).toHaveProperty('type', 'window');
 		expect(transform).toHaveProperty('frame', [6, 0]);
 	});
 	test('should throw error if the method is not of form "moveingAverage-${number}"', () => {
-		expect(() => getWindowTransform(defaultLineProps, { ...defaultTrendlineProps, method: 'linear' })).toThrow(
+		expect(() => getWindowTransform(defaultLineOptions, { ...defaultTrendlineOptions, method: 'linear' })).toThrow(
 			'Invalid moving average frame width: NaN, frame width must be an integer greater than 0'
 		);
 		expect(() =>
-			getWindowTransform(defaultLineProps, { ...defaultTrendlineProps, method: 'movingAverage-0' })
+			getWindowTransform(defaultLineOptions, { ...defaultTrendlineOptions, method: 'movingAverage-0' })
 		).toThrow('Invalid moving average frame width: 0, frame width must be an integer greater than 0');
 	});
 });

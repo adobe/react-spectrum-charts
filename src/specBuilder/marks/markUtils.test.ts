@@ -40,18 +40,18 @@ import { ProductionRuleTests } from '../../types';
 import {
 	getColorProductionRule,
 	getColorProductionRuleSignalString,
-	getCursor,
+	getCursor_DEPRECATED,
 	getHighlightOpacityValue,
 	getLineWidthProductionRule,
 	getMarkOpacity,
 	getOpacityProductionRule,
 	getStrokeDashProductionRule,
 	getSymbolSizeProductionRule,
-	getTooltip,
+	getTooltip_DEPRECATED,
 	getXProductionRule,
 	getYProductionRule,
 	hasMetricRange,
-	hasTooltip_depracated,
+	hasTooltip_DEPRECATED,
 	isInteractive,
 } from './markUtils';
 
@@ -144,12 +144,12 @@ describe('getSymbolSizeProductionRule()', () => {
 
 describe('hasTooltip()', () => {
 	test('should be true if ChartTooltip exists in children', () => {
-		expect(hasTooltip_depracated([createElement(ChartTooltip)])).toBeTruthy();
-		expect(hasTooltip_depracated([createElement(ChartTooltip), createElement('div')])).toBeTruthy();
+		expect(hasTooltip_DEPRECATED([createElement(ChartTooltip)])).toBeTruthy();
+		expect(hasTooltip_DEPRECATED([createElement(ChartTooltip), createElement('div')])).toBeTruthy();
 	});
 	test('should be false if ChartTooltip does not exist in children', () => {
-		expect(hasTooltip_depracated([createElement(ChartPopover)])).toBeFalsy();
-		expect(hasTooltip_depracated([createElement(ChartPopover), createElement('div')])).toBeFalsy();
+		expect(hasTooltip_DEPRECATED([createElement(ChartPopover)])).toBeFalsy();
+		expect(hasTooltip_DEPRECATED([createElement(ChartPopover), createElement('div')])).toBeFalsy();
 	});
 });
 
@@ -166,19 +166,19 @@ describe('hasMetricRange()', () => {
 
 describe('getTooltip()', () => {
 	test('should return undefined if there are not any interactive children', () => {
-		expect(getTooltip([createElement(Annotation)], 'line0')).toBeUndefined();
-		expect(getTooltip([], 'line0')).toBeUndefined();
+		expect(getTooltip_DEPRECATED([createElement(Annotation)], 'line0')).toBeUndefined();
+		expect(getTooltip_DEPRECATED([], 'line0')).toBeUndefined();
 	});
 	test('should return signal ref if there are interactive children', () => {
-		const rule = getTooltip([createElement(ChartTooltip)], 'line0');
+		const rule = getTooltip_DEPRECATED([createElement(ChartTooltip)], 'line0');
 		expect(rule).toHaveProperty('signal');
 	});
 	test('should reference a nested datum if nestedDatum is true', () => {
-		const rule = getTooltip([createElement(ChartTooltip)], 'line0', true) as SignalRef;
+		const rule = getTooltip_DEPRECATED([createElement(ChartTooltip)], 'line0', true) as SignalRef;
 		expect(rule.signal).toContain('datum.datum');
 	});
 	test('should add condition test when excludeDataKey is present', () => {
-		const rule = getTooltip(
+		const rule = getTooltip_DEPRECATED(
 			[createElement(ChartTooltip, { excludeDataKeys: ['excludeFromTooltip'] })],
 			'line0',
 			false
@@ -188,7 +188,7 @@ describe('getTooltip()', () => {
 		expect(rule[0].signal).toBe('false');
 	});
 	test('should have default tooltip as second item when excludeDataKey is present', () => {
-		const rule = getTooltip(
+		const rule = getTooltip_DEPRECATED(
 			[createElement(ChartTooltip, { excludeDataKeys: ['excludeFromTooltip'] })],
 			'line0',
 			false
@@ -257,16 +257,16 @@ describe('isInteractive()', () => {
 
 describe('getCursor()', () => {
 	test('should return pointer object if children have popover element', () => {
-		expect(getCursor([createElement(ChartPopover)])).toEqual({ value: 'pointer' });
+		expect(getCursor_DEPRECATED([createElement(ChartPopover)])).toEqual({ value: 'pointer' });
 	});
 
 	test('should return pointer object if props.onClick is defined', () => {
-		expect(getCursor([], { onClick: jest.fn() })).toEqual({ value: 'pointer' });
+		expect(getCursor_DEPRECATED([], { onClick: jest.fn() })).toEqual({ value: 'pointer' });
 	});
 
 	test('should return falsy value if children do not have popover element and onClick is not defined', () => {
-		expect(getCursor([])).toBeFalsy();
-		expect(getCursor([createElement(ChartTooltip)], {})).toBeFalsy();
+		expect(getCursor_DEPRECATED([])).toBeFalsy();
+		expect(getCursor_DEPRECATED([createElement(ChartTooltip)], {})).toBeFalsy();
 	});
 });
 

@@ -26,7 +26,7 @@ import {
 import { addTooltipData, addTooltipSignals } from '@specBuilder/chartTooltip/chartTooltipUtils';
 import { addTimeTransform, getFilteredTooltipData, getTableData } from '@specBuilder/data/dataUtils';
 import { getInteractiveMarkName } from '@specBuilder/line/lineUtils';
-import { hasInteractiveChildren, hasPopover } from '@specBuilder/marks/markUtils';
+import { hasInteractiveChildren_DEPRECATED, hasPopover_DEPRECATED } from '@specBuilder/marks/markUtils';
 import {
 	addContinuousDimensionScale,
 	addFieldToFacetScaleDomain,
@@ -106,11 +106,11 @@ export const addData = produce<Data[], [ScatterSpecProps]>((data, props) => {
 		tableData.transform = addTimeTransform(tableData.transform ?? [], dimension);
 	}
 
-	if (hasInteractiveChildren(children) || highlightedItem !== undefined) {
+	if (hasInteractiveChildren_DEPRECATED(children) || highlightedItem !== undefined) {
 		data.push(getFilteredTooltipData(children));
 	}
 
-	if (hasPopover(children)) {
+	if (hasPopover_DEPRECATED(children)) {
 		data.push({
 			name: `${name}_selectedData`,
 			source: FILTERED_TABLE,
@@ -136,7 +136,7 @@ export const addSignals = produce<Signal[], [ScatterSpecProps]>((signals, props)
 	// trendline signals
 	setTrendlineSignals(signals, props);
 
-	if (!hasInteractiveChildren(children)) return;
+	if (!hasInteractiveChildren_DEPRECATED(children)) return;
 	// interactive signals
 	addHighlightedItemSignalEvents(signals, `${name}_voronoi`, idKey, 2);
 	addTooltipSignals(signals, props);

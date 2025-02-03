@@ -27,8 +27,8 @@ import {
 import { getColorValue } from '@specBuilder/specUtils';
 import { ColorValueRef, NumericValueRef, SymbolMark } from 'vega';
 
-import { LineSpecProps, ProductionRuleTests } from '../../types';
-import { LineMarkProps } from './lineUtils';
+import { LineSpecOptions, ProductionRuleTests } from '../../types';
+import { LineMarkOptions } from './lineUtils';
 
 const staticPointTest = (staticPoint: string) => `datum.${staticPoint} && datum.${staticPoint} === true`;
 const getSelectedTest = (name: string, idKey: string) =>
@@ -36,7 +36,7 @@ const getSelectedTest = (name: string, idKey: string) =>
 
 /**
  * Gets the point mark for static points on a line chart.
- * @param lineMarkProps
+ * @param lineMarkOptions
  * @returns SymbolMark
  */
 export const getLineStaticPoint = ({
@@ -49,7 +49,7 @@ export const getLineStaticPoint = ({
 	dimension,
 	isSparkline,
 	pointSize = 125,
-}: LineSpecProps): SymbolMark => {
+}: LineSpecOptions): SymbolMark => {
 	return {
 		name: `${name}_staticPoints`,
 		description: `${name}_staticPoints`,
@@ -72,11 +72,11 @@ export const getLineStaticPoint = ({
 
 /**
  * Gets a background to points to prevent opacity from displaying elements behind the point.
- * @param lineMarkProps
+ * @param lineMarkOptions
  * @returns SymbolMark
  */
-export const getHighlightBackgroundPoint = (lineProps: LineMarkProps): SymbolMark => {
-	const { dimension, metric, metricAxis, name, scaleType } = lineProps;
+export const getHighlightBackgroundPoint = (lineOptions: LineMarkOptions): SymbolMark => {
+	const { dimension, metric, metricAxis, name, scaleType } = lineOptions;
 	return {
 		name: `${name}_pointBackground`,
 		description: `${name}_pointBackground`,
@@ -90,16 +90,16 @@ export const getHighlightBackgroundPoint = (lineProps: LineMarkProps): SymbolMar
 				stroke: { signal: BACKGROUND_COLOR },
 			},
 			update: {
-				size: getHighlightPointSize(lineProps),
-				strokeWidth: getHighlightPointStrokeWidth(lineProps),
+				size: getHighlightPointSize(lineOptions),
+				strokeWidth: getHighlightPointStrokeWidth(lineOptions),
 				x: getXProductionRule(scaleType, dimension),
 			},
 		},
 	};
 };
 
-const getHighlightOrSelectionPoint = (lineProps: LineMarkProps, useHighlightedData = true): SymbolMark => {
-	const { color, colorScheme, dimension, metric, metricAxis, name, scaleType } = lineProps;
+const getHighlightOrSelectionPoint = (lineOptions: LineMarkOptions, useHighlightedData = true): SymbolMark => {
+	const { color, colorScheme, dimension, metric, metricAxis, name, scaleType } = lineOptions;
 	return {
 		name: `${name}_point_${useHighlightedData ? 'highlight' : 'select'}`,
 		type: 'symbol',
@@ -111,11 +111,11 @@ const getHighlightOrSelectionPoint = (lineProps: LineMarkProps, useHighlightedDa
 				stroke: getColorProductionRule(color, colorScheme),
 			},
 			update: {
-				fill: getHighlightPointFill(lineProps),
-				size: getHighlightPointSize(lineProps),
-				stroke: getHighlightPointStroke(lineProps),
-				strokeOpacity: getHighlightPointStrokeOpacity(lineProps),
-				strokeWidth: getHighlightPointStrokeWidth(lineProps),
+				fill: getHighlightPointFill(lineOptions),
+				size: getHighlightPointSize(lineOptions),
+				stroke: getHighlightPointStroke(lineOptions),
+				strokeOpacity: getHighlightPointStrokeOpacity(lineOptions),
+				strokeWidth: getHighlightPointStrokeWidth(lineOptions),
 				x: getXProductionRule(scaleType, dimension),
 			},
 		},
@@ -124,33 +124,33 @@ const getHighlightOrSelectionPoint = (lineProps: LineMarkProps, useHighlightedDa
 
 /**
  * Displays a point on hover on the line.
- * @param lineMarkProps
+ * @param lineMarkOptions
  * @returns SymbolMark
  */
-export const getHighlightPoint = (lineProps: LineMarkProps): SymbolMark => {
-	return getHighlightOrSelectionPoint(lineProps, true);
+export const getHighlightPoint = (lineOptions: LineMarkOptions): SymbolMark => {
+	return getHighlightOrSelectionPoint(lineOptions, true);
 };
 
 /**
  * Displays a point on select on the line.
- * @param lineMarkProps
+ * @param lineMarkOptions
  * @returns SymbolMark
  */
-export const getSelectionPoint = (lineProps: LineMarkProps): SymbolMark => {
-	return getHighlightOrSelectionPoint(lineProps, false);
+export const getSelectionPoint = (lineOptions: LineMarkOptions): SymbolMark => {
+	return getHighlightOrSelectionPoint(lineOptions, false);
 };
 
 /**
  * Displays a secondary highlight point on hover or select on the line.
- * @param lineMarkProps
+ * @param lineMarkOptions
  * @param secondaryHighlightedMetric
  * @returns SymbolMark
  */
 export const getSecondaryHighlightPoint = (
-	lineProps: LineMarkProps,
+	lineOptions: LineMarkOptions,
 	secondaryHighlightedMetric: string
 ): SymbolMark => {
-	const { color, colorScheme, dimension, metricAxis, name, scaleType } = lineProps;
+	const { color, colorScheme, dimension, metricAxis, name, scaleType } = lineOptions;
 	return {
 		name: `${name}_secondaryPoint`,
 		type: 'symbol',
@@ -171,24 +171,18 @@ export const getSecondaryHighlightPoint = (
 
 /**
  * gets the fill color for the highlighted point
- * @param lineMarkProps
+ * @param lineMarkOptions
  * @returns fill rule
  */
-export const getHighlightPointFill = ({
-	children,
-	color,
-	colorScheme,
-	idKey,
-	name,
-	staticPoint,
-}: LineMarkProps): ProductionRuleTests<ColorValueRef> => {
+export const getHighlightPointFill = (markOptions: LineMarkOptions): ProductionRuleTests<ColorValueRef> => {
+	const { color, colorScheme, idKey, name, staticPoint } = markOptions;
 	const fillRules: ProductionRuleTests<ColorValueRef> = [];
 	const selectedTest = getSelectedTest(name, idKey);
 
 	if (staticPoint) {
 		fillRules.push({ test: staticPointTest(staticPoint), ...getColorProductionRule(color, colorScheme) });
 	}
-	if (hasPopover(children)) {
+	if (hasPopover(markOptions)) {
 		fillRules.push({ test: selectedTest, ...getColorProductionRule(color, colorScheme) });
 	}
 	return [...fillRules, { signal: BACKGROUND_COLOR }];
@@ -196,24 +190,18 @@ export const getHighlightPointFill = ({
 
 /**
  * gets the stroke color for the highlighted point
- * @param lineMarkProps
+ * @param lineMarkOptions
  * @returns stroke rule
  */
-export const getHighlightPointStroke = ({
-	children,
-	color,
-	colorScheme,
-	idKey,
-	name,
-	staticPoint,
-}: LineMarkProps): ProductionRuleTests<ColorValueRef> => {
+export const getHighlightPointStroke = (markOptions: LineMarkOptions): ProductionRuleTests<ColorValueRef> => {
+	const { color, colorScheme, idKey, name, staticPoint } = markOptions;
 	const strokeRules: ProductionRuleTests<ColorValueRef> = [];
 	const selectedTest = getSelectedTest(name, idKey);
 
 	if (staticPoint) {
 		strokeRules.push({ test: staticPointTest(staticPoint), ...getColorProductionRule(color, colorScheme) });
 	}
-	if (hasPopover(children)) {
+	if (hasPopover(markOptions)) {
 		strokeRules.push({ test: selectedTest, signal: BACKGROUND_COLOR });
 	}
 
@@ -222,13 +210,13 @@ export const getHighlightPointStroke = ({
 
 /**
  * gets the stroke opacity for the highlighted point
- * @param lineMarkProps
+ * @param lineMarkOptions
  * @returns stroke opacity rule
  */
 export const getHighlightPointStrokeOpacity = ({
 	opacity,
 	staticPoint,
-}: LineMarkProps): ProductionRuleTests<NumericValueRef> => {
+}: LineMarkOptions): ProductionRuleTests<NumericValueRef> => {
 	const baseOpacityRule = getOpacityProductionRule(opacity);
 	const strokeOpacityRules: ProductionRuleTests<NumericValueRef> = [];
 	if (staticPoint) {
@@ -242,10 +230,10 @@ export const getHighlightPointStrokeOpacity = ({
 
 /**
  * gets the size for the highlighted point
- * @param lineMarkProps
+ * @param lineMarkOptions
  * @returns size rule
  */
-export const getHighlightPointSize = ({ staticPoint }: LineMarkProps): ProductionRuleTests<NumericValueRef> => {
+export const getHighlightPointSize = ({ staticPoint }: LineMarkOptions): ProductionRuleTests<NumericValueRef> => {
 	const sizeRules: ProductionRuleTests<NumericValueRef> = [];
 	if (staticPoint) {
 		sizeRules.push({
@@ -259,10 +247,12 @@ export const getHighlightPointSize = ({ staticPoint }: LineMarkProps): Productio
 
 /**
  * gets the stroke width for the highlighted point
- * @param lineMarkProps
+ * @param lineMarkOptions
  * @returns stroke width rule
  */
-export const getHighlightPointStrokeWidth = ({ staticPoint }: LineMarkProps): ProductionRuleTests<NumericValueRef> => {
+export const getHighlightPointStrokeWidth = ({
+	staticPoint,
+}: LineMarkOptions): ProductionRuleTests<NumericValueRef> => {
 	const strokeWidthRules: ProductionRuleTests<NumericValueRef> = [];
 	if (staticPoint) {
 		strokeWidthRules.push({
@@ -276,11 +266,11 @@ export const getHighlightPointStrokeWidth = ({ staticPoint }: LineMarkProps): Pr
 
 /**
  * Gets point that is used for the selection ring.
- * @param lineMarkProps
+ * @param lineMarkOptions
  * @returns SymbolMark
  */
-export const getSelectRingPoint = (lineProps: LineMarkProps): SymbolMark => {
-	const { colorScheme, dimension, idKey, metric, metricAxis, name, scaleType } = lineProps;
+export const getSelectRingPoint = (lineOptions: LineMarkOptions): SymbolMark => {
+	const { colorScheme, dimension, idKey, metric, metricAxis, name, scaleType } = lineOptions;
 	const selectedTest = getSelectedTest(name, idKey);
 
 	return {

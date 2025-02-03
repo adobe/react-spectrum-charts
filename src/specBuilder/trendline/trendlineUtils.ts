@@ -39,9 +39,6 @@ export type TrendlineParentOptions = LineSpecOptions | ScatterSpecOptions | BarS
  */
 export const getTrendlines = (markOptions: TrendlineParentOptions): TrendlineSpecOptions[] => {
 	return markOptions.trendlines.map((trendline, index) => applyTrendlinePropDefaults(markOptions, trendline, index));
-
-	// const trendlineElements = markProps.children.filter((child) => child.type === Trendline) as TrendlineElement[];
-	// return trendlineElements.map((trendline, index) => applyTrendlinePropDefaults(markProps, trendline.props, index));
 };
 
 /**

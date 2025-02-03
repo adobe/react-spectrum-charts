@@ -36,7 +36,7 @@ import {
 	getScaleIndexByType,
 } from '@specBuilder/scale/scaleSpecBuilder';
 import { addHighlightedItemSignalEvents, getGenericValueSignal } from '@specBuilder/signal/signalSpecBuilder';
-import { getFacetsFromProps } from '@specBuilder/specUtils';
+import { getFacetsFromOptions } from '@specBuilder/specUtils';
 import { addTrendlineData, getTrendlineMarks, setTrendlineSignals } from '@specBuilder/trendline';
 import { sanitizeMarkChildren, toCamelCase } from '@utils';
 import { produce } from 'immer';
@@ -182,7 +182,7 @@ export const getStackIdTransform = (props: BarSpecProps): FormulaTransform => {
 };
 
 const getStackFields = ({ trellis, color, dimension, lineType, opacity, type }: BarSpecProps): string[] => {
-	const { facets, secondaryFacets } = getFacetsFromProps({ color, lineType, opacity });
+	const { facets, secondaryFacets } = getFacetsFromOptions({ color, lineType, opacity });
 	return [
 		...(trellis ? [trellis] : []),
 		dimension,
@@ -192,7 +192,7 @@ const getStackFields = ({ trellis, color, dimension, lineType, opacity, type }: 
 };
 
 export const getDodgeGroupTransform = ({ color, lineType, name, opacity, type }: BarSpecProps): FormulaTransform => {
-	const { facets, secondaryFacets } = getFacetsFromProps({ color, lineType, opacity });
+	const { facets, secondaryFacets } = getFacetsFromOptions({ color, lineType, opacity });
 	return {
 		type: 'formula',
 		as: `${name}_dodgeGroup`,

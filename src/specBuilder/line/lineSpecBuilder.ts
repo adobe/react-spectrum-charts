@@ -21,14 +21,14 @@ import {
 } from '@constants';
 import { addPopoverData } from '@specBuilder/chartPopover/chartPopoverUtils';
 import { addTooltipData, addTooltipSignals, isHighlightedByGroup } from '@specBuilder/chartTooltip/chartTooltipUtils';
-import { getHoverMarkNames, hasPopover, isInteractive } from '@specBuilder/marks/markUtils';
+import { getHoverMarkNames, hasPopover_DEPRECATED, isInteractive } from '@specBuilder/marks/markUtils';
 import {
 	getMetricRangeData,
 	getMetricRangeGroupMarks,
 	getMetricRangeSignals,
 	getMetricRanges,
 } from '@specBuilder/metricRange/metricRangeUtils';
-import { getFacetsFromProps } from '@specBuilder/specUtils';
+import { getFacetsFromOptions } from '@specBuilder/specUtils';
 import { addTrendlineData, getTrendlineMarks, getTrendlineScales, setTrendlineSignals } from '@specBuilder/trendline';
 import { sanitizeMarkChildren, toCamelCase } from '@utils';
 import { produce } from 'immer';
@@ -39,7 +39,7 @@ import { addTimeTransform, getFilteredTooltipData, getTableData } from '../data/
 import { addContinuousDimensionScale, addFieldToFacetScaleDomain, addMetricScale } from '../scale/scaleSpecBuilder';
 import { addHighlightedItemSignalEvents, addHighlightedSeriesSignalEvents } from '../signal/signalSpecBuilder';
 import { getLineHighlightedData, getLineStaticPointData } from './lineDataUtils';
-import { getLineHoverMarks, getLineMark } from './lineMarkUtils';
+import { getLineHoverMarks_DEPRACATED, getLineMark } from './lineMarkUtils';
 import { getLineStaticPoint } from './linePointUtils';
 import { getInteractiveMarkName, getPopoverMarkName } from './lineUtils';
 
@@ -103,7 +103,13 @@ export const addData = produce<Data[], [LineSpecProps]>((data, props) => {
 	}
 	if (isInteractive(children, props) || highlightedItem !== undefined) {
 		data.push(
-			getLineHighlightedData(name, props.idKey, FILTERED_TABLE, hasPopover(children), isHighlightedByGroup(props))
+			getLineHighlightedData(
+				name,
+				props.idKey,
+				FILTERED_TABLE,
+				hasPopover_DEPRECATED(children),
+				isHighlightedByGroup(props)
+			)
 		);
 		data.push(getFilteredTooltipData(children));
 	}
@@ -152,7 +158,7 @@ export const setScales = produce<Scale[], [LineSpecProps]>((scales, props) => {
 export const addLineMarks = produce<Mark[], [LineSpecProps]>((marks, props) => {
 	const { children, color, highlightedItem, isSparkline, lineType, name, opacity, staticPoint } = props;
 
-	const { facets } = getFacetsFromProps({ color, lineType, opacity });
+	const { facets } = getFacetsFromOptions({ color, lineType, opacity });
 
 	marks.push({
 		name: `${name}_group`,
@@ -169,7 +175,7 @@ export const addLineMarks = produce<Mark[], [LineSpecProps]>((marks, props) => {
 	if (staticPoint || isSparkline) marks.push(getLineStaticPoint(props));
 	marks.push(...getMetricRangeGroupMarks(props));
 	if (isInteractive(children, props) || highlightedItem !== undefined) {
-		marks.push(...getLineHoverMarks(props, `${FILTERED_TABLE}ForTooltip`));
+		marks.push(...getLineHoverMarks_DEPRACATED(props, `${FILTERED_TABLE}ForTooltip`));
 	}
 	marks.push(...getTrendlineMarks(props));
 });

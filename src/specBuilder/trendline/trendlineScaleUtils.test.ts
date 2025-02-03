@@ -9,18 +9,14 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { createElement } from 'react';
-
-import { Trendline } from '@components/Trendline';
-
 import { getTrendlineScales } from './trendlineScaleUtils';
-import { defaultLineProps } from './trendlineTestUtils';
+import { defaultLineOptions } from './trendlineTestUtils';
 
 describe('getTrendlineScales()', () => {
 	test('should return the xTrendline scale if the scaleType is time and there is a regression trendline', () => {
 		const scales = getTrendlineScales({
-			...defaultLineProps,
-			children: [createElement(Trendline, { method: 'linear' })],
+			...defaultLineOptions,
+			trendlines: [{ method: 'linear' }],
 		});
 		expect(scales).toHaveLength(1);
 		expect(scales[0]).toHaveProperty('name', 'xTrendline');

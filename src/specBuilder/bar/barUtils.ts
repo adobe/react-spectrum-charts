@@ -13,12 +13,12 @@ import { CORNER_RADIUS, DISCRETE_PADDING, FILTERED_TABLE, SELECTED_GROUP, SELECT
 import { getPopovers } from '@specBuilder/chartPopover/chartPopoverUtils';
 import {
 	getColorProductionRule,
-	getCursor,
+	getCursor_DEPRECATED,
 	getMarkOpacity,
 	getOpacityProductionRule,
 	getStrokeDashProductionRule,
-	getTooltip,
-	hasPopover,
+	getTooltip_DEPRECATED,
+	hasPopover_DEPRECATED,
 } from '@specBuilder/marks/markUtils';
 import { getColorValue, getLineWidthPixelsFromLineWidth } from '@specBuilder/specUtils';
 import {
@@ -228,11 +228,11 @@ export const getBaseBarEnterEncodings = (props: BarSpecProps): EncodeEntry => ({
 export const getBarEnterEncodings = ({ children, color, colorScheme, name, opacity }: BarSpecProps): EncodeEntry => ({
 	fill: getColorProductionRule(color, colorScheme),
 	fillOpacity: getOpacityProductionRule(opacity),
-	tooltip: getTooltip(children, name),
+	tooltip: getTooltip_DEPRECATED(children, name),
 });
 
 export const getBarUpdateEncodings = (props: BarSpecProps): EncodeEntry => ({
-	cursor: getCursor(props.children, props),
+	cursor: getCursor_DEPRECATED(props.children, props),
 	opacity: getMarkOpacity(props),
 	stroke: getStroke(props),
 	strokeDash: getStrokeDash(props),
@@ -247,7 +247,7 @@ export const getStroke = ({
 	idKey,
 }: BarSpecProps): ProductionRule<ColorValueRef> => {
 	const defaultProductionRule = getColorProductionRule(color, colorScheme);
-	if (!hasPopover(children)) {
+	if (!hasPopover_DEPRECATED(children)) {
 		return [defaultProductionRule];
 	}
 
@@ -299,7 +299,7 @@ export const getDimensionSelectionRing = (props: BarSpecProps): RectMark => {
 
 export const getStrokeDash = ({ children, idKey, lineType }: BarSpecProps): ProductionRule<ArrayValueRef> => {
 	const defaultProductionRule = getStrokeDashProductionRule(lineType);
-	if (!hasPopover(children)) {
+	if (!hasPopover_DEPRECATED(children)) {
 		return [defaultProductionRule];
 	}
 

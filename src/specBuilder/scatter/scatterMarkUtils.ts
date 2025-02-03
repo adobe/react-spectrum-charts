@@ -20,8 +20,8 @@ import {
 	getSymbolSizeProductionRule,
 	getVoronoiPath,
 	getXProductionRule,
-	hasInteractiveChildren,
-	hasPopover,
+	hasInteractiveChildren_DEPRECATED,
+	hasPopover_DEPRECATED,
 } from '@specBuilder/marks/markUtils';
 import { getScatterPathMarks } from '@specBuilder/scatterPath/scatterPathUtils';
 import { getTrendlineMarks } from '@specBuilder/trendline';
@@ -104,7 +104,7 @@ export const getScatterMark = (props: ScatterSpecProps): SymbolMark => {
  */
 export const getOpacity = (props: ScatterSpecProps): ({ test?: string } & NumericValueRef)[] => {
 	const { children, highlightedItem, idKey } = props;
-	if (!hasInteractiveChildren(children) && highlightedItem === undefined) {
+	if (!hasInteractiveChildren_DEPRECATED(children) && highlightedItem === undefined) {
 		return [DEFAULT_OPACITY_RULE];
 	}
 	// if a point is hovered or selected, all other points should be reduced opacity
@@ -112,7 +112,7 @@ export const getOpacity = (props: ScatterSpecProps): ({ test?: string } & Numeri
 
 	const rules: ({ test?: string } & NumericValueRef)[] = [];
 	addHighlightMarkOpacityRules(rules, props);
-	if (hasPopover(children)) {
+	if (hasPopover_DEPRECATED(children)) {
 		rules.push({
 			test: `isValid(${SELECTED_ITEM}) && ${SELECTED_ITEM} !== datum.${idKey}`,
 			value: fadedValue,
@@ -135,7 +135,7 @@ export const getScatterHoverMarks = ({
 	metric,
 	name,
 }: ScatterSpecProps): Mark[] => {
-	if (!hasInteractiveChildren(children) && highlightedItem === undefined) {
+	if (!hasInteractiveChildren_DEPRECATED(children) && highlightedItem === undefined) {
 		return [];
 	}
 
@@ -153,7 +153,7 @@ const getScatterSelectMarks = ({
 	name,
 	size,
 }: ScatterSpecProps): SymbolMark[] => {
-	if (!hasPopover(children)) {
+	if (!hasPopover_DEPRECATED(children)) {
 		return [];
 	}
 	return [
