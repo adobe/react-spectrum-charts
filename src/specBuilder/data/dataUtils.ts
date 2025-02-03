@@ -16,11 +16,10 @@ import {
 	SERIES_ID,
 	TABLE,
 } from '@constants';
-import { getTooltipProps } from '@specBuilder/marks/markUtils';
 import { produce } from 'immer';
 import { Compare, Data, FormulaTransform, SourceData, Transforms, ValuesData } from 'vega';
 
-import { MarkChildElement } from '../../types';
+import { ChartTooltipOptions } from '../../types';
 
 export const addTimeTransform = produce<Transforms[], [string]>((transforms, dimension) => {
 	if (transforms.findIndex((transform) => transform.type === 'timeunit') === -1) {
@@ -79,8 +78,8 @@ export const getSeriesIdTransform = (facets: string[]): FormulaTransform[] => {
  * @param children
  * @returns spec data that filters out items where the `excludeDataKey` is true
  */
-export const getFilteredTooltipData = (children: MarkChildElement[]) => {
-	const excludeDataKeys = getTooltipProps(children)?.excludeDataKeys;
+export const getFilteredTooltipData = (chartTooltips: ChartTooltipOptions[]) => {
+	const excludeDataKeys = chartTooltips[0]?.excludeDataKeys;
 	const transform: { type: 'filter'; expr: string }[] | undefined = excludeDataKeys?.map((excludeDataKey) => ({
 		type: 'filter',
 		expr: `!datum.${excludeDataKey}`,
