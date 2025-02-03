@@ -49,13 +49,13 @@ export const getTooltips = (markOptions: TooltipParentOptions): ChartTooltipSpec
  * @returns ChartTooltipSpecOptions
  */
 export const applyTooltipPropDefaults = (
-	{ highlightBy = 'item', ...props }: ChartTooltipOptions,
+	{ highlightBy = 'item', ...options }: ChartTooltipOptions,
 	markName: string
 ): ChartTooltipSpecOptions => {
 	return {
 		highlightBy,
 		markName,
-		...props,
+		...options,
 	};
 };
 

@@ -9,46 +9,44 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { ChartPopover } from '@components/ChartPopover';
 import { FILTERED_TABLE, SELECTED_GROUP, SERIES_ID } from '@constants';
 import { getFilteredTableData } from '@specBuilder/data/dataUtils';
 import { Data, FormulaTransform, SourceData } from 'vega';
 
-import { ChartPopoverElement, ChartPopoverProps, ChartPopoverSpecProps, MarkChildElement } from '../../types';
+import {
+	AreaSpecOptions,
+	BarSpecOptions,
+	ChartPopoverOptions,
+	ChartPopoverSpecOptions,
+	DonutSpecOptions,
+	LineSpecOptions,
+	ScatterSpecOptions,
+} from '../../types';
 
-type PopoverParentProps = {
-	children: MarkChildElement[];
-	markType?: string;
-	name: string;
-	dimension: string;
-	idKey: string;
-};
+type PopoverParentOptions = AreaSpecOptions | BarSpecOptions | DonutSpecOptions | LineSpecOptions | ScatterSpecOptions;
 
 /**
  * gets all the popovers
- * @param markProps
+ * @param markOptions
  * @returns
  */
-export const getPopovers = (markProps: PopoverParentProps): ChartPopoverSpecProps[] => {
-	const chartPopoverElements = markProps.children.filter(
-		(child) => child.type === ChartPopover
-	) as ChartPopoverElement[];
-	return chartPopoverElements.map((chartPopover) => applyPopoverPropDefaults(chartPopover.props, markProps.name));
+export const getPopovers = (markOptions: PopoverParentOptions): ChartPopoverSpecOptions[] => {
+	return markOptions.chartPopovers.map((chartPopover) => applyPopoverPropDefaults(chartPopover, markOptions.name));
 };
 
 /**
- * Applies all defaults to ChartPopoverProps
- * @param chartPopoverProps
- * @returns ChartPopoverSpecProps
+ * Applies all defaults to ChartPopoverOptions
+ * @param chartPopoverOptions
+ * @returns ChartPopoverSpecOptions
  */
 export const applyPopoverPropDefaults = (
-	{ UNSAFE_highlightBy = 'item', ...props }: ChartPopoverProps,
+	{ UNSAFE_highlightBy = 'item', ...options }: ChartPopoverOptions,
 	markName: string
-): ChartPopoverSpecProps => {
+): ChartPopoverSpecOptions => {
 	return {
 		UNSAFE_highlightBy,
 		markName,
-		...props,
+		...options,
 	};
 };
 
@@ -57,24 +55,24 @@ export const applyPopoverPropDefaults = (
  *
  * NOTE: this function mutates the data object so it should only be called from a produce function
  * @param data
- * @param markProps
+ * @param markOptions
  */
-export const addPopoverData = (data: Data[], markProps: PopoverParentProps, addHighlightedData = true) => {
-	const popovers = getPopovers(markProps);
+export const addPopoverData = (data: Data[], markOptions: PopoverParentOptions, addHighlightedData = true) => {
+	const popovers = getPopovers(markOptions);
 
 	for (const { UNSAFE_highlightBy, markName } of popovers) {
 		const filteredTable = getFilteredTableData(data);
 		if (!filteredTable.transform) {
 			filteredTable.transform = [];
 		}
-		if (UNSAFE_highlightBy === 'dimension' && markProps.markType !== 'donut') {
-			filteredTable.transform.push(getGroupIdTransform([markProps.dimension], markName));
+		if (UNSAFE_highlightBy === 'dimension' && markOptions.markType !== 'donut') {
+			filteredTable.transform.push(getGroupIdTransform([markOptions.dimension], markName));
 		} else if (UNSAFE_highlightBy === 'series') {
 			filteredTable.transform.push(getGroupIdTransform([SERIES_ID], markName));
 		} else if (Array.isArray(UNSAFE_highlightBy)) {
 			filteredTable.transform.push(getGroupIdTransform(UNSAFE_highlightBy, markName));
 		} else {
-			filteredTable.transform.push(getGroupIdTransform([markProps.idKey], markName));
+			filteredTable.transform.push(getGroupIdTransform([markOptions.idKey], markName));
 		}
 
 		if (addHighlightedData) {

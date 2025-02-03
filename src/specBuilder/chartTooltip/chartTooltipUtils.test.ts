@@ -32,7 +32,7 @@ const getDefautltMarkOptions = (tooltipOptions: ChartTooltipOptions = {}): BarSp
 });
 
 describe('getTooltips()', () => {
-	test('should get all the tooltips from props', () => {
+	test('should get all the tooltips from options', () => {
 		const markOptions: BarSpecOptions = {
 			...defaultBarOptions,
 			chartTooltips: [{}],
@@ -139,7 +139,7 @@ describe('addTooltipSignals()', () => {
 		expect(highlightedGroupSignal.on).toHaveLength(2);
 	});
 
-	test('should include voronoi in the mark name if the markprops are for scatter or line', () => {
+	test('should include voronoi in the mark name if the markoptions are for scatter or line', () => {
 		addTooltipSignals(signals, {
 			...defaultScatterOptions,
 			chartTooltips: [{ highlightBy: 'series' }],
