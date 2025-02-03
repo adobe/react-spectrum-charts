@@ -9,16 +9,18 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { AxisAnnotationSpecProps } from '../../types';
+import { AxisAnnotationSpecOptions } from '../../types';
 import {
 	addAxisAnnotationAxis,
 	addAxisAnnotationData,
 	addAxisAnnotationMarks,
 	addAxisAnnotationSignals,
-	applyDefaultAxisAnnotationProps,
+	applyDefaultAxisAnnotationOptions,
 } from './axisAnnotationUtils';
 
-const testAxisAnnotation: AxisAnnotationSpecProps = {
+const testAxisAnnotation: AxisAnnotationSpecOptions = {
+	chartPopovers: [],
+	chartTooltips: [],
 	name: 'annotation0',
 	dataKey: 'anids',
 	color: 'gray-600',
@@ -27,10 +29,11 @@ const testAxisAnnotation: AxisAnnotationSpecProps = {
 	axisName: 'axis0',
 	format: 'span',
 	colorScheme: 'light',
-	children: [],
 };
 
-const testAxisAnnotationWithOptions: AxisAnnotationSpecProps = {
+const testAxisAnnotationWithOptions: AxisAnnotationSpecOptions = {
+	chartPopovers: [],
+	chartTooltips: [],
 	name: 'annotation0',
 	dataKey: 'anids',
 	color: 'gray-600',
@@ -44,10 +47,11 @@ const testAxisAnnotationWithOptions: AxisAnnotationSpecProps = {
 		{ id: '3', color: 'yellow-600' },
 		{ id: '4', color: 'celery-600' },
 	],
-	children: [],
 };
 
-const testAxisAnnotationSummary: AxisAnnotationSpecProps = {
+const testAxisAnnotationSummary: AxisAnnotationSpecOptions = {
+	chartPopovers: [],
+	chartTooltips: [],
 	name: 'annotation0',
 	dataKey: 'anids',
 	color: 'gray-600',
@@ -61,7 +65,6 @@ const testAxisAnnotationSummary: AxisAnnotationSpecProps = {
 		{ id: '3', color: 'yellow-600' },
 		{ id: '4', color: 'celery-600' },
 	],
-	children: [],
 };
 
 describe('Spec builder, AxisAnnotation', () => {
@@ -133,10 +136,10 @@ describe('Spec builder, AxisAnnotation', () => {
 			expect(axes[0]).toMatchObject({ offset: 100 });
 		});
 	});
-	describe('applyDefaultAxisAnnotationProps()', () => {
+	describe('applyDefaultAxisAnnotationOptions()', () => {
 		test('default for time', () => {
-			const newProps = applyDefaultAxisAnnotationProps({ name: 'annotation0' }, 0, 'xTime', 'light', 'time');
-			expect(newProps).toMatchObject({
+			const newOptions = applyDefaultAxisAnnotationOptions({ name: 'annotation0' }, 0, 'xTime', 'light', 'time');
+			expect(newOptions).toMatchObject({
 				color: 'gray-600',
 				colorScheme: 'light',
 				dataKey: 'annotations',
@@ -148,8 +151,8 @@ describe('Spec builder, AxisAnnotation', () => {
 			});
 		});
 		test('default for linear', () => {
-			const newProps = applyDefaultAxisAnnotationProps({}, 1, 'xSeries', 'dark', 'linear');
-			expect(newProps).toMatchObject({
+			const newOptions = applyDefaultAxisAnnotationOptions({}, 1, 'xSeries', 'dark', 'linear');
+			expect(newOptions).toMatchObject({
 				color: 'gray-600',
 				colorScheme: 'dark',
 				dataKey: 'annotations',

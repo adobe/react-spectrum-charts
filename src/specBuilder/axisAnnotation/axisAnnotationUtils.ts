@@ -9,23 +9,13 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { AxisAnnotation } from '@components/AxisAnnotation';
 import { DEFAULT_AXIS_ANNOTATION_COLOR, DEFAULT_AXIS_ANNOTATION_OFFSET, FILTERED_TABLE } from '@constants';
-import { getCursor_DEPRECATED } from '@specBuilder/marks/markUtils';
+import { getCursor } from '@specBuilder/marks/markUtils';
 import { getColorValue } from '@specBuilder/specUtils';
 import { ANNOTATION_RANGED_ICON_SVG, ANNOTATION_SINGLE_ICON_SVG } from '@svgPaths';
-import { sanitizeAxisAnnotationChildren, toArray } from '@utils';
-import { Axis, Data, Mark, Signal, SourceData, ValuesData } from 'vega';
-import { ScaleType } from 'vega-lite/build/src/scale';
+import { Axis, Data, Mark, ScaleType, Signal, SourceData, ValuesData } from 'vega';
 
-import {
-	AxisAnnotationElement,
-	AxisAnnotationProps,
-	AxisAnnotationSpecProps,
-	AxisSpecProps,
-	ColorScheme,
-	Position,
-} from '../../types';
+import { AxisAnnotationOptions, AxisAnnotationSpecOptions, AxisSpecOptions, ColorScheme, Position } from '../../types';
 
 /**
  * Adds the required data for axis annotations.
@@ -33,11 +23,11 @@ import {
  * NOTE: this function should only be called from within a produce with data as the root state since it directly
  * mutates the data array
  * @param data
- * @param axisAnnotationProps
+ * @param axisAnnotationOptions
  */
 export const addAxisAnnotationData = (
 	data: Data[],
-	{ name, dataKey, color, colorScheme, options, format }: AxisAnnotationSpecProps
+	{ name, dataKey, color, colorScheme, options, format }: AxisAnnotationSpecOptions
 ) => {
 	data.push(getAxisAnnotationDetailData(name, options, colorScheme));
 	if (format === 'summary') {
@@ -171,7 +161,7 @@ const getAxisAnnotationRangeData = (name: string): SourceData => {
  * @param signals
  * @param param1
  */
-export const addAxisAnnotationSignals = (signals: Signal[], { name, format }: AxisAnnotationSpecProps) => {
+export const addAxisAnnotationSignals = (signals: Signal[], { name, format }: AxisAnnotationSpecOptions) => {
 	if (format === 'span') {
 		signals.push(
 			getHighlightAxisAnnotationSignal(name),
@@ -236,14 +226,14 @@ const getSelectAxisAnnotationSignal = (name: string): Signal => {
  */
 export const addAxisAnnotationMarks = (
 	marks: Mark[],
-	axisAnnotationProps: AxisAnnotationSpecProps,
+	axisAnnotationOptions: AxisAnnotationSpecOptions,
 	scaleName: string
 ) => {
-	const { format } = axisAnnotationProps;
+	const { format } = axisAnnotationOptions;
 	if (format === 'summary') {
-		marks.push(getAxisAnnotationSummaryMarks(axisAnnotationProps));
+		marks.push(getAxisAnnotationSummaryMarks(axisAnnotationOptions));
 	} else {
-		marks.push(getAxisAnnotationSpanMarks(axisAnnotationProps, scaleName));
+		marks.push(getAxisAnnotationSpanMarks(axisAnnotationOptions, scaleName));
 	}
 };
 
@@ -253,7 +243,7 @@ export const addAxisAnnotationMarks = (
  * @param marks
  * @param param1
  */
-export const getAxisAnnotationSummaryMarks = ({ children, name, offset }: AxisAnnotationSpecProps): Mark => {
+export const getAxisAnnotationSummaryMarks = ({ chartPopovers, name, offset }: AxisAnnotationSpecOptions): Mark => {
 	return {
 		name: `${name}_group`,
 		type: 'group',
@@ -273,7 +263,7 @@ export const getAxisAnnotationSummaryMarks = ({ children, name, offset }: AxisAn
 						// adding a 2px transparent border increases the area of the icon so it's easier to hover
 						stroke: { value: 'transparent' },
 						strokeWidth: { value: 2 },
-						cursor: getCursor_DEPRECATED(children),
+						cursor: getCursor(chartPopovers),
 					},
 					update: {
 						path: {
@@ -301,7 +291,7 @@ export const getAxisAnnotationSummaryMarks = ({ children, name, offset }: AxisAn
  * @param param1
  */
 export const getAxisAnnotationSpanMarks = (
-	{ children, name, offset }: AxisAnnotationSpecProps,
+	{ chartPopovers, name, offset }: AxisAnnotationSpecOptions,
 	scaleName: string
 ): Mark => {
 	return {
@@ -395,7 +385,7 @@ export const getAxisAnnotationSpanMarks = (
 						// adding a 2px transparent border increases the area of the icon so it's easier to hover
 						stroke: { value: 'transparent' },
 						strokeWidth: { value: 2 },
-						cursor: getCursor_DEPRECATED(children),
+						cursor: getCursor(chartPopovers),
 					},
 					update: {
 						path: {
@@ -430,7 +420,7 @@ export const getAxisAnnotationSpanMarks = (
  * @param axes
  * @param param1
  */
-export const addAxisAnnotationAxis = (axes: Axis[], { offset }: AxisAnnotationSpecProps, scaleName) => {
+export const addAxisAnnotationAxis = (axes: Axis[], { offset }: AxisAnnotationSpecOptions, scaleName) => {
 	axes.push({
 		scale: scaleName,
 		orient: 'bottom',
@@ -440,45 +430,37 @@ export const addAxisAnnotationAxis = (axes: Axis[], { offset }: AxisAnnotationSp
 };
 
 export const getAxisAnnotationsFromChildren = ({
-	children,
+	axisAnnotations,
 	colorScheme,
 	name: axisName,
 	position,
 	scaleType,
-}: AxisSpecProps & { scaleType: ScaleType }): AxisAnnotationSpecProps[] => {
+}: AxisSpecOptions & { scaleType: ScaleType }): AxisAnnotationSpecOptions[] => {
 	if (position !== 'bottom') return [];
-	const childrenArray = toArray(children);
-	const axisAnnotations = childrenArray.filter(
-		(child) => typeof child === 'object' && 'type' in child && child.type === AxisAnnotation
-	) as AxisAnnotationElement[];
-	return axisAnnotations.map((annotationElement, annotationIndex) => {
-		return applyDefaultAxisAnnotationProps(
-			annotationElement.props,
-			annotationIndex,
-			axisName,
-			colorScheme,
-			scaleType
-		);
+	return axisAnnotations.map((annotation, annotationIndex) => {
+		return applyDefaultAxisAnnotationOptions(annotation, annotationIndex, axisName, colorScheme, scaleType);
 	});
 };
 
-export const applyDefaultAxisAnnotationProps = (
+export const applyDefaultAxisAnnotationOptions = (
 	{
-		children,
+		chartPopovers = [],
+		chartTooltips = [],
 		name,
 		format,
 		offset = DEFAULT_AXIS_ANNOTATION_OFFSET,
 		color = DEFAULT_AXIS_ANNOTATION_COLOR,
 		dataKey = 'annotations',
 		options = [],
-	}: AxisAnnotationProps,
+	}: AxisAnnotationOptions,
 	annotationIndex: number,
 	axisName: string,
 	colorScheme: ColorScheme,
 	scaleType: ScaleType
-): AxisAnnotationSpecProps => {
+): AxisAnnotationSpecOptions => {
 	return {
-		children: sanitizeAxisAnnotationChildren(children),
+		chartPopovers,
+		chartTooltips,
 		color,
 		colorScheme,
 		dataKey,
