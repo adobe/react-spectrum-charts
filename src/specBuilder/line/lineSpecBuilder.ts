@@ -21,7 +21,7 @@ import {
 } from '@constants';
 import { addPopoverData } from '@specBuilder/chartPopover/chartPopoverUtils';
 import { addTooltipData, addTooltipSignals, isHighlightedByGroup } from '@specBuilder/chartTooltip/chartTooltipUtils';
-import { getHoverMarkNames, hasPopover_DEPRECATED, isInteractive } from '@specBuilder/marks/markUtils';
+import { getHoverMarkNames, hasPopover_DEPRECATED, isInteractive_DEPRECATED } from '@specBuilder/marks/markUtils';
 import {
 	getMetricRangeData,
 	getMetricRangeGroupMarks,
@@ -101,7 +101,7 @@ export const addData = produce<Data[], [LineSpecProps]>((data, props) => {
 		const tableData = getTableData(data);
 		tableData.transform = addTimeTransform(tableData.transform ?? [], dimension);
 	}
-	if (isInteractive(children, props) || highlightedItem !== undefined) {
+	if (isInteractive_DEPRECATED(children, props) || highlightedItem !== undefined) {
 		data.push(
 			getLineHighlightedData(
 				name,
@@ -126,7 +126,7 @@ export const addSignals = produce<Signal[], [LineSpecProps]>((signals, props) =>
 	setTrendlineSignals(signals, props);
 	signals.push(...getMetricRangeSignals(props));
 
-	if (!isInteractive(children, props)) return;
+	if (!isInteractive_DEPRECATED(children, props)) return;
 	addHighlightedItemSignalEvents(signals, `${name}_voronoi`, idKey, 2);
 	addHighlightedSeriesSignalEvents(signals, `${name}_voronoi`, 2);
 	addHoverSignals(signals, props);
@@ -174,7 +174,7 @@ export const addLineMarks = produce<Mark[], [LineSpecProps]>((marks, props) => {
 	});
 	if (staticPoint || isSparkline) marks.push(getLineStaticPoint(props));
 	marks.push(...getMetricRangeGroupMarks(props));
-	if (isInteractive(children, props) || highlightedItem !== undefined) {
+	if (isInteractive_DEPRECATED(children, props) || highlightedItem !== undefined) {
 		marks.push(...getLineHoverMarks_DEPRACATED(props, `${FILTERED_TABLE}ForTooltip`));
 	}
 	marks.push(...getTrendlineMarks(props));

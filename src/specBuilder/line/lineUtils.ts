@@ -12,7 +12,7 @@
 import { ReactNode } from 'react';
 
 import { Trendline } from '@components/Trendline';
-import { hasPopover_DEPRECATED, isInteractive } from '@specBuilder/marks/markUtils';
+import { hasPopover_DEPRECATED, isInteractive_DEPRECATED } from '@specBuilder/marks/markUtils';
 import { sanitizeMarkChildren } from '@utils';
 
 import {
@@ -44,7 +44,7 @@ export const getInteractiveMarkName = (
 	props?: ClickableChartProps
 ): string | undefined => {
 	// if the line has an interactive component, this line is the target for the interactive component
-	if (isInteractive(children, props) || highlightedItem !== undefined) {
+	if (isInteractive_DEPRECATED(children, props) || highlightedItem !== undefined) {
 		return name;
 	}
 	// if there is a trendline with an interactive component on the line, then the trendline is the target for the interactive component
@@ -53,7 +53,7 @@ export const getInteractiveMarkName = (
 			(child) =>
 				child.type === Trendline &&
 				'children' in child.props &&
-				isInteractive(sanitizeMarkChildren(child.props.children as ReactNode), props)
+				isInteractive_DEPRECATED(sanitizeMarkChildren(child.props.children as ReactNode), props)
 		)
 	) {
 		return `${name}Trendline`;

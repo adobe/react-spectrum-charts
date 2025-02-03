@@ -10,7 +10,7 @@
  * governing permissions and limitations under the License.
  */
 import { BACKGROUND_COLOR, FILTERED_TABLE } from '@constants';
-import { isInteractive } from '@specBuilder/marks/markUtils';
+import { isInteractive_DEPRECATED } from '@specBuilder/marks/markUtils';
 import { GroupMark, Mark, RectEncodeEntry, RectMark } from 'vega';
 
 import { BarSpecProps } from '../../types';
@@ -92,7 +92,7 @@ export const getStackedBar = (props: BarSpecProps): RectMark => {
 		description: name,
 		type: 'rect',
 		from: { data: isDodgedAndStacked(props) ? `${name}_facet` : getBaseDataSourceName(props) },
-		interactive: isInteractive(children, props),
+		interactive: isInteractive_DEPRECATED(children, props),
 		encode: {
 			enter: {
 				...getBaseBarEnterEncodings(props),

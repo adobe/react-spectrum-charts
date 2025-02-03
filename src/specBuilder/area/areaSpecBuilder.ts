@@ -9,7 +9,6 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { ChartPopover } from '@components/ChartPopover';
 import {
 	BACKGROUND_COLOR,
 	COLOR_SCALE,
@@ -28,30 +27,38 @@ import {
 	isHighlightedByDimension,
 	isHighlightedByGroup,
 } from '@specBuilder/chartTooltip/chartTooltipUtils';
-import { getTooltipProps, hasPopover_DEPRECATED, hasTooltip_DEPRECATED } from '@specBuilder/marks/markUtils';
+import { hasPopover, hasTooltip, isInteractive } from '@specBuilder/marks/markUtils';
 import {
 	addHighlightedSeriesSignalEvents,
 	getControlledHoveredGroupSignal,
 	getControlledHoveredIdSignal,
 } from '@specBuilder/signal/signalSpecBuilder';
 import { spectrumColors } from '@themes';
-import { sanitizeMarkChildren, toCamelCase } from '@utils';
+import { toCamelCase } from '@utils';
 import { produce } from 'immer';
 import { Data, Mark, Scale, Signal, SourceData, Spec } from 'vega';
 
-import { AreaProps, AreaSpecProps, ColorScheme, HighlightedItem, MarkChildElement, ScaleType } from '../../types';
+import {
+	AreaOptions,
+	AreaSpecOptions,
+	ChartPopoverOptions,
+	ColorScheme,
+	HighlightedItem,
+	ScaleType,
+} from '../../types';
 import { addTimeTransform, getFilteredTableData, getTableData, getTransformSort } from '../data/dataUtils';
 import { addContinuousDimensionScale, addFieldToFacetScaleDomain, addMetricScale } from '../scale/scaleSpecBuilder';
 import { getAreaMark, getX } from './areaUtils';
 
 export const addArea = produce<
 	Spec,
-	[AreaProps & { colorScheme?: ColorScheme; highlightedItem?: HighlightedItem; index?: number; idKey: string }]
+	[AreaOptions & { colorScheme?: ColorScheme; highlightedItem?: HighlightedItem; index?: number; idKey: string }]
 >(
 	(
 		spec,
 		{
-			children,
+			chartPopovers = [],
+			chartTooltips = [],
 			color = DEFAULT_COLOR,
 			colorScheme = DEFAULT_COLOR_SCHEME,
 			dimension = DEFAULT_TIME_DIMENSION,
@@ -66,13 +73,13 @@ export const addArea = produce<
 		}
 	) => {
 		// put props back together now that all defaults are set
-		const areaProps: AreaSpecProps = {
-			children: sanitizeMarkChildren(children),
+		const areaOptions: AreaSpecOptions = {
+			chartPopovers,
+			chartTooltips,
 			color,
 			colorScheme,
 			dimension,
 			index,
-			markType: 'area',
 			metric,
 			name: toCamelCase(name || `area${index}`),
 			scaleType,
@@ -89,22 +96,21 @@ export const addArea = produce<
 					metricEnd ? 'metricStart' : 'metricEnd'
 				} is not. Both must be defined in order to use the "start and end" method. Defaulting back to 'metric = ${metric}'`
 			);
-			areaProps.metricEnd = undefined;
-			areaProps.metricStart = undefined;
+			areaOptions.metricEnd = undefined;
+			areaOptions.metricStart = undefined;
 		}
 
-		spec.data = addData(spec.data ?? [], areaProps);
-		spec.signals = addSignals(spec.signals ?? [], areaProps);
-		spec.scales = setScales(spec.scales ?? [], areaProps);
-		spec.marks = addAreaMarks(spec.marks ?? [], areaProps);
+		spec.data = addData(spec.data ?? [], areaOptions);
+		spec.signals = addSignals(spec.signals ?? [], areaOptions);
+		spec.scales = setScales(spec.scales ?? [], areaOptions);
+		spec.marks = addAreaMarks(spec.marks ?? [], areaOptions);
 
 		return spec;
 	}
 );
 
-export const addData = produce<Data[], [AreaSpecProps]>((data, props) => {
-	const { children, color, dimension, highlightedItem, metric, metricEnd, metricStart, name, order, scaleType } =
-		props;
+export const addData = produce<Data[], [AreaSpecOptions]>((data, areaOptions) => {
+	const { color, dimension, highlightedItem, metric, metricEnd, metricStart, name, order, scaleType } = areaOptions;
 	if (scaleType === 'time') {
 		const tableData = getTableData(data);
 		tableData.transform = addTimeTransform(tableData.transform ?? [], dimension);
@@ -125,11 +131,17 @@ export const addData = produce<Data[], [AreaSpecProps]>((data, props) => {
 		];
 	}
 
-	if (children.length || highlightedItem !== undefined) {
-		const areaHasPopover = hasPopover_DEPRECATED(children);
-		const areaHasTooltip = hasTooltip_DEPRECATED(children);
+	if (isInteractive(areaOptions) || highlightedItem !== undefined) {
+		const areaHasPopover = hasPopover(areaOptions);
+		const areaHasTooltip = hasTooltip(areaOptions);
 		data.push(
-			getAreaHighlightedData(name, props.idKey, areaHasTooltip, areaHasPopover, isHighlightedByGroup(props))
+			getAreaHighlightedData(
+				name,
+				areaOptions.idKey,
+				areaHasTooltip,
+				areaHasPopover,
+				isHighlightedByGroup(areaOptions)
+			)
 		);
 		if (areaHasPopover) {
 			data.push({
@@ -144,7 +156,7 @@ export const addData = produce<Data[], [AreaSpecProps]>((data, props) => {
 			});
 		}
 	}
-	addTooltipData(data, props, false);
+	addTooltipData(data, areaOptions, false);
 });
 
 export const getAreaHighlightedData = (
@@ -178,19 +190,19 @@ export const getAreaHighlightedData = (
 	};
 };
 
-export const addSignals = produce<Signal[], [AreaSpecProps]>((signals, props) => {
-	const { children, name } = props;
-	if (!children.length) return;
-	addHighlightedSeriesSignalEvents(signals, name, 1, getTooltipProps(children)?.excludeDataKeys);
-	if (props.highlightedItem) {
+export const addSignals = produce<Signal[], [AreaSpecOptions]>((signals, areaOptions) => {
+	const { chartTooltips, name } = areaOptions;
+	if (!isInteractive(areaOptions)) return;
+	addHighlightedSeriesSignalEvents(signals, name, 1, chartTooltips[0]?.excludeDataKeys);
+	if (areaOptions.highlightedItem) {
 		addHighlightedItemEvents(signals, name);
 	}
-	if (!isHighlightedByGroup(props)) {
+	if (!isHighlightedByGroup(areaOptions)) {
 		signals.push(getControlledHoveredIdSignal(name));
 	} else {
 		signals.push(getControlledHoveredGroupSignal(name));
 	}
-	addTooltipSignals(signals, props);
+	addTooltipSignals(signals, areaOptions);
 });
 
 /**
@@ -209,7 +221,7 @@ export const addHighlightedItemEvents = (signals: Signal[], areaName: string) =>
 	}
 };
 
-export const setScales = produce<Scale[], [AreaSpecProps]>(
+export const setScales = produce<Scale[], [AreaSpecOptions]>(
 	(scales, { metric, metricEnd, metricStart, dimension, color, scaleType, padding }) => {
 		// add dimension scale
 		addContinuousDimensionScale(scales, { scaleType, dimension, padding });
@@ -225,9 +237,20 @@ export const setScales = produce<Scale[], [AreaSpecProps]>(
 	}
 );
 
-export const addAreaMarks = produce<Mark[], [AreaSpecProps]>((marks, props) => {
-	const { children, color, colorScheme, dimension, highlightedItem, metric, name, opacity, scaleType } = props;
-	let { metricStart, metricEnd } = props;
+export const addAreaMarks = produce<Mark[], [AreaSpecOptions]>((marks, areaOptions) => {
+	const {
+		chartPopovers,
+		chartTooltips,
+		color,
+		colorScheme,
+		dimension,
+		highlightedItem,
+		metric,
+		name,
+		opacity,
+		scaleType,
+	} = areaOptions;
+	let { metricStart, metricEnd } = areaOptions;
 	let isStacked = false;
 	if (!metricEnd || !metricStart) {
 		isStacked = true;
@@ -247,11 +270,12 @@ export const addAreaMarks = produce<Mark[], [AreaSpecProps]>((marks, props) => {
 			},
 			marks: [
 				getAreaMark({
+					chartPopovers,
+					chartTooltips,
 					color,
 					colorScheme,
-					children,
 					dimension,
-					isHighlightedByGroup: isHighlightedByGroup(props),
+					isHighlightedByGroup: isHighlightedByGroup(areaOptions),
 					isStacked,
 					highlightedItem,
 					metricStart,
@@ -260,11 +284,11 @@ export const addAreaMarks = produce<Mark[], [AreaSpecProps]>((marks, props) => {
 					opacity,
 					scaleType,
 				}),
-				...getAnchorPointMark(props),
+				...getAnchorPointMark(areaOptions),
 			],
 		},
-		...getSelectedAreaMarks({ children, name, scaleType, color, dimension, metricEnd, metricStart }),
-		...getHoverMarks(props)
+		...getSelectedAreaMarks({ chartPopovers, name, scaleType, color, dimension, metricEnd, metricStart }),
+		...getHoverMarks(areaOptions)
 	);
 	return marks;
 });
@@ -272,8 +296,9 @@ export const addAreaMarks = produce<Mark[], [AreaSpecProps]>((marks, props) => {
 /**
  * returns a transparent point that gets used by the popover to anchor to
  */
-const getAnchorPointMark = ({ children, name, dimension, metric, scaleType }: AreaSpecProps): Mark[] => {
-	if (!children.length) return [];
+const getAnchorPointMark = (areaOptions: AreaSpecOptions): Mark[] => {
+	const { name, dimension, metric, scaleType } = areaOptions;
+	if (!isInteractive(areaOptions)) return [];
 	return [
 		{
 			name: `${name}_anchorPoint`,
@@ -297,9 +322,9 @@ const getAnchorPointMark = ({ children, name, dimension, metric, scaleType }: Ar
 /**
  * returns a circle symbol and a rule on the hovered/selected point
  */
-const getHoverMarks = (props: AreaSpecProps): Mark[] => {
-	const { children, name, dimension, highlightedItem, metric, scaleType, color } = props;
-	if (!children.length && highlightedItem === undefined) return [];
+const getHoverMarks = (areaOptions: AreaSpecOptions): Mark[] => {
+	const { name, dimension, highlightedItem, metric, scaleType, color } = areaOptions;
+	if (!isInteractive(areaOptions) && highlightedItem === undefined) return [];
 	const highlightMarks: Mark[] = [
 		{
 			name: `${name}_point`,
@@ -318,7 +343,7 @@ const getHoverMarks = (props: AreaSpecProps): Mark[] => {
 			},
 		},
 	];
-	if (isHighlightedByDimension(props) || highlightedItem) {
+	if (isHighlightedByDimension(areaOptions) || highlightedItem) {
 		highlightMarks.unshift({
 			name: `${name}_rule`,
 			type: 'rule',
@@ -343,7 +368,7 @@ const getHoverMarks = (props: AreaSpecProps): Mark[] => {
  * returns an area mark for the blue border around the selected area.
  */
 const getSelectedAreaMarks = ({
-	children,
+	chartPopovers,
 	name,
 	scaleType,
 	color,
@@ -351,7 +376,7 @@ const getSelectedAreaMarks = ({
 	metricEnd,
 	metricStart,
 }: {
-	children: MarkChildElement[];
+	chartPopovers: ChartPopoverOptions[];
 	name: string;
 	scaleType: ScaleType;
 	color: string;
@@ -359,7 +384,7 @@ const getSelectedAreaMarks = ({
 	metricEnd: string;
 	metricStart: string;
 }): Mark[] => {
-	if (!children.some((child) => child.type === ChartPopover)) return [];
+	if (!chartPopovers.length) return [];
 	return [
 		{
 			name: `${name}_selectBorder`,

@@ -52,7 +52,7 @@ import {
 	getYProductionRule,
 	hasMetricRange,
 	hasTooltip_DEPRECATED,
-	isInteractive,
+	isInteractive_DEPRECATED,
 } from './markUtils';
 
 describe('getColorProductionRule', () => {
@@ -245,13 +245,13 @@ describe('isInteractive()', () => {
 	const tooltip = createElement(ChartTooltip);
 	const popover = createElement(ChartPopover);
 	test('should return true based on having interactive children', () => {
-		expect(isInteractive([tooltip])).toEqual(true);
-		expect(isInteractive([])).toEqual(false);
-		expect(isInteractive([tooltip, popover])).toEqual(true);
+		expect(isInteractive_DEPRECATED([tooltip])).toEqual(true);
+		expect(isInteractive_DEPRECATED([])).toEqual(false);
+		expect(isInteractive_DEPRECATED([tooltip, popover])).toEqual(true);
 	});
 
 	test('should return true if props.onClick is defined', () => {
-		expect(isInteractive([], { onClick: jest.fn() })).toEqual(true);
+		expect(isInteractive_DEPRECATED([], { onClick: jest.fn() })).toEqual(true);
 	});
 });
 

@@ -33,6 +33,7 @@ import {
 	SELECTED_ITEM,
 	SYMBOL_SIZE_SCALE,
 } from '@constants';
+import { AreaMarkOptions } from '@specBuilder/area/areaUtils';
 import { addHighlightMarkOpacityRules } from '@specBuilder/chartTooltip/chartTooltipUtils';
 import { LineMarkOptions } from '@specBuilder/line/lineUtils';
 import { getScaleName } from '@specBuilder/scale/scaleSpecBuilder';
@@ -57,6 +58,7 @@ import {
 } from 'vega';
 
 import {
+	AreaSpecOptions,
 	BarSpecOptions,
 	BarSpecProps,
 	ChartPopoverOptions,
@@ -106,7 +108,7 @@ export const getCursor = (chartPopovers: ChartPopoverOptions[], hasOnClick?: boo
 /**
  * Returns true if there are any popovers or tooltips in the children, or if props.onClick is defined.
  */
-export function isInteractive(children: MarkChildElement[], props?: ClickableChartProps): boolean {
+export function isInteractive_DEPRECATED(children: MarkChildElement[], props?: ClickableChartProps): boolean {
 	return props?.onClick !== undefined || hasInteractiveChildren_DEPRECATED(children);
 }
 
@@ -199,13 +201,21 @@ export const hasInteractiveChildren_DEPRECATED = (children: ReactElement[]): boo
  * @param children
  * @returns
  */
-export const hasInteractiveOptions = (
-	options: TrendlineSpecOptions | BarSpecOptions | LineMarkOptions | LineSpecOptions
+export const isInteractive = (
+	options:
+		| AreaMarkOptions
+		| AreaSpecOptions
+		| BarSpecOptions
+		| LineMarkOptions
+		| LineSpecOptions
+		| TrendlineSpecOptions
 ): boolean => {
-	const trendlines = ('trendlines' in options && options.trendlines) || [];
+	const hasOnClick = 'hasOnClick' in options && options.hasOnClick;
 	const metricRanges = ('metricRanges' in options && options.metricRanges) || [];
+	const trendlines = ('trendlines' in options && options.trendlines) || [];
 
 	return (
+		hasOnClick ||
 		hasPopover(options) ||
 		hasTooltip(options) ||
 		trendlines.some((trendline) => trendline.displayOnHover) ||
@@ -229,11 +239,25 @@ export const hasTooltip_DEPRECATED = (children: ReactElement[]): boolean =>
 	children.some((child) => child.type === ChartTooltip);
 
 export const hasPopover = (
-	options: BarSpecOptions | LineSpecOptions | LineMarkOptions | ScatterSpecOptions | TrendlineSpecOptions
+	options:
+		| AreaMarkOptions
+		| AreaSpecOptions
+		| BarSpecOptions
+		| LineSpecOptions
+		| LineMarkOptions
+		| ScatterSpecOptions
+		| TrendlineSpecOptions
 ): boolean => Boolean('chartPopovers' in options && options.chartPopovers && options.chartPopovers.length);
 
 export const hasTooltip = (
-	options: BarSpecOptions | LineMarkOptions | LineSpecOptions | ScatterSpecOptions | TrendlineSpecOptions
+	options:
+		| AreaMarkOptions
+		| AreaSpecOptions
+		| BarSpecOptions
+		| LineMarkOptions
+		| LineSpecOptions
+		| ScatterSpecOptions
+		| TrendlineSpecOptions
 ): boolean => Boolean('chartTooltips' in options && options.chartTooltips && options.chartTooltips.length);
 
 export const childHasTooltip = (children: ReactElement[]): boolean =>

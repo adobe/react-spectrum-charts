@@ -18,7 +18,7 @@ import {
 	SERIES_ID,
 } from '@constants';
 import { getSeriesIdTransform, getTableData } from '@specBuilder/data/dataUtils';
-import { hasInteractiveOptions } from '@specBuilder/marks/markUtils';
+import { isInteractive } from '@specBuilder/marks/markUtils';
 import { getFacetsFromOptions } from '@specBuilder/specUtils';
 import { produce } from 'immer';
 import { Data, SourceData, Transforms } from 'vega';
@@ -87,12 +87,12 @@ export const getTrendlineData = (markOptions: TrendlineParentOptions): SourceDat
 		if (displayOnHover) {
 			data.push(getTrendlineDisplayOnHoverData(name, method));
 		}
-		if (hasInteractiveOptions(trendlineOptions)) {
+		if (isInteractive(trendlineOptions)) {
 			concatenatedTrendlineData.source.push(`${name}_data`);
 		}
 	}
 
-	if (trendlines.some((trendline) => hasInteractiveOptions(trendline))) {
+	if (trendlines.some((trendline) => isInteractive(trendline))) {
 		data.push(concatenatedTrendlineData);
 		data.push(getHighlightTrendlineData(markName, idKey));
 	}
@@ -126,7 +126,7 @@ export const getAggregateTrendlineData = (
 			...getSeriesIdTransform(facets),
 		],
 	});
-	if (hasInteractiveOptions(trendlineOptions)) {
+	if (isInteractive(trendlineOptions)) {
 		// data used for each of the trendline points
 		data.push({
 			name: `${name}_data`,
@@ -173,7 +173,7 @@ export const getRegressionTrendlineData = (
 			...getSeriesIdTransform(facets),
 		],
 	});
-	if (hasInteractiveOptions(trendlineOptions)) {
+	if (isInteractive(trendlineOptions)) {
 		// params and data used for each of the trendline data points
 		// the high resolution data has too much detail and we don't want a tooltip at each high resolution point
 		data.push(

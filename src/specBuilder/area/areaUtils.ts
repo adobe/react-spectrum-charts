@@ -9,7 +9,6 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { ChartPopover } from '@components/ChartPopover';
 import {
 	DEFAULT_OPACITY_RULE,
 	DEFAULT_TRANSFORMED_TIME_DIMENSION,
@@ -22,18 +21,42 @@ import {
 import {
 	getBorderStrokeEncodings,
 	getColorProductionRule,
-	getCursor_DEPRECATED,
-	getTooltip_DEPRECATED,
+	getCursor,
+	getTooltip,
 	isInteractive,
 } from '@specBuilder/marks/markUtils';
 import { AreaMark, NumericValueRef, ProductionRule } from 'vega';
 
-import { ColorFacet, ColorScheme, HighlightedItem, MarkChildElement, ScaleType } from '../../types';
+import {
+	ChartPopoverOptions,
+	ChartTooltipOptions,
+	ColorFacet,
+	ColorScheme,
+	HighlightedItem,
+	ScaleType,
+} from '../../types';
 
-export interface AreaMarkProps {
+// export interface AreaMarkOptions {
+// 	color: ColorFacet;
+// 	colorScheme: ColorScheme;
+// 	children: MarkChildElement[];
+// 	dimension: string;
+// 	displayOnHover?: boolean;
+// 	highlightedItem?: HighlightedItem;
+// 	isHighlightedByGroup?: boolean;
+// 	isMetricRange?: boolean;
+// 	isStacked: boolean;
+// 	metricStart: string;
+// 	metricEnd: string;
+// 	name: string;
+// 	opacity: number;
+// 	parentName?: string; // Optional name of mark that this area is a child of. Used for metric ranges.
+// 	scaleType: ScaleType;
+// }
+
+export interface AreaMarkOptions {
 	color: ColorFacet;
 	colorScheme: ColorScheme;
-	children: MarkChildElement[];
 	dimension: string;
 	displayOnHover?: boolean;
 	highlightedItem?: HighlightedItem;
@@ -46,45 +69,56 @@ export interface AreaMarkProps {
 	opacity: number;
 	parentName?: string; // Optional name of mark that this area is a child of. Used for metric ranges.
 	scaleType: ScaleType;
+
+	chartPopovers?: ChartPopoverOptions[];
+	chartTooltips?: ChartTooltipOptions[];
 }
 
-export const getAreaMark = (areaProps: AreaMarkProps, dataSource: string = `${areaProps.name}_facet`): AreaMark => {
-	const { name, color, colorScheme, children, metricStart, metricEnd, isStacked, scaleType, dimension, opacity } =
-		areaProps;
+export const getAreaMark = (
+	areaOptions: AreaMarkOptions,
+	dataSource: string = `${areaOptions.name}_facet`
+): AreaMark => {
+	const {
+		name,
+		chartPopovers,
+		chartTooltips,
+		color,
+		colorScheme,
+		metricStart,
+		metricEnd,
+		isStacked,
+		scaleType,
+		dimension,
+		opacity,
+	} = areaOptions;
 	return {
 		name,
 		description: name,
 		type: 'area',
 		from: { data: dataSource },
-		interactive: isInteractive(children),
+		interactive: isInteractive(areaOptions),
 		encode: {
 			enter: {
 				y: { scale: 'yLinear', field: metricStart },
 				y2: { scale: 'yLinear', field: metricEnd },
 				fill: getColorProductionRule(color, colorScheme),
-				tooltip: getTooltip_DEPRECATED(children, name),
+				tooltip: getTooltip(chartTooltips ?? [], name),
 				...getBorderStrokeEncodings(isStacked, true),
 			},
 			update: {
 				// this has to be in update because when you resize the window that doesn't rebuild the spec
 				// but it may change the x position if it causes the chart to resize
 				x: getX(scaleType, dimension),
-				cursor: getCursor_DEPRECATED(children),
+				cursor: getCursor(chartPopovers ?? []),
 				fillOpacity: { value: opacity },
-				opacity: getAreaOpacity(areaProps),
+				opacity: getAreaOpacity(areaOptions),
 			},
 		},
 	};
 };
 
-export function getAreaOpacity({
-	children,
-	displayOnHover,
-	isHighlightedByGroup,
-	isMetricRange,
-	highlightedItem,
-	name,
-}: AreaMarkProps): ProductionRule<NumericValueRef> | undefined {
+export function getAreaOpacity(areaOptions: AreaMarkOptions): ProductionRule<NumericValueRef> | undefined {
+	const { chartPopovers, displayOnHover, isHighlightedByGroup, isMetricRange, highlightedItem, name } = areaOptions;
 	// if metric ranges only display when hovering, we don't need to include other hover rules for this specific area
 	const fadedOpacity = 1 / HIGHLIGHT_CONTRAST_RATIO;
 	if (isMetricRange && displayOnHover) {
@@ -99,7 +133,7 @@ export function getAreaOpacity({
 	}
 
 	// no children means no interactive elements
-	if (!children.length && !highlightedItem) {
+	if (!isInteractive(areaOptions) && !highlightedItem) {
 		return [DEFAULT_OPACITY_RULE];
 	}
 
@@ -111,7 +145,7 @@ export function getAreaOpacity({
 		});
 	}
 	// if an area is hovered or selected, all other areas should have half opacity
-	if (children.some((child) => child.type === ChartPopover && !isMetricRange)) {
+	if (!isMetricRange && chartPopovers?.length) {
 		return [
 			...opacityRules,
 			{

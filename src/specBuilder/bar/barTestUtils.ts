@@ -26,7 +26,7 @@ import {
 } from '@constants';
 import { NumericValueRef, ProductionRule, RectEncodeEntry } from 'vega';
 
-import { BarSpecProps } from '../../types';
+import { BarSpecOptions, BarSpecProps } from '../../types';
 
 export const defaultBarProps: BarSpecProps = {
 	children: [],
@@ -48,6 +48,32 @@ export const defaultBarProps: BarSpecProps = {
 	paddingRatio: PADDING_RATIO,
 	trellisOrientation: 'horizontal',
 	trellisPadding: TRELLIS_PADDING,
+	type: 'stacked',
+};
+
+export const defaultBarOptions: BarSpecOptions = {
+	barAnnotations: [],
+	chartPopovers: [],
+	chartTooltips: [],
+	color: DEFAULT_COLOR,
+	colorScheme: DEFAULT_COLOR_SCHEME,
+	dimension: DEFAULT_CATEGORICAL_DIMENSION,
+	dimensionScaleType: 'band',
+	hasSquareCorners: false,
+	idKey: MARK_ID,
+	index: 0,
+	interactiveMarkName: 'bar0',
+	lineType: { value: 'solid' },
+	lineWidth: 0,
+	markType: 'bar',
+	metric: DEFAULT_METRIC,
+	name: 'bar0',
+	orientation: 'vertical',
+	opacity: { value: 1 },
+	paddingRatio: PADDING_RATIO,
+	trellisOrientation: 'horizontal',
+	trellisPadding: TRELLIS_PADDING,
+	trendlines: [],
 	type: 'stacked',
 };
 

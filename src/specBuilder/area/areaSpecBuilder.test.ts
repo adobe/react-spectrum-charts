@@ -9,9 +9,6 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { createElement } from 'react';
-
-import { ChartTooltip } from '@components/ChartTooltip';
 import {
 	BACKGROUND_COLOR,
 	COLOR_SCALE,
@@ -35,7 +32,7 @@ import { getGenericValueSignal } from '@specBuilder/signal/signalSpecBuilder';
 import { defaultSignals } from '@specBuilder/specTestUtils';
 import { Data, GroupMark, Spec } from 'vega';
 
-import { AreaSpecProps } from '../../types';
+import { AreaSpecOptions } from '../../types';
 import { initializeSpec } from '../specUtils';
 import { addArea, addAreaMarks, addData, addHighlightedItemEvents, addSignals, setScales } from './areaSpecBuilder';
 
@@ -43,8 +40,9 @@ const startingSpec: Spec = initializeSpec({
 	scales: [{ name: COLOR_SCALE, type: 'ordinal' }],
 });
 
-const defaultAreaProps: AreaSpecProps = {
-	children: [],
+const defaultAreaOptions: AreaSpecOptions = {
+	chartPopovers: [],
+	chartTooltips: [],
 	colorScheme: DEFAULT_COLOR_SCHEME,
 	color: DEFAULT_COLOR,
 	dimension: DEFAULT_TIME_DIMENSION,
@@ -170,11 +168,13 @@ const defaultPointScale = {
 describe('areaSpecBuilder', () => {
 	describe('addArea()', () => {
 		test('should add area', () => {
-			expect(addArea(startingSpec, { idKey: MARK_ID })).toStrictEqual(defaultSpec);
+			expect(addArea(startingSpec, { markType: 'area', idKey: MARK_ID })).toStrictEqual(defaultSpec);
 		});
 
 		test('metricStart defined but valueEnd not defined, should default to value', () => {
-			expect(addArea(startingSpec, { idKey: MARK_ID, metricStart: 'test' })).toStrictEqual(defaultSpec);
+			expect(addArea(startingSpec, { markType: 'area', idKey: MARK_ID, metricStart: 'test' })).toStrictEqual(
+				defaultSpec
+			);
 		});
 	});
 
@@ -185,17 +185,17 @@ describe('areaSpecBuilder', () => {
 			baseData = initializeSpec().data ?? [];
 		});
 		test('basic', () => {
-			expect(addData(startingSpec.data ?? [], defaultAreaProps)).toStrictEqual(defaultSpec.data);
+			expect(addData(startingSpec.data ?? [], defaultAreaOptions)).toStrictEqual(defaultSpec.data);
 		});
 
 		test('scaleTypes "point" and "linear" should not add timeunit transforms return the original data', () => {
 			expect(
-				addData(baseData, { ...defaultAreaProps, scaleType: 'point' })[0].transform?.find(
+				addData(baseData, { ...defaultAreaOptions, scaleType: 'point' })[0].transform?.find(
 					(t) => t.type === 'timeunit'
 				)
 			).toBeUndefined();
 			expect(
-				addData(baseData, { ...defaultAreaProps, scaleType: 'linear' })[0].transform?.find(
+				addData(baseData, { ...defaultAreaOptions, scaleType: 'linear' })[0].transform?.find(
 					(t) => t.type === 'timeunit'
 				)
 			).toBeUndefined();
@@ -204,12 +204,11 @@ describe('areaSpecBuilder', () => {
 
 	describe('addSignals()', () => {
 		test('no children: should return nothing', () => {
-			expect(addSignals(defaultSignals, defaultAreaProps)).toStrictEqual(defaultSignals);
+			expect(addSignals(defaultSignals, defaultAreaOptions)).toStrictEqual(defaultSignals);
 		});
 
 		test('children: should add signals', () => {
-			const tooltip = createElement(ChartTooltip);
-			const signals = addSignals(defaultSignals, { ...defaultAreaProps, children: [tooltip] });
+			const signals = addSignals(defaultSignals, { ...defaultAreaOptions, chartTooltips: [{}] });
 			expect(signals).toHaveLength(defaultSignals.length + 1);
 			expect(signals[0]).toHaveProperty('name', HIGHLIGHTED_ITEM);
 			expect(signals[2]).toHaveProperty('name', HIGHLIGHTED_SERIES);
@@ -221,8 +220,10 @@ describe('areaSpecBuilder', () => {
 		});
 
 		test('should exclude data with key from update if tooltip has excludeDataKey', () => {
-			const tooltip = createElement(ChartTooltip, { excludeDataKeys: ['excludeFromTooltip'] });
-			const signals = addSignals(defaultSignals, { ...defaultAreaProps, children: [tooltip] });
+			const signals = addSignals(defaultSignals, {
+				...defaultAreaOptions,
+				chartTooltips: [{ excludeDataKeys: ['excludeFromTooltip'] }],
+			});
 			expect(signals).toHaveLength(defaultSignals.length + 1);
 			expect(signals[2]).toHaveProperty('name', HIGHLIGHTED_SERIES);
 			expect(signals[2].on?.[0]).toHaveProperty('events', '@area0:mouseover');
@@ -233,10 +234,9 @@ describe('areaSpecBuilder', () => {
 		});
 
 		test('should add on event to HIGHLIGHTED_ITEM signal if highlightedItem is defined and there is a tooltip on the area', () => {
-			const tooltip = createElement(ChartTooltip);
 			const signals = addSignals(defaultSignals, {
-				...defaultAreaProps,
-				children: [tooltip],
+				...defaultAreaOptions,
+				chartTooltips: [{}],
 				highlightedItem: 'highlightedItem',
 			});
 			expect(signals).toHaveLength(defaultSignals.length + 1);
@@ -272,11 +272,11 @@ describe('areaSpecBuilder', () => {
 
 	describe('setScales()', () => {
 		test('time', () => {
-			expect(setScales(startingSpec.scales ?? [], defaultAreaProps)).toStrictEqual(defaultSpec.scales);
+			expect(setScales(startingSpec.scales ?? [], defaultAreaOptions)).toStrictEqual(defaultSpec.scales);
 		});
 
 		test('linear', () => {
-			expect(setScales(startingSpec.scales ?? [], { ...defaultAreaProps, scaleType: 'linear' })).toStrictEqual([
+			expect(setScales(startingSpec.scales ?? [], { ...defaultAreaOptions, scaleType: 'linear' })).toStrictEqual([
 				defaultSpec.scales?.[0],
 				defaultLinearScale,
 				defaultSpec.scales?.[2],
@@ -284,7 +284,7 @@ describe('areaSpecBuilder', () => {
 		});
 
 		test('point', () => {
-			expect(setScales(startingSpec.scales ?? [], { ...defaultAreaProps, scaleType: 'point' })).toStrictEqual([
+			expect(setScales(startingSpec.scales ?? [], { ...defaultAreaOptions, scaleType: 'point' })).toStrictEqual([
 				defaultSpec.scales?.[0],
 				defaultPointScale,
 				defaultSpec.scales?.[2],
@@ -294,13 +294,13 @@ describe('areaSpecBuilder', () => {
 
 	describe('addAreaMarks()', () => {
 		test('basic', () => {
-			expect(addAreaMarks([], defaultAreaProps)).toStrictEqual(defaultSpec.marks);
+			expect(addAreaMarks([], defaultAreaOptions)).toStrictEqual(defaultSpec.marks);
 		});
 
 		test('linear', () => {
 			const groupMark: GroupMark = defaultSpec.marks?.[0] as GroupMark;
 
-			expect(addAreaMarks([], { ...defaultAreaProps, scaleType: 'linear' })).toStrictEqual([
+			expect(addAreaMarks([], { ...defaultAreaOptions, scaleType: 'linear' })).toStrictEqual([
 				{
 					...groupMark,
 					marks: [
