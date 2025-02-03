@@ -9,18 +9,14 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { createElement } from 'react';
-
-import { ChartPopover } from '@components/ChartPopover';
-import { ChartTooltip } from '@components/ChartTooltip';
 import { HIGHLIGHTED_GROUP } from '@constants';
-import { defaultBarProps } from '@specBuilder/bar/barTestUtils';
-import { defaultScatterProps } from '@specBuilder/scatter/scatterTestUtils';
+import { defaultBarOptions } from '@specBuilder/bar/barTestUtils';
+import { defaultScatterOptions } from '@specBuilder/scatter/scatterTestUtils';
 import { defaultSignals } from '@specBuilder/specTestUtils';
 import { baseData } from '@specBuilder/specUtils';
 import { Data, Signal } from 'vega';
 
-import { BarSpecProps, ChartTooltipProps, LineSpecProps } from '../../types';
+import { BarSpecOptions, ChartTooltipOptions, LineSpecOptions } from '../../types';
 import {
 	addHighlightMarkOpacityRules,
 	addTooltipData,
@@ -30,26 +26,30 @@ import {
 	isHighlightedByGroup,
 } from './chartTooltipUtils';
 
-const getDefautltMarkProps = (tooltipProps: ChartTooltipProps = {}): BarSpecProps => ({
-	...defaultBarProps,
-	children: [createElement(ChartTooltip, tooltipProps)],
+const getDefautltMarkOptions = (tooltipOptions: ChartTooltipOptions = {}): BarSpecOptions => ({
+	...defaultBarOptions,
+	chartTooltips: [tooltipOptions],
 });
 
 describe('getTooltips()', () => {
 	test('should get all the tooltips from props', () => {
-		const markProps = { ...defaultBarProps, children: [createElement(ChartTooltip), createElement(ChartPopover)] };
-		const tooltips = getTooltips(markProps);
+		const markOptions: BarSpecOptions = {
+			...defaultBarOptions,
+			chartTooltips: [{}],
+			chartPopovers: [{}],
+		};
+		const tooltips = getTooltips(markOptions);
 		expect(tooltips.length).toBe(1);
 	});
 });
 
 describe('applyTooltipPropDefaults()', () => {
-	test('should apply all defaults to ChartTooltipProps', () => {
-		const chartTooltipProps: ChartTooltipProps = {};
+	test('should apply all defaults to ChartTooltipOptions', () => {
+		const chartTooltipOptions: ChartTooltipOptions = {};
 		const markName = 'bar0';
-		const tooltipSpecProps = applyTooltipPropDefaults(chartTooltipProps, markName);
-		expect(tooltipSpecProps).toHaveProperty('highlightBy', 'item');
-		expect(tooltipSpecProps).toHaveProperty('markName', markName);
+		const tooltipSpecOptions = applyTooltipPropDefaults(chartTooltipOptions, markName);
+		expect(tooltipSpecOptions).toHaveProperty('highlightBy', 'item');
+		expect(tooltipSpecOptions).toHaveProperty('markName', markName);
 	});
 });
 
@@ -59,34 +59,34 @@ describe('addTooltipData()', () => {
 		data = JSON.parse(JSON.stringify(baseData));
 	});
 	test('if highlightBy is `item` or undefined, no data should be added', () => {
-		const markProps = getDefautltMarkProps();
-		addTooltipData(data, markProps);
+		const markOptions = getDefautltMarkOptions();
+		addTooltipData(data, markOptions);
 		expect(data).toEqual(baseData);
-		addTooltipData(data, getDefautltMarkProps({ highlightBy: 'item' }));
+		addTooltipData(data, getDefautltMarkOptions({ highlightBy: 'item' }));
 		expect(data).toEqual(baseData);
 	});
 	test('should add the group id transform if highlightBy is `dimension`', () => {
-		const markProps = getDefautltMarkProps({ highlightBy: 'dimension' });
-		addTooltipData(data, markProps);
+		const markOptions = getDefautltMarkOptions({ highlightBy: 'dimension' });
+		addTooltipData(data, markOptions);
 		expect(data[1].transform?.length).toBe(1);
 		expect(data[1].transform?.[0]).toHaveProperty('as', 'bar0_highlightGroupId');
 	});
 	test('should add the group id transform if highlightBy is `series`', () => {
-		const markProps = getDefautltMarkProps({ highlightBy: 'series' });
-		addTooltipData(data, markProps);
+		const markOptions = getDefautltMarkOptions({ highlightBy: 'series' });
+		addTooltipData(data, markOptions);
 		expect(data[1].transform?.length).toBe(1);
 		expect(data[1].transform?.[0]).toHaveProperty('as', 'bar0_highlightGroupId');
 	});
 	test('should add the group id transform if highlightBy is a key array', () => {
-		const markProps = getDefautltMarkProps({ highlightBy: ['operatingSystem'] });
-		addTooltipData(data, markProps);
+		const markOptions = getDefautltMarkOptions({ highlightBy: ['operatingSystem'] });
+		addTooltipData(data, markOptions);
 		expect(data[1].transform?.length).toBe(1);
 		expect(data[1].transform?.[0]).toHaveProperty('as', 'bar0_highlightGroupId');
 	});
 	test('should not add highlightedData for the mark if false', () => {
 		const dataLength = data.length;
-		const markProps = getDefautltMarkProps({ highlightBy: 'series' });
-		addTooltipData(data, markProps, false);
+		const markOptions = getDefautltMarkOptions({ highlightBy: 'series' });
+		addTooltipData(data, markOptions, false);
 		// length sholdn't be changed
 		expect(data).toHaveLength(dataLength);
 	});
@@ -94,15 +94,15 @@ describe('addTooltipData()', () => {
 
 describe('isHighlightedByGroup()', () => {
 	test('should return true if highlightBy is `dimension` or `series`', () => {
-		expect(isHighlightedByGroup(getDefautltMarkProps({ highlightBy: 'dimension' }))).toBe(true);
-		expect(isHighlightedByGroup(getDefautltMarkProps({ highlightBy: 'series' }))).toBe(true);
+		expect(isHighlightedByGroup(getDefautltMarkOptions({ highlightBy: 'dimension' }))).toBe(true);
+		expect(isHighlightedByGroup(getDefautltMarkOptions({ highlightBy: 'series' }))).toBe(true);
 	});
 	test('should return true if highlightBy is an array', () => {
-		expect(isHighlightedByGroup(getDefautltMarkProps({ highlightBy: ['operatingSystem'] }))).toBe(true);
+		expect(isHighlightedByGroup(getDefautltMarkOptions({ highlightBy: ['operatingSystem'] }))).toBe(true);
 	});
 	test('should return false if highlightBy is `item` or undefined', () => {
-		expect(isHighlightedByGroup(getDefautltMarkProps({ highlightBy: 'item' }))).toBe(false);
-		expect(isHighlightedByGroup(getDefautltMarkProps())).toBe(false);
+		expect(isHighlightedByGroup(getDefautltMarkOptions({ highlightBy: 'item' }))).toBe(false);
+		expect(isHighlightedByGroup(getDefautltMarkOptions())).toBe(false);
 	});
 });
 
@@ -115,34 +115,34 @@ describe('addTooltipSignals()', () => {
 	});
 
 	test('if mark is not highlighted by group id, should not add any signals', () => {
-		addTooltipSignals(signals, getDefautltMarkProps());
+		addTooltipSignals(signals, getDefautltMarkOptions());
 		expect(highlightedGroupSignal).not.toHaveProperty('on');
-		addTooltipSignals(signals, getDefautltMarkProps({ highlightBy: 'item' }));
+		addTooltipSignals(signals, getDefautltMarkOptions({ highlightBy: 'item' }));
 		expect(highlightedGroupSignal).not.toHaveProperty('on');
 	});
 
 	test('should add on events if highlightBy is `series`', () => {
-		addTooltipSignals(signals, getDefautltMarkProps({ highlightBy: 'series' }));
+		addTooltipSignals(signals, getDefautltMarkOptions({ highlightBy: 'series' }));
 		expect(highlightedGroupSignal).toHaveProperty('on');
 		expect(highlightedGroupSignal.on).toHaveLength(2);
 	});
 
 	test('should add on events if highlightBy is `dimension`', () => {
-		addTooltipSignals(signals, getDefautltMarkProps({ highlightBy: 'dimension' }));
+		addTooltipSignals(signals, getDefautltMarkOptions({ highlightBy: 'dimension' }));
 		expect(highlightedGroupSignal).toHaveProperty('on');
 		expect(highlightedGroupSignal.on).toHaveLength(2);
 	});
 
 	test('should add on events if highlightBy is a key array', () => {
-		addTooltipSignals(signals, getDefautltMarkProps({ highlightBy: ['operatingSystem'] }));
+		addTooltipSignals(signals, getDefautltMarkOptions({ highlightBy: ['operatingSystem'] }));
 		expect(highlightedGroupSignal).toHaveProperty('on');
 		expect(highlightedGroupSignal.on).toHaveLength(2);
 	});
 
 	test('should include voronoi in the mark name if the markprops are for scatter or line', () => {
 		addTooltipSignals(signals, {
-			...defaultScatterProps,
-			children: [createElement(ChartTooltip, { highlightBy: 'series' })],
+			...defaultScatterOptions,
+			chartTooltips: [{ highlightBy: 'series' }],
 		});
 		expect(highlightedGroupSignal.on?.[0].events.toString().includes('_voronoi')).toBeTruthy();
 	});
@@ -150,8 +150,8 @@ describe('addTooltipSignals()', () => {
 	test('should add on events if highlightBy is `series` and interactionMode is `item`', () => {
 		addTooltipSignals(signals, {
 			interactionMode: 'item',
-			children: [createElement(ChartTooltip, { highlightBy: 'series' })],
-		} as LineSpecProps);
+			chartTooltips: [{ highlightBy: 'series' }],
+		} as LineSpecOptions);
 		expect(highlightedGroupSignal.on).toHaveLength(8);
 	});
 });
@@ -159,13 +159,13 @@ describe('addTooltipSignals()', () => {
 describe('addTooltipMarkOpacityRules()', () => {
 	test('should only add a simple item rule if not highlighted by group', () => {
 		const opacityRules = [];
-		addHighlightMarkOpacityRules(opacityRules, getDefautltMarkProps());
+		addHighlightMarkOpacityRules(opacityRules, getDefautltMarkOptions());
 		expect(opacityRules).toHaveLength(2);
 	});
 
 	test('shold add highlight group rule if highlighted by group', () => {
 		const opacityRules = [];
-		addHighlightMarkOpacityRules(opacityRules, getDefautltMarkProps({ highlightBy: 'series' }));
+		addHighlightMarkOpacityRules(opacityRules, getDefautltMarkOptions({ highlightBy: 'series' }));
 		expect(opacityRules).toHaveLength(3);
 	});
 });

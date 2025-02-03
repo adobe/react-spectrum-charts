@@ -9,7 +9,6 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { ChartTooltip } from '@components/ChartTooltip';
 import {
 	DEFAULT_OPACITY_RULE,
 	FILTERED_TABLE,
@@ -24,39 +23,35 @@ import { getHoverMarkNames } from '@specBuilder/marks/markUtils';
 import { Data, FormulaTransform, NumericValueRef, Signal, SourceData } from 'vega';
 
 import {
-	AreaSpecProps,
-	BarSpecProps,
-	ChartTooltipElement,
-	ChartTooltipProps,
-	ChartTooltipSpecProps,
-	DonutSpecProps,
-	LineSpecProps,
-	ScatterSpecProps,
+	AreaSpecOptions,
+	BarSpecOptions,
+	ChartTooltipOptions,
+	ChartTooltipSpecOptions,
+	DonutSpecOptions,
+	LineSpecOptions,
+	ScatterSpecOptions,
 } from '../../types';
 
-type TooltipParentProps = AreaSpecProps | BarSpecProps | DonutSpecProps | LineSpecProps | ScatterSpecProps;
+type TooltipParentOptions = AreaSpecOptions | BarSpecOptions | DonutSpecOptions | LineSpecOptions | ScatterSpecOptions;
 
 /**
  * gets all the tooltips
- * @param markProps
+ * @param markOptions
  * @returns
  */
-export const getTooltips = (markProps: TooltipParentProps): ChartTooltipSpecProps[] => {
-	const chartTooltipElements = markProps.children.filter(
-		(child) => child.type === ChartTooltip
-	) as ChartTooltipElement[];
-	return chartTooltipElements.map((chartTooltip) => applyTooltipPropDefaults(chartTooltip.props, markProps.name));
+export const getTooltips = (markOptions: TooltipParentOptions): ChartTooltipSpecOptions[] => {
+	return markOptions.chartTooltips.map((chartTooltip) => applyTooltipPropDefaults(chartTooltip, markOptions.name));
 };
 
 /**
- * Applies all defaults to ChartTooltipProps
- * @param chartTooltipProps
- * @returns ChartTooltipSpecProps
+ * Applies all defaults to ChartTooltipOptions
+ * @param chartTooltipOptions
+ * @returns ChartTooltipSpecOptions
  */
 export const applyTooltipPropDefaults = (
-	{ highlightBy = 'item', ...props }: ChartTooltipProps,
+	{ highlightBy = 'item', ...props }: ChartTooltipOptions,
 	markName: string
-): ChartTooltipSpecProps => {
+): ChartTooltipSpecOptions => {
 	return {
 		highlightBy,
 		markName,
@@ -69,18 +64,18 @@ export const applyTooltipPropDefaults = (
  *
  * NOTE: this function mutates the data object so it should only be called from a produce function
  * @param data
- * @param chartTooltipProps
+ * @param chartTooltipOptions
  */
-export const addTooltipData = (data: Data[], markProps: TooltipParentProps, addHighlightedData = true) => {
-	const tooltips = getTooltips(markProps);
+export const addTooltipData = (data: Data[], markOptions: TooltipParentOptions, addHighlightedData = true) => {
+	const tooltips = getTooltips(markOptions);
 	for (const { highlightBy, markName } of tooltips) {
 		if (highlightBy === 'item') return;
 		const filteredTable = getFilteredTableData(data);
 		if (!filteredTable.transform) {
 			filteredTable.transform = [];
 		}
-		if (highlightBy === 'dimension' && markProps.markType !== 'donut') {
-			filteredTable.transform.push(getGroupIdTransform([markProps.dimension], markName));
+		if (highlightBy === 'dimension' && markOptions.markType !== 'donut') {
+			filteredTable.transform.push(getGroupIdTransform([markOptions.dimension], markName));
 		} else if (highlightBy === 'series') {
 			filteredTable.transform.push(getGroupIdTransform([SERIES_ID], markName));
 		} else if (Array.isArray(highlightBy)) {
@@ -123,18 +118,18 @@ const getMarkHighlightedData = (markName: string): SourceData => ({
 	],
 });
 
-export const isHighlightedByGroup = (markProps: TooltipParentProps) => {
-	const tooltips = getTooltips(markProps);
+export const isHighlightedByGroup = (markOptions: TooltipParentOptions) => {
+	const tooltips = getTooltips(markOptions);
 	return tooltips.some(({ highlightBy }) => highlightBy && highlightBy !== 'item');
 };
 
 /**
  * Tooltip highlights by item or dimension
- * @param markProps
+ * @param markOptions
  * @returns
  */
-export const isHighlightedByDimension = (markProps: TooltipParentProps) => {
-	const tooltips = getTooltips(markProps);
+export const isHighlightedByDimension = (markOptions: TooltipParentOptions) => {
+	const tooltips = getTooltips(markOptions);
 	return tooltips.some(
 		({ highlightBy }) => typeof highlightBy === 'string' && ['dimension', 'item'].includes(highlightBy)
 	);
@@ -145,22 +140,22 @@ export const isHighlightedByDimension = (markProps: TooltipParentProps) => {
  *
  * NOTE: this function mutates the signals array so it should only be called from a produce function
  * @param signals
- * @param markProps
+ * @param markOptions
  */
-export const addTooltipSignals = (signals: Signal[], markProps: TooltipParentProps) => {
-	if (isHighlightedByGroup(markProps)) {
+export const addTooltipSignals = (signals: Signal[], markOptions: TooltipParentOptions) => {
+	if (isHighlightedByGroup(markOptions)) {
 		const highlightedGroupSignal = signals.find((signal) => signal.name === HIGHLIGHTED_GROUP) as Signal;
 
-		let markName = markProps.name;
+		let markName = markOptions.name;
 		let update = `datum.${markName}_highlightGroupId`;
 
-		if ('interactionMode' in markProps && markProps.interactionMode === INTERACTION_MODE.ITEM) {
+		if ('interactionMode' in markOptions && markOptions.interactionMode === INTERACTION_MODE.ITEM) {
 			getHoverMarkNames(markName).forEach((name) => {
 				addMouseEvents(highlightedGroupSignal, name, update);
 			});
 		}
 
-		if (['scatter', 'line'].includes(markProps.markType)) {
+		if (['scatter', 'line'].includes(markOptions.markType)) {
 			update = `datum.${update}`;
 			markName += '_voronoi';
 		}
@@ -189,24 +184,24 @@ const addMouseEvents = (highlightedGroupSignal: Signal, markName: string, update
  *
  * NOTE: this function mutates the opacityRules array so it should only be called from a produce function
  * @param opacityRules
- * @param markProps
+ * @param markOptions
  */
 export const addHighlightMarkOpacityRules = (
 	opacityRules: ({ test?: string } & NumericValueRef)[],
-	markProps: TooltipParentProps
+	markOptions: TooltipParentOptions
 ) => {
 	opacityRules.unshift(
 		{
-			test: `isArray(${HIGHLIGHTED_ITEM}) && length(${HIGHLIGHTED_ITEM}) > 0 && indexof(${HIGHLIGHTED_ITEM}, datum.${markProps.idKey}) === -1`,
+			test: `isArray(${HIGHLIGHTED_ITEM}) && length(${HIGHLIGHTED_ITEM}) > 0 && indexof(${HIGHLIGHTED_ITEM}, datum.${markOptions.idKey}) === -1`,
 			value: 1 / HIGHLIGHT_CONTRAST_RATIO,
 		},
 		{
-			test: `!isArray(${HIGHLIGHTED_ITEM}) && isValid(${HIGHLIGHTED_ITEM}) && ${HIGHLIGHTED_ITEM} !== datum.${markProps.idKey}`,
+			test: `!isArray(${HIGHLIGHTED_ITEM}) && isValid(${HIGHLIGHTED_ITEM}) && ${HIGHLIGHTED_ITEM} !== datum.${markOptions.idKey}`,
 			value: 1 / HIGHLIGHT_CONTRAST_RATIO,
 		}
 	);
-	if (isHighlightedByGroup(markProps)) {
-		const { name: markName } = markProps;
+	if (isHighlightedByGroup(markOptions)) {
+		const { name: markName } = markOptions;
 		opacityRules.unshift({
 			test: `${HIGHLIGHTED_GROUP} === datum.${markName}_highlightGroupId`,
 			...DEFAULT_OPACITY_RULE,
