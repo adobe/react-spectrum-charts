@@ -140,17 +140,13 @@ export interface ChartPopoverSpecProps extends PartiallyRequired<ChartPopoverPro
 	markName: string;
 }
 
-type BulletPropsWithDefaults = 'chartLabel' | 'name';
+type BulletPropsWithDefaults = 'name' | 'metric' | 'dimension' | 'target';
 
 export interface BulletSpecProps extends PartiallyRequired<BulletProps, BulletPropsWithDefaults> {
 	children: MarkChildElement[];
     idKey: string;
     colorScheme: ColorScheme;
     index: number;
-    markType: "bullet";
-    // currentAmount?: number;
-	// graphLabel?: string;
-	// target?: number;
 }
 
 type DonutPropsWithDefaults = 'color' | 'metric' | 'name' | 'startAngle' | 'holeRatio' | 'isBoolean';

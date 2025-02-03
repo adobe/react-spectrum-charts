@@ -233,10 +233,12 @@ export interface DonutProps extends MarkProps {
 }
 
 export interface BulletProps extends MarkProps {
-	/** How should we name the graph? (may be used later) */
-	chartLabel?: string;
-	/** idk what this is for but I had to include it */
-	// markType?: string;
+	/** Target line */
+	target?: string;
+	/** Data field that the metric is trended against (x-axis for horizontal orientation) */
+	dimension?: string;
+	/** Data field for the metric */
+	metric?: string;
 }
 
 export interface DonutSummaryProps {

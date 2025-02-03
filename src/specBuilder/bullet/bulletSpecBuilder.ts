@@ -26,9 +26,10 @@ export const addBullet = produce<
             children,
             colorScheme = DEFAULT_COLOR_SCHEME,
             index = 0,
-            chartLabel: chartLabel = 'My Bullet Graph',
             name,
-            // markType = 'bullet',
+            metric,
+            dimension,
+            target,
             ...props
         }
     ) => {
@@ -36,15 +37,15 @@ export const addBullet = produce<
             children: sanitizeMarkChildren(children),
             colorScheme,
             index,
-            chartLabel: chartLabel,
-            markType: "bullet",
+            metric: metric ?? 'currentAmount',
+            dimension: dimension ?? 'graphLabel',
+            target: target ?? 'target',
             name: toCamelCase(name ?? `bullet${index}`),
             ...props,
         };
         spec.data = getBulletData();
         spec.marks = getBulletMarks(bulletProps);
-        spec.scales = getBulletScales();
-        console.log(bulletProps.chartLabel)
+        spec.scales = getBulletScales(bulletProps);
     }
 );
 
@@ -60,7 +61,7 @@ function getBulletMarks(props: BulletSpecProps): Mark[] {
         "enter": {
           "x": {"value": 0},
           "y": {"field": "index", "mult": 60, "offset": -44},
-          "width": {"scale": "xscale", "field": "currentAmount"},
+          "width": {"scale": "xscale", "field": `${props.metric}`},
           "height": {"value": 6},
           "fill": {"value": "steelblue"},
           "cornerRadiusTopRight": {"value": 2},
@@ -72,12 +73,12 @@ function getBulletMarks(props: BulletSpecProps): Mark[] {
       "type": "text",
       "name": `${props.name}barlabel`,
       "from": {"data": "table"},
-      "description": `${props.name}`,
+      "description": "graphLabel",
       "encode": {
         "enter": {
           "x": {"value": 0},
           "y": {"field": "index", "mult": 60, "offset": -60},
-          "text": {"field": "graphLabel"},
+          "text": {"field": `${props.dimension}`},
           "align": {"value": "left"},
           "baseline": {"value": "bottom"},
           "fontSize": {"value": 11.5},
@@ -89,12 +90,12 @@ function getBulletMarks(props: BulletSpecProps): Mark[] {
       "type": "text",
       "from": {"data": "table"},
       "name": `${props.name}amountlabel`,
-      "description": `${props.name}`,
+      "description": "currentAmount",
       "encode": {
         "enter": {
           "x": {"signal": "width"},
           "y": {"field": "index", "mult": 60, "offset": -60},
-          "text": {"field": "currentAmount"},
+          "text": {"field": `${props.metric}`},
           "align": {"value": "right"},
           "baseline": {"value": "bottom"},
           "fontSize": {"value": 11.5},
@@ -109,7 +110,7 @@ function getBulletMarks(props: BulletSpecProps): Mark[] {
       "description": `${props.name}`,
       "encode": {
         "enter": {
-          "x": {"scale": "xscale", "field": "target"},
+          "x": {"scale": "xscale", "field": `${props.target}`},
           "y": {"field": "index", "mult": 60, "offset": -53},
           "y2": {"field": "index", "mult": 60, "offset": -29},
           "stroke": {"value": "black"},
@@ -128,7 +129,15 @@ function getBulletData(): Data[] {
         "name": "table",
         "values": [],
         "transform": [
-          {"type": "window", "ops": ["row_number"], "as": ["index"]}
+          {
+            "type": "filter",
+            "expr": "isValid(datum.graphLabel) && datum.graphLabel !== null && datum.graphLabel !== ''"
+          },
+          {
+            "type": "window",
+            "ops": ["row_number"],
+            "as": ["index"]
+          }
         ]
       }
     ]
@@ -136,7 +145,7 @@ function getBulletData(): Data[] {
     return bulletData;
 }
 
-function getBulletScales(): Scale[] {
+function getBulletScales(props: BulletSpecProps): Scale[] {
   // Implementation of addBulletMarks
 
   let bulletScale: Scale[] = [
@@ -145,8 +154,8 @@ function getBulletScales(): Scale[] {
       "type": "linear",
       "domain": {
         "fields": [
-          {"data": "table", "field": "currentAmount"},
-          {"data": "table", "field": "target"}
+          {"data": "table", "field": `${props.metric}`},
+          {"data": "table", "field": `${props.target}`}
         ]
       },
       "range": [0, {"signal": "width"}]

@@ -28,6 +28,8 @@ describe('Bullet', () => {
 		const rects = await findAllMarksByGroupName(chart, 'bullet0rect');
 		expect(rects.length).toEqual(6);
 
+		//Color test here
+
 		const barLabels = await findAllMarksByGroupName(chart, 'bullet0barlabel', 'text');
 		expect(barLabels.length).toEqual(6);
 
