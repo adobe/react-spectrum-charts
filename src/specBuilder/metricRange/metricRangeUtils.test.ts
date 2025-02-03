@@ -9,9 +9,6 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { createElement } from 'react';
-
-import { MetricRange } from '@components/MetricRange';
 import {
 	COLOR_SCALE,
 	DEFAULT_COLOR,
@@ -24,16 +21,15 @@ import {
 	MARK_ID,
 } from '@constants';
 
-import { LineSpecProps, MetricRangeProps, MetricRangeSpecProps } from '../../types';
+import { LineSpecOptions, MetricRangeOptions, MetricRangeSpecOptions } from '../../types';
 import {
-	applyMetricRangePropDefaults,
+	applyMetricRangeOptionDefaults,
 	getMetricRangeData,
 	getMetricRangeGroupMarks,
 	getMetricRangeMark,
 } from './metricRangeUtils';
 
-const defaultMetricRangeProps: MetricRangeProps = {
-	children: [],
+const defaultMetricRangeOptions: MetricRangeOptions = {
 	lineType: 'shortDash',
 	lineWidth: 'S',
 	rangeOpacity: 0.2,
@@ -42,8 +38,8 @@ const defaultMetricRangeProps: MetricRangeProps = {
 	metric: 'metric',
 };
 
-const defaultMetricRangeSpecProps: MetricRangeSpecProps = {
-	children: [],
+const defaultMetricRangeSpecOptions: MetricRangeSpecOptions = {
+	chartTooltips: [],
 	lineType: 'shortDash',
 	lineWidth: 'S',
 	rangeOpacity: 0.2,
@@ -53,21 +49,25 @@ const defaultMetricRangeSpecProps: MetricRangeSpecProps = {
 	name: 'line0MetricRange0',
 };
 
-const defaultLineProps: LineSpecProps = {
-	children: [createElement(MetricRange, defaultMetricRangeProps)],
+const defaultLineOptions: LineSpecOptions = {
+	chartPopovers: [],
+	chartTooltips: [],
 	color: DEFAULT_COLOR,
 	colorScheme: DEFAULT_COLOR_SCHEME,
 	dimension: DEFAULT_TIME_DIMENSION,
+	hasOnClick: false,
 	idKey: MARK_ID,
 	index: 0,
 	interactiveMarkName: undefined,
 	lineType: { value: 'solid' },
 	markType: 'line',
 	metric: DEFAULT_METRIC,
+	metricRanges: [defaultMetricRangeOptions],
 	name: 'line0',
 	opacity: { value: 1 },
 	popoverMarkName: undefined,
 	scaleType: 'time',
+	trendlines: [],
 };
 
 const basicMetricRangeMarks = [
@@ -124,8 +124,9 @@ const basicMetricRangeMarks = [
 describe('applyMetricRangePropDefaults', () => {
 	test('applies defaults', () => {
 		expect(
-			applyMetricRangePropDefaults({ metricEnd: 'metricStart', metricStart: 'metricEnd' }, 'line0', 0)
+			applyMetricRangeOptionDefaults({ metricEnd: 'metricStart', metricStart: 'metricEnd' }, 'line0', 0)
 		).toEqual({
+			chartTootlips: [],
 			displayOnHover: false,
 			lineType: 'dashed',
 			lineWidth: 'S',
@@ -138,7 +139,7 @@ describe('applyMetricRangePropDefaults', () => {
 	});
 	test('skips assigned values', () => {
 		expect(
-			applyMetricRangePropDefaults(
+			applyMetricRangeOptionDefaults(
 				{
 					lineType: 'solid',
 					lineWidth: 'L',
@@ -152,6 +153,7 @@ describe('applyMetricRangePropDefaults', () => {
 				0
 			)
 		).toEqual({
+			chartTooltips: [],
 			displayOnHover: true,
 			lineType: 'solid',
 			lineWidth: 'L',
@@ -166,13 +168,13 @@ describe('applyMetricRangePropDefaults', () => {
 
 describe('getMetricRangeMark', () => {
 	test('creates MetricRange mark from basic input', () => {
-		expect(getMetricRangeMark(defaultLineProps, defaultMetricRangeSpecProps)).toEqual(basicMetricRangeMarks);
+		expect(getMetricRangeMark(defaultLineOptions, defaultMetricRangeSpecOptions)).toEqual(basicMetricRangeMarks);
 	});
 });
 
 describe('getMetricRangeGroupMarks', () => {
 	test('creates MetricRange group mark from basic input', () => {
-		expect(getMetricRangeGroupMarks(defaultLineProps)).toEqual([
+		expect(getMetricRangeGroupMarks(defaultLineOptions)).toEqual([
 			{
 				name: 'line0MetricRange0_group',
 				type: 'group',
@@ -193,8 +195,8 @@ describe('getMetricRangeGroupMarks', () => {
 describe('getMetricRangeData', () => {
 	test('creates metric range data from basic input', () => {
 		const data = getMetricRangeData({
-			...defaultLineProps,
-			children: [createElement(MetricRange, { ...defaultMetricRangeProps, displayOnHover: true })],
+			...defaultLineOptions,
+			metricRanges: [{ ...defaultMetricRangeOptions, displayOnHover: true }],
 		});
 		expect(data).toHaveLength(1);
 		expect(data[0]).toHaveProperty('name', 'line0MetricRange0_highlightedData');

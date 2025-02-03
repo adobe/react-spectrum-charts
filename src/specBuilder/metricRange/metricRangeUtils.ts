@@ -9,42 +9,38 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { MetricRange } from '@components/MetricRange';
 import { DEFAULT_METRIC, FILTERED_TABLE, HIGHLIGHTED_SERIES, SELECTED_SERIES, SERIES_ID } from '@constants';
-import { AreaMarkProps, getAreaMark } from '@specBuilder/area/areaUtils';
+import { AreaMarkOptions, getAreaMark } from '@specBuilder/area/areaUtils';
 import { getLineMark } from '@specBuilder/line/lineMarkUtils';
-import { LineMarkProps } from '@specBuilder/line/lineUtils';
+import { LineMarkOptions } from '@specBuilder/line/lineUtils';
 import { addHighlightedSeriesSignalEvents } from '@specBuilder/signal/signalSpecBuilder';
 import { getFacetsFromOptions } from '@specBuilder/specUtils';
 import { AreaMark, GroupMark, LineMark, Signal, SourceData } from 'vega';
 
-import {
-	LineSpecProps,
-	MarkChildElement,
-	MetricRangeElement,
-	MetricRangeProps,
-	MetricRangeSpecProps,
-} from '../../types';
+import { LineSpecOptions, MetricRangeOptions, MetricRangeSpecOptions, MetricRangeSpecProps } from '../../types';
 
-export const getMetricRanges = (children: MarkChildElement[], markName: string): MetricRangeSpecProps[] => {
-	const metricRangeElements = children.filter((child) => child.type === MetricRange) as MetricRangeElement[];
-	return metricRangeElements.map((metricRange, index) =>
-		applyMetricRangePropDefaults(metricRange.props, markName, index)
+export type MetricRangeParentOptions = LineSpecOptions;
+
+export const getMetricRanges = (markOptions: MetricRangeParentOptions): MetricRangeSpecProps[] => {
+	return markOptions.metricRanges.map((metricRange, index) =>
+		applyMetricRangeOptionDefaults(metricRange, markOptions.name, index)
 	);
 };
 
-export const applyMetricRangePropDefaults = (
+export const applyMetricRangeOptionDefaults = (
 	{
+		chartTooltips = [],
 		lineType = 'dashed',
 		lineWidth = 'S',
 		rangeOpacity = 0.2,
 		metric = DEFAULT_METRIC,
 		displayOnHover = false,
 		...props
-	}: MetricRangeProps,
+	}: MetricRangeOptions,
 	markName: string,
 	index: number
-): MetricRangeSpecProps => ({
+): MetricRangeSpecOptions => ({
+	chartTooltips,
 	lineType,
 	lineWidth,
 	name: `${markName}MetricRange${index}`,
@@ -56,14 +52,14 @@ export const applyMetricRangePropDefaults = (
 
 /**
  * gets the metric range group mark including the metric range line and area marks.
- * @param lineMarkProps
+ * @param lineMarkOptions
  */
-export const getMetricRangeGroupMarks = (lineMarkProps: LineSpecProps): GroupMark[] => {
-	const { children, color, lineType, name: lineName } = lineMarkProps;
+export const getMetricRangeGroupMarks = (lineMarkOptions: LineSpecOptions): GroupMark[] => {
+	const { color, lineType } = lineMarkOptions;
 	const { facets } = getFacetsFromOptions({ color, lineType });
 
 	const marks: GroupMark[] = [];
-	const metricRanges = getMetricRanges(children, lineName);
+	const metricRanges = getMetricRanges(lineMarkOptions);
 
 	for (const metricRangeProps of metricRanges) {
 		const { displayOnHover, name } = metricRangeProps;
@@ -80,7 +76,7 @@ export const getMetricRangeGroupMarks = (lineMarkProps: LineSpecProps): GroupMar
 					groupby: facets,
 				},
 			},
-			marks: getMetricRangeMark(lineMarkProps, metricRangeProps),
+			marks: getMetricRangeMark(lineMarkOptions, metricRangeProps),
 		});
 	}
 
@@ -89,53 +85,51 @@ export const getMetricRangeGroupMarks = (lineMarkProps: LineSpecProps): GroupMar
 
 /**
  * gets the area and line marks for the metric range by combining line and metric range props.
- * @param lineMarkProps
- * @param metricRangeProps
+ * @param lineMarkOptions
+ * @param metricRangeOptions
  */
 export const getMetricRangeMark = (
-	lineMarkProps: LineSpecProps,
-	metricRangeProps: MetricRangeSpecProps
+	lineMarkOptions: LineSpecOptions,
+	metricRangeOptions: MetricRangeSpecProps
 ): (LineMark | AreaMark)[] => {
-	const areaProps: AreaMarkProps = {
-		name: `${metricRangeProps.name}_area`,
-		color: lineMarkProps.color,
-		colorScheme: lineMarkProps.colorScheme,
-		opacity: metricRangeProps.rangeOpacity,
-		children: [],
-		metricStart: metricRangeProps.metricStart,
-		metricEnd: metricRangeProps.metricEnd,
+	const areaOptions: AreaMarkOptions = {
+		name: `${metricRangeOptions.name}_area`,
+		color: lineMarkOptions.color,
+		colorScheme: lineMarkOptions.colorScheme,
+		opacity: metricRangeOptions.rangeOpacity,
+		metricStart: metricRangeOptions.metricStart,
+		metricEnd: metricRangeOptions.metricEnd,
 		isStacked: false,
 		scaleType: 'time',
-		dimension: lineMarkProps.dimension,
+		dimension: lineMarkOptions.dimension,
 		isMetricRange: true,
-		parentName: lineMarkProps.name,
-		displayOnHover: metricRangeProps.displayOnHover,
+		parentName: lineMarkOptions.name,
+		displayOnHover: metricRangeOptions.displayOnHover,
 	};
-	const lineProps: LineMarkProps = {
-		...lineMarkProps,
-		name: `${metricRangeProps.name}_line`,
-		color: metricRangeProps.color ? { value: metricRangeProps.color } : lineMarkProps.color,
-		metric: metricRangeProps.metric,
-		lineType: { value: metricRangeProps.lineType },
-		lineWidth: { value: metricRangeProps.lineWidth },
-		displayOnHover: metricRangeProps.displayOnHover,
+	const lineOptions: LineMarkOptions = {
+		...lineMarkOptions,
+		name: `${metricRangeOptions.name}_line`,
+		color: metricRangeOptions.color ? { value: metricRangeOptions.color } : lineMarkOptions.color,
+		metric: metricRangeOptions.metric,
+		lineType: { value: metricRangeOptions.lineType },
+		lineWidth: { value: metricRangeOptions.lineWidth },
+		displayOnHover: metricRangeOptions.displayOnHover,
 	};
 
-	const dataSource = `${metricRangeProps.name}_facet`;
-	const lineMark = getLineMark(lineProps, dataSource);
-	const areaMark = getAreaMark(areaProps, dataSource);
+	const dataSource = `${metricRangeOptions.name}_facet`;
+	const lineMark = getLineMark(lineOptions, dataSource);
+	const areaMark = getAreaMark(areaOptions, dataSource);
 
 	return [lineMark, areaMark];
 };
 
 /**
  * gets the data source for the metricRange
- * @param markProps
+ * @param markOptions
  */
-export const getMetricRangeData = (markProps: LineSpecProps): SourceData[] => {
+export const getMetricRangeData = (markOptions: LineSpecOptions): SourceData[] => {
 	const data: SourceData[] = [];
-	const { children, name: markName } = markProps;
-	const metricRanges = getMetricRanges(children, markName);
+	const metricRanges = getMetricRanges(markOptions);
 
 	for (const metricRangeProps of metricRanges) {
 		const { displayOnHover, name } = metricRangeProps;
@@ -159,12 +153,12 @@ export const getMetricRangeData = (markProps: LineSpecProps): SourceData[] => {
 
 /**
  * gets the signals for the metricRange
- * @param markProps
+ * @param markOptions
  */
-export const getMetricRangeSignals = (markProps: LineSpecProps): Signal[] => {
+export const getMetricRangeSignals = (markOptions: LineSpecOptions): Signal[] => {
 	const signals: Signal[] = [];
-	const { children, name: markName } = markProps;
-	const metricRanges = getMetricRanges(children, markName);
+	const { name: markName } = markOptions;
+	const metricRanges = getMetricRanges(markOptions);
 
 	if (metricRanges.length) {
 		addHighlightedSeriesSignalEvents(signals, `${markName}_voronoi`, 2);
