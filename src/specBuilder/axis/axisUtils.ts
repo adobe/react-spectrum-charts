@@ -11,7 +11,7 @@
  */
 import { Axis, Mark, Scale, SignalRef } from 'vega';
 
-import { AxisSpecProps, Granularity, Position } from '../../types';
+import { AxisSpecOptions, Granularity, Position } from '../../types';
 import {
 	getAxisLabelsEncoding,
 	getLabelAnchorValues,
@@ -22,12 +22,12 @@ import {
 } from './axisLabelUtils';
 
 /**
- * Generates a default vega axis from the axis props
- * @param axisProps
+ * Generates a default vega axis from the axis options
+ * @param axisOptions
  * @param scaleName
  * @returns axis
  */
-export const getDefaultAxis = (axisProps: AxisSpecProps, scaleName: string): Axis => {
+export const getDefaultAxis = (axisOptions: AxisSpecOptions, scaleName: string): Axis => {
 	const {
 		grid,
 		hideDefaultLabels,
@@ -43,7 +43,7 @@ export const getDefaultAxis = (axisProps: AxisSpecProps, scaleName: string): Axi
 		vegaLabelBaseline,
 		vegaLabelOffset,
 		vegaLabelPadding,
-	} = axisProps;
+	} = axisOptions;
 	return {
 		scale: scaleName,
 		orient: position,
@@ -61,7 +61,7 @@ export const getDefaultAxis = (axisProps: AxisSpecProps, scaleName: string): Axi
 		encode: {
 			labels: {
 				update: {
-					text: getLabelFormat(axisProps, scaleName),
+					text: getLabelFormat(axisOptions, scaleName),
 				},
 			},
 		},
@@ -69,21 +69,21 @@ export const getDefaultAxis = (axisProps: AxisSpecProps, scaleName: string): Axi
 };
 
 /**
- * Generates the time axes for a time scale from the axis props
+ * Generates the time axes for a time scale from the axis options
  * @param scaleName
- * @param axisProps
+ * @param axisOptions
  * @returns axes
  */
-export const getTimeAxes = (scaleName: string, axisProps: AxisSpecProps): Axis[] => {
-	return [getSecondaryTimeAxis(scaleName, axisProps), ...getPrimaryTimeAxis(scaleName, axisProps)];
+export const getTimeAxes = (scaleName: string, axisOptions: AxisSpecOptions): Axis[] => {
+	return [getSecondaryTimeAxis(scaleName, axisOptions), ...getPrimaryTimeAxis(scaleName, axisOptions)];
 };
 
 /**
- * Generates the secondary time axis from the axis props
+ * Generates the secondary time axis from the axis options
  * This is the axis that shows the smaller granularity
  * If this is a vertical axis, it will also show the larger granularity and will hide repeats of the larger granularity
  * @param scaleName
- * @param axisProps
+ * @param axisOptions
  * @returns axis
  */
 const getSecondaryTimeAxis = (
@@ -98,7 +98,7 @@ const getSecondaryTimeAxis = (
 		title,
 		vegaLabelAlign,
 		vegaLabelBaseline,
-	}: AxisSpecProps
+	}: AxisSpecOptions
 ): Axis => {
 	const { tickCount } = getTimeLabelFormats(granularity);
 
@@ -139,11 +139,11 @@ const getSecondaryTimeAxisLabelFormatting = (granularity: Granularity, position:
 };
 
 /**
- * Generates the primary time axis from the axis props
+ * Generates the primary time axis from the axis options
  * This is the axis that shows the larger granularity and hides duplicate labels
  * Only returns an axis for horizontal axes
  * @param scaleName
- * @param axisProps
+ * @param axisOptions
  * @returns axis
  */
 const getPrimaryTimeAxis = (
@@ -157,7 +157,7 @@ const getPrimaryTimeAxis = (
 		ticks,
 		vegaLabelAlign,
 		vegaLabelBaseline,
-	}: AxisSpecProps
+	}: AxisSpecOptions
 ): Axis[] => {
 	if (['left', 'right'].includes(position)) {
 		return [];
@@ -189,18 +189,18 @@ const getPrimaryTimeAxis = (
 };
 
 /**
- * Generates an axis for sub labels from the axis props
- * @param axisProps
+ * Generates an axis for sub labels from the axis options
+ * @param axisOptions
  * @param scaleName
  * @returns axis
  */
-export const getSubLabelAxis = (axisProps: AxisSpecProps, scaleName: string): Axis => {
-	const { labelAlign, labelFontWeight, labelOrientation, name, position, ticks } = axisProps;
-	const subLabels = axisProps.subLabels;
+export const getSubLabelAxis = (axisOptions: AxisSpecOptions, scaleName: string): Axis => {
+	const { labelAlign, labelFontWeight, labelOrientation, name, position, ticks } = axisOptions;
+	const subLabels = axisOptions.subLabels;
 	const signalName = `${name}_subLabels`;
 	const subLabelValues = subLabels.map((label) => label.value);
 
-	let subLabelAxis = getDefaultAxis(axisProps, scaleName);
+	let subLabelAxis = getDefaultAxis(axisOptions, scaleName);
 	subLabelAxis = {
 		...subLabelAxis,
 		domain: false,
@@ -352,7 +352,7 @@ export const getTickCount = (position: Position, grid: boolean): SignalRef | und
 export const getBaselineRule = (baselineOffset: number, position: Position): Mark => {
 	const orientation = isVerticalAxis(position) ? 'y' : 'x';
 
-	const positionProps = {
+	const positionOptions = {
 		x: {
 			x: { value: 0 },
 			x2: { signal: 'width' },
@@ -372,13 +372,13 @@ export const getBaselineRule = (baselineOffset: number, position: Position): Mar
 		interactive: false,
 		encode: {
 			update: {
-				...positionProps[orientation],
+				...positionOptions[orientation],
 			},
 		},
 	};
 };
 
-export const hasSubLabels = ({ subLabels, labelOrientation }: AxisSpecProps) => {
+export const hasSubLabels = ({ subLabels, labelOrientation }: AxisSpecOptions) => {
 	// subLabels are only supported for horizontal axis labels
 	return Boolean(subLabels.length && labelOrientation === 'horizontal');
 };

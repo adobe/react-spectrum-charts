@@ -23,7 +23,7 @@ import {
 	TickCount,
 } from 'vega';
 
-import { AxisSpecProps, Granularity, Label, LabelAlign, Orientation, Position } from '../../types';
+import { AxisSpecOptions, Granularity, Label, LabelAlign, Orientation, Position } from '../../types';
 import { isVerticalAxis } from './axisUtils';
 
 /**
@@ -65,7 +65,7 @@ export const getTimeLabelFormats = (
 };
 
 /**
- * label align can be set in a controlled manner using the `labels` and `subLabels` props
+ * label align can be set in a controlled manner using the `labels` and `subLabels` options
  * This function will return the correct align and baseline encodings based on the labelAlign and position
  * @param position
  * @param labelOrientaion
@@ -83,8 +83,8 @@ export const getControlledLabelAnchorValues = (
 };
 
 /**
- * gets the values for labelAlign and labelBaseline based on the `labelAlign`, `labelOrientation`, and `position` props
- * vegaLabelAlign and vegaLabelBaseline props can be used to override these values
+ * gets the values for labelAlign and labelBaseline based on the `labelAlign`, `labelOrientation`, and `position` options
+ * vegaLabelAlign and vegaLabelBaseline options can be used to override these values
  * @param position
  * @param labelOrientaion
  * @param labelAlign
@@ -108,7 +108,7 @@ export const getLabelAnchorValues = (
 };
 
 /**
- * gets the label align and baseline values based on the `labelAlign`, `labelOrientation`, and `position` props
+ * gets the label align and baseline values based on the `labelAlign`, `labelOrientation`, and `position` options
  * @param position
  * @param labelOrientaion
  * @param labelAlign
@@ -242,7 +242,7 @@ export const getLabelFormat = (
 		truncateLabels,
 		currencyLocale,
 		currencyCode,
-	}: AxisSpecProps,
+	}: AxisSpecOptions,
 	scaleName: string
 ): ProductionRule<TextValueRef> => {
 	if (labelFormat === 'percentage') {

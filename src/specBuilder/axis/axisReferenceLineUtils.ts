@@ -9,7 +9,6 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { ReferenceLine } from '@components/ReferenceLine';
 import { DEFAULT_FONT_COLOR, DEFAULT_LABEL_FONT_WEIGHT } from '@constants';
 import { getColorValue, getPathFromIcon } from '@specBuilder/specUtils';
 import {
@@ -26,31 +25,28 @@ import {
 	TextMark,
 } from 'vega';
 
-import { AxisSpecProps, Position, ReferenceLineElement, ReferenceLineProps, ReferenceLineSpecProps } from '../../types';
+import { AxisSpecOptions, Position, ReferenceLineOptions, ReferenceLineSpecOptions } from '../../types';
 import { isVerticalAxis } from './axisUtils';
 
-export const getReferenceLines = (axisProps: AxisSpecProps): ReferenceLineSpecProps[] => {
-	const referenceLineElements = axisProps.children.filter(
-		(child) => child.type === ReferenceLine
-	) as ReferenceLineElement[];
-	return referenceLineElements.map((referenceLineElement, index) =>
-		applyReferenceLinePropDefaults(referenceLineElement.props, axisProps, index)
+export const getReferenceLines = (axisOptions: AxisSpecOptions): ReferenceLineSpecOptions[] => {
+	return axisOptions.referenceLines.map((referenceLine, index) =>
+		applyReferenceLineOptionDefaults(referenceLine, axisOptions, index)
 	);
 };
 
-const applyReferenceLinePropDefaults = (
-	props: ReferenceLineProps,
-	axisProps: AxisSpecProps,
+const applyReferenceLineOptionDefaults = (
+	options: ReferenceLineOptions,
+	axisOptions: AxisSpecOptions,
 	index: number
-): ReferenceLineSpecProps => ({
-	...props,
-	color: props.color || 'gray-800',
-	colorScheme: axisProps.colorScheme,
-	iconColor: props.iconColor || DEFAULT_FONT_COLOR,
-	labelColor: props.labelColor || DEFAULT_FONT_COLOR,
-	labelFontWeight: props.labelFontWeight ?? DEFAULT_LABEL_FONT_WEIGHT,
-	layer: props.layer ?? 'front',
-	name: `${axisProps.name}ReferenceLine${index}`,
+): ReferenceLineSpecOptions => ({
+	...options,
+	color: options.color || 'gray-800',
+	colorScheme: axisOptions.colorScheme,
+	iconColor: options.iconColor || DEFAULT_FONT_COLOR,
+	labelColor: options.labelColor || DEFAULT_FONT_COLOR,
+	labelFontWeight: options.labelFontWeight ?? DEFAULT_LABEL_FONT_WEIGHT,
+	layer: options.layer ?? 'front',
+	name: `${axisOptions.name}ReferenceLine${index}`,
 });
 
 export const scaleTypeSupportsReferenceLines = (scaleType: ScaleType | undefined): boolean => {
@@ -58,18 +54,21 @@ export const scaleTypeSupportsReferenceLines = (scaleType: ScaleType | undefined
 	return Boolean(scaleType && supportedScaleTypes.includes(scaleType));
 };
 
-export const getReferenceLineMarks = (axisProps: AxisSpecProps, scaleName: string): { back: Mark[]; front: Mark[] } => {
+export const getReferenceLineMarks = (
+	axisOptions: AxisSpecOptions,
+	scaleName: string
+): { back: Mark[]; front: Mark[] } => {
 	const referenceLineMarks: { back: Mark[]; front: Mark[] } = { back: [], front: [] };
-	const referenceLines = getReferenceLines(axisProps);
+	const referenceLines = getReferenceLines(axisOptions);
 
 	for (const referenceLine of referenceLines) {
 		const { layer } = referenceLine;
-		const positionEncoding = getPositionEncoding(axisProps, referenceLine, scaleName);
+		const positionEncoding = getPositionEncoding(axisOptions, referenceLine, scaleName);
 		referenceLineMarks[layer].push(
 			...[
-				getReferenceLineRuleMark(axisProps, referenceLine, positionEncoding),
-				...getReferenceLineSymbolMark(axisProps, referenceLine, positionEncoding),
-				...getReferenceLineTextMark(axisProps, referenceLine, positionEncoding),
+				getReferenceLineRuleMark(axisOptions, referenceLine, positionEncoding),
+				...getReferenceLineSymbolMark(axisOptions, referenceLine, positionEncoding),
+				...getReferenceLineTextMark(axisOptions, referenceLine, positionEncoding),
 			]
 		);
 	}
@@ -77,8 +76,8 @@ export const getReferenceLineMarks = (axisProps: AxisSpecProps, scaleName: strin
 };
 
 export const getPositionEncoding = (
-	{ scaleType }: AxisSpecProps,
-	{ value, position }: ReferenceLineSpecProps,
+	{ scaleType }: AxisSpecOptions,
+	{ value, position }: ReferenceLineSpecOptions,
 	scaleName: string
 ): ProductionRule<NumericValueRef> | SignalRef => {
 	const signalValue = typeof value === 'string' ? `'${value}'` : value;
@@ -95,13 +94,13 @@ export const getPositionEncoding = (
 };
 
 export const getReferenceLineRuleMark = (
-	{ position, ticks }: AxisSpecProps,
-	{ color, colorScheme, name }: ReferenceLineSpecProps,
+	{ position, ticks }: AxisSpecOptions,
+	{ color, colorScheme, name }: ReferenceLineSpecOptions,
 	positionEncoding: ProductionRule<NumericValueRef> | SignalRef
 ): RuleMark => {
 	const startOffset = ticks ? 9 : 0;
 
-	const positionProps: { [key in Position]: Partial<EncodeEntry> } = {
+	const positionOptions: { [key in Position]: Partial<EncodeEntry> } = {
 		top: {
 			x: positionEncoding,
 			y: { value: -startOffset },
@@ -133,7 +132,7 @@ export const getReferenceLineRuleMark = (
 				stroke: { value: getColorValue(color, colorScheme) },
 			},
 			update: {
-				...positionProps[position],
+				...positionOptions[position],
 			},
 		},
 	};
@@ -146,7 +145,7 @@ export const getReferenceLineRuleMark = (
  * @param horizontalOffset
  * @returns SymbolMark
  */
-const getAdditiveMarkPositionProps = (
+const getAdditiveMarkPositionOptions = (
 	offset: number,
 	positionEncoding: ProductionRule<NumericValueRef> | SignalRef,
 	horizontalOffset?: number
@@ -171,22 +170,22 @@ const getAdditiveMarkPositionProps = (
 
 /**
  * Gets the reference line symbol mark
- * @param AxisSpecProps
- * @param ReferenceLineSpecProps
+ * @param AxisSpecOptions
+ * @param ReferenceLineSpecOptions
  * @param referenceLineIndex
  * @param positionEncoding
  * @returns SymbolMark
  */
 export const getReferenceLineSymbolMark = (
-	{ colorScheme, position }: AxisSpecProps,
-	{ icon, iconColor, name }: ReferenceLineSpecProps,
+	{ colorScheme, position }: AxisSpecOptions,
+	{ icon, iconColor, name }: ReferenceLineSpecOptions,
 	positionEncoding: ProductionRule<NumericValueRef> | SignalRef
 ): SymbolMark[] => {
 	if (!icon) return [];
 
 	// offset the icon from the edge of the chart area
 	const OFFSET = 24;
-	const positionProps = getAdditiveMarkPositionProps(OFFSET, positionEncoding);
+	const positionOptions = getAdditiveMarkPositionOptions(OFFSET, positionEncoding);
 
 	return [
 		{
@@ -201,7 +200,7 @@ export const getReferenceLineSymbolMark = (
 					fill: { value: getColorValue(iconColor, colorScheme) },
 				},
 				update: {
-					...positionProps[position],
+					...positionOptions[position],
 				},
 			},
 		},
@@ -210,18 +209,18 @@ export const getReferenceLineSymbolMark = (
 
 /**
  * Gets the reference line text mark
- * @param AxisSpecProps
- * @param ReferenceLineSpecProps
+ * @param AxisSpecOptions
+ * @param ReferenceLineSpecOptions
  * @param referenceLineIndex
  * @param positionEncoding
  * @returns TextMark
  */
 export const getReferenceLineTextMark = (
-	axisProps: AxisSpecProps,
-	referenceLineProps: ReferenceLineSpecProps,
+	axisOptions: AxisSpecOptions,
+	referenceLineOptions: ReferenceLineSpecOptions,
 	positionEncoding: ProductionRule<NumericValueRef> | SignalRef
 ): TextMark[] => {
-	const { label, name } = referenceLineProps;
+	const { label, name } = referenceLineOptions;
 	if (!label) return [];
 
 	return [
@@ -229,7 +228,7 @@ export const getReferenceLineTextMark = (
 			name: `${name}_label`,
 			type: 'text',
 			encode: {
-				...getReferenceLineLabelsEncoding(axisProps, { ...referenceLineProps, label }, positionEncoding),
+				...getReferenceLineLabelsEncoding(axisOptions, { ...referenceLineOptions, label }, positionEncoding),
 			},
 		},
 	];
@@ -245,13 +244,13 @@ export const getReferenceLineTextMark = (
  * @returns updateEncoding
  */
 export const getReferenceLineLabelsEncoding = (
-	{ position }: AxisSpecProps,
-	{ colorScheme, icon, label, labelColor, labelFontWeight }: ReferenceLineSpecProps & { label: string },
+	{ position }: AxisSpecOptions,
+	{ colorScheme, icon, label, labelColor, labelFontWeight }: ReferenceLineSpecOptions & { label: string },
 	positionEncoding: ProductionRule<NumericValueRef> | SignalRef
 ): GuideEncodeEntry<TextEncodeEntry> => {
 	const VERTICAL_OFFSET = icon ? 48 : 26; // Position label outside of icon.
 	const HORIZONTAL_OFFSET = isVerticalAxis(position) && icon ? 24 : 12; // Position label outside of icon for horizontal orientation.
-	const positionProps = getAdditiveMarkPositionProps(VERTICAL_OFFSET, positionEncoding, HORIZONTAL_OFFSET);
+	const positionOptions = getAdditiveMarkPositionOptions(VERTICAL_OFFSET, positionEncoding, HORIZONTAL_OFFSET);
 
 	return {
 		update: {
@@ -266,7 +265,7 @@ export const getReferenceLineLabelsEncoding = (
 			],
 			fill: { value: getColorValue(labelColor, colorScheme) },
 			...getEncodedLabelBaselineAlign(position),
-			...positionProps[position],
+			...positionOptions[position],
 		},
 	};
 };

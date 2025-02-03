@@ -9,9 +9,6 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { createElement } from 'react';
-
-import { ReferenceLine } from '@components/ReferenceLine';
 import { DEFAULT_LABEL_FONT_WEIGHT, FILTERED_TABLE } from '@constants';
 import { Axis, GroupMark, ProductionRule, Scale, Signal, TextValueRef } from 'vega';
 
@@ -24,7 +21,7 @@ import {
 	getLabelSignalValue,
 	setAxisBaseline,
 } from './axisSpecBuilder';
-import { defaultAxisProps, defaultXBaselineMark, defaultYBaselineMark } from './axisTestUtils';
+import { defaultAxisOptions, defaultXBaselineMark, defaultYBaselineMark } from './axisTestUtils';
 
 const defaultAxis: Axis = {
 	orient: 'bottom',
@@ -270,8 +267,8 @@ describe('Spec builder, Axis', () => {
 	describe('addAxes()', () => {
 		test('should add test to hide labels if they would overlap the reference line icon', () => {
 			const labelTextEncoding = addAxes([], {
-				...defaultAxisProps,
-				children: [createElement(ReferenceLine, { value: 10, icon: 'date' })],
+				...defaultAxisOptions,
+				referenceLines: [{ value: 10, icon: 'date' }],
 				scaleName: 'xLinear',
 				scaleType: 'linear',
 			})[0].encode?.labels?.update?.text as ProductionRule<TextValueRef>;
@@ -283,10 +280,10 @@ describe('Spec builder, Axis', () => {
 		});
 		test('should add and tests for each referenceline to hide labels if they would overlap the reference line icon', () => {
 			const labelTextEncoding = addAxes([], {
-				...defaultAxisProps,
-				children: [
-					createElement(ReferenceLine, { value: 10, icon: 'date' }),
-					createElement(ReferenceLine, { value: 15, icon: 'date' }),
+				...defaultAxisOptions,
+				referenceLines: [
+					{ value: 10, icon: 'date' },
+					{ value: 15, icon: 'date' },
 				],
 				scaleName: 'xLinear',
 				scaleType: 'linear',
@@ -297,7 +294,7 @@ describe('Spec builder, Axis', () => {
 		});
 		test('should set the values on the axis if labels is set', () => {
 			const axes = addAxes([], {
-				...defaultAxisProps,
+				...defaultAxisOptions,
 				labels: [1, 2, 3],
 				scaleName: 'xLinear',
 				scaleType: 'linear',
@@ -336,7 +333,7 @@ describe('Spec builder, Axis', () => {
 	describe('addAxesMarks()', () => {
 		test('should add baseline to the end of the marks if baseline offset is 0', () => {
 			const marks = addAxesMarks([defaultYBaselineMark], {
-				...defaultAxisProps,
+				...defaultAxisOptions,
 				baseline: true,
 				baselineOffset: 0,
 				opposingScaleType: 'linear',
@@ -348,7 +345,7 @@ describe('Spec builder, Axis', () => {
 
 		test('should add baseline to the start of the marks if baseline offset is not 0', () => {
 			const marks = addAxesMarks([defaultYBaselineMark], {
-				...defaultAxisProps,
+				...defaultAxisOptions,
 				baseline: true,
 				baselineOffset: 10,
 				opposingScaleType: 'linear',
@@ -374,7 +371,7 @@ describe('Spec builder, Axis', () => {
 
 		test('should add baseline to first mark group if chart is trellised', () => {
 			const marks = addAxesMarks([defaultTrellisGroupMark], {
-				...defaultAxisProps,
+				...defaultAxisOptions,
 				baseline: true,
 				baselineOffset: 0,
 				opposingScaleType: 'linear',
@@ -387,7 +384,7 @@ describe('Spec builder, Axis', () => {
 
 		test('should add baseline to first mark group if chart is trellised and baseline offset is not 0', () => {
 			const marks = addAxesMarks([defaultTrellisGroupMark], {
-				...defaultAxisProps,
+				...defaultAxisOptions,
 				baseline: true,
 				baselineOffset: 10,
 				opposingScaleType: 'linear',
@@ -414,7 +411,7 @@ describe('Spec builder, Axis', () => {
 
 		test('should add an axis to the trellis group if the chart is trellised and opposing scale type is not linear', () => {
 			const marks = addAxesMarks([defaultTrellisGroupMark], {
-				...defaultAxisProps,
+				...defaultAxisOptions,
 				baseline: true,
 				baselineOffset: 0,
 				opposingScaleType: 'band',
@@ -426,7 +423,7 @@ describe('Spec builder, Axis', () => {
 
 		test('should show trellis axis labels if chart orientation matches trellis orientation', () => {
 			const marks = addAxesMarks([defaultTrellisGroupMark], {
-				...defaultAxisProps,
+				...defaultAxisOptions,
 				position: 'bottom',
 				baseline: true,
 				baselineOffset: 0,
@@ -439,7 +436,7 @@ describe('Spec builder, Axis', () => {
 
 		test('should not show trellis axis labels if chart orientation does not match trellis orientation', () => {
 			const marks = addAxesMarks([defaultTrellisGroupMark], {
-				...defaultAxisProps,
+				...defaultAxisOptions,
 				position: 'left',
 				baseline: true,
 				baselineOffset: 0,
@@ -453,13 +450,13 @@ describe('Spec builder, Axis', () => {
 
 	describe('addAxisSignals()', () => {
 		test('should not add any signals if there labels and subLabels are undefined', () => {
-			const signals = addAxisSignals([], defaultAxisProps);
+			const signals = addAxisSignals([], defaultAxisOptions);
 			expect(signals).toHaveLength(0);
 		});
 
 		test('should add labels signal if labels exist', () => {
 			const signals = addAxisSignals([], {
-				...defaultAxisProps,
+				...defaultAxisOptions,
 				labels: [1, 'test', { value: 2, label: 'two', align: 'start' }],
 			});
 			expect(signals).toHaveLength(1);
@@ -469,7 +466,7 @@ describe('Spec builder, Axis', () => {
 
 		test('should add subLabels if subLabels exist', () => {
 			const signals = addAxisSignals([], {
-				...defaultAxisProps,
+				...defaultAxisOptions,
 				subLabels: [
 					{ value: 1, subLabel: 'one', align: 'start' },
 					{ value: 2, subLabel: 'two', align: 'end' },

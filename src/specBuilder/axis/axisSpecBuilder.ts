@@ -24,14 +24,13 @@ import {
 	getAxisAnnotationsFromChildren,
 } from '@specBuilder/axisAnnotation/axisAnnotationUtils';
 import { getGenericValueSignal } from '@specBuilder/signal/signalSpecBuilder';
-import { sanitizeAxisChildren } from '@utils';
 import { produce } from 'immer';
 import { Axis, Data, GroupMark, Mark, ScaleType, Signal, Spec } from 'vega';
 
-import { AxisProps, AxisSpecProps, ColorScheme, Label, Orientation, Position } from '../../types';
+import { AxisOptions, AxisSpecOptions, ColorScheme, Label, Orientation, Position } from '../../types';
 import { getAxisLabelsEncoding, getControlledLabelAnchorValues, getLabelValue } from './axisLabelUtils';
 import { getReferenceLineMarks, getReferenceLines, scaleTypeSupportsReferenceLines } from './axisReferenceLineUtils';
-import { encodeAxisTitle, getTrellisAxisProps, isTrellisedChart } from './axisTrellisUtils';
+import { encodeAxisTitle, getTrellisAxisOptions, isTrellisedChart } from './axisTrellisUtils';
 import {
 	getBaselineRule,
 	getDefaultAxis,
@@ -42,14 +41,14 @@ import {
 	hasSubLabels,
 } from './axisUtils';
 
-export const addAxis = produce<Spec, [AxisProps & { colorScheme?: ColorScheme; index?: number }]>(
+export const addAxis = produce<Spec, [AxisOptions & { colorScheme?: ColorScheme; index?: number }]>(
 	(
 		spec,
 		{
 			name,
+			axisAnnotations = [],
 			baseline = false,
 			baselineOffset = 0,
-			children,
 			colorScheme = DEFAULT_COLOR_SCHEME,
 			granularity = DEFAULT_GRANULARITY,
 			grid = false,
@@ -62,9 +61,10 @@ export const addAxis = produce<Spec, [AxisProps & { colorScheme?: ColorScheme; i
 			numberFormat = 'shortNumber',
 			position,
 			range,
+			referenceLines = [],
 			subLabels = [],
 			ticks = false,
-			...props
+			...options
 		}
 	) => {
 		// get the scale that this axis will be associated with
@@ -75,11 +75,11 @@ export const addAxis = produce<Spec, [AxisProps & { colorScheme?: ColorScheme; i
 		// get the opposing scale
 		const opposingScaleType = getOpposingScaleType(spec.scales ?? [], position);
 
-		// reconstruct props with defaults
-		const axisProps: AxisSpecProps = {
+		// reconstruct options with defaults
+		const axisOptions: AxisSpecOptions = {
+			axisAnnotations,
 			baseline,
 			baselineOffset,
-			children: sanitizeAxisChildren(children),
 			colorScheme,
 			granularity,
 			grid,
@@ -93,14 +93,15 @@ export const addAxis = produce<Spec, [AxisProps & { colorScheme?: ColorScheme; i
 			numberFormat,
 			position,
 			range,
+			referenceLines,
 			subLabels,
 			ticks,
 			scaleType: scaleType ?? 'linear',
-			...props,
+			...options,
 		};
 
-		spec.data = addAxisData(spec.data ?? [], { ...axisProps, scaleType: scaleType ?? 'linear' });
-		spec.signals = addAxisSignals(spec.signals ?? [], axisProps);
+		spec.data = addAxisData(spec.data ?? [], { ...axisOptions, scaleType: scaleType ?? 'linear' });
+		spec.signals = addAxisSignals(spec.signals ?? [], axisOptions);
 
 		// set custom range if applicable
 		if (range && (scaleType === 'linear' || scaleType === 'time')) {
@@ -108,17 +109,17 @@ export const addAxis = produce<Spec, [AxisProps & { colorScheme?: ColorScheme; i
 		}
 
 		spec.axes = addAxes(spec.axes ?? [], {
-			...axisProps,
+			...axisOptions,
 			scaleName,
 			opposingScaleType,
 
 			// we don't want to show the grid on top level
 			// axes for trellised charts
-			grid: axisProps.grid && !isTrellisedChart(spec),
+			grid: axisOptions.grid && !isTrellisedChart(spec),
 		});
 
 		spec.marks = addAxesMarks(spec.marks ?? [], {
-			...axisProps,
+			...axisOptions,
 			scaleName,
 			opposingScaleType,
 		});
@@ -127,20 +128,20 @@ export const addAxis = produce<Spec, [AxisProps & { colorScheme?: ColorScheme; i
 	}
 );
 
-export const addAxisData = produce<Data[], [AxisSpecProps & { scaleType: ScaleType }]>((data, props) => {
-	const axisAnnotations = getAxisAnnotationsFromChildren(props);
-	axisAnnotations.forEach((annotationProps) => {
-		addAxisAnnotationData(data, annotationProps);
+export const addAxisData = produce<Data[], [AxisSpecOptions & { scaleType: ScaleType }]>((data, options) => {
+	const axisAnnotations = getAxisAnnotationsFromChildren(options);
+	axisAnnotations.forEach((annotationOptions) => {
+		addAxisAnnotationData(data, annotationOptions);
 	});
 });
 
-export const addAxisSignals = produce<Signal[], [AxisSpecProps]>((signals, props) => {
-	const { name, labels, position, subLabels, labelOrientation } = props;
+export const addAxisSignals = produce<Signal[], [AxisSpecOptions]>((signals, options) => {
+	const { name, labels, position, subLabels, labelOrientation } = options;
 	if (labels?.length) {
 		// add all the label properties to a signal so that the axis encoding can use it to style each label correctly
 		signals.push(getGenericValueSignal(`${name}_labels`, getLabelSignalValue(labels, position, labelOrientation)));
 	}
-	if (hasSubLabels(props)) {
+	if (hasSubLabels(options)) {
 		// add all the sublabel properties to a signal so that the axis encoding can use it to style each sublabel correctly
 		signals.push(
 			getGenericValueSignal(
@@ -153,9 +154,9 @@ export const addAxisSignals = produce<Signal[], [AxisSpecProps]>((signals, props
 			)
 		);
 	}
-	const axisAnnotations = getAxisAnnotationsFromChildren(props);
-	axisAnnotations.forEach((annotationProps) => {
-		addAxisAnnotationSignals(signals, annotationProps);
+	const axisAnnotations = getAxisAnnotationsFromChildren(options);
+	axisAnnotations.forEach((annotationOptions) => {
+		addAxisAnnotationSignals(signals, annotationOptions);
 	});
 });
 
@@ -183,21 +184,21 @@ export const getLabelSignalValue = (
 		})
 		.filter(Boolean);
 
-export const addAxes = produce<Axis[], [AxisSpecProps & { scaleName: string; opposingScaleType?: string }]>(
-	(axes, { scaleName, opposingScaleType, ...axisProps }) => {
+export const addAxes = produce<Axis[], [AxisSpecOptions & { scaleName: string; opposingScaleType?: string }]>(
+	(axes, { scaleName, opposingScaleType, ...axisOptions }) => {
 		const newAxes: Axis[] = [];
-		// adds all the trellis axis props if this is a trellis axis
-		axisProps = { ...axisProps, ...getTrellisAxisProps(scaleName) };
-		const { baseline, labelAlign, labelFontWeight, labelFormat, labelOrientation, name, position } = axisProps;
+		// adds all the trellis axis options if this is a trellis axis
+		axisOptions = { ...axisOptions, ...getTrellisAxisOptions(scaleName) };
+		const { baseline, labelAlign, labelFontWeight, labelFormat, labelOrientation, name, position } = axisOptions;
 		if (labelFormat === 'time') {
 			// time axis actually needs two axes. A primary and secondary.
-			newAxes.push(...getTimeAxes(scaleName, axisProps));
+			newAxes.push(...getTimeAxes(scaleName, axisOptions));
 		} else {
-			const axis = getDefaultAxis(axisProps, scaleName);
+			const axis = getDefaultAxis(axisOptions, scaleName);
 
 			// if labels exist, add them to the axis
-			if (axisProps.labels.length) {
-				const labels = axisProps.labels;
+			if (axisOptions.labels.length) {
+				const labels = axisOptions.labels;
 				const signalName = `${name}_labels`;
 				axis.values = labels.map((label) => getLabelValue(label));
 				axis.encode = {
@@ -213,11 +214,11 @@ export const addAxes = produce<Axis[], [AxisSpecProps & { scaleName: string; opp
 			}
 
 			// if sublabels exist, create a new axis for the sub labels
-			if (hasSubLabels(axisProps)) {
+			if (hasSubLabels(axisOptions)) {
 				axis.titlePadding = 24;
 
 				// add sublabel axis
-				newAxes.push(getSubLabelAxis(axisProps, scaleName));
+				newAxes.push(getSubLabelAxis(axisOptions, scaleName));
 			}
 			newAxes.unshift(axis);
 		}
@@ -227,11 +228,11 @@ export const addAxes = produce<Axis[], [AxisSpecProps & { scaleName: string; opp
 			newAxes[0] = setAxisBaseline(newAxes[0], baseline);
 		}
 
-		if (scaleTypeSupportsReferenceLines(axisProps.scaleType)) {
+		if (scaleTypeSupportsReferenceLines(axisOptions.scaleType)) {
 			// encode axis to hide labels that overlap reference line icons
-			const referenceLines = getReferenceLines(axisProps);
-			referenceLines.forEach((referenceLineProps) => {
-				const { label: referenceLineLabel, icon, value, position: linePosition } = referenceLineProps;
+			const referenceLines = getReferenceLines(axisOptions);
+			referenceLines.forEach((referenceLineOptions) => {
+				const { label: referenceLineLabel, icon, value, position: linePosition } = referenceLineOptions;
 				const text = newAxes[0].encode?.labels?.update?.text;
 				if (
 					(icon || referenceLineLabel) &&
@@ -248,9 +249,9 @@ export const addAxes = produce<Axis[], [AxisSpecProps & { scaleName: string; opp
 			});
 		}
 
-		const axisAnnotations = getAxisAnnotationsFromChildren(axisProps);
-		axisAnnotations.forEach((annotationProps) => {
-			addAxisAnnotationAxis(newAxes, annotationProps, scaleName);
+		const axisAnnotations = getAxisAnnotationsFromChildren(axisOptions);
+		axisAnnotations.forEach((annotationOptions) => {
+			addAxisAnnotationAxis(newAxes, annotationOptions, scaleName);
 		});
 
 		axes.push(...newAxes);
@@ -259,13 +260,13 @@ export const addAxes = produce<Axis[], [AxisSpecProps & { scaleName: string; opp
 
 export const addAxesMarks = produce<
 	Mark[],
-	[AxisSpecProps & { scaleName: string; scaleType?: ScaleType; opposingScaleType?: string }]
->((marks, props) => {
-	const { baseline, baselineOffset, opposingScaleType, position, scaleName, scaleType } = props;
+	[AxisSpecOptions & { scaleName: string; scaleType?: ScaleType; opposingScaleType?: string }]
+>((marks, options) => {
+	const { baseline, baselineOffset, opposingScaleType, position, scaleName, scaleType } = options;
 
 	// only add reference lines to linear or time scales
 	if (scaleTypeSupportsReferenceLines(scaleType)) {
-		const { back, front } = getReferenceLineMarks(props, scaleName);
+		const { back, front } = getReferenceLineMarks(options, scaleName);
 		marks.unshift(...back);
 		marks.push(...front);
 	}
@@ -278,12 +279,12 @@ export const addAxesMarks = produce<
 	}
 
 	if (isTrellised) {
-		addAxesToTrellisGroup(props, trellisGroupMark, scaleName);
+		addAxesToTrellisGroup(options, trellisGroupMark, scaleName);
 	}
 
-	const axisAnnotations = getAxisAnnotationsFromChildren(props);
-	axisAnnotations.forEach((annotationProps) => {
-		addAxisAnnotationMarks(marks, annotationProps, scaleName);
+	const axisAnnotations = getAxisAnnotationsFromChildren(options);
+	axisAnnotations.forEach((annotationOptions) => {
+		addAxisAnnotationMarks(marks, annotationOptions, scaleName);
 	});
 });
 
@@ -307,28 +308,28 @@ function addBaseline(marks: Mark[], baselineOffset: number, position: Position, 
 	}
 }
 
-function addAxesToTrellisGroup(props: AxisSpecProps, trellisGroupMark: GroupMark, scaleName: string) {
+function addAxesToTrellisGroup(options: AxisSpecOptions, trellisGroupMark: GroupMark, scaleName: string) {
 	const trellisOrientation = trellisGroupMark.name?.startsWith('x') ? 'horizontal' : 'vertical';
-	const axisOrientation = props.position === 'bottom' || props.position === 'top' ? 'horizontal' : 'vertical';
+	const axisOrientation = options.position === 'bottom' || options.position === 'top' ? 'horizontal' : 'vertical';
 
 	// hide labels if the axis is not in the same orientation as the trellis
 	// for example, we don't want x-axis labels on a vertical trellis
-	const hideDefaultLabels = props.hideDefaultLabels || trellisOrientation !== axisOrientation;
+	const hideDefaultLabels = options.hideDefaultLabels || trellisOrientation !== axisOrientation;
 
-	let scaleType = props.scaleType;
+	let scaleType = options.scaleType;
 	// get the scale that this axis will be associated with
 	if (trellisOrientation === axisOrientation) {
-		const scale = getScale(trellisGroupMark.scales ?? [], props.position);
+		const scale = getScale(trellisGroupMark.scales ?? [], options.position);
 		scaleName = scale.name;
 		scaleType = scale.type ?? 'linear';
 	} else {
 		// if the axis is not the same orientation as the trellis, then we don't display the title
 		// because it will be displayed on the root axis at the spec level
-		props.title = undefined;
+		options.title = undefined;
 	}
 
 	let newAxes = addAxes([], {
-		...props,
+		...options,
 		hideDefaultLabels,
 		scaleName,
 		scaleType,

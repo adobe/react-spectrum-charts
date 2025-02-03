@@ -9,17 +9,17 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { getTrellisAxisProps } from './axisTrellisUtils';
+import { getTrellisAxisOptions } from './axisTrellisUtils';
 
 describe('getTrellisAxisProps()', () => {
 	test('should generate trellis axis props for x axis', () => {
-		const trellisAxisProps = getTrellisAxisProps('xTrellisBand');
+		const trellisAxisProps = getTrellisAxisOptions('xTrellisBand');
 		expect(trellisAxisProps).toHaveProperty('position', 'top');
 		expect(trellisAxisProps).toHaveProperty('vegaLabelOffset', { signal: "bandwidth('xTrellisBand') / -2" });
 		expect(trellisAxisProps).toHaveProperty('vegaLabelPadding', 8);
 	});
 	test('should generate trellis axis props for y axis', () => {
-		const trellisAxisProps = getTrellisAxisProps('yTrellisBand');
+		const trellisAxisProps = getTrellisAxisOptions('yTrellisBand');
 		expect(trellisAxisProps).toHaveProperty('position', 'left');
 		expect(trellisAxisProps).toHaveProperty('vegaLabelOffset', {
 			signal: "bandwidth('yTrellisBand') / -2 - 8",
@@ -27,6 +27,6 @@ describe('getTrellisAxisProps()', () => {
 		expect(trellisAxisProps).toHaveProperty('vegaLabelPadding', 0);
 	});
 	test('should retrun empty object if not for a trellis axis', () => {
-		expect(getTrellisAxisProps('xLinear')).toEqual({});
+		expect(getTrellisAxisOptions('xLinear')).toEqual({});
 	});
 });

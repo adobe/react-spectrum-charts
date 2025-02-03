@@ -10,7 +10,7 @@
  * governing permissions and limitations under the License.
  */
 import { SubLabel } from '../../types';
-import { defaultAxisProps, defaultXBaselineMark, defaultYBaselineMark } from './axisTestUtils';
+import { defaultAxisOptions, defaultXBaselineMark, defaultYBaselineMark } from './axisTestUtils';
 import { getBaselineRule, getDefaultAxis, getSubLabelAxis } from './axisUtils';
 
 describe('getBaselineRule', () => {
@@ -36,9 +36,9 @@ describe('getDefaultAxis()', () => {
 		expect(
 			getDefaultAxis(
 				{
+					axisAnnotations: [],
 					baseline: false,
 					baselineOffset: 0,
-					children: [],
 					colorScheme: 'light',
 					granularity: 'day',
 					grid: true,
@@ -51,6 +51,7 @@ describe('getDefaultAxis()', () => {
 					name: 'axis0',
 					numberFormat: 'shortNumber',
 					position: 'left',
+					referenceLines: [],
 					scaleType: 'linear',
 					subLabels: [],
 					ticks: false,
@@ -97,10 +98,10 @@ describe('getDefaultAxis()', () => {
 		expect(
 			getDefaultAxis(
 				{
+					axisAnnotations: [],
 					baseline: false,
 					baselineOffset: 0,
 					colorScheme: 'light',
-					children: [],
 					granularity: 'day',
 					grid: true,
 					hideDefaultLabels: false,
@@ -112,6 +113,7 @@ describe('getDefaultAxis()', () => {
 					name: 'axis0',
 					numberFormat: 'shortNumber',
 					position: 'left',
+					referenceLines: [],
 					scaleType: 'point',
 					subLabels: [],
 					ticks: false,
@@ -155,7 +157,7 @@ describe('getDefaultAxis()', () => {
 		});
 	});
 	test('should set values to empty array if hideDefaultLabels === true', () => {
-		expect(getDefaultAxis({ ...defaultAxisProps, hideDefaultLabels: true }, 'xLinear')).toHaveProperty(
+		expect(getDefaultAxis({ ...defaultAxisOptions, hideDefaultLabels: true }, 'xLinear')).toHaveProperty(
 			'labels',
 			false
 		);
@@ -168,14 +170,17 @@ describe('getSubLabelAxis()', () => {
 			{ value: 1, subLabel: 'one', align: 'start' },
 			{ value: 2, subLabel: 'two', align: 'end' },
 		];
-		expect(getSubLabelAxis({ ...defaultAxisProps, subLabels }, 'xLinear')).toHaveProperty('labelPadding', 24);
-		expect(getSubLabelAxis({ ...defaultAxisProps, subLabels, ticks: true }, 'xLinear')).toHaveProperty(
+		expect(getSubLabelAxis({ ...defaultAxisOptions, subLabels }, 'xLinear')).toHaveProperty('labelPadding', 24);
+		expect(getSubLabelAxis({ ...defaultAxisOptions, subLabels, ticks: true }, 'xLinear')).toHaveProperty(
 			'labelPadding',
 			32
 		);
 	});
 
 	test('should set values to undefined if sublabels have length 0', () => {
-		expect(getSubLabelAxis({ ...defaultAxisProps, subLabels: [] }, 'xLinear')).toHaveProperty('values', undefined);
+		expect(getSubLabelAxis({ ...defaultAxisOptions, subLabels: [] }, 'xLinear')).toHaveProperty(
+			'values',
+			undefined
+		);
 	});
 });

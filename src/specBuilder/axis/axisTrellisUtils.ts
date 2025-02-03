@@ -11,7 +11,7 @@
  */
 import { Axis, GroupMark, Spec } from 'vega';
 
-import { AxisSpecProps } from '../../types';
+import { AxisSpecOptions } from '../../types';
 
 /**
  * Checks the spec to see if it is a trellised chart
@@ -26,17 +26,17 @@ export const isTrellisedChart = (spec: Spec): boolean => {
  * Gets all the custom props for a trellis axis
  * If this axis is not a trellis axis, it will return an empty object
  * @param scaleName
- * @returns trellisAxisProps
+ * @returns trellisAxisOptions
  */
-export const getTrellisAxisProps = (scaleName: string): Partial<AxisSpecProps> => {
-	let trellisAxisProps: Partial<AxisSpecProps> = {};
+export const getTrellisAxisOptions = (scaleName: string): Partial<AxisSpecOptions> => {
+	let trellisAxisOptions: Partial<AxisSpecOptions> = {};
 
 	// if 'TrellisBand' is in the scale name then this is a trellis axis
 	if (scaleName.includes('TrellisBand')) {
 		// shift the labels up/left half the scale bandwidth
 		const labelOffsetSignal = `bandwidth('${scaleName}') / -2`;
 		const axisType = scaleName.startsWith('x') ? 'x' : 'y';
-		trellisAxisProps = {
+		trellisAxisOptions = {
 			position: axisType === 'x' ? 'top' : 'left',
 			labelFontWeight: 'bold',
 			labelAlign: undefined, // set this to undefined because we will manually control alignment
@@ -47,7 +47,7 @@ export const getTrellisAxisProps = (scaleName: string): Partial<AxisSpecProps> =
 			vegaLabelPadding: axisType === 'x' ? 8 : 0, // add vertical padding
 		};
 	}
-	return trellisAxisProps;
+	return trellisAxisOptions;
 };
 
 /**

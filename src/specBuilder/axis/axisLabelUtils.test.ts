@@ -19,7 +19,7 @@ import {
 	getLabelValue,
 	labelIsParallelToAxis,
 } from './axisLabelUtils';
-import { defaultAxisProps } from './axisTestUtils';
+import { defaultAxisOptions } from './axisTestUtils';
 
 describe('getLabelValue()', () => {
 	test('should return the value key if an object', () => {
@@ -158,31 +158,31 @@ describe('getLabelAngle', () => {
 
 describe('getLabelFormat()', () => {
 	test('should include text truncation if truncateText is true', () => {
-		const labelEncodings = getLabelFormat({ ...defaultAxisProps, truncateLabels: true }, 'xBand');
+		const labelEncodings = getLabelFormat({ ...defaultAxisOptions, truncateLabels: true }, 'xBand');
 		expect(labelEncodings).toHaveLength(2);
 		expect(labelEncodings[1].signal).toContain('truncateText');
 	});
 	test('should not include text truncation if the scale name does not include band', () => {
-		expect(getLabelFormat({ ...defaultAxisProps, truncateLabels: true }, 'xLinear')[1].signal).not.toContain(
+		expect(getLabelFormat({ ...defaultAxisOptions, truncateLabels: true }, 'xLinear')[1].signal).not.toContain(
 			'truncateText'
 		);
 	});
 	test('should not include truncae text if labels are perpendicular to the axis', () => {
 		expect(
 			getLabelFormat(
-				{ ...defaultAxisProps, truncateLabels: true, position: 'bottom', labelOrientation: 'vertical' },
+				{ ...defaultAxisOptions, truncateLabels: true, position: 'bottom', labelOrientation: 'vertical' },
 				'xBand'
 			)[1].signal
 		).not.toContain('truncateText');
 		expect(
 			getLabelFormat(
-				{ ...defaultAxisProps, truncateLabels: true, position: 'left', labelOrientation: 'horizontal' },
+				{ ...defaultAxisOptions, truncateLabels: true, position: 'left', labelOrientation: 'horizontal' },
 				'yBand'
 			)[1].signal
 		).not.toContain('truncateText');
 	});
 	test('should return duration formatter if labelFormat is duration', () => {
-		expect(getLabelFormat({ ...defaultAxisProps, labelFormat: 'duration' }, 'xLinear')).toHaveProperty(
+		expect(getLabelFormat({ ...defaultAxisOptions, labelFormat: 'duration' }, 'xLinear')).toHaveProperty(
 			'signal',
 			'formatTimeDurationLabels(datum)'
 		);
