@@ -237,8 +237,6 @@ export interface BulletProps extends MarkProps {
 	target?: string;
 	/** Data field that the metric is trended against (x-axis for horizontal orientation) */
 	dimension?: string;
-	/** Data field for the metric */
-	metric?: string;
 }
 
 export interface DonutSummaryProps {
