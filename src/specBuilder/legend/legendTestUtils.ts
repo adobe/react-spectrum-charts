@@ -13,6 +13,7 @@ import {
 	COLOR_SCALE,
 	DEFAULT_CATEGORICAL_DIMENSION,
 	DEFAULT_COLOR,
+	DEFAULT_COLOR_SCHEME,
 	DEFAULT_METRIC,
 	DEFAULT_OPACITY_RULE,
 	FILTERED_TABLE,
@@ -22,7 +23,7 @@ import {
 } from '@constants';
 import { LineMark } from 'vega';
 
-import { LegendSpecProps } from '../../types';
+import { LegendSpecOptions } from '../../types';
 
 /**
  * Wait for the the duration of the legend tooltip hover delay.
@@ -67,8 +68,10 @@ export const defaultMark: LineMark = {
 	},
 };
 
-export const defaultLegendProps: LegendSpecProps = {
-	colorScheme: 'light',
+export const defaultLegendOptions: LegendSpecOptions = {
+	colorScheme: DEFAULT_COLOR_SCHEME,
+	hasMouseInteraction: false,
+	hasOnClick: false,
 	hiddenEntries: [],
 	hiddenSeries: [],
 	highlight: false,

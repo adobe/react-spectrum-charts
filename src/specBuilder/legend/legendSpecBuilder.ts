@@ -33,8 +33,8 @@ import {
 	ColorFacet,
 	ColorScheme,
 	FacetRef,
-	LegendProps,
-	LegendSpecProps,
+	LegendOptions,
+	LegendSpecOptions,
 	LineTypeFacet,
 	LineWidthFacet,
 	SymbolShapeFacet,
@@ -47,7 +47,7 @@ import { Facet, getColumns, getEncodings, getHiddenEntriesFilter, getSymbolType 
 export const addLegend = produce<
 	Spec,
 	[
-		LegendProps & {
+		LegendOptions & {
 			colorScheme?: ColorScheme;
 			index?: number;
 			hiddenSeries?: string[];
@@ -59,6 +59,8 @@ export const addLegend = produce<
 		spec,
 		{
 			color,
+			hasMouseInteraction = false,
+			hasOnClick = false,
 			hiddenEntries = [],
 			hiddenSeries = [],
 			highlight = false,
@@ -71,7 +73,7 @@ export const addLegend = produce<
 			symbolShape,
 			title,
 			colorScheme = DEFAULT_COLOR_SCHEME,
-			...props
+			...options
 		}
 	) => {
 		const { formattedColor, formattedLineType, formattedLineWidth, formattedSymbolShape } =
@@ -79,9 +81,11 @@ export const addLegend = produce<
 
 		const name = `legend${index}`;
 
-		// put props back together now that all defaults are set
-		const legendProps: LegendSpecProps = {
+		// put options back together now that all defaults are set
+		const legendOptions: LegendSpecOptions = {
 			color: formattedColor,
+			hasMouseInteraction,
+			hasOnClick,
 			hiddenEntries,
 			hiddenSeries,
 			highlight,
@@ -95,15 +99,15 @@ export const addLegend = produce<
 			symbolShape: formattedSymbolShape,
 			title,
 			colorScheme,
-			...props,
+			...options,
 		};
 
 		// Order matters here. Facets rely on the scales being set up.
-		spec.scales = addScales(spec.scales ?? [], legendProps);
+		spec.scales = addScales(spec.scales ?? [], legendOptions);
 
 		// get the keys and facet types that are used to divide the data for this visualization
-		const { ordinalFacets, continuousFacets } = props.keys
-			? getFacetsFromKeys(props.keys, spec.scales ?? [])
+		const { ordinalFacets, continuousFacets } = options.keys
+			? getFacetsFromKeys(options.keys, spec.scales ?? [])
 			: getFacets(spec.scales ?? []);
 
 		const legends: Legend[] = [];
@@ -121,18 +125,18 @@ export const addLegend = produce<
 			// just want the unique fields
 			const uniqueFacetFields = [...new Set(ordinalFacets.map((facet) => facet.field))];
 
-			spec.data = addData(spec.data ?? [], { ...legendProps, facets: uniqueFacetFields });
-			spec.signals = addSignals(spec.signals ?? [], legendProps);
-			spec.marks = addMarks(spec.marks ?? [], legendProps);
+			spec.data = addData(spec.data ?? [], { ...legendOptions, facets: uniqueFacetFields });
+			spec.signals = addSignals(spec.signals ?? [], legendOptions);
+			spec.marks = addMarks(spec.marks ?? [], legendOptions);
 
 			// add the legend
-			legends.push(getCategoricalLegend(ordinalFacets, legendProps));
+			legends.push(getCategoricalLegend(ordinalFacets, legendOptions));
 		}
 
 		// continuous legends cannot be combined with any other legends
 		continuousFacets.forEach((facet) => {
 			// add the legend
-			legends.push(getContinuousLegend(facet, legendProps));
+			legends.push(getContinuousLegend(facet, legendOptions));
 		});
 
 		// if legends is undefined, initialize it as an empty array
@@ -191,17 +195,17 @@ export const formatFacetRefsWithPresets = (
 /**
  * gets the legend for all the categorical facets
  * @param facets
- * @param props
+ * @param options
  * @returns
  */
-const getCategoricalLegend = (facets: Facet[], props: LegendSpecProps): Legend => {
-	const { name, position, title, labelLimit } = props;
+const getCategoricalLegend = (facets: Facet[], options: LegendSpecOptions): Legend => {
+	const { name, position, title, labelLimit } = options;
 	return {
 		fill: `${name}Entries`,
 		direction: ['top', 'bottom'].includes(position) ? 'horizontal' : 'vertical',
 		orient: position,
 		title,
-		encode: getEncodings(facets, props),
+		encode: getEncodings(facets, options),
 		columns: getColumns(position),
 		labelLimit,
 	};
@@ -211,34 +215,34 @@ const getCategoricalLegend = (facets: Facet[], props: LegendSpecProps): Legend =
  * gets the legend for a continuous facet
  * currently just setup to handle symbolSize since that is the only supported continuous facet
  * @param _facet
- * @param props
+ * @param options
  * @returns
  */
-export const getContinuousLegend = (facet: Facet, props: LegendSpecProps): Legend => {
-	const { symbolShape } = props;
+export const getContinuousLegend = (facet: Facet, options: LegendSpecOptions): Legend => {
+	const { symbolShape } = options;
 	// add a switch statement here for the different types of continuous legends
 	if (facet.facetType === SYMBOL_SIZE_SCALE) {
 		return {
 			size: SYMBOL_SIZE_SCALE,
-			...getLegendLayout(props),
+			...getLegendLayout(options),
 			symbolType: getSymbolType(symbolShape),
 		};
 	}
 	return {
 		fill: LINEAR_COLOR_SCALE,
 		gradientThickness: 10,
-		...getLegendLayout(props),
+		...getLegendLayout(options),
 	};
 };
 
-const getLegendLayout = ({ position, title }: LegendSpecProps): Partial<Legend> => {
+const getLegendLayout = ({ position, title }: LegendSpecOptions): Partial<Legend> => {
 	return { direction: ['top', 'bottom'].includes(position) ? 'horizontal' : 'vertical', orient: position, title };
 };
 
 /**
  * Adds a new scale that is used to create the legend entries
  */
-const addScales = produce<Scale[], [LegendSpecProps]>((scales, { color, lineType, opacity, symbolShape }) => {
+const addScales = produce<Scale[], [LegendSpecOptions]>((scales, { color, lineType, opacity, symbolShape }) => {
 	// it is possible to define fields to facet the data off of on the legend
 	// if these fields are not already defined on the scales, we need to add them
 	addFieldToFacetScaleDomain(scales, COLOR_SCALE, color);
@@ -247,7 +251,7 @@ const addScales = produce<Scale[], [LegendSpecProps]>((scales, { color, lineType
 	addFieldToFacetScaleDomain(scales, SYMBOL_SHAPE_SCALE, symbolShape);
 });
 
-const addMarks = produce<Mark[], [LegendSpecProps]>((marks, { highlight, keys, name }) => {
+const addMarks = produce<Mark[], [LegendSpecOptions]>((marks, { highlight, keys, name }) => {
 	if (highlight) {
 		setHoverOpacityForMarks(marks, keys, name);
 	}
@@ -258,7 +262,7 @@ const addMarks = produce<Mark[], [LegendSpecProps]>((marks, { highlight, keys, n
  * This creates a row for every unique combination of the facets in the data
  * Each unique combination gets joined with a pipe to create a single string to use as legend entries
  */
-export const addData = produce<Data[], [LegendSpecProps & { facets: string[] }]>(
+export const addData = produce<Data[], [LegendSpecOptions & { facets: string[] }]>(
 	(data, { facets, hiddenEntries, keys, name }) => {
 		// expression for combining all the facets into a single key
 		const expr = facets.map((facet) => `datum.${facet}`).join(' + " | " + ');
@@ -293,7 +297,7 @@ export const addData = produce<Data[], [LegendSpecProps & { facets: string[] }]>
 	}
 );
 
-export const addSignals = produce<Signal[], [LegendSpecProps]>(
+export const addSignals = produce<Signal[], [LegendSpecOptions]>(
 	(signals, { hiddenSeries, highlight, isToggleable, keys, legendLabels, name }) => {
 		if (highlight) {
 			addHighlighSignalLegendHoverEvents(signals, name, Boolean(isToggleable || hiddenSeries), keys);
