@@ -10,81 +10,60 @@
  * governing permissions and limitations under the License.
  */
 import { DEFAULT_COLOR_SCHEME, DEFAULT_TIME_DIMENSION } from '@constants';
-import { Bar, Line } from '@rsc';
 import { addBar } from '@specBuilder/bar/barSpecBuilder';
 import { addLine } from '@specBuilder/line/lineSpecBuilder';
-import { combineElementNames, sanitizeRscChartChildren, toCamelCase } from '@utils';
+import { combineElementNames, toCamelCase } from '@utils';
 import { produce } from 'immer';
 import { Spec } from 'vega';
 
-import {
-	BarElement,
-	ChartChildElement,
-	ColorScheme,
-	ComboChildElement,
-	ComboProps,
-	HighlightedItem,
-	LineElement,
-} from '../../types';
+import { BarOptions, ColorScheme, ComboOptions, HighlightedItem, LineOptions } from '../../types';
 
 export const addCombo = produce<
 	Spec,
-	[ComboProps & { colorScheme?: ColorScheme; highlightedItem?: HighlightedItem; index?: number; idKey: string }]
+	[ComboOptions & { colorScheme?: ColorScheme; highlightedItem?: HighlightedItem; index?: number; idKey: string }]
 >(
 	(
 		spec,
 		{
-			children = [],
 			colorScheme = DEFAULT_COLOR_SCHEME,
 			highlightedItem,
 			idKey,
 			index = 0,
 			name,
+			marks = [],
 			dimension = DEFAULT_TIME_DIMENSION,
 		}
 	) => {
-		const buildOrder = new Map();
-		buildOrder.set(Bar, 0);
-		buildOrder.set(Line, 0);
-
 		let { barCount, lineCount } = initializeComponentCounts();
-		const sanitizedChildren = sanitizeRscChartChildren(children);
 		const comboName = toCamelCase(name || `combo${index}`);
 
-		spec = [...sanitizedChildren]
-			.sort((a, b) => buildOrder.get(a.type) - buildOrder.get(b.type))
-			.reduce((acc: Spec, cur) => {
-				const displayName = getDisplayName(cur);
-				const barElement = cur as BarElement;
-				const lineElement = cur as LineElement;
-				switch (displayName) {
-					case Bar.displayName:
-						barCount++;
-						return addBar(acc, {
-							...barElement.props,
-							colorScheme,
-							highlightedItem,
-							idKey,
-							index: barCount,
-							name: getComboChildName(barElement, comboName, barCount),
-							dimension: getDimension(barElement, dimension),
-						});
-					case Line.displayName:
-						lineCount++;
-						return addLine(acc, {
-							...lineElement.props,
-							colorScheme,
-							highlightedItem,
-							idKey,
-							index: lineCount,
-							name: getComboChildName(lineElement, comboName, lineCount),
-							dimension: getDimension(lineElement, dimension),
-						});
-					default:
-						console.error(`Invalid component type: ${displayName} is not a supported <Combo> child`);
-						return acc;
-				}
-			}, spec);
+		spec = [...marks].reduce((acc: Spec, mark) => {
+			switch (mark.markType) {
+				case 'bar':
+					barCount++;
+					return addBar(acc, {
+						...mark,
+						colorScheme,
+						highlightedItem,
+						idKey,
+						index: barCount,
+						name: getComboMarkName(mark, comboName, barCount),
+						dimension: getDimension(mark, dimension),
+					});
+				case 'line':
+				default:
+					lineCount++;
+					return addLine(acc, {
+						...mark,
+						colorScheme,
+						highlightedItem,
+						idKey,
+						index: lineCount,
+						name: getComboMarkName(mark, comboName, lineCount),
+						dimension: getDimension(mark, dimension),
+					});
+			}
+		}, spec);
 
 		return spec;
 	}
@@ -94,14 +73,17 @@ const initializeComponentCounts = () => {
 	return { barCount: -1, lineCount: -1 };
 };
 
-export const getComboChildName = (cur: ComboChildElement, comboName: string, index: number) => {
-	if (cur.props.name) {
-		return cur.props.name;
+export const getComboMarkName = (mark: BarOptions | LineOptions, comboName: string, index: number) => {
+	if (mark.name) {
+		return mark.name;
 	}
-	const displayName = getDisplayName(cur);
+	const displayName = getDisplayName(mark.markType);
 	return combineElementNames(comboName, `${displayName}${index}`);
 };
 
-const getDisplayName = (cur: ChartChildElement) => (cur.type as React.ComponentType).displayName;
+const getDisplayName = (markType: string): string => {
+	if (!markType) return '';
+	return markType.charAt(0).toUpperCase() + markType.slice(1);
+};
 
-const getDimension = (cur: ComboChildElement, dimension?: string) => cur.props.dimension ?? dimension;
+const getDimension = (mark: BarOptions | LineOptions, dimension?: string) => mark.dimension ?? dimension;

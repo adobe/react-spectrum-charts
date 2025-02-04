@@ -9,16 +9,12 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { createElement } from 'react';
-
-import { Axis } from '@components/Axis';
-import { Bar } from '@components/Bar';
-import { Line } from '@components/Line';
 import { MARK_ID } from '@constants';
 import { addBar } from '@specBuilder/bar/barSpecBuilder';
 import { addLine } from '@specBuilder/line/lineSpecBuilder';
 
-import { addCombo, getComboChildName } from './comboSpecBuilder';
+import { BarOptions, LineOptions } from '../../types';
+import { addCombo, getComboMarkName } from './comboSpecBuilder';
 
 jest.mock('@specBuilder/bar/barSpecBuilder', () => ({
 	addBar: jest.fn(),
@@ -39,16 +35,12 @@ describe('comboSpecBuilder', () => {
 				{},
 				{
 					idKey: MARK_ID,
-					children: [
-						createElement(Bar, {
-							metric: 'people',
-						}),
-						createElement(Line, {
-							color: { value: 'indigo-900' },
-							metric: 'adoptionRate',
-						}),
-					],
 					dimension: 'datetime',
+					marks: [
+						{ markType: 'bar', metric: 'people' },
+						{ markType: 'line', color: { value: 'indigo-900' }, metric: 'adoptionRate' },
+					],
+					markType: 'combo',
 				}
 			);
 
@@ -59,40 +51,28 @@ describe('comboSpecBuilder', () => {
 			expect(getCallParams(addLine).dimension).toEqual('datetime');
 		});
 
-		it('should skip invalid children', () => {
-			addCombo(
-				{},
-				{
-					idKey: MARK_ID,
-					children: [createElement(Axis)],
-				}
-			);
-
-			expect(addBar).not.toHaveBeenCalled();
-			expect(addLine).not.toHaveBeenCalled();
-		});
-
 		it('should do nothing if no children', () => {
-			addCombo({}, { idKey: MARK_ID });
+			addCombo({}, { idKey: MARK_ID, markType: 'combo' });
 
 			expect(addBar).not.toHaveBeenCalled();
 			expect(addLine).not.toHaveBeenCalled();
 		});
 	});
 
-	describe('getComboChildName', () => {
+	describe('getComboMarkName', () => {
 		it('should return the name of the combo child', () => {
-			const child = createElement(Bar, {
+			const mark: BarOptions = {
+				markType: 'bar',
 				name: 'bar1',
-			});
+			};
 
-			expect(getComboChildName(child, 'combo1', 1)).toEqual('bar1');
+			expect(getComboMarkName(mark, 'combo1', 1)).toEqual('bar1');
 		});
 
 		it('should generate a name for the combo child', () => {
-			const child = createElement(Line);
+			const mark: LineOptions = { markType: 'line' };
 
-			expect(getComboChildName(child, 'combo1', 1)).toEqual('combo1Line1');
+			expect(getComboMarkName(mark, 'combo1', 1)).toEqual('combo1Line1');
 		});
 	});
 

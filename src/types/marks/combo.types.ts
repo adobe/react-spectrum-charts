@@ -24,8 +24,7 @@ export interface ComboOptions {
 	name?: string;
 
 	// children
-	bars?: BarOptions[];
-	lines?: LineOptions[];
+	marks?: (BarOptions | LineOptions)[];
 }
 
 export type ComboChildElement = BarElement | LineElement;
