@@ -43,7 +43,7 @@ export const addBullet = produce<
             name: toCamelCase(name ?? `bullet${index}`),
             ...props,
         };
-        spec.data = getBulletData();
+        spec.data = getBulletData(bulletProps);
         spec.marks = getBulletMarks(bulletProps);
         spec.scales = getBulletScales(bulletProps);
     }
@@ -121,28 +121,46 @@ function getBulletMarks(props: BulletSpecProps): Mark[] {
   ]
 }
 
-function getBulletData(): Data[] {
-    // Implementation of addBulletMarks
+function getBulletData(props: BulletSpecProps): Data[] {
 
-    let bulletData: Data[] = [
-      {
-        "name": "table",
-        "values": [],
-        "transform": [
-          {
-            "type": "filter",
-            "expr": "isValid(datum.graphLabel) && datum.graphLabel !== null && datum.graphLabel !== ''"
-          },
-          {
-            "type": "window",
-            "ops": ["row_number"],
-            "as": ["index"]
-          }
-        ]
-      }
-    ]
+  const maxValue = `max(datum.${props.metric}, datum.${props.target} * 1.1)`
 
-    return bulletData;
+  let bulletData: Data[] = [
+    {
+      "name": "table",
+      "values": [],
+      "transform": [
+        {
+          "type": "filter",
+          "expr": "isValid(datum.graphLabel) && datum.graphLabel !== null && datum.graphLabel !== ''"
+        },
+        {
+          "type": "formula",
+          "as": "maxValue",
+          "expr": maxValue
+        },
+        {
+          "type": "window",
+          "ops": ["row_number"],
+          "as": ["index"]
+        }
+      ]
+    },
+    {
+      "name": "max_values",
+      "source": "table",
+      "transform": [
+        {
+          "type": "aggregate",
+          "ops": ["max"],
+          "fields": ["maxValue"],
+          "as": ["maxOverall"]
+        }
+      ]
+    }
+  ]
+
+  return bulletData;
 }
 
 function getBulletScales(props: BulletSpecProps): Scale[] {
@@ -152,12 +170,12 @@ function getBulletScales(props: BulletSpecProps): Scale[] {
     {
       "name": "xscale",
       "type": "linear",
-      "domain": {
-        "fields": [
-          {"data": "table", "field": `${props.metric}`},
-          {"data": "table", "field": `${props.target}`}
-        ]
-      },
+      "domain": [
+              0,
+              {
+                "signal": "data('max_values')[0].maxOverall"
+              }
+            ],
       "range": [0, {"signal": "width"}]
     }
   ]
