@@ -9,12 +9,6 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { ReactElement } from 'react';
-
-import { ChartPopover } from '@components/ChartPopover';
-import { ChartTooltip } from '@components/ChartTooltip';
-import { MetricRange } from '@components/MetricRange';
-import { Trendline } from '@components/Trendline';
 import {
 	BACKGROUND_COLOR,
 	COLOR_SCALE,
@@ -46,12 +40,10 @@ import {
 	AreaEncodeEntry,
 	ArrayValueRef,
 	ColorValueRef,
-	Cursor,
 	EncodeEntry,
 	GroupMark,
 	NumericValueRef,
 	PathMark,
-	ScaledValueRef,
 	SignalRef,
 	SymbolMark,
 } from 'vega';
@@ -60,8 +52,6 @@ import {
 	BarSpecOptions,
 	ChartPopoverOptions,
 	ChartTooltipOptions,
-	ChartTooltipProps,
-	ClickableChartProps,
 	ColorFacet,
 	ColorScheme,
 	DonutSpecOptions,
@@ -69,7 +59,6 @@ import {
 	HighlightedItem,
 	LineTypeFacet,
 	LineWidthFacet,
-	MarkChildElement,
 	MetricRangeOptions,
 	OpacityFacet,
 	ProductionRuleTests,
@@ -80,19 +69,7 @@ import {
 } from '../../types';
 
 /**
- * If a popover or onClick prop exists on the mark, then set the cursor to a pointer.
- */
-export function getCursor_DEPRECATED(
-	children: MarkChildElement[],
-	props?: ClickableChartProps
-): ScaledValueRef<Cursor> | undefined {
-	if (props?.onClick !== undefined || hasPopover_DEPRECATED(children)) {
-		return { value: 'pointer' };
-	}
-}
-
-/**
- * If a popover or onClick prop exists on the mark, then set the cursor to a pointer.
+ * If a popover or hasOnClick exists on the mark, then set the cursor to a pointer.
  * @param chartPopovers
  * @param hasOnClick
  * @returns cursor encoding
@@ -102,39 +79,6 @@ export const getCursor = (chartPopovers: ChartPopoverOptions[], hasOnClick?: boo
 		return { value: 'pointer' };
 	}
 };
-
-/**
- * Returns true if there are any popovers or tooltips in the children, or if props.onClick is defined.
- */
-export function isInteractive_DEPRECATED(children: MarkChildElement[], props?: ClickableChartProps): boolean {
-	return props?.onClick !== undefined || hasInteractiveChildren_DEPRECATED(children);
-}
-
-/**
- * If a tooltip or popover exists on the mark, then set tooltip to true.
- */
-export function getTooltip_DEPRECATED(
-	children: MarkChildElement[],
-	name: string,
-	nestedDatum?: boolean
-): ProductionRuleTests<SignalRef> | SignalRef | undefined {
-	// skip annotations
-	if (hasTooltip_DEPRECATED(children)) {
-		const defaultTooltip = {
-			signal: `merge(datum${nestedDatum ? '.datum' : ''}, {'${COMPONENT_NAME}': '${name}'})`,
-		};
-		// if the tooltip has an excludeDataKey prop, then disable the tooltip where that key is present
-		const excludeDataKeys = getTooltipProps_DEPRECATED(children)?.excludeDataKeys;
-		if (excludeDataKeys?.length) {
-			return [
-				...excludeDataKeys.map((excludeDataKey) => ({ test: `datum.${excludeDataKey}`, signal: 'false' })),
-				defaultTooltip,
-			];
-		}
-
-		return defaultTooltip;
-	}
-}
 
 /**
  * If a tooltip exists on the mark, then set tooltip to true.
@@ -149,7 +93,7 @@ export function getTooltip(
 		const defaultTooltip = {
 			signal: `merge(datum${nestedDatum ? '.datum' : ''}, {'${COMPONENT_NAME}': '${name}'})`,
 		};
-		// if the tooltip has an excludeDataKey prop, then disable the tooltip where that key is present
+		// if the tooltip has an excludeDataKey option, then disable the tooltip where that key is present
 		const excludeDataKeys = chartTooltips[0].excludeDataKeys;
 		if (excludeDataKeys?.length) {
 			return [
@@ -160,10 +104,6 @@ export function getTooltip(
 
 		return defaultTooltip;
 	}
-}
-
-export function getTooltipProps_DEPRECATED(children: MarkChildElement[]): ChartTooltipProps | undefined {
-	return children.find((child) => child.type === ChartTooltip)?.props as ChartTooltipProps | undefined;
 }
 
 /**
@@ -177,21 +117,6 @@ export const getBorderStrokeEncodings = (isStacked: boolean, isArea = false): Ar
 			strokeJoin: { value: 'round' },
 		};
 	return {};
-};
-
-/**
- * Checks if there are any tooltips or popovers on the mark
- * @param children
- * @returns
- */
-export const hasInteractiveChildren_DEPRECATED = (children: ReactElement[]): boolean => {
-	return children.some(
-		(child) =>
-			child.type === ChartTooltip ||
-			child.type === ChartPopover ||
-			(child.type === Trendline && child.props.displayOnHover) ||
-			(child.type === MetricRange && child.props.displayOnHover)
-	);
 };
 
 /**
@@ -219,21 +144,11 @@ export const isInteractive = (options: {
 	);
 };
 
-export const hasMetricRange = (children: ReactElement[]): boolean =>
-	children.some((child) => child.type === MetricRange);
-export const hasPopover_DEPRECATED = (children: ReactElement[]): boolean =>
-	children.some((child) => child.type === ChartPopover);
-export const hasTooltip_DEPRECATED = (children: ReactElement[]): boolean =>
-	children.some((child) => child.type === ChartTooltip);
-
 export const hasPopover = (options: { chartPopovers?: ChartPopoverOptions[] }): boolean =>
 	Boolean('chartPopovers' in options && options.chartPopovers && options.chartPopovers.length);
 
 export const hasTooltip = (options: { chartTooltips?: ChartTooltipOptions[] }): boolean =>
 	Boolean('chartTooltips' in options && options.chartTooltips && options.chartTooltips.length);
-
-export const childHasTooltip = (children: ReactElement[]): boolean =>
-	children.some((child) => hasTooltip_DEPRECATED(child.props.children));
 
 /**
  * Gets the color encoding
