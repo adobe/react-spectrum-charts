@@ -24,7 +24,7 @@ const getDefautltMarkOptions = (popoverOptions: ChartPopoverOptions = {}): BarSp
 describe('getPopovers()', () => {
 	test('should get all the popovers from options', () => {
 		const markOptions: BarSpecOptions = { ...defaultBarOptions, chartPopovers: [{}] };
-		const popovers = getPopovers(markOptions);
+		const popovers = getPopovers(markOptions.chartPopovers, markOptions.name);
 		expect(popovers.length).toBe(1);
 	});
 });

@@ -11,11 +11,11 @@
  */
 import { useMemo } from 'react';
 
-import { Spec } from 'vega';
+import { Data, Spec, ValuesData } from 'vega';
 
 import { buildSpec } from '../specBuilder';
-import { initializeSpec } from '../specBuilder/specUtils';
-import { SanitizedSpecProps } from '../types';
+import { baseData, getColorValue } from '../specBuilder/specUtils';
+import { ChartSpecOptions, SanitizedSpecProps } from '../types';
 
 export default function useSpec({
 	backgroundColor,
@@ -94,3 +94,52 @@ export default function useSpec({
 		data,
 	]);
 }
+
+const initializeSpec = (
+	spec: Spec | null = {},
+	chartOptions: Partial<ChartSpecOptions & { data: Data[] }> = {}
+): Spec => {
+	const { backgroundColor, colorScheme = 'light', data, description, title } = chartOptions;
+
+	const baseSpec: Spec = {
+		title: title || undefined,
+		description,
+		autosize: { type: 'fit', contains: 'padding', resize: true },
+		data: isVegaData(data) ? data : baseData,
+		background: backgroundColor ? getColorValue(backgroundColor, colorScheme) : undefined,
+	};
+
+	return { ...baseSpec, ...(spec || {}) };
+};
+
+/**
+ * Check to see if an element in the data array is a Vega ValuesData object. Otherwise, treat it as
+ * a normal array of values.
+ * @param dataset An item in the data array we'll use to check if it's a Vega ValuesData object
+ * @returns True if it's a Vega ValuesData object, false if it's a normal data object
+ */
+export const isVegaValuesDataset = (dataset): dataset is ValuesData => Array.isArray(dataset.values);
+
+/**
+ * Check to see if the data array is an array of Vega datasets instead of an array of values.
+ * @param data The data array to check
+ * @returns True if it's an array of Vega datasets, false if it's an array of values
+ */
+export const isVegaData = (data): data is Data[] => data?.length && isVegaValuesDataset(data[0]);
+
+/**
+ * The inverse of `mergeValuesIntoData`. Given an array of Vega datasets, extract the values from
+ * each dataset and return an object of key/value pairs where the key is the dataset name and the
+ * value is the array of values.
+ * @param data An array of Vega datasets with values contained within
+ * @returns An object of key/value pairs where the key is the dataset name and the value is the
+ * array of values
+ */
+export const extractValues = (data) =>
+	data.reduce((memo, dataset) => {
+		if (isVegaValuesDataset(dataset)) {
+			const { name, values } = dataset;
+			memo[name] = values;
+		}
+		return memo;
+	}, {});

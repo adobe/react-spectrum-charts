@@ -17,7 +17,7 @@ import {
 	SENTIMENT_POSITIVE_PATH,
 } from '@svgPaths';
 import { spectrumColors } from '@themes';
-import { Data, Scale, ScaleType, Spec, ValuesData } from 'vega';
+import { Data, Scale, ScaleType, Spec } from 'vega';
 
 import {
 	COLOR_SCALE,
@@ -29,6 +29,7 @@ import {
 	TABLE,
 } from '../constants';
 import {
+	ChartSpecOptions,
 	ChartSymbolShape,
 	ColorFacet,
 	ColorScheme,
@@ -39,7 +40,6 @@ import {
 	LineWidth,
 	NumberFormat,
 	OpacityFacet,
-	SanitizedSpecProps,
 	SpectrumColor,
 	SymbolSize,
 	SymbolSizeFacet,
@@ -47,7 +47,7 @@ import {
 
 /**
  * gets all the keys that are used to facet by
- * @param facetProps
+ * @param facetOptions
  * @returns facets
  */
 export const getFacetsFromOptions = ({
@@ -236,57 +236,25 @@ export const baseData: Data[] = [
 ];
 
 /**
- * Merges an optionally supplied spec with Chart props and default values.
+ * Merges an optionally supplied spec with Chart options and default values.
  *
  * @param spec - The spec to merge with the base spec. If none is supplied, the base spec is returned.
- * @param chartProps - A partial set of chart props to spread on to the spec.
+ * @param chartOptions - A partial set of chart options to spread on to the spec.
  * @returns Spec with default values
  */
-export const initializeSpec = (spec: Spec | null = {}, chartProps: Partial<SanitizedSpecProps> = {}): Spec => {
-	const { backgroundColor, colorScheme = 'light', data, description, title } = chartProps;
+export const initializeSpec = (spec: Spec | null = {}, chartOptions: Partial<ChartSpecOptions> = {}): Spec => {
+	const { backgroundColor, colorScheme = 'light', description, title } = chartOptions;
 
 	const baseSpec: Spec = {
 		title: title || undefined,
 		description,
 		autosize: { type: 'fit', contains: 'padding', resize: true },
-		data: isVegaData(data) ? data : baseData,
+		data: baseData,
 		background: backgroundColor ? getColorValue(backgroundColor, colorScheme) : undefined,
 	};
 
 	return { ...baseSpec, ...(spec || {}) };
 };
-
-/**
- * Check to see if an element in the data array is a Vega ValuesData object. Otherwise, treat it as
- * a normal array of values.
- * @param dataset An item in the data array we'll use to check if it's a Vega ValuesData object
- * @returns True if it's a Vega ValuesData object, false if it's a normal data object
- */
-export const isVegaValuesDataset = (dataset): dataset is ValuesData => Array.isArray(dataset.values);
-
-/**
- * Check to see if the data array is an array of Vega datasets instead of an array of values.
- * @param data The data array to check
- * @returns True if it's an array of Vega datasets, false if it's an array of values
- */
-export const isVegaData = (data): data is Data[] => data?.length && isVegaValuesDataset(data[0]);
-
-/**
- * The inverse of `mergeValuesIntoData`. Given an array of Vega datasets, extract the values from
- * each dataset and return an object of key/value pairs where the key is the dataset name and the
- * value is the array of values.
- * @param data An array of Vega datasets with values contained within
- * @returns An object of key/value pairs where the key is the dataset name and the value is the
- * array of values
- */
-export const extractValues = (data) =>
-	data.reduce((memo, dataset) => {
-		if (isVegaValuesDataset(dataset)) {
-			const { name, values } = dataset;
-			memo[name] = values;
-		}
-		return memo;
-	}, {});
 
 /**
  * The inverse of `extractValues`. Given an array of Vega datasets and an object of key/value pairs

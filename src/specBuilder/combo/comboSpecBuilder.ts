@@ -12,7 +12,7 @@
 import { DEFAULT_COLOR_SCHEME, DEFAULT_TIME_DIMENSION } from '@constants';
 import { addBar } from '@specBuilder/bar/barSpecBuilder';
 import { addLine } from '@specBuilder/line/lineSpecBuilder';
-import { combineElementNames, toCamelCase } from '@utils';
+import { combineNames, toCamelCase } from '@utils';
 import { produce } from 'immer';
 import { Spec } from 'vega';
 
@@ -78,7 +78,7 @@ export const getComboMarkName = (mark: BarOptions | LineOptions, comboName: stri
 		return mark.name;
 	}
 	const displayName = getDisplayName(mark.markType);
-	return combineElementNames(comboName, `${displayName}${index}`);
+	return combineNames(comboName, `${displayName}${index}`);
 };
 
 const getDisplayName = (markType: string): string => {

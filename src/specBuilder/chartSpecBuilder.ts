@@ -11,6 +11,9 @@
  */
 import {
 	BACKGROUND_COLOR,
+	DEFAULT_BACKGROUND_COLOR,
+	DEFAULT_COLOR_SCHEME,
+	DEFAULT_LINE_TYPES,
 	FILTERED_TABLE,
 	HIGHLIGHTED_GROUP,
 	HIGHLIGHTED_ITEM,
@@ -18,6 +21,7 @@ import {
 	LINEAR_COLOR_SCALE,
 	LINE_TYPE_SCALE,
 	LINE_WIDTH_SCALE,
+	MARK_ID,
 	OPACITY_SCALE,
 	SELECTED_GROUP,
 	SELECTED_ITEM,
@@ -28,35 +32,24 @@ import {
 	SYMBOL_SIZE_SCALE,
 	TABLE,
 } from '@constants';
-import { Area, Axis, Bar, Legend, Line, Scatter, Title } from '@rsc';
-import { Combo } from '@rsc/alpha';
-import { BigNumber, Donut } from '@rsc/rc';
 import colorSchemes from '@themes/colorSchemes';
 import { produce } from 'immer';
 import { Data, LinearScale, OrdinalScale, PointScale, Scale, Signal, Spec } from 'vega';
 
 import {
-	AreaElement,
-	AxisElement,
-	BarElement,
 	ChartColors,
+	ChartOptions,
+	ChartSpecOptions,
 	ChartSymbolShape,
 	ColorScale,
 	ColorScheme,
 	Colors,
-	ComboElement,
-	DonutElement,
-	LegendElement,
-	LineElement,
 	LineType,
 	LineTypes,
 	LineWidth,
 	Opacities,
-	SanitizedSpecProps,
-	ScatterElement,
 	SymbolShapes,
 	SymbolSize,
-	TitleElement,
 } from '../types';
 import { addArea } from './area/areaSpecBuilder';
 import { addAxis } from './axis/axisSpecBuilder';
@@ -83,13 +76,32 @@ import {
 import { addTitle } from './title/titleSpecBuilder';
 
 export interface ChartSpecBuilder {
-	buildSpec: (props: SanitizedSpecProps) => Spec;
+	buildSpec: (options: ChartOptions) => Spec;
 }
 
-export function buildSpec(props: SanitizedSpecProps) {
-	const {
+export function buildSpec({
+	axes = [],
+	backgroundColor = DEFAULT_BACKGROUND_COLOR,
+	colors = 'categorical12',
+	colorScheme = DEFAULT_COLOR_SCHEME,
+	description,
+	hiddenSeries = [],
+	highlightedItem,
+	highlightedSeries,
+	idKey = MARK_ID,
+	legends = [],
+	lineTypes = DEFAULT_LINE_TYPES as LineType[],
+	lineWidths = ['M'],
+	marks = [],
+	opacities,
+	symbolShapes = ['rounded-square'],
+	symbolSizes = ['XS', 'XL'],
+	title,
+	titles = [],
+}: ChartOptions) {
+	const options: ChartSpecOptions = {
+		axes,
 		backgroundColor,
-		children,
 		colors,
 		colorScheme,
 		description,
@@ -97,86 +109,72 @@ export function buildSpec(props: SanitizedSpecProps) {
 		highlightedItem,
 		highlightedSeries,
 		idKey,
+		legends,
 		lineTypes,
 		lineWidths,
+		marks,
 		opacities,
 		symbolShapes,
 		symbolSizes,
 		title,
-	} = props;
+		titles,
+	};
 	let spec = initializeSpec(null, { backgroundColor, colorScheme, description, title });
-	spec.signals = getDefaultSignals(props);
+	spec.signals = getDefaultSignals(options);
 	spec.scales = getDefaultScales(colors, colorScheme, lineTypes, lineWidths, opacities, symbolShapes, symbolSizes);
 
-	// need to build the spec in a specific order
-	const buildOrder = new Map();
-	buildOrder.set(Area, 0);
-	buildOrder.set(Bar, 0);
-	buildOrder.set(Line, 0);
-	buildOrder.set(Donut, 0);
-	buildOrder.set(Scatter, 0);
-	buildOrder.set(Combo, 0);
-	buildOrder.set(Legend, 1);
-	buildOrder.set(Axis, 2);
-	buildOrder.set(Title, 3);
-
-	let { areaCount, axisCount, barCount, comboCount, donutCount, legendCount, lineCount, scatterCount } =
-		initializeComponentCounts();
-	const specProps = { colorScheme, idKey, highlightedItem };
-	spec = [...children]
-		.sort((a, b) => buildOrder.get(a.type) - buildOrder.get(b.type))
-		.reduce((acc: Spec, cur) => {
-			if (!('displayName' in cur.type)) {
-				console.error('Invalid component type. Component is missing display name.');
+	let { areaCount, barCount, comboCount, donutCount, lineCount, scatterCount } = initializeComponentCounts();
+	const specOptions = { colorScheme, idKey, highlightedItem };
+	spec = [...marks].reduce((acc: Spec, mark) => {
+		switch (mark.markType) {
+			case 'area':
+				areaCount++;
+				return addArea(acc, { ...mark, ...specOptions, index: areaCount });
+			case 'bar':
+				barCount++;
+				return addBar(acc, { ...mark, ...specOptions, index: barCount });
+			case 'combo':
+				comboCount++;
+				return addCombo(acc, { ...mark, ...specOptions, index: comboCount });
+			case 'donut':
+				donutCount++;
+				return addDonut(acc, { ...mark, ...specOptions, index: donutCount });
+			case 'line':
+				lineCount++;
+				return addLine(acc, { ...mark, ...specOptions, index: lineCount });
+			case 'scatter':
+				scatterCount++;
+				return addScatter(acc, { ...mark, ...specOptions, index: scatterCount });
+			case 'bigNumber':
+				// Do nothing and do not throw an error
 				return acc;
-			}
-			/**
-			 * type.displayName is used because it doesn't get minified, unlike type.name
-			 * If we simply compare cur.type to the component,
-			 * that uses referential equailty which fails in production when the component is imported from a different module like ./alpha
-			 */
-			switch (cur.type.displayName) {
-				case Area.displayName:
-					areaCount++;
-					return addArea(acc, { ...(cur as AreaElement).props, ...specProps, index: areaCount });
-				case Axis.displayName:
-					axisCount++;
-					return addAxis(acc, { ...(cur as AxisElement).props, ...specProps, index: axisCount });
-				case Bar.displayName:
-					barCount++;
-					return addBar(acc, { ...(cur as BarElement).props, ...specProps, index: barCount });
-				case Donut.displayName:
-					donutCount++;
-					return addDonut(acc, { ...(cur as DonutElement).props, ...specProps, index: donutCount });
-				case Legend.displayName:
-					legendCount++;
-					return addLegend(acc, {
-						...(cur as LegendElement).props,
-						...specProps,
-						index: legendCount,
-						hiddenSeries,
-						highlightedSeries,
-					});
-				case Line.displayName:
-					lineCount++;
-					return addLine(acc, { ...(cur as LineElement).props, ...specProps, index: lineCount });
-				case Scatter.displayName:
-					scatterCount++;
-					return addScatter(acc, { ...(cur as ScatterElement).props, ...specProps, index: scatterCount });
-				case Title.displayName:
-					// No title count. There can only be one title.
-					return addTitle(acc, { ...(cur as TitleElement).props });
-				case BigNumber.displayName:
-					// Do nothing and do not throw an error
-					return acc;
-				case Combo.displayName:
-					comboCount++;
-					return addCombo(acc, { ...(cur as ComboElement).props, ...specProps, index: comboCount });
-				default:
-					console.error(`Invalid component type: ${cur.type.displayName} is not a supported <Chart> child`);
-					return acc;
-			}
-		}, spec);
+			default:
+				console.error(`Invalid component type: ${mark} is not a supported chart mark option child`);
+				return acc;
+		}
+	}, spec);
+
+	spec = [...legends].reduce((acc: Spec, legend, index) => {
+		return addLegend(acc, {
+			...legend,
+			...specOptions,
+			index,
+			hiddenSeries,
+			highlightedSeries,
+		});
+	}, spec);
+
+	spec = [...axes].reduce((acc: Spec, axis, index) => {
+		return addAxis(acc, {
+			...axis,
+			...specOptions,
+			index,
+		});
+	}, spec);
+
+	if (titles.length) {
+		spec = addTitle(spec, titles[0]);
+	}
 
 	// copy the spec so we don't mutate the original
 	spec = JSON.parse(JSON.stringify(spec));
@@ -202,11 +200,9 @@ export const removeUnusedScales = produce<Spec>((spec) => {
 const initializeComponentCounts = () => {
 	return {
 		areaCount: -1,
-		axisCount: -1,
 		barCount: -1,
 		comboCount: -1,
 		donutCount: -1,
-		legendCount: -1,
 		lineCount: -1,
 		scatterCount: -1,
 	};
@@ -221,7 +217,7 @@ export const getDefaultSignals = ({
 	hiddenSeries,
 	highlightedItem,
 	highlightedSeries,
-}: SanitizedSpecProps): Signal[] => {
+}: ChartSpecOptions): Signal[] => {
 	// if the background color is transparent, then we want to set the signal background color to gray-50
 	// if the signal background color were transparent then backgroundMarks and annotation fill would also be transparent
 	const signalBackgroundColor = backgroundColor === 'transparent' ? 'gray-50' : backgroundColor;

@@ -126,7 +126,7 @@ describe('applyMetricRangePropDefaults', () => {
 		expect(
 			applyMetricRangeOptionDefaults({ metricEnd: 'metricStart', metricStart: 'metricEnd' }, 'line0', 0)
 		).toEqual({
-			chartTootlips: [],
+			chartTooltips: [],
 			displayOnHover: false,
 			lineType: 'dashed',
 			lineWidth: 'S',

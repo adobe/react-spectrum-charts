@@ -9,10 +9,6 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import React from 'react';
-
-import { Bar } from '@components/Bar';
-import { Legend } from '@components/Legend';
 import {
 	BACKGROUND_COLOR,
 	COLOR_SCALE,
@@ -37,7 +33,7 @@ import { spectrumColors } from '@themes';
 import colorSchemes from '@themes/colorSchemes';
 import { Data } from 'vega';
 
-import { BarProps, LegendProps, LineType, SanitizedSpecProps } from '../types';
+import { BarOptions, ChartSpecOptions, LineType } from '../types';
 import {
 	addData,
 	buildSpec,
@@ -58,36 +54,29 @@ import { baseData } from './specUtils';
 
 const defaultData: Data[] = [{ name: TABLE, values: [], transform: [{ type: 'identifier', as: MARK_ID }] }];
 
-const defaultSpecProps: SanitizedSpecProps = {
+const defaultSpecOptions: ChartSpecOptions = {
+	axes: [],
 	backgroundColor: DEFAULT_BACKGROUND_COLOR,
-	children: [],
 	colors: 'categorical12',
 	colorScheme: DEFAULT_COLOR_SCHEME,
-	data: defaultData,
 	description: '',
 	hiddenSeries: [],
 	highlightedItem: undefined,
 	highlightedSeries: undefined,
 	idKey: MARK_ID,
+	legends: [],
 	lineTypes: DEFAULT_LINE_TYPES as LineType[],
 	lineWidths: [1],
+	marks: [],
 	opacities: undefined,
 	symbolShapes: ['rounded-square'],
 	symbolSizes: ['XS', 'XL'],
 	title: '',
+	titles: [],
 	UNSAFE_vegaSpec: undefined,
 };
 
-function createBar(): React.FunctionComponentElement<BarProps> {
-	return React.createElement(Bar, {
-		dimension: 'browser',
-		metric: 'downloads',
-		color: 'series',
-	});
-}
-function createLegend(highlight: boolean): React.FunctionComponentElement<LegendProps> {
-	return React.createElement(Legend, { highlight: highlight });
-}
+const defaultBarOptions: BarOptions = { markType: 'bar', dimension: 'browser', metric: 'downloads', color: 'series' };
 
 jest.mock('./legend/legendHighlightUtils', () => {
 	return {
@@ -396,8 +385,8 @@ describe('Chart spec builder', () => {
 	describe('controlled highlighting', () => {
 		test('adds highlightedSeries signal if there is a highlighted series', () => {
 			const spec = buildSpec({
-				...defaultSpecProps,
-				children: [createBar()],
+				...defaultSpecOptions,
+				marks: [defaultBarOptions],
 				highlightedSeries: 'Chrome',
 			});
 
@@ -409,8 +398,9 @@ describe('Chart spec builder', () => {
 
 		test('adds highlightedSeries signal if there is a highlighted series and legend does not have highlight', () => {
 			const spec = buildSpec({
-				...defaultSpecProps,
-				children: [createBar(), createLegend(false)],
+				...defaultSpecOptions,
+				marks: [defaultBarOptions],
+				legends: [{ highlight: false }],
 				highlightedSeries: 'Chrome',
 			});
 
@@ -422,8 +412,9 @@ describe('Chart spec builder', () => {
 
 		test('does not apply controlled highlighting if uncontrolled highlighting is applied', () => {
 			const spec = buildSpec({
-				...defaultSpecProps,
-				children: [createBar(), createLegend(true)],
+				...defaultSpecOptions,
+				marks: [defaultBarOptions],
+				legends: [{ highlight: true }],
 			});
 			const uncontrolledHighlightSignal = {
 				name: HIGHLIGHTED_SERIES,
@@ -473,7 +464,7 @@ describe('Chart spec builder', () => {
 		const endSignals = defaultSignals;
 
 		test('hiddenSeries is empty when no hidden series', () => {
-			expect(getDefaultSignals({ ...defaultSpecProps, lineTypes: ['dashed'] })).toStrictEqual([
+			expect(getDefaultSignals({ ...defaultSpecOptions, lineTypes: ['dashed'] })).toStrictEqual([
 				...beginningSignals,
 				{ name: 'hiddenSeries', value: [] },
 				...endSignals,
@@ -482,7 +473,7 @@ describe('Chart spec builder', () => {
 
 		test('hiddenSeries contains provided hidden series', () => {
 			const hiddenSeries = ['test'];
-			expect(getDefaultSignals({ ...defaultSpecProps, hiddenSeries, lineTypes: ['dashed'] })).toStrictEqual([
+			expect(getDefaultSignals({ ...defaultSpecOptions, hiddenSeries, lineTypes: ['dashed'] })).toStrictEqual([
 				...beginningSignals,
 				{ name: 'hiddenSeries', value: hiddenSeries },
 				...endSignals,

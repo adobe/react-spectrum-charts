@@ -18,7 +18,7 @@ import { ChartTooltip } from '@components/ChartTooltip';
 import { Line } from '@components/Line';
 import { Trendline } from '@components/Trendline';
 import {
-	combineElementNames,
+	combineNames,
 	getAllElements,
 	getComponentName,
 	sanitizeAxisAnnotationChildren,
@@ -122,13 +122,13 @@ describe('utils', () => {
 
 	describe('combineElementNames()', () => {
 		test('should return child name if parent name is null', () => {
-			expect(combineElementNames(null, 'bar0')).toBe('bar0');
+			expect(combineNames(null, 'bar0')).toBe('bar0');
 		});
 		test('should return parent name if child name is null', () => {
-			expect(combineElementNames('combo0', null)).toBe('combo0');
+			expect(combineNames('combo0', null)).toBe('combo0');
 		});
 		test('should return combined name if both parent and child names are provided', () => {
-			expect(combineElementNames('combo0', 'bar0')).toBe('combo0Bar0');
+			expect(combineNames('combo0', 'bar0')).toBe('combo0Bar0');
 		});
 	});
 });

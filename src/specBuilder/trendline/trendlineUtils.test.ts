@@ -32,7 +32,7 @@ describe('getTrendlines()', () => {
 		expect(trendlines[1]).toHaveProperty('method', 'linear');
 	});
 
-	test('should return an empty array if there are not any trendline child elements', () => {
+	test('should return an empty array if there are not any trendlines', () => {
 		const trendlines = getTrendlines({ ...defaultLineOptions, trendlines: [] });
 		expect(trendlines).toHaveLength(0);
 	});

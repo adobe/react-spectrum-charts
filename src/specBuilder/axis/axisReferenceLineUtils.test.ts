@@ -70,7 +70,7 @@ const defaultYPositionEncoding = { scale: 'yLinear', value: 10 };
 const defaultXPositionEncoding = { scale: 'xLinear', value: 10 };
 
 describe('getReferenceLines()', () => {
-	test('should return the options for all ReferenceLine elements', () => {
+	test('should return the options for all reference lines', () => {
 		const referenceLines = getReferenceLines({
 			...defaultAxisOptions,
 			referenceLines: [{ value: 1 }, { value: 0, icon: 'date' }],

@@ -36,24 +36,6 @@ import {
 	ScaleType,
 } from '../../types';
 
-// export interface AreaMarkOptions {
-// 	color: ColorFacet;
-// 	colorScheme: ColorScheme;
-// 	children: MarkChildElement[];
-// 	dimension: string;
-// 	displayOnHover?: boolean;
-// 	highlightedItem?: HighlightedItem;
-// 	isHighlightedByGroup?: boolean;
-// 	isMetricRange?: boolean;
-// 	isStacked: boolean;
-// 	metricStart: string;
-// 	metricEnd: string;
-// 	name: string;
-// 	opacity: number;
-// 	parentName?: string; // Optional name of mark that this area is a child of. Used for metric ranges.
-// 	scaleType: ScaleType;
-// }
-
 export interface AreaMarkOptions {
 	color: ColorFacet;
 	colorScheme: ColorScheme;
@@ -132,7 +114,6 @@ export function getAreaOpacity(areaOptions: AreaMarkOptions): ProductionRule<Num
 		];
 	}
 
-	// no children means no interactive elements
 	if (!isInteractive(areaOptions) && !highlightedItem) {
 		return [DEFAULT_OPACITY_RULE];
 	}

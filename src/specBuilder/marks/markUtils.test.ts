@@ -234,15 +234,15 @@ describe('isInteractive()', () => {
 });
 
 describe('getCursor()', () => {
-	test('should return pointer object if children have popover element', () => {
+	test('should return pointer object if there are any popovers', () => {
 		expect(getCursor([{}])).toEqual({ value: 'pointer' });
 	});
 
-	test('should return pointer object if options.onClick is defined', () => {
+	test('should return pointer object if hasOnClick is true', () => {
 		expect(getCursor([], true)).toEqual({ value: 'pointer' });
 	});
 
-	test('should return falsy value if children do not have popover element and onClick is not defined', () => {
+	test('should return falsy value if there are not any popovers and hasOnClick is not false', () => {
 		expect(getCursor([])).toBeFalsy();
 	});
 });

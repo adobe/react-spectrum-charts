@@ -107,15 +107,8 @@ export interface ChartOptions {
 
 	// children
 	marks: MarkOptions[];
-	// areas?: AreaOptions[];
 	axes?: AxisOptions[];
-	// bars?: BarOptions[];
-	// bigNumbers?: BigNumberOptions[];
-	// combos?: ComboOptions[];
-	// donuts?: DonutOptions[];
 	legends?: LegendOptions[];
-	// lines?: LineOptions[];
-	// scatters?: ScatterOptions[];
 	titles?: TitleOptions[];
 }
 
