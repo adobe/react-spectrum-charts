@@ -149,10 +149,10 @@ export const addFieldToFacetScaleDomain = (
 	}
 };
 
-export const generateScale = (type: SupportedScaleType, axis: AxisType, props?: Partial<Scale>): Scale => {
+export const generateScale = (type: SupportedScaleType, axis: AxisType, options?: Partial<Scale>): Scale => {
 	return {
 		...getDefaultScale(type, axis),
-		...props,
+		...options,
 	} as unknown as Scale;
 };
 

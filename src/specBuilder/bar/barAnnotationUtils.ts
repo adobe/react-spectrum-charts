@@ -9,16 +9,14 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { Annotation } from '@components/Annotation';
 import { ANNOTATION_FONT_SIZE, ANNOTATION_FONT_WEIGHT, ANNOTATION_PADDING, BACKGROUND_COLOR } from '@constants';
 import { GroupMark, NumericValueRef, ProductionRule, RectEncodeEntry, RectMark, TextMark } from 'vega';
 
 import {
-	AnnotationSpecProps,
-	BarAnnotationElement,
-	BarAnnotationProps,
-	BarAnnotationStyleProps,
-	BarSpecProps,
+	BarAnnotationOptions,
+	BarAnnotationSpecOptions,
+	BarAnnotationStyleOptions,
+	BarSpecOptions,
 	Orientation,
 } from '../../types';
 import { getOrientationProperties, isDodgedAndStacked } from './barUtils';
@@ -26,55 +24,55 @@ import { getOrientationProperties, isDodgedAndStacked } from './barUtils';
 type AnnotationWidth = { value: number } | { signal: string };
 
 /**
- * Gets the Annotation component from the children if one exists and applies default props, returning the AnnotationSpecProps
- * @param barProps
- * @returns AnnotationSpecProps | undefined
+ * Gets the Annotation component from the children if one exists and applies default options, returning the BarAnnotationSpecOptions
+ * @param barOptions
+ * @returns BarAnnotationSpecOptions | undefined
  */
 const getAnnotation = (
-	props: BarSpecProps,
+	options: BarSpecOptions,
 	dataName: string,
 	dimensionScaleName: string,
 	dimensionField: string
-): AnnotationSpecProps | undefined => {
-	const annotation = props.children.find((child) => child.type === Annotation) as BarAnnotationElement;
+): BarAnnotationSpecOptions | undefined => {
+	const annotation = options.barAnnotations[0];
 
 	if (!annotation) {
 		return;
 	}
-	return applyAnnotationPropDefaults(annotation.props, props, dataName, dimensionScaleName, dimensionField);
+	return applyAnnotationPropDefaults(annotation, options, dataName, dimensionScaleName, dimensionField);
 };
 
 /**
- * Applies all default props, converting BarAnnotationProps into AnnotationSpecProps
- * @param annotationProps
- * @param barProps
- * @returns AnnotationSpecProps
+ * Applies all default options, converting BarAnnotationOptions into BarAnnotationSpecOptions
+ * @param annotationOptions
+ * @param barOptions
+ * @returns BarAnnotationSpecOptions
  */
 const applyAnnotationPropDefaults = (
-	{ textKey, ...props }: BarAnnotationProps,
-	barProps: BarSpecProps,
+	{ textKey, ...options }: BarAnnotationOptions,
+	barOptions: BarSpecOptions,
 	dataName: string,
 	dimensionScaleName: string,
 	dimensionField: string
-): AnnotationSpecProps => ({
-	barProps,
-	textKey: textKey || barProps.metric,
+): BarAnnotationSpecOptions => ({
+	barOptions,
+	textKey: textKey || barOptions.metric,
 	dataName,
 	dimensionScaleName,
 	dimensionField,
-	...props,
+	...options,
 });
 
 /**
  * Gets the annotation marks for the bar chart. Returns an empty array if no annotation is provided on the bar children.
- * @param barProps
+ * @param barOptions
  * @param dataName
  * @param dimensionScaleName
  * @param dimensionName
  * @returns GroupMark[]
  */
 export const getAnnotationMarks = (
-	barProps: BarSpecProps,
+	barOptions: BarSpecOptions,
 
 	// These have to be local fields because it could be used in a group,
 	// in which case we don't want to use the "global" (full table) values.
@@ -82,39 +80,39 @@ export const getAnnotationMarks = (
 	dimensionScaleName: string,
 	dimensionName: string
 ): GroupMark[] => {
-	const annotationProps = getAnnotation(barProps, dataName, dimensionScaleName, dimensionName);
-	if (!annotationProps) {
+	const annotationOptions = getAnnotation(barOptions, dataName, dimensionScaleName, dimensionName);
+	if (!annotationOptions) {
 		return [];
 	}
 
 	return [
 		{
 			type: 'group',
-			name: `${barProps.name}_annotationGroup`,
-			marks: [getAnnotationTextMark(annotationProps), getAnnotationBackgroundMark(annotationProps)],
+			name: `${barOptions.name}_annotationGroup`,
+			marks: [getAnnotationTextMark(annotationOptions), getAnnotationBackgroundMark(annotationOptions)],
 		},
 	];
 };
 
 /**
  * Gets the annotation text mark for the bar chart
- * @param annotationProps
+ * @param annotationOptions
  * @returns TextMark
  */
 const getAnnotationTextMark = ({
-	barProps,
+	barOptions,
 	dataName,
 	dimensionField,
 	dimensionScaleName,
 	textKey,
 	style,
-}: AnnotationSpecProps): TextMark => {
-	const { metricAxis, dimensionAxis } = getOrientationProperties(barProps.orientation);
+}: BarAnnotationSpecOptions): TextMark => {
+	const { metricAxis, dimensionAxis } = getOrientationProperties(barOptions.orientation);
 	const annotationWidth = getAnnotationWidth(textKey, style);
-	const annotationPosition = getAnnotationMetricAxisPosition(barProps, annotationWidth);
+	const annotationPosition = getAnnotationMetricAxisPosition(barOptions, annotationWidth);
 
 	return {
-		name: `${barProps.name}_annotationText`,
+		name: `${barOptions.name}_annotationText`,
 		type: 'text',
 		from: { data: dataName },
 		interactive: false,
@@ -129,7 +127,7 @@ const getAnnotationTextMark = ({
 				[metricAxis]: annotationPosition,
 				text: [
 					{
-						test: `bandwidth('${dimensionScaleName}') > ${getMinBandwidth(barProps.orientation)}`,
+						test: `bandwidth('${dimensionScaleName}') > ${getMinBandwidth(barOptions.orientation)}`,
 						field: textKey,
 					},
 				],
@@ -144,19 +142,19 @@ const getAnnotationTextMark = ({
 
 /**
  * Gets the annotation background mark
- * @param annotationProps
+ * @param annotationOptions
  * @returns RectMark
  */
 const getAnnotationBackgroundMark = ({
-	barProps,
+	barOptions,
 	dimensionScaleName,
 	textKey,
 	style,
-}: AnnotationSpecProps): RectMark => ({
-	name: `${barProps.name}_annotationBackground`,
-	description: `${barProps.name}_annotationBackground`,
+}: BarAnnotationSpecOptions): RectMark => ({
+	name: `${barOptions.name}_annotationBackground`,
+	description: `${barOptions.name}_annotationBackground`,
 	type: 'rect',
-	from: { data: `${barProps.name}_annotationText` },
+	from: { data: `${barOptions.name}_annotationText` },
 	interactive: false,
 	encode: {
 		enter: {
@@ -167,7 +165,7 @@ const getAnnotationBackgroundMark = ({
 			fill: [
 				{
 					test: `datum.datum.${textKey} && bandwidth('${dimensionScaleName}') > ${getMinBandwidth(
-						barProps.orientation
+						barOptions.orientation
 					)}`,
 					signal: BACKGROUND_COLOR,
 				},
@@ -202,7 +200,7 @@ export const getAnnotationXEncode = (width?: number): RectEncodeEntry => {
 	};
 };
 
-export const getAnnotationWidth = (textKey: string, style?: BarAnnotationStyleProps): AnnotationWidth => {
+export const getAnnotationWidth = (textKey: string, style?: BarAnnotationStyleOptions): AnnotationWidth => {
 	if (style?.width) return { value: style.width };
 	return {
 		signal: `getLabelWidth(datum.${textKey}, '${ANNOTATION_FONT_WEIGHT}', ${ANNOTATION_FONT_SIZE}) + ${
@@ -213,12 +211,12 @@ export const getAnnotationWidth = (textKey: string, style?: BarAnnotationStylePr
 
 /**
  * Offset calculation to make sure the annotation does not overlap the baseline
- * @param barProps
+ * @param barOptions
  * @param annotationWidth
  * @returns string
  */
 export const getAnnotationPositionOffset = (
-	{ orientation }: BarSpecProps,
+	{ orientation }: BarSpecOptions,
 	annotationWidth: AnnotationWidth
 ): string => {
 	const pixelGapFromBaseline = 2.5;
@@ -239,18 +237,18 @@ export const getAnnotationPositionOffset = (
 /**
  * Gets the metric position for the annotation text.
  * This ensures that the annotation does not overlap the baseline.
- * @param barProps
+ * @param barOptions
  * @param annotationWidth
  * @returns NumericValueref
  */
 export const getAnnotationMetricAxisPosition = (
-	props: BarSpecProps,
+	options: BarSpecOptions,
 	annotationWidth: AnnotationWidth
 ): ProductionRule<NumericValueRef> => {
-	const { type, metric, orientation } = props;
-	const field = type === 'stacked' || isDodgedAndStacked(props) ? `${metric}1` : metric;
+	const { type, metric, orientation } = options;
+	const field = type === 'stacked' || isDodgedAndStacked(options) ? `${metric}1` : metric;
 	const { metricScaleKey: scaleKey } = getOrientationProperties(orientation);
-	const positionOffset = getAnnotationPositionOffset(props, annotationWidth);
+	const positionOffset = getAnnotationPositionOffset(options, annotationWidth);
 
 	if (orientation === 'vertical') {
 		return [

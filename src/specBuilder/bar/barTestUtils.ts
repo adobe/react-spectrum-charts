@@ -26,30 +26,7 @@ import {
 } from '@constants';
 import { NumericValueRef, ProductionRule, RectEncodeEntry } from 'vega';
 
-import { BarSpecOptions, BarSpecProps } from '../../types';
-
-export const defaultBarProps: BarSpecProps = {
-	children: [],
-	color: DEFAULT_COLOR,
-	colorScheme: DEFAULT_COLOR_SCHEME,
-	dimension: DEFAULT_CATEGORICAL_DIMENSION,
-	dimensionScaleType: 'band',
-	hasSquareCorners: false,
-	idKey: MARK_ID,
-	index: 0,
-	interactiveMarkName: 'bar0',
-	lineType: { value: 'solid' },
-	lineWidth: 0,
-	markType: 'bar',
-	metric: DEFAULT_METRIC,
-	name: 'bar0',
-	orientation: 'vertical',
-	opacity: { value: 1 },
-	paddingRatio: PADDING_RATIO,
-	trellisOrientation: 'horizontal',
-	trellisPadding: TRELLIS_PADDING,
-	type: 'stacked',
-};
+import { BarSpecOptions } from '../../types';
 
 export const defaultBarOptions: BarSpecOptions = {
 	barAnnotations: [],
@@ -77,8 +54,8 @@ export const defaultBarOptions: BarSpecOptions = {
 	type: 'stacked',
 };
 
-export const defaultBarPropsWithSecondayColor: BarSpecProps = {
-	...defaultBarProps,
+export const defaultBarOptionsWithSecondayColor: BarSpecOptions = {
+	...defaultBarOptions,
 	color: [DEFAULT_COLOR, DEFAULT_SECONDARY_COLOR],
 };
 
@@ -140,8 +117,8 @@ export const defaultDodgedCornerRadiusEncodings: RectEncodeEntry = {
 export const defaultBarFillOpacity: ProductionRule<NumericValueRef> = [{ value: 1 }];
 
 export const stackedXScale = 'xBand';
-export const dodgedXScale = `${defaultBarProps.name}_position`;
-export const dodgedGroupField = `${defaultBarProps.name}_dodgeGroup`;
+export const dodgedXScale = `${defaultBarOptions.name}_position`;
+export const dodgedGroupField = `${defaultBarOptions.name}_dodgeGroup`;
 export const stackedLabelWithStyles = {
 	type: 'rect',
 	from: { data: FILTERED_TABLE },
@@ -154,14 +131,14 @@ export const stackedLabelWithStyles = {
 			fill: [{ test: `datum.textLabel && bandwidth('${stackedXScale}') >= 48`, signal: BACKGROUND_COLOR }],
 			height: { value: 22 },
 			width: { value: 48 },
-			xc: { scale: stackedXScale, field: defaultBarProps.dimension, band: 0.5 },
+			xc: { scale: stackedXScale, field: defaultBarOptions.dimension, band: 0.5 },
 			yc: [
 				{
-					test: `datum.${defaultBarProps.metric}1 < 0`,
-					signal: `max(scale('yLinear', datum.${defaultBarProps.metric}1), scale('yLinear', 0) + 13.5)`,
+					test: `datum.${defaultBarOptions.metric}1 < 0`,
+					signal: `max(scale('yLinear', datum.${defaultBarOptions.metric}1), scale('yLinear', 0) + 13.5)`,
 				},
 				{
-					signal: `min(scale('yLinear', datum.${defaultBarProps.metric}1), scale('yLinear', 0) - 13.5)`,
+					signal: `min(scale('yLinear', datum.${defaultBarOptions.metric}1), scale('yLinear', 0) - 13.5)`,
 				},
 			],
 			cornerRadius: { value: 4 },
@@ -181,14 +158,14 @@ export const stackedLabelBackground = {
 			fill: [{ test: `datum.textLabel && bandwidth('${stackedXScale}') >= 48`, signal: BACKGROUND_COLOR }],
 			height: { value: 22 },
 			width: { signal: "getLabelWidth(datum.textLabel, 'bold', 12) + 10" },
-			xc: { scale: stackedXScale, field: defaultBarProps.dimension, band: 0.5 },
+			xc: { scale: stackedXScale, field: defaultBarOptions.dimension, band: 0.5 },
 			yc: [
 				{
-					test: `datum.${defaultBarProps.metric}1 < 0`,
-					signal: `max(scale('yLinear', datum.${defaultBarProps.metric}1), scale('yLinear', 0) + 13.5)`,
+					test: `datum.${defaultBarOptions.metric}1 < 0`,
+					signal: `max(scale('yLinear', datum.${defaultBarOptions.metric}1), scale('yLinear', 0) + 13.5)`,
 				},
 				{
-					signal: `min(scale('yLinear', datum.${defaultBarProps.metric}1), scale('yLinear', 0) - 13.5)`,
+					signal: `min(scale('yLinear', datum.${defaultBarOptions.metric}1), scale('yLinear', 0) - 13.5)`,
 				},
 			],
 			cornerRadius: { value: 4 },
@@ -203,14 +180,14 @@ export const stackedLabelText = {
 	interactive: false,
 	encode: {
 		enter: {
-			x: { scale: stackedXScale, field: defaultBarProps.dimension, band: 0.5 },
+			x: { scale: stackedXScale, field: defaultBarOptions.dimension, band: 0.5 },
 			y: [
 				{
-					test: `datum.${defaultBarProps.metric}1 < 0`,
-					signal: `max(scale('yLinear', datum.${defaultBarProps.metric}1), scale('yLinear', 0) + 13.5)`,
+					test: `datum.${defaultBarOptions.metric}1 < 0`,
+					signal: `max(scale('yLinear', datum.${defaultBarOptions.metric}1), scale('yLinear', 0) + 13.5)`,
 				},
 				{
-					signal: `min(scale('yLinear', datum.${defaultBarProps.metric}1), scale('yLinear', 0) - 13.5)`,
+					signal: `min(scale('yLinear', datum.${defaultBarOptions.metric}1), scale('yLinear', 0) - 13.5)`,
 				},
 			],
 			text: [{ test: `bandwidth('${stackedXScale}') >= 48`, field: 'textLabel' }],
@@ -224,7 +201,7 @@ export const stackedLabelText = {
 
 export const dodgedLabelWithStyles = {
 	...stackedLabelWithStyles,
-	from: { data: `${defaultBarProps.name}_facet` },
+	from: { data: `${defaultBarOptions.name}_facet` },
 	encode: {
 		...stackedLabelWithStyles.encode,
 		enter: {
@@ -232,11 +209,11 @@ export const dodgedLabelWithStyles = {
 			xc: { scale: dodgedXScale, field: dodgedGroupField, band: 0.5 },
 			yc: [
 				{
-					test: `datum.${defaultBarProps.metric} < 0`,
-					signal: `max(scale('yLinear', datum.${defaultBarProps.metric}), scale('yLinear', 0) + 13.5)`,
+					test: `datum.${defaultBarOptions.metric} < 0`,
+					signal: `max(scale('yLinear', datum.${defaultBarOptions.metric}), scale('yLinear', 0) + 13.5)`,
 				},
 				{
-					signal: `min(scale('yLinear', datum.${defaultBarProps.metric}), scale('yLinear', 0) - 13.5)`,
+					signal: `min(scale('yLinear', datum.${defaultBarOptions.metric}), scale('yLinear', 0) - 13.5)`,
 				},
 			],
 			fill: [{ test: `datum.textLabel && bandwidth('${dodgedXScale}') >= 48`, signal: BACKGROUND_COLOR }],
@@ -246,7 +223,7 @@ export const dodgedLabelWithStyles = {
 
 export const dodgedLabelBackground = {
 	...stackedLabelBackground,
-	from: { data: `${defaultBarProps.name}_facet` },
+	from: { data: `${defaultBarOptions.name}_facet` },
 	encode: {
 		...stackedLabelBackground.encode,
 		enter: {
@@ -254,11 +231,11 @@ export const dodgedLabelBackground = {
 			xc: { scale: dodgedXScale, field: dodgedGroupField, band: 0.5 },
 			yc: [
 				{
-					test: `datum.${defaultBarProps.metric} < 0`,
-					signal: `max(scale('yLinear', datum.${defaultBarProps.metric}), scale('yLinear', 0) + 13.5)`,
+					test: `datum.${defaultBarOptions.metric} < 0`,
+					signal: `max(scale('yLinear', datum.${defaultBarOptions.metric}), scale('yLinear', 0) + 13.5)`,
 				},
 				{
-					signal: `min(scale('yLinear', datum.${defaultBarProps.metric}), scale('yLinear', 0) - 13.5)`,
+					signal: `min(scale('yLinear', datum.${defaultBarOptions.metric}), scale('yLinear', 0) - 13.5)`,
 				},
 			],
 			fill: [{ test: `datum.textLabel && bandwidth('${dodgedXScale}') >= 48`, signal: BACKGROUND_COLOR }],
@@ -268,7 +245,7 @@ export const dodgedLabelBackground = {
 
 export const dodgedLabelText = {
 	...stackedLabelText,
-	from: { data: `${defaultBarProps.name}_facet` },
+	from: { data: `${defaultBarOptions.name}_facet` },
 	encode: {
 		...stackedLabelText.encode,
 		enter: {
@@ -276,11 +253,11 @@ export const dodgedLabelText = {
 			x: { scale: dodgedXScale, field: dodgedGroupField, band: 0.5 },
 			y: [
 				{
-					test: `datum.${defaultBarProps.metric} < 0`,
-					signal: `max(scale('yLinear', datum.${defaultBarProps.metric}), scale('yLinear', 0) + 13.5)`,
+					test: `datum.${defaultBarOptions.metric} < 0`,
+					signal: `max(scale('yLinear', datum.${defaultBarOptions.metric}), scale('yLinear', 0) + 13.5)`,
 				},
 				{
-					signal: `min(scale('yLinear', datum.${defaultBarProps.metric}), scale('yLinear', 0) - 13.5)`,
+					signal: `min(scale('yLinear', datum.${defaultBarOptions.metric}), scale('yLinear', 0) - 13.5)`,
 				},
 			],
 			text: [{ test: `bandwidth('${dodgedXScale}') >= 48`, field: 'textLabel' }],
@@ -296,11 +273,11 @@ export const dodgedSubSeriesLabelBackground = {
 			...dodgedLabelBackground.encode.enter,
 			yc: [
 				{
-					test: `datum.${defaultBarProps.metric}1 < 0`,
-					signal: `max(scale('yLinear', datum.${defaultBarProps.metric}1), scale('yLinear', 0) + 13.5)`,
+					test: `datum.${defaultBarOptions.metric}1 < 0`,
+					signal: `max(scale('yLinear', datum.${defaultBarOptions.metric}1), scale('yLinear', 0) + 13.5)`,
 				},
 				{
-					signal: `min(scale('yLinear', datum.${defaultBarProps.metric}1), scale('yLinear', 0) - 13.5)`,
+					signal: `min(scale('yLinear', datum.${defaultBarOptions.metric}1), scale('yLinear', 0) - 13.5)`,
 				},
 			],
 		},
@@ -315,11 +292,11 @@ export const dodgedSubSeriesLabelText = {
 			...dodgedLabelText.encode.enter,
 			y: [
 				{
-					test: `datum.${defaultBarProps.metric}1 < 0`,
-					signal: `max(scale('yLinear', datum.${defaultBarProps.metric}1), scale('yLinear', 0) + 13.5)`,
+					test: `datum.${defaultBarOptions.metric}1 < 0`,
+					signal: `max(scale('yLinear', datum.${defaultBarOptions.metric}1), scale('yLinear', 0) + 13.5)`,
 				},
 				{
-					signal: `min(scale('yLinear', datum.${defaultBarProps.metric}1), scale('yLinear', 0) - 13.5)`,
+					signal: `min(scale('yLinear', datum.${defaultBarOptions.metric}1), scale('yLinear', 0) - 13.5)`,
 				},
 			],
 		},

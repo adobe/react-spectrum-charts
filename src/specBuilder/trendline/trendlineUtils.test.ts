@@ -22,7 +22,7 @@ import {
 } from './trendlineUtils';
 
 describe('getTrendlines()', () => {
-	test('should return an array of trendline props', () => {
+	test('should return an array of trendline options', () => {
 		const trendlines = getTrendlines({
 			...defaultLineOptions,
 			trendlines: [{ method: 'average' }, { method: 'linear' }],
@@ -40,22 +40,22 @@ describe('getTrendlines()', () => {
 
 describe('applyTrendlinePropDefaults()', () => {
 	test('should add defaults', () => {
-		const props = applyTrendlinePropDefaults(defaultLineOptions, {}, 0);
-		expect(props).toHaveProperty('method', 'linear');
-		expect(props).toHaveProperty('dimensionRange', [null, null]);
-		expect(props).toHaveProperty('lineType', 'dashed');
-		expect(props).toHaveProperty('lineWidth', 'M');
-		expect(props).toHaveProperty('metric', TRENDLINE_VALUE);
-		expect(props).toHaveProperty('trendlineColor', defaultLineOptions.color);
+		const options = applyTrendlinePropDefaults(defaultLineOptions, {}, 0);
+		expect(options).toHaveProperty('method', 'linear');
+		expect(options).toHaveProperty('dimensionRange', [null, null]);
+		expect(options).toHaveProperty('lineType', 'dashed');
+		expect(options).toHaveProperty('lineWidth', 'M');
+		expect(options).toHaveProperty('metric', TRENDLINE_VALUE);
+		expect(options).toHaveProperty('trendlineColor', defaultLineOptions.color);
 	});
 	test('should swap dimension and metric if orientation is vertical', () => {
-		const props = applyTrendlinePropDefaults(defaultLineOptions, { orientation: 'vertical' }, 0);
-		expect(props).toHaveProperty('trendlineDimension', DEFAULT_METRIC);
-		expect(props).toHaveProperty('trendlineMetric', DEFAULT_TIME_DIMENSION);
+		const options = applyTrendlinePropDefaults(defaultLineOptions, { orientation: 'vertical' }, 0);
+		expect(options).toHaveProperty('trendlineDimension', DEFAULT_METRIC);
+		expect(options).toHaveProperty('trendlineMetric', DEFAULT_TIME_DIMENSION);
 	});
 	test('should use color from trendline if defined', () => {
-		const props = applyTrendlinePropDefaults(defaultLineOptions, { color: 'gray-700' }, 0);
-		expect(props).toHaveProperty('trendlineColor', { value: 'gray-700' });
+		const options = applyTrendlinePropDefaults(defaultLineOptions, { color: 'gray-700' }, 0);
+		expect(options).toHaveProperty('trendlineColor', { value: 'gray-700' });
 	});
 });
 

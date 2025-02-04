@@ -9,9 +9,6 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { createElement } from 'react';
-
-import { ChartPopover } from '@components/ChartPopover';
 import {
 	COLOR_SCALE,
 	CORNER_RADIUS,
@@ -27,11 +24,11 @@ import {
 } from '@constants';
 import { RectEncodeEntry } from 'vega';
 
-import { BarSpecProps } from '../../types';
+import { BarSpecOptions } from '../../types';
 import {
 	defaultBarEnterEncodings,
-	defaultBarProps,
-	defaultBarPropsWithSecondayColor,
+	defaultBarOptions,
+	defaultBarOptionsWithSecondayColor,
 	defaultCornerRadiusEncodings,
 	defaultDodgedCornerRadiusEncodings,
 	defaultDodgedYEncodings,
@@ -61,24 +58,24 @@ const defaultDodgedXEncodings: RectEncodeEntry = {
 describe('barUtils', () => {
 	describe('getMetricEncodings()', () => {
 		describe('vertical orientation', () => {
-			test('defaultBarProps, should return stacked encodings', () => {
-				expect(getMetricEncodings(defaultBarProps)).toStrictEqual(defaultStackedYEncodings);
+			test('defaultBarOptions, should return stacked encodings', () => {
+				expect(getMetricEncodings(defaultBarOptions)).toStrictEqual(defaultStackedYEncodings);
 			});
 			test('dodged, should return dodged encodings', () => {
-				expect(getMetricEncodings({ ...defaultBarProps, type: 'dodged' })).toStrictEqual(
+				expect(getMetricEncodings({ ...defaultBarOptions, type: 'dodged' })).toStrictEqual(
 					defaultDodgedYEncodings
 				);
 			});
 			test('dodged with secdondary color series, should return stacked encodings', () => {
-				expect(getMetricEncodings({ ...defaultBarPropsWithSecondayColor, type: 'dodged' })).toStrictEqual(
+				expect(getMetricEncodings({ ...defaultBarOptionsWithSecondayColor, type: 'dodged' })).toStrictEqual(
 					defaultStackedYEncodings
 				);
 			});
 		});
 
 		describe('horizontal orientation', () => {
-			test('defaultBarProps should return encodings on x axis', () => {
-				const domainEncodings = getMetricEncodings({ ...defaultBarProps, orientation: 'horizontal' });
+			test('defaultBarOptions should return encodings on x axis', () => {
+				const domainEncodings = getMetricEncodings({ ...defaultBarOptions, orientation: 'horizontal' });
 				const defaultStackedEncodingStartLength = (defaultStackedYEncodings.y as unknown[]).length;
 
 				expect(domainEncodings.x).toHaveLength(defaultStackedEncodingStartLength);
@@ -86,7 +83,7 @@ describe('barUtils', () => {
 			});
 			test('dodged, should return dodged encodings on x axis', () => {
 				const domainEncodings = getMetricEncodings({
-					...defaultBarProps,
+					...defaultBarOptions,
 					type: 'dodged',
 					orientation: 'horizontal',
 				});
@@ -96,7 +93,7 @@ describe('barUtils', () => {
 			});
 			test('dodged with secdondary color series, should return stacked encodings on x axis', () => {
 				const domainEncodings = getMetricEncodings({
-					...defaultBarPropsWithSecondayColor,
+					...defaultBarOptionsWithSecondayColor,
 					type: 'dodged',
 					orientation: 'horizontal',
 				});
@@ -113,19 +110,19 @@ describe('barUtils', () => {
 		const endValue = `datum.${DEFAULT_METRIC}1`;
 
 		describe('vertical orientation', () => {
-			test('defaultBarProps, should return with keys "y" and "y2"', () => {
-				const encodings = getStackedMetricEncodings(defaultBarProps);
+			test('defaultBarOptions, should return with keys "y" and "y2"', () => {
+				const encodings = getStackedMetricEncodings(defaultBarOptions);
 				expect(Object.keys(encodings)).toEqual(['y', 'y2']);
 			});
 
 			test('first should test for starting at 0', () => {
-				const encodings = getStackedMetricEncodings(defaultBarProps);
+				const encodings = getStackedMetricEncodings(defaultBarOptions);
 				expect(encodings.y?.[0]?.test).toEqual(`${startValue} === 0`);
 				expect(encodings.y?.[0]?.signal).toEqual(`scale('yLinear', ${startValue})`);
 			});
 
 			test('should second test for ending positive value', () => {
-				const encodings = getStackedMetricEncodings(defaultBarProps);
+				const encodings = getStackedMetricEncodings(defaultBarOptions);
 				expect(encodings.y?.[1]?.test).toEqual(`${endValue} > 0`);
 				expect(encodings.y?.[1]?.signal).toEqual(
 					`max(scale('yLinear', ${startValue}) - 1.5, scale('yLinear', datum.${DEFAULT_METRIC}1))`
@@ -133,7 +130,7 @@ describe('barUtils', () => {
 			});
 
 			test('should third assume ending negative value', () => {
-				const encodings = getStackedMetricEncodings(defaultBarProps);
+				const encodings = getStackedMetricEncodings(defaultBarOptions);
 				expect(encodings.y?.[2]?.test).toBeUndefined();
 				expect(encodings.y?.[2]?.signal).toEqual(
 					`min(scale('yLinear', ${startValue}) + 1.5, scale('yLinear', datum.${DEFAULT_METRIC}1))`
@@ -141,27 +138,27 @@ describe('barUtils', () => {
 			});
 
 			test('should end on datum.metric1', () => {
-				const encodings = getStackedMetricEncodings(defaultBarProps);
+				const encodings = getStackedMetricEncodings(defaultBarOptions);
 				expect(encodings.y2).toEqual({ scale: 'yLinear', field: `${DEFAULT_METRIC}1` });
 			});
 		});
 
 		describe('horizontal orientation', () => {
-			const horizontalProps: BarSpecProps = { ...defaultBarProps, orientation: 'horizontal' };
+			const horizontalOptions: BarSpecOptions = { ...defaultBarOptions, orientation: 'horizontal' };
 
-			test('defaultBarProps, should return with keys "x" and "x2"', () => {
-				const encodings = getStackedMetricEncodings(horizontalProps);
+			test('defaultBarOptions, should return with keys "x" and "x2"', () => {
+				const encodings = getStackedMetricEncodings(horizontalOptions);
 				expect(Object.keys(encodings)).toEqual(['x', 'x2']);
 			});
 
 			test('first should test for starting at 0', () => {
-				const encodings = getStackedMetricEncodings(horizontalProps);
+				const encodings = getStackedMetricEncodings(horizontalOptions);
 				expect(encodings.x?.[0]?.test).toEqual(`${startValue} === 0`);
 				expect(encodings.x?.[0]?.signal).toEqual(`scale('xLinear', ${startValue})`);
 			});
 
 			test('should second test for ending positive value', () => {
-				const encodings = getStackedMetricEncodings(horizontalProps);
+				const encodings = getStackedMetricEncodings(horizontalOptions);
 				expect(encodings.x?.[1]?.test).toEqual(`${endValue} > 0`);
 				expect(encodings.x?.[1]?.signal).toEqual(
 					`min(scale('xLinear', ${startValue}) + 1.5, scale('xLinear', datum.${DEFAULT_METRIC}1))`
@@ -169,7 +166,7 @@ describe('barUtils', () => {
 			});
 
 			test('should third assume ending negative value', () => {
-				const encodings = getStackedMetricEncodings(horizontalProps);
+				const encodings = getStackedMetricEncodings(horizontalOptions);
 				expect(encodings.x?.[2]?.test).toBeUndefined();
 				expect(encodings.x?.[2]?.signal).toEqual(
 					`max(scale('xLinear', ${startValue}) - 1.5, scale('xLinear', datum.${DEFAULT_METRIC}1))`
@@ -177,24 +174,24 @@ describe('barUtils', () => {
 			});
 
 			test('should end on datum.metric1', () => {
-				const encodings = getStackedMetricEncodings(horizontalProps);
+				const encodings = getStackedMetricEncodings(horizontalOptions);
 				expect(encodings.x2).toEqual({ scale: 'xLinear', field: `${DEFAULT_METRIC}1` });
 			});
 		});
 	});
 
 	describe('getCornerRadiusEncodings()', () => {
-		test('defaultBarProps, should return stacked radius encodings', () => {
-			expect(getCornerRadiusEncodings(defaultBarProps)).toStrictEqual(defaultCornerRadiusEncodings);
+		test('defaultBarOptions, should return stacked radius encodings', () => {
+			expect(getCornerRadiusEncodings(defaultBarOptions)).toStrictEqual(defaultCornerRadiusEncodings);
 		});
 		test('dodged, return simple radius encodings', () => {
-			expect(getCornerRadiusEncodings({ ...defaultBarProps, type: 'dodged' })).toStrictEqual(
+			expect(getCornerRadiusEncodings({ ...defaultBarOptions, type: 'dodged' })).toStrictEqual(
 				defaultDodgedCornerRadiusEncodings
 			);
 		});
 		test('horizontal, should return stacked radius encodings rotated clockwise', () => {
-			const vertical = getCornerRadiusEncodings(defaultBarProps);
-			const horizontal = getCornerRadiusEncodings({ ...defaultBarProps, orientation: 'horizontal' });
+			const vertical = getCornerRadiusEncodings(defaultBarOptions);
+			const horizontal = getCornerRadiusEncodings({ ...defaultBarOptions, orientation: 'horizontal' });
 
 			expect(horizontal?.cornerRadiusTopLeft).toEqual(vertical?.cornerRadiusBottomLeft);
 			expect(horizontal?.cornerRadiusTopRight).toEqual(vertical?.cornerRadiusTopLeft);
@@ -202,9 +199,9 @@ describe('barUtils', () => {
 			expect(horizontal?.cornerRadiusBottomLeft).toEqual(vertical?.cornerRadiusBottomRight);
 		});
 		test('horizontal dodged, should return stacked radius encodings rotated clockwise', () => {
-			const vertical = getCornerRadiusEncodings({ ...defaultBarProps, type: 'dodged' });
+			const vertical = getCornerRadiusEncodings({ ...defaultBarOptions, type: 'dodged' });
 			const horizontal = getCornerRadiusEncodings({
-				...defaultBarProps,
+				...defaultBarOptions,
 				type: 'dodged',
 				orientation: 'horizontal',
 			});
@@ -215,7 +212,7 @@ describe('barUtils', () => {
 			expect(horizontal?.cornerRadiusBottomLeft).toEqual(vertical?.cornerRadiusBottomRight);
 		});
 		test('corner radius should be 0 when the hasSquareCorners prop is true', () => {
-			const squareRadius = getCornerRadiusEncodings({ ...defaultBarProps, hasSquareCorners: true });
+			const squareRadius = getCornerRadiusEncodings({ ...defaultBarOptions, hasSquareCorners: true });
 
 			// Square radius should have values of 0
 			expect(squareRadius).toEqual(
@@ -225,7 +222,7 @@ describe('barUtils', () => {
 				})
 			);
 
-			const roundRadius = getCornerRadiusEncodings({ ...defaultBarProps });
+			const roundRadius = getCornerRadiusEncodings({ ...defaultBarOptions });
 
 			// Round radius should have values of 6
 			expect(roundRadius).toEqual(
@@ -238,24 +235,24 @@ describe('barUtils', () => {
 	});
 
 	describe('getStackedCorderRadiusEncodings()', () => {
-		test('defaultBarProps, should return default encodings', () => {
-			expect(getStackedCornerRadiusEncodings(defaultBarProps)).toStrictEqual(defaultCornerRadiusEncodings);
+		test('defaultBarOptions, should return default encodings', () => {
+			expect(getStackedCornerRadiusEncodings(defaultBarOptions)).toStrictEqual(defaultCornerRadiusEncodings);
 		});
-		test('defaultBarProps with secondary color, should include secondaryColor in singal path', () => {
-			expect(getStackedCornerRadiusEncodings(defaultBarPropsWithSecondayColor).cornerRadiusTopLeft).toStrictEqual(
-				[
-					{
-						test: `datum.${DEFAULT_METRIC}1 > 0 && data('bar0_stacks')[indexof(pluck(data('bar0_stacks'), '${STACK_ID}'), datum.${STACK_ID})].max_${DEFAULT_METRIC}1 === datum.${DEFAULT_METRIC}1`,
-						value: CORNER_RADIUS,
-					},
-					{ value: 0 },
-				]
-			);
+		test('defaultBarOptions with secondary color, should include secondaryColor in singal path', () => {
+			expect(
+				getStackedCornerRadiusEncodings(defaultBarOptionsWithSecondayColor).cornerRadiusTopLeft
+			).toStrictEqual([
+				{
+					test: `datum.${DEFAULT_METRIC}1 > 0 && data('bar0_stacks')[indexof(pluck(data('bar0_stacks'), '${STACK_ID}'), datum.${STACK_ID})].max_${DEFAULT_METRIC}1 === datum.${DEFAULT_METRIC}1`,
+					value: CORNER_RADIUS,
+				},
+				{ value: 0 },
+			]);
 		});
 		test('dodged with secondary color, should include secondaryColor in singal path', () => {
 			expect(
 				getStackedCornerRadiusEncodings({
-					...defaultBarPropsWithSecondayColor,
+					...defaultBarOptionsWithSecondayColor,
 					type: 'dodged',
 				}).cornerRadiusTopLeft
 			).toStrictEqual([
@@ -268,7 +265,7 @@ describe('barUtils', () => {
 		});
 
 		test('corner radius should be 0 when the hasSquareCorners prop is true', () => {
-			const squareRadius = getStackedCornerRadiusEncodings({ ...defaultBarProps, hasSquareCorners: true });
+			const squareRadius = getStackedCornerRadiusEncodings({ ...defaultBarOptions, hasSquareCorners: true });
 
 			// Square radius should have values of 0
 			expect(squareRadius).toEqual(
@@ -278,7 +275,7 @@ describe('barUtils', () => {
 				})
 			);
 
-			const roundRadius = getStackedCornerRadiusEncodings({ ...defaultBarProps });
+			const roundRadius = getStackedCornerRadiusEncodings({ ...defaultBarOptions });
 
 			// Round radius should have values of 6
 			expect(roundRadius).toEqual(
@@ -327,13 +324,12 @@ describe('barUtils', () => {
 
 	describe('getStroke()', () => {
 		test('should return production rule with one item in array if there is not a popover', () => {
-			const strokeRule = getStroke(defaultBarProps);
+			const strokeRule = getStroke(defaultBarOptions);
 			expect(strokeRule).toHaveLength(1);
 			expect(strokeRule[0]).toStrictEqual({ scale: COLOR_SCALE, field: DEFAULT_COLOR });
 		});
 		test('should return rules for selected data if popover exists', () => {
-			const popover = createElement(ChartPopover);
-			const strokeRule = getStroke({ ...defaultBarProps, children: [popover] });
+			const strokeRule = getStroke({ ...defaultBarOptions, chartPopovers: [{}] });
 			expect(strokeRule).toHaveLength(2);
 			expect(strokeRule[0]).toStrictEqual({
 				test: `(${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${MARK_ID}) || (${SELECTED_GROUP} && ${SELECTED_GROUP} === datum.bar0_selectedGroupId)`,
@@ -343,7 +339,7 @@ describe('barUtils', () => {
 	});
 
 	describe('getDimensionSelectionRing()', () => {
-		const barProps: Partial<BarSpecProps> = {
+		const barOptions: Partial<BarSpecOptions> = {
 			name: 'bar0',
 			colorScheme: 'light',
 			orientation: 'vertical',
@@ -351,7 +347,7 @@ describe('barUtils', () => {
 		};
 
 		test('should return vertical selection ring', () => {
-			const selectionRing = getDimensionSelectionRing(barProps as BarSpecProps);
+			const selectionRing = getDimensionSelectionRing(barOptions as BarSpecOptions);
 			expect(selectionRing).toStrictEqual({
 				encode: {
 					enter: {
@@ -376,7 +372,10 @@ describe('barUtils', () => {
 			});
 		});
 		test('should return horizontal selection ring', () => {
-			const selectionRing = getDimensionSelectionRing({ ...barProps, orientation: 'horizontal' } as BarSpecProps);
+			const selectionRing = getDimensionSelectionRing({
+				...barOptions,
+				orientation: 'horizontal',
+			} as BarSpecOptions);
 			expect(selectionRing).toStrictEqual({
 				encode: {
 					enter: {
@@ -404,13 +403,12 @@ describe('barUtils', () => {
 
 	describe('getStrokeDash()', () => {
 		test('should return production rule with one item in array if there is not a popover', () => {
-			const strokeRule = getStrokeDash(defaultBarProps);
+			const strokeRule = getStrokeDash(defaultBarOptions);
 			expect(strokeRule).toHaveLength(1);
 			expect(strokeRule[0]).toStrictEqual({ value: [] });
 		});
 		test('should return rules for selected data if popover exists', () => {
-			const popover = createElement(ChartPopover);
-			const strokeRule = getStrokeDash({ ...defaultBarProps, children: [popover] });
+			const strokeRule = getStrokeDash({ ...defaultBarOptions, chartPopovers: [{}] });
 			expect(strokeRule).toHaveLength(2);
 			expect(strokeRule[0]).toStrictEqual({
 				test: `isValid(${SELECTED_ITEM}) && ${SELECTED_ITEM} === datum.${MARK_ID}`,
@@ -421,21 +419,20 @@ describe('barUtils', () => {
 
 	describe('getStrokeWidth()', () => {
 		test('should return production rule with one item in array if there is not a popover', () => {
-			const strokeRule = getStrokeWidth(defaultBarProps);
+			const strokeRule = getStrokeWidth(defaultBarOptions);
 			expect(strokeRule).toHaveLength(1);
 			expect(strokeRule[0]).toStrictEqual({ value: 0 });
 		});
 		test('should return production rule with one item in array if there is a popover that highlights by dimension', () => {
 			const strokeRule = getStrokeWidth({
-				...defaultBarProps,
-				children: [createElement(ChartPopover, { UNSAFE_highlightBy: 'dimension' })],
+				...defaultBarOptions,
+				chartPopovers: [{ UNSAFE_highlightBy: 'dimension' }],
 			});
 			expect(strokeRule).toHaveLength(1);
 			expect(strokeRule[0]).toStrictEqual({ value: 0 });
 		});
 		test('should return rules for selected data if popover exists', () => {
-			const popover = createElement(ChartPopover);
-			const strokeRule = getStrokeWidth({ ...defaultBarProps, children: [popover] });
+			const strokeRule = getStrokeWidth({ ...defaultBarOptions, chartPopovers: [{}] });
 			expect(strokeRule).toHaveLength(2);
 			expect(strokeRule[0]).toStrictEqual({
 				test: `(isValid(${SELECTED_ITEM}) && ${SELECTED_ITEM} === datum.${MARK_ID}) || (isValid(${SELECTED_GROUP}) && ${SELECTED_GROUP} === datum.bar0_selectedGroupId)`,
@@ -445,14 +442,14 @@ describe('barUtils', () => {
 	});
 
 	describe('getBaseBarEnterEncodings()', () => {
-		test('default props', () => {
-			expect(getBaseBarEnterEncodings(defaultBarProps)).toStrictEqual(defaultBarEnterEncodings);
+		test('default options', () => {
+			expect(getBaseBarEnterEncodings(defaultBarOptions)).toStrictEqual(defaultBarEnterEncodings);
 		});
 	});
 
 	describe('getDodgedGroupMark()', () => {
 		test('should retrun group mark', () => {
-			expect(getDodgedGroupMark(defaultBarProps)).toStrictEqual({
+			expect(getDodgedGroupMark(defaultBarOptions)).toStrictEqual({
 				encode: { enter: { x: { field: DEFAULT_CATEGORICAL_DIMENSION, scale: 'xBand' } } },
 				from: { facet: { data: FILTERED_TABLE, groupby: DEFAULT_CATEGORICAL_DIMENSION, name: 'bar0_facet' } },
 				name: 'bar0_group',
@@ -471,7 +468,7 @@ describe('barUtils', () => {
 		});
 		test('uses groupedPadding for paddingInner if it exists', () => {
 			const groupedPadding = PADDING_RATIO + 0.1;
-			expect(getDodgedGroupMark({ ...defaultBarProps, groupedPadding })).toStrictEqual({
+			expect(getDodgedGroupMark({ ...defaultBarOptions, groupedPadding })).toStrictEqual({
 				encode: { enter: { x: { field: DEFAULT_CATEGORICAL_DIMENSION, scale: 'xBand' } } },
 				from: { facet: { data: FILTERED_TABLE, groupby: DEFAULT_CATEGORICAL_DIMENSION, name: 'bar0_facet' } },
 				name: 'bar0_group',
@@ -492,7 +489,7 @@ describe('barUtils', () => {
 
 	describe('getDodgedDimensionEncodings()', () => {
 		test('should return x and width', () => {
-			expect(getDodgedDimensionEncodings(defaultBarProps)).toStrictEqual(defaultDodgedXEncodings);
+			expect(getDodgedDimensionEncodings(defaultBarOptions)).toStrictEqual(defaultDodgedXEncodings);
 		});
 	});
 

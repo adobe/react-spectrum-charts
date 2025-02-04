@@ -24,7 +24,7 @@ import { getFacetsFromOptions } from '@specBuilder/specUtils';
 import { getTrendlineAnnotationMarks } from '@specBuilder/trendlineAnnotation';
 import { EncodeEntry, GroupMark, LineMark, NumericValueRef, RuleMark } from 'vega';
 
-import { Orientation, ScaleType, TrendlineMethod, TrendlineSpecOptions, TrendlineSpecProps } from '../../types';
+import { Orientation, ScaleType, TrendlineMethod, TrendlineSpecOptions } from '../../types';
 import {
 	TrendlineParentOptions,
 	getTrendlineColorFromMarkOptions,
@@ -34,16 +34,16 @@ import {
 	isRegressionMethod,
 } from './trendlineUtils';
 
-export const getTrendlineMarks = (markProps: TrendlineParentOptions): (GroupMark | RuleMark)[] => {
-	const { color, lineType } = markProps;
+export const getTrendlineMarks = (markOptions: TrendlineParentOptions): (GroupMark | RuleMark)[] => {
+	const { color, lineType } = markOptions;
 	const { facets } = getFacetsFromOptions({ color, lineType });
 
 	const marks: (GroupMark | RuleMark)[] = [];
-	const trendlines = getTrendlines(markProps);
-	for (const trendlineProps of trendlines) {
-		const { displayOnHover, method, name } = trendlineProps;
+	const trendlines = getTrendlines(markOptions);
+	for (const trendlineOptions of trendlines) {
+		const { displayOnHover, method, name } = trendlineOptions;
 		if (isAggregateMethod(method)) {
-			marks.push(getTrendlineRuleMark(markProps, trendlineProps));
+			marks.push(getTrendlineRuleMark(markOptions, trendlineOptions));
 		} else {
 			const data = getDataSourceName(name, method, displayOnHover);
 			marks.push({
@@ -57,17 +57,17 @@ export const getTrendlineMarks = (markProps: TrendlineParentOptions): (GroupMark
 						groupby: facets,
 					},
 				},
-				marks: [getTrendlineLineMark(markProps, trendlineProps)],
+				marks: [getTrendlineLineMark(markOptions, trendlineOptions)],
 			});
 		}
-		marks.push(...getTrendlineAnnotationMarks(trendlineProps, markProps.name));
+		marks.push(...getTrendlineAnnotationMarks(trendlineOptions, markOptions.name));
 	}
 
 	if (trendlines.some((trendline) => hasTooltip(trendline))) {
 		marks.push(
 			getTrendlineHoverMarks(
-				markProps,
-				trendlines.some((trendlineProps) => trendlineProps.highlightRawPoint)
+				markOptions,
+				trendlines.some((trendlineOptions) => trendlineOptions.highlightRawPoint)
 			)
 		);
 	}
@@ -138,7 +138,7 @@ export const getTrendlineRuleMark = (
  * @returns x production rules
  */
 export const getRuleYEncodings = (
-	dimensionExtent: TrendlineSpecProps['dimensionExtent'],
+	dimensionExtent: TrendlineSpecOptions['dimensionExtent'],
 	dimension: string,
 	orientation: Orientation
 ): EncodeEntry => {
@@ -160,7 +160,7 @@ export const getRuleYEncodings = (
  * @returns x production rules
  */
 export const getRuleXEncodings = (
-	dimensionExtent: TrendlineSpecProps['dimensionExtent'],
+	dimensionExtent: TrendlineSpecOptions['dimensionExtent'],
 	dimension: string,
 	scaleType: ScaleType,
 	orientation: Orientation
@@ -308,7 +308,7 @@ export const getLineXProductionRule = (
 const getTrendlineHoverMarks = (markOptions: TrendlineParentOptions, highlightRawPoint: boolean): GroupMark => {
 	const { metric, name } = markOptions;
 	const trendlines = getTrendlines(markOptions);
-	const trendlineHoverProps = getLineMarkOptions(markOptions, trendlines[0], {
+	const trendlineHoverOptions = getLineMarkOptions(markOptions, trendlines[0], {
 		name: `${name}Trendline`,
 		chartTooltips: trendlines.map((trendline) => trendline.chartTooltips).flat(),
 		metric: TRENDLINE_VALUE,
@@ -319,7 +319,7 @@ const getTrendlineHoverMarks = (markOptions: TrendlineParentOptions, highlightRa
 		type: 'group',
 		clip: true,
 		marks: getLineHoverMarks(
-			trendlineHoverProps,
+			trendlineHoverOptions,
 			`${name}_allTrendlineData`,
 			highlightRawPoint ? metric : undefined
 		),

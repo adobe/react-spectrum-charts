@@ -48,8 +48,8 @@ const colors = spectrumColors.light;
 
 describe('applyTrendlineAnnotationDefaults()', () => {
 	test('should apply all defaults', () => {
-		const annotationProps = getTrendlineAnnotationSpecOptions({}, 0, defaultTrendlineOptions, 'line0');
-		expect(annotationProps).toEqual(defaultAnnotationOptions);
+		const annotationOptions = getTrendlineAnnotationSpecOptions({}, 0, defaultTrendlineOptions, 'line0');
+		expect(annotationOptions).toEqual(defaultAnnotationOptions);
 	});
 });
 

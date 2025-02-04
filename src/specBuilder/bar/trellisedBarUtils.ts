@@ -13,26 +13,26 @@ import { FILTERED_TABLE } from '@constants';
 import { addDomainFields, getScaleIndexByName } from '@specBuilder/scale/scaleSpecBuilder';
 import { GroupMark, Mark, Scale } from 'vega';
 
-import { BarSpecProps } from '../../types';
+import { BarSpecOptions } from '../../types';
 import { getDodgedDimensionEncodings, getTrellisedDimensionEncodings, isDodgedAndStacked } from './barUtils';
 
 /**
  * Generates the trellis group mark
- * @param props
+ * @param options
  * @param marks visualization marks (bar, line, etc)
  * @param repeatedScale this is the scale that is repeated for each trellis, for example: y scale for vertical trellis, x scale for horizontal trellis
  * @returns
  */
-export const getTrellisGroupMark = (props: BarSpecProps, marks: Mark[], repeatedScale: Scale): GroupMark => {
-	const { trellisOrientation } = props;
-	const trellis = props.trellis as string;
+export const getTrellisGroupMark = (options: BarSpecOptions, marks: Mark[], repeatedScale: Scale): GroupMark => {
+	const { trellisOrientation } = options;
+	const trellis = options.trellis as string;
 	const {
 		markName,
 		facetName,
 		scaleName,
 		axis: trellisAxis,
 		rangeScale: trellisRangeScale,
-	} = getTrellisProperties(props);
+	} = getTrellisProperties(options);
 
 	return {
 		name: markName,
@@ -64,13 +64,13 @@ export const getTrellisGroupMark = (props: BarSpecProps, marks: Mark[], repeated
 	};
 };
 
-export const addTrellisScale = (scales: Scale[], props: BarSpecProps) => {
-	if (!props.trellis) {
+export const addTrellisScale = (scales: Scale[], options: BarSpecOptions) => {
+	if (!options.trellis) {
 		return;
 	}
-	const { scaleName, rangeScale, paddingInner } = getTrellisProperties(props);
+	const { scaleName, rangeScale, paddingInner } = getTrellisProperties(options);
 	const trellisScaleIndex = getScaleIndexByName(scales, scaleName, 'band');
-	scales[trellisScaleIndex] = addDomainFields(scales[trellisScaleIndex], [props.trellis]);
+	scales[trellisScaleIndex] = addDomainFields(scales[trellisScaleIndex], [options.trellis]);
 	scales[trellisScaleIndex] = {
 		...scales[trellisScaleIndex],
 		range: rangeScale,
@@ -78,12 +78,12 @@ export const addTrellisScale = (scales: Scale[], props: BarSpecProps) => {
 	} as Scale;
 };
 
-export const getTrellisedEncodeEntries = (props: BarSpecProps) => {
-	if (props.type === 'dodged' || isDodgedAndStacked(props)) {
-		return getDodgedDimensionEncodings(props);
+export const getTrellisedEncodeEntries = (options: BarSpecOptions) => {
+	if (options.type === 'dodged' || isDodgedAndStacked(options)) {
+		return getDodgedDimensionEncodings(options);
 	}
 
-	return getTrellisedDimensionEncodings(props);
+	return getTrellisedDimensionEncodings(options);
 };
 
 export interface BarTrellisProperties {
@@ -99,7 +99,7 @@ export const getTrellisProperties = ({
 	trellisOrientation,
 	name,
 	trellisPadding,
-}: BarSpecProps): BarTrellisProperties => {
+}: BarSpecOptions): BarTrellisProperties => {
 	const axis = trellisOrientation === 'horizontal' ? 'x' : 'y';
 
 	return {
@@ -112,4 +112,4 @@ export const getTrellisProperties = ({
 	};
 };
 
-export const isTrellised = (props: BarSpecProps) => Boolean(props.trellis);
+export const isTrellised = (options: BarSpecOptions) => Boolean(options.trellis);

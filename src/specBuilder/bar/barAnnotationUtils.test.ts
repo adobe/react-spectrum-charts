@@ -9,10 +9,6 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
-import { createElement } from 'react';
-
-import { Annotation } from '@components/Annotation';
 import { FILTERED_TABLE } from '@constants';
 
 import {
@@ -23,23 +19,23 @@ import {
 	getAnnotationXEncode,
 	getMinBandwidth,
 } from './barAnnotationUtils';
-import { defaultBarProps, defaultBarPropsWithSecondayColor } from './barTestUtils';
+import { defaultBarOptions, defaultBarOptionsWithSecondayColor } from './barTestUtils';
 
 describe('getAnnotationMarks()', () => {
 	test('should retrun an empty array if there is no annotation on the bar', () => {
-		expect(getAnnotationMarks(defaultBarProps, FILTERED_TABLE, 'xBand', 'category')).toStrictEqual([]);
+		expect(getAnnotationMarks(defaultBarOptions, FILTERED_TABLE, 'xBand', 'category')).toStrictEqual([]);
 	});
 
 	test('should return the annotation group if an annotation exists on the bar', () => {
 		const marks = getAnnotationMarks(
-			{ ...defaultBarProps, children: [createElement(Annotation)] },
+			{ ...defaultBarOptions, barAnnotations: [{}] },
 			FILTERED_TABLE,
 			'xBand',
 			'category'
 		);
 		expect(marks).toHaveLength(1);
 		expect(marks[0].type).toEqual('group');
-		expect(marks[0].name).toEqual(`${defaultBarProps.name}_annotationGroup`);
+		expect(marks[0].name).toEqual(`${defaultBarOptions.name}_annotationGroup`);
 	});
 });
 
@@ -79,18 +75,18 @@ describe('getAnnotationWidth()', () => {
 
 describe('getAnnotationPositionOffset()', () => {
 	test('returns 12.5 for vertical orientation', () => {
-		expect(getAnnotationPositionOffset(defaultBarProps, { value: 12345 })).toEqual('12.5');
+		expect(getAnnotationPositionOffset(defaultBarOptions, { value: 12345 })).toEqual('12.5');
 	});
 
 	test('returns provided value / 2 + 2.5 when value is set and orientation is not vertical', () => {
-		expect(getAnnotationPositionOffset({ ...defaultBarProps, orientation: 'horizontal' }, { value: 50 })).toEqual(
+		expect(getAnnotationPositionOffset({ ...defaultBarOptions, orientation: 'horizontal' }, { value: 50 })).toEqual(
 			'27.5'
 		);
 	});
 
 	test('returns the signal string wrapped with parens when signal is set and orientation is not vertical', () => {
 		expect(
-			getAnnotationPositionOffset({ ...defaultBarProps, orientation: 'horizontal' }, { signal: 'foo' })
+			getAnnotationPositionOffset({ ...defaultBarOptions, orientation: 'horizontal' }, { signal: 'foo' })
 		).toEqual('((foo) / 2 + 2.5)');
 	});
 });
@@ -98,57 +94,57 @@ describe('getAnnotationPositionOffset()', () => {
 describe('getAnnotationMetricAxisPosition()', () => {
 	const defaultAnnotationWidth = { value: 22 };
 
-	test("defaultBarProps, should return '${value}1' field", () => {
-		expect(getAnnotationMetricAxisPosition(defaultBarProps, defaultAnnotationWidth)).toStrictEqual([
+	test("defaultBarOptions, should return '${value}1' field", () => {
+		expect(getAnnotationMetricAxisPosition(defaultBarOptions, defaultAnnotationWidth)).toStrictEqual([
 			{
-				signal: `max(scale('yLinear', datum.${defaultBarProps.metric}1), scale('yLinear', 0) + 12.5)`,
-				test: `datum.${defaultBarProps.metric}1 < 0`,
+				signal: `max(scale('yLinear', datum.${defaultBarOptions.metric}1), scale('yLinear', 0) + 12.5)`,
+				test: `datum.${defaultBarOptions.metric}1 < 0`,
 			},
-			{ signal: `min(scale('yLinear', datum.${defaultBarProps.metric}1), scale('yLinear', 0) - 12.5)` },
+			{ signal: `min(scale('yLinear', datum.${defaultBarOptions.metric}1), scale('yLinear', 0) - 12.5)` },
 		]);
 	});
 	test('horizontal orientation, should return with xLinear scale and min/max properties flipped', () => {
 		expect(
-			getAnnotationMetricAxisPosition({ ...defaultBarProps, orientation: 'horizontal' }, defaultAnnotationWidth)
+			getAnnotationMetricAxisPosition({ ...defaultBarOptions, orientation: 'horizontal' }, defaultAnnotationWidth)
 		).toStrictEqual([
 			{
-				test: `datum.${defaultBarProps.metric}1 < 0`,
-				signal: `min(scale('xLinear', datum.${defaultBarProps.metric}1), scale('xLinear', 0) - 13.5)`,
+				test: `datum.${defaultBarOptions.metric}1 < 0`,
+				signal: `min(scale('xLinear', datum.${defaultBarOptions.metric}1), scale('xLinear', 0) - 13.5)`,
 			},
-			{ signal: `max(scale('xLinear', datum.${defaultBarProps.metric}1), scale('xLinear', 0) + 13.5)` },
+			{ signal: `max(scale('xLinear', datum.${defaultBarOptions.metric}1), scale('xLinear', 0) + 13.5)` },
 		]);
 	});
 	test("stacked with seconday scale, should return '${value}1' field", () => {
-		expect(getAnnotationMetricAxisPosition(defaultBarPropsWithSecondayColor, defaultAnnotationWidth)).toStrictEqual(
-			[
-				{
-					signal: `max(scale('yLinear', datum.${defaultBarProps.metric}1), scale('yLinear', 0) + 12.5)`,
-					test: `datum.${defaultBarProps.metric}1 < 0`,
-				},
-				{ signal: `min(scale('yLinear', datum.${defaultBarProps.metric}1), scale('yLinear', 0) - 12.5)` },
-			]
-		);
+		expect(
+			getAnnotationMetricAxisPosition(defaultBarOptionsWithSecondayColor, defaultAnnotationWidth)
+		).toStrictEqual([
+			{
+				signal: `max(scale('yLinear', datum.${defaultBarOptions.metric}1), scale('yLinear', 0) + 12.5)`,
+				test: `datum.${defaultBarOptions.metric}1 < 0`,
+			},
+			{ signal: `min(scale('yLinear', datum.${defaultBarOptions.metric}1), scale('yLinear', 0) - 12.5)` },
+		]);
 	});
 	test("dodged without secondary scale, should return 'value' field", () => {
 		expect(
-			getAnnotationMetricAxisPosition({ ...defaultBarProps, type: 'dodged' }, defaultAnnotationWidth)
+			getAnnotationMetricAxisPosition({ ...defaultBarOptions, type: 'dodged' }, defaultAnnotationWidth)
 		).toStrictEqual([
 			{
-				signal: `max(scale('yLinear', datum.${defaultBarProps.metric}), scale('yLinear', 0) + 12.5)`,
-				test: `datum.${defaultBarProps.metric} < 0`,
+				signal: `max(scale('yLinear', datum.${defaultBarOptions.metric}), scale('yLinear', 0) + 12.5)`,
+				test: `datum.${defaultBarOptions.metric} < 0`,
 			},
-			{ signal: `min(scale('yLinear', datum.${defaultBarProps.metric}), scale('yLinear', 0) - 12.5)` },
+			{ signal: `min(scale('yLinear', datum.${defaultBarOptions.metric}), scale('yLinear', 0) - 12.5)` },
 		]);
 	});
 	test("dodged with secondary scale, should return '${value}1' field", () => {
-		expect(getAnnotationMetricAxisPosition(defaultBarPropsWithSecondayColor, defaultAnnotationWidth)).toStrictEqual(
-			[
-				{
-					signal: `max(scale('yLinear', datum.${defaultBarProps.metric}1), scale('yLinear', 0) + 12.5)`,
-					test: `datum.${defaultBarProps.metric}1 < 0`,
-				},
-				{ signal: `min(scale('yLinear', datum.${defaultBarProps.metric}1), scale('yLinear', 0) - 12.5)` },
-			]
-		);
+		expect(
+			getAnnotationMetricAxisPosition(defaultBarOptionsWithSecondayColor, defaultAnnotationWidth)
+		).toStrictEqual([
+			{
+				signal: `max(scale('yLinear', datum.${defaultBarOptions.metric}1), scale('yLinear', 0) + 12.5)`,
+				test: `datum.${defaultBarOptions.metric}1 < 0`,
+			},
+			{ signal: `min(scale('yLinear', datum.${defaultBarOptions.metric}1), scale('yLinear', 0) - 12.5)` },
+		]);
 	});
 });

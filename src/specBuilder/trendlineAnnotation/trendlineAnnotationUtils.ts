@@ -23,17 +23,16 @@ import {
 	ColorFacet,
 	TrendlineAnnotationOptions,
 	TrendlineAnnotationSpecOptions,
-	TrendlineAnnotationSpecProps,
 	TrendlineSpecOptions,
 } from '../../types';
 
 /**
  * Applies all trendline annotation defaults
- * @param trenlineAnnotationProps
+ * @param trenlineAnnotationOptions
  * @param index
  * @param trendlineOptions
  * @param markName
- * @returns TrendlineAnnotationSpecProps
+ * @returns TrendlineAnnotationSpecOptions
  */
 export const getTrendlineAnnotationSpecOptions = (
 	{ badge = false, dimensionValue = 'end', numberFormat = '', prefix = '' }: TrendlineAnnotationOptions,
@@ -50,7 +49,7 @@ export const getTrendlineAnnotationSpecOptions = (
 		name: trendlineName,
 	}: TrendlineSpecOptions,
 	markName: string
-): TrendlineAnnotationSpecProps => ({
+): TrendlineAnnotationSpecOptions => ({
 	badge,
 	colorScheme,
 	dimensionValue,
@@ -72,12 +71,12 @@ export const getTrendlineAnnotationSpecOptions = (
  * Gets all the annotations on a trendline
  * @param trendlineOptions
  * @param markName
- * @returns TrendlineAnnotationSpecProps[]
+ * @returns TrendlineAnnotationSpecOptions[]
  */
 export const getTrendlineAnnotations = (
 	trendlineOptions: TrendlineSpecOptions,
 	markName: string
-): TrendlineAnnotationSpecProps[] => {
+): TrendlineAnnotationSpecOptions[] => {
 	return trendlineOptions.trendlineAnnotations.map((annotationOptions, index) =>
 		getTrendlineAnnotationSpecOptions(annotationOptions, index, trendlineOptions, markName)
 	);

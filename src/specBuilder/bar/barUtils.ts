@@ -13,12 +13,12 @@ import { CORNER_RADIUS, DISCRETE_PADDING, FILTERED_TABLE, SELECTED_GROUP, SELECT
 import { getPopovers } from '@specBuilder/chartPopover/chartPopoverUtils';
 import {
 	getColorProductionRule,
-	getCursor_DEPRECATED,
+	getCursor,
 	getMarkOpacity,
 	getOpacityProductionRule,
 	getStrokeDashProductionRule,
-	getTooltip_DEPRECATED,
-	hasPopover_DEPRECATED,
+	getTooltip,
+	hasPopover,
 } from '@specBuilder/marks/markUtils';
 import { getColorValue, getLineWidthPixelsFromLineWidth } from '@specBuilder/specUtils';
 import {
@@ -32,19 +32,19 @@ import {
 	RectMark,
 } from 'vega';
 
-import { BarSpecProps, Orientation } from '../../types';
+import { BarSpecOptions, Orientation } from '../../types';
 import { getTrellisProperties, isTrellised } from './trellisedBarUtils';
 
 /**
  * checks to see if the bar is faceted in the stacked and dodged dimensions
  * @param color
  */
-export const isDodgedAndStacked = ({ color, lineType, opacity }: BarSpecProps): boolean => {
+export const isDodgedAndStacked = ({ color, lineType, opacity }: BarSpecOptions): boolean => {
 	return [color, lineType, opacity].some((facet) => Array.isArray(facet) && facet.length === 2);
 };
 
-export const getDodgedGroupMark = (props: BarSpecProps): GroupMark => {
-	const { dimension, groupedPadding, orientation, name, paddingRatio } = props;
+export const getDodgedGroupMark = (options: BarSpecOptions): GroupMark => {
+	const { dimension, groupedPadding, orientation, name, paddingRatio } = options;
 
 	const { dimensionScaleKey, dimensionAxis, rangeScale } = getOrientationProperties(orientation);
 
@@ -53,7 +53,7 @@ export const getDodgedGroupMark = (props: BarSpecProps): GroupMark => {
 		type: 'group',
 		from: {
 			facet: {
-				data: isTrellised(props) ? getTrellisProperties(props).facetName : FILTERED_TABLE,
+				data: isTrellised(options) ? getTrellisProperties(options).facetName : FILTERED_TABLE,
 				name: `${name}_facet`,
 				groupby: dimension,
 			},
@@ -81,11 +81,11 @@ export const getDodgedGroupMark = (props: BarSpecProps): GroupMark => {
 	};
 };
 
-export const getDodgedDimensionEncodings = (props: BarSpecProps): RectEncodeEntry => {
-	const { dimensionAxis, rangeScale } = getOrientationProperties(props.orientation);
+export const getDodgedDimensionEncodings = (options: BarSpecOptions): RectEncodeEntry => {
+	const { dimensionAxis, rangeScale } = getOrientationProperties(options.orientation);
 
-	const scale = `${props.name}_position`;
-	const field = `${props.name}_dodgeGroup`;
+	const scale = `${options.name}_position`;
+	const field = `${options.name}_dodgeGroup`;
 
 	return {
 		[dimensionAxis]: { scale, field },
@@ -93,25 +93,25 @@ export const getDodgedDimensionEncodings = (props: BarSpecProps): RectEncodeEntr
 	};
 };
 
-export const getTrellisedDimensionEncodings = (props: BarSpecProps): RectEncodeEntry => {
-	const { dimensionAxis, rangeScale, dimensionScaleKey } = getOrientationProperties(props.orientation);
+export const getTrellisedDimensionEncodings = (options: BarSpecOptions): RectEncodeEntry => {
+	const { dimensionAxis, rangeScale, dimensionScaleKey } = getOrientationProperties(options.orientation);
 
 	return {
-		[dimensionAxis]: { scale: dimensionScaleKey, field: props.dimension },
+		[dimensionAxis]: { scale: dimensionScaleKey, field: options.dimension },
 		[rangeScale]: { scale: dimensionScaleKey, band: 1 },
 	};
 };
 
-export const getMetricEncodings = (props: BarSpecProps): RectEncodeEntry => {
-	const { metric, type } = props;
+export const getMetricEncodings = (options: BarSpecOptions): RectEncodeEntry => {
+	const { metric, type } = options;
 	const { metricAxis: startKey, metricScaleKey: scaleKey } = getOrientationProperties(
-		props.orientation,
-		props.metricAxis
+		options.orientation,
+		options.metricAxis
 	);
 	const endKey = `${startKey}2`;
 
-	if (type === 'stacked' || isDodgedAndStacked(props)) {
-		return getStackedMetricEncodings(props);
+	if (type === 'stacked' || isDodgedAndStacked(options)) {
+		return getStackedMetricEncodings(options);
 	}
 	return {
 		[startKey]: { scale: scaleKey, value: 0 },
@@ -119,11 +119,11 @@ export const getMetricEncodings = (props: BarSpecProps): RectEncodeEntry => {
 	};
 };
 
-export const getStackedMetricEncodings = (props: BarSpecProps): RectEncodeEntry => {
-	const { metric, orientation } = props;
+export const getStackedMetricEncodings = (options: BarSpecOptions): RectEncodeEntry => {
+	const { metric, orientation } = options;
 	const { metricAxis: startKey, metricScaleKey: scaleKey } = getOrientationProperties(
-		props.orientation,
-		props.metricAxis
+		options.orientation,
+		options.metricAxis
 	);
 	const endKey = `${startKey}2`;
 
@@ -169,13 +169,13 @@ export const getStackedMetricEncodings = (props: BarSpecProps): RectEncodeEntry 
 	};
 };
 
-export const getCornerRadiusEncodings = (props: BarSpecProps): RectEncodeEntry => {
-	const { type, lineWidth, metric, hasSquareCorners } = props;
+export const getCornerRadiusEncodings = (options: BarSpecOptions): RectEncodeEntry => {
+	const { type, lineWidth, metric, hasSquareCorners } = options;
 	const value = hasSquareCorners ? 0 : Math.max(1, CORNER_RADIUS - getLineWidthPixelsFromLineWidth(lineWidth) / 2);
 
 	let rectEncodeEntry: RectEncodeEntry;
 
-	if (type === 'dodged' && !isDodgedAndStacked(props)) {
+	if (type === 'dodged' && !isDodgedAndStacked(options)) {
 		rectEncodeEntry = {
 			cornerRadiusTopLeft: [{ test: `datum.${metric} > 0`, value }, { value: 0 }],
 			cornerRadiusTopRight: [{ test: `datum.${metric} > 0`, value }, { value: 0 }],
@@ -183,10 +183,10 @@ export const getCornerRadiusEncodings = (props: BarSpecProps): RectEncodeEntry =
 			cornerRadiusBottomRight: [{ test: `datum.${metric} < 0`, value }, { value: 0 }],
 		};
 	} else {
-		rectEncodeEntry = getStackedCornerRadiusEncodings(props);
+		rectEncodeEntry = getStackedCornerRadiusEncodings(options);
 	}
 
-	return rotateRectClockwiseIfNeeded(rectEncodeEntry, props);
+	return rotateRectClockwiseIfNeeded(rectEncodeEntry, options);
 };
 
 export const getStackedCornerRadiusEncodings = ({
@@ -194,7 +194,7 @@ export const getStackedCornerRadiusEncodings = ({
 	metric,
 	lineWidth,
 	hasSquareCorners,
-}: BarSpecProps): RectEncodeEntry => {
+}: BarSpecOptions): RectEncodeEntry => {
 	const topTestString = `datum.${metric}1 > 0 && data('${name}_stacks')[indexof(pluck(data('${name}_stacks'), '${STACK_ID}'), datum.${STACK_ID})].max_${metric}1 === datum.${metric}1`;
 	const bottomTestString = `datum.${metric}1 < 0 && data('${name}_stacks')[indexof(pluck(data('${name}_stacks'), '${STACK_ID}'), datum.${STACK_ID})].min_${metric}1 === datum.${metric}1`;
 	const value = hasSquareCorners ? 0 : Math.max(1, CORNER_RADIUS - getLineWidthPixelsFromLineWidth(lineWidth) / 2);
@@ -209,7 +209,7 @@ export const getStackedCornerRadiusEncodings = ({
 
 export const rotateRectClockwiseIfNeeded = (
 	rectEncodeEntry: RectEncodeEntry,
-	{ orientation }: BarSpecProps
+	{ orientation }: BarSpecOptions
 ): RectEncodeEntry => {
 	if (orientation === 'vertical') return rectEncodeEntry;
 	return {
@@ -220,34 +220,40 @@ export const rotateRectClockwiseIfNeeded = (
 	};
 };
 
-export const getBaseBarEnterEncodings = (props: BarSpecProps): EncodeEntry => ({
-	...getMetricEncodings(props),
-	...getCornerRadiusEncodings(props),
+export const getBaseBarEnterEncodings = (options: BarSpecOptions): EncodeEntry => ({
+	...getMetricEncodings(options),
+	...getCornerRadiusEncodings(options),
 });
 
-export const getBarEnterEncodings = ({ children, color, colorScheme, name, opacity }: BarSpecProps): EncodeEntry => ({
+export const getBarEnterEncodings = ({
+	chartTooltips,
+	color,
+	colorScheme,
+	name,
+	opacity,
+}: BarSpecOptions): EncodeEntry => ({
 	fill: getColorProductionRule(color, colorScheme),
 	fillOpacity: getOpacityProductionRule(opacity),
-	tooltip: getTooltip_DEPRECATED(children, name),
+	tooltip: getTooltip(chartTooltips, name),
 });
 
-export const getBarUpdateEncodings = (props: BarSpecProps): EncodeEntry => ({
-	cursor: getCursor_DEPRECATED(props.children, props),
-	opacity: getMarkOpacity(props),
-	stroke: getStroke(props),
-	strokeDash: getStrokeDash(props),
-	strokeWidth: getStrokeWidth(props),
+export const getBarUpdateEncodings = (options: BarSpecOptions): EncodeEntry => ({
+	cursor: getCursor(options.chartPopovers, options.hasOnClick),
+	opacity: getMarkOpacity(options),
+	stroke: getStroke(options),
+	strokeDash: getStrokeDash(options),
+	strokeWidth: getStrokeWidth(options),
 });
 
 export const getStroke = ({
 	name,
-	children,
+	chartPopovers,
 	color,
 	colorScheme,
 	idKey,
-}: BarSpecProps): ProductionRule<ColorValueRef> => {
+}: BarSpecOptions): ProductionRule<ColorValueRef> => {
 	const defaultProductionRule = getColorProductionRule(color, colorScheme);
-	if (!hasPopover_DEPRECATED(children)) {
+	if (!hasPopover({ chartPopovers })) {
 		return [defaultProductionRule];
 	}
 
@@ -260,8 +266,8 @@ export const getStroke = ({
 	];
 };
 
-export const getDimensionSelectionRing = (props: BarSpecProps): RectMark => {
-	const { name, colorScheme, paddingRatio, orientation } = props;
+export const getDimensionSelectionRing = (options: BarSpecOptions): RectMark => {
+	const { name, colorScheme, paddingRatio, orientation } = options;
 
 	const update =
 		orientation === 'vertical'
@@ -297,9 +303,9 @@ export const getDimensionSelectionRing = (props: BarSpecProps): RectMark => {
 	};
 };
 
-export const getStrokeDash = ({ children, idKey, lineType }: BarSpecProps): ProductionRule<ArrayValueRef> => {
+export const getStrokeDash = ({ chartPopovers, idKey, lineType }: BarSpecOptions): ProductionRule<ArrayValueRef> => {
 	const defaultProductionRule = getStrokeDashProductionRule(lineType);
-	if (!hasPopover_DEPRECATED(children)) {
+	if (!hasPopover({ chartPopovers })) {
 		return [defaultProductionRule];
 	}
 
@@ -309,11 +315,15 @@ export const getStrokeDash = ({ children, idKey, lineType }: BarSpecProps): Prod
 	];
 };
 
-export const getStrokeWidth = (props: BarSpecProps): ProductionRule<NumericValueRef> => {
-	const { idKey, lineWidth, name } = props;
+export const getStrokeWidth = ({
+	chartPopovers,
+	idKey,
+	lineWidth,
+	name,
+}: BarSpecOptions): ProductionRule<NumericValueRef> => {
 	const lineWidthValue = getLineWidthPixelsFromLineWidth(lineWidth);
 	const defaultProductionRule = { value: lineWidthValue };
-	const popovers = getPopovers(props);
+	const popovers = getPopovers(chartPopovers, name);
 	const popoverWithDimensionHighlightExists = popovers.some(
 		({ UNSAFE_highlightBy }) => UNSAFE_highlightBy === 'dimension'
 	);
@@ -339,8 +349,8 @@ export const getBarPadding = (paddingRatio: number, paddingOuter?: number) => {
 	};
 };
 
-export const getScaleValues = (props: BarSpecProps) => {
-	return props.type === 'stacked' || isDodgedAndStacked(props) ? [`${props.metric}1`] : [props.metric];
+export const getScaleValues = (options: BarSpecOptions) => {
+	return options.type === 'stacked' || isDodgedAndStacked(options) ? [`${options.metric}1`] : [options.metric];
 };
 
 export interface BarOrientationProperties {

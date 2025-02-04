@@ -32,7 +32,7 @@ import {
 export type TrendlineParentOptions = LineSpecOptions | ScatterSpecOptions | BarSpecOptions;
 
 /**
- * gets all the trendlines from the children and applies all the default trendline props
+ * gets all the trendlines from the children and applies all the default trendline options
  * @param children
  * @param markName
  * @returns TrendlineSpecOptions[]
@@ -42,11 +42,11 @@ export const getTrendlines = (markOptions: TrendlineParentOptions): TrendlineSpe
 };
 
 /**
- * applies all the default trendline props
+ * applies all the default trendline options
  * @param param0
  * @param markName
  * @param index
- * @returns TrendlineSpecProps
+ * @returns TrendlineSpecOptions
  */
 export const applyTrendlinePropDefaults = (
 	markOptions: TrendlineParentOptions,

@@ -17,11 +17,11 @@ import { addHighlightedSeriesSignalEvents } from '@specBuilder/signal/signalSpec
 import { getFacetsFromOptions } from '@specBuilder/specUtils';
 import { AreaMark, GroupMark, LineMark, Signal, SourceData } from 'vega';
 
-import { LineSpecOptions, MetricRangeOptions, MetricRangeSpecOptions, MetricRangeSpecProps } from '../../types';
+import { LineSpecOptions, MetricRangeOptions, MetricRangeSpecOptions } from '../../types';
 
 export type MetricRangeParentOptions = LineSpecOptions;
 
-export const getMetricRanges = (markOptions: MetricRangeParentOptions): MetricRangeSpecProps[] => {
+export const getMetricRanges = (markOptions: MetricRangeParentOptions): MetricRangeSpecOptions[] => {
 	return markOptions.metricRanges.map((metricRange, index) =>
 		applyMetricRangeOptionDefaults(metricRange, markOptions.name, index)
 	);
@@ -35,7 +35,7 @@ export const applyMetricRangeOptionDefaults = (
 		rangeOpacity = 0.2,
 		metric = DEFAULT_METRIC,
 		displayOnHover = false,
-		...props
+		...options
 	}: MetricRangeOptions,
 	markName: string,
 	index: number
@@ -47,7 +47,7 @@ export const applyMetricRangeOptionDefaults = (
 	rangeOpacity,
 	metric,
 	displayOnHover,
-	...props,
+	...options,
 });
 
 /**
@@ -61,8 +61,8 @@ export const getMetricRangeGroupMarks = (lineMarkOptions: LineSpecOptions): Grou
 	const marks: GroupMark[] = [];
 	const metricRanges = getMetricRanges(lineMarkOptions);
 
-	for (const metricRangeProps of metricRanges) {
-		const { displayOnHover, name } = metricRangeProps;
+	for (const metricRangeOptions of metricRanges) {
+		const { displayOnHover, name } = metricRangeOptions;
 		// if displayOnHover is true, use the highlightedData source, otherwise use the filtered table
 		const data = displayOnHover ? `${name}_highlightedData` : FILTERED_TABLE;
 		marks.push({
@@ -76,7 +76,7 @@ export const getMetricRangeGroupMarks = (lineMarkOptions: LineSpecOptions): Grou
 					groupby: facets,
 				},
 			},
-			marks: getMetricRangeMark(lineMarkOptions, metricRangeProps),
+			marks: getMetricRangeMark(lineMarkOptions, metricRangeOptions),
 		});
 	}
 
@@ -84,13 +84,13 @@ export const getMetricRangeGroupMarks = (lineMarkOptions: LineSpecOptions): Grou
 };
 
 /**
- * gets the area and line marks for the metric range by combining line and metric range props.
+ * gets the area and line marks for the metric range by combining line and metric range options.
  * @param lineMarkOptions
  * @param metricRangeOptions
  */
 export const getMetricRangeMark = (
 	lineMarkOptions: LineSpecOptions,
-	metricRangeOptions: MetricRangeSpecProps
+	metricRangeOptions: MetricRangeSpecOptions
 ): (LineMark | AreaMark)[] => {
 	const areaOptions: AreaMarkOptions = {
 		name: `${metricRangeOptions.name}_area`,
@@ -131,8 +131,8 @@ export const getMetricRangeData = (markOptions: LineSpecOptions): SourceData[] =
 	const data: SourceData[] = [];
 	const metricRanges = getMetricRanges(markOptions);
 
-	for (const metricRangeProps of metricRanges) {
-		const { displayOnHover, name } = metricRangeProps;
+	for (const metricRangeOptions of metricRanges) {
+		const { displayOnHover, name } = metricRangeOptions;
 		// if displayOnHover is true, add a data source for the highlighted data
 		if (displayOnHover) {
 			data.push({
