@@ -9,10 +9,6 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { createElement } from 'react';
-
-import { Annotation } from '@components/Annotation';
-import { ChartTooltip } from '@components/ChartTooltip';
 import {
 	BACKGROUND_COLOR,
 	COLOR_SCALE,
@@ -30,9 +26,9 @@ import {
 } from '@constants';
 import { GroupMark, Mark, RectEncodeEntry } from 'vega';
 
-import { BarSpecProps } from '../../types';
+import { BarSpecOptions } from '../../types';
 import {
-	defaultBarProps,
+	defaultBarOptions,
 	defaultBarStrokeEncodings,
 	defaultCornerRadiusEncodings,
 	defaultDodgedYEncodings,
@@ -40,7 +36,7 @@ import {
 } from './barTestUtils';
 import { getDodgedMark } from './dodgedBarUtils';
 
-const defaultDodgedProps: BarSpecProps = { ...defaultBarProps, type: 'dodged' };
+const defaultDodgedOptions: BarSpecOptions = { ...defaultBarOptions, type: 'dodged' };
 
 const defaultDodgedXEncodings: RectEncodeEntry = {
 	x: { scale: 'bar0_position', field: 'bar0_dodgeGroup' },
@@ -204,14 +200,13 @@ export const annotationDodgedMarks = {
 
 describe('dodgedBarUtils', () => {
 	describe('getDodgedMark()', () => {
-		test('default props,', () => {
-			expect(getDodgedMark(defaultDodgedProps)).toStrictEqual(defaultDodgedMark);
+		test('default options,', () => {
+			expect(getDodgedMark(defaultDodgedOptions)).toStrictEqual(defaultDodgedMark);
 		});
 		test('with annotation', () => {
-			const annotationElement = createElement(Annotation, { textKey: 'textLabel' });
 			const mark = getDodgedMark({
-				...defaultDodgedProps,
-				children: [...defaultDodgedProps.children, annotationElement],
+				...defaultDodgedOptions,
+				barAnnotations: [{ textKey: 'textLabel' }],
 			});
 			expect(mark.marks).toHaveLength(3);
 			expect(mark.marks?.[0].name).toEqual('bar0_background');
@@ -223,7 +218,7 @@ describe('dodgedBarUtils', () => {
 			expect(annotationGroup.marks?.[1].name).toEqual('bar0_annotationBackground');
 		});
 		test('should add tooltip keys if ChartTooltip exists as child', () => {
-			expect(getDodgedMark({ ...defaultDodgedProps, children: [createElement(ChartTooltip)] })).toStrictEqual({
+			expect(getDodgedMark({ ...defaultDodgedOptions, chartTooltips: [{}] })).toStrictEqual({
 				...defaultDodgedMark,
 				marks: [defaultBackgroundMark, defaultMarkWithTooltip],
 			});
@@ -232,7 +227,7 @@ describe('dodgedBarUtils', () => {
 	describe('getDodgedMark()', () => {
 		test('subseries, should include advanced fill, advanced corner radius, and border strokes,', () => {
 			expect(
-				getDodgedMark({ ...defaultDodgedProps, color: [DEFAULT_COLOR, DEFAULT_SECONDARY_COLOR] })
+				getDodgedMark({ ...defaultDodgedOptions, color: [DEFAULT_COLOR, DEFAULT_SECONDARY_COLOR] })
 			).toStrictEqual({
 				...defaultDodgedMark,
 				marks: [defaultDodgedStackedBackgroundMark, defaultDodgedStackedMark],

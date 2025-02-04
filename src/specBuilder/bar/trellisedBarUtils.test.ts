@@ -12,17 +12,17 @@
 import { FILTERED_TABLE, TABLE, TRELLIS_PADDING } from '@constants';
 import { Scale } from 'vega';
 
-import { BarSpecProps } from '../../types';
-import { defaultBarProps } from './barTestUtils';
+import { BarSpecOptions } from '../../types';
+import { defaultBarOptions } from './barTestUtils';
 import { getTrellisGroupMark, getTrellisProperties, getTrellisedEncodeEntries, isTrellised } from './trellisedBarUtils';
 
-const defaultTrellisProps: BarSpecProps = { ...defaultBarProps, trellis: 'trellisProperty' };
+const defaultTrellisOptions: BarSpecOptions = { ...defaultBarOptions, trellis: 'trellisProperty' };
 const defaultRepeatedScale: Scale = { name: 'xLinear', type: 'linear', domain: { data: TABLE, field: 'x' } };
 
 describe('trellisedBarUtils', () => {
 	describe('getTrellisGroupMark()', () => {
 		test('facets the mark with correct data, name, and grouping', () => {
-			const result = getTrellisGroupMark(defaultTrellisProps, [], defaultRepeatedScale);
+			const result = getTrellisGroupMark(defaultTrellisOptions, [], defaultRepeatedScale);
 			const from = result.from as { facet: { groupby: string; name: string; data: string } };
 
 			expect(from?.facet?.data).toEqual(FILTERED_TABLE);
@@ -30,25 +30,25 @@ describe('trellisedBarUtils', () => {
 			expect(from?.facet?.groupby).toEqual('trellisProperty');
 		});
 		describe('horizontal trellis', () => {
-			const horizontalTrellisProps: BarSpecProps = {
-				...defaultTrellisProps,
+			const horizontalTrellisOptions: BarSpecOptions = {
+				...defaultTrellisOptions,
 				trellisOrientation: 'horizontal',
 			};
 
 			test('uses "xTrellisGroup" as the mark name', () => {
-				const result = getTrellisGroupMark(horizontalTrellisProps, [], defaultRepeatedScale);
+				const result = getTrellisGroupMark(horizontalTrellisOptions, [], defaultRepeatedScale);
 
 				expect(result.name).toEqual('xTrellisGroup');
 			});
 
 			test('overrides the width signal with bandwidth("xTrellisBand")', () => {
-				const result = getTrellisGroupMark(horizontalTrellisProps, [], defaultRepeatedScale);
+				const result = getTrellisGroupMark(horizontalTrellisOptions, [], defaultRepeatedScale);
 
 				expect(result.signals).toEqual([{ name: 'width', update: "bandwidth('xTrellisBand')" }]);
 			});
 
 			test('encodes the x axis with the "xTrellisBand" scale and trellis field', () => {
-				const result = getTrellisGroupMark(horizontalTrellisProps, [], defaultRepeatedScale);
+				const result = getTrellisGroupMark(horizontalTrellisOptions, [], defaultRepeatedScale);
 				const xEncoding = result.encode?.enter?.x as { scale: string; field: string };
 
 				expect(xEncoding).toBeDefined();
@@ -57,7 +57,7 @@ describe('trellisedBarUtils', () => {
 			});
 
 			test('encodes the width with bandwidth("xTrellisBand") and height with "height"', () => {
-				const result = getTrellisGroupMark(horizontalTrellisProps, [], defaultRepeatedScale);
+				const result = getTrellisGroupMark(horizontalTrellisOptions, [], defaultRepeatedScale);
 
 				expect(result.encode?.enter?.width).toEqual({ signal: "bandwidth('xTrellisBand')" });
 				expect(result.encode?.enter?.height).toEqual({ signal: 'height' });
@@ -65,25 +65,25 @@ describe('trellisedBarUtils', () => {
 		});
 
 		describe('vertical trellis', () => {
-			const verticalTrellisProps: BarSpecProps = {
-				...defaultTrellisProps,
+			const verticalTrellisOptions: BarSpecOptions = {
+				...defaultTrellisOptions,
 				trellisOrientation: 'vertical',
 			};
 
 			test('uses "yTrellisGroup" as the mark name', () => {
-				const result = getTrellisGroupMark(verticalTrellisProps, [], defaultRepeatedScale);
+				const result = getTrellisGroupMark(verticalTrellisOptions, [], defaultRepeatedScale);
 
 				expect(result.name).toEqual('yTrellisGroup');
 			});
 
 			test('overrides the height signal with bandwidth("yTrellisBand")', () => {
-				const result = getTrellisGroupMark(verticalTrellisProps, [], defaultRepeatedScale);
+				const result = getTrellisGroupMark(verticalTrellisOptions, [], defaultRepeatedScale);
 
 				expect(result.signals).toEqual([{ name: 'height', update: "bandwidth('yTrellisBand')" }]);
 			});
 
 			test('encodes the y axis with the "yTrellisBand" scale and trellis field', () => {
-				const result = getTrellisGroupMark(verticalTrellisProps, [], defaultRepeatedScale);
+				const result = getTrellisGroupMark(verticalTrellisOptions, [], defaultRepeatedScale);
 				const xEncoding = result.encode?.enter?.y as { scale: string; field: string };
 
 				expect(xEncoding).toBeDefined();
@@ -92,7 +92,7 @@ describe('trellisedBarUtils', () => {
 			});
 
 			test('encodes the height with bandwidth("yTrellisBand") and width with "width"', () => {
-				const result = getTrellisGroupMark(verticalTrellisProps, [], defaultRepeatedScale);
+				const result = getTrellisGroupMark(verticalTrellisOptions, [], defaultRepeatedScale);
 
 				expect(result.encode?.enter?.height).toEqual({ signal: "bandwidth('yTrellisBand')" });
 				expect(result.encode?.enter?.width).toEqual({ signal: 'width' });
@@ -103,12 +103,12 @@ describe('trellisedBarUtils', () => {
 	describe('getTrellisProperties()', () => {
 		test('returns expected strings for vertical trellis', () => {
 			const result = getTrellisProperties({
-				...defaultTrellisProps,
+				...defaultTrellisOptions,
 				trellisOrientation: 'vertical',
 			});
 
 			expect(result).toEqual({
-				facetName: `${defaultTrellisProps.name}_trellis`,
+				facetName: `${defaultTrellisOptions.name}_trellis`,
 				markName: 'yTrellisGroup',
 				scaleName: 'yTrellisBand',
 				paddingInner: TRELLIS_PADDING,
@@ -119,13 +119,13 @@ describe('trellisedBarUtils', () => {
 
 		test('returns expected strings for horizontal trellis', () => {
 			const result = getTrellisProperties({
-				...defaultTrellisProps,
+				...defaultTrellisOptions,
 				trellisOrientation: 'horizontal',
 				trellis: 'trellisProperty',
 			});
 
 			expect(result).toEqual({
-				facetName: `${defaultTrellisProps.name}_trellis`,
+				facetName: `${defaultTrellisOptions.name}_trellis`,
 				markName: 'xTrellisGroup',
 				scaleName: 'xTrellisBand',
 				paddingInner: TRELLIS_PADDING,
@@ -139,26 +139,26 @@ describe('trellisedBarUtils', () => {
 		describe('stacked', () => {
 			test('returns y and height encodings for horizontal chart orientation with yBand', () => {
 				const result = getTrellisedEncodeEntries({
-					...defaultTrellisProps,
+					...defaultTrellisOptions,
 					orientation: 'horizontal',
 					type: 'stacked',
 				});
 
 				expect(result).toEqual({
-					y: { field: defaultTrellisProps.dimension, scale: 'yBand' },
+					y: { field: defaultTrellisOptions.dimension, scale: 'yBand' },
 					height: { scale: 'yBand', band: 1 },
 				});
 			});
 
 			test('returns x and width encodings for vertical chart orientation with xBand', () => {
 				const result = getTrellisedEncodeEntries({
-					...defaultTrellisProps,
+					...defaultTrellisOptions,
 					orientation: 'vertical',
 					type: 'stacked',
 				});
 
 				expect(result).toEqual({
-					x: { field: defaultTrellisProps.dimension, scale: 'xBand' },
+					x: { field: defaultTrellisOptions.dimension, scale: 'xBand' },
 					width: { scale: 'xBand', band: 1 },
 				});
 			});
@@ -167,33 +167,33 @@ describe('trellisedBarUtils', () => {
 		describe('dodged', () => {
 			test('returns x and width encodings for vertical chart orientation with xBand', () => {
 				const result = getTrellisedEncodeEntries({
-					...defaultTrellisProps,
+					...defaultTrellisOptions,
 					orientation: 'vertical',
 					type: 'dodged',
 				});
 
 				expect(result).toEqual({
 					x: {
-						scale: `${defaultTrellisProps.name}_position`,
-						field: `${defaultTrellisProps.name}_dodgeGroup`,
+						scale: `${defaultTrellisOptions.name}_position`,
+						field: `${defaultTrellisOptions.name}_dodgeGroup`,
 					},
-					width: { scale: `${defaultTrellisProps.name}_position`, band: 1 },
+					width: { scale: `${defaultTrellisOptions.name}_position`, band: 1 },
 				});
 			});
 
 			test('returns y and height encodings for horizontal chart orientation with yBand', () => {
 				const result = getTrellisedEncodeEntries({
-					...defaultTrellisProps,
+					...defaultTrellisOptions,
 					orientation: 'horizontal',
 					type: 'dodged',
 				});
 
 				expect(result).toEqual({
 					y: {
-						scale: `${defaultTrellisProps.name}_position`,
-						field: `${defaultTrellisProps.name}_dodgeGroup`,
+						scale: `${defaultTrellisOptions.name}_position`,
+						field: `${defaultTrellisOptions.name}_dodgeGroup`,
 					},
-					height: { scale: `${defaultTrellisProps.name}_position`, band: 1 },
+					height: { scale: `${defaultTrellisOptions.name}_position`, band: 1 },
 				});
 			});
 		});
@@ -201,7 +201,7 @@ describe('trellisedBarUtils', () => {
 		describe('dodged and stacked', () => {
 			test('returns x and width encodings for vertical chart orientation with xBand', () => {
 				const result = getTrellisedEncodeEntries({
-					...defaultTrellisProps,
+					...defaultTrellisOptions,
 					orientation: 'vertical',
 					color: ['red', 'blue'],
 					type: 'stacked',
@@ -209,16 +209,16 @@ describe('trellisedBarUtils', () => {
 
 				expect(result).toEqual({
 					x: {
-						scale: `${defaultTrellisProps.name}_position`,
-						field: `${defaultTrellisProps.name}_dodgeGroup`,
+						scale: `${defaultTrellisOptions.name}_position`,
+						field: `${defaultTrellisOptions.name}_dodgeGroup`,
 					},
-					width: { scale: `${defaultTrellisProps.name}_position`, band: 1 },
+					width: { scale: `${defaultTrellisOptions.name}_position`, band: 1 },
 				});
 			});
 
 			test('returns y and height encodings for horizontal chart orientation with yBand', () => {
 				const result = getTrellisedEncodeEntries({
-					...defaultTrellisProps,
+					...defaultTrellisOptions,
 					orientation: 'horizontal',
 					color: ['red', 'blue'],
 					type: 'stacked',
@@ -226,10 +226,10 @@ describe('trellisedBarUtils', () => {
 
 				expect(result).toEqual({
 					y: {
-						scale: `${defaultTrellisProps.name}_position`,
-						field: `${defaultTrellisProps.name}_dodgeGroup`,
+						scale: `${defaultTrellisOptions.name}_position`,
+						field: `${defaultTrellisOptions.name}_dodgeGroup`,
 					},
-					height: { scale: `${defaultTrellisProps.name}_position`, band: 1 },
+					height: { scale: `${defaultTrellisOptions.name}_position`, band: 1 },
 				});
 			});
 		});
@@ -237,11 +237,11 @@ describe('trellisedBarUtils', () => {
 
 	describe('isTrellised()', () => {
 		test('returns true if trellis property is defined', () => {
-			expect(isTrellised(defaultTrellisProps)).toBe(true);
+			expect(isTrellised(defaultTrellisOptions)).toBe(true);
 		});
 
 		test('returns false if trellis property is undefined', () => {
-			expect(isTrellised({ ...defaultTrellisProps, trellis: undefined })).toBe(false);
+			expect(isTrellised({ ...defaultTrellisOptions, trellis: undefined })).toBe(false);
 		});
 	});
 });

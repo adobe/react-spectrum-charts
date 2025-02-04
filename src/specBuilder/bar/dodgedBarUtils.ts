@@ -10,10 +10,10 @@
  * governing permissions and limitations under the License.
  */
 import { BACKGROUND_COLOR } from '@constants';
-import { isInteractive_DEPRECATED } from '@specBuilder/marks/markUtils';
+import { isInteractive } from '@specBuilder/marks/markUtils';
 import { GroupMark } from 'vega';
 
-import { BarSpecProps } from '../../types';
+import { BarSpecOptions } from '../../types';
 import { getAnnotationMarks } from './barAnnotationUtils';
 import {
 	getBarEnterEncodings,
@@ -23,11 +23,11 @@ import {
 	getDodgedGroupMark,
 } from './barUtils';
 
-export const getDodgedMark = (props: BarSpecProps): GroupMark => {
-	const { children, name } = props;
+export const getDodgedMark = (options: BarSpecOptions): GroupMark => {
+	const { name } = options;
 
 	return {
-		...getDodgedGroupMark(props),
+		...getDodgedGroupMark(options),
 		marks: [
 			// background bars
 			{
@@ -37,11 +37,11 @@ export const getDodgedMark = (props: BarSpecProps): GroupMark => {
 				interactive: false,
 				encode: {
 					enter: {
-						...getBaseBarEnterEncodings(props),
+						...getBaseBarEnterEncodings(options),
 						fill: { signal: BACKGROUND_COLOR },
 					},
 					update: {
-						...getDodgedDimensionEncodings(props),
+						...getDodgedDimensionEncodings(options),
 					},
 				},
 			},
@@ -50,19 +50,19 @@ export const getDodgedMark = (props: BarSpecProps): GroupMark => {
 				name,
 				from: { data: `${name}_facet` },
 				type: 'rect',
-				interactive: isInteractive_DEPRECATED(children, props),
+				interactive: isInteractive(options),
 				encode: {
 					enter: {
-						...getBaseBarEnterEncodings(props),
-						...getBarEnterEncodings(props),
+						...getBaseBarEnterEncodings(options),
+						...getBarEnterEncodings(options),
 					},
 					update: {
-						...getDodgedDimensionEncodings(props),
-						...getBarUpdateEncodings(props),
+						...getDodgedDimensionEncodings(options),
+						...getBarUpdateEncodings(options),
 					},
 				},
 			},
-			...getAnnotationMarks(props, `${name}_facet`, `${name}_position`, `${name}_dodgeGroup`),
+			...getAnnotationMarks(options, `${name}_facet`, `${name}_position`, `${name}_dodgeGroup`),
 		],
 	};
 };

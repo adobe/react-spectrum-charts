@@ -202,6 +202,7 @@ type BarOptionsWithDefaults =
 	| 'chartPopovers'
 	| 'chartTooltips'
 	| 'dimension'
+	| 'hasOnClick'
 	| 'hasSquareCorners'
 	| 'lineType'
 	| 'lineWidth'
