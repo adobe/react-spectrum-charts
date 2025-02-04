@@ -60,7 +60,6 @@ import {
 import {
 	AreaSpecOptions,
 	BarSpecOptions,
-	BarSpecProps,
 	ChartPopoverOptions,
 	ChartTooltipOptions,
 	ChartTooltipProps,
@@ -68,7 +67,6 @@ import {
 	ColorFacet,
 	ColorScheme,
 	DonutSpecOptions,
-	DonutSpecProps,
 	DualFacet,
 	LineSpecOptions,
 	LineTypeFacet,
@@ -79,6 +77,7 @@ import {
 	ScaleType,
 	ScatterSpecOptions,
 	SymbolSizeFacet,
+	TrendlineOptions,
 	TrendlineSpecOptions,
 } from '../../types';
 
@@ -210,6 +209,8 @@ export const isInteractive = (
 		| DonutSpecOptions
 		| LineMarkOptions
 		| LineSpecOptions
+		| ScatterSpecOptions
+		| TrendlineOptions
 		| TrendlineSpecOptions
 ): boolean => {
 	const hasOnClick = 'hasOnClick' in options && options.hasOnClick;
@@ -249,6 +250,7 @@ export const hasPopover = (
 		| LineSpecOptions
 		| LineMarkOptions
 		| ScatterSpecOptions
+		| TrendlineOptions
 		| TrendlineSpecOptions
 ): boolean => Boolean('chartPopovers' in options && options.chartPopovers && options.chartPopovers.length);
 
@@ -261,6 +263,7 @@ export const hasTooltip = (
 		| LineMarkOptions
 		| LineSpecOptions
 		| ScatterSpecOptions
+		| TrendlineOptions
 		| TrendlineSpecOptions
 ): boolean => Boolean('chartTooltips' in options && options.chartTooltips && options.chartTooltips.length);
 

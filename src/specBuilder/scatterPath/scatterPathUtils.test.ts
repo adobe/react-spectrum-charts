@@ -9,48 +9,45 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { createElement } from 'react';
-
-import { ScatterPath } from '@components/ScatterPath';
 import { DEFAULT_COLOR, SYMBOL_PATH_WIDTH_SCALE } from '@constants';
-import { defaultScatterProps } from '@specBuilder/scatter/scatterTestUtils';
+import { defaultScatterOptions } from '@specBuilder/scatter/scatterTestUtils';
 
-import { getPathWidth, getScatterPathMarks, getScatterPathSpecProps } from './scatterPathUtils';
+import { getPathWidth, getScatterPathMarks, getScatterPathSpecOptions } from './scatterPathUtils';
 
-describe('getScatterPathSpecProps()', () => {
+describe('getScatterPathSpecOptions()', () => {
 	test('should apply defaults', () => {
-		const pathProps = getScatterPathSpecProps({}, 0, defaultScatterProps);
-		expect(pathProps).toHaveProperty('color', 'gray-500');
-		expect(pathProps).toHaveProperty('name', 'scatter0Path0');
-		expect(pathProps).toHaveProperty('pathWidth', { value: 'M' });
-		expect(pathProps).toHaveProperty('opacity', 0.5);
+		const pathOptions = getScatterPathSpecOptions({}, 0, defaultScatterOptions);
+		expect(pathOptions).toHaveProperty('color', 'gray-500');
+		expect(pathOptions).toHaveProperty('name', 'scatter0Path0');
+		expect(pathOptions).toHaveProperty('pathWidth', { value: 'M' });
+		expect(pathOptions).toHaveProperty('opacity', 0.5);
 	});
 	test('should pick up groupBy properties from scatter facets', () => {
-		const pathProps = getScatterPathSpecProps({}, 0, {
-			...defaultScatterProps,
+		const pathOptions = getScatterPathSpecOptions({}, 0, {
+			...defaultScatterOptions,
 			color: DEFAULT_COLOR,
 			size: 'size',
 		});
-		expect(pathProps).toHaveProperty('groupBy', [DEFAULT_COLOR, 'size']);
+		expect(pathOptions).toHaveProperty('groupBy', [DEFAULT_COLOR, 'size']);
 	});
 	test('should use groupBy instead of scatter facets is supplied', () => {
 		const groupBy = ['test'];
-		const pathProps = getScatterPathSpecProps({ groupBy }, 0, {
-			...defaultScatterProps,
+		const pathOptions = getScatterPathSpecOptions({ groupBy }, 0, {
+			...defaultScatterOptions,
 			color: DEFAULT_COLOR,
 			size: 'size',
 		});
-		expect(pathProps).toHaveProperty('groupBy', groupBy);
+		expect(pathOptions).toHaveProperty('groupBy', groupBy);
 	});
 });
 
 describe('getScatterPathMarks()', () => {
 	test('should return an epmty array if there are not any ScatterPath components', () => {
-		const marks = getScatterPathMarks(defaultScatterProps);
+		const marks = getScatterPathMarks(defaultScatterOptions);
 		expect(marks).toHaveLength(0);
 	});
 	test('should return scatter path marks', () => {
-		const marks = getScatterPathMarks({ ...defaultScatterProps, children: [createElement(ScatterPath)] });
+		const marks = getScatterPathMarks({ ...defaultScatterOptions, scatterPaths: [{}] });
 		expect(marks).toHaveLength(1);
 		expect(marks[0]).toHaveProperty('type', 'group');
 		expect(marks[0]).toHaveProperty('name', 'scatter0Path0_group');

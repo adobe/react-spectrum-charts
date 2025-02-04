@@ -17,26 +17,7 @@ import {
 	MARK_ID,
 } from '@constants';
 
-import { ScatterSpecOptions, ScatterSpecProps } from '../../types';
-
-export const defaultScatterProps: ScatterSpecProps = {
-	children: [],
-	color: { value: 'categorical-100' },
-	colorScaleType: 'ordinal',
-	colorScheme: DEFAULT_COLOR_SCHEME,
-	dimension: DEFAULT_LINEAR_DIMENSION,
-	dimensionScaleType: DEFAULT_DIMENSION_SCALE_TYPE,
-	idKey: MARK_ID,
-	index: 0,
-	interactiveMarkName: 'scatter0',
-	lineType: { value: 'solid' },
-	lineWidth: { value: 0 },
-	markType: 'scatter',
-	metric: DEFAULT_METRIC,
-	name: 'scatter0',
-	opacity: { value: 1 },
-	size: { value: 'M' },
-};
+import { ScatterSpecOptions } from '../../types';
 
 export const defaultScatterOptions: ScatterSpecOptions = {
 	chartPopovers: [],

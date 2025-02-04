@@ -20,8 +20,8 @@ import {
 	getSymbolSizeProductionRule,
 	getVoronoiPath,
 	getXProductionRule,
-	hasInteractiveChildren_DEPRECATED,
-	hasPopover_DEPRECATED,
+	hasPopover,
+	isInteractive,
 } from '@specBuilder/marks/markUtils';
 import { getScatterPathMarks } from '@specBuilder/scatterPath/scatterPathUtils';
 import { getTrendlineMarks } from '@specBuilder/trendline';
@@ -29,28 +29,28 @@ import { spectrumColors } from '@themes';
 import { produce } from 'immer';
 import { GroupMark, Mark, NumericValueRef, SymbolMark } from 'vega';
 
-import { ScatterSpecProps, SymbolSizeFacet } from '../../types';
+import { ScatterSpecOptions, SymbolSizeFacet } from '../../types';
 
-export const addScatterMarks = produce<Mark[], [ScatterSpecProps]>((marks, props) => {
-	const { name } = props;
+export const addScatterMarks = produce<Mark[], [ScatterSpecOptions]>((marks, options) => {
+	const { name } = options;
 
 	const scatterGroup: GroupMark = {
 		name: `${name}_group`,
 		type: 'group',
-		marks: [getScatterMark(props), ...getScatterHoverMarks(props), ...getScatterSelectMarks(props)],
+		marks: [getScatterMark(options), ...getScatterHoverMarks(options), ...getScatterSelectMarks(options)],
 	};
 
-	marks.push(...getScatterPathMarks(props));
+	marks.push(...getScatterPathMarks(options));
 	marks.push(scatterGroup);
-	marks.push(...getTrendlineMarks(props));
+	marks.push(...getTrendlineMarks(options));
 });
 
 /**
  * Gets the primary scatter mark
- * @param scatterProps scatterSpecProps
+ * @param scatterOptions scatterSpecOptions
  * @returns SymbolMark
  */
-export const getScatterMark = (props: ScatterSpecProps): SymbolMark => {
+export const getScatterMark = (options: ScatterSpecOptions): SymbolMark => {
 	const {
 		color,
 		colorScaleType,
@@ -63,7 +63,7 @@ export const getScatterMark = (props: ScatterSpecProps): SymbolMark => {
 		name,
 		opacity,
 		size,
-	} = props;
+	} = options;
 	return {
 		name,
 		description: name,
@@ -88,7 +88,7 @@ export const getScatterMark = (props: ScatterSpecProps): SymbolMark => {
 				stroke: getColorProductionRule(color, colorScheme, colorScaleType),
 			},
 			update: {
-				opacity: getOpacity(props),
+				opacity: getOpacity(options),
 				x: getXProductionRule(dimensionScaleType, dimension),
 				y: { scale: 'yLinear', field: metric },
 			},
@@ -99,20 +99,20 @@ export const getScatterMark = (props: ScatterSpecProps): SymbolMark => {
 /**
  * Gets the opacity production rule for the scatter mark.
  * This is used for highlighting points on hover and selection.
- * @param scatterProps ScatterSpecProps
+ * @param scatterOptions ScatterSpecOptions
  * @returns opacity production rule
  */
-export const getOpacity = (props: ScatterSpecProps): ({ test?: string } & NumericValueRef)[] => {
-	const { children, highlightedItem, idKey } = props;
-	if (!hasInteractiveChildren_DEPRECATED(children) && highlightedItem === undefined) {
+export const getOpacity = (scatterOptions: ScatterSpecOptions): ({ test?: string } & NumericValueRef)[] => {
+	const { highlightedItem, idKey } = scatterOptions;
+	if (!isInteractive(scatterOptions) && highlightedItem === undefined) {
 		return [DEFAULT_OPACITY_RULE];
 	}
 	// if a point is hovered or selected, all other points should be reduced opacity
 	const fadedValue = 1 / HIGHLIGHT_CONTRAST_RATIO;
 
 	const rules: ({ test?: string } & NumericValueRef)[] = [];
-	addHighlightMarkOpacityRules(rules, props);
-	if (hasPopover_DEPRECATED(children)) {
+	addHighlightMarkOpacityRules(rules, scatterOptions);
+	if (hasPopover(scatterOptions)) {
 		rules.push({
 			test: `isValid(${SELECTED_ITEM}) && ${SELECTED_ITEM} !== datum.${idKey}`,
 			value: fadedValue,
@@ -124,36 +124,24 @@ export const getOpacity = (props: ScatterSpecProps): ({ test?: string } & Numeri
 
 /**
  * Gets the vornoi path mark if there are any interactive children
- * @param scatterProps ScatterSpecProps
+ * @param scatterOptions ScatterSpecOptions
  * @returns Mark[]
  */
-export const getScatterHoverMarks = ({
-	children,
-	dimension,
-	dimensionScaleType,
-	highlightedItem,
-	metric,
-	name,
-}: ScatterSpecProps): Mark[] => {
-	if (!hasInteractiveChildren_DEPRECATED(children) && highlightedItem === undefined) {
+export const getScatterHoverMarks = (scatterOptions: ScatterSpecOptions): Mark[] => {
+	const { dimension, dimensionScaleType, highlightedItem, metric, name } = scatterOptions;
+	if (!isInteractive(scatterOptions) && highlightedItem === undefined) {
 		return [];
 	}
 
 	return [
 		getPointsForVoronoi(`${FILTERED_TABLE}ForTooltip`, dimension, metric, name, dimensionScaleType),
-		getVoronoiPath(children, `${name}_pointsForVoronoi`, name),
+		getVoronoiPath(scatterOptions, `${name}_pointsForVoronoi`),
 	];
 };
 
-const getScatterSelectMarks = ({
-	children,
-	dimension,
-	dimensionScaleType,
-	metric,
-	name,
-	size,
-}: ScatterSpecProps): SymbolMark[] => {
-	if (!hasPopover_DEPRECATED(children)) {
+const getScatterSelectMarks = (scatterOptions: ScatterSpecOptions): SymbolMark[] => {
+	const { dimension, dimensionScaleType, metric, name, size } = scatterOptions;
+	if (!hasPopover(scatterOptions)) {
 		return [];
 	}
 	return [

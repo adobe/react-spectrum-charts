@@ -12,19 +12,19 @@
 import { ReactNode } from 'react';
 
 import { Trendline } from '@components/Trendline';
-import { hasPopover_DEPRECATED, isInteractive_DEPRECATED } from '@specBuilder/marks/markUtils';
+import { hasPopover_DEPRECATED, isInteractive } from '@specBuilder/marks/markUtils';
 import { sanitizeMarkChildren } from '@utils';
 
 import {
 	BarAnnotationOptions,
 	ChartPopoverOptions,
 	ChartTooltipOptions,
-	ClickableChartProps,
 	ColorFacet,
 	ColorScheme,
 	DonutSummaryOptions,
 	HighlightedItem,
 	InteractionMode,
+	LineSpecOptions,
 	LineTypeFacet,
 	LineWidthFacet,
 	MarkChildElement,
@@ -33,29 +33,22 @@ import {
 	OpacityFacet,
 	ScaleType,
 	ScatterPathOptions,
+	ScatterSpecOptions,
 	SegmentLabelOptions,
 	TrendlineOptions,
 } from '../../types';
 
 export const getInteractiveMarkName = (
-	children: MarkChildElement[],
+	options: LineSpecOptions | ScatterSpecOptions,
 	name: string,
-	highlightedItem?: HighlightedItem,
-	props?: ClickableChartProps
+	highlightedItem?: HighlightedItem
 ): string | undefined => {
 	// if the line has an interactive component, this line is the target for the interactive component
-	if (isInteractive_DEPRECATED(children, props) || highlightedItem !== undefined) {
+	if (isInteractive(options) || highlightedItem !== undefined) {
 		return name;
 	}
 	// if there is a trendline with an interactive component on the line, then the trendline is the target for the interactive component
-	if (
-		children.some(
-			(child) =>
-				child.type === Trendline &&
-				'children' in child.props &&
-				isInteractive_DEPRECATED(sanitizeMarkChildren(child.props.children as ReactNode), props)
-		)
-	) {
+	if (options.trendlines.some((trendline) => isInteractive(trendline))) {
 		return `${name}Trendline`;
 	}
 };

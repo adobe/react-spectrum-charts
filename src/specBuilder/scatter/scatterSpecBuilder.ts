@@ -25,8 +25,7 @@ import {
 } from '@constants';
 import { addTooltipData, addTooltipSignals } from '@specBuilder/chartTooltip/chartTooltipUtils';
 import { addTimeTransform, getFilteredTooltipData, getTableData } from '@specBuilder/data/dataUtils';
-import { getInteractiveMarkName } from '@specBuilder/line/lineUtils';
-import { hasInteractiveChildren_DEPRECATED, hasPopover_DEPRECATED } from '@specBuilder/marks/markUtils';
+import { hasPopover, isInteractive } from '@specBuilder/marks/markUtils';
 import {
 	addContinuousDimensionScale,
 	addFieldToFacetScaleDomain,
@@ -35,26 +34,35 @@ import {
 import { setScatterPathScales } from '@specBuilder/scatterPath';
 import { addHighlightedItemSignalEvents } from '@specBuilder/signal/signalSpecBuilder';
 import { addTrendlineData, getTrendlineScales, setTrendlineSignals } from '@specBuilder/trendline';
-import { sanitizeMarkChildren, toCamelCase } from '@utils';
+import { toCamelCase } from '@utils';
 import { produce } from 'immer';
 import { Data, Scale, Signal, Spec } from 'vega';
 
-import { ColorScheme, HighlightedItem, ScatterProps, ScatterSpecProps } from '../../types';
+import {
+	ChartPopoverOptions,
+	ChartTooltipOptions,
+	ColorScheme,
+	HighlightedItem,
+	ScatterOptions,
+	ScatterSpecOptions,
+	TrendlineOptions,
+} from '../../types';
 import { addScatterMarks } from './scatterMarkUtils';
 
 /**
  * Adds all the necessary parts of a scatter to the spec
  * @param spec Spec
- * @param scatterProps ScatterProps
+ * @param scatterOptions ScatterOptions
  */
 export const addScatter = produce<
 	Spec,
-	[ScatterProps & { colorScheme?: ColorScheme; highlightedItem?: HighlightedItem; index?: number; idKey: string }]
+	[ScatterOptions & { colorScheme?: ColorScheme; highlightedItem?: HighlightedItem; index?: number; idKey: string }]
 >(
 	(
 		spec,
 		{
-			children,
+			chartPopovers = [],
+			chartTooltips = [],
 			color = { value: 'categorical-100' },
 			colorScaleType = 'ordinal',
 			colorScheme = DEFAULT_COLOR_SCHEME,
@@ -66,51 +74,76 @@ export const addScatter = produce<
 			metric = DEFAULT_METRIC,
 			name,
 			opacity = { value: 1 },
+			scatterPaths = [],
 			size = { value: 'M' },
-			...props
+			trendlines = [],
+			...options
 		}
 	) => {
-		const sanitizedChildren = sanitizeMarkChildren(children);
 		const scatterName = toCamelCase(name || `scatter${index}`);
-		// put props back together now that all the defaults have been set
-		const scatterProps: ScatterSpecProps = {
-			children: sanitizedChildren,
+		// put options back together now that all the defaults have been set
+
+		const scatterOptions: ScatterSpecOptions = {
+			chartPopovers,
+			chartTooltips,
 			color,
 			colorScaleType,
 			colorScheme,
 			dimension,
 			dimensionScaleType,
 			index,
-			interactiveMarkName: getInteractiveMarkName(sanitizedChildren, scatterName, props.highlightedItem),
+			interactiveMarkName: getScatterInteractiveMarkName(chartPopovers, chartTooltips, trendlines, scatterName),
 			lineType,
 			lineWidth,
-			markType: 'scatter',
 			metric,
 			name: scatterName,
 			opacity,
+			scatterPaths,
 			size,
-			...props,
+			trendlines,
+			...options,
 		};
 
-		spec.data = addData(spec.data ?? [], scatterProps);
-		spec.signals = addSignals(spec.signals ?? [], scatterProps);
-		spec.scales = setScales(spec.scales ?? [], scatterProps);
-		spec.marks = addScatterMarks(spec.marks ?? [], scatterProps);
+		spec.data = addData(spec.data ?? [], scatterOptions);
+		spec.signals = addSignals(spec.signals ?? [], scatterOptions);
+		spec.scales = setScales(spec.scales ?? [], scatterOptions);
+		spec.marks = addScatterMarks(spec.marks ?? [], scatterOptions);
 	}
 );
 
-export const addData = produce<Data[], [ScatterSpecProps]>((data, props) => {
-	const { children, dimension, dimensionScaleType, highlightedItem, idKey, name } = props;
+const getScatterInteractiveMarkName = (
+	popovers: ChartPopoverOptions[],
+	chartTooltips: ChartTooltipOptions[],
+	trendlines: TrendlineOptions[],
+	name: string,
+	highlightedItem?: string
+) => {
+	if (
+		popovers.length ||
+		chartTooltips.length ||
+		trendlines.some((trendline) => trendline.displayOnHover) ||
+		highlightedItem !== undefined
+	) {
+		return name;
+	}
+
+	if (trendlines.some((trendline) => isInteractive(trendline))) {
+		return `${name}Trendline`;
+	}
+};
+
+export const addData = produce<Data[], [ScatterSpecOptions]>((data, scatterOptions) => {
+	const { chartTooltips, dimension, dimensionScaleType, highlightedItem, idKey, name } = scatterOptions;
 	if (dimensionScaleType === 'time') {
 		const tableData = getTableData(data);
 		tableData.transform = addTimeTransform(tableData.transform ?? [], dimension);
 	}
 
-	if (hasInteractiveChildren_DEPRECATED(children) || highlightedItem !== undefined) {
-		data.push(getFilteredTooltipData(children));
+	if (isInteractive(scatterOptions) || highlightedItem !== undefined) {
+		data.push(getFilteredTooltipData(chartTooltips));
 	}
 
-	if (hasPopover_DEPRECATED(children)) {
+	if (hasPopover(scatterOptions)) {
 		data.push({
 			name: `${name}_selectedData`,
 			source: FILTERED_TABLE,
@@ -122,33 +155,34 @@ export const addData = produce<Data[], [ScatterSpecProps]>((data, props) => {
 			],
 		});
 	}
-	addTooltipData(data, props);
-	addTrendlineData(data, props);
+	addTooltipData(data, scatterOptions);
+	addTrendlineData(data, scatterOptions);
 });
 
 /**
  * Adds the signals for scatter to the signals array
  * @param signals Signal[]
- * @param scatterProps ScatterSpecProps
+ * @param scatterOptions ScatterSpecOptions
  */
-export const addSignals = produce<Signal[], [ScatterSpecProps]>((signals, props) => {
-	const { children, idKey, name } = props;
+export const addSignals = produce<Signal[], [ScatterSpecOptions]>((signals, scatterOptions) => {
+	const { idKey, name } = scatterOptions;
 	// trendline signals
-	setTrendlineSignals(signals, props);
+	setTrendlineSignals(signals, scatterOptions);
 
-	if (!hasInteractiveChildren_DEPRECATED(children)) return;
+	if (!isInteractive(scatterOptions)) return;
 	// interactive signals
 	addHighlightedItemSignalEvents(signals, `${name}_voronoi`, idKey, 2);
-	addTooltipSignals(signals, props);
+	addTooltipSignals(signals, scatterOptions);
 });
 
 /**
  * Sets up all the scales for scatter on the scales array
  * @param scales Scale[]
- * @param scatterProps ScatterSpecProps
+ * @param scatterOptions ScatterSpecOptions
  */
-export const setScales = produce<Scale[], [ScatterSpecProps]>((scales, props) => {
-	const { color, colorScaleType, dimension, dimensionScaleType, lineType, lineWidth, metric, opacity, size } = props;
+export const setScales = produce<Scale[], [ScatterSpecOptions]>((scales, scatterOptions) => {
+	const { color, colorScaleType, dimension, dimensionScaleType, lineType, lineWidth, metric, opacity, size } =
+		scatterOptions;
 	// add dimension scale
 	addContinuousDimensionScale(scales, { scaleType: dimensionScaleType, dimension });
 	// add metric scale
@@ -169,6 +203,6 @@ export const setScales = produce<Scale[], [ScatterSpecProps]>((scales, props) =>
 	// add size to the size domain
 	addFieldToFacetScaleDomain(scales, SYMBOL_SIZE_SCALE, size);
 
-	setScatterPathScales(scales, props);
-	scales.push(...getTrendlineScales(props));
+	setScatterPathScales(scales, scatterOptions);
+	scales.push(...getTrendlineScales(scatterOptions));
 });

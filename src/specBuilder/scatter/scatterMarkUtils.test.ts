@@ -9,20 +9,15 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { createElement } from 'react';
-
-import { ChartPopover } from '@components/ChartPopover';
-import { ChartTooltip } from '@components/ChartTooltip';
-import { Trendline } from '@components/Trendline';
 import { DEFAULT_OPACITY_RULE, HIGHLIGHTED_ITEM, MARK_ID, SELECTED_ITEM, SYMBOL_SIZE_SCALE } from '@constants';
 import { GroupMark } from 'vega';
 
 import { addScatterMarks, getOpacity, getScatterHoverMarks, getSelectRingSize } from './scatterMarkUtils';
-import { defaultScatterProps } from './scatterTestUtils';
+import { defaultScatterOptions } from './scatterTestUtils';
 
 describe('addScatterMarks()', () => {
 	test('should add the scatter group with the symbol marks', () => {
-		const marks = addScatterMarks([], defaultScatterProps);
+		const marks = addScatterMarks([], defaultScatterOptions);
 		expect(marks).toHaveLength(1);
 		expect(marks[0].name).toBe('scatter0_group');
 		expect(marks[0].type).toBe('group');
@@ -30,15 +25,15 @@ describe('addScatterMarks()', () => {
 	});
 
 	test('should use "multiply" blend mode in light mode', () => {
-		const marks = addScatterMarks([], { ...defaultScatterProps, colorScheme: 'light' });
+		const marks = addScatterMarks([], { ...defaultScatterOptions, colorScheme: 'light' });
 		expect((marks[0] as GroupMark).marks?.[0].encode?.enter?.blend).toEqual({ value: 'multiply' });
 	});
 	test('should "screen" blend mode in dark mode', () => {
-		const marks = addScatterMarks([], { ...defaultScatterProps, colorScheme: 'dark' });
+		const marks = addScatterMarks([], { ...defaultScatterOptions, colorScheme: 'dark' });
 		expect((marks[0] as GroupMark).marks?.[0].encode?.enter?.blend).toEqual({ value: 'screen' });
 	});
 	test('should add trendline marks if trendline exists as a child', () => {
-		const marks = addScatterMarks([], { ...defaultScatterProps, children: [createElement(Trendline)] });
+		const marks = addScatterMarks([], { ...defaultScatterOptions, trendlines: [{}] });
 		expect(marks).toHaveLength(2);
 		expect(marks[1].name).toBe('scatter0Trendline0_group');
 	});
@@ -46,10 +41,10 @@ describe('addScatterMarks()', () => {
 
 describe('getOpacity()', () => {
 	test('should return the default rule if there are not any interactive children', () => {
-		expect(getOpacity(defaultScatterProps)).toEqual([DEFAULT_OPACITY_RULE]);
+		expect(getOpacity(defaultScatterOptions)).toEqual([DEFAULT_OPACITY_RULE]);
 	});
 	test('should include hover rules if tooltip exists', () => {
-		const opacity = getOpacity({ ...defaultScatterProps, children: [createElement(ChartTooltip)] });
+		const opacity = getOpacity({ ...defaultScatterOptions, chartTooltips: [{}] });
 		expect(opacity).toHaveLength(3);
 		expect(opacity[0]).toHaveProperty(
 			'test',
@@ -61,7 +56,7 @@ describe('getOpacity()', () => {
 		);
 	});
 	test('should include select rule if popover exists', () => {
-		const opacity = getOpacity({ ...defaultScatterProps, children: [createElement(ChartPopover)] });
+		const opacity = getOpacity({ ...defaultScatterOptions, chartPopovers: [{}] });
 		expect(opacity).toHaveLength(4);
 		expect(opacity[0]).toHaveProperty(
 			'test',
@@ -77,17 +72,17 @@ describe('getOpacity()', () => {
 
 describe('getScatterHoverMarks()', () => {
 	test('should return the pointsForVoronoi mark if there is a tooltip', () => {
-		expect(getScatterHoverMarks(defaultScatterProps)).toHaveLength(0);
+		expect(getScatterHoverMarks(defaultScatterOptions)).toHaveLength(0);
 
-		const marks = getScatterHoverMarks({ ...defaultScatterProps, children: [createElement(ChartTooltip)] });
+		const marks = getScatterHoverMarks({ ...defaultScatterOptions, chartTooltips: [{}] });
 		expect(marks).toHaveLength(2);
 		expect(marks[0].name).toBe('scatter0_pointsForVoronoi');
 	});
 
 	test('should return the voronoi mark if there is a tooltip', () => {
-		expect(getScatterHoverMarks(defaultScatterProps)).toHaveLength(0);
+		expect(getScatterHoverMarks(defaultScatterOptions)).toHaveLength(0);
 
-		const marks = getScatterHoverMarks({ ...defaultScatterProps, children: [createElement(ChartTooltip)] });
+		const marks = getScatterHoverMarks({ ...defaultScatterOptions, chartTooltips: [{}] });
 		expect(marks).toHaveLength(2);
 		expect(marks[1].name).toBe('scatter0_voronoi');
 	});

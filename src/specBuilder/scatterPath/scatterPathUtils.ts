@@ -9,7 +9,6 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { ScatterPath } from '@components/ScatterPath';
 import {
 	DEFAULT_OPACITY_RULE,
 	FILTERED_TABLE,
@@ -25,24 +24,24 @@ import { addFieldToFacetScaleDomain } from '@specBuilder/scale/scaleSpecBuilder'
 import { getColorValue, getFacetsFromOptions, getLineWidthPixelsFromLineWidth } from '@specBuilder/specUtils';
 import { GroupMark, NumericValueRef, Scale, TrailMark } from 'vega';
 
-import {
-	LineWidthFacet,
-	ScatterPathElement,
-	ScatterPathProps,
-	ScatterPathSpecProps,
-	ScatterSpecProps,
-} from '../../types';
+import { LineWidthFacet, ScatterPathOptions, ScatterPathSpecOptions, ScatterSpecOptions } from '../../types';
 
 /**
- * Gets the path spec props, applying defaults.
- * @param scatterPathProps
+ * Gets the path spec options, applying defaults.
+ * @param scatterPathOptions
  * @param index
  * @param markName
  * @param colorScheme
- * @returns ScatterPathSpecProps
+ * @returns ScatterPathSpecOptions
  */
-export const getScatterPathSpecProps = (
-	{ color = 'gray-500', groupBy, pathWidth = { value: 'M' }, opacity = 0.5, ...scatterPathProps }: ScatterPathProps,
+export const getScatterPathSpecOptions = (
+	{
+		color = 'gray-500',
+		groupBy,
+		pathWidth = { value: 'M' },
+		opacity = 0.5,
+		...scatterPathOptions
+	}: ScatterPathOptions,
 	index: number,
 	{
 		color: scatterColor,
@@ -54,8 +53,8 @@ export const getScatterPathSpecProps = (
 		name: scatterName,
 		opacity: scatterOpacity,
 		size,
-	}: ScatterSpecProps
-): ScatterPathSpecProps => {
+	}: ScatterSpecOptions
+): ScatterPathSpecOptions => {
 	const { facets } = getFacetsFromOptions({ color: scatterColor, lineType, size, opacity: scatterOpacity });
 	return {
 		color,
@@ -68,37 +67,36 @@ export const getScatterPathSpecProps = (
 		pathWidth,
 		name: `${scatterName}Path${index}`,
 		opacity,
-		...scatterPathProps,
+		...scatterPathOptions,
 	};
 };
 
 /**
  * Gets all the paths on a scatter
- * @param scatterProps
- * @returns ScatterPathSpecProps[]
+ * @param scatterOptions
+ * @returns ScatterPathSpecOptions[]
  */
-export const getScatterPaths = (scatterProps: ScatterSpecProps): ScatterPathSpecProps[] => {
-	const pathElements = scatterProps.children.filter((child) => child.type === ScatterPath) as ScatterPathElement[];
-	return pathElements.map((path, index) => getScatterPathSpecProps(path.props, index, scatterProps));
+export const getScatterPaths = (scatterOptions: ScatterSpecOptions): ScatterPathSpecOptions[] => {
+	return scatterOptions.scatterPaths.map((path, index) => getScatterPathSpecOptions(path, index, scatterOptions));
 };
 
 /**
  * Sets the scales up for the scatter path marks
  * Note: This mutates the scales array so it should only be called from an immer produce function
  * @param scales
- * @param scatterProps
+ * @param scatterOptions
  */
-export const setScatterPathScales = (scales: Scale[], scatterProps: ScatterSpecProps) => {
-	const paths = getScatterPaths(scatterProps);
+export const setScatterPathScales = (scales: Scale[], scatterOptions: ScatterSpecOptions) => {
+	const paths = getScatterPaths(scatterOptions);
 
 	paths.forEach((path) => {
 		addFieldToFacetScaleDomain(scales, SYMBOL_PATH_WIDTH_SCALE, path.pathWidth);
 	});
 };
 
-export const getScatterPathMarks = (scatterProps: ScatterSpecProps): GroupMark[] => {
+export const getScatterPathMarks = (scatterOptions: ScatterSpecOptions): GroupMark[] => {
 	const marks: GroupMark[] = [];
-	const paths = getScatterPaths(scatterProps);
+	const paths = getScatterPaths(scatterOptions);
 
 	paths.forEach((path) => {
 		const { groupBy, name } = path;
@@ -128,7 +126,7 @@ export const getScatterPathTrailMark = ({
 	metric,
 	name,
 	opacity,
-}: ScatterPathSpecProps): TrailMark => {
+}: ScatterPathSpecOptions): TrailMark => {
 	return {
 		name,
 		type: 'trail',
@@ -153,7 +151,7 @@ export const getScatterPathTrailMark = ({
 /**
  * Gets the opacity production rule for the scatterPath trail marks.
  * This is used for highlighting trails on hover and selection.
- * @param scatterProps ScatterSpecProps
+ * @param scatterOptions ScatterSpecOptions
  * @returns opacity production rule
  */
 export const getOpacity = (): ({ test?: string } & NumericValueRef)[] => {
