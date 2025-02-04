@@ -29,7 +29,6 @@ import {
 	getXProductionRule,
 	getYProductionRule,
 	hasPopover,
-	hasPopover_DEPRECATED,
 } from '@specBuilder/marks/markUtils';
 import { LineMark, Mark, NumericValueRef, ProductionRule, RuleMark } from 'vega';
 
@@ -41,18 +40,29 @@ import {
 	getSelectRingPoint,
 	getSelectionPoint,
 } from './linePointUtils';
-import { LineMarkOptions, LineMarkProps } from './lineUtils';
+import { LineMarkOptions } from './lineUtils';
 
 /**
  * generates a line mark
- * @param lineProps
+ * @param lineOptions
  * @param dataSource
  * @returns LineMark
  */
-export const getLineMark = (lineMarkProps: LineMarkProps, dataSource: string): LineMark => {
-	const { color, colorScheme, dimension, lineType, lineWidth, metric, metricAxis, name, opacity, scaleType } =
-		lineMarkProps;
-	const popovers = getPopovers(lineMarkProps);
+export const getLineMark = (lineMarkOptions: LineMarkOptions, dataSource: string): LineMark => {
+	const {
+		chartPopovers,
+		color,
+		colorScheme,
+		dimension,
+		lineType,
+		lineWidth,
+		metric,
+		metricAxis,
+		name,
+		opacity,
+		scaleType,
+	} = lineMarkOptions;
+	const popovers = getPopovers(chartPopovers, name);
 	const popoverWithDimensionHighlightExists = popovers.some(
 		({ UNSAFE_highlightBy }) => UNSAFE_highlightBy === 'dimension'
 	);
@@ -75,7 +85,7 @@ export const getLineMark = (lineMarkProps: LineMarkProps, dataSource: string): L
 				// this has to be in update because when you resize the window that doesn't rebuild the spec
 				// but it may change the x position if it causes the chart to resize
 				x: getXProductionRule(scaleType, dimension),
-				...(popoverWithDimensionHighlightExists ? {} : { opacity: getLineOpacity(lineMarkProps) }),
+				...(popoverWithDimensionHighlightExists ? {} : { opacity: getLineOpacity(lineMarkOptions) }),
 			},
 		},
 	};
@@ -124,30 +134,30 @@ export const getLineOpacity = ({
 
 /**
  * All the marks that get displayed when hovering or selecting a point on a line
- * @param lineMarkProps
+ * @param lineMarkOptions
  * @param dataSource
  * @param secondaryHighlightedMetric
  * @returns
  */
 export const getLineHoverMarks_DEPRACATED = (
-	lineProps: LineMarkProps,
+	lineOptions: LineMarkOptions,
 	dataSource: string,
 	secondaryHighlightedMetric?: string
 ): Mark[] => {
-	const { children, dimension, name, scaleType } = lineProps;
+	const { dimension, name, scaleType } = lineOptions;
 	return [
 		// vertical rule shown for the hovered or selected point
 		getHoverRule(dimension, name, scaleType),
 		// point behind the hovered or selected point used to prevent bacgorund elements from being visible through low opacity point
-		getHighlightBackgroundPoint(lineProps),
+		getHighlightBackgroundPoint(lineOptions),
 		// if has popover, add selection ring and selection point
-		...(hasPopover_DEPRECATED(children) ? [getSelectRingPoint(lineProps), getSelectionPoint(lineProps)] : []),
+		...(hasPopover(lineOptions) ? [getSelectRingPoint(lineOptions), getSelectionPoint(lineOptions)] : []),
 		// hover or select point
-		getHighlightPoint(lineProps),
+		getHighlightPoint(lineOptions),
 		// additional point that gets highlighted like the trendline or raw line point
-		...(secondaryHighlightedMetric ? [getSecondaryHighlightPoint(lineProps, secondaryHighlightedMetric)] : []),
+		...(secondaryHighlightedMetric ? [getSecondaryHighlightPoint(lineOptions, secondaryHighlightedMetric)] : []),
 		// get interactive marks for the line
-		...getInteractiveMarks(dataSource, lineProps),
+		...getInteractiveMarks(dataSource, lineOptions),
 	];
 };
 
@@ -224,10 +234,10 @@ const getVoronoiMarks = (lineOptions: LineMarkOptions, dataSource: string): Mark
 };
 
 const getItemHoverMarks = (lineOptions: LineMarkOptions, dataSource: string): Mark[] => {
-	const { dimension, metric, metricAxis, name, scaleType } = lineOptions;
+	const { chartTooltips = [], dimension, metric, metricAxis, name, scaleType } = lineOptions;
 
 	return [
 		// area around item that triggers hover
-		getItemHoverArea(children, dataSource, dimension, metric, name, scaleType, metricAxis),
+		getItemHoverArea(chartTooltips, dataSource, dimension, metric, name, scaleType, metricAxis),
 	];
 };

@@ -33,7 +33,7 @@ import {
 	SELECTED_ITEM,
 	SYMBOL_SIZE_SCALE,
 } from '@constants';
-import { defaultBarProps } from '@specBuilder/bar/barTestUtils';
+import { defaultBarOptions } from '@specBuilder/bar/barTestUtils';
 import { SignalRef } from 'vega';
 
 import { ProductionRuleTests } from '../../types';
@@ -42,6 +42,7 @@ import {
 	getColorProductionRuleSignalString,
 	getCursor_DEPRECATED,
 	getHighlightOpacityValue,
+	getInteractiveMarkName,
 	getLineWidthProductionRule,
 	getMarkOpacity,
 	getOpacityProductionRule,
@@ -250,7 +251,7 @@ describe('isInteractive()', () => {
 		expect(isInteractive_DEPRECATED([tooltip, popover])).toEqual(true);
 	});
 
-	test('should return true if props.onClick is defined', () => {
+	test('should return true if options.onClick is defined', () => {
 		expect(isInteractive_DEPRECATED([], { onClick: jest.fn() })).toEqual(true);
 	});
 });
@@ -260,7 +261,7 @@ describe('getCursor()', () => {
 		expect(getCursor_DEPRECATED([createElement(ChartPopover)])).toEqual({ value: 'pointer' });
 	});
 
-	test('should return pointer object if props.onClick is defined', () => {
+	test('should return pointer object if options.onClick is defined', () => {
 		expect(getCursor_DEPRECATED([], { onClick: jest.fn() })).toEqual({ value: 'pointer' });
 	});
 
@@ -291,18 +292,16 @@ describe('getColorProductionRuleSignalString()', () => {
 
 describe('getMarkOpacity()', () => {
 	test('no children, should use default opacity', () => {
-		expect(getMarkOpacity(defaultBarProps)).toStrictEqual([DEFAULT_OPACITY_RULE]);
+		expect(getMarkOpacity(defaultBarOptions)).toStrictEqual([DEFAULT_OPACITY_RULE]);
 	});
 	test('Tooltip child, should return tests for hover and default to opacity', () => {
-		const tooltip = createElement(ChartTooltip);
-		const opacity = getMarkOpacity({ ...defaultBarProps, children: [tooltip] });
+		const opacity = getMarkOpacity({ ...defaultBarOptions, chartTooltips: [{}] });
 		expect(opacity).toHaveLength(3);
 		expect(opacity[0].test).toContain(HIGHLIGHTED_ITEM);
 		expect(opacity.at(-1)).toStrictEqual(DEFAULT_OPACITY_RULE);
 	});
 	test('Popover child, should return tests for hover and select and default to opacity', () => {
-		const popover = createElement(ChartPopover);
-		const opacity = getMarkOpacity({ ...defaultBarProps, children: [popover] });
+		const opacity = getMarkOpacity({ ...defaultBarOptions, chartPopovers: [{}] });
 		expect(opacity).toHaveLength(7);
 		expect(opacity[0].test).toContain(`${SELECTED_ITEM} !==`);
 		expect(opacity[1].test).toContain(`${SELECTED_ITEM} ===`);
@@ -312,5 +311,25 @@ describe('getMarkOpacity()', () => {
 
 		expect(opacity[4].test).toContain(HIGHLIGHTED_ITEM);
 		expect(opacity.at(-1)).toStrictEqual(DEFAULT_OPACITY_RULE);
+	});
+});
+
+describe('getInteractiveMarkName()', () => {
+	test('should return undefined if there are no interactive children', () => {
+		expect(getInteractiveMarkName({}, 'line0')).toBeUndefined();
+		expect(getInteractiveMarkName({ trendlines: [{}] }, 'line0')).toBeUndefined();
+	});
+	test('should return the name provided if there is a tooltip or popover in the children', () => {
+		expect(getInteractiveMarkName({ chartTooltips: [] }, 'line0')).toEqual('line0');
+		expect(getInteractiveMarkName({ chartPopovers: [] }, 'line0')).toEqual('line0');
+	});
+	test('should return the name provided if options.onClick is defined', () => {
+		expect(getInteractiveMarkName({ hasOnClick: true }, 'line0')).toEqual('line0');
+	});
+	test('should return the name provided if highlightedItem is defined', () => {
+		expect(getInteractiveMarkName({ highlightedItem: 'someItem0' }, 'line0')).toEqual('line0');
+	});
+	test('should return the aggregated trendline name if the line has a trendline with any interactive children', () => {
+		expect(getInteractiveMarkName({ trendlines: [{ chartTooltips: [{}] }] }, 'line0')).toEqual('line0Trendline');
 	});
 });

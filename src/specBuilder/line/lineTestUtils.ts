@@ -11,10 +11,9 @@
  */
 import { DEFAULT_COLOR, DEFAULT_COLOR_SCHEME, DEFAULT_METRIC, DEFAULT_TIME_DIMENSION, MARK_ID } from '@constants';
 
-import { LineMarkProps } from './lineUtils';
+import { LineMarkOptions } from './lineUtils';
 
-export const defaultLineMarkProps: LineMarkProps = {
-	children: [],
+export const defaultLineMarkOptions: LineMarkOptions = {
 	color: DEFAULT_COLOR,
 	colorScheme: DEFAULT_COLOR_SCHEME,
 	dimension: DEFAULT_TIME_DIMENSION,

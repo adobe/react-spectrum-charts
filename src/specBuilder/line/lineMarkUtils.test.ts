@@ -9,10 +9,6 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { createElement } from 'react';
-
-import { ChartPopover } from '@components/ChartPopover';
-import { ChartTooltip } from '@components/ChartTooltip';
 import {
 	COLOR_SCALE,
 	DEFAULT_OPACITY_RULE,
@@ -23,11 +19,11 @@ import {
 } from '@constants';
 
 import { getLineHoverMarks_DEPRACATED, getLineMark, getLineOpacity } from './lineMarkUtils';
-import { defaultLineMarkProps } from './lineTestUtils';
+import { defaultLineMarkOptions } from './lineTestUtils';
 
 describe('getLineMark()', () => {
 	test('should return line mark', () => {
-		const lineMark = getLineMark(defaultLineMarkProps, 'line0_facet');
+		const lineMark = getLineMark(defaultLineMarkOptions, 'line0_facet');
 		expect(lineMark).toEqual({
 			name: 'line0',
 			description: 'line0',
@@ -52,27 +48,27 @@ describe('getLineMark()', () => {
 
 	test('should have no opacity rule for dimension popover highlighting', () => {
 		const lineMark = getLineMark(
-			{ ...defaultLineMarkProps, children: [createElement(ChartPopover, { UNSAFE_highlightBy: 'dimension' })] },
+			{ ...defaultLineMarkOptions, chartPopovers: [{ UNSAFE_highlightBy: 'dimension' }] },
 			'line0_facet'
 		);
 		expect(lineMark.encode?.update?.opacity).toBeUndefined();
 	});
 
 	test('should have undefined strokeWidth if lineWidth if undefined', () => {
-		const lineMark = getLineMark({ ...defaultLineMarkProps, lineWidth: undefined }, 'line0_facet');
+		const lineMark = getLineMark({ ...defaultLineMarkOptions, lineWidth: undefined }, 'line0_facet');
 		expect(lineMark.encode?.enter?.strokeWidth).toBeUndefined();
 	});
 
 	test('adds metric range opacity rules if isMetricRange and displayOnHover', () => {
 		const lineMark = getLineMark(
-			{ ...defaultLineMarkProps, interactiveMarkName: 'line0', displayOnHover: true },
+			{ ...defaultLineMarkOptions, interactiveMarkName: 'line0', displayOnHover: true },
 			'line0_facet'
 		);
 		expect(lineMark.encode?.update?.opacity).toEqual([DEFAULT_OPACITY_RULE]);
 	});
 
 	test('does not add metric range opacity rules if displayOnHover is false and isMetricRange', () => {
-		const lineMark = getLineMark({ ...defaultLineMarkProps, displayOnHover: false }, 'line0_facet');
+		const lineMark = getLineMark({ ...defaultLineMarkOptions, displayOnHover: false }, 'line0_facet');
 		expect(lineMark.encode?.update?.opacity).toEqual([{ value: 1 }]);
 	});
 });
@@ -80,16 +76,13 @@ describe('getLineMark()', () => {
 describe('getLineHoverMarks()', () => {
 	test('should return 5 marks by default', () => {
 		expect(
-			getLineHoverMarks_DEPRACATED(
-				{ ...defaultLineMarkProps, isHighlightedByDimension: true, children: [] },
-				'line0_facet'
-			)
+			getLineHoverMarks_DEPRACATED({ ...defaultLineMarkOptions, isHighlightedByDimension: true }, 'line0_facet')
 		).toHaveLength(5);
 	});
 	test('should return 4 marks if interactionMode is item', () => {
 		expect(
 			getLineHoverMarks_DEPRACATED(
-				{ ...defaultLineMarkProps, isHighlightedByDimension: true, children: [], interactionMode: 'item' },
+				{ ...defaultLineMarkOptions, isHighlightedByDimension: true, interactionMode: 'item' },
 				'line0_facet'
 			)
 		).toHaveLength(4);
@@ -98,9 +91,9 @@ describe('getLineHoverMarks()', () => {
 		expect(
 			getLineHoverMarks_DEPRACATED(
 				{
-					...defaultLineMarkProps,
+					...defaultLineMarkOptions,
 					isHighlightedByDimension: true,
-					children: [createElement(ChartPopover, { UNSAFE_highlightBy: 'dimension' })],
+					chartPopovers: [{ UNSAFE_highlightBy: 'dimension' }],
 				},
 				'line0_facet'
 			)
@@ -108,7 +101,7 @@ describe('getLineHoverMarks()', () => {
 	});
 	test('should have opacity of 0 if a selected item exists', () => {
 		const marks = getLineHoverMarks_DEPRACATED(
-			{ ...defaultLineMarkProps, isHighlightedByDimension: true, children: [createElement(ChartPopover)] },
+			{ ...defaultLineMarkOptions, isHighlightedByDimension: true, chartPopovers: [{}] },
 			'line0_facet'
 		);
 		expect(marks[0].encode?.update?.opacity).toEqual({ signal: "length(data('line0_selectedData')) > 0 ? 0 : 1" });
@@ -116,16 +109,16 @@ describe('getLineHoverMarks()', () => {
 });
 
 describe('getLineOpacity()', () => {
-	test('should return a basic opacity rule when using default line props', () => {
-		const opacityRule = getLineOpacity(defaultLineMarkProps);
+	test('should return a basic opacity rule when using default line options', () => {
+		const opacityRule = getLineOpacity(defaultLineMarkOptions);
 		expect(opacityRule).toEqual([{ value: 1 }]);
 	});
 
 	test('should include hover rules if line has a tooltip', () => {
 		const opacityRule = getLineOpacity({
-			...defaultLineMarkProps,
+			...defaultLineMarkOptions,
 			interactiveMarkName: 'line0',
-			children: [createElement(ChartTooltip)],
+			chartTooltips: [{}],
 		});
 		expect(opacityRule).toEqual([
 			{ test: `isValid(${HIGHLIGHTED_SERIES}) && ${HIGHLIGHTED_SERIES} !== datum.${SERIES_ID}`, value: 0.2 },
@@ -139,10 +132,10 @@ describe('getLineOpacity()', () => {
 
 	test('should include select rules if line has a popover', () => {
 		const opacityRule = getLineOpacity({
-			...defaultLineMarkProps,
+			...defaultLineMarkOptions,
 			interactiveMarkName: 'line0',
 			popoverMarkName: 'line0',
-			children: [createElement(ChartPopover)],
+			chartPopovers: [{}],
 		});
 		expect(opacityRule).toEqual([
 			{ test: `isValid(${HIGHLIGHTED_SERIES}) && ${HIGHLIGHTED_SERIES} !== datum.${SERIES_ID}`, value: 0.2 },
@@ -157,7 +150,7 @@ describe('getLineOpacity()', () => {
 
 	test('should include displayOnHover rules if displayOnHover is true', () => {
 		const opacityRule = getLineOpacity({
-			...defaultLineMarkProps,
+			...defaultLineMarkOptions,
 			interactiveMarkName: 'line0',
 			displayOnHover: true,
 		});
@@ -166,9 +159,9 @@ describe('getLineOpacity()', () => {
 
 	test('should add highlightedData rule for multiple series if isHighlightedByGroup is true', () => {
 		const opacityRule = getLineOpacity({
-			...defaultLineMarkProps,
+			...defaultLineMarkOptions,
 			interactiveMarkName: 'line0',
-			children: [createElement(ChartTooltip)],
+			chartTooltips: [{}],
 			isHighlightedByGroup: true,
 		});
 		expect(opacityRule).toHaveLength(4);

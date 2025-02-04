@@ -33,7 +33,6 @@ import {
 	SELECTED_ITEM,
 	SYMBOL_SIZE_SCALE,
 } from '@constants';
-import { AreaMarkOptions } from '@specBuilder/area/areaUtils';
 import { addHighlightMarkOpacityRules } from '@specBuilder/chartTooltip/chartTooltipUtils';
 import { LineMarkOptions } from '@specBuilder/line/lineUtils';
 import { getScaleName } from '@specBuilder/scale/scaleSpecBuilder';
@@ -58,7 +57,6 @@ import {
 } from 'vega';
 
 import {
-	AreaSpecOptions,
 	BarSpecOptions,
 	ChartPopoverOptions,
 	ChartTooltipOptions,
@@ -68,17 +66,17 @@ import {
 	ColorScheme,
 	DonutSpecOptions,
 	DualFacet,
-	LineSpecOptions,
+	HighlightedItem,
 	LineTypeFacet,
 	LineWidthFacet,
 	MarkChildElement,
+	MetricRangeOptions,
 	OpacityFacet,
 	ProductionRuleTests,
 	ScaleType,
 	ScatterSpecOptions,
 	SymbolSizeFacet,
 	TrendlineOptions,
-	TrendlineSpecOptions,
 } from '../../types';
 
 /**
@@ -201,18 +199,13 @@ export const hasInteractiveChildren_DEPRECATED = (children: ReactElement[]): boo
  * @param children
  * @returns
  */
-export const isInteractive = (
-	options:
-		| AreaMarkOptions
-		| AreaSpecOptions
-		| BarSpecOptions
-		| DonutSpecOptions
-		| LineMarkOptions
-		| LineSpecOptions
-		| ScatterSpecOptions
-		| TrendlineOptions
-		| TrendlineSpecOptions
-): boolean => {
+export const isInteractive = (options: {
+	chartPopovers?: ChartPopoverOptions[];
+	chartTooltips?: ChartTooltipOptions[];
+	hasOnClick?: boolean;
+	metricRanges?: MetricRangeOptions[];
+	trendlines?: TrendlineOptions[];
+}): boolean => {
 	const hasOnClick = 'hasOnClick' in options && options.hasOnClick;
 	const metricRanges = ('metricRanges' in options && options.metricRanges) || [];
 	const trendlines = ('trendlines' in options && options.trendlines) || [];
@@ -224,14 +217,6 @@ export const isInteractive = (
 		trendlines.some((trendline) => trendline.displayOnHover) ||
 		metricRanges.some((metricRange) => metricRange.displayOnHover)
 	);
-
-	// return children.some(
-	// 	(child) =>
-	// 		child.type === ChartTooltip ||
-	// 		child.type === ChartPopover ||
-	// 		(child.type === Trendline && child.props.displayOnHover) ||
-	// 		(child.type === MetricRange && child.props.displayOnHover)
-	// );
 };
 
 export const hasMetricRange = (children: ReactElement[]): boolean =>
@@ -241,31 +226,11 @@ export const hasPopover_DEPRECATED = (children: ReactElement[]): boolean =>
 export const hasTooltip_DEPRECATED = (children: ReactElement[]): boolean =>
 	children.some((child) => child.type === ChartTooltip);
 
-export const hasPopover = (
-	options:
-		| AreaMarkOptions
-		| AreaSpecOptions
-		| BarSpecOptions
-		| DonutSpecOptions
-		| LineSpecOptions
-		| LineMarkOptions
-		| ScatterSpecOptions
-		| TrendlineOptions
-		| TrendlineSpecOptions
-): boolean => Boolean('chartPopovers' in options && options.chartPopovers && options.chartPopovers.length);
+export const hasPopover = (options: { chartPopovers?: ChartPopoverOptions[] }): boolean =>
+	Boolean('chartPopovers' in options && options.chartPopovers && options.chartPopovers.length);
 
-export const hasTooltip = (
-	options:
-		| AreaMarkOptions
-		| AreaSpecOptions
-		| BarSpecOptions
-		| DonutSpecOptions
-		| LineMarkOptions
-		| LineSpecOptions
-		| ScatterSpecOptions
-		| TrendlineOptions
-		| TrendlineSpecOptions
-): boolean => Boolean('chartTooltips' in options && options.chartTooltips && options.chartTooltips.length);
+export const hasTooltip = (options: { chartTooltips?: ChartTooltipOptions[] }): boolean =>
+	Boolean('chartTooltips' in options && options.chartTooltips && options.chartTooltips.length);
 
 export const childHasTooltip = (children: ReactElement[]): boolean =>
 	children.some((child) => hasTooltip_DEPRECATED(child.props.children));
@@ -478,7 +443,7 @@ export const getVoronoiPath = (markOptions: LineMarkOptions | ScatterSpecOptions
 
 /**
  * Gets the hover area for the mark
- * @param children
+ * @param chartTooltips
  * @param dataSource the name of the data source that will be used in the hover area calculation
  * @param dimension the dimension for the x encoding
  * @param metric the metric for the y encoding
@@ -487,7 +452,7 @@ export const getVoronoiPath = (markOptions: LineMarkOptions | ScatterSpecOptions
  * @returns GroupMark
  */
 export const getItemHoverArea = (
-	children: MarkChildElement[],
+	chartTooltips: ChartTooltipOptions[],
 	dataSource: string,
 	dimension: string,
 	metric: string,
@@ -508,7 +473,7 @@ export const getItemHoverArea = (
 					y: getYProductionRule(metricAxis, metric),
 					fill: { value: 'transparent' },
 					stroke: { value: 'transparent' },
-					tooltip: getTooltip_DEPRECATED(children, name, false),
+					tooltip: getTooltip(chartTooltips, name, false),
 					size: getHoverSizeSignal(size),
 				},
 				update: {
@@ -565,4 +530,29 @@ export const getMarkOpacity = (options: BarSpecOptions | DonutSpecOptions): ({ t
 		];
 	}
 	return rules;
+};
+
+export const getInteractiveMarkName = (
+	options: {
+		chartPopovers?: ChartPopoverOptions[];
+		chartTooltips?: ChartTooltipOptions[];
+		hasOnClick?: boolean;
+		highlightedItem?: HighlightedItem;
+		metricRanges?: MetricRangeOptions[];
+		trendlines?: TrendlineOptions[];
+	},
+	name: string
+): string | undefined => {
+	// if the line has an interactive component, this line is the target for the interactive component
+	if (isInteractive(options) || options.highlightedItem !== undefined) {
+		return name;
+	}
+	// if there is a trendline with an interactive component on the line, then the trendline is the target for the interactive component
+	if (
+		'trendlines' in options &&
+		options.trendlines &&
+		options.trendlines.some((trendline) => isInteractive(trendline))
+	) {
+		return `${name}Trendline`;
+	}
 };

@@ -69,10 +69,10 @@ export const addArea = produce<
 			name,
 			opacity = 0.8,
 			scaleType = 'time',
-			...props
+			...options
 		}
 	) => {
-		// put props back together now that all defaults are set
+		// put options back together now that all defaults are set
 		const areaOptions: AreaSpecOptions = {
 			chartPopovers,
 			chartTooltips,
@@ -86,7 +86,7 @@ export const addArea = produce<
 			opacity,
 			metricStart,
 			metricEnd,
-			...props,
+			...options,
 		};
 
 		// if either start or end is defined but not both, error to the console and default back to metric

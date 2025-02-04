@@ -30,8 +30,8 @@ type PopoverParentOptions = AreaSpecOptions | BarSpecOptions | DonutSpecOptions 
  * @param markOptions
  * @returns
  */
-export const getPopovers = (markOptions: PopoverParentOptions): ChartPopoverSpecOptions[] => {
-	return markOptions.chartPopovers.map((chartPopover) => applyPopoverPropDefaults(chartPopover, markOptions.name));
+export const getPopovers = (chartPopovers: ChartPopoverOptions[] = [], markName: string): ChartPopoverSpecOptions[] => {
+	return chartPopovers.map((chartPopover) => applyPopoverPropDefaults(chartPopover, markName));
 };
 
 /**
@@ -58,7 +58,7 @@ export const applyPopoverPropDefaults = (
  * @param markOptions
  */
 export const addPopoverData = (data: Data[], markOptions: PopoverParentOptions, addHighlightedData = true) => {
-	const popovers = getPopovers(markOptions);
+	const popovers = getPopovers(markOptions.chartPopovers, markOptions.name);
 
 	for (const { UNSAFE_highlightBy, markName } of popovers) {
 		const filteredTable = getFilteredTableData(data);

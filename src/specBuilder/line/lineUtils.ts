@@ -9,12 +9,6 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { ReactNode } from 'react';
-
-import { Trendline } from '@components/Trendline';
-import { hasPopover_DEPRECATED, isInteractive } from '@specBuilder/marks/markUtils';
-import { sanitizeMarkChildren } from '@utils';
-
 import {
 	BarAnnotationOptions,
 	ChartPopoverOptions,
@@ -24,76 +18,22 @@ import {
 	DonutSummaryOptions,
 	HighlightedItem,
 	InteractionMode,
-	LineSpecOptions,
 	LineTypeFacet,
 	LineWidthFacet,
-	MarkChildElement,
 	MetricRangeOptions,
-	OnClickCallback,
 	OpacityFacet,
 	ScaleType,
 	ScatterPathOptions,
-	ScatterSpecOptions,
 	SegmentLabelOptions,
 	TrendlineOptions,
 } from '../../types';
 
-export const getInteractiveMarkName = (
-	options: LineSpecOptions | ScatterSpecOptions,
-	name: string,
-	highlightedItem?: HighlightedItem
-): string | undefined => {
-	// if the line has an interactive component, this line is the target for the interactive component
-	if (isInteractive(options) || highlightedItem !== undefined) {
-		return name;
-	}
-	// if there is a trendline with an interactive component on the line, then the trendline is the target for the interactive component
-	if (options.trendlines.some((trendline) => isInteractive(trendline))) {
-		return `${name}Trendline`;
-	}
-};
-
-export const getPopoverMarkName = (children: MarkChildElement[], name: string): string | undefined => {
+export const getPopoverMarkName = (chartPopovers: ChartPopoverOptions[], lineName: string): string | undefined => {
 	// if the line has a popover, this line is the target for the popover
-	if (hasPopover_DEPRECATED(children)) {
-		return name;
-	}
-	// if there is a trendline with a popover on this line, then the trendline is the target for the popover
-	if (
-		children.some(
-			(child) =>
-				child.type === Trendline &&
-				'children' in child.props &&
-				hasPopover_DEPRECATED(sanitizeMarkChildren(child.props.children as ReactNode))
-		)
-	) {
-		return `${name}Trendline`;
+	if (chartPopovers.length) {
+		return lineName;
 	}
 };
-
-export interface LineMarkProps {
-	children: MarkChildElement[];
-	color: ColorFacet;
-	colorScheme: ColorScheme;
-	dimension: string;
-	displayOnHover?: boolean;
-	highlightedItem?: HighlightedItem;
-	idKey: string;
-	interactiveMarkName?: string; // optional name of the mark that is used for hover and click interactions
-	isHighlightedByDimension?: boolean;
-	isHighlightedByGroup?: boolean;
-	lineType: LineTypeFacet;
-	lineWidth?: LineWidthFacet;
-	metric: string;
-	metricAxis?: string;
-	name: string;
-	opacity: OpacityFacet;
-	popoverMarkName?: string;
-	scaleType: ScaleType;
-	staticPoint?: string;
-	interactionMode?: InteractionMode;
-	onClick?: OnClickCallback;
-}
 
 export interface LineMarkOptions {
 	barAnnotations?: BarAnnotationOptions[];

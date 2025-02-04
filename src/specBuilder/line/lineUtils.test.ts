@@ -9,51 +9,13 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { createElement } from 'react';
-
-import { ChartPopover } from '@components/ChartPopover';
-import { ChartTooltip } from '@components/ChartTooltip';
-import { Trendline } from '@components/Trendline';
-
-import { getInteractiveMarkName, getPopoverMarkName } from './lineUtils';
-
-describe('getInteractiveMarkName()', () => {
-	test('should return undefined if there are no interactive children', () => {
-		expect(getInteractiveMarkName([], 'line0')).toBeUndefined();
-		expect(getInteractiveMarkName([createElement(Trendline)], 'line0')).toBeUndefined();
-	});
-	test('should return the name provided if there is a tooltip or popover in the children', () => {
-		expect(getInteractiveMarkName([createElement(ChartTooltip)], 'line0')).toEqual('line0');
-		expect(getInteractiveMarkName([createElement(ChartPopover)], 'line0')).toEqual('line0');
-	});
-	test('should return the name provided if props.onClick is defined', () => {
-		expect(getInteractiveMarkName([], 'line0', undefined, { onClick: jest.fn() })).toEqual('line0');
-	});
-	test('should return the name provided if highlightedItem is defined', () => {
-		expect(getInteractiveMarkName([], 'line0', 'someItem0')).toEqual('line0');
-	});
-	test('should return the aggregated trendline name if the line has a trendline with any interactive children', () => {
-		expect(getInteractiveMarkName([createElement(Trendline, {}, createElement(ChartTooltip))], 'line0')).toEqual(
-			'line0Trendline'
-		);
-		expect(getInteractiveMarkName([createElement(Trendline, {}, createElement(ChartPopover))], 'line0')).toEqual(
-			'line0Trendline'
-		);
-	});
-});
+import { getPopoverMarkName } from './lineUtils';
 
 describe('getPopoverMarkName()', () => {
 	test('should return undefined if there are no popovers', () => {
 		expect(getPopoverMarkName([], 'line0')).toBeUndefined();
-		expect(getPopoverMarkName([createElement(Trendline)], 'line0')).toBeUndefined();
-		expect(getPopoverMarkName([createElement(ChartTooltip)], 'line0')).toBeUndefined();
 	});
 	test('should return the name provided if there is a popover in the children', () => {
-		expect(getPopoverMarkName([createElement(ChartPopover)], 'line0')).toEqual('line0');
-	});
-	test('should return the aggregated trendline name if the line has a trendline with a popover on it', () => {
-		expect(getPopoverMarkName([createElement(Trendline, {}, createElement(ChartPopover))], 'line0')).toEqual(
-			'line0Trendline'
-		);
+		expect(getPopoverMarkName([{}], 'line0')).toEqual('line0');
 	});
 });

@@ -25,7 +25,7 @@ import {
 } from '@constants';
 import { addTooltipData, addTooltipSignals } from '@specBuilder/chartTooltip/chartTooltipUtils';
 import { addTimeTransform, getFilteredTooltipData, getTableData } from '@specBuilder/data/dataUtils';
-import { hasPopover, isInteractive } from '@specBuilder/marks/markUtils';
+import { getInteractiveMarkName, hasPopover, isInteractive } from '@specBuilder/marks/markUtils';
 import {
 	addContinuousDimensionScale,
 	addFieldToFacetScaleDomain,
@@ -38,15 +38,7 @@ import { toCamelCase } from '@utils';
 import { produce } from 'immer';
 import { Data, Scale, Signal, Spec } from 'vega';
 
-import {
-	ChartPopoverOptions,
-	ChartTooltipOptions,
-	ColorScheme,
-	HighlightedItem,
-	ScatterOptions,
-	ScatterSpecOptions,
-	TrendlineOptions,
-} from '../../types';
+import { ColorScheme, HighlightedItem, ScatterOptions, ScatterSpecOptions } from '../../types';
 import { addScatterMarks } from './scatterMarkUtils';
 
 /**
@@ -92,7 +84,10 @@ export const addScatter = produce<
 			dimension,
 			dimensionScaleType,
 			index,
-			interactiveMarkName: getScatterInteractiveMarkName(chartPopovers, chartTooltips, trendlines, scatterName),
+			interactiveMarkName: getInteractiveMarkName(
+				{ chartPopovers, chartTooltips, highlightedItem: options.highlightedItem, trendlines },
+				scatterName
+			),
 			lineType,
 			lineWidth,
 			metric,
@@ -110,27 +105,6 @@ export const addScatter = produce<
 		spec.marks = addScatterMarks(spec.marks ?? [], scatterOptions);
 	}
 );
-
-const getScatterInteractiveMarkName = (
-	popovers: ChartPopoverOptions[],
-	chartTooltips: ChartTooltipOptions[],
-	trendlines: TrendlineOptions[],
-	name: string,
-	highlightedItem?: string
-) => {
-	if (
-		popovers.length ||
-		chartTooltips.length ||
-		trendlines.some((trendline) => trendline.displayOnHover) ||
-		highlightedItem !== undefined
-	) {
-		return name;
-	}
-
-	if (trendlines.some((trendline) => isInteractive(trendline))) {
-		return `${name}Trendline`;
-	}
-};
 
 export const addData = produce<Data[], [ScatterSpecOptions]>((data, scatterOptions) => {
 	const { chartTooltips, dimension, dimensionScaleType, highlightedItem, idKey, name } = scatterOptions;

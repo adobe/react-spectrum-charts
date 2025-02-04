@@ -23,7 +23,7 @@ export const isTrellisedChart = (spec: Spec): boolean => {
 };
 
 /**
- * Gets all the custom props for a trellis axis
+ * Gets all the custom options for a trellis axis
  * If this axis is not a trellis axis, it will return an empty object
  * @param scaleName
  * @returns trellisAxisOptions

@@ -9,9 +9,6 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { createElement } from 'react';
-
-import { ChartPopover } from '@components/ChartPopover';
 import {
 	BACKGROUND_COLOR,
 	COLOR_SCALE,
@@ -30,24 +27,24 @@ import {
 	getHighlightPointStrokeOpacity,
 	getHighlightPointStrokeWidth,
 } from './linePointUtils';
-import { defaultLineMarkProps } from './lineTestUtils';
+import { defaultLineMarkOptions } from './lineTestUtils';
 
 describe('getHighlightPointFill()', () => {
-	test('should return simple background rule with default props', () => {
-		const rules = getHighlightPointFill(defaultLineMarkProps);
+	test('should return simple background rule with default optionsdefaultLineMarkOptions', () => {
+		const rules = getHighlightPointFill(defaultLineMarkOptions);
 		expect(rules).toHaveLength(1);
 		expect(rules[0]).toEqual({ signal: BACKGROUND_COLOR });
 	});
 
 	test('should include a static point rule if staticPoint is set', () => {
 		const staticPoint = 'test';
-		const rules = getHighlightPointFill({ ...defaultLineMarkProps, staticPoint });
+		const rules = getHighlightPointFill({ ...defaultLineMarkOptions, staticPoint });
 		expect(rules).toHaveLength(2);
 		expect(rules[0]).toHaveProperty(`test`, `datum.${staticPoint} && datum.${staticPoint} === true`);
 	});
 
 	test('should include selection rule if hasPopover', () => {
-		const rules = getHighlightPointFill({ ...defaultLineMarkProps, children: [createElement(ChartPopover)] });
+		const rules = getHighlightPointFill({ ...defaultLineMarkOptions, chartPopovers: [{}] });
 		expect(rules).toHaveLength(2);
 		expect(rules[0]).toHaveProperty(
 			'test',
@@ -57,21 +54,21 @@ describe('getHighlightPointFill()', () => {
 });
 
 describe('getHighlightPointStroke()', () => {
-	test('should return simple series color rule with default props', () => {
-		const rules = getHighlightPointStroke(defaultLineMarkProps);
+	test('should return simple series color rule with default optionsdefaultLineMarkOptions', () => {
+		const rules = getHighlightPointStroke(defaultLineMarkOptions);
 		expect(rules).toHaveLength(1);
 		expect(rules[0]).toEqual({ scale: COLOR_SCALE, field: DEFAULT_COLOR });
 	});
 
 	test('should include a static point rule if staticPoint is set', () => {
 		const staticPoint = 'test';
-		const rules = getHighlightPointStroke({ ...defaultLineMarkProps, staticPoint });
+		const rules = getHighlightPointStroke({ ...defaultLineMarkOptions, staticPoint });
 		expect(rules).toHaveLength(2);
 		expect(rules[0]).toHaveProperty(`test`, `datum.${staticPoint} && datum.${staticPoint} === true`);
 	});
 
 	test('should include selection rule if hasPopover', () => {
-		const rules = getHighlightPointStroke({ ...defaultLineMarkProps, children: [createElement(ChartPopover)] });
+		const rules = getHighlightPointStroke({ ...defaultLineMarkOptions, chartPopovers: [{}] });
 		expect(rules).toHaveLength(2);
 		expect(rules[0]).toHaveProperty(
 			'test',
@@ -81,45 +78,45 @@ describe('getHighlightPointStroke()', () => {
 });
 
 describe('getHighlightPointStrokeOpacity()', () => {
-	test('should return simple series color rule with default props', () => {
-		const rules = getHighlightPointStrokeOpacity(defaultLineMarkProps);
+	test('should return simple series color rule with default optionsdefaultLineMarkOptions', () => {
+		const rules = getHighlightPointStrokeOpacity(defaultLineMarkOptions);
 		expect(rules).toHaveLength(1);
 		expect(rules[0]).toEqual({ value: 1 });
 	});
 
 	test('should include a static point rule if staticPoint is set', () => {
 		const staticPoint = 'test';
-		const rules = getHighlightPointStrokeOpacity({ ...defaultLineMarkProps, staticPoint });
+		const rules = getHighlightPointStrokeOpacity({ ...defaultLineMarkOptions, staticPoint });
 		expect(rules).toHaveLength(2);
 		expect(rules[0]).toHaveProperty(`test`, `datum.${staticPoint} && datum.${staticPoint} === true`);
 	});
 });
 
 describe('getHighlightPointSize()', () => {
-	test('should return simple symbol size rule with default props', () => {
-		const rules = getHighlightPointSize(defaultLineMarkProps);
+	test('should return simple symbol size rule with default optionsdefaultLineMarkOptions', () => {
+		const rules = getHighlightPointSize(defaultLineMarkOptions);
 		expect(rules).toHaveLength(1);
 		expect(rules[0]).toEqual({ value: DEFAULT_SYMBOL_SIZE });
 	});
 
 	test('should include a static point rule if staticPoint is set', () => {
 		const staticPoint = 'test';
-		const rules = getHighlightPointSize({ ...defaultLineMarkProps, staticPoint });
+		const rules = getHighlightPointSize({ ...defaultLineMarkOptions, staticPoint });
 		expect(rules).toHaveLength(2);
 		expect(rules[0]).toHaveProperty(`test`, `datum.${staticPoint} && datum.${staticPoint} === true`);
 	});
 });
 
 describe('getHighlightPointStrokeWidth()', () => {
-	test('should return simple stroke width rule with default props', () => {
-		const rules = getHighlightPointStrokeWidth(defaultLineMarkProps);
+	test('should return simple stroke width rule with default optionsdefaultLineMarkOptions', () => {
+		const rules = getHighlightPointStrokeWidth(defaultLineMarkOptions);
 		expect(rules).toHaveLength(1);
 		expect(rules[0]).toEqual({ value: DEFAULT_SYMBOL_STROKE_WIDTH });
 	});
 
 	test('should include a static point rule if staticPoint is set', () => {
 		const staticPoint = 'test';
-		const rules = getHighlightPointStrokeWidth({ ...defaultLineMarkProps, staticPoint });
+		const rules = getHighlightPointStrokeWidth({ ...defaultLineMarkOptions, staticPoint });
 		expect(rules).toHaveLength(2);
 		expect(rules[0]).toHaveProperty(`test`, `datum.${staticPoint} && datum.${staticPoint} === true`);
 	});

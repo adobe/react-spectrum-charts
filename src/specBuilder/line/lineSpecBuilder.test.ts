@@ -9,11 +9,6 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { createElement } from 'react';
-
-import { ChartTooltip } from '@components/ChartTooltip';
-import { MetricRange } from '@components/MetricRange';
-import { Trendline } from '@components/Trendline';
 import {
 	BACKGROUND_COLOR,
 	COLOR_SCALE,
@@ -35,19 +30,22 @@ import {
 import { defaultSignals } from '@specBuilder/specTestUtils';
 import { Data, Spec } from 'vega';
 
-import { LineSpecProps, MetricRangeElement, MetricRangeProps } from '../../types';
+import { LineSpecOptions } from '../../types';
 import * as signalSpecBuilder from '../signal/signalSpecBuilder';
 import { initializeSpec } from '../specUtils';
 import { addData, addLine, addLineMarks, addSignals, setScales } from './lineSpecBuilder';
 
-const defaultLineProps: LineSpecProps = {
-	children: [],
+const defaultLineOptions: LineSpecOptions = {
+	chartPopovers: [],
+	chartTooltips: [],
 	name: 'line0',
 	dimension: DEFAULT_TIME_DIMENSION,
+	hasOnClick: false,
 	idKey: MARK_ID,
 	index: 0,
 	markType: 'line',
 	metric: DEFAULT_METRIC,
+	metricRanges: [],
 	color: DEFAULT_COLOR,
 	scaleType: 'time',
 	lineType: { value: 'solid' },
@@ -55,14 +53,8 @@ const defaultLineProps: LineSpecProps = {
 	colorScheme: DEFAULT_COLOR_SCHEME,
 	interactiveMarkName: undefined,
 	popoverMarkName: undefined,
+	trendlines: [],
 };
-
-const getMetricRangeElement = (props?: Partial<MetricRangeProps>): MetricRangeElement =>
-	createElement(MetricRange, {
-		metricEnd: 'end',
-		metricStart: 'start',
-		...props,
-	});
 
 const startingSpec: Spec = initializeSpec({
 	scales: [{ name: COLOR_SCALE, type: 'ordinal' }],
@@ -360,7 +352,9 @@ const displayPointMarks = [
 describe('lineSpecBuilder', () => {
 	describe('addLine()', () => {
 		test('should add line', () => {
-			expect(addLine(startingSpec, { idKey: MARK_ID, color: DEFAULT_COLOR })).toStrictEqual(defaultSpec);
+			expect(addLine(startingSpec, { idKey: MARK_ID, color: DEFAULT_COLOR, markType: 'line' })).toStrictEqual(
+				defaultSpec
+			);
 		});
 	});
 
@@ -372,19 +366,19 @@ describe('lineSpecBuilder', () => {
 		});
 
 		test('basic', () => {
-			expect(addData(baseData, defaultLineProps)).toStrictEqual(defaultSpec.data);
+			expect(addData(baseData, defaultLineOptions)).toStrictEqual(defaultSpec.data);
 		});
 
 		test('scaleTypes "point" and "linear" should return the original data', () => {
-			expect(addData(baseData, { ...defaultLineProps, scaleType: 'point' })).toEqual(baseData);
-			expect(addData(baseData, { ...defaultLineProps, scaleType: 'linear' })).toEqual(baseData);
+			expect(addData(baseData, { ...defaultLineOptions, scaleType: 'point' })).toEqual(baseData);
+			expect(addData(baseData, { ...defaultLineOptions, scaleType: 'linear' })).toEqual(baseData);
 		});
 
 		test('should add trendline transform', () => {
 			expect(
 				addData(baseData, {
-					...defaultLineProps,
-					children: [createElement(Trendline, { method: 'average' })],
+					...defaultLineOptions,
+					trendlines: [{ method: 'average' }],
 				})[2].transform
 			).toStrictEqual([
 				{
@@ -401,15 +395,15 @@ describe('lineSpecBuilder', () => {
 		test('should not do anything for movingAverage trendline since it is not supported yet', () => {
 			expect(
 				addData(baseData, {
-					...defaultLineProps,
-					children: [createElement(Trendline, { method: 'movingAverage-7' })],
+					...defaultLineOptions,
+					trendlines: [{ method: 'movingAverage-7' }],
 				})[0].transform
 			).toHaveLength(3);
 		});
 
 		test('adds point data if displayPointMark is not undefined', () => {
 			const resultData = addData(baseData ?? [], {
-				...defaultLineProps,
+				...defaultLineOptions,
 				staticPoint: 'staticPoint',
 			});
 			expect(resultData.find((data) => data.name === 'line0_staticPointData')).toStrictEqual({
@@ -422,13 +416,13 @@ describe('lineSpecBuilder', () => {
 
 	describe('setScales()', () => {
 		test('time', () => {
-			expect(setScales(startingSpec.scales ?? [], defaultLineProps)).toStrictEqual(defaultSpec.scales);
+			expect(setScales(startingSpec.scales ?? [], defaultLineOptions)).toStrictEqual(defaultSpec.scales);
 		});
 
 		test('linear', () => {
 			expect(
 				setScales(startingSpec.scales ?? [], {
-					...defaultLineProps,
+					...defaultLineOptions,
 					scaleType: 'linear',
 				})
 			).toStrictEqual([defaultSpec.scales?.[0], defaultLinearScale, defaultSpec.scales?.[2]]);
@@ -437,7 +431,7 @@ describe('lineSpecBuilder', () => {
 		test('point', () => {
 			expect(
 				setScales(startingSpec.scales ?? [], {
-					...defaultLineProps,
+					...defaultLineOptions,
 					scaleType: 'point',
 				})
 			).toStrictEqual([defaultSpec.scales?.[0], defaultPointScale, defaultSpec.scales?.[2]]);
@@ -454,8 +448,8 @@ describe('lineSpecBuilder', () => {
 			};
 			expect(
 				setScales(startingSpec.scales ?? [], {
-					...defaultLineProps,
-					children: [createElement(MetricRange, { scaleAxisToFit: true, metricEnd, metricStart })],
+					...defaultLineOptions,
+					metricRanges: [{ scaleAxisToFit: true, metricEnd, metricStart }],
 				})
 			).toStrictEqual([defaultSpec.scales?.[0], defaultSpec.scales?.[1], metricRangeMetricScale]);
 		});
@@ -463,11 +457,11 @@ describe('lineSpecBuilder', () => {
 
 	describe('addLineMarks()', () => {
 		test('basic', () => {
-			expect(addLineMarks([], defaultLineProps)).toStrictEqual(defaultSpec.marks);
+			expect(addLineMarks([], defaultLineOptions)).toStrictEqual(defaultSpec.marks);
 		});
 
 		test('dashed', () => {
-			expect(addLineMarks([], { ...defaultLineProps, lineType: { value: [8, 8] } })).toStrictEqual([
+			expect(addLineMarks([], { ...defaultLineOptions, lineType: { value: [8, 8] } })).toStrictEqual([
 				{
 					from: { facet: { data: FILTERED_TABLE, groupby: [DEFAULT_COLOR], name: 'line0_facet' } },
 					marks: [
@@ -499,13 +493,13 @@ describe('lineSpecBuilder', () => {
 		});
 
 		test('with metric range', () => {
-			expect(addLineMarks([], { ...defaultLineProps, children: [getMetricRangeElement()] })).toStrictEqual(
-				metricRangeMarks
-			);
+			expect(
+				addLineMarks([], { ...defaultLineOptions, metricRanges: [{ metricEnd: 'end', metricStart: 'start' }] })
+			).toStrictEqual(metricRangeMarks);
 		});
 
 		test('with displayPointMark', () => {
-			expect(addLineMarks([], { ...defaultLineProps, staticPoint: 'staticPoint' })).toStrictEqual(
+			expect(addLineMarks([], { ...defaultLineOptions, staticPoint: 'staticPoint' })).toStrictEqual(
 				displayPointMarks
 			);
 		});
@@ -513,15 +507,15 @@ describe('lineSpecBuilder', () => {
 		test('with displayPointMark and metric range', () => {
 			expect(
 				addLineMarks([], {
-					...defaultLineProps,
+					...defaultLineOptions,
 					staticPoint: 'staticPoint',
-					children: [getMetricRangeElement()],
+					metricRanges: [{ metricEnd: 'end', metricStart: 'start' }],
 				})
 			).toStrictEqual(metricRangeWithDisplayPointMarks);
 		});
 
 		test('with onClick should add hover marks', () => {
-			const marks = addLineMarks([], { ...defaultLineProps, onClick: jest.fn() });
+			const marks = addLineMarks([], { ...defaultLineOptions, hasOnClick: true });
 
 			const voronoiPathMark = marks.at(-1);
 			expect(voronoiPathMark?.description).toBe('line0_voronoi');
@@ -534,7 +528,7 @@ describe('lineSpecBuilder', () => {
 
 	describe('addSignals()', () => {
 		test('on children', () => {
-			expect(addSignals([], defaultLineProps)).toStrictEqual([]);
+			expect(addSignals([], defaultLineOptions)).toStrictEqual([]);
 		});
 
 		test('does not add selected series if it already exists', () => {
@@ -547,7 +541,7 @@ describe('lineSpecBuilder', () => {
 							value: null,
 						},
 					],
-					defaultLineProps
+					defaultLineOptions
 				)
 			).toStrictEqual([
 				{
@@ -561,8 +555,8 @@ describe('lineSpecBuilder', () => {
 
 		test('hover signals with metric range', () => {
 			const signals = addSignals(defaultSignals, {
-				...defaultLineProps,
-				children: [getMetricRangeElement({ displayOnHover: true })],
+				...defaultLineOptions,
+				metricRanges: [{ metricEnd: 'end', metricStart: 'start', displayOnHover: true }],
 			});
 			expect(signals).toHaveLength(defaultSignals.length);
 			expect(signals[0]).toHaveProperty('name', HIGHLIGHTED_ITEM);
@@ -572,14 +566,14 @@ describe('lineSpecBuilder', () => {
 		});
 
 		test('adds hover signals when displayPointMark is not undefined', () => {
-			expect(addSignals([], { ...defaultLineProps, staticPoint: 'staticPoint' })).toStrictEqual([]);
+			expect(addSignals([], { ...defaultLineOptions, staticPoint: 'staticPoint' })).toStrictEqual([]);
 		});
 
 		test('adds hover signals with metric range when displayPointMark is not undefined', () => {
 			const signals = addSignals(defaultSignals, {
-				...defaultLineProps,
+				...defaultLineOptions,
 				staticPoint: 'staticPoint',
-				children: [getMetricRangeElement({ displayOnHover: true })],
+				metricRanges: [{ metricEnd: 'end', metricStart: 'start', displayOnHover: true }],
 			});
 			expect(signals).toHaveLength(defaultSignals.length);
 			expect(signals[0]).toHaveProperty('name', HIGHLIGHTED_ITEM);
@@ -590,9 +584,9 @@ describe('lineSpecBuilder', () => {
 
 		test('hover signals with interactionMode item', () => {
 			const signals = addSignals(defaultSignals, {
-				...defaultLineProps,
+				...defaultLineOptions,
 				interactionMode: 'item',
-				children: [createElement(ChartTooltip)],
+				chartTooltips: [{}],
 			});
 			expect(signals).toHaveLength(defaultSignals.length);
 			expect(signals[0]).toHaveProperty('name', HIGHLIGHTED_ITEM);

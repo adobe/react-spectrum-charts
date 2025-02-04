@@ -18,7 +18,7 @@ import {
 } from '@constants';
 import { Mark } from 'vega';
 
-import { AxisSpecOptions, AxisSpecProps } from '../../types';
+import { AxisSpecOptions } from '../../types';
 
 export const defaultXBaselineMark: Mark = {
 	name: 'xBaseline',
@@ -46,27 +46,6 @@ export const defaultYBaselineMark: Mark = {
 			x: { scale: 'xLinear', value: 0 },
 		},
 	},
-};
-
-export const defaultAxisProps: AxisSpecProps = {
-	name: 'axis0',
-	baseline: false,
-	baselineOffset: 0,
-	children: [],
-	colorScheme: DEFAULT_COLOR_SCHEME,
-	granularity: DEFAULT_GRANULARITY,
-	grid: false,
-	hideDefaultLabels: false,
-	index: 0,
-	labelAlign: DEFAULT_LABEL_ALIGN,
-	labelFontWeight: DEFAULT_LABEL_FONT_WEIGHT,
-	labelOrientation: DEFAULT_LABEL_ORIENTATION,
-	labels: [],
-	numberFormat: 'shortNumber',
-	position: 'bottom',
-	scaleType: 'linear',
-	subLabels: [],
-	ticks: false,
 };
 
 export const defaultAxisOptions: AxisSpecOptions = {

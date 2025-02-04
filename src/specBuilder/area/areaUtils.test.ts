@@ -21,7 +21,7 @@ import {
 import { getAreaMark } from './areaUtils';
 
 describe('getAreaMark', () => {
-	test('basic props', () => {
+	test('basic options', () => {
 		expect(
 			getAreaMark({
 				name: 'area0',

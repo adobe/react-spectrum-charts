@@ -21,7 +21,7 @@ import {
 } from '@constants';
 import { addPopoverData } from '@specBuilder/chartPopover/chartPopoverUtils';
 import { addTooltipData, addTooltipSignals, isHighlightedByGroup } from '@specBuilder/chartTooltip/chartTooltipUtils';
-import { getHoverMarkNames, hasPopover_DEPRECATED, isInteractive_DEPRECATED } from '@specBuilder/marks/markUtils';
+import { getHoverMarkNames, getInteractiveMarkName, hasPopover, isInteractive } from '@specBuilder/marks/markUtils';
 import {
 	getMetricRangeData,
 	getMetricRangeGroupMarks,
@@ -30,111 +30,128 @@ import {
 } from '@specBuilder/metricRange/metricRangeUtils';
 import { getFacetsFromOptions } from '@specBuilder/specUtils';
 import { addTrendlineData, getTrendlineMarks, getTrendlineScales, setTrendlineSignals } from '@specBuilder/trendline';
-import { sanitizeMarkChildren, toCamelCase } from '@utils';
+import { toCamelCase } from '@utils';
 import { produce } from 'immer';
 import { Data, Mark, Scale, Signal, Spec } from 'vega';
 
-import { ColorScheme, HighlightedItem, LineProps, LineSpecProps, MarkChildElement } from '../../types';
+import { ColorScheme, HighlightedItem, LineOptions, LineSpecOptions } from '../../types';
 import { addTimeTransform, getFilteredTooltipData, getTableData } from '../data/dataUtils';
 import { addContinuousDimensionScale, addFieldToFacetScaleDomain, addMetricScale } from '../scale/scaleSpecBuilder';
 import { addHighlightedItemSignalEvents, addHighlightedSeriesSignalEvents } from '../signal/signalSpecBuilder';
 import { getLineHighlightedData, getLineStaticPointData } from './lineDataUtils';
 import { getLineHoverMarks_DEPRACATED, getLineMark } from './lineMarkUtils';
 import { getLineStaticPoint } from './linePointUtils';
-import { getInteractiveMarkName, getPopoverMarkName } from './lineUtils';
+import { getPopoverMarkName } from './lineUtils';
 
 export const addLine = produce<
 	Spec,
-	[LineProps & { colorScheme?: ColorScheme; highlightedItem?: HighlightedItem; index?: number; idKey: string }]
+	[LineOptions & { colorScheme?: ColorScheme; highlightedItem?: HighlightedItem; index?: number; idKey: string }]
 >(
 	(
 		spec,
 		{
-			children,
+			chartPopovers = [],
+			chartTooltips = [],
 			color = { value: 'categorical-100' },
 			colorScheme = DEFAULT_COLOR_SCHEME,
 			dimension = DEFAULT_TIME_DIMENSION,
+			hasOnClick = false,
 			index = 0,
 			lineType = { value: 'solid' },
 			metric = DEFAULT_METRIC,
 			metricAxis,
+			metricRanges = [],
 			name,
 			opacity = { value: 1 },
 			scaleType = 'time',
-			...props
+			trendlines = [],
+			...options
 		}
 	) => {
-		const sanitizedChildren = sanitizeMarkChildren(children);
 		const lineName = toCamelCase(name || `line${index}`);
-		// put props back together now that all defaults are set
-		const lineProps: LineSpecProps = {
-			children: sanitizedChildren,
+		// put options back together now that all defaults are set
+		const lineOptions: LineSpecOptions = {
+			chartPopovers,
+			chartTooltips,
 			color,
 			colorScheme,
 			dimension,
+			hasOnClick,
 			index,
-			interactiveMarkName: getInteractiveMarkName(sanitizedChildren, lineName, props.highlightedItem, props),
+			interactiveMarkName: getInteractiveMarkName(
+				{
+					chartPopovers,
+					chartTooltips,
+					hasOnClick,
+					highlightedItem: options.highlightedItem,
+					metricRanges,
+					trendlines,
+				},
+				lineName
+			),
 			lineType,
-			markType: 'line',
 			metric,
 			metricAxis,
+			metricRanges,
 			name: lineName,
 			opacity,
-			popoverMarkName: getPopoverMarkName(sanitizedChildren, lineName),
+			popoverMarkName: getPopoverMarkName(chartPopovers, lineName),
 			scaleType,
-			...props,
+			trendlines,
+			...options,
 		};
-		lineProps.isHighlightedByGroup = isHighlightedByGroup(lineProps);
+		lineOptions.isHighlightedByGroup = isHighlightedByGroup(lineOptions);
 
-		spec.data = addData(spec.data ?? [], lineProps);
-		spec.signals = addSignals(spec.signals ?? [], lineProps);
-		spec.scales = setScales(spec.scales ?? [], lineProps);
-		spec.marks = addLineMarks(spec.marks ?? [], lineProps);
+		spec.data = addData(spec.data ?? [], lineOptions);
+		spec.signals = addSignals(spec.signals ?? [], lineOptions);
+		spec.scales = setScales(spec.scales ?? [], lineOptions);
+		spec.marks = addLineMarks(spec.marks ?? [], lineOptions);
 
 		return spec;
 	}
 );
 
-export const addData = produce<Data[], [LineSpecProps]>((data, props) => {
-	const { children, dimension, highlightedItem, isSparkline, isMethodLast, name, scaleType, staticPoint } = props;
+export const addData = produce<Data[], [LineSpecOptions]>((data, options) => {
+	const { chartTooltips, dimension, highlightedItem, isSparkline, isMethodLast, name, scaleType, staticPoint } =
+		options;
 	if (scaleType === 'time') {
 		const tableData = getTableData(data);
 		tableData.transform = addTimeTransform(tableData.transform ?? [], dimension);
 	}
-	if (isInteractive_DEPRECATED(children, props) || highlightedItem !== undefined) {
+	if (isInteractive(options) || highlightedItem !== undefined) {
 		data.push(
 			getLineHighlightedData(
 				name,
-				props.idKey,
+				options.idKey,
 				FILTERED_TABLE,
-				hasPopover_DEPRECATED(children),
-				isHighlightedByGroup(props)
+				hasPopover(options),
+				isHighlightedByGroup(options)
 			)
 		);
-		data.push(getFilteredTooltipData(children));
+		data.push(getFilteredTooltipData(chartTooltips));
 	}
 	if (staticPoint || isSparkline)
 		data.push(getLineStaticPointData(name, staticPoint, FILTERED_TABLE, isSparkline, isMethodLast));
-	addTrendlineData(data, props);
-	addTooltipData(data, props, false);
-	addPopoverData(data, props);
-	data.push(...getMetricRangeData(props));
+	addTrendlineData(data, options);
+	addTooltipData(data, options, false);
+	addPopoverData(data, options);
+	data.push(...getMetricRangeData(options));
 });
 
-export const addSignals = produce<Signal[], [LineSpecProps]>((signals, props) => {
-	const { children, idKey, name } = props;
-	setTrendlineSignals(signals, props);
-	signals.push(...getMetricRangeSignals(props));
+export const addSignals = produce<Signal[], [LineSpecOptions]>((signals, options) => {
+	const { idKey, name } = options;
+	setTrendlineSignals(signals, options);
+	signals.push(...getMetricRangeSignals(options));
 
-	if (!isInteractive_DEPRECATED(children, props)) return;
+	if (!isInteractive(options)) return;
 	addHighlightedItemSignalEvents(signals, `${name}_voronoi`, idKey, 2);
 	addHighlightedSeriesSignalEvents(signals, `${name}_voronoi`, 2);
-	addHoverSignals(signals, props);
-	addTooltipSignals(signals, props);
+	addHoverSignals(signals, options);
+	addTooltipSignals(signals, options);
 });
 
-export const setScales = produce<Scale[], [LineSpecProps]>((scales, props) => {
-	const { metric, metricAxis, dimension, color, lineType, opacity, padding, scaleType, children, name } = props;
+export const setScales = produce<Scale[], [LineSpecOptions]>((scales, options) => {
+	const { metricAxis, dimension, color, lineType, opacity, padding, scaleType } = options;
 	// add dimension scale
 	addContinuousDimensionScale(scales, { scaleType, dimension, padding });
 	// add color to the color domain
@@ -144,19 +161,19 @@ export const setScales = produce<Scale[], [LineSpecProps]>((scales, props) => {
 	// add opacity to the opacity domain
 	addFieldToFacetScaleDomain(scales, OPACITY_SCALE, opacity);
 	// find the linear scale and add our fields to it
-	addMetricScale(scales, getMetricKeys(metric, children, name));
+	addMetricScale(scales, getMetricKeys(options));
 	// add linear scale with custom name
 	if (metricAxis) {
-		addMetricScale(scales, getMetricKeys(metric, children, name), 'y', metricAxis);
+		addMetricScale(scales, getMetricKeys(options), 'y', metricAxis);
 	}
 	// add trendline scales
-	scales.push(...getTrendlineScales(props));
+	scales.push(...getTrendlineScales(options));
 	return scales;
 });
 
 // The order that marks are added is important since it determines the draw order.
-export const addLineMarks = produce<Mark[], [LineSpecProps]>((marks, props) => {
-	const { children, color, highlightedItem, isSparkline, lineType, name, opacity, staticPoint } = props;
+export const addLineMarks = produce<Mark[], [LineSpecOptions]>((marks, options) => {
+	const { color, highlightedItem, isSparkline, lineType, name, opacity, staticPoint } = options;
 
 	const { facets } = getFacetsFromOptions({ color, lineType, opacity });
 
@@ -170,21 +187,21 @@ export const addLineMarks = produce<Mark[], [LineSpecProps]>((marks, props) => {
 				groupby: facets,
 			},
 		},
-		marks: [getLineMark(props, `${name}_facet`)],
+		marks: [getLineMark(options, `${name}_facet`)],
 	});
-	if (staticPoint || isSparkline) marks.push(getLineStaticPoint(props));
-	marks.push(...getMetricRangeGroupMarks(props));
-	if (isInteractive_DEPRECATED(children, props) || highlightedItem !== undefined) {
-		marks.push(...getLineHoverMarks_DEPRACATED(props, `${FILTERED_TABLE}ForTooltip`));
+	if (staticPoint || isSparkline) marks.push(getLineStaticPoint(options));
+	marks.push(...getMetricRangeGroupMarks(options));
+	if (isInteractive(options) || highlightedItem !== undefined) {
+		marks.push(...getLineHoverMarks_DEPRACATED(options, `${FILTERED_TABLE}ForTooltip`));
 	}
-	marks.push(...getTrendlineMarks(props));
+	marks.push(...getTrendlineMarks(options));
 });
 
-const getMetricKeys = (lineMetric: string, lineChildren: MarkChildElement[], lineName: string) => {
-	const metricKeys = [lineMetric];
+const getMetricKeys = (lineOptions: LineSpecOptions) => {
+	const metricKeys = [lineOptions.metric];
 
 	// metric range fields should be added if metric-axis will be scaled to fit
-	const metricRanges = getMetricRanges(lineChildren, lineName);
+	const metricRanges = getMetricRanges(lineOptions);
 	metricRanges.forEach((metricRange) => {
 		if (metricRange.scaleAxisToFit) metricKeys.push(metricRange.metricStart, metricRange.metricEnd);
 	});
@@ -192,8 +209,8 @@ const getMetricKeys = (lineMetric: string, lineChildren: MarkChildElement[], lin
 	return metricKeys;
 };
 
-const addHoverSignals = (signals: Signal[], props: LineSpecProps) => {
-	const { idKey, interactionMode, name } = props;
+const addHoverSignals = (signals: Signal[], options: LineSpecOptions) => {
+	const { idKey, interactionMode, name } = options;
 	if (interactionMode !== INTERACTION_MODE.ITEM) return;
 	getHoverMarkNames(name).forEach((hoverMarkName) => {
 		addHighlightedItemSignalEvents(signals, hoverMarkName, idKey, 1);
