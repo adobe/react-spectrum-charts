@@ -26,6 +26,72 @@ export const barDataLongLabels = [
 	{ browser: 'Microsoft Explorer', downloads: 500 },
 ];
 
+export const barDataWithUTC = [
+  {
+    browser: "2024-01-01 00:00:00.0",
+    downloads: 11,
+    dataset_id: "sent",
+  },
+  {
+    browser: "2024-09-02 00:00:00.0",
+    downloads: 2,
+    dataset_id: "sent",
+  },
+  {
+    browser: "2025-01-03 00:00:00.0",
+    downloads: 4,
+    dataset_id: "sent",
+  },
+	{
+    browser: "2025-02-04 00:00:00.0",
+    downloads: 7,
+    dataset_id: "sent",
+  },
+	{
+    browser: "2025-03-05 00:00:00.0",
+    downloads: 1,
+    dataset_id: "sent",
+  },
+	{
+    browser: "2025-04-06 00:00:00.0",
+    downloads: 9,
+    dataset_id: "sent",
+  },
+];
+
+export const stackedBarDataWithUTC = [
+  {
+    browser: "2025-01-27 00:00:00.0",
+    downloads: 27000,
+    dataset_id: "6257b7b5436f7a1949f44d3b",
+  },
+  {
+    browser: "2025-01-27 00:00:00.0",
+    downloads: 8000,
+    dataset_id: "6257b7b5b067f719492758b2",
+  },
+  {
+    browser: "2025-01-25 00:00:00.0",
+    downloads: 7750,
+    dataset_id: "6257b7b5436f7a1949f44d3b",
+  },
+  {
+    browser: "2025-01-25 00:00:00.0",
+    downloads: 7600,
+    dataset_id: "6257b7b5b067f719492758b2",
+  },
+  {
+    browser: "2025-01-26 00:00:00.0",
+    downloads: 500,
+    dataset_id: "6257b7b5436f7a1949f44d3b",
+  },
+  {
+    browser: "2025-01-26 00:00:00.0",
+    downloads: 500,
+    dataset_id: "6257b7b5b067f719492758b2",
+  },
+];
+
 export const barSeriesData = [
 	{ browser: 'Chrome', value: 5, operatingSystem: 'Windows', order: 2, percentLabel: '50%' },
 	{ browser: 'Chrome', value: 3, operatingSystem: 'Mac', order: 1, percentLabel: '30%' },

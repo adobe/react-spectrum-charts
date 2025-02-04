@@ -18,7 +18,7 @@ import { StoryFn } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
 
 import { SpectrumColor } from '../../../types';
-import { barSeriesData, negativeBarSeriesData } from './data';
+import { barSeriesData, stackedBarDataWithUTC, negativeBarSeriesData } from './data';
 
 export default {
 	title: 'RSC/Bar/Stacked Bar',
@@ -31,6 +31,17 @@ const colors: SpectrumColor[] = [
 	'divergent-orange-yellow-seafoam-1400',
 	'divergent-orange-yellow-seafoam-600',
 ];
+
+const StackedBarStoryWithUTCData: StoryFn<typeof Bar> = (args): ReactElement => {
+	const chartProps = useChartProps({ data: stackedBarDataWithUTC, width: 600, height: 600 });
+	return (
+		<Chart {...chartProps}>
+			<Axis position={args.orientation === 'horizontal' ? 'left' : 'bottom'} labelFormat="time" granularity="day" baseline title="Browser" />
+			<Axis position={args.orientation === 'horizontal' ? 'bottom' : 'left'} grid title="Downloads" />
+			<Bar {...args} />
+		</Chart>
+	);
+};
 
 const BarStory: StoryFn<typeof Bar> = (args): ReactElement => {
 	const chartProps = useChartProps({ data: barSeriesData, colors, width: 800, height: 600 });
@@ -86,4 +97,13 @@ OnClick.args = {
 	color: 'operatingSystem',
 };
 
-export { Basic, NegativeStack, WithBarLabels, OnClick };
+const StackedBarWithUTCDatetimeFormat = bindWithProps(StackedBarStoryWithUTCData);
+StackedBarWithUTCDatetimeFormat.args = {
+	...defaultProps,
+	dimension: 'browser',
+	metric: 'downloads',
+	color: "dataset_id",
+	dimensionDataType: 'time',
+};
+
+export { Basic, NegativeStack, WithBarLabels, OnClick, StackedBarWithUTCDatetimeFormat };
