@@ -20,6 +20,7 @@ import {
 	PADDING_RATIO,
 	STACK_ID,
 	TRELLIS_PADDING,
+	TIME
 } from '@constants';
 import { addPopoverData, getPopovers } from '@specBuilder/chartPopover/chartPopoverUtils';
 import { addTooltipData, addTooltipSignals } from '@specBuilder/chartTooltip/chartTooltipUtils';
@@ -127,7 +128,7 @@ export const addSignals = produce<Signal[], [BarSpecProps]>((signals, props) => 
 
 export const addData = produce<Data[], [BarSpecProps]>((data, props) => {
 	const { dimension, dimensionDataType, metric, order, type } = props;
-	if (dimensionDataType === 'time') {
+	if (dimensionDataType === TIME) {
 		const tableData = getTableData(data);
 		tableData.transform = addTimeTransform(tableData.transform ?? [], dimension);
 	}
