@@ -9,6 +9,8 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import React from 'react';
+
 import {
 	BACKGROUND_COLOR,
 	FILTERED_TABLE,
@@ -30,9 +32,9 @@ import {
 } from '@constants';
 import { Area, Axis, Bar, Legend, Line, Scatter, Title } from '@rsc';
 import { Combo } from '@rsc/alpha';
+import { Bullet } from '@rsc/alpha';
 import { BigNumber, Donut } from '@rsc/rc';
 import colorSchemes from '@themes/colorSchemes';
-import { Bullet } from 'alpha/components/Bullet';
 import { produce } from 'immer';
 import { Data, LinearScale, OrdinalScale, PointScale, Scale, Signal, Spec } from 'vega';
 
@@ -103,6 +105,9 @@ export function buildSpec(props: SanitizedSpecProps) {
 		symbolSizes,
 		title,
 	} = props;
+
+	console.log('Chart got children:', React.Children.toArray(props.children));
+
 	let spec = initializeSpec(null, { backgroundColor, colorScheme, description, title });
 	spec.signals = getDefaultSignals(props);
 	spec.scales = getDefaultScales(colors, colorScheme, lineTypes, lineWidths, opacities, symbolShapes, symbolSizes);
@@ -111,6 +116,7 @@ export function buildSpec(props: SanitizedSpecProps) {
 	const buildOrder = new Map();
 	buildOrder.set(Area, 0);
 	buildOrder.set(Bar, 0);
+	buildOrder.set(Bullet, 0);
 	buildOrder.set(Line, 0);
 	buildOrder.set(Donut, 0);
 	buildOrder.set(Scatter, 0);
@@ -134,6 +140,7 @@ export function buildSpec(props: SanitizedSpecProps) {
 			 * If we simply compare cur.type to the component,
 			 * that uses referential equailty which fails in production when the component is imported from a different module like ./alpha
 			 */
+			console.log('Child display name: ', cur.type.displayName);
 			switch (cur.type.displayName) {
 				case Area.displayName:
 					areaCount++;

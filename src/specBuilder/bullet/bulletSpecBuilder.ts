@@ -34,6 +34,18 @@ export const addBullet = produce<Spec, [BulletProps & { index?: number; idKey: s
 			index = 0,
 		}
 	) => {
+		console.log(
+			'Adding bullet',
+			label,
+			ranges,
+			measures,
+			target,
+			measureColor,
+			rangeColor,
+			targetColor,
+			orientation,
+			index
+		);
 		const bulletName = `bullet${index}`;
 
 		// Flatten the data: if ranges/measures are arrays, take the first element.
