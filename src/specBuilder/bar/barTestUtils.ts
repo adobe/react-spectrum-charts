@@ -26,7 +26,7 @@ import {
 } from '@constants';
 import { NumericValueRef, ProductionRule, RectEncodeEntry } from 'vega';
 
-import { BarSpecOptions } from '../../types';
+import { BarSpecOptions } from '../types';
 
 export const defaultBarOptions: BarSpecOptions = {
 	barAnnotations: [],

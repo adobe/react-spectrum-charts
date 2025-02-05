@@ -34,10 +34,10 @@ import { toCamelCase } from '@utils';
 import { produce } from 'immer';
 import { Data, Mark, Scale, Signal, Spec } from 'vega';
 
-import { ColorScheme, HighlightedItem, LineOptions, LineSpecOptions } from '../../types';
 import { addTimeTransform, getFilteredTooltipData, getTableData } from '../data/dataUtils';
 import { addContinuousDimensionScale, addFieldToFacetScaleDomain, addMetricScale } from '../scale/scaleSpecBuilder';
 import { addHighlightedItemSignalEvents, addHighlightedSeriesSignalEvents } from '../signal/signalSpecBuilder';
+import { ColorScheme, HighlightedItem, LineOptions, LineSpecOptions } from '../types';
 import { getLineHighlightedData, getLineStaticPointData } from './lineDataUtils';
 import { getLineHoverMarks_DEPRACATED, getLineMark } from './lineMarkUtils';
 import { getLineStaticPoint } from './linePointUtils';

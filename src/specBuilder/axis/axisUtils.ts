@@ -11,7 +11,7 @@
  */
 import { Axis, Mark, Scale, SignalRef } from 'vega';
 
-import { AxisSpecOptions, Granularity, Position } from '../../types';
+import { AxisSpecOptions, Granularity, Position } from '../types';
 import {
 	getAxisLabelsEncoding,
 	getLabelAnchorValues,

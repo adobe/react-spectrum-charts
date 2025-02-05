@@ -30,9 +30,9 @@ import {
 import { defaultSignals } from '@specBuilder/specTestUtils';
 import { Data, Spec } from 'vega';
 
-import { LineSpecOptions } from '../../types';
 import * as signalSpecBuilder from '../signal/signalSpecBuilder';
 import { initializeSpec } from '../specUtils';
+import { LineSpecOptions } from '../types';
 import { addData, addLine, addLineMarks, addSignals, setScales } from './lineSpecBuilder';
 
 const defaultLineOptions: LineSpecOptions = {

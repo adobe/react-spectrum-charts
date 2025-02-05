@@ -20,13 +20,13 @@ import {
 	LineTypeFacet,
 	Orientation,
 	RegressionMethod as RscRegressionMethod,
-	ScaleType as RscScaleType,
+	ScaleType,
 	ScatterSpecOptions,
 	TrendlineMethod,
 	TrendlineOptions,
 	TrendlineSpecOptions,
 	WindowMethod,
-} from '../../types';
+} from '../types';
 
 /** These are all the spec options that currently support trendlines */
 export type TrendlineParentOptions = LineSpecOptions | ScatterSpecOptions | BarSpecOptions;
@@ -266,7 +266,7 @@ export const getRegressionExtent = (
 export const getTrendlineScaleType = (
 	markOptions: TrendlineParentOptions,
 	trendlineOrientation: Orientation
-): RscScaleType => {
+): ScaleType => {
 	// y axis only support linear... for now...
 	if (trendlineOrientation === 'vertical') return 'linear';
 	return 'scaleType' in markOptions ? markOptions.scaleType : markOptions.dimensionScaleType;

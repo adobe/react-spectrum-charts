@@ -34,6 +34,7 @@ import { Combo } from '@rsc/alpha';
 import { BigNumber, Donut, DonutSummary, SegmentLabel } from '@rsc/rc';
 import { View } from 'vega';
 
+import { Datum } from '../specBuilder';
 import {
 	AreaElement,
 	AxisAnnotationChildElement,
@@ -49,7 +50,6 @@ import {
 	ChartTooltipElement,
 	ChildElement,
 	ComboElement,
-	Datum,
 	DonutElement,
 	DonutSummaryElement,
 	LegendElement,

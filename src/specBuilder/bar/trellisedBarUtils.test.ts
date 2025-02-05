@@ -12,7 +12,7 @@
 import { FILTERED_TABLE, TABLE, TRELLIS_PADDING } from '@constants';
 import { Scale } from 'vega';
 
-import { BarSpecOptions } from '../../types';
+import { BarSpecOptions } from '../types';
 import { defaultBarOptions } from './barTestUtils';
 import { getTrellisGroupMark, getTrellisProperties, getTrellisedEncodeEntries, isTrellised } from './trellisedBarUtils';
 

@@ -24,7 +24,7 @@ import { getFacetsFromOptions } from '@specBuilder/specUtils';
 import { getTrendlineAnnotationMarks } from '@specBuilder/trendlineAnnotation';
 import { EncodeEntry, GroupMark, LineMark, NumericValueRef, RuleMark } from 'vega';
 
-import { Orientation, ScaleType, TrendlineMethod, TrendlineSpecOptions } from '../../types';
+import { Orientation, ScaleType, TrendlineMethod, TrendlineSpecOptions } from '../types';
 import {
 	TrendlineParentOptions,
 	getTrendlineColorFromMarkOptions,

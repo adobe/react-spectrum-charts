@@ -36,21 +36,6 @@ import colorSchemes from '@themes/colorSchemes';
 import { produce } from 'immer';
 import { Data, LinearScale, OrdinalScale, PointScale, Scale, Signal, Spec } from 'vega';
 
-import {
-	ChartColors,
-	ChartOptions,
-	ChartSpecOptions,
-	ChartSymbolShape,
-	ColorScale,
-	ColorScheme,
-	Colors,
-	LineType,
-	LineTypes,
-	LineWidth,
-	Opacities,
-	SymbolShapes,
-	SymbolSize,
-} from '../types';
 import { addArea } from './area/areaSpecBuilder';
 import { addAxis } from './axis/axisSpecBuilder';
 import { addBar } from './bar/barSpecBuilder';
@@ -74,6 +59,21 @@ import {
 	initializeSpec,
 } from './specUtils';
 import { addTitle } from './title/titleSpecBuilder';
+import {
+	ChartColors,
+	ChartOptions,
+	ChartSpecOptions,
+	ChartSymbolShape,
+	ColorScale,
+	ColorScheme,
+	Colors,
+	LineType,
+	LineTypes,
+	LineWidth,
+	Opacities,
+	SymbolShapes,
+	SymbolSize,
+} from './types';
 
 export interface ChartSpecBuilder {
 	buildSpec: (options: ChartOptions) => Spec;

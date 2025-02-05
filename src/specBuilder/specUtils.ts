@@ -43,7 +43,7 @@ import {
 	SpectrumColor,
 	SymbolSize,
 	SymbolSizeFacet,
-} from '../types';
+} from './types';
 
 /**
  * gets all the keys that are used to facet by

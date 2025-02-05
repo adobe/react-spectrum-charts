@@ -41,7 +41,7 @@ import { toCamelCase } from '@utils';
 import { produce } from 'immer';
 import { BandScale, Data, FormulaTransform, Mark, OrdinalScale, Scale, Signal, Spec } from 'vega';
 
-import { BarOptions, BarSpecOptions, ColorScheme, HighlightedItem } from '../../types';
+import { BarOptions, BarSpecOptions, ColorScheme, HighlightedItem } from '../types';
 import { getBarPadding, getDimensionSelectionRing, getScaleValues, isDodgedAndStacked } from './barUtils';
 import { getDodgedMark } from './dodgedBarUtils';
 import { getDodgedAndStackedBarMark, getStackedBarMarks } from './stackedBarUtils';

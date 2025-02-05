@@ -25,7 +25,7 @@ import {
 	TextMark,
 } from 'vega';
 
-import { AxisSpecOptions, Position, ReferenceLineOptions, ReferenceLineSpecOptions } from '../../types';
+import { AxisSpecOptions, Position, ReferenceLineOptions, ReferenceLineSpecOptions } from '../types';
 import { isVerticalAxis } from './axisUtils';
 
 export const getReferenceLines = (axisOptions: AxisSpecOptions): ReferenceLineSpecOptions[] => {

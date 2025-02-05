@@ -16,7 +16,7 @@ import { combineNames, toCamelCase } from '@utils';
 import { produce } from 'immer';
 import { Spec } from 'vega';
 
-import { BarOptions, ColorScheme, ComboOptions, HighlightedItem, LineOptions } from '../../types';
+import { BarOptions, ColorScheme, ComboOptions, HighlightedItem, LineOptions } from '../types';
 
 export const addCombo = produce<
 	Spec,

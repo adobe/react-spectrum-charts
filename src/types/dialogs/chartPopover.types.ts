@@ -11,31 +11,7 @@
  */
 import { JSXElementConstructor, ReactElement, ReactNode } from 'react';
 
-import { Datum } from '../util.types';
-
-/**
- * React-free set of options for the ChartPopover component.
- */
-export interface ChartPopoverOptions {
-	/** Width of the popover */
-	width?: number | 'auto';
-	/** Minimum width of the popover */
-	minWidth?: number;
-	/** Maximum width of the popover */
-	maxWidth?: number;
-	/** Height of the popover */
-	height?: number | 'auto';
-	/** Minimum height of the popover */
-	minHeight?: number;
-	/** Maximum height of the popover */
-	maxHeight?: number;
-	/** handler that is called when the popover's open state changes */
-	onOpenChange?: (isOpen: boolean) => void;
-	/** The placement padding that should be applied between the popover and its surrounding container */
-	containerPadding?: number;
-	/** Sets which marks should be highlighted when a popover is visible.  This feature is incomplete. */
-	UNSAFE_highlightBy?: 'series' | 'dimension' | 'item' | string[];
-}
+import { ChartPopoverOptions, Datum } from '../../specBuilder';
 
 export type PopoverHandler = (datum: Datum, close: () => void) => ReactNode;
 

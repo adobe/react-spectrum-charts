@@ -24,7 +24,7 @@ import { addFieldToFacetScaleDomain } from '@specBuilder/scale/scaleSpecBuilder'
 import { getColorValue, getFacetsFromOptions, getLineWidthPixelsFromLineWidth } from '@specBuilder/specUtils';
 import { GroupMark, NumericValueRef, Scale, TrailMark } from 'vega';
 
-import { LineWidthFacet, ScatterPathOptions, ScatterPathSpecOptions, ScatterSpecOptions } from '../../types';
+import { LineWidthFacet, ScatterPathOptions, ScatterPathSpecOptions, ScatterSpecOptions } from '../types';
 
 /**
  * Gets the path spec options, applying defaults.

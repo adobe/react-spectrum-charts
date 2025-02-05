@@ -11,34 +11,9 @@
  */
 import { JSXElementConstructor, ReactElement } from 'react';
 
-import { SpectrumColor } from '../../SpectrumVizColor.types';
-import { ChartTooltipElement, ChartTooltipOptions } from '../../dialogs/chartTooltip.types';
-import { LineType, LineWidth } from '../../util.types';
+import { MetricRangeOptions } from '../../../specBuilder';
+import { ChartTooltipElement } from '../../dialogs';
 import { Children } from '../../util.types';
-
-export interface MetricRangeOptions {
-	/** The color of the metric line and range. If undefined, will default to the color of the series that it represents. */
-	color?: SpectrumColor | string;
-	/** The line type of the metric line. (dashed, solid, etc..) */
-	lineType?: LineType;
-	/** The line width of the metric line. */
-	lineWidth?: LineWidth;
-	/** The opacity of the area around the metric */
-	rangeOpacity?: number;
-	/** The key for the upper range in the data */
-	metricEnd: string;
-	/** The key for the lower range in the data */
-	metricStart: string;
-	/** The key for the metric value in the data */
-	metric?: string;
-	/** Whether the metric range should only be visible when hovering over the parent line */
-	displayOnHover?: boolean;
-	/** Boolean indicating whether or not the y-axis should expand to include the entire metric range (if necessary). */
-	scaleAxisToFit?: boolean;
-
-	// children
-	chartTooltips?: ChartTooltipOptions[];
-}
 
 export interface MetricRangeProps extends Omit<MetricRangeOptions, 'chartTooltips'> {
 	children?: Children<ChartTooltipElement>;

@@ -30,7 +30,7 @@ import {
 	DonutSpecOptions,
 	LineSpecOptions,
 	ScatterSpecOptions,
-} from '../../types';
+} from '../types';
 
 type TooltipParentOptions = AreaSpecOptions | BarSpecOptions | DonutSpecOptions | LineSpecOptions | ScatterSpecOptions;
 

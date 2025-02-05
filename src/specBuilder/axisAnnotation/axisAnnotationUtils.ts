@@ -15,7 +15,7 @@ import { getColorValue } from '@specBuilder/specUtils';
 import { ANNOTATION_RANGED_ICON_SVG, ANNOTATION_SINGLE_ICON_SVG } from '@svgPaths';
 import { Axis, Data, Mark, ScaleType, Signal, SourceData, ValuesData } from 'vega';
 
-import { AxisAnnotationOptions, AxisAnnotationSpecOptions, AxisSpecOptions, ColorScheme, Position } from '../../types';
+import { AxisAnnotationOptions, AxisAnnotationSpecOptions, AxisSpecOptions, ColorScheme, Position } from '../types';
 
 /**
  * Adds the required data for axis annotations.

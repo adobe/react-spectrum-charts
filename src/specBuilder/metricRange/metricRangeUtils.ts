@@ -17,7 +17,7 @@ import { addHighlightedSeriesSignalEvents } from '@specBuilder/signal/signalSpec
 import { getFacetsFromOptions } from '@specBuilder/specUtils';
 import { AreaMark, GroupMark, LineMark, Signal, SourceData } from 'vega';
 
-import { LineSpecOptions, MetricRangeOptions, MetricRangeSpecOptions } from '../../types';
+import { LineSpecOptions, MetricRangeOptions, MetricRangeSpecOptions } from '../types';
 
 export type MetricRangeParentOptions = LineSpecOptions;
 

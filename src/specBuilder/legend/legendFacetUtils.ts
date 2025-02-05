@@ -19,7 +19,7 @@ import {
 } from '@constants';
 import { Scale, ScaleMultiFieldsRef } from 'vega';
 
-import { FacetType, SecondaryFacetType } from '../../types';
+import { FacetType, SecondaryFacetType } from '../../specBuilder';
 import { Facet } from './legendUtils';
 
 /**

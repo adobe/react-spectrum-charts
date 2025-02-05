@@ -21,7 +21,7 @@ import {
 	DonutSpecOptions,
 	LineSpecOptions,
 	ScatterSpecOptions,
-} from '../../types';
+} from '../types';
 
 type PopoverParentOptions = AreaSpecOptions | BarSpecOptions | DonutSpecOptions | LineSpecOptions | ScatterSpecOptions;
 

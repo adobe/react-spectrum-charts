@@ -34,7 +34,7 @@ import {
 	ColorScheme,
 	HighlightedItem,
 	ScaleType,
-} from '../../types';
+} from '../types';
 
 export interface AreaMarkOptions {
 	color: ColorFacet;

@@ -27,7 +27,7 @@ import { getGenericValueSignal } from '@specBuilder/signal/signalSpecBuilder';
 import { produce } from 'immer';
 import { Axis, Data, GroupMark, Mark, ScaleType, Signal, Spec } from 'vega';
 
-import { AxisOptions, AxisSpecOptions, ColorScheme, Label, Orientation, Position } from '../../types';
+import { AxisOptions, AxisSpecOptions, ColorScheme, Label, Orientation, Position } from '../types';
 import { getAxisLabelsEncoding, getControlledLabelAnchorValues, getLabelValue } from './axisLabelUtils';
 import { getReferenceLineMarks, getReferenceLines, scaleTypeSupportsReferenceLines } from './axisReferenceLineUtils';
 import { encodeAxisTitle, getTrellisAxisOptions, isTrellisedChart } from './axisTrellisUtils';

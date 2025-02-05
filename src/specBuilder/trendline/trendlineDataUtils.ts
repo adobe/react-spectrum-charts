@@ -23,7 +23,7 @@ import { getFacetsFromOptions } from '@specBuilder/specUtils';
 import { produce } from 'immer';
 import { Data, SourceData, Transforms } from 'vega';
 
-import { TrendlineMethod, TrendlineSpecOptions } from '../../types';
+import { TrendlineMethod, TrendlineSpecOptions } from '../types';
 import {
 	getAggregateTransform,
 	getNormalizedDimensionTransform,

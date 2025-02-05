@@ -26,7 +26,7 @@ import {
 	ScatterPathOptions,
 	SegmentLabelOptions,
 	TrendlineOptions,
-} from '../../types';
+} from '../types';
 
 export const getPopoverMarkName = (chartPopovers: ChartPopoverOptions[], lineName: string): string | undefined => {
 	// if the line has a popover, this line is the target for the popover

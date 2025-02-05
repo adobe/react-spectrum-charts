@@ -16,7 +16,7 @@ import { defaultSignals } from '@specBuilder/specTestUtils';
 import { baseData } from '@specBuilder/specUtils';
 import { Data, Signal } from 'vega';
 
-import { BarSpecOptions, ChartTooltipOptions, LineSpecOptions } from '../../types';
+import { BarSpecOptions, ChartTooltipOptions, LineSpecOptions } from '../types';
 import {
 	addHighlightMarkOpacityRules,
 	addTooltipData,

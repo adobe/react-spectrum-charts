@@ -32,7 +32,7 @@ import {
 } from '@specBuilder/marks/markUtils';
 import { LineMark, Mark, NumericValueRef, ProductionRule, RuleMark } from 'vega';
 
-import { ScaleType } from '../../types';
+import { ScaleType } from '../types';
 import {
 	getHighlightBackgroundPoint,
 	getHighlightPoint,

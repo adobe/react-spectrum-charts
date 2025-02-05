@@ -25,7 +25,7 @@ import {
 	ThresholdScale,
 } from 'vega';
 
-import { DonutSpecOptions, DonutSummaryOptions, DonutSummarySpecOptions } from '../../types';
+import { DonutSpecOptions, DonutSummaryOptions, DonutSummarySpecOptions } from '../types';
 
 /**
  * Gets the DonutSummary component from the children if one exists

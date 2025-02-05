@@ -33,7 +33,6 @@ import { spectrumColors } from '@themes';
 import colorSchemes from '@themes/colorSchemes';
 import { Data } from 'vega';
 
-import { BarOptions, ChartSpecOptions, LineType } from '../types';
 import {
 	addData,
 	buildSpec,
@@ -51,6 +50,7 @@ import {
 } from './chartSpecBuilder';
 import { defaultSignals } from './specTestUtils';
 import { baseData } from './specUtils';
+import { BarOptions, ChartSpecOptions, LineType } from './types';
 
 const defaultData: Data[] = [{ name: TABLE, values: [], transform: [{ type: 'identifier', as: MARK_ID }] }];
 

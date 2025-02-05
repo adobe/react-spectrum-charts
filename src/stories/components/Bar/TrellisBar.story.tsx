@@ -19,7 +19,8 @@ import { bindWithProps } from '@test-utils';
 
 import { Content, Text, View } from '@adobe/react-spectrum';
 
-import { BarProps, Datum, SpectrumColor } from '../../../types';
+import { Datum, SpectrumColor } from '../../../specBuilder';
+import { BarProps } from '../../../types';
 import { generateMockDataForTrellis } from './data';
 
 export default {

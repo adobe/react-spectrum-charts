@@ -66,7 +66,7 @@ import {
 	ScatterSpecOptions,
 	SymbolSizeFacet,
 	TrendlineOptions,
-} from '../../types';
+} from '../types';
 
 /**
  * If a popover or hasOnClick exists on the mark, then set the cursor to a pointer.

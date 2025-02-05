@@ -13,8 +13,10 @@ import React, { ReactElement } from 'react';
 
 import { Annotation } from '@components/Annotation/Annotation';
 import useChartProps from '@hooks/useChartProps';
-import { Bar, BarAnnotationProps, BarProps, Chart, Orientation } from '@rsc';
+import { Bar, BarAnnotationProps, BarProps, Chart } from '@rsc';
 import { StoryFn } from '@storybook/react';
+
+import { Orientation } from '../../../specBuilder';
 
 export default {
 	title: 'RSC/Bar/Annotation',

@@ -17,7 +17,7 @@ import { Axis, Bar, BarProps, Chart, Legend } from '@rsc';
 import { StoryFn } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
 
-import { SpectrumColor } from '../../../types';
+import { SpectrumColor } from '../../../specBuilder';
 import { barSeriesData, negativeBarSeriesData } from './data';
 
 export default {
@@ -61,7 +61,7 @@ const defaultProps: BarProps = {
 	order: 'order',
 	color: 'operatingSystem',
 	onClick: undefined,
-}
+};
 
 const Basic = bindWithProps(BarStory);
 Basic.args = {

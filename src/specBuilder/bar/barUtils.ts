@@ -32,7 +32,7 @@ import {
 	RectMark,
 } from 'vega';
 
-import { BarSpecOptions, Orientation } from '../../types';
+import { BarSpecOptions, Orientation } from '../types';
 import { getTrellisProperties, isTrellised } from './trellisedBarUtils';
 
 /**

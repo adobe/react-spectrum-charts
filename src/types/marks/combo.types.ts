@@ -11,21 +11,10 @@
  */
 import { JSXElementConstructor, ReactElement } from 'react';
 
+import { ComboOptions } from '../../specBuilder';
 import { Children } from '../util.types';
-import { BarElement, BarOptions } from './bar.types';
-import { LineElement, LineOptions } from './line.types';
-
-export interface ComboOptions {
-	markType: 'combo';
-
-	/** Data field that the metrics are trended against (x-axis for horizontal orientation) */
-	dimension?: string;
-	/** Sets the name of the component. */
-	name?: string;
-
-	// children
-	marks?: (BarOptions | LineOptions)[];
-}
+import { BarElement } from './bar.types';
+import { LineElement } from './line.types';
 
 export type ComboChildElement = BarElement | LineElement;
 

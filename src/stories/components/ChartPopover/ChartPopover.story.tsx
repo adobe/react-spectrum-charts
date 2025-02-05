@@ -9,10 +9,10 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import React, { ReactElement } from 'react';
+import { ReactElement } from 'react';
 
 import useChartProps from '@hooks/useChartProps';
-import { Area, Axis, Bar, Chart, ChartPopover, ChartProps, ChartTooltip, Datum, Legend, Line } from '@rsc';
+import { Area, Axis, Bar, Chart, ChartPopover, ChartProps, ChartTooltip, Legend, Line } from '@rsc';
 import { Donut, DonutSummary } from '@rsc/rc';
 import { browserData as data } from '@stories/data/data';
 import { StoryFn } from '@storybook/react';
@@ -20,6 +20,7 @@ import { bindWithProps } from '@test-utils';
 
 import { Content } from '@adobe/react-spectrum';
 
+import { Datum } from '../../../specBuilder';
 import { basicDonutData } from '../Donut/data';
 
 export default {
@@ -164,4 +165,4 @@ StackedBarChart.args = { children: dialogContent, width: 'auto' };
 const DonutChart = bindWithProps(DonutStory);
 DonutChart.args = { children: donutDialogContent, width: 'auto' };
 
-export { Canvas, Svg, Size, MinWidth, OnOpenChange, AreaChart, DodgedBarChart, LineChart, StackedBarChart, DonutChart };
+export { AreaChart, Canvas, DodgedBarChart, DonutChart, LineChart, MinWidth, OnOpenChange, Size, StackedBarChart, Svg };

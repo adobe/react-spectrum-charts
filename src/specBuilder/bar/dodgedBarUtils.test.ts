@@ -26,7 +26,7 @@ import {
 } from '@constants';
 import { GroupMark, Mark, RectEncodeEntry } from 'vega';
 
-import { BarSpecOptions } from '../../types';
+import { BarSpecOptions } from '../types';
 import {
 	defaultBarOptions,
 	defaultBarStrokeEncodings,

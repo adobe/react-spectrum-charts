@@ -11,19 +11,7 @@
  */
 import { JSXElementConstructor, ReactElement } from 'react';
 
-export interface TrendlineAnnotationOptions {
-	/** Adds a badge around the annotation */
-	badge?: boolean;
-	/** where along the dimension scale to label the trendline value */
-	dimensionValue?: number | 'start' | 'end';
-	/** d3 number format specifier. Only valid if labelFormat is linear or undefined.
-	 *
-	 * @see https://d3js.org/d3-format#locale_format
-	 */
-	numberFormat?: string;
-	/** text that will be prepended to the trendline value */
-	prefix?: string;
-}
+import { TrendlineAnnotationOptions } from '../../../specBuilder';
 
 export interface TrendlineAnnotationProps extends TrendlineAnnotationOptions {}
 

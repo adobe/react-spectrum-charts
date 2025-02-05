@@ -13,7 +13,7 @@ import { MARK_ID } from '@constants';
 import { addBar } from '@specBuilder/bar/barSpecBuilder';
 import { addLine } from '@specBuilder/line/lineSpecBuilder';
 
-import { BarOptions, LineOptions } from '../../types';
+import { BarOptions, LineOptions } from '../types';
 import { addCombo, getComboMarkName } from './comboSpecBuilder';
 
 jest.mock('@specBuilder/bar/barSpecBuilder', () => ({

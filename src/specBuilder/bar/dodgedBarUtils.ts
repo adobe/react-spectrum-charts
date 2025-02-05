@@ -13,7 +13,7 @@ import { BACKGROUND_COLOR } from '@constants';
 import { isInteractive } from '@specBuilder/marks/markUtils';
 import { GroupMark } from 'vega';
 
-import { BarSpecOptions } from '../../types';
+import { BarSpecOptions } from '../types';
 import { getAnnotationMarks } from './barAnnotationUtils';
 import {
 	getBarEnterEncodings,

@@ -38,7 +38,7 @@ import { toCamelCase } from '@utils';
 import { produce } from 'immer';
 import { Data, Scale, Signal, Spec } from 'vega';
 
-import { ColorScheme, HighlightedItem, ScatterOptions, ScatterSpecOptions } from '../../types';
+import { ColorScheme, HighlightedItem, ScatterOptions, ScatterSpecOptions } from '../types';
 import { addScatterMarks } from './scatterMarkUtils';
 
 /**

@@ -18,7 +18,7 @@ import {
 	BarAnnotationStyleOptions,
 	BarSpecOptions,
 	Orientation,
-} from '../../types';
+} from '../types';
 import { getOrientationProperties, isDodgedAndStacked } from './barUtils';
 
 type AnnotationWidth = { value: number } | { signal: string };

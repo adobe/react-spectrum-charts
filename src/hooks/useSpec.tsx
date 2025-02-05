@@ -14,8 +14,9 @@ import { useMemo } from 'react';
 import { Data, Spec, ValuesData } from 'vega';
 
 import { buildSpec } from '../specBuilder';
+import { ChartSpecOptions } from '../specBuilder';
 import { baseData, getColorValue } from '../specBuilder/specUtils';
-import { ChartSpecOptions, SanitizedSpecProps } from '../types';
+import { SanitizedSpecProps } from '../types';
 
 export default function useSpec({
 	backgroundColor,

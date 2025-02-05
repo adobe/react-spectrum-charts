@@ -14,30 +14,14 @@ import { JSXElementConstructor, ReactElement } from 'react';
 import { IconProps } from '@adobe/react-spectrum';
 import { IconPropsWithoutChildren } from '@react-spectrum/icon';
 
-import { Children, Orientation } from '../util.types';
-import { LineElement, LineOptions } from './line.types';
+import { BigNumberOptions } from '../../specBuilder';
+import { Children } from '../util.types';
+import { LineElement } from './line.types';
 
 export type IconElement = ReactElement<
 	IconProps | IconPropsWithoutChildren,
 	JSXElementConstructor<IconProps | IconPropsWithoutChildren>
 >;
-
-export type BigNumberNumberType = 'linear' | 'percentage';
-export type BigNumberMethod = 'sum' | 'avg' | 'last';
-
-export interface BigNumberOptions {
-	markType: 'bigNumber';
-
-	orientation: Orientation;
-	label: string;
-	dataKey: string;
-	numberFormat?: string;
-	numberType?: BigNumberNumberType;
-	method?: BigNumberMethod;
-
-	//children
-	lines?: LineOptions[];
-}
 
 export interface BigNumberProps extends Omit<BigNumberOptions, 'lines' | 'markType'> {
 	children?: Children<LineElement>;

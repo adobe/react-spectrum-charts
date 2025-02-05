@@ -30,7 +30,7 @@ import {
 import { defaultBarOptions } from '@specBuilder/bar/barTestUtils';
 import { SignalRef } from 'vega';
 
-import { ProductionRuleTests } from '../../types';
+import { ProductionRuleTests } from '../types';
 import {
 	getColorProductionRule,
 	getColorProductionRuleSignalString,

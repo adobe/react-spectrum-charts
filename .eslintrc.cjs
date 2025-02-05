@@ -32,6 +32,10 @@ module.exports = {
 				name: 'types/locales',
 				message: 'Please use relative path import for types instead (ex. ../types/locales).',
 			},
+			{
+				name: '@specBuilder/types',
+				message: 'Please use relative path import for types instead (ex. ../specBuilder/types).',
+			},
 		],
 		'header/header': [
 			2,

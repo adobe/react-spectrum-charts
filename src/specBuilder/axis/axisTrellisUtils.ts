@@ -11,7 +11,7 @@
  */
 import { Axis, GroupMark, Spec } from 'vega';
 
-import { AxisSpecOptions } from '../../types';
+import { AxisSpecOptions } from '../types';
 
 /**
  * Checks the spec to see if it is a trellised chart

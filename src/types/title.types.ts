@@ -11,21 +11,7 @@
  */
 import { JSXElementConstructor, ReactElement } from 'react';
 
-import { FontWeight } from 'vega';
-
-export type TitlePosition = 'start' | 'middle' | 'end';
-export type TitleOrient = 'top' | 'bottom' | 'left' | 'right';
-
-export interface TitleOptions {
-	/** The title text */
-	text: string;
-	/** The title position */
-	position?: TitlePosition;
-	/** The title font weight */
-	fontWeight?: FontWeight;
-	/** The location of the title relative to the chart */
-	orient?: TitleOrient;
-}
+import { TitleOptions } from '../specBuilder';
 
 export interface TitleProps extends TitleOptions {}
 

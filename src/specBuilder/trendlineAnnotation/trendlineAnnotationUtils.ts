@@ -19,12 +19,7 @@ import {
 } from '@specBuilder/trendline/trendlineMarkUtils';
 import { ColorValueRef, GroupMark, NumericValueRef, ProductionRule, RectMark, SymbolMark, TextMark } from 'vega';
 
-import {
-	ColorFacet,
-	TrendlineAnnotationOptions,
-	TrendlineAnnotationSpecOptions,
-	TrendlineSpecOptions,
-} from '../../types';
+import { ColorFacet, TrendlineAnnotationOptions, TrendlineAnnotationSpecOptions, TrendlineSpecOptions } from '../types';
 
 /**
  * Applies all trendline annotation defaults

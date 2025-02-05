@@ -20,7 +20,7 @@ import {
 import { DATE_PATH } from '@svgPaths';
 import { spectrumColors } from '@themes';
 
-import { AxisSpecOptions, ReferenceLineSpecOptions } from '../../types';
+import { AxisSpecOptions, ReferenceLineSpecOptions } from '../types';
 import {
 	getPositionEncoding,
 	getReferenceLineLabelsEncoding,

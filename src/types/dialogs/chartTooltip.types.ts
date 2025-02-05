@@ -11,18 +11,11 @@
  */
 import { JSXElementConstructor, ReactElement, ReactNode } from 'react';
 
-import { Datum } from '../util.types';
+import { ChartTooltipOptions, Datum } from '../../specBuilder';
 
 export type ChartTooltipElement = ReactElement<ChartTooltipProps, JSXElementConstructor<ChartTooltipProps>>;
 
 export type TooltipHandler = (datum: Datum) => ReactNode;
-
-export interface ChartTooltipOptions {
-	/** The keys in the data that will disable the tooltip if they have truthy values */
-	excludeDataKeys?: string[];
-	/** Sets which marks should be highlighted when a tooltip is visible */
-	highlightBy?: 'series' | 'dimension' | 'item' | string[];
-}
 
 export interface ChartTooltipProps extends ChartTooltipOptions {
 	/** Callback that displays the tooltip content */

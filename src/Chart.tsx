@@ -35,7 +35,8 @@ import { Theme } from '@react-types/provider';
 
 import './Chart.css';
 import { RscChart } from './RscChart';
-import { ChartData, ChartHandle, ChartProps, LineType, RscChartProps } from './types';
+import { LineType } from './specBuilder';
+import { ChartData, ChartHandle, ChartProps, RscChartProps } from './types';
 
 interface PlaceholderContentProps {
 	data: ChartData[];

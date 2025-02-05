@@ -11,18 +11,7 @@
  */
 import { JSXElementConstructor, ReactElement } from 'react';
 
-import { NumberFormat } from '../../util.types';
-
-export interface DonutSummaryOptions {
-	/** d3 number format specifier.
-	 * Sets the number format for the summary value.
-	 *
-	 * see {@link https://d3js.org/d3-format#locale_format}
-	 */
-	numberFormat?: NumberFormat;
-	/** Label for the metric summary */
-	label?: string;
-}
+import { DonutSummaryOptions } from '../../../specBuilder';
 
 export interface DonutSummaryProps extends DonutSummaryOptions {}
 

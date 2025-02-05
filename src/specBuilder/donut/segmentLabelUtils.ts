@@ -13,7 +13,7 @@ import { DONUT_RADIUS, DONUT_SEGMENT_LABEL_MIN_ANGLE, FILTERED_TABLE } from '@co
 import { getTextNumberFormat } from '@specBuilder/textUtils';
 import { GroupMark, NumericValueRef, ProductionRule, TextEncodeEntry, TextMark, TextValueRef } from 'vega';
 
-import { DonutSpecOptions, SegmentLabelOptions, SegmentLabelSpecOptions } from '../../types';
+import { DonutSpecOptions, SegmentLabelOptions, SegmentLabelSpecOptions } from '../types';
 
 /**
  * Gets the SegmentLabel component from the children if one exists

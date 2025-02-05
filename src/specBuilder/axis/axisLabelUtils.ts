@@ -23,7 +23,7 @@ import {
 	TickCount,
 } from 'vega';
 
-import { AxisSpecOptions, Granularity, Label, LabelAlign, Orientation, Position } from '../../types';
+import { AxisSpecOptions, Granularity, Label, LabelAlign, Orientation, Position } from '../types';
 import { isVerticalAxis } from './axisUtils';
 
 /**

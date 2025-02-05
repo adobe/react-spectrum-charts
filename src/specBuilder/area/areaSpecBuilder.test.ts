@@ -32,8 +32,8 @@ import { getGenericValueSignal } from '@specBuilder/signal/signalSpecBuilder';
 import { defaultSignals } from '@specBuilder/specTestUtils';
 import { Data, GroupMark, Spec } from 'vega';
 
-import { AreaSpecOptions } from '../../types';
 import { initializeSpec } from '../specUtils';
+import { AreaSpecOptions } from '../types';
 import { addArea, addAreaMarks, addData, addHighlightedItemEvents, addSignals, setScales } from './areaSpecBuilder';
 
 const startingSpec: Spec = initializeSpec({

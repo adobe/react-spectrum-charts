@@ -9,15 +9,17 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import React, { ReactElement } from 'react';
+import { ReactElement } from 'react';
 
 import { ChartTooltip } from '@components/ChartTooltip/ChartTooltip';
 import useChartProps from '@hooks/useChartProps';
-import { Area, Bar, Chart, Datum, Line, categorical12 } from '@rsc';
+import { Area, Bar, Chart, Line, categorical12 } from '@rsc';
 import { browserData } from '@stories/data/data';
 import { formatTimestamp } from '@stories/storyUtils';
 import { StoryFn } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
+
+import { Datum } from '../../../specBuilder';
 
 export default {
 	title: 'RSC/ChartTooltip',
@@ -179,4 +181,4 @@ DisabledSeriesLineChart.args = {
 	excludeDataKeys: ['excludeFromTooltip'],
 };
 
-export { AreaChart, DodgedBarChart, LineChart, StackedBarChart, DisabledSeriesLineChart };
+export { AreaChart, DisabledSeriesLineChart, DodgedBarChart, LineChart, StackedBarChart };

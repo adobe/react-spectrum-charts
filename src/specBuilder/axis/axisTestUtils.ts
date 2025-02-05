@@ -18,7 +18,7 @@ import {
 } from '@constants';
 import { Mark } from 'vega';
 
-import { AxisSpecOptions } from '../../types';
+import { AxisSpecOptions } from '../types';
 
 export const defaultXBaselineMark: Mark = {
 	name: 'xBaseline',

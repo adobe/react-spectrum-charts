@@ -24,7 +24,7 @@ import {
 } from '@constants';
 import { RectEncodeEntry } from 'vega';
 
-import { BarSpecOptions } from '../../types';
+import { BarSpecOptions } from '../types';
 import {
 	defaultBarEnterEncodings,
 	defaultBarOptions,

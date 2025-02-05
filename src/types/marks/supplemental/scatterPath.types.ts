@@ -11,19 +11,7 @@
  */
 import { JSXElementConstructor, ReactElement } from 'react';
 
-import { SpectrumColor } from '../../SpectrumVizColor.types';
-import { PathWidthFacet } from '../../util.types';
-
-export interface ScatterPathOptions {
-	/** The color of the links.*/
-	color?: SpectrumColor | string;
-	/** The width on the links. Link width can vary by point. */
-	pathWidth?: PathWidthFacet;
-	/** Data keys that should be used to create the groups that get connected by links. */
-	groupBy?: string[];
-	/** The opacity of the links. */
-	opacity?: number;
-}
+import { ScatterPathOptions } from '../../../specBuilder';
 
 export interface ScatterPathProps extends ScatterPathOptions {}
 

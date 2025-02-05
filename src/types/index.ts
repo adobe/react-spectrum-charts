@@ -13,9 +13,6 @@
 export * from './chart.types';
 export * from './legend.types';
 export * from './locale.types';
-export * from './specBuilder.types';
-export * from './SpectrumVizColor.types';
-export * from './supplementalVega.types';
 export * from './title.types';
 export * from './util.types';
 

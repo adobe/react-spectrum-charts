@@ -13,7 +13,7 @@ import { FILTERED_TABLE } from '@constants';
 import { addDomainFields, getScaleIndexByName } from '@specBuilder/scale/scaleSpecBuilder';
 import { GroupMark, Mark, Scale } from 'vega';
 
-import { BarSpecOptions } from '../../types';
+import { BarSpecOptions } from '../types';
 import { getDodgedDimensionEncodings, getTrellisedDimensionEncodings, isDodgedAndStacked } from './barUtils';
 
 /**

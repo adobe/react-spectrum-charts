@@ -39,16 +39,8 @@ import GraphPathing from '@spectrum-icons/workflow/GraphPathing';
 import UsersAdd from '@spectrum-icons/workflow/UsersAdd';
 import ViewDetail from '@spectrum-icons/workflow/ViewDetail';
 
-import {
-	ChartData,
-	ChartProps,
-	Colors,
-	Datum,
-	LegendDescription,
-	LegendLabel,
-	SpectrumColor,
-	SubLabel,
-} from '../types';
+import { Colors, Datum, LegendDescription, LegendLabel, SpectrumColor, SubLabel } from '../specBuilder';
+import { ChartData, ChartProps } from '../types';
 import {
 	funnelConversionData,
 	funnelConversionTimeComparisonData,

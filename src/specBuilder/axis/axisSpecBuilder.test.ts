@@ -12,7 +12,7 @@
 import { DEFAULT_LABEL_FONT_WEIGHT, FILTERED_TABLE } from '@constants';
 import { Axis, GroupMark, ProductionRule, Scale, Signal, TextValueRef } from 'vega';
 
-import { SubLabel } from '../../types';
+import { SubLabel } from '../types';
 import {
 	addAxes,
 	addAxesMarks,

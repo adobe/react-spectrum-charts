@@ -11,7 +11,7 @@
  */
 import { MARK_ID } from '@constants';
 
-import { DonutSpecOptions } from '../../types';
+import { DonutSpecOptions } from '../types';
 
 export const defaultDonutOptions: DonutSpecOptions = {
 	chartPopovers: [],

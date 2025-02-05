@@ -21,7 +21,7 @@ import {
 	MARK_ID,
 } from '@constants';
 
-import { LineSpecOptions, MetricRangeOptions, MetricRangeSpecOptions } from '../../types';
+import { LineSpecOptions, MetricRangeOptions, MetricRangeSpecOptions } from '../types';
 import {
 	applyMetricRangeOptionDefaults,
 	getMetricRangeData,

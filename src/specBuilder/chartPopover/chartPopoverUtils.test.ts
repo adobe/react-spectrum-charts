@@ -13,7 +13,7 @@ import { defaultBarOptions } from '@specBuilder/bar/barTestUtils';
 import { baseData } from '@specBuilder/specUtils';
 import { Data } from 'vega';
 
-import { BarSpecOptions, ChartPopoverOptions } from '../../types';
+import { BarSpecOptions, ChartPopoverOptions } from '../types';
 import { addPopoverData, applyPopoverPropDefaults, getPopovers } from './chartPopoverUtils';
 
 const getDefautltMarkOptions = (popoverOptions: ChartPopoverOptions = {}): BarSpecOptions => ({

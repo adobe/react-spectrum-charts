@@ -16,7 +16,7 @@ import { MarkOnClickDetail } from '@hooks/useMarkOnClickDetails';
 import { toggleStringArrayValue } from '@utils';
 import { Item, Scene, SceneGroup, SceneItem, ScenegraphEvent, View } from 'vega';
 
-import { Datum, MarkBounds } from '../types';
+import { Datum, MarkBounds } from '../specBuilder';
 
 export type ActionItem = Item | undefined | null;
 type ViewEventCallback = (event: ScenegraphEvent, item: ActionItem) => void;

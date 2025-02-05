@@ -26,7 +26,7 @@ import {
 	WindowTransform,
 } from 'vega';
 
-import { AggregateMethod, TrendlineMethod, TrendlineSpecOptions } from '../../types';
+import { AggregateMethod, TrendlineMethod, TrendlineSpecOptions } from '../types';
 import { TrendlineParentOptions, getPolynomialOrder, getRegressionExtent, isPolynomialMethod } from './trendlineUtils';
 
 /**

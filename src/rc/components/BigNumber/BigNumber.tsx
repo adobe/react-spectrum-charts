@@ -18,7 +18,8 @@ import { getLocale } from 'utils/locale';
 
 import { Flex, FlexProps, IconProps } from '@adobe/react-spectrum';
 
-import { BigNumberMethod, BigNumberProps, ChartData, LineProps, Orientation, RscChartProps } from '../../../types';
+import { BigNumberMethod, Orientation } from '../../../specBuilder';
+import { BigNumberProps, ChartData, LineProps, RscChartProps } from '../../../types';
 import './BigNumber.css';
 import { formatBigNumber } from './bigNumberFormatUtils';
 

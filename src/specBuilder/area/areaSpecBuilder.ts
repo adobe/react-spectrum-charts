@@ -38,16 +38,9 @@ import { toCamelCase } from '@utils';
 import { produce } from 'immer';
 import { Data, Mark, Scale, Signal, SourceData, Spec } from 'vega';
 
-import {
-	AreaOptions,
-	AreaSpecOptions,
-	ChartPopoverOptions,
-	ColorScheme,
-	HighlightedItem,
-	ScaleType,
-} from '../../types';
 import { addTimeTransform, getFilteredTableData, getTableData, getTransformSort } from '../data/dataUtils';
 import { addContinuousDimensionScale, addFieldToFacetScaleDomain, addMetricScale } from '../scale/scaleSpecBuilder';
+import { AreaOptions, AreaSpecOptions, ChartPopoverOptions, ColorScheme, HighlightedItem, ScaleType } from '../types';
 import { getAreaMark, getX } from './areaUtils';
 
 export const addArea = produce<

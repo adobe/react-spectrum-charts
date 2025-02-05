@@ -19,7 +19,7 @@ import {
 import { produce } from 'immer';
 import { Compare, Data, FormulaTransform, SourceData, Transforms, ValuesData } from 'vega';
 
-import { ChartTooltipOptions } from '../../types';
+import { ChartTooltipOptions } from '../types';
 
 export const addTimeTransform = produce<Transforms[], [string]>((transforms, dimension) => {
 	if (transforms.findIndex((transform) => transform.type === 'timeunit') === -1) {

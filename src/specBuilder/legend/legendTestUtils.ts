@@ -23,7 +23,7 @@ import {
 } from '@constants';
 import { LineMark } from 'vega';
 
-import { LegendSpecOptions } from '../../types';
+import { LegendSpecOptions } from '../types';
 
 /**
  * Wait for the the duration of the legend tooltip hover delay.

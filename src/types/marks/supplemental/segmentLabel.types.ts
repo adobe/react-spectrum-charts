@@ -11,22 +11,7 @@
  */
 import { JSXElementConstructor, ReactElement } from 'react';
 
-export interface SegmentLabelOptions {
-	/** Sets the key in the data that has the segment label. Defaults to the `color` key set on the `Donut` is undefined. */
-	labelKey?: string;
-	/** Shows the donut segment percentage */
-	percent?: boolean;
-	/** Shows the donut segment metric value */
-	value?: boolean;
-	/** d3 number format specifier.
-	 * Sets the number format for the segment metric value.
-	 *
-	 * @default 'standardNumber'
-	 *
-	 * see {@link https://d3js.org/d3-format#locale_format}
-	 */
-	valueFormat?: string;
-}
+import { SegmentLabelOptions } from '../../../specBuilder';
 
 export interface SegmentLabelProps extends SegmentLabelOptions {}
 

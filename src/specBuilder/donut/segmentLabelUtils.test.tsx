@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { DonutSpecOptions, SegmentLabelSpecOptions } from '../../types';
+import { DonutSpecOptions, SegmentLabelSpecOptions } from '../types';
 import { defaultDonutOptions } from './donutTestUtils';
 import {
 	getSegmentLabelMarks,

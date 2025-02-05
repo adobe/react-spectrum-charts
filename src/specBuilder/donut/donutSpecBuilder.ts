@@ -17,7 +17,7 @@ import { toCamelCase } from '@utils';
 import { produce } from 'immer';
 import { Data, FormulaTransform, Mark, PieTransform, Scale, Signal, Spec } from 'vega';
 
-import { ColorScheme, DonutOptions, DonutSpecOptions, HighlightedItem } from '../../types';
+import { ColorScheme, DonutOptions, DonutSpecOptions, HighlightedItem } from '../types';
 import {
 	getDonutSummaryData,
 	getDonutSummaryMarks,

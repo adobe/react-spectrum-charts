@@ -17,7 +17,7 @@ import {
 	MARK_ID,
 } from '@constants';
 
-import { ScatterSpecOptions } from '../../types';
+import { ScatterSpecOptions } from '../types';
 
 export const defaultScatterOptions: ScatterSpecOptions = {
 	chartPopovers: [],

@@ -11,7 +11,7 @@
  */
 import { DEFAULT_COLOR, DEFAULT_COLOR_SCHEME, DEFAULT_METRIC, DEFAULT_TIME_DIMENSION, MARK_ID } from '@constants';
 
-import { LineSpecOptions, TrendlineSpecOptions } from '../../types';
+import { LineSpecOptions, TrendlineSpecOptions } from '../types';
 
 export const defaultLineOptions: LineSpecOptions = {
 	chartPopovers: [],

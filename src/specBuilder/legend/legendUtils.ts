@@ -39,9 +39,8 @@ import {
 	SymbolEncodeEntry,
 } from 'vega';
 
-import { ColorValueV6 } from '@react-types/shared';
-
 import {
+	ColorValueV6,
 	FacetRef,
 	FacetType,
 	LegendDescription,
@@ -49,7 +48,7 @@ import {
 	LegendSpecOptions,
 	Position,
 	SecondaryFacetType,
-} from '../../types';
+} from '../types';
 
 export interface Facet {
 	facetType: FacetType | SecondaryFacetType;

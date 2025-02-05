@@ -29,6 +29,7 @@ import {
 import { produce } from 'immer';
 import { Data, Legend, Mark, Scale, Signal, Spec } from 'vega';
 
+import { addHighlighSignalLegendHoverEvents, getGenericValueSignal } from '../signal/signalSpecBuilder';
 import {
 	ColorFacet,
 	ColorScheme,
@@ -38,8 +39,7 @@ import {
 	LineTypeFacet,
 	LineWidthFacet,
 	SymbolShapeFacet,
-} from '../../types';
-import { addHighlighSignalLegendHoverEvents, getGenericValueSignal } from '../signal/signalSpecBuilder';
+} from '../types';
 import { getFacets, getFacetsFromKeys } from './legendFacetUtils';
 import { setHoverOpacityForMarks } from './legendHighlightUtils';
 import { Facet, getColumns, getEncodings, getHiddenEntriesFilter, getSymbolType } from './legendUtils';

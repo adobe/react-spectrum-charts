@@ -13,7 +13,7 @@ import { DEFAULT_COLOR, DEFAULT_COLOR_SCHEME, DEFAULT_TIME_DIMENSION, TRENDLINE_
 import { defaultTrendlineOptions } from '@specBuilder/trendline/trendlineTestUtils';
 import { spectrumColors } from '@themes';
 
-import { TrendlineAnnotationSpecOptions } from '../../types';
+import { TrendlineAnnotationSpecOptions } from '../types';
 import {
 	getColorKey,
 	getTextFill,

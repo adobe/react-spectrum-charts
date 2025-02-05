@@ -27,7 +27,7 @@ import {
 import { getColorValue } from '@specBuilder/specUtils';
 import { ColorValueRef, NumericValueRef, SymbolMark } from 'vega';
 
-import { LineSpecOptions, ProductionRuleTests } from '../../types';
+import { LineSpecOptions, ProductionRuleTests } from '../types';
 import { LineMarkOptions } from './lineUtils';
 
 const staticPointTest = (staticPoint: string) => `datum.${staticPoint} && datum.${staticPoint} === true`;

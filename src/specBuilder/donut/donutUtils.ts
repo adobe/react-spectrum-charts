@@ -14,7 +14,7 @@ import { getColorProductionRule, getCursor, getMarkOpacity, getTooltip } from '@
 import { getColorValue } from '@specBuilder/specUtils';
 import { ArcMark } from 'vega';
 
-import { DonutSpecOptions } from '../../types';
+import { DonutSpecOptions } from '../types';
 
 export const getArcMark = (options: DonutSpecOptions): ArcMark => {
 	const { chartPopovers, chartTooltips, color, colorScheme, holeRatio, idKey, name } = options;

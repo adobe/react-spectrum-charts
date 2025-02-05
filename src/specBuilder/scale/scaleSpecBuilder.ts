@@ -16,7 +16,7 @@ import { toCamelCase } from '@utils';
 import { produce } from 'immer';
 import { OrdinalScale, Scale, ScaleData, ScaleMultiFieldsRef, SignalRef } from 'vega';
 
-import { DualFacet, FacetRef, FacetType, Orientation } from '../../types';
+import { DualFacet, FacetRef, FacetType, Orientation } from '../types';
 
 type AxisType = 'x' | 'y';
 type SupportedScaleType = 'linear' | 'point' | 'band' | 'time' | 'ordinal';

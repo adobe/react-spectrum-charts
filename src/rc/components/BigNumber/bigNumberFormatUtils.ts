@@ -14,7 +14,7 @@ import { getLocale } from 'utils/locale';
 import { NumberLocale } from 'vega';
 import { numberFormatLocale } from 'vega-format';
 
-import { BigNumberNumberType } from '../../../types';
+import { BigNumberNumberType } from '../../../specBuilder';
 
 export const formatBigNumber = (
 	value: number,

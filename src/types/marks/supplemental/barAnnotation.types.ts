@@ -11,16 +11,7 @@
  */
 import { JSXElementConstructor, ReactElement } from 'react';
 
-export interface BarAnnotationStyleOptions {
-	width?: number;
-}
-
-export interface BarAnnotationOptions {
-	/** The key in the data that has the text to display */
-	textKey?: string;
-	/** @deprecated */
-	style?: BarAnnotationStyleOptions;
-}
+import { BarAnnotationOptions } from '../../../specBuilder';
 
 export interface BarAnnotationProps extends BarAnnotationOptions {}
 

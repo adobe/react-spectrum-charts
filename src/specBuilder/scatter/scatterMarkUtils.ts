@@ -29,7 +29,7 @@ import { spectrumColors } from '@themes';
 import { produce } from 'immer';
 import { GroupMark, Mark, NumericValueRef, SymbolMark } from 'vega';
 
-import { ScatterSpecOptions, SymbolSizeFacet } from '../../types';
+import { ScatterSpecOptions, SymbolSizeFacet } from '../types';
 
 export const addScatterMarks = produce<Mark[], [ScatterSpecOptions]>((marks, options) => {
 	const { name } = options;

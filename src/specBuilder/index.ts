@@ -11,3 +11,4 @@
  */
 
 export * from './chartSpecBuilder';
+export * from './types';
