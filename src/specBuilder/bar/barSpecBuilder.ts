@@ -126,11 +126,11 @@ export const addSignals = produce<Signal[], [BarSpecProps]>((signals, props) => 
 });
 
 export const addData = produce<Data[], [BarSpecProps]>((data, props) => {
-  const { dimension, dimensionDataType, metric, order, type } = props;
-  if (dimensionDataType === 'time') {
-    const tableData = getTableData(data);
-    tableData.transform = addTimeTransform(tableData.transform ?? [], dimension);
-  }
+	const { dimension, dimensionDataType, metric, order, type } = props;
+	if (dimensionDataType === 'time') {
+		const tableData = getTableData(data);
+		tableData.transform = addTimeTransform(tableData.transform ?? [], dimension);
+	}
 
 	const index = data.findIndex((d) => d.name === FILTERED_TABLE);
 	data[index].transform = data[index].transform ?? [];

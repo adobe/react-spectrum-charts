@@ -143,18 +143,18 @@ const defaultStackedTransforms: Transforms[] = [
 ];
 
 const timeTransform: Transforms[]  = [
-  {
-    as: "browser",
-    expr: "toDate(datum[\"browser\"])",
-    type: "formula",
-  },
-  {
-    as: ["datetime0", "datetime1"],
-    field: "browser",
-    type: "timeunit",
-    units: ["year", "month", "date", "hours", "minutes"],
-  },
-]
+	{
+		as: "browser",
+		expr: "toDate(datum[\"browser\"])",
+		type: "formula",
+	},
+	{
+		as: ["datetime0", "datetime1"],
+		field: "browser",
+		type: "timeunit",
+		units: ["year", "month", "date", "hours", "minutes"],
+	},
+];
 
 const defaultSelectedGroupIdTransform: Transforms[] = [
 	{

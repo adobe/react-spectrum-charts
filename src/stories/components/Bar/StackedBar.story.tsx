@@ -33,14 +33,14 @@ const colors: SpectrumColor[] = [
 ];
 
 const StackedBarStoryWithUTCData: StoryFn<typeof Bar> = (args): ReactElement => {
-  const chartProps = useChartProps({ data: stackedBarDataWithUTC, width: 600, height: 600 });
-  return (
-    <Chart {...chartProps}>
-      <Axis position={args.orientation === 'horizontal' ? 'left' : 'bottom'} labelFormat="time" granularity="day" baseline title="Browser" />
-      <Axis position={args.orientation === 'horizontal' ? 'bottom' : 'left'} grid title="Downloads" />
-      <Bar {...args} />
-    </Chart>
-  );
+	const chartProps = useChartProps({ data: stackedBarDataWithUTC, width: 600, height: 600 });
+	return (
+		<Chart {...chartProps}>
+			<Axis position={args.orientation === 'horizontal' ? 'left' : 'bottom'} labelFormat="time" granularity="day" baseline title="Browser" />
+			<Axis position={args.orientation === 'horizontal' ? 'bottom' : 'left'} grid title="Downloads" />
+			<Bar {...args} />
+		</Chart>
+	);
 };
 
 const BarStory: StoryFn<typeof Bar> = (args): ReactElement => {
@@ -99,11 +99,11 @@ OnClick.args = {
 
 const StackedBarWithUTCDatetimeFormat = bindWithProps(StackedBarStoryWithUTCData);
 StackedBarWithUTCDatetimeFormat.args = {
-  ...defaultProps,
-  dimension: 'browser',
-  metric: 'downloads',
-  color: "dataset_id",
-  dimensionDataType: 'time',
+	...defaultProps,
+	dimension: 'browser',
+	metric: 'downloads',
+	color: "dataset_id",
+	dimensionDataType: 'time',
 };
 
 export { Basic, NegativeStack, WithBarLabels, OnClick, StackedBarWithUTCDatetimeFormat };
