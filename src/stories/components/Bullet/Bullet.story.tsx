@@ -23,7 +23,8 @@ export default {
 const BulletStory: StoryFn<typeof Bullet> = (args): ReactElement => {
   return (
     <Chart data={bulletData} width={600} height={100} debug>
-      <Axis position='left' baseline title="Value`" />
+      <Axis position="bottom" title="Value" />
+
       <Bullet {...args} />
     </Chart>
   );

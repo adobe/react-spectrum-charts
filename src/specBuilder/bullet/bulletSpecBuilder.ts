@@ -36,24 +36,29 @@ export const addBullet = produce<Spec, [BulletProps & { index?: number; idKey: s
 	) => {
 		const bulletName = `bullet${index}`;
 
-		// Data Source for Vega
+		// Flatten the data: if ranges/measures are arrays, take the first element.
+		// (You could also compute the max if that makes more sense for your use case.)
+		const rangeValue = Array.isArray(ranges) ? ranges[0] : ranges;
+		const measureValue = Array.isArray(measures) ? measures[0] : measures;
+
+		// Data source with flattened fields
 		const bulletData: Data = {
 			name: bulletName,
 			values: [
 				{
 					label,
-					ranges,
-					measures,
+					range: rangeValue,
+					measure: measureValue,
 					target,
 				},
 			],
 		};
 
-		// X Scale: Linear scale for progress bar & target
+		// X Scale: using the flattened "range" field
 		const xScale: Scale = {
 			name: 'xscale',
 			type: 'linear',
-			domain: { data: bulletName, field: 'ranges[0]' }, // Use the max range
+			domain: { data: bulletName, field: 'range' },
 			range: 'width',
 		};
 
@@ -62,14 +67,14 @@ export const addBullet = produce<Spec, [BulletProps & { index?: number; idKey: s
 		const extractedRangeColor = getColorValue(rangeColor);
 		const extractedTargetColor = getColorValue(targetColor);
 
-		// Marks: Background Ranges
+		// Marks: Background Range Rect (full extent)
 		const rangeMarks: Mark = {
 			type: 'rect',
 			from: { data: bulletName },
 			encode: {
 				enter: {
 					x: { scale: 'xscale', value: 0 },
-					x2: { scale: 'xscale', field: 'ranges' },
+					x2: { scale: 'xscale', field: 'range' },
 					y: { value: 40 },
 					height: { value: 10 },
 					fill: { value: extractedRangeColor },
@@ -77,14 +82,14 @@ export const addBullet = produce<Spec, [BulletProps & { index?: number; idKey: s
 			},
 		};
 
-		// Marks: Progress Bar
+		// Marks: Progress Bar Rect (measure)
 		const measureMarks: Mark = {
 			type: 'rect',
 			from: { data: bulletName },
 			encode: {
 				enter: {
 					x: { scale: 'xscale', value: 0 },
-					x2: { scale: 'xscale', field: 'measures' },
+					x2: { scale: 'xscale', field: 'measure' }, // use flattened "measure"
 					y: { value: 40 },
 					height: { value: 10 },
 					fill: { value: extractedMeasureColor },
@@ -109,7 +114,7 @@ export const addBullet = produce<Spec, [BulletProps & { index?: number; idKey: s
 			},
 		};
 
-		// Add Components to the Vega Spec
+		// Add the bullet components to the Vega spec
 		spec.data = [...(spec.data ?? []), bulletData];
 		spec.scales = [...(spec.scales ?? []), xScale];
 		spec.marks = [...(spec.marks ?? []), rangeMarks, measureMarks, targetMark];
