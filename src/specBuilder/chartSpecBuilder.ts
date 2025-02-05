@@ -147,15 +147,10 @@ export function buildSpec(props: SanitizedSpecProps) {
 					return addBar(acc, { ...(cur as BarElement).props, ...specProps, index: barCount });
 				case Bullet.displayName:
 					bulletCount++;
-					// return addDonut(acc, { ...(cur as BulletElement).props, ...specProps, index: donutCount });
-					const myBullet = addBullet(acc, { ...(cur as BulletElement).props, ...specProps, index: bulletCount });
-					return myBullet;
+					return addBullet(acc, { ...(cur as BulletElement).props, ...specProps, index: bulletCount });
 				case Donut.displayName:
 					donutCount++;
-					// return addDonut(acc, { ...(cur as DonutElement).props, ...specProps, index: donutCount });
-					const myDonut = addDonut(acc, { ...(cur as DonutElement).props, ...specProps, index: donutCount });
-					console.log('myDonut:', myDonut);
-					return myDonut;
+					return addDonut(acc, { ...(cur as DonutElement).props, ...specProps, index: donutCount });
 				case Legend.displayName:
 					legendCount++;
 					return addLegend(acc, {
