@@ -17,7 +17,7 @@ import { COLOR_SCALE, FILTERED_TABLE, HIGHLIGHTED_ITEM } from '@constants';
 import { defaultSignals } from '@specBuilder/specTestUtils';
 import { initializeSpec } from '@specBuilder/specUtils';
 
-import { getBulletScales, addBullet, getBulletData, getBulletMarks } from './bulletSpecBuilder';
+import { getBulletScales, addBullet, getBulletData, getBulletMarks, getAdjustedColor } from './bulletSpecBuilder';
 import { ColorScheme, BulletProps, BulletSpecProps } from '../../types';
 
 const sampleProps: BulletSpecProps = {
@@ -32,21 +32,43 @@ const sampleProps: BulletSpecProps = {
     "idKey": "rscMarkId"
 }
 
-// describe('getBulletData', () => {
-//     test('should return the data object with correct max value field', () => {
-//         const data = getBulletData(sampleProps);
-//         expect(data).toHaveLength(2);
-//         expect(data[1]).toBeDefined();
-//         expect(data[1].transform[0].fields.includes('maxValue')).toBe(true);
-//     });
-// });
+describe('getBulletData', () => {
+    test('should return the data object with max value being set', () => {
+        const data = getBulletData(sampleProps);
+        expect(data).toHaveLength(2);
+        expect(data[1].transform[0].fields.includes('maxValue')).toBe(true);
+    });
+});
 
-// describe('getBulletMarks', () => {
-//     test('should return the correct marks object', () => {
-//         console.log('marks\n', getBulletMarks(sampleProps));
-//         const data = getBulletMarks(sampleProps);
-//         expect(data).toHaveLength(4);
-//         expect(data[1]).toBeDefined();
-//         expect(data[1].transform[0].fields.includes('maxValue')).toBe(true);
-//     });
-// });
+describe('getBulletScales', () => {
+
+    //Not much here right now because the function only returns a single const
+    test('should return the correct scales object', () => {
+        const data = getBulletScales();
+        expect(data).toBeDefined()
+    });
+});
+
+describe('getBulletMarks', () => {
+    test('should return the correct marks object', () => {
+        console.log('marks\n', getBulletMarks(sampleProps));
+        const data = getBulletMarks(sampleProps);
+        expect(data).toHaveLength(4);
+        expect(data[0].type).toBe('rect');
+        expect(data[1].type).toBe('text');
+        expect(data[2].type).toBe('text');
+        expect(data[3].type).toBe('rule');
+    });
+});
+
+describe('getAdjustedColor', () => {
+    test('Returns the correct color when passed an Adobe Spectrum Color', () => {
+        const color = getAdjustedColor('blue-500', 'light');
+        expect(color).toBe('rgb(120, 187, 250)');
+    });
+
+    test('Returns the same color passed if not a valid Adobe Spectrum Color', () => {
+        const color = getAdjustedColor('cyan', 'light');
+        expect(color).toBe('cyan');
+    });
+});

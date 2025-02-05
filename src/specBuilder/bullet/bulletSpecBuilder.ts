@@ -171,9 +171,8 @@ export function getBulletData(props: BulletSpecProps): Data[] {
 }
 
 export function getBulletScales(): Scale[] {
-  // Implementation of addBulletMarks
 
-  let bulletScale: Scale[] = [
+  const bulletScale: Scale[] = [
     {
       "name": "xscale",
       "type": "linear",
