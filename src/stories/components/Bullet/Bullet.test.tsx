@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { findAllMarksByGroupName, findChart, render } from '@test-utils';
+import { findAllMarksByGroupName, findChart, render, allElementsHaveAttributeValue } from '@test-utils';
 import { Bullet } from 'alpha/components/Bullet';
 
 import { Basic } from './Bullet.story';
@@ -20,13 +20,18 @@ describe('Bullet', () => {
 		render(<Bullet />);
 	});
 
-	test('Basic renders properly', async () => {
+	test('Basic bullet renders properly', async () => {
 		render(<Basic {...Basic.args} />);
 		const chart = await findChart();
 		expect(chart).toBeInTheDocument();
 
 		const rects = await findAllMarksByGroupName(chart, 'bullet0rect');
 		expect(rects.length).toEqual(1);
+
+		rects.forEach(rect => {
+			// Expect red-500 color
+			expect(rect).toHaveAttribute('fill', 'rgb(255, 155, 136)');
+		});
 
 		const barLabels = await findAllMarksByGroupName(chart, 'bullet0barlabel', 'text');
 		expect(barLabels.length).toEqual(1);

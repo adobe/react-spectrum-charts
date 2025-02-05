@@ -15,6 +15,9 @@ import { produce } from 'immer';
 import { Spec, Data, Mark, Scale } from 'vega';
 import { ColorScheme, BulletProps, BulletSpecProps } from '../../types';
 import { sanitizeMarkChildren } from '../../utils';
+import { getColorValue } from '../specUtils';
+
+const DEFAULT_COLOR = 'steelblue';
 
 export const addBullet = produce<
     Spec,
@@ -30,27 +33,31 @@ export const addBullet = produce<
             metric,
             dimension,
             target,
+            color = DEFAULT_COLOR,
             ...props
         }
     ) => {
+
         const bulletProps: BulletSpecProps = {
             children: sanitizeMarkChildren(children),
-            colorScheme,
+            colorScheme: colorScheme,
             index,
+            color: getAdjustedColor(color, colorScheme),
             metric: metric ?? 'currentAmount',
             dimension: dimension ?? 'graphLabel',
             target: target ?? 'target',
             name: toCamelCase(name ?? `bullet${index}`),
             ...props,
         };
+        console.log(bulletProps);
         spec.data = getBulletData(bulletProps);
         spec.marks = getBulletMarks(bulletProps);
-        spec.scales = getBulletScales(bulletProps);
+        spec.scales = getBulletScales();
     }
 );
 
-function getBulletMarks(props: BulletSpecProps): Mark[] {
-  // Implementation of addBulletMarks
+export function getBulletMarks(props: BulletSpecProps): Mark[] {
+  
   return [
     {
       "type": "rect",
@@ -63,7 +70,7 @@ function getBulletMarks(props: BulletSpecProps): Mark[] {
           "y": {"field": "index", "mult": 60, "offset": -44},
           "width": {"scale": "xscale", "field": `${props.metric}`},
           "height": {"value": 6},
-          "fill": {"value": "steelblue"},
+          "fill": {"value": `${props.color}`},
           "cornerRadiusTopRight": {"value": 2},
           "cornerRadiusBottomRight": {"value": 2}
         }
@@ -121,7 +128,7 @@ function getBulletMarks(props: BulletSpecProps): Mark[] {
   ]
 }
 
-function getBulletData(props: BulletSpecProps): Data[] {
+export function getBulletData(props: BulletSpecProps): Data[] {
 
   const maxValue = `max(datum.${props.metric}, datum.${props.target} * 1.1)`
 
@@ -163,7 +170,7 @@ function getBulletData(props: BulletSpecProps): Data[] {
   return bulletData;
 }
 
-function getBulletScales(props: BulletSpecProps): Scale[] {
+export function getBulletScales(): Scale[] {
   // Implementation of addBulletMarks
 
   let bulletScale: Scale[] = [
@@ -185,4 +192,14 @@ function getBulletScales(props: BulletSpecProps): Scale[] {
 
 function toCamelCase(str: string): string {
   return str.replace(/([-_][a-z])/gi, (match) => match.toUpperCase().replace('-', '').replace('_', ''));
+}
+
+export function getAdjustedColor(color: string, colorScheme: ColorScheme): string {
+  const adjustedColor = getColorValue(color, colorScheme);
+  console.log(adjustedColor)
+  if(adjustedColor !== color){
+    return adjustedColor;
+  }else{
+    return color
+  }
 }

@@ -140,7 +140,7 @@ export interface ChartPopoverSpecProps extends PartiallyRequired<ChartPopoverPro
 	markName: string;
 }
 
-type BulletPropsWithDefaults = 'name' | 'metric' | 'dimension' | 'target';
+type BulletPropsWithDefaults = 'name' | 'metric' | 'dimension' | 'target' | 'color';
 
 export interface BulletSpecProps extends PartiallyRequired<BulletProps, BulletPropsWithDefaults> {
 	children: MarkChildElement[];
