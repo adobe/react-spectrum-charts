@@ -12,9 +12,7 @@
 
 export * from './chartSpec.types';
 export * from './legendSpec.types';
-export * from './locale.types';
 export * from './spectrumVizColor.types';
-export * from './supplementalVega.types';
 export * from './titleSpec.types';
 export * from './specUtil.types';
 

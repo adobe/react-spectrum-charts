@@ -122,3 +122,8 @@ export type SecondaryFacetType =
 	| 'secondarySymbolShape'
 	| 'secondarySymbolSize'
 	| 'secondarySymbolPathWidth';
+
+// vega production rule type
+export type ProductionRuleTests<T> = ({
+	test?: string;
+} & T)[];
