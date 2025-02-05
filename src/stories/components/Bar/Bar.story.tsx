@@ -25,14 +25,14 @@ export default {
 };
 
 const BarStoryWithUTCData: StoryFn<typeof Bar> = (args): ReactElement => {
-	const chartProps = useChartProps({ data: barDataWithUTC, width: 600, height: 600 });
-	return (
-		<Chart {...chartProps}>
-			<Axis position={args.orientation === 'horizontal' ? 'left' : 'bottom'} labelFormat="time" granularity="day" baseline title="Browser" />
-			<Axis position={args.orientation === 'horizontal' ? 'bottom' : 'left'} grid title="Downloads" />
-			<Bar {...args} />
-		</Chart>
-	);
+  const chartProps = useChartProps({ data: barDataWithUTC, width: 600, height: 600 });
+  return (
+    <Chart {...chartProps}>
+      <Axis position={args.orientation === 'horizontal' ? 'left' : 'bottom'} labelFormat="time" granularity="day" baseline title="Browser" />
+      <Axis position={args.orientation === 'horizontal' ? 'bottom' : 'left'} grid title="Downloads" />
+      <Bar {...args} />
+    </Chart>
+  );
 };
 
 const BarStory: StoryFn<typeof Bar> = (args): ReactElement => {
@@ -103,11 +103,11 @@ OnClick.args = {
 
 const BarWithUTCDatetimeFormat = bindWithProps(BarStoryWithUTCData);
 BarWithUTCDatetimeFormat.args = {
-	...defaultProps,
-	dimension: 'browser',
-	metric: 'downloads',
-	color: "dataset_id",
-	dimensionDataType: 'time',
+  ...defaultProps,
+  dimension: 'browser',
+  metric: 'downloads',
+  color: "dataset_id",
+  dimensionDataType: 'time',
 };
 
 export { Basic, Horizontal, LineType, Opacity, PaddingRatio, WithAnnotation, HasSquareCorners, OnClick, BarWithUTCDatetimeFormat };

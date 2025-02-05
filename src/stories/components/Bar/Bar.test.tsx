@@ -98,15 +98,15 @@ describe('Bar', () => {
 		expect(bars.length).toEqual(9);
 	});
 
-	test('Bar with UTC date on dimension renders properly', async () => {
-		render(<BarWithUTCDatetimeFormat {...BarWithUTCDatetimeFormat.args} />);
-		const chart = await findChart();
-		expect(chart).toBeInTheDocument();
+  test('Bar with UTC date on dimension renders properly', async () => {
+    render(<BarWithUTCDatetimeFormat {...BarWithUTCDatetimeFormat.args} />);
+    const chart = await findChart();
+    expect(chart).toBeInTheDocument();
 
-		// get bars
-		const bars = await findAllMarksByGroupName(chart, 'bar0');
-		expect(bars.length).toEqual(6);
-	});
+    // get bars
+    const bars = await findAllMarksByGroupName(chart, 'bar0');
+    expect(bars.length).toEqual(6);
+  });
 
 	test('should call onClick callback when selecting a bar item', async () => {
 		const onClick = jest.fn();
