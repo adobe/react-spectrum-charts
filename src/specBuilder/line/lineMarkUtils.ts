@@ -62,7 +62,7 @@ export const getLineMark = (lineMarkOptions: LineMarkOptions, dataSource: string
 		opacity,
 		scaleType,
 	} = lineMarkOptions;
-	const popovers = getPopovers(chartPopovers, name);
+	const popovers = getPopovers(chartPopovers ?? [], name);
 	const popoverWithDimensionHighlightExists = popovers.some(
 		({ UNSAFE_highlightBy }) => UNSAFE_highlightBy === 'dimension'
 	);
@@ -130,35 +130,6 @@ export const getLineOpacity = ({
 	strokeOpacityRules.push(DEFAULT_OPACITY_RULE);
 
 	return strokeOpacityRules;
-};
-
-/**
- * All the marks that get displayed when hovering or selecting a point on a line
- * @param lineMarkOptions
- * @param dataSource
- * @param secondaryHighlightedMetric
- * @returns
- */
-export const getLineHoverMarks_DEPRACATED = (
-	lineOptions: LineMarkOptions,
-	dataSource: string,
-	secondaryHighlightedMetric?: string
-): Mark[] => {
-	const { dimension, name, scaleType } = lineOptions;
-	return [
-		// vertical rule shown for the hovered or selected point
-		getHoverRule(dimension, name, scaleType),
-		// point behind the hovered or selected point used to prevent bacgorund elements from being visible through low opacity point
-		getHighlightBackgroundPoint(lineOptions),
-		// if has popover, add selection ring and selection point
-		...(hasPopover(lineOptions) ? [getSelectRingPoint(lineOptions), getSelectionPoint(lineOptions)] : []),
-		// hover or select point
-		getHighlightPoint(lineOptions),
-		// additional point that gets highlighted like the trendline or raw line point
-		...(secondaryHighlightedMetric ? [getSecondaryHighlightPoint(lineOptions, secondaryHighlightedMetric)] : []),
-		// get interactive marks for the line
-		...getInteractiveMarks(dataSource, lineOptions),
-	];
 };
 
 /**

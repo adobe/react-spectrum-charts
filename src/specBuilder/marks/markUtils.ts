@@ -145,10 +145,10 @@ export const isInteractive = (options: {
 };
 
 export const hasPopover = (options: { chartPopovers?: ChartPopoverOptions[] }): boolean =>
-	Boolean('chartPopovers' in options && options.chartPopovers && options.chartPopovers.length);
+	Boolean('chartPopovers' in options && options.chartPopovers?.length);
 
 export const hasTooltip = (options: { chartTooltips?: ChartTooltipOptions[] }): boolean =>
-	Boolean('chartTooltips' in options && options.chartTooltips && options.chartTooltips.length);
+	Boolean('chartTooltips' in options && options.chartTooltips?.length);
 
 /**
  * Gets the color encoding
@@ -463,11 +463,7 @@ export const getInteractiveMarkName = (
 		return name;
 	}
 	// if there is a trendline with an interactive component on the line, then the trendline is the target for the interactive component
-	if (
-		'trendlines' in options &&
-		options.trendlines &&
-		options.trendlines.some((trendline) => isInteractive(trendline))
-	) {
+	if ('trendlines' in options && options.trendlines?.some((trendline) => isInteractive(trendline))) {
 		return `${name}Trendline`;
 	}
 };

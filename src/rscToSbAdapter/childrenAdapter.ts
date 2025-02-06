@@ -171,9 +171,8 @@ export const childrenToOptions = (
 				break;
 
 			case Line.displayName:
-				const lineOptions = getLineOptions(child.props as LineProps);
-				marks.push(lineOptions);
-				lines.push(lineOptions);
+				marks.push(getLineOptions(child.props as LineProps));
+				lines.push(getLineOptions(child.props as LineProps));
 				break;
 
 			case ReferenceLine.displayName:
@@ -202,6 +201,7 @@ export const childrenToOptions = (
 
 			case TrendlineAnnotation.displayName:
 				trendlineAnnotations.push(child.props as TrendlineAnnotationProps);
+				break;
 
 			default:
 				console.error('Invalid component type: ', child.type.displayName);

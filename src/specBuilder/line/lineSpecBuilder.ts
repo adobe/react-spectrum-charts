@@ -39,7 +39,7 @@ import { addContinuousDimensionScale, addFieldToFacetScaleDomain, addMetricScale
 import { addHighlightedItemSignalEvents, addHighlightedSeriesSignalEvents } from '../signal/signalSpecBuilder';
 import { ColorScheme, HighlightedItem, LineOptions, LineSpecOptions } from '../types';
 import { getLineHighlightedData, getLineStaticPointData } from './lineDataUtils';
-import { getLineHoverMarks_DEPRACATED, getLineMark } from './lineMarkUtils';
+import { getLineHoverMarks, getLineMark } from './lineMarkUtils';
 import { getLineStaticPoint } from './linePointUtils';
 import { getPopoverMarkName } from './lineUtils';
 
@@ -192,7 +192,7 @@ export const addLineMarks = produce<Mark[], [LineSpecOptions]>((marks, options) 
 	if (staticPoint || isSparkline) marks.push(getLineStaticPoint(options));
 	marks.push(...getMetricRangeGroupMarks(options));
 	if (isInteractive(options) || highlightedItem !== undefined) {
-		marks.push(...getLineHoverMarks_DEPRACATED(options, `${FILTERED_TABLE}ForTooltip`));
+		marks.push(...getLineHoverMarks(options, `${FILTERED_TABLE}ForTooltip`));
 	}
 	marks.push(...getTrendlineMarks(options));
 });

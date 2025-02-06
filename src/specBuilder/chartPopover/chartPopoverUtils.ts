@@ -30,7 +30,7 @@ type PopoverParentOptions = AreaSpecOptions | BarSpecOptions | DonutSpecOptions 
  * @param markOptions
  * @returns
  */
-export const getPopovers = (chartPopovers: ChartPopoverOptions[] = [], markName: string): ChartPopoverSpecOptions[] => {
+export const getPopovers = (chartPopovers: ChartPopoverOptions[], markName: string): ChartPopoverSpecOptions[] => {
 	return chartPopovers.map((chartPopover) => applyPopoverPropDefaults(chartPopover, markName));
 };
 
