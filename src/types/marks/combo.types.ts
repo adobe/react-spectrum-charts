@@ -18,7 +18,7 @@ import { LineElement } from './line.types';
 
 export type ComboChildElement = BarElement | LineElement;
 
-export interface ComboProps extends Omit<ComboOptions, 'markType'> {
+export interface ComboProps extends Omit<ComboOptions, 'marks' | 'markType'> {
 	children?: Children<ComboChildElement>;
 }
 

@@ -50,7 +50,7 @@ const ChartTimeStory: StoryFn<typeof Chart> = (args): ReactElement => {
 const ChartBarTooltipStory: StoryFn<typeof Chart> = (args): ReactElement => {
 	const props = useChartProps(args);
 	return (
-		<Chart {...props}>
+		<Chart {...props} debug>
 			<Axis position="bottom" baseline />
 			<Axis position="left" grid />
 			<Bar dimension="x" metric="y" color="series">

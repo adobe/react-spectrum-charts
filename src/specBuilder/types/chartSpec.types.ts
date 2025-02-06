@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { Data, Spec } from 'vega';
+import { Spec } from 'vega';
 
 import { AxisOptions } from './axis';
 import { LegendOptions } from './legendSpec.types';
@@ -26,10 +26,7 @@ import { ChartSymbolShape, LineType, LineWidth, PartiallyRequired, SymbolSize } 
 import { Colors } from './spectrumVizColor.types';
 import { TitleOptions } from './titleSpec.types';
 
-export type SimpleData = Record<string, unknown>;
-
 export type ColorScheme = 'light' | 'dark';
-export type ChartData = SimpleData | Data;
 export type Height = number | `${number}%`;
 export type HighlightedItem = string | number | (string | number)[];
 export type TooltipAnchor = 'cursor' | 'mark';

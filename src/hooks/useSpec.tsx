@@ -11,12 +11,12 @@
  */
 import { useMemo } from 'react';
 
+import { rscPropsToSpecBuilderOptions } from 'specBuilderAdapter/chartAdapter';
 import { Data, Spec, ValuesData } from 'vega';
 
-import { buildSpec } from '../specBuilder';
-import { ChartSpecOptions } from '../specBuilder';
+import { ChartSpecOptions, buildSpec } from '../specBuilder';
 import { baseData, getColorValue } from '../specBuilder/specUtils';
-import { SanitizedSpecProps } from '../types';
+import { ChartData, SanitizedSpecProps } from '../types';
 
 export default function useSpec({
 	backgroundColor,
@@ -54,27 +54,25 @@ export default function useSpec({
 
 		// or we need to build their spec
 		// stringify-parse so that all immer stuff gets cleared out
-		return JSON.parse(
-			JSON.stringify(
-				buildSpec({
-					backgroundColor,
-					children,
-					colors,
-					colorScheme,
-					description,
-					hiddenSeries,
-					highlightedItem,
-					highlightedSeries,
-					idKey,
-					lineTypes,
-					lineWidths,
-					opacities,
-					symbolShapes,
-					symbolSizes,
-					title,
-				})
-			)
-		);
+		const chartOptions = rscPropsToSpecBuilderOptions({
+			backgroundColor,
+			children,
+			colors,
+			colorScheme,
+			description,
+			hiddenSeries,
+			highlightedItem,
+			highlightedSeries,
+			idKey,
+			lineTypes,
+			lineWidths,
+			opacities,
+			symbolShapes,
+			symbolSizes,
+			title,
+		});
+
+		return JSON.parse(JSON.stringify(buildSpec(chartOptions)));
 	}, [
 		UNSAFE_vegaSpec,
 		backgroundColor,
@@ -98,7 +96,7 @@ export default function useSpec({
 
 const initializeSpec = (
 	spec: Spec | null = {},
-	chartOptions: Partial<ChartSpecOptions & { data: Data[] }> = {}
+	chartOptions: Partial<ChartSpecOptions & { data: ChartData[] }> = {}
 ): Spec => {
 	const { backgroundColor, colorScheme = 'light', data, description, title } = chartOptions;
 

@@ -116,6 +116,36 @@ export const getElementDisplayName = (element: unknown): string => {
 	return element.type.displayName;
 };
 
+export const sanitizeChildren = (children: unknown): (ChartChildElement | MarkChildElement)[] => {
+	const validDisplayNames = [
+		Annotation.displayName,
+		Area.displayName,
+		Axis.displayName,
+		AxisAnnotation.displayName,
+		Bar.displayName,
+		ChartPopover.displayName,
+		ChartTooltip.displayName,
+		Combo.displayName,
+		Donut.displayName,
+		DonutSummary.displayName,
+		Legend.displayName,
+		Line.displayName,
+		MetricRange.displayName,
+		ReferenceLine.displayName,
+		Scatter.displayName,
+		ScatterPath.displayName,
+		SegmentLabel.displayName,
+		Title.displayName,
+		Trendline.displayName,
+		TrendlineAnnotation.displayName,
+	];
+	return toArray(children)
+		.flat()
+		.filter((child): child is ChartChildElement | MarkChildElement =>
+			validDisplayNames.includes(getElementDisplayName(child))
+		);
+};
+
 // removes all non-chart specific elements
 export const sanitizeRscChartChildren = (children: unknown): ChartChildElement[] => {
 	const chartChildDisplyNames = [
