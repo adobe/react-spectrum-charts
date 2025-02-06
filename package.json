@@ -100,8 +100,8 @@
 		"@types/d3-format": "^3.0.4",
 		"@types/jest": "^29.5.12",
 		"@types/node": "^20.8.2",
-		"@types/react": "18.3.12",
-		"@types/react-dom": "18.3.1",
+		"@types/react": "19.0.8",
+		"@types/react-dom": "19.0.3",
 		"@typescript-eslint/eslint-plugin": "^6.0.0",
 		"@typescript-eslint/parser": "^6.0.0",
 		"axios": "^1.7.7",
@@ -129,9 +129,9 @@
 		"jest-sonar-reporter": "^2.0.0",
 		"plop": "^4.0.1",
 		"prettier": "2.8.8",
-		"react": "^18.3.1",
+		"react": "^19.0.0",
 		"react-docgen-typescript-loader": "^3.7.2",
-		"react-dom": "^18.3.1",
+		"react-dom": "^19.0.0",
 		"resize-observer-polyfill": "^1.5.1",
 		"storybook": "^8.4.1",
 		"storybook-addon-react-docgen": "^1.2.44",
@@ -164,8 +164,8 @@
 		"vega-lite": ">= 5.0.0"
 	},
 	"resolutions": {
-		"@types/react": "18.3.12",
-		"@types/react-dom": "18.3.1",
+		"@types/react": "19.0.8",
+		"@types/react-dom": "19.0.3",
 		"jackspeak": "2.1.1"
 	},
 	"bugs": {
