@@ -137,17 +137,17 @@ const defaultStackedTransforms: Transforms[] = [
 	},
 ];
 
-const timeTransform: Transforms[]  = [
+const timeTransform: Transforms[] = [
 	{
-		as: "browser",
-		expr: "toDate(datum[\"browser\"])",
-		type: "formula",
+		as: 'browser',
+		expr: 'toDate(datum["browser"])',
+		type: 'formula',
 	},
 	{
-		as: ["datetime0", "datetime1"],
-		field: "browser",
-		type: "timeunit",
-		units: ["year", "month", "date", "hours", "minutes"],
+		as: ['datetime0', 'datetime1'],
+		field: 'browser',
+		type: 'timeunit',
+		units: ['year', 'month', 'date', 'hours', 'minutes'],
 	},
 ];
 
@@ -471,14 +471,19 @@ describe('barSpecBuilder', () => {
 		describe('existing data "table"', () => {
 			test('"dimensionDataType = time" transform should be added to the data table', () => {
 				expect(
-					addData(defaultData, { ...defaultBarProps, dimensionDataType: 'time', metric: 'views', dimension: 'browser' })
+					addData(defaultData, {
+						...defaultBarOptions,
+						dimensionDataType: 'time',
+						metric: 'views',
+						dimension: 'browser',
+					})
 				).toStrictEqual([
 					{
 						...defaultTableData,
 						transform: [
 							...(defaultTableData.transform ? defaultTableData.transform : []),
-							...timeTransform
-						]
+							...timeTransform,
+						],
 					},
 					{
 						...defaultFilteredTableData,
@@ -501,7 +506,7 @@ describe('barSpecBuilder', () => {
 					},
 				]);
 			});
-      
+
 			test('new transform should be added to the data table', () => {
 				expect(
 					addData(defaultData, { ...defaultBarOptions, metric: 'views', dimension: 'browser' })
@@ -633,7 +638,7 @@ describe('barSpecBuilder', () => {
 				},
 			]);
 		});
-		
+
 		test('stacked dodged', () => {
 			expect(
 				addData(defaultData, { ...defaultBarOptions, color: [DEFAULT_COLOR, DEFAULT_SECONDARY_COLOR] })
