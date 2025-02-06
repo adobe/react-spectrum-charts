@@ -28,6 +28,8 @@ export interface BarOptions {
 	color?: ColorFacet | DualFacet;
 	/** Data field used for the bar categories (x-axis for a vertical bar) */
 	dimension?: string;
+	/** Data type field used for the bar categories (x-axis for a vertical bar) */
+	dimensionDataType?: string;
 	/** Sets the inner padding between bars in a group */
 	groupedPadding?: number;
 	/** `true` if BarProps has an onClick callback. Will add the mouse pointer to the bar on hover. */
