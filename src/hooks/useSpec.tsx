@@ -11,7 +11,7 @@
  */
 import { useMemo } from 'react';
 
-import { rscPropsToSpecBuilderOptions } from 'specBuilderAdapter/chartAdapter';
+import { rscPropsToSpecBuilderOptions } from 'rscToSbAdapter/chartAdapter';
 import { Data, Spec, ValuesData } from 'vega';
 
 import { ChartSpecOptions, buildSpec } from '../specBuilder';
