@@ -456,6 +456,8 @@ export interface BarProps extends Omit<MarkProps & ClickableChartProps, 'color'>
 	color?: ColorFacet | DualFacet;
 	/** Data field used for the bar categories (x-axis for a vertical bar) */
 	dimension?: string;
+	/** Data type field used for the bar categories (x-axis for a vertical bar) */
+	dimensionDataType?: string;
 	/** Sets the inner padding between bars in a group */
 	groupedPadding?: number;
 	/** Should the top-left and top-right corners of the bars be square? Round by default */

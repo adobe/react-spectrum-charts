@@ -13,7 +13,7 @@ import '@matchMediaMock';
 import { Bar } from '@rsc';
 import { clickNthElement, findAllMarksByGroupName, findChart, render } from '@test-utils';
 
-import { Basic, Opacity, PaddingRatio, WithAnnotation, OnClick } from './Bar.story';
+import { Basic, Opacity, PaddingRatio, WithAnnotation, OnClick, BarWithUTCDatetimeFormat } from './Bar.story';
 import { Color, DodgedStacked } from './DodgedBar.story';
 import { Basic as StackedBasic } from './StackedBar.story';
 import { barData } from './data';
@@ -96,6 +96,16 @@ describe('Bar', () => {
 		// get bars
 		const bars = await findAllMarksByGroupName(chart, 'bar0');
 		expect(bars.length).toEqual(9);
+	});
+
+	test('Bar with UTC date on dimension renders properly', async () => {
+		render(<BarWithUTCDatetimeFormat {...BarWithUTCDatetimeFormat.args} />);
+		const chart = await findChart();
+		expect(chart).toBeInTheDocument();
+
+		// get bars
+		const bars = await findAllMarksByGroupName(chart, 'bar0');
+		expect(bars.length).toEqual(6);
 	});
 
 	test('should call onClick callback when selecting a bar item', async () => {

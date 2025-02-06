@@ -20,10 +20,11 @@ import {
 	PADDING_RATIO,
 	STACK_ID,
 	TRELLIS_PADDING,
+	TIME
 } from '@constants';
 import { addPopoverData, getPopovers } from '@specBuilder/chartPopover/chartPopoverUtils';
 import { addTooltipData, addTooltipSignals } from '@specBuilder/chartTooltip/chartTooltipUtils';
-import { getTransformSort } from '@specBuilder/data/dataUtils';
+import { addTimeTransform, getTableData, getTransformSort } from '@specBuilder/data/dataUtils';
 import { getInteractiveMarkName } from '@specBuilder/line/lineUtils';
 import { getTooltipProps } from '@specBuilder/marks/markUtils';
 import {
@@ -124,7 +125,12 @@ export const addSignals = produce<Signal[], [BarSpecProps]>((signals, props) => 
 });
 
 export const addData = produce<Data[], [BarSpecProps]>((data, props) => {
-	const { metric, order, type } = props;
+	const { dimension, dimensionDataType, metric, order, type } = props;
+	if (dimensionDataType === TIME) {
+		const tableData = getTableData(data);
+		tableData.transform = addTimeTransform(tableData.transform ?? [], dimension);
+	}
+
 	const index = data.findIndex((d) => d.name === FILTERED_TABLE);
 	data[index].transform = data[index].transform ?? [];
 	if (type === 'stacked' || isDodgedAndStacked(props)) {
@@ -178,7 +184,7 @@ export const getStackIdTransform = (props: BarSpecProps): FormulaTransform => {
 		expr: getStackFields(props)
 			.map((facet) => `datum.${facet}`)
 			.join(' + "," + '),
-	};
+	} as FormulaTransform;
 };
 
 const getStackFields = ({ trellis, color, dimension, lineType, opacity, type }: BarSpecProps): string[] => {
