@@ -10,8 +10,9 @@
  * governing permissions and limitations under the License.
  */
 
-import { getBulletScales, getBulletData, getBulletMarks, getAdjustedColor } from './bulletSpecBuilder';
-import { BulletSpecProps } from '../../types';
+import { getBulletScales, getBulletData, getBulletMarks, getAdjustedColor, addBullet } from './bulletSpecBuilder';
+import { BulletSpecProps, BulletProps, ColorScheme } from '../../types';
+import { Spec } from 'vega';
 
 const sampleProps: BulletSpecProps = {
     "children": [],
@@ -25,11 +26,40 @@ const sampleProps: BulletSpecProps = {
     "idKey": "rscMarkId"
 }
 
+describe('addBullet', () => {
+    let spec: Spec;
+
+    beforeEach(() => {
+        spec = { data: [], marks: [], scales: [] };
+    });
+
+    test('should modify spec with bullet chart properties', () => {
+        const bulletProps: BulletProps & { colorScheme: ColorScheme; index: number; idKey: string } = {
+            children: [],
+            name: 'testBullet',
+            metric: 'revenue',
+            dimension: 'region',
+            target: 'goal',
+            color: 'red',
+            colorScheme: 'light',
+            index: 0,
+            idKey: 'rscMarkId',
+        };
+
+        const newSpec = addBullet(spec, bulletProps);
+
+        const expectedScale = [{"domain": [0, {"signal": "data('max_values')[0].maxOverall"}], "name": "xscale", "range": [0, {"signal": "width"}], "type": "linear"}]
+
+        expect(newSpec.data).toHaveLength(2);
+        expect(newSpec.marks).toHaveLength(4);
+        expect(newSpec.scales).toEqual(expectedScale);
+    });
+});
+
 describe('getBulletData', () => {
     test('should return the data object with max value being set', () => {
         const data = getBulletData(sampleProps);
         expect(data).toHaveLength(2);
-        // expect(data[1].transform[0].fields.includes('maxValue')).toBe(true);
     });
 });
 

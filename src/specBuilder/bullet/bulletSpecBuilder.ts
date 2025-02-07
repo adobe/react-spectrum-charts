@@ -11,7 +11,6 @@
  */
 
 import { DEFAULT_COLOR_SCHEME } from '@constants';
-import { produce } from 'immer';
 import { Spec, Data, Mark, Scale } from 'vega';
 import { ColorScheme, BulletProps, BulletSpecProps } from '../../types';
 import { sanitizeMarkChildren } from '../../utils';
@@ -19,42 +18,39 @@ import { getColorValue } from '../specUtils';
 
 const DEFAULT_COLOR = 'steelblue';
 
-export const addBullet = produce<
-    Spec,
-    [BulletProps & { colorScheme?: ColorScheme; index?: number; idKey: string }]
->(
-    (
-        spec,
-        {
-            children,
-            colorScheme = DEFAULT_COLOR_SCHEME,
-            index = 0,
-            name,
-            metric,
-            dimension,
-            target,
-            color = DEFAULT_COLOR,
-            ...props
-        }
-    ) => {
-
-        const bulletProps: BulletSpecProps = {
-            children: sanitizeMarkChildren(children),
-            colorScheme: colorScheme,
-            index,
-            color: getAdjustedColor(color, colorScheme),
-            metric: metric ?? 'currentAmount',
-            dimension: dimension ?? 'graphLabel',
-            target: target ?? 'target',
-            name: toCamelCase(name ?? `bullet${index}`),
-            ...props,
-        };
-        console.log(bulletProps);
-        spec.data = getBulletData(bulletProps);
-        spec.marks = getBulletMarks(bulletProps);
-        spec.scales = getBulletScales();
-    }
-);
+export const addBullet = (
+    spec: Spec,
+    {
+        children,
+        colorScheme = DEFAULT_COLOR_SCHEME,
+        index = 0,
+        name,
+        metric,
+        dimension,
+        target,
+        color = DEFAULT_COLOR,
+        ...props
+    }: BulletProps & { colorScheme?: ColorScheme; index?: number; idKey: string }
+): Spec => {
+    const bulletProps: BulletSpecProps = {
+        children: sanitizeMarkChildren(children),
+        colorScheme: colorScheme,
+        index,
+        color: getAdjustedColor(color, colorScheme),
+        metric: metric ?? 'currentAmount',
+        dimension: dimension ?? 'graphLabel',
+        target: target ?? 'target',
+        name: toCamelCase(name ?? `bullet${index}`),
+        ...props,
+    };
+    console.log(bulletProps);
+    return {
+        ...spec,
+        data: getBulletData(bulletProps),
+        marks: getBulletMarks(bulletProps),
+        scales: getBulletScales(),
+    };
+};
 
 export function getBulletMarks(props: BulletSpecProps): Mark[] {
   
