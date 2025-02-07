@@ -29,6 +29,7 @@ import useSpec from '@hooks/useSpec';
 import useSpecProps from '@hooks/useSpecProps';
 import useTooltips from '@hooks/useTooltips';
 import { getColorValue } from '@specBuilder/specUtils';
+import { createLeafValues } from '@specBuilder/sunburst/sunburstDataModificationUtils';
 import { getChartConfig } from '@themes/spectrumTheme';
 import {
 	debugLog,
@@ -38,6 +39,7 @@ import {
 	sanitizeRscChartChildren,
 	setSelectedSignals,
 } from '@utils';
+import { Sunburst } from 'alpha/components';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { Item } from 'vega';
 import { Handler, Position, Options as TooltipOptions } from 'vega-tooltip';
@@ -53,6 +55,7 @@ import {
 	LegendDescription,
 	MarkBounds,
 	RscChartProps,
+	SunburstProps,
 	TooltipAnchor,
 	TooltipPlacement,
 } from './types';
@@ -112,6 +115,16 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 		const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false); // tracks the open/close state of the popover
 
 		const sanitizedChildren = sanitizeRscChartChildren(props.children);
+
+		//NOTE: I don't love this pattern. I don't want to modify user data outside transforms. I just couldn't figure out the right transforms to get the data in the right way
+		// to make this work. If this wasn't a garage week project, I'd take more time to do transforms to get the data right instead of manually doing this
+		sanitizedChildren.forEach((child) => {
+			if (child.type.name === Sunburst.displayName) {
+				const sunburstProps = child.props as unknown as SunburstProps;
+				const { id, parentKey, metric = 'value' } = sunburstProps;
+				createLeafValues(data, id, parentKey, metric);
+			}
+		});
 
 		// THE MAGIC, builds our spec
 		const spec = useSpec({

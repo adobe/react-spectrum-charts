@@ -9,6 +9,18 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { Datum } from 'vega';
 
-export * from './Combo';
-export * from './Sunburst';
+export const createLeafValues = (data: Datum[], id: string, parentKey: string, metric: string) => {
+	data.forEach((element) => {
+		element[`${metric}_childSum`] = data
+			.filter((e) => e[parentKey] === element[id])
+			.reduce((acc, e) => acc + e[metric], 0);
+	});
+	data.forEach((element) => {
+		element[`${metric}_leafValue`] = element[metric] - element[`${metric}_childSum`];
+		if (element[`${metric}_leafValue`] < 0) {
+			element[`${metric}_leafValue`] = 0;
+		}
+	});
+};

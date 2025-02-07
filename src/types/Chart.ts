@@ -32,6 +32,7 @@ export type ChartElement = ReactElement<ChartProps, JSXElementConstructor<ChartP
 export type ChartPopoverElement = ReactElement<ChartPopoverProps, JSXElementConstructor<ChartPopoverProps>>;
 export type ChartTooltipElement = ReactElement<ChartTooltipProps, JSXElementConstructor<ChartTooltipProps>>;
 export type DonutElement = ReactElement<DonutProps, JSXElementConstructor<DonutProps>>;
+export type SunburstElement = ReactElement<SunburstProps, JSXElementConstructor<SunburstProps>>;
 export type DonutSummaryElement = ReactElement<DonutSummaryProps, JSXElementConstructor<DonutSummaryProps>>;
 export type LegendElement = ReactElement<LegendProps, JSXElementConstructor<LegendProps>>;
 export type LineElement = ReactElement<LineProps, JSXElementConstructor<LineProps>>;
@@ -240,6 +241,20 @@ export interface DonutSummaryProps {
 	numberFormat?: NumberFormat;
 	/** Label for the metric summary */
 	label?: string;
+}
+
+export interface SunburstProps extends MarkProps {
+	/** key for a data element */
+	id: string;
+
+	/** identifies the key of this elements parent, if any parent exists */
+	parentKey: string;
+
+	/** identifies which segment each element is part of */
+	segmentKey: string;
+
+	/** determines if other elements are muted when hovering a given element */
+	muteElementsOnHover?: boolean;
 }
 
 export interface SegmentLabelProps {
@@ -900,6 +915,8 @@ export type ChartChildElement =
 	| LineElement
 	| ScatterElement
 	| TitleElement
+	| DonutElement
+	| SunburstElement
 	| ComboElement;
 export type MarkChildElement =
 	| AnnotationElement
