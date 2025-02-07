@@ -34,15 +34,12 @@ describe('addBullet', () => {
     });
 
     test('should modify spec with bullet chart properties', () => {
-        const bulletProps: BulletProps & { colorScheme: ColorScheme; index: number; idKey: string } = {
+        const bulletProps: BulletProps & { idKey: string } = {
             children: [],
             name: 'testBullet',
             metric: 'revenue',
             dimension: 'region',
             target: 'goal',
-            color: 'red',
-            colorScheme: 'light',
-            index: 0,
             idKey: 'rscMarkId',
         };
 
