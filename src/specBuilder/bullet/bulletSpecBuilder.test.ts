@@ -11,7 +11,7 @@
  */
 
 import { getBulletScales, getBulletData, getBulletMarks, getAdjustedColor, addBullet } from './bulletSpecBuilder';
-import { BulletSpecProps, BulletProps, ColorScheme } from '../../types';
+import { BulletSpecProps, BulletProps } from '../../types';
 import { Spec } from 'vega';
 
 const sampleProps: BulletSpecProps = {
