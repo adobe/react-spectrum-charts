@@ -29,8 +29,7 @@ import {
 	TABLE,
 } from '@constants';
 import { Area, Axis, Bar, Legend, Line, Scatter, Title } from '@rsc';
-import { Combo } from '@rsc/alpha';
-import { Bullet } from '@rsc/alpha';
+import { Combo, Bullet } from '@rsc/alpha';
 import { BigNumber, Donut } from '@rsc/rc';
 import colorSchemes from '@themes/colorSchemes';
 import { produce } from 'immer';
