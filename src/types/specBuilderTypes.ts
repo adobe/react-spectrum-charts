@@ -117,6 +117,7 @@ export interface BarSpecProps extends PartiallyRequired<BarProps, BarPropsWithDe
 	index: number;
 	interactiveMarkName: string | undefined;
 	markType: 'bar';
+	dimensionDataType?: string;
 }
 
 type AnnotationPropsWithDefaults = 'textKey';

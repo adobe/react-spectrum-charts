@@ -107,6 +107,7 @@ export const BACKGROUND_COLOR = 'chartBackgroundColor';
 
 // time constants
 export const MS_PER_DAY = 86400000;
+export const TIME = 'time';
 
 // mark constants
 export enum INTERACTION_MODE {
