@@ -10,15 +10,8 @@
  * governing permissions and limitations under the License.
  */
 
-import { createElement } from 'react';
-
-import { ChartTooltip } from '@components/ChartTooltip';
-import { COLOR_SCALE, FILTERED_TABLE, HIGHLIGHTED_ITEM } from '@constants';
-import { defaultSignals } from '@specBuilder/specTestUtils';
-import { initializeSpec } from '@specBuilder/specUtils';
-
-import { getBulletScales, addBullet, getBulletData, getBulletMarks, getAdjustedColor } from './bulletSpecBuilder';
-import { ColorScheme, BulletProps, BulletSpecProps } from '../../types';
+import { getBulletScales, getBulletData, getBulletMarks, getAdjustedColor } from './bulletSpecBuilder';
+import { BulletSpecProps } from '../../types';
 
 const sampleProps: BulletSpecProps = {
     "children": [],

@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { findAllMarksByGroupName, findChart, render, allElementsHaveAttributeValue } from '@test-utils';
+import { findAllMarksByGroupName, findChart, render } from '@test-utils';
 import { Bullet } from 'alpha/components/Bullet';
 
 import { Basic } from './Bullet.story';
