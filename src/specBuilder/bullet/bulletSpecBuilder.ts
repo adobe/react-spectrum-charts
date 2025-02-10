@@ -129,6 +129,7 @@ export function getBulletMarks(props: BulletSpecProps): Mark[] {
 export function getBulletData(props: BulletSpecProps): Data[] {
 
   const maxValue = `max(datum.${props.metric}, datum.${props.target} * 1.1)`
+  const filter = `isValid(datum.${props.dimension}) && datum.${props.dimension} !== null && datum.${props.dimension} !== ''`
 
   const bulletData: Data[] = [
     {
@@ -137,7 +138,7 @@ export function getBulletData(props: BulletSpecProps): Data[] {
       "transform": [
         {
           "type": "filter",
-          "expr": "isValid(datum.graphLabel) && datum.graphLabel !== null && datum.graphLabel !== ''"
+          "expr": filter
         },
         {
           "type": "formula",
