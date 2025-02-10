@@ -43,7 +43,6 @@ export const addBullet = (
         name: toCamelCase(name ?? `bullet${index}`),
         ...props,
     };
-    console.log(bulletProps);
     return {
         ...spec,
         data: getBulletData(bulletProps),
@@ -191,7 +190,6 @@ function toCamelCase(str: string): string {
 
 export function getAdjustedColor(color: string, colorScheme: ColorScheme): string {
   const adjustedColor = getColorValue(color, colorScheme);
-  console.log(adjustedColor)
   if(adjustedColor !== color){
     return adjustedColor;
   }else{

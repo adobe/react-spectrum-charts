@@ -100,9 +100,8 @@ export const getComboChildName = (cur: ComboChildElement, comboName: string, ind
 	}
 	const displayName = getDisplayName(cur);
 	const combinedElementName = combineElementNames(comboName, `${displayName}${index}`);
-	console.log(combinedElementName)
 	return combinedElementName
-};``
+};
 
 const getDisplayName = (cur: ChartChildElement) => (cur.type as React.ComponentType).displayName;
 

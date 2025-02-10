@@ -71,7 +71,6 @@ describe('getBulletScales', () => {
 
 describe('getBulletMarks', () => {
     test('should return the correct marks object', () => {
-        console.log('marks\n', getBulletMarks(sampleProps));
         const data = getBulletMarks(sampleProps);
         expect(data).toHaveLength(4);
         expect(data[0].type).toBe('rect');
