@@ -52,6 +52,9 @@ export const addBullet = (
 };
 
 export function getBulletMarks(props: BulletSpecProps): Mark[] {
+
+  const solidColor = props.colorScheme === 'dark' ? 'white' : 'black';
+  const barLabelColor = props.colorScheme === 'dark' ? '#9c9c9c' : '#737373';
   
   return [
     {
@@ -84,7 +87,7 @@ export function getBulletMarks(props: BulletSpecProps): Mark[] {
           "align": {"value": "left"},
           "baseline": {"value": "bottom"},
           "fontSize": {"value": 11.5},
-          "fill": {"value": "grey"}
+          "fill": {"value": `${barLabelColor}`}
         }
       }
     },
@@ -101,7 +104,7 @@ export function getBulletMarks(props: BulletSpecProps): Mark[] {
           "align": {"value": "right"},
           "baseline": {"value": "bottom"},
           "fontSize": {"value": 11.5},
-          "fill": {"value": "black"}
+          "fill": {"value": `${solidColor}`}
         }
       }
     },
@@ -115,7 +118,7 @@ export function getBulletMarks(props: BulletSpecProps): Mark[] {
           "x": {"scale": "xscale", "field": `${props.target}`},
           "y": {"field": "index", "mult": 60, "offset": -53},
           "y2": {"field": "index", "mult": 60, "offset": -29},
-          "stroke": {"value": "black"},
+          "stroke": {"value": `${solidColor}`},
           "strokeWidth": {"value": 2},
         }
       }
