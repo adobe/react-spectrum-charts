@@ -11,6 +11,8 @@
  */
 import { spectrumColors } from '@themes';
 
+import { SpectrumColor } from '../specBuilder/types';
+
 const colors = spectrumColors.light;
 
 export const categorical6 = [
@@ -20,7 +22,7 @@ export const categorical6 = [
 	colors['categorical-400'],
 	colors['categorical-500'],
 	colors['categorical-600'],
-];
+] as SpectrumColor[];
 
 export const categorical12 = [
 	...categorical6,
@@ -30,7 +32,7 @@ export const categorical12 = [
 	colors['categorical-1000'],
 	colors['categorical-1100'],
 	colors['categorical-1200'],
-];
+] as SpectrumColor[];
 
 export const categorical16 = [
 	...categorical12,
@@ -38,4 +40,4 @@ export const categorical16 = [
 	colors['categorical-1400'],
 	colors['categorical-1500'],
 	colors['categorical-1600'],
-];
+] as SpectrumColor[];

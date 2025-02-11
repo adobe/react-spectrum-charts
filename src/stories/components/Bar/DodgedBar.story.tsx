@@ -19,6 +19,7 @@ import { bindWithProps } from '@test-utils';
 
 import { Content } from '@adobe/react-spectrum';
 
+import { ChartColors } from '../../../specBuilder/types';
 import { barSeriesData, barSubSeriesData } from './data';
 
 export default {
@@ -28,7 +29,7 @@ export default {
 
 const DodgedBarStory: StoryFn<typeof Bar> = (args): ReactElement => {
 	const { color } = args;
-	const colors = Array.isArray(color)
+	const colors: ChartColors = Array.isArray(color)
 		? [
 				['#00a6a0', '#4bcec7'],
 				['#575de8', '#8489fd'],
@@ -86,7 +87,7 @@ const defaultProps: BarProps = {
 	type: 'dodged',
 	dimension: 'browser',
 	onClick: undefined,
-}
+};
 
 const Color = bindWithProps(DodgedBarStory);
 Color.args = {

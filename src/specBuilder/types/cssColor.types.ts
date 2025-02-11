@@ -1,0 +1,207 @@
+/*
+ * Copyright 2025 Adobe. All rights reserved.
+ * This file is licensed to you under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy
+ * of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under
+ * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+ * OF ANY KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
+ */
+type NamedColor =
+	// standard 16 colors
+	| 'black'
+	| 'silver'
+	| 'gray'
+	| 'white'
+	| 'maroon'
+	| 'red'
+	| 'purple'
+	| 'fuchsia'
+	| 'green'
+	| 'lime'
+	| 'olive'
+	| 'yellow'
+	| 'navy'
+	| 'blue'
+	| 'teal'
+	| 'aqua'
+	// extended colors
+	| 'aliceblue'
+	| 'antiquewhite'
+	| 'aqua'
+	| 'aquamarine'
+	| 'azure'
+	| 'beige'
+	| 'bisque'
+	| 'black'
+	| 'blanchedalmond'
+	| 'blue'
+	| 'blueviolet'
+	| 'brown'
+	| 'burlywood'
+	| 'cadetblue'
+	| 'chartreuse'
+	| 'chocolate'
+	| 'coral'
+	| 'cornflowerblue'
+	| 'cornsilk'
+	| 'crimson'
+	| 'cyan'
+	| 'darkblue'
+	| 'darkcyan'
+	| 'darkgoldenrod'
+	| 'darkgray'
+	| 'darkgreen'
+	| 'darkgrey'
+	| 'darkkhaki'
+	| 'darkmagenta'
+	| 'darkolivegreen'
+	| 'darkorange'
+	| 'darkorchid'
+	| 'darkred'
+	| 'darksalmon'
+	| 'darkseagreen'
+	| 'darkslateblue'
+	| 'darkslategray'
+	| 'darkslategrey'
+	| 'darkturquoise'
+	| 'darkviolet'
+	| 'deeppink'
+	| 'deepskyblue'
+	| 'dimgray'
+	| 'dimgrey'
+	| 'dodgerblue'
+	| 'firebrick'
+	| 'floralwhite'
+	| 'forestgreen'
+	| 'fuchsia'
+	| 'gainsboro'
+	| 'ghostwhite'
+	| 'gold'
+	| 'goldenrod'
+	| 'gray'
+	| 'green'
+	| 'greenyellow'
+	| 'grey'
+	| 'honeydew'
+	| 'hotpink'
+	| 'indianred'
+	| 'indigo'
+	| 'ivory'
+	| 'khaki'
+	| 'lavender'
+	| 'lavenderblush'
+	| 'lawngreen'
+	| 'lemonchiffon'
+	| 'lightblue'
+	| 'lightcoral'
+	| 'lightcyan'
+	| 'lightgoldenrodyellow'
+	| 'lightgray'
+	| 'lightgreen'
+	| 'lightgrey'
+	| 'lightpink'
+	| 'lightsalmon'
+	| 'lightseagreen'
+	| 'lightskyblue'
+	| 'lightslategray'
+	| 'lightslategrey'
+	| 'lightsteelblue'
+	| 'lightyellow'
+	| 'lime'
+	| 'limegreen'
+	| 'linen'
+	| 'magenta'
+	| 'maroon'
+	| 'mediumaquamarine'
+	| 'mediumblue'
+	| 'mediumorchid'
+	| 'mediumpurple'
+	| 'mediumseagreen'
+	| 'mediumslateblue'
+	| 'mediumspringgreen'
+	| 'mediumturquoise'
+	| 'mediumvioletred'
+	| 'midnightblue'
+	| 'mintcream'
+	| 'mistyrose'
+	| 'moccasin'
+	| 'navajowhite'
+	| 'navy'
+	| 'oldlace'
+	| 'olive'
+	| 'olivedrab'
+	| 'orange'
+	| 'orangered'
+	| 'orchid'
+	| 'palegoldenrod'
+	| 'palegreen'
+	| 'paleturquoise'
+	| 'palevioletred'
+	| 'papayawhip'
+	| 'peachpuff'
+	| 'peru'
+	| 'pink'
+	| 'plum'
+	| 'powderblue'
+	| 'purple'
+	| 'rebeccapurple'
+	| 'red'
+	| 'rosybrown'
+	| 'royalblue'
+	| 'saddlebrown'
+	| 'salmon'
+	| 'sandybrown'
+	| 'seagreen'
+	| 'seashell'
+	| 'sienna'
+	| 'silver'
+	| 'skyblue'
+	| 'slateblue'
+	| 'slategray'
+	| 'slategrey'
+	| 'snow'
+	| 'springgreen'
+	| 'steelblue'
+	| 'tan'
+	| 'teal'
+	| 'thistle'
+	| 'tomato'
+	| 'transparent'
+	| 'turquoise'
+	| 'violet'
+	| 'wheat'
+	| 'white'
+	| 'whitesmoke'
+	| 'yellow'
+	| 'yellowgreen';
+
+type HexadecimalColor = `#${string}`;
+
+type Hue = number | `${number}deg` | `${number}turn` | 'none';
+type Saturation = number | `${number}%` | 'none';
+type Lightness = number | `${number}%` | 'none';
+type Alpha = number | `${number}%`;
+
+type HslColor =
+	| `hsl${'a' | ''}(${Hue} ${Saturation} ${Lightness})`
+	| `hsl${'a' | ''}(${Hue},${' ' | ''}${Saturation},${' ' | ''}${Lightness})`
+	| `hsl${'a' | ''}(${Hue} ${Saturation} ${Lightness}${' ' | ''}${'/' | ','}${' ' | ''}${Alpha})`
+	| `hsl${'a' | ''}(${Hue},${' ' | ''}${Saturation},${' ' | ''}${Lightness}${' ' | ''}${'/' | ','}${
+			| ' '
+			| ''}${Alpha})`;
+
+type RgbColor =
+	| `rgb${'a' | ''}(${number}${',' | ''}${' ' | ''}${number}${',' | ''}${' ' | ''}${number})`
+	| `rgb${'a' | ''}(${number}%${',' | ''}${' ' | ''}${number}%${',' | ''}${' ' | ''}${number}%)`
+	| `rgb${'a' | ''}(${number}${',' | ''}${' ' | ''}${number}${',' | ''}${' ' | ''}${number}${' ' | ''}/${
+			| ' '
+			| ''}${Alpha})`
+	| `rgb${'a' | ''}(${number}%${',' | ''}${' ' | ''}${number}%${',' | ''}${' ' | ''}${number}%${' ' | ''}/${
+			| ' '
+			| ''}${Alpha})`
+	| `rgb${'a' | ''}(${number},${' ' | ''}${number},${' ' | ''}${number},${' ' | ''}${number})`;
+
+export type CssColor = string & (NamedColor | HexadecimalColor | HslColor | RgbColor);

@@ -11,6 +11,7 @@
  */
 
 export * from './chartSpec.types';
+export * from './cssColor.types';
 export * from './legendSpec.types';
 export * from './spectrumVizColor.types';
 export * from './titleSpec.types';
