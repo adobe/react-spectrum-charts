@@ -9,9 +9,6 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { createElement } from 'react';
-
-import { Annotation } from '@components/Annotation';
 import {
 	BACKGROUND_COLOR,
 	COLOR_SCALE,
@@ -23,7 +20,7 @@ import {
 } from '@constants';
 import { GroupMark, Mark, RectEncodeEntry } from 'vega';
 
-import { defaultBarEnterEncodings, defaultBarProps, defaultBarStrokeEncodings } from './barTestUtils';
+import { defaultBarEnterEncodings, defaultBarOptions, defaultBarStrokeEncodings } from './barTestUtils';
 import { getDodgedAndStackedBarMark, getStackedBarMarks, getStackedDimensionEncodings } from './stackedBarUtils';
 
 const defaultStackedBarXEncondings: RectEncodeEntry = {
@@ -70,14 +67,13 @@ const defaultMark = {
 
 describe('stackedBarUtils', () => {
 	describe('getStackedBarMarks()', () => {
-		test('default props', () => {
-			expect(getStackedBarMarks(defaultBarProps)).toStrictEqual([defaultBackgroundMark, defaultMark]);
+		test('default options', () => {
+			expect(getStackedBarMarks(defaultBarOptions)).toStrictEqual([defaultBackgroundMark, defaultMark]);
 		});
 		test('with annotation', () => {
-			const annotationElement = createElement(Annotation, { textKey: 'textLabel' });
 			const marks = getStackedBarMarks({
-				...defaultBarProps,
-				children: [...defaultBarProps.children, annotationElement],
+				...defaultBarOptions,
+				barAnnotations: [{ textKey: 'textLabel' }],
 			});
 
 			expect(marks).toHaveLength(3);
@@ -93,7 +89,7 @@ describe('stackedBarUtils', () => {
 
 	describe('getDodgedAndStackedBarMark()', () => {
 		test('should return mark with dodged and stacked marks', () => {
-			const mark = getDodgedAndStackedBarMark(defaultBarProps);
+			const mark = getDodgedAndStackedBarMark(defaultBarOptions);
 
 			expect(mark.name).toEqual('bar0_group');
 			expect(mark.scales?.[0].name).toEqual('bar0_position');
@@ -105,8 +101,8 @@ describe('stackedBarUtils', () => {
 
 		test('should return mark with dodged and stacked marks, with annotation', () => {
 			const mark = getDodgedAndStackedBarMark({
-				...defaultBarProps,
-				children: [...defaultBarProps.children, createElement(Annotation, { textKey: 'textLabel' })],
+				...defaultBarOptions,
+				barAnnotations: [{ textKey: 'textLabel' }],
 			});
 
 			expect(mark.name).toEqual('bar0_group');
@@ -124,9 +120,9 @@ describe('stackedBarUtils', () => {
 
 		test('should return mark with dodged and stacked marks, with annotation, horizontal', () => {
 			const mark = getDodgedAndStackedBarMark({
-				...defaultBarProps,
+				...defaultBarOptions,
 				orientation: 'horizontal',
-				children: [...defaultBarProps.children, createElement(Annotation, { textKey: 'textLabel' })],
+				barAnnotations: [{ textKey: 'textLabel' }],
 			});
 
 			expect(mark.name).toEqual('bar0_group');
@@ -145,13 +141,13 @@ describe('stackedBarUtils', () => {
 
 	describe('getStackedDimensionEncodings()', () => {
 		test('should return x and width encodings', () => {
-			expect(getStackedDimensionEncodings(defaultBarProps)).toStrictEqual(defaultStackedBarXEncondings);
+			expect(getStackedDimensionEncodings(defaultBarOptions)).toStrictEqual(defaultStackedBarXEncondings);
 		});
 
 		test('should get dodged x encoding if stacked/dodged', () => {
 			expect(
 				getStackedDimensionEncodings({
-					...defaultBarProps,
+					...defaultBarOptions,
 					color: [DEFAULT_COLOR, DEFAULT_SECONDARY_COLOR],
 				})
 			).toStrictEqual({

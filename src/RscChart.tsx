@@ -46,16 +46,8 @@ import { ActionButton, Dialog, DialogTrigger, View as SpectrumView } from '@adob
 
 import './Chart.css';
 import { VegaChart } from './VegaChart';
-import {
-	ChartHandle,
-	ColorScheme,
-	Datum,
-	LegendDescription,
-	MarkBounds,
-	RscChartProps,
-	TooltipAnchor,
-	TooltipPlacement,
-} from './types';
+import { ColorScheme, Datum, LegendDescription, MarkBounds } from './specBuilder';
+import { ChartHandle, RscChartProps, TooltipAnchor, TooltipPlacement } from './types';
 
 interface ChartDialogProps {
 	datum: Datum | null;

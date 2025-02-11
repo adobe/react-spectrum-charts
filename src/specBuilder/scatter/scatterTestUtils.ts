@@ -17,10 +17,11 @@ import {
 	MARK_ID,
 } from '@constants';
 
-import { ScatterSpecProps } from '../../types';
+import { ScatterSpecOptions } from '../types';
 
-export const defaultScatterProps: ScatterSpecProps = {
-	children: [],
+export const defaultScatterOptions: ScatterSpecOptions = {
+	chartPopovers: [],
+	chartTooltips: [],
 	color: { value: 'categorical-100' },
 	colorScaleType: 'ordinal',
 	colorScheme: DEFAULT_COLOR_SCHEME,
@@ -35,5 +36,7 @@ export const defaultScatterProps: ScatterSpecProps = {
 	metric: DEFAULT_METRIC,
 	name: 'scatter0',
 	opacity: { value: 1 },
+	scatterPaths: [],
 	size: { value: 'M' },
+	trendlines: [],
 };

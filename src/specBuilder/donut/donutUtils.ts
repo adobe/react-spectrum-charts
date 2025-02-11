@@ -14,10 +14,10 @@ import { getColorProductionRule, getCursor, getMarkOpacity, getTooltip } from '@
 import { getColorValue } from '@specBuilder/specUtils';
 import { ArcMark } from 'vega';
 
-import { DonutSpecProps } from '../../types';
+import { DonutSpecOptions } from '../types';
 
-export const getArcMark = (props: DonutSpecProps): ArcMark => {
-	const { children, color, colorScheme, holeRatio, idKey, name } = props;
+export const getArcMark = (options: DonutSpecOptions): ArcMark => {
+	const { chartPopovers, chartTooltips, color, colorScheme, holeRatio, idKey, name } = options;
 	return {
 		type: 'arc',
 		name,
@@ -28,7 +28,7 @@ export const getArcMark = (props: DonutSpecProps): ArcMark => {
 				fill: getColorProductionRule(color, colorScheme),
 				x: { signal: 'width / 2' },
 				y: { signal: 'height / 2' },
-				tooltip: getTooltip(children, name),
+				tooltip: getTooltip(chartTooltips, name),
 				stroke: { value: getColorValue('static-blue', colorScheme) },
 			},
 			update: {
@@ -37,8 +37,8 @@ export const getArcMark = (props: DonutSpecProps): ArcMark => {
 				padAngle: { value: 0.01 },
 				innerRadius: { signal: `${holeRatio} * ${DONUT_RADIUS}` },
 				outerRadius: { signal: DONUT_RADIUS },
-				opacity: getMarkOpacity(props),
-				cursor: getCursor(children),
+				opacity: getMarkOpacity(options),
+				cursor: getCursor(chartPopovers),
 				strokeWidth: [{ test: `${SELECTED_ITEM} === datum.${idKey}`, value: 2 }, { value: 0 }],
 			},
 		},

@@ -17,8 +17,8 @@ import { Axis, Bar, BarProps, Chart, Legend } from '@rsc';
 import { StoryFn } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
 
-import { SpectrumColor } from '../../../types';
-import { barSeriesData, stackedBarDataWithUTC, negativeBarSeriesData } from './data';
+import { SpectrumColor } from '../../../specBuilder';
+import { barSeriesData, negativeBarSeriesData, stackedBarDataWithUTC } from './data';
 
 export default {
 	title: 'RSC/Bar/Stacked Bar',
@@ -36,7 +36,13 @@ const StackedBarStoryWithUTCData: StoryFn<typeof Bar> = (args): ReactElement => 
 	const chartProps = useChartProps({ data: stackedBarDataWithUTC, width: 600, height: 600 });
 	return (
 		<Chart {...chartProps}>
-			<Axis position={args.orientation === 'horizontal' ? 'left' : 'bottom'} labelFormat="time" granularity="day" baseline title="Browser" />
+			<Axis
+				position={args.orientation === 'horizontal' ? 'left' : 'bottom'}
+				labelFormat="time"
+				granularity="day"
+				baseline
+				title="Browser"
+			/>
 			<Axis position={args.orientation === 'horizontal' ? 'bottom' : 'left'} grid title="Downloads" />
 			<Bar {...args} />
 		</Chart>
@@ -72,7 +78,7 @@ const defaultProps: BarProps = {
 	order: 'order',
 	color: 'operatingSystem',
 	onClick: undefined,
-}
+};
 
 const Basic = bindWithProps(BarStory);
 Basic.args = {
@@ -102,7 +108,7 @@ StackedBarWithUTCDatetimeFormat.args = {
 	...defaultProps,
 	dimension: 'browser',
 	metric: 'downloads',
-	color: "dataset_id",
+	color: 'dataset_id',
 	dimensionDataType: 'time',
 };
 

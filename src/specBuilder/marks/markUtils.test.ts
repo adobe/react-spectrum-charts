@@ -9,12 +9,6 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { createElement } from 'react';
-
-import { Annotation } from '@components/Annotation';
-import { ChartPopover } from '@components/ChartPopover';
-import { ChartTooltip } from '@components/ChartTooltip';
-import { MetricRange } from '@components/MetricRange';
 import {
 	COLOR_SCALE,
 	DEFAULT_COLOR,
@@ -33,15 +27,16 @@ import {
 	SELECTED_ITEM,
 	SYMBOL_SIZE_SCALE,
 } from '@constants';
-import { defaultBarProps } from '@specBuilder/bar/barTestUtils';
+import { defaultBarOptions } from '@specBuilder/bar/barTestUtils';
 import { SignalRef } from 'vega';
 
-import { ProductionRuleTests } from '../../types';
+import { ProductionRuleTests } from '../types';
 import {
 	getColorProductionRule,
 	getColorProductionRuleSignalString,
 	getCursor,
 	getHighlightOpacityValue,
+	getInteractiveMarkName,
 	getLineWidthProductionRule,
 	getMarkOpacity,
 	getOpacityProductionRule,
@@ -50,7 +45,6 @@ import {
 	getTooltip,
 	getXProductionRule,
 	getYProductionRule,
-	hasMetricRange,
 	hasTooltip,
 	isInteractive,
 } from './markUtils';
@@ -144,42 +138,28 @@ describe('getSymbolSizeProductionRule()', () => {
 
 describe('hasTooltip()', () => {
 	test('should be true if ChartTooltip exists in children', () => {
-		expect(hasTooltip([createElement(ChartTooltip)])).toBeTruthy();
-		expect(hasTooltip([createElement(ChartTooltip), createElement('div')])).toBeTruthy();
+		expect(hasTooltip({ chartTooltips: [{}] })).toBeTruthy();
 	});
 	test('should be false if ChartTooltip does not exist in children', () => {
-		expect(hasTooltip([createElement(ChartPopover)])).toBeFalsy();
-		expect(hasTooltip([createElement(ChartPopover), createElement('div')])).toBeFalsy();
-	});
-});
-
-describe('hasMetricRange()', () => {
-	test('should be true if MetricRange exists in children', () => {
-		expect(hasMetricRange([createElement(MetricRange)])).toBeTruthy();
-		expect(hasMetricRange([createElement(MetricRange), createElement('div')])).toBeTruthy();
-	});
-	test('should be false if MetricRange does not exist in children', () => {
-		expect(hasMetricRange([createElement(ChartPopover)])).toBeFalsy();
-		expect(hasMetricRange([createElement(ChartPopover), createElement('div')])).toBeFalsy();
+		expect(hasTooltip({})).toBeFalsy();
 	});
 });
 
 describe('getTooltip()', () => {
 	test('should return undefined if there are not any interactive children', () => {
-		expect(getTooltip([createElement(Annotation)], 'line0')).toBeUndefined();
 		expect(getTooltip([], 'line0')).toBeUndefined();
 	});
 	test('should return signal ref if there are interactive children', () => {
-		const rule = getTooltip([createElement(ChartTooltip)], 'line0');
+		const rule = getTooltip([{}], 'line0');
 		expect(rule).toHaveProperty('signal');
 	});
 	test('should reference a nested datum if nestedDatum is true', () => {
-		const rule = getTooltip([createElement(ChartTooltip)], 'line0', true) as SignalRef;
+		const rule = getTooltip([{}], 'line0', true) as SignalRef;
 		expect(rule.signal).toContain('datum.datum');
 	});
 	test('should add condition test when excludeDataKey is present', () => {
 		const rule = getTooltip(
-			[createElement(ChartTooltip, { excludeDataKeys: ['excludeFromTooltip'] })],
+			[{ excludeDataKeys: ['excludeFromTooltip'] }],
 			'line0',
 			false
 		) as ProductionRuleTests<SignalRef>;
@@ -189,7 +169,7 @@ describe('getTooltip()', () => {
 	});
 	test('should have default tooltip as second item when excludeDataKey is present', () => {
 		const rule = getTooltip(
-			[createElement(ChartTooltip, { excludeDataKeys: ['excludeFromTooltip'] })],
+			[{ excludeDataKeys: ['excludeFromTooltip'] }],
 			'line0',
 			false
 		) as ProductionRuleTests<SignalRef>;
@@ -242,31 +222,28 @@ describe('getYProductionRule()', () => {
 });
 
 describe('isInteractive()', () => {
-	const tooltip = createElement(ChartTooltip);
-	const popover = createElement(ChartPopover);
 	test('should return true based on having interactive children', () => {
-		expect(isInteractive([tooltip])).toEqual(true);
-		expect(isInteractive([])).toEqual(false);
-		expect(isInteractive([tooltip, popover])).toEqual(true);
+		expect(isInteractive({ chartTooltips: [{}] })).toEqual(true);
+		expect(isInteractive({})).toEqual(false);
+		expect(isInteractive({ chartPopovers: [{}], chartTooltips: [{}] })).toEqual(true);
 	});
 
-	test('should return true if props.onClick is defined', () => {
-		expect(isInteractive([], { onClick: jest.fn() })).toEqual(true);
+	test('should return true if hasOnClick', () => {
+		expect(isInteractive({ hasOnClick: true })).toEqual(true);
 	});
 });
 
 describe('getCursor()', () => {
-	test('should return pointer object if children have popover element', () => {
-		expect(getCursor([createElement(ChartPopover)])).toEqual({ value: 'pointer' });
+	test('should return pointer object if there are any popovers', () => {
+		expect(getCursor([{}])).toEqual({ value: 'pointer' });
 	});
 
-	test('should return pointer object if props.onClick is defined', () => {
-		expect(getCursor([], { onClick: jest.fn() })).toEqual({ value: 'pointer' });
+	test('should return pointer object if hasOnClick is true', () => {
+		expect(getCursor([], true)).toEqual({ value: 'pointer' });
 	});
 
-	test('should return falsy value if children do not have popover element and onClick is not defined', () => {
+	test('should return falsy value if there are not any popovers and hasOnClick is not false', () => {
 		expect(getCursor([])).toBeFalsy();
-		expect(getCursor([createElement(ChartTooltip)], {})).toBeFalsy();
 	});
 });
 
@@ -291,18 +268,16 @@ describe('getColorProductionRuleSignalString()', () => {
 
 describe('getMarkOpacity()', () => {
 	test('no children, should use default opacity', () => {
-		expect(getMarkOpacity(defaultBarProps)).toStrictEqual([DEFAULT_OPACITY_RULE]);
+		expect(getMarkOpacity(defaultBarOptions)).toStrictEqual([DEFAULT_OPACITY_RULE]);
 	});
 	test('Tooltip child, should return tests for hover and default to opacity', () => {
-		const tooltip = createElement(ChartTooltip);
-		const opacity = getMarkOpacity({ ...defaultBarProps, children: [tooltip] });
+		const opacity = getMarkOpacity({ ...defaultBarOptions, chartTooltips: [{}] });
 		expect(opacity).toHaveLength(3);
 		expect(opacity[0].test).toContain(HIGHLIGHTED_ITEM);
 		expect(opacity.at(-1)).toStrictEqual(DEFAULT_OPACITY_RULE);
 	});
 	test('Popover child, should return tests for hover and select and default to opacity', () => {
-		const popover = createElement(ChartPopover);
-		const opacity = getMarkOpacity({ ...defaultBarProps, children: [popover] });
+		const opacity = getMarkOpacity({ ...defaultBarOptions, chartPopovers: [{}] });
 		expect(opacity).toHaveLength(7);
 		expect(opacity[0].test).toContain(`${SELECTED_ITEM} !==`);
 		expect(opacity[1].test).toContain(`${SELECTED_ITEM} ===`);
@@ -312,5 +287,25 @@ describe('getMarkOpacity()', () => {
 
 		expect(opacity[4].test).toContain(HIGHLIGHTED_ITEM);
 		expect(opacity.at(-1)).toStrictEqual(DEFAULT_OPACITY_RULE);
+	});
+});
+
+describe('getInteractiveMarkName()', () => {
+	test('should return undefined if there are no interactive children', () => {
+		expect(getInteractiveMarkName({}, 'line0')).toBeUndefined();
+		expect(getInteractiveMarkName({ trendlines: [{}] }, 'line0')).toBeUndefined();
+	});
+	test('should return the name provided if there is a tooltip or popover in the children', () => {
+		expect(getInteractiveMarkName({ chartTooltips: [{}] }, 'line0')).toEqual('line0');
+		expect(getInteractiveMarkName({ chartPopovers: [{}] }, 'line0')).toEqual('line0');
+	});
+	test('should return the name provided if options.onClick is defined', () => {
+		expect(getInteractiveMarkName({ hasOnClick: true }, 'line0')).toEqual('line0');
+	});
+	test('should return the name provided if highlightedItem is defined', () => {
+		expect(getInteractiveMarkName({ highlightedItem: 'someItem0' }, 'line0')).toEqual('line0');
+	});
+	test('should return the aggregated trendline name if the line has a trendline with any interactive children', () => {
+		expect(getInteractiveMarkName({ trendlines: [{ chartTooltips: [{}] }] }, 'line0')).toEqual('line0Trendline');
 	});
 });

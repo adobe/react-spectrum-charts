@@ -9,24 +9,24 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { getTrellisAxisProps } from './axisTrellisUtils';
+import { getTrellisAxisOptions } from './axisTrellisUtils';
 
-describe('getTrellisAxisProps()', () => {
-	test('should generate trellis axis props for x axis', () => {
-		const trellisAxisProps = getTrellisAxisProps('xTrellisBand');
-		expect(trellisAxisProps).toHaveProperty('position', 'top');
-		expect(trellisAxisProps).toHaveProperty('vegaLabelOffset', { signal: "bandwidth('xTrellisBand') / -2" });
-		expect(trellisAxisProps).toHaveProperty('vegaLabelPadding', 8);
+describe('getTrellisAxisOptions()', () => {
+	test('should generate trellis axis options for x axis', () => {
+		const trellisAxisOptions = getTrellisAxisOptions('xTrellisBand');
+		expect(trellisAxisOptions).toHaveProperty('position', 'top');
+		expect(trellisAxisOptions).toHaveProperty('vegaLabelOffset', { signal: "bandwidth('xTrellisBand') / -2" });
+		expect(trellisAxisOptions).toHaveProperty('vegaLabelPadding', 8);
 	});
-	test('should generate trellis axis props for y axis', () => {
-		const trellisAxisProps = getTrellisAxisProps('yTrellisBand');
-		expect(trellisAxisProps).toHaveProperty('position', 'left');
-		expect(trellisAxisProps).toHaveProperty('vegaLabelOffset', {
+	test('should generate trellis axis options for y axis', () => {
+		const trellisAxisOptions = getTrellisAxisOptions('yTrellisBand');
+		expect(trellisAxisOptions).toHaveProperty('position', 'left');
+		expect(trellisAxisOptions).toHaveProperty('vegaLabelOffset', {
 			signal: "bandwidth('yTrellisBand') / -2 - 8",
 		});
-		expect(trellisAxisProps).toHaveProperty('vegaLabelPadding', 0);
+		expect(trellisAxisOptions).toHaveProperty('vegaLabelPadding', 0);
 	});
 	test('should retrun empty object if not for a trellis axis', () => {
-		expect(getTrellisAxisProps('xLinear')).toEqual({});
+		expect(getTrellisAxisOptions('xLinear')).toEqual({});
 	});
 });

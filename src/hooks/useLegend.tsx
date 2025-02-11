@@ -15,7 +15,8 @@ import { getElement } from '@utils';
 
 import { Chart } from '../Chart';
 import { Legend } from '../components/Legend';
-import { ChartChildElement, LegendDescription, LegendElement } from '../types';
+import { LegendDescription } from '../specBuilder';
+import { ChartChildElement, LegendElement } from '../types';
 
 interface UseLegendProps {
 	legendHiddenSeries: string[];

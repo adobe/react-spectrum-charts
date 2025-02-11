@@ -9,16 +9,12 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { createElement } from 'react';
-
-import { ChartTooltip } from '@components/ChartTooltip';
-import { Trendline } from '@components/Trendline';
 import { HIGHLIGHTED_ITEM, HIGHLIGHTED_SERIES } from '@constants';
 import { defaultSignals } from '@specBuilder/specTestUtils';
 import { Signal } from 'vega';
 
 import { setTrendlineSignals } from './trendlineSignalUtils';
-import { defaultLineProps } from './trendlineTestUtils';
+import { defaultLineOptions } from './trendlineTestUtils';
 
 describe('getTrendlineSignals()', () => {
 	let signals: Signal[];
@@ -27,8 +23,8 @@ describe('getTrendlineSignals()', () => {
 	});
 	test('should add voronoi hover signal events if ChartTooltip exists', () => {
 		setTrendlineSignals(signals, {
-			...defaultLineProps,
-			children: [createElement(Trendline, {}, createElement(ChartTooltip))],
+			...defaultLineOptions,
+			trendlines: [{ chartTooltips: [{}] }],
 		});
 		expect(signals).toHaveLength(defaultSignals.length);
 		expect(signals[0]).toHaveProperty('name', HIGHLIGHTED_ITEM);
@@ -38,14 +34,14 @@ describe('getTrendlineSignals()', () => {
 	});
 
 	test('should not modify any signals if there is not a ChartTooltip', () => {
-		setTrendlineSignals(signals, defaultLineProps);
+		setTrendlineSignals(signals, defaultLineOptions);
 		expect(signals).toStrictEqual(defaultSignals);
 	});
 
 	test('should add displayOnHover signal events', () => {
 		setTrendlineSignals(signals, {
-			...defaultLineProps,
-			children: [createElement(Trendline, { displayOnHover: true })],
+			...defaultLineOptions,
+			trendlines: [{ displayOnHover: true }],
 		});
 		expect(signals).toHaveLength(defaultSignals.length);
 		expect(signals[2]).toHaveProperty('name', HIGHLIGHTED_SERIES);

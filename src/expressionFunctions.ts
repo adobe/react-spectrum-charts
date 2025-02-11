@@ -14,7 +14,7 @@ import { ADOBE_CLEAN_FONT } from '@themes/spectrumTheme';
 import { FormatLocaleDefinition, formatLocale } from 'd3-format';
 import { FontWeight } from 'vega';
 
-import { NumberFormat } from './types';
+import { NumberFormat } from './specBuilder';
 
 export interface LabelDatum {
 	index: number;
