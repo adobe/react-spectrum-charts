@@ -10,13 +10,15 @@
  * governing permissions and limitations under the License.
  */
 
+import { toCamelCase } from '@utils';
 import { DEFAULT_COLOR_SCHEME } from '@constants';
 import { Spec, Data, Mark, Scale } from 'vega';
 import { ColorScheme, BulletProps, BulletSpecProps } from '../../types';
 import { sanitizeMarkChildren } from '../../utils';
 import { getColorValue } from '../specUtils';
+import { spectrumColors } from '@themes';
 
-const DEFAULT_COLOR = 'steelblue';
+const DEFAULT_COLOR = spectrumColors.light['static-blue']
 
 export const addBullet = (
     spec: Spec,
@@ -36,7 +38,7 @@ export const addBullet = (
         children: sanitizeMarkChildren(children),
         colorScheme: colorScheme,
         index,
-        color: getAdjustedColor(color, colorScheme),
+        color: getColorValue(color, colorScheme),
         metric: metric ?? 'currentAmount',
         dimension: dimension ?? 'graphLabel',
         target: target ?? 'target',
@@ -53,8 +55,8 @@ export const addBullet = (
 
 export function getBulletMarks(props: BulletSpecProps): Mark[] {
 
-  const solidColor = props.colorScheme === 'dark' ? 'white' : 'black';
-  const barLabelColor = props.colorScheme === 'dark' ? '#9c9c9c' : '#737373';
+  const solidColor = getColorValue('gray-900', props.colorScheme);
+  const barLabelColor = getColorValue('gray-600', props.colorScheme);
   
   return [
     {
@@ -128,6 +130,7 @@ export function getBulletMarks(props: BulletSpecProps): Mark[] {
 
 export function getBulletData(props: BulletSpecProps): Data[] {
 
+  //We are multiplying the target by 1.1 to make sure that the target line is never at the very end of the graph
   const maxValue = `max(datum.${props.metric}, datum.${props.target} * 1.1)`
   const filter = `isValid(datum.${props.dimension}) && datum.${props.dimension} !== null && datum.${props.dimension} !== ''`
 
@@ -170,7 +173,6 @@ export function getBulletData(props: BulletSpecProps): Data[] {
 }
 
 export function getBulletScales(): Scale[] {
-
   const bulletScale: Scale[] = [
     {
       "name": "xscale",
@@ -186,17 +188,4 @@ export function getBulletScales(): Scale[] {
   ]
 
   return bulletScale;
-}
-
-function toCamelCase(str: string): string {
-  return str.replace(/([-_][a-z])/gi, (match) => match.toUpperCase().replace('-', '').replace('_', ''));
-}
-
-export function getAdjustedColor(color: string, colorScheme: ColorScheme): string {
-  const adjustedColor = getColorValue(color, colorScheme);
-  if(adjustedColor !== color){
-    return adjustedColor;
-  }else{
-    return color
-  }
 }

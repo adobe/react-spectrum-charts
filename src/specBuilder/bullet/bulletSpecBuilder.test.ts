@@ -10,7 +10,7 @@
  * governing permissions and limitations under the License.
  */
 
-import { getBulletScales, getBulletData, getBulletMarks, getAdjustedColor, addBullet } from './bulletSpecBuilder';
+import { getBulletScales, getBulletData, getBulletMarks, addBullet } from './bulletSpecBuilder';
 import { BulletSpecProps, BulletProps } from '../../types';
 import { Spec } from 'vega';
 
@@ -77,17 +77,5 @@ describe('getBulletMarks', () => {
         expect(data[1].type).toBe('text');
         expect(data[2].type).toBe('text');
         expect(data[3].type).toBe('rule');
-    });
-});
-
-describe('getAdjustedColor', () => {
-    test('Returns the correct color when passed an Adobe Spectrum Color', () => {
-        const color = getAdjustedColor('blue-500', 'light');
-        expect(color).toBe('rgb(120, 187, 250)');
-    });
-
-    test('Returns the same color passed if not a valid Adobe Spectrum Color', () => {
-        const color = getAdjustedColor('cyan', 'light');
-        expect(color).toBe('cyan');
     });
 });
