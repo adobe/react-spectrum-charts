@@ -30,7 +30,7 @@ import {
 	Trendline,
 	TrendlineAnnotation,
 } from '@rsc';
-import { Combo } from '@rsc/alpha';
+import { Combo, Treemap } from '@rsc/alpha';
 import { BigNumber, Donut, DonutSummary, SegmentLabel } from '@rsc/rc';
 import { View } from 'vega';
 
@@ -54,6 +54,7 @@ import {
 	MarkChildElement,
 	RscElement,
 	ScatterElement,
+	TreemapElement,
 	TrendlineElement,
 } from '../types';
 
@@ -68,6 +69,7 @@ type ElementCounts = {
 	line: number;
 	scatter: number;
 	combo: number;
+	treemap: number;
 };
 
 // coerces a value that could be a single value or an array of that value to an array
@@ -102,6 +104,7 @@ export const sanitizeRscChartChildren = (children: unknown): ChartChildElement[]
 		Scatter.displayName,
 		Title.displayName,
 		Combo.displayName,
+		Treemap.displayName,
 	] as string[];
 	return toArray(children)
 		.flat()
@@ -356,6 +359,9 @@ const getElementName = (element: unknown, elementCounts: ElementCounts) => {
 		case Combo.displayName:
 			elementCounts.combo++;
 			return getComponentName(element as ComboElement, `combo${elementCounts.combo}`);
+		case Treemap.displayName:
+			elementCounts.treemap++;
+			return getComponentName(element as TreemapElement, `treemap${elementCounts.treemap}`);
 		default:
 			return '';
 	}
@@ -384,6 +390,7 @@ const initElementCounts = (): ElementCounts => ({
 	line: -1,
 	scatter: -1,
 	combo: -1,
+	treemap: -1,
 });
 
 /**
