@@ -149,7 +149,7 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 			chartLayers,
 			UNSAFE_vegaSpec,
 		});
-
+		// see controlledHoveredIdSignal for pattern to update focus signal
 		const { controlledHoveredIdSignal, controlledHoveredGroupSignal } = useSpecProps(spec);
 		const chartConfig = useMemo(() => getChartConfig(config, colorScheme), [config, colorScheme]);
 
@@ -241,6 +241,7 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 			if (legendIsToggleable) {
 				signals.hiddenSeries = legendHiddenSeries;
 			}
+			// see "selected"
 			signals[SELECTED_ITEM] = selectedData?.[idKey] ?? null;
 			signals[SELECTED_SERIES] = selectedData?.[SERIES_ID] ?? null;
 
@@ -291,6 +292,7 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 							if (legendIsToggleable) {
 								view.signal('hiddenSeries', legendHiddenSeries);
 							}
+							// this is where the magic happens
 							setSelectedSignals({
 								idKey,
 								selectedData: selectedData.current,
@@ -326,11 +328,11 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 						popover={popover}
 					/>
 				))}
-				<Navigator
+				{chartLayers.length ? <Navigator
 					data={data}
 					chartView={chartView}
 					chartLayers={chartLayers}
-				></Navigator>
+				></Navigator> : <div/>}
 			</>
 		);
 	}
