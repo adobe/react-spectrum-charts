@@ -140,7 +140,7 @@ export function buildSpec(props: SanitizedSpecProps) {
 			switch (cur.type.displayName) {
 				case Area.displayName:
 					areaCount++;
-					addLayer(chartLayers, {acc,cur,index:areaCount})
+					// addLayer(chartLayers, {acc,cur,index:areaCount})
 					return addArea(acc, { ...(cur as AreaElement).props, ...specProps, index: areaCount });
 				case Axis.displayName:
 					axisCount++;
@@ -153,7 +153,7 @@ export function buildSpec(props: SanitizedSpecProps) {
 					return addBar(acc, { ...(cur as BarElement).props, ...specProps, index: barCount });
 				case Donut.displayName:
 					donutCount++;
-					addLayer(chartLayers, {acc,cur,index:donutCount})
+					// addLayer(chartLayers, {acc,cur,index:donutCount})
 					return addDonut(acc, { ...(cur as DonutElement).props, ...specProps, index: donutCount });
 				case Legend.displayName:
 					legendCount++;
@@ -168,11 +168,11 @@ export function buildSpec(props: SanitizedSpecProps) {
 					});
 				case Line.displayName:
 					lineCount++;
-					addLayer(chartLayers, {acc,cur,index:lineCount})
+					// addLayer(chartLayers, {acc,cur,index:lineCount})
 					return addLine(acc, { ...(cur as LineElement).props, ...specProps, index: lineCount });
 				case Scatter.displayName:
 					scatterCount++;
-					addLayer(chartLayers, {acc,cur,index:scatterCount})
+					// addLayer(chartLayers, {acc,cur,index:scatterCount})
 					return addScatter(acc, { ...(cur as ScatterElement).props, ...specProps, index: scatterCount });
 				case Title.displayName:
 					// No title count. There can only be one title.
@@ -209,34 +209,31 @@ export function buildSpec(props: SanitizedSpecProps) {
 }
 
 export const addLayer = (chartLayers: DimensionList, newLayer) => {
-	if (newLayer.cur.type.displayName === Line.displayName) {
-		// console.log("we have a line! how do we want to deal with this??")
-	}
+	// this function adds new traversable dimensions to data navigator
+	// "dimensions" is an API in data navigator, not to be confused with RSC's "dimension"
+	// that being said, the default "dimension" for every chart does seem to be based on
+	// the prop with the same name
+	const subdivisions = newLayer.cur.type.displayName === Scatter.displayName ? 4 : 1
+	console.log("new layer",newLayer)
 	const dimensions: Record<string, DimensionDatum> = {
 		dimension: {
 			dimensionKey: "",
 			operations: {
-				createNumericalSubdivisions: newLayer.cur.type.displayName === Scatter.displayName ? 4 : 1,
+				createNumericalSubdivisions: subdivisions,
 				compressSparseDivisions: true
 			},
 			behavior: {
 				extents: "circular"
 			},
 			navigationRules: NAVIGATION_PAIRS.DIMENSION as DimensionNavigationRules
-		},
-		metric: {
-			dimensionKey: "",
-			operations: {
-				createNumericalSubdivisions: newLayer.cur.type.displayName === Scatter.displayName ? 4 : 1,
-				compressSparseDivisions: true
-			},
-			type: "numerical",
-			behavior: {
-				extents: "terminal"
-			},
-			navigationRules: NAVIGATION_PAIRS.METRIC as DimensionNavigationRules
-		},
-		color: {
+		}
+	}
+	// We only want 2 traversable dimensions at most, so this conditional tries to figure out which to use based on chart type
+	// this will need to be expanded as navigation is added to additional charts in the library
+	if (newLayer.cur.type.displayName === Bar.displayName) {
+		// for bar (at least, and probably other charts?), the "color" becomes the second dimension
+		// we would want to traverse, after "dimension"
+		dimensions.color = {
 			dimensionKey: "",
 			type: "categorical",
 			behavior: {
@@ -247,11 +244,27 @@ export const addLayer = (chartLayers: DimensionList, newLayer) => {
 			},
 			navigationRules: NAVIGATION_PAIRS.COLOR as DimensionNavigationRules
 		}
+	} else if (newLayer.cur.type.displayName === Scatter.displayName) {
+		// for scatter at least (and likely also line chart), "metric" becomes the second dimension 
+		// we would want to traverse, after "dimension"
+		dimensions.metric = {
+			dimensionKey: "",
+			operations: {
+				createNumericalSubdivisions: subdivisions,
+				compressSparseDivisions: true
+			},
+			type: "numerical",
+			behavior: {
+				extents: "terminal"
+			},
+			navigationRules: NAVIGATION_PAIRS.METRIC as DimensionNavigationRules
+		}
 	}
 	if (newLayer.cur?.props) {
 		const dimensionKeys = Object.keys(dimensions)
 		if (newLayer.cur.props.metric_start || newLayer.cur.props.metric_end) {
 			// console.log("uh oh! a range!")
+			// we are currently not handling metric start/end ranges right now
 		}
 		dimensionKeys.forEach(k => {
 			const dimensionKey = newLayer.cur.props[k]
