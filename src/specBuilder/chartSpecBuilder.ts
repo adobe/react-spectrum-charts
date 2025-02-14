@@ -29,7 +29,7 @@ import {
 	TABLE,
 } from '@constants';
 import { Area, Axis, Bar, Legend, Line, Scatter, Title } from '@rsc';
-import { Combo } from '@rsc/alpha';
+import { Combo, Bullet } from '@rsc/alpha';
 import { BigNumber, Donut } from '@rsc/rc';
 import colorSchemes from '@themes/colorSchemes';
 import { produce } from 'immer';
@@ -39,6 +39,7 @@ import {
 	AreaElement,
 	AxisElement,
 	BarElement,
+	BulletElement,
 	ChartColors,
 	ChartSymbolShape,
 	ColorScale,
@@ -64,6 +65,7 @@ import { addBar } from './bar/barSpecBuilder';
 import { addCombo } from './combo/comboSpecBuilder';
 import { getSeriesIdTransform } from './data/dataUtils';
 import { addDonut } from './donut/donutSpecBuilder';
+import { addBullet } from './bullet/bulletSpecBuilder';
 import { setHoverOpacityForMarks } from './legend/legendHighlightUtils';
 import { addLegend } from './legend/legendSpecBuilder';
 import { addLine } from './line/lineSpecBuilder';
@@ -110,13 +112,14 @@ export function buildSpec(props: SanitizedSpecProps) {
 	buildOrder.set(Bar, 0);
 	buildOrder.set(Line, 0);
 	buildOrder.set(Donut, 0);
+	buildOrder.set(Bullet, 0);
 	buildOrder.set(Scatter, 0);
 	buildOrder.set(Combo, 0);
 	buildOrder.set(Legend, 1);
 	buildOrder.set(Axis, 2);
 	buildOrder.set(Title, 3);
 
-	let { areaCount, axisCount, barCount, comboCount, donutCount, legendCount, lineCount, scatterCount } =
+	let { areaCount, axisCount, barCount, comboCount, donutCount, bulletCount, legendCount, lineCount, scatterCount } =
 		initializeComponentCounts();
 	const specProps = { colorScheme, idKey, highlightedItem };
 	spec = [...children]
@@ -141,6 +144,9 @@ export function buildSpec(props: SanitizedSpecProps) {
 				case Bar.displayName:
 					barCount++;
 					return addBar(acc, { ...(cur as BarElement).props, ...specProps, index: barCount });
+				case Bullet.displayName:
+					bulletCount++;
+					return addBullet(acc, { ...(cur as BulletElement).props, ...specProps, index: bulletCount });
 				case Donut.displayName:
 					donutCount++;
 					return addDonut(acc, { ...(cur as DonutElement).props, ...specProps, index: donutCount });
@@ -202,6 +208,7 @@ const initializeComponentCounts = () => {
 		barCount: -1,
 		comboCount: -1,
 		donutCount: -1,
+		bulletCount: -1,
 		legendCount: -1,
 		lineCount: -1,
 		scatterCount: -1,

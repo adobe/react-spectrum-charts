@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 Adobe. All rights reserved.
+ * Copyright 2025 Adobe. All rights reserved.
  * This file is licensed to you under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License. You may obtain a copy
  * of the License at http://www.apache.org/licenses/LICENSE-2.0
@@ -10,5 +10,16 @@
  * governing permissions and limitations under the License.
  */
 
-export * from './Combo'
-export * from './Bullet'
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import { FC } from 'react';
+
+import { BulletProps } from '../../../types';
+
+const Bullet: FC<BulletProps> = ({ name = 'bullet0'}) => {
+	return null;
+};
+
+// displayName is used to validate the component type in the spec builder
+Bullet.displayName = 'Bullet';
+
+export { Bullet };

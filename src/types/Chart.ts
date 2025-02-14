@@ -32,6 +32,7 @@ export type ChartElement = ReactElement<ChartProps, JSXElementConstructor<ChartP
 export type ChartPopoverElement = ReactElement<ChartPopoverProps, JSXElementConstructor<ChartPopoverProps>>;
 export type ChartTooltipElement = ReactElement<ChartTooltipProps, JSXElementConstructor<ChartTooltipProps>>;
 export type DonutElement = ReactElement<DonutProps, JSXElementConstructor<DonutProps>>;
+export type BulletElement = ReactElement<BulletProps, JSXElementConstructor<BulletProps>>;
 export type DonutSummaryElement = ReactElement<DonutSummaryProps, JSXElementConstructor<DonutSummaryProps>>;
 export type LegendElement = ReactElement<LegendProps, JSXElementConstructor<LegendProps>>;
 export type LineElement = ReactElement<LineProps, JSXElementConstructor<LineProps>>;
@@ -229,6 +230,13 @@ export interface DonutProps extends MarkProps {
 	/** Determines if the center metric should be displayed as a percent. if true, data should only be two data points, which sum to 1
 	 * Also, if true, will display the first datapoint as a percent */
 	isBoolean?: boolean;
+}
+
+export interface BulletProps extends MarkProps {
+	/** Target line */
+	target?: string;
+	/** Data field that the metric is trended against (x-axis for horizontal orientation) */
+	dimension?: string;
 }
 
 export interface DonutSummaryProps {
