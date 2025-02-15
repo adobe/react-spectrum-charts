@@ -98,7 +98,7 @@ export function getBulletMarks(props: BulletSpecProps): Mark[] {
 
   const finalPositionEncoding = props.direction === 'vertical' ? verticalPositionEncoding : horizontalPositionEncoding
   
-  let bulletMarks: Mark[] = [
+  const bulletMarks: Mark[] = [
     {
       "type": "rect",
       "name": `${props.name}rect`,
@@ -176,7 +176,7 @@ export function getBulletData(props: BulletSpecProps): Data[] {
   const maxValue = `max(datum.${props.metric}, datum.${props.target} * 1.1)`
   const filter = `isValid(datum.${props.dimension}) && datum.${props.dimension} !== null && datum.${props.dimension} !== ''`
 
-  let bulletData: Data[] = [
+  const bulletData: Data[] = [
     {
       "name": "table",
       "values": [],
