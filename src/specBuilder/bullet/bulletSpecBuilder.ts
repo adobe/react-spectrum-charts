@@ -31,9 +31,11 @@ export const addBullet = (
         dimension,
         target,
         color = DEFAULT_COLOR,
+        direction,
         ...props
     }: BulletProps & { colorScheme?: ColorScheme; index?: number; idKey: string }
 ): Spec => {
+
     const bulletProps: BulletSpecProps = {
         children: sanitizeMarkChildren(children),
         colorScheme: colorScheme,
@@ -43,13 +45,15 @@ export const addBullet = (
         dimension: dimension ?? 'graphLabel',
         target: target ?? 'target',
         name: toCamelCase(name ?? `bullet${index}`),
+        //direction must be horizontal or vertical
+        direction: direction === 'vertical' || direction === 'horizontal' ? direction : 'vertical',
         ...props,
     };
     return {
         ...spec,
         data: getBulletData(bulletProps),
         marks: getBulletMarks(bulletProps),
-        scales: getBulletScales(),
+        scales: getBulletScales(bulletProps),
     };
 };
 
@@ -57,8 +61,44 @@ export function getBulletMarks(props: BulletSpecProps): Mark[] {
 
   const solidColor = getColorValue('gray-900', props.colorScheme);
   const barLabelColor = getColorValue('gray-600', props.colorScheme);
+
+  // The positional encoding variables are the biggest difference
+  // between the horizontal and vertical layouts
+  const verticalPositionEncoding = {
+    rectX: {"value": 0},
+    rectY: {"field": "index", "mult": 60, "offset": -44},
+    leftTextX: {"value": 0},
+    leftTextY: {"field": "index", "mult": 60, "offset": -60},
+    rightTextX: {"signal": "width"},
+    rightTextY: {"field": "index", "mult": 60, "offset": -60},
+    ruleX: {"scale": "xscale", "field": `${props.target}`},
+    ruleY: {"field": "index", "mult": 60, "offset": -53},
+    ruleY2: {"field": "index", "mult": 60, "offset": -29}
+  }
+
+  const horizontalPositionEncoding = {
+    rectX: {"field": "index", "mult": 200, "offset": -200},
+    rectY: {"value": 21},
+    leftTextX: {"field": "index", "mult": 200, "offset": -200},
+    leftTextY: {"value": 5},
+    rightTextX: {"field": "index", "mult": 200, "offset": -30},
+    rightTextY: {"value": 5},
+    ruleX: {
+      "scale": "xscale",
+      "field": "target",
+      "offset": {
+          "field": "index",
+          "mult": 200,
+          "offset": -200
+      }
+    },
+    ruleY: {"value": 12},
+    ruleY2: {"value": 36}
+  }
+
+  const finalPositionEncoding = props.direction === 'vertical' ? verticalPositionEncoding : horizontalPositionEncoding
   
-  return [
+  let bulletMarks: Mark[] = [
     {
       "type": "rect",
       "name": `${props.name}rect`,
@@ -66,8 +106,8 @@ export function getBulletMarks(props: BulletSpecProps): Mark[] {
       "description": `${props.name}`,
       "encode": {
         "enter": {
-          "x": {"value": 0},
-          "y": {"field": "index", "mult": 60, "offset": -44},
+          "x": finalPositionEncoding.rectX,
+          "y": finalPositionEncoding.rectY,
           "width": {"scale": "xscale", "field": `${props.metric}`},
           "height": {"value": 6},
           "fill": {"value": `${props.color}`},
@@ -83,8 +123,8 @@ export function getBulletMarks(props: BulletSpecProps): Mark[] {
       "description": "graphLabel",
       "encode": {
         "enter": {
-          "x": {"value": 0},
-          "y": {"field": "index", "mult": 60, "offset": -60},
+          "x": finalPositionEncoding.leftTextX,
+          "y": finalPositionEncoding.leftTextY,
           "text": {"field": `${props.dimension}`},
           "align": {"value": "left"},
           "baseline": {"value": "bottom"},
@@ -100,8 +140,8 @@ export function getBulletMarks(props: BulletSpecProps): Mark[] {
       "description": "currentAmount",
       "encode": {
         "enter": {
-          "x": {"signal": "width"},
-          "y": {"field": "index", "mult": 60, "offset": -60},
+          "x": finalPositionEncoding.rightTextX,
+          "y": finalPositionEncoding.rightTextY,
           "text": {"field": `${props.metric}`},
           "align": {"value": "right"},
           "baseline": {"value": "bottom"},
@@ -117,15 +157,17 @@ export function getBulletMarks(props: BulletSpecProps): Mark[] {
       "description": `${props.name}`,
       "encode": {
         "enter": {
-          "x": {"scale": "xscale", "field": `${props.target}`},
-          "y": {"field": "index", "mult": 60, "offset": -53},
-          "y2": {"field": "index", "mult": 60, "offset": -29},
+          "x": finalPositionEncoding.ruleX,
+          "y": finalPositionEncoding.ruleY,
+          "y2": finalPositionEncoding.ruleY2,
           "stroke": {"value": `${solidColor}`},
           "strokeWidth": {"value": 2},
         }
       }
     }
-  ]
+  ];
+
+  return bulletMarks
 }
 
 export function getBulletData(props: BulletSpecProps): Data[] {
@@ -134,7 +176,7 @@ export function getBulletData(props: BulletSpecProps): Data[] {
   const maxValue = `max(datum.${props.metric}, datum.${props.target} * 1.1)`
   const filter = `isValid(datum.${props.dimension}) && datum.${props.dimension} !== null && datum.${props.dimension} !== ''`
 
-  const bulletData: Data[] = [
+  let bulletData: Data[] = [
     {
       "name": "table",
       "values": [],
@@ -169,10 +211,23 @@ export function getBulletData(props: BulletSpecProps): Data[] {
     }
   ]
 
+  //Only needed in horizontal mode
+  if(props.direction === 'horizontal'){
+    bulletData[0].transform?.push({
+      "type": "extent",
+      "field": "currentAmount",
+      "signal": "maxValue"
+    })
+  }
+
   return bulletData;
 }
 
-export function getBulletScales(): Scale[] {
+export function getBulletScales(props: BulletSpecProps): Scale[] {
+
+  //Range must be fixed if horizontal mode is specified
+  const bulletScaleRange = props.direction === 'vertical' ? [0, {"signal": "width"}] : [0, 170];
+
   const bulletScale: Scale[] = [
     {
       "name": "xscale",
@@ -183,9 +238,9 @@ export function getBulletScales(): Scale[] {
                 "signal": "data('max_values')[0].maxOverall"
               }
             ],
-      "range": [0, {"signal": "width"}]
+      "range": bulletScaleRange
     }
   ]
 
-  return bulletScale;
+  return bulletScale
 }

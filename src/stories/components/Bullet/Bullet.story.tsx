@@ -26,7 +26,7 @@ export default {
 // Default chart properties
 const defaultChartProps = {
     data: basicBulletData,
-    width: 600,
+    width: 1000,
     height: 400,
 };
 
@@ -46,7 +46,8 @@ Basic.args = {
 	metric: 'currentAmount',
     dimension: 'graphLabel',
     target: 'target',
-    color: 'red-500'
+    color: 'red-500',
+    direction: 'vertical',
 };
 
 export { Basic };

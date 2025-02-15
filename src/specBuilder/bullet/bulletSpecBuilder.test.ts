@@ -23,7 +23,8 @@ const sampleProps: BulletSpecProps = {
     "dimension": "graphLabel",
     "target": "target",
     "name": "bullet0",
-    "idKey": "rscMarkId"
+    "idKey": "rscMarkId",
+    "direction": "vertical",
 }
 
 describe('addBullet', () => {
@@ -41,6 +42,7 @@ describe('addBullet', () => {
             dimension: 'region',
             target: 'goal',
             idKey: 'rscMarkId',
+            direction: 'vertical',
         };
 
         const newSpec = addBullet(spec, bulletProps);
@@ -64,7 +66,7 @@ describe('getBulletScales', () => {
 
     //Not much here right now because the function only returns a single const
     test('should return the correct scales object', () => {
-        const data = getBulletScales();
+        const data = getBulletScales(sampleProps);
         expect(data).toBeDefined()
     });
 });
