@@ -55,6 +55,7 @@ import {
 	Datum,
 	LegendDescription,
 	MarkBounds,
+	NavigationEvent,
 	RscChartProps,
 	TooltipAnchor,
 	TooltipPlacement
@@ -248,6 +249,10 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 			return signals;
 		}, [colorScheme, idKey, legendHiddenSeries, legendIsToggleable]);
 
+		const navigationEventCallback = (navData: NavigationEvent) => {
+			console.log("RSC chart can use this navData to set signals", navData)
+			// set signals here!
+		}
 		return (
 			<>
 				<div
@@ -332,6 +337,7 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 					data={data}
 					chartView={chartView}
 					chartLayers={chartLayers}
+					navigationEventCallback={navigationEventCallback}
 				></Navigator> : <div/>}
 			</>
 		);

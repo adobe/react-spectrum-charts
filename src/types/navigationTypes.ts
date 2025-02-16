@@ -15,6 +15,24 @@ export type Navigation = {
     current: CurrentNodeDetails;
 }
 
+export type NavigationEvent = {
+    // focus and blur should be self-explanatory
+    // selection emits if spacebar is pressed
+    // enter is an event that only happens when the "enter" button is run, this emits BEFORE focus
+    // exit is an event that only happens when the "exit" key is pressed, this emits BEFORE blur
+    // help is an event that only happens when the "help" key is pressed (if set)
+    eventType: "focus" | "blur" | "selection" | "enter" | "exit" | "help";
+    // the ID of the node being focused, blurred, exited from, selected, etc
+    nodeId: string;
+    // these correspond to the 3 layers within data navigator
+    // dimensions are like the keys used in the data (eg "country")
+    // divisions are the collections of values within that dimension (eg "USA" or "1-50" if numerical)
+    // child is the lowest level of a dimension, the children of divisions
+    // if divisions only ever have 1 child each, they are skipped and the level goes straight from
+    // dimension to child (this is what happens in a basic bar chart)
+    nodeLevel: "dimension" | "division" | "child";
+}
+
 export type SpatialProperties = {
     height?: string;
     width?: string;

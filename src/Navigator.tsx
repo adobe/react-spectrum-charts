@@ -13,7 +13,7 @@ import { FC, useEffect, useRef, useState, MutableRefObject } from 'react'
 import { DimensionList, NavigationRules, NodeObject } from '../node_modules/data-navigator/dist/src/data-navigator'
 import { describeNode } from '../node_modules/data-navigator/dist/utilities.js'
 import { buildNavigationStructure, buildStructureHandler } from '@specBuilder/chartSpecBuilder';
-import { Navigation, CurrentNodeDetails, ChartData, SpatialProperties} from './types'
+import { Navigation, NavigationEvent, CurrentNodeDetails, ChartData, SpatialProperties} from './types'
 import { View } from 'vega-view'
 import { Scenegraph } from 'vega-scenegraph';
 import { NAVIGATION_ID_KEY, NAVIGATION_RULES, NAVIGATION_SEMANTICS } from '@constants'
@@ -22,9 +22,10 @@ export interface NavigationProps {
     data: ChartData[];
     chartView: MutableRefObject<View | undefined>;
     chartLayers: DimensionList;
+    navigationEventCallback?: (navEvent: NavigationEvent) => void;
 }
 
-export const Navigator: FC<NavigationProps> = ({data, chartView, chartLayers}) => {
+export const Navigator: FC<NavigationProps> = ({data, chartView, chartLayers, navigationEventCallback}) => {
     const focusedElement = useRef({
         id: ""
     } as CurrentNodeDetails)
@@ -41,7 +42,6 @@ export const Navigator: FC<NavigationProps> = ({data, chartView, chartLayers}) =
         NAVIGATION_RULES as NavigationRules, 
         navigationStructure.dimensions || {}
     )
-
     const entryPoint = structureNavigationHandler.enter()
     const [navigation, setNavigation] = useState<Navigation>({
         transform: "",
@@ -66,7 +66,6 @@ export const Navigator: FC<NavigationProps> = ({data, chartView, chartLayers}) =
     const [childrenInitialized, setInitialization] = useState<boolean>(false)
 
     const setNavigationElement = (target) => {
-        console.log("changing to new target",target.id,target)
         setNavigation({
             transform: "",
             buttonTransform: "",
@@ -113,7 +112,7 @@ export const Navigator: FC<NavigationProps> = ({data, chartView, chartLayers}) =
                 const items = root.items
                 const offset = -root.bounds.x1
                 if (items.length !== 1) {
-                    console.log("what is in items??",items)
+                    // console.log("what is in items??",items)
                 }
                 if (root.items[0]?.items?.length) {
                     // const roles = ["mark", "legend", "axis", "scope"]
@@ -253,25 +252,60 @@ export const Navigator: FC<NavigationProps> = ({data, chartView, chartLayers}) =
         setInitialization(true)
         setNavigationElement(navigationStructure.nodes[navigation.current.id]);
         willFocusAfterRender.current = true
+        if (navigationEventCallback) {
+            const node = navigationStructure.nodes[navigation.current.id]
+            navigationEventCallback({
+                nodeId: navigation.current.id,
+                eventType: "enter",
+                nodeLevel: node.dimensionLevel === 1 ? "dimension" : node.dimensionLevel === 2 ? "division" : "child"
+            })
+        }
     }
     const handleFocus = (e) => {
-        console.log("focused",e,e.target)
         initializeRenderingProperties(e.target.id)
         focusedElement.current = {id: e.target.id}
+        if (navigationEventCallback) {
+            const node = navigationStructure.nodes[e.target.id]
+            navigationEventCallback({
+                nodeId: e.target.id,
+                eventType: "focus",
+                nodeLevel: node.dimensionLevel === 1 ? "dimension" : node.dimensionLevel === 2 ? "division" : "child"
+            })
+        }
     }
-    const handleBlur = (e) => {
-        console.log("blurring at parent",e)
+    const handleBlur = () => {
+        const blurredId = navigation.current.id
         focusedElement.current = {id: ""}
+        if (navigationEventCallback) {
+            const node = navigationStructure.nodes[blurredId]
+            navigationEventCallback({
+                nodeId: blurredId,
+                eventType: "blur",
+                nodeLevel: node.dimensionLevel === 1 ? "dimension" : node.dimensionLevel === 2 ? "division" : "child"
+            })
+        }
     }
     const handleKeydown = (e) => {
         const direction = structureNavigationHandler.keydownValidator(e);
-        console.log("direction",direction)
+        console.log("e.code",e.code,"direction",direction)
+        const target = e.target as HTMLElement
         if (direction) {
             e.preventDefault();
-            const nextNode = structureNavigationHandler.move(e.target.id, direction);
+            const nextNode = structureNavigationHandler.move(target.id, direction);
             if (nextNode) {
                 setNavigationElement(nextNode);
                 willFocusAfterRender.current = true
+            }
+        }
+        if (e.code === "Space") {
+            e.preventDefault();
+            if (navigationEventCallback) {
+                const node = navigationStructure.nodes[target.id]
+                navigationEventCallback({
+                    nodeId: target.id,
+                    eventType: "selection",
+                    nodeLevel: node.dimensionLevel === 1 ? "dimension" : node.dimensionLevel === 2 ? "division" : "child"
+                })
             }
         }
     }
@@ -297,12 +331,7 @@ export const Navigator: FC<NavigationProps> = ({data, chartView, chartLayers}) =
     )
     /* 
         goals:
-            - add *real* focus indicators (using signals in vega)
-            - add event handling between vega and navigator
-            - fix bugs in line, combo, and area
-            - [dn work] create dataNavigator functions to:
-                - nest n divisions within divisions (make this a much smarter process)
-                - add type for what Input returns, improve consistency of those functions
+            - add exit event + handling
             - create semantics for axes, legends, etc
             - create spatialProperties for axes, legends, etc
             - add alt text to root chart element
