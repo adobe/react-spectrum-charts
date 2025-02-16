@@ -18,6 +18,19 @@ import { View } from 'vega-view'
 import { Scenegraph } from 'vega-scenegraph';
 import { NAVIGATION_ID_KEY, NAVIGATION_RULES, NAVIGATION_SEMANTICS } from '@constants'
 
+const convertId = (id, nodeLevel) => {
+    const getValueBetweenStrings = (text, startString, endString) => {
+        const regex = new RegExp(`${startString}(.*?)${endString}`);
+        const match = text.match(regex);
+        
+        if (match && match[1]) {
+          return match[1];
+        }
+        return null;
+    }
+    return nodeLevel === "dimension" ? id.substring(1) : nodeLevel === "division" ? getValueBetweenStrings(id, "_", "_key_") : +id.substring(1) + 1
+}
+
 export interface NavigationProps {
     data: ChartData[];
     chartView: MutableRefObject<View | undefined>;
@@ -34,6 +47,7 @@ export const Navigator: FC<NavigationProps> = ({data, chartView, chartLayers, na
     const secondRef = useRef<HTMLElement>(null);
 
     const navigationStructure = buildNavigationStructure(data, {NAVIGATION_ID_KEY}, chartLayers)
+    console.log("navigationStructure",navigationStructure)
     const structureNavigationHandler = buildStructureHandler(
         {
             nodes: navigationStructure.nodes,
@@ -254,10 +268,12 @@ export const Navigator: FC<NavigationProps> = ({data, chartView, chartLayers, na
         willFocusAfterRender.current = true
         if (navigationEventCallback) {
             const node = navigationStructure.nodes[navigation.current.id]
+            const nodeLevel = node.dimensionLevel === 1 ? "dimension" : node.dimensionLevel === 2 ? "division" : "child"
             navigationEventCallback({
                 nodeId: navigation.current.id,
                 eventType: "enter",
-                nodeLevel: node.dimensionLevel === 1 ? "dimension" : node.dimensionLevel === 2 ? "division" : "child"
+                vegaId: convertId(navigation.current.id, nodeLevel),
+                nodeLevel
             })
         }
     }
@@ -266,10 +282,12 @@ export const Navigator: FC<NavigationProps> = ({data, chartView, chartLayers, na
         focusedElement.current = {id: e.target.id}
         if (navigationEventCallback) {
             const node = navigationStructure.nodes[e.target.id]
+            const nodeLevel = node.dimensionLevel === 1 ? "dimension" : node.dimensionLevel === 2 ? "division" : "child"
             navigationEventCallback({
                 nodeId: e.target.id,
                 eventType: "focus",
-                nodeLevel: node.dimensionLevel === 1 ? "dimension" : node.dimensionLevel === 2 ? "division" : "child"
+                vegaId: convertId(navigation.current.id, nodeLevel),
+                nodeLevel
             })
         }
     }
@@ -278,10 +296,12 @@ export const Navigator: FC<NavigationProps> = ({data, chartView, chartLayers, na
         focusedElement.current = {id: ""}
         if (navigationEventCallback) {
             const node = navigationStructure.nodes[blurredId]
+            const nodeLevel = node.dimensionLevel === 1 ? "dimension" : node.dimensionLevel === 2 ? "division" : "child"
             navigationEventCallback({
                 nodeId: blurredId,
                 eventType: "blur",
-                nodeLevel: node.dimensionLevel === 1 ? "dimension" : node.dimensionLevel === 2 ? "division" : "child"
+                vegaId: convertId(navigation.current.id, nodeLevel),
+                nodeLevel
             })
         }
     }
@@ -301,10 +321,12 @@ export const Navigator: FC<NavigationProps> = ({data, chartView, chartLayers, na
             e.preventDefault();
             if (navigationEventCallback) {
                 const node = navigationStructure.nodes[target.id]
+                const nodeLevel = node.dimensionLevel === 1 ? "dimension" : node.dimensionLevel === 2 ? "division" : "child"
                 navigationEventCallback({
                     nodeId: target.id,
                     eventType: "selection",
-                    nodeLevel: node.dimensionLevel === 1 ? "dimension" : node.dimensionLevel === 2 ? "division" : "child"
+                    vegaId: convertId(navigation.current.id, nodeLevel),
+                    nodeLevel
                 })
             }
         }

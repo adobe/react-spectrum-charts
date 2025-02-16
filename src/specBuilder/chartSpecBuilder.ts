@@ -209,10 +209,27 @@ export function buildSpec(props: SanitizedSpecProps) {
 }
 
 export const addLayer = (chartLayers: DimensionList, newLayer) => {
+	// note: check "funnel" for stack + dodge example 
+	// series, dimension, and item
+	// dimension, division, and child
+	// for childmost ids: they are indexed, starting at 1, in the order of the data
+	// need to emit division ids (values in a series) or dimension ids (the key)
+
+	// color, opacity, line-type, etc - these "facets" are 
+	// all ways to create a series id
+	// (after spec) - go to data, see if series transform happened (aka "as": "rscSeriesId", look for "expr": "datum.operatingSystem")
+
 	// this function adds new traversable dimensions to data navigator
 	// "dimensions" is an API in data navigator, not to be confused with RSC's "dimension"
 	// that being said, the default "dimension" for every chart does seem to be based on
 	// the prop with the same name
+
+	// look at "react-aria" - see if this is the right approach
+	// for first pass (POC) use callback
+	// "useFocus" passes into data navigator
+	// setFocused(child/division/dimension)
+	// add marshallpete to repo
+
 	const subdivisions = newLayer.cur.type.displayName === Scatter.displayName ? 4 : 1
 	console.log("new layer",newLayer)
 	const dimensions: Record<string, DimensionDatum> = {
@@ -274,7 +291,7 @@ export const addLayer = (chartLayers: DimensionList, newLayer) => {
 					dimensionKey,
 					divisionOptions: {
 						// sortFunction: , // no idea if we want to sort or not
-						divisionNodeIds: (dimensionKey, keyValue, i) => dimensionKey + keyValue + i
+						divisionNodeIds: (dimensionKey, keyValue, i) => "_" + keyValue + "_key_" + dimensionKey + i // dimensionKey + keyValue + i
 					}
 				};
 				chartLayers.push(newDimension)

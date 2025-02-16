@@ -24,6 +24,8 @@ export type NavigationEvent = {
     eventType: "focus" | "blur" | "selection" | "enter" | "exit" | "help";
     // the ID of the node being focused, blurred, exited from, selected, etc
     nodeId: string;
+    // the vega-compatible ID of the node being focused, blurred, exited from, selected, etc
+    vegaId: string;
     // these correspond to the 3 layers within data navigator
     // dimensions are like the keys used in the data (eg "country")
     // divisions are the collections of values within that dimension (eg "USA" or "1-50" if numerical)
