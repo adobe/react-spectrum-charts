@@ -167,34 +167,35 @@ export const NAVIGATION_RULES = {
 	"help": {key: 'Quote', direction: 'target'},
 	"undo": {key: 'SemiColon', direction: 'target'},
 	// generics
-	"left": {key: 'Period', direction: 'source'},
-	"right": {key: 'Comma', direction: 'target'},
+	"left": {key: 'ArrowLeft', direction: 'source'},
+	"right": {key: 'ArrowRight', direction: 'target'},
+	"up": {key: 'ArrowUp', direction: 'source'},
+	"down": {key: 'ArrowDown', direction: 'target'},
 	"child": {key: 'Enter', direction: 'target'},
 	// dimension
-	"previous-dimension": {direction: 'source', key: 'ArrowLeft'},
-	"next-dimension": {direction: 'target', key: 'ArrowRight'},
 	"parent-dimension": {direction: 'source', key: 'Backspace'},
-	// metric
-	"previous-metric": {direction: 'source', key: 'ArrowUp'},
-	"next-metric": {direction: 'target', key: 'ArrowDown'},
-	"parent-metric": {direction: 'source', key: 'Slash'},
 	// color
-	"previous-color": {direction: 'source', key: 'BracketLeft'},
-	"next-color": {direction: 'target', key: 'BracketRight'},
-	"parent-color": {direction: 'source', key: 'BackSlash'}
+	"parent-color": {direction: 'source', key: 'Slash'},
+	// metric
+	"parent-metric": {direction: 'source', key: 'BackSlash'}
+	// unused pairs
+	// "previous-metric": {direction: 'source', key: 'BracketLeft'},
+	// "next-metric": {direction: 'target', key: 'BracketRight'},
+	// "previous-dimension": {direction: 'source', key: 'Comma'},
+	// "next-dimension": {direction: 'target', key: 'Period'},
 }
 export const NAVIGATION_PAIRS = {
 	DIMENSION: {
 		parent_child: ["parent-dimension","child"],
-		sibling_sibling: ["previous-dimension","next-dimension"],
+		sibling_sibling: ["left","right"],
 	},
 	METRIC: {
 		parent_child: ["parent-metric","child"],
-		sibling_sibling: ["previous-metric","next-metric"],
+		sibling_sibling: ["up","down"],
 	},
 	COLOR: {
 		parent_child: ["parent-color","child"],
-		sibling_sibling: ["previous-color","next-color"],
+		sibling_sibling: ["up","down"],
 	}
 }
 /*
