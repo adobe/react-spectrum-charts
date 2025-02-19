@@ -202,28 +202,30 @@ export const Navigator: FC<NavigationProps> = ({data, chartView, chartLayers, na
                             }
                         })
                     }
+                    const setChildSpatialProperties = (i, semanticKey) => {
+                        const datum = {}
+                        keysToMatch.forEach(key => {
+                            datum[key] = i.datum[key]
+                        })
+                        if (i.datum[NAVIGATION_ID_KEY] && navigationStructure.nodes[i.datum[NAVIGATION_ID_KEY]]) {
+                            const correspondingNode = navigationStructure.nodes[i.datum[NAVIGATION_ID_KEY]];
+                            correspondingNode.spatialProperties = {
+                                width: `${i.width}px`,
+                                height: `${i.height}px`,
+                                left: `${i.x + offset}px`,
+                                top: `${i.y}px`,
+                            }
+                            correspondingNode.semantics = {
+                                label: describeNode(datum, {semanticLabel: NAVIGATION_SEMANTICS[semanticKey].CHILD + '.'})
+                            }
+                        }
+                    }
                     root.items[0].items.forEach((i) => {
                         if (i.marktype === "rect" && i.role === "mark" && i.name.indexOf("_background") === -1) {
                             // these are the bars in a bar chart or stacked bar chart!
                             setDimensionSpatialProperties(i, "BAR")
                             i.items.forEach(bar => {
-                                const datum = {}
-                                keysToMatch.forEach(key => {
-                                    datum[key] = bar.datum[key]
-                                })
-                                if (bar.datum[NAVIGATION_ID_KEY] && navigationStructure.nodes[bar.datum[NAVIGATION_ID_KEY]]) {
-                                    const correspondingNode = navigationStructure.nodes[bar.datum[NAVIGATION_ID_KEY]];
-                                    
-                                    correspondingNode.spatialProperties = {
-                                        width: `${bar.width}px`,
-                                        height: `${bar.height}px`,
-                                        left: `${bar.x + offset}px`,
-                                        top: `${bar.y}px`,
-                                    }
-                                    correspondingNode.semantics = {
-                                        label: describeNode(datum, {semanticLabel: NAVIGATION_SEMANTICS.BAR.CHILD + '.'})
-                                    }
-                                }
+                                setChildSpatialProperties(bar, "BAR")
                             })
                             setDivisionSpatialProperties(i, "BAR")
                         } else if (i.name && i.name.indexOf("bar0_group") !== -1) {
@@ -234,22 +236,7 @@ export const Navigator: FC<NavigationProps> = ({data, chartView, chartLayers, na
                                 bg.items.forEach((bg_i) => {
                                     if (bg_i.marktype === "rect" && bg_i.role === "mark" && bg_i.name.indexOf("_background") === -1) {
                                         bg_i.items.forEach(bar => {
-                                            const datum = {}
-                                            keysToMatch.forEach(key => {
-                                                datum[key] = bar.datum[key]
-                                            })
-                                            if (bar.datum[NAVIGATION_ID_KEY] && navigationStructure.nodes[bar.datum[NAVIGATION_ID_KEY]]) {
-                                                const correspondingNode = navigationStructure.nodes[bar.datum[NAVIGATION_ID_KEY]];
-                                                correspondingNode.spatialProperties = {
-                                                    width: `${bar.width}px`,
-                                                    height: `${bar.height}px`,
-                                                    left: `${bar.x + offset}px`,
-                                                    top: `${bar.y}px`,
-                                                }
-                                                correspondingNode.semantics = {
-                                                    label: describeNode(datum, {semanticLabel: NAVIGATION_SEMANTICS.BAR.CHILD + '.'})
-                                                }
-                                            }
+                                            setChildSpatialProperties(bar, "BAR")
                                         })
                                     }
                                     
