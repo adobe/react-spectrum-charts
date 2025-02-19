@@ -170,10 +170,10 @@ export const Navigator: FC<NavigationProps> = ({data, chartView, chartLayers, na
                                         const divisionNode = navigationStructure.nodes[division.id]
                                         const isPlural = childrenCount === 1 ? "" : "s"
                                         const spatialBounds = {
-                                            x1: 0,
-                                            x2: 0,
-                                            y1: 0,
-                                            y2: 0
+                                            x1: Infinity,
+                                            x2: -Infinity,
+                                            y1: Infinity,
+                                            y2: -Infinity
                                         }
                                         children.forEach(c => {
                                             const child = navigationStructure.nodes[c]
@@ -189,9 +189,9 @@ export const Navigator: FC<NavigationProps> = ({data, chartView, chartLayers, na
                                             }
                                         })
                                         divisionNode.spatialProperties = {
-                                            width: `${spatialBounds.x1 + spatialBounds.x2}px`,
-                                            height: `${spatialBounds.y1 + spatialBounds.y2}px`,
-                                            left: `${spatialBounds.x1 + offset}px`,
+                                            width: `${spatialBounds.x2 - spatialBounds.x1}px`,
+                                            height: `${spatialBounds.y2 - spatialBounds.y1}px`,
+                                            left: `${spatialBounds.x1}px`,
                                             top: `${spatialBounds.y1}px`,
                                         }
                                         divisionNode.semantics = {
