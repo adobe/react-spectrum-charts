@@ -67,6 +67,42 @@ describe('addBullet', () => {
         expect(newSpec.marks).toHaveLength(4);
         expect(newSpec.scales).toEqual(expectedScale);
     });
+
+    test('should create a vertical spec when neither vertical or horizontal are specified for direction', () => {
+        const bulletProps: BulletProps & { idKey: string } = {
+            children: [],
+            name: 'testBullet',
+            metric: 'revenue',
+            dimension: 'region',
+            target: 'goal',
+            idKey: 'rscMarkId',
+            direction: 'test',
+        };
+
+        const newSpec = addBullet(spec, bulletProps);
+
+        //A length of 4 is indicative of a vertical spec
+        expect(newSpec.marks).toHaveLength(4)
+        
+    });
+
+    test('should create a horizontal spec when horizontal is specified for direction', () => {
+        const bulletProps: BulletProps & { idKey: string } = {
+            children: [],
+            name: 'testBullet',
+            metric: 'revenue',
+            dimension: 'region',
+            target: 'goal',
+            idKey: 'rscMarkId',
+            direction: 'horizontal',
+        };
+
+        const newSpec = addBullet(spec, bulletProps);
+
+        //A length of 1 is indicative of a horizontal spec
+        expect(newSpec.marks).toHaveLength(1)
+        
+    });
 });
 
 describe('getBulletData', () => {
