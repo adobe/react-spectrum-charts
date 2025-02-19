@@ -10,9 +10,10 @@
  * governing permissions and limitations under the License.
  */
 
+// import { GroupMark } from 'vega';
 import { getBulletScales, getBulletData, getBulletMarks, addBullet } from './bulletSpecBuilder';
 import { BulletSpecProps, BulletProps } from '../../types';
-import { Spec } from 'vega';
+import { GroupMark, Spec } from 'vega';
 
 const samplePropsVertical: BulletSpecProps = {
     "children": [],
@@ -70,7 +71,6 @@ describe('addBullet', () => {
 
 describe('getBulletData', () => {
 
-    //Data is only one
     test('should return the data object with all necessary fields being populated', () => {
         const data = getBulletData(samplePropsVertical);
         expect(data).toHaveLength(2);
@@ -78,9 +78,9 @@ describe('getBulletData', () => {
     });
 });
 
+//Makes sure the correct horizontal or vertical object is returned
 describe('getBulletScales', () => {
 
-    //Makes sure the correct horizontal or vertical object is returned
     test('should return the correct vertical scales object', () => {
         const data = getBulletScales(samplePropsVertical);
         expect(data[0].type).toBe('linear')
@@ -93,12 +93,19 @@ describe('getBulletScales', () => {
 });
 
 describe('getBulletMarks', () => {
-    test('should return the correct marks object', () => {
+    test('should return the correct vertical marks object', () => {
         const data = getBulletMarks(samplePropsVertical);
         expect(data).toHaveLength(4);
         expect(data[0].type).toBe('rect');
         expect(data[1].type).toBe('text');
         expect(data[2].type).toBe('text');
         expect(data[3].type).toBe('rule');
+    });
+
+    test('should return the correct horizontal marks object', () => {
+        const data = getBulletMarks(samplePropsHorizontal) as GroupMark[];
+        expect(data).toHaveLength(1);
+        expect(data[0].type).toBe('group')
+        expect(data[0].marks).toHaveLength(4);
     });
 });
