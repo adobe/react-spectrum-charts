@@ -12,7 +12,7 @@
 
 import { toCamelCase } from '@utils';
 import { DEFAULT_COLOR_SCHEME } from '@constants';
-import { Spec, Data, Mark, Scale } from 'vega';
+import { Spec, Data, Mark, Scale, GroupMark } from 'vega';
 import { ColorScheme, BulletProps, BulletSpecProps } from '../../types';
 import { sanitizeMarkChildren } from '../../utils';
 import { getColorValue } from '../specUtils';
@@ -57,58 +57,29 @@ export const addBullet = (
     };
 };
 
-export function getBulletMarks(props: BulletSpecProps): Mark[] {
+export function getBulletMarks(props: BulletSpecProps): Mark[] | GroupMark[] {
 
   const solidColor = getColorValue('gray-900', props.colorScheme);
   const barLabelColor = getColorValue('gray-600', props.colorScheme);
-
-  // The positional encoding variables are the biggest difference
-  // between the horizontal and vertical layouts
-  const verticalPositionEncoding = {
-    rectX: {"value": 0},
-    rectY: {"field": "index", "mult": 60, "offset": -44},
-    leftTextX: {"value": 0},
-    leftTextY: {"field": "index", "mult": 60, "offset": -60},
-    rightTextX: {"signal": "width"},
-    rightTextY: {"field": "index", "mult": 60, "offset": -60},
-    ruleX: {"scale": "xscale", "field": `${props.target}`},
-    ruleY: {"field": "index", "mult": 60, "offset": -53},
-    ruleY2: {"field": "index", "mult": 60, "offset": -29}
-  }
-
-  const horizontalPositionEncoding = {
-    rectX: {"field": "index", "mult": 200, "offset": -200},
-    rectY: {"value": 21},
-    leftTextX: {"field": "index", "mult": 200, "offset": -200},
-    leftTextY: {"value": 5},
-    rightTextX: {"field": "index", "mult": 200, "offset": -30},
-    rightTextY: {"value": 5},
-    ruleX: {
-      "scale": "xscale",
-      "field": "target",
-      "offset": {
-          "field": "index",
-          "mult": 200,
-          "offset": -200
-      }
-    },
-    ruleY: {"value": 12},
-    ruleY2: {"value": 36}
-  }
-
-  const finalPositionEncoding = props.direction === 'vertical' ? verticalPositionEncoding : horizontalPositionEncoding
   
-  const bulletMarks: Mark[] = [
+  const verticalMarks: Mark[] = [
     {
       "type": "rect",
-      "name": `${props.name}rect`,
+      "name": "bullet0rect",
       "from": {"data": "table"},
-      "description": `${props.name}`,
+      "description": "bullet0",
       "encode": {
         "enter": {
-          "x": finalPositionEncoding.rectX,
-          "y": finalPositionEncoding.rectY,
-          "width": {"scale": "xscale", "field": `${props.metric}`},
+          "x": {"value": 0},
+          "y": {
+            "field": "index",
+            "mult": 60,
+            "offset": -44
+          },
+          "width": {
+            "scale": "xscale",
+            "field": `${props.metric}`
+          },
           "height": {"value": 6},
           "fill": {"value": `${props.color}`},
           "cornerRadiusTopRight": {"value": 2},
@@ -118,13 +89,17 @@ export function getBulletMarks(props: BulletSpecProps): Mark[] {
     },
     {
       "type": "text",
-      "name": `${props.name}barlabel`,
+      "name": "bullet0barlabel",
       "from": {"data": "table"},
       "description": "graphLabel",
       "encode": {
         "enter": {
-          "x": finalPositionEncoding.leftTextX,
-          "y": finalPositionEncoding.leftTextY,
+          "x": {"value": 0},
+          "y": {
+            "field": "index",
+            "mult": 60,
+            "offset": -60
+          },
           "text": {"field": `${props.dimension}`},
           "align": {"value": "left"},
           "baseline": {"value": "bottom"},
@@ -136,12 +111,16 @@ export function getBulletMarks(props: BulletSpecProps): Mark[] {
     {
       "type": "text",
       "from": {"data": "table"},
-      "name": `${props.name}amountlabel`,
+      "name": "bullet0amountlabel",
       "description": "currentAmount",
       "encode": {
         "enter": {
-          "x": finalPositionEncoding.rightTextX,
-          "y": finalPositionEncoding.rightTextY,
+          "x": {"signal": "width"},
+          "y": {
+            "field": "index",
+            "mult": 60,
+            "offset": -60
+          },
           "text": {"field": `${props.metric}`},
           "align": {"value": "right"},
           "baseline": {"value": "bottom"},
@@ -153,21 +132,129 @@ export function getBulletMarks(props: BulletSpecProps): Mark[] {
     {
       "type": "rule",
       "from": {"data": "table"},
-      "name": `${props.name}rule`,
-      "description": `${props.name}`,
+      "name": "bullet0rule",
+      "description": "bullet0",
       "encode": {
         "enter": {
-          "x": finalPositionEncoding.ruleX,
-          "y": finalPositionEncoding.ruleY,
-          "y2": finalPositionEncoding.ruleY2,
+          "x": {
+            "scale": "xscale",
+            "field": `${props.target}`
+          },
+          "y": {
+            "field": "index",
+            "mult": 60,
+            "offset": -53
+          },
+          "y2": {
+            "field": "index",
+            "mult": 60,
+            "offset": -29
+          },
           "stroke": {"value": `${solidColor}`},
-          "strokeWidth": {"value": 2},
+          "strokeWidth": {"value": 2}
         }
       }
     }
-  ];
+  ]
 
-  return bulletMarks
+  const horizontalMarks : GroupMark[] = [
+    {
+      "name": "bulletGroup",
+      "type": "group",
+      "from": {
+        "facet": {
+          "data": "table",
+          "name": "bulletGroups",
+          "groupby": `${props.dimension}`
+        }
+      },
+      "signals": [{ "name": "width", "update": "bandwidth('xGroupScale')" }],
+      "encode": {
+        "update": {
+          "x": { "scale": "xGroupScale", "field": `${props.dimension}` },
+          "height": {"value": 20},
+          "width": { "signal": "bandwidth('xGroupScale')" }
+        }
+      },
+      "scales": [
+        {
+          "name": "xscale",
+          "type": "linear",
+          "domain": [0, { "signal": "data('max_values')[0].maxOverall" }],
+          "range": [0, { "signal": "width" }],
+          "round": true,
+          "zero": true
+        }
+      ],
+      "marks": [
+        {
+          "name": "bullet0rect",
+          "type": "rect",
+          "from": { "data": "bulletGroups" },
+          "encode": {
+            "enter": {
+              "x": { "scale": "xscale", "value": 0 },
+              "x2": { "scale": "xscale", "field": `${props.metric}` },
+              "y": { "value": 21 },
+              "height": {"value": 6},
+              "fill": { "value": `${props.color}` },
+              "cornerRadiusTopRight": { "value": 2 },
+              "cornerRadiusBottomRight": { "value": 2 }
+            }
+          }
+        },
+        {
+          "type": "text",
+          "name": "bullet0barlabel",
+          "from": { "data": "bulletGroups" },
+          "description": "graphLabel",
+          "encode": {
+            "enter": {
+              "x": { "value": 0 },
+              "y": {"value": 5},
+              "text": {"field": `${props.dimension}`},
+              "align": {"value": "left"},
+              "baseline": {"value": "bottom"},
+              "fill": {"value": `${barLabelColor}`},
+              "fontSize": {"value": 11.5}
+            }
+          }
+        },
+        {
+          "type": "text",
+          "from": { "data": "bulletGroups" },
+          "name": "bullet0amountlabel",
+          "encode": {
+            "enter": {
+              "x": { "signal": "width", "offset": 0 },
+              "y": { "value": 5 }, 
+              "text": { "field": `${props.metric}` },
+              "align": { "value": "right" }, 
+              "baseline": { "value": "bottom" },
+              "fontSize": { "value": 11.5 },
+              "fill": { "value": `${solidColor}` }
+            }
+          }
+        },
+        {
+          "type": "rule",
+          "from": { "data": "bulletGroups" },
+          "name": "bullet0rule",
+          "encode": {
+            "enter": {
+              "x": { "scale": "xscale", "field": `${props.target}` },
+              "y": { "value": 12 }, 
+              "y2": { "value": 36 }, 
+              "stroke": { "value": `${solidColor}` },
+              "strokeWidth": { "value": 2 }
+            }
+          }
+        }
+      ]
+    }
+  ]
+
+  return props.direction === 'vertical' ? verticalMarks : horizontalMarks
 }
 
 export function getBulletData(props: BulletSpecProps): Data[] {
@@ -211,36 +298,29 @@ export function getBulletData(props: BulletSpecProps): Data[] {
     }
   ]
 
-  //Only needed in horizontal mode
-  if(props.direction === 'horizontal'){
-    bulletData[0].transform?.push({
-      "type": "extent",
-      "field": "currentAmount",
-      "signal": "maxValue"
-    })
-  }
-
   return bulletData;
 }
 
 export function getBulletScales(props: BulletSpecProps): Scale[] {
 
-  //Range must be fixed if horizontal mode is specified
-  const bulletScaleRange = props.direction === 'vertical' ? [0, {"signal": "width"}] : [0, 170];
-
-  const bulletScale: Scale[] = [
+  const bulletScaleVertical: Scale[] = [
     {
       "name": "xscale",
       "type": "linear",
-      "domain": [
-              0,
-              {
-                "signal": "data('max_values')[0].maxOverall"
-              }
-            ],
-      "range": bulletScaleRange
+      "domain": [0, {"signal": "data('max_values')[0].maxOverall"}],
+      "range": [0, {"signal": "width"}]
     }
   ]
 
-  return bulletScale
+  const bulletScaleHorizontal: Scale[] = [
+    {
+      "name": "xGroupScale",
+      "type": "band",
+      "domain": { "data": "table", "field": `${props.dimension}` },
+      "range": [0, { "signal": "width" }],
+      "paddingInner": 0.1
+    }
+  ]
+
+  return props.direction === 'vertical' ? bulletScaleVertical : bulletScaleHorizontal
 }
