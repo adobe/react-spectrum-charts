@@ -14,7 +14,7 @@ import { getBulletScales, getBulletData, getBulletMarks, addBullet } from './bul
 import { BulletSpecProps, BulletProps } from '../../types';
 import { Spec } from 'vega';
 
-const sampleProps: BulletSpecProps = {
+const samplePropsVertical: BulletSpecProps = {
     "children": [],
     "colorScheme": "light",
     "index": 0,
@@ -25,6 +25,19 @@ const sampleProps: BulletSpecProps = {
     "name": "bullet0",
     "idKey": "rscMarkId",
     "direction": "vertical",
+}
+
+const samplePropsHorizontal: BulletSpecProps = {
+    "children": [],
+    "colorScheme": "light",
+    "index": 0,
+    "color": "green",
+    "metric": "currentAmount",
+    "dimension": "graphLabel",
+    "target": "target",
+    "name": "bullet0",
+    "idKey": "rscMarkId",
+    "direction": "horizontal",
 }
 
 describe('addBullet', () => {
@@ -56,24 +69,32 @@ describe('addBullet', () => {
 });
 
 describe('getBulletData', () => {
-    test('should return the data object with max value being set', () => {
-        const data = getBulletData(sampleProps);
+
+    //Data is only one
+    test('should return the data object with all necessary fields being populated', () => {
+        const data = getBulletData(samplePropsVertical);
         expect(data).toHaveLength(2);
+        expect(data[0].transform).toHaveLength(3);
     });
 });
 
 describe('getBulletScales', () => {
 
-    //Not much here right now because the function only returns a single const
-    test('should return the correct scales object', () => {
-        const data = getBulletScales(sampleProps);
-        expect(data).toBeDefined()
+    //Makes sure the correct horizontal or vertical object is returned
+    test('should return the correct vertical scales object', () => {
+        const data = getBulletScales(samplePropsVertical);
+        expect(data[0].type).toBe('linear')
+    });
+
+    test('should return the correct horizontal scales object', () => {
+        const data = getBulletScales(samplePropsHorizontal);
+        expect(data[0].type).toBe('band')
     });
 });
 
 describe('getBulletMarks', () => {
     test('should return the correct marks object', () => {
-        const data = getBulletMarks(sampleProps);
+        const data = getBulletMarks(samplePropsVertical);
         expect(data).toHaveLength(4);
         expect(data[0].type).toBe('rect');
         expect(data[1].type).toBe('text');
