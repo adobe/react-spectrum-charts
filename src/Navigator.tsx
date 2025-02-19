@@ -124,7 +124,7 @@ export const Navigator: FC<NavigationProps> = ({data, chartView, chartLayers, na
             } else {
                 const root: Scenegraph = chartView.current.scenegraph().root
                 const items = root.items
-                const offset = -root.bounds.x1
+                let offset = -root.bounds.x1
                 if (items.length !== 1) {
                     // console.log("what is in items??",items)
                 }
@@ -204,7 +204,7 @@ export const Navigator: FC<NavigationProps> = ({data, chartView, chartLayers, na
                     }
                     root.items[0].items.forEach((i) => {
                         if (i.marktype === "rect" && i.role === "mark" && i.name.indexOf("_background") === -1) {
-                            // these are the bars in a bar chart!
+                            // these are the bars in a bar chart or stacked bar chart!
                             setDimensionSpatialProperties(i, "BAR")
                             i.items.forEach(bar => {
                                 const datum = {}
@@ -224,6 +224,36 @@ export const Navigator: FC<NavigationProps> = ({data, chartView, chartLayers, na
                                         label: describeNode(datum, {semanticLabel: NAVIGATION_SEMANTICS.BAR.CHILD + '.'})
                                     }
                                 }
+                            })
+                            setDivisionSpatialProperties(i, "BAR")
+                        } else if (i.name && i.name.indexOf("bar0_group") !== -1) {
+                            // these are the bars in a dodged bar chart!
+                            setDimensionSpatialProperties(i, "BAR")
+                            i.items.forEach((bg) => {
+                                offset = -root.bounds.x1 + bg.bounds.x1
+                                bg.items.forEach((bg_i) => {
+                                    if (bg_i.marktype === "rect" && bg_i.role === "mark" && bg_i.name.indexOf("_background") === -1) {
+                                        bg_i.items.forEach(bar => {
+                                            const datum = {}
+                                            keysToMatch.forEach(key => {
+                                                datum[key] = bar.datum[key]
+                                            })
+                                            if (bar.datum[NAVIGATION_ID_KEY] && navigationStructure.nodes[bar.datum[NAVIGATION_ID_KEY]]) {
+                                                const correspondingNode = navigationStructure.nodes[bar.datum[NAVIGATION_ID_KEY]];
+                                                correspondingNode.spatialProperties = {
+                                                    width: `${bar.width}px`,
+                                                    height: `${bar.height}px`,
+                                                    left: `${bar.x + offset}px`,
+                                                    top: `${bar.y}px`,
+                                                }
+                                                correspondingNode.semantics = {
+                                                    label: describeNode(datum, {semanticLabel: NAVIGATION_SEMANTICS.BAR.CHILD + '.'})
+                                                }
+                                            }
+                                        })
+                                    }
+                                    
+                                })
                             })
                             setDivisionSpatialProperties(i, "BAR")
                         } else if (i.marktype === "arc" && i.role === "mark") {
