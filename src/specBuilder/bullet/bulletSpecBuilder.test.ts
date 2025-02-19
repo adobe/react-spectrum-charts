@@ -10,7 +10,6 @@
  * governing permissions and limitations under the License.
  */
 
-// import { GroupMark } from 'vega';
 import { getBulletScales, getBulletData, getBulletMarks, addBullet } from './bulletSpecBuilder';
 import { BulletSpecProps, BulletProps } from '../../types';
 import { GroupMark, Spec } from 'vega';
