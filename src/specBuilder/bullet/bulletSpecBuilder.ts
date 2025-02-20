@@ -131,7 +131,7 @@ export function getBulletMarks(props: BulletSpecProps): Mark[] | GroupMark[] {
     {
       "type": "rule",
       "from": {"data": "table"},
-      "name": `${props.name}_rule`,
+      "name": `${props.name}_target`,
       "description": `${props.name}`,
       "encode": {
         "enter": {
