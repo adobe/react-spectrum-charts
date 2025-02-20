@@ -11,6 +11,7 @@
  */
 import { BACKGROUND_COLOR, FILTERED_TABLE } from '@constants';
 import { getInteractive } from '@specBuilder/marks/markUtils';
+import { getColorValue } from '@specBuilder/specUtils';
 import { GroupMark, Mark, RectEncodeEntry, RectMark } from 'vega';
 
 import { BarSpecProps } from '../../types';
@@ -34,6 +35,9 @@ export const getStackedBarMarks = (props: BarSpecProps): Mark[] => {
 
 	// bar mark
 	marks.push(getStackedBar(props));
+
+	// bar focus ring
+	marks.push(getStackedBarFocusRing(props));
 
 	// add annotation marks
 	marks.push(
@@ -99,6 +103,31 @@ export const getStackedBar = (props: BarSpecProps): RectMark => {
 			update: {
 				...getStackedDimensionEncodings(props),
 				...getBarUpdateEncodings(props),
+			},
+		},
+	};
+};
+
+export const getStackedBarFocusRing = (props: BarSpecProps): RectMark => {
+	const { colorScheme, idKey, name } = props;
+	return {
+		name: `${name}_focusRing`,
+		type: 'rect',
+		from: { data: name },
+		interactive: false,
+		encode: {
+			enter: {
+				strokeWidth: { value: 2 },
+				fill: { value: 'transparent' },
+				stroke: { value: getColorValue('static-blue', colorScheme) },
+				cornerRadius: { value: 4 },
+			},
+			update: {
+				x: { signal: 'datum.bounds.x1 - 2' },
+				x2: { signal: 'datum.bounds.x2 + 2' },
+				y: { signal: 'datum.bounds.y1 - 2' },
+				y2: { signal: 'datum.bounds.y2 + 2' },
+				opacity: [{ test: `focussedItem === datum.datum.${idKey}`, value: 1 }, { value: 0 }],
 			},
 		},
 	};

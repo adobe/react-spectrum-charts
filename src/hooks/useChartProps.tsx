@@ -13,7 +13,12 @@ import { useDarkMode } from 'storybook-dark-mode';
 
 import { ChartProps } from '../types';
 
+/**
+ * This hook syncs the color scheme with the storybook dark mode
+ * @param props
+ * @returns
+ */
 export default function useChartProps(props: ChartProps): ChartProps {
 	const darkMode = useDarkMode();
-	return { colorScheme: darkMode ? 'dark' : 'light', ...props };
+	return { colorScheme: darkMode ? 'dark' : 'light', debug: true, ...props };
 }

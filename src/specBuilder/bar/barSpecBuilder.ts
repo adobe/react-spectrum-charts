@@ -36,7 +36,7 @@ import {
 	getScaleIndexByType,
 } from '@specBuilder/scale/scaleSpecBuilder';
 import { addHighlightedItemSignalEvents, getGenericValueSignal } from '@specBuilder/signal/signalSpecBuilder';
-import { getFacetsFromProps } from '@specBuilder/specUtils';
+import { getColorValue, getFacetsFromProps } from '@specBuilder/specUtils';
 import { addTrendlineData, getTrendlineMarks, setTrendlineSignals } from '@specBuilder/trendline';
 import { sanitizeMarkChildren, toCamelCase } from '@utils';
 import { produce } from 'immer';
@@ -114,6 +114,9 @@ export const addSignals = produce<Signal[], [BarSpecProps]>((signals, props) => 
 	// We use this value to calculate ReferenceLine positions.
 	const { paddingInner } = getBarPadding(paddingRatio, barPaddingOuter);
 	signals.push(getGenericValueSignal('paddingInner', paddingInner));
+	signals.push(getGenericValueSignal('focussedItem'));
+	signals.push(getGenericValueSignal('focussedDimension'));
+	signals.push(getGenericValueSignal('focussedRegion'));
 
 	if (!children.length) {
 		return;
@@ -273,7 +276,7 @@ export const addMarks = produce<Mark[], [BarSpecProps]>((marks, props) => {
 	} else if (props.type === 'stacked') {
 		barMarks.push(...getStackedBarMarks(props));
 	} else {
-		barMarks.push(getDodgedMark(props));
+		barMarks.push(...getDodgedMark(props));
 	}
 
 	const popovers = getPopovers(props);
@@ -290,6 +293,26 @@ export const addMarks = produce<Mark[], [BarSpecProps]>((marks, props) => {
 	}
 
 	marks.push(...getTrendlineMarks(props));
+	marks.push({
+		name: 'chartFocusRing',
+		type: 'rect',
+		interactive: false,
+		encode: {
+			enter: {
+				strokeWidth: { value: 2 },
+				fill: { value: 'transparent' },
+				stroke: { value: getColorValue('static-blue', props.colorScheme) },
+				cornerRadius: { value: 4 },
+			},
+			update: {
+				x: { value: 0 },
+				x2: { signal: 'width' },
+				y: { value: 0 },
+				y2: { signal: 'height' },
+				opacity: [{ test: "focussedRegion === 'chart'", value: 1 }, { value: 0 }],
+			},
+		},
+	});
 });
 
 export const getRepeatedScale = (props: BarSpecProps): Scale => {
