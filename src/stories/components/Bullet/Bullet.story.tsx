@@ -47,7 +47,7 @@ Basic.args = {
     dimension: 'graphLabel',
     target: 'target',
     color: 'red-500',
-    direction: 'vertical',
+    direction: 'column',
 };
 
 export { Basic };

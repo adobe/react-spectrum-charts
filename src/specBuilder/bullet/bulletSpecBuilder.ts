@@ -11,7 +11,7 @@
  */
 
 import { toCamelCase } from '@utils';
-import { DEFAULT_COLOR_SCHEME } from '@constants';
+import { DEFAULT_COLOR_SCHEME, DEFAULT_BULLET_DIRECTION } from '@constants';
 import { Spec, Data, Mark, Scale, GroupMark } from 'vega';
 import { ColorScheme, BulletProps, BulletSpecProps } from '../../types';
 import { sanitizeMarkChildren } from '../../utils';
@@ -31,7 +31,7 @@ export const addBullet = (
         dimension,
         target,
         color = DEFAULT_COLOR,
-        direction,
+        direction = DEFAULT_BULLET_DIRECTION,
         ...props
     }: BulletProps & { colorScheme?: ColorScheme; index?: number; idKey: string }
 ): Spec => {
@@ -45,8 +45,7 @@ export const addBullet = (
         dimension: dimension ?? 'graphLabel',
         target: target ?? 'target',
         name: toCamelCase(name ?? `bullet${index}`),
-        //direction must be horizontal or vertical
-        direction: direction === 'vertical' || direction === 'horizontal' ? direction : 'vertical',
+        direction,
         ...props,
     };
     return {
@@ -62,12 +61,12 @@ export function getBulletMarks(props: BulletSpecProps): Mark[] | GroupMark[] {
   const solidColor = getColorValue('gray-900', props.colorScheme);
   const barLabelColor = getColorValue('gray-600', props.colorScheme);
   
-  const verticalMarks: Mark[] = [
+  const bulletMarksColumn: Mark[] = [
     {
       "type": "rect",
-      "name": "bullet0rect",
+      "name": `${props.name}_rect`,
       "from": {"data": "table"},
-      "description": "bullet0",
+      "description": `${props.name}`,
       "encode": {
         "enter": {
           "x": {"value": 0},
@@ -89,9 +88,9 @@ export function getBulletMarks(props: BulletSpecProps): Mark[] | GroupMark[] {
     },
     {
       "type": "text",
-      "name": "bullet0barlabel",
+      "name": `${props.name}_label`,
       "from": {"data": "table"},
-      "description": "graphLabel",
+      "description": `${props.name}`,
       "encode": {
         "enter": {
           "x": {"value": 0},
@@ -111,8 +110,8 @@ export function getBulletMarks(props: BulletSpecProps): Mark[] | GroupMark[] {
     {
       "type": "text",
       "from": {"data": "table"},
-      "name": "bullet0amountlabel",
-      "description": "currentAmount",
+      "name": `${props.name}_valuelabel`,
+      "description": `${props.name}`,
       "encode": {
         "enter": {
           "x": {"signal": "width"},
@@ -132,8 +131,8 @@ export function getBulletMarks(props: BulletSpecProps): Mark[] | GroupMark[] {
     {
       "type": "rule",
       "from": {"data": "table"},
-      "name": "bullet0rule",
-      "description": "bullet0",
+      "name": `${props.name}_rule`,
+      "description": `${props.name}`,
       "encode": {
         "enter": {
           "x": {
@@ -157,9 +156,10 @@ export function getBulletMarks(props: BulletSpecProps): Mark[] | GroupMark[] {
     }
   ]
 
-  const horizontalMarks : GroupMark[] = [
+  const bulletMarksRow : GroupMark[] = [
     {
-      "name": "bulletGroup",
+      "name": `${props.name}_group`,
+      "description": `${props.name}`,
       "type": "group",
       "from": {
         "facet": {
@@ -188,7 +188,7 @@ export function getBulletMarks(props: BulletSpecProps): Mark[] | GroupMark[] {
       ],
       "marks": [
         {
-          "name": "bullet0rect",
+          "name": `${props.name}_rect`,
           "type": "rect",
           "from": { "data": "bulletGroups" },
           "encode": {
@@ -205,7 +205,7 @@ export function getBulletMarks(props: BulletSpecProps): Mark[] | GroupMark[] {
         },
         {
           "type": "text",
-          "name": "bullet0barlabel",
+          "name": `${props.name}_label`,
           "from": { "data": "bulletGroups" },
           "description": "graphLabel",
           "encode": {
@@ -223,7 +223,7 @@ export function getBulletMarks(props: BulletSpecProps): Mark[] | GroupMark[] {
         {
           "type": "text",
           "from": { "data": "bulletGroups" },
-          "name": "bullet0amountlabel",
+          "name": `${props.name}_valueLabel`,
           "encode": {
             "enter": {
               "x": { "signal": "width", "offset": 0 },
@@ -239,7 +239,7 @@ export function getBulletMarks(props: BulletSpecProps): Mark[] | GroupMark[] {
         {
           "type": "rule",
           "from": { "data": "bulletGroups" },
-          "name": "bullet0rule",
+          "name": `${props.name}_target`,
           "encode": {
             "enter": {
               "x": { "scale": "xscale", "field": `${props.target}` },
@@ -254,7 +254,7 @@ export function getBulletMarks(props: BulletSpecProps): Mark[] | GroupMark[] {
     }
   ]
 
-  return props.direction === 'vertical' ? verticalMarks : horizontalMarks
+  return props.direction === 'column' ?  bulletMarksColumn : bulletMarksRow
 }
 
 export function getBulletData(props: BulletSpecProps): Data[] {
@@ -303,7 +303,7 @@ export function getBulletData(props: BulletSpecProps): Data[] {
 
 export function getBulletScales(props: BulletSpecProps): Scale[] {
 
-  const bulletScaleVertical: Scale[] = [
+  const bulletScaleColumn: Scale[] = [
     {
       "name": "xscale",
       "type": "linear",
@@ -312,7 +312,7 @@ export function getBulletScales(props: BulletSpecProps): Scale[] {
     }
   ]
 
-  const bulletScaleHorizontal: Scale[] = [
+  const bulletScaleRow: Scale[] = [
     {
       "name": "xGroupScale",
       "type": "band",
@@ -322,5 +322,5 @@ export function getBulletScales(props: BulletSpecProps): Scale[] {
     }
   ]
 
-  return props.direction === 'vertical' ? bulletScaleVertical : bulletScaleHorizontal
+  return props.direction === 'column' ? bulletScaleColumn : bulletScaleRow
 }

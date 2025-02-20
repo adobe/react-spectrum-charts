@@ -14,7 +14,7 @@ import { getBulletScales, getBulletData, getBulletMarks, addBullet } from './bul
 import { BulletSpecProps, BulletProps } from '../../types';
 import { GroupMark, Spec } from 'vega';
 
-const samplePropsVertical: BulletSpecProps = {
+const samplePropsColumn: BulletSpecProps = {
     "children": [],
     "colorScheme": "light",
     "index": 0,
@@ -24,10 +24,10 @@ const samplePropsVertical: BulletSpecProps = {
     "target": "target",
     "name": "bullet0",
     "idKey": "rscMarkId",
-    "direction": "vertical",
+    "direction": "column",
 }
 
-const samplePropsHorizontal: BulletSpecProps = {
+const samplePropsRow: BulletSpecProps = {
     "children": [],
     "colorScheme": "light",
     "index": 0,
@@ -37,7 +37,7 @@ const samplePropsHorizontal: BulletSpecProps = {
     "target": "target",
     "name": "bullet0",
     "idKey": "rscMarkId",
-    "direction": "horizontal",
+    "direction": "row",
 }
 
 describe('addBullet', () => {
@@ -55,7 +55,7 @@ describe('addBullet', () => {
             dimension: 'region',
             target: 'goal',
             idKey: 'rscMarkId',
-            direction: 'vertical',
+            direction: 'column',
         };
 
         const newSpec = addBullet(spec, bulletProps);
@@ -67,25 +67,25 @@ describe('addBullet', () => {
         expect(newSpec.scales).toEqual(expectedScale);
     });
 
-    test('should create a vertical spec when neither vertical or horizontal are specified for direction', () => {
-        const bulletProps: BulletProps & { idKey: string } = {
-            children: [],
-            name: 'testBullet',
-            metric: 'revenue',
-            dimension: 'region',
-            target: 'goal',
-            idKey: 'rscMarkId',
-            direction: 'test',
-        };
+    // test('should create a vertical spec when neither vertical or horizontal are specified for direction', () => {
+    //     const bulletProps: BulletProps & { idKey: string } = {
+    //         children: [],
+    //         name: 'testBullet',
+    //         metric: 'revenue',
+    //         dimension: 'region',
+    //         target: 'goal',
+    //         idKey: 'rscMarkId',
+    //         direction: 'test',
+    //     };
 
-        const newSpec = addBullet(spec, bulletProps);
+    //     const newSpec = addBullet(spec, bulletProps);
 
-        //A length of 4 is indicative of a vertical spec
-        expect(newSpec.marks).toHaveLength(4)
+    //     //A length of 4 is indicative of a vertical spec
+    //     expect(newSpec.marks).toHaveLength(4)
         
-    });
+    // });
 
-    test('should create a horizontal spec when horizontal is specified for direction', () => {
+    test('should create a horizontally ordered spec when row is specified for direction', () => {
         const bulletProps: BulletProps & { idKey: string } = {
             children: [],
             name: 'testBullet',
@@ -93,12 +93,12 @@ describe('addBullet', () => {
             dimension: 'region',
             target: 'goal',
             idKey: 'rscMarkId',
-            direction: 'horizontal',
+            direction: 'row',
         };
 
         const newSpec = addBullet(spec, bulletProps);
 
-        //A length of 1 is indicative of a horizontal spec
+        //A length of 1 is indicative of a row spec
         expect(newSpec.marks).toHaveLength(1)
         
     });
@@ -107,29 +107,29 @@ describe('addBullet', () => {
 describe('getBulletData', () => {
 
     test('should return the data object with all necessary fields being populated', () => {
-        const data = getBulletData(samplePropsVertical);
+        const data = getBulletData(samplePropsColumn);
         expect(data).toHaveLength(2);
         expect(data[0].transform).toHaveLength(3);
     });
 });
 
-//Makes sure the correct horizontal or vertical object is returned
+//Makes sure the correct column or row object is returned
 describe('getBulletScales', () => {
 
-    test('should return the correct vertical scales object', () => {
-        const data = getBulletScales(samplePropsVertical);
+    test('should return the correct column scales object', () => {
+        const data = getBulletScales(samplePropsColumn);
         expect(data[0].type).toBe('linear')
     });
 
-    test('should return the correct horizontal scales object', () => {
-        const data = getBulletScales(samplePropsHorizontal);
+    test('should return the correct row scales object', () => {
+        const data = getBulletScales(samplePropsRow);
         expect(data[0].type).toBe('band')
     });
 });
 
 describe('getBulletMarks', () => {
-    test('should return the correct vertical marks object', () => {
-        const data = getBulletMarks(samplePropsVertical);
+    test('should return the correct column marks object', () => {
+        const data = getBulletMarks(samplePropsColumn);
         expect(data).toHaveLength(4);
         expect(data[0].type).toBe('rect');
         expect(data[1].type).toBe('text');
@@ -137,8 +137,8 @@ describe('getBulletMarks', () => {
         expect(data[3].type).toBe('rule');
     });
 
-    test('should return the correct horizontal marks object', () => {
-        const data = getBulletMarks(samplePropsHorizontal) as GroupMark[];
+    test('should return the correct row marks object', () => {
+        const data = getBulletMarks(samplePropsRow) as GroupMark[];
         expect(data).toHaveLength(1);
         expect(data[0].type).toBe('group')
         expect(data[0].marks).toHaveLength(4);

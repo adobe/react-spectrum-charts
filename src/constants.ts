@@ -38,6 +38,7 @@ export const DEFAULT_TIME_DIMENSION = 'datetime';
 export const DEFAULT_TRANSFORMED_TIME_DIMENSION = `${DEFAULT_TIME_DIMENSION}0`;
 export const DEFAULT_TITLE_FONT_WEIGHT = 'bold';
 export const DEFAULT_INTERACTION_MODE = 'nearest';
+export const DEFAULT_BULLET_DIRECTION = 'column';
 
 // vega data table name
 export const TABLE = 'table';

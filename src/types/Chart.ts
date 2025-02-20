@@ -237,8 +237,8 @@ export interface BulletProps extends MarkProps {
 	target?: string;
 	/** Data field that the metric is trended against (x-axis for horizontal orientation) */
 	dimension?: string;
-	/** Specifies the direction the bars should be ordered (vertical/horizontal) */
-	direction?: string;
+	/** Specifies the direction the bars should be ordered (row/column) */
+	direction?: 'row' | 'column';
 }
 
 export interface DonutSummaryProps {
