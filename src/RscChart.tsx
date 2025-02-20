@@ -16,10 +16,10 @@ import {
 	FILTERED_TABLE,
 	GROUP_DATA,
 	LEGEND_TOOLTIP_DELAY,
+	NAVIGATION_ID_KEY,
 	SELECTED_ITEM,
 	SELECTED_SERIES,
 	SERIES_ID,
-	NAVIGATION_ID_KEY
 } from '@constants';
 import useChartImperativeHandle from '@hooks/useChartImperativeHandle';
 import useLegend from '@hooks/useLegend';
@@ -38,17 +38,16 @@ import {
 	sanitizeRscChartChildren,
 	setSelectedSignals,
 } from '@utils';
+import { Navigator } from 'Navigator';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { Item } from 'vega';
 import { Handler, Position, Options as TooltipOptions } from 'vega-tooltip';
-import { addSimpleDataIDs as addNavigationIds } from '../node_modules/data-navigator/dist/structure.js'
 
 import { ActionButton, Dialog, DialogTrigger, View as SpectrumView } from '@adobe/react-spectrum';
 
+import { addSimpleDataIDs as addNavigationIds } from '../node_modules/data-navigator/dist/structure.js';
 import './Chart.css';
 import { VegaChart } from './VegaChart';
-import { Navigator } from 'Navigator';
-
 import {
 	ChartHandle,
 	ColorScheme,
@@ -58,7 +57,7 @@ import {
 	NavigationEvent,
 	RscChartProps,
 	TooltipAnchor,
-	TooltipPlacement
+	TooltipPlacement,
 } from './types';
 
 interface ChartDialogProps {
@@ -127,8 +126,8 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 		addNavigationIds({
 			idKey: NAVIGATION_ID_KEY,
 			data,
-			addIds:true
-		})
+			addIds: true,
+		});
 		// THE MAGIC, builds our spec
 		const spec = useSpec({
 			backgroundColor,
@@ -167,7 +166,7 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 		}, [isPopoverOpen]);
 
 		useChartImperativeHandle(forwardedRef, { chartView, title });
-		
+
 		const {
 			legendHiddenSeries,
 			setLegendHiddenSeries,
@@ -250,9 +249,28 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 		}, [colorScheme, idKey, legendHiddenSeries, legendIsToggleable]);
 
 		const navigationEventCallback = (navData: NavigationEvent) => {
-			console.log("RSC chart can use this navData to set signals", navData)
+			if (chartView.current) {
+				console.log('RSC chart can use this navData to set signals', navData);
+				chartView.current.signal('focusedItem', null);
+				chartView.current.signal('focusedDimension', null);
+				chartView.current.signal('focusedRegion', null);
+				switch (navData.nodeLevel) {
+					case 'dimension':
+						chartView.current.signal('focusedRegion', 'chart');
+						break;
+					case 'division':
+						chartView.current.signal('focusedDimension', navData.vegaId);
+						break;
+					case 'child':
+						chartView.current.signal('focusedItem', navData.vegaId);
+						break;
+					default:
+						break;
+				}
+				chartView.current.runAsync();
+			}
 			// set signals here!
-		}
+		};
 		return (
 			<>
 				<div
@@ -333,12 +351,16 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 						popover={popover}
 					/>
 				))}
-				{chartLayers.length ? <Navigator
-					data={data}
-					chartView={chartView}
-					chartLayers={chartLayers}
-					navigationEventCallback={navigationEventCallback}
-				></Navigator> : <div/>}
+				{chartLayers.length ? (
+					<Navigator
+						data={data}
+						chartView={chartView}
+						chartLayers={chartLayers}
+						navigationEventCallback={navigationEventCallback}
+					></Navigator>
+				) : (
+					<div />
+				)}
 			</>
 		);
 	}

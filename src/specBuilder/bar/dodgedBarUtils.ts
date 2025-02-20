@@ -85,7 +85,7 @@ export const getDodgedMark = (props: BarSpecProps): [GroupMark, RectMark] => {
 					x2: { signal: 'datum.bounds.x2 + 2' },
 					y: { signal: 'datum.bounds.y1 - 2' },
 					y2: { signal: 'datum.bounds.y2 + 2' },
-					opacity: [{ test: `focussedDimension === datum.datum.${dimension}`, value: 1 }, { value: 0 }],
+					opacity: [{ test: `focusedDimension === datum.datum.${dimension}`, value: 1 }, { value: 0 }],
 				},
 			},
 		},
@@ -111,7 +111,7 @@ export const getBarFocusRing = (props: BarSpecProps): RectMark => {
 				x2: { signal: 'datum.bounds.x2 + 2' },
 				y: { signal: 'datum.bounds.y1 - 2' },
 				y2: { signal: 'datum.bounds.y2 + 2' },
-				opacity: [{ test: `focussedItem === datum.datum.${idKey}`, value: 1 }, { value: 0 }],
+				opacity: [{ test: `focusedItem === datum.datum.${idKey}`, value: 1 }, { value: 0 }],
 			},
 		},
 	};

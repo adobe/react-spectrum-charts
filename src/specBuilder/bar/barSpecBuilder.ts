@@ -114,9 +114,9 @@ export const addSignals = produce<Signal[], [BarSpecProps]>((signals, props) => 
 	// We use this value to calculate ReferenceLine positions.
 	const { paddingInner } = getBarPadding(paddingRatio, barPaddingOuter);
 	signals.push(getGenericValueSignal('paddingInner', paddingInner));
-	signals.push(getGenericValueSignal('focussedItem'));
-	signals.push(getGenericValueSignal('focussedDimension'));
-	signals.push(getGenericValueSignal('focussedRegion'));
+	signals.push(getGenericValueSignal('focusedItem'));
+	signals.push(getGenericValueSignal('focusedDimension'));
+	signals.push(getGenericValueSignal('focusedRegion'));
 
 	if (!children.length) {
 		return;
@@ -309,7 +309,7 @@ export const addMarks = produce<Mark[], [BarSpecProps]>((marks, props) => {
 				x2: { signal: 'width' },
 				y: { value: 0 },
 				y2: { signal: 'height' },
-				opacity: [{ test: "focussedRegion === 'chart'", value: 1 }, { value: 0 }],
+				opacity: [{ test: "focusedRegion === 'chart'", value: 1 }, { value: 0 }],
 			},
 		},
 	});

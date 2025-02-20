@@ -27,7 +27,7 @@ import {
 } from './barUtils';
 import { getTrellisProperties, isTrellised } from './trellisedBarUtils';
 
-export const getStackedBarMarks = (props: BarSpecProps): Mark[] => {
+export const getStackedBarMarks = (props: BarSpecProps): [GroupMark, RectMark] => {
 	const marks: Mark[] = [];
 	// add background marks
 	// these marks make it so that when the opacity of a bar is lowered (like on hover), you can't see the grid lines behind the bars
@@ -49,7 +49,35 @@ export const getStackedBarMarks = (props: BarSpecProps): Mark[] => {
 		)
 	);
 
-	return marks;
+	return [
+		{
+			name: `${props.name}_group`,
+			type: 'group',
+			from: { facet: { data: FILTERED_TABLE, name: `${props.name}_facet`, groupby: props.dimension } },
+			marks,
+		},
+		{
+			name: `${props.name}_group_focusRing`,
+			type: 'rect',
+			from: { data: `${props.name}_group` },
+			interactive: false,
+			encode: {
+				enter: {
+					strokeWidth: { value: 2 },
+					fill: { value: 'transparent' },
+					stroke: { value: getColorValue('static-blue', props.colorScheme) },
+					cornerRadius: { value: 4 },
+				},
+				update: {
+					x: { signal: 'datum.bounds.x1 - 2' },
+					x2: { signal: 'datum.bounds.x2 + 2' },
+					y: { signal: 'datum.bounds.y1 - 2' },
+					y2: { signal: 'datum.bounds.y2 + 2' },
+					opacity: [{ test: `focusedDimension === datum.datum.${props.dimension}`, value: 1 }, { value: 0 }],
+				},
+			},
+		},
+	];
 };
 
 export const getDodgedAndStackedBarMark = (props: BarSpecProps): GroupMark => {
@@ -74,7 +102,8 @@ export const getStackedBackgroundBar = (props: BarSpecProps): RectMark => {
 	return {
 		name: `${name}_background`,
 		type: 'rect',
-		from: { data: isDodgedAndStacked(props) ? `${name}_facet` : getBaseDataSourceName(props) },
+		// from: { data: isDodgedAndStacked(props) ? `${name}_facet` : getBaseDataSourceName(props) },
+		from: { data: `${name}_facet` },
 		interactive: false,
 		encode: {
 			enter: {
@@ -93,7 +122,8 @@ export const getStackedBar = (props: BarSpecProps): RectMark => {
 	return {
 		name,
 		type: 'rect',
-		from: { data: isDodgedAndStacked(props) ? `${name}_facet` : getBaseDataSourceName(props) },
+		// from: { data: isDodgedAndStacked(props) ? `${name}_facet` : getBaseDataSourceName(props) },
+		from: { data: `${name}_facet` },
 		interactive: getInteractive(children, props),
 		encode: {
 			enter: {
@@ -127,7 +157,7 @@ export const getStackedBarFocusRing = (props: BarSpecProps): RectMark => {
 				x2: { signal: 'datum.bounds.x2 + 2' },
 				y: { signal: 'datum.bounds.y1 - 2' },
 				y2: { signal: 'datum.bounds.y2 + 2' },
-				opacity: [{ test: `focussedItem === datum.datum.${idKey}`, value: 1 }, { value: 0 }],
+				opacity: [{ test: `focusedItem === datum.datum.${idKey}`, value: 1 }, { value: 0 }],
 			},
 		},
 	};
