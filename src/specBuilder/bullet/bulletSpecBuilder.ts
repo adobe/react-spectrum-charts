@@ -64,7 +64,7 @@ export function getBulletMarks(props: BulletSpecProps): Mark[] | GroupMark[] {
   const bulletMarksColumn: Mark[] = [
     {
       "type": "rect",
-      "name": `${props.name}_rect`,
+      "name": `${props.name}_bullet`,
       "from": {"data": "table"},
       "description": `${props.name}`,
       "encode": {
@@ -188,7 +188,7 @@ export function getBulletMarks(props: BulletSpecProps): Mark[] | GroupMark[] {
       ],
       "marks": [
         {
-          "name": `${props.name}_rect`,
+          "name": `${props.name}_bullet`,
           "type": "rect",
           "from": { "data": "bulletGroups" },
           "encode": {
