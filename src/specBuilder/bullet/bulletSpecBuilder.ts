@@ -9,6 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { sanitizeMarkChildren } from '@utils';
 import { produce } from 'immer';
 import { Data, Mark, Scale, Spec } from 'vega';
 
@@ -23,6 +24,7 @@ export const addBullet = produce<Spec, [BulletProps & { index?: number; idKey: s
 	(
 		spec,
 		{
+			children,
 			label,
 			ranges,
 			measures,
@@ -46,6 +48,9 @@ export const addBullet = produce<Spec, [BulletProps & { index?: number; idKey: s
 			orientation,
 			index
 		);
+
+		const sanitizedChildren = sanitizeMarkChildren(children);
+
 		const bulletName = `bullet${index}`;
 
 		// Flatten the data: if ranges/measures are arrays, take the first element.

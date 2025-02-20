@@ -44,30 +44,30 @@ BulletChart.args = {
   ...defaultProps,
 };
 
-// const Basic = BulletStory.bind({});
-// Basic.args = {
-//   ...defaultProps,
-// };
+const Basic = BulletStory.bind({});
+Basic.args = {
+  ...defaultProps,
+};
 
-// const Horizontal = BulletStory.bind({});
-// Horizontal.args = {
-//   ...defaultProps,
-//   orientation: 'horizontal',
-// };
+const Horizontal = BulletStory.bind({});
+Horizontal.args = {
+  ...defaultProps,
+  orientation: 'horizontal',
+};
 
-// const Vertical = BulletStory.bind({});
-// Vertical.args = {
-//   ...defaultProps,
-//   orientation: 'vertical',
-// };
+const Vertical = BulletStory.bind({});
+Vertical.args = {
+  ...defaultProps,
+  orientation: 'vertical',
+};
 
-// const CustomColors = BulletStory.bind({});
-// CustomColors.args = {
-//   ...defaultProps,
-//   measureColor: 'blue',
-//   rangeColor: 'pink',
-//   targetColor: 'red',
-// };
+const CustomColors = BulletStory.bind({});
+CustomColors.args = {
+  ...defaultProps,
+  measureColor: 'blue',
+  rangeColor: 'pink',
+  targetColor: 'red',
+};
 
-// export { Basic, Horizontal, Vertical, CustomColors };
+export { Basic, Horizontal, Vertical, CustomColors };
 

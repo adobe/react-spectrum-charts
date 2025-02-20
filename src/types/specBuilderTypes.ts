@@ -140,7 +140,7 @@ type BulletPropsWithDefaults =
 	| 'orientation'
 	| 'label';
 
-export interface BulletSpecProps extends BulletProps {
+export interface BulletSpecProps extends PartiallyRequired<BulletProps, BulletPropsWithDefaults> {
 	children: MarkChildElement[];
 	colorScheme: ColorScheme;
 	idKey: string;

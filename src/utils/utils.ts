@@ -30,7 +30,7 @@ import {
 	Trendline,
 	TrendlineAnnotation,
 } from '@rsc';
-import { Combo } from '@rsc/alpha';
+import { Bullet, Combo } from '@rsc/alpha';
 import { BigNumber, Donut, DonutSummary, SegmentLabel } from '@rsc/rc';
 import { View } from 'vega';
 
@@ -42,6 +42,7 @@ import {
 	AxisElement,
 	BarElement,
 	BigNumberElement,
+	BulletElement,
 	ChartChildElement,
 	ChartElement,
 	ChartTooltipElement,
@@ -63,6 +64,7 @@ type ElementCounts = {
 	axis: number;
 	axisAnnotation: number;
 	bar: number;
+	bullet: number;
 	donut: number;
 	legend: number;
 	line: number;
@@ -96,6 +98,7 @@ export const sanitizeRscChartChildren = (children: unknown): ChartChildElement[]
 		Area.displayName,
 		Axis.displayName,
 		Bar.displayName,
+		Bullet.displayName,
 		Donut.displayName,
 		Legend.displayName,
 		Line.displayName,
@@ -339,6 +342,9 @@ const getElementName = (element: unknown, elementCounts: ElementCounts) => {
 		case Bar.displayName:
 			elementCounts.bar++;
 			return getComponentName(element as BarElement, `bar${elementCounts.bar}`);
+		case Bullet.displayName:
+			elementCounts.bullet++;
+			return getComponentName(element as BulletElement, `bullet${elementCounts.bullet}`);
 		case Donut.displayName:
 			elementCounts.donut++;
 			return getComponentName(element as DonutElement, `donut${elementCounts.donut}`);
@@ -379,6 +385,7 @@ const initElementCounts = (): ElementCounts => ({
 	axis: -1,
 	axisAnnotation: -1,
 	bar: -1,
+	bullet: -1,
 	donut: -1,
 	legend: -1,
 	line: -1,
