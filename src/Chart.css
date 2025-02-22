@@ -76,6 +76,9 @@ this removes transitions in the vega tooltip
     margin: 0px;
     overflow: visible;
 }
+.dn-node:focus, .dn-node:focus-visible {
+	outline: none;
+}
 .dn-node-svg {
     position: absolute;
     pointer-events: none;
