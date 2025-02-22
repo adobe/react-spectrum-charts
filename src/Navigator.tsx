@@ -53,7 +53,6 @@ export const Navigator: FC<NavigationProps> = ({ data, chartView, chartLayers, n
 	const secondRef = useRef<HTMLElement>(null);
 
 	const navigationStructure = buildNavigationStructure(data, { NAVIGATION_ID_KEY }, chartLayers);
-	console.log('navigationStructure', navigationStructure);
 	const structureNavigationHandler = buildStructureHandler(
 		{
 			nodes: navigationStructure.nodes,
@@ -238,23 +237,19 @@ export const Navigator: FC<NavigationProps> = ({ data, chartView, chartLayers, n
 						}
 					};
 					root.items[0].items.forEach((i) => {
-						if (i.marktype === 'rect' && i.role === 'mark' && i.name.indexOf('_background') === -1) {
-							// these are the bars in a bar chart or stacked bar chart!
-							setDimensionSpatialProperties(i, 'BAR');
-							i.items.forEach((bar) => {
-								setChildSpatialProperties(bar, 'BAR');
-							});
-							setDivisionSpatialProperties(i, 'BAR');
-						} else if (i.name && i.name.indexOf('bar0_group') !== -1) {
-							// these are the bars in a dodged bar chart!
+                        if (i.name && i.name.indexOf('bar0_group') !== -1 && i.name.indexOf('focus') === -1) {
+							// these are bars!
 							setDimensionSpatialProperties(i, 'BAR');
 							i.items.forEach((bg) => {
-								offset = -root.bounds.x1 + bg.bounds.x1;
+                                // using the view we can check for additional scales, if they exist, this needs an offset
+                                // NOTE: as of right now, only dodged charts have a scale and need this extra offset calc!
+								offset = Object.keys(bg.context?.scales || {}).length ? -root.bounds.x1 + bg.bounds.x1 : offset;
 								bg.items.forEach((bg_i) => {
 									if (
 										bg_i.marktype === 'rect' &&
 										bg_i.role === 'mark' &&
-										bg_i.name.indexOf('_background') === -1
+										bg_i.name.indexOf('_background') === -1 &&
+										bg_i.name.indexOf('focus') === -1
 									) {
 										bg_i.items.forEach((bar) => {
 											setChildSpatialProperties(bar, 'BAR');
