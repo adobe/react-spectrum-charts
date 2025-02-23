@@ -51,10 +51,23 @@ export const addBullet = produce<Spec, [BulletProps & { index?: number; idKey: s
 
 		const sanitizedChildren = sanitizeMarkChildren(children);
 
+		const BulletProps = {
+			children: sanitizedChildren,
+			label,
+			ranges,
+			measures,
+			target,
+			measureColor,
+			rangeColor,
+			targetColor,
+			orientation,
+			index,
+		};
+
 		const bulletName = `bullet${index}`;
 
 		// Flatten the data: if ranges/measures are arrays, take the first element.
-		// (You could also compute the max if that makes more sense for your use case.)
+		// (Could also compute the max if that makes more sense for this.)
 		const rangeValue = Array.isArray(ranges) ? ranges[0] : ranges;
 		const measureValue = Array.isArray(measures) ? measures[0] : measures;
 
