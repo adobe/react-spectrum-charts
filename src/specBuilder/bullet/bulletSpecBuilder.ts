@@ -103,8 +103,10 @@ export function getBulletMarks(props: BulletSpecProps): Mark[] {
 					y: { field: 'index', mult: 60, offset: -60 },
 					text: {
 						signal: `
-							datum.${props.metric} != null 
-								? '${props.metricPrefix || ''}' + datum.${props.metric} + '${props.metricSuffix || ''}' 
+							datum.${props.metric} != null
+								? '${props.metricPrefix || ''}' + format(datum.${props.metric}, '${props.numberFormat || ''}') + '${
+							props.metricSuffix || ''
+						}'
 								: ''
 						`,
 					},

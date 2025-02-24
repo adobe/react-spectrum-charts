@@ -245,6 +245,8 @@ export interface BulletProps extends MarkProps {
 	metricPrefix?: string;
 	/** Optional string to append to the progress (metric) value (e.g. '%', 'M', 'K') */
 	metricSuffix?: string;
+	/** D3 number format specifier for the metric value (e.g. ".2f", "~s", etc.) */
+	numberFormat?: NumberFormat;
 }
 
 export interface DonutSummaryProps {
