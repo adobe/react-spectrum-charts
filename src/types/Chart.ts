@@ -237,6 +237,10 @@ export interface BulletProps extends MarkProps {
 	target?: string;
 	/** Data field that the metric is trended against (x-axis for horizontal orientation) */
 	dimension?: string;
+	/** D3 number format specifier for the target value (e.g. ".2f", "~s", etc.) */
+	targetSuffix?: string;
+	/** Optional string to prepend to the formatted target (e.g. '$') */
+	targetPrefix?: string;
 }
 
 export interface DonutSummaryProps {
