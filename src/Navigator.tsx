@@ -16,7 +16,7 @@ import { buildNavigationStructure, buildStructureHandler } from '@specBuilder/ch
 import { Scenegraph } from 'vega-scenegraph';
 import { View } from 'vega-view';
 
-import { DimensionList, NavigationRules, NodeObject } from '../node_modules/data-navigator/dist/src/data-navigator';
+import { DimensionList, NavigationRules, NodeObject, Nodes } from '../node_modules/data-navigator/dist/src/data-navigator';
 import { describeNode } from '../node_modules/data-navigator/dist/utilities.js';
 import { ChartData, CurrentNodeDetails, Navigation, NavigationEvent, SpatialProperties } from './types';
 
@@ -37,6 +37,28 @@ const convertId = (id, nodeLevel) => {
 		: +id.substring(1) + 1;
 };
 
+const buildChildNodeLookup = (nodes: Nodes) => {
+    const keys = Object.keys(nodes)
+    const lookup = {};
+    let previous = "";
+    keys.forEach(key => {
+        if (!nodes[key].dimensionLevel) {
+            // childmost nodes do not have a dimension level (they are not dimensions or divisions),
+            // that means that these are the child nodes we care about
+            lookup[nodes[key].id] = {
+                id: nodes[key].id,
+                next: "",
+                previous: previous || ""
+            }
+            if (previous) {
+                lookup[previous].next = nodes[key].id
+            }
+            previous = nodes[key].id
+        }
+    })
+    return lookup
+}
+
 export interface NavigationProps {
 	data: ChartData[];
 	chartView: MutableRefObject<View | undefined>;
@@ -51,6 +73,8 @@ export const Navigator: FC<NavigationProps> = ({ data, chartView, chartLayers, n
 	const willFocusAfterRender = useRef(false);
 	const firstRef = useRef<HTMLElement>(null);
 	const secondRef = useRef<HTMLElement>(null);
+    const mobileFallbackPreviousRef = useRef<HTMLElement>(null);
+    const mobileFallbackNextRef = useRef<HTMLElement>(null);
 
 	const navigationStructure = buildNavigationStructure(data, { NAVIGATION_ID_KEY }, chartLayers);
 	const structureNavigationHandler = buildStructureHandler(
@@ -61,6 +85,9 @@ export const Navigator: FC<NavigationProps> = ({ data, chartView, chartLayers, n
 		NAVIGATION_RULES as NavigationRules,
 		navigationStructure.dimensions || {}
 	);
+    // we create a child-only lookup with indexes, this is for our mobile fallback nodes
+    const navigationChildren = buildChildNodeLookup(navigationStructure.nodes)
+
 	const entryPoint = structureNavigationHandler.enter();
 	const [navigation, setNavigation] = useState<Navigation>({
 		transform: '',
@@ -77,7 +104,7 @@ export const Navigator: FC<NavigationProps> = ({ data, chartView, chartLayers, n
 				top: '',
 			},
 			semantics: {
-				label: entryPoint.semantics?.label || 'initial element test',
+				label: entryPoint.semantics?.label || '',
 			},
 		},
 	});
@@ -100,11 +127,58 @@ export const Navigator: FC<NavigationProps> = ({ data, chartView, chartLayers, n
 					top: '',
 				},
 				semantics: {
-					label: target.semantics?.label || 'no label yet',
+					label: target.semantics?.label || '',
 				},
 			},
-		});
+		} as Navigation);
 	};
+
+    const setMobileFallbackElement = (nodeId: string, direction: 'previous' | 'next'): Navigation => {
+        console.log(nodeId)
+        const mobileFallbackData = {
+            transform: '',
+            buttonTransform: '',
+            current: {
+                id: '_no_' + direction + '_for_' + nodeId,
+                hasInteractivity: false,
+                spatialProperties: {
+                    width: '',
+                    height: '',
+                    left: '',
+                    top: '',
+                },
+                semantics: {
+                    label: ''
+                }
+            },
+        } as Navigation
+
+        // we need to find a fallback node for our mobile users
+        // first we check if the current node is a child element, if so, we find the previous or next child
+        // but if the current node isn't a child element, then we simply make both of the previous/next elements the first child node
+        // the reasoning for this is that the chart initially might render with a non-child element,
+        // so we want mobile users to encounter the first child element whether they nav from above or below
+        // (hence why both will be this element at first)
+        const target = navigationChildren[nodeId] ? navigationStructure.nodes[navigationChildren[nodeId][direction]] : navigationStructure.nodes[Object.keys(navigationChildren)[0]]
+        if (target) {
+            mobileFallbackData.current = {
+                id: target.id,
+                figureRole: 'figure',
+                imageRole: 'image',
+                hasInteractivity: true,
+                spatialProperties: target.spatialProperties || {
+                    width: '',
+                    height: '',
+                    left: '',
+                    top: '',
+                },
+                semantics: {
+                    label: target.semantics?.label || ''
+                }
+            }
+        }
+        return mobileFallbackData
+    }
 
 	useEffect(() => {
 		if (willFocusAfterRender.current && focusedElement.current.id !== navigation.current.id) {
@@ -376,8 +450,27 @@ export const Navigator: FC<NavigationProps> = ({ data, chartView, chartLayers, n
 	const firstProps = !firstRef.current || focusedElement.current.id !== firstRef.current.id ? navigation : dummySpecs;
 	const secondProps = firstProps.current.id === navigation.current.id ? dummySpecs : navigation;
 
+    const mobileFallbackPreviousProps = setMobileFallbackElement(navigation.current.id, 'previous')
+    const mobileFallbackNextProps = setMobileFallbackElement(navigation.current.id, 'next')
+
 	const figures = (
 		<div>
+            <figure
+				ref={mobileFallbackPreviousRef}
+				role={mobileFallbackPreviousProps.current.figureRole || 'presentation'}
+				id={mobileFallbackPreviousProps.current.id}
+				className="dn-node dn-test-class dn-mobile-fallback-node"
+				tabIndex={-1}
+				style={mobileFallbackPreviousProps.current.spatialProperties}
+				onFocus={mobileFallbackPreviousProps.current.hasInteractivity ? handleFocus : undefined}
+				onKeyDown={mobileFallbackPreviousProps.current.hasInteractivity ? handleKeydown : undefined}
+			>
+				<div
+					role={mobileFallbackPreviousProps.current.imageRole || 'presentation'}
+					className="dn-node-text dn-mobile-fallback-node-text"
+					aria-label={mobileFallbackPreviousProps.current.semantics?.label || undefined}
+				></div>
+			</figure>
 			<figure
 				ref={firstRef}
 				role={firstProps.current.figureRole || 'presentation'}
@@ -410,17 +503,31 @@ export const Navigator: FC<NavigationProps> = ({ data, chartView, chartLayers, n
 					aria-label={secondProps.current.semantics?.label || undefined}
 				></div>
 			</figure>
+            <figure
+				ref={mobileFallbackNextRef}
+				role={mobileFallbackNextProps.current.figureRole || 'presentation'}
+				id={mobileFallbackNextProps.current.id}
+				className="dn-node dn-test-class dn-mobile-fallback-node"
+				tabIndex={-1}
+				style={mobileFallbackNextProps.current.spatialProperties}
+				onFocus={mobileFallbackNextProps.current.hasInteractivity ? handleFocus : undefined}
+				onKeyDown={mobileFallbackNextProps.current.hasInteractivity ? handleKeydown : undefined}
+			>
+				<div
+					role={mobileFallbackNextProps.current.imageRole || 'presentation'}
+					className="dn-node-text dn-mobile-fallback-node-text"
+					aria-label={mobileFallbackNextProps.current.semantics?.label || undefined}
+				></div>
+			</figure>
 		</div>
 	);
 	/* 
         goals:
             - add exit event + handling
-            - create semantics for axes, legends, etc
-            - create spatialProperties for axes, legends, etc
             - add alt text to root chart element
                 - possibly also hide vega's stuff
             - append an exit element within the appended parent element for our navigation stuff
-            - add help menu and "return to chart" button?
+            - add help menu/popup on "help" command?
             - add handling for resizing/etc
     */
 	return (
