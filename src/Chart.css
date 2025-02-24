@@ -71,6 +71,7 @@ this removes transitions in the vega tooltip
     left: 0px;
 }
 .dn-node {
+	pointer-events: none;
     position: absolute;
     padding: 0px;
     margin: 0px;
