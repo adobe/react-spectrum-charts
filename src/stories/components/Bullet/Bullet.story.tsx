@@ -47,7 +47,9 @@ Basic.args = {
     dimension: 'graphLabel',
     target: 'target',
     color: 'red-500',
-    targetPrefix: '$',
+    //targetPrefix: '$',
+    metricPrefix: '$',
+    metricSuffix: 'M',
 };
 
 export { Basic };
