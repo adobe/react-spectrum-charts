@@ -6,11 +6,11 @@
  *
  * Unless required by applicable law or agreed to in writing, software distributed under
  * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
- * OF ANY KIND, either express or implied. See the License for the specific language
+ * OF ANY KIND, either express or implied.s See the License for the specific language
  * governing permissions and limitations under the License.
  */
 
-import { Scale, Signal, Data, GroupMark } from 'vega'
+import { Scale, Signal, Data, GroupMark, Mark } from 'vega'
 import { BulletSpecProps } from 'types';
 import { getColorValue } from '../specUtils';
 
@@ -75,103 +75,138 @@ export function getBulletData(props: BulletSpecProps): Data[] {
 
 export function getBulletMarks(props: BulletSpecProps): GroupMark[] {
 
-    const solidColor = getColorValue('gray-900', props.colorScheme);
-    const barLabelColor = getColorValue('gray-600', props.colorScheme);
-
-    const newMark: GroupMark[] = [
+    let bulletMark: GroupMark[] = [
         {
-        "name": "bulletGroup",
-        "type": "group",
-        "from": {
-            "facet": { "data": "table", "name": "bulletGroups", "groupby": `${props.dimension}` }
-        },
-        "encode": {
-            "update": {
-                "y": { "scale": "yscale", "field": `${props.dimension}` },
-                "height": { "signal": "bulletGroupHeight" },
-                "width": { "signal": "width" }
-            }
-        },
-        "marks": [
-            {
-            "name": `${props.name}Rect`,
-            "description": `${props.name}Rect`,
-            "type": "rect",
-            "from": { "data": "bulletGroups" },
+            "name": "bulletGroup",
+            "type": "group",
+            "from": {
+                "facet": { "data": "table", "name": "bulletGroups", "groupby": `${props.dimension}` }
+            },
             "encode": {
-                "enter": {
-                "cornerRadiusTopLeft": [
-                    { "test": "datum.amount < 0", "value": 3 }
-                ],
-                "cornerRadiusBottomLeft": [
-                    { "test": "datum.amount < 0", "value": 3 }
-                ],
-                "cornerRadiusTopRight": [
-                    { "test": "datum.amount > 0", "value": 3 }
-                ],
-                "cornerRadiusBottomRight": [
-                    { "test": "datum.amount > 0", "value": 3 }
-                ],
-                "fill": [{ "value": `${props.color}` }]
-                },
                 "update": {
-                    "x": { "scale": "xscale", "value": 0 },
-                    "x2": { "scale": "xscale", "field": `${props.metric}` },
-                    "height": { "signal": "bulletHeight" },
-                    "y": { "signal": "bulletGroupHeight - 3 - 2*bulletHeight" }
+                    "y": { "scale": "yscale", "field": `${props.dimension}` },
+                    "height": { "signal": "bulletGroupHeight" },
+                    "width": { "signal": "width" }
                 }
-            }
             },
-            {
-            "name": `${props.name}Target`,
-            "description": `${props.name}Target`,
-            "type": "rule",
-            "from": { "data": "bulletGroups" },
-            "encode": {
-                "enter": {
-                "stroke": { "value": "black" },
-                "strokeWidth": { "value": 2 }
-                },
-                "update": {
-                    "x": { "scale": "xscale", "field": `${props.target}` },
-                    "y": { "signal": "bulletGroupHeight - targetHeight" },
-                    "y2": { "signal": "bulletGroupHeight" }
-                }
-            }
-            },
-            {
-            "name": `${props.name}Label`,
-            "description": `${props.name}Label`,
-            "type": "text",
-            "from": { "data": "bulletGroups" },
-            "encode": {
-                "enter": {
-                "text": { "signal": `datum.${props.dimension}` },
-                "align": { "value": "left" },
-                "baseline": { "value": "top" },
-                "fill": {"value": `${barLabelColor}`}
-                },
-                "update": { "x": { "value": 0 }, "y": { "value": 0 } }
-            }
-            },
-            {
-            "name": `${props.name}ValueLabel`,
-            "description": `${props.name}ValueLabel`,
-            "type": "text",
-            "from": { "data": "bulletGroups" },
-            "encode": {
-                "enter": {
-                "text": { "signal": `datum.${props.metric}` },
-                "align": { "value": "right" },
-                "baseline": { "value": "top" },
-                "fill": {"value": `${solidColor}`}
-                },
-                "update": { "x": { "signal": "width" }, "y": { "value": 0 } }
-            }
-            }
-        ]
+            "marks": []
         }
     ]
 
-    return newMark
+    bulletMark[0].marks?.push(getBulletMarkRect(props));
+    bulletMark[0].marks?.push(getBulletMarkTarget(props));
+    bulletMark[0].marks?.push(getBulletMarkLabel(props));
+    bulletMark[0].marks?.push(getBulletMarkValueLabel(props));
+
+    return bulletMark
+}
+
+export function getBulletMarkRect(props: BulletSpecProps): Mark {
+
+    const bulletMarkRect: Mark = {
+        "name": `${props.name}Rect`,
+        "description": `${props.name}Rect`,
+        "type": "rect",
+        "from": { "data": "bulletGroups" },
+        "encode": {
+            "enter": {
+            "cornerRadiusTopLeft": [
+                { "test": "datum.amount < 0", "value": 3 }
+            ],
+            "cornerRadiusBottomLeft": [
+                { "test": "datum.amount < 0", "value": 3 }
+            ],
+            "cornerRadiusTopRight": [
+                { "test": "datum.amount > 0", "value": 3 }
+            ],
+            "cornerRadiusBottomRight": [
+                { "test": "datum.amount > 0", "value": 3 }
+            ],
+            "fill": [{ "value": `${props.color}` }]
+            },
+            "update": {
+                "x": { "scale": "xscale", "value": 0 },
+                "x2": { "scale": "xscale", "field": `${props.metric}` },
+                "height": { "signal": "bulletHeight" },
+                "y": { "signal": "bulletGroupHeight - 3 - 2*bulletHeight" }
+            }
+        }
+    }
+
+    return bulletMarkRect
+
+}
+
+export function getBulletMarkTarget(props: BulletSpecProps): Mark {
+
+    const solidColor = getColorValue('gray-900', props.colorScheme);
+
+    const bulletMarkTarget: Mark = {
+        "name": `${props.name}Target`,
+        "description": `${props.name}Target`,
+        "type": "rule",
+        "from": { "data": "bulletGroups" },
+        "encode": {
+            "enter": {
+            "stroke": { "value": `${solidColor}` },
+            "strokeWidth": { "value": 2 }
+            },
+            "update": {
+                "x": { "scale": "xscale", "field": `${props.target}` },
+                "y": { "signal": "bulletGroupHeight - targetHeight" },
+                "y2": { "signal": "bulletGroupHeight" }
+            }
+        }
+    }
+
+    return bulletMarkTarget
+
+}
+
+export function getBulletMarkLabel(props: BulletSpecProps): Mark {
+
+    const barLabelColor = getColorValue('gray-600', props.colorScheme);
+
+    const bulletMarkLabel: Mark = {
+        "name": `${props.name}Label`,
+        "description": `${props.name}Label`,
+        "type": "text",
+        "from": { "data": "bulletGroups" },
+        "encode": {
+            "enter": {
+            "text": { "signal": `datum.${props.dimension}` },
+            "align": { "value": "left" },
+            "baseline": { "value": "top" },
+            "fill": {"value": `${barLabelColor}`}
+            },
+            "update": { "x": { "value": 0 }, "y": { "value": 0 } }
+        }
+    }
+
+    return bulletMarkLabel
+
+}
+
+export function getBulletMarkValueLabel(props: BulletSpecProps): Mark {
+
+    const solidColor = getColorValue('gray-900', props.colorScheme);
+
+    const bulletMarkValueLabel: Mark = {
+        "name": `${props.name}ValueLabel`,
+        "description": `${props.name}ValueLabel`,
+        "type": "text",
+        "from": { "data": "bulletGroups" },
+        "encode": {
+            "enter": {
+            "text": { "signal": `datum.${props.metric}` },
+            "align": { "value": "right" },
+            "baseline": { "value": "top" },
+            "fill": {"value": `${solidColor}`}
+            },
+            "update": { "x": { "signal": "width" }, "y": { "value": 0 } }
+        }
+    }
+
+    return bulletMarkValueLabel
+
 }
