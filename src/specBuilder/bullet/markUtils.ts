@@ -6,12 +6,12 @@
  *
  * Unless required by applicable law or agreed to in writing, software distributed under
  * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
- * OF ANY KIND, either express or implied.s See the License for the specific language
+ * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
 
 import { Scale, Signal, Data, GroupMark, Mark } from 'vega'
-import { BulletSpecProps } from 'types';
+import { BulletSpecProps } from '../../types';
 import { getColorValue } from '../specUtils';
 
 export function getBulletScales(props: BulletSpecProps): Scale[] {
@@ -75,7 +75,7 @@ export function getBulletData(props: BulletSpecProps): Data[] {
 
 export function getBulletMarks(props: BulletSpecProps): GroupMark[] {
 
-    let bulletMark: GroupMark[] = [
+    const bulletMark: GroupMark[] = [
         {
             "name": "bulletGroup",
             "type": "group",
