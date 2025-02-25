@@ -12,7 +12,7 @@
 
 import { toCamelCase } from '@utils';
 import { DEFAULT_COLOR_SCHEME } from '@constants';
-import { Spec, Data, Mark, Scale, Signal, GroupMark } from 'vega';
+import { Spec, Data, Scale, Signal, GroupMark } from 'vega';
 import { ColorScheme, BulletProps, BulletSpecProps } from '../../types';
 import { sanitizeMarkChildren } from '../../utils';
 import { getColorValue } from '../specUtils';
@@ -159,10 +159,7 @@ export function getBulletMarks(props: BulletSpecProps): GroupMark[] {
 
 export function getBulletData(props: BulletSpecProps): Data[] {
 
-  //We are multiplying the target by 1.1 to make sure that the target line is never at the very end of the graph
-  const maxValue = `max(datum.${props.metric}, datum.${props.target} * 1.1)`
-  const filter = `isValid(datum.${props.dimension}) && datum.${props.dimension} !== null && datum.${props.dimension} !== ''`
-
+  //We are multiplying the target by 1.05 to make sure that the target line is never at the very end of the graph
   const bulletData: Data[] = [
     {
       "name": "table",
@@ -170,7 +167,7 @@ export function getBulletData(props: BulletSpecProps): Data[] {
       "transform": [
         {
           "type": "formula",
-          "expr": "round(datum.target * 1.05)",
+          "expr": `round(datum.${props.target} * 1.05)`,
           "as": "xPaddingForTarget"
         }
       ]
