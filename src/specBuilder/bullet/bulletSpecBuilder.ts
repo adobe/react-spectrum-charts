@@ -12,7 +12,7 @@
 
 import { toCamelCase } from '@utils';
 import { DEFAULT_COLOR_SCHEME } from '@constants';
-import { Spec, Data, Mark, Scale } from 'vega';
+import { Spec, Data, Mark, Scale, Signal, GroupMark } from 'vega';
 import { ColorScheme, BulletProps, BulletSpecProps } from '../../types';
 import { sanitizeMarkChildren } from '../../utils';
 import { getColorValue } from '../specUtils';
@@ -49,83 +49,112 @@ export const addBullet = (
         ...spec,
         data: getBulletData(bulletProps),
         marks: getBulletMarks(bulletProps),
-        scales: getBulletScales(),
+        scales: getBulletScales(bulletProps),
+        signals: getBulletSignals()
     };
 };
 
-export function getBulletMarks(props: BulletSpecProps): Mark[] {
+export function getBulletMarks(props: BulletSpecProps): GroupMark[] {
 
   const solidColor = getColorValue('gray-900', props.colorScheme);
   const barLabelColor = getColorValue('gray-600', props.colorScheme);
-  
-  return [
+
+  const newMark: GroupMark[] = [
     {
-      "type": "rect",
-      "name": `${props.name}rect`,
-      "from": {"data": "table"},
-      "description": `${props.name}`,
+      "name": "bulletGroup",
+      "type": "group",
+      "from": {
+        "facet": { "data": "table", "name": "bulletGroups", "groupby": `${props.dimension}` }
+      },
       "encode": {
-        "enter": {
-          "x": {"value": 0},
-          "y": {"field": "index", "mult": 60, "offset": -44},
-          "width": {"scale": "xscale", "field": `${props.metric}`},
-          "height": {"value": 6},
-          "fill": {"value": `${props.color}`},
-          "cornerRadiusTopRight": {"value": 2},
-          "cornerRadiusBottomRight": {"value": 2}
+        "update": {
+          "y": { "scale": "yscale", "field": `${props.dimension}` },
+          "height": { "signal": "bulletGroupHeight" },
+          "width": { "signal": "width" }
         }
-      }
-    },
-    {
-      "type": "text",
-      "name": `${props.name}barlabel`,
-      "from": {"data": "table"},
-      "description": "graphLabel",
-      "encode": {
-        "enter": {
-          "x": {"value": 0},
-          "y": {"field": "index", "mult": 60, "offset": -60},
-          "text": {"field": `${props.dimension}`},
-          "align": {"value": "left"},
-          "baseline": {"value": "bottom"},
-          "fontSize": {"value": 11.5},
-          "fill": {"value": `${barLabelColor}`}
+      },
+      "marks": [
+        {
+          "name": `${props.name}Rect`,
+          "description": `${props.name}Rect`,
+          "type": "rect",
+          "from": { "data": "bulletGroups" },
+          "encode": {
+            "enter": {
+              "cornerRadiusTopLeft": [
+                { "test": "datum.amount < 0", "value": 3 }
+              ],
+              "cornerRadiusBottomLeft": [
+                { "test": "datum.amount < 0", "value": 3 }
+              ],
+              "cornerRadiusTopRight": [
+                { "test": "datum.amount > 0", "value": 3 }
+              ],
+              "cornerRadiusBottomRight": [
+                { "test": "datum.amount > 0", "value": 3 }
+              ],
+              "fill": [{ "value": `${props.color}` }]
+            },
+            "update": {
+              "x": { "scale": "xscale", "value": 0 },
+              "x2": { "scale": "xscale", "field": `${props.metric}` },
+              "height": { "signal": "bulletHeight" },
+              "y": { "signal": "bulletGroupHeight - 3 - 2*bulletHeight" }
+            }
+          }
+        },
+        {
+          "name": `${props.name}Target`,
+          "description": `${props.name}Target`,
+          "type": "rule",
+          "from": { "data": "bulletGroups" },
+          "encode": {
+            "enter": {
+              "stroke": { "value": "black" },
+              "strokeWidth": { "value": 2 }
+            },
+            "update": {
+              "x": { "scale": "xscale", "field": `${props.target}` },
+              "y": { "signal": "bulletGroupHeight - targetHeight" },
+              "y2": { "signal": "bulletGroupHeight" }
+            }
+          }
+        },
+        {
+          "name": `${props.name}Label`,
+          "description": `${props.name}Label`,
+          "type": "text",
+          "from": { "data": "bulletGroups" },
+          "encode": {
+            "enter": {
+              "text": { "signal": `datum.${props.dimension}` },
+              "align": { "value": "left" },
+              "baseline": { "value": "top" },
+              "fill": {"value": `${barLabelColor}`}
+            },
+            "update": { "x": { "value": 0 }, "y": { "value": 0 } }
+          }
+        },
+        {
+          "name": `${props.name}ValueLabel`,
+          "description": `${props.name}ValueLabel`,
+          "type": "text",
+          "from": { "data": "bulletGroups" },
+          "encode": {
+            "enter": {
+              "text": { "signal": `datum.${props.metric}` },
+              "align": { "value": "right" },
+              "baseline": { "value": "top" },
+              "fill": {"value": `${solidColor}`}
+            },
+            "update": { "x": { "signal": "width" }, "y": { "value": 0 } }
+          }
         }
-      }
-    },
-    {
-      "type": "text",
-      "from": {"data": "table"},
-      "name": `${props.name}amountlabel`,
-      "description": "currentAmount",
-      "encode": {
-        "enter": {
-          "x": {"signal": "width"},
-          "y": {"field": "index", "mult": 60, "offset": -60},
-          "text": {"field": `${props.metric}`},
-          "align": {"value": "right"},
-          "baseline": {"value": "bottom"},
-          "fontSize": {"value": 11.5},
-          "fill": {"value": `${solidColor}`}
-        }
-      }
-    },
-    {
-      "type": "rule",
-      "from": {"data": "table"},
-      "name": `${props.name}rule`,
-      "description": `${props.name}`,
-      "encode": {
-        "enter": {
-          "x": {"scale": "xscale", "field": `${props.target}`},
-          "y": {"field": "index", "mult": 60, "offset": -53},
-          "y2": {"field": "index", "mult": 60, "offset": -29},
-          "stroke": {"value": `${solidColor}`},
-          "strokeWidth": {"value": 2},
-        }
-      }
+      ]
     }
   ]
+
+  return newMark
 }
 
 export function getBulletData(props: BulletSpecProps): Data[] {
@@ -140,30 +169,9 @@ export function getBulletData(props: BulletSpecProps): Data[] {
       "values": [],
       "transform": [
         {
-          "type": "filter",
-          "expr": filter
-        },
-        {
           "type": "formula",
-          "as": "maxValue",
-          "expr": maxValue
-        },
-        {
-          "type": "window",
-          "ops": ["row_number"],
-          "as": ["index"]
-        }
-      ]
-    },
-    {
-      "name": "max_values",
-      "source": "table",
-      "transform": [
-        {
-          "type": "aggregate",
-          "ops": ["max"],
-          "fields": ["maxValue"],
-          "as": ["maxOverall"]
+          "expr": "round(datum.target * 1.05)",
+          "as": "xPaddingForTarget"
         }
       ]
     }
@@ -172,18 +180,39 @@ export function getBulletData(props: BulletSpecProps): Data[] {
   return bulletData;
 }
 
-export function getBulletScales(): Scale[] {
+export function getBulletSignals(): Signal[] {
+  const bulletSignal: Signal[] = [
+    { "name": "gap", "value": 12 },
+    { "name": "bulletHeight", "value": 8 },
+    { "name": "bulletThresholdHeight", "update": "bulletHeight * 3" },
+    { "name": "targetHeight", "update": "bulletThresholdHeight + 6" },
+    { "name": "bulletGroupHeight", "update": "bulletThresholdHeight + 24" },
+    { "name": "paddingRatio", "update": "gap / (gap + bulletGroupHeight)" },
+    {
+      "name": "height",
+      "update": "length(data('table')) * bulletGroupHeight + (length(data('table')) - 1) * gap"
+    }
+  ]
+
+  return bulletSignal;
+}
+
+export function getBulletScales(props: BulletSpecProps): Scale[] {
   const bulletScale: Scale[] = [
+    {
+      "name": "yscale",
+      "type": "band",
+      "domain": { "data": "table", "field": `${props.dimension}` },
+      "range": [0, { "signal": "height" }],
+      "paddingInner": { "signal": "paddingRatio" }
+    },
     {
       "name": "xscale",
       "type": "linear",
-      "domain": [
-              0,
-              {
-                "signal": "data('max_values')[0].maxOverall"
-              }
-            ],
-      "range": [0, {"signal": "width"}]
+      "domain": { "data": "table", "fields": ["xPaddingForTarget", `${props.metric}`] },
+      "range": "width",
+      "round": true,
+      "zero": true
     }
   ]
 

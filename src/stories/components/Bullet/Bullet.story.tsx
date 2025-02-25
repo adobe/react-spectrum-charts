@@ -13,7 +13,7 @@
 import { ReactElement } from 'react';
 import { StoryFn } from '@storybook/react';
 import { Bullet } from '@rsc/alpha'; // Assuming Bullet chart is a component in the @rsc/rc library
-import { Chart, BulletProps } from '@rsc';
+import { Chart, BulletProps, ChartProps } from '@rsc';
 import useChartProps from '@hooks/useChartProps';
 import { bindWithProps } from '@test-utils';
 import { basicBulletData } from './data';
@@ -24,10 +24,10 @@ export default {
 };
 
 // Default chart properties
-const defaultChartProps = {
+const defaultChartProps: ChartProps = {
     data: basicBulletData,
     width: 600,
-    height: 400,
+    height: 600,
 };
 
 // Basic Bullet chart story
@@ -35,7 +35,7 @@ const BulletStory: StoryFn<BulletProps & { width?: number; height?: number }> = 
     const { width, height, ...bulletProps } = args;
     const chartProps = useChartProps({ ...defaultChartProps, width: width ?? 350, height: height ?? 350 });
     return (
-        <Chart {...chartProps}>
+        <Chart {...chartProps} debug>
             <Bullet {...bulletProps} />
         </Chart>
     );
