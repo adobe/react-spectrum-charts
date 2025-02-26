@@ -10,7 +10,7 @@
  * governing permissions and limitations under the License.
  */
 
-import { getBulletScales, getBulletData, getBulletMarks, getBulletSignals, getBulletMarkRect, getBulletMarkLabel, getBulletMarkTarget, getBulletMarkValueLabel } from "./markUtils";
+import { getBulletScales, getBulletData, getBulletMarks, getBulletSignals, getBulletMarkRect, getBulletMarkLabel, getBulletMarkTarget, getBulletMarkValueLabel } from "./bulletMarkUtils";
 import { sampleProps } from "./bulletSpecBuilder.test";
 
 describe('getBulletMarks', () => {

@@ -17,7 +17,7 @@ import { ColorScheme, BulletProps, BulletSpecProps } from '../../types';
 import { sanitizeMarkChildren } from '../../utils';
 import { getColorValue } from '../specUtils';
 import { spectrumColors } from '@themes';
-import { getBulletScales, getBulletSignals, getBulletData, getBulletMarks } from './markUtils';
+import { getBulletScales, getBulletSignals, getBulletData, getBulletMarks } from './bulletMarkUtils';
 
 const DEFAULT_COLOR = spectrumColors.light['static-blue']
 

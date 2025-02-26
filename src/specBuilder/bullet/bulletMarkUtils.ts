@@ -75,23 +75,21 @@ export function getBulletData(props: BulletSpecProps): Data[] {
 
 export function getBulletMarks(props: BulletSpecProps): GroupMark {
 
-    const bulletMark: GroupMark[] = [
-        {
-            "name": "bulletGroup",
-            "type": "group",
-            "from": {
-                "facet": { "data": "table", "name": "bulletGroups", "groupby": `${props.dimension}` }
-            },
-            "encode": {
-                "update": {
-                    "y": { "scale": "yscale", "field": `${props.dimension}` },
-                    "height": { "signal": "bulletGroupHeight" },
-                    "width": { "signal": "width" }
-                }
-            },
-            "marks": []
-        }
-    ]
+    const bulletMark: GroupMark = {
+        "name": "bulletGroup",
+        "type": "group",
+        "from": {
+            "facet": { "data": "table", "name": "bulletGroups", "groupby": `${props.dimension}` }
+        },
+        "encode": {
+            "update": {
+                "y": { "scale": "yscale", "field": `${props.dimension}` },
+                "height": { "signal": "bulletGroupHeight" },
+                "width": { "signal": "width" }
+            }
+        },
+        "marks": []
+    }
 
     bulletMark[0].marks?.push(getBulletMarkRect(props));
     bulletMark[0].marks?.push(getBulletMarkTarget(props));
