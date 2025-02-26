@@ -73,7 +73,7 @@ export function getBulletData(props: BulletSpecProps): Data[] {
     return bulletData;
 }
 
-export function getBulletMarks(props: BulletSpecProps): GroupMark[] {
+export function getBulletMarks(props: BulletSpecProps): GroupMark {
 
     const bulletMark: GroupMark[] = [
         {
