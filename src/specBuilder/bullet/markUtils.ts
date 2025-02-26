@@ -128,7 +128,7 @@ export function getBulletMarkRect(props: BulletSpecProps): Mark {
                 "x": { "scale": "xscale", "value": 0 },
                 "x2": { "scale": "xscale", "field": `${props.metric}` },
                 "height": { "signal": "bulletHeight" },
-                "y": { "signal": "bulletGroupHeight - 3 - 2*bulletHeight" }
+                "y": { "signal": "bulletGroupHeight - 3 - 2 * bulletHeight" }
             }
         }
     }
