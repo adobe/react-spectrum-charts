@@ -43,10 +43,14 @@ const BulletStory: StoryFn<BulletProps & { width?: number; height?: number }> = 
 
 const Basic = bindWithProps(BulletStory);
 Basic.args = {
-	metric: 'currentAmount',
+    metric: 'currentAmount',
     dimension: 'graphLabel',
     target: 'target',
-    color: 'red-500'
+    color: 'red-500',
+    //targetPrefix: '$',
+    metricPrefix: '$',
+    //metricSuffix: 'M',
+    numberFormat: '.2f'
 };
 
 export { Basic };
