@@ -11,6 +11,6 @@
  */
 
 export const basicBulletData = [
-    {"graphLabel": "New Customer Count", "currentAmount": 390, "target": 50},
+    {"graphLabel": "Customers", "currentAmount": 390, "target": 50},
     {"graphLabel": "Revenue", "currentAmount": 500, "target": 450},
 ];
