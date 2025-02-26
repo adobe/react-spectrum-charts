@@ -37,7 +37,7 @@ export function getBulletScales(props: BulletSpecProps): Scale[] {
 }
 
 export function getBulletSignals(): Signal[] {
-    const bulletSignal: Signal[] = [
+    const bulletSignals: Signal[] = [
         { "name": "gap", "value": 12 },
         { "name": "bulletHeight", "value": 8 },
         { "name": "bulletThresholdHeight", "update": "bulletHeight * 3" },
@@ -50,7 +50,7 @@ export function getBulletSignals(): Signal[] {
         }
     ]
 
-    return bulletSignal;
+    return bulletSignals;
 }
 
 export function getBulletData(props: BulletSpecProps): Data[] {
