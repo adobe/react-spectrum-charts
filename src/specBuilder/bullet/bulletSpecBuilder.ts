@@ -49,7 +49,7 @@ export const addBullet = (
     return {
         ...spec,
         data: getBulletData(bulletProps),
-        marks: getBulletMarks(bulletProps),
+        marks: [getBulletMarks(bulletProps)],
         scales: getBulletScales(bulletProps),
         signals: getBulletSignals()
     };
