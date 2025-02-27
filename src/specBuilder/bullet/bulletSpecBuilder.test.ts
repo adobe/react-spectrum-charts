@@ -23,7 +23,8 @@ export const sampleProps: BulletSpecProps = {
     "dimension": "graphLabel",
     "target": "target",
     "name": "bullet0",
-    "idKey": "rscMarkId"
+    "idKey": "rscMarkId",
+    "track": false
 }
 
 describe('addBullet', () => {

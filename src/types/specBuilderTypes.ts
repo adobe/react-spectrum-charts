@@ -141,7 +141,7 @@ export interface ChartPopoverSpecProps extends PartiallyRequired<ChartPopoverPro
 	markName: string;
 }
 
-type BulletPropsWithDefaults = 'name' | 'metric' | 'dimension' | 'target' | 'color';
+type BulletPropsWithDefaults = 'name' | 'metric' | 'dimension' | 'target' | 'color' | 'track';
 
 export interface BulletSpecProps extends PartiallyRequired<BulletProps, BulletPropsWithDefaults> {
 	children: MarkChildElement[];
