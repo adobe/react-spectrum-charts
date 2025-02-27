@@ -25,7 +25,7 @@ describe('Bullet', () => {
 		const chart = await findChart();
 		expect(chart).toBeInTheDocument();
 
-		const rects = await findAllMarksByGroupName(chart, 'bullet0rect');
+		const rects = await findAllMarksByGroupName(chart, 'bullet0Rect');
 		expect(rects.length).toEqual(2);
 
 		rects.forEach(rect => {
@@ -33,13 +33,13 @@ describe('Bullet', () => {
 			expect(rect).toHaveAttribute('fill', 'rgb(255, 155, 136)');
 		});
 
-		const barLabels = await findAllMarksByGroupName(chart, 'bullet0barlabel', 'text');
+		const barLabels = await findAllMarksByGroupName(chart, 'bullet0Label', 'text');
 		expect(barLabels.length).toEqual(2);
 
-		const amountLabels = await findAllMarksByGroupName(chart, 'bullet0amountlabel', 'text');
+		const amountLabels = await findAllMarksByGroupName(chart, 'bullet0ValueLabel', 'text');
 		expect(amountLabels.length).toEqual(2);
 
-		const rules = await findAllMarksByGroupName(chart, 'bullet0rule', 'line');
+		const rules = await findAllMarksByGroupName(chart, 'bullet0Target', 'line');
 		expect(rules.length).toEqual(2);
 	});
 });
