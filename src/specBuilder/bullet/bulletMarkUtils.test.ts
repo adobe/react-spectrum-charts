@@ -16,12 +16,12 @@ import { sampleProps } from "./bulletSpecBuilder.test";
 describe('getBulletMarks', () => {
     test('Should return the correct marks object', () => {
         const data = getBulletMarks(sampleProps);
-        expect(data).toHaveLength(1);
-        expect(data[0]?.marks).toHaveLength(4);
-        expect(data[0]?.marks?.[0]?.type).toBe('rect');
-        expect(data[0]?.marks?.[1]?.type).toBe('rule');
-        expect(data[0]?.marks?.[2]?.type).toBe('text');
-        expect(data[0]?.marks?.[3]?.type).toBe('text');
+        expect(data).toBeDefined();
+        expect(data?.marks).toHaveLength(4);
+        expect(data?.marks?.[0]?.type).toBe('rect');
+        expect(data?.marks?.[1]?.type).toBe('rule');
+        expect(data?.marks?.[2]?.type).toBe('text');
+        expect(data?.marks?.[3]?.type).toBe('text');
     });
 });
 

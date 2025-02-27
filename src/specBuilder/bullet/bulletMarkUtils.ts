@@ -91,10 +91,10 @@ export function getBulletMarks(props: BulletSpecProps): GroupMark {
         "marks": []
     }
 
-    bulletMark[0].marks?.push(getBulletMarkRect(props));
-    bulletMark[0].marks?.push(getBulletMarkTarget(props));
-    bulletMark[0].marks?.push(getBulletMarkLabel(props));
-    bulletMark[0].marks?.push(getBulletMarkValueLabel(props));
+    bulletMark.marks?.push(getBulletMarkRect(props));
+    bulletMark.marks?.push(getBulletMarkTarget(props));
+    bulletMark.marks?.push(getBulletMarkLabel(props));
+    bulletMark.marks?.push(getBulletMarkValueLabel(props));
 
     return bulletMark
 }
