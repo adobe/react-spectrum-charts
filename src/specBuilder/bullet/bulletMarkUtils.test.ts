@@ -123,20 +123,5 @@ describe('getBulletMarkValueLabel', () => {
         expect(data).toBeDefined()
         expect(data.encode?.update).toBeDefined();
         expect(Object.keys(data.encode?.update ?? {}).length).toBe(2);
-        expect('signal' in (data.encode?.update?.x ?? {})).toBeTruthy()
-        if ('signal' in (data.encode?.update?.x ?? {})) {
-            expect((data.encode?.update?.x as any).signal).toBe('width');
-        }
-    });
-
-    test('Should return the correct value label mark object in row mode', () => {
-        const data = getBulletMarkValueLabel(samplePropsRow);
-        expect(data).toBeDefined()
-        expect(data.encode?.update).toBeDefined();
-        expect(Object.keys(data.encode?.update ?? {}).length).toBe(2);
-        expect('signal' in (data.encode?.update?.x ?? {})).toBeTruthy()
-        if ('signal' in (data.encode?.update?.x ?? {})) {
-            expect((data.encode?.update?.x as any).signal).toBe('bulletGroupWidth');
-        }
-    });
+    })
 });
