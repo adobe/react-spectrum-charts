@@ -12,11 +12,12 @@
 
 import { toCamelCase } from '@utils';
 import { DEFAULT_COLOR_SCHEME } from '@constants';
-import { Spec, Data, Mark, Scale } from 'vega';
+import { Spec } from 'vega';
 import { ColorScheme, BulletProps, BulletSpecProps } from '../../types';
 import { sanitizeMarkChildren } from '../../utils';
 import { getColorValue } from '../specUtils';
 import { spectrumColors } from '@themes';
+import { getBulletScales, getBulletSignals, getBulletData, getBulletMarks } from './bulletMarkUtils';
 
 const DEFAULT_COLOR = spectrumColors.light['static-blue']
 
@@ -48,144 +49,8 @@ export const addBullet = (
     return {
         ...spec,
         data: getBulletData(bulletProps),
-        marks: getBulletMarks(bulletProps),
-        scales: getBulletScales(),
+        marks: [getBulletMarks(bulletProps)],
+        scales: getBulletScales(bulletProps),
+        signals: getBulletSignals()
     };
 };
-
-export function getBulletMarks(props: BulletSpecProps): Mark[] {
-
-  const solidColor = getColorValue('gray-900', props.colorScheme);
-  const barLabelColor = getColorValue('gray-600', props.colorScheme);
-  
-  return [
-    {
-      "type": "rect",
-      "name": `${props.name}rect`,
-      "from": {"data": "table"},
-      "description": `${props.name}`,
-      "encode": {
-        "enter": {
-          "x": {"value": 0},
-          "y": {"field": "index", "mult": 60, "offset": -44},
-          "width": {"scale": "xscale", "field": `${props.metric}`},
-          "height": {"value": 6},
-          "fill": {"value": `${props.color}`},
-          "cornerRadiusTopRight": {"value": 2},
-          "cornerRadiusBottomRight": {"value": 2}
-        }
-      }
-    },
-    {
-      "type": "text",
-      "name": `${props.name}barlabel`,
-      "from": {"data": "table"},
-      "description": "graphLabel",
-      "encode": {
-        "enter": {
-          "x": {"value": 0},
-          "y": {"field": "index", "mult": 60, "offset": -60},
-          "text": {"field": `${props.dimension}`},
-          "align": {"value": "left"},
-          "baseline": {"value": "bottom"},
-          "fontSize": {"value": 11.5},
-          "fill": {"value": `${barLabelColor}`}
-        }
-      }
-    },
-    {
-      "type": "text",
-      "from": {"data": "table"},
-      "name": `${props.name}amountlabel`,
-      "description": "currentAmount",
-      "encode": {
-        "enter": {
-          "x": {"signal": "width"},
-          "y": {"field": "index", "mult": 60, "offset": -60},
-          "text": {"field": `${props.metric}`},
-          "align": {"value": "right"},
-          "baseline": {"value": "bottom"},
-          "fontSize": {"value": 11.5},
-          "fill": {"value": `${solidColor}`}
-        }
-      }
-    },
-    {
-      "type": "rule",
-      "from": {"data": "table"},
-      "name": `${props.name}rule`,
-      "description": `${props.name}`,
-      "encode": {
-        "enter": {
-          "x": {"scale": "xscale", "field": `${props.target}`},
-          "y": {"field": "index", "mult": 60, "offset": -53},
-          "y2": {"field": "index", "mult": 60, "offset": -29},
-          "stroke": {"value": `${solidColor}`},
-          "strokeWidth": {"value": 2},
-        }
-      }
-    }
-  ]
-}
-
-export function getBulletData(props: BulletSpecProps): Data[] {
-
-  //We are multiplying the target by 1.1 to make sure that the target line is never at the very end of the graph
-  const maxValue = `max(datum.${props.metric}, datum.${props.target} * 1.1)`
-  const filter = `isValid(datum.${props.dimension}) && datum.${props.dimension} !== null && datum.${props.dimension} !== ''`
-
-  const bulletData: Data[] = [
-    {
-      "name": "table",
-      "values": [],
-      "transform": [
-        {
-          "type": "filter",
-          "expr": filter
-        },
-        {
-          "type": "formula",
-          "as": "maxValue",
-          "expr": maxValue
-        },
-        {
-          "type": "window",
-          "ops": ["row_number"],
-          "as": ["index"]
-        }
-      ]
-    },
-    {
-      "name": "max_values",
-      "source": "table",
-      "transform": [
-        {
-          "type": "aggregate",
-          "ops": ["max"],
-          "fields": ["maxValue"],
-          "as": ["maxOverall"]
-        }
-      ]
-    }
-  ]
-
-  return bulletData;
-}
-
-export function getBulletScales(): Scale[] {
-  const bulletScale: Scale[] = [
-    {
-      "name": "xscale",
-      "type": "linear",
-      "domain": [
-              0,
-              {
-                "signal": "data('max_values')[0].maxOverall"
-              }
-            ],
-      "range": [0, {"signal": "width"}]
-    }
-  ]
-
-  return bulletScale;
-}
