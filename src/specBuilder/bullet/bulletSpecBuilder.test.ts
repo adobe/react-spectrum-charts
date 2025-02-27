@@ -14,7 +14,7 @@ import { addBullet } from './bulletSpecBuilder';
 import { BulletSpecProps, BulletProps } from '../../types';
 import { Spec } from 'vega';
 
-export const sampleProps: BulletSpecProps = {
+export const samplePropsColumn: BulletSpecProps = {
     "children": [],
     "colorScheme": "light",
     "index": 0,
@@ -25,6 +25,19 @@ export const sampleProps: BulletSpecProps = {
     "name": "bullet0",
     "idKey": "rscMarkId",
     "direction": "column"
+}
+
+export const samplePropsRow: BulletSpecProps = {
+    "children": [],
+    "colorScheme": "light",
+    "index": 0,
+    "color": "green",
+    "metric": "currentAmount",
+    "dimension": "graphLabel",
+    "target": "target",
+    "name": "bullet0",
+    "idKey": "rscMarkId",
+    "direction": "row"
 }
 
 describe('addBullet', () => {
