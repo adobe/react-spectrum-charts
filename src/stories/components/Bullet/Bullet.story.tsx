@@ -46,7 +46,8 @@ Basic.args = {
 	metric: 'currentAmount',
     dimension: 'graphLabel',
     target: 'target',
-    color: 'red-500'
+    color: 'red-500',
+    enableTarget: true
 };
 
 export { Basic };

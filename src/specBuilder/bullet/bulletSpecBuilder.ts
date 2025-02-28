@@ -32,6 +32,7 @@ export const addBullet = (
         dimension,
         target,
         color = DEFAULT_COLOR,
+        enableTarget = true,
         ...props
     }: BulletProps & { colorScheme?: ColorScheme; index?: number; idKey: string }
 ): Spec => {
@@ -44,6 +45,7 @@ export const addBullet = (
         dimension: dimension ?? 'graphLabel',
         target: target ?? 'target',
         name: toCamelCase(name ?? `bullet${index}`),
+        enableTarget,
         ...props,
     };
     return {

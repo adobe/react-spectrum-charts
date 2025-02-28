@@ -92,7 +92,9 @@ export function getBulletMarks(props: BulletSpecProps): GroupMark {
     }
 
     bulletMark.marks?.push(getBulletMarkRect(props));
-    bulletMark.marks?.push(getBulletMarkTarget(props));
+    if(props.enableTarget){
+        bulletMark.marks?.push(getBulletMarkTarget(props));
+    }
     bulletMark.marks?.push(getBulletMarkLabel(props));
     bulletMark.marks?.push(getBulletMarkValueLabel(props));
 

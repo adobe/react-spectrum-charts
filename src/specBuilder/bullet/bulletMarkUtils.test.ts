@@ -12,6 +12,20 @@
 
 import { getBulletScales, getBulletData, getBulletMarks, getBulletSignals, getBulletMarkRect, getBulletMarkLabel, getBulletMarkTarget, getBulletMarkValueLabel } from "./bulletMarkUtils";
 import { sampleProps } from "./bulletSpecBuilder.test";
+import { BulletSpecProps } from '../../types';
+
+export const samplePropsNoTarget: BulletSpecProps = {
+    "children": [],
+    "colorScheme": "light",
+    "index": 0,
+    "color": "green",
+    "metric": "currentAmount",
+    "dimension": "graphLabel",
+    "target": "target",
+    "name": "bullet0",
+    "idKey": "rscMarkId",
+    "enableTarget": false
+}
 
 describe('getBulletMarks', () => {
     test('Should return the correct marks object', () => {
@@ -22,6 +36,17 @@ describe('getBulletMarks', () => {
         expect(data?.marks?.[1]?.type).toBe('rule');
         expect(data?.marks?.[2]?.type).toBe('text');
         expect(data?.marks?.[3]?.type).toBe('text');
+    });
+});
+
+describe('getBulletMarks no target', () => {
+    test('Should return the correct marks object without the target', () => {
+        const data = getBulletMarks(samplePropsNoTarget);
+        expect(data).toBeDefined();
+        expect(data?.marks).toHaveLength(3);
+        expect(data?.marks?.[0]?.type).toBe('rect');
+        expect(data?.marks?.[1]?.type).toBe('text');
+        expect(data?.marks?.[2]?.type).toBe('text');
     });
 });
 
