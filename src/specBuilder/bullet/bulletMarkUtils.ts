@@ -214,10 +214,11 @@ export function getBulletMarkValueLabel(props: BulletSpecProps): Mark {
 
 export function getBulletMarkTrack(props: BulletSpecProps): Mark {
 
-    const trackColor = getColorValue('gray-300', props.colorScheme);
+    const trackColor = getColorValue('gray-200', props.colorScheme);
 
     const bulletTrackMark: Mark = {
-        "name": "bulletTrack",
+        "name": `${props.name}Track`,
+        "description": `${props.name}Track`,
         "type": "rect",
         "from": { "data": "bulletGroups" },
         "encode": {
