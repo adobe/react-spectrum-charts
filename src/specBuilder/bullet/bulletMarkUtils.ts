@@ -194,3 +194,29 @@ export function getBulletMarkValueLabel(props: BulletSpecProps): Mark {
 
 	return bulletMarkValueLabel;
 }
+
+export function getBulletMarkTargetValueLabel(props: BulletSpecProps): Mark {
+	const solidColor = getColorValue('gray-900', props.colorScheme);
+
+	const bulletMarkTargetValueLabel: Mark = {
+		name: `${props.name}TargetValueLabel`,
+		description: `${props.name}TargetValueLabel`,
+		type: 'text',
+		from: { data: 'bulletGroups' },
+		encode: {
+			enter: {
+				text: {
+					signal: `datum.${props.target} != null ? format(datum.${props.target}, '${
+						props.numberFormat || ''
+					}') : ''`,
+				},
+				align: { value: 'right' },
+				baseline: { value: 'top' },
+				fill: { value: `${solidColor}` },
+			},
+			update: { x: { signal: 'width' }, y: { value: 0 } },
+		},
+	};
+
+	return bulletMarkTargetValueLabel;
+}
