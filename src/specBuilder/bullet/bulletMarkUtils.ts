@@ -109,16 +109,16 @@ export function getBulletMarkRect(props: BulletSpecProps): Mark {
         "encode": {
             "enter": {
             "cornerRadiusTopLeft": [
-                { "test": "datum.amount < 0", "value": 3 }
+                { "test": `datum.${props.metric} < 0`, "value": 3 }
             ],
             "cornerRadiusBottomLeft": [
-                { "test": "datum.amount < 0", "value": 3 }
+                { "test": `datum.${props.metric} < 0`, "value": 3 }
             ],
             "cornerRadiusTopRight": [
-                { "test": "datum.amount > 0", "value": 3 }
+                { "test": `datum.${props.metric} > 0`, "value": 3 }
             ],
             "cornerRadiusBottomRight": [
-                { "test": "datum.amount > 0", "value": 3 }
+                { "test": `datum.${props.metric} > 0`, "value": 3 }
             ],
             "fill": [{ "value": `${props.color}` }]
             },
