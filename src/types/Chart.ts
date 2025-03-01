@@ -237,6 +237,12 @@ export interface BulletProps extends MarkProps {
 	target?: string;
 	/** Data field that the metric is trended against (x-axis for horizontal orientation) */
 	dimension?: string;
+	/** d3 number format specifier.
+	 * Sets the number format for the summary value.
+	 *
+	 * see {@link https://d3js.org/d3-format#locale_format}
+	 */
+	numberFormat?: NumberFormat;
 }
 
 export interface DonutSummaryProps {
