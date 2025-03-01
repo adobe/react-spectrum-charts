@@ -26,8 +26,8 @@ describe('getBulletMarks', () => {
 		const data = getBulletMarks(sampleProps);
 		expect(data).toBeDefined();
 		expect(data?.marks).toHaveLength(5);
-		expect(data?.marks?.[0]?.type).toBe('rect');
-		expect(data?.marks?.[1]?.type).toBe('rule');
+		expect(data?.marks?.[0]?.type).toBe('rule');
+		expect(data?.marks?.[1]?.type).toBe('rect');
 		expect(data?.marks?.[2]?.type).toBe('text');
 		expect(data?.marks?.[3]?.type).toBe('text');
 	});
