@@ -250,7 +250,6 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 
 		const navigationEventCallback = (navData: NavigationEvent) => {
 			if (chartView.current) {
-				console.log('RSC chart can use this navData to set signals', navData);
 				chartView.current.signal('focusedItem', null);
 				chartView.current.signal('focusedDimension', null);
 				chartView.current.signal('focusedRegion', null);
