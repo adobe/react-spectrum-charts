@@ -38,7 +38,7 @@ export function getBulletScales(props: BulletSpecProps): Scale[] {
 
 export function getBulletSignals(): Signal[] {
 	const bulletSignals: Signal[] = [
-		{ name: 'gap', value: 12 },
+		{ name: 'gap', value: 36 },
 		{ name: 'bulletHeight', value: 8 },
 		{ name: 'bulletThresholdHeight', update: 'bulletHeight * 3' },
 		{ name: 'targetHeight', update: 'bulletThresholdHeight + 6' },
@@ -93,6 +93,7 @@ export function getBulletMarks(props: BulletSpecProps): GroupMark {
 	bulletMark.marks?.push(getBulletMarkTarget(props));
 	bulletMark.marks?.push(getBulletMarkLabel(props));
 	bulletMark.marks?.push(getBulletMarkValueLabel(props));
+	bulletMark.marks?.push(getBulletMarkTargetValueLabel(props));
 
 	return bulletMark;
 }
@@ -210,11 +211,11 @@ export function getBulletMarkTargetValueLabel(props: BulletSpecProps): Mark {
 						props.numberFormat || ''
 					}') : ''`,
 				},
-				align: { value: 'right' },
+				align: { value: 'center' },
 				baseline: { value: 'top' },
 				fill: { value: `${solidColor}` },
 			},
-			update: { x: { signal: 'width' }, y: { value: 0 } },
+			update: { x: { scale: 'xscale', field: `${props.target}` }, y: { signal: 'bulletGroupHeight + 6' } },
 		},
 	};
 
