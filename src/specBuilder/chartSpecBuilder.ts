@@ -231,7 +231,6 @@ export const addLayer = (chartLayers: DimensionList, newLayer) => {
 	// add marshallpete to repo
 
 	const subdivisions = newLayer.cur.type.displayName === Scatter.displayName ? 4 : 1
-	console.log("new layer",newLayer)
 	const dimensions: Record<string, DimensionDatum> = {
 		dimension: {
 			dimensionKey: "",
