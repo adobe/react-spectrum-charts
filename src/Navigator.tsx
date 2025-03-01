@@ -71,10 +71,10 @@ export const Navigator: FC<NavigationProps> = ({ data, chartView, chartLayers, n
 		id: '',
 	} as CurrentNodeDetails);
 	const willFocusAfterRender = useRef(false);
-	const firstRef = useRef<HTMLElement>(null);
-	const secondRef = useRef<HTMLElement>(null);
-    const mobileFallbackPreviousRef = useRef<HTMLElement>(null);
-    const mobileFallbackNextRef = useRef<HTMLElement>(null);
+	const firstRef = useRef<HTMLDivElement>(null);
+	const secondRef = useRef<HTMLDivElement>(null);
+    const mobileFallbackPreviousRef = useRef<HTMLDivElement>(null);
+    const mobileFallbackNextRef = useRef<HTMLDivElement>(null);
 
 	const navigationStructure = buildNavigationStructure(data, { NAVIGATION_ID_KEY }, chartLayers);
 	const structureNavigationHandler = buildStructureHandler(
@@ -134,7 +134,6 @@ export const Navigator: FC<NavigationProps> = ({ data, chartView, chartLayers, n
 	};
 
     const setMobileFallbackElement = (nodeId: string, direction: 'previous' | 'next'): Navigation => {
-        console.log(nodeId)
         const mobileFallbackData = {
             transform: '',
             buttonTransform: '',
@@ -282,8 +281,10 @@ export const Navigator: FC<NavigationProps> = ({ data, chartView, chartLayers, n
 											left: `${spatialBounds.x1}px`,
 											top: `${spatialBounds.y1}px`,
 										};
+										const key = navigationStructure.dimensions?.[d].dimensionKey || ""
+										const divisionType = division.values[Object.keys(division.values)[0]][key]
 										divisionNode.semantics = {
-											label: `${NAVIGATION_SEMANTICS[semanticKey].DIVISION} of ${navigationStructure.dimensions?.[d].dimensionKey}. Contains ${childrenCount} ${NAVIGATION_SEMANTICS[semanticKey].CHILD}${isPlural}. Press ${NAVIGATION_RULES.child.key} key to navigate.`,
+											label: `${divisionType}, ${NAVIGATION_SEMANTICS[semanticKey].DIVISION} of ${key}. Contains ${childrenCount} ${NAVIGATION_SEMANTICS[semanticKey].CHILD}${isPlural}. Press ${NAVIGATION_RULES.child.key} key to navigate.`,
 										};
 									});
 								}
@@ -415,7 +416,6 @@ export const Navigator: FC<NavigationProps> = ({ data, chartView, chartLayers, n
 	};
 	const handleKeydown = (e) => {
 		const direction = structureNavigationHandler.keydownValidator(e);
-		console.log('e.code', e.code, 'direction', direction);
 		const target = e.target as HTMLElement;
 		if (direction) {
 			e.preventDefault();
@@ -441,6 +441,29 @@ export const Navigator: FC<NavigationProps> = ({ data, chartView, chartLayers, n
 		}
 	};
 
+    const handleFallbackFocus = (e) => {
+
+        // initializeRenderingProperties(e.target.id);
+        setNavigationElement(e.target.id);
+        willFocusAfterRender.current = true;
+        
+		// focusedElement.current = { id: e.target.id };
+		// if (navigationEventCallback) {
+		// 	const node = navigationStructure.nodes[e.target.id];
+		// 	const nodeLevel =
+		// 		node.dimensionLevel === 1 ? 'dimension' : node.dimensionLevel === 2 ? 'division' : 'child';
+		// 	navigationEventCallback({
+		// 		nodeId: e.target.id,
+		// 		eventType: 'focus',
+		// 		vegaId: convertId(navigation.current.id, nodeLevel),
+		// 		nodeLevel,
+		// 	});
+		// }
+    }
+    const handleFallbackKeydown = (e) => {
+        console.log("how does this even happen?",e)
+    }
+
 	const dummySpecs: Navigation = {
 		...navigation,
 	};
@@ -455,23 +478,34 @@ export const Navigator: FC<NavigationProps> = ({ data, chartView, chartLayers, n
 
 	const figures = (
 		<div>
-            <figure
+            {/* <figure
 				ref={mobileFallbackPreviousRef}
 				role={mobileFallbackPreviousProps.current.figureRole || 'presentation'}
 				id={mobileFallbackPreviousProps.current.id}
 				className="dn-node dn-test-class dn-mobile-fallback-node"
-				tabIndex={-1}
+				tabIndex={mobileFallbackNextProps.current.hasInteractivity ? -1 : undefined}
 				style={mobileFallbackPreviousProps.current.spatialProperties}
-				onFocus={mobileFallbackPreviousProps.current.hasInteractivity ? handleFocus : undefined}
-				onKeyDown={mobileFallbackPreviousProps.current.hasInteractivity ? handleKeydown : undefined}
+				onFocus={mobileFallbackPreviousProps.current.hasInteractivity ? handleFallbackFocus : undefined}
+				onKeyDown={mobileFallbackPreviousProps.current.hasInteractivity ? handleFallbackKeydown : undefined}
 			>
 				<div
 					role={mobileFallbackPreviousProps.current.imageRole || 'presentation'}
 					className="dn-node-text dn-mobile-fallback-node-text"
 					aria-label={mobileFallbackPreviousProps.current.semantics?.label || undefined}
 				></div>
-			</figure>
-			<figure
+			</figure> */}
+			<div
+				ref={mobileFallbackPreviousRef}
+				id={mobileFallbackPreviousProps.current.id}
+				className="dn-node dn-test-class dn-mobile-fallback-node"
+				tabIndex={mobileFallbackNextProps.current.hasInteractivity ? -1 : undefined}
+				style={mobileFallbackPreviousProps.current.spatialProperties}
+				onFocus={mobileFallbackPreviousProps.current.hasInteractivity ? handleFallbackFocus : undefined}
+				onKeyDown={mobileFallbackPreviousProps.current.hasInteractivity ? handleFallbackKeydown : undefined}
+				role={mobileFallbackPreviousProps.current.imageRole || 'presentation'}
+				aria-label={mobileFallbackPreviousProps.current.semantics?.label || undefined}
+			></div>
+			{/* <figure
 				ref={firstRef}
 				role={firstProps.current.figureRole || 'presentation'}
 				id={firstProps.current.id}
@@ -486,8 +520,19 @@ export const Navigator: FC<NavigationProps> = ({ data, chartView, chartLayers, n
 					className="dn-node-text"
 					aria-label={firstProps.current.semantics?.label || undefined}
 				></div>
-			</figure>
-			<figure
+			</figure> */}
+			<div
+				ref={firstRef}
+				id={firstProps.current.id}
+				className="dn-node dn-test-class"
+				tabIndex={firstProps.current.hasInteractivity ? 0 : undefined}
+				style={firstProps.current.spatialProperties}
+				onFocus={firstProps.current.hasInteractivity ? handleFocus : undefined}
+				onKeyDown={firstProps.current.hasInteractivity ? handleKeydown : undefined}
+				role={firstProps.current.imageRole || 'presentation'}
+				aria-label={firstProps.current.semantics?.label || undefined}
+			></div>
+			{/* <figure
 				ref={secondRef}
 				role={secondProps.current.figureRole || 'presentation'}
 				id={secondProps.current.id}
@@ -502,23 +547,42 @@ export const Navigator: FC<NavigationProps> = ({ data, chartView, chartLayers, n
 					className="dn-node-text"
 					aria-label={secondProps.current.semantics?.label || undefined}
 				></div>
-			</figure>
-            <figure
+			</figure> */}
+			<div
+				ref={secondRef}
+				id={secondProps.current.id}
+				className="dn-node dn-test-class"
+				tabIndex={secondProps.current.hasInteractivity ? 0 : undefined}
+				style={secondProps.current.spatialProperties}
+				onFocus={secondProps.current.hasInteractivity ? handleFocus : undefined}
+				onKeyDown={secondProps.current.hasInteractivity ? handleKeydown : undefined}
+				role={secondProps.current.imageRole || 'presentation'}
+				aria-label={secondProps.current.semantics?.label || undefined}
+			></div>
+			<div
+				ref={mobileFallbackNextRef}
+				id={mobileFallbackNextProps.current.id}
+				className="dn-node dn-test-class dn-mobile-fallback-node"
+				tabIndex={mobileFallbackNextProps.current.hasInteractivity ? -1 : undefined}
+				style={mobileFallbackNextProps.current.spatialProperties}
+				onFocus={mobileFallbackNextProps.current.hasInteractivity ? handleFallbackFocus : undefined}
+				onKeyDown={mobileFallbackNextProps.current.hasInteractivity ? handleFallbackKeydown : undefined}
+				role={mobileFallbackNextProps.current.imageRole || 'presentation'}
+				aria-label={mobileFallbackNextProps.current.semantics?.label || undefined}
+			></div>
+
+            {/* <figure
 				ref={mobileFallbackNextRef}
 				role={mobileFallbackNextProps.current.figureRole || 'presentation'}
 				id={mobileFallbackNextProps.current.id}
 				className="dn-node dn-test-class dn-mobile-fallback-node"
 				tabIndex={-1}
 				style={mobileFallbackNextProps.current.spatialProperties}
-				onFocus={mobileFallbackNextProps.current.hasInteractivity ? handleFocus : undefined}
-				onKeyDown={mobileFallbackNextProps.current.hasInteractivity ? handleKeydown : undefined}
+				onFocus={mobileFallbackNextProps.current.hasInteractivity ? handleFallbackFocus : undefined}
+				onKeyDown={mobileFallbackNextProps.current.hasInteractivity ? handleFallbackKeydown : undefined}
 			>
-				<div
-					role={mobileFallbackNextProps.current.imageRole || 'presentation'}
-					className="dn-node-text dn-mobile-fallback-node-text"
-					aria-label={mobileFallbackNextProps.current.semantics?.label || undefined}
-				></div>
-			</figure>
+				
+			</figure> */}
 		</div>
 	);
 	/* 
