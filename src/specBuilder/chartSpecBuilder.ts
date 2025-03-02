@@ -239,7 +239,8 @@ export const addLayer = (chartLayers: DimensionList, newLayer) => {
 				compressSparseDivisions: true
 			},
 			behavior: {
-				extents: "circular"
+				extents: "circular",
+				childmostNavigation: "across"
 			},
 			navigationRules: NAVIGATION_PAIRS.DIMENSION as DimensionNavigationRules
 		}
@@ -253,7 +254,8 @@ export const addLayer = (chartLayers: DimensionList, newLayer) => {
 			dimensionKey: "",
 			type: "categorical",
 			behavior: {
-				extents: "circular"
+				extents: "circular",
+				childmostNavigation: "across"
 			},
 			operations: {
 				compressSparseDivisions: true
@@ -271,7 +273,8 @@ export const addLayer = (chartLayers: DimensionList, newLayer) => {
 			},
 			type: "numerical",
 			behavior: {
-				extents: "terminal"
+				extents: "terminal",
+				childmostNavigation: "within"
 			},
 			navigationRules: NAVIGATION_PAIRS.METRIC as DimensionNavigationRules
 		}
