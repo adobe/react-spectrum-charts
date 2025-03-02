@@ -273,8 +273,8 @@ export const addLayer = (chartLayers: DimensionList, newLayer) => {
 			},
 			type: "numerical",
 			behavior: {
-				extents: "terminal",
-				childmostNavigation: "within"
+				extents: "circular",
+				childmostNavigation: "across"
 			},
 			navigationRules: NAVIGATION_PAIRS.METRIC as DimensionNavigationRules
 		}
