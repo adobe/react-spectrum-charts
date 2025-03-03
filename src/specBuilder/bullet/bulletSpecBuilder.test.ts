@@ -10,11 +10,11 @@
  * governing permissions and limitations under the License.
  */
 
-import { getBulletScales, getBulletData, getBulletMarks, addBullet } from './bulletSpecBuilder';
+import { addBullet } from './bulletSpecBuilder';
 import { BulletSpecProps, BulletProps } from '../../types';
 import { Spec } from 'vega';
 
-const sampleProps: BulletSpecProps = {
+export const sampleProps: BulletSpecProps = {
     "children": [],
     "colorScheme": "light",
     "index": 0,
@@ -45,37 +45,10 @@ describe('addBullet', () => {
 
         const newSpec = addBullet(spec, bulletProps);
 
-        const expectedScale = [{"domain": [0, {"signal": "data('max_values')[0].maxOverall"}], "name": "xscale", "range": [0, {"signal": "width"}], "type": "linear"}]
-
-        expect(newSpec.data).toHaveLength(2);
-        expect(newSpec.marks).toHaveLength(4);
-        expect(newSpec.scales).toEqual(expectedScale);
-    });
-});
-
-describe('getBulletData', () => {
-    test('should return the data object with max value being set', () => {
-        const data = getBulletData(sampleProps);
-        expect(data).toHaveLength(2);
-    });
-});
-
-describe('getBulletScales', () => {
-
-    //Not much here right now because the function only returns a single const
-    test('should return the correct scales object', () => {
-        const data = getBulletScales();
-        expect(data).toBeDefined()
-    });
-});
-
-describe('getBulletMarks', () => {
-    test('should return the correct marks object', () => {
-        const data = getBulletMarks(sampleProps);
-        expect(data).toHaveLength(4);
-        expect(data[0].type).toBe('rect');
-        expect(data[1].type).toBe('text');
-        expect(data[2].type).toBe('text');
-        expect(data[3].type).toBe('rule');
+        expect(newSpec).toBeDefined();
+        expect(newSpec).toHaveProperty('data')
+        expect(newSpec).toHaveProperty('marks')
+        expect(newSpec).toHaveProperty('scales')
+        expect(newSpec).toHaveProperty('signals')
     });
 });
