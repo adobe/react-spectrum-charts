@@ -250,23 +250,31 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>(
 
 		const navigationEventCallback = (navData: NavigationEvent) => {
 			if (chartView.current) {
-				chartView.current.signal('focusedItem', null);
-				chartView.current.signal('focusedDimension', null);
-				chartView.current.signal('focusedRegion', null);
-				switch (navData.nodeLevel) {
-					case 'dimension':
-						chartView.current.signal('focusedRegion', 'chart');
-						break;
-					case 'division':
-						chartView.current.signal('focusedDimension', navData.vegaId);
-						break;
-					case 'child':
-						chartView.current.signal('focusedItem', navData.vegaId);
-						break;
-					default:
-						break;
+				if (navData.eventType === 'focus') {
+					chartView.current.signal('focusedItem', null);
+					chartView.current.signal('focusedDimension', null);
+					chartView.current.signal('focusedRegion', null);
+					switch (navData.nodeLevel) {
+						case 'dimension':
+							chartView.current.signal('focusedRegion', 'chart');
+							break;
+						case 'division':
+							chartView.current.signal('focusedDimension', navData.vegaId);
+							break;
+						case 'child':
+							chartView.current.signal('focusedItem', navData.vegaId);
+							break;
+						default:
+							break;
+					}
+					chartView.current.runAsync();
+				} else if (navData.eventType === 'blur') {
+					chartView.current.signal('focusedItem', null);
+					chartView.current.signal('focusedDimension', null);
+					chartView.current.signal('focusedRegion', null);
+				} else if (navData.eventType === 'selection') {
+					// this is where we would run an equivalent click event for a chart element!
 				}
-				chartView.current.runAsync();
 			}
 			// set signals here!
 		};
