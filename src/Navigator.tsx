@@ -421,7 +421,6 @@ export const Navigator: FC<NavigationProps> = ({ data, chartView, chartLayers, n
 	return (
 		<>
 			<div
-				id="dn-wrapper-data-navigator-schema"
 				role="application"
 				aria-label="Data navigation structure"
 				aria-activedescendant={focusedElement.current ? focusedElement.current.id : ''}
