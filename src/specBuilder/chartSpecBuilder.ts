@@ -37,7 +37,7 @@ import colorSchemes from '@themes/colorSchemes';
 import { produce } from 'immer';
 import { Data, LinearScale, OrdinalScale, PointScale, Scale, Signal, Spec } from 'vega';
 import {default as DataNavigator} from 'data-navigator'
-import {StructureOptions, DimensionList, DimensionDatum, Structure, NavigationRules, Dimensions, DimensionNavigationRules} from '../../node_modules/data-navigator/dist/src/data-navigator'
+import {StructureOptions, DimensionList, DimensionDatum, Structure, NavigationRules, Dimensions, DimensionNavigationRules, ChildmostNavigationStrategy} from '../../node_modules/data-navigator/dist/src/data-navigator'
 
 import {
 	AreaElement,
@@ -140,25 +140,18 @@ export function buildSpec(props: SanitizedSpecProps) {
 			switch (cur.type.displayName) {
 				case Area.displayName:
 					areaCount++;
-					// addLayer(chartLayers, {acc,cur,index:areaCount})
 					return addArea(acc, { ...(cur as AreaElement).props, ...specProps, index: areaCount });
 				case Axis.displayName:
 					axisCount++;
-					// console.log("AXIS! What do we do here?")
-					// addLayer(chartLayers, {acc,cur,index:axisCount})
 					return addAxis(acc, { ...(cur as AxisElement).props, ...specProps, index: axisCount });
 				case Bar.displayName:
 					barCount++;
-					addLayer(chartLayers, {acc,cur,index:barCount})
 					return addBar(acc, { ...(cur as BarElement).props, ...specProps, index: barCount });
 				case Donut.displayName:
 					donutCount++;
-					// addLayer(chartLayers, {acc,cur,index:donutCount})
 					return addDonut(acc, { ...(cur as DonutElement).props, ...specProps, index: donutCount });
 				case Legend.displayName:
 					legendCount++;
-					// console.log("LEGEND! What do we do here?")
-					// addLayer(chartLayers, {acc,cur,index:legendCount})
 					return addLegend(acc, {
 						...(cur as LegendElement).props,
 						...specProps,
@@ -168,24 +161,18 @@ export function buildSpec(props: SanitizedSpecProps) {
 					});
 				case Line.displayName:
 					lineCount++;
-					// addLayer(chartLayers, {acc,cur,index:lineCount})
 					return addLine(acc, { ...(cur as LineElement).props, ...specProps, index: lineCount });
 				case Scatter.displayName:
 					scatterCount++;
-					// addLayer(chartLayers, {acc,cur,index:scatterCount})
 					return addScatter(acc, { ...(cur as ScatterElement).props, ...specProps, index: scatterCount });
 				case Title.displayName:
 					// No title count. There can only be one title.
-					// console.log("TITLE! What do we do here?")
-					// addLayer(chartLayers, {acc,cur,index:0})
 					return addTitle(acc, { ...(cur as TitleElement).props });
 				case BigNumber.displayName:
 					// Do nothing and do not throw an error
 					return acc;
 				case Combo.displayName:
 					comboCount++;
-					// console.log("COMBO! What do we do here?")
-					// addLayer(chartLayers, {acc,cur,index:comboCount})
 					return addCombo(acc, { ...(cur as ComboElement).props, ...specProps, index: comboCount });
 				default:
 					console.error(`Invalid component type: ${cur.type.displayName} is not a supported <Chart> child`);
@@ -205,106 +192,120 @@ export function buildSpec(props: SanitizedSpecProps) {
 	// clear out all scales that don't have any fields on the domain
 	spec = removeUnusedScales(spec);
 
+	// now that our vega spec is made, we can generate our navigation spec (which are our dimensions)
+	buildNavigationDimensions(spec,children,chartLayers)
 	return spec;
 }
 
-export const addLayer = (chartLayers: DimensionList, newLayer) => {
-	// note: check "funnel" for stack + dodge example 
-	// series, dimension, and item
-	// dimension, division, and child
-	// for childmost ids: they are indexed, starting at 1, in the order of the data
-	// need to emit division ids (values in a series) or dimension ids (the key)
+export const buildNavigationDimensions = (spec, children, out: DimensionList) => {
+	let popped: DimensionDatum | undefined = undefined;
+	let navigableChartType = "";
+	let isDodged = false;
+	const navigableDimensions = {}
+	console.log("children",children)
+	console.log("children.length",children.length)
+	const childArray = [...children]
+	let count = 0;
 
-	// color, opacity, line-type, etc - these "facets" are 
-	// all ways to create a series id
-	// (after spec) - go to data, see if series transform happened (aka "as": "rscSeriesId", look for "expr": "datum.operatingSystem")
-
-	// this function adds new traversable dimensions to data navigator
-	// "dimensions" is an API in data navigator, not to be confused with RSC's "dimension"
-	// that being said, the default "dimension" for every chart does seem to be based on
-	// the prop with the same name
-
-	// look at "react-aria" - see if this is the right approach
-	// for first pass (POC) use callback
-	// "useFocus" passes into data navigator
-	// setFocused(child/division/dimension)
-	// add marshallpete to repo
-
-	const subdivisions = newLayer.cur.type.displayName === Scatter.displayName ? 4 : 1
-	const dimensions: Record<string, DimensionDatum> = {
-		dimension: {
-			dimensionKey: "",
-			operations: {
-				createNumericalSubdivisions: subdivisions,
-				compressSparseDivisions: true
-			},
-			behavior: {
-				extents: "circular",
-				childmostNavigation: "across"
-			},
-			navigationRules: NAVIGATION_PAIRS.DIMENSION as DimensionNavigationRules
-		}
-	}
-	// We only want 2 traversable dimensions at most, so this conditional tries to figure out which to use based on chart type
-	// this will need to be expanded as navigation is added to additional charts in the library
-	if (newLayer.cur.type.displayName === Bar.displayName) {
-		// for bar (at least, and probably other charts?), the "color" becomes the second dimension
-		// we would want to traverse, after "dimension"
-		dimensions.color = {
-			dimensionKey: "",
+	const dimensionTypes = {
+		"categorical": {
 			type: "categorical",
-			behavior: {
-				extents: "circular",
-				childmostNavigation: "across"
-			},
-			operations: {
-				compressSparseDivisions: true
-			},
-			navigationRules: NAVIGATION_PAIRS.COLOR as DimensionNavigationRules
-		}
-	} else if (newLayer.cur.type.displayName === Scatter.displayName) {
-		// for scatter at least (and likely also line chart), "metric" becomes the second dimension 
-		// we would want to traverse, after "dimension"
-		dimensions.metric = {
-			dimensionKey: "",
-			operations: {
-				createNumericalSubdivisions: subdivisions,
-				compressSparseDivisions: true
-			},
+			createNumericalSubdivisions: 1
+		},
+		// curently we don't support any numerical scales, but later (for scatter) you'll want to
+		"numerical": {
 			type: "numerical",
-			behavior: {
-				extents: "circular",
-				childmostNavigation: "across"
-			},
-			navigationRules: NAVIGATION_PAIRS.METRIC as DimensionNavigationRules
+			createNumericalSubdivisions: 4 // we should *at least* divide numerical dimensions into navigable quartiles
 		}
 	}
-	if (newLayer.cur?.props) {
-		const dimensionKeys = Object.keys(dimensions)
-		if (newLayer.cur.props.metric_start || newLayer.cur.props.metric_end) {
-			// console.log("uh oh! a range!")
-			// we are currently not handling metric start/end ranges right now
-		}
-		dimensionKeys.forEach(k => {
-			const dimensionKey = newLayer.cur.props[k]
-			if (dimensionKey) {
-				const newDimension: DimensionDatum = {
-					...dimensions[k],
-					dimensionKey,
-					divisionOptions: {
-						// sortFunction: , // no idea if we want to sort or not
-						divisionNodeIds: (dimensionKey, keyValue, i) => "_" + keyValue + "_key_" + dimensionKey + i // dimensionKey + keyValue + i
-					}
-				};
-				chartLayers.push(newDimension)
+
+	let i = 0;
+	for (i = 0; i < childArray.length; i++) {
+		// below, we validate that we only create data navigator dimensions for "valid" chart types
+		// as of now, only "bar" chart variants are valid
+		if (childArray[i].type.displayName === Bar.displayName) {
+			if (!navigableChartType) {
+				// we should ideally have all of this stored somewhere!
+				// below are the scale types that we want to look for that bar might use
+				// (not sure if bar uses time, but I included it here)
+				navigableChartType = childArray[i].type.displayName
+				navigableDimensions[childArray[i].type.displayName] = {
+					ordinal: dimensionTypes.categorical,
+					band: dimensionTypes.categorical,
+					point: dimensionTypes.categorical,
+					time: dimensionTypes.categorical
+				}
 			}
-		})
+			if (!isDodged && childArray[i].props?.type === 'dodged') {
+				isDodged = true
+			} 
+		}
 	}
+	const scales = (spec.scales || []);
+	scales.forEach(s => {
+		// the code below probably doesn't need too much tweaking between types?
+		// we don't want to include "legend" from the scales, since that is redundant
+		// we also want to make sure that we include the fields here!
+		if (navigableDimensions[navigableChartType]?.[s.type] && s.domain?.fields?.[0] && !(s.name?.includes("legend"))) {
+			count++
+			// since we only support left/right (1 dimension) and up/down (second dimension), we don't want more than 3 dimensions
+			if (count < 3) {
+				let childmostNavigation: ChildmostNavigationStrategy = "within"
+				// generally, we default to left/right but sometimes also want to check for y axis stuff
+				let navigationRules = !s.name?.includes("y") ? NAVIGATION_PAIRS.HORIZONTAL : NAVIGATION_PAIRS.VERTICAL
+				
+				if (count === 2) {
+					// if we have a bar chart with 2 dimensions that isn't dodged?
+					// this is a stacked bar, so we nav across instead of within
+					if (navigableChartType === Bar.displayName && !isDodged && out[0].behavior) {
+						childmostNavigation = "across"
+						out[0].behavior.childmostNavigation = "across"
+					}
+
+					navigationRules = NAVIGATION_PAIRS.VERTICAL
+					if (s.name?.includes("x") || out[0].navigationRules === NAVIGATION_PAIRS.VERTICAL) {
+						// if we already used vertical or current is horizontal, we want to set current dimension to horizonal
+						navigationRules = NAVIGATION_PAIRS.HORIZONTAL
+						// we want to make absolutely sure that the previous dimension is correct as vertical
+						out[0].navigationRules = NAVIGATION_PAIRS.VERTICAL as DimensionNavigationRules
+						// we want to start with left/right always, so we pop this out to add after our current dimension
+						popped = out.pop()
+					}
+				}
+				const d = navigableDimensions[navigableChartType][s.type]
+				const dimension: DimensionDatum = {
+					dimensionKey: s.domain.fields[0],
+					type: d.type,
+					// these are operations we perform when creating the dimension
+					operations: {
+						createNumericalSubdivisions: d.createNumericalSubdivisions,
+						compressSparseDivisions: true
+					},
+					// these are props for setting structural behavior patterns (which influence navigation)
+					behavior: {
+						extents: "circular",
+						childmostNavigation
+					},
+					// here we specify a function to create unique division ids
+					divisionOptions: {
+						divisionNodeIds: (dimensionKey, keyValue, i) => "_" + keyValue + "_key_" + dimensionKey + i
+					},
+					// here we set the navigation rules
+					navigationRules: navigationRules as DimensionNavigationRules
+				}
+				out.push(dimension)
+				if (popped) {
+					out.push(popped)
+				}
+			}
+		}
+	})
 }
 
 export const buildNavigationStructure = (data, props, chartLayers) : Structure => {
 	const layers = props.list ? "" : chartLayers
-
+	console.log("props",props,NAVIGATION_ID_KEY)
+	console.log('chartLayers',chartLayers)
 	const structureOptions : StructureOptions = {
 		data,
 		idKey: NAVIGATION_ID_KEY,
@@ -320,6 +321,7 @@ export const buildNavigationStructure = (data, props, chartLayers) : Structure =
 }
 
 export const buildStructureHandler = (structure: Structure, navigationRules: NavigationRules, dimensions: Dimensions) => {
+	console.log("dimensions", dimensions)
 	return DataNavigator.input({
 		structure,
 		navigationRules,
