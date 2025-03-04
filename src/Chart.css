@@ -91,6 +91,12 @@ this removes transitions in the vega tooltip
     transform: translateY(2px);
 }
 .dn-entry-button {
-    position: relative;
+    position: absolute;
+	transform: translate(-9999px, -9999px);
+	height: 1px;
+}
+.dn-entry-button:focus {
+	transform: translate(0px, 0px);
+	height: auto;
     top: -21px;
 }
