@@ -16,7 +16,7 @@ import { buildNavigationStructure, buildStructureHandler } from '@specBuilder/ch
 import { Scenegraph } from 'vega-scenegraph';
 import { View } from 'vega-view';
 
-import { DimensionList, NavigationRules, NodeObject, Nodes } from '../node_modules/data-navigator/dist/src/data-navigator';
+import { DimensionList, NavigationRules, NodeObject } from '../node_modules/data-navigator/dist/src/data-navigator';
 import { describeNode } from '../node_modules/data-navigator/dist/utilities.js';
 import { ChartData, CurrentNodeDetails, Navigation, NavigationEvent, SpatialProperties } from './types';
 
@@ -37,34 +37,6 @@ const convertId = (id, nodeLevel) => {
 		: +id.substring(1) + 1;
 };
 
-const buildChildNodeLookup = (nodes: Nodes, entryPoint) => {
-    const keys = Object.keys(nodes)
-    const lookup = {};
-	lookup[entryPoint.id] = {
-		id: entryPoint.id,
-		next: "",
-		previous: ""
-	}
-    let previous = entryPoint.id;
-    keys.forEach(key => {
-        if (!nodes[key].dimensionLevel) {
-            // childmost nodes do not have a dimension level (they are not dimensions or divisions),
-            // that means that these are the child nodes we care about
-            lookup[nodes[key].id] = {
-                id: nodes[key].id,
-                next: "",
-                previous: previous || ""
-            }
-            if (previous) {
-                lookup[previous].next = nodes[key].id
-            }
-            previous = nodes[key].id
-        }
-    })
-	console.log(entryPoint, lookup)
-    return lookup
-}
-
 export interface NavigationProps {
 	data: ChartData[];
 	chartView: MutableRefObject<View | undefined>;
@@ -79,8 +51,6 @@ export const Navigator: FC<NavigationProps> = ({ data, chartView, chartLayers, n
 	const willFocusAfterRender = useRef(false);
 	const firstRef = useRef<HTMLDivElement>(null);
 	const secondRef = useRef<HTMLDivElement>(null);
-    const mobileFallbackPreviousRef = useRef<HTMLDivElement>(null);
-    const mobileFallbackNextRef = useRef<HTMLDivElement>(null);
 
 	const navigationStructure = buildNavigationStructure(data, { NAVIGATION_ID_KEY }, chartLayers);
 	const structureNavigationHandler = buildStructureHandler(
@@ -93,9 +63,6 @@ export const Navigator: FC<NavigationProps> = ({ data, chartView, chartLayers, n
 	);
 
 	const entryPoint = structureNavigationHandler.enter();
-	
-    // we create a child-only lookup with indexes, this is for our mobile fallback nodes
-    const navigationChildren = buildChildNodeLookup(navigationStructure.nodes, entryPoint)
 	
 	const [navigation, setNavigation] = useState<Navigation>({
 		transform: '',
@@ -116,55 +83,6 @@ export const Navigator: FC<NavigationProps> = ({ data, chartView, chartLayers, n
 			},
 		},
 	});
-
-    const setMobileFallbackElement = (nodeId: string, direction: 'previous' | 'next'): Navigation => {
-        const mobileFallbackData = {
-            transform: '',
-            buttonTransform: '',
-            current: {
-                id: '_no_' + direction + '_for_' + nodeId,
-                hasInteractivity: false,
-                spatialProperties: {
-                    width: '',
-                    height: '',
-                    left: '',
-                    top: '',
-                },
-                semantics: {
-                    label: ''
-                }
-            },
-        } as Navigation
-
-        // we need to find a fallback node for our mobile users
-        // first we check if the current node is a child element, if so, we find the previous or next child
-        // but if the current node isn't a child element, then we simply make both of the previous/next elements the first child node
-        // the reasoning for this is that the chart initially might render with a non-child element,
-        // so we want mobile users to encounter the first child element whether they nav from above or below
-        // (hence why both will be this element at first)
-        const target = navigationChildren[nodeId] ? navigationStructure.nodes[navigationChildren[nodeId][direction]] : navigationStructure.nodes[Object.keys(navigationChildren)[0]]
-        if (target) {
-            mobileFallbackData.current = {
-                id: target.id,
-                figureRole: 'figure',
-                imageRole: 'img',
-                hasInteractivity: true,
-                spatialProperties: target.spatialProperties || {
-                    width: '',
-                    height: '',
-                    left: '',
-                    top: '',
-                },
-                semantics: {
-                    label: target.semantics?.label || ''
-                }
-            }
-        }
-        return mobileFallbackData
-    }
-	const [mobileFallbackPreviousProps, setMobileFallbackPrevious] = useState<Navigation>(setMobileFallbackElement(navigation.current.id, 'previous'))
-
-	const [mobileFallbackNextProps, setMobileFallbackNext] = useState<Navigation>(setMobileFallbackElement(navigation.current.id, 'next'))
 
 	const [childrenInitialized, setInitialization] = useState<boolean>(false);
 
@@ -188,9 +106,6 @@ export const Navigator: FC<NavigationProps> = ({ data, chartView, chartLayers, n
 				},
 			},
 		} as Navigation);
-
-		setMobileFallbackPrevious(setMobileFallbackElement(target.id, 'previous'))
-		setMobileFallbackNext(setMobileFallbackElement(target.id, 'next'))
 	};
 
 	useEffect(() => {
@@ -459,29 +374,6 @@ export const Navigator: FC<NavigationProps> = ({ data, chartView, chartLayers, n
 		}
 	};
 
-    const handleFallbackFocus = (e) => {
-
-        // initializeRenderingProperties(e.target.id);
-        setNavigationElement(e.target.id);
-        willFocusAfterRender.current = true;
-        
-		// focusedElement.current = { id: e.target.id };
-		// if (navigationEventCallback) {
-		// 	const node = navigationStructure.nodes[e.target.id];
-		// 	const nodeLevel =
-		// 		node.dimensionLevel === 1 ? 'dimension' : node.dimensionLevel === 2 ? 'division' : 'child';
-		// 	navigationEventCallback({
-		// 		nodeId: e.target.id,
-		// 		eventType: 'focus',
-		// 		vegaId: convertId(navigation.current.id, nodeLevel),
-		// 		nodeLevel,
-		// 	});
-		// }
-    }
-    const handleFallbackKeydown = (e) => {
-        console.log("how does this even happen?",e)
-    }
-
 	const dummySpecs: Navigation = {
 		...navigation,
 	};
@@ -493,17 +385,6 @@ export const Navigator: FC<NavigationProps> = ({ data, chartView, chartLayers, n
 
 	const figures = (
 		<div>
-			<div
-				ref={mobileFallbackPreviousRef}
-				id={mobileFallbackPreviousProps.current.id}
-				className="dn-node dn-test-class dn-mobile-fallback-node"
-				tabIndex={mobileFallbackNextProps.current.hasInteractivity ? -1 : undefined}
-				style={mobileFallbackPreviousProps.current.spatialProperties}
-				onFocus={mobileFallbackPreviousProps.current.hasInteractivity ? handleFallbackFocus : undefined}
-				onKeyDown={mobileFallbackPreviousProps.current.hasInteractivity ? handleFallbackKeydown : undefined}
-				role={mobileFallbackPreviousProps.current.imageRole || 'presentation'}
-				aria-label={mobileFallbackPreviousProps.current.semantics?.label || undefined}
-			></div>
 			<div
 				ref={firstRef}
 				id={firstProps.current.id}
@@ -525,17 +406,6 @@ export const Navigator: FC<NavigationProps> = ({ data, chartView, chartLayers, n
 				onKeyDown={secondProps.current.hasInteractivity ? handleKeydown : undefined}
 				role={secondProps.current.imageRole || 'presentation'}
 				aria-label={secondProps.current.semantics?.label || undefined}
-			></div>
-			<div
-				ref={mobileFallbackNextRef}
-				id={mobileFallbackNextProps.current.id}
-				className="dn-node dn-test-class dn-mobile-fallback-node"
-				tabIndex={mobileFallbackNextProps.current.hasInteractivity ? -1 : undefined}
-				style={mobileFallbackNextProps.current.spatialProperties}
-				onFocus={mobileFallbackNextProps.current.hasInteractivity ? handleFallbackFocus : undefined}
-				onKeyDown={mobileFallbackNextProps.current.hasInteractivity ? handleFallbackKeydown : undefined}
-				role={mobileFallbackNextProps.current.imageRole || 'presentation'}
-				aria-label={mobileFallbackNextProps.current.semantics?.label || undefined}
 			></div>
 		</div>
 	);
