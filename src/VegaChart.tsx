@@ -134,5 +134,5 @@ export const VegaChart: FC<VegaChartProps> = ({
 		width,
 	]);
 
-	return <div ref={containerRef} className="rsc"></div>;
+	return <div ref={containerRef} className="rsc" role="presentation" aria-hidden="true"></div>;
 };
