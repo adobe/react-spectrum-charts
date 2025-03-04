@@ -196,6 +196,14 @@ export const NAVIGATION_PAIRS = {
 	COLOR: {
 		parent_child: ["parent-color","child"],
 		sibling_sibling: ["up","down"],
+	},
+	HORIZONTAL: {
+		parent_child: ["parent-dimension","child"],
+		sibling_sibling: ["left","right"],
+	},
+	VERTICAL: {
+		parent_child: ["parent-color","child"],
+		sibling_sibling: ["up","down"],
 	}
 }
 /*
