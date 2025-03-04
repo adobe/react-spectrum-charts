@@ -25,11 +25,19 @@ describe('getBulletMarks', () => {
 	test('Should return the correct marks object', () => {
 		const data = getBulletMarks(sampleProps);
 		expect(data).toBeDefined();
-		expect(data?.marks).toHaveLength(5);
+		expect(data?.marks).toHaveLength(4);
 		expect(data?.marks?.[0]?.type).toBe('rule');
 		expect(data?.marks?.[1]?.type).toBe('rect');
 		expect(data?.marks?.[2]?.type).toBe('text');
 		expect(data?.marks?.[3]?.type).toBe('text');
+	});
+	test('Should not include target marks when showTarget is false', () => {
+		const props = { ...sampleProps, showTarget: false, showTargetValue: true };
+		const marksGroup = getBulletMarks(props);
+		expect(marksGroup.marks).toHaveLength(3);
+		marksGroup.marks?.forEach((mark) => {
+			expect(mark.description).not.toContain('target');
+		});
 	});
 });
 

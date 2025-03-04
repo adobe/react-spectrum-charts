@@ -89,11 +89,15 @@ export function getBulletMarks(props: BulletSpecProps): GroupMark {
 		marks: [],
 	};
 
-	bulletMark.marks?.push(getBulletMarkTarget(props));
+	if (props.target && props.showTarget !== false) {
+		bulletMark.marks?.push(getBulletMarkTarget(props));
+		if (props.showTargetValue) {
+			bulletMark.marks?.push(getBulletMarkTargetValueLabel(props));
+		}
+	}
 	bulletMark.marks?.push(getBulletMarkRect(props));
 	bulletMark.marks?.push(getBulletMarkLabel(props));
 	bulletMark.marks?.push(getBulletMarkValueLabel(props));
-	bulletMark.marks?.push(getBulletMarkTargetValueLabel(props));
 
 	return bulletMark;
 }
