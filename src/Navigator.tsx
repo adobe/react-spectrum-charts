@@ -493,22 +493,6 @@ export const Navigator: FC<NavigationProps> = ({ data, chartView, chartLayers, n
 
 	const figures = (
 		<div>
-            {/* <figure
-				ref={mobileFallbackPreviousRef}
-				role={mobileFallbackPreviousProps.current.figureRole || 'presentation'}
-				id={mobileFallbackPreviousProps.current.id}
-				className="dn-node dn-test-class dn-mobile-fallback-node"
-				tabIndex={mobileFallbackNextProps.current.hasInteractivity ? -1 : undefined}
-				style={mobileFallbackPreviousProps.current.spatialProperties}
-				onFocus={mobileFallbackPreviousProps.current.hasInteractivity ? handleFallbackFocus : undefined}
-				onKeyDown={mobileFallbackPreviousProps.current.hasInteractivity ? handleFallbackKeydown : undefined}
-			>
-				<div
-					role={mobileFallbackPreviousProps.current.imageRole || 'presentation'}
-					className="dn-node-text dn-mobile-fallback-node-text"
-					aria-label={mobileFallbackPreviousProps.current.semantics?.label || undefined}
-				></div>
-			</figure> */}
 			<div
 				ref={mobileFallbackPreviousRef}
 				id={mobileFallbackPreviousProps.current.id}
@@ -520,22 +504,6 @@ export const Navigator: FC<NavigationProps> = ({ data, chartView, chartLayers, n
 				role={mobileFallbackPreviousProps.current.imageRole || 'presentation'}
 				aria-label={mobileFallbackPreviousProps.current.semantics?.label || undefined}
 			></div>
-			{/* <figure
-				ref={firstRef}
-				role={firstProps.current.figureRole || 'presentation'}
-				id={firstProps.current.id}
-				className="dn-node dn-test-class"
-				tabIndex={firstProps.current.hasInteractivity ? 0 : undefined}
-				style={firstProps.current.spatialProperties}
-				onFocus={firstProps.current.hasInteractivity ? handleFocus : undefined}
-				onKeyDown={firstProps.current.hasInteractivity ? handleKeydown : undefined}
-			>
-				<div
-					role={firstProps.current.imageRole || 'presentation'}
-					className="dn-node-text"
-					aria-label={firstProps.current.semantics?.label || undefined}
-				></div>
-			</figure> */}
 			<div
 				ref={firstRef}
 				id={firstProps.current.id}
@@ -547,22 +515,6 @@ export const Navigator: FC<NavigationProps> = ({ data, chartView, chartLayers, n
 				role={firstProps.current.imageRole || 'presentation'}
 				aria-label={firstProps.current.semantics?.label || undefined}
 			></div>
-			{/* <figure
-				ref={secondRef}
-				role={secondProps.current.figureRole || 'presentation'}
-				id={secondProps.current.id}
-				className="dn-node dn-test-class"
-				tabIndex={secondProps.current.hasInteractivity ? 0 : undefined}
-				style={secondProps.current.spatialProperties}
-				onFocus={secondProps.current.hasInteractivity ? handleFocus : undefined}
-				onKeyDown={secondProps.current.hasInteractivity ? handleKeydown : undefined}
-			>
-				<div
-					role={secondProps.current.imageRole || 'presentation'}
-					className="dn-node-text"
-					aria-label={secondProps.current.semantics?.label || undefined}
-				></div>
-			</figure> */}
 			<div
 				ref={secondRef}
 				id={secondProps.current.id}
@@ -585,19 +537,6 @@ export const Navigator: FC<NavigationProps> = ({ data, chartView, chartLayers, n
 				role={mobileFallbackNextProps.current.imageRole || 'presentation'}
 				aria-label={mobileFallbackNextProps.current.semantics?.label || undefined}
 			></div>
-
-            {/* <figure
-				ref={mobileFallbackNextRef}
-				role={mobileFallbackNextProps.current.figureRole || 'presentation'}
-				id={mobileFallbackNextProps.current.id}
-				className="dn-node dn-test-class dn-mobile-fallback-node"
-				tabIndex={-1}
-				style={mobileFallbackNextProps.current.spatialProperties}
-				onFocus={mobileFallbackNextProps.current.hasInteractivity ? handleFallbackFocus : undefined}
-				onKeyDown={mobileFallbackNextProps.current.hasInteractivity ? handleFallbackKeydown : undefined}
-			>
-				
-			</figure> */}
 		</div>
 	);
 	/* 
