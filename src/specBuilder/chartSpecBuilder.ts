@@ -201,9 +201,7 @@ export const buildNavigationDimensions = (spec, children, out: DimensionList) =>
 	let popped: DimensionDatum | undefined = undefined;
 	let navigableChartType = "";
 	let isDodged = false;
-	const navigableDimensions = {}
-	console.log("children",children)
-	console.log("children.length",children.length)
+	const navigableDimensions = {};
 	const childArray = [...children]
 	let count = 0;
 
@@ -303,9 +301,7 @@ export const buildNavigationDimensions = (spec, children, out: DimensionList) =>
 }
 
 export const buildNavigationStructure = (data, props, chartLayers) : Structure => {
-	const layers = props.list ? "" : chartLayers
-	console.log("props",props,NAVIGATION_ID_KEY)
-	console.log('chartLayers',chartLayers)
+	const layers = props.list ? "" : chartLayers;
 	const structureOptions : StructureOptions = {
 		data,
 		idKey: NAVIGATION_ID_KEY,
@@ -321,7 +317,6 @@ export const buildNavigationStructure = (data, props, chartLayers) : Structure =
 }
 
 export const buildStructureHandler = (structure: Structure, navigationRules: NavigationRules, dimensions: Dimensions) => {
-	console.log("dimensions", dimensions)
 	return DataNavigator.input({
 		structure,
 		navigationRules,
