@@ -235,6 +235,10 @@ export interface DonutProps extends MarkProps {
 export interface BulletProps extends MarkProps {
 	/** Target line */
 	target?: string;
+	/** Flag to control whether the target is shown */
+	showTarget?: boolean;
+	/** Flag to control whether the target value is shown. */
+	showTargetValue?: boolean;
 	/** Data field that the metric is trended against (x-axis for horizontal orientation) */
 	dimension?: string;
 	/** d3 number format specifier.
