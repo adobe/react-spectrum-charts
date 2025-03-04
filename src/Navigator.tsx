@@ -37,10 +37,15 @@ const convertId = (id, nodeLevel) => {
 		: +id.substring(1) + 1;
 };
 
-const buildChildNodeLookup = (nodes: Nodes) => {
+const buildChildNodeLookup = (nodes: Nodes, entryPoint) => {
     const keys = Object.keys(nodes)
     const lookup = {};
-    let previous = "";
+	lookup[entryPoint.id] = {
+		id: entryPoint.id,
+		next: "",
+		previous: ""
+	}
+    let previous = entryPoint.id;
     keys.forEach(key => {
         if (!nodes[key].dimensionLevel) {
             // childmost nodes do not have a dimension level (they are not dimensions or divisions),
@@ -56,6 +61,7 @@ const buildChildNodeLookup = (nodes: Nodes) => {
             previous = nodes[key].id
         }
     })
+	console.log(entryPoint, lookup)
     return lookup
 }
 
@@ -85,17 +91,19 @@ export const Navigator: FC<NavigationProps> = ({ data, chartView, chartLayers, n
 		NAVIGATION_RULES as NavigationRules,
 		navigationStructure.dimensions || {}
 	);
-    // we create a child-only lookup with indexes, this is for our mobile fallback nodes
-    const navigationChildren = buildChildNodeLookup(navigationStructure.nodes)
 
 	const entryPoint = structureNavigationHandler.enter();
+	
+    // we create a child-only lookup with indexes, this is for our mobile fallback nodes
+    const navigationChildren = buildChildNodeLookup(navigationStructure.nodes, entryPoint)
+	
 	const [navigation, setNavigation] = useState<Navigation>({
 		transform: '',
 		buttonTransform: '',
 		current: {
 			id: entryPoint.id,
 			figureRole: 'figure',
-			imageRole: 'image',
+			imageRole: 'img',
 			hasInteractivity: true,
 			spatialProperties: {
 				width: '',
@@ -108,30 +116,6 @@ export const Navigator: FC<NavigationProps> = ({ data, chartView, chartLayers, n
 			},
 		},
 	});
-
-	const [childrenInitialized, setInitialization] = useState<boolean>(false);
-
-	const setNavigationElement = (target) => {
-		setNavigation({
-			transform: '',
-			buttonTransform: '',
-			current: {
-				id: target.id,
-				figureRole: 'figure',
-				imageRole: 'image',
-				hasInteractivity: true,
-				spatialProperties: target.spatialProperties || {
-					width: '',
-					height: '',
-					left: '',
-					top: '',
-				},
-				semantics: {
-					label: target.semantics?.label || '',
-				},
-			},
-		} as Navigation);
-	};
 
     const setMobileFallbackElement = (nodeId: string, direction: 'previous' | 'next'): Navigation => {
         const mobileFallbackData = {
@@ -163,7 +147,7 @@ export const Navigator: FC<NavigationProps> = ({ data, chartView, chartLayers, n
             mobileFallbackData.current = {
                 id: target.id,
                 figureRole: 'figure',
-                imageRole: 'image',
+                imageRole: 'img',
                 hasInteractivity: true,
                 spatialProperties: target.spatialProperties || {
                     width: '',
@@ -178,15 +162,49 @@ export const Navigator: FC<NavigationProps> = ({ data, chartView, chartLayers, n
         }
         return mobileFallbackData
     }
+	const [mobileFallbackPreviousProps, setMobileFallbackPrevious] = useState<Navigation>(setMobileFallbackElement(navigation.current.id, 'previous'))
+
+	const [mobileFallbackNextProps, setMobileFallbackNext] = useState<Navigation>(setMobileFallbackElement(navigation.current.id, 'next'))
+
+	const [childrenInitialized, setInitialization] = useState<boolean>(false);
+
+	const setNavigationElement = (target) => {
+		setNavigation({
+			transform: '',
+			buttonTransform: '',
+			current: {
+				id: target.id,
+				figureRole: 'figure',
+				imageRole: 'img',
+				hasInteractivity: true,
+				spatialProperties: target.spatialProperties || {
+					width: '',
+					height: '',
+					left: '',
+					top: '',
+				},
+				semantics: {
+					label: target.semantics?.label || '',
+				},
+			},
+		} as Navigation);
+
+		setMobileFallbackPrevious(setMobileFallbackElement(target.id, 'previous'))
+		setMobileFallbackNext(setMobileFallbackElement(target.id, 'next'))
+	};
 
 	useEffect(() => {
 		if (willFocusAfterRender.current && focusedElement.current.id !== navigation.current.id) {
 			focusedElement.current = { id: navigation.current.id };
 			willFocusAfterRender.current = false;
+			let refToFocus: HTMLDivElement | undefined = undefined;
 			if (firstRef.current?.id === navigation.current.id) {
-				firstRef.current.focus();
+				refToFocus = firstRef.current;
 			} else if (secondRef.current?.id === navigation.current.id) {
-				secondRef.current.focus();
+				refToFocus = secondRef.current
+			}
+			if (refToFocus) {
+				refToFocus.focus()
 			}
 		}
 	}, [navigation]);
@@ -472,9 +490,6 @@ export const Navigator: FC<NavigationProps> = ({ data, chartView, chartLayers, n
 	dummySpecs.current.spatialProperties = { ...navigation.current.spatialProperties };
 	const firstProps = !firstRef.current || focusedElement.current.id !== firstRef.current.id ? navigation : dummySpecs;
 	const secondProps = firstProps.current.id === navigation.current.id ? dummySpecs : navigation;
-
-    const mobileFallbackPreviousProps = setMobileFallbackElement(navigation.current.id, 'previous')
-    const mobileFallbackNextProps = setMobileFallbackElement(navigation.current.id, 'next')
 
 	const figures = (
 		<div>
