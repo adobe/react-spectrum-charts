@@ -45,7 +45,7 @@ export type SpatialProperties = {
 export type CurrentNodeDetails = {
     id: string;
     figureRole?: "figure";
-    imageRole?: "image";
+    imageRole?: "img";
     hasInteractivity?: boolean;
     spatialProperties?: SpatialProperties;
     semantics?: {
