@@ -15,7 +15,7 @@ import { FC } from 'react';
 
 import { BulletProps } from '../../../types';
 
-const Bullet: FC<BulletProps> = ({ name = 'bullet0'}) => {
+const Bullet: FC<BulletProps> = ({ name = 'bullet0' }) => {
 	return null;
 };
 

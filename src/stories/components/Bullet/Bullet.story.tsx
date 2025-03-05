@@ -19,35 +19,35 @@ import { bindWithProps } from '@test-utils';
 import { basicBulletData } from './data';
 
 export default {
-    title: 'RSC/Bullet',
-    component: Bullet,
+	title: 'RSC/Bullet',
+	component: Bullet,
 };
 
 // Default chart properties
 const defaultChartProps: ChartProps = {
-    data: basicBulletData,
-    width: 600,
-    height: 600,
+	data: basicBulletData,
+	width: 600,
+	height: 600,
 };
 
 // Basic Bullet chart story
 const BulletStory: StoryFn<BulletProps & { width?: number; height?: number }> = (args): ReactElement => {
-    const { width, height, ...bulletProps } = args;
-    const chartProps = useChartProps({ ...defaultChartProps, width: width ?? 350, height: height ?? 350 });
-    return (
-        <Chart {...chartProps}>
-            <Bullet {...bulletProps} />
-        </Chart>
-    );
+	const { width, height, ...bulletProps } = args;
+	const chartProps = useChartProps({ ...defaultChartProps, width: width ?? 350, height: height ?? 350 });
+	return (
+		<Chart {...chartProps}>
+			<Bullet {...bulletProps} />
+		</Chart>
+	);
 };
 
 const Basic = bindWithProps(BulletStory);
 Basic.args = {
-    metric: 'currentAmount',
-    dimension: 'graphLabel',
-    target: 'target',
-    color: 'red-500',
-    numberFormat: '$,.2f',
+	metric: 'currentAmount',
+	dimension: 'graphLabel',
+	target: 'target',
+	color: 'red-500',
+	numberFormat: '$,.2f',
 };
 
 export { Basic };
