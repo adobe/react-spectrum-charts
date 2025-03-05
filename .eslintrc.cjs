@@ -22,6 +22,15 @@ module.exports = {
 		'react/jsx-uses-vars': 'error',
 		'react/jsx-uses-react': 'error',
 		'@typescript-eslint/no-non-null-assertion': 'error',
+		'no-unused-vars': 'off',
+		'@typescript-eslint/no-unused-vars': [
+			'error',
+			{
+				argsIgnorePattern: '^_',
+				varsIgnorePattern: '^_',
+				caughtErrorsIgnorePattern: '^_',
+			},
+		],
 		'no-restricted-imports': [
 			'error',
 			{
@@ -31,6 +40,10 @@ module.exports = {
 			{
 				name: 'types/locales',
 				message: 'Please use relative path import for types instead (ex. ../types/locales).',
+			},
+			{
+				name: '@specBuilder/types',
+				message: 'Please use relative path import for types instead (ex. ../specBuilder/types).',
 			},
 		],
 		'header/header': [

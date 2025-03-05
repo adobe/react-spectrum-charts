@@ -32,7 +32,7 @@ import { baseData } from '@specBuilder/specUtils';
 import { Data, Legend, LegendEncode, Scale, Spec, SymbolEncodeEntry } from 'vega';
 
 import { addData, addLegend, addSignals, formatFacetRefsWithPresets, getContinuousLegend } from './legendSpecBuilder';
-import { defaultLegendProps, opacityEncoding } from './legendTestUtils';
+import { defaultLegendOptions, opacityEncoding } from './legendTestUtils';
 
 const defaultSpec: Spec = {
 	signals: defaultSignals,
@@ -136,7 +136,7 @@ const defaultHighlightSeriesSignal = {
 
 describe('addLegend()', () => {
 	describe('no initial legend', () => {
-		test('no props, should setup default legend', () => {
+		test('no options, should setup default legend', () => {
 			expect(addLegend(defaultSpec, {})).toStrictEqual({
 				...defaultSpec,
 				data: [defaultLegendAggregateData],
@@ -301,12 +301,14 @@ describe('addLegend()', () => {
 
 describe('addData()', () => {
 	test('should add legend0Aggregate data', () => {
-		expect(addData([], { ...defaultLegendProps, facets: [DEFAULT_COLOR] })).toStrictEqual([
+		expect(addData([], { ...defaultLegendOptions, facets: [DEFAULT_COLOR] })).toStrictEqual([
 			defaultLegendAggregateData,
 		]);
 	});
 	test('should join multiple facets', () => {
-		expect(addData([], { ...defaultLegendProps, facets: [DEFAULT_COLOR, DEFAULT_SECONDARY_COLOR] })).toStrictEqual([
+		expect(
+			addData([], { ...defaultLegendOptions, facets: [DEFAULT_COLOR, DEFAULT_SECONDARY_COLOR] })
+		).toStrictEqual([
 			{
 				name: 'legend0Aggregate',
 				source: 'table',
@@ -322,13 +324,13 @@ describe('addData()', () => {
 		]);
 	});
 	test('should add legend group Id if keys has length', () => {
-		const data = addData(baseData, { ...defaultLegendProps, facets: [DEFAULT_COLOR], keys: ['key1', 'key2'] });
+		const data = addData(baseData, { ...defaultLegendOptions, facets: [DEFAULT_COLOR], keys: ['key1', 'key2'] });
 		expect(data[0].transform).toHaveLength(2);
 		expect(data[0].transform?.[1]).toHaveProperty('as', 'legend0_highlightGroupId');
 	});
 	test('should add transform to table if they do not exist', () => {
 		const data = addData([{ ...baseData[0], transform: undefined }, ...baseData], {
-			...defaultLegendProps,
+			...defaultLegendOptions,
 			facets: [DEFAULT_COLOR],
 			keys: ['key1', 'key2'],
 		});
@@ -379,7 +381,7 @@ describe('formatFacetRefsWithPresets()', () => {
 
 describe('addSignals()', () => {
 	test('should add highlightedSeries signal events if highlight is true', () => {
-		const highlightSignal = addSignals(defaultSignals, { ...defaultLegendProps, highlight: true }).find(
+		const highlightSignal = addSignals(defaultSignals, { ...defaultLegendOptions, highlight: true }).find(
 			(signal) => signal.name === HIGHLIGHTED_SERIES
 		);
 		expect(highlightSignal?.on).toHaveLength(2);
@@ -387,14 +389,14 @@ describe('addSignals()', () => {
 	});
 	test('should add legendLabels signal if legendLabels are defined', () => {
 		expect(
-			addSignals(defaultSignals, { ...defaultLegendProps, legendLabels: [] }).find(
+			addSignals(defaultSignals, { ...defaultLegendOptions, legendLabels: [] }).find(
 				(signal) => signal.name === 'legend0_labels'
 			)
 		).toBeDefined();
 	});
 	test('should NOT add hiddenSeries signal if isToggleable is false', () => {
 		expect(
-			addSignals(defaultSignals, { ...defaultLegendProps, isToggleable: false }).find(
+			addSignals(defaultSignals, { ...defaultLegendOptions, isToggleable: false }).find(
 				(signal) => signal.name === 'hiddenSeries'
 			)
 		).toBeUndefined();
@@ -403,14 +405,14 @@ describe('addSignals()', () => {
 
 describe('getContinuousLegend()', () => {
 	test('should return symbolSize legend if facetType is symbolSize', () => {
-		expect(getContinuousLegend({ facetType: 'symbolSize', field: 'weight' }, defaultLegendProps)).toHaveProperty(
+		expect(getContinuousLegend({ facetType: 'symbolSize', field: 'weight' }, defaultLegendOptions)).toHaveProperty(
 			'size',
 			'symbolSize'
 		);
 	});
 	test('should return linearColor scale if facetType is linearColor', () => {
 		expect(
-			getContinuousLegend({ facetType: LINEAR_COLOR_SCALE, field: 'weight' }, defaultLegendProps)
+			getContinuousLegend({ facetType: LINEAR_COLOR_SCALE, field: 'weight' }, defaultLegendOptions)
 		).toHaveProperty('fill', LINEAR_COLOR_SCALE);
 	});
 });

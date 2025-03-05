@@ -9,10 +9,6 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { createElement } from 'react';
-
-import { ChartTooltip } from '@components/ChartTooltip';
-import { Trendline } from '@components/Trendline';
 import { COLOR_SCALE, DEFAULT_TIME_DIMENSION, TRENDLINE_VALUE } from '@constants';
 import { spectrumColors } from '@themes';
 import { Facet, From, GroupMark, Mark } from 'vega';
@@ -26,21 +22,21 @@ import {
 	getTrendlineMarks,
 	getTrendlineRuleMark,
 } from './trendlineMarkUtils';
-import { defaultLineProps, defaultTrendlineProps } from './trendlineTestUtils';
+import { defaultLineOptions, defaultTrendlineOptions } from './trendlineTestUtils';
 
 describe('getTrendlineMarks()', () => {
 	test('should return rule mark for aggregate methods', () => {
 		const marks = getTrendlineMarks({
-			...defaultLineProps,
-			children: [createElement(Trendline, { method: 'median' })],
+			...defaultLineOptions,
+			trendlines: [{ method: 'median' }],
 		});
 		expect(marks).toHaveLength(1);
 		expect(marks[0]).toHaveProperty('type', 'rule');
 	});
 	test('should return group and line mark for non-aggregate methods', () => {
 		const marks = getTrendlineMarks({
-			...defaultLineProps,
-			children: [createElement(Trendline, { method: 'linear' })],
+			...defaultLineOptions,
+			trendlines: [{ method: 'linear' }],
 		});
 		// group mark
 		expect(marks).toHaveLength(1);
@@ -52,8 +48,8 @@ describe('getTrendlineMarks()', () => {
 	});
 	test('should add hover marks if ChartTooltip exists on Trendline', () => {
 		const marks = getTrendlineMarks({
-			...defaultLineProps,
-			children: [createElement(Trendline, {}, createElement(ChartTooltip))],
+			...defaultLineOptions,
+			trendlines: [{ chartTooltips: [{}] }],
 		});
 		expect(marks).toHaveLength(2);
 		expect(marks[1]).toHaveProperty('type', 'group');
@@ -68,8 +64,8 @@ describe('getTrendlineMarks()', () => {
 	});
 	test('should reference _data for window method', () => {
 		const marks = getTrendlineMarks({
-			...defaultLineProps,
-			children: [createElement(Trendline, { method: 'movingAverage-2' })],
+			...defaultLineOptions,
+			trendlines: [{ method: 'movingAverage-2' }],
 		});
 		expect(
 			(
@@ -81,8 +77,8 @@ describe('getTrendlineMarks()', () => {
 	});
 	test('should reference _highResolutionData for linear method', () => {
 		const marks = getTrendlineMarks({
-			...defaultLineProps,
-			children: [createElement(Trendline, { method: 'linear' })],
+			...defaultLineOptions,
+			trendlines: [{ method: 'linear' }],
 		});
 		expect(
 			(
@@ -96,12 +92,12 @@ describe('getTrendlineMarks()', () => {
 
 describe('getTrendlineRuleMark()', () => {
 	test('should use series color if static color is not provided', () => {
-		const mark = getTrendlineRuleMark(defaultLineProps, { ...defaultTrendlineProps, method: 'median' });
+		const mark = getTrendlineRuleMark(defaultLineOptions, { ...defaultTrendlineOptions, method: 'median' });
 		expect(mark.encode?.enter?.stroke).toEqual({ field: 'series', scale: COLOR_SCALE });
 	});
 	test('should use static color if provided', () => {
-		const mark = getTrendlineRuleMark(defaultLineProps, {
-			...defaultTrendlineProps,
+		const mark = getTrendlineRuleMark(defaultLineOptions, {
+			...defaultTrendlineOptions,
 			trendlineColor: { value: 'gray-500' },
 			method: 'median',
 		});
@@ -160,8 +156,8 @@ describe('getRuleXEncondings()', () => {
 describe('getTrendlineLineMark()', () => {
 	test('should use normalized values for x if it is a regression method and scale is time', () => {
 		expect(
-			getTrendlineLineMark(defaultLineProps, {
-				...defaultTrendlineProps,
+			getTrendlineLineMark(defaultLineOptions, {
+				...defaultTrendlineOptions,
 				isDimensionNormalized: true,
 				method: 'linear',
 				trendlineDimension: `${DEFAULT_TIME_DIMENSION}Normalized`,
@@ -173,26 +169,26 @@ describe('getTrendlineLineMark()', () => {
 	});
 	test('should use regular x rule if the x dimension is not normalized', () => {
 		expect(
-			getTrendlineLineMark(defaultLineProps, { ...defaultTrendlineProps, method: 'median' }).encode?.update?.x
+			getTrendlineLineMark(defaultLineOptions, { ...defaultTrendlineOptions, method: 'median' }).encode?.update?.x
 		).toEqual({ field: DEFAULT_TIME_DIMENSION, scale: 'xTime' });
 		expect(
-			getTrendlineLineMark(defaultLineProps, { ...defaultTrendlineProps, method: 'movingAverage-12' }).encode
+			getTrendlineLineMark(defaultLineOptions, { ...defaultTrendlineOptions, method: 'movingAverage-12' }).encode
 				?.update?.x
 		).toEqual({ field: DEFAULT_TIME_DIMENSION, scale: 'xTime' });
 		expect(
 			getTrendlineLineMark(
-				{ ...defaultLineProps, scaleType: 'linear', dimension: 'count' },
-				{ ...defaultTrendlineProps, dimensionScaleType: 'linear', trendlineDimension: 'count' }
+				{ ...defaultLineOptions, scaleType: 'linear', dimension: 'count' },
+				{ ...defaultTrendlineOptions, dimensionScaleType: 'linear', trendlineDimension: 'count' }
 			).encode?.update?.x
 		).toEqual({ field: 'count', scale: 'xLinear' });
 	});
 	test('should use series color if static color is not provided', () => {
-		const mark = getTrendlineLineMark(defaultLineProps, defaultTrendlineProps);
+		const mark = getTrendlineLineMark(defaultLineOptions, defaultTrendlineOptions);
 		expect(mark.encode?.enter?.stroke).toEqual({ field: 'series', scale: COLOR_SCALE });
 	});
 	test('should use static color if provided', () => {
-		const mark = getTrendlineLineMark(defaultLineProps, {
-			...defaultTrendlineProps,
+		const mark = getTrendlineLineMark(defaultLineOptions, {
+			...defaultTrendlineOptions,
 			trendlineColor: { value: 'gray-500' },
 		});
 		expect(mark.encode?.enter?.stroke).toEqual({ value: spectrumColors.light['gray-500'] });

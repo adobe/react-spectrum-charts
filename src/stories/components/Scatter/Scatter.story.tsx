@@ -16,11 +16,9 @@ import useChartProps from '@hooks/useChartProps';
 import {
 	Axis,
 	Chart,
-	ChartColors,
 	ChartPopover,
 	ChartProps,
 	ChartTooltip,
-	Datum,
 	Legend,
 	LegendProps,
 	Scatter,
@@ -32,6 +30,8 @@ import { StoryFn } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
 
 import { Content, Flex } from '@adobe/react-spectrum';
+
+import { ChartColors, Datum } from '../../../specBuilder';
 
 const marioDataKeys = [
 	...Object.keys(characterData[0])

@@ -13,13 +13,15 @@ import { ReactElement } from 'react';
 
 import { ChartTooltip } from '@components/ChartTooltip/ChartTooltip';
 import useChartProps from '@hooks/useChartProps';
-import { Area, Bar, Chart, Datum, Line, Scatter } from '@rsc';
+import { Area, Bar, Chart, Line, Scatter } from '@rsc';
 import { browserData } from '@stories/data/data';
 import { characterData } from '@stories/data/marioKartData';
 import { StoryFn } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
 
 import { View } from '@adobe/react-spectrum';
+
+import { Datum } from '../../../specBuilder';
 
 export default {
 	title: 'RSC/ChartTooltip/HighlightBy',
@@ -172,4 +174,4 @@ ScatterChart.args = {
 	children: marioDialogCallback,
 };
 
-export { Basic, Dimension, Keys, Series, GroupData, AreaChart, LineChart, ScatterChart };
+export { AreaChart, Basic, Dimension, GroupData, Keys, LineChart, ScatterChart, Series };

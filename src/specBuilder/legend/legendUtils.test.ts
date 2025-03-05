@@ -9,10 +9,10 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { DEFAULT_COLOR_SCHEME, FILTERED_TABLE } from '@constants';
+import { FILTERED_TABLE } from '@constants';
 import { spectrumColors } from '@themes';
 
-import { defaultLegendProps } from './legendTestUtils';
+import { defaultLegendOptions } from './legendTestUtils';
 import {
 	getHiddenSeriesColorRule,
 	getShowHideEncodings,
@@ -33,18 +33,7 @@ const labelUpdateEncoding = {
 
 describe('getSymbolEncodings()', () => {
 	test('no factes and no custom values, should return all the defaults', () => {
-		expect(
-			getSymbolEncodings([], {
-				colorScheme: DEFAULT_COLOR_SCHEME,
-				hiddenEntries: [],
-				hiddenSeries: [],
-				highlight: false,
-				index: 0,
-				isToggleable: false,
-				name: 'legend0',
-				position: 'bottom',
-			})
-		).toStrictEqual({
+		expect(getSymbolEncodings([], defaultLegendOptions)).toStrictEqual({
 			entries: { name: 'legend0_legendEntry' },
 			symbols: {
 				enter: {},
@@ -61,24 +50,24 @@ describe('getShowHideEncodings()', () => {
 	test('should only return hiddenSeries encoding if isToggleable, onClick and hiddenSeries are all undefined/false', () => {
 		expect(
 			getShowHideEncodings({
-				...defaultLegendProps,
+				...defaultLegendOptions,
 				isToggleable: false,
-				onClick: undefined,
+				hasOnClick: false,
 			})
 		).toEqual({ labels: labelUpdateEncoding });
 	});
 	test('should return encodings if isToggleable', () => {
-		const encoding = getShowHideEncodings({ ...defaultLegendProps, isToggleable: true });
+		const encoding = getShowHideEncodings({ ...defaultLegendOptions, isToggleable: true });
 		expect(encoding).toHaveProperty('entries');
 		expect(encoding).toHaveProperty('labels');
 	});
 	test('should have labels encodings but not entries encodings for hiddenSeries', () => {
-		const encoding = getShowHideEncodings({ ...defaultLegendProps, hiddenSeries: ['test'] });
+		const encoding = getShowHideEncodings({ ...defaultLegendOptions, hiddenSeries: ['test'] });
 		expect(encoding).not.toHaveProperty('entries');
 		expect(encoding).toHaveProperty('labels');
 	});
 	test('should have entries encodings and only hiddenSeries labels encodings for onClick', () => {
-		const encoding = getShowHideEncodings({ ...defaultLegendProps, onClick: () => {} });
+		const encoding = getShowHideEncodings({ ...defaultLegendOptions, hasOnClick: true });
 		expect(encoding).toHaveProperty('entries');
 		expect(encoding).toHaveProperty('labels');
 		expect(encoding.labels).toStrictEqual(labelUpdateEncoding);
@@ -142,19 +131,19 @@ describe('getSymbolType()', () => {
 
 describe('getHiddenSeriesColorRule()', () => {
 	test('should return empty array if not toggleable and no hiddenSeries', () => {
-		expect(getHiddenSeriesColorRule(defaultLegendProps, 'gray-300')).toEqual([]);
+		expect(getHiddenSeriesColorRule(defaultLegendOptions, 'gray-300')).toEqual([]);
 	});
 
 	test('should use filteredTable if there are keys', () => {
 		const colorRules = getHiddenSeriesColorRule(
-			{ ...defaultLegendProps, isToggleable: true, keys: ['key1'] },
+			{ ...defaultLegendOptions, isToggleable: true, keys: ['key1'] },
 			'gray-300'
 		);
 		expect(colorRules[0].test).toContain(FILTERED_TABLE);
 	});
 
 	test('should look at hiddenSeries if there are not any keys', () => {
-		const colorRules = getHiddenSeriesColorRule({ ...defaultLegendProps, isToggleable: true }, 'gray-300');
+		const colorRules = getHiddenSeriesColorRule({ ...defaultLegendOptions, isToggleable: true }, 'gray-300');
 		expect(colorRules[0].test).toContain('hiddenSeries');
 	});
 });

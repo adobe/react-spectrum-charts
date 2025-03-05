@@ -9,19 +9,16 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { createElement } from 'react';
-
-import { ChartTooltip } from '@components/ChartTooltip';
 import { COLOR_SCALE, FILTERED_TABLE, HIGHLIGHTED_ITEM } from '@constants';
 import { defaultSignals } from '@specBuilder/specTestUtils';
 import { initializeSpec } from '@specBuilder/specUtils';
 
 import { addData, addDonut, addMarks, addScales, addSignals } from './donutSpecBuilder';
-import { defaultDonutProps } from './donutTestUtils';
+import { defaultDonutOptions } from './donutTestUtils';
 
 describe('addData', () => {
 	test('should add data correctly for boolean donut', () => {
-		const data = addData(initializeSpec().data ?? [], { ...defaultDonutProps, isBoolean: true });
+		const data = addData(initializeSpec().data ?? [], { ...defaultDonutOptions, isBoolean: true });
 
 		expect(data).toHaveLength(3);
 		expect(data[2].transform).toHaveLength(2);
@@ -30,7 +27,7 @@ describe('addData', () => {
 	});
 
 	test('should add data correctly for non-boolean donut', () => {
-		const data = addData(initializeSpec().data ?? [], defaultDonutProps);
+		const data = addData(initializeSpec().data ?? [], defaultDonutOptions);
 		expect(data).toHaveLength(2);
 		expect(data[1].transform).toHaveLength(4);
 		expect(data[1].transform?.[0].type).toBe('pie');
@@ -42,7 +39,7 @@ describe('addData', () => {
 
 describe('addSignals()', () => {
 	test('should add hover events when tooltip is present', () => {
-		const signals = addSignals(defaultSignals, { ...defaultDonutProps, children: [createElement(ChartTooltip)] });
+		const signals = addSignals(defaultSignals, { ...defaultDonutOptions, chartTooltips: [{}] });
 		expect(signals).toHaveLength(defaultSignals.length);
 		expect(signals[0]).toHaveProperty('name', HIGHLIGHTED_ITEM);
 		expect(signals[0].on).toHaveLength(2);
@@ -51,8 +48,8 @@ describe('addSignals()', () => {
 	});
 	test('should exclude data with key from update if tooltip has excludeDataKey', () => {
 		const signals = addSignals(defaultSignals, {
-			...defaultDonutProps,
-			children: [createElement(ChartTooltip, { excludeDataKeys: ['excludeFromTooltip'] })],
+			...defaultDonutOptions,
+			chartTooltips: [{ excludeDataKeys: ['excludeFromTooltip'] }],
 		});
 		expect(signals).toHaveLength(defaultSignals.length);
 		expect(signals[0]).toHaveProperty('name', HIGHLIGHTED_ITEM);
@@ -65,7 +62,7 @@ describe('addSignals()', () => {
 
 describe('donutSpecBuilder', () => {
 	test('should add scales correctly', () => {
-		const scales = addScales([], defaultDonutProps);
+		const scales = addScales([], defaultDonutOptions);
 		expect(scales).toHaveLength(1);
 		expect(scales[0]).toHaveProperty('name', COLOR_SCALE);
 	});
@@ -74,13 +71,13 @@ describe('donutSpecBuilder', () => {
 describe('donutSpecBuilder', () => {
 	test('should add donut correctly', () => {
 		const spec = { data: [{ name: FILTERED_TABLE }] };
-		const props = { ...defaultDonutProps, holeRatio: 0.85 };
-		const result = addDonut(spec, props);
+		const options = { ...defaultDonutOptions, holeRatio: 0.85 };
+		const result = addDonut(spec, options);
 		const expectedSpec = {
-			data: addData(spec.data, props),
-			scales: addScales([], props),
-			marks: addMarks([], props),
-			signals: addSignals([], props),
+			data: addData(spec.data, options),
+			scales: addScales([], options),
+			marks: addMarks([], options),
+			signals: addSignals([], options),
 		};
 		expect(result).toEqual(expectedSpec);
 	});

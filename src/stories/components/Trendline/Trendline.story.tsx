@@ -20,7 +20,6 @@ import {
 	ChartPopover,
 	ChartProps,
 	ChartTooltip,
-	Datum,
 	Legend,
 	Line,
 	Scatter,
@@ -32,6 +31,7 @@ import { characterData } from '@stories/data/marioKartData';
 import { StoryFn } from '@storybook/react';
 import { bindWithProps } from 'test-utils/bindWithProps';
 
+import { Datum } from '../../../specBuilder';
 import { barSeriesData } from '../Bar/data';
 
 export default {

@@ -34,28 +34,54 @@ import { Combo } from '@rsc/alpha';
 import { BigNumber, Donut, DonutSummary, SegmentLabel } from '@rsc/rc';
 import { View } from 'vega';
 
+import { Datum } from '../specBuilder';
 import {
 	AreaElement,
 	AxisAnnotationChildElement,
 	AxisAnnotationElement,
 	AxisChildElement,
 	AxisElement,
+	BarAnnotationElement,
 	BarElement,
 	BigNumberElement,
 	ChartChildElement,
 	ChartElement,
+	ChartPopoverElement,
 	ChartTooltipElement,
 	ChildElement,
 	ComboElement,
-	Datum,
 	DonutElement,
+	DonutSummaryElement,
 	LegendElement,
 	LineElement,
-	MarkChildElement,
-	RscElement,
+	MetricRangeElement,
 	ScatterElement,
+	ScatterPathElement,
+	SegmentLabelElement,
+	TitleElement,
 	TrendlineElement,
 } from '../types';
+
+type MarkChildElement =
+	| BarAnnotationElement
+	| ChartTooltipElement
+	| ChartPopoverElement
+	| ScatterPathElement
+	| MetricRangeElement
+	| DonutSummaryElement
+	| SegmentLabelElement
+	| TrendlineElement;
+type RscElement =
+	| MarkChildElement
+	| AreaElement
+	| AxisElement
+	| BarElement
+	| BigNumberElement
+	| LegendElement
+	| LineElement
+	| ScatterElement
+	| TitleElement
+	| ComboElement;
 
 type MappedElement = { name: string; element: ChartElement | RscElement };
 type ElementCounts = {
@@ -88,6 +114,36 @@ export const getElementDisplayName = (element: unknown): string => {
 	)
 		return 'no-display-name';
 	return element.type.displayName;
+};
+
+export const sanitizeChildren = (children: unknown): (ChartChildElement | MarkChildElement)[] => {
+	const validDisplayNames = [
+		Annotation.displayName,
+		Area.displayName,
+		Axis.displayName,
+		AxisAnnotation.displayName,
+		Bar.displayName,
+		ChartPopover.displayName,
+		ChartTooltip.displayName,
+		Combo.displayName,
+		Donut.displayName,
+		DonutSummary.displayName,
+		Legend.displayName,
+		Line.displayName,
+		MetricRange.displayName,
+		ReferenceLine.displayName,
+		Scatter.displayName,
+		ScatterPath.displayName,
+		SegmentLabel.displayName,
+		Title.displayName,
+		Trendline.displayName,
+		TrendlineAnnotation.displayName,
+	];
+	return toArray(children)
+		.flat()
+		.filter((child): child is ChartChildElement | MarkChildElement =>
+			validDisplayNames.includes(getElementDisplayName(child))
+		);
 };
 
 // removes all non-chart specific elements
@@ -261,7 +317,7 @@ export const getAllMarkElements = (
 	const desiredElements: MappedElement[] = [];
 	for (const child of toArray(target.props.children)) {
 		const childName = getElementName(child, elementCounts);
-		desiredElements.push(...getAllMarkElements(child, source, elements, combineElementNames(name, childName)));
+		desiredElements.push(...getAllMarkElements(child, source, elements, combineNames(name, childName)));
 	}
 
 	// no element matches found, give up all hope...
@@ -309,7 +365,7 @@ export const getAllElements = (
 	const desiredElements: MappedElement[] = [];
 	for (const child of toArray(target.props.children)) {
 		const childName = getElementName(child, elementCounts);
-		desiredElements.push(...getAllElements(child, source, elements, combineElementNames(name, childName)));
+		desiredElements.push(...getAllElements(child, source, elements, combineNames(name, childName)));
 	}
 	// no element matches found, give up all hope...
 	return [...elements, ...desiredElements];
@@ -368,7 +424,7 @@ export const getComponentName = (element: ChildElement<RscElement>, defaultName:
 	return defaultName;
 };
 
-export const combineElementNames = (parentName: string | null, childName: string | null): string => {
+export const combineNames = (parentName: string | null, childName: string | null): string => {
 	const formattedChildName =
 		childName && parentName ? childName.charAt(0).toUpperCase() + childName.slice(1) : childName;
 	return [parentName, formattedChildName].filter(Boolean).join('');

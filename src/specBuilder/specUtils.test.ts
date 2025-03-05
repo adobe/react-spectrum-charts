@@ -25,7 +25,7 @@ import {
 	getColorValue,
 	getD3FormatSpecifierFromNumberFormat,
 	getDimensionField,
-	getFacetsFromProps,
+	getFacetsFromOptions,
 	getFacetsFromScales,
 	getLineWidthPixelsFromLineWidth,
 	getPathFromSymbolShape,
@@ -50,25 +50,25 @@ const defaultOpacityScale: BandScale = {
 };
 
 describe('specUtils', () => {
-	describe('getFacetsFromProps()', () => {
+	describe('getFacetsFromOptions()', () => {
 		test('should exclude static values', () => {
-			expect(getFacetsFromProps({ color: DEFAULT_COLOR, lineType: { value: 'solid' } })).toStrictEqual({
+			expect(getFacetsFromOptions({ color: DEFAULT_COLOR, lineType: { value: 'solid' } })).toStrictEqual({
 				facets: [DEFAULT_COLOR],
 				secondaryFacets: [],
 			});
 		});
 		test('should exclude undefined values', () => {
-			expect(getFacetsFromProps({ color: undefined, lineType: { value: 'solid' } })).toStrictEqual({
+			expect(getFacetsFromOptions({ color: undefined, lineType: { value: 'solid' } })).toStrictEqual({
 				facets: [],
 				secondaryFacets: [],
 			});
-			expect(getFacetsFromProps({ color: DEFAULT_COLOR, lineType: undefined })).toStrictEqual({
+			expect(getFacetsFromOptions({ color: DEFAULT_COLOR, lineType: undefined })).toStrictEqual({
 				facets: [DEFAULT_COLOR],
 				secondaryFacets: [],
 			});
 		});
 		test('should getSecondaryFacets', () => {
-			expect(getFacetsFromProps({ color: [DEFAULT_COLOR, DEFAULT_SECONDARY_COLOR] })).toStrictEqual({
+			expect(getFacetsFromOptions({ color: [DEFAULT_COLOR, DEFAULT_SECONDARY_COLOR] })).toStrictEqual({
 				facets: [DEFAULT_COLOR],
 				secondaryFacets: [DEFAULT_SECONDARY_COLOR],
 			});

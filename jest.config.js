@@ -31,5 +31,6 @@ module.exports = {
 		'^d3-format$': '<rootDir>/node_modules/d3-format/dist/d3-format.js',
 		...pathsToModuleNameMapper(compilerOptions.paths),
 	},
+	testPathIgnorePatterns: ['<rootDir>/dist/'],
 	setupFilesAfterEnv: ['@testing-library/jest-dom', 'jest-canvas-mock'],
 };

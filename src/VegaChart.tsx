@@ -13,7 +13,7 @@ import { FC, useEffect, useMemo, useRef } from 'react';
 
 import { TABLE } from '@constants';
 import { useDebugSpec } from '@hooks/useDebugSpec';
-import { extractValues, isVegaData } from '@specBuilder/specUtils';
+import { extractValues, isVegaData } from '@hooks/useSpec';
 import { Config, Padding, Renderers, Spec, View } from 'vega';
 import embed from 'vega-embed';
 import { Options as TooltipOptions } from 'vega-tooltip';

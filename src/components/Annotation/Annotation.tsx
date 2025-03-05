@@ -13,9 +13,9 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { FC } from 'react';
 
-import { AnnotationProps } from '../../types';
+import { BarAnnotationProps } from '../../types';
 
-const Annotation: FC<AnnotationProps> = ({ textKey = 'annotation' }) => {
+const Annotation: FC<BarAnnotationProps> = ({ textKey = 'annotation' }) => {
 	return null;
 };
 

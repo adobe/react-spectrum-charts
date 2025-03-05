@@ -16,7 +16,7 @@ import { toCamelCase } from '@utils';
 import { produce } from 'immer';
 import { OrdinalScale, Scale, ScaleData, ScaleMultiFieldsRef, SignalRef } from 'vega';
 
-import { DualFacet, FacetRef, FacetType, Orientation } from '../../types';
+import { DualFacet, FacetRef, FacetType, Orientation } from '../types';
 
 type AxisType = 'x' | 'y';
 type SupportedScaleType = 'linear' | 'point' | 'band' | 'time' | 'ordinal';
@@ -149,10 +149,10 @@ export const addFieldToFacetScaleDomain = (
 	}
 };
 
-export const generateScale = (type: SupportedScaleType, axis: AxisType, props?: Partial<Scale>): Scale => {
+export const generateScale = (type: SupportedScaleType, axis: AxisType, options?: Partial<Scale>): Scale => {
 	return {
 		...getDefaultScale(type, axis),
-		...props,
+		...options,
 	} as unknown as Scale;
 };
 

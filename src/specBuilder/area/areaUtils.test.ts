@@ -21,13 +21,12 @@ import {
 import { getAreaMark } from './areaUtils';
 
 describe('getAreaMark', () => {
-	test('basic props', () => {
+	test('basic options', () => {
 		expect(
 			getAreaMark({
 				name: 'area0',
 				color: DEFAULT_COLOR,
 				colorScheme: DEFAULT_COLOR_SCHEME,
-				children: [],
 				metricStart: 'metricStart',
 				metricEnd: 'metricEnd',
 				isStacked: false,
@@ -81,7 +80,6 @@ describe('getAreaMark', () => {
 				name: 'area0',
 				color: DEFAULT_COLOR,
 				colorScheme: DEFAULT_COLOR_SCHEME,
-				children: [],
 				metricStart: 'metricStart',
 				metricEnd: 'metricEnd',
 				isStacked: true,
@@ -143,7 +141,6 @@ describe('getAreaMark', () => {
 				name: 'area0',
 				color: DEFAULT_COLOR,
 				colorScheme: DEFAULT_COLOR_SCHEME,
-				children: [],
 				metricStart: 'metricStart',
 				metricEnd: 'metricEnd',
 				isStacked: false,
@@ -197,7 +194,6 @@ describe('getAreaMark', () => {
 				name: 'area0',
 				color: DEFAULT_COLOR,
 				colorScheme: DEFAULT_COLOR_SCHEME,
-				children: [],
 				metricStart: 'metricStart',
 				metricEnd: 'metricEnd',
 				isStacked: false,

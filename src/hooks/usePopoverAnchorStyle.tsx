@@ -13,7 +13,7 @@ import { CSSProperties, useMemo } from 'react';
 
 import { Padding, View } from 'vega';
 
-import { MarkBounds } from '../types';
+import { MarkBounds } from '../specBuilder';
 
 export default function usePopoverAnchorStyle(
 	popoverIsOpen: boolean,

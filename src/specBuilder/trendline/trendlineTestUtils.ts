@@ -9,15 +9,16 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { createElement } from 'react';
-
-import { Trendline } from '@components/Trendline';
 import { DEFAULT_COLOR, DEFAULT_COLOR_SCHEME, DEFAULT_METRIC, DEFAULT_TIME_DIMENSION, MARK_ID } from '@constants';
 
-import { LineSpecProps, TrendlineSpecProps } from '../../types';
+import { LineSpecOptions, TrendlineSpecOptions } from '../types';
 
-export const defaultLineProps: LineSpecProps = {
-	children: [createElement(Trendline, { method: 'average' })],
+export const defaultLineOptions: LineSpecOptions = {
+	chartPopovers: [],
+	chartTooltips: [],
+	hasOnClick: false,
+	metricRanges: [],
+	trendlines: [{ method: 'average' }],
 	color: DEFAULT_COLOR,
 	colorScheme: DEFAULT_COLOR_SCHEME,
 	dimension: DEFAULT_TIME_DIMENSION,
@@ -33,8 +34,8 @@ export const defaultLineProps: LineSpecProps = {
 	popoverMarkName: undefined,
 };
 
-export const defaultTrendlineProps: TrendlineSpecProps = {
-	children: [],
+export const defaultTrendlineOptions: TrendlineSpecOptions = {
+	chartTooltips: [],
 	colorScheme: DEFAULT_COLOR_SCHEME,
 	dimensionExtent: [null, null],
 	dimensionRange: [null, null],
@@ -49,6 +50,7 @@ export const defaultTrendlineProps: TrendlineSpecProps = {
 	name: 'line0Trendline0',
 	opacity: 1,
 	orientation: 'horizontal',
+	trendlineAnnotations: [],
 	trendlineColor: DEFAULT_COLOR,
 	trendlineDimension: DEFAULT_TIME_DIMENSION,
 	trendlineMetric: DEFAULT_METRIC,

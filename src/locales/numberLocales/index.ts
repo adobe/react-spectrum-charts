@@ -11,7 +11,7 @@
  */
 import { NumberLocale } from 'vega';
 
-import { NumberLocaleCode } from '../../types/locales';
+import { NumberLocaleCode } from '../../types/locale.types';
 import arae from './ar-AE.json';
 import arbh from './ar-BH.json';
 import ardj from './ar-DJ.json';

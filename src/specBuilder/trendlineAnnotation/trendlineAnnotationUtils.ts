@@ -9,7 +9,6 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { TrendlineAnnotation } from '@components/TrendlineAnnotation';
 import { TRENDLINE_VALUE } from '@constants';
 import { getColorProductionRule, getColorProductionRuleSignalString } from '@specBuilder/marks/markUtils';
 import { getScaleName } from '@specBuilder/scale/scaleSpecBuilder';
@@ -20,24 +19,18 @@ import {
 } from '@specBuilder/trendline/trendlineMarkUtils';
 import { ColorValueRef, GroupMark, NumericValueRef, ProductionRule, RectMark, SymbolMark, TextMark } from 'vega';
 
-import {
-	ColorFacet,
-	TrendlineAnnotationElement,
-	TrendlineAnnotationProps,
-	TrendlineAnnotationSpecProps,
-	TrendlineSpecProps,
-} from '../../types';
+import { ColorFacet, TrendlineAnnotationOptions, TrendlineAnnotationSpecOptions, TrendlineSpecOptions } from '../types';
 
 /**
  * Applies all trendline annotation defaults
- * @param trenlineAnnotationProps
+ * @param trenlineAnnotationOptions
  * @param index
- * @param trendlineProps
+ * @param trendlineOptions
  * @param markName
- * @returns TrendlineAnnotationSpecProps
+ * @returns TrendlineAnnotationSpecOptions
  */
-export const getTrendlineAnnotationSpecProps = (
-	{ badge = false, dimensionValue = 'end', numberFormat = '', prefix = '' }: TrendlineAnnotationProps,
+export const getTrendlineAnnotationSpecOptions = (
+	{ badge = false, dimensionValue = 'end', numberFormat = '', prefix = '' }: TrendlineAnnotationOptions,
 	index: number,
 	{
 		colorScheme,
@@ -49,9 +42,9 @@ export const getTrendlineAnnotationSpecProps = (
 		trendlineColor,
 		trendlineDimension,
 		name: trendlineName,
-	}: TrendlineSpecProps,
+	}: TrendlineSpecOptions,
 	markName: string
-): TrendlineAnnotationSpecProps => ({
+): TrendlineAnnotationSpecOptions => ({
 	badge,
 	colorScheme,
 	dimensionValue,
@@ -71,31 +64,28 @@ export const getTrendlineAnnotationSpecProps = (
 
 /**
  * Gets all the annotations on a trendline
- * @param trendlineProps
+ * @param trendlineOptions
  * @param markName
- * @returns TrendlineAnnotationSpecProps[]
+ * @returns TrendlineAnnotationSpecOptions[]
  */
 export const getTrendlineAnnotations = (
-	trendlineProps: TrendlineSpecProps,
+	trendlineOptions: TrendlineSpecOptions,
 	markName: string
-): TrendlineAnnotationSpecProps[] => {
-	const annotationElements = trendlineProps.children.filter(
-		(child) => child.type === TrendlineAnnotation
-	) as TrendlineAnnotationElement[];
-	return annotationElements.map((annotation, index) =>
-		getTrendlineAnnotationSpecProps(annotation.props, index, trendlineProps, markName)
+): TrendlineAnnotationSpecOptions[] => {
+	return trendlineOptions.trendlineAnnotations.map((annotationOptions, index) =>
+		getTrendlineAnnotationSpecOptions(annotationOptions, index, trendlineOptions, markName)
 	);
 };
 
 /**
  * Gets all the trendline annotation marks
- * @param trendlineProps
+ * @param trendlineOptions
  * @param markName
  * @returns GroupMark[]
  */
-export const getTrendlineAnnotationMarks = (trendlineProps: TrendlineSpecProps, markName: string): GroupMark[] => {
+export const getTrendlineAnnotationMarks = (trendlineOptions: TrendlineSpecOptions, markName: string): GroupMark[] => {
 	const marks: GroupMark[] = [];
-	const annotations = getTrendlineAnnotations(trendlineProps, markName);
+	const annotations = getTrendlineAnnotations(trendlineOptions, markName);
 
 	annotations.forEach((annotation) => {
 		marks.push({
@@ -114,11 +104,11 @@ export const getTrendlineAnnotationMarks = (trendlineProps: TrendlineSpecProps, 
 
 /**
  * Gets the annotation points
- * @param annotationProps
+ * @param trendlineAnnotationOptions
  * @returns SymbolMark
  */
-const getTrendlineAnnotationPoints = (annotationProps: TrendlineAnnotationSpecProps): SymbolMark => {
-	const { name, trendlineName, trendlineWidth, displayOnHover } = annotationProps;
+const getTrendlineAnnotationPoints = (annotationOptions: TrendlineAnnotationSpecOptions): SymbolMark => {
+	const { name, trendlineName, trendlineWidth, displayOnHover } = annotationOptions;
 	const data = displayOnHover ? `${trendlineName}_highlightedData` : `${trendlineName}_highResolutionData`;
 	return {
 		name: `${name}_points`,
@@ -129,8 +119,8 @@ const getTrendlineAnnotationPoints = (annotationProps: TrendlineAnnotationSpecPr
 			enter: {
 				opacity: { value: 0 },
 				size: { value: Math.pow(trendlineWidth, 2) },
-				x: getTrendlineAnnotationPointX(annotationProps),
-				y: getTrendlineAnnotationPointY(annotationProps),
+				x: getTrendlineAnnotationPointX(annotationOptions),
+				y: getTrendlineAnnotationPointY(annotationOptions),
 			},
 		},
 	};
@@ -138,7 +128,7 @@ const getTrendlineAnnotationPoints = (annotationProps: TrendlineAnnotationSpecPr
 
 /**
  * Gets the correct x rule for the annotation point
- * @param annotationProps
+ * @param trendlineAnnotationOptions
  * @returns NumericValueRef
  */
 export const getTrendlineAnnotationPointX = ({
@@ -147,7 +137,7 @@ export const getTrendlineAnnotationPointX = ({
 	trendlineDimensionExtent,
 	trendlineDimensionScaleType,
 	trendlineOrientation,
-}: TrendlineAnnotationSpecProps): NumericValueRef => {
+}: TrendlineAnnotationSpecOptions): NumericValueRef => {
 	const scale = getScaleName('x', trendlineDimensionScaleType);
 	if (trendlineOrientation === 'vertical') {
 		return { scale, field: TRENDLINE_VALUE };
@@ -164,7 +154,7 @@ export const getTrendlineAnnotationPointX = ({
 
 /**
  * Gets the correct y rule for the annotation point
- * @param param0
+ * @param trendlineAnnotationOptions
  * @returns NumericValueRef
  */
 export const getTrendlineAnnotationPointY = ({
@@ -172,7 +162,7 @@ export const getTrendlineAnnotationPointY = ({
 	trendlineDimension,
 	trendlineDimensionExtent,
 	trendlineOrientation,
-}: TrendlineAnnotationSpecProps): NumericValueRef => {
+}: TrendlineAnnotationSpecOptions): NumericValueRef => {
 	const scale = 'yLinear';
 	if (trendlineOrientation === 'horizontal') {
 		return { scale, field: TRENDLINE_VALUE };
@@ -189,10 +179,10 @@ export const getTrendlineAnnotationPointY = ({
 
 /**
  * Gets the annotation text mark
- * @param annotationProps
+ * @param trendlineAnnotationOptions
  * @returns TextMark
  */
-export const getTrendlineAnnotationTextMark = (annotation: TrendlineAnnotationSpecProps): TextMark => {
+export const getTrendlineAnnotationTextMark = (annotation: TrendlineAnnotationSpecOptions): TextMark => {
 	const { name, numberFormat, prefix, trendlineName, markName } = annotation;
 	const textPrefix = prefix ? `'${prefix} ' + ` : '';
 	const fill = getTextFill({ ...annotation });
@@ -223,14 +213,14 @@ export const getTrendlineAnnotationTextMark = (annotation: TrendlineAnnotationSp
 /**
  * Get's the encoding for the annotation text fill.
  * Includes a color contrast check to ensure the text is visually a11y.
- * @param annotationProps
+ * @param trendlineAnnotationOptions
  * @returns fill ProductionRule
  */
 export const getTextFill = ({
 	badge,
 	colorScheme,
 	trendlineColor,
-}: TrendlineAnnotationSpecProps): ProductionRule<ColorValueRef> | undefined => {
+}: TrendlineAnnotationSpecOptions): ProductionRule<ColorValueRef> | undefined => {
 	if (!badge) {
 		// by returning undefined, the rsc config will be used
 		return undefined;
@@ -249,7 +239,7 @@ export const getTrendlineAnnotationBadgeMark = ({
 	colorScheme,
 	name,
 	trendlineColor,
-}: TrendlineAnnotationSpecProps): RectMark[] => {
+}: TrendlineAnnotationSpecOptions): RectMark[] => {
 	if (!badge) {
 		return [];
 	}

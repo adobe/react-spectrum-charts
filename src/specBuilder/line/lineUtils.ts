@@ -9,87 +9,59 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { ReactNode } from 'react';
-
-import { Trendline } from '@components/Trendline';
-import { hasPopover, isInteractive } from '@specBuilder/marks/markUtils';
-import { sanitizeMarkChildren } from '@utils';
-
 import {
-	ClickableChartProps,
+	BarAnnotationOptions,
+	ChartPopoverOptions,
+	ChartTooltipOptions,
 	ColorFacet,
 	ColorScheme,
+	DonutSummaryOptions,
 	HighlightedItem,
 	InteractionMode,
 	LineTypeFacet,
 	LineWidthFacet,
-	MarkChildElement,
-	OnClickCallback,
+	MetricRangeOptions,
 	OpacityFacet,
 	ScaleType,
-} from '../../types';
+	ScatterPathOptions,
+	SegmentLabelOptions,
+	TrendlineOptions,
+} from '../types';
 
-export const getInteractiveMarkName = (
-	children: MarkChildElement[],
-	name: string,
-	highlightedItem?: HighlightedItem,
-	props?: ClickableChartProps
-): string | undefined => {
-	// if the line has an interactive component, this line is the target for the interactive component
-	if (isInteractive(children, props) || highlightedItem !== undefined) {
-		return name;
-	}
-	// if there is a trendline with an interactive component on the line, then the trendline is the target for the interactive component
-	if (
-		children.some(
-			(child) =>
-				child.type === Trendline &&
-				'children' in child.props &&
-				isInteractive(sanitizeMarkChildren(child.props.children as ReactNode), props)
-		)
-	) {
-		return `${name}Trendline`;
-	}
-};
-
-export const getPopoverMarkName = (children: MarkChildElement[], name: string): string | undefined => {
+export const getPopoverMarkName = (chartPopovers: ChartPopoverOptions[], lineName: string): string | undefined => {
 	// if the line has a popover, this line is the target for the popover
-	if (hasPopover(children)) {
-		return name;
-	}
-	// if there is a trendline with a popover on this line, then the trendline is the target for the popover
-	if (
-		children.some(
-			(child) =>
-				child.type === Trendline &&
-				'children' in child.props &&
-				hasPopover(sanitizeMarkChildren(child.props.children as ReactNode))
-		)
-	) {
-		return `${name}Trendline`;
+	if (chartPopovers.length) {
+		return lineName;
 	}
 };
 
-export interface LineMarkProps {
-	children: MarkChildElement[];
+export interface LineMarkOptions {
+	barAnnotations?: BarAnnotationOptions[];
+	chartPopovers?: ChartPopoverOptions[];
+	chartTooltips?: ChartTooltipOptions[];
 	color: ColorFacet;
 	colorScheme: ColorScheme;
 	dimension: string;
 	displayOnHover?: boolean;
+	donutSummaries?: DonutSummaryOptions[];
+	hasOnClick?: boolean;
 	highlightedItem?: HighlightedItem;
 	idKey: string;
 	interactiveMarkName?: string; // optional name of the mark that is used for hover and click interactions
+	interactionMode?: InteractionMode;
 	isHighlightedByDimension?: boolean;
 	isHighlightedByGroup?: boolean;
 	lineType: LineTypeFacet;
 	lineWidth?: LineWidthFacet;
 	metric: string;
 	metricAxis?: string;
+	metricRanges?: MetricRangeOptions[];
 	name: string;
 	opacity: OpacityFacet;
 	popoverMarkName?: string;
 	scaleType: ScaleType;
+	scatterPaths?: ScatterPathOptions[];
+	segmentLabels?: SegmentLabelOptions[];
 	staticPoint?: string;
-	interactionMode?: InteractionMode;
-	onClick?: OnClickCallback;
+	trendlines?: TrendlineOptions[];
 }

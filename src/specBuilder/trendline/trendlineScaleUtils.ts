@@ -12,18 +12,18 @@
 import { FILTERED_TABLE, LINEAR_PADDING } from '@constants';
 import { Scale } from 'vega';
 
-import { TrendlineParentProps, hasTrendlineWithNormalizedDimension } from './trendlineUtils';
+import { TrendlineParentOptions, hasTrendlineWithNormalizedDimension } from './trendlineUtils';
 
 /**
  * Gets all the scales used for trendlines
- * @param props
+ * @param options
  * @returns Scale[]
  */
-export const getTrendlineScales = (props: TrendlineParentProps): Scale[] => {
-	const { dimension } = props;
+export const getTrendlineScales = (options: TrendlineParentOptions): Scale[] => {
+	const { dimension } = options;
 
 	// if there is a trendline that requires a normalized dimension, add the scale
-	if (hasTrendlineWithNormalizedDimension(props)) {
+	if (hasTrendlineWithNormalizedDimension(options)) {
 		return [
 			{
 				name: 'xTrendline',
