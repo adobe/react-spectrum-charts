@@ -89,6 +89,18 @@ export function getBulletMarks(props: BulletSpecProps): GroupMark {
 		marks: [],
 	};
 
+	// If threshold are provided, add them as a data source and threshold marks
+	if (props.thresholds) {
+		bulletMark.data = [
+			{
+				name: 'thresholds',
+				values: props.thresholds,
+				transform: [{ type: 'identifier', as: 'id' }],
+			},
+		];
+		bulletMark.marks?.push(getBulletMarkThreshold(props));
+	}
+
 	if (props.target && props.showTarget !== false) {
 		bulletMark.marks?.push(getBulletMarkTarget(props));
 		if (props.showTargetValue) {
@@ -224,4 +236,43 @@ export function getBulletMarkTargetValueLabel(props: BulletSpecProps): Mark {
 	};
 
 	return bulletMarkTargetValueLabel;
+}
+
+export function getBulletMarkThreshold(props: BulletSpecProps): Mark {
+	const bulletMarkThreshold: Mark = {
+		name: `${props.name}Threshold`,
+		description: `${props.name}Threshold`,
+		type: 'rect',
+		from: { data: 'thresholds' },
+		clip: true,
+		encode: {
+			enter: {
+				cornerRadiusTopLeft: [
+					{ test: `!isDefined(datum.thresholdMin) && domain('xscale')[0] !== 0`, value: 3 },
+				],
+				cornerRadiusBottomLeft: [
+					{ test: `!isDefined(datum.thresholdMin) && domain('xscale')[0] !== 0`, value: 3 },
+				],
+				cornerRadiusTopRight: [
+					{ test: `!isDefined(datum.thresholdMax) && domain('xscale')[1] !== 0`, value: 3 },
+				],
+				cornerRadiusBottomRight: [
+					{ test: `!isDefined(datum.thresholdMax) && domain('xscale')[1] !== 0`, value: 3 },
+				],
+				fill: { field: 'fill' },
+				fillOpacity: { value: 0.2 },
+			},
+			update: {
+				x: {
+					signal: "isDefined(datum.thresholdMin) ? scale('xscale', datum.thresholdMin) : 0",
+				},
+				x2: {
+					signal: "isDefined(datum.thresholdMax) ? scale('xscale', datum.thresholdMax) : width",
+				},
+				height: { signal: 'bulletThresholdHeight' },
+				y: { signal: 'bulletGroupHeight - 3 - bulletThresholdHeight' },
+			},
+		},
+	};
+	return bulletMarkThreshold;
 }

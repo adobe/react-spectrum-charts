@@ -247,6 +247,8 @@ export interface BulletProps extends MarkProps {
 	 * see {@link https://d3js.org/d3-format#locale_format}
 	 */
 	numberFormat?: NumberFormat;
+	/** Data field for users to supply an array of thresholds definitions. */
+	thresholds?: { thresholdMin?: number; thresholdMax?: number; fill: string }[];
 }
 
 export interface DonutSummaryProps {
