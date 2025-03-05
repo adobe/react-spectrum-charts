@@ -11,13 +11,13 @@
  */
 import { JSXElementConstructor, MutableRefObject, ReactElement, ReactNode } from 'react';
 
-import { GROUP_DATA, INTERACTION_MODE, MARK_ID, SERIES_ID, TRENDLINE_VALUE } from '@constants';
 import { Config, Data, FontWeight, Locale, NumberLocale, Padding, Spec, SymbolShape, TimeLocale, View } from 'vega';
 
 import { Icon, IconProps } from '@adobe/react-spectrum';
 import { IconPropsWithoutChildren } from '@react-spectrum/icon';
 import { Theme } from '@react-types/provider';
 
+import { GROUP_DATA, INTERACTION_MODE, MARK_ID, SERIES_ID, TRENDLINE_VALUE } from '../constants';
 import { Colors, SpectrumColor } from './SpectrumVizColors';
 import { LocaleCode, NumberLocaleCode, TimeLocaleCode } from './locales';
 
