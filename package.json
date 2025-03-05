@@ -1,6 +1,10 @@
 {
-	"name": "@adobe/react-spectrum-charts",
-	"version": "v1.15.5",
+	"name": "spectrum-charts-monorepo",
+	"version": "0.0.0",
+	"private": true,
+	"workspaces": [
+		"packages/*"
+	],
 	"description": "Declarative library for composing Spectrum visualizations in React.",
 	"browser": "./dist/index.js",
 	"module": "./dist/index.js",
@@ -48,20 +52,15 @@
 	],
 	"repository": {
 		"type": "git",
-		"url": "git+ssh://git@github.com/adobe/react-spectrum-charts.git"
+		"url": "https://github.com/adobe/react-spectrum-charts"
 	},
-	"publishConfig": {
-		"access": "public"
-	},
-	"author": "Marshall Peterson",
+	"author": "marshall.w.peterson@gmail.com",
 	"license": "Apache-2.0",
 	"scripts": {
 		"build": "webpack --config webpack.config.js",
 		"build:storybook": "storybook build -o ./dist-storybook --quiet",
 		"copyrights": "node ./scripts/addHeaders.js",
-		"g": "plop component",
-		"generate": "plop component",
-		"lint": "eslint src --ext .ts,.tsx,.js,.jsx",
+		"lint": "eslint packages --ext .ts,.tsx,.js,.jsx",
 		"ts": "yarn tsc",
 		"tsc": "tsc --noEmit --skipLibCheck",
 		"prepack": "yarn build",
@@ -107,6 +106,7 @@
 		"axios": "^1.7.7",
 		"babel-jest": "^29.7.0",
 		"babel-loader": "^9.1.0",
+		"babel-plugin-module-resolver": "^5.0.2",
 		"chalk": "4.1.2",
 		"clean-webpack-plugin": "^4.0.0",
 		"concurrently": "^8.0.0",
@@ -148,21 +148,8 @@
 		"webpack-dev-server": "^4.11.1",
 		"webpack-node-externals": "^3.0.0"
 	},
-	"dependencies": {
-		"d3-format": "^3.1.0",
-		"deepmerge": ">= 4.0.0",
-		"immer": ">= 9.0.0",
-		"uuid": ">= 9.0.0",
-		"vega-embed": ">= 6.27.0",
-		"vega-tooltip": ">= 0.35.2"
-	},
-	"peerDependencies": {
-		"@adobe/react-spectrum": ">=3.23.0",
-		"react": ">= 17.0.2",
-		"react-dom": ">= 17.0.2",
-		"vega": ">= 5.20.2",
-		"vega-lite": ">= 5.0.0"
-	},
+	"dependencies": {},
+	"peerDependencies": {},
 	"resolutions": {
 		"@types/react": "18.3.12",
 		"@types/react-dom": "18.3.1",

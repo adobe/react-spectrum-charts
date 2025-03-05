@@ -1,0 +1,52 @@
+{
+	"presets": [
+		[
+			"@babel/preset-env",
+			{
+				"targets": {
+					"browsers": ["last 1 chrome version", "last 1 firefox version", "last 1 safari version"]
+				}
+			}
+		],
+		"@babel/preset-typescript",
+		[
+			"@babel/preset-react",
+			{
+				"runtime": "automatic"
+			}
+		]
+	],
+	"plugins": [
+		[
+			"@babel/plugin-transform-runtime",
+			{
+				"useESModules": true,
+				"regenerator": false
+			}
+		],
+		[
+			"module-resolver",
+			{
+				"root": ["./src"],
+				"alias": {
+					"@": "./src",
+					"@constants": "./src/constants.ts",
+					"@components": "./src/components",
+					"@hooks": "./src/hooks",
+					"@locales": "./src/locales",
+					"@matchMediaMock": "./src/test-utils/__mocks__/matchMedia.mock",
+					"@rsc/alpha": "./src/alpha/index.ts",
+					"@rsc/beta": "./src/beta/index.ts",
+					"@rsc/rc": "./src/rc/index.ts",
+					"@rsc": "./src/index.ts",
+					"@specBuilder": "./src/specBuilder",
+					"@stories": "./src/stories",
+					"@svgPaths": "./src/svgPaths.ts",
+					"@test-utils": "./src/test-utils",
+					"@themes": "./src/themes",
+					"@utils": "./src/utils"
+				}
+			}
+		]
+	]
+}

@@ -14,19 +14,13 @@
 const path = require('path');
 const webpack = require('webpack');
 const nodeExternals = require('webpack-node-externals');
-const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin');
 
 const { name, version } = require('./package.json');
 const banner = `${name}@v${version}`;
 
 module.exports = {
-	entry: {
-		alpha: './src/alpha/index.ts',
-		beta: './src/beta/index.ts',
-		rc: './src/rc/index.ts',
-		index: './src/index.ts',
-	},
-	mode: 'production',
+	entry: path.resolve(__dirname, `packages/${packageName}/src/index.tsx`),
+	mode: 'development',
 
 	output: {
 		filename: '[name].js',
@@ -63,7 +57,26 @@ module.exports = {
 	plugins: [new webpack.BannerPlugin(banner)],
 
 	resolve: {
-		plugins: [new TsconfigPathsPlugin({})],
+		alias: {
+			'@constants': path.resolve(__dirname, 'packages/react-spectrum-charts/src/constants.ts'),
+			'@components': path.resolve(__dirname, 'packages/react-spectrum-charts/src/components/'),
+			'@hooks': path.resolve(__dirname, 'packages/react-spectrum-charts/src/hooks/'),
+			'@locales': path.resolve(__dirname, 'packages/react-spectrum-charts/src/locales/'),
+			'@matchMediaMock': path.resolve(
+				__dirname,
+				'packages/react-spectrum-charts/src/test-utils/__mocks__/matchMedia.mock.js'
+			),
+			'@rsc': path.resolve(__dirname, 'packages/react-spectrum-charts/src/'),
+			'@rsc/alpha': path.resolve(__dirname, 'packages/react-spectrum-charts/src/alpha/'),
+			'@rsc/beta': path.resolve(__dirname, 'packages/react-spectrum-charts/src/beta/'),
+			'@rsc/rc': path.resolve(__dirname, 'packages/react-spectrum-charts/src/rc/'),
+			'@specBuilder': path.resolve(__dirname, 'packages/react-spectrum-charts/src/specBuilder/'),
+			'@stories': path.resolve(__dirname, 'packages/react-spectrum-charts/src/stories/'),
+			'@svgPaths': path.resolve(__dirname, 'packages/react-spectrum-charts/src/svgPaths.ts'),
+			'@test-utils': path.resolve(__dirname, 'packages/react-spectrum-charts/src/test-utils/'),
+			'@themes': path.resolve(__dirname, 'packages/react-spectrum-charts/src/themes/'),
+			'@utils': path.resolve(__dirname, 'packages/react-spectrum-charts/src/utils/'),
+		},
 		extensions: ['.tsx', '.ts', '.js', '.jsx', '.svg', '.css', '.json'],
 	},
 

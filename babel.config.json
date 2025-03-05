@@ -8,7 +8,6 @@
 				}
 			}
 		],
-
 		"@babel/preset-typescript",
 		[
 			"@babel/preset-react",
@@ -24,6 +23,15 @@
 				"useESModules": true,
 				"regenerator": false
 			}
+		],
+		[
+			"module-resolver",
+			{
+				"root": ["./packages"],
+				"alias": {
+					"@adobe/react-spectrum-charts": "./packages/react-spectrum-charts/src"
+				}
+			}
 		]
 	],
 	"env": {
@@ -33,6 +41,13 @@
 					"@babel/preset-env",
 					{
 						"targets": "current node"
+					}
+				],
+				"@babel/preset-typescript",
+				[
+					"@babel/preset-react",
+					{
+						"runtime": "automatic"
 					}
 				]
 			]

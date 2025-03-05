@@ -21,7 +21,7 @@ module.exports = {
 	transform: {
 		'^.+\\.(j|t)sx?$': 'babel-jest',
 	},
-	moduleDirectories: ['src', 'node_modules'],
+	moduleDirectories: ['packages', 'node_modules'],
 	moduleNameMapper: {
 		'\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$':
 			'<rootDir>/__mocks__/fileMock.ts',
@@ -32,4 +32,12 @@ module.exports = {
 		...pathsToModuleNameMapper(compilerOptions.paths),
 	},
 	setupFilesAfterEnv: ['@testing-library/jest-dom', 'jest-canvas-mock'],
+	testMatch: [
+		'<rootDir>/packages/*/src/**/*.test.{js,jsx,ts,tsx}',
+		'<rootDir>/packages/*/src/**/*.spec.{js,jsx,ts,tsx}',
+	],
+	testPathIgnorePatterns: ['/node_modules/', '/dist/', '/build/', '/coverage/'],
+	transformIgnorePatterns: [
+		'/node_modules/(?!(@adobe/react-spectrum|@react-spectrum|@spectrum-icons|@internationalized|@react-types|@react-stately|@react-aria|@babel/runtime)/)',
+	],
 };

@@ -1,6 +1,7 @@
 {
 	"compilerOptions": {
-		"baseUrl": ".",
+		"composite": true,
+		"baseUrl": "src",
 		"outDir": "./dist",
 		"module": "node16",
 		"target": "ES2017",
@@ -21,10 +22,25 @@
 		"types": ["node", "jest", "@testing-library/jest-dom"],
 		"skipLibCheck": true,
 		"paths": {
+			"@constants": ["constants.ts"],
+			"@components/*": ["components/*"],
+			"@hooks/*": ["hooks/*"],
+			"@locales": ["locales"],
+			"@matchMediaMock": ["test-utils/__mocks__/matchMedia.mock"],
+			"@rsc": ["index.ts"],
+			"@rsc/alpha": ["alpha"],
+			"@rsc/beta": ["beta"],
+			"@rsc/rc": ["rc"],
+			"@specBuilder/*": ["specBuilder/*"],
+			"@stories/*": ["stories/*"],
+			"@svgPaths": ["svgPaths"],
+			"@test-utils": ["test-utils"],
+			"@themes": ["themes"],
+			"@themes/*": ["themes/*"],
+			"@utils": ["utils"],
 			"@react-spectrum-charts/*": ["packages/react-spectrum-charts/src/*"]
 		}
 	},
-	"references": [{ "path": "./packages/react-spectrum-charts" }],
-	"include": ["packages"],
+	"include": ["./src/**/*.ts", "./src/**/*.tsx", "./src/**/*.json"],
 	"exclude": ["node_modules", "dist", "dist-storybook"]
 }
