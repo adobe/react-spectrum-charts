@@ -18,3 +18,9 @@ export const basicBulletData = [
 	{ graphLabel: 'Instagram', currentAmount: 300, target: 250 },
 	{ graphLabel: 'WhatsApp', currentAmount: 375, target: 300 },
 ];
+
+export const basicThresholdsData = [
+	{ thresholdMax: 120, fill: 'rgb(234, 56, 41)' },
+	{ thresholdMin: 120, thresholdMax: 235, fill: 'rgb(249, 137, 23)' },
+	{ thresholdMin: 235, fill: 'rgb(21, 164, 110)' },
+];
