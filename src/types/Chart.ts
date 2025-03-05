@@ -247,7 +247,13 @@ export interface BulletProps extends MarkProps {
 	 * see {@link https://d3js.org/d3-format#locale_format}
 	 */
 	numberFormat?: NumberFormat;
-	/** Data field for users to supply an array of thresholds definitions. */
+	/** Array of threshold definitions to be rendered as background bands on the bullet chart.
+	 *
+	 *  Each threshold object supports:
+	 * - `thresholdMin` (optional): The lower bound of the threshold. If undefined, the threshold starts from the beginning of the x-scale.
+	 * - `thresholdMax` (optional): The upper bound of the threshold. If undefined, the threshold extends to the end of the x-scale.
+	 * - `fill` (required): The fill color to use for the threshold background.
+	 */
 	thresholds?: { thresholdMin?: number; thresholdMax?: number; fill: string }[];
 }
 
