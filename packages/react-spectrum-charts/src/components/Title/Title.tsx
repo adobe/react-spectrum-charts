@@ -13,8 +13,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { FC } from 'react';
 
-import { DEFAULT_TITLE_FONT_WEIGHT } from '@constants';
-
+import { DEFAULT_TITLE_FONT_WEIGHT } from '../../constants';
 import { TitleProps } from '../../types';
 
 const Title: FC<TitleProps> = ({

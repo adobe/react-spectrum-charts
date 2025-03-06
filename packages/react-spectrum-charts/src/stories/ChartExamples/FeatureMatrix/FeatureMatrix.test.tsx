@@ -18,9 +18,8 @@ import {
 	queryMarksByGroupName,
 	render,
 	screen,
-} from '@test-utils';
-import { spectrumColors } from '@themes';
-
+} from '../../../test-utils';
+import { spectrumColors } from '../../../themes';
 import { FeatureMatrix, MultipleSegmentFeatureMatrix, TimeCompareFeatureMatrix } from './FeatureMatrix.story';
 
 const colors = spectrumColors.light;

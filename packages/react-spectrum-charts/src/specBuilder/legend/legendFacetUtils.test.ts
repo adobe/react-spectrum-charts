@@ -9,9 +9,9 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { COLOR_SCALE, DEFAULT_COLOR, LINE_TYPE_SCALE, SYMBOL_SIZE_SCALE, TABLE } from '@constants';
 import { Scale } from 'vega';
 
+import { COLOR_SCALE, DEFAULT_COLOR, LINE_TYPE_SCALE, SYMBOL_SIZE_SCALE, TABLE } from '../../constants';
 import { getFacets, getFacetsFromKeys } from './legendFacetUtils';
 
 describe('getFacets()', () => {

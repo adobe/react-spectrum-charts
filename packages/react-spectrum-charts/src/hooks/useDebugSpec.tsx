@@ -11,10 +11,10 @@
  */
 import { useEffect } from 'react';
 
-import { debugLog } from '@utils';
 import { Config, Spec } from 'vega';
 
 import { mergeValuesIntoData } from '../specBuilder/specUtils';
+import { debugLog } from '../utils';
 
 export const useDebugSpec = (
 	debug: boolean,

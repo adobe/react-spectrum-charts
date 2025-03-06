@@ -11,11 +11,10 @@
  */
 import { createElement, useMemo } from 'react';
 
-import { ChartTooltip } from '@components/ChartTooltip';
-import { getAllElements } from '@utils';
-
 import { Chart } from '../Chart';
+import { ChartTooltip } from '../components/ChartTooltip';
 import { ChartChildElement, ChartTooltipElement, ChartTooltipProps, TooltipHandler } from '../types';
+import { getAllElements } from '../utils';
 
 type MappedTooltip = { name: string; element: ChartTooltipElement };
 

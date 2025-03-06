@@ -18,10 +18,9 @@ import {
 	LINE_WIDTH_SCALE,
 	OPACITY_SCALE,
 	SYMBOL_SIZE_SCALE,
-} from '@constants';
-import { defaultSignals } from '@specBuilder/specTestUtils';
-import { initializeSpec } from '@specBuilder/specUtils';
-
+} from '../../constants';
+import { defaultSignals } from '../specTestUtils';
+import { initializeSpec } from '../specUtils';
 import { addData, addSignals, setScales } from './scatterSpecBuilder';
 import { defaultScatterOptions } from './scatterTestUtils';
 

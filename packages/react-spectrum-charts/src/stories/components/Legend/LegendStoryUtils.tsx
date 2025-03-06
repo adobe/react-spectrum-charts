@@ -11,10 +11,13 @@
  */
 import React, { ReactElement } from 'react';
 
-import useChartProps from '@hooks/useChartProps';
-import { Axis, Bar, Chart, Legend, LegendProps } from '@rsc';
-import { browserData as data } from '@stories/data/data';
 import { StoryFn } from '@storybook/react';
+
+import { Chart } from '../../../Chart';
+import { Axis, Bar, Legend } from '../../../components';
+import useChartProps from '../../../hooks/useChartProps';
+import { LegendProps } from '../../../types';
+import { browserData as data } from '../../data/data';
 
 export const LegendBarStory: StoryFn<typeof Legend> = (args): ReactElement => {
 	const chartProps = useChartProps({ data, width: 700 });

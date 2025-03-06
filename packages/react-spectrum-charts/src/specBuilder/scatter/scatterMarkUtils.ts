@@ -9,8 +9,12 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { DEFAULT_OPACITY_RULE, FILTERED_TABLE, HIGHLIGHT_CONTRAST_RATIO, SELECTED_ITEM } from '@constants';
-import { addHighlightMarkOpacityRules } from '@specBuilder/chartTooltip/chartTooltipUtils';
+import { produce } from 'immer';
+import { GroupMark, Mark, NumericValueRef, SymbolMark } from 'vega';
+
+import { DEFAULT_OPACITY_RULE, FILTERED_TABLE, HIGHLIGHT_CONTRAST_RATIO, SELECTED_ITEM } from '../../constants';
+import { spectrumColors } from '../../themes';
+import { addHighlightMarkOpacityRules } from '../chartTooltip/chartTooltipUtils';
 import {
 	getColorProductionRule,
 	getLineWidthProductionRule,
@@ -22,13 +26,9 @@ import {
 	getXProductionRule,
 	hasPopover,
 	isInteractive,
-} from '@specBuilder/marks/markUtils';
-import { getScatterPathMarks } from '@specBuilder/scatterPath/scatterPathUtils';
-import { getTrendlineMarks } from '@specBuilder/trendline';
-import { spectrumColors } from '@themes';
-import { produce } from 'immer';
-import { GroupMark, Mark, NumericValueRef, SymbolMark } from 'vega';
-
+} from '../marks/markUtils';
+import { getScatterPathMarks } from '../scatterPath/scatterPathUtils';
+import { getTrendlineMarks } from '../trendline';
 import { ScatterSpecOptions, SymbolSizeFacet } from '../types';
 
 export const addScatterMarks = produce<Mark[], [ScatterSpecOptions]>((marks, options) => {

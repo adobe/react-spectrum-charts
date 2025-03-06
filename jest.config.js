@@ -37,7 +37,4 @@ module.exports = {
 		'<rootDir>/packages/*/src/**/*.spec.{js,jsx,ts,tsx}',
 	],
 	testPathIgnorePatterns: ['/node_modules/', '/dist/', '/build/', '/coverage/'],
-	transformIgnorePatterns: [
-		'/node_modules/(?!(@adobe/react-spectrum|@react-spectrum|@spectrum-icons|@internationalized|@react-types|@react-stately|@react-aria|@babel/runtime)/)',
-	],
 };

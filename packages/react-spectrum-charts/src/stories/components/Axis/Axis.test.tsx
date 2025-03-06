@@ -9,10 +9,9 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import '@matchMediaMock';
-import { Axis } from '@rsc';
-import { findChart, getAllAxisLabels, render, screen, within } from '@test-utils';
-
+import { Axis } from '../../../components';
+import { findChart, getAllAxisLabels, render, screen, within } from '../../../test-utils';
+import '../../../test-utils/__mocks__/matchMedia.mock.js';
 import {
 	Basic,
 	ControlledLabels,

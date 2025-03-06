@@ -9,16 +9,16 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { produce } from 'immer';
+import { Compare, Data, FormulaTransform, SourceData, Transforms, ValuesData } from 'vega';
+
 import {
 	DEFAULT_TIME_DIMENSION,
 	DEFAULT_TRANSFORMED_TIME_DIMENSION,
 	FILTERED_TABLE,
 	SERIES_ID,
 	TABLE,
-} from '@constants';
-import { produce } from 'immer';
-import { Compare, Data, FormulaTransform, SourceData, Transforms, ValuesData } from 'vega';
-
+} from '../../constants';
 import { ChartTooltipOptions } from '../types';
 
 export const addTimeTransform = produce<Transforms[], [string]>((transforms, dimension) => {

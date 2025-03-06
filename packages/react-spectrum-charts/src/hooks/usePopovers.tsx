@@ -11,11 +11,10 @@
  */
 import { createElement, useMemo } from 'react';
 
-import { getAllElements } from '@utils';
-
 import { Chart } from '../Chart';
 import { ChartPopover } from '../components/ChartPopover';
 import { ChartChildElement, ChartPopoverElement, ChartPopoverProps } from '../types';
+import { getAllElements } from '../utils';
 
 type MappedPopover = { name: string; element: ChartPopoverElement };
 

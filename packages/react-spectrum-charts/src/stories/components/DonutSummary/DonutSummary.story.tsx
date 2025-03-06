@@ -11,14 +11,15 @@
  */
 import { ReactElement } from 'react';
 
-import useChartProps from '@hooks/useChartProps';
-import { Chart, ChartProps, DonutSummaryProps } from '@rsc';
-import { Donut, DonutSummary } from '@rsc/rc';
 import { StoryFn } from '@storybook/react';
-import { bindWithProps } from '@test-utils';
 
 import { View } from '@adobe/react-spectrum';
 
+import { Chart } from '../../../Chart';
+import useChartProps from '../../../hooks/useChartProps';
+import { Donut, DonutSummary } from '../../../rc';
+import { bindWithProps } from '../../../test-utils';
+import { ChartProps, DonutSummaryProps } from '../../../types';
 import { basicDonutData } from '../Donut/data';
 
 export default {

@@ -9,13 +9,13 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { DISCRETE_PADDING, FILTERED_TABLE, LINEAR_PADDING, PADDING_RATIO, TABLE } from '@constants';
-import { getBarPadding } from '@specBuilder/bar/barUtils';
-import { getDimensionField } from '@specBuilder/specUtils';
-import { toCamelCase } from '@utils';
 import { produce } from 'immer';
 import { OrdinalScale, Scale, ScaleData, ScaleMultiFieldsRef, SignalRef } from 'vega';
 
+import { DISCRETE_PADDING, FILTERED_TABLE, LINEAR_PADDING, PADDING_RATIO, TABLE } from '../../constants';
+import { toCamelCase } from '../../utils';
+import { getBarPadding } from '../bar/barUtils';
+import { getDimensionField } from '../specUtils';
 import { DualFacet, FacetRef, FacetType, Orientation } from '../types';
 
 type AxisType = 'x' | 'y';

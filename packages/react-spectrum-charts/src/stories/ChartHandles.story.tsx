@@ -11,14 +11,16 @@
  */
 import { ReactElement, useRef, useState } from 'react';
 
-import useChartProps from '@hooks/useChartProps';
-import { Axis, Chart, ChartHandle, Line } from '@rsc';
 import { action } from '@storybook/addon-actions';
 import { StoryFn } from '@storybook/react';
-import { bindWithProps } from '@test-utils';
 
 import { ActionButton, Content, Flex } from '@adobe/react-spectrum';
 
+import { Chart } from '../Chart';
+import { Axis, Line } from '../components';
+import useChartProps from '../hooks/useChartProps';
+import { bindWithProps } from '../test-utils';
+import { ChartHandle } from '../types';
 import './Chart.story.css';
 import { data } from './data/data';
 

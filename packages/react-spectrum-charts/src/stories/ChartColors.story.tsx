@@ -9,9 +9,8 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { Chart } from '@rsc';
-import { bindWithProps } from '@test-utils';
-
+import { Chart } from '../Chart';
+import { bindWithProps } from '../test-utils';
 import { ChartBarStory } from './ChartBarStory';
 import { data } from './data/data';
 

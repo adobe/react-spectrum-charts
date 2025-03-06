@@ -9,9 +9,9 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { numberLocales, timeLocales } from '@locales';
 import { Locale, NumberLocale, TimeLocale } from 'vega';
 
+import { numberLocales, timeLocales } from '../locales';
 import { ChartProps } from '../types';
 import { NumberLocaleCode, TimeLocaleCode } from '../types/locale.types';
 

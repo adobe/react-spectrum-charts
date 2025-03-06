@@ -9,8 +9,6 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { MS_PER_DAY, TRENDLINE_VALUE } from '@constants';
-import { getFacetsFromOptions } from '@specBuilder/specUtils';
 import {
 	AggregateOp,
 	AggregateTransform,
@@ -26,6 +24,8 @@ import {
 	WindowTransform,
 } from 'vega';
 
+import { MS_PER_DAY, TRENDLINE_VALUE } from '../../constants';
+import { getFacetsFromOptions } from '../specUtils';
 import { AggregateMethod, TrendlineMethod, TrendlineSpecOptions } from '../types';
 import { TrendlineParentOptions, getPolynomialOrder, getRegressionExtent, isPolynomialMethod } from './trendlineUtils';
 

@@ -9,8 +9,6 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { DONUT_RADIUS, DONUT_SUMMARY_FONT_SIZE_RATIO, DONUT_SUMMARY_MIN_RADIUS, FILTERED_TABLE } from '@constants';
-import { getTextNumberFormat } from '@specBuilder/textUtils';
 import {
 	EncodeEntryName,
 	GroupMark,
@@ -25,6 +23,8 @@ import {
 	ThresholdScale,
 } from 'vega';
 
+import { DONUT_RADIUS, DONUT_SUMMARY_FONT_SIZE_RATIO, DONUT_SUMMARY_MIN_RADIUS, FILTERED_TABLE } from '../../constants';
+import { getTextNumberFormat } from '../textUtils';
 import { DonutSpecOptions, DonutSummaryOptions, DonutSummarySpecOptions } from '../types';
 
 /**

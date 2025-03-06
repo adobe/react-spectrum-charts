@@ -10,6 +10,18 @@
  * governing permissions and limitations under the License.
  */
 import {
+	AreaEncodeEntry,
+	ArrayValueRef,
+	ColorValueRef,
+	EncodeEntry,
+	GroupMark,
+	NumericValueRef,
+	PathMark,
+	SignalRef,
+	SymbolMark,
+} from 'vega';
+
+import {
 	BACKGROUND_COLOR,
 	COLOR_SCALE,
 	COMPONENT_NAME,
@@ -26,28 +38,16 @@ import {
 	SELECTED_GROUP,
 	SELECTED_ITEM,
 	SYMBOL_SIZE_SCALE,
-} from '@constants';
-import { addHighlightMarkOpacityRules } from '@specBuilder/chartTooltip/chartTooltipUtils';
-import { LineMarkOptions } from '@specBuilder/line/lineUtils';
-import { getScaleName } from '@specBuilder/scale/scaleSpecBuilder';
+} from '../../constants';
+import { addHighlightMarkOpacityRules } from '../chartTooltip/chartTooltipUtils';
+import { LineMarkOptions } from '../line/lineUtils';
+import { getScaleName } from '../scale/scaleSpecBuilder';
 import {
 	getColorValue,
 	getLineWidthPixelsFromLineWidth,
 	getStrokeDashFromLineType,
 	getVegaSymbolSizeFromRscSymbolSize,
-} from '@specBuilder/specUtils';
-import {
-	AreaEncodeEntry,
-	ArrayValueRef,
-	ColorValueRef,
-	EncodeEntry,
-	GroupMark,
-	NumericValueRef,
-	PathMark,
-	SignalRef,
-	SymbolMark,
-} from 'vega';
-
+} from '../specUtils';
 import {
 	BarSpecOptions,
 	ChartPopoverOptions,

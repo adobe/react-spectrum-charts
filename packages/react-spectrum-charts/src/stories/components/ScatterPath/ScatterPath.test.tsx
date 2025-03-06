@@ -11,11 +11,11 @@
  */
 import React from 'react';
 
-import '@matchMediaMock';
-import { ScatterPath, spectrumColors } from '@rsc';
-import { characterData } from '@stories/data/marioKartData';
-import { allElementsHaveAttributeValue, findAllMarksByGroupName, findChart, render } from '@test-utils';
-
+import { ScatterPath } from '../../../components';
+import { allElementsHaveAttributeValue, findAllMarksByGroupName, findChart, render } from '../../../test-utils';
+import '../../../test-utils/__mocks__/matchMedia.mock.js';
+import { spectrumColors } from '../../../themes';
+import { characterData } from '../../data/marioKartData';
 import { Basic, Color, GroupBy, Opacity } from './ScatterPath.story';
 
 const colors = spectrumColors.light;

@@ -9,9 +9,9 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { ANNOTATION_FONT_SIZE, ANNOTATION_FONT_WEIGHT, ANNOTATION_PADDING, BACKGROUND_COLOR } from '@constants';
 import { GroupMark, NumericValueRef, ProductionRule, RectEncodeEntry, RectMark, TextMark } from 'vega';
 
+import { ANNOTATION_FONT_SIZE, ANNOTATION_FONT_WEIGHT, ANNOTATION_PADDING, BACKGROUND_COLOR } from '../../constants';
 import {
 	BarAnnotationOptions,
 	BarAnnotationSpecOptions,

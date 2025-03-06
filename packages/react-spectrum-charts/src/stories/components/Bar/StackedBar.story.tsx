@@ -11,13 +11,14 @@
  */
 import React, { ReactElement, createElement } from 'react';
 
-import { Annotation } from '@components/Annotation';
-import useChartProps from '@hooks/useChartProps';
-import { Axis, Bar, BarProps, Chart, Legend } from '@rsc';
 import { StoryFn } from '@storybook/react';
-import { bindWithProps } from '@test-utils';
 
+import { Chart } from '../../../Chart';
+import { Annotation, Axis, Bar, Legend } from '../../../components';
+import useChartProps from '../../../hooks/useChartProps';
 import { SpectrumColor } from '../../../specBuilder';
+import { bindWithProps } from '../../../test-utils';
+import { BarProps } from '../../../types';
 import { barSeriesData, negativeBarSeriesData, stackedBarDataWithUTC } from './data';
 
 export default {

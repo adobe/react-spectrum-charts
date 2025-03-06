@@ -11,11 +11,14 @@
  */
 import { ReactElement } from 'react';
 
-import useChartProps from '@hooks/useChartProps';
-import { Axis, Chart, Legend, Scatter, Title, Trendline, TrendlineAnnotation, TrendlineProps } from '@rsc';
-import { characterData } from '@stories/data/marioKartData';
 import { StoryFn } from '@storybook/react';
-import { bindWithProps } from '@test-utils';
+
+import { Chart } from '../../../Chart';
+import { Axis, Legend, Scatter, Title, Trendline, TrendlineAnnotation } from '../../../components';
+import useChartProps from '../../../hooks/useChartProps';
+import { bindWithProps } from '../../../test-utils';
+import { TrendlineProps } from '../../../types';
+import { characterData } from '../../data/marioKartData';
 
 export default {
 	title: 'RSC/Trendline/TrendlineAnnotation',

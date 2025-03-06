@@ -9,8 +9,9 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { FILTERED_TABLE, HIGHLIGHTED_GROUP, HIGHLIGHTED_ITEM, HIGHLIGHTED_SERIES, SERIES_ID } from '@constants';
 import { Signal } from 'vega';
+
+import { FILTERED_TABLE, HIGHLIGHTED_GROUP, HIGHLIGHTED_ITEM, HIGHLIGHTED_SERIES, SERIES_ID } from '../../constants';
 
 /**
  * Does signal with given name exist?

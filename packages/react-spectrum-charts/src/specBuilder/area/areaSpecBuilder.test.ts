@@ -9,6 +9,8 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { Data, GroupMark, Spec } from 'vega';
+
 import {
 	BACKGROUND_COLOR,
 	COLOR_SCALE,
@@ -27,11 +29,9 @@ import {
 	SELECTED_ITEM,
 	SELECTED_SERIES,
 	TABLE,
-} from '@constants';
-import { getGenericValueSignal } from '@specBuilder/signal/signalSpecBuilder';
-import { defaultSignals } from '@specBuilder/specTestUtils';
-import { Data, GroupMark, Spec } from 'vega';
-
+} from '../../constants';
+import { getGenericValueSignal } from '../signal/signalSpecBuilder';
+import { defaultSignals } from '../specTestUtils';
 import { initializeSpec } from '../specUtils';
 import { AreaSpecOptions } from '../types';
 import { addArea, addAreaMarks, addData, addHighlightedItemEvents, addSignals, setScales } from './areaSpecBuilder';

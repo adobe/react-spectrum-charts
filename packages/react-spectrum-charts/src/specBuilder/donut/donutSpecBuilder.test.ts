@@ -9,10 +9,9 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { COLOR_SCALE, FILTERED_TABLE, HIGHLIGHTED_ITEM } from '@constants';
-import { defaultSignals } from '@specBuilder/specTestUtils';
-import { initializeSpec } from '@specBuilder/specUtils';
-
+import { COLOR_SCALE, FILTERED_TABLE, HIGHLIGHTED_ITEM } from '../../constants';
+import { defaultSignals } from '../specTestUtils';
+import { initializeSpec } from '../specUtils';
 import { addData, addDonut, addMarks, addScales, addSignals } from './donutSpecBuilder';
 import { defaultDonutOptions } from './donutTestUtils';
 

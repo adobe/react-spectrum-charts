@@ -11,11 +11,11 @@
  */
 import React, { ReactElement } from 'react';
 
-import { Annotation } from '@components/Annotation/Annotation';
-import useChartProps from '@hooks/useChartProps';
-import { Bar, BarAnnotationProps, BarProps, Chart } from '@rsc';
 import { StoryFn } from '@storybook/react';
 
+import { Annotation } from '../../../components/Annotation/Annotation';
+import useChartProps from '../../../hooks/useChartProps';
+import { Bar, BarAnnotationProps, BarProps, Chart } from '../../../index';
 import { Orientation } from '../../../specBuilder';
 
 export default {

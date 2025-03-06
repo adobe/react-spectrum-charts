@@ -9,14 +9,14 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { COLOR_SCALE, DEFAULT_COLOR, DEFAULT_COLOR_SCHEME, DEFAULT_METRIC, FILTERED_TABLE } from '@constants';
-import { isInteractive } from '@specBuilder/marks/markUtils';
-import { addFieldToFacetScaleDomain } from '@specBuilder/scale/scaleSpecBuilder';
-import { addHighlightedItemSignalEvents } from '@specBuilder/signal/signalSpecBuilder';
-import { toCamelCase } from '@utils';
 import { produce } from 'immer';
 import { Data, FormulaTransform, Mark, PieTransform, Scale, Signal, Spec } from 'vega';
 
+import { COLOR_SCALE, DEFAULT_COLOR, DEFAULT_COLOR_SCHEME, DEFAULT_METRIC, FILTERED_TABLE } from '../../constants';
+import { toCamelCase } from '../../utils';
+import { isInteractive } from '../marks/markUtils';
+import { addFieldToFacetScaleDomain } from '../scale/scaleSpecBuilder';
+import { addHighlightedItemSignalEvents } from '../signal/signalSpecBuilder';
 import { ColorScheme, DonutOptions, DonutSpecOptions, HighlightedItem } from '../types';
 import {
 	getDonutSummaryData,

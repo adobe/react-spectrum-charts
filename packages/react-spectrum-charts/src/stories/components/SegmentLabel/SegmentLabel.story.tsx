@@ -11,12 +11,13 @@
  */
 import React, { ReactElement } from 'react';
 
-import useChartProps from '@hooks/useChartProps';
-import { Chart, ChartProps } from '@rsc';
-import { Donut, SegmentLabel } from '@rsc/rc';
 import { StoryFn } from '@storybook/react';
-import { bindWithProps } from '@test-utils';
 
+import { Chart } from '../../../Chart';
+import useChartProps from '../../../hooks/useChartProps';
+import { Donut, SegmentLabel } from '../../../rc';
+import { bindWithProps } from '../../../test-utils';
+import { ChartProps } from '../../../types';
 import { basicDonutData, sliveredDonutData } from '../Donut/data';
 
 export default {

@@ -11,10 +11,9 @@
  */
 import { createElement } from 'react';
 
-import { ChartTooltip } from '@components/ChartTooltip';
-import { TrendlineAnnotation } from '@components/TrendlineAnnotation';
-import { DEFAULT_COLOR } from '@constants';
-
+import { ChartTooltip } from '../components/ChartTooltip';
+import { TrendlineAnnotation } from '../components/TrendlineAnnotation';
+import { DEFAULT_COLOR } from '../constants';
 import { getTrendlineOptions } from './trendlineAdapter';
 
 describe('getTrendlineOptions()', () => {

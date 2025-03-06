@@ -9,9 +9,8 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { findAllMarksByGroupName, findChart, render } from '@test-utils';
-
 import { Donut } from '../../../rc/components/Donut';
+import { findAllMarksByGroupName, findChart, render } from '../../../test-utils';
 import { Basic } from './Donut.story';
 
 describe('Donut', () => {

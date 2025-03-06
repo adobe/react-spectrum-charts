@@ -9,11 +9,11 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { DONUT_RADIUS, FILTERED_TABLE, SELECTED_ITEM } from '@constants';
-import { getColorProductionRule, getCursor, getMarkOpacity, getTooltip } from '@specBuilder/marks/markUtils';
-import { getColorValue } from '@specBuilder/specUtils';
 import { ArcMark } from 'vega';
 
+import { DONUT_RADIUS, FILTERED_TABLE, SELECTED_ITEM } from '../../constants';
+import { getColorProductionRule, getCursor, getMarkOpacity, getTooltip } from '../marks/markUtils';
+import { getColorValue } from '../specUtils';
 import { DonutSpecOptions } from '../types';
 
 export const getArcMark = (options: DonutSpecOptions): ArcMark => {

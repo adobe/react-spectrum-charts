@@ -11,9 +11,10 @@
  */
 import React from 'react';
 
-import { HIGHLIGHT_CONTRAST_RATIO } from '@constants';
-import '@matchMediaMock';
-import { Area } from '@rsc';
+import userEvent from '@testing-library/user-event';
+
+import { Area } from '../../../components';
+import { HIGHLIGHT_CONTRAST_RATIO } from '../../../constants';
 import {
 	clickNthElement,
 	findAllMarksByGroupName,
@@ -25,9 +26,8 @@ import {
 	unhoverNthElement,
 	waitFor,
 	within,
-} from '@test-utils';
-import userEvent from '@testing-library/user-event';
-
+} from '../../../test-utils';
+import '../../../test-utils/__mocks__/matchMedia.mock.js';
 import { Basic, BasicFloating, Supreme } from './Area.story';
 import { Popover, Basic as StackedBasic, TimeAxis, Tooltip } from './StackedArea.story';
 

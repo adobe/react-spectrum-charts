@@ -11,10 +11,9 @@
  */
 import React from 'react';
 
-import '@matchMediaMock';
-import { Combo } from '@rsc/alpha';
-import { findAllMarksByGroupName, findChart, hoverNthElement, render, screen, within } from '@test-utils';
-
+import { Combo } from '../../../alpha';
+import { findAllMarksByGroupName, findChart, hoverNthElement, render, screen, within } from '../../../test-utils';
+import '../../../test-utils/__mocks__/matchMedia.mock.js';
 import { Basic, DualAxis, Tooltip } from './Combo.story';
 
 describe('Combo', () => {

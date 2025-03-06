@@ -9,6 +9,8 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { GroupMark, Mark, RectEncodeEntry } from 'vega';
+
 import {
 	BACKGROUND_COLOR,
 	COLOR_SCALE,
@@ -23,9 +25,7 @@ import {
 	HIGHLIGHTED_ITEM,
 	HIGHLIGHT_CONTRAST_RATIO,
 	MARK_ID,
-} from '@constants';
-import { GroupMark, Mark, RectEncodeEntry } from 'vega';
-
+} from '../../constants';
 import { BarSpecOptions } from '../types';
 import {
 	defaultBarOptions,

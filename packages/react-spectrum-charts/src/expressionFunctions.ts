@@ -9,12 +9,12 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { numberLocales } from '@locales';
-import { ADOBE_CLEAN_FONT } from '@themes/spectrumTheme';
 import { FormatLocaleDefinition, formatLocale } from 'd3-format';
 import { FontWeight } from 'vega';
 
+import { numberLocales } from './locales';
 import { NumberFormat } from './specBuilder';
+import { ADOBE_CLEAN_FONT } from './themes/spectrumTheme';
 
 export interface LabelDatum {
 	index: number;

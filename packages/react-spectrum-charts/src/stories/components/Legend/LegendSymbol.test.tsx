@@ -11,10 +11,9 @@
  */
 import React from 'react';
 
-import '@matchMediaMock';
-import { findChart, getAllLegendSymbols, render, screen } from '@test-utils';
-import { spectrumColors } from '@themes';
-
+import { findChart, getAllLegendSymbols, render, screen } from '../../../test-utils';
+import '../../../test-utils/__mocks__/matchMedia.mock.js';
+import { spectrumColors } from '../../../themes';
 import { Color, LineType, LineWidth, Opacity, Supreme, Symbols } from './LegendSymbol.story';
 
 const colors = spectrumColors.light;

@@ -9,6 +9,8 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { LineMark } from 'vega';
+
 import {
 	COLOR_SCALE,
 	DEFAULT_CATEGORICAL_DIMENSION,
@@ -20,9 +22,7 @@ import {
 	HIGHLIGHTED_SERIES,
 	HIGHLIGHT_CONTRAST_RATIO,
 	LEGEND_TOOLTIP_DELAY,
-} from '@constants';
-import { LineMark } from 'vega';
-
+} from '../../constants';
 import { LegendSpecOptions } from '../types';
 
 /**

@@ -9,14 +9,10 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { FILTERED_TABLE, HIGHLIGHTED_ITEM, HIGHLIGHTED_SERIES, MARK_ID } from '@constants';
-import {
-	defaultHighlightedItemSignal,
-	defaultHighlightedSeriesSignal,
-	defaultSignals,
-} from '@specBuilder/specTestUtils';
 import { Signal } from 'vega';
 
+import { FILTERED_TABLE, HIGHLIGHTED_ITEM, HIGHLIGHTED_SERIES, MARK_ID } from '../../constants';
+import { defaultHighlightedItemSignal, defaultHighlightedSeriesSignal, defaultSignals } from '../specTestUtils';
 import {
 	addHighlightedItemSignalEvents,
 	addHighlightedSeriesSignalEvents,

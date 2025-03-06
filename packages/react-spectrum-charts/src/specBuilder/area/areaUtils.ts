@@ -9,6 +9,8 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { AreaMark, NumericValueRef, ProductionRule } from 'vega';
+
 import {
 	DEFAULT_OPACITY_RULE,
 	DEFAULT_TRANSFORMED_TIME_DIMENSION,
@@ -17,16 +19,14 @@ import {
 	HIGHLIGHT_CONTRAST_RATIO,
 	SELECTED_SERIES,
 	SERIES_ID,
-} from '@constants';
+} from '../../constants';
 import {
 	getBorderStrokeEncodings,
 	getColorProductionRule,
 	getCursor,
 	getTooltip,
 	isInteractive,
-} from '@specBuilder/marks/markUtils';
-import { AreaMark, NumericValueRef, ProductionRule } from 'vega';
-
+} from '../marks/markUtils';
 import {
 	ChartPopoverOptions,
 	ChartTooltipOptions,

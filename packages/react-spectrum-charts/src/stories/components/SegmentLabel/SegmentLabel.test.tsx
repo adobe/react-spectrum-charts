@@ -11,10 +11,9 @@
  */
 import React from 'react';
 
-import '@matchMediaMock';
-import { SegmentLabel } from '@rsc/rc';
-import { findChart, render, screen } from '@test-utils';
-
+import { SegmentLabel } from '../../../rc';
+import { findChart, render, screen } from '../../../test-utils';
+import '../../../test-utils/__mocks__/matchMedia.mock.js';
 import { Basic, Percent, Value, ValueFormat } from './SegmentLabel.story';
 
 describe('SegmentLabel', () => {

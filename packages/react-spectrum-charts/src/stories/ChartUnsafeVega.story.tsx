@@ -11,12 +11,12 @@
  */
 import React, { ReactElement } from 'react';
 
-import { TABLE } from '@constants';
-import useChartProps from '@hooks/useChartProps';
-import { Chart } from '@rsc';
 import { StoryFn } from '@storybook/react';
-import { bindWithProps } from '@test-utils';
 
+import { Chart } from '../Chart';
+import { TABLE } from '../constants';
+import useChartProps from '../hooks/useChartProps';
+import { bindWithProps } from '../test-utils';
 import { barData } from './components/Bar/data';
 import carsData from './data/cars.json';
 import { packedBubbleData } from './data/data';

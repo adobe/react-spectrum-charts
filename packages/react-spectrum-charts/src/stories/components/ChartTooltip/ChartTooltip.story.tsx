@@ -11,15 +11,17 @@
  */
 import { ReactElement } from 'react';
 
-import { ChartTooltip } from '@components/ChartTooltip/ChartTooltip';
-import useChartProps from '@hooks/useChartProps';
-import { Area, Bar, Chart, Line, categorical12 } from '@rsc';
-import { browserData } from '@stories/data/data';
-import { formatTimestamp } from '@stories/storyUtils';
 import { StoryFn } from '@storybook/react';
-import { bindWithProps } from '@test-utils';
 
+import { Chart } from '../../../Chart';
+import { Area, Bar, Line } from '../../../components';
+import { ChartTooltip } from '../../../components/ChartTooltip';
+import useChartProps from '../../../hooks/useChartProps';
 import { Datum } from '../../../specBuilder';
+import { browserData } from '../../../stories/data/data';
+import { formatTimestamp } from '../../../stories/storyUtils';
+import { bindWithProps } from '../../../test-utils';
+import { categorical12 } from '../../../themes';
 
 export default {
 	title: 'RSC/ChartTooltip',

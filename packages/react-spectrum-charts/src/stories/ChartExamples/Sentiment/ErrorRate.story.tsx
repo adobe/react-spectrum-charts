@@ -11,12 +11,12 @@
  */
 import { ReactElement } from 'react';
 
-import { ReferenceLine } from '@components/ReferenceLine';
-import useChartProps from '@hooks/useChartProps';
-import { Axis, Chart, Line } from '@rsc';
 import { StoryFn } from '@storybook/react';
-import { bindWithProps } from '@test-utils';
 
+import { Chart } from '../../../Chart';
+import { Axis, Line, ReferenceLine } from '../../../components';
+import useChartProps from '../../../hooks/useChartProps';
+import { bindWithProps } from '../../../test-utils';
 import errorData from './errorData.json';
 
 export default {

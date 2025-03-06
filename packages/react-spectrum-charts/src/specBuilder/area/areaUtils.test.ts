@@ -16,8 +16,7 @@ import {
 	DEFAULT_COLOR_SCHEME,
 	DEFAULT_OPACITY_RULE,
 	DEFAULT_TRANSFORMED_TIME_DIMENSION,
-} from '@constants';
-
+} from '../../constants';
 import { getAreaMark } from './areaUtils';
 
 describe('getAreaMark', () => {

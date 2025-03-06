@@ -9,9 +9,9 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { DEFAULT_LABEL_FONT_WEIGHT, FILTERED_TABLE } from '@constants';
 import { Axis, GroupMark, ProductionRule, Scale, Signal, TextValueRef } from 'vega';
 
+import { DEFAULT_LABEL_FONT_WEIGHT, FILTERED_TABLE } from '../../constants';
 import { SubLabel } from '../types';
 import {
 	addAxes,

@@ -11,10 +11,9 @@
  */
 import React from 'react';
 
-import { AxisAnnotation } from '@components/AxisAnnotation';
-import { clickNthElement, findAllMarksByGroupName, findChart, render, screen } from '@test-utils';
-import { spectrumColors } from '@themes';
-
+import { AxisAnnotation } from '../../../components';
+import { clickNthElement, findAllMarksByGroupName, findChart, render, screen } from '../../../test-utils';
+import { spectrumColors } from '../../../themes';
 import { Basic, Color, ColorOptions, Format, Popover } from './AxisAnnotation.story';
 
 const colors = spectrumColors.light;

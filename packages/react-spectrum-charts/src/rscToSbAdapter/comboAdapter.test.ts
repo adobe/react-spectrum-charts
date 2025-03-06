@@ -11,9 +11,7 @@
  */
 import { createElement } from 'react';
 
-import { Bar } from '@components/Bar';
-import { Line } from '@components/Line';
-
+import { Bar, Line } from '../components';
 import { getComboOptions } from './comboAdapter';
 
 describe('getComboOptions()', () => {

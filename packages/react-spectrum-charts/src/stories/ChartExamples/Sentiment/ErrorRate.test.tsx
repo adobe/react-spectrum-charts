@@ -9,9 +9,8 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { findChart, findMarksByGroupName, render } from '@test-utils';
-import { spectrumColors } from '@themes';
-
+import { findChart, findMarksByGroupName, render } from '../../../test-utils';
+import { spectrumColors } from '../../../themes';
 import { ErrorRate } from './ErrorRate.story';
 
 const colors = spectrumColors.light;

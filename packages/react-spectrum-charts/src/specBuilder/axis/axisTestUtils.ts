@@ -9,15 +9,15 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { Mark } from 'vega';
+
 import {
 	DEFAULT_COLOR_SCHEME,
 	DEFAULT_GRANULARITY,
 	DEFAULT_LABEL_ALIGN,
 	DEFAULT_LABEL_FONT_WEIGHT,
 	DEFAULT_LABEL_ORIENTATION,
-} from '@constants';
-import { Mark } from 'vega';
-
+} from '../../constants';
 import { AxisSpecOptions } from '../types';
 
 export const defaultXBaselineMark: Mark = {

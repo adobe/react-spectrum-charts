@@ -13,8 +13,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { FC } from 'react';
 
-import { DEFAULT_COLOR, DEFAULT_METRIC } from '@constants';
-
+import { DEFAULT_COLOR, DEFAULT_METRIC } from '../../../constants';
 import { DonutProps } from '../../../types';
 
 // destructure props here and set defaults so that storybook can pick them up

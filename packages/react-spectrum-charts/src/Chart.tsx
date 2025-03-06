@@ -11,21 +11,6 @@
  */
 import { FC, forwardRef, useEffect, useMemo, useRef, useState } from 'react';
 
-import { EmptyState } from '@components/EmptyState';
-import { LoadingState } from '@components/LoadingState';
-import {
-	DEFAULT_BACKGROUND_COLOR,
-	DEFAULT_COLOR_SCHEME,
-	DEFAULT_LINE_TYPES,
-	DEFAULT_LOCALE,
-	MARK_ID,
-} from '@constants';
-import useChartHeight from '@hooks/useChartHeight';
-import useChartImperativeHandle from '@hooks/useChartImperativeHandle';
-import useChartWidth from '@hooks/useChartWidth';
-import { useResizeObserver } from '@hooks/useResizeObserver';
-import { getColorValue } from '@specBuilder/specUtils';
-import { getBigNumberElementsFromChildren, toArray } from '@utils';
 import { v4 as uuid } from 'uuid';
 import { View } from 'vega';
 
@@ -34,9 +19,24 @@ import { Theme } from '@react-types/provider';
 
 import './Chart.css';
 import { RscChart } from './RscChart';
+import { EmptyState } from './components';
+import { LoadingState } from './components/LoadingState';
+import {
+	DEFAULT_BACKGROUND_COLOR,
+	DEFAULT_COLOR_SCHEME,
+	DEFAULT_LINE_TYPES,
+	DEFAULT_LOCALE,
+	MARK_ID,
+} from './constants';
+import useChartHeight from './hooks/useChartHeight';
+import useChartImperativeHandle from './hooks/useChartImperativeHandle';
+import useChartWidth from './hooks/useChartWidth';
+import { useResizeObserver } from './hooks/useResizeObserver';
 import { BigNumberInternal } from './rc/components/BigNumber/BigNumber';
 import { LineType } from './specBuilder';
+import { getColorValue } from './specBuilder/specUtils';
 import { ChartData, ChartHandle, ChartProps, RscChartProps } from './types';
+import { getBigNumberElementsFromChildren, toArray } from './utils';
 
 interface PlaceholderContentProps {
 	data: ChartData[];

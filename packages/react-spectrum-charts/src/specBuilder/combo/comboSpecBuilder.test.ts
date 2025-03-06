@@ -9,18 +9,17 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { MARK_ID } from '@constants';
-import { addBar } from '@specBuilder/bar/barSpecBuilder';
-import { addLine } from '@specBuilder/line/lineSpecBuilder';
-
+import { MARK_ID } from '../../constants';
+import { addBar } from '../bar/barSpecBuilder';
+import { addLine } from '../line/lineSpecBuilder';
 import { BarOptions, LineOptions } from '../types';
 import { addCombo, getComboMarkName } from './comboSpecBuilder';
 
-jest.mock('@specBuilder/bar/barSpecBuilder', () => ({
+jest.mock('../bar/barSpecBuilder', () => ({
 	addBar: jest.fn(),
 }));
 
-jest.mock('@specBuilder/line/lineSpecBuilder', () => ({
+jest.mock('../line/lineSpecBuilder', () => ({
 	addLine: jest.fn(),
 }));
 

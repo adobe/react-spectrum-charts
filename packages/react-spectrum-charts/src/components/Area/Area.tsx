@@ -13,8 +13,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { FC } from 'react';
 
-import { DEFAULT_COLOR, DEFAULT_METRIC, DEFAULT_TIME_DIMENSION } from '@constants';
-
+import { DEFAULT_COLOR, DEFAULT_METRIC, DEFAULT_TIME_DIMENSION } from '../../constants';
 import { AreaProps } from '../../types';
 
 // destructure props here and set defaults so that storybook can pick them up

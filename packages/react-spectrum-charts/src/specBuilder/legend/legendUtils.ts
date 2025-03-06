@@ -9,22 +9,6 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import {
-	COLOR_SCALE,
-	COMPONENT_NAME,
-	DEFAULT_OPACITY_RULE,
-	FILTERED_TABLE,
-	HIGHLIGHTED_GROUP,
-	HIGHLIGHTED_SERIES,
-	HIGHLIGHT_CONTRAST_RATIO,
-	LINE_TYPE_SCALE,
-	LINE_WIDTH_SCALE,
-	OPACITY_SCALE,
-	SYMBOL_SHAPE_SCALE,
-	SYMBOL_SIZE_SCALE,
-} from '@constants';
-import { getColorValue, getPathFromSymbolShape } from '@specBuilder/specUtils';
-import { spectrumColors } from '@themes';
 import merge from 'deepmerge';
 import {
 	BaseValueRef,
@@ -39,6 +23,22 @@ import {
 	SymbolEncodeEntry,
 } from 'vega';
 
+import {
+	COLOR_SCALE,
+	COMPONENT_NAME,
+	DEFAULT_OPACITY_RULE,
+	FILTERED_TABLE,
+	HIGHLIGHTED_GROUP,
+	HIGHLIGHTED_SERIES,
+	HIGHLIGHT_CONTRAST_RATIO,
+	LINE_TYPE_SCALE,
+	LINE_WIDTH_SCALE,
+	OPACITY_SCALE,
+	SYMBOL_SHAPE_SCALE,
+	SYMBOL_SIZE_SCALE,
+} from '../../constants';
+import { spectrumColors } from '../../themes';
+import { getColorValue, getPathFromSymbolShape } from '../specUtils';
 import {
 	ColorValueV6,
 	FacetRef,

@@ -9,7 +9,6 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { getTextNumberFormat } from '@specBuilder/textUtils';
 import {
 	Align,
 	Baseline,
@@ -23,6 +22,7 @@ import {
 	TickCount,
 } from 'vega';
 
+import { getTextNumberFormat } from '../textUtils';
 import { AxisSpecOptions, Granularity, Label, LabelAlign, Orientation, Position } from '../types';
 import { isVerticalAxis } from './axisUtils';
 

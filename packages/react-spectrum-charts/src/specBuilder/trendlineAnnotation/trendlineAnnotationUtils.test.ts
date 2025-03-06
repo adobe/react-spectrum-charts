@@ -9,10 +9,9 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { DEFAULT_COLOR, DEFAULT_COLOR_SCHEME, DEFAULT_TIME_DIMENSION, TRENDLINE_VALUE } from '@constants';
-import { defaultTrendlineOptions } from '@specBuilder/trendline/trendlineTestUtils';
-import { spectrumColors } from '@themes';
-
+import { DEFAULT_COLOR, DEFAULT_COLOR_SCHEME, DEFAULT_TIME_DIMENSION, TRENDLINE_VALUE } from '../../constants';
+import { spectrumColors } from '../../themes';
+import { defaultTrendlineOptions } from '../trendline/trendlineTestUtils';
 import { TrendlineAnnotationSpecOptions } from '../types';
 import {
 	getColorKey,

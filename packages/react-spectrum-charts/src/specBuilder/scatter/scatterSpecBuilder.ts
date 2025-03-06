@@ -9,6 +9,9 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { produce } from 'immer';
+import { Data, Scale, Signal, Spec } from 'vega';
+
 import {
 	COLOR_SCALE,
 	DEFAULT_COLOR_SCHEME,
@@ -22,22 +25,15 @@ import {
 	OPACITY_SCALE,
 	SELECTED_ITEM,
 	SYMBOL_SIZE_SCALE,
-} from '@constants';
-import { addTooltipData, addTooltipSignals } from '@specBuilder/chartTooltip/chartTooltipUtils';
-import { addTimeTransform, getFilteredTooltipData, getTableData } from '@specBuilder/data/dataUtils';
-import { getInteractiveMarkName, hasPopover, isInteractive } from '@specBuilder/marks/markUtils';
-import {
-	addContinuousDimensionScale,
-	addFieldToFacetScaleDomain,
-	addMetricScale,
-} from '@specBuilder/scale/scaleSpecBuilder';
-import { setScatterPathScales } from '@specBuilder/scatterPath';
-import { addHighlightedItemSignalEvents } from '@specBuilder/signal/signalSpecBuilder';
-import { addTrendlineData, getTrendlineScales, setTrendlineSignals } from '@specBuilder/trendline';
-import { toCamelCase } from '@utils';
-import { produce } from 'immer';
-import { Data, Scale, Signal, Spec } from 'vega';
-
+} from '../../constants';
+import { toCamelCase } from '../../utils';
+import { addTooltipData, addTooltipSignals } from '../chartTooltip/chartTooltipUtils';
+import { addTimeTransform, getFilteredTooltipData, getTableData } from '../data/dataUtils';
+import { getInteractiveMarkName, hasPopover, isInteractive } from '../marks/markUtils';
+import { addContinuousDimensionScale, addFieldToFacetScaleDomain, addMetricScale } from '../scale/scaleSpecBuilder';
+import { setScatterPathScales } from '../scatterPath';
+import { addHighlightedItemSignalEvents } from '../signal/signalSpecBuilder';
+import { addTrendlineData, getTrendlineScales, setTrendlineSignals } from '../trendline';
 import { ColorScheme, HighlightedItem, ScatterOptions, ScatterSpecOptions } from '../types';
 import { addScatterMarks } from './scatterMarkUtils';
 

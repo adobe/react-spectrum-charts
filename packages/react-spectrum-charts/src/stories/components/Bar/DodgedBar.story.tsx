@@ -11,14 +11,17 @@
  */
 import React, { ReactElement, createElement } from 'react';
 
-import { Annotation } from '@components/Annotation';
-import useChartProps from '@hooks/useChartProps';
-import { Axis, Bar, BarProps, Chart, ChartPopover, ChartTooltip, Legend, categorical6 } from '@rsc';
 import { StoryFn } from '@storybook/react';
-import { bindWithProps } from '@test-utils';
 
 import { Content } from '@adobe/react-spectrum';
 
+import { Chart } from '../../../Chart';
+import { Annotation } from '../../../components';
+import { Axis, Bar, ChartPopover, ChartTooltip, Legend } from '../../../components';
+import useChartProps from '../../../hooks/useChartProps';
+import { bindWithProps } from '../../../test-utils';
+import { categorical6 } from '../../../themes';
+import { BarProps } from '../../../types';
 import { barSeriesData, barSubSeriesData } from './data';
 
 export default {
@@ -86,7 +89,7 @@ const defaultProps: BarProps = {
 	type: 'dodged',
 	dimension: 'browser',
 	onClick: undefined,
-}
+};
 
 const Color = bindWithProps(DodgedBarStory);
 Color.args = {

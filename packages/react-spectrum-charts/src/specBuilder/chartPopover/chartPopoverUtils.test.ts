@@ -9,10 +9,10 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { defaultBarOptions } from '@specBuilder/bar/barTestUtils';
-import { baseData } from '@specBuilder/specUtils';
 import { Data } from 'vega';
 
+import { defaultBarOptions } from '../bar/barTestUtils';
+import { baseData } from '../specUtils';
 import { BarSpecOptions, ChartPopoverOptions } from '../types';
 import { addPopoverData, applyPopoverPropDefaults, getPopovers } from './chartPopoverUtils';
 

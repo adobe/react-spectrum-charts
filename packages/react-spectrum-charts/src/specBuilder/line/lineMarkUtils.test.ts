@@ -16,8 +16,7 @@ import {
 	HIGHLIGHTED_SERIES,
 	SELECTED_SERIES,
 	SERIES_ID,
-} from '@constants';
-
+} from '../../constants';
 import { getLineHoverMarks, getLineMark, getLineOpacity } from './lineMarkUtils';
 import { defaultLineMarkOptions } from './lineTestUtils';
 

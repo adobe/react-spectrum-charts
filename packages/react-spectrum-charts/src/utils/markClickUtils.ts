@@ -11,12 +11,12 @@
  */
 import { MutableRefObject } from 'react';
 
-import { COMPONENT_NAME } from '@constants';
-import { MarkOnClickDetail } from '@hooks/useMarkOnClickDetails';
-import { toggleStringArrayValue } from '@utils';
 import { Item, Scene, SceneGroup, SceneItem, ScenegraphEvent, View } from 'vega';
 
+import { COMPONENT_NAME } from '../constants';
+import { MarkOnClickDetail } from '../hooks/useMarkOnClickDetails';
 import { Datum, MarkBounds } from '../specBuilder';
+import { toggleStringArrayValue } from '../utils';
 
 export type ActionItem = Item | undefined | null;
 type ViewEventCallback = (event: ScenegraphEvent, item: ActionItem) => void;

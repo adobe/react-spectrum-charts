@@ -9,13 +9,15 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { ColorValueRef, NumericValueRef, SymbolMark } from 'vega';
+
 import {
 	BACKGROUND_COLOR,
 	DEFAULT_SYMBOL_SIZE,
 	DEFAULT_SYMBOL_STROKE_WIDTH,
 	SELECTED_GROUP,
 	SELECTED_ITEM,
-} from '@constants';
+} from '../../constants';
 import {
 	getColorProductionRule,
 	getHighlightOpacityValue,
@@ -23,10 +25,8 @@ import {
 	getXProductionRule,
 	getYProductionRule,
 	hasPopover,
-} from '@specBuilder/marks/markUtils';
-import { getColorValue } from '@specBuilder/specUtils';
-import { ColorValueRef, NumericValueRef, SymbolMark } from 'vega';
-
+} from '../marks/markUtils';
+import { getColorValue } from '../specUtils';
 import { LineSpecOptions, ProductionRuleTests } from '../types';
 import { LineMarkOptions } from './lineUtils';
 

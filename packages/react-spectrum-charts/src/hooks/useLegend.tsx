@@ -11,12 +11,11 @@
  */
 import { createElement, useMemo, useState } from 'react';
 
-import { getElement } from '@utils';
-
 import { Chart } from '../Chart';
 import { Legend } from '../components/Legend';
 import { LegendDescription } from '../specBuilder';
 import { ChartChildElement, LegendElement } from '../types';
+import { getElement } from '../utils';
 
 interface UseLegendProps {
 	legendHiddenSeries: string[];

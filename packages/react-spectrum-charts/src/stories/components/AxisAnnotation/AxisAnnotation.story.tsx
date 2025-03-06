@@ -20,13 +20,14 @@
  */
 import React, { ReactElement } from 'react';
 
-import useChartProps from '@hooks/useChartProps';
-import { Axis, AxisAnnotation, Chart, ChartPopover, Legend, Line } from '@rsc';
 import { StoryFn } from '@storybook/react';
-import { bindWithProps } from '@test-utils';
 
 import { Content } from '@adobe/react-spectrum';
 
+import { Chart } from '../../../Chart';
+import { Axis, AxisAnnotation, ChartPopover, Legend, Line } from '../../../components';
+import useChartProps from '../../../hooks/useChartProps';
+import { bindWithProps } from '../../../test-utils';
 import { ChartProps } from '../../../types';
 
 export default {

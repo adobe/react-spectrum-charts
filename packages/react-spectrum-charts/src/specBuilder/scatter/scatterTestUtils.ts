@@ -15,8 +15,7 @@ import {
 	DEFAULT_LINEAR_DIMENSION,
 	DEFAULT_METRIC,
 	MARK_ID,
-} from '@constants';
-
+} from '../../constants';
 import { ScatterSpecOptions } from '../types';
 
 export const defaultScatterOptions: ScatterSpecOptions = {

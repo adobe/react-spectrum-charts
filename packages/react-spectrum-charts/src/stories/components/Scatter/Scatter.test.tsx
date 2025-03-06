@@ -9,8 +9,10 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { HIGHLIGHT_CONTRAST_RATIO } from '@constants';
-import { Scatter, spectrumColors } from '@rsc';
+import userEvent from '@testing-library/user-event';
+
+import { Scatter } from '../../../components';
+import { HIGHLIGHT_CONTRAST_RATIO } from '../../../constants';
 import {
 	allElementsHaveAttributeValue,
 	clickNthElement,
@@ -22,9 +24,8 @@ import {
 	render,
 	screen,
 	within,
-} from '@test-utils';
-import userEvent from '@testing-library/user-event';
-
+} from '../../../test-utils';
+import { spectrumColors } from '../../../themes';
 import { Basic, Color, ColorScaleType, LineType, Opacity, Popover, Size, Tooltip } from './Scatter.story';
 
 const colors = spectrumColors.light;

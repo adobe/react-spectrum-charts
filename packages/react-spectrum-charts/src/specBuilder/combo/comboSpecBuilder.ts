@@ -9,13 +9,13 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { DEFAULT_COLOR_SCHEME, DEFAULT_TIME_DIMENSION } from '@constants';
-import { addBar } from '@specBuilder/bar/barSpecBuilder';
-import { addLine } from '@specBuilder/line/lineSpecBuilder';
-import { combineNames, toCamelCase } from '@utils';
 import { produce } from 'immer';
 import { Spec } from 'vega';
 
+import { DEFAULT_COLOR_SCHEME, DEFAULT_TIME_DIMENSION } from '../../constants';
+import { combineNames, toCamelCase } from '../../utils';
+import { addBar } from '../bar/barSpecBuilder';
+import { addLine } from '../line/lineSpecBuilder';
 import { BarOptions, ColorScheme, ComboOptions, HighlightedItem, LineOptions } from '../types';
 
 export const addCombo = produce<

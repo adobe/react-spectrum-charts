@@ -11,11 +11,7 @@
  */
 import { createElement } from 'react';
 
-import { AxisAnnotation } from '@components/AxisAnnotation';
-import { ChartPopover } from '@components/ChartPopover';
-import { ChartTooltip } from '@components/ChartTooltip';
-import { ReferenceLine } from '@components/ReferenceLine';
-
+import { AxisAnnotation, ChartPopover, ChartTooltip, ReferenceLine } from '../components';
 import { AxisProps } from '../types';
 import { getAxisAnnotationOptions, getAxisOptions } from './axisAdapter';
 

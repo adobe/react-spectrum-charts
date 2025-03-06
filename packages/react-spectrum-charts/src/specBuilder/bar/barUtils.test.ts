@@ -9,6 +9,8 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { RectEncodeEntry } from 'vega';
+
 import {
 	COLOR_SCALE,
 	CORNER_RADIUS,
@@ -21,9 +23,7 @@ import {
 	SELECTED_GROUP,
 	SELECTED_ITEM,
 	STACK_ID,
-} from '@constants';
-import { RectEncodeEntry } from 'vega';
-
+} from '../../constants';
 import { BarSpecOptions } from '../types';
 import {
 	defaultBarEnterEncodings,

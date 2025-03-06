@@ -11,13 +11,14 @@
  */
 import { ReactElement } from 'react';
 
-import useChartProps from '@hooks/useChartProps';
-import { Chart, Line } from '@rsc';
-import { BigNumber } from '@rsc/rc';
 import { StoryFn } from '@storybook/react';
 
 import User from '@spectrum-icons/workflow/User';
 
+import { Chart } from '../../../Chart';
+import { Line } from '../../../components';
+import useChartProps from '../../../hooks/useChartProps';
+import { BigNumber } from '../../../rc';
 import { bindWithProps } from '../../../test-utils/bindWithProps';
 import { simpleSparklineData as data } from '../../data/data';
 

@@ -9,6 +9,8 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { Data } from 'vega';
+
 import {
 	BACKGROUND_COLOR,
 	COLOR_SCALE,
@@ -27,12 +29,10 @@ import {
 	SYMBOL_SHAPE_SCALE,
 	SYMBOL_SIZE_SCALE,
 	TABLE,
-} from '@constants';
-import { ROUNDED_SQUARE_PATH } from '@svgPaths';
-import { spectrumColors } from '@themes';
-import colorSchemes from '@themes/colorSchemes';
-import { Data } from 'vega';
-
+} from '../constants';
+import { ROUNDED_SQUARE_PATH } from '../svgPaths';
+import { spectrumColors } from '../themes';
+import colorSchemes from '../themes/colorSchemes';
 import {
 	addData,
 	buildSpec,

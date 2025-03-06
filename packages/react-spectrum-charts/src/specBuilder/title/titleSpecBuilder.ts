@@ -9,10 +9,10 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { DEFAULT_TITLE_FONT_WEIGHT } from '@constants';
 import { produce } from 'immer';
 import { Spec } from 'vega';
 
+import { DEFAULT_TITLE_FONT_WEIGHT } from '../../constants';
 import { TitleOptions } from '../types';
 
 export const addTitle = produce<Spec, [TitleOptions]>(

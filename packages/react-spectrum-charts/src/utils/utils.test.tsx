@@ -12,12 +12,9 @@
 import { Fragment, createElement } from 'react';
 import React from 'react';
 
-import { Bar } from '@components/Bar';
-import { ChartPopover } from '@components/ChartPopover';
-import { ChartTooltip } from '@components/ChartTooltip';
-import { Line } from '@components/Line';
-import { Trendline } from '@components/Trendline';
-import { Donut } from '@rsc/rc';
+import { Chart } from '../Chart';
+import { Bar, ChartPopover, ChartTooltip, Line, Trendline } from '../components';
+import { Donut } from '../rc';
 import {
 	combineNames,
 	getAllElements,
@@ -25,9 +22,7 @@ import {
 	sanitizeAxisAnnotationChildren,
 	toCamelCase,
 	toggleStringArrayValue,
-} from '@utils';
-
-import { Chart } from '../Chart';
+} from './utils';
 
 describe('utils', () => {
 	describe('toCamelCase()', () => {

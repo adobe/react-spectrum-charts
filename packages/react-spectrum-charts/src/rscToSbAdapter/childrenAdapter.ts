@@ -9,26 +9,24 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { Annotation } from '@components/Annotation';
-import { Area } from '@components/Area';
-import { Axis } from '@components/Axis';
-import { AxisAnnotation } from '@components/AxisAnnotation';
-import { Bar } from '@components/Bar';
-import { ChartPopover } from '@components/ChartPopover';
-import { ChartTooltip } from '@components/ChartTooltip';
-import { Legend } from '@components/Legend';
-import { Line } from '@components/Line';
-import { MetricRange } from '@components/MetricRange';
-import { ReferenceLine } from '@components/ReferenceLine';
-import { Scatter } from '@components/Scatter';
-import { ScatterPath } from '@components/ScatterPath';
-import { Title } from '@components/Title';
-import { Trendline } from '@components/Trendline';
-import { TrendlineAnnotation } from '@components/TrendlineAnnotation';
-import { Combo } from '@rsc/alpha';
-import { Donut, DonutSummary, SegmentLabel } from '@rsc/rc';
-import { sanitizeChildren } from '@utils';
-
+import { Combo } from '../alpha';
+import { Annotation } from '../components/Annotation';
+import { Area } from '../components/Area';
+import { Axis } from '../components/Axis';
+import { AxisAnnotation } from '../components/AxisAnnotation';
+import { Bar } from '../components/Bar';
+import { ChartPopover } from '../components/ChartPopover';
+import { ChartTooltip } from '../components/ChartTooltip';
+import { Legend } from '../components/Legend';
+import { Line } from '../components/Line';
+import { MetricRange } from '../components/MetricRange';
+import { ReferenceLine } from '../components/ReferenceLine';
+import { Scatter } from '../components/Scatter';
+import { ScatterPath } from '../components/ScatterPath';
+import { Title } from '../components/Title';
+import { Trendline } from '../components/Trendline';
+import { TrendlineAnnotation } from '../components/TrendlineAnnotation';
+import { Donut, DonutSummary, SegmentLabel } from '../rc';
 import {
 	AxisAnnotationOptions,
 	AxisOptions,
@@ -67,6 +65,7 @@ import {
 	TrendlineAnnotationProps,
 	TrendlineProps,
 } from '../types';
+import { sanitizeChildren } from '../utils';
 import { getAreaOptions } from './areaAdapter';
 import { getAxisAnnotationOptions, getAxisOptions } from './axisAdapter';
 import { getBarOptions } from './barAdapter';

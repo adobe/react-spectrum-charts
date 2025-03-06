@@ -11,8 +11,7 @@
  */
 import React from 'react';
 
-import { findChart, getAllLegendEntries, hoverNthElement, render, unhoverNthElement } from '@test-utils';
-
+import { findChart, getAllLegendEntries, hoverNthElement, render, unhoverNthElement } from '../../../test-utils';
 import { ControlledHover } from './legendHover.story';
 
 test('Mousing over a legend item should trigger callback function.', async () => {

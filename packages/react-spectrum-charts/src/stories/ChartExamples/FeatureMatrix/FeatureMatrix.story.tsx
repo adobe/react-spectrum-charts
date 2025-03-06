@@ -11,22 +11,14 @@
  */
 import { ReactElement } from 'react';
 
-import useChartProps from '@hooks/useChartProps';
-import {
-	Axis,
-	Chart,
-	ChartTooltip,
-	Legend,
-	Scatter,
-	ScatterPath,
-	Trendline,
-	TrendlineAnnotation,
-	TrendlineProps,
-	categorical12,
-} from '@rsc';
 import { StoryFn } from '@storybook/react';
-import { bindWithProps } from '@test-utils';
 
+import { Chart } from '../../../Chart';
+import { Axis, ChartTooltip, Legend, Scatter, ScatterPath, Trendline, TrendlineAnnotation } from '../../../components';
+import useChartProps from '../../../hooks/useChartProps';
+import { bindWithProps } from '../../../test-utils';
+import { categorical12 } from '../../../themes';
+import { TrendlineProps } from '../../../types';
 import {
 	basicFeatureMatrixData,
 	multipleSegmentFeatureMatrixData,

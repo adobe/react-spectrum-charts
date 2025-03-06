@@ -11,9 +11,8 @@
  */
 import React from 'react';
 
-import { HIGHLIGHT_CONTRAST_RATIO } from '@constants';
-import '@matchMediaMock';
-import { ChartTooltip } from '@rsc';
+import { ChartTooltip } from '../../../components';
+import { HIGHLIGHT_CONTRAST_RATIO } from '../../../constants';
 import {
 	allElementsHaveAttributeValue,
 	findAllMarksByGroupName,
@@ -25,8 +24,8 @@ import {
 	screen,
 	unhoverNthElement,
 	within,
-} from '@test-utils';
-
+} from '../../../test-utils';
+import '../../../test-utils/__mocks__/matchMedia.mock.js';
 import { DodgedBarChart, LineChart, StackedBarChart } from './ChartTooltip.story';
 
 describe('ChartTooltip', () => {

@@ -9,6 +9,8 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { Data } from 'vega';
+
 import {
 	DEFAULT_COLOR,
 	DEFAULT_TIME_DIMENSION,
@@ -16,10 +18,8 @@ import {
 	MS_PER_DAY,
 	SERIES_ID,
 	TRENDLINE_VALUE,
-} from '@constants';
-import { baseData } from '@specBuilder/specUtils';
-import { Data } from 'vega';
-
+} from '../../constants';
+import { baseData } from '../specUtils';
 import {
 	addTableDataTransforms,
 	addTrendlineData,

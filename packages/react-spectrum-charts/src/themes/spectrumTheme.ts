@@ -9,18 +9,18 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { BaseLegendLayout, Config, mergeConfig } from 'vega';
+
 import {
 	DEFAULT_BACKGROUND_COLOR,
 	DEFAULT_FONT_COLOR,
 	DEFAULT_FONT_SIZE,
 	DEFAULT_SYMBOL_SIZE,
 	DEFAULT_SYMBOL_STROKE_WIDTH,
-} from '@constants';
-import { getColorValue } from '@specBuilder/specUtils';
-import { ROUNDED_SQUARE_PATH } from '@svgPaths';
-import { BaseLegendLayout, Config, mergeConfig } from 'vega';
-
+} from '../constants';
 import { ColorScheme } from '../specBuilder';
+import { getColorValue } from '../specBuilder/specUtils';
+import { ROUNDED_SQUARE_PATH } from '../svgPaths';
 import { categorical16 } from './categoricalColorPalette';
 import { divergentOrangeYellowSeafoam15 } from './divergingColorPalette';
 import { sequentialViridis16 } from './sequentialColorPalette';

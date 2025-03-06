@@ -9,8 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { DEFAULT_COLOR, DEFAULT_COLOR_SCHEME, DEFAULT_METRIC, DEFAULT_TIME_DIMENSION, MARK_ID } from '@constants';
-
+import { DEFAULT_COLOR, DEFAULT_COLOR_SCHEME, DEFAULT_METRIC, DEFAULT_TIME_DIMENSION, MARK_ID } from '../../constants';
 import { LineSpecOptions, TrendlineSpecOptions } from '../types';
 
 export const defaultLineOptions: LineSpecOptions = {

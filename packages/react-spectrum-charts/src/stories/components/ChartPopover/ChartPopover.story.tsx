@@ -11,16 +11,18 @@
  */
 import { ReactElement } from 'react';
 
-import useChartProps from '@hooks/useChartProps';
-import { Area, Axis, Bar, Chart, ChartPopover, ChartProps, ChartTooltip, Legend, Line } from '@rsc';
-import { Donut, DonutSummary } from '@rsc/rc';
-import { browserData as data } from '@stories/data/data';
 import { StoryFn } from '@storybook/react';
-import { bindWithProps } from '@test-utils';
 
 import { Content } from '@adobe/react-spectrum';
 
+import { Chart } from '../../../Chart';
+import { Area, Axis, Bar, ChartPopover, ChartTooltip, Legend, Line } from '../../../components';
+import useChartProps from '../../../hooks/useChartProps';
+import { Donut, DonutSummary } from '../../../rc';
 import { Datum } from '../../../specBuilder';
+import { bindWithProps } from '../../../test-utils';
+import { ChartProps } from '../../../types';
+import { browserData as data } from '../../data/data';
 import { basicDonutData } from '../Donut/data';
 
 export default {

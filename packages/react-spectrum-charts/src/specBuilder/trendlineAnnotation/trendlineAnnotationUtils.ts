@@ -9,16 +9,16 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { TRENDLINE_VALUE } from '@constants';
-import { getColorProductionRule, getColorProductionRuleSignalString } from '@specBuilder/marks/markUtils';
-import { getScaleName } from '@specBuilder/scale/scaleSpecBuilder';
-import { getColorValue, getLineWidthPixelsFromLineWidth } from '@specBuilder/specUtils';
+import { ColorValueRef, GroupMark, NumericValueRef, ProductionRule, RectMark, SymbolMark, TextMark } from 'vega';
+
+import { TRENDLINE_VALUE } from '../../constants';
+import { getColorProductionRule, getColorProductionRuleSignalString } from '../marks/markUtils';
+import { getScaleName } from '../scale/scaleSpecBuilder';
+import { getColorValue, getLineWidthPixelsFromLineWidth } from '../specUtils';
 import {
 	getEndDimensionExtentProductionRule,
 	getStartDimensionExtentProductionRule,
-} from '@specBuilder/trendline/trendlineMarkUtils';
-import { ColorValueRef, GroupMark, NumericValueRef, ProductionRule, RectMark, SymbolMark, TextMark } from 'vega';
-
+} from '../trendline/trendlineMarkUtils';
 import { ColorFacet, TrendlineAnnotationOptions, TrendlineAnnotationSpecOptions, TrendlineSpecOptions } from '../types';
 
 /**

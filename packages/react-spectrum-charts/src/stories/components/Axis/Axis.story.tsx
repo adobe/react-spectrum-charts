@@ -11,13 +11,13 @@
  */
 import React, { ReactElement } from 'react';
 
-import { DEFAULT_GRANULARITY } from '@constants';
-import useChartProps from '@hooks/useChartProps';
-import { Axis, Bar, Chart, ChartTooltip, Line } from '@rsc';
-import { stockPriceData, workspaceTrendsData } from '@stories/data/data';
 import { StoryFn } from '@storybook/react';
-import { bindWithProps } from '@test-utils';
 
+import { DEFAULT_GRANULARITY } from '../../../constants';
+import useChartProps from '../../../hooks/useChartProps';
+import { Axis, Bar, Chart, ChartTooltip, Line } from '../../../index';
+import { bindWithProps } from '../../../test-utils';
+import { stockPriceData, workspaceTrendsData } from '../../data/data';
 import { barData, barDataLongLabels } from '../Bar/data';
 import timeData from './timeData.json';
 

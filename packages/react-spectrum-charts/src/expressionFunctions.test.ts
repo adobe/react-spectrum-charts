@@ -9,8 +9,6 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { numberLocales } from '@locales';
-
 import {
 	LabelDatum,
 	expressionFunctions,
@@ -19,6 +17,7 @@ import {
 	formatTimeDurationLabels,
 	formatVerticalAxisTimeLabels,
 } from './expressionFunctions';
+import { numberLocales } from './locales';
 
 describe('formatLocaleCurrency()', () => {
 	test('formats US currency correctly', () => {

@@ -11,9 +11,10 @@
  */
 import React from 'react';
 
-import { HIGHLIGHT_CONTRAST_RATIO } from '@constants';
-import '@matchMediaMock';
-import { ChartPopover, spectrumColors } from '@rsc';
+import userEvent from '@testing-library/user-event';
+
+import { ChartPopover } from '../../../components';
+import { HIGHLIGHT_CONTRAST_RATIO } from '../../../constants';
 import {
 	allElementsHaveAttributeValue,
 	clickNthElement,
@@ -25,9 +26,9 @@ import {
 	screen,
 	waitFor,
 	within,
-} from '@test-utils';
-import userEvent from '@testing-library/user-event';
-
+} from '../../../test-utils';
+import '../../../test-utils/__mocks__/matchMedia.mock.js';
+import { spectrumColors } from '../../../themes';
 import {
 	Canvas,
 	DodgedBarChart,

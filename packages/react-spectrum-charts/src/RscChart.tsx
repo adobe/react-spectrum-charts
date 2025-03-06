@@ -11,33 +11,6 @@
  */
 import { FC, MutableRefObject, forwardRef, useEffect, useMemo, useRef, useState } from 'react';
 
-import {
-	COMPONENT_NAME,
-	FILTERED_TABLE,
-	GROUP_DATA,
-	LEGEND_TOOLTIP_DELAY,
-	SELECTED_ITEM,
-	SELECTED_SERIES,
-	SERIES_ID,
-} from '@constants';
-import useChartImperativeHandle from '@hooks/useChartImperativeHandle';
-import useLegend from '@hooks/useLegend';
-import useMarkOnClickDetails from '@hooks/useMarkOnClickDetails';
-import usePopoverAnchorStyle from '@hooks/usePopoverAnchorStyle';
-import usePopovers, { PopoverDetail } from '@hooks/usePopovers';
-import useSpec from '@hooks/useSpec';
-import useSpecProps from '@hooks/useSpecProps';
-import useTooltips from '@hooks/useTooltips';
-import { getColorValue } from '@specBuilder/specUtils';
-import { getChartConfig } from '@themes/spectrumTheme';
-import {
-	debugLog,
-	getOnChartMarkClickCallback,
-	getOnMarkClickCallback,
-	getOnMouseInputCallback,
-	sanitizeRscChartChildren,
-	setSelectedSignals,
-} from '@utils';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { Item } from 'vega';
 import { Handler, Position, Options as TooltipOptions } from 'vega-tooltip';
@@ -46,8 +19,35 @@ import { ActionButton, Dialog, DialogTrigger, View as SpectrumView } from '@adob
 
 import './Chart.css';
 import { VegaChart } from './VegaChart';
+import {
+	COMPONENT_NAME,
+	FILTERED_TABLE,
+	GROUP_DATA,
+	LEGEND_TOOLTIP_DELAY,
+	SELECTED_ITEM,
+	SELECTED_SERIES,
+	SERIES_ID,
+} from './constants';
+import useChartImperativeHandle from './hooks/useChartImperativeHandle';
+import useLegend from './hooks/useLegend';
+import useMarkOnClickDetails from './hooks/useMarkOnClickDetails';
+import usePopoverAnchorStyle from './hooks/usePopoverAnchorStyle';
+import usePopovers, { PopoverDetail } from './hooks/usePopovers';
+import useSpec from './hooks/useSpec';
+import useSpecProps from './hooks/useSpecProps';
+import useTooltips from './hooks/useTooltips';
 import { ColorScheme, Datum, LegendDescription, MarkBounds } from './specBuilder';
+import { getColorValue } from './specBuilder/specUtils';
+import { getChartConfig } from './themes/spectrumTheme';
 import { ChartHandle, RscChartProps, TooltipAnchor, TooltipPlacement } from './types';
+import {
+	debugLog,
+	getOnChartMarkClickCallback,
+	getOnMarkClickCallback,
+	getOnMouseInputCallback,
+	sanitizeRscChartChildren,
+	setSelectedSignals,
+} from './utils';
 
 interface ChartDialogProps {
 	datum: Datum | null;

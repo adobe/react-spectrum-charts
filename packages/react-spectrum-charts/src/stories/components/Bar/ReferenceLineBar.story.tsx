@@ -11,13 +11,13 @@
  */
 import React, { ReactElement } from 'react';
 
-import { ReferenceLine } from '@components/ReferenceLine';
-import useChartProps from '@hooks/useChartProps';
-import { Axis, Chart } from '@rsc';
 import { StoryFn } from '@storybook/react';
-import { bindWithProps } from '@test-utils';
 
-import { Bar } from '../../../components/Bar';
+import { Chart } from '../../../Chart';
+import { Axis, Bar } from '../../../components';
+import { ReferenceLine } from '../../../components/ReferenceLine';
+import useChartProps from '../../../hooks/useChartProps';
+import { bindWithProps } from '../../../test-utils';
 
 export default {
 	title: 'RSC/Bar/ReferenceLine',

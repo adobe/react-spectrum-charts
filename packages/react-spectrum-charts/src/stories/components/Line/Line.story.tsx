@@ -11,15 +11,20 @@
  */
 import { ReactElement } from 'react';
 
-import { ReferenceLine } from '@components/ReferenceLine';
-import useChartProps from '@hooks/useChartProps';
-import { Axis, Bar, Chart, ChartPopover, ChartTooltip, Legend, Line } from '@rsc';
-import { simpleSparklineData, workspaceTrendsData, workspaceTrendsDataWithVisiblePoints } from '@stories/data/data';
-import { formatTimestamp } from '@stories/storyUtils';
 import { action } from '@storybook/addon-actions';
 import { StoryFn } from '@storybook/react';
-import { bindWithProps } from '@test-utils';
 
+import { Chart } from '../../../Chart';
+import { ReferenceLine } from '../../../components';
+import { Axis, Bar, ChartPopover, ChartTooltip, Legend, Line } from '../../../components';
+import useChartProps from '../../../hooks/useChartProps';
+import {
+	simpleSparklineData,
+	workspaceTrendsData,
+	workspaceTrendsDataWithVisiblePoints,
+} from '../../../stories/data/data';
+import { formatTimestamp } from '../../../stories/storyUtils';
+import { bindWithProps } from '../../../test-utils';
 import { ChartProps } from '../../../types';
 
 export default {

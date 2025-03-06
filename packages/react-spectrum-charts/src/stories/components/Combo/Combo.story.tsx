@@ -11,15 +11,16 @@
  */
 import { ReactElement } from 'react';
 
-import useChartProps from '@hooks/useChartProps';
-import { Axis, Bar, Chart, ChartTooltip, Line } from '@rsc';
-import { Combo } from '@rsc/alpha';
-import { peopleAdoptionComboData, peopleTotalComboData } from '@stories/data/data';
-import { formatTimestamp } from '@stories/storyUtils';
 import { StoryFn } from '@storybook/react';
-import { bindWithProps } from '@test-utils';
 
+import { Chart } from '../../../Chart';
+import { Combo } from '../../../alpha';
+import { Axis, Bar, ChartTooltip, Line } from '../../../components';
+import useChartProps from '../../../hooks/useChartProps';
+import { bindWithProps } from '../../../test-utils';
 import { ChartProps } from '../../../types';
+import { peopleAdoptionComboData, peopleTotalComboData } from '../../data/data';
+import { formatTimestamp } from '../../storyUtils';
 
 export default {
 	title: 'RSC/Combo (alpha)',

@@ -11,7 +11,7 @@
  */
 import React from 'react';
 
-import { HIGHLIGHT_CONTRAST_RATIO } from '@constants';
+import { HIGHLIGHT_CONTRAST_RATIO } from '../../../constants';
 import {
 	allElementsHaveAttributeValue,
 	findAllMarksByGroupName,
@@ -20,8 +20,7 @@ import {
 	hoverNthElement,
 	render,
 	screen,
-} from '@test-utils';
-
+} from '../../../test-utils';
 import { Basic, Controlled } from './LegendHighlight.story';
 
 describe('Controlled', () => {

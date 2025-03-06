@@ -9,9 +9,9 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { FILTERED_TABLE, TABLE, TRELLIS_PADDING } from '@constants';
 import { Scale } from 'vega';
 
+import { FILTERED_TABLE, TABLE, TRELLIS_PADDING } from '../../constants';
 import { BarSpecOptions } from '../types';
 import { defaultBarOptions } from './barTestUtils';
 import { getTrellisGroupMark, getTrellisProperties, getTrellisedEncodeEntries, isTrellised } from './trellisedBarUtils';

@@ -11,15 +11,16 @@
  */
 import React, { ReactElement } from 'react';
 
-import { MARK_ID } from '@constants';
-import useChartProps from '@hooks/useChartProps';
-import { Axis, Bar, Chart, ChartPopover, ChartTooltip, Legend } from '@rsc';
 import { StoryFn } from '@storybook/react';
-import { bindWithProps } from '@test-utils';
 
 import { Content, Text, View } from '@adobe/react-spectrum';
 
+import { Chart } from '../../../Chart';
+import { Axis, Bar, ChartPopover, ChartTooltip, Legend } from '../../../components';
+import { MARK_ID } from '../../../constants';
+import useChartProps from '../../../hooks/useChartProps';
 import { Datum, SpectrumColor } from '../../../specBuilder';
+import { bindWithProps } from '../../../test-utils';
 import { BarProps } from '../../../types';
 import { generateMockDataForTrellis } from './data';
 

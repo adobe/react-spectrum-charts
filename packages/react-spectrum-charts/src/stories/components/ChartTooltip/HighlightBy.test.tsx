@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { HIGHLIGHT_CONTRAST_RATIO } from '@constants';
+import { HIGHLIGHT_CONTRAST_RATIO } from '../../../constants';
 import {
 	allElementsHaveAttributeValue,
 	findAllMarksByGroupName,
@@ -18,8 +18,7 @@ import {
 	queryAllMarksByGroupName,
 	render,
 	screen,
-} from '@test-utils';
-
+} from '../../../test-utils';
 import { AreaChart, Basic, Dimension, GroupData, Keys, LineChart, ScatterChart, Series } from './HighlightBy.story';
 
 describe('Basic', () => {

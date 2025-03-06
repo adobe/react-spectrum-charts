@@ -9,6 +9,8 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { Scale, ScaleMultiFieldsRef } from 'vega';
+
 import {
 	COLOR_SCALE,
 	LINEAR_COLOR_SCALE,
@@ -16,10 +18,8 @@ import {
 	OPACITY_SCALE,
 	SYMBOL_SHAPE_SCALE,
 	SYMBOL_SIZE_SCALE,
-} from '@constants';
-import { Scale, ScaleMultiFieldsRef } from 'vega';
-
-import { FacetType, SecondaryFacetType } from '../../specBuilder';
+} from '../../constants';
+import { FacetType, SecondaryFacetType } from '../types';
 import { Facet } from './legendUtils';
 
 /**

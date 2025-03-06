@@ -11,8 +11,8 @@
  */
 import { createElement, useMemo } from 'react';
 
-import { Bar, BarElement, Chart, ChartChildElement, Line, LineElement, OnClickCallback } from '@rsc';
-import { getAllMarkElements } from '@utils';
+import { Bar, BarElement, Chart, ChartChildElement, Line, LineElement, OnClickCallback } from '../index';
+import { getAllMarkElements } from '../utils';
 
 type MappedMarkElement = { name: string; element: BarElement | LineElement };
 

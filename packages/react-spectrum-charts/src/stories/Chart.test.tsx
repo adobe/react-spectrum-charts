@@ -11,12 +11,13 @@
  */
 import React, { createRef } from 'react';
 
-import { HIGHLIGHT_CONTRAST_RATIO } from '@constants';
-import '@matchMediaMock';
-import { Axis, Bar, Chart, ChartHandle, ChartTooltip, Line } from '@rsc';
-import { findChart, getAllMarksByGroupName, hoverNthElement, render, screen } from '@test-utils';
-import { getElement } from '@utils';
-
+import { Chart } from '../Chart';
+import { Axis, Bar, ChartTooltip, Line } from '../components';
+import { HIGHLIGHT_CONTRAST_RATIO } from '../constants';
+import { findChart, getAllMarksByGroupName, hoverNthElement, render, screen } from '../test-utils';
+import '../test-utils/__mocks__/matchMedia.mock.js';
+import { ChartHandle } from '../types';
+import { getElement } from '../utils';
 import { BackgroundColor, Basic, Config, Height, HighlightedItem, Locale, TooltipAnchor, Width } from './Chart.story';
 import {
 	CssColors,

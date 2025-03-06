@@ -11,7 +11,9 @@
  */
 import { Fragment, ReactNode } from 'react';
 
-import { SELECTED_GROUP, SELECTED_ITEM, SELECTED_SERIES, SERIES_ID } from '@constants';
+import { View } from 'vega';
+
+import { Combo } from '../alpha';
 import {
 	Annotation,
 	Area,
@@ -29,11 +31,9 @@ import {
 	Title,
 	Trendline,
 	TrendlineAnnotation,
-} from '@rsc';
-import { Combo } from '@rsc/alpha';
-import { BigNumber, Donut, DonutSummary, SegmentLabel } from '@rsc/rc';
-import { View } from 'vega';
-
+} from '../components';
+import { SELECTED_GROUP, SELECTED_ITEM, SELECTED_SERIES, SERIES_ID } from '../constants';
+import { BigNumber, Donut, DonutSummary, SegmentLabel } from '../rc';
 import { Datum } from '../specBuilder';
 import {
 	AreaElement,

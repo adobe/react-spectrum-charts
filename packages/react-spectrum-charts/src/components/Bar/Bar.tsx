@@ -13,8 +13,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { FC } from 'react';
 
-import { DEFAULT_CATEGORICAL_DIMENSION, DEFAULT_METRIC, PADDING_RATIO, TRELLIS_PADDING } from '@constants';
-
+import { DEFAULT_CATEGORICAL_DIMENSION, DEFAULT_METRIC, PADDING_RATIO, TRELLIS_PADDING } from '../../constants';
 import { BarProps } from '../../types';
 
 const Bar: FC<BarProps> = ({

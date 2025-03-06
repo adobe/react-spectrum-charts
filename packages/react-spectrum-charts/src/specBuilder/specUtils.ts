@@ -9,14 +9,6 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import {
-	DATE_PATH,
-	ROUNDED_SQUARE_PATH,
-	SENTIMENT_NEGATIVE_PATH,
-	SENTIMENT_NEUTRAL_PATH,
-	SENTIMENT_POSITIVE_PATH,
-} from '@svgPaths';
-import { spectrumColors } from '@themes';
 import { Data, Scale, ScaleType, Spec } from 'vega';
 
 import {
@@ -28,6 +20,14 @@ import {
 	OPACITY_SCALE,
 	TABLE,
 } from '../constants';
+import {
+	DATE_PATH,
+	ROUNDED_SQUARE_PATH,
+	SENTIMENT_NEGATIVE_PATH,
+	SENTIMENT_NEUTRAL_PATH,
+	SENTIMENT_POSITIVE_PATH,
+} from '../svgPaths';
+import { spectrumColors } from '../themes';
 import {
 	ChartSpecOptions,
 	ChartSymbolShape,

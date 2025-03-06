@@ -11,11 +11,12 @@
  */
 import React, { ReactElement } from 'react';
 
-import { DEFAULT_COLOR_SCHEME } from '@constants';
 import { render } from '@testing-library/react';
 
 import { Provider, defaultTheme } from '@adobe/react-spectrum';
 import { ColorScheme } from '@react-types/provider';
+
+import { DEFAULT_COLOR_SCHEME } from '../constants';
 
 export function spectrumRender(
 	element: ReactElement,

@@ -11,10 +11,12 @@
  */
 import React, { ReactElement } from "react";
 
-import useChartProps from '@hooks/useChartProps';
-import { {{name}}, Chart } from "@rsc";
-import { StoryFn } from "@storybook/react";
-import { bindWithProps } from '@test-utils';
+import { StoryFn } from '@storybook/react';
+
+import useChartProps from '../../../hooks/useChartProps';
+import { {{name}} } from '../../../components';
+import { Chart } from '../../../Chart';
+import { bindWithProps } from '../../../test-utils';
 
 export default {
     title: "RSC/{{name}}",

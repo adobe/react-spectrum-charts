@@ -11,27 +11,18 @@
  */
 import { ReactElement, ReactNode } from 'react';
 
-import { COLOR_SCALE, LINE_TYPE_SCALE, OPACITY_SCALE } from '@constants';
-import useChartProps from '@hooks/useChartProps';
-import {
-	Axis,
-	Chart,
-	ChartPopover,
-	ChartProps,
-	ChartTooltip,
-	Legend,
-	LegendProps,
-	Scatter,
-	ScatterProps,
-	Title,
-} from '@rsc';
-import { characterData } from '@stories/data/marioKartData';
 import { StoryFn } from '@storybook/react';
-import { bindWithProps } from '@test-utils';
 
 import { Content, Flex } from '@adobe/react-spectrum';
 
+import { Chart } from '../../../Chart';
+import { Axis, ChartPopover, ChartTooltip, Legend, Scatter, Title } from '../../../components';
+import { COLOR_SCALE, LINE_TYPE_SCALE, OPACITY_SCALE } from '../../../constants';
+import useChartProps from '../../../hooks/useChartProps';
 import { ChartColors, Datum } from '../../../specBuilder';
+import { characterData } from '../../../stories/data/marioKartData';
+import { bindWithProps } from '../../../test-utils';
+import { ChartProps, LegendProps, ScatterProps } from '../../../types';
 
 const marioDataKeys = [
 	...Object.keys(characterData[0])

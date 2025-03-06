@@ -11,11 +11,11 @@
  */
 import { ReactElement } from 'react';
 
-import useChartProps from '@hooks/useChartProps';
-import { Axis, Bar, Chart, ChartTooltip, Line } from '@rsc';
 import { StoryFn } from '@storybook/react';
-import { bindWithProps } from '@test-utils';
 
+import useChartProps from '../hooks/useChartProps';
+import { Axis, Bar, Chart, ChartTooltip, Line } from '../index';
+import { bindWithProps } from '../test-utils';
 import './Chart.story.css';
 import { ChartBarStory } from './ChartBarStory';
 import { data, workspaceTrendsData } from './data/data';

@@ -9,8 +9,6 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { DEFAULT_FONT_COLOR, DEFAULT_LABEL_FONT_WEIGHT } from '@constants';
-import { getColorValue, getPathFromIcon } from '@specBuilder/specUtils';
 import {
 	EncodeEntry,
 	GuideEncodeEntry,
@@ -25,6 +23,8 @@ import {
 	TextMark,
 } from 'vega';
 
+import { DEFAULT_FONT_COLOR, DEFAULT_LABEL_FONT_WEIGHT } from '../../constants';
+import { getColorValue, getPathFromIcon } from '../specUtils';
 import { AxisSpecOptions, Position, ReferenceLineOptions, ReferenceLineSpecOptions } from '../types';
 import { isVerticalAxis } from './axisUtils';
 

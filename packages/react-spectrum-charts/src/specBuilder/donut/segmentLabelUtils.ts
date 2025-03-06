@@ -9,10 +9,10 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { DONUT_RADIUS, DONUT_SEGMENT_LABEL_MIN_ANGLE, FILTERED_TABLE } from '@constants';
-import { getTextNumberFormat } from '@specBuilder/textUtils';
 import { GroupMark, NumericValueRef, ProductionRule, TextEncodeEntry, TextMark, TextValueRef } from 'vega';
 
+import { DONUT_RADIUS, DONUT_SEGMENT_LABEL_MIN_ANGLE, FILTERED_TABLE } from '../../constants';
+import { getTextNumberFormat } from '../textUtils';
 import { DonutSpecOptions, SegmentLabelOptions, SegmentLabelSpecOptions } from '../types';
 
 /**

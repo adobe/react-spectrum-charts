@@ -9,6 +9,8 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { GroupMark, NumericValueRef, Scale, TrailMark } from 'vega';
+
 import {
 	DEFAULT_OPACITY_RULE,
 	FILTERED_TABLE,
@@ -18,12 +20,10 @@ import {
 	SELECTED_ITEM,
 	SELECTED_SERIES,
 	SYMBOL_PATH_WIDTH_SCALE,
-} from '@constants';
-import { getXProductionRule } from '@specBuilder/marks/markUtils';
-import { addFieldToFacetScaleDomain } from '@specBuilder/scale/scaleSpecBuilder';
-import { getColorValue, getFacetsFromOptions, getLineWidthPixelsFromLineWidth } from '@specBuilder/specUtils';
-import { GroupMark, NumericValueRef, Scale, TrailMark } from 'vega';
-
+} from '../../constants';
+import { getXProductionRule } from '../marks/markUtils';
+import { addFieldToFacetScaleDomain } from '../scale/scaleSpecBuilder';
+import { getColorValue, getFacetsFromOptions, getLineWidthPixelsFromLineWidth } from '../specUtils';
 import { LineWidthFacet, ScatterPathOptions, ScatterPathSpecOptions, ScatterSpecOptions } from '../types';
 
 /**

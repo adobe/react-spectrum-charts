@@ -9,8 +9,15 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { COLOR_SCALE, HIGHLIGHTED_GROUP, HIGHLIGHTED_SERIES, HIGHLIGHT_CONTRAST_RATIO, SERIES_ID } from '@constants';
 import { GroupMark, Mark, NumericValueRef } from 'vega';
+
+import {
+	COLOR_SCALE,
+	HIGHLIGHTED_GROUP,
+	HIGHLIGHTED_SERIES,
+	HIGHLIGHT_CONTRAST_RATIO,
+	SERIES_ID,
+} from '../../constants';
 
 /**
  * Adds opacity tests for the fill and stroke of marks that use the color scale to set the fill or stroke value.

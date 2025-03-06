@@ -9,10 +9,10 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { HIGHLIGHTED_ITEM, HIGHLIGHTED_SERIES } from '@constants';
-import { defaultSignals } from '@specBuilder/specTestUtils';
 import { Signal } from 'vega';
 
+import { HIGHLIGHTED_ITEM, HIGHLIGHTED_SERIES } from '../../constants';
+import { defaultSignals } from '../specTestUtils';
 import { setTrendlineSignals } from './trendlineSignalUtils';
 import { defaultLineOptions } from './trendlineTestUtils';
 

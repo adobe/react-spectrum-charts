@@ -9,6 +9,8 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { LineMark, Mark, NumericValueRef, ProductionRule, RuleMark } from 'vega';
+
 import {
 	DEFAULT_INTERACTION_MODE,
 	DEFAULT_OPACITY_RULE,
@@ -16,8 +18,8 @@ import {
 	HIGHLIGHT_CONTRAST_RATIO,
 	SELECTED_SERIES,
 	SERIES_ID,
-} from '@constants';
-import { getPopovers } from '@specBuilder/chartPopover/chartPopoverUtils';
+} from '../../constants';
+import { getPopovers } from '../chartPopover/chartPopoverUtils';
 import {
 	getColorProductionRule,
 	getItemHoverArea,
@@ -29,9 +31,7 @@ import {
 	getXProductionRule,
 	getYProductionRule,
 	hasPopover,
-} from '@specBuilder/marks/markUtils';
-import { LineMark, Mark, NumericValueRef, ProductionRule, RuleMark } from 'vega';
-
+} from '../marks/markUtils';
 import { ScaleType } from '../types';
 import {
 	getHighlightBackgroundPoint,

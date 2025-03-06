@@ -9,21 +9,21 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { TRENDLINE_VALUE } from '@constants';
-import { getLineHoverMarks, getLineOpacity } from '@specBuilder/line/lineMarkUtils';
-import { LineMarkOptions } from '@specBuilder/line/lineUtils';
+import { EncodeEntry, GroupMark, LineMark, NumericValueRef, RuleMark } from 'vega';
+
+import { TRENDLINE_VALUE } from '../../constants';
+import { getLineHoverMarks, getLineOpacity } from '../line/lineMarkUtils';
+import { LineMarkOptions } from '../line/lineUtils';
 import {
 	getColorProductionRule,
 	getLineWidthProductionRule,
 	getOpacityProductionRule,
 	getStrokeDashProductionRule,
 	hasTooltip,
-} from '@specBuilder/marks/markUtils';
-import { getScaleName } from '@specBuilder/scale/scaleSpecBuilder';
-import { getFacetsFromOptions } from '@specBuilder/specUtils';
-import { getTrendlineAnnotationMarks } from '@specBuilder/trendlineAnnotation';
-import { EncodeEntry, GroupMark, LineMark, NumericValueRef, RuleMark } from 'vega';
-
+} from '../marks/markUtils';
+import { getScaleName } from '../scale/scaleSpecBuilder';
+import { getFacetsFromOptions } from '../specUtils';
+import { getTrendlineAnnotationMarks } from '../trendlineAnnotation';
 import { Orientation, ScaleType, TrendlineMethod, TrendlineSpecOptions } from '../types';
 import {
 	TrendlineParentOptions,

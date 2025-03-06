@@ -9,6 +9,8 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { GroupMark, Mark, RectEncodeEntry } from 'vega';
+
 import {
 	BACKGROUND_COLOR,
 	COLOR_SCALE,
@@ -17,9 +19,7 @@ import {
 	DEFAULT_OPACITY_RULE,
 	DEFAULT_SECONDARY_COLOR,
 	FILTERED_TABLE,
-} from '@constants';
-import { GroupMark, Mark, RectEncodeEntry } from 'vega';
-
+} from '../../constants';
 import { defaultBarEnterEncodings, defaultBarOptions, defaultBarStrokeEncodings } from './barTestUtils';
 import { getDodgedAndStackedBarMark, getStackedBarMarks, getStackedDimensionEncodings } from './stackedBarUtils';
 

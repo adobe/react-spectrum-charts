@@ -9,9 +9,8 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import '@matchMediaMock';
-import { act, findAllMarksByGroupName, findChart, render } from '@test-utils';
-
+import { act, findAllMarksByGroupName, findChart, render } from '../../../test-utils';
+import '../../../test-utils/__mocks__/matchMedia.mock.js';
 import { FixedWidthBar, HorizontalBarChart, VerticalBarChart } from './Annotation.story';
 
 describe('Bar', () => {

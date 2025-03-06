@@ -9,6 +9,9 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { produce } from 'immer';
+import { Data, Mark, Scale, Signal, Spec } from 'vega';
+
 import {
 	COLOR_SCALE,
 	DEFAULT_COLOR_SCHEME,
@@ -18,25 +21,22 @@ import {
 	INTERACTION_MODE,
 	LINE_TYPE_SCALE,
 	OPACITY_SCALE,
-} from '@constants';
-import { addPopoverData } from '@specBuilder/chartPopover/chartPopoverUtils';
-import { addTooltipData, addTooltipSignals, isHighlightedByGroup } from '@specBuilder/chartTooltip/chartTooltipUtils';
-import { getHoverMarkNames, getInteractiveMarkName, hasPopover, isInteractive } from '@specBuilder/marks/markUtils';
+} from '../../constants';
+import { toCamelCase } from '../../utils';
+import { addPopoverData } from '../chartPopover/chartPopoverUtils';
+import { addTooltipData, addTooltipSignals, isHighlightedByGroup } from '../chartTooltip/chartTooltipUtils';
+import { addTimeTransform, getFilteredTooltipData, getTableData } from '../data/dataUtils';
+import { getHoverMarkNames, getInteractiveMarkName, hasPopover, isInteractive } from '../marks/markUtils';
 import {
 	getMetricRangeData,
 	getMetricRangeGroupMarks,
 	getMetricRangeSignals,
 	getMetricRanges,
-} from '@specBuilder/metricRange/metricRangeUtils';
-import { getFacetsFromOptions } from '@specBuilder/specUtils';
-import { addTrendlineData, getTrendlineMarks, getTrendlineScales, setTrendlineSignals } from '@specBuilder/trendline';
-import { toCamelCase } from '@utils';
-import { produce } from 'immer';
-import { Data, Mark, Scale, Signal, Spec } from 'vega';
-
-import { addTimeTransform, getFilteredTooltipData, getTableData } from '../data/dataUtils';
+} from '../metricRange/metricRangeUtils';
 import { addContinuousDimensionScale, addFieldToFacetScaleDomain, addMetricScale } from '../scale/scaleSpecBuilder';
 import { addHighlightedItemSignalEvents, addHighlightedSeriesSignalEvents } from '../signal/signalSpecBuilder';
+import { getFacetsFromOptions } from '../specUtils';
+import { addTrendlineData, getTrendlineMarks, getTrendlineScales, setTrendlineSignals } from '../trendline';
 import { ColorScheme, HighlightedItem, LineOptions, LineSpecOptions } from '../types';
 import { getLineHighlightedData, getLineStaticPointData } from './lineDataUtils';
 import { getLineHoverMarks, getLineMark } from './lineMarkUtils';

@@ -11,14 +11,16 @@
  */
 import React, { ReactElement } from 'react';
 
-import useChartProps from '@hooks/useChartProps';
-import { Axis, Chart, ChartPopover, ChartProps, ChartTooltip, Legend, Line, MetricRange } from '@rsc';
-import { workspaceTrendsDataWithAnomalies, workspaceTrendsDataWithExtremeMetricRange } from '@stories/data/data';
 import { StoryFn } from '@storybook/react';
 
 import { Content } from '@adobe/react-spectrum';
 
-import { bindWithProps } from '../../../test-utils/bindWithProps';
+import { Chart } from '../../../Chart';
+import { Axis, ChartPopover, ChartTooltip, Legend, Line, MetricRange } from '../../../components';
+import useChartProps from '../../../hooks/useChartProps';
+import { bindWithProps } from '../../../test-utils';
+import { ChartProps } from '../../../types';
+import { workspaceTrendsDataWithAnomalies, workspaceTrendsDataWithExtremeMetricRange } from '../../data/data';
 
 export default {
 	title: 'RSC/MetricRange',

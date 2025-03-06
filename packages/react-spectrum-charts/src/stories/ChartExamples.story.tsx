@@ -11,10 +11,20 @@
  */
 import { Dispatch, ReactElement, SetStateAction, useState } from 'react';
 
-import { Annotation } from '@components/Annotation';
-import { ReferenceLine } from '@components/ReferenceLine';
-import { TRENDLINE_VALUE } from '@constants';
-import useChartProps from '@hooks/useChartProps';
+import { action } from '@storybook/addon-actions';
+import { StoryFn } from '@storybook/react';
+
+import { ActionButton, ActionGroup, Content, Divider, Flex, Item, Text, View } from '@adobe/react-spectrum';
+import Close from '@spectrum-icons/workflow/Close';
+import Download from '@spectrum-icons/workflow/Download';
+import GraphPathing from '@spectrum-icons/workflow/GraphPathing';
+import UsersAdd from '@spectrum-icons/workflow/UsersAdd';
+import ViewDetail from '@spectrum-icons/workflow/ViewDetail';
+
+import { Annotation } from '../components/Annotation';
+import { ReferenceLine } from '../components/ReferenceLine';
+import { TRENDLINE_VALUE } from '../constants';
+import useChartProps from '../hooks/useChartProps';
 import {
 	Area,
 	Axis,
@@ -27,20 +37,11 @@ import {
 	Title,
 	Trendline,
 	categorical16,
-} from '@rsc';
-import { action } from '@storybook/addon-actions';
-import { StoryFn } from '@storybook/react';
-import { bindWithProps } from '@test-utils';
-
-import { ActionButton, ActionGroup, Content, Divider, Flex, Item, Text, View } from '@adobe/react-spectrum';
-import Close from '@spectrum-icons/workflow/Close';
-import Download from '@spectrum-icons/workflow/Download';
-import GraphPathing from '@spectrum-icons/workflow/GraphPathing';
-import UsersAdd from '@spectrum-icons/workflow/UsersAdd';
-import ViewDetail from '@spectrum-icons/workflow/ViewDetail';
-
+} from '../index';
 import { Colors, Datum, LegendDescription, LegendLabel, SpectrumColor, SubLabel } from '../specBuilder';
+import { bindWithProps } from '../test-utils';
 import { ChartData, ChartProps } from '../types';
+import './ChartExamples.story.css';
 import {
 	funnelConversionData,
 	funnelConversionTimeComparisonData,

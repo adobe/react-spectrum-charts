@@ -9,13 +9,13 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { HIGHLIGHTED_GROUP } from '@constants';
-import { defaultBarOptions } from '@specBuilder/bar/barTestUtils';
-import { defaultScatterOptions } from '@specBuilder/scatter/scatterTestUtils';
-import { defaultSignals } from '@specBuilder/specTestUtils';
-import { baseData } from '@specBuilder/specUtils';
 import { Data, Signal } from 'vega';
 
+import { HIGHLIGHTED_GROUP } from '../../constants';
+import { defaultBarOptions } from '../bar/barTestUtils';
+import { defaultScatterOptions } from '../scatter/scatterTestUtils';
+import { defaultSignals } from '../specTestUtils';
+import { baseData } from '../specUtils';
 import { BarSpecOptions, ChartTooltipOptions, LineSpecOptions } from '../types';
 import {
 	addHighlightMarkOpacityRules,

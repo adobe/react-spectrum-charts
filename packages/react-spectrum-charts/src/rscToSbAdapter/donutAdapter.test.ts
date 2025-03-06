@@ -11,11 +11,10 @@
  */
 import { createElement } from 'react';
 
-import { ChartPopover } from '@components/ChartPopover';
-import { ChartTooltip } from '@components/ChartTooltip';
-import { DEFAULT_COLOR } from '@constants';
-import { DonutSummary, SegmentLabel } from '@rsc/rc';
-
+import { ChartPopover } from '../components/ChartPopover';
+import { ChartTooltip } from '../components/ChartTooltip';
+import { DEFAULT_COLOR } from '../constants';
+import { DonutSummary, SegmentLabel } from '../rc';
 import { getDonutOptions } from './donutAdapter';
 
 describe('getDonutOptions()', () => {

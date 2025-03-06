@@ -11,11 +11,13 @@
  */
 import React, { ReactElement } from 'react';
 
-import useChartProps from '@hooks/useChartProps';
-import { Area, Axis, Chart, ChartProps } from '@rsc';
 import { StoryFn } from '@storybook/react';
 
+import { Chart } from '../../../Chart';
+import { Area, Axis } from '../../../components';
+import useChartProps from '../../../hooks/useChartProps';
 import { bindWithProps } from '../../../test-utils/bindWithProps';
+import { ChartProps } from '../../../types';
 
 export default {
 	title: 'RSC/Area',

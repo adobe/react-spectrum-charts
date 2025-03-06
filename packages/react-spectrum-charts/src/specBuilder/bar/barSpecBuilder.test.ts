@@ -10,23 +10,6 @@
  * governing permissions and limitations under the License.
  */
 import {
-	BACKGROUND_COLOR,
-	COLOR_SCALE,
-	DEFAULT_CATEGORICAL_DIMENSION,
-	DEFAULT_COLOR,
-	DEFAULT_METRIC,
-	DEFAULT_OPACITY_RULE,
-	DEFAULT_SECONDARY_COLOR,
-	FILTERED_TABLE,
-	LINE_TYPE_SCALE,
-	MARK_ID,
-	OPACITY_SCALE,
-	STACK_ID,
-	TABLE,
-} from '@constants';
-import { defaultSignals } from '@specBuilder/specTestUtils';
-import { spectrumColors } from '@themes';
-import {
 	AggregateTransform,
 	Data,
 	GroupMark,
@@ -40,6 +23,23 @@ import {
 	ValuesData,
 } from 'vega';
 
+import {
+	BACKGROUND_COLOR,
+	COLOR_SCALE,
+	DEFAULT_CATEGORICAL_DIMENSION,
+	DEFAULT_COLOR,
+	DEFAULT_METRIC,
+	DEFAULT_OPACITY_RULE,
+	DEFAULT_SECONDARY_COLOR,
+	FILTERED_TABLE,
+	LINE_TYPE_SCALE,
+	MARK_ID,
+	OPACITY_SCALE,
+	STACK_ID,
+	TABLE,
+} from '../../constants';
+import { spectrumColors } from '../../themes';
+import { defaultSignals } from '../specTestUtils';
 import { baseData, initializeSpec } from '../specUtils';
 import {
 	addBar,

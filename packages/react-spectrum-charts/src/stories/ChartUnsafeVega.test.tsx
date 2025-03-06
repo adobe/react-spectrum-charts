@@ -11,10 +11,9 @@
  */
 import React from 'react';
 
-import '@matchMediaMock';
-import { findChart, fireEvent, getAllMarksByGroupName, render, screen, waitFor } from '@test-utils';
-import { sequentialViridis16 } from '@themes';
-
+import { findChart, fireEvent, getAllMarksByGroupName, render, screen, waitFor } from '../test-utils';
+import '../test-utils/__mocks__/matchMedia.mock.js';
+import { sequentialViridis16 } from '../themes';
 import { BasicBar, PackedBubbleChart } from './ChartUnsafeVega.story';
 
 const testFill = (el: HTMLElement, color: string) => {

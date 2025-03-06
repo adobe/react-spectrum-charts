@@ -9,9 +9,9 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { FILTERED_TABLE, HIGHLIGHTED_GROUP, MARK_ID, SELECTED_ITEM } from '@constants';
 import { FilterTransform } from 'vega';
 
+import { FILTERED_TABLE, HIGHLIGHTED_GROUP, MARK_ID, SELECTED_ITEM } from '../../constants';
 import { getLineHighlightedData } from './lineDataUtils';
 
 describe('getLineHighlightedData()', () => {

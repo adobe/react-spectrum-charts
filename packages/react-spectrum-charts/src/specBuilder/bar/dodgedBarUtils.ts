@@ -9,10 +9,10 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { BACKGROUND_COLOR } from '@constants';
-import { isInteractive } from '@specBuilder/marks/markUtils';
 import { GroupMark } from 'vega';
 
+import { BACKGROUND_COLOR } from '../../constants';
+import { isInteractive } from '../marks/markUtils';
 import { BarSpecOptions } from '../types';
 import { getAnnotationMarks } from './barAnnotationUtils';
 import {

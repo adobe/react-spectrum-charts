@@ -11,11 +11,13 @@
  */
 import React, { ReactElement } from 'react';
 
-import useChartProps from '@hooks/useChartProps';
-import { Axis, Chart, Legend, Scatter, ScatterPath, Title } from '@rsc';
-import { characterData } from '@stories/data/marioKartData';
 import { StoryFn } from '@storybook/react';
-import { bindWithProps } from '@test-utils';
+
+import { Chart } from '../../../Chart';
+import { Axis, Legend, Scatter, ScatterPath, Title } from '../../../components';
+import useChartProps from '../../../hooks/useChartProps';
+import { bindWithProps } from '../../../test-utils';
+import { characterData } from '../../data/marioKartData';
 
 export default {
 	title: 'RSC/Scatter/ScatterPath',

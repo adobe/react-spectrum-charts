@@ -19,8 +19,7 @@ import {
 	DEFAULT_TRANSFORMED_TIME_DIMENSION,
 	FILTERED_TABLE,
 	MARK_ID,
-} from '@constants';
-
+} from '../../constants';
 import { LineSpecOptions, MetricRangeOptions, MetricRangeSpecOptions } from '../types';
 import {
 	applyMetricRangeOptionDefaults,

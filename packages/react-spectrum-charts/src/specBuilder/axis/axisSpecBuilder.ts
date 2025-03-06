@@ -9,24 +9,24 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { produce } from 'immer';
+import { Axis, Data, GroupMark, Mark, ScaleType, Signal, Spec } from 'vega';
+
 import {
 	DEFAULT_COLOR_SCHEME,
 	DEFAULT_GRANULARITY,
 	DEFAULT_LABEL_ALIGN,
 	DEFAULT_LABEL_FONT_WEIGHT,
 	DEFAULT_LABEL_ORIENTATION,
-} from '@constants';
+} from '../../constants';
 import {
 	addAxisAnnotationAxis,
 	addAxisAnnotationData,
 	addAxisAnnotationMarks,
 	addAxisAnnotationSignals,
 	getAxisAnnotationsFromChildren,
-} from '@specBuilder/axisAnnotation/axisAnnotationUtils';
-import { getGenericValueSignal } from '@specBuilder/signal/signalSpecBuilder';
-import { produce } from 'immer';
-import { Axis, Data, GroupMark, Mark, ScaleType, Signal, Spec } from 'vega';
-
+} from '../axisAnnotation/axisAnnotationUtils';
+import { getGenericValueSignal } from '../signal/signalSpecBuilder';
 import { AxisOptions, AxisSpecOptions, ColorScheme, Label, Orientation, Position } from '../types';
 import { getAxisLabelsEncoding, getControlledLabelAnchorValues, getLabelValue } from './axisLabelUtils';
 import { getReferenceLineMarks, getReferenceLines, scaleTypeSupportsReferenceLines } from './axisReferenceLineUtils';

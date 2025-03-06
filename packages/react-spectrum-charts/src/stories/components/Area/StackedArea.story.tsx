@@ -11,11 +11,13 @@
  */
 import React, { ReactElement } from 'react';
 
-import useChartProps from '@hooks/useChartProps';
-import { Area, Axis, Chart, ChartPopover, ChartProps, ChartTooltip, Legend } from '@rsc';
 import { StoryFn } from '@storybook/react';
 
+import { Chart } from '../../../Chart';
+import { Area, Axis, ChartPopover, ChartTooltip, Legend } from '../../../components';
+import useChartProps from '../../../hooks/useChartProps';
 import { bindWithProps } from '../../../test-utils/bindWithProps';
+import { ChartProps } from '../../../types';
 
 export default {
 	title: 'RSC/Area/StackedArea',

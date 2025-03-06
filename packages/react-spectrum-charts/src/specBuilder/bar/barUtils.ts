@@ -9,18 +9,6 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { CORNER_RADIUS, DISCRETE_PADDING, FILTERED_TABLE, SELECTED_GROUP, SELECTED_ITEM, STACK_ID } from '@constants';
-import { getPopovers } from '@specBuilder/chartPopover/chartPopoverUtils';
-import {
-	getColorProductionRule,
-	getCursor,
-	getMarkOpacity,
-	getOpacityProductionRule,
-	getStrokeDashProductionRule,
-	getTooltip,
-	hasPopover,
-} from '@specBuilder/marks/markUtils';
-import { getColorValue, getLineWidthPixelsFromLineWidth } from '@specBuilder/specUtils';
 import {
 	ArrayValueRef,
 	ColorValueRef,
@@ -32,6 +20,25 @@ import {
 	RectMark,
 } from 'vega';
 
+import {
+	CORNER_RADIUS,
+	DISCRETE_PADDING,
+	FILTERED_TABLE,
+	SELECTED_GROUP,
+	SELECTED_ITEM,
+	STACK_ID,
+} from '../../constants';
+import { getPopovers } from '../chartPopover/chartPopoverUtils';
+import {
+	getColorProductionRule,
+	getCursor,
+	getMarkOpacity,
+	getOpacityProductionRule,
+	getStrokeDashProductionRule,
+	getTooltip,
+	hasPopover,
+} from '../marks/markUtils';
+import { getColorValue, getLineWidthPixelsFromLineWidth } from '../specUtils';
 import { BarSpecOptions, Orientation } from '../types';
 import { getTrellisProperties, isTrellised } from './trellisedBarUtils';
 

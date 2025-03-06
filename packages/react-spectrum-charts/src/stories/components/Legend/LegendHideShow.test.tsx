@@ -11,8 +11,7 @@
  */
 import React from 'react';
 
-import { HIGHLIGHT_CONTRAST_RATIO } from '@constants';
-import '@matchMediaMock';
+import { HIGHLIGHT_CONTRAST_RATIO } from '../../../constants';
 import {
 	clickNthElement,
 	findAllMarksByGroupName,
@@ -22,9 +21,9 @@ import {
 	hoverNthElement,
 	render,
 	screen,
-} from '@test-utils';
-import { spectrumColors } from '@themes';
-
+} from '../../../test-utils';
+import '../../../test-utils/__mocks__/matchMedia.mock';
+import { spectrumColors } from '../../../themes';
 import { DefaultHiddenSeries, HiddenSeries, IsToggleable } from './LegendHideShow.story';
 
 const colors = spectrumColors.light;

@@ -9,10 +9,9 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { HIGHLIGHT_CONTRAST_RATIO } from '@constants';
-import '@matchMediaMock';
-import { Line } from '@rsc';
-import { workspaceTrendsData } from '@stories/data/data';
+import { Line } from '../../../components';
+import { HIGHLIGHT_CONTRAST_RATIO } from '../../../constants';
+import { workspaceTrendsData } from '../../../stories/data/data';
 import {
 	allElementsHaveAttributeValue,
 	clickNthElement,
@@ -26,8 +25,8 @@ import {
 	screen,
 	unhoverNthElement,
 	within,
-} from '@test-utils';
-
+} from '../../../test-utils';
+import '../../../test-utils/__mocks__/matchMedia.mock';
 import {
 	Basic,
 	HistoricalCompare,

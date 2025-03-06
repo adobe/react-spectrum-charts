@@ -11,12 +11,12 @@
  */
 import React from "react";
 
-import '@matchMediaMock';
-import { {{name}} } from '@rsc';
+import '../../../test-utils/__mocks__/matchMedia.mock.js';
+import { {{name}} } from '../../../components';
 import {
 	findChart,
 	render,
-} from '@test-utils';
+} from '../../../test-utils';
 
 import { Basic } from "./{{name}}.story";
 

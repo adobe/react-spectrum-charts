@@ -18,8 +18,7 @@ import {
 	MARK_ID,
 	SELECTED_GROUP,
 	SELECTED_ITEM,
-} from '@constants';
-
+} from '../../constants';
 import {
 	getHighlightPointFill,
 	getHighlightPointSize,

@@ -11,9 +11,8 @@
  */
 import React from 'react';
 
-import { Title } from '@components/Title';
-import { findChart, getAllMarksByGroupName, render } from '@test-utils';
-
+import { Title } from '../../../components';
+import { findChart, getAllMarksByGroupName, render } from '../../../test-utils';
 import { Basic, FontWeight, Orient, Position } from './Title.story';
 
 describe('Title', () => {

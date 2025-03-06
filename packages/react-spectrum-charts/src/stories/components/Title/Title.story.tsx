@@ -11,12 +11,14 @@
  */
 import React, { ReactElement } from 'react';
 
-import useChartProps from '@hooks/useChartProps';
-import { Axis, Bar, Chart, ChartProps, Legend, Title } from '@rsc';
-import { browserData as data } from '@stories/data/data';
 import { StoryFn } from '@storybook/react';
 
-import { bindWithProps } from '../../../test-utils/bindWithProps';
+import { Chart } from '../../../Chart';
+import { Axis, Bar, Legend, Title } from '../../../components';
+import useChartProps from '../../../hooks/useChartProps';
+import { bindWithProps } from '../../../test-utils';
+import { ChartProps } from '../../../types';
+import { browserData as data } from '../../data/data';
 
 export default {
 	title: 'RSC/Title',

@@ -11,17 +11,18 @@
  */
 import { ReactElement } from 'react';
 
-import { ChartTooltip } from '@components/ChartTooltip/ChartTooltip';
-import useChartProps from '@hooks/useChartProps';
-import { Area, Bar, Chart, Line, Scatter } from '@rsc';
-import { browserData } from '@stories/data/data';
-import { characterData } from '@stories/data/marioKartData';
 import { StoryFn } from '@storybook/react';
-import { bindWithProps } from '@test-utils';
 
 import { View } from '@adobe/react-spectrum';
 
+import { Chart } from '../../../Chart';
+import { Area, Bar, Line, Scatter } from '../../../components';
+import { ChartTooltip } from '../../../components/ChartTooltip';
+import useChartProps from '../../../hooks/useChartProps';
 import { Datum } from '../../../specBuilder';
+import { browserData } from '../../../stories/data/data';
+import { characterData } from '../../../stories/data/marioKartData';
+import { bindWithProps } from '../../../test-utils';
 
 export default {
 	title: 'RSC/ChartTooltip/HighlightBy',

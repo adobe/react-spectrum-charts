@@ -9,10 +9,9 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { DONUT_SUMMARY_MIN_RADIUS } from '@constants';
-import { DonutSummary } from '@rsc/rc';
-import { render, screen } from '@test-utils';
-
+import { DONUT_SUMMARY_MIN_RADIUS } from '../../../constants';
+import { DonutSummary } from '../../../rc';
+import { render, screen } from '../../../test-utils';
 import { Basic, NoLabel, NumberFormat } from './DonutSummary.story';
 
 describe('DonutSummary renders properly', () => {

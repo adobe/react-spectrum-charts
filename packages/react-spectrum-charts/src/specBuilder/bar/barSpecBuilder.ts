@@ -9,6 +9,9 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { produce } from 'immer';
+import { BandScale, Data, FormulaTransform, Mark, OrdinalScale, Scale, Signal, Spec } from 'vega';
+
 import {
 	COLOR_SCALE,
 	DEFAULT_CATEGORICAL_DIMENSION,
@@ -21,11 +24,12 @@ import {
 	STACK_ID,
 	TIME,
 	TRELLIS_PADDING,
-} from '@constants';
-import { addPopoverData, getPopovers } from '@specBuilder/chartPopover/chartPopoverUtils';
-import { addTooltipData, addTooltipSignals } from '@specBuilder/chartTooltip/chartTooltipUtils';
-import { addTimeTransform, getTableData, getTransformSort } from '@specBuilder/data/dataUtils';
-import { getInteractiveMarkName } from '@specBuilder/marks/markUtils';
+} from '../../constants';
+import { toCamelCase } from '../../utils';
+import { addPopoverData, getPopovers } from '../chartPopover/chartPopoverUtils';
+import { addTooltipData, addTooltipSignals } from '../chartTooltip/chartTooltipUtils';
+import { addTimeTransform, getTableData, getTransformSort } from '../data/dataUtils';
+import { getInteractiveMarkName } from '../marks/markUtils';
 import {
 	addDomainFields,
 	addFieldToFacetScaleDomain,
@@ -34,14 +38,10 @@ import {
 	getMetricScale,
 	getScaleIndexByName,
 	getScaleIndexByType,
-} from '@specBuilder/scale/scaleSpecBuilder';
-import { addHighlightedItemSignalEvents, getGenericValueSignal } from '@specBuilder/signal/signalSpecBuilder';
-import { getFacetsFromOptions } from '@specBuilder/specUtils';
-import { addTrendlineData, getTrendlineMarks, setTrendlineSignals } from '@specBuilder/trendline';
-import { toCamelCase } from '@utils';
-import { produce } from 'immer';
-import { BandScale, Data, FormulaTransform, Mark, OrdinalScale, Scale, Signal, Spec } from 'vega';
-
+} from '../scale/scaleSpecBuilder';
+import { addHighlightedItemSignalEvents, getGenericValueSignal } from '../signal/signalSpecBuilder';
+import { getFacetsFromOptions } from '../specUtils';
+import { addTrendlineData, getTrendlineMarks, setTrendlineSignals } from '../trendline';
 import { BarOptions, BarSpecOptions, ColorScheme, HighlightedItem } from '../types';
 import { getBarPadding, getDimensionSelectionRing, getScaleValues, isDodgedAndStacked } from './barUtils';
 import { getDodgedMark } from './dodgedBarUtils';

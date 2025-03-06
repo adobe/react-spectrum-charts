@@ -11,27 +11,17 @@
  */
 import { ReactElement } from 'react';
 
-import { TRENDLINE_VALUE } from '@constants';
-import useChartProps from '@hooks/useChartProps';
-import {
-	Axis,
-	Bar,
-	Chart,
-	ChartPopover,
-	ChartProps,
-	ChartTooltip,
-	Legend,
-	Line,
-	Scatter,
-	Title,
-	Trendline,
-} from '@rsc';
-import { workspaceTrendsData } from '@stories/data/data';
-import { characterData } from '@stories/data/marioKartData';
 import { StoryFn } from '@storybook/react';
 
-import { Datum } from '../../../specBuilder';
+import { Chart } from '../../../Chart';
+import { Axis, Bar, ChartPopover, ChartTooltip, Legend, Line, Scatter, Title, Trendline } from '../../../components';
+import { TRENDLINE_VALUE } from '../../../constants';
+import useChartProps from '../../../hooks/useChartProps';
+import { Datum } from '../../../specBuilder/types';
+import { workspaceTrendsData } from '../../../stories/data/data';
+import { characterData } from '../../../stories/data/marioKartData';
 import { bindWithProps } from '../../../test-utils/bindWithProps';
+import { ChartProps } from '../../../types';
 import { barSeriesData } from '../Bar/data';
 
 export default {

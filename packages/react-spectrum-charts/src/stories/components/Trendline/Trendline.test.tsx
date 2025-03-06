@@ -9,9 +9,8 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { HIGHLIGHT_CONTRAST_RATIO } from '@constants';
-import '@matchMediaMock';
-import { Trendline, spectrumColors } from '@rsc';
+import { Trendline } from '../../../components';
+import { HIGHLIGHT_CONTRAST_RATIO } from '../../../constants';
 import {
 	allElementsHaveAttributeValue,
 	findAllMarksByGroupName,
@@ -21,8 +20,9 @@ import {
 	hoverNthElement,
 	queryMarksByGroupName,
 	render,
-} from '@test-utils';
-
+} from '../../../test-utils';
+import '../../../test-utils/__mocks__/matchMedia.mock.js';
+import { spectrumColors } from '../../../themes';
 import {
 	BarChart,
 	Basic,

@@ -18,8 +18,7 @@ import {
 	DEFAULT_LABEL_ALIGN,
 	DEFAULT_LABEL_FONT_WEIGHT,
 	DEFAULT_LABEL_ORIENTATION,
-} from '@constants';
-
+} from '../../constants';
 import { AxisProps } from '../../types';
 
 const Axis: FC<AxisProps> = ({

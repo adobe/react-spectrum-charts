@@ -9,15 +9,15 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { Mark } from 'vega';
+
 import {
 	DEFAULT_OPACITY_RULE,
 	HIGHLIGHTED_GROUP,
 	HIGHLIGHTED_SERIES,
 	HIGHLIGHT_CONTRAST_RATIO,
 	SERIES_ID,
-} from '@constants';
-import { Mark } from 'vega';
-
+} from '../../constants';
 import { getHighlightOpacityRule, setHoverOpacityForMarks } from './legendHighlightUtils';
 import { defaultMark } from './legendTestUtils';
 

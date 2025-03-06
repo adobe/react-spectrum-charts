@@ -9,9 +9,9 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { GROUP_DATA, MARK_ID, SERIES_ID, TRENDLINE_VALUE } from '@constants';
 import { SymbolShape } from 'vega';
 
+import { GROUP_DATA, MARK_ID, SERIES_ID, TRENDLINE_VALUE } from '../../constants';
 import { SpectrumVizColor } from './spectrumVizColor.types';
 
 export type PartiallyRequired<T, K extends keyof T> = Omit<T, K> & Required<Pick<T, K>>;

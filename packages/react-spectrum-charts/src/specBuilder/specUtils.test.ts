@@ -9,6 +9,8 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { BandScale, OrdinalScale } from 'vega';
+
 import {
 	COLOR_SCALE,
 	DEFAULT_CATEGORICAL_DIMENSION,
@@ -17,10 +19,8 @@ import {
 	DEFAULT_TRANSFORMED_TIME_DIMENSION,
 	LINE_TYPE_SCALE,
 	TABLE,
-} from '@constants';
-import { ROUNDED_SQUARE_PATH } from '@svgPaths';
-import { BandScale, OrdinalScale } from 'vega';
-
+} from '../constants';
+import { ROUNDED_SQUARE_PATH } from '../svgPaths';
 import {
 	getColorValue,
 	getD3FormatSpecifierFromNumberFormat,

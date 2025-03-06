@@ -11,12 +11,11 @@
  */
 import { createElement } from 'react';
 
-import { ChartPopover } from '@components/ChartPopover';
-import { ChartTooltip } from '@components/ChartTooltip';
-import { ScatterPath } from '@components/ScatterPath';
-import { Trendline } from '@components/Trendline';
-import { DEFAULT_COLOR } from '@constants';
-
+import { ChartPopover } from '../components/ChartPopover';
+import { ChartTooltip } from '../components/ChartTooltip';
+import { ScatterPath } from '../components/ScatterPath';
+import { Trendline } from '../components/Trendline';
+import { DEFAULT_COLOR } from '../constants';
 import { getScatterOptions } from './scatterAdapter';
 
 describe('getScatterOptions()', () => {

@@ -11,7 +11,6 @@
  */
 import React from 'react';
 
-import '@matchMediaMock';
 import {
 	findChart,
 	findMarksByGroupName,
@@ -22,9 +21,9 @@ import {
 	hoverNthElement,
 	render,
 	screen,
-} from '@test-utils';
-import { spectrumColors } from '@themes';
-
+} from '../test-utils';
+import '../test-utils/__mocks__/matchMedia.mock.js';
+import { spectrumColors } from '../themes';
 import {
 	FunnelConversion,
 	FunnelTimeComparison,

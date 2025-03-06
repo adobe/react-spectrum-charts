@@ -9,8 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { DEFAULT_METRIC, DEFAULT_TIME_DIMENSION, FILTERED_TABLE, MS_PER_DAY, TRENDLINE_VALUE } from '@constants';
-
+import { DEFAULT_METRIC, DEFAULT_TIME_DIMENSION, FILTERED_TABLE, MS_PER_DAY, TRENDLINE_VALUE } from '../../constants';
 import { defaultLineOptions } from './trendlineTestUtils';
 import {
 	applyTrendlinePropDefaults,

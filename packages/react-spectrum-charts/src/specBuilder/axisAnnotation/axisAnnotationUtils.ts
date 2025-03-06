@@ -9,12 +9,12 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { DEFAULT_AXIS_ANNOTATION_COLOR, DEFAULT_AXIS_ANNOTATION_OFFSET, FILTERED_TABLE } from '@constants';
-import { getCursor } from '@specBuilder/marks/markUtils';
-import { getColorValue } from '@specBuilder/specUtils';
-import { ANNOTATION_RANGED_ICON_SVG, ANNOTATION_SINGLE_ICON_SVG } from '@svgPaths';
 import { Axis, Data, Mark, ScaleType, Signal, SourceData, ValuesData } from 'vega';
 
+import { DEFAULT_AXIS_ANNOTATION_COLOR, DEFAULT_AXIS_ANNOTATION_OFFSET, FILTERED_TABLE } from '../../constants';
+import { ANNOTATION_RANGED_ICON_SVG, ANNOTATION_SINGLE_ICON_SVG } from '../../svgPaths';
+import { getCursor } from '../marks/markUtils';
+import { getColorValue } from '../specUtils';
 import { AxisAnnotationOptions, AxisAnnotationSpecOptions, AxisSpecOptions, ColorScheme, Position } from '../types';
 
 /**

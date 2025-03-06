@@ -9,6 +9,9 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { produce } from 'immer';
+import { Data, Legend, Mark, Scale, Signal, Spec } from 'vega';
+
 import {
 	COLOR_SCALE,
 	DEFAULT_COLOR_SCHEME,
@@ -17,19 +20,16 @@ import {
 	OPACITY_SCALE,
 	SYMBOL_SHAPE_SCALE,
 	SYMBOL_SIZE_SCALE,
-} from '@constants';
-import { getTableData } from '@specBuilder/data/dataUtils';
-import { addFieldToFacetScaleDomain } from '@specBuilder/scale/scaleSpecBuilder';
+} from '../../constants';
+import { getTableData } from '../data/dataUtils';
+import { addFieldToFacetScaleDomain } from '../scale/scaleSpecBuilder';
+import { addHighlighSignalLegendHoverEvents, getGenericValueSignal } from '../signal/signalSpecBuilder';
 import {
 	getColorValue,
 	getLineWidthPixelsFromLineWidth,
 	getPathFromSymbolShape,
 	getStrokeDashFromLineType,
-} from '@specBuilder/specUtils';
-import { produce } from 'immer';
-import { Data, Legend, Mark, Scale, Signal, Spec } from 'vega';
-
-import { addHighlighSignalLegendHoverEvents, getGenericValueSignal } from '../signal/signalSpecBuilder';
+} from '../specUtils';
 import {
 	ColorFacet,
 	ColorScheme,

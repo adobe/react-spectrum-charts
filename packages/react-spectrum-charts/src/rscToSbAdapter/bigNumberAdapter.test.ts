@@ -11,8 +11,7 @@
  */
 import { createElement } from 'react';
 
-import { Line } from '@components/Line';
-
+import { Line } from '../components';
 import { BigNumberProps } from '../types';
 import { getBigNumberOptions } from './bigNumberAdapter';
 

@@ -9,14 +9,14 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { DEFAULT_METRIC, FILTERED_TABLE, HIGHLIGHTED_SERIES, SELECTED_SERIES, SERIES_ID } from '@constants';
-import { AreaMarkOptions, getAreaMark } from '@specBuilder/area/areaUtils';
-import { getLineMark } from '@specBuilder/line/lineMarkUtils';
-import { LineMarkOptions } from '@specBuilder/line/lineUtils';
-import { addHighlightedSeriesSignalEvents } from '@specBuilder/signal/signalSpecBuilder';
-import { getFacetsFromOptions } from '@specBuilder/specUtils';
 import { AreaMark, GroupMark, LineMark, Signal, SourceData } from 'vega';
 
+import { DEFAULT_METRIC, FILTERED_TABLE, HIGHLIGHTED_SERIES, SELECTED_SERIES, SERIES_ID } from '../../constants';
+import { AreaMarkOptions, getAreaMark } from '../area/areaUtils';
+import { getLineMark } from '../line/lineMarkUtils';
+import { LineMarkOptions } from '../line/lineUtils';
+import { addHighlightedSeriesSignalEvents } from '../signal/signalSpecBuilder';
+import { getFacetsFromOptions } from '../specUtils';
 import { LineSpecOptions, MetricRangeOptions, MetricRangeSpecOptions } from '../types';
 
 export type MetricRangeParentOptions = LineSpecOptions;

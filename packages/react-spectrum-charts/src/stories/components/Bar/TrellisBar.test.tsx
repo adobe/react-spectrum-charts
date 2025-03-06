@@ -11,7 +11,6 @@
  */
 import React from 'react';
 
-import '@matchMediaMock';
 import {
 	clickNthElement,
 	findAllByText,
@@ -20,8 +19,8 @@ import {
 	getByText,
 	render,
 	screen,
-} from '@test-utils';
-
+} from '../../../test-utils';
+import '../../../test-utils/__mocks__/matchMedia.mock.js';
 import {
 	Dodged,
 	HorizontalBarHorizontalTrellis,

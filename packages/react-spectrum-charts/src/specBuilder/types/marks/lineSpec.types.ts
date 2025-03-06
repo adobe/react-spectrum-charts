@@ -9,8 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { INTERACTION_MODE } from '@constants';
-
+import { INTERACTION_MODE } from '../../../constants';
 import { ColorScheme, HighlightedItem } from '../chartSpec.types';
 import { ChartPopoverOptions } from '../dialogs/chartPopoverSpec.types';
 import { ChartTooltipOptions } from '../dialogs/chartTooltipSpec.types';

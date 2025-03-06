@@ -11,10 +11,9 @@
  */
 import { createElement } from 'react';
 
-import { ChartPopover } from '@components/ChartPopover';
-import { ChartTooltip } from '@components/ChartTooltip';
-import { DEFAULT_COLOR } from '@constants';
-
+import { ChartPopover } from '../components/ChartPopover';
+import { ChartTooltip } from '../components/ChartTooltip';
+import { DEFAULT_COLOR } from '../constants';
 import { getAreaOptions } from './areaAdapter';
 
 describe('getAreaOptions()', () => {

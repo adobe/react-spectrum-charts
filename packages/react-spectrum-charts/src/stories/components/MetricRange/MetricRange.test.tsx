@@ -9,8 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import '@matchMediaMock';
-import { MetricRange, spectrumColors } from '@rsc';
+import { MetricRange } from '../../../components';
 import {
 	clickNthElement,
 	findAllMarksByGroupName,
@@ -19,8 +18,9 @@ import {
 	hoverNthElement,
 	queryMarksByGroupName,
 	render,
-} from '@test-utils';
-
+} from '../../../test-utils';
+import '../../../test-utils/__mocks__/matchMedia.mock.js';
+import { spectrumColors } from '../../../themes';
 import { Basic, DisplayOnHover, WithPopover } from './MetricRange.story';
 
 const colors = spectrumColors.light;

@@ -9,6 +9,8 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { Data, Legend, LegendEncode, Scale, Spec, SymbolEncodeEntry } from 'vega';
+
 import {
 	COLOR_SCALE,
 	COMPONENT_NAME,
@@ -18,7 +20,7 @@ import {
 	HIGHLIGHTED_SERIES,
 	LINEAR_COLOR_SCALE,
 	TABLE,
-} from '@constants';
+} from '../../constants';
 import {
 	defaultHighlightedGroupSignal,
 	defaultHighlightedItemSignal,
@@ -27,10 +29,8 @@ import {
 	defaultSelectedItemSignal,
 	defaultSelectedSeriesSignal,
 	defaultSignals,
-} from '@specBuilder/specTestUtils';
-import { baseData } from '@specBuilder/specUtils';
-import { Data, Legend, LegendEncode, Scale, Spec, SymbolEncodeEntry } from 'vega';
-
+} from '../specTestUtils';
+import { baseData } from '../specUtils';
 import { addData, addLegend, addSignals, formatFacetRefsWithPresets, getContinuousLegend } from './legendSpecBuilder';
 import { defaultLegendOptions, opacityEncoding } from './legendTestUtils';
 

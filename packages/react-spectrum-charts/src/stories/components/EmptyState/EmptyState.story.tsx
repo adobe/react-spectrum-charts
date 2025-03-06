@@ -11,9 +11,10 @@
  */
 import React, { ReactElement } from 'react';
 
-import { EmptyState } from '@components/EmptyState/EmptyState';
 import { StoryFn } from '@storybook/react';
-import { bindWithProps } from '@test-utils';
+
+import { EmptyState } from '../../../components';
+import { bindWithProps } from '../../../test-utils';
 
 export default {
 	title: 'RSC/EmptyState',

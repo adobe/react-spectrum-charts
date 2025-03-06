@@ -11,12 +11,13 @@
  */
 import React, { ReactElement } from 'react';
 
-import useChartProps from '@hooks/useChartProps';
-import { Bar, Chart, Legend, Line } from '@rsc';
-import { browserData as data } from '@stories/data/data';
 import { StoryFn } from '@storybook/react';
-import { ROUNDED_SQUARE_PATH } from '@svgPaths';
 
+import { Chart } from '../../../Chart';
+import { Bar, Legend, Line } from '../../../components';
+import useChartProps from '../../../hooks/useChartProps';
+import { ROUNDED_SQUARE_PATH } from '../../../svgPaths';
+import { browserData as data } from '../../data/data';
 import { defaultProps } from './LegendStoryUtils';
 
 export default {

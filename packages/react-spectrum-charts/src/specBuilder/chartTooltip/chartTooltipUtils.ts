@@ -9,6 +9,8 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { Data, FormulaTransform, NumericValueRef, Signal, SourceData } from 'vega';
+
 import {
 	DEFAULT_OPACITY_RULE,
 	FILTERED_TABLE,
@@ -17,11 +19,9 @@ import {
 	HIGHLIGHT_CONTRAST_RATIO,
 	INTERACTION_MODE,
 	SERIES_ID,
-} from '@constants';
-import { getFilteredTableData } from '@specBuilder/data/dataUtils';
-import { getHoverMarkNames } from '@specBuilder/marks/markUtils';
-import { Data, FormulaTransform, NumericValueRef, Signal, SourceData } from 'vega';
-
+} from '../../constants';
+import { getFilteredTableData } from '../data/dataUtils';
+import { getHoverMarkNames } from '../marks/markUtils';
 import {
 	AreaSpecOptions,
 	BarSpecOptions,

@@ -9,8 +9,9 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { HIGHLIGHTED_GROUP, HIGHLIGHTED_ITEM, SELECTED_ITEM } from '@constants';
 import { SourceData } from 'vega';
+
+import { HIGHLIGHTED_GROUP, HIGHLIGHTED_ITEM, SELECTED_ITEM } from '../../constants';
 
 /**
  * gets the data used for highlighting hovered data points

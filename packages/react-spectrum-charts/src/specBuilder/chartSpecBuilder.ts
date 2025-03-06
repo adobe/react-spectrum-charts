@@ -9,6 +9,9 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { produce } from 'immer';
+import { Data, LinearScale, OrdinalScale, PointScale, Scale, Signal, Spec } from 'vega';
+
 import {
 	BACKGROUND_COLOR,
 	DEFAULT_BACKGROUND_COLOR,
@@ -31,11 +34,8 @@ import {
 	SYMBOL_SHAPE_SCALE,
 	SYMBOL_SIZE_SCALE,
 	TABLE,
-} from '@constants';
-import colorSchemes from '@themes/colorSchemes';
-import { produce } from 'immer';
-import { Data, LinearScale, OrdinalScale, PointScale, Scale, Signal, Spec } from 'vega';
-
+} from '../constants';
+import colorSchemes from '../themes/colorSchemes';
 import { addArea } from './area/areaSpecBuilder';
 import { addAxis } from './axis/axisSpecBuilder';
 import { addBar } from './bar/barSpecBuilder';

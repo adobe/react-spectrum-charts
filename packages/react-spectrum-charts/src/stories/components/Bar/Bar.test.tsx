@@ -9,11 +9,10 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import '@matchMediaMock';
-import { Bar } from '@rsc';
-import { clickNthElement, findAllMarksByGroupName, findChart, render } from '@test-utils';
-
-import { Basic, Opacity, PaddingRatio, WithAnnotation, OnClick, BarWithUTCDatetimeFormat } from './Bar.story';
+import { Bar } from '../../../components';
+import { clickNthElement, findAllMarksByGroupName, findChart, render } from '../../../test-utils';
+import '../../../test-utils/__mocks__/matchMedia.mock.js';
+import { BarWithUTCDatetimeFormat, Basic, OnClick, Opacity, PaddingRatio, WithAnnotation } from './Bar.story';
 import { Color, DodgedStacked } from './DodgedBar.story';
 import { Basic as StackedBasic } from './StackedBar.story';
 import { barData } from './data';

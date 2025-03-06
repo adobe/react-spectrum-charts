@@ -11,12 +11,11 @@
  */
 import React from 'react';
 
-import { Legend } from '@components/Legend';
-import '@matchMediaMock';
-import { cleanupTooltips, waitForLegendTooltip } from '@specBuilder/legend/legendTestUtils';
-import { clickNthElement, findChart, getAllLegendEntries, hoverNthElement, render, screen } from '@test-utils';
-
 import { Chart } from '../../../Chart';
+import { Legend } from '../../../components';
+import { cleanupTooltips, waitForLegendTooltip } from '../../../specBuilder/legend/legendTestUtils';
+import { clickNthElement, findChart, getAllLegendEntries, hoverNthElement, render, screen } from '../../../test-utils';
+import '../../../test-utils/__mocks__/matchMedia.mock.js';
 import { Basic, Descriptions, LabelLimit, OnClick, Position, Supreme, Title } from './Legend.story';
 
 describe('Legend', () => {

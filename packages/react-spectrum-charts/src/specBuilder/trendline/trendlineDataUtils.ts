@@ -9,6 +9,9 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { produce } from 'immer';
+import { Data, SourceData, Transforms } from 'vega';
+
 import {
 	FILTERED_TABLE,
 	HIGHLIGHTED_ITEM,
@@ -16,13 +19,10 @@ import {
 	SELECTED_ITEM,
 	SELECTED_SERIES,
 	SERIES_ID,
-} from '@constants';
-import { getSeriesIdTransform, getTableData } from '@specBuilder/data/dataUtils';
-import { isInteractive } from '@specBuilder/marks/markUtils';
-import { getFacetsFromOptions } from '@specBuilder/specUtils';
-import { produce } from 'immer';
-import { Data, SourceData, Transforms } from 'vega';
-
+} from '../../constants';
+import { getSeriesIdTransform, getTableData } from '../data/dataUtils';
+import { isInteractive } from '../marks/markUtils';
+import { getFacetsFromOptions } from '../specUtils';
 import { TrendlineMethod, TrendlineSpecOptions } from '../types';
 import {
 	getAggregateTransform,

@@ -24,7 +24,6 @@
 			"@react-spectrum-charts/*": ["packages/react-spectrum-charts/src/*"]
 		}
 	},
-	"references": [{ "path": "./packages/react-spectrum-charts" }],
 	"include": ["packages"],
 	"exclude": ["node_modules", "dist", "dist-storybook"]
 }
