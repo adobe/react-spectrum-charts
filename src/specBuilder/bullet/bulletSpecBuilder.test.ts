@@ -9,60 +9,60 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
-import { addBullet } from './bulletSpecBuilder';
-import { BulletSpecProps, BulletProps } from '../../types';
 import { Spec } from 'vega';
 
+import { BulletProps, BulletSpecProps } from '../../types';
+import { addBullet } from './bulletSpecBuilder';
+
 export const samplePropsColumn: BulletSpecProps = {
-    "children": [],
-    "colorScheme": "light",
-    "index": 0,
-    "color": "green",
-    "metric": "currentAmount",
-    "dimension": "graphLabel",
-    "target": "target",
-    "name": "bullet0",
-    "idKey": "rscMarkId",
-    "direction": "column"
-}
+	children: [],
+	colorScheme: 'light',
+	index: 0,
+	color: 'green',
+	metric: 'currentAmount',
+	dimension: 'graphLabel',
+	target: 'target',
+	name: 'bullet0',
+	idKey: 'rscMarkId',
+	direction: 'column',
+};
 
 export const samplePropsRow: BulletSpecProps = {
-    "children": [],
-    "colorScheme": "light",
-    "index": 0,
-    "color": "green",
-    "metric": "currentAmount",
-    "dimension": "graphLabel",
-    "target": "target",
-    "name": "bullet0",
-    "idKey": "rscMarkId",
-    "direction": "row"
-}
+	children: [],
+	colorScheme: 'light',
+	index: 0,
+	color: 'green',
+	metric: 'currentAmount',
+	dimension: 'graphLabel',
+	target: 'target',
+	name: 'bullet0',
+	idKey: 'rscMarkId',
+	direction: 'row',
+};
 
 describe('addBullet', () => {
-    let spec: Spec;
+	let spec: Spec;
 
-    beforeEach(() => {
-        spec = { data: [], marks: [], scales: [] };
-    });
+	beforeEach(() => {
+		spec = { data: [], marks: [], scales: [] };
+	});
 
-    test('should modify spec with bullet chart properties', () => {
-        const bulletProps: BulletProps & { idKey: string } = {
-            children: [],
-            name: 'testBullet',
-            metric: 'revenue',
-            dimension: 'region',
-            target: 'goal',
-            idKey: 'rscMarkId',
-        };
+	test('should modify spec with bullet chart properties', () => {
+		const bulletProps: BulletProps & { idKey: string } = {
+			children: [],
+			name: 'testBullet',
+			metric: 'revenue',
+			dimension: 'region',
+			target: 'goal',
+			idKey: 'rscMarkId',
+		};
 
-        const newSpec = addBullet(spec, bulletProps);
+		const newSpec = addBullet(spec, bulletProps);
 
-        expect(newSpec).toBeDefined();
-        expect(newSpec).toHaveProperty('data')
-        expect(newSpec).toHaveProperty('marks')
-        expect(newSpec).toHaveProperty('scales')
-        expect(newSpec).toHaveProperty('signals')
-    });
+		expect(newSpec).toBeDefined();
+		expect(newSpec).toHaveProperty('data');
+		expect(newSpec).toHaveProperty('marks');
+		expect(newSpec).toHaveProperty('scales');
+		expect(newSpec).toHaveProperty('signals');
+	});
 });

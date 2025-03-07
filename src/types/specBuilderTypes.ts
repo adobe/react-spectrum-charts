@@ -19,12 +19,12 @@ import {
 	AxisChildElement,
 	AxisProps,
 	BarProps,
+	BulletProps,
 	ChartPopoverProps,
 	ChartTooltipProps,
 	ColorFacet,
 	ColorScheme,
 	DonutProps,
-	BulletProps,
 	DonutSummaryProps,
 	FacetRef,
 	HighlightedItem,
@@ -145,9 +145,9 @@ type BulletPropsWithDefaults = 'name' | 'metric' | 'dimension' | 'target' | 'col
 
 export interface BulletSpecProps extends PartiallyRequired<BulletProps, BulletPropsWithDefaults> {
 	children: MarkChildElement[];
-    idKey: string;
-    colorScheme: ColorScheme;
-    index: number;
+	idKey: string;
+	colorScheme: ColorScheme;
+	index: number;
 }
 
 type DonutPropsWithDefaults = 'color' | 'metric' | 'name' | 'startAngle' | 'holeRatio' | 'isBoolean';
