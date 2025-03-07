@@ -98,7 +98,6 @@ export function getBulletMarks(props: BulletSpecProps): GroupMark {
             "update": {
                 [markGroupEncodeUpdateDirection]: { "scale": "groupScale", "field": `${props.dimension}` },
                 "height": { "signal": "bulletGroupHeight" },
-                "width": { "signal": "width" }
             }
         },
         "marks": []
@@ -139,6 +138,7 @@ export function getBulletMarkRect(props: BulletSpecProps): Mark {
                 "x": { "scale": "xscale", "value": 0 },
                 "x2": { "scale": "xscale", "field": `${props.metric}` },
                 "height": { "signal": "bulletHeight" },
+                //The vertical position of the bullet is calculated using
                 "y": { "signal": "bulletGroupHeight - 3 - 2 * bulletHeight" }
             }
         }
