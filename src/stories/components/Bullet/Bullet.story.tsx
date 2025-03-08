@@ -30,6 +30,13 @@ const defaultChartProps: ChartProps = {
     height: 350,
 };
 
+// Default chart properties
+const chartPropsRowMode: ChartProps = {
+    data: basicBulletData,
+    width: 350,
+    height: 350,
+};
+
 // Basic Bullet chart story
 const BulletStory: StoryFn<BulletProps & { width?: number; height?: number }> = (args): ReactElement => {
     const { width, height, ...bulletProps } = args;
@@ -50,4 +57,13 @@ Basic.args = {
     direction: 'column',
 };
 
-export { Basic };
+const RowMode = bindWithProps(BulletStory);
+RowMode.args = {
+	metric: 'currentAmount',
+    dimension: 'graphLabel',
+    target: 'target',
+    color: 'red-500',
+    direction: 'row',
+};
+
+export { Basic, RowMode };
