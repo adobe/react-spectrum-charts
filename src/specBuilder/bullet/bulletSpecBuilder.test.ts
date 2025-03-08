@@ -25,6 +25,7 @@ export const samplePropsColumn: BulletSpecProps = {
 	name: 'bullet0',
 	idKey: 'rscMarkId',
 	direction: 'column',
+	horizontalLabel: false,
 };
 
 export const samplePropsRow: BulletSpecProps = {
@@ -38,6 +39,7 @@ export const samplePropsRow: BulletSpecProps = {
 	name: 'bullet0',
 	idKey: 'rscMarkId',
 	direction: 'row',
+	horizontalLabel: false,
 };
 
 describe('addBullet', () => {

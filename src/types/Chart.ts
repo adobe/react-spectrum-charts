@@ -239,6 +239,8 @@ export interface BulletProps extends MarkProps {
 	dimension?: string;
 	/** Specifies the direction the bars should be ordered (row/column) */
 	direction?: 'row' | 'column';
+	/** Specifies if the labels should be on the sides or above the bullet. Only works in column mode. */
+	horizontalLabel?: boolean;
 }
 
 export interface DonutSummaryProps {
