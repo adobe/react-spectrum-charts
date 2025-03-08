@@ -126,7 +126,10 @@ export function getBulletMarkRect(props: BulletSpecProps): Mark {
 				x: { scale: 'xscale', value: 0 },
 				x2: { scale: 'xscale', field: `${props.metric}` },
 				height: { signal: 'bulletHeight' },
-				//The vertical position of the bullet is calculated using
+				//The vertical positioning is calculated starting at the bulletgroupheight
+                //and then subtracting two times the bullet height to center the bullet bar 
+                //in the middle of the threshold. The 3 is subtracted because the bulletgroup height
+                //starts the bullet below the threshold area
 				y: { signal: 'bulletGroupHeight - 3 - 2 * bulletHeight' },
 			},
 		},
