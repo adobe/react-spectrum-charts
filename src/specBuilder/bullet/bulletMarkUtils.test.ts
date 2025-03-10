@@ -45,8 +45,10 @@ describe('getBulletMarks', () => {
 		expect(data?.marks?.[2]?.type).toBe('text');
 		expect(data?.marks?.[3]?.type).toBe('text');
 		expect(Object.keys(data?.encode?.update || {})).toContain('x');
+
+	});
     
-   test('Should not include target marks when showTarget is false', () => {
+   	test('Should not include target marks when showTarget is false', () => {
 		const props = { ...samplePropsColumn, showTarget: false, showTargetValue: true };
 		const marksGroup = getBulletMarks(props);
 		expect(marksGroup.marks).toHaveLength(3);
@@ -145,7 +147,7 @@ describe('getBulletMarkValueLabel', () => {
 	});
 
 	test('Should apply numberFormat specifier to metric and target values', () => {
-		const props = { ...sampleProps, showTarget: true, showTargetValue: true, numberFormat: '$,.2f' };
+		const props = { ...samplePropsColumn, showTarget: true, showTargetValue: true, numberFormat: '$,.2f' };
 		const marksGroup = getBulletMarks(props);
 
 		const metricValueLabel = marksGroup.marks?.find((mark) => mark.name === `${props.name}ValueLabel`);

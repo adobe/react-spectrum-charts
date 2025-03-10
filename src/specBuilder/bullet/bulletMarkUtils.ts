@@ -100,7 +100,7 @@ export function getBulletMarks(props: BulletSpecProps): GroupMark {
 		marks: [],
 	};
 
-  bulletMark.marks?.push(getBulletMarkRect(props));
+  	bulletMark.marks?.push(getBulletMarkRect(props));
 	if (props.target && props.showTarget !== false) {
 		bulletMark.marks?.push(getBulletMarkTarget(props));
 		if (props.showTargetValue) {
@@ -133,9 +133,9 @@ export function getBulletMarkRect(props: BulletSpecProps): Mark {
 				x2: { scale: 'xscale', field: `${props.metric}` },
 				height: { signal: 'bulletHeight' },
 				//The vertical positioning is calculated starting at the bulletgroupheight
-        //and then subtracting two times the bullet height to center the bullet bar 
-        //in the middle of the threshold. The 3 is subtracted because the bulletgroup height
-        //starts the bullet below the threshold area
+				//and then subtracting two times the bullet height to center the bullet bar 
+				//in the middle of the threshold. The 3 is subtracted because the bulletgroup height
+				//starts the bullet below the threshold area
 				y: { signal: 'bulletGroupHeight - 3 - 2 * bulletHeight' },
 			},
 		},

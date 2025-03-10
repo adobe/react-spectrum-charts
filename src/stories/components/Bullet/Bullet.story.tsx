@@ -35,7 +35,7 @@ const BulletStory: StoryFn<BulletProps & { width?: number; height?: number }> = 
 	const { width, height, ...bulletProps } = args;
 	const chartProps = useChartProps({ ...defaultChartProps, width: width ?? 350, height: height ?? 350 });
 	return (
-		<Chart {...chartProps}>
+		<Chart {...chartProps} debug>
 			<Bullet {...bulletProps} />
 		</Chart>
 	);
@@ -47,8 +47,10 @@ Basic.args = {
 	dimension: 'graphLabel',
 	target: 'target',
 	color: 'red-500',
-  direction: 'column',
+    direction: 'column',
 	numberFormat: '$,.2f',
+    showTarget: true,
+    showTargetValue: false,
 };
 
 const RowMode = bindWithProps(BulletStory);
@@ -58,6 +60,9 @@ RowMode.args = {
     target: 'target',
     color: 'red-500',
     direction: 'row',
+    numberFormat: '$,.2f',
+    showTarget: true,
+    showTargetValue: false,
 };
 
 export { Basic, RowMode };
