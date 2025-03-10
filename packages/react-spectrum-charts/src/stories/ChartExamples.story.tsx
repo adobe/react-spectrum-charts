@@ -41,7 +41,6 @@ import {
 import { Colors, Datum, LegendDescription, LegendLabel, SpectrumColor, SubLabel } from '../specBuilder';
 import { bindWithProps } from '../test-utils';
 import { ChartData, ChartProps } from '../types';
-import './ChartExamples.story.css';
 import {
 	funnelConversionData,
 	funnelConversionTimeComparisonData,

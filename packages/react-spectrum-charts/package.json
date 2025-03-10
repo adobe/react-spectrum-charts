@@ -57,7 +57,6 @@
 	"license": "Apache-2.0",
 	"scripts": {
 		"build": "webpack --config webpack.config.js",
-		"build:storybook": "storybook build -o ./dist-storybook --quiet",
 		"g": "plop component",
 		"generate": "plop component",
 		"lint": "eslint src --ext .ts,.tsx,.js,.jsx",
@@ -67,8 +66,6 @@
 		"pack-test": "rm -rf dist & cross-env NODE_ENV=development npm pack",
 		"sonar": "node ./scripts/runSonarOnBranch.js",
 		"sonar-fork-pr": "node ./scripts/runSonarOnFork.js",
-		"start": "yarn storybook",
-		"storybook": "cross-env NODE_OPTIONS=--openssl-legacy-provider && storybook dev -p 6009",
 		"test": "cross-env TZ=UTC BABEL_ENV=test jest --config ../../jest.config.js",
 		"watch": "cross-env TZ=UTC BABEL_ENV=test jest --config ../../jest.config.js --watch",
 		"skulk": "yarn watch --silent"
