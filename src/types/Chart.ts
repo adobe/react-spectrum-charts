@@ -222,16 +222,6 @@ export interface AreaProps extends MarkProps {
 	metricEnd?: string;
 }
 
-export interface DonutProps extends MarkProps {
-	/** Start angle of the donut in radians (0 is top dead center, and default) */
-	startAngle?: number;
-	/** Ratio of the donut inner radius / donut outer radius. 0 is a pie chart. 0.85 is the default. */
-	holeRatio?: number;
-	/** Determines if the center metric should be displayed as a percent. if true, data should only be two data points, which sum to 1
-	 * Also, if true, will display the first datapoint as a percent */
-	isBoolean?: boolean;
-}
-
 export interface BulletProps extends MarkProps {
 	/** Target line */
 	target?: string;
@@ -255,6 +245,28 @@ export interface BulletProps extends MarkProps {
 	 * - `fill` (required): The fill color to use for the threshold background.
 	 */
 	thresholds?: { thresholdMin?: number; thresholdMax?: number; fill: string }[];
+	/**
+	 * A simplified threshold configuration that allows for defining thresholds
+	 * using an array of numbers and corresponding colors.
+	 */
+	thresholdConfig?: BulletThresholdConfig;
+}
+
+export interface BulletThresholdConfig {
+	/** Threshold boundaries, each number in the array represents a threshold value. */
+	thresholds: number[];
+	/** Threshold fill colors, each color corresponds to a threshold in the `thresholds` array. */
+	colors: string[];
+}
+
+export interface DonutProps extends MarkProps {
+	/** Start angle of the donut in radians (0 is top dead center, and default) */
+	startAngle?: number;
+	/** Ratio of the donut inner radius / donut outer radius. 0 is a pie chart. 0.85 is the default. */
+	holeRatio?: number;
+	/** Determines if the center metric should be displayed as a percent. if true, data should only be two data points, which sum to 1
+	 * Also, if true, will display the first datapoint as a percent */
+	isBoolean?: boolean;
 }
 
 export interface DonutSummaryProps {
