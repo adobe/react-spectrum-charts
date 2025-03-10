@@ -100,8 +100,14 @@ export function getBulletMarks(props: BulletSpecProps): GroupMark {
 		marks: [],
 	};
 
-	bulletMark.marks?.push(getBulletMarkRect(props));
-	bulletMark.marks?.push(getBulletMarkTarget(props));
+  bulletMark.marks?.push(getBulletMarkRect(props));
+	if (props.target && props.showTarget !== false) {
+		bulletMark.marks?.push(getBulletMarkTarget(props));
+		if (props.showTargetValue) {
+			bulletMark.marks?.push(getBulletMarkTargetValueLabel(props));
+		}
+	}
+	
 	bulletMark.marks?.push(getBulletMarkLabel(props));
 	bulletMark.marks?.push(getBulletMarkValueLabel(props));
 
@@ -127,9 +133,9 @@ export function getBulletMarkRect(props: BulletSpecProps): Mark {
 				x2: { scale: 'xscale', field: `${props.metric}` },
 				height: { signal: 'bulletHeight' },
 				//The vertical positioning is calculated starting at the bulletgroupheight
-                //and then subtracting two times the bullet height to center the bullet bar 
-                //in the middle of the threshold. The 3 is subtracted because the bulletgroup height
-                //starts the bullet below the threshold area
+        //and then subtracting two times the bullet height to center the bullet bar 
+        //in the middle of the threshold. The 3 is subtracted because the bulletgroup height
+        //starts the bullet below the threshold area
 				y: { signal: 'bulletGroupHeight - 3 - 2 * bulletHeight' },
 			},
 		},
@@ -195,7 +201,11 @@ export function getBulletMarkValueLabel(props: BulletSpecProps): Mark {
 		from: { data: 'bulletGroups' },
 		encode: {
 			enter: {
-				text: { signal: `datum.${props.metric}` },
+				text: {
+					signal: `datum.${props.metric} != null ? format(datum.${props.metric}, '${
+						props.numberFormat || ''
+					}') : ''`,
+				},
 				align: { value: 'right' },
 				baseline: { value: 'top' },
 				fill: { value: `${solidColor}` },
@@ -205,4 +215,30 @@ export function getBulletMarkValueLabel(props: BulletSpecProps): Mark {
 	};
 
 	return bulletMarkValueLabel;
+}
+
+export function getBulletMarkTargetValueLabel(props: BulletSpecProps): Mark {
+	const solidColor = getColorValue('gray-900', props.colorScheme);
+
+	const bulletMarkTargetValueLabel: Mark = {
+		name: `${props.name}TargetValueLabel`,
+		description: `${props.name}TargetValueLabel`,
+		type: 'text',
+		from: { data: 'bulletGroups' },
+		encode: {
+			enter: {
+				text: {
+					signal: `datum.${props.target} != null ? format(datum.${props.target}, '${
+						props.numberFormat || ''
+					}') : ''`,
+				},
+				align: { value: 'center' },
+				baseline: { value: 'top' },
+				fill: { value: `${solidColor}` },
+			},
+			update: { x: { scale: 'xscale', field: `${props.target}` }, y: { signal: 'bulletGroupHeight + 6' } },
+		},
+	};
+
+	return bulletMarkTargetValueLabel;
 }
