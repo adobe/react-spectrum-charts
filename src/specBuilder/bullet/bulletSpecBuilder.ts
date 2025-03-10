@@ -50,7 +50,6 @@ export const addBullet = (
 		horizontalLabel: horizontalLabel,
 		...props,
 	};
-	console.log(bulletProps.horizontalLabel);
 	return {
 		...spec,
 		data: getBulletData(bulletProps),
