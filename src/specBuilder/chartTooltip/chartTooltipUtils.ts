@@ -32,9 +32,16 @@ import {
 	DonutSpecProps,
 	LineSpecProps,
 	ScatterSpecProps,
+	SunburstSpecProps,
 } from '../../types';
 
-type TooltipParentProps = AreaSpecProps | BarSpecProps | DonutSpecProps | LineSpecProps | ScatterSpecProps;
+type TooltipParentProps =
+	| AreaSpecProps
+	| BarSpecProps
+	| DonutSpecProps
+	| LineSpecProps
+	| ScatterSpecProps
+	| SunburstSpecProps;
 
 /**
  * gets all the tooltips
@@ -79,7 +86,7 @@ export const addTooltipData = (data: Data[], markProps: TooltipParentProps, addH
 		if (!filteredTable.transform) {
 			filteredTable.transform = [];
 		}
-		if (highlightBy === 'dimension' && markProps.markType !== 'donut') {
+		if (highlightBy === 'dimension' && markProps.markType !== 'donut' && markProps.markType !== 'sunburst') {
 			filteredTable.transform.push(getGroupIdTransform([markProps.dimension], markName));
 		} else if (highlightBy === 'series') {
 			filteredTable.transform.push(getGroupIdTransform([SERIES_ID], markName));

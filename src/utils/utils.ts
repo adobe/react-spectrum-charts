@@ -30,7 +30,7 @@ import {
 	Trendline,
 	TrendlineAnnotation,
 } from '@rsc';
-import { Combo } from '@rsc/alpha';
+import { Combo, Sunburst } from '@rsc/alpha';
 import { BigNumber, Donut, DonutSummary, SegmentLabel } from '@rsc/rc';
 import { View } from 'vega';
 
@@ -54,6 +54,7 @@ import {
 	MarkChildElement,
 	RscElement,
 	ScatterElement,
+	SunburstElement,
 	TrendlineElement,
 } from '../types';
 
@@ -64,6 +65,7 @@ type ElementCounts = {
 	axisAnnotation: number;
 	bar: number;
 	donut: number;
+	sunburst: number;
 	legend: number;
 	line: number;
 	scatter: number;
@@ -97,6 +99,7 @@ export const sanitizeRscChartChildren = (children: unknown): ChartChildElement[]
 		Axis.displayName,
 		Bar.displayName,
 		Donut.displayName,
+		Sunburst.displayName,
 		Legend.displayName,
 		Line.displayName,
 		Scatter.displayName,
@@ -342,6 +345,9 @@ const getElementName = (element: unknown, elementCounts: ElementCounts) => {
 		case Donut.displayName:
 			elementCounts.donut++;
 			return getComponentName(element as DonutElement, `donut${elementCounts.donut}`);
+		case Sunburst.displayName:
+			elementCounts.sunburst++;
+			return getComponentName(element as SunburstElement, `sunburst${elementCounts.sunburst}`);
 		case Legend.displayName:
 			elementCounts.legend++;
 			return getComponentName(element as LegendElement, `legend${elementCounts.legend}`);
@@ -380,6 +386,7 @@ const initElementCounts = (): ElementCounts => ({
 	axisAnnotation: -1,
 	bar: -1,
 	donut: -1,
+	sunburst: -1,
 	legend: -1,
 	line: -1,
 	scatter: -1,

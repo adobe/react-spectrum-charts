@@ -29,7 +29,7 @@ import {
 	TABLE,
 } from '@constants';
 import { Area, Axis, Bar, Legend, Line, Scatter, Title } from '@rsc';
-import { Combo } from '@rsc/alpha';
+import { Combo, Sunburst } from '@rsc/alpha';
 import { BigNumber, Donut } from '@rsc/rc';
 import colorSchemes from '@themes/colorSchemes';
 import { produce } from 'immer';
@@ -54,6 +54,7 @@ import {
 	Opacities,
 	SanitizedSpecProps,
 	ScatterElement,
+	SunburstElement,
 	SymbolShapes,
 	SymbolSize,
 	TitleElement,
@@ -80,6 +81,7 @@ import {
 	getVegaSymbolSizeFromRscSymbolSize,
 	initializeSpec,
 } from './specUtils';
+import { addSunburst } from './sunburst/sunburstSpecBuilder';
 import { addTitle } from './title/titleSpecBuilder';
 
 export function buildSpec(props: SanitizedSpecProps) {
@@ -110,14 +112,24 @@ export function buildSpec(props: SanitizedSpecProps) {
 	buildOrder.set(Bar, 0);
 	buildOrder.set(Line, 0);
 	buildOrder.set(Donut, 0);
+	buildOrder.set(Sunburst, 0);
 	buildOrder.set(Scatter, 0);
 	buildOrder.set(Combo, 0);
 	buildOrder.set(Legend, 1);
 	buildOrder.set(Axis, 2);
 	buildOrder.set(Title, 3);
 
-	let { areaCount, axisCount, barCount, comboCount, donutCount, legendCount, lineCount, scatterCount } =
-		initializeComponentCounts();
+	let {
+		areaCount,
+		axisCount,
+		barCount,
+		comboCount,
+		donutCount,
+		sunburstCount,
+		legendCount,
+		lineCount,
+		scatterCount,
+	} = initializeComponentCounts();
 	const specProps = { colorScheme, idKey, highlightedItem };
 	spec = [...children]
 		.sort((a, b) => buildOrder.get(a.type) - buildOrder.get(b.type))
@@ -144,6 +156,9 @@ export function buildSpec(props: SanitizedSpecProps) {
 				case Donut.displayName:
 					donutCount++;
 					return addDonut(acc, { ...(cur as DonutElement).props, ...specProps, index: donutCount });
+				case Sunburst.displayName:
+					sunburstCount++;
+					return addSunburst(acc, { ...(cur as SunburstElement).props, ...specProps, index: sunburstCount });
 				case Legend.displayName:
 					legendCount++;
 					return addLegend(acc, {
@@ -202,6 +217,7 @@ const initializeComponentCounts = () => {
 		barCount: -1,
 		comboCount: -1,
 		donutCount: -1,
+		sunburstCount: -1,
 		legendCount: -1,
 		lineCount: -1,
 		scatterCount: -1,
