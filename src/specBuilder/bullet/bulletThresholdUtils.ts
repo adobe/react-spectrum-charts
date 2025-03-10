@@ -8,7 +8,7 @@ interface ThresholdObject {
 	fill?: string;
 }
 
-function parseThresholdConfig(thresholdConfig: BulletThresholdConfig) {
+export function parseThresholdConfig(thresholdConfig: BulletThresholdConfig): ThresholdObject[] {
 	const { thresholds, colors } = thresholdConfig;
 
 	if (colors.length !== thresholds.length + 1) {

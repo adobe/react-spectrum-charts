@@ -222,6 +222,8 @@ export interface AreaProps extends MarkProps {
 	metricEnd?: string;
 }
 
+export type ThresholdBackground = { thresholdMin?: number; thresholdMax?: number; fill?: string };
+
 export interface BulletProps extends MarkProps {
 	/** Target line */
 	target?: string;
@@ -244,7 +246,7 @@ export interface BulletProps extends MarkProps {
 	 * - `thresholdMax` (optional): The upper bound of the threshold. If undefined, the threshold extends to the end of the x-scale.
 	 * - `fill` (required): The fill color to use for the threshold background.
 	 */
-	thresholds?: { thresholdMin?: number; thresholdMax?: number; fill: string }[];
+	thresholds?: ThresholdBackground[];
 	/**
 	 * A simplified threshold configuration that allows for defining thresholds
 	 * using an array of numbers and corresponding colors.
