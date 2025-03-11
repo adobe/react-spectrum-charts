@@ -1,21 +1,22 @@
 import { BulletThresholdConfig } from 'types';
 
-import { BulletSpecProps } from '../../types';
+import { ThresholdBackground } from '../../types';
 
-interface ThresholdObject {
-	thresholdMin?: number;
-	thresholdMax?: number;
-	fill?: string;
-}
-
-export function parseThresholdConfig(thresholdConfig: BulletThresholdConfig): ThresholdObject[] {
+/**
+ * Converts a BulletThresholdConfig into an array of detailed ThresholdBackground objects.
+ *
+ * @param thresholdConfig - The simplified threshold configuration.
+ * @returns An array of ThresholdBackground objects.
+ * @throws Error if the colors array length does not equal thresholds.length + 1.
+ */
+export function parseThresholdConfig(thresholdConfig: BulletThresholdConfig): ThresholdBackground[] {
 	const { thresholds, colors } = thresholdConfig;
 
 	if (colors.length !== thresholds.length + 1) {
 		throw new Error('The number of colors must match the number of thresholds.');
 	}
 
-	const thresholdObjects: ThresholdObject[] = [];
+	const thresholdObjects: ThresholdBackground[] = [];
 	thresholdObjects.push({
 		thresholdMax: thresholds[0],
 		fill: colors[0],

@@ -100,11 +100,11 @@ export function getBulletMarks(props: BulletSpecProps): GroupMark {
 	}
 
 	// If threshold are provided, add them as a data source and threshold marks
-	if (props.thresholds) {
+	if (thresholdValues) {
 		bulletMark.data = [
 			{
 				name: 'thresholds',
-				values: props.thresholds,
+				values: thresholdValues,
 				transform: [{ type: 'identifier', as: 'id' }],
 			},
 		];

@@ -16,7 +16,7 @@ import { Bullet } from '@rsc/alpha'; // Assuming Bullet chart is a component in 
 import { Chart, BulletProps, ChartProps } from '@rsc';
 import useChartProps from '@hooks/useChartProps';
 import { bindWithProps } from '@test-utils';
-import { basicBulletData, basicThresholdsData } from './data';
+import { basicBulletData, basicThresholdConfigData, basicThresholdsData } from './data';
 
 export default {
     title: 'RSC/Bullet',
@@ -35,7 +35,7 @@ const BulletStory: StoryFn<BulletProps & { width?: number; height?: number }> = 
     const { width, height, ...bulletProps } = args;
     const chartProps = useChartProps({ ...defaultChartProps, width: width ?? 350, height: height ?? 350 });
     return (
-        <Chart {...chartProps}>
+        <Chart {...chartProps} debug>
             <Bullet {...bulletProps} />
         </Chart>
     );
@@ -46,7 +46,8 @@ Basic.args = {
     metric: 'currentAmount',
     dimension: 'graphLabel',
     target: 'target',
-    thresholds: basicThresholdsData,
+    //thresholds: basicThresholdsData,
+    thresholdConfig: basicThresholdConfigData,
     color: 'red-500',
     numberFormat: '$,.2f',
 };
