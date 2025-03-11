@@ -242,9 +242,11 @@ export interface BulletProps extends MarkProps {
 	/** Array of threshold definitions to be rendered as background bands on the bullet chart.
 	 *
 	 *  Each threshold object supports:
-	 * - `thresholdMin` (optional): The lower bound of the threshold. If undefined, the threshold starts from the beginning of the x-scale.
-	 * - `thresholdMax` (optional): The upper bound of the threshold. If undefined, the threshold extends to the end of the x-scale.
-	 * - `fill` : The fill color to use for the threshold background.
+	 * `thresholdMin` (optional): The lower bound of the threshold. If undefined, the threshold starts from the beginning of the x-scale.
+	 *
+	 * `thresholdMax` (optional): The upper bound of the threshold. If undefined, the threshold extends to the end of the x-scale.
+	 *
+	 * `fill` : The fill color to use for the threshold background.
 	 */
 	thresholds?: ThresholdBackground[];
 	/**
@@ -252,8 +254,8 @@ export interface BulletProps extends MarkProps {
 	 *
 	 * For example:
 	 * {
-	 *   thresholds: [120, 235],
-	 *   colors: ['rgb(234, 56, 41)', 'rgb(249, 137, 23)', 'rgb(21, 164, 110)']
+	 *   `thresholds`: [120, 235],
+	 *   `colors`: ['rgb(234, 56, 41)', 'rgb(249, 137, 23)', 'rgb(21, 164, 110)']
 	 * }
 	 *
 	 * Note: When both `thresholds` and `thresholdConfig` are provided, the detailed `thresholds` take precedence.

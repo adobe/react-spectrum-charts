@@ -46,8 +46,7 @@ Basic.args = {
     metric: 'currentAmount',
     dimension: 'graphLabel',
     target: 'target',
-    //thresholds: basicThresholdsData,
-    thresholdConfig: basicThresholdConfigData,
+    thresholds: basicThresholdsData,
     color: 'red-500',
     numberFormat: '$,.2f',
 };

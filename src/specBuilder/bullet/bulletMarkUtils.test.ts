@@ -48,6 +48,52 @@ describe('getBulletMarks', () => {
 		const targetValueMark = marksGroup.marks?.find((mark) => mark.name?.includes('TargetValueLabel'));
 		expect(targetValueMark).toBeDefined();
 	});
+
+	describe('Threshold functionality', () => {
+		const thresholdConfig = {
+			thresholds: [120, 235],
+			colors: ['rgb(234, 56, 41)', 'rgb(249, 137, 23)', 'rgb(21, 164, 110)'],
+		};
+
+		test('Should add threshold data and threshold mark when thresholdConfig is provided', () => {
+			const props = {
+				...sampleProps,
+				thresholds: undefined,
+				thresholdConfig,
+			};
+
+			const marksGroup = getBulletMarks(props);
+
+			expect(marksGroup.data).toBeDefined();
+			expect(marksGroup.data?.[0].name).toBe('thresholds');
+
+			const dataItem = marksGroup.data?.[0] as any;
+			expect(Array.isArray(dataItem.values)).toBeTruthy();
+			expect(dataItem.values).toHaveLength(3);
+
+			const thresholdMark = marksGroup.marks?.find((mark) => mark.name === `${props.name}Threshold`);
+			expect(thresholdMark).toBeDefined();
+			expect(thresholdMark?.type).toBe('rect');
+		});
+
+		test('Should add threshold data and mark when detailed thresholds are provided', () => {
+			const detailedThresholds = [
+				{ thresholdMax: 120, fill: 'rgb(234, 56, 41)' },
+				{ thresholdMin: 120, thresholdMax: 235, fill: 'rgb(249, 137, 23)' },
+				{ thresholdMin: 235, fill: 'rgb(21, 164, 110)' },
+			];
+			const props = { ...sampleProps, thresholds: detailedThresholds, thresholdConfig: undefined };
+
+			const marksGroup = getBulletMarks(props);
+			expect(marksGroup.data).toBeDefined();
+
+			const dataItem = marksGroup.data?.[0] as any;
+			expect(dataItem.values).toEqual(detailedThresholds);
+
+			const thresholdMark = marksGroup.marks?.find((mark) => mark.name === `${props.name}Threshold`);
+			expect(thresholdMark).toBeDefined();
+		});
+	});
 });
 
 describe('getBulletData', () => {

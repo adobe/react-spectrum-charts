@@ -13,7 +13,7 @@ import { Data, GroupMark, Mark, Scale, Signal } from 'vega';
 
 import { BulletSpecProps } from '../../types';
 import { getColorValue } from '../specUtils';
-import { parseThresholdConfig } from './bulletThresholdUtils';
+import { getThresholdValues, parseThresholdConfig } from './bulletThresholdUtils';
 
 export function getBulletScales(props: BulletSpecProps): Scale[] {
 	const bulletScale: Scale[] = [
@@ -90,16 +90,8 @@ export function getBulletMarks(props: BulletSpecProps): GroupMark {
 		marks: [],
 	};
 
-	let thresholdValues = props.thresholds;
-	if (!thresholdValues && props.thresholdConfig) {
-		try {
-			thresholdValues = parseThresholdConfig(props.thresholdConfig);
-		} catch (error) {
-			console.error(error);
-		}
-	}
+	const thresholdValues = getThresholdValues(props);
 
-	// If threshold are provided, add them as a data source and threshold marks
 	if (thresholdValues) {
 		bulletMark.data = [
 			{
