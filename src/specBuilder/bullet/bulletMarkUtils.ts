@@ -15,40 +15,56 @@ import { BulletSpecProps } from '../../types';
 import { getColorValue } from '../specUtils';
 
 export function getBulletScales(props: BulletSpecProps): Scale[] {
-	const bulletScale: Scale[] = [
+	const groupScaleRangeSignal = props.direction === 'column' ? 'height' : 'width';
+	const xRange = props.direction === 'column' ? 'width' : [0, { signal: 'bulletGroupWidth' }];
+
+	const bulletScales: Scale[] = [
 		{
-			name: 'yscale',
+			name: 'groupScale',
 			type: 'band',
-			domain: { data: 'table', field: `${props.dimension}` },
-			range: [0, { signal: 'height' }],
+			domain: { data: 'table', field: props.dimension },
+			range: [0, { signal: groupScaleRangeSignal }],
 			paddingInner: { signal: 'paddingRatio' },
 		},
 		{
 			name: 'xscale',
 			type: 'linear',
-			domain: { data: 'table', fields: ['xPaddingForTarget', `${props.metric}`] },
-			range: 'width',
+			domain: { data: 'table', fields: ['xPaddingForTarget', props.metric] },
+			range: xRange,
 			round: true,
 			zero: true,
 		},
 	];
 
-	return bulletScale;
+	return bulletScales;
 }
 
-export function getBulletSignals(): Signal[] {
+export function getBulletSignals(props: BulletSpecProps): Signal[] {
 	const bulletSignals: Signal[] = [
-		{ name: 'gap', value: 36 },
+		{ name: 'gap', value: 12 },
 		{ name: 'bulletHeight', value: 8 },
 		{ name: 'bulletThresholdHeight', update: 'bulletHeight * 3' },
 		{ name: 'targetHeight', update: 'bulletThresholdHeight + 6' },
-		{ name: 'bulletGroupHeight', update: 'bulletThresholdHeight + 24' },
-		{ name: 'paddingRatio', update: 'gap / (gap + bulletGroupHeight)' },
-		{
+	];
+
+	if (props.direction === 'column') {
+		bulletSignals.push({ name: 'paddingRatio', update: 'gap / (gap + bulletGroupHeight)' });
+		bulletSignals.push({
 			name: 'height',
 			update: "length(data('table')) * bulletGroupHeight + (length(data('table')) - 1) * gap",
-		},
-	];
+		});
+	} else {
+		bulletSignals.push({ name: 'bulletGroupWidth', update: "(width / length(data('table'))) - gap" });
+		bulletSignals.push({ name: 'paddingRatio', update: 'gap / (gap + bulletGroupWidth)' });
+		bulletSignals.push({ name: 'height', update: 'bulletGroupHeight' });
+	}
+
+	if(props.showTargetValue && props.showTarget) {
+		bulletSignals.push({ name: "targetValueLabelHeight", update: "20"});
+		bulletSignals.push({ name: "bulletGroupHeight", update: "bulletThresholdHeight + targetValueLabelHeight + 24"});
+	} else {
+		bulletSignals.push({ name: 'bulletGroupHeight', update: 'bulletThresholdHeight + 24' });
+	}
 
 	return bulletSignals;
 }
@@ -73,6 +89,8 @@ export function getBulletData(props: BulletSpecProps): Data[] {
 }
 
 export function getBulletMarks(props: BulletSpecProps): GroupMark {
+	const markGroupEncodeUpdateDirection = props.direction === 'column' ? 'y' : 'x';
+
 	const bulletMark: GroupMark = {
 		name: 'bulletGroup',
 		type: 'group',
@@ -81,21 +99,21 @@ export function getBulletMarks(props: BulletSpecProps): GroupMark {
 		},
 		encode: {
 			update: {
-				y: { scale: 'yscale', field: `${props.dimension}` },
+				[markGroupEncodeUpdateDirection]: { scale: 'groupScale', field: `${props.dimension}` },
 				height: { signal: 'bulletGroupHeight' },
-				width: { signal: 'width' },
 			},
 		},
 		marks: [],
 	};
 
+  	bulletMark.marks?.push(getBulletMarkRect(props));
 	if (props.target && props.showTarget !== false) {
 		bulletMark.marks?.push(getBulletMarkTarget(props));
 		if (props.showTargetValue) {
 			bulletMark.marks?.push(getBulletMarkTargetValueLabel(props));
 		}
 	}
-	bulletMark.marks?.push(getBulletMarkRect(props));
+	
 	bulletMark.marks?.push(getBulletMarkLabel(props));
 	bulletMark.marks?.push(getBulletMarkValueLabel(props));
 
@@ -103,6 +121,15 @@ export function getBulletMarks(props: BulletSpecProps): GroupMark {
 }
 
 export function getBulletMarkRect(props: BulletSpecProps): Mark {
+
+	//The vertical positioning is calculated starting at the bulletgroupheight
+	//and then subtracting two times the bullet height to center the bullet bar 
+	//in the middle of the threshold. The 3 is subtracted because the bulletgroup height
+	//starts the bullet below the threshold area.
+	//Additionally, the value of the targetValueLabelHeight is subtracted if the target value label is shown
+	//to make sure that the bullet bar is not drawn over the target value label.
+	const bulletMarkRectEncodeUpdateYSignal = (props.showTarget && props.showTargetValue) ? 'bulletGroupHeight - targetValueLabelHeight - 3 - 2 * bulletHeight' : 'bulletGroupHeight - 3 - 2 * bulletHeight';
+
 	const bulletMarkRect: Mark = {
 		name: `${props.name}Rect`,
 		description: `${props.name}Rect`,
@@ -120,7 +147,7 @@ export function getBulletMarkRect(props: BulletSpecProps): Mark {
 				x: { scale: 'xscale', value: 0 },
 				x2: { scale: 'xscale', field: `${props.metric}` },
 				height: { signal: 'bulletHeight' },
-				y: { signal: 'bulletGroupHeight - 3 - 2 * bulletHeight' },
+				y: { signal: bulletMarkRectEncodeUpdateYSignal },
 			},
 		},
 	};
@@ -130,6 +157,11 @@ export function getBulletMarkRect(props: BulletSpecProps): Mark {
 
 export function getBulletMarkTarget(props: BulletSpecProps): Mark {
 	const solidColor = getColorValue('gray-900', props.colorScheme);
+
+	//When the target value label is shown, we must subtract the height of the target value label
+	//to make sure that the target line is not drawn over the target value label
+	const bulletMarkTargetEncodeUpdateY = (props.showTarget && props.showTargetValue) ? 'bulletGroupHeight - targetValueLabelHeight - targetHeight' : 'bulletGroupHeight - targetHeight';
+	const bulletMarkTargetEncodeUpdateY2 = (props.showTarget && props.showTargetValue) ? 'bulletGroupHeight - targetValueLabelHeight' : 'bulletGroupHeight';
 
 	const bulletMarkTarget: Mark = {
 		name: `${props.name}Target`,
@@ -143,8 +175,8 @@ export function getBulletMarkTarget(props: BulletSpecProps): Mark {
 			},
 			update: {
 				x: { scale: 'xscale', field: `${props.target}` },
-				y: { signal: 'bulletGroupHeight - targetHeight' },
-				y2: { signal: 'bulletGroupHeight' },
+				y: { signal: bulletMarkTargetEncodeUpdateY },
+				y2: { signal: bulletMarkTargetEncodeUpdateY2 },
 			},
 		},
 	};
@@ -176,6 +208,7 @@ export function getBulletMarkLabel(props: BulletSpecProps): Mark {
 
 export function getBulletMarkValueLabel(props: BulletSpecProps): Mark {
 	const solidColor = getColorValue('gray-900', props.colorScheme);
+	const encodeUpdateSignalWidth = props.direction === 'column' ? 'width' : 'bulletGroupWidth';
 
 	const bulletMarkValueLabel: Mark = {
 		name: `${props.name}ValueLabel`,
@@ -193,7 +226,7 @@ export function getBulletMarkValueLabel(props: BulletSpecProps): Mark {
 				baseline: { value: 'top' },
 				fill: { value: `${solidColor}` },
 			},
-			update: { x: { signal: 'width' }, y: { value: 0 } },
+			update: { x: { signal: encodeUpdateSignalWidth }, y: { value: 0 } },
 		},
 	};
 
@@ -210,16 +243,14 @@ export function getBulletMarkTargetValueLabel(props: BulletSpecProps): Mark {
 		from: { data: 'bulletGroups' },
 		encode: {
 			enter: {
-				text: {
-					signal: `datum.${props.target} != null ? format(datum.${props.target}, '${
-						props.numberFormat || ''
-					}') : ''`,
+				"text": {
+					"signal": `datum.${props.target} != null ? 'Target: ' + format(datum.${props.target}, '$,.2f') : 'No Target'`
 				},
 				align: { value: 'center' },
 				baseline: { value: 'top' },
 				fill: { value: `${solidColor}` },
 			},
-			update: { x: { scale: 'xscale', field: `${props.target}` }, y: { signal: 'bulletGroupHeight + 6' } },
+			update: { x: { scale: 'xscale', field: `${props.target}` }, y: { signal: 'bulletGroupHeight - targetValueLabelHeight + 6' } },
 		},
 	};
 

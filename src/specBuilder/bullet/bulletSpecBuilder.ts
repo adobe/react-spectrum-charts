@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { DEFAULT_COLOR_SCHEME } from '@constants';
+import { DEFAULT_BULLET_DIRECTION, DEFAULT_COLOR_SCHEME } from '@constants';
 import { spectrumColors } from '@themes';
 import { toCamelCase } from '@utils';
 import { Spec } from 'vega';
@@ -32,6 +32,10 @@ export const addBullet = (
 		dimension,
 		target,
 		color = DEFAULT_COLOR,
+		direction = DEFAULT_BULLET_DIRECTION,
+		numberFormat,
+		showTarget = true,
+		showTargetValue = false,
 		...props
 	}: BulletProps & { colorScheme?: ColorScheme; index?: number; idKey: string }
 ): Spec => {
@@ -44,6 +48,10 @@ export const addBullet = (
 		dimension: dimension ?? 'graphLabel',
 		target: target ?? 'target',
 		name: toCamelCase(name ?? `bullet${index}`),
+		direction: direction,
+		numberFormat: numberFormat ?? '',
+		showTarget: showTarget,
+		showTargetValue: showTargetValue,
 		...props,
 	};
 	return {
@@ -51,6 +59,6 @@ export const addBullet = (
 		data: getBulletData(bulletProps),
 		marks: [getBulletMarks(bulletProps)],
 		scales: getBulletScales(bulletProps),
-		signals: getBulletSignals(),
+		signals: getBulletSignals(bulletProps),
 	};
 };

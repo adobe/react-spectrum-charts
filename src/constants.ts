@@ -17,6 +17,7 @@ export const ANNOTATION_PADDING = 4;
 export const DEFAULT_AXIS_ANNOTATION_COLOR = 'gray-600';
 export const DEFAULT_AXIS_ANNOTATION_OFFSET = 80;
 export const DEFAULT_BACKGROUND_COLOR = 'transparent';
+export const DEFAULT_BULLET_DIRECTION = 'column';
 export const DEFAULT_CATEGORICAL_DIMENSION = 'category';
 export const DEFAULT_COLOR = 'series';
 export const DEFAULT_COLOR_SCHEME = 'light';
