@@ -13,8 +13,9 @@ import React, { ReactElement } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
+import { TABLE } from '@spectrum-charts/constants';
+
 import { Chart } from '../Chart';
-import { TABLE } from '../constants';
 import useChartProps from '../hooks/useChartProps';
 import { bindWithProps } from '../test-utils';
 import { barData } from './components/Bar/data';

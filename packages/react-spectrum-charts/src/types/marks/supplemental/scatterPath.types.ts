@@ -11,7 +11,7 @@
  */
 import { JSXElementConstructor, ReactElement } from 'react';
 
-import { ScatterPathOptions } from '../../../specBuilder';
+import { ScatterPathOptions } from '@spectrum-charts/vega-spec-builder';
 
 export interface ScatterPathProps extends ScatterPathOptions {}
 

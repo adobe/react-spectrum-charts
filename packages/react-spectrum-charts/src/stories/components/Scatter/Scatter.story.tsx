@@ -14,12 +14,12 @@ import { ReactElement, ReactNode } from 'react';
 import { StoryFn } from '@storybook/react';
 
 import { Content, Flex } from '@adobe/react-spectrum';
+import { COLOR_SCALE, LINE_TYPE_SCALE, OPACITY_SCALE } from '@spectrum-charts/constants';
+import { ChartColors, Datum } from '@spectrum-charts/vega-spec-builder';
 
 import { Chart } from '../../../Chart';
 import { Axis, ChartPopover, ChartTooltip, Legend, Scatter, Title } from '../../../components';
-import { COLOR_SCALE, LINE_TYPE_SCALE, OPACITY_SCALE } from '../../../constants';
 import useChartProps from '../../../hooks/useChartProps';
-import { ChartColors, Datum } from '../../../specBuilder';
 import { characterData } from '../../../stories/data/marioKartData';
 import { bindWithProps } from '../../../test-utils';
 import { ChartProps, LegendProps, ScatterProps } from '../../../types';

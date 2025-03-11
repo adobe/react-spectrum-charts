@@ -13,8 +13,9 @@ import React, { ReactElement } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
+import { DEFAULT_LABEL_FONT_WEIGHT, DEFAULT_LABEL_ORIENTATION } from '@spectrum-charts/constants';
+
 import { Axis } from '../../../components/Axis';
-import { DEFAULT_LABEL_FONT_WEIGHT, DEFAULT_LABEL_ORIENTATION } from '../../../constants';
 import useChartProps from '../../../hooks/useChartProps';
 import { Chart } from '../../../index';
 import { bindWithProps } from '../../../test-utils';

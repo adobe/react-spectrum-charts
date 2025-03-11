@@ -13,8 +13,10 @@ import React from 'react';
 
 import userEvent from '@testing-library/user-event';
 
+import { HIGHLIGHT_CONTRAST_RATIO } from '@spectrum-charts/constants';
+import { spectrumColors } from '@spectrum-charts/themes';
+
 import { ChartPopover } from '../../../components';
-import { HIGHLIGHT_CONTRAST_RATIO } from '../../../constants';
 import {
 	allElementsHaveAttributeValue,
 	clickNthElement,
@@ -28,7 +30,6 @@ import {
 	within,
 } from '../../../test-utils';
 import '../../../test-utils/__mocks__/matchMedia.mock.js';
-import { spectrumColors } from '../../../themes';
 import {
 	Canvas,
 	DodgedBarChart,

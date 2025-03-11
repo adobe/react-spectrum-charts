@@ -14,8 +14,8 @@ import { JSXElementConstructor, MutableRefObject, ReactElement } from 'react';
 import { Config, Data, Locale, NumberLocale, Padding, TimeLocale, View } from 'vega';
 
 import { Theme } from '@react-types/provider';
+import { ChartOptions, PartiallyRequired } from '@spectrum-charts/vega-spec-builder';
 
-import { ChartOptions, PartiallyRequired } from '../specBuilder';
 import { AxisElement } from './axis';
 import { ChartPopoverElement, ChartTooltipElement } from './dialogs';
 import { LegendElement } from './legend.types';

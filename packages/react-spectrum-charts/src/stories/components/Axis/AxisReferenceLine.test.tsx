@@ -11,9 +11,10 @@
  */
 import React from 'react';
 
+import { spectrumColors } from '@spectrum-charts/themes';
+
 import { ReferenceLine } from '../../../components/ReferenceLine';
 import { findChart, findMarksByGroupName, render, screen } from '../../../test-utils';
-import { spectrumColors } from '../../../themes';
 import { Basic, Color, Icon, IconColor, Label, LabelColor } from './AxisReferenceLine.story';
 
 describe('AxisReferenceLine', () => {

@@ -1,0 +1,9 @@
+{
+	"name": "@spectrum-charts/constants",
+	"version": "0.0.0",
+	"description": "Constants for spectrum charts",
+	"main": "index.ts",
+	"author": "marshallpete",
+	"license": "MIT",
+	"private": true
+}

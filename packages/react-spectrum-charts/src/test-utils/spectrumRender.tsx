@@ -15,8 +15,7 @@ import { render } from '@testing-library/react';
 
 import { Provider, defaultTheme } from '@adobe/react-spectrum';
 import { ColorScheme } from '@react-types/provider';
-
-import { DEFAULT_COLOR_SCHEME } from '../constants';
+import { DEFAULT_COLOR_SCHEME } from '@spectrum-charts/constants';
 
 export function spectrumRender(
 	element: ReactElement,

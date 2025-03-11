@@ -11,7 +11,7 @@
  */
 import { JSXElementConstructor, ReactElement } from 'react';
 
-import { SegmentLabelOptions } from '../../../specBuilder';
+import { SegmentLabelOptions } from '@spectrum-charts/vega-spec-builder';
 
 export interface SegmentLabelProps extends SegmentLabelOptions {}
 

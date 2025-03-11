@@ -11,9 +11,10 @@
  */
 import { createElement } from 'react';
 
+import { DEFAULT_COLOR } from '@spectrum-charts/constants';
+
 import { ChartTooltip } from '../components/ChartTooltip';
 import { TrendlineAnnotation } from '../components/TrendlineAnnotation';
-import { DEFAULT_COLOR } from '../constants';
 import { getTrendlineOptions } from './trendlineAdapter';
 
 describe('getTrendlineOptions()', () => {

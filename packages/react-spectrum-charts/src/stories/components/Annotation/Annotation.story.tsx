@@ -13,10 +13,11 @@ import React, { ReactElement } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
+import { Orientation } from '@spectrum-charts/vega-spec-builder';
+
 import { Annotation } from '../../../components/Annotation/Annotation';
 import useChartProps from '../../../hooks/useChartProps';
 import { Bar, BarAnnotationProps, BarProps, Chart } from '../../../index';
-import { Orientation } from '../../../specBuilder';
 
 export default {
 	title: 'RSC/Bar/Annotation',

@@ -11,12 +11,30 @@
  */
 import React from 'react';
 
+import { LEGEND_TOOLTIP_DELAY } from '@spectrum-charts/constants';
+
 import { Chart } from '../../../Chart';
 import { Legend } from '../../../components';
-import { cleanupTooltips, waitForLegendTooltip } from '../../../specBuilder/legend/legendTestUtils';
 import { clickNthElement, findChart, getAllLegendEntries, hoverNthElement, render, screen } from '../../../test-utils';
 import '../../../test-utils/__mocks__/matchMedia.mock.js';
 import { Basic, Descriptions, LabelLimit, OnClick, Position, Supreme, Title } from './Legend.story';
+
+/**
+ * Wait for the the duration of the legend tooltip hover delay.
+ */
+export const waitForLegendTooltip = async () => {
+	await new Promise((resolve) => setTimeout(resolve, LEGEND_TOOLTIP_DELAY));
+};
+
+/**
+ * Tooltips are rendered in a portal, so jest's default cleanup won't remove them.
+ * This helper will remove all vega tooltips from the DOM.
+ */
+export const cleanupTooltips = () => {
+	document.body.querySelectorAll('.vg-tooltip').forEach((node) => {
+		node.remove();
+	});
+};
 
 describe('Legend', () => {
 	afterEach(() => {

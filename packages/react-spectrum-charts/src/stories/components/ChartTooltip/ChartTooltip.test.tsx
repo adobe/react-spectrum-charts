@@ -11,8 +11,9 @@
  */
 import React from 'react';
 
+import { HIGHLIGHT_CONTRAST_RATIO } from '@spectrum-charts/constants';
+
 import { ChartTooltip } from '../../../components';
-import { HIGHLIGHT_CONTRAST_RATIO } from '../../../constants';
 import {
 	allElementsHaveAttributeValue,
 	findAllMarksByGroupName,

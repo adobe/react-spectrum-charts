@@ -16,9 +16,6 @@ import { Item } from 'vega';
 import { Handler, Position, Options as TooltipOptions } from 'vega-tooltip';
 
 import { ActionButton, Dialog, DialogTrigger, View as SpectrumView } from '@adobe/react-spectrum';
-
-import './Chart.css';
-import { VegaChart } from './VegaChart';
 import {
 	COMPONENT_NAME,
 	FILTERED_TABLE,
@@ -27,7 +24,13 @@ import {
 	SELECTED_ITEM,
 	SELECTED_SERIES,
 	SERIES_ID,
-} from './constants';
+} from '@spectrum-charts/constants';
+import { getChartConfig } from '@spectrum-charts/themes';
+import { ColorScheme, Datum, LegendDescription, MarkBounds } from '@spectrum-charts/vega-spec-builder';
+import { getColorValue } from '@spectrum-charts/vega-spec-builder';
+
+import './Chart.css';
+import { VegaChart } from './VegaChart';
 import useChartImperativeHandle from './hooks/useChartImperativeHandle';
 import useLegend from './hooks/useLegend';
 import useMarkOnClickDetails from './hooks/useMarkOnClickDetails';
@@ -36,9 +39,6 @@ import usePopovers, { PopoverDetail } from './hooks/usePopovers';
 import useSpec from './hooks/useSpec';
 import useSpecProps from './hooks/useSpecProps';
 import useTooltips from './hooks/useTooltips';
-import { ColorScheme, Datum, LegendDescription, MarkBounds } from './specBuilder';
-import { getColorValue } from './specBuilder/specUtils';
-import { getChartConfig } from './themes/spectrumTheme';
 import { ChartHandle, RscChartProps, TooltipAnchor, TooltipPlacement } from './types';
 import {
 	debugLog,

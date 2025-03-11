@@ -11,7 +11,8 @@
  */
 import { JSXElementConstructor, ReactElement } from 'react';
 
-import { DonutOptions } from '../../specBuilder';
+import { DonutOptions } from '@spectrum-charts/vega-spec-builder';
+
 import { ChartPopoverElement, ChartTooltipElement } from '../dialogs';
 import { Children } from '../util.types';
 import { DonutSummaryElement, SegmentLabelElement } from './supplemental';

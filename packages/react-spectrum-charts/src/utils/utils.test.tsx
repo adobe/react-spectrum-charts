@@ -10,45 +10,13 @@
  * governing permissions and limitations under the License.
  */
 import { Fragment, createElement } from 'react';
-import React from 'react';
 
 import { Chart } from '../Chart';
 import { Bar, ChartPopover, ChartTooltip, Line, Trendline } from '../components';
 import { Donut } from '../rc';
-import {
-	combineNames,
-	getAllElements,
-	getComponentName,
-	sanitizeAxisAnnotationChildren,
-	toCamelCase,
-	toggleStringArrayValue,
-} from './utils';
+import { getAllElements, getComponentName, sanitizeAxisAnnotationChildren, toggleStringArrayValue } from './utils';
 
 describe('utils', () => {
-	describe('toCamelCase()', () => {
-		test('camelCase should convert to camelCase', () => {
-			expect(toCamelCase('camelTest')).toStrictEqual('camelTest');
-		});
-		test('kebab-case should convert to camelCase', () => {
-			expect(toCamelCase('kebab-test')).toStrictEqual('kebabTest');
-		});
-		test('PascalCase should convert to camelCase', () => {
-			expect(toCamelCase('PascalTest')).toStrictEqual('pascalTest');
-		});
-		test('snake_case should convert to camelCase', () => {
-			expect(toCamelCase('snake_test')).toStrictEqual('snakeTest');
-		});
-		test('sentence should convert to camelCase', () => {
-			expect(toCamelCase('This is a test')).toStrictEqual('thisIsATest');
-		});
-		test('wild string should convert to camelCase', () => {
-			expect(toCamelCase('The quickFox_jumped-over 2 DOGS!')).toStrictEqual('theQuickFoxJumpedOver2Dogs');
-		});
-		test('no alpha numeric characters should return original string', () => {
-			expect(toCamelCase('&()*')).toStrictEqual('&()*');
-		});
-	});
-
 	describe('sanitizeAxisAnnotationChildren()', () => {
 		test('should filter out invalid children', () => {
 			const popover = createElement(ChartPopover);
@@ -113,18 +81,6 @@ describe('utils', () => {
 		});
 		test('should return camelCase name if provide in props', () => {
 			expect(getComponentName(createElement(Bar, { name: 'funnel chart' }), 'bar0')).toBe('funnelChart');
-		});
-	});
-
-	describe('combineElementNames()', () => {
-		test('should return child name if parent name is null', () => {
-			expect(combineNames(null, 'bar0')).toBe('bar0');
-		});
-		test('should return parent name if child name is null', () => {
-			expect(combineNames('combo0', null)).toBe('combo0');
-		});
-		test('should return combined name if both parent and child names are provided', () => {
-			expect(combineNames('combo0', 'bar0')).toBe('combo0Bar0');
 		});
 	});
 });

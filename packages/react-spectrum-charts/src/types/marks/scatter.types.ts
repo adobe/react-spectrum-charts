@@ -11,7 +11,8 @@
  */
 import { JSXElementConstructor, ReactElement } from 'react';
 
-import { ScatterOptions } from '../../specBuilder';
+import { ScatterOptions } from '@spectrum-charts/vega-spec-builder';
+
 import { ChartPopoverElement, ChartTooltipElement } from '../dialogs';
 import { Children } from '../util.types';
 import { ScatterPathElement, TrendlineElement } from './supplemental';

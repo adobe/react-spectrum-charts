@@ -1,0 +1,9 @@
+{
+  "name": "@spectrum-charts/themes",
+  "version": "0.0.0",
+  "description": "Spectrum colors and themes used for spectrum charts",
+  "main": "index.ts",
+  "author": "marshallpete",
+  "license": "MIT",
+  "private": false
+}

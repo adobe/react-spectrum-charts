@@ -13,11 +13,12 @@ import { ReactElement } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
+import { categorical12 } from '@spectrum-charts/themes';
+
 import { Chart } from '../../../Chart';
 import { Axis, ChartTooltip, Legend, Scatter, ScatterPath, Trendline, TrendlineAnnotation } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
 import { bindWithProps } from '../../../test-utils';
-import { categorical12 } from '../../../themes';
 import { TrendlineProps } from '../../../types';
 import {
 	basicFeatureMatrixData,

@@ -13,6 +13,10 @@ import { Fragment, ReactNode } from 'react';
 
 import { View } from 'vega';
 
+import { SELECTED_GROUP, SELECTED_ITEM, SELECTED_SERIES, SERIES_ID } from '@spectrum-charts/constants';
+import { combineNames, toCamelCase } from '@spectrum-charts/utils';
+import { Datum } from '@spectrum-charts/vega-spec-builder';
+
 import { Combo } from '../alpha';
 import {
 	Annotation,
@@ -32,9 +36,7 @@ import {
 	Trendline,
 	TrendlineAnnotation,
 } from '../components';
-import { SELECTED_GROUP, SELECTED_ITEM, SELECTED_SERIES, SERIES_ID } from '../constants';
 import { BigNumber, Donut, DonutSummary, SegmentLabel } from '../rc';
-import { Datum } from '../specBuilder';
 import {
 	AreaElement,
 	AxisAnnotationChildElement,
@@ -218,20 +220,6 @@ export const sanitizeTrendlineChildren = (children: unknown): ChartTooltipElemen
 			trendlineChildDisplayNames.includes(getElementDisplayName(child))
 		);
 };
-
-// converts any string to the camelcase equivalent
-export function toCamelCase(str: string) {
-	const words = str.match(/[A-Z]{2,}(?=[A-Z][a-z]+\d*|\b)|[A-Z]?[a-z]+\d*|[A-Z]|\d+/g);
-	if (words) {
-		return words
-			.map((word, i) => {
-				if (i === 0) return word.toLowerCase();
-				return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
-			})
-			.join('');
-	}
-	return str;
-}
 
 /**
  * IMMUTABLE
@@ -422,12 +410,6 @@ export const getComponentName = (element: ChildElement<RscElement>, defaultName:
 		return toCamelCase(element.props.name);
 	}
 	return defaultName;
-};
-
-export const combineNames = (parentName: string | null, childName: string | null): string => {
-	const formattedChildName =
-		childName && parentName ? childName.charAt(0).toUpperCase() + childName.slice(1) : childName;
-	return [parentName, formattedChildName].filter(Boolean).join('');
 };
 
 const initElementCounts = (): ElementCounts => ({

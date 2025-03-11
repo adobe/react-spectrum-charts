@@ -11,6 +11,14 @@
  */
 import { createElement } from 'react';
 
+import {
+	DEFAULT_BACKGROUND_COLOR,
+	DEFAULT_COLOR_SCHEME,
+	DEFAULT_LINE_TYPES,
+	MARK_ID,
+} from '@spectrum-charts/constants';
+import { LineType } from '@spectrum-charts/vega-spec-builder';
+
 import { Axis } from '../components/Axis';
 import { Bar } from '../components/Bar';
 import { ChartTooltip } from '../components/ChartTooltip';
@@ -21,8 +29,6 @@ import { ScatterPath } from '../components/ScatterPath';
 import { Title } from '../components/Title';
 import { Trendline } from '../components/Trendline';
 import { TrendlineAnnotation } from '../components/TrendlineAnnotation';
-import { DEFAULT_BACKGROUND_COLOR, DEFAULT_COLOR_SCHEME, DEFAULT_LINE_TYPES, MARK_ID } from '../constants';
-import { LineType } from '../specBuilder/types';
 import { SanitizedSpecProps } from '../types';
 import { rscPropsToSpecBuilderOptions } from './chartAdapter';
 

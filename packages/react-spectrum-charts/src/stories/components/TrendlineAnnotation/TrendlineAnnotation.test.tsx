@@ -9,10 +9,11 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { spectrumColors } from '@spectrum-charts/themes';
+
 import { TrendlineAnnotation } from '../../../components';
 import { allElementsHaveAttributeValue, findAllMarksByGroupName, findChart, render } from '../../../test-utils';
 import '../../../test-utils/__mocks__/matchMedia.mock.js';
-import { spectrumColors } from '../../../themes';
 import { Badge, Basic, DimensionValue, NumberFormat, Prefix } from './TrendlineAnnotation.story';
 
 const colors = spectrumColors.light;

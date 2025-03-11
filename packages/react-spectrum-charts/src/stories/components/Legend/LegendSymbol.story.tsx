@@ -13,10 +13,11 @@ import React, { ReactElement } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
+import { ROUNDED_SQUARE_PATH } from '@spectrum-charts/constants';
+
 import { Chart } from '../../../Chart';
 import { Bar, Legend, Line } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
-import { ROUNDED_SQUARE_PATH } from '../../../svgPaths';
 import { browserData as data } from '../../data/data';
 import { defaultProps } from './LegendStoryUtils';
 

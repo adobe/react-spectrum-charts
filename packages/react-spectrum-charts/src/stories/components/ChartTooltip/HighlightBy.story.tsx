@@ -14,12 +14,12 @@ import { ReactElement } from 'react';
 import { StoryFn } from '@storybook/react';
 
 import { View } from '@adobe/react-spectrum';
+import { Datum } from '@spectrum-charts/vega-spec-builder';
 
 import { Chart } from '../../../Chart';
 import { Area, Bar, Line, Scatter } from '../../../components';
 import { ChartTooltip } from '../../../components/ChartTooltip';
 import useChartProps from '../../../hooks/useChartProps';
-import { Datum } from '../../../specBuilder';
 import { browserData } from '../../../stories/data/data';
 import { characterData } from '../../../stories/data/marioKartData';
 import { bindWithProps } from '../../../test-utils';

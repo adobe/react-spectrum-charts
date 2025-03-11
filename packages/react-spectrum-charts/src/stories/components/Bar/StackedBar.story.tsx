@@ -13,10 +13,11 @@ import React, { ReactElement, createElement } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
+import { SpectrumColor } from '@spectrum-charts/vega-spec-builder';
+
 import { Chart } from '../../../Chart';
 import { Annotation, Axis, Bar, Legend } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
-import { SpectrumColor } from '../../../specBuilder';
 import { bindWithProps } from '../../../test-utils';
 import { BarProps } from '../../../types';
 import { barSeriesData, negativeBarSeriesData, stackedBarDataWithUTC } from './data';

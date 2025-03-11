@@ -13,11 +13,12 @@ import { ReactElement } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
+import { TRENDLINE_VALUE } from '@spectrum-charts/constants';
+import { Datum } from '@spectrum-charts/vega-spec-builder';
+
 import { Chart } from '../../../Chart';
 import { Axis, Bar, ChartPopover, ChartTooltip, Legend, Line, Scatter, Title, Trendline } from '../../../components';
-import { TRENDLINE_VALUE } from '../../../constants';
 import useChartProps from '../../../hooks/useChartProps';
-import { Datum } from '../../../specBuilder/types';
 import { workspaceTrendsData } from '../../../stories/data/data';
 import { characterData } from '../../../stories/data/marioKartData';
 import { bindWithProps } from '../../../test-utils/bindWithProps';

@@ -13,7 +13,8 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { FC } from 'react';
 
-import { DEFAULT_AXIS_ANNOTATION_COLOR, DEFAULT_AXIS_ANNOTATION_OFFSET } from '../../constants';
+import { DEFAULT_AXIS_ANNOTATION_COLOR, DEFAULT_AXIS_ANNOTATION_OFFSET } from '@spectrum-charts/constants';
+
 import { AxisAnnotationProps } from '../../types';
 
 const AxisAnnotation: FC<AxisAnnotationProps> = ({

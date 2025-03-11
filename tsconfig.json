@@ -21,7 +21,8 @@
 		"types": ["node", "jest", "@testing-library/jest-dom"],
 		"skipLibCheck": true,
 		"paths": {
-			"@react-spectrum-charts/*": ["packages/react-spectrum-charts/src/*"]
+			"@react-spectrum-charts/*": ["packages/react-spectrum-charts/src/*"],
+			"@vega-spec-builder/*": ["packages/vega-spec-builder/src/*"]
 		}
 	},
 	"include": ["packages"],

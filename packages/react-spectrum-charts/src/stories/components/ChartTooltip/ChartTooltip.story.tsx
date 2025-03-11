@@ -13,15 +13,16 @@ import { ReactElement } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
+import { categorical12 } from '@spectrum-charts/themes';
+import { Datum } from '@spectrum-charts/vega-spec-builder';
+
 import { Chart } from '../../../Chart';
 import { Area, Bar, Line } from '../../../components';
 import { ChartTooltip } from '../../../components/ChartTooltip';
 import useChartProps from '../../../hooks/useChartProps';
-import { Datum } from '../../../specBuilder';
 import { browserData } from '../../../stories/data/data';
 import { formatTimestamp } from '../../../stories/storyUtils';
 import { bindWithProps } from '../../../test-utils';
-import { categorical12 } from '../../../themes';
 
 export default {
 	title: 'RSC/ChartTooltip',

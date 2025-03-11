@@ -13,7 +13,8 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { FC } from 'react';
 
-import { DEFAULT_LABEL_FONT_WEIGHT } from '../../constants';
+import { DEFAULT_LABEL_FONT_WEIGHT } from '@spectrum-charts/constants';
+
 import { ReferenceLineProps } from '../../types';
 
 const ReferenceLine: FC<ReferenceLineProps> = ({ value, labelFontWeight = DEFAULT_LABEL_FONT_WEIGHT }) => {

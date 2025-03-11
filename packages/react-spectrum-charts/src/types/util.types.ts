@@ -11,7 +11,7 @@
  */
 import { ReactNode } from 'react';
 
-import { Datum } from '../specBuilder';
+import { Datum } from '@spectrum-charts/vega-spec-builder';
 
 export type ChildElement<T> = T | string | boolean | Iterable<ReactNode>;
 export type Children<T> = ChildElement<T> | ChildElement<T>[];

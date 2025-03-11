@@ -9,8 +9,9 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { HIGHLIGHT_CONTRAST_RATIO } from '@spectrum-charts/constants';
+
 import { Line } from '../../../components';
-import { HIGHLIGHT_CONTRAST_RATIO } from '../../../constants';
 import { workspaceTrendsData } from '../../../stories/data/data';
 import {
 	allElementsHaveAttributeValue,

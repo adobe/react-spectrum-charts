@@ -9,7 +9,8 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { ChartPopoverOptions } from '../specBuilder/types';
+import { ChartPopoverOptions } from '@spectrum-charts/vega-spec-builder';
+
 import { ChartPopoverProps } from '../types';
 
 export const getChartPopoverOptions = ({

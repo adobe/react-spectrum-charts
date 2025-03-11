@@ -1,0 +1,9 @@
+{
+  "name": "@spectrum-charts/utils",
+  "version": "0.0.0",
+  "description": "Utilities for spectrum charts",
+  "main": "index.ts",
+  "author": "marshallpete",
+  "license": "MIT",
+  "private": true
+}

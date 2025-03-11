@@ -12,8 +12,9 @@
 import { NumberLocale } from 'vega';
 import { numberFormatLocale } from 'vega-format';
 
-import { DEFAULT_LOCALE } from '../../../constants';
-import { BigNumberNumberType } from '../../../specBuilder';
+import { DEFAULT_LOCALE } from '@spectrum-charts/constants';
+import { BigNumberNumberType } from '@spectrum-charts/vega-spec-builder';
+
 import { getLocale } from '../../../utils/locale';
 
 export const formatBigNumber = (

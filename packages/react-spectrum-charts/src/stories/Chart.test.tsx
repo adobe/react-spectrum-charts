@@ -11,9 +11,10 @@
  */
 import React, { createRef } from 'react';
 
+import { HIGHLIGHT_CONTRAST_RATIO } from '@spectrum-charts/constants';
+
 import { Chart } from '../Chart';
 import { Axis, Bar, ChartTooltip, Line } from '../components';
-import { HIGHLIGHT_CONTRAST_RATIO } from '../constants';
 import { findChart, getAllMarksByGroupName, hoverNthElement, render, screen } from '../test-utils';
 import '../test-utils/__mocks__/matchMedia.mock.js';
 import { ChartHandle } from '../types';

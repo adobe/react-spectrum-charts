@@ -13,7 +13,8 @@ import { useEffect } from 'react';
 
 import { Config, Spec } from 'vega';
 
-import { mergeValuesIntoData } from '../specBuilder/specUtils';
+import { mergeValuesIntoData } from '@spectrum-charts/vega-spec-builder';
+
 import { debugLog } from '../utils';
 
 export const useDebugSpec = (

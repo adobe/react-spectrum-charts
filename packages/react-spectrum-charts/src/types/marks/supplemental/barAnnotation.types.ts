@@ -11,7 +11,7 @@
  */
 import { JSXElementConstructor, ReactElement } from 'react';
 
-import { BarAnnotationOptions } from '../../../specBuilder';
+import { BarAnnotationOptions } from '@spectrum-charts/vega-spec-builder';
 
 export interface BarAnnotationProps extends BarAnnotationOptions {}
 

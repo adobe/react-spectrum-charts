@@ -11,7 +11,7 @@
  */
 import { JSXElementConstructor, ReactElement } from 'react';
 
-import { TitleOptions } from '../specBuilder';
+import { TitleOptions } from '@spectrum-charts/vega-spec-builder';
 
 export interface TitleProps extends TitleOptions {}
 

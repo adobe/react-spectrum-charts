@@ -11,8 +11,10 @@
  */
 import userEvent from '@testing-library/user-event';
 
+import { HIGHLIGHT_CONTRAST_RATIO } from '@spectrum-charts/constants';
+import { spectrumColors } from '@spectrum-charts/themes';
+
 import { Scatter } from '../../../components';
-import { HIGHLIGHT_CONTRAST_RATIO } from '../../../constants';
 import {
 	allElementsHaveAttributeValue,
 	clickNthElement,
@@ -25,7 +27,6 @@ import {
 	screen,
 	within,
 } from '../../../test-utils';
-import { spectrumColors } from '../../../themes';
 import { Basic, Color, ColorScaleType, LineType, Opacity, Popover, Size, Tooltip } from './Scatter.story';
 
 const colors = spectrumColors.light;

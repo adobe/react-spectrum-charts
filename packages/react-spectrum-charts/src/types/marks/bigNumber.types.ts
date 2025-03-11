@@ -13,8 +13,8 @@ import { JSXElementConstructor, ReactElement } from 'react';
 
 import { IconProps } from '@adobe/react-spectrum';
 import { IconPropsWithoutChildren } from '@react-spectrum/icon';
+import { BigNumberOptions } from '@spectrum-charts/vega-spec-builder';
 
-import { BigNumberOptions } from '../../specBuilder';
 import { Children } from '../util.types';
 import { LineElement } from './line.types';
 

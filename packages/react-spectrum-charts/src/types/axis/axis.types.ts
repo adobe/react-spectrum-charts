@@ -11,7 +11,8 @@
  */
 import { JSXElementConstructor, ReactElement } from 'react';
 
-import { AxisOptions } from '../../specBuilder';
+import { AxisOptions } from '@spectrum-charts/vega-spec-builder';
+
 import { Children } from '../util.types';
 import { AxisAnnotationElement } from './axisAnnotation.types';
 import { ReferenceLineElement } from './referenceLine.types';

@@ -11,6 +11,8 @@
  */
 import React from 'react';
 
+import { spectrumColors } from '@spectrum-charts/themes';
+
 import {
 	findChart,
 	findMarksByGroupName,
@@ -23,7 +25,6 @@ import {
 	screen,
 } from '../test-utils';
 import '../test-utils/__mocks__/matchMedia.mock.js';
-import { spectrumColors } from '../themes';
 import {
 	FunnelConversion,
 	FunnelTimeComparison,

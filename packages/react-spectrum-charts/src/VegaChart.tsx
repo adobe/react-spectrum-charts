@@ -15,7 +15,8 @@ import { Config, Padding, Renderers, Spec, View } from 'vega';
 import embed from 'vega-embed';
 import { Options as TooltipOptions } from 'vega-tooltip';
 
-import { TABLE } from './constants';
+import { TABLE } from '@spectrum-charts/constants';
+
 import { expressionFunctions, formatLocaleCurrency, formatTimeDurationLabels } from './expressionFunctions';
 import { useDebugSpec } from './hooks/useDebugSpec';
 import { extractValues, isVegaData } from './hooks/useSpec';

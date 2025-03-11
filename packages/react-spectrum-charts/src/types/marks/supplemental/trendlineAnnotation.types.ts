@@ -11,7 +11,7 @@
  */
 import { JSXElementConstructor, ReactElement } from 'react';
 
-import { TrendlineAnnotationOptions } from '../../../specBuilder';
+import { TrendlineAnnotationOptions } from '@spectrum-charts/vega-spec-builder';
 
 export interface TrendlineAnnotationProps extends TrendlineAnnotationOptions {}
 

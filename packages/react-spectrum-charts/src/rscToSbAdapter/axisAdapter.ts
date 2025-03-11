@@ -9,7 +9,8 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { AxisAnnotationOptions, AxisOptions } from '../specBuilder/types';
+import { AxisAnnotationOptions, AxisOptions } from '@spectrum-charts/vega-spec-builder';
+
 import { AxisAnnotationProps, AxisProps } from '../types';
 import { childrenToOptions } from './childrenAdapter';
 

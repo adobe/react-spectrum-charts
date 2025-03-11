@@ -14,12 +14,12 @@ import { ReactElement } from 'react';
 import { StoryFn } from '@storybook/react';
 
 import { Content } from '@adobe/react-spectrum';
+import { Datum } from '@spectrum-charts/vega-spec-builder';
 
 import { Chart } from '../../../Chart';
 import { Area, Axis, Bar, ChartPopover, ChartTooltip, Legend, Line } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
 import { Donut, DonutSummary } from '../../../rc';
-import { Datum } from '../../../specBuilder';
 import { bindWithProps } from '../../../test-utils';
 import { ChartProps } from '../../../types';
 import { browserData as data } from '../../data/data';

@@ -13,7 +13,8 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { FC } from 'react';
 
-import { DEFAULT_INTERACTION_MODE, DEFAULT_METRIC, DEFAULT_TIME_DIMENSION } from '../../constants';
+import { DEFAULT_INTERACTION_MODE, DEFAULT_METRIC, DEFAULT_TIME_DIMENSION } from '@spectrum-charts/constants';
+
 import { LineProps } from '../../types';
 
 const Line: FC<LineProps> = ({

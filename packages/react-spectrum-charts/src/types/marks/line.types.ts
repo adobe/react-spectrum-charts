@@ -11,7 +11,8 @@
  */
 import { JSXElementConstructor, ReactElement } from 'react';
 
-import { LineOptions } from '../../specBuilder';
+import { LineOptions } from '@spectrum-charts/vega-spec-builder';
+
 import { ChartPopoverElement, ChartTooltipElement } from '../dialogs';
 import { Children, OnClickCallback } from '../util.types';
 import { MetricRangeElement, TrendlineElement } from './supplemental';

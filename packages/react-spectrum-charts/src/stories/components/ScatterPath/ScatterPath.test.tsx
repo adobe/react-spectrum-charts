@@ -11,10 +11,11 @@
  */
 import React from 'react';
 
+import { spectrumColors } from '@spectrum-charts/themes';
+
 import { ScatterPath } from '../../../components';
 import { allElementsHaveAttributeValue, findAllMarksByGroupName, findChart, render } from '../../../test-utils';
 import '../../../test-utils/__mocks__/matchMedia.mock.js';
-import { spectrumColors } from '../../../themes';
 import { characterData } from '../../data/marioKartData';
 import { Basic, Color, GroupBy, Opacity } from './ScatterPath.story';
 

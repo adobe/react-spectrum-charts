@@ -9,6 +9,25 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import {
+	AxisAnnotationOptions,
+	AxisOptions,
+	BarAnnotationOptions,
+	ChartPopoverOptions,
+	ChartTooltipOptions,
+	DonutSummaryOptions,
+	LegendOptions,
+	LineOptions,
+	MarkOptions,
+	MetricRangeOptions,
+	ReferenceLineOptions,
+	ScatterPathOptions,
+	SegmentLabelOptions,
+	TitleOptions,
+	TrendlineAnnotationOptions,
+	TrendlineOptions,
+} from '@spectrum-charts/vega-spec-builder';
+
 import { Combo } from '../alpha';
 import { Annotation } from '../components/Annotation';
 import { Area } from '../components/Area';
@@ -27,24 +46,6 @@ import { Title } from '../components/Title';
 import { Trendline } from '../components/Trendline';
 import { TrendlineAnnotation } from '../components/TrendlineAnnotation';
 import { Donut, DonutSummary, SegmentLabel } from '../rc';
-import {
-	AxisAnnotationOptions,
-	AxisOptions,
-	BarAnnotationOptions,
-	ChartPopoverOptions,
-	ChartTooltipOptions,
-	DonutSummaryOptions,
-	LegendOptions,
-	LineOptions,
-	MarkOptions,
-	MetricRangeOptions,
-	ReferenceLineOptions,
-	ScatterPathOptions,
-	SegmentLabelOptions,
-	TitleOptions,
-	TrendlineAnnotationOptions,
-	TrendlineOptions,
-} from '../specBuilder/types';
 import {
 	AreaProps,
 	AxisAnnotationProps,

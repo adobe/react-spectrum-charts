@@ -13,7 +13,8 @@ import React, { ReactElement } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
-import { DEFAULT_GRANULARITY } from '../../../constants';
+import { DEFAULT_GRANULARITY } from '@spectrum-charts/constants';
+
 import useChartProps from '../../../hooks/useChartProps';
 import { Axis, Bar, Chart, ChartTooltip, Line } from '../../../index';
 import { bindWithProps } from '../../../test-utils';

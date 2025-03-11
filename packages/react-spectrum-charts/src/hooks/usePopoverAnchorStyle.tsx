@@ -13,7 +13,7 @@ import { CSSProperties, useMemo } from 'react';
 
 import { Padding, View } from 'vega';
 
-import { MarkBounds } from '../specBuilder';
+import { MarkBounds } from '@spectrum-charts/vega-spec-builder';
 
 export default function usePopoverAnchorStyle(
 	popoverIsOpen: boolean,

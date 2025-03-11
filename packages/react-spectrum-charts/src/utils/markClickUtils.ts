@@ -13,9 +13,10 @@ import { MutableRefObject } from 'react';
 
 import { Item, Scene, SceneGroup, SceneItem, ScenegraphEvent, View } from 'vega';
 
-import { COMPONENT_NAME } from '../constants';
+import { COMPONENT_NAME } from '@spectrum-charts/constants';
+import { Datum, MarkBounds } from '@spectrum-charts/vega-spec-builder';
+
 import { MarkOnClickDetail } from '../hooks/useMarkOnClickDetails';
-import { Datum, MarkBounds } from '../specBuilder';
 import { toggleStringArrayValue } from '../utils';
 
 export type ActionItem = Item | undefined | null;

@@ -11,9 +11,10 @@
  */
 import { createElement, useMemo, useState } from 'react';
 
+import { LegendDescription } from '@spectrum-charts/vega-spec-builder';
+
 import { Chart } from '../Chart';
 import { Legend } from '../components/Legend';
-import { LegendDescription } from '../specBuilder';
 import { ChartChildElement, LegendElement } from '../types';
 import { getElement } from '../utils';
 

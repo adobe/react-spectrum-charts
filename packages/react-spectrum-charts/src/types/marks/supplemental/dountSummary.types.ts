@@ -11,7 +11,7 @@
  */
 import { JSXElementConstructor, ReactElement } from 'react';
 
-import { DonutSummaryOptions } from '../../../specBuilder';
+import { DonutSummaryOptions } from '@spectrum-charts/vega-spec-builder';
 
 export interface DonutSummaryProps extends DonutSummaryOptions {}
 

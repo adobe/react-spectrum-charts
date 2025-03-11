@@ -13,9 +13,10 @@ import { useMemo } from 'react';
 
 import { Data, Spec, ValuesData } from 'vega';
 
+import { ChartSpecOptions, buildSpec } from '@spectrum-charts/vega-spec-builder';
+import { baseData, getColorValue } from '@spectrum-charts/vega-spec-builder';
+
 import { rscPropsToSpecBuilderOptions } from '../rscToSbAdapter';
-import { ChartSpecOptions, buildSpec } from '../specBuilder';
-import { baseData, getColorValue } from '../specBuilder/specUtils';
 import { ChartData, SanitizedSpecProps } from '../types';
 
 export default function useSpec({

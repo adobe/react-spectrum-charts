@@ -14,13 +14,13 @@ import React, { ReactElement, createElement } from 'react';
 import { StoryFn } from '@storybook/react';
 
 import { Content } from '@adobe/react-spectrum';
+import { categorical6 } from '@spectrum-charts/themes';
 
 import { Chart } from '../../../Chart';
 import { Annotation } from '../../../components';
 import { Axis, Bar, ChartPopover, ChartTooltip, Legend } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
 import { bindWithProps } from '../../../test-utils';
-import { categorical6 } from '../../../themes';
 import { BarProps } from '../../../types';
 import { barSeriesData, barSubSeriesData } from './data';
 

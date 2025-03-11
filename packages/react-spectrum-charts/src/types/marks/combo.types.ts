@@ -11,7 +11,8 @@
  */
 import { JSXElementConstructor, ReactElement } from 'react';
 
-import { ComboOptions } from '../../specBuilder';
+import { ComboOptions } from '@spectrum-charts/vega-spec-builder';
+
 import { Children } from '../util.types';
 import { BarElement } from './bar.types';
 import { LineElement } from './line.types';

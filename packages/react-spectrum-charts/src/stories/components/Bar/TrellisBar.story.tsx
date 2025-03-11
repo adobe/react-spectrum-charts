@@ -14,12 +14,12 @@ import React, { ReactElement } from 'react';
 import { StoryFn } from '@storybook/react';
 
 import { Content, Text, View } from '@adobe/react-spectrum';
+import { MARK_ID } from '@spectrum-charts/constants';
+import { Datum, SpectrumColor } from '@spectrum-charts/vega-spec-builder';
 
 import { Chart } from '../../../Chart';
 import { Axis, Bar, ChartPopover, ChartTooltip, Legend } from '../../../components';
-import { MARK_ID } from '../../../constants';
 import useChartProps from '../../../hooks/useChartProps';
-import { Datum, SpectrumColor } from '../../../specBuilder';
 import { bindWithProps } from '../../../test-utils';
 import { BarProps } from '../../../types';
 import { generateMockDataForTrellis } from './data';

@@ -1,0 +1,16 @@
+{
+	"name": "@spectrum-charts/vega-spec-builder",
+	"version": "0.0.0",
+	"description": "Vega spec builder for spectrum charts",
+	"main": "index.js",
+	"author": "marshallpete@gmail.com",
+	"license": "MIT",
+	"private": false,
+	"dependencies": {
+		"@spectrum-charts/constants": "0.0.0",
+		"@spectrum-charts/themes": "0.0.0",
+		"@spectrum-charts/utils": "0.0.0",
+		"immer": "^10.1.1",
+		"vega": "^5.32.0"
+	}
+}

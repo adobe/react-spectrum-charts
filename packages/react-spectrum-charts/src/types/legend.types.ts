@@ -11,7 +11,7 @@
  */
 import { JSXElementConstructor, ReactElement } from 'react';
 
-import { LegendOptions } from '../specBuilder';
+import { LegendOptions } from '@spectrum-charts/vega-spec-builder';
 
 export interface LegendProps extends Omit<LegendOptions, 'hasOnClick' | 'hasMouseInteraction'> {
 	/** callback that will be run when a legend item is selected */

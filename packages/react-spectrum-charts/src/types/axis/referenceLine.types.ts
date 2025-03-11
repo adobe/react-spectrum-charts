@@ -11,7 +11,7 @@
  */
 import { JSXElementConstructor, ReactElement } from 'react';
 
-import { ReferenceLineOptions } from '../../specBuilder';
+import { ReferenceLineOptions } from '@spectrum-charts/vega-spec-builder';
 
 export interface ReferenceLineProps extends ReferenceLineOptions {}
 

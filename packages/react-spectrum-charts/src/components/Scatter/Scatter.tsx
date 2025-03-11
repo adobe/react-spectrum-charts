@@ -13,7 +13,13 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { FC } from 'react';
 
-import { DEFAULT_COLOR, DEFAULT_LINEAR_DIMENSION, DEFAULT_METRIC, DEFAULT_SYMBOL_SIZE } from '../../constants';
+import {
+	DEFAULT_COLOR,
+	DEFAULT_LINEAR_DIMENSION,
+	DEFAULT_METRIC,
+	DEFAULT_SYMBOL_SIZE,
+} from '@spectrum-charts/constants';
+
 import { ScatterProps } from '../../types';
 
 // destructure props here and set defaults so that storybook can pick them up

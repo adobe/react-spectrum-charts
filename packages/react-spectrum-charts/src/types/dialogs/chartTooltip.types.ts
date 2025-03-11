@@ -11,7 +11,7 @@
  */
 import { JSXElementConstructor, ReactElement, ReactNode } from 'react';
 
-import { ChartTooltipOptions, Datum } from '../../specBuilder';
+import { ChartTooltipOptions, Datum } from '@spectrum-charts/vega-spec-builder';
 
 export type ChartTooltipElement = ReactElement<ChartTooltipProps, JSXElementConstructor<ChartTooltipProps>>;
 

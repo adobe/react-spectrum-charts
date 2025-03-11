@@ -9,6 +9,8 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { spectrumColors } from '@spectrum-charts/themes';
+
 import {
 	allElementsHaveAttributeValue,
 	findAllMarksByGroupName,
@@ -19,7 +21,6 @@ import {
 	render,
 	screen,
 } from '../../../test-utils';
-import { spectrumColors } from '../../../themes';
 import { FeatureMatrix, MultipleSegmentFeatureMatrix, TimeCompareFeatureMatrix } from './FeatureMatrix.story';
 
 const colors = spectrumColors.light;

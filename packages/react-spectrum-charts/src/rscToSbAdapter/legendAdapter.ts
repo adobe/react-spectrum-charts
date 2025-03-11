@@ -9,7 +9,8 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { LegendOptions } from '../specBuilder/types';
+import { LegendOptions } from '@spectrum-charts/vega-spec-builder';
+
 import { LegendProps } from '../types';
 
 export const getLegendOptions = ({ onClick, onMouseOut, onMouseOver, ...legendProps }: LegendProps): LegendOptions => ({

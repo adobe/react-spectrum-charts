@@ -9,7 +9,8 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { LineOptions } from '../specBuilder/types';
+import { LineOptions } from '@spectrum-charts/vega-spec-builder';
+
 import { LineProps } from '../types';
 import { childrenToOptions } from './childrenAdapter';
 

@@ -11,11 +11,12 @@
  */
 import { createElement } from 'react';
 
+import { DEFAULT_COLOR } from '@spectrum-charts/constants';
+
 import { Annotation } from '../components/Annotation';
 import { ChartPopover } from '../components/ChartPopover';
 import { ChartTooltip } from '../components/ChartTooltip';
 import { Trendline } from '../components/Trendline';
-import { DEFAULT_COLOR } from '../constants';
 import { getBarOptions } from './barAdapter';
 
 describe('getBarOptions()', () => {

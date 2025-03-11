@@ -11,7 +11,7 @@
  */
 import { JSXElementConstructor, ReactElement, ReactNode } from 'react';
 
-import { ChartPopoverOptions, Datum } from '../../specBuilder';
+import { ChartPopoverOptions, Datum } from '@spectrum-charts/vega-spec-builder';
 
 export type PopoverHandler = (datum: Datum, close: () => void) => ReactNode;
 
