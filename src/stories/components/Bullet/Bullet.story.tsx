@@ -25,9 +25,9 @@ export default {
 
 // Default chart properties
 const defaultChartProps: ChartProps = {
-    data: basicBulletData,
-    width: 350,
-    height: 350,
+	data: basicBulletData,
+	width: 600,
+	height: 600,
 };
 
 // Basic Bullet chart story
@@ -47,22 +47,7 @@ Basic.args = {
 	dimension: 'graphLabel',
 	target: 'target',
 	color: 'red-500',
-    direction: 'column',
 	numberFormat: '$,.2f',
-    showTarget: true,
-    showTargetValue: false,
 };
 
-const RowMode = bindWithProps(BulletStory);
-RowMode.args = {
-	metric: 'currentAmount',
-    dimension: 'graphLabel',
-    target: 'target',
-    color: 'red-500',
-    direction: 'row',
-    numberFormat: '$,.2f',
-    showTarget: true,
-    showTargetValue: false,
-};
-
-export { Basic, RowMode };
+export { Basic };

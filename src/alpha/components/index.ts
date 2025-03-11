@@ -10,5 +10,5 @@
  * governing permissions and limitations under the License.
  */
 
-export * from './Combo';
-export * from './Bullet';
+export * from './Combo'
+export * from './Bullet'

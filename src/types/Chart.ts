@@ -241,8 +241,6 @@ export interface BulletProps extends MarkProps {
 	showTargetValue?: boolean;
 	/** Data field that the metric is trended against (x-axis for horizontal orientation) */
 	dimension?: string;
-	/** Specifies the direction the bars should be ordered (row/column) */
-	direction?: 'row' | 'column';
 	/** d3 number format specifier.
 	 * Sets the number format for the summary value.
 	 *

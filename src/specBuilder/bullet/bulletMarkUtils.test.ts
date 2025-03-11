@@ -19,37 +19,21 @@ import {
 	getBulletScales,
 	getBulletSignals,
 } from './bulletMarkUtils';
-
-import { samplePropsColumn, samplePropsRow } from './bulletSpecBuilder.test';
+import { sampleProps } from './bulletSpecBuilder.test';
 
 describe('getBulletMarks', () => {
-	test('Should return the correct marks object for column mode', () => {
-		const data = getBulletMarks(samplePropsColumn);
-		expect(data).toBeDefined;
+	test('Should return the correct marks object', () => {
+		const data = getBulletMarks(sampleProps);
+		expect(data).toBeDefined();
 		expect(data?.marks).toHaveLength(4);
-		expect(data?.marks?.[0]?.type).toBe('rect');
-		expect(data?.marks?.[1]?.type).toBe('rule');
+		expect(data?.marks?.[0]?.type).toBe('rule');
+		expect(data?.marks?.[1]?.type).toBe('rect');
 		expect(data?.marks?.[2]?.type).toBe('text');
 		expect(data?.marks?.[3]?.type).toBe('text');
-
-		//Make sure the object that defines the orientation contains the correct key
-		expect(Object.keys(data?.encode?.update || {})).toContain('y');
 	});
 
-	test('Should return the correct marks object for row mode', () => {
-		const data = getBulletMarks(samplePropsRow);
-		expect(data).toBeDefined;
-		expect(data?.marks).toHaveLength(4);
-		expect(data?.marks?.[0]?.type).toBe('rect');
-		expect(data?.marks?.[1]?.type).toBe('rule');
-		expect(data?.marks?.[2]?.type).toBe('text');
-		expect(data?.marks?.[3]?.type).toBe('text');
-		expect(Object.keys(data?.encode?.update || {})).toContain('x');
-
-	});
-    
-   	test('Should not include target marks when showTarget is false', () => {
-		const props = { ...samplePropsColumn, showTarget: false, showTargetValue: true };
+	test('Should not include target marks when showTarget is false', () => {
+		const props = { ...sampleProps, showTarget: false, showTargetValue: true };
 		const marksGroup = getBulletMarks(props);
 		expect(marksGroup.marks).toHaveLength(3);
 		marksGroup.marks?.forEach((mark) => {
@@ -58,7 +42,7 @@ describe('getBulletMarks', () => {
 	});
 
 	test('Should include target value label when showTargetValue is true', () => {
-		const props = { ...samplePropsColumn, showTarget: true, showTargetValue: true };
+		const props = { ...sampleProps, showTarget: true, showTargetValue: true };
 		const marksGroup = getBulletMarks(props);
 		expect(marksGroup.marks).toHaveLength(5);
 		const targetValueMark = marksGroup.marks?.find((mark) => mark.name?.includes('TargetValueLabel'));
@@ -68,50 +52,30 @@ describe('getBulletMarks', () => {
 
 describe('getBulletData', () => {
 	test('Should return the data object', () => {
-		const data = getBulletData(samplePropsColumn);
+		const data = getBulletData(sampleProps);
 		expect(data).toHaveLength(1);
 	});
 });
 
 describe('getBulletScales', () => {
-	test('Should return the correct scales object for column mode', () => {
-		const data = getBulletScales(samplePropsColumn);
+	test('Should return the correct scales object', () => {
+		const data = getBulletScales(sampleProps);
 		expect(data).toBeDefined();
 		expect(data).toHaveLength(2);
-		expect('range' in data[0] && data[0].range && data[0].range[1]).toBeTruthy();
-		if ('range' in data[0] && data[0].range && data[0].range[1]) {
-			expect(data[0].range[1].signal).toBe('height');
-		}
-	});
-
-	test('Should return the correct scales object for row mode', () => {
-		const data = getBulletScales(samplePropsRow);
-		expect(data).toBeDefined();
-		expect(data).toHaveLength(2);
-		expect('range' in data[0] && data[0].range && data[0].range[1]).toBeTruthy();
-		if ('range' in data[0] && data[0].range && data[0].range[1]) {
-			expect(data[0].range[1].signal).toBe('width');
-		}
 	});
 });
 
 describe('getBulletSignals', () => {
-	test('Should return the correct signals object in column mode', () => {
-		const data = getBulletSignals(samplePropsColumn);
+	test('Should return the correct signals object', () => {
+		const data = getBulletSignals();
 		expect(data).toBeDefined();
 		expect(data).toHaveLength(7);
-	});
-
-	test('Should return the correct signals object in row mode', () => {
-		const data = getBulletSignals(samplePropsRow);
-		expect(data).toBeDefined();
-		expect(data).toHaveLength(8);
 	});
 });
 
 describe('getBulletMarkRect', () => {
 	test('Should return the correct rect mark object', () => {
-		const data = getBulletMarkRect(samplePropsColumn);
+		const data = getBulletMarkRect(sampleProps);
 		expect(data).toBeDefined();
 		expect(data.encode?.update).toBeDefined();
 
@@ -122,7 +86,7 @@ describe('getBulletMarkRect', () => {
 
 describe('getBulletMarkTarget', () => {
 	test('Should return the correct target mark object', () => {
-		const data = getBulletMarkTarget(samplePropsColumn);
+		const data = getBulletMarkTarget(sampleProps);
 		expect(data).toBeDefined();
 		expect(data.encode?.update).toBeDefined();
 		expect(Object.keys(data.encode?.update ?? {}).length).toBe(3);
@@ -131,7 +95,7 @@ describe('getBulletMarkTarget', () => {
 
 describe('getBulletMarkLabel', () => {
 	test('Should return the correct label mark object', () => {
-		const data = getBulletMarkLabel(samplePropsColumn);
+		const data = getBulletMarkLabel(sampleProps);
 		expect(data).toBeDefined();
 		expect(data.encode?.update).toBeDefined();
 		expect(Object.keys(data.encode?.update ?? {}).length).toBe(2);
@@ -139,15 +103,15 @@ describe('getBulletMarkLabel', () => {
 });
 
 describe('getBulletMarkValueLabel', () => {
-	test('Should return the correct value label mark object in column mode', () => {
-		const data = getBulletMarkValueLabel(samplePropsColumn);
+	test('Should return the correct value label mark object', () => {
+		const data = getBulletMarkValueLabel(sampleProps);
 		expect(data).toBeDefined();
 		expect(data.encode?.update).toBeDefined();
 		expect(Object.keys(data.encode?.update ?? {}).length).toBe(2);
 	});
 
 	test('Should apply numberFormat specifier to metric and target values', () => {
-		const props = { ...samplePropsColumn, showTarget: true, showTargetValue: true, numberFormat: '$,.2f' };
+		const props = { ...sampleProps, showTarget: true, showTargetValue: true, numberFormat: '$,.2f' };
 		const marksGroup = getBulletMarks(props);
 
 		const metricValueLabel = marksGroup.marks?.find((mark) => mark.name === `${props.name}ValueLabel`);
