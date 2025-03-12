@@ -19,36 +19,51 @@ import { bindWithProps } from '@test-utils';
 import { basicBulletData, basicThresholdConfigData, basicThresholdsData } from './data';
 
 export default {
-    title: 'RSC/Bullet',
-    component: Bullet,
+	title: 'RSC/Bullet',
+	component: Bullet,
 };
 
 // Default chart properties
 const defaultChartProps: ChartProps = {
     data: basicBulletData,
-    width: 600,
-    height: 600,
+    width: 350,
+    height: 350,
 };
 
 // Basic Bullet chart story
 const BulletStory: StoryFn<BulletProps & { width?: number; height?: number }> = (args): ReactElement => {
-    const { width, height, ...bulletProps } = args;
-    const chartProps = useChartProps({ ...defaultChartProps, width: width ?? 350, height: height ?? 350 });
-    return (
-        <Chart {...chartProps}>
-            <Bullet {...bulletProps} />
-        </Chart>
-    );
+	const { width, height, ...bulletProps } = args;
+	const chartProps = useChartProps({ ...defaultChartProps, width: width ?? 350, height: height ?? 350 });
+	return (
+		<Chart {...chartProps}>
+			<Bullet {...bulletProps} />
+		</Chart>
+	);
 };
 
 const Basic = bindWithProps(BulletStory);
 Basic.args = {
-    metric: 'currentAmount',
+	metric: 'currentAmount',
+	dimension: 'graphLabel',
+	target: 'target',
+	color: 'red-500',
+    direction: 'column',
+	numberFormat: '$,.2f',
+    showTarget: true,
+    showTargetValue: false,
+};
+
+const RowMode = bindWithProps(BulletStory);
+RowMode.args = {
+	metric: 'currentAmount',
     dimension: 'graphLabel',
     target: 'target',
     thresholds: basicThresholdsData,
     color: 'red-500',
+    direction: 'row',
     numberFormat: '$,.2f',
+    showTarget: true,
+    showTargetValue: false,
 };
 
-export { Basic };
+export { Basic, RowMode };

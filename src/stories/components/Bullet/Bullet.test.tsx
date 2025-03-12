@@ -26,7 +26,7 @@ describe('Bullet', () => {
 		expect(chart).toBeInTheDocument();
 
 		const rects = await findAllMarksByGroupName(chart, 'bullet0Rect');
-		expect(rects.length).toEqual(6);
+		expect(rects.length).toEqual(2);
 
 		rects.forEach(rect => {
 			// Expect red-500 color
@@ -34,12 +34,12 @@ describe('Bullet', () => {
 		});
 
 		const barLabels = await findAllMarksByGroupName(chart, 'bullet0Label', 'text');
-		expect(barLabels.length).toEqual(6);
+		expect(barLabels.length).toEqual(2);
 
 		const amountLabels = await findAllMarksByGroupName(chart, 'bullet0ValueLabel', 'text');
-		expect(amountLabels.length).toEqual(6);
+		expect(amountLabels.length).toEqual(2);
 
 		const rules = await findAllMarksByGroupName(chart, 'bullet0Target', 'line');
-		expect(rules.length).toEqual(6);
+		expect(rules.length).toEqual(2);
 	});
 });
