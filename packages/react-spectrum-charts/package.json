@@ -57,6 +57,7 @@
 	"license": "Apache-2.0",
 	"scripts": {
 		"build": "webpack --config webpack.config.js",
+		"clean": "rm -rf dist",
 		"g": "plop component",
 		"generate": "plop component",
 		"lint": "eslint src --ext .ts,.tsx,.js,.jsx",

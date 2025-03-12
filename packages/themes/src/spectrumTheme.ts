@@ -24,7 +24,7 @@ import { ColorScheme, getColorValue } from '@spectrum-charts/vega-spec-builder';
 import { categorical16 } from './categoricalColorPalette';
 import { divergentOrangeYellowSeafoam15 } from './divergingColorPalette';
 import { sequentialViridis16 } from './sequentialColorPalette';
-import spectrumColors from './spectrumColors.json';
+import { spectrumColors } from './spectrumColors';
 
 export const ADOBE_CLEAN_FONT =
 	"adobe-clean, 'Source Sans Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Ubuntu, 'Trebuchet MS', 'Lucida Grande', sans-serif";

@@ -1,9 +1,18 @@
 {
 	"name": "@spectrum-charts/constants",
 	"version": "0.0.0",
-	"description": "Constants for spectrum charts",
-	"main": "index.ts",
+	"description": "Constants used in spectrum charts",
+	"main": "dist/index.js",
+	"module": "dist/index.js",
+	"types": "dist/index.d.ts",
 	"author": "marshallpete",
 	"license": "MIT",
-	"private": true
+	"private": true,
+	"scripts": {
+		"build": "tsc",
+		"clean": "rm -rf dist"
+	},
+	"devDependencies": {
+		"typescript": "^5.4.5"
+	}
 }

@@ -57,7 +57,12 @@
 	"author": "marshall.w.peterson@gmail.com",
 	"license": "Apache-2.0",
 	"scripts": {
-		"build": "webpack --config webpack.config.js",
+		"build": "yarn workspaces run build",
+		"build:parallel": "concurrently 'yarn workspace @spectrum-charts/themes build' 'yarn workspace @spectrum-charts/constants build' 'yarn workspace @spectrum-charts/utils build' && yarn workspace @spectrum-charts/vega-spec-builder build && yarn workspace @spectrum-charts/react-spectrum-charts build",
+		"clean": "yarn workspaces run clean",
+		"clean:parallel": "concurrently 'yarn workspace @spectrum-charts/themes clean' 'yarn workspace @spectrum-charts/constants clean' 'yarn workspace @spectrum-charts/utils clean' 'yarn workspace @spectrum-charts/vega-spec-builder clean' 'yarn workspace @spectrum-charts/react-spectrum-charts clean'",
+		"build:force": "yarn clean && yarn build",
+		"build:force:parallel": "yarn clean:parallel && yarn build:parallel",
 		"build:storybook": "storybook build -o ./dist-storybook --quiet",
 		"copyrights": "node ./scripts/addHeaders.js",
 		"lint": "eslint packages --ext .ts,.tsx,.js,.jsx",

@@ -2,8 +2,19 @@
 	"name": "@spectrum-charts/vega-spec-builder",
 	"version": "0.0.0",
 	"description": "Vega spec builder for spectrum charts",
-	"main": "index.js",
-	"author": "marshallpete@gmail.com",
+	"main": "dist/index.js",
+	"module": "dist/index.js",
+	"types": "dist/types/index.d.ts",
+	"files": [
+		"dist",
+		"README.md"
+	],
+	"scripts": {
+		"build": "tsc",
+		"clean": "rm -rf dist",
+		"prepare": "yarn clean && yarn build"
+	},
+	"author": "marshallpete",
 	"license": "MIT",
 	"private": false,
 	"dependencies": {
@@ -12,5 +23,8 @@
 		"@spectrum-charts/utils": "0.0.0",
 		"immer": "^10.1.1",
 		"vega": "^5.32.0"
+	},
+	"devDependencies": {
+		"typescript": "^5.0.0"
 	}
 }

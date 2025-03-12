@@ -1,9 +1,23 @@
 {
-  "name": "@spectrum-charts/themes",
-  "version": "0.0.0",
-  "description": "Spectrum colors and themes used for spectrum charts",
-  "main": "index.ts",
-  "author": "marshallpete",
-  "license": "MIT",
-  "private": false
+	"name": "@spectrum-charts/themes",
+	"version": "0.0.0",
+	"description": "Spectrum colors and themes used for spectrum charts",
+	"main": "dist/index.js",
+	"module": "dist/index.js",
+	"types": "dist/index.d.ts",
+	"files": [
+		"dist",
+		"README.md"
+	],
+	"scripts": {
+		"build": "tsc",
+		"clean": "rm -rf dist",
+		"prepare": "yarn clean && yarn build"
+	},
+	"author": "marshallpete",
+	"license": "MIT",
+	"private": false,
+	"devDependencies": {
+		"typescript": "^5.0.0"
+	}
 }
