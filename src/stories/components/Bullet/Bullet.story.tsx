@@ -16,7 +16,7 @@ import { Bullet } from '@rsc/alpha'; // Assuming Bullet chart is a component in 
 import { Chart, BulletProps, ChartProps } from '@rsc';
 import useChartProps from '@hooks/useChartProps';
 import { bindWithProps } from '@test-utils';
-import { basicBulletData, basicThresholdConfigData, basicThresholdsData } from './data';
+import { basicBulletData, basicThresholdsData } from './data';
 
 export default {
 	title: 'RSC/Bullet',

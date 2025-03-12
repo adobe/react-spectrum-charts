@@ -9,20 +9,16 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import exp from 'constants';
-
 import {
 	getBulletData,
 	getBulletMarkLabel,
 	getBulletMarkRect,
 	getBulletMarkTarget,
-	getBulletMarkThreshold,
 	getBulletMarkValueLabel,
 	getBulletMarks,
 	getBulletScales,
 	getBulletSignals,
 } from './bulletMarkUtils';
-
 import { samplePropsColumn, samplePropsRow } from './bulletSpecBuilder.test';
 
 describe('getBulletMarks', () => {
@@ -48,10 +44,9 @@ describe('getBulletMarks', () => {
 		expect(data?.marks?.[2]?.type).toBe('text');
 		expect(data?.marks?.[3]?.type).toBe('text');
 		expect(Object.keys(data?.encode?.update || {})).toContain('x');
-
 	});
-    
-   	test('Should not include target marks when showTarget is false', () => {
+
+	test('Should not include target marks when showTarget is false', () => {
 		const props = { ...samplePropsColumn, showTarget: false, showTargetValue: true };
 		const marksGroup = getBulletMarks(props);
 		expect(marksGroup.marks).toHaveLength(3);
@@ -76,7 +71,7 @@ describe('getBulletMarks', () => {
 
 		test('Should add threshold data and threshold mark when thresholdConfig is provided', () => {
 			const props = {
-				...sampleProps,
+				...samplePropsRow,
 				thresholds: undefined,
 				thresholdConfig,
 			};
@@ -90,9 +85,11 @@ describe('getBulletMarks', () => {
 			expect(marksGroup.data).toBeDefined();
 			expect(marksGroup.data?.[0].name).toBe('thresholds');
 
-			const dataItem = marksGroup.data?.[0] as any;
-			expect(Array.isArray(dataItem.values)).toBeTruthy();
-			expect(dataItem.values).toHaveLength(3);
+			const dataItem = marksGroup.data?.[0];
+			expect(dataItem).toHaveProperty('values');
+			const values = (dataItem as { values: unknown[] }).values;
+			expect(Array.isArray(values)).toBeTruthy();
+			expect(values).toHaveLength(3);
 
 			const thresholdMark = marksGroup.marks?.find((mark) => mark.name === `${props.name}Threshold`);
 			expect(thresholdMark).toBeDefined();
@@ -105,13 +102,16 @@ describe('getBulletMarks', () => {
 				{ thresholdMin: 120, thresholdMax: 235, fill: 'rgb(249, 137, 23)' },
 				{ thresholdMin: 235, fill: 'rgb(21, 164, 110)' },
 			];
-			const props = { ...sampleProps, thresholds: detailedThresholds, thresholdConfig: undefined };
+			const props = { ...samplePropsRow, thresholds: detailedThresholds, thresholdConfig: undefined };
 
 			const marksGroup = getBulletMarks(props);
 			expect(marksGroup.data).toBeDefined();
+			expect(marksGroup.data?.[0].name).toBe('thresholds');
 
-			const dataItem = marksGroup.data?.[0] as any;
-			expect(dataItem.values).toEqual(detailedThresholds);
+			const dataItem = marksGroup.data?.[0];
+			expect(dataItem).toHaveProperty('values');
+			const values = (dataItem as { values: unknown[] }).values;
+			expect(values).toEqual(detailedThresholds);
 
 			const thresholdMark = marksGroup.marks?.find((mark) => mark.name === `${props.name}Threshold`);
 			expect(thresholdMark).toBeDefined();

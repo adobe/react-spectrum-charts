@@ -9,9 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { BulletSpecProps, BulletThresholdConfig } from 'types';
-
-import { ThresholdBackground } from '../../types';
+import { BulletSpecProps, BulletThresholdConfig, ThresholdBackground } from '../../types';
 
 /**
  * Converts a BulletThresholdConfig into an array of detailed ThresholdBackground objects.
