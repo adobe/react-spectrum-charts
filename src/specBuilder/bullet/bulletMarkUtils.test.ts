@@ -9,11 +9,14 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import exp from 'constants';
+
 import {
 	getBulletData,
 	getBulletMarkLabel,
 	getBulletMarkRect,
 	getBulletMarkTarget,
+	getBulletMarkThreshold,
 	getBulletMarkValueLabel,
 	getBulletMarks,
 	getBulletScales,
@@ -61,6 +64,10 @@ describe('getBulletMarks', () => {
 				thresholds: undefined,
 				thresholdConfig,
 			};
+
+			expect(props.thresholdConfig).toBeDefined();
+			expect(props.thresholdConfig.thresholds).toHaveLength(2);
+			expect(props.thresholdConfig.colors).toHaveLength(3);
 
 			const marksGroup = getBulletMarks(props);
 
