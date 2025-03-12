@@ -13,7 +13,7 @@
 import { ReactElement } from 'react';
 import { StoryFn } from '@storybook/react';
 import { Bullet } from '@rsc/alpha'; // Assuming Bullet chart is a component in the @rsc/rc library
-import { Chart, BulletProps, ChartProps } from '@rsc';
+import { Chart, BulletProps, ChartProps, Title } from '@rsc';
 import useChartProps from '@hooks/useChartProps';
 import { bindWithProps } from '@test-utils';
 import { basicBulletData } from './data';
@@ -41,6 +41,17 @@ const BulletStory: StoryFn<BulletProps & { width?: number; height?: number }> = 
     );
 };
 
+// Bullrt with Title 
+const BulletTitleStory: StoryFn<typeof Bullet> = (args): ReactElement => {
+    const chartProps = useChartProps({ ...defaultChartProps, width: 400 });
+    return (
+        <Chart {...chartProps} debug>
+            <Title text={'Title Bullet'} position={'start'} orient={'top'} />
+            <Bullet {...args} />
+        </Chart>
+    );
+};
+
 const Basic = bindWithProps(BulletStory);
 Basic.args = {
     metric: 'currentAmount',
@@ -50,4 +61,12 @@ Basic.args = {
     numberFormat: '$,.2f',
 };
 
-export { Basic };
+const WithTitle = bindWithProps(BulletTitleStory);
+WithTitle.args = {
+    metric: 'currentAmount',
+    dimension: 'graphLabel',
+    target: 'target',
+    color: 'red-500',
+    numberFormat: '$,.2f',
+};
+export { Basic, WithTitle };

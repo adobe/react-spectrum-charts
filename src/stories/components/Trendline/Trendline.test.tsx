@@ -160,9 +160,10 @@ describe('Trendline', () => {
 
 			const trendlines = await findAllMarksByGroupName(chart, 'scatter0Trendline0', 'line');
 			expect(trendlines).toHaveLength(3);
+
 			// if x2 is 0, then the trendline is vertical
 			expect(allElementsHaveAttributeValue(trendlines, 'x2', '0')).toBeTruthy();
-			expect(allElementsHaveAttributeValue(trendlines, 'y2', '-387')).toBeTruthy();
+			expect(allElementsHaveAttributeValue(trendlines, 'y2', '-405')).toBeTruthy();
 		});
 	});
 
