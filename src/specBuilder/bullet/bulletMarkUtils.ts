@@ -36,7 +36,6 @@ export function getBulletScales(props: BulletSpecProps): Scale[] {
 			zero: true,
 		},
 	];
-
 	return bulletScales;
 }
 
@@ -105,6 +104,7 @@ export function getBulletMarks(props: BulletSpecProps): GroupMark {
 			update: {
 				[markGroupEncodeUpdateDirection]: { scale: 'groupScale', field: `${props.dimension}` },
 				height: { signal: 'bulletGroupHeight' },
+				width: { signal: 'width' },
 			},
 		},
 		marks: [],

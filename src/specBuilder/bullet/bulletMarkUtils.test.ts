@@ -116,6 +116,42 @@ describe('getBulletMarks', () => {
 			const thresholdMark = marksGroup.marks?.find((mark) => mark.name === `${props.name}Threshold`);
 			expect(thresholdMark).toBeDefined();
 		});
+
+		test('Should include threshold data with proper values', () => {
+			const props = {
+				...samplePropsRow,
+				thresholds: undefined,
+				thresholdConfig: {
+					thresholds: [120, 235],
+					colors: ['rgb(234, 56, 41)', 'rgb(249, 137, 23)', 'rgb(21, 164, 110)'],
+				},
+				name: 'testBullet',
+			};
+
+			const marksGroup = getBulletMarks(props);
+
+			expect(marksGroup.encode?.update).toHaveProperty('width');
+			expect(marksGroup.encode?.update?.width).toEqual({ signal: 'width' });
+
+			expect(marksGroup.data).toBeDefined();
+			expect(marksGroup.data).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						name: 'thresholds',
+						values: expect.arrayContaining([
+							expect.objectContaining({
+								thresholdMin: expect.any(Number),
+								thresholdMax: expect.any(Number),
+							}),
+						]),
+					}),
+				])
+			);
+
+			const thresholdMark = marksGroup.marks?.find((mark) => mark.name === `${props.name}Threshold`);
+			expect(thresholdMark).toBeDefined();
+			expect(thresholdMark?.type).toBe('rect');
+		});
 	});
 });
 

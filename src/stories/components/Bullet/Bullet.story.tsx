@@ -25,9 +25,9 @@ export default {
 
 // Default chart properties
 const defaultChartProps: ChartProps = {
-    data: basicBulletData,
-    width: 350,
-    height: 350,
+	data: basicBulletData,
+	width: 350,
+	height: 350,
 };
 
 // Basic Bullet chart story
@@ -35,7 +35,7 @@ const BulletStory: StoryFn<BulletProps & { width?: number; height?: number }> = 
 	const { width, height, ...bulletProps } = args;
 	const chartProps = useChartProps({ ...defaultChartProps, width: width ?? 350, height: height ?? 350 });
 	return (
-		<Chart {...chartProps}>
+		<Chart {...chartProps} debug>
 			<Bullet {...bulletProps} />
 		</Chart>
 	);
@@ -46,24 +46,25 @@ Basic.args = {
 	metric: 'currentAmount',
 	dimension: 'graphLabel',
 	target: 'target',
+	thresholds: basicThresholdsData,
 	color: 'red-500',
-    direction: 'column',
+	direction: 'column',
 	numberFormat: '$,.2f',
-    showTarget: true,
-    showTargetValue: false,
+	showTarget: true,
+	showTargetValue: false,
 };
 
 const RowMode = bindWithProps(BulletStory);
 RowMode.args = {
 	metric: 'currentAmount',
-    dimension: 'graphLabel',
-    target: 'target',
-    thresholds: basicThresholdsData,
-    color: 'red-500',
-    direction: 'row',
-    numberFormat: '$,.2f',
-    showTarget: true,
-    showTargetValue: false,
+	dimension: 'graphLabel',
+	target: 'target',
+	thresholds: basicThresholdsData,
+	color: 'red-500',
+	direction: 'row',
+	numberFormat: '$,.2f',
+	showTarget: true,
+	showTargetValue: false,
 };
 
 export { Basic, RowMode };
