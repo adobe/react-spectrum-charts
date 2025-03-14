@@ -41,7 +41,7 @@ const BulletStory: StoryFn<BulletProps & { width?: number; height?: number }> = 
 	);
 };
 
-// Bullrt with Title 
+// Bullet with Title 
 const BulletTitleStory: StoryFn<typeof Bullet> = (args): ReactElement => {
     const chartProps = useChartProps({ ...defaultChartProps, width: 400 });
     return (
@@ -76,7 +76,7 @@ RowMode.args = {
     showTargetValue: false,
 };
 
-
+const WithTitle = bindWithProps(BulletTitleStory);
 WithTitle.args = {
     metric: 'currentAmount',
     dimension: 'graphLabel',
