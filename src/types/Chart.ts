@@ -222,15 +222,7 @@ export interface AreaProps extends MarkProps {
 	metricEnd?: string;
 }
 
-export interface DonutProps extends MarkProps {
-	/** Start angle of the donut in radians (0 is top dead center, and default) */
-	startAngle?: number;
-	/** Ratio of the donut inner radius / donut outer radius. 0 is a pie chart. 0.85 is the default. */
-	holeRatio?: number;
-	/** Determines if the center metric should be displayed as a percent. if true, data should only be two data points, which sum to 1
-	 * Also, if true, will display the first datapoint as a percent */
-	isBoolean?: boolean;
-}
+export type ThresholdBackground = { thresholdMin?: number; thresholdMax?: number; fill?: string };
 
 export interface BulletProps extends MarkProps {
 	/** Target line */
@@ -249,6 +241,45 @@ export interface BulletProps extends MarkProps {
 	 * see {@link https://d3js.org/d3-format#locale_format}
 	 */
 	numberFormat?: NumberFormat;
+	/** Array of threshold definitions to be rendered as background bands on the bullet chart.
+	 *
+	 *  Each threshold object supports:
+	 * `thresholdMin` (optional): The lower bound of the threshold. If undefined, the threshold starts from the beginning of the x-scale.
+	 *
+	 * `thresholdMax` (optional): The upper bound of the threshold. If undefined, the threshold extends to the end of the x-scale.
+	 *
+	 * `fill` : The fill color to use for the threshold background.
+	 */
+	thresholds?: ThresholdBackground[];
+	/**
+	 * A simplified threshold configuration that allows for defining thresholds using an array of numbers and corresponding colors.
+	 *
+	 * For example:
+	 * {
+	 *   `"thresholds"`: [120, 235],
+	 *   `"colors"`: ["rgb(234, 56, 41)", "rgb(249, 137, 23)", "rgb(21, 164, 110)"]
+	 * }
+	 *
+	 * Note: When both `thresholds` and `thresholdConfig` are provided, the detailed `thresholds` take precedence.
+	 */
+	thresholdConfig?: BulletThresholdConfig;
+}
+
+export interface BulletThresholdConfig {
+	/** Threshold boundaries, each number in the array represents a threshold value. */
+	thresholds: number[];
+	/** Threshold fill colors, each color corresponds to a threshold in the `thresholds` array. */
+	colors: string[];
+}
+
+export interface DonutProps extends MarkProps {
+	/** Start angle of the donut in radians (0 is top dead center, and default) */
+	startAngle?: number;
+	/** Ratio of the donut inner radius / donut outer radius. 0 is a pie chart. 0.85 is the default. */
+	holeRatio?: number;
+	/** Determines if the center metric should be displayed as a percent. if true, data should only be two data points, which sum to 1
+	 * Also, if true, will display the first datapoint as a percent */
+	isBoolean?: boolean;
 }
 
 export interface DonutSummaryProps {

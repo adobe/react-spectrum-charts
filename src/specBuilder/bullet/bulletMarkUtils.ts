@@ -13,6 +13,7 @@ import { Data, GroupMark, Mark, Scale, Signal } from 'vega';
 
 import { BulletSpecProps } from '../../types';
 import { getColorValue } from '../specUtils';
+import { getThresholdValues } from './bulletThresholdUtils';
 
 export function getBulletScales(props: BulletSpecProps): Scale[] {
 	const groupScaleRangeSignal = props.direction === 'column' ? 'height' : 'width';
@@ -35,7 +36,6 @@ export function getBulletScales(props: BulletSpecProps): Scale[] {
 			zero: true,
 		},
 	];
-
 	return bulletScales;
 }
 
@@ -59,9 +59,12 @@ export function getBulletSignals(props: BulletSpecProps): Signal[] {
 		bulletSignals.push({ name: 'height', update: 'bulletGroupHeight' });
 	}
 
-	if(props.showTargetValue && props.showTarget) {
-		bulletSignals.push({ name: "targetValueLabelHeight", update: "20"});
-		bulletSignals.push({ name: "bulletGroupHeight", update: "bulletThresholdHeight + targetValueLabelHeight + 24"});
+	if (props.showTargetValue && props.showTarget) {
+		bulletSignals.push({ name: 'targetValueLabelHeight', update: '20' });
+		bulletSignals.push({
+			name: 'bulletGroupHeight',
+			update: 'bulletThresholdHeight + targetValueLabelHeight + 24',
+		});
 	} else {
 		bulletSignals.push({ name: 'bulletGroupHeight', update: 'bulletThresholdHeight + 24' });
 	}
@@ -101,19 +104,32 @@ export function getBulletMarks(props: BulletSpecProps): GroupMark {
 			update: {
 				[markGroupEncodeUpdateDirection]: { scale: 'groupScale', field: `${props.dimension}` },
 				height: { signal: 'bulletGroupHeight' },
+				width: { signal: 'width' },
 			},
 		},
 		marks: [],
 	};
 
-  	bulletMark.marks?.push(getBulletMarkRect(props));
+	const thresholdValues = getThresholdValues(props);
+
+	if (thresholdValues) {
+		bulletMark.data = [
+			{
+				name: 'thresholds',
+				values: thresholdValues,
+				transform: [{ type: 'identifier', as: 'id' }],
+			},
+		];
+		bulletMark.marks?.push(getBulletMarkThreshold(props));
+	}
+
+	bulletMark.marks?.push(getBulletMarkRect(props));
 	if (props.target && props.showTarget !== false) {
 		bulletMark.marks?.push(getBulletMarkTarget(props));
 		if (props.showTargetValue) {
 			bulletMark.marks?.push(getBulletMarkTargetValueLabel(props));
 		}
 	}
-	
 	bulletMark.marks?.push(getBulletMarkLabel(props));
 	bulletMark.marks?.push(getBulletMarkValueLabel(props));
 
@@ -121,14 +137,16 @@ export function getBulletMarks(props: BulletSpecProps): GroupMark {
 }
 
 export function getBulletMarkRect(props: BulletSpecProps): Mark {
-
 	//The vertical positioning is calculated starting at the bulletgroupheight
-	//and then subtracting two times the bullet height to center the bullet bar 
+	//and then subtracting two times the bullet height to center the bullet bar
 	//in the middle of the threshold. The 3 is subtracted because the bulletgroup height
 	//starts the bullet below the threshold area.
 	//Additionally, the value of the targetValueLabelHeight is subtracted if the target value label is shown
 	//to make sure that the bullet bar is not drawn over the target value label.
-	const bulletMarkRectEncodeUpdateYSignal = (props.showTarget && props.showTargetValue) ? 'bulletGroupHeight - targetValueLabelHeight - 3 - 2 * bulletHeight' : 'bulletGroupHeight - 3 - 2 * bulletHeight';
+	const bulletMarkRectEncodeUpdateYSignal =
+		props.showTarget && props.showTargetValue
+			? 'bulletGroupHeight - targetValueLabelHeight - 3 - 2 * bulletHeight'
+			: 'bulletGroupHeight - 3 - 2 * bulletHeight';
 
 	const bulletMarkRect: Mark = {
 		name: `${props.name}Rect`,
@@ -160,8 +178,12 @@ export function getBulletMarkTarget(props: BulletSpecProps): Mark {
 
 	//When the target value label is shown, we must subtract the height of the target value label
 	//to make sure that the target line is not drawn over the target value label
-	const bulletMarkTargetEncodeUpdateY = (props.showTarget && props.showTargetValue) ? 'bulletGroupHeight - targetValueLabelHeight - targetHeight' : 'bulletGroupHeight - targetHeight';
-	const bulletMarkTargetEncodeUpdateY2 = (props.showTarget && props.showTargetValue) ? 'bulletGroupHeight - targetValueLabelHeight' : 'bulletGroupHeight';
+	const bulletMarkTargetEncodeUpdateY =
+		props.showTarget && props.showTargetValue
+			? 'bulletGroupHeight - targetValueLabelHeight - targetHeight'
+			: 'bulletGroupHeight - targetHeight';
+	const bulletMarkTargetEncodeUpdateY2 =
+		props.showTarget && props.showTargetValue ? 'bulletGroupHeight - targetValueLabelHeight' : 'bulletGroupHeight';
 
 	const bulletMarkTarget: Mark = {
 		name: `${props.name}Target`,
@@ -243,16 +265,58 @@ export function getBulletMarkTargetValueLabel(props: BulletSpecProps): Mark {
 		from: { data: 'bulletGroups' },
 		encode: {
 			enter: {
-				"text": {
-					"signal": `datum.${props.target} != null ? 'Target: ' + format(datum.${props.target}, '$,.2f') : 'No Target'`
+				text: {
+					signal: `datum.${props.target} != null ? 'Target: ' + format(datum.${props.target}, '$,.2f') : 'No Target'`,
 				},
 				align: { value: 'center' },
 				baseline: { value: 'top' },
 				fill: { value: `${solidColor}` },
 			},
-			update: { x: { scale: 'xscale', field: `${props.target}` }, y: { signal: 'bulletGroupHeight - targetValueLabelHeight + 6' } },
+			update: {
+				x: { scale: 'xscale', field: `${props.target}` },
+				y: { signal: 'bulletGroupHeight - targetValueLabelHeight + 6' },
+			},
 		},
 	};
 
 	return bulletMarkTargetValueLabel;
+}
+
+export function getBulletMarkThreshold(props: BulletSpecProps): Mark {
+	const bulletMarkThreshold: Mark = {
+		name: `${props.name}Threshold`,
+		description: `${props.name}Threshold`,
+		type: 'rect',
+		from: { data: 'thresholds' },
+		clip: true,
+		encode: {
+			enter: {
+				cornerRadiusTopLeft: [
+					{ test: `!isDefined(datum.thresholdMin) && domain('xscale')[0] !== 0`, value: 3 },
+				],
+				cornerRadiusBottomLeft: [
+					{ test: `!isDefined(datum.thresholdMin) && domain('xscale')[0] !== 0`, value: 3 },
+				],
+				cornerRadiusTopRight: [
+					{ test: `!isDefined(datum.thresholdMax) && domain('xscale')[1] !== 0`, value: 3 },
+				],
+				cornerRadiusBottomRight: [
+					{ test: `!isDefined(datum.thresholdMax) && domain('xscale')[1] !== 0`, value: 3 },
+				],
+				fill: { field: 'fill' },
+				fillOpacity: { value: 0.2 },
+			},
+			update: {
+				x: {
+					signal: "isDefined(datum.thresholdMin) ? scale('xscale', datum.thresholdMin) : 0",
+				},
+				x2: {
+					signal: "isDefined(datum.thresholdMax) ? scale('xscale', datum.thresholdMax) : width",
+				},
+				height: { signal: 'bulletThresholdHeight' },
+				y: { signal: 'bulletGroupHeight - 3 - bulletThresholdHeight' },
+			},
+		},
+	};
+	return bulletMarkThreshold;
 }
