@@ -9,48 +9,56 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
+import { DEFAULT_BULLET_DIRECTION, DEFAULT_COLOR_SCHEME } from '@constants';
+import { spectrumColors } from '@themes';
 import { toCamelCase } from '@utils';
-import { DEFAULT_COLOR_SCHEME } from '@constants';
 import { Spec } from 'vega';
-import { ColorScheme, BulletProps, BulletSpecProps } from '../../types';
+
+import { BulletProps, BulletSpecProps, ColorScheme } from '../../types';
 import { sanitizeMarkChildren } from '../../utils';
 import { getColorValue } from '../specUtils';
-import { spectrumColors } from '@themes';
-import { getBulletScales, getBulletSignals, getBulletData, getBulletMarks } from './bulletMarkUtils';
+import { getBulletData, getBulletMarks, getBulletScales, getBulletSignals } from './bulletMarkUtils';
 
-const DEFAULT_COLOR = spectrumColors.light['static-blue']
+const DEFAULT_COLOR = spectrumColors.light['static-blue'];
 
 export const addBullet = (
-    spec: Spec,
-    {
-        children,
-        colorScheme = DEFAULT_COLOR_SCHEME,
-        index = 0,
-        name,
-        metric,
-        dimension,
-        target,
-        color = DEFAULT_COLOR,
-        ...props
-    }: BulletProps & { colorScheme?: ColorScheme; index?: number; idKey: string }
+	spec: Spec,
+	{
+		children,
+		colorScheme = DEFAULT_COLOR_SCHEME,
+		index = 0,
+		name,
+		metric,
+		dimension,
+		target,
+		color = DEFAULT_COLOR,
+		direction = DEFAULT_BULLET_DIRECTION,
+		numberFormat,
+		showTarget = true,
+		showTargetValue = false,
+		...props
+	}: BulletProps & { colorScheme?: ColorScheme; index?: number; idKey: string }
 ): Spec => {
-    const bulletProps: BulletSpecProps = {
-        children: sanitizeMarkChildren(children),
-        colorScheme: colorScheme,
-        index,
-        color: getColorValue(color, colorScheme),
-        metric: metric ?? 'currentAmount',
-        dimension: dimension ?? 'graphLabel',
-        target: target ?? 'target',
-        name: toCamelCase(name ?? `bullet${index}`),
-        ...props,
-    };
-    return {
-        ...spec,
-        data: getBulletData(bulletProps),
-        marks: [getBulletMarks(bulletProps)],
-        scales: getBulletScales(bulletProps),
-        signals: getBulletSignals()
-    };
+	const bulletProps: BulletSpecProps = {
+		children: sanitizeMarkChildren(children),
+		colorScheme: colorScheme,
+		index,
+		color: getColorValue(color, colorScheme),
+		metric: metric ?? 'currentAmount',
+		dimension: dimension ?? 'graphLabel',
+		target: target ?? 'target',
+		name: toCamelCase(name ?? `bullet${index}`),
+		direction: direction,
+		numberFormat: numberFormat ?? '',
+		showTarget: showTarget,
+		showTargetValue: showTargetValue,
+		...props,
+	};
+	return {
+		...spec,
+		data: getBulletData(bulletProps),
+		marks: [getBulletMarks(bulletProps)],
+		scales: getBulletScales(bulletProps),
+		signals: getBulletSignals(bulletProps),
+	};
 };
