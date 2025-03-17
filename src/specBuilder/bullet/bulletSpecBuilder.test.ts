@@ -27,6 +27,7 @@ export const samplePropsColumn: BulletSpecProps = {
 	direction: 'column',
 	showTarget: true,
 	showTargetValue: false,
+	labelPosition: 'top',
 };
 
 export const samplePropsRow: BulletSpecProps = {
@@ -42,6 +43,7 @@ export const samplePropsRow: BulletSpecProps = {
 	direction: 'row',
 	showTarget: true,
 	showTargetValue: false,
+	labelPosition: 'top',
 };
 
 describe('addBullet', () => {

@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { DEFAULT_BULLET_DIRECTION, DEFAULT_COLOR_SCHEME } from '@constants';
+import { DEFAULT_BULLET_DIRECTION, DEFAULT_COLOR_SCHEME, DEFAULT_LABEL_POSITION } from '@constants';
 import { spectrumColors } from '@themes';
 import { toCamelCase } from '@utils';
 import { Spec } from 'vega';
@@ -17,7 +17,7 @@ import { Spec } from 'vega';
 import { BulletProps, BulletSpecProps, ColorScheme } from '../../types';
 import { sanitizeMarkChildren } from '../../utils';
 import { getColorValue } from '../specUtils';
-import { getBulletData, getBulletMarks, getBulletScales, getBulletSignals } from './bulletMarkUtils';
+import { getBulletData, getBulletMarks, getBulletScales, getBulletSignals, getBulletAxes } from './bulletMarkUtils';
 
 const DEFAULT_COLOR = spectrumColors.light['static-blue'];
 
@@ -36,6 +36,7 @@ export const addBullet = (
 		numberFormat,
 		showTarget = true,
 		showTargetValue = false,
+		labelPosition = DEFAULT_LABEL_POSITION,
 		...props
 	}: BulletProps & { colorScheme?: ColorScheme; index?: number; idKey: string }
 ): Spec => {
@@ -52,13 +53,17 @@ export const addBullet = (
 		numberFormat: numberFormat ?? '',
 		showTarget: showTarget,
 		showTargetValue: showTargetValue,
+		labelPosition: labelPosition,
 		...props,
 	};
+	console.log(bulletProps.labelPosition);
+
 	return {
 		...spec,
 		data: getBulletData(bulletProps),
 		marks: [getBulletMarks(bulletProps)],
 		scales: getBulletScales(bulletProps),
 		signals: getBulletSignals(bulletProps),
+		axes: getBulletAxes(bulletProps),
 	};
 };
