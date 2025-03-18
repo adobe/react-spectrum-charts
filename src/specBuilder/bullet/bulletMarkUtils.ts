@@ -66,10 +66,10 @@ export function getBulletSignals(props: BulletSpecProps): Signal[] {
 		}else{
 			bulletSignals.push({ name: "bulletGroupHeight", update: "bulletThresholdHeight + targetValueLabelHeight + 24"});
 		}
-	} else if(props.labelPosition === 'top'){
-		bulletSignals.push({ name: "bulletGroupHeight", update: "bulletThresholdHeight + 24"});
-	} else{
+	} else if(props.labelPosition === 'side' && props.direction === 'column'){
 		bulletSignals.push({ name: "bulletGroupHeight", update: "bulletThresholdHeight + 10"});
+	} else {
+		bulletSignals.push({ name: "bulletGroupHeight", update: "bulletThresholdHeight + 24"});
 	}
 
 	return bulletSignals;
@@ -298,5 +298,5 @@ export function getBulletAxes(props: BulletSpecProps): Axis[] {
 		}
 	]
 	
-	return (props.labelPosition === 'top' && props.direction === 'column') ? [] : bulletAxes;
+	return (props.labelPosition === 'side' && props.direction === 'column') ? bulletAxes : [];
 }
