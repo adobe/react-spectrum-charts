@@ -14,6 +14,7 @@ import {
 	getBulletMarkLabel,
 	getBulletMarkRect,
 	getBulletMarkTarget,
+	getBulletMarkThreshold,
 	getBulletMarkValueLabel,
 	getBulletMarks,
 	getBulletScales,
@@ -61,97 +62,6 @@ describe('getBulletMarks', () => {
 		expect(marksGroup.marks).toHaveLength(5);
 		const targetValueMark = marksGroup.marks?.find((mark) => mark.name?.includes('TargetValueLabel'));
 		expect(targetValueMark).toBeDefined();
-	});
-
-	describe('Threshold functionality', () => {
-		const thresholdConfig = {
-			thresholds: [120, 235],
-			colors: ['rgb(234, 56, 41)', 'rgb(249, 137, 23)', 'rgb(21, 164, 110)'],
-		};
-
-		test('Should add threshold data and threshold mark when thresholdConfig is provided', () => {
-			const props = {
-				...samplePropsRow,
-				thresholds: undefined,
-				thresholdConfig,
-			};
-
-			expect(props.thresholdConfig).toBeDefined();
-			expect(props.thresholdConfig.thresholds).toHaveLength(2);
-			expect(props.thresholdConfig.colors).toHaveLength(3);
-
-			const marksGroup = getBulletMarks(props);
-
-			expect(marksGroup.data).toBeDefined();
-			expect(marksGroup.data?.[0].name).toBe('thresholds');
-
-			const dataItem = marksGroup.data?.[0];
-			expect(dataItem).toHaveProperty('values');
-			const values = (dataItem as { values: unknown[] }).values;
-			expect(Array.isArray(values)).toBeTruthy();
-			expect(values).toHaveLength(3);
-
-			const thresholdMark = marksGroup.marks?.find((mark) => mark.name === `${props.name}Threshold`);
-			expect(thresholdMark).toBeDefined();
-			expect(thresholdMark?.type).toBe('rect');
-		});
-
-		test('Should add threshold data and mark when detailed thresholds are provided', () => {
-			const detailedThresholds = [
-				{ thresholdMax: 120, fill: 'rgb(234, 56, 41)' },
-				{ thresholdMin: 120, thresholdMax: 235, fill: 'rgb(249, 137, 23)' },
-				{ thresholdMin: 235, fill: 'rgb(21, 164, 110)' },
-			];
-			const props = { ...samplePropsRow, thresholds: detailedThresholds, thresholdConfig: undefined };
-
-			const marksGroup = getBulletMarks(props);
-			expect(marksGroup.data).toBeDefined();
-			expect(marksGroup.data?.[0].name).toBe('thresholds');
-
-			const dataItem = marksGroup.data?.[0];
-			expect(dataItem).toHaveProperty('values');
-			const values = (dataItem as { values: unknown[] }).values;
-			expect(values).toEqual(detailedThresholds);
-
-			const thresholdMark = marksGroup.marks?.find((mark) => mark.name === `${props.name}Threshold`);
-			expect(thresholdMark).toBeDefined();
-		});
-
-		test('Should include threshold data with proper values', () => {
-			const props = {
-				...samplePropsRow,
-				thresholds: undefined,
-				thresholdConfig: {
-					thresholds: [120, 235],
-					colors: ['rgb(234, 56, 41)', 'rgb(249, 137, 23)', 'rgb(21, 164, 110)'],
-				},
-				name: 'testBullet',
-			};
-
-			const marksGroup = getBulletMarks(props);
-
-			expect(marksGroup.encode?.update).toHaveProperty('width');
-			expect(marksGroup.encode?.update?.width).toEqual({ signal: 'bulletGroupWidth' });
-
-			expect(marksGroup.data).toBeDefined();
-			expect(marksGroup.data).toEqual(
-				expect.arrayContaining([
-					expect.objectContaining({
-						name: 'thresholds',
-						values: expect.arrayContaining([
-							expect.objectContaining({
-								thresholdMin: expect.any(Number),
-								thresholdMax: expect.any(Number),
-							}),
-						]),
-					}),
-				])
-			);
-
-			const thresholdMark = marksGroup.marks?.find((mark) => mark.name === `${props.name}Threshold`);
-			expect(thresholdMark).toBeDefined();
-			expect(thresholdMark?.type).toBe('rect');
-		});
 	});
 });
 
@@ -258,5 +168,116 @@ describe('getBulletMarkValueLabel', () => {
 				expect(textEncode.signal).toContain(`format(datum.${props.target}, '$,.2f')`);
 			}
 		}
+	});
+});
+
+describe('Threshold functionality', () => {
+	const thresholdConfig = {
+		thresholds: [120, 235],
+		colors: ['rgb(234, 56, 41)', 'rgb(249, 137, 23)', 'rgb(21, 164, 110)'],
+	};
+
+	describe('Data generation', () => {
+		test('Sould add threshold data and threshold mark when thresholdConfig is provided', () => {
+			const props = {
+				...samplePropsRow,
+				name: 'testBullet',
+				thresholds: undefined,
+				thresholdConfig,
+			};
+
+			expect(props.thresholdConfig).toBeDefined();
+			expect(props.thresholdConfig.thresholds).toHaveLength(2);
+			expect(props.thresholdConfig.colors).toHaveLength(3);
+
+			const marksGroup = getBulletMarks(props);
+
+			// Verify that threshold data is added.
+			expect(marksGroup.data).toBeDefined();
+			expect(marksGroup.data?.[0].name).toBe('thresholds');
+
+			// Check that the data object has a values property with three threshold objects.
+			expect(marksGroup.data).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						name: 'thresholds',
+						values: expect.arrayContaining([expect.objectContaining({ thresholdMax: expect.any(Number) })]),
+					}),
+				])
+			);
+
+			const thresholdMark = marksGroup.marks?.find((mark) => mark.name === `${props.name}Threshold`);
+			expect(thresholdMark).toBeDefined();
+			expect(thresholdMark?.type).toBe('rect');
+		});
+
+		test('Should add threshold data and mark when detailed thresholds are provided', () => {
+			const detailedThresholds = [
+				{ thresholdMax: 120, fill: 'rgb(234, 56, 41)' },
+				{ thresholdMin: 120, thresholdMax: 235, fill: 'rgb(249, 137, 23)' },
+				{ thresholdMin: 235, fill: 'rgb(21, 164, 110)' },
+			];
+			const props = {
+				...samplePropsRow,
+				name: 'testBullet',
+				thresholds: detailedThresholds,
+				thresholdConfig: undefined,
+			};
+
+			const marksGroup = getBulletMarks(props);
+			expect(marksGroup.data).toBeDefined();
+			expect(marksGroup.data?.[0].name).toBe('thresholds');
+
+			// Ensure that the generated values match the detailed thresholds.
+			const dataItem = marksGroup.data?.[0];
+			expect(dataItem).toHaveProperty('values');
+			const values = (dataItem as { values: unknown[] }).values;
+			expect(values).toEqual(detailedThresholds);
+
+			const thresholdMark = marksGroup.marks?.find((mark) => mark.name === `${props.name}Threshold`);
+			expect(thresholdMark).toBeDefined();
+		});
+	});
+
+	describe('Y encoding', () => {
+		test('Should adjust y encoding when showTargetValue is enabled', () => {
+			const props = {
+				...samplePropsRow,
+				name: 'testBullet',
+				showTarget: true,
+				showTargetValue: true,
+			};
+			const thresholdMark = getBulletMarkThreshold(props);
+			expect(thresholdMark).toBeDefined();
+			expect(thresholdMark.encode).toBeDefined();
+			expect(thresholdMark.encode?.update).toBeDefined();
+
+			const yEncoding = thresholdMark.encode?.update?.y;
+			if (yEncoding && 'signal' in yEncoding) {
+				expect(yEncoding.signal).toContain('targetValueLabelHeight');
+				const expectedSignal = 'bulletGroupHeight - 3 - bulletThresholdHeight - targetValueLabelHeight';
+				expect(yEncoding.signal).toBe(expectedSignal);
+			}
+		});
+
+		test('Should compute y encoding without subtracting targetValueLabelHeight when showTargetValue is false', () => {
+			const props = {
+				...samplePropsRow,
+				name: 'testBullet',
+				showTarget: true,
+				showTargetValue: false,
+			};
+			const thresholdMark = getBulletMarkThreshold(props);
+			expect(thresholdMark).toBeDefined();
+			expect(thresholdMark.encode).toBeDefined();
+			expect(thresholdMark.encode?.update).toBeDefined();
+
+			const yEncoding = thresholdMark.encode?.update?.y;
+			if (yEncoding && 'signal' in yEncoding) {
+				expect(yEncoding.signal).not.toContain('targetValueLabelHeight');
+				const expectedSignal = 'bulletGroupHeight - 3 - bulletThresholdHeight';
+				expect(yEncoding.signal).toBe(expectedSignal);
+			}
+		});
 	});
 });

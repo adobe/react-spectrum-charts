@@ -256,8 +256,8 @@ export interface BulletProps extends MarkProps {
 	 *
 	 * For example:
 	 * {
-	 *   `"thresholds"`: [120, 235],
-	 *   `"colors"`: ["rgb(234, 56, 41)", "rgb(249, 137, 23)", "rgb(21, 164, 110)"]
+	 *   `thresholds`: [120, 235],
+	 *   `colors`: ["rgb(234, 56, 41)", "rgb(249, 137, 23)", "rgb(21, 164, 110)"]
 	 * }
 	 *
 	 * Note: When both `thresholds` and `thresholdConfig` are provided, the detailed `thresholds` take precedence.
