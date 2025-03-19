@@ -93,6 +93,7 @@ export function getBulletData(props: BulletSpecProps): Data[] {
 
 export function getBulletMarks(props: BulletSpecProps): GroupMark {
 	const markGroupEncodeUpdateDirection = props.direction === 'column' ? 'y' : 'x';
+	const bulletGroupWidth = props.direction === 'column' ? 'width' : 'bulletGroupWidth';
 
 	const bulletMark: GroupMark = {
 		name: 'bulletGroup',
@@ -104,7 +105,7 @@ export function getBulletMarks(props: BulletSpecProps): GroupMark {
 			update: {
 				[markGroupEncodeUpdateDirection]: { scale: 'groupScale', field: `${props.dimension}` },
 				height: { signal: 'bulletGroupHeight' },
-				width: { signal: 'width' },
+				width: { signal: bulletGroupWidth },
 			},
 		},
 		marks: [],
@@ -283,6 +284,10 @@ export function getBulletMarkTargetValueLabel(props: BulletSpecProps): Mark {
 }
 
 export function getBulletMarkThreshold(props: BulletSpecProps): Mark {
+	const encodeUpdateYSignal = props.showTargetValue
+		? 'bulletGroupHeight - 3 - bulletThresholdHeight - targetValueLabelHeight'
+		: 'bulletGroupHeight - 3 - bulletThresholdHeight';
+
 	const bulletMarkThreshold: Mark = {
 		name: `${props.name}Threshold`,
 		description: `${props.name}Threshold`,
@@ -314,7 +319,7 @@ export function getBulletMarkThreshold(props: BulletSpecProps): Mark {
 					signal: "isDefined(datum.thresholdMax) ? scale('xscale', datum.thresholdMax) : width",
 				},
 				height: { signal: 'bulletThresholdHeight' },
-				y: { signal: 'bulletGroupHeight - 3 - bulletThresholdHeight' },
+				y: { signal: encodeUpdateYSignal },
 			},
 		},
 	};

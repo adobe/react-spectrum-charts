@@ -131,7 +131,7 @@ describe('getBulletMarks', () => {
 			const marksGroup = getBulletMarks(props);
 
 			expect(marksGroup.encode?.update).toHaveProperty('width');
-			expect(marksGroup.encode?.update?.width).toEqual({ signal: 'width' });
+			expect(marksGroup.encode?.update?.width).toEqual({ signal: 'bulletGroupWidth' });
 
 			expect(marksGroup.data).toBeDefined();
 			expect(marksGroup.data).toEqual(
