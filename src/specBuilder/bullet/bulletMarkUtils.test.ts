@@ -68,7 +68,7 @@ describe('getBulletMarks', () => {
 describe('getBulletData', () => {
 	test('Should return the data object', () => {
 		const data = addBulletData([], samplePropsColumn);
-		expect(data).toHaveLength(0);
+		expect(data).toHaveLength(1);
 	});
 });
 

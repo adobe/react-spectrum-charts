@@ -9,11 +9,13 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { TABLE } from '@constants';
 import { produce } from 'immer';
 import { Data, GroupMark, Mark, Scale, Signal } from 'vega';
 
 import { BulletSpecProps } from '../../types';
 import { getColorValue } from '../specUtils';
+import { getBulletTableData } from './bulletSummaryUtils';
 import { getThresholdValues } from './bulletThresholdUtils';
 
 export const addBulletScales = produce<Scale[], [BulletSpecProps]>((scales, props) => {
@@ -72,30 +74,16 @@ export const addBulletSignals = produce<Signal[], [BulletSpecProps]>((signals, p
 
 export const addBulletData = produce<Data[], [BulletSpecProps]>((data, props) => {
 	//We are multiplying the target by 1.05 to make sure that the target line is never at the very end of the graph
-	const hasExistingTable = data.some((d) => d.name === 'table');
+	const tableData = getBulletTableData(data);
+	tableData.values = props.children?.length ? props.children : [];
 
-	if (!hasExistingTable && props.children?.length > 0) {
-		data.push({
-			name: 'table',
-			values: props.children,
-			transform: [
-				{
-					type: 'formula',
-					expr: `round(datum.${props.target} * 1.05)`,
-					as: 'xPaddingForTarget',
-				},
-			],
-		});
-	}
-
-	console.log(
-		'Table Data:',
-		JSON.stringify(
-			data.find((d) => d.name === 'table'),
-			null,
-			2
-		)
-	);
+	tableData.transform = [
+		{
+			type: 'formula',
+			expr: `isValid(datum.${props.target}) ? round(datum.${props.target} * 1.05) : 0`,
+			as: 'xPaddingForTarget',
+		},
+	];
 });
 
 export function getBulletMarks(props: BulletSpecProps): GroupMark {
