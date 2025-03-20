@@ -30,10 +30,14 @@ export const addBulletScales = produce<Scale[], [BulletSpecProps]>((scales, prop
 	scales.push({
 		name: 'xscale',
 		type: 'linear',
-		domain: { data: 'table', fields: ['xPaddingForTarget', props.metric] },
+		domain: {
+			data: 'table',
+			fields: ['xPaddingForTarget', props.metric],
+		},
 		range: xRange,
 		round: true,
 		zero: true,
+		nice: true,
 	});
 });
 
@@ -66,12 +70,14 @@ export const addBulletSignals = produce<Signal[], [BulletSpecProps]>((signals, p
 	}
 });
 
-export function getBulletData(props: BulletSpecProps): Data[] {
+export const addBulletData = produce<Data[], [BulletSpecProps]>((data, props) => {
 	//We are multiplying the target by 1.05 to make sure that the target line is never at the very end of the graph
-	const bulletData: Data[] = [
-		{
+	const hasExistingTable = data.some((d) => d.name === 'table');
+
+	if (!hasExistingTable && props.children?.length > 0) {
+		data.push({
 			name: 'table',
-			values: [],
+			values: props.children,
 			transform: [
 				{
 					type: 'formula',
@@ -79,11 +85,18 @@ export function getBulletData(props: BulletSpecProps): Data[] {
 					as: 'xPaddingForTarget',
 				},
 			],
-		},
-	];
+		});
+	}
 
-	return bulletData;
-}
+	console.log(
+		'Table Data:',
+		JSON.stringify(
+			data.find((d) => d.name === 'table'),
+			null,
+			2
+		)
+	);
+});
 
 export function getBulletMarks(props: BulletSpecProps): GroupMark {
 	const markGroupEncodeUpdateDirection = props.direction === 'column' ? 'y' : 'x';
