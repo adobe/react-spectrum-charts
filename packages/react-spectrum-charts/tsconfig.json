@@ -5,6 +5,12 @@
 		"outDir": "./dist",
 		"declarationDir": "./dist/@types/"
 	},
-	"include": ["src/**/*.ts", "src/**/*.tsx", "../constants/index.ts"],
-	"exclude": ["node_modules", "dist", "dist-storybook"]
+	"include": ["src/**/*.ts", "src/**/*.tsx"],
+	"exclude": ["node_modules", "dist", "dist-storybook", "*.test.ts", "src/stories/**/*"],
+	"references": [
+		{ "path": "../constants" },
+		{ "path": "../themes" },
+		{ "path": "../vega-spec-builder" },
+		{ "path": "../utils" }
+	]
 }

@@ -12,10 +12,11 @@
 import { ColorValueRef, GroupMark, NumericValueRef, ProductionRule, RectMark, SymbolMark, TextMark } from 'vega';
 
 import { TRENDLINE_VALUE } from '@spectrum-charts/constants';
+import { getColorValue } from '@spectrum-charts/themes';
 
 import { getColorProductionRule, getColorProductionRuleSignalString } from '../marks/markUtils';
 import { getScaleName } from '../scale/scaleSpecBuilder';
-import { getColorValue, getLineWidthPixelsFromLineWidth } from '../specUtils';
+import { getLineWidthPixelsFromLineWidth } from '../specUtils';
 import {
 	getEndDimensionExtentProductionRule,
 	getStartDimensionExtentProductionRule,

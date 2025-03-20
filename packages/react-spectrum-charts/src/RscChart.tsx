@@ -25,9 +25,8 @@ import {
 	SELECTED_SERIES,
 	SERIES_ID,
 } from '@spectrum-charts/constants';
-import { getChartConfig } from '@spectrum-charts/themes';
+import { getChartConfig, getColorValue } from '@spectrum-charts/themes';
 import { ColorScheme, Datum, LegendDescription, MarkBounds } from '@spectrum-charts/vega-spec-builder';
-import { getColorValue } from '@spectrum-charts/vega-spec-builder';
 
 import './Chart.css';
 import { VegaChart } from './VegaChart';

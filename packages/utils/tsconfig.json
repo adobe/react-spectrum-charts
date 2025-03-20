@@ -4,8 +4,8 @@
 		"outDir": "./dist",
 		"rootDir": ".",
 		"composite": true,
-		"declaration": true,
-		"declarationMap": true
+		"declarationDir": "./dist/@types/"
 	},
+	"exclude": ["*.test.ts"],
 	"include": ["*.ts"]
 }

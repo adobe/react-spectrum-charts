@@ -18,9 +18,9 @@ import {
 	DEFAULT_AXIS_ANNOTATION_OFFSET,
 	FILTERED_TABLE,
 } from '@spectrum-charts/constants';
+import { getColorValue } from '@spectrum-charts/themes';
 
 import { getCursor } from '../marks/markUtils';
-import { getColorValue } from '../specUtils';
 import { AxisAnnotationOptions, AxisAnnotationSpecOptions, AxisSpecOptions, ColorScheme, Position } from '../types';
 
 /**

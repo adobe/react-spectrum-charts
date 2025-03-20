@@ -19,12 +19,14 @@ import {
 	DEFAULT_SYMBOL_STROKE_WIDTH,
 	ROUNDED_SQUARE_PATH,
 } from '@spectrum-charts/constants';
-import { ColorScheme, getColorValue } from '@spectrum-charts/vega-spec-builder';
 
 import { categorical16 } from './categoricalColorPalette';
 import { divergentOrangeYellowSeafoam15 } from './divergingColorPalette';
 import { sequentialViridis16 } from './sequentialColorPalette';
 import { spectrumColors } from './spectrumColors';
+import { getColorValue } from './utils';
+
+type ColorScheme = 'light' | 'dark';
 
 export const ADOBE_CLEAN_FONT =
 	"adobe-clean, 'Source Sans Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Ubuntu, 'Trebuchet MS', 'Lucida Grande', sans-serif";

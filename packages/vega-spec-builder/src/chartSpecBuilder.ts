@@ -35,7 +35,7 @@ import {
 	SYMBOL_SIZE_SCALE,
 	TABLE,
 } from '@spectrum-charts/constants';
-import { colorSchemes } from '@spectrum-charts/themes';
+import { colorSchemes, getColorValue } from '@spectrum-charts/themes';
 
 import { addArea } from './area/areaSpecBuilder';
 import { addAxis } from './axis/axisSpecBuilder';
@@ -50,7 +50,6 @@ import { getOrdinalScale } from './scale/scaleSpecBuilder';
 import { addScatter } from './scatter/scatterSpecBuilder';
 import { getGenericValueSignal } from './signal/signalSpecBuilder';
 import {
-	getColorValue,
 	getFacetsFromScales,
 	getLineWidthPixelsFromLineWidth,
 	getPathFromSymbolShape,

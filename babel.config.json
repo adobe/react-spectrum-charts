@@ -23,15 +23,6 @@
 				"useESModules": true,
 				"regenerator": false
 			}
-		],
-		[
-			"module-resolver",
-			{
-				"root": ["./packages"],
-				"alias": {
-					"@adobe/react-spectrum-charts": "./packages/react-spectrum-charts/src"
-				}
-			}
 		]
 	],
 	"env": {

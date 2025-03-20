@@ -13,8 +13,8 @@ import { useMemo } from 'react';
 
 import { Data, Spec, ValuesData } from 'vega';
 
-import { ChartSpecOptions, buildSpec } from '@spectrum-charts/vega-spec-builder';
-import { baseData, getColorValue } from '@spectrum-charts/vega-spec-builder';
+import { getColorValue } from '@spectrum-charts/themes';
+import { ChartSpecOptions, baseData, buildSpec } from '@spectrum-charts/vega-spec-builder';
 
 import { rscPropsToSpecBuilderOptions } from '../rscToSbAdapter';
 import { ChartData, SanitizedSpecProps } from '../types';

@@ -23,8 +23,8 @@ import {
 	DEFAULT_LOCALE,
 	MARK_ID,
 } from '@spectrum-charts/constants';
+import { getColorValue } from '@spectrum-charts/themes';
 import { LineType } from '@spectrum-charts/vega-spec-builder';
-import { getColorValue } from '@spectrum-charts/vega-spec-builder';
 
 import './Chart.css';
 import { RscChart } from './RscChart';

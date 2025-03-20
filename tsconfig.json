@@ -24,6 +24,6 @@
 			"@vega-spec-builder/*": ["packages/vega-spec-builder/src/*"]
 		}
 	},
-	"include": ["packages"],
+	"include": ["packages", "packages/constants/webpack.config.js"],
 	"exclude": ["node_modules", "dist", "dist-storybook"]
 }

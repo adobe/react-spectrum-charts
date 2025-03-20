@@ -18,6 +18,7 @@ import {
 	SELECTED_GROUP,
 	SELECTED_ITEM,
 } from '@spectrum-charts/constants';
+import { getColorValue } from '@spectrum-charts/themes';
 
 import {
 	getColorProductionRule,
@@ -27,7 +28,6 @@ import {
 	getYProductionRule,
 	hasPopover,
 } from '../marks/markUtils';
-import { getColorValue } from '../specUtils';
 import { LineSpecOptions, ProductionRuleTests } from '../types';
 import { LineMarkOptions } from './lineUtils';
 

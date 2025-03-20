@@ -25,13 +25,12 @@ import {
 	SENTIMENT_POSITIVE_PATH,
 	TABLE,
 } from '@spectrum-charts/constants';
-import { spectrumColors } from '@spectrum-charts/themes';
+import { getColorValue } from '@spectrum-charts/themes';
 
 import {
 	ChartSpecOptions,
 	ChartSymbolShape,
 	ColorFacet,
-	ColorScheme,
 	DualFacet,
 	Icon,
 	LineType,
@@ -39,7 +38,6 @@ import {
 	LineWidth,
 	NumberFormat,
 	OpacityFacet,
-	SpectrumColor,
 	SymbolSize,
 	SymbolSizeFacet,
 } from './types';
@@ -100,16 +98,6 @@ export const getFacetsFromScales = (scales: Scale[] = []): string[] => {
 
 	// only want the unique facets
 	return [...new Set(facets)];
-};
-
-/**
- * gets the css color string from a spectrum color or a css color string
- * @param color
- * @param colorScheme
- * @returns css color string
- */
-export const getColorValue = (color: SpectrumColor | string, colorScheme: ColorScheme): string => {
-	return spectrumColors[colorScheme][color] || color;
 };
 
 /**

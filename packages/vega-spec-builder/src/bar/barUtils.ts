@@ -28,6 +28,7 @@ import {
 	SELECTED_ITEM,
 	STACK_ID,
 } from '@spectrum-charts/constants';
+import { getColorValue } from '@spectrum-charts/themes';
 
 import { getPopovers } from '../chartPopover/chartPopoverUtils';
 import {
@@ -39,7 +40,7 @@ import {
 	getTooltip,
 	hasPopover,
 } from '../marks/markUtils';
-import { getColorValue, getLineWidthPixelsFromLineWidth } from '../specUtils';
+import { getLineWidthPixelsFromLineWidth } from '../specUtils';
 import { BarSpecOptions, Orientation } from '../types';
 import { getTrellisProperties, isTrellised } from './trellisedBarUtils';
 

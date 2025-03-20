@@ -21,16 +21,12 @@ import {
 	SYMBOL_SHAPE_SCALE,
 	SYMBOL_SIZE_SCALE,
 } from '@spectrum-charts/constants';
+import { getColorValue } from '@spectrum-charts/themes';
 
 import { getTableData } from '../data/dataUtils';
 import { addFieldToFacetScaleDomain } from '../scale/scaleSpecBuilder';
 import { addHighlighSignalLegendHoverEvents, getGenericValueSignal } from '../signal/signalSpecBuilder';
-import {
-	getColorValue,
-	getLineWidthPixelsFromLineWidth,
-	getPathFromSymbolShape,
-	getStrokeDashFromLineType,
-} from '../specUtils';
+import { getLineWidthPixelsFromLineWidth, getPathFromSymbolShape, getStrokeDashFromLineType } from '../specUtils';
 import {
 	ColorFacet,
 	ColorScheme,

@@ -21,10 +21,11 @@ import {
 	SELECTED_SERIES,
 	SYMBOL_PATH_WIDTH_SCALE,
 } from '@spectrum-charts/constants';
+import { getColorValue } from '@spectrum-charts/themes';
 
 import { getXProductionRule } from '../marks/markUtils';
 import { addFieldToFacetScaleDomain } from '../scale/scaleSpecBuilder';
-import { getColorValue, getFacetsFromOptions, getLineWidthPixelsFromLineWidth } from '../specUtils';
+import { getFacetsFromOptions, getLineWidthPixelsFromLineWidth } from '../specUtils';
 import { LineWidthFacet, ScatterPathOptions, ScatterPathSpecOptions, ScatterSpecOptions } from '../types';
 
 /**

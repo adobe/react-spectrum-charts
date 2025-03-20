@@ -39,12 +39,12 @@ import {
 	SELECTED_ITEM,
 	SYMBOL_SIZE_SCALE,
 } from '@spectrum-charts/constants';
+import { getColorValue } from '@spectrum-charts/themes';
 
 import { addHighlightMarkOpacityRules } from '../chartTooltip/chartTooltipUtils';
 import { LineMarkOptions } from '../line/lineUtils';
 import { getScaleName } from '../scale/scaleSpecBuilder';
 import {
-	getColorValue,
 	getLineWidthPixelsFromLineWidth,
 	getStrokeDashFromLineType,
 	getVegaSymbolSizeFromRscSymbolSize,

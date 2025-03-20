@@ -1,6 +1,6 @@
 {
 	"name": "spectrum-charts-monorepo",
-	"version": "0.0.0",
+	"version": "0.0.1",
 	"private": true,
 	"workspaces": [
 		"packages/*"
@@ -68,8 +68,8 @@
 		"lint": "eslint packages --ext .ts,.tsx,.js,.jsx",
 		"ts": "yarn tsc",
 		"tsc": "tsc --noEmit --skipLibCheck",
-		"prepack": "yarn build",
-		"pack-test": "rm -rf dist & cross-env NODE_ENV=development npm pack",
+		"pack-test": "yarn workspaces run pack-test",
+		"pack": "yarn workspaces run pack",
 		"sonar": "node ./scripts/runSonarOnBranch.js",
 		"sonar-fork-pr": "node ./scripts/runSonarOnFork.js",
 		"start": "yarn storybook",

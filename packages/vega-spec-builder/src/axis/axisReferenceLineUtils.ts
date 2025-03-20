@@ -24,8 +24,9 @@ import {
 } from 'vega';
 
 import { DEFAULT_FONT_COLOR, DEFAULT_LABEL_FONT_WEIGHT } from '@spectrum-charts/constants';
+import { getColorValue } from '@spectrum-charts/themes';
 
-import { getColorValue, getPathFromIcon } from '../specUtils';
+import { getPathFromIcon } from '../specUtils';
 import { AxisSpecOptions, Position, ReferenceLineOptions, ReferenceLineSpecOptions } from '../types';
 import { isVerticalAxis } from './axisUtils';
 

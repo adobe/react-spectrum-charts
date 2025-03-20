@@ -37,9 +37,9 @@ import {
 	SYMBOL_SHAPE_SCALE,
 	SYMBOL_SIZE_SCALE,
 } from '@spectrum-charts/constants';
-import { spectrumColors } from '@spectrum-charts/themes';
+import { getColorValue, spectrumColors } from '@spectrum-charts/themes';
 
-import { getColorValue, getPathFromSymbolShape } from '../specUtils';
+import { getPathFromSymbolShape } from '../specUtils';
 import {
 	ColorValueV6,
 	FacetRef,

@@ -12,9 +12,9 @@
 import { ArcMark } from 'vega';
 
 import { DONUT_RADIUS, FILTERED_TABLE, SELECTED_ITEM } from '@spectrum-charts/constants';
+import { getColorValue } from '@spectrum-charts/themes';
 
 import { getColorProductionRule, getCursor, getMarkOpacity, getTooltip } from '../marks/markUtils';
-import { getColorValue } from '../specUtils';
 import { DonutSpecOptions } from '../types';
 
 export const getArcMark = (options: DonutSpecOptions): ArcMark => {
