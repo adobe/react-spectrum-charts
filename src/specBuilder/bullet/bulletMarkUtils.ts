@@ -15,7 +15,7 @@ import { Data, GroupMark, Mark, Scale, Signal } from 'vega';
 
 import { BulletSpecProps } from '../../types';
 import { getColorValue } from '../specUtils';
-import { getBulletTableData } from './bulletSummaryUtils';
+import { getBulletTableData, getBulletTransforms } from './bulletSummaryUtils';
 import { getThresholdValues } from './bulletThresholdUtils';
 
 export const addBulletScales = produce<Scale[], [BulletSpecProps]>((scales, props) => {
@@ -77,13 +77,7 @@ export const addBulletData = produce<Data[], [BulletSpecProps]>((data, props) =>
 	const tableData = getBulletTableData(data);
 	tableData.values = props.children?.length ? props.children : [];
 
-	tableData.transform = [
-		{
-			type: 'formula',
-			expr: `isValid(datum.${props.target}) ? round(datum.${props.target} * 1.05) : 0`,
-			as: 'xPaddingForTarget',
-		},
-	];
+	tableData.transform = getBulletTransforms(props);
 });
 
 export function getBulletMarks(props: BulletSpecProps): GroupMark {
