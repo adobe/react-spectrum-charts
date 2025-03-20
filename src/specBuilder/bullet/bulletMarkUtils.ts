@@ -284,9 +284,10 @@ export function getBulletMarkTargetValueLabel(props: BulletSpecProps): Mark {
 }
 
 export function getBulletMarkThreshold(props: BulletSpecProps): Mark {
-	const encodeUpdateYSignal = props.showTargetValue
-		? 'bulletGroupHeight - 3 - bulletThresholdHeight - targetValueLabelHeight'
-		: 'bulletGroupHeight - 3 - bulletThresholdHeight';
+	const encodeUpdateYSignal =
+		props.showTarget && props.showTargetValue
+			? 'bulletGroupHeight - 3 - bulletThresholdHeight - targetValueLabelHeight'
+			: 'bulletGroupHeight - 3 - bulletThresholdHeight';
 
 	const bulletMarkThreshold: Mark = {
 		name: `${props.name}Threshold`,

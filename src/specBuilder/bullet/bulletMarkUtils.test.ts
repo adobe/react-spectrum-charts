@@ -240,13 +240,16 @@ describe('Threshold functionality', () => {
 	});
 
 	describe('Y encoding', () => {
-		test('Should adjust y encoding when showTargetValue is enabled', () => {
+		test('Should adjust y encoding when showTarget and showTargetValue is enabled', () => {
 			const props = {
 				...samplePropsRow,
 				name: 'testBullet',
 				showTarget: true,
 				showTargetValue: true,
 			};
+			expect(props.showTarget).toBe(true);
+			expect(props.showTargetValue).toBe(true);
+
 			const thresholdMark = getBulletMarkThreshold(props);
 			expect(thresholdMark).toBeDefined();
 			expect(thresholdMark.encode).toBeDefined();
