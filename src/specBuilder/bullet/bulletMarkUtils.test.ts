@@ -10,6 +10,8 @@
  * governing permissions and limitations under the License.
  */
 import {
+	addBulletScales,
+	addBulletSignals,
 	getBulletData,
 	getBulletMarkLabel,
 	getBulletMarkRect,
@@ -17,8 +19,6 @@ import {
 	getBulletMarkThreshold,
 	getBulletMarkValueLabel,
 	getBulletMarks,
-	getBulletScales,
-	getBulletSignals,
 } from './bulletMarkUtils';
 import { samplePropsColumn, samplePropsRow } from './bulletSpecBuilder.test';
 
@@ -74,7 +74,7 @@ describe('getBulletData', () => {
 
 describe('getBulletScales', () => {
 	test('Should return the correct scales object for column mode', () => {
-		const data = getBulletScales(samplePropsColumn);
+		const data = addBulletScales([], samplePropsColumn);
 		expect(data).toBeDefined();
 		expect(data).toHaveLength(2);
 		expect('range' in data[0] && data[0].range && data[0].range[1]).toBeTruthy();
@@ -84,7 +84,7 @@ describe('getBulletScales', () => {
 	});
 
 	test('Should return the correct scales object for row mode', () => {
-		const data = getBulletScales(samplePropsRow);
+		const data = addBulletScales([], samplePropsRow);
 		expect(data).toBeDefined();
 		expect(data).toHaveLength(2);
 		expect('range' in data[0] && data[0].range && data[0].range[1]).toBeTruthy();
@@ -96,13 +96,13 @@ describe('getBulletScales', () => {
 
 describe('getBulletSignals', () => {
 	test('Should return the correct signals object in column mode', () => {
-		const data = getBulletSignals(samplePropsColumn);
+		const data = addBulletSignals([], samplePropsColumn);
 		expect(data).toBeDefined();
 		expect(data).toHaveLength(7);
 	});
 
 	test('Should return the correct signals object in row mode', () => {
-		const data = getBulletSignals(samplePropsRow);
+		const data = addBulletSignals([], samplePropsRow);
 		expect(data).toBeDefined();
 		expect(data).toHaveLength(8);
 	});
