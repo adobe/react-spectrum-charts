@@ -20,25 +20,7 @@ import {
 	getBulletSignals,
 } from './bulletMarkUtils';
 
-// import { BulletSpecProps } from '../../types';
-
 import { samplePropsColumn, samplePropsRow } from './bulletSpecBuilder.test';
-
-// export const samplePropsSideLabel: BulletSpecProps = {
-// 	children: [],
-// 	colorScheme: 'light',
-// 	index: 0,
-// 	color: 'green',
-// 	metric: 'currentAmount',
-// 	dimension: 'graphLabel',
-// 	target: 'target',
-// 	name: 'bullet0',
-// 	idKey: 'rscMarkId',
-// 	direction: 'column',
-// 	showTarget: true,
-// 	showTargetValue: true,
-// 	labelPosition: 'side',
-// };
 
 describe('getBulletMarks', () => {
 	test('Should return the correct marks object for column mode', () => {
