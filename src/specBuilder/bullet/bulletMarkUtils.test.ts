@@ -133,16 +133,22 @@ describe('getBulletSignals', () => {
 		expect(signals.find((signal) => signal.name === 'targetValueLabelHeight')).toBeDefined();
 	});
 
-	test('Should include targetValueLabelHeight signal when showTargetValue is true', () => {
+	test('Should include correct targetValueLabelHeight signal when showTargetValue is true', () => {
 		const props = { ...samplePropsColumn, showTarget: true, showTargetValue: true, labelPosition: "side" as "side" | "top" };
 		const signals = getBulletSignals(props);
 		expect(signals.find((signal) => signal.name === 'bulletGroupHeight')).toStrictEqual({"name": "bulletGroupHeight", "update": "bulletThresholdHeight + targetValueLabelHeight + 10"});
 	});
 
-	test('Should include targetValueLabelHeight signal when showTargetValue is true', () => {
+	test('Should include correct targetValueLabelHeight signal when showTargetValue is true', () => {
 		const props = { ...samplePropsColumn, showTarget: true, showTargetValue: true, labelPosition: "top" as "side" | "top" };
 		const signals = getBulletSignals(props);
 		expect(signals.find((signal) => signal.name === 'bulletGroupHeight')).toStrictEqual({"name": "bulletGroupHeight", "update": "bulletThresholdHeight + targetValueLabelHeight + 24"});
+	});
+
+	test('Should include correct targetValueLabelHeight signal when showTargetValue is true', () => {
+		const props = { ...samplePropsColumn, showTarget: true, showTargetValue: false, labelPosition: "side" as "side" | "top" };
+		const signals = getBulletSignals(props);
+		expect(signals.find((signal) => signal.name === 'bulletGroupHeight')).toStrictEqual({"name": "bulletGroupHeight", "update": "bulletThresholdHeight + 10"});
 	});
 });
 
