@@ -78,28 +78,26 @@ export const addBulletData = produce<Data[], [BulletSpecProps]>((data, props) =>
 	tableData.transform = getBulletTransforms(props);
 });
 
-export const addBulletMarks = produce<GroupMark, [BulletSpecProps]>((bulletMark, props) => {
+export const addBulletMarks = produce<Mark[], [BulletSpecProps]>((marks, props) => {
 	const markGroupEncodeUpdateDirection = props.direction === 'column' ? 'y' : 'x';
 	const bulletGroupWidth = props.direction === 'column' ? 'width' : 'bulletGroupWidth';
 
-	// Build the group mark.
-	bulletMark.name = 'bulletGroup';
-	bulletMark.type = 'group';
-	bulletMark.from = {
-		facet: { data: 'table', name: 'bulletGroups', groupby: props.dimension },
-	};
-	bulletMark.encode = {
-		update: {
-			[markGroupEncodeUpdateDirection]: { scale: 'groupScale', field: props.dimension },
-			height: { signal: 'bulletGroupHeight' },
-			width: { signal: bulletGroupWidth },
+	const bulletMark: GroupMark = {
+		name: 'bulletGroup',
+		type: 'group',
+		from: {
+			facet: { data: 'table', name: 'bulletGroups', groupby: `${props.dimension}` },
 		},
+		encode: {
+			update: {
+				[markGroupEncodeUpdateDirection]: { scale: 'groupScale', field: `${props.dimension}` },
+				height: { signal: 'bulletGroupHeight' },
+				width: { signal: bulletGroupWidth },
+			},
+		},
+		marks: [],
 	};
 
-	// Initialize the marks array.
-	bulletMark.marks = [];
-
-	// Add threshold data and mark if available.
 	const thresholdValues = getThresholdValues(props);
 	if (thresholdValues) {
 		bulletMark.data = [
@@ -109,23 +107,20 @@ export const addBulletMarks = produce<GroupMark, [BulletSpecProps]>((bulletMark,
 				transform: [{ type: 'identifier', as: 'id' }],
 			},
 		];
-		bulletMark.marks.push(getBulletMarkThreshold(props));
+		bulletMark.marks?.push(getBulletMarkThreshold(props));
 	}
 
-	// Add bullet rectangle.
-	bulletMark.marks.push(getBulletMarkRect(props));
-
-	// Add target mark and optionally the target value label.
+	bulletMark.marks?.push(getBulletMarkRect(props));
 	if (props.target && props.showTarget !== false) {
-		bulletMark.marks.push(getBulletMarkTarget(props));
+		bulletMark.marks?.push(getBulletMarkTarget(props));
 		if (props.showTargetValue) {
-			bulletMark.marks.push(getBulletMarkTargetValueLabel(props));
+			bulletMark.marks?.push(getBulletMarkTargetValueLabel(props));
 		}
 	}
+	bulletMark.marks?.push(getBulletMarkLabel(props));
+	bulletMark.marks?.push(getBulletMarkValueLabel(props));
 
-	// Add the bullet's dimension label and metric label.
-	bulletMark.marks.push(getBulletMarkLabel(props));
-	bulletMark.marks.push(getBulletMarkValueLabel(props));
+	marks.push(bulletMark);
 });
 
 export function getBulletMarkRect(props: BulletSpecProps): Mark {
