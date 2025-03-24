@@ -18,6 +18,7 @@ import {
 	getBulletMarks,
 	getBulletScales,
 	getBulletSignals,
+	getBulletAxes
 } from './bulletMarkUtils';
 
 import { samplePropsColumn, samplePropsRow } from './bulletSpecBuilder.test';
@@ -58,6 +59,14 @@ describe('getBulletMarks', () => {
 	});
 
 	test('Should include target value label when showTargetValue is true', () => {
+		const props = { ...samplePropsColumn, showTarget: true, showTargetValue: true };
+		const marksGroup = getBulletMarks(props);
+		expect(marksGroup.marks).toHaveLength(5);
+		const targetValueMark = marksGroup.marks?.find((mark) => mark.name?.includes('TargetValueLabel'));
+		expect(targetValueMark).toBeDefined();
+	});
+
+	test('Should include label marks when axis labels are enabled', () => {
 		const props = { ...samplePropsColumn, showTarget: true, showTargetValue: true };
 		const marksGroup = getBulletMarks(props);
 		expect(marksGroup.marks).toHaveLength(5);
@@ -196,3 +205,27 @@ describe('getBulletMarkValueLabel', () => {
 		}
 	});
 });
+
+describe('getBulletAxes', () => {
+
+	test('Should return the correct axes object when side label mode is enabled', () => {
+		const props = { ...samplePropsColumn, labelPosition: 'side' as 'side' | 'top' };
+		const axes = getBulletAxes(props);
+		expect(axes).toHaveLength(2);
+		expect(axes[0].labelOffset).toBe(2);
+	});
+
+	test('Should return the correct axes object when side label mode is enabled and target label is shown', () => {
+		const props = { ...samplePropsColumn, labelPosition: 'side' as 'side' | 'top', showTargetValue: true };
+		const axes = getBulletAxes(props);
+		expect(axes).toHaveLength(2);
+		expect(axes[0].labelOffset).toBe(-8);
+	});
+
+	test('Should return an empty list when top label mode is enabled', () => {
+		const props = { ...samplePropsColumn };
+		const axes = getBulletAxes(props);
+		expect(axes).toStrictEqual([]);
+	});
+	
+})
