@@ -11,6 +11,7 @@
  */
 import {
 	addBulletData,
+	addBulletMarks,
 	addBulletScales,
 	addBulletSignals,
 	getBulletMarkLabel,
@@ -18,13 +19,12 @@ import {
 	getBulletMarkTarget,
 	getBulletMarkThreshold,
 	getBulletMarkValueLabel,
-	getBulletMarks,
 } from './bulletMarkUtils';
 import { samplePropsColumn, samplePropsRow } from './bulletSpecBuilder.test';
 
 describe('getBulletMarks', () => {
 	test('Should return the correct marks object for column mode', () => {
-		const data = getBulletMarks(samplePropsColumn);
+		const data = addBulletMarks([], samplePropsColumn);
 		expect(data).toBeDefined;
 		expect(data?.marks).toHaveLength(4);
 		expect(data?.marks?.[0]?.type).toBe('rect');
@@ -37,7 +37,7 @@ describe('getBulletMarks', () => {
 	});
 
 	test('Should return the correct marks object for row mode', () => {
-		const data = getBulletMarks(samplePropsRow);
+		const data = addBulletMarks([], samplePropsRow);
 		expect(data).toBeDefined;
 		expect(data?.marks).toHaveLength(4);
 		expect(data?.marks?.[0]?.type).toBe('rect');
@@ -49,7 +49,7 @@ describe('getBulletMarks', () => {
 
 	test('Should not include target marks when showTarget is false', () => {
 		const props = { ...samplePropsColumn, showTarget: false, showTargetValue: true };
-		const marksGroup = getBulletMarks(props);
+		const marksGroup = addBulletMarks([], props);
 		expect(marksGroup.marks).toHaveLength(3);
 		marksGroup.marks?.forEach((mark) => {
 			expect(mark.description).not.toContain('Target');
@@ -58,7 +58,7 @@ describe('getBulletMarks', () => {
 
 	test('Should include target value label when showTargetValue is true', () => {
 		const props = { ...samplePropsColumn, showTarget: true, showTargetValue: true };
-		const marksGroup = getBulletMarks(props);
+		const marksGroup = addBulletMarks([], props);
 		expect(marksGroup.marks).toHaveLength(5);
 		const targetValueMark = marksGroup.marks?.find((mark) => mark.name?.includes('TargetValueLabel'));
 		expect(targetValueMark).toBeDefined();
@@ -147,7 +147,7 @@ describe('getBulletMarkValueLabel', () => {
 
 	test('Should apply numberFormat specifier to metric and target values', () => {
 		const props = { ...samplePropsColumn, showTarget: true, showTargetValue: true, numberFormat: '$,.2f' };
-		const marksGroup = getBulletMarks(props);
+		const marksGroup = addBulletMarks([], props);
 
 		const metricValueLabel = marksGroup.marks?.find((mark) => mark.name === `${props.name}ValueLabel`);
 		expect(metricValueLabel).toBeDefined();
@@ -190,7 +190,7 @@ describe('Threshold functionality', () => {
 			expect(props.thresholdConfig.thresholds).toHaveLength(2);
 			expect(props.thresholdConfig.colors).toHaveLength(3);
 
-			const marksGroup = getBulletMarks(props);
+			const marksGroup = addBulletMarks([], props);
 
 			// Verify that threshold data is added.
 			expect(marksGroup.data).toBeDefined();
@@ -224,7 +224,7 @@ describe('Threshold functionality', () => {
 				thresholdConfig: undefined,
 			};
 
-			const marksGroup = getBulletMarks(props);
+			const marksGroup = addBulletMarks([], props);
 			expect(marksGroup.data).toBeDefined();
 			expect(marksGroup.data?.[0].name).toBe('thresholds');
 

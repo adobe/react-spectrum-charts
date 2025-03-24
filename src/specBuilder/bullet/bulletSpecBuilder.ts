@@ -13,12 +13,12 @@ import { DEFAULT_BULLET_DIRECTION, DEFAULT_COLOR_SCHEME } from '@constants';
 import { spectrumColors } from '@themes';
 import { toCamelCase } from '@utils';
 import { produce } from 'immer';
-import { Spec } from 'vega';
+import { GroupMark, Spec } from 'vega';
 
 import { BulletProps, BulletSpecProps, ColorScheme } from '../../types';
 import { sanitizeMarkChildren } from '../../utils';
 import { getColorValue } from '../specUtils';
-import { addBulletData, addBulletScales, addBulletSignals, getBulletMarks } from './bulletMarkUtils';
+import { addBulletData, addBulletMarks, addBulletScales, addBulletSignals } from './bulletMarkUtils';
 
 const DEFAULT_COLOR = spectrumColors.light['static-blue'];
 
@@ -58,7 +58,7 @@ export const addBullet = produce<Spec, [BulletProps & { colorScheme?: ColorSchem
 		};
 
 		spec.data = addBulletData(spec.data ?? [], bulletProps);
-		spec.marks = [getBulletMarks(bulletProps)];
+		spec.marks = [addBulletMarks({} as GroupMark, bulletProps)];
 		spec.scales = addBulletScales(spec.scales ?? [], bulletProps);
 		spec.signals = addBulletSignals(spec.signals ?? [], bulletProps);
 	}

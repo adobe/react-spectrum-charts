@@ -9,7 +9,6 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { TABLE } from '@constants';
 import { produce } from 'immer';
 import { Data, GroupMark, Mark, Scale, Signal } from 'vega';
 
@@ -73,35 +72,35 @@ export const addBulletSignals = produce<Signal[], [BulletSpecProps]>((signals, p
 });
 
 export const addBulletData = produce<Data[], [BulletSpecProps]>((data, props) => {
-	//We are multiplying the target by 1.05 to make sure that the target line is never at the very end of the graph
 	const tableData = getBulletTableData(data);
 	tableData.values = props.children?.length ? props.children : [];
 
 	tableData.transform = getBulletTransforms(props);
 });
 
-export function getBulletMarks(props: BulletSpecProps): GroupMark {
+export const addBulletMarks = produce<GroupMark, [BulletSpecProps]>((bulletMark, props) => {
 	const markGroupEncodeUpdateDirection = props.direction === 'column' ? 'y' : 'x';
 	const bulletGroupWidth = props.direction === 'column' ? 'width' : 'bulletGroupWidth';
 
-	const bulletMark: GroupMark = {
-		name: 'bulletGroup',
-		type: 'group',
-		from: {
-			facet: { data: 'table', name: 'bulletGroups', groupby: `${props.dimension}` },
+	// Build the group mark.
+	bulletMark.name = 'bulletGroup';
+	bulletMark.type = 'group';
+	bulletMark.from = {
+		facet: { data: 'table', name: 'bulletGroups', groupby: props.dimension },
+	};
+	bulletMark.encode = {
+		update: {
+			[markGroupEncodeUpdateDirection]: { scale: 'groupScale', field: props.dimension },
+			height: { signal: 'bulletGroupHeight' },
+			width: { signal: bulletGroupWidth },
 		},
-		encode: {
-			update: {
-				[markGroupEncodeUpdateDirection]: { scale: 'groupScale', field: `${props.dimension}` },
-				height: { signal: 'bulletGroupHeight' },
-				width: { signal: bulletGroupWidth },
-			},
-		},
-		marks: [],
 	};
 
-	const thresholdValues = getThresholdValues(props);
+	// Initialize the marks array.
+	bulletMark.marks = [];
 
+	// Add threshold data and mark if available.
+	const thresholdValues = getThresholdValues(props);
 	if (thresholdValues) {
 		bulletMark.data = [
 			{
@@ -110,21 +109,24 @@ export function getBulletMarks(props: BulletSpecProps): GroupMark {
 				transform: [{ type: 'identifier', as: 'id' }],
 			},
 		];
-		bulletMark.marks?.push(getBulletMarkThreshold(props));
+		bulletMark.marks.push(getBulletMarkThreshold(props));
 	}
 
-	bulletMark.marks?.push(getBulletMarkRect(props));
+	// Add bullet rectangle.
+	bulletMark.marks.push(getBulletMarkRect(props));
+
+	// Add target mark and optionally the target value label.
 	if (props.target && props.showTarget !== false) {
-		bulletMark.marks?.push(getBulletMarkTarget(props));
+		bulletMark.marks.push(getBulletMarkTarget(props));
 		if (props.showTargetValue) {
-			bulletMark.marks?.push(getBulletMarkTargetValueLabel(props));
+			bulletMark.marks.push(getBulletMarkTargetValueLabel(props));
 		}
 	}
-	bulletMark.marks?.push(getBulletMarkLabel(props));
-	bulletMark.marks?.push(getBulletMarkValueLabel(props));
 
-	return bulletMark;
-}
+	// Add the bullet's dimension label and metric label.
+	bulletMark.marks.push(getBulletMarkLabel(props));
+	bulletMark.marks.push(getBulletMarkValueLabel(props));
+});
 
 export function getBulletMarkRect(props: BulletSpecProps): Mark {
 	//The vertical positioning is calculated starting at the bulletgroupheight
