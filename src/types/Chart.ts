@@ -251,6 +251,10 @@ export interface BulletProps extends MarkProps {
 	numberFormat?: NumberFormat;
 	/** Specifies if the labels should be in top of the bullet chart or to the side. Side labels are not supported in row mode. */
 	labelPosition?: 'side' | 'top';
+	/** Specifies if the scale should be normal, fixed, or flexible */
+	scaleType?: 'normal' | 'fixed' | 'flexible';
+	/** Maximum value for the scale */
+	maxScaleValue?: number;
 }
 
 export interface DonutSummaryProps {

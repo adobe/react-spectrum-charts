@@ -63,6 +63,8 @@ Basic.args = {
     showTarget: true,
     showTargetValue: false,
     labelPosition: 'top',
+    scaleType: 'normal',
+    maxScaleValue: 100,
 };
 
 const RowMode = bindWithProps(BulletStory);
@@ -76,6 +78,8 @@ RowMode.args = {
     showTarget: true,
     showTargetValue: false,
     labelPosition: 'top',
+    scaleType: 'normal',
+    maxScaleValue: 100,
 };
 
 const WithTitle = bindWithProps(BulletTitleStory);
@@ -86,6 +90,8 @@ WithTitle.args = {
     color: 'red-500',
     numberFormat: '$,.2f',
     labelPosition: 'top',
+    scaleType: 'normal',
+    maxScaleValue: 100,
 };
 export { Basic, RowMode, WithTitle };
 
