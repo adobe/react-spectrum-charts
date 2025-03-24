@@ -206,6 +206,15 @@ describe('getBulletMarkValueLabel', () => {
 	});
 });
 
+describe('getBulletMarkSideLabel', () => {
+	test('Should not return label marks when side label mode is enabled', () => {
+		const props = { ...samplePropsColumn, labelPosition: 'side' as 'side' | 'top' };
+		const marks = getBulletMarks(props);
+		expect(marks.marks).toBeDefined();
+		expect(marks.marks).toHaveLength(2);
+	});
+});
+
 describe('getBulletAxes', () => {
 
 	test('Should return the correct axes object when side label mode is enabled', () => {
