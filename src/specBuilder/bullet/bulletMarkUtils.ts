@@ -17,8 +17,14 @@ import { getColorValue } from '../specUtils';
 export function getBulletScales(props: BulletSpecProps): Scale[] {
 	const groupScaleRangeSignal = props.direction === 'column' ? 'height' : 'width';
 	const xRange = props.direction === 'column' ? 'width' : [0, { signal: 'bulletGroupWidth' }];
-	const domainFields = props.scaleType === 'flexible' ? ({data: 'table', fields: ['xPaddingForTarget', props.metric, 'flexibleScaleValue']}) :
-	props.scaleType === 'fixed' ? ([0,`${props.maxScaleValue}`]) : ({data: 'table',fields:['xPaddingForTarget', props.metric]});
+	let domainFields;
+	if(props.scaleType === 'flexible'){
+		domainFields = ({data: 'table', fields: ['xPaddingForTarget', props.metric, 'flexibleScaleValue']});
+	}else if(props.scaleType === 'fixed'){
+		domainFields = ([0,`${props.maxScaleValue}`]);
+	}else{
+		domainFields = ({data: 'table',fields:['xPaddingForTarget', props.metric]});
+	}
 
 	const bulletScales: Scale[] = [
 		{
