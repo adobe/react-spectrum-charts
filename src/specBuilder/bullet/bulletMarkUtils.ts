@@ -120,7 +120,7 @@ export const addBulletMarks = produce<Mark[], [BulletSpecProps]>((marks, props) 
 	bulletMark.marks?.push(getBulletMarkLabel(props));
 	bulletMark.marks?.push(getBulletMarkValueLabel(props));
 
-	marks.push(bulletMark);
+	return [bulletMark];
 });
 
 export function getBulletMarkRect(props: BulletSpecProps): Mark {

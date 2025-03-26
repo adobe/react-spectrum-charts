@@ -58,7 +58,7 @@ export const addBullet = produce<Spec, [BulletProps & { colorScheme?: ColorSchem
 		};
 
 		spec.data = addBulletData(spec.data ?? [], bulletProps);
-		spec.marks = [addBulletMarks({} as GroupMark, bulletProps)];
+		spec.marks = addBulletMarks(spec.marks ?? [], bulletProps);
 		spec.scales = addBulletScales(spec.scales ?? [], bulletProps);
 		spec.signals = addBulletSignals(spec.signals ?? [], bulletProps);
 	}
