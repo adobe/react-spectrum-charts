@@ -16,7 +16,7 @@ import { Bullet } from '@rsc/alpha'; // Assuming Bullet chart is a component in 
 import { Chart, BulletProps, ChartProps, Title } from '@rsc';
 import useChartProps from '@hooks/useChartProps';
 import { bindWithProps } from '@test-utils';
-import { basicBulletData } from './data';
+import { basicBulletData, basicThresholdsData } from './data';
 
 export default {
 	title: 'RSC/Bullet',
@@ -25,9 +25,9 @@ export default {
 
 // Default chart properties
 const defaultChartProps: ChartProps = {
-    data: basicBulletData,
-    width: 350,
-    height: 350,
+	data: basicBulletData,
+	width: 350,
+	height: 350,
 };
 
 // Basic Bullet chart story
@@ -57,25 +57,27 @@ Basic.args = {
 	metric: 'currentAmount',
 	dimension: 'graphLabel',
 	target: 'target',
+	thresholds: basicThresholdsData,
 	color: 'red-500',
-    direction: 'column',
+	direction: 'column',
 	numberFormat: '$,.2f',
-    showTarget: true,
-    showTargetValue: false,
-    labelPosition: 'top',
+  showTarget: true,
+  showTargetValue: false,
+  labelPosition: 'top',
 };
 
 const RowMode = bindWithProps(BulletStory);
 RowMode.args = {
 	metric: 'currentAmount',
-    dimension: 'graphLabel',
-    target: 'target',
-    color: 'red-500',
-    direction: 'row',
-    numberFormat: '$,.2f',
-    showTarget: true,
-    showTargetValue: false,
-    labelPosition: 'top',
+	dimension: 'graphLabel',
+	target: 'target',
+	thresholds: basicThresholdsData,
+	color: 'red-500',
+	direction: 'row',
+	numberFormat: '$,.2f',
+	showTarget: true,
+	showTargetValue: false,
+  labelPosition: 'top',
 };
 
 const WithTitle = bindWithProps(BulletTitleStory);

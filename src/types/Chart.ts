@@ -222,15 +222,7 @@ export interface AreaProps extends MarkProps {
 	metricEnd?: string;
 }
 
-export interface DonutProps extends MarkProps {
-	/** Start angle of the donut in radians (0 is top dead center, and default) */
-	startAngle?: number;
-	/** Ratio of the donut inner radius / donut outer radius. 0 is a pie chart. 0.85 is the default. */
-	holeRatio?: number;
-	/** Determines if the center metric should be displayed as a percent. if true, data should only be two data points, which sum to 1
-	 * Also, if true, will display the first datapoint as a percent */
-	isBoolean?: boolean;
-}
+export type ThresholdBackground = { thresholdMin?: number; thresholdMax?: number; fill?: string };
 
 export interface BulletProps extends MarkProps {
 	/** Target line */
@@ -251,6 +243,26 @@ export interface BulletProps extends MarkProps {
 	numberFormat?: NumberFormat;
 	/** Specifies if the labels should be in top of the bullet chart or to the side. Side labels are not supported in row mode. */
 	labelPosition?: 'side' | 'top';
+	/** Array of threshold definitions to be rendered as background bands on the bullet chart.
+	 *
+	 *  Each threshold object supports:
+	 * `thresholdMin` (optional): The lower bound of the threshold. If undefined, the threshold starts from the beginning of the x-scale.
+	 *
+	 * `thresholdMax` (optional): The upper bound of the threshold. If undefined, the threshold extends to the end of the x-scale.
+	 *
+	 * `fill` : The fill color to use for the threshold background.
+	 */
+	thresholds?: ThresholdBackground[];
+}
+
+export interface DonutProps extends MarkProps {
+	/** Start angle of the donut in radians (0 is top dead center, and default) */
+	startAngle?: number;
+	/** Ratio of the donut inner radius / donut outer radius. 0 is a pie chart. 0.85 is the default. */
+	holeRatio?: number;
+	/** Determines if the center metric should be displayed as a percent. if true, data should only be two data points, which sum to 1
+	 * Also, if true, will display the first datapoint as a percent */
+	isBoolean?: boolean;
 }
 
 export interface DonutSummaryProps {
