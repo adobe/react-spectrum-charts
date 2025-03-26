@@ -17,7 +17,8 @@ import { getColorValue } from '../specUtils';
 export function getBulletScales(props: BulletSpecProps): Scale[] {
 	const groupScaleRangeSignal = props.direction === 'column' ? 'height' : 'width';
 	const xRange = props.direction === 'column' ? 'width' : [0, { signal: 'bulletGroupWidth' }];
-	const domainFields = props.scaleType === 'flexible' ? ['xPaddingForTarget', props.metric, 'flexibleScaleValue'] : ['xPaddingForTarget', props.metric];
+	const domainFields = props.scaleType === 'flexible' ? ({data: 'table', fields: ['xPaddingForTarget', props.metric, 'flexibleScaleValue']}) :
+	props.scaleType === 'fixed' ? ([0,`${props.maxScaleValue}`]) : ({data: 'table',fields:['xPaddingForTarget', props.metric]});
 
 	const bulletScales: Scale[] = [
 		{
@@ -30,9 +31,10 @@ export function getBulletScales(props: BulletSpecProps): Scale[] {
 		{
 			name: 'xscale',
 			type: 'linear',
-			domain: { data: 'table', fields: domainFields },
+			domain: domainFields,
 			range: xRange,
 			round: true,
+			clamp: true,
 			zero: true,
 		},
 	];
@@ -45,7 +47,7 @@ export function getBulletSignals(props: BulletSpecProps): Signal[] {
 		{ name: 'gap', value: 12 },
 		{ name: 'bulletHeight', value: 8 },
 		{ name: 'bulletThresholdHeight', update: 'bulletHeight * 3' },
-		{ name: 'targetHeight', update: 'bulletThresholdHeight + 6' },
+		{ name: 'targetHeight', update: 'bulletThresholdHeight + 6' }
 	];
 
 	if (props.direction === 'column') {
@@ -97,9 +99,9 @@ export function getBulletData(props: BulletSpecProps): Data[] {
 			"type": "formula",
 			"expr": `${props.maxScaleValue}`,
 			"as": "flexibleScaleValue"
-		})
-
-	}
+			});
+	};
+	
 
 	return bulletData;
 }

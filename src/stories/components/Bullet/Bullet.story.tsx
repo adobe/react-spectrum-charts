@@ -17,6 +17,7 @@ import { Chart, BulletProps, ChartProps, Title } from '@rsc';
 import useChartProps from '@hooks/useChartProps';
 import { bindWithProps } from '@test-utils';
 import { basicBulletData } from './data';
+import { debug } from 'console';
 
 export default {
 	title: 'RSC/Bullet',
@@ -35,8 +36,8 @@ const BulletStory: StoryFn<BulletProps & { width?: number; height?: number }> = 
 	const { width, height, ...bulletProps } = args;
 	const chartProps = useChartProps({ ...defaultChartProps, width: width ?? 350, height: height ?? 350 });
 	return (
-		<Chart {...chartProps}>
-			<Bullet {...bulletProps} />
+		<Chart {...chartProps} debug>
+			<Bullet {...bulletProps}/> 
 		</Chart>
 	);
 };
