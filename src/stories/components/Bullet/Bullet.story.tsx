@@ -16,8 +16,7 @@ import { Bullet } from '@rsc/alpha'; // Assuming Bullet chart is a component in 
 import { Chart, BulletProps, ChartProps, Title } from '@rsc';
 import useChartProps from '@hooks/useChartProps';
 import { bindWithProps } from '@test-utils';
-import { basicBulletData } from './data';
-import { debug } from 'console';
+import { basicBulletData, basicThresholdsData } from './data';
 
 export default {
 	title: 'RSC/Bullet',
@@ -26,9 +25,9 @@ export default {
 
 // Default chart properties
 const defaultChartProps: ChartProps = {
-    data: basicBulletData,
-    width: 350,
-    height: 350,
+	data: basicBulletData,
+	width: 350,
+	height: 350,
 };
 
 // Basic Bullet chart story
@@ -36,7 +35,7 @@ const BulletStory: StoryFn<BulletProps & { width?: number; height?: number }> = 
 	const { width, height, ...bulletProps } = args;
 	const chartProps = useChartProps({ ...defaultChartProps, width: width ?? 350, height: height ?? 350 });
 	return (
-		<Chart {...chartProps} debug>
+		<Chart {...chartProps}>
 			<Bullet {...bulletProps}/> 
 		</Chart>
 	);
@@ -58,29 +57,31 @@ Basic.args = {
 	metric: 'currentAmount',
 	dimension: 'graphLabel',
 	target: 'target',
+	thresholds: basicThresholdsData,
 	color: 'red-500',
-    direction: 'column',
+	direction: 'column',
 	numberFormat: '$,.2f',
-    showTarget: true,
-    showTargetValue: false,
-    labelPosition: 'top',
-    scaleType: 'normal',
-    maxScaleValue: 100,
+  showTarget: true,
+  showTargetValue: false,
+  labelPosition: 'top',
+  scaleType: 'normal',
+  maxScaleValue: 100,
 };
 
 const RowMode = bindWithProps(BulletStory);
 RowMode.args = {
 	metric: 'currentAmount',
-    dimension: 'graphLabel',
-    target: 'target',
-    color: 'red-500',
-    direction: 'row',
-    numberFormat: '$,.2f',
-    showTarget: true,
-    showTargetValue: false,
-    labelPosition: 'top',
-    scaleType: 'normal',
-    maxScaleValue: 100,
+  dimension: 'graphLabel',
+  target: 'target',
+  color: 'red-500',
+  direction: 'row',
+  numberFormat: '$,.2f',
+  showTarget: true,
+  showTargetValue: false,
+  labelPosition: 'top',
+  scaleType: 'normal',
+  maxScaleValue: 100,
+  thresholds: basicThresholdsData,
 };
 
 const WithTitle = bindWithProps(BulletTitleStory);
