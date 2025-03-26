@@ -322,6 +322,7 @@ export function getBulletAxes(props: BulletSpecProps): Axis[] {
 	]
 	
 	return (props.labelPosition === 'side' && props.direction === 'column') ? bulletAxes : [];
+}
   
 export function getBulletMarkThreshold(props: BulletSpecProps): Mark {
 	// Vertically center the threshold bar by offsetting from bulletGroupHeight.
