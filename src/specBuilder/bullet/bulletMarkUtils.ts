@@ -13,7 +13,6 @@ import { Data, GroupMark, Mark, Scale, Signal } from 'vega';
 
 import { BulletSpecProps } from '../../types';
 import { getColorValue } from '../specUtils';
-import { getThresholdValues } from './bulletThresholdUtils';
 
 export function getBulletScales(props: BulletSpecProps): Scale[] {
 	const groupScaleRangeSignal = props.direction === 'column' ? 'height' : 'width';
