@@ -178,39 +178,6 @@ describe('Threshold functionality', () => {
 	};
 
 	describe('Data generation', () => {
-		test('Sould add threshold data and threshold mark when thresholdConfig is provided', () => {
-			const props = {
-				...samplePropsRow,
-				name: 'testBullet',
-				thresholds: undefined,
-				thresholdConfig,
-			};
-
-			expect(props.thresholdConfig).toBeDefined();
-			expect(props.thresholdConfig.thresholds).toHaveLength(2);
-			expect(props.thresholdConfig.colors).toHaveLength(3);
-
-			const marksGroup = getBulletMarks(props);
-
-			// Verify that threshold data is added.
-			expect(marksGroup.data).toBeDefined();
-			expect(marksGroup.data?.[0].name).toBe('thresholds');
-
-			// Check that the data object has a values property with three threshold objects.
-			expect(marksGroup.data).toEqual(
-				expect.arrayContaining([
-					expect.objectContaining({
-						name: 'thresholds',
-						values: expect.arrayContaining([expect.objectContaining({ thresholdMax: expect.any(Number) })]),
-					}),
-				])
-			);
-
-			const thresholdMark = marksGroup.marks?.find((mark) => mark.name === `${props.name}Threshold`);
-			expect(thresholdMark).toBeDefined();
-			expect(thresholdMark?.type).toBe('rect');
-		});
-
 		test('Should add threshold data and mark when detailed thresholds are provided', () => {
 			const detailedThresholds = [
 				{ thresholdMax: 120, fill: 'rgb(234, 56, 41)' },

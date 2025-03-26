@@ -111,7 +111,7 @@ export function getBulletMarks(props: BulletSpecProps): GroupMark {
 		marks: [],
 	};
 
-	const thresholdValues = getThresholdValues(props);
+	const thresholdValues = props.thresholds;
 
 	if (thresholdValues) {
 		bulletMark.data = [
@@ -284,10 +284,9 @@ export function getBulletMarkTargetValueLabel(props: BulletSpecProps): Mark {
 }
 
 export function getBulletMarkThreshold(props: BulletSpecProps): Mark {
+	const baseHeightSignal = 'bulletGroupHeight - 3 - bulletThresholdHeight';
 	const encodeUpdateYSignal =
-		props.showTarget && props.showTargetValue
-			? 'bulletGroupHeight - 3 - bulletThresholdHeight - targetValueLabelHeight'
-			: 'bulletGroupHeight - 3 - bulletThresholdHeight';
+		props.showTarget && props.showTargetValue ? `${baseHeightSignal} - targetValueLabelHeight` : baseHeightSignal;
 
 	const bulletMarkThreshold: Mark = {
 		name: `${props.name}Threshold`,
