@@ -178,7 +178,7 @@ describe('Threshold functionality', () => {
 	};
 
 	describe('Data generation', () => {
-		test('Should add threshold data and mark when detailed thresholds are provided', () => {
+		test('Should add threshold data and mark when thresholds are provided', () => {
 			const detailedThresholds = [
 				{ thresholdMax: 120, fill: 'rgb(234, 56, 41)' },
 				{ thresholdMin: 120, thresholdMax: 235, fill: 'rgb(249, 137, 23)' },

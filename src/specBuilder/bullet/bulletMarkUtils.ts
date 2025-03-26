@@ -284,6 +284,8 @@ export function getBulletMarkTargetValueLabel(props: BulletSpecProps): Mark {
 }
 
 export function getBulletMarkThreshold(props: BulletSpecProps): Mark {
+	// Vertically center the threshold bar by offsetting from bulletGroupHeight.
+	// Subtract 3 for alignment and targetValueLabelHeight if the label is shown.
 	const baseHeightSignal = 'bulletGroupHeight - 3 - bulletThresholdHeight';
 	const encodeUpdateYSignal =
 		props.showTarget && props.showTargetValue ? `${baseHeightSignal} - targetValueLabelHeight` : baseHeightSignal;
