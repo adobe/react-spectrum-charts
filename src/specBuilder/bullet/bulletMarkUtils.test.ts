@@ -172,11 +172,6 @@ describe('getBulletMarkValueLabel', () => {
 });
 
 describe('Threshold functionality', () => {
-	const thresholdConfig = {
-		thresholds: [120, 235],
-		colors: ['rgb(234, 56, 41)', 'rgb(249, 137, 23)', 'rgb(21, 164, 110)'],
-	};
-
 	describe('Data generation', () => {
 		test('Should add threshold data and mark when thresholds are provided', () => {
 			const detailedThresholds = [
