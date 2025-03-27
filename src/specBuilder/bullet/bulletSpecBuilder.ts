@@ -56,7 +56,6 @@ export const addBullet = (
 		labelPosition: labelPosition,
 		...props,
 	};
-	console.log(bulletProps.labelPosition);
 
 	return {
 		...spec,
