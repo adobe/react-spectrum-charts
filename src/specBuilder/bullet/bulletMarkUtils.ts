@@ -38,6 +38,17 @@ export function getBulletScales(props: BulletSpecProps): Scale[] {
 	return bulletScales;
 }
 
+function getBulletGroupHeightExpression(props: BulletSpecProps): string {
+	if (props.showTargetValue && props.showTarget) {
+	  return props.labelPosition === 'side' && props.direction === 'column'
+	    ? "bulletThresholdHeight + targetValueLabelHeight + 10"
+	    : "bulletThresholdHeight + targetValueLabelHeight + 24";
+	} else if (props.labelPosition === 'side' && props.direction === 'column') {
+	  return "bulletThresholdHeight + 10";
+	}
+	return "bulletThresholdHeight + 24";
+}
+
 export function getBulletSignals(props: BulletSpecProps): Signal[] {
 	const bulletSignals: Signal[] = [
 		{ name: 'gap', value: 12 },
@@ -45,6 +56,12 @@ export function getBulletSignals(props: BulletSpecProps): Signal[] {
 		{ name: 'bulletThresholdHeight', update: 'bulletHeight * 3' },
 		{ name: 'targetHeight', update: 'bulletThresholdHeight + 6' },
 	];
+
+	if(props.showTargetValue && props.showTarget) {
+		bulletSignals.push({ name: "targetValueLabelHeight", update: "20"});
+	}
+
+	bulletSignals.push({ name: 'bulletGroupHeight', update: getBulletGroupHeightExpression(props) });
 
 	if (props.direction === 'column') {
 		bulletSignals.push({ name: 'paddingRatio', update: 'gap / (gap + bulletGroupHeight)' });
@@ -58,18 +75,18 @@ export function getBulletSignals(props: BulletSpecProps): Signal[] {
 		bulletSignals.push({ name: 'height', update: 'bulletGroupHeight' });
 	}
 
-	if(props.showTargetValue && props.showTarget) {
-		bulletSignals.push({ name: "targetValueLabelHeight", update: "20"});
-		if(props.labelPosition === 'side' && props.direction === 'column'){
-			bulletSignals.push({ name: "bulletGroupHeight", update: "bulletThresholdHeight + targetValueLabelHeight + 10"});
-		}else{
-			bulletSignals.push({ name: "bulletGroupHeight", update: "bulletThresholdHeight + targetValueLabelHeight + 24"});
-		}
-	} else if(props.labelPosition === 'side' && props.direction === 'column'){
-		bulletSignals.push({ name: "bulletGroupHeight", update: "bulletThresholdHeight + 10"});
-	} else {
-		bulletSignals.push({ name: "bulletGroupHeight", update: "bulletThresholdHeight + 24"});
-	}
+	// if(props.showTargetValue && props.showTarget) {
+	// 	bulletSignals.push({ name: "targetValueLabelHeight", update: "20"});
+	// 	if(props.labelPosition === 'side' && props.direction === 'column'){
+	// 		bulletSignals.push({ name: "bulletGroupHeight", update: "bulletThresholdHeight + targetValueLabelHeight + 10"});
+	// 	}else{
+	// 		bulletSignals.push({ name: "bulletGroupHeight", update: "bulletThresholdHeight + targetValueLabelHeight + 24"});
+	// 	}
+	// } else if(props.labelPosition === 'side' && props.direction === 'column'){
+	// 	bulletSignals.push({ name: "bulletGroupHeight", update: "bulletThresholdHeight + 10"});
+	// } else {
+	// 	bulletSignals.push({ name: "bulletGroupHeight", update: "bulletThresholdHeight + 24"});
+	// }
 
 	return bulletSignals;
 }
@@ -290,7 +307,7 @@ export function getBulletMarkTargetValueLabel(props: BulletSpecProps): Mark {
 
 export function getBulletAxes(props: BulletSpecProps): Axis[] {
 
-	const labelOffset = props.showTargetValue ? -8 : 2;
+	const labelOffset = props.showTargetValue && props.showTarget ? -8 : 2;
 
 	const bulletAxes: Axis[] = [
 		{
@@ -300,7 +317,7 @@ export function getBulletAxes(props: BulletSpecProps): Axis[] {
 			"labelOffset": labelOffset,
 			"labelPadding": 10,
 			"labelColor": "#797979",
-			"domain": false
+			"domain": false,
 		},
 		{
 			"scale": "groupScale",
@@ -313,7 +330,9 @@ export function getBulletAxes(props: BulletSpecProps): Axis[] {
 				"labels":{
 					"update": {
 						"text": {
-							"signal": `info(data('table')[datum.index * (length(data('table')) - 1)].${props.metric})`
+							"signal": `info(data('table')[datum.index * (length(data('table')) - 1)].${props.metric}) != null ? format(info(data('table')[datum.index * (length(data('table')) - 1)].${props.metric}), '${
+								props.numberFormat || ''
+							}') : ''`,
 						}
 					}
 				}
