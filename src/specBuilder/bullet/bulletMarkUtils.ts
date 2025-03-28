@@ -75,19 +75,6 @@ export function getBulletSignals(props: BulletSpecProps): Signal[] {
 		bulletSignals.push({ name: 'height', update: 'bulletGroupHeight' });
 	}
 
-	// if(props.showTargetValue && props.showTarget) {
-	// 	bulletSignals.push({ name: "targetValueLabelHeight", update: "20"});
-	// 	if(props.labelPosition === 'side' && props.direction === 'column'){
-	// 		bulletSignals.push({ name: "bulletGroupHeight", update: "bulletThresholdHeight + targetValueLabelHeight + 10"});
-	// 	}else{
-	// 		bulletSignals.push({ name: "bulletGroupHeight", update: "bulletThresholdHeight + targetValueLabelHeight + 24"});
-	// 	}
-	// } else if(props.labelPosition === 'side' && props.direction === 'column'){
-	// 	bulletSignals.push({ name: "bulletGroupHeight", update: "bulletThresholdHeight + 10"});
-	// } else {
-	// 	bulletSignals.push({ name: "bulletGroupHeight", update: "bulletThresholdHeight + 24"});
-	// }
-
 	return bulletSignals;
 }
 
