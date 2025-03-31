@@ -241,6 +241,8 @@ export interface BulletProps extends MarkProps {
 	 * see {@link https://d3js.org/d3-format#locale_format}
 	 */
 	numberFormat?: NumberFormat;
+	/** Specifies if the labels should be in top of the bullet chart or to the side. Side labels are not supported in row mode. */
+	labelPosition?: 'side' | 'top';
 	/** Array of threshold definitions to be rendered as background bands on the bullet chart.
 	 *
 	 *  Each threshold object supports:

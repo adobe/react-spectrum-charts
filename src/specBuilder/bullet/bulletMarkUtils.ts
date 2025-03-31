@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { Data, GroupMark, Mark, Scale, Signal } from 'vega';
+import { Axis, Data, GroupMark, Mark, Scale, Signal } from 'vega';
 
 import { BulletSpecProps } from '../../types';
 import { getColorValue } from '../specUtils';
@@ -38,6 +38,17 @@ export function getBulletScales(props: BulletSpecProps): Scale[] {
 	return bulletScales;
 }
 
+function getBulletGroupHeightExpression(props: BulletSpecProps): string {
+	if (props.showTargetValue && props.showTarget) {
+		return props.labelPosition === 'side' && props.direction === 'column'
+			? 'bulletThresholdHeight + targetValueLabelHeight + 10'
+			: 'bulletThresholdHeight + targetValueLabelHeight + 24';
+	} else if (props.labelPosition === 'side' && props.direction === 'column') {
+		return 'bulletThresholdHeight + 10';
+	}
+	return 'bulletThresholdHeight + 24';
+}
+
 export function getBulletSignals(props: BulletSpecProps): Signal[] {
 	const bulletSignals: Signal[] = [
 		{ name: 'gap', value: 12 },
@@ -45,6 +56,15 @@ export function getBulletSignals(props: BulletSpecProps): Signal[] {
 		{ name: 'bulletThresholdHeight', update: 'bulletHeight * 3' },
 		{ name: 'targetHeight', update: 'bulletThresholdHeight + 6' },
 	];
+
+	if (props.showTargetValue && props.showTarget) {
+		bulletSignals.push({ name: 'targetValueLabelHeight', update: '20' });
+	}
+
+	bulletSignals.push({
+		name: 'bulletGroupHeight',
+		update: getBulletGroupHeightExpression(props),
+	});
 
 	if (props.direction === 'column') {
 		bulletSignals.push({ name: 'paddingRatio', update: 'gap / (gap + bulletGroupHeight)' });
@@ -56,16 +76,6 @@ export function getBulletSignals(props: BulletSpecProps): Signal[] {
 		bulletSignals.push({ name: 'bulletGroupWidth', update: "(width / length(data('table'))) - gap" });
 		bulletSignals.push({ name: 'paddingRatio', update: 'gap / (gap + bulletGroupWidth)' });
 		bulletSignals.push({ name: 'height', update: 'bulletGroupHeight' });
-	}
-
-	if (props.showTargetValue && props.showTarget) {
-		bulletSignals.push({ name: 'targetValueLabelHeight', update: '20' });
-		bulletSignals.push({
-			name: 'bulletGroupHeight',
-			update: 'bulletThresholdHeight + targetValueLabelHeight + 24',
-		});
-	} else {
-		bulletSignals.push({ name: 'bulletGroupHeight', update: 'bulletThresholdHeight + 24' });
 	}
 
 	return bulletSignals;
@@ -130,8 +140,11 @@ export function getBulletMarks(props: BulletSpecProps): GroupMark {
 			bulletMark.marks?.push(getBulletMarkTargetValueLabel(props));
 		}
 	}
-	bulletMark.marks?.push(getBulletMarkLabel(props));
-	bulletMark.marks?.push(getBulletMarkValueLabel(props));
+
+	if (props.labelPosition === 'top' || props.direction === 'row') {
+		bulletMark.marks?.push(getBulletMarkLabel(props));
+		bulletMark.marks?.push(getBulletMarkValueLabel(props));
+	}
 
 	return bulletMark;
 }
@@ -280,6 +293,45 @@ export function getBulletMarkTargetValueLabel(props: BulletSpecProps): Mark {
 	};
 
 	return bulletMarkTargetValueLabel;
+}
+
+export function getBulletLabelAxes(props: BulletSpecProps): Axis[] {
+	const labelOffset = props.showTargetValue && props.showTarget ? -8 : 2;
+
+	const bulletAxes: Axis[] = [
+		{
+			scale: 'groupScale',
+			orient: 'left',
+			tickSize: 0,
+			labelOffset: labelOffset,
+			labelPadding: 10,
+			labelColor: '#797979',
+			domain: false,
+		},
+		{
+			scale: 'groupScale',
+			orient: 'right',
+			tickSize: 0,
+			labelOffset: labelOffset,
+			labelPadding: 10,
+			domain: false,
+			encode: {
+				labels: {
+					update: {
+						text: {
+							signal: `info(data('table')[datum.index * (length(data('table')) - 1)].${
+								props.metric
+							}) != null ? format(info(data('table')[datum.index * (length(data('table')) - 1)].${
+								props.metric
+							}), '${props.numberFormat || ''}') : ''`,
+						},
+					},
+				},
+			},
+		},
+	];
+
+	return props.labelPosition === 'side' && props.direction === 'column' ? bulletAxes : [];
 }
 
 export function getBulletMarkThreshold(props: BulletSpecProps): Mark {

@@ -45,7 +45,7 @@ const BulletStory: StoryFn<BulletProps & { width?: number; height?: number }> = 
 const BulletTitleStory: StoryFn<typeof Bullet> = (args): ReactElement => {
     const chartProps = useChartProps({ ...defaultChartProps, width: 400 });
     return (
-        <Chart {...chartProps} debug>
+        <Chart {...chartProps}>
             <Title text={'Title Bullet'} position={'start'} orient={'top'} />
             <Bullet {...args} />
         </Chart>
@@ -61,8 +61,9 @@ Basic.args = {
 	color: 'red-500',
 	direction: 'column',
 	numberFormat: '$,.2f',
-	showTarget: true,
-	showTargetValue: false,
+  showTarget: true,
+  showTargetValue: false,
+  labelPosition: 'top',
 };
 
 const RowMode = bindWithProps(BulletStory);
@@ -76,6 +77,7 @@ RowMode.args = {
 	numberFormat: '$,.2f',
 	showTarget: true,
 	showTargetValue: false,
+  labelPosition: 'top',
 };
 
 const WithTitle = bindWithProps(BulletTitleStory);
@@ -85,7 +87,8 @@ WithTitle.args = {
     target: 'target',
     color: 'red-500',
     numberFormat: '$,.2f',
+    labelPosition: 'top',
 };
-export { Basic, WithTitle };
+export { Basic, RowMode, WithTitle };
 
 

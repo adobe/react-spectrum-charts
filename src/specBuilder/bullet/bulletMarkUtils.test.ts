@@ -19,6 +19,7 @@ import {
 	getBulletMarks,
 	getBulletScales,
 	getBulletSignals,
+	getBulletLabelAxes
 } from './bulletMarkUtils';
 import { samplePropsColumn, samplePropsRow } from './bulletSpecBuilder.test';
 
@@ -63,6 +64,15 @@ describe('getBulletMarks', () => {
 		const targetValueMark = marksGroup.marks?.find((mark) => mark.name?.includes('TargetValueLabel'));
 		expect(targetValueMark).toBeDefined();
 	});
+
+	test('Should include label marks when axis labels are enabled', () => {
+		const props = { ...samplePropsColumn, showTarget: true, showTargetValue: true };
+		const marksGroup = getBulletMarks(props);
+		expect(marksGroup.marks).toHaveLength(5);
+		const targetValueMark = marksGroup.marks?.find((mark) => mark.name?.includes('TargetValueLabel'));
+		expect(targetValueMark).toBeDefined();
+	});
+
 });
 
 describe('getBulletData', () => {
@@ -105,6 +115,30 @@ describe('getBulletSignals', () => {
 		const data = getBulletSignals(samplePropsRow);
 		expect(data).toBeDefined();
 		expect(data).toHaveLength(8);
+	});
+
+	test('Should include targetValueLabelHeight signal when showTargetValue is true', () => {
+		const props = { ...samplePropsColumn, showTarget: true, showTargetValue: true };
+		const signals = getBulletSignals(props);
+		expect(signals.find((signal) => signal.name === 'targetValueLabelHeight')).toBeDefined();
+	});
+
+	test('Should include correct targetValueLabelHeight signal when showTargetValue is true', () => {
+		const props = { ...samplePropsColumn, showTarget: true, showTargetValue: true, labelPosition: "side" as "side" | "top" };
+		const signals = getBulletSignals(props);
+		expect(signals.find((signal) => signal.name === 'bulletGroupHeight')).toStrictEqual({"name": "bulletGroupHeight", "update": "bulletThresholdHeight + targetValueLabelHeight + 10"});
+	});
+
+	test('Should include correct targetValueLabelHeight signal when showTargetValue is true', () => {
+		const props = { ...samplePropsColumn, showTarget: true, showTargetValue: true, labelPosition: "top" as "side" | "top" };
+		const signals = getBulletSignals(props);
+		expect(signals.find((signal) => signal.name === 'bulletGroupHeight')).toStrictEqual({"name": "bulletGroupHeight", "update": "bulletThresholdHeight + targetValueLabelHeight + 24"});
+	});
+
+	test('Should include correct targetValueLabelHeight signal when showTargetValue is true', () => {
+		const props = { ...samplePropsColumn, showTarget: true, showTargetValue: false, labelPosition: "side" as "side" | "top" };
+		const signals = getBulletSignals(props);
+		expect(signals.find((signal) => signal.name === 'bulletGroupHeight')).toStrictEqual({"name": "bulletGroupHeight", "update": "bulletThresholdHeight + 10"});
 	});
 });
 
@@ -170,6 +204,39 @@ describe('getBulletMarkValueLabel', () => {
 		}
 	});
 });
+
+describe('getBulletMarkSideLabel', () => {
+	test('Should not return label marks when side label mode is enabled', () => {
+		const props = { ...samplePropsColumn, labelPosition: 'side' as 'side' | 'top' };
+		const marks = getBulletMarks(props);
+		expect(marks.marks).toBeDefined();
+		expect(marks.marks).toHaveLength(2);
+	});
+});
+
+describe('getBulletAxes', () => {
+
+	test('Should return the correct axes object when side label mode is enabled', () => {
+		const props = { ...samplePropsColumn, labelPosition: 'side' as 'side' | 'top' };
+		const axes = getBulletLabelAxes(props);
+		expect(axes).toHaveLength(2);
+		expect(axes[0].labelOffset).toBe(2);
+	});
+
+	test('Should return the correct axes object when side label mode is enabled and target label is shown', () => {
+		const props = { ...samplePropsColumn, labelPosition: 'side' as 'side' | 'top', showTargetValue: true };
+		const axes = getBulletLabelAxes(props);
+		expect(axes).toHaveLength(2);
+		expect(axes[0].labelOffset).toBe(-8);
+	});
+
+	test('Should return an empty list when top label mode is enabled', () => {
+		const props = { ...samplePropsColumn };
+		const axes = getBulletLabelAxes(props);
+		expect(axes).toStrictEqual([]);
+	});
+	
+})
 
 describe('Threshold functionality', () => {
 	describe('Data generation', () => {
