@@ -19,7 +19,8 @@ import {
 	getBulletMarks,
 	getBulletScales,
 	getBulletSignals,
-	getBulletLabelAxes
+	getBulletLabelAxes,
+	getBulletMarkTrack
 } from './bulletMarkUtils';
 import { samplePropsColumn, samplePropsRow } from './bulletSpecBuilder.test';
 
@@ -282,11 +283,11 @@ describe('Threshold functionality', () => {
 			const props = {
 				...samplePropsRow,
 				name: 'testBullet',
-				thresholds: detailedThresholds,
-				thresholdConfig: undefined,
+				thresholdValues: detailedThresholds,
 			};
 
 			const marksGroup = getBulletMarks(props);
+
 			expect(marksGroup.data).toBeDefined();
 			expect(marksGroup.data?.[0].name).toBe('thresholds');
 
@@ -346,3 +347,20 @@ describe('Threshold functionality', () => {
 		});
 	});
 });
+
+describe('getBulletMarkTrack', () => {
+
+	test('Should return the correct track mark object', () => {
+		const props = {
+			...samplePropsRow,
+			name: 'testBullet',
+			threshold: false,
+			track: true
+		};
+		const data = getBulletMarkTrack(props);
+		expect(data).toBeDefined()
+		expect(data.encode?.update).toBeDefined();
+		expect(Object.keys(data.encode?.update ?? {}).length).toBe(4);
+		expect(Object.keys(data.encode?.enter ?? {}).length).toBe(5);
+	});
+    });
