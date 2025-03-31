@@ -19,7 +19,7 @@ import {
 	getBulletMarks,
 	getBulletScales,
 	getBulletSignals,
-	getBulletAxes
+	getBulletLabelAxes
 } from './bulletMarkUtils';
 import { samplePropsColumn, samplePropsRow } from './bulletSpecBuilder.test';
 
@@ -251,21 +251,21 @@ describe('getBulletAxes', () => {
 
 	test('Should return the correct axes object when side label mode is enabled', () => {
 		const props = { ...samplePropsColumn, labelPosition: 'side' as 'side' | 'top' };
-		const axes = getBulletAxes(props);
+		const axes = getBulletLabelAxes(props);
 		expect(axes).toHaveLength(2);
 		expect(axes[0].labelOffset).toBe(2);
 	});
 
 	test('Should return the correct axes object when side label mode is enabled and target label is shown', () => {
 		const props = { ...samplePropsColumn, labelPosition: 'side' as 'side' | 'top', showTargetValue: true };
-		const axes = getBulletAxes(props);
+		const axes = getBulletLabelAxes(props);
 		expect(axes).toHaveLength(2);
 		expect(axes[0].labelOffset).toBe(-8);
 	});
 
 	test('Should return an empty list when top label mode is enabled', () => {
 		const props = { ...samplePropsColumn };
-		const axes = getBulletAxes(props);
+		const axes = getBulletLabelAxes(props);
 		expect(axes).toStrictEqual([]);
 	});
 	
