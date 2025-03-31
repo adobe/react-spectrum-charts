@@ -60,7 +60,6 @@ export const addBullet = (
 		maxScaleValue: maxScaleValue,
 		...props,
 	};
-	console.log(bulletProps.labelPosition);
 
 	return {
 		...spec,
