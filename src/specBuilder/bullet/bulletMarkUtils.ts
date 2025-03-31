@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { Data, GroupMark, Mark, Scale, Signal, Axis } from 'vega';
+import { Axis, Data, GroupMark, Mark, Scale, Signal } from 'vega';
 
 import { BulletSpecProps } from '../../types';
 import { getColorValue } from '../specUtils';
@@ -40,13 +40,13 @@ export function getBulletScales(props: BulletSpecProps): Scale[] {
 
 function getBulletGroupHeightExpression(props: BulletSpecProps): string {
 	if (props.showTargetValue && props.showTarget) {
-	  return props.labelPosition === 'side' && props.direction === 'column'
-	    ? "bulletThresholdHeight + targetValueLabelHeight + 10"
-	    : "bulletThresholdHeight + targetValueLabelHeight + 24";
+		return props.labelPosition === 'side' && props.direction === 'column'
+			? 'bulletThresholdHeight + targetValueLabelHeight + 10'
+			: 'bulletThresholdHeight + targetValueLabelHeight + 24';
 	} else if (props.labelPosition === 'side' && props.direction === 'column') {
-	  return "bulletThresholdHeight + 10";
+		return 'bulletThresholdHeight + 10';
 	}
-	return "bulletThresholdHeight + 24";
+	return 'bulletThresholdHeight + 24';
 }
 
 export function getBulletSignals(props: BulletSpecProps): Signal[] {
@@ -57,11 +57,14 @@ export function getBulletSignals(props: BulletSpecProps): Signal[] {
 		{ name: 'targetHeight', update: 'bulletThresholdHeight + 6' },
 	];
 
-	if(props.showTargetValue && props.showTarget) {
-		bulletSignals.push({ name: "targetValueLabelHeight", update: "20"});
+	if (props.showTargetValue && props.showTarget) {
+		bulletSignals.push({ name: 'targetValueLabelHeight', update: '20' });
 	}
 
-	bulletSignals.push({ name: 'bulletGroupHeight', update: getBulletGroupHeightExpression(props) });
+	bulletSignals.push({
+		name: 'bulletGroupHeight',
+		update: getBulletGroupHeightExpression(props),
+	});
 
 	if (props.direction === 'column') {
 		bulletSignals.push({ name: 'paddingRatio', update: 'gap / (gap + bulletGroupHeight)' });
@@ -137,8 +140,8 @@ export function getBulletMarks(props: BulletSpecProps): GroupMark {
 			bulletMark.marks?.push(getBulletMarkTargetValueLabel(props));
 		}
 	}
-	
-	if(props.labelPosition === 'top' || props.direction === 'row'){
+
+	if (props.labelPosition === 'top' || props.direction === 'row') {
 		bulletMark.marks?.push(getBulletMarkLabel(props));
 		bulletMark.marks?.push(getBulletMarkValueLabel(props));
 	}
@@ -292,44 +295,45 @@ export function getBulletMarkTargetValueLabel(props: BulletSpecProps): Mark {
 	return bulletMarkTargetValueLabel;
 }
 
-export function getBulletAxes(props: BulletSpecProps): Axis[] {
-
+export function getBulletLabelAxes(props: BulletSpecProps): Axis[] {
 	const labelOffset = props.showTargetValue && props.showTarget ? -8 : 2;
 
 	const bulletAxes: Axis[] = [
 		{
-			"scale": "groupScale",
-			"orient": "left",
-			"tickSize": 0,
-			"labelOffset": labelOffset,
-			"labelPadding": 10,
-			"labelColor": "#797979",
-			"domain": false,
+			scale: 'groupScale',
+			orient: 'left',
+			tickSize: 0,
+			labelOffset: labelOffset,
+			labelPadding: 10,
+			labelColor: '#797979',
+			domain: false,
 		},
 		{
-			"scale": "groupScale",
-			"orient": "right",
-			"tickSize": 0,
-			"labelOffset": labelOffset,
-			"labelPadding": 10,
-			"domain": false,
-			"encode": {
-				"labels":{
-					"update": {
-						"text": {
-							"signal": `info(data('table')[datum.index * (length(data('table')) - 1)].${props.metric}) != null ? format(info(data('table')[datum.index * (length(data('table')) - 1)].${props.metric}), '${
-								props.numberFormat || ''
-							}') : ''`,
-						}
-					}
-				}
-			}
-		}
-	]
-	
-	return (props.labelPosition === 'side' && props.direction === 'column') ? bulletAxes : [];
+			scale: 'groupScale',
+			orient: 'right',
+			tickSize: 0,
+			labelOffset: labelOffset,
+			labelPadding: 10,
+			domain: false,
+			encode: {
+				labels: {
+					update: {
+						text: {
+							signal: `info(data('table')[datum.index * (length(data('table')) - 1)].${
+								props.metric
+							}) != null ? format(info(data('table')[datum.index * (length(data('table')) - 1)].${
+								props.metric
+							}), '${props.numberFormat || ''}') : ''`,
+						},
+					},
+				},
+			},
+		},
+	];
+
+	return props.labelPosition === 'side' && props.direction === 'column' ? bulletAxes : [];
 }
-  
+
 export function getBulletMarkThreshold(props: BulletSpecProps): Mark {
 	// Vertically center the threshold bar by offsetting from bulletGroupHeight.
 	// Subtract 3 for alignment and targetValueLabelHeight if the label is shown.
