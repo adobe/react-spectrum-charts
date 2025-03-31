@@ -138,9 +138,9 @@ export function getBulletMarks(props: BulletSpecProps): GroupMark {
 		marks: [],
 	};
 
-	const thresholdValues = props.thresholds;
+	const thresholdValues = props.thresholdValues;
 
-	if (thresholdValues) {
+	if (props.threshold && thresholdValues) {
 		bulletMark.data = [
 			{
 				name: 'thresholds',
@@ -149,6 +149,8 @@ export function getBulletMarks(props: BulletSpecProps): GroupMark {
 			},
 		];
 		bulletMark.marks?.push(getBulletMarkThreshold(props));
+	} else if(props.track) {
+		bulletMark.marks?.push(getBulletMarkTrack(props));
 	}
 
 	bulletMark.marks?.push(getBulletMarkRect(props));
@@ -396,3 +398,41 @@ export function getBulletMarkThreshold(props: BulletSpecProps): Mark {
 	};
 	return bulletMarkThreshold;
 }
+
+export function getBulletMarkTrack(props: BulletSpecProps): Mark {
+
+	const trackColor = getColorValue('gray-200', props.colorScheme);
+    
+	const bulletTrackMark: Mark = {
+	    "name": `${props.name}Track`,
+	    "description": `${props.name}Track`,
+	    "type": "rect",
+	    "from": { "data": "bulletGroups" },
+	    "encode": {
+	      "enter": {
+		"fill": { "value": trackColor },
+		"cornerRadiusTopRight": [
+		  { "test": "domain('xscale')[1] !== 0", "value": 3 }
+		],
+		"cornerRadiusBottomRight": [
+		  { "test": "domain('xscale')[1] !== 0", "value": 3 }
+		],
+		"cornerRadiusTopLeft": [
+		  { "test": "domain('xscale')[0] !== 0", "value": 3 }
+		],
+		"cornerRadiusBottomLeft": [
+		  { "test": "domain('xscale')[0] !== 0", "value": 3 }
+		]
+	      },
+	      "update": {
+		"x": { "value": 0 },
+		"width": { "signal": "width" },
+		"height": { "signal": "bulletHeight" },
+		"y": { "signal": "bulletGroupHeight - 3 - 2 * bulletHeight" }
+	      }
+	    }
+	  }
+    
+	return bulletTrackMark
+    
+    }

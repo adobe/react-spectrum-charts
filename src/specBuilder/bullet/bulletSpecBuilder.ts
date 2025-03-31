@@ -39,6 +39,8 @@ export const addBullet = (
 		labelPosition = DEFAULT_LABEL_POSITION,
 		scaleType = DEFAULT_SCALE_TYPE,
 		maxScaleValue = DEFAULT_SCALE_VALUE,
+		threshold = true,
+		track = false,
 		...props
 	}: BulletProps & { colorScheme?: ColorScheme; index?: number; idKey: string }
 ): Spec => {
@@ -58,9 +60,10 @@ export const addBullet = (
 		labelPosition: labelPosition,
 		scaleType: scaleType,
 		maxScaleValue: maxScaleValue,
+		track: track,
+		threshold: threshold,
 		...props,
 	};
-	console.log(bulletProps.labelPosition);
 
 	return {
 		...spec,

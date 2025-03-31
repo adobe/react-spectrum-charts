@@ -35,7 +35,7 @@ const BulletStory: StoryFn<BulletProps & { width?: number; height?: number }> = 
 	const { width, height, ...bulletProps } = args;
 	const chartProps = useChartProps({ ...defaultChartProps, width: width ?? 350, height: height ?? 350 });
 	return (
-		<Chart {...chartProps}>
+		<Chart {...chartProps} debug>
 			<Bullet {...bulletProps}/> 
 		</Chart>
 	);
@@ -57,43 +57,49 @@ Basic.args = {
 	metric: 'currentAmount',
 	dimension: 'graphLabel',
 	target: 'target',
-	thresholds: basicThresholdsData,
+	thresholdValues: basicThresholdsData,
 	color: 'red-500',
 	direction: 'column',
 	numberFormat: '$,.2f',
-  showTarget: true,
-  showTargetValue: false,
-  labelPosition: 'top',
-  scaleType: 'normal',
-  maxScaleValue: 100,
+	showTarget: true,
+	showTargetValue: false,
+	labelPosition: 'top',
+	scaleType: 'normal',
+	maxScaleValue: 100,
+	threshold: true,
+	track: false,
 };
 
 const RowMode = bindWithProps(BulletStory);
 RowMode.args = {
 	metric: 'currentAmount',
-  dimension: 'graphLabel',
-  target: 'target',
-  color: 'red-500',
-  direction: 'row',
-  numberFormat: '$,.2f',
-  showTarget: true,
-  showTargetValue: false,
-  labelPosition: 'top',
-  scaleType: 'normal',
-  maxScaleValue: 100,
-  thresholds: basicThresholdsData,
+	dimension: 'graphLabel',
+	target: 'target',
+	color: 'red-500',
+	direction: 'row',
+	numberFormat: '$,.2f',
+	showTarget: true,
+	showTargetValue: false,
+	labelPosition: 'top',
+	scaleType: 'normal',
+	maxScaleValue: 100,
+	threshold: true,
+	thresholdValues: basicThresholdsData,
+	track: false,
 };
 
 const WithTitle = bindWithProps(BulletTitleStory);
 WithTitle.args = {
-    metric: 'currentAmount',
-    dimension: 'graphLabel',
-    target: 'target',
-    color: 'red-500',
-    numberFormat: '$,.2f',
-    labelPosition: 'top',
-    scaleType: 'normal',
-    maxScaleValue: 100,
+	metric: 'currentAmount',
+	dimension: 'graphLabel',
+	target: 'target',
+	color: 'red-500',
+	numberFormat: '$,.2f',
+	labelPosition: 'top',
+	scaleType: 'normal',
+	maxScaleValue: 100,
+	threshold: false,
+	track: false,
 };
 export { Basic, RowMode, WithTitle };
 

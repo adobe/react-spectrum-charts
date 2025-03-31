@@ -256,7 +256,11 @@ export interface BulletProps extends MarkProps {
 	 *
 	 * `fill` : The fill color to use for the threshold background.
 	 */
-	thresholds?: ThresholdBackground[];
+	thresholdValues?: ThresholdBackground[];
+	/** Color regions that sit behind the bullet bar */
+	threshold?: boolean,
+	/** Track that sits behind the Bullet bar */
+	track?: boolean;
 }
 
 export interface DonutProps extends MarkProps {
