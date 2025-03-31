@@ -35,7 +35,7 @@ const BulletStory: StoryFn<BulletProps & { width?: number; height?: number }> = 
 	const { width, height, ...bulletProps } = args;
 	const chartProps = useChartProps({ ...defaultChartProps, width: width ?? 350, height: height ?? 350 });
 	return (
-		<Chart {...chartProps}>
+		<Chart {...chartProps} debug>
 			<Bullet {...bulletProps}/> 
 		</Chart>
 	);
@@ -135,7 +135,8 @@ FixedScale.args = {
 	scaleType: 'fixed',
 	maxScaleValue: 250,
 	thresholdValues: basicThresholdsData,
-  threshold: true
+	threshold: true,
+	track: false
 };
 
 export { Basic, Thresholds, RowMode, WithTitle, FixedScale };
