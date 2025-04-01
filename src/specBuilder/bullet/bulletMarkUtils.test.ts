@@ -135,6 +135,16 @@ describe('getBulletScales', () => {
 		expect(data[1].domain).toBeDefined();
 		expect(data[1].domain).toStrictEqual({data: 'table',fields:['xPaddingForTarget', props.metric]});
 	});
+
+	test('Should return the correct scales object when a negative value is passed for maxScaleValue', () => {
+		const props = { ...samplePropsColumn, scaleType: 'fixed' as 'normal' | 'flexible' | 'fixed', maxScaleValue: -100 };
+		const data = getBulletScales(props);
+		expect(data).toBeDefined();
+		expect(data[1].domain).toBeDefined();
+
+		// Expect normal scale mode to be used
+		expect(data[1].domain).toStrictEqual({data: 'table',fields:['xPaddingForTarget', props.metric]});
+	});
 });
 
 describe('getBulletSignals', () => {
