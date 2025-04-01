@@ -15,7 +15,7 @@ import { Axis, Data, GroupMark, Mark, Scale, Signal } from 'vega';
 import { BulletSpecProps } from '../../types';
 import { getColorValue } from '../specUtils';
 
-export const addBulletScales = produce<Scale[], [BulletSpecProps]>((scales, props) => {
+export const addScales = produce<Scale[], [BulletSpecProps]>((scales, props) => {
 	const groupScaleRangeSignal = props.direction === 'column' ? 'height' : 'width';
 	const xRange = props.direction === 'column' ? 'width' : [0, { signal: 'bulletGroupWidth' }];
 	let domainFields;
@@ -59,37 +59,33 @@ function getBulletGroupHeightExpression(props: BulletSpecProps): string {
 	return 'bulletThresholdHeight + 24';
 }
 
-export function getBulletSignals(props: BulletSpecProps): Signal[] {
-	const bulletSignals: Signal[] = [
-		{ name: 'gap', value: 12 },
-		{ name: 'bulletHeight', value: 8 },
-		{ name: 'bulletThresholdHeight', update: 'bulletHeight * 3' },
-		{ name: 'targetHeight', update: 'bulletThresholdHeight + 6' },
-	];
+export const addSignals = produce<Signal[], [BulletSpecProps]>((signals, props) => {
+	signals.push({ name: 'gap', value: 12 });
+	signals.push({ name: 'bulletHeight', value: 8 });
+	signals.push({ name: 'bulletThresholdHeight', update: 'bulletHeight * 3' });
+	signals.push({ name: 'targetHeight', update: 'bulletThresholdHeight + 6' });
 
 	if (props.showTargetValue && props.showTarget) {
-		bulletSignals.push({ name: 'targetValueLabelHeight', update: '20' });
+		signals.push({ name: 'targetValueLabelHeight', update: '20' });
 	}
 
-	bulletSignals.push({
+	signals.push({
 		name: 'bulletGroupHeight',
 		update: getBulletGroupHeightExpression(props),
 	});
 
 	if (props.direction === 'column') {
-		bulletSignals.push({ name: 'paddingRatio', update: 'gap / (gap + bulletGroupHeight)' });
-		bulletSignals.push({
+		signals.push({ name: 'paddingRatio', update: 'gap / (gap + bulletGroupHeight)' });
+		signals.push({
 			name: 'height',
 			update: "length(data('table')) * bulletGroupHeight + (length(data('table')) - 1) * gap",
 		});
 	} else {
-		bulletSignals.push({ name: 'bulletGroupWidth', update: "(width / length(data('table'))) - gap" });
-		bulletSignals.push({ name: 'paddingRatio', update: 'gap / (gap + bulletGroupWidth)' });
-		bulletSignals.push({ name: 'height', update: 'bulletGroupHeight' });
+		signals.push({ name: 'bulletGroupWidth', update: "(width / length(data('table'))) - gap" });
+		signals.push({ name: 'paddingRatio', update: 'gap / (gap + bulletGroupWidth)' });
+		signals.push({ name: 'height', update: 'bulletGroupHeight' });
 	}
-
-	return bulletSignals;
-}
+});
 
 export function getBulletData(props: BulletSpecProps): Data[] {
 	//We are multiplying the target by 1.05 to make sure that the target line is never at the very end of the graph
