@@ -14,8 +14,22 @@
 import { FC } from 'react';
 
 import { BulletProps } from '../../../types';
+import { DEFAULT_BULLET_DIRECTION, DEFAULT_LABEL_POSITION, DEFAULT_SCALE_TYPE, DEFAULT_SCALE_VALUE } from '@constants';
 
-const Bullet: FC<BulletProps> = ({ name = 'bullet0' }) => {
+const Bullet: FC<BulletProps> = ({
+	name = 'bullet0',
+	metric = 'currentAmount',
+	dimension = 'graphLabel',
+	target = 'target',
+	direction = DEFAULT_BULLET_DIRECTION,
+	numberFormat = '',
+	showTarget = true,
+	showTargetValue = false,
+	labelPosition = DEFAULT_LABEL_POSITION,
+	scaleType = DEFAULT_SCALE_TYPE,
+	maxScaleValue = DEFAULT_SCALE_VALUE,
+	children
+}) => {
 	return null;
 };
 
