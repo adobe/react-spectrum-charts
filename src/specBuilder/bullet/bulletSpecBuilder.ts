@@ -25,10 +25,10 @@ import { BulletProps, BulletSpecProps, ColorScheme } from '../../types';
 import { sanitizeMarkChildren } from '../../utils';
 import { getColorValue } from '../specUtils';
 import {
+	addBulletScales,
 	getBulletData,
 	getBulletLabelAxes,
 	getBulletMarks,
-	getBulletScales,
 	getBulletSignals,
 } from './bulletMarkUtils';
 
@@ -75,13 +75,10 @@ export const addBullet = produce<Spec, [BulletProps & { colorScheme?: ColorSchem
 			...props,
 		};
 
-		return {
-			...spec,
-			data: getBulletData(bulletProps),
-			marks: [getBulletMarks(bulletProps)],
-			scales: getBulletScales(bulletProps),
-			signals: getBulletSignals(bulletProps),
-			axes: getBulletLabelAxes(bulletProps),
-		};
+		spec.data = getBulletData(bulletProps);
+		spec.marks = [getBulletMarks(bulletProps)];
+		spec.scales = addBulletScales(spec.scales ?? [], bulletProps);
+		spec.signals = getBulletSignals(bulletProps);
+		spec.axes = getBulletLabelAxes(bulletProps);
 	}
 );

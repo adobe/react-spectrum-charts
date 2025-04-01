@@ -9,15 +9,17 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { produce } from 'immer';
 import { Axis, Data, GroupMark, Mark, Scale, Signal } from 'vega';
 
 import { BulletSpecProps } from '../../types';
 import { getColorValue } from '../specUtils';
 
-export function getBulletScales(props: BulletSpecProps): Scale[] {
+export const addBulletScales = produce<Scale[], [BulletSpecProps]>((scales, props) => {
 	const groupScaleRangeSignal = props.direction === 'column' ? 'height' : 'width';
 	const xRange = props.direction === 'column' ? 'width' : [0, { signal: 'bulletGroupWidth' }];
 	let domainFields;
+
 	if (props.scaleType === 'flexible') {
 		domainFields = { data: 'table', fields: ['xPaddingForTarget', props.metric, 'flexibleScaleValue'] };
 	} else if (props.scaleType === 'fixed') {
@@ -26,7 +28,7 @@ export function getBulletScales(props: BulletSpecProps): Scale[] {
 		domainFields = { data: 'table', fields: ['xPaddingForTarget', props.metric] };
 	}
 
-	const bulletScales: Scale[] = [
+	scales.push(
 		{
 			name: 'groupScale',
 			type: 'band',
@@ -42,11 +44,9 @@ export function getBulletScales(props: BulletSpecProps): Scale[] {
 			round: true,
 			clamp: true,
 			zero: true,
-		},
-	];
-
-	return bulletScales;
-}
+		}
+	);
+});
 
 function getBulletGroupHeightExpression(props: BulletSpecProps): string {
 	if (props.showTargetValue && props.showTarget) {
