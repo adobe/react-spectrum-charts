@@ -406,6 +406,7 @@ export function getBulletMarkThreshold(props: BulletSpecProps): Mark {
 export function getBulletMarkTrack(props: BulletSpecProps): Mark {
 
 	const trackColor = getColorValue('gray-200', props.colorScheme);
+	const trackWidth = props.direction === 'column' ? 'width' : 'bulletGroupWidth';
     
 	const bulletTrackMark: Mark = {
 	    "name": `${props.name}Track`,
@@ -430,7 +431,7 @@ export function getBulletMarkTrack(props: BulletSpecProps): Mark {
 	      },
 	      "update": {
 		"x": { "value": 0 },
-		"width": { "signal": "width" },
+		"width": { "signal": trackWidth },
 		"height": { "signal": "bulletHeight" },
 		"y": { "signal": "bulletGroupHeight - 3 - 2 * bulletHeight" }
 	      }

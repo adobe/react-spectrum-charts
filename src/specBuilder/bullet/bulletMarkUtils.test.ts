@@ -397,9 +397,9 @@ describe('Threshold functionality', () => {
 
 describe('getBulletMarkTrack', () => {
 
-	test('Should return the correct track mark object', () => {
+	test('Should return the correct track mark object in column mode', () => {
 		const props = {
-			...samplePropsRow,
+			...samplePropsColumn,
 			name: 'testBullet',
 			threshold: false,
 			track: true
@@ -409,5 +409,19 @@ describe('getBulletMarkTrack', () => {
 		expect(data.encode?.update).toBeDefined();
 		expect(Object.keys(data.encode?.update ?? {}).length).toBe(4);
 		expect(Object.keys(data.encode?.enter ?? {}).length).toBe(5);
+		expect(data.encode?.update?.width).toBeDefined()
+		expect(data.encode?.update?.width).toStrictEqual({ 'signal': 'width' })
+	});
+
+	test('Should return the correct track mark object in row mode', () => {
+		const props = {
+			...samplePropsRow,
+			name: 'testBullet',
+			threshold: false,
+			track: true
+		};
+		const data = getBulletMarkTrack(props);
+		expect(data.encode?.update?.width).toBeDefined()
+		expect(data.encode?.update?.width).toStrictEqual({ 'signal': 'bulletGroupWidth' })
 	});
     });
