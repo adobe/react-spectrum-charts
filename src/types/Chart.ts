@@ -243,9 +243,17 @@ export interface BulletProps extends MarkProps {
 	numberFormat?: NumberFormat;
 	/** Specifies if the labels should be in top of the bullet chart or to the side. Side labels are not supported in row mode. */
 	labelPosition?: 'side' | 'top';
-	/** Specifies if the scale should be normal, fixed, or flexible */
+	/** Specifies if the scale should be normal, fixed, or flexible.
+	 * 
+	 * In normal mode the maximum scale value will be calculated using the maximum value of the metric and target data fields. 
+	 * 
+	 * In fixed mode the maximum scale value will be set as the maxScaleValue prop.
+	 * 
+	 * In flexible mode the maximum scale value will be calculated using the maximum value of either the maxScaleValue prop or maximum value of the metric and target data fields.
+	 * This means that the scale max will be set to be the maxScaleValue prop until the data values overtake it.
+	 */
 	scaleType?: 'normal' | 'fixed' | 'flexible';
-	/** Maximum value for the scale */
+	/** Maximum value for the scale. This value must be greater than zero. */
 	maxScaleValue?: number;
 	/** Array of threshold definitions to be rendered as background bands on the bullet chart.
 	 *
