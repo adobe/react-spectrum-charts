@@ -10,7 +10,8 @@
  * governing permissions and limitations under the License.
  */
 import {
-	addBulletScales,
+	addScales,
+	addSignals,
 	getBulletData,
 	getBulletLabelAxes,
 	getBulletMarkLabel,
@@ -19,8 +20,7 @@ import {
 	getBulletMarkThreshold,
 	getBulletMarkValueLabel,
 	getBulletMarks,
-	getBulletSignals,
-	getBulletMarkTrack
+	getBulletMarkTrack,
 } from './bulletMarkUtils';
 import { samplePropsColumn, samplePropsRow } from './bulletSpecBuilder.test';
 
@@ -102,7 +102,7 @@ describe('getBulletData', () => {
 
 describe('getBulletScales', () => {
 	test('Should return the correct scales object for column mode', () => {
-		const data = addBulletScales([], samplePropsColumn);
+		const data = addScales([], samplePropsColumn);
 		expect(data).toBeDefined();
 		expect(data).toHaveLength(2);
 		expect('range' in data[0] && data[0].range && data[0].range[1]).toBeTruthy();
@@ -112,7 +112,7 @@ describe('getBulletScales', () => {
 	});
 
 	test('Should return the correct scales object for row mode', () => {
-		const data = addBulletScales([], samplePropsRow);
+		const data = addScales([], samplePropsRow);
 		expect(data).toBeDefined();
 		expect(data).toHaveLength(2);
 		expect('range' in data[0] && data[0].range && data[0].range[1]).toBeTruthy();
@@ -123,7 +123,7 @@ describe('getBulletScales', () => {
 
 	test('Should return the correct scales object for flexible scale mode', () => {
 		const props = { ...samplePropsColumn, scaleType: 'flexible' as 'normal' | 'flexible' | 'fixed' };
-		const data = addBulletScales([], props);
+		const data = addScales([], props);
 		expect(data).toBeDefined();
 		expect(data[1].domain).toBeDefined();
 		expect(data[1].domain).toStrictEqual({
@@ -134,7 +134,7 @@ describe('getBulletScales', () => {
 
 	test('Should return the correct scales object for fixed scale mode', () => {
 		const props = { ...samplePropsColumn, scaleType: 'fixed' as 'normal' | 'flexible' | 'fixed' };
-		const data = addBulletScales([], props);
+		const data = addScales([], props);
 		expect(data).toBeDefined();
 		expect(data[1].domain).toBeDefined();
 		expect(data[1].domain).toStrictEqual([0, `${props.maxScaleValue}`]);
@@ -142,7 +142,7 @@ describe('getBulletScales', () => {
 
 	test('Should return the correct scales object for normal scale mode', () => {
 		const props = { ...samplePropsColumn, scaleType: 'normal' as 'normal' | 'flexible' | 'fixed' };
-		const data = addBulletScales([], props);
+		const data = addScales([], props);
 		expect(data).toBeDefined();
 		expect(data[1].domain).toBeDefined();
 		expect(data[1].domain).toStrictEqual({ data: 'table', fields: ['xPaddingForTarget', props.metric] });
@@ -150,7 +150,7 @@ describe('getBulletScales', () => {
 
 	test('Should return the correct scales object when a negative value is passed for maxScaleValue', () => {
 		const props = { ...samplePropsColumn, scaleType: 'fixed' as 'normal' | 'flexible' | 'fixed', maxScaleValue: -100 };
-		const data = addBulletScales([], props);
+		const data = addScales([], props);
 		expect(data).toBeDefined();
 		expect(data[1].domain).toBeDefined();
 
@@ -161,20 +161,20 @@ describe('getBulletScales', () => {
 
 describe('getBulletSignals', () => {
 	test('Should return the correct signals object in column mode', () => {
-		const data = getBulletSignals(samplePropsColumn);
+		const data = addSignals([], samplePropsColumn);
 		expect(data).toBeDefined();
 		expect(data).toHaveLength(7);
 	});
 
 	test('Should return the correct signals object in row mode', () => {
-		const data = getBulletSignals(samplePropsRow);
+		const data = addSignals([], samplePropsRow);
 		expect(data).toBeDefined();
 		expect(data).toHaveLength(8);
 	});
 
 	test('Should include targetValueLabelHeight signal when showTargetValue is true', () => {
 		const props = { ...samplePropsColumn, showTarget: true, showTargetValue: true };
-		const signals = getBulletSignals(props);
+		const signals = addSignals([], props);
 		expect(signals.find((signal) => signal.name === 'targetValueLabelHeight')).toBeDefined();
 	});
 
@@ -185,7 +185,7 @@ describe('getBulletSignals', () => {
 			showTargetValue: true,
 			labelPosition: 'side' as 'side' | 'top',
 		};
-		const signals = getBulletSignals(props);
+		const signals = addSignals([], props);
 		expect(signals.find((signal) => signal.name === 'bulletGroupHeight')).toStrictEqual({
 			name: 'bulletGroupHeight',
 			update: 'bulletThresholdHeight + targetValueLabelHeight + 10',
@@ -199,7 +199,7 @@ describe('getBulletSignals', () => {
 			showTargetValue: true,
 			labelPosition: 'top' as 'side' | 'top',
 		};
-		const signals = getBulletSignals(props);
+		const signals = addSignals([], props);
 		expect(signals.find((signal) => signal.name === 'bulletGroupHeight')).toStrictEqual({
 			name: 'bulletGroupHeight',
 			update: 'bulletThresholdHeight + targetValueLabelHeight + 24',
@@ -213,7 +213,7 @@ describe('getBulletSignals', () => {
 			showTargetValue: false,
 			labelPosition: 'side' as 'side' | 'top',
 		};
-		const signals = getBulletSignals(props);
+		const signals = addSignals([], props);
 		expect(signals.find((signal) => signal.name === 'bulletGroupHeight')).toStrictEqual({
 			name: 'bulletGroupHeight',
 			update: 'bulletThresholdHeight + 10',
