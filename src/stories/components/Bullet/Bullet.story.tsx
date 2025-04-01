@@ -84,7 +84,7 @@ Thresholds.args = {
 	scaleType: 'normal',
 	maxScaleValue: 100,
 	thresholdValues: basicThresholdsData,
-  threshold: true,
+  	threshold: true,
 	track: false,
 };
 
