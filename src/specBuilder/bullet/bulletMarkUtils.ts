@@ -48,17 +48,6 @@ export const addScales = produce<Scale[], [BulletSpecProps]>((scales, props) => 
 	);
 });
 
-function getBulletGroupHeightExpression(props: BulletSpecProps): string {
-	if (props.showTargetValue && props.showTarget) {
-		return props.labelPosition === 'side' && props.direction === 'column'
-			? 'bulletThresholdHeight + targetValueLabelHeight + 10'
-			: 'bulletThresholdHeight + targetValueLabelHeight + 24';
-	} else if (props.labelPosition === 'side' && props.direction === 'column') {
-		return 'bulletThresholdHeight + 10';
-	}
-	return 'bulletThresholdHeight + 24';
-}
-
 export const addSignals = produce<Signal[], [BulletSpecProps]>((signals, props) => {
 	signals.push({ name: 'gap', value: 12 });
 	signals.push({ name: 'bulletHeight', value: 8 });
@@ -86,6 +75,22 @@ export const addSignals = produce<Signal[], [BulletSpecProps]>((signals, props) 
 		signals.push({ name: 'height', update: 'bulletGroupHeight' });
 	}
 });
+
+/**
+ * Returns the height of the bullet group based on the props
+ * @param props the bullet spec props
+ * @returns the height of the bullet group
+ */
+function getBulletGroupHeightExpression(props: BulletSpecProps): string {
+	if (props.showTargetValue && props.showTarget) {
+		return props.labelPosition === 'side' && props.direction === 'column'
+			? 'bulletThresholdHeight + targetValueLabelHeight + 10'
+			: 'bulletThresholdHeight + targetValueLabelHeight + 24';
+	} else if (props.labelPosition === 'side' && props.direction === 'column') {
+		return 'bulletThresholdHeight + 10';
+	}
+	return 'bulletThresholdHeight + 24';
+}
 
 export function getBulletData(props: BulletSpecProps): Data[] {
 	//We are multiplying the target by 1.05 to make sure that the target line is never at the very end of the graph
