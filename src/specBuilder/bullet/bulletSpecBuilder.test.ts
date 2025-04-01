@@ -28,6 +28,8 @@ export const samplePropsColumn: BulletSpecProps = {
 	showTarget: true,
 	showTargetValue: false,
 	labelPosition: 'top',
+	scaleType: 'normal',
+	maxScaleValue: 100,
 };
 
 export const samplePropsRow: BulletSpecProps = {
@@ -44,6 +46,8 @@ export const samplePropsRow: BulletSpecProps = {
 	showTarget: true,
 	showTargetValue: false,
 	labelPosition: 'top',
+	scaleType: 'normal',
+	maxScaleValue: 100,
 };
 
 describe('addBullet', () => {

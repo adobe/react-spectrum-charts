@@ -80,6 +80,12 @@ describe('getBulletData', () => {
 		const data = getBulletData(samplePropsColumn);
 		expect(data).toHaveLength(1);
 	});
+
+	test('Should return the correct data object in flexible scale mode', () => {
+		const props = { ...samplePropsColumn, scaleType: 'flexible' as 'normal' | 'flexible' | 'fixed' };
+		const data = getBulletData(props);
+		expect(data[0].transform).toHaveLength(2);
+	});
 });
 
 describe('getBulletScales', () => {
@@ -101,6 +107,43 @@ describe('getBulletScales', () => {
 		if ('range' in data[0] && data[0].range && data[0].range[1]) {
 			expect(data[0].range[1].signal).toBe('width');
 		}
+	});
+
+	test('Should return the correct scales object for flexible scale mode', () => {
+		const props = { ...samplePropsColumn, scaleType: 'flexible' as 'normal' | 'flexible' | 'fixed' };
+		const data = getBulletScales(props);
+		expect(data).toBeDefined();
+		expect(data[1].domain).toBeDefined();
+		expect(data[1].domain).toStrictEqual({
+			data: 'table',
+			fields: ['xPaddingForTarget', props.metric, 'flexibleScaleValue']
+		});
+	});
+
+	test('Should return the correct scales object for fixed scale mode', () => {
+		const props = { ...samplePropsColumn, scaleType: 'fixed' as 'normal' | 'flexible' | 'fixed' };
+		const data = getBulletScales(props);
+		expect(data).toBeDefined();
+		expect(data[1].domain).toBeDefined();
+		expect(data[1].domain).toStrictEqual([0,`${props.maxScaleValue}`]);
+	});
+
+	test('Should return the correct scales object for normal scale mode', () => {
+		const props = { ...samplePropsColumn, scaleType: 'normal' as 'normal' | 'flexible' | 'fixed' };
+		const data = getBulletScales(props);
+		expect(data).toBeDefined();
+		expect(data[1].domain).toBeDefined();
+		expect(data[1].domain).toStrictEqual({data: 'table',fields:['xPaddingForTarget', props.metric]});
+	});
+
+	test('Should return the correct scales object when a negative value is passed for maxScaleValue', () => {
+		const props = { ...samplePropsColumn, scaleType: 'fixed' as 'normal' | 'flexible' | 'fixed', maxScaleValue: -100 };
+		const data = getBulletScales(props);
+		expect(data).toBeDefined();
+		expect(data[1].domain).toBeDefined();
+
+		// Expect normal scale mode to be used
+		expect(data[1].domain).toStrictEqual({data: 'table',fields:['xPaddingForTarget', props.metric]});
 	});
 });
 

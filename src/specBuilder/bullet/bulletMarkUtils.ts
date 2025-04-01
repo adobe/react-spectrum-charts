@@ -17,6 +17,14 @@ import { getColorValue } from '../specUtils';
 export function getBulletScales(props: BulletSpecProps): Scale[] {
 	const groupScaleRangeSignal = props.direction === 'column' ? 'height' : 'width';
 	const xRange = props.direction === 'column' ? 'width' : [0, { signal: 'bulletGroupWidth' }];
+	let domainFields;
+	if (props.scaleType === 'flexible' && props.maxScaleValue > 0) {
+		domainFields = { data: 'table', fields: ['xPaddingForTarget', props.metric, 'flexibleScaleValue'] };
+	} else if (props.scaleType === 'fixed' && props.maxScaleValue > 0) {
+		domainFields = [0, `${props.maxScaleValue}`];
+	} else {
+		domainFields = { data: 'table', fields: ['xPaddingForTarget', props.metric] };
+	}
 
 	const bulletScales: Scale[] = [
 		{
@@ -29,12 +37,14 @@ export function getBulletScales(props: BulletSpecProps): Scale[] {
 		{
 			name: 'xscale',
 			type: 'linear',
-			domain: { data: 'table', fields: ['xPaddingForTarget', props.metric] },
+			domain: domainFields,
 			range: xRange,
 			round: true,
+			clamp: true,
 			zero: true,
 		},
 	];
+
 	return bulletScales;
 }
 
@@ -96,6 +106,17 @@ export function getBulletData(props: BulletSpecProps): Data[] {
 			],
 		},
 	];
+
+	// In flexible scale mode the max scale value is added to each data field to make sure that the scale calculation is accurate.
+	// The flexible scale max value is calculated by taking the max value of the metric, target value, and the flexible scale value
+	// of all data fields.
+	if (props.scaleType === 'flexible') {
+		bulletData[0].transform?.push({
+			type: 'formula',
+			expr: `${props.maxScaleValue}`,
+			as: 'flexibleScaleValue',
+		});
+	}
 
 	return bulletData;
 }

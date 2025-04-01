@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { DEFAULT_BULLET_DIRECTION, DEFAULT_COLOR_SCHEME, DEFAULT_LABEL_POSITION } from '@constants';
+import { DEFAULT_BULLET_DIRECTION, DEFAULT_COLOR_SCHEME, DEFAULT_LABEL_POSITION, DEFAULT_SCALE_TYPE, DEFAULT_SCALE_VALUE } from '@constants';
 import { spectrumColors } from '@themes';
 import { toCamelCase } from '@utils';
 import { Spec } from 'vega';
@@ -37,6 +37,8 @@ export const addBullet = (
 		showTarget = true,
 		showTargetValue = false,
 		labelPosition = DEFAULT_LABEL_POSITION,
+		scaleType = DEFAULT_SCALE_TYPE,
+		maxScaleValue = DEFAULT_SCALE_VALUE,
 		...props
 	}: BulletProps & { colorScheme?: ColorScheme; index?: number; idKey: string }
 ): Spec => {
@@ -54,6 +56,8 @@ export const addBullet = (
 		showTarget: showTarget,
 		showTargetValue: showTargetValue,
 		labelPosition: labelPosition,
+		scaleType: scaleType,
+		maxScaleValue: maxScaleValue,
 		...props,
 	};
 
