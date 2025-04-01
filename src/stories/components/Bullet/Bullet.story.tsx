@@ -118,7 +118,7 @@ WithTitle.args = {
 	maxScaleValue: 100,
 	threshold: false,
 	track: false,
-  direction: 'column',
+  	direction: 'column',
 };
 
 const FixedScale = bindWithProps(BulletStory);
