@@ -18,9 +18,9 @@ export function getBulletScales(props: BulletSpecProps): Scale[] {
 	const groupScaleRangeSignal = props.direction === 'column' ? 'height' : 'width';
 	const xRange = props.direction === 'column' ? 'width' : [0, { signal: 'bulletGroupWidth' }];
 	let domainFields;
-	if (props.scaleType === 'flexible') {
+	if (props.scaleType === 'flexible' && props.maxScaleValue > 0) {
 		domainFields = { data: 'table', fields: ['xPaddingForTarget', props.metric, 'flexibleScaleValue'] };
-	} else if (props.scaleType === 'fixed') {
+	} else if (props.scaleType === 'fixed' && props.maxScaleValue > 0) {
 		domainFields = [0, `${props.maxScaleValue}`];
 	} else {
 		domainFields = { data: 'table', fields: ['xPaddingForTarget', props.metric] };
