@@ -107,7 +107,7 @@ export const addData = produce<Data[], [BulletSpecProps]>((data, props) => {
 	tableData.transform = getBulletTransforms(props);
 });
 
-export const addMarks = produce<GroupMark[], [BulletSpecProps]>((marks, props) => {
+export const addMarks = produce<Mark[], [BulletSpecProps]>((marks, props) => {
 	const markGroupEncodeUpdateDirection = props.direction === 'column' ? 'y' : 'x';
 	const bulletGroupWidth = props.direction === 'column' ? 'width' : 'bulletGroupWidth';
 
