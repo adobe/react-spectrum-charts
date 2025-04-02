@@ -66,6 +66,7 @@ Basic.args = {
 	scaleType: 'normal',
 	maxScaleValue: 100,
 	track: false,
+    axis: false,
 };
 
 const Thresholds = bindWithProps(BulletStory);
@@ -83,6 +84,7 @@ Thresholds.args = {
 	maxScaleValue: 100,
 	thresholdValues: basicThresholdsData,
 	track: false,
+    axis: false,
 };
 
 const Track = bindWithProps(BulletStory);
@@ -99,6 +101,7 @@ Track.args = {
 	scaleType: 'normal',
 	maxScaleValue: 100,
 	track: true,
+    axis: false,
 };
 
 const RowMode = bindWithProps(BulletStory);
@@ -116,6 +119,7 @@ RowMode.args = {
 	maxScaleValue: 100,
 	thresholdValues: basicThresholdsData,
 	track: false,
+    axis: false,
 };
 
 const WithTitle = bindWithProps(BulletTitleStory);
@@ -130,6 +134,7 @@ WithTitle.args = {
 	maxScaleValue: 100,
 	track: false,
   	direction: 'column',
+      axis: false,
 };
 
 const FixedScale = bindWithProps(BulletStory);
@@ -146,7 +151,8 @@ FixedScale.args = {
 	scaleType: 'fixed',
 	maxScaleValue: 250,
 	thresholdValues: basicThresholdsData,
-	track: false
+	track: false,
+    axis: false,
 };
 
 export { Basic, Thresholds, Track, RowMode, WithTitle, FixedScale };

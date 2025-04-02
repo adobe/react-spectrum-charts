@@ -267,6 +267,8 @@ export interface BulletProps extends MarkProps {
 	thresholdValues?: ThresholdBackground[];
 	/** Color regions that sit behind the bullet bar */
 	track?: boolean;
+	/** Adds an axis that follows the max target in basic mode */
+	axis?: boolean;
 }
 
 export interface DonutProps extends MarkProps {
