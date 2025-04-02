@@ -9,13 +9,15 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
 import { ReactElement } from 'react';
-import { StoryFn } from '@storybook/react';
-import { Bullet } from '@rsc/alpha'; // Assuming Bullet chart is a component in the @rsc/rc library
-import { Chart, BulletProps, ChartProps, Title } from '@rsc';
+
 import useChartProps from '@hooks/useChartProps';
+// Assuming Bullet chart is a component in the @rsc/rc library
+import { BulletProps, Chart, ChartProps, Title } from '@rsc';
+import { Bullet } from '@rsc/alpha';
+import { StoryFn } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
+
 import { basicBulletData, basicThresholdsData } from './data';
 
 export default {
@@ -36,20 +38,20 @@ const BulletStory: StoryFn<BulletProps & { width?: number; height?: number }> = 
 	const chartProps = useChartProps({ ...defaultChartProps, width: width ?? 350, height: height ?? 350 });
 	return (
 		<Chart {...chartProps}>
-			<Bullet {...bulletProps}/> 
+			<Bullet {...bulletProps} />
 		</Chart>
 	);
 };
 
-// Bullet with Title 
+// Bullet with Title
 const BulletTitleStory: StoryFn<typeof Bullet> = (args): ReactElement => {
-    const chartProps = useChartProps({ ...defaultChartProps, width: 400 });
-    return (
-        <Chart {...chartProps}>
-            <Title text={'Title Bullet'} position={'start'} orient={'top'} />
-            <Bullet {...args} />
-        </Chart>
-    );
+	const chartProps = useChartProps({ ...defaultChartProps, width: 400 });
+	return (
+		<Chart {...chartProps}>
+			<Title text={'Title Bullet'} position={'start'} orient={'top'} />
+			<Bullet {...args} />
+		</Chart>
+	);
 };
 
 const Basic = bindWithProps(BulletStory);
@@ -65,6 +67,7 @@ Basic.args = {
 	labelPosition: 'top',
 	scaleType: 'normal',
 	maxScaleValue: 100,
+	track: false,
 };
 
 const Thresholds = bindWithProps(BulletStory);
@@ -81,6 +84,23 @@ Thresholds.args = {
 	scaleType: 'normal',
 	maxScaleValue: 100,
 	thresholds: basicThresholdsData,
+	track: false,
+};
+
+const Track = bindWithProps(BulletStory);
+Track.args = {
+	metric: 'currentAmount',
+	dimension: 'graphLabel',
+	target: 'target',
+	color: 'red-500',
+	direction: 'column',
+	numberFormat: '$,.2f',
+	showTarget: true,
+	showTargetValue: false,
+	labelPosition: 'top',
+	scaleType: 'normal',
+	maxScaleValue: 100,
+	track: true,
 };
 
 const RowMode = bindWithProps(BulletStory);
@@ -97,6 +117,7 @@ RowMode.args = {
 	scaleType: 'normal',
 	maxScaleValue: 100,
 	thresholds: basicThresholdsData,
+	track: false,
 };
 
 const WithTitle = bindWithProps(BulletTitleStory);
@@ -105,14 +126,12 @@ WithTitle.args = {
 	dimension: 'graphLabel',
 	target: 'target',
 	color: 'red-500',
-	direction: 'column',
 	numberFormat: '$,.2f',
-	showTarget: true,
-	showTargetValue: false,
 	labelPosition: 'top',
 	scaleType: 'normal',
 	maxScaleValue: 100,
-	thresholds: basicThresholdsData,
+	track: false,
+	direction: 'column',
 };
 
 const FixedScale = bindWithProps(BulletStory);
@@ -129,8 +148,7 @@ FixedScale.args = {
 	scaleType: 'fixed',
 	maxScaleValue: 250,
 	thresholds: basicThresholdsData,
+	track: false,
 };
 
-export { Basic, Thresholds, RowMode, WithTitle, FixedScale };
-
-
+export { Basic, Thresholds, Track, RowMode, WithTitle, FixedScale };
