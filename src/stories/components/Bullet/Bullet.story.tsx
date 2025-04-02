@@ -152,7 +152,7 @@ FixedScale.args = {
 	labelPosition: 'top',
 	scaleType: 'fixed',
 	maxScaleValue: 250,
-	thresholdValues: basicThresholdsData,
+	thresholds: basicThresholdsData,
 	track: false,
 	axis: false,
 };
