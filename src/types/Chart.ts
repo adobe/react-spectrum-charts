@@ -266,8 +266,6 @@ export interface BulletProps extends MarkProps {
 	 */
 	thresholdValues?: ThresholdBackground[];
 	/** Color regions that sit behind the bullet bar */
-	threshold?: boolean,
-	/** Track that sits behind the Bullet bar */
 	track?: boolean;
 }
 

@@ -20,8 +20,3 @@ export const basicThresholdsData = [
 	{ thresholdMin: 120, thresholdMax: 235, fill: 'rgb(249, 137, 23)' },
 	{ thresholdMin: 235, fill: 'rgb(21, 164, 110)' },
 ];
-
-export const basicThresholdConfigData = {
-	thresholds: [120, 235],
-	colors: ['rgb(234, 56, 41)', 'rgb(249, 137, 23)', 'rgb(21, 164, 110)'],
-};

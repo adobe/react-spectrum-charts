@@ -57,7 +57,6 @@ Basic.args = {
 	metric: 'currentAmount',
 	dimension: 'graphLabel',
 	target: 'target',
-	thresholdValues: basicThresholdsData,
 	color: 'red-500',
 	direction: 'column',
 	numberFormat: '$,.2f',
@@ -66,7 +65,6 @@ Basic.args = {
 	labelPosition: 'top',
 	scaleType: 'normal',
 	maxScaleValue: 100,
-	threshold: true,
 	track: false,
 };
 
@@ -84,8 +82,23 @@ Thresholds.args = {
 	scaleType: 'normal',
 	maxScaleValue: 100,
 	thresholdValues: basicThresholdsData,
-  	threshold: true,
 	track: false,
+};
+
+const Track = bindWithProps(BulletStory);
+Track.args = {
+	metric: 'currentAmount',
+	dimension: 'graphLabel',
+	target: 'target',
+	color: 'red-500',
+	direction: 'column',
+	numberFormat: '$,.2f',
+	showTarget: true,
+	showTargetValue: false,
+	labelPosition: 'top',
+	scaleType: 'normal',
+	maxScaleValue: 100,
+	track: true,
 };
 
 const RowMode = bindWithProps(BulletStory);
@@ -101,7 +114,6 @@ RowMode.args = {
 	labelPosition: 'top',
 	scaleType: 'normal',
 	maxScaleValue: 100,
-	threshold: true,
 	thresholdValues: basicThresholdsData,
 	track: false,
 };
@@ -116,7 +128,6 @@ WithTitle.args = {
 	labelPosition: 'top',
 	scaleType: 'normal',
 	maxScaleValue: 100,
-	threshold: false,
 	track: false,
   	direction: 'column',
 };
@@ -135,10 +146,7 @@ FixedScale.args = {
 	scaleType: 'fixed',
 	maxScaleValue: 250,
 	thresholdValues: basicThresholdsData,
-	threshold: true,
 	track: false
 };
 
-export { Basic, Thresholds, RowMode, WithTitle, FixedScale };
-
-
+export { Basic, Thresholds, Track, RowMode, WithTitle, FixedScale };
