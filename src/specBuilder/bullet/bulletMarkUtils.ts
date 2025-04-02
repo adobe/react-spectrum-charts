@@ -408,7 +408,7 @@ export function getBulletMarkTrack(props: BulletSpecProps): Mark {
 	const trackColor = getColorValue('gray-200', props.colorScheme);
 	const trackWidth = props.direction === 'column' ? 'width' : 'bulletGroupWidth';
     
-	const bulletTrackMark: Mark = {
+	const bulletMarkTrack: Mark = {
 	    "name": `${props.name}Track`,
 	    "description": `${props.name}Track`,
 	    "type": "rect",
@@ -438,6 +438,6 @@ export function getBulletMarkTrack(props: BulletSpecProps): Mark {
 	    }
 	  }
     
-	return bulletTrackMark
+	return bulletMarkTrack
     
     }
