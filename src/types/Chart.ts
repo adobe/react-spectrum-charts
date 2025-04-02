@@ -264,7 +264,7 @@ export interface BulletProps extends MarkProps {
 	 *
 	 * `fill` : The fill color to use for the threshold background.
 	 */
-	thresholdValues?: ThresholdBackground[];
+	thresholds?: ThresholdBackground[];
 	/** Color regions that sit behind the bullet bar */
 	track?: boolean;
 	/** Adds an axis that follows the max target in basic mode */
