@@ -153,7 +153,7 @@ export function getBulletMarks(props: BulletSpecProps): GroupMark {
 			},
 		];
 		bulletMark.marks?.push(getBulletMarkThreshold(props));
-	} else if(props.track) {
+	} else if (props.track) {
 		bulletMark.marks?.push(getBulletTrack(props));
 	}
 
@@ -404,40 +404,30 @@ export function getBulletMarkThreshold(props: BulletSpecProps): Mark {
 }
 
 export function getBulletTrack(props: BulletSpecProps): Mark {
-
 	const trackColor = getColorValue('gray-200', props.colorScheme);
 	const trackWidth = props.direction === 'column' ? 'width' : 'bulletGroupWidth';
-    
+
 	const bulletTrack: Mark = {
-		"name": `${props.name}Track`,
-		"description": `${props.name}Track`,
-		"type": "rect",
-		"from": { "data": "bulletGroups" },
-		"encode": {
-			"enter": {
-				"fill": { "value": trackColor },
-				"cornerRadiusTopRight": [
-				{ "test": "domain('xscale')[1] !== 0", "value": 3 }
-				],
-				"cornerRadiusBottomRight": [
-				{ "test": "domain('xscale')[1] !== 0", "value": 3 }
-				],
-				"cornerRadiusTopLeft": [
-				{ "test": "domain('xscale')[0] !== 0", "value": 3 }
-				],
-				"cornerRadiusBottomLeft": [
-				{ "test": "domain('xscale')[0] !== 0", "value": 3 }
-				]
+		name: `${props.name}Track`,
+		description: `${props.name}Track`,
+		type: 'rect',
+		from: { data: 'bulletGroups' },
+		encode: {
+			enter: {
+				fill: { value: trackColor },
+				cornerRadiusTopRight: [{ test: "domain('xscale')[1] !== 0", value: 3 }],
+				cornerRadiusBottomRight: [{ test: "domain('xscale')[1] !== 0", value: 3 }],
+				cornerRadiusTopLeft: [{ test: "domain('xscale')[0] !== 0", value: 3 }],
+				cornerRadiusBottomLeft: [{ test: "domain('xscale')[0] !== 0", value: 3 }],
 			},
-			"update": {
-				"x": { "value": 0 },
-				"width": { "signal": trackWidth },
-				"height": { "signal": "bulletHeight" },
-				"y": { "signal": "bulletGroupHeight - 3 - 2 * bulletHeight" }
-			}
-		}
-	}
-    
-	return bulletTrack
-    
-    }
+			update: {
+				x: { value: 0 },
+				width: { signal: trackWidth },
+				height: { signal: 'bulletHeight' },
+				y: { signal: 'bulletGroupHeight - 3 - 2 * bulletHeight' },
+			},
+		},
+	};
+
+	return bulletTrack;
+}
