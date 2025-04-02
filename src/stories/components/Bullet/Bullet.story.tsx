@@ -81,7 +81,7 @@ Thresholds.args = {
 	labelPosition: 'top',
 	scaleType: 'normal',
 	maxScaleValue: 100,
-	thresholdValues: basicThresholdsData,
+	thresholds: basicThresholdsData,
 	track: false,
 };
 
@@ -114,7 +114,7 @@ RowMode.args = {
 	labelPosition: 'top',
 	scaleType: 'normal',
 	maxScaleValue: 100,
-	thresholdValues: basicThresholdsData,
+	thresholds: basicThresholdsData,
 	track: false,
 };
 
@@ -145,7 +145,7 @@ FixedScale.args = {
 	labelPosition: 'top',
 	scaleType: 'fixed',
 	maxScaleValue: 250,
-	thresholdValues: basicThresholdsData,
+	thresholds: basicThresholdsData,
 	track: false
 };
 

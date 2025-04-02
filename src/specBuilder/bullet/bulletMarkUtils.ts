@@ -142,13 +142,13 @@ export function getBulletMarks(props: BulletSpecProps): GroupMark {
 		marks: [],
 	};
 
-	const thresholdValues = props.thresholdValues;
+	const thresholds = props.thresholds;
 
-	if (Array.isArray(thresholdValues) && thresholdValues.length > 0) {
+	if (Array.isArray(thresholds) && thresholds.length > 0) {
 		bulletMark.data = [
 			{
 				name: 'thresholds',
-				values: thresholdValues,
+				values: thresholds,
 				transform: [{ type: 'identifier', as: 'id' }],
 			},
 		];
