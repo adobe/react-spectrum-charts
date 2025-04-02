@@ -67,7 +67,7 @@ export const addSignals = produce<Signal[], [BulletSpecProps]>((signals, props) 
 	if (props.direction === 'column') {
 		signals.push({ name: 'paddingRatio', update: 'gap / (gap + bulletGroupHeight)' });
 
-		if (props.axis && !props.showTargetValue) {
+		if (props.metricAxis && !props.showTargetValue) {
 			signals.push({
 				name: 'height',
 				update: "length(data('table')) * bulletGroupHeight + (length(data('table')) - 1) * gap + 10",
@@ -442,7 +442,7 @@ export function getBulletScaleAxes(props: BulletSpecProps): Axis {
 export function getBulletAxes(props: BulletSpecProps): Axis[] {
 	let BulletAxes: Axis[] = [];
 
-	if (props.axis && props.direction === 'column' && !props.showTargetValue) {
+	if (props.metricAxis && props.direction === 'column' && !props.showTargetValue) {
 		BulletAxes.push(getBulletScaleAxes(props));
 	}
 
