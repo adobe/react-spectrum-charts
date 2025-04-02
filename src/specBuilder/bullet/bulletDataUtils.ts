@@ -34,6 +34,21 @@ export const getBulletTableData = (data: Data[]): ValuesData => {
 	return tableData;
 };
 
+function generateThresholdExpression(thresholds: { thresholdMin?: number; thresholdMax?: number; fill: string }[]): string {
+	// Create a copy of the array before sorting to avoid modifying the original object
+	const sortedThresholds = [...thresholds].sort((a, b) => (a.thresholdMax ?? Infinity) - (b.thresholdMax ?? Infinity));
+    
+	// Build the ternary expression
+	const conditions = sortedThresholds.map(({ thresholdMin, thresholdMax, fill }) => {
+	    if (thresholdMax !== undefined) {
+		return `datum.currentAmount <= ${thresholdMax} ? '${fill}'`;
+	    }
+	    return `'${fill}'`; // Default case (when only thresholdMin exists)
+	});
+    
+	return conditions.join(' : ') + ' : ' + `'${sortedThresholds[sortedThresholds.length - 1].fill}'`;
+    }
+
 /**
  * Generates the necessary formula transforms for the bullet chart.
  * It calculates the xPaddingForTarget and, if in flexible scale mode, adds the flexibleScaleValue.
