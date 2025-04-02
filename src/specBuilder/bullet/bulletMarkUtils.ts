@@ -418,3 +418,19 @@ export function getBulletTrack(props: BulletSpecProps): Mark {
 
 	return bulletTrack;
 }
+
+export function getBulletAxis(props: BulletSpecProps): Axis [] {
+
+        const BulletAxis: Axis [] = [{
+		scale: 'xscale', // The name of the scale this axis is associated with
+		orient: 'bottom', // Orientation of the axis (e.g., 'top', 'bottom', 'left', 'right')
+		ticks: false, // Whether to show tick marks
+		labelColor: 'gray', // Color of the axis labels
+		domain: false, // Whether to show the axis line
+		tickCount: 5, // Number of ticks to show
+		offset: props.showTargetValue ? 10 : 0, // Add top padding (distance between the axis and the chart content)
+        }];
+    
+        return props.axis ? BulletAxis : []
+    
+}
