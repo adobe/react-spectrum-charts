@@ -14,6 +14,7 @@ import { Axis, Data, GroupMark, Mark, Scale, Signal } from 'vega';
 
 import { BulletSpecProps } from '../../types';
 import { getColorValue } from '../specUtils';
+import { getBulletTableData, getBulletTransforms } from './bulletDataUtils';
 
 export const addScales = produce<Scale[], [BulletSpecProps]>((scales, props) => {
 	const groupScaleRangeSignal = props.direction === 'column' ? 'height' : 'width';
@@ -100,35 +101,11 @@ function getBulletGroupHeightExpression(props: BulletSpecProps): string {
 	return 'bulletThresholdHeight + 24';
 }
 
-export function getBulletData(props: BulletSpecProps): Data[] {
-	//We are multiplying the target by 1.05 to make sure that the target line is never at the very end of the graph
-	const bulletData: Data[] = [
-		{
-			name: 'table',
-			values: [],
-			transform: [
-				{
-					type: 'formula',
-					expr: `round(datum.${props.target} * 1.05)`,
-					as: 'xPaddingForTarget',
-				},
-			],
-		},
-	];
-
-	// In flexible scale mode the max scale value is added to each data field to make sure that the scale calculation is accurate.
-	// The flexible scale max value is calculated by taking the max value of the metric, target value, and the flexible scale value
-	// of all data fields.
-	if (props.scaleType === 'flexible') {
-		bulletData[0].transform?.push({
-			type: 'formula',
-			expr: `${props.maxScaleValue}`,
-			as: 'flexibleScaleValue',
-		});
-	}
-
-	return bulletData;
-}
+export const addData = produce<Data[], [BulletSpecProps]>((data, props) => {
+	const tableData = getBulletTableData(data);
+	tableData.values = props.children && props.children?.length ? props.children : [];
+	tableData.transform = getBulletTransforms(props);
+});
 
 export function getBulletMarks(props: BulletSpecProps): GroupMark {
 	const markGroupEncodeUpdateDirection = props.direction === 'column' ? 'y' : 'x';

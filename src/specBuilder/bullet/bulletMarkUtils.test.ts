@@ -10,10 +10,10 @@
  * governing permissions and limitations under the License.
  */
 import {
+	addData,
 	addScales,
 	addSignals,
 	getBulletAxes,
-	getBulletData,
 	getBulletMarkLabel,
 	getBulletMarkRect,
 	getBulletMarkTarget,
@@ -89,13 +89,13 @@ describe('getBulletMarks', () => {
 
 describe('getBulletData', () => {
 	test('Should return the data object', () => {
-		const data = getBulletData(samplePropsColumn);
+		const data = addData([], samplePropsColumn);
 		expect(data).toHaveLength(1);
 	});
 
 	test('Should return the correct data object in flexible scale mode', () => {
 		const props = { ...samplePropsColumn, scaleType: 'flexible' as 'normal' | 'flexible' | 'fixed' };
-		const data = getBulletData(props);
+		const data = addData([], props);
 		expect(data[0].transform).toHaveLength(2);
 	});
 });
