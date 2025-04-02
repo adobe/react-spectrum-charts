@@ -239,6 +239,8 @@ export interface BulletProps extends MarkProps {
 	dimension?: string;
 	/** Track that sits behind the Bullet bar */
 	track?: boolean;
+	/** Adds an axis that follows the max target in basic mode*/  
+	axis?: boolean;
 }
 
 export interface DonutSummaryProps {

@@ -14,7 +14,7 @@ import { getBulletScales, getBulletData, getBulletMarks, getBulletSignals, getBu
 import { sampleProps } from "./bulletSpecBuilder.test";
 import { BulletSpecProps } from '../../types';
 
-export const samplePropsTrack: BulletSpecProps = {
+export const samplePropsTrack: SpecProps = {
     "children": [],
     "colorScheme": "light",
     "index": 0,

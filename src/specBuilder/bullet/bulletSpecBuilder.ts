@@ -17,7 +17,7 @@ import { ColorScheme, BulletProps, BulletSpecProps } from '../../types';
 import { sanitizeMarkChildren } from '../../utils';
 import { getColorValue } from '../specUtils';
 import { spectrumColors } from '@themes';
-import { getBulletScales, getBulletSignals, getBulletData, getBulletMarks } from './bulletMarkUtils';
+import { getBulletScales, getBulletSignals, getBulletData, getBulletMarks, getBulletAxis} from './bulletMarkUtils';
 
 const DEFAULT_COLOR = spectrumColors.light['static-blue']
 
@@ -33,6 +33,7 @@ export const addBullet = (
         target,
         color = DEFAULT_COLOR,
         track = false,
+        axis = false,
         ...props
     }: BulletProps & { colorScheme?: ColorScheme; index?: number; idKey: string }
 ): Spec => {
@@ -46,6 +47,7 @@ export const addBullet = (
         target: target ?? 'target',
         name: toCamelCase(name ?? `bullet${index}`),
         track,
+        axis,
         ...props,
     };
     return {
@@ -53,6 +55,7 @@ export const addBullet = (
         data: getBulletData(bulletProps),
         marks: [getBulletMarks(bulletProps)],
         scales: getBulletScales(bulletProps),
-        signals: getBulletSignals()
+        signals: getBulletSignals(),
+        axes: getBulletAxis(bulletProps)
     };
 };

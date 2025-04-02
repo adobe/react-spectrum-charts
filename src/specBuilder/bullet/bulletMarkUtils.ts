@@ -10,7 +10,7 @@
  * governing permissions and limitations under the License.
  */
 
-import { Scale, Signal, Data, GroupMark, Mark } from 'vega'
+import { Scale, Signal, Data, GroupMark, Mark, Axis } from 'vega'
 import { BulletSpecProps } from '../../types';
 import { getColorValue } from '../specUtils';
 
@@ -211,6 +211,22 @@ export function getBulletMarkValueLabel(props: BulletSpecProps): Mark {
     return bulletMarkValueLabel
 
 }
+
+export function getBulletAxis(props: BulletSpecProps): Axis [] {
+
+    const BulletAxis: Axis [] = [{
+        scale: 'xscale', // The name of the scale this axis is associated with
+        orient: 'bottom', // Orientation of the axis (e.g., 'top', 'bottom', 'left', 'right')
+        ticks: false, // Whether to show tick marks
+        labelColor: 'gray', // Color of the axis labels
+        domain: false, // Whether to show the axis line
+        tickCount: 10, // Number of ticks to show
+      }];
+
+    return BulletAxis
+
+}
+
 
 export function getBulletMarkTrack(props: BulletSpecProps): Mark {
 
