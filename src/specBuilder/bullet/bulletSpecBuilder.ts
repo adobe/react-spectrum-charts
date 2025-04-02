@@ -24,7 +24,7 @@ import { Spec } from 'vega';
 import { BulletProps, BulletSpecProps, ColorScheme } from '../../types';
 import { sanitizeMarkChildren } from '../../utils';
 import { getColorValue } from '../specUtils';
-import { addData, addScales, addSignals, getBulletLabelAxes, getBulletMarks } from './bulletMarkUtils';
+import { addData, addMarks, addScales, addSignals, getBulletLabelAxes } from './bulletMarkUtils';
 
 const DEFAULT_COLOR = spectrumColors.light['static-blue'];
 
@@ -74,7 +74,7 @@ export const addBullet = produce<Spec, [BulletProps & { colorScheme?: ColorSchem
 		};
 
 		spec.data = addData(spec.data ?? [], bulletProps);
-		spec.marks = [getBulletMarks(bulletProps)];
+		spec.marks = addMarks(spec.marks ?? [], bulletProps);
 		spec.scales = addScales(spec.scales ?? [], bulletProps);
 		spec.signals = addSignals(spec.signals ?? [], bulletProps);
 		spec.axes = getBulletLabelAxes(bulletProps);
