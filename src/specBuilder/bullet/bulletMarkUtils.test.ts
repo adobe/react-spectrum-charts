@@ -78,7 +78,7 @@ describe('getBulletMarks', () => {
 
 	test('Should include bullet track when track is set to true and threshold is set to false.', () => {
 		const props = { ...samplePropsColumn, threshold: false, track: true };
-		const marksGroup = getBulletMarks(props);
+		const marksGroup = addMarks([], props)[0] as GroupMark;
 		expect(marksGroup.marks).toHaveLength(5);
 		const bulletTrackMark = marksGroup.marks?.find((mark) => mark.name?.includes('Track'));
 		expect(bulletTrackMark).toBeDefined();
