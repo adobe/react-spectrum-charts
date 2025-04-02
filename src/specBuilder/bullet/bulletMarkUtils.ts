@@ -107,7 +107,7 @@ export const addData = produce<Data[], [BulletSpecProps]>((data, props) => {
 	tableData.transform = getBulletTransforms(props);
 });
 
-export function getBulletMarks(props: BulletSpecProps): GroupMark {
+export const addMarks = produce<GroupMark[], [BulletSpecProps]>((marks, props) => {
 	const markGroupEncodeUpdateDirection = props.direction === 'column' ? 'y' : 'x';
 	const bulletGroupWidth = props.direction === 'column' ? 'width' : 'bulletGroupWidth';
 
@@ -155,8 +155,8 @@ export function getBulletMarks(props: BulletSpecProps): GroupMark {
 		bulletMark.marks?.push(getBulletMarkValueLabel(props));
 	}
 
-	return bulletMark;
-}
+	marks.push(bulletMark);
+});
 
 export function getBulletMarkRect(props: BulletSpecProps): Mark {
 	//The vertical positioning is calculated starting at the bulletgroupheight

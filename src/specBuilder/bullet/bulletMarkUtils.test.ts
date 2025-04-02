@@ -9,8 +9,11 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { GroupMark } from 'vega';
+
 import {
 	addData,
+	addMarks,
 	addScales,
 	addSignals,
 	getBulletAxes,
@@ -19,14 +22,13 @@ import {
 	getBulletMarkTarget,
 	getBulletMarkThreshold,
 	getBulletMarkValueLabel,
-	getBulletMarks,
 	getBulletTrack,
 } from './bulletMarkUtils';
 import { samplePropsColumn, samplePropsRow } from './bulletSpecBuilder.test';
 
 describe('getBulletMarks', () => {
 	test('Should return the correct marks object for column mode', () => {
-		const data = getBulletMarks(samplePropsColumn);
+		const data = addMarks([], samplePropsColumn)[0] as GroupMark;
 		expect(data).toBeDefined;
 		expect(data?.marks).toHaveLength(4);
 		expect(data?.marks?.[0]?.type).toBe('rect');
@@ -39,7 +41,7 @@ describe('getBulletMarks', () => {
 	});
 
 	test('Should return the correct marks object for row mode', () => {
-		const data = getBulletMarks(samplePropsRow);
+		const data = addMarks([], samplePropsRow)[0] as GroupMark;
 		expect(data).toBeDefined;
 		expect(data?.marks).toHaveLength(4);
 		expect(data?.marks?.[0]?.type).toBe('rect');
@@ -51,7 +53,7 @@ describe('getBulletMarks', () => {
 
 	test('Should not include target marks when showTarget is false', () => {
 		const props = { ...samplePropsColumn, showTarget: false, showTargetValue: true };
-		const marksGroup = getBulletMarks(props);
+		const marksGroup = addMarks([], props)[0] as GroupMark;
 		expect(marksGroup.marks).toHaveLength(3);
 		marksGroup.marks?.forEach((mark) => {
 			expect(mark.description).not.toContain('Target');
@@ -60,7 +62,7 @@ describe('getBulletMarks', () => {
 
 	test('Should include target value label when showTargetValue is true', () => {
 		const props = { ...samplePropsColumn, showTarget: true, showTargetValue: true };
-		const marksGroup = getBulletMarks(props);
+		const marksGroup = addMarks([], props)[0] as GroupMark;
 		expect(marksGroup.marks).toHaveLength(5);
 		const targetValueMark = marksGroup.marks?.find((mark) => mark.name?.includes('TargetValueLabel'));
 		expect(targetValueMark).toBeDefined();
@@ -68,7 +70,7 @@ describe('getBulletMarks', () => {
 
 	test('Should include label marks when axis labels are enabled', () => {
 		const props = { ...samplePropsColumn, showTarget: true, showTargetValue: true };
-		const marksGroup = getBulletMarks(props);
+		const marksGroup = addMarks([], props)[0] as GroupMark;
 		expect(marksGroup.marks).toHaveLength(5);
 		const targetValueMark = marksGroup.marks?.find((mark) => mark.name?.includes('TargetValueLabel'));
 		expect(targetValueMark).toBeDefined();
@@ -76,7 +78,7 @@ describe('getBulletMarks', () => {
 
 	test('Should include bullet track when track is set to true and threshold is set to false.', () => {
 		const props = { ...samplePropsColumn, threshold: false, track: true };
-		const marksGroup = getBulletMarks(props);
+		const marksGroup = addMarks([], props)[0] as GroupMark;
 		expect(marksGroup.marks).toHaveLength(5);
 		const bulletTrackMark = marksGroup.marks?.find((mark) => mark.name?.includes('Track'));
 		expect(bulletTrackMark).toBeDefined();
@@ -264,7 +266,7 @@ describe('getBulletMarkValueLabel', () => {
 
 	test('Should apply numberFormat specifier to metric and target values', () => {
 		const props = { ...samplePropsColumn, showTarget: true, showTargetValue: true, numberFormat: '$,.2f' };
-		const marksGroup = getBulletMarks(props);
+		const marksGroup = addMarks([], props)[0] as GroupMark;
 
 		const metricValueLabel = marksGroup.marks?.find((mark) => mark.name === `${props.name}ValueLabel`);
 		expect(metricValueLabel).toBeDefined();
@@ -291,7 +293,7 @@ describe('getBulletMarkValueLabel', () => {
 describe('getBulletMarkSideLabel', () => {
 	test('Should not return label marks when side label mode is enabled', () => {
 		const props = { ...samplePropsColumn, labelPosition: 'side' as 'side' | 'top' };
-		const marks = getBulletMarks(props);
+		const marks = addMarks([], props)[0] as GroupMark;
 		expect(marks.marks).toBeDefined();
 		expect(marks.marks).toHaveLength(2);
 	});
@@ -394,11 +396,10 @@ describe('Threshold functionality', () => {
 			const props = {
 				...samplePropsRow,
 				name: 'testBullet',
-				thresholdValues: detailedThresholds,
+				thresholds: detailedThresholds,
 			};
 
-			const marksGroup = getBulletMarks(props);
-
+			const marksGroup = addMarks([], props)[0] as GroupMark;
 			expect(marksGroup.data).toBeDefined();
 			expect(marksGroup.data?.[0].name).toBe('thresholds');
 
