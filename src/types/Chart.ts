@@ -267,6 +267,8 @@ export interface BulletProps extends MarkProps {
 	thresholds?: ThresholdBackground[];
 	/** Color regions that sit behind the bullet bar */
 	track?: boolean;
+	/** changes color based on threshold */
+	thresholdBarColor?: boolean;
 }
 
 export interface DonutProps extends MarkProps {

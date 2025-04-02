@@ -162,6 +162,8 @@ export function getBulletMarkRect(props: BulletSpecProps): Mark {
 			? 'bulletGroupHeight - targetValueLabelHeight - 3 - 2 * bulletHeight'
 			: 'bulletGroupHeight - 3 - 2 * bulletHeight';
 
+	const fillColor = props.thresholdBarColor ? [{ field: 'barColor' }] : [{ value: props.color }]
+
 	const bulletMarkRect: Mark = {
 		name: `${props.name}Rect`,
 		description: `${props.name}Rect`,
@@ -173,7 +175,7 @@ export function getBulletMarkRect(props: BulletSpecProps): Mark {
 				cornerRadiusBottomLeft: [{ test: `datum.${props.metric} < 0`, value: 3 }],
 				cornerRadiusTopRight: [{ test: `datum.${props.metric} > 0`, value: 3 }],
 				cornerRadiusBottomRight: [{ test: `datum.${props.metric} > 0`, value: 3 }],
-				fill: [{ value: `${props.color}` }],
+				fill: fillColor,
 			},
 			update: {
 				x: { scale: 'xscale', value: 0 },
@@ -245,6 +247,7 @@ export function getBulletMarkLabel(props: BulletSpecProps): Mark {
 export function getBulletMarkValueLabel(props: BulletSpecProps): Mark {
 	const solidColor = getColorValue('gray-900', props.colorScheme);
 	const encodeUpdateSignalWidth = props.direction === 'column' ? 'width' : 'bulletGroupWidth';
+	const fillColor = props.thresholdBarColor ? [{ field: 'barColor' }] : [{ value: solidColor }]
 
 	const bulletMarkValueLabel: Mark = {
 		name: `${props.name}ValueLabel`,
@@ -260,7 +263,7 @@ export function getBulletMarkValueLabel(props: BulletSpecProps): Mark {
 				},
 				align: { value: 'right' },
 				baseline: { value: 'top' },
-				fill: { value: `${solidColor}` },
+				fill: fillColor,
 			},
 			update: { x: { signal: encodeUpdateSignalWidth }, y: { value: 0 } },
 		},
