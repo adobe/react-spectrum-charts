@@ -19,7 +19,7 @@ import {
 import { spectrumColors } from '@themes';
 import { toCamelCase } from '@utils';
 import { produce } from 'immer';
-import { GroupMark, Spec } from 'vega';
+import { Spec } from 'vega';
 
 import { BulletProps, BulletSpecProps, ColorScheme } from '../../types';
 import { sanitizeMarkChildren } from '../../utils';
