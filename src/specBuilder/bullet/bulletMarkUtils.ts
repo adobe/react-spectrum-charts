@@ -154,7 +154,7 @@ export function getBulletMarks(props: BulletSpecProps): GroupMark {
 		];
 		bulletMark.marks?.push(getBulletMarkThreshold(props));
 	} else if(props.track) {
-		bulletMark.marks?.push(getBulletMarkTrack(props));
+		bulletMark.marks?.push(getBulletTrack(props));
 	}
 
 	bulletMark.marks?.push(getBulletMarkRect(props));

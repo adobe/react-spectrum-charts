@@ -20,7 +20,7 @@ import {
 	getBulletMarkThreshold,
 	getBulletMarkValueLabel,
 	getBulletMarks,
-	getBulletMarkTrack,
+	getBulletTrack,
 } from './bulletMarkUtils';
 import { samplePropsColumn, samplePropsRow } from './bulletSpecBuilder.test';
 
@@ -405,7 +405,7 @@ describe('getBulletMarkTrack', () => {
 			threshold: false,
 			track: true
 		};
-		const data = getBulletMarkTrack(props);
+		const data = getBulletTrack(props);
 		expect(data).toBeDefined()
 		expect(data.encode?.update).toBeDefined();
 		expect(Object.keys(data.encode?.update ?? {}).length).toBe(4);
@@ -421,7 +421,7 @@ describe('getBulletMarkTrack', () => {
 			threshold: false,
 			track: true
 		};
-		const data = getBulletMarkTrack(props);
+		const data = getBulletTrack(props);
 		expect(data.encode?.update?.width).toBeDefined()
 		expect(data.encode?.update?.width).toStrictEqual({ 'signal': 'bulletGroupWidth' })
 	});
