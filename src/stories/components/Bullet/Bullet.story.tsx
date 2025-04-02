@@ -62,6 +62,7 @@ Basic.args = {
 	color: 'blue-900',
 	direction: 'column',
 	numberFormat: '$,.2f',
+	thresholdValues: basicThresholdsData,
 	showTarget: true,
 	showTargetValue: false,
 	labelPosition: 'top',
