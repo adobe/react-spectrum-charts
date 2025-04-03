@@ -14,6 +14,7 @@ import { getTableData } from '@specBuilder/data/dataUtils';
 import { Data, FormulaTransform, ValuesData } from 'vega';
 
 import { BulletSpecProps } from '../../types';
+import { thresholdColorField } from './bulletMarkUtils';
 
 /**
  * Retrieves the bullet table data from the provided data array.
@@ -54,6 +55,14 @@ export const getBulletTransforms = (props: BulletSpecProps): FormulaTransform[] 
 			type: 'formula',
 			expr: `${props.maxScaleValue}`,
 			as: 'flexibleScaleValue',
+		});
+	}
+
+	if (props.thresholdBarColor && (props.thresholds?.length ?? 0) > 0) {
+		transforms.push({
+			type: 'formula',
+			expr: thresholdColorField(props.thresholds ?? [], props.metric),
+			as: 'thresholdBarColor',
 		});
 	}
 
