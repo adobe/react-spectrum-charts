@@ -13,8 +13,7 @@ import { TABLE } from '@constants';
 import { getTableData } from '@specBuilder/data/dataUtils';
 import { Data, FormulaTransform, ValuesData } from 'vega';
 
-import { BulletSpecProps } from '../../types';
-import { thresholdColorField } from './bulletMarkUtils';
+import { BulletSpecProps, ThresholdBackground } from '../../types';
 
 /**
  * Retrieves the bullet table data from the provided data array.
@@ -68,3 +67,20 @@ export const getBulletTransforms = (props: BulletSpecProps): FormulaTransform[] 
 
 	return transforms;
 };
+
+export function thresholdColorField(thresholds: ThresholdBackground[], metricField: string): string {
+	const sortedThresholds = [...thresholds].sort(
+		(a, b) => (a.thresholdMax ?? Infinity) - (b.thresholdMax ?? Infinity)
+	);
+
+	let expr = sortedThresholds
+		.map((threshold) => {
+			if (threshold.thresholdMax !== undefined) {
+				return `datum.${metricField} <= ${threshold.thresholdMax} ? '${threshold.fill}'`;
+			}
+			return `'${threshold.fill}'`;
+		})
+		.join(' : ');
+
+	return expr;
+}
