@@ -162,7 +162,10 @@ export function getBulletMarkRect(props: BulletSpecProps): Mark {
 			? 'bulletGroupHeight - targetValueLabelHeight - 3 - 2 * bulletHeight'
 			: 'bulletGroupHeight - 3 - 2 * bulletHeight';
 
-	const fillColor = props.thresholdBarColor ? [{ field: 'barColor' }] : [{ value: props.color }];
+	const fillColor =
+		props.thresholdBarColor && (props.thresholds?.length ?? 0) > 0
+			? [{ field: 'thresholdBarColor' }]
+			: [{ value: props.color }];
 
 	const bulletMarkRect: Mark = {
 		name: `${props.name}Rect`,
