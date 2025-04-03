@@ -12,7 +12,7 @@
 import { produce } from 'immer';
 import { Axis, Data, GroupMark, Mark, Scale, Signal } from 'vega';
 
-import { BulletSpecProps } from '../../types';
+import { BulletSpecProps, ThresholdBackground } from '../../types';
 import { getColorValue } from '../specUtils';
 import { getBulletTableData, getBulletTransforms } from './bulletDataUtils';
 
@@ -162,7 +162,7 @@ export function getBulletMarkRect(props: BulletSpecProps): Mark {
 			? 'bulletGroupHeight - targetValueLabelHeight - 3 - 2 * bulletHeight'
 			: 'bulletGroupHeight - 3 - 2 * bulletHeight';
 
-	const fillColor = props.thresholdBarColor ? [{ field: 'barColor' }] : [{ value: props.color }]
+	const fillColor = props.thresholdBarColor ? [{ field: 'barColor' }] : [{ value: props.color }];
 
 	const bulletMarkRect: Mark = {
 		name: `${props.name}Rect`,
@@ -187,6 +187,23 @@ export function getBulletMarkRect(props: BulletSpecProps): Mark {
 	};
 
 	return bulletMarkRect;
+}
+
+export function thresholdColorField(thresholds: ThresholdBackground[], metricField: string): string {
+	const sortedThresholds = [...thresholds].sort(
+		(a, b) => (a.thresholdMax ?? Infinity) - (b.thresholdMax ?? Infinity)
+	);
+
+	let expr = sortedThresholds
+		.map((threshold) => {
+			if (threshold.thresholdMax !== undefined) {
+				return `datum.${metricField} <= ${threshold.thresholdMax} ? '${threshold.fill}'`;
+			}
+			return `'${threshold.fill}'`;
+		})
+		.join(' : ');
+
+	return expr;
 }
 
 export function getBulletMarkTarget(props: BulletSpecProps): Mark {
@@ -247,7 +264,7 @@ export function getBulletMarkLabel(props: BulletSpecProps): Mark {
 export function getBulletMarkValueLabel(props: BulletSpecProps): Mark {
 	const solidColor = getColorValue('gray-900', props.colorScheme);
 	const encodeUpdateSignalWidth = props.direction === 'column' ? 'width' : 'bulletGroupWidth';
-	const fillColor = props.thresholdBarColor ? [{ field: 'barColor' }] : [{ value: solidColor }]
+	const fillColor = props.thresholdBarColor ? [{ field: 'barColor' }] : [{ value: solidColor }];
 
 	const bulletMarkValueLabel: Mark = {
 		name: `${props.name}ValueLabel`,
