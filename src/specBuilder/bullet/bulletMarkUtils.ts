@@ -306,45 +306,6 @@ export function getBulletMarkTargetValueLabel(props: BulletSpecProps): Mark {
 	return bulletMarkTargetValueLabel;
 }
 
-export function getBulletLabelAxes(props: BulletSpecProps): Axis[] {
-	const labelOffset = props.showTargetValue && props.showTarget ? -8 : 2;
-
-	const bulletAxes: Axis[] = [
-		{
-			scale: 'groupScale',
-			orient: 'left',
-			tickSize: 0,
-			labelOffset: labelOffset,
-			labelPadding: 10,
-			labelColor: '#797979',
-			domain: false,
-		},
-		{
-			scale: 'groupScale',
-			orient: 'right',
-			tickSize: 0,
-			labelOffset: labelOffset,
-			labelPadding: 10,
-			domain: false,
-			encode: {
-				labels: {
-					update: {
-						text: {
-							signal: `info(data('table')[datum.index * (length(data('table')) - 1)].${
-								props.metric
-							}) != null ? format(info(data('table')[datum.index * (length(data('table')) - 1)].${
-								props.metric
-							}), '${props.numberFormat || ''}') : ''`,
-						},
-					},
-				},
-			},
-		},
-	];
-
-	return props.labelPosition === 'side' && props.direction === 'column' ? bulletAxes : [];
-}
-
 export function getBulletMarkThreshold(props: BulletSpecProps): Mark {
 	// Vertically center the threshold bar by offsetting from bulletGroupHeight.
 	// Subtract 3 for alignment and targetValueLabelHeight if the label is shown.
@@ -419,9 +380,45 @@ export function getBulletTrack(props: BulletSpecProps): Mark {
 	return bulletTrack;
 }
 
-export function getBulletAxis(props: BulletSpecProps): Axis [] {
+export function getBulletLabelAxes(props: BulletSpecProps): Axis[] {
+	const labelOffset = props.showTargetValue && props.showTarget ? -8 : 2;
 
-        const BulletAxis: Axis [] = [{
+	return [{
+		scale: 'groupScale',
+		orient: 'left',
+		tickSize: 0,
+		labelOffset: labelOffset,
+		labelPadding: 10,
+		labelColor: '#797979',
+		domain: false,
+	},{
+		scale: 'groupScale',
+		orient: 'right',
+		tickSize: 0,
+		labelOffset: labelOffset,
+		labelPadding: 10,
+		domain: false,
+		encode: {
+			labels: {
+				update: {
+					text: {
+						signal: `info(data('table')[datum.index * (length(data('table')) - 1)].${
+							props.metric
+						}) != null ? format(info(data('table')[datum.index * (length(data('table')) - 1)].${
+							props.metric
+						}), '${props.numberFormat || ''}') : ''`,
+					},
+				},
+			},
+		},
+	}]
+}
+
+export function getBulletScaleAxes(props: BulletSpecProps): Axis {
+	const labelOffset = props.showTargetValue && props.showTarget ? -8 : 2;
+
+	return {
+		labelOffset: labelOffset,
 		scale: 'xscale', // The name of the scale this axis is associated with
 		orient: 'bottom', // Orientation of the axis (e.g., 'top', 'bottom', 'left', 'right')
 		ticks: false, // Whether to show tick marks
@@ -429,8 +426,20 @@ export function getBulletAxis(props: BulletSpecProps): Axis [] {
 		domain: false, // Whether to show the axis line
 		tickCount: 5, // Number of ticks to show
 		offset: props.showTargetValue ? 10 : 0, // Add top padding (distance between the axis and the chart content)
-        }];
-    
-        return props.axis ? BulletAxis : []
-    
+	}
+}
+
+export function getBulletAxes(props: BulletSpecProps): Axis[] {
+
+	let BulletAxes: Axis[] = [];
+
+	if(props.axis) {
+		BulletAxes.push(getBulletScaleAxes(props))
+	}
+
+	if(props.labelPosition === 'side' && props.direction === 'column') {
+		BulletAxes = BulletAxes.concat(getBulletLabelAxes(props));
+	}
+
+	return BulletAxes
 }
