@@ -57,8 +57,7 @@ export const getBulletTransforms = (props: BulletSpecProps): FormulaTransform[] 
 		});
 	}
 
-	const thresholds = props.thresholds ?? [];
-	if (props.thresholdBarColor && hasAllThresholds(thresholds ?? [], thresholds.length - 1)) {
+	if (props.thresholdBarColor && (props.thresholds?.length ?? 0) > 0) {
 		transforms.push({
 			type: 'formula',
 			expr: thresholdColorField(props.thresholds ?? [], props.metric),
@@ -86,6 +85,6 @@ export function thresholdColorField(thresholds: ThresholdBackground[], metricFie
 	return expr;
 }
 
-function hasAllThresholds(thresholds: ThresholdBackground[], requiredCount: number): boolean {
+export function hasAllThresholds(thresholds: ThresholdBackground[], requiredCount: number): boolean {
 	return Array.isArray(thresholds) && thresholds.length >= requiredCount;
 }
