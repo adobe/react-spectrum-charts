@@ -17,7 +17,7 @@ import { getColorValue } from '../specUtils';
 import { getBulletTableData, getBulletTransforms } from './bulletDataUtils';
 
 export const addScales = produce<Scale[], [BulletSpecProps]>((scales, props) => {
-	const groupScaleRangeSignal = props.direction === 'column' ? 'height' : 'width';
+	const groupScaleRangeSignal = props.direction === 'column' ? 'bulletChartHeight' : 'width';
 	const xRange = props.direction === 'column' ? 'width' : [0, { signal: 'bulletGroupWidth' }];
 	let domainFields;
 
@@ -69,19 +69,19 @@ export const addSignals = produce<Signal[], [BulletSpecProps]>((signals, props) 
 
 		if (props.metricAxis && !props.showTargetValue) {
 			signals.push({
-				name: 'height',
+				name: 'bulletChartHeight',
 				update: "length(data('table')) * bulletGroupHeight + (length(data('table')) - 1) * gap + 10",
 			});
 		} else {
 			signals.push({
-				name: 'height',
+				name: 'bulletChartHeight',
 				update: "length(data('table')) * bulletGroupHeight + (length(data('table')) - 1) * gap",
 			});
 		}
 	} else {
 		signals.push({ name: 'bulletGroupWidth', update: "(width / length(data('table'))) - gap" });
 		signals.push({ name: 'paddingRatio', update: 'gap / (gap + bulletGroupWidth)' });
-		signals.push({ name: 'height', update: 'bulletGroupHeight' });
+		signals.push({ name: 'bulletChartHeight', update: 'bulletGroupHeight' });
 	}
 });
 
@@ -362,6 +362,8 @@ export function getBulletMarkThreshold(props: BulletSpecProps): Mark {
 export function getBulletTrack(props: BulletSpecProps): Mark {
 	const trackColor = getColorValue('gray-200', props.colorScheme);
 	const trackWidth = props.direction === 'column' ? 'width' : 'bulletGroupWidth';
+	// Subtracting 20 accounts for the space used by the target value label
+	const trackY = props.showTarget && props.showTargetValue ? 'bulletGroupHeight - 3 - 2 * bulletHeight - 20' : 'bulletGroupHeight - 3 - 2 * bulletHeight';
 
 	const bulletTrack: Mark = {
 		name: `${props.name}Track`,
@@ -380,7 +382,7 @@ export function getBulletTrack(props: BulletSpecProps): Mark {
 				x: { value: 0 },
 				width: { signal: trackWidth },
 				height: { signal: 'bulletHeight' },
-				y: { signal: 'bulletGroupHeight - 3 - 2 * bulletHeight' },
+				y: { signal: trackY },
 			},
 		},
 	};
