@@ -164,7 +164,7 @@ export function getBulletMarkRect(props: BulletSpecProps): Mark {
 
 	const fillColor =
 		props.thresholdBarColor && (props.thresholds?.length ?? 0) > 0
-			? [{ field: 'thresholdBarColor' }]
+			? [{ field: 'barColor' }]
 			: [{ value: props.color }];
 
 	const bulletMarkRect: Mark = {
@@ -250,7 +250,10 @@ export function getBulletMarkLabel(props: BulletSpecProps): Mark {
 export function getBulletMarkValueLabel(props: BulletSpecProps): Mark {
 	const solidColor = getColorValue('gray-900', props.colorScheme);
 	const encodeUpdateSignalWidth = props.direction === 'column' ? 'width' : 'bulletGroupWidth';
-	const fillColor = props.thresholdBarColor ? [{ field: 'barColor' }] : [{ value: solidColor }];
+	const fillColor =
+		props.thresholdBarColor && (props.thresholds?.length ?? 0) > 0
+			? [{ field: 'barColor' }]
+			: [{ value: solidColor }];
 
 	const bulletMarkValueLabel: Mark = {
 		name: `${props.name}ValueLabel`,
