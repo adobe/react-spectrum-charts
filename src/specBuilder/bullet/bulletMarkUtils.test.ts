@@ -109,7 +109,7 @@ describe('getBulletScales', () => {
 		expect(data).toHaveLength(2);
 		expect('range' in data[0] && data[0].range && data[0].range[1]).toBeTruthy();
 		if ('range' in data[0] && data[0].range && data[0].range[1]) {
-			expect(data[0].range[1].signal).toBe('height');
+			expect(data[0].range[1].signal).toBe('bulletChartHeight');
 		}
 	});
 
@@ -487,5 +487,19 @@ describe('getBulletMarkTrack', () => {
 		const data = getBulletTrack(props);
 		expect(data.encode?.update?.width).toBeDefined();
 		expect(data.encode?.update?.width).toStrictEqual({ signal: 'bulletGroupWidth' });
+	});
+
+	test('Should return the correct track mark object when the target label is enabled', () => {
+		const props = {
+			...samplePropsRow,
+			name: 'testBullet',
+			threshold: false,
+			track: true,
+			showTarget: true,
+			showTargetValue: true,
+		};
+		const data = getBulletTrack(props);
+		expect(data.encode?.update?.y).toBeDefined();
+		expect(data.encode?.update?.y).toStrictEqual({ "signal": "bulletGroupHeight - 3 - 2 * bulletHeight - 20" });
 	});
 });
