@@ -437,7 +437,7 @@ export function getBulletScaleAxes(props: BulletSpecProps): Axis {
 		labelColor: 'gray',
 		domain: false,
 		tickCount: 5,
-		offset: props.showTargetValue ? 10 : 0,
+		offset: 0,
 	};
 }
 

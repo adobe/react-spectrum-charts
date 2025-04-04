@@ -225,6 +225,19 @@ describe('getBulletSignals', () => {
 			update: 'bulletThresholdHeight + 10',
 		});
 	});
+
+	test('Should include correct bulletChartHeight signal when props.axis is true and showTargetValue is false', () => {
+		const props = {
+			...samplePropsColumn,
+			showTargetValue: false,
+			axis: 'true',
+		};
+		const signals = addSignals([], props);
+		expect(signals.find((signal) => signal.name === 'bulletChartHeight')).toStrictEqual({
+			name: 'bulletChartHeight',
+			update: "length(data('table')) * bulletGroupHeight + (length(data('table')) - 1) * gap + 10",
+		});
+	});
 });
 
 describe('getBulletMarkRect', () => {
