@@ -16,7 +16,7 @@ import {
 	addMarks,
 	addScales,
 	addSignals,
-	getBulletLabelAxes,
+	getBulletAxes,
 	getBulletMarkLabel,
 	getBulletMarkRect,
 	getBulletMarkTarget,
@@ -410,22 +410,86 @@ describe('getBulletMarkSideLabel', () => {
 describe('getBulletAxes', () => {
 	test('Should return the correct axes object when side label mode is enabled', () => {
 		const props = { ...samplePropsColumn, labelPosition: 'side' as 'side' | 'top' };
-		const axes = getBulletLabelAxes(props);
+		const axes = getBulletAxes(props);
 		expect(axes).toHaveLength(2);
 		expect(axes[0].labelOffset).toBe(2);
 	});
 
 	test('Should return the correct axes object when side label mode is enabled and target label is shown', () => {
 		const props = { ...samplePropsColumn, labelPosition: 'side' as 'side' | 'top', showTargetValue: true };
-		const axes = getBulletLabelAxes(props);
+		const axes = getBulletAxes(props);
 		expect(axes).toHaveLength(2);
 		expect(axes[0].labelOffset).toBe(-8);
 	});
 
 	test('Should return an empty list when top label mode is enabled', () => {
 		const props = { ...samplePropsColumn };
-		const axes = getBulletLabelAxes(props);
+		const axes = getBulletAxes(props);
 		expect(axes).toStrictEqual([]);
+	});
+
+	test('Should return the scale axis when axis is true, row mode is enabled, and showtarget is false', () => {
+		const props = { ...samplePropsColumn, axis: true};
+		const axes = getBulletAxes(props);
+		expect(axes).toStrictEqual([{
+			labelOffset: 2,
+			scale: 'xscale',
+			orient: 'bottom',
+			ticks: false,
+			labelColor: 'gray',
+			domain: false,
+			tickCount: 5,
+			offset: props.showTargetValue ? 10 : 0,
+		}])
+	});
+
+	test('Should not return scale axis when showtarget and showtargetValue are true', () => {
+		const props = { ...samplePropsColumn, showTarget: true, showTargetValue: true, axis: true };
+		const axes = getBulletAxes(props);
+		expect(axes).toStrictEqual([])
+	});
+
+	test('Should return scale axis and label axes when both are enabled', () => {
+		const props = { ...samplePropsColumn, labelPosition: 'side' as 'side' | 'top', axis: true };
+		const axes = getBulletAxes(props);
+		expect(axes).toStrictEqual([
+			{
+			    "labelOffset": 2,
+			    "scale": "xscale",
+			    "orient": "bottom",
+			    "ticks": false,
+			    "labelColor": "gray",
+			    "domain": false,
+			    "tickCount": 5,
+			    "offset": 0
+			},
+			{
+			    "scale": "groupScale",
+			    "orient": "left",
+			    "tickSize": 0,
+			    "labelOffset": 2,
+			    "labelPadding": 10,
+			    "labelColor": "#797979",
+			    "domain": false
+			},
+			{
+			    "scale": "groupScale",
+			    "orient": "right",
+			    "tickSize": 0,
+			    "labelOffset": 2,
+			    "labelPadding": 10,
+			    "domain": false,
+			    "encode": {
+				"labels": {
+				    "update": {
+					"text": {
+					    "signal": "info(data('table')[datum.index * (length(data('table')) - 1)].currentAmount) != null ? format(info(data('table')[datum.index * (length(data('table')) - 1)].currentAmount), '') : ''"
+					}
+				    }
+				}
+			    }
+			}
+		    ])
 	});
 });
 
