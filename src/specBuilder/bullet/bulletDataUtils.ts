@@ -57,7 +57,8 @@ export const getBulletTransforms = (props: BulletSpecProps): FormulaTransform[] 
 		});
 	}
 
-	if (props.thresholdBarColor && (props.thresholds?.length ?? 0) > 0) {
+	const thresholds = props.thresholds ?? [];
+	if (props.thresholdBarColor && hasAllThresholds(thresholds ?? [], thresholds.length - 1)) {
 		transforms.push({
 			type: 'formula',
 			expr: generateThresholdColorExpr(props.thresholds ?? [], props.metric, props.color),
@@ -110,4 +111,8 @@ export function generateThresholdColorExpr(
 
 	const expr = exprParts.join('');
 	return expr;
+}
+
+function hasAllThresholds(thresholds: ThresholdBackground[], requiredCount: number): boolean {
+	return Array.isArray(thresholds) && thresholds.length >= requiredCount;
 }
