@@ -153,7 +153,7 @@ export function getBulletMarks(props: BulletSpecProps): GroupMark {
 			},
 		];
 		bulletMark.marks?.push(getBulletMarkThreshold(props));
-	} else if(props.track) {
+	} else if (props.track) {
 		bulletMark.marks?.push(getBulletTrack(props));
 	}
 
@@ -319,45 +319,6 @@ export function getBulletMarkTargetValueLabel(props: BulletSpecProps): Mark {
 	return bulletMarkTargetValueLabel;
 }
 
-export function getBulletLabelAxes(props: BulletSpecProps): Axis[] {
-	const labelOffset = props.showTargetValue && props.showTarget ? -8 : 2;
-
-	const bulletAxes: Axis[] = [
-		{
-			scale: 'groupScale',
-			orient: 'left',
-			tickSize: 0,
-			labelOffset: labelOffset,
-			labelPadding: 10,
-			labelColor: '#797979',
-			domain: false,
-		},
-		{
-			scale: 'groupScale',
-			orient: 'right',
-			tickSize: 0,
-			labelOffset: labelOffset,
-			labelPadding: 10,
-			domain: false,
-			encode: {
-				labels: {
-					update: {
-						text: {
-							signal: `info(data('table')[datum.index * (length(data('table')) - 1)].${
-								props.metric
-							}) != null ? format(info(data('table')[datum.index * (length(data('table')) - 1)].${
-								props.metric
-							}), '${props.numberFormat || ''}') : ''`,
-						},
-					},
-				},
-			},
-		},
-	];
-
-	return props.labelPosition === 'side' && props.direction === 'column' ? bulletAxes : [];
-}
-
 export function getBulletMarkThreshold(props: BulletSpecProps): Mark {
 	// Vertically center the threshold bar by offsetting from bulletGroupHeight.
 	// Subtract 3 for alignment and targetValueLabelHeight if the label is shown.
@@ -404,58 +365,94 @@ export function getBulletMarkThreshold(props: BulletSpecProps): Mark {
 }
 
 export function getBulletTrack(props: BulletSpecProps): Mark {
-
 	const trackColor = getColorValue('gray-200', props.colorScheme);
 	const trackWidth = props.direction === 'column' ? 'width' : 'bulletGroupWidth';
-    
+
 	const bulletTrack: Mark = {
-		"name": `${props.name}Track`,
-		"description": `${props.name}Track`,
-		"type": "rect",
-		"from": { "data": "bulletGroups" },
-		"encode": {
-			"enter": {
-				"fill": { "value": trackColor },
-				"cornerRadiusTopRight": [
-				{ "test": "domain('xscale')[1] !== 0", "value": 3 }
-				],
-				"cornerRadiusBottomRight": [
-				{ "test": "domain('xscale')[1] !== 0", "value": 3 }
-				],
-				"cornerRadiusTopLeft": [
-				{ "test": "domain('xscale')[0] !== 0", "value": 3 }
-				],
-				"cornerRadiusBottomLeft": [
-				{ "test": "domain('xscale')[0] !== 0", "value": 3 }
-				]
+		name: `${props.name}Track`,
+		description: `${props.name}Track`,
+		type: 'rect',
+		from: { data: 'bulletGroups' },
+		encode: {
+			enter: {
+				fill: { value: trackColor },
+				cornerRadiusTopRight: [{ test: "domain('xscale')[1] !== 0", value: 3 }],
+				cornerRadiusBottomRight: [{ test: "domain('xscale')[1] !== 0", value: 3 }],
+				cornerRadiusTopLeft: [{ test: "domain('xscale')[0] !== 0", value: 3 }],
+				cornerRadiusBottomLeft: [{ test: "domain('xscale')[0] !== 0", value: 3 }],
 			},
-			"update": {
-				"x": { "value": 0 },
-				"width": { "signal": trackWidth },
-				"height": { "signal": "bulletHeight" },
-				"y": { "signal": "bulletGroupHeight - 3 - 2 * bulletHeight" }
-			}
-		}
+			update: {
+				x: { value: 0 },
+				width: { signal: trackWidth },
+				height: { signal: 'bulletHeight' },
+				y: { signal: 'bulletGroupHeight - 3 - 2 * bulletHeight' },
+			},
+		},
+	};
+
+	return bulletTrack;
+}
+
+export function getBulletLabelAxes(props: BulletSpecProps): Axis[] {
+	const labelOffset = props.showTargetValue && props.showTarget ? -8 : 2;
+
+	return [{
+		scale: 'groupScale',
+		orient: 'left',
+		tickSize: 0,
+		labelOffset: labelOffset,
+		labelPadding: 10,
+		labelColor: '#797979',
+		domain: false,
+	},{
+		scale: 'groupScale',
+		orient: 'right',
+		tickSize: 0,
+		labelOffset: labelOffset,
+		labelPadding: 10,
+		domain: false,
+		encode: {
+			labels: {
+				update: {
+					text: {
+						signal: `info(data('table')[datum.index * (length(data('table')) - 1)].${
+							props.metric
+						}) != null ? format(info(data('table')[datum.index * (length(data('table')) - 1)].${
+							props.metric
+						}), '${props.numberFormat || ''}') : ''`,
+					},
+				},
+			},
+		},
+	}]
+}
+
+export function getBulletScaleAxes(props: BulletSpecProps): Axis {
+	const labelOffset = props.showTargetValue && props.showTarget ? -8 : 2;
+
+	return {
+		labelOffset: labelOffset,
+		scale: 'xscale', // The name of the scale this axis is associated with
+		orient: 'bottom', // Orientation of the axis (e.g., 'top', 'bottom', 'left', 'right')
+		ticks: false, // Whether to show tick marks
+		labelColor: 'gray', // Color of the axis labels
+		domain: false, // Whether to show the axis line
+		tickCount: 5, // Number of ticks to show
+		offset: props.showTargetValue ? 10 : 0, // Add top padding (distance between the axis and the chart content)
 	}
-    
-	return bulletTrack
-    
-    }
+}
 
-    export function getBulletAxis(props: BulletSpecProps): Axis [] {
+export function getBulletAxes(props: BulletSpecProps): Axis[] {
 
-        const BulletAxis: Axis [] = [{
-            scale: 'xscale', // The name of the scale this axis is associated with
-            orient: 'bottom', // Orientation of the axis (e.g., 'top', 'bottom', 'left', 'right')
-            ticks: false, // Whether to show tick marks
-            labelColor: 'gray', // Color of the axis labels
-            domain: false, // Whether to show the axis line
-            tickCount: 5, // Number of ticks to show
-			offset: props.showTargetValue ? 10 : 0, // Add top padding (distance between the axis and the chart content)
-          }];
-    
+	let BulletAxes: Axis[] = [];
 
+	if(props.axis) {
+		BulletAxes.push(getBulletScaleAxes(props))
+	}
 
-        return props.axis ? BulletAxis : []
-    
-    }
+	if(props.labelPosition === 'side' && props.direction === 'column') {
+		BulletAxes = BulletAxes.concat(getBulletLabelAxes(props));
+	}
+
+	return BulletAxes
+}

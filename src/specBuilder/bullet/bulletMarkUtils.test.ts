@@ -85,7 +85,6 @@ describe('getBulletMarks', () => {
 		const bulletThresholdMark = marksGroup.marks?.find((mark) => mark.name?.includes('Threshold'));
 		expect(bulletThresholdMark).toBeUndefined();
 	});
-
 });
 
 describe('getBulletData', () => {
@@ -397,21 +396,20 @@ describe('Threshold functionality', () => {
 });
 
 describe('getBulletMarkTrack', () => {
-
 	test('Should return the correct track mark object in column mode', () => {
 		const props = {
 			...samplePropsColumn,
 			name: 'testBullet',
 			threshold: false,
-			track: true
+			track: true,
 		};
 		const data = getBulletTrack(props);
-		expect(data).toBeDefined()
+		expect(data).toBeDefined();
 		expect(data.encode?.update).toBeDefined();
 		expect(Object.keys(data.encode?.update ?? {}).length).toBe(4);
 		expect(Object.keys(data.encode?.enter ?? {}).length).toBe(5);
-		expect(data.encode?.update?.width).toBeDefined()
-		expect(data.encode?.update?.width).toStrictEqual({ 'signal': 'width' })
+		expect(data.encode?.update?.width).toBeDefined();
+		expect(data.encode?.update?.width).toStrictEqual({ signal: 'width' });
 	});
 
 	test('Should return the correct track mark object in row mode', () => {
@@ -419,10 +417,10 @@ describe('getBulletMarkTrack', () => {
 			...samplePropsRow,
 			name: 'testBullet',
 			threshold: false,
-			track: true
+			track: true,
 		};
 		const data = getBulletTrack(props);
-		expect(data.encode?.update?.width).toBeDefined()
-		expect(data.encode?.update?.width).toStrictEqual({ 'signal': 'bulletGroupWidth' })
+		expect(data.encode?.update?.width).toBeDefined();
+		expect(data.encode?.update?.width).toStrictEqual({ signal: 'bulletGroupWidth' });
 	});
-    });
+});
