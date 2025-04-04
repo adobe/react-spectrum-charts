@@ -73,18 +73,17 @@ export function thresholdColorField(thresholds: ThresholdBackground[], metricFie
 		(a, b) => (a.thresholdMax ?? Infinity) - (b.thresholdMax ?? Infinity)
 	);
 
-	let expr = sortedThresholds
-		.map((threshold) => {
-			if (threshold.thresholdMax !== undefined) {
-				return `datum.${metricField} <= ${threshold.thresholdMax} ? '${threshold.fill}'`;
-			}
-			return `'${threshold.fill}'`;
-		})
-		.join(' : ');
+	let expressionParts = sortedThresholds.map((threshold) => {
+		if (threshold.thresholdMax !== undefined) {
+			return `datum.${metricField} <= ${threshold.thresholdMax} ? '${threshold.fill}'`;
+		}
+		return `'${threshold.fill}'`;
+	});
 
+	if (sortedThresholds.length > 0 && sortedThresholds[sortedThresholds.length - 1].thresholdMax !== undefined) {
+		expressionParts.push(`'${sortedThresholds[sortedThresholds.length - 1].fill}'`);
+	}
+
+	const expr = expressionParts.join(' : ');
 	return expr;
-}
-
-export function hasAllThresholds(thresholds: ThresholdBackground[], requiredCount: number): boolean {
-	return Array.isArray(thresholds) && thresholds.length >= requiredCount;
 }
