@@ -345,7 +345,7 @@ describe('getBulletAxes', () => {
 				labelColor: 'gray',
 				domain: false,
 				tickCount: 5,
-				offset: props.showTargetValue ? 10 : 0,
+				offset: { signal: 'axisOffset' },
 			},
 		]);
 	});
@@ -368,7 +368,7 @@ describe('getBulletAxes', () => {
 				labelColor: 'gray',
 				domain: false,
 				tickCount: 5,
-				offset: 0,
+				offset: { signal: 'axisOffset' },
 			},
 			{
 				scale: 'groupScale',
