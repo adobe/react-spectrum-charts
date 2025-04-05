@@ -73,9 +73,9 @@ export const addSignals = produce<Signal[], [BulletSpecProps]>((signals, props) 
 				update: "length(data('table')) * bulletGroupHeight + (length(data('table')) - 1) * gap + 10",
 			});
 			signals.push({
-				"name": "axisOffset",
-				"update": "bulletChartHeight - height - 10"
-			})
+				name: 'axisOffset',
+				update: 'bulletChartHeight - height - 10',
+			});
 		} else {
 			signals.push({
 				name: 'bulletChartHeight',
@@ -357,7 +357,10 @@ export function getBulletTrack(props: BulletSpecProps): Mark {
 	const trackColor = getColorValue('gray-200', props.colorScheme);
 	const trackWidth = props.direction === 'column' ? 'width' : 'bulletGroupWidth';
 	// Subtracting 20 accounts for the space used by the target value label
-	const trackY = props.showTarget && props.showTargetValue ? 'bulletGroupHeight - 3 - 2 * bulletHeight - 20' : 'bulletGroupHeight - 3 - 2 * bulletHeight';
+	const trackY =
+		props.showTarget && props.showTargetValue
+			? 'bulletGroupHeight - 3 - 2 * bulletHeight - 20'
+			: 'bulletGroupHeight - 3 - 2 * bulletHeight';
 
 	const bulletTrack: Mark = {
 		name: `${props.name}Track`,
@@ -421,8 +424,7 @@ export function getBulletLabelAxes(props: BulletSpecProps): Axis[] {
 	];
 }
 
-export function getBulletScaleAxes(props: BulletSpecProps): Axis {
-
+export function getBulletScaleAxes(): Axis {
 	return {
 		labelOffset: 2,
 		scale: 'xscale',
@@ -431,7 +433,7 @@ export function getBulletScaleAxes(props: BulletSpecProps): Axis {
 		labelColor: 'gray',
 		domain: false,
 		tickCount: 5,
-		offset: {"signal": "axisOffset"},
+		offset: { signal: 'axisOffset' },
 	};
 }
 
@@ -439,7 +441,7 @@ export function getBulletAxes(props: BulletSpecProps): Axis[] {
 	let BulletAxes: Axis[] = [];
 
 	if (props.axis && props.direction === 'column' && !props.showTargetValue) {
-		BulletAxes.push(getBulletScaleAxes(props));
+		BulletAxes.push(getBulletScaleAxes());
 	}
 
 	if (props.labelPosition === 'side' && props.direction === 'column') {

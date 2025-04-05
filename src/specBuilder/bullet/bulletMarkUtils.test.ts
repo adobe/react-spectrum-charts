@@ -334,24 +334,26 @@ describe('getBulletAxes', () => {
 	});
 
 	test('Should return the scale axis when axis is true, row mode is enabled, and showtarget is false', () => {
-		const props = { ...samplePropsColumn, axis: true};
+		const props = { ...samplePropsColumn, axis: true };
 		const axes = getBulletAxes(props);
-		expect(axes).toStrictEqual([{
-			labelOffset: 2,
-			scale: 'xscale',
-			orient: 'bottom',
-			ticks: false,
-			labelColor: 'gray',
-			domain: false,
-			tickCount: 5,
-			offset: props.showTargetValue ? 10 : 0,
-		}])
+		expect(axes).toStrictEqual([
+			{
+				labelOffset: 2,
+				scale: 'xscale',
+				orient: 'bottom',
+				ticks: false,
+				labelColor: 'gray',
+				domain: false,
+				tickCount: 5,
+				offset: props.showTargetValue ? 10 : 0,
+			},
+		]);
 	});
 
 	test('Should not return scale axis when showtarget and showtargetValue are true', () => {
 		const props = { ...samplePropsColumn, showTarget: true, showTargetValue: true, axis: true };
 		const axes = getBulletAxes(props);
-		expect(axes).toStrictEqual([])
+		expect(axes).toStrictEqual([]);
 	});
 
 	test('Should return scale axis and label axes when both are enabled', () => {
@@ -359,42 +361,42 @@ describe('getBulletAxes', () => {
 		const axes = getBulletAxes(props);
 		expect(axes).toStrictEqual([
 			{
-			    "labelOffset": 2,
-			    "scale": "xscale",
-			    "orient": "bottom",
-			    "ticks": false,
-			    "labelColor": "gray",
-			    "domain": false,
-			    "tickCount": 5,
-			    "offset": 0
+				labelOffset: 2,
+				scale: 'xscale',
+				orient: 'bottom',
+				ticks: false,
+				labelColor: 'gray',
+				domain: false,
+				tickCount: 5,
+				offset: 0,
 			},
 			{
-			    "scale": "groupScale",
-			    "orient": "left",
-			    "tickSize": 0,
-			    "labelOffset": 2,
-			    "labelPadding": 10,
-			    "labelColor": "#797979",
-			    "domain": false
+				scale: 'groupScale',
+				orient: 'left',
+				tickSize: 0,
+				labelOffset: 2,
+				labelPadding: 10,
+				labelColor: '#797979',
+				domain: false,
 			},
 			{
-			    "scale": "groupScale",
-			    "orient": "right",
-			    "tickSize": 0,
-			    "labelOffset": 2,
-			    "labelPadding": 10,
-			    "domain": false,
-			    "encode": {
-				"labels": {
-				    "update": {
-					"text": {
-					    "signal": "info(data('table')[datum.index * (length(data('table')) - 1)].currentAmount) != null ? format(info(data('table')[datum.index * (length(data('table')) - 1)].currentAmount), '') : ''"
-					}
-				    }
-				}
-			    }
-			}
-		    ])
+				scale: 'groupScale',
+				orient: 'right',
+				tickSize: 0,
+				labelOffset: 2,
+				labelPadding: 10,
+				domain: false,
+				encode: {
+					labels: {
+						update: {
+							text: {
+								signal: "info(data('table')[datum.index * (length(data('table')) - 1)].currentAmount) != null ? format(info(data('table')[datum.index * (length(data('table')) - 1)].currentAmount), '') : ''",
+							},
+						},
+					},
+				},
+			},
+		]);
 	});
 });
 
@@ -513,6 +515,6 @@ describe('getBulletMarkTrack', () => {
 		};
 		const data = getBulletTrack(props);
 		expect(data.encode?.update?.y).toBeDefined();
-		expect(data.encode?.update?.y).toStrictEqual({ "signal": "bulletGroupHeight - 3 - 2 * bulletHeight - 20" });
+		expect(data.encode?.update?.y).toStrictEqual({ signal: 'bulletGroupHeight - 3 - 2 * bulletHeight - 20' });
 	});
 });
