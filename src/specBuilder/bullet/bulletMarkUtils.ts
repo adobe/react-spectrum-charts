@@ -397,41 +397,40 @@ export function getBulletTrack(props: BulletSpecProps): Mark {
 	return bulletTrack;
 }
 
-export function getBulletLabelAxes(props: BulletSpecProps): Axis[] {
-	const labelOffset = props.showTargetValue && props.showTarget ? -8 : 2;
+export function getBulletLabelAxesLeft(labelOffset): Axis {
+	return {
+		scale: 'groupScale',
+		orient: 'left',
+		tickSize: 0,
+		labelOffset: labelOffset,
+		labelPadding: 10,
+		labelColor: '#797979',
+		domain: false,
+	};
+}
 
-	return [
-		{
-			scale: 'groupScale',
-			orient: 'left',
-			tickSize: 0,
-			labelOffset: labelOffset,
-			labelPadding: 10,
-			labelColor: '#797979',
-			domain: false,
-		},
-		{
-			scale: 'groupScale',
-			orient: 'right',
-			tickSize: 0,
-			labelOffset: labelOffset,
-			labelPadding: 10,
-			domain: false,
-			encode: {
-				labels: {
-					update: {
-						text: {
-							signal: `info(data('table')[datum.index * (length(data('table')) - 1)].${
-								props.metric
-							}) != null ? format(info(data('table')[datum.index * (length(data('table')) - 1)].${
-								props.metric
-							}), '${props.numberFormat || ''}') : ''`,
-						},
+export function getBulletLabelAxesRight(props: BulletSpecProps, labelOffset): Axis {
+	return {
+		scale: 'groupScale',
+		orient: 'right',
+		tickSize: 0,
+		labelOffset: labelOffset,
+		labelPadding: 10,
+		domain: false,
+		encode: {
+			labels: {
+				update: {
+					text: {
+						signal: `info(data('table')[datum.index * (length(data('table')) - 1)].${
+							props.metric
+						}) != null ? format(info(data('table')[datum.index * (length(data('table')) - 1)].${
+							props.metric
+						}), '${props.numberFormat || ''}') : ''`,
 					},
 				},
 			},
 		},
-	];
+	};
 }
 
 export function getBulletScaleAxes(): Axis {
@@ -447,16 +446,14 @@ export function getBulletScaleAxes(): Axis {
 	};
 }
 
-export function getBulletAxes(props: BulletSpecProps): Axis[] {
-	let BulletAxes: Axis[] = [];
-
+export const addAxes = produce<Axis[], [BulletSpecProps]>((axes, props) => {
 	if (props.metricAxis && props.direction === 'column' && !props.showTargetValue) {
-		BulletAxes.push(getBulletScaleAxes(props));
+		axes.push(getBulletScaleAxes());
 	}
 
 	if (props.labelPosition === 'side' && props.direction === 'column') {
-		BulletAxes = BulletAxes.concat(getBulletLabelAxes(props));
+		const labelOffset = props.showTargetValue && props.showTarget ? -8 : 2;
+		axes.push(getBulletLabelAxesLeft(labelOffset));
+		axes.push(getBulletLabelAxesRight(props, labelOffset));
 	}
-
-	return BulletAxes;
-}
+});
