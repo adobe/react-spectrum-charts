@@ -72,6 +72,10 @@ export const addSignals = produce<Signal[], [BulletSpecProps]>((signals, props) 
 				name: 'bulletChartHeight',
 				update: "length(data('table')) * bulletGroupHeight + (length(data('table')) - 1) * gap + 10",
 			});
+			signals.push({
+				"name": "axisOffset",
+				"update": "bulletChartHeight - height - 10"
+			})
 		} else {
 			signals.push({
 				name: 'bulletChartHeight',
@@ -427,7 +431,7 @@ export function getBulletScaleAxes(props: BulletSpecProps): Axis {
 		labelColor: 'gray',
 		domain: false,
 		tickCount: 5,
-		offset: 0,
+		offset: {"signal": "axisOffset"},
 	};
 }
 
