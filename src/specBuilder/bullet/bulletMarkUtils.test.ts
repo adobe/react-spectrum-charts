@@ -230,7 +230,7 @@ describe('getBulletSignals', () => {
 		const props = {
 			...samplePropsColumn,
 			showTargetValue: false,
-			axis: 'true',
+			axis: true,
 		};
 		const signals = addSignals([], props);
 		expect(signals.find((signal) => signal.name === 'bulletChartHeight')).toStrictEqual({
