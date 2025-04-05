@@ -12,11 +12,11 @@
 import { GroupMark } from 'vega';
 
 import {
+	addAxes,
 	addData,
 	addMarks,
 	addScales,
 	addSignals,
-	getBulletAxes,
 	getBulletMarkLabel,
 	getBulletMarkRect,
 	getBulletMarkTarget,
@@ -315,27 +315,27 @@ describe('getBulletMarkSideLabel', () => {
 describe('getBulletAxes', () => {
 	test('Should return the correct axes object when side label mode is enabled', () => {
 		const props = { ...samplePropsColumn, labelPosition: 'side' as 'side' | 'top' };
-		const axes = getBulletAxes(props);
+		const axes = addAxes([], props);
 		expect(axes).toHaveLength(2);
 		expect(axes[0].labelOffset).toBe(2);
 	});
 
 	test('Should return the correct axes object when side label mode is enabled and target label is shown', () => {
 		const props = { ...samplePropsColumn, labelPosition: 'side' as 'side' | 'top', showTargetValue: true };
-		const axes = getBulletAxes(props);
+		const axes = addAxes([], props);
 		expect(axes).toHaveLength(2);
 		expect(axes[0].labelOffset).toBe(-8);
 	});
 
 	test('Should return an empty list when top label mode is enabled', () => {
 		const props = { ...samplePropsColumn };
-		const axes = getBulletAxes(props);
+		const axes = addAxes([], props);
 		expect(axes).toStrictEqual([]);
 	});
 
 	test('Should return the scale axis when axis is true, row mode is enabled, and showtarget is false', () => {
 		const props = { ...samplePropsColumn, axis: true };
-		const axes = getBulletAxes(props);
+		const axes = addAxes([], props);
 		expect(axes).toStrictEqual([
 			{
 				labelOffset: 2,
@@ -352,13 +352,13 @@ describe('getBulletAxes', () => {
 
 	test('Should not return scale axis when showtarget and showtargetValue are true', () => {
 		const props = { ...samplePropsColumn, showTarget: true, showTargetValue: true, axis: true };
-		const axes = getBulletAxes(props);
+		const axes = addAxes([], props);
 		expect(axes).toStrictEqual([]);
 	});
 
 	test('Should return scale axis and label axes when both are enabled', () => {
 		const props = { ...samplePropsColumn, labelPosition: 'side' as 'side' | 'top', axis: true };
-		const axes = getBulletAxes(props);
+		const axes = addAxes([], props);
 		expect(axes).toStrictEqual([
 			{
 				labelOffset: 2,
