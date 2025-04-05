@@ -85,5 +85,6 @@ export function thresholdColorField(thresholds: ThresholdBackground[], metricFie
 	}
 
 	const expr = expressionParts.join(' : ');
+	console.log('expr', expr);
 	return expr;
 }
