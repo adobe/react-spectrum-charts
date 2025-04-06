@@ -248,6 +248,7 @@ export function getBulletMarkLabel(props: BulletSpecProps): Mark {
 }
 
 export function getBulletMarkValueLabel(props: BulletSpecProps): Mark {
+	const defaultColor = getColorValue(props.color, props.colorScheme);
 	const solidColor = getColorValue('gray-900', props.colorScheme);
 	const encodeUpdateSignalWidth = props.direction === 'column' ? 'width' : 'bulletGroupWidth';
 	const fillColor =
@@ -269,7 +270,7 @@ export function getBulletMarkValueLabel(props: BulletSpecProps): Mark {
 				},
 				align: { value: 'right' },
 				baseline: { value: 'top' },
-				fill: fillColor,
+				fill: `'${fillColor} !== ${defaultColor}'` ? fillColor : [{ value: solidColor }],
 			},
 			update: { x: { signal: encodeUpdateSignalWidth }, y: { value: 0 } },
 		},

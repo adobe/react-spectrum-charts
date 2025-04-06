@@ -60,7 +60,7 @@ export const getBulletTransforms = (props: BulletSpecProps): FormulaTransform[] 
 	if (props.thresholdBarColor && (props.thresholds?.length ?? 0) > 0) {
 		transforms.push({
 			type: 'formula',
-			expr: thresholdColorField(props.thresholds ?? [], props.metric),
+			expr: thresholdColorField(props.thresholds ?? [], props.metric, props.color),
 			as: 'barColor',
 		});
 	}
@@ -68,23 +68,43 @@ export const getBulletTransforms = (props: BulletSpecProps): FormulaTransform[] 
 	return transforms;
 };
 
-export function thresholdColorField(thresholds: ThresholdBackground[], metricField: string): string {
-	const sortedThresholds = [...thresholds].sort(
-		(a, b) => (a.thresholdMax ?? Infinity) - (b.thresholdMax ?? Infinity)
-	);
+export function thresholdColorField(
+	thresholds: ThresholdBackground[],
+	metricField: string,
+	defaultColor: string
+): string {
+	if (!thresholds || thresholds.length === 0) return `'${defaultColor}'`;
 
-	let expressionParts = sortedThresholds.map((threshold) => {
-		if (threshold.thresholdMax !== undefined) {
-			return `datum.${metricField} <= ${threshold.thresholdMax} ? '${threshold.fill}'`;
-		}
-		return `'${threshold.fill}'`;
+	// Sort thresholds by their lower bound.
+	// For thresholds with no thresholdMin, we treat them as having -1e12.
+	const sorted: ThresholdBackground[] = thresholds.slice().sort((a, b) => {
+		const aMin = a.thresholdMin !== undefined ? a.thresholdMin : -1e12;
+		const bMin = b.thresholdMin !== undefined ? b.thresholdMin : -1e12;
+		return aMin - bMin;
 	});
 
-	if (sortedThresholds.length > 0 && sortedThresholds[sortedThresholds.length - 1].thresholdMax !== undefined) {
-		expressionParts.push(`'${sortedThresholds[sortedThresholds.length - 1].fill}'`);
+	let exprParts: string[] = [];
+
+	// For values below the first threshold's lower bound, use the default color.
+	exprParts.push(
+		`(datum.${metricField} < ${
+			sorted[0].thresholdMin !== undefined ? sorted[0].thresholdMin : -1e12
+		}) ? '${defaultColor}' : `
+	);
+
+	// Loop over all thresholds except the last one.
+	// For each, if the metric is less than the next threshold's lower bound,
+	// then use the current threshold's color.
+	for (let i = 0; i < sorted.length - 1; i++) {
+		const nextLower = sorted[i + 1].thresholdMin !== undefined ? sorted[i + 1].thresholdMin : -1e12;
+		exprParts.push(`(datum.${metricField} < ${nextLower}) ? '${sorted[i].fill}' : `);
 	}
 
-	const expr = expressionParts.join(' : ');
-	console.log('expr', expr);
+	// For values greater than or equal to the last threshold's lower bound,
+	// use the last threshold's color.
+	exprParts.push(`'${sorted[sorted.length - 1].fill}'`);
+
+	const expr = exprParts.join('');
+	console.log('carry forward expr:', expr);
 	return expr;
 }
