@@ -209,7 +209,7 @@ export function thresholdColorField(thresholds: ThresholdBackground[], metricFie
 		(a, b) => (a.thresholdMax ?? Infinity) - (b.thresholdMax ?? Infinity)
 	);
 
-	let expr = sortedThresholds
+	return sortedThresholds
 		.map((threshold) => {
 			if (threshold.thresholdMax !== undefined) {
 				return `datum.${metricField} <= ${threshold.thresholdMax} ? '${threshold.fill}'`;
@@ -217,8 +217,6 @@ export function thresholdColorField(thresholds: ThresholdBackground[], metricFie
 			return `'${threshold.fill}'`;
 		})
 		.join(' : ');
-
-	return expr;
 }
 
 export function getBulletMarkTarget(props: BulletSpecProps): Mark {
