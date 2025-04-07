@@ -12,11 +12,11 @@
 import { GroupMark } from 'vega';
 
 import {
+	addAxes,
 	addData,
 	addMarks,
 	addScales,
 	addSignals,
-	getBulletLabelAxes,
 	getBulletMarkLabel,
 	getBulletMarkRect,
 	getBulletMarkTarget,
@@ -225,6 +225,19 @@ describe('getBulletSignals', () => {
 			update: 'bulletThresholdHeight + 10',
 		});
 	});
+
+	test('Should include correct bulletChartHeight signal when props.axis is true and showTargetValue is false', () => {
+		const props = {
+			...samplePropsColumn,
+			showTargetValue: false,
+			metricAxis: true,
+		};
+		const signals = addSignals([], props);
+		expect(signals.find((signal) => signal.name === 'bulletChartHeight')).toStrictEqual({
+			name: 'bulletChartHeight',
+			update: "length(data('table')) * bulletGroupHeight + (length(data('table')) - 1) * gap + 10",
+		});
+	});
 });
 
 describe('getBulletMarkRect', () => {
@@ -302,22 +315,88 @@ describe('getBulletMarkSideLabel', () => {
 describe('getBulletAxes', () => {
 	test('Should return the correct axes object when side label mode is enabled', () => {
 		const props = { ...samplePropsColumn, labelPosition: 'side' as 'side' | 'top' };
-		const axes = getBulletLabelAxes(props);
+		const axes = addAxes([], props);
 		expect(axes).toHaveLength(2);
 		expect(axes[0].labelOffset).toBe(2);
 	});
 
 	test('Should return the correct axes object when side label mode is enabled and target label is shown', () => {
 		const props = { ...samplePropsColumn, labelPosition: 'side' as 'side' | 'top', showTargetValue: true };
-		const axes = getBulletLabelAxes(props);
+		const axes = addAxes([], props);
 		expect(axes).toHaveLength(2);
 		expect(axes[0].labelOffset).toBe(-8);
 	});
 
 	test('Should return an empty list when top label mode is enabled', () => {
 		const props = { ...samplePropsColumn };
-		const axes = getBulletLabelAxes(props);
+		const axes = addAxes([], props);
 		expect(axes).toStrictEqual([]);
+	});
+
+	test('Should return the scale axis when axis is true, row mode is enabled, and showtarget is false', () => {
+		const props = { ...samplePropsColumn, metricAxis: true };
+		const axes = addAxes([], props);
+		expect(axes).toStrictEqual([
+			{
+				labelOffset: 2,
+				scale: 'xscale',
+				orient: 'bottom',
+				ticks: false,
+				labelColor: 'gray',
+				domain: false,
+				tickCount: 5,
+				offset: { signal: 'axisOffset' },
+			},
+		]);
+	});
+
+	test('Should not return scale axis when showtarget and showtargetValue are true', () => {
+		const props = { ...samplePropsColumn, showTarget: true, showTargetValue: true, axis: true };
+		const axes = addAxes([], props);
+		expect(axes).toStrictEqual([]);
+	});
+
+	test('Should return scale axis and label axes when both are enabled', () => {
+		const props = { ...samplePropsColumn, labelPosition: 'side' as 'side' | 'top', metricAxis: true };
+		const axes = addAxes([], props);
+		expect(axes).toStrictEqual([
+			{
+				labelOffset: 2,
+				scale: 'xscale',
+				orient: 'bottom',
+				ticks: false,
+				labelColor: 'gray',
+				domain: false,
+				tickCount: 5,
+				offset: { signal: 'axisOffset' },
+			},
+			{
+				scale: 'groupScale',
+				orient: 'left',
+				tickSize: 0,
+				labelOffset: 2,
+				labelPadding: 10,
+				labelColor: '#797979',
+				domain: false,
+			},
+			{
+				scale: 'groupScale',
+				orient: 'right',
+				tickSize: 0,
+				labelOffset: 2,
+				labelPadding: 10,
+				domain: false,
+				encode: {
+					labels: {
+						update: {
+							text: {
+								signal: "info(data('table')[datum.index * (length(data('table')) - 1)].currentAmount) != null ? format(info(data('table')[datum.index * (length(data('table')) - 1)].currentAmount), '') : ''",
+							},
+						},
+					},
+				},
+			},
+		]);
 	});
 });
 
@@ -436,6 +515,6 @@ describe('getBulletMarkTrack', () => {
 		};
 		const data = getBulletTrack(props);
 		expect(data.encode?.update?.y).toBeDefined();
-		expect(data.encode?.update?.y).toStrictEqual({ "signal": "bulletGroupHeight - 3 - 2 * bulletHeight - 20" });
+		expect(data.encode?.update?.y).toStrictEqual({ signal: 'bulletGroupHeight - 3 - 2 * bulletHeight - 20' });
 	});
 });
