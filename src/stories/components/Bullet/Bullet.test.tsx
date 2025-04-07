@@ -29,8 +29,7 @@ describe('Bullet', () => {
 		expect(rects.length).toEqual(2);
 
 		rects.forEach((rect) => {
-			// Expect red-500 color
-			expect(rect).toHaveAttribute('fill', 'rgb(255, 155, 136)');
+			expect(rect).toHaveAttribute('fill', 'rgb(249, 137, 23)');
 		});
 
 		const barLabels = await findAllMarksByGroupName(chart, 'bullet0Label', 'text');
