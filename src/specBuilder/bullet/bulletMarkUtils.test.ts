@@ -263,6 +263,32 @@ describe('getBulletMarkRect', () => {
 			const rectMark = getBulletMarkRect(propsNoThresholds);
 			expect(rectMark.encode?.enter?.fill).toEqual([{ value: propsNoThresholds.color }]);
 		});
+
+		test('Uses default color field when thresholdBarColor is disabled', () => {
+			const propsNoThresholds = {
+				...samplePropsColumn,
+				thresholdBarColor: false,
+				thresholds: [
+					{ thresholdMax: 120, fill: 'rgb(234, 56, 41)' },
+					{ thresholdMin: 120, thresholdMax: 235, fill: 'rgb(249, 137, 23)' },
+					{ thresholdMin: 235, fill: 'rgb(21, 164, 110)' },
+				],
+			};
+
+			const rectMark = getBulletMarkRect(propsNoThresholds);
+			expect(rectMark.encode?.enter?.fill).toEqual([{ value: propsNoThresholds.color }]);
+		});
+
+		test('Uses default color field when thresholdBarColor is disabled and no thresholds exist', () => {
+			const propsNoThresholds = {
+				...samplePropsColumn,
+				thresholdBarColor: false,
+				thresholds: [],
+			};
+
+			const rectMark = getBulletMarkRect(propsNoThresholds);
+			expect(rectMark.encode?.enter?.fill).toEqual([{ value: propsNoThresholds.color }]);
+		});
 	});
 });
 
@@ -337,6 +363,36 @@ describe('getBulletMarkValueLabel', () => {
 			};
 			const labelMark = getBulletMarkValueLabel(props);
 
+			expect(labelMark.encode?.enter?.fill).toEqual({ signal: "'rgb(0, 0, 0)'" });
+		});
+
+		test('Uses default color when no thresholds are provided', () => {
+			const props = {
+				...samplePropsColumn,
+				thresholdBarColor: true,
+				thresholds: [],
+			};
+			const labelMark = getBulletMarkValueLabel(props);
+			expect(labelMark.encode?.enter?.fill).toEqual({ signal: "'rgb(0, 0, 0)'" });
+		});
+
+		test('Uses default color when thresholdBarColor is false and no thresholds are provided', () => {
+			const props = {
+				...samplePropsColumn,
+				thresholdBarColor: false,
+				thresholds: [],
+			};
+			const labelMark = getBulletMarkValueLabel(props);
+			expect(labelMark.encode?.enter?.fill).toEqual({ signal: "'rgb(0, 0, 0)'" });
+		});
+
+		test('Uses default color when thresholdBarColor is true and no thresholds are provided', () => {
+			const props = {
+				...samplePropsColumn,
+				thresholdBarColor: true,
+				thresholds: [],
+			};
+			const labelMark = getBulletMarkValueLabel(props);
 			expect(labelMark.encode?.enter?.fill).toEqual({ signal: "'rgb(0, 0, 0)'" });
 		});
 	});

@@ -116,17 +116,31 @@ describe('getBulletTransforms', () => {
 		const barColorTransform = result.find((t) => t.as === 'barColor');
 		expect(barColorTransform).toBeUndefined();
 	});
+
+	it('Should not include a barColor transform when thresholdBarColor is false', () => {
+		const props: BulletSpecProps = {
+			...samplePropsColumn,
+			target: 'target',
+			thresholdBarColor: false,
+			thresholds: [],
+			color: 'blue',
+			metric: 'currentAmount',
+		};
+		const result = getBulletTransforms(props);
+		const barColorTransform = result.find((t) => t.as === 'barColor');
+		expect(barColorTransform).toBeUndefined();
+	});
 });
 
 describe('generateThresholdColorExpr', () => {
 	const metricField = 'currentAmount';
 
-	it('returns default color if no thresholds provided', () => {
+	it('Should return default color if no thresholds provided', () => {
 		const expr = generateThresholdColorExpr([], metricField, 'blue-900');
 		expect(expr).toBe(`'blue-900'`);
 	});
 
-	it('generates correct expression for complete thresholds', () => {
+	it('Should generate correct expression for complete thresholds', () => {
 		const thresholds: ThresholdBackground[] = [
 			{ fill: 'rgb(234, 56, 41)' }, // first threshold, no thresholdMin → treated as -1e12
 			{ thresholdMin: 120, thresholdMax: 235, fill: 'rgb(249, 137, 23)' },
@@ -142,7 +156,7 @@ describe('generateThresholdColorExpr', () => {
 		expect(expr).toBe(expected);
 	});
 
-	it('returns proper expression when one threshold is removed', () => {
+	it('Should returns proper expression when one threshold is removed', () => {
 		// Only two thresholds provided.
 		const thresholds: ThresholdBackground[] = [
 			{ fill: 'rgb(234, 56, 41)' }, // covers below 120
@@ -157,7 +171,21 @@ describe('generateThresholdColorExpr', () => {
 		expect(expr).toBe(expected);
 	});
 
-	it('returns proper expression when two thresholds are removed', () => {
+	it('Should sort thresholds correctly when thresholdMin is not provided', () => {
+		const thresholds: ThresholdBackground[] = [
+			{ fill: 'rgb(234, 56, 41)' }, // covers below 120
+			{ thresholdMax: 235, fill: 'rgb(249, 137, 23)' }, // covers from 120 upward
+		];
+
+		const expected =
+			`(datum.${metricField} < -1000000000000) ? 'blue' : ` +
+			`(datum.${metricField} < -1000000000000) ? 'rgb(234, 56, 41)' : ` +
+			`'rgb(249, 137, 23)'`;
+		const expr = generateThresholdColorExpr(thresholds, metricField, 'blue');
+		expect(expr).toBe(expected);
+	});
+
+	it('Should return proper expression when two thresholds are removed', () => {
 		// Only one threshold provided.
 		const thresholds: ThresholdBackground[] = [
 			{ fill: 'rgb(234, 56, 41)' }, // covers below 120
