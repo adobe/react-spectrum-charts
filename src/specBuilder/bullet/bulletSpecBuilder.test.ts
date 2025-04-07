@@ -30,9 +30,9 @@ export const samplePropsColumn: BulletSpecProps = {
 	labelPosition: 'top',
 	scaleType: 'normal',
 	maxScaleValue: 100,
+	metricAxis: false,
 	track: false,
 	thresholdBarColor: false,
-	metricAxis: false,
 };
 
 export const samplePropsRow: BulletSpecProps = {
