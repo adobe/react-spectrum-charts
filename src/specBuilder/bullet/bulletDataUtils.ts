@@ -37,6 +37,7 @@ export const getBulletTableData = (data: Data[]): ValuesData => {
 /**
  * Generates the necessary formula transforms for the bullet chart.
  * It calculates the xPaddingForTarget and, if in flexible scale mode, adds the flexibleScaleValue.
+ * It also generates a color expression for the threshold bars if applicable.
  * @param props The bullet spec properties.
  * @returns An array of formula transforms.
  */
@@ -58,7 +59,7 @@ export const getBulletTransforms = (props: BulletSpecProps): FormulaTransform[] 
 	}
 
 	const thresholds = props.thresholds ?? [];
-	if (props.thresholdBarColor && hasAllThresholds(thresholds ?? [], thresholds.length - 1)) {
+	if (props.thresholdBarColor && (props.thresholds?.length ?? 0) > 0) {
 		transforms.push({
 			type: 'formula',
 			expr: generateThresholdColorExpr(props.thresholds ?? [], props.metric, props.color),
@@ -111,8 +112,4 @@ export function generateThresholdColorExpr(
 
 	const expr = exprParts.join('');
 	return expr;
-}
-
-function hasAllThresholds(thresholds: ThresholdBackground[], requiredCount: number): boolean {
-	return Array.isArray(thresholds) && thresholds.length >= requiredCount;
 }

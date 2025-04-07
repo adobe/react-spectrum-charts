@@ -104,6 +104,7 @@ describe('getBulletTransforms', () => {
 	});
 
 	it('Should not include a barColor transform when thresholds is empty', () => {
+		// test
 		const props: BulletSpecProps = {
 			...samplePropsColumn,
 			target: 'target',
