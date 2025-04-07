@@ -89,7 +89,7 @@ export function generateThresholdColorExpr(
 		return aMin - bMin;
 	});
 
-	let exprParts: string[] = [];
+	const exprParts: string[] = [];
 
 	// For values below the first threshold's lower bound, use the default color.
 	exprParts.push(
