@@ -71,8 +71,7 @@ export const getBulletTransforms = (props: BulletSpecProps): FormulaTransform[] 
 /**
  * Generates a Vega expression for the color of the bullet chart based on the provided thresholds.
  * The expression checks the value of the metric field against the thresholds and assigns the appropriate color.
- * @param thresholds An array of threshold objects,
- * each containing a fill color and a optional thresholdMin or thresholdMax value.
+ * @param thresholds An array of threshold objects.
  * @param metricField The name of the metric field in the data.
  * @param defaultColor The default color to use if no thresholds are met.
  * @returns A string representing the Vega expression for the color.

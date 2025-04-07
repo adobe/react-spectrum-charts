@@ -11,8 +11,8 @@
  */
 import { Data } from 'vega';
 
-import { BulletSpecProps } from '../../types';
-import { getBulletTableData, getBulletTransforms } from './bulletDataUtils';
+import { BulletSpecProps, ThresholdBackground } from '../../types';
+import { generateThresholdColorExpr, getBulletTableData, getBulletTransforms } from './bulletDataUtils';
 import { samplePropsColumn } from './bulletSpecBuilder.test';
 
 describe('getBulletTableData', () => {
@@ -79,5 +79,45 @@ describe('getBulletTransforms', () => {
 			expr: '100',
 			as: 'flexibleScaleValue',
 		});
+	});
+});
+
+describe('generateThresholdColorExpr', () => {
+	const metricField = 'currentAmount';
+
+	test('returns default color if no thresholds provided', () => {
+		const expr = generateThresholdColorExpr([], metricField, 'blue-900');
+		expect(expr).toBe(`'blue-900'`);
+	});
+
+	test('generates correct expression for complete thresholds', () => {
+		const thresholds: ThresholdBackground[] = [
+			{ fill: 'rgb(234, 56, 41)' }, // first threshold, no thresholdMin → treated as -1e12
+			{ thresholdMin: 120, thresholdMax: 235, fill: 'rgb(249, 137, 23)' },
+			{ thresholdMin: 235, fill: 'rgb(21, 164, 110)' },
+		];
+
+		const expected =
+			`(datum.${metricField} < -1000000000000) ? 'blue' : ` +
+			`(datum.${metricField} < 120) ? 'rgb(234, 56, 41)' : ` +
+			`(datum.${metricField} < 235) ? 'rgb(249, 137, 23)' : ` +
+			`'rgb(21, 164, 110)'`;
+		const expr = generateThresholdColorExpr(thresholds, metricField, 'blue');
+		expect(expr).toBe(expected);
+	});
+
+	test('returns proper expression when one threshold is removed', () => {
+		// Only two thresholds provided.
+		const thresholds: ThresholdBackground[] = [
+			{ fill: 'rgb(234, 56, 41)' }, // covers below 120
+			{ thresholdMin: 120, fill: 'rgb(249, 137, 23)' }, // covers from 120 upward
+		];
+
+		const expected =
+			`(datum.${metricField} < -1000000000000) ? 'blue' : ` +
+			`(datum.${metricField} < 120) ? 'rgb(234, 56, 41)' : ` +
+			`'rgb(249, 137, 23)'`;
+		const expr = generateThresholdColorExpr(thresholds, metricField, 'blue');
+		expect(expr).toBe(expected);
 	});
 });
