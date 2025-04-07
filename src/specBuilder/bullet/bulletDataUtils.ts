@@ -109,6 +109,5 @@ export function generateThresholdColorExpr(
 	exprParts.push(`'${sorted[sorted.length - 1].fill}'`);
 
 	const expr = exprParts.join('');
-	console.log('carry forward expr:', expr);
 	return expr;
 }
