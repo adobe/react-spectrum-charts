@@ -37,7 +37,7 @@ const BulletStory: StoryFn<BulletProps & { width?: number; height?: number }> = 
 	const { width, height, ...bulletProps } = args;
 	const chartProps = useChartProps({ ...defaultChartProps, width: width ?? 350, height: height ?? 350 });
 	return (
-		<Chart {...chartProps} >
+		<Chart {...chartProps}>
 			<Bullet {...bulletProps} />
 		</Chart>
 	);
@@ -70,7 +70,7 @@ Basic.args = {
 	track: false,
 	thresholdBarColor: true,
 	thresholds: basicThresholdsData,
-    	metricAxis: false,
+	metricAxis: false,
 };
 
 const Thresholds = bindWithProps(BulletStory);
@@ -88,7 +88,7 @@ Thresholds.args = {
 	maxScaleValue: 100,
 	thresholds: basicThresholdsData,
 	track: false,
-    	metricAxis: false,
+	metricAxis: false,
 };
 
 const Track = bindWithProps(BulletStory);
@@ -105,7 +105,7 @@ Track.args = {
 	scaleType: 'normal',
 	maxScaleValue: 100,
 	track: true,
-    	metricAxis: false,
+	metricAxis: false,
 };
 
 const RowMode = bindWithProps(BulletStory);
@@ -123,7 +123,7 @@ RowMode.args = {
 	maxScaleValue: 100,
 	thresholds: basicThresholdsData,
 	track: false,
-    	metricAxis: false,
+	metricAxis: false,
 };
 
 const WithTitle = bindWithProps(BulletTitleStory);
@@ -137,8 +137,8 @@ WithTitle.args = {
 	scaleType: 'normal',
 	maxScaleValue: 100,
 	track: false,
-  	direction: 'column',
-      	metricAxis: false,
+	direction: 'column',
+	metricAxis: false,
 };
 
 const FixedScale = bindWithProps(BulletStory);
@@ -156,7 +156,7 @@ FixedScale.args = {
 	maxScaleValue: 250,
 	thresholds: basicThresholdsData,
 	track: false,
-    	metricAxis: false,
+	metricAxis: false,
 };
 
 const Axis = bindWithProps(BulletStory);

@@ -50,7 +50,7 @@ export const addBullet = produce<Spec, [BulletProps & { colorScheme?: ColorSchem
 			thresholds = [],
 			track = false,
 			thresholdBarColor = true,
-            		metricAxis = false,
+			metricAxis = false,
 			...props
 		}
 	) => {
@@ -73,7 +73,7 @@ export const addBullet = produce<Spec, [BulletProps & { colorScheme?: ColorSchem
 			track: track,
 			thresholds: thresholds,
 			thresholdBarColor: thresholdBarColor,
-            		metricAxis: metricAxis,
+			metricAxis: metricAxis,
 			...props,
 		};
 

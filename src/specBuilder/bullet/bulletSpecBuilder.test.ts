@@ -53,7 +53,7 @@ export const samplePropsRow: BulletSpecProps = {
 	maxScaleValue: 100,
 	track: false,
 	thresholdBarColor: false,
-	metricAxis: false
+	metricAxis: false,
 };
 
 describe('addBullet', () => {

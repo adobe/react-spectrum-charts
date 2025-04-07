@@ -267,8 +267,6 @@ export interface BulletProps extends MarkProps {
 	thresholds?: ThresholdBackground[];
 	/** Color regions that sit behind the bullet bar */
 	track?: boolean;
-	/** If true, the metric bar will be colored according to the thresholds. */
-	thresholdBarColor?: boolean;
 	/** Adds an axis that follows the max target in basic mode */
 	metricAxis?: boolean;
 	/** changes color based on threshold */
