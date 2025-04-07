@@ -251,10 +251,10 @@ export function getBulletMarkValueLabel(props: BulletSpecProps): Mark {
 	const defaultColor = getColorValue(props.color, props.colorScheme);
 	const solidColor = getColorValue('gray-900', props.colorScheme);
 	const encodeUpdateSignalWidth = props.direction === 'column' ? 'width' : 'bulletGroupWidth';
-	const fillColor =
+	const fillExpr =
 		props.thresholdBarColor && (props.thresholds?.length ?? 0) > 0
-			? [{ field: 'barColor' }]
-			: [{ value: solidColor }];
+			? `datum.barColor === '${defaultColor}' ? '${solidColor}' : datum.barColor`
+			: `'${solidColor}'`;
 
 	const bulletMarkValueLabel: Mark = {
 		name: `${props.name}ValueLabel`,
@@ -270,7 +270,7 @@ export function getBulletMarkValueLabel(props: BulletSpecProps): Mark {
 				},
 				align: { value: 'right' },
 				baseline: { value: 'top' },
-				fill: `'${fillColor} !== ${defaultColor}'` ? fillColor : [{ value: solidColor }],
+				fill: { signal: fillExpr },
 			},
 			update: { x: { signal: encodeUpdateSignalWidth }, y: { value: 0 } },
 		},
