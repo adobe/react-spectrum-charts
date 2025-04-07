@@ -230,7 +230,7 @@ describe('getBulletSignals', () => {
 		const props = {
 			...samplePropsColumn,
 			showTargetValue: false,
-			axis: true,
+			metricAxis: true,
 		};
 		const signals = addSignals([], props);
 		expect(signals.find((signal) => signal.name === 'bulletChartHeight')).toStrictEqual({
@@ -442,7 +442,7 @@ describe('getBulletAxes', () => {
 	});
 
 	test('Should return the scale axis when axis is true, row mode is enabled, and showtarget is false', () => {
-		const props = { ...samplePropsColumn, axis: true };
+		const props = { ...samplePropsColumn, metricAxis: true };
 		const axes = addAxes([], props);
 		expect(axes).toStrictEqual([
 			{
@@ -465,7 +465,7 @@ describe('getBulletAxes', () => {
 	});
 
 	test('Should return scale axis and label axes when both are enabled', () => {
-		const props = { ...samplePropsColumn, labelPosition: 'side' as 'side' | 'top', axis: true };
+		const props = { ...samplePropsColumn, labelPosition: 'side' as 'side' | 'top', metricAxis: true };
 		const axes = addAxes([], props);
 		expect(axes).toStrictEqual([
 			{
