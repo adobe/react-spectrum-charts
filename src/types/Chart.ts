@@ -268,7 +268,7 @@ export interface BulletProps extends MarkProps {
 	/** Color regions that sit behind the bullet bar */
 	track?: boolean;
 	/** Adds an axis that follows the max target in basic mode */
-	axis?: boolean;
+	metricAxis?: boolean;
 }
 
 export interface DonutProps extends MarkProps {
