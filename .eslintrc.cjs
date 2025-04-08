@@ -18,6 +18,7 @@ module.exports = {
 	],
 	parser: '@typescript-eslint/parser',
 	plugins: ['prettier', '@typescript-eslint', 'jest', 'jsdoc', 'react', 'header'],
+	ignorePatterns: ['node_modules/', 'dist/', 'build/', 'coverage/'],
 	rules: {
 		'react/jsx-uses-vars': 'error',
 		'react/jsx-uses-react': 'error',
@@ -40,10 +41,6 @@ module.exports = {
 			{
 				name: 'types/locales',
 				message: 'Please use relative path import for types instead (ex. ../types/locales).',
-			},
-			{
-				name: '@specBuilder/types',
-				message: 'Please use relative path import for types instead (ex. ../specBuilder/types).',
 			},
 		],
 		'header/header': [

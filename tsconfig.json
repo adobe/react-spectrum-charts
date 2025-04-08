@@ -1,6 +1,6 @@
 {
 	"compilerOptions": {
-		"baseUrl": "src",
+		"baseUrl": ".",
 		"outDir": "./dist",
 		"module": "node16",
 		"target": "ES2017",
@@ -13,7 +13,6 @@
 		"forceConsistentCasingInFileNames": true,
 		"allowSyntheticDefaultImports": true,
 		"declaration": true,
-		"declarationDir": "./dist/@types/",
 		"declarationMap": true,
 		"noImplicitAny": false,
 		"resolveJsonModule": true,
@@ -21,24 +20,10 @@
 		"types": ["node", "jest", "@testing-library/jest-dom"],
 		"skipLibCheck": true,
 		"paths": {
-			"@constants": ["constants.ts"],
-			"@components/*": ["components/*"],
-			"@hooks/*": ["hooks/*"],
-			"@locales": ["locales"],
-			"@matchMediaMock": ["test-utils/__mocks__/matchMedia.mock"],
-			"@rsc": ["index.ts"],
-			"@rsc/alpha": ["alpha"],
-			"@rsc/beta": ["beta"],
-			"@rsc/rc": ["rc"],
-			"@specBuilder/*": ["specBuilder/*"],
-			"@stories/*": ["stories/*"],
-			"@svgPaths": ["svgPaths"],
-			"@test-utils": ["test-utils"],
-			"@themes": ["themes"],
-			"@themes/*": ["themes/*"],
-			"@utils": ["utils"]
+			"@react-spectrum-charts/*": ["packages/react-spectrum-charts/src/*"],
+			"@vega-spec-builder/*": ["packages/vega-spec-builder/src/*"]
 		}
 	},
-	"include": ["src/**/*.ts", "src/**/*.tsx"],
+	"include": ["packages", "packages/constants/webpack.config.js"],
 	"exclude": ["node_modules", "dist", "dist-storybook"]
 }
