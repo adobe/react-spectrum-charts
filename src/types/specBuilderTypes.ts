@@ -19,6 +19,7 @@ import {
 	AxisChildElement,
 	AxisProps,
 	BarProps,
+	BulletProps,
 	ChartPopoverProps,
 	ChartTooltipProps,
 	ColorFacet,
@@ -138,6 +139,15 @@ type ChartPopoverPropsWithDefaults = 'UNSAFE_highlightBy';
 
 export interface ChartPopoverSpecProps extends PartiallyRequired<ChartPopoverProps, ChartPopoverPropsWithDefaults> {
 	markName: string;
+}
+
+type BulletPropsWithDefaults = 'name' | 'metric' | 'dimension' | 'target' | 'color' | 'direction'| 'showTarget' | 'showTargetValue' | 'labelPosition' | 'scaleType' | 'maxScaleValue' | 'track' | 'metricAxis' | 'thresholdBarColor';
+
+export interface BulletSpecProps extends PartiallyRequired<BulletProps, BulletPropsWithDefaults> {
+	children: MarkChildElement[];
+	idKey: string;
+	colorScheme: ColorScheme;
+	index: number;
 }
 
 type DonutPropsWithDefaults = 'color' | 'metric' | 'name' | 'startAngle' | 'holeRatio' | 'isBoolean';

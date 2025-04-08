@@ -30,7 +30,7 @@ import {
 	Trendline,
 	TrendlineAnnotation,
 } from '@rsc';
-import { Combo } from '@rsc/alpha';
+import { Bullet, Combo } from '@rsc/alpha';
 import { BigNumber, Donut, DonutSummary, SegmentLabel } from '@rsc/rc';
 import { View } from 'vega';
 
@@ -42,6 +42,7 @@ import {
 	AxisElement,
 	BarElement,
 	BigNumberElement,
+	BulletElement,
 	ChartChildElement,
 	ChartElement,
 	ChartTooltipElement,
@@ -68,6 +69,7 @@ type ElementCounts = {
 	line: number;
 	scatter: number;
 	combo: number;
+	bullet: number;
 };
 
 // coerces a value that could be a single value or an array of that value to an array
@@ -102,6 +104,7 @@ export const sanitizeRscChartChildren = (children: unknown): ChartChildElement[]
 		Scatter.displayName,
 		Title.displayName,
 		Combo.displayName,
+		Bullet.displayName,
 	] as string[];
 	return toArray(children)
 		.flat()
@@ -342,6 +345,9 @@ const getElementName = (element: unknown, elementCounts: ElementCounts) => {
 		case Donut.displayName:
 			elementCounts.donut++;
 			return getComponentName(element as DonutElement, `donut${elementCounts.donut}`);
+		case Bullet.displayName:
+			elementCounts.bullet++;
+			return getComponentName(element as BulletElement, `bullet${elementCounts.bullet}`);
 		case Legend.displayName:
 			elementCounts.legend++;
 			return getComponentName(element as LegendElement, `legend${elementCounts.legend}`);
@@ -380,6 +386,7 @@ const initElementCounts = (): ElementCounts => ({
 	axisAnnotation: -1,
 	bar: -1,
 	donut: -1,
+	bullet: -1,
 	legend: -1,
 	line: -1,
 	scatter: -1,
