@@ -141,6 +141,7 @@ RowMode.args = {
 	scaleType: 'normal',
 	maxScaleValue: 100,
 	thresholds: coloredThresholdsData,
+	thresholdBarColor: true,
 	track: false,
 	metricAxis: false,
 };
