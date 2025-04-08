@@ -249,6 +249,60 @@ describe('getBulletMarkRect', () => {
 		// Expect the correct amount of fields in the update object
 		expect(Object.keys(data.encode?.update ?? {}).length).toBe(4);
 	});
+
+	describe('getBulletMarkRect threshold color logic', () => {
+		test('Uses barColor field when thresholdBarColor is enabled and thresholds exist', () => {
+			const propsWithThresholdColor = {
+				...samplePropsColumn,
+				thresholdBarColor: true,
+				thresholds: [
+					{ thresholdMax: 120, fill: 'rgb(234, 56, 41)' },
+					{ thresholdMin: 120, thresholdMax: 235, fill: 'rgb(249, 137, 23)' },
+					{ thresholdMin: 235, fill: 'rgb(21, 164, 110)' },
+				],
+			};
+
+			const rectMark = getBulletMarkRect(propsWithThresholdColor);
+			expect(rectMark.encode?.enter?.fill).toEqual([{ field: 'barColor' }]);
+		});
+
+		test('Uses default color field when thresholdBarColor is disabled or no thresholds exist', () => {
+			const propsNoThresholds = {
+				...samplePropsColumn,
+				thresholdBarColor: true,
+				thresholds: [],
+			};
+
+			const rectMark = getBulletMarkRect(propsNoThresholds);
+			expect(rectMark.encode?.enter?.fill).toEqual([{ value: propsNoThresholds.color }]);
+		});
+
+		test('Uses default color field when thresholdBarColor is disabled', () => {
+			const propsNoThresholds = {
+				...samplePropsColumn,
+				thresholdBarColor: false,
+				thresholds: [
+					{ thresholdMax: 120, fill: 'rgb(234, 56, 41)' },
+					{ thresholdMin: 120, thresholdMax: 235, fill: 'rgb(249, 137, 23)' },
+					{ thresholdMin: 235, fill: 'rgb(21, 164, 110)' },
+				],
+			};
+
+			const rectMark = getBulletMarkRect(propsNoThresholds);
+			expect(rectMark.encode?.enter?.fill).toEqual([{ value: propsNoThresholds.color }]);
+		});
+
+		test('Uses default color field when thresholdBarColor is disabled and no thresholds exist', () => {
+			const propsNoThresholds = {
+				...samplePropsColumn,
+				thresholdBarColor: false,
+				thresholds: [],
+			};
+
+			const rectMark = getBulletMarkRect(propsNoThresholds);
+			expect(rectMark.encode?.enter?.fill).toEqual([{ value: propsNoThresholds.color }]);
+		});
+	});
 });
 
 describe('getBulletMarkTarget', () => {
@@ -300,6 +354,60 @@ describe('getBulletMarkValueLabel', () => {
 				expect(textEncode.signal).toContain(`format(datum.${props.target}, '$,.2f')`);
 			}
 		}
+	});
+
+	describe('getBulletMarkValueLabel threshold color logic', () => {
+		test('Uses barColor field for label when thresholdBarColor is true', () => {
+			const props = {
+				...samplePropsColumn,
+				thresholdBarColor: true,
+				thresholds: [{ thresholdMax: 200, fill: 'rgb(249, 137, 23)' }],
+			};
+			const labelMark = getBulletMarkValueLabel(props);
+			expect(labelMark.encode?.enter?.fill).toEqual({
+				signal: "datum.barColor === 'green' ? 'rgb(0, 0, 0)' : datum.barColor",
+			});
+		});
+
+		test('Falls back to neutral when thresholdBarColor is false', () => {
+			const props = {
+				...samplePropsColumn,
+				thresholdBarColor: false,
+			};
+			const labelMark = getBulletMarkValueLabel(props);
+
+			expect(labelMark.encode?.enter?.fill).toEqual({ signal: "'rgb(0, 0, 0)'" });
+		});
+
+		test('Uses default color when no thresholds are provided', () => {
+			const props = {
+				...samplePropsColumn,
+				thresholdBarColor: true,
+				thresholds: [],
+			};
+			const labelMark = getBulletMarkValueLabel(props);
+			expect(labelMark.encode?.enter?.fill).toEqual({ signal: "'rgb(0, 0, 0)'" });
+		});
+
+		test('Uses default color when thresholdBarColor is false and no thresholds are provided', () => {
+			const props = {
+				...samplePropsColumn,
+				thresholdBarColor: false,
+				thresholds: [],
+			};
+			const labelMark = getBulletMarkValueLabel(props);
+			expect(labelMark.encode?.enter?.fill).toEqual({ signal: "'rgb(0, 0, 0)'" });
+		});
+
+		test('Uses default color when thresholdBarColor is true and no thresholds are provided', () => {
+			const props = {
+				...samplePropsColumn,
+				thresholdBarColor: true,
+				thresholds: [],
+			};
+			const labelMark = getBulletMarkValueLabel(props);
+			expect(labelMark.encode?.enter?.fill).toEqual({ signal: "'rgb(0, 0, 0)'" });
+		});
 	});
 });
 

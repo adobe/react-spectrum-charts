@@ -13,7 +13,7 @@ import { TABLE } from '@constants';
 import { getTableData } from '@specBuilder/data/dataUtils';
 import { Data, FormulaTransform, ValuesData } from 'vega';
 
-import { BulletSpecProps } from '../../types';
+import { BulletSpecProps, ThresholdBackground } from '../../types';
 
 /**
  * Retrieves the bullet table data from the provided data array.
@@ -37,6 +37,7 @@ export const getBulletTableData = (data: Data[]): ValuesData => {
 /**
  * Generates the necessary formula transforms for the bullet chart.
  * It calculates the xPaddingForTarget and, if in flexible scale mode, adds the flexibleScaleValue.
+ * It also generates a color expression for the threshold bars if applicable.
  * @param props The bullet spec properties.
  * @returns An array of formula transforms.
  */
@@ -56,5 +57,58 @@ export const getBulletTransforms = (props: BulletSpecProps): FormulaTransform[] 
 			as: 'flexibleScaleValue',
 		});
 	}
+
+	if (props.thresholdBarColor && (props.thresholds?.length ?? 0) > 0) {
+		transforms.push({
+			type: 'formula',
+			expr: generateThresholdColorExpr(props.thresholds ?? [], props.metric, props.color),
+			as: 'barColor',
+		});
+	}
+
 	return transforms;
 };
+
+/**
+ * Generates a Vega expression for the color of the bullet chart based on the provided thresholds.
+ * The expression checks the value of the metric field against the thresholds and assigns the appropriate color.
+ * @param thresholds An array of threshold objects.
+ * @param metricField The name of the metric field in the data.
+ * @param defaultColor The default color to use if no thresholds are met.
+ * @returns A string representing the Vega expression for the color.
+ */
+export function generateThresholdColorExpr(
+	thresholds: ThresholdBackground[],
+	metricField: string,
+	defaultColor: string
+): string {
+	if (!thresholds || thresholds.length === 0) return `'${defaultColor}'`;
+
+	const sorted: ThresholdBackground[] = thresholds.slice().sort((a, b) => {
+		const aMin = a.thresholdMin !== undefined ? a.thresholdMin : -1e12;
+		const bMin = b.thresholdMin !== undefined ? b.thresholdMin : -1e12;
+		return aMin - bMin;
+	});
+
+	const exprParts: string[] = [];
+
+	// For values below the first threshold's lower bound, use the default color.
+	exprParts.push(
+		`(datum.${metricField} < ${
+			sorted[0].thresholdMin !== undefined ? sorted[0].thresholdMin : -1e12
+		}) ? '${defaultColor}' : `
+	);
+
+	// For each threshold, check if the metric field is within the range defined by the thresholdMin and thresholdMax values.
+	// If it is, use the corresponding fill color.
+	for (let i = 0; i < sorted.length - 1; i++) {
+		const nextLower = sorted[i + 1].thresholdMin !== undefined ? sorted[i + 1].thresholdMin : -1e12;
+		exprParts.push(`(datum.${metricField} < ${nextLower}) ? '${sorted[i].fill}' : `);
+	}
+
+	// For values above the last threshold's upper bound, use the last threshold's fill color.
+	exprParts.push(`'${sorted[sorted.length - 1].fill}'`);
+
+	const expr = exprParts.join('');
+	return expr;
+}

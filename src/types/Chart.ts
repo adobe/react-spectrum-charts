@@ -269,6 +269,9 @@ export interface BulletProps extends MarkProps {
 	track?: boolean;
 	/** Adds an axis that follows the max target in basic mode */
 	metricAxis?: boolean;
+	/** changes color based on threshold */
+	/** If true, the metric bar will be colored according to the thresholds. */
+	thresholdBarColor?: boolean;
 }
 
 export interface DonutProps extends MarkProps {

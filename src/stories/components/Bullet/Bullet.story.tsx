@@ -18,7 +18,7 @@ import { Bullet } from '@rsc/alpha';
 import { StoryFn } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
 
-import { basicBulletData, basicThresholdsData } from './data';
+import { basicBulletData, basicThresholdsData, coloredThresholdsData } from './data';
 
 export default {
 	title: 'RSC/Bullet',
@@ -68,6 +68,7 @@ Basic.args = {
 	scaleType: 'normal',
 	maxScaleValue: 100,
 	track: false,
+	thresholdBarColor: false,
 	metricAxis: false,
 };
 
@@ -85,7 +86,27 @@ Thresholds.args = {
 	scaleType: 'normal',
 	maxScaleValue: 100,
 	thresholds: basicThresholdsData,
+	thresholdBarColor: false,
 	track: false,
+	metricAxis: false,
+};
+
+const ColoredMetric = bindWithProps(BulletStory);
+ColoredMetric.args = {
+	metric: 'currentAmount',
+	dimension: 'graphLabel',
+	target: 'target',
+	color: 'blue-900',
+	direction: 'column',
+	numberFormat: '$,.2f',
+	showTarget: true,
+	showTargetValue: false,
+	labelPosition: 'top',
+	scaleType: 'normal',
+	maxScaleValue: 100,
+	track: false,
+	thresholdBarColor: true,
+	thresholds: coloredThresholdsData,
 	metricAxis: false,
 };
 
@@ -119,7 +140,8 @@ RowMode.args = {
 	labelPosition: 'top',
 	scaleType: 'normal',
 	maxScaleValue: 100,
-	thresholds: basicThresholdsData,
+	thresholds: coloredThresholdsData,
+	thresholdBarColor: true,
 	track: false,
 	metricAxis: false,
 };
@@ -157,8 +179,8 @@ FixedScale.args = {
 	metricAxis: false,
 };
 
-const Axis = bindWithProps(BulletStory);
-Axis.args = {
+const MetricAxis = bindWithProps(BulletStory);
+MetricAxis.args = {
 	metric: 'currentAmount',
 	dimension: 'graphLabel',
 	target: 'target',
@@ -174,4 +196,4 @@ Axis.args = {
 	metricAxis: true,
 };
 
-export { Basic, Thresholds, Track, RowMode, WithTitle, FixedScale, Axis };
+export { Basic, Thresholds, ColoredMetric, Track, RowMode, WithTitle, FixedScale, MetricAxis};

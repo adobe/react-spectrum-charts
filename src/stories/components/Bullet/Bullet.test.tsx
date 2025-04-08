@@ -29,7 +29,7 @@ describe('Bullet', () => {
 		expect(rects.length).toEqual(2);
 
 		rects.forEach((rect) => {
-			// Expect red-500 color
+			// Expect blue-900 color
 			expect(rect).toHaveAttribute('fill', 'rgb(2, 101, 220)');
 		});
 

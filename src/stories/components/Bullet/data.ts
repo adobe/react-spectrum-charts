@@ -11,11 +11,17 @@
  */
 
 export const basicBulletData = [
-	{ graphLabel: 'Customers', currentAmount: 390, target: 50 },
-	{ graphLabel: 'Revenue', currentAmount: 500, target: 450 },
+	{ graphLabel: 'Customers', currentAmount: 150, target: 50 },
+	{ graphLabel: 'Revenue', currentAmount: 350, target: 450 },
 ];
 
 export const basicThresholdsData = [
+	{ thresholdMax: 120, fill: 'rgb(0, 0, 0)' },
+	{ thresholdMin: 120, thresholdMax: 235, fill: 'rgb(109, 109, 109)' },
+	{ thresholdMin: 235, fill: 'rgb(177, 177, 177)' },
+];
+
+export const coloredThresholdsData = [
 	{ thresholdMax: 120, fill: 'rgb(234, 56, 41)' },
 	{ thresholdMin: 120, thresholdMax: 235, fill: 'rgb(249, 137, 23)' },
 	{ thresholdMin: 235, fill: 'rgb(21, 164, 110)' },

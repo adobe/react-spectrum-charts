@@ -28,6 +28,7 @@ const Bullet: FC<BulletProps> = ({
 	labelPosition = DEFAULT_LABEL_POSITION,
 	scaleType = DEFAULT_SCALE_TYPE,
 	maxScaleValue = DEFAULT_SCALE_VALUE,
+	thresholdBarColor = false,
 	children
 }) => {
 	return null;

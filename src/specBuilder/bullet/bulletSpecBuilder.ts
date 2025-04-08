@@ -49,6 +49,7 @@ export const addBullet = produce<Spec, [BulletProps & { colorScheme?: ColorSchem
 			maxScaleValue = DEFAULT_SCALE_VALUE,
 			thresholds = [],
 			track = false,
+			thresholdBarColor = false,
 			metricAxis = false,
 			...props
 		}
@@ -71,6 +72,7 @@ export const addBullet = produce<Spec, [BulletProps & { colorScheme?: ColorSchem
 			maxScaleValue: maxScaleValue,
 			track: track,
 			thresholds: thresholds,
+			thresholdBarColor: thresholdBarColor,
 			metricAxis: metricAxis,
 			...props,
 		};
