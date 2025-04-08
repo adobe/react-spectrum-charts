@@ -16,9 +16,9 @@ export const basicBulletData = [
 ];
 
 export const basicThresholdsData = [
-	{ thresholdMax: 120, fill: 'rgb(14, 14, 14)' },
-	{ thresholdMin: 120, thresholdMax: 235, fill: 'rgb(75, 75, 75)' },
-	{ thresholdMin: 235, fill: 'rgb(141, 141, 141)' },
+	{ thresholdMax: 120, fill: 'rgb(0, 0, 0)' },
+	{ thresholdMin: 120, thresholdMax: 235, fill: 'rgb(109, 109, 109)' },
+	{ thresholdMin: 235, fill: 'rgb(177, 177, 177)' },
 ];
 
 export const coloredThresholdsData = [

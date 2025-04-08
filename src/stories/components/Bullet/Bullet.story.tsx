@@ -173,7 +173,7 @@ FixedScale.args = {
 	labelPosition: 'top',
 	scaleType: 'fixed',
 	maxScaleValue: 250,
-	thresholds: coloredThresholdsData,
+	thresholds: basicThresholdsData,
 	track: false,
 	metricAxis: false,
 };
