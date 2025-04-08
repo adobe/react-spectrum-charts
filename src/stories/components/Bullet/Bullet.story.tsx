@@ -12,7 +12,7 @@
 import { ReactElement } from 'react';
 
 import useChartProps from '@hooks/useChartProps';
-// Assuming Bullet chart is a component in the @rsc/rc library
+// Assuming Bullet chart is a component in the @rsc/alpha export
 import { BulletProps, Chart, ChartProps, Title } from '@rsc';
 import { Bullet } from '@rsc/alpha';
 import { StoryFn } from '@storybook/react';
