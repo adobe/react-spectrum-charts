@@ -58,7 +58,6 @@ export const getBulletTransforms = (props: BulletSpecProps): FormulaTransform[] 
 		});
 	}
 
-	const thresholds = props.thresholds ?? [];
 	if (props.thresholdBarColor && (props.thresholds?.length ?? 0) > 0) {
 		transforms.push({
 			type: 'formula',
