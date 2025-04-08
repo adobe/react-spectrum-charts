@@ -18,7 +18,7 @@ import { Bullet } from '@rsc/alpha';
 import { StoryFn } from '@storybook/react';
 import { bindWithProps } from '@test-utils';
 
-import { basicBulletData, basicThresholdsData } from './data';
+import { basicBulletData, basicThresholdsData, coloredThresholdsData } from './data';
 
 export default {
 	title: 'RSC/Bullet',
@@ -106,7 +106,7 @@ ColoredMetric.args = {
 	maxScaleValue: 100,
 	track: false,
 	thresholdBarColor: true,
-	thresholds: basicThresholdsData,
+	thresholds: coloredThresholdsData,
 	metricAxis: false,
 };
 
@@ -140,7 +140,7 @@ RowMode.args = {
 	labelPosition: 'top',
 	scaleType: 'normal',
 	maxScaleValue: 100,
-	thresholds: basicThresholdsData,
+	thresholds: coloredThresholdsData,
 	track: false,
 	metricAxis: false,
 };
@@ -173,7 +173,7 @@ FixedScale.args = {
 	labelPosition: 'top',
 	scaleType: 'fixed',
 	maxScaleValue: 250,
-	thresholds: basicThresholdsData,
+	thresholds: coloredThresholdsData,
 	track: false,
 	metricAxis: false,
 };
