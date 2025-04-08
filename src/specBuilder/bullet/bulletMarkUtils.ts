@@ -12,7 +12,7 @@
 import { produce } from 'immer';
 import { Axis, Data, GroupMark, Mark, Scale, Signal } from 'vega';
 
-import { BulletSpecProps, ThresholdBackground } from '../../types';
+import { BulletSpecProps } from '../../types';
 import { getColorValue } from '../specUtils';
 import { getBulletTableData, getBulletTransforms } from './bulletDataUtils';
 
@@ -202,21 +202,6 @@ export function getBulletMarkRect(props: BulletSpecProps): Mark {
 	};
 
 	return bulletMarkRect;
-}
-
-export function thresholdColorField(thresholds: ThresholdBackground[], metricField: string): string {
-	const sortedThresholds = [...thresholds].sort(
-		(a, b) => (a.thresholdMax ?? Infinity) - (b.thresholdMax ?? Infinity)
-	);
-
-	return sortedThresholds
-		.map((threshold) => {
-			if (threshold.thresholdMax !== undefined) {
-				return `datum.${metricField} <= ${threshold.thresholdMax} ? '${threshold.fill}'`;
-			}
-			return `'${threshold.fill}'`;
-		})
-		.join(' : ');
 }
 
 export function getBulletMarkTarget(props: BulletSpecProps): Mark {
