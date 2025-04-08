@@ -196,4 +196,4 @@ MetricAxis.args = {
 	metricAxis: true,
 };
 
-export { Basic, Thresholds, ColoredMetric, Track, RowMode, WithTitle, FixedScale, MetricAxis as Axis };
+export { Basic, Thresholds, ColoredMetric, Track, RowMode, WithTitle, FixedScale, MetricAxis};
