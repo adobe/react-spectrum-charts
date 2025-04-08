@@ -10,106 +10,10 @@
  * governing permissions and limitations under the License.
  */
 import { produce } from 'immer';
-import { Axis, Data, GroupMark, Mark, Scale, Signal } from 'vega';
+import { Axis, GroupMark, Mark } from 'vega';
 
 import { BulletSpecProps } from '../../types';
 import { getColorValue } from '../specUtils';
-import { getBulletTableData, getBulletTransforms } from './bulletDataUtils';
-
-export const addScales = produce<Scale[], [BulletSpecProps]>((scales, props) => {
-	const groupScaleRangeSignal = props.direction === 'column' ? 'bulletChartHeight' : 'width';
-	const xRange = props.direction === 'column' ? 'width' : [0, { signal: 'bulletGroupWidth' }];
-	let domainFields;
-
-	if (props.scaleType === 'flexible' && props.maxScaleValue > 0) {
-		domainFields = { data: 'table', fields: ['xPaddingForTarget', props.metric, 'flexibleScaleValue'] };
-	} else if (props.scaleType === 'fixed' && props.maxScaleValue > 0) {
-		domainFields = [0, `${props.maxScaleValue}`];
-	} else {
-		domainFields = { data: 'table', fields: ['xPaddingForTarget', props.metric] };
-	}
-
-	scales.push(
-		{
-			name: 'groupScale',
-			type: 'band',
-			domain: { data: 'table', field: props.dimension },
-			range: [0, { signal: groupScaleRangeSignal }],
-			paddingInner: { signal: 'paddingRatio' },
-		},
-		{
-			name: 'xscale',
-			type: 'linear',
-			domain: domainFields,
-			range: xRange,
-			round: true,
-			clamp: true,
-			zero: true,
-		}
-	);
-});
-
-export const addSignals = produce<Signal[], [BulletSpecProps]>((signals, props) => {
-	signals.push({ name: 'gap', value: 12 });
-	signals.push({ name: 'bulletHeight', value: 8 });
-	signals.push({ name: 'bulletThresholdHeight', update: 'bulletHeight * 3' });
-	signals.push({ name: 'targetHeight', update: 'bulletThresholdHeight + 6' });
-
-	if (props.showTargetValue && props.showTarget) {
-		signals.push({ name: 'targetValueLabelHeight', update: '20' });
-	}
-
-	signals.push({
-		name: 'bulletGroupHeight',
-		update: getBulletGroupHeightExpression(props),
-	});
-
-	if (props.direction === 'column') {
-		signals.push({ name: 'paddingRatio', update: 'gap / (gap + bulletGroupHeight)' });
-
-		if (props.metricAxis && !props.showTargetValue) {
-			signals.push({
-				name: 'bulletChartHeight',
-				update: "length(data('table')) * bulletGroupHeight + (length(data('table')) - 1) * gap + 10",
-			});
-			signals.push({
-				name: 'axisOffset',
-				update: 'bulletChartHeight - height - 10',
-			});
-		} else {
-			signals.push({
-				name: 'bulletChartHeight',
-				update: "length(data('table')) * bulletGroupHeight + (length(data('table')) - 1) * gap",
-			});
-		}
-	} else {
-		signals.push({ name: 'bulletGroupWidth', update: "(width / length(data('table'))) - gap" });
-		signals.push({ name: 'paddingRatio', update: 'gap / (gap + bulletGroupWidth)' });
-		signals.push({ name: 'bulletChartHeight', update: 'bulletGroupHeight' });
-	}
-});
-
-/**
- * Returns the height of the bullet group based on the props
- * @param props the bullet spec props
- * @returns the height of the bullet group
- */
-function getBulletGroupHeightExpression(props: BulletSpecProps): string {
-	if (props.showTargetValue && props.showTarget) {
-		return props.labelPosition === 'side' && props.direction === 'column'
-			? 'bulletThresholdHeight + targetValueLabelHeight + 10'
-			: 'bulletThresholdHeight + targetValueLabelHeight + 24';
-	} else if (props.labelPosition === 'side' && props.direction === 'column') {
-		return 'bulletThresholdHeight + 10';
-	}
-	return 'bulletThresholdHeight + 24';
-}
-
-export const addData = produce<Data[], [BulletSpecProps]>((data, props) => {
-	const tableData = getBulletTableData(data);
-	tableData.values = props.children?.length ? props.children : [];
-	tableData.transform = getBulletTransforms(props);
-});
 
 export const addMarks = produce<Mark[], [BulletSpecProps]>((marks, props) => {
 	const markGroupEncodeUpdateDirection = props.direction === 'column' ? 'y' : 'x';

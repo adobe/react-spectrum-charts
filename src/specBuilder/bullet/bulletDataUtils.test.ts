@@ -12,8 +12,21 @@
 import { Data } from 'vega';
 
 import { BulletSpecProps, ThresholdBackground } from '../../types';
-import { generateThresholdColorExpr, getBulletTableData, getBulletTransforms } from './bulletDataUtils';
+import { addData, generateThresholdColorExpr, getBulletTableData, getBulletTransforms } from './bulletDataUtils';
 import { samplePropsColumn } from './bulletSpecBuilder.test';
+
+describe('getBulletData', () => {
+	test('Should return the data object', () => {
+		const data = addData([], samplePropsColumn);
+		expect(data).toHaveLength(1);
+	});
+
+	test('Should return the correct data object in flexible scale mode', () => {
+		const props = { ...samplePropsColumn, scaleType: 'flexible' as 'normal' | 'flexible' | 'fixed' };
+		const data = addData([], props);
+		expect(data[0].transform).toHaveLength(2);
+	});
+});
 
 describe('getBulletTableData', () => {
 	it('Should create a new table data if it does not exist', () => {

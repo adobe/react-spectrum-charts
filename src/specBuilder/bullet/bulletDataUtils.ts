@@ -11,9 +11,16 @@
  */
 import { TABLE } from '@constants';
 import { getTableData } from '@specBuilder/data/dataUtils';
+import { produce } from 'immer';
 import { Data, FormulaTransform, ValuesData } from 'vega';
 
 import { BulletSpecProps, ThresholdBackground } from '../../types';
+
+export const addData = produce<Data[], [BulletSpecProps]>((data, props) => {
+	const tableData = getBulletTableData(data);
+	tableData.values = props.children?.length ? props.children : [];
+	tableData.transform = getBulletTransforms(props);
+});
 
 /**
  * Retrieves the bullet table data from the provided data array.

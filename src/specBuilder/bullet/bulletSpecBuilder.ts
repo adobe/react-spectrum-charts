@@ -24,7 +24,9 @@ import { Spec } from 'vega';
 import { BulletProps, BulletSpecProps, ColorScheme } from '../../types';
 import { sanitizeMarkChildren } from '../../utils';
 import { getColorValue } from '../specUtils';
-import { addAxes, addData, addMarks, addScales, addSignals } from './bulletMarkUtils';
+import { addData } from './bulletDataUtils';
+import { addAxes, addMarks } from './bulletMarkUtils';
+import { addScales, addSignals } from './bulletSpecUtils';
 
 const DEFAULT_COLOR = spectrumColors.light['static-blue'];
 
