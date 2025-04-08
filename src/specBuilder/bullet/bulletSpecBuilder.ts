@@ -177,6 +177,5 @@ function getBulletGroupHeightExpression(props: BulletSpecProps): string {
 
 export const addData = produce<Data[], [BulletSpecProps]>((data, props) => {
 	const tableData = getBulletTableData(data);
-	tableData.values = props.children?.length ? props.children : [];
 	tableData.transform = getBulletTransforms(props);
 });
