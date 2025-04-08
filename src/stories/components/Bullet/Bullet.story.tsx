@@ -68,8 +68,7 @@ Basic.args = {
 	scaleType: 'normal',
 	maxScaleValue: 100,
 	track: false,
-	thresholdBarColor: true,
-	thresholds: basicThresholdsData,
+	thresholdBarColor: false,
 	metricAxis: false,
 };
 
@@ -87,7 +86,27 @@ Thresholds.args = {
 	scaleType: 'normal',
 	maxScaleValue: 100,
 	thresholds: basicThresholdsData,
+	thresholdBarColor: false,
 	track: false,
+	metricAxis: false,
+};
+
+const ColoredMetric = bindWithProps(BulletStory);
+ColoredMetric.args = {
+	metric: 'currentAmount',
+	dimension: 'graphLabel',
+	target: 'target',
+	color: 'blue-900',
+	direction: 'column',
+	numberFormat: '$,.2f',
+	showTarget: true,
+	showTargetValue: false,
+	labelPosition: 'top',
+	scaleType: 'normal',
+	maxScaleValue: 100,
+	track: false,
+	thresholdBarColor: true,
+	thresholds: basicThresholdsData,
 	metricAxis: false,
 };
 
@@ -176,4 +195,4 @@ Axis.args = {
 	metricAxis: true,
 };
 
-export { Basic, Thresholds, Track, RowMode, WithTitle, FixedScale, Axis };
+export { Basic, Thresholds, ColoredMetric, Track, RowMode, WithTitle, FixedScale, Axis };
