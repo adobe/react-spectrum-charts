@@ -19,12 +19,12 @@ import {
 import { spectrumColors } from '@themes';
 import { toCamelCase } from '@utils';
 import { produce } from 'immer';
-import { Scale, Signal, Spec } from 'vega';
+import { Data, Scale, Signal, Spec } from 'vega';
 
 import { BulletProps, BulletSpecProps, ColorScheme } from '../../types';
 import { sanitizeMarkChildren } from '../../utils';
 import { getColorValue } from '../specUtils';
-import { addData } from './bulletDataUtils';
+import { getBulletTableData, getBulletTransforms } from './bulletDataUtils';
 import { addAxes, addMarks } from './bulletMarkUtils';
 
 const DEFAULT_COLOR = spectrumColors.light['static-blue'];
@@ -174,3 +174,9 @@ function getBulletGroupHeightExpression(props: BulletSpecProps): string {
 	}
 	return 'bulletThresholdHeight + 24';
 }
+
+export const addData = produce<Data[], [BulletSpecProps]>((data, props) => {
+	const tableData = getBulletTableData(data);
+	tableData.values = props.children?.length ? props.children : [];
+	tableData.transform = getBulletTransforms(props);
+});

@@ -12,7 +12,7 @@
 import { Spec } from 'vega';
 
 import { BulletProps, BulletSpecProps } from '../../types';
-import { addBullet, addScales, addSignals } from './bulletSpecBuilder';
+import { addBullet, addData, addScales, addSignals } from './bulletSpecBuilder';
 
 export const samplePropsColumn: BulletSpecProps = {
 	children: [],
@@ -218,5 +218,18 @@ describe('getBulletSignals', () => {
 			name: 'bulletChartHeight',
 			update: "length(data('table')) * bulletGroupHeight + (length(data('table')) - 1) * gap + 10",
 		});
+	});
+});
+
+describe('getBulletData', () => {
+	test('Should return the data object', () => {
+		const data = addData([], samplePropsColumn);
+		expect(data).toHaveLength(1);
+	});
+
+	test('Should return the correct data object in flexible scale mode', () => {
+		const props = { ...samplePropsColumn, scaleType: 'flexible' as 'normal' | 'flexible' | 'fixed' };
+		const data = addData([], props);
+		expect(data[0].transform).toHaveLength(2);
 	});
 });
