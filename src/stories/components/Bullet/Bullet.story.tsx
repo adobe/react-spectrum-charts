@@ -179,8 +179,8 @@ FixedScale.args = {
 	metricAxis: false,
 };
 
-const Axis = bindWithProps(BulletStory);
-Axis.args = {
+const MetricAxis = bindWithProps(BulletStory);
+MetricAxis.args = {
 	metric: 'currentAmount',
 	dimension: 'graphLabel',
 	target: 'target',
@@ -196,4 +196,4 @@ Axis.args = {
 	metricAxis: true,
 };
 
-export { Basic, Thresholds, ColoredMetric, Track, RowMode, WithTitle, FixedScale, Axis };
+export { Basic, Thresholds, ColoredMetric, Track, RowMode, WithTitle, FixedScale, MetricAxis as Axis };
