@@ -21,7 +21,7 @@ import { bindWithProps } from '@test-utils';
 import { basicBulletData, basicThresholdsData, coloredThresholdsData } from './data';
 
 export default {
-	title: 'RSC/Bullet',
+	title: 'RSC/Bullet (alpha)',
 	component: Bullet,
 };
 
