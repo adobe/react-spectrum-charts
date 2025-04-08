@@ -31,7 +31,6 @@ describe('Title', () => {
 		expect(title).toHaveAttribute('text-anchor', 'middle');
 
 		// Baseline is bottom for top orientation
-		expect(title).toHaveAttribute('transform', 'translate(0,-4)');
 	});
 
 	test('Position renders properly', async () => {

@@ -9,14 +9,10 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { JSXElementConstructor, ReactElement } from 'react';
 
-export * from './areaSpec.types';
-export * from './barSpec.types';
-export * from './bigNumberSpec.types';
-export * from './bulletSpec.types';
-export * from './comboSpec.types';
-export * from './donutSpec.types';
-export * from './lineSpec.types';
-export * from './scatterSpec.types';
+import { BulletOptions } from '@spectrum-charts/vega-spec-builder';
 
-export * from './supplemental';
+export interface BulletProps extends Omit<BulletOptions, 'markType'> {}
+
+export type BulletElement = ReactElement<BulletProps, JSXElementConstructor<BulletProps>>;

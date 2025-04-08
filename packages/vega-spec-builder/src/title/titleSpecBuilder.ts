@@ -23,7 +23,6 @@ export const addTitle = produce<Spec, [TitleOptions]>(
 			fontWeight,
 			anchor: position,
 			frame: 'group',
-			baseline: orient === 'top' ? 'bottom' : 'top',
 			orient,
 		};
 

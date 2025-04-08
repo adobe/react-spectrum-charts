@@ -10,13 +10,4 @@
  * governing permissions and limitations under the License.
  */
 
-export * from './areaSpec.types';
-export * from './barSpec.types';
-export * from './bigNumberSpec.types';
-export * from './bulletSpec.types';
-export * from './comboSpec.types';
-export * from './donutSpec.types';
-export * from './lineSpec.types';
-export * from './scatterSpec.types';
-
-export * from './supplemental';
+export * from './Bullet';

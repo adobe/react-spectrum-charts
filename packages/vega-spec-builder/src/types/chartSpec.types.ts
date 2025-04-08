@@ -17,6 +17,7 @@ import {
 	AreaOptions,
 	BarOptions,
 	BigNumberOptions,
+	BulletOptions,
 	ComboOptions,
 	DonutOptions,
 	LineOptions,
@@ -49,6 +50,7 @@ export type MarkOptions =
 	| AreaOptions
 	| BarOptions
 	| BigNumberOptions
+	| BulletOptions
 	| ComboOptions
 	| DonutOptions
 	| LineOptions

@@ -13,6 +13,7 @@ import {
 	AxisAnnotationOptions,
 	AxisOptions,
 	BarAnnotationOptions,
+	BulletOptions,
 	ChartPopoverOptions,
 	ChartTooltipOptions,
 	DonutSummaryOptions,
@@ -28,7 +29,7 @@ import {
 	TrendlineOptions,
 } from '@spectrum-charts/vega-spec-builder';
 
-import { Combo } from '../alpha';
+import { Bullet, Combo } from '../alpha';
 import { Annotation } from '../components/Annotation';
 import { Area } from '../components/Area';
 import { Axis } from '../components/Axis';
@@ -140,6 +141,10 @@ export const childrenToOptions = (
 
 			case Bar.displayName:
 				marks.push(getBarOptions(child.props as BarProps));
+				break;
+
+			case Bullet.displayName:
+				marks.push({ ...child.props, markType: 'bullet' } as BulletOptions);
 				break;
 
 			case ChartPopover.displayName:

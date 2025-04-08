@@ -17,7 +17,7 @@ import { SELECTED_GROUP, SELECTED_ITEM, SELECTED_SERIES, SERIES_ID } from '@spec
 import { combineNames, toCamelCase } from '@spectrum-charts/utils';
 import { Datum } from '@spectrum-charts/vega-spec-builder';
 
-import { Combo } from '../alpha';
+import { Bullet, Combo } from '../alpha';
 import {
 	Annotation,
 	Area,
@@ -46,6 +46,7 @@ import {
 	BarAnnotationElement,
 	BarElement,
 	BigNumberElement,
+	BulletElement,
 	ChartChildElement,
 	ChartElement,
 	ChartPopoverElement,
@@ -79,6 +80,7 @@ type RscElement =
 	| AxisElement
 	| BarElement
 	| BigNumberElement
+	| BulletElement
 	| LegendElement
 	| LineElement
 	| ScatterElement
@@ -96,6 +98,7 @@ type ElementCounts = {
 	line: number;
 	scatter: number;
 	combo: number;
+	bullet: number;
 };
 
 // coerces a value that could be a single value or an array of that value to an array
@@ -125,6 +128,7 @@ export const sanitizeChildren = (children: unknown): (ChartChildElement | MarkCh
 		Axis.displayName,
 		AxisAnnotation.displayName,
 		Bar.displayName,
+		Bullet.displayName,
 		ChartPopover.displayName,
 		ChartTooltip.displayName,
 		Combo.displayName,
@@ -160,6 +164,7 @@ export const sanitizeRscChartChildren = (children: unknown): ChartChildElement[]
 		Scatter.displayName,
 		Title.displayName,
 		Combo.displayName,
+		Bullet.displayName,
 	] as string[];
 	return toArray(children)
 		.flat()
@@ -386,6 +391,9 @@ const getElementName = (element: unknown, elementCounts: ElementCounts) => {
 		case Donut.displayName:
 			elementCounts.donut++;
 			return getComponentName(element as DonutElement, `donut${elementCounts.donut}`);
+		case Bullet.displayName:
+			elementCounts.bullet++;
+			return getComponentName(element as BulletElement, `bullet${elementCounts.bullet}`);
 		case Legend.displayName:
 			elementCounts.legend++;
 			return getComponentName(element as LegendElement, `legend${elementCounts.legend}`);
@@ -418,6 +426,7 @@ const initElementCounts = (): ElementCounts => ({
 	axisAnnotation: -1,
 	bar: -1,
 	donut: -1,
+	bullet: -1,
 	legend: -1,
 	line: -1,
 	scatter: -1,

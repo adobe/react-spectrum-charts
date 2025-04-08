@@ -40,6 +40,7 @@ import { colorSchemes, getColorValue } from '@spectrum-charts/themes';
 import { addArea } from './area/areaSpecBuilder';
 import { addAxis } from './axis/axisSpecBuilder';
 import { addBar } from './bar/barSpecBuilder';
+import { addBullet } from './bullet/bulletSpecBuilder';
 import { addCombo } from './combo/comboSpecBuilder';
 import { getSeriesIdTransform } from './data/dataUtils';
 import { addDonut } from './donut/donutSpecBuilder';
@@ -123,7 +124,8 @@ export function buildSpec({
 	spec.signals = getDefaultSignals(options);
 	spec.scales = getDefaultScales(colors, colorScheme, lineTypes, lineWidths, opacities, symbolShapes, symbolSizes);
 
-	let { areaCount, barCount, comboCount, donutCount, lineCount, scatterCount } = initializeComponentCounts();
+	let { areaCount, barCount, bulletCount, comboCount, donutCount, lineCount, scatterCount } =
+		initializeComponentCounts();
 	const specOptions = { colorScheme, idKey, highlightedItem };
 	spec = [...marks].reduce((acc: Spec, mark) => {
 		switch (mark.markType) {
@@ -133,6 +135,9 @@ export function buildSpec({
 			case 'bar':
 				barCount++;
 				return addBar(acc, { ...mark, ...specOptions, index: barCount });
+			case 'bullet':
+				bulletCount++;
+				return addBullet(acc, { ...mark, ...specOptions, index: bulletCount });
 			case 'combo':
 				comboCount++;
 				return addCombo(acc, { ...mark, ...specOptions, index: comboCount });
@@ -203,6 +208,7 @@ const initializeComponentCounts = () => {
 		barCount: -1,
 		comboCount: -1,
 		donutCount: -1,
+		bulletCount: -1,
 		lineCount: -1,
 		scatterCount: -1,
 	};
