@@ -195,9 +195,10 @@ export const getDefaultScale = (
  */
 export const getPadding = (type: SupportedScaleType | 'band') => {
 	switch (type) {
-		case 'band':
+		case 'band': {
 			const { paddingInner, paddingOuter } = getBarPadding(PADDING_RATIO);
 			return { paddingInner, paddingOuter };
+		}
 		case 'linear':
 		case 'time':
 			return { padding: LINEAR_PADDING };

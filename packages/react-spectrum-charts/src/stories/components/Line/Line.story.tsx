@@ -15,8 +15,7 @@ import { action } from '@storybook/addon-actions';
 import { StoryFn } from '@storybook/react';
 
 import { Chart } from '../../../Chart';
-import { ReferenceLine } from '../../../components';
-import { Axis, Bar, ChartPopover, ChartTooltip, Legend, Line } from '../../../components';
+import { Axis, Bar, ChartPopover, ChartTooltip, Legend, Line, ReferenceLine } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
 import {
 	simpleSparklineData,

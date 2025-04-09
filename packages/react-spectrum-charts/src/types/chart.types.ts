@@ -44,7 +44,7 @@ export type ChartData = SimpleData | Data;
 export type Height = number | `${number}%`;
 export type TooltipAnchor = 'cursor' | 'mark';
 export type TooltipPlacement = 'top' | 'bottom' | 'left' | 'right';
-export type Width = number | string | 'auto';
+export type Width = number | 'auto' | (string & NonNullable<unknown>);
 
 export interface ChartHandle {
 	copy: () => Promise<string>;

@@ -15,7 +15,7 @@ import { SpectrumColor } from '../../spectrumVizColor.types';
 
 export interface ScatterPathOptions {
 	/** The color of the links.*/
-	color?: SpectrumColor | string;
+	color?: SpectrumColor | (string & NonNullable<unknown>);
 	/** The width on the links. Link width can vary by point. */
 	pathWidth?: PathWidthFacet;
 	/** Data keys that should be used to create the groups that get connected by links. */

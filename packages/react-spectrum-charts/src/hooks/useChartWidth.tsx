@@ -15,7 +15,7 @@ export default function useChartWidth(
 	containerWidth: number,
 	maxWidth: number,
 	minWidth: number,
-	width: number | 'auto' | string
+	width: number | 'auto' | (string & NonNullable<unknown>)
 ) {
 	return useMemo(() => {
 		let targetWidth = minWidth;
@@ -24,7 +24,7 @@ export default function useChartWidth(
 			return Math.round(width);
 		} else if (width === 'auto') {
 			targetWidth = containerWidth;
-		} else if (width.match(/^\d+%$/)) {
+		} else if (/^\d+%$/.exec(width)) {
 			targetWidth = (containerWidth * Number(width.slice(0, -1))) / 100;
 		} else {
 			console.error(

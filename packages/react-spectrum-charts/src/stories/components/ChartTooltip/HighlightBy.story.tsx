@@ -149,7 +149,7 @@ GroupData.args = {
 						?.map((d) => d.character)
 						.flat()
 						.map((c, i) => (
-							<div key={i}>{c}</div>
+							<div key={c + i}>{c}</div>
 						))}
 				</View>
 			</div>

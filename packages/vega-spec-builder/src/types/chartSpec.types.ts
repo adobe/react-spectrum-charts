@@ -32,7 +32,7 @@ export type Height = number | `${number}%`;
 export type HighlightedItem = string | number | (string | number)[];
 export type TooltipAnchor = 'cursor' | 'mark';
 export type TooltipPlacement = 'top' | 'bottom' | 'left' | 'right';
-export type Width = number | string | 'auto';
+export type Width = number | 'auto' | (string & NonNullable<unknown>);
 
 export type ChartColors = Colors | Colors[];
 export type LineTypes = LineType[] | LineType[][];

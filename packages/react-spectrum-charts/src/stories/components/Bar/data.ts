@@ -28,67 +28,67 @@ export const barDataLongLabels = [
 
 export const barDataWithUTC = [
 	{
-		browser: "2024-01-01 00:00:00.0",
+		browser: '2024-01-01 00:00:00.0',
 		downloads: 11,
-		dataset_id: "sent",
+		dataset_id: 'sent',
 	},
 	{
-		browser: "2024-09-02 00:00:00.0",
+		browser: '2024-09-02 00:00:00.0',
 		downloads: 2,
-		dataset_id: "sent",
+		dataset_id: 'sent',
 	},
 	{
-		browser: "2025-01-03 00:00:00.0",
+		browser: '2025-01-03 00:00:00.0',
 		downloads: 4,
-		dataset_id: "sent",
+		dataset_id: 'sent',
 	},
 	{
-		browser: "2025-02-04 00:00:00.0",
+		browser: '2025-02-04 00:00:00.0',
 		downloads: 7,
-		dataset_id: "sent",
+		dataset_id: 'sent',
 	},
 	{
-		browser: "2025-03-05 00:00:00.0",
+		browser: '2025-03-05 00:00:00.0',
 		downloads: 1,
-		dataset_id: "sent",
+		dataset_id: 'sent',
 	},
 	{
-		browser: "2025-04-06 00:00:00.0",
+		browser: '2025-04-06 00:00:00.0',
 		downloads: 9,
-		dataset_id: "sent",
+		dataset_id: 'sent',
 	},
 ];
 
 export const stackedBarDataWithUTC = [
 	{
-		browser: "2025-01-27 00:00:00.0",
+		browser: '2025-01-27 00:00:00.0',
 		downloads: 27000,
-		dataset_id: "6257b7b5436f7a1949f44d3b",
+		dataset_id: '6257b7b5436f7a1949f44d3b',
 	},
 	{
-		browser: "2025-01-27 00:00:00.0",
+		browser: '2025-01-27 00:00:00.0',
 		downloads: 8000,
-		dataset_id: "6257b7b5b067f719492758b2",
+		dataset_id: '6257b7b5b067f719492758b2',
 	},
 	{
-		browser: "2025-01-25 00:00:00.0",
+		browser: '2025-01-25 00:00:00.0',
 		downloads: 7750,
-		dataset_id: "6257b7b5436f7a1949f44d3b",
+		dataset_id: '6257b7b5436f7a1949f44d3b',
 	},
 	{
-		browser: "2025-01-25 00:00:00.0",
+		browser: '2025-01-25 00:00:00.0',
 		downloads: 7600,
-		dataset_id: "6257b7b5b067f719492758b2",
+		dataset_id: '6257b7b5b067f719492758b2',
 	},
 	{
-		browser: "2025-01-26 00:00:00.0",
+		browser: '2025-01-26 00:00:00.0',
 		downloads: 500,
-		dataset_id: "6257b7b5436f7a1949f44d3b",
+		dataset_id: '6257b7b5436f7a1949f44d3b',
 	},
 	{
-		browser: "2025-01-26 00:00:00.0",
+		browser: '2025-01-26 00:00:00.0',
 		downloads: 500,
-		dataset_id: "6257b7b5b067f719492758b2",
+		dataset_id: '6257b7b5b067f719492758b2',
 	},
 ];
 
@@ -196,6 +196,30 @@ interface GenerateMockDataForTrellisArgs {
 	maxValue?: number;
 	randomizeSteps?: boolean;
 }
+
+// Helper to calculate order based on the orderBy parameter
+const getOrder = (
+	p1i: number,
+	p2i: number,
+	p3i: number,
+	orderBy: string,
+	propertyNames: [string, string, string]
+): number => {
+	const [property1Name, property2Name, property3Name] = propertyNames;
+	if (orderBy === property1Name) return p1i;
+	if (orderBy === property2Name) return p2i;
+	if (orderBy === property3Name) return p3i;
+	return -1; // Default order if orderBy doesn't match
+};
+
+// Helper to calculate the value based on indices and randomization flag
+const getValue = (p1i: number, p2i: number, p3i: number, maxValue: number, randomizeSteps: boolean): number => {
+	if (randomizeSteps) {
+		return Math.max(0, Math.floor(Math.random() * maxValue));
+	}
+	return Math.max(0, maxValue - (p1i + p2i + p3i) * (maxValue / 10));
+};
+
 export const generateMockDataForTrellis = ({
 	property1,
 	property2,
@@ -206,36 +230,17 @@ export const generateMockDataForTrellis = ({
 	randomizeSteps = true,
 }: GenerateMockDataForTrellisArgs): Record<string, string | number>[] => {
 	const [property1Name, property2Name, property3Name] = propertyNames;
-
 	const data: Record<string, string | number>[] = [];
-	let order: number = -1;
 
 	for (let p1i = 0; p1i < property1.length; p1i++) {
 		const p1 = property1[p1i];
-
-		if (orderBy === property1Name) {
-			order = p1i;
-		}
-
 		for (let p2i = 0; p2i < property2.length; p2i++) {
 			const p2 = property2[p2i];
-			if (orderBy === property2Name) {
-				order = p2i;
-			}
-
 			for (let p3i = 0; p3i < property3.length; p3i++) {
 				const p3 = property3[p3i];
-				if (orderBy === property3Name) {
-					order = p3i;
-				}
 
-				let value: number;
-
-				if (randomizeSteps) {
-					value = Math.max(0, Math.floor(Math.random() * maxValue));
-				} else {
-					value = Math.max(0, maxValue - (p1i + p2i + p3i) * (maxValue / 10));
-				}
+				const order = getOrder(p1i, p2i, p3i, orderBy, propertyNames);
+				const value = getValue(p1i, p2i, p3i, maxValue, randomizeSteps);
 
 				data.push({
 					order,

@@ -299,13 +299,10 @@ function addBaseline(marks: Mark[], baselineOffset: number, position: Position, 
 		} else {
 			trellisGroupMark.marks?.unshift(baselineRule);
 		}
+	} else if (baselineOffset === 0) {
+		marks.push(baselineRule);
 	} else {
-		// if the baselineOffset is 0, draw the baseline on top of all other marks, otherwise draw it behind
-		if (baselineOffset === 0) {
-			marks.push(baselineRule);
-		} else {
-			marks.unshift(baselineRule);
-		}
+		marks.unshift(baselineRule);
 	}
 }
 

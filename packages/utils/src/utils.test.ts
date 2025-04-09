@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { combineNames, toCamelCase } from './index';
+import { combineNames, toCamelCase } from './utils';
 
 describe('combineElementNames()', () => {
 	test('should return child name if parent name is null', () => {

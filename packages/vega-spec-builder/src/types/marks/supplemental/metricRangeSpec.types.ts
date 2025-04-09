@@ -15,7 +15,7 @@ import { SpectrumColor } from '../../spectrumVizColor.types';
 
 export interface MetricRangeOptions {
 	/** The color of the metric line and range. If undefined, will default to the color of the series that it represents. */
-	color?: SpectrumColor | string;
+	color?: SpectrumColor | (string & NonNullable<unknown>);
 	/** The line type of the metric line. (dashed, solid, etc..) */
 	lineType?: LineType;
 	/** The line width of the metric line. */

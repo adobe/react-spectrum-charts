@@ -62,13 +62,13 @@ export const getFacetsFromOptions = ({
 	// filter out the ones that use static values instead of fields
 	let facets = [color, lineType, opacity, size]
 		.map((facet) => (Array.isArray(facet) ? facet[0] : facet))
-		.filter((facet) => typeof facet === 'string') as string[];
+		.filter((facet): facet is string => typeof facet === 'string');
 	// remove duplicates
 	facets = [...new Set(facets)];
 
 	let secondaryFacets = [color, lineType, opacity]
 		.map((facet) => (Array.isArray(facet) ? facet[1] : undefined))
-		.filter((facet) => typeof facet === 'string') as string[];
+		.filter((facet): facet is string => typeof facet === 'string');
 	// remove duplicates
 	secondaryFacets = [...new Set(secondaryFacets)];
 
@@ -168,7 +168,7 @@ export const getPathFromSymbolShape = (symbolShape: ChartSymbolShape): string =>
  * @param icon
  * @returns strokeDash array
  */
-export const getPathFromIcon = (icon: Icon | string): string => {
+export const getPathFromIcon = (icon: Icon | (string & NonNullable<unknown>)): string => {
 	const supportedIcons: { [key in Icon]: string } = {
 		date: DATE_PATH,
 		sentimentNegative: SENTIMENT_NEGATIVE_PATH,
