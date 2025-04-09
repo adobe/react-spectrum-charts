@@ -15,7 +15,7 @@ export default function useChartWidth(
 	containerWidth: number,
 	maxWidth: number,
 	minWidth: number,
-	width: number | 'auto' | (string & NonNullable<unknown>)
+	width: number | 'auto' | string
 ) {
 	return useMemo(() => {
 		let targetWidth = minWidth;

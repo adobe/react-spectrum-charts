@@ -168,7 +168,7 @@ export const getPathFromSymbolShape = (symbolShape: ChartSymbolShape): string =>
  * @param icon
  * @returns strokeDash array
  */
-export const getPathFromIcon = (icon: Icon | (string & NonNullable<unknown>)): string => {
+export const getPathFromIcon = (icon: Icon | string): string => {
 	const supportedIcons: { [key in Icon]: string } = {
 		date: DATE_PATH,
 		sentimentNegative: SENTIMENT_NEGATIVE_PATH,
@@ -277,9 +277,7 @@ export const getDimensionField = (dimension: string, scaleType?: ScaleType) => {
  * @param numberFormat
  * @returns
  */
-export const getD3FormatSpecifierFromNumberFormat = (
-	numberFormat: NumberFormat | (string & NonNullable<unknown>)
-): string => {
+export const getD3FormatSpecifierFromNumberFormat = (numberFormat: NumberFormat | string): string => {
 	switch (numberFormat) {
 		case 'currency':
 			return '$,.2f'; // currency format

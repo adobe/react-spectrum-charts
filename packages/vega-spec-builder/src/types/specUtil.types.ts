@@ -40,16 +40,11 @@ export type Datum = object & {
 	[key: string]: any;
 };
 
-export type NumberFormat =
-	| 'currency'
-	| 'shortCurrency'
-	| 'shortNumber'
-	| 'standardNumber'
-	| (string & NonNullable<unknown>);
+export type NumberFormat = 'currency' | 'shortCurrency' | 'shortNumber' | 'standardNumber' | string;
 export type Orientation = 'vertical' | 'horizontal';
 export type Position = 'left' | 'right' | 'top' | 'bottom';
 export type ScaleType = 'linear' | 'point' | 'time' | 'band';
-export type ChartSymbolShape = 'rounded-square' | SymbolShape | (string & NonNullable<unknown>);
+export type ChartSymbolShape = 'rounded-square' | SymbolShape | string;
 
 /**
  * Stroke dasharray for the line.
@@ -100,9 +95,9 @@ export type PathWidth = 'XS' | 'S' | 'M' | 'L' | 'XL' | number;
 export type SymbolSize = 'XS' | 'S' | 'M' | 'L' | 'XL' | number;
 
 export type StaticValue<T> = { value: T };
-export type FacetRef<T> = (string & NonNullable<unknown>) | StaticValue<T>;
+export type FacetRef<T> = string | StaticValue<T>;
 
-export type ColorFacet = FacetRef<SpectrumVizColor | (string & NonNullable<unknown>)>;
+export type ColorFacet = FacetRef<SpectrumVizColor | string>;
 export type LineTypeFacet = FacetRef<LineType>;
 export type LineWidthFacet = FacetRef<LineWidth>;
 export type OpacityFacet = FacetRef<number>;

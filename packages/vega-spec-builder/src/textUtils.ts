@@ -20,7 +20,7 @@ import { NumberFormat } from './types';
  * @returns
  */
 export const getTextNumberFormat = (
-	numberFormat: NumberFormat | (string & NonNullable<unknown>),
+	numberFormat: NumberFormat | string,
 	datumProperty: string = 'value',
 	currencyLocale?: string,
 	currencyCode?: string
