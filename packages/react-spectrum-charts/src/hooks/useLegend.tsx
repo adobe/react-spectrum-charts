@@ -13,10 +13,14 @@ import { createElement, useMemo, useState } from 'react';
 
 import { LegendDescription } from '@spectrum-charts/vega-spec-builder';
 
-import { Chart } from '../Chart';
 import { Legend } from '../components/Legend';
 import { ChartChildElement, LegendElement } from '../types';
 import { getElement } from '../utils';
+
+const ChartContainer = ({ children }: { children: React.ReactNode }) => {
+	return <div>{children}</div>;
+};
+ChartContainer.displayName = 'ChartContainer';
 
 interface UseLegendProps {
 	legendHiddenSeries: string[];
@@ -30,7 +34,7 @@ interface UseLegendProps {
 
 export default function useLegend(children: ChartChildElement[]): UseLegendProps {
 	const legend = useMemo(() => {
-		return getElement(createElement(Chart, { data: [] }, children), Legend);
+		return getElement(createElement(ChartContainer, undefined, children), Legend);
 	}, [children]) as LegendElement;
 	const [legendHiddenSeries, setLegendHiddenSeries] = useState<string[]>(legend?.props?.defaultHiddenSeries ?? []);
 	if (!legend) return { legendHiddenSeries, setLegendHiddenSeries };

@@ -11,12 +11,16 @@
  */
 import { createElement, useMemo } from 'react';
 
-import { Chart } from '../Chart';
 import { ChartTooltip } from '../components/ChartTooltip';
 import { ChartChildElement, ChartTooltipElement, ChartTooltipProps, TooltipHandler } from '../types';
 import { getAllElements } from '../utils';
 
 type MappedTooltip = { name: string; element: ChartTooltipElement };
+
+const ChartContainer = ({ children }: { children: React.ReactNode }) => {
+	return <div>{children}</div>;
+};
+ChartContainer.displayName = 'ChartContainer';
 
 export type TooltipDetail = {
 	name: string;
@@ -27,7 +31,7 @@ export type TooltipDetail = {
 
 export default function useTooltips(children: ChartChildElement[]): TooltipDetail[] {
 	const tooltipElements = useMemo(
-		() => getAllElements(createElement(Chart, { data: [] }, children), ChartTooltip, []) as MappedTooltip[],
+		() => getAllElements(createElement(ChartContainer, undefined, children), ChartTooltip, []) as MappedTooltip[],
 		[children]
 	);
 

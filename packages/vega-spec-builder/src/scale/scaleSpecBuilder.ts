@@ -15,7 +15,6 @@ import { OrdinalScale, Scale, ScaleData, ScaleMultiFieldsRef, SignalRef } from '
 import { DISCRETE_PADDING, FILTERED_TABLE, LINEAR_PADDING, PADDING_RATIO, TABLE } from '@spectrum-charts/constants';
 import { toCamelCase } from '@spectrum-charts/utils';
 
-import { getBarPadding } from '../bar/barUtils';
 import { getDimensionField } from '../specUtils';
 import { DualFacet, FacetRef, FacetType, Orientation } from '../types';
 
@@ -196,7 +195,7 @@ export const getDefaultScale = (
 export const getPadding = (type: SupportedScaleType | 'band') => {
 	switch (type) {
 		case 'band': {
-			const { paddingInner, paddingOuter } = getBarPadding(PADDING_RATIO);
+			const { paddingInner, paddingOuter } = getBandPadding(PADDING_RATIO);
 			return { paddingInner, paddingOuter };
 		}
 		case 'linear':
@@ -207,6 +206,14 @@ export const getPadding = (type: SupportedScaleType | 'band') => {
 		default:
 			return {};
 	}
+};
+
+export const getBandPadding = (paddingRatio: number, paddingOuter?: number) => {
+	const paddingInner = paddingRatio;
+	return {
+		paddingInner,
+		paddingOuter: paddingOuter === undefined ? DISCRETE_PADDING - (1 - paddingInner) / 2 : paddingOuter,
+	};
 };
 
 /**

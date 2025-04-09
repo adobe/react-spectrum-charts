@@ -11,12 +11,16 @@
  */
 import { createElement, useMemo } from 'react';
 
-import { Chart } from '../Chart';
 import { ChartPopover } from '../components/ChartPopover';
 import { ChartChildElement, ChartPopoverElement, ChartPopoverProps } from '../types';
 import { getAllElements } from '../utils';
 
 type MappedPopover = { name: string; element: ChartPopoverElement };
+
+const ChartContainer = ({ children }: { children: React.ReactNode }) => {
+	return <div>{children}</div>;
+};
+ChartContainer.displayName = 'ChartContainer';
 
 export type PopoverDetail = {
 	chartPopoverProps: ChartPopoverProps;
@@ -27,7 +31,7 @@ export type PopoverDetail = {
 
 export default function usePopovers(children: ChartChildElement[]): PopoverDetail[] {
 	const popoverElements = useMemo(
-		() => getAllElements(createElement(Chart, { data: [] }, children), ChartPopover, []) as MappedPopover[],
+		() => getAllElements(createElement(ChartContainer, undefined, children), ChartPopover, []) as MappedPopover[],
 		[children]
 	);
 

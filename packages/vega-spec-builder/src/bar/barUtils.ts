@@ -20,14 +20,7 @@ import {
 	RectMark,
 } from 'vega';
 
-import {
-	CORNER_RADIUS,
-	DISCRETE_PADDING,
-	FILTERED_TABLE,
-	SELECTED_GROUP,
-	SELECTED_ITEM,
-	STACK_ID,
-} from '@spectrum-charts/constants';
+import { CORNER_RADIUS, FILTERED_TABLE, SELECTED_GROUP, SELECTED_ITEM, STACK_ID } from '@spectrum-charts/constants';
 import { getColorValue } from '@spectrum-charts/themes';
 
 import { getPopovers } from '../chartPopover/chartPopoverUtils';
@@ -40,6 +33,7 @@ import {
 	getTooltip,
 	hasPopover,
 } from '../marks/markUtils';
+import { getBandPadding } from '../scale/scaleSpecBuilder';
 import { getLineWidthPixelsFromLineWidth } from '../specUtils';
 import { BarSpecOptions, Orientation } from '../types';
 import { getTrellisProperties, isTrellised } from './trellisedBarUtils';
@@ -351,11 +345,7 @@ export const getStrokeWidth = ({
 };
 
 export const getBarPadding = (paddingRatio: number, paddingOuter?: number) => {
-	const paddingInner = paddingRatio;
-	return {
-		paddingInner,
-		paddingOuter: paddingOuter === undefined ? DISCRETE_PADDING - (1 - paddingInner) / 2 : paddingOuter,
-	};
+	return getBandPadding(paddingRatio, paddingOuter);
 };
 
 export const getScaleValues = (options: BarSpecOptions) => {
