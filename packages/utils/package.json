@@ -1,0 +1,27 @@
+{
+	"name": "@spectrum-charts/utils",
+	"version": "0.0.1",
+	"description": "Utilities used in spectrum charts",
+	"browser": "dist/index.js",
+	"main": "dist/index.js",
+	"module": "dist/index.js",
+	"types": "dist/@types/index.d.ts",
+	"files": [
+		"dist"
+	],
+	"author": "marshallpete",
+	"license": "Apache-2.0",
+	"scripts": {
+		"build": "webpack --config ./webpack.config.js",
+		"clean": "rm -rf dist",
+		"prepack": "yarn clean && yarn build",
+		"pack-test": "cross-env NODE_ENV=development npm pack",
+		"pack": "cross-env NODE_ENV=production npm pack"
+	},
+	"devDependencies": {
+		"typescript": "^5.4.5",
+		"webpack": "^5.75.0",
+		"webpack-cli": "^5.0.1",
+		"ts-loader": "^9.4.2"
+	}
+}

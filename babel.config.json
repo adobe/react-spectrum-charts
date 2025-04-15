@@ -8,7 +8,6 @@
 				}
 			}
 		],
-
 		"@babel/preset-typescript",
 		[
 			"@babel/preset-react",
@@ -33,6 +32,13 @@
 					"@babel/preset-env",
 					{
 						"targets": "current node"
+					}
+				],
+				"@babel/preset-typescript",
+				[
+					"@babel/preset-react",
+					{
+						"runtime": "automatic"
 					}
 				]
 			]
