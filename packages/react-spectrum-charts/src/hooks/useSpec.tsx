@@ -118,7 +118,7 @@ const initializeSpec = (
  * @param dataset An item in the data array we'll use to check if it's a Vega ValuesData object
  * @returns True if it's a Vega ValuesData object, false if it's a normal data object
  */
-export const isVegaValuesDataset = (dataset): dataset is ValuesData => Array.isArray(dataset.values);
+const isVegaValuesDataset = (dataset): dataset is ValuesData => Array.isArray(dataset.values);
 
 /**
  * Check to see if the data array is an array of Vega datasets instead of an array of values.
