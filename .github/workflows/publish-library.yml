@@ -39,7 +39,7 @@ jobs:
             - name: Build
               run: yarn build
 
-            - name: Publish Packages
+            - name: Publish Adobe Package
               run: yarn workspace @adobe/react-spectrum-charts run publish
               env:
                   NODE_AUTH_TOKEN: ${{ secrets.ADOBE_BOT_NPM_TOKEN }}
