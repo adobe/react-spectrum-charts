@@ -1,6 +1,6 @@
 {
 	"name": "@spectrum-charts/utils",
-	"version": "0.0.1",
+	"version": "1.16.0",
 	"description": "Utilities used in spectrum charts",
 	"browser": "dist/index.js",
 	"main": "dist/index.js",
