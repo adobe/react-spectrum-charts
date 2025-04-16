@@ -39,10 +39,18 @@ jobs:
             - name: Build
               run: yarn build
 
-            - name: Publish Package
-              run: yarn workspaces run publish
+            - name: Publish Adobe Package
+              run: yarn workspace @adobe/react-spectrum-charts run publish
               env:
                   NODE_AUTH_TOKEN: ${{ secrets.ADOBE_BOT_NPM_TOKEN }}
+
+            - name: Publish Spectrum Charts Packages
+              run: yarn workspace @spectrum-charts/constants run publish && \
+                  yarn workspace @spectrum-charts/themes run publish && \
+                  yarn workspace @spectrum-charts/utils run publish && \
+                  yarn workspace @spectrum-charts/vega-spec-builder run publish
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.SPECTRUM_CHARTS_NPM_TOKEN }}
 
             - name: Create Pull Request
               uses: peter-evans/create-pull-request@v3
