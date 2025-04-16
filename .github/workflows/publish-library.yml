@@ -21,6 +21,12 @@ jobs:
                   node-version: '18'
                   registry-url: 'https://registry.npmjs.org'
 
+            - name: Install Dependencies
+              run: yarn install
+
+            - name: Build
+              run: yarn build
+
             - name: Extract Tag
               id: extract_tag
               run: |
@@ -32,12 +38,6 @@ jobs:
             - name: Update Package Version
               run: |
                   node ./scripts/updateVersions.js $tag
-
-            - name: Install Dependencies
-              run: yarn install
-
-            - name: Build
-              run: yarn build
 
             - name: Publish Package
               run: yarn workspaces run publish
