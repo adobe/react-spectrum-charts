@@ -24,13 +24,15 @@ jobs:
             - name: Extract Tag
               id: extract_tag
               run: |
-                  echo "tag=${GITHUB_REF#refs/tags/}" >> "$GITHUB_ENV"
-                  echo "tag=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
+                  FULL_TAG=${GITHUB_REF#refs/tags/}
+                  VERSION_NUMBER=${FULL_TAG#v}
+                  echo "tag=$VERSION_NUMBER" >> "$GITHUB_ENV"
+                  echo "tag=$VERSION_NUMBER" >> "$GITHUB_OUTPUT"
 
             - name: Update Package Version
               run: |
-                  sed -i "s/\"version\": \".*\"/\"version\": \"$tag\"/" package.json
-              
+                  node ./scripts/updateVersions.js $tag
+
             - name: Install Dependencies
               run: yarn install
 
@@ -38,16 +40,16 @@ jobs:
               run: yarn build
 
             - name: Publish Package
-              run: yarn publish --access public
+              run: yarn workspaces run publish
               env:
                   NODE_AUTH_TOKEN: ${{ secrets.ADOBE_BOT_NPM_TOKEN }}
 
             - name: Create Pull Request
               uses: peter-evans/create-pull-request@v3
               with:
-                token: ${{ secrets.GITHUB_TOKEN }}
-                commit-message: "Update package version to ${{ steps.extract_tag.outputs.tag }}"
-                title: "Update package version to ${{ steps.extract_tag.outputs.tag }}"
-                body: "This PR updates the version in package.json to ${{ steps.extract_tag.outputs.tag }}."
-                branch: "release-${{ steps.extract_tag.outputs.tag }}"
-                base: "main"
+                  token: ${{ secrets.GITHUB_TOKEN }}
+                  commit-message: 'Update package version to ${{ steps.extract_tag.outputs.tag }}'
+                  title: 'Update package version to ${{ steps.extract_tag.outputs.tag }}'
+                  body: 'This PR updates the version in package.json to ${{ steps.extract_tag.outputs.tag }}.'
+                  branch: 'release-${{ steps.extract_tag.outputs.tag }}'
+                  base: 'main'

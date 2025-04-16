@@ -71,14 +71,14 @@
 		"sonar-fork-pr": "node ./scripts/runSonarOnFork.js",
 		"test": "cross-env TZ=UTC BABEL_ENV=test jest --config ../../jest.config.js",
 		"watch": "cross-env TZ=UTC BABEL_ENV=test jest --config ../../jest.config.js --watch",
-		"skulk": "yarn watch --silent"
+		"skulk": "yarn watch --silent",
+		"publish": "npm publish --access public"
 	},
-	"devDependencies": {},
 	"dependencies": {
 		"@spectrum-charts/constants": "0.0.1",
 		"@spectrum-charts/themes": "0.0.1",
-		"@spectrum-charts/vega-spec-builder": "0.0.1",
 		"@spectrum-charts/utils": "0.0.1",
+		"@spectrum-charts/vega-spec-builder": "0.0.1",
 		"d3-format": "^3.1.0",
 		"deepmerge": ">= 4.0.0",
 		"immer": ">= 9.0.0",

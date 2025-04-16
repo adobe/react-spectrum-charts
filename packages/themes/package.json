@@ -16,13 +16,14 @@
 		"clean": "rm -rf dist",
 		"prepack": "yarn clean && yarn build",
 		"pack-test": "cross-env NODE_ENV=development npm pack",
-		"pack": "cross-env NODE_ENV=production npm pack"
+		"pack": "cross-env NODE_ENV=production npm pack",
+		"publish": "npm publish --access public"
 	},
 	"devDependencies": {
+		"ts-loader": "^9.4.2",
 		"typescript": "^5.4.5",
 		"webpack": "^5.75.0",
-		"webpack-cli": "^5.0.1",
-		"ts-loader": "^9.4.2"
+		"webpack-cli": "^5.0.1"
 	},
 	"dependencies": {
 		"@spectrum-charts/constants": "0.0.1",
