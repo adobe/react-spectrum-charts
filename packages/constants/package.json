@@ -14,8 +14,7 @@
 	"scripts": {
 		"build": "webpack --config ./webpack.config.js",
 		"clean": "rm -rf dist",
-		"prepack": "yarn clean && yarn build",
-		"pack-test": "cross-env NODE_ENV=development npm pack",
+		"pack-test": "yarn clean && yarn build &&cross-env NODE_ENV=development npm pack",
 		"pack": "cross-env NODE_ENV=production npm pack",
 		"publish": "npm publish --access public"
 	},
