@@ -15,12 +15,12 @@ import { action } from '@storybook/addon-actions';
 import { StoryFn } from '@storybook/react';
 
 import { ActionButton, Content, Flex } from '@adobe/react-spectrum';
+import { ChartHandle } from '@spectrum-charts/vega-spec-builder';
 
 import { Chart } from '../Chart';
 import { Axis, Line } from '../components';
 import useChartProps from '../hooks/useChartProps';
 import { bindWithProps } from '../test-utils';
-import { ChartHandle } from '../types';
 import './Chart.story.css';
 import { data } from './data/data';
 

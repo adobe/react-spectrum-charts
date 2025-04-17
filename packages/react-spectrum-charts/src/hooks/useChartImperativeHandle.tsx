@@ -13,7 +13,7 @@ import { MutableRefObject, Ref, useImperativeHandle } from 'react';
 
 import { View } from 'vega';
 
-import { ChartHandle } from '../types';
+import { ChartHandle } from '@spectrum-charts/vega-spec-builder';
 
 interface ChartImperativeHandleProps {
 	chartView: MutableRefObject<View | undefined>;

@@ -15,3 +15,4 @@ export * from './Chart';
 export * from './locales';
 export * from '@spectrum-charts/themes';
 export * from './types/';
+export * from '@spectrum-charts/vega-spec-builder';

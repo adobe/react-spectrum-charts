@@ -26,7 +26,15 @@ import {
 	SERIES_ID,
 } from '@spectrum-charts/constants';
 import { getChartConfig, getColorValue } from '@spectrum-charts/themes';
-import { ColorScheme, Datum, LegendDescription, MarkBounds } from '@spectrum-charts/vega-spec-builder';
+import {
+	ChartHandle,
+	ColorScheme,
+	Datum,
+	LegendDescription,
+	MarkBounds,
+	TooltipAnchor,
+	TooltipPlacement,
+} from '@spectrum-charts/vega-spec-builder';
 
 import './Chart.css';
 import { VegaChart } from './VegaChart';
@@ -38,7 +46,7 @@ import usePopovers, { PopoverDetail } from './hooks/usePopovers';
 import useSpec from './hooks/useSpec';
 import useSpecProps from './hooks/useSpecProps';
 import useTooltips from './hooks/useTooltips';
-import { ChartHandle, RscChartProps, TooltipAnchor, TooltipPlacement } from './types';
+import { RscChartProps } from './types';
 import {
 	debugLog,
 	getOnChartMarkClickCallback,
