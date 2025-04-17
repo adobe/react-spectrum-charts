@@ -16,7 +16,7 @@
 		"clean": "rm -rf dist",
 		"pack-test": "yarn clean && yarn build && cross-env NODE_ENV=development npm pack",
 		"pack": "cross-env NODE_ENV=production npm pack",
-		"publish": "npm publish --access public"
+		"publish-package": "npm publish --access public"
 	},
 	"devDependencies": {
 		"ts-loader": "^9.4.2",
