@@ -9,15 +9,15 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import React, { createRef } from 'react';
+import { createRef } from 'react';
 
 import { HIGHLIGHT_CONTRAST_RATIO } from '@spectrum-charts/constants';
+import { ChartHandle } from '@spectrum-charts/vega-spec-builder';
 
 import { Chart } from '../Chart';
 import { Axis, Bar, ChartTooltip, Line } from '../components';
 import { findChart, getAllMarksByGroupName, hoverNthElement, render, screen } from '../test-utils';
 import '../test-utils/__mocks__/matchMedia.mock.js';
-import { ChartHandle } from '../types';
 import { getElement } from '../utils';
 import { BackgroundColor, Basic, Config, Height, HighlightedItem, Locale, TooltipAnchor, Width } from './Chart.story';
 import {

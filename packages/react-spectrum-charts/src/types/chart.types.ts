@@ -14,7 +14,14 @@ import { JSXElementConstructor, MutableRefObject, ReactElement } from 'react';
 import { Config, Data, Locale, NumberLocale, Padding, TimeLocale, View } from 'vega';
 
 import { Theme } from '@react-types/provider';
-import { ChartOptions, PartiallyRequired } from '@spectrum-charts/vega-spec-builder';
+import {
+	ChartOptions,
+	Height,
+	PartiallyRequired,
+	TooltipAnchor,
+	TooltipPlacement,
+	Width,
+} from '@spectrum-charts/vega-spec-builder';
 
 import { AxisElement } from './axis';
 import { ChartPopoverElement, ChartTooltipElement } from './dialogs';
@@ -41,17 +48,6 @@ import { Children } from './util.types';
 export type SimpleData = Record<string, unknown>;
 
 export type ChartData = SimpleData | Data;
-export type Height = number | `${number}%`;
-export type TooltipAnchor = 'cursor' | 'mark';
-export type TooltipPlacement = 'top' | 'bottom' | 'left' | 'right';
-export type Width = number | 'auto' | string;
-
-export interface ChartHandle {
-	copy: () => Promise<string>;
-	download: (customFileName?: string) => Promise<string>;
-	getBase64Png: () => Promise<string>;
-	getSvg: () => Promise<string>;
-}
 
 export type ChartChildElement =
 	| AreaElement
