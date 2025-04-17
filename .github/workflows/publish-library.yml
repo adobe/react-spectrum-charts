@@ -47,8 +47,15 @@ jobs:
                   else
                     echo "NODE_AUTH_TOKEN is NOT set."
                   fi
-                  echo "Checking .npmrc content..."
-                  cat /github/home/.npmrc || echo ".npmrc not found or unreadable"
+                  echo "Checking specified .npmrc path: $NPM_CONFIG_USERCONFIG"
+                  if [ -n "$NPM_CONFIG_USERCONFIG" ]; then
+                    echo "Attempting to read $NPM_CONFIG_USERCONFIG..."
+                    cat "$NPM_CONFIG_USERCONFIG" || echo "Specified .npmrc ($NPM_CONFIG_USERCONFIG) not found or unreadable"
+                  else
+                    echo "NPM_CONFIG_USERCONFIG is not set."
+                    echo "Checking default .npmrc path: /github/home/.npmrc"
+                    cat /github/home/.npmrc || echo "Default .npmrc (/github/home/.npmrc) not found or unreadable"
+                  fi
               env:
                   NODE_AUTH_TOKEN: ${{ secrets.ADOBE_BOT_NPM_TOKEN }}
 
