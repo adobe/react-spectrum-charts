@@ -20,6 +20,8 @@ jobs:
               with:
                   node-version: '18'
                   registry-url: 'https://registry.npmjs.org'
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.ADOBE_BOT_NPM_TOKEN }}
 
             - name: Install Dependencies
               run: yarn install
