@@ -39,6 +39,9 @@ jobs:
             - name: Build
               run: yarn build
 
+            - name: Configure Yarn Registry
+              run: yarn config set registry https://registry.npmjs.org/
+
             - name: Publish Adobe Package
               run: yarn workspace @adobe/react-spectrum-charts run publish
               env:
