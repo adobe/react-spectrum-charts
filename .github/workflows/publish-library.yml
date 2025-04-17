@@ -39,6 +39,19 @@ jobs:
             - name: Build
               run: yarn build
 
+            - name: Debug Auth Setup
+              run: |
+                  echo "Checking NODE_AUTH_TOKEN existence..."
+                  if [ -n "$NODE_AUTH_TOKEN" ]; then
+                    echo "NODE_AUTH_TOKEN is set."
+                  else
+                    echo "NODE_AUTH_TOKEN is NOT set."
+                  fi
+                  echo "Checking .npmrc content..."
+                  cat /github/home/.npmrc || echo ".npmrc not found or unreadable"
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.ADOBE_BOT_NPM_TOKEN }}
+
             - name: Publish Adobe Package
               run: yarn workspace @adobe/react-spectrum-charts run publish
               env:
