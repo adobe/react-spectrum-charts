@@ -16,17 +16,10 @@ jobs:
                   fetch-depth: 0
 
             - name: Setup Node.js
-              uses: actions/setup-node@v3
+              uses: actions/setup-node@v4
               with:
                   node-version: '18'
-
-            - name: Configure npm Authentication
-              run: |
-                  echo "//registry.npmjs.org/:_authToken=\${NODE_AUTH_TOKEN}" > /github/home/.npmrc
-                  echo "registry=https://registry.npmjs.org/" >> /github/home/.npmrc
-                  echo "always-auth=true" >> /github/home/.npmrc # Recommended for CI
-              env:
-                  NODE_AUTH_TOKEN: ${{ secrets.ADOBE_BOT_NPM_TOKEN }}
+                  registry-url: 'https://registry.npmjs.org'
 
             - name: Install Dependencies
               run: yarn install
@@ -45,20 +38,6 @@ jobs:
 
             - name: Build
               run: yarn build
-
-            - name: Debug Auth Setup
-              run: |
-                  echo "Checking NODE_AUTH_TOKEN existence..."
-                  if [ -n "$NODE_AUTH_TOKEN" ]; then
-                    echo "NODE_AUTH_TOKEN is set (value masked)."
-                  else
-                    echo "NODE_AUTH_TOKEN is NOT set."
-                  fi
-                  echo "Checking default .npmrc path: /github/home/.npmrc"
-                  cat /github/home/.npmrc || echo "Default .npmrc (/github/home/.npmrc) not found or unreadable"
-              env:
-                  # This env is just for the debug check, the token is written in the previous step
-                  NODE_AUTH_TOKEN: ${{ secrets.ADOBE_BOT_NPM_TOKEN }}
 
             - name: Publish Adobe Package
               run: yarn workspace @adobe/react-spectrum-charts run publish
