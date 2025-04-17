@@ -43,15 +43,15 @@ jobs:
               run: yarn config set registry https://registry.npmjs.org/
 
             - name: Publish Adobe Package
-              run: yarn workspace @adobe/react-spectrum-charts run publish
+              run: yarn workspace @adobe/react-spectrum-charts publish
               env:
                   NODE_AUTH_TOKEN: ${{ secrets.ADOBE_BOT_NPM_TOKEN }}
 
             - name: Publish Spectrum Charts Packages
-              run: yarn workspace @spectrum-charts/constants run publish && \
-                  yarn workspace @spectrum-charts/themes run publish && \
-                  yarn workspace @spectrum-charts/utils run publish && \
-                  yarn workspace @spectrum-charts/vega-spec-builder run publish
+              run: yarn workspace @spectrum-charts/constants publish && \
+                  yarn workspace @spectrum-charts/themes publish && \
+                  yarn workspace @spectrum-charts/utils publish && \
+                  yarn workspace @spectrum-charts/vega-spec-builder publish
               env:
                   NODE_AUTH_TOKEN: ${{ secrets.SPECTRUM_CHARTS_NPM_TOKEN }}
 
