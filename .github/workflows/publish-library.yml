@@ -19,7 +19,12 @@ jobs:
               uses: actions/setup-node@v3
               with:
                   node-version: '18'
-                  registry-url: 'https://registry.npmjs.org'
+
+            - name: Configure npm Authentication
+              run: |
+                  echo "//registry.npmjs.org/:_authToken=\${NODE_AUTH_TOKEN}" > /github/home/.npmrc
+                  echo "registry=https://registry.npmjs.org/" >> /github/home/.npmrc
+                  echo "always-auth=true" >> /github/home/.npmrc # Recommended for CI
               env:
                   NODE_AUTH_TOKEN: ${{ secrets.ADOBE_BOT_NPM_TOKEN }}
 
@@ -45,20 +50,14 @@ jobs:
               run: |
                   echo "Checking NODE_AUTH_TOKEN existence..."
                   if [ -n "$NODE_AUTH_TOKEN" ]; then
-                    echo "NODE_AUTH_TOKEN is set."
+                    echo "NODE_AUTH_TOKEN is set (value masked)."
                   else
                     echo "NODE_AUTH_TOKEN is NOT set."
                   fi
-                  echo "Checking specified .npmrc path: $NPM_CONFIG_USERCONFIG"
-                  if [ -n "$NPM_CONFIG_USERCONFIG" ]; then
-                    echo "Attempting to read $NPM_CONFIG_USERCONFIG..."
-                    cat "$NPM_CONFIG_USERCONFIG" || echo "Specified .npmrc ($NPM_CONFIG_USERCONFIG) not found or unreadable"
-                  else
-                    echo "NPM_CONFIG_USERCONFIG is not set."
-                    echo "Checking default .npmrc path: /github/home/.npmrc"
-                    cat /github/home/.npmrc || echo "Default .npmrc (/github/home/.npmrc) not found or unreadable"
-                  fi
+                  echo "Checking default .npmrc path: /github/home/.npmrc"
+                  cat /github/home/.npmrc || echo "Default .npmrc (/github/home/.npmrc) not found or unreadable"
               env:
+                  # This env is just for the debug check, the token is written in the previous step
                   NODE_AUTH_TOKEN: ${{ secrets.ADOBE_BOT_NPM_TOKEN }}
 
             - name: Publish Adobe Package
