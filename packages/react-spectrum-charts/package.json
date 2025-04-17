@@ -71,7 +71,7 @@
 		"test": "cross-env TZ=UTC BABEL_ENV=test jest --config ../../jest.config.js",
 		"watch": "cross-env TZ=UTC BABEL_ENV=test jest --config ../../jest.config.js --watch",
 		"skulk": "yarn watch --silent",
-		"publish": "npm publish --access public"
+		"publish-package": "npm publish --access public"
 	},
 	"dependencies": {
 		"@spectrum-charts/constants": "0.0.1",
