@@ -62,6 +62,7 @@ export const addBar = produce<
 			color = { value: 'categorical-100' },
 			colorScheme = DEFAULT_COLOR_SCHEME,
 			dimension = DEFAULT_CATEGORICAL_DIMENSION,
+			dualYAxis = false,
 			hasOnClick = false,
 			hasSquareCorners = false,
 			index = 0,
@@ -87,6 +88,7 @@ export const addBar = produce<
 			chartPopovers,
 			chartTooltips,
 			dimensionScaleType: 'band',
+			dualYAxis,
 			orientation,
 			color,
 			colorScheme,
@@ -124,6 +126,7 @@ export const addSignals = produce<Signal[], [BarSpecOptions]>((signals, options)
 		barAnnotations,
 		chartTooltips,
 		chartPopovers,
+		dualYAxis,
 		idKey,
 		name,
 		paddingRatio,
@@ -134,6 +137,21 @@ export const addSignals = produce<Signal[], [BarSpecOptions]>((signals, options)
 	const { paddingInner } = getBarPadding(paddingRatio, barPaddingOuter);
 	signals.push(getGenericValueSignal('paddingInner', paddingInner));
 
+	if (dualYAxis) {
+		signals.push(
+			{
+				name: 'lastRscSeriesId',
+				value: null,
+				update: 'length(domain("color")) > 0 ? peek(domain("color")) : null',
+			},
+			{
+				name: 'firstRscSeriesId',
+				value: null,
+				update: 'length(domain("color")) > 0 ? domain("color")[0] : null',
+			}
+		);
+	}
+
 	if (!barAnnotations.length && !chartPopovers.length && !chartTooltips.length && !trendlines.length) {
 		return;
 	}
@@ -143,7 +161,7 @@ export const addSignals = produce<Signal[], [BarSpecOptions]>((signals, options)
 });
 
 export const addData = produce<Data[], [BarSpecOptions]>((data, options) => {
-	const { dimension, dimensionDataType, metric, order, type } = options;
+	const { dimension, dimensionDataType, dualYAxis, metric, order, type } = options;
 	if (dimensionDataType === TIME) {
 		const tableData = getTableData(data);
 		tableData.transform = addTimeTransform(tableData.transform ?? [], dimension);
@@ -165,6 +183,10 @@ export const addData = produce<Data[], [BarSpecOptions]>((data, options) => {
 	}
 	if (type === 'dodged' || isDodgedAndStacked(options)) {
 		data[index].transform?.push(getDodgeGroupTransform(options));
+	}
+
+	if (dualYAxis) {
+		addDualYAxisData(data, options);
 	}
 	addTrendlineData(data, options);
 	addTooltipData(data, options);
@@ -224,12 +246,30 @@ export const getDodgeGroupTransform = ({ color, lineType, name, opacity, type }:
 	};
 };
 
+export const addDualYAxisData = (data: Data[], options: BarSpecOptions) => {
+	const scaleKey = options.metricAxis || 'yLinear';
+	data.push({
+		name: `${scaleKey}PrimaryAxisDomain`,
+		source: FILTERED_TABLE,
+		transform: [{ type: 'filter', expr: 'datum.rscSeriesId !== lastRscSeriesId' }],
+	});
+
+	data.push({
+		name: `${scaleKey}SecondaryAxisDomain`,
+		source: FILTERED_TABLE,
+		transform: [{ type: 'filter', expr: 'datum.rscSeriesId === lastRscSeriesId' }],
+	});
+};
+
 export const addScales = produce<Scale[], [BarSpecOptions]>((scales, options) => {
-	const { color, lineType, opacity, orientation, metricAxis } = options;
+	const { color, dualYAxis, lineType, opacity, orientation, metricAxis } = options;
 	const axisType = orientation === 'vertical' ? 'y' : 'x';
 	addMetricScale(scales, getScaleValues(options), axisType);
 	if (metricAxis) {
 		addMetricScale(scales, getScaleValues(options), axisType, metricAxis);
+	}
+	if (dualYAxis) {
+		addDualYAxisScales(scales, options);
 	}
 	addDimensionScale(scales, options);
 	addTrellisScale(scales, options);
@@ -238,6 +278,32 @@ export const addScales = produce<Scale[], [BarSpecOptions]>((scales, options) =>
 	addFieldToFacetScaleDomain(scales, OPACITY_SCALE, opacity);
 	addSecondaryScales(scales, options);
 });
+
+export const addDualYAxisScales = (scales: Scale[], options: BarSpecOptions) => {
+	const scaleKey = options.metricAxis || 'yLinear';
+	scales.push({
+		name: `${scaleKey}PrimaryAxis`,
+		type: 'linear',
+		range: 'height',
+		domain: {
+			data: `${scaleKey}PrimaryAxisDomain`,
+			fields: ['value'],
+		},
+		nice: true,
+		zero: true,
+	});
+	scales.push({
+		name: `${scaleKey}SecondaryAxis`,
+		type: 'linear',
+		range: 'height',
+		domain: {
+			data: `${scaleKey}SecondaryAxisDomain`,
+			fields: ['value'],
+		},
+		nice: true,
+		zero: true,
+	});
+};
 
 export const addDimensionScale = (
 	scales: Scale[],
