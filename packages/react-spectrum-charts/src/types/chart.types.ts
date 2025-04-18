@@ -158,3 +158,13 @@ export interface ChartProps extends SharedChartProps {
 }
 
 export type ChartElement = ReactElement<ChartProps, JSXElementConstructor<ChartProps>>;
+
+/**
+ * @deprecated
+ */
+export interface MarkProps {
+	name?: string;
+	children?: Children<MarkChildElement>;
+	color?: string;
+	metric?: string;
+}
