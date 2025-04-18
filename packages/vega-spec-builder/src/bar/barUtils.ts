@@ -106,7 +106,7 @@ export const getTrellisedDimensionEncodings = (options: BarSpecOptions): RectEnc
 };
 
 export const getMetricEncodings = (options: BarSpecOptions): RectEncodeEntry => {
-	const { metric, type } = options;
+	const { metric, type, dualYAxis } = options;
 	const { metricAxis: startKey, metricScaleKey: scaleKey } = getOrientationProperties(
 		options.orientation,
 		options.metricAxis
@@ -116,6 +116,34 @@ export const getMetricEncodings = (options: BarSpecOptions): RectEncodeEntry => 
 	if (type === 'stacked' || isDodgedAndStacked(options)) {
 		return getStackedMetricEncodings(options);
 	}
+
+	if (dualYAxis) {
+		return {
+			[startKey]: [
+				{
+					test: 'datum.rscSeriesId === lastRscSeriesId',
+					scale: `${scaleKey}SecondaryAxis`,
+					value: 0,
+				},
+				{
+					scale: `${scaleKey}PrimaryAxis`,
+					value: 0,
+				},
+			],
+			[endKey]: [
+				{
+					test: 'datum.rscSeriesId === lastRscSeriesId',
+					scale: `${scaleKey}SecondaryAxis`,
+					field: metric,
+				},
+				{
+					scale: `${scaleKey}PrimaryAxis`,
+					field: metric,
+				},
+			],
+		};
+	}
+
 	return {
 		[startKey]: { scale: scaleKey, value: 0 },
 		[endKey]: { scale: scaleKey, field: metric },
