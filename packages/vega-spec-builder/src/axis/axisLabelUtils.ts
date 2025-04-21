@@ -260,6 +260,16 @@ export const getLabelFormat = (
 	];
 };
 
+export const getPrimaryAxisLabelFillRules = () => {
+	return [
+		{
+			test: "length(domain('color')) -1 === 1",
+			signal: "scale('color', firstRscSeriesId)",
+		},
+		{ value: 'black' },
+	];
+};
+
 /**
  * Gets the axis label encoding
  * @param labelAlign

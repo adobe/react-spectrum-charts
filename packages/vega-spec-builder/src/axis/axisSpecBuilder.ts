@@ -10,7 +10,11 @@
  * governing permissions and limitations under the License.
  */
 import { produce } from 'immer';
+<<<<<<< HEAD
 import { Axis, Data, GroupMark, Mark, ScaleType, Signal } from 'vega';
+=======
+import { Axis, ColorValueRef, Data, GroupMark, Mark, ProductionRule, ScaleType, Signal, Spec } from 'vega';
+>>>>>>> 0f86f575 (feat: preliminary axis spec builder for dualYAxis)
 
 import {
 	DEFAULT_COLOR_SCHEME,
@@ -20,6 +24,8 @@ import {
 	DEFAULT_LABEL_ORIENTATION,
 } from '@spectrum-charts/constants';
 
+import { ensurePath } from '../specUtils'
+
 import {
 	addAxisAnnotationAxis,
 	addAxisAnnotationData,
@@ -28,8 +34,18 @@ import {
 	getAxisAnnotationsFromChildren,
 } from '../axisAnnotation/axisAnnotationUtils';
 import { getGenericValueSignal } from '../signal/signalSpecBuilder';
+<<<<<<< HEAD
 import { AxisOptions, AxisSpecOptions, ColorScheme, Label, Orientation, Position, ScSpec } from '../types';
 import { getAxisLabelsEncoding, getControlledLabelAnchorValues, getLabelValue } from './axisLabelUtils';
+=======
+import { AxisOptions, AxisSpecOptions, ColorScheme, Label, Orientation, Position } from '../types';
+import {
+	getAxisLabelsEncoding,
+	getControlledLabelAnchorValues,
+	getLabelValue,
+	getPrimaryAxisLabelFillRules,
+} from './axisLabelUtils';
+>>>>>>> 0f86f575 (feat: preliminary axis spec builder for dualYAxis)
 import { getReferenceLineMarks, getReferenceLines, scaleTypeSupportsReferenceLines } from './axisReferenceLineUtils';
 import { encodeAxisTitle, getTrellisAxisOptions, isTrellisedChart } from './axisTrellisUtils';
 import {
@@ -101,6 +117,8 @@ export const addAxis = produce<ScSpec, [AxisOptions & { colorScheme?: ColorSchem
 			...options,
 		};
 
+		const dualYAxis = spec.signals?.some((signal) => signal.name === 'firstRscSeriesId');
+
 		spec.data = addAxisData(spec.data ?? [], { ...axisOptions, scaleType: scaleType ?? 'linear' });
 		spec.signals = addAxisSignals(spec.signals ?? [], axisOptions);
 
@@ -117,12 +135,14 @@ export const addAxis = produce<ScSpec, [AxisOptions & { colorScheme?: ColorSchem
 			// we don't want to show the grid on top level
 			// axes for trellised charts
 			grid: axisOptions.grid && !isTrellisedChart(spec),
+			dualYAxis
 		});
 
 		spec.marks = addAxesMarks(spec.marks ?? [], {
 			...axisOptions,
 			scaleName,
 			opposingScaleType,
+			dualYAxis
 		});
 
 		return spec;
@@ -185,8 +205,8 @@ export const getLabelSignalValue = (
 		})
 		.filter(Boolean);
 
-export const addAxes = produce<Axis[], [AxisSpecOptions & { scaleName: string; opposingScaleType?: string }]>(
-	(axes, { scaleName, opposingScaleType, ...axisOptions }) => {
+export const addAxes = produce<Axis[], [AxisSpecOptions & { scaleName: string; opposingScaleType?: string, dualYAxis?: boolean }]>(
+	(axes, { scaleName, opposingScaleType, dualYAxis, ...axisOptions }) => {
 		const newAxes: Axis[] = [];
 		// adds all the trellis axis options if this is a trellis axis
 		axisOptions = { ...axisOptions, ...getTrellisAxisOptions(scaleName) };
@@ -196,7 +216,6 @@ export const addAxes = produce<Axis[], [AxisSpecOptions & { scaleName: string; o
 			newAxes.push(...getTimeAxes(scaleName, axisOptions));
 		} else {
 			const axis = getDefaultAxis(axisOptions, scaleName);
-
 			// if labels exist, add them to the axis
 			if (axisOptions.labels.length) {
 				const labels = axisOptions.labels;
@@ -221,6 +240,17 @@ export const addAxes = produce<Axis[], [AxisSpecOptions & { scaleName: string; o
 				// add sublabel axis
 				newAxes.push(getSubLabelAxis(axisOptions, scaleName));
 			}
+
+			if (dualYAxis) {
+				const labelUpdateFillEncode = ensurePath(
+					axis,
+					['encode', 'labels', 'update', 'fill'],
+					true
+				) as ProductionRule<ColorValueRef>[];
+
+				labelUpdateFillEncode.push(...getPrimaryAxisLabelFillRules());
+			}
+
 			newAxes.unshift(axis);
 		}
 
@@ -261,9 +291,9 @@ export const addAxes = produce<Axis[], [AxisSpecOptions & { scaleName: string; o
 
 export const addAxesMarks = produce<
 	Mark[],
-	[AxisSpecOptions & { scaleName: string; scaleType?: ScaleType; opposingScaleType?: string }]
+	[AxisSpecOptions & { scaleName: string; scaleType?: ScaleType; opposingScaleType?: string, dualYAxis?: boolean }]
 >((marks, options) => {
-	const { baseline, baselineOffset, opposingScaleType, position, scaleName, scaleType } = options;
+	const { baseline, baselineOffset, opposingScaleType, position, scaleName, scaleType, dualYAxis } = options;
 
 	// only add reference lines to linear or time scales
 	if (scaleTypeSupportsReferenceLines(scaleType)) {
@@ -280,7 +310,7 @@ export const addAxesMarks = produce<
 	}
 
 	if (isTrellised) {
-		addAxesToTrellisGroup(options, trellisGroupMark, scaleName);
+		addAxesToTrellisGroup(options, trellisGroupMark, scaleName, dualYAxis);
 	}
 
 	const axisAnnotations = getAxisAnnotationsFromChildren(options);
@@ -306,7 +336,7 @@ function addBaseline(marks: Mark[], baselineOffset: number, position: Position, 
 	}
 }
 
-function addAxesToTrellisGroup(options: AxisSpecOptions, trellisGroupMark: GroupMark, scaleName: string) {
+function addAxesToTrellisGroup(options: AxisSpecOptions, trellisGroupMark: GroupMark, scaleName: string, dualYAxis?: boolean) {
 	const trellisOrientation = trellisGroupMark.name?.startsWith('x') ? 'horizontal' : 'vertical';
 	const axisOrientation = options.position === 'bottom' || options.position === 'top' ? 'horizontal' : 'vertical';
 
@@ -331,6 +361,7 @@ function addAxesToTrellisGroup(options: AxisSpecOptions, trellisGroupMark: Group
 		hideDefaultLabels,
 		scaleName,
 		scaleType,
+		dualYAxis
 	});
 
 	// titles on axes within the trellis group have special encodings so that the title is only shown on the first axis
