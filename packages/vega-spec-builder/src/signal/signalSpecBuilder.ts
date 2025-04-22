@@ -115,6 +115,18 @@ export const getGenericUpdateSignal = (name: string, update: string): Signal => 
 };
 
 /**
+ * Returns a signal that tracks which series is being moused over for dual Y-axis charts
+ */
+export const getMouseOverSeriesSignal = (markName: string): Signal => ({
+	name: "mousedOverSeries",
+	value: null,
+	on: [
+		{"events": `@${markName}:mouseover`, "update": "datum.rscSeriesId"},
+		{"events": `@${markName}:mouseout`, "update": "null"}
+	]
+});
+
+/**
  * adds on events to the highlighted item signal
  * @param signals
  * @param markName

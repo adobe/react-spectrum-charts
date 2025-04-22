@@ -40,7 +40,7 @@ import {
 	getScaleIndexByName,
 	getScaleIndexByType,
 } from '../scale/scaleSpecBuilder';
-import { addHighlightedItemSignalEvents, getGenericValueSignal } from '../signal/signalSpecBuilder';
+import { addHighlightedItemSignalEvents, getGenericValueSignal, getMouseOverSeriesSignal } from '../signal/signalSpecBuilder';
 import { getFacetsFromOptions } from '../specUtils';
 import { addTrendlineData, getTrendlineMarks, setTrendlineSignals } from '../trendline';
 import { BarOptions, BarSpecOptions, ColorScheme, HighlightedItem, ScSpec } from '../types';
@@ -148,7 +148,8 @@ export const addSignals = produce<Signal[], [BarSpecOptions]>((signals, options)
 				name: 'firstRscSeriesId',
 				value: null,
 				update: 'length(domain("color")) > 0 ? domain("color")[0] : null',
-			}
+			},
+			getMouseOverSeriesSignal(name)
 		);
 	}
 
