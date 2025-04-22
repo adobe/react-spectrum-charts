@@ -122,22 +122,22 @@ export const getMetricEncodings = (options: BarSpecOptions): RectEncodeEntry => 
 			[startKey]: [
 				{
 					test: 'datum.rscSeriesId === lastRscSeriesId',
-					scale: `${scaleKey}SecondaryAxis`,
+					scale: `${scaleKey}Secondary`,
 					value: 0,
 				},
 				{
-					scale: `${scaleKey}PrimaryAxis`,
+					scale: `${scaleKey}Primary`,
 					value: 0,
 				},
 			],
 			[endKey]: [
 				{
 					test: 'datum.rscSeriesId === lastRscSeriesId',
-					scale: `${scaleKey}SecondaryAxis`,
+					scale: `${scaleKey}Secondary`,
 					field: metric,
 				},
 				{
-					scale: `${scaleKey}PrimaryAxis`,
+					scale: `${scaleKey}Primary`,
 					field: metric,
 				},
 			],

@@ -32,12 +32,16 @@ export const getScaleIndexByType = (
 	scales: Scale[],
 	type: SupportedScaleType,
 	axis: AxisType,
-	scaleName?: string
+	scaleName?: string,
+	data?: string
 ): number => {
 	const name = scaleName || toCamelCase(`${axis} ${type}`);
 	let index = scales.findIndex((scale) => scale.name === name);
 	if (index === -1) {
 		index = scales.length;
+    if (data) {
+      scales.push(generateScale(type, axis, { name, domain: { data, fields: [] }, }));
+    }
 		scales.push(generateScale(type, axis, { name }));
 	}
 	return index;
@@ -111,9 +115,10 @@ export const addMetricScale = (
 	scales: Scale[],
 	metricKeys: string[],
 	metricAxis: AxisType = 'y',
-	scaleName?: string
+	scaleName?: string,
+	data?: string
 ) => {
-	const index = getScaleIndexByType(scales, 'linear', metricAxis, scaleName);
+	const index = getScaleIndexByType(scales, 'linear', metricAxis, scaleName, data);
 	scales[index] = addDomainFields(scales[index], metricKeys);
 };
 

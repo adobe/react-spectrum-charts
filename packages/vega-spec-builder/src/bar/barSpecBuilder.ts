@@ -62,7 +62,7 @@ export const addBar = produce<
 			color = { value: 'categorical-100' },
 			colorScheme = DEFAULT_COLOR_SCHEME,
 			dimension = DEFAULT_CATEGORICAL_DIMENSION,
-			dualYAxis = false,
+			dualYAxis = true,
 			hasOnClick = false,
 			hasSquareCorners = false,
 			index = 0,
@@ -247,15 +247,16 @@ export const getDodgeGroupTransform = ({ color, lineType, name, opacity, type }:
 };
 
 export const addDualYAxisData = (data: Data[], options: BarSpecOptions) => {
-	const scaleKey = options.metricAxis || 'yLinear';
+  const { orientation } = options
+	const axisType = orientation === 'vertical' ? 'y' : 'x';
 	data.push({
-		name: `${scaleKey}PrimaryAxisDomain`,
+		name: `${axisType}LinearPrimaryDomain`,
 		source: FILTERED_TABLE,
 		transform: [{ type: 'filter', expr: 'datum.rscSeriesId !== lastRscSeriesId' }],
 	});
 
 	data.push({
-		name: `${scaleKey}SecondaryAxisDomain`,
+		name: `${axisType}LinearSecondaryDomain`,
 		source: FILTERED_TABLE,
 		transform: [{ type: 'filter', expr: 'datum.rscSeriesId === lastRscSeriesId' }],
 	});
@@ -269,7 +270,12 @@ export const addScales = produce<Scale[], [BarSpecOptions]>((scales, options) =>
 		addMetricScale(scales, getScaleValues(options), axisType, metricAxis);
 	}
 	if (dualYAxis) {
-		addDualYAxisScales(scales, options);
+	  const primaryScaleName = `${axisType}LinearPrimary`
+	  const secondaryScaleName = `${axisType}LinearSecondary`
+
+	  addMetricScale(scales, getScaleValues(options), axisType, primaryScaleName, `${primaryScaleName}Domain` )
+	  addMetricScale(scales, getScaleValues(options), axisType, secondaryScaleName, `${secondaryScaleName}Domain`)
+		// addDualYAxisScales(scales, options);
 	}
 	addDimensionScale(scales, options);
 	addTrellisScale(scales, options);
@@ -280,7 +286,8 @@ export const addScales = produce<Scale[], [BarSpecOptions]>((scales, options) =>
 });
 
 export const addDualYAxisScales = (scales: Scale[], options: BarSpecOptions) => {
-	const scaleKey = options.metricAxis || 'yLinear';
+  const { metricAxis } = options
+	const scaleKey = metricAxis || 'metric';
 	scales.push({
 		name: `${scaleKey}PrimaryAxis`,
 		type: 'linear',
