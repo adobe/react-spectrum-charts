@@ -28,6 +28,8 @@ export interface ChartPopoverOptions {
 	onOpenChange?: (isOpen: boolean) => void;
 	/** The placement padding that should be applied between the popover and its surrounding container */
 	containerPadding?: number;
+	/** Whether the popover should be shown on right click */
+	rightClick?: boolean;
 	/** Sets which marks should be highlighted when a popover is visible.  This feature is incomplete. */
 	UNSAFE_highlightBy?: 'series' | 'dimension' | 'item' | string[];
 }

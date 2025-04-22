@@ -32,6 +32,7 @@ interface GetOnMarkClickCallbackArgs {
 	setHiddenSeries: (hiddenSeries: string[]) => void;
 	legendIsToggleable?: boolean;
 	onLegendClick?: (seriesName: string) => void;
+	trigger: 'click' | 'contextmenu';
 }
 
 /**
@@ -57,9 +58,11 @@ export const getOnMarkClickCallback = ({
 	setHiddenSeries,
 	legendIsToggleable,
 	onLegendClick,
+	trigger,
 }: GetOnMarkClickCallbackArgs): ViewEventCallback => {
 	return (_event, item) => {
 		if (!item) return;
+		if (trigger === 'contextmenu' && _event.type !== 'contextmenu') return;
 		if (isLegendItem(item)) {
 			handleLegendItemClick(item, hiddenSeries, setHiddenSeries, legendIsToggleable, onLegendClick);
 			return;
@@ -77,7 +80,13 @@ export const getOnMarkClickCallback = ({
 			// we need to anchor the popover to a div that we move to the same location as the selected mark
 			selectedDataBounds.current = getItemBounds(item);
 			selectedDataName.current = itemName;
-			(document.querySelector(`#${chartId.current} > div > #${itemName}-button`) as HTMLButtonElement)?.click();
+			(
+				document.querySelector(
+					`#${chartId.current} > div > #${itemName}-${
+						trigger === 'contextmenu' ? 'contextmenu' : 'popover'
+					}-button`
+				) as HTMLButtonElement
+			)?.click();
 		}
 	};
 };

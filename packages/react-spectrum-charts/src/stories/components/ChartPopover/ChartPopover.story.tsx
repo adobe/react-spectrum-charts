@@ -137,14 +137,20 @@ const DonutStory: StoryFn<typeof ChartPopover> = (args): ReactElement => {
 	);
 };
 
+const AreaChart = bindWithProps(AreaStory);
+AreaChart.args = { children: dialogContent, width: 'auto' };
+
 const Canvas = bindWithProps(ChartPopoverCanvasStory);
 Canvas.args = { children: dialogContent, width: 'auto' };
 
-const Svg = bindWithProps(ChartPopoverSvgStory);
-Svg.args = { children: dialogContent, width: 'auto' };
+const DodgedBarChart = bindWithProps(ChartPopoverDodgedBarStory);
+DodgedBarChart.args = { children: dialogContent, width: 'auto' };
 
-const Size = bindWithProps(ChartPopoverSvgStory);
-Size.args = { children: dialogContent, width: 200, height: 100 };
+const DonutChart = bindWithProps(DonutStory);
+DonutChart.args = { children: donutDialogContent, width: 'auto' };
+
+const LineChart = bindWithProps(LineStory);
+LineChart.args = { children: dialogContent, width: 'auto' };
 
 const MinWidth = bindWithProps(ChartPopoverSvgStory);
 MinWidth.args = { children: dialogContent, width: 'auto', minWidth: 250 };
@@ -152,19 +158,28 @@ MinWidth.args = { children: dialogContent, width: 'auto', minWidth: 250 };
 const OnOpenChange = bindWithProps(ChartPopoverSvgStory);
 OnOpenChange.args = { children: dialogContent, width: 'auto' };
 
-const AreaChart = bindWithProps(AreaStory);
-AreaChart.args = { children: dialogContent, width: 'auto' };
+const RightClick = bindWithProps(ChartPopoverSvgStory);
+RightClick.args = { children: dialogContent, width: 'auto', rightClick: true };
 
-const DodgedBarChart = bindWithProps(ChartPopoverDodgedBarStory);
-DodgedBarChart.args = { children: dialogContent, width: 'auto' };
-
-const LineChart = bindWithProps(LineStory);
-LineChart.args = { children: dialogContent, width: 'auto' };
+const Size = bindWithProps(ChartPopoverSvgStory);
+Size.args = { children: dialogContent, width: 200, height: 100 };
 
 const StackedBarChart = bindWithProps(ChartPopoverSvgStory);
 StackedBarChart.args = { children: dialogContent, width: 'auto' };
 
-const DonutChart = bindWithProps(DonutStory);
-DonutChart.args = { children: donutDialogContent, width: 'auto' };
+const Svg = bindWithProps(ChartPopoverSvgStory);
+Svg.args = { children: dialogContent, width: 'auto' };
 
-export { AreaChart, Canvas, DodgedBarChart, DonutChart, LineChart, MinWidth, OnOpenChange, Size, StackedBarChart, Svg };
+export {
+	AreaChart,
+	Canvas,
+	DodgedBarChart,
+	DonutChart,
+	LineChart,
+	MinWidth,
+	OnOpenChange,
+	RightClick,
+	Size,
+	StackedBarChart,
+	Svg,
+};
