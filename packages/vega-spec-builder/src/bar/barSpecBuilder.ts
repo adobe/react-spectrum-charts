@@ -44,7 +44,7 @@ import { addHighlightedItemSignalEvents, getGenericValueSignal } from '../signal
 import { getFacetsFromOptions } from '../specUtils';
 import { addTrendlineData, getTrendlineMarks, setTrendlineSignals } from '../trendline';
 import { BarOptions, BarSpecOptions, ColorScheme, HighlightedItem, ScSpec } from '../types';
-import { getBarPadding, getDimensionSelectionRing, getScaleValues, isDodgedAndStacked } from './barUtils';
+import { getBarPadding, getDimensionSelectionRing, getOrientationProperties, getScaleValues, isDodgedAndStacked } from './barUtils';
 import { getDodgedMark } from './dodgedBarUtils';
 import { getDodgedAndStackedBarMark, getStackedBarMarks } from './stackedBarUtils';
 import { addTrellisScale, getTrellisGroupMark, isTrellised } from './trellisedBarUtils';
@@ -247,8 +247,7 @@ export const getDodgeGroupTransform = ({ color, lineType, name, opacity, type }:
 };
 
 export const addDualYAxisData = (data: Data[], options: BarSpecOptions) => {
-  const { orientation } = options
-	const axisType = orientation === 'vertical' ? 'y' : 'x';
+	const { metricAxis: axisType } = getOrientationProperties(options.orientation);
 	data.push({
 		name: `${axisType}LinearPrimaryDomain`,
 		source: FILTERED_TABLE,
@@ -263,19 +262,18 @@ export const addDualYAxisData = (data: Data[], options: BarSpecOptions) => {
 };
 
 export const addScales = produce<Scale[], [BarSpecOptions]>((scales, options) => {
-	const { color, dualYAxis, lineType, opacity, orientation, metricAxis } = options;
-	const axisType = orientation === 'vertical' ? 'y' : 'x';
+	const { color, dualYAxis, lineType, opacity, metricAxis } = options;
+	const { metricAxis: axisType } = getOrientationProperties(options.orientation);
 	addMetricScale(scales, getScaleValues(options), axisType);
 	if (metricAxis) {
 		addMetricScale(scales, getScaleValues(options), axisType, metricAxis);
 	}
 	if (dualYAxis) {
-	  const primaryScaleName = `${axisType}LinearPrimary`
-	  const secondaryScaleName = `${axisType}LinearSecondary`
+		const primaryScaleName = `${axisType}LinearPrimary`;
+		const secondaryScaleName = `${axisType}LinearSecondary`;
 
-	  addMetricScale(scales, getScaleValues(options), axisType, primaryScaleName, `${primaryScaleName}Domain` )
-	  addMetricScale(scales, getScaleValues(options), axisType, secondaryScaleName, `${secondaryScaleName}Domain`)
-		// addDualYAxisScales(scales, options);
+		addMetricScale(scales, getScaleValues(options), axisType, primaryScaleName, `${primaryScaleName}Domain`);
+		addMetricScale(scales, getScaleValues(options), axisType, secondaryScaleName, `${secondaryScaleName}Domain`);
 	}
 	addDimensionScale(scales, options);
 	addTrellisScale(scales, options);
@@ -285,38 +283,12 @@ export const addScales = produce<Scale[], [BarSpecOptions]>((scales, options) =>
 	addSecondaryScales(scales, options);
 });
 
-export const addDualYAxisScales = (scales: Scale[], options: BarSpecOptions) => {
-  const { metricAxis } = options
-	const scaleKey = metricAxis || 'metric';
-	scales.push({
-		name: `${scaleKey}PrimaryAxis`,
-		type: 'linear',
-		range: 'height',
-		domain: {
-			data: `${scaleKey}PrimaryAxisDomain`,
-			fields: ['value'],
-		},
-		nice: true,
-		zero: true,
-	});
-	scales.push({
-		name: `${scaleKey}SecondaryAxis`,
-		type: 'linear',
-		range: 'height',
-		domain: {
-			data: `${scaleKey}SecondaryAxisDomain`,
-			fields: ['value'],
-		},
-		nice: true,
-		zero: true,
-	});
-};
-
 export const addDimensionScale = (
 	scales: Scale[],
 	{ dimension, paddingRatio, paddingOuter: barPaddingOuter, orientation }: BarSpecOptions
 ) => {
-	const index = getScaleIndexByType(scales, 'band', orientation === 'vertical' ? 'x' : 'y');
+	const { dimensionAxis } = getOrientationProperties(orientation);
+	const index = getScaleIndexByType(scales, 'band', dimensionAxis);
 	scales[index] = addDomainFields(scales[index], [dimension]);
 	const { paddingInner, paddingOuter } = getBarPadding(paddingRatio, barPaddingOuter);
 
@@ -395,7 +367,8 @@ export const getRepeatedScale = (options: BarSpecOptions): Scale => {
 	// if the orientations match then the metric scale is repeated, otherwise the dimension scale is repeated
 	// ex. vertical bar in a vertical trellis will have multiple copies of the metric scale
 	if (orientation === trellisOrientation) {
-		return getMetricScale(getScaleValues(options), orientation === 'vertical' ? 'y' : 'x', orientation);
+		const { metricAxis } = getOrientationProperties(orientation);
+		return getMetricScale(getScaleValues(options), metricAxis, orientation);
 	} else {
 		return getDimensionScale(options);
 	}
@@ -413,7 +386,8 @@ const getDimensionScale = ({
 	paddingRatio,
 	paddingOuter: barPaddingOuter,
 }: BarSpecOptions): BandScale => {
-	let scale = getDefaultScale('band', orientation === 'vertical' ? 'x' : 'y', orientation);
+	const { dimensionAxis } = getOrientationProperties(orientation);
+	let scale = getDefaultScale('band', dimensionAxis, orientation);
 	scale = addDomainFields(scale, [dimension]);
 	const { paddingInner, paddingOuter } = getBarPadding(paddingRatio, barPaddingOuter);
 	return { ...scale, paddingInner, paddingOuter } as BandScale;
