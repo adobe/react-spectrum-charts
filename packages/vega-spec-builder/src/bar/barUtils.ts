@@ -35,7 +35,7 @@ import {
 } from '../marks/markUtils';
 import { getBandPadding } from '../scale/scaleSpecBuilder';
 import { getLineWidthPixelsFromLineWidth } from '../specUtils';
-import { BarSpecOptions, Orientation } from '../types';
+import { BarSpecOptions, Orientation, Position } from '../types';
 import { getTrellisProperties, isTrellised } from './trellisedBarUtils';
 
 /**
@@ -404,3 +404,42 @@ export const getOrientationProperties = (orientation: Orientation, scaleName?: s
 				dimensionScaleKey: 'yBand',
 				rangeScale: 'height',
 		  };
+
+/**
+ * Returns a unified set of scale names for metric axes, handling both custom metricAxis names
+ * and dual Y-axis scenarios consistently
+ */
+export const getUnifiedScaleNames = (options: BarSpecOptions) => {
+	const { metricAxis, dualYAxis, orientation } = options;
+	const { metricScaleKey } = getOrientationProperties(orientation);
+	const baseScaleName = metricAxis || metricScaleKey;
+	
+	return {
+		primary: dualYAxis ? `${baseScaleName}Primary` : baseScaleName,
+		secondary: dualYAxis ? `${baseScaleName}Secondary` : undefined,
+		domain: {
+			primary: dualYAxis ? `${baseScaleName}PrimaryDomain` : undefined,
+			secondary: dualYAxis ? `${baseScaleName}SecondaryDomain` : undefined
+		}
+	};
+};
+
+/**
+ * Determines the appropriate scale name for an axis based on its position and options
+ */
+export const getAxisScaleName = (
+	options: BarSpecOptions,
+	position: Position
+): string => {
+	const { name, dualYAxis } = options;
+	const scaleNames = getUnifiedScaleNames(options);
+	
+	if (!dualYAxis) {
+		return name || (scaleNames.primary ?? '');
+	}
+	
+	if (position === 'right') {
+		return scaleNames.secondary || '';
+	}
+	return scaleNames.primary || '';
+};

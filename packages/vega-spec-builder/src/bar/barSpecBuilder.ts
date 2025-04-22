@@ -44,7 +44,7 @@ import { addHighlightedItemSignalEvents, getGenericValueSignal, getMouseOverSeri
 import { getFacetsFromOptions } from '../specUtils';
 import { addTrendlineData, getTrendlineMarks, setTrendlineSignals } from '../trendline';
 import { BarOptions, BarSpecOptions, ColorScheme, HighlightedItem, ScSpec } from '../types';
-import { getBarPadding, getDimensionSelectionRing, getOrientationProperties, getScaleValues, isDodgedAndStacked } from './barUtils';
+import { getBarPadding, getDimensionSelectionRing, getOrientationProperties, getScaleValues, getUnifiedScaleNames, isDodgedAndStacked } from './barUtils';
 import { getDodgedMark } from './dodgedBarUtils';
 import { getDodgedAndStackedBarMark, getStackedBarMarks } from './stackedBarUtils';
 import { addTrellisScale, getTrellisGroupMark, isTrellised } from './trellisedBarUtils';
@@ -248,34 +248,42 @@ export const getDodgeGroupTransform = ({ color, lineType, name, opacity, type }:
 };
 
 export const addDualYAxisData = (data: Data[], options: BarSpecOptions) => {
-	const { metricAxis: axisType } = getOrientationProperties(options.orientation);
-	data.push({
-		name: `${axisType}LinearPrimaryDomain`,
-		source: FILTERED_TABLE,
-		transform: [{ type: 'filter', expr: 'datum.rscSeriesId !== lastRscSeriesId' }],
-	});
+	const scaleNames = getUnifiedScaleNames(options);
+	
+	if (options.dualYAxis && scaleNames.domain.primary && scaleNames.domain.secondary) {
+		data.push({
+			name: scaleNames.domain.primary,
+			source: FILTERED_TABLE,
+			transform: [{ type: 'filter', expr: 'datum.rscSeriesId !== lastRscSeriesId' }]
+		});
 
-	data.push({
-		name: `${axisType}LinearSecondaryDomain`,
-		source: FILTERED_TABLE,
-		transform: [{ type: 'filter', expr: 'datum.rscSeriesId === lastRscSeriesId' }],
-	});
+		data.push({
+			name: scaleNames.domain.secondary,
+			source: FILTERED_TABLE,
+			transform: [{ type: 'filter', expr: 'datum.rscSeriesId === lastRscSeriesId' }]
+		});
+	}
 };
 
 export const addScales = produce<Scale[], [BarSpecOptions]>((scales, options) => {
 	const { color, dualYAxis, lineType, opacity, metricAxis } = options;
 	const { metricAxis: axisType } = getOrientationProperties(options.orientation);
+	const scaleNames = getUnifiedScaleNames(options);
+
+	// Add base metric scale
 	addMetricScale(scales, getScaleValues(options), axisType);
+
+	// Add custom metric axis scale if specified
 	if (metricAxis) {
 		addMetricScale(scales, getScaleValues(options), axisType, metricAxis);
 	}
-	if (dualYAxis) {
-		const primaryScaleName = `${axisType}LinearPrimary`;
-		const secondaryScaleName = `${axisType}LinearSecondary`;
 
-		addMetricScale(scales, getScaleValues(options), axisType, primaryScaleName, `${primaryScaleName}Domain`);
-		addMetricScale(scales, getScaleValues(options), axisType, secondaryScaleName, `${secondaryScaleName}Domain`);
+	// Add dual Y-axis scales if enabled
+	if (dualYAxis && scaleNames.primary && scaleNames.secondary && scaleNames.domain.primary && scaleNames.domain.secondary) {
+		addMetricScale(scales, getScaleValues(options), axisType, scaleNames.primary, scaleNames.domain.primary);
+		addMetricScale(scales, getScaleValues(options), axisType, scaleNames.secondary, scaleNames.domain.secondary);
 	}
+
 	addDimensionScale(scales, options);
 	addTrellisScale(scales, options);
 	addFieldToFacetScaleDomain(scales, COLOR_SCALE, color);
