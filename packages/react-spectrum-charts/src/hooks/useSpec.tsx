@@ -54,7 +54,6 @@ export default function useSpec({
 		}
 
 		// or we need to build their spec
-		// stringify-parse so that all immer stuff gets cleared out
 		const chartOptions = rscPropsToSpecBuilderOptions({
 			backgroundColor,
 			children,
@@ -73,6 +72,7 @@ export default function useSpec({
 			title,
 		});
 
+		// stringify-parse so that all immer stuff gets cleared out
 		return JSON.parse(JSON.stringify(buildSpec(chartOptions)));
 	}, [
 		UNSAFE_vegaSpec,
