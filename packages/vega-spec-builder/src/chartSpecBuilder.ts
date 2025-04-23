@@ -72,6 +72,7 @@ import {
 	LineTypes,
 	LineWidth,
 	Opacities,
+	ScSpec,
 	SymbolShapes,
 	SymbolSize,
 } from './types';
@@ -127,7 +128,7 @@ export function buildSpec({
 	let { areaCount, barCount, bulletCount, comboCount, donutCount, lineCount, scatterCount } =
 		initializeComponentCounts();
 	const specOptions = { colorScheme, idKey, highlightedItem };
-	spec = [...marks].reduce((acc: Spec, mark) => {
+	spec = [...marks].reduce((acc: ScSpec, mark) => {
 		switch (mark.markType) {
 			case 'area':
 				areaCount++;
@@ -159,7 +160,7 @@ export function buildSpec({
 		}
 	}, spec);
 
-	spec = [...legends].reduce((acc: Spec, legend, index) => {
+	spec = [...legends].reduce((acc: ScSpec, legend, index) => {
 		return addLegend(acc, {
 			...legend,
 			...specOptions,
@@ -169,7 +170,7 @@ export function buildSpec({
 		});
 	}, spec);
 
-	spec = [...axes].reduce((acc: Spec, axis, index) => {
+	spec = [...axes].reduce((acc: ScSpec, axis, index) => {
 		return addAxis(acc, {
 			...axis,
 			...specOptions,
@@ -196,7 +197,7 @@ export function buildSpec({
 	return spec;
 }
 
-export const removeUnusedScales = produce<Spec>((spec) => {
+export const removeUnusedScales = produce<ScSpec>((spec) => {
 	spec.scales = spec.scales?.filter((scale) => {
 		return !('domain' in scale && scale.domain && 'fields' in scale.domain && scale.domain.fields.length === 0);
 	});

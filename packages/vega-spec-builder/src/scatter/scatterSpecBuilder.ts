@@ -10,7 +10,7 @@
  * governing permissions and limitations under the License.
  */
 import { produce } from 'immer';
-import { Data, Scale, Signal, Spec } from 'vega';
+import { Data, Scale, Signal } from 'vega';
 
 import {
 	COLOR_SCALE,
@@ -35,7 +35,7 @@ import { addContinuousDimensionScale, addFieldToFacetScaleDomain, addMetricScale
 import { setScatterPathScales } from '../scatterPath';
 import { addHighlightedItemSignalEvents } from '../signal/signalSpecBuilder';
 import { addTrendlineData, getTrendlineScales, setTrendlineSignals } from '../trendline';
-import { ColorScheme, HighlightedItem, ScatterOptions, ScatterSpecOptions } from '../types';
+import { ColorScheme, HighlightedItem, ScSpec, ScatterOptions, ScatterSpecOptions } from '../types';
 import { addScatterMarks } from './scatterMarkUtils';
 
 /**
@@ -44,7 +44,7 @@ import { addScatterMarks } from './scatterMarkUtils';
  * @param scatterOptions ScatterOptions
  */
 export const addScatter = produce<
-	Spec,
+	ScSpec,
 	[ScatterOptions & { colorScheme?: ColorScheme; highlightedItem?: HighlightedItem; index?: number; idKey: string }]
 >(
 	(

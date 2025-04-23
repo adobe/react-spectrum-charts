@@ -10,7 +10,7 @@
  * governing permissions and limitations under the License.
  */
 import { produce } from 'immer';
-import { Data, Mark, Scale, Signal, Spec } from 'vega';
+import { Data, Mark, Scale, Signal } from 'vega';
 
 import {
 	COLOR_SCALE,
@@ -38,14 +38,14 @@ import { addContinuousDimensionScale, addFieldToFacetScaleDomain, addMetricScale
 import { addHighlightedItemSignalEvents, addHighlightedSeriesSignalEvents } from '../signal/signalSpecBuilder';
 import { getFacetsFromOptions } from '../specUtils';
 import { addTrendlineData, getTrendlineMarks, getTrendlineScales, setTrendlineSignals } from '../trendline';
-import { ColorScheme, HighlightedItem, LineOptions, LineSpecOptions } from '../types';
+import { ColorScheme, HighlightedItem, LineOptions, LineSpecOptions, ScSpec } from '../types';
 import { getLineHighlightedData, getLineStaticPointData } from './lineDataUtils';
 import { getLineHoverMarks, getLineMark } from './lineMarkUtils';
 import { getLineStaticPoint } from './linePointUtils';
 import { getPopoverMarkName } from './lineUtils';
 
 export const addLine = produce<
-	Spec,
+	ScSpec,
 	[LineOptions & { colorScheme?: ColorScheme; highlightedItem?: HighlightedItem; index?: number; idKey: string }]
 >(
 	(
