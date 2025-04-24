@@ -82,8 +82,6 @@ export const ChartProvider = ({ children, chartId, chartView }: ChartProviderPro
 		[chartId, chartView, isPopoverOpen, legendHiddenSeries]
 	);
 
-	console.log('re-rendering ChartProvider');
-
 	return <ChartContext.Provider value={value}>{children}</ChartContext.Provider>;
 };
 
