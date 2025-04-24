@@ -25,7 +25,7 @@ type ViewEventCallback = (event: ScenegraphEvent, item: ActionItem) => void;
 interface GetOnMarkClickCallbackArgs {
 	chartView: MutableRefObject<View | undefined>;
 	hiddenSeries: string[];
-	chartId: MutableRefObject<string>;
+	chartId: string;
 	selectedData: MutableRefObject<Datum | null>;
 	selectedDataBounds: MutableRefObject<MarkBounds | undefined>;
 	selectedDataName: MutableRefObject<string | undefined>;
@@ -77,7 +77,7 @@ export const getOnMarkClickCallback = ({
 			// we need to anchor the popover to a div that we move to the same location as the selected mark
 			selectedDataBounds.current = getItemBounds(item);
 			selectedDataName.current = itemName;
-			(document.querySelector(`#${chartId.current} > div > #${itemName}-button`) as HTMLButtonElement)?.click();
+			(document.querySelector(`#${chartId} > div > #${itemName}-button`) as HTMLButtonElement)?.click();
 		}
 	};
 };
