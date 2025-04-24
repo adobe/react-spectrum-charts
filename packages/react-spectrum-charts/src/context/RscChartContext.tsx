@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { MutableRefObject, ReactNode, createContext, useContext, useRef, useState } from 'react';
+import { MutableRefObject, ReactNode, createContext, useContext, useMemo, useRef, useState } from 'react';
 
 import { Signal, View } from 'vega';
 
@@ -64,20 +64,25 @@ export const ChartProvider = ({ children, chartId, chartView }: ChartProviderPro
 	const [isPopoverOpen, setIsPopoverOpen] = useState(false);
 	const [legendHiddenSeries, setLegendHiddenSeries] = useState<string[]>([]);
 
-	const value: ChartContextValue = {
-		chartView,
-		chartId,
-		selectedData,
-		selectedDataName,
-		selectedDataBounds,
-		controlledHoveredIdSignal,
-		controlledHoveredGroupSignal,
-		isPopoverOpen,
-		setIsPopoverOpen,
-		popoverAnchorRef,
-		legendHiddenSeries,
-		setLegendHiddenSeries,
-	};
+	const value: ChartContextValue = useMemo(
+		() => ({
+			chartView,
+			chartId,
+			selectedData,
+			selectedDataName,
+			selectedDataBounds,
+			controlledHoveredIdSignal,
+			controlledHoveredGroupSignal,
+			isPopoverOpen,
+			setIsPopoverOpen,
+			popoverAnchorRef,
+			legendHiddenSeries,
+			setLegendHiddenSeries,
+		}),
+		[chartId, chartView, isPopoverOpen, legendHiddenSeries]
+	);
+
+	console.log('re-rendering ChartProvider');
 
 	return <ChartContext.Provider value={value}>{children}</ChartContext.Provider>;
 };

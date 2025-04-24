@@ -12,8 +12,7 @@
 import { useCallback } from 'react';
 
 import { Item, View } from 'vega';
-import { Handler } from 'vega-tooltip';
-import { Options as TooltipOptions } from 'vega-tooltip';
+import { Handler, Options as TooltipOptions } from 'vega-tooltip';
 
 import { LEGEND_TOOLTIP_DELAY } from '@spectrum-charts/constants';
 
