@@ -26,3 +26,5 @@ test-report.xml
 # cursor
 .cursor
 cursor
+.memory
+
