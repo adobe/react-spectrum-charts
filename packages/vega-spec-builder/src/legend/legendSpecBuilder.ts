@@ -10,7 +10,7 @@
  * governing permissions and limitations under the License.
  */
 import { produce } from 'immer';
-import { Data, Legend, Mark, Scale, Signal, Spec } from 'vega';
+import { Data, Legend, Mark, Scale, Signal } from 'vega';
 
 import {
 	COLOR_SCALE,
@@ -35,6 +35,7 @@ import {
 	LegendSpecOptions,
 	LineTypeFacet,
 	LineWidthFacet,
+	ScSpec,
 	SymbolShapeFacet,
 } from '../types';
 import { getFacets, getFacetsFromKeys } from './legendFacetUtils';
@@ -42,7 +43,7 @@ import { setHoverOpacityForMarks } from './legendHighlightUtils';
 import { Facet, getColumns, getEncodings, getHiddenEntriesFilter, getSymbolType } from './legendUtils';
 
 export const addLegend = produce<
-	Spec,
+	ScSpec,
 	[
 		LegendOptions & {
 			colorScheme?: ColorScheme;

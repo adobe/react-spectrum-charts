@@ -10,13 +10,12 @@
  * governing permissions and limitations under the License.
  */
 import { produce } from 'immer';
-import { Spec } from 'vega';
 
 import { DEFAULT_TITLE_FONT_WEIGHT } from '@spectrum-charts/constants';
 
-import { TitleOptions } from '../types';
+import { ScSpec, TitleOptions } from '../types';
 
-export const addTitle = produce<Spec, [TitleOptions]>(
+export const addTitle = produce<ScSpec, [TitleOptions]>(
 	(spec, { text, fontWeight = DEFAULT_TITLE_FONT_WEIGHT, position = 'middle', orient = 'top' }) => {
 		spec.title = {
 			text,

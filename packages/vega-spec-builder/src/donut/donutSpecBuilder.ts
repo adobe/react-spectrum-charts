@@ -10,7 +10,7 @@
  * governing permissions and limitations under the License.
  */
 import { produce } from 'immer';
-import { Data, FormulaTransform, Mark, PieTransform, Scale, Signal, Spec } from 'vega';
+import { Data, FormulaTransform, Mark, PieTransform, Scale, Signal } from 'vega';
 
 import {
 	COLOR_SCALE,
@@ -24,7 +24,7 @@ import { toCamelCase } from '@spectrum-charts/utils';
 import { isInteractive } from '../marks/markUtils';
 import { addFieldToFacetScaleDomain } from '../scale/scaleSpecBuilder';
 import { addHighlightedItemSignalEvents } from '../signal/signalSpecBuilder';
-import { ColorScheme, DonutOptions, DonutSpecOptions, HighlightedItem } from '../types';
+import { ColorScheme, DonutOptions, DonutSpecOptions, HighlightedItem, ScSpec } from '../types';
 import {
 	getDonutSummaryData,
 	getDonutSummaryMarks,
@@ -35,7 +35,7 @@ import { getArcMark } from './donutUtils';
 import { getSegmentLabelMarks } from './segmentLabelUtils';
 
 export const addDonut = produce<
-	Spec,
+	ScSpec,
 	[DonutOptions & { colorScheme?: ColorScheme; highlightedItem?: HighlightedItem; index?: number; idKey: string }]
 >(
 	(

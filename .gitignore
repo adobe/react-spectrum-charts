@@ -22,3 +22,7 @@ test-report.xml
 
 # exclude sonar files
 .scannerwork
+
+# cursor
+.cursor
+cursor

@@ -38,6 +38,7 @@ import {
 	LineWidth,
 	NumberFormat,
 	OpacityFacet,
+	ScSpec,
 	SymbolSize,
 	SymbolSizeFacet,
 } from './types';
@@ -229,10 +230,10 @@ export const baseData: Data[] = [
  * @param chartOptions - A partial set of chart options to spread on to the spec.
  * @returns Spec with default values
  */
-export const initializeSpec = (spec: Spec | null = {}, chartOptions: Partial<ChartSpecOptions> = {}): Spec => {
+export const initializeSpec = (spec: Spec | null = {}, chartOptions: Partial<ChartSpecOptions> = {}): ScSpec => {
 	const { backgroundColor, colorScheme = 'light', description, title } = chartOptions;
 
-	const baseSpec: Spec = {
+	const baseSpec: ScSpec = {
 		title: title || undefined,
 		description,
 		autosize: { type: 'fit', contains: 'padding', resize: true },
