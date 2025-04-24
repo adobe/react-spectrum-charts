@@ -9,9 +9,9 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { JSXElementConstructor, MutableRefObject, ReactElement } from 'react';
+import { JSXElementConstructor, ReactElement } from 'react';
 
-import { Config, Data, Locale, NumberLocale, Padding, TimeLocale, View } from 'vega';
+import { Config, Data, Locale, NumberLocale, Padding, TimeLocale } from 'vega';
 
 import { Theme } from '@react-types/provider';
 import {
@@ -109,11 +109,8 @@ type RscChartPropsWithDefaults =
 	| 'tooltipPlacement';
 
 export interface RscChartProps extends PartiallyRequired<SharedChartProps, RscChartPropsWithDefaults> {
-	chartId: MutableRefObject<string>;
-	chartView: MutableRefObject<View | undefined>;
 	chartWidth: number;
 	chartHeight: number;
-	popoverIsOpen?: boolean;
 }
 
 type SpecPropsWithDefaults =

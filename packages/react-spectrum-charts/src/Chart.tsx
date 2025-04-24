@@ -30,6 +30,7 @@ import './Chart.css';
 import { RscChart } from './RscChart';
 import { EmptyState } from './components';
 import { LoadingState } from './components/LoadingState';
+import { ChartProvider } from './context/RscChartContext';
 import useChartHeight from './hooks/useChartHeight';
 import useChartImperativeHandle from './hooks/useChartImperativeHandle';
 import useChartWidth from './hooks/useChartWidth';
@@ -122,8 +123,6 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 		}
 
 		const rscChartProps: RscChartProps = {
-			chartView,
-			chartId,
 			data,
 			backgroundColor,
 			colors,
@@ -180,7 +179,9 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 								emptyStateText={emptyStateText}
 							/>
 						) : (
-							chartContent
+							<ChartProvider chartId={chartId.current} chartView={chartView}>
+								{chartContent}
+							</ChartProvider>
 						)}
 					</div>
 				</div>
