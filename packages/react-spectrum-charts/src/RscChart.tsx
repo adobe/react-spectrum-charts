@@ -11,8 +11,6 @@
  */
 import { MutableRefObject, forwardRef, useEffect, useMemo } from 'react';
 
-import { SymbolShape } from 'vega';
-
 import { ActionButton, Dialog, DialogTrigger, View as SpectrumView } from '@adobe/react-spectrum';
 import { COMPONENT_NAME, DEFAULT_SYMBOL_SHAPES, DEFAULT_SYMBOL_SIZES } from '@spectrum-charts/constants';
 import { getChartConfig } from '@spectrum-charts/themes';
@@ -56,7 +54,7 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>((props, forwarded
 		opacities,
 		padding,
 		renderer,
-		symbolShapes = DEFAULT_SYMBOL_SHAPES as SymbolShape[],
+		symbolShapes = DEFAULT_SYMBOL_SHAPES,
 		symbolSizes = DEFAULT_SYMBOL_SIZES as [SymbolSize, SymbolSize],
 		title,
 		UNSAFE_vegaSpec,
