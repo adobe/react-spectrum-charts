@@ -12,9 +12,9 @@
 import { MutableRefObject, forwardRef, useEffect, useMemo } from 'react';
 
 import { ActionButton, Dialog, DialogTrigger, View as SpectrumView } from '@adobe/react-spectrum';
-import { COMPONENT_NAME } from '@spectrum-charts/constants';
+import { COMPONENT_NAME, DEFAULT_SYMBOL_SHAPES, DEFAULT_SYMBOL_SIZES } from '@spectrum-charts/constants';
 import { getChartConfig } from '@spectrum-charts/themes';
-import { ChartHandle, Datum } from '@spectrum-charts/vega-spec-builder';
+import { ChartHandle, Datum, SymbolSize } from '@spectrum-charts/vega-spec-builder';
 
 import './Chart.css';
 import { VegaChart } from './VegaChart';
@@ -54,8 +54,8 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>((props, forwarded
 		opacities,
 		padding,
 		renderer,
-		symbolShapes = ['rounded-square'],
-		symbolSizes = ['XS', 'XL'],
+		symbolShapes = DEFAULT_SYMBOL_SHAPES,
+		symbolSizes = DEFAULT_SYMBOL_SIZES as [SymbolSize, SymbolSize],
 		title,
 		UNSAFE_vegaSpec,
 		idKey,
@@ -63,7 +63,7 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>((props, forwarded
 
 	const { chartView, chartId, selectedData, popoverAnchorRef, isPopoverOpen, setIsPopoverOpen } = useChartContext();
 
-	const sanitizedChildren = sanitizeRscChartChildren(props.children);
+	const sanitizedChildren = useMemo(() => sanitizeRscChartChildren(props.children), [props.children]);
 
 	// THE MAGIC, builds our spec
 	const spec = useSpec({
