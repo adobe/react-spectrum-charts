@@ -10,17 +10,16 @@
  * governing permissions and limitations under the License.
  */
 import { produce } from 'immer';
-import { Spec } from 'vega';
 
 import { DEFAULT_COLOR_SCHEME, DEFAULT_TIME_DIMENSION } from '@spectrum-charts/constants';
 import { combineNames, toCamelCase } from '@spectrum-charts/utils';
 
 import { addBar } from '../bar/barSpecBuilder';
 import { addLine } from '../line/lineSpecBuilder';
-import { BarOptions, ColorScheme, ComboOptions, HighlightedItem, LineOptions } from '../types';
+import { BarOptions, ColorScheme, ComboOptions, HighlightedItem, LineOptions, ScSpec } from '../types';
 
 export const addCombo = produce<
-	Spec,
+	ScSpec,
 	[ComboOptions & { colorScheme?: ColorScheme; highlightedItem?: HighlightedItem; index?: number; idKey: string }]
 >(
 	(
@@ -38,7 +37,7 @@ export const addCombo = produce<
 		let { barCount, lineCount } = initializeComponentCounts();
 		const comboName = toCamelCase(name || `combo${index}`);
 
-		spec = [...marks].reduce((acc: Spec, mark) => {
+		spec = [...marks].reduce((acc: ScSpec, mark) => {
 			switch (mark.markType) {
 				case 'bar':
 					barCount++;

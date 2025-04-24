@@ -10,7 +10,7 @@
  * governing permissions and limitations under the License.
  */
 import { produce } from 'immer';
-import { Axis, Data, GroupMark, Mark, ScaleType, Signal, Spec } from 'vega';
+import { Axis, Data, GroupMark, Mark, ScaleType, Signal } from 'vega';
 
 import {
 	DEFAULT_COLOR_SCHEME,
@@ -28,7 +28,7 @@ import {
 	getAxisAnnotationsFromChildren,
 } from '../axisAnnotation/axisAnnotationUtils';
 import { getGenericValueSignal } from '../signal/signalSpecBuilder';
-import { AxisOptions, AxisSpecOptions, ColorScheme, Label, Orientation, Position } from '../types';
+import { AxisOptions, AxisSpecOptions, ColorScheme, Label, Orientation, Position, ScSpec } from '../types';
 import { getAxisLabelsEncoding, getControlledLabelAnchorValues, getLabelValue } from './axisLabelUtils';
 import { getReferenceLineMarks, getReferenceLines, scaleTypeSupportsReferenceLines } from './axisReferenceLineUtils';
 import { encodeAxisTitle, getTrellisAxisOptions, isTrellisedChart } from './axisTrellisUtils';
@@ -42,7 +42,7 @@ import {
 	hasSubLabels,
 } from './axisUtils';
 
-export const addAxis = produce<Spec, [AxisOptions & { colorScheme?: ColorScheme; index?: number }]>(
+export const addAxis = produce<ScSpec, [AxisOptions & { colorScheme?: ColorScheme; index?: number }]>(
 	(
 		spec,
 		{

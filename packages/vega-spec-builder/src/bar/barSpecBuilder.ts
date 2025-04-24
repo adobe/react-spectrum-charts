@@ -10,7 +10,7 @@
  * governing permissions and limitations under the License.
  */
 import { produce } from 'immer';
-import { BandScale, Data, FormulaTransform, Mark, OrdinalScale, Scale, Signal, Spec } from 'vega';
+import { BandScale, Data, FormulaTransform, Mark, OrdinalScale, Scale, Signal } from 'vega';
 
 import {
 	COLOR_SCALE,
@@ -43,14 +43,14 @@ import {
 import { addHighlightedItemSignalEvents, getGenericValueSignal } from '../signal/signalSpecBuilder';
 import { getFacetsFromOptions } from '../specUtils';
 import { addTrendlineData, getTrendlineMarks, setTrendlineSignals } from '../trendline';
-import { BarOptions, BarSpecOptions, ColorScheme, HighlightedItem } from '../types';
+import { BarOptions, BarSpecOptions, ColorScheme, HighlightedItem, ScSpec } from '../types';
 import { getBarPadding, getDimensionSelectionRing, getScaleValues, isDodgedAndStacked } from './barUtils';
 import { getDodgedMark } from './dodgedBarUtils';
 import { getDodgedAndStackedBarMark, getStackedBarMarks } from './stackedBarUtils';
 import { addTrellisScale, getTrellisGroupMark, isTrellised } from './trellisedBarUtils';
 
 export const addBar = produce<
-	Spec,
+	ScSpec,
 	[BarOptions & { colorScheme?: ColorScheme; highlightedItem?: HighlightedItem; index?: number; idKey: string }]
 >(
 	(

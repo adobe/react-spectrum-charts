@@ -9,13 +9,35 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { SymbolShape } from 'vega';
+import { Spec, SymbolShape } from 'vega';
 
 import { GROUP_DATA, MARK_ID, SERIES_ID, TRENDLINE_VALUE } from '@spectrum-charts/constants';
 
 import { SpectrumVizColor } from './spectrumVizColor.types';
 
 export type PartiallyRequired<T, K extends keyof T> = Omit<T, K> & Required<Pick<T, K>>;
+
+// For overloading Spec typing when more strict typing is needed.
+export interface ScSpec extends Spec {
+	/*
+	 * Strict typing for usermeta makes it clear what meta information can be accessed during spec creation.
+	 *
+	 * Usage:
+	 * Add properties to usermeta when it's necessary to provide information from one builder
+	 * to another during spec creation.
+	 * This should only be used when sibling components have tight coupling and there isn't a
+	 * reasonable alternative approach using the spec options.
+	 *
+	 * Example:
+	 * A chart element like bar needs to communicate information about its orientation to the axes elements.
+	 * However, axis elements are built within their own axisSpecBuilder, which is independant from the barSpecBuilder.
+	 * Parsing the spec for information about the bar is brittle, since implementation details may change.
+	 * A preferred approach would be to add the needed information to usermeta { orientation: 'vertical' }.
+	 */
+	usermeta?: {
+		orientation?: Orientation;
+	};
+}
 
 export interface MarkBounds {
 	x1: number;

@@ -10,7 +10,7 @@
  * governing permissions and limitations under the License.
  */
 import { produce } from 'immer';
-import { Data, Mark, Scale, Signal, SourceData, Spec } from 'vega';
+import { Data, Mark, Scale, Signal, SourceData } from 'vega';
 
 import {
 	BACKGROUND_COLOR,
@@ -41,11 +41,19 @@ import {
 	getControlledHoveredGroupSignal,
 	getControlledHoveredIdSignal,
 } from '../signal/signalSpecBuilder';
-import { AreaOptions, AreaSpecOptions, ChartPopoverOptions, ColorScheme, HighlightedItem, ScaleType } from '../types';
+import {
+	AreaOptions,
+	AreaSpecOptions,
+	ChartPopoverOptions,
+	ColorScheme,
+	HighlightedItem,
+	ScSpec,
+	ScaleType,
+} from '../types';
 import { getAreaMark, getX } from './areaUtils';
 
 export const addArea = produce<
-	Spec,
+	ScSpec,
 	[AreaOptions & { colorScheme?: ColorScheme; highlightedItem?: HighlightedItem; index?: number; idKey: string }]
 >(
 	(

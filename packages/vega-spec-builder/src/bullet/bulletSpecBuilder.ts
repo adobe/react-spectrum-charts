@@ -10,7 +10,7 @@
  * governing permissions and limitations under the License.
  */
 import { produce } from 'immer';
-import { Data, Scale, Signal, Spec } from 'vega';
+import { Data, Scale, Signal } from 'vega';
 
 import {
 	DEFAULT_BULLET_DIRECTION,
@@ -22,13 +22,16 @@ import {
 import { getColorValue, spectrumColors } from '@spectrum-charts/themes';
 import { toCamelCase } from '@spectrum-charts/utils';
 
-import { BulletOptions, BulletSpecOptions, ColorScheme } from '../types';
+import { BulletOptions, BulletSpecOptions, ColorScheme, ScSpec } from '../types';
 import { getBulletTableData, getBulletTransforms } from './bulletDataUtils';
 import { addAxes, addMarks } from './bulletMarkUtils';
 
 const DEFAULT_COLOR = spectrumColors.light['static-blue'];
 
-export const addBullet = produce<Spec, [BulletOptions & { colorScheme?: ColorScheme; index?: number; idKey: string }]>(
+export const addBullet = produce<
+	ScSpec,
+	[BulletOptions & { colorScheme?: ColorScheme; index?: number; idKey: string }]
+>(
 	(
 		spec,
 		{
