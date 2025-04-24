@@ -114,6 +114,9 @@ export const addBar = produce<
 			...options,
 		};
 
+		spec.usermeta = {
+			orientation: barOptions.orientation,
+		};
 		spec.data = addData(spec.data ?? [], barOptions);
 		spec.signals = addSignals(spec.signals ?? [], barOptions);
 		spec.scales = addScales(spec.scales ?? [], barOptions);
