@@ -28,5 +28,10 @@ export const clickNthElement = async (elements: HTMLElement[], index: number) =>
 	await userEvent.click(elements[index]);
 };
 
+export const rightClickNthElement = async (elements: HTMLElement[], index: number) => {
+	const user = userEvent.setup();
+	await user.pointer([{ target: elements[index], keys: '[MouseRight]' }]);
+};
+
 export const allElementsHaveAttributeValue = (elements: HTMLElement[], attribute: string, value: number | string) =>
 	elements.every((element) => element.getAttribute(attribute) === value.toString());

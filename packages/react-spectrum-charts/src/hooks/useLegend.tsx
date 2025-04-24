@@ -37,6 +37,7 @@ export default function useLegend(children: ChartChildElement[]): UseLegendProps
 		return getElement(createElement(ChartContainer, undefined, children), Legend);
 	}, [children]) as LegendElement;
 	const [legendHiddenSeries, setLegendHiddenSeries] = useState<string[]>(legend?.props?.defaultHiddenSeries ?? []);
+
 	if (!legend) return { legendHiddenSeries, setLegendHiddenSeries };
 	const { descriptions, isToggleable, onClick, onMouseOut, onMouseOver } = legend.props;
 	return { legendHiddenSeries, setLegendHiddenSeries, descriptions, isToggleable, onClick, onMouseOut, onMouseOver };

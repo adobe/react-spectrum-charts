@@ -25,7 +25,7 @@ type ViewEventCallback = (event: ScenegraphEvent, item: ActionItem) => void;
 interface GetOnMarkClickCallbackArgs {
 	chartView: MutableRefObject<View | undefined>;
 	hiddenSeries: string[];
-	chartId: MutableRefObject<string>;
+	chartId: string;
 	selectedData: MutableRefObject<Datum | null>;
 	selectedDataBounds: MutableRefObject<MarkBounds | undefined>;
 	selectedDataName: MutableRefObject<string | undefined>;
@@ -82,9 +82,7 @@ export const getOnMarkClickCallback = ({
 			selectedDataName.current = itemName;
 			(
 				document.querySelector(
-					`#${chartId.current} > div > #${itemName}-${
-						trigger === 'contextmenu' ? 'contextmenu' : 'popover'
-					}-button`
+					`#${chartId} > div > #${itemName}-${trigger === 'contextmenu' ? 'contextmenu' : 'popover'}-button`
 				) as HTMLButtonElement
 			)?.click();
 		}

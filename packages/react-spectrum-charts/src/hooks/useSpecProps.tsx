@@ -9,16 +9,15 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { useMemo } from 'react';
-
 import { Spec } from 'vega';
 
+import { useChartContext } from '../context/RscChartContext';
+
 export default function useSpecProps(spec: Spec) {
-	return useMemo(() => {
-		const controlledHoveredIdSignal = spec.signals?.find((signal) => signal.name.includes('controlledHoveredId'));
-		const controlledHoveredGroupSignal = spec.signals?.find((signal) =>
-			signal.name.includes('controlledHoveredGroup')
-		);
-		return { controlledHoveredIdSignal, controlledHoveredGroupSignal };
-	}, [spec]);
+	const { controlledHoveredIdSignal, controlledHoveredGroupSignal } = useChartContext();
+
+	controlledHoveredIdSignal.current = spec.signals?.find((signal) => signal.name.includes('controlledHoveredId'));
+	controlledHoveredGroupSignal.current = spec.signals?.find((signal) =>
+		signal.name.includes('controlledHoveredGroup')
+	);
 }

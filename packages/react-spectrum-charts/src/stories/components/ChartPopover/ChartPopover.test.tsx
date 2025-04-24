@@ -25,6 +25,7 @@ import {
 	findMarksByGroupName,
 	getAllMarksByGroupName,
 	render,
+	rightClickNthElement,
 	screen,
 	waitFor,
 	within,
@@ -37,6 +38,7 @@ import {
 	LineChart,
 	MinWidth,
 	OnOpenChange,
+	RightClick,
 	Size,
 	StackedBarChart,
 	Svg,
@@ -144,6 +146,32 @@ describe('ChartPopover', () => {
 		await waitFor(() => expect(popover).toBeInTheDocument()); // waitFor to give the popover time to make sure it doesn't close
 
 		expect(popover).toHaveStyle('width: auto; min-width: 250px;');
+	});
+
+	test('Popover opens on right click, not left click', async () => {
+		render(<RightClick {...RightClick.args} />);
+
+		const chart = await findChart();
+		expect(chart).toBeInTheDocument();
+		const bars = getAllMarksByGroupName(chart, 'bar0');
+
+		// left clicking the bar should not open the popover
+		await clickNthElement(bars, 0);
+		let popover = screen.queryByTestId('rsc-popover');
+		await waitFor(() => expect(popover).not.toBeInTheDocument());
+
+		// clicking the bar should open the popover
+		await rightClickNthElement(bars, 0);
+		popover = await screen.findByTestId('rsc-popover');
+		await waitFor(() => expect(popover).toBeInTheDocument()); // waitFor to give the popover time to make sure it doesn't close
+
+		// shouldn't close the popover
+		await userEvent.click(popover);
+		expect(popover).toBeInTheDocument();
+
+		// should close the popover
+		await userEvent.click(chart);
+		await waitFor(() => expect(popover).not.toBeInTheDocument());
 	});
 
 	test('Line popover opens and closes corectly when clicking on the chart', async () => {

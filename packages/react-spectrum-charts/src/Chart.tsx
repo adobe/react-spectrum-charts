@@ -19,17 +19,20 @@ import { Theme } from '@react-types/provider';
 import {
 	DEFAULT_BACKGROUND_COLOR,
 	DEFAULT_COLOR_SCHEME,
+	DEFAULT_HIDDEN_SERIES,
 	DEFAULT_LINE_TYPES,
+	DEFAULT_LINE_WIDTHS,
 	DEFAULT_LOCALE,
 	MARK_ID,
 } from '@spectrum-charts/constants';
 import { getColorValue } from '@spectrum-charts/themes';
-import { ChartHandle, LineType } from '@spectrum-charts/vega-spec-builder';
+import { ChartHandle, LineType, LineWidth } from '@spectrum-charts/vega-spec-builder';
 
 import './Chart.css';
 import { RscChart } from './RscChart';
 import { EmptyState } from './components';
 import { LoadingState } from './components/LoadingState';
+import { ChartProvider } from './context/RscChartContext';
 import useChartHeight from './hooks/useChartHeight';
 import useChartImperativeHandle from './hooks/useChartImperativeHandle';
 import useChartWidth from './hooks/useChartWidth';
@@ -56,10 +59,10 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 			debug = false,
 			emptyStateText = 'No data found',
 			height = 300,
-			hiddenSeries = [],
+			hiddenSeries = DEFAULT_HIDDEN_SERIES,
 			idKey = MARK_ID,
 			lineTypes = DEFAULT_LINE_TYPES as LineType[],
-			lineWidths = ['M'],
+			lineWidths = DEFAULT_LINE_WIDTHS as LineWidth[],
 			loading,
 			locale = DEFAULT_LOCALE,
 			minHeight = 100,
@@ -122,8 +125,6 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 		}
 
 		const rscChartProps: RscChartProps = {
-			chartView,
-			chartId,
 			data,
 			backgroundColor,
 			colors,
@@ -180,7 +181,9 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
 								emptyStateText={emptyStateText}
 							/>
 						) : (
-							chartContent
+							<ChartProvider chartId={chartId.current} chartView={chartView}>
+								{chartContent}
+							</ChartProvider>
 						)}
 					</div>
 				</div>

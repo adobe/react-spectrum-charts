@@ -11,18 +11,18 @@
  */
 import { CSSProperties, useMemo } from 'react';
 
-import { Padding, View } from 'vega';
+import { Padding } from 'vega';
 
-import { MarkBounds } from '@spectrum-charts/vega-spec-builder';
+import { useChartContext } from '../context/RscChartContext';
 
-export default function usePopoverAnchorStyle(
-	popoverIsOpen: boolean,
-	view: View | undefined,
-	bounds: MarkBounds | undefined,
-	padding: Padding
-): CSSProperties {
+export default function usePopoverAnchorStyle(padding: Padding): CSSProperties {
+	const { chartView, selectedDataBounds, isPopoverOpen } = useChartContext();
+
+	const bounds = selectedDataBounds.current;
+	const view = chartView.current;
+
 	return useMemo((): CSSProperties => {
-		if (popoverIsOpen && bounds && view) {
+		if (isPopoverOpen && bounds && view) {
 			const { x1, x2, y1, y2 } = bounds;
 			const leftPadding = (typeof padding === 'number' ? padding : padding.left) ?? 0;
 			const topPadding = (typeof padding === 'number' ? padding : padding.top) ?? 0;
@@ -35,5 +35,5 @@ export default function usePopoverAnchorStyle(
 			};
 		}
 		return { display: 'none' };
-	}, [popoverIsOpen, view, bounds, padding]);
+	}, [isPopoverOpen, view, bounds, padding]);
 }
