@@ -234,6 +234,7 @@ export const initializeSpec = (spec: Spec | null = {}, chartOptions: Partial<Cha
 	const { backgroundColor, colorScheme = 'light', description, title } = chartOptions;
 
 	const baseSpec: ScSpec = {
+		usermeta: {},
 		title: title || undefined,
 		description,
 		autosize: { type: 'fit', contains: 'padding', resize: true },
@@ -288,27 +289,3 @@ export const getD3FormatSpecifierFromNumberFormat = (numberFormat: NumberFormat 
 			return numberFormat;
 	}
 };
-
-/**
- * Gets a reference to an object at a given path.
- * If the reference is not found, the path is created and returned.
- *
- * This function is generic by nature and expect you to ensure the given path belongs on the provided object.
- *
- * @param object
- * @param path
- * @param createArray - if true, the last key in the path is created as an array
- * @returns A reference to the object or array created at the end of the path.
- */
-export function ensurePath(objectToTraverse: unknown, path: string[], createArray = false) {
-	return path.reduce((acc, key, index) => {
-		if (!(key in (acc as Record<string, unknown>))) {
-			if (index === path.length - 1) {
-				(acc as Record<string, unknown>)[key] = createArray ? [] : {};
-			} else {
-				(acc as Record<string, unknown>)[key] = {};
-			}
-		}
-		return (acc as Record<string, unknown>)[key] as Record<string, unknown>;
-	}, objectToTraverse as Record<string, unknown>) as unknown;
-}

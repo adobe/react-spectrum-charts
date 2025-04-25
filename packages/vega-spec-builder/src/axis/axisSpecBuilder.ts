@@ -9,12 +9,9 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import deepmerge from 'deepmerge';
 import { produce } from 'immer';
-<<<<<<< HEAD
 import { Axis, Data, GroupMark, Mark, ScaleType, Signal } from 'vega';
-=======
-import { Axis, ColorValueRef, Data, GroupMark, Mark, ProductionRule, ScaleType, Signal, Spec } from 'vega';
->>>>>>> 0f86f575 (feat: preliminary axis spec builder for dualYAxis)
 
 import {
 	DEFAULT_COLOR_SCHEME,
@@ -24,8 +21,6 @@ import {
 	DEFAULT_LABEL_ORIENTATION,
 } from '@spectrum-charts/constants';
 
-import { ensurePath } from '../specUtils'
-
 import {
 	addAxisAnnotationAxis,
 	addAxisAnnotationData,
@@ -34,18 +29,9 @@ import {
 	getAxisAnnotationsFromChildren,
 } from '../axisAnnotation/axisAnnotationUtils';
 import { getGenericValueSignal } from '../signal/signalSpecBuilder';
-<<<<<<< HEAD
-import { AxisOptions, AxisSpecOptions, ColorScheme, Label, Orientation, Position, ScSpec } from '../types';
+import { getDualAxisScaleNames } from '../scale/scaleUtils';
+import { AxisOptions, AxisSpecOptions, ColorScheme, Label, Orientation, Position, ScSpec, UserMeta } from '../types';
 import { getAxisLabelsEncoding, getControlledLabelAnchorValues, getLabelValue } from './axisLabelUtils';
-=======
-import { AxisOptions, AxisSpecOptions, ColorScheme, Label, Orientation, Position } from '../types';
-import {
-	getAxisLabelsEncoding,
-	getControlledLabelAnchorValues,
-	getLabelValue,
-	getPrimaryAxisLabelFillRules,
-} from './axisLabelUtils';
->>>>>>> 0f86f575 (feat: preliminary axis spec builder for dualYAxis)
 import { getReferenceLineMarks, getReferenceLines, scaleTypeSupportsReferenceLines } from './axisReferenceLineUtils';
 import { encodeAxisTitle, getTrellisAxisOptions, isTrellisedChart } from './axisTrellisUtils';
 import {
@@ -56,6 +42,7 @@ import {
 	getSubLabelAxis,
 	getTimeAxes,
 	hasSubLabels,
+	isVerticalAxis,
 } from './axisUtils';
 
 export const addAxis = produce<ScSpec, [AxisOptions & { colorScheme?: ColorScheme; index?: number }]>(
@@ -127,22 +114,25 @@ export const addAxis = produce<ScSpec, [AxisOptions & { colorScheme?: ColorSchem
 			scale.domain = range;
 		}
 
+		const usermeta = spec.usermeta;
 		spec.axes = addAxes(spec.axes ?? [], {
 			...axisOptions,
 			scaleName,
 			opposingScaleType,
+			usermeta,
 
 			// we don't want to show the grid on top level
 			// axes for trellised charts
 			grid: axisOptions.grid && !isTrellisedChart(spec),
-			dualYAxis
+			dualYAxis,
 		});
 
 		spec.marks = addAxesMarks(spec.marks ?? [], {
 			...axisOptions,
+			usermeta,
 			scaleName,
 			opposingScaleType,
-			dualYAxis
+			dualYAxis,
 		});
 
 		return spec;
@@ -205,95 +195,233 @@ export const getLabelSignalValue = (
 		})
 		.filter(Boolean);
 
-export const addAxes = produce<Axis[], [AxisSpecOptions & { scaleName: string; opposingScaleType?: string, dualYAxis?: boolean }]>(
-	(axes, { scaleName, opposingScaleType, dualYAxis, ...axisOptions }) => {
-		const newAxes: Axis[] = [];
-		// adds all the trellis axis options if this is a trellis axis
-		axisOptions = { ...axisOptions, ...getTrellisAxisOptions(scaleName) };
-		const { baseline, labelAlign, labelFontWeight, labelFormat, labelOrientation, name, position } = axisOptions;
-		if (labelFormat === 'time') {
-			// time axis actually needs two axes. A primary and secondary.
-			newAxes.push(...getTimeAxes(scaleName, axisOptions));
-		} else {
-			const axis = getDefaultAxis(axisOptions, scaleName);
-			// if labels exist, add them to the axis
-			if (axisOptions.labels.length) {
-				const labels = axisOptions.labels;
-				const signalName = `${name}_labels`;
-				axis.values = labels.map((label) => getLabelValue(label));
-				axis.encode = {
-					labels: getAxisLabelsEncoding(
-						labelAlign,
-						labelFontWeight,
-						'label',
-						labelOrientation,
-						position,
-						signalName
-					),
-				};
-			}
+/**
+ * Applies fill and opacity encoding rules to the secondary metric axis
+ * @param axis Axis to apply encoding rules to
+ */
+export function applySecondaryMetricAxisEncodings(axis: Axis): void {
+	console.log('isapplied')
+	const secondaryAxisFillRules = [{ signal: "scale('color', lastRscSeriesId)" }];
 
-			// if sublabels exist, create a new axis for the sub labels
-			if (hasSubLabels(axisOptions)) {
-				axis.titlePadding = 24;
+	const secondaryAxisFillOpacityRules = [
+		{
+			test: 'isValid(mousedOverSeries) && mousedOverSeries !== lastRscSeriesId',
+			value: 0.3,
+		},
+	];
 
-				// add sublabel axis
-				newAxes.push(getSubLabelAxis(axisOptions, scaleName));
-			}
+	const encodings = {
+		labels: {
+			enter: {
+				fill: secondaryAxisFillRules,
+			},
+			update: {
+				fillOpacity: secondaryAxisFillOpacityRules,
+			},
+		},
+		title: {
+			enter: {
+				fill: secondaryAxisFillRules,
+			},
+			update: {
+				fillOpacity: secondaryAxisFillOpacityRules,
+			},
+		},
+	};
 
-			if (dualYAxis) {
-				const labelUpdateFillEncode = ensurePath(
-					axis,
-					['encode', 'labels', 'update', 'fill'],
-					true
-				) as ProductionRule<ColorValueRef>[];
-
-				labelUpdateFillEncode.push(...getPrimaryAxisLabelFillRules());
-			}
-
-			newAxes.unshift(axis);
-		}
-
-		// add baseline
-		if (opposingScaleType !== 'linear') {
-			newAxes[0] = setAxisBaseline(newAxes[0], baseline);
-		}
-
-		if (scaleTypeSupportsReferenceLines(axisOptions.scaleType)) {
-			// encode axis to hide labels that overlap reference line icons
-			const referenceLines = getReferenceLines(axisOptions);
-			referenceLines.forEach((referenceLineOptions) => {
-				const { label: referenceLineLabel, icon, value, position: linePosition } = referenceLineOptions;
-				const text = newAxes[0].encode?.labels?.update?.text;
-				if (
-					(icon || referenceLineLabel) &&
-					text &&
-					Array.isArray(text) &&
-					(!linePosition || linePosition === 'center')
-				) {
-					// if the label is within 30 pixels of the reference line icon, hide it
-					text.unshift({
-						test: `abs(scale('${scaleName}', ${value}) - scale('${scaleName}', datum.value)) < 30`,
-						value: '',
-					});
-				}
-			});
-		}
-
-		const axisAnnotations = getAxisAnnotationsFromChildren(axisOptions);
-		axisAnnotations.forEach((annotationOptions) => {
-			addAxisAnnotationAxis(newAxes, annotationOptions, scaleName);
-		});
-
-		axes.push(...newAxes);
+	if (!axis.encode) {
+		axis.encode = encodings;
+	} else {
+		axis.encode = deepmerge(axis.encode, encodings);
 	}
-);
+}
+
+/**
+ * Applies fill and opacity encoding rules to the primary metric axis
+ * @param axis Axis to apply encoding rules to
+ */
+export function applyPrimaryMetricAxisEncodings(axis: Axis): void {
+	console.log('isapplied')
+	const primaryAxisFillRules = [
+		{
+			test: `length(domain('color')) -1 === 1`,
+			signal: "scale('color', firstRscSeriesId)",
+		},
+		{ value: 'black' },
+	];
+	const primaryAxisFillOpacityRules = [
+		{
+			test: 'mousedOverSeries === lastRscSeriesId',
+			value: 0.3,
+		},
+	];
+
+	const encodings = {
+		labels: {
+			update: {
+				fill: primaryAxisFillRules,
+				fillOpacity: primaryAxisFillOpacityRules,
+			},
+		},
+		title: {
+			update: {
+				fill: primaryAxisFillRules,
+				fillOpacity: primaryAxisFillOpacityRules,
+			},
+		},
+	};
+
+	if (!axis.encode) {
+		axis.encode = encodings;
+	} else {
+		axis.encode = deepmerge(axis.encode, encodings);
+	}
+}
+
+/**
+ * Determines if an axis is a metric axis based on its position and chart orientation
+ * @param position The position of the axis
+ * @param chartOrientation The orientation of the chart
+ * @returns Whether the axis is a metric axis
+ */
+export function getIsMetricAxis(position: Position, chartOrientation: Orientation): boolean {
+	return (
+		(chartOrientation === 'vertical' && isVerticalAxis(position)) ||
+		(chartOrientation === 'horizontal' && !isVerticalAxis(position))
+	);
+}
+
+/**
+ * Handles the dual Y axis logic for axis styling
+ * @param axis The axis to process
+ * @param position The position of the axis
+ * @param usermeta The user metadata
+ * @returns Whether this is a metric axis
+ */
+export function addDualMetricAxisConfig(axis: Axis, usermeta: UserMeta, scaleName: string) {
+	if (!usermeta.metricAxisCount) {
+		usermeta.metricAxisCount = 0;
+	}
+	const isPrimaryMetricAxis = usermeta.metricAxisCount === 0;
+
+	const scaleNames = getDualAxisScaleNames(scaleName);
+	const { primaryScale, secondaryScale } = scaleNames;
+
+	if (isPrimaryMetricAxis) {
+		axis.scale = primaryScale;
+		applyPrimaryMetricAxisEncodings(axis);
+	} else {
+		axis.scale = secondaryScale;
+		applySecondaryMetricAxisEncodings(axis);
+	}
+
+	usermeta.metricAxisCount++;
+}
+
+export const addAxes = produce<
+	Axis[],
+	[
+		AxisSpecOptions & {
+			scaleName: string;
+			opposingScaleType?: string;
+			dualYAxis?: boolean;
+			usermeta: UserMeta;
+		}
+	]
+>((axes, { scaleName, opposingScaleType, dualYAxis, ...axisOptions }) => {
+	const newAxes: Axis[] = [];
+	// adds all the trellis axis options if this is a trellis axis
+	axisOptions = { ...axisOptions, ...getTrellisAxisOptions(scaleName) };
+	const { baseline, usermeta, labelAlign, labelFontWeight, labelFormat, labelOrientation, name, position } =
+		axisOptions;
+	if (labelFormat === 'time') {
+		// time axis actually needs two axes. A primary and secondary.
+		newAxes.push(...getTimeAxes(scaleName, axisOptions));
+	} else {
+		const axis = getDefaultAxis(axisOptions, scaleName);
+		// if labels exist, add them to the axis
+		if (axisOptions.labels.length) {
+			const labels = axisOptions.labels;
+			const signalName = `${name}_labels`;
+			axis.values = labels.map((label) => getLabelValue(label));
+			axis.encode = {
+				labels: getAxisLabelsEncoding(
+					labelAlign,
+					labelFontWeight,
+					'label',
+					labelOrientation,
+					position,
+					signalName
+				),
+			};
+		}
+
+		// if sublabels exist, create a new axis for the sub labels
+		if (hasSubLabels(axisOptions)) {
+			axis.titlePadding = 24;
+
+			// add sublabel axis
+			newAxes.push(getSubLabelAxis(axisOptions, scaleName));
+		}
+
+		if (dualYAxis) {
+			const chartOrientation = usermeta?.orientation ?? 'vertical';
+			const isMetricAxis = getIsMetricAxis(position, chartOrientation);
+			if (isMetricAxis) {
+				addDualMetricAxisConfig(axis, usermeta, scaleName);
+			}
+		}
+
+		newAxes.unshift(axis);
+	}
+
+	// add baseline
+	if (opposingScaleType !== 'linear') {
+		newAxes[0] = setAxisBaseline(newAxes[0], baseline);
+	}
+
+	if (scaleTypeSupportsReferenceLines(axisOptions.scaleType)) {
+		// encode axis to hide labels that overlap reference line icons
+		const referenceLines = getReferenceLines(axisOptions);
+		referenceLines.forEach((referenceLineOptions) => {
+			const { label: referenceLineLabel, icon, value, position: linePosition } = referenceLineOptions;
+			const text = newAxes[0].encode?.labels?.update?.text;
+			if (
+				(icon || referenceLineLabel) &&
+				text &&
+				Array.isArray(text) &&
+				(!linePosition || linePosition === 'center')
+			) {
+				// if the label is within 30 pixels of the reference line icon, hide it
+				text.unshift({
+					test: `abs(scale('${scaleName}', ${value}) - scale('${scaleName}', datum.value)) < 30`,
+					value: '',
+				});
+			}
+		});
+	}
+
+	const axisAnnotations = getAxisAnnotationsFromChildren(axisOptions);
+	axisAnnotations.forEach((annotationOptions) => {
+		addAxisAnnotationAxis(newAxes, annotationOptions, scaleName);
+	});
+
+	axes.push(...newAxes);
+});
 
 export const addAxesMarks = produce<
 	Mark[],
-	[AxisSpecOptions & { scaleName: string; scaleType?: ScaleType; opposingScaleType?: string, dualYAxis?: boolean }]
+	[
+		AxisSpecOptions & {
+			scaleName: string;
+			scaleType?: ScaleType;
+			opposingScaleType?: string;
+			dualYAxis?: boolean;
+			usermeta: UserMeta;
+		}
+	]
 >((marks, options) => {
-	const { baseline, baselineOffset, opposingScaleType, position, scaleName, scaleType, dualYAxis } = options;
+	const { baseline, baselineOffset, opposingScaleType, position, scaleName, scaleType, usermeta } = options;
 
 	// only add reference lines to linear or time scales
 	if (scaleTypeSupportsReferenceLines(scaleType)) {
@@ -310,7 +438,7 @@ export const addAxesMarks = produce<
 	}
 
 	if (isTrellised) {
-		addAxesToTrellisGroup(options, trellisGroupMark, scaleName, dualYAxis);
+		addAxesToTrellisGroup(options, trellisGroupMark, scaleName, usermeta);
 	}
 
 	const axisAnnotations = getAxisAnnotationsFromChildren(options);
@@ -336,7 +464,12 @@ function addBaseline(marks: Mark[], baselineOffset: number, position: Position, 
 	}
 }
 
-function addAxesToTrellisGroup(options: AxisSpecOptions, trellisGroupMark: GroupMark, scaleName: string, dualYAxis?: boolean) {
+function addAxesToTrellisGroup(
+	options: AxisSpecOptions,
+	trellisGroupMark: GroupMark,
+	scaleName: string,
+	usermeta: UserMeta,
+) {
 	const trellisOrientation = trellisGroupMark.name?.startsWith('x') ? 'horizontal' : 'vertical';
 	const axisOrientation = options.position === 'bottom' || options.position === 'top' ? 'horizontal' : 'vertical';
 
@@ -361,7 +494,8 @@ function addAxesToTrellisGroup(options: AxisSpecOptions, trellisGroupMark: Group
 		hideDefaultLabels,
 		scaleName,
 		scaleType,
-		dualYAxis
+		dualYAxis: false, // trellis axes don't support dualYAxis scaling
+		usermeta,
 	});
 
 	// titles on axes within the trellis group have special encodings so that the title is only shown on the first axis

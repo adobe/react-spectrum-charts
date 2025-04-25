@@ -44,10 +44,11 @@ import { addHighlightedItemSignalEvents, getGenericValueSignal, getMouseOverSeri
 import { getFacetsFromOptions } from '../specUtils';
 import { addTrendlineData, getTrendlineMarks, setTrendlineSignals } from '../trendline';
 import { BarOptions, BarSpecOptions, ColorScheme, HighlightedItem, ScSpec } from '../types';
-import { getBarPadding, getDimensionSelectionRing, getOrientationProperties, getScaleValues, getUnifiedScaleNames, isDodgedAndStacked } from './barUtils';
+import { getBarPadding, getBaseScaleName, getDimensionSelectionRing, getOrientationProperties, getScaleValues, isDodgedAndStacked, isDualYAxis } from './barUtils';
 import { getDodgedMark } from './dodgedBarUtils';
 import { getDodgedAndStackedBarMark, getStackedBarMarks } from './stackedBarUtils';
 import { addTrellisScale, getTrellisGroupMark, isTrellised } from './trellisedBarUtils';
+import { getDualAxisScaleNames } from '../scale/scaleUtils';
 
 export const addBar = produce<
 	ScSpec,
@@ -129,7 +130,6 @@ export const addSignals = produce<Signal[], [BarSpecOptions]>((signals, options)
 		barAnnotations,
 		chartTooltips,
 		chartPopovers,
-		dualYAxis,
 		idKey,
 		name,
 		paddingRatio,
@@ -140,7 +140,7 @@ export const addSignals = produce<Signal[], [BarSpecOptions]>((signals, options)
 	const { paddingInner } = getBarPadding(paddingRatio, barPaddingOuter);
 	signals.push(getGenericValueSignal('paddingInner', paddingInner));
 
-	if (dualYAxis) {
+	if (isDualYAxis(options)) {
 		signals.push(
 			{
 				name: 'lastRscSeriesId',
@@ -152,7 +152,7 @@ export const addSignals = produce<Signal[], [BarSpecOptions]>((signals, options)
 				value: null,
 				update: 'length(domain("color")) > 0 ? domain("color")[0] : null',
 			},
-			getMouseOverSeriesSignal(name)
+			getMouseOverSeriesSignal(name),
 		);
 	}
 
@@ -165,7 +165,7 @@ export const addSignals = produce<Signal[], [BarSpecOptions]>((signals, options)
 });
 
 export const addData = produce<Data[], [BarSpecOptions]>((data, options) => {
-	const { dimension, dimensionDataType, dualYAxis, metric, order, type } = options;
+	const { dimension, dimensionDataType, metric, order, type } = options;
 	if (dimensionDataType === TIME) {
 		const tableData = getTableData(data);
 		tableData.transform = addTimeTransform(tableData.transform ?? [], dimension);
@@ -189,7 +189,7 @@ export const addData = produce<Data[], [BarSpecOptions]>((data, options) => {
 		data[index].transform?.push(getDodgeGroupTransform(options));
 	}
 
-	if (dualYAxis) {
+	if (isDualYAxis(options)) {
 		addDualYAxisData(data, options);
 	}
 	addTrendlineData(data, options);
@@ -251,27 +251,27 @@ export const getDodgeGroupTransform = ({ color, lineType, name, opacity, type }:
 };
 
 export const addDualYAxisData = (data: Data[], options: BarSpecOptions) => {
-	const scaleNames = getUnifiedScaleNames(options);
+	const baseScaleName = getBaseScaleName(options);
+	const scaleNames = getDualAxisScaleNames(baseScaleName);
 	
-	if (options.dualYAxis && scaleNames.domain.primary && scaleNames.domain.secondary) {
+	if (options.dualYAxis && scaleNames.primaryDomain && scaleNames.secondaryDomain) {
 		data.push({
-			name: scaleNames.domain.primary,
+			name: scaleNames.primaryDomain,
 			source: FILTERED_TABLE,
-			transform: [{ type: 'filter', expr: 'datum.rscSeriesId !== lastRscSeriesId' }]
-		});
+		    transform: [{ type: 'filter', expr: 'datum.rscSeriesId !== lastRscSeriesId' }],
+	});
 
-		data.push({
-			name: scaleNames.domain.secondary,
+	data.push({
+			name: scaleNames.secondaryDomain,
 			source: FILTERED_TABLE,
-			transform: [{ type: 'filter', expr: 'datum.rscSeriesId === lastRscSeriesId' }]
+			transform: [{ type: 'filter', expr: 'datum.rscSeriesId === lastRscSeriesId' }],
 		});
 	}
 };
 
 export const addScales = produce<Scale[], [BarSpecOptions]>((scales, options) => {
-	const { color, dualYAxis, lineType, opacity, metricAxis } = options;
+	const { color, lineType, opacity, metricAxis } = options;
 	const { metricAxis: axisType } = getOrientationProperties(options.orientation);
-	const scaleNames = getUnifiedScaleNames(options);
 
 	// Add base metric scale
 	addMetricScale(scales, getScaleValues(options), axisType);
@@ -281,12 +281,12 @@ export const addScales = produce<Scale[], [BarSpecOptions]>((scales, options) =>
 		addMetricScale(scales, getScaleValues(options), axisType, metricAxis);
 	}
 
-	// Add dual Y-axis scales if enabled
-	if (dualYAxis && scaleNames.primary && scaleNames.secondary && scaleNames.domain.primary && scaleNames.domain.secondary) {
-		addMetricScale(scales, getScaleValues(options), axisType, scaleNames.primary, scaleNames.domain.primary);
-		addMetricScale(scales, getScaleValues(options), axisType, scaleNames.secondary, scaleNames.domain.secondary);
+	if (isDualYAxis(options)) {
+		const baseScaleName = getBaseScaleName(options);
+		const scaleNames = getDualAxisScaleNames(baseScaleName);
+		addMetricScale(scales, getScaleValues(options), axisType, scaleNames.primaryScale, scaleNames.primaryDomain);
+		addMetricScale(scales, getScaleValues(options), axisType, scaleNames.secondaryScale, scaleNames.secondaryDomain);
 	}
-
 	addDimensionScale(scales, options);
 	addTrellisScale(scales, options);
 	addFieldToFacetScaleDomain(scales, COLOR_SCALE, color);

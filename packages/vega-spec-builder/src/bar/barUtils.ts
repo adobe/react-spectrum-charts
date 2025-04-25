@@ -35,7 +35,7 @@ import {
 } from '../marks/markUtils';
 import { getBandPadding } from '../scale/scaleSpecBuilder';
 import { getLineWidthPixelsFromLineWidth } from '../specUtils';
-import { BarSpecOptions, Orientation, Position } from '../types';
+import { BarSpecOptions, Orientation } from '../types';
 import { getTrellisProperties, isTrellised } from './trellisedBarUtils';
 
 /**
@@ -45,6 +45,11 @@ import { getTrellisProperties, isTrellised } from './trellisedBarUtils';
 export const isDodgedAndStacked = ({ color, lineType, opacity }: BarSpecOptions): boolean => {
 	return [color, lineType, opacity].some((facet) => Array.isArray(facet) && facet.length === 2);
 };
+
+export const isDualYAxis = (options: BarSpecOptions) => {
+	const { dualYAxis, type } = options;
+	return Boolean(dualYAxis && !isTrellised(options) && type === 'dodged' && !isDodgedAndStacked(options));
+}
 
 export const getDodgedGroupMark = (options: BarSpecOptions): GroupMark => {
 	const { dimension, groupedPadding, orientation, name, paddingRatio } = options;
@@ -106,7 +111,7 @@ export const getTrellisedDimensionEncodings = (options: BarSpecOptions): RectEnc
 };
 
 export const getMetricEncodings = (options: BarSpecOptions): RectEncodeEntry => {
-	const { metric, type, dualYAxis } = options;
+	const { metric, type } = options;
 	const { metricAxis: startKey, metricScaleKey: scaleKey } = getOrientationProperties(
 		options.orientation,
 		options.metricAxis
@@ -117,7 +122,7 @@ export const getMetricEncodings = (options: BarSpecOptions): RectEncodeEntry => 
 		return getStackedMetricEncodings(options);
 	}
 
-	if (dualYAxis) {
+	if (isDualYAxis(options)) {
 		return {
 			[startKey]: [
 				{
@@ -405,41 +410,8 @@ export const getOrientationProperties = (orientation: Orientation, scaleName?: s
 				rangeScale: 'height',
 		  };
 
-/**
- * Returns a unified set of scale names for metric axes, handling both custom metricAxis names
- * and dual Y-axis scenarios consistently
- */
-export const getUnifiedScaleNames = (options: BarSpecOptions) => {
-	const { metricAxis, dualYAxis, orientation } = options;
+export const getBaseScaleName = (options: BarSpecOptions) => {
+	const { metricAxis, orientation } = options;
 	const { metricScaleKey } = getOrientationProperties(orientation);
-	const baseScaleName = metricAxis || metricScaleKey;
-	
-	return {
-		primary: dualYAxis ? `${baseScaleName}Primary` : baseScaleName,
-		secondary: dualYAxis ? `${baseScaleName}Secondary` : undefined,
-		domain: {
-			primary: dualYAxis ? `${baseScaleName}PrimaryDomain` : undefined,
-			secondary: dualYAxis ? `${baseScaleName}SecondaryDomain` : undefined
-		}
-	};
-};
-
-/**
- * Determines the appropriate scale name for an axis based on its position and options
- */
-export const getAxisScaleName = (
-	options: BarSpecOptions,
-	position: Position
-): string => {
-	const { name, dualYAxis } = options;
-	const scaleNames = getUnifiedScaleNames(options);
-	
-	if (!dualYAxis) {
-		return name || (scaleNames.primary ?? '');
-	}
-	
-	if (position === 'right') {
-		return scaleNames.secondary || '';
-	}
-	return scaleNames.primary || '';
-};
+	return metricAxis || metricScaleKey;
+}
