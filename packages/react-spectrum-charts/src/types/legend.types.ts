@@ -13,6 +13,9 @@ import { JSXElementConstructor, ReactElement } from 'react';
 
 import { LegendOptions } from '@spectrum-charts/vega-spec-builder';
 
+import { ChartPopoverElement } from './dialogs/chartPopover.types';
+import { Children } from './util.types';
+
 export interface LegendProps extends Omit<LegendOptions, 'hasOnClick' | 'hasMouseInteraction'> {
 	/** callback that will be run when a legend item is selected */
 	onClick?: (seriesName: string) => void;
@@ -20,6 +23,8 @@ export interface LegendProps extends Omit<LegendOptions, 'hasOnClick' | 'hasMous
 	onMouseOut?: (seriesName: string) => void;
 	/** callback that will be run when mousing over a legend item */
 	onMouseOver?: (seriesName: string) => void;
+
+	children?: Children<ChartPopoverElement>;
 }
 
 export type LegendElement = ReactElement<LegendProps, JSXElementConstructor<LegendProps>>;

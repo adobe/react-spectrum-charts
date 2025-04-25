@@ -89,11 +89,18 @@ export const getHiddenEntriesFilter = (hiddenEntries: string[], name: string): F
  */
 export const getEncodings = (facets: Facet[], legendOptions: LegendSpecOptions): LegendEncode => {
 	const symbolEncodings = getSymbolEncodings(facets, legendOptions);
-	const hoverEncodings = getHoverEncodings(facets, legendOptions);
+	const hoverEncodings = getHoverEncodings(legendOptions);
 	const legendLabelsEncodings = getLegendLabelsEncodings(legendOptions.name, legendOptions.legendLabels);
 	const showHideEncodings = getShowHideEncodings(legendOptions);
+	const clickEncodings = getClickEncodings(legendOptions);
 	// merge the encodings together
-	return mergeLegendEncodings([symbolEncodings, legendLabelsEncodings, hoverEncodings, showHideEncodings]);
+	return mergeLegendEncodings([
+		symbolEncodings,
+		legendLabelsEncodings,
+		hoverEncodings,
+		showHideEncodings,
+		clickEncodings,
+	]);
 };
 
 const getLegendLabelsEncodings = (name: string, legendLabels: LegendLabel[] | undefined): LegendEncode => {
@@ -116,7 +123,7 @@ const getLegendLabelsEncodings = (name: string, legendLabels: LegendLabel[] | un
 	return {};
 };
 
-const getHoverEncodings = (facets: Facet[], options: LegendSpecOptions): LegendEncode => {
+const getHoverEncodings = (options: LegendSpecOptions): LegendEncode => {
 	const { highlight, highlightedSeries, name, hasMouseInteraction, descriptions } = options;
 	if (highlight || highlightedSeries || descriptions) {
 		return {
@@ -303,24 +310,31 @@ export const getHiddenSeriesColorRule = (
  * @returns
  */
 export const getShowHideEncodings = (options: LegendSpecOptions): LegendEncode => {
-	const { colorScheme, hiddenSeries, isToggleable, keys, name, hasOnClick } = options;
-	let hiddenSeriesEncode: LegendEncode = {};
-	// if the legend supports hide/show and doesn't have custom keys, add the hidden series encodings
-	if (hiddenSeries || isToggleable) {
-		hiddenSeriesEncode = {
-			labels: {
-				update: {
-					fill: [
-						...getHiddenSeriesColorRule(options, 'gray-500'),
-						{ value: getColorValue('gray-700', colorScheme) },
-					],
-				},
+	const { colorScheme } = options;
+	const hiddenSeriesEncode: LegendEncode = {
+		labels: {
+			update: {
+				fill: [
+					...getHiddenSeriesColorRule(options, 'gray-500'),
+					{ value: getColorValue('gray-700', colorScheme) },
+				],
 			},
-		};
-	}
+		},
+	};
+
+	return hiddenSeriesEncode;
+};
+
+/**
+ * Gets the required encondings for clickable legends
+ * @param options
+ * @returns
+ */
+export const getClickEncodings = (options: LegendSpecOptions): LegendEncode => {
+	const { isToggleable, keys, name, hasOnClick, chartPopovers } = options;
 
 	let clickEncode: LegendEncode = {};
-	if ((isToggleable && !keys) || hasOnClick) {
+	if ((isToggleable && !keys) || hasOnClick || chartPopovers?.length) {
 		clickEncode = {
 			entries: {
 				name: `${name}_legendEntry`,
@@ -332,7 +346,7 @@ export const getShowHideEncodings = (options: LegendSpecOptions): LegendEncode =
 			},
 		};
 	}
-	return mergeLegendEncodings([hiddenSeriesEncode, clickEncode]);
+	return clickEncode;
 };
 
 /**

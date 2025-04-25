@@ -11,13 +11,23 @@
  */
 import React from 'react';
 
+import userEvent from '@testing-library/user-event';
+
 import { LEGEND_TOOLTIP_DELAY } from '@spectrum-charts/constants';
 
 import { Chart } from '../../../Chart';
 import { Legend } from '../../../components';
-import { clickNthElement, findChart, getAllLegendEntries, hoverNthElement, render, screen } from '../../../test-utils';
+import {
+	clickNthElement,
+	findChart,
+	getAllLegendEntries,
+	hoverNthElement,
+	render,
+	screen,
+	waitFor,
+} from '../../../test-utils';
 import '../../../test-utils/__mocks__/matchMedia.mock.js';
-import { Basic, Descriptions, LabelLimit, OnClick, Position, Supreme, Title } from './Legend.story';
+import { Basic, Descriptions, LabelLimit, OnClick, Popover, Position, Supreme, Title } from './Legend.story';
 
 /**
  * Wait for the the duration of the legend tooltip hover delay.
@@ -183,6 +193,24 @@ describe('Legend', () => {
 		render(<Title {...Title.args} />);
 		const view = await screen.findByRole('graphics-document');
 		expect(view).toBeInTheDocument();
+	});
+
+	test('Popover renders properly', async () => {
+		render(<Popover {...Popover.args} />);
+		const chart = await findChart();
+		const entries = getAllLegendEntries(chart);
+
+		await clickNthElement(entries, 0);
+		const popover = await screen.findByTestId('rsc-popover');
+		await waitFor(() => expect(popover).toBeInTheDocument());
+
+		// shouldn't close the popover
+		await userEvent.click(popover);
+		expect(popover).toBeInTheDocument();
+
+		// should close the popover
+		await userEvent.click(chart);
+		await waitFor(() => expect(popover).not.toBeInTheDocument());
 	});
 
 	test('Supreme renders properly', async () => {
