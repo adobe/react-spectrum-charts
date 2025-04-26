@@ -200,7 +200,6 @@ export const getLabelSignalValue = (
  * @param axis Axis to apply encoding rules to
  */
 export function applySecondaryMetricAxisEncodings(axis: Axis): void {
-	console.log('isapplied')
 	const secondaryAxisFillRules = [{ signal: "scale('color', lastRscSeriesId)" }];
 
 	const secondaryAxisFillOpacityRules = [
@@ -241,7 +240,6 @@ export function applySecondaryMetricAxisEncodings(axis: Axis): void {
  * @param axis Axis to apply encoding rules to
  */
 export function applyPrimaryMetricAxisEncodings(axis: Axis): void {
-	console.log('isapplied')
 	const primaryAxisFillRules = [
 		{
 			test: `length(domain('color')) -1 === 1`,
@@ -294,15 +292,11 @@ export function getIsMetricAxis(position: Position, chartOrientation: Orientatio
 /**
  * Handles the dual Y axis logic for axis styling
  * @param axis The axis to process
- * @param position The position of the axis
  * @param usermeta The user metadata
- * @returns Whether this is a metric axis
+ * @param scaleName The name of the scale
  */
-export function addDualMetricAxisConfig(axis: Axis, usermeta: UserMeta, scaleName: string) {
-	if (!usermeta.metricAxisCount) {
-		usermeta.metricAxisCount = 0;
-	}
-	const isPrimaryMetricAxis = usermeta.metricAxisCount === 0;
+export function addDualMetricAxisConfig(axis: Axis, metricAxisCount: number, scaleName: string) {
+	const isPrimaryMetricAxis = metricAxisCount === 0;
 
 	const scaleNames = getDualAxisScaleNames(scaleName);
 	const { primaryScale, secondaryScale } = scaleNames;
@@ -314,8 +308,6 @@ export function addDualMetricAxisConfig(axis: Axis, usermeta: UserMeta, scaleNam
 		axis.scale = secondaryScale;
 		applySecondaryMetricAxisEncodings(axis);
 	}
-
-	usermeta.metricAxisCount++;
 }
 
 export const addAxes = produce<
@@ -334,6 +326,10 @@ export const addAxes = produce<
 	axisOptions = { ...axisOptions, ...getTrellisAxisOptions(scaleName) };
 	const { baseline, usermeta, labelAlign, labelFontWeight, labelFormat, labelOrientation, name, position } =
 		axisOptions;
+		if (usermeta.metricAxisCount === undefined) {
+			usermeta.metricAxisCount = 0;
+		}
+		
 	if (labelFormat === 'time') {
 		// time axis actually needs two axes. A primary and secondary.
 		newAxes.push(...getTimeAxes(scaleName, axisOptions));
@@ -361,14 +357,26 @@ export const addAxes = produce<
 			axis.titlePadding = 24;
 
 			// add sublabel axis
-			newAxes.push(getSubLabelAxis(axisOptions, scaleName));
+			const subLabelAxis = getSubLabelAxis(axisOptions, scaleName);
+			
+			// Apply dual Y-axis config to sublabel axis if needed
+			if (dualYAxis) {
+				const chartOrientation = usermeta?.orientation ?? 'vertical';
+				const isMetricAxis = getIsMetricAxis(position, chartOrientation);
+				if (isMetricAxis) {
+					addDualMetricAxisConfig(subLabelAxis, usermeta.metricAxisCount, scaleName);
+				}
+			}
+			
+			newAxes.push(subLabelAxis);
 		}
 
 		if (dualYAxis) {
 			const chartOrientation = usermeta?.orientation ?? 'vertical';
 			const isMetricAxis = getIsMetricAxis(position, chartOrientation);
 			if (isMetricAxis) {
-				addDualMetricAxisConfig(axis, usermeta, scaleName);
+				addDualMetricAxisConfig(axis, usermeta.metricAxisCount, scaleName);
+				usermeta.metricAxisCount++;
 			}
 		}
 
