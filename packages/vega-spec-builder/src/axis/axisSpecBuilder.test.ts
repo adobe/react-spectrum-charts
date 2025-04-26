@@ -167,16 +167,19 @@ describe('Spec builder, Axis', () => {
 			test('position = "bottom"', () => {
 				// eslint-disable-next-line @typescript-eslint/no-unused-vars
 				const { domain, domainWidth, ...axis } = defaultAxis;
-				expect(addAxis({ scales: defaultScales }, { position: 'bottom' })).toStrictEqual({
+				expect(addAxis({ 				usermeta: {}, scales: defaultScales }, { position: 'bottom' })).toStrictEqual({
 					scales: defaultScales,
 					axes: [{ ...axis, labelAlign: 'center' }],
 					marks: [],
 					signals: [],
 					data: [],
+					usermeta: {
+						metricAxisCount: 0
+					}
 				});
 			});
 			test('position = "left"', () => {
-				expect(addAxis({ scales: defaultScales }, { position: 'left' })).toStrictEqual({
+				expect(addAxis({ 				usermeta: {}, scales: defaultScales }, { position: 'left' })).toStrictEqual({
 					scales: defaultScales,
 					axes: [
 						{
@@ -190,11 +193,14 @@ describe('Spec builder, Axis', () => {
 					signals: [],
 					marks: [],
 					data: [],
+					usermeta: {
+						metricAxisCount: 0
+					}
 				});
 			});
 			test('type = percentage', () => {
 				expect(
-					addAxis({ scales: defaultScales }, { position: 'left', labelFormat: 'percentage' })
+					addAxis({ 				usermeta: {}, scales: defaultScales }, { position: 'left', labelFormat: 'percentage' })
 				).toStrictEqual({
 					scales: defaultScales,
 					axes: [
@@ -219,24 +225,30 @@ describe('Spec builder, Axis', () => {
 					signals: [],
 					marks: [],
 					data: [],
+					usermeta: {
+						metricAxisCount: 0
+					}
 				});
 			});
 			test('subLabels', () => {
 				// eslint-disable-next-line @typescript-eslint/no-unused-vars
 				const { domain, domainWidth, ...axis } = defaultAxis;
 				expect(
-					addAxis({ scales: defaultScales }, { position: 'bottom', subLabels: defaultSubLabels })
+					addAxis({ 				usermeta: {}, scales: defaultScales }, { position: 'bottom', subLabels: defaultSubLabels })
 				).toStrictEqual({
 					scales: defaultScales,
 					axes: [{ ...axis, labelAlign: 'center', titlePadding: 24 }, defaultSubLabelAxis],
 					marks: [],
 					signals: [{ ...defaultSignal, value: [{ ...defaultSignal.value[0], baseline: undefined }] }],
 					data: [],
+					usermeta: {
+						metricAxisCount: 0
+					}
 				});
 			});
 			test('custom X range', () => {
 				const resultScales = addAxis(
-					{ scales: defaultLinearScales },
+					{ 				usermeta: {}, scales: defaultLinearScales },
 					{ position: 'bottom', range: [0, 100] }
 				).scales;
 
@@ -244,7 +256,7 @@ describe('Spec builder, Axis', () => {
 			});
 			test('custom Y range', () => {
 				const resultScales = addAxis(
-					{ scales: defaultLinearScales },
+					{ 		usermeta: {}, scales: defaultLinearScales },
 					{ position: 'left', range: [0, 100] }
 				).scales;
 
@@ -255,11 +267,14 @@ describe('Spec builder, Axis', () => {
 			test('should add scales', () => {
 				// eslint-disable-next-line @typescript-eslint/no-unused-vars
 				const { domain, domainWidth, ...axis } = defaultAxis;
-				expect(addAxis({}, { position: 'bottom' })).toStrictEqual({
+				expect(addAxis({usermeta: {}}, { position: 'bottom' })).toStrictEqual({
 					axes: [{ ...axis, labelAlign: 'center', scale: 'xLinear' }],
 					marks: [],
 					signals: [],
 					data: [],
+					usermeta: {
+						metricAxisCount: 0
+					}
 				});
 			});
 		});
@@ -272,6 +287,7 @@ describe('Spec builder, Axis', () => {
 				referenceLines: [{ value: 10, icon: 'date' }],
 				scaleName: 'xLinear',
 				scaleType: 'linear',
+				usermeta: {}
 			})[0].encode?.labels?.update?.text as ProductionRule<TextValueRef>;
 			expect(labelTextEncoding).toHaveLength(3);
 			expect(labelTextEncoding[0]).toEqual({
@@ -288,6 +304,7 @@ describe('Spec builder, Axis', () => {
 				],
 				scaleName: 'xLinear',
 				scaleType: 'linear',
+				usermeta: {}
 			})[0].encode?.labels?.update?.text as ProductionRule<TextValueRef>;
 
 			// 2 tests for the two reference lines plus 2 default tests = 4 tests
@@ -299,6 +316,7 @@ describe('Spec builder, Axis', () => {
 				labels: [1, 2, 3],
 				scaleName: 'xLinear',
 				scaleType: 'linear',
+				usermeta: {}
 			});
 			expect(axes).toHaveLength(1);
 			expect(axes[0].values).toEqual([1, 2, 3]);
@@ -339,6 +357,7 @@ describe('Spec builder, Axis', () => {
 				baselineOffset: 0,
 				opposingScaleType: 'linear',
 				scaleName: 'xLinear',
+				usermeta: {}
 			});
 
 			expect(marks).toEqual([defaultYBaselineMark, defaultXBaselineMark]);
@@ -351,6 +370,7 @@ describe('Spec builder, Axis', () => {
 				baselineOffset: 10,
 				opposingScaleType: 'linear',
 				scaleName: 'xLinear',
+				usermeta: {}
 			});
 
 			expect(marks).toEqual([
@@ -377,6 +397,7 @@ describe('Spec builder, Axis', () => {
 				baselineOffset: 0,
 				opposingScaleType: 'linear',
 				scaleName: 'xLinear',
+				usermeta: {}
 			});
 
 			expect(marks).toHaveLength(1);
@@ -390,6 +411,7 @@ describe('Spec builder, Axis', () => {
 				baselineOffset: 10,
 				opposingScaleType: 'linear',
 				scaleName: 'xLinear',
+				usermeta: {}
 			});
 
 			expect(marks).toHaveLength(1);
@@ -417,6 +439,7 @@ describe('Spec builder, Axis', () => {
 				baselineOffset: 0,
 				opposingScaleType: 'band',
 				scaleName: 'xLinear',
+				usermeta: {}
 			}) as GroupMark[];
 
 			expect(marks[0].axes).toHaveLength(1);
@@ -430,6 +453,7 @@ describe('Spec builder, Axis', () => {
 				baselineOffset: 0,
 				opposingScaleType: 'band',
 				scaleName: 'xLinear',
+				usermeta: {}
 			}) as GroupMark[];
 
 			expect(marks[0].axes?.[0].labels).toBe(true);
@@ -443,6 +467,7 @@ describe('Spec builder, Axis', () => {
 				baselineOffset: 0,
 				opposingScaleType: 'band',
 				scaleName: 'yLinear',
+				usermeta: {}
 			}) as GroupMark[];
 
 			expect(marks[0].axes?.[0].labels).toBe(false);

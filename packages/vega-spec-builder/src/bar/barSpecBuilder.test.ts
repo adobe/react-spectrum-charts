@@ -18,7 +18,6 @@ import {
 	Scale,
 	ScaleData,
 	SourceData,
-	Spec,
 	Transforms,
 	ValuesData,
 } from 'vega';
@@ -42,6 +41,7 @@ import { spectrumColors } from '@spectrum-charts/themes';
 
 import { defaultSignals } from '../specTestUtils';
 import { baseData, initializeSpec } from '../specUtils';
+import { ScSpec } from '../types/specUtil.types';
 import {
 	addBar,
 	addData,
@@ -63,9 +63,9 @@ import {
 } from './barTestUtils';
 import { defaultDodgedMark } from './dodgedBarUtils.test';
 
-const startingSpec: Spec = initializeSpec({
+const startingSpec = initializeSpec({
 	scales: [{ name: COLOR_SCALE, type: 'ordinal' }],
-});
+}) as ScSpec;
 
 const defaultMetricScaleDomain: ScaleData = { data: FILTERED_TABLE, fields: ['value1'] };
 const defaultMetricScale: Scale = {
@@ -206,7 +206,7 @@ const defaultPaddingSignal = {
 	name: 'paddingInner',
 	value: 0.4,
 };
-const defaultSpec: Spec = {
+const defaultSpec: ScSpec = {
 	...startingSpec,
 	data: [
 		{
@@ -240,6 +240,9 @@ const defaultSpec: Spec = {
 			},
 		},
 	],
+	usermeta: {
+		orientation: 'vertical',
+	},
 };
 
 describe('barSpecBuilder', () => {
