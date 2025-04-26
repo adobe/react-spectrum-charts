@@ -60,10 +60,10 @@ const dialogContent = (datum) => (
 const DodgedBarPopoverStory: StoryFn<typeof Bar> = (args): ReactElement => {
 	const chartProps = useChartProps({ data: barSeriesData, width: 800, height: 600 });
 	return (
-		<Chart {...chartProps} debug>
+		<Chart {...chartProps}>
 			<Axis position={args.orientation === 'horizontal' ? 'left' : 'bottom'} baseline title="Browser" />
 			<Axis position={args.orientation === 'horizontal' ? 'bottom' : 'left'} grid title="Downloads" />
-			<Bar {...args} >
+			<Bar {...args}>
 				<ChartTooltip>{dialogContent}</ChartTooltip>
 				<ChartPopover width={200}>{dialogContent}</ChartPopover>
 			</Bar>
@@ -122,7 +122,6 @@ Opacity.args = {
 const Popover = bindWithProps(DodgedBarPopoverStory);
 Popover.args = {
 	...defaultProps,
-	orientation: 'horizontal',
 	order: 'order',
 	color: 'operatingSystem',
 };
@@ -143,4 +142,12 @@ OnClick.args = {
 	color: 'operatingSystem',
 };
 
-export { Color, DodgedStacked, DodgedStackedWithLabels, LineType, Opacity, Popover, OnClick };
+export {
+	Color,
+	DodgedStacked,
+	DodgedStackedWithLabels,
+	LineType,
+	Opacity,
+	Popover,
+	OnClick,
+};
