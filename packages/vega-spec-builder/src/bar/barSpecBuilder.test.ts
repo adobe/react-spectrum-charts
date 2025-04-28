@@ -410,6 +410,81 @@ describe('barSpecBuilder', () => {
 				const lastRscSeriesIdSignal = signals.find(getLastRscSeriesIdSignal);
 				expect(lastRscSeriesIdSignal).toBeUndefined();
 			});
+
+			test('should not add mousedOverSeries if dualYAxis is true and bar is dodged and stacked', () => {
+				const signals = addSignals(defaultSignals, {
+					...defaultBarOptions,
+					color: ['#000', '#fff'],
+					dualYAxis: true,
+					type: 'dodged',
+				});
+				const mousedOverSeriesSignal = signals.find(getMousedOverSeriesSignal);
+				expect(mousedOverSeriesSignal).toBeUndefined();
+			});
+
+			test('should not add firstRscSeriesId if dualYAxis is true and bar is dodged and stacked', () => {
+				const signals = addSignals(defaultSignals, {
+					...defaultBarOptions,
+					color: ['#000', '#fff'],
+					dualYAxis: true,
+					type: 'dodged',
+				});
+				const firstRscSeriesIdSignal = signals.find(getFirstRscSeriesIdSignal);
+				expect(firstRscSeriesIdSignal).toBeUndefined();
+			});
+
+			test('should not add lastRscSeriesId if dualYAxis is true and bar is dodged and stacked', () => {
+				const signals = addSignals(defaultSignals, {
+					...defaultBarOptions,
+					color: ['#000', '#fff'],
+					dualYAxis: true,
+					type: 'dodged',
+				});
+				const lastRscSeriesIdSignal = signals.find(getLastRscSeriesIdSignal);
+				expect(lastRscSeriesIdSignal).toBeUndefined();
+			});
+
+			test('should not add mousedOverSeries if dualYAxis is true and bar is trellis', () => {
+				const signals = addSignals(defaultSignals, {
+					...defaultBarOptions,
+					color: ['#000', '#fff'],
+					dualYAxis: true,
+					type: 'dodged',
+					trellis: 'event',
+					trellisOrientation: 'vertical',
+					trellisPadding: 0.5,
+				});
+				const mousedOverSeriesSignal = signals.find(getMousedOverSeriesSignal);
+				expect(mousedOverSeriesSignal).toBeUndefined();
+			});
+
+			test('should not add firstRscSeriesId if dualYAxis is true and bar is trellis', () => {
+				const signals = addSignals(defaultSignals, {
+					...defaultBarOptions,
+					color: ['#000', '#fff'],
+					dualYAxis: true,
+					type: 'dodged',
+					trellis: 'event',
+					trellisOrientation: 'vertical',
+					trellisPadding: 0.5,
+				});
+				const firstRscSeriesIdSignal = signals.find(getFirstRscSeriesIdSignal);
+				expect(firstRscSeriesIdSignal).toBeUndefined();
+			});
+
+			test('should not add lastRscSeriesId if dualYAxis is true and bar is trellis', () => {
+				const signals = addSignals(defaultSignals, {
+					...defaultBarOptions,
+					color: ['#000', '#fff'],
+					dualYAxis: true,
+					type: 'dodged',
+					trellis: 'event',
+					trellisOrientation: 'vertical',
+					trellisPadding: 0.5,
+				});
+				const lastRscSeriesIdSignal = signals.find(getLastRscSeriesIdSignal);
+				expect(lastRscSeriesIdSignal).toBeUndefined();
+			});
 		});
 	});
 
@@ -563,6 +638,50 @@ describe('barSpecBuilder', () => {
 					...defaultBarOptions,
 					dualYAxis: false,
 					type: 'dodged',
+				});
+				expect(scales.find(getSecondaryMetricScale)).toBeUndefined();
+			});
+
+			test('should not add primary metric scale if dualYAxis is true and bar is dodged and stacked', () => {
+				const scales = addScales([{ name: COLOR_SCALE, type: 'ordinal' }], {
+					...defaultBarOptions,
+					dualYAxis: true,
+					type: 'dodged',
+					color: ['#000', '#fff'],
+				});
+				expect(scales.find(getPrimaryMetricScale)).toBeUndefined();
+			});
+
+			test('should not add secondary metric scale if dualYAxis is true and bar is dodged and stacked', () => {
+				const scales = addScales([{ name: COLOR_SCALE, type: 'ordinal' }], {
+					...defaultBarOptions,
+					dualYAxis: true,
+					type: 'dodged',
+					color: ['#000', '#fff'],
+				});
+				expect(scales.find(getSecondaryMetricScale)).toBeUndefined();
+			});
+
+			test('should not add primary metric scale if dualYAxis is true and bar is trellis', () => {
+				const scales = addScales([{ name: COLOR_SCALE, type: 'ordinal' }], {
+					...defaultBarOptions,
+					dualYAxis: true,
+					type: 'dodged',
+					trellis: 'event',
+					trellisOrientation: 'vertical',
+					trellisPadding: 0.5,
+				});
+				expect(scales.find(getPrimaryMetricScale)).toBeUndefined();
+			});
+
+			test('should not add secondary metric scale if dualYAxis is true and bar is trellis', () => {
+				const scales = addScales([{ name: COLOR_SCALE, type: 'ordinal' }], {
+					...defaultBarOptions,
+					dualYAxis: true,
+					type: 'dodged',
+					trellis: 'event',
+					trellisOrientation: 'vertical',
+					trellisPadding: 0.5,
 				});
 				expect(scales.find(getSecondaryMetricScale)).toBeUndefined();
 			});
@@ -944,6 +1063,50 @@ describe('barSpecBuilder', () => {
 
 			test('should not add secondary domain data if dualYAxis is false', () => {
 				const data = addData(defaultData, { ...defaultBarOptions, dualYAxis: false, type: 'dodged' });
+				expect(getDualYAxisSecondaryDomain(data)).toBeUndefined();
+			});
+
+			test('should not add primary domain data if dualYAxis is true and type is dodged and stacked', () => {
+				const data = addData(defaultData, {
+					...defaultBarOptions,
+					dualYAxis: true,
+					type: 'dodged',
+					color: ['#000', '#fff'],
+				});
+				expect(getDualYAxisPrimaryDomain(data)).toBeUndefined();
+			});
+
+			test('should not add secondary domain data if dualYAxis is true and type is dodged and stacked', () => {
+				const data = addData(defaultData, {
+					...defaultBarOptions,
+					dualYAxis: true,
+					type: 'dodged',
+					color: ['#000', '#fff'],
+				});
+				expect(getDualYAxisSecondaryDomain(data)).toBeUndefined();
+			});
+
+			test('should not add primary domain data if dualYAxis is true and bar is trellis', () => {
+				const data = addData(defaultData, {
+					...defaultBarOptions,
+					dualYAxis: true,
+					type: 'dodged',
+					trellis: 'event',
+					trellisOrientation: 'vertical',
+					trellisPadding: 0.5,
+				});
+				expect(getDualYAxisPrimaryDomain(data)).toBeUndefined();
+			});
+
+			test('should not add secondary domain data if dualYAxis is true and bar is trellis', () => {
+				const data = addData(defaultData, {
+					...defaultBarOptions,
+					dualYAxis: true,
+					type: 'dodged',
+					trellis: 'event',
+					trellisOrientation: 'vertical',
+					trellisPadding: 0.5,
+				});
 				expect(getDualYAxisSecondaryDomain(data)).toBeUndefined();
 			});
 		});

@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { Axis, GroupMark, ProductionRule, Scale, Signal, TextValueRef } from 'vega';
+import { Axis, ColorValueRef, GroupMark, NumericValueRef, ProductionRule, Scale, Signal, TextValueRef } from 'vega';
 
 import {
 	DEFAULT_LABEL_FONT_WEIGHT,
@@ -710,6 +710,50 @@ describe('Spec builder, Axis', () => {
 			}) as GroupMark[];
 
 			expect(marks[0].axes?.[0].labels).toBe(false);
+		});
+
+		describe('dualYAxis', () => {
+			test('dualYAxis should be treated as false in trellis', () => {
+				const marks = addAxesMarks([defaultTrellisGroupMark], {
+					...defaultAxisOptions,
+					dualYAxis: true,
+					position: 'left',
+					baseline: true,
+					baselineOffset: 0,
+					opposingScaleType: 'band',
+					scaleName: 'yLinear',
+					usermeta: {},
+				}) as GroupMark[];
+
+				const labelFillEncoding = marks[0].axes?.[0].encode?.labels?.enter
+					?.fill as ProductionRule<ColorValueRef>[];
+				const labelFillOpacity = marks[0].axes?.[0].encode?.labels?.update
+					?.fillOpacity as ProductionRule<NumericValueRef>[];
+				const titleFillUpdate = marks[0].axes?.[0].encode?.title?.update
+					?.fill as ProductionRule<ColorValueRef>[];
+				const titleFillOpacity = marks[0].axes?.[0].encode?.title?.update
+					?.fillOpacity as ProductionRule<NumericValueRef>[];
+
+				function getDualYAxisFillEncoding(encoding: ProductionRule<ColorValueRef>[]) {
+					return encoding?.find(
+						(rule) =>
+							'test' in rule &&
+							rule.test === 'isValid(mousedOverSeries) && mousedOverSeries !== lastRscSeriesId'
+					);
+				}
+				function getDualYAxisFillOpacityEncoding(encoding: ProductionRule<NumericValueRef>[]) {
+					return encoding?.find(
+						(rule) =>
+							'test' in rule &&
+							rule.test === 'isValid(mousedOverSeries) && mousedOverSeries !== lastRscSeriesId'
+					);
+				}
+
+				expect(getDualYAxisFillEncoding(labelFillEncoding)).toBeUndefined();
+				expect(getDualYAxisFillOpacityEncoding(labelFillOpacity)).toBeUndefined();
+				expect(getDualYAxisFillEncoding(titleFillUpdate)).toBeUndefined();
+				expect(getDualYAxisFillOpacityEncoding(titleFillOpacity)).toBeUndefined();
+			});
 		});
 	});
 
