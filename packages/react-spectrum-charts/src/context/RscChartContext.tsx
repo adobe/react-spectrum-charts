@@ -30,11 +30,6 @@ interface ChartContextValue {
 	setIsPopoverOpen: (isOpen: boolean) => void;
 	popoverAnchorRef: MutableRefObject<HTMLDivElement | null>;
 
-	// Legend state
-	legendHiddenSeries: string[];
-	setLegendHiddenSeries: (series: string[]) => void;
-	// legendIsToggleable: boolean;
-
 	// Interaction handlers
 	onLegendClick?: (seriesName: string) => void;
 	onLegendMouseOver?: (seriesName: string) => void;
@@ -62,7 +57,6 @@ export const ChartProvider = ({ children, chartId, chartView }: ChartProviderPro
 	const selectedDataBounds = useRef<MarkBounds>({ x1: 0, x2: 0, y1: 0, y2: 0 });
 
 	const [isPopoverOpen, setIsPopoverOpen] = useState(false);
-	const [legendHiddenSeries, setLegendHiddenSeries] = useState<string[]>([]);
 
 	const value: ChartContextValue = useMemo(
 		() => ({
@@ -76,10 +70,8 @@ export const ChartProvider = ({ children, chartId, chartView }: ChartProviderPro
 			isPopoverOpen,
 			setIsPopoverOpen,
 			popoverAnchorRef,
-			legendHiddenSeries,
-			setLegendHiddenSeries,
 		}),
-		[chartId, chartView, isPopoverOpen, legendHiddenSeries]
+		[chartId, chartView, isPopoverOpen]
 	);
 
 	return <ChartContext.Provider value={value}>{children}</ChartContext.Provider>;

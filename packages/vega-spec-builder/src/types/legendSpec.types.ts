@@ -10,6 +10,7 @@
  * governing permissions and limitations under the License.
  */
 import { ColorScheme } from './chartSpec.types';
+import { ChartPopoverOptions } from './dialogs/chartPopoverSpec.types';
 import {
 	ColorFacet,
 	FacetRef,
@@ -61,6 +62,9 @@ export interface LegendOptions {
 	symbolShape?: SymbolShapeFacet;
 	/** legend title */
 	title?: string;
+
+	// children
+	chartPopovers?: ChartPopoverOptions[];
 }
 
 type LegendOptionsWithDefaults =

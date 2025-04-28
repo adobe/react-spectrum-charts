@@ -9,16 +9,28 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { Item } from 'vega';
+import { Item, View } from 'vega';
 
 import {
 	ActionItem,
+	GetOnMarkClickCallbackArgs,
 	getItemBounds,
 	getItemName,
 	getLegendItemValue,
 	handleLegendItemClick,
 	handleLegendItemMouseInput,
 } from './markClickUtils';
+
+const defaultMarkClickArgs: GetOnMarkClickCallbackArgs = {
+	chartView: { current: true as unknown as View },
+	selectedData: { current: null },
+	selectedDataBounds: { current: undefined },
+	selectedDataName: { current: undefined },
+	chartId: 'test',
+	hiddenSeries: [],
+	setHiddenSeries: jest.fn(),
+	trigger: 'click',
+};
 
 describe('getItemBounds()', () => {
 	test('should return default bounds if null or undefined', () => {
@@ -43,11 +55,12 @@ describe('handleLegendItemClick()', () => {
 			width: null,
 			items: [{ role: 'legend-label', bounds: null, clip: null, items: [{ datum: { value: 'test' } }] }],
 		} as unknown as Item;
-		handleLegendItemClick(item, [], setHiddenSeries, true);
+		handleLegendItemClick(item, { ...defaultMarkClickArgs, setHiddenSeries, legendIsToggleable: true });
 		expect(setHiddenSeries).toHaveBeenCalled();
 	});
 	test('should not call setHiddenSeries if legendItemValue is not found', () => {
-		handleLegendItemClick(undefined, [], setHiddenSeries, true);
+		const item = {} as unknown as Item;
+		handleLegendItemClick(item, { ...defaultMarkClickArgs, setHiddenSeries, legendIsToggleable: true });
 		expect(setHiddenSeries).not.toHaveBeenCalled();
 	});
 });

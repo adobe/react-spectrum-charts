@@ -87,8 +87,30 @@ const useNewChartView = (
 						setHiddenSeries: setLegendHiddenSeries,
 						legendIsToggleable,
 						onLegendClick,
+						trigger: 'click',
 					})
 				);
+				if (popovers.some((p) => p.chartPopoverProps.rightClick)) {
+					const chartContainer = document.querySelector(`#${chartId}`);
+					if (chartContainer) {
+						chartContainer.addEventListener('contextmenu', (e) => e.preventDefault());
+					}
+					view.addEventListener(
+						'contextmenu',
+						getOnMarkClickCallback({
+							chartView,
+							hiddenSeries: legendHiddenSeries,
+							chartId,
+							selectedData,
+							selectedDataBounds,
+							selectedDataName,
+							setHiddenSeries: setLegendHiddenSeries,
+							legendIsToggleable,
+							onLegendClick,
+							trigger: 'contextmenu',
+						})
+					);
+				}
 			}
 			view.addEventListener('click', getOnChartMarkClickCallback(chartView, markClickDetails));
 			view.addEventListener('mouseover', getOnMouseInputCallback(onLegendMouseOver));
@@ -104,7 +126,7 @@ const useNewChartView = (
 			onLegendClick,
 			onLegendMouseOut,
 			onLegendMouseOver,
-			popovers.length,
+			popovers,
 			selectedData,
 			selectedDataBounds,
 			selectedDataName,

@@ -9,8 +9,11 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { createElement } from 'react';
+
 import { DEFAULT_COLOR } from '@spectrum-charts/constants';
 
+import { ChartPopover } from '../components/ChartPopover';
 import { getLegendOptions } from './legendAdapter';
 
 describe('getLegendOptions()', () => {
@@ -36,6 +39,10 @@ describe('getLegendOptions()', () => {
 			'hasMouseInteraction',
 			false
 		);
+	});
+	it('should convert popover children to chartPopovers array', () => {
+		const options = getLegendOptions({ children: [createElement(ChartPopover)] });
+		expect(options.chartPopovers).toHaveLength(1);
 	});
 	it('should pass through included props', () => {
 		const options = getLegendOptions({ color: DEFAULT_COLOR });

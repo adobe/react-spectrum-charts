@@ -12,9 +12,21 @@
 import { LegendOptions } from '@spectrum-charts/vega-spec-builder';
 
 import { LegendProps } from '../types';
+import { childrenToOptions } from './childrenAdapter';
 
-export const getLegendOptions = ({ onClick, onMouseOut, onMouseOver, ...legendProps }: LegendProps): LegendOptions => ({
-	...legendProps,
-	hasOnClick: Boolean(onClick),
-	hasMouseInteraction: Boolean(onMouseOut || onMouseOver),
-});
+export const getLegendOptions = ({
+	children,
+	onClick,
+	onMouseOut,
+	onMouseOver,
+	...legendProps
+}: LegendProps): LegendOptions => {
+	const { chartPopovers } = childrenToOptions(children);
+
+	return {
+		...legendProps,
+		hasOnClick: Boolean(onClick),
+		hasMouseInteraction: Boolean(onMouseOut || onMouseOver),
+		chartPopovers,
+	};
+};

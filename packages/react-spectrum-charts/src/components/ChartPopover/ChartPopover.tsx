@@ -25,6 +25,7 @@ const ChartPopover: FC<ChartPopoverProps> = ({
 	maxHeight,
 	containerPadding = 12,
 	onOpenChange,
+	rightClick = false,
 	UNSAFE_highlightBy = 'item',
 }) => {
 	return null;

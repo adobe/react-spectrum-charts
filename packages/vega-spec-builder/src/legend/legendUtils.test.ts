@@ -14,22 +14,12 @@ import { spectrumColors } from '@spectrum-charts/themes';
 
 import { defaultLegendOptions } from './legendTestUtils';
 import {
+	getClickEncodings,
 	getHiddenSeriesColorRule,
-	getShowHideEncodings,
 	getSymbolEncodings,
 	getSymbolType,
 	mergeLegendEncodings,
 } from './legendUtils';
-
-const labelUpdateEncoding = {
-	update: {
-		fill: [
-			{
-				value: 'rgb(70, 70, 70)',
-			},
-		],
-	},
-};
 
 describe('getSymbolEncodings()', () => {
 	test('no factes and no custom values, should return all the defaults', () => {
@@ -46,31 +36,22 @@ describe('getSymbolEncodings()', () => {
 	});
 });
 
-describe('getShowHideEncodings()', () => {
-	test('should only return hiddenSeries encoding if isToggleable, onClick and hiddenSeries are all undefined/false', () => {
-		expect(
-			getShowHideEncodings({
-				...defaultLegendOptions,
-				isToggleable: false,
-				hasOnClick: false,
-			})
-		).toEqual({ labels: labelUpdateEncoding });
+describe('getClickEncodings()', () => {
+	test('should return empty object with default options', () => {
+		const encodings = getClickEncodings(defaultLegendOptions);
+		expect(encodings).toEqual({});
 	});
-	test('should return encodings if isToggleable', () => {
-		const encoding = getShowHideEncodings({ ...defaultLegendOptions, isToggleable: true });
-		expect(encoding).toHaveProperty('entries');
-		expect(encoding).toHaveProperty('labels');
+	test('should return entries encodings if isToggleable and no keys', () => {
+		const encodings = getClickEncodings({ ...defaultLegendOptions, isToggleable: true });
+		expect(encodings).toHaveProperty('entries');
 	});
-	test('should have labels encodings but not entries encodings for hiddenSeries', () => {
-		const encoding = getShowHideEncodings({ ...defaultLegendOptions, hiddenSeries: ['test'] });
-		expect(encoding).not.toHaveProperty('entries');
-		expect(encoding).toHaveProperty('labels');
+	test('should return entries encodings if hasOnClick', () => {
+		const encodings = getClickEncodings({ ...defaultLegendOptions, hasOnClick: true });
+		expect(encodings).toHaveProperty('entries');
 	});
-	test('should have entries encodings and only hiddenSeries labels encodings for onClick', () => {
-		const encoding = getShowHideEncodings({ ...defaultLegendOptions, hasOnClick: true });
-		expect(encoding).toHaveProperty('entries');
-		expect(encoding).toHaveProperty('labels');
-		expect(encoding.labels).toStrictEqual(labelUpdateEncoding);
+	test('should return entries encodings if chartPopovers', () => {
+		const encodings = getClickEncodings({ ...defaultLegendOptions, chartPopovers: [{}] });
+		expect(encodings).toHaveProperty('entries');
 	});
 });
 

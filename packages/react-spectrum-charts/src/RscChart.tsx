@@ -144,7 +144,7 @@ RscChart.displayName = 'RscChart';
 
 const ChartDialog = ({ datum, popover, setIsPopoverOpen, targetElement }: ChartDialogProps) => {
 	const { chartPopoverProps, name } = popover;
-	const { children, onOpenChange, containerPadding, ...dialogProps } = chartPopoverProps;
+	const { children, onOpenChange, containerPadding, rightClick, ...dialogProps } = chartPopoverProps;
 	const minWidth = dialogProps.minWidth ?? 0;
 
 	return (
@@ -160,8 +160,11 @@ const ChartDialog = ({ datum, popover, setIsPopoverOpen, targetElement }: ChartD
 			hideArrow
 			containerPadding={containerPadding}
 		>
-			<ActionButton id={`${name}-button`} UNSAFE_style={{ display: 'none' }}>
-				launch chart popover
+			<ActionButton
+				id={`${name}-${rightClick ? 'contextmenu' : 'popover'}-button`}
+				UNSAFE_style={{ display: 'none' }}
+			>
+				{rightClick ? 'launch chart context menu' : 'launch chart popover'}
 			</ActionButton>
 			{(close) => (
 				<Dialog data-testid="rsc-popover" UNSAFE_className="rsc-popover" {...dialogProps} minWidth={minWidth}>

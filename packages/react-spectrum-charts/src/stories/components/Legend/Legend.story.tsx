@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { Legend } from '../../../components';
+import { ChartPopover, Legend } from '../../../components';
 import { LegendBarStory, LegendDisconnectedStory, defaultProps } from './LegendStoryUtils';
 
 export default {
@@ -56,6 +56,12 @@ LabelLimit.args = { legendLabels: truncatedLegendLabels, ...defaultProps };
 const OnClick = LegendBarStory.bind({});
 OnClick.args = {};
 
+const Popover = LegendBarStory.bind({});
+Popover.args = {
+	children: <ChartPopover width="auto">{(datum) => <div>{datum.value}</div>}</ChartPopover>,
+	...defaultProps,
+};
+
 const Position = LegendBarStory.bind({});
 Position.args = { position: 'right', ...defaultProps };
 
@@ -71,4 +77,4 @@ Supreme.args = {
 	title: 'Operating system',
 };
 
-export { Basic, Descriptions, Disconnected, Labels, LabelLimit, OnClick, Position, Title, Supreme };
+export { Basic, Descriptions, Disconnected, Labels, LabelLimit, OnClick, Popover, Position, Title, Supreme };

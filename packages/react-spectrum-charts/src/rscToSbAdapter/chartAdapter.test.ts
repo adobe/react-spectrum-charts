@@ -178,7 +178,14 @@ describe('rscPropsToSpecBuilderOptions()', () => {
 				colors: 'categorical12',
 				hiddenSeries: [],
 				idKey: 'rscMarkId',
-				legends: [{ hasMouseInteraction: false, hasOnClick: false, lineWidth: { value: 0 } }],
+				legends: [
+					{
+						chartPopovers: [],
+						hasMouseInteraction: false,
+						hasOnClick: false,
+						lineWidth: { value: 0 },
+					},
+				],
 				lineTypes: ['solid', 'dashed', 'dotted', 'dotDash', 'longDash', 'twoDash'],
 				lineWidths: ['M'],
 				marks: [
@@ -285,7 +292,15 @@ describe('rscPropsToSpecBuilderOptions()', () => {
 				colors: 'categorical12',
 				hiddenSeries: [],
 				idKey: 'rscMarkId',
-				legends: [{ hasMouseInteraction: false, hasOnClick: false, highlight: true, position: 'bottom' }],
+				legends: [
+					{
+						chartPopovers: [],
+						hasMouseInteraction: false,
+						hasOnClick: false,
+						highlight: true,
+						position: 'bottom',
+					},
+				],
 				lineTypes: ['dotted', 'solid'],
 				lineWidths: ['M'],
 				marks: [

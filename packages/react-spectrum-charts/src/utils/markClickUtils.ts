@@ -22,7 +22,7 @@ import { toggleStringArrayValue } from '../utils';
 export type ActionItem = Item | undefined | null;
 type ViewEventCallback = (event: ScenegraphEvent, item: ActionItem) => void;
 
-interface GetOnMarkClickCallbackArgs {
+export interface GetOnMarkClickCallbackArgs {
 	chartView: MutableRefObject<View | undefined>;
 	hiddenSeries: string[];
 	chartId: string;
@@ -32,6 +32,7 @@ interface GetOnMarkClickCallbackArgs {
 	setHiddenSeries: (hiddenSeries: string[]) => void;
 	legendIsToggleable?: boolean;
 	onLegendClick?: (seriesName: string) => void;
+	trigger: 'click' | 'contextmenu';
 }
 
 /**
@@ -47,39 +48,43 @@ interface GetOnMarkClickCallbackArgs {
  * @param onLegendClick
  * @returns
  */
-export const getOnMarkClickCallback = ({
-	chartView,
-	hiddenSeries,
-	chartId,
-	selectedData,
-	selectedDataBounds,
-	selectedDataName,
-	setHiddenSeries,
-	legendIsToggleable,
-	onLegendClick,
-}: GetOnMarkClickCallbackArgs): ViewEventCallback => {
+export const getOnMarkClickCallback = (args: GetOnMarkClickCallbackArgs): ViewEventCallback => {
 	return (_event, item) => {
 		if (!item) return;
+		if (args.trigger === 'contextmenu' && _event.type !== 'contextmenu') return;
 		if (isLegendItem(item)) {
-			handleLegendItemClick(item, hiddenSeries, setHiddenSeries, legendIsToggleable, onLegendClick);
+			handleLegendItemClick(item, args);
 			return;
 		}
-
-		item = getGroupOrAreaMarkItemFromItem(item);
-
-		// ensure that the current chartView is still defined
-		if (userDidNotClickOnLegend(item) && chartView.current) {
-			// clicking the button will trigger a new view since it will cause a rerender
-			// this means we don't need to set the signal value since it would just be cleared on rerender
-			// instead, the rerender will set the value of the signal to the selectedData
-			const itemName = getItemName(item);
-			selectedData.current = { [COMPONENT_NAME]: itemName, ...item.datum };
-			// we need to anchor the popover to a div that we move to the same location as the selected mark
-			selectedDataBounds.current = getItemBounds(item);
-			selectedDataName.current = itemName;
-			(document.querySelector(`#${chartId} > div > #${itemName}-button`) as HTMLButtonElement)?.click();
-		}
+		handleMarkClick(item, args);
 	};
+};
+
+const handleMarkClick = (
+	item: NonNullable<ActionItem>,
+	{ chartView, selectedData, selectedDataBounds, selectedDataName, chartId, trigger }: GetOnMarkClickCallbackArgs
+) => {
+	if (!chartView.current) return;
+
+	item = getGroupOrAreaMarkItemFromItem(item);
+	// clicking the button will trigger a new view since it will cause a rerender
+	// this means we don't need to set the signal value since it would just be cleared on rerender
+	// instead, the rerender will set the value of the signal to the selectedData
+	const itemName = getItemName(item);
+	selectedData.current = { [COMPONENT_NAME]: itemName, ...item.datum };
+	// we need to anchor the popover to a div that we move to the same location as the selected mark
+	selectedDataBounds.current = getItemBounds(item);
+	selectedDataName.current = itemName;
+	triggerPopover(chartId, itemName, trigger);
+};
+
+const triggerPopover = (chartId: string, itemName: string | undefined, trigger: 'click' | 'contextmenu') => {
+	if (!itemName) return;
+	(
+		document.querySelector(
+			`#${chartId} > div > #${itemName}-${trigger === 'contextmenu' ? 'contextmenu' : 'popover'}-button`
+		) as HTMLButtonElement
+	)?.click();
 };
 
 /**
@@ -172,14 +177,33 @@ export const isLegendItem = (item: Item): boolean => {
  * @returns
  */
 export const handleLegendItemClick = (
-	item: ActionItem,
-	hiddenSeries: string[],
-	setHiddenSeries: (hiddenSeries: string[]) => void,
-	legendIsToggleable?: boolean,
-	onLegendClick?: (seriesName: string) => void
+	item: NonNullable<ActionItem>,
+	{
+		chartView,
+		hiddenSeries,
+		chartId,
+		selectedData,
+		selectedDataBounds,
+		selectedDataName,
+		setHiddenSeries,
+		legendIsToggleable,
+		onLegendClick,
+		trigger,
+	}: GetOnMarkClickCallbackArgs
 ): void => {
 	const legendItemValue = getLegendItemValue(item);
 	if (legendItemValue === undefined) return;
+
+	if (chartView.current) {
+		const itemName = getItemName(item);
+
+		selectedData.current = { [COMPONENT_NAME]: itemName, value: legendItemValue } as unknown as Datum;
+		// we need to anchor the popover to a div that we move to the same location as the selected mark
+		selectedDataBounds.current = getItemBounds(item);
+		selectedDataName.current = itemName;
+		triggerPopover(chartId, itemName, trigger);
+	}
+
 	onLegendClick?.(legendItemValue);
 	if (!legendIsToggleable) return;
 	setHiddenSeries(toggleStringArrayValue(hiddenSeries, legendItemValue));
