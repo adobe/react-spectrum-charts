@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { Data, Legend, LegendEncode, Scale, Spec, SymbolEncodeEntry } from 'vega';
+import { Data, Legend, LegendEncode, Scale, SymbolEncodeEntry } from 'vega';
 
 import {
 	COLOR_SCALE,
@@ -32,10 +32,11 @@ import {
 	defaultSignals,
 } from '../specTestUtils';
 import { baseData } from '../specUtils';
+import { ScSpec } from '../types';
 import { addData, addLegend, addSignals, formatFacetRefsWithPresets, getContinuousLegend } from './legendSpecBuilder';
 import { defaultLegendOptions, opacityEncoding } from './legendTestUtils';
 
-const defaultSpec: Spec = {
+const defaultSpec: ScSpec = {
 	signals: defaultSignals,
 	scales: [
 		{
@@ -45,6 +46,7 @@ const defaultSpec: Spec = {
 		},
 	],
 	marks: [],
+	usermeta: {},
 };
 
 const colorEncoding = { signal: `scale('${COLOR_SCALE}', data('legend0Aggregate')[datum.index].${DEFAULT_COLOR})` };

@@ -70,7 +70,7 @@ describe('donutSpecBuilder', () => {
 
 describe('donutSpecBuilder', () => {
 	test('should add donut correctly', () => {
-		const spec = { data: [{ name: FILTERED_TABLE }] };
+		const spec = { data: [{ name: FILTERED_TABLE }], usermeta: {} };
 		const options = { ...defaultDonutOptions, holeRatio: 0.85 };
 		const result = addDonut(spec, options);
 		const expectedSpec = {
@@ -78,6 +78,7 @@ describe('donutSpecBuilder', () => {
 			scales: addScales([], options),
 			marks: addMarks([], options),
 			signals: addSignals([], options),
+			usermeta: {},
 		};
 		expect(result).toEqual(expectedSpec);
 	});

@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { Data, GroupMark, Spec } from 'vega';
+import { Data, GroupMark } from 'vega';
 
 import {
 	BACKGROUND_COLOR,
@@ -34,10 +34,10 @@ import {
 import { getGenericValueSignal } from '../signal/signalSpecBuilder';
 import { defaultSignals } from '../specTestUtils';
 import { initializeSpec } from '../specUtils';
-import { AreaSpecOptions } from '../types';
+import { AreaSpecOptions, ScSpec } from '../types';
 import { addArea, addAreaMarks, addData, addHighlightedItemEvents, addSignals, setScales } from './areaSpecBuilder';
 
-const startingSpec: Spec = initializeSpec({
+const startingSpec: ScSpec = initializeSpec({
 	scales: [{ name: COLOR_SCALE, type: 'ordinal' }],
 });
 

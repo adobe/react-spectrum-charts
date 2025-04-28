@@ -26,7 +26,7 @@ import {
 	LAST_RSC_SERIES_ID,
 	MOUSE_OVER_SERIES,
 } from '@spectrum-charts/constants';
-import { spectrumColors } from '@spectrum-charts/themes/src/spectrumColors';
+import { spectrumColors } from '@spectrum-charts/themes';
 
 import {
 	addAxisAnnotationAxis,

@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { Data, Spec } from 'vega';
+import { Data } from 'vega';
 
 import {
 	BACKGROUND_COLOR,
@@ -33,7 +33,7 @@ import {
 import * as signalSpecBuilder from '../signal/signalSpecBuilder';
 import { defaultSignals } from '../specTestUtils';
 import { initializeSpec } from '../specUtils';
-import { LineSpecOptions } from '../types';
+import { LineSpecOptions, ScSpec } from '../types';
 import { addData, addLine, addLineMarks, addSignals, setScales } from './lineSpecBuilder';
 
 const defaultLineOptions: LineSpecOptions = {
@@ -57,7 +57,7 @@ const defaultLineOptions: LineSpecOptions = {
 	trendlines: [],
 };
 
-const startingSpec: Spec = initializeSpec({
+const startingSpec: ScSpec = initializeSpec({
 	scales: [{ name: COLOR_SCALE, type: 'ordinal' }],
 });
 
