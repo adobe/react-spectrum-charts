@@ -12,10 +12,14 @@
 import { Signal } from 'vega';
 
 import {
+	COLOR_SCALE,
 	FILTERED_TABLE,
+	FIRST_RSC_SERIES_ID,
 	HIGHLIGHTED_GROUP,
 	HIGHLIGHTED_ITEM,
 	HIGHLIGHTED_SERIES,
+	LAST_RSC_SERIES_ID,
+	MOUSE_OVER_SERIES,
 	SERIES_ID,
 } from '@spectrum-charts/constants';
 
@@ -118,12 +122,30 @@ export const getGenericUpdateSignal = (name: string, update: string): Signal => 
  * Returns a signal that tracks which series is being moused over for dual Y-axis charts
  */
 export const getMouseOverSeriesSignal = (markName: string): Signal => ({
-	name: "mousedOverSeries",
+	name: `${MOUSE_OVER_SERIES}`,
 	value: null,
 	on: [
-		{"events": `@${markName}:mouseover`, "update": "datum.rscSeriesId"},
-		{"events": `@${markName}:mouseout`, "update": "null"}
-	]
+		{ events: `@${markName}:mouseover`, update: `datum.${SERIES_ID}` },
+		{ events: `@${markName}:mouseout`, update: 'null' },
+	],
+});
+
+/**
+ * Returns a signal that tracks the first series in the series order for dual Y-axis charts
+ */
+export const getFirstRscSeriesIdSignal = (): Signal => ({
+	name: `${FIRST_RSC_SERIES_ID}`,
+	value: null,
+	update: `length(domain("${COLOR_SCALE}")) > 0 ? domain("${COLOR_SCALE}")[0] : null`,
+});
+
+/**
+ * Returns a signal that tracks the last series in the series order for dual Y-axis charts
+ */
+export const getLastRscSeriesIdSignal = (): Signal => ({
+	name: `${LAST_RSC_SERIES_ID}`,
+	value: null,
+	update: `length(domain("${COLOR_SCALE}")) > 0 ? peek(domain("${COLOR_SCALE}")) : null`,
 });
 
 /**

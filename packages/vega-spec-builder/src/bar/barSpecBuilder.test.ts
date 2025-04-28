@@ -250,6 +250,21 @@ describe('barSpecBuilder', () => {
 		test('no options', () => {
 			expect(addBar(startingSpec, { idKey: MARK_ID, markType: 'bar' })).toStrictEqual(defaultSpec);
 		});
+
+		describe('usermeta', () => {
+			test('should add vertical orientation to usermeta if bar orientation is vertical', () => {
+				// default orientation is vertical
+				expect(addBar(startingSpec, { idKey: MARK_ID, markType: 'bar' }).usermeta).toHaveProperty(
+					'orientation',
+					'vertical'
+				);
+			});
+			test('should add horizontal orientation to usermeta if bar orientation is horizontal', () => {
+				expect(
+					addBar(startingSpec, { idKey: MARK_ID, markType: 'bar', orientation: 'horizontal' }).usermeta
+				).toHaveProperty('orientation', 'horizontal');
+			});
+		});
 	});
 
 	describe('addSignals()', () => {
@@ -273,6 +288,128 @@ describe('barSpecBuilder', () => {
 			expect(signals[0].on).toHaveLength(2);
 			expect(signals[0].on?.[0]).toHaveProperty('events', '@bar0:mouseover');
 			expect(signals[0].on?.[0]).toHaveProperty('update', '(datum.excludeFromTooltip) ? null : datum.rscMarkId');
+		});
+
+		describe('dualYAxis signals', () => {
+			function getMousedOverSeriesSignal(signal) {
+				return signal.name === 'mousedOverSeries';
+			}
+
+			function getFirstRscSeriesIdSignal(signal) {
+				return signal.name === 'firstRscSeriesId';
+			}
+
+			function getLastRscSeriesIdSignal(signal) {
+				return signal.name === 'lastRscSeriesId';
+			}
+
+			test('should add mousedOverSeries if dualYAxis is true and type is dodged', () => {
+				const signals = addSignals(defaultSignals, {
+					...defaultBarOptions,
+					type: 'dodged',
+					dualYAxis: true,
+				});
+				const mousedOverSeriesSignal = signals.find(getMousedOverSeriesSignal);
+				// update to moused over series id on mouseover
+				expect(mousedOverSeriesSignal?.on?.[0]).toHaveProperty('events', '@bar0:mouseover');
+				expect(mousedOverSeriesSignal?.on?.[0]).toHaveProperty('update', 'datum.rscSeriesId');
+				// update to null on mouseout
+				expect(mousedOverSeriesSignal?.on?.[1]).toHaveProperty('events', '@bar0:mouseout');
+				expect(mousedOverSeriesSignal?.on?.[1]).toHaveProperty('update', 'null');
+			});
+
+			test('should add firstRscSeriesId if dualYAxis is true and type is dodged', () => {
+				const signals = addSignals(defaultSignals, {
+					...defaultBarOptions,
+					type: 'dodged',
+					dualYAxis: true,
+				});
+				const firstRscSeriesIdSignal = signals.find(getFirstRscSeriesIdSignal);
+				// first series in the color domain is the first series in the 'order'
+				expect(firstRscSeriesIdSignal).toHaveProperty('value', null);
+				expect(firstRscSeriesIdSignal).toHaveProperty(
+					'update',
+					'length(domain("color")) > 0 ? domain("color")[0] : null'
+				);
+			});
+
+			test('should add lastRscSeriesId if dualYAxis is true and type is dodged', () => {
+				const signals = addSignals(defaultSignals, {
+					...defaultBarOptions,
+					type: 'dodged',
+					dualYAxis: true,
+				});
+				const lastRscSeriesIdSignal = signals.find(getLastRscSeriesIdSignal);
+				// last series in the color domain is the last series in the 'order'
+				expect(lastRscSeriesIdSignal).toHaveProperty('value', null);
+				expect(lastRscSeriesIdSignal).toHaveProperty(
+					'update',
+					'length(domain("color")) > 0 ? peek(domain("color")) : null'
+				);
+			});
+
+			test('should not add mousedOverSeries if dualYAxis is true and type is not dodged', () => {
+				// default type is stacked
+				const signals = addSignals(defaultSignals, {
+					...defaultBarOptions,
+					dualYAxis: true,
+				});
+				const mousedOverSeriesSignal = signals.find(getMousedOverSeriesSignal);
+				expect(mousedOverSeriesSignal).toBeUndefined();
+			});
+
+			test('should not add firstRscSeriesId if dualYAxis is true and type is not dodged', () => {
+				// default type is stacked
+				const signals = addSignals(defaultSignals, {
+					...defaultBarOptions,
+					dualYAxis: true,
+				});
+				const firstRscSeriesIdSignal = signals.find(getFirstRscSeriesIdSignal);
+				expect(firstRscSeriesIdSignal).toBeUndefined();
+			});
+
+			test('should not add lastRscSeriesId if dualYAxis is true and type is not dodged', () => {
+				// default type is stacked
+				const signals = addSignals(defaultSignals, {
+					...defaultBarOptions,
+					dualYAxis: true,
+				});
+				const lastRscSeriesIdSignal = signals.find(getLastRscSeriesIdSignal);
+				expect(lastRscSeriesIdSignal).toBeUndefined();
+			});
+
+			test('should not add mousedOverSeries if dualYAxis is false', () => {
+				// default type is stacked
+				const signals = addSignals(defaultSignals, {
+					...defaultBarOptions,
+					dualYAxis: false,
+					type: 'dodged',
+				});
+				const mousedOverSeriesSignal = signals.find(getMousedOverSeriesSignal);
+				expect(mousedOverSeriesSignal).toBeUndefined();
+			});
+
+			test('should not add firstRscSeriesId if dualYAxis is false', () => {
+				// default type is stacked
+				const signals = addSignals(defaultSignals, {
+					...defaultBarOptions,
+					dualYAxis: false,
+					type: 'dodged',
+				});
+				const firstRscSeriesIdSignal = signals.find(getFirstRscSeriesIdSignal);
+				expect(firstRscSeriesIdSignal).toBeUndefined();
+			});
+
+			test('should not add lastRscSeriesId if dualYAxis is false', () => {
+				// default type is stacked
+				const signals = addSignals(defaultSignals, {
+					...defaultBarOptions,
+					dualYAxis: false,
+					type: 'dodged',
+				});
+				const lastRscSeriesIdSignal = signals.find(getLastRscSeriesIdSignal);
+				expect(lastRscSeriesIdSignal).toBeUndefined();
+			});
 		});
 	});
 
@@ -350,6 +487,84 @@ describe('barSpecBuilder', () => {
 						paddingInner: 0.5,
 					},
 				]);
+			});
+		});
+
+		describe('dualYAxis scales', () => {
+			function getPrimaryMetricScale(scale) {
+				return scale.name === 'yLinearPrimary';
+			}
+			function getSecondaryMetricScale(scale) {
+				return scale.name === 'yLinearSecondary';
+			}
+
+			const baseMetricScale = {
+				name: 'yLinearPrimary',
+				type: 'linear',
+				domain: { data: 'yLinearPrimaryDomain', fields: [DEFAULT_METRIC] },
+				range: 'height',
+				nice: true,
+				zero: true,
+			};
+
+			test('should add primary metric scale if dualYAxis is true and type is dodged', () => {
+				const scales = addScales([{ name: COLOR_SCALE, type: 'ordinal' }], {
+					...defaultBarOptions,
+					dualYAxis: true,
+					type: 'dodged',
+				});
+				expect(scales.find(getPrimaryMetricScale)).toEqual({
+					...baseMetricScale,
+				});
+			});
+
+			test('should add secondary metric scale if dualYAxis is true and type is dodged', () => {
+				const scales = addScales([{ name: COLOR_SCALE, type: 'ordinal' }], {
+					...defaultBarOptions,
+					dualYAxis: true,
+					type: 'dodged',
+				});
+				expect(scales.find(getSecondaryMetricScale)).toEqual({
+					...baseMetricScale,
+					name: 'yLinearSecondary',
+					domain: { data: 'yLinearSecondaryDomain', fields: [DEFAULT_METRIC] },
+				});
+			});
+
+			test('should not add primary metric scale if dualYAxis is true and type is not dodged', () => {
+				const scales = addScales([{ name: COLOR_SCALE, type: 'ordinal' }], {
+					...defaultBarOptions,
+					dualYAxis: true,
+					type: 'stacked',
+				});
+				expect(scales.find(getPrimaryMetricScale)).toBeUndefined();
+			});
+
+			test('should not add secondary metric scale if dualYAxis is true and type is not dodged', () => {
+				const scales = addScales([{ name: COLOR_SCALE, type: 'ordinal' }], {
+					...defaultBarOptions,
+					dualYAxis: true,
+					type: 'stacked',
+				});
+				expect(scales.find(getSecondaryMetricScale)).toBeUndefined();
+			});
+
+			test('should not add primary metric scale if dualYAxis is false', () => {
+				const scales = addScales([{ name: COLOR_SCALE, type: 'ordinal' }], {
+					...defaultBarOptions,
+					dualYAxis: false,
+					type: 'dodged',
+				});
+				expect(scales.find(getPrimaryMetricScale)).toBeUndefined();
+			});
+
+			test('should not add secondary metric scale if dualYAxis is false', () => {
+				const scales = addScales([{ name: COLOR_SCALE, type: 'ordinal' }], {
+					...defaultBarOptions,
+					dualYAxis: false,
+					type: 'dodged',
+				});
+				expect(scales.find(getSecondaryMetricScale)).toBeUndefined();
 			});
 		});
 	});
@@ -684,6 +899,53 @@ describe('barSpecBuilder', () => {
 					],
 				},
 			]);
+		});
+
+		describe('dualYAxis', () => {
+			function getDualYAxisPrimaryDomain(data) {
+				return data.find((d) => d.name === 'yLinearPrimaryDomain');
+			}
+			function getDualYAxisSecondaryDomain(data) {
+				return data.find((d) => d.name === 'yLinearSecondaryDomain');
+			}
+
+			test('should add primary domain data if dualYAxis is true and type is dodged', () => {
+				const data = addData(defaultData, { ...defaultBarOptions, dualYAxis: true, type: 'dodged' });
+				expect(getDualYAxisPrimaryDomain(data)).toStrictEqual({
+					name: 'yLinearPrimaryDomain',
+					source: FILTERED_TABLE,
+					transform: [{ type: 'filter', expr: 'datum.rscSeriesId !== lastRscSeriesId' }],
+				});
+			});
+
+			test('should add secondary domain data if dualYAxis is true and type is dodged', () => {
+				const data = addData(defaultData, { ...defaultBarOptions, dualYAxis: true, type: 'dodged' });
+				expect(getDualYAxisSecondaryDomain(data)).toStrictEqual({
+					name: 'yLinearSecondaryDomain',
+					source: FILTERED_TABLE,
+					transform: [{ type: 'filter', expr: 'datum.rscSeriesId === lastRscSeriesId' }],
+				});
+			});
+
+			test('should not add primary domain data if dualYAxis is true and type is not dodged', () => {
+				const data = addData(defaultData, { ...defaultBarOptions, dualYAxis: true, type: 'stacked' });
+				expect(getDualYAxisPrimaryDomain(data)).toBeUndefined();
+			});
+
+			test('should not add secondary domain data if dualYAxis is true and type is not dodged', () => {
+				const data = addData(defaultData, { ...defaultBarOptions, dualYAxis: true, type: 'stacked' });
+				expect(getDualYAxisSecondaryDomain(data)).toBeUndefined();
+			});
+
+			test('should not add primary domain data if dualYAxis is false', () => {
+				const data = addData(defaultData, { ...defaultBarOptions, dualYAxis: false, type: 'dodged' });
+				expect(getDualYAxisPrimaryDomain(data)).toBeUndefined();
+			});
+
+			test('should not add secondary domain data if dualYAxis is false', () => {
+				const data = addData(defaultData, { ...defaultBarOptions, dualYAxis: false, type: 'dodged' });
+				expect(getDualYAxisSecondaryDomain(data)).toBeUndefined();
+			});
 		});
 	});
 

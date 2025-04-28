@@ -62,6 +62,9 @@ export const HIGHLIGHTED_SERIES = 'highlightedSeries'; // series
 export const SELECTED_ITEM = 'selectedItem'; // data point
 export const SELECTED_SERIES = 'selectedSeries'; // series
 export const SELECTED_GROUP = 'selectedGroup'; // data point
+export const MOUSE_OVER_SERIES = 'mousedOverSeries'; // mouse over series for dual y-axis
+export const FIRST_RSC_SERIES_ID = 'firstRscSeriesId'; // first series for dual y-axis
+export const LAST_RSC_SERIES_ID = 'lastRscSeriesId'; // last series for dual y-axis
 
 // scale names
 export const COLOR_SCALE = 'color';

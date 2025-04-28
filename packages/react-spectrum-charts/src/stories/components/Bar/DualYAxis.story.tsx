@@ -50,7 +50,7 @@ const DualYAxisStory: StoryFn<typeof Bar> = (args): ReactElement => {
 				position={args.orientation === 'horizontal' ? 'bottom' : 'right'}
 				ticks
 				tickMinStep={1}
-				title="Downloads"
+				title="Mac Downloads"
 			/>
 			<Bar {...args}>
 				<ChartTooltip>{dialogContent}</ChartTooltip>
@@ -81,7 +81,7 @@ const WithSublabelsStory: StoryFn<typeof Bar> = (args): ReactElement => {
 				position={args.orientation === 'horizontal' ? 'bottom' : 'right'}
 				ticks
 				tickMinStep={1}
-				title="Downloads"
+				title="Mac Downloads"
 				subLabels={[
 					{ value: '1', subLabel: 'Low' },
 					{ value: '2', subLabel: 'Medium' },
@@ -112,7 +112,7 @@ const WithThreeSeriesStory: StoryFn<typeof Bar> = (args): ReactElement => {
 				position={args.orientation === 'horizontal' ? 'bottom' : 'right'}
 				ticks
 				tickMinStep={1}
-				title="Downloads"
+				title="Other Downloads"
 			/>
 			<Bar {...args}>
 				<ChartTooltip>{dialogContent}</ChartTooltip>
@@ -153,8 +153,4 @@ WithThreeSeries.args = {
 	color: 'operatingSystem',
 };
 
-export {
-	DualYAxis,
-	WithSublabels,
-	WithThreeSeries,
-};
+export { DualYAxis, WithSublabels, WithThreeSeries };

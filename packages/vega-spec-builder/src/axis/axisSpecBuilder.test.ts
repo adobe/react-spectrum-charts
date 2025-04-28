@@ -11,7 +11,13 @@
  */
 import { Axis, GroupMark, ProductionRule, Scale, Signal, TextValueRef } from 'vega';
 
-import { DEFAULT_LABEL_FONT_WEIGHT, FILTERED_TABLE } from '@spectrum-charts/constants';
+import {
+	DEFAULT_LABEL_FONT_WEIGHT,
+	FILTERED_TABLE,
+	HIGHLIGHT_CONTRAST_RATIO,
+	LAST_RSC_SERIES_ID,
+	MOUSE_OVER_SERIES,
+} from '@spectrum-charts/constants';
 
 import { SubLabel } from '../types';
 import {
@@ -167,19 +173,19 @@ describe('Spec builder, Axis', () => {
 			test('position = "bottom"', () => {
 				// eslint-disable-next-line @typescript-eslint/no-unused-vars
 				const { domain, domainWidth, ...axis } = defaultAxis;
-				expect(addAxis({ 				usermeta: {}, scales: defaultScales }, { position: 'bottom' })).toStrictEqual({
+				expect(addAxis({ usermeta: {}, scales: defaultScales }, { position: 'bottom' })).toStrictEqual({
 					scales: defaultScales,
 					axes: [{ ...axis, labelAlign: 'center' }],
 					marks: [],
 					signals: [],
 					data: [],
 					usermeta: {
-						metricAxisCount: 0
-					}
+						metricAxisCount: 0,
+					},
 				});
 			});
 			test('position = "left"', () => {
-				expect(addAxis({ 				usermeta: {}, scales: defaultScales }, { position: 'left' })).toStrictEqual({
+				expect(addAxis({ usermeta: {}, scales: defaultScales }, { position: 'left' })).toStrictEqual({
 					scales: defaultScales,
 					axes: [
 						{
@@ -194,13 +200,13 @@ describe('Spec builder, Axis', () => {
 					marks: [],
 					data: [],
 					usermeta: {
-						metricAxisCount: 0
-					}
+						metricAxisCount: 0,
+					},
 				});
 			});
 			test('type = percentage', () => {
 				expect(
-					addAxis({ 				usermeta: {}, scales: defaultScales }, { position: 'left', labelFormat: 'percentage' })
+					addAxis({ usermeta: {}, scales: defaultScales }, { position: 'left', labelFormat: 'percentage' })
 				).toStrictEqual({
 					scales: defaultScales,
 					axes: [
@@ -226,15 +232,18 @@ describe('Spec builder, Axis', () => {
 					marks: [],
 					data: [],
 					usermeta: {
-						metricAxisCount: 0
-					}
+						metricAxisCount: 0,
+					},
 				});
 			});
 			test('subLabels', () => {
 				// eslint-disable-next-line @typescript-eslint/no-unused-vars
 				const { domain, domainWidth, ...axis } = defaultAxis;
 				expect(
-					addAxis({ 				usermeta: {}, scales: defaultScales }, { position: 'bottom', subLabels: defaultSubLabels })
+					addAxis(
+						{ usermeta: {}, scales: defaultScales },
+						{ position: 'bottom', subLabels: defaultSubLabels }
+					)
 				).toStrictEqual({
 					scales: defaultScales,
 					axes: [{ ...axis, labelAlign: 'center', titlePadding: 24 }, defaultSubLabelAxis],
@@ -242,13 +251,13 @@ describe('Spec builder, Axis', () => {
 					signals: [{ ...defaultSignal, value: [{ ...defaultSignal.value[0], baseline: undefined }] }],
 					data: [],
 					usermeta: {
-						metricAxisCount: 0
-					}
+						metricAxisCount: 0,
+					},
 				});
 			});
 			test('custom X range', () => {
 				const resultScales = addAxis(
-					{ 				usermeta: {}, scales: defaultLinearScales },
+					{ usermeta: {}, scales: defaultLinearScales },
 					{ position: 'bottom', range: [0, 100] }
 				).scales;
 
@@ -256,7 +265,7 @@ describe('Spec builder, Axis', () => {
 			});
 			test('custom Y range', () => {
 				const resultScales = addAxis(
-					{ 		usermeta: {}, scales: defaultLinearScales },
+					{ usermeta: {}, scales: defaultLinearScales },
 					{ position: 'left', range: [0, 100] }
 				).scales;
 
@@ -267,27 +276,257 @@ describe('Spec builder, Axis', () => {
 			test('should add scales', () => {
 				// eslint-disable-next-line @typescript-eslint/no-unused-vars
 				const { domain, domainWidth, ...axis } = defaultAxis;
-				expect(addAxis({usermeta: {}}, { position: 'bottom' })).toStrictEqual({
+				expect(addAxis({ usermeta: {} }, { position: 'bottom' })).toStrictEqual({
 					axes: [{ ...axis, labelAlign: 'center', scale: 'xLinear' }],
 					marks: [],
 					signals: [],
 					data: [],
 					usermeta: {
-						metricAxisCount: 0
-					}
+						metricAxisCount: 0,
+					},
 				});
 			});
 		});
 	});
 
 	describe('addAxes()', () => {
+		describe('dualYAxis', () => {
+			test('should add dualYAxis primary metric axis label color based on series', () => {
+				const labelFillEncoding = addAxes([], {
+					...defaultAxisOptions,
+					dualYAxis: true,
+					position: 'left',
+					scaleName: 'yLinear',
+					scaleType: 'linear',
+					usermeta: {},
+				})[0].encode?.labels?.update?.fill;
+				expect(labelFillEncoding).toHaveLength(2);
+				expect(labelFillEncoding?.[0]).toEqual({
+					test: "length(domain('color')) -1 === 1",
+					signal: "scale('color', firstRscSeriesId)",
+				});
+				expect(labelFillEncoding?.[1]).toEqual({ value: 'rgb(34, 34, 34)' });
+			});
+
+			test('should add dualYAxis primary metric axis label fill opacity based on series', () => {
+				const labelFillOpacityEncoding = addAxes([], {
+					...defaultAxisOptions,
+					dualYAxis: true,
+					position: 'left',
+					scaleName: 'yLinear',
+					scaleType: 'linear',
+					usermeta: {},
+				})[0].encode?.labels?.update?.fillOpacity;
+				expect(labelFillOpacityEncoding).toHaveLength(1);
+				expect(labelFillOpacityEncoding?.[0]).toEqual({
+					test: `${MOUSE_OVER_SERIES} === ${LAST_RSC_SERIES_ID}`,
+					value: 1 / HIGHLIGHT_CONTRAST_RATIO,
+				});
+			});
+
+			test('should add dualYAxis primary metric axis title color based on series', () => {
+				const titleFillEncoding = addAxes([], {
+					...defaultAxisOptions,
+					dualYAxis: true,
+					position: 'left',
+					scaleName: 'yLinear',
+					scaleType: 'linear',
+					usermeta: {},
+				})[0].encode?.title?.update?.fill;
+				expect(titleFillEncoding).toHaveLength(2);
+				expect(titleFillEncoding?.[0]).toEqual({
+					test: "length(domain('color')) -1 === 1",
+					signal: "scale('color', firstRscSeriesId)",
+				});
+				expect(titleFillEncoding?.[1]).toEqual({ value: 'rgb(34, 34, 34)' });
+			});
+
+			test('should add dualYAxis primary metric axis title fill opacity based on series', () => {
+				const titleFillOpacityEncoding = addAxes([], {
+					...defaultAxisOptions,
+					dualYAxis: true,
+					position: 'left',
+					scaleName: 'yLinear',
+					scaleType: 'linear',
+					usermeta: {},
+				})[0].encode?.title?.update?.fillOpacity;
+				expect(titleFillOpacityEncoding).toHaveLength(1);
+				expect(titleFillOpacityEncoding?.[0]).toEqual({
+					test: `${MOUSE_OVER_SERIES} === ${LAST_RSC_SERIES_ID}`,
+					value: 1 / HIGHLIGHT_CONTRAST_RATIO,
+				});
+			});
+
+			test('should add dualYAxis primary metric subLabels color based on series', () => {
+				const labelFillEncoding = addAxes([], {
+					...defaultAxisOptions,
+					dualYAxis: true,
+					position: 'left',
+					scaleName: 'yLinear',
+					scaleType: 'linear',
+					subLabels: defaultSubLabels,
+					usermeta: {},
+				})[1].encode?.labels?.update?.fill;
+				expect(labelFillEncoding).toHaveLength(2);
+				expect(labelFillEncoding?.[0]).toEqual({
+					test: "length(domain('color')) -1 === 1",
+					signal: "scale('color', firstRscSeriesId)",
+				});
+				expect(labelFillEncoding?.[1]).toEqual({ value: 'rgb(34, 34, 34)' });
+			});
+
+			test('should add dualYAxis primary metric subLabels fill opacity based on series', () => {
+				const labelFillOpacityEncoding = addAxes([], {
+					...defaultAxisOptions,
+					dualYAxis: true,
+					position: 'left',
+					scaleName: 'yLinear',
+					scaleType: 'linear',
+					subLabels: defaultSubLabels,
+					usermeta: {},
+				})[1].encode?.labels?.update?.fillOpacity;
+				expect(labelFillOpacityEncoding).toHaveLength(1);
+				expect(labelFillOpacityEncoding?.[0]).toEqual({
+					test: `${MOUSE_OVER_SERIES} === ${LAST_RSC_SERIES_ID}`,
+					value: 1 / HIGHLIGHT_CONTRAST_RATIO,
+				});
+			});
+
+			test('should initialize usermeta.metricAxisCount when adding a primary metric axis', () => {
+				const usermeta = {};
+				addAxes([], {
+					...defaultAxisOptions,
+					dualYAxis: true,
+					position: 'left',
+					scaleName: 'yLinear',
+					scaleType: 'linear',
+					usermeta,
+				});
+				expect(usermeta).toEqual({ metricAxisCount: 1 });
+			});
+
+			test('should not add extra primary metric axis if subLabels axis is added', () => {
+				const usermeta = {};
+				addAxes([], {
+					...defaultAxisOptions,
+					dualYAxis: true,
+					position: 'left',
+					scaleName: 'yLinear',
+					scaleType: 'linear',
+					subLabels: defaultSubLabels,
+					usermeta,
+				});
+				expect(usermeta).toEqual({ metricAxisCount: 1 });
+			});
+
+			test('should add dualYAxis secondary metric axis label color based on series', () => {
+				const labelFillEncoding = addAxes([], {
+					...defaultAxisOptions,
+					dualYAxis: true,
+					position: 'left',
+					scaleName: 'yLinear',
+					scaleType: 'linear',
+					usermeta: { metricAxisCount: 1 },
+				})[0].encode?.labels?.enter?.fill;
+				expect(labelFillEncoding).toHaveLength(1);
+				expect(labelFillEncoding?.[0]).toEqual({ signal: "scale('color', lastRscSeriesId)" });
+			});
+
+			test('should add dualYAxis secondary metric axis label fill opacity based on series', () => {
+				const labelFillOpacityEncoding = addAxes([], {
+					...defaultAxisOptions,
+					dualYAxis: true,
+					position: 'left',
+					scaleName: 'yLinear',
+					scaleType: 'linear',
+					usermeta: { metricAxisCount: 1 },
+				})[0].encode?.labels?.update?.fillOpacity;
+				expect(labelFillOpacityEncoding).toHaveLength(1);
+				expect(labelFillOpacityEncoding?.[0]).toEqual({
+					test: `isValid(${MOUSE_OVER_SERIES}) && ${MOUSE_OVER_SERIES} !== ${LAST_RSC_SERIES_ID}`,
+					value: 1 / HIGHLIGHT_CONTRAST_RATIO,
+				});
+			});
+
+			test('should add dualYAxis secondary metric subLabels color based on series', () => {
+				const labelFillEncoding = addAxes([], {
+					...defaultAxisOptions,
+					dualYAxis: true,
+					position: 'left',
+					scaleName: 'yLinear',
+					scaleType: 'linear',
+					subLabels: defaultSubLabels,
+					usermeta: { metricAxisCount: 1 },
+				})[1].encode?.labels?.enter?.fill;
+				expect(labelFillEncoding).toHaveLength(1);
+				expect(labelFillEncoding?.[0]).toEqual({ signal: "scale('color', lastRscSeriesId)" });
+			});
+
+			test('should add dualYAxis secondary metric subLabels fill opacity based on series', () => {
+				const labelFillOpacityEncoding = addAxes([], {
+					...defaultAxisOptions,
+					dualYAxis: true,
+					position: 'left',
+					scaleName: 'yLinear',
+					scaleType: 'linear',
+					subLabels: defaultSubLabels,
+					usermeta: { metricAxisCount: 1 },
+				})[1].encode?.labels?.update?.fillOpacity;
+				expect(labelFillOpacityEncoding).toHaveLength(1);
+				expect(labelFillOpacityEncoding?.[0]).toEqual({
+					test: `isValid(${MOUSE_OVER_SERIES}) && ${MOUSE_OVER_SERIES} !== ${LAST_RSC_SERIES_ID}`,
+					value: 1 / HIGHLIGHT_CONTRAST_RATIO,
+				});
+			});
+
+			test('should increment usermeta.metricAxisCount when adding a secondary metric axis', () => {
+				const usermeta = { metricAxisCount: 1 };
+				addAxes([], {
+					...defaultAxisOptions,
+					dualYAxis: true,
+					position: 'left',
+					scaleName: 'yLinear',
+					scaleType: 'linear',
+					usermeta,
+				});
+				expect(usermeta).toEqual({ metricAxisCount: 2 });
+			});
+
+			test('should not increment additional usermeta.metricAxisCount if subLabels axis is added', () => {
+				const usermeta = { metricAxisCount: 1 };
+				addAxes([], {
+					...defaultAxisOptions,
+					dualYAxis: true,
+					position: 'left',
+					scaleName: 'yLinear',
+					scaleType: 'linear',
+					subLabels: defaultSubLabels,
+					usermeta,
+				});
+				expect(usermeta).toEqual({ metricAxisCount: 2 });
+			});
+
+			test('should not increment usermeta.metricAxisCount if dualYAxis is false', () => {
+				const usermeta = {};
+				addAxes([], {
+					...defaultAxisOptions,
+					dualYAxis: false,
+					position: 'left',
+					scaleName: 'yLinear',
+					scaleType: 'linear',
+					usermeta,
+				});
+				expect(usermeta).toEqual({ metricAxisCount: 0 });
+			});
+		});
+
 		test('should add test to hide labels if they would overlap the reference line icon', () => {
 			const labelTextEncoding = addAxes([], {
 				...defaultAxisOptions,
 				referenceLines: [{ value: 10, icon: 'date' }],
 				scaleName: 'xLinear',
 				scaleType: 'linear',
-				usermeta: {}
+				usermeta: {},
 			})[0].encode?.labels?.update?.text as ProductionRule<TextValueRef>;
 			expect(labelTextEncoding).toHaveLength(3);
 			expect(labelTextEncoding[0]).toEqual({
@@ -304,7 +543,7 @@ describe('Spec builder, Axis', () => {
 				],
 				scaleName: 'xLinear',
 				scaleType: 'linear',
-				usermeta: {}
+				usermeta: {},
 			})[0].encode?.labels?.update?.text as ProductionRule<TextValueRef>;
 
 			// 2 tests for the two reference lines plus 2 default tests = 4 tests
@@ -316,7 +555,7 @@ describe('Spec builder, Axis', () => {
 				labels: [1, 2, 3],
 				scaleName: 'xLinear',
 				scaleType: 'linear',
-				usermeta: {}
+				usermeta: {},
 			});
 			expect(axes).toHaveLength(1);
 			expect(axes[0].values).toEqual([1, 2, 3]);
@@ -357,7 +596,7 @@ describe('Spec builder, Axis', () => {
 				baselineOffset: 0,
 				opposingScaleType: 'linear',
 				scaleName: 'xLinear',
-				usermeta: {}
+				usermeta: {},
 			});
 
 			expect(marks).toEqual([defaultYBaselineMark, defaultXBaselineMark]);
@@ -370,7 +609,7 @@ describe('Spec builder, Axis', () => {
 				baselineOffset: 10,
 				opposingScaleType: 'linear',
 				scaleName: 'xLinear',
-				usermeta: {}
+				usermeta: {},
 			});
 
 			expect(marks).toEqual([
@@ -397,7 +636,7 @@ describe('Spec builder, Axis', () => {
 				baselineOffset: 0,
 				opposingScaleType: 'linear',
 				scaleName: 'xLinear',
-				usermeta: {}
+				usermeta: {},
 			});
 
 			expect(marks).toHaveLength(1);
@@ -411,7 +650,7 @@ describe('Spec builder, Axis', () => {
 				baselineOffset: 10,
 				opposingScaleType: 'linear',
 				scaleName: 'xLinear',
-				usermeta: {}
+				usermeta: {},
 			});
 
 			expect(marks).toHaveLength(1);
@@ -439,7 +678,7 @@ describe('Spec builder, Axis', () => {
 				baselineOffset: 0,
 				opposingScaleType: 'band',
 				scaleName: 'xLinear',
-				usermeta: {}
+				usermeta: {},
 			}) as GroupMark[];
 
 			expect(marks[0].axes).toHaveLength(1);
@@ -453,7 +692,7 @@ describe('Spec builder, Axis', () => {
 				baselineOffset: 0,
 				opposingScaleType: 'band',
 				scaleName: 'xLinear',
-				usermeta: {}
+				usermeta: {},
 			}) as GroupMark[];
 
 			expect(marks[0].axes?.[0].labels).toBe(true);
@@ -467,7 +706,7 @@ describe('Spec builder, Axis', () => {
 				baselineOffset: 0,
 				opposingScaleType: 'band',
 				scaleName: 'yLinear',
-				usermeta: {}
+				usermeta: {},
 			}) as GroupMark[];
 
 			expect(marks[0].axes?.[0].labels).toBe(false);

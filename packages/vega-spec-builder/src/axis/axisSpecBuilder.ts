@@ -14,12 +14,19 @@ import { produce } from 'immer';
 import { Axis, Data, GroupMark, Mark, ScaleType, Signal } from 'vega';
 
 import {
+	COLOR_SCALE,
 	DEFAULT_COLOR_SCHEME,
+	DEFAULT_FONT_COLOR,
 	DEFAULT_GRANULARITY,
 	DEFAULT_LABEL_ALIGN,
 	DEFAULT_LABEL_FONT_WEIGHT,
 	DEFAULT_LABEL_ORIENTATION,
+	FIRST_RSC_SERIES_ID,
+	HIGHLIGHT_CONTRAST_RATIO,
+	LAST_RSC_SERIES_ID,
+	MOUSE_OVER_SERIES,
 } from '@spectrum-charts/constants';
+import { spectrumColors } from '@spectrum-charts/themes/src/spectrumColors';
 
 import {
 	addAxisAnnotationAxis,
@@ -28,8 +35,8 @@ import {
 	addAxisAnnotationSignals,
 	getAxisAnnotationsFromChildren,
 } from '../axisAnnotation/axisAnnotationUtils';
-import { getGenericValueSignal } from '../signal/signalSpecBuilder';
 import { getDualAxisScaleNames } from '../scale/scaleUtils';
+import { getGenericValueSignal } from '../signal/signalSpecBuilder';
 import { AxisOptions, AxisSpecOptions, ColorScheme, Label, Orientation, Position, ScSpec, UserMeta } from '../types';
 import { getAxisLabelsEncoding, getControlledLabelAnchorValues, getLabelValue } from './axisLabelUtils';
 import { getReferenceLineMarks, getReferenceLines, scaleTypeSupportsReferenceLines } from './axisReferenceLineUtils';
@@ -200,12 +207,12 @@ export const getLabelSignalValue = (
  * @param axis Axis to apply encoding rules to
  */
 export function applySecondaryMetricAxisEncodings(axis: Axis): void {
-	const secondaryAxisFillRules = [{ signal: "scale('color', lastRscSeriesId)" }];
+	const secondaryAxisFillRules = [{ signal: `scale('${COLOR_SCALE}', lastRscSeriesId)` }];
 
 	const secondaryAxisFillOpacityRules = [
 		{
 			test: 'isValid(mousedOverSeries) && mousedOverSeries !== lastRscSeriesId',
-			value: 0.3,
+			value: 1 / HIGHLIGHT_CONTRAST_RATIO,
 		},
 	];
 
@@ -238,19 +245,23 @@ export function applySecondaryMetricAxisEncodings(axis: Axis): void {
 /**
  * Applies fill and opacity encoding rules to the primary metric axis
  * @param axis Axis to apply encoding rules to
+ * @param colorScheme The color scheme (light or dark)
  */
-export function applyPrimaryMetricAxisEncodings(axis: Axis): void {
+export function applyPrimaryMetricAxisEncodings(axis: Axis, colorScheme: ColorScheme = DEFAULT_COLOR_SCHEME): void {
+	// Get the appropriate font color value based on the colorScheme (light/dark theme)
+	const defaultFontColor = spectrumColors[colorScheme][DEFAULT_FONT_COLOR];
+
 	const primaryAxisFillRules = [
 		{
-			test: `length(domain('color')) -1 === 1`,
-			signal: "scale('color', firstRscSeriesId)",
+			test: `length(domain('${COLOR_SCALE}')) -1 === 1`,
+			signal: `scale('${COLOR_SCALE}', ${FIRST_RSC_SERIES_ID})`,
 		},
-		{ value: 'black' },
+		{ value: defaultFontColor },
 	];
 	const primaryAxisFillOpacityRules = [
 		{
-			test: 'mousedOverSeries === lastRscSeriesId',
-			value: 0.3,
+			test: `${MOUSE_OVER_SERIES} === ${LAST_RSC_SERIES_ID}`,
+			value: 1 / HIGHLIGHT_CONTRAST_RATIO,
 		},
 	];
 
@@ -295,7 +306,12 @@ export function getIsMetricAxis(position: Position, chartOrientation: Orientatio
  * @param usermeta The user metadata
  * @param scaleName The name of the scale
  */
-export function addDualMetricAxisConfig(axis: Axis, metricAxisCount: number, scaleName: string) {
+export function addDualMetricAxisConfig(
+	axis: Axis,
+	metricAxisCount: number,
+	scaleName: string,
+	colorScheme: ColorScheme = DEFAULT_COLOR_SCHEME
+) {
 	const isPrimaryMetricAxis = metricAxisCount === 0;
 
 	const scaleNames = getDualAxisScaleNames(scaleName);
@@ -303,7 +319,7 @@ export function addDualMetricAxisConfig(axis: Axis, metricAxisCount: number, sca
 
 	if (isPrimaryMetricAxis) {
 		axis.scale = primaryScale;
-		applyPrimaryMetricAxisEncodings(axis);
+		applyPrimaryMetricAxisEncodings(axis, colorScheme);
 	} else {
 		axis.scale = secondaryScale;
 		applySecondaryMetricAxisEncodings(axis);
@@ -324,12 +340,21 @@ export const addAxes = produce<
 	const newAxes: Axis[] = [];
 	// adds all the trellis axis options if this is a trellis axis
 	axisOptions = { ...axisOptions, ...getTrellisAxisOptions(scaleName) };
-	const { baseline, usermeta, labelAlign, labelFontWeight, labelFormat, labelOrientation, name, position } =
-		axisOptions;
-		if (usermeta.metricAxisCount === undefined) {
-			usermeta.metricAxisCount = 0;
-		}
-		
+	const {
+		baseline,
+		colorScheme,
+		usermeta,
+		labelAlign,
+		labelFontWeight,
+		labelFormat,
+		labelOrientation,
+		name,
+		position,
+	} = axisOptions;
+	if (usermeta.metricAxisCount === undefined) {
+		usermeta.metricAxisCount = 0;
+	}
+
 	if (labelFormat === 'time') {
 		// time axis actually needs two axes. A primary and secondary.
 		newAxes.push(...getTimeAxes(scaleName, axisOptions));
@@ -358,7 +383,7 @@ export const addAxes = produce<
 
 			// add sublabel axis
 			const subLabelAxis = getSubLabelAxis(axisOptions, scaleName);
-			
+
 			// Apply dual Y-axis config to sublabel axis if needed
 			if (dualYAxis) {
 				const chartOrientation = usermeta?.orientation ?? 'vertical';
@@ -367,7 +392,7 @@ export const addAxes = produce<
 					addDualMetricAxisConfig(subLabelAxis, usermeta.metricAxisCount, scaleName);
 				}
 			}
-			
+
 			newAxes.push(subLabelAxis);
 		}
 
@@ -375,7 +400,7 @@ export const addAxes = produce<
 			const chartOrientation = usermeta?.orientation ?? 'vertical';
 			const isMetricAxis = getIsMetricAxis(position, chartOrientation);
 			if (isMetricAxis) {
-				addDualMetricAxisConfig(axis, usermeta.metricAxisCount, scaleName);
+				addDualMetricAxisConfig(axis, usermeta.metricAxisCount, scaleName, colorScheme);
 				usermeta.metricAxisCount++;
 			}
 		}
@@ -476,7 +501,7 @@ function addAxesToTrellisGroup(
 	options: AxisSpecOptions,
 	trellisGroupMark: GroupMark,
 	scaleName: string,
-	usermeta: UserMeta,
+	usermeta: UserMeta
 ) {
 	const trellisOrientation = trellisGroupMark.name?.startsWith('x') ? 'horizontal' : 'vertical';
 	const axisOrientation = options.position === 'bottom' || options.position === 'top' ? 'horizontal' : 'vertical';
