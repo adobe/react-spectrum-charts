@@ -60,7 +60,7 @@ import {
 	getOrientationProperties,
 	getScaleValues,
 	isDodgedAndStacked,
-	isDualYAxis,
+	isDualMetricAxis,
 } from './barUtils';
 import { getDodgedMark } from './dodgedBarUtils';
 import { getDodgedAndStackedBarMark, getStackedBarMarks } from './stackedBarUtils';
@@ -79,7 +79,7 @@ export const addBar = produce<
 			color = { value: 'categorical-100' },
 			colorScheme = DEFAULT_COLOR_SCHEME,
 			dimension = DEFAULT_CATEGORICAL_DIMENSION,
-			dualYAxis = false,
+			dualMetricAxis = false,
 			hasOnClick = false,
 			hasSquareCorners = false,
 			index = 0,
@@ -105,7 +105,7 @@ export const addBar = produce<
 			chartPopovers,
 			chartTooltips,
 			dimensionScaleType: 'band',
-			dualYAxis,
+			dualMetricAxis,
 			orientation,
 			color,
 			colorScheme,
@@ -156,7 +156,7 @@ export const addSignals = produce<Signal[], [BarSpecOptions]>((signals, options)
 	const { paddingInner } = getBarPadding(paddingRatio, barPaddingOuter);
 	signals.push(getGenericValueSignal('paddingInner', paddingInner));
 
-	if (isDualYAxis(options)) {
+	if (isDualMetricAxis(options)) {
 		signals.push(getFirstRscSeriesIdSignal(), getLastRscSeriesIdSignal(), getMouseOverSeriesSignal(name));
 	}
 
@@ -193,8 +193,8 @@ export const addData = produce<Data[], [BarSpecOptions]>((data, options) => {
 		data[index].transform?.push(getDodgeGroupTransform(options));
 	}
 
-	if (isDualYAxis(options)) {
-		addDualYAxisData(data, options);
+	if (isDualMetricAxis(options)) {
+		addDualMetricAxisData(data, options);
 	}
 	addTrendlineData(data, options);
 	addTooltipData(data, options);
@@ -254,7 +254,7 @@ export const getDodgeGroupTransform = ({ color, lineType, name, opacity, type }:
 	};
 };
 
-export const addDualYAxisData = (data: Data[], options: BarSpecOptions) => {
+export const addDualMetricAxisData = (data: Data[], options: BarSpecOptions) => {
 	const baseScaleName = getBaseScaleName(options);
 	const scaleNames = getDualAxisScaleNames(baseScaleName);
 
@@ -283,7 +283,7 @@ export const addScales = produce<Scale[], [BarSpecOptions]>((scales, options) =>
 		addMetricScale(scales, getScaleValues(options), axisType, metricAxis);
 	}
 
-	if (isDualYAxis(options)) {
+	if (isDualMetricAxis(options)) {
 		const baseScaleName = getBaseScaleName(options);
 		const scaleNames = getDualAxisScaleNames(baseScaleName);
 		addMetricScale(scales, getScaleValues(options), axisType, scaleNames.primaryScale, scaleNames.primaryDomain);

@@ -23,7 +23,7 @@ import { BarProps } from '../../../types';
 import { barSeriesData, barSeriesDataTwoSeries } from './data';
 
 export default {
-	title: 'RSC/Bar/Dual Axis',
+	title: 'RSC/Bar/Dual Metric Axis',
 	component: Bar,
 };
 
@@ -35,7 +35,7 @@ const dialogContent = (datum) => (
 	</Content>
 );
 
-const DualYAxisStory: StoryFn<typeof Bar> = (args): ReactElement => {
+const DualMetricAxisStory: StoryFn<typeof Bar> = (args): ReactElement => {
 	const chartProps = useChartProps({ data: barSeriesDataTwoSeries, width: 800, height: 600 });
 	return (
 		<Chart {...chartProps}>
@@ -124,14 +124,14 @@ const WithThreeSeriesStory: StoryFn<typeof Bar> = (args): ReactElement => {
 };
 
 const defaultProps: BarProps = {
-	dualYAxis: true,
+	dualMetricAxis: true,
 	type: 'dodged',
 	dimension: 'browser',
 	onClick: undefined,
 };
 
-const DualYAxis = bindWithProps(DualYAxisStory);
-DualYAxis.args = {
+const DualMetricAxis = bindWithProps(DualMetricAxisStory);
+DualMetricAxis.args = {
 	...defaultProps,
 	orientation: 'vertical',
 	order: 'order',
@@ -154,4 +154,4 @@ WithThreeSeries.args = {
 	color: 'operatingSystem',
 };
 
-export { DualYAxis, WithSublabels, WithThreeSeries };
+export { DualMetricAxis, WithSublabels, WithThreeSeries };

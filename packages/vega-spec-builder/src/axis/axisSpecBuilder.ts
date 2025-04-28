@@ -111,7 +111,7 @@ export const addAxis = produce<ScSpec, [AxisOptions & { colorScheme?: ColorSchem
 			...options,
 		};
 
-		const dualYAxis = spec.signals?.some((signal) => signal.name === 'firstRscSeriesId');
+		const dualMetricAxis = spec.signals?.some((signal) => signal.name === 'firstRscSeriesId');
 
 		spec.data = addAxisData(spec.data ?? [], { ...axisOptions, scaleType: scaleType ?? 'linear' });
 		spec.signals = addAxisSignals(spec.signals ?? [], axisOptions);
@@ -131,7 +131,7 @@ export const addAxis = produce<ScSpec, [AxisOptions & { colorScheme?: ColorSchem
 			// we don't want to show the grid on top level
 			// axes for trellised charts
 			grid: axisOptions.grid && !isTrellisedChart(spec),
-			dualYAxis,
+			dualMetricAxis,
 		});
 
 		spec.marks = addAxesMarks(spec.marks ?? [], {
@@ -139,7 +139,7 @@ export const addAxis = produce<ScSpec, [AxisOptions & { colorScheme?: ColorSchem
 			usermeta,
 			scaleName,
 			opposingScaleType,
-			dualYAxis,
+			dualMetricAxis,
 		});
 
 		return spec;
@@ -324,17 +324,30 @@ export function addDualMetricAxisConfig(
 	}
 }
 
+export interface AxisAddOptions extends AxisSpecOptions {
+	scaleName: string;
+	opposingScaleType?: ScaleType;
+	usermeta?: UserMeta;
+	dualMetricAxis?: boolean;
+}
+
+/**
+ * Add axes to the spec
+ * @param axes The axes to add
+ * @param options The axis options
+ * @returns The updated axes
+ */
 export const addAxes = produce<
 	Axis[],
 	[
 		AxisSpecOptions & {
 			scaleName: string;
 			opposingScaleType?: string;
-			dualYAxis?: boolean;
+			dualMetricAxis?: boolean;
 			usermeta: UserMeta;
 		}
 	]
->((axes, { scaleName, opposingScaleType, dualYAxis, ...axisOptions }) => {
+>((axes, { scaleName, opposingScaleType, dualMetricAxis, ...axisOptions }) => {
 	const newAxes: Axis[] = [];
 	// adds all the trellis axis options if this is a trellis axis
 	axisOptions = { ...axisOptions, ...getTrellisAxisOptions(scaleName) };
@@ -379,8 +392,8 @@ export const addAxes = produce<
 			// add sublabel axis
 			const subLabelAxis = getSubLabelAxis(axisOptions, scaleName);
 
-			addDualYAxisConfig({
-				dualYAxis,
+			handleDualMetricAxisConfig({
+				dualMetricAxis,
 				axis: subLabelAxis,
 				usermeta,
 				scaleName,
@@ -392,8 +405,8 @@ export const addAxes = produce<
 			newAxes.push(subLabelAxis);
 		}
 
-		addDualYAxisConfig({
-			dualYAxis,
+		handleDualMetricAxisConfig({
+			dualMetricAxis,
 			axis,
 			usermeta,
 			scaleName,
@@ -439,8 +452,12 @@ export const addAxes = produce<
 	axes.push(...newAxes);
 });
 
-const addDualYAxisConfig = ({
-	dualYAxis,
+/**
+ * Adds dual metric axis configuration to the axis
+ * This applies color and opacity encodings based on the series involved
+ */
+const handleDualMetricAxisConfig = ({
+	dualMetricAxis,
 	axis,
 	usermeta,
 	scaleName,
@@ -448,7 +465,7 @@ const addDualYAxisConfig = ({
 	position,
 	incrementMetricAxisCount,
 }: {
-	dualYAxis: boolean | undefined;
+	dualMetricAxis: boolean | undefined;
 	axis: Axis;
 	usermeta: UserMeta;
 	scaleName: string;
@@ -457,7 +474,7 @@ const addDualYAxisConfig = ({
 	incrementMetricAxisCount: boolean;
 }) => {
 	const chartOrientation = usermeta?.orientation ?? 'vertical';
-	if (dualYAxis && getIsMetricAxis(position, chartOrientation)) {
+	if (dualMetricAxis && getIsMetricAxis(position, chartOrientation)) {
 		if (!usermeta.metricAxisCount) {
 			usermeta.metricAxisCount = 0;
 		}
@@ -475,7 +492,7 @@ export const addAxesMarks = produce<
 			scaleName: string;
 			scaleType?: ScaleType;
 			opposingScaleType?: string;
-			dualYAxis?: boolean;
+			dualMetricAxis?: boolean;
 			usermeta: UserMeta;
 		}
 	]
@@ -553,7 +570,7 @@ function addAxesToTrellisGroup(
 		hideDefaultLabels,
 		scaleName,
 		scaleType,
-		dualYAxis: false, // trellis axes don't support dualYAxis scaling
+		dualMetricAxis: false, // trellis axes don't support dualMetricAxis scaling
 		usermeta,
 	});
 

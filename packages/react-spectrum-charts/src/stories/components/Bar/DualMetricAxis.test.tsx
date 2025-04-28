@@ -11,12 +11,12 @@
  */
 import { findChart, render, screen } from '../../../test-utils';
 import '../../../test-utils/__mocks__/matchMedia.mock.js';
-import { DualYAxis, WithSublabels, WithThreeSeries } from './DualYAxis.story';
+import { DualMetricAxis, WithSublabels, WithThreeSeries } from './DualMetricAxis.story';
 
-describe('Dual y axis bar axis styling', () => {
+describe('Dual metric axis bar axis styling', () => {
 	describe('Two series', () => {
 		test('axis title should have fill color based on series', async () => {
-			render(<DualYAxis {...DualYAxis.args} />);
+			render(<DualMetricAxis {...DualMetricAxis.args} />);
 
 			const chart = await findChart();
 			expect(chart).toBeInTheDocument();
@@ -29,7 +29,7 @@ describe('Dual y axis bar axis styling', () => {
 			expect(screen.getByText('Mac Downloads')).toHaveAttribute('fill', 'rgb(64, 70, 202)');
 		});
 		test('axis label should have fill color based on series', async () => {
-			render(<DualYAxis {...DualYAxis.args} />);
+			render(<DualMetricAxis {...DualMetricAxis.args} />);
 
 			const chart = await findChart();
 			expect(chart).toBeInTheDocument();

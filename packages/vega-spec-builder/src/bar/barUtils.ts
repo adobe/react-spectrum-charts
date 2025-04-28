@@ -55,13 +55,13 @@ export const isDodgedAndStacked = ({ color, lineType, opacity }: BarSpecOptions)
 };
 
 /**
- * Checks if the bar chart is a dual y-axis chart
+ * Checks if the bar chart is a dual metric axis chart
  * @param options - The bar chart options
- * @returns True if the bar chart is a dual y-axis chart, false otherwise
+ * @returns True if the bar chart is a dual metric axis chart, false otherwise
  */
-export const isDualYAxis = (options: BarSpecOptions) => {
-	const { dualYAxis, type } = options;
-	return Boolean(dualYAxis && !isTrellised(options) && type === 'dodged' && !isDodgedAndStacked(options));
+export const isDualMetricAxis = (options: BarSpecOptions) => {
+	const { dualMetricAxis, type } = options;
+	return Boolean(dualMetricAxis && !isTrellised(options) && type === 'dodged' && !isDodgedAndStacked(options));
 };
 
 export const getDodgedGroupMark = (options: BarSpecOptions): GroupMark => {
@@ -135,7 +135,7 @@ export const getMetricEncodings = (options: BarSpecOptions): RectEncodeEntry => 
 		return getStackedMetricEncodings(options);
 	}
 
-	if (isDualYAxis(options)) {
+	if (isDualMetricAxis(options)) {
 		return {
 			[startKey]: [
 				{

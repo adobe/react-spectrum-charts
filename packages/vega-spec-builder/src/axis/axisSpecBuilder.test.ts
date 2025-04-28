@@ -280,11 +280,11 @@ describe('Spec builder, Axis', () => {
 	});
 
 	describe('addAxes()', () => {
-		describe('dualYAxis', () => {
-			test('should add dualYAxis primary metric axis label color based on series', () => {
+		describe('dualMetricAxis', () => {
+			test('should add dualMetricAxis primary metric axis label color based on series', () => {
 				const labelFillEncoding = addAxes([], {
 					...defaultAxisOptions,
-					dualYAxis: true,
+					dualMetricAxis: true,
 					position: 'left',
 					scaleName: 'yLinear',
 					scaleType: 'linear',
@@ -298,10 +298,10 @@ describe('Spec builder, Axis', () => {
 				expect(labelFillEncoding?.[1]).toEqual({ value: 'rgb(34, 34, 34)' });
 			});
 
-			test('should add dualYAxis primary metric axis label fill opacity based on series', () => {
+			test('should add dualMetricAxis primary metric axis label fill opacity based on series', () => {
 				const labelFillOpacityEncoding = addAxes([], {
 					...defaultAxisOptions,
-					dualYAxis: true,
+					dualMetricAxis: true,
 					position: 'left',
 					scaleName: 'yLinear',
 					scaleType: 'linear',
@@ -314,10 +314,10 @@ describe('Spec builder, Axis', () => {
 				});
 			});
 
-			test('should add dualYAxis primary metric axis title color based on series', () => {
+			test('should add dualMetricAxis primary metric axis title color based on series', () => {
 				const titleFillEncoding = addAxes([], {
 					...defaultAxisOptions,
-					dualYAxis: true,
+					dualMetricAxis: true,
 					position: 'left',
 					scaleName: 'yLinear',
 					scaleType: 'linear',
@@ -331,10 +331,10 @@ describe('Spec builder, Axis', () => {
 				expect(titleFillEncoding?.[1]).toEqual({ value: 'rgb(34, 34, 34)' });
 			});
 
-			test('should add dualYAxis primary metric axis title fill opacity based on series', () => {
+			test('should add dualMetricAxis primary metric axis title fill opacity based on series', () => {
 				const titleFillOpacityEncoding = addAxes([], {
 					...defaultAxisOptions,
-					dualYAxis: true,
+					dualMetricAxis: true,
 					position: 'left',
 					scaleName: 'yLinear',
 					scaleType: 'linear',
@@ -347,10 +347,10 @@ describe('Spec builder, Axis', () => {
 				});
 			});
 
-			test('should add dualYAxis primary metric subLabels color based on series', () => {
+			test('should add dualMetricAxis primary metric subLabels color based on series', () => {
 				const labelFillEncoding = addAxes([], {
 					...defaultAxisOptions,
-					dualYAxis: true,
+					dualMetricAxis: true,
 					position: 'left',
 					scaleName: 'yLinear',
 					scaleType: 'linear',
@@ -365,10 +365,10 @@ describe('Spec builder, Axis', () => {
 				expect(labelFillEncoding?.[1]).toEqual({ value: 'rgb(34, 34, 34)' });
 			});
 
-			test('should add dualYAxis primary metric subLabels fill opacity based on series', () => {
+			test('should add dualMetricAxis primary metric subLabels fill opacity based on series', () => {
 				const labelFillOpacityEncoding = addAxes([], {
 					...defaultAxisOptions,
-					dualYAxis: true,
+					dualMetricAxis: true,
 					position: 'left',
 					scaleName: 'yLinear',
 					scaleType: 'linear',
@@ -386,7 +386,7 @@ describe('Spec builder, Axis', () => {
 				const usermeta = {};
 				addAxes([], {
 					...defaultAxisOptions,
-					dualYAxis: true,
+					dualMetricAxis: true,
 					position: 'left',
 					scaleName: 'yLinear',
 					scaleType: 'linear',
@@ -399,7 +399,7 @@ describe('Spec builder, Axis', () => {
 				const usermeta = {};
 				addAxes([], {
 					...defaultAxisOptions,
-					dualYAxis: true,
+					dualMetricAxis: true,
 					position: 'left',
 					scaleName: 'yLinear',
 					scaleType: 'linear',
@@ -409,10 +409,10 @@ describe('Spec builder, Axis', () => {
 				expect(usermeta).toEqual({ metricAxisCount: 1 });
 			});
 
-			test('should add dualYAxis secondary metric axis label color based on series', () => {
+			test('should add dualMetricAxis secondary metric axis label color based on series', () => {
 				const labelFillEncoding = addAxes([], {
 					...defaultAxisOptions,
-					dualYAxis: true,
+					dualMetricAxis: true,
 					position: 'left',
 					scaleName: 'yLinear',
 					scaleType: 'linear',
@@ -422,10 +422,10 @@ describe('Spec builder, Axis', () => {
 				expect(labelFillEncoding?.[0]).toEqual({ signal: "scale('color', lastRscSeriesId)" });
 			});
 
-			test('should add dualYAxis secondary metric axis label fill opacity based on series', () => {
+			test('should add dualMetricAxis secondary metric axis label fill opacity based on series', () => {
 				const labelFillOpacityEncoding = addAxes([], {
 					...defaultAxisOptions,
-					dualYAxis: true,
+					dualMetricAxis: true,
 					position: 'left',
 					scaleName: 'yLinear',
 					scaleType: 'linear',
@@ -438,10 +438,10 @@ describe('Spec builder, Axis', () => {
 				});
 			});
 
-			test('should add dualYAxis secondary metric subLabels color based on series', () => {
+			test('should add dualMetricAxis secondary metric subLabels color based on series', () => {
 				const labelFillEncoding = addAxes([], {
 					...defaultAxisOptions,
-					dualYAxis: true,
+					dualMetricAxis: true,
 					position: 'left',
 					scaleName: 'yLinear',
 					scaleType: 'linear',
@@ -452,10 +452,10 @@ describe('Spec builder, Axis', () => {
 				expect(labelFillEncoding?.[0]).toEqual({ signal: "scale('color', lastRscSeriesId)" });
 			});
 
-			test('should add dualYAxis secondary metric subLabels fill opacity based on series', () => {
+			test('should add dualMetricAxis secondary metric subLabels fill opacity based on series', () => {
 				const labelFillOpacityEncoding = addAxes([], {
 					...defaultAxisOptions,
-					dualYAxis: true,
+					dualMetricAxis: true,
 					position: 'left',
 					scaleName: 'yLinear',
 					scaleType: 'linear',
@@ -473,7 +473,7 @@ describe('Spec builder, Axis', () => {
 				const usermeta = { metricAxisCount: 1 };
 				addAxes([], {
 					...defaultAxisOptions,
-					dualYAxis: true,
+					dualMetricAxis: true,
 					position: 'left',
 					scaleName: 'yLinear',
 					scaleType: 'linear',
@@ -486,7 +486,7 @@ describe('Spec builder, Axis', () => {
 				const usermeta = { metricAxisCount: 1 };
 				addAxes([], {
 					...defaultAxisOptions,
-					dualYAxis: true,
+					dualMetricAxis: true,
 					position: 'left',
 					scaleName: 'yLinear',
 					scaleType: 'linear',
@@ -496,11 +496,11 @@ describe('Spec builder, Axis', () => {
 				expect(usermeta).toEqual({ metricAxisCount: 2 });
 			});
 
-			test('should not initialize usermeta.metricAxisCount if dualYAxis is false', () => {
+			test('should not initialize usermeta.metricAxisCount if dualMetricAxis is false', () => {
 				const usermeta = {};
 				addAxes([], {
 					...defaultAxisOptions,
-					dualYAxis: false,
+					dualMetricAxis: false,
 					position: 'left',
 					scaleName: 'yLinear',
 					scaleType: 'linear',
@@ -702,11 +702,11 @@ describe('Spec builder, Axis', () => {
 			expect(marks[0].axes?.[0].labels).toBe(false);
 		});
 
-		describe('dualYAxis', () => {
-			test('dualYAxis should be treated as false in trellis', () => {
+		describe('dualMetricAxis', () => {
+			test('dualMetricAxis should be treated as false in trellis', () => {
 				const marks = addAxesMarks([defaultTrellisGroupMark], {
 					...defaultAxisOptions,
-					dualYAxis: true,
+					dualMetricAxis: true,
 					position: 'left',
 					baseline: true,
 					baselineOffset: 0,
@@ -724,7 +724,7 @@ describe('Spec builder, Axis', () => {
 				const titleFillOpacity = marks[0].axes?.[0].encode?.title?.update
 					?.fillOpacity as ProductionRule<NumericValueRef>[];
 
-				function getDualYAxisFillEncoding(encoding: ProductionRule<ColorValueRef>[]) {
+				function getDualMetricAxisFillEncoding(encoding: ProductionRule<ColorValueRef>[]) {
 					return encoding?.find(
 						(rule) =>
 							'test' in rule &&
@@ -732,7 +732,7 @@ describe('Spec builder, Axis', () => {
 								`isValid(${MOUSE_OVER_SERIES}) && ${MOUSE_OVER_SERIES} !== ${LAST_RSC_SERIES_ID}`
 					);
 				}
-				function getDualYAxisFillOpacityEncoding(encoding: ProductionRule<NumericValueRef>[]) {
+				function getDualMetricAxisFillOpacityEncoding(encoding: ProductionRule<NumericValueRef>[]) {
 					return encoding?.find(
 						(rule) =>
 							'test' in rule &&
@@ -741,10 +741,10 @@ describe('Spec builder, Axis', () => {
 					);
 				}
 
-				expect(getDualYAxisFillEncoding(labelFillEncoding)).toBeUndefined();
-				expect(getDualYAxisFillOpacityEncoding(labelFillOpacity)).toBeUndefined();
-				expect(getDualYAxisFillEncoding(titleFillUpdate)).toBeUndefined();
-				expect(getDualYAxisFillOpacityEncoding(titleFillOpacity)).toBeUndefined();
+				expect(getDualMetricAxisFillEncoding(labelFillEncoding)).toBeUndefined();
+				expect(getDualMetricAxisFillOpacityEncoding(labelFillOpacity)).toBeUndefined();
+				expect(getDualMetricAxisFillEncoding(titleFillUpdate)).toBeUndefined();
+				expect(getDualMetricAxisFillOpacityEncoding(titleFillOpacity)).toBeUndefined();
 			});
 		});
 	});
