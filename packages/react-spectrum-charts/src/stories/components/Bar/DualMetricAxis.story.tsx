@@ -20,7 +20,7 @@ import { Axis, Bar, ChartPopover, ChartTooltip, Legend } from '../../../componen
 import useChartProps from '../../../hooks/useChartProps';
 import { bindWithProps } from '../../../test-utils';
 import { BarProps } from '../../../types';
-import { barSeriesData, barSeriesDataTwoSeries } from './data';
+import { barDataTwoSeries, barSeriesData } from './data';
 
 export default {
 	title: 'RSC/Bar/Dual Metric Axis',
@@ -36,7 +36,7 @@ const dialogContent = (datum) => (
 );
 
 const DualMetricAxisStory: StoryFn<typeof Bar> = (args): ReactElement => {
-	const chartProps = useChartProps({ data: barSeriesDataTwoSeries, width: 800, height: 600 });
+	const chartProps = useChartProps({ data: barDataTwoSeries, width: 800, height: 600 });
 	return (
 		<Chart {...chartProps}>
 			<Axis position={args.orientation === 'horizontal' ? 'left' : 'bottom'} baseline title="Browser" />
@@ -62,7 +62,7 @@ const DualMetricAxisStory: StoryFn<typeof Bar> = (args): ReactElement => {
 };
 
 const WithSublabelsStory: StoryFn<typeof Bar> = (args): ReactElement => {
-	const chartProps = useChartProps({ data: barSeriesDataTwoSeries, width: 800, height: 600 });
+	const chartProps = useChartProps({ data: barDataTwoSeries, width: 800, height: 600 });
 	return (
 		<Chart {...chartProps}>
 			<Axis position={args.orientation === 'horizontal' ? 'left' : 'bottom'} baseline title="Browser" />
