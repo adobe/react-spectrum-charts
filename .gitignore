@@ -24,12 +24,5 @@ test-report.xml
 .scannerwork
 
 # cursor
-<<<<<<< HEAD
-.cursor
-cursor
-.memory
-
-=======
 cursor
 .cursor
->>>>>>> 45af78da (chore: resolve conflicts)
