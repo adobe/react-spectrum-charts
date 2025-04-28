@@ -18,9 +18,11 @@ import {
 	DEFAULT_COLOR_SCHEME,
 	DEFAULT_METRIC,
 	FILTERED_TABLE,
+	LAST_RSC_SERIES_ID,
 	LINE_TYPE_SCALE,
 	OPACITY_SCALE,
 	PADDING_RATIO,
+	SERIES_ID,
 	STACK_ID,
 	TIME,
 	TRELLIS_PADDING,
@@ -260,13 +262,13 @@ export const addDualYAxisData = (data: Data[], options: BarSpecOptions) => {
 		data.push({
 			name: scaleNames.primaryDomain,
 			source: FILTERED_TABLE,
-			transform: [{ type: 'filter', expr: 'datum.rscSeriesId !== lastRscSeriesId' }],
+			transform: [{ type: 'filter', expr: `datum.${SERIES_ID} !== ${LAST_RSC_SERIES_ID}` }],
 		});
 
 		data.push({
 			name: scaleNames.secondaryDomain,
 			source: FILTERED_TABLE,
-			transform: [{ type: 'filter', expr: 'datum.rscSeriesId === lastRscSeriesId' }],
+			transform: [{ type: 'filter', expr: `datum.${SERIES_ID} === ${LAST_RSC_SERIES_ID}` }],
 		});
 	}
 };
@@ -275,10 +277,8 @@ export const addScales = produce<Scale[], [BarSpecOptions]>((scales, options) =>
 	const { color, lineType, opacity, metricAxis } = options;
 	const { metricAxis: axisType } = getOrientationProperties(options.orientation);
 
-	// Add base metric scale
 	addMetricScale(scales, getScaleValues(options), axisType);
 
-	// Add custom metric axis scale if specified
 	if (metricAxis) {
 		addMetricScale(scales, getScaleValues(options), axisType, metricAxis);
 	}

@@ -20,7 +20,15 @@ import {
 	RectMark,
 } from 'vega';
 
-import { CORNER_RADIUS, FILTERED_TABLE, SELECTED_GROUP, SELECTED_ITEM, STACK_ID } from '@spectrum-charts/constants';
+import {
+	CORNER_RADIUS,
+	FILTERED_TABLE,
+	LAST_RSC_SERIES_ID,
+	SELECTED_GROUP,
+	SELECTED_ITEM,
+	SERIES_ID,
+	STACK_ID,
+} from '@spectrum-charts/constants';
 import { getColorValue } from '@spectrum-charts/themes';
 
 import { getPopovers } from '../chartPopover/chartPopoverUtils';
@@ -46,10 +54,15 @@ export const isDodgedAndStacked = ({ color, lineType, opacity }: BarSpecOptions)
 	return [color, lineType, opacity].some((facet) => Array.isArray(facet) && facet.length === 2);
 };
 
+/**
+ * Checks if the bar chart is a dual y-axis chart
+ * @param options - The bar chart options
+ * @returns True if the bar chart is a dual y-axis chart, false otherwise
+ */
 export const isDualYAxis = (options: BarSpecOptions) => {
 	const { dualYAxis, type } = options;
 	return Boolean(dualYAxis && !isTrellised(options) && type === 'dodged' && !isDodgedAndStacked(options));
-}
+};
 
 export const getDodgedGroupMark = (options: BarSpecOptions): GroupMark => {
 	const { dimension, groupedPadding, orientation, name, paddingRatio } = options;
@@ -126,7 +139,7 @@ export const getMetricEncodings = (options: BarSpecOptions): RectEncodeEntry => 
 		return {
 			[startKey]: [
 				{
-					test: 'datum.rscSeriesId === lastRscSeriesId',
+					test: `datum.${SERIES_ID} === ${LAST_RSC_SERIES_ID}`,
 					scale: `${scaleKey}Secondary`,
 					value: 0,
 				},
@@ -137,7 +150,7 @@ export const getMetricEncodings = (options: BarSpecOptions): RectEncodeEntry => 
 			],
 			[endKey]: [
 				{
-					test: 'datum.rscSeriesId === lastRscSeriesId',
+					test: `datum.${SERIES_ID} === ${LAST_RSC_SERIES_ID}`,
 					scale: `${scaleKey}Secondary`,
 					field: metric,
 				},
@@ -414,4 +427,4 @@ export const getBaseScaleName = (options: BarSpecOptions) => {
 	const { metricAxis, orientation } = options;
 	const { metricScaleKey } = getOrientationProperties(orientation);
 	return metricAxis || metricScaleKey;
-}
+};

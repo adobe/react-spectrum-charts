@@ -65,7 +65,7 @@ import { defaultDodgedMark } from './dodgedBarUtils.test';
 
 const startingSpec = initializeSpec({
 	scales: [{ name: COLOR_SCALE, type: 'ordinal' }],
-}) as ScSpec;
+});
 
 const defaultMetricScaleDomain: ScaleData = { data: FILTERED_TABLE, fields: ['value1'] };
 const defaultMetricScale: Scale = {

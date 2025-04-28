@@ -728,14 +728,16 @@ describe('Spec builder, Axis', () => {
 					return encoding?.find(
 						(rule) =>
 							'test' in rule &&
-							rule.test === 'isValid(mousedOverSeries) && mousedOverSeries !== lastRscSeriesId'
+							rule.test ===
+								`isValid(${MOUSE_OVER_SERIES}) && ${MOUSE_OVER_SERIES} !== ${LAST_RSC_SERIES_ID}`
 					);
 				}
 				function getDualYAxisFillOpacityEncoding(encoding: ProductionRule<NumericValueRef>[]) {
 					return encoding?.find(
 						(rule) =>
 							'test' in rule &&
-							rule.test === 'isValid(mousedOverSeries) && mousedOverSeries !== lastRscSeriesId'
+							rule.test ===
+								`isValid(${MOUSE_OVER_SERIES}) && ${MOUSE_OVER_SERIES} !== ${LAST_RSC_SERIES_ID}`
 					);
 				}
 

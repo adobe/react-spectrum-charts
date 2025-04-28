@@ -207,11 +207,11 @@ export const getLabelSignalValue = (
  * @param axis Axis to apply encoding rules to
  */
 export function applySecondaryMetricAxisEncodings(axis: Axis): void {
-	const secondaryAxisFillRules = [{ signal: `scale('${COLOR_SCALE}', lastRscSeriesId)` }];
+	const secondaryAxisFillRules = [{ signal: `scale('${COLOR_SCALE}', ${LAST_RSC_SERIES_ID})` }];
 
 	const secondaryAxisFillOpacityRules = [
 		{
-			test: 'isValid(mousedOverSeries) && mousedOverSeries !== lastRscSeriesId',
+			test: `isValid(${MOUSE_OVER_SERIES}) && ${MOUSE_OVER_SERIES} !== ${LAST_RSC_SERIES_ID}`,
 			value: 1 / HIGHLIGHT_CONTRAST_RATIO,
 		},
 	];
@@ -294,10 +294,10 @@ export function applyPrimaryMetricAxisEncodings(axis: Axis, colorScheme: ColorSc
  * @returns Whether the axis is a metric axis
  */
 export function getIsMetricAxis(position: Position, chartOrientation: Orientation): boolean {
-	return (
-		(chartOrientation === 'vertical' && isVerticalAxis(position)) ||
-		(chartOrientation === 'horizontal' && !isVerticalAxis(position))
-	);
+	if (chartOrientation === 'vertical') {
+		return isVerticalAxis(position);
+	}
+	return !isVerticalAxis(position);
 }
 
 /**
@@ -308,12 +308,10 @@ export function getIsMetricAxis(position: Position, chartOrientation: Orientatio
  */
 export function addDualMetricAxisConfig(
 	axis: Axis,
-	metricAxisCount: number,
+	isPrimaryMetricAxis: boolean,
 	scaleName: string,
 	colorScheme: ColorScheme = DEFAULT_COLOR_SCHEME
 ) {
-	const isPrimaryMetricAxis = metricAxisCount === 0;
-
 	const scaleNames = getDualAxisScaleNames(scaleName);
 	const { primaryScale, secondaryScale } = scaleNames;
 
@@ -463,7 +461,7 @@ const addDualYAxisConfig = ({
 		if (!usermeta.metricAxisCount) {
 			usermeta.metricAxisCount = 0;
 		}
-		addDualMetricAxisConfig(axis, usermeta.metricAxisCount, scaleName, colorScheme);
+		addDualMetricAxisConfig(axis, usermeta.metricAxisCount === 0, scaleName, colorScheme);
 		if (incrementMetricAxisCount) {
 			usermeta.metricAxisCount++;
 		}
