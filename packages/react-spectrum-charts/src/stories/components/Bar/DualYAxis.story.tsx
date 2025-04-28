@@ -124,6 +124,7 @@ const WithThreeSeriesStory: StoryFn<typeof Bar> = (args): ReactElement => {
 };
 
 const defaultProps: BarProps = {
+	dualYAxis: true,
 	type: 'dodged',
 	dimension: 'browser',
 	onClick: undefined,
