@@ -351,9 +351,6 @@ export const addAxes = produce<
 		name,
 		position,
 	} = axisOptions;
-	if (usermeta.metricAxisCount === undefined) {
-		usermeta.metricAxisCount = 0;
-	}
 
 	if (labelFormat === 'time') {
 		// time axis actually needs two axes. A primary and secondary.
@@ -384,26 +381,28 @@ export const addAxes = produce<
 			// add sublabel axis
 			const subLabelAxis = getSubLabelAxis(axisOptions, scaleName);
 
-			// Apply dual Y-axis config to sublabel axis if needed
-			if (dualYAxis) {
-				const chartOrientation = usermeta?.orientation ?? 'vertical';
-				const isMetricAxis = getIsMetricAxis(position, chartOrientation);
-				if (isMetricAxis) {
-					addDualMetricAxisConfig(subLabelAxis, usermeta.metricAxisCount, scaleName);
-				}
-			}
+			addDualYAxisConfig({
+				dualYAxis,
+				axis: subLabelAxis,
+				usermeta,
+				scaleName,
+				colorScheme,
+				position,
+				incrementMetricAxisCount: false,
+			});
 
 			newAxes.push(subLabelAxis);
 		}
 
-		if (dualYAxis) {
-			const chartOrientation = usermeta?.orientation ?? 'vertical';
-			const isMetricAxis = getIsMetricAxis(position, chartOrientation);
-			if (isMetricAxis) {
-				addDualMetricAxisConfig(axis, usermeta.metricAxisCount, scaleName, colorScheme);
-				usermeta.metricAxisCount++;
-			}
-		}
+		addDualYAxisConfig({
+			dualYAxis,
+			axis,
+			usermeta,
+			scaleName,
+			colorScheme,
+			position,
+			incrementMetricAxisCount: true,
+		});
 
 		newAxes.unshift(axis);
 	}
@@ -441,6 +440,35 @@ export const addAxes = produce<
 
 	axes.push(...newAxes);
 });
+
+const addDualYAxisConfig = ({
+	dualYAxis,
+	axis,
+	usermeta,
+	scaleName,
+	colorScheme,
+	position,
+	incrementMetricAxisCount,
+}: {
+	dualYAxis: boolean | undefined;
+	axis: Axis;
+	usermeta: UserMeta;
+	scaleName: string;
+	colorScheme: ColorScheme;
+	position: Position;
+	incrementMetricAxisCount: boolean;
+}) => {
+	const chartOrientation = usermeta?.orientation ?? 'vertical';
+	if (dualYAxis && getIsMetricAxis(position, chartOrientation)) {
+		if (!usermeta.metricAxisCount) {
+			usermeta.metricAxisCount = 0;
+		}
+		addDualMetricAxisConfig(axis, usermeta.metricAxisCount, scaleName, colorScheme);
+		if (incrementMetricAxisCount) {
+			usermeta.metricAxisCount++;
+		}
+	}
+};
 
 export const addAxesMarks = produce<
 	Mark[],

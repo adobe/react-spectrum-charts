@@ -179,9 +179,7 @@ describe('Spec builder, Axis', () => {
 					marks: [],
 					signals: [],
 					data: [],
-					usermeta: {
-						metricAxisCount: 0,
-					},
+					usermeta: {},
 				});
 			});
 			test('position = "left"', () => {
@@ -199,9 +197,7 @@ describe('Spec builder, Axis', () => {
 					signals: [],
 					marks: [],
 					data: [],
-					usermeta: {
-						metricAxisCount: 0,
-					},
+					usermeta: {},
 				});
 			});
 			test('type = percentage', () => {
@@ -231,9 +227,7 @@ describe('Spec builder, Axis', () => {
 					signals: [],
 					marks: [],
 					data: [],
-					usermeta: {
-						metricAxisCount: 0,
-					},
+					usermeta: {},
 				});
 			});
 			test('subLabels', () => {
@@ -250,9 +244,7 @@ describe('Spec builder, Axis', () => {
 					marks: [],
 					signals: [{ ...defaultSignal, value: [{ ...defaultSignal.value[0], baseline: undefined }] }],
 					data: [],
-					usermeta: {
-						metricAxisCount: 0,
-					},
+					usermeta: {},
 				});
 			});
 			test('custom X range', () => {
@@ -281,9 +273,7 @@ describe('Spec builder, Axis', () => {
 					marks: [],
 					signals: [],
 					data: [],
-					usermeta: {
-						metricAxisCount: 0,
-					},
+					usermeta: {},
 				});
 			});
 		});
@@ -506,7 +496,7 @@ describe('Spec builder, Axis', () => {
 				expect(usermeta).toEqual({ metricAxisCount: 2 });
 			});
 
-			test('should not increment usermeta.metricAxisCount if dualYAxis is false', () => {
+			test('should not initialize usermeta.metricAxisCount if dualYAxis is false', () => {
 				const usermeta = {};
 				addAxes([], {
 					...defaultAxisOptions,
@@ -516,7 +506,7 @@ describe('Spec builder, Axis', () => {
 					scaleType: 'linear',
 					usermeta,
 				});
-				expect(usermeta).toEqual({ metricAxisCount: 0 });
+				expect(usermeta).toEqual({});
 			});
 		});
 
