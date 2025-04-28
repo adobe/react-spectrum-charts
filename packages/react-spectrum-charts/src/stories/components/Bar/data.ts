@@ -92,7 +92,7 @@ export const stackedBarDataWithUTC = [
 	},
 ];
 
-export const barSeriesDataTwoSeries = [
+export const barDataTwoSeries = [
 	{ browser: 'Chrome', value: 5, operatingSystem: 'Windows', order: 2, percentLabel: '50%' },
 	{ browser: 'Chrome', value: 3, operatingSystem: 'Mac', order: 1, percentLabel: '30%' },
 	{ browser: 'Firefox', value: 3, operatingSystem: 'Windows', order: 2, percentLabel: '42.6%' },
@@ -102,7 +102,7 @@ export const barSeriesDataTwoSeries = [
 ];
 
 export const barSeriesData = [
-	...barSeriesDataTwoSeries,
+	...barDataTwoSeries,
 	{ browser: 'Chrome', value: 2, operatingSystem: 'Other', order: 0, percentLabel: '20%' },
 	{ browser: 'Firefox', value: 1, operatingSystem: 'Other', order: 0, percentLabel: '14.3%' },
 	{ browser: 'Safari', value: 1, operatingSystem: 'Other', order: 0, percentLabel: '25%' },
