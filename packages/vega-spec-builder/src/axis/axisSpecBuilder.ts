@@ -473,7 +473,7 @@ const handleDualMetricAxisConfig = ({
 	position: Position;
 	incrementMetricAxisCount: boolean;
 }) => {
-	const chartOrientation = usermeta?.orientation ?? 'vertical';
+	const chartOrientation = usermeta?.chartOrientation ?? 'vertical';
 	if (dualMetricAxis && getIsMetricAxis(position, chartOrientation)) {
 		if (!usermeta.metricAxisCount) {
 			usermeta.metricAxisCount = 0;

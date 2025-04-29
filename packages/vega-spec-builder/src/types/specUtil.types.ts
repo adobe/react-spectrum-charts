@@ -38,7 +38,7 @@ export interface ScSpec extends Spec {
 }
 
 export type UserMeta = {
-	orientation?: Orientation;
+	chartOrientation?: Orientation;
 	metricAxisCount?: number;
 };
 

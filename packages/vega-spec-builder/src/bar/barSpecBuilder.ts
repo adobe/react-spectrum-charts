@@ -132,8 +132,9 @@ export const addBar = produce<
 		};
 
 		spec.usermeta = {
-			orientation: barOptions.orientation,
+			chartOrientation: barOptions.orientation,
 		};
+
 		spec.data = addData(spec.data ?? [], barOptions);
 		spec.signals = addSignals(spec.signals ?? [], barOptions);
 		spec.scales = addScales(spec.scales ?? [], barOptions);
@@ -193,9 +194,7 @@ export const addData = produce<Data[], [BarSpecOptions]>((data, options) => {
 		data[index].transform?.push(getDodgeGroupTransform(options));
 	}
 
-	if (isDualMetricAxis(options)) {
-		addDualMetricAxisData(data, options);
-	}
+	addDualMetricAxisData(data, options);
 	addTrendlineData(data, options);
 	addTooltipData(data, options);
 	addPopoverData(data, options);
@@ -255,21 +254,23 @@ export const getDodgeGroupTransform = ({ color, lineType, name, opacity, type }:
 };
 
 export const addDualMetricAxisData = (data: Data[], options: BarSpecOptions) => {
-	const baseScaleName = getBaseScaleName(options);
-	const scaleNames = getDualAxisScaleNames(baseScaleName);
+	if (isDualMetricAxis(options)) {
+		const baseScaleName = getBaseScaleName(options);
+		const scaleNames = getDualAxisScaleNames(baseScaleName);
 
-	if (scaleNames.primaryDomain && scaleNames.secondaryDomain) {
-		data.push({
-			name: scaleNames.primaryDomain,
-			source: FILTERED_TABLE,
-			transform: [{ type: 'filter', expr: `datum.${SERIES_ID} !== ${LAST_RSC_SERIES_ID}` }],
-		});
+		if (scaleNames.primaryDomain && scaleNames.secondaryDomain) {
+			data.push({
+				name: scaleNames.primaryDomain,
+				source: FILTERED_TABLE,
+				transform: [{ type: 'filter', expr: `datum.${SERIES_ID} !== ${LAST_RSC_SERIES_ID}` }],
+			});
 
-		data.push({
-			name: scaleNames.secondaryDomain,
-			source: FILTERED_TABLE,
-			transform: [{ type: 'filter', expr: `datum.${SERIES_ID} === ${LAST_RSC_SERIES_ID}` }],
-		});
+			data.push({
+				name: scaleNames.secondaryDomain,
+				source: FILTERED_TABLE,
+				transform: [{ type: 'filter', expr: `datum.${SERIES_ID} === ${LAST_RSC_SERIES_ID}` }],
+			});
+		}
 	}
 };
 

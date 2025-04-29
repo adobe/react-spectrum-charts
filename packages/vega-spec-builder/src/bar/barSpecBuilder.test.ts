@@ -241,7 +241,7 @@ const defaultSpec: ScSpec = {
 		},
 	],
 	usermeta: {
-		orientation: 'vertical',
+		chartOrientation: 'vertical',
 	},
 };
 
@@ -255,14 +255,14 @@ describe('barSpecBuilder', () => {
 			test('should add vertical orientation to usermeta if bar orientation is vertical', () => {
 				// default orientation is vertical
 				expect(addBar(startingSpec, { idKey: MARK_ID, markType: 'bar' }).usermeta).toHaveProperty(
-					'orientation',
+					'chartOrientation',
 					'vertical'
 				);
 			});
 			test('should add horizontal orientation to usermeta if bar orientation is horizontal', () => {
 				expect(
 					addBar(startingSpec, { idKey: MARK_ID, markType: 'bar', orientation: 'horizontal' }).usermeta
-				).toHaveProperty('orientation', 'horizontal');
+				).toHaveProperty('chartOrientation', 'horizontal');
 			});
 		});
 	});
