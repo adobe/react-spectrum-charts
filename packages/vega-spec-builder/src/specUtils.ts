@@ -234,6 +234,7 @@ export const initializeSpec = (spec: Spec | null = {}, chartOptions: Partial<Cha
 	const { backgroundColor, colorScheme = 'light', description, title } = chartOptions;
 
 	const baseSpec: ScSpec = {
+		usermeta: {},
 		title: title || undefined,
 		description,
 		autosize: { type: 'fit', contains: 'padding', resize: true },

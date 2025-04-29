@@ -34,10 +34,13 @@ export interface ScSpec extends Spec {
 	 * Parsing the spec for information about the bar is brittle, since implementation details may change.
 	 * A preferred approach would be to add the needed information to usermeta { orientation: 'vertical' }.
 	 */
-	usermeta?: {
-		orientation?: Orientation;
-	};
+	usermeta: UserMeta;
 }
+
+export type UserMeta = {
+	chartOrientation?: Orientation;
+	metricAxisCount?: number;
+};
 
 export interface MarkBounds {
 	x1: number;

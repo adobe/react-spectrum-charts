@@ -32,7 +32,7 @@ describe('comboSpecBuilder', () => {
 	describe('addCombo', () => {
 		it('should build a combo spec with a line and bar mark', () => {
 			addCombo(
-				{},
+				{ usermeta: {} },
 				{
 					idKey: MARK_ID,
 					dimension: 'datetime',
@@ -52,7 +52,7 @@ describe('comboSpecBuilder', () => {
 		});
 
 		it('should do nothing if no children', () => {
-			addCombo({}, { idKey: MARK_ID, markType: 'combo' });
+			addCombo({ usermeta: {} }, { idKey: MARK_ID, markType: 'combo' });
 
 			expect(addBar).not.toHaveBeenCalled();
 			expect(addLine).not.toHaveBeenCalled();

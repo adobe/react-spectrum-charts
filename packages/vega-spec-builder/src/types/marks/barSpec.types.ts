@@ -30,6 +30,8 @@ export interface BarOptions {
 	dimension?: string;
 	/** Data type field used for the bar categories (x-axis for a vertical bar) */
 	dimensionDataType?: string;
+	/** Whether to scale the last series in the data separately using the secondary metric axis */
+	dualMetricAxis?: boolean;
 	/** Sets the inner padding between bars in a group */
 	groupedPadding?: number;
 	/** `true` if BarProps has an onClick callback. Will add the mouse pointer to the bar on hover. */

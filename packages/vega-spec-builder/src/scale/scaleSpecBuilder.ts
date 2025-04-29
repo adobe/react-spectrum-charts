@@ -32,13 +32,17 @@ export const getScaleIndexByType = (
 	scales: Scale[],
 	type: SupportedScaleType,
 	axis: AxisType,
-	scaleName?: string
+	scaleName?: string,
+	domainDataKey?: string
 ): number => {
 	const name = scaleName || toCamelCase(`${axis} ${type}`);
 	let index = scales.findIndex((scale) => scale.name === name);
 	if (index === -1) {
 		index = scales.length;
-		scales.push(generateScale(type, axis, { name }));
+		scales.push(generateScale(type, axis, {
+			name,
+			...(domainDataKey ? { domain: { data: domainDataKey, fields: [] } } : {}),
+		}));
 	}
 	return index;
 };
@@ -106,14 +110,16 @@ const overridePadding = produce<Scale, [number]>((scale, padding) => {
  * @param values
  * @param metricAxis
  * @param scaleName
+ * @param domainDataKey
  */
 export const addMetricScale = (
 	scales: Scale[],
 	metricKeys: string[],
 	metricAxis: AxisType = 'y',
-	scaleName?: string
+	scaleName?: string,
+	domainDataKey?: string
 ) => {
-	const index = getScaleIndexByType(scales, 'linear', metricAxis, scaleName);
+	const index = getScaleIndexByType(scales, 'linear', metricAxis, scaleName, domainDataKey);
 	scales[index] = addDomainFields(scales[index], metricKeys);
 };
 

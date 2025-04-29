@@ -9,16 +9,24 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import deepmerge from 'deepmerge';
 import { produce } from 'immer';
 import { Axis, Data, GroupMark, Mark, ScaleType, Signal } from 'vega';
 
 import {
+	COLOR_SCALE,
 	DEFAULT_COLOR_SCHEME,
+	DEFAULT_FONT_COLOR,
 	DEFAULT_GRANULARITY,
 	DEFAULT_LABEL_ALIGN,
 	DEFAULT_LABEL_FONT_WEIGHT,
 	DEFAULT_LABEL_ORIENTATION,
+	FIRST_RSC_SERIES_ID,
+	HIGHLIGHT_CONTRAST_RATIO,
+	LAST_RSC_SERIES_ID,
+	MOUSE_OVER_SERIES,
 } from '@spectrum-charts/constants';
+import { spectrumColors } from '@spectrum-charts/themes';
 
 import {
 	addAxisAnnotationAxis,
@@ -27,8 +35,9 @@ import {
 	addAxisAnnotationSignals,
 	getAxisAnnotationsFromChildren,
 } from '../axisAnnotation/axisAnnotationUtils';
+import { getDualAxisScaleNames } from '../scale/scaleUtils';
 import { getGenericValueSignal } from '../signal/signalSpecBuilder';
-import { AxisOptions, AxisSpecOptions, ColorScheme, Label, Orientation, Position, ScSpec } from '../types';
+import { AxisOptions, AxisSpecOptions, ColorScheme, Label, Orientation, Position, ScSpec, UserMeta } from '../types';
 import { getAxisLabelsEncoding, getControlledLabelAnchorValues, getLabelValue } from './axisLabelUtils';
 import { getReferenceLineMarks, getReferenceLines, scaleTypeSupportsReferenceLines } from './axisReferenceLineUtils';
 import { encodeAxisTitle, getTrellisAxisOptions, isTrellisedChart } from './axisTrellisUtils';
@@ -40,6 +49,7 @@ import {
 	getSubLabelAxis,
 	getTimeAxes,
 	hasSubLabels,
+	isVerticalAxis,
 } from './axisUtils';
 
 export const addAxis = produce<ScSpec, [AxisOptions & { colorScheme?: ColorScheme; index?: number }]>(
@@ -101,6 +111,8 @@ export const addAxis = produce<ScSpec, [AxisOptions & { colorScheme?: ColorSchem
 			...options,
 		};
 
+		const dualMetricAxis = spec.signals?.some((signal) => signal.name === 'firstRscSeriesId');
+
 		spec.data = addAxisData(spec.data ?? [], { ...axisOptions, scaleType: scaleType ?? 'linear' });
 		spec.signals = addAxisSignals(spec.signals ?? [], axisOptions);
 
@@ -109,20 +121,25 @@ export const addAxis = produce<ScSpec, [AxisOptions & { colorScheme?: ColorSchem
 			scale.domain = range;
 		}
 
+		const usermeta = spec.usermeta;
 		spec.axes = addAxes(spec.axes ?? [], {
 			...axisOptions,
 			scaleName,
 			opposingScaleType,
+			usermeta,
 
 			// we don't want to show the grid on top level
 			// axes for trellised charts
 			grid: axisOptions.grid && !isTrellisedChart(spec),
+			dualMetricAxis,
 		});
 
 		spec.marks = addAxesMarks(spec.marks ?? [], {
 			...axisOptions,
+			usermeta,
 			scaleName,
 			opposingScaleType,
+			dualMetricAxis,
 		});
 
 		return spec;
@@ -185,85 +202,302 @@ export const getLabelSignalValue = (
 		})
 		.filter(Boolean);
 
-export const addAxes = produce<Axis[], [AxisSpecOptions & { scaleName: string; opposingScaleType?: string }]>(
-	(axes, { scaleName, opposingScaleType, ...axisOptions }) => {
-		const newAxes: Axis[] = [];
-		// adds all the trellis axis options if this is a trellis axis
-		axisOptions = { ...axisOptions, ...getTrellisAxisOptions(scaleName) };
-		const { baseline, labelAlign, labelFontWeight, labelFormat, labelOrientation, name, position } = axisOptions;
-		if (labelFormat === 'time') {
-			// time axis actually needs two axes. A primary and secondary.
-			newAxes.push(...getTimeAxes(scaleName, axisOptions));
-		} else {
-			const axis = getDefaultAxis(axisOptions, scaleName);
+/**
+ * Applies fill and opacity encoding rules to the secondary metric axis
+ * @param axis Axis to apply encoding rules to
+ */
+export function applySecondaryMetricAxisEncodings(axis: Axis): void {
+	const secondaryAxisFillRules = [{ signal: `scale('${COLOR_SCALE}', ${LAST_RSC_SERIES_ID})` }];
 
-			// if labels exist, add them to the axis
-			if (axisOptions.labels.length) {
-				const labels = axisOptions.labels;
-				const signalName = `${name}_labels`;
-				axis.values = labels.map((label) => getLabelValue(label));
-				axis.encode = {
-					labels: getAxisLabelsEncoding(
-						labelAlign,
-						labelFontWeight,
-						'label',
-						labelOrientation,
-						position,
-						signalName
-					),
-				};
-			}
+	const secondaryAxisFillOpacityRules = [
+		{
+			test: `isValid(${MOUSE_OVER_SERIES}) && ${MOUSE_OVER_SERIES} !== ${LAST_RSC_SERIES_ID}`,
+			value: 1 / HIGHLIGHT_CONTRAST_RATIO,
+		},
+	];
 
-			// if sublabels exist, create a new axis for the sub labels
-			if (hasSubLabels(axisOptions)) {
-				axis.titlePadding = 24;
+	const encodings = {
+		labels: {
+			enter: {
+				fill: secondaryAxisFillRules,
+			},
+			update: {
+				fillOpacity: secondaryAxisFillOpacityRules,
+			},
+		},
+		title: {
+			enter: {
+				fill: secondaryAxisFillRules,
+			},
+			update: {
+				fillOpacity: secondaryAxisFillOpacityRules,
+			},
+		},
+	};
 
-				// add sublabel axis
-				newAxes.push(getSubLabelAxis(axisOptions, scaleName));
-			}
-			newAxes.unshift(axis);
+	if (!axis.encode) {
+		axis.encode = encodings;
+	} else {
+		axis.encode = deepmerge(axis.encode, encodings);
+	}
+}
+
+/**
+ * Applies fill and opacity encoding rules to the primary metric axis
+ * @param axis Axis to apply encoding rules to
+ * @param colorScheme The color scheme (light or dark)
+ */
+export function applyPrimaryMetricAxisEncodings(axis: Axis, colorScheme: ColorScheme = DEFAULT_COLOR_SCHEME): void {
+	// Get the appropriate font color value based on the colorScheme (light/dark theme)
+	const defaultFontColor = spectrumColors[colorScheme][DEFAULT_FONT_COLOR];
+
+	const primaryAxisFillRules = [
+		{
+			test: `length(domain('${COLOR_SCALE}')) -1 === 1`,
+			signal: `scale('${COLOR_SCALE}', ${FIRST_RSC_SERIES_ID})`,
+		},
+		{ value: defaultFontColor },
+	];
+	const primaryAxisFillOpacityRules = [
+		{
+			test: `${MOUSE_OVER_SERIES} === ${LAST_RSC_SERIES_ID}`,
+			value: 1 / HIGHLIGHT_CONTRAST_RATIO,
+		},
+	];
+
+	const encodings = {
+		labels: {
+			update: {
+				fill: primaryAxisFillRules,
+				fillOpacity: primaryAxisFillOpacityRules,
+			},
+		},
+		title: {
+			update: {
+				fill: primaryAxisFillRules,
+				fillOpacity: primaryAxisFillOpacityRules,
+			},
+		},
+	};
+
+	if (!axis.encode) {
+		axis.encode = encodings;
+	} else {
+		axis.encode = deepmerge(axis.encode, encodings);
+	}
+}
+
+/**
+ * Determines if an axis is a metric axis based on its position and chart orientation
+ * @param position The position of the axis
+ * @param chartOrientation The orientation of the chart
+ * @returns Whether the axis is a metric axis
+ */
+export function getIsMetricAxis(position: Position, chartOrientation: Orientation): boolean {
+	if (chartOrientation === 'vertical') {
+		return isVerticalAxis(position);
+	}
+	return !isVerticalAxis(position);
+}
+
+/**
+ * Handles the dual Y axis logic for axis styling
+ * @param axis The axis to process
+ * @param usermeta The user metadata
+ * @param scaleName The name of the scale
+ */
+export function addDualMetricAxisConfig(
+	axis: Axis,
+	isPrimaryMetricAxis: boolean,
+	scaleName: string,
+	colorScheme: ColorScheme = DEFAULT_COLOR_SCHEME
+) {
+	const scaleNames = getDualAxisScaleNames(scaleName);
+	const { primaryScale, secondaryScale } = scaleNames;
+
+	if (isPrimaryMetricAxis) {
+		axis.scale = primaryScale;
+		applyPrimaryMetricAxisEncodings(axis, colorScheme);
+	} else {
+		axis.scale = secondaryScale;
+		applySecondaryMetricAxisEncodings(axis);
+	}
+}
+
+export interface AxisAddOptions extends AxisSpecOptions {
+	scaleName: string;
+	opposingScaleType?: ScaleType;
+	usermeta?: UserMeta;
+	dualMetricAxis?: boolean;
+}
+
+/**
+ * Add axes to the spec
+ * @param axes The axes to add
+ * @param options The axis options
+ * @returns The updated axes
+ */
+export const addAxes = produce<
+	Axis[],
+	[
+		AxisSpecOptions & {
+			scaleName: string;
+			opposingScaleType?: string;
+			dualMetricAxis?: boolean;
+			usermeta: UserMeta;
+		}
+	]
+>((axes, { scaleName, opposingScaleType, dualMetricAxis, ...axisOptions }) => {
+	const newAxes: Axis[] = [];
+	// adds all the trellis axis options if this is a trellis axis
+	axisOptions = { ...axisOptions, ...getTrellisAxisOptions(scaleName) };
+	const {
+		baseline,
+		colorScheme,
+		usermeta,
+		labelAlign,
+		labelFontWeight,
+		labelFormat,
+		labelOrientation,
+		name,
+		position,
+	} = axisOptions;
+
+	if (labelFormat === 'time') {
+		// time axis actually needs two axes. A primary and secondary.
+		newAxes.push(...getTimeAxes(scaleName, axisOptions));
+	} else {
+		const axis = getDefaultAxis(axisOptions, scaleName);
+		// if labels exist, add them to the axis
+		if (axisOptions.labels.length) {
+			const labels = axisOptions.labels;
+			const signalName = `${name}_labels`;
+			axis.values = labels.map((label) => getLabelValue(label));
+			axis.encode = {
+				labels: getAxisLabelsEncoding(
+					labelAlign,
+					labelFontWeight,
+					'label',
+					labelOrientation,
+					position,
+					signalName
+				),
+			};
 		}
 
-		// add baseline
-		if (opposingScaleType !== 'linear') {
-			newAxes[0] = setAxisBaseline(newAxes[0], baseline);
-		}
+		// if sublabels exist, create a new axis for the sub labels
+		if (hasSubLabels(axisOptions)) {
+			axis.titlePadding = 24;
 
-		if (scaleTypeSupportsReferenceLines(axisOptions.scaleType)) {
-			// encode axis to hide labels that overlap reference line icons
-			const referenceLines = getReferenceLines(axisOptions);
-			referenceLines.forEach((referenceLineOptions) => {
-				const { label: referenceLineLabel, icon, value, position: linePosition } = referenceLineOptions;
-				const text = newAxes[0].encode?.labels?.update?.text;
-				if (
-					(icon || referenceLineLabel) &&
-					text &&
-					Array.isArray(text) &&
-					(!linePosition || linePosition === 'center')
-				) {
-					// if the label is within 30 pixels of the reference line icon, hide it
-					text.unshift({
-						test: `abs(scale('${scaleName}', ${value}) - scale('${scaleName}', datum.value)) < 30`,
-						value: '',
-					});
-				}
+			// add sublabel axis
+			const subLabelAxis = getSubLabelAxis(axisOptions, scaleName);
+
+			handleDualMetricAxisConfig({
+				dualMetricAxis,
+				axis: subLabelAxis,
+				usermeta,
+				scaleName,
+				colorScheme,
+				position,
+				incrementMetricAxisCount: false,
 			});
+
+			newAxes.push(subLabelAxis);
 		}
 
-		const axisAnnotations = getAxisAnnotationsFromChildren(axisOptions);
-		axisAnnotations.forEach((annotationOptions) => {
-			addAxisAnnotationAxis(newAxes, annotationOptions, scaleName);
+		handleDualMetricAxisConfig({
+			dualMetricAxis,
+			axis,
+			usermeta,
+			scaleName,
+			colorScheme,
+			position,
+			incrementMetricAxisCount: true,
 		});
 
-		axes.push(...newAxes);
+		newAxes.unshift(axis);
 	}
-);
+
+	// add baseline
+	if (opposingScaleType !== 'linear') {
+		newAxes[0] = setAxisBaseline(newAxes[0], baseline);
+	}
+
+	if (scaleTypeSupportsReferenceLines(axisOptions.scaleType)) {
+		// encode axis to hide labels that overlap reference line icons
+		const referenceLines = getReferenceLines(axisOptions);
+		referenceLines.forEach((referenceLineOptions) => {
+			const { label: referenceLineLabel, icon, value, position: linePosition } = referenceLineOptions;
+			const text = newAxes[0].encode?.labels?.update?.text;
+			if (
+				(icon || referenceLineLabel) &&
+				text &&
+				Array.isArray(text) &&
+				(!linePosition || linePosition === 'center')
+			) {
+				// if the label is within 30 pixels of the reference line icon, hide it
+				text.unshift({
+					test: `abs(scale('${scaleName}', ${value}) - scale('${scaleName}', datum.value)) < 30`,
+					value: '',
+				});
+			}
+		});
+	}
+
+	const axisAnnotations = getAxisAnnotationsFromChildren(axisOptions);
+	axisAnnotations.forEach((annotationOptions) => {
+		addAxisAnnotationAxis(newAxes, annotationOptions, scaleName);
+	});
+
+	axes.push(...newAxes);
+});
+
+/**
+ * Adds dual metric axis configuration to the axis
+ * This applies color and opacity encodings based on the series involved
+ */
+const handleDualMetricAxisConfig = ({
+	dualMetricAxis,
+	axis,
+	usermeta,
+	scaleName,
+	colorScheme,
+	position,
+	incrementMetricAxisCount,
+}: {
+	dualMetricAxis: boolean | undefined;
+	axis: Axis;
+	usermeta: UserMeta;
+	scaleName: string;
+	colorScheme: ColorScheme;
+	position: Position;
+	incrementMetricAxisCount: boolean;
+}) => {
+	const chartOrientation = usermeta?.chartOrientation ?? 'vertical';
+	if (dualMetricAxis && getIsMetricAxis(position, chartOrientation)) {
+		if (!usermeta.metricAxisCount) {
+			usermeta.metricAxisCount = 0;
+		}
+		addDualMetricAxisConfig(axis, usermeta.metricAxisCount === 0, scaleName, colorScheme);
+		if (incrementMetricAxisCount) {
+			usermeta.metricAxisCount++;
+		}
+	}
+};
 
 export const addAxesMarks = produce<
 	Mark[],
-	[AxisSpecOptions & { scaleName: string; scaleType?: ScaleType; opposingScaleType?: string }]
+	[
+		AxisSpecOptions & {
+			scaleName: string;
+			scaleType?: ScaleType;
+			opposingScaleType?: string;
+			dualMetricAxis?: boolean;
+			usermeta: UserMeta;
+		}
+	]
 >((marks, options) => {
-	const { baseline, baselineOffset, opposingScaleType, position, scaleName, scaleType } = options;
+	const { baseline, baselineOffset, opposingScaleType, position, scaleName, scaleType, usermeta } = options;
 
 	// only add reference lines to linear or time scales
 	if (scaleTypeSupportsReferenceLines(scaleType)) {
@@ -280,7 +514,7 @@ export const addAxesMarks = produce<
 	}
 
 	if (isTrellised) {
-		addAxesToTrellisGroup(options, trellisGroupMark, scaleName);
+		addAxesToTrellisGroup(options, trellisGroupMark, scaleName, usermeta);
 	}
 
 	const axisAnnotations = getAxisAnnotationsFromChildren(options);
@@ -306,7 +540,12 @@ function addBaseline(marks: Mark[], baselineOffset: number, position: Position, 
 	}
 }
 
-function addAxesToTrellisGroup(options: AxisSpecOptions, trellisGroupMark: GroupMark, scaleName: string) {
+function addAxesToTrellisGroup(
+	options: AxisSpecOptions,
+	trellisGroupMark: GroupMark,
+	scaleName: string,
+	usermeta: UserMeta
+) {
 	const trellisOrientation = trellisGroupMark.name?.startsWith('x') ? 'horizontal' : 'vertical';
 	const axisOrientation = options.position === 'bottom' || options.position === 'top' ? 'horizontal' : 'vertical';
 
@@ -331,6 +570,8 @@ function addAxesToTrellisGroup(options: AxisSpecOptions, trellisGroupMark: Group
 		hideDefaultLabels,
 		scaleName,
 		scaleType,
+		dualMetricAxis: false, // trellis axes don't support dualMetricAxis scaling
+		usermeta,
 	});
 
 	// titles on axes within the trellis group have special encodings so that the title is only shown on the first axis

@@ -20,7 +20,15 @@ import {
 	RectMark,
 } from 'vega';
 
-import { CORNER_RADIUS, FILTERED_TABLE, SELECTED_GROUP, SELECTED_ITEM, STACK_ID } from '@spectrum-charts/constants';
+import {
+	CORNER_RADIUS,
+	FILTERED_TABLE,
+	LAST_RSC_SERIES_ID,
+	SELECTED_GROUP,
+	SELECTED_ITEM,
+	SERIES_ID,
+	STACK_ID,
+} from '@spectrum-charts/constants';
 import { getColorValue } from '@spectrum-charts/themes';
 
 import { getPopovers } from '../chartPopover/chartPopoverUtils';
@@ -44,6 +52,16 @@ import { getTrellisProperties, isTrellised } from './trellisedBarUtils';
  */
 export const isDodgedAndStacked = ({ color, lineType, opacity }: BarSpecOptions): boolean => {
 	return [color, lineType, opacity].some((facet) => Array.isArray(facet) && facet.length === 2);
+};
+
+/**
+ * Checks if the bar chart is a dual metric axis chart
+ * @param options - The bar chart options
+ * @returns True if the bar chart is a dual metric axis chart, false otherwise
+ */
+export const isDualMetricAxis = (options: BarSpecOptions) => {
+	const { dualMetricAxis, type } = options;
+	return Boolean(dualMetricAxis && !isTrellised(options) && type === 'dodged' && !isDodgedAndStacked(options));
 };
 
 export const getDodgedGroupMark = (options: BarSpecOptions): GroupMark => {
@@ -116,6 +134,34 @@ export const getMetricEncodings = (options: BarSpecOptions): RectEncodeEntry => 
 	if (type === 'stacked' || isDodgedAndStacked(options)) {
 		return getStackedMetricEncodings(options);
 	}
+
+	if (isDualMetricAxis(options)) {
+		return {
+			[startKey]: [
+				{
+					test: `datum.${SERIES_ID} === ${LAST_RSC_SERIES_ID}`,
+					scale: `${scaleKey}Secondary`,
+					value: 0,
+				},
+				{
+					scale: `${scaleKey}Primary`,
+					value: 0,
+				},
+			],
+			[endKey]: [
+				{
+					test: `datum.${SERIES_ID} === ${LAST_RSC_SERIES_ID}`,
+					scale: `${scaleKey}Secondary`,
+					field: metric,
+				},
+				{
+					scale: `${scaleKey}Primary`,
+					field: metric,
+				},
+			],
+		};
+	}
+
 	return {
 		[startKey]: { scale: scaleKey, value: 0 },
 		[endKey]: { scale: scaleKey, field: metric },
@@ -376,3 +422,9 @@ export const getOrientationProperties = (orientation: Orientation, scaleName?: s
 				dimensionScaleKey: 'yBand',
 				rangeScale: 'height',
 		  };
+
+export const getBaseScaleName = (options: BarSpecOptions) => {
+	const { metricAxis, orientation } = options;
+	const { metricScaleKey } = getOrientationProperties(orientation);
+	return metricAxis || metricScaleKey;
+};

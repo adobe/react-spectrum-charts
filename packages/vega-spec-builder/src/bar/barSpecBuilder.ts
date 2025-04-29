@@ -18,9 +18,11 @@ import {
 	DEFAULT_COLOR_SCHEME,
 	DEFAULT_METRIC,
 	FILTERED_TABLE,
+	LAST_RSC_SERIES_ID,
 	LINE_TYPE_SCALE,
 	OPACITY_SCALE,
 	PADDING_RATIO,
+	SERIES_ID,
 	STACK_ID,
 	TIME,
 	TRELLIS_PADDING,
@@ -40,11 +42,26 @@ import {
 	getScaleIndexByName,
 	getScaleIndexByType,
 } from '../scale/scaleSpecBuilder';
-import { addHighlightedItemSignalEvents, getGenericValueSignal } from '../signal/signalSpecBuilder';
+import { getDualAxisScaleNames } from '../scale/scaleUtils';
+import {
+	addHighlightedItemSignalEvents,
+	getFirstRscSeriesIdSignal,
+	getGenericValueSignal,
+	getLastRscSeriesIdSignal,
+	getMouseOverSeriesSignal,
+} from '../signal/signalSpecBuilder';
 import { getFacetsFromOptions } from '../specUtils';
 import { addTrendlineData, getTrendlineMarks, setTrendlineSignals } from '../trendline';
 import { BarOptions, BarSpecOptions, ColorScheme, HighlightedItem, ScSpec } from '../types';
-import { getBarPadding, getDimensionSelectionRing, getScaleValues, isDodgedAndStacked } from './barUtils';
+import {
+	getBarPadding,
+	getBaseScaleName,
+	getDimensionSelectionRing,
+	getOrientationProperties,
+	getScaleValues,
+	isDodgedAndStacked,
+	isDualMetricAxis,
+} from './barUtils';
 import { getDodgedMark } from './dodgedBarUtils';
 import { getDodgedAndStackedBarMark, getStackedBarMarks } from './stackedBarUtils';
 import { addTrellisScale, getTrellisGroupMark, isTrellised } from './trellisedBarUtils';
@@ -62,6 +79,7 @@ export const addBar = produce<
 			color = { value: 'categorical-100' },
 			colorScheme = DEFAULT_COLOR_SCHEME,
 			dimension = DEFAULT_CATEGORICAL_DIMENSION,
+			dualMetricAxis = false,
 			hasOnClick = false,
 			hasSquareCorners = false,
 			index = 0,
@@ -87,6 +105,7 @@ export const addBar = produce<
 			chartPopovers,
 			chartTooltips,
 			dimensionScaleType: 'band',
+			dualMetricAxis,
 			orientation,
 			color,
 			colorScheme,
@@ -112,6 +131,10 @@ export const addBar = produce<
 			...options,
 		};
 
+		spec.usermeta = {
+			chartOrientation: barOptions.orientation,
+		};
+
 		spec.data = addData(spec.data ?? [], barOptions);
 		spec.signals = addSignals(spec.signals ?? [], barOptions);
 		spec.scales = addScales(spec.scales ?? [], barOptions);
@@ -133,6 +156,10 @@ export const addSignals = produce<Signal[], [BarSpecOptions]>((signals, options)
 	// We use this value to calculate ReferenceLine positions.
 	const { paddingInner } = getBarPadding(paddingRatio, barPaddingOuter);
 	signals.push(getGenericValueSignal('paddingInner', paddingInner));
+
+	if (isDualMetricAxis(options)) {
+		signals.push(getFirstRscSeriesIdSignal(), getLastRscSeriesIdSignal(), getMouseOverSeriesSignal(name));
+	}
 
 	if (!barAnnotations.length && !chartPopovers.length && !chartTooltips.length && !trendlines.length) {
 		return;
@@ -166,6 +193,8 @@ export const addData = produce<Data[], [BarSpecOptions]>((data, options) => {
 	if (type === 'dodged' || isDodgedAndStacked(options)) {
 		data[index].transform?.push(getDodgeGroupTransform(options));
 	}
+
+	addDualMetricAxisData(data, options);
 	addTrendlineData(data, options);
 	addTooltipData(data, options);
 	addPopoverData(data, options);
@@ -224,12 +253,48 @@ export const getDodgeGroupTransform = ({ color, lineType, name, opacity, type }:
 	};
 };
 
+export const addDualMetricAxisData = (data: Data[], options: BarSpecOptions) => {
+	if (isDualMetricAxis(options)) {
+		const baseScaleName = getBaseScaleName(options);
+		const scaleNames = getDualAxisScaleNames(baseScaleName);
+
+		if (scaleNames.primaryDomain && scaleNames.secondaryDomain) {
+			data.push({
+				name: scaleNames.primaryDomain,
+				source: FILTERED_TABLE,
+				transform: [{ type: 'filter', expr: `datum.${SERIES_ID} !== ${LAST_RSC_SERIES_ID}` }],
+			});
+
+			data.push({
+				name: scaleNames.secondaryDomain,
+				source: FILTERED_TABLE,
+				transform: [{ type: 'filter', expr: `datum.${SERIES_ID} === ${LAST_RSC_SERIES_ID}` }],
+			});
+		}
+	}
+};
+
 export const addScales = produce<Scale[], [BarSpecOptions]>((scales, options) => {
-	const { color, lineType, opacity, orientation, metricAxis } = options;
-	const axisType = orientation === 'vertical' ? 'y' : 'x';
+	const { color, lineType, opacity, metricAxis } = options;
+	const { metricAxis: axisType } = getOrientationProperties(options.orientation);
+
 	addMetricScale(scales, getScaleValues(options), axisType);
+
 	if (metricAxis) {
 		addMetricScale(scales, getScaleValues(options), axisType, metricAxis);
+	}
+
+	if (isDualMetricAxis(options)) {
+		const baseScaleName = getBaseScaleName(options);
+		const scaleNames = getDualAxisScaleNames(baseScaleName);
+		addMetricScale(scales, getScaleValues(options), axisType, scaleNames.primaryScale, scaleNames.primaryDomain);
+		addMetricScale(
+			scales,
+			getScaleValues(options),
+			axisType,
+			scaleNames.secondaryScale,
+			scaleNames.secondaryDomain
+		);
 	}
 	addDimensionScale(scales, options);
 	addTrellisScale(scales, options);
@@ -243,7 +308,8 @@ export const addDimensionScale = (
 	scales: Scale[],
 	{ dimension, paddingRatio, paddingOuter: barPaddingOuter, orientation }: BarSpecOptions
 ) => {
-	const index = getScaleIndexByType(scales, 'band', orientation === 'vertical' ? 'x' : 'y');
+	const { dimensionAxis } = getOrientationProperties(orientation);
+	const index = getScaleIndexByType(scales, 'band', dimensionAxis);
 	scales[index] = addDomainFields(scales[index], [dimension]);
 	const { paddingInner, paddingOuter } = getBarPadding(paddingRatio, barPaddingOuter);
 
@@ -322,7 +388,8 @@ export const getRepeatedScale = (options: BarSpecOptions): Scale => {
 	// if the orientations match then the metric scale is repeated, otherwise the dimension scale is repeated
 	// ex. vertical bar in a vertical trellis will have multiple copies of the metric scale
 	if (orientation === trellisOrientation) {
-		return getMetricScale(getScaleValues(options), orientation === 'vertical' ? 'y' : 'x', orientation);
+		const { metricAxis } = getOrientationProperties(orientation);
+		return getMetricScale(getScaleValues(options), metricAxis, orientation);
 	} else {
 		return getDimensionScale(options);
 	}
@@ -340,7 +407,8 @@ const getDimensionScale = ({
 	paddingRatio,
 	paddingOuter: barPaddingOuter,
 }: BarSpecOptions): BandScale => {
-	let scale = getDefaultScale('band', orientation === 'vertical' ? 'x' : 'y', orientation);
+	const { dimensionAxis } = getOrientationProperties(orientation);
+	let scale = getDefaultScale('band', dimensionAxis, orientation);
 	scale = addDomainFields(scale, [dimension]);
 	const { paddingInner, paddingOuter } = getBarPadding(paddingRatio, barPaddingOuter);
 	return { ...scale, paddingInner, paddingOuter } as BandScale;

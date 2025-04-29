@@ -18,7 +18,6 @@ import {
 	Scale,
 	ScaleData,
 	SourceData,
-	Spec,
 	Transforms,
 	ValuesData,
 } from 'vega';
@@ -42,6 +41,7 @@ import { spectrumColors } from '@spectrum-charts/themes';
 
 import { defaultSignals } from '../specTestUtils';
 import { baseData, initializeSpec } from '../specUtils';
+import { ScSpec } from '../types/specUtil.types';
 import {
 	addBar,
 	addData,
@@ -63,7 +63,7 @@ import {
 } from './barTestUtils';
 import { defaultDodgedMark } from './dodgedBarUtils.test';
 
-const startingSpec: Spec = initializeSpec({
+const startingSpec = initializeSpec({
 	scales: [{ name: COLOR_SCALE, type: 'ordinal' }],
 });
 
@@ -206,7 +206,7 @@ const defaultPaddingSignal = {
 	name: 'paddingInner',
 	value: 0.4,
 };
-const defaultSpec: Spec = {
+const defaultSpec: ScSpec = {
 	...startingSpec,
 	data: [
 		{
@@ -240,12 +240,30 @@ const defaultSpec: Spec = {
 			},
 		},
 	],
+	usermeta: {
+		chartOrientation: 'vertical',
+	},
 };
 
 describe('barSpecBuilder', () => {
 	describe('addBar()', () => {
 		test('no options', () => {
 			expect(addBar(startingSpec, { idKey: MARK_ID, markType: 'bar' })).toStrictEqual(defaultSpec);
+		});
+
+		describe('usermeta', () => {
+			test('should add vertical orientation to usermeta if bar orientation is vertical', () => {
+				// default orientation is vertical
+				expect(addBar(startingSpec, { idKey: MARK_ID, markType: 'bar' }).usermeta).toHaveProperty(
+					'chartOrientation',
+					'vertical'
+				);
+			});
+			test('should add horizontal orientation to usermeta if bar orientation is horizontal', () => {
+				expect(
+					addBar(startingSpec, { idKey: MARK_ID, markType: 'bar', orientation: 'horizontal' }).usermeta
+				).toHaveProperty('chartOrientation', 'horizontal');
+			});
 		});
 	});
 
@@ -270,6 +288,203 @@ describe('barSpecBuilder', () => {
 			expect(signals[0].on).toHaveLength(2);
 			expect(signals[0].on?.[0]).toHaveProperty('events', '@bar0:mouseover');
 			expect(signals[0].on?.[0]).toHaveProperty('update', '(datum.excludeFromTooltip) ? null : datum.rscMarkId');
+		});
+
+		describe('dualMetricAxis signals', () => {
+			function getMousedOverSeriesSignal(signal) {
+				return signal.name === 'mousedOverSeries';
+			}
+
+			function getFirstRscSeriesIdSignal(signal) {
+				return signal.name === 'firstRscSeriesId';
+			}
+
+			function getLastRscSeriesIdSignal(signal) {
+				return signal.name === 'lastRscSeriesId';
+			}
+
+			test('should add mousedOverSeries if dualMetricAxis is true and type is dodged', () => {
+				const signals = addSignals(defaultSignals, {
+					...defaultBarOptions,
+					type: 'dodged',
+					dualMetricAxis: true,
+				});
+				const mousedOverSeriesSignal = signals.find(getMousedOverSeriesSignal);
+				// update to moused over series id on mouseover
+				expect(mousedOverSeriesSignal?.on?.[0]).toHaveProperty('events', '@bar0:mouseover');
+				expect(mousedOverSeriesSignal?.on?.[0]).toHaveProperty('update', 'datum.rscSeriesId');
+				// update to null on mouseout
+				expect(mousedOverSeriesSignal?.on?.[1]).toHaveProperty('events', '@bar0:mouseout');
+				expect(mousedOverSeriesSignal?.on?.[1]).toHaveProperty('update', 'null');
+			});
+
+			test('should add firstRscSeriesId if dualMetricAxis is true and type is dodged', () => {
+				const signals = addSignals(defaultSignals, {
+					...defaultBarOptions,
+					type: 'dodged',
+					dualMetricAxis: true,
+				});
+				const firstRscSeriesIdSignal = signals.find(getFirstRscSeriesIdSignal);
+				// first series in the color domain is the first series in the 'order'
+				expect(firstRscSeriesIdSignal).toHaveProperty('value', null);
+				expect(firstRscSeriesIdSignal).toHaveProperty(
+					'update',
+					'length(domain("color")) > 0 ? domain("color")[0] : null'
+				);
+			});
+
+			test('should add lastRscSeriesId if dualMetricAxis is true and type is dodged', () => {
+				const signals = addSignals(defaultSignals, {
+					...defaultBarOptions,
+					type: 'dodged',
+					dualMetricAxis: true,
+				});
+				const lastRscSeriesIdSignal = signals.find(getLastRscSeriesIdSignal);
+				// last series in the color domain is the last series in the 'order'
+				expect(lastRscSeriesIdSignal).toHaveProperty('value', null);
+				expect(lastRscSeriesIdSignal).toHaveProperty(
+					'update',
+					'length(domain("color")) > 0 ? peek(domain("color")) : null'
+				);
+			});
+
+			test('should not add mousedOverSeries if dualMetricAxis is true and type is not dodged', () => {
+				// default type is stacked
+				const signals = addSignals(defaultSignals, {
+					...defaultBarOptions,
+					dualMetricAxis: true,
+				});
+				const mousedOverSeriesSignal = signals.find(getMousedOverSeriesSignal);
+				expect(mousedOverSeriesSignal).toBeUndefined();
+			});
+
+			test('should not add firstRscSeriesId if dualMetricAxis is true and type is not dodged', () => {
+				// default type is stacked
+				const signals = addSignals(defaultSignals, {
+					...defaultBarOptions,
+					dualMetricAxis: true,
+				});
+				const firstRscSeriesIdSignal = signals.find(getFirstRscSeriesIdSignal);
+				expect(firstRscSeriesIdSignal).toBeUndefined();
+			});
+
+			test('should not add lastRscSeriesId if dualMetricAxis is true and type is not dodged', () => {
+				// default type is stacked
+				const signals = addSignals(defaultSignals, {
+					...defaultBarOptions,
+					dualMetricAxis: true,
+				});
+				const lastRscSeriesIdSignal = signals.find(getLastRscSeriesIdSignal);
+				expect(lastRscSeriesIdSignal).toBeUndefined();
+			});
+
+			test('should not add mousedOverSeries if dualMetricAxis is false', () => {
+				// default type is stacked
+				const signals = addSignals(defaultSignals, {
+					...defaultBarOptions,
+					dualMetricAxis: false,
+					type: 'dodged',
+				});
+				const mousedOverSeriesSignal = signals.find(getMousedOverSeriesSignal);
+				expect(mousedOverSeriesSignal).toBeUndefined();
+			});
+
+			test('should not add firstRscSeriesId if dualMetricAxis is false', () => {
+				// default type is stacked
+				const signals = addSignals(defaultSignals, {
+					...defaultBarOptions,
+					dualMetricAxis: false,
+					type: 'dodged',
+				});
+				const firstRscSeriesIdSignal = signals.find(getFirstRscSeriesIdSignal);
+				expect(firstRscSeriesIdSignal).toBeUndefined();
+			});
+
+			test('should not add lastRscSeriesId if dualMetricAxis is false', () => {
+				// default type is stacked
+				const signals = addSignals(defaultSignals, {
+					...defaultBarOptions,
+					dualMetricAxis: false,
+					type: 'dodged',
+				});
+				const lastRscSeriesIdSignal = signals.find(getLastRscSeriesIdSignal);
+				expect(lastRscSeriesIdSignal).toBeUndefined();
+			});
+
+			test('should not add mousedOverSeries if dualMetricAxis is true and bar is dodged and stacked', () => {
+				const signals = addSignals(defaultSignals, {
+					...defaultBarOptions,
+					color: ['#000', '#fff'],
+					dualMetricAxis: true,
+					type: 'dodged',
+				});
+				const mousedOverSeriesSignal = signals.find(getMousedOverSeriesSignal);
+				expect(mousedOverSeriesSignal).toBeUndefined();
+			});
+
+			test('should not add firstRscSeriesId if dualMetricAxis is true and bar is dodged and stacked', () => {
+				const signals = addSignals(defaultSignals, {
+					...defaultBarOptions,
+					color: ['#000', '#fff'],
+					dualMetricAxis: true,
+					type: 'dodged',
+				});
+				const firstRscSeriesIdSignal = signals.find(getFirstRscSeriesIdSignal);
+				expect(firstRscSeriesIdSignal).toBeUndefined();
+			});
+
+			test('should not add lastRscSeriesId if dualMetricAxis is true and bar is dodged and stacked', () => {
+				const signals = addSignals(defaultSignals, {
+					...defaultBarOptions,
+					color: ['#000', '#fff'],
+					dualMetricAxis: true,
+					type: 'dodged',
+				});
+				const lastRscSeriesIdSignal = signals.find(getLastRscSeriesIdSignal);
+				expect(lastRscSeriesIdSignal).toBeUndefined();
+			});
+
+			test('should not add mousedOverSeries if dualMetricAxis is true and bar is trellis', () => {
+				const signals = addSignals(defaultSignals, {
+					...defaultBarOptions,
+					color: ['#000', '#fff'],
+					dualMetricAxis: true,
+					type: 'dodged',
+					trellis: 'event',
+					trellisOrientation: 'vertical',
+					trellisPadding: 0.5,
+				});
+				const mousedOverSeriesSignal = signals.find(getMousedOverSeriesSignal);
+				expect(mousedOverSeriesSignal).toBeUndefined();
+			});
+
+			test('should not add firstRscSeriesId if dualMetricAxis is true and bar is trellis', () => {
+				const signals = addSignals(defaultSignals, {
+					...defaultBarOptions,
+					color: ['#000', '#fff'],
+					dualMetricAxis: true,
+					type: 'dodged',
+					trellis: 'event',
+					trellisOrientation: 'vertical',
+					trellisPadding: 0.5,
+				});
+				const firstRscSeriesIdSignal = signals.find(getFirstRscSeriesIdSignal);
+				expect(firstRscSeriesIdSignal).toBeUndefined();
+			});
+
+			test('should not add lastRscSeriesId if dualMetricAxis is true and bar is trellis', () => {
+				const signals = addSignals(defaultSignals, {
+					...defaultBarOptions,
+					color: ['#000', '#fff'],
+					dualMetricAxis: true,
+					type: 'dodged',
+					trellis: 'event',
+					trellisOrientation: 'vertical',
+					trellisPadding: 0.5,
+				});
+				const lastRscSeriesIdSignal = signals.find(getLastRscSeriesIdSignal);
+				expect(lastRscSeriesIdSignal).toBeUndefined();
+			});
 		});
 	});
 
@@ -347,6 +562,128 @@ describe('barSpecBuilder', () => {
 						paddingInner: 0.5,
 					},
 				]);
+			});
+		});
+
+		describe('dualMetricAxis scales', () => {
+			function getPrimaryMetricScale(scale) {
+				return scale.name === 'yLinearPrimary';
+			}
+			function getSecondaryMetricScale(scale) {
+				return scale.name === 'yLinearSecondary';
+			}
+
+			const baseMetricScale = {
+				name: 'yLinearPrimary',
+				type: 'linear',
+				domain: { data: 'yLinearPrimaryDomain', fields: [DEFAULT_METRIC] },
+				range: 'height',
+				nice: true,
+				zero: true,
+			};
+
+			test('should add primary metric scale if dualMetricAxis is true and type is dodged', () => {
+				const scales = addScales([{ name: COLOR_SCALE, type: 'ordinal' }], {
+					...defaultBarOptions,
+					dualMetricAxis: true,
+					type: 'dodged',
+				});
+				expect(scales.find(getPrimaryMetricScale)).toEqual({
+					...baseMetricScale,
+				});
+			});
+
+			test('should add secondary metric scale if dualMetricAxis is true and type is dodged', () => {
+				const scales = addScales([{ name: COLOR_SCALE, type: 'ordinal' }], {
+					...defaultBarOptions,
+					dualMetricAxis: true,
+					type: 'dodged',
+				});
+				expect(scales.find(getSecondaryMetricScale)).toEqual({
+					...baseMetricScale,
+					name: 'yLinearSecondary',
+					domain: { data: 'yLinearSecondaryDomain', fields: [DEFAULT_METRIC] },
+				});
+			});
+
+			test('should not add primary metric scale if dualMetricAxis is true and type is not dodged', () => {
+				const scales = addScales([{ name: COLOR_SCALE, type: 'ordinal' }], {
+					...defaultBarOptions,
+					dualMetricAxis: true,
+					type: 'stacked',
+				});
+				expect(scales.find(getPrimaryMetricScale)).toBeUndefined();
+			});
+
+			test('should not add secondary metric scale if dualMetricAxis is true and type is not dodged', () => {
+				const scales = addScales([{ name: COLOR_SCALE, type: 'ordinal' }], {
+					...defaultBarOptions,
+					dualMetricAxis: true,
+					type: 'stacked',
+				});
+				expect(scales.find(getSecondaryMetricScale)).toBeUndefined();
+			});
+
+			test('should not add primary metric scale if dualMetricAxis is false', () => {
+				const scales = addScales([{ name: COLOR_SCALE, type: 'ordinal' }], {
+					...defaultBarOptions,
+					dualMetricAxis: false,
+					type: 'dodged',
+				});
+				expect(scales.find(getPrimaryMetricScale)).toBeUndefined();
+			});
+
+			test('should not add secondary metric scale if dualMetricAxis is false', () => {
+				const scales = addScales([{ name: COLOR_SCALE, type: 'ordinal' }], {
+					...defaultBarOptions,
+					dualMetricAxis: false,
+					type: 'dodged',
+				});
+				expect(scales.find(getSecondaryMetricScale)).toBeUndefined();
+			});
+
+			test('should not add primary metric scale if dualMetricAxis is true and bar is dodged and stacked', () => {
+				const scales = addScales([{ name: COLOR_SCALE, type: 'ordinal' }], {
+					...defaultBarOptions,
+					dualMetricAxis: true,
+					type: 'dodged',
+					color: ['#000', '#fff'],
+				});
+				expect(scales.find(getPrimaryMetricScale)).toBeUndefined();
+			});
+
+			test('should not add secondary metric scale if dualMetricAxis is true and bar is dodged and stacked', () => {
+				const scales = addScales([{ name: COLOR_SCALE, type: 'ordinal' }], {
+					...defaultBarOptions,
+					dualMetricAxis: true,
+					type: 'dodged',
+					color: ['#000', '#fff'],
+				});
+				expect(scales.find(getSecondaryMetricScale)).toBeUndefined();
+			});
+
+			test('should not add primary metric scale if dualMetricAxis is true and bar is trellis', () => {
+				const scales = addScales([{ name: COLOR_SCALE, type: 'ordinal' }], {
+					...defaultBarOptions,
+					dualMetricAxis: true,
+					type: 'dodged',
+					trellis: 'event',
+					trellisOrientation: 'vertical',
+					trellisPadding: 0.5,
+				});
+				expect(scales.find(getPrimaryMetricScale)).toBeUndefined();
+			});
+
+			test('should not add secondary metric scale if dualMetricAxis is true and bar is trellis', () => {
+				const scales = addScales([{ name: COLOR_SCALE, type: 'ordinal' }], {
+					...defaultBarOptions,
+					dualMetricAxis: true,
+					type: 'dodged',
+					trellis: 'event',
+					trellisOrientation: 'vertical',
+					trellisPadding: 0.5,
+				});
+				expect(scales.find(getSecondaryMetricScale)).toBeUndefined();
 			});
 		});
 	});
@@ -681,6 +1018,97 @@ describe('barSpecBuilder', () => {
 					],
 				},
 			]);
+		});
+
+		describe('dualMetricAxis', () => {
+			function dualMetricAxisPrimaryDomain(data) {
+				return data.find((d) => d.name === 'yLinearPrimaryDomain');
+			}
+			function dualMetricAxisSecondaryDomain(data) {
+				return data.find((d) => d.name === 'yLinearSecondaryDomain');
+			}
+
+			test('should add primary domain data if dualMetricAxis is true and type is dodged', () => {
+				const data = addData(defaultData, { ...defaultBarOptions, dualMetricAxis: true, type: 'dodged' });
+				expect(dualMetricAxisPrimaryDomain(data)).toStrictEqual({
+					name: 'yLinearPrimaryDomain',
+					source: FILTERED_TABLE,
+					transform: [{ type: 'filter', expr: 'datum.rscSeriesId !== lastRscSeriesId' }],
+				});
+			});
+
+			test('should add secondary domain data if dualMetricAxis is true and type is dodged', () => {
+				const data = addData(defaultData, { ...defaultBarOptions, dualMetricAxis: true, type: 'dodged' });
+				expect(dualMetricAxisSecondaryDomain(data)).toStrictEqual({
+					name: 'yLinearSecondaryDomain',
+					source: FILTERED_TABLE,
+					transform: [{ type: 'filter', expr: 'datum.rscSeriesId === lastRscSeriesId' }],
+				});
+			});
+
+			test('should not add primary domain data if dualMetricAxis is true and type is not dodged', () => {
+				const data = addData(defaultData, { ...defaultBarOptions, dualMetricAxis: true, type: 'stacked' });
+				expect(dualMetricAxisPrimaryDomain(data)).toBeUndefined();
+			});
+
+			test('should not add secondary domain data if dualMetricAxis is true and type is not dodged', () => {
+				const data = addData(defaultData, { ...defaultBarOptions, dualMetricAxis: true, type: 'stacked' });
+				expect(dualMetricAxisSecondaryDomain(data)).toBeUndefined();
+			});
+
+			test('should not add primary domain data if dualMetricAxis is false', () => {
+				const data = addData(defaultData, { ...defaultBarOptions, dualMetricAxis: false, type: 'dodged' });
+				expect(dualMetricAxisPrimaryDomain(data)).toBeUndefined();
+			});
+
+			test('should not add secondary domain data if dualMetricAxis is false', () => {
+				const data = addData(defaultData, { ...defaultBarOptions, dualMetricAxis: false, type: 'dodged' });
+				expect(dualMetricAxisSecondaryDomain(data)).toBeUndefined();
+			});
+
+			test('should not add primary domain data if dualMetricAxis is true and type is dodged and stacked', () => {
+				const data = addData(defaultData, {
+					...defaultBarOptions,
+					dualMetricAxis: true,
+					type: 'dodged',
+					color: ['#000', '#fff'],
+				});
+				expect(dualMetricAxisPrimaryDomain(data)).toBeUndefined();
+			});
+
+			test('should not add secondary domain data if dualMetricAxis is true and type is dodged and stacked', () => {
+				const data = addData(defaultData, {
+					...defaultBarOptions,
+					dualMetricAxis: true,
+					type: 'dodged',
+					color: ['#000', '#fff'],
+				});
+				expect(dualMetricAxisSecondaryDomain(data)).toBeUndefined();
+			});
+
+			test('should not add primary domain data if dualMetricAxis is true and bar is trellis', () => {
+				const data = addData(defaultData, {
+					...defaultBarOptions,
+					dualMetricAxis: true,
+					type: 'dodged',
+					trellis: 'event',
+					trellisOrientation: 'vertical',
+					trellisPadding: 0.5,
+				});
+				expect(dualMetricAxisPrimaryDomain(data)).toBeUndefined();
+			});
+
+			test('should not add secondary domain data if dualMetricAxis is true and bar is trellis', () => {
+				const data = addData(defaultData, {
+					...defaultBarOptions,
+					dualMetricAxis: true,
+					type: 'dodged',
+					trellis: 'event',
+					trellisOrientation: 'vertical',
+					trellisPadding: 0.5,
+				});
+				expect(dualMetricAxisSecondaryDomain(data)).toBeUndefined();
+			});
 		});
 	});
 

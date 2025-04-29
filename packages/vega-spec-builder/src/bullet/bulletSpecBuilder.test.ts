@@ -9,17 +9,15 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { Spec } from 'vega';
-
-import { BulletOptions } from '../types';
+import { BulletOptions, ScSpec } from '../types';
 import { addBullet, addData, addScales, addSignals } from './bulletSpecBuilder';
 import { sampleOptionsColumn, sampleOptionsRow } from './bulletTestUtils';
 
 describe('addBullet', () => {
-	let spec: Spec;
+	let spec: ScSpec;
 
 	beforeEach(() => {
-		spec = { data: [], marks: [], scales: [] };
+		spec = { data: [], marks: [], scales: [], usermeta: {} };
 	});
 
 	test('should modify spec with bullet chart properties', () => {

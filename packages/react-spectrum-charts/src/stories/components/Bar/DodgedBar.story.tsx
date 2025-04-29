@@ -142,4 +142,12 @@ OnClick.args = {
 	color: 'operatingSystem',
 };
 
-export { Color, DodgedStacked, DodgedStackedWithLabels, LineType, Opacity, Popover, OnClick };
+export {
+	Color,
+	DodgedStacked,
+	DodgedStackedWithLabels,
+	LineType,
+	Opacity,
+	Popover,
+	OnClick,
+};
