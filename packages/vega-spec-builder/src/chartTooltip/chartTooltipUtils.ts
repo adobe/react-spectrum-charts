@@ -31,9 +31,16 @@ import {
 	DonutSpecOptions,
 	LineSpecOptions,
 	ScatterSpecOptions,
+	VennSpecOptions,
 } from '../types';
 
-type TooltipParentOptions = AreaSpecOptions | BarSpecOptions | DonutSpecOptions | LineSpecOptions | ScatterSpecOptions;
+type TooltipParentOptions =
+	| AreaSpecOptions
+	| BarSpecOptions
+	| DonutSpecOptions
+	| LineSpecOptions
+	| ScatterSpecOptions
+	| VennSpecOptions;
 
 /**
  * gets all the tooltips
@@ -208,4 +215,15 @@ export const addHighlightMarkOpacityRules = (
 			...DEFAULT_OPACITY_RULE,
 		});
 	}
+};
+
+export const addHoverMarkOpacityRules = (
+	opacityRules: ({ test?: string } & NumericValueRef)[],
+	markProps: TooltipParentOptions,
+	hoverOpacity: number
+) => {
+	opacityRules.unshift({
+		test: `!isArray(${HIGHLIGHTED_ITEM}) && isValid(${HIGHLIGHTED_ITEM}) && ${HIGHLIGHTED_ITEM} === datum.${markProps.idKey}`,
+		value: hoverOpacity,
+	});
 };

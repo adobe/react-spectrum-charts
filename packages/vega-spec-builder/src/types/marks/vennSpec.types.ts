@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { ChartData, ColorScheme } from 'types/chartSpec.types';
+import { ChartData, ColorScheme, HighlightedItem } from 'types/chartSpec.types';
 import { ChartPopoverOptions, ChartTooltipOptions } from 'types/dialogs';
 import { SpectrumColor } from 'types/spectrumVizColor.types';
 import { PartiallyRequired } from 'types/specUtil.types';
@@ -43,15 +43,17 @@ export interface VennOptions {
 	chartTooltips?: ChartTooltipOptions[];
 }
 
-type VennPropsWithDefaults = 'chartPopovers' | 'chartTooltips' | 'orientation' | 'name' | 'label' | 'color' | 'metric';
+type VennOptionsWithDefaults = 'chartPopovers' | 'chartTooltips' | 'orientation' | 'name' | 'label' | 'color' | 'metric';
 
-export interface VennSpecProps extends PartiallyRequired<VennOptions, VennPropsWithDefaults> {
-  chartWidth: number;
-  chartHeight: number;
+export interface VennSpecOptions extends PartiallyRequired<VennOptions, VennOptionsWithDefaults> {
+	chartWidth: number;
+	chartHeight: number;
 	colorScheme: ColorScheme;
-  data: ChartData[]
+	highlightedItem?: HighlightedItem;
+	data: ChartData[];
 	idKey: string;
 	index: number;
+	markType: 'venn';
 }
 
 export type VennDegreeOptions = '0deg' | '90deg' | '180deg' | '270deg';

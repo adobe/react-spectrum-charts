@@ -12,20 +12,21 @@
 import { produce } from 'immer';
 import { Data, FilterTransform, FormulaTransform, LookupTransform, Mark, Scale, Signal } from 'vega';
 
-import { COLOR_SCALE, DEFAULT_COLOR_SCHEME, TABLE } from '@spectrum-charts/constants';
+import {
+	COLOR_SCALE,
+	DEFAULT_COLOR_SCHEME,
+	DEFAULT_LABEL,
+	DEFAULT_VENN_COLOR,
+	DEFAULT_VENN_METRIC,
+	SET_ID_DELIMITER,
+	TABLE,
+} from '@spectrum-charts/constants';
 import { toCamelCase } from '@spectrum-charts/utils';
 
 import { isInteractive } from '../marks/markUtils';
 import { addFieldToFacetScaleDomain } from '../scale/scaleSpecBuilder';
 import { addHighlightedItemSignalEvents } from '../signal/signalSpecBuilder';
-import { ChartData, ColorScheme, HighlightedItem, ScSpec, VennOptions, VennSpecProps } from '../types';
-import {
-	DEFAULT_LABEL,
-	DEFAULT_VENN_COLOR,
-	DEFAULT_VENN_METRIC,
-	DEFAULT_VENN_STYLES,
-	SET_ID_DELIMITER,
-} from './vennDefaults';
+import { ChartData, ColorScheme, HighlightedItem, ScSpec, VennOptions, VennSpecOptions } from '../types';
 import {
 	getCircleMark,
 	getCircleOverlays,
@@ -33,20 +34,19 @@ import {
 	getStrokeMark,
 	getTextMark,
 	getVennSolution,
-	mergeStylesWithDefaults,
 } from './vennUtils';
 
 export const addVenn = produce<
 	ScSpec,
 	[
 		VennOptions & {
-      chartHeight?: number,
-      chartWidth?: number,
 			colorScheme?: ColorScheme;
-      data?: ChartData[]
 			highlightedItem?: HighlightedItem;
-			index?: number;
 			idKey: string;
+			index?: number;
+			chartHeight?: number;
+			chartWidth?: number;
+			data?: ChartData[];
 		}
 	]
 >(
@@ -55,26 +55,25 @@ export const addVenn = produce<
 		{
 			chartPopovers = [],
 			chartTooltips = [],
-      chartWidth = 100,
-      chartHeight = 100,
-      data = [],
-			orientation = '0deg',
-			metric = DEFAULT_VENN_METRIC,
-			index = 0,
 			color = DEFAULT_VENN_COLOR,
 			colorScheme = DEFAULT_COLOR_SCHEME,
-			style = DEFAULT_VENN_STYLES,
+			index = 0,
 			label = DEFAULT_LABEL,
+			metric = DEFAULT_VENN_METRIC,
 			name,
+			orientation = '0deg',
+			chartHeight = 100,
+			chartWidth = 100,
+			data = [],
 			...props
 		}
 	) => {
-		const vennProps: VennSpecProps = {
+		const vennProps: VennSpecOptions = {
 			chartPopovers,
 			chartTooltips,
-      chartWidth,
-      chartHeight,
-      data,
+			chartWidth,
+			chartHeight,
+			data,
 			index,
 			colorScheme,
 			color,
@@ -82,7 +81,6 @@ export const addVenn = produce<
 			orientation,
 			metric,
 			name: toCamelCase(name ?? `venn${index}`),
-			style: mergeStylesWithDefaults(style),
 			...props,
 		};
 		spec.data = addData(spec.data ?? [], vennProps);
@@ -92,7 +90,7 @@ export const addVenn = produce<
 	}
 );
 
-export const addData = produce<Data[], [VennSpecProps]>((data, props) => {
+export const addData = produce<Data[], [VennSpecOptions]>((data, props) => {
 	const { circles, intersections } = getVennSolution(props);
 
 	data.push({
@@ -116,7 +114,7 @@ export const addData = produce<Data[], [VennSpecProps]>((data, props) => {
 	data[tableIndex].transform?.push(...getTableTransforms(props));
 });
 
-export const addMarks = produce<Mark[], [VennSpecProps]>((marks, props) => {
+export const addMarks = produce<Mark[], [VennSpecOptions]>((marks, props) => {
 	marks.push(getStrokeMark(props));
 	marks.push(getCircleMark(props));
 	marks.push(getCircleOverlays(props));
@@ -128,7 +126,7 @@ export const addScales = produce<Scale[]>((scales) => {
 	addFieldToFacetScaleDomain(scales, COLOR_SCALE, 'set_legend');
 });
 
-export const getTableTransforms = (props: VennSpecProps): (FormulaTransform | FilterTransform)[] => [
+export const getTableTransforms = (props: VennSpecOptions): (FormulaTransform | FilterTransform)[] => [
 	{
 		type: 'formula',
 		as: 'set_id',
@@ -153,7 +151,7 @@ export const getTableJoinTransforms = (): (LookupTransform | FormulaTransform)[]
 	{ type: 'formula', expr: 'datum.table_data.rscMarkId', as: 'rscMarkId' },
 ];
 
-export const addSignals = produce<Signal[], [VennSpecProps]>((signals, props) => {
+export const addSignals = produce<Signal[], [VennSpecOptions]>((signals, props) => {
 	const { chartTooltips, name, idKey } = props;
 
 	if (!isInteractive(props)) return;

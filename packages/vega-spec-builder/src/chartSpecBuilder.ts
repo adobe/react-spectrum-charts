@@ -11,7 +11,6 @@
  */
 import { produce } from 'immer';
 import { Data, LinearScale, OrdinalScale, PointScale, Scale, Signal, Spec } from 'vega';
-import { addVenn } from 'venn/vennSpecBuilder';
 
 import {
 	BACKGROUND_COLOR,
@@ -61,6 +60,7 @@ import {
 	initializeSpec,
 } from './specUtils';
 import { addTitle } from './title/titleSpecBuilder';
+import { addVenn } from './venn/vennSpecBuilder';
 import {
 	ChartColors,
 	ChartOptions,

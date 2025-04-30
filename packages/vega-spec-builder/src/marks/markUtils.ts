@@ -41,7 +41,7 @@ import {
 } from '@spectrum-charts/constants';
 import { getColorValue } from '@spectrum-charts/themes';
 
-import { addHighlightMarkOpacityRules } from '../chartTooltip/chartTooltipUtils';
+import { addHighlightMarkOpacityRules, addHoverMarkOpacityRules } from '../chartTooltip/chartTooltipUtils';
 import { LineMarkOptions } from '../line/lineUtils';
 import { getScaleName } from '../scale/scaleSpecBuilder';
 import {
@@ -67,6 +67,7 @@ import {
 	ScatterSpecOptions,
 	SymbolSizeFacet,
 	TrendlineOptions,
+	VennSpecOptions,
 } from '../types';
 
 /**
@@ -417,21 +418,30 @@ const getHoverSizeSignal = (size: number): SignalRef => ({
  * @param options
  * @returns
  */
-export const getMarkOpacity = (options: BarSpecOptions | DonutSpecOptions): ({ test?: string } & NumericValueRef)[] => {
+export const getMarkOpacity = (
+	options: BarSpecOptions | DonutSpecOptions | VennSpecOptions,
+	opacitity?: number,
+	hoverOpacity?: number
+): ({ test?: string } & NumericValueRef)[] => {
 	const { highlightedItem, idKey, name: markName } = options;
-	const rules: ({ test?: string } & NumericValueRef)[] = [DEFAULT_OPACITY_RULE];
+	const rules: ({ test?: string } & NumericValueRef)[] = [opacitity ? { value: opacitity } : DEFAULT_OPACITY_RULE];
 	// if there aren't any interactive components, then we don't need to add special opacity rules
 	if (!isInteractive(options) && highlightedItem === undefined) {
 		return rules;
 	}
 
+	if (hoverOpacity !== undefined) {
+		addHoverMarkOpacityRules(rules, options, hoverOpacity);
+	} else {
+		addHighlightMarkOpacityRules(rules, options);
+	}
+
 	// if a bar is hovered/selected, all other bars should have reduced opacity
-	addHighlightMarkOpacityRules(rules, options);
 	if (hasPopover(options)) {
 		return [
 			{
 				test: `!isValid(${SELECTED_GROUP}) && ${SELECTED_ITEM} && ${SELECTED_ITEM} !== datum.${idKey}`,
-				value: 1 / HIGHLIGHT_CONTRAST_RATIO,
+				value: hoverOpacity ? opacitity : 1 / HIGHLIGHT_CONTRAST_RATIO,
 			},
 			{ test: `isValid(${SELECTED_ITEM}) && ${SELECTED_ITEM} === datum.${idKey}`, ...DEFAULT_OPACITY_RULE },
 			{
@@ -440,7 +450,7 @@ export const getMarkOpacity = (options: BarSpecOptions | DonutSpecOptions): ({ t
 			},
 			{
 				test: `isValid(${SELECTED_GROUP}) && ${SELECTED_GROUP} !== datum.${markName}_selectedGroupId`,
-				value: 1 / HIGHLIGHT_CONTRAST_RATIO,
+				value: hoverOpacity ? opacitity : 1 / HIGHLIGHT_CONTRAST_RATIO,
 			},
 			...rules,
 		];
