@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { Legend } from '../../../components';
+import { ChartPopover, Legend } from '../../../components';
 import { LegendBarHiddenSeriesStory, LegendBarStory, defaultProps } from './LegendStoryUtils';
 
 export default {
@@ -18,7 +18,17 @@ export default {
 };
 
 const DefaultHiddenSeries = LegendBarStory.bind({});
-DefaultHiddenSeries.args = { defaultHiddenSeries: ['Other'], isToggleable: true, highlight: true, ...defaultProps };
+DefaultHiddenSeries.args = {
+	defaultHiddenSeries: ['Other'],
+	isToggleable: true,
+	highlight: true,
+	children: (
+		<ChartPopover rightClick width="auto">
+			{(datum) => <div>{datum.value}</div>}
+		</ChartPopover>
+	),
+	...defaultProps,
+};
 DefaultHiddenSeries.storyName = 'Default Hidden Series (uncontrolled)';
 
 const HiddenSeries = LegendBarHiddenSeriesStory.bind({});

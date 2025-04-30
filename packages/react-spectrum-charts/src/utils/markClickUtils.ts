@@ -204,9 +204,12 @@ export const handleLegendItemClick = (
 		triggerPopover(chartId, itemName, trigger);
 	}
 
-	onLegendClick?.(legendItemValue);
-	if (!legendIsToggleable) return;
-	setHiddenSeries(toggleStringArrayValue(hiddenSeries, legendItemValue));
+	if (trigger === 'click') {
+		onLegendClick?.(legendItemValue);
+		if (legendIsToggleable) {
+			setHiddenSeries(toggleStringArrayValue(hiddenSeries, legendItemValue));
+		}
+	}
 };
 
 /**
