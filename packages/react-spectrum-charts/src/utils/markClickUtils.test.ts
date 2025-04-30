@@ -41,6 +41,13 @@ describe('getItemBounds()', () => {
 
 describe('handleLegendItemClick()', () => {
 	let setHiddenSeries;
+	const item = {
+		context: null,
+		height: null,
+		width: null,
+		items: [{ role: 'legend-label', bounds: null, clip: null, items: [{ datum: { value: 'test' } }] }],
+	} as unknown as Item;
+
 	beforeEach(() => {
 		setHiddenSeries = jest.fn();
 	});
@@ -49,12 +56,6 @@ describe('handleLegendItemClick()', () => {
 	});
 
 	test('should call setHiddenSeries if legendItemValue is found', () => {
-		const item = {
-			context: null,
-			height: null,
-			width: null,
-			items: [{ role: 'legend-label', bounds: null, clip: null, items: [{ datum: { value: 'test' } }] }],
-		} as unknown as Item;
 		handleLegendItemClick(item, { ...defaultMarkClickArgs, setHiddenSeries, legendIsToggleable: true });
 		expect(setHiddenSeries).toHaveBeenCalled();
 	});
@@ -62,6 +63,11 @@ describe('handleLegendItemClick()', () => {
 		const item = {} as unknown as Item;
 		handleLegendItemClick(item, { ...defaultMarkClickArgs, setHiddenSeries, legendIsToggleable: true });
 		expect(setHiddenSeries).not.toHaveBeenCalled();
+	});
+	test('should call onLegendClick if trigger is click', () => {
+		const onLegendClick = jest.fn();
+		handleLegendItemClick(item, { ...defaultMarkClickArgs, onLegendClick, trigger: 'click' });
+		expect(onLegendClick).toHaveBeenCalled();
 	});
 });
 

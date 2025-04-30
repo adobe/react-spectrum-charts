@@ -30,11 +30,6 @@ interface ChartContextValue {
 	setIsPopoverOpen: (isOpen: boolean) => void;
 	popoverAnchorRef: MutableRefObject<HTMLDivElement | null>;
 
-	// Interaction handlers
-	onLegendClick?: (seriesName: string) => void;
-	onLegendMouseOver?: (seriesName: string) => void;
-	onLegendMouseOut?: (seriesName: string) => void;
-
 	// Spec state
 	controlledHoveredIdSignal: MutableRefObject<Signal | undefined>;
 	controlledHoveredGroupSignal: MutableRefObject<Signal | undefined>;
