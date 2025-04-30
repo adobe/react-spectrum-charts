@@ -21,6 +21,8 @@ import { ChartData, SanitizedSpecProps } from '../types';
 
 export default function useSpec({
 	backgroundColor,
+  chartHeight,
+  chartWidth,
 	children,
 	colors,
 	colorScheme,
@@ -56,9 +58,12 @@ export default function useSpec({
 		// or we need to build their spec
 		const chartOptions = rscPropsToSpecBuilderOptions({
 			backgroundColor,
+      chartHeight,
+      chartWidth,
 			children,
 			colors,
 			colorScheme,
+      data,
 			description,
 			hiddenSeries,
 			highlightedItem,
