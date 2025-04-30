@@ -237,7 +237,6 @@ export const initializeSpec = (spec: Spec | null = {}, chartOptions: Partial<Cha
 		usermeta: {},
 		title: title || undefined,
 		description,
-		autosize: { type: 'fit', contains: 'padding', resize: true },
 		data: baseData,
 		background: backgroundColor ? getColorValue(backgroundColor, colorScheme) : undefined,
 	};
