@@ -10,26 +10,26 @@
  * governing permissions and limitations under the License.
  */
 import {
-	AxisAnnotationOptions,
-	AxisOptions,
-	BarAnnotationOptions,
-	BulletOptions,
-	ChartPopoverOptions,
-	ChartTooltipOptions,
-	DonutSummaryOptions,
-	LegendOptions,
-	LineOptions,
-	MarkOptions,
-	MetricRangeOptions,
-	ReferenceLineOptions,
-	ScatterPathOptions,
-	SegmentLabelOptions,
-	TitleOptions,
-	TrendlineAnnotationOptions,
-	TrendlineOptions,
+  AxisAnnotationOptions,
+  AxisOptions,
+  BarAnnotationOptions,
+  BulletOptions,
+  ChartPopoverOptions,
+  ChartTooltipOptions,
+  DonutSummaryOptions,
+  LegendOptions,
+  LineOptions,
+  MarkOptions,
+  MetricRangeOptions,
+  ReferenceLineOptions,
+  ScatterPathOptions,
+  SegmentLabelOptions,
+  TitleOptions,
+  TrendlineAnnotationOptions,
+  TrendlineOptions,
 } from '@spectrum-charts/vega-spec-builder';
 
-import { Bullet, Combo } from '../alpha';
+import { Bullet, Combo, Venn } from '../alpha';
 import { Annotation } from '../components/Annotation';
 import { Area } from '../components/Area';
 import { Axis } from '../components/Axis';
@@ -48,24 +48,25 @@ import { Trendline } from '../components/Trendline';
 import { TrendlineAnnotation } from '../components/TrendlineAnnotation';
 import { Donut, DonutSummary, SegmentLabel } from '../rc';
 import {
-	AreaProps,
-	AxisAnnotationProps,
-	AxisProps,
-	BarProps,
-	ChartPopoverProps,
-	ChartTooltipProps,
-	ComboProps,
-	DonutProps,
-	DonutSummaryProps,
-	LegendProps,
-	LineProps,
-	ReferenceLineProps,
-	ScatterPathProps,
-	ScatterProps,
-	SegmentLabelProps,
-	TitleProps,
-	TrendlineAnnotationProps,
-	TrendlineProps,
+  AreaProps,
+  AxisAnnotationProps,
+  AxisProps,
+  BarProps,
+  ChartPopoverProps,
+  ChartTooltipProps,
+  ComboProps,
+  DonutProps,
+  DonutSummaryProps,
+  LegendProps,
+  LineProps,
+  ReferenceLineProps,
+  ScatterPathProps,
+  ScatterProps,
+  SegmentLabelProps,
+  TitleProps,
+  TrendlineAnnotationProps,
+  TrendlineProps,
+  VennProps,
 } from '../types';
 import { sanitizeChildren } from '../utils';
 import { getAreaOptions } from './areaAdapter';
@@ -79,156 +80,161 @@ import { getLegendOptions } from './legendAdapter';
 import { getLineOptions } from './lineAdapter';
 import { getScatterOptions } from './scatterAdapter';
 import { getTrendlineOptions } from './trendlineAdapter';
+import { getVennOptions } from './vennAdapter';
 
 export const childrenToOptions = (
-	children: React.ReactNode
+  children: React.ReactNode
 ): {
-	axes: AxisOptions[];
-	axisAnnotations: AxisAnnotationOptions[];
-	barAnnotations: BarAnnotationOptions[];
-	chartTooltips: ChartTooltipOptions[];
-	chartPopovers: ChartPopoverOptions[];
-	donutSummaries: DonutSummaryOptions[];
-	legends: LegendOptions[];
-	lines: LineOptions[];
-	marks: MarkOptions[];
-	metricRanges: MetricRangeOptions[];
-	referenceLines: ReferenceLineOptions[];
-	scatterPaths: ScatterPathOptions[];
-	segmentLabels: SegmentLabelOptions[];
-	titles: TitleOptions[];
-	trendlines: TrendlineOptions[];
-	trendlineAnnotations: TrendlineAnnotationOptions[];
+  axes: AxisOptions[];
+  axisAnnotations: AxisAnnotationOptions[];
+  barAnnotations: BarAnnotationOptions[];
+  chartTooltips: ChartTooltipOptions[];
+  chartPopovers: ChartPopoverOptions[];
+  donutSummaries: DonutSummaryOptions[];
+  legends: LegendOptions[];
+  lines: LineOptions[];
+  marks: MarkOptions[];
+  metricRanges: MetricRangeOptions[];
+  referenceLines: ReferenceLineOptions[];
+  scatterPaths: ScatterPathOptions[];
+  segmentLabels: SegmentLabelOptions[];
+  titles: TitleOptions[];
+  trendlines: TrendlineOptions[];
+  trendlineAnnotations: TrendlineAnnotationOptions[];
 } => {
-	const axes: AxisOptions[] = [];
-	const axisAnnotations: AxisAnnotationOptions[] = [];
-	const barAnnotations: BarAnnotationOptions[] = [];
-	const chartPopovers: ChartPopoverOptions[] = [];
-	const chartTooltips: ChartTooltipOptions[] = [];
-	const donutSummaries: DonutSummaryOptions[] = [];
-	const legends: LegendOptions[] = [];
-	const lines: LineOptions[] = [];
-	const marks: MarkOptions[] = [];
-	const metricRanges: MetricRangeOptions[] = [];
-	const referenceLines: ReferenceLineOptions[] = [];
-	const segmentLabels: SegmentLabelOptions[] = [];
-	const scatterPaths: ScatterPathOptions[] = [];
-	const titles: TitleOptions[] = [];
-	const trendlineAnnotations: TrendlineAnnotationOptions[] = [];
-	const trendlines: TrendlineOptions[] = [];
+  const axes: AxisOptions[] = [];
+  const axisAnnotations: AxisAnnotationOptions[] = [];
+  const barAnnotations: BarAnnotationOptions[] = [];
+  const chartPopovers: ChartPopoverOptions[] = [];
+  const chartTooltips: ChartTooltipOptions[] = [];
+  const donutSummaries: DonutSummaryOptions[] = [];
+  const legends: LegendOptions[] = [];
+  const lines: LineOptions[] = [];
+  const marks: MarkOptions[] = [];
+  const metricRanges: MetricRangeOptions[] = [];
+  const referenceLines: ReferenceLineOptions[] = [];
+  const segmentLabels: SegmentLabelOptions[] = [];
+  const scatterPaths: ScatterPathOptions[] = [];
+  const titles: TitleOptions[] = [];
+  const trendlineAnnotations: TrendlineAnnotationOptions[] = [];
+  const trendlines: TrendlineOptions[] = [];
 
-	sanitizeChildren(children).forEach((child) => {
-		if (!('displayName' in child.type)) {
-			console.error('Invalid component type. Component is missing display name.');
-			return;
-		}
-		switch (child.type.displayName) {
-			case Area.displayName:
-				marks.push(getAreaOptions(child.props as AreaProps));
-				break;
+  sanitizeChildren(children).forEach((child) => {
+    if (!('displayName' in child.type)) {
+      console.error('Invalid component type. Component is missing display name.');
+      return;
+    }
+    switch (child.type.displayName) {
+      case Area.displayName:
+        marks.push(getAreaOptions(child.props as AreaProps));
+        break;
 
-			case Annotation.displayName:
-				barAnnotations.push(child.props as BarAnnotationOptions);
-				break;
+      case Annotation.displayName:
+        barAnnotations.push(child.props as BarAnnotationOptions);
+        break;
 
-			case Axis.displayName:
-				axes.push(getAxisOptions(child.props as AxisProps));
-				break;
+      case Axis.displayName:
+        axes.push(getAxisOptions(child.props as AxisProps));
+        break;
 
-			case AxisAnnotation.displayName:
-				axisAnnotations.push(getAxisAnnotationOptions(child.props as AxisAnnotationProps));
-				break;
+      case AxisAnnotation.displayName:
+        axisAnnotations.push(getAxisAnnotationOptions(child.props as AxisAnnotationProps));
+        break;
 
-			case Bar.displayName:
-				marks.push(getBarOptions(child.props as BarProps));
-				break;
+      case Bar.displayName:
+        marks.push(getBarOptions(child.props as BarProps));
+        break;
 
-			case Bullet.displayName:
-				marks.push({ ...child.props, markType: 'bullet' } as BulletOptions);
-				break;
+      case Bullet.displayName:
+        marks.push({ ...child.props, markType: 'bullet' } as BulletOptions);
+        break;
 
-			case ChartPopover.displayName:
-				chartPopovers.push(getChartPopoverOptions(child.props as ChartPopoverProps));
-				break;
+      case ChartPopover.displayName:
+        chartPopovers.push(getChartPopoverOptions(child.props as ChartPopoverProps));
+        break;
 
-			case ChartTooltip.displayName:
-				chartTooltips.push(getChartTooltipOptions(child.props as ChartTooltipProps));
-				break;
+      case ChartTooltip.displayName:
+        chartTooltips.push(getChartTooltipOptions(child.props as ChartTooltipProps));
+        break;
 
-			case Combo.displayName:
-				marks.push(getComboOptions(child.props as ComboProps));
-				break;
+      case Combo.displayName:
+        marks.push(getComboOptions(child.props as ComboProps));
+        break;
 
-			case Donut.displayName:
-				marks.push(getDonutOptions(child.props as DonutProps));
-				break;
+      case Donut.displayName:
+        marks.push(getDonutOptions(child.props as DonutProps));
+        break;
 
-			case DonutSummary.displayName:
-				donutSummaries.push(child.props as DonutSummaryProps);
-				break;
+      case DonutSummary.displayName:
+        donutSummaries.push(child.props as DonutSummaryProps);
+        break;
 
-			case MetricRange.displayName:
-				metricRanges.push(child.props as MetricRangeOptions);
-				break;
+      case MetricRange.displayName:
+        metricRanges.push(child.props as MetricRangeOptions);
+        break;
 
-			case Legend.displayName:
-				legends.push(getLegendOptions(child.props as LegendProps));
-				break;
+      case Legend.displayName:
+        legends.push(getLegendOptions(child.props as LegendProps));
+        break;
 
-			case Line.displayName:
-				marks.push(getLineOptions(child.props as LineProps));
-				lines.push(getLineOptions(child.props as LineProps));
-				break;
+      case Line.displayName:
+        marks.push(getLineOptions(child.props as LineProps));
+        lines.push(getLineOptions(child.props as LineProps));
+        break;
 
-			case ReferenceLine.displayName:
-				referenceLines.push(child.props as ReferenceLineProps);
-				break;
+      case ReferenceLine.displayName:
+        referenceLines.push(child.props as ReferenceLineProps);
+        break;
 
-			case Scatter.displayName:
-				marks.push(getScatterOptions(child.props as ScatterProps));
-				break;
+      case Scatter.displayName:
+        marks.push(getScatterOptions(child.props as ScatterProps));
+        break;
 
-			case ScatterPath.displayName:
-				scatterPaths.push(child.props as ScatterPathProps);
-				break;
+      case ScatterPath.displayName:
+        scatterPaths.push(child.props as ScatterPathProps);
+        break;
 
-			case SegmentLabel.displayName:
-				segmentLabels.push(child.props as SegmentLabelProps);
-				break;
+      case SegmentLabel.displayName:
+        segmentLabels.push(child.props as SegmentLabelProps);
+        break;
 
-			case Title.displayName:
-				titles.push(child.props as TitleProps);
-				break;
+      case Title.displayName:
+        titles.push(child.props as TitleProps);
+        break;
 
-			case Trendline.displayName:
-				trendlines.push(getTrendlineOptions(child.props as TrendlineProps));
-				break;
+      case Trendline.displayName:
+        trendlines.push(getTrendlineOptions(child.props as TrendlineProps));
+        break;
 
-			case TrendlineAnnotation.displayName:
-				trendlineAnnotations.push(child.props as TrendlineAnnotationProps);
-				break;
+      case TrendlineAnnotation.displayName:
+        trendlineAnnotations.push(child.props as TrendlineAnnotationProps);
+        break;
 
-			default:
-				console.error('Invalid component type: ', child.type.displayName);
-		}
-	});
+      case Venn.displayName:
+        marks.push(getVennOptions(child.props as VennProps));
+        break;
 
-	return {
-		axes,
-		axisAnnotations,
-		barAnnotations,
-		chartTooltips,
-		chartPopovers,
-		donutSummaries,
-		legends,
-		lines,
-		marks,
-		metricRanges,
-		referenceLines,
-		scatterPaths,
-		segmentLabels,
-		titles,
-		trendlines,
-		trendlineAnnotations,
-	};
+      default:
+        console.error('Invalid component type: ', child.type.displayName);
+    }
+  });
+
+  return {
+    axes,
+    axisAnnotations,
+    barAnnotations,
+    chartTooltips,
+    chartPopovers,
+    donutSummaries,
+    legends,
+    lines,
+    marks,
+    metricRanges,
+    referenceLines,
+    scatterPaths,
+    segmentLabels,
+    titles,
+    trendlines,
+    trendlineAnnotations,
+  };
 };

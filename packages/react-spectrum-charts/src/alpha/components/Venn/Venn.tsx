@@ -10,14 +10,30 @@
  * governing permissions and limitations under the License.
  */
 
-export * from './area.types';
-export * from './bar.types';
-export * from './bigNumber.types';
-export * from './bullet.types';
-export * from './combo.types';
-export * from './donut.types';
-export * from './line.types';
-export * from './scatter.types';
-export * from './venn.types';
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import { FC } from 'react';
 
-export * from './supplemental';
+import {
+	DEFAULT_LABEL,
+	DEFAULT_VENN_COLOR,
+	DEFAULT_VENN_METRIC,
+	DEFAULT_VENN_STYLES,
+} from '@spectrum-charts/constants';
+
+import { VennProps } from '../../../types';
+
+const Venn: FC<VennProps> = ({
+	orientation = '0deg',
+	metric = DEFAULT_VENN_METRIC,
+	style = DEFAULT_VENN_STYLES,
+	label = DEFAULT_LABEL,
+	color = DEFAULT_VENN_COLOR,
+
+}) => {
+	return null;
+};
+
+Venn.displayName = 'Venn';
+
+export { Venn };
+
