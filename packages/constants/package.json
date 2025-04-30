@@ -1,6 +1,6 @@
 {
 	"name": "@spectrum-charts/constants",
-	"version": "1.17.0",
+	"version": "1.17.1",
 	"description": "Constants used in spectrum charts",
 	"browser": "dist/index.js",
 	"main": "dist/index.js",
