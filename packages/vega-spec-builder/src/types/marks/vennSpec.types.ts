@@ -9,10 +9,15 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { ChartData, ColorScheme, HighlightedItem } from 'types/chartSpec.types';
-import { ChartPopoverOptions, ChartTooltipOptions } from 'types/dialogs';
-import { SpectrumColor } from 'types/spectrumVizColor.types';
-import { PartiallyRequired } from 'types/specUtil.types';
+import {
+	ChartData,
+	ChartPopoverOptions,
+	ChartTooltipOptions,
+	ColorScheme,
+	HighlightedItem,
+	PartiallyRequired,
+	SpectrumColor,
+} from '../../types';
 
 export interface VennOptions {
 	markType: 'venn';
@@ -39,7 +44,7 @@ export interface VennOptions {
 		padding?: number;
 	};
 
-  // children
+	// children
 	chartPopovers?: ChartPopoverOptions[];
 	chartTooltips?: ChartTooltipOptions[];
 }

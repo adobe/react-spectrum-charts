@@ -9,8 +9,6 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { normalizeSolution } from 'venn-helper';
-
 import { defaultVennOptions, data as vennData } from './vennTestUtils';
 import {
 	getCircleMark,
@@ -100,10 +98,6 @@ describe('getVennSolution', () => {
 
 		expect(vennSolution.circles).toHaveLength(2);
 		expect(vennSolution.intersections).toHaveLength(0);
-	});
-
-	test('should call normalize function with right radians', () => {
-		getVennSolution({ ...defaultVennOptions, data: vennData ?? [], orientation: '90deg' });
 	});
 
 	test('should correctly calculate circle size from radius', () => {

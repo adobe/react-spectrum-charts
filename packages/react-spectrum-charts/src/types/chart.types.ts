@@ -46,8 +46,6 @@ import {
 import { TitleElement } from './title.types';
 import { Children } from './util.types';
 
-export type SimpleData = Record<string, unknown>;
-
 export type ChartChildElement =
 	| AreaElement
 	| AxisElement
