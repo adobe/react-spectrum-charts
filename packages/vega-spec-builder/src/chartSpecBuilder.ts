@@ -60,7 +60,6 @@ import {
 	initializeSpec,
 } from './specUtils';
 import { addTitle } from './title/titleSpecBuilder';
-import { addVenn } from './venn/vennSpecBuilder';
 import {
 	ChartColors,
 	ChartOptions,
@@ -77,6 +76,7 @@ import {
 	SymbolShapes,
 	SymbolSize,
 } from './types';
+import { addVenn } from './venn/vennSpecBuilder';
 
 export interface ChartSpecBuilder {
 	buildSpec: (options: ChartOptions) => Spec;

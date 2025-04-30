@@ -507,7 +507,7 @@ describe('barUtils', () => {
 			const options: BarSpecOptions = {
 				...defaultBarOptions,
 				metricAxis: 'customScaleName',
-				orientation: 'vertical'
+				orientation: 'vertical',
 			};
 			expect(getBaseScaleName(options)).toEqual('customScaleName');
 		});
@@ -515,7 +515,7 @@ describe('barUtils', () => {
 		test('should return metricScaleKey from orientation properties if metricAxis is not provided (vertical)', () => {
 			const options: BarSpecOptions = {
 				...defaultBarOptions,
-				orientation: 'vertical'
+				orientation: 'vertical',
 			};
 			expect(getBaseScaleName(options)).toEqual('yLinear');
 		});
@@ -523,7 +523,7 @@ describe('barUtils', () => {
 		test('should return metricScaleKey from orientation properties if metricAxis is not provided (horizontal)', () => {
 			const options: BarSpecOptions = {
 				...defaultBarOptions,
-				orientation: 'horizontal'
+				orientation: 'horizontal',
 			};
 			expect(getBaseScaleName(options)).toEqual('xLinear');
 		});
@@ -532,7 +532,7 @@ describe('barUtils', () => {
 			const options: BarSpecOptions = {
 				...defaultBarOptions,
 				metricAxis: undefined,
-				orientation: 'vertical'
+				orientation: 'vertical',
 			};
 			expect(getBaseScaleName(options)).toEqual('yLinear');
 		});
@@ -541,7 +541,7 @@ describe('barUtils', () => {
 			const options: BarSpecOptions = {
 				...defaultBarOptions,
 				metricAxis: '',
-				orientation: 'horizontal'
+				orientation: 'horizontal',
 			};
 			expect(getBaseScaleName(options)).toEqual('xLinear');
 		});

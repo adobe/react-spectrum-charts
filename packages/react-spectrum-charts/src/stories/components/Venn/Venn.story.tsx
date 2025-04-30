@@ -9,18 +9,17 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { ChartPopover, ChartTooltip, Legend } from '../../../components';
-import useChartProps from '../../../hooks/useChartProps';
 import { StoryFn } from '@storybook/react';
-import { bindWithProps } from '../../../test-utils';
-import { Chart } from '../../../Chart';
-import { Venn } from '../../../alpha';
 
 import { Content } from '@adobe/react-spectrum';
-
-import { ChartProps, VennProps } from '../../../types';
 import { Datum } from '@spectrum-charts/vega-spec-builder';
 
+import { Chart } from '../../../Chart';
+import { Venn } from '../../../alpha';
+import { ChartPopover, ChartTooltip, Legend } from '../../../components';
+import useChartProps from '../../../hooks/useChartProps';
+import { bindWithProps } from '../../../test-utils';
+import { ChartProps, VennProps } from '../../../types';
 import { radioData } from './data';
 
 export default {
@@ -52,9 +51,9 @@ const defaultChartProps: ChartProps = {
 };
 
 const basicData = [
-	{ sets: [A], size: 12, label: "A" },
-	{ sets: [B], size: 12, label: "B" },
-	{ sets: [A, B], size: 2, label: "AnB" },
+	{ sets: [A], size: 12, label: 'A' },
+	{ sets: [B], size: 12, label: 'B' },
+	{ sets: [A, B], size: 2, label: 'AnB' },
 ];
 
 const BasicVennStory: StoryFn<VennProps> = (args) => {
@@ -105,8 +104,8 @@ const WithLegend = bindWithProps(VennStoryWithLegend);
 
 const Supreme = bindWithProps(SupremeStory);
 Supreme.args = {
-  children: interactiveChildren
-}
+	children: interactiveChildren,
+};
 
 const WithToolTip = bindWithProps(BasicVennStory);
 WithToolTip.args = {
@@ -119,4 +118,3 @@ WithPopover.args = {
 };
 
 export { Basic, WithToolTip, WithPopover, WithLegend, Supreme };
-

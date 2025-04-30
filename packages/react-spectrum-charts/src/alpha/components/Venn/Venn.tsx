@@ -13,11 +13,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { FC } from 'react';
 
-import {
-	DEFAULT_VENN_LABEL,
-	DEFAULT_VENN_COLOR,
-	DEFAULT_VENN_METRIC,
-} from '@spectrum-charts/constants';
+import { DEFAULT_VENN_COLOR, DEFAULT_VENN_LABEL, DEFAULT_VENN_METRIC } from '@spectrum-charts/constants';
 
 import { VennProps } from '../../../types';
 
@@ -33,4 +29,3 @@ const Venn: FC<VennProps> = ({
 Venn.displayName = 'Venn';
 
 export { Venn };
-

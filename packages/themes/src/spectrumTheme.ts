@@ -12,12 +12,12 @@
 import { BaseLegendLayout, Config, mergeConfig } from 'vega';
 
 import {
-  DEFAULT_BACKGROUND_COLOR,
-  DEFAULT_FONT_COLOR,
-  DEFAULT_FONT_SIZE,
-  DEFAULT_SYMBOL_SIZE,
-  DEFAULT_SYMBOL_STROKE_WIDTH,
-  ROUNDED_SQUARE_PATH,
+	DEFAULT_BACKGROUND_COLOR,
+	DEFAULT_FONT_COLOR,
+	DEFAULT_FONT_SIZE,
+	DEFAULT_SYMBOL_SIZE,
+	DEFAULT_SYMBOL_STROKE_WIDTH,
+	ROUNDED_SQUARE_PATH,
 } from '@spectrum-charts/constants';
 
 import { categorical16 } from './categoricalColorPalette';
@@ -29,145 +29,145 @@ import { getColorValue } from './utils';
 type ColorScheme = 'light' | 'dark';
 
 export const ADOBE_CLEAN_FONT =
-  "adobe-clean, 'Source Sans Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Ubuntu, 'Trebuchet MS', 'Lucida Grande', sans-serif";
+	"adobe-clean, 'Source Sans Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Ubuntu, 'Trebuchet MS', 'Lucida Grande', sans-serif";
 
 export function getChartConfig(config: Config | undefined, colorScheme: ColorScheme): Config {
-  const defaultConfig = getSpectrumVegaConfig(colorScheme);
-  if (config) {
-    return mergeConfig(defaultConfig, config);
-  }
-  return defaultConfig;
+	const defaultConfig = getSpectrumVegaConfig(colorScheme);
+	if (config) {
+		return mergeConfig(defaultConfig, config);
+	}
+	return defaultConfig;
 }
 
 function getSpectrumVegaConfig(colorScheme: ColorScheme): Config {
-  const FONT_COLOR = getColorValue(DEFAULT_FONT_COLOR, colorScheme);
-  const {
-    'blue-400': blue400,
-    'gray-200': gray200,
-    'gray-300': gray300,
-    'gray-700': gray700,
-    'gray-900': gray900,
-  } = spectrumColors[colorScheme];
-  const horizontalLegendLayout: BaseLegendLayout = {
-    anchor: 'middle',
-    direction: 'horizontal',
-    center: true,
-    offset: 24,
-    bounds: 'full',
-    margin: 48,
-  };
-  const verticalLegendLayout: BaseLegendLayout = {
-    anchor: 'middle',
-    direction: 'vertical',
-    center: false,
-    offset: 24,
-    bounds: 'full',
-    margin: 24,
-  };
+	const FONT_COLOR = getColorValue(DEFAULT_FONT_COLOR, colorScheme);
+	const {
+		'blue-400': blue400,
+		'gray-200': gray200,
+		'gray-300': gray300,
+		'gray-700': gray700,
+		'gray-900': gray900,
+	} = spectrumColors[colorScheme];
+	const horizontalLegendLayout: BaseLegendLayout = {
+		anchor: 'middle',
+		direction: 'horizontal',
+		center: true,
+		offset: 24,
+		bounds: 'full',
+		margin: 48,
+	};
+	const verticalLegendLayout: BaseLegendLayout = {
+		anchor: 'middle',
+		direction: 'vertical',
+		center: false,
+		offset: 24,
+		bounds: 'full',
+		margin: 24,
+	};
 
-  const defaultColor = spectrumColors[colorScheme]['categorical-100'];
+	const defaultColor = spectrumColors[colorScheme]['categorical-100'];
 
-  return {
-    axis: {
-      bandPosition: 0.5,
-      domain: false,
-      domainWidth: 2,
-      domainColor: gray900,
-      gridColor: gray200,
-      labelFont: ADOBE_CLEAN_FONT,
-      labelFontSize: DEFAULT_FONT_SIZE,
-      labelFontWeight: 'normal',
-      labelPadding: 8,
-      labelOverlap: true,
-      labelColor: FONT_COLOR,
-      ticks: false,
-      tickColor: gray300,
-      tickRound: true,
-      tickSize: 8,
-      tickCap: 'round',
-      tickWidth: 1,
-      titleAnchor: 'middle',
-      titleColor: FONT_COLOR,
-      titleFont: ADOBE_CLEAN_FONT,
-      titleFontSize: DEFAULT_FONT_SIZE,
-      titleFontWeight: 'bold',
-      titlePadding: 16,
-    },
-    range: {
-      category: categorical16,
-      diverging: divergentOrangeYellowSeafoam15,
-      ordinal: categorical16,
-      ramp: sequentialViridis16,
-    },
-    background: DEFAULT_BACKGROUND_COLOR,
-    legend: {
-      columnPadding: 20,
-      labelColor: FONT_COLOR,
-      labelFont: ADOBE_CLEAN_FONT,
-      labelFontSize: DEFAULT_FONT_SIZE,
-      labelFontWeight: 'normal',
-      labelLimit: 184,
-      layout: {
-        bottom: horizontalLegendLayout,
-        top: horizontalLegendLayout,
-        left: verticalLegendLayout,
-        right: verticalLegendLayout,
-      },
-      rowPadding: 8,
-      symbolSize: 250,
-      symbolType: ROUNDED_SQUARE_PATH,
-      symbolStrokeColor: gray700,
-      titleColor: FONT_COLOR,
-      titleFont: ADOBE_CLEAN_FONT,
-      titleFontSize: DEFAULT_FONT_SIZE,
-      titlePadding: 8,
-    },
-    arc: {
-      fill: defaultColor,
-    },
-    area: {
-      fill: defaultColor,
-      opacity: 0.8,
-    },
-    line: {
-      strokeWidth: 2,
-      stroke: defaultColor,
-    },
-    path: {
-      stroke: defaultColor,
-    },
-    rect: {
-      strokeWidth: 0,
-      stroke: blue400,
-      fill: defaultColor,
-    },
-    rule: {
-      stroke: gray900,
-      strokeWidth: 2,
-    },
-    shape: {
-      stroke: defaultColor,
-    },
-    symbol: {
-      strokeWidth: DEFAULT_SYMBOL_STROKE_WIDTH,
-      size: DEFAULT_SYMBOL_SIZE,
-      fill: defaultColor,
-    },
-    text: {
-      fill: FONT_COLOR,
-      font: ADOBE_CLEAN_FONT,
-      fontSize: DEFAULT_FONT_SIZE,
-    },
-    title: {
-      offset: 10,
-      font: ADOBE_CLEAN_FONT,
-      fontSize: 18,
-      color: FONT_COLOR,
-    },
-    autosize: {
-      type: 'fit',
-      contains: 'padding',
-      resize: true,
-    },
-  };
+	return {
+		axis: {
+			bandPosition: 0.5,
+			domain: false,
+			domainWidth: 2,
+			domainColor: gray900,
+			gridColor: gray200,
+			labelFont: ADOBE_CLEAN_FONT,
+			labelFontSize: DEFAULT_FONT_SIZE,
+			labelFontWeight: 'normal',
+			labelPadding: 8,
+			labelOverlap: true,
+			labelColor: FONT_COLOR,
+			ticks: false,
+			tickColor: gray300,
+			tickRound: true,
+			tickSize: 8,
+			tickCap: 'round',
+			tickWidth: 1,
+			titleAnchor: 'middle',
+			titleColor: FONT_COLOR,
+			titleFont: ADOBE_CLEAN_FONT,
+			titleFontSize: DEFAULT_FONT_SIZE,
+			titleFontWeight: 'bold',
+			titlePadding: 16,
+		},
+		range: {
+			category: categorical16,
+			diverging: divergentOrangeYellowSeafoam15,
+			ordinal: categorical16,
+			ramp: sequentialViridis16,
+		},
+		background: DEFAULT_BACKGROUND_COLOR,
+		legend: {
+			columnPadding: 20,
+			labelColor: FONT_COLOR,
+			labelFont: ADOBE_CLEAN_FONT,
+			labelFontSize: DEFAULT_FONT_SIZE,
+			labelFontWeight: 'normal',
+			labelLimit: 184,
+			layout: {
+				bottom: horizontalLegendLayout,
+				top: horizontalLegendLayout,
+				left: verticalLegendLayout,
+				right: verticalLegendLayout,
+			},
+			rowPadding: 8,
+			symbolSize: 250,
+			symbolType: ROUNDED_SQUARE_PATH,
+			symbolStrokeColor: gray700,
+			titleColor: FONT_COLOR,
+			titleFont: ADOBE_CLEAN_FONT,
+			titleFontSize: DEFAULT_FONT_SIZE,
+			titlePadding: 8,
+		},
+		arc: {
+			fill: defaultColor,
+		},
+		area: {
+			fill: defaultColor,
+			opacity: 0.8,
+		},
+		line: {
+			strokeWidth: 2,
+			stroke: defaultColor,
+		},
+		path: {
+			stroke: defaultColor,
+		},
+		rect: {
+			strokeWidth: 0,
+			stroke: blue400,
+			fill: defaultColor,
+		},
+		rule: {
+			stroke: gray900,
+			strokeWidth: 2,
+		},
+		shape: {
+			stroke: defaultColor,
+		},
+		symbol: {
+			strokeWidth: DEFAULT_SYMBOL_STROKE_WIDTH,
+			size: DEFAULT_SYMBOL_SIZE,
+			fill: defaultColor,
+		},
+		text: {
+			fill: FONT_COLOR,
+			font: ADOBE_CLEAN_FONT,
+			fontSize: DEFAULT_FONT_SIZE,
+		},
+		title: {
+			offset: 10,
+			font: ADOBE_CLEAN_FONT,
+			fontSize: 18,
+			color: FONT_COLOR,
+		},
+		autosize: {
+			type: 'fit',
+			contains: 'padding',
+			resize: true,
+		},
+	};
 }

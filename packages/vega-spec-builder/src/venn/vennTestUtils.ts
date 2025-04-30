@@ -30,8 +30,8 @@ export const data = [
 ];
 
 export const defaultVennOptions: VennSpecOptions = {
-  chartTooltips: [],
-  chartPopovers: [],
+	chartTooltips: [],
+	chartPopovers: [],
 	data,
 	colorScheme: 'light',
 	idKey: 'set_id',

@@ -113,4 +113,3 @@ export const radioData = [
 	{ sets: [0, 9, 10], size: 13 },
 	{ sets: [2, 7, 8], size: 72 },
 ];
-

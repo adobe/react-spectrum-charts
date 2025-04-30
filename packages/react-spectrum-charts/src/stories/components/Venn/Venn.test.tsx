@@ -11,12 +11,11 @@
  */
 import { Venn } from '../../../alpha';
 import { findAllMarksByGroupName, findChart, render } from '../../../test-utils';
-
 import { Basic, WithLegend } from './Venn.story';
 
 describe('Venn', () => {
 	test('Venn pseudo element', () => {
-		render(<Venn markType='venn'/>);
+		render(<Venn markType="venn" />);
 	});
 
 	test('Basic renders properly without passing props', async () => {
@@ -45,4 +44,3 @@ describe('Venn', () => {
 		expect(intersections.length).toEqual(5);
 	});
 });
-

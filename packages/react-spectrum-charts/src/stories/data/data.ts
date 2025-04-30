@@ -1057,8 +1057,8 @@ export const simpleSparklineData = [
 	{ x: 17, y: 70 },
 	{ x: 18, y: 35 },
 	{ x: 19, y: 55 },
-	{ x: 20, y: 90 }
-]
+	{ x: 20, y: 90 },
+];
 
 export const peopleAdoptionComboData = [
 	{ datetime: 1667890800000, people: 10, adoptionRate: 0.2 },

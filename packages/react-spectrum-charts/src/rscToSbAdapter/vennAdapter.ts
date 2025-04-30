@@ -15,11 +15,11 @@ import { VennProps } from '../types';
 import { childrenToOptions } from './childrenAdapter';
 
 export const getVennOptions = ({ children, ...vennProps }: VennProps): VennOptions => {
-  const { chartPopovers, chartTooltips } = childrenToOptions(children);
-  return {
-    ...vennProps,
-    chartPopovers,
-    chartTooltips,
-    markType: 'venn',
-  };
+	const { chartPopovers, chartTooltips } = childrenToOptions(children);
+	return {
+		...vennProps,
+		chartPopovers,
+		chartTooltips,
+		markType: 'venn',
+	};
 };

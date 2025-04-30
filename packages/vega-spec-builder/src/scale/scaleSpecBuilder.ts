@@ -39,10 +39,12 @@ export const getScaleIndexByType = (
 	let index = scales.findIndex((scale) => scale.name === name);
 	if (index === -1) {
 		index = scales.length;
-		scales.push(generateScale(type, axis, {
-			name,
-			...(domainDataKey ? { domain: { data: domainDataKey, fields: [] } } : {}),
-		}));
+		scales.push(
+			generateScale(type, axis, {
+				name,
+				...(domainDataKey ? { domain: { data: domainDataKey, fields: [] } } : {}),
+			})
+		);
 	}
 	return index;
 };

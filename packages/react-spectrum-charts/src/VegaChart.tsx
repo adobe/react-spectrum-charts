@@ -16,12 +16,12 @@ import embed from 'vega-embed';
 import { Options as TooltipOptions } from 'vega-tooltip';
 
 import { TABLE } from '@spectrum-charts/constants';
+import { ChartData } from '@spectrum-charts/vega-spec-builder';
 
 import { expressionFunctions, formatLocaleCurrency, formatTimeDurationLabels } from './expressionFunctions';
 import { useDebugSpec } from './hooks/useDebugSpec';
 import { extractValues, isVegaData } from './hooks/useSpec';
 import { ChartProps } from './types';
-import { ChartData } from '@spectrum-charts/vega-spec-builder';
 import { getLocale } from './utils/locale';
 
 export interface VegaChartProps {
