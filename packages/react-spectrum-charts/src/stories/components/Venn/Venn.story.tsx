@@ -60,7 +60,7 @@ const basicData = [
 const BasicVennStory: StoryFn<VennProps> = (args) => {
 	const chartProps = useChartProps({ ...defaultChartProps, data: basicData });
 	return (
-		<Chart {...chartProps} config={{ autosize: { type: 'pad' } }} debug>
+		<Chart {...chartProps} config={{ autosize: { type: 'pad' } }}>
 			<Venn {...args} />
 		</Chart>
 	);
