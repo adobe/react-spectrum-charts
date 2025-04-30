@@ -22,6 +22,7 @@ import {
 	getAllLegendSymbols,
 	hoverNthElement,
 	render,
+	rightClickNthElement,
 	screen,
 } from '../../../test-utils';
 import '../../../test-utils/__mocks__/matchMedia.mock';
@@ -119,4 +120,23 @@ test('Hidden series should not highlight any marks', async () => {
 	await hoverNthElement(entries, 2);
 	bars = await findAllMarksByGroupName(chart, 'bar0');
 	expect(bars[0]).toHaveAttribute('opacity', '1');
+});
+
+test('Right clicking on a legend entry should not hide the series or trigger onClick', async () => {
+	const onLegendClick = jest.fn();
+	render(<DefaultHiddenSeries {...DefaultHiddenSeries.args} onClick={onLegendClick} />);
+	const chart = await findChart();
+
+	let bars = await findAllMarksByGroupName(chart, 'bar0');
+	// there should only be 6 bars (2 series 3 categories)
+	expect(bars.length).toEqual(6);
+
+	const entries = getAllLegendEntries(chart);
+	await rightClickNthElement(entries, 0);
+
+	bars = await findAllMarksByGroupName(chart, 'bar0');
+	// there should still be 6 bars (2 series 3 categories)
+	expect(bars.length).toEqual(6);
+
+	expect(onLegendClick).not.toHaveBeenCalled();
 });
