@@ -10,7 +10,6 @@
  * governing permissions and limitations under the License.
  */
 import { Legend } from '../../../components';
-
 import { LegendBarStory, defaultProps } from './LegendStoryUtils';
 
 export default {

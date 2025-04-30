@@ -9,7 +9,6 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
 import { getDualAxisScaleNames } from './scaleUtils';
 
 describe('getDualAxisScaleNames()', () => {
@@ -19,7 +18,7 @@ describe('getDualAxisScaleNames()', () => {
 			primaryScale: 'xLinearPrimary',
 			secondaryScale: 'xLinearSecondary',
 			primaryDomain: 'xLinearPrimaryDomain',
-			secondaryDomain: 'xLinearSecondaryDomain'
+			secondaryDomain: 'xLinearSecondaryDomain',
 		});
 	});
 
@@ -29,7 +28,7 @@ describe('getDualAxisScaleNames()', () => {
 			primaryScale: 'yLinearPrimary',
 			secondaryScale: 'yLinearSecondary',
 			primaryDomain: 'yLinearPrimaryDomain',
-			secondaryDomain: 'yLinearSecondaryDomain'
+			secondaryDomain: 'yLinearSecondaryDomain',
 		});
 	});
 
@@ -39,7 +38,7 @@ describe('getDualAxisScaleNames()', () => {
 			primaryScale: 'customScalePrimary',
 			secondaryScale: 'customScaleSecondary',
 			primaryDomain: 'customScalePrimaryDomain',
-			secondaryDomain: 'customScaleSecondaryDomain'
+			secondaryDomain: 'customScaleSecondaryDomain',
 		});
 	});
 
@@ -49,7 +48,7 @@ describe('getDualAxisScaleNames()', () => {
 			primaryScale: 'Primary',
 			secondaryScale: 'Secondary',
 			primaryDomain: 'PrimaryDomain',
-			secondaryDomain: 'SecondaryDomain'
+			secondaryDomain: 'SecondaryDomain',
 		});
 	});
-}); 
+});
