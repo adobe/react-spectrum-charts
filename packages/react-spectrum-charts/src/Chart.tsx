@@ -38,7 +38,8 @@ import useChartImperativeHandle from './hooks/useChartImperativeHandle';
 import useChartWidth from './hooks/useChartWidth';
 import { useResizeObserver } from './hooks/useResizeObserver';
 import { BigNumberInternal } from './rc/components/BigNumber/BigNumber';
-import { ChartData, ChartProps, RscChartProps } from './types';
+import {  ChartProps, RscChartProps } from './types';
+import { ChartData } from '@spectrum-charts/vega-spec-builder';
 import { getBigNumberElementsFromChildren, toArray } from './utils';
 
 interface PlaceholderContentProps {

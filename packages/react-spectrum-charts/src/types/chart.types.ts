@@ -11,7 +11,7 @@
  */
 import { JSXElementConstructor, ReactElement } from 'react';
 
-import { Config, Data, Locale, NumberLocale, Padding, TimeLocale } from 'vega';
+import { Config, Locale, NumberLocale, Padding, TimeLocale } from 'vega';
 
 import { Theme } from '@react-types/provider';
 import {
@@ -22,6 +22,7 @@ import {
 	TooltipPlacement,
 	Width,
 } from '@spectrum-charts/vega-spec-builder';
+import { ChartData } from '@spectrum-charts/vega-spec-builder';
 
 import { AxisElement } from './axis';
 import { ChartPopoverElement, ChartTooltipElement } from './dialogs';
@@ -46,8 +47,6 @@ import { TitleElement } from './title.types';
 import { Children } from './util.types';
 
 export type SimpleData = Record<string, unknown>;
-
-export type ChartData = SimpleData | Data;
 
 export type ChartChildElement =
 	| AreaElement

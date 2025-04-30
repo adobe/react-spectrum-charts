@@ -39,18 +39,26 @@ export interface VennOptions {
 		padding?: number;
 	};
 
+  // children
 	chartPopovers?: ChartPopoverOptions[];
 	chartTooltips?: ChartTooltipOptions[];
 }
 
-type VennOptionsWithDefaults = 'chartPopovers' | 'chartTooltips' | 'orientation' | 'name' | 'label' | 'color' | 'metric';
+type VennOptionsWithDefaults =
+	| 'chartPopovers'
+	| 'chartTooltips'
+	| 'color'
+	| 'label'
+	| 'metric'
+	| 'name'
+	| 'orientation';
 
 export interface VennSpecOptions extends PartiallyRequired<VennOptions, VennOptionsWithDefaults> {
-	chartWidth: number;
 	chartHeight: number;
+	chartWidth: number;
 	colorScheme: ColorScheme;
-	highlightedItem?: HighlightedItem;
 	data: ChartData[];
+	highlightedItem?: HighlightedItem;
 	idKey: string;
 	index: number;
 	markType: 'venn';

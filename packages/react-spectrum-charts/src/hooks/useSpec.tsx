@@ -15,14 +15,15 @@ import { Data, Spec, ValuesData } from 'vega';
 
 import { getColorValue } from '@spectrum-charts/themes';
 import { ChartSpecOptions, baseData, buildSpec } from '@spectrum-charts/vega-spec-builder';
+import { ChartData } from '@spectrum-charts/vega-spec-builder';
 
 import { rscPropsToSpecBuilderOptions } from '../rscToSbAdapter';
-import { ChartData, SanitizedSpecProps } from '../types';
+import { SanitizedSpecProps } from '../types';
 
 export default function useSpec({
 	backgroundColor,
-  chartHeight,
-  chartWidth,
+	chartHeight,
+	chartWidth,
 	children,
 	colors,
 	colorScheme,
@@ -58,12 +59,12 @@ export default function useSpec({
 		// or we need to build their spec
 		const chartOptions = rscPropsToSpecBuilderOptions({
 			backgroundColor,
-      chartHeight,
-      chartWidth,
+			chartHeight,
+			chartWidth,
 			children,
 			colors,
 			colorScheme,
-      data,
+			data,
 			description,
 			hiddenSeries,
 			highlightedItem,
