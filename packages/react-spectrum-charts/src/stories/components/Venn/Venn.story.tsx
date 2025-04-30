@@ -52,9 +52,9 @@ const defaultChartProps: ChartProps = {
 };
 
 const basicData = [
-	{ sets: [A], size: 12 },
-	{ sets: [B], size: 12 },
-	{ sets: [A, B], size: 2 },
+	{ sets: [A], size: 12, label: "A" },
+	{ sets: [B], size: 12, label: "B" },
+	{ sets: [A, B], size: 2, label: "AnB" },
 ];
 
 const BasicVennStory: StoryFn<VennProps> = (args) => {

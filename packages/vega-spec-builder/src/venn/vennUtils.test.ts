@@ -18,7 +18,6 @@ import {
 	getTextMark,
 	getVennSolution,
 	mapDataForVennHelper,
-	mergeStylesWithDefaults,
 } from './vennUtils';
 
 describe('getVennSolution', () => {
@@ -134,18 +133,6 @@ describe('mapDataForVennHelper', () => {
 		expect(() => {
 			mapDataForVennHelper({ ...defaultVennOptions, data: vennData ?? [], color: 'fake' });
 		}).toThrow();
-	});
-});
-
-describe('mergeStylesWithDefaults', () => {
-	test('should set default styling when calling with undefined style', () => {
-		const defaultStyles = mergeStylesWithDefaults({ fontSize: 30, fontWeight: 'bolder' });
-
-		expect(defaultStyles).toHaveProperty('fontSize', 30);
-		expect(defaultStyles).toHaveProperty('padding');
-		expect(defaultStyles).toHaveProperty('fontWeight', 'bolder');
-		expect(defaultStyles).toHaveProperty('intersectionFill');
-		expect(defaultStyles).toHaveProperty('color');
 	});
 });
 

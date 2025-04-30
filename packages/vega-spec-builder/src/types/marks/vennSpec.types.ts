@@ -16,7 +16,6 @@ import {
 	ColorScheme,
 	HighlightedItem,
 	PartiallyRequired,
-	SpectrumColor,
 } from '../../types';
 
 export interface VennOptions {
@@ -31,18 +30,6 @@ export interface VennOptions {
 	label?: string;
 	/** Sets the name of the component. */
 	name?: string;
-
-	style?: {
-		/** font size of labels inside sets and intersections */
-		fontSize?: number;
-		/** color of the text inside the sets */
-		color?: string;
-		/** color of intersection when hovering over it */
-		intersectionFill?: SpectrumColor | string;
-		fontWeight?: 'lighter' | 'normal' | 'bolder' | 'bolder';
-		/** padding around the venn diagram */
-		padding?: number;
-	};
 
 	// children
 	chartPopovers?: ChartPopoverOptions[];

@@ -14,10 +14,9 @@
 import { FC } from 'react';
 
 import {
-	DEFAULT_LABEL,
+	DEFAULT_VENN_LABEL,
 	DEFAULT_VENN_COLOR,
 	DEFAULT_VENN_METRIC,
-	DEFAULT_VENN_STYLES,
 } from '@spectrum-charts/constants';
 
 import { VennProps } from '../../../types';
@@ -25,10 +24,8 @@ import { VennProps } from '../../../types';
 const Venn: FC<VennProps> = ({
 	orientation = '0deg',
 	metric = DEFAULT_VENN_METRIC,
-	style = DEFAULT_VENN_STYLES,
-	label = DEFAULT_LABEL,
+	label = DEFAULT_VENN_LABEL,
 	color = DEFAULT_VENN_COLOR,
-
 }) => {
 	return null;
 };
