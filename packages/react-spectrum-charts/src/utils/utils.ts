@@ -477,3 +477,13 @@ export const setSelectedSignals = ({
 		view.signal(SELECTED_GROUP, selectedData?.[selectedGroupKey] ?? null);
 	}
 };
+
+export const chartHasChild = ({ children, displayName }: { children: ChartChildElement[]; displayName: string }) => {
+	return children.find((child) => {
+		if (!('displayName' in child.type)) {
+			return false;
+		}
+
+		return child.type.displayName === displayName;
+	});
+};

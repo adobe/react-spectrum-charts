@@ -14051,10 +14051,10 @@ vega@^5.32.0:
     vega-voronoi "~4.2.4"
     vega-wordcloud "~4.1.6"
 
-venn-helper@^2.3.4:
-  version "2.3.4"
-  resolved "https://registry.yarnpkg.com/venn-helper/-/venn-helper-2.3.4.tgz#b703824556bd6927e7c7ce9550c436e314872192"
-  integrity sha512-7ae3gcvXkyVU4sktS7Eno96yjahh8BdZj5ffxKU6uZYEtD4R6M1BcXrSUDn/9zb4sABbiAIumoOZA5gv5A5SPw==
+venn-helper@^2.3.6:
+  version "2.3.6"
+  resolved "https://registry.yarnpkg.com/venn-helper/-/venn-helper-2.3.6.tgz#a46fcf2543a622596c1ff36cdc282d17fdcdc61f"
+  integrity sha512-juXi8hWQRacXhzIgJiYu9BK35SBYs5qvoEemOfl55ahE5HLaAaYXHKZwtsRO6unGGdo27vn0KOF1d1VblT6oeg==
   dependencies:
     fmin "0.0.2"
 

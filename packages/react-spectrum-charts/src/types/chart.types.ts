@@ -42,6 +42,7 @@ import {
 	ScatterPathElement,
 	SegmentLabelElement,
 	TrendlineElement,
+	VennElement,
 } from './marks';
 import { TitleElement } from './title.types';
 import { Children } from './util.types';
@@ -56,7 +57,8 @@ export type ChartChildElement =
 	| LegendElement
 	| LineElement
 	| ScatterElement
-	| TitleElement;
+	| TitleElement
+	| VennElement;
 export type MarkChildElement =
 	| BarAnnotationElement
 	| ChartPopoverElement

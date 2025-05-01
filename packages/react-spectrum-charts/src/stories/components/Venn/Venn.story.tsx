@@ -11,7 +11,7 @@
  */
 import { StoryFn } from '@storybook/react';
 
-import { Content } from '@adobe/react-spectrum';
+import { Content, View } from '@adobe/react-spectrum';
 import { Datum } from '@spectrum-charts/vega-spec-builder';
 
 import { Chart } from '../../../Chart';
@@ -23,79 +23,92 @@ import { ChartProps, VennProps } from '../../../types';
 import { radioData } from './data';
 
 export default {
-	title: 'RSC/Venn',
-	component: Venn,
+  title: 'RSC/Venn',
+  component: Venn,
 };
 
 const { A, B, C } = {
-	A: 'Instagram',
-	B: 'TikTok',
-	C: 'X',
+  A: 'Instagram',
+  B: 'TikTok',
+  C: 'X',
 };
 
 const defaultChartProps: ChartProps = {
-	data: [
-		{ regions: [A], radius: 12 },
-		{ regions: [B], radius: 12 },
-		{ regions: [C], radius: 6 },
-		{ regions: ['D'], radius: 6 },
-		{ regions: [A, B], radius: 2 },
-		{ regions: [A, 'D'], radius: 2 },
-		{ regions: [A, C], radius: 2 },
-		{ regions: [B, C], radius: 2 },
-		{ regions: [A, B, C], radius: 1 },
-	],
+  data: [
+    { regions: [A], radius: 12 },
+    { regions: [B], radius: 12 },
+    { regions: [C], radius: 6 },
+    { regions: ['D'], radius: 6 },
+    { regions: [A, B], radius: 2 },
+    { regions: [A, 'D'], radius: 2 },
+    { regions: [A, C], radius: 2 },
+    { regions: [B, C], radius: 2 },
+    { regions: [A, B, C], radius: 1 },
+  ],
 
-	height: 350,
-	width: 350,
+  height: 350,
+  width: 350,
 };
 
 const basicData = [
-	{ sets: [A], size: 12, label: 'A' },
-	{ sets: [B], size: 12, label: 'B' },
-	{ sets: [A, B], size: 2, label: 'AnB' },
+  { sets: [A], size: 12, label: 'A' },
+  { sets: [B], size: 12, label: 'B' },
+  { sets: [A, B], size: 2, label: 'AnB' },
 ];
 
 const BasicVennStory: StoryFn<VennProps> = (args) => {
-	const chartProps = useChartProps({ ...defaultChartProps, data: basicData });
-	return (
-		<Chart {...chartProps} config={{ autosize: { type: 'pad' } }}>
-			<Venn {...args} />
-		</Chart>
-	);
+  const chartProps = useChartProps({ ...defaultChartProps, data: basicData, height: '100%', width: '100%' });
+  return (
+    <View
+      backgroundColor="gray-50"
+      padding="size-600"
+      overflow="auto"
+      minHeight={50}
+      maxHeight={600}
+      width={500}
+      height={200}
+      UNSAFE_style={{
+        resize: 'both',
+      }}
+    >
+      <Chart {...chartProps} minHeight={50} debug config={{ autosize: { type: 'pad' } }}>
+        <Venn {...args} />
+      </Chart>
+    </View>
+  );
 };
 
 const VennStoryWithLegend: StoryFn<VennProps> = (args) => {
-	const chartProps = useChartProps({ ...defaultChartProps });
-	return (
-		<Chart {...chartProps} config={{ autosize: { type: 'pad' } }}>
-			<Venn {...args} metric="radius" color="regions" />
-			<Legend highlight isToggleable />
-		</Chart>
-	);
+  const chartProps = useChartProps({ ...defaultChartProps });
+  return (
+    <Chart {...chartProps} config={{ autosize: { type: 'pad' } }} >
+      <Venn {...args} metric="radius" color="regions" />
+      <Legend highlight isToggleable />
+    </Chart>
+  );
 };
 
 const SupremeStory: StoryFn<VennProps> = (args) => {
-	return (
-		<Chart data={radioData} height={650} width={650} config={{ autosize: { type: 'pad' } }}>
-			<Venn {...args} />
-		</Chart>
-	);
+  return (
+    <Chart data={radioData} height={650} width={650} config={{ autosize: { type: 'pad' } }}>
+      <Venn {...args} />
+    </Chart>
+  );
 };
 
 const dialogContent = (datum: Datum) => {
-	return (
-		<Content>
-			<div>{datum['set_id']}</div>
-		</Content>
-	);
+  return (
+    <Content>
+      <div>{datum['set_id']}</div>
+    </Content>
+  );
 };
 
 const interactiveChildren = [
-	<ChartTooltip key={0}>{dialogContent}</ChartTooltip>,
-	<ChartPopover key={1} width="auto">
-		{dialogContent}
-	</ChartPopover>,
+  <ChartTooltip key={0}>{dialogContent}</ChartTooltip>,
+  <ChartPopover key={1} width="auto">
+    {dialogContent}
+  </ChartPopover>,
 ];
 
 const Basic = bindWithProps(BasicVennStory);
@@ -104,17 +117,17 @@ const WithLegend = bindWithProps(VennStoryWithLegend);
 
 const Supreme = bindWithProps(SupremeStory);
 Supreme.args = {
-	children: interactiveChildren,
+  children: interactiveChildren,
 };
 
 const WithToolTip = bindWithProps(BasicVennStory);
 WithToolTip.args = {
-	children: interactiveChildren[0],
+  children: interactiveChildren[0],
 };
 
 const WithPopover = bindWithProps(VennStoryWithLegend);
 WithPopover.args = {
-	children: interactiveChildren,
+  children: interactiveChildren,
 };
 
 export { Basic, WithToolTip, WithPopover, WithLegend, Supreme };

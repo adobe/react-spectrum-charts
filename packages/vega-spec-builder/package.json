@@ -24,7 +24,7 @@
 		"@spectrum-charts/utils": "1.17.0",
 		"immer": "^10.1.1",
 		"vega": ">= 5.20.2",
-		"venn-helper": "^2.3.4"
+		"venn-helper": "^2.3.6"
 	},
 	"devDependencies": {
 		"ts-loader": "^9.4.2",

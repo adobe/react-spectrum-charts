@@ -14,7 +14,7 @@ export const radioData = [
 	{ sets: [0], label: 'Radiohead', size: 77348 },
 	{ sets: [1], label: 'Thom Yorke', size: 5621 },
 	{ sets: [2], label: 'John Lennon', size: 7773 },
-	{ sets: [3], label: 'Kanye West', size: 27053 },
+	{ sets: [3], label: 'Taylor Swift', size: 27053 },
 	{ sets: [4], label: 'Eminem', size: 19056 },
 	{ sets: [5], label: 'Elvis Presley', size: 15839 },
 	{ sets: [6], label: 'Explosions in the Sky', size: 10813 },
