@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { PathMark, SymbolMark, TextMark, isArray } from 'vega';
+import { PathMark, SymbolMark, TextMark } from 'vega';
 import { vennSolution } from 'venn-helper';
 
 import { DEFAULT_VENN_COLOR, DEFAULT_VENN_METRIC, SET_ID_DELIMITER } from '@spectrum-charts/constants';
@@ -61,7 +61,7 @@ export const mapDataForVennHelper = (props: VennSpecOptions): VennHelperProps[] 
 				throw new Error("set the setField prop to the default 'sets' or set your own");
 			}
 
-			if (color !== DEFAULT_VENN_COLOR && typeof isArray(res[color])) {
+			if (color !== DEFAULT_VENN_COLOR && Array.isArray(res[color])) {
 				res.sets = structuredClone(datum[color]) as string[];
 			}
 

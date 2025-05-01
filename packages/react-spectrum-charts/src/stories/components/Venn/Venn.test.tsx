@@ -15,7 +15,7 @@ import { Basic, WithLegend } from './Venn.story';
 
 describe('Venn', () => {
 	test('Venn pseudo element', () => {
-		render(<Venn markType="venn" />);
+		render(<Venn />);
 	});
 
 	test('Basic renders properly without passing props', async () => {
