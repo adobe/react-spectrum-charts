@@ -478,6 +478,11 @@ export const setSelectedSignals = ({
 	}
 };
 
+/**
+  * Return true if chart has a child with the corresponding displayName
+  * @param0
+  * @returns boolean 
+*/
 export const chartHasChild = ({ children, displayName }: { children: ChartChildElement[]; displayName: string }) => {
 	return children.find((child) => {
 		if (!('displayName' in child.type)) {

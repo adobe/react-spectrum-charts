@@ -71,7 +71,7 @@ const BasicVennStory: StoryFn<VennProps> = (args) => {
         resize: 'both',
       }}
     >
-      <Chart {...chartProps} minHeight={50} debug config={{ autosize: { type: 'pad' } }}>
+      <Chart {...chartProps} minHeight={50} config={{ autosize: { type: 'pad' } }}>
         <Venn {...args} />
       </Chart>
     </View>

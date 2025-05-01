@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { MutableRefObject, forwardRef, useEffect, useMemo, useRef } from 'react';
+import { MutableRefObject, forwardRef, useEffect, useMemo } from 'react';
 
 import { ActionButton, Dialog, DialogTrigger, View as SpectrumView } from '@adobe/react-spectrum';
 import { COMPONENT_NAME, DEFAULT_SYMBOL_SHAPES, DEFAULT_SYMBOL_SIZES } from '@spectrum-charts/constants';
@@ -92,9 +92,6 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>((props, forwarded
 
 	const { signals, targetStyle, tooltipOptions, onNewView } = useChartInteractions(props, sanitizedChildren);
 	const chartConfig = useMemo(() => getChartConfig(config, colorScheme), [config, colorScheme]);
-
-  const rerender = useRef(0)
-  rerender.current++
 
 	useEffect(() => {
 		const tooltipElement = document.getElementById('vg-tooltip-element');

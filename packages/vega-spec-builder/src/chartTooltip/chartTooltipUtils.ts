@@ -217,6 +217,10 @@ export const addHighlightMarkOpacityRules = (
 	}
 };
 
+/**
+  * Adds hover opacity rule if item is the highlighted one then the opacity of
+  * the item will the the one given by the hover opacity
+*/
 export const addHoverMarkOpacityRules = (
 	opacityRules: ({ test?: string } & NumericValueRef)[],
 	markProps: TooltipParentOptions,
