@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { defaultVennOptions, data as vennData } from './vennTestUtils';
+import { customVennOptions, data as vennData } from './vennTestUtils';
 import {
 	getCircleMark,
 	getCircleOverlays,
@@ -22,19 +22,19 @@ import {
 
 describe('getVennSolution', () => {
 	test('should return the correct object structure with defaultVennOptions', () => {
-		const vennSolution = getVennSolution(defaultVennOptions);
+		const vennSolution = getVennSolution(customVennOptions);
 		expect(vennSolution).toHaveProperty('circles');
 		expect(vennSolution).toHaveProperty('intersections');
 	});
 
 	test('should return empty arrays when no data is provided', () => {
-		const vennSolution = getVennSolution({ ...defaultVennOptions, data: [] });
+		const vennSolution = getVennSolution({ ...customVennOptions, data: [] });
 		expect(vennSolution.circles).toEqual([]);
 		expect(vennSolution.intersections).toEqual([]);
 	});
 
 	test('should return correct data for one circle', () => {
-		const vennSolution = getVennSolution({ ...defaultVennOptions, data: [{ regions: ['A'], radius: 12 }] });
+		const vennSolution = getVennSolution({ ...customVennOptions, data: [{ regions: ['A'], radius: 12 }] });
 		// Checking for correct length of arrays
 		expect(vennSolution.circles).toHaveLength(1);
 		expect(vennSolution.intersections).toHaveLength(0);
@@ -49,7 +49,7 @@ describe('getVennSolution', () => {
 	});
 
 	test('should return data for vennData with multiple circles and intersections', () => {
-		const vennSolution = getVennSolution({ ...defaultVennOptions, data: vennData ?? [] });
+		const vennSolution = getVennSolution({ ...customVennOptions, data: vennData ?? [] });
 		// Checking for correct length of arrays
 
 		expect(vennSolution.circles).toHaveLength(4);
@@ -82,13 +82,13 @@ describe('getVennSolution', () => {
 	});
 
 	test('should still give solution with orienation undefined in props', () => {
-		const vennSolution = getVennSolution({ ...defaultVennOptions, data: vennData ?? [] });
+		const vennSolution = getVennSolution({ ...customVennOptions, data: vennData ?? [] });
 		expect(vennSolution).toBeDefined();
 	});
 
 	test('should give correct data for two disjoint sets', () => {
 		const vennSolution = getVennSolution({
-			...defaultVennOptions,
+			...customVennOptions,
 			data: [
 				{ regions: ['A'], radius: 12 },
 				{ regions: ['B'], radius: 10 },
@@ -100,7 +100,7 @@ describe('getVennSolution', () => {
 	});
 
 	test('should correctly calculate circle size from radius', () => {
-		const vennSolution = getVennSolution({ ...defaultVennOptions, data: vennData ?? [] });
+		const vennSolution = getVennSolution({ ...customVennOptions, data: vennData ?? [] });
 
 		vennSolution.circles.forEach((circle) => {
 			expect(circle.size).toBeGreaterThan(0);
@@ -111,7 +111,7 @@ describe('getVennSolution', () => {
 describe('mapDataForVennHelper', () => {
 	test('should return the correct object structure without modifying metric or color props', () => {
 		// Might always go into the if statement branches because of the defaultVennOptions
-		const parsedData = mapDataForVennHelper({ ...defaultVennOptions, data: vennData ?? [] });
+		const parsedData = mapDataForVennHelper({ ...customVennOptions, data: vennData ?? [] });
 
 		expect(parsedData).toHaveLength(9);
 
@@ -125,20 +125,20 @@ describe('mapDataForVennHelper', () => {
 
 	test('should throw error when giving an undefined metric prop', () => {
 		expect(() => {
-			mapDataForVennHelper({ ...defaultVennOptions, data: vennData ?? [], metric: 'fake' });
+			mapDataForVennHelper({ ...customVennOptions, data: vennData ?? [], metric: 'fake' });
 		}).toThrow();
 	});
 
 	test('should throw error when giving an undefined color prop', () => {
 		expect(() => {
-			mapDataForVennHelper({ ...defaultVennOptions, data: vennData ?? [], color: 'fake' });
+			mapDataForVennHelper({ ...customVennOptions, data: vennData ?? [], color: 'fake' });
 		}).toThrow();
 	});
 });
 
 describe('getSelectedCircleMark', () => {
 	test('should return a full selected cirlce mark when given defaultVennOptions', () => {
-		const selectedCircleMark = getCircleOverlays(defaultVennOptions);
+		const selectedCircleMark = getCircleOverlays(customVennOptions);
 
 		expect(selectedCircleMark).toBeDefined();
 		expect(selectedCircleMark).toHaveProperty('type', 'symbol');
@@ -151,7 +151,7 @@ describe('getSelectedCircleMark', () => {
 
 describe('getCircleMark', () => {
 	test('should return full circle mark when given defaultVennOptions', () => {
-		const circleMark = getCircleMark(defaultVennOptions);
+		const circleMark = getCircleMark(customVennOptions);
 
 		expect(circleMark).toBeDefined();
 		expect(circleMark).toHaveProperty('type', 'symbol');
@@ -162,7 +162,7 @@ describe('getCircleMark', () => {
 
 	test('should return mark with cursor value pointer if there is an interactive child component present', () => {
 		const circleMark = getCircleMark({
-			...defaultVennOptions,
+			...customVennOptions,
 			chartPopovers: [{}],
 		});
 
@@ -177,7 +177,7 @@ describe('getCircleMark', () => {
 
 describe('getTextMark', () => {
 	test('should return full text mark with data property being set to circles', () => {
-		const textMark = getTextMark(defaultVennOptions, 'circles');
+		const textMark = getTextMark(customVennOptions, 'circles');
 
 		expect(textMark).toBeDefined();
 		expect(textMark).toHaveProperty('type', 'text');
@@ -190,7 +190,7 @@ describe('getTextMark', () => {
 
 describe('getInterserctionMark', () => {
 	test('should return full intersection text mark with defaultVennOptions and check for given name being in name prop', () => {
-		const intersectionTextMark = getInterserctionMark(defaultVennOptions);
+		const intersectionTextMark = getInterserctionMark(customVennOptions);
 
 		expect(intersectionTextMark).toBeDefined();
 		expect(intersectionTextMark).toHaveProperty('type', 'path');
@@ -202,7 +202,7 @@ describe('getInterserctionMark', () => {
 
 	test('should return mark with cursor value pointer if there is an interactive child component present', () => {
 		const intersectionTextMark = getInterserctionMark({
-			...defaultVennOptions,
+			...customVennOptions,
 			chartPopovers: [{}],
 		});
 
@@ -218,7 +218,7 @@ describe('getInterserctionMark', () => {
 
 describe('getStrokeMark', () => {
 	test('should return full text mark with data property being set to circles', () => {
-		const textMark = getStrokeMark(defaultVennOptions);
+		const textMark = getStrokeMark(customVennOptions);
 
 		expect(textMark).toBeDefined();
 		expect(textMark).toHaveProperty('type', 'symbol');

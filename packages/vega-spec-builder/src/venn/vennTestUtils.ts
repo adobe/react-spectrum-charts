@@ -9,6 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { DEFAULT_VENN_COLOR, DEFAULT_VENN_LABEL, DEFAULT_VENN_METRIC } from '@spectrum-charts/constants';
 import { VennSpecOptions } from '../types';
 
 const { A, B, C } = {
@@ -29,7 +30,7 @@ export const data = [
 	{ regions: [A, B, C], radius: 1 },
 ];
 
-export const defaultVennOptions: VennSpecOptions = {
+export const customVennOptions: VennSpecOptions = {
 	chartTooltips: [],
 	chartPopovers: [],
 	data,
@@ -44,4 +45,21 @@ export const defaultVennOptions: VennSpecOptions = {
 	label: 'label',
 	color: 'regions',
 	metric: 'radius',
+};
+
+export const defaultVennOptions: VennSpecOptions = {
+	chartHeight: 100,
+	chartWidth: 100,
+	colorScheme: 'light',
+	data: [],
+	idKey: 'rscMarkId',
+	index: 0,
+	markType: 'venn',
+	chartPopovers: [],
+	chartTooltips: [],
+	color: DEFAULT_VENN_COLOR,
+	label: DEFAULT_VENN_LABEL,
+	metric: DEFAULT_VENN_METRIC,
+	name: 'venn0',
+	orientation: '0deg',
 };

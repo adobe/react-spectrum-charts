@@ -14,11 +14,11 @@ import { COLOR_SCALE, HIGHLIGHTED_ITEM, TABLE } from '@spectrum-charts/constants
 import { defaultSignals } from '../specTestUtils';
 import { initializeSpec } from '../specUtils';
 import { addData, addMarks, addScales, addSignals, addVenn } from './vennSpecBuilder';
-import { defaultVennOptions, data as vennData } from './vennTestUtils';
+import { customVennOptions, defaultVennOptions, data as vennData } from './vennTestUtils';
 
 describe('addData', () => {
 	test('should add data correctly to tables circles, intersections and table', () => {
-		const data = addData(initializeSpec({}, { data: vennData }).data ?? [], defaultVennOptions);
+		const data = addData(initializeSpec({}, { data: vennData }).data ?? [], customVennOptions);
 
 		expect(data).toHaveLength(4);
 		expect(data[0].transform).toHaveLength(3);
@@ -42,12 +42,29 @@ describe('addData', () => {
 		expect(data[3].transform?.[0]).toHaveProperty('key', 'set_id');
 		expect(data[3].transform?.[0]).toHaveProperty('from', TABLE);
 	});
+
+	test('should add correct transforms to intersection data if it has interactive children', () => {
+		const data = addData(initializeSpec({}, { data: vennData }).data ?? [], {
+			...customVennOptions,
+			chartTooltips: [{}],
+		});
+
+		expect(data[3].transform).toHaveLength(10);
+    // make sure that the interactions transforms are performed in the right order
+		expect(data[3].transform?.[3]).toHaveProperty('type', 'formula');
+		expect(data[3].transform?.[4]).toHaveProperty('type', 'flatten');
+		expect(data[3].transform?.[5]).toHaveProperty('type', 'formula');
+		expect(data[3].transform?.[6]).toHaveProperty('type', 'joinaggregate');
+		expect(data[3].transform?.[7]).toHaveProperty('type', 'filter');
+		expect(data[3].transform?.[8]).toHaveProperty('type', 'window');
+		expect(data[3].transform?.[9]).toHaveProperty('type', 'filter');
+	});
 });
 
 describe('addSignal', () => {
 	test('should add hover events when tooltip is present', () => {
 		const signals = addSignals(defaultSignals, {
-			...defaultVennOptions,
+			...customVennOptions,
 			chartTooltips: [{}],
 		});
 
@@ -71,7 +88,7 @@ describe('addScales', () => {
 
 describe('donuteSpecBuilder', () => {
 	test('should add venn correctly', () => {
-		const props = defaultVennOptions;
+		const props = customVennOptions;
 		const spec = { data: [{ name: TABLE }], usermeta: {} };
 		const result = addVenn(spec, props);
 
@@ -85,4 +102,25 @@ describe('donuteSpecBuilder', () => {
 
 		expect(result).toEqual(expectedSpec);
 	});
+
+	test('should add venn correctly with default values', () => {
+    const props = defaultVennOptions
+		const spec = { data: [{ name: TABLE }], usermeta: {} };
+
+		const result = addVenn(spec, {
+      markType: 'venn',
+      idKey: 'rscMarkId'
+    });
+
+		const expectedSpec = {
+			data: addData(spec.data ?? [], props),
+			scales: addScales([]),
+			marks: addMarks([], props),
+			signals: addSignals([], props),
+			usermeta: {},
+		};
+
+		expect(result).toEqual(expectedSpec);
+	});
 });
+

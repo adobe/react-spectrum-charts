@@ -49,24 +49,20 @@ export const mapDataForVennHelper = (props: VennSpecOptions): VennHelperProps[] 
 		.map((datum) => {
 			const res = { ...datum };
 
-			if (metric) {
-				if (res[metric] === undefined) {
-					throw new Error("set the metric prop to the default 'size' or set your own");
-				}
-
-				if (metric !== DEFAULT_VENN_METRIC && typeof res[metric] === 'number') {
-					res.size = datum[metric] as string;
-				}
+			if (res[metric] === undefined) {
+				throw new Error("set the metric prop to the default 'size' or set your own");
 			}
 
-			if (color) {
-				if (res[color] === undefined) {
-					throw new Error("set the setField prop to the default 'sets' or set your own");
-				}
+			if (metric !== DEFAULT_VENN_METRIC && typeof res[metric] === 'number') {
+				res.size = datum[metric] as string;
+			}
 
-				if (color !== DEFAULT_VENN_COLOR && typeof isArray(res[color])) {
-					res.sets = structuredClone(datum[color]) as string[];
-				}
+			if (res[color] === undefined) {
+				throw new Error("set the setField prop to the default 'sets' or set your own");
+			}
+
+			if (color !== DEFAULT_VENN_COLOR && typeof isArray(res[color])) {
+				res.sets = structuredClone(datum[color]) as string[];
 			}
 
 			return {
