@@ -13,7 +13,7 @@ import React from 'react';
 
 import userEvent from '@testing-library/user-event';
 
-import { LEGEND_TOOLTIP_DELAY } from '@spectrum-charts/constants';
+import { HIGHLIGHT_CONTRAST_RATIO, LEGEND_TOOLTIP_DELAY } from '@spectrum-charts/constants';
 
 import { Chart } from '../../../Chart';
 import { Legend } from '../../../components';
@@ -21,6 +21,7 @@ import {
 	clickNthElement,
 	findChart,
 	getAllLegendEntries,
+	getAllLegendSymbols,
 	hoverNthElement,
 	render,
 	screen,
@@ -195,7 +196,7 @@ describe('Legend', () => {
 		expect(view).toBeInTheDocument();
 	});
 
-	test('Popover renders properly', async () => {
+	test.only('Popover renders properly', async () => {
 		render(<Popover {...Popover.args} />);
 		const chart = await findChart();
 		const entries = getAllLegendEntries(chart);
@@ -204,6 +205,11 @@ describe('Legend', () => {
 		const popover = await screen.findByTestId('rsc-popover');
 		await waitFor(() => expect(popover).toBeInTheDocument());
 
+		// first symbol should be highlighted
+		let symbols = getAllLegendSymbols(chart);
+		expect(symbols[0]).toHaveAttribute('opacity', '1');
+		expect(symbols[1]).toHaveAttribute('opacity', `${1 / HIGHLIGHT_CONTRAST_RATIO}`);
+
 		// shouldn't close the popover
 		await userEvent.click(popover);
 		expect(popover).toBeInTheDocument();
@@ -211,6 +217,11 @@ describe('Legend', () => {
 		// should close the popover
 		await userEvent.click(chart);
 		await waitFor(() => expect(popover).not.toBeInTheDocument());
+
+		// no symbols should be highlighted
+		symbols = getAllLegendSymbols(chart);
+		expect(symbols[0]).toHaveAttribute('opacity', '1');
+		expect(symbols[1]).toHaveAttribute('opacity', '1');
 	});
 
 	test('Supreme renders properly', async () => {

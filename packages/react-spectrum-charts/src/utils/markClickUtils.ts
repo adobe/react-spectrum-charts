@@ -13,7 +13,7 @@ import { MutableRefObject } from 'react';
 
 import { Item, Scene, SceneGroup, SceneItem, ScenegraphEvent, View } from 'vega';
 
-import { COMPONENT_NAME } from '@spectrum-charts/constants';
+import { COMPONENT_NAME, SERIES_ID } from '@spectrum-charts/constants';
 import { Datum, MarkBounds } from '@spectrum-charts/vega-spec-builder';
 
 import { MarkOnClickDetail } from '../hooks/useMarkOnClickDetails';
@@ -197,7 +197,11 @@ export const handleLegendItemClick = (
 	if (chartView.current) {
 		const itemName = getItemName(item);
 
-		selectedData.current = { [COMPONENT_NAME]: itemName, value: legendItemValue } as unknown as Datum;
+		selectedData.current = {
+			[COMPONENT_NAME]: itemName,
+			value: legendItemValue,
+			[SERIES_ID]: legendItemValue,
+		} as unknown as Datum;
 		// we need to anchor the popover to a div that we move to the same location as the selected mark
 		selectedDataBounds.current = getItemBounds(item);
 		selectedDataName.current = itemName;

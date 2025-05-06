@@ -34,6 +34,8 @@ import {
 	LINE_TYPE_SCALE,
 	LINE_WIDTH_SCALE,
 	OPACITY_SCALE,
+	SELECTED_GROUP,
+	SELECTED_SERIES,
 	SYMBOL_SHAPE_SCALE,
 	SYMBOL_SIZE_SCALE,
 } from '@spectrum-charts/constants';
@@ -124,8 +126,8 @@ const getLegendLabelsEncodings = (name: string, legendLabels: LegendLabel[] | un
 };
 
 const getHoverEncodings = (options: LegendSpecOptions): LegendEncode => {
-	const { highlight, highlightedSeries, name, hasMouseInteraction, descriptions } = options;
-	if (highlight || highlightedSeries || descriptions) {
+	const { highlight, highlightedSeries, name, hasMouseInteraction, descriptions, chartPopovers } = options;
+	if (highlight || highlightedSeries || descriptions || chartPopovers?.length) {
 		return {
 			entries: {
 				name: `${name}_legendEntry`,
@@ -179,13 +181,19 @@ export const getOpacityEncoding = ({
 	highlight,
 	highlightedSeries,
 	keys,
+	chartPopovers,
 }: LegendSpecOptions): ProductionRule<NumericValueRef> | undefined => {
 	const highlightSignalName = keys?.length ? HIGHLIGHTED_GROUP : HIGHLIGHTED_SERIES;
+	const selectedSignalName = keys?.length ? SELECTED_GROUP : SELECTED_SERIES;
 	// only add symbol opacity if highlight is true or highlightedSeries is defined
-	if (highlight || highlightedSeries) {
+	if (highlight || highlightedSeries || chartPopovers?.length) {
 		return [
 			{
 				test: `isValid(${highlightSignalName}) && datum.value !== ${highlightSignalName}`,
+				value: 1 / HIGHLIGHT_CONTRAST_RATIO,
+			},
+			{
+				test: `isValid(${selectedSignalName}) && datum.value !== ${selectedSignalName}`,
 				value: 1 / HIGHLIGHT_CONTRAST_RATIO,
 			},
 			DEFAULT_OPACITY_RULE,
