@@ -15,7 +15,7 @@ import { vennSolution } from 'venn-helper';
 import { DEFAULT_VENN_COLOR, DEFAULT_VENN_METRIC, SET_ID_DELIMITER } from '@spectrum-charts/constants';
 import { getColorValue } from '@spectrum-charts/themes';
 
-import { getColorProductionRule, getMarkOpacity, getTooltip, isInteractive } from '../marks/markUtils';
+import { getColorProductionRule, getCursor, getMarkOpacity, getTooltip } from '../marks/markUtils';
 import { VennDegreeOptions, VennSpecOptions } from '../types';
 
 type VennHelperProps = {
@@ -58,7 +58,7 @@ export const mapDataForVennHelper = (props: VennSpecOptions): VennHelperProps[] 
 			}
 
 			if (res[color] === undefined) {
-				throw new Error("set the setField prop to the default 'sets' or set your own");
+				throw new Error("set the color prop to the default 'sets' or set your own");
 			}
 
 			if (color !== DEFAULT_VENN_COLOR && Array.isArray(res[color])) {
@@ -97,7 +97,7 @@ export const getCircleOverlays = (props: VennSpecOptions): SymbolMark => {
 };
 
 export const getCircleMark = (props: VennSpecOptions): SymbolMark => {
-	const { name, colorScheme, chartTooltips } = props;
+	const { name, colorScheme, chartTooltips, chartPopovers } = props;
 
 	return {
 		type: 'symbol',
@@ -115,7 +115,7 @@ export const getCircleMark = (props: VennSpecOptions): SymbolMark => {
 			update: {
 				opacity: getMarkOpacity(props, 0.5),
 				// Add cursor pointer when there are popovers
-				cursor: isInteractive(props) ? { value: 'pointer' } : undefined,
+				cursor: getCursor(chartPopovers),
 			},
 		},
 	};
@@ -142,7 +142,7 @@ export const getTextMark = (props: VennSpecOptions, dataSource: 'circles' | 'int
 };
 
 export const getInterserctionMark = (props: VennSpecOptions): PathMark => {
-	const { name, chartTooltips, colorScheme } = props;
+	const { name, chartTooltips, colorScheme, chartPopovers } = props;
 
 	return {
 		type: 'path',
@@ -157,7 +157,7 @@ export const getInterserctionMark = (props: VennSpecOptions): PathMark => {
 
 			update: {
 				fillOpacity: getMarkOpacity(props, 0, 0.7),
-				cursor: isInteractive(props) ? { value: 'pointer' } : undefined,
+				cursor: getCursor(chartPopovers)
 			},
 		},
 	};

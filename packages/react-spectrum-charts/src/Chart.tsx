@@ -26,8 +26,7 @@ import {
 	MARK_ID,
 } from '@spectrum-charts/constants';
 import { getColorValue } from '@spectrum-charts/themes';
-import { ChartHandle, LineType, LineWidth } from '@spectrum-charts/vega-spec-builder';
-import { ChartData } from '@spectrum-charts/vega-spec-builder';
+import { ChartData, ChartHandle, LineType, LineWidth } from '@spectrum-charts/vega-spec-builder';
 
 import './Chart.css';
 import { RscChart } from './RscChart';

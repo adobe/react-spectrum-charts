@@ -22,8 +22,15 @@ import GraphPathing from '@spectrum-icons/workflow/GraphPathing';
 import UsersAdd from '@spectrum-icons/workflow/UsersAdd';
 import ViewDetail from '@spectrum-icons/workflow/ViewDetail';
 
-import { Colors, Datum, LegendDescription, LegendLabel, SpectrumColor, SubLabel } from '../../../vega-spec-builder';
-import { ChartData } from '../../../vega-spec-builder';
+import {
+	ChartData,
+	Colors,
+	Datum,
+	LegendDescription,
+	LegendLabel,
+	SpectrumColor,
+	SubLabel,
+} from '../../../vega-spec-builder';
 import { Annotation } from '../components/Annotation';
 import { ReferenceLine } from '../components/ReferenceLine';
 import useChartProps from '../hooks/useChartProps';

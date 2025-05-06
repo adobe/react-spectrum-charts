@@ -12,8 +12,7 @@
 import { CSSProperties, FC, cloneElement } from 'react';
 
 import { Flex, FlexProps, IconProps } from '@adobe/react-spectrum';
-import { BigNumberMethod, Orientation } from '@spectrum-charts/vega-spec-builder';
-import { ChartData } from '@spectrum-charts/vega-spec-builder';
+import { BigNumberMethod, ChartData, Orientation } from '@spectrum-charts/vega-spec-builder';
 
 import { RscChart } from '../../../RscChart';
 import { Line } from '../../../components';

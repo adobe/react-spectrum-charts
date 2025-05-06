@@ -14,8 +14,7 @@ import { useEffect, useMemo, useRef } from 'react';
 import { Data, Spec, ValuesData } from 'vega';
 
 import { getColorValue } from '@spectrum-charts/themes';
-import { ChartSpecOptions, baseData, buildSpec } from '@spectrum-charts/vega-spec-builder';
-import { ChartData } from '@spectrum-charts/vega-spec-builder';
+import { ChartData, ChartSpecOptions, baseData, buildSpec } from '@spectrum-charts/vega-spec-builder';
 
 import { Venn } from '../alpha';
 import { rscPropsToSpecBuilderOptions } from '../rscToSbAdapter';
@@ -70,7 +69,7 @@ export default function useSpec({
 	]);
 
 	return useMemo(() => {
-		// returned cached spec there is a cached spec and if venn is not a child element
+		// returned cached spec if there is a cached spec and if venn is not a child element
 		if (!hasVenn && prevSpec.current !== null) {
 			return prevSpec.current;
 		}

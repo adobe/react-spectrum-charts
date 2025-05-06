@@ -15,6 +15,7 @@ import { Config, Locale, NumberLocale, Padding, TimeLocale } from 'vega';
 
 import { Theme } from '@react-types/provider';
 import {
+  ChartData,
 	ChartOptions,
 	Height,
 	PartiallyRequired,
@@ -22,7 +23,6 @@ import {
 	TooltipPlacement,
 	Width,
 } from '@spectrum-charts/vega-spec-builder';
-import { ChartData } from '@spectrum-charts/vega-spec-builder';
 
 import { AxisElement } from './axis';
 import { ChartPopoverElement, ChartTooltipElement } from './dialogs';
