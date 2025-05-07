@@ -87,7 +87,7 @@ type RscElement =
 	| TitleElement
 	| ComboElement;
 
-type MappedElement = { name: string; element: ChartElement | RscElement };
+type MappedElement = { name: string; element: ChartElement | RscElement; parent?: string };
 type ElementCounts = {
 	area: number;
 	axis: number;
@@ -283,7 +283,8 @@ export const getAllMarkElements = (
 	target: unknown,
 	source: typeof Area | typeof Bar | typeof Donut | typeof Line | typeof Scatter,
 	elements: MappedElement[] = [],
-	name: string = ''
+	name: string = '',
+	parent?: string
 ): MappedElement[] => {
 	if (
 		!target ||
@@ -298,7 +299,7 @@ export const getAllMarkElements = (
 
 	// if the type matches, we found our element
 	if (target.type === source) {
-		return [...elements, { name, element: target as ChartElement | RscElement }];
+		return [...elements, { name, element: target as ChartElement | RscElement, parent }];
 	}
 
 	// if there aren't any more children to search, stop looking
@@ -310,7 +311,9 @@ export const getAllMarkElements = (
 	const desiredElements: MappedElement[] = [];
 	for (const child of toArray(target.props.children)) {
 		const childName = getElementName(child, elementCounts);
-		desiredElements.push(...getAllMarkElements(child, source, elements, combineNames(name, childName)));
+		desiredElements.push(
+			...getAllMarkElements(child, source, elements, combineNames(name, childName), target.type.displayName)
+		);
 	}
 
 	// no element matches found, give up all hope...
@@ -335,7 +338,8 @@ export const getAllElements = (
 		| typeof Line
 		| typeof Scatter,
 	elements: MappedElement[] = [],
-	name: string = ''
+	name: string = '',
+	parent?: string
 ): MappedElement[] => {
 	if (
 		!target ||
@@ -348,7 +352,7 @@ export const getAllElements = (
 		return elements;
 	}
 	// if the type matches, we found our element
-	if (target.type === source) return [...elements, { name, element: target as ChartElement | RscElement }];
+	if (target.type === source) return [...elements, { name, element: target as ChartElement | RscElement, parent }];
 
 	// if there aren't any more children to search, stop looking
 	if (!('props' in target) || typeof target.props !== 'object' || !target.props || !('children' in target.props))
@@ -358,7 +362,9 @@ export const getAllElements = (
 	const desiredElements: MappedElement[] = [];
 	for (const child of toArray(target.props.children)) {
 		const childName = getElementName(child, elementCounts);
-		desiredElements.push(...getAllElements(child, source, elements, combineNames(name, childName)));
+		desiredElements.push(
+			...getAllElements(child, source, elements, combineNames(name, childName), target.type.displayName)
+		);
 	}
 	// no element matches found, give up all hope...
 	return [...elements, ...desiredElements];

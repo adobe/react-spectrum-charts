@@ -31,6 +31,7 @@ export interface GetOnMarkClickCallbackArgs {
 	selectedDataName: MutableRefObject<string | undefined>;
 	setHiddenSeries: (hiddenSeries: string[]) => void;
 	legendIsToggleable?: boolean;
+	legendHasPopover?: boolean;
 	onLegendClick?: (seriesName: string) => void;
 	trigger: 'click' | 'contextmenu';
 }
@@ -186,6 +187,7 @@ export const handleLegendItemClick = (
 		selectedDataBounds,
 		selectedDataName,
 		setHiddenSeries,
+		legendHasPopover,
 		legendIsToggleable,
 		onLegendClick,
 		trigger,
@@ -194,7 +196,7 @@ export const handleLegendItemClick = (
 	const legendItemValue = getLegendItemValue(item);
 	if (legendItemValue === undefined) return;
 
-	if (chartView.current) {
+	if (chartView.current && legendHasPopover) {
 		const itemName = getItemName(item);
 
 		selectedData.current = {
@@ -210,7 +212,7 @@ export const handleLegendItemClick = (
 
 	if (trigger === 'click') {
 		onLegendClick?.(legendItemValue);
-		if (legendIsToggleable) {
+		if (legendIsToggleable && !legendHasPopover) {
 			setHiddenSeries(toggleStringArrayValue(hiddenSeries, legendItemValue));
 		}
 	}

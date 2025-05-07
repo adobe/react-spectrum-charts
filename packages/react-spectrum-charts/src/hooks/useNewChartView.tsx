@@ -9,13 +9,14 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 
 import { Item, View } from 'vega';
 import { Handler, Options as TooltipOptions } from 'vega-tooltip';
 
 import { LEGEND_TOOLTIP_DELAY } from '@spectrum-charts/constants';
 
+import { Legend } from '../components';
 import { useChartContext } from '../context/RscChartContext';
 import { ChartChildElement, RscChartProps } from '../types';
 import {
@@ -44,6 +45,15 @@ const useNewChartView = (
 		onMouseOver: onLegendMouseOver,
 	} = useLegend(sanitizedChildren); // gets props from the legend if it exists
 	const markClickDetails = useMarkOnClickDetails(sanitizedChildren);
+
+	const legendHasPopover = useMemo(
+		() => popovers.some((p) => p.parent === Legend.displayName && !p.chartPopoverProps.rightClick),
+		[popovers]
+	);
+	const legendHasRightClickPopover = useMemo(
+		() => popovers.some((p) => p.parent === Legend.displayName && p.chartPopoverProps.rightClick),
+		[popovers]
+	);
 
 	return useCallback(
 		(view: View) => {
@@ -86,6 +96,7 @@ const useNewChartView = (
 						selectedDataName,
 						setHiddenSeries: setLegendHiddenSeries,
 						legendIsToggleable,
+						legendHasPopover,
 						onLegendClick,
 						trigger: 'click',
 					})
@@ -105,6 +116,7 @@ const useNewChartView = (
 							selectedDataBounds,
 							selectedDataName,
 							setHiddenSeries: setLegendHiddenSeries,
+							legendHasPopover: legendHasRightClickPopover,
 							legendIsToggleable,
 							onLegendClick,
 							trigger: 'contextmenu',
@@ -120,6 +132,8 @@ const useNewChartView = (
 			chartId,
 			chartView,
 			idKey,
+			legendHasPopover,
+			legendHasRightClickPopover,
 			legendHiddenSeries,
 			legendIsToggleable,
 			markClickDetails,

@@ -15,7 +15,7 @@ import { ChartPopover } from '../components/ChartPopover';
 import { ChartChildElement, ChartPopoverElement, ChartPopoverProps } from '../types';
 import { getAllElements } from '../utils';
 
-type MappedPopover = { name: string; element: ChartPopoverElement };
+type MappedPopover = { name: string; element: ChartPopoverElement; parent?: string };
 
 const ChartContainer = ({ children }: { children: React.ReactNode }) => {
 	return <div>{children}</div>;
@@ -27,11 +27,19 @@ export type PopoverDetail = {
 	key: string;
 	name: string;
 	UNSAFE_highlightBy: ChartPopoverProps['UNSAFE_highlightBy'];
+	parent?: string;
 };
 
 export default function usePopovers(children: ChartChildElement[]): PopoverDetail[] {
 	const popoverElements = useMemo(
-		() => getAllElements(createElement(ChartContainer, undefined, children), ChartPopover, []) as MappedPopover[],
+		() =>
+			getAllElements(
+				createElement(ChartContainer, undefined, children),
+				ChartPopover,
+				[],
+				undefined,
+				'Chart'
+			) as MappedPopover[],
 		[children]
 	);
 
@@ -45,6 +53,7 @@ export default function usePopovers(children: ChartChildElement[]): PopoverDetai
 						key: `${popover.name}Popover${index}`,
 						name: popover.name,
 						UNSAFE_highlightBy: popover.element.props.UNSAFE_highlightBy,
+						parent: popover.parent,
 					};
 				}),
 		[popoverElements]
