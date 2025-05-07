@@ -25,13 +25,23 @@ export interface LabelDatum {
 
 /**
  * Formats a number using the compact notation.
- * @param localeCode
+ * @param numberLocale
  * @returns formatted string
  */
-export const formatCompactNumber = (localeCode?: string) => {
-	const locale = localeCode ?? navigator.language;
+export const formatShortNumber = (numberLocale?: string | FormatLocaleDefinition) => {
+	const locale = typeof numberLocale === 'string' ? numberLocale : navigator.language;
+	const customDecimalSymbol = typeof numberLocale === 'object' ? numberLocale.decimal : undefined;
 	return (value: number) => {
-		return Intl.NumberFormat(locale, { notation: 'compact' }).format(value);
+		// get the decimal symbol for the locale by formatting a number with decimals
+		const decimalSymbol = new Intl.NumberFormat(locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 })
+			.format(1.1)
+			.replace(/[0-9]/g, '');
+
+		const shortNumber = Intl.NumberFormat(locale, { notation: 'compact' }).format(value);
+		if (customDecimalSymbol) {
+			return shortNumber.replace(decimalSymbol, customDecimalSymbol);
+		}
+		return shortNumber;
 	};
 };
 

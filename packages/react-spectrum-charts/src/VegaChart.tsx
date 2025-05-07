@@ -19,8 +19,8 @@ import { TABLE } from '@spectrum-charts/constants';
 
 import {
 	expressionFunctions,
-	formatCompactNumber,
 	formatLocaleCurrency,
+	formatShortNumber,
 	formatTimeDurationLabels,
 } from './expressionFunctions';
 import { useDebugSpec } from './hooks/useDebugSpec';
@@ -66,10 +66,7 @@ export const VegaChart: FC<VegaChartProps> = ({
 		if (typeof locale === 'string') {
 			return locale;
 		}
-		if (typeof locale?.number === 'string') {
-			return locale.number;
-		}
-		return undefined;
+		return locale?.number;
 	}, [locale]);
 
 	// Need to de a deep copy of the data because vega tries to transform the data
@@ -110,7 +107,7 @@ export const VegaChart: FC<VegaChartProps> = ({
 					...expressionFunctions,
 					formatTimeDurationLabels: formatTimeDurationLabels(numberLocale),
 					formatLocaleCurrency: formatLocaleCurrency(numberLocale),
-					formatCompactNumber: formatCompactNumber(localeCode),
+					formatShortNumber: formatShortNumber(localeCode),
 				},
 				formatLocale: numberLocale as unknown as Record<string, unknown>, // these are poorly typed by vega-embed
 				height,
@@ -149,6 +146,7 @@ export const VegaChart: FC<VegaChartProps> = ({
 		spec,
 		tooltip,
 		width,
+		localeCode,
 	]);
 
 	return <div ref={containerRef} className="rsc"></div>;

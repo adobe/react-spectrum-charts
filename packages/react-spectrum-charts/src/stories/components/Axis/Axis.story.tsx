@@ -36,16 +36,7 @@ export default {
 		},
 		numberFormat: {
 			control: 'select',
-			options: [
-				'currency',
-				'shortCurrency',
-				'shortNumber',
-				'compactNumber',
-				'standardNumber',
-				'$,.2f',
-				',.2%',
-				'.3s',
-			],
+			options: ['currency', 'shortCurrency', 'shortNumber', 'standardNumber', '$,.2f', ',.2%', '.3s'],
 		},
 	},
 };

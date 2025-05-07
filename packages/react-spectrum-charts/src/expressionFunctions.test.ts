@@ -12,9 +12,9 @@
 import {
 	LabelDatum,
 	expressionFunctions,
-	formatCompactNumber,
 	formatHorizontalTimeAxisLabels,
 	formatLocaleCurrency,
+	formatShortNumber,
 	formatTimeDurationLabels,
 	formatVerticalAxisTimeLabels,
 } from './expressionFunctions';
@@ -159,33 +159,45 @@ describe('formatVerticalAxisTimeLabels()', () => {
 	});
 });
 
-describe('formatCompactNumber()', () => {
+describe('formatShortNumber()', () => {
 	test('should revturn the correst string based on the value', () => {
-		expect(formatCompactNumber('en-US')(123)).toBe('123');
-		expect(formatCompactNumber('en-US')(1234)).toBe('1.2K');
-		expect(formatCompactNumber('en-US')(12345)).toBe('12K');
-		expect(formatCompactNumber('en-US')(123456)).toBe('123K');
-		expect(formatCompactNumber('en-US')(1234567)).toBe('1.2M');
-		expect(formatCompactNumber('en-US')(12345678)).toBe('12M');
-		expect(formatCompactNumber('en-US')(123456789)).toBe('123M');
-		expect(formatCompactNumber('en-US')(1234567890)).toBe('1.2B');
-		expect(formatCompactNumber('en-US')(12345678900)).toBe('12B');
-		expect(formatCompactNumber('en-US')(123456789000)).toBe('123B');
-		expect(formatCompactNumber('en-US')(1234567890000)).toBe('1.2T');
-		expect(formatCompactNumber('en-US')(12345678900000)).toBe('12T');
-		expect(formatCompactNumber('en-US')(123456789000000)).toBe('123T');
+		expect(formatShortNumber('en-US')(123)).toBe('123');
+		expect(formatShortNumber('en-US')(1234)).toBe('1.2K');
+		expect(formatShortNumber('en-US')(12345)).toBe('12K');
+		expect(formatShortNumber('en-US')(123456)).toBe('123K');
+		expect(formatShortNumber('en-US')(1234567)).toBe('1.2M');
+		expect(formatShortNumber('en-US')(12345678)).toBe('12M');
+		expect(formatShortNumber('en-US')(123456789)).toBe('123M');
+		expect(formatShortNumber('en-US')(1234567890)).toBe('1.2B');
+		expect(formatShortNumber('en-US')(12345678900)).toBe('12B');
+		expect(formatShortNumber('en-US')(123456789000)).toBe('123B');
+		expect(formatShortNumber('en-US')(1234567890000)).toBe('1.2T');
+		expect(formatShortNumber('en-US')(12345678900000)).toBe('12T');
+		expect(formatShortNumber('en-US')(123456789000000)).toBe('123T');
+		expect(formatShortNumber('en-US')(1234567890000000)).toBe('1235T');
 	});
 	test('should return the correct string based on locale', () => {
-		expect(formatCompactNumber('en-US')(123456789)).toBe('123M');
-		expect(formatCompactNumber('es-ES')(123456789)).toBe('123\u00a0M');
-		expect(formatCompactNumber('fr-FR')(123456789)).toBe('123\u00a0M');
-		expect(formatCompactNumber('de-DE')(123456789)).toBe('123\u00a0Mio.');
-		expect(formatCompactNumber('ja-JP')(123456789)).toBe('1.2億');
-		expect(formatCompactNumber('zh-CN')(123456789)).toBe('1.2亿');
-		expect(formatCompactNumber('zh-TW')(123456789)).toBe('1.2億');
-		expect(formatCompactNumber('ko-KR')(123456789)).toBe('1.2억');
-		expect(formatCompactNumber('ru-RU')(123456789)).toBe('123\u00a0млн');
-		expect(formatCompactNumber('pt-BR')(123456789)).toBe('123\u00a0mi');
-		expect(formatCompactNumber('it-IT')(123456789)).toBe('123\u00a0Mln');
+		expect(formatShortNumber('en-US')(123456789)).toBe('123M');
+		expect(formatShortNumber('es-ES')(123456789)).toBe('123\u00a0M');
+		expect(formatShortNumber('fr-FR')(123456789)).toBe('123\u00a0M');
+		expect(formatShortNumber('de-DE')(123456789)).toBe('123\u00a0Mio.');
+		expect(formatShortNumber('ja-JP')(123456789)).toBe('1.2億');
+		expect(formatShortNumber('zh-CN')(123456789)).toBe('1.2亿');
+		expect(formatShortNumber('zh-TW')(123456789)).toBe('1.2億');
+		expect(formatShortNumber('ko-KR')(123456789)).toBe('1.2억');
+		expect(formatShortNumber('ru-RU')(123456789)).toBe('123\u00a0млн');
+		expect(formatShortNumber('pt-BR')(123456789)).toBe('123\u00a0mi');
+		expect(formatShortNumber('it-IT')(123456789)).toBe('123\u00a0Mln');
+	});
+	test('should use custom decimal symbol if provided', () => {
+		expect(
+			formatShortNumber({
+				decimal: ',',
+				thousands: '\u00a0',
+				grouping: [3],
+				currency: ['', '\u00a0€'],
+				percent: '\u202f%',
+			})(1234567)
+		).toBe('1,2M');
 	});
 });
