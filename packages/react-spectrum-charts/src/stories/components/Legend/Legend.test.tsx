@@ -196,7 +196,7 @@ describe('Legend', () => {
 		expect(view).toBeInTheDocument();
 	});
 
-	test.only('Popover renders properly', async () => {
+	test('Popover renders properly', async () => {
 		render(<Popover {...Popover.args} />);
 		const chart = await findChart();
 		const entries = getAllLegendEntries(chart);

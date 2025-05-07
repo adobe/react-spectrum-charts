@@ -24,6 +24,28 @@ export interface LabelDatum {
 }
 
 /**
+ * Formats a number using the compact notation.
+ * @param numberLocale
+ * @returns formatted string
+ */
+export const formatShortNumber = (numberLocale?: string | FormatLocaleDefinition) => {
+	const locale = typeof numberLocale === 'string' ? numberLocale : navigator.language;
+	const customDecimalSymbol = typeof numberLocale === 'object' ? numberLocale.decimal : undefined;
+	return (value: number) => {
+		// get the decimal symbol for the locale by formatting a number with decimals
+		const decimalSymbol = new Intl.NumberFormat(locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 })
+			.format(1.1)
+			.replace(/\d/g, '');
+
+		const shortNumber = Intl.NumberFormat(locale, { notation: 'compact' }).format(value);
+		if (customDecimalSymbol) {
+			return shortNumber.replace(decimalSymbol, customDecimalSymbol);
+		}
+		return shortNumber;
+	};
+};
+
+/**
  * Formats currency values using a currency specific locale and currency code for the position and
  * type of currency symbol.
  * Applies thousands and decimal separators based on the numberFormat.

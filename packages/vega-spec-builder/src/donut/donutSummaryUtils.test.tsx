@@ -117,8 +117,8 @@ describe('getSummaryValueText()', () => {
 		const result = getSummaryValueText(defaultDonutSummaryOptions);
 		expect(result).toEqual([
 			{
-				signal: "upper(replace(format(datum['sum'], '.3~s'), /(\\d+)G/, '$1B'))",
-				test: "isNumber(datum['sum']) && abs(datum['sum']) >= 1000",
+				signal: "formatShortNumber(datum['sum'])",
+				test: "isNumber(datum['sum'])",
 			},
 			{ field: 'sum' },
 		]);

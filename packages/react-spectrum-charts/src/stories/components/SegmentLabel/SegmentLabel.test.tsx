@@ -59,8 +59,8 @@ describe('SegmentLabel', () => {
 		const chart = await findChart();
 		expect(chart).toBeInTheDocument();
 
-		expect(screen.getByText('10.4K')).toBeInTheDocument();
-		expect(screen.getByText('7.05K')).toBeInTheDocument();
+		expect(screen.getByText('10K')).toBeInTheDocument();
+		expect(screen.getByText('7K')).toBeInTheDocument();
 		expect(screen.getByText('4.2K')).toBeInTheDocument();
 	});
 

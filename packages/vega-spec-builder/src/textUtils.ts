@@ -29,12 +29,7 @@ export const getTextNumberFormat = (
 } & TextValueRef)[] => {
 	const test = `isNumber(datum['${datumProperty}'])`;
 	if (numberFormat === 'shortNumber') {
-		return [
-			{
-				test: `${test} && abs(datum['${datumProperty}']) >= 1000`,
-				signal: `upper(replace(format(datum['${datumProperty}'], '.3~s'), /(\\d+)G/, '$1B'))`,
-			},
-		];
+		return [{ test, signal: `formatShortNumber(datum['${datumProperty}'])` }];
 	}
 	if (numberFormat === 'shortCurrency') {
 		return [

@@ -14,6 +14,7 @@ import {
 	expressionFunctions,
 	formatHorizontalTimeAxisLabels,
 	formatLocaleCurrency,
+	formatShortNumber,
 	formatTimeDurationLabels,
 	formatVerticalAxisTimeLabels,
 } from './expressionFunctions';
@@ -155,5 +156,47 @@ describe('formatVerticalAxisTimeLabels()', () => {
 	test('should drop the larger time granularity when previous label was the same larger time granularity', () => {
 		expect(formatter({ index: 0, label: '2024 \u2000Jan', value: 1 })).toBe('2024 \u2000Jan');
 		expect(formatter({ index: 1, label: '2024 \u2000Feb', value: 1 })).toBe('Feb');
+	});
+});
+
+describe('formatShortNumber()', () => {
+	test('should revturn the correst string based on the value', () => {
+		expect(formatShortNumber('en-US')(123)).toBe('123');
+		expect(formatShortNumber('en-US')(1234)).toBe('1.2K');
+		expect(formatShortNumber('en-US')(12345)).toBe('12K');
+		expect(formatShortNumber('en-US')(123456)).toBe('123K');
+		expect(formatShortNumber('en-US')(1234567)).toBe('1.2M');
+		expect(formatShortNumber('en-US')(12345678)).toBe('12M');
+		expect(formatShortNumber('en-US')(123456789)).toBe('123M');
+		expect(formatShortNumber('en-US')(1234567890)).toBe('1.2B');
+		expect(formatShortNumber('en-US')(12345678900)).toBe('12B');
+		expect(formatShortNumber('en-US')(123456789000)).toBe('123B');
+		expect(formatShortNumber('en-US')(1234567890000)).toBe('1.2T');
+		expect(formatShortNumber('en-US')(12345678900000)).toBe('12T');
+		expect(formatShortNumber('en-US')(123456789000000)).toBe('123T');
+		expect(formatShortNumber('en-US')(1234567890000000)).toBe('1235T');
+	});
+	test('should return the correct string based on locale', () => {
+		expect(formatShortNumber('en-US')(123456789)).toBe('123M');
+		expect(formatShortNumber('es-ES')(123456789)).toBe('123\u00a0M');
+		expect(formatShortNumber('fr-FR')(123456789)).toBe('123\u00a0M');
+		expect(formatShortNumber('de-DE')(123456789)).toBe('123\u00a0Mio.');
+		expect(formatShortNumber('ja-JP')(123456789)).toBe('1.2億');
+		expect(formatShortNumber('zh-CN')(123456789)).toBe('1.2亿');
+		expect(formatShortNumber('zh-TW')(123456789)).toBe('1.2億');
+		expect(formatShortNumber('ko-KR')(123456789)).toBe('1.2억');
+		expect(formatShortNumber('ru-RU')(123456789)).toBe('123\u00a0млн');
+		expect(formatShortNumber('pt-BR')(123456789)).toBe('123\u00a0mi');
+	});
+	test('should use custom decimal symbol if provided', () => {
+		expect(
+			formatShortNumber({
+				decimal: ',',
+				thousands: '\u00a0',
+				grouping: [3],
+				currency: ['', '\u00a0€'],
+				percent: '\u202f%',
+			})(1234567)
+		).toBe('1,2M');
 	});
 });
