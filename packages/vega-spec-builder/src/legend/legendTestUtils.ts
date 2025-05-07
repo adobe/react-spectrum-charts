@@ -21,6 +21,7 @@ import {
 	FILTERED_TABLE,
 	HIGHLIGHTED_SERIES,
 	HIGHLIGHT_CONTRAST_RATIO,
+	SELECTED_SERIES,
 } from '@spectrum-charts/constants';
 
 import { LegendSpecOptions } from '../types';
@@ -28,6 +29,10 @@ import { LegendSpecOptions } from '../types';
 export const opacityEncoding = [
 	{
 		test: `isValid(${HIGHLIGHTED_SERIES}) && datum.value !== ${HIGHLIGHTED_SERIES}`,
+		value: 1 / HIGHLIGHT_CONTRAST_RATIO,
+	},
+	{
+		test: `isValid(${SELECTED_SERIES}) && datum.value !== ${SELECTED_SERIES}`,
 		value: 1 / HIGHLIGHT_CONTRAST_RATIO,
 	},
 	DEFAULT_OPACITY_RULE,
