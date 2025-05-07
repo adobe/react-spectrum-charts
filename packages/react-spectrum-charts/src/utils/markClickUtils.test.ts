@@ -29,6 +29,7 @@ const defaultMarkClickArgs: GetOnMarkClickCallbackArgs = {
 	chartId: 'test',
 	hiddenSeries: [],
 	setHiddenSeries: jest.fn(),
+	legendHasPopover: false,
 	trigger: 'click',
 };
 
@@ -41,6 +42,7 @@ describe('getItemBounds()', () => {
 
 describe('handleLegendItemClick()', () => {
 	let setHiddenSeries;
+	let onLegendClick;
 	const item = {
 		context: null,
 		height: null,
@@ -50,6 +52,7 @@ describe('handleLegendItemClick()', () => {
 
 	beforeEach(() => {
 		setHiddenSeries = jest.fn();
+		onLegendClick = jest.fn();
 	});
 	afterEach(() => {
 		jest.clearAllMocks();
@@ -64,10 +67,32 @@ describe('handleLegendItemClick()', () => {
 		handleLegendItemClick(item, { ...defaultMarkClickArgs, setHiddenSeries, legendIsToggleable: true });
 		expect(setHiddenSeries).not.toHaveBeenCalled();
 	});
+	test('should not call setHiddenSeries if legendHasPopover is true', () => {
+		const item = {} as unknown as Item;
+		handleLegendItemClick(item, { ...defaultMarkClickArgs, setHiddenSeries, legendHasPopover: true });
+		expect(setHiddenSeries).not.toHaveBeenCalled();
+	});
+	test('should not call setHiddenSeries if trigger is contextmenu', () => {
+		const item = {} as unknown as Item;
+		handleLegendItemClick(item, { ...defaultMarkClickArgs, setHiddenSeries, trigger: 'contextmenu' });
+		expect(setHiddenSeries).not.toHaveBeenCalled();
+	});
 	test('should call onLegendClick if trigger is click', () => {
-		const onLegendClick = jest.fn();
 		handleLegendItemClick(item, { ...defaultMarkClickArgs, onLegendClick, trigger: 'click' });
 		expect(onLegendClick).toHaveBeenCalled();
+	});
+	test('should not call onLegendClick if trigger is contextmenu', () => {
+		handleLegendItemClick(item, { ...defaultMarkClickArgs, onLegendClick, trigger: 'contextmenu' });
+		expect(onLegendClick).not.toHaveBeenCalled();
+	});
+	test('should set selectedData if legendHasPopover is true', () => {
+		const selectedData = { current: null };
+		handleLegendItemClick(item, { ...defaultMarkClickArgs, legendHasPopover: true, selectedData });
+		expect(selectedData.current).toStrictEqual({
+			rscComponentName: undefined,
+			rscSeriesId: 'test',
+			value: 'test',
+		});
 	});
 });
 

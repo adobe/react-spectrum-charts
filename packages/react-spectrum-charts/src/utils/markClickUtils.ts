@@ -13,7 +13,7 @@ import { MutableRefObject } from 'react';
 
 import { Item, Scene, SceneGroup, SceneItem, ScenegraphEvent, View } from 'vega';
 
-import { COMPONENT_NAME } from '@spectrum-charts/constants';
+import { COMPONENT_NAME, SERIES_ID } from '@spectrum-charts/constants';
 import { Datum, MarkBounds } from '@spectrum-charts/vega-spec-builder';
 
 import { MarkOnClickDetail } from '../hooks/useMarkOnClickDetails';
@@ -31,6 +31,7 @@ export interface GetOnMarkClickCallbackArgs {
 	selectedDataName: MutableRefObject<string | undefined>;
 	setHiddenSeries: (hiddenSeries: string[]) => void;
 	legendIsToggleable?: boolean;
+	legendHasPopover?: boolean;
 	onLegendClick?: (seriesName: string) => void;
 	trigger: 'click' | 'contextmenu';
 }
@@ -186,6 +187,7 @@ export const handleLegendItemClick = (
 		selectedDataBounds,
 		selectedDataName,
 		setHiddenSeries,
+		legendHasPopover,
 		legendIsToggleable,
 		onLegendClick,
 		trigger,
@@ -194,10 +196,14 @@ export const handleLegendItemClick = (
 	const legendItemValue = getLegendItemValue(item);
 	if (legendItemValue === undefined) return;
 
-	if (chartView.current) {
+	if (chartView.current && legendHasPopover) {
 		const itemName = getItemName(item);
 
-		selectedData.current = { [COMPONENT_NAME]: itemName, value: legendItemValue } as unknown as Datum;
+		selectedData.current = {
+			[COMPONENT_NAME]: itemName,
+			value: legendItemValue,
+			[SERIES_ID]: legendItemValue,
+		} as unknown as Datum;
 		// we need to anchor the popover to a div that we move to the same location as the selected mark
 		selectedDataBounds.current = getItemBounds(item);
 		selectedDataName.current = itemName;
@@ -206,7 +212,7 @@ export const handleLegendItemClick = (
 
 	if (trigger === 'click') {
 		onLegendClick?.(legendItemValue);
-		if (legendIsToggleable) {
+		if (legendIsToggleable && !legendHasPopover) {
 			setHiddenSeries(toggleStringArrayValue(hiddenSeries, legendItemValue));
 		}
 	}

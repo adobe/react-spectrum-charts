@@ -34,8 +34,8 @@ export const useChartInteractions = (props: RscChartProps, sanitizedChildren: Ch
 		if (legendIsToggleable) {
 			signals.hiddenSeries = legendHiddenSeries;
 		}
-		signals[SELECTED_ITEM] = selectedData?.[props.idKey] ?? null;
-		signals[SELECTED_SERIES] = selectedData?.[SERIES_ID] ?? null;
+		signals[SELECTED_ITEM] = selectedData.current?.[props.idKey] ?? null;
+		signals[SELECTED_SERIES] = selectedData.current?.[SERIES_ID] ?? null;
 
 		return signals;
 	}, [legendHiddenSeries, legendIsToggleable, props.colorScheme, props.idKey, selectedData]);
