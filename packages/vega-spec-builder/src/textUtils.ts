@@ -36,6 +36,9 @@ export const getTextNumberFormat = (
 			},
 		];
 	}
+	if (numberFormat === 'compactNumber') {
+		return [{ test, signal: `formatCompactNumber(datum['${datumProperty}'])` }];
+	}
 	if (numberFormat === 'shortCurrency') {
 		return [
 			{

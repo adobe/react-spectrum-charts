@@ -12,6 +12,7 @@
 import {
 	LabelDatum,
 	expressionFunctions,
+	formatCompactNumber,
 	formatHorizontalTimeAxisLabels,
 	formatLocaleCurrency,
 	formatTimeDurationLabels,
@@ -155,5 +156,36 @@ describe('formatVerticalAxisTimeLabels()', () => {
 	test('should drop the larger time granularity when previous label was the same larger time granularity', () => {
 		expect(formatter({ index: 0, label: '2024 \u2000Jan', value: 1 })).toBe('2024 \u2000Jan');
 		expect(formatter({ index: 1, label: '2024 \u2000Feb', value: 1 })).toBe('Feb');
+	});
+});
+
+describe('formatCompactNumber()', () => {
+	test('should revturn the correst string based on the value', () => {
+		expect(formatCompactNumber('en-US')(123)).toBe('123');
+		expect(formatCompactNumber('en-US')(1234)).toBe('1.2K');
+		expect(formatCompactNumber('en-US')(12345)).toBe('12K');
+		expect(formatCompactNumber('en-US')(123456)).toBe('123K');
+		expect(formatCompactNumber('en-US')(1234567)).toBe('1.2M');
+		expect(formatCompactNumber('en-US')(12345678)).toBe('12M');
+		expect(formatCompactNumber('en-US')(123456789)).toBe('123M');
+		expect(formatCompactNumber('en-US')(1234567890)).toBe('1.2B');
+		expect(formatCompactNumber('en-US')(12345678900)).toBe('12B');
+		expect(formatCompactNumber('en-US')(123456789000)).toBe('123B');
+		expect(formatCompactNumber('en-US')(1234567890000)).toBe('1.2T');
+		expect(formatCompactNumber('en-US')(12345678900000)).toBe('12T');
+		expect(formatCompactNumber('en-US')(123456789000000)).toBe('123T');
+	});
+	test('should return the correct string based on locale', () => {
+		expect(formatCompactNumber('en-US')(123456789)).toBe('123M');
+		expect(formatCompactNumber('es-ES')(123456789)).toBe('123\u00a0M');
+		expect(formatCompactNumber('fr-FR')(123456789)).toBe('123\u00a0M');
+		expect(formatCompactNumber('de-DE')(123456789)).toBe('123\u00a0Mio.');
+		expect(formatCompactNumber('ja-JP')(123456789)).toBe('1.2億');
+		expect(formatCompactNumber('zh-CN')(123456789)).toBe('1.2亿');
+		expect(formatCompactNumber('zh-TW')(123456789)).toBe('1.2億');
+		expect(formatCompactNumber('ko-KR')(123456789)).toBe('1.2억');
+		expect(formatCompactNumber('ru-RU')(123456789)).toBe('123\u00a0млн');
+		expect(formatCompactNumber('pt-BR')(123456789)).toBe('123\u00a0mi');
+		expect(formatCompactNumber('it-IT')(123456789)).toBe('123\u00a0Mln');
 	});
 });

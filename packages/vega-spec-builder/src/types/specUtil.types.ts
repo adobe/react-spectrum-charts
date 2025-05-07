@@ -65,7 +65,7 @@ export type Datum = object & {
 	[key: string]: any;
 };
 
-export type NumberFormat = 'currency' | 'shortCurrency' | 'shortNumber' | 'standardNumber' | string;
+export type NumberFormat = 'currency' | 'shortCurrency' | 'shortNumber' | 'compactNumber' | 'standardNumber' | string;
 export type Orientation = 'vertical' | 'horizontal';
 export type Position = 'left' | 'right' | 'top' | 'bottom';
 export type ScaleType = 'linear' | 'point' | 'time' | 'band';

@@ -17,6 +17,11 @@ describe('getTextNumberFormat()', () => {
 		expect(format).toHaveLength(1);
 		expect(format[0]).toHaveProperty('signal', "upper(replace(format(datum['value'], '.3~s'), /(\\d+)G/, '$1B'))");
 	});
+	test('should return correct signal for compactNumber', () => {
+		const format = getTextNumberFormat('compactNumber');
+		expect(format).toHaveLength(1);
+		expect(format[0]).toHaveProperty('signal', "formatCompactNumber(datum['value'])");
+	});
 	test('should return correct signal for shortCurrency', () => {
 		const format = getTextNumberFormat('shortCurrency');
 		expect(format).toHaveLength(2);

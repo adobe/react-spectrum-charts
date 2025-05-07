@@ -17,7 +17,12 @@ import { Options as TooltipOptions } from 'vega-tooltip';
 
 import { TABLE } from '@spectrum-charts/constants';
 
-import { expressionFunctions, formatLocaleCurrency, formatTimeDurationLabels } from './expressionFunctions';
+import {
+	expressionFunctions,
+	formatCompactNumber,
+	formatLocaleCurrency,
+	formatTimeDurationLabels,
+} from './expressionFunctions';
 import { useDebugSpec } from './hooks/useDebugSpec';
 import { extractValues, isVegaData } from './hooks/useSpec';
 import { ChartData, ChartProps } from './types';
@@ -57,6 +62,15 @@ export const VegaChart: FC<VegaChartProps> = ({
 	const chartView = useRef<View>();
 
 	const { number: numberLocale, time: timeLocale } = useMemo(() => getLocale(locale), [locale]);
+	const localeCode = useMemo(() => {
+		if (typeof locale === 'string') {
+			return locale;
+		}
+		if (typeof locale?.number === 'string') {
+			return locale.number;
+		}
+		return undefined;
+	}, [locale]);
 
 	// Need to de a deep copy of the data because vega tries to transform the data
 	const chartData = useMemo(() => {
@@ -96,6 +110,7 @@ export const VegaChart: FC<VegaChartProps> = ({
 					...expressionFunctions,
 					formatTimeDurationLabels: formatTimeDurationLabels(numberLocale),
 					formatLocaleCurrency: formatLocaleCurrency(numberLocale),
+					formatCompactNumber: formatCompactNumber(localeCode),
 				},
 				formatLocale: numberLocale as unknown as Record<string, unknown>, // these are poorly typed by vega-embed
 				height,

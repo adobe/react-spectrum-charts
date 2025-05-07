@@ -24,6 +24,18 @@ export interface LabelDatum {
 }
 
 /**
+ * Formats a number using the compact notation.
+ * @param localeCode
+ * @returns formatted string
+ */
+export const formatCompactNumber = (localeCode?: string) => {
+	const locale = localeCode ?? navigator.language;
+	return (value: number) => {
+		return Intl.NumberFormat(locale, { notation: 'compact' }).format(value);
+	};
+};
+
+/**
  * Formats currency values using a currency specific locale and currency code for the position and
  * type of currency symbol.
  * Applies thousands and decimal separators based on the numberFormat.
