@@ -35,7 +35,7 @@ export const formatShortNumber = (numberLocale?: string | FormatLocaleDefinition
 		// get the decimal symbol for the locale by formatting a number with decimals
 		const decimalSymbol = new Intl.NumberFormat(locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 })
 			.format(1.1)
-			.replace(/[0-9]/g, '');
+			.replace(/\d/g, '');
 
 		const shortNumber = Intl.NumberFormat(locale, { notation: 'compact' }).format(value);
 		if (customDecimalSymbol) {
