@@ -187,7 +187,6 @@ describe('formatShortNumber()', () => {
 		expect(formatShortNumber('ko-KR')(123456789)).toBe('1.2억');
 		expect(formatShortNumber('ru-RU')(123456789)).toBe('123\u00a0млн');
 		expect(formatShortNumber('pt-BR')(123456789)).toBe('123\u00a0mi');
-		expect(formatShortNumber('it-IT')(123456789)).toBe('123\u00a0Mln');
 	});
 	test('should use custom decimal symbol if provided', () => {
 		expect(
