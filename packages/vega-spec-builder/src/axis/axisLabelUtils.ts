@@ -59,6 +59,8 @@ export const getTimeLabelFormats = (
 			return { secondaryLabelFormat: '%b', primaryLabelFormat: '%Y', tickCount: 'month' };
 		case 'quarter':
 			return { secondaryLabelFormat: 'Q%q', primaryLabelFormat: '%Y', tickCount: { interval: 'month', step: 3 } };
+		case 'year':
+			return { secondaryLabelFormat: '%Y', primaryLabelFormat: '', tickCount: 'year' };
 		default:
 			return { secondaryLabelFormat: '%-d', primaryLabelFormat: '%b', tickCount: 'day' };
 	}

@@ -16,7 +16,7 @@ import { NumberFormat, Orientation, PartiallyRequired, Position } from '../specU
 import { AxisAnnotationOptions } from './axisAnnotationSpec.types';
 import { ReferenceLineOptions } from './referenceLineSpec.types';
 
-export type Granularity = 'minute' | 'hour' | 'day' | 'week' | 'month' | 'quarter';
+export type Granularity = 'minute' | 'hour' | 'day' | 'week' | 'month' | 'quarter' | 'year';
 /**
  * `center` will set the align to `center` for horizontal axes and the baseline to `middle` for vertical axes.
  *

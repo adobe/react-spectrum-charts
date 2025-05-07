@@ -122,6 +122,15 @@ describe('Axis', () => {
 			expect(screen.getAllByText('Q1')[0]).toBeInTheDocument();
 			expect(screen.getByText('2020')).toBeInTheDocument();
 		});
+
+		test('Year renders properly', async () => {
+			render(<Time {...Time.args} granularity="year" />);
+			const chart = await findChart();
+			expect(chart).toBeInTheDocument();
+
+			// make sure the year labels are visible
+			expect(screen.getByText('2016')).toBeInTheDocument();
+		});
 	});
 
 	describe('Time axis', () => {
@@ -183,6 +192,16 @@ describe('Axis', () => {
 			// make sure labels are visible
 			expect(screen.getByText(/2020.+Q1/)).toBeInTheDocument();
 			expect(screen.getAllByText('Q2')[0]).toBeInTheDocument();
+		});
+
+		test('Year renders properly', async () => {
+			render(<VerticalTimeAxis {...VerticalTimeAxis.args} granularity="year" />);
+			const chart = await findChart();
+			expect(chart).toBeInTheDocument();
+
+			// make sure year labels are visible
+			expect(await screen.findByText(/2015/)).toBeInTheDocument();
+			expect(await screen.findByText('2016')).toBeInTheDocument();
 		});
 	});
 

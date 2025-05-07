@@ -293,6 +293,17 @@ CurrencyFormatSpecifier.args = {
 	title: 'Conversion Rate',
 };
 
+const YearAxis = bindWithProps(TimeAxisStory);
+YearAxis.args = {
+	granularity: 'year',
+	position: 'bottom',
+	baseline: true,
+	labelFormat: 'time',
+	ticks: true,
+	labelAlign: 'center',
+	title: 'Year',
+};
+
 export {
 	Basic,
 	ControlledLabels,
@@ -308,4 +319,5 @@ export {
 	VerticalTimeAxis,
 	CurrencyLocale,
 	CurrencyFormatSpecifier,
+	YearAxis,
 };
