@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { BaseLegendLayout, Config, mergeConfig } from 'vega';
+import { BaseLegendLayout, Config } from 'vega';
 
 import {
 	DEFAULT_BACKGROUND_COLOR,
@@ -26,20 +26,10 @@ import { sequentialViridis16 } from './sequentialColorPalette';
 import { spectrumColors } from './spectrumColors';
 import { getColorValue } from './utils';
 
-type ColorScheme = 'light' | 'dark';
-
 export const ADOBE_CLEAN_FONT =
 	"adobe-clean, 'Source Sans Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Ubuntu, 'Trebuchet MS', 'Lucida Grande', sans-serif";
 
-export function getChartConfig(config: Config | undefined, colorScheme: ColorScheme): Config {
-	const defaultConfig = getSpectrumVegaConfig(colorScheme);
-	if (config) {
-		return mergeConfig(defaultConfig, config);
-	}
-	return defaultConfig;
-}
-
-function getSpectrumVegaConfig(colorScheme: ColorScheme): Config {
+export function getSpectrumVegaConfig(colorScheme: 'light' | 'dark'): Config {
 	const FONT_COLOR = getColorValue(DEFAULT_FONT_COLOR, colorScheme);
 	const {
 		'blue-400': blue400,

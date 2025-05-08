@@ -29,6 +29,7 @@ module.exports = {
 		'single-spa-react/parcel': 'single-spa-react/lib/cjs/parcel.cjs',
 		'^.+\\.(css|less|scss)$': 'babel-jest',
 		'^d3-format$': '<rootDir>/node_modules/d3-format/dist/d3-format.js',
+		'^vega$': '<rootDir>/node_modules/vega/build/vega.js',
 		...pathsToModuleNameMapper(compilerOptions.paths),
 	},
 	testPathIgnorePatterns: ['<rootDir>/dist/'],
