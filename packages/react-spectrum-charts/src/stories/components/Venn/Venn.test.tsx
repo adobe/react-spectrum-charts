@@ -10,8 +10,8 @@
  * governing permissions and limitations under the License.
  */
 import { Venn } from '../../../alpha';
-import { findAllMarksByGroupName, findChart, render } from '../../../test-utils';
-import { Basic, WithLegend } from './Venn.story';
+import { allElementsHaveAttributeValue, clickNthElement, findAllMarksByGroupName, findChart, render } from '../../../test-utils';
+import { Basic, WithLegend, WithPopover, WithToolTip } from './Venn.story';
 
 describe('Venn', () => {
 	test('Venn pseudo element', () => {
@@ -43,4 +43,57 @@ describe('Venn', () => {
 		const intersections = await findAllMarksByGroupName(chart, 'venn0_intersections');
 		expect(intersections.length).toEqual(5);
 	});
+
+	describe('Popover', () => {
+		test('should render a popover on click of circle', async () => {
+			render(<WithPopover {...WithPopover.args} />);
+			const chart = await findChart();
+	
+			expect(chart).toBeInTheDocument();
+	
+			const circles = await findAllMarksByGroupName(chart, 'venn0');
+			expect(circles.length).toEqual(4);
+	
+			const intersections = await findAllMarksByGroupName(chart, 'venn0_intersections')
+			expect(intersections.length).toEqual(5);
+	
+			await clickNthElement(circles, 0);
+			expect(circles[0]).toHaveAttribute('opacity', '0.5')
+	
+			// Check to make sure all circles after have lower opacity
+			expect(
+				allElementsHaveAttributeValue(circles.slice(1), 'opacity', '0.2')
+			).toBeTruthy()
+		})
+	
+		test('should render a popover on click of intersection', async () => {
+			render(<WithPopover {...WithPopover.args} />);
+			const chart = await findChart();
+	
+			expect(chart).toBeInTheDocument();
+	
+			const circles = await findAllMarksByGroupName(chart, 'venn0');
+			expect(circles.length).toEqual(4);
+	
+			const intersections = await findAllMarksByGroupName(chart, 'venn0_intersections')
+			expect(intersections.length).toEqual(5);
+	
+			await clickNthElement(intersections, 0);
+	
+			console.log("Intersection attributes:", 
+				Array.from(intersections[1].attributes)
+				.map(attr => `${attr.name}="${attr.value}"`)
+				.join(', ')
+			);
+	
+	
+			expect(intersections[0]).toHaveAttribute('fill-opacity', '0.7')
+	
+			// Check to make sure all circles after have lower opacity
+			expect(
+				allElementsHaveAttributeValue(intersections.slice(1), 'fill-opacity', '0')
+			).toBeTruthy()
+		})
+	})
+	
 });
