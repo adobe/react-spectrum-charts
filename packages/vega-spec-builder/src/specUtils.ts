@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { Data, Scale, ScaleType, Spec } from 'vega';
+import { Config, Data, Scale, ScaleType, Spec, mergeConfig } from 'vega';
 
 import {
 	COLOR_SCALE,
@@ -25,12 +25,13 @@ import {
 	SENTIMENT_POSITIVE_PATH,
 	TABLE,
 } from '@spectrum-charts/constants';
-import { getColorValue } from '@spectrum-charts/themes';
+import { getColorValue, getSpectrumVegaConfig } from '@spectrum-charts/themes';
 
 import {
 	ChartSpecOptions,
 	ChartSymbolShape,
 	ColorFacet,
+	ColorScheme,
 	DualFacet,
 	Icon,
 	LineType,
@@ -289,3 +290,17 @@ export const getD3FormatSpecifierFromNumberFormat = (numberFormat: NumberFormat 
 			return numberFormat;
 	}
 };
+
+/**
+ * Merges the provided config with the Spectrum Vega config
+ * @param config
+ * @param colorScheme
+ * @returns Vega config
+ */
+export function getChartConfig(config: Config | undefined, colorScheme: ColorScheme): Config {
+	const defaultConfig = getSpectrumVegaConfig(colorScheme);
+	if (config) {
+		return mergeConfig(defaultConfig, config);
+	}
+	return defaultConfig;
+}
