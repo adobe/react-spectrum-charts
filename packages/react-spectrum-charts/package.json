@@ -1,6 +1,6 @@
 {
 	"name": "@adobe/react-spectrum-charts",
-	"version": "1.17.1",
+	"version": "1.17.2",
 	"description": "Declarative library for composing Spectrum visualizations in React.",
 	"browser": "./dist/index.js",
 	"module": "./dist/index.js",
@@ -74,10 +74,10 @@
 		"publish-package": "npm publish --access public"
 	},
 	"dependencies": {
-		"@spectrum-charts/constants": "1.17.1",
-		"@spectrum-charts/themes": "1.17.1",
-		"@spectrum-charts/utils": "1.17.1",
-		"@spectrum-charts/vega-spec-builder": "1.17.1",
+		"@spectrum-charts/constants": "1.17.2",
+		"@spectrum-charts/themes": "1.17.2",
+		"@spectrum-charts/utils": "1.17.2",
+		"@spectrum-charts/vega-spec-builder": "1.17.2",
 		"d3-format": "^3.1.0",
 		"deepmerge": ">= 4.0.0",
 		"immer": ">= 9.0.0",
