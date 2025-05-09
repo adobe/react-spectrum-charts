@@ -12,3 +12,4 @@
 
 export * from './Bullet';
 export * from './Combo';
+export * from './Venn';

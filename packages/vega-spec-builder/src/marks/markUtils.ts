@@ -41,7 +41,7 @@ import {
 } from '@spectrum-charts/constants';
 import { getColorValue } from '@spectrum-charts/themes';
 
-import { addHighlightMarkOpacityRules } from '../chartTooltip/chartTooltipUtils';
+import { addHighlightMarkOpacityRules, addHoverMarkOpacityRules } from '../chartTooltip/chartTooltipUtils';
 import { LineMarkOptions } from '../line/lineUtils';
 import { getScaleName } from '../scale/scaleSpecBuilder';
 import {
@@ -67,6 +67,7 @@ import {
 	ScatterSpecOptions,
 	SymbolSizeFacet,
 	TrendlineOptions,
+	VennSpecOptions,
 } from '../types';
 
 /**
@@ -417,16 +418,26 @@ const getHoverSizeSignal = (size: number): SignalRef => ({
  * @param options
  * @returns
  */
-export const getMarkOpacity = (options: BarSpecOptions | DonutSpecOptions): ({ test?: string } & NumericValueRef)[] => {
+export const getMarkOpacity = (
+	options: BarSpecOptions | DonutSpecOptions | VennSpecOptions,
+	opacitity?: number,
+	hoverOpacity?: number
+): ({ test?: string } & NumericValueRef)[] => {
 	const { highlightedItem, idKey, name: markName } = options;
-	const rules: ({ test?: string } & NumericValueRef)[] = [DEFAULT_OPACITY_RULE];
+	const rules: ({ test?: string } & NumericValueRef)[] = [
+		opacitity !== undefined ? { value: opacitity } : DEFAULT_OPACITY_RULE,
+	];
 	// if there aren't any interactive components, then we don't need to add special opacity rules
 	if (!isInteractive(options) && highlightedItem === undefined) {
 		return rules;
 	}
 
-	// if a bar is hovered/selected, all other bars should have reduced opacity
+	if (hoverOpacity !== undefined) {
+		addHoverMarkOpacityRules(rules, options, hoverOpacity);
+	}
 	addHighlightMarkOpacityRules(rules, options);
+
+	// if a bar is hovered/selected, all other bars should have reduced opacity
 	if (hasPopover(options)) {
 		return [
 			{
