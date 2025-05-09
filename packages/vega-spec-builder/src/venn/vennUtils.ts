@@ -12,7 +12,7 @@
 import { PathMark, SymbolMark, TextMark } from 'vega';
 import { vennSolution } from 'venn-helper';
 
-import { DEFAULT_VENN_COLOR, DEFAULT_VENN_METRIC, SET_ID_DELIMITER } from '@spectrum-charts/constants';
+import { DEFAULT_VENN_COLOR, DEFAULT_VENN_METRIC } from '@spectrum-charts/constants';
 import { getColorValue } from '@spectrum-charts/themes';
 
 import { getColorProductionRule, getCursor, getMarkOpacity, getTooltip } from '../marks/markUtils';
@@ -22,6 +22,9 @@ type VennHelperProps = {
 	sets: string[];
 	size: number;
 };
+
+/** Default delimiter for set ids */
+export const SET_ID_DELIMITER = '∩';
 
 export const getVennSolution = (props: VennSpecOptions) => {
 	const { orientation, chartWidth, chartHeight } = props;
@@ -132,7 +135,7 @@ export const getTextMark = (props: VennSpecOptions, dataSource: 'circles' | 'int
 			enter: {
 				x: { field: 'textX' },
 				y: { field: 'textY' },
-				text: { field: `table_data.${label}` },
+				text: { field: `table_data.${label}.split` },
 				opacity: getMarkOpacity(props),
 				align: { value: 'center' },
 				baseline: { value: 'middle' },
