@@ -71,7 +71,7 @@ const BasicVennStory: StoryFn<VennProps> = (args) => {
 				resize: 'both',
 			}}
 		>
-			<Chart {...chartProps} minHeight={50} config={{ autosize: { type: 'pad' } }}>
+			<Chart {...chartProps} minHeight={50} config={{ autosize: { type: 'pad' } }} debug>
 				<Venn {...args} />
 			</Chart>
 		</View>
@@ -81,7 +81,7 @@ const BasicVennStory: StoryFn<VennProps> = (args) => {
 const VennStoryWithLegend: StoryFn<VennProps> = (args) => {
 	const chartProps = useChartProps({ ...defaultChartProps });
 	return (
-		<Chart {...chartProps} config={{ autosize: { type: 'pad' } }}>
+		<Chart {...chartProps} config={{ autosize: { type: 'pad' } }} debug>
 			<Venn {...args} metric="radius" color="regions" />
 			<Legend highlight isToggleable />
 		</Chart>

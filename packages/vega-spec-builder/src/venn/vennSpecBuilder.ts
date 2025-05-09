@@ -126,15 +126,13 @@ export const addData = produce<Data[], [VennSpecOptions]>((data, props) => {
 });
 
 export const addMarks = produce<Mark[], [VennSpecOptions]>((marks, props) => {
-	marks.push(getStrokeMark(props));
 	marks.push(getCircleMark(props));
-	marks.push(getCircleOverlays(props));
 	marks.push(getInterserctionMark(props));
 	marks.push(getTextMark(props, 'circles'), getTextMark(props, 'intersections'));
 });
 
 export const addScales = produce<Scale[]>((scales) => {
-	addFieldToFacetScaleDomain(scales, COLOR_SCALE, 'set_legend');
+	addFieldToFacetScaleDomain(scales, COLOR_SCALE, 'set_id');
 });
 
 export const getTableTransforms = (props: VennSpecOptions): (FormulaTransform | FilterTransform)[] => [

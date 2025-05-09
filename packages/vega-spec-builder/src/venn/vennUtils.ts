@@ -12,7 +12,7 @@
 import { PathMark, SymbolMark, TextMark } from 'vega';
 import { vennSolution } from 'venn-helper';
 
-import { DEFAULT_VENN_COLOR, DEFAULT_VENN_METRIC } from '@spectrum-charts/constants';
+import { DEFAULT_VENN_COLOR, DEFAULT_VENN_METRIC, SELECTED_ITEM } from '@spectrum-charts/constants';
 import { getColorValue } from '@spectrum-charts/themes';
 
 import { getColorProductionRule, getCursor, getMarkOpacity, getTooltip } from '../marks/markUtils';
@@ -114,9 +114,12 @@ export const getCircleMark = (props: VennSpecOptions): SymbolMark => {
 				size: { field: 'size' },
 				shape: { value: 'circle' },
 				fill: getColorProductionRule('set_id', colorScheme),
+				stroke: { signal: 'chartBackgroundColor' },
+				strokeWidth: { value: 2 },
+				strokeOpacity: { value: 0 },
 			},
 			update: {
-				opacity: getMarkOpacity(props, 0.5),
+				opacity: getMarkOpacity(props, 1),
 				// Add cursor pointer when there are popovers
 				cursor: getCursor(chartPopovers),
 			},
@@ -135,7 +138,7 @@ export const getTextMark = (props: VennSpecOptions, dataSource: 'circles' | 'int
 			enter: {
 				x: { field: 'textX' },
 				y: { field: 'textY' },
-				text: { field: `table_data.${label}.split` },
+				text: { field: `table_data.${label}` },
 				opacity: getMarkOpacity(props),
 				align: { value: 'center' },
 				baseline: { value: 'middle' },
@@ -145,7 +148,7 @@ export const getTextMark = (props: VennSpecOptions, dataSource: 'circles' | 'int
 };
 
 export const getInterserctionMark = (props: VennSpecOptions): PathMark => {
-	const { name, chartTooltips, colorScheme, chartPopovers } = props;
+	const { name, chartTooltips, colorScheme, chartPopovers, idKey } = props;
 
 	return {
 		type: 'path',
@@ -154,13 +157,16 @@ export const getInterserctionMark = (props: VennSpecOptions): PathMark => {
 		encode: {
 			enter: {
 				path: { field: 'path' },
-				fill: { value: getColorValue('static-blue', colorScheme) },
+				fill: getColorProductionRule('set_id', colorScheme),
+				stroke: { signal: 'chartBackgroundColor' },
+				strokeWidth: { value: 2 },
 				tooltip: getTooltip(chartTooltips, `${name}`),
 			},
 
 			update: {
-				fillOpacity: getMarkOpacity(props, 0, 0.7),
-				cursor: getCursor(chartPopovers)
+				opacity: getMarkOpacity({...props, name: `${props.name}_intersections`}),
+				cursor: getCursor(chartPopovers),
+				zindex: [{ test: `${SELECTED_ITEM} === datum.${idKey}`, value: 2 }, { value: 0 }],
 			},
 		},
 	};
