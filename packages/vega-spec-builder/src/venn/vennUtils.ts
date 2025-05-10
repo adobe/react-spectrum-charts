@@ -9,13 +9,27 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { PathMark, SymbolMark, TextMark } from 'vega';
+import { NumericValueRef, PathMark, SymbolMark, TextMark } from 'vega';
 import { vennSolution } from 'venn-helper';
 
-import { DEFAULT_VENN_COLOR, DEFAULT_VENN_METRIC, SELECTED_ITEM } from '@spectrum-charts/constants';
+import {
+	DEFAULT_OPACITY_RULE,
+	DEFAULT_VENN_COLOR,
+	DEFAULT_VENN_METRIC,
+	HIGHLIGHT_CONTRAST_RATIO,
+	SELECTED_GROUP,
+	SELECTED_ITEM,
+} from '@spectrum-charts/constants';
 import { getColorValue } from '@spectrum-charts/themes';
 
-import { getColorProductionRule, getCursor, getMarkOpacity, getTooltip } from '../marks/markUtils';
+import {
+	getColorProductionRule,
+	getCursor,
+	getMarkOpacity,
+	getTooltip,
+	hasPopover,
+	isInteractive,
+} from '../marks/markUtils';
 import { VennDegreeOptions, VennSpecOptions } from '../types';
 
 type VennHelperProps = {
@@ -26,12 +40,12 @@ type VennHelperProps = {
 /** Default delimiter for set ids */
 export const SET_ID_DELIMITER = '∩';
 
-export const getVennSolution = (props: VennSpecOptions) => {
-	const { orientation, chartWidth, chartHeight } = props;
+export const getVennSolution = (options: VennSpecOptions) => {
+	const { orientation, chartWidth, chartHeight } = options;
 
-	const safeData = mapDataForVennHelper(props);
+	const safeData = mapDataForVennHelper(options);
 
-	// safe to do casting since types in map and props are the same
+	// safe to do casting since types in map and options are the same
 	const orientationInRadians = degreesToRadians.get(orientation) as number;
 
 	return vennSolution(safeData, {
@@ -44,8 +58,8 @@ export const getVennSolution = (props: VennSpecOptions) => {
 	});
 };
 
-export const mapDataForVennHelper = (props: VennSpecOptions): VennHelperProps[] => {
-	const { data, metric, color } = props;
+export const mapDataForVennHelper = (options: VennSpecOptions): VennHelperProps[] => {
+	const { data, metric, color } = options;
 	const unsafeData = data as unknown as Record<string, unknown>[];
 
 	const parsed = unsafeData
@@ -78,8 +92,8 @@ export const mapDataForVennHelper = (props: VennSpecOptions): VennHelperProps[] 
 	return parsed;
 };
 
-export const getCircleOverlays = (props: VennSpecOptions): SymbolMark => {
-	const { name, colorScheme } = props;
+export const getCircleOverlays = (options: VennSpecOptions): SymbolMark => {
+	const { name, colorScheme } = options;
 
 	return {
 		type: 'symbol',
@@ -99,8 +113,8 @@ export const getCircleOverlays = (props: VennSpecOptions): SymbolMark => {
 	};
 };
 
-export const getCircleMark = (props: VennSpecOptions): SymbolMark => {
-	const { name, colorScheme, chartTooltips, chartPopovers } = props;
+export const getCircleMark = (options: VennSpecOptions): SymbolMark => {
+	const { name, colorScheme, chartTooltips, chartPopovers } = options;
 
 	return {
 		type: 'symbol',
@@ -116,19 +130,17 @@ export const getCircleMark = (props: VennSpecOptions): SymbolMark => {
 				fill: getColorProductionRule('set_id', colorScheme),
 				stroke: { signal: 'chartBackgroundColor' },
 				strokeWidth: { value: 2 },
-				strokeOpacity: { value: 0 },
 			},
 			update: {
-				opacity: getMarkOpacity(props, 1),
-				// Add cursor pointer when there are popovers
+				opacity: getMarkOpacity(options, 1),
 				cursor: getCursor(chartPopovers),
 			},
 		},
 	};
 };
 
-export const getTextMark = (props: VennSpecOptions, dataSource: 'circles' | 'intersections'): TextMark => {
-	const { label } = props;
+export const getTextMark = (options: VennSpecOptions, dataSource: 'circles' | 'intersections'): TextMark => {
+	const { label } = options;
 
 	return {
 		type: 'text',
@@ -139,7 +151,7 @@ export const getTextMark = (props: VennSpecOptions, dataSource: 'circles' | 'int
 				x: { field: 'textX' },
 				y: { field: 'textY' },
 				text: { field: `table_data.${label}` },
-				opacity: getMarkOpacity(props),
+				opacity: getMarkOpacity(options),
 				align: { value: 'center' },
 				baseline: { value: 'middle' },
 			},
@@ -147,8 +159,30 @@ export const getTextMark = (props: VennSpecOptions, dataSource: 'circles' | 'int
 	};
 };
 
-export const getInterserctionMark = (props: VennSpecOptions): PathMark => {
-	const { name, chartTooltips, colorScheme, chartPopovers, idKey } = props;
+export const getIntersectionOutlineMark = (options: VennSpecOptions): PathMark => {
+	const { name, idKey, colorScheme } = options;
+
+	return {
+		type: 'path',
+		from: { data: 'intersections' },
+		name: `${name}_intersections_outline`,
+		interactive: false,
+		encode: {
+			enter: {
+				path: { field: 'path' },
+				strokeWidth: { value: 2 },
+				stroke: { value: getColorValue('static-blue', colorScheme) },
+			},
+
+			update: {
+				strokeOpacity: [{ test: `${SELECTED_ITEM} === datum.${idKey}`, value: 1 }, { value: 0 }],
+			},
+		},
+	};
+};
+
+export const getInterserctionMark = (options: VennSpecOptions): PathMark => {
+	const { name, chartTooltips, colorScheme, chartPopovers } = options;
 
 	return {
 		type: 'path',
@@ -158,39 +192,37 @@ export const getInterserctionMark = (props: VennSpecOptions): PathMark => {
 			enter: {
 				path: { field: 'path' },
 				fill: getColorProductionRule('set_id', colorScheme),
-				stroke: { signal: 'chartBackgroundColor' },
 				strokeWidth: { value: 2 },
+				stroke: { signal: 'chartBackgroundColor' },
 				tooltip: getTooltip(chartTooltips, `${name}`),
+				zindex: { field: 'zindex' },
 			},
 
 			update: {
-				opacity: getMarkOpacity({...props, name: `${props.name}_intersections`}),
+				opacity: getInterserctionMarkOpacity(options),
 				cursor: getCursor(chartPopovers),
-				zindex: [{ test: `${SELECTED_ITEM} === datum.${idKey}`, value: 2 }, { value: 0 }],
 			},
 		},
 	};
 };
 
-export const getStrokeMark = (props: VennSpecOptions): SymbolMark => {
+export const getStrokeMark = (options: VennSpecOptions): SymbolMark => {
+	const { colorScheme, idKey } = options;
 	return {
 		type: 'symbol',
-		name: `${props.name}_stroke`,
+		name: `${options.name}_stroke`,
 		from: { data: 'circles' },
 		interactive: false,
 		encode: {
 			enter: {
 				x: { field: 'x' },
 				y: { field: 'y' },
-				size: { field: 'strokeSize' },
+				size: { field: 'size' },
 				shape: { value: 'circle' },
-				stroke: getColorProductionRule('set_id', props.colorScheme),
+				stroke: { value: getColorValue('static-blue', colorScheme) },
 			},
 			update: {
-				fill: getColorProductionRule('set_id', props.colorScheme),
-				strokeWidth: { value: 1 },
-				fillOpacity: { value: 0 },
-				opacity: getMarkOpacity(props),
+				strokeOpacity: [{ test: `${SELECTED_ITEM} === datum.${idKey}`, value: 1 }, { value: 0 }],
 			},
 		},
 	};
@@ -203,3 +235,58 @@ export const degreesToRadians = new Map<VennDegreeOptions, number>([
 	['180deg', -Math.PI / 2],
 	['270deg', -Math.PI],
 ]);
+
+const getInterserctionMarkOpacity = (options: VennSpecOptions) => {
+	const rules = [DEFAULT_OPACITY_RULE];
+	const { idKey, name: markName } = options;
+
+	if (isInteractive(options)) {
+		addIntersectionHighlightRules(rules, options);
+	}
+
+	if (hasPopover(options)) {
+		[
+			{
+				test: `!isValid(${SELECTED_GROUP}) && ${SELECTED_ITEM} && ${SELECTED_ITEM} !== datum.${idKey}`,
+				value: 1 / HIGHLIGHT_CONTRAST_RATIO,
+			},
+			{
+				test: `isValid(${SELECTED_ITEM}) && indexof(datum.${idKey}, ${SELECTED_ITEM}) !== -1`,
+				...DEFAULT_OPACITY_RULE,
+			},
+			{
+				test: `isValid(${SELECTED_GROUP}) && ${SELECTED_GROUP} === datum.${markName}_selectedGroupId`,
+				value: 1,
+			},
+			{
+				test: `isValid(${SELECTED_GROUP}) && ${SELECTED_GROUP} !== datum.${markName}_selectedGroupId`,
+				value: 1 / HIGHLIGHT_CONTRAST_RATIO,
+			},
+			...rules,
+		];
+	}
+
+	return rules;
+};
+
+const addIntersectionHighlightRules = (rules: ({ test?: string } & NumericValueRef)[], options: VennSpecOptions) => {
+	const { idKey } = options;
+	rules.unshift(
+		{
+			test: `isValid(${SELECTED_ITEM}) && indexof(datum.${idKey}, ${SELECTED_ITEM}) === -1`,
+			value: 1 / HIGHLIGHT_CONTRAST_RATIO,
+		},
+		{
+			test: `isArray(highlightedItem) && length(highlightedItem) > 0 && indexof(highlightedItem, datum.${idKey}) === -1`,
+			value: 1 / HIGHLIGHT_CONTRAST_RATIO,
+		},
+		{
+			test: `!isArray(highlightedItem) && isValid(highlightedItem) && indexof(datum.${idKey}, highlightedItem) === -1`,
+			value: 1 / HIGHLIGHT_CONTRAST_RATIO,
+		},
+		{
+			test: `isValid(highlightedSeries) && indexof(datum.${idKey}, highlightedSeries) === -1`,
+			value: 1 / HIGHLIGHT_CONTRAST_RATIO,
+		}
+	);
+};
