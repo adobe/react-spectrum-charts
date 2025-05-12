@@ -130,5 +130,15 @@
 		{ "datetime": 1648792800000, "value": 639, "series": "Downloads" },
 		{ "datetime": 1656655200000, "value": 6263, "series": "Downloads" },
 		{ "datetime": 1664604000000, "value": 616, "series": "Downloads" }
+	],
+	"year": [
+		{ "datetime": 1420099200000, "value": 6342, "series": "Downloads" },
+		{ "datetime": 1451635200000, "value": 7255, "series": "Downloads" },
+		{ "datetime": 1483257600000, "value": 8412, "series": "Downloads" },
+		{ "datetime": 1514793600000, "value": 9321, "series": "Downloads" },
+		{ "datetime": 1546329600000, "value": 8912, "series": "Downloads" },
+		{ "datetime": 1577865600000, "value": 7639, "series": "Downloads" },
+		{ "datetime": 1609488000000, "value": 8245, "series": "Downloads" },
+		{ "datetime": 1641024000000, "value": 9156, "series": "Downloads" }
 	]
 }

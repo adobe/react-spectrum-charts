@@ -79,6 +79,20 @@ const VerticalTimeAxisStory: StoryFn<typeof Axis> = (args): ReactElement => {
 	);
 };
 
+const TimeAxisBarStory: StoryFn<typeof Axis> = (args): ReactElement => {
+	const chartProps = useChartProps({
+		data: timeData[args.granularity ?? DEFAULT_GRANULARITY],
+		width: 600,
+		height: 800,
+	});
+	return (
+		<Chart {...chartProps}>
+			<Axis {...args} />
+			<Bar orientation="vertical" dimension="datetime" />
+		</Chart>
+	);
+};
+
 const SubLabelStory: StoryFn<typeof Axis> = (args): ReactElement => {
 	const chartProps = useChartProps({ data: barData, width: 600 });
 	return (
@@ -269,6 +283,16 @@ VerticalTimeAxis.args = {
 	labelAlign: 'center',
 };
 
+const YearGranularity = bindWithProps(TimeAxisBarStory);
+YearGranularity.args = {
+	granularity: 'year',
+	position: 'bottom',
+	baseline: true,
+	labelFormat: 'time',
+	ticks: true,
+	labelAlign: 'center',
+};
+
 const CurrencyLocale = bindWithProps(AxisStory);
 CurrencyLocale.args = {
 	position: 'left',
@@ -304,6 +328,7 @@ export {
 	SubLabels,
 	TickMinStep,
 	Time,
+	YearGranularity,
 	TruncateLabels,
 	VerticalTimeAxis,
 	CurrencyLocale,
