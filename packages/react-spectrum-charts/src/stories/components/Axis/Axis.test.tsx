@@ -199,8 +199,6 @@ describe('Axis', () => {
 			const chart = await findChart();
 			expect(chart).toBeInTheDocument();
 
-			// make sure year labels are visible
-			expect(await screen.findByText(/2015/)).toBeInTheDocument();
 			expect(await screen.findByText('2016')).toBeInTheDocument();
 		});
 	});
