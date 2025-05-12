@@ -133,7 +133,7 @@ describe('Axis', () => {
 		});
 	});
 
-	describe('Time axis', () => {
+	describe('Vertical time axis', () => {
 		test('Minute renders properly', async () => {
 			render(<VerticalTimeAxis {...VerticalTimeAxis.args} granularity="minute" />);
 			const chart = await findChart();
