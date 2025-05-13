@@ -204,6 +204,26 @@ Time.args = {
 	labelAlign: 'center',
 };
 
+const SecondGranularity = bindWithProps(TimeAxisBarStory);
+SecondGranularity.args = {
+	granularity: 'second',
+	position: 'bottom',
+	baseline: true,
+	labelFormat: 'time',
+	ticks: true,
+	labelAlign: 'center',
+};
+
+const SecondGranularityLine = bindWithProps(TimeAxisStory);
+SecondGranularityLine.args = {
+	granularity: 'second',
+	position: 'bottom',
+	baseline: true,
+	labelFormat: 'time',
+	ticks: true,
+	labelAlign: 'center',
+};
+
 const SubLabels = bindWithProps(SubLabelStory);
 SubLabels.args = {
 	position: 'bottom',
@@ -317,6 +337,16 @@ CurrencyFormatSpecifier.args = {
 	title: 'Conversion Rate',
 };
 
+const VerticalSecondGranularity = bindWithProps(VerticalTimeAxisStory);
+VerticalSecondGranularity.args = {
+	granularity: 'second',
+	position: 'left',
+	baseline: true,
+	labelFormat: 'time',
+	ticks: true,
+	labelAlign: 'center',
+};
+
 export {
 	Basic,
 	ControlledLabels,
@@ -325,12 +355,15 @@ export {
 	MultilineTitle,
 	NonLinearAxis,
 	NumberFormat,
+	SecondGranularity,
+	SecondGranularityLine,
 	SubLabels,
 	TickMinStep,
 	Time,
+	VerticalSecondGranularity,
+	VerticalTimeAxis,
 	YearGranularity,
 	TruncateLabels,
-	VerticalTimeAxis,
 	CurrencyLocale,
 	CurrencyFormatSpecifier,
 };

@@ -148,7 +148,7 @@ const timeTransform: Transforms[] = [
 		as: ['datetime0', 'datetime1'],
 		field: 'browser',
 		type: 'timeunit',
-		units: ['year', 'month', 'date', 'hours', 'minutes'],
+		units: ['year', 'month', 'date', 'hours', 'minutes', 'seconds'],
 	},
 ];
 
