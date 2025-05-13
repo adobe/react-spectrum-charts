@@ -138,8 +138,7 @@ export const addMarks = produce<Mark[], [VennSpecOptions]>((marks, props) => {
 });
 
 export const addScales = produce<Scale[]>((scales) => {
-	//addFieldToFacetScaleDomain(scales, 'color', 'set_id');
-	addFieldToFacetScaleDomain(scales, COLOR_SCALE, 'set_legend');
+	addFieldToFacetScaleDomain(scales, COLOR_SCALE, 'set_id');
 });
 
 export const getTableTransforms = (props: VennSpecOptions): (FormulaTransform | FilterTransform)[] => [
