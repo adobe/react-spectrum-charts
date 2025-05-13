@@ -32,7 +32,7 @@ export const addTimeTransform = produce<Transforms[], [string]>((transforms, dim
 		transforms.push({
 			type: 'timeunit',
 			field: dimension,
-			units: ['year', 'month', 'date', 'hours', 'minutes'],
+			units: ['year', 'month', 'date', 'hours', 'minutes', 'seconds'],
 			as: [DEFAULT_TRANSFORMED_TIME_DIMENSION, `${DEFAULT_TIME_DIMENSION}1`],
 		});
 	}

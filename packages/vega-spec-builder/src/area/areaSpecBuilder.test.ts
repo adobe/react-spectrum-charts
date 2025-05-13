@@ -71,7 +71,7 @@ const defaultSpec = initializeSpec({
 					as: [DEFAULT_TRANSFORMED_TIME_DIMENSION, `${DEFAULT_TIME_DIMENSION}1`],
 					field: DEFAULT_TIME_DIMENSION,
 					type: 'timeunit',
-					units: ['year', 'month', 'date', 'hours', 'minutes'],
+					units: ['year', 'month', 'date', 'hours', 'minutes', 'seconds'],
 				},
 			],
 			values: [],

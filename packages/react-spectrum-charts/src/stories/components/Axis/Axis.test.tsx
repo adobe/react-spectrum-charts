@@ -19,9 +19,12 @@ import {
 	MultilineTitle,
 	NonLinearAxis,
 	NumberFormat,
+	SecondGranularity,
+	SecondGranularityLine,
 	SubLabels,
 	TickMinStep,
 	Time,
+	VerticalSecondGranularity,
 	VerticalTimeAxis,
 } from './Axis.story';
 
@@ -65,6 +68,26 @@ describe('Axis', () => {
 	});
 
 	describe('Time axis', () => {
+		test('Second renders properly with line', async () => {
+			render(<SecondGranularityLine {...SecondGranularityLine.args} />);
+			const chart = await findChart();
+			expect(chart).toBeInTheDocument();
+
+			expect(screen.getByText('Dec 2')).toBeInTheDocument();
+			const timeLabels = screen.getAllByText(/\d+:\d+:\d+ [AP]M/);
+			expect(timeLabels.length).toBeGreaterThan(0);
+		});
+
+		test('Second renders properly', async () => {
+			render(<SecondGranularity {...SecondGranularity.args} />);
+			const chart = await findChart();
+			expect(chart).toBeInTheDocument();
+
+			expect(screen.getByText('Dec 2')).toBeInTheDocument();
+			const timeLabels = screen.getAllByText(/\d+:\d+:\d+ [AP]M/);
+			expect(timeLabels.length).toBeGreaterThan(0);
+		});
+
 		test('Minute renders properly', async () => {
 			render(<Time {...Time.args} granularity="minute" />);
 			const chart = await findChart();
@@ -134,6 +157,17 @@ describe('Axis', () => {
 	});
 
 	describe('Vertical time axis', () => {
+		test('Second renders properly', async () => {
+			render(<VerticalSecondGranularity {...VerticalSecondGranularity.args} />);
+			const chart = await findChart();
+			expect(chart).toBeInTheDocument();
+
+			// Day and time are in the same label for this configuration.
+			expect(screen.getByText(/Dec 2.+\d+:\d+:\d+ [AP]M/)).toBeInTheDocument();
+			const timeLabels = screen.getAllByText(/\d+:\d+:\d+ [AP]M/);
+			expect(timeLabels.length).toBeGreaterThan(0);
+		});
+
 		test('Minute renders properly', async () => {
 			render(<VerticalTimeAxis {...VerticalTimeAxis.args} granularity="minute" />);
 			const chart = await findChart();
