@@ -120,7 +120,6 @@ export const addData = produce<Data[], [VennSpecOptions]>((data, props) => {
 		values: intersections,
 		transform: [
 			...getTableJoinTransforms(),
-			{ type: 'formula', expr: 'length(datum.sets)', as: 'zindex' },
 			...getHiddenIntersectionTransforms(props),
 		],
 	});
@@ -131,15 +130,16 @@ export const addData = produce<Data[], [VennSpecOptions]>((data, props) => {
 });
 
 export const addMarks = produce<Mark[], [VennSpecOptions]>((marks, props) => {
-	marks.push(getCircleMark(props));
-	marks.push(getInterserctionMark(props));
-	marks.push(getIntersectionOutlineMark(props));
 	marks.push(getStrokeMark(props));
+	marks.push(getCircleMark(props));
+	marks.push(getIntersectionOutlineMark(props));
+	marks.push(getInterserctionMark(props));
 	marks.push(getTextMark(props, 'circles'), getTextMark(props, 'intersections'));
 });
 
 export const addScales = produce<Scale[]>((scales) => {
-	addFieldToFacetScaleDomain(scales, COLOR_SCALE, 'set_id');
+	//addFieldToFacetScaleDomain(scales, 'color', 'set_id');
+	addFieldToFacetScaleDomain(scales, COLOR_SCALE, 'set_legend');
 });
 
 export const getTableTransforms = (props: VennSpecOptions): (FormulaTransform | FilterTransform)[] => [
@@ -182,10 +182,10 @@ export const getHiddenIntersectionTransforms = (
 			},
 			// sum up the values
 			{ type: 'joinaggregate', groupby: ['set_id'], fields: ['hide_intersection'], ops: ['sum'] },
-			{ type: 'filter', expr: 'datum.sum_hide_intersection == 0' },
+			{ type: 'filter', expr: 'datum.sum_hide_intersection === 0' },
 			// clean up duplicates
 			{ type: 'window', groupby: ['set_id'], ops: ['row_number'], as: ['row_num'] },
-			{ type: 'filter', expr: 'datum.row_num == 1' },
+			{ type: 'filter', expr: 'datum.row_num === 1' },
 		];
 	return [];
 };

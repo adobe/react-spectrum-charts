@@ -170,7 +170,8 @@ export const getIntersectionOutlineMark = (options: VennSpecOptions): PathMark =
 		encode: {
 			enter: {
 				path: { field: 'path' },
-				strokeWidth: { value: 2 },
+				strokeWidth: { value: 6 },
+				strokeCap: { value: 'round' },
 				stroke: { value: getColorValue('static-blue', colorScheme) },
 			},
 
@@ -194,8 +195,8 @@ export const getInterserctionMark = (options: VennSpecOptions): PathMark => {
 				fill: getColorProductionRule('set_id', colorScheme),
 				strokeWidth: { value: 2 },
 				stroke: { signal: 'chartBackgroundColor' },
+        strokeCap: { value: 'square'},
 				tooltip: getTooltip(chartTooltips, `${name}`),
-				zindex: { field: 'zindex' },
 			},
 
 			update: {
@@ -220,6 +221,7 @@ export const getStrokeMark = (options: VennSpecOptions): SymbolMark => {
 				size: { field: 'size' },
 				shape: { value: 'circle' },
 				stroke: { value: getColorValue('static-blue', colorScheme) },
+				strokeWidth: { value: 6 },
 			},
 			update: {
 				strokeOpacity: [{ test: `${SELECTED_ITEM} === datum.${idKey}`, value: 1 }, { value: 0 }],
