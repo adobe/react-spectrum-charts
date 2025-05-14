@@ -16,6 +16,7 @@ import embed from 'vega-embed';
 import { Options as TooltipOptions } from 'vega-tooltip';
 
 import { TABLE } from '@spectrum-charts/constants';
+import { ChartData } from '@spectrum-charts/vega-spec-builder';
 
 import {
 	expressionFunctions,
@@ -25,7 +26,7 @@ import {
 } from './expressionFunctions';
 import { useDebugSpec } from './hooks/useDebugSpec';
 import { extractValues, isVegaData } from './hooks/useSpec';
-import { ChartData, ChartProps } from './types';
+import { ChartProps } from './types';
 import { getLocale } from './utils/locale';
 
 export interface VegaChartProps {

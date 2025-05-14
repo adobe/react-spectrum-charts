@@ -23,56 +23,56 @@ import { ChartProps, DonutSummaryProps } from '../../../types';
 import { basicDonutData } from '../Donut/data';
 
 export default {
-	title: 'RSC/Donut/DonutSummary',
-	component: DonutSummary,
+  title: 'RSC/Donut/DonutSummary',
+  component: DonutSummary,
 };
 
 const defaultChartProps: ChartProps = {
-	data: basicDonutData,
-	width: 350,
-	height: 350,
+  data: basicDonutData,
+  width: 350,
+  height: 350,
 };
 
 const DonutStory: StoryFn<DonutSummaryProps & { width?: number; height?: number }> = (args): ReactElement => {
-	const { width, height, ...donutSummaryProps } = args;
-	const chartProps = useChartProps({ ...defaultChartProps, width: width ?? 350, height: height ?? 350 });
-	return (
-		<Chart {...chartProps}>
-			<Donut metric="count" color="browser">
-				<DonutSummary {...donutSummaryProps} />
-			</Donut>
-		</Chart>
-	);
+  const { width, height, ...donutSummaryProps } = args;
+  const chartProps = useChartProps({ ...defaultChartProps, width: width ?? 350, height: height ?? 350 });
+  return (
+    <Chart {...chartProps}>
+      <Donut metric="count" color="browser">
+        <DonutSummary {...donutSummaryProps} />
+      </Donut>
+    </Chart>
+  );
 };
 
 const ResponsiveStory: StoryFn<typeof DonutSummary> = (args): ReactElement => {
-	const chartProps = useChartProps({ ...defaultChartProps, width: '100%', height: '100%' });
-	return (
-		<View
-			backgroundColor="gray-50"
-			padding="size-600"
-			overflow="auto"
-			minHeight={50}
-			maxHeight={600}
-			width={600}
-			height={200}
-			UNSAFE_style={{
-				resize: 'vertical',
-			}}
-		>
-			<Chart {...chartProps} minHeight={50}>
-				<Donut metric="count" color="browser">
-					<DonutSummary {...args} />
-				</Donut>
-			</Chart>
-		</View>
-	);
+  const chartProps = useChartProps({ ...defaultChartProps, width: '100%', height: '100%' });
+  return (
+    <View
+      backgroundColor="gray-50"
+      padding="size-600"
+      overflow="auto"
+      minHeight={50}
+      maxHeight={600}
+      width={600}
+      height={200}
+      UNSAFE_style={{
+        resize: 'vertical',
+      }}
+    >
+      <Chart {...chartProps} minHeight={50} debug>
+        <Donut metric="count" color="browser">
+          <DonutSummary {...args} />
+        </Donut>
+      </Chart>
+    </View>
+  );
 };
 
 const Basic = bindWithProps(DonutStory);
 Basic.args = {
-	label: 'Visitors',
-	numberFormat: 'shortNumber',
+  label: 'Visitors',
+  numberFormat: 'shortNumber',
 };
 
 const NoLabel = bindWithProps(DonutStory);
@@ -80,13 +80,13 @@ NoLabel.args = {};
 
 const NumberFormat = bindWithProps(DonutStory);
 NumberFormat.args = {
-	numberFormat: 'standardNumber',
-	label: 'Visitors',
+  numberFormat: 'standardNumber',
+  label: 'Visitors',
 };
 
 const Responsive = bindWithProps(ResponsiveStory);
 Responsive.args = {
-	label: 'Visitors',
+  label: 'Visitors',
 };
 
 export { Basic, NoLabel, NumberFormat, Responsive };

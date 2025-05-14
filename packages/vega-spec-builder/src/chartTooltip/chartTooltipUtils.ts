@@ -31,9 +31,16 @@ import {
 	DonutSpecOptions,
 	LineSpecOptions,
 	ScatterSpecOptions,
+	VennSpecOptions,
 } from '../types';
 
-type TooltipParentOptions = AreaSpecOptions | BarSpecOptions | DonutSpecOptions | LineSpecOptions | ScatterSpecOptions;
+type TooltipParentOptions =
+	| AreaSpecOptions
+	| BarSpecOptions
+	| DonutSpecOptions
+	| LineSpecOptions
+	| ScatterSpecOptions
+	| VennSpecOptions;
 
 /**
  * gets all the tooltips
@@ -75,7 +82,7 @@ export const addTooltipData = (data: Data[], markOptions: TooltipParentOptions, 
 		if (!filteredTable.transform) {
 			filteredTable.transform = [];
 		}
-		if (highlightBy === 'dimension' && markOptions.markType !== 'donut') {
+		if (highlightBy === 'dimension' && markOptions.markType !== 'donut' && markOptions.markType !== 'venn') {
 			filteredTable.transform.push(getGroupIdTransform([markOptions.dimension], markName));
 		} else if (highlightBy === 'series') {
 			filteredTable.transform.push(getGroupIdTransform([SERIES_ID], markName));
@@ -208,4 +215,19 @@ export const addHighlightMarkOpacityRules = (
 			...DEFAULT_OPACITY_RULE,
 		});
 	}
+};
+
+/**
+  * Adds hover opacity rule if item is the highlighted one then the opacity of
+  * the item will the the one given by the hover opacity
+*/
+export const addHoverMarkOpacityRules = (
+	opacityRules: ({ test?: string } & NumericValueRef)[],
+	markProps: TooltipParentOptions,
+	hoverOpacity: number
+) => {
+	opacityRules.unshift({
+		test: `!isArray(${HIGHLIGHTED_ITEM}) && isValid(${HIGHLIGHTED_ITEM}) && ${HIGHLIGHTED_ITEM} === datum.${markProps.idKey}`,
+		value: hoverOpacity,
+	});
 };
