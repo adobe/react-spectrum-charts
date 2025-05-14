@@ -12,7 +12,7 @@
 import { PathMark, SymbolMark, TextMark } from 'vega';
 import { vennSolution } from 'venn-helper';
 
-import { DEFAULT_VENN_COLOR, DEFAULT_VENN_METRIC, SET_ID_DELIMITER } from '@spectrum-charts/constants';
+import { DEFAULT_VENN_COLOR, DEFAULT_VENN_METRIC } from '@spectrum-charts/constants';
 import { getColorValue } from '@spectrum-charts/themes';
 
 import { getColorProductionRule, getCursor, getMarkOpacity, getTooltip } from '../marks/markUtils';
@@ -22,6 +22,8 @@ type VennHelperProps = {
 	sets: string[];
 	size: number;
 };
+
+export const SET_ID_DELIMITER = '∩';
 
 export const getVennSolution = (props: VennSpecOptions) => {
 	const { orientation, chartWidth, chartHeight } = props;

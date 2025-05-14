@@ -434,15 +434,16 @@ export const getMarkOpacity = (
 
 	if (hoverOpacity !== undefined) {
 		addHoverMarkOpacityRules(rules, options, hoverOpacity);
+	} else {
+		addHighlightMarkOpacityRules(rules, options);
 	}
-	addHighlightMarkOpacityRules(rules, options);
 
 	// if a bar is hovered/selected, all other bars should have reduced opacity
 	if (hasPopover(options)) {
 		return [
 			{
 				test: `!isValid(${SELECTED_GROUP}) && ${SELECTED_ITEM} && ${SELECTED_ITEM} !== datum.${idKey}`,
-				value: 1 / HIGHLIGHT_CONTRAST_RATIO,
+				value: hoverOpacity ? opacitity : 1 / HIGHLIGHT_CONTRAST_RATIO,
 			},
 			{ test: `isValid(${SELECTED_ITEM}) && ${SELECTED_ITEM} === datum.${idKey}`, ...DEFAULT_OPACITY_RULE },
 			{
@@ -451,7 +452,7 @@ export const getMarkOpacity = (
 			},
 			{
 				test: `isValid(${SELECTED_GROUP}) && ${SELECTED_GROUP} !== datum.${markName}_selectedGroupId`,
-				value: 1 / HIGHLIGHT_CONTRAST_RATIO,
+				value: hoverOpacity ? opacitity : 1 / HIGHLIGHT_CONTRAST_RATIO,
 			},
 			...rules,
 		];

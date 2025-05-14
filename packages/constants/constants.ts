@@ -106,9 +106,6 @@ export const DONUT_SUMMARY_FONT_SIZE_RATIO = 0.35;
 /** Min inner radius to display the summary metric. If the inner radius is less than this, the summary metric is hidden. */
 export const DONUT_SUMMARY_MIN_RADIUS = 45;
 
-/** Default delimiter for set ids */
-export const SET_ID_DELIMITER = '∩';
-
 export const DEFAULT_VENN_COLOR = 'sets';
 /** default key in data for the metric in the venn diagram */
 export const DEFAULT_VENN_METRIC = 'size';
