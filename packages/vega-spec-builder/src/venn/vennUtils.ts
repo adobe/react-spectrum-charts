@@ -82,7 +82,7 @@ export const getCircleOverlays = (props: VennSpecOptions): SymbolMark => {
 
 	return {
 		type: 'symbol',
-		name: `${name}_selected_circle`,
+		name: `${name}_circle_overlays`,
 		from: { data: 'circles' },
 		interactive: false,
 		encode: {

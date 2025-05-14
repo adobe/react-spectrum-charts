@@ -227,7 +227,7 @@ export const addHoverMarkOpacityRules = (
 	hoverOpacity: number
 ) => {
 	opacityRules.unshift({
-		test: `!isArray(${HIGHLIGHTED_ITEM}) && isValid(${HIGHLIGHTED_ITEM}) && ${HIGHLIGHTED_ITEM} !== datum.${markProps.idKey}`,
+		test: `!isArray(${HIGHLIGHTED_ITEM}) && isValid(${HIGHLIGHTED_ITEM}) && ${HIGHLIGHTED_ITEM} === datum.${markProps.idKey}`,
 		value: hoverOpacity,
 	});
 };
