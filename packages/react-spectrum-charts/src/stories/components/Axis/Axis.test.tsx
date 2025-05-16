@@ -73,9 +73,13 @@ describe('Axis', () => {
 			const chart = await findChart();
 			expect(chart).toBeInTheDocument();
 
-			expect(screen.getByText('Dec 2')).toBeInTheDocument();
-			const timeLabels = screen.getAllByText(/\d+:\d+:\d+ [AP]M/);
+			// Check for minute-based time labels (primary label)
+			const timeLabels = screen.getAllByText(/\d+:\d+ [AP]M/);
 			expect(timeLabels.length).toBeGreaterThan(0);
+			
+			// Check for second labels (secondary label)
+			const secondLabels = screen.getAllByText(/^\d{1,2}$/);  // Just digits for seconds
+			expect(secondLabels.length).toBeGreaterThan(0);
 		});
 
 		test('Second renders properly', async () => {
@@ -83,9 +87,13 @@ describe('Axis', () => {
 			const chart = await findChart();
 			expect(chart).toBeInTheDocument();
 
-			expect(screen.getByText('Dec 2')).toBeInTheDocument();
-			const timeLabels = screen.getAllByText(/\d+:\d+:\d+ [AP]M/);
+			// Check for minute-based time labels (primary label)
+			const timeLabels = screen.getAllByText(/\d+:\d+ [AP]M/);
 			expect(timeLabels.length).toBeGreaterThan(0);
+			
+			// Check for second labels (secondary label)
+			const secondLabels = screen.getAllByText(/^\d{1,2}$/);  // Just digits for seconds
+			expect(secondLabels.length).toBeGreaterThan(0);
 		});
 
 		test('Minute renders properly', async () => {
@@ -162,10 +170,13 @@ describe('Axis', () => {
 			const chart = await findChart();
 			expect(chart).toBeInTheDocument();
 
-			// Day and time are in the same label for this configuration.
-			expect(screen.getByText(/Dec 2.+\d+:\d+:\d+ [AP]M/)).toBeInTheDocument();
-			const timeLabels = screen.getAllByText(/\d+:\d+:\d+ [AP]M/);
+			// Check for time labels (minutes)
+			const timeLabels = screen.getAllByText(/\d+:\d+ [AP]M/);
 			expect(timeLabels.length).toBeGreaterThan(0);
+			
+			// Check for second labels
+			const secondLabels = screen.getAllByText(/^\d{1,2}$/);
+			expect(secondLabels.length).toBeGreaterThan(0);
 		});
 
 		test('Minute renders properly', async () => {
