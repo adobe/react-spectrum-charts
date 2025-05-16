@@ -48,7 +48,7 @@ export const getTimeLabelFormats = (
 ): { secondaryLabelFormat: string; primaryLabelFormat: string; tickCount: TickCount } => {
 	switch (granularity) {
 		case 'second':
-			return { secondaryLabelFormat: '%-I:%M:%S %p', primaryLabelFormat: '%b %-d', tickCount: 'second' };
+			return { secondaryLabelFormat: '%S', primaryLabelFormat: '%-I:%M %p', tickCount: 'second' };
 		case 'minute':
 			return { secondaryLabelFormat: '%-I:%M %p', primaryLabelFormat: '%b %-d', tickCount: 'minute' };
 		case 'hour':
