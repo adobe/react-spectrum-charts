@@ -23,7 +23,7 @@
 		"@spectrum-charts/themes": "1.17.3",
 		"@spectrum-charts/utils": "1.17.3",
 		"immer": "^10.1.1",
-		"vega": ">= 5.20.2"
+		"vega": ">= 5.32.0"
 	},
 	"devDependencies": {
 		"ts-loader": "^9.4.2",
