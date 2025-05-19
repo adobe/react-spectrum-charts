@@ -11,11 +11,16 @@
  */
 import { Locale, NumberLocale, TimeLocale } from 'vega';
 
-import { numberLocales, timeLocales } from '../locales';
-import { ChartProps } from '../types';
-import { NumberLocaleCode, TimeLocaleCode } from '../types/locale.types';
+import { LocaleCode, NumberLocaleCode, TimeLocaleCode } from './locale.types';
+import { numberLocales } from './numberLocales';
+import { timeLocales } from './timeLocales';
 
-export const getLocale = (locale: ChartProps['locale'] = 'en-US'): Locale => {
+export const getLocale = (
+	locale:
+		| Locale
+		| LocaleCode
+		| { number?: NumberLocaleCode | NumberLocale; time?: TimeLocaleCode | TimeLocale } = 'en-US'
+): Locale => {
 	if (typeof locale === 'string') {
 		// if the locale is a string, we assume that it is a locale code and get the locale from the locale files
 		return {

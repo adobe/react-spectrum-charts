@@ -11,7 +11,7 @@
  */
 import { TimeLocale } from 'vega';
 
-import { TimeLocaleCode } from '../../types/locale.types';
+import { TimeLocaleCode } from '../locale.types';
 import areg from './ar-EG.json';
 import arsy from './ar-SY.json';
 import caes from './ca-ES.json';

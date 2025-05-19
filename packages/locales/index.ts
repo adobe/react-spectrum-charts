@@ -10,11 +10,4 @@
  * governing permissions and limitations under the License.
  */
 
-export * from './chart.types';
-export * from './legend.types';
-export * from './title.types';
-export * from './util.types';
-
-export * from './axis';
-export * from './dialogs';
-export * from './marks';
+export * from './src';
