@@ -12,10 +12,9 @@
 import { FormatLocaleDefinition, formatLocale } from 'd3-format';
 import { FontWeight } from 'vega';
 
+import { numberLocales } from '@spectrum-charts/locales';
 import { ADOBE_CLEAN_FONT } from '@spectrum-charts/themes';
 import { NumberFormat } from '@spectrum-charts/vega-spec-builder';
-
-import { numberLocales } from './locales';
 
 export interface LabelDatum {
 	index: number;

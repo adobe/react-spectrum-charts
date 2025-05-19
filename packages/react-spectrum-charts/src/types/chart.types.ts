@@ -14,6 +14,7 @@ import { JSXElementConstructor, ReactElement } from 'react';
 import { Config, Data, Locale, NumberLocale, Padding, TimeLocale } from 'vega';
 
 import { Theme } from '@react-types/provider';
+import { LocaleCode, NumberLocaleCode, TimeLocaleCode } from '@spectrum-charts/locales';
 import {
 	ChartOptions,
 	Height,
@@ -26,7 +27,6 @@ import {
 import { AxisElement } from './axis';
 import { ChartPopoverElement, ChartTooltipElement } from './dialogs';
 import { LegendElement } from './legend.types';
-import { LocaleCode, NumberLocaleCode, TimeLocaleCode } from './locale.types';
 import {
 	AreaElement,
 	BarAnnotationElement,

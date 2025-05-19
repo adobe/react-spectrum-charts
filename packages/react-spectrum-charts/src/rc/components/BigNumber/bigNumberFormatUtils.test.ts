@@ -9,7 +9,8 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { getLocale } from '../../../utils/locale';
+import { getLocale } from '@spectrum-charts/locales';
+
 import { formatBigNumber } from './bigNumberFormatUtils';
 
 describe('Big Number format utility functions', () => {

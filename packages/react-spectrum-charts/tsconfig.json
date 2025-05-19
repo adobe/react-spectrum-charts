@@ -11,6 +11,7 @@
 		{ "path": "../constants" },
 		{ "path": "../themes" },
 		{ "path": "../vega-spec-builder" },
+		{ "path": "../locales" },
 		{ "path": "../utils" }
 	]
 }
