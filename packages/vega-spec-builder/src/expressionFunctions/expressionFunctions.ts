@@ -10,17 +10,38 @@
  * governing permissions and limitations under the License.
  */
 import { FormatLocaleDefinition, formatLocale } from 'd3-format';
-import { FontWeight } from 'vega';
+import { FontWeight, Locale, NumberLocale, TimeLocale } from 'vega';
 
-import { numberLocales } from '@spectrum-charts/locales';
+import { LocaleCode, NumberLocaleCode, TimeLocaleCode, getLocale, numberLocales } from '@spectrum-charts/locales';
 import { ADOBE_CLEAN_FONT } from '@spectrum-charts/themes';
-import { NumberFormat } from '@spectrum-charts/vega-spec-builder';
+
+import { NumberFormat } from '../types';
 
 export interface LabelDatum {
 	index: number;
 	label: string;
 	value: string | number;
 }
+
+export const getExpressionFunctions = (
+	locale:
+		| Locale
+		| LocaleCode
+		| { number?: NumberLocaleCode | NumberLocale; time?: TimeLocaleCode | TimeLocale } = 'en-US'
+) => {
+	const { number: numberLocale } = getLocale(locale);
+	const localeCode = typeof locale === 'string' ? locale : locale?.number;
+	return {
+		formatTimeDurationLabels: formatTimeDurationLabels(numberLocale),
+		formatLocaleCurrency: formatLocaleCurrency(numberLocale),
+		formatShortNumber: formatShortNumber(localeCode),
+		consoleLog,
+		formatHorizontalTimeAxisLabels: formatHorizontalTimeAxisLabels(),
+		formatVerticalAxisTimeLabels: formatVerticalAxisTimeLabels(),
+		getLabelWidth,
+		truncateText,
+	};
+};
 
 /**
  * Formats a number using the compact notation.

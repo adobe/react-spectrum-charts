@@ -9,5 +9,10 @@
 	},
 	"include": ["src/**/*", "index.ts"],
 	"exclude": ["*.test.ts"],
-	"references": [{ "path": "../constants" }, { "path": "../themes" }, { "path": "../utils" }]
+	"references": [
+		{ "path": "../constants" },
+		{ "path": "../themes" },
+		{ "path": "../utils" },
+		{ "path": "../locales" }
+	]
 }
