@@ -10,7 +10,7 @@
  * governing permissions and limitations under the License.
  */
 import { produce } from 'immer';
-import { Data, LinearScale, OrdinalScale, PointScale, Scale, Signal, Spec } from 'vega';
+import { Data, LinearScale, OrdinalScale, PointScale, Scale, Signal } from 'vega';
 
 import {
 	BACKGROUND_COLOR,
@@ -76,10 +76,6 @@ import {
 	SymbolShapes,
 	SymbolSize,
 } from './types';
-
-export interface ChartSpecBuilder {
-	buildSpec: (options: ChartOptions) => Spec;
-}
 
 export function buildSpec({
 	axes = [],
@@ -194,7 +190,7 @@ export function buildSpec({
 	// clear out all scales that don't have any fields on the domain
 	spec = removeUnusedScales(spec);
 
-	return spec;
+	return cloneSpec(spec);
 }
 
 export const removeUnusedScales = produce<ScSpec>((spec) => {
@@ -421,4 +417,11 @@ export const isNumberArray = (opacities: Opacities): opacities is number[] => {
 
 export const isSymbolShapeArray = (symbolShapes: SymbolShapes): symbolShapes is ChartSymbolShape[] => {
 	return !symbolShapes.some((symbolShape) => Array.isArray(symbolShape));
+};
+
+const cloneSpec = <T>(obj: T): T => {
+	if (typeof structuredClone === 'function') {
+		return structuredClone(obj);
+	}
+	return JSON.parse(JSON.stringify(obj));
 };

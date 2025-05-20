@@ -73,7 +73,7 @@ export default function useSpec({
 		});
 
 		// stringify-parse so that all immer stuff gets cleared out
-		return JSON.parse(JSON.stringify(buildSpec(chartOptions)));
+		return buildSpec(chartOptions);
 	}, [
 		UNSAFE_vegaSpec,
 		backgroundColor,
