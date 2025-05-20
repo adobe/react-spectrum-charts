@@ -190,7 +190,7 @@ export function buildSpec({
 	// clear out all scales that don't have any fields on the domain
 	spec = removeUnusedScales(spec);
 
-	return safeSpec(spec);
+	return safeClone(spec);
 }
 
 export const removeUnusedScales = produce<ScSpec>((spec) => {
@@ -419,7 +419,7 @@ export const isSymbolShapeArray = (symbolShapes: SymbolShapes): symbolShapes is 
 	return !symbolShapes.some((symbolShape) => Array.isArray(symbolShape));
 };
 
-const safeSpec = <T>(obj: T): T => {
+const safeClone = <T>(obj: T): T => {
 	if (typeof structuredClone === 'function') {
 		return structuredClone(obj);
 	}
