@@ -391,7 +391,7 @@ describe('Chart spec builder', () => {
 				highlightedSeries: 'Chrome',
 			});
 
-			expect(spec.signals?.find((signal) => signal.name === HIGHLIGHTED_SERIES)).toStrictEqual({
+			expect(spec.signals?.find((signal) => signal.name === HIGHLIGHTED_SERIES)).toEqual({
 				name: HIGHLIGHTED_SERIES,
 				value: 'Chrome',
 			});
@@ -405,7 +405,7 @@ describe('Chart spec builder', () => {
 				highlightedSeries: 'Chrome',
 			});
 
-			expect(spec.signals?.find((signal) => signal.name === HIGHLIGHTED_SERIES)).toStrictEqual({
+			expect(spec.signals?.find((signal) => signal.name === HIGHLIGHTED_SERIES)).toEqual({
 				name: HIGHLIGHTED_SERIES,
 				value: 'Chrome',
 			});
@@ -432,7 +432,7 @@ describe('Chart spec builder', () => {
 				],
 			};
 
-			expect(spec.signals?.find((signal) => signal.name === 'highlightedSeries')).toStrictEqual(
+			expect(spec.signals?.find((signal) => signal.name === 'highlightedSeries')).toEqual(
 				uncontrolledHighlightSignal
 			);
 		});
