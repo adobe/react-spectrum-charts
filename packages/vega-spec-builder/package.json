@@ -20,6 +20,7 @@
 	},
 	"dependencies": {
 		"@spectrum-charts/constants": "1.17.3",
+		"@spectrum-charts/locales": "1.17.3",
 		"@spectrum-charts/themes": "1.17.3",
 		"@spectrum-charts/utils": "1.17.3",
 		"immer": "^10.1.1",
