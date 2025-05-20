@@ -1,6 +1,6 @@
 {
 	"name": "@spectrum-charts/vega-spec-builder",
-	"version": "1.17.3",
+	"version": "1.18.0",
 	"description": "Vega spec builder for spectrum charts",
 	"browser": "dist/index.js",
 	"main": "dist/index.js",
@@ -19,10 +19,10 @@
 		"publish-package": "npm publish --access public"
 	},
 	"dependencies": {
-		"@spectrum-charts/constants": "1.17.3",
-		"@spectrum-charts/locales": "1.17.3",
-		"@spectrum-charts/themes": "1.17.3",
-		"@spectrum-charts/utils": "1.17.3",
+		"@spectrum-charts/constants": "1.18.0",
+		"@spectrum-charts/locales": "1.18.0",
+		"@spectrum-charts/themes": "1.18.0",
+		"@spectrum-charts/utils": "1.18.0",
 		"immer": "^10.1.1",
 		"vega": ">= 5.32.0"
 	},
