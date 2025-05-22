@@ -11,7 +11,7 @@
  */
 import { SubLabel } from '../types';
 import { defaultAxisOptions, defaultXBaselineMark, defaultYBaselineMark } from './axisTestUtils';
-import { getBaselineRule, getDefaultAxis, getSubLabelAxis, getTickCount } from './axisUtils';
+import { getBaselineRule, getDefaultAxis, getIsMetricAxis, getSubLabelAxis, getTickCount } from './axisUtils';
 
 describe('getBaselineRule', () => {
 	describe('initial state', () => {
@@ -207,5 +207,43 @@ describe('getTickCount()', () => {
 	test('when neither maxTicks nor grid is provided, it should return undefined', () => {
 		expect(getTickCount('left')).toBeUndefined();
 		expect(getTickCount('bottom')).toBeUndefined();
+	});
+});
+
+describe('getIsMetricAxis()', () => {
+	describe('with vertical chart orientation', () => {
+		test('should return true for left axis', () => {
+			expect(getIsMetricAxis('left', 'vertical')).toBe(true);
+		});
+
+		test('should return true for right axis', () => {
+			expect(getIsMetricAxis('right', 'vertical')).toBe(true);
+		});
+
+		test('should return false for top axis', () => {
+			expect(getIsMetricAxis('top', 'vertical')).toBe(false);
+		});
+
+		test('should return false for bottom axis', () => {
+			expect(getIsMetricAxis('bottom', 'vertical')).toBe(false);
+		});
+	});
+
+	describe('with horizontal chart orientation', () => {
+		test('should return false for left axis', () => {
+			expect(getIsMetricAxis('left', 'horizontal')).toBe(false);
+		});
+
+		test('should return false for right axis', () => {
+			expect(getIsMetricAxis('right', 'horizontal')).toBe(false);
+		});
+
+		test('should return true for top axis', () => {
+			expect(getIsMetricAxis('top', 'horizontal')).toBe(true);
+		});
+
+		test('should return true for bottom axis', () => {
+			expect(getIsMetricAxis('bottom', 'horizontal')).toBe(true);
+		});
 	});
 });
