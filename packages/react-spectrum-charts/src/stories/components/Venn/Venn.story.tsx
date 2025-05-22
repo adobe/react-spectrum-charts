@@ -81,7 +81,7 @@ const BasicVennStory: StoryFn<VennProps> = (args) => {
 const VennStoryWithLegend: StoryFn<VennProps> = (args) => {
   const chartProps = useChartProps({ ...defaultChartProps });
   return (
-    <Chart {...chartProps} config={{ autosize: { type: 'pad' } }} debug idKey="rscSeriesId">
+    <Chart {...chartProps} config={{ autosize: { type: 'pad' } }} debug backgroundColor='#222425'>
       <Venn {...args} metric="radius" color="regions" />
       <Legend highlight isToggleable />
     </Chart>

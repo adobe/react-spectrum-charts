@@ -9,15 +9,12 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { NumericValueRef, PathMark, SymbolMark, TextMark } from 'vega';
+import { PathMark, SymbolMark, TextMark } from 'vega';
 import { vennSolution } from 'venn-helper';
 
 import {
-	DEFAULT_OPACITY_RULE,
 	DEFAULT_VENN_COLOR,
 	DEFAULT_VENN_METRIC,
-	HIGHLIGHT_CONTRAST_RATIO,
-	SELECTED_GROUP,
 	SELECTED_ITEM,
 } from '@spectrum-charts/constants';
 import { getColorValue } from '@spectrum-charts/themes';
@@ -27,8 +24,6 @@ import {
 	getCursor,
 	getMarkOpacity,
 	getTooltip,
-	hasPopover,
-	isInteractive,
 } from '../marks/markUtils';
 import { VennDegreeOptions, VennSpecOptions } from '../types';
 
@@ -92,27 +87,6 @@ export const mapDataForVennHelper = (options: VennSpecOptions): VennHelperProps[
 	return parsed;
 };
 
-export const getCircleOverlays = (options: VennSpecOptions): SymbolMark => {
-	const { name, colorScheme } = options;
-
-	return {
-		type: 'symbol',
-		name: `${name}_selected_circle`,
-		from: { data: 'circles' },
-		interactive: false,
-		encode: {
-			enter: {
-				x: { field: 'x' },
-				y: { field: 'y' },
-				size: { field: 'size' },
-				shape: { value: 'circle' },
-				fill: getColorProductionRule('set_id', colorScheme),
-				fillOpacity: { value: 0.2 },
-			},
-		},
-	};
-};
-
 export const getCircleMark = (options: VennSpecOptions): SymbolMark => {
 	const { name, colorScheme, chartTooltips, chartPopovers } = options;
 
@@ -132,7 +106,7 @@ export const getCircleMark = (options: VennSpecOptions): SymbolMark => {
 				strokeWidth: { value: 2 },
 			},
 			update: {
-				opacity: getMarkOpacity(options, 1),
+				opacity: getMarkOpacity(options),
 				cursor: getCursor(chartPopovers),
 			},
 		},
@@ -200,7 +174,7 @@ export const getInterserctionMark = (options: VennSpecOptions): PathMark => {
 			},
 
 			update: {
-				opacity: getInterserctionMarkOpacity(options),
+				opacity: getMarkOpacity(options),
 				cursor: getCursor(chartPopovers),
 			},
 		},
@@ -237,58 +211,3 @@ export const degreesToRadians = new Map<VennDegreeOptions, number>([
 	['180deg', -Math.PI / 2],
 	['270deg', -Math.PI],
 ]);
-
-const getInterserctionMarkOpacity = (options: VennSpecOptions) => {
-	const rules = [DEFAULT_OPACITY_RULE];
-	const { idKey, name: markName } = options;
-
-	if (isInteractive(options)) {
-		addIntersectionHighlightRules(rules, options);
-	}
-
-	if (hasPopover(options)) {
-		[
-			{
-				test: `!isValid(${SELECTED_GROUP}) && ${SELECTED_ITEM} && ${SELECTED_ITEM} !== datum.${idKey}`,
-				value: 1 / HIGHLIGHT_CONTRAST_RATIO,
-			},
-			{
-				test: `isValid(${SELECTED_ITEM}) && indexof(datum.${idKey}, ${SELECTED_ITEM}) !== -1`,
-				...DEFAULT_OPACITY_RULE,
-			},
-			{
-				test: `isValid(${SELECTED_GROUP}) && ${SELECTED_GROUP} === datum.${markName}_selectedGroupId`,
-				value: 1,
-			},
-			{
-				test: `isValid(${SELECTED_GROUP}) && ${SELECTED_GROUP} !== datum.${markName}_selectedGroupId`,
-				value: 1 / HIGHLIGHT_CONTRAST_RATIO,
-			},
-			...rules,
-		];
-	}
-
-	return rules;
-};
-
-const addIntersectionHighlightRules = (rules: ({ test?: string } & NumericValueRef)[], options: VennSpecOptions) => {
-	const { idKey } = options;
-	rules.unshift(
-		{
-			test: `isValid(${SELECTED_ITEM}) && indexof(datum.${idKey}, ${SELECTED_ITEM}) === -1`,
-			value: 1 / HIGHLIGHT_CONTRAST_RATIO,
-		},
-		{
-			test: `isArray(highlightedItem) && length(highlightedItem) > 0 && indexof(highlightedItem, datum.${idKey}) === -1`,
-			value: 1 / HIGHLIGHT_CONTRAST_RATIO,
-		},
-		{
-			test: `!isArray(highlightedItem) && isValid(highlightedItem) && indexof(datum.${idKey}, highlightedItem) === -1`,
-			value: 1 / HIGHLIGHT_CONTRAST_RATIO,
-		},
-		{
-			test: `isValid(highlightedSeries) && indexof(datum.${idKey}, highlightedSeries) === -1`,
-			value: 1 / HIGHLIGHT_CONTRAST_RATIO,
-		}
-	);
-};

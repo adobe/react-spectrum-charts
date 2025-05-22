@@ -93,7 +93,6 @@ export const addVenn = produce<
 			metric,
 			name: toCamelCase(name ?? `venn${index}`),
 			...props,
-			idKey: 'rscSeriesId',
 		};
 		spec.data = addData(spec.data ?? [], vennProps);
 		spec.signals = addSignals(spec.signals ?? [], vennProps);
@@ -118,10 +117,7 @@ export const addData = produce<Data[], [VennSpecOptions]>((data, props) => {
 	data.push({
 		name: 'intersections',
 		values: intersections,
-		transform: [
-			...getTableJoinTransforms(),
-			...getHiddenIntersectionTransforms(props),
-		],
+		transform: [...getTableJoinTransforms(), ...getHiddenIntersectionTransforms(props)],
 	});
 
 	const tableIndex = data.findIndex((d) => d.name === TABLE);
@@ -138,6 +134,7 @@ export const addMarks = produce<Mark[], [VennSpecOptions]>((marks, props) => {
 });
 
 export const addScales = produce<Scale[]>((scales) => {
+	addFieldToFacetScaleDomain(scales, COLOR_SCALE, 'set_legend');
 	addFieldToFacetScaleDomain(scales, COLOR_SCALE, 'set_id');
 });
 
@@ -190,15 +187,9 @@ export const getHiddenIntersectionTransforms = (
 };
 
 export const addSignals = produce<Signal[], [VennSpecOptions]>((signals, props) => {
-	const { chartTooltips, name } = props;
+	const { chartTooltips, name, idKey } = props;
 
 	if (!isInteractive(props)) return;
-	addHighlightedItemSignalEvents(signals, name, 'rscSeriesId', 1, chartTooltips[0]?.excludeDataKeys);
-	addHighlightedItemSignalEvents(
-		signals,
-		`${name}_intersections`,
-		'rscSeriesId',
-		1,
-		chartTooltips[0]?.excludeDataKeys
-	);
+	addHighlightedItemSignalEvents(signals, name, idKey, 1, chartTooltips[0]?.excludeDataKeys);
+	addHighlightedItemSignalEvents(signals, `${name}_intersections`, idKey, 1, chartTooltips[0]?.excludeDataKeys);
 });
