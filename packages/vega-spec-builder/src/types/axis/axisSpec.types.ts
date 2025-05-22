@@ -80,6 +80,11 @@ export interface AxisOptions {
 	labelOrientation?: Orientation;
 	/** Explicityly sets the axis labels (controlled). Providing a Label object allows for more control over the label display. */
 	labels?: (Label | string | number)[];
+	/** Sets the upper limit on the number of axis ticks.
+	 *  Base tick, typically 0, is not included in the count. e.g. 0, 1, 2, 3 is considered 3 ticks.
+	 *  Note: The final tick count may vary based on Vega's automatic calculations to create visually pleasing values. 
+	 */
+	tickCountLimit?: number;
 	/** d3 number format specifier. Only valid if labelFormat is linear or undefined.
 	 *
 	 * see {@link https://d3js.org/d3-format#locale_format}

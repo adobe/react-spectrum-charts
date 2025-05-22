@@ -44,12 +44,12 @@ import { encodeAxisTitle, getTrellisAxisOptions, isTrellisedChart } from './axis
 import {
 	getBaselineRule,
 	getDefaultAxis,
+	getIsMetricAxis,
 	getOpposingScaleType,
 	getScale,
 	getSubLabelAxis,
 	getTimeAxes,
 	hasSubLabels,
-	isVerticalAxis,
 } from './axisUtils';
 
 export const addAxis = produce<ScSpec, [AxisOptions & { colorScheme?: ColorScheme; index?: number }]>(
@@ -285,19 +285,6 @@ export function applyPrimaryMetricAxisEncodings(axis: Axis, colorScheme: ColorSc
 	} else {
 		axis.encode = deepmerge(axis.encode, encodings);
 	}
-}
-
-/**
- * Determines if an axis is a metric axis based on its position and chart orientation
- * @param position The position of the axis
- * @param chartOrientation The orientation of the chart
- * @returns Whether the axis is a metric axis
- */
-export function getIsMetricAxis(position: Position, chartOrientation: Orientation): boolean {
-	if (chartOrientation === 'vertical') {
-		return isVerticalAxis(position);
-	}
-	return !isVerticalAxis(position);
 }
 
 /**

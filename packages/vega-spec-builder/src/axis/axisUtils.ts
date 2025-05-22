@@ -11,7 +11,7 @@
  */
 import { Axis, Mark, Scale, SignalRef } from 'vega';
 
-import { AxisSpecOptions, Granularity, Position } from '../types';
+import { AxisSpecOptions, Granularity, Orientation, Position } from '../types';
 import {
 	getAxisLabelsEncoding,
 	getLabelAnchorValues,
@@ -34,6 +34,7 @@ export const getDefaultAxis = (axisOptions: AxisSpecOptions, scaleName: string):
 		labelAlign,
 		labelFontWeight,
 		labelOrientation,
+		tickCountLimit,
 		position,
 		scaleType,
 		ticks,
@@ -49,7 +50,7 @@ export const getDefaultAxis = (axisOptions: AxisSpecOptions, scaleName: string):
 		orient: position,
 		grid,
 		ticks,
-		tickCount: getTickCount(position, grid),
+		tickCount: getTickCount(position, tickCountLimit, grid),
 		tickMinStep: scaleType !== 'linear' ? undefined : tickMinStep, //only supported for linear scales
 		title,
 		labelAngle: getLabelAngle(labelOrientation),
@@ -330,17 +331,35 @@ const getDefaultOpposingScaleNameFromPosition = (position: Position) => {
 };
 
 /**
- * clamps the tick count to a min of 2 and max of 5 for linear scales
- * @param position
- * @param grid
- * @returns tickCount production rule
+ * Determines tick count based on axis type and available space.
+ * Uses Vega's tickCount parameter which is treated as a suggestion rather than a strict limit.
+ * The final number of ticks may vary as Vega optimizes for visually pleasing values and intervals.
+ * 
+ * @param position The position of the axis
+ * @param tickCountLimit The upper limit for the number of ticks
+ * @param grid Whether grid lines are enabled
+ * @returns tickCount production rule for Vega
  */
-export const getTickCount = (position: Position, grid: boolean): SignalRef | undefined => {
-	if (!grid) return;
+export const getTickCount = (
+	position: Position, 
+	tickCountLimit?: number,
+	grid?: boolean
+): SignalRef | undefined => {
 	const range = ['top', 'bottom'].includes(position) ? 'width' : 'height';
-	// divide the range by 100 to get the ideal number of ticks (grid lines)
-	// clamp axis tick count to a min of 2 and max of 10
-	return { signal: `clamp(ceil(${range}/100), 2, 10)` };
+	
+	// 0 is a valid tickCountLimit value.
+	if (tickCountLimit !== undefined) {
+		// divide the range by 100 to get the ideal number of ticks (grid lines)
+		return {
+			signal: `clamp(ceil(${range}/100), 2, ${tickCountLimit})`
+		};
+	} else if (grid) {
+		// divide the range by 100 to get the ideal number of ticks (grid lines)
+		return {
+			signal: `clamp(ceil(${range}/100), 2, 10)`
+		};
+	}
+	return undefined;
 };
 
 /**
@@ -382,3 +401,16 @@ export const hasSubLabels = ({ subLabels, labelOrientation }: AxisSpecOptions) =
 	// subLabels are only supported for horizontal axis labels
 	return Boolean(subLabels.length && labelOrientation === 'horizontal');
 };
+
+/**
+ * Determines if an axis is a metric axis based on its position and chart orientation
+ * @param position The position of the axis
+ * @param chartOrientation The orientation of the chart
+ * @returns Whether the axis is a metric axis
+ */
+export function getIsMetricAxis(position: Position, chartOrientation: Orientation): boolean {
+	if (chartOrientation === 'vertical') {
+		return isVerticalAxis(position);
+	}
+	return !isVerticalAxis(position);
+}
