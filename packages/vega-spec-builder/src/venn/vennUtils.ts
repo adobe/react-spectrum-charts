@@ -208,6 +208,6 @@ export const getStrokeMark = (options: VennSpecOptions): SymbolMark => {
 export const degreesToRadians = new Map<VennDegreeOptions, number>([
 	['0deg', Math.PI / 2],
 	['90deg', 0],
-	['180deg', -Math.PI / 2],
+  ['180deg', -3*Math.PI /  2],
 	['270deg', -Math.PI],
 ]);
