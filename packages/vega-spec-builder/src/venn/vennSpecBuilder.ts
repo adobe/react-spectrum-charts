@@ -117,7 +117,7 @@ export const addData = produce<Data[], [VennSpecOptions]>((data, props) => {
 	data.push({
 		name: 'intersections',
 		values: intersections,
-		transform: [...getTableJoinTransforms(), ...getHiddenIntersectionTransforms(props)],
+		transform: [...getTableJoinTransforms(), ...getHiddenIntersectionTransforms()],
 	});
 
 	const tableIndex = data.findIndex((d) => d.name === TABLE);
@@ -163,27 +163,29 @@ export const getTableJoinTransforms = (): (LookupTransform | FormulaTransform)[]
 	{ type: 'formula', expr: 'datum.table_data.rscMarkId', as: 'rscMarkId' },
 ];
 
-export const getHiddenIntersectionTransforms = (
-	props: VennSpecOptions
-): (FormulaTransform | FlattenTransform | JoinAggregateTransform | WindowTransform | FilterTransform)[] => {
-	if (isInteractive(props))
-		return [
-			{ type: 'formula', as: 'hidden', expr: 'hiddenSeries' },
-			{ type: 'flatten', fields: ['sets'], as: ['intersect_set'] },
-			// check if each set in the relation is in hidden series
-			{
-				type: 'formula',
-				as: 'hide_intersection',
-				expr: 'indexof(datum.hidden, datum.intersect_set) === -1 ? 0 : 1',
-			},
-			// sum up the values
-			{ type: 'joinaggregate', groupby: ['set_id'], fields: ['hide_intersection'], ops: ['sum'] },
-			{ type: 'filter', expr: 'datum.sum_hide_intersection === 0' },
-			// clean up duplicates
-			{ type: 'window', groupby: ['set_id'], ops: ['row_number'], as: ['row_num'] },
-			{ type: 'filter', expr: 'datum.row_num === 1' },
-		];
-	return [];
+export const getHiddenIntersectionTransforms = (): (
+	| FormulaTransform
+	| FlattenTransform
+	| JoinAggregateTransform
+	| WindowTransform
+	| FilterTransform
+)[] => {
+	return [
+		{ type: 'formula', as: 'hidden', expr: 'hiddenSeries' },
+		{ type: 'flatten', fields: ['sets'], as: ['intersect_set'] },
+		// check if each set in the relation is in hidden series
+		{
+			type: 'formula',
+			as: 'hide_intersection',
+			expr: 'indexof(datum.hidden, datum.intersect_set) === -1 ? 0 : 1',
+		},
+		// sum up the values
+		{ type: 'joinaggregate', groupby: ['set_id'], fields: ['hide_intersection'], ops: ['sum'] },
+		{ type: 'filter', expr: 'datum.sum_hide_intersection === 0' },
+		// clean up duplicates
+		{ type: 'window', groupby: ['set_id'], ops: ['row_number'], as: ['row_num'] },
+		{ type: 'filter', expr: 'datum.row_num === 1' },
+	];
 };
 
 export const addSignals = produce<Signal[], [VennSpecOptions]>((signals, props) => {
