@@ -77,8 +77,8 @@ describe('Axis', () => {
 			const timeLabels = screen.getAllByText(/\d+:\d+ [AP]M/);
 			expect(timeLabels.length).toBeGreaterThan(0);
 			
-			// Check for second labels (secondary label)
-			const secondLabels = screen.getAllByText(/^\d{1,2}$/);  // Just digits for seconds
+			// Check for second labels (secondary label) with colon prefix
+			const secondLabels = screen.getAllByText(/^:\d{1,2}$/);  // Colon followed by digits for seconds
 			expect(secondLabels.length).toBeGreaterThan(0);
 		});
 
@@ -91,8 +91,8 @@ describe('Axis', () => {
 			const timeLabels = screen.getAllByText(/\d+:\d+ [AP]M/);
 			expect(timeLabels.length).toBeGreaterThan(0);
 			
-			// Check for second labels (secondary label)
-			const secondLabels = screen.getAllByText(/^\d{1,2}$/);  // Just digits for seconds
+			// Check for second labels (secondary label) with colon prefix
+			const secondLabels = screen.getAllByText(/^:\d{1,2}$/);  // Colon followed by digits for seconds
 			expect(secondLabels.length).toBeGreaterThan(0);
 		});
 
@@ -174,8 +174,8 @@ describe('Axis', () => {
 			const timeLabels = screen.getAllByText(/\d+:\d+ [AP]M/);
 			expect(timeLabels.length).toBeGreaterThan(0);
 			
-			// Check for second labels
-			const secondLabels = screen.getAllByText(/^\d{1,2}$/);
+			// Check for second labels with colon prefix
+			const secondLabels = screen.getAllByText(/^:\d{1,2}$/);
 			expect(secondLabels.length).toBeGreaterThan(0);
 		});
 
