@@ -55,7 +55,6 @@ jobs:
               if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
               run: yarn build:docs
 
-
             - name: Create and Upload Storybook to PR directory
               # Don't run Storybook upload on PRs from forks
               if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
@@ -95,7 +94,11 @@ jobs:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
             - name: Delete Storybook URL and Docs URL comment if it exists
+              # Don't delete comment on PRs from forks
+              if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
               run: |
+                  PR_NUMBER="${{ github.event.number }}"
+
                   # Find the comment with the Storybook URL and Docs URL
                   COMMENT_ID=$(curl -sSL \
                     -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
