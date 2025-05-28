@@ -54,8 +54,12 @@ jobs:
               # Don't run Storybook build on PRs from forks
               if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
               run: |
+                  echo "Current content of docusaurus.config.ts:"
+                  cat packages/docs/docusaurus.config.ts
                   # modify the docusaurus.config.ts, changing the baseUrl to /react-spectrum-charts/PR-${{ github.event.number }}-docs/
-                  sed -i 's|baseUrl: "/react-spectrum-charts/docs/"|baseUrl: "/react-spectrum-charts/PR-${{ github.event.number }}-docs/"|g' packages/docs/docusaurus.config.ts
+                  sed -i 's|baseUrl: '"'"'/react-spectrum-charts/docs/'"'"'|baseUrl: '"'"'/react-spectrum-charts/PR-${{ github.event.number }}-docs/'"'"'|g' packages/docs/docusaurus.config.ts
+                  echo "Content after sed command:"
+                  cat packages/docs/docusaurus.config.ts
                   # build the docs
                   yarn build:docs
 
