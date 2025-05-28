@@ -22,7 +22,7 @@ const config: Config = {
   // Set the production url of your site here
   url: 'https://opensource.adobe.com',
   // Set the /<baseUrl>/ pathname under which your site is served
-  baseUrl: '/react-spectrum-charts/docs/',
+  baseUrl: '/react-spectrum-charts/PR-596-docs/',
 
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
