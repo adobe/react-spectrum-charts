@@ -53,7 +53,11 @@ jobs:
             - name: Build Docs
               # Don't run Storybook build on PRs from forks
               if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
-              run: yarn build:docs
+              run: |
+                  # modify the docusaurus.config.ts, changing the baseUrl to /react-spectrum-charts/PR-${{ github.event.number }}-docs/
+                  sed -i 's|baseUrl: "/react-spectrum-charts/docs/"|baseUrl: "/react-spectrum-charts/PR-${{ github.event.number }}-docs/"|g' packages/docs/docusaurus.config.ts
+                  # build the docs
+                  yarn build:docs
 
             - name: Create and Upload Storybook to PR directory
               # Don't run Storybook upload on PRs from forks
@@ -98,7 +102,7 @@ jobs:
               if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
               run: |
                   PR_NUMBER="${{ github.event.number }}"
-                  
+
                   # Find comments with the Storybook URL and Docs URL
                   COMMENT_IDS=$(curl -sSL \
                     -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
