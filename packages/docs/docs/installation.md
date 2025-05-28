@@ -16,23 +16,16 @@ React Spectrum Charts requires:
 
 ```bash
 # Using npm
-npm install @adobe/react-spectrum-charts
+npm install @adobe/react-spectrum-charts @adobe/react-spectrum vega vega-lite
 
 # Using yarn
-yarn add @adobe/react-spectrum-charts
+yarn add @adobe/react-spectrum-charts @adobe/react-spectrum vega vega-lite
+
+# Using pnpm
+pnpm add @adobe/react-spectrum-charts @adobe/react-spectrum vega vega-lite
 ```
 
-2. Install peer dependencies if you haven't already:
-
-```bash
-# Using npm
-npm install @adobe/react-spectrum
-
-# Using yarn
-yarn add @adobe/react-spectrum
-```
-
-3. Import and use the components in your React application:
+2. Import and use the components in your React application:
 
 ```jsx
 import { Chart } from '@adobe/react-spectrum-charts';
@@ -51,6 +44,7 @@ React Spectrum Charts works with most build tools including:
 - Vite
 - Webpack
 - Rollup
+- Parcel.js
 
 No additional configuration is typically needed for these build systems.
 

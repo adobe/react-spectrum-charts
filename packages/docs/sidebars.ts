@@ -27,7 +27,7 @@ const sidebars: SidebarsConfig = {
       label: 'Guides',
       items: [
         'guides/basic-charts',
-        'guides/customization',
+        'guides/troubleshooting',
       ],
     },
     {
@@ -43,6 +43,7 @@ const sidebars: SidebarsConfig = {
             'api/marks/Area',
             'api/marks/Bar',
             'api/marks/BigNumber',
+            'api/marks/Donut',
             'api/marks/Line',
             'api/marks/Scatter',
           ],

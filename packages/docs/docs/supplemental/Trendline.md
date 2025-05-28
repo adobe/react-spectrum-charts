@@ -50,7 +50,7 @@ Example
 ### Average line on a bar chart
 
 ```
-<Chart data=\{data} >
+<Chart data={data} >
     <Bar>
         <Trendline method="average" color="gray-500"  />
     </Bar>
@@ -62,7 +62,7 @@ Example
 For this example, the granularity of the data would be in days.
 
 ```
-<Chart data=\{data} >
+<Chart data={data} >
     <Line>
         <Trendline method="movingAverage-7" lineType="dashed" />
     </Line>
@@ -158,7 +158,8 @@ For this example, the granularity of the data would be in days.
 
 ## TrendlineAnnotation
 
-[[/images/trendlineAnnotation.png|Trendline annotation]]
+![Trendline annotation](/img/trendline_annotation_light.png#gh-light-mode-only)
+![Trendline annotation](/img/trendline_annotation_dark.png#gh-dark-mode-only)
 
 The `TrendlineAnnotation` component will render a text annotation on the trendline, calling out the trendline value at the point. `TrendlineAnnotation` can be defined as a child of a `Trendline`. If an annotation cannot be rendered without overlapping over graphical marks or text, it will not be rendered. Because of this, `TrendlineAnnotation`s should be thought of as "nice to haves".
 
@@ -180,11 +181,11 @@ Annotations on a trendline use logic to identify if the annotation will overlap 
 #### Example
 
 ```
-<Chart \{...chartProps}>
+<Chart {...chartProps}>
     <Axis position="bottom" grid ticks baseline title="Speed (normal)" />
     <Axis position="left" grid ticks baseline title="Handling (normal)" />
     <Scatter color="weightClass" dimension="speedNormal" metric="handlingNormal">
-        <Trendline method="median" dimensionExtent=\{['domain', 'domain']} lineWidth="S">
+        <Trendline method="median" dimensionExtent={['domain', 'domain']} lineWidth="S">
             <TrendlineAnnotation dimensionValue="end" prefix="Speed:" />
         </Trendline>
     </Scatter>
@@ -194,7 +195,8 @@ Annotations on a trendline use logic to identify if the annotation will overlap 
 
 ```
 
-[[/images/trendlineAnnotationTextCollisions.png|Trendline annotation text collision]]
+![Trendline annotation text collision](/img/trendline_annotationTextCollisions_light.png#gh-light-mode-only)
+![Trendline annotation text collision](/img/trendline_annotationTextCollisions_dark.png#gh-dark-mode-only)
 
 In the chart above, the annoations are being displayed at the end of the trendline. The first annotation attempted to place the text at top, bottom, right, left, and top-right (all relative to the end point) but all of these failed since there wasn't enough room. Finally it attempted to place the text at the top-left (relative to the end point) and was successful. The same goes for the second annotation. The third annotation was not able to find any position that it could place the text without a collision so the annotation was not rendered.
 

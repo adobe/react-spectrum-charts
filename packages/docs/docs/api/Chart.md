@@ -6,12 +6,12 @@ Charts use Vega to draw the chart. Vega charts can be rendered as either `svg` o
 
 ```
 <Chart
-    data=\{data}
+    data={data}
     renderer="canvas"
-    description=\{chartDescription}
-    height=\{300}
-    width=\{500}
-    padding=\{32}
+    description={chartDescription}
+    height={300}
+    width={500}
+    padding={32}
     theme="light"
 >
     <Line />
@@ -33,17 +33,17 @@ If attempts to copy to clipboard result in the promise rejecting and receiving t
 ```
 const ref = useRef<ChartHandle>(null);
 
-const copy = () => \{
+const copy = () => {
     ref.current?.copy().then(console.log, console.warn)
 }
 
 return (
     <>
-        <Chart data=\{data} ref=\{ref}>
+        <Chart data={data} ref={ref}>
             <Line />
         </Chart>
 
-        <ActionButton onPress=\{copy}>Copy to clipboard</ActionButton>
+        <ActionButton onPress={copy}>Copy to clipboard</ActionButton>
     </>
 )
 ```
@@ -57,17 +57,17 @@ The `download()` function will download a PNG of the current visualization to th
 ```
 const ref = useRef<ChartHandle>(null);
 
-const download = () => \{
+const download = () => {
     ref.current?.download().then(console.log, console.warn)
 }
 
 return (
     <>
-        <Chart data=\{data} ref=\{ref}>
+        <Chart data={data} ref={ref}>
             <Line />
         </Chart>
 
-        <ActionButton onPress=\{download}>Download</ActionButton>
+        <ActionButton onPress={download}>Download</ActionButton>
     </>
 )
 ```
@@ -81,17 +81,17 @@ The `getBase64Png()` method will return the PNG Base 64 string for the current v
 ```
 const ref = useRef<ChartHandle>(null);
 
-const getBase64Png = () => \{
+const getBase64Png = () => {
     ref.current?.getBase64Png().then(console.log, console.warn)
 }
 
 return (
     <>
-        <Chart data=\{data} ref=\{ref}>
+        <Chart data={data} ref={ref}>
             <Line />
         </Chart>
 
-        <ActionButton onPress=\{getBase64Png}>Log Base64 PNG</ActionButton>
+        <ActionButton onPress={getBase64Png}>Log Base64 PNG</ActionButton>
     </>
 )
 ```
@@ -105,17 +105,17 @@ The `getSvg()` method will return the SVG string for the current visualization a
 ```
 const ref = useRef<ChartHandle>(null);
 
-const getSvg = () => \{
+const getSvg = () => {
     ref.current?.getSvg().then(console.log, console.warn)
 }
 
 return (
     <>
-        <Chart data=\{data} ref=\{ref}>
+        <Chart data={data} ref={ref}>
             <Line />
         </Chart>
 
-        <ActionButton onPress=\{getSvg}>Log SVG</ActionButton>
+        <ActionButton onPress={getSvg}>Log SVG</ActionButton>
     </>
 )
 ```
@@ -136,7 +136,7 @@ These scales can be used on the mark components to divide the data into series f
 Example:
 
 ```
-<Chart data=\{data}>
+<Chart data={data}>
 	<Axis position='bottom' labelFormat='time' granularity='month' baseline />
 	<Axis position='left' grid title="Visitors" />
 	<Line metric="visitors" color="browser" />
@@ -153,7 +153,7 @@ Example:
 This example sets the lineTypes scale to be `['dotted', 'solid']`. This means the first division will use be a `dotted` line and the second division will be a `solid` line. The line is divided into series using color and lineType. Each unique browser will be a different color and each unique version will be a different line type.
 
 ```
-<Chart data=\{data} lineTypes=\{['dotted', 'solid']}>
+<Chart data={data} lineTypes={['dotted', 'solid']}>
 	<Axis position='bottom' labelFormat='time' granularity='day' baseline />
 	<Axis position='left' grid title="Events" />
 	<Line metric="events" color="browser" lineType="version" />

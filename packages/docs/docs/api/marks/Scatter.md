@@ -16,7 +16,7 @@ The `Scatter` component supports many different attributes for mapping data prop
 All the following examples will use the same base chart code:
 
 ```
-<Chart data=\{data}>
+<Chart data={data}>
     <Axis
         baseline
         grid
@@ -48,31 +48,34 @@ All the following examples will use the same base chart code:
 
 ```
 ...
-    <Scatter \{...scatterProps} color="weightClass" />
+    <Scatter {...scatterProps} color="weightClass" />
 ...
 ```
 
-[[/images/scatterColor.png|Scatter plot with different colors based on weight class]]
+![Scatter plot with different colors based on weight class](/img/scatter_color_light.png#gh-light-mode-only)
+![Scatter plot with different colors based on weight class](/img/scatter_color_dark.png#gh-dark-mode-only)
 
 #### Continuous color scale
 
 ```
 ...
-    <Scatter \{...scatterProps} color="weight" colorScaleType="linear" />
+    <Scatter {...scatterProps} color="weight" colorScaleType="linear" />
 ...
 ```
 
-[[/images/scatterSequentialColor.png|Scatter plot with different colors based on weight]]
+![Scatter plot with different colors based on weight](/img/scatter_sequentialColor_light.png#gh-light-mode-only)
+![Scatter plot with different colors based on weight](/img/scatter_sequentialColor_dark.png#gh-dark-mode-only)
 
 #### Size
 
 ```
 ...
-    <Scatter \{...scatterProps} size="weight" />
+    <Scatter {...scatterProps} size="weight" />
 ...
 ```
 
-[[/images/scatterSize.png|Scatter plot with different symbol sizes based on weight]]
+![Scatter plot with different symbol sizes based on weight](/img/scatter_size_light.png#gh-light-mode-only)
+![Scatter plot with different symbol sizes based on weight](/img/scatter_size_dark.png#gh-dark-mode-only)
 
 ## Tooltips and Popovers
 
@@ -81,7 +84,7 @@ All the following examples will use the same base chart code:
 ### Tooltip
 
 ```
-<Chart data=\{data}>
+<Chart data={data}>
     <Axis
         baseline
         grid
@@ -102,16 +105,16 @@ All the following examples will use the same base chart code:
         color="weightClass"
     >
         <ChartTooltip>
-            \{
+            {
                 (item) => (
                     <Content>
                         <Flex direction="column">
-                            <div style=\{\{ fontWeight: 'bold' }}>\{(item.character as string[]).join(', ')}</div>
+                            <div style={{ fontWeight: 'bold' }}>{(item.character as string[]).join(', ')}</div>
                             <div>
-                                Speed (normal): \{item.speedNormal}
+                                Speed (normal): {item.speedNormal}
                             </div>
                             <div>
-                                Handling (normal): \{item.handlingNormal}
+                                Handling (normal): {item.handlingNormal}
                             </div>
                         </Flex>
                     </Content>
@@ -128,13 +131,15 @@ All the following examples will use the same base chart code:
 </Chart>
 ```
 
-[[/images/scatterTooltip.png|Scatter plot with a tooltip displayed on one of the points]]
+![Scatter plot with a tooltip displayed on one of the points](/img/scatter_tooltip_light.png#gh-light-mode-only)
+![Scatter plot with a tooltip displayed on one of the points](/img/scatter_tooltip_dark.png#gh-dark-mode-only)
 
 ## Trendlines
 
 The `Trendline` component is fully supported by `Scatter`. To plot a trendline, simply pass the `Trendline` component into `Scatter` as a child.
 
-[[/images/featureMatrix.png|Scatter plot with vertical and horizontal median lines]]
+![Scatter plot with vertical and horizontal median lines](/img/featureMatrix_light.png#gh-light-mode-only)
+![Scatter plot with vertical and horizontal median lines](/img/featureMatrix_dark.png#gh-dark-mode-only)
 
 ## Props
 
@@ -222,25 +227,26 @@ The `ScatterPath` component can be passed into `Scatter` as a child. This allows
 
 This plot is using the `ScatterPath` component to draw "comets" that help visually connect the "before" and "after" state of components.
 
-[[/images/featureMatrixTimeCompare.png|Scatter plot with paths connecting past points to their present counterparts]]
+![Scatter plot with paths connecting past points to their present counterparts](/img/featureMatrixTimeCompare_light.png#gh-light-mode-only)
+![Scatter plot with paths connecting past points to their present counterparts](/img/featureMatrixTimeCompare_dark.png#gh-dark-mode-only)
 
 ```
-<Chart \{...chartProps}>
-    \{...chartComponents}
+<Chart {...chartProps}>
+    {...chartComponents}
     <Scatter
         color="segment"
         dimension="dauPercent"
         lineType="period"
-        lineWidth=\{\{
+        lineWidth={{
             value: 1
         }}
         metric="countAvg"
         opacity="period"
     >
-        \{...scatterChildren}
+        {...scatterChildren}
         <ScatterPath
-            groupBy=\{['event', 'segment']}
-            opacity=\{0.2}
+            groupBy={['event', 'segment']}
+            opacity={0.2}
             pathWidth="trailSize"
         />
     </Scatter>

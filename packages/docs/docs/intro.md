@@ -17,16 +17,20 @@ Install React Spectrum Charts in your project:
 
 ```bash
 # Using npm
-npm install @adobe/react-spectrum-charts
+npm install @adobe/react-spectrum-charts @adobe/react-spectrum vega vega-lite
 
 # Using yarn
-yarn add @adobe/react-spectrum-charts
+yarn add @adobe/react-spectrum-charts @adobe/react-spectrum vega vega-lite
+
+# Using pnpm
+pnpm add @adobe/react-spectrum-charts @adobe/react-spectrum vega vega-lite
 ```
+
 
 Create your first chart:
 
 ```jsx
-import { Chart, BarChart } from '@adobe/react-spectrum-charts';
+import { Axis, Bar, Chart } from '@adobe/react-spectrum-charts';
 
 function MyChart() {
   const data = [
@@ -37,10 +41,9 @@ function MyChart() {
 
   return (
     <Chart data={data}>
-      <BarChart
-        x={d => d.category}
-        y={d => d.value}
-      />
+      <Bar />
+      <Axis position="bottom" baseline/>
+      <Axis position="left" grid/>
     </Chart>
   );
 }
