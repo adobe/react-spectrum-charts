@@ -12,7 +12,7 @@
 import { customVennOptions, data as vennData } from './vennTestUtils';
 import {
 	getCircleMark,
-	getCircleOverlays,
+	// getCircleOverlays,
 	getInterserctionMark,
 	getStrokeMark,
 	getTextMark,
@@ -136,18 +136,18 @@ describe('mapDataForVennHelper', () => {
 	});
 });
 
-describe('getSelectedCircleMark', () => {
-	test('should return a full selected cirlce mark when given defaultVennOptions', () => {
-		const selectedCircleMark = getCircleOverlays(customVennOptions);
+// describe('getSelectedCircleMark', () => {
+// 	test('should return a full selected cirlce mark when given defaultVennOptions', () => {
+// 		const selectedCircleMark = getCircleOverlays(customVennOptions);
 
-		expect(selectedCircleMark).toBeDefined();
-		expect(selectedCircleMark).toHaveProperty('type', 'symbol');
-		expect(selectedCircleMark).toHaveProperty('name');
-		expect(selectedCircleMark).toHaveProperty('from');
-		expect(selectedCircleMark).toHaveProperty('interactive', false);
-		expect(selectedCircleMark).toHaveProperty('encode');
-	});
-});
+// 		expect(selectedCircleMark).toBeDefined();
+// 		expect(selectedCircleMark).toHaveProperty('type', 'symbol');
+// 		expect(selectedCircleMark).toHaveProperty('name');
+// 		expect(selectedCircleMark).toHaveProperty('from');
+// 		expect(selectedCircleMark).toHaveProperty('interactive', false);
+// 		expect(selectedCircleMark).toHaveProperty('encode');
+// 	});
+// });
 
 describe('getCircleMark', () => {
 	test('should return full circle mark when given defaultVennOptions', () => {

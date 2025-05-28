@@ -1,6 +1,6 @@
 {
-	"name": "@adobe/react-spectrum-charts",
-	"version": "1.17.0",
+	"name": "react-spectrum-charts-capstone-venn",
+	"version": "1.0.5",
 	"description": "Declarative library for composing Spectrum visualizations in React.",
 	"browser": "./dist/index.js",
 	"module": "./dist/index.js",
