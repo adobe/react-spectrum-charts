@@ -114,7 +114,7 @@ jobs:
                       curl -sSL \
                         -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
                         -X DELETE \
-                        "https://api.github.com/repos/${{ github.repository }}/issues/${PR_NUMBER}/comments/${COMMENT_ID}"
+                        "https://api.github.com/repos/${{ github.repository }}/issues/comments/${COMMENT_ID}"
                     done
                   else
                     echo "No matching comments found to delete"
