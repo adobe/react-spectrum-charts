@@ -62,6 +62,8 @@ jobs:
                   cat packages/docs/docusaurus.config.ts
                   # build the docs
                   yarn build:docs
+                  # revert the docusaurus.config.ts
+                  git checkout packages/docs/docusaurus.config.ts
 
             - name: Create and Upload Storybook to PR directory
               # Don't run Storybook upload on PRs from forks
