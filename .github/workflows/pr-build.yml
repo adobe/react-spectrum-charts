@@ -46,6 +46,9 @@ jobs:
             - name: Build Storybook
               run: yarn build:storybook
 
+            - name: Build Docs
+              run: yarn build:docs
+
             - name: Create and Upload Storybook to PR directory
               run: |
                   PR_NUMBER="PR-${{ github.event.number }}"
@@ -61,19 +64,23 @@ jobs:
 
                   # Remove the PR directory if it exists
                   rm -rf "${PR_NUMBER}"
+                  rm -rf "${PR_NUMBER}-docs"
 
                   # Create the PR directory
                   mkdir "${PR_NUMBER}"
+                  mkdir "${PR_NUMBER}-docs"
 
                   # Copy the contents of dist-storybook to the directory
                   cp -r dist-storybook/* "${PR_NUMBER}/"
+                  cp -r packages/docs/dist/* "${PR_NUMBER}-docs/"
 
                   rm -rf node_modules  # Explicitly remove the node_modules directory
                   rm -rf dist-storybook # Explicitly remove the dist-storybook directory
 
                   # Add, commit, and push changes
                   git add "${PR_NUMBER}/."
-                  git commit -m "Update Storybook for ${PR_NUMBER}"
+                  git add "${PR_NUMBER}-docs/."
+                  git commit -m "Update Storybook and Docs for ${PR_NUMBER}"
                   git push -f origin gh-pages
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,4 +1,4 @@
-name: Publish Storybook to GitHub Pages
+name: Publish Storybook and Docs to GitHub Pages
 # This action runs when a branch has been merged to main.
 
 on:
@@ -32,6 +32,9 @@ jobs:
             - name: Build Storybook
               run: yarn build:storybook
 
+            - name: Build Docs
+              run: yarn build:docs
+
             - name: Checkout and clean current 'gh-pages' branch
               run: |
                   git config user.name "evargast"
@@ -55,6 +58,10 @@ jobs:
             - name: Copy 'dist-storybook' to 'gh-pages' branch
               run: |
                   cp -r dist-storybook/* .
+
+            - name: Copy 'dist' to 'gh-pages' branch
+              run: |
+                  cp -r packages/docs/dist/* ./docs
 
             - name: Commit and push changes to 'gh-pages' branch
               run: |
