@@ -98,22 +98,26 @@ jobs:
               if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
               run: |
                   PR_NUMBER="${{ github.event.number }}"
-
-                  # Find the comment with the Storybook URL and Docs URL
-                  COMMENT_ID=$(curl -sSL \
+                  
+                  # Find comments with the Storybook URL and Docs URL
+                  COMMENT_IDS=$(curl -sSL \
                     -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
                     "https://api.github.com/repos/${{ github.repository }}/issues/${PR_NUMBER}/comments" | \
                     jq -r '.[] | select(.body | contains("🎨 Storybook ->") or contains("📚 Docs ->")) | .id')
 
-                  # Only attempt to delete if a matching comment was found
-                  if [ ! -z "$COMMENT_ID" ]; then
-                    echo "Deleting comment with ID: $COMMENT_ID"
-                    curl -sSL \
-                      -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-                      -X DELETE \
-                      "https://api.github.com/repos/${{ github.repository }}/issues/${PR_NUMBER}/comments/${COMMENT_ID}"
+                  # Check if we found any comments
+                  if [ ! -z "$COMMENT_IDS" ]; then
+                    echo "Found matching comments to delete"
+                    # Loop through each comment ID
+                    echo "$COMMENT_IDS" | while read -r COMMENT_ID; do
+                      echo "Deleting comment with ID: $COMMENT_ID"
+                      curl -sSL \
+                        -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+                        -X DELETE \
+                        "https://api.github.com/repos/${{ github.repository }}/issues/${PR_NUMBER}/comments/${COMMENT_ID}"
+                    done
                   else
-                    echo "No matching comment found to delete"
+                    echo "No matching comments found to delete"
                   fi
 
             - name: Add comment to the PR with Storybook URL and Docs URL
