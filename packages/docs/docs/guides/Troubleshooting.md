@@ -2,6 +2,7 @@
 
 ## Parcel
 
+
 ### @parcel/core: Failed to load ... from ...
 
 `react-spectrum-charts` uses `exports` in it's `package.json`. In order to take advantage of libraries that use `exports` in `Parcel`, you need to enable this in you app's `package.json` ([v2.9.0 announcement](https://parceljs.org/blog/v2-9-0/#new-resolver)).
