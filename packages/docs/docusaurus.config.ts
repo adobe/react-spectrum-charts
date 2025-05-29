@@ -17,7 +17,7 @@ import type * as Preset from '@docusaurus/preset-classic';
 const config: Config = {
   title: 'React Spectrum Charts',
   tagline: 'Declarative library for composing Spectrum visualizations in React',
-  favicon: 'img/favicon.ico',
+  favicon: 'https://www.adobe.com/favicon.ico',
 
   // Set the production url of your site here
   url: 'https://opensource.adobe.com',
@@ -61,7 +61,7 @@ const config: Config = {
       items: [
         {
           type: 'docSidebar',
-          sidebarId: 'tutorialSidebar',
+          sidebarId: 'sidebar',
           position: 'left',
           label: 'Documentation',
         },

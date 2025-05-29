@@ -1,6 +1,6 @@
-The `<Chart>` component is a [collection component](https://react-spectrum.adobe.com/react-stately/collections.html). This component renders the chart visualization based on the properties passed in, including all children.
+The `<Chart>` component is a [collection component](https://react-spectrum.adobe.com/react-stately/collections.html). This is the primary wrapper component for all of `react-spectrum-charts`. This component renders the chart visualization based on the children and props passed in.
 
-# Canvas vs. SVG
+## Canvas vs. SVG
 
 Charts use Vega to draw the chart. Vega charts can be rendered as either `svg` or `canvas` elements. We recommend using `svg` in most situations. However, if you are plotting data on the order of 10K rows or more, you may want to switch to `canvas` as the renderer. Using `canvas` as the rendered does not add elements to the document for every shape in the visualization, unlike `svg`.
 
@@ -18,17 +18,52 @@ Charts use Vega to draw the chart. Vega charts can be rendered as either `svg` o
 </Chart>
 ```
 
-# Handles
+## Height and Width Constraints
+
+React-spectrum-charts provides fine-grained control over chart dimensions through several props:
+
+### Width Controls
+- `width`: Can be a number (pixels), 'auto', or a percentage (e.g. '50%')
+- `minWidth`: Minimum width in pixels (default: 100)
+- `maxWidth`: Maximum width in pixels (default: Infinity)
+
+### Height Controls
+- `height`: Can be a number (pixels) or a percentage (e.g. '50%')
+- `minHeight`: Minimum height in pixels (default: 100)
+- `maxHeight`: Maximum height in pixels (default: Infinity)
+
+### Percentages
+Percentage values are calculated based on the size of the charts container element. For example: if the `<Chart>` element is inside of a div that has a width of 500px and the width of the chart is set to 50%, the chart width will be 250px.
+
+These constraints work together to ensure your chart maintains appropriate dimensions across different screen sizes and container widths.
+
+Example:
+```jsx
+<Chart 
+  data={data}
+  width="100%"
+  height={400}
+  minWidth={300}
+  maxWidth={800}
+  minHeight={200}
+  maxHeight={600}
+>
+  <Bar metric="sales" />
+</Chart>
+```
+
+
+## Handles
 
 Chart exposes four handles, `copy()`, `download()`, `getBase64Png()`, and `getSvg()`. These are exposed so that you can call them from elsewhere in your application. These are accessed by passing a `ref` to `Chart` and calling them from `ref.current` (see examples below).
 
-## Copy
+### Copy
 
 The `copy()` function will copy the current visualization to the user's clipboard. Copy returns a promise so that you can handle the success/failure as needed.
 
 If attempts to copy to clipboard result in the promise rejecting and receiving this result: "Error occurred while writing to clipboard", then it is likely that writing to the clipboard is not permitted.
 
-### Example
+#### Example
 
 ```
 const ref = useRef<ChartHandle>(null);
@@ -48,11 +83,11 @@ return (
 )
 ```
 
-## Download
+### Download
 
 The `download()` function will download a PNG of the current visualization to the user's computer. Download returns a promise so that you can handle the success/failure as needed.
 
-### Example
+#### Example
 
 ```
 const ref = useRef<ChartHandle>(null);
@@ -72,11 +107,11 @@ return (
 )
 ```
 
-## Get PNG
+### Get PNG
 
 The `getBase64Png()` method will return the PNG Base 64 string for the current visualization as the resolution for a promise.
 
-### Example
+#### Example
 
 ```
 const ref = useRef<ChartHandle>(null);
@@ -96,11 +131,11 @@ return (
 )
 ```
 
-## Get SVG
+### Get SVG
 
 The `getSvg()` method will return the SVG string for the current visualization as the resolution for a promise.
 
-### Example
+#### Example
 
 ```
 const ref = useRef<ChartHandle>(null);
@@ -120,7 +155,7 @@ return (
 )
 ```
 
-# Scales
+## Scales
 
 There are a handful of scales that can be used to differentiate marks in charts. These are:
 
@@ -161,21 +196,21 @@ This example sets the lineTypes scale to be `['dotted', 'solid']`. This means th
 </Chart>
 ```
 
-## Repeating scales
+### Repeating scales
 
 If there are more divisions than there are entries in a scale, then the entries will repeat the loop. For example, if there are 3 series (`['Windows', 'Mac', 'Linux']`) and only two colors (`['red', 'blue']`), then the color scale will start over with the third element (`'Windows' = 'red', 'Mac' = 'blue', 'Linux' = 'red'`).
 
-# Colors
+## Colors
 
-## 2D color scales
+### 2D color scales
 
 It is also possible to define colors as a 2D scale (scale of scales). Two dimensional color scales are used when a given series is additionally subdivided. An example of this is using a dodged bar with a `subSeries`. Each series will use the scale for that series to set the color of each subdivision. Just like the color of the series repeats when the are more series than colors in the scale, the series scale will repeat when the number of sub series is greater than the number of colors in the series scale.
 
-## Supported colors
+### Supported colors
 
 A color scale can be defined as a color scheme name, an array of spectrum color names or an array of css colors. It is possible to mix spectrum color names and css colors in a single array.
 
-### Color scheme
+#### Color scheme
 
 The color schemes are defined by [spectrum](https://spectrum.adobe.com/page/color-for-data-visualization/). Research and careful consideration went into selecting these colors so that they are accessible and aesthetically pleasing. It is **highly** recommended to use the default spectrum color schemes.
 
@@ -201,19 +236,52 @@ Available color schemes:
 - `divergentRedBlue9`
 - `divergentRedBlue15`
 
-### Spectrum color names
+#### Spectrum color names
 
 A color scale can be defined as an array of spectrum color names. Spectrum color names are responsive (excluding `static*` variants). This is great for when light and dark mode support is needed. The colors adjust so that they look ideal in both light and dark mode.
 
 Example: `['red-500', 'blue-600', 'celery-400']`
 
-### CSS colors
+#### CSS colors
 
 A color scale can also be defined as an array of css colors. This method is the least desirable.
 
 Example: `['#FFF', 'DarkGoldenRod', '#00008B', 'rgb(150, 150, 150)']`
 
-# Locale
+### Background Color
+
+The chart's background can be customized using the `backgroundColor` prop. By default, it's set to 'transparent', allowing the chart to blend with your application's background.
+
+It is recommended to set this prop to the background color of the chart's container element, even if it looks good with the transparent background. The reason for this is chart export. If someone exports your chart (via the copy or download handles) or saves a copy of it (right click on canvas), you want the background color to be saved with the chart. This guarentees that the exported chart will be readable even if it's copied and pasted into a dark or light mode app (like slack).
+
+```jsx
+<Chart 
+  data={data}
+  backgroundColor="gray-100"
+>
+  <Line metric="trend" />
+</Chart>
+```
+
+### Theme Integration
+
+The chart integrates with @adobe/react-spectrum's theming system through the `theme` prop. This ensures that components like tooltips and popovers match your application's styling:
+
+```jsx
+<Chart 
+  data={data}
+  theme={yourSpectrumTheme}
+>
+  <Line metric="trend">
+    <ChartTooltip>
+        {() => <View>Hello world!</View>}
+    </ChartTooltip>
+  </Line>
+</Chart>
+```
+
+
+## Locale
 
 `react-spectrum-charts` supports locale for both number and date/time values. There are multiple methods available for setting the locale definitions.
 
@@ -223,20 +291,20 @@ Example: `['#FFF', 'DarkGoldenRod', '#00008B', 'rgb(150, 150, 150)']`
    - Example: `locale=\{\{number: 'ar-AE', time: 'ar-SY'}}`
 3. Provide your own locale definitions. You can create any custom definition for number or date/ time locales, using the properties available for the [formatLocale](https://d3js.org/d3-format#formatLocale) and [timeFormatLocale](https://d3js.org/d3-time-format#timeFormatLocale) methods, respectively. For examples for various locales, check out [number locale definitions](https://github.com/d3/d3-format/tree/main/locale) and [time locale definitions](https://github.com/d3/d3-time-format/tree/main/locale).
 
-## Custom locale definition example
+### Custom locale definition example
 
 ```
 import {NumberLocale, TimeLocale} from 'vega'
 
 ...
-const numberLocale: NumberLocale = \{
+const numberLocale: NumberLocale = {
     "decimal": ",",
     "thousands": "\u00a0",
     "grouping": [3],
     "currency": ["", "\u00a0CHF"],
     "percent": "\u202f%"
 };
-const timeLocale: TimeLocale = \{
+const timeLocale: TimeLocale = {
     "dateTime": "%A %e %B %Y à %X",
     "date": "%d.%m.%Y",
     "time": "%H:%M:%S",
@@ -248,12 +316,12 @@ const timeLocale: TimeLocale = \{
 }
 
 ...
-<Chart \{...chartProps} locale=\{\{number: numberLocale, time: timeLocale}}>
+<Chart {...chartProps} locale={{number: numberLocale, time: timeLocale}}>
 ...
 
 ```
 
-# Props
+## Props
 
 <table>
     <thead>
@@ -265,23 +333,23 @@ const timeLocale: TimeLocale = \{
         </tr>
     </thead>
     <tbody>
-	<tr>
-		<td>animations</td>
-		<td>boolean</td>
-		<td>–</td>
-		<td>Whether or not to include initial, dataset transition, and opacity animations in bar, area, and line charts. Animations are on by default. Explicitly define this prop as false to disable them.</td>
-	</tr>
         <tr>
-            <td>children*</td>
-            <td>Axis | Group | Line | Bar | Legend</td>
+            <td>animations</td>
+            <td>boolean</td>
             <td>–</td>
-            <td>The elements that make up the chart.</td>
+            <td>Whether or not to include initial, dataset transition, and opacity animations in bar, area, and line charts. Animations are on by default. Explicitly define this prop as false to disable them.</td>
         </tr>
         <tr>
-            <td>data*</td>
-            <td>object[]</td>
+            <td>backgroundColor</td>
+            <td>string</td>
+            <td>'transparent'</td>
+            <td>Sets the background color of the chart.</td>
+        </tr>
+        <tr>
+            <td>children*</td>
+            <td>AreaElement | AxisElement | BarElement | BigNumberElement | DonutElement | ComboElement | LegendElement | LineElement | ScatterElement | TitleElement</td>
             <td>–</td>
-            <td>Data that needs to be plotted in the chart.</td>
+            <td>The elements that make up the chart.</td>
         </tr>
         <tr>
             <td>colors</td>
@@ -290,10 +358,22 @@ const timeLocale: TimeLocale = \{
             <td>Defines the color scale used for coloring divisions (series). A single dimension color scale can be defined by supplying a ColorScheme or and array of CssColor | SpectrumColor[]</td>
         </tr>
         <tr>
+            <td>colorScheme</td>
+            <td>'light' | 'dark'</td>
+            <td>'light'</td>
+            <td>Sets whether the chart should be rendered in light or dark mode.</td>
+        </tr>
+        <tr>
             <td>config</td>
             <td>Config</td>
             <td>–</td>
             <td><a href="https://vega.github.io/vega/docs/config/">Vega config</a> object that sets the custom style of the chart. This config will be merged with the default spectrum config.</td>
+        </tr>
+        <tr>
+            <td>data*</td>
+            <td>ChartData[]</td>
+            <td>–</td>
+            <td>Data to be plotted in the chart.</td>
         </tr>
         <tr>
             <td>dataTestId</td>
@@ -321,7 +401,7 @@ const timeLocale: TimeLocale = \{
         </tr>
         <tr>
             <td>height</td>
-            <td>number</td>
+            <td>number | `$\{number}%`</td>
             <td>500</td>
             <td>Chart height in pixels.</td>
         </tr>
@@ -338,10 +418,22 @@ const timeLocale: TimeLocale = \{
             <td>The series that should be highlighted on the chart (controlled). This will not have an effect if `highlight` (uncontrolled) is enabled on a `Legend` somewhere in the chart.</td>
         </tr>
         <tr>
+            <td>idKey</td>
+            <td>string</td>
+            <td>–</td>
+            <td>The key to use as the unique identifier for data points.</td>
+        </tr>
+        <tr>
             <td>lineTypes</td>
             <td>('solid' | 'dashed' | 'dotted' | 'dotDash' | 'longDash' | 'twoDash' | number[])[]</td>
             <td>['solid', 'dashed', 'dotted', 'dotDash', 'longDash', 'twoDash']</td>
             <td>Defines the line type scale used for divisions (series).<br/>The default line types available are `solid`, `dashed` ([7, 4]), `dotted` ([2, 3]), `dotDash`([2, 3, 7, 4]), `longDash`([11, 4]), and `twoDash` ([5, 2, 11, 2]).<br/>Custom line types can be set by using the <a href="https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute/stroke-dasharray">dash array format.</a></td>
+        </tr>
+        <tr>
+            <td>lineWidths</td>
+            <td>number[]</td>
+            <td>–</td>
+            <td>Array of line widths to use for different series. Line widths are in pixels.</td>
         </tr>
         <tr>
             <td>loading</td>
@@ -353,25 +445,37 @@ const timeLocale: TimeLocale = \{
             <td>locale</td>
             <td>Locale | LocaleCode | \{ number?: NumberLocaleCode | NumberLocale; time?: TimeLocaleCode | TimeLocale }</td>
             <td>'en-US'</td>
-            <td>Sets the locale for numeric and time values. Can be set using many different predefined locale codes or you can provide your own locale definitions. See  <a href="https://github.com/adobe/react-spectrum-charts/wiki/Chart-API#locale" target="_blank">Locale</a> for more details.</td>
+            <td>Sets the locale for numeric and time values. Can be set using many different predefined locale codes or you can provide your own locale definitions. See <a href="#locale">Locale</a> for more details.</td>
+        </tr>
+        <tr>
+            <td>maxHeight</td>
+            <td>number</td>
+            <td>Infinity</td>
+            <td>Maximum height of the chart in pixels.</td>
         </tr>
         <tr>
             <td>maxWidth</td>
             <td>number</td>
             <td>Infinity</td>
-            <td>Max width of the chart in pixels.</td>
+            <td>Maximum width of the chart in pixels.</td>
+        </tr>
+        <tr>
+            <td>minHeight</td>
+            <td>number</td>
+            <td>100</td>
+            <td>Minimum height of the chart in pixels.</td>
         </tr>
         <tr>
             <td>minWidth</td>
             <td>number</td>
             <td>100</td>
-            <td>Min width of the chart in pixels.</td>
+            <td>Minimum width of the chart in pixels.</td>
         </tr>
         <tr>
             <td>opacities</td>
             <td>number[]</td>
             <td>[1]</td>
-            <td>Defines the opacity scale used for divisions (series).<br/>            The default opacities are dynamically calculated based on the number of unique values in the domain. For example, if the `opacity` on a bar is set on `version` and there are 3 unique versions in the data supplied, the default opacities scale will be [1, 0.67, 0.33]. If there were 4 unique versions, the the default opacities scale will be [1, 0.75, 0.5, 0.25]<br/>            Default opacities scale equation: new Array(nDivisions).fill(0).map((d, i) => (nDivisions - i) / nDivisions)</td>
+            <td>Defines the opacity scale used for divisions (series).<br/>The default opacities are dynamically calculated based on the number of unique values in the domain. For example, if the `opacity` on a bar is set on `version` and there are 3 unique versions in the data supplied, the default opacities scale will be [1, 0.67, 0.33]. If there were 4 unique versions, the the default opacities scale will be [1, 0.75, 0.5, 0.25]<br/>Default opacities scale equation: new Array(nDivisions).fill(0).map((d, i) => (nDivisions - i) / nDivisions)</td>
         </tr>
         <tr>
             <td>padding</td>
@@ -387,15 +491,27 @@ const timeLocale: TimeLocale = \{
         </tr>
         <tr>
             <td>theme</td>
-            <td>'light' | 'dark'</td>
+            <td>Theme</td>
             <td>'light'</td>
-            <td>Sets the theme of the chart. This primarily sets colors to make sure everything is accessible.</td>
+            <td>Sets the theme of the chart from @adobe/react-spectrum provider. react-spectrum components like tooltip content and popovers need this to get the proper styling to match your app.</td>
         </tr>
         <tr>
             <td>title</td>
             <td>string</td>
             <td>–</td>
             <td>Sets the chart title. If the Title component is used to define the chart title, that will overwrite this prop.</td>
+        </tr>
+        <tr>
+            <td>tooltipAnchor</td>
+            <td>'cursor' | 'mark'</td>
+            <td>'cursor'</td>
+            <td>Sets what the tooltip should be anchored to. If set to `cursor`, the tooltip will always follow the cursor. If set to `mark` the tooltip will snap to the associated mark. Defaults to `cursor`.</td>
+        </tr>
+        <tr>
+            <td>tooltipPlacement</td>
+            <td>'top' | 'bottom' | 'left' | 'right'</td>
+            <td>–</td>
+            <td>The placement of the tooltip with respect to the mark. Only applicable if `tooltipAnchor = 'mark'`.</td>
         </tr>
         <tr>
             <td>width</td>

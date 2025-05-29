@@ -1,8 +1,10 @@
-# What is `react-spectrum-charts`?
+# Developer Docs
+
+## What is `react-spectrum-charts`?
 
 `react-spectrum-charts` is a react visualization library built on [Vega](https://vega.github.io/vega/). `react-spectrum-charts` uses a declarative approach to convert react components and properties into a spectrum-styled vega visualization (Chart: `(data) => spectrum visualization`).
 
-# How it works
+## How it works
 
 At its simplest, the Chart component is a single react component that takes in props and uses those to render a vega visualization.
 
@@ -22,7 +24,7 @@ Another downside of this method is the props become ambiguous or require really 
 
 Another option would be to accept a spec JSON object that defines all the desired properties of the visualization like [Vega-lite](https://vega.github.io/vega-lite/). But we can do better than this...
 
-## Collection Component
+### Collection Component
 
 A more elegant solution is for Chart to be a [collection component](https://react-spectrum.adobe.com/react-stately/collections.html). A collection component accepts both props and react components as children (which are also technically props).
 
@@ -46,7 +48,7 @@ Building our visualization this way makes it far more readable and more composab
 
 Now we are talking. You can see that with Chart as a collection component, we get highly configurable visualizations with minimal code that is still very readable. Win, win, win.
 
-## Pseudo Components
+### Pseudo Components
 
 Ultimately, all chart visualizations get converted to a vega spec. A vega spec is a complex JSON object that defines the visualization. This means that even though child components like `Axis` and `Bar` can be passed into Chart, there aren't any actual `Axis` or `Bar` components that get rendered to the DOM.
 
@@ -74,21 +76,21 @@ This may seem hacky at first glance but this pattern is common practice in libra
 
 Great questions. Introducing the spec builder.
 
-## Spec Builder
+### Spec Builder
 
 The Chart takes all the props, children and the children's props and uses those to compose a valid vega spec. The spec builder is what does this.
 
 The spec builder uses the functional programming pattern. This was chosen for predictability and testability.
 
-### Predictability
+#### Predictability
 
 Functional programming doesn't allow side effects. Since Chart is simply building a spec file and using it to display a vega visualization, there isn't a need for side effects.
 
-### Testability
+#### Testability
 
 The final output of Chart is a vega visualization. This means integration and end-to-end testing isn't always trivial. This increases the need for strong unit testing which functional programming excels at.
 
-### Decoupled Children
+#### Decoupled Children
 
 To keep Chart extensible and easy to develop in. The child components are used to build the final spec independently of one another, keeping them decoupled. For example, `addBar()` only accepts the initial state of the spec and bar props as inputs. For some controlled behavior, we may pass in some props from the Chart, but none of the Axis props or other component props are accessible from within `addBar()`.
 
@@ -113,13 +115,13 @@ spec = [...children]
     }, spec);
 ```
 
-# Best Practices
+## Best Practices
 
-## Functional Programming
+### Functional Programming
 
 The spec builder implements a functional programming pattern. This means that functions must be immutable and cannot have any side effects.
 
-### Setters
+#### Setters
 
 A setter is a pure function that takes in an initial state and some arguments and returns a new modified copy of the initial state based on the arguments. Setters should match this pattern:
 
@@ -152,7 +154,7 @@ const set{{Property}} = produce<T, [Args]>((initState, args) => {
 
 Notice that we don't need to copy the initState anymore. We can write normal mutable code and still maintain immutability. Immer outlines the recommended [update patterns](https://immerjs.github.io/immer/update-patterns) and common [pitfalls](https://immerjs.github.io/immer/pitfalls) in their documentation. Please follow these recommendations and avoid the pitfalls outlined.
 
-### Getters
+#### Getters
 
 A getter is a pure function that takes in some arguments and returns a value. Unlike setters, getters don't require an initial state. There also isn't any need to wrap getters in immer because they shouldn't be implementing any code that would mutate an object regardless of immer.
 
@@ -166,7 +168,7 @@ function getTooltip(children: DialogElement[]): ProductionRule<StringValueRef> |
 }
 ```
 
-## Decoupled Child Components
+### Decoupled Child Components
 
 Each of the child components of Chart (ex. Bar, Line, Legend etc.) should be kept independent of one another. In practice, this means, when calling `addBar()`, the only arguments allowed are the initial state and bar props. We don't want to pass in any of the props from Legend or Chart to `addBar()`.
 
@@ -176,31 +178,31 @@ So how do we keep Legend decoupled from Bar and Line. The way we do this is by b
 
 It is very important to keep the children decoupled because it keeps the code base easy to work in and prevents it from turning into spaghetti. It's also critical for keeping Chart highly composable.
 
-# Common Dev Workflow
+## Common Dev Workflow
 
 With any new `react-spectrum-charts` request, the following workflow is typically followed. Some steps may be skipped depending on how simple the request is.
 
 As an example for this workflow, we will go through the process of enhancing the legend symbols to default to rounded squares instead of circles (the vega default).
 
-## Review the Vega documentation
+### Review the Vega documentation
 
 Since `react-spectrum-charts` builds all the charts in vega, typically the first step in a new feature request is figuring out how to implement the feature request in vega. The best resource for learning how to implements something is the [vega documentation](https://vega.github.io/vega/docs/).
 
 Another good resource is to look through the [vega examples](https://vega.github.io/vega/examples/) for a solution that is close to the desired feature request. Each example has the full spec that can be reviewed. Each example also has a link that will open the example in the [vega editor](https://vega.github.io/editor/#/edited).
 
-## Try implementing the feature in the vega editor
+### Try implementing the feature in the vega editor
 
 The [vega editor](https://vega.github.io/editor/#/edited) is a live playground that allows you to try out altering a vega spec and observing the result. It is typically a good practice to find an example that is close to desired feature request, open that in vega editor and then attempt to modify it to implement the feature.
 
 It is highly recommended to take the time to fully understand each property in the spec. There are often multiple ways to accomplish the same thing in vega, so take the time to understand them so the best solution can be implemented in ``react-spectrum-charts``.
 
-## Modify a `react-spectrum-charts` spec in the vega editor
+### Modify a `react-spectrum-charts` spec in the vega editor
 
 Now that the correct way to implement the desired feature has been identified, it is often helpful to pull in a `react-spectrum-charts` vega spec and attempt to implement the feature.
 
 Note that `react-spectrum-charts` uses a config option to override many of the vega defaults. This means that what is displayed in the vega editor will not match one-to-one with what displays in storybook. Config options are strictly cosmetic so they should have minimal impact.
 
-### How to pull a `react-spectrum-charts` generated vega spec into the vega editor
+#### How to pull a `react-spectrum-charts` generated vega spec into the vega editor
 
 1. Find or write a story that can be a starting point for implementing this feature
 2. On the story, add the `debug` property to the `Chart` component
@@ -219,7 +221,7 @@ Note that `react-spectrum-charts` uses a config option to override many of the v
    ```
 9. The `react-spectrum-charts` generated spec should be displaying in the vega editor now.
 
-## Implement in Chart
+### Implement in Chart
 
 Now that the spec changes required to add the desired feature are identified, time to try it on the real thing. For this step, please follow all of the best practices called out above (or the PR will not be approved).
 
@@ -227,17 +229,17 @@ It's typically best to dev using storybook.
 
 Please make sure code is well commented so that others will understand why the feature was implemented the way that it was.
 
-## Update test and write new tests
+### Update test and write new tests
 
 Now that the feature is working and all is right in the world, make sure that the new code is adequately tested. ``react-spectrum-charts`` requires 60% code coverage for all new lines of code. Typically if the coverage is not >90%, the PR will not be approved.
 
 To verify that all existing test still pass, run either `yarn test` or `yarn watch`. It's also possible to pass in a regex to run a subset of tests (`yarn watch legendSpecBuilder.test`). Without a regex, all tests will be run.
 
-## Submit a PR
+### Submit a PR
 
 Now that the new feature is implemented and tested, it's time to submit a PR.
 
-# Linking your local react-spectrum-charts package to another local package.
+## Linking your local react-spectrum-charts package to another local package.
 
 There are a number of ways to do this. Yarn link is a common solution. Here are the steps to link using [yalc](https://github.com/wclr/yalc):
 1. Install yalc globally. `yarn global add yalc`

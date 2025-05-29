@@ -17,7 +17,7 @@ Unlike many other chart types, `Donut` only draws a single mark (arc) for a give
 
 ## Legend vs. direct labels
 
-A donut chart can display series labels directly next to each arc using the `SegmentLabel` component. This is the direct labels method. This method is great when there are fewer than 6 segments in your donut chart. If one of the segments of the pie chart is really thin (sliver), the direct label for that slice will be dropped.
+A donut chart can display series labels directly next to each arc using the `SegmentLabel` component. This is the direct labels method. This method is great when there are fewer than 6 segments in your donut chart. If one of the segments of the pie chart is really thin (sliver), the direct label for that slice will be dropped. The minimum angle for a segment to display a label is 0.3 radians (17.2 degrees).
 
 It is also possible to label each series using a legend just like you would on any other chart type.
 
@@ -81,19 +81,19 @@ You should not use direct labels and a legend at the same time as the informatio
             <td>holeRatio</td>
             <td>number</td>
             <td>0.85</td>
-            <td>Ratio of the donut inner radius / donut outer radius. 0 is a piechart.</td>
+            <td>Ratio of the donut inner radius / donut outer radius. 0 is a piechart. The outer radius is calculated as min(width, height) / 2 - 2 pixels (to make room for selection ring).</td>
         </tr>
         <tr>
             <td>isBoolean</td>
             <td>boolean</td>
             <td>false</td>
-            <td>Determines if the metric value should be displayed as a percent.</td>
+            <td>Determines if the metric value should be displayed as a percent. If true, data should only contain two data points which sum to 1. When true, will display the first datapoint as a percent.</td>
         </tr>
         <tr>
             <td>name</td>
             <td>string</td>
-            <td>–</td>
-            <td>Donut name. Useful for if you need to traverse the chart object to find this donut.</td>
+            <td>donut{index}</td>
+            <td>Donut name. Useful for if you need to traverse the chart object to find this donut. If not provided, will be automatically generated as "donut" followed by its index number.</td>
         </tr>
         <tr>
             <td>metric</td>
@@ -105,14 +105,14 @@ You should not use direct labels and a legend at the same time as the informatio
             <td>startAngle</td>
             <td>number</td>
             <td>0</td>
-            <td>The start angle of the donut in radians.</td>
+            <td>The start angle of the donut in radians. 0 is top dead center.</td>
         </tr>
    </tbody>
 </table>
 
 ## Donut Summary
 
-The `DonutSummary` component can be used to provide a total of the displayed metric in the center of the donut.
+The `DonutSummary` component can be used to provide a total of the displayed metric in the center of the donut. The font size of the summary is calculated as 35% of the inner donut radius.
 
 ```
 <Chart {...chartProps}>
@@ -154,7 +154,7 @@ The `DonutSummary` component can be used to provide a total of the displayed met
 
 ## Segment Label
 
-The `SegmentLabel` component can be used to add labels to each segment of the donut.
+The `SegmentLabel` component can be used to add labels to each segment of the donut. Labels will only be shown for segments with an arc angle greater than 0.3 radians (17.2 degrees).
 
 ```
 <Chart {...chartProps}>
@@ -200,7 +200,7 @@ The `SegmentLabel` component can be used to add labels to each segment of the do
         <tr>
             <td>valueFormat</td>
             <td>'currency' | 'shortCurrency' | 'shortNumber' | 'standardNumber' | string</td>
-            <td>shortNumber</td>
+            <td>standardNumber</td>
             <td>Sets the format for the segment metric value. This format must be a <a href="https://d3js.org/d3-format#locale_format" target="_blank">d3-format specifier</a> (Example: '$.2f' = $5,432.10). <a href="https://github.com/adobe/react-spectrum-charts/wiki/Chart-API#locale" target="_blank">Number locale</a> will be applied to the number format. The following presets are also provided: currency ($2.50), shortCurrency ($20M), shortNumber (3B), standardNumber (2,500)</td>
         </tr>
     </tbody>
