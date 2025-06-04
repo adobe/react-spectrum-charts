@@ -17,7 +17,7 @@ import { Orientation } from '@spectrum-charts/vega-spec-builder';
 
 import { Annotation } from '../../../components/Annotation/Annotation';
 import useChartProps from '../../../hooks/useChartProps';
-import { Bar, BarAnnotationProps, BarProps, Chart, Axis } from '../../../index';
+import { Bar, BarAnnotationProps, BarProps, Chart } from '../../../index';
 
 export default {
 	title: 'RSC/Bar/Annotation',
@@ -49,12 +49,10 @@ const barArgs: BarProps = { dimension: 'browser', order: 'order', color: 'operat
 const BarAnnotationStory: StoryFn<
 	BarAnnotationProps & { barOrientation?: Orientation; chartHeight?: number; chartWidth?: number }
 > = (args): ReactElement => {
-	const chartProps = useChartProps({ data: data, });
+	const chartProps = useChartProps({ data: data });
 	const { barOrientation = 'vertical', chartHeight = 300, chartWidth = 300, ...annotationProps } = args;
 	return (
-		<Chart {...chartProps} height={400} width={600} renderer='canvas'>
-			<Axis position="left" grid  />
-			<Axis position="bottom" baseline />
+		<Chart {...chartProps} height={chartHeight} width={chartWidth}>
 			<Bar {...barArgs} orientation={barOrientation}>
 				<Annotation {...annotationProps} />
 			</Bar>
