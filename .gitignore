@@ -26,3 +26,6 @@ test-report.xml
 # cursor
 cursor
 .cursor
+
+# docusaurus
+.docusaurus

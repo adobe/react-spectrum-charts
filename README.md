@@ -62,6 +62,11 @@ npm install @adobe/react-spectrum-charts @adobe/react-spectrum vega vega-lite
 yarn add @adobe/react-spectrum-charts @adobe/react-spectrum vega vega-lite
 ```
 
+#### pnpm
+```bash
+pnpm add @adobe/react-spectrum-charts @adobe/react-spectrum vega vega-lite
+```
+
 ## Usage
 
 `react-spectrum-charts` is designed in a way that makes composing charts similar to composing any other app content in JSX.

@@ -59,6 +59,7 @@
 	"scripts": {
 		"build": "yarn workspaces run build",
 		"build:parallel": "concurrently 'yarn workspace @spectrum-charts/themes build' 'yarn workspace @spectrum-charts/constants build' 'yarn workspace @spectrum-charts/utils build' 'yarn workspace @spectrum-charts/locales build' && yarn workspace @spectrum-charts/vega-spec-builder build && yarn workspace @adobe/react-spectrum-charts build",
+		"build:docs": "yarn workspace @spectrum-charts/docs build",
 		"clean": "yarn workspaces run clean",
 		"clean:parallel": "concurrently 'yarn workspace @spectrum-charts/themes clean' 'yarn workspace @spectrum-charts/constants clean' 'yarn workspace @spectrum-charts/utils clean' 'yarn workspace @spectrum-charts/locales clean' 'yarn workspace @spectrum-charts/vega-spec-builder clean' 'yarn workspace @adobe/react-spectrum-charts clean'",
 		"build:force": "yarn clean && yarn build",
@@ -73,6 +74,7 @@
 		"sonar": "node ./scripts/runSonarOnBranch.js",
 		"sonar-fork-pr": "node ./scripts/runSonarOnFork.js",
 		"start": "yarn storybook",
+		"start:docs": "yarn workspace @spectrum-charts/docs start",
 		"storybook": "cross-env NODE_OPTIONS=--openssl-legacy-provider && storybook dev -p 6009",
 		"test": "cross-env TZ=UTC BABEL_ENV=test jest",
 		"watch": "cross-env TZ=UTC BABEL_ENV=test jest --watch",
