@@ -1,4 +1,4 @@
-The `Bar` component is used to display bar charts. You can do [stacked](https://spectrum.adobe.com/page/bar-chart/#Stacked) or [dodged](https://spectrum.adobe.com/page/bar-chart/#Dodged) (grouped) bars as well as [vertical](https://spectrum.adobe.com/page/bar-chart/#Column-chart) or [horizontal](https://spectrum.adobe.com/page/bar-chart/#Bar-chart) orientation. It's also possible to define tooltips and on-click popovers for the bars using the `ChartTooltip` and `ChartPopover` components respectively as children. Trendlines can be added as well using the `Trendline` component as a child (only average and median methods are supported for bar).
+The `Bar` component is used to display bar charts. You can do [stacked](https://spectrum.adobe.com/page/bar-chart/#Stacked) or [dodged](https://spectrum.adobe.com/page/bar-chart/#Dodged) (grouped) bars as well as [vertical](https://spectrum.adobe.com/page/bar-chart/#Column-chart) or [horizontal](https://spectrum.adobe.com/page/bar-chart/#Bar-chart) orientation. It's also possible to define tooltips and on-click popovers for the bars using the `ChartTooltip` and `ChartPopover` components respectively as children. Trendlines can be added as well using the `Trendline` component as a child (only average and median methods are supported for bar). Bar annotations can be added using the `Annotation` component as a child.
 
 If you only have one series in your data, both the `type` and `color` props can be ignored.
 
@@ -6,9 +6,9 @@ If you only have one series in your data, both the `type` and `color` props can 
 
 #### Horizontal Bar
 
-```
-<Chart data=\{data}>
-    <Axis position="bottom" grid ticks title="Page Views" />
+```jsx
+<Chart data={data}>
+    <Axis position="bottom" grid ticks title="Downloads" />
     <Axis position="left" baseline title="Browser" />
     <Bar
         name="Bar Chart"
@@ -19,30 +19,32 @@ If you only have one series in your data, both the `type` and `color` props can 
 </Chart>
 ```
 
-![bar](https://github.com/adobe/react-spectrum-charts/assets/29240999/8bb373b5-3a3a-46e1-a08e-340cdd23968e)
+![Horizontal bar chart](/img/bar_horizontal_light.png#gh-light-mode-only)
+![Horizontal bar chart](/img/bar_horizontal_dark.png#gh-dark-mode-only)
 
 #### Vertical Bar
 
-```
-<Chart data=\{data}>
+```jsx
+<Chart data={data}>
     <Axis position="bottom" baseline title="Browser" />
-    <Axis position="left" grid ticks title="Visitors" />
+    <Axis position="left" grid ticks title="Downloads" />
     <Bar
         name="Vertical Bar"
         orientation="vertical"
         dimension="browser"
-        metric="visitors"
+        metric="downloads"
     />
 </Chart>
 ```
 
-![verticalbar](https://github.com/adobe/react-spectrum-charts/assets/29240999/fb5726c9-107a-4738-bf32-c796bafe1074)
+![Vertical bar chart](/img/bar_vertical_light.png#gh-light-mode-only)
+![Vertical bar chart](/img/bar_vertical_dark.png#gh-dark-mode-only)
 
 #### Stacked Bar
 
-```
-<Chart data=\{data}>
-    <Axis position="bottom" grid title="Page Views" />
+```jsx
+<Chart data={data}>
+    <Axis position="bottom" grid title="Downloads" />
     <Axis position="left" baseline title="Browser" />
     <Bar
         name="Bar Chart"
@@ -50,19 +52,20 @@ If you only have one series in your data, both the `type` and `color` props can 
         type="stacked"
         color="operatingSystem"
         dimension="browser"
-        metric="views"
+        metric="downloads"
     />
     <Legend position="top" title="Operating system" />
 </Chart>
 ```
 
-![stackedbar](https://github.com/adobe/react-spectrum-charts/assets/29240999/2aa91dd6-dc28-4138-832a-51d6b51b1bca)
+![Horizontal stacked bar chart](/img/bar_stackedHorizontal_light.png#gh-light-mode-only)
+![Horizontal stacked bar chart](/img/bar_stackedHorizontal_dark.png#gh-dark-mode-only)
 
 #### Dodged Bar
 
-```
-<Chart data=\{data}>
-    <Axis position="bottom" gridtitle="Page Views" />
+```jsx
+<Chart data={data}>
+    <Axis position="bottom" grid title="Downloads" />
     <Axis position="left" baseline title="Browser" />
     <Bar
         name="Bar Chart"
@@ -70,18 +73,19 @@ If you only have one series in your data, both the `type` and `color` props can 
         type="dodged"
         color="operatingSystem"
         dimension="browser"
-        metric="views"
+        metric="downloads"
     />
     <Legend position="top" title="Operating system" />
 </Chart>
 ```
 
-![dodgedbar](https://github.com/adobe/react-spectrum-charts/assets/29240999/c35144f0-f4f0-4355-91d4-a261f1af49e5)
+![Horizontal dodged bar chart](/img/bar_dodgedHorizontal_light.png#gh-light-mode-only)
+![Horizontal dodged bar chart](/img/bar_dodgedHorizontal_dark.png#gh-dark-mode-only)
 
 #### Trellised Bar
 
-```
-<Chart data=\{data}>
+```jsx
+<Chart data={data}>
     <Axis
         grid
         position="left"
@@ -106,7 +110,8 @@ If you only have one series in your data, both the `type` and `color` props can 
 </Chart>
 ```
 
-<img width="885" alt="trellis" src="https://github.com/adobe/react-spectrum-charts/assets/29240999/258041f5-16ab-45f9-bbc6-787fb19c1064" />
+![Trellis dodged bar chart](/img/bar_trellis_light.png#gh-light-mode-only)
+![Trellis dodged bar chart](/img/bar_trellis_dark.png#gh-dark-mode-only)
 
 ### Props
 
@@ -122,15 +127,15 @@ If you only have one series in your data, both the `type` and `color` props can 
     <tbody>
         <tr>
             <td>children</td>
-            <td>ChartTooltip | ChartPopover | Trendline</td>
+            <td>Annotation | ChartTooltip | ChartPopover | Trendline</td>
             <td>–</td>
             <td>Optional elements that can be rendered within the chart.</td>
         </tr>
         <tr>
             <td>color</td>
-            <td>string</td>
+            <td>string | [string, string]</td>
             <td>'series'</td>
-            <td>The key in the data that defines what color that bar will be. This is not a color value itself but rather the key in the data that will map to the colors scale.<br/>            For example: A stacked bar chart that has a different color for each operating system, `color` would be set to the name of the key in the data that defines which operating system it is (color="operatingSystem").</td>
+            <td>The key in the data that defines what color that bar will be, or a dual facet array for more complex color mapping. This is not a color value itself but rather the key in the data that will map to the colors scale.<br/>For example: A stacked bar chart that has a different color for each operating system, `color` would be set to the name of the key in the data that defines which operating system it is (color="operatingSystem").</td>
         </tr>
         <tr>
             <td>dimension</td>
@@ -138,7 +143,19 @@ If you only have one series in your data, both the `type` and `color` props can 
             <td>'category'</td>
             <td>The key in the data that is used for the categories of the bar.</td>
         </tr>
-         <tr>
+        <tr>
+            <td>dimensionDataType</td>
+            <td>string</td>
+            <td>–</td>
+            <td>Data type field used for the bar categories (x-axis for a vertical bar).</td>
+        </tr>
+        <tr>
+            <td>dualMetricAxis</td>
+            <td>boolean</td>
+            <td>false</td>
+            <td>Whether to scale the last series in the data separately using the secondary metric axis.</td>
+        </tr>
+        <tr>
             <td>groupedPadding</td>
             <td>number (0-1)</td>
             <td>-</td>
@@ -151,6 +168,18 @@ If you only have one series in your data, both the `type` and `color` props can 
             <td>Forces bars to be square on top instead of using default rounded corners.</td>
         </tr>
         <tr>
+            <td>lineType</td>
+            <td>string | [string, string]</td>
+            <td>'solid'</td>
+            <td>Line type or key in the data that is used as the line type facet. Can be a dual facet array for more complex line type mapping.</td>
+        </tr>
+        <tr>
+            <td>lineWidth</td>
+            <td>number</td>
+            <td>0</td>
+            <td>Border width of the bar.</td>
+        </tr>
+        <tr>
             <td>name</td>
             <td>string</td>
             <td>–</td>
@@ -158,9 +187,9 @@ If you only have one series in your data, both the `type` and `color` props can 
         </tr>
         <tr>
             <td>opacity</td>
-            <td>string | \{value: number}</td>
+            <td>string | \{value: number} | [string, string]</td>
             <td>\{value: 1}</td>
-            <td>If a string is provided, this string is the key in the data that bars will be grouped into series by. Each unique value for this key in the provided data will map to an opacity from the opacities scale.<br/>            If an object with a value is provided, this will set the opacity for bars.</td>
+            <td>If a string is provided, this string is the key in the data that bars will be grouped into series by. Each unique value for this key in the provided data will map to an opacity from the opacities scale. Can also be a dual facet array for more complex opacity mapping.</td>
         </tr>
         <tr>
             <td>order</td>
@@ -187,22 +216,22 @@ If you only have one series in your data, both the `type` and `color` props can 
             <td>Sets the chart area padding. The padding is calculated as (paddingOuter * stepLength). "stepLength" is the distance in pixels from the center of one bar to the center of the next bar. If undefined, paddingOuter is calculated based on the paddingRatio. For more details, see the <a href="https://vega.github.io/vega/docs/scales/#band">Vega band scale docs</a>.</td>
         </tr>
         <tr>
-            <td>subSeries</td>
-            <td>string</td>
+            <td>onClick</td>
+            <td>function</td>
             <td>–</td>
-            <td>The key in the data that defines the sub series of the data. Adds an additional dimension to the bar chart. If the bar chart is a stacked bar, then the stacked bars will be dodged (grouped) by the sub series. Conversely, if the bar chart is a dodged (grouped) bar, then the dodged bars will be stacked the sub series.<br/>            To configure the colors of the sub series, pass through a two dimensional array of colors (Color[][]) to Chart.</td>
-        </tr>
-        <tr>
-            <td>type</td>
-            <td>'dodged' | 'stacked'</td>
-            <td>'stacked'</td>
-            <td>Defines if multiple series should be grouped side-by-side (dodged) or stacked</td>
+            <td>Callback that will be run when a point/section is clicked.</td>
         </tr>
         <tr>
             <td>metric</td>
             <td>string</td>
             <td>'value'</td>
             <td>The key in the data that is used for the height of the bar.</td>
+        </tr>
+        <tr>
+            <td>metricAxis</td>
+            <td>string</td>
+            <td>–</td>
+            <td>Axis that the metric is trended against (y-axis for a vertical bar). This is used for combo charts.</td>
         </tr>
         <tr>
             <td>trellis</td>
@@ -216,11 +245,17 @@ If you only have one series in your data, both the `type` and `color` props can 
             <td>'horizontal'</td>
             <td>Determines the direction the trellised charts should be laid out in. Only takes effect when the "trellis" prop is defined.</td>
         </tr>
-<tr>
+        <tr>
             <td>trellisPadding</td>
             <td>number (0-1)</td>
             <td>0.2</td>
             <td>Defines the padding between each sub-chart in the trellis. The padding is calculated as (trellisPadding * axisLength). "axisLength" is the length in pixels of one charts' axis in the direction of the trellis (i.e. x-axis for a horizontal trellis). For more details, see the <a href="https://vega.github.io/vega/docs/scales/#band">Vega band scale docs</a>.</td>
         </tr>
-   </tbody>
+        <tr>
+            <td>type</td>
+            <td>'dodged' | 'stacked'</td>
+            <td>'stacked'</td>
+            <td>Defines if multiple series should be grouped side-by-side (dodged) or stacked.</td>
+        </tr>
+    </tbody>
 </table>

@@ -27,7 +27,7 @@ You should not use direct labels and a legend at the same time as the informatio
 
 ### Donut
 
-```
+```jsx
 <Chart data={data}>
     <Donut color="operatingSystem" metric="visitors">
         <DonutSummary label="Visitors" />
@@ -41,7 +41,7 @@ You should not use direct labels and a legend at the same time as the informatio
 
 ### Direct labels
 
-```
+```jsx
 <Chart data={data}>
     <Donut color="operatingSystem" metric="visitors">
         <DonutSummary label="Visitors" />
@@ -92,7 +92,7 @@ You should not use direct labels and a legend at the same time as the informatio
         <tr>
             <td>name</td>
             <td>string</td>
-            <td>donut{index}</td>
+            <td>donut\{index}</td>
             <td>Donut name. Useful for if you need to traverse the chart object to find this donut. If not provided, will be automatically generated as "donut" followed by its index number.</td>
         </tr>
         <tr>
@@ -114,7 +114,7 @@ You should not use direct labels and a legend at the same time as the informatio
 
 The `DonutSummary` component can be used to provide a total of the displayed metric in the center of the donut. The font size of the summary is calculated as 35% of the inner donut radius.
 
-```
+```jsx
 <Chart {...chartProps}>
     <Donut>
         <DonutSummary label="Visitors" />
@@ -156,7 +156,7 @@ The `DonutSummary` component can be used to provide a total of the displayed met
 
 The `SegmentLabel` component can be used to add labels to each segment of the donut. Labels will only be shown for segments with an arc angle greater than 0.3 radians (17.2 degrees).
 
-```
+```jsx
 <Chart {...chartProps}>
     <Donut>
         <SegmentLabel percent value valueFormat="shortNumber" />
