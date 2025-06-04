@@ -2,18 +2,63 @@ The `Line` component is used to display line charts. You can specify the type of
 
 ### Examples
 
-#### Line
+#### Basic Line Chart
 
-```
-<Chart data=\{data}>
-	<Axis position='bottom' labelFormat='time' granularity='month' baseline />
-	<Axis position='left' grid title="Visitors" />
-	<Line metric="visitors" color="browser" />
-	<Legend position='top' title='Browser' />
+```jsx
+<Chart data={data}>
+  <Axis position="bottom" labelFormat="time" ticks baseline />
+  <Axis position="left" grid title="Users" />
+  <Line metric="users" color="event" />
+  <Legend position="bottom" />
 </Chart>
 ```
 
-![line](https://github.com/adobe/react-spectrum-charts/assets/29240999/5fb8d55e-7f07-4846-a944-d2eb46c477fa)
+![Line chart example](/img/line_light.png#gh-light-mode-only)
+![Line chart example](/img/line_dark.png#gh-dark-mode-only)
+
+#### Line with Tooltip and Click Handler
+
+```jsx
+<Chart data={data}>
+  <Axis position='bottom' labelFormat='time' ticks baseline />
+  <Axis position='left' grid title="Users" />
+  <Line
+    metric="users"
+    color="browser"
+    onClick={(event, data) => console.log('Clicked:', data)}
+  >
+    <ChartTooltip>
+      {(datum) => (
+        <div>
+          <div>{datum.date}</div>
+          <div>Event: {datum.event}</div>
+          <div>Users: {Number(datum.users).toLocaleString()}</div>
+        </div>
+      )}
+    </ChartTooltip>
+  </Line>
+  <Legend position='bottom'/>
+</Chart>
+```
+
+![Line tooltip chart example](/img/line_tooltip_light.png#gh-light-mode-only)
+![Line tooltip chart example](/img/line_tooltip_dark.png#gh-dark-mode-only)
+
+#### Line with Trendline and MetricRange
+
+```jsx
+<Chart data={data}>
+  <Axis position="bottom" labelFormat="time" ticks baseline />
+  <Axis position="left" grid title="Users" />
+  <Line metric="users" color="event">
+    <Trendline method="quadratic" />
+    <MetricRange upperMetric="upperBound" lowerMetric="lowerBound" />
+  </Line>
+</Chart>
+```
+
+![Line chart with metric range and trendline example](/img/line_metricRangeTrendline_light.png#gh-light-mode-only)
+![Line chart with metric range and trendline example](/img/line_metricRangeTrendline_dark.png#gh-dark-mode-only)
 
 ### Props
 
@@ -31,7 +76,7 @@ The `Line` component is used to display line charts. You can specify the type of
             <td>children</td>
             <td>ChartTooltip | ChartPopover | MetricRange | Trendline</td>
             <td>–</td>
-            <td>Optional elements that can be rendered within the chart.</td>
+            <td>Optional elements that can be rendered within the chart. Use these to add tooltips, popovers, metric ranges, or trendlines to your line chart.</td>
         </tr>
         <tr>
             <td>color</td>
@@ -49,7 +94,7 @@ The `Line` component is used to display line charts. You can specify the type of
             <td>lineType</td>
             <td>string | \{value: LineType | number[]}</td>
             <td>–</td>
-            <td>If a string is provided, this string is the key in the data that lines will be grouped into series by. Each unique value for this key in the provided data will map to a line type from the lineTypes scale. <br/>If an object with a value is provided, this will set the line type for all lines.</td>
+            <td>If a string is provided, this string is the key in the data that lines will be grouped into series by. Each unique value for this key in the provided data will map to a line type from the lineTypes scale. <br/>If an object is provided with format `{value: 'solid' | 'dashed' | 'dotted' | number[]}`, this will set the line type for all lines.</td>
         </tr>
         <tr>
             <td>metric</td>
@@ -62,6 +107,12 @@ The `Line` component is used to display line charts. You can specify the type of
             <td>string</td>
             <td>–</td>
             <td>Line name. Useful for if you need to traverse the chart object to find this line.</td>
+        </tr>
+        <tr>
+            <td>onClick</td>
+            <td>(event: MouseEvent, data: any) => void</td>
+            <td>–</td>
+            <td>Callback function that will be executed when a point or section of the line is clicked. Receives the mouse event and the data point as arguments.</td>
         </tr>
         <tr>
             <td>padding</td>
@@ -79,7 +130,34 @@ The `Line` component is used to display line charts. You can specify the type of
             <td>staticPoint</td>
             <td>string</td>
             <td>–</td>
-            <td>Key in the data that if it exists and it's value is true, a visible point will be shown on the line for that data item.</td>
+            <td>Key in the data that if it exists and its value is true, a visible point will be shown on the line for that data item.</td>
         </tr>
     </tbody>
 </table>
+
+### Best Practices
+
+1. **Scale Type Selection**
+
+    - Use `scaleType="time"` for time-series data
+    - Use `scaleType="linear"` for continuous numerical data
+    - Use `scaleType="point"` when working with categorical data or when combining with ordinal marks like bars
+
+2. **Interactivity**
+
+    - Add tooltips using `ChartTooltip` for better data exploration
+    - Use `onClick` handlers for interactive features like drilling down into data
+    - Consider using `ChartPopover` for displaying detailed information on click
+
+3. **Data Analysis**
+    - Use `Trendline` to show data trends
+    - Add `MetricRange` to display confidence intervals or bounds
+    - Use `staticPoint` to highlight specific data points of interest
+
+### Accessibility
+
+The Line component follows accessibility best practices:
+
+-   Uses semantic SVG elements for better screen reader support
+-   Supports keyboard navigation when interactive elements are added
+-   Color combinations should meet WCAG contrast requirements
