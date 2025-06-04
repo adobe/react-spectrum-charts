@@ -9,16 +9,8 @@ You can specify which data dimension (`dataKey`) a `BigNumber` should display. A
 #### Basic Horizontal
 
 ```jsx
-<Chart
-  data={[{ x: 20, y: 90 }]}
-  height={100}
-  width={200}
->
-  <BigNumber
-    dataKey="x"
-    label="Visitors"
-    orientation="horizontal"
-  />
+<Chart data={[{ x: 20, y: 90 }]} height={100} width={200}>
+	<BigNumber dataKey="x" label="Visitors" orientation="horizontal" />
 </Chart>
 ```
 
@@ -27,17 +19,8 @@ You can specify which data dimension (`dataKey`) a `BigNumber` should display. A
 #### Vertical with Icon
 
 ```jsx
-<Chart
-  data={[{ x: 20, y: 90 }]}
-  height={100}
-  width={200}
->
-  <BigNumber
-    dataKey="x"
-    icon={<User />} /* From react-spectrum icons */
-    label="Visitors"
-    orientation="horizontal"
-  />
+<Chart data={[{ x: 20, y: 90 }]} height={100} width={200}>
+	<BigNumber dataKey="x" icon={<User />} /* From react-spectrum icons */ label="Visitors" orientation="vertical" />
 </Chart>
 ```
 
@@ -47,31 +30,23 @@ You can specify which data dimension (`dataKey`) a `BigNumber` should display. A
 
 ```jsx
 <Chart
-  data={[
-    /* previous data values omitted for brevity */
-    {
-      x: 19,
-      y: 55
-    },
-    {
-      x: 20,
-      y: 90
-    }
-  ]}
-  height={100}
-  width={200}
+	data={[
+		/* previous data values omitted for brevity */
+		{
+			x: 19,
+			y: 55,
+		},
+		{
+			x: 20,
+			y: 90,
+		},
+	]}
+	height={100}
+	width={200}
 >
-  <BigNumber
-    dataKey="x"
-    label="Visitors"
-    orientation="horizontal"
-  >
-    <Line
-      dimension="x"
-      metric="y"
-      scaleType="linear"
-    />
-  </BigNumber>
+	<BigNumber dataKey="x" label="Visitors" orientation="horizontal">
+		<Line dimension="x" metric="y" scaleType="linear" />
+	</BigNumber>
 </Chart>
 ```
 
@@ -81,32 +56,23 @@ You can specify which data dimension (`dataKey`) a `BigNumber` should display. A
 
 ```jsx
 <Chart
-   data={[
-    /* previous data values omitted for brevity */
-    {
-      x: 19,
-      y: 55
-    },
-    {
-      x: 20,
-      y: 90
-    }
-  ]}
-  height={100}
-  width={200}
+	data={[
+		/* previous data values omitted for brevity */
+		{
+			x: 19,
+			y: 55,
+		},
+		{
+			x: 20,
+			y: 90,
+		},
+	]}
+	height={100}
+	width={200}
 >
-  <BigNumber
-    dataKey="x"
-    icon={<User />} /* From react-spectrum icons */
-    label="Visitors"
-    orientation="vertical"
-  >
-    <Line
-      dimension="x"
-      metric="y"
-      scaleType="linear"
-    />
-  </BigNumber>
+	<BigNumber dataKey="x" icon={<User />} /* From react-spectrum icons */ label="Visitors" orientation="vertical">
+		<Line dimension="x" metric="y" scaleType="linear" />
+	</BigNumber>
 </Chart>
 ```
 
@@ -115,18 +81,8 @@ You can specify which data dimension (`dataKey`) a `BigNumber` should display. A
 #### Currency Format
 
 ```jsx
-<Chart
-  data={[{ value: 255.56 }]}
-  height={600}
-  locale="de-DE"
-  width={600}
->
-  <BigNumber
-    dataKey="value"
-    label="Ad Spend"
-    numberFormat="$,.2f"
-    orientation="horizontal"
-  />
+<Chart data={[{ value: 255.56 }]} height={600} locale="de-DE" width={600}>
+	<BigNumber dataKey="value" label="Ad Spend" numberFormat="$,.2f" orientation="horizontal" />
 </Chart>
 ```
 
@@ -148,7 +104,7 @@ You can specify which data dimension (`dataKey`) a `BigNumber` should display. A
             <td>children</td>
             <td>LineElement</td>
             <td>–</td>
-            <td>Optional sparkline element.</td>
+            <td>Optional sparkline element. When provided, renders a small line chart below or beside the number based on orientation.</td>
         </tr>
         <tr>
             <td>dataKey</td>
@@ -160,7 +116,7 @@ You can specify which data dimension (`dataKey`) a `BigNumber` should display. A
             <td>icon</td>
             <td>IconElement</td>
             <td>–</td>
-            <td>Optional icon element.</td>
+            <td>Optional icon element from @adobe/react-spectrum icons.</td>
         </tr>
         <tr>
             <td>label</td>
@@ -186,19 +142,27 @@ You can specify which data dimension (`dataKey`) a `BigNumber` should display. A
             <td>numberFormat</td>
             <td>string</td>
             <td>-</td>
-            <td>Sets the format for numeric axis labels. This format must be a <a href="https://d3js.org/d3-format#locale_format" target="_blank">d3-format specifier</a> (Example: '$.2f' = $5,432.10). <a href="https://github.com/adobe/react-spectrum-charts/wiki/Chart-API#locale" target="_blank">Number locale</a> will be applied to the number format.</td>
+            <td>
+              Sets the format for numeric axis labels. This format must be a <a href="https://d3js.org/d3-format#locale_format" target="_blank">d3-format specifier</a>. Examples:
+                <ul>
+                    <li><code>','</code> = 1,234,567</li>
+                    <li><code>'$.2f'</code> = $1,234.57</li>
+                    <li><code>'~s'</code> = 1.2M</li>
+                </ul>
+                The <a href="https://github.com/adobe/react-spectrum-charts/wiki/Chart-API#locale" target="_blank">number locale</a> will be applied to the number format.
+            </td>
         </tr>
        <tr>
             <td>numberType</td>
             <td>'linear' | 'percentage'</td>
             <td>'linear'</td>
-            <td>If set to <code>percentage</code>, automatically formats the number as a percentage.  Otherwise, this component relies on the <code>numberFormat</code> prop.</td>
+            <td>If set to <code>percentage</code>, automatically formats the number as a percentage (e.g., 0.123 becomes "12.3%"). Otherwise, this component relies on the <code>numberFormat</code> prop.</td>
         </tr>
        <tr>
             <td>orientation</td>
             <td>'vertical' | 'horizontal'</td>
             <td>'vertical'</td>
-            <td>Specifies the visual direction for this component's elements.  See visual examples above.</td>
+            <td>Specifies the visual direction for this component's elements. In vertical orientation, elements are stacked top-to-bottom. In horizontal orientation, elements are arranged left-to-right. See visual examples above.</td>
         </tr>
        <tr>
             <td>rscChartProps</td>

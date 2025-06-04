@@ -259,3 +259,45 @@ If you only have one series in your data, both the `type` and `color` props can 
         </tr>
     </tbody>
 </table>
+
+## Annotation
+
+The `Annotation` component is used to display a text annotation. The annotation will display at the top of the bar for each data point in `data`.
+
+```jsx
+<Chart data={data}>
+    <Bar {...props}>
+        <Annotation textKey="textKey" style={{width: 48}} />
+    </Bar>
+</Chart>
+```
+
+![Bar annotation chart](/img/barAnnotation_light.png#gh-light-mode-only)
+![Bar annotation chart](/img/barAnnotation_dark.png#gh-dark-mode-only)
+
+### Props
+
+<table>
+    <thead>
+        <tr>
+            <th>name</th>
+            <th>type</th>
+            <th>default</th>
+            <th>description</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>textKey</td>
+            <td>string</td>
+            <td>–</td>
+            <td>The key on each value in the data passed to the chart that contains the text to display in the annotation.</td>
+        </tr>
+        <tr>
+            <td>style</td>
+            <td>\{width: number}</td>
+            <td>-</td>
+            <td>Style overrides. Width is used in place of dynamically calculated width.</td>
+        </tr>
+    </tbody>
+</table>

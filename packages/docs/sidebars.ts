@@ -38,19 +38,27 @@ const sidebars: SidebarsConfig = {
         'api/Chart',
         {
           type: 'category',
-          label: 'Marks',
+          label: 'Core Visualizations',
           items: [
-            'api/marks/Area',
-            'api/marks/Bar',
-            'api/marks/BigNumber',
-            'api/marks/Donut',
-            'api/marks/Line',
-            'api/marks/Scatter',
+            'api/visualizations/Area',
+            'api/visualizations/Bar',
+            'api/visualizations/BigNumber',
+            'api/visualizations/Donut',
+            'api/visualizations/Line',
+            'api/visualizations/Scatter'
           ],
         },
         {
           type: 'category',
-          label: 'Components',
+          label: 'Analysis',
+          items: [
+            'api/analysis/MetricRange',
+            'api/analysis/Trendline',
+          ],
+        },
+        {
+          type: 'category',
+          label: 'Chart Components',
           items: [
             'api/components/Axis',
             'api/components/Legend',
@@ -59,13 +67,20 @@ const sidebars: SidebarsConfig = {
         },
         {
           type: 'category',
-          label: 'Supplemental',
+          label: 'Interactivity',
           items: [
-            'supplemental/Annotation',
-            'supplemental/MetricRange',
-            'supplemental/Trendline',
+            'api/interactivity/ChartTooltip',
+            'api/interactivity/ChartPopover'
           ],
         },
+        // {
+        //   type: 'category',
+        //   label: 'States',
+        //   items: [
+        //     'api/states/EmptyState',
+        //     'api/states/LoadingState'
+        //   ],
+        // }
       ],
     },
     'Developer-Docs'
