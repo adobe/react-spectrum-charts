@@ -9,7 +9,7 @@
 
 To resolve this issue, add the following to your app's `package.json`:
 
-```
+```json
     "@parcel/resolver-default": {
         "packageExports": true
     },
@@ -21,7 +21,7 @@ To resolve this issue, add the following to your app's `package.json`:
 
 To resolve this issue, add the following to your app's `package.json`:
 
-```
+```json
     "alias": {
         "fast-json-patch": "fast-json-patch/index.js"
     }

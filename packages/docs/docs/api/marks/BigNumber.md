@@ -8,11 +8,11 @@ You can specify which data dimension (`dataKey`) a `BigNumber` should display. A
 
 #### Basic Horizontal
 
-```
+```jsx
 <Chart
-  data=\{[\{ x: 20, y: 90 }]}
-  height=\{100}
-  width=\{200}
+  data={[{ x: 20, y: 90 }]}
+  height={100}
+  width={200}
 >
   <BigNumber
     dataKey="x"
@@ -26,15 +26,15 @@ You can specify which data dimension (`dataKey`) a `BigNumber` should display. A
 
 #### Vertical with Icon
 
-```
+```jsx
 <Chart
-  data=\{[\{ x: 20, y: 90 }]}
-  height=\{100}
-  width=\{200}
+  data={[{ x: 20, y: 90 }]}
+  height={100}
+  width={200}
 >
   <BigNumber
     dataKey="x"
-    icon=\{<User />} /* From react-spectrum icons */
+    icon={<User />} /* From react-spectrum icons */
     label="Visitors"
     orientation="horizontal"
   />
@@ -45,21 +45,21 @@ You can specify which data dimension (`dataKey`) a `BigNumber` should display. A
 
 #### Horizontal with Sparkline
 
-```
+```jsx
 <Chart
-  data=\{[
+  data={[
     /* previous data values omitted for brevity */
-    \{
+    {
       x: 19,
       y: 55
     },
-    \{
+    {
       x: 20,
       y: 90
     }
   ]}
-  height=\{100}
-  width=\{200}
+  height={100}
+  width={200}
 >
   <BigNumber
     dataKey="x"
@@ -79,25 +79,25 @@ You can specify which data dimension (`dataKey`) a `BigNumber` should display. A
 
 #### Vertical with Icon and Sparkline
 
-```
+```jsx
 <Chart
-   data=\{[
+   data={[
     /* previous data values omitted for brevity */
-    \{
+    {
       x: 19,
       y: 55
     },
-    \{
+    {
       x: 20,
       y: 90
     }
   ]}
-  height=\{100}
-  width=\{200}
+  height={100}
+  width={200}
 >
   <BigNumber
     dataKey="x"
-    icon=\{<User />} /* From react-spectrum icons */
+    icon={<User />} /* From react-spectrum icons */
     label="Visitors"
     orientation="vertical"
   >
@@ -114,12 +114,12 @@ You can specify which data dimension (`dataKey`) a `BigNumber` should display. A
 
 #### Currency Format
 
-```
+```jsx
 <Chart
-  data=\{[\{ value: 255.56 }]}
-  height=\{600}
+  data={[{ value: 255.56 }]}
+  height={600}
   locale="de-DE"
-  width=\{600}
+  width={600}
 >
   <BigNumber
     dataKey="value"

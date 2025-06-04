@@ -14,7 +14,7 @@ I'm glad you asked! Technically all the react components that you can pass into 
 
 We could just have a single component for creating a bar chart like so:
 
-```
+```jsx
 <Chart type="stacked-bar" data={data} orientation="horizontal" axis="bottom"/>
 ```
 
@@ -30,7 +30,7 @@ A more elegant solution is for Chart to be a [collection component](https://reac
 
 Back to our bar example, by using Chart as a collection component, we get the following:
 
-```
+```jsx
 <Chart data={data}>
     <Axis position="bottom" />
     <Bar orientation="horizontal" />
@@ -39,7 +39,7 @@ Back to our bar example, by using Chart as a collection component, we get the fo
 
 Building our visualization this way makes it far more readable and more composable. For example, what if we revisit the complex example above where we have a line plot with an area behind it to represent the standard deviation. Also to complicate things further, lets add a 7 day moving average to the line?
 
-```
+```jsx
 <Chart data={data}>
     <Area metricStart='lowerBound' metricEnd='upperBound' opacity={0.2} />
     <Line metric="mean" trendline="moving-7" />
@@ -58,7 +58,7 @@ Instead, these child components are treated as complex props that get represente
 
 It's really simple. This is the Bar component from `Bar.tsx` file:
 
-```
+```tsx
 import { BarProps } from '../types';
 
 export function Bar({ dimension = 'category', color = 'series', metric = 'value', opacity = 1 }: BarProps) {
@@ -94,7 +94,7 @@ The final output of Chart is a vega visualization. This means integration and en
 
 To keep Chart extensible and easy to develop in. The child components are used to build the final spec independently of one another, keeping them decoupled. For example, `addBar()` only accepts the initial state of the spec and bar props as inputs. For some controlled behavior, we may pass in some props from the Chart, but none of the Axis props or other component props are accessible from within `addBar()`.
 
-```
+```tsx
 spec = [...children]
     .sort((a, b) => buildOrder[a.type.name] - buildOrder[b.type.name])
     .reduce((acc: Spec, cur) => {
@@ -125,7 +125,7 @@ The spec builder implements a functional programming pattern. This means that fu
 
 A setter is a pure function that takes in an initial state and some arguments and returns a new modified copy of the initial state based on the arguments. Setters should match this pattern:
 
-```
+```tsx
 const set{{Property}} = <T>(initState: T, args: Args): T => {
     const stateCopy = {...initState};
     // ...
@@ -141,7 +141,7 @@ One tricky thing is even though we are spreading the initState to create a copy,
 
 An easy fix for this is to use [immer](https://immerjs.github.io/immer/). Here we wrap the function above in immer's produce function. The inputs are [curried](https://immerjs.github.io/immer/curried-produce) to our function:
 
-```
+```tsx
 import produce from 'immer';
 
 const set{{Property}} = produce<T, [Args]>((initState, args) => {
@@ -160,7 +160,7 @@ A getter is a pure function that takes in some arguments and returns a value. Un
 
 Example:
 
-```
+```tsx
 function getTooltip(children: DialogElement[]): ProductionRule<StringValueRef> | undefined {
 	if (children.length) {
 		return { signal: 'datum' };
@@ -206,7 +206,7 @@ Note that `react-spectrum-charts` uses a config option to override many of the v
 
 1. Find or write a story that can be a starting point for implementing this feature
 2. On the story, add the `debug` property to the `Chart` component
-   ```
+   ```jsx
    <Chart {...chartProps} debug>
    ```
 3. Start storybook by running `yarn storybook`
@@ -215,7 +215,7 @@ Note that `react-spectrum-charts` uses a config option to override many of the v
 6. The spec for that story will be printed to the console
 7. Copy the entire spec and paste it into the [vega editor](https://vega.github.io/editor/#/edited)
 8. Add the following to the top of the spec
-   ```
+   ```json
    "width": 600,
    "height": 600,
    ```

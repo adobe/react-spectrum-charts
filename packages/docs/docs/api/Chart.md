@@ -4,7 +4,7 @@ The `<Chart>` component is a [collection component](https://react-spectrum.adobe
 
 Charts use Vega to draw the chart. Vega charts can be rendered as either `svg` or `canvas` elements. We recommend using `svg` in most situations. However, if you are plotting data on the order of 10K rows or more, you may want to switch to `canvas` as the renderer. Using `canvas` as the rendered does not add elements to the document for every shape in the visualization, unlike `svg`.
 
-```
+```jsx
 <Chart
     data={data}
     renderer="canvas"
@@ -65,7 +65,7 @@ If attempts to copy to clipboard result in the promise rejecting and receiving t
 
 #### Example
 
-```
+```tsx
 const ref = useRef<ChartHandle>(null);
 
 const copy = () => {
@@ -89,7 +89,7 @@ The `download()` function will download a PNG of the current visualization to th
 
 #### Example
 
-```
+```tsx
 const ref = useRef<ChartHandle>(null);
 
 const download = () => {
@@ -113,7 +113,7 @@ The `getBase64Png()` method will return the PNG Base 64 string for the current v
 
 #### Example
 
-```
+```tsx
 const ref = useRef<ChartHandle>(null);
 
 const getBase64Png = () => {
@@ -137,7 +137,7 @@ The `getSvg()` method will return the SVG string for the current visualization a
 
 #### Example
 
-```
+```tsx
 const ref = useRef<ChartHandle>(null);
 
 const getSvg = () => {
@@ -170,7 +170,7 @@ These scales can be used on the mark components to divide the data into series f
 
 Example:
 
-```
+```jsx
 <Chart data={data}>
 	<Axis position='bottom' labelFormat='time' granularity='month' baseline />
 	<Axis position='left' grid title="Visitors" />
@@ -187,7 +187,7 @@ Example:
 
 This example sets the lineTypes scale to be `['dotted', 'solid']`. This means the first division will use be a `dotted` line and the second division will be a `solid` line. The line is divided into series using color and lineType. Each unique browser will be a different color and each unique version will be a different line type.
 
-```
+```jsx
 <Chart data={data} lineTypes={['dotted', 'solid']}>
 	<Axis position='bottom' labelFormat='time' granularity='day' baseline />
 	<Axis position='left' grid title="Events" />
@@ -293,7 +293,7 @@ The chart integrates with @adobe/react-spectrum's theming system through the `th
 
 ### Custom locale definition example
 
-```
+```tsx
 import {NumberLocale, TimeLocale} from 'vega'
 
 ...
@@ -318,7 +318,6 @@ const timeLocale: TimeLocale = {
 ...
 <Chart {...chartProps} locale={{number: numberLocale, time: timeLocale}}>
 ...
-
 ```
 
 ## Props

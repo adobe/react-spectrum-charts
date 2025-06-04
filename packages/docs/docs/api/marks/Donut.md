@@ -2,7 +2,7 @@
 
 Donut is currently in `rc`. This means that the component, behavior and API are all subject to change. To use, you will need to import from `@adobe/react-spectrum-charts/rc`. If your app is bundled with `parcel`, check out the [troubleshooting guide](https://github.com/adobe/react-spectrum-charts/wiki/Troubleshooting-Guide) for details on how to setup your `package.json` so it will accept this style of import.
 
-```
+```tsx
 import { Chart, ChartProps } from '@adobe/react-spectrum-charts';
 import { Donut, DonutSummary, SegmentLabel } from '@adobe/react-spectrum-charts/rc';
 ```

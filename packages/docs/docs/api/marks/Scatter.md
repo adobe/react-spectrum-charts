@@ -15,7 +15,7 @@ The `Scatter` component supports many different attributes for mapping data prop
 
 All the following examples will use the same base chart code:
 
-```
+```jsx
 <Chart data={data}>
     <Axis
         baseline
@@ -46,7 +46,7 @@ All the following examples will use the same base chart code:
 
 #### Color
 
-```
+```jsx
 ...
     <Scatter {...scatterProps} color="weightClass" />
 ...
@@ -57,7 +57,7 @@ All the following examples will use the same base chart code:
 
 #### Continuous color scale
 
-```
+```jsx
 ...
     <Scatter {...scatterProps} color="weight" colorScaleType="linear" />
 ...
@@ -68,7 +68,7 @@ All the following examples will use the same base chart code:
 
 #### Size
 
-```
+```jsx
 ...
     <Scatter {...scatterProps} size="weight" />
 ...
@@ -83,7 +83,7 @@ All the following examples will use the same base chart code:
 
 ### Tooltip
 
-```
+```jsx
 <Chart data={data}>
     <Axis
         baseline
@@ -230,7 +230,7 @@ This plot is using the `ScatterPath` component to draw "comets" that help visual
 ![Scatter plot with paths connecting past points to their present counterparts](/img/featureMatrixTimeCompare_light.png#gh-light-mode-only)
 ![Scatter plot with paths connecting past points to their present counterparts](/img/featureMatrixTimeCompare_dark.png#gh-dark-mode-only)
 
-```
+```jsx
 <Chart {...chartProps}>
     {...chartComponents}
     <Scatter

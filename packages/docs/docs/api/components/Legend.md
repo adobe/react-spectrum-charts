@@ -1,7 +1,7 @@
 The `Legend` component is used to display a legend for the visualization.
 
-```
-<Chart data=\{data}>
+```jsx
+<Chart data={data}>
     <Legend position="right" title="Country">
 </Chart>
 ```
@@ -117,7 +117,7 @@ The easiest way to hide/show data in the chart is to supply the `isToggleable` p
 
 #### Example
 
-```
+```jsx
 <Chart>
   <Bar/>
   <Legend isToggleable />
@@ -134,20 +134,20 @@ The `onClick` handler can be used to trigger custom hide/show logic.
 
 #### Example
 
-```
+```jsx
 const [hiddenSeries, setHiddenSeries] = useState<string[]>([])
 
-const onLegendClick = (seriesName: string) => \{
-  if (hiddenSeries.includes(seriesName)) \{
+const onLegendClick = (seriesName: string) => {
+  if (hiddenSeries.includes(seriesName)) {
     setHiddenSeries(hiddenSeries.filter(series => series !== seriesName))
   }
   setHiddenSeries([...hiddenSeries, seriesName])
 }
 
 return (
-  <Chart hiddenSeries=\{hiddenSeries}>
+  <Chart hiddenSeries={hiddenSeries}>
     <Bar/>
-    <Legend onClick=\{onLegendClick} />
+    <Legend onClick={onLegendClick} />
   </Chart>
 )
 ```
@@ -164,9 +164,9 @@ If there is a need to override any of these, the `color`, `lineType`, `lineWidth
 
 For the following example, each symbol in the legend will be `gray-800` and the opacity of each symbol will be determined by the operatingSystem.
 
-```
+```jsx
 <Chart>
   <Bar/>
-  <Legend color=\{\{value: 'gray-800'}} opacity='operatingSystem' />
+  <Legend color={{value: 'gray-800'}} opacity='operatingSystem' />
 </Chart>
 ```

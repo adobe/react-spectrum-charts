@@ -6,7 +6,7 @@ Tooltips should only use plain html without any interactive elements. It's not p
 
 ### Basic
 
-```
+```jsx
 <Chart data={data}>
     <Bar>
         <ChartTooltip>
@@ -18,7 +18,7 @@ Tooltips should only use plain html without any interactive elements. It's not p
 
 ### Tooltip disabled for some data
 
-```
+```tsx
 const data = [
   /* Tooltip will not be shown when disableTooltip is truthy */
   { value: 10, disableTooltip: true },

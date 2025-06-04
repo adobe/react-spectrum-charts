@@ -6,7 +6,7 @@ The `MetricRange` component is used to add a custom area mark onto visualization
 
 ### Average line on a bar chart
 
-```
+```jsx
 <Chart data={data} >
     <Bar>
         <MetricRange metricStart="minDataKey" metricEnd="maxDataKey" color="gray-500"  />

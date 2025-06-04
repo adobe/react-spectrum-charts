@@ -2,7 +2,7 @@ The `Title` component is used to add a title to a chart. Only a single title is 
 
 ### Example
 
-```
+```jsx
 <Chart data={data}>
     <Title text="Chart Title" position="middle" fontWeight="bolder" />
 </Chart>

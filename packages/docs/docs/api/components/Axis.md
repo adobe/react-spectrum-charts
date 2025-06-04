@@ -1,8 +1,8 @@
 The `Axis` component is used to display the axis, axis labels and grid marks. An axis is not required if you would like something like a [sparkline](https://spectrum.adobe.com/page/line-chart/#Sparkline) visualization.
 
-```
-<Chart data=\{data}>
-    <Axis position="bottom" granularity="hour" grid=\{false} title="My Axis Title" />
+```jsx
+<Chart data={data}>
+    <Axis position="bottom" granularity="hour" grid={false} title="My Axis Title" />
 </Chart>
 ```
 
@@ -139,15 +139,15 @@ An `AxisAnnotation` can be used to add icons to an axis. These are typically use
 
 #### Example
 
-```
-const axisAnnotationProps = \{
+```jsx
+const axisAnnotationProps = {
 	dataKey: 'annotations',
 	color: 'gray-600',
 }
 
-<Chart data=\{data}>
-    <Axis position="bottom" granularity="hour" grid=\{false} title="My Axis Title">
-        <AxisAnnotation \{...axisAnnotationProps} />
+<Chart data={data}>
+    <Axis position="bottom" granularity="hour" grid={false} title="My Axis Title">
+        <AxisAnnotation {...axisAnnotationProps} />
     </Axis>
 </Chart>
 ```
@@ -240,20 +240,20 @@ An array of `option` objects can be passed to the prop `options` to control indi
     </tbody>
 </table>
 
-```
-const axisAnnotationProps = \{
+```jsx
+const axisAnnotationProps = {
 	dataKey: 'annotations',
 	options: [
-		\{ id: '1', color: 'magenta-600' },
-		\{ id: '2', color: 'fuchsia-600' },
-		\{ id: '3', color: 'yellow-600' },
-		\{ id: '4', color: 'celery-600' },
+		{ id: '1', color: 'magenta-600' },
+		{ id: '2', color: 'fuchsia-600' },
+		{ id: '3', color: 'yellow-600' },
+		{ id: '4', color: 'celery-600' },
 	],
 }
 
-<Chart data=\{data}>
-    <Axis position="bottom" granularity="hour" grid=\{false} title="My Axis Title">
-        <AxisAnnotation \{...axisAnnotationProps} />
+<Chart data={data}>
+    <Axis position="bottom" granularity="hour" grid={false} title="My Axis Title">
+        <AxisAnnotation {...axisAnnotationProps} />
     </Axis>
 </Chart>
 ```
@@ -262,10 +262,10 @@ const axisAnnotationProps = \{
 
 A `ReferenceLine` can be used to add a vertical or horizontal line to a chart as a reference.
 
-```
-<Chart data=\{data}>
-    <Axis position="bottom" granularity="hour" grid=\{false} title="My Axis Title">
-        <ReferenceLine value=\{0.5} icon="date" />
+```jsx
+<Chart data={data}>
+    <Axis position="bottom" granularity="hour" grid={false} title="My Axis Title">
+        <ReferenceLine value={0.5} icon="date" />
     </Axis>
 </Chart>
 ```
