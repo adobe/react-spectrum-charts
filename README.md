@@ -14,6 +14,10 @@
 
 ![Scatter plot of penguin bill dimensions by species and body mass](https://github.com/adobe/react-spectrum-charts/wiki/images/penguins.png)
 
+## Documentation
+
+[React Spectrum Charts documentation](https://opensource.adobe.com/react-spectrum-charts/docs)
+
 ## Table of Contents
 
 -   [React Spectrum Charts](#react-spectrum-charts)
@@ -60,6 +64,11 @@ npm install @adobe/react-spectrum-charts @adobe/react-spectrum vega vega-lite
 
 ```bash
 yarn add @adobe/react-spectrum-charts @adobe/react-spectrum vega vega-lite
+```
+
+#### pnpm
+```bash
+pnpm add @adobe/react-spectrum-charts @adobe/react-spectrum vega vega-lite
 ```
 
 ## Usage

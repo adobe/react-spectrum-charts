@@ -50,6 +50,21 @@ jobs:
               if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
               run: yarn build:storybook
 
+            - name: Build Docs
+              # Don't run Storybook build on PRs from forks
+              if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
+              run: |
+                  echo "Current content of docusaurus.config.ts:"
+                  cat packages/docs/docusaurus.config.ts
+                  # modify the docusaurus.config.ts, changing the baseUrl to /react-spectrum-charts/PR-${{ github.event.number }}-docs/
+                  sed -i 's|baseUrl: '"'"'/react-spectrum-charts/docs/'"'"'|baseUrl: '"'"'/react-spectrum-charts/PR-${{ github.event.number }}-docs/'"'"'|g' packages/docs/docusaurus.config.ts
+                  echo "Content after sed command:"
+                  cat packages/docs/docusaurus.config.ts
+                  # build the docs
+                  yarn build:docs
+                  # revert the docusaurus.config.ts
+                  git checkout packages/docs/docusaurus.config.ts
+
             - name: Create and Upload Storybook to PR directory
               # Don't run Storybook upload on PRs from forks
               if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
@@ -67,29 +82,60 @@ jobs:
 
                   # Remove the PR directory if it exists
                   rm -rf "${PR_NUMBER}"
+                  rm -rf "${PR_NUMBER}-docs"
 
                   # Create the PR directory
                   mkdir "${PR_NUMBER}"
+                  mkdir "${PR_NUMBER}-docs"
 
                   # Copy the contents of dist-storybook to the directory
                   cp -r dist-storybook/* "${PR_NUMBER}/"
+                  cp -r packages/docs/dist/* "${PR_NUMBER}-docs/"
 
                   rm -rf node_modules  # Explicitly remove the node_modules directory
                   rm -rf dist-storybook # Explicitly remove the dist-storybook directory
 
                   # Add, commit, and push changes
                   git add "${PR_NUMBER}/."
-                  git commit -m "Update Storybook for ${PR_NUMBER}"
+                  git add "${PR_NUMBER}-docs/."
+                  git commit -m "Update Storybook and Docs for ${PR_NUMBER}"
                   git push -f origin gh-pages
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-            - name: Add comment to the PR with Storybook URL
+            - name: Delete Storybook URL and Docs URL comment if it exists
+              # Don't delete comment on PRs from forks
+              if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
+              run: |
+                  PR_NUMBER="${{ github.event.number }}"
+
+                  # Find comments with the Storybook URL and Docs URL
+                  COMMENT_IDS=$(curl -sSL \
+                    -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+                    "https://api.github.com/repos/${{ github.repository }}/issues/${PR_NUMBER}/comments" | \
+                    jq -r '.[] | select(.body | contains("🎨 Storybook ->") or contains("📚 Docs ->")) | .id')
+
+                  # Check if we found any comments
+                  if [ ! -z "$COMMENT_IDS" ]; then
+                    echo "Found matching comments to delete"
+                    # Loop through each comment ID
+                    echo "$COMMENT_IDS" | while read -r COMMENT_ID; do
+                      echo "Deleting comment with ID: $COMMENT_ID"
+                      curl -sSL \
+                        -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+                        -X DELETE \
+                        "https://api.github.com/repos/${{ github.repository }}/issues/comments/${COMMENT_ID}"
+                    done
+                  else
+                    echo "No matching comments found to delete"
+                  fi
+
+            - name: Add comment to the PR with Storybook URL and Docs URL
               # Don't add comment on PRs from forks
               if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
               run: |
                   PR_NUMBER="${{ github.event.number }}"
-                  COMMENT_BODY="🎨 Storybook -> https://opensource.adobe.com/react-spectrum-charts/PR-${PR_NUMBER}"
+                  COMMENT_BODY="🎨 Storybook -> https://opensource.adobe.com/react-spectrum-charts/PR-${PR_NUMBER}\n\n📚 Docs -> https://opensource.adobe.com/react-spectrum-charts/PR-${PR_NUMBER}-docs/"
 
                   curl -sSL \
                     -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
