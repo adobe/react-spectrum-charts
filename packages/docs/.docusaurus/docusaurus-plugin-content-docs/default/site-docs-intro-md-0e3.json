@@ -1,0 +1,20 @@
+{
+  "id": "intro",
+  "title": "Introduction to React Spectrum Charts",
+  "description": "React Spectrum Charts is a declarative library for composing Spectrum visualizations in React. It provides a set of React components that make it easy to create beautiful, accessible, and interactive charts that follow Adobe's Spectrum design system.",
+  "source": "@site/docs/intro.md",
+  "sourceDirName": ".",
+  "slug": "/intro",
+  "permalink": "/react-spectrum-charts/docs/docs/intro",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/adobe/react-spectrum-charts/tree/main/packages/docs/docs/intro.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "sidebar",
+  "next": {
+    "title": "Installation",
+    "permalink": "/react-spectrum-charts/docs/docs/installation"
+  }
+}

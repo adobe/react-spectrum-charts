@@ -1,0 +1,24 @@
+{
+  "id": "api/visualizations/Bar",
+  "title": "Bar",
+  "description": "The Bar component is used to display bar charts. You can do stacked or dodged (grouped) bars as well as vertical or horizontal orientation. It's also possible to define tooltips and on-click popovers for the bars using the ChartTooltip and ChartPopover components respectively as children. Trendlines can be added as well using the Trendline component as a child (only average and median methods are supported for bar). Bar annotations can be added using the Annotation component as a child.",
+  "source": "@site/docs/api/visualizations/Bar.md",
+  "sourceDirName": "api/visualizations",
+  "slug": "/api/visualizations/Bar",
+  "permalink": "/react-spectrum-charts/docs/docs/api/visualizations/Bar",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/adobe/react-spectrum-charts/tree/main/packages/docs/docs/api/visualizations/Bar.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "sidebar",
+  "previous": {
+    "title": "Area",
+    "permalink": "/react-spectrum-charts/docs/docs/api/visualizations/Area"
+  },
+  "next": {
+    "title": "BigNumber",
+    "permalink": "/react-spectrum-charts/docs/docs/api/visualizations/BigNumber"
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "id": "guides/troubleshooting",
+  "title": "Troubleshooting",
+  "description": "Parcel",
+  "source": "@site/docs/guides/troubleshooting.md",
+  "sourceDirName": "guides",
+  "slug": "/guides/troubleshooting",
+  "permalink": "/react-spectrum-charts/docs/docs/guides/troubleshooting",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/adobe/react-spectrum-charts/tree/main/packages/docs/docs/guides/troubleshooting.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "sidebar",
+  "previous": {
+    "title": "Chart Basics",
+    "permalink": "/react-spectrum-charts/docs/docs/guides/chart-basics"
+  },
+  "next": {
+    "title": "Chart",
+    "permalink": "/react-spectrum-charts/docs/docs/api/Chart"
+  }
+}

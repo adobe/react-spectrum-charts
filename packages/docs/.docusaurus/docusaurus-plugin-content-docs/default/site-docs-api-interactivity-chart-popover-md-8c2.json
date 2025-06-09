@@ -1,0 +1,24 @@
+{
+  "id": "api/interactivity/ChartPopover",
+  "title": "ChartPopover",
+  "description": "The ChartPopover component defines the popover that will appear when the user selects a mark on the chart. ChartPopover must be used as a child of Area, Bar, Line, or AxisAnnotation. You should only have one popover defined per Chart visualization.",
+  "source": "@site/docs/api/interactivity/ChartPopover.md",
+  "sourceDirName": "api/interactivity",
+  "slug": "/api/interactivity/ChartPopover",
+  "permalink": "/react-spectrum-charts/docs/docs/api/interactivity/ChartPopover",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/adobe/react-spectrum-charts/tree/main/packages/docs/docs/api/interactivity/ChartPopover.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "sidebar",
+  "previous": {
+    "title": "ChartTooltip",
+    "permalink": "/react-spectrum-charts/docs/docs/api/interactivity/ChartTooltip"
+  },
+  "next": {
+    "title": "Developer Docs",
+    "permalink": "/react-spectrum-charts/docs/docs/Developer-Docs"
+  }
+}

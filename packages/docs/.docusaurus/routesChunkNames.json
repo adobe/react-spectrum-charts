@@ -1,0 +1,98 @@
+{
+  "/react-spectrum-charts/docs/docs-e91": {
+    "__comp": "5e95c892",
+    "__context": {
+      "plugin": "aba21aa0"
+    }
+  },
+  "/react-spectrum-charts/docs/docs-b2a": {
+    "__comp": "a7bd4aaa",
+    "__props": "75eec72e"
+  },
+  "/react-spectrum-charts/docs/docs-a5f": {
+    "__comp": "a94703ab"
+  },
+  "/react-spectrum-charts/docs/docs/api/analysis/MetricRange-433": {
+    "__comp": "17896441",
+    "content": "4fa86c38"
+  },
+  "/react-spectrum-charts/docs/docs/api/analysis/Trendline-e46": {
+    "__comp": "17896441",
+    "content": "ae3ac5cd"
+  },
+  "/react-spectrum-charts/docs/docs/api/Chart-ec3": {
+    "__comp": "17896441",
+    "content": "ed6f9049"
+  },
+  "/react-spectrum-charts/docs/docs/api/components/Axis-34e": {
+    "__comp": "17896441",
+    "content": "27868865"
+  },
+  "/react-spectrum-charts/docs/docs/api/components/Legend-785": {
+    "__comp": "17896441",
+    "content": "90100e79"
+  },
+  "/react-spectrum-charts/docs/docs/api/components/Title-f18": {
+    "__comp": "17896441",
+    "content": "1ac3c13c"
+  },
+  "/react-spectrum-charts/docs/docs/api/interactivity/ChartPopover-ba7": {
+    "__comp": "17896441",
+    "content": "8c2dcef6"
+  },
+  "/react-spectrum-charts/docs/docs/api/interactivity/ChartTooltip-f74": {
+    "__comp": "17896441",
+    "content": "ffe78ee5"
+  },
+  "/react-spectrum-charts/docs/docs/api/visualizations/Area-1af": {
+    "__comp": "17896441",
+    "content": "b4a3f934"
+  },
+  "/react-spectrum-charts/docs/docs/api/visualizations/Bar-5a0": {
+    "__comp": "17896441",
+    "content": "fc4e6d07"
+  },
+  "/react-spectrum-charts/docs/docs/api/visualizations/BigNumber-320": {
+    "__comp": "17896441",
+    "content": "834f8bed"
+  },
+  "/react-spectrum-charts/docs/docs/api/visualizations/Donut-e55": {
+    "__comp": "17896441",
+    "content": "f11a9f67"
+  },
+  "/react-spectrum-charts/docs/docs/api/visualizations/Line-231": {
+    "__comp": "17896441",
+    "content": "50ea99d3"
+  },
+  "/react-spectrum-charts/docs/docs/api/visualizations/Scatter-f4b": {
+    "__comp": "17896441",
+    "content": "d567ed06"
+  },
+  "/react-spectrum-charts/docs/docs/Developer-Docs-2a2": {
+    "__comp": "17896441",
+    "content": "e946f127"
+  },
+  "/react-spectrum-charts/docs/docs/guides/chart-basics-e47": {
+    "__comp": "17896441",
+    "content": "5f1d6096"
+  },
+  "/react-spectrum-charts/docs/docs/guides/troubleshooting-472": {
+    "__comp": "17896441",
+    "content": "03be7dae"
+  },
+  "/react-spectrum-charts/docs/docs/installation-c4e": {
+    "__comp": "17896441",
+    "content": "3b8c55ea"
+  },
+  "/react-spectrum-charts/docs/docs/intro-fcd": {
+    "__comp": "17896441",
+    "content": "0e384e19"
+  },
+  "/react-spectrum-charts/docs/-d95": {
+    "__comp": "c4f5d8e4",
+    "__context": {
+      "plugin": "a7456010"
+    },
+    "config": "5e9f5e1a"
+  }
+}

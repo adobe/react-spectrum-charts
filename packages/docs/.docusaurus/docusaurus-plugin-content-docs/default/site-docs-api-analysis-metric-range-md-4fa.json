@@ -1,0 +1,24 @@
+{
+  "id": "api/analysis/MetricRange",
+  "title": "MetricRange",
+  "description": "The MetricRange component is used to add a custom area mark onto visualizations. MetricRange is only supported for Line components. When creating a MetricRange you define a metricStart and metricEnd for the range that controls the area of the chart it will cover. You can also provide a Metric to create an additional line within the MetricRange. This metric line is not a Trendline and will only display with the data you provide to the Chart.",
+  "source": "@site/docs/api/analysis/MetricRange.md",
+  "sourceDirName": "api/analysis",
+  "slug": "/api/analysis/MetricRange",
+  "permalink": "/react-spectrum-charts/docs/docs/api/analysis/MetricRange",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/adobe/react-spectrum-charts/tree/main/packages/docs/docs/api/analysis/MetricRange.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "sidebar",
+  "previous": {
+    "title": "Scatter",
+    "permalink": "/react-spectrum-charts/docs/docs/api/visualizations/Scatter"
+  },
+  "next": {
+    "title": "Trendline",
+    "permalink": "/react-spectrum-charts/docs/docs/api/analysis/Trendline"
+  }
+}

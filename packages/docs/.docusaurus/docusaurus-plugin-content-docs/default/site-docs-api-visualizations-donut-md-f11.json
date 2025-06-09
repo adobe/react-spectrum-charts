@@ -1,0 +1,24 @@
+{
+  "id": "api/visualizations/Donut",
+  "title": "Donut",
+  "description": "RELEASE CANDIDATE",
+  "source": "@site/docs/api/visualizations/Donut.md",
+  "sourceDirName": "api/visualizations",
+  "slug": "/api/visualizations/Donut",
+  "permalink": "/react-spectrum-charts/docs/docs/api/visualizations/Donut",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/adobe/react-spectrum-charts/tree/main/packages/docs/docs/api/visualizations/Donut.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "sidebar",
+  "previous": {
+    "title": "BigNumber",
+    "permalink": "/react-spectrum-charts/docs/docs/api/visualizations/BigNumber"
+  },
+  "next": {
+    "title": "Line",
+    "permalink": "/react-spectrum-charts/docs/docs/api/visualizations/Line"
+  }
+}

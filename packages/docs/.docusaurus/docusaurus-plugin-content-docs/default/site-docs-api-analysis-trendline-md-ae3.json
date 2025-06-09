@@ -1,0 +1,24 @@
+{
+  "id": "api/analysis/Trendline",
+  "title": "Trendline",
+  "description": "The Trendline component is used to add average lines, regression (trend) lines as well as moving average lines to a cartesean based plot like Area, Bar or Line. Trendline will add a single line of the provided variant to each series in the chart. Styling of the Trendline is inherited from the mark that it is attached to but it is possible to override these values with static values (for example: change the line type so all moving averages are dashed lines).",
+  "source": "@site/docs/api/analysis/Trendline.md",
+  "sourceDirName": "api/analysis",
+  "slug": "/api/analysis/Trendline",
+  "permalink": "/react-spectrum-charts/docs/docs/api/analysis/Trendline",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/adobe/react-spectrum-charts/tree/main/packages/docs/docs/api/analysis/Trendline.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "sidebar",
+  "previous": {
+    "title": "MetricRange",
+    "permalink": "/react-spectrum-charts/docs/docs/api/analysis/MetricRange"
+  },
+  "next": {
+    "title": "Axis",
+    "permalink": "/react-spectrum-charts/docs/docs/api/components/Axis"
+  }
+}

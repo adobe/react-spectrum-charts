@@ -1,0 +1,123 @@
+{
+  "docusaurus-plugin-content-docs": {
+    "default": {
+      "path": "/react-spectrum-charts/docs/docs",
+      "versions": [
+        {
+          "name": "current",
+          "label": "Next",
+          "isLast": true,
+          "path": "/react-spectrum-charts/docs/docs",
+          "mainDocId": "intro",
+          "docs": [
+            {
+              "id": "api/analysis/MetricRange",
+              "path": "/react-spectrum-charts/docs/docs/api/analysis/MetricRange",
+              "sidebar": "sidebar"
+            },
+            {
+              "id": "api/analysis/Trendline",
+              "path": "/react-spectrum-charts/docs/docs/api/analysis/Trendline",
+              "sidebar": "sidebar"
+            },
+            {
+              "id": "api/Chart",
+              "path": "/react-spectrum-charts/docs/docs/api/Chart",
+              "sidebar": "sidebar"
+            },
+            {
+              "id": "api/components/Axis",
+              "path": "/react-spectrum-charts/docs/docs/api/components/Axis",
+              "sidebar": "sidebar"
+            },
+            {
+              "id": "api/components/Legend",
+              "path": "/react-spectrum-charts/docs/docs/api/components/Legend",
+              "sidebar": "sidebar"
+            },
+            {
+              "id": "api/components/Title",
+              "path": "/react-spectrum-charts/docs/docs/api/components/Title",
+              "sidebar": "sidebar"
+            },
+            {
+              "id": "api/interactivity/ChartPopover",
+              "path": "/react-spectrum-charts/docs/docs/api/interactivity/ChartPopover",
+              "sidebar": "sidebar"
+            },
+            {
+              "id": "api/interactivity/ChartTooltip",
+              "path": "/react-spectrum-charts/docs/docs/api/interactivity/ChartTooltip",
+              "sidebar": "sidebar"
+            },
+            {
+              "id": "api/visualizations/Area",
+              "path": "/react-spectrum-charts/docs/docs/api/visualizations/Area",
+              "sidebar": "sidebar"
+            },
+            {
+              "id": "api/visualizations/Bar",
+              "path": "/react-spectrum-charts/docs/docs/api/visualizations/Bar",
+              "sidebar": "sidebar"
+            },
+            {
+              "id": "api/visualizations/BigNumber",
+              "path": "/react-spectrum-charts/docs/docs/api/visualizations/BigNumber",
+              "sidebar": "sidebar"
+            },
+            {
+              "id": "api/visualizations/Donut",
+              "path": "/react-spectrum-charts/docs/docs/api/visualizations/Donut",
+              "sidebar": "sidebar"
+            },
+            {
+              "id": "api/visualizations/Line",
+              "path": "/react-spectrum-charts/docs/docs/api/visualizations/Line",
+              "sidebar": "sidebar"
+            },
+            {
+              "id": "api/visualizations/Scatter",
+              "path": "/react-spectrum-charts/docs/docs/api/visualizations/Scatter",
+              "sidebar": "sidebar"
+            },
+            {
+              "id": "Developer-Docs",
+              "path": "/react-spectrum-charts/docs/docs/Developer-Docs",
+              "sidebar": "sidebar"
+            },
+            {
+              "id": "guides/chart-basics",
+              "path": "/react-spectrum-charts/docs/docs/guides/chart-basics",
+              "sidebar": "sidebar"
+            },
+            {
+              "id": "guides/troubleshooting",
+              "path": "/react-spectrum-charts/docs/docs/guides/troubleshooting",
+              "sidebar": "sidebar"
+            },
+            {
+              "id": "installation",
+              "path": "/react-spectrum-charts/docs/docs/installation",
+              "sidebar": "sidebar"
+            },
+            {
+              "id": "intro",
+              "path": "/react-spectrum-charts/docs/docs/intro",
+              "sidebar": "sidebar"
+            }
+          ],
+          "draftIds": [],
+          "sidebars": {
+            "sidebar": {
+              "link": {
+                "path": "/react-spectrum-charts/docs/docs/intro",
+                "label": "intro"
+              }
+            }
+          }
+        }
+      ],
+      "breadcrumbs": true
+    }
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "id": "api/visualizations/Area",
+  "title": "Area",
+  "description": "The Area component is used to display area charts. You can specify the type of data that the area is being trended over (linear data, time data or point data) with the scaleType prop. It's also possible to define tooltips and on-click popovers for the area using the ChartTooltip and ChartPopover components respectively as children.",
+  "source": "@site/docs/api/visualizations/Area.md",
+  "sourceDirName": "api/visualizations",
+  "slug": "/api/visualizations/Area",
+  "permalink": "/react-spectrum-charts/docs/docs/api/visualizations/Area",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/adobe/react-spectrum-charts/tree/main/packages/docs/docs/api/visualizations/Area.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "sidebar",
+  "previous": {
+    "title": "Chart",
+    "permalink": "/react-spectrum-charts/docs/docs/api/Chart"
+  },
+  "next": {
+    "title": "Bar",
+    "permalink": "/react-spectrum-charts/docs/docs/api/visualizations/Bar"
+  }
+}

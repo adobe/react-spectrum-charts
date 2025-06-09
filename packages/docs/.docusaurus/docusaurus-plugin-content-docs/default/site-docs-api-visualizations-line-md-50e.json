@@ -1,0 +1,24 @@
+{
+  "id": "api/visualizations/Line",
+  "title": "Line",
+  "description": "The Line component is used to display line charts. You can specify the type of data that the line is being trended over with the scaleType prop. You can add Trendlines and MetricRanges as children to show trends in your data or include a ranged area of data in addition to the line. It's also possible to define tooltips and on-click popovers for the line using the ChartTooltip and ChartPopover components respectively as children.",
+  "source": "@site/docs/api/visualizations/Line.md",
+  "sourceDirName": "api/visualizations",
+  "slug": "/api/visualizations/Line",
+  "permalink": "/react-spectrum-charts/docs/docs/api/visualizations/Line",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/adobe/react-spectrum-charts/tree/main/packages/docs/docs/api/visualizations/Line.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "sidebar",
+  "previous": {
+    "title": "Donut",
+    "permalink": "/react-spectrum-charts/docs/docs/api/visualizations/Donut"
+  },
+  "next": {
+    "title": "Scatter",
+    "permalink": "/react-spectrum-charts/docs/docs/api/visualizations/Scatter"
+  }
+}

@@ -1,0 +1,393 @@
+{
+  "entrypoints": [
+    "main"
+  ],
+  "origins": {
+    "723": [
+      723
+    ],
+    "17896441": [
+      869,
+      401
+    ],
+    "27868865": [
+      107
+    ],
+    "main": [
+      354,
+      869,
+      792
+    ],
+    "runtime~main": [
+      792,
+      869,
+      354
+    ],
+    "03be7dae": [
+      768
+    ],
+    "0e384e19": [
+      976
+    ],
+    "1ac3c13c": [
+      845
+    ],
+    "3b8c55ea": [
+      803
+    ],
+    "4fa86c38": [
+      54
+    ],
+    "50ea99d3": [
+      591
+    ],
+    "5e95c892": [
+      647
+    ],
+    "5f1d6096": [
+      446
+    ],
+    "75eec72e": [
+      0
+    ],
+    "834f8bed": [
+      87
+    ],
+    "8c2dcef6": [
+      842
+    ],
+    "90100e79": [
+      418
+    ],
+    "a7456010": [
+      235
+    ],
+    "a7bd4aaa": [
+      98
+    ],
+    "a94703ab": [
+      869,
+      48
+    ],
+    "aba21aa0": [
+      742
+    ],
+    "ae3ac5cd": [
+      864
+    ],
+    "b4a3f934": [
+      659
+    ],
+    "c4f5d8e4": [
+      869,
+      634
+    ],
+    "d567ed06": [
+      38
+    ],
+    "e946f127": [
+      389
+    ],
+    "ed6f9049": [
+      942
+    ],
+    "f11a9f67": [
+      610
+    ],
+    "fc4e6d07": [
+      934
+    ],
+    "ffe78ee5": [
+      372
+    ],
+    "styles": [
+      48,
+      354,
+      401,
+      634,
+      792,
+      869
+    ]
+  },
+  "assets": {
+    "0": {
+      "js": [
+        {
+          "file": "assets/js/75eec72e.9b99f0ce.js",
+          "hash": "b551cf104e9b1045",
+          "publicPath": "/react-spectrum-charts/docs/assets/js/75eec72e.9b99f0ce.js"
+        }
+      ]
+    },
+    "38": {
+      "js": [
+        {
+          "file": "assets/js/d567ed06.a88e5478.js",
+          "hash": "0a66b9d61dcbbaee",
+          "publicPath": "/react-spectrum-charts/docs/assets/js/d567ed06.a88e5478.js"
+        }
+      ]
+    },
+    "48": {
+      "js": [
+        {
+          "file": "assets/js/a94703ab.1325d676.js",
+          "hash": "3c78371dc76fd539",
+          "publicPath": "/react-spectrum-charts/docs/assets/js/a94703ab.1325d676.js"
+        }
+      ]
+    },
+    "54": {
+      "js": [
+        {
+          "file": "assets/js/4fa86c38.276cbf9b.js",
+          "hash": "43efeb9882a0b4c2",
+          "publicPath": "/react-spectrum-charts/docs/assets/js/4fa86c38.276cbf9b.js"
+        }
+      ]
+    },
+    "87": {
+      "js": [
+        {
+          "file": "assets/js/834f8bed.b7e66306.js",
+          "hash": "d74f64128b142bd1",
+          "publicPath": "/react-spectrum-charts/docs/assets/js/834f8bed.b7e66306.js"
+        }
+      ]
+    },
+    "98": {
+      "js": [
+        {
+          "file": "assets/js/a7bd4aaa.79c8bcb2.js",
+          "hash": "b1a87ea308357534",
+          "publicPath": "/react-spectrum-charts/docs/assets/js/a7bd4aaa.79c8bcb2.js"
+        }
+      ]
+    },
+    "107": {
+      "js": [
+        {
+          "file": "assets/js/27868865.88ad9dc2.js",
+          "hash": "de71f6a5866ad461",
+          "publicPath": "/react-spectrum-charts/docs/assets/js/27868865.88ad9dc2.js"
+        }
+      ]
+    },
+    "235": {
+      "js": [
+        {
+          "file": "assets/js/a7456010.c7c2a703.js",
+          "hash": "8663eaefa3db39fb",
+          "publicPath": "/react-spectrum-charts/docs/assets/js/a7456010.c7c2a703.js"
+        }
+      ]
+    },
+    "354": {
+      "js": [
+        {
+          "file": "assets/js/runtime~main.2eba072a.js",
+          "hash": "0518b84a746da120",
+          "publicPath": "/react-spectrum-charts/docs/assets/js/runtime~main.2eba072a.js"
+        }
+      ]
+    },
+    "372": {
+      "js": [
+        {
+          "file": "assets/js/ffe78ee5.7dae0b75.js",
+          "hash": "ecd306afc865da05",
+          "publicPath": "/react-spectrum-charts/docs/assets/js/ffe78ee5.7dae0b75.js"
+        }
+      ]
+    },
+    "389": {
+      "js": [
+        {
+          "file": "assets/js/e946f127.c948e271.js",
+          "hash": "38bfa5b6a6abd1c9",
+          "publicPath": "/react-spectrum-charts/docs/assets/js/e946f127.c948e271.js"
+        }
+      ]
+    },
+    "401": {
+      "js": [
+        {
+          "file": "assets/js/17896441.b843bc31.js",
+          "hash": "73ce04e2222c7647",
+          "publicPath": "/react-spectrum-charts/docs/assets/js/17896441.b843bc31.js"
+        }
+      ]
+    },
+    "418": {
+      "js": [
+        {
+          "file": "assets/js/90100e79.882c3d30.js",
+          "hash": "66d170dcf2eb6fea",
+          "publicPath": "/react-spectrum-charts/docs/assets/js/90100e79.882c3d30.js"
+        }
+      ]
+    },
+    "446": {
+      "js": [
+        {
+          "file": "assets/js/5f1d6096.06a9dfa2.js",
+          "hash": "89f173fc92cc981e",
+          "publicPath": "/react-spectrum-charts/docs/assets/js/5f1d6096.06a9dfa2.js"
+        }
+      ]
+    },
+    "591": {
+      "js": [
+        {
+          "file": "assets/js/50ea99d3.1433490f.js",
+          "hash": "d92a36a94fafc40b",
+          "publicPath": "/react-spectrum-charts/docs/assets/js/50ea99d3.1433490f.js"
+        }
+      ]
+    },
+    "610": {
+      "js": [
+        {
+          "file": "assets/js/f11a9f67.ecd8c356.js",
+          "hash": "c43fbe34c1944c70",
+          "publicPath": "/react-spectrum-charts/docs/assets/js/f11a9f67.ecd8c356.js"
+        }
+      ]
+    },
+    "634": {
+      "js": [
+        {
+          "file": "assets/js/c4f5d8e4.212be1b8.js",
+          "hash": "425233d8a498eeeb",
+          "publicPath": "/react-spectrum-charts/docs/assets/js/c4f5d8e4.212be1b8.js"
+        }
+      ]
+    },
+    "647": {
+      "js": [
+        {
+          "file": "assets/js/5e95c892.d4578cbd.js",
+          "hash": "7a6d3ba72b3449a5",
+          "publicPath": "/react-spectrum-charts/docs/assets/js/5e95c892.d4578cbd.js"
+        }
+      ]
+    },
+    "659": {
+      "js": [
+        {
+          "file": "assets/js/b4a3f934.370689c8.js",
+          "hash": "97b8f14567800064",
+          "publicPath": "/react-spectrum-charts/docs/assets/js/b4a3f934.370689c8.js"
+        }
+      ]
+    },
+    "723": {
+      "js": [
+        {
+          "file": "assets/js/723.92ab183c.js",
+          "hash": "7349fa4d5de31dc4",
+          "publicPath": "/react-spectrum-charts/docs/assets/js/723.92ab183c.js"
+        }
+      ]
+    },
+    "742": {
+      "js": [
+        {
+          "file": "assets/js/aba21aa0.fba8010b.js",
+          "hash": "829d37238c8d4a3b",
+          "publicPath": "/react-spectrum-charts/docs/assets/js/aba21aa0.fba8010b.js"
+        }
+      ]
+    },
+    "768": {
+      "js": [
+        {
+          "file": "assets/js/03be7dae.3e0accaa.js",
+          "hash": "16fe8b8877857cf6",
+          "publicPath": "/react-spectrum-charts/docs/assets/js/03be7dae.3e0accaa.js"
+        }
+      ]
+    },
+    "792": {
+      "js": [
+        {
+          "file": "assets/js/main.69c62e1e.js",
+          "hash": "c3741f04ab4d5ed0",
+          "publicPath": "/react-spectrum-charts/docs/assets/js/main.69c62e1e.js"
+        }
+      ]
+    },
+    "803": {
+      "js": [
+        {
+          "file": "assets/js/3b8c55ea.43d3891c.js",
+          "hash": "3c4aa2b1b6db3dd1",
+          "publicPath": "/react-spectrum-charts/docs/assets/js/3b8c55ea.43d3891c.js"
+        }
+      ]
+    },
+    "842": {
+      "js": [
+        {
+          "file": "assets/js/8c2dcef6.4d198eab.js",
+          "hash": "0345f54fc99b5fcb",
+          "publicPath": "/react-spectrum-charts/docs/assets/js/8c2dcef6.4d198eab.js"
+        }
+      ]
+    },
+    "845": {
+      "js": [
+        {
+          "file": "assets/js/1ac3c13c.44b6c04c.js",
+          "hash": "65375a9562b30304",
+          "publicPath": "/react-spectrum-charts/docs/assets/js/1ac3c13c.44b6c04c.js"
+        }
+      ]
+    },
+    "864": {
+      "js": [
+        {
+          "file": "assets/js/ae3ac5cd.971070fa.js",
+          "hash": "f809983d9292b411",
+          "publicPath": "/react-spectrum-charts/docs/assets/js/ae3ac5cd.971070fa.js"
+        }
+      ]
+    },
+    "869": {
+      "css": [
+        {
+          "file": "assets/css/styles.36fd3d91.css",
+          "hash": "822b37ce3c34f0c6",
+          "publicPath": "/react-spectrum-charts/docs/assets/css/styles.36fd3d91.css"
+        }
+      ]
+    },
+    "934": {
+      "js": [
+        {
+          "file": "assets/js/fc4e6d07.a6596af6.js",
+          "hash": "2d997bd865890947",
+          "publicPath": "/react-spectrum-charts/docs/assets/js/fc4e6d07.a6596af6.js"
+        }
+      ]
+    },
+    "942": {
+      "js": [
+        {
+          "file": "assets/js/ed6f9049.689b033d.js",
+          "hash": "29087a55ea2e1f61",
+          "publicPath": "/react-spectrum-charts/docs/assets/js/ed6f9049.689b033d.js"
+        }
+      ]
+    },
+    "976": {
+      "js": [
+        {
+          "file": "assets/js/0e384e19.80102103.js",
+          "hash": "629a71df9c2c2ca8",
+          "publicPath": "/react-spectrum-charts/docs/assets/js/0e384e19.80102103.js"
+        }
+      ]
+    }
+  }
+}

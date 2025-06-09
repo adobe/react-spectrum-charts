@@ -1,0 +1,24 @@
+{
+  "id": "api/components/Axis",
+  "title": "Axis",
+  "description": "The Axis component is used to display the axis, axis labels and grid marks. An axis is not required if you would like something like a sparkline visualization.",
+  "source": "@site/docs/api/components/Axis.md",
+  "sourceDirName": "api/components",
+  "slug": "/api/components/Axis",
+  "permalink": "/react-spectrum-charts/docs/docs/api/components/Axis",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/adobe/react-spectrum-charts/tree/main/packages/docs/docs/api/components/Axis.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "sidebar",
+  "previous": {
+    "title": "Trendline",
+    "permalink": "/react-spectrum-charts/docs/docs/api/analysis/Trendline"
+  },
+  "next": {
+    "title": "Legend",
+    "permalink": "/react-spectrum-charts/docs/docs/api/components/Legend"
+  }
+}

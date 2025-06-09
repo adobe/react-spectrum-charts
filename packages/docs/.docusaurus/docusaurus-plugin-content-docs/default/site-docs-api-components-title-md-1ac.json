@@ -1,0 +1,24 @@
+{
+  "id": "api/components/Title",
+  "title": "Title",
+  "description": "The Title component is used to add a title to a chart. Only a single title is supported. In cases where multiple Titles are provided, only the last Title will be used.",
+  "source": "@site/docs/api/components/Title.md",
+  "sourceDirName": "api/components",
+  "slug": "/api/components/Title",
+  "permalink": "/react-spectrum-charts/docs/docs/api/components/Title",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/adobe/react-spectrum-charts/tree/main/packages/docs/docs/api/components/Title.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "sidebar",
+  "previous": {
+    "title": "Legend",
+    "permalink": "/react-spectrum-charts/docs/docs/api/components/Legend"
+  },
+  "next": {
+    "title": "ChartTooltip",
+    "permalink": "/react-spectrum-charts/docs/docs/api/interactivity/ChartTooltip"
+  }
+}

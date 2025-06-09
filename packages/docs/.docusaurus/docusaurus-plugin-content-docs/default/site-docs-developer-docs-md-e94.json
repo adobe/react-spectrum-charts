@@ -1,0 +1,20 @@
+{
+  "id": "Developer-Docs",
+  "title": "Developer Docs",
+  "description": "What is react-spectrum-charts?",
+  "source": "@site/docs/Developer-Docs.md",
+  "sourceDirName": ".",
+  "slug": "/Developer-Docs",
+  "permalink": "/react-spectrum-charts/docs/docs/Developer-Docs",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/adobe/react-spectrum-charts/tree/main/packages/docs/docs/Developer-Docs.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "sidebar",
+  "previous": {
+    "title": "ChartPopover",
+    "permalink": "/react-spectrum-charts/docs/docs/api/interactivity/ChartPopover"
+  }
+}

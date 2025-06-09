@@ -1,0 +1,24 @@
+{
+  "id": "api/visualizations/BigNumber",
+  "title": "BigNumber",
+  "description": "The BigNumber component calls attention to a specified data metric. A BigNumber gets its data from a parent Chart.",
+  "source": "@site/docs/api/visualizations/BigNumber.md",
+  "sourceDirName": "api/visualizations",
+  "slug": "/api/visualizations/BigNumber",
+  "permalink": "/react-spectrum-charts/docs/docs/api/visualizations/BigNumber",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/adobe/react-spectrum-charts/tree/main/packages/docs/docs/api/visualizations/BigNumber.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "sidebar",
+  "previous": {
+    "title": "Bar",
+    "permalink": "/react-spectrum-charts/docs/docs/api/visualizations/Bar"
+  },
+  "next": {
+    "title": "Donut",
+    "permalink": "/react-spectrum-charts/docs/docs/api/visualizations/Donut"
+  }
+}

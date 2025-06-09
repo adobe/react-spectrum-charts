@@ -1,0 +1,24 @@
+{
+  "id": "api/interactivity/ChartTooltip",
+  "title": "ChartTooltip",
+  "description": "The ChartTooltip component is used to setup hover tooltips for data on the chart. ChartTooltip must be used as a child of another component such as Bar, Area, Line or Trendline.",
+  "source": "@site/docs/api/interactivity/ChartTooltip.md",
+  "sourceDirName": "api/interactivity",
+  "slug": "/api/interactivity/ChartTooltip",
+  "permalink": "/react-spectrum-charts/docs/docs/api/interactivity/ChartTooltip",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/adobe/react-spectrum-charts/tree/main/packages/docs/docs/api/interactivity/ChartTooltip.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "sidebar",
+  "previous": {
+    "title": "Title",
+    "permalink": "/react-spectrum-charts/docs/docs/api/components/Title"
+  },
+  "next": {
+    "title": "ChartPopover",
+    "permalink": "/react-spectrum-charts/docs/docs/api/interactivity/ChartPopover"
+  }
+}

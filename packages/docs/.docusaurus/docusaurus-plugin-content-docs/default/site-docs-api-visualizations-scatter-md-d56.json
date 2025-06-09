@@ -1,0 +1,24 @@
+{
+  "id": "api/visualizations/Scatter",
+  "title": "Scatter",
+  "description": "The Scatter component is used to display scatter plots. Scatter plots use continuous data for both the x and y axes. They are most useful for comparing two continuous values across many different points.",
+  "source": "@site/docs/api/visualizations/Scatter.md",
+  "sourceDirName": "api/visualizations",
+  "slug": "/api/visualizations/Scatter",
+  "permalink": "/react-spectrum-charts/docs/docs/api/visualizations/Scatter",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/adobe/react-spectrum-charts/tree/main/packages/docs/docs/api/visualizations/Scatter.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "sidebar",
+  "previous": {
+    "title": "Line",
+    "permalink": "/react-spectrum-charts/docs/docs/api/visualizations/Line"
+  },
+  "next": {
+    "title": "MetricRange",
+    "permalink": "/react-spectrum-charts/docs/docs/api/analysis/MetricRange"
+  }
+}

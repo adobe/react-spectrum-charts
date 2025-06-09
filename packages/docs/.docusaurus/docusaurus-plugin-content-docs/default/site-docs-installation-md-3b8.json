@@ -1,0 +1,24 @@
+{
+  "id": "installation",
+  "title": "Installation",
+  "description": "This guide will help you get started with React Spectrum Charts in your project.",
+  "source": "@site/docs/installation.md",
+  "sourceDirName": ".",
+  "slug": "/installation",
+  "permalink": "/react-spectrum-charts/docs/docs/installation",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/adobe/react-spectrum-charts/tree/main/packages/docs/docs/installation.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "sidebar",
+  "previous": {
+    "title": "Introduction to React Spectrum Charts",
+    "permalink": "/react-spectrum-charts/docs/docs/intro"
+  },
+  "next": {
+    "title": "Chart Basics",
+    "permalink": "/react-spectrum-charts/docs/docs/guides/chart-basics"
+  }
+}
