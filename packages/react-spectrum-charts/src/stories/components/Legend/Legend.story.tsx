@@ -53,6 +53,13 @@ Labels.args = { legendLabels, highlight: true, ...defaultProps };
 const LabelLimit = LegendBarStory.bind({});
 LabelLimit.args = { legendLabels: truncatedLegendLabels, ...defaultProps };
 
+const TitleLimit = LegendBarStory.bind({});
+TitleLimit.args = {
+	title: 'Very long legend title that should be truncated',
+	titleLimit: 250,
+	...defaultProps,
+};
+
 const OnClick = LegendBarStory.bind({});
 OnClick.args = {};
 
@@ -77,4 +84,16 @@ Supreme.args = {
 	title: 'Operating system',
 };
 
-export { Basic, Descriptions, Disconnected, Labels, LabelLimit, OnClick, Popover, Position, Title, Supreme };
+export {
+	Basic,
+	Descriptions,
+	Disconnected,
+	Labels,
+	LabelLimit,
+	TitleLimit,
+	OnClick,
+	Popover,
+	Position,
+	Title,
+	Supreme,
+};

@@ -16,6 +16,7 @@ import { childrenToOptions } from './childrenAdapter';
 
 export const getLegendOptions = ({
 	children,
+	titleLimit,
 	onClick,
 	onMouseOut,
 	onMouseOver,
@@ -25,6 +26,7 @@ export const getLegendOptions = ({
 
 	return {
 		...legendProps,
+		...(titleLimit !== undefined ? { titleLimit } : {}),
 		hasOnClick: Boolean(onClick),
 		hasMouseInteraction: Boolean(onMouseOut || onMouseOver),
 		chartPopovers,

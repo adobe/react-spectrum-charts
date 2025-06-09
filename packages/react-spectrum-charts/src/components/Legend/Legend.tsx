@@ -23,6 +23,7 @@ const Legend: FC<LegendProps> = ({
 	highlight = false,
 	isToggleable = false,
 	legendLabels,
+	titleLimit,
 	lineType,
 	lineWidth,
 	onClick,

@@ -28,7 +28,7 @@ import {
 	waitFor,
 } from '../../../test-utils';
 import '../../../test-utils/__mocks__/matchMedia.mock.js';
-import { Basic, Descriptions, LabelLimit, OnClick, Popover, Position, Supreme, Title } from './Legend.story';
+import { Basic, Descriptions, LabelLimit, OnClick, Popover, Position, Supreme, Title, TitleLimit } from './Legend.story';
 
 /**
  * Wait for the the duration of the legend tooltip hover delay.
@@ -284,6 +284,15 @@ describe('Legend', () => {
 		expect(
 			screen.queryByText('Very long Windows label that will be truncated without a custom labelLimit')
 		).toBeInTheDocument();
+	});
+
+	test('renders with titleLimit', async () => {
+		render(<TitleLimit {...TitleLimit.args} />);
+		const view = await screen.findByRole('graphics-document');
+		expect(view).toBeInTheDocument();
+		// Check that the legend title is present. Note that JSDOM causes this to not match the UI rendered storybook.
+		// We're just testing that the chart renders with the titleLimit prop.
+		expect(screen.getByText('Very long legend title that should be truncated')).toBeInTheDocument();
 	});
 
 	// Legend is not a real React component. This is test just provides test coverage for sonarqube
