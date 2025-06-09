@@ -21,6 +21,18 @@ The `Title` component is used to add a title to a chart. Only a single title is 
     </thead>
     <tbody>
         <tr>
+            <td>text</td>
+            <td>string</td>
+            <td>-</td>
+            <td>The title text.</td>
+        </tr>
+        <tr>
+            <td>position</td>
+            <td>'start' | 'middle' | 'end'</td>
+            <td>'middle'</td>
+            <td>The horizontal position of the title.</td>
+        </tr>
+        <tr>
             <td>fontWeight</td>
             <td>'normal' | 'bold' | 'lighter' | 'bolder' | 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900</td>
             <td>'bold'</td>
@@ -30,19 +42,7 @@ The `Title` component is used to add a title to a chart. Only a single title is 
             <td>orient</td>
             <td>'top' | 'bottom' | 'left' | 'right'</td>
             <td>'top'</td>
-            <td>The position of the title relative to the chart.</td>
-        </tr>
-        <tr>
-            <td>position</td>
-            <td>'start' | 'middle' | 'end'</td>
-            <td>'middle'</td>
-            <td>The horizontal position of the title.</td>
-        </tr>
-        <tr>
-            <td>text</td>
-            <td>string</td>
-            <td>''</td>
-            <td>The text to display in the title.</td>
+            <td>The location of the title relative to the chart.</td>
         </tr>
     </tbody>
 </table>

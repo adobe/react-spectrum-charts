@@ -25,10 +25,16 @@ The `Legend` component is used to display a legend for the visualization.
       <td>Overrides the default symbol fill and stroke color. If a string is provided, this is a data key reference, similar to setting `color` on a mark like `Line` or `Bar`. If a static value object is provided then all symbols will be the color provided. Css color names and spectrum color names are supported for the static color value.</td>
     </tr>
     <tr>
-      <td>descriptions</td>
-      <td>\{seriesName: string, description: string}[]</td>
+      <td>defaultHiddenSeries</td>
+      <td>string[]</td>
       <td>–</td>
-      <td>An array of objects containing a `seriesName` and `description` property. The seriesName must match the value of the series property on the chart data being passed in. If set, a tooltip will appear after a short delay when you hover over a legend element. The contents of the tooltip will be the description found in the key-value pair.</td>
+      <td>Series that should be hidden by default (uncontrolled). This is different from `hiddenEntries` which only hides entries from the legend, whereas `defaultHiddenSeries` hides the series from both the legend and the chart.</td>
+    </tr>
+    <tr>
+      <td>descriptions</td>
+      <td>\{seriesName: string, description: string, title?: string}[]</td>
+      <td>–</td>
+      <td>An array of objects containing a `seriesName`, `description`, and optional `title` property. The seriesName must match the value of the series property on the chart data being passed in. If set, a tooltip will appear after a short delay when you hover over a legend element. The contents of the tooltip will be the description found in the key-value pair.</td>
     </tr>
     <tr>
       <td>hiddenEntries</td>
@@ -49,10 +55,22 @@ The `Legend` component is used to display a legend for the visualization.
       <td>Sets if the series should be able to hide/show by clicking on the respective legend entry (uncontrolled).</td>
     </tr>
     <tr>
+      <td>keys</td>
+      <td>string[]</td>
+      <td>–</td>
+      <td>Keys from the data to generate the legend for. Defaults to all keys used to facet the data. Use this prop to limit which data fields should appear in the legend.</td>
+    </tr>
+    <tr>
+      <td>labelLimit</td>
+      <td>number</td>
+      <td>–</td>
+      <td>Max width in pixels before truncating a legend label. If not specified, labels will not be truncated.</td>
+    </tr>
+    <tr>
       <td>legendLabels</td>
-      <td>\{seriesName: string, label: string}[]</td>
+      <td>\{seriesName: string | number, label: string, maxLength?: number}[]</td>
       <td>-</td>
-      <td>Defines custom labels to display in place of the series value for data. If one series has an override, any series that don't have an override will display their series value.</td>
+      <td>Defines custom labels to display in place of the series value for data. If one series has an override, any series that don't have an override will display their series value. The optional `maxLength` property can be used to truncate individual labels.</td>
     </tr>
     <tr>
       <td>lineType</td>
@@ -101,6 +119,12 @@ The `Legend` component is used to display a legend for the visualization.
       <td>string</td>
       <td>–</td>
       <td>Defines the legend title.</td>
+    </tr>
+    <tr>
+      <td>titleLimit</td>
+      <td>number</td>
+      <td>–</td>
+      <td>The maximum allowed length in pixels of the legend title. If the title exceeds this length, it will be truncated.</td>
     </tr>
   </tbody>
 </table>
