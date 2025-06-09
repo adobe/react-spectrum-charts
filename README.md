@@ -14,6 +14,10 @@
 
 ![Scatter plot of penguin bill dimensions by species and body mass](https://github.com/adobe/react-spectrum-charts/wiki/images/penguins.png)
 
+## Documentation
+
+[React Spectrum Charts documentation](https://opensource.adobe.com/react-spectrum-charts/docs)
+
 ## Table of Contents
 
 -   [React Spectrum Charts](#react-spectrum-charts)
