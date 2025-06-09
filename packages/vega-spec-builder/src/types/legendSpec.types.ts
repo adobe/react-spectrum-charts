@@ -62,6 +62,8 @@ export interface LegendOptions {
 	symbolShape?: SymbolShapeFacet;
 	/** legend title */
 	title?: string;
+	/** The maximum allowed length in pixels of the legend title. */
+	titleLimit?: number;
 
 	// children
 	chartPopovers?: ChartPopoverOptions[];

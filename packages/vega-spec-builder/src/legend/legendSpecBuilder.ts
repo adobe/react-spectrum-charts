@@ -197,8 +197,8 @@ export const formatFacetRefsWithPresets = (
  * @returns
  */
 const getCategoricalLegend = (facets: Facet[], options: LegendSpecOptions): Legend => {
-	const { name, position, title, labelLimit } = options;
-	return {
+	const { name, position, title, labelLimit, titleLimit } = options;
+	const legend: Legend = {
 		fill: `${name}Entries`,
 		direction: ['top', 'bottom'].includes(position) ? 'horizontal' : 'vertical',
 		orient: position,
@@ -207,6 +207,8 @@ const getCategoricalLegend = (facets: Facet[], options: LegendSpecOptions): Lege
 		columns: getColumns(position),
 		labelLimit,
 	};
+	if (titleLimit !== undefined) legend.titleLimit = titleLimit;
+	return legend;
 };
 
 /**
@@ -233,8 +235,14 @@ export const getContinuousLegend = (facet: Facet, options: LegendSpecOptions): L
 	};
 };
 
-const getLegendLayout = ({ position, title }: LegendSpecOptions): Partial<Legend> => {
-	return { direction: ['top', 'bottom'].includes(position) ? 'horizontal' : 'vertical', orient: position, title };
+const getLegendLayout = ({ position, title, titleLimit }: LegendSpecOptions): Partial<Legend> => {
+	const layout: Partial<Legend> = {
+		direction: ['top', 'bottom'].includes(position) ? 'horizontal' : 'vertical',
+		orient: position,
+		title,
+	};
+	if (titleLimit !== undefined) layout.titleLimit = titleLimit;
+	return layout;
 };
 
 /**
