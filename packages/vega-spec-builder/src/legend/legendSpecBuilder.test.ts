@@ -278,6 +278,17 @@ describe('addLegend()', () => {
 			expect(legendSpec.scales).toEqual([...(defaultSpec.scales || []), defaultLegendEntriesScale]);
 		});
 
+		test('should add titleLimit if provided', () => {
+			const legendSpec = addLegend(defaultSpec, {
+				descriptions: [{ seriesName: 'test', description: 'test' }],
+				title: 'My title',
+				titleLimit: 123,
+			});
+			const legend = legendSpec.legends?.[0];
+			expect(legend?.titleLimit).toBe(123);
+			expect(legend?.title).toBe('My title');
+		});
+
 		test('should add fields to scales if they have not been added', () => {
 			const legendSpec = addLegend(
 				{ ...defaultSpec, scales: [{ name: COLOR_SCALE, type: 'ordinal' }] },
