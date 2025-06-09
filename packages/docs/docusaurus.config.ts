@@ -73,7 +73,6 @@ const config: Config = {
       ],
     },
     footer: {
-      style: 'dark',
       links: [
         {
           title: 'Docs',
@@ -107,7 +106,7 @@ const config: Config = {
           ],
         },
       ],
-      copyright: `Copyright © ${new Date().getFullYear()} Adobe. Built with Docusaurus.`,
+      copyright: `Copyright © ${new Date().getFullYear()} Adobe. / <a href="https://www.adobe.com/privacy.html">Privacy</a> / <a href="https://www.adobe.com/legal/terms.html">Terms of Use</a> / <a href="https://www.adobe.com/privacy/cookies.html">Cookies</a> / <a href="https://www.adobe.com/privacy/ca-rights.html">Do Not Sell My Personal Information</a>`,
     },
     prism: {
       theme: prismThemes.github,

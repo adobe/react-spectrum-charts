@@ -17,6 +17,7 @@ import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import Layout from '@theme/Layout';
 
 import styles from './index.module.css';
+import HomepageFeatures from '../components/HomepageFeatures';
 
 function HomepageHeader() {
   const {siteConfig} = useDocusaurusContext();
@@ -45,37 +46,7 @@ export default function Home() {
       description={siteConfig.tagline}>
       <HomepageHeader />
       <main>
-        <div className="container">
-          <div className="row">
-            <div className="col col--4">
-              <div className="text--center padding-horiz--md">
-                <h3>Easy to Use</h3>
-                <p>
-                  React Spectrum Charts was designed from the ground up to be easily installed and
-                  used to get your visualization up and running quickly.
-                </p>
-              </div>
-            </div>
-            <div className="col col--4">
-              <div className="text--center padding-horiz--md">
-                <h3>Spectrum Design System</h3>
-                <p>
-                  Built on Adobe&apos;s Spectrum design system, ensuring your charts are beautiful,
-                  accessible, and consistent with Adobe&apos;s design language.
-                </p>
-              </div>
-            </div>
-            <div className="col col--4">
-              <div className="text--center padding-horiz--md">
-                <h3>Powered by React</h3>
-                <p>
-                  Extend or customize chart components using React. React Spectrum Charts can be
-                  extended while reusing the existing components.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
+        <HomepageFeatures />
       </main>
     </Layout>
   );

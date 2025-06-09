@@ -26,7 +26,7 @@ const sidebars: SidebarsConfig = {
       type: 'category',
       label: 'Guides',
       items: [
-        'guides/basic-charts',
+        'guides/chart-basics',
         'guides/troubleshooting',
       ],
     },
@@ -39,6 +39,7 @@ const sidebars: SidebarsConfig = {
         {
           type: 'category',
           label: 'Core Visualizations',
+          collapsed: false,
           items: [
             'api/visualizations/Area',
             'api/visualizations/Bar',

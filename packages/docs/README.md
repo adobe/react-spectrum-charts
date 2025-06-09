@@ -35,17 +35,15 @@ docs/
 ├── docs/
 │   ├── intro.md
 │   ├── installation.md
+│   ├── Developer-Docs.md
 │   ├── guides/
-│   │   ├── basic-charts.md
-│   │   └── customization.md
-│   └── api/
-│       ├── chart-types.md
-│       ├── components.md
-│       └── themes.md
+│   ├── api/
+│   └── supplemental/
 ├── src/
 │   ├── components/
 │   ├── css/
-│   └── pages/
+│   ├── pages/
+│   └── theme/
 └── static/
     └── img/
 ```

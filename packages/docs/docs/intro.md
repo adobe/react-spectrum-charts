@@ -7,9 +7,8 @@ React Spectrum Charts is a declarative library for composing Spectrum visualizat
 - 🎨 **Spectrum Design System**: Built on Adobe's Spectrum design system for consistent and beautiful visualizations
 - ⚛️ **React-First**: Fully integrated with React's component model and lifecycle
 - 📊 **Declarative API**: Create complex visualizations with simple, declarative components
-- ♿️ **Accessibility**: Built-in accessibility features following WCAG guidelines
-- 🎯 **Interactive**: Rich interaction capabilities with events and animations
-- 🛠️ **Customizable**: Extensive theming and customization options
+- 🎯 **Interactive**: Rich interaction capabilities
+- 🛠️ **Feature-Rich**: Extensive API allows for a great balance of simplicity and control
 
 ## Quick Start
 
@@ -49,8 +48,11 @@ function MyChart() {
 }
 ```
 
+![Basic bar chart](/img/bar_basic_light.png#gh-light-mode-only)
+![Basic bar chart](/img/bar_basic_dark.png#gh-dark-mode-only)
+
 ## Next Steps
 
 - Check out the [Installation](installation) guide for detailed setup instructions
-- Learn about basic chart types in the [Basic Charts](guides/basic-charts) guide
+- Learn about basic chart types in the [Basic Charts](guides/chart-basics) guide
 - Explore the [API Reference](api/Chart) for detailed component documentation 

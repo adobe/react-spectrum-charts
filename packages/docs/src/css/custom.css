@@ -48,3 +48,8 @@
 [data-theme="dark"] img[src$="#gh-light-mode-only"] {
   display: none; /* Hide the light mode image in dark mode */
 }
+
+/* Custom footer font size */
+.footer__copyright {
+  font-size: 0.75em;
+}
