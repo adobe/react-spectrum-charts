@@ -18,13 +18,13 @@ import { Children, OnClickCallback } from '../util.types';
 import { BarAnnotationElement, TrendlineElement } from './supplemental';
 
 export interface BarProps
-	extends Omit<
-		BarOptions,
-		'barAnnotations' | 'chartPopovers' | 'chartTooltips' | 'hasOnClick' | 'markType' | 'trendlines'
-	> {
-	children?: Children<BarAnnotationElement | ChartPopoverElement | ChartTooltipElement | TrendlineElement>;
-	/** Callback that will be run when a point/section is clicked */
-	onClick?: OnClickCallback;
+  extends Omit<
+    BarOptions,
+    'barAnnotations' | 'chartPopovers' | 'chartTooltips' | 'hasOnClick' | 'markType' | 'trendlines'
+  > {
+  children?: Children<BarAnnotationElement | ChartPopoverElement | ChartTooltipElement | TrendlineElement>;
+  /** Callback that will be run when a point/section is clicked */
+  onClick?: OnClickCallback;
 }
 
 export type BarElement = ReactElement<BarProps, JSXElementConstructor<BarProps>>;

@@ -14,28 +14,28 @@ import { spectrumColors } from './spectrumColors';
 const colors = spectrumColors.light;
 
 export const categorical6 = [
-	colors['categorical-100'],
-	colors['categorical-200'],
-	colors['categorical-300'],
-	colors['categorical-400'],
-	colors['categorical-500'],
-	colors['categorical-600'],
+  colors['categorical-100'],
+  colors['categorical-200'],
+  colors['categorical-300'],
+  colors['categorical-400'],
+  colors['categorical-500'],
+  colors['categorical-600'],
 ];
 
 export const categorical12 = [
-	...categorical6,
-	colors['categorical-700'],
-	colors['categorical-800'],
-	colors['categorical-900'],
-	colors['categorical-1000'],
-	colors['categorical-1100'],
-	colors['categorical-1200'],
+  ...categorical6,
+  colors['categorical-700'],
+  colors['categorical-800'],
+  colors['categorical-900'],
+  colors['categorical-1000'],
+  colors['categorical-1100'],
+  colors['categorical-1200'],
 ];
 
 export const categorical16 = [
-	...categorical12,
-	colors['categorical-1300'],
-	colors['categorical-1400'],
-	colors['categorical-1500'],
-	colors['categorical-1600'],
+  ...categorical12,
+  colors['categorical-1300'],
+  colors['categorical-1400'],
+  colors['categorical-1500'],
+  colors['categorical-1600'],
 ];

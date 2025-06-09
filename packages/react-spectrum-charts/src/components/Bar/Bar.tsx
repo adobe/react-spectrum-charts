@@ -14,29 +14,29 @@
 import { FC } from 'react';
 
 import {
-	DEFAULT_CATEGORICAL_DIMENSION,
-	DEFAULT_METRIC,
-	PADDING_RATIO,
-	TRELLIS_PADDING,
+  DEFAULT_CATEGORICAL_DIMENSION,
+  DEFAULT_METRIC,
+  PADDING_RATIO,
+  TRELLIS_PADDING,
 } from '@spectrum-charts/constants';
 
 import { BarProps } from '../../types';
 
 const Bar: FC<BarProps> = ({
-	dimension = DEFAULT_CATEGORICAL_DIMENSION,
-	color = { value: 'categorical-100' },
-	metric = DEFAULT_METRIC,
-	metricAxis,
-	type = 'stacked',
-	opacity = { value: 1 },
-	lineType = { value: 'solid' },
-	orientation = 'vertical',
-	trellisOrientation = 'horizontal',
-	trellisPadding = TRELLIS_PADDING,
-	paddingRatio = PADDING_RATIO,
-	paddingOuter,
+  dimension = DEFAULT_CATEGORICAL_DIMENSION,
+  color = { value: 'categorical-100' },
+  metric = DEFAULT_METRIC,
+  metricAxis,
+  type = 'stacked',
+  opacity = { value: 1 },
+  lineType = { value: 'solid' },
+  orientation = 'vertical',
+  trellisOrientation = 'horizontal',
+  trellisPadding = TRELLIS_PADDING,
+  paddingRatio = PADDING_RATIO,
+  paddingOuter,
 }) => {
-	return null;
+  return null;
 };
 
 // displayName is used to validate the component type in the spec builder

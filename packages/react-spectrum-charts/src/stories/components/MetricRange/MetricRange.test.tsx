@@ -13,13 +13,13 @@ import { spectrumColors } from '@spectrum-charts/themes';
 
 import { MetricRange } from '../../../components';
 import {
-	clickNthElement,
-	findAllMarksByGroupName,
-	findChart,
-	findMarksByGroupName,
-	hoverNthElement,
-	queryMarksByGroupName,
-	render,
+  clickNthElement,
+  findAllMarksByGroupName,
+  findChart,
+  findMarksByGroupName,
+  hoverNthElement,
+  queryMarksByGroupName,
+  render,
 } from '../../../test-utils';
 import '../../../test-utils/__mocks__/matchMedia.mock.js';
 import { Basic, DisplayOnHover, WithPopover } from './MetricRange.story';
@@ -27,73 +27,73 @@ import { Basic, DisplayOnHover, WithPopover } from './MetricRange.story';
 const colors = spectrumColors.light;
 
 describe('MetricRange', () => {
-	// MetricRange is not a real React component. This is test just provides test coverage for sonarqube
-	test('MetricRange pseudo element', () => {
-		render(<MetricRange metricEnd="100" metricStart="0" />);
-	});
+  // MetricRange is not a real React component. This is test just provides test coverage for sonarqube
+  test('MetricRange pseudo element', () => {
+    render(<MetricRange metricEnd="100" metricStart="0" />);
+  });
 
-	test('Basic renders properly', async () => {
-		render(<Basic {...Basic.args} />);
-		const chart = await findChart();
-		expect(chart).toBeInTheDocument();
+  test('Basic renders properly', async () => {
+    render(<Basic {...Basic.args} />);
+    const chart = await findChart();
+    expect(chart).toBeInTheDocument();
 
-		const areas = await findAllMarksByGroupName(chart, 'line0MetricRange0_area');
-		expect(areas[0]).toHaveAttribute('opacity', '1');
-		expect(areas[0]).toHaveAttribute('fill-opacity', '0.2');
-		expect(areas[0]).toHaveAttribute('fill', colors['categorical-100']);
-		expect(areas[1]).toHaveAttribute('fill', colors['categorical-200']);
+    const areas = await findAllMarksByGroupName(chart, 'line0MetricRange0_area');
+    expect(areas[0]).toHaveAttribute('opacity', '1');
+    expect(areas[0]).toHaveAttribute('fill-opacity', '0.2');
+    expect(areas[0]).toHaveAttribute('fill', colors['categorical-100']);
+    expect(areas[1]).toHaveAttribute('fill', colors['categorical-200']);
 
-		const lines = await findAllMarksByGroupName(chart, 'line0MetricRange0_line');
-		expect(lines[0]).toHaveAttribute('stroke-opacity', '1');
-		expect(lines[0]).toHaveAttribute('stroke-dasharray', '3,4');
-		expect(lines[0]).toHaveAttribute('stroke-width', '1.5');
-		expect(lines[0]).toHaveAttribute('stroke', colors['categorical-100']);
-		expect(lines[1]).toHaveAttribute('stroke', colors['categorical-200']);
-	});
+    const lines = await findAllMarksByGroupName(chart, 'line0MetricRange0_line');
+    expect(lines[0]).toHaveAttribute('stroke-opacity', '1');
+    expect(lines[0]).toHaveAttribute('stroke-dasharray', '3,4');
+    expect(lines[0]).toHaveAttribute('stroke-width', '1.5');
+    expect(lines[0]).toHaveAttribute('stroke', colors['categorical-100']);
+    expect(lines[1]).toHaveAttribute('stroke', colors['categorical-200']);
+  });
 
-	test('DisplayOnHover renders properly', async () => {
-		render(<DisplayOnHover {...DisplayOnHover.args} />);
-		const chart = await findChart();
-		expect(chart).toBeInTheDocument();
+  test('DisplayOnHover renders properly', async () => {
+    render(<DisplayOnHover {...DisplayOnHover.args} />);
+    const chart = await findChart();
+    expect(chart).toBeInTheDocument();
 
-		expect(queryMarksByGroupName(chart, 'line0MetricRange0_line')).not.toBeInTheDocument();
-		expect(queryMarksByGroupName(chart, 'line0MetricRange0_area')).not.toBeInTheDocument();
+    expect(queryMarksByGroupName(chart, 'line0MetricRange0_line')).not.toBeInTheDocument();
+    expect(queryMarksByGroupName(chart, 'line0MetricRange0_area')).not.toBeInTheDocument();
 
-		const points = await findAllMarksByGroupName(chart, 'line0_voronoi');
-		await hoverNthElement(points, 0);
+    const points = await findAllMarksByGroupName(chart, 'line0_voronoi');
+    await hoverNthElement(points, 0);
 
-		let line = await findMarksByGroupName(chart, 'line0MetricRange0_line');
-		expect(line).toHaveAttribute('stroke', colors['categorical-100']);
-		expect(line).toHaveAttribute('stroke-dasharray', '3,4');
-		expect(line).toHaveAttribute('stroke-width', '1.5');
+    let line = await findMarksByGroupName(chart, 'line0MetricRange0_line');
+    expect(line).toHaveAttribute('stroke', colors['categorical-100']);
+    expect(line).toHaveAttribute('stroke-dasharray', '3,4');
+    expect(line).toHaveAttribute('stroke-width', '1.5');
 
-		let area = await findMarksByGroupName(chart, 'line0MetricRange0_area');
-		expect(area).toHaveAttribute('fill', colors['categorical-100']);
-		expect(area).toHaveAttribute('fill-opacity', '0.2');
+    let area = await findMarksByGroupName(chart, 'line0MetricRange0_area');
+    expect(area).toHaveAttribute('fill', colors['categorical-100']);
+    expect(area).toHaveAttribute('fill-opacity', '0.2');
 
-		await hoverNthElement(points, 7);
+    await hoverNthElement(points, 7);
 
-		line = await findMarksByGroupName(chart, 'line0MetricRange0_line');
-		expect(line).toHaveAttribute('stroke', colors['categorical-200']);
+    line = await findMarksByGroupName(chart, 'line0MetricRange0_line');
+    expect(line).toHaveAttribute('stroke', colors['categorical-200']);
 
-		area = await findMarksByGroupName(chart, 'line0MetricRange0_area');
-		expect(area).toHaveAttribute('fill', colors['categorical-200']);
-	});
+    area = await findMarksByGroupName(chart, 'line0MetricRange0_area');
+    expect(area).toHaveAttribute('fill', colors['categorical-200']);
+  });
 
-	test('Hovered range stays active with popover', async () => {
-		render(<WithPopover {...WithPopover.args} />);
+  test('Hovered range stays active with popover', async () => {
+    render(<WithPopover {...WithPopover.args} />);
 
-		const chart = await findChart();
-		expect(chart).toBeInTheDocument();
+    const chart = await findChart();
+    expect(chart).toBeInTheDocument();
 
-		const points = await findAllMarksByGroupName(chart, 'line0_voronoi');
-		await clickNthElement(points, 0);
+    const points = await findAllMarksByGroupName(chart, 'line0_voronoi');
+    await clickNthElement(points, 0);
 
-		const metricRangeAreas = await findAllMarksByGroupName(chart, 'line0MetricRange0_area');
-		expect(metricRangeAreas[0]).toHaveAttribute('opacity', '1');
-		expect(metricRangeAreas[0]).toHaveAttribute('fill-opacity', '0.2');
+    const metricRangeAreas = await findAllMarksByGroupName(chart, 'line0MetricRange0_area');
+    expect(metricRangeAreas[0]).toHaveAttribute('opacity', '1');
+    expect(metricRangeAreas[0]).toHaveAttribute('fill-opacity', '0.2');
 
-		const metricRangeLines = await findAllMarksByGroupName(chart, 'line0MetricRange0_line');
-		expect(metricRangeLines[0]).toHaveAttribute('stroke-opacity', '1');
-	});
+    const metricRangeLines = await findAllMarksByGroupName(chart, 'line0MetricRange0_line');
+    expect(metricRangeLines[0]).toHaveAttribute('stroke-opacity', '1');
+  });
 });

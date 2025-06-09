@@ -16,22 +16,22 @@ import { FILTERED_TABLE, HIGHLIGHTED_GROUP, MARK_ID, SELECTED_ITEM } from '@spec
 import { getLineHighlightedData } from './lineDataUtils';
 
 describe('getLineHighlightedData()', () => {
-	test('should include select signal if hasPopover', () => {
-		const expr = (
-			getLineHighlightedData('line0', MARK_ID, FILTERED_TABLE, true, false).transform?.[0] as FilterTransform
-		).expr;
-		expect(expr.includes(SELECTED_ITEM)).toBeTruthy();
-	});
-	test('should not include select signal if does not hasPopover', () => {
-		const expr = (
-			getLineHighlightedData('line0', MARK_ID, FILTERED_TABLE, false, false).transform?.[0] as FilterTransform
-		).expr;
-		expect(expr.includes(SELECTED_ITEM)).toBeFalsy();
-	});
-	test('should use groupId if hadGroupId', () => {
-		const expr = (
-			getLineHighlightedData('line0', MARK_ID, FILTERED_TABLE, true, true).transform?.[0] as FilterTransform
-		).expr;
-		expect(expr.includes(HIGHLIGHTED_GROUP)).toBeTruthy();
-	});
+  test('should include select signal if hasPopover', () => {
+    const expr = (
+      getLineHighlightedData('line0', MARK_ID, FILTERED_TABLE, true, false).transform?.[0] as FilterTransform
+    ).expr;
+    expect(expr.includes(SELECTED_ITEM)).toBeTruthy();
+  });
+  test('should not include select signal if does not hasPopover', () => {
+    const expr = (
+      getLineHighlightedData('line0', MARK_ID, FILTERED_TABLE, false, false).transform?.[0] as FilterTransform
+    ).expr;
+    expect(expr.includes(SELECTED_ITEM)).toBeFalsy();
+  });
+  test('should use groupId if hadGroupId', () => {
+    const expr = (
+      getLineHighlightedData('line0', MARK_ID, FILTERED_TABLE, true, true).transform?.[0] as FilterTransform
+    ).expr;
+    expect(expr.includes(HIGHLIGHTED_GROUP)).toBeTruthy();
+  });
 });

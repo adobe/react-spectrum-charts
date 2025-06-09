@@ -12,16 +12,16 @@
 import { getChartPopoverOptions } from './chartPopoverAdapter';
 
 describe('getChartPopoverOptions()', () => {
-	it('should strip out children', () => {
-		const options = getChartPopoverOptions({ children: () => null });
-		expect(options).not.toHaveProperty('children');
-	});
-	it('should pass through included props', () => {
-		const options = getChartPopoverOptions({ height: 200 });
-		expect(options).toHaveProperty('height', 200);
-	});
-	it('should not add props that are not provided', () => {
-		const options = getChartPopoverOptions({});
-		expect(options).not.toHaveProperty('height');
-	});
+  it('should strip out children', () => {
+    const options = getChartPopoverOptions({ children: () => null });
+    expect(options).not.toHaveProperty('children');
+  });
+  it('should pass through included props', () => {
+    const options = getChartPopoverOptions({ height: 200 });
+    expect(options).toHaveProperty('height', 200);
+  });
+  it('should not add props that are not provided', () => {
+    const options = getChartPopoverOptions({});
+    expect(options).not.toHaveProperty('height');
+  });
 });

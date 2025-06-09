@@ -18,6 +18,6 @@ export type ChartTooltipElement = ReactElement<ChartTooltipProps, JSXElementCons
 export type TooltipHandler = (datum: Datum) => ReactNode;
 
 export interface ChartTooltipProps extends ChartTooltipOptions {
-	/** Callback that displays the tooltip content */
-	children?: TooltipHandler;
+  /** Callback that displays the tooltip content */
+  children?: TooltipHandler;
 }

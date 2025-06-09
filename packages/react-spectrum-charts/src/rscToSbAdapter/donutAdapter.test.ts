@@ -19,36 +19,36 @@ import { DonutSummary, SegmentLabel } from '../rc';
 import { getDonutOptions } from './donutAdapter';
 
 describe('getDonutOptions()', () => {
-	it('should return all basic options', () => {
-		const options = getDonutOptions({});
-		expect(options.markType).toBe('donut');
-		expect(options.chartPopovers).toHaveLength(0);
-		expect(options.chartTooltips).toHaveLength(0);
-		expect(options.donutSummaries).toHaveLength(0);
-		expect(options.segmentLabels).toHaveLength(0);
-	});
-	it('should convert popover children to chartPopovers array', () => {
-		const options = getDonutOptions({ children: [createElement(ChartPopover)] });
-		expect(options.chartPopovers).toHaveLength(1);
-	});
-	it('should convert tooltip children to chartTooltips array', () => {
-		const options = getDonutOptions({ children: [createElement(ChartTooltip)] });
-		expect(options.chartTooltips).toHaveLength(1);
-	});
-	it('should convert donnut summary children to donutSummaries array', () => {
-		const options = getDonutOptions({ children: [createElement(DonutSummary)] });
-		expect(options.donutSummaries).toHaveLength(1);
-	});
-	it('should convert segment label children to segmentLabels array', () => {
-		const options = getDonutOptions({ children: [createElement(SegmentLabel)] });
-		expect(options.segmentLabels).toHaveLength(1);
-	});
-	it('should pass through included props', () => {
-		const options = getDonutOptions({ color: DEFAULT_COLOR });
-		expect(options).toHaveProperty('color', DEFAULT_COLOR);
-	});
-	it('should not add props that are not provided', () => {
-		const options = getDonutOptions({});
-		expect(options).not.toHaveProperty('color');
-	});
+  it('should return all basic options', () => {
+    const options = getDonutOptions({});
+    expect(options.markType).toBe('donut');
+    expect(options.chartPopovers).toHaveLength(0);
+    expect(options.chartTooltips).toHaveLength(0);
+    expect(options.donutSummaries).toHaveLength(0);
+    expect(options.segmentLabels).toHaveLength(0);
+  });
+  it('should convert popover children to chartPopovers array', () => {
+    const options = getDonutOptions({ children: [createElement(ChartPopover)] });
+    expect(options.chartPopovers).toHaveLength(1);
+  });
+  it('should convert tooltip children to chartTooltips array', () => {
+    const options = getDonutOptions({ children: [createElement(ChartTooltip)] });
+    expect(options.chartTooltips).toHaveLength(1);
+  });
+  it('should convert donnut summary children to donutSummaries array', () => {
+    const options = getDonutOptions({ children: [createElement(DonutSummary)] });
+    expect(options.donutSummaries).toHaveLength(1);
+  });
+  it('should convert segment label children to segmentLabels array', () => {
+    const options = getDonutOptions({ children: [createElement(SegmentLabel)] });
+    expect(options.segmentLabels).toHaveLength(1);
+  });
+  it('should pass through included props', () => {
+    const options = getDonutOptions({ color: DEFAULT_COLOR });
+    expect(options).toHaveProperty('color', DEFAULT_COLOR);
+  });
+  it('should not add props that are not provided', () => {
+    const options = getDonutOptions({});
+    expect(options).not.toHaveProperty('color');
+  });
 });

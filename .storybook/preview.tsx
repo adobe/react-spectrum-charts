@@ -10,44 +10,44 @@ import { Provider, View, defaultTheme } from '@adobe/react-spectrum';
 import './storybook.css';
 
 const decorators: Decorator[] = [
-	(Story) => {
-		const darkMode = useDarkMode();
-		return (
-			<Provider theme={defaultTheme} colorScheme={darkMode ? 'dark' : 'light'} locale="en-US" height="100vh">
-				<View padding={24} height="calc(100% - 48px)">
-					<Story />
-				</View>
-			</Provider>
-		);
-	},
+  (Story) => {
+    const darkMode = useDarkMode();
+    return (
+      <Provider theme={defaultTheme} colorScheme={darkMode ? 'dark' : 'light'} locale="en-US" height="100vh">
+        <View padding={24} height="calc(100% - 48px)">
+          <Story />
+        </View>
+      </Provider>
+    );
+  },
 ];
 
 const parameters: Parameters = {
-	controls: {
-		expanded: true,
-		// data is huge so we don't want to show it in the controls
-		exclude: ['data'],
-	},
-	backgrounds: { disable: true },
-	docs: {
-		container: (context: any) => {
-			const isDark = useDarkMode();
+  controls: {
+    expanded: true,
+    // data is huge so we don't want to show it in the controls
+    exclude: ['data'],
+  },
+  backgrounds: { disable: true },
+  docs: {
+    container: (context: any) => {
+      const isDark = useDarkMode();
 
-			const props = {
-				...context,
-				theme: isDark ? themes.dark : themes.light,
-			};
+      const props = {
+        ...context,
+        theme: isDark ? themes.dark : themes.light,
+      };
 
-			return <DocsContainer {...props} />;
-		},
-	},
-	actions: { argTypesRegex: '^on[A-Z].*' },
+      return <DocsContainer {...props} />;
+    },
+  },
+  actions: { argTypesRegex: '^on[A-Z].*' },
 };
 
 const preview: Preview = {
-	decorators,
-	parameters,
-	tags: ['autodocs'],
+  decorators,
+  parameters,
+  tags: ['autodocs'],
 };
 
 export default preview;

@@ -57,4 +57,4 @@ If you encounter any issues during installation:
 3. Clear your package manager's cache and node_modules
 4. Try a fresh install
 
-If problems persist, there may be a solution in our [troubleshooting guide](guides/troubleshooting). If not, please check our [GitHub issues](https://github.com/adobe/react-spectrum-charts/issues) or create a new one. 
+If problems persist, there may be a solution in our [troubleshooting guide](guides/troubleshooting). If not, please check our [GitHub issues](https://github.com/adobe/react-spectrum-charts/issues) or create a new one.

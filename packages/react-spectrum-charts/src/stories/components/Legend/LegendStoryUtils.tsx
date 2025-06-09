@@ -20,50 +20,50 @@ import { LegendProps } from '../../../types';
 import { browserData as data } from '../../data/data';
 
 export const LegendBarStory: StoryFn<typeof Legend> = (args): ReactElement => {
-	const chartProps = useChartProps({ data, width: 700 });
-	return (
-		<Chart {...chartProps}>
-			<Bar color="series" />
-			<Legend {...args} />
-			<Axis position="bottom" baseline />
-			<Axis position="left" grid />
-		</Chart>
-	);
+  const chartProps = useChartProps({ data, width: 700 });
+  return (
+    <Chart {...chartProps}>
+      <Bar color="series" />
+      <Legend {...args} />
+      <Axis position="bottom" baseline />
+      <Axis position="left" grid />
+    </Chart>
+  );
 };
 
 export const LegendBarHighlightedSeriesStory: StoryFn<typeof Legend> = (args): ReactElement => {
-	const chartProps = useChartProps({ data, width: 700, highlightedSeries: 'Mac' });
-	return (
-		<Chart {...chartProps}>
-			<Bar color="series" />
-			<Legend {...args} />
-			<Axis position="bottom" baseline />
-			<Axis position="left" grid />
-		</Chart>
-	);
+  const chartProps = useChartProps({ data, width: 700, highlightedSeries: 'Mac' });
+  return (
+    <Chart {...chartProps}>
+      <Bar color="series" />
+      <Legend {...args} />
+      <Axis position="bottom" baseline />
+      <Axis position="left" grid />
+    </Chart>
+  );
 };
 
 export const LegendBarHiddenSeriesStory: StoryFn<typeof Legend> = (args): ReactElement => {
-	const chartProps = useChartProps({ data, width: 700, hiddenSeries: ['Mac'] });
-	return (
-		<Chart {...chartProps}>
-			<Bar color="series" />
-			<Legend {...args} />
-			<Axis position="bottom" baseline />
-			<Axis position="left" grid />
-		</Chart>
-	);
+  const chartProps = useChartProps({ data, width: 700, hiddenSeries: ['Mac'] });
+  return (
+    <Chart {...chartProps}>
+      <Bar color="series" />
+      <Legend {...args} />
+      <Axis position="bottom" baseline />
+      <Axis position="left" grid />
+    </Chart>
+  );
 };
 
 export const LegendDisconnectedStory: StoryFn<typeof Legend> = (args): ReactElement => {
-	const chartProps = useChartProps({ data, width: 700, height: 50 });
-	return (
-		<Chart {...chartProps}>
-			<Legend {...args} />
-		</Chart>
-	);
+  const chartProps = useChartProps({ data, width: 700, height: 50 });
+  return (
+    <Chart {...chartProps}>
+      <Legend {...args} />
+    </Chart>
+  );
 };
 
 export const defaultProps: LegendProps = {
-	onClick: undefined,
+  onClick: undefined,
 };

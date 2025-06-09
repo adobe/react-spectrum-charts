@@ -18,50 +18,50 @@ import { getAxisAnnotationOptions, getAxisOptions } from './axisAdapter';
 const basicAxisProps: AxisProps = { position: 'bottom' };
 
 describe('getAxisOptions()', () => {
-	it('should return all basic options', () => {
-		const options = getAxisOptions(basicAxisProps);
-		expect(options.axisAnnotations).toHaveLength(0);
-		expect(options.referenceLines).toHaveLength(0);
-		expect(options.position).toBe('bottom');
-	});
-	it('should convert AxisAnnotation children to axisAnnotations array', () => {
-		const options = getAxisOptions({ ...basicAxisProps, children: [createElement(AxisAnnotation)] });
-		expect(options.axisAnnotations).toHaveLength(1);
-	});
-	it('should convert ReferenceLine children to referenceLines array', () => {
-		const options = getAxisOptions({ ...basicAxisProps, children: [createElement(ReferenceLine)] });
-		expect(options.referenceLines).toHaveLength(1);
-	});
-	it('should pass through included props', () => {
-		const options = getAxisOptions({ ...basicAxisProps, baseline: true });
-		expect(options).toHaveProperty('baseline', true);
-	});
-	it('should not add props that are not provided', () => {
-		const options = getAxisOptions(basicAxisProps);
-		expect(options).not.toHaveProperty('color');
-	});
+  it('should return all basic options', () => {
+    const options = getAxisOptions(basicAxisProps);
+    expect(options.axisAnnotations).toHaveLength(0);
+    expect(options.referenceLines).toHaveLength(0);
+    expect(options.position).toBe('bottom');
+  });
+  it('should convert AxisAnnotation children to axisAnnotations array', () => {
+    const options = getAxisOptions({ ...basicAxisProps, children: [createElement(AxisAnnotation)] });
+    expect(options.axisAnnotations).toHaveLength(1);
+  });
+  it('should convert ReferenceLine children to referenceLines array', () => {
+    const options = getAxisOptions({ ...basicAxisProps, children: [createElement(ReferenceLine)] });
+    expect(options.referenceLines).toHaveLength(1);
+  });
+  it('should pass through included props', () => {
+    const options = getAxisOptions({ ...basicAxisProps, baseline: true });
+    expect(options).toHaveProperty('baseline', true);
+  });
+  it('should not add props that are not provided', () => {
+    const options = getAxisOptions(basicAxisProps);
+    expect(options).not.toHaveProperty('color');
+  });
 });
 
 describe('getAxisAnnotationOptions()', () => {
-	it('should return all basic options', () => {
-		const options = getAxisAnnotationOptions({});
-		expect(options.chartPopovers).toHaveLength(0);
-		expect(options.chartTooltips).toHaveLength(0);
-	});
-	it('should convert popover children to chartPopovers array', () => {
-		const options = getAxisAnnotationOptions({ children: [createElement(ChartPopover)] });
-		expect(options.chartPopovers).toHaveLength(1);
-	});
-	it('should convert tooltip children to chartTooltips array', () => {
-		const options = getAxisAnnotationOptions({ children: [createElement(ChartTooltip)] });
-		expect(options.chartTooltips).toHaveLength(1);
-	});
-	it('should pass through included props', () => {
-		const options = getAxisAnnotationOptions({ color: 'red' });
-		expect(options).toHaveProperty('color', 'red');
-	});
-	it('should not add props that are not provided', () => {
-		const options = getAxisAnnotationOptions({});
-		expect(options).not.toHaveProperty('color');
-	});
+  it('should return all basic options', () => {
+    const options = getAxisAnnotationOptions({});
+    expect(options.chartPopovers).toHaveLength(0);
+    expect(options.chartTooltips).toHaveLength(0);
+  });
+  it('should convert popover children to chartPopovers array', () => {
+    const options = getAxisAnnotationOptions({ children: [createElement(ChartPopover)] });
+    expect(options.chartPopovers).toHaveLength(1);
+  });
+  it('should convert tooltip children to chartTooltips array', () => {
+    const options = getAxisAnnotationOptions({ children: [createElement(ChartTooltip)] });
+    expect(options.chartTooltips).toHaveLength(1);
+  });
+  it('should pass through included props', () => {
+    const options = getAxisAnnotationOptions({ color: 'red' });
+    expect(options).toHaveProperty('color', 'red');
+  });
+  it('should not add props that are not provided', () => {
+    const options = getAxisAnnotationOptions({});
+    expect(options).not.toHaveProperty('color');
+  });
 });

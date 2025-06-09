@@ -25,7 +25,6 @@ yarn add @adobe/react-spectrum-charts @adobe/react-spectrum vega vega-lite
 pnpm add @adobe/react-spectrum-charts @adobe/react-spectrum vega vega-lite
 ```
 
-
 Create your first chart:
 
 ```jsx
@@ -41,8 +40,8 @@ function MyChart() {
   return (
     <Chart data={data}>
       <Bar />
-      <Axis position="bottom" baseline/>
-      <Axis position="left" grid/>
+      <Axis position="bottom" baseline />
+      <Axis position="left" grid />
     </Chart>
   );
 }
@@ -55,4 +54,4 @@ function MyChart() {
 
 - Check out the [Installation](installation) guide for detailed setup instructions
 - Learn about basic chart types in the [Basic Charts](guides/chart-basics) guide
-- Explore the [API Reference](api/Chart) for detailed component documentation 
+- Explore the [API Reference](api/Chart) for detailed component documentation

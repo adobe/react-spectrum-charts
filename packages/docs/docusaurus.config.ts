@@ -9,10 +9,9 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
-import {themes as prismThemes} from 'prism-react-renderer';
-import type {Config} from '@docusaurus/types';
 import type * as Preset from '@docusaurus/preset-classic';
+import type { Config } from '@docusaurus/types';
+import { themes as prismThemes } from 'prism-react-renderer';
 
 const config: Config = {
   title: 'React Spectrum Charts',
@@ -41,8 +40,7 @@ const config: Config = {
         docs: {
           routeBasePath: 'docs',
           sidebarPath: './sidebars.ts',
-          editUrl:
-            'https://github.com/adobe/react-spectrum-charts/tree/main/packages/docs/',
+          editUrl: 'https://github.com/adobe/react-spectrum-charts/tree/main/packages/docs/',
         },
         theme: {
           customCss: './src/css/custom.css',
@@ -115,4 +113,4 @@ const config: Config = {
   } satisfies Preset.ThemeConfig,
 };
 
-export default config; 
+export default config;

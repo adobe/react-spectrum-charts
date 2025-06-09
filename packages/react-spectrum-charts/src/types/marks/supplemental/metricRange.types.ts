@@ -17,7 +17,7 @@ import { ChartTooltipElement } from '../../dialogs';
 import { Children } from '../../util.types';
 
 export interface MetricRangeProps extends Omit<MetricRangeOptions, 'chartTooltips'> {
-	children?: Children<ChartTooltipElement>;
+  children?: Children<ChartTooltipElement>;
 }
 
 export type MetricRangeElement = ReactElement<MetricRangeProps, JSXElementConstructor<MetricRangeProps>>;

@@ -5,16 +5,8 @@ The `<Chart>` component is a [collection component](https://react-spectrum.adobe
 Charts use Vega to draw the chart. Vega charts can be rendered as either `svg` or `canvas` elements. We recommend using `svg` in most situations. However, if you are plotting data on the order of 10K rows or more, you may want to switch to `canvas` as the renderer. Using `canvas` as the rendered does not add elements to the document for every shape in the visualization, unlike `svg`.
 
 ```jsx
-<Chart
-    data={data}
-    renderer="canvas"
-    description={chartDescription}
-    height={300}
-    width={500}
-    padding={32}
-    theme="light"
->
-    <Line />
+<Chart data={data} renderer="canvas" description={chartDescription} height={300} width={500} padding={32} theme="light">
+  <Line />
 </Chart>
 ```
 
@@ -23,35 +15,30 @@ Charts use Vega to draw the chart. Vega charts can be rendered as either `svg` o
 React-spectrum-charts provides fine-grained control over chart dimensions through several props:
 
 ### Width Controls
+
 - `width`: Can be a number (pixels), 'auto', or a percentage (e.g. '50%')
 - `minWidth`: Minimum width in pixels (default: 100)
 - `maxWidth`: Maximum width in pixels (default: Infinity)
 
 ### Height Controls
+
 - `height`: Can be a number (pixels) or a percentage (e.g. '50%')
 - `minHeight`: Minimum height in pixels (default: 100)
 - `maxHeight`: Maximum height in pixels (default: Infinity)
 
 ### Percentages
+
 Percentage values are calculated based on the size of the charts container element. For example: if the `<Chart>` element is inside of a div that has a width of 500px and the width of the chart is set to 50%, the chart width will be 250px.
 
 These constraints work together to ensure your chart maintains appropriate dimensions across different screen sizes and container widths.
 
 Example:
+
 ```jsx
-<Chart 
-  data={data}
-  width="100%"
-  height={400}
-  minWidth={300}
-  maxWidth={800}
-  minHeight={200}
-  maxHeight={600}
->
+<Chart data={data} width="100%" height={400} minWidth={300} maxWidth={800} minHeight={200} maxHeight={600}>
   <Bar metric="sales" />
 </Chart>
 ```
-
 
 ## Handles
 
@@ -172,10 +159,10 @@ Example:
 
 ```jsx
 <Chart data={data}>
-	<Axis position='bottom' labelFormat='time' granularity='month' baseline />
-	<Axis position='left' grid title="Visitors" />
-	<Line metric="visitors" color="browser" />
-	<Legend position='top' title='Browser' />
+  <Axis position="bottom" labelFormat="time" granularity="month" baseline />
+  <Axis position="left" grid title="Visitors" />
+  <Line metric="visitors" color="browser" />
+  <Legend position="top" title="Browser" />
 </Chart>
 ```
 
@@ -189,10 +176,10 @@ This example sets the lineTypes scale to be `['dotted', 'solid']`. This means th
 
 ```jsx
 <Chart data={data} lineTypes={['dotted', 'solid']}>
-	<Axis position='bottom' labelFormat='time' granularity='day' baseline />
-	<Axis position='left' grid title="Events" />
-	<Line metric="events" color="browser" lineType="version" />
-	<Legend position='bottom' />
+  <Axis position="bottom" labelFormat="time" granularity="day" baseline />
+  <Axis position="left" grid title="Events" />
+  <Line metric="events" color="browser" lineType="version" />
+  <Legend position="bottom" />
 </Chart>
 ```
 
@@ -255,10 +242,7 @@ The chart's background can be customized using the `backgroundColor` prop. By de
 It is recommended to set this prop to the background color of the chart's container element, even if it looks good with the transparent background. The reason for this is chart export. If someone exports your chart (via the copy or download handles) or saves a copy of it (right click on canvas), you want the background color to be saved with the chart. This guarentees that the exported chart will be readable even if it's copied and pasted into a dark or light mode app (like slack).
 
 ```jsx
-<Chart 
-  data={data}
-  backgroundColor="gray-100"
->
+<Chart data={data} backgroundColor="gray-100">
   <Line metric="trend" />
 </Chart>
 ```
@@ -268,18 +252,12 @@ It is recommended to set this prop to the background color of the chart's contai
 The chart integrates with @adobe/react-spectrum's theming system through the `theme` prop. This ensures that components like tooltips and popovers match your application's styling:
 
 ```jsx
-<Chart 
-  data={data}
-  theme={yourSpectrumTheme}
->
+<Chart data={data} theme={yourSpectrumTheme}>
   <Line metric="trend">
-    <ChartTooltip>
-        {() => <View>Hello world!</View>}
-    </ChartTooltip>
+    <ChartTooltip>{() => <View>Hello world!</View>}</ChartTooltip>
   </Line>
 </Chart>
 ```
-
 
 ## Locale
 

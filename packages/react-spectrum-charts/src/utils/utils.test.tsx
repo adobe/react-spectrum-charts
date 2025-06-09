@@ -17,70 +17,70 @@ import { Donut } from '../rc';
 import { getAllElements, getComponentName, sanitizeAxisAnnotationChildren, toggleStringArrayValue } from './utils';
 
 describe('utils', () => {
-	describe('sanitizeAxisAnnotationChildren()', () => {
-		test('should filter out invalid children', () => {
-			const popover = createElement(ChartPopover);
-			const tooltip = createElement(ChartTooltip);
-			const fragment = createElement(Fragment);
-			const children = [popover, tooltip, true, fragment];
-			expect(sanitizeAxisAnnotationChildren(children)).toStrictEqual([popover, tooltip]);
-		});
-		test('should flatten children', () => {
-			const popover = createElement(ChartPopover);
-			const tooltip = createElement(ChartTooltip);
-			expect(sanitizeAxisAnnotationChildren([[popover, tooltip]])).toStrictEqual([popover, tooltip]);
-			expect(sanitizeAxisAnnotationChildren([[popover], tooltip])).toStrictEqual([popover, tooltip]);
-		});
-	});
+  describe('sanitizeAxisAnnotationChildren()', () => {
+    test('should filter out invalid children', () => {
+      const popover = createElement(ChartPopover);
+      const tooltip = createElement(ChartTooltip);
+      const fragment = createElement(Fragment);
+      const children = [popover, tooltip, true, fragment];
+      expect(sanitizeAxisAnnotationChildren(children)).toStrictEqual([popover, tooltip]);
+    });
+    test('should flatten children', () => {
+      const popover = createElement(ChartPopover);
+      const tooltip = createElement(ChartTooltip);
+      expect(sanitizeAxisAnnotationChildren([[popover, tooltip]])).toStrictEqual([popover, tooltip]);
+      expect(sanitizeAxisAnnotationChildren([[popover], tooltip])).toStrictEqual([popover, tooltip]);
+    });
+  });
 
-	describe('toggleStringArrayValue()', () => {
-		test('should add value to target if it does not exist', () => {
-			expect(toggleStringArrayValue(['a', 'b'], 'c')).toStrictEqual(['a', 'b', 'c']);
-			expect(toggleStringArrayValue([], 'a')).toStrictEqual(['a']);
-		});
-		test('should remove value if it already exists in the target', () => {
-			expect(toggleStringArrayValue(['a', 'b', 'c'], 'b')).toStrictEqual(['a', 'c']);
-		});
-	});
+  describe('toggleStringArrayValue()', () => {
+    test('should add value to target if it does not exist', () => {
+      expect(toggleStringArrayValue(['a', 'b'], 'c')).toStrictEqual(['a', 'b', 'c']);
+      expect(toggleStringArrayValue([], 'a')).toStrictEqual(['a']);
+    });
+    test('should remove value if it already exists in the target', () => {
+      expect(toggleStringArrayValue(['a', 'b', 'c'], 'b')).toStrictEqual(['a', 'c']);
+    });
+  });
 
-	describe('getAllElements()', () => {
-		test('should return all matches', () => {
-			const element = (
-				<Chart data={[]}>
-					<Bar>
-						<Trendline>
-							<ChartTooltip />
-						</Trendline>
-					</Bar>
-					<Line name="myLine">
-						<></>
-						<ChartTooltip />
-					</Line>
-					<Line>
-						<ChartTooltip />
-					</Line>
-					<Donut>
-						<ChartTooltip />
-					</Donut>
-				</Chart>
-			);
+  describe('getAllElements()', () => {
+    test('should return all matches', () => {
+      const element = (
+        <Chart data={[]}>
+          <Bar>
+            <Trendline>
+              <ChartTooltip />
+            </Trendline>
+          </Bar>
+          <Line name="myLine">
+            <></>
+            <ChartTooltip />
+          </Line>
+          <Line>
+            <ChartTooltip />
+          </Line>
+          <Donut>
+            <ChartTooltip />
+          </Donut>
+        </Chart>
+      );
 
-			const matches = getAllElements(element, ChartTooltip);
+      const matches = getAllElements(element, ChartTooltip);
 
-			expect(matches).toHaveLength(4);
-			expect(matches[0].name).toBe('bar0Trendline');
-			expect(matches[1].name).toBe('myLine');
-			expect(matches[2].name).toBe('line1');
-			expect(matches[3].name).toBe('donut0');
-		});
-	});
+      expect(matches).toHaveLength(4);
+      expect(matches[0].name).toBe('bar0Trendline');
+      expect(matches[1].name).toBe('myLine');
+      expect(matches[2].name).toBe('line1');
+      expect(matches[3].name).toBe('donut0');
+    });
+  });
 
-	describe('getComponentName()', () => {
-		test('should return default name if name is not in the props passed in', () => {
-			expect(getComponentName(createElement(Bar), 'bar0')).toBe('bar0');
-		});
-		test('should return camelCase name if provide in props', () => {
-			expect(getComponentName(createElement(Bar, { name: 'funnel chart' }), 'bar0')).toBe('funnelChart');
-		});
-	});
+  describe('getComponentName()', () => {
+    test('should return default name if name is not in the props passed in', () => {
+      expect(getComponentName(createElement(Bar), 'bar0')).toBe('bar0');
+    });
+    test('should return camelCase name if provide in props', () => {
+      expect(getComponentName(createElement(Bar, { name: 'funnel chart' }), 'bar0')).toBe('funnelChart');
+    });
+  });
 });

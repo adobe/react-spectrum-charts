@@ -29,10 +29,10 @@ You should not use direct labels and a legend at the same time as the informatio
 
 ```jsx
 <Chart data={data}>
-    <Donut color="operatingSystem" metric="visitors">
-        <DonutSummary label="Visitors" />
-    </Donut>
-    <Legend title="Operating system" />
+  <Donut color="operatingSystem" metric="visitors">
+    <DonutSummary label="Visitors" />
+  </Donut>
+  <Legend title="Operating system" />
 </Chart>
 ```
 
@@ -43,10 +43,10 @@ You should not use direct labels and a legend at the same time as the informatio
 
 ```jsx
 <Chart data={data}>
-    <Donut color="operatingSystem" metric="visitors">
-        <DonutSummary label="Visitors" />
-        <SegmentLabel percent value />
-    </Donut>
+  <Donut color="operatingSystem" metric="visitors">
+    <DonutSummary label="Visitors" />
+    <SegmentLabel percent value />
+  </Donut>
 </Chart>
 ```
 
@@ -116,9 +116,9 @@ The `DonutSummary` component can be used to provide a total of the displayed met
 
 ```jsx
 <Chart {...chartProps}>
-    <Donut>
-        <DonutSummary label="Visitors" />
-    </Donut>
+  <Donut>
+    <DonutSummary label="Visitors" />
+  </Donut>
 </Chart>
 ```
 
@@ -158,9 +158,9 @@ The `SegmentLabel` component can be used to add labels to each segment of the do
 
 ```jsx
 <Chart {...chartProps}>
-    <Donut>
-        <SegmentLabel percent value valueFormat="shortNumber" />
-    </Donut>
+  <Donut>
+    <SegmentLabel percent value valueFormat="shortNumber" />
+  </Donut>
 </Chart>
 ```
 

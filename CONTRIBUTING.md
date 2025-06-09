@@ -34,20 +34,20 @@ For significant changes, it is recommended that you first propose your solution 
 
 A few things to keep in mind before submitting a pull request:
 
--   Add a clear description covering your changes
--   Reference the issue in the description
--   Make sure linting and tests pass
--   Include relevant unit tests
--   Add/update stories in storybook for your changes
-    -   Any change that adds or modifies a prop must have stories to represent that change and tests written that validate the new behavior
--   Update documentation
--   Remember that all submissions require review, please be patient.
+- Add a clear description covering your changes
+- Reference the issue in the description
+- Make sure linting and tests pass
+- Include relevant unit tests
+- Add/update stories in storybook for your changes
+  - Any change that adds or modifies a prop must have stories to represent that change and tests written that validate the new behavior
+- Update documentation
+- Remember that all submissions require review, please be patient.
 
 The team will review all pull requests and do one of the following:
 
--   request changes to it (most common)
--   merge it
--   close it with an explanation.
+- request changes to it (most common)
+- merge it
+- close it with an explanation.
 
 Read GitHub's [pull request documentation](https://help.github.com/articles/about-pull-requests/) for more information on sending pull requests.
 
@@ -67,10 +67,10 @@ There are many places to dive into react-spectrum-charts to help out. Before you
 
 If you are looking for place to start, consider the following options:
 
--   Look for issues tagged with help wanted and/or good first issue.
--   Help triage existing issues by investigating problems and following up on missing information.
--   Update missing or fix existing documentation
--   Review and test open pull requests
+- Look for issues tagged with help wanted and/or good first issue.
+- Help triage existing issues by investigating problems and following up on missing information.
+- Update missing or fix existing documentation
+- Review and test open pull requests
 
 ## Developing
 

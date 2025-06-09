@@ -15,17 +15,17 @@ import { findChart, getAllLegendEntries, hoverNthElement, render, unhoverNthElem
 import { ControlledHover } from './legendHover.story';
 
 test('Mousing over a legend item should trigger callback function.', async () => {
-	const onMouseOver = jest.fn();
-	const onMouseOut = jest.fn();
-	render(<ControlledHover {...ControlledHover.args} onMouseOver={onMouseOver} onMouseOut={onMouseOut} />);
-	const chart = await findChart();
+  const onMouseOver = jest.fn();
+  const onMouseOut = jest.fn();
+  render(<ControlledHover {...ControlledHover.args} onMouseOver={onMouseOver} onMouseOut={onMouseOut} />);
+  const chart = await findChart();
 
-	const entries = getAllLegendEntries(chart);
-	await hoverNthElement(entries, 0);
-	await unhoverNthElement(entries, 0);
+  const entries = getAllLegendEntries(chart);
+  await hoverNthElement(entries, 0);
+  await unhoverNthElement(entries, 0);
 
-	expect(onMouseOver).toHaveBeenCalledTimes(1);
-	expect(onMouseOver).toHaveBeenCalledWith('Windows');
-	expect(onMouseOut).toHaveBeenCalledTimes(1);
-	expect(onMouseOut).toHaveBeenCalledWith('Windows');
+  expect(onMouseOver).toHaveBeenCalledTimes(1);
+  expect(onMouseOver).toHaveBeenCalledWith('Windows');
+  expect(onMouseOut).toHaveBeenCalledTimes(1);
+  expect(onMouseOut).toHaveBeenCalledWith('Windows');
 });

@@ -13,25 +13,25 @@ import { PartiallyRequired } from '../../specUtil.types';
 import { DonutSpecOptions } from '../donutSpec.types';
 
 export interface SegmentLabelOptions {
-	/** Sets the key in the data that has the segment label. Defaults to the `color` key set on the `Donut` is undefined. */
-	labelKey?: string;
-	/** Shows the donut segment percentage */
-	percent?: boolean;
-	/** Shows the donut segment metric value */
-	value?: boolean;
-	/** d3 number format specifier.
-	 * Sets the number format for the segment metric value.
-	 *
-	 * @default 'standardNumber'
-	 *
-	 * see {@link https://d3js.org/d3-format#locale_format}
-	 */
-	valueFormat?: string;
+  /** Sets the key in the data that has the segment label. Defaults to the `color` key set on the `Donut` is undefined. */
+  labelKey?: string;
+  /** Shows the donut segment percentage */
+  percent?: boolean;
+  /** Shows the donut segment metric value */
+  value?: boolean;
+  /** d3 number format specifier.
+   * Sets the number format for the segment metric value.
+   *
+   * @default 'standardNumber'
+   *
+   * see {@link https://d3js.org/d3-format#locale_format}
+   */
+  valueFormat?: string;
 }
 
 type SegmentLabelOptionsWithDefaults = 'percent' | 'value' | 'valueFormat';
 
 export interface SegmentLabelSpecOptions
-	extends PartiallyRequired<SegmentLabelOptions, SegmentLabelOptionsWithDefaults> {
-	donutOptions: DonutSpecOptions;
+  extends PartiallyRequired<SegmentLabelOptions, SegmentLabelOptionsWithDefaults> {
+  donutOptions: DonutSpecOptions;
 }

@@ -14,23 +14,23 @@ import { PartiallyRequired, PathWidthFacet, ScaleType } from '../../specUtil.typ
 import { SpectrumColor } from '../../spectrumVizColor.types';
 
 export interface ScatterPathOptions {
-	/** The color of the links.*/
-	color?: SpectrumColor | string;
-	/** The width on the links. Link width can vary by point. */
-	pathWidth?: PathWidthFacet;
-	/** Data keys that should be used to create the groups that get connected by links. */
-	groupBy?: string[];
-	/** The opacity of the links. */
-	opacity?: number;
+  /** The color of the links.*/
+  color?: SpectrumColor | string;
+  /** The width on the links. Link width can vary by point. */
+  pathWidth?: PathWidthFacet;
+  /** Data keys that should be used to create the groups that get connected by links. */
+  groupBy?: string[];
+  /** The opacity of the links. */
+  opacity?: number;
 }
 
 type ScatterPathOptionsWithDefaults = 'color' | 'groupBy' | 'pathWidth' | 'opacity';
 
 export interface ScatterPathSpecOptions extends PartiallyRequired<ScatterPathOptions, ScatterPathOptionsWithDefaults> {
-	colorScheme: ColorScheme;
-	dimension: string;
-	dimensionScaleType: ScaleType;
-	metric: string;
-	index: number;
-	name: string;
+  colorScheme: ColorScheme;
+  dimension: string;
+  dimensionScaleType: ScaleType;
+  metric: string;
+  index: number;
+  name: string;
 }

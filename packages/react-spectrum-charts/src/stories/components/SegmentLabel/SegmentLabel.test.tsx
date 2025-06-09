@@ -17,60 +17,60 @@ import '../../../test-utils/__mocks__/matchMedia.mock.js';
 import { Basic, Percent, Value, ValueFormat } from './SegmentLabel.story';
 
 describe('SegmentLabel', () => {
-	// SegmentLabel is not a real React component. This is test just provides test coverage for sonarqube
-	test('SegmentLabel pseudo element', () => {
-		render(<SegmentLabel />);
-	});
+  // SegmentLabel is not a real React component. This is test just provides test coverage for sonarqube
+  test('SegmentLabel pseudo element', () => {
+    render(<SegmentLabel />);
+  });
 
-	test('Basic renders properly', async () => {
-		render(<Basic {...Basic.args} />);
-		const chart = await findChart();
-		expect(chart).toBeInTheDocument();
+  test('Basic renders properly', async () => {
+    render(<Basic {...Basic.args} />);
+    const chart = await findChart();
+    expect(chart).toBeInTheDocument();
 
-		const label = await screen.findByText('Chrome');
-		expect(label).toBeInTheDocument();
-		expect(label).toHaveAttribute('font-weight', 'bold');
-		expect(await screen.findByText('Safari')).toBeInTheDocument();
-		expect(await screen.findByText('Other')).toBeInTheDocument();
-	});
+    const label = await screen.findByText('Chrome');
+    expect(label).toBeInTheDocument();
+    expect(label).toHaveAttribute('font-weight', 'bold');
+    expect(await screen.findByText('Safari')).toBeInTheDocument();
+    expect(await screen.findByText('Other')).toBeInTheDocument();
+  });
 
-	test('Percent renders properly', async () => {
-		render(<Percent {...Percent.args} />);
-		const chart = await findChart();
-		expect(chart).toBeInTheDocument();
+  test('Percent renders properly', async () => {
+    render(<Percent {...Percent.args} />);
+    const chart = await findChart();
+    expect(chart).toBeInTheDocument();
 
-		expect(screen.getByText('26%')).toBeInTheDocument();
-		expect(screen.getByText('17%')).toBeInTheDocument();
-		expect(screen.getByText('10%')).toBeInTheDocument();
-	});
+    expect(screen.getByText('26%')).toBeInTheDocument();
+    expect(screen.getByText('17%')).toBeInTheDocument();
+    expect(screen.getByText('10%')).toBeInTheDocument();
+  });
 
-	test('Value renders properly', async () => {
-		render(<Value {...Value.args} />);
-		const chart = await findChart();
-		expect(chart).toBeInTheDocument();
+  test('Value renders properly', async () => {
+    render(<Value {...Value.args} />);
+    const chart = await findChart();
+    expect(chart).toBeInTheDocument();
 
-		expect(screen.getByText('10,390')).toBeInTheDocument();
-		expect(screen.getByText('7,045')).toBeInTheDocument();
-		expect(screen.getByText('4,201')).toBeInTheDocument();
-	});
+    expect(screen.getByText('10,390')).toBeInTheDocument();
+    expect(screen.getByText('7,045')).toBeInTheDocument();
+    expect(screen.getByText('4,201')).toBeInTheDocument();
+  });
 
-	test('Should format segment metric values', async () => {
-		render(<ValueFormat {...ValueFormat.args} />);
-		const chart = await findChart();
-		expect(chart).toBeInTheDocument();
+  test('Should format segment metric values', async () => {
+    render(<ValueFormat {...ValueFormat.args} />);
+    const chart = await findChart();
+    expect(chart).toBeInTheDocument();
 
-		expect(screen.getByText('10K')).toBeInTheDocument();
-		expect(screen.getByText('7K')).toBeInTheDocument();
-		expect(screen.getByText('4.2K')).toBeInTheDocument();
-	});
+    expect(screen.getByText('10K')).toBeInTheDocument();
+    expect(screen.getByText('7K')).toBeInTheDocument();
+    expect(screen.getByText('4.2K')).toBeInTheDocument();
+  });
 
-	test('Should hide labels for thin segments', async () => {
-		render(<Basic {...Basic.args} />);
-		const chart = await findChart();
-		expect(chart).toBeInTheDocument();
+  test('Should hide labels for thin segments', async () => {
+    render(<Basic {...Basic.args} />);
+    const chart = await findChart();
+    expect(chart).toBeInTheDocument();
 
-		expect(screen.getByText('Safari')).toBeInTheDocument();
-		// unknown has a font size of 0 since it's segment is too thin
-		expect(screen.getByText('Unknown')).toHaveAttribute('font-size', '0px');
-	});
+    expect(screen.getByText('Safari')).toBeInTheDocument();
+    // unknown has a font size of 0 since it's segment is too thin
+    expect(screen.getByText('Unknown')).toHaveAttribute('font-size', '0px');
+  });
 });

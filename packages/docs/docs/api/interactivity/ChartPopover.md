@@ -5,17 +5,17 @@ You can add interactive elements like buttons to the popover.
 The `ChartPopover` uses the React Spectrum [Dialog](https://react-spectrum.adobe.com/react-spectrum/Dialog.html). Follow the React Spectrum [documentation](https://react-spectrum.adobe.com/react-spectrum/Dialog.html#content) to properly setup your dialog content.
 
 ```jsx
-<Chart data={data} >
-    <Bar>
-        <ChartPopover>
-            {(datum, close) => (
-                <Content>
-                    <Text>Average: {datum.average}</Text>
-                    <ActionButton onPress={close}>Close</ActionButton>
-                </Content>
-            )}
-        </ChartPopover>
-    </Bar>
+<Chart data={data}>
+  <Bar>
+    <ChartPopover>
+      {(datum, close) => (
+        <Content>
+          <Text>Average: {datum.average}</Text>
+          <ActionButton onPress={close}>Close</ActionButton>
+        </Content>
+      )}
+    </ChartPopover>
+  </Bar>
 </Chart>
 ```
 

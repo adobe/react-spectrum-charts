@@ -17,22 +17,22 @@ import { getLocale } from '@spectrum-charts/locales';
 import { BigNumberNumberType } from '@spectrum-charts/vega-spec-builder';
 
 export const formatBigNumber = (
-	value: number,
-	numberType: BigNumberNumberType,
-	numberFormat?: string,
-	numberLocale?: NumberLocale
+  value: number,
+  numberType: BigNumberNumberType,
+  numberFormat?: string,
+  numberLocale?: NumberLocale
 ): string => {
-	const formatter = numberLocale
-		? numberFormatLocale(numberLocale)
-		: numberFormatLocale(getLocale(DEFAULT_LOCALE).number);
+  const formatter = numberLocale
+    ? numberFormatLocale(numberLocale)
+    : numberFormatLocale(getLocale(DEFAULT_LOCALE).number);
 
-	if (numberType === 'percentage') {
-		return formatter.format('~%')(value);
-	}
+  if (numberType === 'percentage') {
+    return formatter.format('~%')(value);
+  }
 
-	if (numberFormat) {
-		return formatter.format(numberFormat)(value);
-	} else {
-		return formatter.format('')(value);
-	}
+  if (numberFormat) {
+    return formatter.format(numberFormat)(value);
+  } else {
+    return formatter.format('')(value);
+  }
 };

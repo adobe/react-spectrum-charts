@@ -17,26 +17,26 @@ import { getAllMarkElements } from '../utils';
 type MappedMarkElement = { name: string; element: BarElement | LineElement };
 
 export type MarkOnClickDetail = {
-	markName?: string;
-	onClick?: OnClickCallback;
+  markName?: string;
+  onClick?: OnClickCallback;
 };
 
 export default function useMarkOnClickDetails(children: ChartChildElement[]): MarkOnClickDetail[] {
-	const markElements = useMemo(() => {
-		return [
-			...getAllMarkElements(createElement(Chart, { data: [] }, children), Bar, []),
-			...getAllMarkElements(createElement(Chart, { data: [] }, children), Line, []),
-		] as MappedMarkElement[];
-	}, [children]);
+  const markElements = useMemo(() => {
+    return [
+      ...getAllMarkElements(createElement(Chart, { data: [] }, children), Bar, []),
+      ...getAllMarkElements(createElement(Chart, { data: [] }, children), Line, []),
+    ] as MappedMarkElement[];
+  }, [children]);
 
-	return useMemo(
-		() =>
-			markElements
-				.filter((mark) => mark.element.props.onClick)
-				.map((mark) => ({
-					markName: mark.name,
-					onClick: mark.element.props.onClick,
-				})) as MarkOnClickDetail[],
-		[markElements]
-	);
+  return useMemo(
+    () =>
+      markElements
+        .filter((mark) => mark.element.props.onClick)
+        .map((mark) => ({
+          markName: mark.name,
+          onClick: mark.element.props.onClick,
+        })) as MarkOnClickDetail[],
+    [markElements]
+  );
 }

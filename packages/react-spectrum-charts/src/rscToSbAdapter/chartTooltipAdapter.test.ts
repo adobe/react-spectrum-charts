@@ -12,16 +12,16 @@
 import { getChartTooltipOptions } from './chartTooltipAdapter';
 
 describe('getChartTooltipOptions()', () => {
-	it('should strip out children', () => {
-		const options = getChartTooltipOptions({ children: () => null });
-		expect(options).not.toHaveProperty('children');
-	});
-	it('should pass through included props', () => {
-		const options = getChartTooltipOptions({ excludeDataKeys: ['foo'] });
-		expect(options).toHaveProperty('excludeDataKeys', ['foo']);
-	});
-	it('should not add props that are not provided', () => {
-		const options = getChartTooltipOptions({});
-		expect(options).not.toHaveProperty('excludeDataKeys');
-	});
+  it('should strip out children', () => {
+    const options = getChartTooltipOptions({ children: () => null });
+    expect(options).not.toHaveProperty('children');
+  });
+  it('should pass through included props', () => {
+    const options = getChartTooltipOptions({ excludeDataKeys: ['foo'] });
+    expect(options).toHaveProperty('excludeDataKeys', ['foo']);
+  });
+  it('should not add props that are not provided', () => {
+    const options = getChartTooltipOptions({});
+    expect(options).not.toHaveProperty('excludeDataKeys');
+  });
 });

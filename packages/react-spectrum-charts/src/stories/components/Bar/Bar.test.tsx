@@ -18,114 +18,114 @@ import { Basic as StackedBasic } from './StackedBar.story';
 import { barData } from './data';
 
 describe('Bar', () => {
-	// Bar is not a real React component. This is test just provides test coverage for sonarqube
-	test('Bar pseudo element', () => {
-		render(<Bar />);
-	});
+  // Bar is not a real React component. This is test just provides test coverage for sonarqube
+  test('Bar pseudo element', () => {
+    render(<Bar />);
+  });
 
-	test('Basic renders properly', async () => {
-		render(<Basic {...Basic.args} />);
-		const chart = await findChart();
-		expect(chart).toBeInTheDocument();
+  test('Basic renders properly', async () => {
+    render(<Basic {...Basic.args} />);
+    const chart = await findChart();
+    expect(chart).toBeInTheDocument();
 
-		// get bars
-		const bars = await findAllMarksByGroupName(chart, 'bar0');
-		expect(bars.length).toEqual(5);
-	});
+    // get bars
+    const bars = await findAllMarksByGroupName(chart, 'bar0');
+    expect(bars.length).toEqual(5);
+  });
 
-	test('Opacity renders properly', async () => {
-		render(<Opacity {...Opacity.args} />);
-		const chart = await findChart();
-		expect(chart).toBeInTheDocument();
+  test('Opacity renders properly', async () => {
+    render(<Opacity {...Opacity.args} />);
+    const chart = await findChart();
+    expect(chart).toBeInTheDocument();
 
-		// get bars
-		const bars = await findAllMarksByGroupName(chart, 'bar0');
-		expect(bars[0].getAttribute('fill-opacity')).toEqual('0.75');
-	});
+    // get bars
+    const bars = await findAllMarksByGroupName(chart, 'bar0');
+    expect(bars[0].getAttribute('fill-opacity')).toEqual('0.75');
+  });
 
-	test('Padding Ratio renders properly', async () => {
-		render(<PaddingRatio {...PaddingRatio.args} />);
-		const chart = await findChart();
-		expect(chart).toBeInTheDocument();
+  test('Padding Ratio renders properly', async () => {
+    render(<PaddingRatio {...PaddingRatio.args} />);
+    const chart = await findChart();
+    expect(chart).toBeInTheDocument();
 
-		// get bars
-		const bars = await findAllMarksByGroupName(chart, 'bar0');
-		expect(bars.length).toEqual(5);
-	});
+    // get bars
+    const bars = await findAllMarksByGroupName(chart, 'bar0');
+    expect(bars.length).toEqual(5);
+  });
 
-	test('With Annotation renders properly', async () => {
-		render(<WithAnnotation {...WithAnnotation.args} />);
-		const chart = await findChart();
-		expect(chart).toBeInTheDocument();
+  test('With Annotation renders properly', async () => {
+    render(<WithAnnotation {...WithAnnotation.args} />);
+    const chart = await findChart();
+    expect(chart).toBeInTheDocument();
 
-		// get bars
-		const bars = await findAllMarksByGroupName(chart, 'bar0');
-		expect(bars.length).toEqual(5);
+    // get bars
+    const bars = await findAllMarksByGroupName(chart, 'bar0');
+    expect(bars.length).toEqual(5);
 
-		// get annotations
-		const labels = await findAllMarksByGroupName(chart, 'bar0_annotationText', 'text');
-		expect(labels.length).toEqual(5);
-	});
+    // get annotations
+    const labels = await findAllMarksByGroupName(chart, 'bar0_annotationText', 'text');
+    expect(labels.length).toEqual(5);
+  });
 
-	test('Dodged Basic renders properly', async () => {
-		render(<Color {...Color.args} />);
-		const chart = await findChart();
-		expect(chart).toBeInTheDocument();
+  test('Dodged Basic renders properly', async () => {
+    render(<Color {...Color.args} />);
+    const chart = await findChart();
+    expect(chart).toBeInTheDocument();
 
-		// get bars
-		const bars = await findAllMarksByGroupName(chart, 'bar0');
-		expect(bars.length).toEqual(9);
-	});
+    // get bars
+    const bars = await findAllMarksByGroupName(chart, 'bar0');
+    expect(bars.length).toEqual(9);
+  });
 
-	test('Dodged Stacked renders properly', async () => {
-		render(<DodgedStacked {...DodgedStacked.args} />);
-		const chart = await findChart();
-		expect(chart).toBeInTheDocument();
+  test('Dodged Stacked renders properly', async () => {
+    render(<DodgedStacked {...DodgedStacked.args} />);
+    const chart = await findChart();
+    expect(chart).toBeInTheDocument();
 
-		// get bars
-		const bars = await findAllMarksByGroupName(chart, 'bar0');
-		expect(bars.length).toEqual(18);
-	});
+    // get bars
+    const bars = await findAllMarksByGroupName(chart, 'bar0');
+    expect(bars.length).toEqual(18);
+  });
 
-	test('Stacked Basic renders properly', async () => {
-		render(<StackedBasic {...StackedBasic.args} />);
-		const chart = await findChart();
-		expect(chart).toBeInTheDocument();
+  test('Stacked Basic renders properly', async () => {
+    render(<StackedBasic {...StackedBasic.args} />);
+    const chart = await findChart();
+    expect(chart).toBeInTheDocument();
 
-		// get bars
-		const bars = await findAllMarksByGroupName(chart, 'bar0');
-		expect(bars.length).toEqual(9);
-	});
+    // get bars
+    const bars = await findAllMarksByGroupName(chart, 'bar0');
+    expect(bars.length).toEqual(9);
+  });
 
-	test('Bar with UTC date on dimension renders properly', async () => {
-		render(<BarWithUTCDatetimeFormat {...BarWithUTCDatetimeFormat.args} />);
-		const chart = await findChart();
-		expect(chart).toBeInTheDocument();
+  test('Bar with UTC date on dimension renders properly', async () => {
+    render(<BarWithUTCDatetimeFormat {...BarWithUTCDatetimeFormat.args} />);
+    const chart = await findChart();
+    expect(chart).toBeInTheDocument();
 
-		// get bars
-		const bars = await findAllMarksByGroupName(chart, 'bar0');
-		expect(bars.length).toEqual(6);
-	});
+    // get bars
+    const bars = await findAllMarksByGroupName(chart, 'bar0');
+    expect(bars.length).toEqual(6);
+  });
 
-	test('should call onClick callback when selecting a bar item', async () => {
-		const onClick = jest.fn();
-		render(<OnClick {...OnClick.args} onClick={onClick} />);
-		const chart = await findChart();
-		const bars = await findAllMarksByGroupName(chart, 'bar0');
+  test('should call onClick callback when selecting a bar item', async () => {
+    const onClick = jest.fn();
+    render(<OnClick {...OnClick.args} onClick={onClick} />);
+    const chart = await findChart();
+    const bars = await findAllMarksByGroupName(chart, 'bar0');
 
-		await clickNthElement(bars, 0);
-		expect(onClick).toHaveBeenCalledWith(expect.objectContaining(barData[0]));
+    await clickNthElement(bars, 0);
+    expect(onClick).toHaveBeenCalledWith(expect.objectContaining(barData[0]));
 
-		await clickNthElement(bars, 1);
-		expect(onClick).toHaveBeenCalledWith(expect.objectContaining(barData[1]));
+    await clickNthElement(bars, 1);
+    expect(onClick).toHaveBeenCalledWith(expect.objectContaining(barData[1]));
 
-		await clickNthElement(bars, 2);
-		expect(onClick).toHaveBeenCalledWith(expect.objectContaining(barData[2]));
+    await clickNthElement(bars, 2);
+    expect(onClick).toHaveBeenCalledWith(expect.objectContaining(barData[2]));
 
-		await clickNthElement(bars, 3);
-		expect(onClick).toHaveBeenCalledWith(expect.objectContaining(barData[3]));
+    await clickNthElement(bars, 3);
+    expect(onClick).toHaveBeenCalledWith(expect.objectContaining(barData[3]));
 
-		await clickNthElement(bars, 4);
-		expect(onClick).toHaveBeenCalledWith(expect.objectContaining(barData[4]));
-	});
+    await clickNthElement(bars, 4);
+    expect(onClick).toHaveBeenCalledWith(expect.objectContaining(barData[4]));
+  });
 });

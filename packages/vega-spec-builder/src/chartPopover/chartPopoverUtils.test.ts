@@ -17,62 +17,62 @@ import { BarSpecOptions, ChartPopoverOptions } from '../types';
 import { addPopoverData, applyPopoverPropDefaults, getPopovers } from './chartPopoverUtils';
 
 const getDefautltMarkOptions = (popoverOptions: ChartPopoverOptions = {}): BarSpecOptions => ({
-	...defaultBarOptions,
-	chartPopovers: [popoverOptions],
+  ...defaultBarOptions,
+  chartPopovers: [popoverOptions],
 });
 
 describe('getPopovers()', () => {
-	test('should get all the popovers from options', () => {
-		const markOptions: BarSpecOptions = { ...defaultBarOptions, chartPopovers: [{}] };
-		const popovers = getPopovers(markOptions.chartPopovers, markOptions.name);
-		expect(popovers.length).toBe(1);
-	});
+  test('should get all the popovers from options', () => {
+    const markOptions: BarSpecOptions = { ...defaultBarOptions, chartPopovers: [{}] };
+    const popovers = getPopovers(markOptions.chartPopovers, markOptions.name);
+    expect(popovers.length).toBe(1);
+  });
 });
 
 describe('applyPopoverPropDefaults()', () => {
-	test('should apply all defaults to ChartPopoverOptions', () => {
-		const chartPopoverOptions: ChartPopoverOptions = {};
-		const markName = 'bar0';
-		const popoverSpecOptions = applyPopoverPropDefaults(chartPopoverOptions, markName);
-		expect(popoverSpecOptions).toHaveProperty('UNSAFE_highlightBy', 'item');
-		expect(popoverSpecOptions).toHaveProperty('markName', markName);
-	});
+  test('should apply all defaults to ChartPopoverOptions', () => {
+    const chartPopoverOptions: ChartPopoverOptions = {};
+    const markName = 'bar0';
+    const popoverSpecOptions = applyPopoverPropDefaults(chartPopoverOptions, markName);
+    expect(popoverSpecOptions).toHaveProperty('UNSAFE_highlightBy', 'item');
+    expect(popoverSpecOptions).toHaveProperty('markName', markName);
+  });
 });
 
 describe('addPopoverData()', () => {
-	let data: Data[];
-	beforeEach(() => {
-		data = JSON.parse(JSON.stringify(baseData));
-	});
-	test('should add the group id transform if highlightBy is `item`', () => {
-		const markOptions = getDefautltMarkOptions({ UNSAFE_highlightBy: 'item' });
-		addPopoverData(data, markOptions);
-		expect(data[1].transform?.length).toBe(1);
-		expect(data[1].transform?.[0]).toHaveProperty('as', 'bar0_selectedGroupId');
-	});
-	test('should add the group id transform if highlightBy is `dimension`', () => {
-		const markOptions = getDefautltMarkOptions({ UNSAFE_highlightBy: 'dimension' });
-		addPopoverData(data, markOptions);
-		expect(data[1].transform?.length).toBe(1);
-		expect(data[1].transform?.[0]).toHaveProperty('as', 'bar0_selectedGroupId');
-	});
-	test('should add the group id transform if highlightBy is `series`', () => {
-		const markOptions = getDefautltMarkOptions({ UNSAFE_highlightBy: 'series' });
-		addPopoverData(data, markOptions);
-		expect(data[1].transform?.length).toBe(1);
-		expect(data[1].transform?.[0]).toHaveProperty('as', 'bar0_selectedGroupId');
-	});
-	test('should add the group id transform if highlightBy is a key array', () => {
-		const markOptions = getDefautltMarkOptions({ UNSAFE_highlightBy: ['operatingSystem'] });
-		addPopoverData(data, markOptions);
-		expect(data[1].transform?.length).toBe(1);
-		expect(data[1].transform?.[0]).toHaveProperty('as', 'bar0_selectedGroupId');
-	});
-	test('should not add highlightedData for the mark if false', () => {
-		const dataLength = data.length;
-		const markOptions = getDefautltMarkOptions({ UNSAFE_highlightBy: 'series' });
-		addPopoverData(data, markOptions, false);
-		// length sholdn't be changed
-		expect(data).toHaveLength(dataLength);
-	});
+  let data: Data[];
+  beforeEach(() => {
+    data = JSON.parse(JSON.stringify(baseData));
+  });
+  test('should add the group id transform if highlightBy is `item`', () => {
+    const markOptions = getDefautltMarkOptions({ UNSAFE_highlightBy: 'item' });
+    addPopoverData(data, markOptions);
+    expect(data[1].transform?.length).toBe(1);
+    expect(data[1].transform?.[0]).toHaveProperty('as', 'bar0_selectedGroupId');
+  });
+  test('should add the group id transform if highlightBy is `dimension`', () => {
+    const markOptions = getDefautltMarkOptions({ UNSAFE_highlightBy: 'dimension' });
+    addPopoverData(data, markOptions);
+    expect(data[1].transform?.length).toBe(1);
+    expect(data[1].transform?.[0]).toHaveProperty('as', 'bar0_selectedGroupId');
+  });
+  test('should add the group id transform if highlightBy is `series`', () => {
+    const markOptions = getDefautltMarkOptions({ UNSAFE_highlightBy: 'series' });
+    addPopoverData(data, markOptions);
+    expect(data[1].transform?.length).toBe(1);
+    expect(data[1].transform?.[0]).toHaveProperty('as', 'bar0_selectedGroupId');
+  });
+  test('should add the group id transform if highlightBy is a key array', () => {
+    const markOptions = getDefautltMarkOptions({ UNSAFE_highlightBy: ['operatingSystem'] });
+    addPopoverData(data, markOptions);
+    expect(data[1].transform?.length).toBe(1);
+    expect(data[1].transform?.[0]).toHaveProperty('as', 'bar0_selectedGroupId');
+  });
+  test('should not add highlightedData for the mark if false', () => {
+    const dataLength = data.length;
+    const markOptions = getDefautltMarkOptions({ UNSAFE_highlightBy: 'series' });
+    addPopoverData(data, markOptions, false);
+    // length sholdn't be changed
+    expect(data).toHaveLength(dataLength);
+  });
 });

@@ -17,12 +17,12 @@ import { SegmentLabelProps } from '../../../types';
 
 // destructure props here and set defaults so that storybook can pick them up
 const SegmentLabel: FC<SegmentLabelProps> = ({
-	labelKey,
-	percent = false,
-	value = false,
-	valueFormat = 'standardNumber',
+  labelKey,
+  percent = false,
+  value = false,
+  valueFormat = 'standardNumber',
 }) => {
-	return null;
+  return null;
 };
 
 // displayName is used to validate the component type in the spec builder

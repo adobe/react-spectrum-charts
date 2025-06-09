@@ -13,42 +13,42 @@ import { produce } from 'immer';
 import { GroupMark, Mark, NumericValueRef, SymbolMark } from 'vega';
 
 import {
-	DEFAULT_OPACITY_RULE,
-	FILTERED_TABLE,
-	HIGHLIGHT_CONTRAST_RATIO,
-	SELECTED_ITEM,
+  DEFAULT_OPACITY_RULE,
+  FILTERED_TABLE,
+  HIGHLIGHT_CONTRAST_RATIO,
+  SELECTED_ITEM,
 } from '@spectrum-charts/constants';
 import { spectrumColors } from '@spectrum-charts/themes';
 
 import { addHighlightMarkOpacityRules } from '../chartTooltip/chartTooltipUtils';
 import {
-	getColorProductionRule,
-	getLineWidthProductionRule,
-	getOpacityProductionRule,
-	getPointsForVoronoi,
-	getStrokeDashProductionRule,
-	getSymbolSizeProductionRule,
-	getVoronoiPath,
-	getXProductionRule,
-	hasPopover,
-	isInteractive,
+  getColorProductionRule,
+  getLineWidthProductionRule,
+  getOpacityProductionRule,
+  getPointsForVoronoi,
+  getStrokeDashProductionRule,
+  getSymbolSizeProductionRule,
+  getVoronoiPath,
+  getXProductionRule,
+  hasPopover,
+  isInteractive,
 } from '../marks/markUtils';
 import { getScatterPathMarks } from '../scatterPath/scatterPathUtils';
 import { getTrendlineMarks } from '../trendline';
 import { ScatterSpecOptions, SymbolSizeFacet } from '../types';
 
 export const addScatterMarks = produce<Mark[], [ScatterSpecOptions]>((marks, options) => {
-	const { name } = options;
+  const { name } = options;
 
-	const scatterGroup: GroupMark = {
-		name: `${name}_group`,
-		type: 'group',
-		marks: [getScatterMark(options), ...getScatterHoverMarks(options), ...getScatterSelectMarks(options)],
-	};
+  const scatterGroup: GroupMark = {
+    name: `${name}_group`,
+    type: 'group',
+    marks: [getScatterMark(options), ...getScatterHoverMarks(options), ...getScatterSelectMarks(options)],
+  };
 
-	marks.push(...getScatterPathMarks(options));
-	marks.push(scatterGroup);
-	marks.push(...getTrendlineMarks(options));
+  marks.push(...getScatterPathMarks(options));
+  marks.push(scatterGroup);
+  marks.push(...getTrendlineMarks(options));
 });
 
 /**
@@ -57,49 +57,49 @@ export const addScatterMarks = produce<Mark[], [ScatterSpecOptions]>((marks, opt
  * @returns SymbolMark
  */
 export const getScatterMark = (options: ScatterSpecOptions): SymbolMark => {
-	const {
-		color,
-		colorScaleType,
-		colorScheme,
-		dimension,
-		dimensionScaleType,
-		lineType,
-		lineWidth,
-		metric,
-		name,
-		opacity,
-		size,
-	} = options;
-	return {
-		name,
-		description: name,
-		type: 'symbol',
-		from: {
-			data: FILTERED_TABLE,
-		},
-		encode: {
-			enter: {
-				/**
-				 * the blend mode makes it possible to tell when there are overlapping points
-				 * in light mode, the points are darker when they overlap (multiply)
-				 * in dark mode, the points are lighter when they overlap (screen)
-				 */
-				blend: { value: colorScheme === 'light' ? 'multiply' : 'screen' },
-				fill: getColorProductionRule(color, colorScheme, colorScaleType),
-				fillOpacity: getOpacityProductionRule(opacity),
-				shape: { value: 'circle' },
-				size: getSymbolSizeProductionRule(size),
-				strokeDash: getStrokeDashProductionRule(lineType),
-				strokeWidth: getLineWidthProductionRule(lineWidth),
-				stroke: getColorProductionRule(color, colorScheme, colorScaleType),
-			},
-			update: {
-				opacity: getOpacity(options),
-				x: getXProductionRule(dimensionScaleType, dimension),
-				y: { scale: 'yLinear', field: metric },
-			},
-		},
-	};
+  const {
+    color,
+    colorScaleType,
+    colorScheme,
+    dimension,
+    dimensionScaleType,
+    lineType,
+    lineWidth,
+    metric,
+    name,
+    opacity,
+    size,
+  } = options;
+  return {
+    name,
+    description: name,
+    type: 'symbol',
+    from: {
+      data: FILTERED_TABLE,
+    },
+    encode: {
+      enter: {
+        /**
+         * the blend mode makes it possible to tell when there are overlapping points
+         * in light mode, the points are darker when they overlap (multiply)
+         * in dark mode, the points are lighter when they overlap (screen)
+         */
+        blend: { value: colorScheme === 'light' ? 'multiply' : 'screen' },
+        fill: getColorProductionRule(color, colorScheme, colorScaleType),
+        fillOpacity: getOpacityProductionRule(opacity),
+        shape: { value: 'circle' },
+        size: getSymbolSizeProductionRule(size),
+        strokeDash: getStrokeDashProductionRule(lineType),
+        strokeWidth: getLineWidthProductionRule(lineWidth),
+        stroke: getColorProductionRule(color, colorScheme, colorScaleType),
+      },
+      update: {
+        opacity: getOpacity(options),
+        x: getXProductionRule(dimensionScaleType, dimension),
+        y: { scale: 'yLinear', field: metric },
+      },
+    },
+  };
 };
 
 /**
@@ -109,23 +109,23 @@ export const getScatterMark = (options: ScatterSpecOptions): SymbolMark => {
  * @returns opacity production rule
  */
 export const getOpacity = (scatterOptions: ScatterSpecOptions): ({ test?: string } & NumericValueRef)[] => {
-	const { highlightedItem, idKey } = scatterOptions;
-	if (!isInteractive(scatterOptions) && highlightedItem === undefined) {
-		return [DEFAULT_OPACITY_RULE];
-	}
-	// if a point is hovered or selected, all other points should be reduced opacity
-	const fadedValue = 1 / HIGHLIGHT_CONTRAST_RATIO;
+  const { highlightedItem, idKey } = scatterOptions;
+  if (!isInteractive(scatterOptions) && highlightedItem === undefined) {
+    return [DEFAULT_OPACITY_RULE];
+  }
+  // if a point is hovered or selected, all other points should be reduced opacity
+  const fadedValue = 1 / HIGHLIGHT_CONTRAST_RATIO;
 
-	const rules: ({ test?: string } & NumericValueRef)[] = [];
-	addHighlightMarkOpacityRules(rules, scatterOptions);
-	if (hasPopover(scatterOptions)) {
-		rules.push({
-			test: `isValid(${SELECTED_ITEM}) && ${SELECTED_ITEM} !== datum.${idKey}`,
-			value: fadedValue,
-		});
-	}
+  const rules: ({ test?: string } & NumericValueRef)[] = [];
+  addHighlightMarkOpacityRules(rules, scatterOptions);
+  if (hasPopover(scatterOptions)) {
+    rules.push({
+      test: `isValid(${SELECTED_ITEM}) && ${SELECTED_ITEM} !== datum.${idKey}`,
+      value: fadedValue,
+    });
+  }
 
-	return [...rules, DEFAULT_OPACITY_RULE];
+  return [...rules, DEFAULT_OPACITY_RULE];
 };
 
 /**
@@ -134,44 +134,44 @@ export const getOpacity = (scatterOptions: ScatterSpecOptions): ({ test?: string
  * @returns Mark[]
  */
 export const getScatterHoverMarks = (scatterOptions: ScatterSpecOptions): Mark[] => {
-	const { dimension, dimensionScaleType, highlightedItem, metric, name } = scatterOptions;
-	if (!isInteractive(scatterOptions) && highlightedItem === undefined) {
-		return [];
-	}
+  const { dimension, dimensionScaleType, highlightedItem, metric, name } = scatterOptions;
+  if (!isInteractive(scatterOptions) && highlightedItem === undefined) {
+    return [];
+  }
 
-	return [
-		getPointsForVoronoi(`${FILTERED_TABLE}ForTooltip`, dimension, metric, name, dimensionScaleType),
-		getVoronoiPath(scatterOptions, `${name}_pointsForVoronoi`),
-	];
+  return [
+    getPointsForVoronoi(`${FILTERED_TABLE}ForTooltip`, dimension, metric, name, dimensionScaleType),
+    getVoronoiPath(scatterOptions, `${name}_pointsForVoronoi`),
+  ];
 };
 
 const getScatterSelectMarks = (scatterOptions: ScatterSpecOptions): SymbolMark[] => {
-	const { dimension, dimensionScaleType, metric, name, size } = scatterOptions;
-	if (!hasPopover(scatterOptions)) {
-		return [];
-	}
-	return [
-		{
-			name: `${name}_selectRing`,
-			type: 'symbol',
-			from: {
-				data: `${name}_selectedData`,
-			},
-			encode: {
-				enter: {
-					fill: { value: 'transparent' },
-					shape: { value: 'circle' },
-					size: getSelectRingSize(size),
-					strokeWidth: { value: 2 },
-					stroke: { value: spectrumColors.light['static-blue'] },
-				},
-				update: {
-					x: getXProductionRule(dimensionScaleType, dimension),
-					y: { scale: 'yLinear', field: metric },
-				},
-			},
-		},
-	];
+  const { dimension, dimensionScaleType, metric, name, size } = scatterOptions;
+  if (!hasPopover(scatterOptions)) {
+    return [];
+  }
+  return [
+    {
+      name: `${name}_selectRing`,
+      type: 'symbol',
+      from: {
+        data: `${name}_selectedData`,
+      },
+      encode: {
+        enter: {
+          fill: { value: 'transparent' },
+          shape: { value: 'circle' },
+          size: getSelectRingSize(size),
+          strokeWidth: { value: 2 },
+          stroke: { value: spectrumColors.light['static-blue'] },
+        },
+        update: {
+          x: getXProductionRule(dimensionScaleType, dimension),
+          y: { scale: 'yLinear', field: metric },
+        },
+      },
+    },
+  ];
 };
 
 /**
@@ -180,14 +180,14 @@ const getScatterSelectMarks = (scatterOptions: ScatterSpecOptions): SymbolMark[]
  * @returns NumericValueRef
  */
 export const getSelectRingSize = (size: SymbolSizeFacet): NumericValueRef => {
-	const baseSize = getSymbolSizeProductionRule(size);
-	if ('value' in baseSize && typeof baseSize.value === 'number') {
-		// the select ring is 4px widr and taller
-		// to calculate: (sqrt(baseSize) + 4)^2
-		return { value: Math.pow(Math.sqrt(baseSize.value) + 4, 2) };
-	}
-	if ('scale' in baseSize && 'field' in baseSize) {
-		return { signal: `pow(sqrt(scale('${baseSize.scale}', datum.${baseSize.field})) + 4, 2)` };
-	}
-	return baseSize;
+  const baseSize = getSymbolSizeProductionRule(size);
+  if ('value' in baseSize && typeof baseSize.value === 'number') {
+    // the select ring is 4px widr and taller
+    // to calculate: (sqrt(baseSize) + 4)^2
+    return { value: Math.pow(Math.sqrt(baseSize.value) + 4, 2) };
+  }
+  if ('scale' in baseSize && 'field' in baseSize) {
+    return { signal: `pow(sqrt(scale('${baseSize.scale}', datum.${baseSize.field})) + 4, 2)` };
+  }
+  return baseSize;
 };

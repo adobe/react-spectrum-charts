@@ -16,15 +16,15 @@ import { addHighlightedItemSignalEvents, addHighlightedSeriesSignalEvents } from
 import { TrendlineParentOptions, getTrendlines } from './trendlineUtils';
 
 export const setTrendlineSignals = (signals: Signal[], markOptions: TrendlineParentOptions): void => {
-	const { idKey, name: markName } = markOptions;
-	const trendlines = getTrendlines(markOptions);
+  const { idKey, name: markName } = markOptions;
+  const trendlines = getTrendlines(markOptions);
 
-	if (trendlines.some((trendline) => hasTooltip(trendline))) {
-		addHighlightedItemSignalEvents(signals, `${markName}Trendline_voronoi`, idKey, 2);
-		addHighlightedSeriesSignalEvents(signals, `${markName}Trendline_voronoi`, 2);
-	}
+  if (trendlines.some((trendline) => hasTooltip(trendline))) {
+    addHighlightedItemSignalEvents(signals, `${markName}Trendline_voronoi`, idKey, 2);
+    addHighlightedSeriesSignalEvents(signals, `${markName}Trendline_voronoi`, 2);
+  }
 
-	if (trendlines.some((trendline) => trendline.displayOnHover)) {
-		addHighlightedSeriesSignalEvents(signals, `${markName}_voronoi`, 2);
-	}
+  if (trendlines.some((trendline) => trendline.displayOnHover)) {
+    addHighlightedSeriesSignalEvents(signals, `${markName}_voronoi`, 2);
+  }
 };

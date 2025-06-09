@@ -12,11 +12,11 @@
 import { AreaMark, GroupMark, LineMark, Signal, SourceData } from 'vega';
 
 import {
-	DEFAULT_METRIC,
-	FILTERED_TABLE,
-	HIGHLIGHTED_SERIES,
-	SELECTED_SERIES,
-	SERIES_ID,
+  DEFAULT_METRIC,
+  FILTERED_TABLE,
+  HIGHLIGHTED_SERIES,
+  SELECTED_SERIES,
+  SERIES_ID,
 } from '@spectrum-charts/constants';
 
 import { AreaMarkOptions, getAreaMark } from '../area/areaUtils';
@@ -29,32 +29,32 @@ import { LineSpecOptions, MetricRangeOptions, MetricRangeSpecOptions } from '../
 export type MetricRangeParentOptions = LineSpecOptions;
 
 export const getMetricRanges = (markOptions: MetricRangeParentOptions): MetricRangeSpecOptions[] => {
-	return markOptions.metricRanges.map((metricRange, index) =>
-		applyMetricRangeOptionDefaults(metricRange, markOptions.name, index)
-	);
+  return markOptions.metricRanges.map((metricRange, index) =>
+    applyMetricRangeOptionDefaults(metricRange, markOptions.name, index)
+  );
 };
 
 export const applyMetricRangeOptionDefaults = (
-	{
-		chartTooltips = [],
-		lineType = 'dashed',
-		lineWidth = 'S',
-		rangeOpacity = 0.2,
-		metric = DEFAULT_METRIC,
-		displayOnHover = false,
-		...options
-	}: MetricRangeOptions,
-	markName: string,
-	index: number
+  {
+    chartTooltips = [],
+    lineType = 'dashed',
+    lineWidth = 'S',
+    rangeOpacity = 0.2,
+    metric = DEFAULT_METRIC,
+    displayOnHover = false,
+    ...options
+  }: MetricRangeOptions,
+  markName: string,
+  index: number
 ): MetricRangeSpecOptions => ({
-	chartTooltips,
-	lineType,
-	lineWidth,
-	name: `${markName}MetricRange${index}`,
-	rangeOpacity,
-	metric,
-	displayOnHover,
-	...options,
+  chartTooltips,
+  lineType,
+  lineWidth,
+  name: `${markName}MetricRange${index}`,
+  rangeOpacity,
+  metric,
+  displayOnHover,
+  ...options,
 });
 
 /**
@@ -62,32 +62,32 @@ export const applyMetricRangeOptionDefaults = (
  * @param lineMarkOptions
  */
 export const getMetricRangeGroupMarks = (lineMarkOptions: LineSpecOptions): GroupMark[] => {
-	const { color, lineType } = lineMarkOptions;
-	const { facets } = getFacetsFromOptions({ color, lineType });
+  const { color, lineType } = lineMarkOptions;
+  const { facets } = getFacetsFromOptions({ color, lineType });
 
-	const marks: GroupMark[] = [];
-	const metricRanges = getMetricRanges(lineMarkOptions);
+  const marks: GroupMark[] = [];
+  const metricRanges = getMetricRanges(lineMarkOptions);
 
-	for (const metricRangeOptions of metricRanges) {
-		const { displayOnHover, name } = metricRangeOptions;
-		// if displayOnHover is true, use the highlightedData source, otherwise use the filtered table
-		const data = displayOnHover ? `${name}_highlightedData` : FILTERED_TABLE;
-		marks.push({
-			name: `${name}_group`,
-			type: 'group',
-			clip: true,
-			from: {
-				facet: {
-					name: `${name}_facet`,
-					data,
-					groupby: facets,
-				},
-			},
-			marks: getMetricRangeMark(lineMarkOptions, metricRangeOptions),
-		});
-	}
+  for (const metricRangeOptions of metricRanges) {
+    const { displayOnHover, name } = metricRangeOptions;
+    // if displayOnHover is true, use the highlightedData source, otherwise use the filtered table
+    const data = displayOnHover ? `${name}_highlightedData` : FILTERED_TABLE;
+    marks.push({
+      name: `${name}_group`,
+      type: 'group',
+      clip: true,
+      from: {
+        facet: {
+          name: `${name}_facet`,
+          data,
+          groupby: facets,
+        },
+      },
+      marks: getMetricRangeMark(lineMarkOptions, metricRangeOptions),
+    });
+  }
 
-	return marks;
+  return marks;
 };
 
 /**
@@ -96,38 +96,38 @@ export const getMetricRangeGroupMarks = (lineMarkOptions: LineSpecOptions): Grou
  * @param metricRangeOptions
  */
 export const getMetricRangeMark = (
-	lineMarkOptions: LineSpecOptions,
-	metricRangeOptions: MetricRangeSpecOptions
+  lineMarkOptions: LineSpecOptions,
+  metricRangeOptions: MetricRangeSpecOptions
 ): (LineMark | AreaMark)[] => {
-	const areaOptions: AreaMarkOptions = {
-		name: `${metricRangeOptions.name}_area`,
-		color: lineMarkOptions.color,
-		colorScheme: lineMarkOptions.colorScheme,
-		opacity: metricRangeOptions.rangeOpacity,
-		metricStart: metricRangeOptions.metricStart,
-		metricEnd: metricRangeOptions.metricEnd,
-		isStacked: false,
-		scaleType: 'time',
-		dimension: lineMarkOptions.dimension,
-		isMetricRange: true,
-		parentName: lineMarkOptions.name,
-		displayOnHover: metricRangeOptions.displayOnHover,
-	};
-	const lineOptions: LineMarkOptions = {
-		...lineMarkOptions,
-		name: `${metricRangeOptions.name}_line`,
-		color: metricRangeOptions.color ? { value: metricRangeOptions.color } : lineMarkOptions.color,
-		metric: metricRangeOptions.metric,
-		lineType: { value: metricRangeOptions.lineType },
-		lineWidth: { value: metricRangeOptions.lineWidth },
-		displayOnHover: metricRangeOptions.displayOnHover,
-	};
+  const areaOptions: AreaMarkOptions = {
+    name: `${metricRangeOptions.name}_area`,
+    color: lineMarkOptions.color,
+    colorScheme: lineMarkOptions.colorScheme,
+    opacity: metricRangeOptions.rangeOpacity,
+    metricStart: metricRangeOptions.metricStart,
+    metricEnd: metricRangeOptions.metricEnd,
+    isStacked: false,
+    scaleType: 'time',
+    dimension: lineMarkOptions.dimension,
+    isMetricRange: true,
+    parentName: lineMarkOptions.name,
+    displayOnHover: metricRangeOptions.displayOnHover,
+  };
+  const lineOptions: LineMarkOptions = {
+    ...lineMarkOptions,
+    name: `${metricRangeOptions.name}_line`,
+    color: metricRangeOptions.color ? { value: metricRangeOptions.color } : lineMarkOptions.color,
+    metric: metricRangeOptions.metric,
+    lineType: { value: metricRangeOptions.lineType },
+    lineWidth: { value: metricRangeOptions.lineWidth },
+    displayOnHover: metricRangeOptions.displayOnHover,
+  };
 
-	const dataSource = `${metricRangeOptions.name}_facet`;
-	const lineMark = getLineMark(lineOptions, dataSource);
-	const areaMark = getAreaMark(areaOptions, dataSource);
+  const dataSource = `${metricRangeOptions.name}_facet`;
+  const lineMark = getLineMark(lineOptions, dataSource);
+  const areaMark = getAreaMark(areaOptions, dataSource);
 
-	return [lineMark, areaMark];
+  return [lineMark, areaMark];
 };
 
 /**
@@ -135,27 +135,27 @@ export const getMetricRangeMark = (
  * @param markOptions
  */
 export const getMetricRangeData = (markOptions: LineSpecOptions): SourceData[] => {
-	const data: SourceData[] = [];
-	const metricRanges = getMetricRanges(markOptions);
+  const data: SourceData[] = [];
+  const metricRanges = getMetricRanges(markOptions);
 
-	for (const metricRangeOptions of metricRanges) {
-		const { displayOnHover, name } = metricRangeOptions;
-		// if displayOnHover is true, add a data source for the highlighted data
-		if (displayOnHover) {
-			data.push({
-				name: `${name}_highlightedData`,
-				source: FILTERED_TABLE,
-				transform: [
-					{
-						type: 'filter',
-						expr: `isValid(${HIGHLIGHTED_SERIES}) && ${HIGHLIGHTED_SERIES} === datum.${SERIES_ID} || isValid(${SELECTED_SERIES}) && ${SELECTED_SERIES} === datum.${SERIES_ID}`,
-					},
-				],
-			});
-		}
-	}
+  for (const metricRangeOptions of metricRanges) {
+    const { displayOnHover, name } = metricRangeOptions;
+    // if displayOnHover is true, add a data source for the highlighted data
+    if (displayOnHover) {
+      data.push({
+        name: `${name}_highlightedData`,
+        source: FILTERED_TABLE,
+        transform: [
+          {
+            type: 'filter',
+            expr: `isValid(${HIGHLIGHTED_SERIES}) && ${HIGHLIGHTED_SERIES} === datum.${SERIES_ID} || isValid(${SELECTED_SERIES}) && ${SELECTED_SERIES} === datum.${SERIES_ID}`,
+          },
+        ],
+      });
+    }
+  }
 
-	return data;
+  return data;
 };
 
 /**
@@ -163,13 +163,13 @@ export const getMetricRangeData = (markOptions: LineSpecOptions): SourceData[] =
  * @param markOptions
  */
 export const getMetricRangeSignals = (markOptions: LineSpecOptions): Signal[] => {
-	const signals: Signal[] = [];
-	const { name: markName } = markOptions;
-	const metricRanges = getMetricRanges(markOptions);
+  const signals: Signal[] = [];
+  const { name: markName } = markOptions;
+  const metricRanges = getMetricRanges(markOptions);
 
-	if (metricRanges.length) {
-		addHighlightedSeriesSignalEvents(signals, `${markName}_voronoi`, 2);
-	}
+  if (metricRanges.length) {
+    addHighlightedSeriesSignalEvents(signals, `${markName}_voronoi`, 2);
+  }
 
-	return signals;
+  return signals;
 };

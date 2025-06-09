@@ -19,70 +19,70 @@ import { Badge, Basic, DimensionValue, NumberFormat, Prefix } from './TrendlineA
 const colors = spectrumColors.light;
 
 describe('TrendlineAnnotation', () => {
-	// TrendlineAnnotation is not a real React component. This is test just provides test coverage for sonarqube
-	test('TrendlineAnnotation pseudo element', () => {
-		render(<TrendlineAnnotation />);
-	});
+  // TrendlineAnnotation is not a real React component. This is test just provides test coverage for sonarqube
+  test('TrendlineAnnotation pseudo element', () => {
+    render(<TrendlineAnnotation />);
+  });
 
-	test('Basic renders properly', async () => {
-		render(<Basic {...Basic.args} />);
+  test('Basic renders properly', async () => {
+    render(<Basic {...Basic.args} />);
 
-		const chart = await findChart();
-		expect(chart).toBeInTheDocument();
+    const chart = await findChart();
+    expect(chart).toBeInTheDocument();
 
-		const labels = await findAllMarksByGroupName(chart, 'scatter0Trendline0Annotation0', 'text');
-		expect(labels).toHaveLength(3);
-		expect(allElementsHaveAttributeValue(labels, 'opacity', 1)).toBeTruthy();
-		expect(labels[0]).toHaveTextContent('4.5');
-		expect(labels[1]).toHaveTextContent('3.75');
-		expect(labels[2]).toHaveTextContent('3');
-	});
+    const labels = await findAllMarksByGroupName(chart, 'scatter0Trendline0Annotation0', 'text');
+    expect(labels).toHaveLength(3);
+    expect(allElementsHaveAttributeValue(labels, 'opacity', 1)).toBeTruthy();
+    expect(labels[0]).toHaveTextContent('4.5');
+    expect(labels[1]).toHaveTextContent('3.75');
+    expect(labels[2]).toHaveTextContent('3');
+  });
 
-	test('should render Badge correctly', async () => {
-		render(<Badge {...Badge.args} />);
-		const chart = await findChart();
-		expect(chart).toBeInTheDocument();
+  test('should render Badge correctly', async () => {
+    render(<Badge {...Badge.args} />);
+    const chart = await findChart();
+    expect(chart).toBeInTheDocument();
 
-		const badges = await findAllMarksByGroupName(chart, 'scatter0Trendline0Annotation0_badge');
-		expect(badges).toHaveLength(3);
-		expect(badges[0]).toHaveAttribute('fill', colors['categorical-100']);
-		expect(badges[1]).toHaveAttribute('fill', colors['categorical-200']);
-		expect(badges[2]).toHaveAttribute('fill', colors['categorical-300']);
-	});
+    const badges = await findAllMarksByGroupName(chart, 'scatter0Trendline0Annotation0_badge');
+    expect(badges).toHaveLength(3);
+    expect(badges[0]).toHaveAttribute('fill', colors['categorical-100']);
+    expect(badges[1]).toHaveAttribute('fill', colors['categorical-200']);
+    expect(badges[2]).toHaveAttribute('fill', colors['categorical-300']);
+  });
 
-	test('should render DimensionValue correctly', async () => {
-		render(<DimensionValue {...DimensionValue.args} />);
+  test('should render DimensionValue correctly', async () => {
+    render(<DimensionValue {...DimensionValue.args} />);
 
-		const chart = await findChart();
-		expect(chart).toBeInTheDocument();
+    const chart = await findChart();
+    expect(chart).toBeInTheDocument();
 
-		const labels = await findAllMarksByGroupName(chart, 'scatter0Trendline0Annotation0', 'text');
-		expect(labels).toHaveLength(3);
-		expect(allElementsHaveAttributeValue(labels, 'opacity', 1)).toBeTruthy();
-	});
+    const labels = await findAllMarksByGroupName(chart, 'scatter0Trendline0Annotation0', 'text');
+    expect(labels).toHaveLength(3);
+    expect(allElementsHaveAttributeValue(labels, 'opacity', 1)).toBeTruthy();
+  });
 
-	test('should render NumberFormat', async () => {
-		render(<NumberFormat {...NumberFormat.args} />);
-		const chart = await findChart();
-		expect(chart).toBeInTheDocument();
+  test('should render NumberFormat', async () => {
+    render(<NumberFormat {...NumberFormat.args} />);
+    const chart = await findChart();
+    expect(chart).toBeInTheDocument();
 
-		const labels = await findAllMarksByGroupName(chart, 'scatter0Trendline0Annotation0', 'text');
-		expect(labels).toHaveLength(3);
-		expect(allElementsHaveAttributeValue(labels, 'opacity', 1)).toBeTruthy();
-		expect(labels[0]).toHaveTextContent('4.50');
-		expect(labels[1]).toHaveTextContent('3.75');
-		expect(labels[2]).toHaveTextContent('3.00');
-	});
+    const labels = await findAllMarksByGroupName(chart, 'scatter0Trendline0Annotation0', 'text');
+    expect(labels).toHaveLength(3);
+    expect(allElementsHaveAttributeValue(labels, 'opacity', 1)).toBeTruthy();
+    expect(labels[0]).toHaveTextContent('4.50');
+    expect(labels[1]).toHaveTextContent('3.75');
+    expect(labels[2]).toHaveTextContent('3.00');
+  });
 
-	test('should render Prefix', async () => {
-		render(<Prefix {...Prefix.args} />);
-		const chart = await findChart();
-		expect(chart).toBeInTheDocument();
+  test('should render Prefix', async () => {
+    render(<Prefix {...Prefix.args} />);
+    const chart = await findChart();
+    expect(chart).toBeInTheDocument();
 
-		const labels = await findAllMarksByGroupName(chart, 'scatter0Trendline0Annotation0', 'text');
-		expect(labels).toHaveLength(3);
-		expect(labels[0]).toHaveTextContent('Speed: 4.5');
-		expect(labels[1]).toHaveTextContent('Speed: 3.75');
-		expect(labels[2]).toHaveTextContent('Speed: 3');
-	});
+    const labels = await findAllMarksByGroupName(chart, 'scatter0Trendline0Annotation0', 'text');
+    expect(labels).toHaveLength(3);
+    expect(labels[0]).toHaveTextContent('Speed: 4.5');
+    expect(labels[1]).toHaveTextContent('Speed: 3.75');
+    expect(labels[2]).toHaveTextContent('Speed: 3');
+  });
 });

@@ -143,7 +143,7 @@ The easiest way to hide/show data in the chart is to supply the `isToggleable` p
 
 ```jsx
 <Chart>
-  <Bar/>
+  <Bar />
   <Legend isToggleable />
 </Chart>
 ```
@@ -190,7 +190,7 @@ For the following example, each symbol in the legend will be `gray-800` and the 
 
 ```jsx
 <Chart>
-  <Bar/>
-  <Legend color={{value: 'gray-800'}} opacity='operatingSystem' />
+  <Bar />
+  <Legend color={{ value: 'gray-800' }} opacity="operatingSystem" />
 </Chart>
 ```

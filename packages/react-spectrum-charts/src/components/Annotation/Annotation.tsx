@@ -16,7 +16,7 @@ import { FC } from 'react';
 import { BarAnnotationProps } from '../../types';
 
 const Annotation: FC<BarAnnotationProps> = ({ textKey = 'annotation' }) => {
-	return null;
+  return null;
 };
 
 // displayName is used to validate the component type in the spec builder

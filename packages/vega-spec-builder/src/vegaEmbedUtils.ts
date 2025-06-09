@@ -18,36 +18,36 @@ import { getExpressionFunctions } from './expressionFunctions';
 import { getChartConfig } from './specUtils';
 
 export const getVegaEmbedOptions = ({
-	locale = 'en-US',
-	height = 400,
-	width = 600,
-	padding = 0,
-	renderer = 'svg',
-	config,
-	colorScheme = DEFAULT_COLOR_SCHEME,
+  locale = 'en-US',
+  height = 400,
+  width = 600,
+  padding = 0,
+  renderer = 'svg',
+  config,
+  colorScheme = DEFAULT_COLOR_SCHEME,
 }: {
-	locale?: Locale | LocaleCode | { number?: NumberLocaleCode | NumberLocale; time?: TimeLocaleCode | TimeLocale };
-	height?: number;
-	width?: number;
-	padding?: Padding;
-	renderer?: Renderers;
-	config?: Config;
-	colorScheme?: 'light' | 'dark';
+  locale?: Locale | LocaleCode | { number?: NumberLocaleCode | NumberLocale; time?: TimeLocaleCode | TimeLocale };
+  height?: number;
+  width?: number;
+  padding?: Padding;
+  renderer?: Renderers;
+  config?: Config;
+  colorScheme?: 'light' | 'dark';
 }) => {
-	const expressionFunctions = getExpressionFunctions(locale);
-	const { number: numberLocale, time: timeLocale } = getLocale(locale);
-	const chartConfig = config ?? getChartConfig(undefined, colorScheme);
+  const expressionFunctions = getExpressionFunctions(locale);
+  const { number: numberLocale, time: timeLocale } = getLocale(locale);
+  const chartConfig = config ?? getChartConfig(undefined, colorScheme);
 
-	return {
-		actions: false,
-		ast: true,
-		expressionFunctions,
-		formatLocale: numberLocale as unknown as Record<string, unknown>, // these are poorly typed by vega-embed
-		height,
-		width,
-		padding,
-		renderer,
-		timeFormatLocale: timeLocale as unknown as Record<string, unknown>, // these are poorly typed by vega-embed
-		config: chartConfig,
-	};
+  return {
+    actions: false,
+    ast: true,
+    expressionFunctions,
+    formatLocale: numberLocale as unknown as Record<string, unknown>, // these are poorly typed by vega-embed
+    height,
+    width,
+    padding,
+    renderer,
+    timeFormatLocale: timeLocale as unknown as Record<string, unknown>, // these are poorly typed by vega-embed
+    config: chartConfig,
+  };
 };

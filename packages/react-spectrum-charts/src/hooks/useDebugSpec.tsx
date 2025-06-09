@@ -18,24 +18,24 @@ import { mergeValuesIntoData } from '@spectrum-charts/vega-spec-builder';
 import { debugLog } from '../utils';
 
 export const useDebugSpec = (
-	debug: boolean,
-	spec: Spec,
-	chartData: unknown[],
-	chartWidth: number,
-	height: number,
-	config: Config
+  debug: boolean,
+  spec: Spec,
+  chartData: unknown[],
+  chartWidth: number,
+  height: number,
+  config: Config
 ): void => {
-	useEffect(() => {
-		if (debug) {
-			const data = JSON.parse(JSON.stringify(spec.data));
+  useEffect(() => {
+    if (debug) {
+      const data = JSON.parse(JSON.stringify(spec.data));
 
-			// Merge raw values into the Vega datasets array for a combined view of the data
-			const combinedData = mergeValuesIntoData(data, chartData);
+      // Merge raw values into the Vega datasets array for a combined view of the data
+      const combinedData = mergeValuesIntoData(data, chartData);
 
-			debugLog(debug, {
-				title: 'react-spectrum-charts Vega Spec',
-				contents: { width: chartWidth, height, config, ...spec, data: combinedData },
-			});
-		}
-	}, [debug, spec, chartData, chartWidth, height, config]);
+      debugLog(debug, {
+        title: 'react-spectrum-charts Vega Spec',
+        contents: { width: chartWidth, height, config, ...spec, data: combinedData },
+      });
+    }
+  }, [debug, spec, chartData, chartWidth, height, config]);
 };

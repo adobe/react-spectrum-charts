@@ -16,19 +16,19 @@ import { FC } from 'react';
 import { ChartPopoverProps } from '../../types';
 
 const ChartPopover: FC<ChartPopoverProps> = ({
-	children,
-	width = 250,
-	minWidth = 0,
-	maxWidth,
-	height,
-	minHeight,
-	maxHeight,
-	containerPadding = 12,
-	onOpenChange,
-	rightClick = false,
-	UNSAFE_highlightBy = 'item',
+  children,
+  width = 250,
+  minWidth = 0,
+  maxWidth,
+  height,
+  minHeight,
+  maxHeight,
+  containerPadding = 12,
+  onOpenChange,
+  rightClick = false,
+  UNSAFE_highlightBy = 'item',
 }) => {
-	return null;
+  return null;
 };
 
 // displayName is used to validate the component type in the spec builder

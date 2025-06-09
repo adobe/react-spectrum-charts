@@ -13,13 +13,13 @@ import { produce } from 'immer';
 import { Data, Legend, Mark, Scale, Signal } from 'vega';
 
 import {
-	COLOR_SCALE,
-	DEFAULT_COLOR_SCHEME,
-	LINEAR_COLOR_SCALE,
-	LINE_TYPE_SCALE,
-	OPACITY_SCALE,
-	SYMBOL_SHAPE_SCALE,
-	SYMBOL_SIZE_SCALE,
+  COLOR_SCALE,
+  DEFAULT_COLOR_SCHEME,
+  LINEAR_COLOR_SCALE,
+  LINE_TYPE_SCALE,
+  OPACITY_SCALE,
+  SYMBOL_SHAPE_SCALE,
+  SYMBOL_SIZE_SCALE,
 } from '@spectrum-charts/constants';
 import { getColorValue } from '@spectrum-charts/themes';
 
@@ -28,121 +28,126 @@ import { addFieldToFacetScaleDomain } from '../scale/scaleSpecBuilder';
 import { addHighlighSignalLegendHoverEvents, getGenericValueSignal } from '../signal/signalSpecBuilder';
 import { getLineWidthPixelsFromLineWidth, getPathFromSymbolShape, getStrokeDashFromLineType } from '../specUtils';
 import {
-	ColorFacet,
-	ColorScheme,
-	FacetRef,
-	LegendOptions,
-	LegendSpecOptions,
-	LineTypeFacet,
-	LineWidthFacet,
-	ScSpec,
-	SymbolShapeFacet,
+  ColorFacet,
+  ColorScheme,
+  FacetRef,
+  LegendOptions,
+  LegendSpecOptions,
+  LineTypeFacet,
+  LineWidthFacet,
+  ScSpec,
+  SymbolShapeFacet,
 } from '../types';
 import { getFacets, getFacetsFromKeys } from './legendFacetUtils';
 import { setHoverOpacityForMarks } from './legendHighlightUtils';
 import { Facet, getColumns, getEncodings, getHiddenEntriesFilter, getSymbolType } from './legendUtils';
 
 export const addLegend = produce<
-	ScSpec,
-	[
-		LegendOptions & {
-			colorScheme?: ColorScheme;
-			index?: number;
-			hiddenSeries?: string[];
-			highlightedSeries?: string | number;
-		}
-	]
+  ScSpec,
+  [
+    LegendOptions & {
+      colorScheme?: ColorScheme;
+      index?: number;
+      hiddenSeries?: string[];
+      highlightedSeries?: string | number;
+    }
+  ]
 >(
-	(
-		spec,
-		{
-			color,
-			hasMouseInteraction = false,
-			hasOnClick = false,
-			hiddenEntries = [],
-			hiddenSeries = [],
-			highlight = false,
-			highlightedSeries,
-			index = 0,
-			isToggleable = false,
-			lineType,
-			lineWidth,
-			position = 'bottom',
-			symbolShape,
-			title,
-			colorScheme = DEFAULT_COLOR_SCHEME,
-			...options
-		}
-	) => {
-		const { formattedColor, formattedLineType, formattedLineWidth, formattedSymbolShape } =
-			formatFacetRefsWithPresets(color, lineType, lineWidth, symbolShape, colorScheme);
+  (
+    spec,
+    {
+      color,
+      hasMouseInteraction = false,
+      hasOnClick = false,
+      hiddenEntries = [],
+      hiddenSeries = [],
+      highlight = false,
+      highlightedSeries,
+      index = 0,
+      isToggleable = false,
+      lineType,
+      lineWidth,
+      position = 'bottom',
+      symbolShape,
+      title,
+      colorScheme = DEFAULT_COLOR_SCHEME,
+      ...options
+    }
+  ) => {
+    const { formattedColor, formattedLineType, formattedLineWidth, formattedSymbolShape } = formatFacetRefsWithPresets(
+      color,
+      lineType,
+      lineWidth,
+      symbolShape,
+      colorScheme
+    );
 
-		const name = `legend${index}`;
+    const name = `legend${index}`;
 
-		// put options back together now that all defaults are set
-		const legendOptions: LegendSpecOptions = {
-			color: formattedColor,
-			hasMouseInteraction,
-			hasOnClick,
-			hiddenEntries,
-			hiddenSeries,
-			highlight,
-			highlightedSeries,
-			index,
-			isToggleable,
-			lineType: formattedLineType,
-			lineWidth: formattedLineWidth,
-			name,
-			position,
-			symbolShape: formattedSymbolShape,
-			title,
-			colorScheme,
-			...options,
-		};
+    // put options back together now that all defaults are set
+    const legendOptions: LegendSpecOptions = {
+      color: formattedColor,
+      hasMouseInteraction,
+      hasOnClick,
+      hiddenEntries,
+      hiddenSeries,
+      highlight,
+      highlightedSeries,
+      index,
+      isToggleable,
+      lineType: formattedLineType,
+      lineWidth: formattedLineWidth,
+      name,
+      position,
+      symbolShape: formattedSymbolShape,
+      title,
+      colorScheme,
+      ...options,
+    };
 
-		// Order matters here. Facets rely on the scales being set up.
-		spec.scales = addScales(spec.scales ?? [], legendOptions);
+    // Order matters here. Facets rely on the scales being set up.
+    spec.scales = addScales(spec.scales ?? [], legendOptions);
 
-		// get the keys and facet types that are used to divide the data for this visualization
-		const { ordinalFacets, continuousFacets } = options.keys
-			? getFacetsFromKeys(options.keys, spec.scales ?? [])
-			: getFacets(spec.scales ?? []);
+    // get the keys and facet types that are used to divide the data for this visualization
+    const { ordinalFacets, continuousFacets } = options.keys
+      ? getFacetsFromKeys(options.keys, spec.scales ?? [])
+      : getFacets(spec.scales ?? []);
 
-		const legends: Legend[] = [];
+    const legends: Legend[] = [];
 
-		// if there are any categorical facets, add the legend and supporting data, signals and marks
-		if (ordinalFacets.length) {
-			// add the legendEntries scale
-			// this scale is used to generate every combination of the catergorical facets
-			spec.scales.push({
-				name: `${name}Entries`,
-				type: 'ordinal',
-				domain: { data: `${name}Aggregate`, field: `${name}Entries` },
-			});
+    // if there are any categorical facets, add the legend and supporting data, signals and marks
+    if (ordinalFacets.length) {
+      // add the legendEntries scale
+      // this scale is used to generate every combination of the catergorical facets
+      spec.scales.push({
+        name: `${name}Entries`,
+        type: 'ordinal',
+        domain: { data: `${name}Aggregate`, field: `${name}Entries` },
+      });
 
-			// just want the unique fields
-			const uniqueFacetFields = [...new Set(ordinalFacets.map((facet) => facet.field))];
+      // just want the unique fields
+      const uniqueFacetFields = [...new Set(ordinalFacets.map((facet) => facet.field))];
 
-			spec.data = addData(spec.data ?? [], { ...legendOptions, facets: uniqueFacetFields });
-			spec.signals = addSignals(spec.signals ?? [], legendOptions);
-			spec.marks = addMarks(spec.marks ?? [], legendOptions);
+      spec.data = addData(spec.data ?? [], { ...legendOptions, facets: uniqueFacetFields });
+      spec.signals = addSignals(spec.signals ?? [], legendOptions);
+      spec.marks = addMarks(spec.marks ?? [], legendOptions);
 
-			// add the legend
-			legends.push(getCategoricalLegend(ordinalFacets, legendOptions));
-		}
+      // add the legend
+      legends.push(getCategoricalLegend(ordinalFacets, legendOptions));
+    }
 
-		// continuous legends cannot be combined with any other legends
-		continuousFacets.forEach((facet) => {
-			// add the legend
-			legends.push(getContinuousLegend(facet, legendOptions));
-		});
+    // continuous legends cannot be combined with any other legends
+    continuousFacets.forEach((facet) => {
+      // add the legend
+      legends.push(getContinuousLegend(facet, legendOptions));
+    });
 
-		// if legends is undefined, initialize it as an empty array
-		if (typeof spec.legends === 'undefined') {
-			spec.legends = [];
-		}
-		spec.legends.push(...legends);
-	}
+    // if legends is undefined, initialize it as an empty array
+    if (typeof spec.legends === 'undefined') {
+      spec.legends = [];
+    }
+    spec.legends.push(...legends);
+  }
 );
 
 /**
@@ -154,40 +159,40 @@ export const addLegend = produce<
  * @param colorScheme
  */
 export const formatFacetRefsWithPresets = (
-	color: ColorFacet | undefined,
-	lineType: LineTypeFacet | undefined,
-	lineWidth: LineWidthFacet | undefined,
-	symbolShape: SymbolShapeFacet | undefined,
-	colorScheme: ColorScheme
+  color: ColorFacet | undefined,
+  lineType: LineTypeFacet | undefined,
+  lineWidth: LineWidthFacet | undefined,
+  symbolShape: SymbolShapeFacet | undefined,
+  colorScheme: ColorScheme
 ) => {
-	let formattedColor: FacetRef<string> | undefined;
-	if (color && typeof color === 'object') {
-		formattedColor = { value: getColorValue(color.value, colorScheme) };
-	} else {
-		formattedColor = color;
-	}
+  let formattedColor: FacetRef<string> | undefined;
+  if (color && typeof color === 'object') {
+    formattedColor = { value: getColorValue(color.value, colorScheme) };
+  } else {
+    formattedColor = color;
+  }
 
-	let formattedLineType: FacetRef<number[]> | undefined;
-	if (lineType && typeof lineType === 'object') {
-		formattedLineType = { value: getStrokeDashFromLineType(lineType.value) };
-	} else {
-		formattedLineType = lineType;
-	}
+  let formattedLineType: FacetRef<number[]> | undefined;
+  if (lineType && typeof lineType === 'object') {
+    formattedLineType = { value: getStrokeDashFromLineType(lineType.value) };
+  } else {
+    formattedLineType = lineType;
+  }
 
-	let formattedLineWidth: FacetRef<number> | undefined;
-	if (lineWidth && typeof lineWidth === 'object') {
-		formattedLineWidth = { value: getLineWidthPixelsFromLineWidth(lineWidth.value) };
-	} else {
-		formattedLineWidth = lineWidth;
-	}
+  let formattedLineWidth: FacetRef<number> | undefined;
+  if (lineWidth && typeof lineWidth === 'object') {
+    formattedLineWidth = { value: getLineWidthPixelsFromLineWidth(lineWidth.value) };
+  } else {
+    formattedLineWidth = lineWidth;
+  }
 
-	let formattedSymbolShape: FacetRef<string> | undefined;
-	if (symbolShape && typeof symbolShape === 'object') {
-		formattedSymbolShape = { value: getPathFromSymbolShape(symbolShape.value) };
-	} else {
-		formattedSymbolShape = symbolShape;
-	}
-	return { formattedColor, formattedLineType, formattedLineWidth, formattedSymbolShape };
+  let formattedSymbolShape: FacetRef<string> | undefined;
+  if (symbolShape && typeof symbolShape === 'object') {
+    formattedSymbolShape = { value: getPathFromSymbolShape(symbolShape.value) };
+  } else {
+    formattedSymbolShape = symbolShape;
+  }
+  return { formattedColor, formattedLineType, formattedLineWidth, formattedSymbolShape };
 };
 
 /**
@@ -197,18 +202,18 @@ export const formatFacetRefsWithPresets = (
  * @returns
  */
 const getCategoricalLegend = (facets: Facet[], options: LegendSpecOptions): Legend => {
-	const { name, position, title, labelLimit, titleLimit } = options;
-	const legend: Legend = {
-		fill: `${name}Entries`,
-		direction: ['top', 'bottom'].includes(position) ? 'horizontal' : 'vertical',
-		orient: position,
-		title,
-		encode: getEncodings(facets, options),
-		columns: getColumns(position),
-		labelLimit,
-	};
-	if (titleLimit !== undefined) legend.titleLimit = titleLimit;
-	return legend;
+  const { name, position, title, labelLimit, titleLimit } = options;
+  const legend: Legend = {
+    fill: `${name}Entries`,
+    direction: ['top', 'bottom'].includes(position) ? 'horizontal' : 'vertical',
+    orient: position,
+    title,
+    encode: getEncodings(facets, options),
+    columns: getColumns(position),
+    labelLimit,
+  };
+  if (titleLimit !== undefined) legend.titleLimit = titleLimit;
+  return legend;
 };
 
 /**
@@ -219,48 +224,48 @@ const getCategoricalLegend = (facets: Facet[], options: LegendSpecOptions): Lege
  * @returns
  */
 export const getContinuousLegend = (facet: Facet, options: LegendSpecOptions): Legend => {
-	const { symbolShape } = options;
-	// add a switch statement here for the different types of continuous legends
-	if (facet.facetType === SYMBOL_SIZE_SCALE) {
-		return {
-			size: SYMBOL_SIZE_SCALE,
-			...getLegendLayout(options),
-			symbolType: getSymbolType(symbolShape),
-		};
-	}
-	return {
-		fill: LINEAR_COLOR_SCALE,
-		gradientThickness: 10,
-		...getLegendLayout(options),
-	};
+  const { symbolShape } = options;
+  // add a switch statement here for the different types of continuous legends
+  if (facet.facetType === SYMBOL_SIZE_SCALE) {
+    return {
+      size: SYMBOL_SIZE_SCALE,
+      ...getLegendLayout(options),
+      symbolType: getSymbolType(symbolShape),
+    };
+  }
+  return {
+    fill: LINEAR_COLOR_SCALE,
+    gradientThickness: 10,
+    ...getLegendLayout(options),
+  };
 };
 
 const getLegendLayout = ({ position, title, titleLimit }: LegendSpecOptions): Partial<Legend> => {
-	const layout: Partial<Legend> = {
-		direction: ['top', 'bottom'].includes(position) ? 'horizontal' : 'vertical',
-		orient: position,
-		title,
-	};
-	if (titleLimit !== undefined) layout.titleLimit = titleLimit;
-	return layout;
+  const layout: Partial<Legend> = {
+    direction: ['top', 'bottom'].includes(position) ? 'horizontal' : 'vertical',
+    orient: position,
+    title,
+  };
+  if (titleLimit !== undefined) layout.titleLimit = titleLimit;
+  return layout;
 };
 
 /**
  * Adds a new scale that is used to create the legend entries
  */
 const addScales = produce<Scale[], [LegendSpecOptions]>((scales, { color, lineType, opacity, symbolShape }) => {
-	// it is possible to define fields to facet the data off of on the legend
-	// if these fields are not already defined on the scales, we need to add them
-	addFieldToFacetScaleDomain(scales, COLOR_SCALE, color);
-	addFieldToFacetScaleDomain(scales, LINE_TYPE_SCALE, lineType);
-	addFieldToFacetScaleDomain(scales, OPACITY_SCALE, opacity);
-	addFieldToFacetScaleDomain(scales, SYMBOL_SHAPE_SCALE, symbolShape);
+  // it is possible to define fields to facet the data off of on the legend
+  // if these fields are not already defined on the scales, we need to add them
+  addFieldToFacetScaleDomain(scales, COLOR_SCALE, color);
+  addFieldToFacetScaleDomain(scales, LINE_TYPE_SCALE, lineType);
+  addFieldToFacetScaleDomain(scales, OPACITY_SCALE, opacity);
+  addFieldToFacetScaleDomain(scales, SYMBOL_SHAPE_SCALE, symbolShape);
 });
 
 const addMarks = produce<Mark[], [LegendSpecOptions]>((marks, { highlight, keys, name }) => {
-	if (highlight) {
-		setHoverOpacityForMarks(marks, keys, name);
-	}
+  if (highlight) {
+    setHoverOpacityForMarks(marks, keys, name);
+  }
 });
 
 /**
@@ -269,48 +274,48 @@ const addMarks = produce<Mark[], [LegendSpecOptions]>((marks, { highlight, keys,
  * Each unique combination gets joined with a pipe to create a single string to use as legend entries
  */
 export const addData = produce<Data[], [LegendSpecOptions & { facets: string[] }]>(
-	(data, { facets, hiddenEntries, keys, name }) => {
-		// expression for combining all the facets into a single key
-		const expr = facets.map((facet) => `datum.${facet}`).join(' + " | " + ');
-		data.push({
-			name: `${name}Aggregate`,
-			source: 'table',
-			transform: [
-				{
-					type: 'aggregate',
-					groupby: facets,
-				},
-				{
-					type: 'formula',
-					as: `${name}Entries`,
-					expr,
-				},
-				...getHiddenEntriesFilter(hiddenEntries, name),
-			],
-		});
+  (data, { facets, hiddenEntries, keys, name }) => {
+    // expression for combining all the facets into a single key
+    const expr = facets.map((facet) => `datum.${facet}`).join(' + " | " + ');
+    data.push({
+      name: `${name}Aggregate`,
+      source: 'table',
+      transform: [
+        {
+          type: 'aggregate',
+          groupby: facets,
+        },
+        {
+          type: 'formula',
+          as: `${name}Entries`,
+          expr,
+        },
+        ...getHiddenEntriesFilter(hiddenEntries, name),
+      ],
+    });
 
-		if (keys?.length) {
-			const tableData = getTableData(data);
-			if (!tableData.transform) {
-				tableData.transform = [];
-			}
-			tableData.transform.push({
-				type: 'formula',
-				as: `${name}_highlightGroupId`,
-				expr: keys.map((key) => `datum.${key}`).join(' + " | " + '),
-			});
-		}
-	}
+    if (keys?.length) {
+      const tableData = getTableData(data);
+      if (!tableData.transform) {
+        tableData.transform = [];
+      }
+      tableData.transform.push({
+        type: 'formula',
+        as: `${name}_highlightGroupId`,
+        expr: keys.map((key) => `datum.${key}`).join(' + " | " + '),
+      });
+    }
+  }
 );
 
 export const addSignals = produce<Signal[], [LegendSpecOptions]>(
-	(signals, { hiddenSeries, highlight, isToggleable, keys, legendLabels, name }) => {
-		if (highlight) {
-			addHighlighSignalLegendHoverEvents(signals, name, Boolean(isToggleable || hiddenSeries), keys);
-		}
+  (signals, { hiddenSeries, highlight, isToggleable, keys, legendLabels, name }) => {
+    if (highlight) {
+      addHighlighSignalLegendHoverEvents(signals, name, Boolean(isToggleable || hiddenSeries), keys);
+    }
 
-		if (legendLabels) {
-			signals.push(getGenericValueSignal(`${name}_labels`, legendLabels));
-		}
-	}
+    if (legendLabels) {
+      signals.push(getGenericValueSignal(`${name}_labels`, legendLabels));
+    }
+  }
 );

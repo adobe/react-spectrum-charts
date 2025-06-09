@@ -21,5 +21,5 @@ export type AxisAnnotationElement = ReactElement<AxisAnnotationProps, JSXElement
 export type AxisAnnotationChildElement = ChartPopoverElement | ChartTooltipElement;
 
 export interface AxisAnnotationProps extends Omit<AxisAnnotationOptions, 'chartPopovers' | 'chartTooltips'> {
-	children?: Children<AxisAnnotationChildElement>;
+  children?: Children<AxisAnnotationChildElement>;
 }

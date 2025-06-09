@@ -20,47 +20,47 @@ import { bindWithProps } from '../../../test-utils/bindWithProps';
 import { ChartProps } from '../../../types';
 
 export default {
-	title: 'RSC/Area',
-	component: Area,
-	argTypes: {
-		/*onClick: {
+  title: 'RSC/Area',
+  component: Area,
+  argTypes: {
+    /*onClick: {
             control: {
                 type: "object",
             },
         },*/
-	},
+  },
 };
 
 const data = [
-	{ datetime: 1667890800000, maxTemperature: 73, minTemperature: 47, series: 'Add Fallout' },
-	{ datetime: 1667977200000, maxTemperature: 70, minTemperature: 48, series: 'Add Fallout' },
-	{ datetime: 1668063600000, maxTemperature: 73, minTemperature: 48, series: 'Add Fallout' },
-	{ datetime: 1668150000000, maxTemperature: 56, minTemperature: 31, series: 'Add Fallout' },
-	{ datetime: 1668236400000, maxTemperature: 41, minTemperature: 18, series: 'Add Fallout' },
-	{ datetime: 1668322800000, maxTemperature: 60, minTemperature: 45, series: 'Add Fallout' },
-	{ datetime: 1668409200000, maxTemperature: 64, minTemperature: 43, series: 'Add Fallout' },
+  { datetime: 1667890800000, maxTemperature: 73, minTemperature: 47, series: 'Add Fallout' },
+  { datetime: 1667977200000, maxTemperature: 70, minTemperature: 48, series: 'Add Fallout' },
+  { datetime: 1668063600000, maxTemperature: 73, minTemperature: 48, series: 'Add Fallout' },
+  { datetime: 1668150000000, maxTemperature: 56, minTemperature: 31, series: 'Add Fallout' },
+  { datetime: 1668236400000, maxTemperature: 41, minTemperature: 18, series: 'Add Fallout' },
+  { datetime: 1668322800000, maxTemperature: 60, minTemperature: 45, series: 'Add Fallout' },
+  { datetime: 1668409200000, maxTemperature: 64, minTemperature: 43, series: 'Add Fallout' },
 ];
 
 const defaultChartProps: ChartProps = { data, minWidth: 400, maxWidth: 800, height: 400 };
 
 const BasicStory: StoryFn<typeof Area> = (args): ReactElement => {
-	const chartProps = useChartProps({ ...defaultChartProps });
-	return (
-		<Chart {...chartProps}>
-			<Area {...args} />
-		</Chart>
-	);
+  const chartProps = useChartProps({ ...defaultChartProps });
+  return (
+    <Chart {...chartProps}>
+      <Area {...args} />
+    </Chart>
+  );
 };
 
 const AreaTimeStory: StoryFn<typeof Area> = (args): ReactElement => {
-	const chartProps = useChartProps({ ...defaultChartProps });
-	return (
-		<Chart {...chartProps}>
-			<Axis position="bottom" labelFormat="time" baseline />
-			<Axis position="left" title="Temperature (F)" grid />
-			<Area {...args} />
-		</Chart>
-	);
+  const chartProps = useChartProps({ ...defaultChartProps });
+  return (
+    <Chart {...chartProps}>
+      <Axis position="bottom" labelFormat="time" baseline />
+      <Axis position="left" title="Temperature (F)" grid />
+      <Area {...args} />
+    </Chart>
+  );
 };
 
 const Basic = bindWithProps(BasicStory);

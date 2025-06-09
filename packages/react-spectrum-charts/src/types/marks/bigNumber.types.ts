@@ -19,14 +19,14 @@ import { Children } from '../util.types';
 import { LineElement } from './line.types';
 
 export type IconElement = ReactElement<
-	IconProps | IconPropsWithoutChildren,
-	JSXElementConstructor<IconProps | IconPropsWithoutChildren>
+  IconProps | IconPropsWithoutChildren,
+  JSXElementConstructor<IconProps | IconPropsWithoutChildren>
 >;
 
 export interface BigNumberProps extends Omit<BigNumberOptions, 'lines' | 'markType'> {
-	children?: Children<LineElement>;
-	// Can't have react elements like this in the options interface
-	icon?: IconElement;
+  children?: Children<LineElement>;
+  // Can't have react elements like this in the options interface
+  icon?: IconElement;
 }
 
 export type BigNumberElement = ReactElement<BigNumberProps, JSXElementConstructor<BigNumberProps>>;

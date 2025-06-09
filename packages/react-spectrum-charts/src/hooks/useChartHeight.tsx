@@ -14,19 +14,17 @@ import { useMemo } from 'react';
 import { Height } from '@spectrum-charts/vega-spec-builder';
 
 export default function useChartHeight(containerHeight: number, maxHeight: number, minHeight: number, height: Height) {
-	return useMemo(() => {
-		let targetHeight = minHeight;
-		if (typeof height === 'number') {
-			// integers only, decimal values can cause performance issues with vega.
-			return Math.round(height);
-		} else if (/^\d+%$/.exec(height)) {
-			targetHeight = (containerHeight * Number(height.slice(0, -1))) / 100;
-		} else {
-			console.error(
-				`height of ${height} is not a valid height. Please provide a valid number or percentage ex. 75%`
-			);
-		}
-		// integers only, decimal values can cause performance issues with vega.
-		return targetHeight === 0 ? 0 : Math.round(Math.min(maxHeight, Math.max(minHeight, targetHeight)));
-	}, [containerHeight, maxHeight, minHeight, height]);
+  return useMemo(() => {
+    let targetHeight = minHeight;
+    if (typeof height === 'number') {
+      // integers only, decimal values can cause performance issues with vega.
+      return Math.round(height);
+    } else if (/^\d+%$/.exec(height)) {
+      targetHeight = (containerHeight * Number(height.slice(0, -1))) / 100;
+    } else {
+      console.error(`height of ${height} is not a valid height. Please provide a valid number or percentage ex. 75%`);
+    }
+    // integers only, decimal values can cause performance issues with vega.
+    return targetHeight === 0 ? 0 : Math.round(Math.min(maxHeight, Math.max(minHeight, targetHeight)));
+  }, [containerHeight, maxHeight, minHeight, height]);
 }

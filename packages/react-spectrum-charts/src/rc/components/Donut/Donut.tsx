@@ -19,15 +19,15 @@ import { DonutProps } from '../../../types';
 
 // destructure props here and set defaults so that storybook can pick them up
 const Donut: FC<DonutProps> = ({
-	children,
-	color = DEFAULT_COLOR,
-	holeRatio = 0.85,
-	isBoolean = false,
-	metric = DEFAULT_METRIC,
-	name,
-	startAngle = 0,
+  children,
+  color = DEFAULT_COLOR,
+  holeRatio = 0.85,
+  isBoolean = false,
+  metric = DEFAULT_METRIC,
+  name,
+  startAngle = 0,
 }) => {
-	return null;
+  return null;
 };
 
 // displayName is used to validate the component type in the spec builder

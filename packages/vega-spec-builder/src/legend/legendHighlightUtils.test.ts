@@ -12,97 +12,97 @@
 import { Mark } from 'vega';
 
 import {
-	DEFAULT_OPACITY_RULE,
-	HIGHLIGHTED_GROUP,
-	HIGHLIGHTED_SERIES,
-	HIGHLIGHT_CONTRAST_RATIO,
-	SERIES_ID,
+  DEFAULT_OPACITY_RULE,
+  HIGHLIGHTED_GROUP,
+  HIGHLIGHTED_SERIES,
+  HIGHLIGHT_CONTRAST_RATIO,
+  SERIES_ID,
 } from '@spectrum-charts/constants';
 
 import { getHighlightOpacityRule, setHoverOpacityForMarks } from './legendHighlightUtils';
 import { defaultMark } from './legendTestUtils';
 
 const defaultGroupMark: Mark = {
-	type: 'group',
-	marks: [defaultMark],
+  type: 'group',
+  marks: [defaultMark],
 };
 
 const defaultOpacityEncoding = {
-	opacity: [
-		{
-			test: `isValid(${HIGHLIGHTED_SERIES}) && ${HIGHLIGHTED_SERIES} !== datum.${SERIES_ID}`,
-			value: 1 / HIGHLIGHT_CONTRAST_RATIO,
-		},
-	],
+  opacity: [
+    {
+      test: `isValid(${HIGHLIGHTED_SERIES}) && ${HIGHLIGHTED_SERIES} !== datum.${SERIES_ID}`,
+      value: 1 / HIGHLIGHT_CONTRAST_RATIO,
+    },
+  ],
 };
 
 describe('getHighlightOpacityRule()', () => {
-	test('should use HIGHLIGHTED_SERIES in test if there are not any keys', () => {
-		const opacityRule = getHighlightOpacityRule();
-		expect(opacityRule).toHaveProperty(
-			'test',
-			`isValid(${HIGHLIGHTED_SERIES}) && ${HIGHLIGHTED_SERIES} !== datum.${SERIES_ID}`
-		);
-	});
-	test('should use keys in test if there are keys', () => {
-		const opacityRule = getHighlightOpacityRule(['key1'], 'legend0');
-		expect(opacityRule).toHaveProperty(
-			'test',
-			`isValid(${HIGHLIGHTED_GROUP}) && ${HIGHLIGHTED_GROUP} !== datum.legend0_highlightGroupId`
-		);
-	});
+  test('should use HIGHLIGHTED_SERIES in test if there are not any keys', () => {
+    const opacityRule = getHighlightOpacityRule();
+    expect(opacityRule).toHaveProperty(
+      'test',
+      `isValid(${HIGHLIGHTED_SERIES}) && ${HIGHLIGHTED_SERIES} !== datum.${SERIES_ID}`
+    );
+  });
+  test('should use keys in test if there are keys', () => {
+    const opacityRule = getHighlightOpacityRule(['key1'], 'legend0');
+    expect(opacityRule).toHaveProperty(
+      'test',
+      `isValid(${HIGHLIGHTED_GROUP}) && ${HIGHLIGHTED_GROUP} !== datum.legend0_highlightGroupId`
+    );
+  });
 });
 
 describe('setHoverOpacityForMarks()', () => {
-	describe('no initial state', () => {
-		test('should not modify the marks', () => {
-			const marks = [];
-			setHoverOpacityForMarks(marks);
-			expect(marks).toEqual([]);
-		});
-	});
-	describe('bar mark initial state', () => {
-		test('encoding should be added for opacity', () => {
-			const marks = JSON.parse(JSON.stringify([defaultMark]));
-			setHoverOpacityForMarks(marks);
-			expect(marks).toStrictEqual([
-				{ ...defaultMark, encode: { ...defaultMark.encode, update: defaultOpacityEncoding } },
-			]);
-		});
-		test('opacity encoding already exists, rules should be added in the correct spot', () => {
-			const marks = JSON.parse(
-				JSON.stringify([
-					{
-						...defaultMark,
-						encode: { ...defaultMark.encode, update: { opacity: [DEFAULT_OPACITY_RULE] } },
-					},
-				])
-			);
-			setHoverOpacityForMarks(marks);
-			expect(marks).toStrictEqual([
-				{
-					...defaultMark,
-					encode: {
-						...defaultMark.encode,
-						update: {
-							...defaultOpacityEncoding,
-							opacity: [...defaultOpacityEncoding.opacity, DEFAULT_OPACITY_RULE],
-						},
-					},
-				},
-			]);
-		});
-	});
-	describe('group mark initial state', () => {
-		test('encoding should be added for opacity', () => {
-			const marks = JSON.parse(JSON.stringify([defaultGroupMark]));
-			setHoverOpacityForMarks(marks);
-			expect(marks).toStrictEqual([
-				{
-					...defaultGroupMark,
-					marks: [{ ...defaultMark, encode: { ...defaultMark.encode, update: defaultOpacityEncoding } }],
-				},
-			]);
-		});
-	});
+  describe('no initial state', () => {
+    test('should not modify the marks', () => {
+      const marks = [];
+      setHoverOpacityForMarks(marks);
+      expect(marks).toEqual([]);
+    });
+  });
+  describe('bar mark initial state', () => {
+    test('encoding should be added for opacity', () => {
+      const marks = JSON.parse(JSON.stringify([defaultMark]));
+      setHoverOpacityForMarks(marks);
+      expect(marks).toStrictEqual([
+        { ...defaultMark, encode: { ...defaultMark.encode, update: defaultOpacityEncoding } },
+      ]);
+    });
+    test('opacity encoding already exists, rules should be added in the correct spot', () => {
+      const marks = JSON.parse(
+        JSON.stringify([
+          {
+            ...defaultMark,
+            encode: { ...defaultMark.encode, update: { opacity: [DEFAULT_OPACITY_RULE] } },
+          },
+        ])
+      );
+      setHoverOpacityForMarks(marks);
+      expect(marks).toStrictEqual([
+        {
+          ...defaultMark,
+          encode: {
+            ...defaultMark.encode,
+            update: {
+              ...defaultOpacityEncoding,
+              opacity: [...defaultOpacityEncoding.opacity, DEFAULT_OPACITY_RULE],
+            },
+          },
+        },
+      ]);
+    });
+  });
+  describe('group mark initial state', () => {
+    test('encoding should be added for opacity', () => {
+      const marks = JSON.parse(JSON.stringify([defaultGroupMark]));
+      setHoverOpacityForMarks(marks);
+      expect(marks).toStrictEqual([
+        {
+          ...defaultGroupMark,
+          marks: [{ ...defaultMark, encode: { ...defaultMark.encode, update: defaultOpacityEncoding } }],
+        },
+      ]);
+    });
+  });
 });

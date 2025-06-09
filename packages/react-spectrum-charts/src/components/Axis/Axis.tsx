@@ -14,34 +14,34 @@
 import { FC } from 'react';
 
 import {
-	DEFAULT_GRANULARITY,
-	DEFAULT_LABEL_ALIGN,
-	DEFAULT_LABEL_FONT_WEIGHT,
-	DEFAULT_LABEL_ORIENTATION,
+  DEFAULT_GRANULARITY,
+  DEFAULT_LABEL_ALIGN,
+  DEFAULT_LABEL_FONT_WEIGHT,
+  DEFAULT_LABEL_ORIENTATION,
 } from '@spectrum-charts/constants';
 
 import { AxisProps } from '../../types';
 
 const Axis: FC<AxisProps> = ({
-	position,
-	baseline = false,
-	baselineOffset = 0,
-	granularity = DEFAULT_GRANULARITY,
-	grid = false,
-	hideDefaultLabels = false,
-	labelAlign = DEFAULT_LABEL_ALIGN,
-	labelFontWeight = DEFAULT_LABEL_FONT_WEIGHT,
-	labelFormat,
-	labelOrientation = DEFAULT_LABEL_ORIENTATION,
-	labels,
-	numberFormat = 'shortNumber',
-	range = undefined,
-	subLabels,
-	ticks = false,
-	tickMinStep = undefined,
-	title = undefined,
+  position,
+  baseline = false,
+  baselineOffset = 0,
+  granularity = DEFAULT_GRANULARITY,
+  grid = false,
+  hideDefaultLabels = false,
+  labelAlign = DEFAULT_LABEL_ALIGN,
+  labelFontWeight = DEFAULT_LABEL_FONT_WEIGHT,
+  labelFormat,
+  labelOrientation = DEFAULT_LABEL_ORIENTATION,
+  labels,
+  numberFormat = 'shortNumber',
+  range = undefined,
+  subLabels,
+  ticks = false,
+  tickMinStep = undefined,
+  title = undefined,
 }) => {
-	return null;
+  return null;
 };
 
 // displayName is used to validate the component type in the spec builder

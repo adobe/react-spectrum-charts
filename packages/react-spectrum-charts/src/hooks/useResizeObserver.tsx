@@ -12,31 +12,31 @@
 import { useLayoutEffect, useRef } from 'react';
 
 export const useResizeObserver = <T extends HTMLElement>(callback: (target: T, entry: ResizeObserverEntry) => void) => {
-	const ref = useRef<T>(null);
+  const ref = useRef<T>(null);
 
-	useLayoutEffect(() => {
-		const element = ref?.current;
+  useLayoutEffect(() => {
+    const element = ref?.current;
 
-		if (!element) {
-			return;
-		}
+    if (!element) {
+      return;
+    }
 
-		// ResizeObserver is not supported in jest
-		if (typeof ResizeObserver === 'undefined') {
-			callback(element, { contentRect: { width: 500, height: 500 } } as ResizeObserverEntry);
-			return;
-		}
+    // ResizeObserver is not supported in jest
+    if (typeof ResizeObserver === 'undefined') {
+      callback(element, { contentRect: { width: 500, height: 500 } } as ResizeObserverEntry);
+      return;
+    }
 
-		const observer = new ResizeObserver((entries) => {
-			callback(element, entries[0]);
-		});
+    const observer = new ResizeObserver((entries) => {
+      callback(element, entries[0]);
+    });
 
-		observer.observe(element);
+    observer.observe(element);
 
-		return () => {
-			observer.disconnect();
-		};
-	}, [callback, ref]);
+    return () => {
+      observer.disconnect();
+    };
+  }, [callback, ref]);
 
-	return ref;
+  return ref;
 };

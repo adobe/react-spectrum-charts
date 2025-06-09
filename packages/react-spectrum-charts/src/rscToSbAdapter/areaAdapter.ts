@@ -15,11 +15,11 @@ import { AreaProps } from '../types';
 import { childrenToOptions } from './childrenAdapter';
 
 export const getAreaOptions = ({ children, ...areaProps }: AreaProps): AreaOptions => {
-	const { chartPopovers, chartTooltips } = childrenToOptions(children);
-	return {
-		...areaProps,
-		chartPopovers,
-		chartTooltips,
-		markType: 'area',
-	};
+  const { chartPopovers, chartTooltips } = childrenToOptions(children);
+  return {
+    ...areaProps,
+    chartPopovers,
+    chartTooltips,
+    markType: 'area',
+  };
 };

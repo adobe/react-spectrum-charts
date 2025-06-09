@@ -2,7 +2,7 @@ The `Axis` component is used to display the axis, axis labels and grid marks. An
 
 ```jsx
 <Chart data={data}>
-    <Axis position="bottom" granularity="hour" grid={false} title="My Axis Title" />
+  <Axis position="bottom" granularity="hour" grid={false} title="My Axis Title" />
 </Chart>
 ```
 
@@ -294,9 +294,9 @@ A `ReferenceLine` can be used to add a vertical or horizontal line to a chart as
 
 ```jsx
 <Chart data={data}>
-    <Axis position="bottom" granularity="hour" grid={false} title="My Axis Title">
-        <ReferenceLine value={0.5} icon="date" />
-    </Axis>
+  <Axis position="bottom" granularity="hour" grid={false} title="My Axis Title">
+    <ReferenceLine value={0.5} icon="date" />
+  </Axis>
 </Chart>
 ```
 

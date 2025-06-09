@@ -15,13 +15,13 @@ import { SanitizedSpecProps } from '../types';
 import { childrenToOptions } from './childrenAdapter';
 
 export const rscPropsToSpecBuilderOptions = ({ children, ...specProps }: SanitizedSpecProps): ChartOptions => {
-	const { axes, marks, legends, titles } = childrenToOptions(children);
+  const { axes, marks, legends, titles } = childrenToOptions(children);
 
-	return {
-		...specProps,
-		axes,
-		marks,
-		legends,
-		titles,
-	};
+  return {
+    ...specProps,
+    axes,
+    marks,
+    legends,
+    titles,
+  };
 };

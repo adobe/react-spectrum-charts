@@ -18,12 +18,12 @@ import { DEFAULT_TITLE_FONT_WEIGHT } from '@spectrum-charts/constants';
 import { TitleProps } from '../../types';
 
 const Title: FC<TitleProps> = ({
-	text,
-	fontWeight = DEFAULT_TITLE_FONT_WEIGHT,
-	position = 'middle',
-	orient = 'top',
+  text,
+  fontWeight = DEFAULT_TITLE_FONT_WEIGHT,
+  position = 'middle',
+  orient = 'top',
 }) => {
-	return null;
+  return null;
 };
 
 // displayName is used to validate the component type in the spec builder

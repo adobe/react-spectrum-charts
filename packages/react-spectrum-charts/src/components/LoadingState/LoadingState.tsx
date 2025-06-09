@@ -14,15 +14,15 @@ import React, { FC } from 'react';
 import { Flex, ProgressCircle } from '@adobe/react-spectrum';
 
 interface LoadingStateProps {
-	height?: number;
+  height?: number;
 }
 
 const LoadingState: FC<LoadingStateProps> = (props) => {
-	return (
-		<Flex direction="column" justifyContent="center" alignItems="center" {...props}>
-			<ProgressCircle isIndeterminate size="L" />
-		</Flex>
-	);
+  return (
+    <Flex direction="column" justifyContent="center" alignItems="center" {...props}>
+      <ProgressCircle isIndeterminate size="L" />
+    </Flex>
+  );
 };
 
 // displayName is used to validate the component type in the spec builder

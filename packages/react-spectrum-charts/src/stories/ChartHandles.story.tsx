@@ -25,58 +25,58 @@ import './Chart.story.css';
 import { data } from './data/data';
 
 export default {
-	title: 'RSC/Chart/Handles',
-	component: Chart,
+  title: 'RSC/Chart/Handles',
+  component: Chart,
 };
 
 const HandleStory = ({ variant }: { variant: 'copy' | 'download' | 'getBase64Png' | 'getSvg' }) => {
-	const [loading, setLoading] = useState(false);
-	const ref = useRef<ChartHandle>(null);
-	const props = useChartProps({ data });
+  const [loading, setLoading] = useState(false);
+  const ref = useRef<ChartHandle>(null);
+  const props = useChartProps({ data });
 
-	const buttonText: Record<typeof variant, string> = {
-		copy: 'Copy to clipboard',
-		download: 'Download PNG',
-		getBase64Png: 'Get base64 PNG',
-		getSvg: 'Get SVG',
-	};
+  const buttonText: Record<typeof variant, string> = {
+    copy: 'Copy to clipboard',
+    download: 'Download PNG',
+    getBase64Png: 'Get base64 PNG',
+    getSvg: 'Get SVG',
+  };
 
-	const onPressHandler = () => {
-		action(variant)();
-		return ref?.current?.[variant]().then(console.log, console.warn);
-	};
+  const onPressHandler = () => {
+    action(variant)();
+    return ref?.current?.[variant]().then(console.log, console.warn);
+  };
 
-	return (
-		<Content>
-			<Chart {...props} ref={ref} loading={loading}>
-				<Axis position="bottom" baseline ticks />
-				<Axis position="left" grid />
-				<Line dimension="x" metric="y" color="series" scaleType="linear" />
-			</Chart>
-			<Flex direction="row" gap="size-100">
-				<ActionButton onPress={onPressHandler} data-testid={variant}>
-					{buttonText[variant]}
-				</ActionButton>
-				<ActionButton onPress={() => setLoading(!loading)}>Toggle loading</ActionButton>
-			</Flex>
-		</Content>
-	);
+  return (
+    <Content>
+      <Chart {...props} ref={ref} loading={loading}>
+        <Axis position="bottom" baseline ticks />
+        <Axis position="left" grid />
+        <Line dimension="x" metric="y" color="series" scaleType="linear" />
+      </Chart>
+      <Flex direction="row" gap="size-100">
+        <ActionButton onPress={onPressHandler} data-testid={variant}>
+          {buttonText[variant]}
+        </ActionButton>
+        <ActionButton onPress={() => setLoading(!loading)}>Toggle loading</ActionButton>
+      </Flex>
+    </Content>
+  );
 };
 
 const CopyStory: StoryFn<typeof Chart> = (): ReactElement => {
-	return <HandleStory variant="copy" />;
+  return <HandleStory variant="copy" />;
 };
 
 const DownloadStory: StoryFn<typeof Chart> = (): ReactElement => {
-	return <HandleStory variant="download" />;
+  return <HandleStory variant="download" />;
 };
 
 const PngStory: StoryFn<typeof Chart> = (): ReactElement => {
-	return <HandleStory variant="getBase64Png" />;
+  return <HandleStory variant="getBase64Png" />;
 };
 
 const SvgStory: StoryFn<typeof Chart> = (): ReactElement => {
-	return <HandleStory variant="getSvg" />;
+  return <HandleStory variant="getSvg" />;
 };
 
 const Copy = bindWithProps(CopyStory);

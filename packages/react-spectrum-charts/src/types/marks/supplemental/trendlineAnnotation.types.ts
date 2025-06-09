@@ -16,6 +16,6 @@ import { TrendlineAnnotationOptions } from '@spectrum-charts/vega-spec-builder';
 export interface TrendlineAnnotationProps extends TrendlineAnnotationOptions {}
 
 export type TrendlineAnnotationElement = ReactElement<
-	TrendlineAnnotationProps,
-	JSXElementConstructor<TrendlineAnnotationProps>
+  TrendlineAnnotationProps,
+  JSXElementConstructor<TrendlineAnnotationProps>
 >;

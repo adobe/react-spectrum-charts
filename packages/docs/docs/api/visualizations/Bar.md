@@ -8,14 +8,9 @@ If you only have one series in your data, both the `type` and `color` props can 
 
 ```jsx
 <Chart data={data}>
-    <Axis position="bottom" grid ticks title="Downloads" />
-    <Axis position="left" baseline title="Browser" />
-    <Bar
-        name="Bar Chart"
-        orientation="horizontal"
-        dimension="browser"
-        metric="views"
-    />
+  <Axis position="bottom" grid ticks title="Downloads" />
+  <Axis position="left" baseline title="Browser" />
+  <Bar name="Bar Chart" orientation="horizontal" dimension="browser" metric="views" />
 </Chart>
 ```
 
@@ -26,14 +21,9 @@ If you only have one series in your data, both the `type` and `color` props can 
 
 ```jsx
 <Chart data={data}>
-    <Axis position="bottom" baseline title="Browser" />
-    <Axis position="left" grid ticks title="Downloads" />
-    <Bar
-        name="Vertical Bar"
-        orientation="vertical"
-        dimension="browser"
-        metric="downloads"
-    />
+  <Axis position="bottom" baseline title="Browser" />
+  <Axis position="left" grid ticks title="Downloads" />
+  <Bar name="Vertical Bar" orientation="vertical" dimension="browser" metric="downloads" />
 </Chart>
 ```
 
@@ -44,17 +34,17 @@ If you only have one series in your data, both the `type` and `color` props can 
 
 ```jsx
 <Chart data={data}>
-    <Axis position="bottom" grid title="Downloads" />
-    <Axis position="left" baseline title="Browser" />
-    <Bar
-        name="Bar Chart"
-        orientation="horizontal"
-        type="stacked"
-        color="operatingSystem"
-        dimension="browser"
-        metric="downloads"
-    />
-    <Legend position="top" title="Operating system" />
+  <Axis position="bottom" grid title="Downloads" />
+  <Axis position="left" baseline title="Browser" />
+  <Bar
+    name="Bar Chart"
+    orientation="horizontal"
+    type="stacked"
+    color="operatingSystem"
+    dimension="browser"
+    metric="downloads"
+  />
+  <Legend position="top" title="Operating system" />
 </Chart>
 ```
 
@@ -65,17 +55,17 @@ If you only have one series in your data, both the `type` and `color` props can 
 
 ```jsx
 <Chart data={data}>
-    <Axis position="bottom" grid title="Downloads" />
-    <Axis position="left" baseline title="Browser" />
-    <Bar
-        name="Bar Chart"
-        orientation="horizontal"
-        type="dodged"
-        color="operatingSystem"
-        dimension="browser"
-        metric="downloads"
-    />
-    <Legend position="top" title="Operating system" />
+  <Axis position="bottom" grid title="Downloads" />
+  <Axis position="left" baseline title="Browser" />
+  <Bar
+    name="Bar Chart"
+    orientation="horizontal"
+    type="dodged"
+    color="operatingSystem"
+    dimension="browser"
+    metric="downloads"
+  />
+  <Legend position="top" title="Operating system" />
 </Chart>
 ```
 
@@ -86,27 +76,18 @@ If you only have one series in your data, both the `type` and `color` props can 
 
 ```jsx
 <Chart data={data}>
-    <Axis
-        grid
-        position="left"
-        title="Users, Count"
-    />
-    <Axis
-        baseline
-        position="bottom"
-        title="Platform"
-    />
-    <Bar
-        color="bucket"
-        dimension="platform"
-        order="order"
-        orientation="vertical"
-        trellis="event"
-        trellisOrientation="horizontal"
-        type="stacked"
-    >
-    </Bar>
-    <Legend />
+  <Axis grid position="left" title="Users, Count" />
+  <Axis baseline position="bottom" title="Platform" />
+  <Bar
+    color="bucket"
+    dimension="platform"
+    order="order"
+    orientation="vertical"
+    trellis="event"
+    trellisOrientation="horizontal"
+    type="stacked"
+  ></Bar>
+  <Legend />
 </Chart>
 ```
 
@@ -266,9 +247,9 @@ The `Annotation` component is used to display a text annotation. The annotation 
 
 ```jsx
 <Chart data={data}>
-    <Bar {...props}>
-        <Annotation textKey="textKey" style={{width: 48}} />
-    </Bar>
+  <Bar {...props}>
+    <Annotation textKey="textKey" style={{ width: 48 }} />
+  </Bar>
 </Chart>
 ```
 

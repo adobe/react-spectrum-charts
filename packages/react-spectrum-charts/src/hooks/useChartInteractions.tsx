@@ -22,25 +22,25 @@ import usePopoverAnchorStyle from './usePopoverAnchorStyle';
 import useTooltipInteractions from './useTooltipInteractions';
 
 export const useChartInteractions = (props: RscChartProps, sanitizedChildren: ChartChildElement[]) => {
-	const { selectedData } = useChartContext();
-	const { tooltipOptions } = useTooltipInteractions(props, sanitizedChildren);
-	const { legendHiddenSeries, isToggleable: legendIsToggleable } = useLegend(sanitizedChildren);
-	const targetStyle = usePopoverAnchorStyle(props.padding);
+  const { selectedData } = useChartContext();
+  const { tooltipOptions } = useTooltipInteractions(props, sanitizedChildren);
+  const { legendHiddenSeries, isToggleable: legendIsToggleable } = useLegend(sanitizedChildren);
+  const targetStyle = usePopoverAnchorStyle(props.padding);
 
-	const signals = useMemo(() => {
-		const signals: Record<string, unknown> = {
-			backgroundColor: getColorValue('gray-50', props.colorScheme),
-		};
-		if (legendIsToggleable) {
-			signals.hiddenSeries = legendHiddenSeries;
-		}
-		signals[SELECTED_ITEM] = selectedData.current?.[props.idKey] ?? null;
-		signals[SELECTED_SERIES] = selectedData.current?.[SERIES_ID] ?? null;
+  const signals = useMemo(() => {
+    const signals: Record<string, unknown> = {
+      backgroundColor: getColorValue('gray-50', props.colorScheme),
+    };
+    if (legendIsToggleable) {
+      signals.hiddenSeries = legendHiddenSeries;
+    }
+    signals[SELECTED_ITEM] = selectedData.current?.[props.idKey] ?? null;
+    signals[SELECTED_SERIES] = selectedData.current?.[SERIES_ID] ?? null;
 
-		return signals;
-	}, [legendHiddenSeries, legendIsToggleable, props.colorScheme, props.idKey, selectedData]);
+    return signals;
+  }, [legendHiddenSeries, legendIsToggleable, props.colorScheme, props.idKey, selectedData]);
 
-	const onNewView = useNewChartView(props, sanitizedChildren, tooltipOptions);
+  const onNewView = useNewChartView(props, sanitizedChildren, tooltipOptions);
 
-	return { signals, targetStyle, tooltipOptions, onNewView };
+  return { signals, targetStyle, tooltipOptions, onNewView };
 };

@@ -24,7 +24,7 @@ type RequiredProps<T> = StoryFn<T> & { args: T };
  * @param template: Story to bind.
  */
 function bindWithProps<T>(template: StoryFn<T>) {
-	return template.bind({}) as RequiredProps<StoryArgsTypes<typeof template>>;
+  return template.bind({}) as RequiredProps<StoryArgsTypes<typeof template>>;
 }
 
 export { bindWithProps };

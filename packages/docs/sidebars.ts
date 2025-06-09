@@ -9,26 +9,19 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
-import type {SidebarsConfig} from '@docusaurus/plugin-content-docs';
+import type { SidebarsConfig } from '@docusaurus/plugin-content-docs';
 
 const sidebars: SidebarsConfig = {
   sidebar: [
     {
       type: 'category',
       label: 'Getting Started',
-      items: [
-        'intro',
-        'installation',
-      ],
+      items: ['intro', 'installation'],
     },
     {
       type: 'category',
       label: 'Guides',
-      items: [
-        'guides/chart-basics',
-        'guides/troubleshooting',
-      ],
+      items: ['guides/chart-basics', 'guides/troubleshooting'],
     },
     {
       type: 'category',
@@ -46,33 +39,23 @@ const sidebars: SidebarsConfig = {
             'api/visualizations/BigNumber',
             'api/visualizations/Donut',
             'api/visualizations/Line',
-            'api/visualizations/Scatter'
+            'api/visualizations/Scatter',
           ],
         },
         {
           type: 'category',
           label: 'Analysis',
-          items: [
-            'api/analysis/MetricRange',
-            'api/analysis/Trendline',
-          ],
+          items: ['api/analysis/MetricRange', 'api/analysis/Trendline'],
         },
         {
           type: 'category',
           label: 'Chart Components',
-          items: [
-            'api/components/Axis',
-            'api/components/Legend',
-            'api/components/Title',
-          ],
+          items: ['api/components/Axis', 'api/components/Legend', 'api/components/Title'],
         },
         {
           type: 'category',
           label: 'Interactivity',
-          items: [
-            'api/interactivity/ChartTooltip',
-            'api/interactivity/ChartPopover'
-          ],
+          items: ['api/interactivity/ChartTooltip', 'api/interactivity/ChartPopover'],
         },
         // {
         //   type: 'category',
@@ -84,8 +67,8 @@ const sidebars: SidebarsConfig = {
         // }
       ],
     },
-    'Developer-Docs'
+    'Developer-Docs',
   ],
 };
 
-export default sidebars; 
+export default sidebars;

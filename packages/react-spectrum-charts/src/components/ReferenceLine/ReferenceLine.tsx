@@ -18,7 +18,7 @@ import { DEFAULT_LABEL_FONT_WEIGHT } from '@spectrum-charts/constants';
 import { ReferenceLineProps } from '../../types';
 
 const ReferenceLine: FC<ReferenceLineProps> = ({ value, labelFontWeight = DEFAULT_LABEL_FONT_WEIGHT }) => {
-	return null;
+  return null;
 };
 
 // displayName is used to validate the component type in the spec builder

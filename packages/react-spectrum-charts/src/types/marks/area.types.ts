@@ -17,7 +17,7 @@ import { ChartPopoverElement, ChartTooltipElement } from '../dialogs';
 import { Children } from '../util.types';
 
 export interface AreaProps extends Omit<AreaOptions, 'chartPopovers' | 'chartTooltips' | 'markType'> {
-	children?: Children<ChartPopoverElement | ChartTooltipElement>;
+  children?: Children<ChartPopoverElement | ChartTooltipElement>;
 }
 
 export type AreaElement = ReactElement<AreaProps, JSXElementConstructor<AreaProps>>;

@@ -20,24 +20,24 @@ import { bindWithProps } from '../../../test-utils';
 import { characterData } from '../../data/marioKartData';
 
 export default {
-	title: 'RSC/Scatter/ScatterPath',
-	component: ScatterPath,
+  title: 'RSC/Scatter/ScatterPath',
+  component: ScatterPath,
 };
 
 const ScatterPathStory: StoryFn<typeof ScatterPath> = (args): ReactElement => {
-	const chartProps = useChartProps({ data: characterData, height: 500, width: 500 });
+  const chartProps = useChartProps({ data: characterData, height: 500, width: 500 });
 
-	return (
-		<Chart {...chartProps}>
-			<Axis position="bottom" grid ticks baseline title="Speed (normal)" />
-			<Axis position="left" grid ticks baseline title="Handling (normal)" />
-			<Scatter color="weightClass" dimension="speedNormal" metric="handlingNormal">
-				<ScatterPath {...args} />
-			</Scatter>
-			<Legend position="right" title="Weight class" highlight />
-			<Title text="Mario Kart 8 Character Data" />
-		</Chart>
-	);
+  return (
+    <Chart {...chartProps}>
+      <Axis position="bottom" grid ticks baseline title="Speed (normal)" />
+      <Axis position="left" grid ticks baseline title="Handling (normal)" />
+      <Scatter color="weightClass" dimension="speedNormal" metric="handlingNormal">
+        <ScatterPath {...args} />
+      </Scatter>
+      <Legend position="right" title="Weight class" highlight />
+      <Title text="Mario Kart 8 Character Data" />
+    </Chart>
+  );
 };
 
 const Basic = bindWithProps(ScatterPathStory);
@@ -45,22 +45,22 @@ Basic.args = {};
 
 const Color = bindWithProps(ScatterPathStory);
 Color.args = {
-	color: 'red-900',
+  color: 'red-900',
 };
 
 const GroupBy = bindWithProps(ScatterPathStory);
 GroupBy.args = {
-	groupBy: ['weight'],
+  groupBy: ['weight'],
 };
 
 const Opacity = bindWithProps(ScatterPathStory);
 Opacity.args = {
-	opacity: 1,
+  opacity: 1,
 };
 
 const PathWidth = bindWithProps(ScatterPathStory);
 PathWidth.args = {
-	pathWidth: 'weight',
+  pathWidth: 'weight',
 };
 
 export { Basic, Color, GroupBy, Opacity, PathWidth };

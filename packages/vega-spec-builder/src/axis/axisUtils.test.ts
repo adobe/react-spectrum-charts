@@ -14,236 +14,233 @@ import { defaultAxisOptions, defaultXBaselineMark, defaultYBaselineMark } from '
 import { getBaselineRule, getDefaultAxis, getIsMetricAxis, getSubLabelAxis, getTickCount } from './axisUtils';
 
 describe('getBaselineRule', () => {
-	describe('initial state', () => {
-		test("position: 'bottom', baseline: true", () => {
-			expect(getBaselineRule(0, 'bottom')).toStrictEqual(defaultXBaselineMark);
-		});
-		test("position: 'left', baseline: true", () => {
-			expect(getBaselineRule(0, 'left')).toStrictEqual(defaultYBaselineMark);
-		});
-	});
-	describe('baselineOffset', () => {
-		test('should apply offset', () => {
-			expect(getBaselineRule(1, 'bottom').encode?.update?.y).toHaveProperty('value', 1);
-			expect(getBaselineRule(100, 'bottom').encode?.update?.y).toHaveProperty('value', 100);
-			expect(getBaselineRule(-100, 'bottom').encode?.update?.y).toHaveProperty('value', -100);
-		});
-	});
+  describe('initial state', () => {
+    test("position: 'bottom', baseline: true", () => {
+      expect(getBaselineRule(0, 'bottom')).toStrictEqual(defaultXBaselineMark);
+    });
+    test("position: 'left', baseline: true", () => {
+      expect(getBaselineRule(0, 'left')).toStrictEqual(defaultYBaselineMark);
+    });
+  });
+  describe('baselineOffset', () => {
+    test('should apply offset', () => {
+      expect(getBaselineRule(1, 'bottom').encode?.update?.y).toHaveProperty('value', 1);
+      expect(getBaselineRule(100, 'bottom').encode?.update?.y).toHaveProperty('value', 100);
+      expect(getBaselineRule(-100, 'bottom').encode?.update?.y).toHaveProperty('value', -100);
+    });
+  });
 });
 
 describe('getDefaultAxis()', () => {
-	test('tickMinStep: linear scale', () => {
-		expect(
-			getDefaultAxis(
-				{
-					axisAnnotations: [],
-					baseline: false,
-					baselineOffset: 0,
-					colorScheme: 'light',
-					granularity: 'day',
-					grid: true,
-					hideDefaultLabels: false,
-					index: 0,
-					labelAlign: 'center',
-					labelFontWeight: 'normal',
-					labelOrientation: 'horizontal',
-					labels: [],
-					name: 'axis0',
-					numberFormat: 'shortNumber',
-					position: 'left',
-					referenceLines: [],
-					scaleType: 'linear',
-					subLabels: [],
-					ticks: false,
-					title: 'Users',
-					tickMinStep: 5,
-				},
-				'yLinear'
-			)
-		).toStrictEqual({
-			scale: 'yLinear',
-			orient: 'left',
-			grid: true,
-			ticks: false,
-			tickCount: {
-				signal: 'clamp(ceil(height/100), 2, 10)',
-			},
-			tickMinStep: 5,
-			title: 'Users',
-			labels: true,
-			labelAlign: 'right',
-			labelAngle: 0,
-			labelBaseline: 'middle',
-			labelFontWeight: 'normal',
-			labelOffset: undefined,
-			labelPadding: undefined,
-			encode: {
-				labels: {
-					update: {
-						text: [
-							{
-								test: "isNumber(datum['value'])",
-								signal: "formatShortNumber(datum['value'])",
-							},
-							{
-								signal: 'datum.value',
-							},
-						],
-					},
-				},
-			},
-		});
-	});
-	test('tickMinStep: linear scale', () => {
-		expect(
-			getDefaultAxis(
-				{
-					axisAnnotations: [],
-					baseline: false,
-					baselineOffset: 0,
-					colorScheme: 'light',
-					granularity: 'day',
-					grid: true,
-					hideDefaultLabels: false,
-					index: 0,
-					labelAlign: 'center',
-					labelFontWeight: 'normal',
-					labelOrientation: 'horizontal',
-					labels: [],
-					name: 'axis0',
-					numberFormat: 'shortNumber',
-					position: 'left',
-					referenceLines: [],
-					scaleType: 'point',
-					subLabels: [],
-					ticks: false,
-					title: 'Users',
-					tickMinStep: 5,
-				},
-				'yLinear'
-			)
-		).toStrictEqual({
-			scale: 'yLinear',
-			orient: 'left',
-			grid: true,
-			ticks: false,
-			tickCount: {
-				signal: 'clamp(ceil(height/100), 2, 10)',
-			},
-			tickMinStep: undefined,
-			title: 'Users',
-			labels: true,
-			labelAlign: 'right',
-			labelAngle: 0,
-			labelBaseline: 'middle',
-			labelFontWeight: 'normal',
-			labelOffset: undefined,
-			labelPadding: undefined,
-			encode: {
-				labels: {
-					update: {
-						text: [
-							{
-								test: "isNumber(datum['value'])",
-								signal: "formatShortNumber(datum['value'])",
-							},
-							{
-								signal: 'datum.value',
-							},
-						],
-					},
-				},
-			},
-		});
-	});
-	test('should set values to empty array if hideDefaultLabels === true', () => {
-		expect(getDefaultAxis({ ...defaultAxisOptions, hideDefaultLabels: true }, 'xLinear')).toHaveProperty(
-			'labels',
-			false
-		);
-	});
+  test('tickMinStep: linear scale', () => {
+    expect(
+      getDefaultAxis(
+        {
+          axisAnnotations: [],
+          baseline: false,
+          baselineOffset: 0,
+          colorScheme: 'light',
+          granularity: 'day',
+          grid: true,
+          hideDefaultLabels: false,
+          index: 0,
+          labelAlign: 'center',
+          labelFontWeight: 'normal',
+          labelOrientation: 'horizontal',
+          labels: [],
+          name: 'axis0',
+          numberFormat: 'shortNumber',
+          position: 'left',
+          referenceLines: [],
+          scaleType: 'linear',
+          subLabels: [],
+          ticks: false,
+          title: 'Users',
+          tickMinStep: 5,
+        },
+        'yLinear'
+      )
+    ).toStrictEqual({
+      scale: 'yLinear',
+      orient: 'left',
+      grid: true,
+      ticks: false,
+      tickCount: {
+        signal: 'clamp(ceil(height/100), 2, 10)',
+      },
+      tickMinStep: 5,
+      title: 'Users',
+      labels: true,
+      labelAlign: 'right',
+      labelAngle: 0,
+      labelBaseline: 'middle',
+      labelFontWeight: 'normal',
+      labelOffset: undefined,
+      labelPadding: undefined,
+      encode: {
+        labels: {
+          update: {
+            text: [
+              {
+                test: "isNumber(datum['value'])",
+                signal: "formatShortNumber(datum['value'])",
+              },
+              {
+                signal: 'datum.value',
+              },
+            ],
+          },
+        },
+      },
+    });
+  });
+  test('tickMinStep: linear scale', () => {
+    expect(
+      getDefaultAxis(
+        {
+          axisAnnotations: [],
+          baseline: false,
+          baselineOffset: 0,
+          colorScheme: 'light',
+          granularity: 'day',
+          grid: true,
+          hideDefaultLabels: false,
+          index: 0,
+          labelAlign: 'center',
+          labelFontWeight: 'normal',
+          labelOrientation: 'horizontal',
+          labels: [],
+          name: 'axis0',
+          numberFormat: 'shortNumber',
+          position: 'left',
+          referenceLines: [],
+          scaleType: 'point',
+          subLabels: [],
+          ticks: false,
+          title: 'Users',
+          tickMinStep: 5,
+        },
+        'yLinear'
+      )
+    ).toStrictEqual({
+      scale: 'yLinear',
+      orient: 'left',
+      grid: true,
+      ticks: false,
+      tickCount: {
+        signal: 'clamp(ceil(height/100), 2, 10)',
+      },
+      tickMinStep: undefined,
+      title: 'Users',
+      labels: true,
+      labelAlign: 'right',
+      labelAngle: 0,
+      labelBaseline: 'middle',
+      labelFontWeight: 'normal',
+      labelOffset: undefined,
+      labelPadding: undefined,
+      encode: {
+        labels: {
+          update: {
+            text: [
+              {
+                test: "isNumber(datum['value'])",
+                signal: "formatShortNumber(datum['value'])",
+              },
+              {
+                signal: 'datum.value',
+              },
+            ],
+          },
+        },
+      },
+    });
+  });
+  test('should set values to empty array if hideDefaultLabels === true', () => {
+    expect(getDefaultAxis({ ...defaultAxisOptions, hideDefaultLabels: true }, 'xLinear')).toHaveProperty(
+      'labels',
+      false
+    );
+  });
 });
 
 describe('getSubLabelAxis()', () => {
-	test('should set the labelPadding to 32 if ticks are enabled and 24 if not', () => {
-		const subLabels: SubLabel[] = [
-			{ value: 1, subLabel: 'one', align: 'start' },
-			{ value: 2, subLabel: 'two', align: 'end' },
-		];
-		expect(getSubLabelAxis({ ...defaultAxisOptions, subLabels }, 'xLinear')).toHaveProperty('labelPadding', 24);
-		expect(getSubLabelAxis({ ...defaultAxisOptions, subLabels, ticks: true }, 'xLinear')).toHaveProperty(
-			'labelPadding',
-			32
-		);
-	});
+  test('should set the labelPadding to 32 if ticks are enabled and 24 if not', () => {
+    const subLabels: SubLabel[] = [
+      { value: 1, subLabel: 'one', align: 'start' },
+      { value: 2, subLabel: 'two', align: 'end' },
+    ];
+    expect(getSubLabelAxis({ ...defaultAxisOptions, subLabels }, 'xLinear')).toHaveProperty('labelPadding', 24);
+    expect(getSubLabelAxis({ ...defaultAxisOptions, subLabels, ticks: true }, 'xLinear')).toHaveProperty(
+      'labelPadding',
+      32
+    );
+  });
 
-	test('should set values to undefined if sublabels have length 0', () => {
-		expect(getSubLabelAxis({ ...defaultAxisOptions, subLabels: [] }, 'xLinear')).toHaveProperty(
-			'values',
-			undefined
-		);
-	});
+  test('should set values to undefined if sublabels have length 0', () => {
+    expect(getSubLabelAxis({ ...defaultAxisOptions, subLabels: [] }, 'xLinear')).toHaveProperty('values', undefined);
+  });
 });
 
 describe('getTickCount()', () => {
-	test('when maxTicks is provided, it should use maxTicks as the max value', () => {
-		expect(getTickCount('left', 5)).toEqual({
-			signal: 'clamp(ceil(height/100), 2, 5)'
-		});
-		expect(getTickCount('bottom', 15)).toEqual({
-			signal: 'clamp(ceil(width/100), 2, 15)'
-		});
-	});
+  test('when maxTicks is provided, it should use maxTicks as the max value', () => {
+    expect(getTickCount('left', 5)).toEqual({
+      signal: 'clamp(ceil(height/100), 2, 5)',
+    });
+    expect(getTickCount('bottom', 15)).toEqual({
+      signal: 'clamp(ceil(width/100), 2, 15)',
+    });
+  });
 
-	test('when grid is true and maxTicks is not provided, it should use 10 as the max value', () => {
-		expect(getTickCount('left', undefined, true)).toEqual({
-			signal: 'clamp(ceil(height/100), 2, 10)'
-		});
-		expect(getTickCount('bottom', undefined, true)).toEqual({
-			signal: 'clamp(ceil(width/100), 2, 10)'
-		});
-	});
+  test('when grid is true and maxTicks is not provided, it should use 10 as the max value', () => {
+    expect(getTickCount('left', undefined, true)).toEqual({
+      signal: 'clamp(ceil(height/100), 2, 10)',
+    });
+    expect(getTickCount('bottom', undefined, true)).toEqual({
+      signal: 'clamp(ceil(width/100), 2, 10)',
+    });
+  });
 
-	test('when neither maxTicks nor grid is provided, it should return undefined', () => {
-		expect(getTickCount('left')).toBeUndefined();
-		expect(getTickCount('bottom')).toBeUndefined();
-	});
+  test('when neither maxTicks nor grid is provided, it should return undefined', () => {
+    expect(getTickCount('left')).toBeUndefined();
+    expect(getTickCount('bottom')).toBeUndefined();
+  });
 });
 
 describe('getIsMetricAxis()', () => {
-	describe('with vertical chart orientation', () => {
-		test('should return true for left axis', () => {
-			expect(getIsMetricAxis('left', 'vertical')).toBe(true);
-		});
+  describe('with vertical chart orientation', () => {
+    test('should return true for left axis', () => {
+      expect(getIsMetricAxis('left', 'vertical')).toBe(true);
+    });
 
-		test('should return true for right axis', () => {
-			expect(getIsMetricAxis('right', 'vertical')).toBe(true);
-		});
+    test('should return true for right axis', () => {
+      expect(getIsMetricAxis('right', 'vertical')).toBe(true);
+    });
 
-		test('should return false for top axis', () => {
-			expect(getIsMetricAxis('top', 'vertical')).toBe(false);
-		});
+    test('should return false for top axis', () => {
+      expect(getIsMetricAxis('top', 'vertical')).toBe(false);
+    });
 
-		test('should return false for bottom axis', () => {
-			expect(getIsMetricAxis('bottom', 'vertical')).toBe(false);
-		});
-	});
+    test('should return false for bottom axis', () => {
+      expect(getIsMetricAxis('bottom', 'vertical')).toBe(false);
+    });
+  });
 
-	describe('with horizontal chart orientation', () => {
-		test('should return false for left axis', () => {
-			expect(getIsMetricAxis('left', 'horizontal')).toBe(false);
-		});
+  describe('with horizontal chart orientation', () => {
+    test('should return false for left axis', () => {
+      expect(getIsMetricAxis('left', 'horizontal')).toBe(false);
+    });
 
-		test('should return false for right axis', () => {
-			expect(getIsMetricAxis('right', 'horizontal')).toBe(false);
-		});
+    test('should return false for right axis', () => {
+      expect(getIsMetricAxis('right', 'horizontal')).toBe(false);
+    });
 
-		test('should return true for top axis', () => {
-			expect(getIsMetricAxis('top', 'horizontal')).toBe(true);
-		});
+    test('should return true for top axis', () => {
+      expect(getIsMetricAxis('top', 'horizontal')).toBe(true);
+    });
 
-		test('should return true for bottom axis', () => {
-			expect(getIsMetricAxis('bottom', 'horizontal')).toBe(true);
-		});
-	});
+    test('should return true for bottom axis', () => {
+      expect(getIsMetricAxis('bottom', 'horizontal')).toBe(true);
+    });
+  });
 });

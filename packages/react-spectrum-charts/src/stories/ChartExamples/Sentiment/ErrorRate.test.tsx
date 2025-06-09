@@ -17,51 +17,51 @@ import { ErrorRate } from './ErrorRate.story';
 const colors = spectrumColors.light;
 
 describe('ErrorRate', () => {
-	let chart: HTMLElement;
+  let chart: HTMLElement;
 
-	beforeEach(async () => {
-		render(<ErrorRate />);
+  beforeEach(async () => {
+    render(<ErrorRate />);
 
-		chart = await findChart();
-		expect(chart).toBeInTheDocument();
-	});
+    chart = await findChart();
+    expect(chart).toBeInTheDocument();
+  });
 
-	test('should plot 3 reference lines', async () => {
-		const negativeReferenceLine = await findMarksByGroupName(chart, 'axis0ReferenceLine0', 'line');
-		expect(negativeReferenceLine).toBeInTheDocument();
-		expect(negativeReferenceLine).toHaveAttribute('stroke', colors['red-800']);
+  test('should plot 3 reference lines', async () => {
+    const negativeReferenceLine = await findMarksByGroupName(chart, 'axis0ReferenceLine0', 'line');
+    expect(negativeReferenceLine).toBeInTheDocument();
+    expect(negativeReferenceLine).toHaveAttribute('stroke', colors['red-800']);
 
-		const neutralReferenceLine = await findMarksByGroupName(chart, 'axis0ReferenceLine1', 'line');
-		expect(neutralReferenceLine).toBeInTheDocument();
-		expect(neutralReferenceLine).toHaveAttribute('stroke', colors['blue-800']);
+    const neutralReferenceLine = await findMarksByGroupName(chart, 'axis0ReferenceLine1', 'line');
+    expect(neutralReferenceLine).toBeInTheDocument();
+    expect(neutralReferenceLine).toHaveAttribute('stroke', colors['blue-800']);
 
-		const positiveReferenceLine = await findMarksByGroupName(chart, 'axis0ReferenceLine2', 'line');
-		expect(positiveReferenceLine).toBeInTheDocument();
-		expect(positiveReferenceLine).toHaveAttribute('stroke', colors['green-800']);
-	});
+    const positiveReferenceLine = await findMarksByGroupName(chart, 'axis0ReferenceLine2', 'line');
+    expect(positiveReferenceLine).toBeInTheDocument();
+    expect(positiveReferenceLine).toHaveAttribute('stroke', colors['green-800']);
+  });
 
-	test('icons should be colored correctly', async () => {
-		const negativeIcon = await findMarksByGroupName(chart, 'axis0ReferenceLine0_symbol');
-		expect(negativeIcon).toBeInTheDocument();
-		expect(negativeIcon).toHaveAttribute('fill', colors['red-800']);
+  test('icons should be colored correctly', async () => {
+    const negativeIcon = await findMarksByGroupName(chart, 'axis0ReferenceLine0_symbol');
+    expect(negativeIcon).toBeInTheDocument();
+    expect(negativeIcon).toHaveAttribute('fill', colors['red-800']);
 
-		const neutralIcon = await findMarksByGroupName(chart, 'axis0ReferenceLine1_symbol');
-		expect(neutralIcon).toBeInTheDocument();
-		expect(neutralIcon).toHaveAttribute('fill', colors['blue-800']);
+    const neutralIcon = await findMarksByGroupName(chart, 'axis0ReferenceLine1_symbol');
+    expect(neutralIcon).toBeInTheDocument();
+    expect(neutralIcon).toHaveAttribute('fill', colors['blue-800']);
 
-		const positiveIcon = await findMarksByGroupName(chart, 'axis0ReferenceLine2_symbol');
-		expect(positiveIcon).toBeInTheDocument();
-		expect(positiveIcon).toHaveAttribute('fill', colors['green-800']);
-	});
-	test('referenceLines should be drawn behind the line data', () => {
-		const markGroups = chart.querySelectorAll('.role-frame.root > g > g > g');
-		console.log(markGroups.length);
+    const positiveIcon = await findMarksByGroupName(chart, 'axis0ReferenceLine2_symbol');
+    expect(positiveIcon).toBeInTheDocument();
+    expect(positiveIcon).toHaveAttribute('fill', colors['green-800']);
+  });
+  test('referenceLines should be drawn behind the line data', () => {
+    const markGroups = chart.querySelectorAll('.role-frame.root > g > g > g');
+    console.log(markGroups.length);
 
-		const positiveReferenceLineIndex = Array.from(markGroups).findIndex((g) =>
-			g.classList.contains('axis0ReferenceLine0')
-		);
-		const lineIndex = Array.from(markGroups).findIndex((g) => g.classList.contains('line0_group'));
+    const positiveReferenceLineIndex = Array.from(markGroups).findIndex((g) =>
+      g.classList.contains('axis0ReferenceLine0')
+    );
+    const lineIndex = Array.from(markGroups).findIndex((g) => g.classList.contains('line0_group'));
 
-		expect(positiveReferenceLineIndex).toBeLessThan(lineIndex);
-	});
+    expect(positiveReferenceLineIndex).toBeLessThan(lineIndex);
+  });
 });

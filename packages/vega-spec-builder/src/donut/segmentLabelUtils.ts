@@ -22,10 +22,10 @@ import { DonutSpecOptions, SegmentLabelOptions, SegmentLabelSpecOptions } from '
  * @returns segmentLabelOptions
  */
 const getSegmentLabel = (options: DonutSpecOptions): SegmentLabelSpecOptions | undefined => {
-	if (!options.segmentLabels.length) {
-		return;
-	}
-	return applySegmentLabelPropDefaults(options.segmentLabels[0], options);
+  if (!options.segmentLabels.length) {
+    return;
+  }
+  return applySegmentLabelPropDefaults(options.segmentLabels[0], options);
 };
 
 /**
@@ -35,14 +35,14 @@ const getSegmentLabel = (options: DonutSpecOptions): SegmentLabelSpecOptions | u
  * @returns SegmentLabelSpecOptions
  */
 const applySegmentLabelPropDefaults = (
-	{ percent = false, value = false, valueFormat = 'standardNumber', ...options }: SegmentLabelOptions,
-	donutOptions: DonutSpecOptions
+  { percent = false, value = false, valueFormat = 'standardNumber', ...options }: SegmentLabelOptions,
+  donutOptions: DonutSpecOptions
 ): SegmentLabelSpecOptions => ({
-	donutOptions,
-	percent,
-	value,
-	valueFormat,
-	...options,
+  donutOptions,
+  percent,
+  value,
+  valueFormat,
+  ...options,
 });
 
 /**
@@ -51,21 +51,21 @@ const applySegmentLabelPropDefaults = (
  * @returns GroupMark[]
  */
 export const getSegmentLabelMarks = (donutOptions: DonutSpecOptions): GroupMark[] => {
-	const { isBoolean, name } = donutOptions;
-	// segment labels are not supported for boolean variants
-	if (isBoolean) return [];
+  const { isBoolean, name } = donutOptions;
+  // segment labels are not supported for boolean variants
+  if (isBoolean) return [];
 
-	const segmentLabel = getSegmentLabel(donutOptions);
-	// if there isn't a segment label, we don't need to do anything
-	if (!segmentLabel) return [];
+  const segmentLabel = getSegmentLabel(donutOptions);
+  // if there isn't a segment label, we don't need to do anything
+  if (!segmentLabel) return [];
 
-	return [
-		{
-			name: `${name}_segmentLabelGroup`,
-			type: 'group',
-			marks: [getSegmentLabelTextMark(segmentLabel), ...getSegmentLabelValueTextMark(segmentLabel)],
-		},
-	];
+  return [
+    {
+      name: `${name}_segmentLabelGroup`,
+      type: 'group',
+      marks: [getSegmentLabelTextMark(segmentLabel), ...getSegmentLabelValueTextMark(segmentLabel)],
+    },
+  ];
 };
 
 /**
@@ -74,31 +74,31 @@ export const getSegmentLabelMarks = (donutOptions: DonutSpecOptions): GroupMark[
  * @returns TextMark
  */
 export const getSegmentLabelTextMark = ({
-	labelKey,
-	value,
-	percent,
-	donutOptions,
+  labelKey,
+  value,
+  percent,
+  donutOptions,
 }: SegmentLabelSpecOptions): TextMark => {
-	const { name, color } = donutOptions;
-	return {
-		type: 'text',
-		name: `${name}_segmentLabel`,
-		from: { data: FILTERED_TABLE },
-		encode: {
-			enter: {
-				...getBaseSegmentLabelEnterEncode(name),
-				text: { field: labelKey ?? color },
-				fontWeight: { value: 'bold' },
-				dy:
-					value || percent
-						? {
-								signal: `datum['${name}_arcTheta'] <= 0.5 * PI || datum['${name}_arcTheta'] >= 1.5 * PI ? -16 : 0`,
-						  }
-						: undefined,
-			},
-			update: positionEncodings,
-		},
-	};
+  const { name, color } = donutOptions;
+  return {
+    type: 'text',
+    name: `${name}_segmentLabel`,
+    from: { data: FILTERED_TABLE },
+    encode: {
+      enter: {
+        ...getBaseSegmentLabelEnterEncode(name),
+        text: { field: labelKey ?? color },
+        fontWeight: { value: 'bold' },
+        dy:
+          value || percent
+            ? {
+                signal: `datum['${name}_arcTheta'] <= 0.5 * PI || datum['${name}_arcTheta'] >= 1.5 * PI ? -16 : 0`,
+              }
+            : undefined,
+      },
+      update: positionEncodings,
+    },
+  };
 };
 
 /**
@@ -107,26 +107,26 @@ export const getSegmentLabelTextMark = ({
  * @returns TextMark[]
  */
 export const getSegmentLabelValueTextMark = (options: SegmentLabelSpecOptions): TextMark[] => {
-	if (!options.value && !options.percent) return [];
-	const { donutOptions } = options;
+  if (!options.value && !options.percent) return [];
+  const { donutOptions } = options;
 
-	return [
-		{
-			type: 'text',
-			name: `${donutOptions.name}_segmentLabelValue`,
-			from: { data: FILTERED_TABLE },
-			encode: {
-				enter: {
-					...getBaseSegmentLabelEnterEncode(donutOptions.name),
-					text: getSegmentLabelValueText(options),
-					dy: {
-						signal: `datum['${donutOptions.name}_arcTheta'] <= 0.5 * PI || datum['${donutOptions.name}_arcTheta'] >= 1.5 * PI ? 0 : 16`,
-					},
-				},
-				update: positionEncodings,
-			},
-		},
-	];
+  return [
+    {
+      type: 'text',
+      name: `${donutOptions.name}_segmentLabelValue`,
+      from: { data: FILTERED_TABLE },
+      encode: {
+        enter: {
+          ...getBaseSegmentLabelEnterEncode(donutOptions.name),
+          text: getSegmentLabelValueText(options),
+          dy: {
+            signal: `datum['${donutOptions.name}_arcTheta'] <= 0.5 * PI || datum['${donutOptions.name}_arcTheta'] >= 1.5 * PI ? 0 : 16`,
+          },
+        },
+        update: positionEncodings,
+      },
+    },
+  ];
 };
 
 /**
@@ -135,23 +135,23 @@ export const getSegmentLabelValueTextMark = (options: SegmentLabelSpecOptions): 
  * @returns TextEncodeEntry
  */
 const getBaseSegmentLabelEnterEncode = (name: string): TextEncodeEntry => ({
-	radius: { signal: `${DONUT_RADIUS} + 6` },
-	theta: { field: `${name}_arcTheta` },
-	fontSize: getSegmentLabelFontSize(name),
-	align: {
-		signal: `datum['${name}_arcTheta'] <= PI ? 'left' : 'right'`,
-	},
-	baseline: {
-		// if the center of the arc is in the top half of the donut, the text baseline should be bottom, else top
-		signal: `datum['${name}_arcTheta'] <= 0.5 * PI || datum['${name}_arcTheta'] >= 1.5 * PI ? 'bottom' : 'top'`,
-	},
+  radius: { signal: `${DONUT_RADIUS} + 6` },
+  theta: { field: `${name}_arcTheta` },
+  fontSize: getSegmentLabelFontSize(name),
+  align: {
+    signal: `datum['${name}_arcTheta'] <= PI ? 'left' : 'right'`,
+  },
+  baseline: {
+    // if the center of the arc is in the top half of the donut, the text baseline should be bottom, else top
+    signal: `datum['${name}_arcTheta'] <= 0.5 * PI || datum['${name}_arcTheta'] >= 1.5 * PI ? 'bottom' : 'top'`,
+  },
 });
 /**
  * position encodings
  */
 const positionEncodings: TextEncodeEntry = {
-	x: { signal: 'width / 2' },
-	y: { signal: 'height / 2' },
+  x: { signal: 'width / 2' },
+  y: { signal: 'height / 2' },
 };
 
 /**
@@ -160,28 +160,28 @@ const positionEncodings: TextEncodeEntry = {
  * @returns TextValueRef
  */
 export const getSegmentLabelValueText = ({
-	donutOptions,
-	percent,
-	value,
-	valueFormat,
+  donutOptions,
+  percent,
+  value,
+  valueFormat,
 }: SegmentLabelSpecOptions): ProductionRule<TextValueRef> | undefined => {
-	const percentSignal = `format(datum['${donutOptions.name}_arcPercent'], '.0%')`;
-	if (value) {
-		// to support `shortNumber` and `shortCurrency` we need to use the consistent logic
-		const rules = getTextNumberFormat(valueFormat, donutOptions.metric) as { test?: string; signal: string }[];
-		if (percent) {
-			// rules will be an array so we need to add the percent to each signal
-			return rules.map((rule) => ({
-				...rule,
-				signal: `${percentSignal} + "\\u00a0\\u00a0" + ${rule.signal}`,
-			}));
-		}
-		return rules;
-	}
+  const percentSignal = `format(datum['${donutOptions.name}_arcPercent'], '.0%')`;
+  if (value) {
+    // to support `shortNumber` and `shortCurrency` we need to use the consistent logic
+    const rules = getTextNumberFormat(valueFormat, donutOptions.metric) as { test?: string; signal: string }[];
+    if (percent) {
+      // rules will be an array so we need to add the percent to each signal
+      return rules.map((rule) => ({
+        ...rule,
+        signal: `${percentSignal} + "\\u00a0\\u00a0" + ${rule.signal}`,
+      }));
+    }
+    return rules;
+  }
 
-	if (percent) {
-		return { signal: percentSignal };
-	}
+  if (percent) {
+    return { signal: percentSignal };
+  }
 };
 
 /**
@@ -191,8 +191,8 @@ export const getSegmentLabelValueText = ({
  * @returns NumericValueRef
  */
 const getSegmentLabelFontSize = (name: string): ProductionRule<NumericValueRef> => {
-	// need to use radians for this. 0.3 radians is about 17 degrees
-	// if we used arc length, then showing a label could shrink the overall donut size which could make the arc to small
-	// that would hide the label which would make the arc bigger which would show the label and so on
-	return [{ test: `datum['${name}_arcLength'] < ${DONUT_SEGMENT_LABEL_MIN_ANGLE}`, value: 0 }, { value: 14 }];
+  // need to use radians for this. 0.3 radians is about 17 degrees
+  // if we used arc length, then showing a label could shrink the overall donut size which could make the arc to small
+  // that would hide the label which would make the arc bigger which would show the label and so on
+  return [{ test: `datum['${name}_arcLength'] < ${DONUT_SEGMENT_LABEL_MIN_ANGLE}`, value: 0 }, { value: 14 }];
 };

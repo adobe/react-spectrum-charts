@@ -15,7 +15,7 @@ import { BigNumberProps } from '../types';
 import { childrenToOptions } from './childrenAdapter';
 
 export const getBigNumberOptions = ({ children, ...bigNumberProps }: BigNumberProps): BigNumberOptions => ({
-	...bigNumberProps,
-	lines: childrenToOptions(children).lines,
-	markType: 'bigNumber',
+  ...bigNumberProps,
+  lines: childrenToOptions(children).lines,
+  markType: 'bigNumber',
 });

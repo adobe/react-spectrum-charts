@@ -10,16 +10,16 @@
  * governing permissions and limitations under the License.
  */
 import {
-	Align,
-	Baseline,
-	EncodeEntry,
-	FontWeight,
-	GuideEncodeEntry,
-	NumberValue,
-	ProductionRule,
-	TextEncodeEntry,
-	TextValueRef,
-	TickCount,
+  Align,
+  Baseline,
+  EncodeEntry,
+  FontWeight,
+  GuideEncodeEntry,
+  NumberValue,
+  ProductionRule,
+  TextEncodeEntry,
+  TextValueRef,
+  TickCount,
 } from 'vega';
 
 import { getTextNumberFormat } from '../textUtils';
@@ -32,10 +32,10 @@ import { isVerticalAxis } from './axisUtils';
  * @returns string | number
  */
 export const getLabelValue = (label: Label | number | string): string | number => {
-	if (typeof label === 'object') {
-		return label.value;
-	}
-	return label;
+  if (typeof label === 'object') {
+    return label.value;
+  }
+  return label;
 };
 
 /**
@@ -44,28 +44,28 @@ export const getLabelValue = (label: Label | number | string): string | number =
  * @returns [secondaryFormat, primaryFormat, tickCount]
  */
 export const getTimeLabelFormats = (
-	granularity: Granularity
+  granularity: Granularity
 ): { secondaryLabelFormat: string; primaryLabelFormat: string; tickCount: TickCount } => {
-	switch (granularity) {
-		case 'second':
-			return { secondaryLabelFormat: ':%S', primaryLabelFormat: '%-I:%M %p', tickCount: 'second' };
-		case 'minute':
-			return { secondaryLabelFormat: '%-I:%M %p', primaryLabelFormat: '%b %-d', tickCount: 'minute' };
-		case 'hour':
-			return { secondaryLabelFormat: '%-I %p', primaryLabelFormat: '%b %-d', tickCount: 'hour' };
-		case 'day':
-			return { secondaryLabelFormat: '%-d', primaryLabelFormat: '%b', tickCount: 'day' };
-		case 'week':
-			return { secondaryLabelFormat: '%-d', primaryLabelFormat: '%b', tickCount: 'week' };
-		case 'month':
-			return { secondaryLabelFormat: '%b', primaryLabelFormat: '%Y', tickCount: 'month' };
-		case 'quarter':
-			return { secondaryLabelFormat: 'Q%q', primaryLabelFormat: '%Y', tickCount: { interval: 'month', step: 3 } };
-		case 'year':
-			return { secondaryLabelFormat: '%Y', primaryLabelFormat: '', tickCount: 'year' };
-		default:
-			return { secondaryLabelFormat: '%-d', primaryLabelFormat: '%b', tickCount: 'day' };
-	}
+  switch (granularity) {
+    case 'second':
+      return { secondaryLabelFormat: ':%S', primaryLabelFormat: '%-I:%M %p', tickCount: 'second' };
+    case 'minute':
+      return { secondaryLabelFormat: '%-I:%M %p', primaryLabelFormat: '%b %-d', tickCount: 'minute' };
+    case 'hour':
+      return { secondaryLabelFormat: '%-I %p', primaryLabelFormat: '%b %-d', tickCount: 'hour' };
+    case 'day':
+      return { secondaryLabelFormat: '%-d', primaryLabelFormat: '%b', tickCount: 'day' };
+    case 'week':
+      return { secondaryLabelFormat: '%-d', primaryLabelFormat: '%b', tickCount: 'week' };
+    case 'month':
+      return { secondaryLabelFormat: '%b', primaryLabelFormat: '%Y', tickCount: 'month' };
+    case 'quarter':
+      return { secondaryLabelFormat: 'Q%q', primaryLabelFormat: '%Y', tickCount: { interval: 'month', step: 3 } };
+    case 'year':
+      return { secondaryLabelFormat: '%Y', primaryLabelFormat: '', tickCount: 'year' };
+    default:
+      return { secondaryLabelFormat: '%-d', primaryLabelFormat: '%b', tickCount: 'day' };
+  }
 };
 
 /**
@@ -77,13 +77,13 @@ export const getTimeLabelFormats = (
  * @returns align and baseline
  */
 export const getControlledLabelAnchorValues = (
-	position: Position,
-	labelOrientaion: Orientation,
-	labelAlign?: LabelAlign
+  position: Position,
+  labelOrientaion: Orientation,
+  labelAlign?: LabelAlign
 ): { align: Align | undefined; baseline: Baseline | undefined } => {
-	// if there isn't a labelAlign, we don't want to set the align or baseline
-	if (!labelAlign) return { align: undefined, baseline: undefined };
-	return getLabelAnchor(position, labelOrientaion, labelAlign);
+  // if there isn't a labelAlign, we don't want to set the align or baseline
+  if (!labelAlign) return { align: undefined, baseline: undefined };
+  return getLabelAnchor(position, labelOrientaion, labelAlign);
 };
 
 /**
@@ -97,18 +97,18 @@ export const getControlledLabelAnchorValues = (
  * @returns labelAlign and labelBaseline
  */
 export const getLabelAnchorValues = (
-	position: Position,
-	labelOrientaion: Orientation,
-	labelAlign: LabelAlign,
-	vegaLabelAlign?: Align,
-	vegaLabelBaseline?: Baseline
+  position: Position,
+  labelOrientaion: Orientation,
+  labelAlign: LabelAlign,
+  vegaLabelAlign?: Align,
+  vegaLabelBaseline?: Baseline
 ): { labelAlign: Align; labelBaseline: Baseline } => {
-	const { align, baseline } = getLabelAnchor(position, labelOrientaion, labelAlign);
-	// if vegaLabelAlign or vegaLabelBaseline are set, we want to use those values instead of the calculated values
-	return {
-		labelAlign: vegaLabelAlign ?? align,
-		labelBaseline: vegaLabelBaseline ?? baseline,
-	};
+  const { align, baseline } = getLabelAnchor(position, labelOrientaion, labelAlign);
+  // if vegaLabelAlign or vegaLabelBaseline are set, we want to use those values instead of the calculated values
+  return {
+    labelAlign: vegaLabelAlign ?? align,
+    labelBaseline: vegaLabelBaseline ?? baseline,
+  };
 };
 
 /**
@@ -119,46 +119,46 @@ export const getLabelAnchorValues = (
  * @returns align and baseline
  */
 export const getLabelAnchor = (
-	position: Position,
-	labelOrientaion: Orientation,
-	labelAlign: LabelAlign
+  position: Position,
+  labelOrientaion: Orientation,
+  labelAlign: LabelAlign
 ): { align: Align; baseline: Baseline } => {
-	let align: Align;
-	let baseline: Baseline;
-	if (labelIsParallelToAxis(position, labelOrientaion)) {
-		// label direction is parallel to the axis
-		// for these, the align depends on the labelAlign and the baseline depends on the position
-		const labelAlignToAlign: { [key in LabelAlign]: Align } = {
-			start: 'left',
-			center: 'center',
-			end: 'right',
-		};
-		align = labelAlignToAlign[labelAlign];
-		if (['top', 'left'].includes(position)) {
-			// baseline is bottom for top and left axes
-			baseline = 'bottom';
-		} else {
-			// baseline is top for bottom and right axes
-			baseline = 'top';
-		}
-	} else {
-		// label direction is perpendicular to the axis
-		// for these, baseline depends on the labelAlign and align depends on the position
-		const labelAlignToBaseline: { [key in LabelAlign]: Baseline } = {
-			start: 'top',
-			center: 'middle',
-			end: 'bottom',
-		};
-		baseline = labelAlignToBaseline[labelAlign];
-		if (['bottom', 'left'].includes(position)) {
-			// bottom and left will always have the anchor on the right side of the text
-			align = 'right';
-		} else {
-			// top and right will always have the anchor on the left side of the text
-			align = 'left';
-		}
-	}
-	return { align, baseline };
+  let align: Align;
+  let baseline: Baseline;
+  if (labelIsParallelToAxis(position, labelOrientaion)) {
+    // label direction is parallel to the axis
+    // for these, the align depends on the labelAlign and the baseline depends on the position
+    const labelAlignToAlign: { [key in LabelAlign]: Align } = {
+      start: 'left',
+      center: 'center',
+      end: 'right',
+    };
+    align = labelAlignToAlign[labelAlign];
+    if (['top', 'left'].includes(position)) {
+      // baseline is bottom for top and left axes
+      baseline = 'bottom';
+    } else {
+      // baseline is top for bottom and right axes
+      baseline = 'top';
+    }
+  } else {
+    // label direction is perpendicular to the axis
+    // for these, baseline depends on the labelAlign and align depends on the position
+    const labelAlignToBaseline: { [key in LabelAlign]: Baseline } = {
+      start: 'top',
+      center: 'middle',
+      end: 'bottom',
+    };
+    baseline = labelAlignToBaseline[labelAlign];
+    if (['bottom', 'left'].includes(position)) {
+      // bottom and left will always have the anchor on the right side of the text
+      align = 'right';
+    } else {
+      // top and right will always have the anchor on the left side of the text
+      align = 'left';
+    }
+  }
+  return { align, baseline };
 };
 
 /**
@@ -168,8 +168,8 @@ export const getLabelAnchor = (
  * @returns boolean
  */
 export const labelIsParallelToAxis = (position: Position, labelOrientaion: Orientation): boolean => {
-	const axisOrientation = ['top', 'bottom'].includes(position) ? 'horizontal' : 'vertical';
-	return axisOrientation === labelOrientaion;
+  const axisOrientation = ['top', 'bottom'].includes(position) ? 'horizontal' : 'vertical';
+  return axisOrientation === labelOrientaion;
 };
 
 /**
@@ -178,11 +178,11 @@ export const labelIsParallelToAxis = (position: Position, labelOrientaion: Orien
  * @returns labelAngle: number
  */
 export const getLabelAngle = (labelOrientaion: Orientation): number => {
-	if (labelOrientaion === 'horizontal') {
-		return 0;
-	}
-	// default vertical label should read from bottom to top
-	return 270;
+  if (labelOrientaion === 'horizontal') {
+    return 0;
+  }
+  // default vertical label should read from bottom to top
+  return 270;
 };
 
 /**
@@ -191,23 +191,23 @@ export const getLabelAngle = (labelOrientaion: Orientation): number => {
  * @returns
  */
 export const getLabelBaseline = (
-	labelAlign: LabelAlign | undefined,
-	position: Position,
-	vegaLabelBaseline?: Baseline
+  labelAlign: LabelAlign | undefined,
+  position: Position,
+  vegaLabelBaseline?: Baseline
 ): Baseline | undefined => {
-	if (vegaLabelBaseline) return vegaLabelBaseline;
-	if (!labelAlign) return;
-	if (isVerticalAxis(position)) {
-		switch (labelAlign) {
-			case 'start':
-				return 'top';
-			case 'end':
-				return 'bottom';
-			case 'center':
-			default:
-				return 'middle';
-		}
-	}
+  if (vegaLabelBaseline) return vegaLabelBaseline;
+  if (!labelAlign) return;
+  if (isVerticalAxis(position)) {
+    switch (labelAlign) {
+      case 'start':
+        return 'top';
+      case 'end':
+        return 'bottom';
+      case 'center':
+      default:
+        return 'middle';
+    }
+  }
 };
 
 /**
@@ -217,19 +217,19 @@ export const getLabelBaseline = (
  * @returns
  */
 export const getLabelOffset = (
-	labelAlign: LabelAlign,
-	scaleName: string,
-	vegaLabelOffset?: NumberValue
+  labelAlign: LabelAlign,
+  scaleName: string,
+  vegaLabelOffset?: NumberValue
 ): NumberValue | undefined => {
-	if (vegaLabelOffset !== undefined) return vegaLabelOffset;
-	switch (labelAlign) {
-		case 'start':
-			return { signal: `bandwidth('${scaleName}') / -2` };
-		case 'end':
-			return { signal: `bandwidth('${scaleName}') / 2` };
-		default:
-			return undefined;
-	}
+  if (vegaLabelOffset !== undefined) return vegaLabelOffset;
+  switch (labelAlign) {
+    case 'start':
+      return { signal: `bandwidth('${scaleName}') / -2` };
+    case 'end':
+      return { signal: `bandwidth('${scaleName}') / 2` };
+    default:
+      return undefined;
+  }
 };
 
 /**
@@ -238,30 +238,30 @@ export const getLabelOffset = (
  * @returns
  */
 export const getLabelFormat = (
-	{
-		labelFormat,
-		labelOrientation,
-		numberFormat,
-		position,
-		truncateLabels,
-		currencyLocale,
-		currencyCode,
-	}: AxisSpecOptions,
-	scaleName: string
+  {
+    labelFormat,
+    labelOrientation,
+    numberFormat,
+    position,
+    truncateLabels,
+    currencyLocale,
+    currencyCode,
+  }: AxisSpecOptions,
+  scaleName: string
 ): ProductionRule<TextValueRef> => {
-	if (labelFormat === 'percentage') {
-		return [{ test: 'isNumber(datum.value)', signal: "format(datum.value, '~%')" }, { signal: 'datum.value' }];
-	}
-	if (labelFormat === 'duration') {
-		return { signal: 'formatTimeDurationLabels(datum)' };
-	}
+  if (labelFormat === 'percentage') {
+    return [{ test: 'isNumber(datum.value)', signal: "format(datum.value, '~%')" }, { signal: 'datum.value' }];
+  }
+  if (labelFormat === 'duration') {
+    return { signal: 'formatTimeDurationLabels(datum)' };
+  }
 
-	return [
-		...getTextNumberFormat(numberFormat, undefined, currencyLocale, currencyCode),
-		...(truncateLabels && scaleName.includes('Band') && labelIsParallelToAxis(position, labelOrientation)
-			? [{ signal: 'truncateText(datum.value, bandwidth("xBand")/(1- paddingInner), "normal", 14)' }]
-			: [{ signal: 'datum.value' }]),
-	];
+  return [
+    ...getTextNumberFormat(numberFormat, undefined, currencyLocale, currencyCode),
+    ...(truncateLabels && scaleName.includes('Band') && labelIsParallelToAxis(position, labelOrientation)
+      ? [{ signal: 'truncateText(datum.value, bandwidth("xBand")/(1- paddingInner), "normal", 14)' }]
+      : [{ signal: 'datum.value' }]),
+  ];
 };
 
 /**
@@ -274,31 +274,31 @@ export const getLabelFormat = (
  * @returns updateEncoding
  */
 export const getAxisLabelsEncoding = (
-	labelAlign: LabelAlign,
-	labelFontWeight: FontWeight,
-	labelKey: 'label' | 'subLabel',
-	labelOrientation: Orientation,
-	position: Position,
-	signalName: string
+  labelAlign: LabelAlign,
+  labelFontWeight: FontWeight,
+  labelKey: 'label' | 'subLabel',
+  labelOrientation: Orientation,
+  position: Position,
+  signalName: string
 ): GuideEncodeEntry<TextEncodeEntry> => ({
-	update: {
-		text: [
-			{
-				test: `indexof(pluck(${signalName}, 'value'), datum.value) !== -1`,
-				signal: `${signalName}[indexof(pluck(${signalName}, 'value'), datum.value)].${labelKey}`,
-			},
-			{ signal: 'datum.value' },
-		],
-		fontWeight: [
-			{
-				test: `indexof(pluck(${signalName}, 'value'), datum.value) !== -1 && ${signalName}[indexof(pluck(${signalName}, 'value'), datum.value)].fontWeight`,
-				signal: `${signalName}[indexof(pluck(${signalName}, 'value'), datum.value)].fontWeight`,
-			},
-			// default to the primary label font weight
-			{ value: labelFontWeight },
-		],
-		...getEncodedLabelAnchor(position, signalName, labelOrientation, labelAlign),
-	},
+  update: {
+    text: [
+      {
+        test: `indexof(pluck(${signalName}, 'value'), datum.value) !== -1`,
+        signal: `${signalName}[indexof(pluck(${signalName}, 'value'), datum.value)].${labelKey}`,
+      },
+      { signal: 'datum.value' },
+    ],
+    fontWeight: [
+      {
+        test: `indexof(pluck(${signalName}, 'value'), datum.value) !== -1 && ${signalName}[indexof(pluck(${signalName}, 'value'), datum.value)].fontWeight`,
+        signal: `${signalName}[indexof(pluck(${signalName}, 'value'), datum.value)].fontWeight`,
+      },
+      // default to the primary label font weight
+      { value: labelFontWeight },
+    ],
+    ...getEncodedLabelAnchor(position, signalName, labelOrientation, labelAlign),
+  },
 });
 
 /**
@@ -312,17 +312,17 @@ export const getAxisLabelsEncoding = (
  * @returns align | baseline
  */
 export const getEncodedLabelAnchor = (
-	position: Position,
-	signalName: string,
-	labelOrientation: Orientation,
-	defaultLabelAlign: LabelAlign
+  position: Position,
+  signalName: string,
+  labelOrientation: Orientation,
+  defaultLabelAlign: LabelAlign
 ): EncodeEntry => {
-	const baseTestString = `indexof(pluck(${signalName}, 'value'), datum.value) !== -1 && ${signalName}[indexof(pluck(${signalName}, 'value'), datum.value)]`;
-	const baseSignalString = `${signalName}[indexof(pluck(${signalName}, 'value'), datum.value)]`;
-	const { align, baseline } = getLabelAnchor(position, labelOrientation, defaultLabelAlign);
+  const baseTestString = `indexof(pluck(${signalName}, 'value'), datum.value) !== -1 && ${signalName}[indexof(pluck(${signalName}, 'value'), datum.value)]`;
+  const baseSignalString = `${signalName}[indexof(pluck(${signalName}, 'value'), datum.value)]`;
+  const { align, baseline } = getLabelAnchor(position, labelOrientation, defaultLabelAlign);
 
-	return {
-		align: [{ test: `${baseTestString}.align`, signal: `${baseSignalString}.align` }, { value: align }],
-		baseline: [{ test: `${baseTestString}.baseline`, signal: `${baseSignalString}.baseline` }, { value: baseline }],
-	};
+  return {
+    align: [{ test: `${baseTestString}.align`, signal: `${baseSignalString}.align` }, { value: align }],
+    baseline: [{ test: `${baseTestString}.baseline`, signal: `${baseSignalString}.baseline` }, { value: baseline }],
+  };
 };

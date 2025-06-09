@@ -12,12 +12,12 @@
 import { Scale, ScaleMultiFieldsRef } from 'vega';
 
 import {
-	COLOR_SCALE,
-	LINEAR_COLOR_SCALE,
-	LINE_TYPE_SCALE,
-	OPACITY_SCALE,
-	SYMBOL_SHAPE_SCALE,
-	SYMBOL_SIZE_SCALE,
+  COLOR_SCALE,
+  LINEAR_COLOR_SCALE,
+  LINE_TYPE_SCALE,
+  OPACITY_SCALE,
+  SYMBOL_SHAPE_SCALE,
+  SYMBOL_SIZE_SCALE,
 } from '@spectrum-charts/constants';
 
 import { FacetType, SecondaryFacetType } from '../types';
@@ -27,16 +27,16 @@ import { Facet } from './legendUtils';
  * These are all the scale names that are used for facets
  */
 const facetScaleNames: (FacetType | SecondaryFacetType)[] = [
-	COLOR_SCALE,
-	LINE_TYPE_SCALE,
-	LINEAR_COLOR_SCALE,
-	OPACITY_SCALE,
-	'secondaryColor',
-	'secondaryLineType',
-	'secondaryOpacity',
-	'secondarySymbolShape',
-	SYMBOL_SHAPE_SCALE,
-	SYMBOL_SIZE_SCALE,
+  COLOR_SCALE,
+  LINE_TYPE_SCALE,
+  LINEAR_COLOR_SCALE,
+  OPACITY_SCALE,
+  'secondaryColor',
+  'secondaryLineType',
+  'secondaryOpacity',
+  'secondarySymbolShape',
+  SYMBOL_SHAPE_SCALE,
+  SYMBOL_SIZE_SCALE,
 ];
 
 /**
@@ -47,26 +47,26 @@ const facetScaleNames: (FacetType | SecondaryFacetType)[] = [
  * @returns Factes
  */
 export const getFacets = (scales: Scale[]): { ordinalFacets: Facet[]; continuousFacets: Facet[] } => {
-	const ordinalFacets: Facet[] = [];
-	const continuousFacets: Facet[] = [];
+  const ordinalFacets: Facet[] = [];
+  const continuousFacets: Facet[] = [];
 
-	scales.forEach((scale) => {
-		if (
-			facetScaleNames.includes(scale.name as FacetType) &&
-			isScaleWithMultiFields(scale) &&
-			scale.domain.fields.length
-		) {
-			if (scale.type === 'ordinal' || scale.type === 'point') {
-				ordinalFacets.push({
-					facetType: scale.name as FacetType,
-					field: scale.domain.fields[0].toString(),
-				});
-			} else {
-				continuousFacets.push({ facetType: scale.name as FacetType, field: scale.domain.fields[0].toString() });
-			}
-		}
-	});
-	return { ordinalFacets, continuousFacets };
+  scales.forEach((scale) => {
+    if (
+      facetScaleNames.includes(scale.name as FacetType) &&
+      isScaleWithMultiFields(scale) &&
+      scale.domain.fields.length
+    ) {
+      if (scale.type === 'ordinal' || scale.type === 'point') {
+        ordinalFacets.push({
+          facetType: scale.name as FacetType,
+          field: scale.domain.fields[0].toString(),
+        });
+      } else {
+        continuousFacets.push({ facetType: scale.name as FacetType, field: scale.domain.fields[0].toString() });
+      }
+    }
+  });
+  return { ordinalFacets, continuousFacets };
 };
 
 /**
@@ -77,27 +77,27 @@ export const getFacets = (scales: Scale[]): { ordinalFacets: Facet[]; continuous
  * @returns
  */
 export const getFacetsFromKeys = (
-	keys: string[],
-	scales: Scale[]
+  keys: string[],
+  scales: Scale[]
 ): { ordinalFacets: Facet[]; continuousFacets: Facet[] } => {
-	const ordinalFacets: Facet[] = [];
-	const continuousFacets: Facet[] = [];
-	scales.forEach((scale) => {
-		if (isScaleWithMultiFields(scale) && scaleHasKey(scale, keys)) {
-			if (scale.type === 'ordinal' || scale.type === 'point') {
-				ordinalFacets.push({
-					facetType: scale.name as FacetType,
-					field: scale.domain.fields.find((field) => keys.includes(field.toString()))?.toString() as string,
-				});
-			} else {
-				continuousFacets.push({
-					facetType: scale.name as FacetType,
-					field: scale.domain.fields.find((field) => keys.includes(field.toString()))?.toString() as string,
-				});
-			}
-		}
-	});
-	return { ordinalFacets, continuousFacets };
+  const ordinalFacets: Facet[] = [];
+  const continuousFacets: Facet[] = [];
+  scales.forEach((scale) => {
+    if (isScaleWithMultiFields(scale) && scaleHasKey(scale, keys)) {
+      if (scale.type === 'ordinal' || scale.type === 'point') {
+        ordinalFacets.push({
+          facetType: scale.name as FacetType,
+          field: scale.domain.fields.find((field) => keys.includes(field.toString()))?.toString() as string,
+        });
+      } else {
+        continuousFacets.push({
+          facetType: scale.name as FacetType,
+          field: scale.domain.fields.find((field) => keys.includes(field.toString()))?.toString() as string,
+        });
+      }
+    }
+  });
+  return { ordinalFacets, continuousFacets };
 };
 
 /**
@@ -107,7 +107,7 @@ export const getFacetsFromKeys = (
  * @returns boolean
  */
 const scaleHasKey = (scale: ScaleWithMultiFields, keys: string[]): boolean =>
-	scale.domain.fields.some((field) => keys.includes(field.toString()));
+  scale.domain.fields.some((field) => keys.includes(field.toString()));
 
 type ScaleWithMultiFields = Scale & { domain: ScaleMultiFieldsRef };
 
@@ -117,5 +117,5 @@ type ScaleWithMultiFields = Scale & { domain: ScaleMultiFieldsRef };
  * @returns
  */
 const isScaleWithMultiFields = (scale: Scale): scale is ScaleWithMultiFields => {
-	return Boolean('domain' in scale && scale.domain && 'fields' in scale.domain);
+  return Boolean('domain' in scale && scale.domain && 'fields' in scale.domain);
 };

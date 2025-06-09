@@ -12,18 +12,18 @@
 import { GroupMark, NumericValueRef, ProductionRule, RectEncodeEntry, RectMark, TextMark } from 'vega';
 
 import {
-	ANNOTATION_FONT_SIZE,
-	ANNOTATION_FONT_WEIGHT,
-	ANNOTATION_PADDING,
-	BACKGROUND_COLOR,
+  ANNOTATION_FONT_SIZE,
+  ANNOTATION_FONT_WEIGHT,
+  ANNOTATION_PADDING,
+  BACKGROUND_COLOR,
 } from '@spectrum-charts/constants';
 
 import {
-	BarAnnotationOptions,
-	BarAnnotationSpecOptions,
-	BarAnnotationStyleOptions,
-	BarSpecOptions,
-	Orientation,
+  BarAnnotationOptions,
+  BarAnnotationSpecOptions,
+  BarAnnotationStyleOptions,
+  BarSpecOptions,
+  Orientation,
 } from '../types';
 import { getOrientationProperties, isDodgedAndStacked } from './barUtils';
 
@@ -35,17 +35,17 @@ type AnnotationWidth = { value: number } | { signal: string };
  * @returns BarAnnotationSpecOptions | undefined
  */
 const getAnnotation = (
-	options: BarSpecOptions,
-	dataName: string,
-	dimensionScaleName: string,
-	dimensionField: string
+  options: BarSpecOptions,
+  dataName: string,
+  dimensionScaleName: string,
+  dimensionField: string
 ): BarAnnotationSpecOptions | undefined => {
-	const annotation = options.barAnnotations[0];
+  const annotation = options.barAnnotations[0];
 
-	if (!annotation) {
-		return;
-	}
-	return applyAnnotationPropDefaults(annotation, options, dataName, dimensionScaleName, dimensionField);
+  if (!annotation) {
+    return;
+  }
+  return applyAnnotationPropDefaults(annotation, options, dataName, dimensionScaleName, dimensionField);
 };
 
 /**
@@ -55,18 +55,18 @@ const getAnnotation = (
  * @returns BarAnnotationSpecOptions
  */
 const applyAnnotationPropDefaults = (
-	{ textKey, ...options }: BarAnnotationOptions,
-	barOptions: BarSpecOptions,
-	dataName: string,
-	dimensionScaleName: string,
-	dimensionField: string
+  { textKey, ...options }: BarAnnotationOptions,
+  barOptions: BarSpecOptions,
+  dataName: string,
+  dimensionScaleName: string,
+  dimensionField: string
 ): BarAnnotationSpecOptions => ({
-	barOptions,
-	textKey: textKey || barOptions.metric,
-	dataName,
-	dimensionScaleName,
-	dimensionField,
-	...options,
+  barOptions,
+  textKey: textKey || barOptions.metric,
+  dataName,
+  dimensionScaleName,
+  dimensionField,
+  ...options,
 });
 
 /**
@@ -78,26 +78,26 @@ const applyAnnotationPropDefaults = (
  * @returns GroupMark[]
  */
 export const getAnnotationMarks = (
-	barOptions: BarSpecOptions,
+  barOptions: BarSpecOptions,
 
-	// These have to be local fields because it could be used in a group,
-	// in which case we don't want to use the "global" (full table) values.
-	dataName: string,
-	dimensionScaleName: string,
-	dimensionName: string
+  // These have to be local fields because it could be used in a group,
+  // in which case we don't want to use the "global" (full table) values.
+  dataName: string,
+  dimensionScaleName: string,
+  dimensionName: string
 ): GroupMark[] => {
-	const annotationOptions = getAnnotation(barOptions, dataName, dimensionScaleName, dimensionName);
-	if (!annotationOptions) {
-		return [];
-	}
+  const annotationOptions = getAnnotation(barOptions, dataName, dimensionScaleName, dimensionName);
+  if (!annotationOptions) {
+    return [];
+  }
 
-	return [
-		{
-			type: 'group',
-			name: `${barOptions.name}_annotationGroup`,
-			marks: [getAnnotationTextMark(annotationOptions), getAnnotationBackgroundMark(annotationOptions)],
-		},
-	];
+  return [
+    {
+      type: 'group',
+      name: `${barOptions.name}_annotationGroup`,
+      marks: [getAnnotationTextMark(annotationOptions), getAnnotationBackgroundMark(annotationOptions)],
+    },
+  ];
 };
 
 /**
@@ -106,44 +106,44 @@ export const getAnnotationMarks = (
  * @returns TextMark
  */
 const getAnnotationTextMark = ({
-	barOptions,
-	dataName,
-	dimensionField,
-	dimensionScaleName,
-	textKey,
-	style,
+  barOptions,
+  dataName,
+  dimensionField,
+  dimensionScaleName,
+  textKey,
+  style,
 }: BarAnnotationSpecOptions): TextMark => {
-	const { metricAxis, dimensionAxis } = getOrientationProperties(barOptions.orientation);
-	const annotationWidth = getAnnotationWidth(textKey, style);
-	const annotationPosition = getAnnotationMetricAxisPosition(barOptions, annotationWidth);
+  const { metricAxis, dimensionAxis } = getOrientationProperties(barOptions.orientation);
+  const annotationWidth = getAnnotationWidth(textKey, style);
+  const annotationPosition = getAnnotationMetricAxisPosition(barOptions, annotationWidth);
 
-	return {
-		name: `${barOptions.name}_annotationText`,
-		type: 'text',
-		from: { data: dataName },
-		interactive: false,
-		zindex: 1,
-		encode: {
-			enter: {
-				[dimensionAxis]: {
-					scale: dimensionScaleName,
-					field: dimensionField,
-					band: 0.5,
-				},
-				[metricAxis]: annotationPosition,
-				text: [
-					{
-						test: `bandwidth('${dimensionScaleName}') > ${getMinBandwidth(barOptions.orientation)}`,
-						field: textKey,
-					},
-				],
-				fontSize: { value: ANNOTATION_FONT_SIZE },
-				fontWeight: { value: ANNOTATION_FONT_WEIGHT },
-				baseline: { value: 'middle' },
-				align: { value: 'center' },
-			},
-		},
-	};
+  return {
+    name: `${barOptions.name}_annotationText`,
+    type: 'text',
+    from: { data: dataName },
+    interactive: false,
+    zindex: 1,
+    encode: {
+      enter: {
+        [dimensionAxis]: {
+          scale: dimensionScaleName,
+          field: dimensionField,
+          band: 0.5,
+        },
+        [metricAxis]: annotationPosition,
+        text: [
+          {
+            test: `bandwidth('${dimensionScaleName}') > ${getMinBandwidth(barOptions.orientation)}`,
+            field: textKey,
+          },
+        ],
+        fontSize: { value: ANNOTATION_FONT_SIZE },
+        fontWeight: { value: ANNOTATION_FONT_WEIGHT },
+        baseline: { value: 'middle' },
+        align: { value: 'center' },
+      },
+    },
+  };
 };
 
 /**
@@ -152,32 +152,32 @@ const getAnnotationTextMark = ({
  * @returns RectMark
  */
 const getAnnotationBackgroundMark = ({
-	barOptions,
-	dimensionScaleName,
-	textKey,
-	style,
+  barOptions,
+  dimensionScaleName,
+  textKey,
+  style,
 }: BarAnnotationSpecOptions): RectMark => ({
-	name: `${barOptions.name}_annotationBackground`,
-	description: `${barOptions.name}_annotationBackground`,
-	type: 'rect',
-	from: { data: `${barOptions.name}_annotationText` },
-	interactive: false,
-	encode: {
-		enter: {
-			...getAnnotationXEncode(style?.width),
-			y: { signal: `datum.bounds.y1  - ${ANNOTATION_PADDING}` },
-			y2: { signal: `datum.bounds.y2  + ${ANNOTATION_PADDING}` },
-			cornerRadius: { value: 4 },
-			fill: [
-				{
-					test: `datum.datum.${textKey} && bandwidth('${dimensionScaleName}') > ${getMinBandwidth(
-						barOptions.orientation
-					)}`,
-					signal: BACKGROUND_COLOR,
-				},
-			],
-		},
-	},
+  name: `${barOptions.name}_annotationBackground`,
+  description: `${barOptions.name}_annotationBackground`,
+  type: 'rect',
+  from: { data: `${barOptions.name}_annotationText` },
+  interactive: false,
+  encode: {
+    enter: {
+      ...getAnnotationXEncode(style?.width),
+      y: { signal: `datum.bounds.y1  - ${ANNOTATION_PADDING}` },
+      y2: { signal: `datum.bounds.y2  + ${ANNOTATION_PADDING}` },
+      cornerRadius: { value: 4 },
+      fill: [
+        {
+          test: `datum.datum.${textKey} && bandwidth('${dimensionScaleName}') > ${getMinBandwidth(
+            barOptions.orientation
+          )}`,
+          signal: BACKGROUND_COLOR,
+        },
+      ],
+    },
+  },
 });
 
 /**
@@ -186,7 +186,7 @@ const getAnnotationBackgroundMark = ({
  * @returns number
  */
 export const getMinBandwidth = (orientation: Orientation): number =>
-	orientation === 'vertical' ? 48 : ANNOTATION_FONT_SIZE + 2 * ANNOTATION_PADDING;
+  orientation === 'vertical' ? 48 : ANNOTATION_FONT_SIZE + 2 * ANNOTATION_PADDING;
 
 /**
  * Gets the x position encoding for the annotation background
@@ -194,25 +194,25 @@ export const getMinBandwidth = (orientation: Orientation): number =>
  * @returns RectEncodeEntry
  */
 export const getAnnotationXEncode = (width?: number): RectEncodeEntry => {
-	if (width) {
-		return {
-			xc: { signal: '(datum.bounds.x1 + datum.bounds.x2) / 2' },
-			width: { value: width },
-		};
-	}
-	return {
-		x: { signal: `datum.bounds.x1 - ${ANNOTATION_PADDING}` },
-		x2: { signal: `datum.bounds.x2 + ${ANNOTATION_PADDING}` },
-	};
+  if (width) {
+    return {
+      xc: { signal: '(datum.bounds.x1 + datum.bounds.x2) / 2' },
+      width: { value: width },
+    };
+  }
+  return {
+    x: { signal: `datum.bounds.x1 - ${ANNOTATION_PADDING}` },
+    x2: { signal: `datum.bounds.x2 + ${ANNOTATION_PADDING}` },
+  };
 };
 
 export const getAnnotationWidth = (textKey: string, style?: BarAnnotationStyleOptions): AnnotationWidth => {
-	if (style?.width) return { value: style.width };
-	return {
-		signal: `getLabelWidth(datum.${textKey}, '${ANNOTATION_FONT_WEIGHT}', ${ANNOTATION_FONT_SIZE}) + ${
-			2 * ANNOTATION_PADDING
-		}`,
-	};
+  if (style?.width) return { value: style.width };
+  return {
+    signal: `getLabelWidth(datum.${textKey}, '${ANNOTATION_FONT_WEIGHT}', ${ANNOTATION_FONT_SIZE}) + ${
+      2 * ANNOTATION_PADDING
+    }`,
+  };
 };
 
 /**
@@ -222,22 +222,22 @@ export const getAnnotationWidth = (textKey: string, style?: BarAnnotationStyleOp
  * @returns string
  */
 export const getAnnotationPositionOffset = (
-	{ orientation }: BarSpecOptions,
-	annotationWidth: AnnotationWidth
+  { orientation }: BarSpecOptions,
+  annotationWidth: AnnotationWidth
 ): string => {
-	const pixelGapFromBaseline = 2.5;
+  const pixelGapFromBaseline = 2.5;
 
-	if (orientation === 'vertical') {
-		return `${(2 * ANNOTATION_PADDING + ANNOTATION_FONT_SIZE) / 2 + pixelGapFromBaseline}`;
-	}
+  if (orientation === 'vertical') {
+    return `${(2 * ANNOTATION_PADDING + ANNOTATION_FONT_SIZE) / 2 + pixelGapFromBaseline}`;
+  }
 
-	if ('value' in annotationWidth) {
-		return `${annotationWidth.value / 2 + pixelGapFromBaseline}`;
-	}
+  if ('value' in annotationWidth) {
+    return `${annotationWidth.value / 2 + pixelGapFromBaseline}`;
+  }
 
-	// Need parens for order of operations
-	// Evaluate signal expression first, then divide by 2, then add extra offset
-	return `((${annotationWidth.signal}) / 2 + ${pixelGapFromBaseline})`;
+  // Need parens for order of operations
+  // Evaluate signal expression first, then divide by 2, then add extra offset
+  return `((${annotationWidth.signal}) / 2 + ${pixelGapFromBaseline})`;
 };
 
 /**
@@ -248,33 +248,33 @@ export const getAnnotationPositionOffset = (
  * @returns NumericValueref
  */
 export const getAnnotationMetricAxisPosition = (
-	options: BarSpecOptions,
-	annotationWidth: AnnotationWidth
+  options: BarSpecOptions,
+  annotationWidth: AnnotationWidth
 ): ProductionRule<NumericValueRef> => {
-	const { type, metric, orientation } = options;
-	const field = type === 'stacked' || isDodgedAndStacked(options) ? `${metric}1` : metric;
-	const { metricScaleKey: scaleKey } = getOrientationProperties(orientation);
-	const positionOffset = getAnnotationPositionOffset(options, annotationWidth);
+  const { type, metric, orientation } = options;
+  const field = type === 'stacked' || isDodgedAndStacked(options) ? `${metric}1` : metric;
+  const { metricScaleKey: scaleKey } = getOrientationProperties(orientation);
+  const positionOffset = getAnnotationPositionOffset(options, annotationWidth);
 
-	if (orientation === 'vertical') {
-		return [
-			{
-				test: `datum.${field} < 0`,
-				signal: `max(scale('${scaleKey}', datum.${field}), scale('${scaleKey}', 0) + ${positionOffset})`,
-			},
-			{
-				signal: `min(scale('${scaleKey}', datum.${field}), scale('${scaleKey}', 0) - ${positionOffset})`,
-			},
-		];
-	}
+  if (orientation === 'vertical') {
+    return [
+      {
+        test: `datum.${field} < 0`,
+        signal: `max(scale('${scaleKey}', datum.${field}), scale('${scaleKey}', 0) + ${positionOffset})`,
+      },
+      {
+        signal: `min(scale('${scaleKey}', datum.${field}), scale('${scaleKey}', 0) - ${positionOffset})`,
+      },
+    ];
+  }
 
-	return [
-		{
-			test: `datum.${field} < 0`,
-			signal: `min(scale('${scaleKey}', datum.${field}), scale('${scaleKey}', 0) - ${positionOffset})`,
-		},
-		{
-			signal: `max(scale('${scaleKey}', datum.${field}), scale('${scaleKey}', 0) + ${positionOffset})`,
-		},
-	];
+  return [
+    {
+      test: `datum.${field} < 0`,
+      signal: `min(scale('${scaleKey}', datum.${field}), scale('${scaleKey}', 0) - ${positionOffset})`,
+    },
+    {
+      signal: `max(scale('${scaleKey}', datum.${field}), scale('${scaleKey}', 0) + ${positionOffset})`,
+    },
+  ];
 };

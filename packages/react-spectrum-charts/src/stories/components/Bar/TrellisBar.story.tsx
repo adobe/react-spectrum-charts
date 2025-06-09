@@ -25,118 +25,118 @@ import { BarProps } from '../../../types';
 import { generateMockDataForTrellis } from './data';
 
 export default {
-	title: 'RSC/Bar/Trellis',
-	component: Bar,
+  title: 'RSC/Bar/Trellis',
+  component: Bar,
 };
 
 const colors: SpectrumColor[] = [
-	'sequential-magma-200',
-	'sequential-magma-400',
-	'sequential-magma-600',
-	'sequential-magma-800',
-	'sequential-magma-1000',
-	'sequential-magma-1200',
-	'sequential-magma-1400',
+  'sequential-magma-200',
+  'sequential-magma-400',
+  'sequential-magma-600',
+  'sequential-magma-800',
+  'sequential-magma-1000',
+  'sequential-magma-1200',
+  'sequential-magma-1400',
 ];
 
 const BarStory: StoryFn<typeof Bar> = (args: BarProps): ReactElement => {
-	const chartProps = useChartProps({
-		data: generateMockDataForTrellis({
-			property1: ['All users', 'Roku', 'Chromecast', 'Amazon Fire', 'Apple TV'],
-			property2: ['A. Sign up', 'B. Watch a video', 'C. Add to MyList'],
-			property3: ['1-5 times', '6-10 times', '11-15 times', '16-20 times', '21-25 times', '26+ times'],
-			propertyNames: ['segment', 'event', 'bucket'],
-			randomizeSteps: false,
-			orderBy: 'bucket',
-		}),
-		colors,
-		width: 800,
-		height: 800,
-	});
+  const chartProps = useChartProps({
+    data: generateMockDataForTrellis({
+      property1: ['All users', 'Roku', 'Chromecast', 'Amazon Fire', 'Apple TV'],
+      property2: ['A. Sign up', 'B. Watch a video', 'C. Add to MyList'],
+      property3: ['1-5 times', '6-10 times', '11-15 times', '16-20 times', '21-25 times', '26+ times'],
+      propertyNames: ['segment', 'event', 'bucket'],
+      randomizeSteps: false,
+      orderBy: 'bucket',
+    }),
+    colors,
+    width: 800,
+    height: 800,
+  });
 
-	const dialog = (item: Datum) => {
-		return (
-			<Content>
-				<View>
-					<Text>{item[MARK_ID]}</Text>
-				</View>
-			</Content>
-		);
-	};
+  const dialog = (item: Datum) => {
+    return (
+      <Content>
+        <View>
+          <Text>{item[MARK_ID]}</Text>
+        </View>
+      </Content>
+    );
+  };
 
-	return (
-		<Chart {...chartProps}>
-			<Axis position={args.orientation === 'horizontal' ? 'bottom' : 'left'} title="Users, Count" grid />
-			<Axis position={args.orientation === 'horizontal' ? 'left' : 'bottom'} title="Platform" baseline />
-			<Bar {...args}>
-				<ChartTooltip>{dialog}</ChartTooltip>
-				<ChartPopover>{dialog}</ChartPopover>
-			</Bar>
-			<Legend />
-		</Chart>
-	);
+  return (
+    <Chart {...chartProps}>
+      <Axis position={args.orientation === 'horizontal' ? 'bottom' : 'left'} title="Users, Count" grid />
+      <Axis position={args.orientation === 'horizontal' ? 'left' : 'bottom'} title="Platform" baseline />
+      <Bar {...args}>
+        <ChartTooltip>{dialog}</ChartTooltip>
+        <ChartPopover>{dialog}</ChartPopover>
+      </Bar>
+      <Legend />
+    </Chart>
+  );
 };
 
 const Dodged = bindWithProps<BarProps>(BarStory);
 Dodged.args = {
-	type: 'dodged',
-	dimension: 'segment',
-	onClick: undefined,
-	order: 'order',
-	color: 'bucket',
-	trellis: 'event',
-	trellisOrientation: 'horizontal',
-	orientation: 'horizontal',
+  type: 'dodged',
+  dimension: 'segment',
+  onClick: undefined,
+  order: 'order',
+  color: 'bucket',
+  trellis: 'event',
+  trellisOrientation: 'horizontal',
+  orientation: 'horizontal',
 };
 
 const HorizontalBarHorizontalTrellis = bindWithProps<BarProps>(BarStory);
 HorizontalBarHorizontalTrellis.storyName = 'Horizontal Bar, Horizontal Trellis';
 HorizontalBarHorizontalTrellis.args = {
-	type: 'stacked',
-	trellis: 'event',
-	dimension: 'segment',
-	onClick: undefined,
-	color: 'bucket',
-	order: 'order',
-	orientation: 'horizontal',
-	trellisOrientation: 'horizontal',
+  type: 'stacked',
+  trellis: 'event',
+  dimension: 'segment',
+  onClick: undefined,
+  color: 'bucket',
+  order: 'order',
+  orientation: 'horizontal',
+  trellisOrientation: 'horizontal',
 };
 
 const HorizontalBarVerticalTrellis = bindWithProps<BarProps>(BarStory);
 HorizontalBarVerticalTrellis.storyName = 'Horizontal Bar, Vertical Trellis';
 HorizontalBarVerticalTrellis.args = {
-	...HorizontalBarHorizontalTrellis.args,
-	trellisOrientation: 'vertical',
+  ...HorizontalBarHorizontalTrellis.args,
+  trellisOrientation: 'vertical',
 };
 
 const VerticalBarHorizontalTrellis = bindWithProps<BarProps>(BarStory);
 VerticalBarHorizontalTrellis.storyName = 'Vertical Bar, Horizontal Trellis';
 VerticalBarHorizontalTrellis.args = {
-	...HorizontalBarHorizontalTrellis.args,
-	orientation: 'vertical',
-	trellisOrientation: 'horizontal',
+  ...HorizontalBarHorizontalTrellis.args,
+  orientation: 'vertical',
+  trellisOrientation: 'horizontal',
 };
 
 const VerticalBarVerticalTrellis = bindWithProps<BarProps>(BarStory);
 VerticalBarVerticalTrellis.storyName = 'Vertical Bar, Vertical Trellis';
 VerticalBarVerticalTrellis.args = {
-	...HorizontalBarVerticalTrellis.args,
-	orientation: 'vertical',
-	trellisOrientation: 'vertical',
+  ...HorizontalBarVerticalTrellis.args,
+  orientation: 'vertical',
+  trellisOrientation: 'vertical',
 };
 
 const WithCustomTrellisPadding = bindWithProps<BarProps>(BarStory);
 WithCustomTrellisPadding.args = {
-	...HorizontalBarVerticalTrellis.args,
-	orientation: 'vertical',
-	trellisPadding: 0.33,
+  ...HorizontalBarVerticalTrellis.args,
+  orientation: 'vertical',
+  trellisPadding: 0.33,
 };
 
 export {
-	Dodged,
-	HorizontalBarHorizontalTrellis,
-	HorizontalBarVerticalTrellis,
-	VerticalBarHorizontalTrellis,
-	VerticalBarVerticalTrellis,
-	WithCustomTrellisPadding,
+  Dodged,
+  HorizontalBarHorizontalTrellis,
+  HorizontalBarVerticalTrellis,
+  VerticalBarHorizontalTrellis,
+  VerticalBarVerticalTrellis,
+  WithCustomTrellisPadding,
 };

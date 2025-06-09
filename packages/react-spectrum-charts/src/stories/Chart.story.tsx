@@ -21,50 +21,50 @@ import { ChartBarStory } from './ChartBarStory';
 import { data, workspaceTrendsData } from './data/data';
 
 export default {
-	title: 'RSC/Chart',
-	component: Chart,
+  title: 'RSC/Chart',
+  component: Chart,
 };
 
 const ChartLineStory: StoryFn<typeof Chart> = (args): ReactElement => {
-	const props = useChartProps(args);
-	return (
-		<Chart {...props}>
-			<Axis position="bottom" baseline ticks />
-			<Axis position="left" grid />
-			<Line dimension="x" metric="y" color="series" scaleType="linear" />
-		</Chart>
-	);
+  const props = useChartProps(args);
+  return (
+    <Chart {...props}>
+      <Axis position="bottom" baseline ticks />
+      <Axis position="left" grid />
+      <Line dimension="x" metric="y" color="series" scaleType="linear" />
+    </Chart>
+  );
 };
 
 const ChartTimeStory: StoryFn<typeof Chart> = (args): ReactElement => {
-	const props = useChartProps(args);
-	return (
-		<Chart {...props} width={500}>
-			<Axis position="bottom" baseline ticks labelFormat="time" />
-			<Axis position="left" grid numberFormat=",.2f" />
-			<Line dimension="datetime" metric="value" color="series" scaleType="time" />
-		</Chart>
-	);
+  const props = useChartProps(args);
+  return (
+    <Chart {...props} width={500}>
+      <Axis position="bottom" baseline ticks labelFormat="time" />
+      <Axis position="left" grid numberFormat=",.2f" />
+      <Line dimension="datetime" metric="value" color="series" scaleType="time" />
+    </Chart>
+  );
 };
 
 const ChartBarTooltipStory: StoryFn<typeof Chart> = (args): ReactElement => {
-	const props = useChartProps(args);
-	return (
-		<Chart {...props}>
-			<Axis position="bottom" baseline />
-			<Axis position="left" grid />
-			<Bar dimension="x" metric="y" color="series">
-				<ChartTooltip>
-					{(datum) => (
-						<div className="bar-tooltip">
-							<div>x: {datum.x}</div>
-							<div>y: {datum.y}</div>
-						</div>
-					)}
-				</ChartTooltip>
-			</Bar>
-		</Chart>
-	);
+  const props = useChartProps(args);
+  return (
+    <Chart {...props}>
+      <Axis position="bottom" baseline />
+      <Axis position="left" grid />
+      <Bar dimension="x" metric="y" color="series">
+        <ChartTooltip>
+          {(datum) => (
+            <div className="bar-tooltip">
+              <div>x: {datum.x}</div>
+              <div>y: {datum.y}</div>
+            </div>
+          )}
+        </ChartTooltip>
+      </Bar>
+    </Chart>
+  );
 };
 
 const Basic = bindWithProps(ChartLineStory);
@@ -74,54 +74,54 @@ Basic.args = { data, renderer: 'svg', height: 300 };
 
 const BackgroundColor = bindWithProps(ChartLineStory);
 BackgroundColor.args = {
-	backgroundColor: 'gray-50',
-	padding: 32,
-	data,
+  backgroundColor: 'gray-50',
+  padding: 32,
+  data,
 };
 
 const Config = bindWithProps(ChartBarStory);
 Config.args = {
-	config: {
-		rect: {
-			strokeWidth: 2,
-		},
-	},
-	data,
+  config: {
+    rect: {
+      strokeWidth: 2,
+    },
+  },
+  data,
 };
 
 const Locale = bindWithProps(ChartTimeStory);
 Locale.args = {
-	locale: 'de-DE',
-	data: workspaceTrendsData,
+  locale: 'de-DE',
+  data: workspaceTrendsData,
 };
 
 const Width = bindWithProps(ChartBarStory);
 Width.args = {
-	width: '50%',
-	minWidth: 300,
-	maxWidth: 600,
-	data,
+  width: '50%',
+  minWidth: 300,
+  maxWidth: 600,
+  data,
 };
 
 const Height = bindWithProps(ChartBarStory);
 Height.args = {
-	height: '50%',
-	minHeight: 300,
-	maxHeight: 600,
-	data,
+  height: '50%',
+  minHeight: 300,
+  maxHeight: 600,
+  data,
 };
 
 const TooltipAnchor = bindWithProps(ChartBarTooltipStory);
 TooltipAnchor.args = {
-	tooltipAnchor: 'mark',
-	tooltipPlacement: 'top',
-	data,
+  tooltipAnchor: 'mark',
+  tooltipPlacement: 'top',
+  data,
 };
 
 const HighlightedItem = bindWithProps(ChartBarTooltipStory);
 HighlightedItem.args = {
-	highlightedItem: 15,
-	data,
+  highlightedItem: 15,
+  data,
 };
 
 export { BackgroundColor, Basic, Config, Height, HighlightedItem, Locale, TooltipAnchor, Width };

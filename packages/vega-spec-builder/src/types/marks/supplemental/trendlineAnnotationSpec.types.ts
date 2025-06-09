@@ -14,32 +14,32 @@ import { ColorFacet, Orientation, PartiallyRequired, ScaleType } from '../../spe
 import { TrendlineSpecOptions } from './trendlineSpec.types';
 
 export interface TrendlineAnnotationOptions {
-	/** Adds a badge around the annotation */
-	badge?: boolean;
-	/** where along the dimension scale to label the trendline value */
-	dimensionValue?: number | 'start' | 'end';
-	/** d3 number format specifier. Only valid if labelFormat is linear or undefined.
-	 *
-	 * @see https://d3js.org/d3-format#locale_format
-	 */
-	numberFormat?: string;
-	/** text that will be prepended to the trendline value */
-	prefix?: string;
+  /** Adds a badge around the annotation */
+  badge?: boolean;
+  /** where along the dimension scale to label the trendline value */
+  dimensionValue?: number | 'start' | 'end';
+  /** d3 number format specifier. Only valid if labelFormat is linear or undefined.
+   *
+   * @see https://d3js.org/d3-format#locale_format
+   */
+  numberFormat?: string;
+  /** text that will be prepended to the trendline value */
+  prefix?: string;
 }
 
 type TrendlineAnnotationOptionsWithDefaults = 'badge' | 'dimensionValue' | 'numberFormat' | 'prefix';
 
 export interface TrendlineAnnotationSpecOptions
-	extends PartiallyRequired<TrendlineAnnotationOptions, TrendlineAnnotationOptionsWithDefaults> {
-	colorScheme: ColorScheme;
-	displayOnHover: boolean;
-	markName: string;
-	name: string;
-	trendlineColor: ColorFacet;
-	trendlineDimension: string;
-	trendlineDimensionExtent: TrendlineSpecOptions['dimensionExtent'];
-	trendlineDimensionScaleType: ScaleType;
-	trendlineName: string;
-	trendlineOrientation: Orientation;
-	trendlineWidth: number;
+  extends PartiallyRequired<TrendlineAnnotationOptions, TrendlineAnnotationOptionsWithDefaults> {
+  colorScheme: ColorScheme;
+  displayOnHover: boolean;
+  markName: string;
+  name: string;
+  trendlineColor: ColorFacet;
+  trendlineDimension: string;
+  trendlineDimensionExtent: TrendlineSpecOptions['dimensionExtent'];
+  trendlineDimensionScaleType: ScaleType;
+  trendlineName: string;
+  trendlineOrientation: Orientation;
+  trendlineWidth: number;
 }
