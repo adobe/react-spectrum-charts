@@ -420,21 +420,15 @@ const getHoverSizeSignal = (size: number): SignalRef => ({
  */
 export const getMarkOpacity = (
 	options: BarSpecOptions | DonutSpecOptions | VennSpecOptions,
-	opacitity?: number,
-	hoverOpacity?: number
 ): ({ test?: string } & NumericValueRef)[] => {
 	const { highlightedItem, idKey, name: markName } = options;
-	const rules: ({ test?: string } & NumericValueRef)[] = [
-		opacitity !== undefined ? { value: opacitity } : DEFAULT_OPACITY_RULE,
-	];
+	const rules: ({ test?: string } & NumericValueRef)[] = [DEFAULT_OPACITY_RULE]
+  
 	// if there aren't any interactive components, then we don't need to add special opacity rules
 	if (!isInteractive(options) && highlightedItem === undefined) {
 		return rules;
 	}
 
-	if (hoverOpacity !== undefined) {
-		addHoverMarkOpacityRules(rules, options, hoverOpacity);
-	}
 	addHighlightMarkOpacityRules(rules, options);
 
 	// if a bar is hovered/selected, all other bars should have reduced opacity

@@ -12,19 +12,10 @@
 import { PathMark, SymbolMark, TextMark } from 'vega';
 import { vennSolution } from 'venn-helper';
 
-import {
-	DEFAULT_VENN_COLOR,
-	DEFAULT_VENN_METRIC,
-	SELECTED_ITEM,
-} from '@spectrum-charts/constants';
+import { DEFAULT_VENN_COLOR, DEFAULT_VENN_METRIC, SELECTED_ITEM } from '@spectrum-charts/constants';
 import { getColorValue } from '@spectrum-charts/themes';
 
-import {
-	getColorProductionRule,
-	getCursor,
-	getMarkOpacity,
-	getTooltip,
-} from '../marks/markUtils';
+import { getColorProductionRule, getCursor, getMarkOpacity, getTooltip } from '../marks/markUtils';
 import { VennDegreeOptions, VennSpecOptions } from '../types';
 
 type VennHelperProps = {
@@ -125,21 +116,23 @@ export const getTextMark = (options: VennSpecOptions, dataSource: 'circles' | 'i
 				x: { field: 'textX' },
 				y: { field: 'textY' },
 				text: { field: `table_data.${label}` },
-				opacity: getMarkOpacity(options),
 				align: { value: 'center' },
 				baseline: { value: 'middle' },
+			},
+			update: {
+				opacity: getMarkOpacity(options),
 			},
 		},
 	};
 };
 
-export const getIntersectionOutlineMark = (options: VennSpecOptions): PathMark => {
+export const getIntersectionStrokeMark = (options: VennSpecOptions): PathMark => {
 	const { name, idKey, colorScheme } = options;
 
 	return {
 		type: 'path',
 		from: { data: 'intersections' },
-		name: `${name}_intersections_outline`,
+		name: `${name}_intersections_strokes`,
 		interactive: false,
 		encode: {
 			enter: {
@@ -169,7 +162,7 @@ export const getInterserctionMark = (options: VennSpecOptions): PathMark => {
 				fill: getColorProductionRule('set_id', colorScheme),
 				strokeWidth: { value: 2 },
 				stroke: { signal: 'chartBackgroundColor' },
-        strokeCap: { value: 'square'},
+				strokeCap: { value: 'square' },
 				tooltip: getTooltip(chartTooltips, `${name}`),
 			},
 
@@ -181,11 +174,11 @@ export const getInterserctionMark = (options: VennSpecOptions): PathMark => {
 	};
 };
 
-export const getStrokeMark = (options: VennSpecOptions): SymbolMark => {
+export const getCircleStrokeMark = (options: VennSpecOptions): SymbolMark => {
 	const { colorScheme, idKey } = options;
 	return {
 		type: 'symbol',
-		name: `${options.name}_stroke`,
+		name: `${options.name}_circle_strokes`,
 		from: { data: 'circles' },
 		interactive: false,
 		encode: {
@@ -208,6 +201,6 @@ export const getStrokeMark = (options: VennSpecOptions): SymbolMark => {
 export const degreesToRadians = new Map<VennDegreeOptions, number>([
 	['0deg', Math.PI / 2],
 	['90deg', 0],
-  ['180deg', -3*Math.PI /  2],
+	['180deg', (-3 * Math.PI) / 2],
 	['270deg', -Math.PI],
 ]);

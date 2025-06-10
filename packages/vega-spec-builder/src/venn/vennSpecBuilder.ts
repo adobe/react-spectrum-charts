@@ -40,9 +40,9 @@ import { ChartData, ColorScheme, HighlightedItem, ScSpec, VennOptions, VennSpecO
 import {
 	SET_ID_DELIMITER,
 	getCircleMark,
-	getIntersectionOutlineMark,
+	getIntersectionStrokeMark,
 	getInterserctionMark,
-	getStrokeMark,
+	getCircleStrokeMark,
 	getTextMark,
 	getVennSolution,
 } from './vennUtils';
@@ -126,9 +126,9 @@ export const addData = produce<Data[], [VennSpecOptions]>((data, props) => {
 });
 
 export const addMarks = produce<Mark[], [VennSpecOptions]>((marks, props) => {
-	marks.push(getStrokeMark(props));
+	marks.push(getCircleStrokeMark(props));
 	marks.push(getCircleMark(props));
-	marks.push(getIntersectionOutlineMark(props));
+	marks.push(getIntersectionStrokeMark(props));
 	marks.push(getInterserctionMark(props));
 	marks.push(getTextMark(props, 'circles'), getTextMark(props, 'intersections'));
 });

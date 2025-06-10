@@ -37,20 +37,12 @@ describe('addData', () => {
 
 		expect(data[2].transform?.[4]).toHaveProperty('type', 'filter');
 
-		expect(data[3].transform).toHaveLength(3);
+		expect(data[3].transform).toHaveLength(10);
 		expect(data[3].transform?.[0]).toHaveProperty('type', 'lookup');
 		expect(data[3].transform?.[0]).toHaveProperty('key', 'set_id');
 		expect(data[3].transform?.[0]).toHaveProperty('from', TABLE);
-	});
 
-	test('should add correct transforms to intersection data if it has interactive children', () => {
-		const data = addData(initializeSpec({}, { data: vennData }).data ?? [], {
-			...customVennOptions,
-			chartTooltips: [{}],
-		});
-
-		expect(data[3].transform).toHaveLength(10);
-    // make sure that the interactions transforms are performed in the right order
+		// make sure that the interactions transforms are performed in the right order
 		expect(data[3].transform?.[3]).toHaveProperty('type', 'formula');
 		expect(data[3].transform?.[4]).toHaveProperty('type', 'flatten');
 		expect(data[3].transform?.[5]).toHaveProperty('type', 'formula');
@@ -59,6 +51,7 @@ describe('addData', () => {
 		expect(data[3].transform?.[8]).toHaveProperty('type', 'window');
 		expect(data[3].transform?.[9]).toHaveProperty('type', 'filter');
 	});
+
 });
 
 describe('addSignal', () => {
@@ -104,13 +97,13 @@ describe('donuteSpecBuilder', () => {
 	});
 
 	test('should add venn correctly with default values', () => {
-    const props = defaultVennOptions
+		const props = defaultVennOptions;
 		const spec = { data: [{ name: TABLE }], usermeta: {} };
 
 		const result = addVenn(spec, {
-      markType: 'venn',
-      idKey: 'rscMarkId'
-    });
+			markType: 'venn',
+			idKey: 'rscMarkId',
+		});
 
 		const expectedSpec = {
 			data: addData(spec.data ?? [], props),
@@ -123,4 +116,3 @@ describe('donuteSpecBuilder', () => {
 		expect(result).toEqual(expectedSpec);
 	});
 });
-

@@ -12,9 +12,9 @@
 import { customVennOptions, data as vennData } from './vennTestUtils';
 import {
 	getCircleMark,
-	// getCircleOverlays,
+	getCircleStrokeMark,
+	getIntersectionStrokeMark,
 	getInterserctionMark,
-	getStrokeMark,
 	getTextMark,
 	getVennSolution,
 	mapDataForVennHelper,
@@ -136,19 +136,6 @@ describe('mapDataForVennHelper', () => {
 	});
 });
 
-// describe('getSelectedCircleMark', () => {
-// 	test('should return a full selected cirlce mark when given defaultVennOptions', () => {
-// 		const selectedCircleMark = getCircleOverlays(customVennOptions);
-
-// 		expect(selectedCircleMark).toBeDefined();
-// 		expect(selectedCircleMark).toHaveProperty('type', 'symbol');
-// 		expect(selectedCircleMark).toHaveProperty('name');
-// 		expect(selectedCircleMark).toHaveProperty('from');
-// 		expect(selectedCircleMark).toHaveProperty('interactive', false);
-// 		expect(selectedCircleMark).toHaveProperty('encode');
-// 	});
-// });
-
 describe('getCircleMark', () => {
 	test('should return full circle mark when given defaultVennOptions', () => {
 		const circleMark = getCircleMark(customVennOptions);
@@ -216,15 +203,27 @@ describe('getInterserctionMark', () => {
 	});
 });
 
-describe('getStrokeMark', () => {
-	test('should return full text mark with data property being set to circles', () => {
-		const textMark = getStrokeMark(customVennOptions);
+describe('getCircleStrokeMark', () => {
+	test('should return stroke marks for circles', () => {
+		const circleStrokes = getCircleStrokeMark(customVennOptions);
 
-		expect(textMark).toBeDefined();
-		expect(textMark).toHaveProperty('type', 'symbol');
-		expect(textMark).toHaveProperty('from');
-		expect(textMark.from).toHaveProperty('data', 'circles');
-		expect(textMark).toHaveProperty('interactive');
-		expect(textMark).toHaveProperty('encode');
+		expect(circleStrokes).toBeDefined();
+		expect(circleStrokes).toHaveProperty('type', 'symbol');
+		expect(circleStrokes).toHaveProperty('from');
+		expect(circleStrokes.from).toHaveProperty('data', 'circles');
+		expect(circleStrokes).toHaveProperty('interactive');
+		expect(circleStrokes).toHaveProperty('encode');
+	});
+});
+
+describe('getIntersectionStrokeMark', () => {
+	test('should return stroke marks for circles', () => {
+		const circleStrokes = getIntersectionStrokeMark(customVennOptions);
+
+		expect(circleStrokes).toBeDefined();
+		expect(circleStrokes).toHaveProperty('type', 'path');
+		expect(circleStrokes).toHaveProperty('from');
+		expect(circleStrokes.from).toHaveProperty('data', 'intersections');
+		expect(circleStrokes).toHaveProperty('encode');
 	});
 });
