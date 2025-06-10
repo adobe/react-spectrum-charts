@@ -41,7 +41,7 @@ import {
 } from '@spectrum-charts/constants';
 import { getColorValue } from '@spectrum-charts/themes';
 
-import { addHighlightMarkOpacityRules, addHoverMarkOpacityRules } from '../chartTooltip/chartTooltipUtils';
+import { addHighlightMarkOpacityRules } from '../chartTooltip/chartTooltipUtils';
 import { LineMarkOptions } from '../line/lineUtils';
 import { getScaleName } from '../scale/scaleSpecBuilder';
 import {
