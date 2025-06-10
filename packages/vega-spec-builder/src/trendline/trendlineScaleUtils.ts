@@ -21,21 +21,21 @@ import { TrendlineParentOptions, hasTrendlineWithNormalizedDimension } from './t
  * @returns Scale[]
  */
 export const getTrendlineScales = (options: TrendlineParentOptions): Scale[] => {
-	const { dimension } = options;
+  const { dimension } = options;
 
-	// if there is a trendline that requires a normalized dimension, add the scale
-	if (hasTrendlineWithNormalizedDimension(options)) {
-		return [
-			{
-				name: 'xTrendline',
-				type: 'linear',
-				range: 'width',
-				domain: { data: FILTERED_TABLE, fields: [`${dimension}Normalized`] },
-				padding: LINEAR_PADDING,
-				zero: false,
-				nice: false,
-			},
-		];
-	}
-	return [];
+  // if there is a trendline that requires a normalized dimension, add the scale
+  if (hasTrendlineWithNormalizedDimension(options)) {
+    return [
+      {
+        name: 'xTrendline',
+        type: 'linear',
+        range: 'width',
+        domain: { data: FILTERED_TABLE, fields: [`${dimension}Normalized`] },
+        padding: LINEAR_PADDING,
+        zero: false,
+        nice: false,
+      },
+    ];
+  }
+  return [];
 };

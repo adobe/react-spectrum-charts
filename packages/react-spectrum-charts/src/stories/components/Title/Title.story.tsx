@@ -21,46 +21,46 @@ import { ChartProps } from '../../../types';
 import { browserData as data } from '../../data/data';
 
 export default {
-	title: 'RSC/Title',
-	component: Title,
+  title: 'RSC/Title',
+  component: Title,
 };
 
 const defaultChartProps: ChartProps = { data, minWidth: 400, maxWidth: 800, height: 400 };
 
 const TitleBarStory: StoryFn<typeof Title> = (args): ReactElement => {
-	const chartProps = useChartProps(defaultChartProps);
-	return (
-		<Chart {...chartProps}>
-			<Title {...args} />
-			<Bar color="series" />
-			<Legend />
-			<Axis position="bottom" baseline />
-			<Axis position="left" grid />
-		</Chart>
-	);
+  const chartProps = useChartProps(defaultChartProps);
+  return (
+    <Chart {...chartProps}>
+      <Title {...args} />
+      <Bar color="series" />
+      <Legend />
+      <Axis position="bottom" baseline />
+      <Axis position="left" grid />
+    </Chart>
+  );
 };
 
 const Basic = bindWithProps(TitleBarStory);
 Basic.args = {
-	text: 'Bar Chart',
+  text: 'Bar Chart',
 };
 
 const Orient = bindWithProps(TitleBarStory);
 Orient.args = {
-	text: 'Bar Chart',
-	orient: 'bottom',
+  text: 'Bar Chart',
+  orient: 'bottom',
 };
 
 const Position = bindWithProps(TitleBarStory);
 Position.args = {
-	text: 'Bar Chart',
-	position: 'start',
+  text: 'Bar Chart',
+  position: 'start',
 };
 
 const FontWeight = bindWithProps(TitleBarStory);
 FontWeight.args = {
-	text: 'Bar Chart',
-	fontWeight: 'lighter',
+  text: 'Bar Chart',
+  fontWeight: 'lighter',
 };
 
 export { Basic, Orient, Position, FontWeight };

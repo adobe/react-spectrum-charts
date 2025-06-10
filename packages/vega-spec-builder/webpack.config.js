@@ -20,46 +20,46 @@ const { name, version } = require('./package.json');
 const banner = `${name}@v${version}`;
 
 module.exports = {
-	entry: './src/index.ts',
-	mode: 'production',
+  entry: './src/index.ts',
+  mode: 'production',
 
-	output: {
-		filename: 'index.js',
-		path: path.resolve(__dirname, 'dist'),
-		library: 'spectrumChartsVegaSpecBuilder',
-		libraryTarget: 'umd',
-		globalObject: 'this',
-		clean: true,
-	},
+  output: {
+    filename: 'index.js',
+    path: path.resolve(__dirname, 'dist'),
+    library: 'spectrumChartsVegaSpecBuilder',
+    libraryTarget: 'umd',
+    globalObject: 'this',
+    clean: true,
+  },
 
-	module: {
-		rules: [
-			{
-				test: /\.(ts|tsx)$/,
-				exclude: /node_modules/,
-				use: 'ts-loader',
-			},
-		],
-	},
+  module: {
+    rules: [
+      {
+        test: /\.(ts|tsx)$/,
+        exclude: /node_modules/,
+        use: 'ts-loader',
+      },
+    ],
+  },
 
-	externals: [
-		nodeExternals(),
-		{
-			'@spectrum-charts/constants': '@spectrum-charts/constants',
-			'@spectrum-charts/utils': '@spectrum-charts/utils',
-			'@spectrum-charts/themes': '@spectrum-charts/themes',
-		},
-	],
+  externals: [
+    nodeExternals(),
+    {
+      '@spectrum-charts/constants': '@spectrum-charts/constants',
+      '@spectrum-charts/utils': '@spectrum-charts/utils',
+      '@spectrum-charts/themes': '@spectrum-charts/themes',
+    },
+  ],
 
-	optimization: {
-		minimize: process.env.NODE_ENV === 'development' ? false : true,
-	},
+  optimization: {
+    minimize: process.env.NODE_ENV === 'development' ? false : true,
+  },
 
-	plugins: [new webpack.BannerPlugin(banner)],
+  plugins: [new webpack.BannerPlugin(banner)],
 
-	resolve: {
-		extensions: ['.tsx', '.ts', '.js', '.jsx', '.json'],
-	},
+  resolve: {
+    extensions: ['.tsx', '.ts', '.js', '.jsx', '.json'],
+  },
 
-	devtool: 'source-map',
+  devtool: 'source-map',
 };

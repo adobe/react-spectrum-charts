@@ -12,15 +12,15 @@
 import { getColorValue } from './utils';
 
 describe('getColorValue()', () => {
-	test('should return color values from spectrum names', () => {
-		expect(getColorValue('categorical-100', 'light')).toEqual('rgb(15, 181, 174)');
-		expect(getColorValue('gray-800', 'light')).toEqual('rgb(34, 34, 34)');
-		expect(getColorValue('gray-800', 'dark')).toEqual('rgb(235, 235, 235)');
-	});
+  test('should return color values from spectrum names', () => {
+    expect(getColorValue('categorical-100', 'light')).toEqual('rgb(15, 181, 174)');
+    expect(getColorValue('gray-800', 'light')).toEqual('rgb(34, 34, 34)');
+    expect(getColorValue('gray-800', 'dark')).toEqual('rgb(235, 235, 235)');
+  });
 
-	test('should pass through non-spectrum color values', () => {
-		expect(getColorValue('transparent', 'light')).toEqual('transparent');
-		expect(getColorValue('gray', 'light')).toEqual('gray');
-		expect(getColorValue('#FFF', 'dark')).toEqual('#FFF');
-	});
+  test('should pass through non-spectrum color values', () => {
+    expect(getColorValue('transparent', 'light')).toEqual('transparent');
+    expect(getColorValue('gray', 'light')).toEqual('gray');
+    expect(getColorValue('#FFF', 'dark')).toEqual('#FFF');
+  });
 });

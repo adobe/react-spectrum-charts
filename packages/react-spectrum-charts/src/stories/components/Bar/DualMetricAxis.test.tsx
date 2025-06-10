@@ -14,72 +14,72 @@ import '../../../test-utils/__mocks__/matchMedia.mock.js';
 import { DualMetricAxis, WithSublabels, WithThreeSeries } from './DualMetricAxis.story';
 
 describe('Dual metric axis bar axis styling', () => {
-	describe('Two series', () => {
-		test('axis title should have fill color based on series', async () => {
-			render(<DualMetricAxis {...DualMetricAxis.args} />);
+  describe('Two series', () => {
+    test('axis title should have fill color based on series', async () => {
+      render(<DualMetricAxis {...DualMetricAxis.args} />);
 
-			const chart = await findChart();
-			expect(chart).toBeInTheDocument();
+      const chart = await findChart();
+      expect(chart).toBeInTheDocument();
 
-			// set timeout
-			await new Promise((resolve) => setTimeout(resolve, 1000));
-			// first axis uses first series color.
-			expect(screen.getByText('Downloads')).toHaveAttribute('fill', 'rgb(15, 181, 174)');
-			// second axis uses second series color.
-			expect(screen.getByText('Mac Downloads')).toHaveAttribute('fill', 'rgb(64, 70, 202)');
-		});
-		test('axis label should have fill color based on series', async () => {
-			render(<DualMetricAxis {...DualMetricAxis.args} />);
+      // set timeout
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      // first axis uses first series color.
+      expect(screen.getByText('Downloads')).toHaveAttribute('fill', 'rgb(15, 181, 174)');
+      // second axis uses second series color.
+      expect(screen.getByText('Mac Downloads')).toHaveAttribute('fill', 'rgb(64, 70, 202)');
+    });
+    test('axis label should have fill color based on series', async () => {
+      render(<DualMetricAxis {...DualMetricAxis.args} />);
 
-			const chart = await findChart();
-			expect(chart).toBeInTheDocument();
+      const chart = await findChart();
+      expect(chart).toBeInTheDocument();
 
-			// first axis
-			expect(screen.getAllByText('0')[0]).toHaveAttribute('fill', 'rgb(15, 181, 174)');
-			// second axis uses second series color.
-			expect(screen.getAllByText('0')[1]).toHaveAttribute('fill', 'rgb(64, 70, 202)');
-		});
-	});
+      // first axis
+      expect(screen.getAllByText('0')[0]).toHaveAttribute('fill', 'rgb(15, 181, 174)');
+      // second axis uses second series color.
+      expect(screen.getAllByText('0')[1]).toHaveAttribute('fill', 'rgb(64, 70, 202)');
+    });
+  });
 
-	describe('Three series', () => {
-		test('axis title should have fill color based on series', async () => {
-			render(<WithThreeSeries {...WithThreeSeries.args} />);
+  describe('Three series', () => {
+    test('axis title should have fill color based on series', async () => {
+      render(<WithThreeSeries {...WithThreeSeries.args} />);
 
-			const chart = await findChart();
-			expect(chart).toBeInTheDocument();
+      const chart = await findChart();
+      expect(chart).toBeInTheDocument();
 
-			// first axis has more than one series. Use default color.
-			expect(screen.getByText('Downloads')).toHaveAttribute('fill', 'rgb(34, 34, 34)');
-			// second axis uses third series color.
-			expect(screen.getByText('Other Downloads')).toHaveAttribute('fill', 'rgb(246, 133, 17)');
-		});
-		test('axis label should have fill color based on series', async () => {
-			render(<WithThreeSeries {...WithThreeSeries.args} />);
+      // first axis has more than one series. Use default color.
+      expect(screen.getByText('Downloads')).toHaveAttribute('fill', 'rgb(34, 34, 34)');
+      // second axis uses third series color.
+      expect(screen.getByText('Other Downloads')).toHaveAttribute('fill', 'rgb(246, 133, 17)');
+    });
+    test('axis label should have fill color based on series', async () => {
+      render(<WithThreeSeries {...WithThreeSeries.args} />);
 
-			const chart = await findChart();
-			expect(chart).toBeInTheDocument();
+      const chart = await findChart();
+      expect(chart).toBeInTheDocument();
 
-			const axisLabels = screen.getAllByText('0');
+      const axisLabels = screen.getAllByText('0');
 
-			// first axis has more than one series. Use default color.
-			expect(axisLabels[0]).toHaveAttribute('fill', 'rgb(34, 34, 34)');
-			// second axis uses third series color.
-			expect(axisLabels[1]).toHaveAttribute('fill', 'rgb(246, 133, 17)');
-		});
-	});
+      // first axis has more than one series. Use default color.
+      expect(axisLabels[0]).toHaveAttribute('fill', 'rgb(34, 34, 34)');
+      // second axis uses third series color.
+      expect(axisLabels[1]).toHaveAttribute('fill', 'rgb(246, 133, 17)');
+    });
+  });
 
-	describe('Sublabels', () => {
-		test('should render sublabels', async () => {
-			render(<WithSublabels {...WithSublabels.args} />);
+  describe('Sublabels', () => {
+    test('should render sublabels', async () => {
+      render(<WithSublabels {...WithSublabels.args} />);
 
-			const chart = await findChart();
-			expect(chart).toBeInTheDocument();
+      const chart = await findChart();
+      expect(chart).toBeInTheDocument();
 
-			const subLabels = screen.getAllByText('Low');
-			// first axis has more than one series. Use default color.
-			expect(subLabels[0]).toHaveAttribute('fill', 'rgb(15, 181, 174)');
-			// second axis uses third series color.
-			expect(subLabels[1]).toHaveAttribute('fill', 'rgb(64, 70, 202)');
-		});
-	});
+      const subLabels = screen.getAllByText('Low');
+      // first axis has more than one series. Use default color.
+      expect(subLabels[0]).toHaveAttribute('fill', 'rgb(15, 181, 174)');
+      // second axis uses third series color.
+      expect(subLabels[1]).toHaveAttribute('fill', 'rgb(64, 70, 202)');
+    });
+  });
 });

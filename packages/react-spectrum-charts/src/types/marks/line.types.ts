@@ -19,13 +19,13 @@ import { MetricRangeElement, TrendlineElement } from './supplemental';
 
 type LineChildElement = ChartTooltipElement | ChartPopoverElement | MetricRangeElement | TrendlineElement;
 export interface LineProps
-	extends Omit<
-		LineOptions,
-		'chartPopovers' | 'chartTooltips' | 'hasOnClick' | 'markType' | 'metricRanges' | 'trendlines'
-	> {
-	children?: Children<LineChildElement>;
-	/** Callback that will be run when a point/section is clicked */
-	onClick?: OnClickCallback;
+  extends Omit<
+    LineOptions,
+    'chartPopovers' | 'chartTooltips' | 'hasOnClick' | 'markType' | 'metricRanges' | 'trendlines'
+  > {
+  children?: Children<LineChildElement>;
+  /** Callback that will be run when a point/section is clicked */
+  onClick?: OnClickCallback;
 }
 
 export type LineElement = ReactElement<LineProps, JSXElementConstructor<LineProps>>;

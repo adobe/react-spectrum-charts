@@ -14,22 +14,22 @@ import { bindWithProps } from '../test-utils';
 import { ChartBarStory } from './ChartBarStory';
 
 export default {
-	title: 'RSC/Chart/States',
-	component: Chart,
+  title: 'RSC/Chart/States',
+  component: Chart,
 };
 
 const EmptyState = bindWithProps(ChartBarStory);
 EmptyState.args = {
-	data: [],
-	height: 500,
-	emptyStateText: 'No data found',
+  data: [],
+  height: 500,
+  emptyStateText: 'No data found',
 };
 
 const LoadingState = bindWithProps(ChartBarStory);
 LoadingState.args = {
-	data: [],
-	height: 500,
-	loading: true,
+  data: [],
+  height: 500,
+  loading: true,
 };
 
 export { EmptyState, LoadingState };

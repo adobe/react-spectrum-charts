@@ -16,37 +16,37 @@ import { numberLocales } from './numberLocales';
 import { timeLocales } from './timeLocales';
 
 export const getLocale = (
-	locale:
-		| Locale
-		| LocaleCode
-		| { number?: NumberLocaleCode | NumberLocale; time?: TimeLocaleCode | TimeLocale } = 'en-US'
+  locale:
+    | Locale
+    | LocaleCode
+    | { number?: NumberLocaleCode | NumberLocale; time?: TimeLocaleCode | TimeLocale } = 'en-US'
 ): Locale => {
-	if (typeof locale === 'string') {
-		// if the locale is a string, we assume that it is a locale code and get the locale from the locale files
-		return {
-			number: numberLocales[locale] ?? numberLocales['en-US'],
-			time: timeLocales[locale] ?? timeLocales['en-US'],
-		};
-	}
+  if (typeof locale === 'string') {
+    // if the locale is a string, we assume that it is a locale code and get the locale from the locale files
+    return {
+      number: numberLocales[locale] ?? numberLocales['en-US'],
+      time: timeLocales[locale] ?? timeLocales['en-US'],
+    };
+  }
 
-	return {
-		number: getNumberLocale(locale.number),
-		time: getTimeLocale(locale.time),
-	};
+  return {
+    number: getNumberLocale(locale.number),
+    time: getTimeLocale(locale.time),
+  };
 };
 
 const getNumberLocale = (locale: NumberLocaleCode | NumberLocale | undefined): NumberLocale | undefined => {
-	if (typeof locale === 'string') {
-		// if the locale is a string, we assume that it is a locale code and get the locale from the locale files
-		return numberLocales[locale] ?? numberLocales['en-US'];
-	}
-	return locale;
+  if (typeof locale === 'string') {
+    // if the locale is a string, we assume that it is a locale code and get the locale from the locale files
+    return numberLocales[locale] ?? numberLocales['en-US'];
+  }
+  return locale;
 };
 
 const getTimeLocale = (locale: TimeLocaleCode | TimeLocale | undefined): TimeLocale | undefined => {
-	if (typeof locale === 'string') {
-		// if the locale is a string, we assume that it is a locale code and get the locale from the locale files
-		return timeLocales[locale] ?? timeLocales['en-US'];
-	}
-	return locale;
+  if (typeof locale === 'string') {
+    // if the locale is a string, we assume that it is a locale code and get the locale from the locale files
+    return timeLocales[locale] ?? timeLocales['en-US'];
+  }
+  return locale;
 };

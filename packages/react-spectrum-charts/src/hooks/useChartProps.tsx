@@ -14,6 +14,6 @@ import { useDarkMode } from 'storybook-dark-mode';
 import { ChartProps } from '../types';
 
 export default function useChartProps(props: ChartProps): ChartProps {
-	const darkMode = useDarkMode();
-	return { colorScheme: darkMode ? 'dark' : 'light', ...props };
+  const darkMode = useDarkMode();
+  return { colorScheme: darkMode ? 'dark' : 'light', ...props };
 }

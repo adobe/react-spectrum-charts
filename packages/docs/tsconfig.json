@@ -15,10 +15,5 @@
     },
     "skipLibCheck": true
   },
-  "include": [
-    "src/**/*",
-    "docs/**/*",
-    "docusaurus.config.ts",
-    "sidebars.ts"
-  ]
-} 
+  "include": ["src/**/*", "docs/**/*", "docusaurus.config.ts", "sidebars.ts"]
+}

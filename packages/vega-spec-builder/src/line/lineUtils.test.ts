@@ -12,10 +12,10 @@
 import { getPopoverMarkName } from './lineUtils';
 
 describe('getPopoverMarkName()', () => {
-	test('should return undefined if there are no popovers', () => {
-		expect(getPopoverMarkName([], 'line0')).toBeUndefined();
-	});
-	test('should return the name provided if there is a popover in the children', () => {
-		expect(getPopoverMarkName([{}], 'line0')).toEqual('line0');
-	});
+  test('should return undefined if there are no popovers', () => {
+    expect(getPopoverMarkName([], 'line0')).toBeUndefined();
+  });
+  test('should return the name provided if there is a popover in the children', () => {
+    expect(getPopoverMarkName([{}], 'line0')).toEqual('line0');
+  });
 });

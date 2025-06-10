@@ -18,42 +18,42 @@ import { SpectrumColor } from '../spectrumVizColor.types';
 export type AxisAnnotationFormat = 'span' | 'summary';
 
 export type Option = {
-	/** The id of the annotation to apply these options to */
-	id: string;
-	/** The color of the icon and range lines  */
-	color?: SpectrumColor | string;
+  /** The id of the annotation to apply these options to */
+  id: string;
+  /** The color of the icon and range lines  */
+  color?: SpectrumColor | string;
 };
 export interface AxisAnnotationOptions {
-	/** the color to use for the annotation icon and span lines if a color isn't specified in options or multiple annotations fall in the same icon */
-	color?: SpectrumColor | string;
-	/** data field where the annotation ids are listed for each data point */
-	dataKey?: string;
-	/** show annotations as a horizontal span of icons or a single summary icon */
-	format?: AxisAnnotationFormat;
-	/** unique name for this annotation */
-	name?: string;
-	/** how far from the bottom of the chart do the annotations display */
-	offset?: number;
-	/** options specific to each annotation in the data */
-	options?: Option[];
+  /** the color to use for the annotation icon and span lines if a color isn't specified in options or multiple annotations fall in the same icon */
+  color?: SpectrumColor | string;
+  /** data field where the annotation ids are listed for each data point */
+  dataKey?: string;
+  /** show annotations as a horizontal span of icons or a single summary icon */
+  format?: AxisAnnotationFormat;
+  /** unique name for this annotation */
+  name?: string;
+  /** how far from the bottom of the chart do the annotations display */
+  offset?: number;
+  /** options specific to each annotation in the data */
+  options?: Option[];
 
-	// children
-	chartPopovers?: ChartPopoverOptions[];
-	chartTooltips?: ChartTooltipOptions[];
+  // children
+  chartPopovers?: ChartPopoverOptions[];
+  chartTooltips?: ChartTooltipOptions[];
 }
 
 type AxisAnnotationOptionsWithDefaults =
-	| 'chartPopovers'
-	| 'chartTooltips'
-	| 'color'
-	| 'dataKey'
-	| 'format'
-	| 'name'
-	| 'offset'
-	| 'options';
+  | 'chartPopovers'
+  | 'chartTooltips'
+  | 'color'
+  | 'dataKey'
+  | 'format'
+  | 'name'
+  | 'offset'
+  | 'options';
 
 export interface AxisAnnotationSpecOptions
-	extends PartiallyRequired<AxisAnnotationOptions, AxisAnnotationOptionsWithDefaults> {
-	axisName: string;
-	colorScheme: ColorScheme;
+  extends PartiallyRequired<AxisAnnotationOptions, AxisAnnotationOptionsWithDefaults> {
+  axisName: string;
+  colorScheme: ColorScheme;
 }

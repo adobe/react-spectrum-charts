@@ -20,96 +20,96 @@ import { rscPropsToSpecBuilderOptions } from '../rscToSbAdapter';
 import { ChartData, SanitizedSpecProps } from '../types';
 
 export default function useSpec({
-	backgroundColor,
-	children,
-	colors,
-	colorScheme,
-	data,
-	description,
-	hiddenSeries,
-	highlightedItem,
-	highlightedSeries,
-	idKey,
-	lineTypes,
-	lineWidths,
-	opacities,
-	symbolShapes,
-	symbolSizes,
-	title,
-	UNSAFE_vegaSpec,
+  backgroundColor,
+  children,
+  colors,
+  colorScheme,
+  data,
+  description,
+  hiddenSeries,
+  highlightedItem,
+  highlightedSeries,
+  idKey,
+  lineTypes,
+  lineWidths,
+  opacities,
+  symbolShapes,
+  symbolSizes,
+  title,
+  UNSAFE_vegaSpec,
 }: SanitizedSpecProps): Spec {
-	return useMemo(() => {
-		// They already supplied a spec, fill it in with defaults
-		if (UNSAFE_vegaSpec) {
-			const vegaSpecWithDefaults = initializeSpec(UNSAFE_vegaSpec, {
-				backgroundColor,
-				colorScheme,
-				data,
-				description,
-				title,
-			});
+  return useMemo(() => {
+    // They already supplied a spec, fill it in with defaults
+    if (UNSAFE_vegaSpec) {
+      const vegaSpecWithDefaults = initializeSpec(UNSAFE_vegaSpec, {
+        backgroundColor,
+        colorScheme,
+        data,
+        description,
+        title,
+      });
 
-			// copy the spec so we don't mutate the original
-			return JSON.parse(JSON.stringify(vegaSpecWithDefaults));
-		}
+      // copy the spec so we don't mutate the original
+      return JSON.parse(JSON.stringify(vegaSpecWithDefaults));
+    }
 
-		// or we need to build their spec
-		const chartOptions = rscPropsToSpecBuilderOptions({
-			backgroundColor,
-			children,
-			colors,
-			colorScheme,
-			description,
-			hiddenSeries,
-			highlightedItem,
-			highlightedSeries,
-			idKey,
-			lineTypes,
-			lineWidths,
-			opacities,
-			symbolShapes,
-			symbolSizes,
-			title,
-		});
+    // or we need to build their spec
+    const chartOptions = rscPropsToSpecBuilderOptions({
+      backgroundColor,
+      children,
+      colors,
+      colorScheme,
+      description,
+      hiddenSeries,
+      highlightedItem,
+      highlightedSeries,
+      idKey,
+      lineTypes,
+      lineWidths,
+      opacities,
+      symbolShapes,
+      symbolSizes,
+      title,
+    });
 
-		// stringify-parse so that all immer stuff gets cleared out
-		return buildSpec(chartOptions);
-	}, [
-		UNSAFE_vegaSpec,
-		backgroundColor,
-		children,
-		colors,
-		colorScheme,
-		description,
-		hiddenSeries,
-		highlightedItem,
-		highlightedSeries,
-		idKey,
-		lineTypes,
-		lineWidths,
-		opacities,
-		symbolShapes,
-		symbolSizes,
-		title,
-		data,
-	]);
+    // stringify-parse so that all immer stuff gets cleared out
+    return buildSpec(chartOptions);
+  }, [
+    UNSAFE_vegaSpec,
+    backgroundColor,
+    children,
+    colors,
+    colorScheme,
+    description,
+    hiddenSeries,
+    highlightedItem,
+    highlightedSeries,
+    idKey,
+    lineTypes,
+    lineWidths,
+    opacities,
+    symbolShapes,
+    symbolSizes,
+    title,
+    data,
+  ]);
 }
 
 const initializeSpec = (
-	spec: Spec | null = {},
-	chartOptions: Partial<ChartSpecOptions & { data: ChartData[] }> = {}
+  spec: Spec | null = {},
+  chartOptions: Partial<ChartSpecOptions & { data: ChartData[] }> = {}
 ): Spec => {
-	const { backgroundColor, colorScheme = 'light', data, description, title } = chartOptions;
+  const { backgroundColor, colorScheme = 'light', data, description, title } = chartOptions;
 
-	const baseSpec: Spec = {
-		title: title || undefined,
-		description,
-		autosize: { type: 'fit', contains: 'padding', resize: true },
-		data: isVegaData(data) ? data : baseData,
-		background: backgroundColor ? getColorValue(backgroundColor, colorScheme) : undefined,
-	};
+  const baseSpec: Spec = {
+    title: title || undefined,
+    description,
+    autosize: { type: 'fit', contains: 'padding', resize: true },
+    data: isVegaData(data) ? data : baseData,
+    background: backgroundColor ? getColorValue(backgroundColor, colorScheme) : undefined,
+  };
 
-	return { ...baseSpec, ...(spec || {}) };
+  return { ...baseSpec, ...(spec || {}) };
 };
 
 /**
@@ -136,10 +136,10 @@ export const isVegaData = (data): data is Data[] => data?.length && isVegaValues
  * array of values
  */
 export const extractValues = (data) =>
-	data.reduce((memo, dataset) => {
-		if (isVegaValuesDataset(dataset)) {
-			const { name, values } = dataset;
-			memo[name] = values;
-		}
-		return memo;
-	}, {});
+  data.reduce((memo, dataset) => {
+    if (isVegaValuesDataset(dataset)) {
+      const { name, values } = dataset;
+      memo[name] = values;
+    }
+    return memo;
+  }, {});

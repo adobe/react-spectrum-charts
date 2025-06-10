@@ -20,13 +20,9 @@ The `Line` component is used to display line charts. You can specify the type of
 
 ```jsx
 <Chart data={data}>
-  <Axis position='bottom' labelFormat='time' ticks baseline />
-  <Axis position='left' grid title="Users" />
-  <Line
-    metric="users"
-    color="browser"
-    onClick={(event, data) => console.log('Clicked:', data)}
-  >
+  <Axis position="bottom" labelFormat="time" ticks baseline />
+  <Axis position="left" grid title="Users" />
+  <Line metric="users" color="browser" onClick={(event, data) => console.log('Clicked:', data)}>
     <ChartTooltip>
       {(datum) => (
         <div>
@@ -37,7 +33,7 @@ The `Line` component is used to display line charts. You can specify the type of
       )}
     </ChartTooltip>
   </Line>
-  <Legend position='bottom'/>
+  <Legend position="bottom" />
 </Chart>
 ```
 
@@ -139,25 +135,25 @@ The `Line` component is used to display line charts. You can specify the type of
 
 1. **Scale Type Selection**
 
-    - Use `scaleType="time"` for time-series data
-    - Use `scaleType="linear"` for continuous numerical data
-    - Use `scaleType="point"` when working with categorical data or when combining with ordinal marks like bars
+   - Use `scaleType="time"` for time-series data
+   - Use `scaleType="linear"` for continuous numerical data
+   - Use `scaleType="point"` when working with categorical data or when combining with ordinal marks like bars
 
 2. **Interactivity**
 
-    - Add tooltips using `ChartTooltip` for better data exploration
-    - Use `onClick` handlers for interactive features like drilling down into data
-    - Consider using `ChartPopover` for displaying detailed information on click
+   - Add tooltips using `ChartTooltip` for better data exploration
+   - Use `onClick` handlers for interactive features like drilling down into data
+   - Consider using `ChartPopover` for displaying detailed information on click
 
 3. **Data Analysis**
-    - Use `Trendline` to show data trends
-    - Add `MetricRange` to display confidence intervals or bounds
-    - Use `staticPoint` to highlight specific data points of interest
+   - Use `Trendline` to show data trends
+   - Add `MetricRange` to display confidence intervals or bounds
+   - Use `staticPoint` to highlight specific data points of interest
 
 ### Accessibility
 
 The Line component follows accessibility best practices:
 
--   Uses semantic SVG elements for better screen reader support
--   Supports keyboard navigation when interactive elements are added
--   Color combinations should meet WCAG contrast requirements
+- Uses semantic SVG elements for better screen reader support
+- Supports keyboard navigation when interactive elements are added
+- Color combinations should meet WCAG contrast requirements

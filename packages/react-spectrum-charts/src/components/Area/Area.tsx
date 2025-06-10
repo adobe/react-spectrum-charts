@@ -19,19 +19,19 @@ import { AreaProps } from '../../types';
 
 // destructure props here and set defaults so that storybook can pick them up
 const Area: FC<AreaProps> = ({
-	children,
-	name,
-	opacity = 0.8,
-	order,
-	scaleType = 'time',
-	color = DEFAULT_COLOR,
-	dimension = DEFAULT_TIME_DIMENSION,
-	metric = DEFAULT_METRIC,
-	metricEnd,
-	metricStart,
-	padding,
+  children,
+  name,
+  opacity = 0.8,
+  order,
+  scaleType = 'time',
+  color = DEFAULT_COLOR,
+  dimension = DEFAULT_TIME_DIMENSION,
+  metric = DEFAULT_METRIC,
+  metricEnd,
+  metricStart,
+  padding,
 }) => {
-	return null;
+  return null;
 };
 
 // displayName is used to validate the component type in the spec builder

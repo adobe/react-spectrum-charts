@@ -20,7 +20,7 @@ import { TrendlineAnnotationElement } from './trendlineAnnotation.types';
 export type TrendlineChildElement = ChartTooltipElement | TrendlineAnnotationElement;
 
 export interface TrendlineProps extends Omit<TrendlineOptions, 'chartTooltips' | 'trendlineAnnotations'> {
-	children?: Children<TrendlineChildElement>;
+  children?: Children<TrendlineChildElement>;
 }
 
 export type TrendlineElement = ReactElement<TrendlineProps, JSXElementConstructor<TrendlineProps>>;

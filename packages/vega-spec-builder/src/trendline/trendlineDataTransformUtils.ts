@@ -10,18 +10,18 @@
  * governing permissions and limitations under the License.
  */
 import {
-	AggregateOp,
-	AggregateTransform,
-	CollectTransform,
-	ExtentTransform,
-	FilterTransform,
-	FormulaTransform,
-	JoinAggregateTransform,
-	LookupTransform,
-	RegressionMethod,
-	RegressionTransform,
-	Transforms,
-	WindowTransform,
+  AggregateOp,
+  AggregateTransform,
+  CollectTransform,
+  ExtentTransform,
+  FilterTransform,
+  FormulaTransform,
+  JoinAggregateTransform,
+  LookupTransform,
+  RegressionMethod,
+  RegressionTransform,
+  Transforms,
+  WindowTransform,
 } from 'vega';
 
 import { MS_PER_DAY, TRENDLINE_VALUE } from '@spectrum-charts/constants';
@@ -38,32 +38,32 @@ import { TrendlineParentOptions, getPolynomialOrder, getRegressionExtent, isPoly
  * @returns transform
  */
 export const getAggregateTransform = (
-	markOptions: TrendlineParentOptions,
-	{ method, trendlineDimension, trendlineMetric }: TrendlineSpecOptions,
-	isHighResolutionData: boolean
+  markOptions: TrendlineParentOptions,
+  { method, trendlineDimension, trendlineMetric }: TrendlineSpecOptions,
+  isHighResolutionData: boolean
 ): AggregateTransform | JoinAggregateTransform => {
-	const { color, lineType } = markOptions;
-	const { facets } = getFacetsFromOptions({ color, lineType });
-	const operations: Record<AggregateMethod, AggregateOp> = {
-		average: 'mean',
-		median: 'median',
-	};
-	if (isHighResolutionData) {
-		return {
-			type: 'aggregate',
-			groupby: facets,
-			ops: [operations[method], 'min', 'max'],
-			fields: [trendlineMetric, trendlineDimension, trendlineDimension],
-			as: [TRENDLINE_VALUE, `${trendlineDimension}Min`, `${trendlineDimension}Max`],
-		};
-	}
-	return {
-		type: 'joinaggregate',
-		groupby: facets,
-		ops: [operations[method]],
-		fields: [trendlineMetric],
-		as: [TRENDLINE_VALUE],
-	};
+  const { color, lineType } = markOptions;
+  const { facets } = getFacetsFromOptions({ color, lineType });
+  const operations: Record<AggregateMethod, AggregateOp> = {
+    average: 'mean',
+    median: 'median',
+  };
+  if (isHighResolutionData) {
+    return {
+      type: 'aggregate',
+      groupby: facets,
+      ops: [operations[method], 'min', 'max'],
+      fields: [trendlineMetric, trendlineDimension, trendlineDimension],
+      as: [TRENDLINE_VALUE, `${trendlineDimension}Min`, `${trendlineDimension}Max`],
+    };
+  }
+  return {
+    type: 'joinaggregate',
+    groupby: facets,
+    ops: [operations[method]],
+    fields: [trendlineMetric],
+    as: [TRENDLINE_VALUE],
+  };
 };
 
 /**
@@ -76,45 +76,45 @@ export const getAggregateTransform = (
  * @returns
  */
 export const getRegressionTransform = (
-	markOptions: TrendlineParentOptions,
-	trendlineOptions: TrendlineSpecOptions,
-	isHighResolutionData: boolean
+  markOptions: TrendlineParentOptions,
+  trendlineOptions: TrendlineSpecOptions,
+  isHighResolutionData: boolean
 ): RegressionTransform => {
-	const { color, lineType } = markOptions;
-	const { dimensionExtent, isDimensionNormalized, method, name, trendlineDimension, trendlineMetric } =
-		trendlineOptions;
-	const { facets } = getFacetsFromOptions({ color, lineType });
+  const { color, lineType } = markOptions;
+  const { dimensionExtent, isDimensionNormalized, method, name, trendlineDimension, trendlineMetric } =
+    trendlineOptions;
+  const { facets } = getFacetsFromOptions({ color, lineType });
 
-	let regressionMethod: RegressionMethod | undefined;
-	let order: number | undefined;
+  let regressionMethod: RegressionMethod | undefined;
+  let order: number | undefined;
 
-	switch (method) {
-		case 'exponential':
-			regressionMethod = 'exp';
-			break;
-		case 'logarithmic':
-			regressionMethod = 'log';
-			break;
-		case 'power':
-			regressionMethod = 'pow';
-			break;
-		default:
-			order = getPolynomialOrder(method);
-			regressionMethod = 'poly';
-			break;
-	}
+  switch (method) {
+    case 'exponential':
+      regressionMethod = 'exp';
+      break;
+    case 'logarithmic':
+      regressionMethod = 'log';
+      break;
+    case 'power':
+      regressionMethod = 'pow';
+      break;
+    default:
+      order = getPolynomialOrder(method);
+      regressionMethod = 'poly';
+      break;
+  }
 
-	return {
-		type: 'regression',
-		method: regressionMethod,
-		order,
-		groupby: facets,
-		x: trendlineDimension,
-		y: trendlineMetric,
-		as: isHighResolutionData ? [trendlineDimension, TRENDLINE_VALUE] : undefined,
-		params: !isHighResolutionData,
-		extent: isHighResolutionData ? getRegressionExtent(dimensionExtent, name, isDimensionNormalized) : undefined,
-	};
+  return {
+    type: 'regression',
+    method: regressionMethod,
+    order,
+    groupby: facets,
+    x: trendlineDimension,
+    y: trendlineMetric,
+    as: isHighResolutionData ? [trendlineDimension, TRENDLINE_VALUE] : undefined,
+    params: !isHighResolutionData,
+    extent: isHighResolutionData ? getRegressionExtent(dimensionExtent, name, isDimensionNormalized) : undefined,
+  };
 };
 
 /**
@@ -124,28 +124,26 @@ export const getRegressionTransform = (
  * @returns
  */
 export const getWindowTransform = (
-	markOptions: TrendlineParentOptions,
-	{ method, trendlineMetric }: TrendlineSpecOptions
+  markOptions: TrendlineParentOptions,
+  { method, trendlineMetric }: TrendlineSpecOptions
 ): WindowTransform => {
-	const frameWidth = parseInt(method.split('-')[1]);
+  const frameWidth = parseInt(method.split('-')[1]);
 
-	const { color, lineType } = markOptions;
-	const { facets } = getFacetsFromOptions({ color, lineType });
+  const { color, lineType } = markOptions;
+  const { facets } = getFacetsFromOptions({ color, lineType });
 
-	if (isNaN(frameWidth) || frameWidth < 1) {
-		throw new Error(
-			`Invalid moving average frame width: ${frameWidth}, frame width must be an integer greater than 0`
-		);
-	}
+  if (isNaN(frameWidth) || frameWidth < 1) {
+    throw new Error(`Invalid moving average frame width: ${frameWidth}, frame width must be an integer greater than 0`);
+  }
 
-	return {
-		type: 'window',
-		ops: ['mean'],
-		groupby: facets,
-		fields: [trendlineMetric],
-		as: [TRENDLINE_VALUE],
-		frame: [frameWidth - 1, 0],
-	};
+  return {
+    type: 'window',
+    ops: ['mean'],
+    groupby: facets,
+    fields: [trendlineMetric],
+    as: [TRENDLINE_VALUE],
+    frame: [frameWidth - 1, 0],
+  };
 };
 
 /**
@@ -155,17 +153,17 @@ export const getWindowTransform = (
  * @returns
  */
 export const getNormalizedDimensionTransform = (dimension: string): Transforms[] => [
-	{
-		type: 'joinaggregate',
-		fields: [dimension],
-		as: [`${dimension}Min`],
-		ops: ['min'],
-	},
-	{
-		type: 'formula',
-		expr: `(datum.${dimension} - datum.${dimension}Min + ${MS_PER_DAY}) / ${MS_PER_DAY}`,
-		as: `${dimension}Normalized`,
-	},
+  {
+    type: 'joinaggregate',
+    fields: [dimension],
+    as: [`${dimension}Min`],
+    ops: ['min'],
+  },
+  {
+    type: 'formula',
+    expr: `(datum.${dimension} - datum.${dimension}Min + ${MS_PER_DAY}) / ${MS_PER_DAY}`,
+    as: `${dimension}Normalized`,
+  },
 ];
 
 /**
@@ -176,9 +174,9 @@ export const getNormalizedDimensionTransform = (dimension: string): Transforms[]
  * @returns
  */
 export const getRegressionExtentTransform = (dimension: string, name: string): ExtentTransform => ({
-	type: 'extent',
-	field: dimension,
-	signal: `${name}_extent`,
+  type: 'extent',
+  field: dimension,
+  signal: `${name}_extent`,
 });
 
 /**
@@ -188,10 +186,10 @@ export const getRegressionExtentTransform = (dimension: string, name: string): E
  * @returns CollectTransform
  */
 export const getSortTransform = (dimension: string): CollectTransform => ({
-	type: 'collect',
-	sort: {
-		field: dimension,
-	},
+  type: 'collect',
+  sort: {
+    field: dimension,
+  },
 });
 
 /**
@@ -201,25 +199,25 @@ export const getSortTransform = (dimension: string): CollectTransform => ({
  * @returns filterTansforms
  */
 export const getTrendlineDimensionRangeTransforms = (
-	dimension: string,
-	dimensionRange: [number | null, number | null]
+  dimension: string,
+  dimensionRange: [number | null, number | null]
 ): FilterTransform[] => {
-	const filterExpressions: string[] = [];
-	if (dimensionRange[0] !== null) {
-		filterExpressions.push(`datum.${dimension} >= ${dimensionRange[0]}`);
-	}
-	if (dimensionRange[1] !== null) {
-		filterExpressions.push(`datum.${dimension} <= ${dimensionRange[1]}`);
-	}
-	if (filterExpressions.length) {
-		return [
-			{
-				type: 'filter',
-				expr: filterExpressions.join(' && '),
-			},
-		];
-	}
-	return [];
+  const filterExpressions: string[] = [];
+  if (dimensionRange[0] !== null) {
+    filterExpressions.push(`datum.${dimension} >= ${dimensionRange[0]}`);
+  }
+  if (dimensionRange[1] !== null) {
+    filterExpressions.push(`datum.${dimension} <= ${dimensionRange[1]}`);
+  }
+  if (filterExpressions.length) {
+    return [
+      {
+        type: 'filter',
+        expr: filterExpressions.join(' && '),
+      },
+    ];
+  }
+  return [];
 };
 
 /**
@@ -229,34 +227,34 @@ export const getTrendlineDimensionRangeTransforms = (
  * @returns formula transorfm
  */
 export const getTrendlineParamFormulaTransforms = (
-	trendlineDimension: string,
-	method: TrendlineMethod
+  trendlineDimension: string,
+  method: TrendlineMethod
 ): FormulaTransform[] => {
-	let expr = '';
-	if (isPolynomialMethod(method)) {
-		const order = getPolynomialOrder(method);
-		expr = [
-			'datum.coef[0]',
-			...Array(order)
-				.fill(0)
-				.map((_e, i) => `datum.coef[${i + 1}] * pow(datum.${trendlineDimension}, ${i + 1})`),
-		].join(' + ');
-	} else if (method === 'exponential') {
-		expr = `datum.coef[0] + exp(datum.coef[1] * datum.${trendlineDimension})`;
-	} else if (method === 'logarithmic') {
-		expr = `datum.coef[0] + datum.coef[1] * log(datum.${trendlineDimension})`;
-	} else if (method === 'power') {
-		expr = `datum.coef[0] * pow(datum.${trendlineDimension}, datum.coef[1])`;
-	}
+  let expr = '';
+  if (isPolynomialMethod(method)) {
+    const order = getPolynomialOrder(method);
+    expr = [
+      'datum.coef[0]',
+      ...Array(order)
+        .fill(0)
+        .map((_e, i) => `datum.coef[${i + 1}] * pow(datum.${trendlineDimension}, ${i + 1})`),
+    ].join(' + ');
+  } else if (method === 'exponential') {
+    expr = `datum.coef[0] + exp(datum.coef[1] * datum.${trendlineDimension})`;
+  } else if (method === 'logarithmic') {
+    expr = `datum.coef[0] + datum.coef[1] * log(datum.${trendlineDimension})`;
+  } else if (method === 'power') {
+    expr = `datum.coef[0] * pow(datum.${trendlineDimension}, datum.coef[1])`;
+  }
 
-	if (!expr) return [];
-	return [
-		{
-			type: 'formula',
-			expr,
-			as: TRENDLINE_VALUE,
-		},
-	];
+  if (!expr) return [];
+  return [
+    {
+      type: 'formula',
+      expr,
+      as: TRENDLINE_VALUE,
+    },
+  ];
 };
 
 /**
@@ -266,15 +264,15 @@ export const getTrendlineParamFormulaTransforms = (
  * @returns LookupTransform
  */
 export const getTrendlineParamLookupTransform = (
-	{ color, lineType }: TrendlineParentOptions,
-	{ name }: TrendlineSpecOptions
+  { color, lineType }: TrendlineParentOptions,
+  { name }: TrendlineSpecOptions
 ): LookupTransform => {
-	const { facets } = getFacetsFromOptions({ color, lineType });
-	return {
-		type: 'lookup',
-		from: `${name}_params`,
-		key: 'keys',
-		fields: facets,
-		values: ['coef'],
-	};
+  const { facets } = getFacetsFromOptions({ color, lineType });
+  return {
+    type: 'lookup',
+    from: `${name}_params`,
+    key: 'keys',
+    fields: facets,
+    values: ['coef'],
+  };
 };

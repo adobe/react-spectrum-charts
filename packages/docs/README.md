@@ -50,4 +50,4 @@ docs/
 
 ## Contributing
 
-Please see the main repository's CONTRIBUTING.md file for guidelines on how to contribute to the documentation. 
+Please see the main repository's CONTRIBUTING.md file for guidelines on how to contribute to the documentation.

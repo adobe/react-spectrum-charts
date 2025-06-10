@@ -21,55 +21,55 @@ import { Chart } from '../../../index';
 import { bindWithProps } from '../../../test-utils';
 
 export default {
-	title: 'RSC/Axis/Labels',
-	component: Axis,
+  title: 'RSC/Axis/Labels',
+  component: Axis,
 };
 
 const data = [
-	{ x: 0, y: 0, series: 0 },
-	{ x: 1, y: 1, series: 0 },
+  { x: 0, y: 0, series: 0 },
+  { x: 1, y: 1, series: 0 },
 ];
 
 const AxisLabelStory: StoryFn<typeof Axis> = (args): ReactElement => {
-	const chartProps = useChartProps({ data, width: 600 });
-	return (
-		<Chart {...chartProps}>
-			<Axis {...args}></Axis>
-		</Chart>
-	);
+  const chartProps = useChartProps({ data, width: 600 });
+  return (
+    <Chart {...chartProps}>
+      <Axis {...args}></Axis>
+    </Chart>
+  );
 };
 
 const Basic = bindWithProps(AxisLabelStory);
 Basic.args = {
-	labelAlign: 'center',
-	labelFontWeight: DEFAULT_LABEL_FONT_WEIGHT,
-	labelFormat: 'linear',
-	labelOrientation: DEFAULT_LABEL_ORIENTATION,
-	position: 'bottom',
-	ticks: true,
-	baseline: true,
+  labelAlign: 'center',
+  labelFontWeight: DEFAULT_LABEL_FONT_WEIGHT,
+  labelFormat: 'linear',
+  labelOrientation: DEFAULT_LABEL_ORIENTATION,
+  position: 'bottom',
+  ticks: true,
+  baseline: true,
 };
 
 const LabelAlign = bindWithProps(AxisLabelStory);
 LabelAlign.args = {
-	labelAlign: 'start',
-	labelFontWeight: DEFAULT_LABEL_FONT_WEIGHT,
-	labelFormat: 'linear',
-	labelOrientation: 'horizontal',
-	position: 'bottom',
-	ticks: true,
-	baseline: true,
+  labelAlign: 'start',
+  labelFontWeight: DEFAULT_LABEL_FONT_WEIGHT,
+  labelFormat: 'linear',
+  labelOrientation: 'horizontal',
+  position: 'bottom',
+  ticks: true,
+  baseline: true,
 };
 
 const LabelOrientation = bindWithProps(AxisLabelStory);
 LabelOrientation.args = {
-	labelOrientation: 'vertical',
-	labelAlign: 'center',
-	labelFontWeight: DEFAULT_LABEL_FONT_WEIGHT,
-	labelFormat: 'linear',
-	position: 'bottom',
-	ticks: true,
-	baseline: true,
+  labelOrientation: 'vertical',
+  labelAlign: 'center',
+  labelFontWeight: DEFAULT_LABEL_FONT_WEIGHT,
+  labelFormat: 'linear',
+  position: 'bottom',
+  ticks: true,
+  baseline: true,
 };
 
 export { Basic, LabelAlign, LabelOrientation };

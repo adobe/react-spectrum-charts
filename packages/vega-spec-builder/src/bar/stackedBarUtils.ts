@@ -17,116 +17,111 @@ import { isInteractive } from '../marks/markUtils';
 import { BarSpecOptions } from '../types';
 import { getAnnotationMarks } from './barAnnotationUtils';
 import {
-	getBarEnterEncodings,
-	getBarUpdateEncodings,
-	getBaseBarEnterEncodings,
-	getDodgedDimensionEncodings,
-	getDodgedGroupMark,
-	getOrientationProperties,
-	isDodgedAndStacked,
+  getBarEnterEncodings,
+  getBarUpdateEncodings,
+  getBaseBarEnterEncodings,
+  getDodgedDimensionEncodings,
+  getDodgedGroupMark,
+  getOrientationProperties,
+  isDodgedAndStacked,
 } from './barUtils';
 import { getTrellisProperties, isTrellised } from './trellisedBarUtils';
 
 export const getStackedBarMarks = (options: BarSpecOptions): Mark[] => {
-	const marks: Mark[] = [];
-	// add background marks
-	// these marks make it so that when the opacity of a bar is lowered (like on hover), you can't see the grid lines behind the bars
-	marks.push(getStackedBackgroundBar(options));
+  const marks: Mark[] = [];
+  // add background marks
+  // these marks make it so that when the opacity of a bar is lowered (like on hover), you can't see the grid lines behind the bars
+  marks.push(getStackedBackgroundBar(options));
 
-	// bar mark
-	marks.push(getStackedBar(options));
+  // bar mark
+  marks.push(getStackedBar(options));
 
-	// add annotation marks
-	marks.push(
-		...getAnnotationMarks(
-			options,
-			getBaseDataSourceName(options),
-			getOrientationProperties(options.orientation).dimensionScaleKey,
-			options.dimension
-		)
-	);
+  // add annotation marks
+  marks.push(
+    ...getAnnotationMarks(
+      options,
+      getBaseDataSourceName(options),
+      getOrientationProperties(options.orientation).dimensionScaleKey,
+      options.dimension
+    )
+  );
 
-	return marks;
+  return marks;
 };
 
 export const getDodgedAndStackedBarMark = (options: BarSpecOptions): GroupMark => {
-	const marks: Mark[] = [];
-	// add background marks
-	marks.push(getStackedBackgroundBar(options));
+  const marks: Mark[] = [];
+  // add background marks
+  marks.push(getStackedBackgroundBar(options));
 
-	// bar mark
-	marks.push(getStackedBar(options));
+  // bar mark
+  marks.push(getStackedBar(options));
 
-	// add annotation marks
-	marks.push(
-		...getAnnotationMarks(
-			options,
-			`${options.name}_facet`,
-			`${options.name}_position`,
-			`${options.name}_dodgeGroup`
-		)
-	);
+  // add annotation marks
+  marks.push(
+    ...getAnnotationMarks(options, `${options.name}_facet`, `${options.name}_position`, `${options.name}_dodgeGroup`)
+  );
 
-	return { ...getDodgedGroupMark(options), marks };
+  return { ...getDodgedGroupMark(options), marks };
 };
 
 export const getStackedBackgroundBar = (options: BarSpecOptions): RectMark => {
-	const { name } = options;
+  const { name } = options;
 
-	return {
-		name: `${name}_background`,
-		description: `${name}_background`,
-		type: 'rect',
-		from: { data: isDodgedAndStacked(options) ? `${name}_facet` : getBaseDataSourceName(options) },
-		interactive: false,
-		encode: {
-			enter: {
-				...getBaseBarEnterEncodings(options),
-				fill: { signal: BACKGROUND_COLOR },
-			},
-			update: {
-				...getStackedDimensionEncodings(options),
-			},
-		},
-	};
+  return {
+    name: `${name}_background`,
+    description: `${name}_background`,
+    type: 'rect',
+    from: { data: isDodgedAndStacked(options) ? `${name}_facet` : getBaseDataSourceName(options) },
+    interactive: false,
+    encode: {
+      enter: {
+        ...getBaseBarEnterEncodings(options),
+        fill: { signal: BACKGROUND_COLOR },
+      },
+      update: {
+        ...getStackedDimensionEncodings(options),
+      },
+    },
+  };
 };
 
 export const getStackedBar = (options: BarSpecOptions): RectMark => {
-	const { name } = options;
-	return {
-		name,
-		description: name,
-		type: 'rect',
-		from: { data: isDodgedAndStacked(options) ? `${name}_facet` : getBaseDataSourceName(options) },
-		interactive: isInteractive(options),
-		encode: {
-			enter: {
-				...getBaseBarEnterEncodings(options),
-				...getBarEnterEncodings(options),
-			},
-			update: {
-				...getStackedDimensionEncodings(options),
-				...getBarUpdateEncodings(options),
-			},
-		},
-	};
+  const { name } = options;
+  return {
+    name,
+    description: name,
+    type: 'rect',
+    from: { data: isDodgedAndStacked(options) ? `${name}_facet` : getBaseDataSourceName(options) },
+    interactive: isInteractive(options),
+    encode: {
+      enter: {
+        ...getBaseBarEnterEncodings(options),
+        ...getBarEnterEncodings(options),
+      },
+      update: {
+        ...getStackedDimensionEncodings(options),
+        ...getBarUpdateEncodings(options),
+      },
+    },
+  };
 };
 
 export const getStackedDimensionEncodings = (options: BarSpecOptions): RectEncodeEntry => {
-	const { dimension, orientation } = options;
-	if (isDodgedAndStacked(options)) {
-		return getDodgedDimensionEncodings(options);
-	}
+  const { dimension, orientation } = options;
+  if (isDodgedAndStacked(options)) {
+    return getDodgedDimensionEncodings(options);
+  }
 
-	const { dimensionAxis, rangeScale, dimensionScaleKey } = getOrientationProperties(orientation);
+  const { dimensionAxis, rangeScale, dimensionScaleKey } = getOrientationProperties(orientation);
 
-	return {
-		[dimensionAxis]: { scale: dimensionScaleKey, field: dimension },
-		[rangeScale]: { scale: dimensionScaleKey, band: 1 },
-	};
+  return {
+    [dimensionAxis]: { scale: dimensionScaleKey, field: dimension },
+    [rangeScale]: { scale: dimensionScaleKey, band: 1 },
+  };
 };
 
 const getBaseDataSourceName = (options: BarSpecOptions) => {
-	if (isTrellised(options)) return getTrellisProperties(options).facetName;
-	return FILTERED_TABLE;
+  if (isTrellised(options)) return getTrellisProperties(options).facetName;
+  return FILTERED_TABLE;
 };

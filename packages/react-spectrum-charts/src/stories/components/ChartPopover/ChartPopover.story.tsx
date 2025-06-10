@@ -26,115 +26,115 @@ import { browserData as data } from '../../data/data';
 import { basicDonutData } from '../Donut/data';
 
 export default {
-	title: 'RSC/ChartPopover',
-	component: ChartPopover,
-	argTypes: {
-		children: {
-			description: '`(datum: Datum, close: () => void)`',
-			control: {
-				type: null,
-			},
-		},
-	},
+  title: 'RSC/ChartPopover',
+  component: ChartPopover,
+  argTypes: {
+    children: {
+      description: '`(datum: Datum, close: () => void)`',
+      control: {
+        type: null,
+      },
+    },
+  },
 };
 
 const dialogContent = (datum: Datum) => (
-	<Content>
-		<div>Operating system: {datum.series}</div>
-		<div>Browser: {datum.category}</div>
-		<div>Users: {datum.value}</div>
-	</Content>
+  <Content>
+    <div>Operating system: {datum.series}</div>
+    <div>Browser: {datum.category}</div>
+    <div>Users: {datum.value}</div>
+  </Content>
 );
 
 const defaultChartProps: ChartProps = { data, renderer: 'svg', width: 600 };
 
 const ChartPopoverCanvasStory: StoryFn<typeof ChartPopover> = (args): ReactElement => {
-	const chartProps = useChartProps({ data, renderer: 'canvas', width: 600 });
-	return (
-		<Chart {...chartProps}>
-			<Bar color="series">
-				<ChartTooltip>{dialogContent}</ChartTooltip>
-				<ChartPopover {...args} />
-			</Bar>
-		</Chart>
-	);
+  const chartProps = useChartProps({ data, renderer: 'canvas', width: 600 });
+  return (
+    <Chart {...chartProps}>
+      <Bar color="series">
+        <ChartTooltip>{dialogContent}</ChartTooltip>
+        <ChartPopover {...args} />
+      </Bar>
+    </Chart>
+  );
 };
 
 const ChartPopoverSvgStory: StoryFn<typeof ChartPopover> = (args): ReactElement => {
-	const chartProps = useChartProps(defaultChartProps);
-	return (
-		<Chart {...chartProps}>
-			<Bar color="series">
-				<ChartTooltip>{dialogContent}</ChartTooltip>
-				<ChartPopover {...args} />
-			</Bar>
-		</Chart>
-	);
+  const chartProps = useChartProps(defaultChartProps);
+  return (
+    <Chart {...chartProps}>
+      <Bar color="series">
+        <ChartTooltip>{dialogContent}</ChartTooltip>
+        <ChartPopover {...args} />
+      </Bar>
+    </Chart>
+  );
 };
 
 const ChartPopoverDodgedBarStory: StoryFn<typeof ChartPopover> = (args): ReactElement => {
-	const chartProps = useChartProps(defaultChartProps);
-	return (
-		<Chart {...chartProps}>
-			<Bar color="series" type="dodged">
-				<ChartTooltip>{dialogContent}</ChartTooltip>
-				<ChartPopover {...args} />
-			</Bar>
-		</Chart>
-	);
+  const chartProps = useChartProps(defaultChartProps);
+  return (
+    <Chart {...chartProps}>
+      <Bar color="series" type="dodged">
+        <ChartTooltip>{dialogContent}</ChartTooltip>
+        <ChartPopover {...args} />
+      </Bar>
+    </Chart>
+  );
 };
 
 const LineStory: StoryFn<typeof ChartPopover> = (args): ReactElement => {
-	const chartProps = useChartProps(defaultChartProps);
-	return (
-		<Chart {...chartProps}>
-			<Axis position="bottom" baseline />
-			<Axis position="left" grid />
-			<Line scaleType="point" dimension="category" color="series">
-				<ChartTooltip>{dialogContent}</ChartTooltip>
-				<ChartPopover {...args} />
-			</Line>
-			<Legend />
-		</Chart>
-	);
+  const chartProps = useChartProps(defaultChartProps);
+  return (
+    <Chart {...chartProps}>
+      <Axis position="bottom" baseline />
+      <Axis position="left" grid />
+      <Line scaleType="point" dimension="category" color="series">
+        <ChartTooltip>{dialogContent}</ChartTooltip>
+        <ChartPopover {...args} />
+      </Line>
+      <Legend />
+    </Chart>
+  );
 };
 
 const AreaStory: StoryFn<typeof ChartPopover> = (args): ReactElement => {
-	const chartProps = useChartProps(defaultChartProps);
-	return (
-		<Chart {...chartProps}>
-			<Axis position="bottom" baseline />
-			<Axis position="left" grid />
-			<Area scaleType="point" dimension="category">
-				<ChartTooltip>{dialogContent}</ChartTooltip>
-				<ChartPopover {...args} />
-			</Area>
-			<Legend />
-		</Chart>
-	);
+  const chartProps = useChartProps(defaultChartProps);
+  return (
+    <Chart {...chartProps}>
+      <Axis position="bottom" baseline />
+      <Axis position="left" grid />
+      <Area scaleType="point" dimension="category">
+        <ChartTooltip>{dialogContent}</ChartTooltip>
+        <ChartPopover {...args} />
+      </Area>
+      <Legend />
+    </Chart>
+  );
 };
 
 // content for tooltip and popover
 const donutDialogContent = (datum: Datum) => {
-	return (
-		<Content>
-			<div>Browser: {datum.browser}</div>
-			<div>Visitors: {datum.count}</div>
-		</Content>
-	);
+  return (
+    <Content>
+      <div>Browser: {datum.browser}</div>
+      <div>Visitors: {datum.count}</div>
+    </Content>
+  );
 };
 
 const DonutStory: StoryFn<typeof ChartPopover> = (args): ReactElement => {
-	const chartProps = useChartProps({ data: basicDonutData, width: 350, height: 350 });
-	return (
-		<Chart {...chartProps}>
-			<Donut metric="count" color="browser">
-				<DonutSummary label="Visitors" />
-				<ChartTooltip>{donutDialogContent}</ChartTooltip>
-				<ChartPopover {...args} />
-			</Donut>
-		</Chart>
-	);
+  const chartProps = useChartProps({ data: basicDonutData, width: 350, height: 350 });
+  return (
+    <Chart {...chartProps}>
+      <Donut metric="count" color="browser">
+        <DonutSummary label="Visitors" />
+        <ChartTooltip>{donutDialogContent}</ChartTooltip>
+        <ChartPopover {...args} />
+      </Donut>
+    </Chart>
+  );
 };
 
 const AreaChart = bindWithProps(AreaStory);
@@ -171,15 +171,15 @@ const Svg = bindWithProps(ChartPopoverSvgStory);
 Svg.args = { children: dialogContent, width: 'auto' };
 
 export {
-	AreaChart,
-	Canvas,
-	DodgedBarChart,
-	DonutChart,
-	LineChart,
-	MinWidth,
-	OnOpenChange,
-	RightClick,
-	Size,
-	StackedBarChart,
-	Svg,
+  AreaChart,
+  Canvas,
+  DodgedBarChart,
+  DonutChart,
+  LineChart,
+  MinWidth,
+  OnOpenChange,
+  RightClick,
+  Size,
+  StackedBarChart,
+  Svg,
 };

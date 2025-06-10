@@ -27,9 +27,9 @@ When using `metricStart` and `metricEnd`, each area's shape is defined by explic
 
 ```jsx
 <Chart data={data}>
-	<Axis baseline labelFormat="time" position="bottom" ticks />
-	<Axis grid position="left" ticks />
-	<Area dimension="date" metric="count" />
+  <Axis baseline labelFormat="time" position="bottom" ticks />
+  <Axis grid position="left" ticks />
+  <Area dimension="date" metric="count" />
 </Chart>
 ```
 
@@ -40,10 +40,10 @@ When using `metricStart` and `metricEnd`, each area's shape is defined by explic
 
 ```jsx
 <Chart data={data}>
-	<Axis baseline labelFormat="time" position="bottom" ticks />
-	<Axis grid position="left" ticks />
-	<Area dimension="date" metric="count" color="event" />
-	<Legend />
+  <Axis baseline labelFormat="time" position="bottom" ticks />
+  <Axis grid position="left" ticks />
+  <Area dimension="date" metric="count" color="event" />
+  <Legend />
 </Chart>
 ```
 
@@ -54,9 +54,9 @@ When using `metricStart` and `metricEnd`, each area's shape is defined by explic
 
 ```jsx
 <Chart data={data}>
-	<Axis baseline labelFormat="time" position="bottom" />
-	<Axis grid position="left" title="Temperature (F)" />
-	<Area metricEnd="maxTemperature" metricStart="minTemperature" opacity={0.6} />
+  <Axis baseline labelFormat="time" position="bottom" />
+  <Axis grid position="left" title="Temperature (F)" />
+  <Area metricEnd="maxTemperature" metricStart="minTemperature" opacity={0.6} />
 </Chart>
 ```
 
@@ -67,9 +67,9 @@ When using `metricStart` and `metricEnd`, each area's shape is defined by explic
 
 The Area component supports rich interactions through tooltips and popovers. When hovering over an area:
 
--   The opacity of non-hovered areas will be reduced automatically
--   If tooltips are defined, they will be displayed
--   If popovers are defined, clicking the area will show the popover
+- The opacity of non-hovered areas will be reduced automatically
+- If tooltips are defined, they will be displayed
+- If popovers are defined, clicking the area will show the popover
 
 To add these interactions, use the `ChartTooltip` and `ChartPopover` components as children of the Area component.
 

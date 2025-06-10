@@ -12,28 +12,28 @@
 import { ColorValueRef, NumericValueRef, SymbolMark } from 'vega';
 
 import {
-	BACKGROUND_COLOR,
-	DEFAULT_SYMBOL_SIZE,
-	DEFAULT_SYMBOL_STROKE_WIDTH,
-	SELECTED_GROUP,
-	SELECTED_ITEM,
+  BACKGROUND_COLOR,
+  DEFAULT_SYMBOL_SIZE,
+  DEFAULT_SYMBOL_STROKE_WIDTH,
+  SELECTED_GROUP,
+  SELECTED_ITEM,
 } from '@spectrum-charts/constants';
 import { getColorValue } from '@spectrum-charts/themes';
 
 import {
-	getColorProductionRule,
-	getHighlightOpacityValue,
-	getOpacityProductionRule,
-	getXProductionRule,
-	getYProductionRule,
-	hasPopover,
+  getColorProductionRule,
+  getHighlightOpacityValue,
+  getOpacityProductionRule,
+  getXProductionRule,
+  getYProductionRule,
+  hasPopover,
 } from '../marks/markUtils';
 import { LineSpecOptions, ProductionRuleTests } from '../types';
 import { LineMarkOptions } from './lineUtils';
 
 const staticPointTest = (staticPoint: string) => `datum.${staticPoint} && datum.${staticPoint} === true`;
 const getSelectedTest = (name: string, idKey: string) =>
-	`(${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${idKey}) || (${SELECTED_GROUP} && ${SELECTED_GROUP} === datum.${name}_selectedGroupId)`;
+  `(${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${idKey}) || (${SELECTED_GROUP} && ${SELECTED_GROUP} === datum.${name}_selectedGroupId)`;
 
 /**
  * Gets the point mark for static points on a line chart.
@@ -41,34 +41,34 @@ const getSelectedTest = (name: string, idKey: string) =>
  * @returns SymbolMark
  */
 export const getLineStaticPoint = ({
-	name,
-	metric,
-	metricAxis,
-	color,
-	colorScheme,
-	scaleType,
-	dimension,
-	isSparkline,
-	pointSize = 125,
+  name,
+  metric,
+  metricAxis,
+  color,
+  colorScheme,
+  scaleType,
+  dimension,
+  isSparkline,
+  pointSize = 125,
 }: LineSpecOptions): SymbolMark => {
-	return {
-		name: `${name}_staticPoints`,
-		description: `${name}_staticPoints`,
-		type: 'symbol',
-		from: { data: `${name}_staticPointData` },
-		interactive: false,
-		encode: {
-			enter: {
-				size: { value: pointSize },
-				fill: isSparkline ? { signal: BACKGROUND_COLOR } : getColorProductionRule(color, colorScheme),
-				stroke: isSparkline ? getColorProductionRule(color, colorScheme) : { signal: BACKGROUND_COLOR },
-				y: getYProductionRule(metricAxis, metric),
-			},
-			update: {
-				x: getXProductionRule(scaleType, dimension),
-			},
-		},
-	};
+  return {
+    name: `${name}_staticPoints`,
+    description: `${name}_staticPoints`,
+    type: 'symbol',
+    from: { data: `${name}_staticPointData` },
+    interactive: false,
+    encode: {
+      enter: {
+        size: { value: pointSize },
+        fill: isSparkline ? { signal: BACKGROUND_COLOR } : getColorProductionRule(color, colorScheme),
+        stroke: isSparkline ? getColorProductionRule(color, colorScheme) : { signal: BACKGROUND_COLOR },
+        y: getYProductionRule(metricAxis, metric),
+      },
+      update: {
+        x: getXProductionRule(scaleType, dimension),
+      },
+    },
+  };
 };
 
 /**
@@ -77,50 +77,50 @@ export const getLineStaticPoint = ({
  * @returns SymbolMark
  */
 export const getHighlightBackgroundPoint = (lineOptions: LineMarkOptions): SymbolMark => {
-	const { dimension, metric, metricAxis, name, scaleType } = lineOptions;
-	return {
-		name: `${name}_pointBackground`,
-		description: `${name}_pointBackground`,
-		type: 'symbol',
-		from: { data: `${name}_highlightedData` },
-		interactive: false,
-		encode: {
-			enter: {
-				y: getYProductionRule(metricAxis, metric),
-				fill: { signal: BACKGROUND_COLOR },
-				stroke: { signal: BACKGROUND_COLOR },
-			},
-			update: {
-				size: getHighlightPointSize(lineOptions),
-				strokeWidth: getHighlightPointStrokeWidth(lineOptions),
-				x: getXProductionRule(scaleType, dimension),
-			},
-		},
-	};
+  const { dimension, metric, metricAxis, name, scaleType } = lineOptions;
+  return {
+    name: `${name}_pointBackground`,
+    description: `${name}_pointBackground`,
+    type: 'symbol',
+    from: { data: `${name}_highlightedData` },
+    interactive: false,
+    encode: {
+      enter: {
+        y: getYProductionRule(metricAxis, metric),
+        fill: { signal: BACKGROUND_COLOR },
+        stroke: { signal: BACKGROUND_COLOR },
+      },
+      update: {
+        size: getHighlightPointSize(lineOptions),
+        strokeWidth: getHighlightPointStrokeWidth(lineOptions),
+        x: getXProductionRule(scaleType, dimension),
+      },
+    },
+  };
 };
 
 const getHighlightOrSelectionPoint = (lineOptions: LineMarkOptions, useHighlightedData = true): SymbolMark => {
-	const { color, colorScheme, dimension, metric, metricAxis, name, scaleType } = lineOptions;
-	return {
-		name: `${name}_point_${useHighlightedData ? 'highlight' : 'select'}`,
-		type: 'symbol',
-		from: { data: `${name}${useHighlightedData ? '_highlightedData' : '_selectedData'}` },
-		interactive: false,
-		encode: {
-			enter: {
-				y: getYProductionRule(metricAxis, metric),
-				stroke: getColorProductionRule(color, colorScheme),
-			},
-			update: {
-				fill: getHighlightPointFill(lineOptions),
-				size: getHighlightPointSize(lineOptions),
-				stroke: getHighlightPointStroke(lineOptions),
-				strokeOpacity: getHighlightPointStrokeOpacity(lineOptions),
-				strokeWidth: getHighlightPointStrokeWidth(lineOptions),
-				x: getXProductionRule(scaleType, dimension),
-			},
-		},
-	};
+  const { color, colorScheme, dimension, metric, metricAxis, name, scaleType } = lineOptions;
+  return {
+    name: `${name}_point_${useHighlightedData ? 'highlight' : 'select'}`,
+    type: 'symbol',
+    from: { data: `${name}${useHighlightedData ? '_highlightedData' : '_selectedData'}` },
+    interactive: false,
+    encode: {
+      enter: {
+        y: getYProductionRule(metricAxis, metric),
+        stroke: getColorProductionRule(color, colorScheme),
+      },
+      update: {
+        fill: getHighlightPointFill(lineOptions),
+        size: getHighlightPointSize(lineOptions),
+        stroke: getHighlightPointStroke(lineOptions),
+        strokeOpacity: getHighlightPointStrokeOpacity(lineOptions),
+        strokeWidth: getHighlightPointStrokeWidth(lineOptions),
+        x: getXProductionRule(scaleType, dimension),
+      },
+    },
+  };
 };
 
 /**
@@ -129,7 +129,7 @@ const getHighlightOrSelectionPoint = (lineOptions: LineMarkOptions, useHighlight
  * @returns SymbolMark
  */
 export const getHighlightPoint = (lineOptions: LineMarkOptions): SymbolMark => {
-	return getHighlightOrSelectionPoint(lineOptions, true);
+  return getHighlightOrSelectionPoint(lineOptions, true);
 };
 
 /**
@@ -138,7 +138,7 @@ export const getHighlightPoint = (lineOptions: LineMarkOptions): SymbolMark => {
  * @returns SymbolMark
  */
 export const getSelectionPoint = (lineOptions: LineMarkOptions): SymbolMark => {
-	return getHighlightOrSelectionPoint(lineOptions, false);
+  return getHighlightOrSelectionPoint(lineOptions, false);
 };
 
 /**
@@ -148,26 +148,26 @@ export const getSelectionPoint = (lineOptions: LineMarkOptions): SymbolMark => {
  * @returns SymbolMark
  */
 export const getSecondaryHighlightPoint = (
-	lineOptions: LineMarkOptions,
-	secondaryHighlightedMetric: string
+  lineOptions: LineMarkOptions,
+  secondaryHighlightedMetric: string
 ): SymbolMark => {
-	const { color, colorScheme, dimension, metricAxis, name, scaleType } = lineOptions;
-	return {
-		name: `${name}_secondaryPoint`,
-		type: 'symbol',
-		from: { data: `${name}_highlightedData` },
-		interactive: false,
-		encode: {
-			enter: {
-				y: getYProductionRule(metricAxis, secondaryHighlightedMetric),
-				fill: { signal: BACKGROUND_COLOR },
-				stroke: getColorProductionRule(color, colorScheme),
-			},
-			update: {
-				x: getXProductionRule(scaleType, dimension),
-			},
-		},
-	};
+  const { color, colorScheme, dimension, metricAxis, name, scaleType } = lineOptions;
+  return {
+    name: `${name}_secondaryPoint`,
+    type: 'symbol',
+    from: { data: `${name}_highlightedData` },
+    interactive: false,
+    encode: {
+      enter: {
+        y: getYProductionRule(metricAxis, secondaryHighlightedMetric),
+        fill: { signal: BACKGROUND_COLOR },
+        stroke: getColorProductionRule(color, colorScheme),
+      },
+      update: {
+        x: getXProductionRule(scaleType, dimension),
+      },
+    },
+  };
 };
 
 /**
@@ -176,17 +176,17 @@ export const getSecondaryHighlightPoint = (
  * @returns fill rule
  */
 export const getHighlightPointFill = (markOptions: LineMarkOptions): ProductionRuleTests<ColorValueRef> => {
-	const { color, colorScheme, idKey, name, staticPoint } = markOptions;
-	const fillRules: ProductionRuleTests<ColorValueRef> = [];
-	const selectedTest = getSelectedTest(name, idKey);
+  const { color, colorScheme, idKey, name, staticPoint } = markOptions;
+  const fillRules: ProductionRuleTests<ColorValueRef> = [];
+  const selectedTest = getSelectedTest(name, idKey);
 
-	if (staticPoint) {
-		fillRules.push({ test: staticPointTest(staticPoint), ...getColorProductionRule(color, colorScheme) });
-	}
-	if (hasPopover(markOptions)) {
-		fillRules.push({ test: selectedTest, ...getColorProductionRule(color, colorScheme) });
-	}
-	return [...fillRules, { signal: BACKGROUND_COLOR }];
+  if (staticPoint) {
+    fillRules.push({ test: staticPointTest(staticPoint), ...getColorProductionRule(color, colorScheme) });
+  }
+  if (hasPopover(markOptions)) {
+    fillRules.push({ test: selectedTest, ...getColorProductionRule(color, colorScheme) });
+  }
+  return [...fillRules, { signal: BACKGROUND_COLOR }];
 };
 
 /**
@@ -195,18 +195,18 @@ export const getHighlightPointFill = (markOptions: LineMarkOptions): ProductionR
  * @returns stroke rule
  */
 export const getHighlightPointStroke = (markOptions: LineMarkOptions): ProductionRuleTests<ColorValueRef> => {
-	const { color, colorScheme, idKey, name, staticPoint } = markOptions;
-	const strokeRules: ProductionRuleTests<ColorValueRef> = [];
-	const selectedTest = getSelectedTest(name, idKey);
+  const { color, colorScheme, idKey, name, staticPoint } = markOptions;
+  const strokeRules: ProductionRuleTests<ColorValueRef> = [];
+  const selectedTest = getSelectedTest(name, idKey);
 
-	if (staticPoint) {
-		strokeRules.push({ test: staticPointTest(staticPoint), ...getColorProductionRule(color, colorScheme) });
-	}
-	if (hasPopover(markOptions)) {
-		strokeRules.push({ test: selectedTest, signal: BACKGROUND_COLOR });
-	}
+  if (staticPoint) {
+    strokeRules.push({ test: staticPointTest(staticPoint), ...getColorProductionRule(color, colorScheme) });
+  }
+  if (hasPopover(markOptions)) {
+    strokeRules.push({ test: selectedTest, signal: BACKGROUND_COLOR });
+  }
 
-	return [...strokeRules, getColorProductionRule(color, colorScheme)];
+  return [...strokeRules, getColorProductionRule(color, colorScheme)];
 };
 
 /**
@@ -215,18 +215,18 @@ export const getHighlightPointStroke = (markOptions: LineMarkOptions): Productio
  * @returns stroke opacity rule
  */
 export const getHighlightPointStrokeOpacity = ({
-	opacity,
-	staticPoint,
+  opacity,
+  staticPoint,
 }: LineMarkOptions): ProductionRuleTests<NumericValueRef> => {
-	const baseOpacityRule = getOpacityProductionRule(opacity);
-	const strokeOpacityRules: ProductionRuleTests<NumericValueRef> = [];
-	if (staticPoint) {
-		strokeOpacityRules.push({
-			test: staticPointTest(staticPoint),
-			...getHighlightOpacityValue(baseOpacityRule),
-		});
-	}
-	return [...strokeOpacityRules, baseOpacityRule];
+  const baseOpacityRule = getOpacityProductionRule(opacity);
+  const strokeOpacityRules: ProductionRuleTests<NumericValueRef> = [];
+  if (staticPoint) {
+    strokeOpacityRules.push({
+      test: staticPointTest(staticPoint),
+      ...getHighlightOpacityValue(baseOpacityRule),
+    });
+  }
+  return [...strokeOpacityRules, baseOpacityRule];
 };
 
 /**
@@ -235,15 +235,15 @@ export const getHighlightPointStrokeOpacity = ({
  * @returns size rule
  */
 export const getHighlightPointSize = ({ staticPoint }: LineMarkOptions): ProductionRuleTests<NumericValueRef> => {
-	const sizeRules: ProductionRuleTests<NumericValueRef> = [];
-	if (staticPoint) {
-		sizeRules.push({
-			// if this is a static point, reduce the size since we are increasing the stroke width
-			test: staticPointTest(staticPoint),
-			value: 64,
-		});
-	}
-	return [...sizeRules, { value: DEFAULT_SYMBOL_SIZE }];
+  const sizeRules: ProductionRuleTests<NumericValueRef> = [];
+  if (staticPoint) {
+    sizeRules.push({
+      // if this is a static point, reduce the size since we are increasing the stroke width
+      test: staticPointTest(staticPoint),
+      value: 64,
+    });
+  }
+  return [...sizeRules, { value: DEFAULT_SYMBOL_SIZE }];
 };
 
 /**
@@ -252,17 +252,17 @@ export const getHighlightPointSize = ({ staticPoint }: LineMarkOptions): Product
  * @returns stroke width rule
  */
 export const getHighlightPointStrokeWidth = ({
-	staticPoint,
+  staticPoint,
 }: LineMarkOptions): ProductionRuleTests<NumericValueRef> => {
-	const strokeWidthRules: ProductionRuleTests<NumericValueRef> = [];
-	if (staticPoint) {
-		strokeWidthRules.push({
-			// if the point is static, increase the stroke width
-			test: staticPointTest(staticPoint),
-			value: 6,
-		});
-	}
-	return [...strokeWidthRules, { value: DEFAULT_SYMBOL_STROKE_WIDTH }];
+  const strokeWidthRules: ProductionRuleTests<NumericValueRef> = [];
+  if (staticPoint) {
+    strokeWidthRules.push({
+      // if the point is static, increase the stroke width
+      test: staticPointTest(staticPoint),
+      value: 6,
+    });
+  }
+  return [...strokeWidthRules, { value: DEFAULT_SYMBOL_STROKE_WIDTH }];
 };
 
 /**
@@ -271,25 +271,25 @@ export const getHighlightPointStrokeWidth = ({
  * @returns SymbolMark
  */
 export const getSelectRingPoint = (lineOptions: LineMarkOptions): SymbolMark => {
-	const { colorScheme, dimension, idKey, metric, metricAxis, name, scaleType } = lineOptions;
-	const selectedTest = getSelectedTest(name, idKey);
+  const { colorScheme, dimension, idKey, metric, metricAxis, name, scaleType } = lineOptions;
+  const selectedTest = getSelectedTest(name, idKey);
 
-	return {
-		name: `${name}_pointSelectRing`,
-		type: 'symbol',
-		from: { data: `${name}_selectedData` },
-		interactive: false,
-		encode: {
-			enter: {
-				y: getYProductionRule(metricAxis, metric),
-				fill: { signal: BACKGROUND_COLOR },
-				stroke: { value: getColorValue('static-blue', colorScheme) },
-			},
-			update: {
-				size: [{ test: selectedTest, value: 196 }, { value: 0 }],
-				strokeWidth: [{ test: selectedTest, value: DEFAULT_SYMBOL_STROKE_WIDTH }, { value: 0 }],
-				x: getXProductionRule(scaleType, dimension),
-			},
-		},
-	};
+  return {
+    name: `${name}_pointSelectRing`,
+    type: 'symbol',
+    from: { data: `${name}_selectedData` },
+    interactive: false,
+    encode: {
+      enter: {
+        y: getYProductionRule(metricAxis, metric),
+        fill: { signal: BACKGROUND_COLOR },
+        stroke: { value: getColorValue('static-blue', colorScheme) },
+      },
+      update: {
+        size: [{ test: selectedTest, value: 196 }, { value: 0 }],
+        strokeWidth: [{ test: selectedTest, value: DEFAULT_SYMBOL_STROKE_WIDTH }, { value: 0 }],
+        x: getXProductionRule(scaleType, dimension),
+      },
+    },
+  };
 };

@@ -13,18 +13,18 @@ import { produce } from 'immer';
 import { Data, Scale, Signal } from 'vega';
 
 import {
-	COLOR_SCALE,
-	DEFAULT_COLOR_SCHEME,
-	DEFAULT_DIMENSION_SCALE_TYPE,
-	DEFAULT_LINEAR_DIMENSION,
-	DEFAULT_METRIC,
-	FILTERED_TABLE,
-	LINEAR_COLOR_SCALE,
-	LINE_TYPE_SCALE,
-	LINE_WIDTH_SCALE,
-	OPACITY_SCALE,
-	SELECTED_ITEM,
-	SYMBOL_SIZE_SCALE,
+  COLOR_SCALE,
+  DEFAULT_COLOR_SCHEME,
+  DEFAULT_DIMENSION_SCALE_TYPE,
+  DEFAULT_LINEAR_DIMENSION,
+  DEFAULT_METRIC,
+  FILTERED_TABLE,
+  LINEAR_COLOR_SCALE,
+  LINE_TYPE_SCALE,
+  LINE_WIDTH_SCALE,
+  OPACITY_SCALE,
+  SELECTED_ITEM,
+  SYMBOL_SIZE_SCALE,
 } from '@spectrum-charts/constants';
 import { toCamelCase } from '@spectrum-charts/utils';
 
@@ -44,90 +44,90 @@ import { addScatterMarks } from './scatterMarkUtils';
  * @param scatterOptions ScatterOptions
  */
 export const addScatter = produce<
-	ScSpec,
-	[ScatterOptions & { colorScheme?: ColorScheme; highlightedItem?: HighlightedItem; index?: number; idKey: string }]
+  ScSpec,
+  [ScatterOptions & { colorScheme?: ColorScheme; highlightedItem?: HighlightedItem; index?: number; idKey: string }]
 >(
-	(
-		spec,
-		{
-			chartPopovers = [],
-			chartTooltips = [],
-			color = { value: 'categorical-100' },
-			colorScaleType = 'ordinal',
-			colorScheme = DEFAULT_COLOR_SCHEME,
-			dimension = DEFAULT_LINEAR_DIMENSION,
-			dimensionScaleType = DEFAULT_DIMENSION_SCALE_TYPE,
-			index = 0,
-			lineType = { value: 'solid' },
-			lineWidth = { value: 0 },
-			metric = DEFAULT_METRIC,
-			name,
-			opacity = { value: 1 },
-			scatterPaths = [],
-			size = { value: 'M' },
-			trendlines = [],
-			...options
-		}
-	) => {
-		const scatterName = toCamelCase(name || `scatter${index}`);
-		// put options back together now that all the defaults have been set
+  (
+    spec,
+    {
+      chartPopovers = [],
+      chartTooltips = [],
+      color = { value: 'categorical-100' },
+      colorScaleType = 'ordinal',
+      colorScheme = DEFAULT_COLOR_SCHEME,
+      dimension = DEFAULT_LINEAR_DIMENSION,
+      dimensionScaleType = DEFAULT_DIMENSION_SCALE_TYPE,
+      index = 0,
+      lineType = { value: 'solid' },
+      lineWidth = { value: 0 },
+      metric = DEFAULT_METRIC,
+      name,
+      opacity = { value: 1 },
+      scatterPaths = [],
+      size = { value: 'M' },
+      trendlines = [],
+      ...options
+    }
+  ) => {
+    const scatterName = toCamelCase(name || `scatter${index}`);
+    // put options back together now that all the defaults have been set
 
-		const scatterOptions: ScatterSpecOptions = {
-			chartPopovers,
-			chartTooltips,
-			color,
-			colorScaleType,
-			colorScheme,
-			dimension,
-			dimensionScaleType,
-			index,
-			interactiveMarkName: getInteractiveMarkName(
-				{ chartPopovers, chartTooltips, highlightedItem: options.highlightedItem, trendlines },
-				scatterName
-			),
-			lineType,
-			lineWidth,
-			metric,
-			name: scatterName,
-			opacity,
-			scatterPaths,
-			size,
-			trendlines,
-			...options,
-		};
+    const scatterOptions: ScatterSpecOptions = {
+      chartPopovers,
+      chartTooltips,
+      color,
+      colorScaleType,
+      colorScheme,
+      dimension,
+      dimensionScaleType,
+      index,
+      interactiveMarkName: getInteractiveMarkName(
+        { chartPopovers, chartTooltips, highlightedItem: options.highlightedItem, trendlines },
+        scatterName
+      ),
+      lineType,
+      lineWidth,
+      metric,
+      name: scatterName,
+      opacity,
+      scatterPaths,
+      size,
+      trendlines,
+      ...options,
+    };
 
-		spec.data = addData(spec.data ?? [], scatterOptions);
-		spec.signals = addSignals(spec.signals ?? [], scatterOptions);
-		spec.scales = setScales(spec.scales ?? [], scatterOptions);
-		spec.marks = addScatterMarks(spec.marks ?? [], scatterOptions);
-	}
+    spec.data = addData(spec.data ?? [], scatterOptions);
+    spec.signals = addSignals(spec.signals ?? [], scatterOptions);
+    spec.scales = setScales(spec.scales ?? [], scatterOptions);
+    spec.marks = addScatterMarks(spec.marks ?? [], scatterOptions);
+  }
 );
 
 export const addData = produce<Data[], [ScatterSpecOptions]>((data, scatterOptions) => {
-	const { chartTooltips, dimension, dimensionScaleType, highlightedItem, idKey, name } = scatterOptions;
-	if (dimensionScaleType === 'time') {
-		const tableData = getTableData(data);
-		tableData.transform = addTimeTransform(tableData.transform ?? [], dimension);
-	}
+  const { chartTooltips, dimension, dimensionScaleType, highlightedItem, idKey, name } = scatterOptions;
+  if (dimensionScaleType === 'time') {
+    const tableData = getTableData(data);
+    tableData.transform = addTimeTransform(tableData.transform ?? [], dimension);
+  }
 
-	if (isInteractive(scatterOptions) || highlightedItem !== undefined) {
-		data.push(getFilteredTooltipData(chartTooltips));
-	}
+  if (isInteractive(scatterOptions) || highlightedItem !== undefined) {
+    data.push(getFilteredTooltipData(chartTooltips));
+  }
 
-	if (hasPopover(scatterOptions)) {
-		data.push({
-			name: `${name}_selectedData`,
-			source: FILTERED_TABLE,
-			transform: [
-				{
-					type: 'filter',
-					expr: `${SELECTED_ITEM} === datum.${idKey}`,
-				},
-			],
-		});
-	}
-	addTooltipData(data, scatterOptions);
-	addTrendlineData(data, scatterOptions);
+  if (hasPopover(scatterOptions)) {
+    data.push({
+      name: `${name}_selectedData`,
+      source: FILTERED_TABLE,
+      transform: [
+        {
+          type: 'filter',
+          expr: `${SELECTED_ITEM} === datum.${idKey}`,
+        },
+      ],
+    });
+  }
+  addTooltipData(data, scatterOptions);
+  addTrendlineData(data, scatterOptions);
 });
 
 /**
@@ -136,14 +136,14 @@ export const addData = produce<Data[], [ScatterSpecOptions]>((data, scatterOptio
  * @param scatterOptions ScatterSpecOptions
  */
 export const addSignals = produce<Signal[], [ScatterSpecOptions]>((signals, scatterOptions) => {
-	const { idKey, name } = scatterOptions;
-	// trendline signals
-	setTrendlineSignals(signals, scatterOptions);
+  const { idKey, name } = scatterOptions;
+  // trendline signals
+  setTrendlineSignals(signals, scatterOptions);
 
-	if (!isInteractive(scatterOptions)) return;
-	// interactive signals
-	addHighlightedItemSignalEvents(signals, `${name}_voronoi`, idKey, 2);
-	addTooltipSignals(signals, scatterOptions);
+  if (!isInteractive(scatterOptions)) return;
+  // interactive signals
+  addHighlightedItemSignalEvents(signals, `${name}_voronoi`, idKey, 2);
+  addTooltipSignals(signals, scatterOptions);
 });
 
 /**
@@ -152,28 +152,28 @@ export const addSignals = produce<Signal[], [ScatterSpecOptions]>((signals, scat
  * @param scatterOptions ScatterSpecOptions
  */
 export const setScales = produce<Scale[], [ScatterSpecOptions]>((scales, scatterOptions) => {
-	const { color, colorScaleType, dimension, dimensionScaleType, lineType, lineWidth, metric, opacity, size } =
-		scatterOptions;
-	// add dimension scale
-	addContinuousDimensionScale(scales, { scaleType: dimensionScaleType, dimension });
-	// add metric scale
-	addMetricScale(scales, [metric]);
-	if (colorScaleType === 'linear') {
-		// add color to the color domain
-		addFieldToFacetScaleDomain(scales, LINEAR_COLOR_SCALE, color);
-	} else {
-		// add color to the color domain
-		addFieldToFacetScaleDomain(scales, COLOR_SCALE, color);
-	}
-	// add lineType to the lineType domain
-	addFieldToFacetScaleDomain(scales, LINE_TYPE_SCALE, lineType);
-	// add lineWidth to the lineWidth domain
-	addFieldToFacetScaleDomain(scales, LINE_WIDTH_SCALE, lineWidth);
-	// add opacity to the opacity domain
-	addFieldToFacetScaleDomain(scales, OPACITY_SCALE, opacity);
-	// add size to the size domain
-	addFieldToFacetScaleDomain(scales, SYMBOL_SIZE_SCALE, size);
+  const { color, colorScaleType, dimension, dimensionScaleType, lineType, lineWidth, metric, opacity, size } =
+    scatterOptions;
+  // add dimension scale
+  addContinuousDimensionScale(scales, { scaleType: dimensionScaleType, dimension });
+  // add metric scale
+  addMetricScale(scales, [metric]);
+  if (colorScaleType === 'linear') {
+    // add color to the color domain
+    addFieldToFacetScaleDomain(scales, LINEAR_COLOR_SCALE, color);
+  } else {
+    // add color to the color domain
+    addFieldToFacetScaleDomain(scales, COLOR_SCALE, color);
+  }
+  // add lineType to the lineType domain
+  addFieldToFacetScaleDomain(scales, LINE_TYPE_SCALE, lineType);
+  // add lineWidth to the lineWidth domain
+  addFieldToFacetScaleDomain(scales, LINE_WIDTH_SCALE, lineWidth);
+  // add opacity to the opacity domain
+  addFieldToFacetScaleDomain(scales, OPACITY_SCALE, opacity);
+  // add size to the size domain
+  addFieldToFacetScaleDomain(scales, SYMBOL_SIZE_SCALE, size);
 
-	setScatterPathScales(scales, scatterOptions);
-	scales.push(...getTrendlineScales(scatterOptions));
+  setScatterPathScales(scales, scatterOptions);
+  scales.push(...getTrendlineScales(scatterOptions));
 });

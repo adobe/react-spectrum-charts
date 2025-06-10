@@ -17,12 +17,12 @@ import { ScatterPathProps } from '../../types';
 
 // destructure props here and set defaults so that storybook can pick them up
 const ScatterPath: FC<ScatterPathProps> = ({
-	color = 'gray-500',
-	groupBy,
-	pathWidth = { value: 'M' },
-	opacity = 0.5,
+  color = 'gray-500',
+  groupBy,
+  pathWidth = { value: 'M' },
+  opacity = 0.5,
 }) => {
-	return null;
+  return null;
 };
 
 // displayName is used to validate the component type in the spec builder

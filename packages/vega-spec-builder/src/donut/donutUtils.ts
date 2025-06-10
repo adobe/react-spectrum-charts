@@ -18,30 +18,30 @@ import { getColorProductionRule, getCursor, getMarkOpacity, getTooltip } from '.
 import { DonutSpecOptions } from '../types';
 
 export const getArcMark = (options: DonutSpecOptions): ArcMark => {
-	const { chartPopovers, chartTooltips, color, colorScheme, holeRatio, idKey, name } = options;
-	return {
-		type: 'arc',
-		name,
-		description: name,
-		from: { data: FILTERED_TABLE },
-		encode: {
-			enter: {
-				fill: getColorProductionRule(color, colorScheme),
-				x: { signal: 'width / 2' },
-				y: { signal: 'height / 2' },
-				tooltip: getTooltip(chartTooltips, name),
-				stroke: { value: getColorValue('static-blue', colorScheme) },
-			},
-			update: {
-				startAngle: { field: `${name}_startAngle` },
-				endAngle: { field: `${name}_endAngle` },
-				padAngle: { value: 0.01 },
-				innerRadius: { signal: `${holeRatio} * ${DONUT_RADIUS}` },
-				outerRadius: { signal: DONUT_RADIUS },
-				opacity: getMarkOpacity(options),
-				cursor: getCursor(chartPopovers),
-				strokeWidth: [{ test: `${SELECTED_ITEM} === datum.${idKey}`, value: 2 }, { value: 0 }],
-			},
-		},
-	};
+  const { chartPopovers, chartTooltips, color, colorScheme, holeRatio, idKey, name } = options;
+  return {
+    type: 'arc',
+    name,
+    description: name,
+    from: { data: FILTERED_TABLE },
+    encode: {
+      enter: {
+        fill: getColorProductionRule(color, colorScheme),
+        x: { signal: 'width / 2' },
+        y: { signal: 'height / 2' },
+        tooltip: getTooltip(chartTooltips, name),
+        stroke: { value: getColorValue('static-blue', colorScheme) },
+      },
+      update: {
+        startAngle: { field: `${name}_startAngle` },
+        endAngle: { field: `${name}_endAngle` },
+        padAngle: { value: 0.01 },
+        innerRadius: { signal: `${holeRatio} * ${DONUT_RADIUS}` },
+        outerRadius: { signal: DONUT_RADIUS },
+        opacity: getMarkOpacity(options),
+        cursor: getCursor(chartPopovers),
+        strokeWidth: [{ test: `${SELECTED_ITEM} === datum.${idKey}`, value: 2 }, { value: 0 }],
+      },
+    },
+  };
 };

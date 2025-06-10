@@ -12,12 +12,12 @@
 import { Signal } from 'vega';
 
 import {
-	HIGHLIGHTED_GROUP,
-	HIGHLIGHTED_ITEM,
-	HIGHLIGHTED_SERIES,
-	SELECTED_GROUP,
-	SELECTED_ITEM,
-	SELECTED_SERIES,
+  HIGHLIGHTED_GROUP,
+  HIGHLIGHTED_ITEM,
+  HIGHLIGHTED_SERIES,
+  SELECTED_GROUP,
+  SELECTED_ITEM,
+  SELECTED_SERIES,
 } from '@spectrum-charts/constants';
 
 import { getGenericValueSignal } from './signal/signalSpecBuilder';
@@ -30,10 +30,10 @@ export const defaultSelectedSeriesSignal = getGenericValueSignal(SELECTED_SERIES
 export const defaultSelectedGroupSignal = getGenericValueSignal(SELECTED_GROUP);
 
 export const defaultSignals: Signal[] = [
-	defaultHighlightedItemSignal,
-	defaultHighlightedGroupSignal,
-	defaultHighlightedSeriesSignal,
-	defaultSelectedItemSignal,
-	defaultSelectedSeriesSignal,
-	defaultSelectedGroupSignal,
+  defaultHighlightedItemSignal,
+  defaultHighlightedGroupSignal,
+  defaultHighlightedSeriesSignal,
+  defaultSelectedItemSignal,
+  defaultSelectedSeriesSignal,
+  defaultSelectedGroupSignal,
 ];

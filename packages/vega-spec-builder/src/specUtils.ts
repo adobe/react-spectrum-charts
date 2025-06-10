@@ -12,36 +12,36 @@
 import { Config, Data, Scale, ScaleType, Spec, mergeConfig } from 'vega';
 
 import {
-	COLOR_SCALE,
-	DATE_PATH,
-	DEFAULT_TRANSFORMED_TIME_DIMENSION,
-	FILTERED_TABLE,
-	LINE_TYPE_SCALE,
-	MARK_ID,
-	OPACITY_SCALE,
-	ROUNDED_SQUARE_PATH,
-	SENTIMENT_NEGATIVE_PATH,
-	SENTIMENT_NEUTRAL_PATH,
-	SENTIMENT_POSITIVE_PATH,
-	TABLE,
+  COLOR_SCALE,
+  DATE_PATH,
+  DEFAULT_TRANSFORMED_TIME_DIMENSION,
+  FILTERED_TABLE,
+  LINE_TYPE_SCALE,
+  MARK_ID,
+  OPACITY_SCALE,
+  ROUNDED_SQUARE_PATH,
+  SENTIMENT_NEGATIVE_PATH,
+  SENTIMENT_NEUTRAL_PATH,
+  SENTIMENT_POSITIVE_PATH,
+  TABLE,
 } from '@spectrum-charts/constants';
 import { getColorValue, getSpectrumVegaConfig } from '@spectrum-charts/themes';
 
 import {
-	ChartSpecOptions,
-	ChartSymbolShape,
-	ColorFacet,
-	ColorScheme,
-	DualFacet,
-	Icon,
-	LineType,
-	LineTypeFacet,
-	LineWidth,
-	NumberFormat,
-	OpacityFacet,
-	ScSpec,
-	SymbolSize,
-	SymbolSizeFacet,
+  ChartSpecOptions,
+  ChartSymbolShape,
+  ColorFacet,
+  ColorScheme,
+  DualFacet,
+  Icon,
+  LineType,
+  LineTypeFacet,
+  LineWidth,
+  NumberFormat,
+  OpacityFacet,
+  ScSpec,
+  SymbolSize,
+  SymbolSizeFacet,
 } from './types';
 
 /**
@@ -50,31 +50,31 @@ import {
  * @returns facets
  */
 export const getFacetsFromOptions = ({
-	color,
-	lineType,
-	opacity,
-	size,
+  color,
+  lineType,
+  opacity,
+  size,
 }: {
-	color?: ColorFacet | DualFacet;
-	lineType?: LineTypeFacet | DualFacet;
-	opacity?: OpacityFacet | DualFacet;
-	size?: SymbolSizeFacet;
+  color?: ColorFacet | DualFacet;
+  lineType?: LineTypeFacet | DualFacet;
+  opacity?: OpacityFacet | DualFacet;
+  size?: SymbolSizeFacet;
 }): { facets: string[]; secondaryFacets: string[] } => {
-	// get all the keys that we need to facet by
-	// filter out the ones that use static values instead of fields
-	let facets = [color, lineType, opacity, size]
-		.map((facet) => (Array.isArray(facet) ? facet[0] : facet))
-		.filter((facet): facet is string => typeof facet === 'string');
-	// remove duplicates
-	facets = [...new Set(facets)];
+  // get all the keys that we need to facet by
+  // filter out the ones that use static values instead of fields
+  let facets = [color, lineType, opacity, size]
+    .map((facet) => (Array.isArray(facet) ? facet[0] : facet))
+    .filter((facet): facet is string => typeof facet === 'string');
+  // remove duplicates
+  facets = [...new Set(facets)];
 
-	let secondaryFacets = [color, lineType, opacity]
-		.map((facet) => (Array.isArray(facet) ? facet[1] : undefined))
-		.filter((facet): facet is string => typeof facet === 'string');
-	// remove duplicates
-	secondaryFacets = [...new Set(secondaryFacets)];
+  let secondaryFacets = [color, lineType, opacity]
+    .map((facet) => (Array.isArray(facet) ? facet[1] : undefined))
+    .filter((facet): facet is string => typeof facet === 'string');
+  // remove duplicates
+  secondaryFacets = [...new Set(secondaryFacets)];
 
-	return { facets, secondaryFacets };
+  return { facets, secondaryFacets };
 };
 
 /**
@@ -83,23 +83,23 @@ export const getFacetsFromOptions = ({
  * @returns
  */
 export const getFacetsFromScales = (scales: Scale[] = []): string[] => {
-	const facets = [
-		COLOR_SCALE,
-		LINE_TYPE_SCALE,
-		OPACITY_SCALE,
-		'secondaryColor',
-		'secondaryLineType',
-		'secondaryOpacity',
-	].reduce((acc, cur) => {
-		const scale = scales.find((scale) => scale.name === cur);
-		if (scale?.domain && 'fields' in scale.domain && scale.domain.fields.length) {
-			return [...acc, scale.domain.fields[0].toString()];
-		}
-		return acc;
-	}, [] as string[]);
+  const facets = [
+    COLOR_SCALE,
+    LINE_TYPE_SCALE,
+    OPACITY_SCALE,
+    'secondaryColor',
+    'secondaryLineType',
+    'secondaryOpacity',
+  ].reduce((acc, cur) => {
+    const scale = scales.find((scale) => scale.name === cur);
+    if (scale?.domain && 'fields' in scale.domain && scale.domain.fields.length) {
+      return [...acc, scale.domain.fields[0].toString()];
+    }
+    return acc;
+  }, [] as string[]);
 
-	// only want the unique facets
-	return [...new Set(facets)];
+  // only want the unique facets
+  return [...new Set(facets)];
 };
 
 /**
@@ -108,26 +108,26 @@ export const getFacetsFromScales = (scales: Scale[] = []): string[] => {
  * @returns strokeDash array
  */
 export const getStrokeDashFromLineType = (lineType: LineType): number[] => {
-	if (Array.isArray(lineType)) {
-		return lineType;
-	}
-	switch (lineType) {
-		case 'dashed':
-			return [7, 4];
-		case 'dotted':
-			return [2, 3];
-		case 'dotDash':
-			return [2, 3, 7, 4];
-		case 'shortDash':
-			return [3, 4];
-		case 'longDash':
-			return [11, 4];
-		case 'twoDash':
-			return [5, 2, 11, 2];
-		case 'solid':
-		default:
-			return [];
-	}
+  if (Array.isArray(lineType)) {
+    return lineType;
+  }
+  switch (lineType) {
+    case 'dashed':
+      return [7, 4];
+    case 'dotted':
+      return [2, 3];
+    case 'dotDash':
+      return [2, 3, 7, 4];
+    case 'shortDash':
+      return [3, 4];
+    case 'longDash':
+      return [11, 4];
+    case 'twoDash':
+      return [5, 2, 11, 2];
+    case 'solid':
+    default:
+      return [];
+  }
 };
 
 /**
@@ -136,23 +136,23 @@ export const getStrokeDashFromLineType = (lineType: LineType): number[] => {
  * @returns line width pixel value
  */
 export const getLineWidthPixelsFromLineWidth = (lineWidth: LineWidth): number => {
-	if (typeof lineWidth === 'number') {
-		return lineWidth;
-	}
+  if (typeof lineWidth === 'number') {
+    return lineWidth;
+  }
 
-	switch (lineWidth) {
-		case 'XS':
-			return 1;
-		case 'S':
-			return 1.5;
-		case 'L':
-			return 3;
-		case 'XL':
-			return 4;
-		case 'M':
-		default:
-			return 2;
-	}
+  switch (lineWidth) {
+    case 'XS':
+      return 1;
+    case 'S':
+      return 1.5;
+    case 'L':
+      return 3;
+    case 'XL':
+      return 4;
+    case 'M':
+    default:
+      return 2;
+  }
 };
 
 /**
@@ -161,8 +161,8 @@ export const getLineWidthPixelsFromLineWidth = (lineWidth: LineWidth): number =>
  * @returns SVG path
  */
 export const getPathFromSymbolShape = (symbolShape: ChartSymbolShape): string => {
-	if (symbolShape === 'rounded-square') return ROUNDED_SQUARE_PATH;
-	return symbolShape;
+  if (symbolShape === 'rounded-square') return ROUNDED_SQUARE_PATH;
+  return symbolShape;
 };
 
 /**
@@ -171,13 +171,13 @@ export const getPathFromSymbolShape = (symbolShape: ChartSymbolShape): string =>
  * @returns strokeDash array
  */
 export const getPathFromIcon = (icon: Icon | string): string => {
-	const supportedIcons: { [key in Icon]: string } = {
-		date: DATE_PATH,
-		sentimentNegative: SENTIMENT_NEGATIVE_PATH,
-		sentimentNeutral: SENTIMENT_NEUTRAL_PATH,
-		sentimentPositive: SENTIMENT_POSITIVE_PATH,
-	};
-	return supportedIcons[icon] || icon;
+  const supportedIcons: { [key in Icon]: string } = {
+    date: DATE_PATH,
+    sentimentNegative: SENTIMENT_NEGATIVE_PATH,
+    sentimentNeutral: SENTIMENT_NEUTRAL_PATH,
+    sentimentPositive: SENTIMENT_POSITIVE_PATH,
+  };
+  return supportedIcons[icon] || icon;
 };
 
 /**
@@ -188,7 +188,7 @@ export const getPathFromIcon = (icon: Icon | string): string => {
  * @returns size in square pixels
  */
 export const getVegaSymbolSizeFromRscSymbolSize = (symbolSize: SymbolSize): number => {
-	return Math.pow(getSymbolWidthFromRscSymbolSize(symbolSize), 2);
+  return Math.pow(getSymbolWidthFromRscSymbolSize(symbolSize), 2);
 };
 
 /**
@@ -197,31 +197,31 @@ export const getVegaSymbolSizeFromRscSymbolSize = (symbolSize: SymbolSize): numb
  * @returns width in pixels
  */
 export const getSymbolWidthFromRscSymbolSize = (symbolSize: SymbolSize): number => {
-	if (typeof symbolSize === 'number') {
-		return symbolSize;
-	}
+  if (typeof symbolSize === 'number') {
+    return symbolSize;
+  }
 
-	switch (symbolSize) {
-		case 'XS':
-			return 6;
-		case 'S':
-			return 8;
-		case 'L':
-			return 12;
-		case 'XL':
-			return 16;
-		case 'M':
-		default:
-			return 10;
-	}
+  switch (symbolSize) {
+    case 'XS':
+      return 6;
+    case 'S':
+      return 8;
+    case 'L':
+      return 12;
+    case 'XL':
+      return 16;
+    case 'M':
+    default:
+      return 10;
+  }
 };
 
 /**
  * base data that gets initialized with every uncontrolled spec
  */
 export const baseData: Data[] = [
-	{ name: TABLE, values: [], transform: [{ type: 'identifier', as: MARK_ID }] },
-	{ name: FILTERED_TABLE, source: TABLE },
+  { name: TABLE, values: [], transform: [{ type: 'identifier', as: MARK_ID }] },
+  { name: FILTERED_TABLE, source: TABLE },
 ];
 
 /**
@@ -232,18 +232,18 @@ export const baseData: Data[] = [
  * @returns Spec with default values
  */
 export const initializeSpec = (spec: Spec | null = {}, chartOptions: Partial<ChartSpecOptions> = {}): ScSpec => {
-	const { backgroundColor, colorScheme = 'light', description, title } = chartOptions;
+  const { backgroundColor, colorScheme = 'light', description, title } = chartOptions;
 
-	const baseSpec: ScSpec = {
-		usermeta: {},
-		title: title || undefined,
-		description,
-		autosize: { type: 'fit', contains: 'padding', resize: true },
-		data: baseData,
-		background: backgroundColor ? getColorValue(backgroundColor, colorScheme) : undefined,
-	};
+  const baseSpec: ScSpec = {
+    usermeta: {},
+    title: title || undefined,
+    description,
+    autosize: { type: 'fit', contains: 'padding', resize: true },
+    data: baseData,
+    background: backgroundColor ? getColorValue(backgroundColor, colorScheme) : undefined,
+  };
 
-	return { ...baseSpec, ...(spec || {}) };
+  return { ...baseSpec, ...(spec || {}) };
 };
 
 /**
@@ -255,13 +255,13 @@ export const initializeSpec = (spec: Spec | null = {}, chartOptions: Partial<Cha
  * @returns An array of Vega datasets with the values from the values object merged in
  */
 export const mergeValuesIntoData = (data, values) => {
-	return data.map((dataset) => {
-		const datasetValues = values[dataset.name];
-		if (datasetValues) {
-			dataset.values = datasetValues;
-		}
-		return dataset;
-	});
+  return data.map((dataset) => {
+    const datasetValues = values[dataset.name];
+    if (datasetValues) {
+      dataset.values = datasetValues;
+    }
+    return dataset;
+  });
 };
 
 /**
@@ -271,7 +271,7 @@ export const mergeValuesIntoData = (data, values) => {
  * @returns string
  */
 export const getDimensionField = (dimension: string, scaleType?: ScaleType) => {
-	return scaleType === 'time' ? DEFAULT_TRANSFORMED_TIME_DIMENSION : dimension;
+  return scaleType === 'time' ? DEFAULT_TRANSFORMED_TIME_DIMENSION : dimension;
 };
 
 /**
@@ -281,14 +281,14 @@ export const getDimensionField = (dimension: string, scaleType?: ScaleType) => {
  * @returns
  */
 export const getD3FormatSpecifierFromNumberFormat = (numberFormat: NumberFormat | string): string => {
-	switch (numberFormat) {
-		case 'currency':
-			return '$,.2f'; // currency format
-		case 'standardNumber':
-			return ','; // standard number format
-		default:
-			return numberFormat;
-	}
+  switch (numberFormat) {
+    case 'currency':
+      return '$,.2f'; // currency format
+    case 'standardNumber':
+      return ','; // standard number format
+    default:
+      return numberFormat;
+  }
 };
 
 /**
@@ -298,9 +298,9 @@ export const getD3FormatSpecifierFromNumberFormat = (numberFormat: NumberFormat 
  * @returns Vega config
  */
 export function getChartConfig(config: Config | undefined, colorScheme: ColorScheme): Config {
-	const defaultConfig = getSpectrumVegaConfig(colorScheme);
-	if (config) {
-		return mergeConfig(defaultConfig, config);
-	}
-	return defaultConfig;
+  const defaultConfig = getSpectrumVegaConfig(colorScheme);
+  if (config) {
+    return mergeConfig(defaultConfig, config);
+  }
+  return defaultConfig;
 }

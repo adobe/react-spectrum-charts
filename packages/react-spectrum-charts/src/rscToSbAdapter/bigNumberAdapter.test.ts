@@ -16,27 +16,27 @@ import { BigNumberProps } from '../types';
 import { getBigNumberOptions } from './bigNumberAdapter';
 
 const basicBigNumberProps: BigNumberProps = {
-	dataKey: 'test',
-	label: 'Hello world',
-	orientation: 'horizontal',
+  dataKey: 'test',
+  label: 'Hello world',
+  orientation: 'horizontal',
 };
 
 describe('getBigNumberOptions()', () => {
-	it('should return all basic options', () => {
-		const options = getBigNumberOptions(basicBigNumberProps);
-		expect(options.markType).toBe('bigNumber');
-		expect(options.lines).toHaveLength(0);
-	});
-	it('should convert line children to bigNumberLines array', () => {
-		const options = getBigNumberOptions({ ...basicBigNumberProps, children: [createElement(Line)] });
-		expect(options.lines).toHaveLength(1);
-	});
-	it('should pass through included props', () => {
-		const options = getBigNumberOptions({ ...basicBigNumberProps, numberFormat: 'currency' });
-		expect(options).toHaveProperty('numberFormat', 'currency');
-	});
-	it('should not add props that are not provided', () => {
-		const options = getBigNumberOptions(basicBigNumberProps);
-		expect(options).not.toHaveProperty('numberFormat');
-	});
+  it('should return all basic options', () => {
+    const options = getBigNumberOptions(basicBigNumberProps);
+    expect(options.markType).toBe('bigNumber');
+    expect(options.lines).toHaveLength(0);
+  });
+  it('should convert line children to bigNumberLines array', () => {
+    const options = getBigNumberOptions({ ...basicBigNumberProps, children: [createElement(Line)] });
+    expect(options.lines).toHaveLength(1);
+  });
+  it('should pass through included props', () => {
+    const options = getBigNumberOptions({ ...basicBigNumberProps, numberFormat: 'currency' });
+    expect(options).toHaveProperty('numberFormat', 'currency');
+  });
+  it('should not add props that are not provided', () => {
+    const options = getBigNumberOptions(basicBigNumberProps);
+    expect(options).not.toHaveProperty('numberFormat');
+  });
 });

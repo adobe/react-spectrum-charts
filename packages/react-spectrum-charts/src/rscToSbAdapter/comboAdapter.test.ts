@@ -15,23 +15,23 @@ import { Bar, Line } from '../components';
 import { getComboOptions } from './comboAdapter';
 
 describe('getComboOptions()', () => {
-	it('should return all basic options', () => {
-		const options = getComboOptions({});
-		expect(options.markType).toBe('combo');
-		expect(options.marks).toHaveLength(0);
-	});
-	it('should convert mark children to marks array', () => {
-		const options = getComboOptions({ children: [createElement(Bar), createElement(Line)] });
-		expect(options.marks).toHaveLength(2);
-		expect(options.marks?.[0].markType).toBe('bar');
-		expect(options.marks?.[1].markType).toBe('line');
-	});
-	it('should pass through included props', () => {
-		const options = getComboOptions({ dimension: 'x' });
-		expect(options).toHaveProperty('dimension', 'x');
-	});
-	it('should not add props that are not provided', () => {
-		const options = getComboOptions({});
-		expect(options).not.toHaveProperty('dimension');
-	});
+  it('should return all basic options', () => {
+    const options = getComboOptions({});
+    expect(options.markType).toBe('combo');
+    expect(options.marks).toHaveLength(0);
+  });
+  it('should convert mark children to marks array', () => {
+    const options = getComboOptions({ children: [createElement(Bar), createElement(Line)] });
+    expect(options.marks).toHaveLength(2);
+    expect(options.marks?.[0].markType).toBe('bar');
+    expect(options.marks?.[1].markType).toBe('line');
+  });
+  it('should pass through included props', () => {
+    const options = getComboOptions({ dimension: 'x' });
+    expect(options).toHaveProperty('dimension', 'x');
+  });
+  it('should not add props that are not provided', () => {
+    const options = getComboOptions({});
+    expect(options).not.toHaveProperty('dimension');
+  });
 });

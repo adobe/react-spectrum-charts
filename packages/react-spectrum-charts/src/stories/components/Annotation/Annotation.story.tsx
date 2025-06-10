@@ -20,65 +20,65 @@ import useChartProps from '../../../hooks/useChartProps';
 import { Bar, BarAnnotationProps, BarProps, Chart } from '../../../index';
 
 export default {
-	title: 'RSC/Bar/Annotation',
-	component: Annotation,
-	argTypes: {
-		children: {
-			description: '`(datum) => React.ReactElement`',
-			control: {
-				type: null,
-			},
-		},
-	},
+  title: 'RSC/Bar/Annotation',
+  component: Annotation,
+  argTypes: {
+    children: {
+      description: '`(datum) => React.ReactElement`',
+      control: {
+        type: null,
+      },
+    },
+  },
 };
 
 const data = [
-	{ browser: 'Chrome', value: 5, operatingSystem: 'Windows', order: 2, percentLabel: '50%' },
-	{ browser: 'Chrome', value: 3, operatingSystem: 'Mac', order: 1, percentLabel: '30%' },
-	{ browser: 'Chrome', value: 2, operatingSystem: 'Other', order: 0, percentLabel: '20%' },
-	{ browser: 'Firefox', value: 3, operatingSystem: 'Windows', order: 2, percentLabel: '42.6%' },
-	{ browser: 'Firefox', value: 3, operatingSystem: 'Mac', order: 1, percentLabel: '42.6%' },
-	{ browser: 'Firefox', value: 1, operatingSystem: 'Other', order: 0, percentLabel: '14.3%' },
-	{ browser: 'Safari', value: 3, operatingSystem: 'Windows', order: 2, percentLabel: '75%' },
-	{ browser: 'Safari', value: 0, operatingSystem: 'Mac', order: 1 },
-	{ browser: 'Safari', value: 1, operatingSystem: 'Other', order: 0, percentLabel: '25%' },
+  { browser: 'Chrome', value: 5, operatingSystem: 'Windows', order: 2, percentLabel: '50%' },
+  { browser: 'Chrome', value: 3, operatingSystem: 'Mac', order: 1, percentLabel: '30%' },
+  { browser: 'Chrome', value: 2, operatingSystem: 'Other', order: 0, percentLabel: '20%' },
+  { browser: 'Firefox', value: 3, operatingSystem: 'Windows', order: 2, percentLabel: '42.6%' },
+  { browser: 'Firefox', value: 3, operatingSystem: 'Mac', order: 1, percentLabel: '42.6%' },
+  { browser: 'Firefox', value: 1, operatingSystem: 'Other', order: 0, percentLabel: '14.3%' },
+  { browser: 'Safari', value: 3, operatingSystem: 'Windows', order: 2, percentLabel: '75%' },
+  { browser: 'Safari', value: 0, operatingSystem: 'Mac', order: 1 },
+  { browser: 'Safari', value: 1, operatingSystem: 'Other', order: 0, percentLabel: '25%' },
 ];
 
 const barArgs: BarProps = { dimension: 'browser', order: 'order', color: 'operatingSystem' };
 
 const BarAnnotationStory: StoryFn<
-	BarAnnotationProps & { barOrientation?: Orientation; chartHeight?: number; chartWidth?: number }
+  BarAnnotationProps & { barOrientation?: Orientation; chartHeight?: number; chartWidth?: number }
 > = (args): ReactElement => {
-	const chartProps = useChartProps({ data: data });
-	const { barOrientation = 'vertical', chartHeight = 300, chartWidth = 300, ...annotationProps } = args;
-	return (
-		<Chart {...chartProps} height={chartHeight} width={chartWidth}>
-			<Bar {...barArgs} orientation={barOrientation}>
-				<Annotation {...annotationProps} />
-			</Bar>
-		</Chart>
-	);
+  const chartProps = useChartProps({ data: data });
+  const { barOrientation = 'vertical', chartHeight = 300, chartWidth = 300, ...annotationProps } = args;
+  return (
+    <Chart {...chartProps} height={chartHeight} width={chartWidth}>
+      <Bar {...barArgs} orientation={barOrientation}>
+        <Annotation {...annotationProps} />
+      </Bar>
+    </Chart>
+  );
 };
 
 const HorizontalBarChart = BarAnnotationStory.bind({});
 HorizontalBarChart.args = {
-	textKey: 'percentLabel',
-	// color: 'operatingSystem',
-	barOrientation: 'horizontal',
+  textKey: 'percentLabel',
+  // color: 'operatingSystem',
+  barOrientation: 'horizontal',
 };
 
 const VerticalBarChart = BarAnnotationStory.bind({});
 VerticalBarChart.args = {
-	textKey: 'percentLabel',
-	// color: 'operatingSystem',
-	barOrientation: 'vertical',
+  textKey: 'percentLabel',
+  // color: 'operatingSystem',
+  barOrientation: 'vertical',
 };
 
 const FixedWidthBar = BarAnnotationStory.bind({});
 FixedWidthBar.args = {
-	textKey: 'percentLabel',
-	style: { width: 48 },
-	// color: 'operatingSystem',
+  textKey: 'percentLabel',
+  style: { width: 48 },
+  // color: 'operatingSystem',
 };
 
 export { HorizontalBarChart, VerticalBarChart, FixedWidthBar };

@@ -13,12 +13,12 @@ import { Axis, Mark, Scale, SignalRef } from 'vega';
 
 import { AxisSpecOptions, Granularity, Orientation, Position } from '../types';
 import {
-	getAxisLabelsEncoding,
-	getLabelAnchorValues,
-	getLabelAngle,
-	getLabelFormat,
-	getLabelOffset,
-	getTimeLabelFormats,
+  getAxisLabelsEncoding,
+  getLabelAnchorValues,
+  getLabelAngle,
+  getLabelFormat,
+  getLabelOffset,
+  getTimeLabelFormats,
 } from './axisLabelUtils';
 
 /**
@@ -28,45 +28,45 @@ import {
  * @returns axis
  */
 export const getDefaultAxis = (axisOptions: AxisSpecOptions, scaleName: string): Axis => {
-	const {
-		grid,
-		hideDefaultLabels,
-		labelAlign,
-		labelFontWeight,
-		labelOrientation,
-		tickCountLimit,
-		position,
-		scaleType,
-		ticks,
-		tickMinStep,
-		title,
-		vegaLabelAlign,
-		vegaLabelBaseline,
-		vegaLabelOffset,
-		vegaLabelPadding,
-	} = axisOptions;
-	return {
-		scale: scaleName,
-		orient: position,
-		grid,
-		ticks,
-		tickCount: getTickCount(position, tickCountLimit, grid),
-		tickMinStep: scaleType !== 'linear' ? undefined : tickMinStep, //only supported for linear scales
-		title,
-		labelAngle: getLabelAngle(labelOrientation),
-		labelFontWeight,
-		labelOffset: getLabelOffset(labelAlign, scaleName, vegaLabelOffset),
-		labelPadding: vegaLabelPadding,
-		labels: !hideDefaultLabels,
-		...getLabelAnchorValues(position, labelOrientation, labelAlign, vegaLabelAlign, vegaLabelBaseline),
-		encode: {
-			labels: {
-				update: {
-					text: getLabelFormat(axisOptions, scaleName),
-				},
-			},
-		},
-	};
+  const {
+    grid,
+    hideDefaultLabels,
+    labelAlign,
+    labelFontWeight,
+    labelOrientation,
+    tickCountLimit,
+    position,
+    scaleType,
+    ticks,
+    tickMinStep,
+    title,
+    vegaLabelAlign,
+    vegaLabelBaseline,
+    vegaLabelOffset,
+    vegaLabelPadding,
+  } = axisOptions;
+  return {
+    scale: scaleName,
+    orient: position,
+    grid,
+    ticks,
+    tickCount: getTickCount(position, tickCountLimit, grid),
+    tickMinStep: scaleType !== 'linear' ? undefined : tickMinStep, //only supported for linear scales
+    title,
+    labelAngle: getLabelAngle(labelOrientation),
+    labelFontWeight,
+    labelOffset: getLabelOffset(labelAlign, scaleName, vegaLabelOffset),
+    labelPadding: vegaLabelPadding,
+    labels: !hideDefaultLabels,
+    ...getLabelAnchorValues(position, labelOrientation, labelAlign, vegaLabelAlign, vegaLabelBaseline),
+    encode: {
+      labels: {
+        update: {
+          text: getLabelFormat(axisOptions, scaleName),
+        },
+      },
+    },
+  };
 };
 
 /**
@@ -76,7 +76,7 @@ export const getDefaultAxis = (axisOptions: AxisSpecOptions, scaleName: string):
  * @returns axes
  */
 export const getTimeAxes = (scaleName: string, axisOptions: AxisSpecOptions): Axis[] => {
-	return [getSecondaryTimeAxis(scaleName, axisOptions), ...getPrimaryTimeAxis(scaleName, axisOptions)];
+  return [getSecondaryTimeAxis(scaleName, axisOptions), ...getPrimaryTimeAxis(scaleName, axisOptions)];
 };
 
 /**
@@ -88,55 +88,55 @@ export const getTimeAxes = (scaleName: string, axisOptions: AxisSpecOptions): Ax
  * @returns axis
  */
 const getSecondaryTimeAxis = (
-	scaleName: string,
-	{
-		granularity,
-		grid,
-		labelAlign,
-		labelOrientation,
-		position,
-		ticks,
-		title,
-		vegaLabelAlign,
-		vegaLabelBaseline,
-	}: AxisSpecOptions
+  scaleName: string,
+  {
+    granularity,
+    grid,
+    labelAlign,
+    labelOrientation,
+    position,
+    ticks,
+    title,
+    vegaLabelAlign,
+    vegaLabelBaseline,
+  }: AxisSpecOptions
 ): Axis => {
-	const { tickCount } = getTimeLabelFormats(granularity);
+  const { tickCount } = getTimeLabelFormats(granularity);
 
-	return {
-		scale: scaleName,
-		orient: position,
-		grid,
-		ticks,
-		tickCount: scaleName.includes('Time') ? tickCount : undefined,
-		title,
-		formatType: 'time',
-		labelAngle: getLabelAngle(labelOrientation),
-		labelSeparation: 12,
-		...getSecondaryTimeAxisLabelFormatting(granularity, position),
-		...getLabelAnchorValues(position, labelOrientation, labelAlign, vegaLabelAlign, vegaLabelBaseline),
-	};
+  return {
+    scale: scaleName,
+    orient: position,
+    grid,
+    ticks,
+    tickCount: scaleName.includes('Time') ? tickCount : undefined,
+    title,
+    formatType: 'time',
+    labelAngle: getLabelAngle(labelOrientation),
+    labelSeparation: 12,
+    ...getSecondaryTimeAxisLabelFormatting(granularity, position),
+    ...getLabelAnchorValues(position, labelOrientation, labelAlign, vegaLabelAlign, vegaLabelBaseline),
+  };
 };
 
 const getSecondaryTimeAxisLabelFormatting = (granularity: Granularity, position: Position): Partial<Axis> => {
-	const { secondaryLabelFormat, primaryLabelFormat } = getTimeLabelFormats(granularity);
-	const isVerticalAxis = ['left', 'right'].includes(position);
-	if (isVerticalAxis) {
-		return {
-			format: `${primaryLabelFormat}\u2000${secondaryLabelFormat}`,
-			encode: {
-				labels: {
-					update: {
-						text: { signal: 'formatVerticalAxisTimeLabels(datum)' },
-					},
-				},
-			},
-		};
-	}
+  const { secondaryLabelFormat, primaryLabelFormat } = getTimeLabelFormats(granularity);
+  const isVerticalAxis = ['left', 'right'].includes(position);
+  if (isVerticalAxis) {
+    return {
+      format: `${primaryLabelFormat}\u2000${secondaryLabelFormat}`,
+      encode: {
+        labels: {
+          update: {
+            text: { signal: 'formatVerticalAxisTimeLabels(datum)' },
+          },
+        },
+      },
+    };
+  }
 
-	return {
-		format: secondaryLabelFormat,
-	};
+  return {
+    format: secondaryLabelFormat,
+  };
 };
 
 /**
@@ -148,45 +148,45 @@ const getSecondaryTimeAxisLabelFormatting = (granularity: Granularity, position:
  * @returns axis
  */
 const getPrimaryTimeAxis = (
-	scaleName: string,
-	{
-		granularity,
-		labelAlign,
-		labelOrientation,
-		labelFontWeight,
-		position,
-		ticks,
-		vegaLabelAlign,
-		vegaLabelBaseline,
-	}: AxisSpecOptions
+  scaleName: string,
+  {
+    granularity,
+    labelAlign,
+    labelOrientation,
+    labelFontWeight,
+    position,
+    ticks,
+    vegaLabelAlign,
+    vegaLabelBaseline,
+  }: AxisSpecOptions
 ): Axis[] => {
-	if (['left', 'right'].includes(position)) {
-		return [];
-	}
-	const { primaryLabelFormat, tickCount } = getTimeLabelFormats(granularity);
-	return [
-		{
-			scale: scaleName,
-			orient: position,
-			format: primaryLabelFormat,
-			tickCount: scaleName.includes('Time') ? tickCount : undefined,
-			formatType: 'time',
-			labelOverlap: 'greedy',
-			labelFontWeight,
-			labelAngle: getLabelAngle(labelOrientation),
-			...getLabelAnchorValues(position, labelOrientation, labelAlign, vegaLabelAlign, vegaLabelBaseline),
-			encode: {
-				labels: {
-					enter: {
-						dy: { value: (ticks ? 28 : 20) * (position === 'top' ? -1 : 1) }, // account for tick height
-					},
-					update: {
-						text: { signal: 'formatHorizontalTimeAxisLabels(datum)' },
-					},
-				},
-			},
-		},
-	];
+  if (['left', 'right'].includes(position)) {
+    return [];
+  }
+  const { primaryLabelFormat, tickCount } = getTimeLabelFormats(granularity);
+  return [
+    {
+      scale: scaleName,
+      orient: position,
+      format: primaryLabelFormat,
+      tickCount: scaleName.includes('Time') ? tickCount : undefined,
+      formatType: 'time',
+      labelOverlap: 'greedy',
+      labelFontWeight,
+      labelAngle: getLabelAngle(labelOrientation),
+      ...getLabelAnchorValues(position, labelOrientation, labelAlign, vegaLabelAlign, vegaLabelBaseline),
+      encode: {
+        labels: {
+          enter: {
+            dy: { value: (ticks ? 28 : 20) * (position === 'top' ? -1 : 1) }, // account for tick height
+          },
+          update: {
+            text: { signal: 'formatHorizontalTimeAxisLabels(datum)' },
+          },
+        },
+      },
+    },
+  ];
 };
 
 /**
@@ -196,35 +196,28 @@ const getPrimaryTimeAxis = (
  * @returns axis
  */
 export const getSubLabelAxis = (axisOptions: AxisSpecOptions, scaleName: string): Axis => {
-	const { labelAlign, labelFontWeight, labelOrientation, name, position, ticks } = axisOptions;
-	const subLabels = axisOptions.subLabels;
-	const signalName = `${name}_subLabels`;
-	const subLabelValues = subLabels.map((label) => label.value);
+  const { labelAlign, labelFontWeight, labelOrientation, name, position, ticks } = axisOptions;
+  const subLabels = axisOptions.subLabels;
+  const signalName = `${name}_subLabels`;
+  const subLabelValues = subLabels.map((label) => label.value);
 
-	let subLabelAxis = getDefaultAxis(axisOptions, scaleName);
-	subLabelAxis = {
-		...subLabelAxis,
-		domain: false,
-		domainWidth: undefined,
-		grid: false,
-		labelPadding: ticks ? 32 : 24,
-		ticks: false,
-		title: undefined,
-		values: subLabelValues.length ? subLabelValues : undefined,
-		encode: {
-			labels: {
-				...getAxisLabelsEncoding(
-					labelAlign,
-					labelFontWeight,
-					'subLabel',
-					labelOrientation,
-					position,
-					signalName
-				),
-			},
-		},
-	};
-	return subLabelAxis;
+  let subLabelAxis = getDefaultAxis(axisOptions, scaleName);
+  subLabelAxis = {
+    ...subLabelAxis,
+    domain: false,
+    domainWidth: undefined,
+    grid: false,
+    labelPadding: ticks ? 32 : 24,
+    ticks: false,
+    title: undefined,
+    values: subLabelValues.length ? subLabelValues : undefined,
+    encode: {
+      labels: {
+        ...getAxisLabelsEncoding(labelAlign, labelFontWeight, 'subLabel', labelOrientation, position, signalName),
+      },
+    },
+  };
+  return subLabelAxis;
 };
 
 /**
@@ -235,27 +228,27 @@ export const getSubLabelAxis = (axisOptions: AxisSpecOptions, scaleName: string)
  * @returns scale
  */
 export const getScale = (scales: Scale[], position: Position) => {
-	const applicableScales = scales.filter((s) => 'range' in s && s.range === getRange(position));
-	let scale: Scale | undefined;
+  const applicableScales = scales.filter((s) => 'range' in s && s.range === getRange(position));
+  let scale: Scale | undefined;
 
-	if (applicableScales.length > 1) {
-		// Is there a better way to find the trellis scale?
-		scale = scales.find((s) => s.name.includes('Trellis')) ?? applicableScales[0];
-	} else {
-		scale = applicableScales[0];
-	}
+  if (applicableScales.length > 1) {
+    // Is there a better way to find the trellis scale?
+    scale = scales.find((s) => s.name.includes('Trellis')) ?? applicableScales[0];
+  } else {
+    scale = applicableScales[0];
+  }
 
-	if (scale) {
-		return scale;
-	}
+  if (scale) {
+    return scale;
+  }
 
-	scale = {
-		name: getDefaultScaleNameFromPosition(position),
-		type: 'linear',
-		range: getRange(position),
-	};
-	scales.push(scale);
-	return scale;
+  scale = {
+    name: getDefaultScaleNameFromPosition(position),
+    type: 'linear',
+    range: getRange(position),
+  };
+  scales.push(scale);
+  return scale;
 };
 
 /**
@@ -264,10 +257,10 @@ export const getScale = (scales: Scale[], position: Position) => {
  * @returns range
  */
 export const getRange = (position: Position): 'width' | 'height' => {
-	if (position === 'left' || position === 'right') {
-		return 'height';
-	}
-	return 'width';
+  if (position === 'left' || position === 'right') {
+    return 'height';
+  }
+  return 'width';
 };
 
 /**
@@ -278,17 +271,17 @@ export const getRange = (position: Position): 'width' | 'height' => {
  * @returns scaleType
  */
 export const getOpposingScaleType = (scales: Scale[], position: Position) => {
-	let scale = scales.find((s) => 'range' in s && s.range === getOpposingRange(position));
-	if (scale) {
-		return scale.type;
-	}
-	scale = {
-		name: getDefaultOpposingScaleNameFromPosition(position),
-		type: 'linear',
-		range: getOpposingRange(position),
-	};
-	scales.push(scale);
-	return scale.type;
+  let scale = scales.find((s) => 'range' in s && s.range === getOpposingRange(position));
+  if (scale) {
+    return scale.type;
+  }
+  scale = {
+    name: getDefaultOpposingScaleNameFromPosition(position),
+    type: 'linear',
+    range: getOpposingRange(position),
+  };
+  scales.push(scale);
+  return scale.type;
 };
 
 /**
@@ -297,10 +290,10 @@ export const getOpposingScaleType = (scales: Scale[], position: Position) => {
  * @returns
  */
 export const getOpposingRange = (position: Position): 'width' | 'height' => {
-	if (position === 'left' || position === 'right') {
-		return 'width';
-	}
-	return 'height';
+  if (position === 'left' || position === 'right') {
+    return 'width';
+  }
+  return 'height';
 };
 
 /**
@@ -309,7 +302,7 @@ export const getOpposingRange = (position: Position): 'width' | 'height' => {
  * @returns boolean
  */
 export const isVerticalAxis = (position: Position): boolean => {
-	return ['left', 'right'].includes(position);
+  return ['left', 'right'].includes(position);
 };
 
 /**
@@ -318,7 +311,7 @@ export const isVerticalAxis = (position: Position): boolean => {
  * @returns scaleName
  */
 const getDefaultScaleNameFromPosition = (position: Position) => {
-	return isVerticalAxis(position) ? 'yLinear' : 'xLinear';
+  return isVerticalAxis(position) ? 'yLinear' : 'xLinear';
 };
 
 /**
@@ -327,39 +320,35 @@ const getDefaultScaleNameFromPosition = (position: Position) => {
  * @returns scaleName
  */
 const getDefaultOpposingScaleNameFromPosition = (position: Position) => {
-	return isVerticalAxis(position) ? 'xLinear' : 'yLinear';
+  return isVerticalAxis(position) ? 'xLinear' : 'yLinear';
 };
 
 /**
  * Determines tick count based on axis type and available space.
  * Uses Vega's tickCount parameter which is treated as a suggestion rather than a strict limit.
  * The final number of ticks may vary as Vega optimizes for visually pleasing values and intervals.
- * 
+ *
  * @param position The position of the axis
  * @param tickCountLimit The upper limit for the number of ticks
  * @param grid Whether grid lines are enabled
  * @returns tickCount production rule for Vega
  */
-export const getTickCount = (
-	position: Position, 
-	tickCountLimit?: number,
-	grid?: boolean
-): SignalRef | undefined => {
-	const range = ['top', 'bottom'].includes(position) ? 'width' : 'height';
-	
-	// 0 is a valid tickCountLimit value.
-	if (tickCountLimit !== undefined) {
-		// divide the range by 100 to get the ideal number of ticks (grid lines)
-		return {
-			signal: `clamp(ceil(${range}/100), 2, ${tickCountLimit})`
-		};
-	} else if (grid) {
-		// divide the range by 100 to get the ideal number of ticks (grid lines)
-		return {
-			signal: `clamp(ceil(${range}/100), 2, 10)`
-		};
-	}
-	return undefined;
+export const getTickCount = (position: Position, tickCountLimit?: number, grid?: boolean): SignalRef | undefined => {
+  const range = ['top', 'bottom'].includes(position) ? 'width' : 'height';
+
+  // 0 is a valid tickCountLimit value.
+  if (tickCountLimit !== undefined) {
+    // divide the range by 100 to get the ideal number of ticks (grid lines)
+    return {
+      signal: `clamp(ceil(${range}/100), 2, ${tickCountLimit})`,
+    };
+  } else if (grid) {
+    // divide the range by 100 to get the ideal number of ticks (grid lines)
+    return {
+      signal: `clamp(ceil(${range}/100), 2, 10)`,
+    };
+  }
+  return undefined;
 };
 
 /**
@@ -369,37 +358,37 @@ export const getTickCount = (
  * @returns baselineMark
  */
 export const getBaselineRule = (baselineOffset: number, position: Position): Mark => {
-	const orientation = isVerticalAxis(position) ? 'y' : 'x';
+  const orientation = isVerticalAxis(position) ? 'y' : 'x';
 
-	const positionOptions = {
-		x: {
-			x: { value: 0 },
-			x2: { signal: 'width' },
-			y: { scale: 'yLinear', value: baselineOffset },
-		},
-		y: {
-			x: { scale: 'xLinear', value: baselineOffset },
-			y: { value: 0 },
-			y2: { signal: 'height' },
-		},
-	};
+  const positionOptions = {
+    x: {
+      x: { value: 0 },
+      x2: { signal: 'width' },
+      y: { scale: 'yLinear', value: baselineOffset },
+    },
+    y: {
+      x: { scale: 'xLinear', value: baselineOffset },
+      y: { value: 0 },
+      y2: { signal: 'height' },
+    },
+  };
 
-	return {
-		name: `${orientation}Baseline`,
-		description: `${orientation}Baseline`,
-		type: 'rule',
-		interactive: false,
-		encode: {
-			update: {
-				...positionOptions[orientation],
-			},
-		},
-	};
+  return {
+    name: `${orientation}Baseline`,
+    description: `${orientation}Baseline`,
+    type: 'rule',
+    interactive: false,
+    encode: {
+      update: {
+        ...positionOptions[orientation],
+      },
+    },
+  };
 };
 
 export const hasSubLabels = ({ subLabels, labelOrientation }: AxisSpecOptions) => {
-	// subLabels are only supported for horizontal axis labels
-	return Boolean(subLabels.length && labelOrientation === 'horizontal');
+  // subLabels are only supported for horizontal axis labels
+  return Boolean(subLabels.length && labelOrientation === 'horizontal');
 };
 
 /**
@@ -409,8 +398,8 @@ export const hasSubLabels = ({ subLabels, labelOrientation }: AxisSpecOptions) =
  * @returns Whether the axis is a metric axis
  */
 export function getIsMetricAxis(position: Position, chartOrientation: Orientation): boolean {
-	if (chartOrientation === 'vertical') {
-		return isVerticalAxis(position);
-	}
-	return !isVerticalAxis(position);
+  if (chartOrientation === 'vertical') {
+    return isVerticalAxis(position);
+  }
+  return !isVerticalAxis(position);
 }

@@ -13,25 +13,25 @@ import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 export const findChart = async () => {
-	return screen.findByRole('graphics-document');
+  return screen.findByRole('graphics-document');
 };
 
 export const hoverNthElement = async (elements: HTMLElement[], index: number) => {
-	await userEvent.hover(elements[index]);
+  await userEvent.hover(elements[index]);
 };
 
 export const unhoverNthElement = async (elements: HTMLElement[], index: number) => {
-	await userEvent.unhover(elements[index]);
+  await userEvent.unhover(elements[index]);
 };
 
 export const clickNthElement = async (elements: HTMLElement[], index: number) => {
-	await userEvent.click(elements[index]);
+  await userEvent.click(elements[index]);
 };
 
 export const rightClickNthElement = async (elements: HTMLElement[], index: number) => {
-	const user = userEvent.setup();
-	await user.pointer([{ target: elements[index], keys: '[MouseRight]' }]);
+  const user = userEvent.setup();
+  await user.pointer([{ target: elements[index], keys: '[MouseRight]' }]);
 };
 
 export const allElementsHaveAttributeValue = (elements: HTMLElement[], attribute: string, value: number | string) =>
-	elements.every((element) => element.getAttribute(attribute) === value.toString());
+  elements.every((element) => element.getAttribute(attribute) === value.toString());

@@ -18,5 +18,5 @@ import { spectrumColors } from './spectrumColors';
  * @returns css color string
  */
 export const getColorValue = (color: string, colorScheme: 'light' | 'dark'): string => {
-	return spectrumColors[colorScheme][color] || color;
+  return spectrumColors[colorScheme][color] || color;
 };

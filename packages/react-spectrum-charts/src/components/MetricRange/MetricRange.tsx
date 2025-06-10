@@ -19,18 +19,18 @@ import { MetricRangeProps } from '../../types';
 
 // destructure props here and set defaults so that storybook can pick them up
 const MetricRange: FC<MetricRangeProps> = ({
-	children,
-	color,
-	lineType = 'dashed',
-	lineWidth = 'M',
-	rangeOpacity = 0.2,
-	metricEnd,
-	metricStart,
-	metric = DEFAULT_METRIC,
-	displayOnHover = false,
-	scaleAxisToFit = false,
+  children,
+  color,
+  lineType = 'dashed',
+  lineWidth = 'M',
+  rangeOpacity = 0.2,
+  metricEnd,
+  metricStart,
+  metric = DEFAULT_METRIC,
+  displayOnHover = false,
+  scaleAxisToFit = false,
 }) => {
-	return null;
+  return null;
 };
 
 // displayName is used to validate the component type in the spec builder

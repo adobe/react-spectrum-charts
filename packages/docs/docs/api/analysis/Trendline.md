@@ -29,7 +29,7 @@ Note: `linear` is identical to `polynomial-1` and `quadratic` is identical to `p
 Timestamps in `react-spectrum-charts` use unix time which is the milliseconds since Jan, 1st 1970 in London. This means that timestamps are on the order of 1.5 trillion. Using such large numbers for the x axis is problematic when calculating regressions. To solve this and get more value out of regression methods, `react-spectrum-charts` normalizes timestamp dimensions so that the regressions are actually calculated using days since the beginning of time period + 1 day.
 
 ```tsx
-normalizedTimestamp = (timestamp - timePeriodStart + msPerDay) / msPerDay
+normalizedTimestamp = (timestamp - timePeriodStart + msPerDay) / msPerDay;
 ```
 
 ### Window
@@ -50,10 +50,10 @@ Example
 ### Average line on a bar chart
 
 ```jsx
-<Chart data={data} >
-    <Bar>
-        <Trendline method="average" color="gray-500"  />
-    </Bar>
+<Chart data={data}>
+  <Bar>
+    <Trendline method="average" color="gray-500" />
+  </Bar>
 </Chart>
 ```
 
@@ -62,10 +62,10 @@ Example
 For this example, the granularity of the data would be in days.
 
 ```jsx
-<Chart data={data} >
-    <Line>
-        <Trendline method="movingAverage-7" lineType="dashed" />
-    </Line>
+<Chart data={data}>
+  <Line>
+    <Trendline method="movingAverage-7" lineType="dashed" />
+  </Line>
 </Chart>
 ```
 
@@ -182,15 +182,15 @@ Annotations on a trendline use logic to identify if the annotation will overlap 
 
 ```jsx
 <Chart {...chartProps}>
-    <Axis position="bottom" grid ticks baseline title="Speed (normal)" />
-    <Axis position="left" grid ticks baseline title="Handling (normal)" />
-    <Scatter color="weightClass" dimension="speedNormal" metric="handlingNormal">
-        <Trendline method="median" dimensionExtent={['domain', 'domain']} lineWidth="S">
-            <TrendlineAnnotation dimensionValue="end" prefix="Speed:" />
-        </Trendline>
-    </Scatter>
-    <Legend title="Weight class" highlight position="right" />
-    <Title text="Mario Kart 8 Character Data" />
+  <Axis position="bottom" grid ticks baseline title="Speed (normal)" />
+  <Axis position="left" grid ticks baseline title="Handling (normal)" />
+  <Scatter color="weightClass" dimension="speedNormal" metric="handlingNormal">
+    <Trendline method="median" dimensionExtent={['domain', 'domain']} lineWidth="S">
+      <TrendlineAnnotation dimensionValue="end" prefix="Speed:" />
+    </Trendline>
+  </Scatter>
+  <Legend title="Weight class" highlight position="right" />
+  <Title text="Mario Kart 8 Character Data" />
 </Chart>
 ```
 

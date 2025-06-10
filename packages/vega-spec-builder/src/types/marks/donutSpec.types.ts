@@ -17,45 +17,45 @@ import { DonutSummaryOptions } from './supplemental/dountSummarySpec.types';
 import { SegmentLabelOptions } from './supplemental/segmentLabelSpec.types';
 
 export interface DonutOptions {
-	markType: 'donut';
+  markType: 'donut';
 
-	/** Key in the data that is used as the color facet */
-	color?: string;
-	/** Ratio of the donut inner radius / donut outer radius. 0 is a pie chart. 0.85 is the default. */
-	holeRatio?: number;
-	/** Determines if the center metric should be displayed as a percent. if true, data should only be two data points, which sum to 1
-	 * Also, if true, will display the first datapoint as a percent */
-	isBoolean?: boolean;
-	/** Key in the data that is used as the metric */
-	metric?: string;
-	/** Sets the name of the component. */
-	name?: string;
-	/** Start angle of the donut in radians (0 is top dead center, and default) */
-	startAngle?: number;
+  /** Key in the data that is used as the color facet */
+  color?: string;
+  /** Ratio of the donut inner radius / donut outer radius. 0 is a pie chart. 0.85 is the default. */
+  holeRatio?: number;
+  /** Determines if the center metric should be displayed as a percent. if true, data should only be two data points, which sum to 1
+   * Also, if true, will display the first datapoint as a percent */
+  isBoolean?: boolean;
+  /** Key in the data that is used as the metric */
+  metric?: string;
+  /** Sets the name of the component. */
+  name?: string;
+  /** Start angle of the donut in radians (0 is top dead center, and default) */
+  startAngle?: number;
 
-	// children
-	chartPopovers?: ChartPopoverOptions[];
-	chartTooltips?: ChartTooltipOptions[];
-	donutSummaries?: DonutSummaryOptions[];
-	segmentLabels?: SegmentLabelOptions[];
+  // children
+  chartPopovers?: ChartPopoverOptions[];
+  chartTooltips?: ChartTooltipOptions[];
+  donutSummaries?: DonutSummaryOptions[];
+  segmentLabels?: SegmentLabelOptions[];
 }
 
 type DonutOptionsWithDefaults =
-	| 'chartPopovers'
-	| 'chartTooltips'
-	| 'color'
-	| 'donutSummaries'
-	| 'holeRatio'
-	| 'isBoolean'
-	| 'metric'
-	| 'name'
-	| 'segmentLabels'
-	| 'startAngle';
+  | 'chartPopovers'
+  | 'chartTooltips'
+  | 'color'
+  | 'donutSummaries'
+  | 'holeRatio'
+  | 'isBoolean'
+  | 'metric'
+  | 'name'
+  | 'segmentLabels'
+  | 'startAngle';
 
 export interface DonutSpecOptions extends PartiallyRequired<DonutOptions, DonutOptionsWithDefaults> {
-	colorScheme: ColorScheme;
-	highlightedItem?: HighlightedItem;
-	idKey: string;
-	index: number;
-	markType: 'donut';
+  colorScheme: ColorScheme;
+  highlightedItem?: HighlightedItem;
+  idKey: string;
+  index: number;
+  markType: 'donut';
 }

@@ -13,32 +13,32 @@ import { findChart, render, screen } from '../../../test-utils';
 import { LabelAlign, LabelOrientation } from './AxisLabels.story';
 
 describe('LabelAlign', () => {
-	test('anchor should be on the left side of text for labelAlign="start" and labelOrientation="horizontal"', async () => {
-		render(<LabelAlign {...LabelAlign.args} labelAlign="start" />);
+  test('anchor should be on the left side of text for labelAlign="start" and labelOrientation="horizontal"', async () => {
+    render(<LabelAlign {...LabelAlign.args} labelAlign="start" />);
 
-		const chart = await findChart();
-		expect(chart).toBeInTheDocument();
+    const chart = await findChart();
+    expect(chart).toBeInTheDocument();
 
-		expect(screen.getByText('0')).toHaveAttribute('text-anchor', 'start');
-	});
+    expect(screen.getByText('0')).toHaveAttribute('text-anchor', 'start');
+  });
 
-	test('anchor should be at end of text for labelAlign="end" and labelOrientation="horizontal"', async () => {
-		render(<LabelAlign {...LabelAlign.args} labelAlign="end" />);
+  test('anchor should be at end of text for labelAlign="end" and labelOrientation="horizontal"', async () => {
+    render(<LabelAlign {...LabelAlign.args} labelAlign="end" />);
 
-		const chart = await findChart();
-		expect(chart).toBeInTheDocument();
+    const chart = await findChart();
+    expect(chart).toBeInTheDocument();
 
-		expect(screen.getByText('0')).toHaveAttribute('text-anchor', 'end');
-	});
+    expect(screen.getByText('0')).toHaveAttribute('text-anchor', 'end');
+  });
 });
 
 describe('LabelOrientation', () => {
-	test('text should be rotated 270deg for veritcal labelOrientation', async () => {
-		render(<LabelOrientation {...LabelOrientation.args} labelOrientation="vertical" />);
+  test('text should be rotated 270deg for veritcal labelOrientation', async () => {
+    render(<LabelOrientation {...LabelOrientation.args} labelOrientation="vertical" />);
 
-		const chart = await findChart();
-		expect(chart).toBeInTheDocument();
+    const chart = await findChart();
+    expect(chart).toBeInTheDocument();
 
-		expect(screen.getByText('0').getAttribute('transform')?.includes('rotate(270')).toBeTruthy();
-	});
+    expect(screen.getByText('0').getAttribute('transform')?.includes('rotate(270')).toBeTruthy();
+  });
 });

@@ -16,66 +16,66 @@ import { Signal, View } from 'vega';
 import { Datum, MarkBounds } from '@spectrum-charts/vega-spec-builder';
 
 interface ChartContextValue {
-	// Chart view state
-	chartView: MutableRefObject<View | undefined>;
-	chartId: string;
+  // Chart view state
+  chartView: MutableRefObject<View | undefined>;
+  chartId: string;
 
-	// Selection state
-	selectedData: MutableRefObject<Datum | null>;
-	selectedDataName: MutableRefObject<string>;
-	selectedDataBounds: MutableRefObject<MarkBounds>;
+  // Selection state
+  selectedData: MutableRefObject<Datum | null>;
+  selectedDataName: MutableRefObject<string>;
+  selectedDataBounds: MutableRefObject<MarkBounds>;
 
-	// Popover state
-	isPopoverOpen: boolean;
-	setIsPopoverOpen: (isOpen: boolean) => void;
-	popoverAnchorRef: MutableRefObject<HTMLDivElement | null>;
+  // Popover state
+  isPopoverOpen: boolean;
+  setIsPopoverOpen: (isOpen: boolean) => void;
+  popoverAnchorRef: MutableRefObject<HTMLDivElement | null>;
 
-	// Spec state
-	controlledHoveredIdSignal: MutableRefObject<Signal | undefined>;
-	controlledHoveredGroupSignal: MutableRefObject<Signal | undefined>;
+  // Spec state
+  controlledHoveredIdSignal: MutableRefObject<Signal | undefined>;
+  controlledHoveredGroupSignal: MutableRefObject<Signal | undefined>;
 }
 
 const ChartContext = createContext<ChartContextValue | null>(null);
 
 interface ChartProviderProps {
-	children: ReactNode;
-	chartId: string;
-	chartView: MutableRefObject<View | undefined>;
+  children: ReactNode;
+  chartId: string;
+  chartView: MutableRefObject<View | undefined>;
 }
 
 export const ChartProvider = ({ children, chartId, chartView }: ChartProviderProps) => {
-	const controlledHoveredIdSignal = useRef<Signal | undefined>();
-	const controlledHoveredGroupSignal = useRef<Signal | undefined>();
-	const popoverAnchorRef = useRef<HTMLDivElement | null>(null);
-	const selectedData = useRef<Datum | null>(null);
-	const selectedDataName = useRef<string>('');
-	const selectedDataBounds = useRef<MarkBounds>({ x1: 0, x2: 0, y1: 0, y2: 0 });
+  const controlledHoveredIdSignal = useRef<Signal | undefined>();
+  const controlledHoveredGroupSignal = useRef<Signal | undefined>();
+  const popoverAnchorRef = useRef<HTMLDivElement | null>(null);
+  const selectedData = useRef<Datum | null>(null);
+  const selectedDataName = useRef<string>('');
+  const selectedDataBounds = useRef<MarkBounds>({ x1: 0, x2: 0, y1: 0, y2: 0 });
 
-	const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
 
-	const value: ChartContextValue = useMemo(
-		() => ({
-			chartView,
-			chartId,
-			selectedData,
-			selectedDataName,
-			selectedDataBounds,
-			controlledHoveredIdSignal,
-			controlledHoveredGroupSignal,
-			isPopoverOpen,
-			setIsPopoverOpen,
-			popoverAnchorRef,
-		}),
-		[chartId, chartView, isPopoverOpen]
-	);
+  const value: ChartContextValue = useMemo(
+    () => ({
+      chartView,
+      chartId,
+      selectedData,
+      selectedDataName,
+      selectedDataBounds,
+      controlledHoveredIdSignal,
+      controlledHoveredGroupSignal,
+      isPopoverOpen,
+      setIsPopoverOpen,
+      popoverAnchorRef,
+    }),
+    [chartId, chartView, isPopoverOpen]
+  );
 
-	return <ChartContext.Provider value={value}>{children}</ChartContext.Provider>;
+  return <ChartContext.Provider value={value}>{children}</ChartContext.Provider>;
 };
 
 export const useChartContext = () => {
-	const context = useContext(ChartContext);
-	if (!context) {
-		throw new Error('useChartContext must be used within a ChartProvider');
-	}
-	return context;
+  const context = useContext(ChartContext);
+  if (!context) {
+    throw new Error('useChartContext must be used within a ChartProvider');
+  }
+  return context;
 };

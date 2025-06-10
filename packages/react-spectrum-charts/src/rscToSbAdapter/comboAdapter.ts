@@ -15,9 +15,9 @@ import { ComboProps } from '../types';
 import { childrenToOptions } from './childrenAdapter';
 
 export const getComboOptions = ({ children, ...comboProps }: ComboProps): ComboOptions => {
-	return {
-		...comboProps,
-		marks: childrenToOptions(children).marks as ComboOptions['marks'],
-		markType: 'combo',
-	};
+  return {
+    ...comboProps,
+    marks: childrenToOptions(children).marks as ComboOptions['marks'],
+    markType: 'combo',
+  };
 };

@@ -23,95 +23,95 @@ import { BarProps } from '../../../types';
 import { barSeriesData, negativeBarSeriesData, stackedBarDataWithUTC } from './data';
 
 export default {
-	title: 'RSC/Bar/Stacked Bar',
-	component: Bar,
+  title: 'RSC/Bar/Stacked Bar',
+  component: Bar,
 };
 
 const colors: SpectrumColor[] = [
-	'divergent-orange-yellow-seafoam-1000',
-	'divergent-orange-yellow-seafoam-1200',
-	'divergent-orange-yellow-seafoam-1400',
-	'divergent-orange-yellow-seafoam-600',
+  'divergent-orange-yellow-seafoam-1000',
+  'divergent-orange-yellow-seafoam-1200',
+  'divergent-orange-yellow-seafoam-1400',
+  'divergent-orange-yellow-seafoam-600',
 ];
 
 const StackedBarStoryWithUTCData: StoryFn<typeof Bar> = (args): ReactElement => {
-	const chartProps = useChartProps({ data: stackedBarDataWithUTC, width: 600, height: 600 });
-	return (
-		<Chart {...chartProps}>
-			<Axis
-				position={args.orientation === 'horizontal' ? 'left' : 'bottom'}
-				labelFormat="time"
-				granularity="day"
-				baseline
-				title="Browser"
-			/>
-			<Axis position={args.orientation === 'horizontal' ? 'bottom' : 'left'} grid title="Downloads" />
-			<Bar {...args} />
-		</Chart>
-	);
+  const chartProps = useChartProps({ data: stackedBarDataWithUTC, width: 600, height: 600 });
+  return (
+    <Chart {...chartProps}>
+      <Axis
+        position={args.orientation === 'horizontal' ? 'left' : 'bottom'}
+        labelFormat="time"
+        granularity="day"
+        baseline
+        title="Browser"
+      />
+      <Axis position={args.orientation === 'horizontal' ? 'bottom' : 'left'} grid title="Downloads" />
+      <Bar {...args} />
+    </Chart>
+  );
 };
 
 const BarStory: StoryFn<typeof Bar> = (args): ReactElement => {
-	const chartProps = useChartProps({ data: barSeriesData, colors, width: 800, height: 600 });
-	return (
-		<Chart {...chartProps}>
-			<Axis position={args.orientation === 'horizontal' ? 'left' : 'bottom'} baseline title="Browser" />
-			<Axis position={args.orientation === 'horizontal' ? 'bottom' : 'left'} grid title="Downloads" />
-			<Bar {...args} />
-			<Legend title="Operating system" />
-		</Chart>
-	);
+  const chartProps = useChartProps({ data: barSeriesData, colors, width: 800, height: 600 });
+  return (
+    <Chart {...chartProps}>
+      <Axis position={args.orientation === 'horizontal' ? 'left' : 'bottom'} baseline title="Browser" />
+      <Axis position={args.orientation === 'horizontal' ? 'bottom' : 'left'} grid title="Downloads" />
+      <Bar {...args} />
+      <Legend title="Operating system" />
+    </Chart>
+  );
 };
 
 const NegativeBarStory: StoryFn<typeof Bar> = (args): ReactElement => {
-	const chartProps = useChartProps({ data: negativeBarSeriesData, width: 800, height: 600 });
-	return (
-		<Chart {...chartProps}>
-			<Axis position={args.orientation === 'horizontal' ? 'left' : 'bottom'} baseline title="Browser" />
-			<Axis position={args.orientation === 'horizontal' ? 'bottom' : 'left'} grid title="Downloads" />
-			<Bar {...args} />
-			<Legend title="Operating system" />
-		</Chart>
-	);
+  const chartProps = useChartProps({ data: negativeBarSeriesData, width: 800, height: 600 });
+  return (
+    <Chart {...chartProps}>
+      <Axis position={args.orientation === 'horizontal' ? 'left' : 'bottom'} baseline title="Browser" />
+      <Axis position={args.orientation === 'horizontal' ? 'bottom' : 'left'} grid title="Downloads" />
+      <Bar {...args} />
+      <Legend title="Operating system" />
+    </Chart>
+  );
 };
 
 const defaultProps: BarProps = {
-	dimension: 'browser',
-	order: 'order',
-	color: 'operatingSystem',
-	onClick: undefined,
+  dimension: 'browser',
+  order: 'order',
+  color: 'operatingSystem',
+  onClick: undefined,
 };
 
 const Basic = bindWithProps(BarStory);
 Basic.args = {
-	...defaultProps,
+  ...defaultProps,
 };
 
 const WithBarLabels = bindWithProps(BarStory);
 WithBarLabels.args = {
-	...defaultProps,
-	children: createElement(Annotation, { textKey: 'percentLabel' }),
+  ...defaultProps,
+  children: createElement(Annotation, { textKey: 'percentLabel' }),
 };
 
 const NegativeStack = bindWithProps(NegativeBarStory);
 NegativeStack.args = {
-	...defaultProps,
+  ...defaultProps,
 };
 
 const OnClick = bindWithProps(BarStory);
 OnClick.args = {
-	dimension: 'browser',
-	order: 'order',
-	color: 'operatingSystem',
+  dimension: 'browser',
+  order: 'order',
+  color: 'operatingSystem',
 };
 
 const StackedBarWithUTCDatetimeFormat = bindWithProps(StackedBarStoryWithUTCData);
 StackedBarWithUTCDatetimeFormat.args = {
-	...defaultProps,
-	dimension: 'browser',
-	metric: 'downloads',
-	color: 'dataset_id',
-	dimensionDataType: 'time',
+  ...defaultProps,
+  dimension: 'browser',
+  metric: 'downloads',
+  color: 'dataset_id',
+  dimensionDataType: 'time',
 };
 
 export { Basic, NegativeStack, WithBarLabels, OnClick, StackedBarWithUTCDatetimeFormat };

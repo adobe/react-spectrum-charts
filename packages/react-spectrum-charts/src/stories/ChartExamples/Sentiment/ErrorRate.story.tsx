@@ -20,29 +20,23 @@ import { bindWithProps } from '../../../test-utils';
 import errorData from './errorData.json';
 
 export default {
-	title: 'RSC/Chart/Examples',
-	component: ReferenceLine,
+  title: 'RSC/Chart/Examples',
+  component: ReferenceLine,
 };
 
 const ErrorRateStory: StoryFn = (): ReactElement => {
-	const chartProps = useChartProps({ data: errorData, width: 800 });
-	return (
-		<Chart {...chartProps}>
-			<Line scaleType="linear" dimension="time" metric="errors" />
-			<Axis position="left" hideDefaultLabels>
-				<ReferenceLine value={400} icon="sentimentNegative" color="red-800" iconColor="red-800" layer="back" />
-				<ReferenceLine value={200} icon="sentimentNeutral" color="blue-800" iconColor="blue-800" layer="back" />
-				<ReferenceLine
-					value={100}
-					icon="sentimentPositive"
-					color="green-800"
-					iconColor="green-800"
-					layer="back"
-				/>
-			</Axis>
-			<Axis position="bottom" baseline ticks labelFormat="duration" />
-		</Chart>
-	);
+  const chartProps = useChartProps({ data: errorData, width: 800 });
+  return (
+    <Chart {...chartProps}>
+      <Line scaleType="linear" dimension="time" metric="errors" />
+      <Axis position="left" hideDefaultLabels>
+        <ReferenceLine value={400} icon="sentimentNegative" color="red-800" iconColor="red-800" layer="back" />
+        <ReferenceLine value={200} icon="sentimentNeutral" color="blue-800" iconColor="blue-800" layer="back" />
+        <ReferenceLine value={100} icon="sentimentPositive" color="green-800" iconColor="green-800" layer="back" />
+      </Axis>
+      <Axis position="bottom" baseline ticks labelFormat="duration" />
+    </Chart>
+  );
 };
 
 const ErrorRate = bindWithProps(ErrorRateStory);

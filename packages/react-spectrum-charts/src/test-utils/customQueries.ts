@@ -12,74 +12,74 @@
 import { buildQueries } from '@testing-library/react';
 
 const queryAllMarksByGroupName = (container: HTMLElement, markName: string, tagName = 'path') =>
-	[...container.querySelectorAll(`g.${markName} > ${tagName}`)] as HTMLElement[];
+  [...container.querySelectorAll(`g.${markName} > ${tagName}`)] as HTMLElement[];
 
 const getMultipleError = (_c, markName) => `Found multiple marks under the group name ${markName}`;
 const getMissingError = (_c, markName) => `Unable to find any marks under the group name ${markName}`;
 
 const [
-	queryMarksByGroupName,
-	getAllMarksByGroupName,
-	getMarksByGroupName,
-	findAllMarksByGroupName,
-	findMarksByGroupName,
+  queryMarksByGroupName,
+  getAllMarksByGroupName,
+  getMarksByGroupName,
+  findAllMarksByGroupName,
+  findMarksByGroupName,
 ] = buildQueries<[string, string?]>(queryAllMarksByGroupName, getMultipleError, getMissingError);
 
 export {
-	queryMarksByGroupName,
-	queryAllMarksByGroupName,
-	getMarksByGroupName,
-	getAllMarksByGroupName,
-	findAllMarksByGroupName,
-	findMarksByGroupName,
+  queryMarksByGroupName,
+  queryAllMarksByGroupName,
+  getMarksByGroupName,
+  getAllMarksByGroupName,
+  findAllMarksByGroupName,
+  findMarksByGroupName,
 };
 
 const queryAllLegendEntries = (container: HTMLElement) =>
-	[...container.querySelectorAll(`g.role-legend-entry g.role-scope > g > path.foreground`)] as HTMLElement[];
+  [...container.querySelectorAll(`g.role-legend-entry g.role-scope > g > path.foreground`)] as HTMLElement[];
 
 const getMultipleLegendError = () => `Found multiple legend entries`;
 const getMissingLegendError = () => `Unable to find any legend entries`;
 
 const [queryLegendEntries, getAllLegendEntries, getLegendEntries, findAllLegendEntries, findLegendEntries] =
-	buildQueries(queryAllLegendEntries, getMultipleLegendError, getMissingLegendError);
+  buildQueries(queryAllLegendEntries, getMultipleLegendError, getMissingLegendError);
 
 export {
-	queryLegendEntries,
-	queryAllLegendEntries,
-	getLegendEntries,
-	getAllLegendEntries,
-	findAllLegendEntries,
-	findLegendEntries,
+  queryLegendEntries,
+  queryAllLegendEntries,
+  getLegendEntries,
+  getAllLegendEntries,
+  findAllLegendEntries,
+  findLegendEntries,
 };
 
 const queryAllLegendSymbols = (container: HTMLElement) =>
-	[...container.querySelectorAll(`g.role-legend-entry g.role-legend-symbol > path`)] as HTMLElement[];
+  [...container.querySelectorAll(`g.role-legend-entry g.role-legend-symbol > path`)] as HTMLElement[];
 
 const getMultipleLegendSymbolsError = () => `Found multiple legend symbols`;
 const getMissingLegendSymbolsError = () => `Unable to find any legend symbols`;
 
 const [queryLegendSymbols, getAllLegendSymbols, getLegendSymbols, findAllLegendSymbols, findLegendSymbols] =
-	buildQueries(queryAllLegendSymbols, getMultipleLegendSymbolsError, getMissingLegendSymbolsError);
+  buildQueries(queryAllLegendSymbols, getMultipleLegendSymbolsError, getMissingLegendSymbolsError);
 
 export {
-	queryLegendSymbols,
-	queryAllLegendSymbols,
-	getLegendSymbols,
-	getAllLegendSymbols,
-	findAllLegendSymbols,
-	findLegendSymbols,
+  queryLegendSymbols,
+  queryAllLegendSymbols,
+  getLegendSymbols,
+  getAllLegendSymbols,
+  findAllLegendSymbols,
+  findLegendSymbols,
 };
 
 const queryAllAxisLabels = (container: HTMLElement) =>
-	[...container.querySelectorAll(`g.role-axis-label > text`)] as HTMLElement[];
+  [...container.querySelectorAll(`g.role-axis-label > text`)] as HTMLElement[];
 
 const getMultipleAxisLabelError = () => `Found multiple legend entries`;
 const getMissingAxisLabelError = () => `Unable to find any legend entries`;
 
 const [queryAxisLabels, getAllAxisLabels, getAxisLabels, findAllAxisLabels, findAxisLabels] = buildQueries(
-	queryAllAxisLabels,
-	getMultipleAxisLabelError,
-	getMissingAxisLabelError
+  queryAllAxisLabels,
+  getMultipleAxisLabelError,
+  getMissingAxisLabelError
 );
 
 export { queryAxisLabels, queryAllAxisLabels, getAxisLabels, getAllAxisLabels, findAllAxisLabels, findAxisLabels };

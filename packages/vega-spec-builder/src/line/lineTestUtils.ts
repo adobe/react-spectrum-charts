@@ -10,24 +10,24 @@
  * governing permissions and limitations under the License.
  */
 import {
-	DEFAULT_COLOR,
-	DEFAULT_COLOR_SCHEME,
-	DEFAULT_METRIC,
-	DEFAULT_TIME_DIMENSION,
-	MARK_ID,
+  DEFAULT_COLOR,
+  DEFAULT_COLOR_SCHEME,
+  DEFAULT_METRIC,
+  DEFAULT_TIME_DIMENSION,
+  MARK_ID,
 } from '@spectrum-charts/constants';
 
 import { LineMarkOptions } from './lineUtils';
 
 export const defaultLineMarkOptions: LineMarkOptions = {
-	color: DEFAULT_COLOR,
-	colorScheme: DEFAULT_COLOR_SCHEME,
-	dimension: DEFAULT_TIME_DIMENSION,
-	idKey: MARK_ID,
-	lineType: { value: 'solid' },
-	lineWidth: { value: 1 },
-	name: 'line0',
-	opacity: { value: 1 },
-	metric: DEFAULT_METRIC,
-	scaleType: 'time',
+  color: DEFAULT_COLOR,
+  colorScheme: DEFAULT_COLOR_SCHEME,
+  dimension: DEFAULT_TIME_DIMENSION,
+  idKey: MARK_ID,
+  lineType: { value: 'solid' },
+  lineWidth: { value: 1 },
+  name: 'line0',
+  opacity: { value: 1 },
+  metric: DEFAULT_METRIC,
+  scaleType: 'time',
 };

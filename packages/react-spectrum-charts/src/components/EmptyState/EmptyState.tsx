@@ -17,17 +17,17 @@ import GraphBarVertical from '@spectrum-icons/workflow/GraphBarVertical';
 import './EmptyState.css';
 
 export interface EmptyStateProps {
-	height?: number;
-	text?: string;
+  height?: number;
+  text?: string;
 }
 
 const EmptyState: FC<EmptyStateProps> = ({ height, text }) => {
-	return (
-		<Flex direction="column" justifyContent="center" alignItems="center" height={height}>
-			<GraphBarVertical size="XXL" UNSAFE_className="EmptyState-icon" />
-			{Boolean(text) && <Text UNSAFE_className="EmptyState-text">{text}</Text>}
-		</Flex>
-	);
+  return (
+    <Flex direction="column" justifyContent="center" alignItems="center" height={height}>
+      <GraphBarVertical size="XXL" UNSAFE_className="EmptyState-icon" />
+      {Boolean(text) && <Text UNSAFE_className="EmptyState-text">{text}</Text>}
+    </Flex>
+  );
 };
 
 // displayName is used to validate the component type in the spec builder

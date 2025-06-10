@@ -10,104 +10,104 @@
  * governing permissions and limitations under the License.
  */
 import {
-	DEFAULT_METRIC,
-	DEFAULT_TIME_DIMENSION,
-	FILTERED_TABLE,
-	MS_PER_DAY,
-	TRENDLINE_VALUE,
+  DEFAULT_METRIC,
+  DEFAULT_TIME_DIMENSION,
+  FILTERED_TABLE,
+  MS_PER_DAY,
+  TRENDLINE_VALUE,
 } from '@spectrum-charts/constants';
 
 import { defaultLineOptions } from './trendlineTestUtils';
 import {
-	applyTrendlinePropDefaults,
-	getPolynomialOrder,
-	getRegressionExtent,
-	getTrendlineColorFromMarkOptions,
-	getTrendlineLineTypeFromMarkOptions,
-	getTrendlines,
+  applyTrendlinePropDefaults,
+  getPolynomialOrder,
+  getRegressionExtent,
+  getTrendlineColorFromMarkOptions,
+  getTrendlineLineTypeFromMarkOptions,
+  getTrendlines,
 } from './trendlineUtils';
 
 describe('getTrendlines()', () => {
-	test('should return an array of trendline options', () => {
-		const trendlines = getTrendlines({
-			...defaultLineOptions,
-			trendlines: [{ method: 'average' }, { method: 'linear' }],
-		});
-		expect(trendlines).toHaveLength(2);
-		expect(trendlines[0]).toHaveProperty('method', 'average');
-		expect(trendlines[1]).toHaveProperty('method', 'linear');
-	});
+  test('should return an array of trendline options', () => {
+    const trendlines = getTrendlines({
+      ...defaultLineOptions,
+      trendlines: [{ method: 'average' }, { method: 'linear' }],
+    });
+    expect(trendlines).toHaveLength(2);
+    expect(trendlines[0]).toHaveProperty('method', 'average');
+    expect(trendlines[1]).toHaveProperty('method', 'linear');
+  });
 
-	test('should return an empty array if there are not any trendlines', () => {
-		const trendlines = getTrendlines({ ...defaultLineOptions, trendlines: [] });
-		expect(trendlines).toHaveLength(0);
-	});
+  test('should return an empty array if there are not any trendlines', () => {
+    const trendlines = getTrendlines({ ...defaultLineOptions, trendlines: [] });
+    expect(trendlines).toHaveLength(0);
+  });
 });
 
 describe('applyTrendlinePropDefaults()', () => {
-	test('should add defaults', () => {
-		const options = applyTrendlinePropDefaults(defaultLineOptions, {}, 0);
-		expect(options).toHaveProperty('method', 'linear');
-		expect(options).toHaveProperty('dimensionRange', [null, null]);
-		expect(options).toHaveProperty('lineType', 'dashed');
-		expect(options).toHaveProperty('lineWidth', 'M');
-		expect(options).toHaveProperty('metric', TRENDLINE_VALUE);
-		expect(options).toHaveProperty('trendlineColor', defaultLineOptions.color);
-	});
-	test('should swap dimension and metric if orientation is vertical', () => {
-		const options = applyTrendlinePropDefaults(defaultLineOptions, { orientation: 'vertical' }, 0);
-		expect(options).toHaveProperty('trendlineDimension', DEFAULT_METRIC);
-		expect(options).toHaveProperty('trendlineMetric', DEFAULT_TIME_DIMENSION);
-	});
-	test('should use color from trendline if defined', () => {
-		const options = applyTrendlinePropDefaults(defaultLineOptions, { color: 'gray-700' }, 0);
-		expect(options).toHaveProperty('trendlineColor', { value: 'gray-700' });
-	});
+  test('should add defaults', () => {
+    const options = applyTrendlinePropDefaults(defaultLineOptions, {}, 0);
+    expect(options).toHaveProperty('method', 'linear');
+    expect(options).toHaveProperty('dimensionRange', [null, null]);
+    expect(options).toHaveProperty('lineType', 'dashed');
+    expect(options).toHaveProperty('lineWidth', 'M');
+    expect(options).toHaveProperty('metric', TRENDLINE_VALUE);
+    expect(options).toHaveProperty('trendlineColor', defaultLineOptions.color);
+  });
+  test('should swap dimension and metric if orientation is vertical', () => {
+    const options = applyTrendlinePropDefaults(defaultLineOptions, { orientation: 'vertical' }, 0);
+    expect(options).toHaveProperty('trendlineDimension', DEFAULT_METRIC);
+    expect(options).toHaveProperty('trendlineMetric', DEFAULT_TIME_DIMENSION);
+  });
+  test('should use color from trendline if defined', () => {
+    const options = applyTrendlinePropDefaults(defaultLineOptions, { color: 'gray-700' }, 0);
+    expect(options).toHaveProperty('trendlineColor', { value: 'gray-700' });
+  });
 });
 
 describe('getPolynomialOrder()', () => {
-	test('should trow error if the polynomial order is less than 1', () => {
-		expect(() => getPolynomialOrder('polynomial-0')).toThrowError();
-	});
+  test('should trow error if the polynomial order is less than 1', () => {
+    expect(() => getPolynomialOrder('polynomial-0')).toThrowError();
+  });
 });
 
 describe('getRegressionExtent()', () => {
-	test('should the correct extent based on extent value', () => {
-		const name = 'line0Trendline0';
-		expect(getRegressionExtent([1, 2], name, false)).toHaveProperty('signal', '[1, 2]');
-		expect(getRegressionExtent([1, 2], name, true)).toHaveProperty(
-			'signal',
-			`[(1 - data('${FILTERED_TABLE}')[0].datetimeMin + ${MS_PER_DAY}) / ${MS_PER_DAY}, (2 - data('${FILTERED_TABLE}')[0].datetimeMin + ${MS_PER_DAY}) / ${MS_PER_DAY}]`
-		);
-		expect(getRegressionExtent([null, null], name, false)).toHaveProperty(
-			'signal',
-			`[${name}_extent[0], ${name}_extent[1]]`
-		);
-		expect(getRegressionExtent(['domain', 'domain'], name, false)).toHaveProperty(
-			'signal',
-			`[${name}_extent[0] - (${name}_extent[1] - ${name}_extent[0]) * 0.3, ${name}_extent[1] + (${name}_extent[1] - ${name}_extent[0]) * 0.3]`
-		);
-	});
+  test('should the correct extent based on extent value', () => {
+    const name = 'line0Trendline0';
+    expect(getRegressionExtent([1, 2], name, false)).toHaveProperty('signal', '[1, 2]');
+    expect(getRegressionExtent([1, 2], name, true)).toHaveProperty(
+      'signal',
+      `[(1 - data('${FILTERED_TABLE}')[0].datetimeMin + ${MS_PER_DAY}) / ${MS_PER_DAY}, (2 - data('${FILTERED_TABLE}')[0].datetimeMin + ${MS_PER_DAY}) / ${MS_PER_DAY}]`
+    );
+    expect(getRegressionExtent([null, null], name, false)).toHaveProperty(
+      'signal',
+      `[${name}_extent[0], ${name}_extent[1]]`
+    );
+    expect(getRegressionExtent(['domain', 'domain'], name, false)).toHaveProperty(
+      'signal',
+      `[${name}_extent[0] - (${name}_extent[1] - ${name}_extent[0]) * 0.3, ${name}_extent[1] + (${name}_extent[1] - ${name}_extent[0]) * 0.3]`
+    );
+  });
 });
 
 describe('getTrendlineColorFromMarkOptions()', () => {
-	test('should return first facet if dual facet', () => {
-		expect(getTrendlineColorFromMarkOptions(['series', 'subSeries'])).toEqual('series');
-	});
+  test('should return first facet if dual facet', () => {
+    expect(getTrendlineColorFromMarkOptions(['series', 'subSeries'])).toEqual('series');
+  });
 
-	test('should return what was passed in if it is not a dual facet', () => {
-		expect(getTrendlineColorFromMarkOptions('series')).toEqual('series');
-		expect(getTrendlineColorFromMarkOptions({ value: 'red-500' })).toEqual({ value: 'red-500' });
-	});
+  test('should return what was passed in if it is not a dual facet', () => {
+    expect(getTrendlineColorFromMarkOptions('series')).toEqual('series');
+    expect(getTrendlineColorFromMarkOptions({ value: 'red-500' })).toEqual({ value: 'red-500' });
+  });
 });
 
 describe('getTrendlineLineTypeFromMarkOptions()', () => {
-	test('should return first facet if dual facet', () => {
-		expect(getTrendlineLineTypeFromMarkOptions(['series', 'subSeries'])).toEqual('series');
-	});
+  test('should return first facet if dual facet', () => {
+    expect(getTrendlineLineTypeFromMarkOptions(['series', 'subSeries'])).toEqual('series');
+  });
 
-	test('should return what was passed in if it is not a dual facet', () => {
-		expect(getTrendlineLineTypeFromMarkOptions('series')).toEqual('series');
-		expect(getTrendlineLineTypeFromMarkOptions({ value: 'dashed' })).toEqual({ value: 'dashed' });
-	});
+  test('should return what was passed in if it is not a dual facet', () => {
+    expect(getTrendlineLineTypeFromMarkOptions('series')).toEqual('series');
+    expect(getTrendlineLineTypeFromMarkOptions({ value: 'dashed' })).toEqual({ value: 'dashed' });
+  });
 });

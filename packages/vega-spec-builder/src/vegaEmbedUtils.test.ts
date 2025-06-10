@@ -14,30 +14,30 @@ import { numberLocales } from '@spectrum-charts/locales';
 import { getVegaEmbedOptions } from './vegaEmbedUtils';
 
 describe('getVegaEmbedOptions()', () => {
-	it('should return the correct options', () => {
-		const options = getVegaEmbedOptions({});
-		expect(options).toHaveProperty('actions', false);
-		expect(options).toHaveProperty('ast', true);
-		expect(options).toHaveProperty('expressionFunctions');
-		expect(options).toHaveProperty('formatLocale');
-		expect(options).toHaveProperty('height', 400);
-		expect(options).toHaveProperty('width', 600);
-		expect(options).toHaveProperty('padding', 0);
-	});
-	it('should use the correct color scheme', () => {
-		let options = getVegaEmbedOptions({ colorScheme: 'dark' });
-		expect(options?.config?.text?.fill).toEqual('rgb(235, 235, 235)');
-		options = getVegaEmbedOptions({ colorScheme: 'light' });
-		expect(options?.config?.text?.fill).toEqual('rgb(34, 34, 34)');
-	});
-	it('should default to en-US', () => {
-		const enLocale = numberLocales['en-US'];
-		const options = getVegaEmbedOptions({});
-		expect(options?.formatLocale).toEqual(enLocale);
-	});
-	it('should use the correct locale if provided', () => {
-		const frLocale = numberLocales['fr-FR'];
-		const options = getVegaEmbedOptions({ locale: 'fr-FR' });
-		expect(options?.formatLocale).toEqual(frLocale);
-	});
+  it('should return the correct options', () => {
+    const options = getVegaEmbedOptions({});
+    expect(options).toHaveProperty('actions', false);
+    expect(options).toHaveProperty('ast', true);
+    expect(options).toHaveProperty('expressionFunctions');
+    expect(options).toHaveProperty('formatLocale');
+    expect(options).toHaveProperty('height', 400);
+    expect(options).toHaveProperty('width', 600);
+    expect(options).toHaveProperty('padding', 0);
+  });
+  it('should use the correct color scheme', () => {
+    let options = getVegaEmbedOptions({ colorScheme: 'dark' });
+    expect(options?.config?.text?.fill).toEqual('rgb(235, 235, 235)');
+    options = getVegaEmbedOptions({ colorScheme: 'light' });
+    expect(options?.config?.text?.fill).toEqual('rgb(34, 34, 34)');
+  });
+  it('should default to en-US', () => {
+    const enLocale = numberLocales['en-US'];
+    const options = getVegaEmbedOptions({});
+    expect(options?.formatLocale).toEqual(enLocale);
+  });
+  it('should use the correct locale if provided', () => {
+    const frLocale = numberLocales['fr-FR'];
+    const options = getVegaEmbedOptions({ locale: 'fr-FR' });
+    expect(options?.formatLocale).toEqual(frLocale);
+  });
 });

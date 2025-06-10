@@ -15,7 +15,7 @@ I'm glad you asked! Technically all the react components that you can pass into 
 We could just have a single component for creating a bar chart like so:
 
 ```jsx
-<Chart type="stacked-bar" data={data} orientation="horizontal" axis="bottom"/>
+<Chart type="stacked-bar" data={data} orientation="horizontal" axis="bottom" />
 ```
 
 This could work but it would get very cumbersome very quick as the complexity of the chart increases. For example, let's say you wanted to have a line and a bar on the same chart. Does this mean we also need a `type="combo"`? Or what if we want a line that has an area chart behind it showing the standard deviation?
@@ -32,8 +32,8 @@ Back to our bar example, by using Chart as a collection component, we get the fo
 
 ```jsx
 <Chart data={data}>
-    <Axis position="bottom" />
-    <Bar orientation="horizontal" />
+  <Axis position="bottom" />
+  <Bar orientation="horizontal" />
 </Chart>
 ```
 
@@ -41,8 +41,8 @@ Building our visualization this way makes it far more readable and more composab
 
 ```jsx
 <Chart data={data}>
-    <Area metricStart='lowerBound' metricEnd='upperBound' opacity={0.2} />
-    <Line metric="mean" trendline="moving-7" />
+  <Area metricStart="lowerBound" metricEnd="upperBound" opacity={0.2} />
+  <Line metric="mean" trendline="moving-7" />
 </Chart>
 ```
 
@@ -62,7 +62,7 @@ It's really simple. This is the Bar component from `Bar.tsx` file:
 import { BarProps } from '../types';
 
 export function Bar({ dimension = 'category', color = 'series', metric = 'value', opacity = 1 }: BarProps) {
-	return null;
+  return null;
 }
 ```
 
@@ -96,23 +96,23 @@ To keep Chart extensible and easy to develop in. The child components are used t
 
 ```tsx
 spec = [...children]
-    .sort((a, b) => buildOrder[a.type.name] - buildOrder[b.type.name])
-    .reduce((acc: Spec, cur) => {
-        const type = cur.type.name;
-        switch (type) {
-            case 'Axis':
-                return addAxis(acc, (cur as AxisElement).props);
-            case 'Bar':
-                return addBar(acc, (cur as BarElement).props);
-            case 'Line':
-                return addLine(acc, (cur as LineElement).props);
-            case 'Legend':
-                return addLegend(acc, (cur as LegendElement).props);
-            default:
-                console.error('invalid type');
-                return acc;
-        }
-    }, spec);
+  .sort((a, b) => buildOrder[a.type.name] - buildOrder[b.type.name])
+  .reduce((acc: Spec, cur) => {
+    const type = cur.type.name;
+    switch (type) {
+      case 'Axis':
+        return addAxis(acc, (cur as AxisElement).props);
+      case 'Bar':
+        return addBar(acc, (cur as BarElement).props);
+      case 'Line':
+        return addLine(acc, (cur as LineElement).props);
+      case 'Legend':
+        return addLegend(acc, (cur as LegendElement).props);
+      default:
+        console.error('invalid type');
+        return acc;
+    }
+  }, spec);
 ```
 
 ## Best Practices
@@ -162,9 +162,9 @@ Example:
 
 ```tsx
 function getTooltip(children: DialogElement[]): ProductionRule<StringValueRef> | undefined {
-	if (children.length) {
-		return { signal: 'datum' };
-	}
+  if (children.length) {
+    return { signal: 'datum' };
+  }
 }
 ```
 
@@ -194,7 +194,7 @@ Another good resource is to look through the [vega examples](https://vega.github
 
 The [vega editor](https://vega.github.io/editor/#/edited) is a live playground that allows you to try out altering a vega spec and observing the result. It is typically a good practice to find an example that is close to desired feature request, open that in vega editor and then attempt to modify it to implement the feature.
 
-It is highly recommended to take the time to fully understand each property in the spec. There are often multiple ways to accomplish the same thing in vega, so take the time to understand them so the best solution can be implemented in ``react-spectrum-charts``.
+It is highly recommended to take the time to fully understand each property in the spec. There are often multiple ways to accomplish the same thing in vega, so take the time to understand them so the best solution can be implemented in `react-spectrum-charts`.
 
 ### Modify a `react-spectrum-charts` spec in the vega editor
 
@@ -231,7 +231,7 @@ Please make sure code is well commented so that others will understand why the f
 
 ### Update test and write new tests
 
-Now that the feature is working and all is right in the world, make sure that the new code is adequately tested. ``react-spectrum-charts`` requires 60% code coverage for all new lines of code. Typically if the coverage is not >90%, the PR will not be approved.
+Now that the feature is working and all is right in the world, make sure that the new code is adequately tested. `react-spectrum-charts` requires 60% code coverage for all new lines of code. Typically if the coverage is not >90%, the PR will not be approved.
 
 To verify that all existing test still pass, run either `yarn test` or `yarn watch`. It's also possible to pass in a regex to run a subset of tests (`yarn watch legendSpecBuilder.test`). Without a regex, all tests will be run.
 
@@ -242,8 +242,8 @@ Now that the new feature is implemented and tested, it's time to submit a PR.
 ## Linking your local react-spectrum-charts package to another local package.
 
 There are a number of ways to do this. Yarn link is a common solution. Here are the steps to link using [yalc](https://github.com/wclr/yalc):
+
 1. Install yalc globally. `yarn global add yalc`
 2. In the react-spectrum-charts project directory, run `yalc publish`.
 3. In the project that you would like to run the local version of react-spectrum-charts in, run `yalc add` with the react-spectrum-charts package name.
 4. When you make changes in react-spectrum-charts, run `yalc publish` in the react-spectrum-charts directory. Then, run `yalc update` in your project directory.
-

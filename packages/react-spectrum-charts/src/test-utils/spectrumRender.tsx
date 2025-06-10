@@ -18,16 +18,16 @@ import { ColorScheme } from '@react-types/provider';
 import { DEFAULT_COLOR_SCHEME } from '@spectrum-charts/constants';
 
 export function spectrumRender(
-	element: ReactElement,
-	options?: {
-		colorScheme?: ColorScheme;
-	}
+  element: ReactElement,
+  options?: {
+    colorScheme?: ColorScheme;
+  }
 ) {
-	return render(
-		<Provider theme={defaultTheme} colorScheme={options?.colorScheme ?? DEFAULT_COLOR_SCHEME}>
-			{element}
-		</Provider>
-	);
+  return render(
+    <Provider theme={defaultTheme} colorScheme={options?.colorScheme ?? DEFAULT_COLOR_SCHEME}>
+      {element}
+    </Provider>
+  );
 }
 
 // re-export everything

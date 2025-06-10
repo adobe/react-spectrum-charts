@@ -18,27 +18,27 @@ import { ChartChildElement, LegendElement } from '../types';
 import { getElement } from '../utils';
 
 const ChartContainer = ({ children }: { children: React.ReactNode }) => {
-	return <div>{children}</div>;
+  return <div>{children}</div>;
 };
 ChartContainer.displayName = 'ChartContainer';
 
 interface UseLegendProps {
-	legendHiddenSeries: string[];
-	setLegendHiddenSeries: (legendHiddenSeries: string[]) => void;
-	descriptions?: LegendDescription[];
-	isToggleable?: boolean;
-	onClick?: (seriesName: string) => void;
-	onMouseOut?: (seriesName: string) => void;
-	onMouseOver?: (seriesName: string) => void;
+  legendHiddenSeries: string[];
+  setLegendHiddenSeries: (legendHiddenSeries: string[]) => void;
+  descriptions?: LegendDescription[];
+  isToggleable?: boolean;
+  onClick?: (seriesName: string) => void;
+  onMouseOut?: (seriesName: string) => void;
+  onMouseOver?: (seriesName: string) => void;
 }
 
 export default function useLegend(children: ChartChildElement[]): UseLegendProps {
-	const legend = useMemo(() => {
-		return getElement(createElement(ChartContainer, undefined, children), Legend);
-	}, [children]) as LegendElement;
-	const [legendHiddenSeries, setLegendHiddenSeries] = useState<string[]>(legend?.props?.defaultHiddenSeries ?? []);
+  const legend = useMemo(() => {
+    return getElement(createElement(ChartContainer, undefined, children), Legend);
+  }, [children]) as LegendElement;
+  const [legendHiddenSeries, setLegendHiddenSeries] = useState<string[]>(legend?.props?.defaultHiddenSeries ?? []);
 
-	if (!legend) return { legendHiddenSeries, setLegendHiddenSeries };
-	const { descriptions, isToggleable, onClick, onMouseOut, onMouseOver } = legend.props;
-	return { legendHiddenSeries, setLegendHiddenSeries, descriptions, isToggleable, onClick, onMouseOut, onMouseOver };
+  if (!legend) return { legendHiddenSeries, setLegendHiddenSeries };
+  const { descriptions, isToggleable, onClick, onMouseOut, onMouseOver } = legend.props;
+  return { legendHiddenSeries, setLegendHiddenSeries, descriptions, isToggleable, onClick, onMouseOut, onMouseOver };
 }

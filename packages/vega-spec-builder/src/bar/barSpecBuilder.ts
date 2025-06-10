@@ -13,19 +13,19 @@ import { produce } from 'immer';
 import { BandScale, Data, FormulaTransform, Mark, OrdinalScale, Scale, Signal } from 'vega';
 
 import {
-	COLOR_SCALE,
-	DEFAULT_CATEGORICAL_DIMENSION,
-	DEFAULT_COLOR_SCHEME,
-	DEFAULT_METRIC,
-	FILTERED_TABLE,
-	LAST_RSC_SERIES_ID,
-	LINE_TYPE_SCALE,
-	OPACITY_SCALE,
-	PADDING_RATIO,
-	SERIES_ID,
-	STACK_ID,
-	TIME,
-	TRELLIS_PADDING,
+  COLOR_SCALE,
+  DEFAULT_CATEGORICAL_DIMENSION,
+  DEFAULT_COLOR_SCHEME,
+  DEFAULT_METRIC,
+  FILTERED_TABLE,
+  LAST_RSC_SERIES_ID,
+  LINE_TYPE_SCALE,
+  OPACITY_SCALE,
+  PADDING_RATIO,
+  SERIES_ID,
+  STACK_ID,
+  TIME,
+  TRELLIS_PADDING,
 } from '@spectrum-charts/constants';
 import { toCamelCase } from '@spectrum-charts/utils';
 
@@ -34,170 +34,170 @@ import { addTooltipData, addTooltipSignals } from '../chartTooltip/chartTooltipU
 import { addTimeTransform, getTableData, getTransformSort } from '../data/dataUtils';
 import { getInteractiveMarkName } from '../marks/markUtils';
 import {
-	addDomainFields,
-	addFieldToFacetScaleDomain,
-	addMetricScale,
-	getDefaultScale,
-	getMetricScale,
-	getScaleIndexByName,
-	getScaleIndexByType,
+  addDomainFields,
+  addFieldToFacetScaleDomain,
+  addMetricScale,
+  getDefaultScale,
+  getMetricScale,
+  getScaleIndexByName,
+  getScaleIndexByType,
 } from '../scale/scaleSpecBuilder';
 import { getDualAxisScaleNames } from '../scale/scaleUtils';
 import {
-	addHighlightedItemSignalEvents,
-	getFirstRscSeriesIdSignal,
-	getGenericValueSignal,
-	getLastRscSeriesIdSignal,
-	getMouseOverSeriesSignal,
+  addHighlightedItemSignalEvents,
+  getFirstRscSeriesIdSignal,
+  getGenericValueSignal,
+  getLastRscSeriesIdSignal,
+  getMouseOverSeriesSignal,
 } from '../signal/signalSpecBuilder';
 import { getFacetsFromOptions } from '../specUtils';
 import { addTrendlineData, getTrendlineMarks, setTrendlineSignals } from '../trendline';
 import { BarOptions, BarSpecOptions, ColorScheme, HighlightedItem, ScSpec } from '../types';
 import {
-	getBarPadding,
-	getBaseScaleName,
-	getDimensionSelectionRing,
-	getOrientationProperties,
-	getScaleValues,
-	isDodgedAndStacked,
-	isDualMetricAxis,
+  getBarPadding,
+  getBaseScaleName,
+  getDimensionSelectionRing,
+  getOrientationProperties,
+  getScaleValues,
+  isDodgedAndStacked,
+  isDualMetricAxis,
 } from './barUtils';
 import { getDodgedMark } from './dodgedBarUtils';
 import { getDodgedAndStackedBarMark, getStackedBarMarks } from './stackedBarUtils';
 import { addTrellisScale, getTrellisGroupMark, isTrellised } from './trellisedBarUtils';
 
 export const addBar = produce<
-	ScSpec,
-	[BarOptions & { colorScheme?: ColorScheme; highlightedItem?: HighlightedItem; index?: number; idKey: string }]
+  ScSpec,
+  [BarOptions & { colorScheme?: ColorScheme; highlightedItem?: HighlightedItem; index?: number; idKey: string }]
 >(
-	(
-		spec,
-		{
-			barAnnotations = [],
-			chartPopovers = [],
-			chartTooltips = [],
-			color = { value: 'categorical-100' },
-			colorScheme = DEFAULT_COLOR_SCHEME,
-			dimension = DEFAULT_CATEGORICAL_DIMENSION,
-			dualMetricAxis = false,
-			hasOnClick = false,
-			hasSquareCorners = false,
-			index = 0,
-			lineType = { value: 'solid' },
-			lineWidth = 0,
-			metric = DEFAULT_METRIC,
-			metricAxis,
-			name,
-			opacity = { value: 1 },
-			orientation = 'vertical',
-			paddingRatio = PADDING_RATIO,
-			trellisOrientation = 'horizontal',
-			trellisPadding = TRELLIS_PADDING,
-			type = 'stacked',
-			trendlines = [],
-			...options
-		}
-	) => {
-		const barName = toCamelCase(name || `bar${index}`);
-		// put options back together now that all defaults are set
-		const barOptions: BarSpecOptions = {
-			barAnnotations,
-			chartPopovers,
-			chartTooltips,
-			dimensionScaleType: 'band',
-			dualMetricAxis,
-			orientation,
-			color,
-			colorScheme,
-			dimension,
-			hasOnClick,
-			hasSquareCorners,
-			index,
-			interactiveMarkName: getInteractiveMarkName(
-				{ chartPopovers, chartTooltips, hasOnClick, highlightedItem: options.highlightedItem, trendlines },
-				barName
-			),
-			lineType,
-			lineWidth,
-			metric,
-			metricAxis,
-			name: barName,
-			opacity,
-			paddingRatio,
-			trellisOrientation,
-			trellisPadding,
-			trendlines,
-			type,
-			...options,
-		};
+  (
+    spec,
+    {
+      barAnnotations = [],
+      chartPopovers = [],
+      chartTooltips = [],
+      color = { value: 'categorical-100' },
+      colorScheme = DEFAULT_COLOR_SCHEME,
+      dimension = DEFAULT_CATEGORICAL_DIMENSION,
+      dualMetricAxis = false,
+      hasOnClick = false,
+      hasSquareCorners = false,
+      index = 0,
+      lineType = { value: 'solid' },
+      lineWidth = 0,
+      metric = DEFAULT_METRIC,
+      metricAxis,
+      name,
+      opacity = { value: 1 },
+      orientation = 'vertical',
+      paddingRatio = PADDING_RATIO,
+      trellisOrientation = 'horizontal',
+      trellisPadding = TRELLIS_PADDING,
+      type = 'stacked',
+      trendlines = [],
+      ...options
+    }
+  ) => {
+    const barName = toCamelCase(name || `bar${index}`);
+    // put options back together now that all defaults are set
+    const barOptions: BarSpecOptions = {
+      barAnnotations,
+      chartPopovers,
+      chartTooltips,
+      dimensionScaleType: 'band',
+      dualMetricAxis,
+      orientation,
+      color,
+      colorScheme,
+      dimension,
+      hasOnClick,
+      hasSquareCorners,
+      index,
+      interactiveMarkName: getInteractiveMarkName(
+        { chartPopovers, chartTooltips, hasOnClick, highlightedItem: options.highlightedItem, trendlines },
+        barName
+      ),
+      lineType,
+      lineWidth,
+      metric,
+      metricAxis,
+      name: barName,
+      opacity,
+      paddingRatio,
+      trellisOrientation,
+      trellisPadding,
+      trendlines,
+      type,
+      ...options,
+    };
 
-		spec.usermeta = {
-			chartOrientation: barOptions.orientation,
-		};
+    spec.usermeta = {
+      chartOrientation: barOptions.orientation,
+    };
 
-		spec.data = addData(spec.data ?? [], barOptions);
-		spec.signals = addSignals(spec.signals ?? [], barOptions);
-		spec.scales = addScales(spec.scales ?? [], barOptions);
-		spec.marks = addMarks(spec.marks ?? [], barOptions);
-	}
+    spec.data = addData(spec.data ?? [], barOptions);
+    spec.signals = addSignals(spec.signals ?? [], barOptions);
+    spec.scales = addScales(spec.scales ?? [], barOptions);
+    spec.marks = addMarks(spec.marks ?? [], barOptions);
+  }
 );
 
 export const addSignals = produce<Signal[], [BarSpecOptions]>((signals, options) => {
-	const {
-		barAnnotations,
-		chartTooltips,
-		chartPopovers,
-		idKey,
-		name,
-		paddingRatio,
-		paddingOuter: barPaddingOuter,
-		trendlines,
-	} = options;
-	// We use this value to calculate ReferenceLine positions.
-	const { paddingInner } = getBarPadding(paddingRatio, barPaddingOuter);
-	signals.push(getGenericValueSignal('paddingInner', paddingInner));
+  const {
+    barAnnotations,
+    chartTooltips,
+    chartPopovers,
+    idKey,
+    name,
+    paddingRatio,
+    paddingOuter: barPaddingOuter,
+    trendlines,
+  } = options;
+  // We use this value to calculate ReferenceLine positions.
+  const { paddingInner } = getBarPadding(paddingRatio, barPaddingOuter);
+  signals.push(getGenericValueSignal('paddingInner', paddingInner));
 
-	if (isDualMetricAxis(options)) {
-		signals.push(getFirstRscSeriesIdSignal(), getLastRscSeriesIdSignal(), getMouseOverSeriesSignal(name));
-	}
+  if (isDualMetricAxis(options)) {
+    signals.push(getFirstRscSeriesIdSignal(), getLastRscSeriesIdSignal(), getMouseOverSeriesSignal(name));
+  }
 
-	if (!barAnnotations.length && !chartPopovers.length && !chartTooltips.length && !trendlines.length) {
-		return;
-	}
-	addHighlightedItemSignalEvents(signals, name, idKey, 1, chartTooltips[0]?.excludeDataKeys);
-	addTooltipSignals(signals, options);
-	setTrendlineSignals(signals, options);
+  if (!barAnnotations.length && !chartPopovers.length && !chartTooltips.length && !trendlines.length) {
+    return;
+  }
+  addHighlightedItemSignalEvents(signals, name, idKey, 1, chartTooltips[0]?.excludeDataKeys);
+  addTooltipSignals(signals, options);
+  setTrendlineSignals(signals, options);
 });
 
 export const addData = produce<Data[], [BarSpecOptions]>((data, options) => {
-	const { dimension, dimensionDataType, metric, order, type } = options;
-	if (dimensionDataType === TIME) {
-		const tableData = getTableData(data);
-		tableData.transform = addTimeTransform(tableData.transform ?? [], dimension);
-	}
+  const { dimension, dimensionDataType, metric, order, type } = options;
+  if (dimensionDataType === TIME) {
+    const tableData = getTableData(data);
+    tableData.transform = addTimeTransform(tableData.transform ?? [], dimension);
+  }
 
-	const index = data.findIndex((d) => d.name === FILTERED_TABLE);
-	data[index].transform = data[index].transform ?? [];
-	if (type === 'stacked' || isDodgedAndStacked(options)) {
-		data[index].transform?.push({
-			type: 'stack',
-			groupby: getStackFields(options),
-			field: metric,
-			sort: getTransformSort(order),
-			as: [`${metric}0`, `${metric}1`],
-		});
+  const index = data.findIndex((d) => d.name === FILTERED_TABLE);
+  data[index].transform = data[index].transform ?? [];
+  if (type === 'stacked' || isDodgedAndStacked(options)) {
+    data[index].transform?.push({
+      type: 'stack',
+      groupby: getStackFields(options),
+      field: metric,
+      sort: getTransformSort(order),
+      as: [`${metric}0`, `${metric}1`],
+    });
 
-		data[index].transform?.push(getStackIdTransform(options));
-		data.push(getStackAggregateData(options));
-	}
-	if (type === 'dodged' || isDodgedAndStacked(options)) {
-		data[index].transform?.push(getDodgeGroupTransform(options));
-	}
+    data[index].transform?.push(getStackIdTransform(options));
+    data.push(getStackAggregateData(options));
+  }
+  if (type === 'dodged' || isDodgedAndStacked(options)) {
+    data[index].transform?.push(getDodgeGroupTransform(options));
+  }
 
-	addDualMetricAxisData(data, options);
-	addTrendlineData(data, options);
-	addTooltipData(data, options);
-	addPopoverData(data, options);
+  addDualMetricAxisData(data, options);
+  addTrendlineData(data, options);
+  addTooltipData(data, options);
+  addPopoverData(data, options);
 });
 
 /**
@@ -208,112 +208,106 @@ export const addData = produce<Data[], [BarSpecOptions]>((data, options) => {
  * @returns vega Data object
  */
 export const getStackAggregateData = (options: BarSpecOptions): Data => {
-	const { metric, name } = options;
-	return {
-		name: `${name}_stacks`,
-		source: FILTERED_TABLE,
-		transform: [
-			{
-				type: 'aggregate',
-				groupby: getStackFields(options),
-				fields: [`${metric}1`, `${metric}1`],
-				ops: ['min', 'max'],
-			},
-			getStackIdTransform(options),
-		],
-	};
+  const { metric, name } = options;
+  return {
+    name: `${name}_stacks`,
+    source: FILTERED_TABLE,
+    transform: [
+      {
+        type: 'aggregate',
+        groupby: getStackFields(options),
+        fields: [`${metric}1`, `${metric}1`],
+        ops: ['min', 'max'],
+      },
+      getStackIdTransform(options),
+    ],
+  };
 };
 
 export const getStackIdTransform = (options: BarSpecOptions): FormulaTransform => {
-	return {
-		type: 'formula',
-		as: STACK_ID,
-		expr: getStackFields(options)
-			.map((facet) => `datum.${facet}`)
-			.join(' + "," + '),
-	} as FormulaTransform;
+  return {
+    type: 'formula',
+    as: STACK_ID,
+    expr: getStackFields(options)
+      .map((facet) => `datum.${facet}`)
+      .join(' + "," + '),
+  } as FormulaTransform;
 };
 
 const getStackFields = ({ trellis, color, dimension, lineType, opacity, type }: BarSpecOptions): string[] => {
-	const { facets, secondaryFacets } = getFacetsFromOptions({ color, lineType, opacity });
-	return [
-		...(trellis ? [trellis] : []),
-		dimension,
-		...(type === 'dodged' ? facets : []),
-		...(type === 'stacked' ? secondaryFacets : []),
-	];
+  const { facets, secondaryFacets } = getFacetsFromOptions({ color, lineType, opacity });
+  return [
+    ...(trellis ? [trellis] : []),
+    dimension,
+    ...(type === 'dodged' ? facets : []),
+    ...(type === 'stacked' ? secondaryFacets : []),
+  ];
 };
 
 export const getDodgeGroupTransform = ({ color, lineType, name, opacity, type }: BarSpecOptions): FormulaTransform => {
-	const { facets, secondaryFacets } = getFacetsFromOptions({ color, lineType, opacity });
-	return {
-		type: 'formula',
-		as: `${name}_dodgeGroup`,
-		expr: (type === 'dodged' ? facets : secondaryFacets).map((facet) => `datum.${facet}`).join(' + "," + '),
-	};
+  const { facets, secondaryFacets } = getFacetsFromOptions({ color, lineType, opacity });
+  return {
+    type: 'formula',
+    as: `${name}_dodgeGroup`,
+    expr: (type === 'dodged' ? facets : secondaryFacets).map((facet) => `datum.${facet}`).join(' + "," + '),
+  };
 };
 
 export const addDualMetricAxisData = (data: Data[], options: BarSpecOptions) => {
-	if (isDualMetricAxis(options)) {
-		const baseScaleName = getBaseScaleName(options);
-		const scaleNames = getDualAxisScaleNames(baseScaleName);
+  if (isDualMetricAxis(options)) {
+    const baseScaleName = getBaseScaleName(options);
+    const scaleNames = getDualAxisScaleNames(baseScaleName);
 
-		if (scaleNames.primaryDomain && scaleNames.secondaryDomain) {
-			data.push({
-				name: scaleNames.primaryDomain,
-				source: FILTERED_TABLE,
-				transform: [{ type: 'filter', expr: `datum.${SERIES_ID} !== ${LAST_RSC_SERIES_ID}` }],
-			});
+    if (scaleNames.primaryDomain && scaleNames.secondaryDomain) {
+      data.push({
+        name: scaleNames.primaryDomain,
+        source: FILTERED_TABLE,
+        transform: [{ type: 'filter', expr: `datum.${SERIES_ID} !== ${LAST_RSC_SERIES_ID}` }],
+      });
 
-			data.push({
-				name: scaleNames.secondaryDomain,
-				source: FILTERED_TABLE,
-				transform: [{ type: 'filter', expr: `datum.${SERIES_ID} === ${LAST_RSC_SERIES_ID}` }],
-			});
-		}
-	}
+      data.push({
+        name: scaleNames.secondaryDomain,
+        source: FILTERED_TABLE,
+        transform: [{ type: 'filter', expr: `datum.${SERIES_ID} === ${LAST_RSC_SERIES_ID}` }],
+      });
+    }
+  }
 };
 
 export const addScales = produce<Scale[], [BarSpecOptions]>((scales, options) => {
-	const { color, lineType, opacity, metricAxis } = options;
-	const { metricAxis: axisType } = getOrientationProperties(options.orientation);
+  const { color, lineType, opacity, metricAxis } = options;
+  const { metricAxis: axisType } = getOrientationProperties(options.orientation);
 
-	addMetricScale(scales, getScaleValues(options), axisType);
+  addMetricScale(scales, getScaleValues(options), axisType);
 
-	if (metricAxis) {
-		addMetricScale(scales, getScaleValues(options), axisType, metricAxis);
-	}
+  if (metricAxis) {
+    addMetricScale(scales, getScaleValues(options), axisType, metricAxis);
+  }
 
-	if (isDualMetricAxis(options)) {
-		const baseScaleName = getBaseScaleName(options);
-		const scaleNames = getDualAxisScaleNames(baseScaleName);
-		addMetricScale(scales, getScaleValues(options), axisType, scaleNames.primaryScale, scaleNames.primaryDomain);
-		addMetricScale(
-			scales,
-			getScaleValues(options),
-			axisType,
-			scaleNames.secondaryScale,
-			scaleNames.secondaryDomain
-		);
-	}
-	addDimensionScale(scales, options);
-	addTrellisScale(scales, options);
-	addFieldToFacetScaleDomain(scales, COLOR_SCALE, color);
-	addFieldToFacetScaleDomain(scales, LINE_TYPE_SCALE, lineType);
-	addFieldToFacetScaleDomain(scales, OPACITY_SCALE, opacity);
-	addSecondaryScales(scales, options);
+  if (isDualMetricAxis(options)) {
+    const baseScaleName = getBaseScaleName(options);
+    const scaleNames = getDualAxisScaleNames(baseScaleName);
+    addMetricScale(scales, getScaleValues(options), axisType, scaleNames.primaryScale, scaleNames.primaryDomain);
+    addMetricScale(scales, getScaleValues(options), axisType, scaleNames.secondaryScale, scaleNames.secondaryDomain);
+  }
+  addDimensionScale(scales, options);
+  addTrellisScale(scales, options);
+  addFieldToFacetScaleDomain(scales, COLOR_SCALE, color);
+  addFieldToFacetScaleDomain(scales, LINE_TYPE_SCALE, lineType);
+  addFieldToFacetScaleDomain(scales, OPACITY_SCALE, opacity);
+  addSecondaryScales(scales, options);
 });
 
 export const addDimensionScale = (
-	scales: Scale[],
-	{ dimension, paddingRatio, paddingOuter: barPaddingOuter, orientation }: BarSpecOptions
+  scales: Scale[],
+  { dimension, paddingRatio, paddingOuter: barPaddingOuter, orientation }: BarSpecOptions
 ) => {
-	const { dimensionAxis } = getOrientationProperties(orientation);
-	const index = getScaleIndexByType(scales, 'band', dimensionAxis);
-	scales[index] = addDomainFields(scales[index], [dimension]);
-	const { paddingInner, paddingOuter } = getBarPadding(paddingRatio, barPaddingOuter);
+  const { dimensionAxis } = getOrientationProperties(orientation);
+  const index = getScaleIndexByType(scales, 'band', dimensionAxis);
+  scales[index] = addDomainFields(scales[index], [dimension]);
+  const { paddingInner, paddingOuter } = getBarPadding(paddingRatio, barPaddingOuter);
 
-	scales[index] = { ...scales[index], paddingInner, paddingOuter } as BandScale;
+  scales[index] = { ...scales[index], paddingInner, paddingOuter } as BandScale;
 };
 
 /**
@@ -323,76 +317,76 @@ export const addDimensionScale = (
  * @param param1
  */
 export const addSecondaryScales = (scales: Scale[], options: BarSpecOptions) => {
-	const { color, lineType, opacity } = options;
-	if (isDodgedAndStacked(options)) {
-		[
-			{
-				value: color,
-				scaleName: 'colors',
-				secondaryScaleName: 'secondaryColor',
-			},
-			{
-				value: lineType,
-				scaleName: 'lineTypes',
-				secondaryScaleName: 'secondaryLineType',
-			},
-			{
-				value: opacity,
-				scaleName: 'opacities',
-				secondaryScaleName: 'secondaryOpacity',
-			},
-		].forEach(({ value, scaleName, secondaryScaleName }) => {
-			if (Array.isArray(value) && value.length === 2) {
-				// secondary value scale used for 2D scales
-				const secondaryIndex = getScaleIndexByName(scales, secondaryScaleName, 'ordinal');
-				scales[secondaryIndex] = addDomainFields(scales[secondaryIndex], [value[1]]);
+  const { color, lineType, opacity } = options;
+  if (isDodgedAndStacked(options)) {
+    [
+      {
+        value: color,
+        scaleName: 'colors',
+        secondaryScaleName: 'secondaryColor',
+      },
+      {
+        value: lineType,
+        scaleName: 'lineTypes',
+        secondaryScaleName: 'secondaryLineType',
+      },
+      {
+        value: opacity,
+        scaleName: 'opacities',
+        secondaryScaleName: 'secondaryOpacity',
+      },
+    ].forEach(({ value, scaleName, secondaryScaleName }) => {
+      if (Array.isArray(value) && value.length === 2) {
+        // secondary value scale used for 2D scales
+        const secondaryIndex = getScaleIndexByName(scales, secondaryScaleName, 'ordinal');
+        scales[secondaryIndex] = addDomainFields(scales[secondaryIndex], [value[1]]);
 
-				const primaryIndex = getScaleIndexByName(scales, scaleName, 'ordinal');
-				const primaryScale = scales[primaryIndex] as OrdinalScale;
-				primaryScale.range = { signal: scaleName };
-				scales[primaryIndex] = addDomainFields(primaryScale, [value[0]]);
-			}
-		});
-	}
+        const primaryIndex = getScaleIndexByName(scales, scaleName, 'ordinal');
+        const primaryScale = scales[primaryIndex] as OrdinalScale;
+        primaryScale.range = { signal: scaleName };
+        scales[primaryIndex] = addDomainFields(primaryScale, [value[0]]);
+      }
+    });
+  }
 };
 
 export const addMarks = produce<Mark[], [BarSpecOptions]>((marks, options) => {
-	const { chartPopovers, name, type } = options;
-	const barMarks: Mark[] = [];
-	if (isDodgedAndStacked(options)) {
-		barMarks.push(getDodgedAndStackedBarMark(options));
-	} else if (type === 'stacked') {
-		barMarks.push(...getStackedBarMarks(options));
-	} else {
-		barMarks.push(getDodgedMark(options));
-	}
+  const { chartPopovers, name, type } = options;
+  const barMarks: Mark[] = [];
+  if (isDodgedAndStacked(options)) {
+    barMarks.push(getDodgedAndStackedBarMark(options));
+  } else if (type === 'stacked') {
+    barMarks.push(...getStackedBarMarks(options));
+  } else {
+    barMarks.push(getDodgedMark(options));
+  }
 
-	const popovers = getPopovers(chartPopovers, name);
-	if (popovers.some((popover) => popover.UNSAFE_highlightBy === 'dimension')) {
-		barMarks.push(getDimensionSelectionRing(options));
-	}
+  const popovers = getPopovers(chartPopovers, name);
+  if (popovers.some((popover) => popover.UNSAFE_highlightBy === 'dimension')) {
+    barMarks.push(getDimensionSelectionRing(options));
+  }
 
-	// if this is a trellis plot, we add the bars and the repeated scale to the trellis group
-	if (isTrellised(options)) {
-		const repeatedScale = getRepeatedScale(options);
-		marks.push(getTrellisGroupMark(options, barMarks, repeatedScale));
-	} else {
-		marks.push(...barMarks);
-	}
+  // if this is a trellis plot, we add the bars and the repeated scale to the trellis group
+  if (isTrellised(options)) {
+    const repeatedScale = getRepeatedScale(options);
+    marks.push(getTrellisGroupMark(options, barMarks, repeatedScale));
+  } else {
+    marks.push(...barMarks);
+  }
 
-	marks.push(...getTrendlineMarks(options));
+  marks.push(...getTrendlineMarks(options));
 });
 
 export const getRepeatedScale = (options: BarSpecOptions): Scale => {
-	const { orientation, trellisOrientation } = options;
-	// if the orientations match then the metric scale is repeated, otherwise the dimension scale is repeated
-	// ex. vertical bar in a vertical trellis will have multiple copies of the metric scale
-	if (orientation === trellisOrientation) {
-		const { metricAxis } = getOrientationProperties(orientation);
-		return getMetricScale(getScaleValues(options), metricAxis, orientation);
-	} else {
-		return getDimensionScale(options);
-	}
+  const { orientation, trellisOrientation } = options;
+  // if the orientations match then the metric scale is repeated, otherwise the dimension scale is repeated
+  // ex. vertical bar in a vertical trellis will have multiple copies of the metric scale
+  if (orientation === trellisOrientation) {
+    const { metricAxis } = getOrientationProperties(orientation);
+    return getMetricScale(getScaleValues(options), metricAxis, orientation);
+  } else {
+    return getDimensionScale(options);
+  }
 };
 
 /**
@@ -402,14 +396,14 @@ export const getRepeatedScale = (options: BarSpecOptions): Scale => {
  * @returns
  */
 const getDimensionScale = ({
-	dimension,
-	orientation,
-	paddingRatio,
-	paddingOuter: barPaddingOuter,
+  dimension,
+  orientation,
+  paddingRatio,
+  paddingOuter: barPaddingOuter,
 }: BarSpecOptions): BandScale => {
-	const { dimensionAxis } = getOrientationProperties(orientation);
-	let scale = getDefaultScale('band', dimensionAxis, orientation);
-	scale = addDomainFields(scale, [dimension]);
-	const { paddingInner, paddingOuter } = getBarPadding(paddingRatio, barPaddingOuter);
-	return { ...scale, paddingInner, paddingOuter } as BandScale;
+  const { dimensionAxis } = getOrientationProperties(orientation);
+  let scale = getDefaultScale('band', dimensionAxis, orientation);
+  scale = addDomainFields(scale, [dimension]);
+  const { paddingInner, paddingOuter } = getBarPadding(paddingRatio, barPaddingOuter);
+  return { ...scale, paddingInner, paddingOuter } as BandScale;
 };

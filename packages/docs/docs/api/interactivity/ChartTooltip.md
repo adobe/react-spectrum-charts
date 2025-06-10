@@ -8,11 +8,9 @@ Tooltips should only use plain html without any interactive elements. It's not p
 
 ```jsx
 <Chart data={data}>
-    <Bar>
-        <ChartTooltip>
-            {datum => <div>Average: {datum.average}</div>}
-        </ChartTooltip>
-    </Bar>
+  <Bar>
+    <ChartTooltip>{(datum) => <div>Average: {datum.average}</div>}</ChartTooltip>
+  </Bar>
 </Chart>
 ```
 
@@ -25,16 +23,14 @@ const data = [
   { value: 20, disableTooltip: 'a string' },
   /* Tooltip will be shown when disableTooltip is falsy */
   { value: 30, disableTooltip: false },
-  { value: 40  },
+  { value: 40 },
 ];
 
-<Chart data={data} >
-    <Bar>
-        <ChartTooltip excludeDataKey="disableTooltip">
-            {datum => <div>Value: {datum.value}</div>}
-        </ChartTooltip>
-    </Bar>
-</Chart>
+<Chart data={data}>
+  <Bar>
+    <ChartTooltip excludeDataKey="disableTooltip">{(datum) => <div>Value: {datum.value}</div>}</ChartTooltip>
+  </Bar>
+</Chart>;
 ```
 
 ## Props

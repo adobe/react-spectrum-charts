@@ -1,29 +1,29 @@
 {
-	"compilerOptions": {
-		"baseUrl": ".",
-		"outDir": "./dist",
-		"module": "node16",
-		"target": "ES2017",
-		"jsx": "react-jsx",
-		"lib": ["ESNext", "ES5", "ES6", "DOM", "DOM.Iterable"],
-		"sourceMap": true,
-		"strict": true,
-		"allowJs": false,
-		"moduleResolution": "node16",
-		"forceConsistentCasingInFileNames": true,
-		"allowSyntheticDefaultImports": true,
-		"declaration": true,
-		"declarationMap": true,
-		"noImplicitAny": false,
-		"resolveJsonModule": true,
-		"esModuleInterop": true,
-		"types": ["node", "jest", "@testing-library/jest-dom"],
-		"skipLibCheck": true,
-		"paths": {
-			"@react-spectrum-charts/*": ["packages/react-spectrum-charts/src/*"],
-			"@vega-spec-builder/*": ["packages/vega-spec-builder/src/*"]
-		}
-	},
-	"include": ["packages", "packages/constants/webpack.config.js"],
-	"exclude": ["node_modules", "dist", "dist-storybook"]
+  "compilerOptions": {
+    "baseUrl": ".",
+    "outDir": "./dist",
+    "module": "node16",
+    "target": "ES2017",
+    "jsx": "react-jsx",
+    "lib": ["ESNext", "ES5", "ES6", "DOM", "DOM.Iterable"],
+    "sourceMap": true,
+    "strict": true,
+    "allowJs": false,
+    "moduleResolution": "node16",
+    "forceConsistentCasingInFileNames": true,
+    "allowSyntheticDefaultImports": true,
+    "declaration": true,
+    "declarationMap": true,
+    "noImplicitAny": false,
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "types": ["node", "jest", "@testing-library/jest-dom"],
+    "skipLibCheck": true,
+    "paths": {
+      "@react-spectrum-charts/*": ["packages/react-spectrum-charts/src/*"],
+      "@vega-spec-builder/*": ["packages/vega-spec-builder/src/*"]
+    }
+  },
+  "include": ["packages", "packages/constants/webpack.config.js"],
+  "exclude": ["node_modules", "dist", "dist-storybook"]
 }

@@ -19,71 +19,71 @@ import { addLine } from '../line/lineSpecBuilder';
 import { BarOptions, ColorScheme, ComboOptions, HighlightedItem, LineOptions, ScSpec } from '../types';
 
 export const addCombo = produce<
-	ScSpec,
-	[ComboOptions & { colorScheme?: ColorScheme; highlightedItem?: HighlightedItem; index?: number; idKey: string }]
+  ScSpec,
+  [ComboOptions & { colorScheme?: ColorScheme; highlightedItem?: HighlightedItem; index?: number; idKey: string }]
 >(
-	(
-		spec,
-		{
-			colorScheme = DEFAULT_COLOR_SCHEME,
-			highlightedItem,
-			idKey,
-			index = 0,
-			name,
-			marks = [],
-			dimension = DEFAULT_TIME_DIMENSION,
-		}
-	) => {
-		let { barCount, lineCount } = initializeComponentCounts();
-		const comboName = toCamelCase(name || `combo${index}`);
+  (
+    spec,
+    {
+      colorScheme = DEFAULT_COLOR_SCHEME,
+      highlightedItem,
+      idKey,
+      index = 0,
+      name,
+      marks = [],
+      dimension = DEFAULT_TIME_DIMENSION,
+    }
+  ) => {
+    let { barCount, lineCount } = initializeComponentCounts();
+    const comboName = toCamelCase(name || `combo${index}`);
 
-		spec = [...marks].reduce((acc: ScSpec, mark) => {
-			switch (mark.markType) {
-				case 'bar':
-					barCount++;
-					return addBar(acc, {
-						...mark,
-						colorScheme,
-						highlightedItem,
-						idKey,
-						index: barCount,
-						name: getComboMarkName(mark, comboName, barCount),
-						dimension: getDimension(mark, dimension),
-					});
-				case 'line':
-				default:
-					lineCount++;
-					return addLine(acc, {
-						...mark,
-						colorScheme,
-						highlightedItem,
-						idKey,
-						index: lineCount,
-						name: getComboMarkName(mark, comboName, lineCount),
-						dimension: getDimension(mark, dimension),
-					});
-			}
-		}, spec);
+    spec = [...marks].reduce((acc: ScSpec, mark) => {
+      switch (mark.markType) {
+        case 'bar':
+          barCount++;
+          return addBar(acc, {
+            ...mark,
+            colorScheme,
+            highlightedItem,
+            idKey,
+            index: barCount,
+            name: getComboMarkName(mark, comboName, barCount),
+            dimension: getDimension(mark, dimension),
+          });
+        case 'line':
+        default:
+          lineCount++;
+          return addLine(acc, {
+            ...mark,
+            colorScheme,
+            highlightedItem,
+            idKey,
+            index: lineCount,
+            name: getComboMarkName(mark, comboName, lineCount),
+            dimension: getDimension(mark, dimension),
+          });
+      }
+    }, spec);
 
-		return spec;
-	}
+    return spec;
+  }
 );
 
 const initializeComponentCounts = () => {
-	return { barCount: -1, lineCount: -1 };
+  return { barCount: -1, lineCount: -1 };
 };
 
 export const getComboMarkName = (mark: BarOptions | LineOptions, comboName: string, index: number) => {
-	if (mark.name) {
-		return mark.name;
-	}
-	const displayName = getDisplayName(mark.markType);
-	return combineNames(comboName, `${displayName}${index}`);
+  if (mark.name) {
+    return mark.name;
+  }
+  const displayName = getDisplayName(mark.markType);
+  return combineNames(comboName, `${displayName}${index}`);
 };
 
 const getDisplayName = (markType: string): string => {
-	if (!markType) return '';
-	return markType.charAt(0).toUpperCase() + markType.slice(1);
+  if (!markType) return '';
+  return markType.charAt(0).toUpperCase() + markType.slice(1);
 };
 
 const getDimension = (mark: BarOptions | LineOptions, dimension?: string) => mark.dimension ?? dimension;

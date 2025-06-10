@@ -24,7 +24,7 @@ import { formatBigNumber } from './bigNumberFormatUtils';
 
 // We expose this as the external big number, but all we do is take the props from it and pass them to our internal version alongside RscChartProps
 const BigNumber: FC<BigNumberProps> = () => {
-	return <></>;
+  return <></>;
 };
 
 /**
@@ -33,213 +33,213 @@ const BigNumber: FC<BigNumberProps> = () => {
  *  alongside some additional props we add ourselves based on the RscChartProps so we can render the sparkline using an RSC line chart.
  */
 const BigNumberInternal: FC<BigNumberProps & { rscChartProps: RscChartProps }> = ({
-	dataKey,
-	label,
-	numberFormat,
-	children,
-	icon,
-	orientation,
-	rscChartProps,
-	numberType = 'linear',
-	method = 'last',
+  dataKey,
+  label,
+  numberFormat,
+  children,
+  icon,
+  orientation,
+  rscChartProps,
+  numberType = 'linear',
+  method = 'last',
 }) => {
-	const { chartWidth, chartHeight, locale, data } = rscChartProps;
-	const bigNumberValue = getBigNumberValue(data, dataKey, method);
-	const numberLocale = getLocale(locale).number;
-	const formattedValue = formatBigNumber(bigNumberValue, numberType, numberFormat, numberLocale);
-	const lineElements = sanitizeBigNumberChildren(children);
+  const { chartWidth, chartHeight, locale, data } = rscChartProps;
+  const bigNumberValue = getBigNumberValue(data, dataKey, method);
+  const numberLocale = getLocale(locale).number;
+  const formattedValue = formatBigNumber(bigNumberValue, numberType, numberFormat, numberLocale);
+  const lineElements = sanitizeBigNumberChildren(children);
 
-	let lineProps: LineProps | undefined;
-	if (lineElements.length > 0) {
-		lineProps = lineElements[0].props;
-	}
+  let lineProps: LineProps | undefined;
+  if (lineElements.length > 0) {
+    lineProps = lineElements[0].props;
+  }
 
-	const bigNumberSize = getBigNumberSize(chartWidth, chartHeight);
-	const { iconSize, labelSize, valueSize } = getIconAndFontSizes(bigNumberSize, lineProps, orientation);
-	const { textAlign, direction, iconDirection } = getLayoutSettings(orientation);
+  const bigNumberSize = getBigNumberSize(chartWidth, chartHeight);
+  const { iconSize, labelSize, valueSize } = getIconAndFontSizes(bigNumberSize, lineProps, orientation);
+  const { textAlign, direction, iconDirection } = getLayoutSettings(orientation);
 
-	const labelStyle: CSSProperties = { fontSize: labelSize, textAlign };
-	const valueStyle: CSSProperties = { fontSize: valueSize, textAlign };
+  const labelStyle: CSSProperties = { fontSize: labelSize, textAlign };
+  const valueStyle: CSSProperties = { fontSize: valueSize, textAlign };
 
-	return (
-		<Flex alignItems={'center'} justifyContent={'center'} direction={direction}>
-			<Flex
-				columnGap={'size-100'}
-				justifyContent={'center'}
-				direction={direction}
-				width={chartWidth}
-				height={chartHeight}
-			>
-				{lineProps && (
-					<BigNumberChart
-						rscChartProps={rscChartProps}
-						lineProps={lineProps}
-						method={method}
-						orientation={orientation}
-					/>
-				)}
-				{icon && !lineProps && (
-					<Flex direction={iconDirection} justifyContent={'center'}>
-						{cloneElement(icon, { size: iconSize, marginTop: '1px' })}
-					</Flex>
-				)}
+  return (
+    <Flex alignItems={'center'} justifyContent={'center'} direction={direction}>
+      <Flex
+        columnGap={'size-100'}
+        justifyContent={'center'}
+        direction={direction}
+        width={chartWidth}
+        height={chartHeight}
+      >
+        {lineProps && (
+          <BigNumberChart
+            rscChartProps={rscChartProps}
+            lineProps={lineProps}
+            method={method}
+            orientation={orientation}
+          />
+        )}
+        {icon && !lineProps && (
+          <Flex direction={iconDirection} justifyContent={'center'}>
+            {cloneElement(icon, { size: iconSize, marginTop: '1px' })}
+          </Flex>
+        )}
 
-				<Flex direction={'column'} justifyContent={'center'}>
-					{icon && lineProps ? (
-						<>
-							<p style={valueStyle} className="big-number-data">
-								{formattedValue}
-							</p>
-							<Flex gap={'size-50'} justifyContent={'center'}>
-								<Flex direction={'column'} justifyContent={'center'}>
-									{cloneElement(icon, { size: iconSize, marginTop: '1px' })}
-								</Flex>
-								<p style={labelStyle} className="big-number-label">
-									{label}
-								</p>
-							</Flex>
-						</>
-					) : (
-						<>
-							<p style={valueStyle} className="big-number-data">
-								{formattedValue}
-							</p>
-							<p style={labelStyle} className="big-number-label">
-								{label}
-							</p>
-						</>
-					)}
-				</Flex>
-			</Flex>
-		</Flex>
-	);
+        <Flex direction={'column'} justifyContent={'center'}>
+          {icon && lineProps ? (
+            <>
+              <p style={valueStyle} className="big-number-data">
+                {formattedValue}
+              </p>
+              <Flex gap={'size-50'} justifyContent={'center'}>
+                <Flex direction={'column'} justifyContent={'center'}>
+                  {cloneElement(icon, { size: iconSize, marginTop: '1px' })}
+                </Flex>
+                <p style={labelStyle} className="big-number-label">
+                  {label}
+                </p>
+              </Flex>
+            </>
+          ) : (
+            <>
+              <p style={valueStyle} className="big-number-data">
+                {formattedValue}
+              </p>
+              <p style={labelStyle} className="big-number-label">
+                {label}
+              </p>
+            </>
+          )}
+        </Flex>
+      </Flex>
+    </Flex>
+  );
 };
 
 interface BigNumberChartProps {
-	rscChartProps: RscChartProps;
-	lineProps: LineProps;
-	method: BigNumberMethod;
-	orientation: Orientation;
+  rscChartProps: RscChartProps;
+  lineProps: LineProps;
+  method: BigNumberMethod;
+  orientation: Orientation;
 }
 const BigNumberChart: FC<BigNumberChartProps> = ({ rscChartProps, lineProps, method, orientation }) => {
-	const isVertical = orientation === 'vertical';
-	const { chartWidth, chartHeight } = rscChartProps;
-	const bigNumberSize = getBigNumberSize(chartWidth, chartHeight);
-	const { cWidth, cHeight } = getBigNumberChartDimensions(bigNumberSize);
-	return (
-		<Flex justifySelf={'center'} alignSelf={'center'} marginTop="5px">
-			<RscChart {...rscChartProps} chartWidth={cWidth} chartHeight={cHeight}>
-				<Line
-					{...lineProps}
-					isSparkline
-					isMethodLast={method === 'last'}
-					padding={isVertical ? 0 : 10}
-					pointSize={getPointSize(cWidth)}
-				/>
-			</RscChart>
-		</Flex>
-	);
+  const isVertical = orientation === 'vertical';
+  const { chartWidth, chartHeight } = rscChartProps;
+  const bigNumberSize = getBigNumberSize(chartWidth, chartHeight);
+  const { cWidth, cHeight } = getBigNumberChartDimensions(bigNumberSize);
+  return (
+    <Flex justifySelf={'center'} alignSelf={'center'} marginTop="5px">
+      <RscChart {...rscChartProps} chartWidth={cWidth} chartHeight={cHeight}>
+        <Line
+          {...lineProps}
+          isSparkline
+          isMethodLast={method === 'last'}
+          padding={isVertical ? 0 : 10}
+          pointSize={getPointSize(cWidth)}
+        />
+      </RscChart>
+    </Flex>
+  );
 };
 
 type BigNumberSize = 'small' | 'medium' | 'large' | 'x-large';
 export function getBigNumberSize(chartWidth: number, chartHeight: number): BigNumberSize {
-	if (chartWidth <= 100 || chartHeight <= 100) return 'small';
-	else if (chartWidth <= 266 || chartHeight <= 200) return 'medium';
-	else if (chartWidth <= 466 || chartHeight <= 300) return 'large';
-	return 'x-large';
+  if (chartWidth <= 100 || chartHeight <= 100) return 'small';
+  else if (chartWidth <= 266 || chartHeight <= 200) return 'medium';
+  else if (chartWidth <= 466 || chartHeight <= 300) return 'large';
+  return 'x-large';
 }
 
 export function getBigNumberChartDimensions(bigNumberSize: BigNumberSize): { cHeight: number; cWidth: number } {
-	let cWidth = 200;
-	let cHeight = 100;
-	if (bigNumberSize === 'small') {
-		cWidth = 75;
-		cHeight = 35;
-	} else if (bigNumberSize === 'medium') {
-		cWidth = 100;
-		cHeight = 50;
-	} else if (bigNumberSize === 'large') {
-		cWidth = 150;
-		cHeight = 75;
-	}
+  let cWidth = 200;
+  let cHeight = 100;
+  if (bigNumberSize === 'small') {
+    cWidth = 75;
+    cHeight = 35;
+  } else if (bigNumberSize === 'medium') {
+    cWidth = 100;
+    cHeight = 50;
+  } else if (bigNumberSize === 'large') {
+    cWidth = 150;
+    cHeight = 75;
+  }
 
-	return { cWidth, cHeight };
+  return { cWidth, cHeight };
 }
 
 function getLayoutSettings(orientation: Orientation): {
-	textAlign: CSSProperties['textAlign'];
-	direction: FlexProps['direction'];
-	iconDirection: FlexProps['direction'];
+  textAlign: CSSProperties['textAlign'];
+  direction: FlexProps['direction'];
+  iconDirection: FlexProps['direction'];
 } {
-	if (orientation === 'vertical') {
-		return {
-			textAlign: 'center',
-			direction: 'column',
-			iconDirection: 'row',
-		};
-	} else {
-		return {
-			textAlign: 'start',
-			direction: 'row',
-			iconDirection: 'column',
-		};
-	}
+  if (orientation === 'vertical') {
+    return {
+      textAlign: 'center',
+      direction: 'column',
+      iconDirection: 'row',
+    };
+  } else {
+    return {
+      textAlign: 'start',
+      direction: 'row',
+      iconDirection: 'column',
+    };
+  }
 }
 
 function getIconAndFontSizes(
-	bigNumberSize: BigNumberSize,
-	lineProps: LineProps | undefined,
-	orientation: Orientation
+  bigNumberSize: BigNumberSize,
+  lineProps: LineProps | undefined,
+  orientation: Orientation
 ): { iconSize: IconProps['size']; labelSize: string; valueSize: string } {
-	const fontSizes = getFontSize(bigNumberSize);
-	const labelSize = fontSizes.labelSize;
-	const valueSize = fontSizes.valueSize;
+  const fontSizes = getFontSize(bigNumberSize);
+  const labelSize = fontSizes.labelSize;
+  const valueSize = fontSizes.valueSize;
 
-	const fontSize = orientation === 'vertical' ? labelSize : valueSize;
-	const iconSize = lineProps !== undefined ? getIconSizeWithChart(fontSize) : getIconSize(fontSize);
+  const fontSize = orientation === 'vertical' ? labelSize : valueSize;
+  const iconSize = lineProps !== undefined ? getIconSizeWithChart(fontSize) : getIconSize(fontSize);
 
-	return {
-		iconSize,
-		labelSize,
-		valueSize,
-	};
+  return {
+    iconSize,
+    labelSize,
+    valueSize,
+  };
 }
 
 export function getFontSize(bigNumberSize: BigNumberSize): {
-	labelSize: string;
-	valueSize: string;
+  labelSize: string;
+  valueSize: string;
 } {
-	if (bigNumberSize === 'small') return { labelSize: 'medium', valueSize: 'large' };
-	else if (bigNumberSize === 'medium') return { labelSize: 'large', valueSize: 'x-large' };
-	else if (bigNumberSize === 'large') return { labelSize: 'x-large', valueSize: 'xx-large' };
-	return { labelSize: 'xx-large', valueSize: 'xxx-large' };
+  if (bigNumberSize === 'small') return { labelSize: 'medium', valueSize: 'large' };
+  else if (bigNumberSize === 'medium') return { labelSize: 'large', valueSize: 'x-large' };
+  else if (bigNumberSize === 'large') return { labelSize: 'x-large', valueSize: 'xx-large' };
+  return { labelSize: 'xx-large', valueSize: 'xxx-large' };
 }
 
 function getPointSize(availableSpace: number): number {
-	if (availableSpace <= 150) return 50;
-	return 100;
+  if (availableSpace <= 150) return 50;
+  return 100;
 }
 
 function getIconSizeWithChart(textSize: CSSProperties['fontSize']): IconProps['size'] {
-	if (textSize === 'medium') {
-		return 'XXS';
-	} else if (textSize === 'large') {
-		return 'XS';
-	} else if (textSize === 'x-large') {
-		return 'S';
-	}
-	return 'M';
+  if (textSize === 'medium') {
+    return 'XXS';
+  } else if (textSize === 'large') {
+    return 'XS';
+  } else if (textSize === 'x-large') {
+    return 'S';
+  }
+  return 'M';
 }
 
 function getIconSize(textSize: CSSProperties['fontSize']): IconProps['size'] {
-	if (textSize === 'medium') {
-		return 'M';
-	} else if (textSize === 'large') {
-		return 'L';
-	} else if (textSize === 'x-large') {
-		return 'XL';
-	}
-	return 'XXL';
+  if (textSize === 'medium') {
+    return 'M';
+  } else if (textSize === 'large') {
+    return 'L';
+  } else if (textSize === 'x-large') {
+    return 'XL';
+  }
+  return 'XXL';
 }
 
 /**
@@ -252,19 +252,19 @@ function getIconSize(textSize: CSSProperties['fontSize']): IconProps['size'] {
  * @returns The calculated big number value.
  */
 function getBigNumberValue(data: ChartData[], dataKey: string, method: BigNumberMethod = 'last'): number {
-	if (method === 'last') {
-		const value = data[data.length - 1][dataKey];
-		return typeof value === 'number' ? value : 0; // Return 0 if the value is not a number
-	} else {
-		// This must be either 'sum' or 'avg'
-		const value = data.reduce((sum, cur) => {
-			const curValue = cur[dataKey];
-			return typeof curValue === 'number' ? sum + curValue : sum;
-		}, 0);
+  if (method === 'last') {
+    const value = data[data.length - 1][dataKey];
+    return typeof value === 'number' ? value : 0; // Return 0 if the value is not a number
+  } else {
+    // This must be either 'sum' or 'avg'
+    const value = data.reduce((sum, cur) => {
+      const curValue = cur[dataKey];
+      return typeof curValue === 'number' ? sum + curValue : sum;
+    }, 0);
 
-		if (method === 'avg') return value / data.length;
-		return value;
-	}
+    if (method === 'avg') return value / data.length;
+    return value;
+  }
 }
 
 BigNumber.displayName = 'BigNumber';

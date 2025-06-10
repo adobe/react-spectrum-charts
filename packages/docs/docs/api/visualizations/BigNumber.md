@@ -10,7 +10,7 @@ You can specify which data dimension (`dataKey`) a `BigNumber` should display. A
 
 ```jsx
 <Chart data={[{ x: 20, y: 90 }]} height={100} width={200}>
-	<BigNumber dataKey="x" label="Visitors" orientation="horizontal" />
+  <BigNumber dataKey="x" label="Visitors" orientation="horizontal" />
 </Chart>
 ```
 
@@ -20,7 +20,7 @@ You can specify which data dimension (`dataKey`) a `BigNumber` should display. A
 
 ```jsx
 <Chart data={[{ x: 20, y: 90 }]} height={100} width={200}>
-	<BigNumber dataKey="x" icon={<User />} /* From react-spectrum icons */ label="Visitors" orientation="vertical" />
+  <BigNumber dataKey="x" icon={<User />} /* From react-spectrum icons */ label="Visitors" orientation="vertical" />
 </Chart>
 ```
 
@@ -30,23 +30,23 @@ You can specify which data dimension (`dataKey`) a `BigNumber` should display. A
 
 ```jsx
 <Chart
-	data={[
-		/* previous data values omitted for brevity */
-		{
-			x: 19,
-			y: 55,
-		},
-		{
-			x: 20,
-			y: 90,
-		},
-	]}
-	height={100}
-	width={200}
+  data={[
+    /* previous data values omitted for brevity */
+    {
+      x: 19,
+      y: 55,
+    },
+    {
+      x: 20,
+      y: 90,
+    },
+  ]}
+  height={100}
+  width={200}
 >
-	<BigNumber dataKey="x" label="Visitors" orientation="horizontal">
-		<Line dimension="x" metric="y" scaleType="linear" />
-	</BigNumber>
+  <BigNumber dataKey="x" label="Visitors" orientation="horizontal">
+    <Line dimension="x" metric="y" scaleType="linear" />
+  </BigNumber>
 </Chart>
 ```
 
@@ -56,23 +56,23 @@ You can specify which data dimension (`dataKey`) a `BigNumber` should display. A
 
 ```jsx
 <Chart
-	data={[
-		/* previous data values omitted for brevity */
-		{
-			x: 19,
-			y: 55,
-		},
-		{
-			x: 20,
-			y: 90,
-		},
-	]}
-	height={100}
-	width={200}
+  data={[
+    /* previous data values omitted for brevity */
+    {
+      x: 19,
+      y: 55,
+    },
+    {
+      x: 20,
+      y: 90,
+    },
+  ]}
+  height={100}
+  width={200}
 >
-	<BigNumber dataKey="x" icon={<User />} /* From react-spectrum icons */ label="Visitors" orientation="vertical">
-		<Line dimension="x" metric="y" scaleType="linear" />
-	</BigNumber>
+  <BigNumber dataKey="x" icon={<User />} /* From react-spectrum icons */ label="Visitors" orientation="vertical">
+    <Line dimension="x" metric="y" scaleType="linear" />
+  </BigNumber>
 </Chart>
 ```
 
@@ -82,7 +82,7 @@ You can specify which data dimension (`dataKey`) a `BigNumber` should display. A
 
 ```jsx
 <Chart data={[{ value: 255.56 }]} height={600} locale="de-DE" width={600}>
-	<BigNumber dataKey="value" label="Ad Spend" numberFormat="$,.2f" orientation="horizontal" />
+  <BigNumber dataKey="value" label="Ad Spend" numberFormat="$,.2f" orientation="horizontal" />
 </Chart>
 ```
 

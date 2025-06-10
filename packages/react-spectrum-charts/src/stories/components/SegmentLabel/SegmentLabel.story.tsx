@@ -21,38 +21,38 @@ import { ChartProps } from '../../../types';
 import { basicDonutData, sliveredDonutData } from '../Donut/data';
 
 export default {
-	title: 'RSC/Donut/SegmentLabel',
-	component: SegmentLabel,
+  title: 'RSC/Donut/SegmentLabel',
+  component: SegmentLabel,
 };
 
 const defaultChartProps: ChartProps = {
-	data: basicDonutData,
-	width: 350,
-	height: 350,
+  data: basicDonutData,
+  width: 350,
+  height: 350,
 };
 
 const SegmentLabelStory: StoryFn<typeof SegmentLabel> = (args): ReactElement => {
-	const chartProps = useChartProps(defaultChartProps);
+  const chartProps = useChartProps(defaultChartProps);
 
-	return (
-		<Chart {...chartProps}>
-			<Donut metric="count" color="browser">
-				<SegmentLabel {...args} />;
-			</Donut>
-		</Chart>
-	);
+  return (
+    <Chart {...chartProps}>
+      <Donut metric="count" color="browser">
+        <SegmentLabel {...args} />;
+      </Donut>
+    </Chart>
+  );
 };
 
 const SliverStory: StoryFn<typeof SegmentLabel> = (args): ReactElement => {
-	const chartProps = useChartProps({ ...defaultChartProps, data: sliveredDonutData });
+  const chartProps = useChartProps({ ...defaultChartProps, data: sliveredDonutData });
 
-	return (
-		<Chart {...chartProps}>
-			<Donut metric="count" color="browser">
-				<SegmentLabel {...args} />;
-			</Donut>
-		</Chart>
-	);
+  return (
+    <Chart {...chartProps}>
+      <Donut metric="count" color="browser">
+        <SegmentLabel {...args} />;
+      </Donut>
+    </Chart>
+  );
 };
 
 const Basic = bindWithProps(SegmentLabelStory);

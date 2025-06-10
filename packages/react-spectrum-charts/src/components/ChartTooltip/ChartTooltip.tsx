@@ -15,7 +15,7 @@ import { ChartTooltipProps } from '../../types';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const ChartTooltip: FC<ChartTooltipProps> = ({ children, excludeDataKeys, highlightBy = 'item' }) => {
-	return null;
+  return null;
 };
 
 // displayName is used to validate the component type in the spec builder

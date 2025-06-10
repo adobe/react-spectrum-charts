@@ -16,24 +16,24 @@ import { Padding } from 'vega';
 import { useChartContext } from '../context/RscChartContext';
 
 export default function usePopoverAnchorStyle(padding: Padding): CSSProperties {
-	const { chartView, selectedDataBounds, isPopoverOpen } = useChartContext();
+  const { chartView, selectedDataBounds, isPopoverOpen } = useChartContext();
 
-	const bounds = selectedDataBounds.current;
-	const view = chartView.current;
+  const bounds = selectedDataBounds.current;
+  const view = chartView.current;
 
-	return useMemo((): CSSProperties => {
-		if (isPopoverOpen && bounds && view) {
-			const { x1, x2, y1, y2 } = bounds;
-			const leftPadding = (typeof padding === 'number' ? padding : padding.left) ?? 0;
-			const topPadding = (typeof padding === 'number' ? padding : padding.top) ?? 0;
-			return {
-				position: 'absolute',
-				width: x2 - x1,
-				height: y2 - y1,
-				left: x1 + leftPadding + view.origin()[0],
-				top: y1 + topPadding + view.origin()[1],
-			};
-		}
-		return { display: 'none' };
-	}, [isPopoverOpen, view, bounds, padding]);
+  return useMemo((): CSSProperties => {
+    if (isPopoverOpen && bounds && view) {
+      const { x1, x2, y1, y2 } = bounds;
+      const leftPadding = (typeof padding === 'number' ? padding : padding.left) ?? 0;
+      const topPadding = (typeof padding === 'number' ? padding : padding.top) ?? 0;
+      return {
+        position: 'absolute',
+        width: x2 - x1,
+        height: y2 - y1,
+        left: x1 + leftPadding + view.origin()[0],
+        top: y1 + topPadding + view.origin()[1],
+      };
+    }
+    return { display: 'none' };
+  }, [isPopoverOpen, view, bounds, padding]);
 }

@@ -16,27 +16,27 @@
 
 ## Documentation
 
-[React Spectrum Charts documentation](https://opensource.adobe.com/react-spectrum-charts/docs)
+[React Spectrum Charts Docs](https://opensource.adobe.com/react-spectrum-charts/docs)
 
 ## Table of Contents
 
--   [React Spectrum Charts](#react-spectrum-charts)
-    -   [Table of Contents](#table-of-contents)
-    -   [Overview](#overview)
-        -   [Key Features:](#key-features)
-    -   [Installation](#installation)
-        -   [npm](#npm)
-        -   [yarn](#yarn)
-    -   [Usage](#usage)
-        -   [Example](#example)
-    -   [Spectrum (Adobe Design System) Integration](#spectrum-adobe-design-system-integration)
-    -   [API](#api)
-    -   [Storybook](#storybook)
-    -   [Support](#support)
-    -   [Contributing](#contributing)
-    -   [License](#license)
-        -   [Apache License 2.0 Summary](#apache-license-20-summary)
-    -   [Roadmap](#roadmap)
+- [React Spectrum Charts](#react-spectrum-charts)
+  - [Table of Contents](#table-of-contents)
+  - [Overview](#overview)
+    - [Key Features:](#key-features)
+  - [Installation](#installation)
+    - [npm](#npm)
+    - [yarn](#yarn)
+  - [Usage](#usage)
+    - [Example](#example)
+  - [Spectrum (Adobe Design System) Integration](#spectrum-adobe-design-system-integration)
+  - [API](#api)
+  - [Storybook](#storybook)
+  - [Support](#support)
+  - [Contributing](#contributing)
+  - [License](#license)
+    - [Apache License 2.0 Summary](#apache-license-20-summary)
+  - [Roadmap](#roadmap)
 
 ## Overview
 
@@ -44,13 +44,13 @@
 
 ### Key Features:
 
--   **Intuitive**: Developer experience comes first in the API design. The declarative API removes the need to understand advanced data visualization concepts. The code reads just like you would explain the chart to someone else.
+- **Intuitive**: Developer experience comes first in the API design. The declarative API removes the need to understand advanced data visualization concepts. The code reads just like you would explain the chart to someone else.
 
--   **Configurable**: The component-based building blocks enable you to build the chart that solves your use case. The modular design makes it easy to compose complex visualizations with simple, easy to understand code.
+- **Configurable**: The component-based building blocks enable you to build the chart that solves your use case. The modular design makes it easy to compose complex visualizations with simple, easy to understand code.
 
--   **Proven**: By leveraging Spectrum ([Adobe's Spectrum design system](https://spectrum.adobe.com/)) you get beautiful charts backed by research, user testing, and industry best practices.
+- **Proven**: By leveraging Spectrum ([Adobe's Spectrum design system](https://spectrum.adobe.com/)) you get beautiful charts backed by research, user testing, and industry best practices.
 
--   **International**: Support for 30+ date/number locales so that your users can view their data in the format that they would expect.
+- **International**: Support for 30+ date/number locales so that your users can view their data in the format that they would expect.
 
 ## Installation
 
@@ -98,12 +98,12 @@ Adobe's design system has detailed guidelines for charting fundamentals, color s
 
 `react-spectrum-charts` is the react implementation of these guidelines.
 
--   [Fundamentals](https://spectrum.adobe.com/page/data-visualization-fundamentals/)
--   [Color](https://spectrum.adobe.com/page/color-for-data-visualization/)
--   Components
-    -   [Area](https://spectrum.adobe.com/page/area-chart/)
-    -   [Bar](https://spectrum.adobe.com/page/bar-chart/)
-    -   [Line](https://spectrum.adobe.com/page/line-chart/)
+- [Fundamentals](https://spectrum.adobe.com/page/data-visualization-fundamentals/)
+- [Color](https://spectrum.adobe.com/page/color-for-data-visualization/)
+- Components
+  - [Area](https://spectrum.adobe.com/page/area-chart/)
+  - [Bar](https://spectrum.adobe.com/page/bar-chart/)
+  - [Line](https://spectrum.adobe.com/page/line-chart/)
 
 ## API
 
@@ -137,13 +137,13 @@ Please be respectful and considerate when seeking support. Provide as much conte
 
 ### Apache License 2.0 Summary
 
--   **Permissions**: You are granted broad permissions to use, modify, distribute, and sublicense the software. You can use it for commercial purposes.
+- **Permissions**: You are granted broad permissions to use, modify, distribute, and sublicense the software. You can use it for commercial purposes.
 
--   **Conditions**: You must include the original copyright notice and disclaimers. You cannot use trademarks of the project without proper attribution.
+- **Conditions**: You must include the original copyright notice and disclaimers. You cannot use trademarks of the project without proper attribution.
 
--   **Limitations**: The license is not a warranty, and the software is provided "as is." The project's contributors are not liable for any damages.
+- **Limitations**: The license is not a warranty, and the software is provided "as is." The project's contributors are not liable for any damages.
 
--   **More Information**: For a full and detailed explanation of the Apache License 2.0, please refer to the [official license document](https://www.apache.org/licenses/LICENSE-2.0).
+- **More Information**: For a full and detailed explanation of the Apache License 2.0, please refer to the [official license document](https://www.apache.org/licenses/LICENSE-2.0).
 
 By using **react-spectrum-charts**, you agree to comply with the terms and conditions of the Apache License 2.0.
 

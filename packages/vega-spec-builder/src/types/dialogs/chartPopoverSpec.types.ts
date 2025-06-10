@@ -12,31 +12,31 @@
 import { PartiallyRequired } from '../specUtil.types';
 
 export interface ChartPopoverOptions {
-	/** Width of the popover */
-	width?: number | 'auto';
-	/** Minimum width of the popover */
-	minWidth?: number;
-	/** Maximum width of the popover */
-	maxWidth?: number;
-	/** Height of the popover */
-	height?: number | 'auto';
-	/** Minimum height of the popover */
-	minHeight?: number;
-	/** Maximum height of the popover */
-	maxHeight?: number;
-	/** handler that is called when the popover's open state changes */
-	onOpenChange?: (isOpen: boolean) => void;
-	/** The placement padding that should be applied between the popover and its surrounding container */
-	containerPadding?: number;
-	/** Whether the popover should be shown on right click */
-	rightClick?: boolean;
-	/** Sets which marks should be highlighted when a popover is visible.  This feature is incomplete. */
-	UNSAFE_highlightBy?: 'series' | 'dimension' | 'item' | string[];
+  /** Width of the popover */
+  width?: number | 'auto';
+  /** Minimum width of the popover */
+  minWidth?: number;
+  /** Maximum width of the popover */
+  maxWidth?: number;
+  /** Height of the popover */
+  height?: number | 'auto';
+  /** Minimum height of the popover */
+  minHeight?: number;
+  /** Maximum height of the popover */
+  maxHeight?: number;
+  /** handler that is called when the popover's open state changes */
+  onOpenChange?: (isOpen: boolean) => void;
+  /** The placement padding that should be applied between the popover and its surrounding container */
+  containerPadding?: number;
+  /** Whether the popover should be shown on right click */
+  rightClick?: boolean;
+  /** Sets which marks should be highlighted when a popover is visible.  This feature is incomplete. */
+  UNSAFE_highlightBy?: 'series' | 'dimension' | 'item' | string[];
 }
 
 type ChartPopoverOptionsWithDefaults = 'UNSAFE_highlightBy';
 
 export interface ChartPopoverSpecOptions
-	extends PartiallyRequired<ChartPopoverOptions, ChartPopoverOptionsWithDefaults> {
-	markName: string;
+  extends PartiallyRequired<ChartPopoverOptions, ChartPopoverOptionsWithDefaults> {
+  markName: string;
 }

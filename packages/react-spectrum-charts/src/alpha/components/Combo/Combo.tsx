@@ -18,7 +18,7 @@ import { DEFAULT_TIME_DIMENSION } from '@spectrum-charts/constants';
 import { ComboProps } from '../../../types';
 
 const Combo: FC<ComboProps> = ({ name = 'combo0', dimension = DEFAULT_TIME_DIMENSION }) => {
-	return null;
+  return null;
 };
 
 // displayName is used to validate the component type in the spec builder

@@ -14,6 +14,6 @@ import { ChartTooltipOptions } from '@spectrum-charts/vega-spec-builder';
 import { ChartTooltipProps } from '../types';
 
 export const getChartTooltipOptions = ({
-	children: _,
-	...chartTooltipOptions
+  children: _,
+  ...chartTooltipOptions
 }: ChartTooltipProps): ChartTooltipOptions => chartTooltipOptions;

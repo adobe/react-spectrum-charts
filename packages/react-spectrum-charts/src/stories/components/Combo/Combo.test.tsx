@@ -17,76 +17,76 @@ import '../../../test-utils/__mocks__/matchMedia.mock.js';
 import { Basic, DualAxis, Tooltip } from './Combo.story';
 
 describe('Combo', () => {
-	// Combo is not a real React component. This test just provides test coverage for sonarqube
-	test('Combo pseudo element', () => {
-		render(<Combo />);
-	});
+  // Combo is not a real React component. This test just provides test coverage for sonarqube
+  test('Combo pseudo element', () => {
+    render(<Combo />);
+  });
 
-	test('Basic renders properly', async () => {
-		render(<Basic {...Basic.args} />);
-		const chart = await findChart();
-		expect(chart).toBeInTheDocument();
+  test('Basic renders properly', async () => {
+    render(<Basic {...Basic.args} />);
+    const chart = await findChart();
+    expect(chart).toBeInTheDocument();
 
-		// get bars
-		const bars = await findAllMarksByGroupName(chart, 'combo0Bar0');
-		expect(bars.length).toEqual(7);
+    // get bars
+    const bars = await findAllMarksByGroupName(chart, 'combo0Bar0');
+    expect(bars.length).toEqual(7);
 
-		// get lines
-		const lines = await findAllMarksByGroupName(chart, 'combo0Line0');
-		expect(lines.length).toEqual(1);
+    // get lines
+    const lines = await findAllMarksByGroupName(chart, 'combo0Line0');
+    expect(lines.length).toEqual(1);
 
-		// get axes
-		const axes = await screen.findAllByRole('graphics-symbol');
-		const axisText = axisTextUtil(axes);
-		expect(axisText(0, 'People')).toBeInTheDocument();
-		expect(axisText(0, '30')).toBeInTheDocument();
-		expect(axisText(1, 'Adoption Rate')).toBeInTheDocument();
-		expect(axisText(1, '0.8')).toBeInTheDocument();
-	});
+    // get axes
+    const axes = await screen.findAllByRole('graphics-symbol');
+    const axisText = axisTextUtil(axes);
+    expect(axisText(0, 'People')).toBeInTheDocument();
+    expect(axisText(0, '30')).toBeInTheDocument();
+    expect(axisText(1, 'Adoption Rate')).toBeInTheDocument();
+    expect(axisText(1, '0.8')).toBeInTheDocument();
+  });
 
-	test('Tooltip renders properly', async () => {
-		render(<Tooltip {...Tooltip.args} />);
-		const chart = await findChart();
-		expect(chart).toBeInTheDocument();
+  test('Tooltip renders properly', async () => {
+    render(<Tooltip {...Tooltip.args} />);
+    const chart = await findChart();
+    expect(chart).toBeInTheDocument();
 
-		// get bars
-		const bars = await findAllMarksByGroupName(chart, 'combo0Bar0');
-		expect(bars.length).toEqual(7);
+    // get bars
+    const bars = await findAllMarksByGroupName(chart, 'combo0Bar0');
+    expect(bars.length).toEqual(7);
 
-		// get lines
-		const lines = await findAllMarksByGroupName(chart, 'combo0Line0');
-		expect(lines.length).toEqual(1);
+    // get lines
+    const lines = await findAllMarksByGroupName(chart, 'combo0Line0');
+    expect(lines.length).toEqual(1);
 
-		const paths = await findAllMarksByGroupName(chart, 'combo0Line0_hover0');
+    const paths = await findAllMarksByGroupName(chart, 'combo0Line0_hover0');
 
-		// hover and validate all hover components are visible
-		await hoverNthElement(paths, 0);
-		const tooltip = await screen.findByTestId('rsc-tooltip');
-		expect(tooltip).toBeInTheDocument();
-		expect(within(tooltip).getByText('Nov 8')).toBeInTheDocument();
-	});
+    // hover and validate all hover components are visible
+    await hoverNthElement(paths, 0);
+    const tooltip = await screen.findByTestId('rsc-tooltip');
+    expect(tooltip).toBeInTheDocument();
+    expect(within(tooltip).getByText('Nov 8')).toBeInTheDocument();
+  });
 
-	test('Dual Axis renders properly', async () => {
-		render(<DualAxis {...DualAxis.args} />);
-		const chart = await findChart();
-		expect(chart).toBeInTheDocument();
+  test('Dual Axis renders properly', async () => {
+    render(<DualAxis {...DualAxis.args} />);
+    const chart = await findChart();
+    expect(chart).toBeInTheDocument();
 
-		// get bars
-		const bars = await findAllMarksByGroupName(chart, 'combo0Bar0');
-		expect(bars.length).toEqual(7);
+    // get bars
+    const bars = await findAllMarksByGroupName(chart, 'combo0Bar0');
+    expect(bars.length).toEqual(7);
 
-		// get lines
-		const lines = await findAllMarksByGroupName(chart, 'combo0Line0');
-		expect(lines.length).toEqual(1);
+    // get lines
+    const lines = await findAllMarksByGroupName(chart, 'combo0Line0');
+    expect(lines.length).toEqual(1);
 
-		// get axes
-		const axes = await screen.findAllByRole('graphics-symbol');
-		const axisText = axisTextUtil(axes);
-		expect(axisText(0, 'People')).toBeInTheDocument();
-		expect(axisText(0, '30')).toBeInTheDocument();
-		expect(axisText(1, 'Total')).toBeInTheDocument();
-		expect(axisText(1, '130')).toBeInTheDocument();
-	});
+    // get axes
+    const axes = await screen.findAllByRole('graphics-symbol');
+    const axisText = axisTextUtil(axes);
+    expect(axisText(0, 'People')).toBeInTheDocument();
+    expect(axisText(0, '30')).toBeInTheDocument();
+    expect(axisText(1, 'Total')).toBeInTheDocument();
+    expect(axisText(1, '130')).toBeInTheDocument();
+  });
 
-	const axisTextUtil = (axes: HTMLElement[]) => (index: number, text: string) => within(axes[index]).getByText(text);
+  const axisTextUtil = (axes: HTMLElement[]) => (index: number, text: string) => within(axes[index]).getByText(text);
 });

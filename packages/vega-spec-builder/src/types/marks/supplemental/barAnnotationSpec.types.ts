@@ -13,22 +13,22 @@ import { PartiallyRequired } from '../../specUtil.types';
 import { BarSpecOptions } from '../barSpec.types';
 
 export interface BarAnnotationStyleOptions {
-	width?: number;
+  width?: number;
 }
 
 export interface BarAnnotationOptions {
-	/** The key in the data that has the text to display */
-	textKey?: string;
-	/** @deprecated */
-	style?: BarAnnotationStyleOptions;
+  /** The key in the data that has the text to display */
+  textKey?: string;
+  /** @deprecated */
+  style?: BarAnnotationStyleOptions;
 }
 
 type BarAnnotationOptionsWithDefaults = 'textKey';
 
 export interface BarAnnotationSpecOptions
-	extends PartiallyRequired<BarAnnotationOptions, BarAnnotationOptionsWithDefaults> {
-	barOptions: BarSpecOptions;
-	dataName: string;
-	dimensionField: string;
-	dimensionScaleName: string;
+  extends PartiallyRequired<BarAnnotationOptions, BarAnnotationOptionsWithDefaults> {
+  barOptions: BarSpecOptions;
+  dataName: string;
+  dimensionField: string;
+  dimensionScaleName: string;
 }

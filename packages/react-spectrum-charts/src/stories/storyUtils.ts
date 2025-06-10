@@ -15,16 +15,16 @@
  * @returns
  */
 export const formatTimestamp = (timestamp: number): string => {
-	// Create a Date object from the timestamp (assuming the timestamp is in milliseconds)
-	const date = new Date(timestamp);
+  // Create a Date object from the timestamp (assuming the timestamp is in milliseconds)
+  const date = new Date(timestamp);
 
-	// Define an array of month abbreviations
-	const monthAbbreviations = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  // Define an array of month abbreviations
+  const monthAbbreviations = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-	// Get the month and day from the Date object
-	const month = monthAbbreviations[date.getMonth()];
-	const day = date.getDate();
+  // Get the month and day from the Date object
+  const month = monthAbbreviations[date.getMonth()];
+  const day = date.getDate();
 
-	// Format the date in 'MMM D' format
-	return `${month} ${day}`;
+  // Format the date in 'MMM D' format
+  return `${month} ${day}`;
 };

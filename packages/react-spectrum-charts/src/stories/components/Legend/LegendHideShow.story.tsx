@@ -13,21 +13,21 @@ import { ChartPopover, Legend } from '../../../components';
 import { LegendBarHiddenSeriesStory, LegendBarStory, defaultProps } from './LegendStoryUtils';
 
 export default {
-	title: 'RSC/Legend/Hide Show',
-	component: Legend,
+  title: 'RSC/Legend/Hide Show',
+  component: Legend,
 };
 
 const DefaultHiddenSeries = LegendBarStory.bind({});
 DefaultHiddenSeries.args = {
-	defaultHiddenSeries: ['Other'],
-	isToggleable: true,
-	highlight: true,
-	children: (
-		<ChartPopover rightClick width="auto">
-			{(datum) => <div>{datum.value}</div>}
-		</ChartPopover>
-	),
-	...defaultProps,
+  defaultHiddenSeries: ['Other'],
+  isToggleable: true,
+  highlight: true,
+  children: (
+    <ChartPopover rightClick width="auto">
+      {(datum) => <div>{datum.value}</div>}
+    </ChartPopover>
+  ),
+  ...defaultProps,
 };
 DefaultHiddenSeries.storyName = 'Default Hidden Series (uncontrolled)';
 

@@ -11,34 +11,34 @@
  */
 
 export const basicDonutData = [
-	{ count: 10390, browser: 'Chrome' },
-	{ count: 8281, browser: 'Firefox' },
-	{ count: 7045, browser: 'Safari' },
-	{ count: 6166, browser: 'Opera' },
-	{ count: 4201, browser: 'Other' },
-	{ count: 3261, browser: 'Brave' },
-	{ count: 1021, browser: 'Unknown' },
+  { count: 10390, browser: 'Chrome' },
+  { count: 8281, browser: 'Firefox' },
+  { count: 7045, browser: 'Safari' },
+  { count: 6166, browser: 'Opera' },
+  { count: 4201, browser: 'Other' },
+  { count: 3261, browser: 'Brave' },
+  { count: 1021, browser: 'Unknown' },
 ];
 
 export const sliveredDonutData = [
-	{ count: 34393, browser: 'Chrome' },
-	{ count: 22055, browser: 'Safari' },
-	{ count: 21870, browser: 'Firefox' },
-	{ count: 7099, browser: 'Edge' },
-	{ count: 5465, browser: 'Internet Explorer' },
-	{ count: 3265, browser: 'Opera' },
-	{ count: 2123, browser: 'Brave' },
-	{ count: 1597, browser: 'UC Browser' },
-	{ count: 1246, browser: 'Vivaldi' },
-	{ count: 806, browser: 'Maxthon' },
-	{ count: 601, browser: 'Avant Browser' },
-	{ count: 479, browser: 'Deepnet Explorer' },
-	{ count: 332, browser: 'SeaMonkey' },
-	{ count: 198, browser: 'Lunascape' },
-	{ count: 120, browser: 'SlimBrowser' },
+  { count: 34393, browser: 'Chrome' },
+  { count: 22055, browser: 'Safari' },
+  { count: 21870, browser: 'Firefox' },
+  { count: 7099, browser: 'Edge' },
+  { count: 5465, browser: 'Internet Explorer' },
+  { count: 3265, browser: 'Opera' },
+  { count: 2123, browser: 'Brave' },
+  { count: 1597, browser: 'UC Browser' },
+  { count: 1246, browser: 'Vivaldi' },
+  { count: 806, browser: 'Maxthon' },
+  { count: 601, browser: 'Avant Browser' },
+  { count: 479, browser: 'Deepnet Explorer' },
+  { count: 332, browser: 'SeaMonkey' },
+  { count: 198, browser: 'Lunascape' },
+  { count: 120, browser: 'SlimBrowser' },
 ];
 
 export const booleanDonutData = [
-	{ id: '1', value: 0.68 },
-	{ id: '2', value: 0.32 },
+  { id: '1', value: 0.68 },
+  { id: '2', value: 0.32 },
 ];

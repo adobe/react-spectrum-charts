@@ -17,30 +17,11 @@ All the following examples will use the same base chart code:
 
 ```jsx
 <Chart data={data}>
-    <Axis
-        baseline
-        grid
-        position="bottom"
-        ticks
-        title="Speed (normal)"
-    />
-    <Axis
-        baseline
-        grid
-        position="left"
-        ticks
-        title="Handling (normal)"
-    />
-    <Scatter
-        dimension="speedNormal"
-        metric="handlingNormal"
-    />
-    <Legend
-        highlight
-        position="right"
-        title="Weight class"
-    />
-    <Title text="Mario Kart 8 Character Data" />
+  <Axis baseline grid position="bottom" ticks title="Speed (normal)" />
+  <Axis baseline grid position="left" ticks title="Handling (normal)" />
+  <Scatter dimension="speedNormal" metric="handlingNormal" />
+  <Legend highlight position="right" title="Weight class" />
+  <Title text="Mario Kart 8 Character Data" />
 </Chart>
 ```
 
@@ -232,24 +213,20 @@ This plot is using the `ScatterPath` component to draw "comets" that help visual
 
 ```jsx
 <Chart {...chartProps}>
-    {...chartComponents}
-    <Scatter
-        color="segment"
-        dimension="dauPercent"
-        lineType="period"
-        lineWidth={{
-            value: 1
-        }}
-        metric="countAvg"
-        opacity="period"
-    >
-        {...scatterChildren}
-        <ScatterPath
-            groupBy={['event', 'segment']}
-            opacity={0.2}
-            pathWidth="trailSize"
-        />
-    </Scatter>
+  {...chartComponents}
+  <Scatter
+    color="segment"
+    dimension="dauPercent"
+    lineType="period"
+    lineWidth={{
+      value: 1,
+    }}
+    metric="countAvg"
+    opacity="period"
+  >
+    {...scatterChildren}
+    <ScatterPath groupBy={['event', 'segment']} opacity={0.2} pathWidth="trailSize" />
+  </Scatter>
 </Chart>
 ```
 

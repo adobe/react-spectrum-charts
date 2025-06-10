@@ -13,12 +13,12 @@ import { getTrendlineScales } from './trendlineScaleUtils';
 import { defaultLineOptions } from './trendlineTestUtils';
 
 describe('getTrendlineScales()', () => {
-	test('should return the xTrendline scale if the scaleType is time and there is a regression trendline', () => {
-		const scales = getTrendlineScales({
-			...defaultLineOptions,
-			trendlines: [{ method: 'linear' }],
-		});
-		expect(scales).toHaveLength(1);
-		expect(scales[0]).toHaveProperty('name', 'xTrendline');
-	});
+  test('should return the xTrendline scale if the scaleType is time and there is a regression trendline', () => {
+    const scales = getTrendlineScales({
+      ...defaultLineOptions,
+      trendlines: [{ method: 'linear' }],
+    });
+    expect(scales).toHaveLength(1);
+    expect(scales[0]).toHaveProperty('name', 'xTrendline');
+  });
 });

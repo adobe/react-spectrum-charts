@@ -18,6 +18,6 @@ export type Children<T> = ChildElement<T> | ChildElement<T>[];
 export type OnClickCallback = (datum: Datum) => void;
 
 export interface ClickableChartProps {
-	/** Callback that will be run when a point/section is clicked */
-	onClick?: OnClickCallback;
+  /** Callback that will be run when a point/section is clicked */
+  onClick?: OnClickCallback;
 }
