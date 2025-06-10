@@ -16,7 +16,7 @@
 
 ## Documentation
 
-[React Spectrum Charts documentation](https://opensource.adobe.com/react-spectrum-charts/docs)
+[React Spectrum Charts Docs](https://opensource.adobe.com/react-spectrum-charts/docs)
 
 ## Table of Contents
 
