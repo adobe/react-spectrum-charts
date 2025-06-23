@@ -203,6 +203,18 @@ If you only have one series in your data, both the `type` and `color` props can 
             <td>Callback that will be run when a point/section is clicked.</td>
         </tr>
         <tr>
+            <td>onMouseOver</td>
+            <td>function</td>
+            <td>–</td>
+            <td>Callback that will be run when a bar is hovered.</td>
+        </tr>
+        <tr>
+            <td>onMouseOut</td>
+            <td>function</td>
+            <td>–</td>
+            <td>Callback that will be run when a bar is no longer hovered.</td>
+        </tr>
+        <tr>
             <td>metric</td>
             <td>string</td>
             <td>'value'</td>

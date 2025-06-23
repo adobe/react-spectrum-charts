@@ -14,7 +14,7 @@ import { JSXElementConstructor, ReactElement } from 'react';
 import { LineOptions } from '@spectrum-charts/vega-spec-builder';
 
 import { ChartPopoverElement, ChartTooltipElement } from '../dialogs';
-import { Children, OnClickCallback } from '../util.types';
+import { Children, MarkCallback } from '../util.types';
 import { MetricRangeElement, TrendlineElement } from './supplemental';
 
 type LineChildElement = ChartTooltipElement | ChartPopoverElement | MetricRangeElement | TrendlineElement;
@@ -25,7 +25,7 @@ export interface LineProps
   > {
   children?: Children<LineChildElement>;
   /** Callback that will be run when a point/section is clicked */
-  onClick?: OnClickCallback;
+  onClick?: MarkCallback;
 }
 
 export type LineElement = ReactElement<LineProps, JSXElementConstructor<LineProps>>;

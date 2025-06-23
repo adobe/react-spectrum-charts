@@ -26,6 +26,7 @@ import {
   setSelectedSignals,
 } from '../utils';
 import useLegend from './useLegend';
+import useMarkMouseInputDetails from './useMarkMouseInputDetails';
 import useMarkOnClickDetails from './useMarkOnClickDetails';
 import usePopovers from './usePopovers';
 
@@ -45,6 +46,7 @@ const useNewChartView = (
     onMouseOver: onLegendMouseOver,
   } = useLegend(sanitizedChildren); // gets props from the legend if it exists
   const markClickDetails = useMarkOnClickDetails(sanitizedChildren);
+  const markMouseInputDetails = useMarkMouseInputDetails(sanitizedChildren);
 
   const legendHasPopover = useMemo(
     () => popovers.some((p) => p.parent === Legend.displayName && !p.chartPopoverProps.rightClick),
@@ -125,8 +127,8 @@ const useNewChartView = (
         }
       }
       view.addEventListener('click', getOnChartMarkClickCallback(chartView, markClickDetails));
-      view.addEventListener('mouseover', getOnMouseInputCallback(onLegendMouseOver));
-      view.addEventListener('mouseout', getOnMouseInputCallback(onLegendMouseOut));
+      view.addEventListener('mouseover', getOnMouseInputCallback(onLegendMouseOver, markMouseInputDetails));
+      view.addEventListener('mouseout', getOnMouseInputCallback(onLegendMouseOut, markMouseInputDetails));
     },
     [
       chartId,
@@ -137,6 +139,7 @@ const useNewChartView = (
       legendHiddenSeries,
       legendIsToggleable,
       markClickDetails,
+      markMouseInputDetails,
       onLegendClick,
       onLegendMouseOut,
       onLegendMouseOver,

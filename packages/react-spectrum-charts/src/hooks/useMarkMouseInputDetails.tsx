@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Adobe. All rights reserved.
+ * Copyright 2025 Adobe. All rights reserved.
  * This file is licensed to you under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License. You may obtain a copy
  * of the License at http://www.apache.org/licenses/LICENSE-2.0
@@ -11,32 +11,41 @@
  */
 import { createElement, useMemo } from 'react';
 
-import { Bar, BarElement, Chart, ChartChildElement, Line, LineElement, MarkCallback } from '../index';
+import { Datum } from '@spectrum-charts/vega-spec-builder';
+
+import { Bar, BarElement, Chart, ChartChildElement } from '../index';
 import { getAllMarkElements } from '../utils';
 
-type MappedMarkElement = { name: string; element: BarElement | LineElement };
+type MappedMarkElement = { name: string; element: BarElement };
 
-export type MarkOnClickDetail = {
+export type MarkMouseInputDetail = {
   markName?: string;
-  onClick?: MarkCallback;
+  onMouseOver?: (datum: Datum) => void;
+  onMouseOut?: (datum: Datum) => void;
 };
 
-export default function useMarkOnClickDetails(children: ChartChildElement[]): MarkOnClickDetail[] {
+export default function useMarkMouseInputDetails(children: ChartChildElement[]): MarkMouseInputDetail[] {
   const markElements = useMemo(() => {
     return [
       ...getAllMarkElements(createElement(Chart, { data: [] }, children), Bar, []),
-      ...getAllMarkElements(createElement(Chart, { data: [] }, children), Line, []),
     ] as MappedMarkElement[];
   }, [children]);
 
   return useMemo(
     () =>
       markElements
-        .filter((mark) => mark.element.props.onClick)
-        .map((mark) => ({
-          markName: mark.name,
-          onClick: mark.element.props.onClick,
-        })) as MarkOnClickDetail[],
+        .filter((mark) => {
+          const barProps = mark.element.props;
+          return barProps.onMouseOver || barProps.onMouseOut;
+        })
+        .map((mark) => {
+          const barProps = mark.element.props;
+          return {
+            markName: mark.name,
+            onMouseOver: barProps.onMouseOver,
+            onMouseOut: barProps.onMouseOut,
+          };
+        }) as MarkMouseInputDetail[],
     [markElements]
   );
-}
+} 
