@@ -16,6 +16,7 @@ import { Item, Scene, SceneGroup, SceneItem, ScenegraphEvent, View } from 'vega'
 import { COMPONENT_NAME, SERIES_ID } from '@spectrum-charts/constants';
 import { Datum, MarkBounds } from '@spectrum-charts/vega-spec-builder';
 
+import { MarkMouseInputDetail } from '../hooks/useMarkMouseInputDetails';
 import { MarkOnClickDetail } from '../hooks/useMarkOnClickDetails';
 import { toggleStringArrayValue } from '../utils';
 
@@ -130,6 +131,30 @@ const userDidNotClickOnLegend = (item: unknown): item is Item & SceneItem => {
 };
 
 /**
+ * Handles mark mouse input events (mouseover/mouseout)
+ * Only supports bar marks.
+ * @param event
+ * @param item
+ * @param markMouseInputDetails
+ */
+const handleMarkMouseInput = (
+  event: ScenegraphEvent,
+  item: ActionItem,
+  markMouseInputDetails: MarkMouseInputDetail[]
+): void => {
+  if (!item) return;
+  item = getGroupOrAreaMarkItemFromItem(item);
+  const itemName = getItemName(item);
+  const markDetail = markMouseInputDetails.find((details) => details.markName === itemName);
+
+  if (event.type === 'mouseover' && markDetail?.onMouseOver) {
+    markDetail.onMouseOver(item.datum);
+  } else if (event.type === 'mouseout' && markDetail?.onMouseOut) {
+    markDetail.onMouseOut(item.datum);
+  }
+};
+
+/**
  * Updates the hidden series when a legend item is clicked
  * @param item
  * @param onLegendMouseInput
@@ -146,16 +171,21 @@ export const handleLegendItemMouseInput = (
 };
 
 /**
- * Generates the callback for simple mouse events
- * @param item
+ * Generates the callback for mouse events (both legend and mark hover)
  * @param onLegendMouseInput
+ * @param markHoverDetails
  * @returns
  */
-export const getOnMouseInputCallback = (onMouseInput?: (seriesName: string) => void): ViewEventCallback => {
-  return (_event, item) => {
+export const getOnMouseInputCallback = (
+  onLegendMouseInput?: (seriesName: string) => void,
+  markMouseInputDetails?: MarkMouseInputDetail[]
+): ViewEventCallback => {
+  return (event, item) => {
     if (!item) return;
     if (isLegendItem(item)) {
-      handleLegendItemMouseInput(item, onMouseInput);
+      handleLegendItemMouseInput(item, onLegendMouseInput);
+    } else if (markMouseInputDetails?.length) {
+      handleMarkMouseInput(event, item, markMouseInputDetails);
     }
   };
 };

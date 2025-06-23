@@ -9,9 +9,11 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import React, { ReactElement, createElement } from 'react';
+import React, { ReactElement, createElement, useState } from 'react';
 
 import { StoryFn } from '@storybook/react';
+
+import { Datum } from '@spectrum-charts/vega-spec-builder';
 
 import { Annotation } from '../../../components/Annotation';
 import useChartProps from '../../../hooks/useChartProps';
@@ -38,6 +40,41 @@ const BarStoryWithUTCData: StoryFn<typeof Bar> = (args): ReactElement => {
       <Axis position={args.orientation === 'horizontal' ? 'bottom' : 'left'} grid title="Downloads" />
       <Bar {...args} />
     </Chart>
+  );
+};
+
+const OnMouseInputsStory: StoryFn<typeof Bar> = (args): ReactElement => {
+  const [hoveredData, setHoveredData] = useState<Datum | null>(null);
+  const [isHovering, setIsHovering] = useState(false);
+
+  const controlledMouseOver = (datum: Datum) => {
+    if (!isHovering) {
+      setHoveredData(datum);
+      setIsHovering(true);
+    }
+  };
+  const controlledMouseOut = () => {
+    if (isHovering) {
+      setIsHovering(false);
+    }
+  };
+
+  const chartProps = useChartProps({ data: barData, width: 600, height: 600 });
+  return (
+    <div>
+      <div data-testid="hover-info">
+        {isHovering && hoveredData ? (
+          <div data-testid="hover-data">{JSON.stringify(hoveredData, null, 2)}</div>
+        ) : (
+          <div data-testid="no-hover">No bar hovered</div>
+        )}
+      </div>
+      <Chart {...chartProps}>
+        <Axis position={args.orientation === 'horizontal' ? 'left' : 'bottom'} baseline title="Browser" />
+        <Axis position={args.orientation === 'horizontal' ? 'bottom' : 'left'} grid title="Downloads" />
+        <Bar {...args} onMouseOver={controlledMouseOver} onMouseOut={controlledMouseOut} />
+      </Chart>
+    </div>
   );
 };
 
@@ -107,6 +144,12 @@ OnClick.args = {
   metric: 'downloads',
 };
 
+const OnMouseInputs = bindWithProps(OnMouseInputsStory);
+OnMouseInputs.args = {
+  dimension: 'browser',
+  metric: 'downloads',
+};
+
 const BarWithUTCDatetimeFormat = bindWithProps(BarStoryWithUTCData);
 BarWithUTCDatetimeFormat.args = {
   ...defaultProps,
@@ -125,5 +168,6 @@ export {
   WithAnnotation,
   HasSquareCorners,
   OnClick,
+  OnMouseInputs,
   BarWithUTCDatetimeFormat,
 };
