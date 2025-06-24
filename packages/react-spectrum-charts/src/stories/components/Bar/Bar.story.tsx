@@ -142,6 +142,9 @@ const OnClick = bindWithProps(BarStory);
 OnClick.args = {
   dimension: 'browser',
   metric: 'downloads',
+  onClick: (datum) => {
+    console.log('datum:', datum);
+  }
 };
 
 const OnMouseInputs = bindWithProps(OnMouseInputsStory);
