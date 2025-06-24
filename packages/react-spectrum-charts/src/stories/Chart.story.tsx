@@ -68,9 +68,7 @@ const ChartBarTooltipStory: StoryFn<typeof Chart> = (args): ReactElement => {
 };
 
 const Basic = bindWithProps(ChartLineStory);
-
-// Story specific props are passed here
-Basic.args = { data, renderer: 'svg', height: 300 };
+Basic.args = { data };
 
 const BackgroundColor = bindWithProps(ChartLineStory);
 BackgroundColor.args = {
@@ -124,4 +122,4 @@ HighlightedItem.args = {
   data,
 };
 
-export { BackgroundColor, Basic, Config, Height, HighlightedItem, Locale, TooltipAnchor, Width };
+export { Basic, BackgroundColor, Config, Height, HighlightedItem, Locale, TooltipAnchor, Width };
