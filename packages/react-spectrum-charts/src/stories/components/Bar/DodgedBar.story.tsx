@@ -140,6 +140,9 @@ OnClick.args = {
   dimension: 'browser',
   order: 'order',
   color: 'operatingSystem',
+  onClick: (datum) => {
+    console.log('datum:', datum);
+  }
 };
 
 export { Color, DodgedStacked, DodgedStackedWithLabels, LineType, Opacity, Popover, OnClick };

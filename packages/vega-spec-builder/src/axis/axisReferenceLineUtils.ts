@@ -237,6 +237,32 @@ export const getReferenceLineTextMark = (
 };
 
 /**
+ * Calculates the vertical and horizontal offsets for reference line labels based on axis position and icon presence
+ * @param position The axis position
+ * @param icon Whether an icon is present
+ * @returns Object containing verticalOffset and horizontalOffset values
+ */
+const calculateReferenceLineOffsets = (position: Position, icon?: string): { verticalOffset: number; horizontalOffset: number } => {
+  const isVertical = isVerticalAxis(position);
+  let verticalOffset = isVertical ? 40 : 28;
+  let horizontalOffset = isVertical ? 4 : 5;
+  
+  if (icon) {
+    if (isVertical) {
+      verticalOffset += 25;
+    } else {
+      verticalOffset += 20;
+    }
+    if (!isVertical) {
+      horizontalOffset += 25;
+      verticalOffset += 2;
+    }
+  }
+  
+  return { verticalOffset, horizontalOffset };
+};
+
+/**
  * Gets the reference line label encoding
  * @param labelFontWeight
  * @param label
@@ -250,9 +276,8 @@ export const getReferenceLineLabelsEncoding = (
   { colorScheme, icon, label, labelColor, labelFontWeight }: ReferenceLineSpecOptions & { label: string },
   positionEncoding: ProductionRule<NumericValueRef> | SignalRef
 ): GuideEncodeEntry<TextEncodeEntry> => {
-  const VERTICAL_OFFSET = icon ? 48 : 26; // Position label outside of icon.
-  const HORIZONTAL_OFFSET = isVerticalAxis(position) && icon ? 24 : 12; // Position label outside of icon for horizontal orientation.
-  const positionOptions = getAdditiveMarkPositionOptions(VERTICAL_OFFSET, positionEncoding, HORIZONTAL_OFFSET);
+  const { verticalOffset, horizontalOffset } = calculateReferenceLineOffsets(position, icon);
+  const positionOptions = getAdditiveMarkPositionOptions(verticalOffset, positionEncoding, horizontalOffset);
 
   return {
     update: {
