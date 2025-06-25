@@ -27,7 +27,7 @@ import { DEFAULT_FONT_COLOR, DEFAULT_LABEL_FONT_WEIGHT } from '@spectrum-charts/
 import { getColorValue } from '@spectrum-charts/themes';
 
 import { getPathFromIcon } from '../specUtils';
-import { AxisSpecOptions, Position, ReferenceLineOptions, ReferenceLineSpecOptions, Icon } from '../types';
+import { AxisSpecOptions, Position, ReferenceLineOptions, ReferenceLineSpecOptions } from '../types';
 import { isVerticalAxis } from './axisUtils';
 
 export const getReferenceLines = (axisOptions: AxisSpecOptions): ReferenceLineSpecOptions[] => {
@@ -242,7 +242,7 @@ export const getReferenceLineTextMark = (
  * @param icon Whether an icon is present
  * @returns Object containing verticalOffset and horizontalOffset values
  */
-const calculateReferenceLineOffsets = (position: Position, icon?: Icon | string): { verticalOffset: number; horizontalOffset: number } => {
+const calculateReferenceLineOffsets = (position: Position, icon?: string): { verticalOffset: number; horizontalOffset: number } => {
   const isVertical = isVerticalAxis(position);
   let verticalOffset = isVertical ? 40 : 28;
   let horizontalOffset = isVertical ? 4 : 5;
