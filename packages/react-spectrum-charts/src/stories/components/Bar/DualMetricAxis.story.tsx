@@ -35,12 +35,12 @@ const dialogContent = (datum) => (
   </Content>
 );
 
-const DualMetricAxisStory: StoryFn<typeof Bar> = (args): ReactElement => {
+const BasicStory: StoryFn<typeof Bar> = (args): ReactElement => {
   const chartProps = useChartProps({ data: barDataTwoSeries, width: 800, height: 600 });
   return (
     <Chart {...chartProps}>
       <Axis position={args.orientation === 'horizontal' ? 'left' : 'bottom'} baseline title="Browser" />
-      <Axis position={args.orientation === 'horizontal' ? 'bottom' : 'left'} ticks tickMinStep={1} title="Downloads" />
+      <Axis position={args.orientation === 'horizontal' ? 'bottom' : 'left'} ticks tickMinStep={1} title="Windows Downloads" />
       <Axis
         position={args.orientation === 'horizontal' ? 'bottom' : 'right'}
         ticks
@@ -120,10 +120,9 @@ const defaultProps: BarProps = {
   onClick: undefined,
 };
 
-const DualMetricAxis = bindWithProps(DualMetricAxisStory);
-DualMetricAxis.args = {
+const Basic = bindWithProps(BasicStory);
+Basic.args = {
   ...defaultProps,
-  orientation: 'vertical',
   order: 'order',
   color: 'operatingSystem',
 };
@@ -131,7 +130,6 @@ DualMetricAxis.args = {
 const WithSublabels = bindWithProps(WithSublabelsStory);
 WithSublabels.args = {
   ...defaultProps,
-  orientation: 'vertical',
   order: 'order',
   color: 'operatingSystem',
 };
@@ -139,9 +137,8 @@ WithSublabels.args = {
 const WithThreeSeries = bindWithProps(WithThreeSeriesStory);
 WithThreeSeries.args = {
   ...defaultProps,
-  orientation: 'vertical',
   order: 'order',
   color: 'operatingSystem',
 };
 
-export { DualMetricAxis, WithSublabels, WithThreeSeries };
+export { Basic, WithSublabels, WithThreeSeries };

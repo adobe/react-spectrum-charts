@@ -11,12 +11,12 @@
  */
 import { findChart, render, screen } from '../../../test-utils';
 import '../../../test-utils/__mocks__/matchMedia.mock.js';
-import { DualMetricAxis, WithSublabels, WithThreeSeries } from './DualMetricAxis.story';
+import { Basic, WithSublabels, WithThreeSeries } from './DualMetricAxis.story';
 
 describe('Dual metric axis bar axis styling', () => {
   describe('Two series', () => {
     test('axis title should have fill color based on series', async () => {
-      render(<DualMetricAxis {...DualMetricAxis.args} />);
+      render(<Basic {...Basic.args} />);
 
       const chart = await findChart();
       expect(chart).toBeInTheDocument();
@@ -24,12 +24,12 @@ describe('Dual metric axis bar axis styling', () => {
       // set timeout
       await new Promise((resolve) => setTimeout(resolve, 1000));
       // first axis uses first series color.
-      expect(screen.getByText('Downloads')).toHaveAttribute('fill', 'rgb(15, 181, 174)');
+      expect(screen.getByText('Windows Downloads')).toHaveAttribute('fill', 'rgb(15, 181, 174)');
       // second axis uses second series color.
       expect(screen.getByText('Mac Downloads')).toHaveAttribute('fill', 'rgb(64, 70, 202)');
     });
     test('axis label should have fill color based on series', async () => {
-      render(<DualMetricAxis {...DualMetricAxis.args} />);
+      render(<Basic {...Basic.args} />);
 
       const chart = await findChart();
       expect(chart).toBeInTheDocument();
