@@ -69,7 +69,6 @@ const VerticalTimeAxisStory: StoryFn<typeof Axis> = (args): ReactElement => {
   const chartProps = useChartProps({
     data: timeData[args.granularity ?? DEFAULT_GRANULARITY],
     width: 600,
-    height: 800,
   });
   return (
     <Chart {...chartProps}>
@@ -83,7 +82,6 @@ const TimeAxisBarStory: StoryFn<typeof Axis> = (args): ReactElement => {
   const chartProps = useChartProps({
     data: timeData[args.granularity ?? DEFAULT_GRANULARITY],
     width: 600,
-    height: 800,
   });
   return (
     <Chart {...chartProps}>
