@@ -220,7 +220,7 @@ DimensionExtent.args = {
   lineType: 'dashed',
   lineWidth: 'S',
   highlightRawPoint: true,
-  dimensionExtent: ['domain', 'domain'],
+  dimensionExtent: [1668063600000, null],
 };
 
 const DimensionRange = bindWithProps(TrendlineWithDialogsStory);
