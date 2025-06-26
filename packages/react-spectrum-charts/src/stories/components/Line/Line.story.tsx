@@ -15,7 +15,7 @@ import { action } from '@storybook/addon-actions';
 import { StoryFn } from '@storybook/react';
 
 import { Chart } from '../../../Chart';
-import { Axis, Bar, ChartPopover, ChartTooltip, Legend, Line, ReferenceLine } from '../../../components';
+import { Axis, ChartPopover, ChartTooltip, Legend, Line, ReferenceLine } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
 import {
   simpleSparklineData,
@@ -115,19 +115,6 @@ const LineStoryWithUTCData: StoryFn<typeof Line> = (args): ReactElement => {
   );
 };
 
-const ComboStory: StoryFn<typeof Line> = (args): ReactElement => {
-  const chartProps = useChartProps(defaultChartProps);
-  return (
-    <Chart {...chartProps}>
-      <Axis position="left" grid title="Users" />
-      <Axis position="bottom" labelFormat="time" baseline ticks />
-      <Bar dimension="datetime" metric="users" opacity={{ value: 0.75 }} />
-      <Line {...args} />
-      <Legend highlight />
-    </Chart>
-  );
-};
-
 const HistoricalCompareStory: StoryFn<typeof Line> = (args): ReactElement => {
   const chartProps = useChartProps({
     ...defaultChartProps,
@@ -209,7 +196,7 @@ Opacity.args = {
   opacity: { value: 0.6 },
 };
 
-const TrendScale = bindWithProps(ComboStory);
+const TrendScale = bindWithProps(LineStory);
 TrendScale.args = {
   ...defaultArgs,
   scaleType: 'point',
@@ -258,7 +245,6 @@ WithStaticPoints.args = {
   ...defaultArgs,
   dimension: 'datetime',
   metric: 'value',
-  scaleType: 'linear',
   staticPoint: 'staticPoint',
 };
 
