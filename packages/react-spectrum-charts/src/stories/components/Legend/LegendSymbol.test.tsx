@@ -41,7 +41,7 @@ test('LineType renders correctly', async () => {
   expect(chart).toBeInTheDocument();
 
   const symbols = getAllLegendSymbols(chart);
-  expect(symbols[0].getAttribute('stroke-dasharray')).toEqual('');
+  expect(symbols[0].getAttribute('stroke-dasharray')).toEqual('7,4');
 });
 
 test('LineWidth renders correctly', async () => {
