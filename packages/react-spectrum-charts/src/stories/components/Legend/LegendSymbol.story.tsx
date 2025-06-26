@@ -49,7 +49,7 @@ const Color = LegendLineStory.bind({});
 Color.args = { color: { value: 'gray-700' }, opacity: { value: 0.25 }, ...defaultProps };
 
 const LineType = LegendLineStory.bind({});
-LineType.args = { lineType: { value: 'solid' }, opacity: { value: 0.25 }, ...defaultProps };
+LineType.args = { lineType: { value: 'dashed' }, opacity: { value: 0.25 }, ...defaultProps };
 
 const LineWidth = LegendBarStory.bind({});
 LineWidth.args = { lineWidth: { value: 'XS' }, opacity: { value: 0.25 }, ...defaultProps };
