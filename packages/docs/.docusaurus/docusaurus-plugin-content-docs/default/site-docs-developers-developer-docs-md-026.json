@@ -1,0 +1,24 @@
+{
+  "id": "developers/DeveloperDocs",
+  "title": "Developer Docs",
+  "description": "What is react-spectrum-charts?",
+  "source": "@site/docs/developers/DeveloperDocs.md",
+  "sourceDirName": "developers",
+  "slug": "/developers/DeveloperDocs",
+  "permalink": "/react-spectrum-charts/docs/docs/developers/DeveloperDocs",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/adobe/react-spectrum-charts/tree/main/packages/docs/docs/developers/DeveloperDocs.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "sidebar",
+  "previous": {
+    "title": "ChartPopover",
+    "permalink": "/react-spectrum-charts/docs/docs/api/interactivity/ChartPopover"
+  },
+  "next": {
+    "title": "Learning Vega: A Developer's Guide",
+    "permalink": "/react-spectrum-charts/docs/docs/developers/LearningVega"
+  }
+}

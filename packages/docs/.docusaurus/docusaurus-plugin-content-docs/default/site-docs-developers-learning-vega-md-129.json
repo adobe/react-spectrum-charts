@@ -1,0 +1,20 @@
+{
+  "id": "developers/LearningVega",
+  "title": "Learning Vega: A Developer's Guide",
+  "description": "Welcome to Vega! This guide will help you learn Vega, a powerful declarative language for creating, saving, and sharing interactive data visualizations. Vega is the foundation that powers React Spectrum Charts, so understanding it will help you create more sophisticated and customized charts.",
+  "source": "@site/docs/developers/LearningVega.md",
+  "sourceDirName": "developers",
+  "slug": "/developers/LearningVega",
+  "permalink": "/react-spectrum-charts/docs/docs/developers/LearningVega",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/adobe/react-spectrum-charts/tree/main/packages/docs/docs/developers/LearningVega.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "sidebar",
+  "previous": {
+    "title": "Developer Docs",
+    "permalink": "/react-spectrum-charts/docs/docs/developers/DeveloperDocs"
+  }
+}
