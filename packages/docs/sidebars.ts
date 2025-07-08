@@ -57,17 +57,13 @@ const sidebars: SidebarsConfig = {
           label: 'Interactivity',
           items: ['api/interactivity/ChartTooltip', 'api/interactivity/ChartPopover'],
         },
-        // {
-        //   type: 'category',
-        //   label: 'States',
-        //   items: [
-        //     'api/states/EmptyState',
-        //     'api/states/LoadingState'
-        //   ],
-        // }
       ],
     },
-    'Developer-Docs',
+    {
+      type: 'category',
+      label: 'For Developers',
+      items: ['developers/DeveloperDocs', 'developers/LearningVega'],
+    },
   ],
 };
 
