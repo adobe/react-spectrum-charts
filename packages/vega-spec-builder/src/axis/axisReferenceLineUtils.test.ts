@@ -42,6 +42,7 @@ const defaultReferenceLineOptions: ReferenceLineSpecOptions = {
   labelFontWeight: DEFAULT_LABEL_FONT_WEIGHT,
   layer: 'front',
   name: 'axis0ReferenceLine0',
+  lineType: 'solid',
 };
 
 const defaultAxisOptions: AxisSpecOptions = {
@@ -165,7 +166,7 @@ describe('getReferenceLineRuleMark()', () => {
     const rule = getReferenceLineRuleMark(defaultAxisOptions, defaultReferenceLineOptions, defaultXPositionEncoding);
     expect(rule).toStrictEqual({
       encode: {
-        enter: { stroke: { value: spectrumColors.light['gray-900'] } },
+        enter: { stroke: { value: spectrumColors.light['gray-900'] }, strokeDash: { value: [] } },
         update: { x: defaultXPositionEncoding, y: { value: 0 }, y2: { signal: 'height + 0' } },
       },
       interactive: false,
