@@ -19,6 +19,7 @@ import {
   HorizontalSupreme,
   Icon,
   Label,
+  ReferenceLineDashed,
   Supreme,
 } from './ReferenceLineBar.story';
 
@@ -37,8 +38,36 @@ describe('AxisReferenceLine', () => {
       const axisReferenceLine = await findMarksByGroupName(chart, 'axis0ReferenceLine0', 'line');
       expect(axisReferenceLine).toBeInTheDocument();
       expect(axisReferenceLine).toHaveAttribute('transform', 'translate(298,0)');
+      
+      // Check that the line is solid by verifying stroke-dasharray is not set or is 'none'
+      // because the default line type is solid and for this lineType as in specUtils.ts strokeDash is empty array
+      const strokeDasharray = axisReferenceLine.getAttribute('stroke-dasharray');
+      if (strokeDasharray) {
+        expect(strokeDasharray).toBe('none');
+      }
     });
 
+    test('Reference line renders with dashed line type', async () => {
+      render(<ReferenceLineDashed {...ReferenceLineDashed.args}  />);
+
+      const chart = await findChart();
+      expect(chart).toBeInTheDocument();
+
+      const axisReferenceLine = await findMarksByGroupName(chart, 'axis0ReferenceLine0', 'line');
+      expect(axisReferenceLine).toBeInTheDocument();
+      
+      // Check that the line is dotted by verifying stroke-dasharray attribute
+      expect(axisReferenceLine).toHaveAttribute('stroke-dasharray');
+      
+        // For dotted lines, stroke-dasharray should have a value (e.g., "7,4" or similar)
+      const strokeDasharray = axisReferenceLine.getAttribute('stroke-dasharray');
+      expect(strokeDasharray).toBeTruthy();
+      
+      // Check for specific stroke-dasharray pattern [7,4] as it is dashed line type
+      expect(strokeDasharray).toBe('7,4');
+    });
+
+    
     test('Icon renders', async () => {
       render(<Icon {...Icon.args} />);
 

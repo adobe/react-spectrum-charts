@@ -12,7 +12,7 @@
 import { FontWeight } from 'vega';
 
 import { ColorScheme } from '../chartSpec.types';
-import { PartiallyRequired } from '../specUtil.types';
+import { LineType, PartiallyRequired } from '../specUtil.types';
 import { SpectrumColor } from '../spectrumVizColor.types';
 
 export type Icon = 'date' | 'sentimentNegative' | 'sentimentNeutral' | 'sentimentPositive';
@@ -36,9 +36,11 @@ export interface ReferenceLineOptions {
   labelColor?: SpectrumColor | string;
   /** Font weight of the label. */
   labelFontWeight?: FontWeight;
+  /** Line type of the reference line. */
+  lineType?: LineType;
 }
 
-type ReferenceLineOptionsWithDefaults = 'color' | 'iconColor' | 'labelColor' | 'layer' | 'labelFontWeight';
+type ReferenceLineOptionsWithDefaults = 'color' | 'iconColor' | 'labelColor' | 'layer' | 'labelFontWeight' | 'lineType';
 
 export interface ReferenceLineSpecOptions
   extends PartiallyRequired<ReferenceLineOptions, ReferenceLineOptionsWithDefaults> {
