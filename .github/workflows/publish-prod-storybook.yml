@@ -2,69 +2,69 @@ name: Publish Storybook and Docs to GitHub Pages
 # This action runs when a branch has been merged to main.
 
 on:
-    push:
-        branches:
-            - main
+  push:
+    branches:
+      - main
 
 permissions:
-    pages: write
-    id-token: write
-    contents: write
+  pages: write
+  id-token: write
+  contents: write
 
 jobs:
-    build-and-deploy:
-        runs-on: ubuntu-latest
+  build-and-deploy:
+    runs-on: ubuntu-latest
 
-        steps:
-            - name: Checkout code
-              uses: actions/checkout@v3
-              with:
-                  fetch-depth: 0
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
-            - name: Setup Node.js
-              uses: actions/setup-node@v3
-              with:
-                  node-version: '18'
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
 
-            - name: Install Dependencies 📦
-              run: yarn install
+      - name: Install Dependencies 📦
+        run: yarn install
 
-            - name: Build Storybook
-              run: yarn build:storybook
+      - name: Build Storybook
+        run: yarn build:storybook
 
-            - name: Build Docs
-              run: yarn build:docs
+      - name: Build Docs
+        run: yarn build:docs
 
-            - name: Checkout and clean current 'gh-pages' branch
-              run: |
-                  git config user.name "marshallpete"
-                  git config user.email "40001449+marshallpete@users.noreply.github.com"
+      - name: Checkout and clean current 'gh-pages' branch
+        run: |
+          git config user.name "marshallpete"
+          git config user.email "40001449+marshallpete@users.noreply.github.com"
 
-                  # Fetch the existing gh-pages branch
-                  git fetch origin gh-pages
+          # Fetch the existing gh-pages branch
+          git fetch origin gh-pages
 
-                  # Checkout the existing gh-pages branch
-                  git checkout gh-pages
+          # Checkout the existing gh-pages branch
+          git checkout gh-pages
 
-                  # Remove all files
-                  git rm -r --cached .
+          # Remove all files
+          git rm -r --cached .
 
-                  # Restore directories starting with "PR-"
-                  find . -mindepth 1 -maxdepth 1 -type d -name 'PR-*' -exec git reset {} +
-                  
-                  # Explicitly remove the node_modules directory
-                  rm -rf node_modules  
+          # Restore directories starting with "PR-"
+          find . -mindepth 1 -maxdepth 1 -type d -name 'PR-*' -exec git reset {} +
 
-            - name: Copy 'dist-storybook' to 'gh-pages' branch
-              run: |
-                  cp -r dist-storybook/* .
+          # Explicitly remove the node_modules directory
+          rm -rf node_modules
 
-            - name: Copy 'dist' to 'gh-pages' branch
-              run: |
-                  cp -r packages/docs/dist/* ./docs
+      - name: Copy 'dist-storybook' to 'gh-pages' branch
+        run: |
+          cp -r dist-storybook/* .
 
-            - name: Commit and push changes to 'gh-pages' branch
-              run: |
-                  git add -- . ':!dist-storybook'
-                  git commit -m "Update gh-pages with latest Storybook build"
-                  git push origin gh-pages
+      - name: Copy 'dist' to 'gh-pages' branch
+        run: |
+          cp -r packages/docs/dist/* ./docs
+
+      - name: Commit and push changes to 'gh-pages' branch
+        run: |
+          git add -- . ':!dist-storybook'
+          git commit -m "Update gh-pages with latest Storybook build"
+          git push origin gh-pages

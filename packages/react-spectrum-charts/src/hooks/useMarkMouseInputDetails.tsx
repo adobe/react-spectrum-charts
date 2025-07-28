@@ -26,9 +26,7 @@ export type MarkMouseInputDetail = {
 
 export default function useMarkMouseInputDetails(children: ChartChildElement[]): MarkMouseInputDetail[] {
   const markElements = useMemo(() => {
-    return [
-      ...getAllMarkElements(createElement(Chart, { data: [] }, children), Bar, []),
-    ] as MappedMarkElement[];
+    return [...getAllMarkElements(createElement(Chart, { data: [] }, children), Bar, [])] as MappedMarkElement[];
   }, [children]);
 
   return useMemo(
@@ -48,4 +46,4 @@ export default function useMarkMouseInputDetails(children: ChartChildElement[]):
         }) as MarkMouseInputDetail[],
     [markElements]
   );
-} 
+}

@@ -144,7 +144,7 @@ OnClick.args = {
   metric: 'downloads',
   onClick: (datum) => {
     console.log('datum:', datum);
-  }
+  },
 };
 
 const OnMouseInputs = bindWithProps(OnMouseInputsStory);
