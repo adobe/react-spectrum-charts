@@ -244,11 +244,14 @@ export const getReferenceLineTextMark = (
  * @param icon Whether an icon is present
  * @returns Object containing verticalOffset and horizontalOffset values
  */
-const calculateReferenceLineOffsets = (position: Position, icon?: string): { verticalOffset: number; horizontalOffset: number } => {
+const calculateReferenceLineOffsets = (
+  position: Position,
+  icon?: string
+): { verticalOffset: number; horizontalOffset: number } => {
   const isVertical = isVerticalAxis(position);
   let verticalOffset = isVertical ? 40 : 28;
   let horizontalOffset = isVertical ? 4 : 5;
-  
+
   if (icon) {
     if (isVertical) {
       verticalOffset += 25;
@@ -260,7 +263,7 @@ const calculateReferenceLineOffsets = (position: Position, icon?: string): { ver
       verticalOffset += 2;
     }
   }
-  
+
   return { verticalOffset, horizontalOffset };
 };
 

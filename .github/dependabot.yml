@@ -5,19 +5,19 @@
 
 version: 2
 updates:
-  - package-ecosystem: "npm" # See documentation for possible values
-    directory: "/" # Location of package manifests
+  - package-ecosystem: 'npm' # See documentation for possible values
+    directory: '/' # Location of package manifests
     schedule:
-      interval: "daily"
+      interval: 'daily'
     open-pull-requests-limit: 5
     ignore:
-      - dependency-name: "prettier"
+      - dependency-name: 'prettier'
     groups:
       storybook:
         patterns:
-          - "storybook"
-          - "@storybook/*"
+          - 'storybook'
+          - '@storybook/*'
       react:
         patterns:
-          - "*react"
-          - "*react-dom"
+          - '*react'
+          - '*react-dom'
