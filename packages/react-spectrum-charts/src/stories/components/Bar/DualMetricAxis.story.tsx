@@ -40,7 +40,12 @@ const BasicStory: StoryFn<typeof Bar> = (args): ReactElement => {
   return (
     <Chart {...chartProps}>
       <Axis position={args.orientation === 'horizontal' ? 'left' : 'bottom'} baseline title="Browser" />
-      <Axis position={args.orientation === 'horizontal' ? 'bottom' : 'left'} ticks tickMinStep={1} title="Windows Downloads" />
+      <Axis
+        position={args.orientation === 'horizontal' ? 'bottom' : 'left'}
+        ticks
+        tickMinStep={1}
+        title="Windows Downloads"
+      />
       <Axis
         position={args.orientation === 'horizontal' ? 'bottom' : 'right'}
         ticks

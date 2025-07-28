@@ -79,93 +79,93 @@ import {
 import { addVenn } from './venn/vennSpecBuilder';
 
 export function buildSpec({
-	axes = [],
-	backgroundColor = DEFAULT_BACKGROUND_COLOR,
-	chartHeight,
-	chartWidth,
-	colors = 'categorical12',
-	colorScheme = DEFAULT_COLOR_SCHEME,
-	data,
-	description,
-	hiddenSeries = [],
-	highlightedItem,
-	highlightedSeries,
-	idKey = MARK_ID,
-	legends = [],
-	lineTypes = DEFAULT_LINE_TYPES as LineType[],
-	lineWidths = ['M'],
-	marks = [],
-	opacities,
-	symbolShapes = ['rounded-square'],
-	symbolSizes = ['XS', 'XL'],
-	title,
-	titles = [],
+  axes = [],
+  backgroundColor = DEFAULT_BACKGROUND_COLOR,
+  chartHeight,
+  chartWidth,
+  colors = 'categorical12',
+  colorScheme = DEFAULT_COLOR_SCHEME,
+  data,
+  description,
+  hiddenSeries = [],
+  highlightedItem,
+  highlightedSeries,
+  idKey = MARK_ID,
+  legends = [],
+  lineTypes = DEFAULT_LINE_TYPES as LineType[],
+  lineWidths = ['M'],
+  marks = [],
+  opacities,
+  symbolShapes = ['rounded-square'],
+  symbolSizes = ['XS', 'XL'],
+  title,
+  titles = [],
 }: ChartOptions) {
-	const options: ChartSpecOptions = {
-		axes,
-		backgroundColor,
-		chartHeight,
-		chartWidth,
-		colors,
-		colorScheme,
-		data,
-		description,
-		hiddenSeries,
-		highlightedItem,
-		highlightedSeries,
-		idKey,
-		legends,
-		lineTypes,
-		lineWidths,
-		marks,
-		opacities,
-		symbolShapes,
-		symbolSizes,
-		title,
-		titles,
-	};
-	let spec = initializeSpec(null, { backgroundColor, colorScheme, description, title });
-	spec.signals = getDefaultSignals(options);
-	spec.scales = getDefaultScales(colors, colorScheme, lineTypes, lineWidths, opacities, symbolShapes, symbolSizes);
+  const options: ChartSpecOptions = {
+    axes,
+    backgroundColor,
+    chartHeight,
+    chartWidth,
+    colors,
+    colorScheme,
+    data,
+    description,
+    hiddenSeries,
+    highlightedItem,
+    highlightedSeries,
+    idKey,
+    legends,
+    lineTypes,
+    lineWidths,
+    marks,
+    opacities,
+    symbolShapes,
+    symbolSizes,
+    title,
+    titles,
+  };
+  let spec = initializeSpec(null, { backgroundColor, colorScheme, description, title });
+  spec.signals = getDefaultSignals(options);
+  spec.scales = getDefaultScales(colors, colorScheme, lineTypes, lineWidths, opacities, symbolShapes, symbolSizes);
 
-	let { areaCount, barCount, bulletCount, comboCount, donutCount, lineCount, scatterCount, vennCount } =
-		initializeComponentCounts();
-	const specOptions = { colorScheme, idKey, highlightedItem };
-	spec = [...marks].reduce((acc: ScSpec, mark) => {
-		switch (mark.markType) {
-			case 'area':
-				areaCount++;
-				return addArea(acc, { ...mark, ...specOptions, index: areaCount });
-			case 'bar':
-				barCount++;
-				return addBar(acc, { ...mark, ...specOptions, index: barCount });
-			case 'bullet':
-				bulletCount++;
-				return addBullet(acc, { ...mark, ...specOptions, index: bulletCount });
-			case 'combo':
-				comboCount++;
-				return addCombo(acc, { ...mark, ...specOptions, index: comboCount });
-			case 'donut':
-				donutCount++;
-				return addDonut(acc, { ...mark, ...specOptions, index: donutCount });
-			case 'line':
-				lineCount++;
-				return addLine(acc, { ...mark, ...specOptions, index: lineCount });
-			case 'scatter':
-				scatterCount++;
-				return addScatter(acc, { ...mark, ...specOptions, index: scatterCount });
-			case 'venn':
-				vennCount++;
-				return addVenn(acc, { ...mark, ...specOptions, index: vennCount, data, chartWidth, chartHeight });
+  let { areaCount, barCount, bulletCount, comboCount, donutCount, lineCount, scatterCount, vennCount } =
+    initializeComponentCounts();
+  const specOptions = { colorScheme, idKey, highlightedItem };
+  spec = [...marks].reduce((acc: ScSpec, mark) => {
+    switch (mark.markType) {
+      case 'area':
+        areaCount++;
+        return addArea(acc, { ...mark, ...specOptions, index: areaCount });
+      case 'bar':
+        barCount++;
+        return addBar(acc, { ...mark, ...specOptions, index: barCount });
+      case 'bullet':
+        bulletCount++;
+        return addBullet(acc, { ...mark, ...specOptions, index: bulletCount });
+      case 'combo':
+        comboCount++;
+        return addCombo(acc, { ...mark, ...specOptions, index: comboCount });
+      case 'donut':
+        donutCount++;
+        return addDonut(acc, { ...mark, ...specOptions, index: donutCount });
+      case 'line':
+        lineCount++;
+        return addLine(acc, { ...mark, ...specOptions, index: lineCount });
+      case 'scatter':
+        scatterCount++;
+        return addScatter(acc, { ...mark, ...specOptions, index: scatterCount });
+      case 'venn':
+        vennCount++;
+        return addVenn(acc, { ...mark, ...specOptions, index: vennCount, data, chartWidth, chartHeight });
 
-			case 'bigNumber':
-				// Do nothing and do not throw an error
-				return acc;
-			default:
-				console.error(`Invalid component type: ${mark} is not a supported chart mark option child`);
-				return acc;
-		}
-	}, spec);
+      case 'bigNumber':
+        // Do nothing and do not throw an error
+        return acc;
+      default:
+        console.error(`Invalid component type: ${mark} is not a supported chart mark option child`);
+        return acc;
+    }
+  }, spec);
 
   spec = [...legends].reduce((acc: ScSpec, legend, index) => {
     return addLegend(acc, {
@@ -211,16 +211,16 @@ export const removeUnusedScales = produce<ScSpec>((spec) => {
 });
 
 const initializeComponentCounts = () => {
-	return {
-		areaCount: -1,
-		barCount: -1,
-		comboCount: -1,
-		donutCount: -1,
-		bulletCount: -1,
-		lineCount: -1,
-		scatterCount: -1,
-		vennCount: -1,
-	};
+  return {
+    areaCount: -1,
+    barCount: -1,
+    comboCount: -1,
+    donutCount: -1,
+    bulletCount: -1,
+    lineCount: -1,
+    scatterCount: -1,
+    vennCount: -1,
+  };
 };
 
 export const getDefaultSignals = ({

@@ -35,18 +35,18 @@ export const getScaleIndexByType = (
   scaleName?: string,
   domainDataKey?: string
 ): number => {
-	const name = scaleName || toCamelCase(`${axis} ${type}`);
-	let index = scales.findIndex((scale) => scale.name === name);
-	if (index === -1) {
-		index = scales.length;
-		scales.push(
-			generateScale(type, axis, {
-				name,
-				...(domainDataKey ? { domain: { data: domainDataKey, fields: [] } } : {}),
-			})
-		);
-	}
-	return index;
+  const name = scaleName || toCamelCase(`${axis} ${type}`);
+  let index = scales.findIndex((scale) => scale.name === name);
+  if (index === -1) {
+    index = scales.length;
+    scales.push(
+      generateScale(type, axis, {
+        name,
+        ...(domainDataKey ? { domain: { data: domainDataKey, fields: [] } } : {}),
+      })
+    );
+  }
+  return index;
 };
 
 /**

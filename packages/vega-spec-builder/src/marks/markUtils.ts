@@ -50,24 +50,24 @@ import {
   getVegaSymbolSizeFromRscSymbolSize,
 } from '../specUtils';
 import {
-	BarSpecOptions,
-	ChartPopoverOptions,
-	ChartTooltipOptions,
-	ColorFacet,
-	ColorScheme,
-	DonutSpecOptions,
-	DualFacet,
-	HighlightedItem,
-	LineTypeFacet,
-	LineWidthFacet,
-	MetricRangeOptions,
-	OpacityFacet,
-	ProductionRuleTests,
-	ScaleType,
-	ScatterSpecOptions,
-	SymbolSizeFacet,
-	TrendlineOptions,
-	VennSpecOptions,
+  BarSpecOptions,
+  ChartPopoverOptions,
+  ChartTooltipOptions,
+  ColorFacet,
+  ColorScheme,
+  DonutSpecOptions,
+  DualFacet,
+  HighlightedItem,
+  LineTypeFacet,
+  LineWidthFacet,
+  MetricRangeOptions,
+  OpacityFacet,
+  ProductionRuleTests,
+  ScaleType,
+  ScatterSpecOptions,
+  SymbolSizeFacet,
+  TrendlineOptions,
+  VennSpecOptions,
 } from '../types';
 
 /**
@@ -419,38 +419,38 @@ const getHoverSizeSignal = (size: number): SignalRef => ({
  * @returns
  */
 export const getMarkOpacity = (
-	options: BarSpecOptions | DonutSpecOptions | VennSpecOptions,
+  options: BarSpecOptions | DonutSpecOptions | VennSpecOptions
 ): ({ test?: string } & NumericValueRef)[] => {
-	const { highlightedItem, idKey, name: markName } = options;
-	const rules: ({ test?: string } & NumericValueRef)[] = [DEFAULT_OPACITY_RULE]
-  
-	// if there aren't any interactive components, then we don't need to add special opacity rules
-	if (!isInteractive(options) && highlightedItem === undefined) {
-		return rules;
-	}
+  const { highlightedItem, idKey, name: markName } = options;
+  const rules: ({ test?: string } & NumericValueRef)[] = [DEFAULT_OPACITY_RULE];
 
-	addHighlightMarkOpacityRules(rules, options);
+  // if there aren't any interactive components, then we don't need to add special opacity rules
+  if (!isInteractive(options) && highlightedItem === undefined) {
+    return rules;
+  }
 
-	// if a bar is hovered/selected, all other bars should have reduced opacity
-	if (hasPopover(options)) {
-		return [
-			{
-				test: `!isValid(${SELECTED_GROUP}) && ${SELECTED_ITEM} && ${SELECTED_ITEM} !== datum.${idKey}`,
-				value: 1 / HIGHLIGHT_CONTRAST_RATIO,
-			},
-			{ test: `isValid(${SELECTED_ITEM}) && ${SELECTED_ITEM} === datum.${idKey}`, ...DEFAULT_OPACITY_RULE },
-			{
-				test: `isValid(${SELECTED_GROUP}) && ${SELECTED_GROUP} === datum.${markName}_selectedGroupId`,
-				value: 1,
-			},
-			{
-				test: `isValid(${SELECTED_GROUP}) && ${SELECTED_GROUP} !== datum.${markName}_selectedGroupId`,
-				value: 1 / HIGHLIGHT_CONTRAST_RATIO,
-			},
-			...rules,
-		];
-	}
-	return rules;
+  addHighlightMarkOpacityRules(rules, options);
+
+  // if a bar is hovered/selected, all other bars should have reduced opacity
+  if (hasPopover(options)) {
+    return [
+      {
+        test: `!isValid(${SELECTED_GROUP}) && ${SELECTED_ITEM} && ${SELECTED_ITEM} !== datum.${idKey}`,
+        value: 1 / HIGHLIGHT_CONTRAST_RATIO,
+      },
+      { test: `isValid(${SELECTED_ITEM}) && ${SELECTED_ITEM} === datum.${idKey}`, ...DEFAULT_OPACITY_RULE },
+      {
+        test: `isValid(${SELECTED_GROUP}) && ${SELECTED_GROUP} === datum.${markName}_selectedGroupId`,
+        value: 1,
+      },
+      {
+        test: `isValid(${SELECTED_GROUP}) && ${SELECTED_GROUP} !== datum.${markName}_selectedGroupId`,
+        value: 1 / HIGHLIGHT_CONTRAST_RATIO,
+      },
+      ...rules,
+    ];
+  }
+  return rules;
 };
 
 export const getInteractiveMarkName = (

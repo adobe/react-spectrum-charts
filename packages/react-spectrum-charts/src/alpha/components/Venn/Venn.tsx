@@ -18,12 +18,12 @@ import { DEFAULT_VENN_COLOR, DEFAULT_VENN_LABEL, DEFAULT_VENN_METRIC } from '@sp
 import { VennProps } from '../../../types';
 
 const Venn: FC<VennProps> = ({
-	orientation = '0deg',
-	metric = DEFAULT_VENN_METRIC,
-	label = DEFAULT_VENN_LABEL,
-	color = DEFAULT_VENN_COLOR,
+  orientation = '0deg',
+  metric = DEFAULT_VENN_METRIC,
+  label = DEFAULT_VENN_LABEL,
+  color = DEFAULT_VENN_COLOR,
 }) => {
-	return null;
+  return null;
 };
 
 Venn.displayName = 'Venn';

@@ -17,8 +17,8 @@ import { ChartPopoverElement, ChartTooltipElement } from '../dialogs';
 import { Children } from '../util.types';
 
 export interface VennProps
-	extends Omit<VennOptions, 'chartPopovers' | 'chartTooltips' | 'data' | 'chartWidth' | 'chartHeight' | 'markType'> {
-	children?: Children<ChartPopoverElement | ChartTooltipElement>;
+  extends Omit<VennOptions, 'chartPopovers' | 'chartTooltips' | 'data' | 'chartWidth' | 'chartHeight' | 'markType'> {
+  children?: Children<ChartPopoverElement | ChartTooltipElement>;
 }
 
 export type VennElement = ReactElement<VennProps, JSXElementConstructor<VennProps>>;

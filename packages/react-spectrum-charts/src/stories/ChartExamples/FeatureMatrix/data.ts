@@ -356,4 +356,3 @@ export const topEventsFeatureMatrixData = [
   },
   ...multipleSegmentFeatureMatrixData.map((d) => ({ ...d, isSegmentData: true })),
 ];
-

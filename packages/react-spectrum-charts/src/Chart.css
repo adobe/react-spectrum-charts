@@ -15,48 +15,48 @@ the vega tooltip won't pick up spectrum variables
 set all the default styling
 */
 #vg-tooltip-element.vg-tooltip {
-	border-radius: 4px;
-	font-family: adobe-clean-ux, adobe-clean, Source Sans Pro, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto,
-		sans-serif;
-	font-size: 14px;
-	font-style: normal;
-	font-weight: 400;
-	line-height: 21px;
-	padding: 12px;
-	max-width: 300px;
+  border-radius: 4px;
+  font-family: adobe-clean-ux, adobe-clean, Source Sans Pro, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto,
+    sans-serif;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 21px;
+  padding: 12px;
+  max-width: 300px;
 }
 /*
 sections sometimes add a 500ms transition but vega tooltips close instantly
 this removes transitions in the vega tooltip
 */
 #vg-tooltip-element.vg-tooltip section {
-	transition: none;
+  transition: none;
 }
 /* double scope light-theme so that it has higher precedence */
 #vg-tooltip-element.vg-tooltip.light-theme.light-theme {
-	color-scheme: light;
-	border: 1px solid #cacaca;
-	background-color: #fff;
-	color: #4b4b4b;
+  color-scheme: light;
+  border: 1px solid #cacaca;
+  background-color: #fff;
+  color: #4b4b4b;
 }
 /* double scope dark-theme so that it has higher precedence */
 #vg-tooltip-element.vg-tooltip.dark-theme.dark-theme {
-	color-scheme: dark;
-	border: 1px solid #494949;
-	background-color: #000;
-	color: #c8c8c8;
+  color-scheme: dark;
+  border: 1px solid #494949;
+  background-color: #000;
+  color: #c8c8c8;
 }
 #vg-tooltip-element.vg-tooltip .legend-tooltip {
-	max-width: 150px;
+  max-width: 150px;
 }
 #vg-tooltip-element.vg-tooltip .legend-tooltip .series {
-	font-weight: 700;
+  font-weight: 700;
 }
 #vg-tooltip-element.vg-tooltip .legend-tooltip .series-description {
-	margin: 0px;
+  margin: 0px;
 }
 .rsc-container {
-	position: relative;
-	width: auto;
-	height: 100%;
+  position: relative;
+  width: auto;
+  height: 100%;
 }

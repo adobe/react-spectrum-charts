@@ -103,23 +103,23 @@ describe('BigNumber', () => {
     });
   });
 
-	describe('Chart with BigNumber children', () => {
-		test('Chart with BigNumber and Line as children should only display BigNumber', async () => {
-			render(
-				<Chart data={data}>
-					<BigNumber
-						dataKey="y"
-						orientation="horizontal"
-						label="Empty"
-						icon={
-							<Icon data-testid="icon">
-								<svg></svg>
-							</Icon>
-						}
-					/>
-					<Line />
-				</Chart>
-			);
+  describe('Chart with BigNumber children', () => {
+    test('Chart with BigNumber and Line as children should only display BigNumber', async () => {
+      render(
+        <Chart data={data}>
+          <BigNumber
+            dataKey="y"
+            orientation="horizontal"
+            label="Empty"
+            icon={
+              <Icon data-testid="icon">
+                <svg></svg>
+              </Icon>
+            }
+          />
+          <Line />
+        </Chart>
+      );
 
       const bigNumber = screen.queryByTestId('icon');
       expect(bigNumber).toBeInTheDocument();

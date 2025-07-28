@@ -10,50 +10,50 @@
  * governing permissions and limitations under the License.
  */
 import {
-	ChartData,
-	ChartPopoverOptions,
-	ChartTooltipOptions,
-	ColorScheme,
-	HighlightedItem,
-	PartiallyRequired,
+  ChartData,
+  ChartPopoverOptions,
+  ChartTooltipOptions,
+  ColorScheme,
+  HighlightedItem,
+  PartiallyRequired,
 } from '../../types';
 
 export interface VennOptions {
-	markType: 'venn';
-	/** Key in the data that is used as the color facet */
-	color?: string;
-	/** Key in the data that is used as the metric */
-	metric?: string;
-	/** orientation of the diagram in degrees */
-	orientation?: VennDegreeOptions;
-	/** key in data that is used for labels inside the sets and intersections*/
-	label?: string;
-	/** Sets the name of the component. */
-	name?: string;
+  markType: 'venn';
+  /** Key in the data that is used as the color facet */
+  color?: string;
+  /** Key in the data that is used as the metric */
+  metric?: string;
+  /** orientation of the diagram in degrees */
+  orientation?: VennDegreeOptions;
+  /** key in data that is used for labels inside the sets and intersections*/
+  label?: string;
+  /** Sets the name of the component. */
+  name?: string;
 
-	// children
-	chartPopovers?: ChartPopoverOptions[];
-	chartTooltips?: ChartTooltipOptions[];
+  // children
+  chartPopovers?: ChartPopoverOptions[];
+  chartTooltips?: ChartTooltipOptions[];
 }
 
 type VennOptionsWithDefaults =
-	| 'chartPopovers'
-	| 'chartTooltips'
-	| 'color'
-	| 'label'
-	| 'metric'
-	| 'name'
-	| 'orientation';
+  | 'chartPopovers'
+  | 'chartTooltips'
+  | 'color'
+  | 'label'
+  | 'metric'
+  | 'name'
+  | 'orientation';
 
 export interface VennSpecOptions extends PartiallyRequired<VennOptions, VennOptionsWithDefaults> {
-	chartHeight: number;
-	chartWidth: number;
-	colorScheme: ColorScheme;
-	data: ChartData[];
-	highlightedItem?: HighlightedItem;
-	idKey: string;
-	index: number;
-	markType: 'venn';
+  chartHeight: number;
+  chartWidth: number;
+  colorScheme: ColorScheme;
+  data: ChartData[];
+  highlightedItem?: HighlightedItem;
+  idKey: string;
+  index: number;
+  markType: 'venn';
 }
 
 export type VennDegreeOptions = '0deg' | '90deg' | '180deg' | '270deg';

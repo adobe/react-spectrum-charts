@@ -28,20 +28,20 @@ import { AxisElement } from './axis';
 import { ChartPopoverElement, ChartTooltipElement } from './dialogs';
 import { LegendElement } from './legend.types';
 import {
-	AreaElement,
-	BarAnnotationElement,
-	BarElement,
-	BigNumberElement,
-	ComboElement,
-	DonutElement,
-	DonutSummaryElement,
-	LineElement,
-	MetricRangeElement,
-	ScatterElement,
-	ScatterPathElement,
-	SegmentLabelElement,
-	TrendlineElement,
-	VennElement,
+  AreaElement,
+  BarAnnotationElement,
+  BarElement,
+  BigNumberElement,
+  ComboElement,
+  DonutElement,
+  DonutSummaryElement,
+  LineElement,
+  MetricRangeElement,
+  ScatterElement,
+  ScatterPathElement,
+  SegmentLabelElement,
+  TrendlineElement,
+  VennElement,
 } from './marks';
 import { TitleElement } from './title.types';
 import { Children } from './util.types';
@@ -51,17 +51,17 @@ export type SimpleData = Record<string, unknown>;
 export type ChartData = SimpleData | Data;
 
 export type ChartChildElement =
-	| AreaElement
-	| AxisElement
-	| BarElement
-	| BigNumberElement
-	| DonutElement
-	| ComboElement
-	| LegendElement
-	| LineElement
-	| ScatterElement
-	| TitleElement
-	| VennElement;
+  | AreaElement
+  | AxisElement
+  | BarElement
+  | BigNumberElement
+  | DonutElement
+  | ComboElement
+  | LegendElement
+  | LineElement
+  | ScatterElement
+  | TitleElement
+  | VennElement;
 export type MarkChildElement =
   | BarAnnotationElement
   | ChartPopoverElement

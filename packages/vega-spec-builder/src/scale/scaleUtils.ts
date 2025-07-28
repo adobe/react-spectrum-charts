@@ -17,12 +17,12 @@
  * @returns Object containing all scale names needed for dual axis configuration
  */
 export function getDualAxisScaleNames(baseScaleName: string) {
-	const primaryScaleName = `${baseScaleName}Primary`;
-	const secondaryScaleName = `${baseScaleName}Secondary`;
-	return {
-		primaryScale: primaryScaleName,
-		secondaryScale: secondaryScaleName,
-		primaryDomain: `${primaryScaleName}Domain`,
-		secondaryDomain: `${secondaryScaleName}Domain`,
-	};
+  const primaryScaleName = `${baseScaleName}Primary`;
+  const secondaryScaleName = `${baseScaleName}Secondary`;
+  return {
+    primaryScale: primaryScaleName,
+    secondaryScale: secondaryScaleName,
+    primaryDomain: `${primaryScaleName}Domain`,
+    secondaryDomain: `${secondaryScaleName}Domain`,
+  };
 }

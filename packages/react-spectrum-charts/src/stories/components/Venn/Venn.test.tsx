@@ -69,9 +69,9 @@ describe('Venn', () => {
       let popover = await screen.findByTestId('rsc-popover');
       expect(within(popover).getByText('Instagram')).toBeInTheDocument();
 
-      const circleStrokes = await findAllMarksByGroupName(chart, 'venn0_circle_strokes')
+      const circleStrokes = await findAllMarksByGroupName(chart, 'venn0_circle_strokes');
 
-      expect(circleStrokes[0]).toHaveAttribute('stroke-opacity', '1')
+      expect(circleStrokes[0]).toHaveAttribute('stroke-opacity', '1');
 
       await userEvent.click(chart);
 
@@ -81,8 +81,8 @@ describe('Venn', () => {
       popover = await screen.findByTestId('rsc-popover');
       expect(within(popover).getByText('Instagram∩TikTok')).toBeInTheDocument();
 
-      const intersectionStrokes = await findAllMarksByGroupName(chart, 'venn0_intersections_strokes')
-      expect(intersectionStrokes[0]).toHaveAttribute('stroke-opacity', '1')
+      const intersectionStrokes = await findAllMarksByGroupName(chart, 'venn0_intersections_strokes');
+      expect(intersectionStrokes[0]).toHaveAttribute('stroke-opacity', '1');
     });
 
     test('should dim unselected circles', async () => {

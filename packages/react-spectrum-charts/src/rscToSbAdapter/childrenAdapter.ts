@@ -48,25 +48,25 @@ import { Trendline } from '../components/Trendline';
 import { TrendlineAnnotation } from '../components/TrendlineAnnotation';
 import { Donut, DonutSummary, SegmentLabel } from '../rc';
 import {
-	AreaProps,
-	AxisAnnotationProps,
-	AxisProps,
-	BarProps,
-	ChartPopoverProps,
-	ChartTooltipProps,
-	ComboProps,
-	DonutProps,
-	DonutSummaryProps,
-	LegendProps,
-	LineProps,
-	ReferenceLineProps,
-	ScatterPathProps,
-	ScatterProps,
-	SegmentLabelProps,
-	TitleProps,
-	TrendlineAnnotationProps,
-	TrendlineProps,
-	VennProps,
+  AreaProps,
+  AxisAnnotationProps,
+  AxisProps,
+  BarProps,
+  ChartPopoverProps,
+  ChartTooltipProps,
+  ComboProps,
+  DonutProps,
+  DonutSummaryProps,
+  LegendProps,
+  LineProps,
+  ReferenceLineProps,
+  ScatterPathProps,
+  ScatterProps,
+  SegmentLabelProps,
+  TitleProps,
+  TrendlineAnnotationProps,
+  TrendlineProps,
+  VennProps,
 } from '../types';
 import { sanitizeChildren } from '../utils';
 import { getAreaOptions } from './areaAdapter';
@@ -210,14 +210,14 @@ export const childrenToOptions = (
         trendlineAnnotations.push(child.props as TrendlineAnnotationProps);
         break;
 
-			case Venn.displayName:
-				marks.push(getVennOptions(child.props as VennProps));
-				break;
+      case Venn.displayName:
+        marks.push(getVennOptions(child.props as VennProps));
+        break;
 
-			default:
-				console.error('Invalid component type: ', child.type.displayName);
-		}
-	});
+      default:
+        console.error('Invalid component type: ', child.type.displayName);
+    }
+  });
 
   return {
     axes,

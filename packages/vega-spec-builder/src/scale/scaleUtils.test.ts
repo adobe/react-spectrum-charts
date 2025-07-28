@@ -12,43 +12,43 @@
 import { getDualAxisScaleNames } from './scaleUtils';
 
 describe('getDualAxisScaleNames()', () => {
-	test('should return correct scale names for "xLinear" base scale', () => {
-		const result = getDualAxisScaleNames('xLinear');
-		expect(result).toEqual({
-			primaryScale: 'xLinearPrimary',
-			secondaryScale: 'xLinearSecondary',
-			primaryDomain: 'xLinearPrimaryDomain',
-			secondaryDomain: 'xLinearSecondaryDomain',
-		});
-	});
+  test('should return correct scale names for "xLinear" base scale', () => {
+    const result = getDualAxisScaleNames('xLinear');
+    expect(result).toEqual({
+      primaryScale: 'xLinearPrimary',
+      secondaryScale: 'xLinearSecondary',
+      primaryDomain: 'xLinearPrimaryDomain',
+      secondaryDomain: 'xLinearSecondaryDomain',
+    });
+  });
 
-	test('should return correct scale names for "yLinear" base scale', () => {
-		const result = getDualAxisScaleNames('yLinear');
-		expect(result).toEqual({
-			primaryScale: 'yLinearPrimary',
-			secondaryScale: 'yLinearSecondary',
-			primaryDomain: 'yLinearPrimaryDomain',
-			secondaryDomain: 'yLinearSecondaryDomain',
-		});
-	});
+  test('should return correct scale names for "yLinear" base scale', () => {
+    const result = getDualAxisScaleNames('yLinear');
+    expect(result).toEqual({
+      primaryScale: 'yLinearPrimary',
+      secondaryScale: 'yLinearSecondary',
+      primaryDomain: 'yLinearPrimaryDomain',
+      secondaryDomain: 'yLinearSecondaryDomain',
+    });
+  });
 
-	test('should return correct scale names for custom base scale', () => {
-		const result = getDualAxisScaleNames('customScale');
-		expect(result).toEqual({
-			primaryScale: 'customScalePrimary',
-			secondaryScale: 'customScaleSecondary',
-			primaryDomain: 'customScalePrimaryDomain',
-			secondaryDomain: 'customScaleSecondaryDomain',
-		});
-	});
+  test('should return correct scale names for custom base scale', () => {
+    const result = getDualAxisScaleNames('customScale');
+    expect(result).toEqual({
+      primaryScale: 'customScalePrimary',
+      secondaryScale: 'customScaleSecondary',
+      primaryDomain: 'customScalePrimaryDomain',
+      secondaryDomain: 'customScaleSecondaryDomain',
+    });
+  });
 
-	test('should handle empty string base scale name', () => {
-		const result = getDualAxisScaleNames('');
-		expect(result).toEqual({
-			primaryScale: 'Primary',
-			secondaryScale: 'Secondary',
-			primaryDomain: 'PrimaryDomain',
-			secondaryDomain: 'SecondaryDomain',
-		});
-	});
+  test('should handle empty string base scale name', () => {
+    const result = getDualAxisScaleNames('');
+    expect(result).toEqual({
+      primaryScale: 'Primary',
+      secondaryScale: 'Secondary',
+      primaryDomain: 'PrimaryDomain',
+      secondaryDomain: 'SecondaryDomain',
+    });
+  });
 });

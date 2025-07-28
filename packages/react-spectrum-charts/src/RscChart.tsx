@@ -64,28 +64,28 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>((props, forwarded
 
   const sanitizedChildren = useMemo(() => sanitizeRscChartChildren(props.children), [props.children]);
 
-	// THE MAGIC, builds our spec
-	const spec = useSpec({
-		backgroundColor,
-		children: sanitizedChildren,
-		colors,
-		chartWidth,
-		chartHeight,
-		data,
-		description,
-		idKey,
-		hiddenSeries,
-		highlightedItem,
-		highlightedSeries,
-		symbolShapes,
-		symbolSizes,
-		lineTypes,
-		lineWidths,
-		opacities,
-		colorScheme,
-		title,
-		UNSAFE_vegaSpec,
-	});
+  // THE MAGIC, builds our spec
+  const spec = useSpec({
+    backgroundColor,
+    children: sanitizedChildren,
+    colors,
+    chartWidth,
+    chartHeight,
+    data,
+    description,
+    idKey,
+    hiddenSeries,
+    highlightedItem,
+    highlightedSeries,
+    symbolShapes,
+    symbolSizes,
+    lineTypes,
+    lineWidths,
+    opacities,
+    colorScheme,
+    title,
+    UNSAFE_vegaSpec,
+  });
 
   useSpecProps(spec);
 

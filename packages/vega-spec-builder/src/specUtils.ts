@@ -234,13 +234,13 @@ export const baseData: Data[] = [
 export const initializeSpec = (spec: Spec | null = {}, chartOptions: Partial<ChartSpecOptions> = {}): ScSpec => {
   const { backgroundColor, colorScheme = 'light', description, title } = chartOptions;
 
-	const baseSpec: ScSpec = {
-		usermeta: {},
-		title: title || undefined,
-		description,
-		data: baseData,
-		background: backgroundColor ? getColorValue(backgroundColor, colorScheme) : undefined,
-	};
+  const baseSpec: ScSpec = {
+    usermeta: {},
+    title: title || undefined,
+    description,
+    data: baseData,
+    background: backgroundColor ? getColorValue(backgroundColor, colorScheme) : undefined,
+  };
 
   return { ...baseSpec, ...(spec || {}) };
 };

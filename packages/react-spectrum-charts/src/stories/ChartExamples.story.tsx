@@ -22,15 +22,7 @@ import GraphPathing from '@spectrum-icons/workflow/GraphPathing';
 import UsersAdd from '@spectrum-icons/workflow/UsersAdd';
 import ViewDetail from '@spectrum-icons/workflow/ViewDetail';
 
-import {
-	ChartData,
-	Colors,
-	Datum,
-	LegendDescription,
-	LegendLabel,
-	SpectrumColor,
-	SubLabel,
-} from '../../../vega-spec-builder';
+import { Colors, Datum, LegendDescription, LegendLabel, SpectrumColor, SubLabel } from '../../../vega-spec-builder';
 import { Annotation } from '../components/Annotation';
 import { ReferenceLine } from '../components/ReferenceLine';
 import useChartProps from '../hooks/useChartProps';
@@ -48,7 +40,7 @@ import {
   categorical16,
 } from '../index';
 import { bindWithProps } from '../test-utils';
-import { ChartProps } from '../types';
+import { ChartData, ChartProps } from '../types';
 import {
   funnelConversionData,
   funnelConversionTimeComparisonData,

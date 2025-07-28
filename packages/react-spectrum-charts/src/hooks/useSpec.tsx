@@ -22,123 +22,123 @@ import { SanitizedSpecProps } from '../types';
 import { chartHasChild } from '../utils';
 
 export default function useSpec({
-	backgroundColor,
-	chartHeight,
-	chartWidth,
-	children,
-	colors,
-	colorScheme,
-	data,
-	description,
-	hiddenSeries,
-	highlightedItem,
-	highlightedSeries,
-	idKey,
-	lineTypes,
-	lineWidths,
-	opacities,
-	symbolShapes,
-	symbolSizes,
-	title,
-	UNSAFE_vegaSpec,
+  backgroundColor,
+  chartHeight,
+  chartWidth,
+  children,
+  colors,
+  colorScheme,
+  data,
+  description,
+  hiddenSeries,
+  highlightedItem,
+  highlightedSeries,
+  idKey,
+  lineTypes,
+  lineWidths,
+  opacities,
+  symbolShapes,
+  symbolSizes,
+  title,
+  UNSAFE_vegaSpec,
 }: SanitizedSpecProps): Spec {
-	const prevSpec = useRef<Spec | null>(null);
-	const hasVenn = useMemo(() => chartHasChild({ children, displayName: Venn.displayName as string }), [children]);
+  const prevSpec = useRef<Spec | null>(null);
+  const hasVenn = useMemo(() => chartHasChild({ children, displayName: Venn.displayName as string }), [children]);
 
   // invalidate cache if changes to props other than width, height change
-	useEffect(() => {
-    prevSpec.current = null
-	}, [
-		UNSAFE_vegaSpec,
-		backgroundColor,
-		children,
-		colors,
-		colorScheme,
-		description,
-		hiddenSeries,
-		highlightedItem,
-		highlightedSeries,
-		idKey,
-		lineTypes,
-		lineWidths,
-		opacities,
-		symbolShapes,
-		symbolSizes,
-		title,
-		data,
-	]);
+  useEffect(() => {
+    prevSpec.current = null;
+  }, [
+    UNSAFE_vegaSpec,
+    backgroundColor,
+    children,
+    colors,
+    colorScheme,
+    description,
+    hiddenSeries,
+    highlightedItem,
+    highlightedSeries,
+    idKey,
+    lineTypes,
+    lineWidths,
+    opacities,
+    symbolShapes,
+    symbolSizes,
+    title,
+    data,
+  ]);
 
-	return useMemo(() => {
-		// returned cached spec if there is a cached spec and if venn is not a child element
-		if (!hasVenn && prevSpec.current !== null) {
-			return prevSpec.current;
-		}
+  return useMemo(() => {
+    // returned cached spec if there is a cached spec and if venn is not a child element
+    if (!hasVenn && prevSpec.current !== null) {
+      return prevSpec.current;
+    }
 
-		// They already supplied a spec, fill it in with defaults
-		if (UNSAFE_vegaSpec) {
-			const vegaSpecWithDefaults = initializeSpec(UNSAFE_vegaSpec, {
-				backgroundColor,
-				colorScheme,
-				data,
-				description,
-				title,
-			});
+    // They already supplied a spec, fill it in with defaults
+    if (UNSAFE_vegaSpec) {
+      const vegaSpecWithDefaults = initializeSpec(UNSAFE_vegaSpec, {
+        backgroundColor,
+        colorScheme,
+        data,
+        description,
+        title,
+      });
 
-			// copy the spec so we don't mutate the original
-			const spec = JSON.parse(JSON.stringify(vegaSpecWithDefaults));
-			prevSpec.current = spec;
-			return spec;
-		}
+      // copy the spec so we don't mutate the original
+      const spec = JSON.parse(JSON.stringify(vegaSpecWithDefaults));
+      prevSpec.current = spec;
+      return spec;
+    }
 
-		// or we need to build their spec
-		const chartOptions = rscPropsToSpecBuilderOptions({
-			backgroundColor,
-			chartHeight,
-			chartWidth,
-			children,
-			colors,
-			colorScheme,
-			data,
-			description,
-			hiddenSeries,
-			highlightedItem,
-			highlightedSeries,
-			idKey,
-			lineTypes,
-			lineWidths,
-			opacities,
-			symbolShapes,
-			symbolSizes,
-			title,
-		});
+    // or we need to build their spec
+    const chartOptions = rscPropsToSpecBuilderOptions({
+      backgroundColor,
+      chartHeight,
+      chartWidth,
+      children,
+      colors,
+      colorScheme,
+      data,
+      description,
+      hiddenSeries,
+      highlightedItem,
+      highlightedSeries,
+      idKey,
+      lineTypes,
+      lineWidths,
+      opacities,
+      symbolShapes,
+      symbolSizes,
+      title,
+    });
 
-		// stringify-parse so that all immer stuff gets cleared out
-		const spec = buildSpec(chartOptions);
-		prevSpec.current = spec;
+    // stringify-parse so that all immer stuff gets cleared out
+    const spec = buildSpec(chartOptions);
+    prevSpec.current = spec;
 
-		return spec;
-	}, [
-		UNSAFE_vegaSpec,
-		backgroundColor,
-		children,
-		colors,
-		colorScheme,
-		description,
-		hiddenSeries,
-		highlightedItem,
-		highlightedSeries,
-		idKey,
-		lineTypes,
-		lineWidths,
-		opacities,
-		symbolShapes,
-		symbolSizes,
-		title,
-		data,
-		chartHeight,
-		chartWidth,
-		hasVenn,
-	]);
+    return spec;
+  }, [
+    UNSAFE_vegaSpec,
+    backgroundColor,
+    children,
+    colors,
+    colorScheme,
+    description,
+    hiddenSeries,
+    highlightedItem,
+    highlightedSeries,
+    idKey,
+    lineTypes,
+    lineWidths,
+    opacities,
+    symbolShapes,
+    symbolSizes,
+    title,
+    data,
+    chartHeight,
+    chartWidth,
+    hasVenn,
+  ]);
 }
 
 const initializeSpec = (

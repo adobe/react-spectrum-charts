@@ -24,23 +24,23 @@ import {
 import { getFilteredTableData } from '../data/dataUtils';
 import { getHoverMarkNames } from '../marks/markUtils';
 import {
-	AreaSpecOptions,
-	BarSpecOptions,
-	ChartTooltipOptions,
-	ChartTooltipSpecOptions,
-	DonutSpecOptions,
-	LineSpecOptions,
-	ScatterSpecOptions,
-	VennSpecOptions,
+  AreaSpecOptions,
+  BarSpecOptions,
+  ChartTooltipOptions,
+  ChartTooltipSpecOptions,
+  DonutSpecOptions,
+  LineSpecOptions,
+  ScatterSpecOptions,
+  VennSpecOptions,
 } from '../types';
 
 type TooltipParentOptions =
-	| AreaSpecOptions
-	| BarSpecOptions
-	| DonutSpecOptions
-	| LineSpecOptions
-	| ScatterSpecOptions
-	| VennSpecOptions;
+  | AreaSpecOptions
+  | BarSpecOptions
+  | DonutSpecOptions
+  | LineSpecOptions
+  | ScatterSpecOptions
+  | VennSpecOptions;
 
 /**
  * gets all the tooltips
@@ -75,20 +75,20 @@ export const applyTooltipPropDefaults = (
  * @param chartTooltipOptions
  */
 export const addTooltipData = (data: Data[], markOptions: TooltipParentOptions, addHighlightedData = true) => {
-	const tooltips = getTooltips(markOptions);
-	for (const { highlightBy, markName } of tooltips) {
-		if (highlightBy === 'item') return;
-		const filteredTable = getFilteredTableData(data);
-		if (!filteredTable.transform) {
-			filteredTable.transform = [];
-		}
-		if (highlightBy === 'dimension' && markOptions.markType !== 'donut' && markOptions.markType !== 'venn') {
-			filteredTable.transform.push(getGroupIdTransform([markOptions.dimension], markName));
-		} else if (highlightBy === 'series') {
-			filteredTable.transform.push(getGroupIdTransform([SERIES_ID], markName));
-		} else if (Array.isArray(highlightBy)) {
-			filteredTable.transform.push(getGroupIdTransform(highlightBy, markName));
-		}
+  const tooltips = getTooltips(markOptions);
+  for (const { highlightBy, markName } of tooltips) {
+    if (highlightBy === 'item') return;
+    const filteredTable = getFilteredTableData(data);
+    if (!filteredTable.transform) {
+      filteredTable.transform = [];
+    }
+    if (highlightBy === 'dimension' && markOptions.markType !== 'donut' && markOptions.markType !== 'venn') {
+      filteredTable.transform.push(getGroupIdTransform([markOptions.dimension], markName));
+    } else if (highlightBy === 'series') {
+      filteredTable.transform.push(getGroupIdTransform([SERIES_ID], markName));
+    } else if (Array.isArray(highlightBy)) {
+      filteredTable.transform.push(getGroupIdTransform(highlightBy, markName));
+    }
 
     if (addHighlightedData) {
       data.push(getMarkHighlightedData(markName));

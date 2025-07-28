@@ -11,14 +11,14 @@
  */
 
 .userGrowth-dialog {
-	--spectrum-rule-large-height: 1px;
-	--spectrum-rule-large-background-color: var(--spectrum-global-color-gray-300);
+  --spectrum-rule-large-height: 1px;
+  --spectrum-rule-large-background-color: var(--spectrum-global-color-gray-300);
 }
 
 .userGrowth-dialog hr {
-	margin: 12px 0px;
+  margin: 12px 0px;
 }
 
 .userGrowth-dialog .dialog-actions div[role='toolbar'] button {
-	width: 100%;
+  width: 100%;
 }

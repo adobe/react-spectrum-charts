@@ -14,15 +14,15 @@ import { Data, Spec } from 'vega';
 import { AxisOptions } from './axis';
 import { LegendOptions } from './legendSpec.types';
 import {
-	AreaOptions,
-	BarOptions,
-	BigNumberOptions,
-	BulletOptions,
-	ComboOptions,
-	DonutOptions,
-	LineOptions,
-	ScatterOptions,
-	VennOptions,
+  AreaOptions,
+  BarOptions,
+  BigNumberOptions,
+  BulletOptions,
+  ComboOptions,
+  DonutOptions,
+  LineOptions,
+  ScatterOptions,
+  VennOptions,
 } from './marks';
 import { ChartSymbolShape, LineType, LineWidth, PartiallyRequired, SymbolSize } from './specUtil.types';
 import { Colors } from './spectrumVizColor.types';
@@ -52,55 +52,55 @@ export type SimpleData = Record<string, unknown>;
 export type ChartData = SimpleData | Data;
 
 export type MarkOptions =
-	| AreaOptions
-	| BarOptions
-	| BigNumberOptions
-	| BulletOptions
-	| ComboOptions
-	| DonutOptions
-	| LineOptions
-	| ScatterOptions
-	| VennOptions;
+  | AreaOptions
+  | BarOptions
+  | BigNumberOptions
+  | BulletOptions
+  | ComboOptions
+  | DonutOptions
+  | LineOptions
+  | ScatterOptions
+  | VennOptions;
 
 // These are the vega spec specific types
 // Notice that things like data and width/height are not included here
 // This is intentional as we don't want to have to rebuild the entire spec anytime data updates or the width/height change
 export interface ChartOptions {
-	/** Background color of the chart. */
-	backgroundColor?: string;
-	/** Color scale. Defaults to the `categorical16' color scale. */
-	colors?: ChartColors;
-	/** react-spectrum color scheme. @see https://react-spectrum.adobe.com/react-spectrum/Provider.html#props */
-	colorScheme?: ColorScheme;
-	data?: ChartData[];
-	/** Chart description. Sets the aria-label attribute for the chart container. @see https://vega.github.io/vega/docs/specification/ */
-	description?: string;
-	/** Symbol shape scale. */
-	symbolShapes?: SymbolShapes;
-	/** Symbol size scale. Values define the min and max size in that order. */
-	symbolSizes?: [SymbolSize, SymbolSize];
-	/** Line type scale. */
-	lineTypes?: LineTypes;
-	/** Line width scale. */
-	lineWidths?: LineWidth[];
-	/** Opacity scale*/
-	opacities?: Opacities;
-	/** Chart title. If the `Title` component is provided as a child, the component will override this prop. */
-	title?: string;
-	/** Vega spec to be used instead of generating one using the component API. */
-	UNSAFE_vegaSpec?: Spec;
-	/** Series names to hide from the chart (controlled). */
-	hiddenSeries?: string[];
-	/** Data item id or ids that should be highlighted on the chart (controlled). Be sure to supply an `idKey` where each data point has a unique ID if you are using controlled highlighting of items. */
-	highlightedItem?: HighlightedItem;
-	/** height of chart*/
-	chartHeight?: number;
-	/** Series name to highlight on the chart (controlled). */
-	highlightedSeries?: string | number;
-	/** Data key that contains a unique ID for each data point in the array. */
-	idKey?: string;
-	/** Width of chart */
-	chartWidth?: number;
+  /** Background color of the chart. */
+  backgroundColor?: string;
+  /** Color scale. Defaults to the `categorical16' color scale. */
+  colors?: ChartColors;
+  /** react-spectrum color scheme. @see https://react-spectrum.adobe.com/react-spectrum/Provider.html#props */
+  colorScheme?: ColorScheme;
+  data?: ChartData[];
+  /** Chart description. Sets the aria-label attribute for the chart container. @see https://vega.github.io/vega/docs/specification/ */
+  description?: string;
+  /** Symbol shape scale. */
+  symbolShapes?: SymbolShapes;
+  /** Symbol size scale. Values define the min and max size in that order. */
+  symbolSizes?: [SymbolSize, SymbolSize];
+  /** Line type scale. */
+  lineTypes?: LineTypes;
+  /** Line width scale. */
+  lineWidths?: LineWidth[];
+  /** Opacity scale*/
+  opacities?: Opacities;
+  /** Chart title. If the `Title` component is provided as a child, the component will override this prop. */
+  title?: string;
+  /** Vega spec to be used instead of generating one using the component API. */
+  UNSAFE_vegaSpec?: Spec;
+  /** Series names to hide from the chart (controlled). */
+  hiddenSeries?: string[];
+  /** Data item id or ids that should be highlighted on the chart (controlled). Be sure to supply an `idKey` where each data point has a unique ID if you are using controlled highlighting of items. */
+  highlightedItem?: HighlightedItem;
+  /** height of chart*/
+  chartHeight?: number;
+  /** Series name to highlight on the chart (controlled). */
+  highlightedSeries?: string | number;
+  /** Data key that contains a unique ID for each data point in the array. */
+  idKey?: string;
+  /** Width of chart */
+  chartWidth?: number;
 
   // children
   marks: MarkOptions[];

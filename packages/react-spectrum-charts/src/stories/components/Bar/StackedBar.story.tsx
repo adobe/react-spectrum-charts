@@ -105,7 +105,7 @@ OnClick.args = {
   color: 'operatingSystem',
   onClick: (datum) => {
     console.log('datum:', datum);
-  }
+  },
 };
 
 const StackedBarWithUTCDatetimeFormat = bindWithProps(StackedBarStoryWithUTCData);
