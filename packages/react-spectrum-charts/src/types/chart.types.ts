@@ -11,11 +11,12 @@
  */
 import { JSXElementConstructor, ReactElement } from 'react';
 
-import { Config, Data, Locale, NumberLocale, Padding, TimeLocale } from 'vega';
+import { Config, Locale, NumberLocale, Padding, TimeLocale } from 'vega';
 
 import { Theme } from '@react-types/provider';
 import { LocaleCode, NumberLocaleCode, TimeLocaleCode } from '@spectrum-charts/locales';
 import {
+  ChartData,
   ChartOptions,
   Height,
   PartiallyRequired,
@@ -45,10 +46,6 @@ import {
 } from './marks';
 import { TitleElement } from './title.types';
 import { Children } from './util.types';
-
-export type SimpleData = Record<string, unknown>;
-
-export type ChartData = SimpleData | Data;
 
 export type ChartChildElement =
   | AreaElement
