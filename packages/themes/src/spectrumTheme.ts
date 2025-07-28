@@ -154,5 +154,10 @@ export function getSpectrumVegaConfig(colorScheme: 'light' | 'dark'): Config {
       fontSize: 18,
       color: FONT_COLOR,
     },
+    autosize: {
+      type: 'fit',
+      contains: 'padding',
+      resize: true,
+    },
   };
 }

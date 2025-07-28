@@ -76,12 +76,16 @@ import {
   SymbolShapes,
   SymbolSize,
 } from './types';
+import { addVenn } from './venn/vennSpecBuilder';
 
 export function buildSpec({
   axes = [],
   backgroundColor = DEFAULT_BACKGROUND_COLOR,
+  chartHeight,
+  chartWidth,
   colors = 'categorical12',
   colorScheme = DEFAULT_COLOR_SCHEME,
+  data,
   description,
   hiddenSeries = [],
   highlightedItem,
@@ -100,8 +104,11 @@ export function buildSpec({
   const options: ChartSpecOptions = {
     axes,
     backgroundColor,
+    chartHeight,
+    chartWidth,
     colors,
     colorScheme,
+    data,
     description,
     hiddenSeries,
     highlightedItem,
@@ -121,7 +128,7 @@ export function buildSpec({
   spec.signals = getDefaultSignals(options);
   spec.scales = getDefaultScales(colors, colorScheme, lineTypes, lineWidths, opacities, symbolShapes, symbolSizes);
 
-  let { areaCount, barCount, bulletCount, comboCount, donutCount, lineCount, scatterCount } =
+  let { areaCount, barCount, bulletCount, comboCount, donutCount, lineCount, scatterCount, vennCount } =
     initializeComponentCounts();
   const specOptions = { colorScheme, idKey, highlightedItem };
   spec = [...marks].reduce((acc: ScSpec, mark) => {
@@ -147,6 +154,10 @@ export function buildSpec({
       case 'scatter':
         scatterCount++;
         return addScatter(acc, { ...mark, ...specOptions, index: scatterCount });
+      case 'venn':
+        vennCount++;
+        return addVenn(acc, { ...mark, ...specOptions, index: vennCount, data, chartWidth, chartHeight });
+
       case 'bigNumber':
         // Do nothing and do not throw an error
         return acc;
@@ -208,6 +219,7 @@ const initializeComponentCounts = () => {
     bulletCount: -1,
     lineCount: -1,
     scatterCount: -1,
+    vennCount: -1,
   };
 };
 

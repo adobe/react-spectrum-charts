@@ -9,18 +9,22 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { useMemo } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 
 import { Data, Spec, ValuesData } from 'vega';
 
 import { getColorValue } from '@spectrum-charts/themes';
-import { ChartSpecOptions, baseData, buildSpec } from '@spectrum-charts/vega-spec-builder';
+import { ChartData, ChartSpecOptions, baseData, buildSpec } from '@spectrum-charts/vega-spec-builder';
 
+import { Venn } from '../alpha';
 import { rscPropsToSpecBuilderOptions } from '../rscToSbAdapter';
-import { ChartData, SanitizedSpecProps } from '../types';
+import { SanitizedSpecProps } from '../types';
+import { chartHasChild } from '../utils';
 
 export default function useSpec({
   backgroundColor,
+  chartHeight,
+  chartWidth,
   children,
   colors,
   colorScheme,
@@ -38,42 +42,12 @@ export default function useSpec({
   title,
   UNSAFE_vegaSpec,
 }: SanitizedSpecProps): Spec {
-  return useMemo(() => {
-    // They already supplied a spec, fill it in with defaults
-    if (UNSAFE_vegaSpec) {
-      const vegaSpecWithDefaults = initializeSpec(UNSAFE_vegaSpec, {
-        backgroundColor,
-        colorScheme,
-        data,
-        description,
-        title,
-      });
+  const prevSpec = useRef<Spec | null>(null);
+  const hasVenn = useMemo(() => chartHasChild({ children, displayName: Venn.displayName as string }), [children]);
 
-      // copy the spec so we don't mutate the original
-      return JSON.parse(JSON.stringify(vegaSpecWithDefaults));
-    }
-
-    // or we need to build their spec
-    const chartOptions = rscPropsToSpecBuilderOptions({
-      backgroundColor,
-      children,
-      colors,
-      colorScheme,
-      description,
-      hiddenSeries,
-      highlightedItem,
-      highlightedSeries,
-      idKey,
-      lineTypes,
-      lineWidths,
-      opacities,
-      symbolShapes,
-      symbolSizes,
-      title,
-    });
-
-    // stringify-parse so that all immer stuff gets cleared out
-    return buildSpec(chartOptions);
+  // invalidate cache if changes to props other than width, height change
+  useEffect(() => {
+    prevSpec.current = null;
   }, [
     UNSAFE_vegaSpec,
     backgroundColor,
@@ -92,6 +66,78 @@ export default function useSpec({
     symbolSizes,
     title,
     data,
+  ]);
+
+  return useMemo(() => {
+    // returned cached spec if there is a cached spec and if venn is not a child element
+    if (!hasVenn && prevSpec.current !== null) {
+      return prevSpec.current;
+    }
+
+    // They already supplied a spec, fill it in with defaults
+    if (UNSAFE_vegaSpec) {
+      const vegaSpecWithDefaults = initializeSpec(UNSAFE_vegaSpec, {
+        backgroundColor,
+        colorScheme,
+        data,
+        description,
+        title,
+      });
+
+      // copy the spec so we don't mutate the original
+      const spec = JSON.parse(JSON.stringify(vegaSpecWithDefaults));
+      prevSpec.current = spec;
+      return spec;
+    }
+
+    // or we need to build their spec
+    const chartOptions = rscPropsToSpecBuilderOptions({
+      backgroundColor,
+      chartHeight,
+      chartWidth,
+      children,
+      colors,
+      colorScheme,
+      data,
+      description,
+      hiddenSeries,
+      highlightedItem,
+      highlightedSeries,
+      idKey,
+      lineTypes,
+      lineWidths,
+      opacities,
+      symbolShapes,
+      symbolSizes,
+      title,
+    });
+
+    // stringify-parse so that all immer stuff gets cleared out
+    const spec = buildSpec(chartOptions);
+    prevSpec.current = spec;
+
+    return spec;
+  }, [
+    UNSAFE_vegaSpec,
+    backgroundColor,
+    children,
+    colors,
+    colorScheme,
+    description,
+    hiddenSeries,
+    highlightedItem,
+    highlightedSeries,
+    idKey,
+    lineTypes,
+    lineWidths,
+    opacities,
+    symbolShapes,
+    symbolSizes,
+    title,
+    data,
+    chartHeight,
+    chartWidth,
+    hasVenn,
   ]);
 }
 

@@ -26,7 +26,7 @@ import {
   MARK_ID,
 } from '@spectrum-charts/constants';
 import { getColorValue } from '@spectrum-charts/themes';
-import { ChartHandle, LineType, LineWidth } from '@spectrum-charts/vega-spec-builder';
+import { ChartData, ChartHandle, LineType, LineWidth } from '@spectrum-charts/vega-spec-builder';
 
 import './Chart.css';
 import { RscChart } from './RscChart';
@@ -38,7 +38,7 @@ import useChartImperativeHandle from './hooks/useChartImperativeHandle';
 import useChartWidth from './hooks/useChartWidth';
 import { useResizeObserver } from './hooks/useResizeObserver';
 import { BigNumberInternal } from './rc/components/BigNumber/BigNumber';
-import { ChartData, ChartProps, RscChartProps } from './types';
+import { ChartProps, RscChartProps } from './types';
 import { getBigNumberElementsFromChildren, toArray } from './utils';
 
 interface PlaceholderContentProps {

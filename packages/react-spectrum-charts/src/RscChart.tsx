@@ -69,6 +69,8 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>((props, forwarded
     backgroundColor,
     children: sanitizedChildren,
     colors,
+    chartWidth,
+    chartHeight,
     data,
     description,
     idKey,

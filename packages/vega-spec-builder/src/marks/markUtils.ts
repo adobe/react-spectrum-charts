@@ -67,6 +67,7 @@ import {
   ScatterSpecOptions,
   SymbolSizeFacet,
   TrendlineOptions,
+  VennSpecOptions,
 } from '../types';
 
 /**
@@ -417,16 +418,20 @@ const getHoverSizeSignal = (size: number): SignalRef => ({
  * @param options
  * @returns
  */
-export const getMarkOpacity = (options: BarSpecOptions | DonutSpecOptions): ({ test?: string } & NumericValueRef)[] => {
+export const getMarkOpacity = (
+  options: BarSpecOptions | DonutSpecOptions | VennSpecOptions
+): ({ test?: string } & NumericValueRef)[] => {
   const { highlightedItem, idKey, name: markName } = options;
   const rules: ({ test?: string } & NumericValueRef)[] = [DEFAULT_OPACITY_RULE];
+
   // if there aren't any interactive components, then we don't need to add special opacity rules
   if (!isInteractive(options) && highlightedItem === undefined) {
     return rules;
   }
 
-  // if a bar is hovered/selected, all other bars should have reduced opacity
   addHighlightMarkOpacityRules(rules, options);
+
+  // if a bar is hovered/selected, all other bars should have reduced opacity
   if (hasPopover(options)) {
     return [
       {

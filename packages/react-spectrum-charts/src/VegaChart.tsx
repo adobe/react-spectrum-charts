@@ -17,11 +17,11 @@ import { Options as TooltipOptions } from 'vega-tooltip';
 
 import { TABLE } from '@spectrum-charts/constants';
 import { getLocale } from '@spectrum-charts/locales';
-import { getVegaEmbedOptions } from '@spectrum-charts/vega-spec-builder';
+import { ChartData, getVegaEmbedOptions } from '@spectrum-charts/vega-spec-builder';
 
 import { useDebugSpec } from './hooks/useDebugSpec';
 import { extractValues, isVegaData } from './hooks/useSpec';
-import { ChartData, ChartProps } from './types';
+import { ChartProps } from './types';
 
 export interface VegaChartProps {
   config: Config;

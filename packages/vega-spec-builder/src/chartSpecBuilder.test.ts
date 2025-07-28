@@ -31,8 +31,7 @@ import {
   SYMBOL_SIZE_SCALE,
   TABLE,
 } from '@spectrum-charts/constants';
-import { spectrumColors } from '@spectrum-charts/themes';
-import { colorSchemes } from '@spectrum-charts/themes';
+import { colorSchemes, spectrumColors } from '@spectrum-charts/themes';
 
 import {
   addData,

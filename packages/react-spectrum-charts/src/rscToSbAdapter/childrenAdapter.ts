@@ -29,7 +29,7 @@ import {
   TrendlineOptions,
 } from '@spectrum-charts/vega-spec-builder';
 
-import { Bullet, Combo } from '../alpha';
+import { Bullet, Combo, Venn } from '../alpha';
 import { Annotation } from '../components/Annotation';
 import { Area } from '../components/Area';
 import { Axis } from '../components/Axis';
@@ -66,6 +66,7 @@ import {
   TitleProps,
   TrendlineAnnotationProps,
   TrendlineProps,
+  VennProps,
 } from '../types';
 import { sanitizeChildren } from '../utils';
 import { getAreaOptions } from './areaAdapter';
@@ -79,6 +80,7 @@ import { getLegendOptions } from './legendAdapter';
 import { getLineOptions } from './lineAdapter';
 import { getScatterOptions } from './scatterAdapter';
 import { getTrendlineOptions } from './trendlineAdapter';
+import { getVennOptions } from './vennAdapter';
 
 export const childrenToOptions = (
   children: React.ReactNode
@@ -206,6 +208,10 @@ export const childrenToOptions = (
 
       case TrendlineAnnotation.displayName:
         trendlineAnnotations.push(child.props as TrendlineAnnotationProps);
+        break;
+
+      case Venn.displayName:
+        marks.push(getVennOptions(child.props as VennProps));
         break;
 
       default:

@@ -9,15 +9,17 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { VennOptions } from '@spectrum-charts/vega-spec-builder';
 
-export * from './area.types';
-export * from './bar.types';
-export * from './bigNumber.types';
-export * from './bullet.types';
-export * from './combo.types';
-export * from './donut.types';
-export * from './line.types';
-export * from './scatter.types';
-export * from './venn.types';
+import { VennProps } from '../types';
+import { childrenToOptions } from './childrenAdapter';
 
-export * from './supplemental';
+export const getVennOptions = ({ children, ...vennProps }: VennProps): VennOptions => {
+  const { chartPopovers, chartTooltips } = childrenToOptions(children);
+  return {
+    ...vennProps,
+    chartPopovers,
+    chartTooltips,
+    markType: 'venn',
+  };
+};

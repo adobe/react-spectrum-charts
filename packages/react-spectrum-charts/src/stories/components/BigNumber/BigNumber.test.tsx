@@ -15,7 +15,6 @@ import { Chart } from '../../../Chart';
 import { Line } from '../../../components';
 import { BigNumber } from '../../../rc';
 import { getBigNumberChartDimensions, getBigNumberSize, getFontSize } from '../../../rc/components/BigNumber/BigNumber';
-import { simpleSparklineData } from '../../../stories/data/data';
 import { simpleSparklineData as data } from '../../../stories/data/data';
 import { findAllMarksByGroupName, findChart, render, screen } from '../../../test-utils';
 import {
@@ -107,7 +106,7 @@ describe('BigNumber', () => {
   describe('Chart with BigNumber children', () => {
     test('Chart with BigNumber and Line as children should only display BigNumber', async () => {
       render(
-        <Chart data={simpleSparklineData}>
+        <Chart data={data}>
           <BigNumber
             dataKey="y"
             orientation="horizontal"

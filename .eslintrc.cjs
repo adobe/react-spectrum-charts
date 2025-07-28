@@ -44,6 +44,7 @@ module.exports = {
         message: 'Please use relative path import for types instead (ex. ../types/locales).',
       },
     ],
+    'no-duplicate-imports': 'error',
     'header/header': [
       2,
       'block',

@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { Spec } from 'vega';
+import { Data, Spec } from 'vega';
 
 import { AxisOptions } from './axis';
 import { LegendOptions } from './legendSpec.types';
@@ -22,6 +22,7 @@ import {
   DonutOptions,
   LineOptions,
   ScatterOptions,
+  VennOptions,
 } from './marks';
 import { ChartSymbolShape, LineType, LineWidth, PartiallyRequired, SymbolSize } from './specUtil.types';
 import { Colors } from './spectrumVizColor.types';
@@ -46,6 +47,10 @@ export interface ChartHandle {
   getSvg: () => Promise<string>;
 }
 
+export type SimpleData = Record<string, unknown>;
+
+export type ChartData = SimpleData | Data;
+
 export type MarkOptions =
   | AreaOptions
   | BarOptions
@@ -54,7 +59,8 @@ export type MarkOptions =
   | ComboOptions
   | DonutOptions
   | LineOptions
-  | ScatterOptions;
+  | ScatterOptions
+  | VennOptions;
 
 // These are the vega spec specific types
 // Notice that things like data and width/height are not included here
@@ -66,6 +72,7 @@ export interface ChartOptions {
   colors?: ChartColors;
   /** react-spectrum color scheme. @see https://react-spectrum.adobe.com/react-spectrum/Provider.html#props */
   colorScheme?: ColorScheme;
+  data?: ChartData[];
   /** Chart description. Sets the aria-label attribute for the chart container. @see https://vega.github.io/vega/docs/specification/ */
   description?: string;
   /** Symbol shape scale. */
@@ -86,10 +93,14 @@ export interface ChartOptions {
   hiddenSeries?: string[];
   /** Data item id or ids that should be highlighted on the chart (controlled). Be sure to supply an `idKey` where each data point has a unique ID if you are using controlled highlighting of items. */
   highlightedItem?: HighlightedItem;
+  /** height of chart*/
+  chartHeight?: number;
   /** Series name to highlight on the chart (controlled). */
   highlightedSeries?: string | number;
   /** Data key that contains a unique ID for each data point in the array. */
   idKey?: string;
+  /** Width of chart */
+  chartWidth?: number;
 
   // children
   marks: MarkOptions[];

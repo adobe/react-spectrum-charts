@@ -17,7 +17,7 @@ import { SELECTED_GROUP, SELECTED_ITEM, SELECTED_SERIES, SERIES_ID } from '@spec
 import { combineNames, toCamelCase } from '@spectrum-charts/utils';
 import { Datum } from '@spectrum-charts/vega-spec-builder';
 
-import { Bullet, Combo } from '../alpha';
+import { Bullet, Combo, Venn } from '../alpha';
 import {
   Annotation,
   Area,
@@ -63,6 +63,7 @@ import {
   SegmentLabelElement,
   TitleElement,
   TrendlineElement,
+  VennElement,
 } from '../types';
 
 type MarkChildElement =
@@ -85,7 +86,8 @@ type RscElement =
   | LineElement
   | ScatterElement
   | TitleElement
-  | ComboElement;
+  | ComboElement
+  | VennElement;
 
 type MappedElement = { name: string; element: ChartElement | RscElement; parent?: string };
 type ElementCounts = {
@@ -99,6 +101,7 @@ type ElementCounts = {
   scatter: number;
   combo: number;
   bullet: number;
+  venn: number;
 };
 
 // coerces a value that could be a single value or an array of that value to an array
@@ -144,6 +147,7 @@ export const sanitizeChildren = (children: unknown): (ChartChildElement | MarkCh
     Title.displayName,
     Trendline.displayName,
     TrendlineAnnotation.displayName,
+    Venn.displayName,
   ];
   return toArray(children)
     .flat()
@@ -165,6 +169,7 @@ export const sanitizeRscChartChildren = (children: unknown): ChartChildElement[]
     Title.displayName,
     Combo.displayName,
     Bullet.displayName,
+    Venn.displayName,
   ] as string[];
   return toArray(children)
     .flat()
@@ -412,6 +417,9 @@ const getElementName = (element: unknown, elementCounts: ElementCounts) => {
     case Combo.displayName:
       elementCounts.combo++;
       return getComponentName(element as ComboElement, `combo${elementCounts.combo}`);
+    case Venn.displayName:
+      elementCounts.venn++;
+      return getComponentName(element as VennElement, `venn${elementCounts.venn}`);
     default:
       return '';
   }
@@ -435,6 +443,7 @@ const initElementCounts = (): ElementCounts => ({
   line: -1,
   scatter: -1,
   combo: -1,
+  venn: -1,
 });
 
 /**
@@ -471,4 +480,19 @@ export const setSelectedSignals = ({
   if (selectedGroupKey) {
     view.signal(SELECTED_GROUP, selectedData?.[selectedGroupKey] ?? null);
   }
+};
+
+/**
+ * Return true if chart has a child with the corresponding displayName
+ * @param0
+ * @returns boolean
+ */
+export const chartHasChild = ({ children, displayName }: { children: ChartChildElement[]; displayName: string }) => {
+  return children.find((child) => {
+    if (!('displayName' in child.type)) {
+      return false;
+    }
+
+    return child.type.displayName === displayName;
+  });
 };

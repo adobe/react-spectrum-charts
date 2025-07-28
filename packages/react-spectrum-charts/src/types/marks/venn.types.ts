@@ -9,15 +9,16 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { JSXElementConstructor, ReactElement } from 'react';
 
-export * from './area.types';
-export * from './bar.types';
-export * from './bigNumber.types';
-export * from './bullet.types';
-export * from './combo.types';
-export * from './donut.types';
-export * from './line.types';
-export * from './scatter.types';
-export * from './venn.types';
+import { VennOptions } from '@spectrum-charts/vega-spec-builder';
 
-export * from './supplemental';
+import { ChartPopoverElement, ChartTooltipElement } from '../dialogs';
+import { Children } from '../util.types';
+
+export interface VennProps
+  extends Omit<VennOptions, 'chartPopovers' | 'chartTooltips' | 'data' | 'chartWidth' | 'chartHeight' | 'markType'> {
+  children?: Children<ChartPopoverElement | ChartTooltipElement>;
+}
+
+export type VennElement = ReactElement<VennProps, JSXElementConstructor<VennProps>>;
