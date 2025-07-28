@@ -26,7 +26,7 @@ import {
 import { DEFAULT_FONT_COLOR, DEFAULT_LABEL_FONT_WEIGHT } from '@spectrum-charts/constants';
 import { getColorValue } from '@spectrum-charts/themes';
 
-import { getPathFromIcon } from '../specUtils';
+import { getPathFromIcon, getStrokeDashFromLineType } from '../specUtils';
 import { AxisSpecOptions, Position, ReferenceLineOptions, ReferenceLineSpecOptions } from '../types';
 import { isVerticalAxis } from './axisUtils';
 
@@ -49,6 +49,7 @@ const applyReferenceLineOptionDefaults = (
   labelFontWeight: options.labelFontWeight ?? DEFAULT_LABEL_FONT_WEIGHT,
   layer: options.layer ?? 'front',
   name: `${axisOptions.name}ReferenceLine${index}`,
+  lineType: options.lineType ?? 'solid',
 });
 
 export const scaleTypeSupportsReferenceLines = (scaleType: ScaleType | undefined): boolean => {
@@ -97,7 +98,7 @@ export const getPositionEncoding = (
 
 export const getReferenceLineRuleMark = (
   { position, ticks }: AxisSpecOptions,
-  { color, colorScheme, name }: ReferenceLineSpecOptions,
+  { color, colorScheme, name, lineType }: ReferenceLineSpecOptions,
   positionEncoding: ProductionRule<NumericValueRef> | SignalRef
 ): RuleMark => {
   const startOffset = ticks ? 9 : 0;
@@ -132,6 +133,7 @@ export const getReferenceLineRuleMark = (
     encode: {
       enter: {
         stroke: { value: getColorValue(color, colorScheme) },
+        strokeDash: { value: getStrokeDashFromLineType(lineType ?? 'solid') },
       },
       update: {
         ...positionOptions[position],
