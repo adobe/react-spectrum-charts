@@ -119,4 +119,14 @@ ReferenceLineDashed.args = {
   lineType: 'dashed',
 };
 
-export { Basic, Icon, Label, Supreme, Horizontal, HorizontalIcon, HorizontalLabel, HorizontalSupreme,  ReferenceLineDashed};
+export {
+  Basic,
+  Icon,
+  Label,
+  Supreme,
+  Horizontal,
+  HorizontalIcon,
+  HorizontalLabel,
+  HorizontalSupreme,
+  ReferenceLineDashed,
+};
