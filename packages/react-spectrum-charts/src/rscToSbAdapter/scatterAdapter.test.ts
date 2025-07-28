@@ -20,36 +20,36 @@ import { Trendline } from '../components/Trendline';
 import { getScatterOptions } from './scatterAdapter';
 
 describe('getScatterOptions()', () => {
-	it('should return all basic options', () => {
-		const options = getScatterOptions({});
-		expect(options.markType).toBe('scatter');
-		expect(options.chartPopovers).toHaveLength(0);
-		expect(options.chartTooltips).toHaveLength(0);
-		expect(options.trendlines).toHaveLength(0);
-		expect(options.scatterPaths).toHaveLength(0);
-	});
-	it('should convert popover children to chartPopovers array', () => {
-		const options = getScatterOptions({ children: [createElement(ChartPopover)] });
-		expect(options.chartPopovers).toHaveLength(1);
-	});
-	it('should convert tooltip children to chartTooltips array', () => {
-		const options = getScatterOptions({ children: [createElement(ChartTooltip)] });
-		expect(options.chartTooltips).toHaveLength(1);
-	});
-	it('should convert trendline children to trendlines array', () => {
-		const options = getScatterOptions({ children: [createElement(Trendline)] });
-		expect(options.trendlines).toHaveLength(1);
-	});
-	it('should convert scatterPath children to scatterPaths array', () => {
-		const options = getScatterOptions({ children: [createElement(ScatterPath)] });
-		expect(options.scatterPaths).toHaveLength(1);
-	});
-	it('should pass through included props', () => {
-		const options = getScatterOptions({ color: DEFAULT_COLOR });
-		expect(options).toHaveProperty('color', DEFAULT_COLOR);
-	});
-	it('should not add props that are not provided', () => {
-		const options = getScatterOptions({});
-		expect(options).not.toHaveProperty('color');
-	});
+  it('should return all basic options', () => {
+    const options = getScatterOptions({});
+    expect(options.markType).toBe('scatter');
+    expect(options.chartPopovers).toHaveLength(0);
+    expect(options.chartTooltips).toHaveLength(0);
+    expect(options.trendlines).toHaveLength(0);
+    expect(options.scatterPaths).toHaveLength(0);
+  });
+  it('should convert popover children to chartPopovers array', () => {
+    const options = getScatterOptions({ children: [createElement(ChartPopover)] });
+    expect(options.chartPopovers).toHaveLength(1);
+  });
+  it('should convert tooltip children to chartTooltips array', () => {
+    const options = getScatterOptions({ children: [createElement(ChartTooltip)] });
+    expect(options.chartTooltips).toHaveLength(1);
+  });
+  it('should convert trendline children to trendlines array', () => {
+    const options = getScatterOptions({ children: [createElement(Trendline)] });
+    expect(options.trendlines).toHaveLength(1);
+  });
+  it('should convert scatterPath children to scatterPaths array', () => {
+    const options = getScatterOptions({ children: [createElement(ScatterPath)] });
+    expect(options.scatterPaths).toHaveLength(1);
+  });
+  it('should pass through included props', () => {
+    const options = getScatterOptions({ color: DEFAULT_COLOR });
+    expect(options).toHaveProperty('color', DEFAULT_COLOR);
+  });
+  it('should not add props that are not provided', () => {
+    const options = getScatterOptions({});
+    expect(options).not.toHaveProperty('color');
+  });
 });

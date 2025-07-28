@@ -15,18 +15,20 @@ import { LegendProps } from '../types';
 import { childrenToOptions } from './childrenAdapter';
 
 export const getLegendOptions = ({
-	children,
-	onClick,
-	onMouseOut,
-	onMouseOver,
-	...legendProps
+  children,
+  titleLimit,
+  onClick,
+  onMouseOut,
+  onMouseOver,
+  ...legendProps
 }: LegendProps): LegendOptions => {
-	const { chartPopovers } = childrenToOptions(children);
+  const { chartPopovers } = childrenToOptions(children);
 
-	return {
-		...legendProps,
-		hasOnClick: Boolean(onClick),
-		hasMouseInteraction: Boolean(onMouseOut || onMouseOver),
-		chartPopovers,
-	};
+  return {
+    ...legendProps,
+    ...(titleLimit !== undefined ? { titleLimit } : {}),
+    hasOnClick: Boolean(onClick),
+    hasMouseInteraction: Boolean(onMouseOut || onMouseOver),
+    chartPopovers,
+  };
 };

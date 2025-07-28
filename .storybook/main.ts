@@ -1,32 +1,32 @@
 import type { StorybookConfig } from '@storybook/react-webpack5';
 
 const config: StorybookConfig = {
-	stories: [
-		'../packages/react-spectrum-charts/src/**/*.story.mdx',
-		'../packages/react-spectrum-charts/src/**/*.story.@(js|jsx|ts|tsx)',
-	],
+  stories: [
+    '../packages/react-spectrum-charts/src/**/*.story.mdx',
+    '../packages/react-spectrum-charts/src/**/*.story.@(js|jsx|ts|tsx)',
+  ],
 
-	addons: [
-		'@storybook/addon-links',
-		'@storybook/addon-essentials',
-		'storybook-dark-mode',
-		'@storybook/addon-webpack5-compiler-babel',
-	],
+  addons: [
+    '@storybook/addon-links',
+    '@storybook/addon-essentials',
+    'storybook-dark-mode',
+    '@storybook/addon-webpack5-compiler-babel',
+  ],
 
-	framework: {
-		name: '@storybook/react-webpack5',
-		options: {},
-	},
+  framework: {
+    name: '@storybook/react-webpack5',
+    options: {},
+  },
 
-	webpackFinal(config) {
-		return config;
-	},
+  webpackFinal(config) {
+    return config;
+  },
 
-	docs: {},
+  docs: {},
 
-	typescript: {
-		reactDocgen: 'react-docgen-typescript',
-	},
+  typescript: {
+    reactDocgen: 'react-docgen-typescript',
+  },
 };
 
 module.exports = config;

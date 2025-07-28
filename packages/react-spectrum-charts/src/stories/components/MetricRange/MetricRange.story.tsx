@@ -23,138 +23,138 @@ import { ChartProps } from '../../../types';
 import { workspaceTrendsDataWithAnomalies, workspaceTrendsDataWithExtremeMetricRange } from '../../data/data';
 
 export default {
-	title: 'RSC/MetricRange',
-	component: MetricRange,
+  title: 'RSC/MetricRange',
+  component: MetricRange,
 };
 
 const defaultChartProps: ChartProps = {
-	data: workspaceTrendsDataWithAnomalies,
-	minWidth: 400,
-	maxWidth: 800,
-	height: 400,
+  data: workspaceTrendsDataWithAnomalies,
+  minWidth: 400,
+  maxWidth: 800,
+  height: 400,
 };
 
 const MetricRangeStory: StoryFn<typeof MetricRange> = (args): ReactElement => {
-	const chartProps = useChartProps(defaultChartProps);
-	return (
-		<Chart {...chartProps}>
-			<Axis position="left" grid title="Users" />
-			<Axis position="bottom" labelFormat="time" baseline ticks />
-			<Line color="series">
-				<MetricRange {...args} />
-			</Line>
-			<Legend lineWidth={{ value: 0 }} highlight />
-		</Chart>
-	);
+  const chartProps = useChartProps(defaultChartProps);
+  return (
+    <Chart {...chartProps}>
+      <Axis position="left" grid title="Users" />
+      <Axis position="bottom" labelFormat="time" baseline ticks />
+      <Line color="series">
+        <MetricRange {...args} />
+      </Line>
+      <Legend lineWidth={{ value: 0 }} highlight />
+    </Chart>
+  );
 };
 
 const MetricRangeWithStaticPointsStory: StoryFn<typeof MetricRange> = (args): ReactElement => {
-	const chartProps = useChartProps(defaultChartProps);
-	return (
-		<Chart {...chartProps}>
-			<Axis position="left" grid title="Users" />
-			<Axis position="bottom" labelFormat="time" baseline ticks />
-			<Line color="series" staticPoint="staticPoint">
-				<MetricRange {...args} />
-			</Line>
-			<Legend lineWidth={{ value: 0 }} highlight />
-		</Chart>
-	);
+  const chartProps = useChartProps(defaultChartProps);
+  return (
+    <Chart {...chartProps}>
+      <Axis position="left" grid title="Users" />
+      <Axis position="bottom" labelFormat="time" baseline ticks />
+      <Line color="series" staticPoint="staticPoint">
+        <MetricRange {...args} />
+      </Line>
+      <Legend lineWidth={{ value: 0 }} highlight />
+    </Chart>
+  );
 };
 
 const MetricRangeWithPopoverStory: StoryFn<typeof MetricRange> = (args): ReactElement => {
-	const chartProps = useChartProps(defaultChartProps);
-	return (
-		<Chart {...chartProps}>
-			<Axis position="left" grid title="Users" />
-			<Axis position="bottom" labelFormat="time" baseline ticks />
-			<Line color="series">
-				<MetricRange {...args} />
-				<ChartTooltip>{dialogContent}</ChartTooltip>
-				<ChartPopover width={200}>{dialogContent}</ChartPopover>
-			</Line>
-			<Legend lineWidth={{ value: 0 }} highlight />
-		</Chart>
-	);
+  const chartProps = useChartProps(defaultChartProps);
+  return (
+    <Chart {...chartProps}>
+      <Axis position="left" grid title="Users" />
+      <Axis position="bottom" labelFormat="time" baseline ticks />
+      <Line color="series">
+        <MetricRange {...args} />
+        <ChartTooltip>{dialogContent}</ChartTooltip>
+        <ChartPopover width={200}>{dialogContent}</ChartPopover>
+      </Line>
+      <Legend lineWidth={{ value: 0 }} highlight />
+    </Chart>
+  );
 };
 
 const MetricRangescaleAxisToFitStory: StoryFn<typeof MetricRange> = (args): ReactElement => {
-	const chartProps = useChartProps({
-		...defaultChartProps,
-		data: workspaceTrendsDataWithExtremeMetricRange,
-	});
-	return (
-		<Chart {...chartProps}>
-			<Axis position="left" grid title="Users" />
-			<Axis position="bottom" labelFormat="time" baseline ticks />
-			<Line color="series">
-				<MetricRange {...args} />
-			</Line>
-			<Legend lineWidth={{ value: 0 }} highlight />
-		</Chart>
-	);
+  const chartProps = useChartProps({
+    ...defaultChartProps,
+    data: workspaceTrendsDataWithExtremeMetricRange,
+  });
+  return (
+    <Chart {...chartProps}>
+      <Axis position="left" grid title="Users" />
+      <Axis position="bottom" labelFormat="time" baseline ticks />
+      <Line color="series">
+        <MetricRange {...args} />
+      </Line>
+      <Legend lineWidth={{ value: 0 }} highlight />
+    </Chart>
+  );
 };
 
 const dialogContent = (datum) => (
-	<Content>
-		<div>Operating system: {datum.series}</div>
-		<div>Browser: {datum.category}</div>
-		<div>Users: {datum.value}</div>
-	</Content>
+  <Content>
+    <div>Operating system: {datum.series}</div>
+    <div>Browser: {datum.category}</div>
+    <div>Users: {datum.value}</div>
+  </Content>
 );
 
 const Basic = bindWithProps(MetricRangeStory);
 Basic.args = {
-	lineType: 'shortDash',
-	lineWidth: 'S',
-	rangeOpacity: 0.2,
-	metricEnd: 'metricEnd',
-	metricStart: 'metricStart',
-	metric: 'metric',
+  lineType: 'shortDash',
+  lineWidth: 'S',
+  rangeOpacity: 0.2,
+  metricEnd: 'metricEnd',
+  metricStart: 'metricStart',
+  metric: 'metric',
 };
 
 const DisplayOnHover = bindWithProps(MetricRangeStory);
 DisplayOnHover.args = {
-	lineType: 'shortDash',
-	lineWidth: 'S',
-	rangeOpacity: 0.2,
-	metricEnd: 'metricEnd',
-	metricStart: 'metricStart',
-	metric: 'metric',
-	displayOnHover: true,
+  lineType: 'shortDash',
+  lineWidth: 'S',
+  rangeOpacity: 0.2,
+  metricEnd: 'metricEnd',
+  metricStart: 'metricStart',
+  metric: 'metric',
+  displayOnHover: true,
 };
 
 const WithStaticPoints = bindWithProps(MetricRangeWithStaticPointsStory);
 WithStaticPoints.args = {
-	lineType: 'shortDash',
-	lineWidth: 'S',
-	rangeOpacity: 0.2,
-	metricEnd: 'metricEnd',
-	metricStart: 'metricStart',
-	metric: 'metric',
-	displayOnHover: true,
+  lineType: 'shortDash',
+  lineWidth: 'S',
+  rangeOpacity: 0.2,
+  metricEnd: 'metricEnd',
+  metricStart: 'metricStart',
+  metric: 'metric',
+  displayOnHover: true,
 };
 
 const WithPopover = bindWithProps(MetricRangeWithPopoverStory);
 WithPopover.args = {
-	lineType: 'shortDash',
-	lineWidth: 'S',
-	rangeOpacity: 0.2,
-	metricEnd: 'metricEnd',
-	metricStart: 'metricStart',
-	metric: 'metric',
-	displayOnHover: true,
+  lineType: 'shortDash',
+  lineWidth: 'S',
+  rangeOpacity: 0.2,
+  metricEnd: 'metricEnd',
+  metricStart: 'metricStart',
+  metric: 'metric',
+  displayOnHover: true,
 };
 
 const ScaleAxisToFit = bindWithProps(MetricRangescaleAxisToFitStory);
 ScaleAxisToFit.args = {
-	lineType: 'shortDash',
-	lineWidth: 'S',
-	rangeOpacity: 0.2,
-	metricEnd: 'metricEnd',
-	metricStart: 'metricStart',
-	metric: 'metric',
-	scaleAxisToFit: true,
+  lineType: 'shortDash',
+  lineWidth: 'S',
+  rangeOpacity: 0.2,
+  metricEnd: 'metricEnd',
+  metricStart: 'metricStart',
+  metric: 'metric',
+  scaleAxisToFit: true,
 };
 
 export { Basic, DisplayOnHover, WithStaticPoints, WithPopover, ScaleAxisToFit };

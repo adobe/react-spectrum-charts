@@ -17,9 +17,9 @@
  * @returns The combined name
  */
 export const combineNames = (parentName: string | null, childName: string | null): string => {
-	const formattedChildName =
-		childName && parentName ? childName.charAt(0).toUpperCase() + childName.slice(1) : childName;
-	return [parentName, formattedChildName].filter(Boolean).join('');
+  const formattedChildName =
+    childName && parentName ? childName.charAt(0).toUpperCase() + childName.slice(1) : childName;
+  return [parentName, formattedChildName].filter(Boolean).join('');
 };
 
 /**
@@ -28,14 +28,14 @@ export const combineNames = (parentName: string | null, childName: string | null
  * @returns The camel case string
  */
 export function toCamelCase(str: string) {
-	const words = str.match(/[A-Z]{2,}(?=[A-Z][a-z]+\d*|\b)|[A-Z]?[a-z]+\d*|[A-Z]|\d+/g);
-	if (words) {
-		return words
-			.map((word, i) => {
-				if (i === 0) return word.toLowerCase();
-				return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
-			})
-			.join('');
-	}
-	return str;
+  const words = str.match(/[A-Z]{2,}(?=[A-Z][a-z]+\d*|\b)|[A-Z]?[a-z]+\d*|[A-Z]|\d+/g);
+  if (words) {
+    return words
+      .map((word, i) => {
+        if (i === 0) return word.toLowerCase();
+        return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+      })
+      .join('');
+  }
+  return str;
 }

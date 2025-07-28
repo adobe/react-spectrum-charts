@@ -20,77 +20,77 @@ import { Basic, Color, ColorOptions, Format, Popover } from './AxisAnnotation.st
 const colors = spectrumColors.light;
 
 describe('AxisAnnotation', () => {
-	afterEach(() => {
-		jest.restoreAllMocks();
-	});
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
 
-	// AxisAnnotation is not a real React component. This is test just provides test coverage for sonarqube
-	test('AxisAnnoation pseudo element', () => {
-		render(<AxisAnnotation />);
-	});
+  // AxisAnnotation is not a real React component. This is test just provides test coverage for sonarqube
+  test('AxisAnnoation pseudo element', () => {
+    render(<AxisAnnotation />);
+  });
 
-	test('Basic renders correctly', async () => {
-		render(<Basic {...Basic.args} />);
+  test('Basic renders correctly', async () => {
+    render(<Basic {...Basic.args} />);
 
-		const chart = await findChart();
-		expect(chart).toBeInTheDocument();
+    const chart = await findChart();
+    expect(chart).toBeInTheDocument();
 
-		const annotations = await findAllMarksByGroupName(chart, 'axis1Annotation0_icon');
-		expect(annotations).toHaveLength(3);
-	});
+    const annotations = await findAllMarksByGroupName(chart, 'axis1Annotation0_icon');
+    expect(annotations).toHaveLength(3);
+  });
 
-	test('Annotations render in the correct color', async () => {
-		render(<Color {...Color.args} />);
+  test('Annotations render in the correct color', async () => {
+    render(<Color {...Color.args} />);
 
-		const chart = await findChart();
-		expect(chart).toBeInTheDocument();
+    const chart = await findChart();
+    expect(chart).toBeInTheDocument();
 
-		const annotations = await findAllMarksByGroupName(chart, 'axis1Annotation0_icon');
-		expect(annotations).toHaveLength(3);
+    const annotations = await findAllMarksByGroupName(chart, 'axis1Annotation0_icon');
+    expect(annotations).toHaveLength(3);
 
-		expect(annotations[0]).toHaveAttribute('fill', colors['celery-600']);
-	});
+    expect(annotations[0]).toHaveAttribute('fill', colors['celery-600']);
+  });
 
-	test('Annotations render in the correct color when using color options', async () => {
-		render(<ColorOptions {...ColorOptions.args} />);
+  test('Annotations render in the correct color when using color options', async () => {
+    render(<ColorOptions {...ColorOptions.args} />);
 
-		const chart = await findChart();
-		expect(chart).toBeInTheDocument();
+    const chart = await findChart();
+    expect(chart).toBeInTheDocument();
 
-		const annotations = await findAllMarksByGroupName(chart, 'axis1Annotation0_icon');
-		expect(annotations).toHaveLength(3);
+    const annotations = await findAllMarksByGroupName(chart, 'axis1Annotation0_icon');
+    expect(annotations).toHaveLength(3);
 
-		expect(annotations[0]).toHaveAttribute('fill', colors['magenta-600']);
-		expect(annotations[1]).toHaveAttribute('fill', colors['fuscia-600']);
-		expect(annotations[2]).toHaveAttribute('fill', colors['gray-600']);
-	});
+    expect(annotations[0]).toHaveAttribute('fill', colors['magenta-600']);
+    expect(annotations[1]).toHaveAttribute('fill', colors['fuscia-600']);
+    expect(annotations[2]).toHaveAttribute('fill', colors['gray-600']);
+  });
 
-	test('Summary icon renders correctly', async () => {
-		render(<Format {...Format.args} />);
+  test('Summary icon renders correctly', async () => {
+    render(<Format {...Format.args} />);
 
-		const chart = await findChart();
-		expect(chart).toBeInTheDocument();
+    const chart = await findChart();
+    expect(chart).toBeInTheDocument();
 
-		const annotations = await findAllMarksByGroupName(chart, 'axis1Annotation0_icon');
-		expect(annotations).toHaveLength(1);
+    const annotations = await findAllMarksByGroupName(chart, 'axis1Annotation0_icon');
+    expect(annotations).toHaveLength(1);
 
-		expect(annotations[0]).toHaveAttribute('fill', colors['gray-600']);
-	});
+    expect(annotations[0]).toHaveAttribute('fill', colors['gray-600']);
+  });
 
-	test('Popover renders correctly', async () => {
-		render(<Popover {...Popover.args} />);
+  test('Popover renders correctly', async () => {
+    render(<Popover {...Popover.args} />);
 
-		const chart = await findChart();
-		expect(chart).toBeInTheDocument();
+    const chart = await findChart();
+    expect(chart).toBeInTheDocument();
 
-		const annotations = await findAllMarksByGroupName(chart, 'axis1Annotation0_icon');
-		expect(annotations).toHaveLength(3);
+    const annotations = await findAllMarksByGroupName(chart, 'axis1Annotation0_icon');
+    expect(annotations).toHaveLength(3);
 
-		let popover = screen.queryByTestId('rsc-popover');
-		expect(popover).not.toBeInTheDocument();
+    let popover = screen.queryByTestId('rsc-popover');
+    expect(popover).not.toBeInTheDocument();
 
-		clickNthElement(annotations, 0);
-		popover = await screen.findByTestId('rsc-popover');
-		expect(popover).toBeInTheDocument();
-	});
+    clickNthElement(annotations, 0);
+    popover = await screen.findByTestId('rsc-popover');
+    expect(popover).toBeInTheDocument();
+  });
 });

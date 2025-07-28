@@ -18,26 +18,26 @@ import { ChartTooltip } from '../components/ChartTooltip';
 import { getAreaOptions } from './areaAdapter';
 
 describe('getAreaOptions()', () => {
-	it('should return all basic options', () => {
-		const options = getAreaOptions({});
-		expect(options.markType).toBe('area');
-		expect(options.chartPopovers).toHaveLength(0);
-		expect(options.chartTooltips).toHaveLength(0);
-	});
-	it('should convert popover children to chartPopovers array', () => {
-		const options = getAreaOptions({ children: [createElement(ChartPopover)] });
-		expect(options.chartPopovers).toHaveLength(1);
-	});
-	it('should convert tooltip children to chartTooltips array', () => {
-		const options = getAreaOptions({ children: [createElement(ChartTooltip)] });
-		expect(options.chartTooltips).toHaveLength(1);
-	});
-	it('should pass through included props', () => {
-		const options = getAreaOptions({ color: DEFAULT_COLOR });
-		expect(options).toHaveProperty('color', DEFAULT_COLOR);
-	});
-	it('should not add props that are not provided', () => {
-		const options = getAreaOptions({});
-		expect(options).not.toHaveProperty('color');
-	});
+  it('should return all basic options', () => {
+    const options = getAreaOptions({});
+    expect(options.markType).toBe('area');
+    expect(options.chartPopovers).toHaveLength(0);
+    expect(options.chartTooltips).toHaveLength(0);
+  });
+  it('should convert popover children to chartPopovers array', () => {
+    const options = getAreaOptions({ children: [createElement(ChartPopover)] });
+    expect(options.chartPopovers).toHaveLength(1);
+  });
+  it('should convert tooltip children to chartTooltips array', () => {
+    const options = getAreaOptions({ children: [createElement(ChartTooltip)] });
+    expect(options.chartTooltips).toHaveLength(1);
+  });
+  it('should pass through included props', () => {
+    const options = getAreaOptions({ color: DEFAULT_COLOR });
+    expect(options).toHaveProperty('color', DEFAULT_COLOR);
+  });
+  it('should not add props that are not provided', () => {
+    const options = getAreaOptions({});
+    expect(options).not.toHaveProperty('color');
+  });
 });

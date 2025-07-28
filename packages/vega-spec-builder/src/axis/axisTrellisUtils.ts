@@ -19,7 +19,7 @@ import { AxisSpecOptions } from '../types';
  * @returns
  */
 export const isTrellisedChart = (spec: Spec): boolean => {
-	return /[xy]TrellisGroup/g.test(JSON.stringify(spec));
+  return /[xy]TrellisGroup/g.test(JSON.stringify(spec));
 };
 
 /**
@@ -29,25 +29,25 @@ export const isTrellisedChart = (spec: Spec): boolean => {
  * @returns trellisAxisOptions
  */
 export const getTrellisAxisOptions = (scaleName: string): Partial<AxisSpecOptions> => {
-	let trellisAxisOptions: Partial<AxisSpecOptions> = {};
+  let trellisAxisOptions: Partial<AxisSpecOptions> = {};
 
-	// if 'TrellisBand' is in the scale name then this is a trellis axis
-	if (scaleName.includes('TrellisBand')) {
-		// shift the labels up/left half the scale bandwidth
-		const labelOffsetSignal = `bandwidth('${scaleName}') / -2`;
-		const axisType = scaleName.startsWith('x') ? 'x' : 'y';
-		trellisAxisOptions = {
-			position: axisType === 'x' ? 'top' : 'left',
-			labelFontWeight: 'bold',
-			labelAlign: undefined, // set this to undefined because we will manually control alignment
-			title: undefined,
-			vegaLabelAlign: 'left',
-			vegaLabelBaseline: 'bottom',
-			vegaLabelOffset: axisType === 'x' ? { signal: labelOffsetSignal } : { signal: `${labelOffsetSignal} - 8` }, // y axis needs an extra 8px as vertical padding
-			vegaLabelPadding: axisType === 'x' ? 8 : 0, // add vertical padding
-		};
-	}
-	return trellisAxisOptions;
+  // if 'TrellisBand' is in the scale name then this is a trellis axis
+  if (scaleName.includes('TrellisBand')) {
+    // shift the labels up/left half the scale bandwidth
+    const labelOffsetSignal = `bandwidth('${scaleName}') / -2`;
+    const axisType = scaleName.startsWith('x') ? 'x' : 'y';
+    trellisAxisOptions = {
+      position: axisType === 'x' ? 'top' : 'left',
+      labelFontWeight: 'bold',
+      labelAlign: undefined, // set this to undefined because we will manually control alignment
+      title: undefined,
+      vegaLabelAlign: 'left',
+      vegaLabelBaseline: 'bottom',
+      vegaLabelOffset: axisType === 'x' ? { signal: labelOffsetSignal } : { signal: `${labelOffsetSignal} - 8` }, // y axis needs an extra 8px as vertical padding
+      vegaLabelPadding: axisType === 'x' ? 8 : 0, // add vertical padding
+    };
+  }
+  return trellisAxisOptions;
 };
 
 /**
@@ -58,30 +58,30 @@ export const getTrellisAxisOptions = (scaleName: string): Partial<AxisSpecOption
  * @returns axes
  */
 export const encodeAxisTitle = (axes: Axis[], trellisGroupMark: GroupMark) => {
-	const { facetName, facetGroupBy, trellisScaleName } = getTrellisGroupProperties(trellisGroupMark);
+  const { facetName, facetGroupBy, trellisScaleName } = getTrellisGroupProperties(trellisGroupMark);
 
-	return axes.map((axis) => {
-		if (axis.title) {
-			return {
-				...axis,
-				encode: {
-					...axis.encode,
-					title: {
-						update: {
-							opacity: [
-								{
-									test: `info(domain('${trellisScaleName}')[0] === data('${facetName}')[0].${facetGroupBy})`,
-									value: 1,
-								},
-								{ value: 0 },
-							],
-						},
-					},
-				},
-			};
-		}
-		return axis;
-	});
+  return axes.map((axis) => {
+    if (axis.title) {
+      return {
+        ...axis,
+        encode: {
+          ...axis.encode,
+          title: {
+            update: {
+              opacity: [
+                {
+                  test: `info(domain('${trellisScaleName}')[0] === data('${facetName}')[0].${facetGroupBy})`,
+                  value: 1,
+                },
+                { value: 0 },
+              ],
+            },
+          },
+        },
+      };
+    }
+    return axis;
+  });
 };
 
 /**
@@ -90,10 +90,10 @@ export const encodeAxisTitle = (axes: Axis[], trellisGroupMark: GroupMark) => {
  * @returns properties
  */
 export const getTrellisGroupProperties = (
-	groupMark: GroupMark
+  groupMark: GroupMark
 ): { facetGroupBy: string; facetName: string; trellisScaleName: string } => {
-	const trellisScaleName = `${(groupMark.name ?? 'x')[0]}TrellisBand`;
-	const fromFacet = groupMark.from as { facet: { name: string; groupby: string } };
+  const trellisScaleName = `${(groupMark.name ?? 'x')[0]}TrellisBand`;
+  const fromFacet = groupMark.from as { facet: { name: string; groupby: string } };
 
-	return { facetGroupBy: fromFacet.facet.groupby, facetName: fromFacet.facet.name, trellisScaleName };
+  return { facetGroupBy: fromFacet.facet.groupby, facetName: fromFacet.facet.name, trellisScaleName };
 };

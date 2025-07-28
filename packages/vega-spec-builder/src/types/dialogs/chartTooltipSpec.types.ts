@@ -12,15 +12,15 @@
 import { PartiallyRequired } from '../specUtil.types';
 
 export interface ChartTooltipOptions {
-	/** The keys in the data that will disable the tooltip if they have truthy values */
-	excludeDataKeys?: string[];
-	/** Sets which marks should be highlighted when a tooltip is visible */
-	highlightBy?: 'series' | 'dimension' | 'item' | string[];
+  /** The keys in the data that will disable the tooltip if they have truthy values */
+  excludeDataKeys?: string[];
+  /** Sets which marks should be highlighted when a tooltip is visible */
+  highlightBy?: 'series' | 'dimension' | 'item' | string[];
 }
 
 type ChartTooltipOptionsWithDefaults = 'highlightBy';
 
 export interface ChartTooltipSpecOptions
-	extends PartiallyRequired<ChartTooltipOptions, ChartTooltipOptionsWithDefaults> {
-	markName: string;
+  extends PartiallyRequired<ChartTooltipOptions, ChartTooltipOptionsWithDefaults> {
+  markName: string;
 }

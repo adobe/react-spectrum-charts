@@ -13,3 +13,5 @@
 export * from './chartSpecBuilder';
 export * from './specUtils';
 export * from './types';
+export * from './expressionFunctions';
+export * from './vegaEmbedUtils';

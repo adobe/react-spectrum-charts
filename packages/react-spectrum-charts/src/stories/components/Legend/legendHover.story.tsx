@@ -13,21 +13,21 @@ import { Legend } from '../../../components';
 import { LegendBarStory, defaultProps } from './LegendStoryUtils';
 
 export default {
-	title: 'RSC/Legend/Hover',
-	component: Legend,
+  title: 'RSC/Legend/Hover',
+  component: Legend,
 };
 
 const onMouseOver = (seriesName: string) => {
-	console.log('onMouseOver', seriesName);
+  console.log('onMouseOver', seriesName);
 };
 const onMouseOut = (seriesName: string) => {
-	console.log('onMouseOut', seriesName);
+  console.log('onMouseOut', seriesName);
 };
 const ControlledHover = LegendBarStory.bind({});
 ControlledHover.args = {
-	onMouseOver: onMouseOver,
-	onMouseOut: onMouseOut,
-	...defaultProps,
+  onMouseOver: onMouseOver,
+  onMouseOut: onMouseOut,
+  ...defaultProps,
 };
 ControlledHover.storyName = 'Hover (controlled)';
 

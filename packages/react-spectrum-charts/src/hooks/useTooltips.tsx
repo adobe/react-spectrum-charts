@@ -18,32 +18,32 @@ import { getAllElements } from '../utils';
 type MappedTooltip = { name: string; element: ChartTooltipElement };
 
 const ChartContainer = ({ children }: { children: React.ReactNode }) => {
-	return <div>{children}</div>;
+  return <div>{children}</div>;
 };
 ChartContainer.displayName = 'ChartContainer';
 
 export type TooltipDetail = {
-	name: string;
-	callback: TooltipHandler;
-	highlightBy: ChartTooltipProps['highlightBy'];
-	width?: number;
+  name: string;
+  callback: TooltipHandler;
+  highlightBy: ChartTooltipProps['highlightBy'];
+  width?: number;
 };
 
 export default function useTooltips(children: ChartChildElement[]): TooltipDetail[] {
-	const tooltipElements = useMemo(
-		() => getAllElements(createElement(ChartContainer, undefined, children), ChartTooltip, []) as MappedTooltip[],
-		[children]
-	);
+  const tooltipElements = useMemo(
+    () => getAllElements(createElement(ChartContainer, undefined, children), ChartTooltip, []) as MappedTooltip[],
+    [children]
+  );
 
-	return useMemo(
-		() =>
-			tooltipElements
-				.filter((tooltip) => tooltip.element.props.children)
-				.map((tooltip) => ({
-					name: tooltip.name,
-					callback: tooltip.element.props.children,
-					highlightBy: tooltip.element.props.highlightBy,
-				})) as TooltipDetail[],
-		[tooltipElements]
-	);
+  return useMemo(
+    () =>
+      tooltipElements
+        .filter((tooltip) => tooltip.element.props.children)
+        .map((tooltip) => ({
+          name: tooltip.name,
+          callback: tooltip.element.props.children,
+          highlightBy: tooltip.element.props.highlightBy,
+        })) as TooltipDetail[],
+    [tooltipElements]
+  );
 }

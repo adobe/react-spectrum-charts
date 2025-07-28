@@ -11,41 +11,41 @@
  */
 
 module.exports = function generate(plop) {
-	plop.setGenerator('component', {
-		description: 'Create a new React component',
-		prompts: [
-			{
-				type: 'input',
-				name: 'name',
-				message: 'What is the name of the component?',
-			},
-		],
-		actions: [
-			{
-				type: 'add',
-				path: 'src/components/{{name}}/index.ts',
-				templateFile: 'templates/index.hbs',
-			},
-			{
-				type: 'add',
-				path: 'src/components/{{name}}/{{name}}.tsx',
-				templateFile: 'templates/component.hbs',
-			},
-			{
-				type: 'add',
-				path: 'src/stories/components/{{name}}/{{name}}.test.tsx',
-				templateFile: 'templates/test.hbs',
-			},
-			{
-				type: 'add',
-				path: 'src/stories/components/{{name}}/{{name}}.story.tsx',
-				templateFile: 'templates/story.hbs',
-			},
-			{
-				type: 'append',
-				path: 'src/components/index.ts',
-				template: "export * from './{{name}}';",
-			},
-		],
-	});
+  plop.setGenerator('component', {
+    description: 'Create a new React component',
+    prompts: [
+      {
+        type: 'input',
+        name: 'name',
+        message: 'What is the name of the component?',
+      },
+    ],
+    actions: [
+      {
+        type: 'add',
+        path: 'src/components/{{name}}/index.ts',
+        templateFile: 'templates/index.hbs',
+      },
+      {
+        type: 'add',
+        path: 'src/components/{{name}}/{{name}}.tsx',
+        templateFile: 'templates/component.hbs',
+      },
+      {
+        type: 'add',
+        path: 'src/stories/components/{{name}}/{{name}}.test.tsx',
+        templateFile: 'templates/test.hbs',
+      },
+      {
+        type: 'add',
+        path: 'src/stories/components/{{name}}/{{name}}.story.tsx',
+        templateFile: 'templates/story.hbs',
+      },
+      {
+        type: 'append',
+        path: 'src/components/index.ts',
+        template: "export * from './{{name}}';",
+      },
+    ],
+  });
 };

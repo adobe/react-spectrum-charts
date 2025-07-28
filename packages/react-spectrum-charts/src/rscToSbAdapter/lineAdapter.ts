@@ -15,14 +15,14 @@ import { LineProps } from '../types';
 import { childrenToOptions } from './childrenAdapter';
 
 export const getLineOptions = ({ children, onClick, ...lineProps }: LineProps): LineOptions => {
-	const { chartPopovers, chartTooltips, metricRanges, trendlines } = childrenToOptions(children);
-	return {
-		...lineProps,
-		chartPopovers,
-		chartTooltips,
-		hasOnClick: Boolean(onClick),
-		markType: 'line',
-		metricRanges,
-		trendlines,
-	};
+  const { chartPopovers, chartTooltips, metricRanges, trendlines } = childrenToOptions(children);
+  return {
+    ...lineProps,
+    chartPopovers,
+    chartTooltips,
+    hasOnClick: Boolean(onClick),
+    markType: 'line',
+    metricRanges,
+    trendlines,
+  };
 };

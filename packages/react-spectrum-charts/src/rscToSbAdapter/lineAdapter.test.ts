@@ -20,41 +20,41 @@ import { Trendline } from '../components/Trendline';
 import { getLineOptions } from './lineAdapter';
 
 describe('getLineOptions()', () => {
-	it('should return all basic options', () => {
-		const options = getLineOptions({});
-		expect(options.markType).toBe('line');
-		expect(options.hasOnClick).toBe(false);
-		expect(options.chartPopovers).toHaveLength(0);
-		expect(options.chartTooltips).toHaveLength(0);
-		expect(options.metricRanges).toHaveLength(0);
-		expect(options.trendlines).toHaveLength(0);
-	});
-	it('should convert popover children to chartPopovers array', () => {
-		const options = getLineOptions({ children: [createElement(ChartPopover)] });
-		expect(options.chartPopovers).toHaveLength(1);
-	});
-	it('should convert tooltip children to chartTooltips array', () => {
-		const options = getLineOptions({ children: [createElement(ChartTooltip)] });
-		expect(options.chartTooltips).toHaveLength(1);
-	});
-	it('should convert metric range children to metricRanges array', () => {
-		const options = getLineOptions({ children: [createElement(MetricRange)] });
-		expect(options.metricRanges).toHaveLength(1);
-	});
-	it('should convert trendline children to trendlines array', () => {
-		const options = getLineOptions({ children: [createElement(Trendline)] });
-		expect(options.trendlines).toHaveLength(1);
-	});
-	test('should set hasOnClick to true if onClickProp exists and is not undefined', () => {
-		expect(getLineOptions({ onClick: () => {} }).hasOnClick).toBe(true);
-		expect(getLineOptions({ onClick: undefined }).hasOnClick).toBe(false);
-	});
-	it('should pass through included props', () => {
-		const options = getLineOptions({ color: DEFAULT_COLOR });
-		expect(options).toHaveProperty('color', DEFAULT_COLOR);
-	});
-	it('should not add props that are not provided', () => {
-		const options = getLineOptions({});
-		expect(options).not.toHaveProperty('color');
-	});
+  it('should return all basic options', () => {
+    const options = getLineOptions({});
+    expect(options.markType).toBe('line');
+    expect(options.hasOnClick).toBe(false);
+    expect(options.chartPopovers).toHaveLength(0);
+    expect(options.chartTooltips).toHaveLength(0);
+    expect(options.metricRanges).toHaveLength(0);
+    expect(options.trendlines).toHaveLength(0);
+  });
+  it('should convert popover children to chartPopovers array', () => {
+    const options = getLineOptions({ children: [createElement(ChartPopover)] });
+    expect(options.chartPopovers).toHaveLength(1);
+  });
+  it('should convert tooltip children to chartTooltips array', () => {
+    const options = getLineOptions({ children: [createElement(ChartTooltip)] });
+    expect(options.chartTooltips).toHaveLength(1);
+  });
+  it('should convert metric range children to metricRanges array', () => {
+    const options = getLineOptions({ children: [createElement(MetricRange)] });
+    expect(options.metricRanges).toHaveLength(1);
+  });
+  it('should convert trendline children to trendlines array', () => {
+    const options = getLineOptions({ children: [createElement(Trendline)] });
+    expect(options.trendlines).toHaveLength(1);
+  });
+  test('should set hasOnClick to true if onClickProp exists and is not undefined', () => {
+    expect(getLineOptions({ onClick: () => {} }).hasOnClick).toBe(true);
+    expect(getLineOptions({ onClick: undefined }).hasOnClick).toBe(false);
+  });
+  it('should pass through included props', () => {
+    const options = getLineOptions({ color: DEFAULT_COLOR });
+    expect(options).toHaveProperty('color', DEFAULT_COLOR);
+  });
+  it('should not add props that are not provided', () => {
+    const options = getLineOptions({});
+    expect(options).not.toHaveProperty('color');
+  });
 });

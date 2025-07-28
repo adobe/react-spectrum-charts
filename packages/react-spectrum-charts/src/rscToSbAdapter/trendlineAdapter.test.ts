@@ -18,25 +18,25 @@ import { TrendlineAnnotation } from '../components/TrendlineAnnotation';
 import { getTrendlineOptions } from './trendlineAdapter';
 
 describe('getTrendlineOptions()', () => {
-	it('should return all basic options', () => {
-		const options = getTrendlineOptions({});
-		expect(options.chartTooltips).toHaveLength(0);
-		expect(options.trendlineAnnotations).toHaveLength(0);
-	});
-	it('should convert tooltip children to chartTooltips array', () => {
-		const options = getTrendlineOptions({ children: [createElement(ChartTooltip)] });
-		expect(options.chartTooltips).toHaveLength(1);
-	});
-	it('should convert trendline annotation children to trendlineAnnotations array', () => {
-		const options = getTrendlineOptions({ children: [createElement(TrendlineAnnotation)] });
-		expect(options.trendlineAnnotations).toHaveLength(1);
-	});
-	it('should pass through included props', () => {
-		const options = getTrendlineOptions({ color: DEFAULT_COLOR });
-		expect(options).toHaveProperty('color', DEFAULT_COLOR);
-	});
-	it('should not add props that are not provided', () => {
-		const options = getTrendlineOptions({});
-		expect(options).not.toHaveProperty('color');
-	});
+  it('should return all basic options', () => {
+    const options = getTrendlineOptions({});
+    expect(options.chartTooltips).toHaveLength(0);
+    expect(options.trendlineAnnotations).toHaveLength(0);
+  });
+  it('should convert tooltip children to chartTooltips array', () => {
+    const options = getTrendlineOptions({ children: [createElement(ChartTooltip)] });
+    expect(options.chartTooltips).toHaveLength(1);
+  });
+  it('should convert trendline annotation children to trendlineAnnotations array', () => {
+    const options = getTrendlineOptions({ children: [createElement(TrendlineAnnotation)] });
+    expect(options.trendlineAnnotations).toHaveLength(1);
+  });
+  it('should pass through included props', () => {
+    const options = getTrendlineOptions({ color: DEFAULT_COLOR });
+    expect(options).toHaveProperty('color', DEFAULT_COLOR);
+  });
+  it('should not add props that are not provided', () => {
+    const options = getTrendlineOptions({});
+    expect(options).not.toHaveProperty('color');
+  });
 });

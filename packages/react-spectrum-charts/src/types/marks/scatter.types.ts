@@ -20,8 +20,8 @@ import { ScatterPathElement, TrendlineElement } from './supplemental';
 type ScatterChildElement = ChartPopoverElement | ChartTooltipElement | ScatterPathElement | TrendlineElement;
 
 export interface ScatterProps
-	extends Omit<ScatterOptions, 'chartPopovers' | 'chartTooltips' | 'markType' | 'scatterPaths' | 'trendlines'> {
-	children?: Children<ScatterChildElement>;
+  extends Omit<ScatterOptions, 'chartPopovers' | 'chartTooltips' | 'markType' | 'scatterPaths' | 'trendlines'> {
+  children?: Children<ScatterChildElement>;
 }
 
 export type ScatterElement = ReactElement<ScatterProps, JSXElementConstructor<ScatterProps>>;

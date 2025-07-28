@@ -13,19 +13,19 @@ import { NumberFormat, PartiallyRequired } from '../../specUtil.types';
 import { DonutSpecOptions } from '../donutSpec.types';
 
 export interface DonutSummaryOptions {
-	/** d3 number format specifier.
-	 * Sets the number format for the summary value.
-	 *
-	 * see {@link https://d3js.org/d3-format#locale_format}
-	 */
-	numberFormat?: NumberFormat;
-	/** Label for the metric summary */
-	label?: string;
+  /** d3 number format specifier.
+   * Sets the number format for the summary value.
+   *
+   * see {@link https://d3js.org/d3-format#locale_format}
+   */
+  numberFormat?: NumberFormat;
+  /** Label for the metric summary */
+  label?: string;
 }
 
 type DonutSummaryOptionsWithDefaults = 'numberFormat';
 
 export interface DonutSummarySpecOptions
-	extends PartiallyRequired<DonutSummaryOptions, DonutSummaryOptionsWithDefaults> {
-	donutOptions: DonutSpecOptions;
+  extends PartiallyRequired<DonutSummaryOptions, DonutSummaryOptionsWithDefaults> {
+  donutOptions: DonutSpecOptions;
 }

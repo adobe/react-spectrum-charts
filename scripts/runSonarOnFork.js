@@ -19,61 +19,61 @@ const { getBranchName, runSonarForFork, askQuestion } = require('./sonarCloudUti
 const prNumber = parseInt(process.argv[2]);
 
 if (!prNumber || isNaN(prNumber)) {
-	console.error(chalk.red('Please provide a PR number.\nUsage: yarn sonar-fork-pr <pr-number>'));
-	process.exit(1);
+  console.error(chalk.red('Please provide a PR number.\nUsage: yarn sonar-fork-pr <pr-number>'));
+  process.exit(1);
 }
 
 async function main() {
-	// Create an interface to capture user input
-	const rl = readline.createInterface({
-		input: process.stdin,
-		output: process.stdout,
-	});
+  // Create an interface to capture user input
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+  });
 
-	// Ask the user if they want to continue
-	const answer = await askQuestion(
-		'This action will stash all your changes, checkout and pull main. Do you wish to continue? (y): ',
-		rl
-	);
+  // Ask the user if they want to continue
+  const answer = await askQuestion(
+    'This action will stash all your changes, checkout and pull main. Do you wish to continue? (y): ',
+    rl
+  );
 
-	if (['n', 'no'].includes(answer.toLowerCase())) {
-		console.log('Exiting...');
-		process.exit(0);
-	}
-	// Close the readline interface
-	rl.close();
+  if (['n', 'no'].includes(answer.toLowerCase())) {
+    console.log('Exiting...');
+    process.exit(0);
+  }
+  // Close the readline interface
+  rl.close();
 
-	// get the branch name so we can use it later
-	const currentBranch = getBranchName();
+  // get the branch name so we can use it later
+  const currentBranch = getBranchName();
 
-	console.log('Stashing changes...');
-	execSync('git stash');
+  console.log('Stashing changes...');
+  execSync('git stash');
 
-	console.log('Checking out main...');
-	execSync('git checkout main && git pull');
+  console.log('Checking out main...');
+  execSync('git checkout main && git pull');
 
-	console.log('Checking out PR branch...');
-	execSync(`git fetch origin pull/${prNumber}/head:pr/${prNumber} && git checkout pr/${prNumber}`);
+  console.log('Checking out PR branch...');
+  execSync(`git fetch origin pull/${prNumber}/head:pr/${prNumber} && git checkout pr/${prNumber}`);
 
-	console.log('Installing dependencies...');
-	execSync('yarn install');
+  console.log('Installing dependencies...');
+  execSync('yarn install');
 
-	console.log('Running tests...');
-	execSync('yarn test');
+  console.log('Running tests...');
+  execSync('yarn test');
 
-	console.log('Running SonarCloud analysis...');
-	await runSonarForFork();
+  console.log('Running SonarCloud analysis...');
+  await runSonarForFork();
 
-	console.log('Cleaning up...');
-	execSync(`git checkout main && git branch -D pr/${prNumber} && git checkout ${currentBranch}`);
+  console.log('Cleaning up...');
+  execSync(`git checkout main && git branch -D pr/${prNumber} && git checkout ${currentBranch}`);
 
-	try {
-		execSync('git stash pop');
-	} catch (e) {
-		console.log('No changes to pop.');
-	}
+  try {
+    execSync('git stash pop');
+  } catch (e) {
+    console.log('No changes to pop.');
+  }
 
-	execSync(`yarn install`);
+  execSync(`yarn install`);
 }
 
 main();

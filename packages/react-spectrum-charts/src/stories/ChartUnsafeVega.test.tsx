@@ -18,100 +18,100 @@ import '../test-utils/__mocks__/matchMedia.mock.js';
 import { BasicBar, PackedBubbleChart } from './ChartUnsafeVega.story';
 
 const testFill = (el: HTMLElement, color: string) => {
-	expect(el).toHaveAttribute('fill', color);
+  expect(el).toHaveAttribute('fill', color);
 };
 
 const getSlider = (container: HTMLElement, name: string) => {
-	return container.querySelector(`input[name=${name}]`) as HTMLInputElement;
+  return container.querySelector(`input[name=${name}]`) as HTMLInputElement;
 };
 
 describe('UNSAFE_vegaSpec stories', () => {
-	describe('BasicBar', () => {
-		test('has correct number of bars', async () => {
-			render(<BasicBar {...BasicBar.args} />);
+  describe('BasicBar', () => {
+    test('has correct number of bars', async () => {
+      render(<BasicBar {...BasicBar.args} />);
 
-			const chart = await findChart();
-			expect(chart).toBeInTheDocument();
+      const chart = await findChart();
+      expect(chart).toBeInTheDocument();
 
-			const bars = getAllMarksByGroupName(chart, 'mark-rect');
-			expect(bars).toHaveLength(5);
-		});
+      const bars = getAllMarksByGroupName(chart, 'mark-rect');
+      expect(bars).toHaveLength(5);
+    });
 
-		test('bars have spectrum color theme applied', async () => {
-			render(<BasicBar {...BasicBar.args} />);
+    test('bars have spectrum color theme applied', async () => {
+      render(<BasicBar {...BasicBar.args} />);
 
-			const chart = await findChart();
-			expect(chart).toBeInTheDocument();
+      const chart = await findChart();
+      expect(chart).toBeInTheDocument();
 
-			const bars = getAllMarksByGroupName(chart, 'mark-rect');
+      const bars = getAllMarksByGroupName(chart, 'mark-rect');
 
-			// Ensure the default spectrum color theme is applied
-			bars.forEach((bar) => {
-				testFill(bar, 'rgb(15, 181, 174)');
-			});
-		});
+      // Ensure the default spectrum color theme is applied
+      bars.forEach((bar) => {
+        testFill(bar, 'rgb(15, 181, 174)');
+      });
+    });
 
-		test('existing interaction signals in vega spec still work', async () => {
-			render(<BasicBar {...BasicBar.args} />);
+    test('existing interaction signals in vega spec still work', async () => {
+      render(<BasicBar {...BasicBar.args} />);
 
-			const chart = await findChart();
-			expect(chart).toBeInTheDocument();
+      const chart = await findChart();
+      expect(chart).toBeInTheDocument();
 
-			const bars = getAllMarksByGroupName(chart, 'mark-rect');
+      const bars = getAllMarksByGroupName(chart, 'mark-rect');
 
-			// Make sure signals in the spec are not interfered with
-			fireEvent.mouseOver(bars[0]);
-			await waitFor(() => screen.getByText('53.1%'));
-			expect(screen.getByText('53.1%')).toBeInTheDocument();
-		});
-	});
+      // Make sure signals in the spec are not interfered with
+      fireEvent.mouseOver(bars[0]);
+      await waitFor(() => screen.getByText('53.1%'));
+      expect(screen.getByText('53.1%')).toBeInTheDocument();
+    });
+  });
 
-	describe('PackedBubbleChart', () => {
-		test('has correct number of bubbles', async () => {
-			render(<PackedBubbleChart {...PackedBubbleChart.args} />);
+  describe('PackedBubbleChart', () => {
+    test('has correct number of bubbles', async () => {
+      render(<PackedBubbleChart {...PackedBubbleChart.args} />);
 
-			const chart = await findChart();
-			expect(chart).toBeInTheDocument();
+      const chart = await findChart();
+      expect(chart).toBeInTheDocument();
 
-			const bubbles = getAllMarksByGroupName(chart, 'mark-symbol');
-			expect(bubbles).toHaveLength(16);
-		});
+      const bubbles = getAllMarksByGroupName(chart, 'mark-symbol');
+      expect(bubbles).toHaveLength(16);
+    });
 
-		test('bubbles have spectrum color theme applied', async () => {
-			render(<PackedBubbleChart {...PackedBubbleChart.args} />);
+    test('bubbles have spectrum color theme applied', async () => {
+      render(<PackedBubbleChart {...PackedBubbleChart.args} />);
 
-			const chart = await findChart();
-			expect(chart).toBeInTheDocument();
+      const chart = await findChart();
+      expect(chart).toBeInTheDocument();
 
-			const bubbles = getAllMarksByGroupName(chart, 'mark-symbol');
+      const bubbles = getAllMarksByGroupName(chart, 'mark-symbol');
 
-			// Check the bubbles to ensure the sequential color scheme is applied
-			// 16-value gradient with 16 bubbles will match 1:1
-			bubbles.forEach((bubble, i) => {
-				testFill(bubble, sequentialViridis16[i]);
-			});
-		});
+      // Check the bubbles to ensure the sequential color scheme is applied
+      // 16-value gradient with 16 bubbles will match 1:1
+      bubbles.forEach((bubble, i) => {
+        testFill(bubble, sequentialViridis16[i]);
+      });
+    });
 
-		test('Slider interaction controls are present and can be changed', async () => {
-			render(<PackedBubbleChart {...PackedBubbleChart.args} />);
+    test('Slider interaction controls are present and can be changed', async () => {
+      render(<PackedBubbleChart {...PackedBubbleChart.args} />);
 
-			const chart = await findChart();
-			expect(chart).toBeInTheDocument();
+      const chart = await findChart();
+      expect(chart).toBeInTheDocument();
 
-			const gravityXSlider = getSlider(chart, 'gravityX');
-			const gravityYSlider = getSlider(chart, 'gravityY');
+      const gravityXSlider = getSlider(chart, 'gravityX');
+      const gravityYSlider = getSlider(chart, 'gravityY');
 
-			// slider defaults are properly set
-			expect(gravityXSlider.value).toBe('0.2');
-			expect(gravityYSlider.value).toBe('0.1');
+      // slider defaults are properly set
+      expect(gravityXSlider.value).toBe('0.2');
+      expect(gravityYSlider.value).toBe('0.1');
 
-			// sliders can be adjusted
-			fireEvent.change(gravityXSlider, { target: { value: 0.1 } });
-			fireEvent.change(gravityYSlider, { target: { value: 0.9 } });
+      // sliders can be adjusted
+      fireEvent.change(gravityXSlider, { target: { value: 0.1 } });
+      fireEvent.change(gravityYSlider, { target: { value: 0.9 } });
 
-			// slider responds to event and updates accordingly
-			expect(gravityXSlider.value).toBe('0.1');
-			expect(gravityYSlider.value).toBe('0.9');
-		});
-	});
+      // slider responds to event and updates accordingly
+      expect(gravityXSlider.value).toBe('0.1');
+      expect(gravityYSlider.value).toBe('0.9');
+    });
+  });
 });

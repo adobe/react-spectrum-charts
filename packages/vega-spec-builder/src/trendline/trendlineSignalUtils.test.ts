@@ -18,34 +18,34 @@ import { setTrendlineSignals } from './trendlineSignalUtils';
 import { defaultLineOptions } from './trendlineTestUtils';
 
 describe('getTrendlineSignals()', () => {
-	let signals: Signal[];
-	beforeEach(() => {
-		signals = JSON.parse(JSON.stringify(defaultSignals));
-	});
-	test('should add voronoi hover signal events if ChartTooltip exists', () => {
-		setTrendlineSignals(signals, {
-			...defaultLineOptions,
-			trendlines: [{ chartTooltips: [{}] }],
-		});
-		expect(signals).toHaveLength(defaultSignals.length);
-		expect(signals[0]).toHaveProperty('name', HIGHLIGHTED_ITEM);
-		expect(signals[0].on).toHaveLength(2);
-		expect(signals[2]).toHaveProperty('name', HIGHLIGHTED_SERIES);
-		expect(signals[2].on).toHaveLength(2);
-	});
+  let signals: Signal[];
+  beforeEach(() => {
+    signals = JSON.parse(JSON.stringify(defaultSignals));
+  });
+  test('should add voronoi hover signal events if ChartTooltip exists', () => {
+    setTrendlineSignals(signals, {
+      ...defaultLineOptions,
+      trendlines: [{ chartTooltips: [{}] }],
+    });
+    expect(signals).toHaveLength(defaultSignals.length);
+    expect(signals[0]).toHaveProperty('name', HIGHLIGHTED_ITEM);
+    expect(signals[0].on).toHaveLength(2);
+    expect(signals[2]).toHaveProperty('name', HIGHLIGHTED_SERIES);
+    expect(signals[2].on).toHaveLength(2);
+  });
 
-	test('should not modify any signals if there is not a ChartTooltip', () => {
-		setTrendlineSignals(signals, defaultLineOptions);
-		expect(signals).toStrictEqual(defaultSignals);
-	});
+  test('should not modify any signals if there is not a ChartTooltip', () => {
+    setTrendlineSignals(signals, defaultLineOptions);
+    expect(signals).toStrictEqual(defaultSignals);
+  });
 
-	test('should add displayOnHover signal events', () => {
-		setTrendlineSignals(signals, {
-			...defaultLineOptions,
-			trendlines: [{ displayOnHover: true }],
-		});
-		expect(signals).toHaveLength(defaultSignals.length);
-		expect(signals[2]).toHaveProperty('name', HIGHLIGHTED_SERIES);
-		expect(signals[2].on).toHaveLength(2);
-	});
+  test('should add displayOnHover signal events', () => {
+    setTrendlineSignals(signals, {
+      ...defaultLineOptions,
+      trendlines: [{ displayOnHover: true }],
+    });
+    expect(signals).toHaveLength(defaultSignals.length);
+    expect(signals[2]).toHaveProperty('name', HIGHLIGHTED_SERIES);
+    expect(signals[2].on).toHaveLength(2);
+  });
 });

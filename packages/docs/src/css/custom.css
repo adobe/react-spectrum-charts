@@ -1,0 +1,55 @@
+/*
+ * Copyright 2025 Adobe. All rights reserved.
+ * This file is licensed to you under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy
+ * of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under
+ * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+ * OF ANY KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
+ */
+
+/**
+ * Any CSS included here will be global. The classic template
+ * bundles Infima by default. Infima is a CSS framework designed to
+ * work well for content-centric websites.
+ */
+
+/* You can override the default Infima variables here. */
+:root {
+  --ifm-color-primary: #5424DB;
+  --ifm-color-primary-dark: #4513BF;
+  --ifm-color-primary-darker: #3706A0;
+  --ifm-color-primary-darkest: #2A0081;
+  --ifm-color-primary-light: #6338EE;
+  --ifm-color-primary-lighter: #7155FA;
+  --ifm-color-primary-lightest: #7A6AFD;
+  --ifm-code-font-size: 95%;
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
+}
+
+/* For readability concerns, you should choose a lighter palette in dark mode. */
+[data-theme='dark'] {
+  --ifm-color-primary: #99A1FF;
+  --ifm-color-primary-dark: #8B8DFE;
+  --ifm-color-primary-darker: #8077FE;
+  --ifm-color-primary-darkest: #745BFC;
+  --ifm-color-primary-light: #B0BAFF;
+  --ifm-color-primary-lighter: #C7D0FF;
+  --ifm-color-primary-lightest: #DFE4FF;
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
+} 
+
+[data-theme="light"] img[src$="#gh-dark-mode-only"] {
+  display: none; /* Hide the dark mode image in light mode */
+}
+
+[data-theme="dark"] img[src$="#gh-light-mode-only"] {
+  display: none; /* Hide the light mode image in dark mode */
+}
+
+/* Custom footer font size */
+.footer__copyright {
+  font-size: 0.75em;
+}

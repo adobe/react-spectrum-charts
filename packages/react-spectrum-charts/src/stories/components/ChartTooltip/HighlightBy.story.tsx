@@ -25,154 +25,154 @@ import { characterData } from '../../../stories/data/marioKartData';
 import { bindWithProps } from '../../../test-utils';
 
 export default {
-	title: 'RSC/ChartTooltip/HighlightBy',
-	component: ChartTooltip,
-	argTypes: {
-		children: {
-			description: '`(datum) => React.ReactElement`',
-			control: {
-				type: null,
-			},
-		},
-	},
+  title: 'RSC/ChartTooltip/HighlightBy',
+  component: ChartTooltip,
+  argTypes: {
+    children: {
+      description: '`(datum) => React.ReactElement`',
+      control: {
+        type: null,
+      },
+    },
+  },
 };
 
 interface LineData extends Datum {
-	value?: number;
-	series?: string;
-	category?: string;
+  value?: number;
+  series?: string;
+  category?: string;
 }
 
 interface MarioData extends Datum {
-	character?: string[];
-	speedNormal?: number;
-	handlingNormal?: number;
-	weightClass?: string;
+  character?: string[];
+  speedNormal?: number;
+  handlingNormal?: number;
+  weightClass?: string;
 }
 
 const StackedBarTooltipStory: StoryFn<typeof ChartTooltip> = (args): ReactElement => {
-	const chartProps = useChartProps({ data: browserData, width: 600 });
-	return (
-		<Chart {...chartProps}>
-			<Bar color="series">
-				<ChartTooltip {...args} />
-			</Bar>
-		</Chart>
-	);
+  const chartProps = useChartProps({ data: browserData, width: 600 });
+  return (
+    <Chart {...chartProps}>
+      <Bar color="series">
+        <ChartTooltip {...args} />
+      </Bar>
+    </Chart>
+  );
 };
 
 const AreaStory: StoryFn<typeof ChartTooltip> = (args): ReactElement => {
-	const chartProps = useChartProps({ data: browserData, width: 600 });
-	return (
-		<Chart {...chartProps}>
-			<Area color="series" dimension="category" scaleType="point">
-				<ChartTooltip {...args} />
-			</Area>
-		</Chart>
-	);
+  const chartProps = useChartProps({ data: browserData, width: 600 });
+  return (
+    <Chart {...chartProps}>
+      <Area color="series" dimension="category" scaleType="point">
+        <ChartTooltip {...args} />
+      </Area>
+    </Chart>
+  );
 };
 
 const LineStory: StoryFn<typeof ChartTooltip> = (args): ReactElement => {
-	const chartProps = useChartProps({ data: browserData, width: 600 });
-	return (
-		<Chart {...chartProps}>
-			<Line color="series" dimension="category" scaleType="point">
-				<ChartTooltip {...args} />
-			</Line>
-		</Chart>
-	);
+  const chartProps = useChartProps({ data: browserData, width: 600 });
+  return (
+    <Chart {...chartProps}>
+      <Line color="series" dimension="category" scaleType="point">
+        <ChartTooltip {...args} />
+      </Line>
+    </Chart>
+  );
 };
 
 const ScatterStory: StoryFn<typeof ChartTooltip> = (args): ReactElement => {
-	const chartProps = useChartProps({ data: characterData, width: 400 });
+  const chartProps = useChartProps({ data: characterData, width: 400 });
 
-	return (
-		<Chart {...chartProps}>
-			<Scatter dimension="speedNormal" metric="handlingNormal">
-				<ChartTooltip {...args} />
-			</Scatter>
-		</Chart>
-	);
+  return (
+    <Chart {...chartProps}>
+      <Scatter dimension="speedNormal" metric="handlingNormal">
+        <ChartTooltip {...args} />
+      </Scatter>
+    </Chart>
+  );
 };
 
 const dialogCallback = (datum: LineData) => (
-	<div className="browser-data-tooltip">
-		<div>Operating system: {datum.series}</div>
-		<div>Browser: {datum.category}</div>
-		<div>Users: {datum.value}</div>
-	</div>
+  <div className="browser-data-tooltip">
+    <div>Operating system: {datum.series}</div>
+    <div>Browser: {datum.category}</div>
+    <div>Users: {datum.value}</div>
+  </div>
 );
 
 const marioDialogCallback = (datum: MarioData) => (
-	<div className="mario-tooltip">
-		<div>Characters: {datum.character?.join(', ')}</div>
-		<div>Weight class: {datum.weightClass}</div>
-		<div>Handling: {datum.handlingNormal}</div>
-		<div>Speed: {datum.speedNormal}</div>
-	</div>
+  <div className="mario-tooltip">
+    <div>Characters: {datum.character?.join(', ')}</div>
+    <div>Weight class: {datum.weightClass}</div>
+    <div>Handling: {datum.handlingNormal}</div>
+    <div>Speed: {datum.speedNormal}</div>
+  </div>
 );
 
 const Basic = bindWithProps(StackedBarTooltipStory);
 Basic.args = {
-	highlightBy: 'item',
-	children: dialogCallback,
+  highlightBy: 'item',
+  children: dialogCallback,
 };
 
 const Dimension = bindWithProps(StackedBarTooltipStory);
 Dimension.args = {
-	highlightBy: 'dimension',
-	children: dialogCallback,
+  highlightBy: 'dimension',
+  children: dialogCallback,
 };
 
 const Series = bindWithProps(StackedBarTooltipStory);
 Series.args = {
-	highlightBy: 'series',
-	children: dialogCallback,
+  highlightBy: 'series',
+  children: dialogCallback,
 };
 
 const Keys = bindWithProps(StackedBarTooltipStory);
 Keys.args = {
-	highlightBy: ['series'],
-	children: dialogCallback,
+  highlightBy: ['series'],
+  children: dialogCallback,
 };
 
 const GroupData = bindWithProps(ScatterStory);
 GroupData.args = {
-	highlightBy: ['weightClass'],
-	children: (datum: MarioData) => (
-		<div className="mario-tooltip">
-			<div>Weight class: {datum.weightClass}</div>
-			<div>
-				Characters:
-				<View marginStart={6}>
-					{datum.rscGroupData
-						?.map((d) => d.character)
-						.flat()
-						.map((c, i) => (
-							<div key={c + i}>{c}</div>
-						))}
-				</View>
-			</div>
-		</div>
-	),
+  highlightBy: ['weightClass'],
+  children: (datum: MarioData) => (
+    <div className="mario-tooltip">
+      <div>Weight class: {datum.weightClass}</div>
+      <div>
+        Characters:
+        <View marginStart={6}>
+          {datum.rscGroupData
+            ?.map((d) => d.character)
+            .flat()
+            .map((c, i) => (
+              <div key={c + i}>{c}</div>
+            ))}
+        </View>
+      </div>
+    </div>
+  ),
 };
 
 const AreaChart = bindWithProps(AreaStory);
 AreaChart.args = {
-	highlightBy: 'dimension',
-	children: dialogCallback,
+  highlightBy: 'dimension',
+  children: dialogCallback,
 };
 
 const LineChart = bindWithProps(LineStory);
 LineChart.args = {
-	highlightBy: 'dimension',
-	children: dialogCallback,
+  highlightBy: 'dimension',
+  children: dialogCallback,
 };
 
 const ScatterChart = bindWithProps(ScatterStory);
 ScatterChart.args = {
-	highlightBy: ['weightClass'],
-	children: marioDialogCallback,
+  highlightBy: ['weightClass'],
+  children: marioDialogCallback,
 };
 
 export { AreaChart, Basic, Dimension, GroupData, Keys, LineChart, ScatterChart, Series };

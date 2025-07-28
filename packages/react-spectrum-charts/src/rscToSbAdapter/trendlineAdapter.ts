@@ -15,11 +15,11 @@ import { TrendlineProps } from '../types';
 import { childrenToOptions } from './childrenAdapter';
 
 export const getTrendlineOptions = ({ children, ...trendlineProps }: TrendlineProps): TrendlineOptions => {
-	const { chartTooltips, trendlineAnnotations } = childrenToOptions(children);
+  const { chartTooltips, trendlineAnnotations } = childrenToOptions(children);
 
-	return {
-		...trendlineProps,
-		chartTooltips,
-		trendlineAnnotations,
-	};
+  return {
+    ...trendlineProps,
+    chartTooltips,
+    trendlineAnnotations,
+  };
 };

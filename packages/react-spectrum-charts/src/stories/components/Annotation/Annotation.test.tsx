@@ -14,81 +14,81 @@ import '../../../test-utils/__mocks__/matchMedia.mock.js';
 import { FixedWidthBar, HorizontalBarChart, VerticalBarChart } from './Annotation.story';
 
 describe('Bar', () => {
-	test('Vertical bar chart renders properly', async () => {
-		render(<VerticalBarChart {...VerticalBarChart.args} />);
-		const chart = await findChart();
-		expect(chart).toBeInTheDocument();
+  test('Vertical bar chart renders properly', async () => {
+    render(<VerticalBarChart {...VerticalBarChart.args} />);
+    const chart = await findChart();
+    expect(chart).toBeInTheDocument();
 
-		// get bars
-		const bars = await findAllMarksByGroupName(chart, 'bar0');
-		expect(bars.length).toEqual(9);
+    // get bars
+    const bars = await findAllMarksByGroupName(chart, 'bar0');
+    expect(bars.length).toEqual(9);
 
-		// get text annotations
-		const labels = await findAllMarksByGroupName(chart, 'bar0_annotationText', 'text');
-		expect(labels.length).toEqual(9);
-	});
-	test('Small chart drops annotations', async () => {
-		render(<VerticalBarChart {...VerticalBarChart.args} chartWidth={100} />);
-		const chart = await findChart();
-		expect(chart).toBeInTheDocument();
+    // get text annotations
+    const labels = await findAllMarksByGroupName(chart, 'bar0_annotationText', 'text');
+    expect(labels.length).toEqual(9);
+  });
+  test('Small chart drops annotations', async () => {
+    render(<VerticalBarChart {...VerticalBarChart.args} chartWidth={100} />);
+    const chart = await findChart();
+    expect(chart).toBeInTheDocument();
 
-		// get text annotations
-		const labels = await findAllMarksByGroupName(chart, 'bar0_annotationText', 'text');
+    // get text annotations
+    const labels = await findAllMarksByGroupName(chart, 'bar0_annotationText', 'text');
 
-		// text should be empty since bars are too small
-		expect(labels[0]).toHaveTextContent('');
-		expect(labels[1]).toHaveTextContent('');
-		expect(labels[2]).toHaveTextContent('');
-	});
-	test('Horizontal bar chart renders properly', async () => {
-		render(<HorizontalBarChart {...HorizontalBarChart.args} />);
-		const chart = await findChart();
-		expect(chart).toBeInTheDocument();
+    // text should be empty since bars are too small
+    expect(labels[0]).toHaveTextContent('');
+    expect(labels[1]).toHaveTextContent('');
+    expect(labels[2]).toHaveTextContent('');
+  });
+  test('Horizontal bar chart renders properly', async () => {
+    render(<HorizontalBarChart {...HorizontalBarChart.args} />);
+    const chart = await findChart();
+    expect(chart).toBeInTheDocument();
 
-		// get bars
-		const bars = await findAllMarksByGroupName(chart, 'bar0');
-		expect(bars.length).toEqual(9);
+    // get bars
+    const bars = await findAllMarksByGroupName(chart, 'bar0');
+    expect(bars.length).toEqual(9);
 
-		// get text annotations
-		const labels = await findAllMarksByGroupName(chart, 'bar0_annotationText', 'text');
-		expect(labels.length).toEqual(9);
-		expect(labels[0]).toHaveTextContent('50%');
-		expect(labels[1]).toHaveTextContent('30%');
-		expect(labels[2]).toHaveTextContent('20%');
-	});
-	test('Small chart drops annotations', async () => {
-		render(<HorizontalBarChart {...HorizontalBarChart.args} chartHeight={100} />);
-		const chart = await findChart();
-		expect(chart).toBeInTheDocument();
+    // get text annotations
+    const labels = await findAllMarksByGroupName(chart, 'bar0_annotationText', 'text');
+    expect(labels.length).toEqual(9);
+    expect(labels[0]).toHaveTextContent('50%');
+    expect(labels[1]).toHaveTextContent('30%');
+    expect(labels[2]).toHaveTextContent('20%');
+  });
+  test('Small chart drops annotations', async () => {
+    render(<HorizontalBarChart {...HorizontalBarChart.args} chartHeight={100} />);
+    const chart = await findChart();
+    expect(chart).toBeInTheDocument();
 
-		// get text annotations
-		const labels = await findAllMarksByGroupName(chart, 'bar0_annotationText', 'text');
+    // get text annotations
+    const labels = await findAllMarksByGroupName(chart, 'bar0_annotationText', 'text');
 
-		// text should be empty since bars are too small
-		expect(labels[0]).toHaveTextContent('');
-		expect(labels[1]).toHaveTextContent('');
-		expect(labels[2]).toHaveTextContent('');
-	});
-	test('Fixed Width Bar Chart renders properly', async () => {
-		render(<FixedWidthBar {...FixedWidthBar.args} />);
-		const chart = await findChart();
-		expect(chart).toBeInTheDocument();
+    // text should be empty since bars are too small
+    expect(labels[0]).toHaveTextContent('');
+    expect(labels[1]).toHaveTextContent('');
+    expect(labels[2]).toHaveTextContent('');
+  });
+  test('Fixed Width Bar Chart renders properly', async () => {
+    render(<FixedWidthBar {...FixedWidthBar.args} />);
+    const chart = await findChart();
+    expect(chart).toBeInTheDocument();
 
-		// get bars
-		const bars = await findAllMarksByGroupName(chart, 'bar0');
-		expect(bars.length).toEqual(9);
+    // get bars
+    const bars = await findAllMarksByGroupName(chart, 'bar0');
+    expect(bars.length).toEqual(9);
 
-		// get text annotations
-		const labels = await findAllMarksByGroupName(chart, 'bar0_annotationText', 'text');
-		expect(labels.length).toEqual(9);
+    // get text annotations
+    const labels = await findAllMarksByGroupName(chart, 'bar0_annotationText', 'text');
+    expect(labels.length).toEqual(9);
 
-		// backgrounds have width of 48px
-		for (const label of labels) {
-			act(async () => {
-				const background = await findAllMarksByGroupName(label, 'bar0_annotationBackground', 'rect');
-				expect(background.length).toEqual(1);
-				expect(background[0].getAttribute('width')).toEqual('48');
-			});
-		}
-	});
+    // backgrounds have width of 48px
+    for (const label of labels) {
+      act(async () => {
+        const background = await findAllMarksByGroupName(label, 'bar0_annotationBackground', 'rect');
+        expect(background.length).toEqual(1);
+        expect(background[0].getAttribute('width')).toEqual('48');
+      });
+    }
+  });
 });

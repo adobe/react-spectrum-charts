@@ -23,6 +23,7 @@ module.exports = {
 		'react/jsx-uses-vars': 'error',
 		'react/jsx-uses-react': 'error',
 		'@typescript-eslint/no-non-null-assertion': 'error',
+		'jest/no-focused-tests': 'error',
 		'no-unused-vars': 'off',
 		'@typescript-eslint/no-unused-vars': [
 			'error',

@@ -17,19 +17,19 @@ import { TrendlineProps } from '../../types';
 
 // destructure props here and set defaults so that storybook can pick them up
 const Trendline: FC<TrendlineProps> = ({
-	children,
-	color,
-	dimensionExtent,
-	dimensionRange = [null, null],
-	displayOnHover = false,
-	excludeDataKeys,
-	highlightRawPoint = false,
-	lineType = 'dashed',
-	lineWidth = 'M',
-	method = 'linear',
-	opacity = 1,
+  children,
+  color,
+  dimensionExtent,
+  dimensionRange = [null, null],
+  displayOnHover = false,
+  excludeDataKeys,
+  highlightRawPoint = false,
+  lineType = 'dashed',
+  lineWidth = 'M',
+  method = 'linear',
+  opacity = 1,
 }) => {
-	return null;
+  return null;
 };
 
 // displayName is used to validate the component type in the spec builder

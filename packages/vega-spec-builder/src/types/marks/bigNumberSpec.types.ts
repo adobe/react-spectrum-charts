@@ -16,15 +16,15 @@ export type BigNumberNumberType = 'linear' | 'percentage';
 export type BigNumberMethod = 'sum' | 'avg' | 'last';
 
 export interface BigNumberOptions {
-	markType: 'bigNumber';
+  markType: 'bigNumber';
 
-	orientation: Orientation;
-	label: string;
-	dataKey: string;
-	numberFormat?: string;
-	numberType?: BigNumberNumberType;
-	method?: BigNumberMethod;
+  orientation: Orientation;
+  label: string;
+  dataKey: string;
+  numberFormat?: string;
+  numberType?: BigNumberNumberType;
+  method?: BigNumberMethod;
 
-	//children
-	lines?: LineOptions[];
+  //children
+  lines?: LineOptions[];
 }

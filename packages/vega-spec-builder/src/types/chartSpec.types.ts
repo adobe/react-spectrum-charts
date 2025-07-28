@@ -41,10 +41,10 @@ export type Opacities = number[] | number[][];
 export type SymbolShapes = ChartSymbolShape[] | ChartSymbolShape[][];
 
 export interface ChartHandle {
-	copy: () => Promise<string>;
-	download: (customFileName?: string) => Promise<string>;
-	getBase64Png: () => Promise<string>;
-	getSvg: () => Promise<string>;
+  copy: () => Promise<string>;
+  download: (customFileName?: string) => Promise<string>;
+  getBase64Png: () => Promise<string>;
+  getSvg: () => Promise<string>;
 }
 
 export type SimpleData = Record<string, unknown>;
@@ -102,26 +102,26 @@ export interface ChartOptions {
 	/** Width of chart */
 	chartWidth?: number;
 
-	// children
-	marks: MarkOptions[];
-	axes?: AxisOptions[];
-	legends?: LegendOptions[];
-	titles?: TitleOptions[];
+  // children
+  marks: MarkOptions[];
+  axes?: AxisOptions[];
+  legends?: LegendOptions[];
+  titles?: TitleOptions[];
 }
 
 type ChartOptionsWithDefaults =
-	| 'axes'
-	| 'backgroundColor'
-	| 'colors'
-	| 'colorScheme'
-	| 'hiddenSeries'
-	| 'idKey'
-	| 'legends'
-	| 'lineTypes'
-	| 'lineWidths'
-	| 'marks'
-	| 'symbolShapes'
-	| 'symbolSizes'
-	| 'titles';
+  | 'axes'
+  | 'backgroundColor'
+  | 'colors'
+  | 'colorScheme'
+  | 'hiddenSeries'
+  | 'idKey'
+  | 'legends'
+  | 'lineTypes'
+  | 'lineWidths'
+  | 'marks'
+  | 'symbolShapes'
+  | 'symbolSizes'
+  | 'titles';
 
 export interface ChartSpecOptions extends PartiallyRequired<ChartOptions, ChartOptionsWithDefaults> {}

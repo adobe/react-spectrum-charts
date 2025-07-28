@@ -12,37 +12,37 @@
 import { combineNames, toCamelCase } from './utils';
 
 describe('combineElementNames()', () => {
-	test('should return child name if parent name is null', () => {
-		expect(combineNames(null, 'bar0')).toBe('bar0');
-	});
-	test('should return parent name if child name is null', () => {
-		expect(combineNames('combo0', null)).toBe('combo0');
-	});
-	test('should return combined name if both parent and child names are provided', () => {
-		expect(combineNames('combo0', 'bar0')).toBe('combo0Bar0');
-	});
+  test('should return child name if parent name is null', () => {
+    expect(combineNames(null, 'bar0')).toBe('bar0');
+  });
+  test('should return parent name if child name is null', () => {
+    expect(combineNames('combo0', null)).toBe('combo0');
+  });
+  test('should return combined name if both parent and child names are provided', () => {
+    expect(combineNames('combo0', 'bar0')).toBe('combo0Bar0');
+  });
 });
 
 describe('toCamelCase()', () => {
-	test('camelCase should convert to camelCase', () => {
-		expect(toCamelCase('camelTest')).toStrictEqual('camelTest');
-	});
-	test('kebab-case should convert to camelCase', () => {
-		expect(toCamelCase('kebab-test')).toStrictEqual('kebabTest');
-	});
-	test('PascalCase should convert to camelCase', () => {
-		expect(toCamelCase('PascalTest')).toStrictEqual('pascalTest');
-	});
-	test('snake_case should convert to camelCase', () => {
-		expect(toCamelCase('snake_test')).toStrictEqual('snakeTest');
-	});
-	test('sentence should convert to camelCase', () => {
-		expect(toCamelCase('This is a test')).toStrictEqual('thisIsATest');
-	});
-	test('wild string should convert to camelCase', () => {
-		expect(toCamelCase('The quickFox_jumped-over 2 DOGS!')).toStrictEqual('theQuickFoxJumpedOver2Dogs');
-	});
-	test('no alpha numeric characters should return original string', () => {
-		expect(toCamelCase('&()*')).toStrictEqual('&()*');
-	});
+  test('camelCase should convert to camelCase', () => {
+    expect(toCamelCase('camelTest')).toStrictEqual('camelTest');
+  });
+  test('kebab-case should convert to camelCase', () => {
+    expect(toCamelCase('kebab-test')).toStrictEqual('kebabTest');
+  });
+  test('PascalCase should convert to camelCase', () => {
+    expect(toCamelCase('PascalTest')).toStrictEqual('pascalTest');
+  });
+  test('snake_case should convert to camelCase', () => {
+    expect(toCamelCase('snake_test')).toStrictEqual('snakeTest');
+  });
+  test('sentence should convert to camelCase', () => {
+    expect(toCamelCase('This is a test')).toStrictEqual('thisIsATest');
+  });
+  test('wild string should convert to camelCase', () => {
+    expect(toCamelCase('The quickFox_jumped-over 2 DOGS!')).toStrictEqual('theQuickFoxJumpedOver2Dogs');
+  });
+  test('no alpha numeric characters should return original string', () => {
+    expect(toCamelCase('&()*')).toStrictEqual('&()*');
+  });
 });

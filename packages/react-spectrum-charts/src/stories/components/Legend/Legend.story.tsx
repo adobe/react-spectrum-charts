@@ -13,20 +13,20 @@ import { ChartPopover, Legend } from '../../../components';
 import { LegendBarStory, LegendDisconnectedStory, defaultProps } from './LegendStoryUtils';
 
 export default {
-	title: 'RSC/Legend',
-	component: Legend,
+  title: 'RSC/Legend',
+  component: Legend,
 };
 
 const Basic = LegendBarStory.bind({});
 Basic.args = { ...defaultProps };
 
 const descriptions = [
-	{
-		seriesName: 'Windows',
-		description: 'Most popular operating system, especially in business',
-	},
-	{ seriesName: 'Mac', description: 'Popular for content creation, home and development' },
-	{ seriesName: 'Other', description: 'Linux accounts for the majority of "other" operating systems' },
+  {
+    seriesName: 'Windows',
+    description: 'Most popular operating system, especially in business',
+  },
+  { seriesName: 'Mac', description: 'Popular for content creation, home and development' },
+  { seriesName: 'Other', description: 'Linux accounts for the majority of "other" operating systems' },
 ];
 
 const Descriptions = LegendBarStory.bind({});
@@ -36,15 +36,15 @@ const Disconnected = LegendDisconnectedStory.bind({});
 Disconnected.args = { ...defaultProps, color: 'series' };
 
 const legendLabels = [
-	{ seriesName: 'Windows', label: 'Custom Windows' },
-	{ seriesName: 'Mac', label: 'Custom Mac' },
-	{ seriesName: 'Other', label: 'Custom Other' },
+  { seriesName: 'Windows', label: 'Custom Windows' },
+  { seriesName: 'Mac', label: 'Custom Mac' },
+  { seriesName: 'Other', label: 'Custom Other' },
 ];
 
 const truncatedLegendLabels = [
-	{ seriesName: 'Windows', label: 'Very long Windows label that will be truncated without a custom labelLimit' },
-	{ seriesName: 'Mac', label: 'Very long Mac label that will be truncated without a custom labelLimit' },
-	{ seriesName: 'Other', label: 'Very long Other label that will be truncated without a custom labelLimit' },
+  { seriesName: 'Windows', label: 'Very long Windows label that will be truncated without a custom labelLimit' },
+  { seriesName: 'Mac', label: 'Very long Mac label that will be truncated without a custom labelLimit' },
+  { seriesName: 'Other', label: 'Very long Other label that will be truncated without a custom labelLimit' },
 ];
 
 const Labels = LegendBarStory.bind({});
@@ -53,13 +53,20 @@ Labels.args = { legendLabels, highlight: true, ...defaultProps };
 const LabelLimit = LegendBarStory.bind({});
 LabelLimit.args = { legendLabels: truncatedLegendLabels, ...defaultProps };
 
+const TitleLimit = LegendBarStory.bind({});
+TitleLimit.args = {
+  title: 'Very long legend title that should be truncated',
+  titleLimit: 250,
+  ...defaultProps,
+};
+
 const OnClick = LegendBarStory.bind({});
 OnClick.args = {};
 
 const Popover = LegendBarStory.bind({});
 Popover.args = {
-	children: <ChartPopover width="auto">{(datum) => <div>{datum.value}</div>}</ChartPopover>,
-	...defaultProps,
+  children: <ChartPopover width="auto">{(datum) => <div>{datum.value}</div>}</ChartPopover>,
+  ...defaultProps,
 };
 
 const Position = LegendBarStory.bind({});
@@ -70,11 +77,23 @@ Title.args = { title: 'Operating system', ...defaultProps };
 
 const Supreme = LegendBarStory.bind({});
 Supreme.args = {
-	descriptions,
-	highlight: true,
-	legendLabels,
-	position: 'right',
-	title: 'Operating system',
+  descriptions,
+  highlight: true,
+  legendLabels,
+  position: 'right',
+  title: 'Operating system',
 };
 
-export { Basic, Descriptions, Disconnected, Labels, LabelLimit, OnClick, Popover, Position, Title, Supreme };
+export {
+  Basic,
+  Descriptions,
+  Disconnected,
+  Labels,
+  LabelLimit,
+  TitleLimit,
+  OnClick,
+  Popover,
+  Position,
+  Title,
+  Supreme,
+};

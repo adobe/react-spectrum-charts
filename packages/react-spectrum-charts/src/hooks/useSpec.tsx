@@ -96,8 +96,8 @@ export default function useSpec({
 			chartHeight,
 			chartWidth,
 			children,
-			colorScheme,
 			colors,
+			colorScheme,
 			data,
 			description,
 			hiddenSeries,
@@ -113,7 +113,7 @@ export default function useSpec({
 		});
 
 		// stringify-parse so that all immer stuff gets cleared out
-		const spec = JSON.parse(JSON.stringify(buildSpec(chartOptions)));
+		const spec = buildSpec(chartOptions);
 		prevSpec.current = spec;
 
 		return spec;
@@ -142,20 +142,20 @@ export default function useSpec({
 }
 
 const initializeSpec = (
-	spec: Spec | null = {},
-	chartOptions: Partial<ChartSpecOptions & { data: ChartData[] }> = {}
+  spec: Spec | null = {},
+  chartOptions: Partial<ChartSpecOptions & { data: ChartData[] }> = {}
 ): Spec => {
-	const { backgroundColor, colorScheme = 'light', data, description, title } = chartOptions;
+  const { backgroundColor, colorScheme = 'light', data, description, title } = chartOptions;
 
-	const baseSpec: Spec = {
-		title: title || undefined,
-		description,
-		autosize: { type: 'fit', contains: 'padding', resize: true },
-		data: isVegaData(data) ? data : baseData,
-		background: backgroundColor ? getColorValue(backgroundColor, colorScheme) : undefined,
-	};
+  const baseSpec: Spec = {
+    title: title || undefined,
+    description,
+    autosize: { type: 'fit', contains: 'padding', resize: true },
+    data: isVegaData(data) ? data : baseData,
+    background: backgroundColor ? getColorValue(backgroundColor, colorScheme) : undefined,
+  };
 
-	return { ...baseSpec, ...(spec || {}) };
+  return { ...baseSpec, ...(spec || {}) };
 };
 
 /**
@@ -182,10 +182,10 @@ export const isVegaData = (data): data is Data[] => data?.length && isVegaValues
  * array of values
  */
 export const extractValues = (data) =>
-	data.reduce((memo, dataset) => {
-		if (isVegaValuesDataset(dataset)) {
-			const { name, values } = dataset;
-			memo[name] = values;
-		}
-		return memo;
-	}, {});
+  data.reduce((memo, dataset) => {
+    if (isVegaValuesDataset(dataset)) {
+      const { name, values } = dataset;
+      memo[name] = values;
+    }
+    return memo;
+  }, {});

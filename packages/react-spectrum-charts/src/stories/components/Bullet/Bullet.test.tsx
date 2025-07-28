@@ -14,31 +14,31 @@ import { findAllMarksByGroupName, findChart, render } from '../../../test-utils'
 import { Basic } from './Bullet.story';
 
 describe('Bullet', () => {
-	// Bullet is not a real React component. This is test just provides test coverage for sonarqube
-	test('Bullet pseudo element', () => {
-		render(<Bullet />);
-	});
+  // Bullet is not a real React component. This is test just provides test coverage for sonarqube
+  test('Bullet pseudo element', () => {
+    render(<Bullet />);
+  });
 
-	test('Basic bullet renders properly', async () => {
-		render(<Basic {...Basic.args} />);
-		const chart = await findChart();
-		expect(chart).toBeInTheDocument();
+  test('Basic bullet renders properly', async () => {
+    render(<Basic {...Basic.args} />);
+    const chart = await findChart();
+    expect(chart).toBeInTheDocument();
 
-		const rects = await findAllMarksByGroupName(chart, 'bullet0Rect');
-		expect(rects.length).toEqual(2);
+    const rects = await findAllMarksByGroupName(chart, 'bullet0Rect');
+    expect(rects.length).toEqual(2);
 
-		rects.forEach((rect) => {
-			// Expect blue-900 color
-			expect(rect).toHaveAttribute('fill', 'rgb(2, 101, 220)');
-		});
+    rects.forEach((rect) => {
+      // Expect blue-900 color
+      expect(rect).toHaveAttribute('fill', 'rgb(2, 101, 220)');
+    });
 
-		const barLabels = await findAllMarksByGroupName(chart, 'bullet0Label', 'text');
-		expect(barLabels.length).toEqual(2);
+    const barLabels = await findAllMarksByGroupName(chart, 'bullet0Label', 'text');
+    expect(barLabels.length).toEqual(2);
 
-		const amountLabels = await findAllMarksByGroupName(chart, 'bullet0ValueLabel', 'text');
-		expect(amountLabels.length).toEqual(2);
+    const amountLabels = await findAllMarksByGroupName(chart, 'bullet0ValueLabel', 'text');
+    expect(amountLabels.length).toEqual(2);
 
-		const rules = await findAllMarksByGroupName(chart, 'bullet0Target', 'line');
-		expect(rules.length).toEqual(2);
-	});
+    const rules = await findAllMarksByGroupName(chart, 'bullet0Target', 'line');
+    expect(rules.length).toEqual(2);
+  });
 });

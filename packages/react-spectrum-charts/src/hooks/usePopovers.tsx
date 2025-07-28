@@ -15,38 +15,47 @@ import { ChartPopover } from '../components/ChartPopover';
 import { ChartChildElement, ChartPopoverElement, ChartPopoverProps } from '../types';
 import { getAllElements } from '../utils';
 
-type MappedPopover = { name: string; element: ChartPopoverElement };
+type MappedPopover = { name: string; element: ChartPopoverElement; parent?: string };
 
 const ChartContainer = ({ children }: { children: React.ReactNode }) => {
-	return <div>{children}</div>;
+  return <div>{children}</div>;
 };
 ChartContainer.displayName = 'ChartContainer';
 
 export type PopoverDetail = {
-	chartPopoverProps: ChartPopoverProps;
-	key: string;
-	name: string;
-	UNSAFE_highlightBy: ChartPopoverProps['UNSAFE_highlightBy'];
+  chartPopoverProps: ChartPopoverProps;
+  key: string;
+  name: string;
+  UNSAFE_highlightBy: ChartPopoverProps['UNSAFE_highlightBy'];
+  parent?: string;
 };
 
 export default function usePopovers(children: ChartChildElement[]): PopoverDetail[] {
-	const popoverElements = useMemo(
-		() => getAllElements(createElement(ChartContainer, undefined, children), ChartPopover, []) as MappedPopover[],
-		[children]
-	);
+  const popoverElements = useMemo(
+    () =>
+      getAllElements(
+        createElement(ChartContainer, undefined, children),
+        ChartPopover,
+        [],
+        undefined,
+        'Chart'
+      ) as MappedPopover[],
+    [children]
+  );
 
-	return useMemo(
-		() =>
-			popoverElements
-				.filter((popover) => popover.element.props.children)
-				.map((popover, index) => {
-					return {
-						chartPopoverProps: popover.element.props,
-						key: `${popover.name}Popover${index}`,
-						name: popover.name,
-						UNSAFE_highlightBy: popover.element.props.UNSAFE_highlightBy,
-					};
-				}),
-		[popoverElements]
-	);
+  return useMemo(
+    () =>
+      popoverElements
+        .filter((popover) => popover.element.props.children)
+        .map((popover, index) => {
+          return {
+            chartPopoverProps: popover.element.props,
+            key: `${popover.name}Popover${index}`,
+            name: popover.name,
+            UNSAFE_highlightBy: popover.element.props.UNSAFE_highlightBy,
+            parent: popover.parent,
+          };
+        }),
+    [popoverElements]
+  );
 }

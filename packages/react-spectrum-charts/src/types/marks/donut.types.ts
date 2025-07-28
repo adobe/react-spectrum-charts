@@ -18,8 +18,8 @@ import { Children } from '../util.types';
 import { DonutSummaryElement, SegmentLabelElement } from './supplemental';
 
 export interface DonutProps
-	extends Omit<DonutOptions, 'chartPopovers' | 'chartTooltips' | 'donutSummaries' | 'markType' | 'segmentLabels'> {
-	children?: Children<ChartPopoverElement | ChartTooltipElement | DonutSummaryElement | SegmentLabelElement>;
+  extends Omit<DonutOptions, 'chartPopovers' | 'chartTooltips' | 'donutSummaries' | 'markType' | 'segmentLabels'> {
+  children?: Children<ChartPopoverElement | ChartTooltipElement | DonutSummaryElement | SegmentLabelElement>;
 }
 
 export type DonutElement = ReactElement<DonutProps, JSXElementConstructor<DonutProps>>;

@@ -12,22 +12,22 @@
 import { Data } from 'vega';
 
 import {
-	BACKGROUND_COLOR,
-	COLOR_SCALE,
-	DEFAULT_COLOR,
-	DEFAULT_COLOR_SCHEME,
-	DEFAULT_METRIC,
-	DEFAULT_OPACITY_RULE,
-	DEFAULT_TIME_DIMENSION,
-	DEFAULT_TRANSFORMED_TIME_DIMENSION,
-	FILTERED_TABLE,
-	HIGHLIGHTED_ITEM,
-	HIGHLIGHTED_SERIES,
-	LINEAR_PADDING,
-	MARK_ID,
-	SERIES_ID,
-	TABLE,
-	TRENDLINE_VALUE,
+  BACKGROUND_COLOR,
+  COLOR_SCALE,
+  DEFAULT_COLOR,
+  DEFAULT_COLOR_SCHEME,
+  DEFAULT_METRIC,
+  DEFAULT_OPACITY_RULE,
+  DEFAULT_TIME_DIMENSION,
+  DEFAULT_TRANSFORMED_TIME_DIMENSION,
+  FILTERED_TABLE,
+  HIGHLIGHTED_ITEM,
+  HIGHLIGHTED_SERIES,
+  LINEAR_PADDING,
+  MARK_ID,
+  SERIES_ID,
+  TABLE,
+  TRENDLINE_VALUE,
 } from '@spectrum-charts/constants';
 
 import * as signalSpecBuilder from '../signal/signalSpecBuilder';
@@ -37,563 +37,561 @@ import { LineSpecOptions, ScSpec } from '../types';
 import { addData, addLine, addLineMarks, addSignals, setScales } from './lineSpecBuilder';
 
 const defaultLineOptions: LineSpecOptions = {
-	chartPopovers: [],
-	chartTooltips: [],
-	name: 'line0',
-	dimension: DEFAULT_TIME_DIMENSION,
-	hasOnClick: false,
-	idKey: MARK_ID,
-	index: 0,
-	markType: 'line',
-	metric: DEFAULT_METRIC,
-	metricRanges: [],
-	color: DEFAULT_COLOR,
-	scaleType: 'time',
-	lineType: { value: 'solid' },
-	opacity: { value: 1 },
-	colorScheme: DEFAULT_COLOR_SCHEME,
-	interactiveMarkName: undefined,
-	popoverMarkName: undefined,
-	trendlines: [],
+  chartPopovers: [],
+  chartTooltips: [],
+  name: 'line0',
+  dimension: DEFAULT_TIME_DIMENSION,
+  hasOnClick: false,
+  idKey: MARK_ID,
+  index: 0,
+  markType: 'line',
+  metric: DEFAULT_METRIC,
+  metricRanges: [],
+  color: DEFAULT_COLOR,
+  scaleType: 'time',
+  lineType: { value: 'solid' },
+  opacity: { value: 1 },
+  colorScheme: DEFAULT_COLOR_SCHEME,
+  interactiveMarkName: undefined,
+  popoverMarkName: undefined,
+  trendlines: [],
 };
 
 const startingSpec: ScSpec = initializeSpec({
-	scales: [{ name: COLOR_SCALE, type: 'ordinal' }],
+  scales: [{ name: COLOR_SCALE, type: 'ordinal' }],
 });
 
 const defaultSpec = initializeSpec({
-	data: [
-		{
-			name: TABLE,
-			transform: [
-				{ as: MARK_ID, type: 'identifier' },
-				{
-					type: 'formula',
-					expr: `toDate(datum[\"${DEFAULT_TIME_DIMENSION}\"])`,
-					as: DEFAULT_TIME_DIMENSION,
-				},
-				{
-					as: [DEFAULT_TRANSFORMED_TIME_DIMENSION, `${DEFAULT_TIME_DIMENSION}1`],
-					field: DEFAULT_TIME_DIMENSION,
-					type: 'timeunit',
-					units: ['year', 'month', 'date', 'hours', 'minutes'],
-				},
-			],
-			values: [],
-		},
-		{
-			name: FILTERED_TABLE,
-			source: TABLE,
-		},
-	],
-	marks: [
-		{
-			from: { facet: { data: FILTERED_TABLE, groupby: [DEFAULT_COLOR], name: 'line0_facet' } },
-			marks: [
-				{
-					encode: {
-						enter: {
-							stroke: { field: DEFAULT_COLOR, scale: COLOR_SCALE },
-							strokeDash: { value: [] },
-							strokeOpacity: DEFAULT_OPACITY_RULE,
-							strokeWidth: undefined,
-							y: { field: 'value', scale: 'yLinear' },
-						},
-						update: {
-							x: { field: DEFAULT_TRANSFORMED_TIME_DIMENSION, scale: 'xTime' },
-							opacity: [DEFAULT_OPACITY_RULE],
-						},
-					},
-					from: { data: 'line0_facet' },
-					name: 'line0',
-					description: 'line0',
-					type: 'line',
-					interactive: false,
-				},
-			],
-			name: 'line0_group',
-			type: 'group',
-		},
-	],
-	scales: [
-		{ domain: { data: TABLE, fields: [DEFAULT_COLOR] }, name: COLOR_SCALE, type: 'ordinal' },
-		{
-			domain: { data: FILTERED_TABLE, fields: [DEFAULT_TRANSFORMED_TIME_DIMENSION] },
-			name: 'xTime',
-			padding: LINEAR_PADDING,
-			range: 'width',
-			type: 'time',
-		},
-		{
-			domain: { data: FILTERED_TABLE, fields: ['value'] },
-			name: 'yLinear',
-			nice: true,
-			range: 'height',
-			type: 'linear',
-			zero: true,
-		},
-	],
-	signals: [],
+  data: [
+    {
+      name: TABLE,
+      transform: [
+        { as: MARK_ID, type: 'identifier' },
+        {
+          type: 'formula',
+          expr: `toDate(datum[\"${DEFAULT_TIME_DIMENSION}\"])`,
+          as: DEFAULT_TIME_DIMENSION,
+        },
+        {
+          as: [DEFAULT_TRANSFORMED_TIME_DIMENSION, `${DEFAULT_TIME_DIMENSION}1`],
+          field: DEFAULT_TIME_DIMENSION,
+          type: 'timeunit',
+          units: ['year', 'month', 'date', 'hours', 'minutes', 'seconds'],
+        },
+      ],
+      values: [],
+    },
+    {
+      name: FILTERED_TABLE,
+      source: TABLE,
+    },
+  ],
+  marks: [
+    {
+      from: { facet: { data: FILTERED_TABLE, groupby: [DEFAULT_COLOR], name: 'line0_facet' } },
+      marks: [
+        {
+          encode: {
+            enter: {
+              stroke: { field: DEFAULT_COLOR, scale: COLOR_SCALE },
+              strokeDash: { value: [] },
+              strokeOpacity: DEFAULT_OPACITY_RULE,
+              strokeWidth: undefined,
+              y: { field: 'value', scale: 'yLinear' },
+            },
+            update: {
+              x: { field: DEFAULT_TRANSFORMED_TIME_DIMENSION, scale: 'xTime' },
+              opacity: [DEFAULT_OPACITY_RULE],
+            },
+          },
+          from: { data: 'line0_facet' },
+          name: 'line0',
+          description: 'line0',
+          type: 'line',
+          interactive: false,
+        },
+      ],
+      name: 'line0_group',
+      type: 'group',
+    },
+  ],
+  scales: [
+    { domain: { data: TABLE, fields: [DEFAULT_COLOR] }, name: COLOR_SCALE, type: 'ordinal' },
+    {
+      domain: { data: FILTERED_TABLE, fields: [DEFAULT_TRANSFORMED_TIME_DIMENSION] },
+      name: 'xTime',
+      padding: LINEAR_PADDING,
+      range: 'width',
+      type: 'time',
+    },
+    {
+      domain: { data: FILTERED_TABLE, fields: ['value'] },
+      name: 'yLinear',
+      nice: true,
+      range: 'height',
+      type: 'linear',
+      zero: true,
+    },
+  ],
+  signals: [],
 });
 
 const defaultLinearScale = {
-	domain: { data: FILTERED_TABLE, fields: [DEFAULT_TIME_DIMENSION] },
-	name: 'xLinear',
-	padding: LINEAR_PADDING,
-	range: 'width',
-	type: 'linear',
+  domain: { data: FILTERED_TABLE, fields: [DEFAULT_TIME_DIMENSION] },
+  name: 'xLinear',
+  padding: LINEAR_PADDING,
+  range: 'width',
+  type: 'linear',
 };
 
 const defaultPointScale = {
-	domain: { data: FILTERED_TABLE, fields: [DEFAULT_TIME_DIMENSION] },
-	name: 'xPoint',
-	paddingOuter: 0.5,
-	range: 'width',
-	type: 'point',
+  domain: { data: FILTERED_TABLE, fields: [DEFAULT_TIME_DIMENSION] },
+  name: 'xPoint',
+  paddingOuter: 0.5,
+  range: 'width',
+  type: 'point',
 };
 
 const line0_groupMark = {
-	name: 'line0_group',
-	type: 'group',
-	from: {
-		facet: {
-			name: 'line0_facet',
-			data: FILTERED_TABLE,
-			groupby: ['series'],
-		},
-	},
-	marks: [
-		{
-			name: 'line0',
-			description: 'line0',
-			type: 'line',
-			from: {
-				data: 'line0_facet',
-			},
-			interactive: false,
-			encode: {
-				enter: {
-					y: { scale: 'yLinear', field: 'value' },
-					stroke: { scale: COLOR_SCALE, field: 'series' },
-					strokeDash: { value: [] },
-					strokeOpacity: DEFAULT_OPACITY_RULE,
-					strokeWidth: undefined,
-				},
-				update: {
-					x: { scale: 'xTime', field: DEFAULT_TRANSFORMED_TIME_DIMENSION },
-					opacity: [DEFAULT_OPACITY_RULE],
-				},
-			},
-		},
-	],
+  name: 'line0_group',
+  type: 'group',
+  from: {
+    facet: {
+      name: 'line0_facet',
+      data: FILTERED_TABLE,
+      groupby: ['series'],
+    },
+  },
+  marks: [
+    {
+      name: 'line0',
+      description: 'line0',
+      type: 'line',
+      from: {
+        data: 'line0_facet',
+      },
+      interactive: false,
+      encode: {
+        enter: {
+          y: { scale: 'yLinear', field: 'value' },
+          stroke: { scale: COLOR_SCALE, field: 'series' },
+          strokeDash: { value: [] },
+          strokeOpacity: DEFAULT_OPACITY_RULE,
+          strokeWidth: undefined,
+        },
+        update: {
+          x: { scale: 'xTime', field: DEFAULT_TRANSFORMED_TIME_DIMENSION },
+          opacity: [DEFAULT_OPACITY_RULE],
+        },
+      },
+    },
+  ],
 };
 
 const metricRangeGroupMark = {
-	name: 'line0MetricRange0_group',
-	type: 'group',
-	clip: true,
-	from: {
-		facet: {
-			name: 'line0MetricRange0_facet',
-			data: FILTERED_TABLE,
-			groupby: ['series'],
-		},
-	},
-	marks: [
-		{
-			name: 'line0MetricRange0_line',
-			description: 'line0MetricRange0_line',
-			type: 'line',
-			from: {
-				data: 'line0MetricRange0_facet',
-			},
-			interactive: false,
-			encode: {
-				enter: {
-					y: {
-						scale: 'yLinear',
-						field: 'value',
-					},
-					stroke: {
-						scale: COLOR_SCALE,
-						field: 'series',
-					},
-					strokeDash: {
-						value: [7, 4],
-					},
-					strokeOpacity: DEFAULT_OPACITY_RULE,
-					strokeWidth: {
-						value: 1.5,
-					},
-				},
-				update: {
-					x: {
-						scale: 'xTime',
-						field: DEFAULT_TRANSFORMED_TIME_DIMENSION,
-					},
-					opacity: [DEFAULT_OPACITY_RULE],
-				},
-			},
-		},
-		{
-			name: 'line0MetricRange0_area',
-			description: 'line0MetricRange0_area',
-			type: 'area',
-			from: {
-				data: 'line0MetricRange0_facet',
-			},
-			interactive: false,
-			encode: {
-				enter: {
-					y: {
-						field: 'start',
-						scale: 'yLinear',
-					},
-					y2: {
-						field: 'end',
-						scale: 'yLinear',
-					},
-					fill: {
-						scale: COLOR_SCALE,
-						field: 'series',
-					},
-					tooltip: undefined,
-				},
-				update: {
-					cursor: undefined,
-					x: {
-						scale: 'xTime',
-						field: DEFAULT_TRANSFORMED_TIME_DIMENSION,
-					},
-					fillOpacity: { value: 0.2 },
-					opacity: [DEFAULT_OPACITY_RULE],
-				},
-			},
-		},
-	],
+  name: 'line0MetricRange0_group',
+  type: 'group',
+  clip: true,
+  from: {
+    facet: {
+      name: 'line0MetricRange0_facet',
+      data: FILTERED_TABLE,
+      groupby: ['series'],
+    },
+  },
+  marks: [
+    {
+      name: 'line0MetricRange0_line',
+      description: 'line0MetricRange0_line',
+      type: 'line',
+      from: {
+        data: 'line0MetricRange0_facet',
+      },
+      interactive: false,
+      encode: {
+        enter: {
+          y: {
+            scale: 'yLinear',
+            field: 'value',
+          },
+          stroke: {
+            scale: COLOR_SCALE,
+            field: 'series',
+          },
+          strokeDash: {
+            value: [7, 4],
+          },
+          strokeOpacity: DEFAULT_OPACITY_RULE,
+          strokeWidth: {
+            value: 1.5,
+          },
+        },
+        update: {
+          x: {
+            scale: 'xTime',
+            field: DEFAULT_TRANSFORMED_TIME_DIMENSION,
+          },
+          opacity: [DEFAULT_OPACITY_RULE],
+        },
+      },
+    },
+    {
+      name: 'line0MetricRange0_area',
+      description: 'line0MetricRange0_area',
+      type: 'area',
+      from: {
+        data: 'line0MetricRange0_facet',
+      },
+      interactive: false,
+      encode: {
+        enter: {
+          y: {
+            field: 'start',
+            scale: 'yLinear',
+          },
+          y2: {
+            field: 'end',
+            scale: 'yLinear',
+          },
+          fill: {
+            scale: COLOR_SCALE,
+            field: 'series',
+          },
+          tooltip: undefined,
+        },
+        update: {
+          cursor: undefined,
+          x: {
+            scale: 'xTime',
+            field: DEFAULT_TRANSFORMED_TIME_DIMENSION,
+          },
+          fillOpacity: { value: 0.2 },
+          opacity: [DEFAULT_OPACITY_RULE],
+        },
+      },
+    },
+  ],
 };
 
 const metricRangeMarks = [line0_groupMark, metricRangeGroupMark];
 
 const metricRangeWithDisplayPointMarks = [
-	line0_groupMark,
-	{
-		name: 'line0_staticPoints',
-		description: 'line0_staticPoints',
-		type: 'symbol',
-		from: {
-			data: 'line0_staticPointData',
-		},
-		interactive: false,
-		encode: {
-			enter: {
-				y: {
-					scale: 'yLinear',
-					field: 'value',
-				},
-				size: {
-					value: 125,
-				},
-				fill: {
-					scale: COLOR_SCALE,
-					field: 'series',
-				},
-				stroke: {
-					signal: BACKGROUND_COLOR,
-				},
-			},
-			update: {
-				x: {
-					scale: 'xTime',
-					field: DEFAULT_TRANSFORMED_TIME_DIMENSION,
-				},
-			},
-		},
-	},
-	metricRangeGroupMark,
+  line0_groupMark,
+  {
+    name: 'line0_staticPoints',
+    description: 'line0_staticPoints',
+    type: 'symbol',
+    from: {
+      data: 'line0_staticPointData',
+    },
+    interactive: false,
+    encode: {
+      enter: {
+        y: {
+          scale: 'yLinear',
+          field: 'value',
+        },
+        size: {
+          value: 125,
+        },
+        fill: {
+          scale: COLOR_SCALE,
+          field: 'series',
+        },
+        stroke: {
+          signal: BACKGROUND_COLOR,
+        },
+      },
+      update: {
+        x: {
+          scale: 'xTime',
+          field: DEFAULT_TRANSFORMED_TIME_DIMENSION,
+        },
+      },
+    },
+  },
+  metricRangeGroupMark,
 ];
 
 const displayPointMarks = [
-	line0_groupMark,
-	{
-		name: 'line0_staticPoints',
-		description: 'line0_staticPoints',
-		type: 'symbol',
-		from: {
-			data: 'line0_staticPointData',
-		},
-		interactive: false,
-		encode: {
-			enter: {
-				y: {
-					scale: 'yLinear',
-					field: 'value',
-				},
-				size: {
-					value: 125,
-				},
-				fill: {
-					scale: COLOR_SCALE,
-					field: 'series',
-				},
-				stroke: {
-					signal: BACKGROUND_COLOR,
-				},
-			},
-			update: {
-				x: {
-					scale: 'xTime',
-					field: DEFAULT_TRANSFORMED_TIME_DIMENSION,
-				},
-			},
-		},
-	},
+  line0_groupMark,
+  {
+    name: 'line0_staticPoints',
+    description: 'line0_staticPoints',
+    type: 'symbol',
+    from: {
+      data: 'line0_staticPointData',
+    },
+    interactive: false,
+    encode: {
+      enter: {
+        y: {
+          scale: 'yLinear',
+          field: 'value',
+        },
+        size: {
+          value: 125,
+        },
+        fill: {
+          scale: COLOR_SCALE,
+          field: 'series',
+        },
+        stroke: {
+          signal: BACKGROUND_COLOR,
+        },
+      },
+      update: {
+        x: {
+          scale: 'xTime',
+          field: DEFAULT_TRANSFORMED_TIME_DIMENSION,
+        },
+      },
+    },
+  },
 ];
 
 describe('lineSpecBuilder', () => {
-	describe('addLine()', () => {
-		test('should add line', () => {
-			expect(addLine(startingSpec, { idKey: MARK_ID, color: DEFAULT_COLOR, markType: 'line' })).toStrictEqual(
-				defaultSpec
-			);
-		});
-	});
+  describe('addLine()', () => {
+    test('should add line', () => {
+      expect(addLine(startingSpec, { idKey: MARK_ID, color: DEFAULT_COLOR, markType: 'line' })).toStrictEqual(
+        defaultSpec
+      );
+    });
+  });
 
-	describe('addData()', () => {
-		let baseData: Data[];
+  describe('addData()', () => {
+    let baseData: Data[];
 
-		beforeEach(() => {
-			baseData = initializeSpec().data ?? [];
-		});
+    beforeEach(() => {
+      baseData = initializeSpec().data ?? [];
+    });
 
-		test('basic', () => {
-			expect(addData(baseData, defaultLineOptions)).toStrictEqual(defaultSpec.data);
-		});
+    test('basic', () => {
+      expect(addData(baseData, defaultLineOptions)).toStrictEqual(defaultSpec.data);
+    });
 
-		test('scaleTypes "point" and "linear" should return the original data', () => {
-			expect(addData(baseData, { ...defaultLineOptions, scaleType: 'point' })).toEqual(baseData);
-			expect(addData(baseData, { ...defaultLineOptions, scaleType: 'linear' })).toEqual(baseData);
-		});
+    test('scaleTypes "point" and "linear" should return the original data', () => {
+      expect(addData(baseData, { ...defaultLineOptions, scaleType: 'point' })).toEqual(baseData);
+      expect(addData(baseData, { ...defaultLineOptions, scaleType: 'linear' })).toEqual(baseData);
+    });
 
-		test('should add trendline transform', () => {
-			expect(
-				addData(baseData, {
-					...defaultLineOptions,
-					trendlines: [{ method: 'average' }],
-				})[2].transform
-			).toStrictEqual([
-				{
-					as: [TRENDLINE_VALUE, `${DEFAULT_TIME_DIMENSION}Min`, `${DEFAULT_TIME_DIMENSION}Max`],
-					fields: [DEFAULT_METRIC, DEFAULT_TIME_DIMENSION, DEFAULT_TIME_DIMENSION],
-					groupby: [DEFAULT_COLOR],
-					ops: ['mean', 'min', 'max'],
-					type: 'aggregate',
-				},
-				{ as: SERIES_ID, expr: `datum.${DEFAULT_COLOR}`, type: 'formula' },
-			]);
-		});
+    test('should add trendline transform', () => {
+      expect(
+        addData(baseData, {
+          ...defaultLineOptions,
+          trendlines: [{ method: 'average' }],
+        })[2].transform
+      ).toStrictEqual([
+        {
+          as: [TRENDLINE_VALUE, `${DEFAULT_TIME_DIMENSION}Min`, `${DEFAULT_TIME_DIMENSION}Max`],
+          fields: [DEFAULT_METRIC, DEFAULT_TIME_DIMENSION, DEFAULT_TIME_DIMENSION],
+          groupby: [DEFAULT_COLOR],
+          ops: ['mean', 'min', 'max'],
+          type: 'aggregate',
+        },
+        { as: SERIES_ID, expr: `datum.${DEFAULT_COLOR}`, type: 'formula' },
+      ]);
+    });
 
-		test('should not do anything for movingAverage trendline since it is not supported yet', () => {
-			expect(
-				addData(baseData, {
-					...defaultLineOptions,
-					trendlines: [{ method: 'movingAverage-7' }],
-				})[0].transform
-			).toHaveLength(3);
-		});
+    test('should not do anything for movingAverage trendline since it is not supported yet', () => {
+      expect(
+        addData(baseData, {
+          ...defaultLineOptions,
+          trendlines: [{ method: 'movingAverage-7' }],
+        })[0].transform
+      ).toHaveLength(3);
+    });
 
-		test('adds point data if displayPointMark is not undefined', () => {
-			const resultData = addData(baseData ?? [], {
-				...defaultLineOptions,
-				staticPoint: 'staticPoint',
-			});
-			expect(resultData.find((data) => data.name === 'line0_staticPointData')).toStrictEqual({
-				name: 'line0_staticPointData',
-				source: FILTERED_TABLE,
-				transform: [{ expr: 'datum.staticPoint === true', type: 'filter' }],
-			});
-		});
-	});
+    test('adds point data if displayPointMark is not undefined', () => {
+      const resultData = addData(baseData ?? [], {
+        ...defaultLineOptions,
+        staticPoint: 'staticPoint',
+      });
+      expect(resultData.find((data) => data.name === 'line0_staticPointData')).toStrictEqual({
+        name: 'line0_staticPointData',
+        source: FILTERED_TABLE,
+        transform: [{ expr: 'datum.staticPoint === true', type: 'filter' }],
+      });
+    });
+  });
 
-	describe('setScales()', () => {
-		test('time', () => {
-			expect(setScales(startingSpec.scales ?? [], defaultLineOptions)).toStrictEqual(defaultSpec.scales);
-		});
+  describe('setScales()', () => {
+    test('time', () => {
+      expect(setScales(startingSpec.scales ?? [], defaultLineOptions)).toStrictEqual(defaultSpec.scales);
+    });
 
-		test('linear', () => {
-			expect(
-				setScales(startingSpec.scales ?? [], {
-					...defaultLineOptions,
-					scaleType: 'linear',
-				})
-			).toStrictEqual([defaultSpec.scales?.[0], defaultLinearScale, defaultSpec.scales?.[2]]);
-		});
+    test('linear', () => {
+      expect(
+        setScales(startingSpec.scales ?? [], {
+          ...defaultLineOptions,
+          scaleType: 'linear',
+        })
+      ).toStrictEqual([defaultSpec.scales?.[0], defaultLinearScale, defaultSpec.scales?.[2]]);
+    });
 
-		test('point', () => {
-			expect(
-				setScales(startingSpec.scales ?? [], {
-					...defaultLineOptions,
-					scaleType: 'point',
-				})
-			).toStrictEqual([defaultSpec.scales?.[0], defaultPointScale, defaultSpec.scales?.[2]]);
-		});
+    test('point', () => {
+      expect(
+        setScales(startingSpec.scales ?? [], {
+          ...defaultLineOptions,
+          scaleType: 'point',
+        })
+      ).toStrictEqual([defaultSpec.scales?.[0], defaultPointScale, defaultSpec.scales?.[2]]);
+    });
 
-		test('with metric range fields', () => {
-			const [metricStart, metricEnd] = ['metricStart', 'metricEnd'];
-			const metricRangeMetricScale = {
-				...defaultSpec.scales?.[2],
-				domain: {
-					...defaultSpec.scales?.[2].domain,
-					fields: ['value', metricStart, metricEnd],
-				},
-			};
-			expect(
-				setScales(startingSpec.scales ?? [], {
-					...defaultLineOptions,
-					metricRanges: [{ scaleAxisToFit: true, metricEnd, metricStart }],
-				})
-			).toStrictEqual([defaultSpec.scales?.[0], defaultSpec.scales?.[1], metricRangeMetricScale]);
-		});
-	});
+    test('with metric range fields', () => {
+      const [metricStart, metricEnd] = ['metricStart', 'metricEnd'];
+      const metricRangeMetricScale = {
+        ...defaultSpec.scales?.[2],
+        domain: {
+          ...defaultSpec.scales?.[2].domain,
+          fields: ['value', metricStart, metricEnd],
+        },
+      };
+      expect(
+        setScales(startingSpec.scales ?? [], {
+          ...defaultLineOptions,
+          metricRanges: [{ scaleAxisToFit: true, metricEnd, metricStart }],
+        })
+      ).toStrictEqual([defaultSpec.scales?.[0], defaultSpec.scales?.[1], metricRangeMetricScale]);
+    });
+  });
 
-	describe('addLineMarks()', () => {
-		test('basic', () => {
-			expect(addLineMarks([], defaultLineOptions)).toStrictEqual(defaultSpec.marks);
-		});
+  describe('addLineMarks()', () => {
+    test('basic', () => {
+      expect(addLineMarks([], defaultLineOptions)).toStrictEqual(defaultSpec.marks);
+    });
 
-		test('dashed', () => {
-			expect(addLineMarks([], { ...defaultLineOptions, lineType: { value: [8, 8] } })).toStrictEqual([
-				{
-					from: { facet: { data: FILTERED_TABLE, groupby: [DEFAULT_COLOR], name: 'line0_facet' } },
-					marks: [
-						{
-							encode: {
-								enter: {
-									stroke: { field: DEFAULT_COLOR, scale: COLOR_SCALE },
-									strokeOpacity: DEFAULT_OPACITY_RULE,
-									strokeDash: { value: [8, 8] },
-									strokeWidth: undefined,
-									y: { field: 'value', scale: 'yLinear' },
-								},
-								update: {
-									x: { field: DEFAULT_TRANSFORMED_TIME_DIMENSION, scale: 'xTime' },
-									opacity: [DEFAULT_OPACITY_RULE],
-								},
-							},
-							from: { data: 'line0_facet' },
-							name: 'line0',
-							description: 'line0',
-							type: 'line',
-							interactive: false,
-						},
-					],
-					name: 'line0_group',
-					type: 'group',
-				},
-			]);
-		});
+    test('dashed', () => {
+      expect(addLineMarks([], { ...defaultLineOptions, lineType: { value: [8, 8] } })).toStrictEqual([
+        {
+          from: { facet: { data: FILTERED_TABLE, groupby: [DEFAULT_COLOR], name: 'line0_facet' } },
+          marks: [
+            {
+              encode: {
+                enter: {
+                  stroke: { field: DEFAULT_COLOR, scale: COLOR_SCALE },
+                  strokeOpacity: DEFAULT_OPACITY_RULE,
+                  strokeDash: { value: [8, 8] },
+                  strokeWidth: undefined,
+                  y: { field: 'value', scale: 'yLinear' },
+                },
+                update: {
+                  x: { field: DEFAULT_TRANSFORMED_TIME_DIMENSION, scale: 'xTime' },
+                  opacity: [DEFAULT_OPACITY_RULE],
+                },
+              },
+              from: { data: 'line0_facet' },
+              name: 'line0',
+              description: 'line0',
+              type: 'line',
+              interactive: false,
+            },
+          ],
+          name: 'line0_group',
+          type: 'group',
+        },
+      ]);
+    });
 
-		test('with metric range', () => {
-			expect(
-				addLineMarks([], { ...defaultLineOptions, metricRanges: [{ metricEnd: 'end', metricStart: 'start' }] })
-			).toStrictEqual(metricRangeMarks);
-		});
+    test('with metric range', () => {
+      expect(
+        addLineMarks([], { ...defaultLineOptions, metricRanges: [{ metricEnd: 'end', metricStart: 'start' }] })
+      ).toStrictEqual(metricRangeMarks);
+    });
 
-		test('with displayPointMark', () => {
-			expect(addLineMarks([], { ...defaultLineOptions, staticPoint: 'staticPoint' })).toStrictEqual(
-				displayPointMarks
-			);
-		});
+    test('with displayPointMark', () => {
+      expect(addLineMarks([], { ...defaultLineOptions, staticPoint: 'staticPoint' })).toStrictEqual(displayPointMarks);
+    });
 
-		test('with displayPointMark and metric range', () => {
-			expect(
-				addLineMarks([], {
-					...defaultLineOptions,
-					staticPoint: 'staticPoint',
-					metricRanges: [{ metricEnd: 'end', metricStart: 'start' }],
-				})
-			).toStrictEqual(metricRangeWithDisplayPointMarks);
-		});
+    test('with displayPointMark and metric range', () => {
+      expect(
+        addLineMarks([], {
+          ...defaultLineOptions,
+          staticPoint: 'staticPoint',
+          metricRanges: [{ metricEnd: 'end', metricStart: 'start' }],
+        })
+      ).toStrictEqual(metricRangeWithDisplayPointMarks);
+    });
 
-		test('with onClick should add hover marks', () => {
-			const marks = addLineMarks([], { ...defaultLineOptions, hasOnClick: true });
+    test('with onClick should add hover marks', () => {
+      const marks = addLineMarks([], { ...defaultLineOptions, hasOnClick: true });
 
-			const voronoiPathMark = marks.at(-1);
-			expect(voronoiPathMark?.description).toBe('line0_voronoi');
-			expect(voronoiPathMark?.encode?.update?.cursor).toStrictEqual({ value: 'pointer' });
+      const voronoiPathMark = marks.at(-1);
+      expect(voronoiPathMark?.description).toBe('line0_voronoi');
+      expect(voronoiPathMark?.encode?.update?.cursor).toStrictEqual({ value: 'pointer' });
 
-			const voronoiPointsMark = marks.at(-2);
-			expect(voronoiPointsMark?.description).toBe('line0_pointsForVoronoi');
-		});
-	});
+      const voronoiPointsMark = marks.at(-2);
+      expect(voronoiPointsMark?.description).toBe('line0_pointsForVoronoi');
+    });
+  });
 
-	describe('addSignals()', () => {
-		test('on children', () => {
-			expect(addSignals([], defaultLineOptions)).toStrictEqual([]);
-		});
+  describe('addSignals()', () => {
+    test('on children', () => {
+      expect(addSignals([], defaultLineOptions)).toStrictEqual([]);
+    });
 
-		test('does not add selected series if it already exists', () => {
-			const hasSignalByNameSpy = jest.spyOn(signalSpecBuilder, 'hasSignalByName');
-			expect(
-				addSignals(
-					[
-						{
-							name: 'line0_selectedSeries',
-							value: null,
-						},
-					],
-					defaultLineOptions
-				)
-			).toStrictEqual([
-				{
-					name: 'line0_selectedSeries',
-					value: null,
-				},
-			]);
+    test('does not add selected series if it already exists', () => {
+      const hasSignalByNameSpy = jest.spyOn(signalSpecBuilder, 'hasSignalByName');
+      expect(
+        addSignals(
+          [
+            {
+              name: 'line0_selectedSeries',
+              value: null,
+            },
+          ],
+          defaultLineOptions
+        )
+      ).toStrictEqual([
+        {
+          name: 'line0_selectedSeries',
+          value: null,
+        },
+      ]);
 
-			expect(hasSignalByNameSpy).not.toHaveBeenCalled();
-		});
+      expect(hasSignalByNameSpy).not.toHaveBeenCalled();
+    });
 
-		test('hover signals with metric range', () => {
-			const signals = addSignals(defaultSignals, {
-				...defaultLineOptions,
-				metricRanges: [{ metricEnd: 'end', metricStart: 'start', displayOnHover: true }],
-			});
-			expect(signals).toHaveLength(defaultSignals.length);
-			expect(signals[0]).toHaveProperty('name', HIGHLIGHTED_ITEM);
-			expect(signals[0].on).toHaveLength(2);
-			expect(signals[2]).toHaveProperty('name', HIGHLIGHTED_SERIES);
-			expect(signals[2].on).toHaveLength(2);
-		});
+    test('hover signals with metric range', () => {
+      const signals = addSignals(defaultSignals, {
+        ...defaultLineOptions,
+        metricRanges: [{ metricEnd: 'end', metricStart: 'start', displayOnHover: true }],
+      });
+      expect(signals).toHaveLength(defaultSignals.length);
+      expect(signals[0]).toHaveProperty('name', HIGHLIGHTED_ITEM);
+      expect(signals[0].on).toHaveLength(2);
+      expect(signals[2]).toHaveProperty('name', HIGHLIGHTED_SERIES);
+      expect(signals[2].on).toHaveLength(2);
+    });
 
-		test('adds hover signals when displayPointMark is not undefined', () => {
-			expect(addSignals([], { ...defaultLineOptions, staticPoint: 'staticPoint' })).toStrictEqual([]);
-		});
+    test('adds hover signals when displayPointMark is not undefined', () => {
+      expect(addSignals([], { ...defaultLineOptions, staticPoint: 'staticPoint' })).toStrictEqual([]);
+    });
 
-		test('adds hover signals with metric range when displayPointMark is not undefined', () => {
-			const signals = addSignals(defaultSignals, {
-				...defaultLineOptions,
-				staticPoint: 'staticPoint',
-				metricRanges: [{ metricEnd: 'end', metricStart: 'start', displayOnHover: true }],
-			});
-			expect(signals).toHaveLength(defaultSignals.length);
-			expect(signals[0]).toHaveProperty('name', HIGHLIGHTED_ITEM);
-			expect(signals[0].on).toHaveLength(2);
-			expect(signals[2]).toHaveProperty('name', HIGHLIGHTED_SERIES);
-			expect(signals[2].on).toHaveLength(2);
-		});
+    test('adds hover signals with metric range when displayPointMark is not undefined', () => {
+      const signals = addSignals(defaultSignals, {
+        ...defaultLineOptions,
+        staticPoint: 'staticPoint',
+        metricRanges: [{ metricEnd: 'end', metricStart: 'start', displayOnHover: true }],
+      });
+      expect(signals).toHaveLength(defaultSignals.length);
+      expect(signals[0]).toHaveProperty('name', HIGHLIGHTED_ITEM);
+      expect(signals[0].on).toHaveLength(2);
+      expect(signals[2]).toHaveProperty('name', HIGHLIGHTED_SERIES);
+      expect(signals[2].on).toHaveLength(2);
+    });
 
-		test('hover signals with interactionMode item', () => {
-			const signals = addSignals(defaultSignals, {
-				...defaultLineOptions,
-				interactionMode: 'item',
-				chartTooltips: [{}],
-			});
-			expect(signals).toHaveLength(defaultSignals.length);
-			expect(signals[0]).toHaveProperty('name', HIGHLIGHTED_ITEM);
-			expect(signals[0].on).toHaveLength(8);
-			expect(signals[2]).toHaveProperty('name', HIGHLIGHTED_SERIES);
-			expect(signals[2].on).toHaveLength(8);
-		});
-	});
+    test('hover signals with interactionMode item', () => {
+      const signals = addSignals(defaultSignals, {
+        ...defaultLineOptions,
+        interactionMode: 'item',
+        chartTooltips: [{}],
+      });
+      expect(signals).toHaveLength(defaultSignals.length);
+      expect(signals[0]).toHaveProperty('name', HIGHLIGHTED_ITEM);
+      expect(signals[0].on).toHaveLength(8);
+      expect(signals[2]).toHaveProperty('name', HIGHLIGHTED_SERIES);
+      expect(signals[2].on).toHaveLength(8);
+    });
+  });
 });

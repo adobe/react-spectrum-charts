@@ -17,53 +17,53 @@ import { isInteractive } from '../marks/markUtils';
 import { BarSpecOptions } from '../types';
 import { getAnnotationMarks } from './barAnnotationUtils';
 import {
-	getBarEnterEncodings,
-	getBarUpdateEncodings,
-	getBaseBarEnterEncodings,
-	getDodgedDimensionEncodings,
-	getDodgedGroupMark,
+  getBarEnterEncodings,
+  getBarUpdateEncodings,
+  getBaseBarEnterEncodings,
+  getDodgedDimensionEncodings,
+  getDodgedGroupMark,
 } from './barUtils';
 
 export const getDodgedMark = (options: BarSpecOptions): GroupMark => {
-	const { name } = options;
+  const { name } = options;
 
-	return {
-		...getDodgedGroupMark(options),
-		marks: [
-			// background bars
-			{
-				name: `${name}_background`,
-				from: { data: `${name}_facet` },
-				type: 'rect',
-				interactive: false,
-				encode: {
-					enter: {
-						...getBaseBarEnterEncodings(options),
-						fill: { signal: BACKGROUND_COLOR },
-					},
-					update: {
-						...getDodgedDimensionEncodings(options),
-					},
-				},
-			},
-			// bars
-			{
-				name,
-				from: { data: `${name}_facet` },
-				type: 'rect',
-				interactive: isInteractive(options),
-				encode: {
-					enter: {
-						...getBaseBarEnterEncodings(options),
-						...getBarEnterEncodings(options),
-					},
-					update: {
-						...getDodgedDimensionEncodings(options),
-						...getBarUpdateEncodings(options),
-					},
-				},
-			},
-			...getAnnotationMarks(options, `${name}_facet`, `${name}_position`, `${name}_dodgeGroup`),
-		],
-	};
+  return {
+    ...getDodgedGroupMark(options),
+    marks: [
+      // background bars
+      {
+        name: `${name}_background`,
+        from: { data: `${name}_facet` },
+        type: 'rect',
+        interactive: false,
+        encode: {
+          enter: {
+            ...getBaseBarEnterEncodings(options),
+            fill: { signal: BACKGROUND_COLOR },
+          },
+          update: {
+            ...getDodgedDimensionEncodings(options),
+          },
+        },
+      },
+      // bars
+      {
+        name,
+        from: { data: `${name}_facet` },
+        type: 'rect',
+        interactive: isInteractive(options),
+        encode: {
+          enter: {
+            ...getBaseBarEnterEncodings(options),
+            ...getBarEnterEncodings(options),
+          },
+          update: {
+            ...getDodgedDimensionEncodings(options),
+            ...getBarUpdateEncodings(options),
+          },
+        },
+      },
+      ...getAnnotationMarks(options, `${name}_facet`, `${name}_position`, `${name}_dodgeGroup`),
+    ],
+  };
 };

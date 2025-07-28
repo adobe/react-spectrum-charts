@@ -17,12 +17,12 @@ import { EmptyState } from '../../../components';
 import { bindWithProps } from '../../../test-utils';
 
 export default {
-	title: 'RSC/EmptyState',
-	component: EmptyState,
+  title: 'RSC/EmptyState',
+  component: EmptyState,
 };
 
 const EmptyStateStory: StoryFn<typeof EmptyState> = (args): ReactElement => {
-	return <EmptyState {...args}></EmptyState>;
+  return <EmptyState {...args}></EmptyState>;
 };
 
 const Basic = bindWithProps(EmptyStateStory);

@@ -13,13 +13,13 @@ import { BarOptions } from './barSpec.types';
 import { LineOptions } from './lineSpec.types';
 
 export interface ComboOptions {
-	markType: 'combo';
+  markType: 'combo';
 
-	/** Data field that the metrics are trended against (x-axis for horizontal orientation) */
-	dimension?: string;
-	/** Sets the name of the component. */
-	name?: string;
+  /** Data field that the metrics are trended against (x-axis for horizontal orientation) */
+  dimension?: string;
+  /** Sets the name of the component. */
+  name?: string;
 
-	// children
-	marks?: (BarOptions | LineOptions)[];
+  // children
+  marks?: (BarOptions | LineOptions)[];
 }

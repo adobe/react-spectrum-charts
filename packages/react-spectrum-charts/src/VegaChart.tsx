@@ -16,126 +16,120 @@ import embed from 'vega-embed';
 import { Options as TooltipOptions } from 'vega-tooltip';
 
 import { TABLE } from '@spectrum-charts/constants';
-import { ChartData } from '@spectrum-charts/vega-spec-builder';
+import { getLocale } from '@spectrum-charts/locales';
+import { getVegaEmbedOptions } from '@spectrum-charts/vega-spec-builder';
 
-import { expressionFunctions, formatLocaleCurrency, formatTimeDurationLabels } from './expressionFunctions';
 import { useDebugSpec } from './hooks/useDebugSpec';
 import { extractValues, isVegaData } from './hooks/useSpec';
-import { ChartProps } from './types';
-import { getLocale } from './utils/locale';
+import { ChartData, ChartProps } from './types';
 
 export interface VegaChartProps {
-	config: Config;
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	data: ChartData[];
-	debug: boolean;
-	height: number;
-	locale: ChartProps['locale'];
-	onNewView: (view: View) => void;
-	padding: Padding;
-	renderer: Renderers;
-	signals?: Record<string, unknown>;
-	spec: Spec;
-	tooltip: TooltipOptions;
-	width: number;
+  config: Config;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  data: ChartData[];
+  debug: boolean;
+  height: number;
+  locale: ChartProps['locale'];
+  onNewView: (view: View) => void;
+  padding: Padding;
+  renderer: Renderers;
+  signals?: Record<string, unknown>;
+  spec: Spec;
+  tooltip: TooltipOptions;
+  width: number;
 }
 
 export const VegaChart: FC<VegaChartProps> = ({
-	config,
-	data,
-	debug,
-	height,
-	locale,
-	onNewView,
-	padding,
-	renderer = 'svg',
-	signals,
-	spec,
-	tooltip,
-	width,
+  config,
+  data,
+  debug,
+  height,
+  locale,
+  onNewView,
+  padding,
+  renderer = 'svg',
+  signals,
+  spec,
+  tooltip,
+  width,
 }) => {
-	const containerRef = useRef<HTMLDivElement>(null);
-	const chartView = useRef<View>();
+  const containerRef = useRef<HTMLDivElement>(null);
+  const chartView = useRef<View>();
 
-	const { number: numberLocale, time: timeLocale } = useMemo(() => getLocale(locale), [locale]);
+  const { number: numberLocale, time: timeLocale } = useMemo(() => getLocale(locale), [locale]);
 
-	// Need to de a deep copy of the data because vega tries to transform the data
-	const chartData = useMemo(() => {
-		const clonedData = JSON.parse(JSON.stringify(data));
+  // Need to de a deep copy of the data because vega tries to transform the data
+  const chartData = useMemo(() => {
+    const clonedData = JSON.parse(JSON.stringify(data));
 
-		// We received a full Vega data array with potentially multiple dataset objects
-		if (isVegaData(clonedData)) {
-			return extractValues(clonedData);
-		}
+    // We received a full Vega data array with potentially multiple dataset objects
+    if (isVegaData(clonedData)) {
+      return extractValues(clonedData);
+    }
 
-		// We received a simple array of data and we'll set a default key of 'table' to reference internally
-		return { [TABLE]: clonedData };
-	}, [data]);
+    // We received a simple array of data and we'll set a default key of 'table' to reference internally
+    return { [TABLE]: clonedData };
+  }, [data]);
 
-	useDebugSpec(debug, spec, chartData, width, height, config);
+  useDebugSpec(debug, spec, chartData, width, height, config);
 
-	useEffect(() => {
-		if (width && height && containerRef.current) {
-			const specCopy = JSON.parse(JSON.stringify(spec)) as Spec;
-			const tableData = specCopy.data?.find((d) => d.name === TABLE);
-			if (tableData && 'values' in tableData) {
-				tableData.values = chartData.table;
-			}
-			if (signals) {
-				specCopy.signals = specCopy.signals?.map((signal) => {
-					if (signal.name in signals && signals[signal.name] !== undefined && 'value' in signal) {
-						signal.value = signals[signal.name];
-					}
-					return signal;
-				});
-			}
-			embed(containerRef.current, specCopy, {
-				actions: false,
-				ast: true,
-				config,
-				expressionFunctions: {
-					...expressionFunctions,
-					formatTimeDurationLabels: formatTimeDurationLabels(numberLocale),
-					formatLocaleCurrency: formatLocaleCurrency(numberLocale),
-				},
-				formatLocale: numberLocale as unknown as Record<string, unknown>, // these are poorly typed by vega-embed
-				height,
-				padding,
-				renderer,
-				timeFormatLocale: timeLocale as unknown as Record<string, unknown>, // these are poorly typed by vega-embed
-				tooltip,
-				width,
-			}).then(({ view }) => {
-				chartView.current = view;
-				onNewView(view);
-				view.resize();
-				view.runAsync();
-				// One additional render to settle all resize calculations
-				setTimeout(() => view.runAsync(), 0);
-			});
-		}
-		return () => {
-			// destroy the chart on unmount
-			if (chartView.current) {
-				chartView.current.finalize();
-				chartView.current = undefined;
-			}
-		};
-	}, [
-		chartData.table,
-		config,
-		data,
-		height,
-		numberLocale,
-		timeLocale,
-		onNewView,
-		padding,
-		renderer,
-		signals,
-		spec,
-		tooltip,
-		width,
-	]);
+  useEffect(() => {
+    if (width && height && containerRef.current) {
+      const specCopy = JSON.parse(JSON.stringify(spec)) as Spec;
+      const tableData = specCopy.data?.find((d) => d.name === TABLE);
+      if (tableData && 'values' in tableData) {
+        tableData.values = chartData.table;
+      }
+      if (signals) {
+        specCopy.signals = specCopy.signals?.map((signal) => {
+          if (signal.name in signals && signals[signal.name] !== undefined && 'value' in signal) {
+            signal.value = signals[signal.name];
+          }
+          return signal;
+        });
+      }
+      embed(containerRef.current, specCopy, {
+        ...getVegaEmbedOptions({
+          locale,
+          height,
+          width,
+          padding,
+          renderer,
+          config,
+        }),
+        tooltip,
+      }).then(({ view }) => {
+        chartView.current = view;
+        onNewView(view);
+        view.resize();
+        view.runAsync();
+        // One additional render to settle all resize calculations
+        setTimeout(() => view.runAsync(), 0);
+      });
+    }
+    return () => {
+      // destroy the chart on unmount
+      if (chartView.current) {
+        chartView.current.finalize();
+        chartView.current = undefined;
+      }
+    };
+  }, [
+    chartData.table,
+    config,
+    data,
+    height,
+    numberLocale,
+    timeLocale,
+    onNewView,
+    padding,
+    renderer,
+    signals,
+    spec,
+    tooltip,
+    width,
+    locale,
+  ]);
 
-	return <div ref={containerRef} className="rsc"></div>;
+  return <div ref={containerRef} className="rsc"></div>;
 };

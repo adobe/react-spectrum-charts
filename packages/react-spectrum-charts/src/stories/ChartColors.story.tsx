@@ -15,32 +15,32 @@ import { ChartBarStory } from './ChartBarStory';
 import { data } from './data/data';
 
 export default {
-	title: 'RSC/Chart/Colors',
-	component: Chart,
+  title: 'RSC/Chart/Colors',
+  component: Chart,
 };
 
 const SpectrumColorNames = bindWithProps(ChartBarStory);
 SpectrumColorNames.args = {
-	colors: ['gray-800', 'gray-700', 'gray-600', 'gray-500'],
-	data,
+  colors: ['gray-800', 'gray-700', 'gray-600', 'gray-500'],
+  data,
 };
 
 const SpectrumDivergentColorScheme = bindWithProps(ChartBarStory);
 SpectrumDivergentColorScheme.args = {
-	colors: 'divergentOrangeYellowSeafoam5',
-	data,
+  colors: 'divergentOrangeYellowSeafoam5',
+  data,
 };
 
 const SpectrumSequentialColorScheme = bindWithProps(ChartBarStory);
 SpectrumSequentialColorScheme.args = {
-	colors: 'sequentialCerulean5',
-	data,
+  colors: 'sequentialCerulean5',
+  data,
 };
 
 const CssColors = bindWithProps(ChartBarStory);
 CssColors.args = {
-	colors: ['purple', 'rgb(38, 142, 108)', '#0d66d0', 'hsl(32deg, 86%, 46%)'],
-	data,
+  colors: ['purple', 'rgb(38, 142, 108)', '#0d66d0', 'hsl(32deg, 86%, 46%)'],
+  data,
 };
 
 export { SpectrumColorNames, SpectrumDivergentColorScheme, SpectrumSequentialColorScheme, CssColors };

@@ -16,70 +16,70 @@ import { TRENDLINE_VALUE } from '@spectrum-charts/constants';
 import { getLineHoverMarks, getLineOpacity } from '../line/lineMarkUtils';
 import { LineMarkOptions } from '../line/lineUtils';
 import {
-	getColorProductionRule,
-	getLineWidthProductionRule,
-	getOpacityProductionRule,
-	getStrokeDashProductionRule,
-	hasTooltip,
+  getColorProductionRule,
+  getLineWidthProductionRule,
+  getOpacityProductionRule,
+  getStrokeDashProductionRule,
+  hasTooltip,
 } from '../marks/markUtils';
 import { getScaleName } from '../scale/scaleSpecBuilder';
 import { getFacetsFromOptions } from '../specUtils';
 import { getTrendlineAnnotationMarks } from '../trendlineAnnotation';
 import { Orientation, ScaleType, TrendlineMethod, TrendlineSpecOptions } from '../types';
 import {
-	TrendlineParentOptions,
-	getTrendlineColorFromMarkOptions,
-	getTrendlineLineTypeFromMarkOptions,
-	getTrendlines,
-	isAggregateMethod,
-	isRegressionMethod,
+  TrendlineParentOptions,
+  getTrendlineColorFromMarkOptions,
+  getTrendlineLineTypeFromMarkOptions,
+  getTrendlines,
+  isAggregateMethod,
+  isRegressionMethod,
 } from './trendlineUtils';
 
 export const getTrendlineMarks = (markOptions: TrendlineParentOptions): (GroupMark | RuleMark)[] => {
-	const { color, lineType } = markOptions;
-	const { facets } = getFacetsFromOptions({ color, lineType });
+  const { color, lineType } = markOptions;
+  const { facets } = getFacetsFromOptions({ color, lineType });
 
-	const marks: (GroupMark | RuleMark)[] = [];
-	const trendlines = getTrendlines(markOptions);
-	for (const trendlineOptions of trendlines) {
-		const { displayOnHover, method, name } = trendlineOptions;
-		if (isAggregateMethod(method)) {
-			marks.push(getTrendlineRuleMark(markOptions, trendlineOptions));
-		} else {
-			const data = getDataSourceName(name, method, displayOnHover);
-			marks.push({
-				name: `${name}_group`,
-				type: 'group',
-				clip: true,
-				from: {
-					facet: {
-						name: `${name}_facet`,
-						data,
-						groupby: facets,
-					},
-				},
-				marks: [getTrendlineLineMark(markOptions, trendlineOptions)],
-			});
-		}
-		marks.push(...getTrendlineAnnotationMarks(trendlineOptions, markOptions.name));
-	}
+  const marks: (GroupMark | RuleMark)[] = [];
+  const trendlines = getTrendlines(markOptions);
+  for (const trendlineOptions of trendlines) {
+    const { displayOnHover, method, name } = trendlineOptions;
+    if (isAggregateMethod(method)) {
+      marks.push(getTrendlineRuleMark(markOptions, trendlineOptions));
+    } else {
+      const data = getDataSourceName(name, method, displayOnHover);
+      marks.push({
+        name: `${name}_group`,
+        type: 'group',
+        clip: true,
+        from: {
+          facet: {
+            name: `${name}_facet`,
+            data,
+            groupby: facets,
+          },
+        },
+        marks: [getTrendlineLineMark(markOptions, trendlineOptions)],
+      });
+    }
+    marks.push(...getTrendlineAnnotationMarks(trendlineOptions, markOptions.name));
+  }
 
-	if (trendlines.some((trendline) => hasTooltip(trendline))) {
-		marks.push(
-			getTrendlineHoverMarks(
-				markOptions,
-				trendlines.some((trendlineOptions) => trendlineOptions.highlightRawPoint)
-			)
-		);
-	}
+  if (trendlines.some((trendline) => hasTooltip(trendline))) {
+    marks.push(
+      getTrendlineHoverMarks(
+        markOptions,
+        trendlines.some((trendlineOptions) => trendlineOptions.highlightRawPoint)
+      )
+    );
+  }
 
-	return marks;
+  return marks;
 };
 
 const getDataSourceName = (trendlineName: string, method: TrendlineMethod, displayOnHover: boolean): string => {
-	if (displayOnHover) return `${trendlineName}_highlightedData`;
-	if (isRegressionMethod(method)) return `${trendlineName}_highResolutionData`;
-	return `${trendlineName}_data`;
+  if (displayOnHover) return `${trendlineName}_highlightedData`;
+  if (isRegressionMethod(method)) return `${trendlineName}_highResolutionData`;
+  return `${trendlineName}_data`;
 };
 
 /**
@@ -89,46 +89,46 @@ const getDataSourceName = (trendlineName: string, method: TrendlineMethod, displ
  * @returns rule mark
  */
 export const getTrendlineRuleMark = (
-	markOptions: TrendlineParentOptions,
-	trendlineOptions: TrendlineSpecOptions
+  markOptions: TrendlineParentOptions,
+  trendlineOptions: TrendlineSpecOptions
 ): RuleMark => {
-	const { colorScheme } = markOptions;
-	const {
-		dimensionExtent,
-		dimensionScaleType,
-		displayOnHover,
-		lineType,
-		lineWidth,
-		name,
-		orientation,
-		trendlineColor,
-		trendlineDimension,
-	} = trendlineOptions;
+  const { colorScheme } = markOptions;
+  const {
+    dimensionExtent,
+    dimensionScaleType,
+    displayOnHover,
+    lineType,
+    lineWidth,
+    name,
+    orientation,
+    trendlineColor,
+    trendlineDimension,
+  } = trendlineOptions;
 
-	const data = displayOnHover ? `${name}_highlightedData` : `${name}_highResolutionData`;
+  const data = displayOnHover ? `${name}_highlightedData` : `${name}_highResolutionData`;
 
-	return {
-		name,
-		type: 'rule',
-		clip: true,
-		from: {
-			data,
-		},
-		interactive: false,
-		encode: {
-			enter: {
-				...getRuleYEncodings(dimensionExtent, trendlineDimension, orientation),
-				stroke: getColorProductionRule(trendlineColor, colorScheme),
-				strokeDash: getStrokeDashProductionRule({ value: lineType }),
-				strokeOpacity: getOpacityProductionRule({ value: trendlineOptions.opacity }),
-				strokeWidth: getLineWidthProductionRule({ value: lineWidth }),
-			},
-			update: {
-				...getRuleXEncodings(dimensionExtent, trendlineDimension, dimensionScaleType, orientation),
-				opacity: getLineOpacity(getLineMarkOptions(markOptions, trendlineOptions)),
-			},
-		},
-	};
+  return {
+    name,
+    type: 'rule',
+    clip: true,
+    from: {
+      data,
+    },
+    interactive: false,
+    encode: {
+      enter: {
+        ...getRuleYEncodings(dimensionExtent, trendlineDimension, orientation),
+        stroke: getColorProductionRule(trendlineColor, colorScheme),
+        strokeDash: getStrokeDashProductionRule({ value: lineType }),
+        strokeOpacity: getOpacityProductionRule({ value: trendlineOptions.opacity }),
+        strokeWidth: getLineWidthProductionRule({ value: lineWidth }),
+      },
+      update: {
+        ...getRuleXEncodings(dimensionExtent, trendlineDimension, dimensionScaleType, orientation),
+        opacity: getLineOpacity(getLineMarkOptions(markOptions, trendlineOptions)),
+      },
+    },
+  };
 };
 
 /**
@@ -139,17 +139,17 @@ export const getTrendlineRuleMark = (
  * @returns x production rules
  */
 export const getRuleYEncodings = (
-	dimensionExtent: TrendlineSpecOptions['dimensionExtent'],
-	dimension: string,
-	orientation: Orientation
+  dimensionExtent: TrendlineSpecOptions['dimensionExtent'],
+  dimension: string,
+  orientation: Orientation
 ): EncodeEntry => {
-	if (orientation === 'horizontal') {
-		return { y: { scale: 'yLinear', field: TRENDLINE_VALUE } };
-	}
-	return {
-		y: getStartDimensionExtentProductionRule(dimensionExtent[0], dimension, 'yLinear', 'y'),
-		y2: getEndDimensionExtentProductionRule(dimensionExtent[1], dimension, 'yLinear', 'y'),
-	};
+  if (orientation === 'horizontal') {
+    return { y: { scale: 'yLinear', field: TRENDLINE_VALUE } };
+  }
+  return {
+    y: getStartDimensionExtentProductionRule(dimensionExtent[0], dimension, 'yLinear', 'y'),
+    y2: getEndDimensionExtentProductionRule(dimensionExtent[1], dimension, 'yLinear', 'y'),
+  };
 };
 
 /**
@@ -161,19 +161,19 @@ export const getRuleYEncodings = (
  * @returns x production rules
  */
 export const getRuleXEncodings = (
-	dimensionExtent: TrendlineSpecOptions['dimensionExtent'],
-	dimension: string,
-	scaleType: ScaleType,
-	orientation: Orientation
+  dimensionExtent: TrendlineSpecOptions['dimensionExtent'],
+  dimension: string,
+  scaleType: ScaleType,
+  orientation: Orientation
 ): EncodeEntry => {
-	const scale = getScaleName('x', scaleType);
-	if (orientation === 'vertical') {
-		return { x: { scale, field: TRENDLINE_VALUE } };
-	}
-	return {
-		x: getStartDimensionExtentProductionRule(dimensionExtent[0], dimension, scale, 'x'),
-		x2: getEndDimensionExtentProductionRule(dimensionExtent[1], dimension, scale, 'x'),
-	};
+  const scale = getScaleName('x', scaleType);
+  if (orientation === 'vertical') {
+    return { x: { scale, field: TRENDLINE_VALUE } };
+  }
+  return {
+    x: getStartDimensionExtentProductionRule(dimensionExtent[0], dimension, scale, 'x'),
+    x2: getEndDimensionExtentProductionRule(dimensionExtent[1], dimension, scale, 'x'),
+  };
 };
 
 /**
@@ -185,20 +185,20 @@ export const getRuleXEncodings = (
  * @returns
  */
 export const getStartDimensionExtentProductionRule = (
-	startDimensionExtent: number | 'domain' | null,
-	dimension: string,
-	scale: string,
-	axis: 'x' | 'y'
+  startDimensionExtent: number | 'domain' | null,
+  dimension: string,
+  scale: string,
+  axis: 'x' | 'y'
 ): NumericValueRef => {
-	switch (startDimensionExtent) {
-		case null:
-			return { scale, field: `${dimension}Min` };
-		case 'domain':
-			if (axis === 'x') return { value: 0 };
-			return { signal: 'height' };
-		default:
-			return { scale, value: startDimensionExtent };
-	}
+  switch (startDimensionExtent) {
+    case null:
+      return { scale, field: `${dimension}Min` };
+    case 'domain':
+      if (axis === 'x') return { value: 0 };
+      return { signal: 'height' };
+    default:
+      return { scale, value: startDimensionExtent };
+  }
 };
 
 /**
@@ -210,20 +210,20 @@ export const getStartDimensionExtentProductionRule = (
  * @returns
  */
 export const getEndDimensionExtentProductionRule = (
-	endDimensionExtent: number | 'domain' | null,
-	dimension: string,
-	scale: string,
-	axis: 'x' | 'y'
+  endDimensionExtent: number | 'domain' | null,
+  dimension: string,
+  scale: string,
+  axis: 'x' | 'y'
 ): NumericValueRef => {
-	switch (endDimensionExtent) {
-		case null:
-			return { scale, field: `${dimension}Max` };
-		case 'domain':
-			if (axis === 'x') return { signal: 'width' };
-			return { value: 0 };
-		default:
-			return { scale, value: endDimensionExtent };
-	}
+  switch (endDimensionExtent) {
+    case null:
+      return { scale, field: `${dimension}Max` };
+    case 'domain':
+      if (axis === 'x') return { signal: 'width' };
+      return { value: 0 };
+    default:
+      return { scale, value: endDimensionExtent };
+  }
 };
 
 /**
@@ -233,40 +233,40 @@ export const getEndDimensionExtentProductionRule = (
  * @returns
  */
 export const getTrendlineLineMark = (
-	markOptions: TrendlineParentOptions,
-	trendlineOptions: TrendlineSpecOptions
+  markOptions: TrendlineParentOptions,
+  trendlineOptions: TrendlineSpecOptions
 ): LineMark => {
-	const { colorScheme } = markOptions;
-	const {
-		dimensionScaleType,
-		isDimensionNormalized,
-		lineType,
-		lineWidth,
-		name,
-		orientation,
-		trendlineColor,
-		trendlineDimension,
-	} = trendlineOptions;
+  const { colorScheme } = markOptions;
+  const {
+    dimensionScaleType,
+    isDimensionNormalized,
+    lineType,
+    lineWidth,
+    name,
+    orientation,
+    trendlineColor,
+    trendlineDimension,
+  } = trendlineOptions;
 
-	return {
-		name,
-		type: 'line',
-		from: { data: `${name}_facet` },
-		interactive: false,
-		encode: {
-			enter: {
-				y: getLineYProductionRule(trendlineDimension, orientation),
-				stroke: getColorProductionRule(trendlineColor, colorScheme),
-				strokeDash: getStrokeDashProductionRule({ value: lineType }),
-				strokeOpacity: getOpacityProductionRule({ value: trendlineOptions.opacity }),
-				strokeWidth: getLineWidthProductionRule({ value: lineWidth }),
-			},
-			update: {
-				x: getLineXProductionRule(trendlineDimension, dimensionScaleType, orientation, isDimensionNormalized),
-				opacity: getLineOpacity(getLineMarkOptions(markOptions, trendlineOptions)),
-			},
-		},
-	};
+  return {
+    name,
+    type: 'line',
+    from: { data: `${name}_facet` },
+    interactive: false,
+    encode: {
+      enter: {
+        y: getLineYProductionRule(trendlineDimension, orientation),
+        stroke: getColorProductionRule(trendlineColor, colorScheme),
+        strokeDash: getStrokeDashProductionRule({ value: lineType }),
+        strokeOpacity: getOpacityProductionRule({ value: trendlineOptions.opacity }),
+        strokeWidth: getLineWidthProductionRule({ value: lineWidth }),
+      },
+      update: {
+        x: getLineXProductionRule(trendlineDimension, dimensionScaleType, orientation, isDimensionNormalized),
+        opacity: getLineOpacity(getLineMarkOptions(markOptions, trendlineOptions)),
+      },
+    },
+  };
 };
 
 /**
@@ -276,11 +276,11 @@ export const getTrendlineLineMark = (
  * @returns
  */
 export const getLineYProductionRule = (trendlineDimension: string, orientation: Orientation): NumericValueRef => {
-	const scale = 'yLinear';
-	if (orientation === 'horizontal') {
-		return { scale, field: TRENDLINE_VALUE };
-	}
-	return { scale, field: trendlineDimension };
+  const scale = 'yLinear';
+  if (orientation === 'horizontal') {
+    return { scale, field: TRENDLINE_VALUE };
+  }
+  return { scale, field: trendlineDimension };
 };
 
 /**
@@ -292,62 +292,58 @@ export const getLineYProductionRule = (trendlineDimension: string, orientation: 
  * @returns
  */
 export const getLineXProductionRule = (
-	trendlineDimension: string,
-	scaleType: ScaleType,
-	orientation: Orientation,
-	isDimensionNormalized: boolean
+  trendlineDimension: string,
+  scaleType: ScaleType,
+  orientation: Orientation,
+  isDimensionNormalized: boolean
 ): NumericValueRef => {
-	const scale = getScaleName('x', scaleType);
-	if (orientation === 'vertical') {
-		return { scale, field: TRENDLINE_VALUE };
-	}
-	return isDimensionNormalized
-		? { scale: 'xTrendline', field: trendlineDimension }
-		: { scale, field: trendlineDimension };
+  const scale = getScaleName('x', scaleType);
+  if (orientation === 'vertical') {
+    return { scale, field: TRENDLINE_VALUE };
+  }
+  return isDimensionNormalized
+    ? { scale: 'xTrendline', field: trendlineDimension }
+    : { scale, field: trendlineDimension };
 };
 
 const getTrendlineHoverMarks = (markOptions: TrendlineParentOptions, highlightRawPoint: boolean): GroupMark => {
-	const { metric, name } = markOptions;
-	const trendlines = getTrendlines(markOptions);
-	const trendlineHoverOptions = getLineMarkOptions(markOptions, trendlines[0], {
-		name: `${name}Trendline`,
-		chartTooltips: trendlines.map((trendline) => trendline.chartTooltips).flat(),
-		metric: TRENDLINE_VALUE,
-	});
+  const { metric, name } = markOptions;
+  const trendlines = getTrendlines(markOptions);
+  const trendlineHoverOptions = getLineMarkOptions(markOptions, trendlines[0], {
+    name: `${name}Trendline`,
+    chartTooltips: trendlines.map((trendline) => trendline.chartTooltips).flat(),
+    metric: TRENDLINE_VALUE,
+  });
 
-	return {
-		name: `${name}Trendline_hoverGroup`,
-		type: 'group',
-		clip: true,
-		marks: getLineHoverMarks(
-			trendlineHoverOptions,
-			`${name}_allTrendlineData`,
-			highlightRawPoint ? metric : undefined
-		),
-	};
+  return {
+    name: `${name}Trendline_hoverGroup`,
+    type: 'group',
+    clip: true,
+    marks: getLineHoverMarks(trendlineHoverOptions, `${name}_allTrendlineData`, highlightRawPoint ? metric : undefined),
+  };
 };
 
 const getLineMarkOptions = (
-	markOptions: TrendlineParentOptions,
-	{ dimensionScaleType, displayOnHover, lineWidth, metric, name, opacity }: TrendlineSpecOptions,
-	override?: Partial<LineMarkOptions>
+  markOptions: TrendlineParentOptions,
+  { dimensionScaleType, displayOnHover, lineWidth, metric, name, opacity }: TrendlineSpecOptions,
+  override?: Partial<LineMarkOptions>
 ): LineMarkOptions => {
-	const { color, lineType } = markOptions;
-	const popoverMarkName = 'popoverMarkName' in markOptions ? markOptions.popoverMarkName : undefined;
-	const staticPoint = 'staticPoint' in markOptions ? markOptions.staticPoint : undefined;
-	return {
-		...markOptions,
-		color: getTrendlineColorFromMarkOptions(color),
-		displayOnHover,
-		lineType: getTrendlineLineTypeFromMarkOptions(lineType),
-		lineWidth: { value: lineWidth },
-		metric,
-		name,
-		opacity: { value: opacity },
-		popoverMarkName,
-		scaleType: dimensionScaleType,
-		staticPoint,
+  const { color, lineType } = markOptions;
+  const popoverMarkName = 'popoverMarkName' in markOptions ? markOptions.popoverMarkName : undefined;
+  const staticPoint = 'staticPoint' in markOptions ? markOptions.staticPoint : undefined;
+  return {
+    ...markOptions,
+    color: getTrendlineColorFromMarkOptions(color),
+    displayOnHover,
+    lineType: getTrendlineLineTypeFromMarkOptions(lineType),
+    lineWidth: { value: lineWidth },
+    metric,
+    name,
+    opacity: { value: opacity },
+    popoverMarkName,
+    scaleType: dimensionScaleType,
+    staticPoint,
 
-		...override,
-	};
+    ...override,
+  };
 };

@@ -18,17 +18,17 @@ import { DEFAULT_INTERACTION_MODE, DEFAULT_METRIC, DEFAULT_TIME_DIMENSION } from
 import { LineProps } from '../../types';
 
 const Line: FC<LineProps> = ({
-	name = 'line0',
-	dimension = DEFAULT_TIME_DIMENSION,
-	metric = DEFAULT_METRIC,
-	metricAxis,
-	color = { value: 'categorical-100' },
-	scaleType = 'time',
-	lineType = { value: 'solid' },
-	padding,
-	interactionMode = DEFAULT_INTERACTION_MODE,
+  name = 'line0',
+  dimension = DEFAULT_TIME_DIMENSION,
+  metric = DEFAULT_METRIC,
+  metricAxis,
+  color = { value: 'categorical-100' },
+  scaleType = 'time',
+  lineType = { value: 'solid' },
+  padding,
+  interactionMode = DEFAULT_INTERACTION_MODE,
 }: LineProps) => {
-	return null;
+  return null;
 };
 
 // displayName is used to validate the component type in the spec builder

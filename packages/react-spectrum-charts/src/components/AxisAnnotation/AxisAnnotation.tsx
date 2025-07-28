@@ -18,11 +18,11 @@ import { DEFAULT_AXIS_ANNOTATION_COLOR, DEFAULT_AXIS_ANNOTATION_OFFSET } from '@
 import { AxisAnnotationProps } from '../../types';
 
 const AxisAnnotation: FC<AxisAnnotationProps> = ({
-	dataKey = 'annotations',
-	color = DEFAULT_AXIS_ANNOTATION_COLOR,
-	offset = DEFAULT_AXIS_ANNOTATION_OFFSET,
+  dataKey = 'annotations',
+  color = DEFAULT_AXIS_ANNOTATION_COLOR,
+  offset = DEFAULT_AXIS_ANNOTATION_OFFSET,
 }) => {
-	return null;
+  return null;
 };
 
 // displayName is used to validate the component type in the spec builder

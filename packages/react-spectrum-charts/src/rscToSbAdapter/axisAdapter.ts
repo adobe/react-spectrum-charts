@@ -15,24 +15,24 @@ import { AxisAnnotationProps, AxisProps } from '../types';
 import { childrenToOptions } from './childrenAdapter';
 
 export const getAxisOptions = ({ children, ...axisProps }: AxisProps): AxisOptions => {
-	const { axisAnnotations, referenceLines } = childrenToOptions(children);
+  const { axisAnnotations, referenceLines } = childrenToOptions(children);
 
-	return {
-		...axisProps,
-		axisAnnotations,
-		referenceLines,
-	};
+  return {
+    ...axisProps,
+    axisAnnotations,
+    referenceLines,
+  };
 };
 
 export const getAxisAnnotationOptions = ({
-	children,
-	...axisAnnotationProps
+  children,
+  ...axisAnnotationProps
 }: AxisAnnotationProps): AxisAnnotationOptions => {
-	const { chartPopovers, chartTooltips } = childrenToOptions(children);
+  const { chartPopovers, chartTooltips } = childrenToOptions(children);
 
-	return {
-		...axisAnnotationProps,
-		chartPopovers,
-		chartTooltips,
-	};
+  return {
+    ...axisAnnotationProps,
+    chartPopovers,
+    chartTooltips,
+  };
 };

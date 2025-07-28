@@ -9,15 +9,15 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { BaseLegendLayout, Config, mergeConfig } from 'vega';
+import { BaseLegendLayout, Config } from 'vega';
 
 import {
-	DEFAULT_BACKGROUND_COLOR,
-	DEFAULT_FONT_COLOR,
-	DEFAULT_FONT_SIZE,
-	DEFAULT_SYMBOL_SIZE,
-	DEFAULT_SYMBOL_STROKE_WIDTH,
-	ROUNDED_SQUARE_PATH,
+  DEFAULT_BACKGROUND_COLOR,
+  DEFAULT_FONT_COLOR,
+  DEFAULT_FONT_SIZE,
+  DEFAULT_SYMBOL_SIZE,
+  DEFAULT_SYMBOL_STROKE_WIDTH,
+  ROUNDED_SQUARE_PATH,
 } from '@spectrum-charts/constants';
 
 import { categorical16 } from './categoricalColorPalette';
@@ -26,46 +26,36 @@ import { sequentialViridis16 } from './sequentialColorPalette';
 import { spectrumColors } from './spectrumColors';
 import { getColorValue } from './utils';
 
-type ColorScheme = 'light' | 'dark';
-
 export const ADOBE_CLEAN_FONT =
-	"adobe-clean, 'Source Sans Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Ubuntu, 'Trebuchet MS', 'Lucida Grande', sans-serif";
+  "adobe-clean, 'Source Sans Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Ubuntu, 'Trebuchet MS', 'Lucida Grande', sans-serif";
 
-export function getChartConfig(config: Config | undefined, colorScheme: ColorScheme): Config {
-	const defaultConfig = getSpectrumVegaConfig(colorScheme);
-	if (config) {
-		return mergeConfig(defaultConfig, config);
-	}
-	return defaultConfig;
-}
+export function getSpectrumVegaConfig(colorScheme: 'light' | 'dark'): Config {
+  const FONT_COLOR = getColorValue(DEFAULT_FONT_COLOR, colorScheme);
+  const {
+    'blue-400': blue400,
+    'gray-200': gray200,
+    'gray-300': gray300,
+    'gray-700': gray700,
+    'gray-900': gray900,
+  } = spectrumColors[colorScheme];
+  const horizontalLegendLayout: BaseLegendLayout = {
+    anchor: 'middle',
+    direction: 'horizontal',
+    center: true,
+    offset: 24,
+    bounds: 'full',
+    margin: 48,
+  };
+  const verticalLegendLayout: BaseLegendLayout = {
+    anchor: 'middle',
+    direction: 'vertical',
+    center: false,
+    offset: 24,
+    bounds: 'full',
+    margin: 24,
+  };
 
-function getSpectrumVegaConfig(colorScheme: ColorScheme): Config {
-	const FONT_COLOR = getColorValue(DEFAULT_FONT_COLOR, colorScheme);
-	const {
-		'blue-400': blue400,
-		'gray-200': gray200,
-		'gray-300': gray300,
-		'gray-700': gray700,
-		'gray-900': gray900,
-	} = spectrumColors[colorScheme];
-	const horizontalLegendLayout: BaseLegendLayout = {
-		anchor: 'middle',
-		direction: 'horizontal',
-		center: true,
-		offset: 24,
-		bounds: 'full',
-		margin: 48,
-	};
-	const verticalLegendLayout: BaseLegendLayout = {
-		anchor: 'middle',
-		direction: 'vertical',
-		center: false,
-		offset: 24,
-		bounds: 'full',
-		margin: 24,
-	};
-
-	const defaultColor = spectrumColors[colorScheme]['categorical-100'];
+  const defaultColor = spectrumColors[colorScheme]['categorical-100'];
 
 	return {
 		axis: {

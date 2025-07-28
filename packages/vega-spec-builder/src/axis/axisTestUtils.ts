@@ -12,61 +12,61 @@
 import { Mark } from 'vega';
 
 import {
-	DEFAULT_COLOR_SCHEME,
-	DEFAULT_GRANULARITY,
-	DEFAULT_LABEL_ALIGN,
-	DEFAULT_LABEL_FONT_WEIGHT,
-	DEFAULT_LABEL_ORIENTATION,
+  DEFAULT_COLOR_SCHEME,
+  DEFAULT_GRANULARITY,
+  DEFAULT_LABEL_ALIGN,
+  DEFAULT_LABEL_FONT_WEIGHT,
+  DEFAULT_LABEL_ORIENTATION,
 } from '@spectrum-charts/constants';
 
 import { AxisSpecOptions } from '../types';
 
 export const defaultXBaselineMark: Mark = {
-	name: 'xBaseline',
-	description: 'xBaseline',
-	type: 'rule',
-	interactive: false,
-	encode: {
-		update: {
-			x: { value: 0 },
-			x2: { signal: 'width' },
-			y: { scale: 'yLinear', value: 0 },
-		},
-	},
+  name: 'xBaseline',
+  description: 'xBaseline',
+  type: 'rule',
+  interactive: false,
+  encode: {
+    update: {
+      x: { value: 0 },
+      x2: { signal: 'width' },
+      y: { scale: 'yLinear', value: 0 },
+    },
+  },
 };
 
 export const defaultYBaselineMark: Mark = {
-	name: 'yBaseline',
-	description: 'yBaseline',
-	type: 'rule',
-	interactive: false,
-	encode: {
-		update: {
-			y: { value: 0 },
-			y2: { signal: 'height' },
-			x: { scale: 'xLinear', value: 0 },
-		},
-	},
+  name: 'yBaseline',
+  description: 'yBaseline',
+  type: 'rule',
+  interactive: false,
+  encode: {
+    update: {
+      y: { value: 0 },
+      y2: { signal: 'height' },
+      x: { scale: 'xLinear', value: 0 },
+    },
+  },
 };
 
 export const defaultAxisOptions: AxisSpecOptions = {
-	axisAnnotations: [],
-	baseline: false,
-	baselineOffset: 0,
-	colorScheme: DEFAULT_COLOR_SCHEME,
-	granularity: DEFAULT_GRANULARITY,
-	grid: false,
-	hideDefaultLabels: false,
-	index: 0,
-	labelAlign: DEFAULT_LABEL_ALIGN,
-	labelFontWeight: DEFAULT_LABEL_FONT_WEIGHT,
-	labelOrientation: DEFAULT_LABEL_ORIENTATION,
-	labels: [],
-	name: 'axis0',
-	numberFormat: 'shortNumber',
-	position: 'bottom',
-	referenceLines: [],
-	scaleType: 'linear',
-	subLabels: [],
-	ticks: false,
+  axisAnnotations: [],
+  baseline: false,
+  baselineOffset: 0,
+  colorScheme: DEFAULT_COLOR_SCHEME,
+  granularity: DEFAULT_GRANULARITY,
+  grid: false,
+  hideDefaultLabels: false,
+  index: 0,
+  labelAlign: DEFAULT_LABEL_ALIGN,
+  labelFontWeight: DEFAULT_LABEL_FONT_WEIGHT,
+  labelOrientation: DEFAULT_LABEL_ORIENTATION,
+  labels: [],
+  name: 'axis0',
+  numberFormat: 'shortNumber',
+  position: 'bottom',
+  referenceLines: [],
+  scaleType: 'linear',
+  subLabels: [],
+  ticks: false,
 };

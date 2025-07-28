@@ -17,64 +17,64 @@ import { BarOptions, LineOptions } from '../types';
 import { addCombo, getComboMarkName } from './comboSpecBuilder';
 
 jest.mock('../bar/barSpecBuilder', () => ({
-	addBar: jest.fn(),
+  addBar: jest.fn(),
 }));
 
 jest.mock('../line/lineSpecBuilder', () => ({
-	addLine: jest.fn(),
+  addLine: jest.fn(),
 }));
 
 describe('comboSpecBuilder', () => {
-	afterEach(() => {
-		jest.clearAllMocks();
-	});
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
 
-	describe('addCombo', () => {
-		it('should build a combo spec with a line and bar mark', () => {
-			addCombo(
-				{ usermeta: {} },
-				{
-					idKey: MARK_ID,
-					dimension: 'datetime',
-					marks: [
-						{ markType: 'bar', metric: 'people' },
-						{ markType: 'line', color: { value: 'indigo-900' }, metric: 'adoptionRate' },
-					],
-					markType: 'combo',
-				}
-			);
+  describe('addCombo', () => {
+    it('should build a combo spec with a line and bar mark', () => {
+      addCombo(
+        { usermeta: {} },
+        {
+          idKey: MARK_ID,
+          dimension: 'datetime',
+          marks: [
+            { markType: 'bar', metric: 'people' },
+            { markType: 'line', color: { value: 'indigo-900' }, metric: 'adoptionRate' },
+          ],
+          markType: 'combo',
+        }
+      );
 
-			expect(addBar).toHaveBeenCalledTimes(1);
-			expect(getCallParams(addBar).dimension).toEqual('datetime');
+      expect(addBar).toHaveBeenCalledTimes(1);
+      expect(getCallParams(addBar).dimension).toEqual('datetime');
 
-			expect(addLine).toHaveBeenCalledTimes(1);
-			expect(getCallParams(addLine).dimension).toEqual('datetime');
-		});
+      expect(addLine).toHaveBeenCalledTimes(1);
+      expect(getCallParams(addLine).dimension).toEqual('datetime');
+    });
 
-		it('should do nothing if no children', () => {
-			addCombo({ usermeta: {} }, { idKey: MARK_ID, markType: 'combo' });
+    it('should do nothing if no children', () => {
+      addCombo({ usermeta: {} }, { idKey: MARK_ID, markType: 'combo' });
 
-			expect(addBar).not.toHaveBeenCalled();
-			expect(addLine).not.toHaveBeenCalled();
-		});
-	});
+      expect(addBar).not.toHaveBeenCalled();
+      expect(addLine).not.toHaveBeenCalled();
+    });
+  });
 
-	describe('getComboMarkName', () => {
-		it('should return the name of the combo child', () => {
-			const mark: BarOptions = {
-				markType: 'bar',
-				name: 'bar1',
-			};
+  describe('getComboMarkName', () => {
+    it('should return the name of the combo child', () => {
+      const mark: BarOptions = {
+        markType: 'bar',
+        name: 'bar1',
+      };
 
-			expect(getComboMarkName(mark, 'combo1', 1)).toEqual('bar1');
-		});
+      expect(getComboMarkName(mark, 'combo1', 1)).toEqual('bar1');
+    });
 
-		it('should generate a name for the combo child', () => {
-			const mark: LineOptions = { markType: 'line' };
+    it('should generate a name for the combo child', () => {
+      const mark: LineOptions = { markType: 'line' };
 
-			expect(getComboMarkName(mark, 'combo1', 1)).toEqual('combo1Line1');
-		});
-	});
+      expect(getComboMarkName(mark, 'combo1', 1)).toEqual('combo1Line1');
+    });
+  });
 
-	const getCallParams = (mockFn: unknown) => (mockFn as jest.Mock).mock.calls[0][1];
+  const getCallParams = (mockFn: unknown) => (mockFn as jest.Mock).mock.calls[0][1];
 });

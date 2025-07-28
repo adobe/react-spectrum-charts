@@ -1,0 +1,19 @@
+{
+  "extends": "@docusaurus/tsconfig",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "resolveJsonModule": true,
+    "allowJs": true,
+    "esModuleInterop": true,
+    "jsx": "react-jsx",
+    "lib": ["DOM", "ESNext"],
+    "noEmit": true,
+    "types": ["node", "@docusaurus/theme-classic", "@docusaurus/module-type-aliases"],
+    "paths": {
+      "@site/*": ["./*"],
+      "@theme/*": ["./node_modules/@docusaurus/theme-classic/lib/theme/*"]
+    },
+    "skipLibCheck": true
+  },
+  "include": ["src/**/*", "docs/**/*", "docusaurus.config.ts", "sidebars.ts"]
+}

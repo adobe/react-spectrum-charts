@@ -10,17 +10,17 @@
  * governing permissions and limitations under the License.
  */
 import {
-	EncodeEntry,
-	GuideEncodeEntry,
-	Mark,
-	NumericValueRef,
-	ProductionRule,
-	RuleMark,
-	ScaleType,
-	SignalRef,
-	SymbolMark,
-	TextEncodeEntry,
-	TextMark,
+  EncodeEntry,
+  GuideEncodeEntry,
+  Mark,
+  NumericValueRef,
+  ProductionRule,
+  RuleMark,
+  ScaleType,
+  SignalRef,
+  SymbolMark,
+  TextEncodeEntry,
+  TextMark,
 } from 'vega';
 
 import { DEFAULT_FONT_COLOR, DEFAULT_LABEL_FONT_WEIGHT } from '@spectrum-charts/constants';
@@ -31,113 +31,113 @@ import { AxisSpecOptions, Position, ReferenceLineOptions, ReferenceLineSpecOptio
 import { isVerticalAxis } from './axisUtils';
 
 export const getReferenceLines = (axisOptions: AxisSpecOptions): ReferenceLineSpecOptions[] => {
-	return axisOptions.referenceLines.map((referenceLine, index) =>
-		applyReferenceLineOptionDefaults(referenceLine, axisOptions, index)
-	);
+  return axisOptions.referenceLines.map((referenceLine, index) =>
+    applyReferenceLineOptionDefaults(referenceLine, axisOptions, index)
+  );
 };
 
 const applyReferenceLineOptionDefaults = (
-	options: ReferenceLineOptions,
-	axisOptions: AxisSpecOptions,
-	index: number
+  options: ReferenceLineOptions,
+  axisOptions: AxisSpecOptions,
+  index: number
 ): ReferenceLineSpecOptions => ({
-	...options,
-	color: options.color || 'gray-800',
-	colorScheme: axisOptions.colorScheme,
-	iconColor: options.iconColor || DEFAULT_FONT_COLOR,
-	labelColor: options.labelColor || DEFAULT_FONT_COLOR,
-	labelFontWeight: options.labelFontWeight ?? DEFAULT_LABEL_FONT_WEIGHT,
-	layer: options.layer ?? 'front',
-	name: `${axisOptions.name}ReferenceLine${index}`,
+  ...options,
+  color: options.color || 'gray-800',
+  colorScheme: axisOptions.colorScheme,
+  iconColor: options.iconColor || DEFAULT_FONT_COLOR,
+  labelColor: options.labelColor || DEFAULT_FONT_COLOR,
+  labelFontWeight: options.labelFontWeight ?? DEFAULT_LABEL_FONT_WEIGHT,
+  layer: options.layer ?? 'front',
+  name: `${axisOptions.name}ReferenceLine${index}`,
 });
 
 export const scaleTypeSupportsReferenceLines = (scaleType: ScaleType | undefined): boolean => {
-	const supportedScaleTypes: ScaleType[] = ['band', 'linear', 'point', 'time', 'utc'];
-	return Boolean(scaleType && supportedScaleTypes.includes(scaleType));
+  const supportedScaleTypes: ScaleType[] = ['band', 'linear', 'point', 'time', 'utc'];
+  return Boolean(scaleType && supportedScaleTypes.includes(scaleType));
 };
 
 export const getReferenceLineMarks = (
-	axisOptions: AxisSpecOptions,
-	scaleName: string
+  axisOptions: AxisSpecOptions,
+  scaleName: string
 ): { back: Mark[]; front: Mark[] } => {
-	const referenceLineMarks: { back: Mark[]; front: Mark[] } = { back: [], front: [] };
-	const referenceLines = getReferenceLines(axisOptions);
+  const referenceLineMarks: { back: Mark[]; front: Mark[] } = { back: [], front: [] };
+  const referenceLines = getReferenceLines(axisOptions);
 
-	for (const referenceLine of referenceLines) {
-		const { layer } = referenceLine;
-		const positionEncoding = getPositionEncoding(axisOptions, referenceLine, scaleName);
-		referenceLineMarks[layer].push(
-			...[
-				getReferenceLineRuleMark(axisOptions, referenceLine, positionEncoding),
-				...getReferenceLineSymbolMark(axisOptions, referenceLine, positionEncoding),
-				...getReferenceLineTextMark(axisOptions, referenceLine, positionEncoding),
-			]
-		);
-	}
-	return referenceLineMarks;
+  for (const referenceLine of referenceLines) {
+    const { layer } = referenceLine;
+    const positionEncoding = getPositionEncoding(axisOptions, referenceLine, scaleName);
+    referenceLineMarks[layer].push(
+      ...[
+        getReferenceLineRuleMark(axisOptions, referenceLine, positionEncoding),
+        ...getReferenceLineSymbolMark(axisOptions, referenceLine, positionEncoding),
+        ...getReferenceLineTextMark(axisOptions, referenceLine, positionEncoding),
+      ]
+    );
+  }
+  return referenceLineMarks;
 };
 
 export const getPositionEncoding = (
-	{ scaleType }: AxisSpecOptions,
-	{ value, position }: ReferenceLineSpecOptions,
-	scaleName: string
+  { scaleType }: AxisSpecOptions,
+  { value, position }: ReferenceLineSpecOptions,
+  scaleName: string
 ): ProductionRule<NumericValueRef> | SignalRef => {
-	const signalValue = typeof value === 'string' ? `'${value}'` : value;
-	const halfInnerPaddingFormula = `paddingInner * bandwidth('${scaleName}') / (2 * (1 - paddingInner))`;
-	const beforePositionSignal = `scale('${scaleName}', ${signalValue}) - ${halfInnerPaddingFormula}`;
-	const centeredPositionSignal = `scale('${scaleName}', ${signalValue}) + bandwidth('${scaleName}') / 2`;
-	const afterPositionSignal = `scale('${scaleName}', ${signalValue}) + bandwidth('${scaleName}') + ${halfInnerPaddingFormula}`;
-	if (scaleType === 'band') {
-		if (position === 'before') return { signal: beforePositionSignal };
-		if (position === 'after') return { signal: afterPositionSignal };
-		return { signal: centeredPositionSignal };
-	}
-	return { scale: scaleName, value };
+  const signalValue = typeof value === 'string' ? `'${value}'` : value;
+  const halfInnerPaddingFormula = `paddingInner * bandwidth('${scaleName}') / (2 * (1 - paddingInner))`;
+  const beforePositionSignal = `scale('${scaleName}', ${signalValue}) - ${halfInnerPaddingFormula}`;
+  const centeredPositionSignal = `scale('${scaleName}', ${signalValue}) + bandwidth('${scaleName}') / 2`;
+  const afterPositionSignal = `scale('${scaleName}', ${signalValue}) + bandwidth('${scaleName}') + ${halfInnerPaddingFormula}`;
+  if (scaleType === 'band') {
+    if (position === 'before') return { signal: beforePositionSignal };
+    if (position === 'after') return { signal: afterPositionSignal };
+    return { signal: centeredPositionSignal };
+  }
+  return { scale: scaleName, value };
 };
 
 export const getReferenceLineRuleMark = (
-	{ position, ticks }: AxisSpecOptions,
-	{ color, colorScheme, name }: ReferenceLineSpecOptions,
-	positionEncoding: ProductionRule<NumericValueRef> | SignalRef
+  { position, ticks }: AxisSpecOptions,
+  { color, colorScheme, name }: ReferenceLineSpecOptions,
+  positionEncoding: ProductionRule<NumericValueRef> | SignalRef
 ): RuleMark => {
-	const startOffset = ticks ? 9 : 0;
+  const startOffset = ticks ? 9 : 0;
 
-	const positionOptions: { [key in Position]: Partial<EncodeEntry> } = {
-		top: {
-			x: positionEncoding,
-			y: { value: -startOffset },
-			y2: { signal: 'height' },
-		},
-		bottom: {
-			x: positionEncoding,
-			y: { value: 0 },
-			y2: { signal: `height + ${startOffset}` },
-		},
-		left: {
-			x: { value: -startOffset },
-			x2: { signal: 'width' },
-			y: positionEncoding,
-		},
-		right: {
-			x: { value: 0 },
-			x2: { signal: `width + ${startOffset}` },
-			y: positionEncoding,
-		},
-	};
+  const positionOptions: { [key in Position]: Partial<EncodeEntry> } = {
+    top: {
+      x: positionEncoding,
+      y: { value: -startOffset },
+      y2: { signal: 'height' },
+    },
+    bottom: {
+      x: positionEncoding,
+      y: { value: 0 },
+      y2: { signal: `height + ${startOffset}` },
+    },
+    left: {
+      x: { value: -startOffset },
+      x2: { signal: 'width' },
+      y: positionEncoding,
+    },
+    right: {
+      x: { value: 0 },
+      x2: { signal: `width + ${startOffset}` },
+      y: positionEncoding,
+    },
+  };
 
-	return {
-		name,
-		type: 'rule',
-		interactive: false,
-		encode: {
-			enter: {
-				stroke: { value: getColorValue(color, colorScheme) },
-			},
-			update: {
-				...positionOptions[position],
-			},
-		},
-	};
+  return {
+    name,
+    type: 'rule',
+    interactive: false,
+    encode: {
+      enter: {
+        stroke: { value: getColorValue(color, colorScheme) },
+      },
+      update: {
+        ...positionOptions[position],
+      },
+    },
+  };
 };
 
 /**
@@ -148,26 +148,26 @@ export const getReferenceLineRuleMark = (
  * @returns SymbolMark
  */
 const getAdditiveMarkPositionOptions = (
-	offset: number,
-	positionEncoding: ProductionRule<NumericValueRef> | SignalRef,
-	horizontalOffset?: number
+  offset: number,
+  positionEncoding: ProductionRule<NumericValueRef> | SignalRef,
+  horizontalOffset?: number
 ) => ({
-	top: {
-		x: positionEncoding,
-		y: { value: -offset },
-	},
-	bottom: {
-		x: positionEncoding,
-		y: { signal: `height + ${offset}` },
-	},
-	left: {
-		x: { value: -offset },
-		y: { ...positionEncoding, offset: horizontalOffset },
-	},
-	right: {
-		x: { signal: `width + ${offset}` },
-		y: { ...positionEncoding, offset: horizontalOffset },
-	},
+  top: {
+    x: positionEncoding,
+    y: { value: -offset },
+  },
+  bottom: {
+    x: positionEncoding,
+    y: { signal: `height + ${offset}` },
+  },
+  left: {
+    x: { value: -offset },
+    y: { ...positionEncoding, offset: horizontalOffset },
+  },
+  right: {
+    x: { signal: `width + ${offset}` },
+    y: { ...positionEncoding, offset: horizontalOffset },
+  },
 });
 
 /**
@@ -179,34 +179,34 @@ const getAdditiveMarkPositionOptions = (
  * @returns SymbolMark
  */
 export const getReferenceLineSymbolMark = (
-	{ colorScheme, position }: AxisSpecOptions,
-	{ icon, iconColor, name }: ReferenceLineSpecOptions,
-	positionEncoding: ProductionRule<NumericValueRef> | SignalRef
+  { colorScheme, position }: AxisSpecOptions,
+  { icon, iconColor, name }: ReferenceLineSpecOptions,
+  positionEncoding: ProductionRule<NumericValueRef> | SignalRef
 ): SymbolMark[] => {
-	if (!icon) return [];
+  if (!icon) return [];
 
-	// offset the icon from the edge of the chart area
-	const OFFSET = 24;
-	const positionOptions = getAdditiveMarkPositionOptions(OFFSET, positionEncoding);
+  // offset the icon from the edge of the chart area
+  const OFFSET = 24;
+  const positionOptions = getAdditiveMarkPositionOptions(OFFSET, positionEncoding);
 
-	return [
-		{
-			name: `${name}_symbol`,
-			type: 'symbol',
-			encode: {
-				enter: {
-					shape: {
-						value: getPathFromIcon(icon),
-					},
-					size: { value: 324 },
-					fill: { value: getColorValue(iconColor, colorScheme) },
-				},
-				update: {
-					...positionOptions[position],
-				},
-			},
-		},
-	];
+  return [
+    {
+      name: `${name}_symbol`,
+      type: 'symbol',
+      encode: {
+        enter: {
+          shape: {
+            value: getPathFromIcon(icon),
+          },
+          size: { value: 324 },
+          fill: { value: getColorValue(iconColor, colorScheme) },
+        },
+        update: {
+          ...positionOptions[position],
+        },
+      },
+    },
+  ];
 };
 
 /**
@@ -218,22 +218,48 @@ export const getReferenceLineSymbolMark = (
  * @returns TextMark
  */
 export const getReferenceLineTextMark = (
-	axisOptions: AxisSpecOptions,
-	referenceLineOptions: ReferenceLineSpecOptions,
-	positionEncoding: ProductionRule<NumericValueRef> | SignalRef
+  axisOptions: AxisSpecOptions,
+  referenceLineOptions: ReferenceLineSpecOptions,
+  positionEncoding: ProductionRule<NumericValueRef> | SignalRef
 ): TextMark[] => {
-	const { label, name } = referenceLineOptions;
-	if (!label) return [];
+  const { label, name } = referenceLineOptions;
+  if (!label) return [];
 
-	return [
-		{
-			name: `${name}_label`,
-			type: 'text',
-			encode: {
-				...getReferenceLineLabelsEncoding(axisOptions, { ...referenceLineOptions, label }, positionEncoding),
-			},
-		},
-	];
+  return [
+    {
+      name: `${name}_label`,
+      type: 'text',
+      encode: {
+        ...getReferenceLineLabelsEncoding(axisOptions, { ...referenceLineOptions, label }, positionEncoding),
+      },
+    },
+  ];
+};
+
+/**
+ * Calculates the vertical and horizontal offsets for reference line labels based on axis position and icon presence
+ * @param position The axis position
+ * @param icon Whether an icon is present
+ * @returns Object containing verticalOffset and horizontalOffset values
+ */
+const calculateReferenceLineOffsets = (position: Position, icon?: string): { verticalOffset: number; horizontalOffset: number } => {
+  const isVertical = isVerticalAxis(position);
+  let verticalOffset = isVertical ? 40 : 28;
+  let horizontalOffset = isVertical ? 4 : 5;
+  
+  if (icon) {
+    if (isVertical) {
+      verticalOffset += 25;
+    } else {
+      verticalOffset += 20;
+    }
+    if (!isVertical) {
+      horizontalOffset += 25;
+      verticalOffset += 2;
+    }
+  }
+  
+  return { verticalOffset, horizontalOffset };
 };
 
 /**
@@ -246,30 +272,29 @@ export const getReferenceLineTextMark = (
  * @returns updateEncoding
  */
 export const getReferenceLineLabelsEncoding = (
-	{ position }: AxisSpecOptions,
-	{ colorScheme, icon, label, labelColor, labelFontWeight }: ReferenceLineSpecOptions & { label: string },
-	positionEncoding: ProductionRule<NumericValueRef> | SignalRef
+  { position }: AxisSpecOptions,
+  { colorScheme, icon, label, labelColor, labelFontWeight }: ReferenceLineSpecOptions & { label: string },
+  positionEncoding: ProductionRule<NumericValueRef> | SignalRef
 ): GuideEncodeEntry<TextEncodeEntry> => {
-	const VERTICAL_OFFSET = icon ? 48 : 26; // Position label outside of icon.
-	const HORIZONTAL_OFFSET = isVerticalAxis(position) && icon ? 24 : 12; // Position label outside of icon for horizontal orientation.
-	const positionOptions = getAdditiveMarkPositionOptions(VERTICAL_OFFSET, positionEncoding, HORIZONTAL_OFFSET);
+  const { verticalOffset, horizontalOffset } = calculateReferenceLineOffsets(position, icon);
+  const positionOptions = getAdditiveMarkPositionOptions(verticalOffset, positionEncoding, horizontalOffset);
 
-	return {
-		update: {
-			text: [
-				{
-					value: label,
-				},
-			],
-			fontWeight: [
-				// default to the primary label font weight
-				{ value: labelFontWeight },
-			],
-			fill: { value: getColorValue(labelColor, colorScheme) },
-			...getEncodedLabelBaselineAlign(position),
-			...positionOptions[position],
-		},
-	};
+  return {
+    update: {
+      text: [
+        {
+          value: label,
+        },
+      ],
+      fontWeight: [
+        // default to the primary label font weight
+        { value: labelFontWeight },
+      ],
+      fill: { value: getColorValue(labelColor, colorScheme) },
+      ...getEncodedLabelBaselineAlign(position),
+      ...positionOptions[position],
+    },
+  };
 };
 
 /**
@@ -281,16 +306,16 @@ export const getReferenceLineLabelsEncoding = (
  * @returns align | baseline
  */
 export const getEncodedLabelBaselineAlign = (position: Position): EncodeEntry => {
-	switch (position) {
-		case 'top':
-		case 'bottom':
-			return {
-				align: { value: 'center' },
-			};
-		case 'left':
-		case 'right':
-			return {
-				baseline: { value: 'center' },
-			};
-	}
+  switch (position) {
+    case 'top':
+    case 'bottom':
+      return {
+        align: { value: 'center' },
+      };
+    case 'left':
+    case 'right':
+      return {
+        baseline: { value: 'center' },
+      };
+  }
 };

@@ -15,13 +15,13 @@ import { FILTERED_TABLE, SELECTED_GROUP, SERIES_ID } from '@spectrum-charts/cons
 
 import { getFilteredTableData } from '../data/dataUtils';
 import {
-	AreaSpecOptions,
-	BarSpecOptions,
-	ChartPopoverOptions,
-	ChartPopoverSpecOptions,
-	DonutSpecOptions,
-	LineSpecOptions,
-	ScatterSpecOptions,
+  AreaSpecOptions,
+  BarSpecOptions,
+  ChartPopoverOptions,
+  ChartPopoverSpecOptions,
+  DonutSpecOptions,
+  LineSpecOptions,
+  ScatterSpecOptions,
 } from '../types';
 
 type PopoverParentOptions = AreaSpecOptions | BarSpecOptions | DonutSpecOptions | LineSpecOptions | ScatterSpecOptions;
@@ -32,7 +32,7 @@ type PopoverParentOptions = AreaSpecOptions | BarSpecOptions | DonutSpecOptions 
  * @returns
  */
 export const getPopovers = (chartPopovers: ChartPopoverOptions[], markName: string): ChartPopoverSpecOptions[] => {
-	return chartPopovers.map((chartPopover) => applyPopoverPropDefaults(chartPopover, markName));
+  return chartPopovers.map((chartPopover) => applyPopoverPropDefaults(chartPopover, markName));
 };
 
 /**
@@ -41,14 +41,14 @@ export const getPopovers = (chartPopovers: ChartPopoverOptions[], markName: stri
  * @returns ChartPopoverSpecOptions
  */
 export const applyPopoverPropDefaults = (
-	{ UNSAFE_highlightBy = 'item', ...options }: ChartPopoverOptions,
-	markName: string
+  { UNSAFE_highlightBy = 'item', ...options }: ChartPopoverOptions,
+  markName: string
 ): ChartPopoverSpecOptions => {
-	return {
-		UNSAFE_highlightBy,
-		markName,
-		...options,
-	};
+  return {
+    UNSAFE_highlightBy,
+    markName,
+    ...options,
+  };
 };
 
 /**
@@ -59,27 +59,27 @@ export const applyPopoverPropDefaults = (
  * @param markOptions
  */
 export const addPopoverData = (data: Data[], markOptions: PopoverParentOptions, addHighlightedData = true) => {
-	const popovers = getPopovers(markOptions.chartPopovers, markOptions.name);
+  const popovers = getPopovers(markOptions.chartPopovers, markOptions.name);
 
-	for (const { UNSAFE_highlightBy, markName } of popovers) {
-		const filteredTable = getFilteredTableData(data);
-		if (!filteredTable.transform) {
-			filteredTable.transform = [];
-		}
-		if (UNSAFE_highlightBy === 'dimension' && markOptions.markType !== 'donut') {
-			filteredTable.transform.push(getGroupIdTransform([markOptions.dimension], markName));
-		} else if (UNSAFE_highlightBy === 'series') {
-			filteredTable.transform.push(getGroupIdTransform([SERIES_ID], markName));
-		} else if (Array.isArray(UNSAFE_highlightBy)) {
-			filteredTable.transform.push(getGroupIdTransform(UNSAFE_highlightBy, markName));
-		} else {
-			filteredTable.transform.push(getGroupIdTransform([markOptions.idKey], markName));
-		}
+  for (const { UNSAFE_highlightBy, markName } of popovers) {
+    const filteredTable = getFilteredTableData(data);
+    if (!filteredTable.transform) {
+      filteredTable.transform = [];
+    }
+    if (UNSAFE_highlightBy === 'dimension' && markOptions.markType !== 'donut') {
+      filteredTable.transform.push(getGroupIdTransform([markOptions.dimension], markName));
+    } else if (UNSAFE_highlightBy === 'series') {
+      filteredTable.transform.push(getGroupIdTransform([SERIES_ID], markName));
+    } else if (Array.isArray(UNSAFE_highlightBy)) {
+      filteredTable.transform.push(getGroupIdTransform(UNSAFE_highlightBy, markName));
+    } else {
+      filteredTable.transform.push(getGroupIdTransform([markOptions.idKey], markName));
+    }
 
-		if (addHighlightedData) {
-			data.push(getMarkSelectedData(markName));
-		}
-	}
+    if (addHighlightedData) {
+      data.push(getMarkSelectedData(markName));
+    }
+  }
 };
 
 /**
@@ -89,11 +89,11 @@ export const addPopoverData = (data: Data[], markOptions: PopoverParentOptions, 
  * @returns FormulaTransform
  */
 export const getGroupIdTransform = (highlightBy: string[], markName: string): FormulaTransform => {
-	return {
-		type: 'formula',
-		as: `${markName}_selectedGroupId`,
-		expr: highlightBy.map((facet) => `datum.${facet}`).join(' + " | " + '),
-	};
+  return {
+    type: 'formula',
+    as: `${markName}_selectedGroupId`,
+    expr: highlightBy.map((facet) => `datum.${facet}`).join(' + " | " + '),
+  };
 };
 
 /**
@@ -102,12 +102,12 @@ export const getGroupIdTransform = (highlightBy: string[], markName: string): Fo
  * @returns
  */
 const getMarkSelectedData = (markName: string): SourceData => ({
-	name: `${markName}_selectedData`,
-	source: FILTERED_TABLE,
-	transform: [
-		{
-			type: 'filter',
-			expr: `${SELECTED_GROUP} === datum.${markName}_selectedGroupId`,
-		},
-	],
+  name: `${markName}_selectedData`,
+  source: FILTERED_TABLE,
+  transform: [
+    {
+      type: 'filter',
+      expr: `${SELECTED_GROUP} === datum.${markName}_selectedGroupId`,
+    },
+  ],
 });

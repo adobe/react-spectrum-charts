@@ -20,39 +20,32 @@ import { NumberFormat } from './types';
  * @returns
  */
 export const getTextNumberFormat = (
-	numberFormat: NumberFormat | string,
-	datumProperty: string = 'value',
-	currencyLocale?: string,
-	currencyCode?: string
+  numberFormat: NumberFormat | string,
+  datumProperty: string = 'value',
+  currencyLocale?: string,
+  currencyCode?: string
 ): ({
-	test?: string;
+  test?: string;
 } & TextValueRef)[] => {
-	const test = `isNumber(datum['${datumProperty}'])`;
-	if (numberFormat === 'shortNumber') {
-		return [
-			{
-				test: `${test} && abs(datum['${datumProperty}']) >= 1000`,
-				signal: `upper(replace(format(datum['${datumProperty}'], '.3~s'), /(\\d+)G/, '$1B'))`,
-			},
-		];
-	}
-	if (numberFormat === 'shortCurrency') {
-		return [
-			{
-				test: `${test} && abs(datum['${datumProperty}']) >= 1000`,
-				signal: `upper(replace(format(datum['${datumProperty}'], '$.3~s'), /(\\d+)G/, '$1B'))`,
-			},
-			{
-				test,
-				signal: `format(datum['${datumProperty}'], '$')`,
-			},
-		];
-	}
-	if (currencyCode && currencyLocale) {
-		return [
-			{ test, signal: `formatLocaleCurrency(datum, "${currencyLocale}", "${currencyCode}", "${numberFormat}")` },
-		];
-	}
-	const d3FormatSpecifier = getD3FormatSpecifierFromNumberFormat(numberFormat);
-	return [{ test, signal: `format(datum['${datumProperty}'], '${d3FormatSpecifier}')` }];
+  const test = `isNumber(datum['${datumProperty}'])`;
+  if (numberFormat === 'shortNumber') {
+    return [{ test, signal: `formatShortNumber(datum['${datumProperty}'])` }];
+  }
+  if (numberFormat === 'shortCurrency') {
+    return [
+      {
+        test: `${test} && abs(datum['${datumProperty}']) >= 1000`,
+        signal: `upper(replace(format(datum['${datumProperty}'], '$.3~s'), /(\\d+)G/, '$1B'))`,
+      },
+      {
+        test,
+        signal: `format(datum['${datumProperty}'], '$')`,
+      },
+    ];
+  }
+  if (currencyCode && currencyLocale) {
+    return [{ test, signal: `formatLocaleCurrency(datum, "${currencyLocale}", "${currencyCode}", "${numberFormat}")` }];
+  }
+  const d3FormatSpecifier = getD3FormatSpecifierFromNumberFormat(numberFormat);
+  return [{ test, signal: `format(datum['${datumProperty}'], '${d3FormatSpecifier}')` }];
 };

@@ -17,7 +17,7 @@ import { DonutSummaryProps } from '../../../types';
 
 // destructure props here and set defaults so that storybook can pick them up
 const DonutSummary: FC<DonutSummaryProps> = ({ numberFormat = 'shortNumber', label }) => {
-	return null;
+  return null;
 };
 
 // displayName is used to validate the component type in the spec builder

@@ -14,28 +14,29 @@ const { pathsToModuleNameMapper } = require('ts-jest');
 const { compilerOptions } = require('./tsconfig.json');
 
 module.exports = {
-	testResultsProcessor: 'jest-sonar-reporter',
-	collectCoverage: true,
-	coverageReporters: ['cobertura', 'html', 'text', 'lcov'],
-	testEnvironment: './jest.environment.js',
-	transform: {
-		'^.+\\.(j|t)sx?$': 'babel-jest',
-	},
-	moduleDirectories: ['packages', 'node_modules'],
-	moduleNameMapper: {
-		'\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$':
-			'<rootDir>/__mocks__/fileMock.ts',
-		'\\.(css)$': 'identity-obj-proxy',
-		'single-spa-react/parcel': 'single-spa-react/lib/cjs/parcel.cjs',
-		'^.+\\.(css|less|scss)$': 'babel-jest',
-		'^d3-format$': '<rootDir>/node_modules/d3-format/dist/d3-format.js',
-		...pathsToModuleNameMapper(compilerOptions.paths),
-	},
-	testPathIgnorePatterns: ['<rootDir>/dist/'],
-	setupFilesAfterEnv: ['@testing-library/jest-dom', 'jest-canvas-mock'],
-	testMatch: [
-		'<rootDir>/packages/*/src/**/*.test.{js,jsx,ts,tsx}',
-		'<rootDir>/packages/*/src/**/*.spec.{js,jsx,ts,tsx}',
-	],
-	testPathIgnorePatterns: ['/node_modules/', '/dist/', '/build/', '/coverage/'],
+  testResultsProcessor: 'jest-sonar-reporter',
+  collectCoverage: true,
+  coverageReporters: ['cobertura', 'html', 'text', 'lcov'],
+  testEnvironment: './jest.environment.js',
+  transform: {
+    '^.+\\.(j|t)sx?$': 'babel-jest',
+  },
+  moduleDirectories: ['packages', 'node_modules'],
+  moduleNameMapper: {
+    '\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$':
+      '<rootDir>/__mocks__/fileMock.ts',
+    '\\.(css)$': 'identity-obj-proxy',
+    'single-spa-react/parcel': 'single-spa-react/lib/cjs/parcel.cjs',
+    '^.+\\.(css|less|scss)$': 'babel-jest',
+    '^d3-format$': '<rootDir>/node_modules/d3-format/dist/d3-format.js',
+    '^vega$': '<rootDir>/node_modules/vega/build/vega.js',
+    ...pathsToModuleNameMapper(compilerOptions.paths),
+  },
+  testPathIgnorePatterns: ['<rootDir>/dist/'],
+  setupFilesAfterEnv: ['@testing-library/jest-dom', 'jest-canvas-mock'],
+  testMatch: [
+    '<rootDir>/packages/*/src/**/*.test.{js,jsx,ts,tsx}',
+    '<rootDir>/packages/*/src/**/*.spec.{js,jsx,ts,tsx}',
+  ],
+  testPathIgnorePatterns: ['/node_modules/', '/dist/', '/build/', '/coverage/'],
 };

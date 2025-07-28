@@ -10,58 +10,58 @@
  * governing permissions and limitations under the License.
  */
 import {
-	BarAnnotationOptions,
-	ChartPopoverOptions,
-	ChartTooltipOptions,
-	ColorFacet,
-	ColorScheme,
-	DonutSummaryOptions,
-	HighlightedItem,
-	InteractionMode,
-	LineTypeFacet,
-	LineWidthFacet,
-	MetricRangeOptions,
-	OpacityFacet,
-	ScaleType,
-	ScatterPathOptions,
-	SegmentLabelOptions,
-	TrendlineOptions,
+  BarAnnotationOptions,
+  ChartPopoverOptions,
+  ChartTooltipOptions,
+  ColorFacet,
+  ColorScheme,
+  DonutSummaryOptions,
+  HighlightedItem,
+  InteractionMode,
+  LineTypeFacet,
+  LineWidthFacet,
+  MetricRangeOptions,
+  OpacityFacet,
+  ScaleType,
+  ScatterPathOptions,
+  SegmentLabelOptions,
+  TrendlineOptions,
 } from '../types';
 
 export const getPopoverMarkName = (chartPopovers: ChartPopoverOptions[], lineName: string): string | undefined => {
-	// if the line has a popover, this line is the target for the popover
-	if (chartPopovers.length) {
-		return lineName;
-	}
+  // if the line has a popover, this line is the target for the popover
+  if (chartPopovers.length) {
+    return lineName;
+  }
 };
 
 export interface LineMarkOptions {
-	barAnnotations?: BarAnnotationOptions[];
-	chartPopovers?: ChartPopoverOptions[];
-	chartTooltips?: ChartTooltipOptions[];
-	color: ColorFacet;
-	colorScheme: ColorScheme;
-	dimension: string;
-	displayOnHover?: boolean;
-	donutSummaries?: DonutSummaryOptions[];
-	hasOnClick?: boolean;
-	highlightedItem?: HighlightedItem;
-	idKey: string;
-	interactiveMarkName?: string; // optional name of the mark that is used for hover and click interactions
-	interactionMode?: InteractionMode;
-	isHighlightedByDimension?: boolean;
-	isHighlightedByGroup?: boolean;
-	lineType: LineTypeFacet;
-	lineWidth?: LineWidthFacet;
-	metric: string;
-	metricAxis?: string;
-	metricRanges?: MetricRangeOptions[];
-	name: string;
-	opacity: OpacityFacet;
-	popoverMarkName?: string;
-	scaleType: ScaleType;
-	scatterPaths?: ScatterPathOptions[];
-	segmentLabels?: SegmentLabelOptions[];
-	staticPoint?: string;
-	trendlines?: TrendlineOptions[];
+  barAnnotations?: BarAnnotationOptions[];
+  chartPopovers?: ChartPopoverOptions[];
+  chartTooltips?: ChartTooltipOptions[];
+  color: ColorFacet;
+  colorScheme: ColorScheme;
+  dimension: string;
+  displayOnHover?: boolean;
+  donutSummaries?: DonutSummaryOptions[];
+  hasOnClick?: boolean;
+  highlightedItem?: HighlightedItem;
+  idKey: string;
+  interactiveMarkName?: string; // optional name of the mark that is used for hover and click interactions
+  interactionMode?: InteractionMode;
+  isHighlightedByDimension?: boolean;
+  isHighlightedByGroup?: boolean;
+  lineType: LineTypeFacet;
+  lineWidth?: LineWidthFacet;
+  metric: string;
+  metricAxis?: string;
+  metricRanges?: MetricRangeOptions[];
+  name: string;
+  opacity: OpacityFacet;
+  popoverMarkName?: string;
+  scaleType: ScaleType;
+  scatterPaths?: ScatterPathOptions[];
+  segmentLabels?: SegmentLabelOptions[];
+  staticPoint?: string;
+  trendlines?: TrendlineOptions[];
 }

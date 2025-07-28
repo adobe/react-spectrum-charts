@@ -18,71 +18,71 @@ import { findChart, findMarksByGroupName, render, screen } from '../../../test-u
 import { Basic, Color, Icon, IconColor, Label, LabelColor } from './AxisReferenceLine.story';
 
 describe('AxisReferenceLine', () => {
-	// Axis is not a real React component. This is test just provides test coverage for sonarqube
-	test('Render pseudo element', () => {
-		render(<ReferenceLine value={0} />);
-	});
+  // Axis is not a real React component. This is test just provides test coverage for sonarqube
+  test('Render pseudo element', () => {
+    render(<ReferenceLine value={0} />);
+  });
 
-	test('Reference line renders', async () => {
-		render(<Basic {...Basic.args} />);
+  test('Reference line renders', async () => {
+    render(<Basic {...Basic.args} />);
 
-		const chart = await findChart();
-		expect(chart).toBeInTheDocument();
+    const chart = await findChart();
+    expect(chart).toBeInTheDocument();
 
-		const axisReferenceLine = await findMarksByGroupName(chart, 'axis0ReferenceLine0', 'line');
-		expect(axisReferenceLine).toBeInTheDocument();
-	});
+    const axisReferenceLine = await findMarksByGroupName(chart, 'axis0ReferenceLine0', 'line');
+    expect(axisReferenceLine).toBeInTheDocument();
+  });
 
-	test('Reference line gets the correct color', async () => {
-		render(<Color {...Color.args} />);
+  test('Reference line gets the correct color', async () => {
+    render(<Color {...Color.args} />);
 
-		const chart = await findChart();
-		expect(chart).toBeInTheDocument();
+    const chart = await findChart();
+    expect(chart).toBeInTheDocument();
 
-		const axisReferenceLine = await findMarksByGroupName(chart, 'axis0ReferenceLine0', 'line');
-		expect(axisReferenceLine).toBeInTheDocument();
-		expect(axisReferenceLine).toHaveAttribute('stroke', spectrumColors.light['blue-500']);
-	});
+    const axisReferenceLine = await findMarksByGroupName(chart, 'axis0ReferenceLine0', 'line');
+    expect(axisReferenceLine).toBeInTheDocument();
+    expect(axisReferenceLine).toHaveAttribute('stroke', spectrumColors.light['blue-500']);
+  });
 
-	test('Icon renders', async () => {
-		render(<Icon {...Icon.args} />);
+  test('Icon renders', async () => {
+    render(<Icon {...Icon.args} />);
 
-		const chart = await findChart();
-		expect(chart).toBeInTheDocument();
+    const chart = await findChart();
+    expect(chart).toBeInTheDocument();
 
-		const icon = await findMarksByGroupName(chart, 'axis0ReferenceLine0_symbol');
-		expect(icon).toBeInTheDocument();
-	});
+    const icon = await findMarksByGroupName(chart, 'axis0ReferenceLine0_symbol');
+    expect(icon).toBeInTheDocument();
+  });
 
-	test('IconColor should apply the correct color to the label', async () => {
-		render(<IconColor {...IconColor.args} />);
+  test('IconColor should apply the correct color to the label', async () => {
+    render(<IconColor {...IconColor.args} />);
 
-		const chart = await findChart();
-		expect(chart).toBeInTheDocument();
+    const chart = await findChart();
+    expect(chart).toBeInTheDocument();
 
-		const icon = await findMarksByGroupName(chart, 'axis0ReferenceLine0_symbol');
-		expect(icon).toBeInTheDocument();
-		expect(icon).toHaveAttribute('fill', spectrumColors.light['blue-500']);
-	});
+    const icon = await findMarksByGroupName(chart, 'axis0ReferenceLine0_symbol');
+    expect(icon).toBeInTheDocument();
+    expect(icon).toHaveAttribute('fill', spectrumColors.light['blue-500']);
+  });
 
-	test('Label should display a custom label', async () => {
-		render(<Label {...Label.args} />);
+  test('Label should display a custom label', async () => {
+    render(<Label {...Label.args} />);
 
-		const chart = await findChart();
-		expect(chart).toBeInTheDocument();
+    const chart = await findChart();
+    expect(chart).toBeInTheDocument();
 
-		expect(screen.getByText('Middle')).toBeInTheDocument();
-	});
+    expect(screen.getByText('Middle')).toBeInTheDocument();
+  });
 
-	test('LabelColor should set custom color on label', async () => {
-		render(<LabelColor {...LabelColor.args} />);
+  test('LabelColor should set custom color on label', async () => {
+    render(<LabelColor {...LabelColor.args} />);
 
-		const chart = await findChart();
-		expect(chart).toBeInTheDocument();
+    const chart = await findChart();
+    expect(chart).toBeInTheDocument();
 
-		const text = screen.getByText('Positive');
+    const text = screen.getByText('Positive');
 
-		expect(text).toBeInTheDocument();
-		expect(text).toHaveAttribute('fill', spectrumColors.light['green-700']);
-	});
+    expect(text).toBeInTheDocument();
+    expect(text).toHaveAttribute('fill', spectrumColors.light['green-700']);
+  });
 });

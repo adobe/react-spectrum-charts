@@ -14,109 +14,105 @@ import React from 'react';
 import { HIGHLIGHT_CONTRAST_RATIO } from '@spectrum-charts/constants';
 
 import {
-	allElementsHaveAttributeValue,
-	findAllMarksByGroupName,
-	findChart,
-	getAllLegendEntries,
-	hoverNthElement,
-	render,
-	screen,
+  allElementsHaveAttributeValue,
+  findAllMarksByGroupName,
+  findChart,
+  getAllLegendEntries,
+  hoverNthElement,
+  render,
+  screen,
 } from '../../../test-utils';
 import { Basic, Controlled } from './LegendHighlight.story';
 
 describe('Controlled', () => {
-	test('non highlighted series bars should have opacity applied', async () => {
-		render(<Controlled {...Controlled.args} />);
-		const chart = await findChart();
+  test('non highlighted series bars should have opacity applied', async () => {
+    render(<Controlled {...Controlled.args} />);
+    const chart = await findChart();
 
-		const bars = await findAllMarksByGroupName(chart, 'bar0');
-		expect(bars.length).toEqual(9);
-		expect(bars[0]).toHaveAttribute('opacity', `${1 / HIGHLIGHT_CONTRAST_RATIO}`);
-		expect(bars[1]).toHaveAttribute('opacity', '1');
-		expect(bars[2]).toHaveAttribute('opacity', `${1 / HIGHLIGHT_CONTRAST_RATIO}`);
-	});
+    const bars = await findAllMarksByGroupName(chart, 'bar0');
+    expect(bars.length).toEqual(9);
+    expect(bars[0]).toHaveAttribute('opacity', `${1 / HIGHLIGHT_CONTRAST_RATIO}`);
+    expect(bars[1]).toHaveAttribute('opacity', '1');
+    expect(bars[2]).toHaveAttribute('opacity', `${1 / HIGHLIGHT_CONTRAST_RATIO}`);
+  });
 
-	test('non highlighted series legend symbols should have opacity applied', async () => {
-		render(<Controlled {...Controlled.args} />);
-		const chart = await findChart();
+  test('non highlighted series legend symbols should have opacity applied', async () => {
+    render(<Controlled {...Controlled.args} />);
+    const chart = await findChart();
 
-		const legendSymbols = await findAllMarksByGroupName(chart, 'role-legend-symbol');
-		expect(legendSymbols.length).toEqual(3);
-		expect(legendSymbols[0]).toHaveAttribute('opacity', `${1 / HIGHLIGHT_CONTRAST_RATIO}`);
-		expect(legendSymbols[1]).toHaveAttribute('opacity', '1');
-		expect(legendSymbols[2]).toHaveAttribute('opacity', `${1 / HIGHLIGHT_CONTRAST_RATIO}`);
-	});
+    const legendSymbols = await findAllMarksByGroupName(chart, 'role-legend-symbol');
+    expect(legendSymbols.length).toEqual(3);
+    expect(legendSymbols[0]).toHaveAttribute('opacity', `${1 / HIGHLIGHT_CONTRAST_RATIO}`);
+    expect(legendSymbols[1]).toHaveAttribute('opacity', '1');
+    expect(legendSymbols[2]).toHaveAttribute('opacity', `${1 / HIGHLIGHT_CONTRAST_RATIO}`);
+  });
 
-	test('non highlighted series legend labels should have opacity applied', async () => {
-		render(<Controlled {...Controlled.args} />);
-		const chart = await findChart();
+  test('non highlighted series legend labels should have opacity applied', async () => {
+    render(<Controlled {...Controlled.args} />);
+    const chart = await findChart();
 
-		const legendLabels = await findAllMarksByGroupName(chart, 'role-legend-symbol');
-		expect(legendLabels.length).toEqual(3);
-		expect(legendLabels[0]).toHaveAttribute('opacity', `${1 / HIGHLIGHT_CONTRAST_RATIO}`);
-		expect(legendLabels[1]).toHaveAttribute('opacity', '1');
-		expect(legendLabels[2]).toHaveAttribute('opacity', `${1 / HIGHLIGHT_CONTRAST_RATIO}`);
-	});
+    const legendLabels = await findAllMarksByGroupName(chart, 'role-legend-symbol');
+    expect(legendLabels.length).toEqual(3);
+    expect(legendLabels[0]).toHaveAttribute('opacity', `${1 / HIGHLIGHT_CONTRAST_RATIO}`);
+    expect(legendLabels[1]).toHaveAttribute('opacity', '1');
+    expect(legendLabels[2]).toHaveAttribute('opacity', `${1 / HIGHLIGHT_CONTRAST_RATIO}`);
+  });
 });
 
 describe('Uncontrolled', () => {
-	test('Basic renders', async () => {
-		render(<Basic {...Basic.args} />);
-		const view = await screen.findByRole('graphics-document');
-		expect(view).toBeInTheDocument();
-	});
+  test('Basic renders', async () => {
+    render(<Basic {...Basic.args} />);
+    const view = await screen.findByRole('graphics-document');
+    expect(view).toBeInTheDocument();
+  });
 
-	test('hovering over legend items highlights the bars with matching series', async () => {
-		render(<Basic {...Basic.args} />);
-		const chart = await findChart();
+  test('hovering over legend items highlights the bars with matching series', async () => {
+    render(<Basic {...Basic.args} />);
+    const chart = await findChart();
 
-		let bars = await findAllMarksByGroupName(chart, 'bar0');
-		expect(bars.length).toEqual(9);
-		expect(allElementsHaveAttributeValue(bars, 'opacity', 1)).toBeTruthy();
+    let bars = await findAllMarksByGroupName(chart, 'bar0');
+    expect(bars.length).toEqual(9);
+    expect(allElementsHaveAttributeValue(bars, 'opacity', 1)).toBeTruthy();
 
-		const legendEntries = getAllLegendEntries(chart);
-		await hoverNthElement(legendEntries, 0);
+    const legendEntries = getAllLegendEntries(chart);
+    await hoverNthElement(legendEntries, 0);
 
-		bars = await findAllMarksByGroupName(chart, 'bar0');
-		expect(bars[0]).toHaveAttribute('opacity', '1');
-		expect(bars[1]).toHaveAttribute('opacity', `${1 / HIGHLIGHT_CONTRAST_RATIO}`);
-		expect(bars[2]).toHaveAttribute('opacity', `${1 / HIGHLIGHT_CONTRAST_RATIO}`);
-	});
+    bars = await findAllMarksByGroupName(chart, 'bar0');
+    expect(bars[0]).toHaveAttribute('opacity', '1');
+    expect(bars[1]).toHaveAttribute('opacity', `${1 / HIGHLIGHT_CONTRAST_RATIO}`);
+    expect(bars[2]).toHaveAttribute('opacity', `${1 / HIGHLIGHT_CONTRAST_RATIO}`);
+  });
 
-	test('hovering over legend items adds opacity to the non hovered legend symbols', async () => {
-		render(<Basic {...Basic.args} />);
-		const chart = await findChart();
+  test('hovering over legend items adds opacity to the non hovered legend symbols', async () => {
+    render(<Basic {...Basic.args} />);
+    const chart = await findChart();
 
-		let legendSymbols = await findAllMarksByGroupName(chart, 'role-legend-symbol');
-		expect(legendSymbols.length).toEqual(3);
-		expect(allElementsHaveAttributeValue(legendSymbols, 'opacity', 1)).toBeTruthy();
+    let legendSymbols = await findAllMarksByGroupName(chart, 'role-legend-symbol');
+    expect(legendSymbols.length).toEqual(3);
+    expect(allElementsHaveAttributeValue(legendSymbols, 'opacity', 1)).toBeTruthy();
 
-		const legendEntries = getAllLegendEntries(chart);
-		await hoverNthElement(legendEntries, 0);
+    const legendEntries = getAllLegendEntries(chart);
+    await hoverNthElement(legendEntries, 0);
 
-		legendSymbols = await findAllMarksByGroupName(chart, 'role-legend-symbol');
-		expect(legendSymbols[0]).toHaveAttribute('opacity', '1');
-		expect(
-			allElementsHaveAttributeValue(legendSymbols.slice(1), 'opacity', 1 / HIGHLIGHT_CONTRAST_RATIO)
-		).toBeTruthy();
-	});
+    legendSymbols = await findAllMarksByGroupName(chart, 'role-legend-symbol');
+    expect(legendSymbols[0]).toHaveAttribute('opacity', '1');
+    expect(allElementsHaveAttributeValue(legendSymbols.slice(1), 'opacity', 1 / HIGHLIGHT_CONTRAST_RATIO)).toBeTruthy();
+  });
 
-	test('hovering over legend items adds opacity to the non hovered legend labels', async () => {
-		render(<Basic {...Basic.args} />);
-		const chart = await findChart();
+  test('hovering over legend items adds opacity to the non hovered legend labels', async () => {
+    render(<Basic {...Basic.args} />);
+    const chart = await findChart();
 
-		let legendLabels = await findAllMarksByGroupName(chart, 'role-legend-symbol');
-		expect(legendLabels.length).toEqual(3);
-		expect(allElementsHaveAttributeValue(legendLabels, 'opacity', 1)).toBeTruthy();
+    let legendLabels = await findAllMarksByGroupName(chart, 'role-legend-symbol');
+    expect(legendLabels.length).toEqual(3);
+    expect(allElementsHaveAttributeValue(legendLabels, 'opacity', 1)).toBeTruthy();
 
-		const legendEntries = getAllLegendEntries(chart);
-		await hoverNthElement(legendEntries, 0);
+    const legendEntries = getAllLegendEntries(chart);
+    await hoverNthElement(legendEntries, 0);
 
-		legendLabels = await findAllMarksByGroupName(chart, 'role-legend-symbol');
-		expect(legendLabels.length).toEqual(3);
-		expect(legendLabels[0]).toHaveAttribute('opacity', '1');
-		expect(
-			allElementsHaveAttributeValue(legendLabels.slice(1), 'opacity', 1 / HIGHLIGHT_CONTRAST_RATIO)
-		).toBeTruthy();
-	});
+    legendLabels = await findAllMarksByGroupName(chart, 'role-legend-symbol');
+    expect(legendLabels.length).toEqual(3);
+    expect(legendLabels[0]).toHaveAttribute('opacity', '1');
+    expect(allElementsHaveAttributeValue(legendLabels.slice(1), 'opacity', 1 / HIGHLIGHT_CONTRAST_RATIO)).toBeTruthy();
+  });
 });

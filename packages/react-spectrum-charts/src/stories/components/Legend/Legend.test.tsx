@@ -13,27 +13,38 @@ import React from 'react';
 
 import userEvent from '@testing-library/user-event';
 
-import { LEGEND_TOOLTIP_DELAY } from '@spectrum-charts/constants';
+import { HIGHLIGHT_CONTRAST_RATIO, LEGEND_TOOLTIP_DELAY } from '@spectrum-charts/constants';
 
 import { Chart } from '../../../Chart';
 import { Legend } from '../../../components';
 import {
-	clickNthElement,
-	findChart,
-	getAllLegendEntries,
-	hoverNthElement,
-	render,
-	screen,
-	waitFor,
+  clickNthElement,
+  findChart,
+  getAllLegendEntries,
+  getAllLegendSymbols,
+  hoverNthElement,
+  render,
+  screen,
+  waitFor,
 } from '../../../test-utils';
 import '../../../test-utils/__mocks__/matchMedia.mock.js';
-import { Basic, Descriptions, LabelLimit, OnClick, Popover, Position, Supreme, Title } from './Legend.story';
+import {
+  Basic,
+  Descriptions,
+  LabelLimit,
+  OnClick,
+  Popover,
+  Position,
+  Supreme,
+  Title,
+  TitleLimit,
+} from './Legend.story';
 
 /**
  * Wait for the the duration of the legend tooltip hover delay.
  */
 export const waitForLegendTooltip = async () => {
-	await new Promise((resolve) => setTimeout(resolve, LEGEND_TOOLTIP_DELAY));
+  await new Promise((resolve) => setTimeout(resolve, LEGEND_TOOLTIP_DELAY));
 };
 
 /**
@@ -41,242 +52,261 @@ export const waitForLegendTooltip = async () => {
  * This helper will remove all vega tooltips from the DOM.
  */
 export const cleanupTooltips = () => {
-	document.body.querySelectorAll('.vg-tooltip').forEach((node) => {
-		node.remove();
-	});
+  document.body.querySelectorAll('.vg-tooltip').forEach((node) => {
+    node.remove();
+  });
 };
 
 describe('Legend', () => {
-	afterEach(() => {
-		cleanupTooltips();
-	});
+  afterEach(() => {
+    cleanupTooltips();
+  });
 
-	test('Basic renders properly', async () => {
-		render(<Basic {...Basic.args} />);
-		const view = await screen.findByRole('graphics-document');
-		expect(view).toBeInTheDocument();
-		const windowsEntry = screen.getByText('Windows');
-		expect(windowsEntry).toBeInTheDocument();
-	});
+  test('Basic renders properly', async () => {
+    render(<Basic {...Basic.args} />);
+    const view = await screen.findByRole('graphics-document');
+    expect(view).toBeInTheDocument();
+    const windowsEntry = screen.getByText('Windows');
+    expect(windowsEntry).toBeInTheDocument();
+  });
 
-	test('Descriptions renders properly', async () => {
-		render(<Descriptions {...Descriptions.args} />);
-		const view = await screen.findByRole('graphics-document');
-		expect(view).toBeInTheDocument();
-	});
+  test('Descriptions renders properly', async () => {
+    render(<Descriptions {...Descriptions.args} />);
+    const view = await screen.findByRole('graphics-document');
+    expect(view).toBeInTheDocument();
+  });
 
-	test('Displays legend descriptions on hover after a delay', async () => {
-		render(<Descriptions {...Descriptions.args} />);
-		const chart = await findChart();
-		const legendEntries = getAllLegendEntries(chart);
-		await hoverNthElement(legendEntries, 0);
-		let tooltip = screen.queryByTestId('rsc-tooltip');
+  test('Displays legend descriptions on hover after a delay', async () => {
+    render(<Descriptions {...Descriptions.args} />);
+    const chart = await findChart();
+    const legendEntries = getAllLegendEntries(chart);
+    await hoverNthElement(legendEntries, 0);
+    let tooltip = screen.queryByTestId('rsc-tooltip');
 
-		expect(tooltip).toBeNull();
+    expect(tooltip).toBeNull();
 
-		await waitForLegendTooltip();
-		tooltip = await screen.findByTestId('rsc-tooltip');
-		expect(tooltip).toBeInTheDocument();
-		expect(tooltip).toHaveTextContent('WindowsMost popular operating system, especially in business');
-	});
+    await waitForLegendTooltip();
+    tooltip = await screen.findByTestId('rsc-tooltip');
+    expect(tooltip).toBeInTheDocument();
+    expect(tooltip).toHaveTextContent('WindowsMost popular operating system, especially in business');
+  });
 
-	test('Does not display legend tooltip if there are no descriptions', async () => {
-		render(<Descriptions {...Descriptions.args} descriptions={undefined} />);
-		const chart = await findChart();
-		const legendEntries = getAllLegendEntries(chart);
-		await hoverNthElement(legendEntries, 0);
+  test('Does not display legend tooltip if there are no descriptions', async () => {
+    render(<Descriptions {...Descriptions.args} descriptions={undefined} />);
+    const chart = await findChart();
+    const legendEntries = getAllLegendEntries(chart);
+    await hoverNthElement(legendEntries, 0);
 
-		await waitForLegendTooltip();
+    await waitForLegendTooltip();
 
-		const tooltip = screen.queryByTestId('rsc-tooltip');
+    const tooltip = screen.queryByTestId('rsc-tooltip');
 
-		expect(tooltip).toBeNull();
-	});
+    expect(tooltip).toBeNull();
+  });
 
-	test('Does not display legend tooltip if descriptions is empty', async () => {
-		render(<Descriptions {...Descriptions.args} descriptions={[]} />);
-		const chart = await findChart();
-		const legendEntries = getAllLegendEntries(chart);
-		await hoverNthElement(legendEntries, 0);
-		waitForLegendTooltip();
+  test('Does not display legend tooltip if descriptions is empty', async () => {
+    render(<Descriptions {...Descriptions.args} descriptions={[]} />);
+    const chart = await findChart();
+    const legendEntries = getAllLegendEntries(chart);
+    await hoverNthElement(legendEntries, 0);
+    waitForLegendTooltip();
 
-		const tooltip = screen.queryByTestId('rsc-tooltip');
-		expect(tooltip).toBeNull();
-	});
+    const tooltip = screen.queryByTestId('rsc-tooltip');
+    expect(tooltip).toBeNull();
+  });
 
-	test('Description tooltips display for multiple entries with one series', async () => {
-		const data = [
-			{
-				period: 'Previous period',
-				series: 'series',
-			},
-			{
-				period: 'Current period',
-				series: 'series',
-			},
-		];
+  test('Description tooltips display for multiple entries with one series', async () => {
+    const data = [
+      {
+        period: 'Previous period',
+        series: 'series',
+      },
+      {
+        period: 'Current period',
+        series: 'series',
+      },
+    ];
 
-		const descriptions = [
-			{
-				seriesName: 'series | Previous period',
-				description: 'description previous',
-				title: 'Series | Previous period',
-			},
-			{
-				seriesName: 'series | Current period',
-				description: 'description current',
-				title: 'Series | Current period',
-			},
-		];
+    const descriptions = [
+      {
+        seriesName: 'series | Previous period',
+        description: 'description previous',
+        title: 'Series | Previous period',
+      },
+      {
+        seriesName: 'series | Current period',
+        description: 'description current',
+        title: 'Series | Current period',
+      },
+    ];
 
-		const legendLabels = [
-			{
-				seriesName: descriptions[0].seriesName,
-				label: descriptions[0].title,
-			},
-			{
-				seriesName: descriptions[1].seriesName,
-				label: descriptions[1].title,
-			},
-		];
+    const legendLabels = [
+      {
+        seriesName: descriptions[0].seriesName,
+        label: descriptions[0].title,
+      },
+      {
+        seriesName: descriptions[1].seriesName,
+        label: descriptions[1].title,
+      },
+    ];
 
-		render(
-			<Chart data={data} width={700}>
-				<Legend color="series" lineType="period" descriptions={descriptions} legendLabels={legendLabels} />
-			</Chart>
-		);
-		const chart = await findChart();
-		expect(chart).toBeInTheDocument();
+    render(
+      <Chart data={data} width={700}>
+        <Legend color="series" lineType="period" descriptions={descriptions} legendLabels={legendLabels} />
+      </Chart>
+    );
+    const chart = await findChart();
+    expect(chart).toBeInTheDocument();
 
-		const entries = getAllLegendEntries(chart);
-		await hoverNthElement(entries, 0);
+    const entries = getAllLegendEntries(chart);
+    await hoverNthElement(entries, 0);
 
-		let tooltip = await screen.findByTestId('rsc-tooltip');
-		expect(tooltip).toBeVisible();
-		expect(tooltip).toHaveTextContent('Series | Previous perioddescription previous');
+    let tooltip = await screen.findByTestId('rsc-tooltip');
+    expect(tooltip).toBeVisible();
+    expect(tooltip).toHaveTextContent('Series | Previous perioddescription previous');
 
-		cleanupTooltips();
+    cleanupTooltips();
 
-		await hoverNthElement(entries, 1);
+    await hoverNthElement(entries, 1);
 
-		tooltip = await screen.findByTestId('rsc-tooltip');
-		expect(tooltip).toBeVisible();
-		expect(tooltip).toHaveTextContent('Series | Current perioddescription current');
-	});
+    tooltip = await screen.findByTestId('rsc-tooltip');
+    expect(tooltip).toBeVisible();
+    expect(tooltip).toHaveTextContent('Series | Current perioddescription current');
+  });
 
-	test('Disconnected renders properly', async () => {
-		render(<Basic {...Basic.args} />);
-		const view = await screen.findByRole('graphics-document');
-		expect(view).toBeInTheDocument();
+  test('Disconnected renders properly', async () => {
+    render(<Basic {...Basic.args} />);
+    const view = await screen.findByRole('graphics-document');
+    expect(view).toBeInTheDocument();
 
-		const chart = await findChart();
+    const chart = await findChart();
 
-		const legendEntries = getAllLegendEntries(chart);
-		expect(legendEntries.length).toBe(3);
+    const legendEntries = getAllLegendEntries(chart);
+    expect(legendEntries.length).toBe(3);
 
-		for (const entry of legendEntries) {
-			expect(entry).toBeVisible();
-		}
+    for (const entry of legendEntries) {
+      expect(entry).toBeVisible();
+    }
 
-		expect(screen.getByText('Windows')).toBeInTheDocument();
-		expect(screen.getByText('Mac')).toBeInTheDocument();
-		expect(screen.getByText('Other')).toBeInTheDocument();
-	});
+    expect(screen.getByText('Windows')).toBeInTheDocument();
+    expect(screen.getByText('Mac')).toBeInTheDocument();
+    expect(screen.getByText('Other')).toBeInTheDocument();
+  });
 
-	test('Position renders properly', async () => {
-		render(<Position {...Position.args} />);
-		const view = await screen.findByRole('graphics-document');
-		expect(view).toBeInTheDocument();
-	});
+  test('Position renders properly', async () => {
+    render(<Position {...Position.args} />);
+    const view = await screen.findByRole('graphics-document');
+    expect(view).toBeInTheDocument();
+  });
 
-	test('Title renders properly', async () => {
-		render(<Title {...Title.args} />);
-		const view = await screen.findByRole('graphics-document');
-		expect(view).toBeInTheDocument();
-	});
+  test('Title renders properly', async () => {
+    render(<Title {...Title.args} />);
+    const view = await screen.findByRole('graphics-document');
+    expect(view).toBeInTheDocument();
+  });
 
-	test('Popover renders properly', async () => {
-		render(<Popover {...Popover.args} />);
-		const chart = await findChart();
-		const entries = getAllLegendEntries(chart);
+  test('Popover renders properly', async () => {
+    render(<Popover {...Popover.args} />);
+    const chart = await findChart();
+    const entries = getAllLegendEntries(chart);
 
-		await clickNthElement(entries, 0);
-		const popover = await screen.findByTestId('rsc-popover');
-		await waitFor(() => expect(popover).toBeInTheDocument());
+    await clickNthElement(entries, 0);
+    const popover = await screen.findByTestId('rsc-popover');
+    await waitFor(() => expect(popover).toBeInTheDocument());
 
-		// shouldn't close the popover
-		await userEvent.click(popover);
-		expect(popover).toBeInTheDocument();
+    // first symbol should be highlighted
+    let symbols = getAllLegendSymbols(chart);
+    expect(symbols[0]).toHaveAttribute('opacity', '1');
+    expect(symbols[1]).toHaveAttribute('opacity', `${1 / HIGHLIGHT_CONTRAST_RATIO}`);
 
-		// should close the popover
-		await userEvent.click(chart);
-		await waitFor(() => expect(popover).not.toBeInTheDocument());
-	});
+    // shouldn't close the popover
+    await userEvent.click(popover);
+    expect(popover).toBeInTheDocument();
 
-	test('Supreme renders properly', async () => {
-		render(<Supreme {...Supreme.args} />);
-		const chart = await findChart();
-		expect(chart).toBeInTheDocument();
+    // should close the popover
+    await userEvent.click(chart);
+    await waitFor(() => expect(popover).not.toBeInTheDocument());
 
-		const entries = getAllLegendEntries(chart);
-		await hoverNthElement(entries, 0);
+    // no symbols should be highlighted
+    symbols = getAllLegendSymbols(chart);
+    expect(symbols[0]).toHaveAttribute('opacity', '1');
+    expect(symbols[1]).toHaveAttribute('opacity', '1');
+  });
 
-		// make sure tooltip is visible
-		const tooltip = await screen.findByTestId('rsc-tooltip');
-		expect(tooltip).toBeInTheDocument();
-	});
+  test('Supreme renders properly', async () => {
+    render(<Supreme {...Supreme.args} />);
+    const chart = await findChart();
+    expect(chart).toBeInTheDocument();
 
-	test('Supreme with no descriptions', async () => {
-		render(<Supreme {...Supreme.args} descriptions={[]} />);
-		const chart = await findChart();
-		expect(chart).toBeInTheDocument();
+    const entries = getAllLegendEntries(chart);
+    await hoverNthElement(entries, 0);
 
-		const entries = getAllLegendEntries(chart);
-		await hoverNthElement(entries, 0);
-		await waitForLegendTooltip();
+    // make sure tooltip is visible
+    const tooltip = await screen.findByTestId('rsc-tooltip');
+    expect(tooltip).toBeInTheDocument();
+  });
 
-		const tooltip = screen.queryByTestId('rsc-tooltip');
-		expect(tooltip).toBeNull();
-	});
+  test('Supreme with no descriptions', async () => {
+    render(<Supreme {...Supreme.args} descriptions={[]} />);
+    const chart = await findChart();
+    expect(chart).toBeInTheDocument();
 
-	test('should call onClick callback when selecting a legend entry', async () => {
-		const onClick = jest.fn();
-		render(<OnClick {...OnClick.args} onClick={onClick} />);
-		const chart = await findChart();
-		const entries = getAllLegendEntries(chart);
+    const entries = getAllLegendEntries(chart);
+    await hoverNthElement(entries, 0);
+    await waitForLegendTooltip();
 
-		await clickNthElement(entries, 0);
-		expect(onClick).toHaveBeenCalledWith('Windows');
+    const tooltip = screen.queryByTestId('rsc-tooltip');
+    expect(tooltip).toBeNull();
+  });
 
-		await clickNthElement(entries, 1);
-		expect(onClick).toHaveBeenCalledWith('Mac');
+  test('should call onClick callback when selecting a legend entry', async () => {
+    const onClick = jest.fn();
+    render(<OnClick {...OnClick.args} onClick={onClick} />);
+    const chart = await findChart();
+    const entries = getAllLegendEntries(chart);
 
-		await clickNthElement(entries, 2);
-		expect(onClick).toHaveBeenCalledWith('Other');
-	});
+    await clickNthElement(entries, 0);
+    expect(onClick).toHaveBeenCalledWith('Windows');
 
-	test('respects labelLimit prop if provided (shorter than default limit)', async () => {
-		render(<LabelLimit {...LabelLimit.args} labelLimit={30} />);
-		const chart = await findChart();
-		expect(chart).toBeInTheDocument();
+    await clickNthElement(entries, 1);
+    expect(onClick).toHaveBeenCalledWith('Mac');
 
-		expect(
-			screen.queryByText('Very long Windows label that will be truncated without a custom labelLimit')
-		).not.toBeInTheDocument();
-	});
+    await clickNthElement(entries, 2);
+    expect(onClick).toHaveBeenCalledWith('Other');
+  });
 
-	test('respects labelLimit prop if provided (longer than default limit)', async () => {
-		render(<LabelLimit {...LabelLimit.args} labelLimit={300} />);
-		const chart = await findChart();
-		expect(chart).toBeInTheDocument();
+  test('respects labelLimit prop if provided (shorter than default limit)', async () => {
+    render(<LabelLimit {...LabelLimit.args} labelLimit={30} />);
+    const chart = await findChart();
+    expect(chart).toBeInTheDocument();
 
-		expect(
-			screen.queryByText('Very long Windows label that will be truncated without a custom labelLimit')
-		).toBeInTheDocument();
-	});
+    expect(
+      screen.queryByText('Very long Windows label that will be truncated without a custom labelLimit')
+    ).not.toBeInTheDocument();
+  });
 
-	// Legend is not a real React component. This is test just provides test coverage for sonarqube
-	test('Legend pseudo element', async () => {
-		render(<Legend />);
-	});
+  test('respects labelLimit prop if provided (longer than default limit)', async () => {
+    render(<LabelLimit {...LabelLimit.args} labelLimit={300} />);
+    const chart = await findChart();
+    expect(chart).toBeInTheDocument();
+
+    expect(
+      screen.queryByText('Very long Windows label that will be truncated without a custom labelLimit')
+    ).toBeInTheDocument();
+  });
+
+  test('renders with titleLimit', async () => {
+    render(<TitleLimit {...TitleLimit.args} />);
+    const view = await screen.findByRole('graphics-document');
+    expect(view).toBeInTheDocument();
+    // Check that the legend title is present. Note that JSDOM causes this to not match the UI rendered storybook.
+    // We're just testing that the chart renders with the titleLimit prop.
+    expect(screen.getByText('Very long legend title that should be truncated')).toBeInTheDocument();
+  });
+
+  // Legend is not a real React component. This is test just provides test coverage for sonarqube
+  test('Legend pseudo element', async () => {
+    render(<Legend />);
+  });
 });

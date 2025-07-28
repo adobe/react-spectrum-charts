@@ -1,16 +1,17 @@
 {
-	"extends": "../../tsconfig.json",
-	"compilerOptions": {
-		"baseUrl": "src",
-		"outDir": "./dist",
-		"declarationDir": "./dist/@types/"
-	},
-	"include": ["src/**/*.ts", "src/**/*.tsx"],
-	"exclude": ["node_modules", "dist", "dist-storybook", "*.test.ts", "src/stories/**/*"],
-	"references": [
-		{ "path": "../constants" },
-		{ "path": "../themes" },
-		{ "path": "../vega-spec-builder" },
-		{ "path": "../utils" }
-	]
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": "src",
+    "outDir": "./dist",
+    "declarationDir": "./dist/@types/"
+  },
+  "include": ["src/**/*.ts", "src/**/*.tsx"],
+  "exclude": ["node_modules", "dist", "dist-storybook", "*.test.ts", "src/stories/**/*"],
+  "references": [
+    { "path": "../constants" },
+    { "path": "../themes" },
+    { "path": "../vega-spec-builder" },
+    { "path": "../locales" },
+    { "path": "../utils" }
+  ]
 }

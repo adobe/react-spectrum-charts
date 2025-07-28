@@ -20,28 +20,28 @@ import { HIGHLIGHTED_GROUP, HIGHLIGHTED_ITEM, SELECTED_ITEM } from '@spectrum-ch
  * @returns
  */
 export const getLineHighlightedData = (
-	name: string,
-	idKey: string,
-	source: string,
-	hasPopover: boolean,
-	hasGroupId: boolean
+  name: string,
+  idKey: string,
+  source: string,
+  hasPopover: boolean,
+  hasGroupId: boolean
 ): SourceData => {
-	const highlightedExpr = hasGroupId
-		? `${HIGHLIGHTED_GROUP} === datum.${name}_highlightGroupId`
-		: `isArray(${HIGHLIGHTED_ITEM}) && indexof(${HIGHLIGHTED_ITEM}, datum.${idKey}) > -1  || ${HIGHLIGHTED_ITEM} === datum.${idKey}`;
-	const expr = hasPopover
-		? `${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${idKey} || !${SELECTED_ITEM} && ${highlightedExpr}`
-		: highlightedExpr;
-	return {
-		name: `${name}_highlightedData`,
-		source,
-		transform: [
-			{
-				type: 'filter',
-				expr,
-			},
-		],
-	};
+  const highlightedExpr = hasGroupId
+    ? `${HIGHLIGHTED_GROUP} === datum.${name}_highlightGroupId`
+    : `isArray(${HIGHLIGHTED_ITEM}) && indexof(${HIGHLIGHTED_ITEM}, datum.${idKey}) > -1  || ${HIGHLIGHTED_ITEM} === datum.${idKey}`;
+  const expr = hasPopover
+    ? `${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${idKey} || !${SELECTED_ITEM} && ${highlightedExpr}`
+    : highlightedExpr;
+  return {
+    name: `${name}_highlightedData`,
+    source,
+    transform: [
+      {
+        type: 'filter',
+        expr,
+      },
+    ],
+  };
 };
 
 /**
@@ -54,24 +54,22 @@ export const getLineHighlightedData = (
  * @returns
  */
 export const getLineStaticPointData = (
-	name: string,
-	staticPoint: string | undefined,
-	source: string,
-	isSparkline: boolean | undefined,
-	isMethodLast: boolean | undefined
+  name: string,
+  staticPoint: string | undefined,
+  source: string,
+  isSparkline: boolean | undefined,
+  isMethodLast: boolean | undefined
 ): SourceData => {
-	const expr =
-		isSparkline && isMethodLast
-			? "datum === data('table')[data('table').length - 1]"
-			: `datum.${staticPoint} === true`;
-	return {
-		name: `${name}_staticPointData`,
-		source,
-		transform: [
-			{
-				type: 'filter',
-				expr,
-			},
-		],
-	};
+  const expr =
+    isSparkline && isMethodLast ? "datum === data('table')[data('table').length - 1]" : `datum.${staticPoint} === true`;
+  return {
+    name: `${name}_staticPointData`,
+    source,
+    transform: [
+      {
+        type: 'filter',
+        expr,
+      },
+    ],
+  };
 };

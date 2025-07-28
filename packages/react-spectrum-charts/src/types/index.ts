@@ -12,7 +12,6 @@
 
 export * from './chart.types';
 export * from './legend.types';
-export * from './locale.types';
 export * from './title.types';
 export * from './util.types';
 

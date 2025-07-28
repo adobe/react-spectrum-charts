@@ -13,8 +13,7 @@ import { MutableRefObject, forwardRef, useEffect, useMemo } from 'react';
 
 import { ActionButton, Dialog, DialogTrigger, View as SpectrumView } from '@adobe/react-spectrum';
 import { COMPONENT_NAME, DEFAULT_SYMBOL_SHAPES, DEFAULT_SYMBOL_SIZES } from '@spectrum-charts/constants';
-import { getChartConfig } from '@spectrum-charts/themes';
-import { ChartHandle, Datum, SymbolSize } from '@spectrum-charts/vega-spec-builder';
+import { ChartHandle, Datum, SymbolSize, getChartConfig } from '@spectrum-charts/vega-spec-builder';
 
 import './Chart.css';
 import { VegaChart } from './VegaChart';
@@ -28,42 +27,42 @@ import { RscChartProps } from './types';
 import { sanitizeRscChartChildren } from './utils';
 
 interface ChartDialogProps {
-	datum: Datum | null;
-	targetElement: MutableRefObject<HTMLElement | null>;
-	setIsPopoverOpen: (isOpen: boolean) => void;
-	popover: PopoverDetail;
+  datum: Datum | null;
+  targetElement: MutableRefObject<HTMLElement | null>;
+  setIsPopoverOpen: (isOpen: boolean) => void;
+  popover: PopoverDetail;
 }
 
 export const RscChart = forwardRef<ChartHandle, RscChartProps>((props, forwardedRef) => {
-	const {
-		backgroundColor,
-		data,
-		chartWidth,
-		chartHeight,
-		colors,
-		colorScheme,
-		config,
-		description,
-		debug,
-		hiddenSeries,
-		highlightedItem,
-		highlightedSeries,
-		lineTypes,
-		lineWidths,
-		locale,
-		opacities,
-		padding,
-		renderer,
-		symbolShapes = DEFAULT_SYMBOL_SHAPES,
-		symbolSizes = DEFAULT_SYMBOL_SIZES as [SymbolSize, SymbolSize],
-		title,
-		UNSAFE_vegaSpec,
-		idKey,
-	} = props;
+  const {
+    backgroundColor,
+    data,
+    chartWidth,
+    chartHeight,
+    colors,
+    colorScheme,
+    config,
+    description,
+    debug,
+    hiddenSeries,
+    highlightedItem,
+    highlightedSeries,
+    lineTypes,
+    lineWidths,
+    locale,
+    opacities,
+    padding,
+    renderer,
+    symbolShapes = DEFAULT_SYMBOL_SHAPES,
+    symbolSizes = DEFAULT_SYMBOL_SIZES as [SymbolSize, SymbolSize],
+    title,
+    UNSAFE_vegaSpec,
+    idKey,
+  } = props;
 
-	const { chartView, chartId, selectedData, popoverAnchorRef, isPopoverOpen, setIsPopoverOpen } = useChartContext();
+  const { chartView, chartId, selectedData, popoverAnchorRef, isPopoverOpen, setIsPopoverOpen } = useChartContext();
 
-	const sanitizedChildren = useMemo(() => sanitizeRscChartChildren(props.children), [props.children]);
+  const sanitizedChildren = useMemo(() => sanitizeRscChartChildren(props.children), [props.children]);
 
 	// THE MAGIC, builds our spec
 	const spec = useSpec({
@@ -88,93 +87,90 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>((props, forwarded
 		UNSAFE_vegaSpec,
 	});
 
-	useSpecProps(spec);
+  useSpecProps(spec);
 
-	const { signals, targetStyle, tooltipOptions, onNewView } = useChartInteractions(props, sanitizedChildren);
-	const chartConfig = useMemo(() => getChartConfig(config, colorScheme), [config, colorScheme]);
+  const { signals, targetStyle, tooltipOptions, onNewView } = useChartInteractions(props, sanitizedChildren);
+  const chartConfig = useMemo(() => getChartConfig(config, colorScheme), [config, colorScheme]);
 
-	useEffect(() => {
-		const tooltipElement = document.getElementById('vg-tooltip-element');
-		if (!tooltipElement) return;
-		// Hide tooltips on all charts when a popover is open
-		tooltipElement.hidden = isPopoverOpen;
+  useEffect(() => {
+    const tooltipElement = document.getElementById('vg-tooltip-element');
+    if (!tooltipElement) return;
+    // Hide tooltips on all charts when a popover is open
+    tooltipElement.hidden = isPopoverOpen;
 
-		// if the popover is closed, reset the selected data
-		if (!isPopoverOpen) {
-			selectedData.current = null;
-		}
-	}, [isPopoverOpen, selectedData]);
+    // if the popover is closed, reset the selected data
+    if (!isPopoverOpen) {
+      selectedData.current = null;
+    }
+  }, [isPopoverOpen, selectedData]);
 
-	useChartImperativeHandle(forwardedRef, { chartView, title });
-	const popovers = usePopovers(sanitizedChildren);
+  useChartImperativeHandle(forwardedRef, { chartView, title });
+  const popovers = usePopovers(sanitizedChildren);
 
-	return (
-		<>
-			<div
-				id={`${chartId}-popover-anchor`}
-				data-testid="rsc-popover-anchor"
-				ref={popoverAnchorRef}
-				style={targetStyle}
-			/>
-			<VegaChart
-				spec={spec}
-				config={chartConfig}
-				data={data}
-				debug={debug}
-				renderer={renderer}
-				width={chartWidth}
-				height={chartHeight}
-				locale={locale}
-				padding={padding}
-				signals={signals}
-				tooltip={tooltipOptions} // legend show/hide relies on this
-				onNewView={onNewView}
-			/>
-			{popovers.map((popover) => (
-				<ChartDialog
-					key={popover.key}
-					datum={selectedData.current}
-					targetElement={popoverAnchorRef}
-					setIsPopoverOpen={setIsPopoverOpen}
-					popover={popover}
-				/>
-			))}
-		</>
-	);
+  return (
+    <>
+      <div
+        id={`${chartId}-popover-anchor`}
+        data-testid="rsc-popover-anchor"
+        ref={popoverAnchorRef}
+        style={targetStyle}
+      />
+      <VegaChart
+        spec={spec}
+        config={chartConfig}
+        data={data}
+        debug={debug}
+        renderer={renderer}
+        width={chartWidth}
+        height={chartHeight}
+        locale={locale}
+        padding={padding}
+        signals={signals}
+        tooltip={tooltipOptions} // legend show/hide relies on this
+        onNewView={onNewView}
+      />
+      {popovers.map((popover) => (
+        <ChartDialog
+          key={popover.key}
+          datum={selectedData.current}
+          targetElement={popoverAnchorRef}
+          setIsPopoverOpen={setIsPopoverOpen}
+          popover={popover}
+        />
+      ))}
+    </>
+  );
 });
 RscChart.displayName = 'RscChart';
 
 const ChartDialog = ({ datum, popover, setIsPopoverOpen, targetElement }: ChartDialogProps) => {
-	const { chartPopoverProps, name } = popover;
-	const { children, onOpenChange, containerPadding, rightClick, ...dialogProps } = chartPopoverProps;
-	const minWidth = dialogProps.minWidth ?? 0;
+  const { chartPopoverProps, name } = popover;
+  const { children, onOpenChange, containerPadding, rightClick, ...dialogProps } = chartPopoverProps;
+  const minWidth = dialogProps.minWidth ?? 0;
 
-	return (
-		<DialogTrigger
-			type="popover"
-			mobileType="tray"
-			targetRef={targetElement}
-			onOpenChange={(isOpen) => {
-				onOpenChange?.(isOpen);
-				setIsPopoverOpen(isOpen);
-			}}
-			placement="top"
-			hideArrow
-			containerPadding={containerPadding}
-		>
-			<ActionButton
-				id={`${name}-${rightClick ? 'contextmenu' : 'popover'}-button`}
-				UNSAFE_style={{ display: 'none' }}
-			>
-				{rightClick ? 'launch chart context menu' : 'launch chart popover'}
-			</ActionButton>
-			{(close) => (
-				<Dialog data-testid="rsc-popover" UNSAFE_className="rsc-popover" {...dialogProps} minWidth={minWidth}>
-					<SpectrumView gridColumn="1/-1" gridRow="1/-1" margin={12}>
-						{datum && datum[COMPONENT_NAME] === name && children?.(datum, close)}
-					</SpectrumView>
-				</Dialog>
-			)}
-		</DialogTrigger>
-	);
+  return (
+    <DialogTrigger
+      type="popover"
+      mobileType="tray"
+      targetRef={targetElement}
+      onOpenChange={(isOpen) => {
+        onOpenChange?.(isOpen);
+        setIsPopoverOpen(isOpen);
+      }}
+      placement="top"
+      hideArrow
+      containerPadding={containerPadding}
+    >
+      <ActionButton id={`${name}-${rightClick ? 'contextmenu' : 'popover'}-button`} UNSAFE_style={{ display: 'none' }}>
+        {rightClick ? 'launch chart context menu' : 'launch chart popover'}
+      </ActionButton>
+      {(close) => (
+        <Dialog data-testid="rsc-popover" UNSAFE_className="rsc-popover" {...dialogProps} minWidth={minWidth}>
+          <SpectrumView gridColumn="1/-1" gridRow="1/-1" margin={12}>
+            {datum && datum[COMPONENT_NAME] === name && children?.(datum, close)}
+          </SpectrumView>
+        </Dialog>
+      )}
+    </DialogTrigger>
+  );
 };

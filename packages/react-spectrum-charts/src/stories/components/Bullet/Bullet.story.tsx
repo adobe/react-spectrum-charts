@@ -23,179 +23,179 @@ import { BulletProps, ChartProps } from '../../../types';
 import { basicBulletData, basicThresholdsData, coloredThresholdsData } from './data';
 
 export default {
-	title: 'RSC/Bullet (alpha)',
-	component: Bullet,
+  title: 'RSC/Bullet (alpha)',
+  component: Bullet,
 };
 
 // Default chart properties
 const defaultChartProps: ChartProps = {
-	data: basicBulletData,
-	width: 350,
-	height: 350,
+  data: basicBulletData,
+  width: 350,
+  height: 350,
 };
 
 // Basic Bullet chart story
 const BulletStory: StoryFn<BulletProps & { width?: number; height?: number }> = (args): ReactElement => {
-	const { width, height, ...bulletProps } = args;
-	const chartProps = useChartProps({ ...defaultChartProps, width: width ?? 350, height: height ?? 350 });
-	return (
-		<Chart {...chartProps}>
-			<Bullet {...bulletProps} />
-		</Chart>
-	);
+  const { width, height, ...bulletProps } = args;
+  const chartProps = useChartProps({ ...defaultChartProps, width: width ?? 350, height: height ?? 350 });
+  return (
+    <Chart {...chartProps}>
+      <Bullet {...bulletProps} />
+    </Chart>
+  );
 };
 
 // Bullet with Title
 const BulletTitleStory: StoryFn<typeof Bullet> = (args): ReactElement => {
-	const chartProps = useChartProps({ ...defaultChartProps, width: 400 });
-	return (
-		<Chart {...chartProps}>
-			<Title text={'Title Bullet'} position={'start'} orient={'top'} />
-			<Bullet {...args} />
-		</Chart>
-	);
+  const chartProps = useChartProps({ ...defaultChartProps, width: 400 });
+  return (
+    <Chart {...chartProps}>
+      <Title text={'Title Bullet'} position={'start'} orient={'top'} />
+      <Bullet {...args} />
+    </Chart>
+  );
 };
 
 const Basic = bindWithProps(BulletStory);
 Basic.args = {
-	metric: 'currentAmount',
-	dimension: 'graphLabel',
-	target: 'target',
-	color: 'blue-900',
-	direction: 'column',
-	numberFormat: '$,.2f',
-	showTarget: true,
-	showTargetValue: false,
-	labelPosition: 'top',
-	scaleType: 'normal',
-	maxScaleValue: 100,
-	track: false,
-	thresholdBarColor: false,
-	metricAxis: false,
+  metric: 'currentAmount',
+  dimension: 'graphLabel',
+  target: 'target',
+  color: 'blue-900',
+  direction: 'column',
+  numberFormat: '$,.2f',
+  showTarget: true,
+  showTargetValue: false,
+  labelPosition: 'top',
+  scaleType: 'normal',
+  maxScaleValue: 100,
+  track: false,
+  thresholdBarColor: false,
+  metricAxis: false,
 };
 
 const Thresholds = bindWithProps(BulletStory);
 Thresholds.args = {
-	metric: 'currentAmount',
-	dimension: 'graphLabel',
-	target: 'target',
-	color: 'blue-900',
-	direction: 'column',
-	numberFormat: '$,.2f',
-	showTarget: true,
-	showTargetValue: false,
-	labelPosition: 'top',
-	scaleType: 'normal',
-	maxScaleValue: 100,
-	thresholds: basicThresholdsData,
-	thresholdBarColor: false,
-	track: false,
-	metricAxis: false,
+  metric: 'currentAmount',
+  dimension: 'graphLabel',
+  target: 'target',
+  color: 'blue-900',
+  direction: 'column',
+  numberFormat: '$,.2f',
+  showTarget: true,
+  showTargetValue: false,
+  labelPosition: 'top',
+  scaleType: 'normal',
+  maxScaleValue: 100,
+  thresholds: basicThresholdsData,
+  thresholdBarColor: false,
+  track: false,
+  metricAxis: false,
 };
 
 const ColoredMetric = bindWithProps(BulletStory);
 ColoredMetric.args = {
-	metric: 'currentAmount',
-	dimension: 'graphLabel',
-	target: 'target',
-	color: 'blue-900',
-	direction: 'column',
-	numberFormat: '$,.2f',
-	showTarget: true,
-	showTargetValue: false,
-	labelPosition: 'top',
-	scaleType: 'normal',
-	maxScaleValue: 100,
-	track: false,
-	thresholdBarColor: true,
-	thresholds: coloredThresholdsData,
-	metricAxis: false,
+  metric: 'currentAmount',
+  dimension: 'graphLabel',
+  target: 'target',
+  color: 'blue-900',
+  direction: 'column',
+  numberFormat: '$,.2f',
+  showTarget: true,
+  showTargetValue: false,
+  labelPosition: 'top',
+  scaleType: 'normal',
+  maxScaleValue: 100,
+  track: false,
+  thresholdBarColor: true,
+  thresholds: coloredThresholdsData,
+  metricAxis: false,
 };
 
 const Track = bindWithProps(BulletStory);
 Track.args = {
-	metric: 'currentAmount',
-	dimension: 'graphLabel',
-	target: 'target',
-	color: 'blue-900',
-	direction: 'column',
-	numberFormat: '$,.2f',
-	showTarget: true,
-	showTargetValue: false,
-	labelPosition: 'top',
-	scaleType: 'normal',
-	maxScaleValue: 100,
-	track: true,
-	metricAxis: false,
+  metric: 'currentAmount',
+  dimension: 'graphLabel',
+  target: 'target',
+  color: 'blue-900',
+  direction: 'column',
+  numberFormat: '$,.2f',
+  showTarget: true,
+  showTargetValue: false,
+  labelPosition: 'top',
+  scaleType: 'normal',
+  maxScaleValue: 100,
+  track: true,
+  metricAxis: false,
 };
 
 const RowMode = bindWithProps(BulletStory);
 RowMode.args = {
-	metric: 'currentAmount',
-	dimension: 'graphLabel',
-	target: 'target',
-	color: 'blue-900',
-	direction: 'row',
-	numberFormat: '$,.2f',
-	showTarget: true,
-	showTargetValue: false,
-	labelPosition: 'top',
-	scaleType: 'normal',
-	maxScaleValue: 100,
-	thresholds: coloredThresholdsData,
-	thresholdBarColor: true,
-	track: false,
-	metricAxis: false,
+  metric: 'currentAmount',
+  dimension: 'graphLabel',
+  target: 'target',
+  color: 'blue-900',
+  direction: 'row',
+  numberFormat: '$,.2f',
+  showTarget: true,
+  showTargetValue: false,
+  labelPosition: 'top',
+  scaleType: 'normal',
+  maxScaleValue: 100,
+  thresholds: coloredThresholdsData,
+  thresholdBarColor: true,
+  track: false,
+  metricAxis: false,
 };
 
 const WithTitle = bindWithProps(BulletTitleStory);
 WithTitle.args = {
-	metric: 'currentAmount',
-	dimension: 'graphLabel',
-	target: 'target',
-	color: 'blue-900',
-	numberFormat: '$,.2f',
-	labelPosition: 'top',
-	scaleType: 'normal',
-	maxScaleValue: 100,
-	track: false,
-	direction: 'column',
-	metricAxis: false,
+  metric: 'currentAmount',
+  dimension: 'graphLabel',
+  target: 'target',
+  color: 'blue-900',
+  numberFormat: '$,.2f',
+  labelPosition: 'top',
+  scaleType: 'normal',
+  maxScaleValue: 100,
+  track: false,
+  direction: 'column',
+  metricAxis: false,
 };
 
 const FixedScale = bindWithProps(BulletStory);
 FixedScale.args = {
-	metric: 'currentAmount',
-	dimension: 'graphLabel',
-	target: 'target',
-	color: 'blue-900',
-	direction: 'column',
-	numberFormat: '$,.2f',
-	showTarget: true,
-	showTargetValue: false,
-	labelPosition: 'top',
-	scaleType: 'fixed',
-	maxScaleValue: 250,
-	thresholds: basicThresholdsData,
-	track: false,
-	metricAxis: false,
+  metric: 'currentAmount',
+  dimension: 'graphLabel',
+  target: 'target',
+  color: 'blue-900',
+  direction: 'column',
+  numberFormat: '$,.2f',
+  showTarget: true,
+  showTargetValue: false,
+  labelPosition: 'top',
+  scaleType: 'fixed',
+  maxScaleValue: 250,
+  thresholds: basicThresholdsData,
+  track: false,
+  metricAxis: false,
 };
 
 const MetricAxis = bindWithProps(BulletStory);
 MetricAxis.args = {
-	metric: 'currentAmount',
-	dimension: 'graphLabel',
-	target: 'target',
-	color: 'blue-900',
-	direction: 'column',
-	numberFormat: '$,.2f',
-	showTarget: true,
-	showTargetValue: false,
-	labelPosition: 'top',
-	scaleType: 'normal',
-	maxScaleValue: 250,
-	track: false,
-	metricAxis: true,
+  metric: 'currentAmount',
+  dimension: 'graphLabel',
+  target: 'target',
+  color: 'blue-900',
+  direction: 'column',
+  numberFormat: '$,.2f',
+  showTarget: true,
+  showTargetValue: false,
+  labelPosition: 'top',
+  scaleType: 'normal',
+  maxScaleValue: 250,
+  track: false,
+  metricAxis: true,
 };
 
 export { Basic, Thresholds, ColoredMetric, Track, RowMode, WithTitle, FixedScale, MetricAxis };

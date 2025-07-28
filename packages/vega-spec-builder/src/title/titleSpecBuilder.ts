@@ -16,15 +16,15 @@ import { DEFAULT_TITLE_FONT_WEIGHT } from '@spectrum-charts/constants';
 import { ScSpec, TitleOptions } from '../types';
 
 export const addTitle = produce<ScSpec, [TitleOptions]>(
-	(spec, { text, fontWeight = DEFAULT_TITLE_FONT_WEIGHT, position = 'middle', orient = 'top' }) => {
-		spec.title = {
-			text,
-			fontWeight,
-			anchor: position,
-			frame: 'group',
-			orient,
-		};
+  (spec, { text, fontWeight = DEFAULT_TITLE_FONT_WEIGHT, position = 'middle', orient = 'top' }) => {
+    spec.title = {
+      text,
+      fontWeight,
+      anchor: position,
+      frame: 'group',
+      orient,
+    };
 
-		return spec;
-	}
+    return spec;
+  }
 );

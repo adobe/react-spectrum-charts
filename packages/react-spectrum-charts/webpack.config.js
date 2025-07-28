@@ -19,69 +19,70 @@ const { name, version } = require('./package.json');
 const banner = `${name}@v${version}`;
 
 module.exports = {
-	entry: {
-		alpha: './src/alpha/index.ts',
-		beta: './src/beta/index.ts',
-		rc: './src/rc/index.ts',
-		index: './src/index.ts',
-	},
-	mode: 'production',
+  entry: {
+    alpha: './src/alpha/index.ts',
+    beta: './src/beta/index.ts',
+    rc: './src/rc/index.ts',
+    index: './src/index.ts',
+  },
+  mode: 'production',
 
-	output: {
-		filename: '[name].js',
-		path: path.resolve(__dirname, 'dist'),
-		library: 'reactSpectrumCharts',
-		libraryTarget: 'umd',
-		globalObject: 'this',
-		clean: true,
-	},
+  output: {
+    filename: '[name].js',
+    path: path.resolve(__dirname, 'dist'),
+    library: 'reactSpectrumCharts',
+    libraryTarget: 'umd',
+    globalObject: 'this',
+    clean: true,
+  },
 
-	module: {
-		rules: [
-			{
-				test: /\.(ts|tsx)$/,
-				exclude: /node_modules/,
-				resolve: {
-					extensions: ['.ts', '.tsx', '.js', '.jsx', '.json'],
-				},
-				use: 'ts-loader',
-			},
-			{
-				test: /\.(sa|sc|c)ss$/,
-				use: ['style-loader', 'css-loader'],
-				sideEffects: true,
-			},
-		],
-	},
+  module: {
+    rules: [
+      {
+        test: /\.(ts|tsx)$/,
+        exclude: /node_modules/,
+        resolve: {
+          extensions: ['.ts', '.tsx', '.js', '.jsx', '.json'],
+        },
+        use: 'ts-loader',
+      },
+      {
+        test: /\.(sa|sc|c)ss$/,
+        use: ['style-loader', 'css-loader'],
+        sideEffects: true,
+      },
+    ],
+  },
 
-	externals: [
-		{
-			'@spectrum-charts/constants': '@spectrum-charts/constants',
-			'@spectrum-charts/utils': '@spectrum-charts/utils',
-			'@spectrum-charts/themes': '@spectrum-charts/themes',
-			'@spectrum-charts/vega-spec-builder': '@spectrum-charts/vega-spec-builder',
-			'@adobe/react-spectrum': '@adobe/react-spectrum',
-			react: 'react',
-			'react-dom': 'react-dom',
-			vega: 'vega',
-			'vega-lite': 'vega-lite',
-		},
-		nodeExternals(),
-	],
+  externals: [
+    {
+      '@spectrum-charts/constants': '@spectrum-charts/constants',
+      '@spectrum-charts/locales': '@spectrum-charts/locales',
+      '@spectrum-charts/utils': '@spectrum-charts/utils',
+      '@spectrum-charts/themes': '@spectrum-charts/themes',
+      '@spectrum-charts/vega-spec-builder': '@spectrum-charts/vega-spec-builder',
+      '@adobe/react-spectrum': '@adobe/react-spectrum',
+      react: 'react',
+      'react-dom': 'react-dom',
+      vega: 'vega',
+      'vega-lite': 'vega-lite',
+    },
+    nodeExternals(),
+  ],
 
-	optimization: {
-		minimize: process.env.NODE_ENV === 'development' ? false : true,
-	},
+  optimization: {
+    minimize: process.env.NODE_ENV === 'development' ? false : true,
+  },
 
-	plugins: [new webpack.BannerPlugin(banner)],
+  plugins: [new webpack.BannerPlugin(banner)],
 
-	resolve: {
-		extensions: ['.tsx', '.ts', '.js', '.jsx', '.svg', '.css', '.json'],
-	},
+  resolve: {
+    extensions: ['.tsx', '.ts', '.js', '.jsx', '.svg', '.css', '.json'],
+  },
 
-	devServer: {
-		client: {
-			overlay: false,
-		},
-	},
+  devServer: {
+    client: {
+      overlay: false,
+    },
+  },
 };

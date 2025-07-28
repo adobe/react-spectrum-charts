@@ -20,8 +20,8 @@ import { ReferenceLineElement } from './referenceLine.types';
 export type AxisChildElement = AxisAnnotationElement | ReferenceLineElement;
 
 export interface AxisProps extends Omit<AxisOptions, 'axisAnnotations' | 'referenceLines'> {
-	/** Child components that add supplemental content to the axis */
-	children?: Children<AxisChildElement>;
+  /** Child components that add supplemental content to the axis */
+  children?: Children<AxisChildElement>;
 }
 
 export type AxisElement = ReactElement<AxisProps, JSXElementConstructor<AxisProps>>;

@@ -14,28 +14,28 @@
 import { FC } from 'react';
 
 import {
-	DEFAULT_COLOR,
-	DEFAULT_LINEAR_DIMENSION,
-	DEFAULT_METRIC,
-	DEFAULT_SYMBOL_SIZE,
+  DEFAULT_COLOR,
+  DEFAULT_LINEAR_DIMENSION,
+  DEFAULT_METRIC,
+  DEFAULT_SYMBOL_SIZE,
 } from '@spectrum-charts/constants';
 
 import { ScatterProps } from '../../types';
 
 // destructure props here and set defaults so that storybook can pick them up
 const Scatter: FC<ScatterProps> = ({
-	color = DEFAULT_COLOR,
-	colorScaleType,
-	dimension = DEFAULT_LINEAR_DIMENSION,
-	children,
-	lineType = { value: 'solid' },
-	lineWidth = { value: 0 },
-	metric = DEFAULT_METRIC,
-	name,
-	opacity = { value: 1 },
-	size = { value: DEFAULT_SYMBOL_SIZE },
+  color = DEFAULT_COLOR,
+  colorScaleType,
+  dimension = DEFAULT_LINEAR_DIMENSION,
+  children,
+  lineType = { value: 'solid' },
+  lineWidth = { value: 0 },
+  metric = DEFAULT_METRIC,
+  name,
+  opacity = { value: 1 },
+  size = { value: DEFAULT_SYMBOL_SIZE },
 }) => {
-	return null;
+  return null;
 };
 
 // displayName is used to validate the component type in the spec builder

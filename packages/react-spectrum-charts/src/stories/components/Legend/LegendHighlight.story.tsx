@@ -13,8 +13,8 @@ import { Legend } from '../../../components';
 import { LegendBarHighlightedSeriesStory, LegendBarStory, defaultProps } from './LegendStoryUtils';
 
 export default {
-	title: 'RSC/Legend/Highlight',
-	component: Legend,
+  title: 'RSC/Legend/Highlight',
+  component: Legend,
 };
 
 const Basic = LegendBarStory.bind({});

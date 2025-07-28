@@ -20,41 +20,41 @@ import { Trendline } from '../components/Trendline';
 import { getBarOptions } from './barAdapter';
 
 describe('getBarOptions()', () => {
-	it('should return all basic options', () => {
-		const options = getBarOptions({});
-		expect(options.markType).toBe('bar');
-		expect(options.hasOnClick).toBe(false);
-		expect(options.barAnnotations).toHaveLength(0);
-		expect(options.chartPopovers).toHaveLength(0);
-		expect(options.chartTooltips).toHaveLength(0);
-		expect(options.trendlines).toHaveLength(0);
-	});
-	it('should convert annotation children to barAnnotations array', () => {
-		const options = getBarOptions({ children: [createElement(Annotation)] });
-		expect(options.barAnnotations).toHaveLength(1);
-	});
-	it('should convert popover children to chartPopovers array', () => {
-		const options = getBarOptions({ children: [createElement(ChartPopover)] });
-		expect(options.chartPopovers).toHaveLength(1);
-	});
-	it('should convert tooltip children to chartTooltips array', () => {
-		const options = getBarOptions({ children: [createElement(ChartTooltip)] });
-		expect(options.chartTooltips).toHaveLength(1);
-	});
-	it('should convert trendline children to trendlines array', () => {
-		const options = getBarOptions({ children: [createElement(Trendline)] });
-		expect(options.trendlines).toHaveLength(1);
-	});
-	test('should set hasOnClick to true if onClickProp exists and is not undefined', () => {
-		expect(getBarOptions({ onClick: () => {} }).hasOnClick).toBe(true);
-		expect(getBarOptions({ onClick: undefined }).hasOnClick).toBe(false);
-	});
-	it('should pass through included props', () => {
-		const options = getBarOptions({ color: DEFAULT_COLOR });
-		expect(options).toHaveProperty('color', DEFAULT_COLOR);
-	});
-	it('should not add props that are not provided', () => {
-		const options = getBarOptions({});
-		expect(options).not.toHaveProperty('color');
-	});
+  it('should return all basic options', () => {
+    const options = getBarOptions({});
+    expect(options.markType).toBe('bar');
+    expect(options.hasOnClick).toBe(false);
+    expect(options.barAnnotations).toHaveLength(0);
+    expect(options.chartPopovers).toHaveLength(0);
+    expect(options.chartTooltips).toHaveLength(0);
+    expect(options.trendlines).toHaveLength(0);
+  });
+  it('should convert annotation children to barAnnotations array', () => {
+    const options = getBarOptions({ children: [createElement(Annotation)] });
+    expect(options.barAnnotations).toHaveLength(1);
+  });
+  it('should convert popover children to chartPopovers array', () => {
+    const options = getBarOptions({ children: [createElement(ChartPopover)] });
+    expect(options.chartPopovers).toHaveLength(1);
+  });
+  it('should convert tooltip children to chartTooltips array', () => {
+    const options = getBarOptions({ children: [createElement(ChartTooltip)] });
+    expect(options.chartTooltips).toHaveLength(1);
+  });
+  it('should convert trendline children to trendlines array', () => {
+    const options = getBarOptions({ children: [createElement(Trendline)] });
+    expect(options.trendlines).toHaveLength(1);
+  });
+  test('should set hasOnClick to true if onClickProp exists and is not undefined', () => {
+    expect(getBarOptions({ onClick: () => {} }).hasOnClick).toBe(true);
+    expect(getBarOptions({ onClick: undefined }).hasOnClick).toBe(false);
+  });
+  it('should pass through included props', () => {
+    const options = getBarOptions({ color: DEFAULT_COLOR });
+    expect(options).toHaveProperty('color', DEFAULT_COLOR);
+  });
+  it('should not add props that are not provided', () => {
+    const options = getBarOptions({});
+    expect(options).not.toHaveProperty('color');
+  });
 });

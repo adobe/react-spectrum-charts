@@ -14,10 +14,8 @@ import { Spec } from 'vega';
 import { useChartContext } from '../context/RscChartContext';
 
 export default function useSpecProps(spec: Spec) {
-	const { controlledHoveredIdSignal, controlledHoveredGroupSignal } = useChartContext();
+  const { controlledHoveredIdSignal, controlledHoveredGroupSignal } = useChartContext();
 
-	controlledHoveredIdSignal.current = spec.signals?.find((signal) => signal.name.includes('controlledHoveredId'));
-	controlledHoveredGroupSignal.current = spec.signals?.find((signal) =>
-		signal.name.includes('controlledHoveredGroup')
-	);
+  controlledHoveredIdSignal.current = spec.signals?.find((signal) => signal.name.includes('controlledHoveredId'));
+  controlledHoveredGroupSignal.current = spec.signals?.find((signal) => signal.name.includes('controlledHoveredGroup'));
 }

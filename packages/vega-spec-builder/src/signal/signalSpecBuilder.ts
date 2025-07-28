@@ -12,22 +12,22 @@
 import { Signal } from 'vega';
 
 import {
-	COLOR_SCALE,
-	FILTERED_TABLE,
-	FIRST_RSC_SERIES_ID,
-	HIGHLIGHTED_GROUP,
-	HIGHLIGHTED_ITEM,
-	HIGHLIGHTED_SERIES,
-	LAST_RSC_SERIES_ID,
-	MOUSE_OVER_SERIES,
-	SERIES_ID,
+  COLOR_SCALE,
+  FILTERED_TABLE,
+  FIRST_RSC_SERIES_ID,
+  HIGHLIGHTED_GROUP,
+  HIGHLIGHTED_ITEM,
+  HIGHLIGHTED_SERIES,
+  LAST_RSC_SERIES_ID,
+  MOUSE_OVER_SERIES,
+  SERIES_ID,
 } from '@spectrum-charts/constants';
 
 /**
  * Does signal with given name exist?
  */
 export const hasSignalByName = (signals: Signal[], name: string) => {
-	return signals.some((signal) => signal.name === name);
+  return signals.some((signal) => signal.name === name);
 };
 
 /**
@@ -35,11 +35,11 @@ export const hasSignalByName = (signals: Signal[], name: string) => {
  *  Controlled hover signals get manually updated via the view in Chart.tsx
  */
 export const getControlledHoveredIdSignal = (name: string): Signal => {
-	return {
-		name: `${name}_controlledHoveredId`,
-		value: null,
-		on: [{ events: `@${name}:mouseout`, update: 'null' }],
-	};
+  return {
+    name: `${name}_controlledHoveredId`,
+    value: null,
+    on: [{ events: `@${name}:mouseout`, update: 'null' }],
+  };
 };
 
 /**
@@ -47,105 +47,105 @@ export const getControlledHoveredIdSignal = (name: string): Signal => {
  *  Controlled hover signals get manually updated via the view in Chart.tsx
  */
 export const getControlledHoveredGroupSignal = (name: string): Signal => {
-	return {
-		name: `${name}_controlledHoveredGroup`,
-		value: null,
-		on: [{ events: `@${name}:mouseout`, update: 'null' }],
-	};
+  return {
+    name: `${name}_controlledHoveredGroup`,
+    value: null,
+    on: [{ events: `@${name}:mouseout`, update: 'null' }],
+  };
 };
 
 /**
  * Returns the highlighted series signal
  */
 export const addHighlighSignalLegendHoverEvents = (
-	signals: Signal[],
-	legendName: string,
-	includeHiddenSeries: boolean,
-	keys?: string[]
+  signals: Signal[],
+  legendName: string,
+  includeHiddenSeries: boolean,
+  keys?: string[]
 ) => {
-	const signalName = keys?.length ? HIGHLIGHTED_GROUP : HIGHLIGHTED_SERIES;
-	const highlightedItemSignal = signals.find((signal) => signal.name === signalName);
-	if (highlightedItemSignal) {
-		if (highlightedItemSignal.on === undefined) {
-			highlightedItemSignal.on = [];
-		}
-		highlightedItemSignal.on.push(
-			...[
-				{
-					events: `@${legendName}_legendEntry:mouseover`,
-					update: getHighlightSignalUpdateExpression(legendName, includeHiddenSeries, keys),
-				},
-				{ events: `@${legendName}_legendEntry:mouseout`, update: 'null' },
-			]
-		);
-	}
+  const signalName = keys?.length ? HIGHLIGHTED_GROUP : HIGHLIGHTED_SERIES;
+  const highlightedItemSignal = signals.find((signal) => signal.name === signalName);
+  if (highlightedItemSignal) {
+    if (highlightedItemSignal.on === undefined) {
+      highlightedItemSignal.on = [];
+    }
+    highlightedItemSignal.on.push(
+      ...[
+        {
+          events: `@${legendName}_legendEntry:mouseover`,
+          update: getHighlightSignalUpdateExpression(legendName, includeHiddenSeries, keys),
+        },
+        { events: `@${legendName}_legendEntry:mouseout`, update: 'null' },
+      ]
+    );
+  }
 };
 
 export const getHighlightSignalUpdateExpression = (
-	legendName: string,
-	includeHiddenSeries: boolean,
-	keys?: string[]
+  legendName: string,
+  includeHiddenSeries: boolean,
+  keys?: string[]
 ) => {
-	const hoveredSeriesExpression = `domain("${legendName}Entries")[datum.index]`;
-	if (!includeHiddenSeries) return hoveredSeriesExpression;
-	if (keys?.length) {
-		return `indexof(pluck(data("${FILTERED_TABLE}"),"${legendName}_highlightGroupId"), ${hoveredSeriesExpression}) !== -1 ? ${hoveredSeriesExpression} : null`;
-	}
-	return `indexof(hiddenSeries, ${hoveredSeriesExpression}) === -1 ? ${hoveredSeriesExpression} : null`;
+  const hoveredSeriesExpression = `domain("${legendName}Entries")[datum.index]`;
+  if (!includeHiddenSeries) return hoveredSeriesExpression;
+  if (keys?.length) {
+    return `indexof(pluck(data("${FILTERED_TABLE}"),"${legendName}_highlightGroupId"), ${hoveredSeriesExpression}) !== -1 ? ${hoveredSeriesExpression} : null`;
+  }
+  return `indexof(hiddenSeries, ${hoveredSeriesExpression}) === -1 ? ${hoveredSeriesExpression} : null`;
 };
 
 /**
  * Returns the legendLabels series signal
  */
 export const getLegendLabelsSeriesSignal = (value: unknown = null): Signal => {
-	return {
-		name: 'legendLabels',
-		value,
-	};
+  return {
+    name: 'legendLabels',
+    value,
+  };
 };
 
 /**
  * Returns a basic value based signal
  */
 export const getGenericValueSignal = (name: string, value: unknown = null): Signal => {
-	return { name, value };
+  return { name, value };
 };
 
 /**
  * Returns a basic value based signal
  */
 export const getGenericUpdateSignal = (name: string, update: string): Signal => {
-	return { name, update };
+  return { name, update };
 };
 
 /**
  * Returns a signal that tracks which series is being moused over for dual Y-axis charts
  */
 export const getMouseOverSeriesSignal = (markName: string): Signal => ({
-	name: `${MOUSE_OVER_SERIES}`,
-	value: null,
-	on: [
-		{ events: `@${markName}:mouseover`, update: `datum.${SERIES_ID}` },
-		{ events: `@${markName}:mouseout`, update: 'null' },
-	],
+  name: `${MOUSE_OVER_SERIES}`,
+  value: null,
+  on: [
+    { events: `@${markName}:mouseover`, update: `datum.${SERIES_ID}` },
+    { events: `@${markName}:mouseout`, update: 'null' },
+  ],
 });
 
 /**
  * Returns a signal that tracks the first series in the series order for dual Y-axis charts
  */
 export const getFirstRscSeriesIdSignal = (): Signal => ({
-	name: `${FIRST_RSC_SERIES_ID}`,
-	value: null,
-	update: `length(domain("${COLOR_SCALE}")) > 0 ? domain("${COLOR_SCALE}")[0] : null`,
+  name: `${FIRST_RSC_SERIES_ID}`,
+  value: null,
+  update: `length(domain("${COLOR_SCALE}")) > 0 ? domain("${COLOR_SCALE}")[0] : null`,
 });
 
 /**
  * Returns a signal that tracks the last series in the series order for dual Y-axis charts
  */
 export const getLastRscSeriesIdSignal = (): Signal => ({
-	name: `${LAST_RSC_SERIES_ID}`,
-	value: null,
-	update: `length(domain("${COLOR_SCALE}")) > 0 ? peek(domain("${COLOR_SCALE}")) : null`,
+  name: `${LAST_RSC_SERIES_ID}`,
+  value: null,
+  update: `length(domain("${COLOR_SCALE}")) > 0 ? peek(domain("${COLOR_SCALE}")) : null`,
 });
 
 /**
@@ -156,34 +156,32 @@ export const getLastRscSeriesIdSignal = (): Signal => ({
  * @param excludeDataKey data items with a truthy value for this key will be excluded from the signal
  */
 export const addHighlightedItemSignalEvents = (
-	signals: Signal[],
-	markName: string,
-	idKey: string,
-	datumOrder = 1,
-	excludeDataKeys?: string[]
+  signals: Signal[],
+  markName: string,
+  idKey: string,
+  datumOrder = 1,
+  excludeDataKeys?: string[]
 ) => {
-	const highlightedItemSignal = signals.find((signal) => signal.name === HIGHLIGHTED_ITEM);
-	if (highlightedItemSignal) {
-		if (highlightedItemSignal.on === undefined) {
-			highlightedItemSignal.on = [];
-		}
-		const datum = new Array(datumOrder).fill('datum.').join('');
+  const highlightedItemSignal = signals.find((signal) => signal.name === HIGHLIGHTED_ITEM);
+  if (highlightedItemSignal) {
+    if (highlightedItemSignal.on === undefined) {
+      highlightedItemSignal.on = [];
+    }
+    const datum = new Array(datumOrder).fill('datum.').join('');
 
-		const excludeDataKeysCondition = excludeDataKeys
-			?.map((excludeDataKey) => `${datum}${excludeDataKey}`)
-			.join(' || ');
-		highlightedItemSignal.on.push(
-			...[
-				{
-					events: `@${markName}:mouseover`,
-					update: excludeDataKeys?.length
-						? `(${excludeDataKeysCondition}) ? null : ${datum}${idKey}`
-						: `${datum}${idKey}`,
-				},
-				{ events: `@${markName}:mouseout`, update: 'null' },
-			]
-		);
-	}
+    const excludeDataKeysCondition = excludeDataKeys?.map((excludeDataKey) => `${datum}${excludeDataKey}`).join(' || ');
+    highlightedItemSignal.on.push(
+      ...[
+        {
+          events: `@${markName}:mouseover`,
+          update: excludeDataKeys?.length
+            ? `(${excludeDataKeysCondition}) ? null : ${datum}${idKey}`
+            : `${datum}${idKey}`,
+        },
+        { events: `@${markName}:mouseout`, update: 'null' },
+      ]
+    );
+  }
 };
 
 /**
@@ -194,31 +192,29 @@ export const addHighlightedItemSignalEvents = (
  * @param excludeDataKey data items with a truthy value for this key will be excluded from the signal
  */
 export const addHighlightedSeriesSignalEvents = (
-	signals: Signal[],
-	markName: string,
-	datumOrder = 1,
-	excludeDataKeys?: string[]
+  signals: Signal[],
+  markName: string,
+  datumOrder = 1,
+  excludeDataKeys?: string[]
 ) => {
-	const highlightedSeriesSignal = signals.find((signal) => signal.name === HIGHLIGHTED_SERIES);
-	if (highlightedSeriesSignal) {
-		if (highlightedSeriesSignal.on === undefined) {
-			highlightedSeriesSignal.on = [];
-		}
-		const datum = new Array(datumOrder).fill('datum.').join('');
+  const highlightedSeriesSignal = signals.find((signal) => signal.name === HIGHLIGHTED_SERIES);
+  if (highlightedSeriesSignal) {
+    if (highlightedSeriesSignal.on === undefined) {
+      highlightedSeriesSignal.on = [];
+    }
+    const datum = new Array(datumOrder).fill('datum.').join('');
 
-		const excludeDataKeysCondition = excludeDataKeys
-			?.map((excludeDataKey) => `${datum}${excludeDataKey}`)
-			.join(' || ');
-		highlightedSeriesSignal.on.push(
-			...[
-				{
-					events: `@${markName}:mouseover`,
-					update: excludeDataKeys?.length
-						? `(${excludeDataKeysCondition}) ? null : ${datum}${SERIES_ID}`
-						: `${datum}${SERIES_ID}`,
-				},
-				{ events: `@${markName}:mouseout`, update: 'null' },
-			]
-		);
-	}
+    const excludeDataKeysCondition = excludeDataKeys?.map((excludeDataKey) => `${datum}${excludeDataKey}`).join(' || ');
+    highlightedSeriesSignal.on.push(
+      ...[
+        {
+          events: `@${markName}:mouseover`,
+          update: excludeDataKeys?.length
+            ? `(${excludeDataKeysCondition}) ? null : ${datum}${SERIES_ID}`
+            : `${datum}${SERIES_ID}`,
+        },
+        { events: `@${markName}:mouseout`, update: 'null' },
+      ]
+    );
+  }
 };

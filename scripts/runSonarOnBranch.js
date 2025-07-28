@@ -15,29 +15,29 @@ const readline = require('readline');
 const { execSync } = require('child_process');
 
 async function main() {
-	// Create an interface to capture user input
-	const rl = readline.createInterface({
-		input: process.stdin,
-		output: process.stdout,
-	});
+  // Create an interface to capture user input
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+  });
 
-	const answer = await askQuestion(
-		`Make sure that your main is up to date before executing or the results won't be accurate. Is your main branch up to date? (y): `,
-		rl
-	);
+  const answer = await askQuestion(
+    `Make sure that your main is up to date before executing or the results won't be accurate. Is your main branch up to date? (y): `,
+    rl
+  );
 
-	if (['n', 'no'].includes(answer.toLowerCase())) {
-		console.log('Exiting...');
-		process.exit(0);
-	}
+  if (['n', 'no'].includes(answer.toLowerCase())) {
+    console.log('Exiting...');
+    process.exit(0);
+  }
 
-	// Close the readline interface
-	rl.close();
+  // Close the readline interface
+  rl.close();
 
-	console.log('Running tests...');
-	execSync('yarn test');
+  console.log('Running tests...');
+  execSync('yarn test');
 
-	runSonarForBranch();
+  runSonarForBranch();
 }
 
 main();

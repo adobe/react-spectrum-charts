@@ -60,7 +60,7 @@ const ResponsiveStory: StoryFn<typeof DonutSummary> = (args): ReactElement => {
         resize: 'vertical',
       }}
     >
-      <Chart {...chartProps} minHeight={50} debug>
+      <Chart {...chartProps} minHeight={50}>
         <Donut metric="count" color="browser">
           <DonutSummary {...args} />
         </Donut>

@@ -21,62 +21,62 @@ import { TrendlineProps } from '../../../types';
 import { characterData } from '../../data/marioKartData';
 
 export default {
-	title: 'RSC/Trendline/TrendlineAnnotation',
-	component: TrendlineAnnotation,
+  title: 'RSC/Trendline/TrendlineAnnotation',
+  component: TrendlineAnnotation,
 };
 
 const trendlineProps: TrendlineProps = {
-	method: 'median',
-	dimensionExtent: ['domain', 'domain'],
-	lineWidth: 'S',
+  method: 'median',
+  dimensionExtent: ['domain', 'domain'],
+  lineWidth: 'S',
 };
 
 const TrendlineAnnotationStory: StoryFn<typeof TrendlineAnnotation> = (args): ReactElement => {
-	const chartProps = useChartProps({ data: characterData, height: 500, width: 500, lineWidths: [1, 2, 3] });
+  const chartProps = useChartProps({ data: characterData, height: 500, width: 500, lineWidths: [1, 2, 3] });
 
-	return (
-		<Chart {...chartProps}>
-			<Axis position="bottom" grid ticks baseline title="Speed (normal)" />
-			<Axis position="left" grid ticks baseline title="Handling (normal)" />
-			<Scatter color="weightClass" dimension="speedNormal" metric="handlingNormal">
-				<Trendline {...trendlineProps}>
-					<TrendlineAnnotation {...args} />
-				</Trendline>
-			</Scatter>
-			<Legend title="Weight class" highlight position="right" />
-			<Title text="Mario Kart 8 Character Data" />
-		</Chart>
-	);
+  return (
+    <Chart {...chartProps}>
+      <Axis position="bottom" grid ticks baseline title="Speed (normal)" />
+      <Axis position="left" grid ticks baseline title="Handling (normal)" />
+      <Scatter color="weightClass" dimension="speedNormal" metric="handlingNormal">
+        <Trendline {...trendlineProps}>
+          <TrendlineAnnotation {...args} />
+        </Trendline>
+      </Scatter>
+      <Legend title="Weight class" highlight position="right" />
+      <Title text="Mario Kart 8 Character Data" />
+    </Chart>
+  );
 };
 
 const Basic = bindWithProps(TrendlineAnnotationStory);
 
 const Badge = bindWithProps(TrendlineAnnotationStory);
 Badge.args = {
-	badge: true,
+  badge: true,
 };
 
 const DimensionValue = bindWithProps(TrendlineAnnotationStory);
 DimensionValue.args = {
-	dimensionValue: 2,
+  dimensionValue: 2,
 };
 
 const NumberFormat = bindWithProps(TrendlineAnnotationStory);
 NumberFormat.args = {
-	numberFormat: '.2f',
+  numberFormat: '.2f',
 };
 
 const Prefix = bindWithProps(TrendlineAnnotationStory);
 Prefix.args = {
-	prefix: 'Speed:',
+  prefix: 'Speed:',
 };
 
 const Supreme = bindWithProps(TrendlineAnnotationStory);
 Supreme.args = {
-	badge: true,
-	dimensionValue: 'start',
-	numberFormat: '.2f',
-	prefix: 'Speed:',
+  badge: true,
+  dimensionValue: 'start',
+  numberFormat: '.2f',
+  prefix: 'Speed:',
 };
 
 export { Basic, Badge, DimensionValue, NumberFormat, Prefix, Supreme };
