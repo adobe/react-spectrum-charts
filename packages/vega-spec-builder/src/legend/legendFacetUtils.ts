@@ -40,6 +40,29 @@ const facetScaleNames: (FacetType | SecondaryFacetType)[] = [
 ];
 
 /**
+ * Safely extracts the field name from a field reference
+ * @param field - The field reference which could be a string or object
+ * @returns The field name as a string
+ */
+export const getFieldName = (field: string | { field?: string; signal?: string } | unknown): string => {
+  if (typeof field === 'string') {
+    return field;
+  }
+  if (field && typeof field === 'object') {
+    // Handle Vega field reference objects
+    if ('field' in field && typeof field.field === 'string') {
+      return field.field;
+    }
+    if ('signal' in field && typeof field.signal === 'string') {
+      return field.signal;
+    }
+    // Fallback to toString for other object types
+    return String(field);
+  }
+  return String(field);
+};
+
+/**
  * Goes through all the scales and finds all the facets that are used
  * A facet is a key in the data that is used to differentiate the data
  * Examples are color based on 'operatingSystem', size based on 'weight', lineType based on 'timePeriod' etc.
@@ -59,10 +82,10 @@ export const getFacets = (scales: Scale[]): { ordinalFacets: Facet[]; continuous
       if (scale.type === 'ordinal' || scale.type === 'point') {
         ordinalFacets.push({
           facetType: scale.name as FacetType,
-          field: scale.domain.fields[0].toString(),
+          field: getFieldName(scale.domain.fields[0]),
         });
       } else {
-        continuousFacets.push({ facetType: scale.name as FacetType, field: scale.domain.fields[0].toString() });
+        continuousFacets.push({ facetType: scale.name as FacetType, field: getFieldName(scale.domain.fields[0]) });
       }
     }
   });
@@ -87,12 +110,12 @@ export const getFacetsFromKeys = (
       if (scale.type === 'ordinal' || scale.type === 'point') {
         ordinalFacets.push({
           facetType: scale.name as FacetType,
-          field: scale.domain.fields.find((field) => keys.includes(field.toString()))?.toString() as string,
+          field: getFieldName(scale.domain.fields.find((field) => keys.includes(getFieldName(field)))),
         });
       } else {
         continuousFacets.push({
           facetType: scale.name as FacetType,
-          field: scale.domain.fields.find((field) => keys.includes(field.toString()))?.toString() as string,
+          field: getFieldName(scale.domain.fields.find((field) => keys.includes(getFieldName(field)))),
         });
       }
     }
@@ -107,7 +130,7 @@ export const getFacetsFromKeys = (
  * @returns boolean
  */
 const scaleHasKey = (scale: ScaleWithMultiFields, keys: string[]): boolean =>
-  scale.domain.fields.some((field) => keys.includes(field.toString()));
+  scale.domain.fields.some((field) => keys.includes(getFieldName(field)));
 
 type ScaleWithMultiFields = Scale & { domain: ScaleMultiFieldsRef };
 

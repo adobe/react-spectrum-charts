@@ -187,7 +187,7 @@ export const getSelectRingSize = (size: SymbolSizeFacet): NumericValueRef => {
     return { value: Math.pow(Math.sqrt(baseSize.value) + 4, 2) };
   }
   if ('scale' in baseSize && 'field' in baseSize) {
-    return { signal: `pow(sqrt(scale('${baseSize.scale}', datum.${baseSize.field})) + 4, 2)` };
+    return { signal: `pow(sqrt(scale('${baseSize.scale as string}', datum.${baseSize.field as string})) + 4, 2)` };
   }
   return baseSize;
 };
