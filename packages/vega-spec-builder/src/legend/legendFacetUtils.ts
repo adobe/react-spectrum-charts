@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { Scale, ScaleMultiFieldsRef } from 'vega';
+import { Scale, ScaleField, ScaleMultiFieldsRef } from 'vega';
 
 import {
   COLOR_SCALE,
@@ -44,7 +44,7 @@ const facetScaleNames: (FacetType | SecondaryFacetType)[] = [
  * @param field - The field reference which could be a string or object
  * @returns The field name as a string
  */
-export const getFieldName = (field: string | { field?: string; signal?: string } | unknown): string => {
+export const getFieldName = (field: ScaleField | undefined): string => {
   if (typeof field === 'string') {
     return field;
   }
