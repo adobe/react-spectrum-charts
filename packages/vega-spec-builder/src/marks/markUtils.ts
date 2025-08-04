@@ -193,10 +193,10 @@ export const getColorProductionRuleSignalString = (
     return colorRule.signal;
   }
   if ('scale' in colorRule && 'field' in colorRule) {
-    return `scale('${colorRule.scale}', datum.${colorRule.field})`;
+    return `scale('${colorRule.scale as string}', datum.${colorRule.field as string})`;
   }
   if ('value' in colorRule && colorRule.value) {
-    return `'${colorRule.value}'`;
+    return `'${colorRule.value as string}'`;
   }
   return '';
 };
