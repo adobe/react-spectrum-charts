@@ -9,12 +9,11 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { Scale, ScaleField } from 'vega';
+import { Scale } from 'vega';
 
 import { COLOR_SCALE, DEFAULT_COLOR, LINE_TYPE_SCALE, SYMBOL_SIZE_SCALE, TABLE } from '@spectrum-charts/constants';
 
-import { getFacets, getFacetsFromKeys, getFieldName } from './legendFacetUtils';
-
+import { getFacets, getFacetsFromKeys } from './legendFacetUtils';
 
 describe('getFacets()', () => {
   test('should correctly identify continuous and categorical facets', () => {
@@ -38,8 +37,6 @@ describe('getFacets()', () => {
     expect(ordinalFacets).toHaveLength(1);
     expect(continuousFacets).toHaveLength(1);
   });
-
-
 });
 
 describe('getFacetsFromKeys()', () => {
@@ -66,70 +63,5 @@ describe('getFacetsFromKeys()', () => {
     facets = getFacetsFromKeys([DEFAULT_COLOR], scales);
     expect(facets.ordinalFacets).toHaveLength(1);
     expect(facets.continuousFacets).toHaveLength(0);
-  });
-
-
-});
-
-describe('getFieldName()', () => {
-  test('should return string field as is', () => {
-    expect(getFieldName('category')).toBe('category');
-    expect(getFieldName('series')).toBe('series');
-    expect(getFieldName('')).toBe('');
-  });
-
-  test('should extract field name from object with field property', () => {
-    expect(getFieldName({ field: 'category' } as unknown as ScaleField)).toBe('category');
-    expect(getFieldName({ field: 'series' } as unknown as ScaleField)).toBe('series');
-    expect(getFieldName({ field: '' } as unknown as ScaleField)).toBe('');
-  });
-
-  test('should extract signal name from object with signal property', () => {
-    expect(getFieldName({ signal: 'category' } as unknown as ScaleField)).toBe('category');
-    expect(getFieldName({ signal: 'series' } as unknown as ScaleField)).toBe('series');
-    expect(getFieldName({ signal: '' } as unknown as ScaleField)).toBe('');
-  });
-
-  test('should handle undefined input', () => {
-    expect(getFieldName(undefined)).toBe('undefined');
-  });
-
-  test('should handle null input', () => {
-    expect(getFieldName(null as unknown as ScaleField)).toBe('null');
-  });
-
-  test('should handle other object types with toString fallback', () => {
-    const obj = { toString: () => 'custom object' };
-    expect(getFieldName(obj as unknown as ScaleField)).toBe('custom object');
-  });
-
-  test('should handle object with both field and signal properties', () => {
-    // Should prioritize field over signal
-    expect(getFieldName({ field: 'category', signal: 'series' } as unknown as ScaleField)).toBe('category');
-  });
-
-  test('should handle object with non-string field property', () => {
-    expect(getFieldName({ field: 123 } as unknown as ScaleField)).toBe('[object Object]');
-  });
-
-  test('should handle object with non-string signal property', () => {
-    expect(getFieldName({ signal: 456 } as unknown as ScaleField)).toBe('[object Object]');
-  });
-
-  test('should handle empty object', () => {
-    expect(getFieldName({} as unknown as ScaleField)).toBe('[object Object]');
-  });
-
-  test('should handle array input', () => {
-    expect(getFieldName(['category'] as unknown as ScaleField)).toBe('category');
-  });
-
-  test('should handle number input', () => {
-    expect(getFieldName(123 as unknown as ScaleField)).toBe('123');
-  });
-
-  test('should handle boolean input', () => {
-    expect(getFieldName(true as unknown as ScaleField)).toBe('true');
-    expect(getFieldName(false as unknown as ScaleField)).toBe('false');
   });
 });
