@@ -209,7 +209,7 @@ const getCategoricalLegend = (facets: Facet[], options: LegendSpecOptions): Lege
     orient: position,
     title,
     encode: getEncodings(facets, options),
-    columns: getColumns(position),
+    columns: getColumns(position, labelLimit),
     labelLimit,
   };
   if (titleLimit !== undefined) legend.titleLimit = titleLimit;

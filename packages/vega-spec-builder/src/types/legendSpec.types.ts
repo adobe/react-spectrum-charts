@@ -46,7 +46,7 @@ export interface LegendOptions {
   keys?: string[];
   /** labels for each of the series */
   legendLabels?: LegendLabel[];
-  /** max width in pixels before truncating a legend label */
+  /** max width in pixels before truncating a legend label. Influences legend column layout by calculating how many legend items can fit horizontally based on the label width. */
   labelLimit?: number;
   /** line type or key in the data that is used as the line type facet for the symbols */
   lineType?: LineTypeFacet;
