@@ -27,6 +27,22 @@ if (!newVersion) {
 
 console.log(`Updating versions to: ${newVersion}`);
 
+// Function to detect indentation from file content
+function detectIndentation(content) {
+  const lines = content.split('\n');
+  for (const line of lines) {
+    if (line.trim() && line.startsWith(' ')) {
+      // Find the first non-space character
+      const match = line.match(/^(\s+)/);
+      if (match) {
+        return match[1];
+      }
+    }
+  }
+  // Default to 2 spaces if no indentation detected
+  return '  ';
+}
+
 // Find all package.json files in root and packages/*
 const rootDir = path.resolve(__dirname, '..');
 const packageJsonPaths = globSync('{package.json,packages/*/package.json}', {
@@ -39,6 +55,9 @@ packageJsonPaths.forEach((filePath) => {
     console.log(`Processing: ${path.relative(rootDir, filePath)}`);
     const packageJsonContent = fs.readFileSync(filePath, 'utf8');
     const packageJson = JSON.parse(packageJsonContent);
+
+    // Detect the original indentation
+    const originalIndentation = detectIndentation(packageJsonContent);
 
     // Update the main version
     if (packageJson.version) {
@@ -60,8 +79,10 @@ packageJsonPaths.forEach((filePath) => {
     });
 
     // Write the updated package.json back to the file
-    // Keep the same indentation (tab) and trailing newline as the original
-    fs.writeFileSync(filePath, JSON.stringify(packageJson, null, '\t') + '\n', 'utf8');
+    // Preserve the original indentation
+    const indentSize = originalIndentation.length;
+    const indent = ' '.repeat(indentSize);
+    fs.writeFileSync(filePath, JSON.stringify(packageJson, null, indent) + '\n', 'utf8');
   } catch (error) {
     console.error(`Error processing file ${filePath}:`, error);
   }
