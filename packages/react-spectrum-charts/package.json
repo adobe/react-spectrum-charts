@@ -8,21 +8,25 @@
   "exports": {
     ".": {
       "import": "./dist/index.js",
+      "require": "./dist/index.js",
       "types": "./dist/@types/index.d.ts",
       "default": "./dist/index.js"
     },
     "./alpha": {
       "import": "./dist/alpha.js",
+      "require": "./dist/alpha.js",
       "types": "./dist/@types/alpha/index.d.ts",
       "default": "./dist/alpha.js"
     },
     "./beta": {
       "import": "./dist/beta.js",
+      "require": "./dist/beta.js",
       "types": "./dist/@types/beta/index.d.ts",
       "default": "./dist/beta.js"
     },
     "./rc": {
       "import": "./dist/rc.js",
+      "require": "./dist/rc.js",
       "types": "./dist/@types/rc/index.d.ts",
       "default": "./dist/rc.js"
     }
