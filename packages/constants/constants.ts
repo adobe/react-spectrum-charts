@@ -47,6 +47,12 @@ export const DEFAULT_TRANSFORMED_TIME_DIMENSION = `${DEFAULT_TIME_DIMENSION}0`;
 export const DEFAULT_TITLE_FONT_WEIGHT = 'bold';
 export const DEFAULT_INTERACTION_MODE = 'nearest';
 
+// legend constants
+export const DEFAULT_LEGEND_SYMBOL_SIZE = 250;
+export const DEFAULT_LEGEND_SYMBOL_WIDTH = 16; // approximate width for square symbols (√250 ≈ 15.8)
+export const DEFAULT_LEGEND_COLUMN_PADDING = 20;
+export const DEFAULT_LEGEND_LABEL_LIMIT = 184;
+
 // vega data table name
 export const TABLE = 'table';
 export const FILTERED_TABLE = 'filteredTable';

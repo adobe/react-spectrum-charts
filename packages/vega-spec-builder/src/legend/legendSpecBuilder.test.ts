@@ -270,7 +270,7 @@ describe('addLegend()', () => {
       });
       const legend = legendSpec.legends?.[0];
       expect(legend?.labelLimit).toBe(300);
-      expect(legendSpec.legends).toEqual([{ ...defaultLegend, labelLimit: 300, encode: defaultTooltipLegendEncoding }]);
+      expect(legendSpec.legends).toEqual([{ ...defaultLegend, labelLimit: 300, encode: defaultTooltipLegendEncoding, columns: { signal: 'max(1, floor(width / 336))' } }]);
       expect(legendSpec.data).toEqual([defaultLegendAggregateData]);
       expect(legendSpec.scales).toEqual([...(defaultSpec.scales || []), defaultLegendEntriesScale]);
     });
