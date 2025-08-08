@@ -1,0 +1,27 @@
+{
+  "name": "@spectrum-charts/{{name}}",
+  "version": "{{rootVersion}}",
+  "description": "{{description}}",
+  "browser": "dist/index.js",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/@types/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "author": "{{author}}",
+  "license": "Apache-2.0",
+  "scripts": {
+    "build": "webpack --config ./webpack.config.js",
+    "clean": "rm -rf dist",
+    "pack-test": "yarn clean && yarn build && cross-env NODE_ENV=development npm pack",
+    "pack": "cross-env NODE_ENV=production npm pack",
+    "publish-package": "npm publish --access public"
+  },
+  "devDependencies": {
+    "ts-loader": "{{devDependencies.ts-loader}}",
+    "typescript": "{{devDependencies.typescript}}",
+    "webpack": "{{devDependencies.webpack}}",
+    "webpack-cli": "{{devDependencies.webpack-cli}}"
+  }
+}

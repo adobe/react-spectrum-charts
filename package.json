@@ -66,6 +66,7 @@
     "build:force:parallel": "yarn clean:parallel && yarn build:parallel",
     "build:storybook": "storybook build -o ./dist-storybook --quiet",
     "copyrights": "node ./scripts/addHeaders.js",
+    "generate:package": "plop package",
     "lint": "eslint packages --ext .ts,.tsx,.js,.jsx",
     "ts": "yarn tsc",
     "tsc": "tsc --noEmit --skipLibCheck",
