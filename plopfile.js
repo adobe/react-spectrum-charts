@@ -10,16 +10,22 @@
  * governing permissions and limitations under the License.
  */
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
+/* eslint-disable @typescript-eslint/no-var-requires */
 const { execSync } = require('child_process');
-// eslint-disable-next-line @typescript-eslint/no-var-requires
 const fs = require('fs');
-// eslint-disable-next-line @typescript-eslint/no-var-requires
 const path = require('path');
 
 function getGitUser() {
   try {
-    return execSync('git config user.name', { encoding: 'utf8' }).trim();
+    const email = execSync('git config user.email', { encoding: 'utf8' }).trim();
+    const emailPrefix = email.split('@')[0];
+
+    // Handle GitHub noreply email format: "12345678+username"
+    if (emailPrefix.includes('+')) {
+      return emailPrefix.split('+')[1];
+    }
+
+    return emailPrefix;
   } catch (error) {
     return null;
   }
@@ -48,55 +54,67 @@ module.exports = function generate(plop) {
           if (input.includes(' ')) return 'Package name cannot contain spaces';
           if (!/^[a-z0-9-]+$/.test(input)) return 'Package name must be lowercase letters, numbers, and hyphens only';
           return true;
-        }
+        },
       },
       {
         type: 'input',
         name: 'description',
         message: 'Package description:',
-        default: (answers) => `Package for ${answers.name}`
+        default: (answers) => `Package for ${answers.name}`,
       },
       {
         type: 'confirm',
         name: 'useGitUser',
         message: () => `Use git user "${getGitUser()}" as author?`,
         default: true,
-        when: () => getGitUser() !== null
+        when: () => getGitUser() !== null,
       },
       {
         type: 'input',
         name: 'author',
         message: 'Author name:',
         default: () => getGitUser() || undefined,
-        validate: (input) => input ? true : 'Author name is required',
-        when: (answers) => getGitUser() === null || !answers.useGitUser
+        validate: (input) => (input ? true : 'Author name is required'),
+        when: (answers) => getGitUser() === null || !answers.useGitUser,
       },
       {
         type: 'confirm',
-        name: 'includeIndexFiles',
-        message: 'Do you want to include index files?',
+        name: 'isReactPackage',
+        message: 'Is this a React package?',
         default: false,
-      }
+      },
+      {
+        type: 'confirm',
+        name: 'includeInternalDeps',
+        message: 'Include common @spectrum-charts dependencies?',
+        default: false,
+      },
     ],
     actions: (data) => {
       if (data.useGitUser) {
         data.author = getGitUser();
       }
-      
+
       // Add root package info for templates
       const rootPackage = getRootPackageJson();
       data.rootVersion = rootPackage.version || '1.18.2';
       data.devDependencies = rootPackage.devDependencies || {};
+      data.reactVersion = rootPackage.devDependencies?.react || '>= 17.0.2';
+
       const actions = [
         {
           type: 'add',
           path: 'packages/{{name}}/package.json',
-          templateFile: 'templates/package/package.json.hbs',
+          templateFile: data.isReactPackage
+            ? 'templates/package/package-react.json.hbs'
+            : 'templates/package/package.json.hbs',
         },
         {
           type: 'add',
           path: 'packages/{{name}}/webpack.config.js',
-          templateFile: 'templates/package/webpack.config.js.hbs',
+          templateFile: data.isReactPackage
+            ? 'templates/package/webpack-react.config.js.hbs'
+            : 'templates/package/webpack.config.js.hbs',
         },
         {
           type: 'add',
@@ -122,7 +140,7 @@ module.exports = function generate(plop) {
           type: 'add',
           path: 'packages/{{name}}/src/index.ts',
           templateFile: 'templates/package/src-index.ts.hbs',
-        }
+        },
       ];
 
       return actions;
