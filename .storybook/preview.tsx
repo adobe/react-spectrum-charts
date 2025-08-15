@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 
 import { DocsContainer } from '@storybook/addon-docs';
 import { Decorator, Parameters, Preview } from '@storybook/react';
@@ -12,9 +12,21 @@ import './storybook.css';
 const decorators: Decorator[] = [
   (Story) => {
     const darkMode = useDarkMode();
+
+    useEffect(() => {
+      const htmlElement = document.documentElement;
+      if (darkMode) {
+        htmlElement.classList.add('dark');
+        htmlElement.classList.remove('light');
+      } else {
+        htmlElement.classList.add('light');
+        htmlElement.classList.remove('dark');
+      }
+    }, [darkMode]);
+
     return (
-      <Provider theme={defaultTheme} colorScheme={darkMode ? 'dark' : 'light'} locale="en-US" height="100vh">
-        <View padding={24} height="calc(100% - 48px)">
+      <Provider theme={defaultTheme} colorScheme={darkMode ? 'dark' : 'light'} locale="en-US">
+        <View padding={24} backgroundColor="gray-50">
           <Story />
         </View>
       </Provider>

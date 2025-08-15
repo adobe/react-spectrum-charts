@@ -189,10 +189,10 @@ describe('Chart', () => {
       expect(chart).toBeInTheDocument();
 
       const svg = chart.querySelector('svg');
-      expect(svg).toHaveStyle('background-color: rgb(255, 255, 255);');
+      expect(svg).toHaveStyle('background-color: rgb(248, 248, 248);');
 
       const container = document.querySelector('.rsc-container > div');
-      expect(container).toHaveStyle('background-color: rgb(255, 255, 255);');
+      expect(container).toHaveStyle('background-color: rgb(248, 248, 248);');
     });
   });
 
