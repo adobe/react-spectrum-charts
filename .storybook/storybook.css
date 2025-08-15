@@ -1,3 +1,11 @@
+html {
+  background-color: white;
+}
+
+html.dark {
+  background-color: black;
+}
+
 .sb-show-main.sb-main-padded,
 .docs-story div[class^='css'] {
   padding: 0;
