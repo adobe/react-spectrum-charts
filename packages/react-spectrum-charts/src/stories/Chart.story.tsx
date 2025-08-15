@@ -19,6 +19,7 @@ import { bindWithProps } from '../test-utils';
 import './Chart.story.css';
 import { ChartBarStory } from './ChartBarStory';
 import { data, workspaceTrendsData } from './data/data';
+import { ChartDynamicHeightBarStory } from './ChartDynamicHeightBarStory';
 
 export default {
   title: 'RSC/Chart',
@@ -72,7 +73,7 @@ Basic.args = { data };
 
 const BackgroundColor = bindWithProps(ChartLineStory);
 BackgroundColor.args = {
-  backgroundColor: 'gray-50',
+  backgroundColor: 'gray-100',
   padding: 32,
   data,
 };
@@ -101,7 +102,7 @@ Width.args = {
   data,
 };
 
-const Height = bindWithProps(ChartBarStory);
+const Height = bindWithProps(ChartDynamicHeightBarStory);
 Height.args = {
   height: '50%',
   minHeight: 300,
