@@ -78,6 +78,13 @@ export interface AxisOptions {
   labelFormat?: LabelFormat;
   /** Sets the orientation of the label. Defaults to horizontal. */
   labelOrientation?: Orientation;
+  /**
+   * Sets the maximum allowed length, in pixels, of axis tick labels. Defaults to 180.
+   *
+   * Note: Vega's layout calculations are based on 180, so alignment may be affected if setting greater thatn 180.
+   * Combine with truncateLabels to keep upper limit within bandwidth.
+   */
+  labelLimit?: number;
   /** Explicityly sets the axis labels (controlled). Providing a Label object allows for more control over the label display. */
   labels?: (Label | string | number)[];
   /** Sets the upper limit on the number of axis ticks.

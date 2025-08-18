@@ -32,6 +32,7 @@ const Axis: FC<AxisProps> = ({
   labelAlign = DEFAULT_LABEL_ALIGN,
   labelFontWeight = DEFAULT_LABEL_FONT_WEIGHT,
   labelFormat,
+  labelLimit,
   labelOrientation = DEFAULT_LABEL_ORIENTATION,
   labels,
   numberFormat = 'shortNumber',

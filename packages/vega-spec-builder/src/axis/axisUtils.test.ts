@@ -162,6 +162,17 @@ describe('getDefaultAxis()', () => {
       false
     );
   });
+
+  test('should set labelLimit property with custom value', () => {
+    expect(getDefaultAxis({ ...defaultAxisOptions, labelLimit: 5 }, 'xLinear')).toHaveProperty(
+      'labelLimit',
+      5
+    );
+  });
+
+  test('should not include labelLimit property when not specified', () => {
+    expect(getDefaultAxis(defaultAxisOptions, 'xLinear')).not.toHaveProperty('labelLimit');
+  });
 });
 
 describe('getSubLabelAxis()', () => {
