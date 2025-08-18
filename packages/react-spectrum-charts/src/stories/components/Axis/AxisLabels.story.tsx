@@ -15,7 +15,7 @@ import { StoryFn } from '@storybook/react';
 
 import { DEFAULT_LABEL_FONT_WEIGHT, DEFAULT_LABEL_ORIENTATION } from '@spectrum-charts/constants';
 
-import { Axis } from '../../../components/Axis';
+import { Axis, Bar } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
 import { Chart } from '../../../index';
 import { bindWithProps } from '../../../test-utils';
@@ -72,4 +72,28 @@ LabelOrientation.args = {
   baseline: true,
 };
 
-export { Basic, LabelAlign, LabelOrientation };
+const LabelLimitStory: StoryFn<typeof Axis> = (args): ReactElement => {
+  const longLabelData = [
+    { browser: 'Chrome with Very Long Browser Name That Exceeds Normal Limits', downloads: 100 },
+    { browser: 'Firefox Extended Name Version', downloads: 80 },
+    { browser: 'Safari Browser', downloads: 60 },
+  ];
+  const chartProps = useChartProps({ data: longLabelData, width: 600, height: 400 });
+  return (
+    <Chart {...chartProps}>
+      <Axis {...args} />
+      <Axis position="left" grid title="Downloads" />
+      <Bar dimension="browser" metric="downloads" />
+    </Chart>
+  );
+};
+
+const LabelLimit = bindWithProps(LabelLimitStory);
+LabelLimit.args = {
+  position: 'bottom',
+  baseline: true,
+  title: 'Browser',
+  labelLimit: 60,
+};
+
+export { Basic, LabelAlign, LabelOrientation, LabelLimit };
