@@ -85,6 +85,12 @@ The `Axis` component is used to display the axis, axis labels and grid marks. An
             <td>Sets the format of the axis labels. `duration` will display seconds value in a m:ss format if less than 3,600 and in a H:mm:ss format if >= 3,600 (ex: 3 = 0:03, 36 = 0:36, 366 = 6:06, 3661 = 1:01:01).</td>
         </tr>
         <tr>
+            <td>labelLimit</td>
+            <td>number</td>
+            <td>undefined (180 Vega default)</td>
+            <td>Sets the maximum allowed length, in pixels, of axis tick labels. Labels that exceed this limit will be truncated. If not specified, Vega uses its default of 180 pixels.</td>
+        </tr>
+        <tr>
             <td>labelOrientation</td>
             <td>'horizontal' | 'vertical'</td>
             <td>'horizontal'</td>
