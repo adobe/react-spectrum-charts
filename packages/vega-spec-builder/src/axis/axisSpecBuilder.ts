@@ -363,7 +363,10 @@ export const addAxes = produce<
       const signalName = `${name}_labels`;
       axis.values = labels.map((label) => getLabelValue(label));
       axis.encode = {
-        labels: getAxisLabelsEncoding(labelAlign, labelFontWeight, 'label', labelOrientation, position, signalName),
+        labels: {
+          interactive: true,
+          ...getAxisLabelsEncoding(labelAlign, labelFontWeight, 'label', labelOrientation, position, signalName),
+        },
       };
     }
 
