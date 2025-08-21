@@ -79,6 +79,7 @@ describe('getDefaultAxis()', () => {
       labelPadding: undefined,
       encode: {
         labels: {
+          interactive: true,
           update: {
             text: [
               {
@@ -89,6 +90,9 @@ describe('getDefaultAxis()', () => {
                 signal: 'datum.value',
               },
             ],
+            tooltip: {
+              signal: 'datum.value',
+            },
           },
         },
       },
@@ -141,6 +145,7 @@ describe('getDefaultAxis()', () => {
       labelPadding: undefined,
       encode: {
         labels: {
+          interactive: true,
           update: {
             text: [
               {
@@ -151,6 +156,9 @@ describe('getDefaultAxis()', () => {
                 signal: 'datum.value',
               },
             ],
+            tooltip: {
+              signal: 'datum.value',
+            },
           },
         },
       },
@@ -164,10 +172,7 @@ describe('getDefaultAxis()', () => {
   });
 
   test('should set labelLimit property with custom value', () => {
-    expect(getDefaultAxis({ ...defaultAxisOptions, labelLimit: 5 }, 'xLinear')).toHaveProperty(
-      'labelLimit',
-      5
-    );
+    expect(getDefaultAxis({ ...defaultAxisOptions, labelLimit: 5 }, 'xLinear')).toHaveProperty('labelLimit', 5);
   });
 
   test('should not include labelLimit property when not specified', () => {

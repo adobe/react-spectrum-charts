@@ -123,7 +123,7 @@ export const DEFAULT_VENN_LABEL = 'label';
 export const HIGHLIGHT_CONTRAST_RATIO = 5;
 
 // legend tooltips
-export const LEGEND_TOOLTIP_DELAY = 350;
+export const TOOLTIP_DELAY = 350;
 
 // signal names
 // 'backgroundColor' is an undocumented protected signal name used by vega

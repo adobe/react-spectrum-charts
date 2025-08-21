@@ -49,6 +49,7 @@ const defaultAxis: Axis = {
   labelPadding: undefined,
   encode: {
     labels: {
+      interactive: true,
       update: {
         text: [
           {
@@ -57,6 +58,7 @@ const defaultAxis: Axis = {
           },
           { signal: 'datum.value' },
         ],
+        tooltip: { signal: 'datum.value' },
       },
     },
   },
@@ -66,6 +68,7 @@ const defaultSubLabelAxis: Axis = {
   ...defaultAxis,
   encode: {
     labels: {
+      interactive: true,
       update: {
         text: [
           {
@@ -214,11 +217,13 @@ describe('Spec builder, Axis', () => {
               labelBaseline: 'middle',
               encode: {
                 labels: {
+                  interactive: true,
                   update: {
                     text: [
                       { test: 'isNumber(datum.value)', signal: "format(datum.value, '~%')" },
                       { signal: 'datum.value' },
                     ],
+                    tooltip: { signal: 'datum.value' },
                   },
                 },
               },
