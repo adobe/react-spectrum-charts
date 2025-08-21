@@ -15,11 +15,12 @@ import { AxisOptions } from '@spectrum-charts/vega-spec-builder';
 
 import { Children } from '../util.types';
 import { AxisAnnotationElement } from './axisAnnotation.types';
+import { AxisThumbnailElement } from './axisThumbnail.types';
 import { ReferenceLineElement } from './referenceLine.types';
 
-export type AxisChildElement = AxisAnnotationElement | ReferenceLineElement;
+export type AxisChildElement = AxisAnnotationElement | AxisThumbnailElement | ReferenceLineElement;
 
-export interface AxisProps extends Omit<AxisOptions, 'axisAnnotations' | 'referenceLines'> {
+export interface AxisProps extends Omit<AxisOptions, 'axisAnnotations' | 'axisThumbnails' | 'referenceLines'> {
   /** Child components that add supplemental content to the axis */
   children?: Children<AxisChildElement>;
 }

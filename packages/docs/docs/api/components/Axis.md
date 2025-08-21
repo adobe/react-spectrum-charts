@@ -386,3 +386,55 @@ Supported Icons:
 - date
 
 If there is a [Spectrum Icon](https://spectrum.adobe.com/page/icons/) that is not supported, submit an issue to this repo to get it added.
+
+### AxisThumbnail
+
+An `AxisThumbnail` can be used to display thumbnail images on axis labels. This component enhances axis labels with visual thumbnails from your data.
+
+```jsx
+const data = [
+  { browser: 'Chrome', downloads: 1000, thumbnail: 'https://example.com/chrome-icon.png' },
+  { browser: 'Firefox', downloads: 800, thumbnail: 'https://example.com/firefox-icon.png' }
+];
+
+<Chart data={data}>
+  <Bar dimension="browser" metric="downloads" />
+  <Axis position="bottom" baseline>
+    <AxisThumbnail urlKey="thumbnail" />
+  </Axis>
+</Chart>
+```
+
+#### AxisThumbnail Props
+
+<table>
+    <thead>
+        <tr>
+            <th>name</th>
+            <th>type</th>
+            <th>default</th>
+            <th>description</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>urlKey</td>
+            <td>string</td>
+            <td>'thumbnail'</td>
+            <td>The data field key that contains the URL of the thumbnail image.</td>
+        </tr>
+    </tbody>
+</table>
+
+#### Data Requirements
+
+- Each data point must include a field containing the URL of the thumbnail image
+- The URL should point to a valid image file (PNG, JPG, SVG, etc.)
+- The image should be appropriately sized for display on axis labels
+- Ensure the image URLs are accessible and load properly
+
+#### Notes
+
+- The `AxisThumbnail` component is currently implemented as a placeholder and may not render actual thumbnails in the current version
+- This component is designed to work within the context of an `Axis` component
+- The thumbnail images will be displayed in relation to the axis labels based on the data mapping
