@@ -14,6 +14,7 @@ export * from './Annotation';
 export * from './Area';
 export * from './Axis';
 export * from './AxisAnnotation';
+export * from './AxisThumbnail';
 export * from './Bar';
 export * from './ChartPopover';
 export * from './ChartTooltip';
