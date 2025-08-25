@@ -10,7 +10,13 @@
  * governing permissions and limitations under the License.
  */
 
-export * from './axis.types';
-export * from './axisAnnotation.types';
-export * from './axisThumbnail.types';
-export * from './referenceLine.types';
+import { PartiallyRequired } from '../specUtil.types';
+
+export interface AxisThumbnailOptions {
+  /** The data field key that contains the URL of the thumbnail image. Defaults to 'thumbnail'. */
+  urlKey?: string;
+}
+
+export interface AxisThumbnailSpecOptions extends PartiallyRequired<AxisThumbnailOptions, 'urlKey'> {
+  name: string;
+}

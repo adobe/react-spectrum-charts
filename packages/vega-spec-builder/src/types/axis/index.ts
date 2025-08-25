@@ -12,4 +12,5 @@
 
 export * from './axisSpec.types';
 export * from './axisAnnotationSpec.types';
+export * from './axisThumbnailSpec.types';
 export * from './referenceLineSpec.types';
