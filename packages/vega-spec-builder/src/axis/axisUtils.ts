@@ -45,6 +45,7 @@ export const getDefaultAxis = (axisOptions: AxisSpecOptions, scaleName: string):
     vegaLabelBaseline,
     vegaLabelOffset,
     vegaLabelPadding,
+    hasTooltip,
   } = axisOptions;
   return {
     scale: scaleName,
@@ -63,10 +64,10 @@ export const getDefaultAxis = (axisOptions: AxisSpecOptions, scaleName: string):
     ...getLabelAnchorValues(position, labelOrientation, labelAlign, vegaLabelAlign, vegaLabelBaseline),
     encode: {
       labels: {
-        interactive: true,
+        interactive: hasTooltip,
         update: {
           text: getLabelFormat(axisOptions, scaleName),
-          tooltip: { signal: 'datum.value' },
+          ...(hasTooltip ? { tooltip: { signal: 'datum.value' } } : {}),
         },
       },
     },
@@ -130,10 +131,9 @@ const getSecondaryTimeAxisLabelFormatting = (granularity: Granularity, position:
       format: `${primaryLabelFormat}\u2000${secondaryLabelFormat}`,
       encode: {
         labels: {
-          interactive: true,
+          interactive: false,
           update: {
             text: { signal: 'formatVerticalAxisTimeLabels(datum)' },
-            tooltip: { signal: 'formatVerticalAxisTimeLabels(datum)' },
           },
         },
       },
@@ -183,13 +183,12 @@ const getPrimaryTimeAxis = (
       ...getLabelAnchorValues(position, labelOrientation, labelAlign, vegaLabelAlign, vegaLabelBaseline),
       encode: {
         labels: {
-          interactive: true,
+          interactive: false,
           enter: {
             dy: { value: (ticks ? 28 : 20) * (position === 'top' ? -1 : 1) }, // account for tick height
           },
           update: {
             text: { signal: 'formatHorizontalTimeAxisLabels(datum)' },
-            tooltip: { signal: 'formatHorizontalTimeAxisLabels(datum)' },
           },
         },
       },
@@ -221,7 +220,7 @@ export const getSubLabelAxis = (axisOptions: AxisSpecOptions, scaleName: string)
     values: subLabelValues.length ? subLabelValues : undefined,
     encode: {
       labels: {
-        interactive: true,
+        interactive: false,
         ...getAxisLabelsEncoding(labelAlign, labelFontWeight, 'subLabel', labelOrientation, position, signalName),
       },
     },

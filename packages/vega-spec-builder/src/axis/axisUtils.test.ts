@@ -79,7 +79,7 @@ describe('getDefaultAxis()', () => {
       labelPadding: undefined,
       encode: {
         labels: {
-          interactive: true,
+          interactive: false,
           update: {
             text: [
               {
@@ -90,9 +90,6 @@ describe('getDefaultAxis()', () => {
                 signal: 'datum.value',
               },
             ],
-            tooltip: {
-              signal: 'datum.value',
-            },
           },
         },
       },
@@ -145,7 +142,7 @@ describe('getDefaultAxis()', () => {
       labelPadding: undefined,
       encode: {
         labels: {
-          interactive: true,
+          interactive: false,
           update: {
             text: [
               {
@@ -156,9 +153,6 @@ describe('getDefaultAxis()', () => {
                 signal: 'datum.value',
               },
             ],
-            tooltip: {
-              signal: 'datum.value',
-            },
           },
         },
       },

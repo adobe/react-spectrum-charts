@@ -23,6 +23,9 @@ import { bindWithProps } from '../../../test-utils';
 export default {
   title: 'RSC/Axis/Labels',
   component: Axis,
+  argTypes: {
+    hasTooltip: { control: 'boolean' },
+  },
 };
 
 const data = [
