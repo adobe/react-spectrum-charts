@@ -389,7 +389,7 @@ If there is a [Spectrum Icon](https://spectrum.adobe.com/page/icons/) that is no
 
 ### AxisThumbnail
 
-An `AxisThumbnail` can be used to display thumbnail images on axis labels. This component enhances axis labels with visual thumbnails from your data.
+An `AxisThumbnail` can be used to display thumbnail images on axis labels. This component enhances axis labels with visual thumbnails from your data, providing additional context and visual appeal to categorical axes.
 
 ```jsx
 const data = [
@@ -426,15 +426,34 @@ const data = [
     </tbody>
 </table>
 
+#### Supported Scale Types
+
+Axis thumbnails are currently supported only on **band scales**, which are typically used for categorical dimensions in bar charts and similar visualizations. Linear and time scales do not support thumbnails.
+
+#### Thumbnail Behavior
+
+- **Dynamic Sizing**: Thumbnails automatically resize based on the available bandwidth of the scale, with a maximum size of 42px and minimum size of 16px
+- **Visibility**: Thumbnails become invisible when the available space is less than 16px to prevent overcrowding
+- **Positioning**: Thumbnails are positioned relative to the axis
+
 #### Data Requirements
 
 - Each data point must include a field containing the URL of the thumbnail image
 - The URL should point to a valid image file (PNG, JPG, SVG, etc.)
-- The image should be appropriately sized for display on axis labels
+- Images should be square and appropriately sized for display (recommended: 32x32px or larger)
 - Ensure the image URLs are accessible and load properly
+- For best results, use consistent image dimensions across all thumbnails
+
+#### Example Use Cases
+
+- **Browser logos** in web analytics charts
+- **Product images** in e-commerce dashboards
+- **Country flags** in geographic data visualizations
+- **Brand logos** in marketing performance charts
+- **Category icons** in organizational charts
 
 #### Notes
 
-- The `AxisThumbnail` component is currently implemented as a placeholder and may not render actual thumbnails in the current version
-- This component is designed to work within the context of an `Axis` component
-- The thumbnail images will be displayed in relation to the axis labels based on the data mapping
+- Thumbnails are automatically hidden when there isn't enough space to display them properly
+- The component automatically handles label positioning to prevent overlap with thumbnails
+- Thumbnails are rendered as Vega image marks and support all standard image formats
