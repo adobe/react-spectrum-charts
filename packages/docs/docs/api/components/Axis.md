@@ -393,9 +393,12 @@ An `AxisThumbnail` can be used to display thumbnail images on axis labels. This 
 
 ```jsx
 const data = [
-  { browser: 'Chrome', downloads: 1000, thumbnail: 'https://example.com/chrome-icon.png' },
-  { browser: 'Firefox', downloads: 800, thumbnail: 'https://example.com/firefox-icon.png' }
-];
+    {"browser": "Chrome", "downloads": 27000, "thumbnail": "/chrome.png"},
+    {"browser": "Firefox", "downloads": 8000, "thumbnail": "/firefox.png"},
+    {"browser": "Safari", "downloads": 7750, "thumbnail": "/safari.png"},
+    {"browser": "Edge", "downloads": 7600, "thumbnail": "/edge.png"},
+    {"browser": "Explorer", "downloads": 500, "thumbnail": "/explorer.png"}
+]
 
 <Chart data={data}>
   <Bar dimension="browser" metric="downloads" />
@@ -404,6 +407,9 @@ const data = [
   </Axis>
 </Chart>
 ```
+
+![Bar chart with axis thumbnail](/img/thumbnail_light.png#gh-light-mode-only)
+![Bar chart with axis thumbnail](/img/thumbnail_dark.png#gh-dark-mode-only)
 
 #### AxisThumbnail Props
 
