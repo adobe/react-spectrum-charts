@@ -15,12 +15,13 @@ import { AxisAnnotationProps, AxisProps } from '../types';
 import { childrenToOptions } from './childrenAdapter';
 
 export const getAxisOptions = ({ children, ...axisProps }: AxisProps): AxisOptions => {
-  const { axisAnnotations, referenceLines } = childrenToOptions(children);
+  const { axisAnnotations, referenceLines, axisThumbnails } = childrenToOptions(children);
 
   return {
     ...axisProps,
     axisAnnotations,
     referenceLines,
+    axisThumbnails,
   };
 };
 

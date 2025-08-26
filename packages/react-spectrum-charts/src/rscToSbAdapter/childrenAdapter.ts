@@ -12,6 +12,7 @@
 import {
   AxisAnnotationOptions,
   AxisOptions,
+  AxisThumbnailOptions,
   BarAnnotationOptions,
   BulletOptions,
   ChartPopoverOptions,
@@ -34,6 +35,7 @@ import { Annotation } from '../components/Annotation';
 import { Area } from '../components/Area';
 import { Axis } from '../components/Axis';
 import { AxisAnnotation } from '../components/AxisAnnotation';
+import { AxisThumbnail } from '../components/AxisThumbnail';
 import { Bar } from '../components/Bar';
 import { ChartPopover } from '../components/ChartPopover';
 import { ChartTooltip } from '../components/ChartTooltip';
@@ -51,6 +53,7 @@ import {
   AreaProps,
   AxisAnnotationProps,
   AxisProps,
+  AxisThumbnailProps,
   BarProps,
   ChartPopoverProps,
   ChartTooltipProps,
@@ -87,6 +90,7 @@ export const childrenToOptions = (
 ): {
   axes: AxisOptions[];
   axisAnnotations: AxisAnnotationOptions[];
+  axisThumbnails: AxisThumbnailOptions[];
   barAnnotations: BarAnnotationOptions[];
   chartTooltips: ChartTooltipOptions[];
   chartPopovers: ChartPopoverOptions[];
@@ -104,6 +108,7 @@ export const childrenToOptions = (
 } => {
   const axes: AxisOptions[] = [];
   const axisAnnotations: AxisAnnotationOptions[] = [];
+  const axisThumbnails: AxisThumbnailOptions[] = [];
   const barAnnotations: BarAnnotationOptions[] = [];
   const chartPopovers: ChartPopoverOptions[] = [];
   const chartTooltips: ChartTooltipOptions[] = [];
@@ -139,6 +144,10 @@ export const childrenToOptions = (
 
       case AxisAnnotation.displayName:
         axisAnnotations.push(getAxisAnnotationOptions(child.props as AxisAnnotationProps));
+        break;
+
+      case AxisThumbnail.displayName:
+        axisThumbnails.push(child.props as AxisThumbnailProps);
         break;
 
       case Bar.displayName:
@@ -222,6 +231,7 @@ export const childrenToOptions = (
   return {
     axes,
     axisAnnotations,
+    axisThumbnails,
     barAnnotations,
     chartTooltips,
     chartPopovers,

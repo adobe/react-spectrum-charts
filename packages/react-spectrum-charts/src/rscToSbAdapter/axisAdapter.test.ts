@@ -11,7 +11,7 @@
  */
 import { createElement } from 'react';
 
-import { AxisAnnotation, ChartPopover, ChartTooltip, ReferenceLine } from '../components';
+import { AxisAnnotation, AxisThumbnail, ChartPopover, ChartTooltip, ReferenceLine } from '../components';
 import { AxisProps } from '../types';
 import { getAxisAnnotationOptions, getAxisOptions } from './axisAdapter';
 
@@ -31,6 +31,10 @@ describe('getAxisOptions()', () => {
   it('should convert ReferenceLine children to referenceLines array', () => {
     const options = getAxisOptions({ ...basicAxisProps, children: [createElement(ReferenceLine)] });
     expect(options.referenceLines).toHaveLength(1);
+  });
+  it('should convert AxisThumbnail children to axisThumbnails array', () => {
+    const options = getAxisOptions({ ...basicAxisProps, children: [createElement(AxisThumbnail)] });
+    expect(options.axisThumbnails).toHaveLength(1);
   });
   it('should pass through included props', () => {
     const options = getAxisOptions({ ...basicAxisProps, baseline: true });
