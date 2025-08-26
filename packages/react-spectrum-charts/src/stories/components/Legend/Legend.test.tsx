@@ -13,7 +13,7 @@ import React from 'react';
 
 import userEvent from '@testing-library/user-event';
 
-import { HIGHLIGHT_CONTRAST_RATIO, LEGEND_TOOLTIP_DELAY } from '@spectrum-charts/constants';
+import { HIGHLIGHT_CONTRAST_RATIO, TOOLTIP_DELAY } from '@spectrum-charts/constants';
 
 import { Chart } from '../../../Chart';
 import { Legend } from '../../../components';
@@ -44,7 +44,7 @@ import {
  * Wait for the the duration of the legend tooltip hover delay.
  */
 export const waitForLegendTooltip = async () => {
-  await new Promise((resolve) => setTimeout(resolve, LEGEND_TOOLTIP_DELAY));
+  await new Promise((resolve) => setTimeout(resolve, TOOLTIP_DELAY));
 };
 
 /**

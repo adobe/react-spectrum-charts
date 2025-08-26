@@ -14,7 +14,7 @@ import { useCallback, useMemo } from 'react';
 import { Item, View } from 'vega';
 import { Handler, Options as TooltipOptions } from 'vega-tooltip';
 
-import { LEGEND_TOOLTIP_DELAY } from '@spectrum-charts/constants';
+import { TOOLTIP_DELAY } from '@spectrum-charts/constants';
 
 import { Legend } from '../components';
 import { useChartContext } from '../context/RscChartContext';
@@ -69,11 +69,16 @@ const useNewChartView = (
           clearTimeout(tooltipTimeout);
           tooltipTimeout = undefined;
         }
-        if (event && event.type === 'pointermove' && itemIsLegendItem(item) && 'tooltip' in item) {
+        if (
+          event &&
+          event.type === 'pointermove' &&
+          (itemIsLegendItem(item) || itemIsAxisLabel(item)) &&
+          'tooltip' in item
+        ) {
           tooltipTimeout = setTimeout(() => {
             tooltipHandler.call(viewRef, event, item, value);
             tooltipTimeout = undefined;
-          }, LEGEND_TOOLTIP_DELAY);
+          }, TOOLTIP_DELAY);
         } else {
           tooltipHandler.call(viewRef, event, item, value);
         }
@@ -158,3 +163,5 @@ export default useNewChartView;
 const itemIsLegendItem = (item: Item<unknown>): boolean => {
   return 'name' in item.mark && typeof item.mark.name === 'string' && item.mark.name.includes('legend');
 };
+
+const itemIsAxisLabel = (item: Item<unknown>): boolean => 'role' in item.mark && item.mark.role === 'axis-label';

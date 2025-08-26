@@ -49,6 +49,7 @@ const defaultAxis: Axis = {
   labelPadding: undefined,
   encode: {
     labels: {
+      interactive: false,
       update: {
         text: [
           {
@@ -66,11 +67,12 @@ const defaultSubLabelAxis: Axis = {
   ...defaultAxis,
   encode: {
     labels: {
+      interactive: false,
       update: {
         text: [
           {
             signal: "axis0_subLabels[indexof(pluck(axis0_subLabels, 'value'), datum.value)].subLabel",
-            test: "indexof(pluck(axis0_subLabels, 'value'), datum.value) !== -1",
+            test: "indexof(pluck(axis0_subLabels, 'value'), datum.value) !== -1 && axis0_subLabels[indexof(pluck(axis0_subLabels, 'value'), datum.value)].subLabel",
           },
           { signal: 'datum.value' },
         ],
@@ -214,6 +216,7 @@ describe('Spec builder, Axis', () => {
               labelBaseline: 'middle',
               encode: {
                 labels: {
+                  interactive: false,
                   update: {
                     text: [
                       { test: 'isNumber(datum.value)', signal: "format(datum.value, '~%')" },

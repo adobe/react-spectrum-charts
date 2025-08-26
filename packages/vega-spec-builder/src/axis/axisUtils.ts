@@ -45,6 +45,7 @@ export const getDefaultAxis = (axisOptions: AxisSpecOptions, scaleName: string):
     vegaLabelBaseline,
     vegaLabelOffset,
     vegaLabelPadding,
+    hasTooltip,
   } = axisOptions;
   return {
     scale: scaleName,
@@ -63,8 +64,10 @@ export const getDefaultAxis = (axisOptions: AxisSpecOptions, scaleName: string):
     ...getLabelAnchorValues(position, labelOrientation, labelAlign, vegaLabelAlign, vegaLabelBaseline),
     encode: {
       labels: {
+        interactive: Boolean(hasTooltip),
         update: {
           text: getLabelFormat(axisOptions, scaleName),
+          ...(hasTooltip ? { tooltip: { signal: 'datum.value' } } : {}),
         },
       },
     },
@@ -128,6 +131,7 @@ const getSecondaryTimeAxisLabelFormatting = (granularity: Granularity, position:
       format: `${primaryLabelFormat}\u2000${secondaryLabelFormat}`,
       encode: {
         labels: {
+          interactive: false,
           update: {
             text: { signal: 'formatVerticalAxisTimeLabels(datum)' },
           },
@@ -179,6 +183,7 @@ const getPrimaryTimeAxis = (
       ...getLabelAnchorValues(position, labelOrientation, labelAlign, vegaLabelAlign, vegaLabelBaseline),
       encode: {
         labels: {
+          interactive: false,
           enter: {
             dy: { value: (ticks ? 28 : 20) * (position === 'top' ? -1 : 1) }, // account for tick height
           },
@@ -215,6 +220,7 @@ export const getSubLabelAxis = (axisOptions: AxisSpecOptions, scaleName: string)
     values: subLabelValues.length ? subLabelValues : undefined,
     encode: {
       labels: {
+        interactive: false,
         ...getAxisLabelsEncoding(labelAlign, labelFontWeight, 'subLabel', labelOrientation, position, signalName),
       },
     },

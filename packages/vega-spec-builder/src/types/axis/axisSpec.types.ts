@@ -106,6 +106,8 @@ export interface AxisOptions {
   subLabels?: SubLabel[];
   /** Displays ticks at each label location */
   ticks?: boolean;
+  /** Enables hover tooltips on axis labels for this axis. */
+  hasTooltip?: boolean;
   /**
    * The minimum desired step between axis ticks, in terms of scale domain values.
    * For example, a value of 1 indicates that ticks should not be less than 1 unit apart.

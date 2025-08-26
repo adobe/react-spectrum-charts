@@ -284,7 +284,7 @@ export const getAxisLabelsEncoding = (
   update: {
     text: [
       {
-        test: `indexof(pluck(${signalName}, 'value'), datum.value) !== -1`,
+        test: `indexof(pluck(${signalName}, 'value'), datum.value) !== -1 && ${signalName}[indexof(pluck(${signalName}, 'value'), datum.value)].${labelKey}`,
         signal: `${signalName}[indexof(pluck(${signalName}, 'value'), datum.value)].${labelKey}`,
       },
       { signal: 'datum.value' },

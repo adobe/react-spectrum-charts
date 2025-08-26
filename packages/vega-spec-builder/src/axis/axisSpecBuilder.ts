@@ -350,6 +350,7 @@ export const addAxes = produce<
     labelOrientation,
     name,
     position,
+    hasTooltip,
   } = axisOptions;
 
   if (labelFormat === 'time') {
@@ -362,8 +363,28 @@ export const addAxes = produce<
       const labels = axisOptions.labels;
       const signalName = `${name}_labels`;
       axis.values = labels.map((label) => getLabelValue(label));
+      const baseEncoding = getAxisLabelsEncoding(
+        labelAlign,
+        labelFontWeight,
+        'label',
+        labelOrientation,
+        position,
+        signalName
+      );
+      const encodingWithOptionalTooltip = hasTooltip
+        ? {
+            ...baseEncoding,
+            update: {
+              ...baseEncoding.update,
+              tooltip: { signal: 'datum.value' },
+            },
+          }
+        : baseEncoding;
       axis.encode = {
-        labels: getAxisLabelsEncoding(labelAlign, labelFontWeight, 'label', labelOrientation, position, signalName),
+        labels: {
+          interactive: hasTooltip,
+          ...encodingWithOptionalTooltip,
+        },
       };
     }
 
