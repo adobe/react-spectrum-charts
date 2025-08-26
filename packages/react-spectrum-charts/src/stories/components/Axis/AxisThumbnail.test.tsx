@@ -15,10 +15,12 @@ import '../../../test-utils/__mocks__/matchMedia.mock.js';
 import { AxisThumbnail } from '../../../components';
 import {
 	findChart,
+	findAllMarksByGroupName,
 	render,
+	allElementsHaveAttributeValue,
 } from '../../../test-utils';
 
-import { Basic } from "./AxisThumbnail.story";
+import { Basic, YAxis } from "./AxisThumbnail.story";
 
 describe("AxisThumbnail", () => {
 	// AxisThumbnail is not a real React component. This is test just provides test coverage for sonarqube
@@ -30,5 +32,30 @@ describe("AxisThumbnail", () => {
 		render(<Basic {...Basic.args} />);
 		const chart = await findChart();
 		expect(chart).toBeInTheDocument();
+		
+		// Check that thumbnail icons are drawn to the chart
+		const thumbnailMarks = await findAllMarksByGroupName(chart, 'axis0AxisThumbnail0', 'image');
+		expect(thumbnailMarks).toHaveLength(5);
+	});
+
+	test("Thumbnail is hidden when width is too small", async () => {
+		render(<Basic {...Basic.args} width={100} />);
+		const chart = await findChart();
+		expect(chart).toBeInTheDocument();
+		
+		// Check that thumbnail icons have 0 opacity
+		const thumbnailMarks = await findAllMarksByGroupName(chart, 'axis0AxisThumbnail0', 'image');
+		expect(thumbnailMarks).toHaveLength(5);
+		expect(allElementsHaveAttributeValue(thumbnailMarks, 'opacity', 0)).toBe(true);
+	});
+
+	test("YAxis renders properly", async () => {
+		render(<YAxis {...YAxis.args} />);
+		const chart = await findChart();
+		expect(chart).toBeInTheDocument();
+		
+		// Check that thumbnail icons are drawn to the chart
+		const thumbnailMarks = await findAllMarksByGroupName(chart, 'axis0AxisThumbnail0', 'image');
+		expect(thumbnailMarks).toHaveLength(5);
 	});
 });

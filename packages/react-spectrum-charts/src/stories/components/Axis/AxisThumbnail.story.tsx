@@ -13,38 +13,78 @@ import { ReactElement } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
+import { View } from '@adobe/react-spectrum';
+
 import { Chart } from '../../../Chart';
 import { Axis, AxisThumbnail, Bar } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
 import { bindWithProps } from '../../../test-utils';
 import { barData } from '../Bar/data';
+import { AxisThumbnailProps } from '../../../types';
 
 export default {
   title: 'RSC/Axis/AxisThumbnail',
   component: AxisThumbnail,
+  parameters: {
+    controls: {
+      exclude: ['orientation', 'width'],
+    },
+  },
 };
 
-const data = barData.map((datum) => ({
+const thumbnails = ['/chrome.png', '/firefox.png', '/safari.png', '/edge.png', '/explorer.png'];
+
+const data = barData.map((datum, index) => ({
   ...datum,
-  thumbnail: 'https://vega.github.io/images/idl-logo.png',
+  thumbnail: thumbnails[index],
 }));
 
-const AxisThumbnailStory: StoryFn<typeof AxisThumbnail> = (args): ReactElement => {
-  const chartProps = useChartProps({ data, width: 600 });
+type StoryArgs = AxisThumbnailProps & {
+  orientation: 'vertical' | 'horizontal';
+  width?: number;
+};
+
+const AxisThumbnailStory: StoryFn<StoryArgs> = (args): ReactElement => {
+  const { orientation, width, ...axisThumbnailProps } = args;
+  const chartProps = useChartProps({ data, width: width || 'auto', height: '100%', padding: 2 });
 
   return (
-    <Chart {...chartProps}>
-      <Bar dimension="browser" metric="downloads" />
-      <Axis position="bottom" baseline>
-        <AxisThumbnail {...args} />
-      </Axis>
-    </Chart>
+    <View
+      backgroundColor="gray-50"
+      overflow="hidden"
+      width={800}
+      minWidth={150}
+      maxWidth={1200}
+      height={400}
+      minHeight={150}
+      maxHeight={800}
+      borderColor="gray-200"
+      borderWidth="thin"
+      padding={16}
+      UNSAFE_style={{
+        resize: 'both',
+      }}
+    >
+      <Chart {...chartProps}>
+        <Bar orientation={orientation} dimension="browser" metric="downloads" />
+        <Axis position={orientation === 'horizontal' ? 'left' : 'bottom'} baseline>
+          <AxisThumbnail {...axisThumbnailProps} />
+        </Axis>
+      </Chart>
+    </View>
   );
 };
 
 const Basic = bindWithProps(AxisThumbnailStory);
 Basic.args = {
   urlKey: 'thumbnail',
+  orientation: 'vertical',
 };
 
-export { Basic };
+const YAxis = bindWithProps(AxisThumbnailStory);
+YAxis.args = {
+  urlKey: 'thumbnail',
+  orientation: 'horizontal',
+};
+
+export { Basic, YAxis };
