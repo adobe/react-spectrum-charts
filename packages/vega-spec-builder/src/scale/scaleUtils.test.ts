@@ -9,7 +9,8 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { getDualAxisScaleNames } from './scaleUtils';
+import { getDualAxisScaleNames, getScaleField } from './scaleUtils';
+import { Scale } from 'vega';
 
 describe('getDualAxisScaleNames()', () => {
   test('should return correct scale names for "xLinear" base scale', () => {
@@ -50,5 +51,50 @@ describe('getDualAxisScaleNames()', () => {
       primaryDomain: 'PrimaryDomain',
       secondaryDomain: 'SecondaryDomain',
     });
+  });
+});
+
+describe('getScaleField()', () => {
+  test('should return field string when scale has domain with field property', () => {
+    const scale: Scale = {
+      name: 'testScale',
+      type: 'linear',
+      domain: { data: 'table', field: 'category' }
+    };
+    
+    const result = getScaleField(scale);
+    expect(result).toBe('category');
+  });
+
+  test('should return first field when scale has domain with fields array', () => {
+    const scale: Scale = {
+      name: 'testScale',
+      type: 'linear',
+      domain: { data: 'table', fields: ['field1', 'field2'] }
+    };
+    
+    const result = getScaleField(scale);
+    expect(result).toBe('field1');
+  });
+
+  test('should return undefined when scale has domain with empty fields array', () => {
+    const scale: Scale = {
+      name: 'testScale',
+      type: 'linear',
+      domain: { data: 'table', fields: [] }
+    };
+    
+    const result = getScaleField(scale);
+    expect(result).toBeUndefined();
+  });
+
+  test('should return undefined when scale has no domain', () => {
+    const scale: Scale = {
+      name: 'testScale',
+      type: 'linear'
+    };
+    
+    const result = getScaleField(scale);
+    expect(result).toBeUndefined();
   });
 });

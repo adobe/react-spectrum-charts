@@ -10,6 +10,8 @@
  * governing permissions and limitations under the License.
  */
 
+import { Scale } from "vega";
+
 /**
  * Generates consistent scale names for dual-axis charts
  * @param baseScaleName The base scale name (e.g. 'xLinear', 'yLinear', 'customAxis')
@@ -25,4 +27,16 @@ export function getDualAxisScaleNames(baseScaleName: string) {
     primaryDomain: `${primaryScaleName}Domain`,
     secondaryDomain: `${secondaryScaleName}Domain`,
   };
+}
+
+export const getScaleField = (scale: Scale): string | undefined => {
+  if (scale.domain) {
+    if ('field' in scale.domain) {
+      return scale.domain.field.toString();
+    }
+    if ('fields' in scale.domain) {
+      return scale.domain.fields[0]?.toString();
+    }
+  }
+  return undefined;
 }
