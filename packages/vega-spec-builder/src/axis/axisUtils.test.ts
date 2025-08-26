@@ -37,6 +37,7 @@ describe('getDefaultAxis()', () => {
       getDefaultAxis(
         {
           axisAnnotations: [],
+          axisThumbnails: [],
           baseline: false,
           baselineOffset: 0,
           colorScheme: 'light',
@@ -99,6 +100,7 @@ describe('getDefaultAxis()', () => {
       getDefaultAxis(
         {
           axisAnnotations: [],
+          axisThumbnails: [],
           baseline: false,
           baselineOffset: 0,
           colorScheme: 'light',

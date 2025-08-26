@@ -47,6 +47,7 @@ const defaultReferenceLineOptions: ReferenceLineSpecOptions = {
 
 const defaultAxisOptions: AxisSpecOptions = {
   axisAnnotations: [],
+  axisThumbnails: [],
   baseline: false,
   baselineOffset: 0,
   colorScheme: DEFAULT_COLOR_SCHEME,
