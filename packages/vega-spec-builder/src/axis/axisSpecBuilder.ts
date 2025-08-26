@@ -11,7 +11,15 @@
  */
 import deepmerge from 'deepmerge';
 import { produce } from 'immer';
-import { Axis, Data, GroupMark, Mark, ScaleType, Signal } from 'vega';
+import {
+  Axis,
+  AxisEncode,
+  Data,
+  GroupMark,
+  Mark,
+  ScaleType,
+  Signal
+} from 'vega';
 
 import {
   COLOR_SCALE,
@@ -24,7 +32,7 @@ import {
   FIRST_RSC_SERIES_ID,
   HIGHLIGHT_CONTRAST_RATIO,
   LAST_RSC_SERIES_ID,
-  MOUSE_OVER_SERIES,
+  MOUSE_OVER_SERIES
 } from '@spectrum-charts/constants';
 import { spectrumColors } from '@spectrum-charts/themes';
 
@@ -35,12 +43,19 @@ import {
   addAxisAnnotationSignals,
   getAxisAnnotationsFromChildren,
 } from '../axisAnnotation/axisAnnotationUtils';
-import { getDualAxisScaleNames } from '../scale/scaleUtils';
+import { getDualAxisScaleNames, getScaleField } from '../scale/scaleUtils';
 import { getGenericValueSignal } from '../signal/signalSpecBuilder';
 import { AxisOptions, AxisSpecOptions, ColorScheme, Label, Orientation, Position, ScSpec, UserMeta } from '../types';
 import { getAxisLabelsEncoding, getControlledLabelAnchorValues, getLabelValue } from './axisLabelUtils';
 import { getReferenceLineMarks, getReferenceLines, scaleTypeSupportsReferenceLines } from './axisReferenceLineUtils';
 import { encodeAxisTitle, getTrellisAxisOptions, isTrellisedChart } from './axisTrellisUtils';
+import {
+  addAxisThumbnailSignals,
+  getAxisThumbnailLabelOffset,
+  getAxisThumbnailMarks,
+  getAxisThumbnails,
+  scaleTypeSupportsThumbnails,
+} from './axisThumbnailUtils';
 import {
   getBaselineRule,
   getDefaultAxis,
@@ -49,7 +64,7 @@ import {
   getScale,
   getSubLabelAxis,
   getTimeAxes,
-  hasSubLabels,
+  hasSubLabels
 } from './axisUtils';
 
 export const addAxis = produce<ScSpec, [AxisOptions & { colorScheme?: ColorScheme; index?: number }]>(
@@ -58,6 +73,7 @@ export const addAxis = produce<ScSpec, [AxisOptions & { colorScheme?: ColorSchem
     {
       name,
       axisAnnotations = [],
+      axisThumbnails = [],
       baseline = false,
       baselineOffset = 0,
       colorScheme = DEFAULT_COLOR_SCHEME,
@@ -83,6 +99,7 @@ export const addAxis = produce<ScSpec, [AxisOptions & { colorScheme?: ColorSchem
     const scale = getScale(spec.scales ?? [], position);
     const scaleName = name || scale.name;
     const scaleType = scale.type;
+    const scaleField = getScaleField(scale);
 
     // get the opposing scale
     const opposingScaleType = getOpposingScaleType(spec.scales ?? [], position);
@@ -90,6 +107,7 @@ export const addAxis = produce<ScSpec, [AxisOptions & { colorScheme?: ColorSchem
     // reconstruct options with defaults
     const axisOptions: AxisSpecOptions = {
       axisAnnotations,
+      axisThumbnails,
       baseline,
       baselineOffset,
       colorScheme,
@@ -116,7 +134,7 @@ export const addAxis = produce<ScSpec, [AxisOptions & { colorScheme?: ColorSchem
     const dualMetricAxis = spec.signals?.some((signal) => signal.name === 'firstRscSeriesId');
 
     spec.data = addAxisData(spec.data ?? [], { ...axisOptions, scaleType: scaleType ?? 'linear' });
-    spec.signals = addAxisSignals(spec.signals ?? [], axisOptions);
+    spec.signals = addAxisSignals(spec.signals ?? [], axisOptions, scaleName);
 
     // set custom range if applicable
     if (range && (scaleType === 'linear' || scaleType === 'time')) {
@@ -140,6 +158,7 @@ export const addAxis = produce<ScSpec, [AxisOptions & { colorScheme?: ColorSchem
       ...axisOptions,
       usermeta,
       scaleName,
+      scaleField,
       opposingScaleType,
       dualMetricAxis,
     });
@@ -155,7 +174,7 @@ export const addAxisData = produce<Data[], [AxisSpecOptions & { scaleType: Scale
   });
 });
 
-export const addAxisSignals = produce<Signal[], [AxisSpecOptions]>((signals, options) => {
+export const addAxisSignals = produce<Signal[], [AxisSpecOptions, string]>((signals, options, scaleName) => {
   const { name, labels, position, subLabels, labelOrientation } = options;
   if (labels?.length) {
     // add all the label properties to a signal so that the axis encoding can use it to style each label correctly
@@ -177,6 +196,11 @@ export const addAxisSignals = produce<Signal[], [AxisSpecOptions]>((signals, opt
   const axisAnnotations = getAxisAnnotationsFromChildren(options);
   axisAnnotations.forEach((annotationOptions) => {
     addAxisAnnotationSignals(signals, annotationOptions);
+  });
+
+  const axisThumbnails = getAxisThumbnails(options);
+  axisThumbnails.forEach(({name}) => {
+    addAxisThumbnailSignals(signals, name, scaleName);
   });
 });
 
@@ -421,6 +445,28 @@ export const addAxes = produce<
     });
   }
 
+  if (scaleTypeSupportsThumbnails(axisOptions.scaleType)) {
+    const axisThumbnails = getAxisThumbnails(axisOptions);
+    axisThumbnails.forEach((axisThumbnailOptions) => {
+      const encodings: AxisEncode = {
+        labels: {
+          update: {
+            ...getAxisThumbnailLabelOffset(axisThumbnailOptions.name, position),
+          },
+        },
+      };
+
+      // apply encodings to all axes
+      newAxes.forEach((axis) => {
+        if (!axis.encode) {
+          axis.encode = encodings;
+        } else {
+          axis.encode = deepmerge(axis.encode, encodings);
+        }
+      });
+    });
+  }
+
   const axisAnnotations = getAxisAnnotationsFromChildren(axisOptions);
   axisAnnotations.forEach((annotationOptions) => {
     addAxisAnnotationAxis(newAxes, annotationOptions, scaleName);
@@ -467,6 +513,7 @@ export const addAxesMarks = produce<
   [
     AxisSpecOptions & {
       scaleName: string;
+      scaleField?: string;
       scaleType?: ScaleType;
       opposingScaleType?: string;
       dualMetricAxis?: boolean;
@@ -474,7 +521,7 @@ export const addAxesMarks = produce<
     }
   ]
 >((marks, options) => {
-  const { baseline, baselineOffset, opposingScaleType, position, scaleName, scaleType, usermeta } = options;
+  const { baseline, baselineOffset, opposingScaleType, position, scaleField, scaleName, scaleType, usermeta } = options;
 
   // only add reference lines to linear or time scales
   if (scaleTypeSupportsReferenceLines(scaleType)) {
@@ -498,6 +545,11 @@ export const addAxesMarks = produce<
   axisAnnotations.forEach((annotationOptions) => {
     addAxisAnnotationMarks(marks, annotationOptions, scaleName);
   });
+
+  if (scaleTypeSupportsThumbnails(scaleType) && scaleField) {
+    const axisThumbnailMarks = getAxisThumbnailMarks(options, scaleName, scaleField);
+    marks.push(...axisThumbnailMarks);
+  }
 });
 
 function addBaseline(marks: Mark[], baselineOffset: number, position: Position, trellisGroupMark: GroupMark) {

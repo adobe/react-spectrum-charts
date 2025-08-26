@@ -23,6 +23,7 @@ import {
   Area,
   Axis,
   AxisAnnotation,
+  AxisThumbnail,
   Bar,
   ChartPopover,
   ChartTooltip,
@@ -130,6 +131,7 @@ export const sanitizeChildren = (children: unknown): (ChartChildElement | MarkCh
     Area.displayName,
     Axis.displayName,
     AxisAnnotation.displayName,
+    AxisThumbnail.displayName,
     Bar.displayName,
     Bullet.displayName,
     ChartPopover.displayName,
@@ -206,7 +208,11 @@ export const sanitizeMarkChildren = (children: unknown): MarkChildElement[] => {
 };
 
 export const sanitizeAxisChildren = (children: unknown): AxisChildElement[] => {
-  const axisChildDisplayNames = [AxisAnnotation.displayName, ReferenceLine.displayName] as string[];
+  const axisChildDisplayNames = [
+    AxisAnnotation.displayName,
+    AxisThumbnail.displayName,
+    ReferenceLine.displayName,
+  ] as string[];
   return toArray(children)
     .flat()
     .filter((child): child is AxisChildElement => axisChildDisplayNames.includes(getElementDisplayName(child)));
