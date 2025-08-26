@@ -75,6 +75,18 @@ LabelOrientation.args = {
   baseline: true,
 };
 
+const LabelWithTooltip = bindWithProps(AxisLabelStory);
+LabelWithTooltip.args = {
+  labelAlign: 'center',
+  labelFontWeight: DEFAULT_LABEL_FONT_WEIGHT,
+  labelFormat: 'linear',
+  labelOrientation: DEFAULT_LABEL_ORIENTATION,
+  position: 'bottom',
+  ticks: true,
+  baseline: true,
+  hasTooltip: true,
+};
+
 const LabelLimitStory: StoryFn<typeof Axis> = (args): ReactElement => {
   const longLabelData = [
     { browser: 'Chrome with Very Long Browser Name That Exceeds Normal Limits', downloads: 100 },
@@ -99,4 +111,4 @@ LabelLimit.args = {
   labelLimit: 60,
 };
 
-export { Basic, LabelAlign, LabelOrientation, LabelLimit };
+export { Basic, LabelAlign, LabelOrientation, LabelLimit, LabelWithTooltip };
