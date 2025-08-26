@@ -64,7 +64,7 @@ export const getDefaultAxis = (axisOptions: AxisSpecOptions, scaleName: string):
     ...getLabelAnchorValues(position, labelOrientation, labelAlign, vegaLabelAlign, vegaLabelBaseline),
     encode: {
       labels: {
-        interactive: hasTooltip,
+        interactive: Boolean(hasTooltip),
         update: {
           text: getLabelFormat(axisOptions, scaleName),
           ...(hasTooltip ? { tooltip: { signal: 'datum.value' } } : {}),
