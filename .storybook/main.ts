@@ -18,6 +18,10 @@ const config: StorybookConfig = {
     options: {},
   },
 
+  staticDirs: [
+    { from: './public', to: '/' }
+  ],
+
   webpackFinal(config) {
     return config;
   },

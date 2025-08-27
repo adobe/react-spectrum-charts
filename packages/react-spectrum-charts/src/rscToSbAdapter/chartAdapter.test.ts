@@ -128,8 +128,8 @@ describe('rscPropsToSpecBuilderOptions()', () => {
     test('basic bar', () => {
       expect(rscPropsToSpecBuilderOptions(chartProps)).toStrictEqual({
         axes: [
-          { axisAnnotations: [], baseline: true, position: 'bottom', referenceLines: [], title: 'Browser' },
-          { axisAnnotations: [], grid: true, position: 'left', referenceLines: [], title: 'Downloads' },
+          { axisAnnotations: [], axisThumbnails: [], baseline: true, position: 'bottom', referenceLines: [], title: 'Browser' },
+          { axisAnnotations: [], axisThumbnails: [], grid: true, position: 'left', referenceLines: [], title: 'Downloads' },
         ],
         backgroundColor: DEFAULT_BACKGROUND_COLOR,
         colorScheme: DEFAULT_COLOR_SCHEME,
@@ -273,6 +273,7 @@ describe('rscPropsToSpecBuilderOptions()', () => {
         axes: [
           {
             axisAnnotations: [],
+            axisThumbnails: [],
             grid: true,
             labelFormat: 'percentage',
             position: 'bottom',
@@ -281,6 +282,7 @@ describe('rscPropsToSpecBuilderOptions()', () => {
           },
           {
             axisAnnotations: [],
+            axisThumbnails: [],
             grid: true,
             position: 'left',
             referenceLines: [],

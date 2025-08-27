@@ -14,6 +14,7 @@ import { Align, Baseline, FontWeight, NumberValue, ScaleType } from 'vega';
 import { ColorScheme } from '../chartSpec.types';
 import { NumberFormat, Orientation, PartiallyRequired, Position } from '../specUtil.types';
 import { AxisAnnotationOptions } from './axisAnnotationSpec.types';
+import { AxisThumbnailOptions } from './axisThumbnailSpec.types';
 import { ReferenceLineOptions } from './referenceLineSpec.types';
 
 export type Granularity = 'second' | 'minute' | 'hour' | 'day' | 'week' | 'month' | 'quarter' | 'year';
@@ -145,6 +146,7 @@ export interface AxisOptions {
 
   // children
   axisAnnotations?: AxisAnnotationOptions[];
+  axisThumbnails?: AxisThumbnailOptions[];
   referenceLines?: ReferenceLineOptions[];
 }
 
@@ -161,6 +163,7 @@ type AxisOptionsWithDefaults =
   | 'labels'
   | 'numberFormat'
   | 'referenceLines'
+  | 'axisThumbnails'
   | 'subLabels'
   | 'ticks';
 

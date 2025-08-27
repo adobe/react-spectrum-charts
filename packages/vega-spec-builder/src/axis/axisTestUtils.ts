@@ -51,6 +51,7 @@ export const defaultYBaselineMark: Mark = {
 
 export const defaultAxisOptions: AxisSpecOptions = {
   axisAnnotations: [],
+  axisThumbnails: [],
   baseline: false,
   baselineOffset: 0,
   colorScheme: DEFAULT_COLOR_SCHEME,

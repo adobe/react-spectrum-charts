@@ -510,6 +510,61 @@ describe('Spec builder, Axis', () => {
       });
     });
 
+    describe('axisThumbnails', () => {
+      test('should not add thumbnail encodings when scale type does not support thumbnails', () => {
+        const axes = addAxes([], {
+          ...defaultAxisOptions,
+          scaleName: 'xLinear',
+          scaleType: 'linear',
+          axisThumbnails: [{ urlKey: 'thumbnail' }],
+          usermeta: {},
+        });
+
+        expect(axes).toHaveLength(1);
+        // Should not have thumbnail-related encodings
+        expect(axes[0].encode?.labels?.update?.dx).toBeUndefined();
+        expect(axes[0].encode?.labels?.update?.dy).toBeUndefined();
+      });
+
+      test('should add thumbnail label offset encodings when scale type supports thumbnails', () => {
+        const axes = addAxes([], {
+          ...defaultAxisOptions,
+          scaleName: 'xBand',
+          scaleType: 'band',
+          position: 'bottom',
+          name: 'testAxis',
+          axisThumbnails: [{ urlKey: 'thumbnail' }],
+          usermeta: {},
+        });
+
+        expect(axes).toHaveLength(1);
+        expect(axes[0].encode?.labels?.update?.dy).toBeDefined();
+        expect(axes[0].encode?.labels?.update?.dy).toEqual([
+          { test: 'testAxisAxisThumbnail0ThumbnailSize < 16', value: 0 },
+          { signal: 'testAxisAxisThumbnail0ThumbnailSize' },
+        ]);
+      });
+
+      test('should add thumbnail label offset encodings for left position', () => {
+        const axes = addAxes([], {
+          ...defaultAxisOptions,
+          scaleName: 'yBand',
+          scaleType: 'band',
+          position: 'left',
+          name: 'testAxis',
+          axisThumbnails: [{ urlKey: 'thumbnail' }],
+          usermeta: {},
+        });
+
+        expect(axes).toHaveLength(1);
+        expect(axes[0].encode?.labels?.update?.dx).toBeDefined();
+        expect(axes[0].encode?.labels?.update?.dx).toEqual([
+          { test: 'testAxisAxisThumbnail0ThumbnailSize < 16', value: 0 },
+          { signal: '-testAxisAxisThumbnail0ThumbnailSize' },
+        ]);
+      });
+    });
+
     test('should add test to hide labels if they would overlap the reference line icon', () => {
       const labelTextEncoding = addAxes([], {
         ...defaultAxisOptions,
@@ -586,6 +641,7 @@ describe('Spec builder, Axis', () => {
         baselineOffset: 0,
         opposingScaleType: 'linear',
         scaleName: 'xLinear',
+        scaleField: 'x',
         usermeta: {},
       });
 
@@ -599,6 +655,7 @@ describe('Spec builder, Axis', () => {
         baselineOffset: 10,
         opposingScaleType: 'linear',
         scaleName: 'xLinear',
+        scaleField: 'x',
         usermeta: {},
       });
 
@@ -626,6 +683,7 @@ describe('Spec builder, Axis', () => {
         baselineOffset: 0,
         opposingScaleType: 'linear',
         scaleName: 'xLinear',
+        scaleField: 'x',
         usermeta: {},
       });
 
@@ -640,6 +698,7 @@ describe('Spec builder, Axis', () => {
         baselineOffset: 10,
         opposingScaleType: 'linear',
         scaleName: 'xLinear',
+        scaleField: 'x',
         usermeta: {},
       });
 
@@ -668,6 +727,7 @@ describe('Spec builder, Axis', () => {
         baselineOffset: 0,
         opposingScaleType: 'band',
         scaleName: 'xLinear',
+        scaleField: 'x',
         usermeta: {},
       }) as GroupMark[];
 
@@ -682,6 +742,7 @@ describe('Spec builder, Axis', () => {
         baselineOffset: 0,
         opposingScaleType: 'band',
         scaleName: 'xLinear',
+        scaleField: 'x',
         usermeta: {},
       }) as GroupMark[];
 
@@ -696,10 +757,75 @@ describe('Spec builder, Axis', () => {
         baselineOffset: 0,
         opposingScaleType: 'band',
         scaleName: 'yLinear',
+        scaleField: 'y',
         usermeta: {},
       }) as GroupMark[];
 
       expect(marks[0].axes?.[0].labels).toBe(false);
+    });
+
+    describe('axisThumbnails', () => {
+      test('should not add thumbnail marks when scale type does not support thumbnails', () => {
+        const marks = addAxesMarks([defaultYBaselineMark], {
+          ...defaultAxisOptions,
+          scaleName: 'xLinear',
+          scaleType: 'linear',
+          scaleField: 'x',
+          axisThumbnails: [{ urlKey: 'thumbnail' }],
+          usermeta: {},
+        });
+
+        expect(marks).toEqual([defaultYBaselineMark]);
+      });
+
+      test('should not add thumbnail marks when scaleField is not provided', () => {
+        const marks = addAxesMarks([defaultYBaselineMark], {
+          ...defaultAxisOptions,
+          scaleName: 'xBand',
+          scaleType: 'band',
+          axisThumbnails: [{ urlKey: 'thumbnail' }],
+          usermeta: {},
+        });
+
+        expect(marks).toEqual([defaultYBaselineMark]);
+      });
+
+      test('should add thumbnail image marks when scale type supports thumbnails and scaleField is provided', () => {
+        const marks = addAxesMarks([defaultYBaselineMark], {
+          ...defaultAxisOptions,
+          scaleName: 'xBand',
+          scaleType: 'band',
+          scaleField: 'category',
+          name: 'testAxis',
+          position: 'bottom',
+          axisThumbnails: [{ urlKey: 'thumbnail' }],
+          usermeta: {},
+        });
+
+        expect(marks).toHaveLength(2); // Original mark + thumbnail mark
+        expect(marks[1]).toHaveProperty('type', 'image');
+        expect(marks[1]).toHaveProperty('name', 'testAxisAxisThumbnail0');
+        expect(marks[1]).toHaveProperty('from', { data: 'filteredTable' });
+      });
+
+      test('should add multiple thumbnail image marks for multiple thumbnails', () => {
+        const marks = addAxesMarks([defaultYBaselineMark], {
+          ...defaultAxisOptions,
+          scaleName: 'xBand',
+          scaleType: 'band',
+          scaleField: 'category',
+          name: 'testAxis',
+          position: 'bottom',
+          axisThumbnails: [{ urlKey: 'thumbnail1' }, { urlKey: 'thumbnail2' }],
+          usermeta: {},
+        });
+
+        expect(marks).toHaveLength(3); // Original mark + 2 thumbnail marks
+        expect(marks[1]).toHaveProperty('type', 'image');
+        expect(marks[1]).toHaveProperty('name', 'testAxisAxisThumbnail0');
+        expect(marks[2]).toHaveProperty('type', 'image');
+        expect(marks[2]).toHaveProperty('name', 'testAxisAxisThumbnail1');
+      });
     });
 
     describe('dualMetricAxis', () => {
@@ -712,6 +838,7 @@ describe('Spec builder, Axis', () => {
           baselineOffset: 0,
           opposingScaleType: 'band',
           scaleName: 'yLinear',
+          scaleField: 'y',
           usermeta: {},
         }) as GroupMark[];
 
@@ -747,34 +874,73 @@ describe('Spec builder, Axis', () => {
 
   describe('addAxisSignals()', () => {
     test('should not add any signals if there labels and subLabels are undefined', () => {
-      const signals = addAxisSignals([], defaultAxisOptions);
+      const signals = addAxisSignals([], defaultAxisOptions, 'xLinear');
       expect(signals).toHaveLength(0);
     });
 
     test('should add labels signal if labels exist', () => {
-      const signals = addAxisSignals([], {
-        ...defaultAxisOptions,
-        labels: [1, 'test', { value: 2, label: 'two', align: 'start' }],
-      });
+      const signals = addAxisSignals(
+        [],
+        {
+          ...defaultAxisOptions,
+          labels: [1, 'test', { value: 2, label: 'two', align: 'start' }],
+        },
+        'xLinear'
+      );
       expect(signals).toHaveLength(1);
       expect(signals[0]).toHaveProperty('name', 'axis0_labels');
       expect(signals[0]).toHaveProperty('value', [{ value: 2, label: 'two', align: 'left', baseline: 'top' }]);
     });
 
     test('should add subLabels if subLabels exist', () => {
-      const signals = addAxisSignals([], {
-        ...defaultAxisOptions,
-        subLabels: [
-          { value: 1, subLabel: 'one', align: 'start' },
-          { value: 2, subLabel: 'two', align: 'end' },
-        ],
-      });
+      const signals = addAxisSignals(
+        [],
+        {
+          ...defaultAxisOptions,
+          subLabels: [
+            { value: 1, subLabel: 'one', align: 'start' },
+            { value: 2, subLabel: 'two', align: 'end' },
+          ],
+        },
+        'xLinear'
+      );
       expect(signals).toHaveLength(1);
       expect(signals[0]).toHaveProperty('name', 'axis0_subLabels');
       expect(signals[0]).toHaveProperty('value', [
         { value: 1, subLabel: 'one', align: 'left', baseline: 'top' },
         { value: 2, subLabel: 'two', align: 'right', baseline: 'top' },
       ]);
+    });
+
+    describe('axisThumbnails', () => {
+      test('should not add thumbnail signals when no thumbnails are configured', () => {
+        const signals = addAxisSignals(
+          [],
+          {
+            ...defaultAxisOptions,
+            axisThumbnails: [],
+          },
+          'xLinear'
+        );
+        expect(signals).toHaveLength(0);
+      });
+
+      test('should add thumbnail size signal for single thumbnail', () => {
+        const signals = addAxisSignals(
+          [],
+          {
+            ...defaultAxisOptions,
+            name: 'testAxis',
+            axisThumbnails: [{ urlKey: 'thumbnail' }],
+          },
+          'xBand'
+        );
+        expect(signals).toHaveLength(1);
+        expect(signals[0]).toEqual({
+          name: 'testAxisAxisThumbnail0ThumbnailSize',
+          update: "min(bandwidth('xBand'), 42)",
+        });
+      });
     });
   });
 
