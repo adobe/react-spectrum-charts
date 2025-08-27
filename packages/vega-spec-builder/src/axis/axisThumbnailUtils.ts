@@ -11,7 +11,7 @@
  */
 import { ImageMark, ScaleType, Signal, TextEncodeEntry } from 'vega';
 
-import { FILTERED_TABLE, MAX_THUMBNAIL_SIZE, MIN_THUMBNAIL_SIZE } from '@spectrum-charts/constants';
+import { FILTERED_TABLE, MAX_THUMBNAIL_SIZE, MIN_THUMBNAIL_SIZE, THUMBNAIL_OFFSET } from '@spectrum-charts/constants';
 
 import { getGenericUpdateSignal } from '../signal/signalSpecBuilder';
 import { AxisSpecOptions, AxisThumbnailOptions, AxisThumbnailSpecOptions, Position } from '../types';
@@ -149,24 +149,24 @@ export const getAxisThumbnailPosition = (
   switch (position) {
     case 'left':
       return {
-        x: { signal: `-4 - ${axisThumbnailName}ThumbnailSize` },
+        x: { signal: `-${THUMBNAIL_OFFSET} - ${axisThumbnailName}ThumbnailSize` },
         yc: centerEncoding,
       };
     case 'right':
       return {
-        x: { signal: 'width + 4' },
+        x: { signal: `width + ${THUMBNAIL_OFFSET}` },
         yc: centerEncoding,
       };
     case 'top':
       return {
         xc: centerEncoding,
-        y: { signal: `-4 - ${axisThumbnailName}ThumbnailSize` },
+        y: { signal: `-${THUMBNAIL_OFFSET} - ${axisThumbnailName}ThumbnailSize` },
       };
     case 'bottom':
     default:
       return {
         xc: centerEncoding,
-        y: { signal: 'height + 4' },
+        y: { signal: `height + ${THUMBNAIL_OFFSET}` },
       };
   }
 };
