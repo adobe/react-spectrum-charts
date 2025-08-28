@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { MAX_THUMBNAIL_SIZE, MIN_THUMBNAIL_SIZE } from '@spectrum-charts/constants';
+import { MAX_THUMBNAIL_SIZE, MIN_THUMBNAIL_SIZE, THUMBNAIL_OFFSET } from '@spectrum-charts/constants';
 import { ScaleType, Signal } from 'vega';
 import { AxisSpecOptions, AxisThumbnailOptions } from '../types';
 import { defaultAxisOptions } from './axisTestUtils';
@@ -206,7 +206,7 @@ describe('axisThumbnailUtils', () => {
       const result = getAxisThumbnailPosition('xScale', 'category', 'left', 'testThumbnail');
 
       expect(result).toEqual({
-        x: { signal: '-4 - testThumbnailThumbnailSize' },
+        x: { signal: `-${THUMBNAIL_OFFSET} - testThumbnailThumbnailSize` },
         yc: { signal: 'scale(\'xScale\', datum.category) + bandwidth(\'xScale\') / 2' },
       });
     });
@@ -215,7 +215,7 @@ describe('axisThumbnailUtils', () => {
       const result = getAxisThumbnailPosition('yScale', 'value', 'right', 'testThumbnail');
 
       expect(result).toEqual({
-        x: { signal: 'width + 4' },
+        x: { signal: `width + ${THUMBNAIL_OFFSET}` },
         yc: { signal: 'scale(\'yScale\', datum.value) + bandwidth(\'yScale\') / 2' },
       });
     });
@@ -225,7 +225,7 @@ describe('axisThumbnailUtils', () => {
 
       expect(result).toEqual({
         xc: { signal: 'scale(\'xScale\', datum.category) + bandwidth(\'xScale\') / 2' },
-        y: { signal: '-4 - testThumbnailThumbnailSize' },
+        y: { signal: `-${THUMBNAIL_OFFSET} - testThumbnailThumbnailSize` },
       });
     });
 
@@ -234,7 +234,7 @@ describe('axisThumbnailUtils', () => {
 
       expect(result).toEqual({
         xc: { signal: 'scale(\'xScale\', datum.category) + bandwidth(\'xScale\') / 2' },
-        y: { signal: 'height + 4' },
+        y: { signal: `height + ${THUMBNAIL_OFFSET}` },
       });
     });
   });

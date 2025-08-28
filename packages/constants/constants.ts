@@ -50,6 +50,7 @@ export const DEFAULT_INTERACTION_MODE = 'nearest';
 // axis constants
 export const MAX_THUMBNAIL_SIZE = 42;
 export const MIN_THUMBNAIL_SIZE = 16;
+export const THUMBNAIL_OFFSET = 4;
 
 // legend constants
 export const DEFAULT_LEGEND_SYMBOL_SIZE = 250;
