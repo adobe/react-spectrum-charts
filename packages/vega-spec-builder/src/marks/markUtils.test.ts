@@ -21,6 +21,7 @@ import {
   DEFAULT_TRANSFORMED_TIME_DIMENSION,
   HIGHLIGHTED_ITEM,
   HIGHLIGHT_CONTRAST_RATIO,
+  HOVERED_ITEM,
   LINEAR_COLOR_SCALE,
   LINE_TYPE_SCALE,
   LINE_WIDTH_SCALE,
@@ -274,20 +275,22 @@ describe('getMarkOpacity()', () => {
   });
   test('Tooltip child, should return tests for hover and default to opacity', () => {
     const opacity = getMarkOpacity({ ...defaultBarOptions, chartTooltips: [{}] });
-    expect(opacity).toHaveLength(3);
-    expect(opacity[0].test).toContain(HIGHLIGHTED_ITEM);
+    expect(opacity).toHaveLength(4);
+    expect(opacity[0].test).toContain(HOVERED_ITEM);
+    expect(opacity[1].test).toContain(HIGHLIGHTED_ITEM);
     expect(opacity.at(-1)).toStrictEqual(DEFAULT_OPACITY_RULE);
   });
   test('Popover child, should return tests for hover and select and default to opacity', () => {
     const opacity = getMarkOpacity({ ...defaultBarOptions, chartPopovers: [{}] });
-    expect(opacity).toHaveLength(7);
+    expect(opacity).toHaveLength(8);
     expect(opacity[0].test).toContain(`${SELECTED_ITEM} !==`);
     expect(opacity[1].test).toContain(`${SELECTED_ITEM} ===`);
 
     expect(opacity[2].test).toContain(`${SELECTED_GROUP} ===`);
     expect(opacity[3].test).toContain(`${SELECTED_GROUP} !==`);
 
-    expect(opacity[4].test).toContain(HIGHLIGHTED_ITEM);
+    expect(opacity[4].test).toContain(HOVERED_ITEM);
+    expect(opacity[5].test).toContain(HIGHLIGHTED_ITEM);
     expect(opacity.at(-1)).toStrictEqual(DEFAULT_OPACITY_RULE);
   });
 });

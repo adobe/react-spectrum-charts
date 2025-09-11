@@ -15,9 +15,11 @@ import {
   COLOR_SCALE,
   FILTERED_TABLE,
   FIRST_RSC_SERIES_ID,
+  GROUP_ID,
   HIGHLIGHTED_GROUP,
   HIGHLIGHTED_ITEM,
   HIGHLIGHTED_SERIES,
+  HOVERED_ITEM,
   LAST_RSC_SERIES_ID,
   MOUSE_OVER_SERIES,
   SERIES_ID,
@@ -89,7 +91,7 @@ export const getHighlightSignalUpdateExpression = (
   const hoveredSeriesExpression = `domain("${legendName}Entries")[datum.index]`;
   if (!includeHiddenSeries) return hoveredSeriesExpression;
   if (keys?.length) {
-    return `indexof(pluck(data("${FILTERED_TABLE}"),"${legendName}_highlightGroupId"), ${hoveredSeriesExpression}) !== -1 ? ${hoveredSeriesExpression} : null`;
+    return `indexof(pluck(data("${FILTERED_TABLE}"),"${legendName}_${GROUP_ID}"), ${hoveredSeriesExpression}) !== -1 ? ${hoveredSeriesExpression} : null`;
   }
   return `indexof(hiddenSeries, ${hoveredSeriesExpression}) === -1 ? ${hoveredSeriesExpression} : null`;
 };
@@ -217,4 +219,29 @@ export const addHighlightedSeriesSignalEvents = (
       ]
     );
   }
+};
+
+export const addHoveredItemSignal = (signals: Signal[], markName: string, targetName?: string): void => {
+  targetName = targetName || markName;
+  const signalName = `${markName}_${HOVERED_ITEM}`;
+
+  let signal = signals.find((signal) => signal.name === signalName);
+  if (!signal) {
+    signal = {
+      description: `Tracks the hovered item for ${targetName}`,
+      name: signalName,
+      value: null,
+      on: [],
+    };
+    signals.push(signal);
+  }
+
+  if (signal.on === undefined) {
+    signal.on = [];
+  }
+
+  signal.on.push(
+    { events: `@${targetName}:mouseover`, update: 'datum' },
+    { events: `@${targetName}:mouseout`, update: 'null' }
+  );
 };

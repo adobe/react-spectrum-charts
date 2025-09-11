@@ -35,7 +35,7 @@ import { toCamelCase } from '@spectrum-charts/utils';
 
 import { isInteractive } from '../marks/markUtils';
 import { addFieldToFacetScaleDomain } from '../scale/scaleSpecBuilder';
-import { addHighlightedItemSignalEvents } from '../signal/signalSpecBuilder';
+import { addHighlightedItemSignalEvents, addHoveredItemSignal } from '../signal/signalSpecBuilder';
 import { ChartData, ColorScheme, HighlightedItem, ScSpec, VennOptions, VennSpecOptions } from '../types';
 import {
   SET_ID_DELIMITER,
@@ -192,6 +192,8 @@ export const addSignals = produce<Signal[], [VennSpecOptions]>((signals, props) 
   const { chartTooltips, name, idKey } = props;
 
   if (!isInteractive(props)) return;
+  addHoveredItemSignal(signals, name);
+  addHoveredItemSignal(signals, name, `${name}_intersections`);
   addHighlightedItemSignalEvents(signals, name, idKey, 1, chartTooltips[0]?.excludeDataKeys);
   addHighlightedItemSignalEvents(signals, `${name}_intersections`, idKey, 1, chartTooltips[0]?.excludeDataKeys);
 });

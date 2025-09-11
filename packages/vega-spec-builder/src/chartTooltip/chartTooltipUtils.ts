@@ -14,9 +14,11 @@ import { Data, FormulaTransform, NumericValueRef, Signal, SourceData } from 'veg
 import {
   DEFAULT_OPACITY_RULE,
   FILTERED_TABLE,
+  GROUP_ID,
   HIGHLIGHTED_GROUP,
   HIGHLIGHTED_ITEM,
   HIGHLIGHT_CONTRAST_RATIO,
+  HOVERED_ITEM,
   INTERACTION_MODE,
   SERIES_ID,
 } from '@spectrum-charts/constants';
@@ -105,7 +107,7 @@ export const addTooltipData = (data: Data[], markOptions: TooltipParentOptions, 
 export const getGroupIdTransform = (highlightBy: string[], markName: string): FormulaTransform => {
   return {
     type: 'formula',
-    as: `${markName}_highlightGroupId`,
+    as: `${markName}_${GROUP_ID}`,
     expr: highlightBy.map((facet) => `datum.${facet}`).join(' + " | " + '),
   };
 };
@@ -121,7 +123,7 @@ const getMarkHighlightedData = (markName: string): SourceData => ({
   transform: [
     {
       type: 'filter',
-      expr: `${HIGHLIGHTED_GROUP} === datum.${markName}_highlightGroupId`,
+      expr: `${HIGHLIGHTED_GROUP} === datum.${markName}_${GROUP_ID}`,
     },
   ],
 });
@@ -155,7 +157,7 @@ export const addTooltipSignals = (signals: Signal[], markOptions: TooltipParentO
     const highlightedGroupSignal = signals.find((signal) => signal.name === HIGHLIGHTED_GROUP) as Signal;
 
     let markName = markOptions.name;
-    let update = `datum.${markName}_highlightGroupId`;
+    let update = `datum.${markName}_${GROUP_ID}`;
 
     if ('interactionMode' in markOptions && markOptions.interactionMode === INTERACTION_MODE.ITEM) {
       getHoverMarkNames(markName).forEach((name) => {
@@ -211,8 +213,26 @@ export const addHighlightMarkOpacityRules = (
   if (isHighlightedByGroup(markOptions)) {
     const { name: markName } = markOptions;
     opacityRules.unshift({
-      test: `${HIGHLIGHTED_GROUP} === datum.${markName}_highlightGroupId`,
+      test: `${HIGHLIGHTED_GROUP} === datum.${markName}_${GROUP_ID}`,
       ...DEFAULT_OPACITY_RULE,
     });
   }
 };
+
+export const addHoveredItemOpacityRules = (opacityRules: ({ test?: string, description?: string } & NumericValueRef)[], markOptions: TooltipParentOptions) => {
+  const { name: markName } = markOptions;
+  // find the index of the first hover rule
+  const startIndex = opacityRules.findIndex((rule) => rule.description?.startsWith(`Hover`)) + 1;
+
+  const hoveredItemSignal = `${markName}_${HOVERED_ITEM}`;
+
+  let key = markOptions.idKey;
+  if (isHighlightedByGroup(markOptions)) {
+    key = `${markName}_${GROUP_ID}`;
+  }
+
+  opacityRules.splice(startIndex, 0, {
+    test: `isValid(${hoveredItemSignal})`,
+    signal: `${hoveredItemSignal}.${key} === datum.${key} ? 1 : 1 / ${HIGHLIGHT_CONTRAST_RATIO}`,
+  });
+}

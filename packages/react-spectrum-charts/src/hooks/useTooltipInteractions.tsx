@@ -14,7 +14,7 @@ import { FC } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { Position, Options as TooltipOptions } from 'vega-tooltip';
 
-import { COMPONENT_NAME, FILTERED_TABLE, GROUP_DATA } from '@spectrum-charts/constants';
+import { COMPONENT_NAME, FILTERED_TABLE, GROUP_DATA, GROUP_ID } from '@spectrum-charts/constants';
 import { ColorScheme, LegendDescription, TooltipAnchor, TooltipPlacement } from '@spectrum-charts/vega-spec-builder';
 
 import { useChartContext } from '../context/RscChartContext';
@@ -60,14 +60,14 @@ const useTooltipsInteractions = (props: RscChartProps, sanitizedChildren: ChartC
           chartView.current?.signal(controlledHoveredIdSignal.current.name, value?.[idKey] ?? null);
         }
         if (controlledHoveredGroupSignal.current) {
-          const key = Object.keys(value).find((k) => k.endsWith('_highlightGroupId'));
+          const key = Object.keys(value).find((k) => k.endsWith(GROUP_ID));
           if (key) {
             chartView.current?.signal(controlledHoveredGroupSignal.current.name, value[key]);
           }
         }
         if (tooltip.highlightBy && tooltip.highlightBy !== 'item') {
           const tableData = chartView.current?.data(FILTERED_TABLE);
-          const groupId = `${tooltip.name}_highlightGroupId`;
+          const groupId = `${tooltip.name}_${GROUP_ID}`;
           value[GROUP_DATA] = tableData?.filter((d) => d[groupId] === value[groupId]);
         }
         return renderToStaticMarkup(

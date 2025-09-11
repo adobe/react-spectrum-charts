@@ -20,6 +20,7 @@ import {
   DEFAULT_METRIC,
   DEFAULT_TIME_DIMENSION,
   FILTERED_TABLE,
+  GROUP_ID,
   HIGHLIGHTED_ITEM,
   SELECTED_ITEM,
   SELECTED_SERIES,
@@ -164,7 +165,7 @@ export const getAreaHighlightedData = (
 ): SourceData => {
   let expr = '';
   if (hasGroupId) {
-    expr += `${name}_controlledHoveredGroup === datum.${name}_highlightGroupId`;
+    expr += `${name}_controlledHoveredGroup === datum.${name}_${GROUP_ID}`;
   } else {
     expr += `isArray(${HIGHLIGHTED_ITEM}) && indexof(${HIGHLIGHTED_ITEM}, datum.${idKey}) > -1  || ${HIGHLIGHTED_ITEM} === datum.${idKey}`;
     if (hasTooltip) {

@@ -23,7 +23,7 @@ import { toCamelCase } from '@spectrum-charts/utils';
 
 import { isInteractive } from '../marks/markUtils';
 import { addFieldToFacetScaleDomain } from '../scale/scaleSpecBuilder';
-import { addHighlightedItemSignalEvents } from '../signal/signalSpecBuilder';
+import { addHighlightedItemSignalEvents, addHoveredItemSignal } from '../signal/signalSpecBuilder';
 import { ColorScheme, DonutOptions, DonutSpecOptions, HighlightedItem, ScSpec } from '../types';
 import {
   getDonutSummaryData,
@@ -150,5 +150,6 @@ export const addSignals = produce<Signal[], [DonutSpecOptions]>((signals, option
   const { chartTooltips, idKey, name } = options;
   signals.push(...getDonutSummarySignals(options));
   if (!isInteractive(options)) return;
+  addHoveredItemSignal(signals, name);
   addHighlightedItemSignalEvents(signals, name, idKey, 1, chartTooltips[0]?.excludeDataKeys);
 });

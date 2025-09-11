@@ -65,12 +65,14 @@ export const FILTERED_TABLE = 'filteredTable';
 // vega data field names
 export const GROUP_DATA = 'rscGroupData';
 export const MARK_ID = 'rscMarkId';
+export const GROUP_ID = 'rscGroupId';
 export const SERIES_ID = 'rscSeriesId';
 export const STACK_ID = 'rscStackId';
 export const COMPONENT_NAME = 'rscComponentName';
 export const TRENDLINE_VALUE = 'rscTrendlineValue';
 
 // signal names
+export const HOVERED_ITEM = 'hoveredItem'; // hovered item suffix
 export const HIGHLIGHTED_ITEM = 'highlightedItem'; // data point
 export const HIGHLIGHTED_GROUP = 'highlightedGroup'; // data point
 export const HIGHLIGHTED_SERIES = 'highlightedSeries'; // series
@@ -125,6 +127,7 @@ export const DEFAULT_VENN_METRIC = 'size';
 export const DEFAULT_VENN_LABEL = 'label';
 
 // ratio that each opacity is divded by when hovering or highlighting from legend
+// TODO: invert this ratio so we don't have to do 1 / HIGHLIGHT_CONTRAST_RATIO every time
 export const HIGHLIGHT_CONTRAST_RATIO = 5;
 
 // legend tooltips

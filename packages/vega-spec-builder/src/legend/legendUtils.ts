@@ -30,6 +30,7 @@ import {
   DEFAULT_LEGEND_SYMBOL_WIDTH,
   DEFAULT_OPACITY_RULE,
   FILTERED_TABLE,
+  GROUP_ID,
   HIGHLIGHTED_GROUP,
   HIGHLIGHTED_SERIES,
   HIGHLIGHT_CONTRAST_RATIO,
@@ -316,7 +317,7 @@ export const getHiddenSeriesColorRule = (
   if (keys?.length) {
     return [
       {
-        test: `indexof(pluck(data('${FILTERED_TABLE}'), '${name}_highlightGroupId'), datum.value) === -1`,
+        test: `indexof(pluck(data('${FILTERED_TABLE}'), '${name}_${GROUP_ID}'), datum.value) === -1`,
         value: getColorValue(colorValue, colorScheme),
       },
     ];

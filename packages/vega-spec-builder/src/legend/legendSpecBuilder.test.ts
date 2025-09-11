@@ -17,6 +17,7 @@ import {
   DEFAULT_COLOR,
   DEFAULT_COLOR_SCHEME,
   DEFAULT_SECONDARY_COLOR,
+  GROUP_ID,
   HIGHLIGHTED_SERIES,
   LINEAR_COLOR_SCALE,
   TABLE,
@@ -335,7 +336,7 @@ describe('addData()', () => {
   test('should add legend group Id if keys has length', () => {
     const data = addData(baseData, { ...defaultLegendOptions, facets: [DEFAULT_COLOR], keys: ['key1', 'key2'] });
     expect(data[0].transform).toHaveLength(2);
-    expect(data[0].transform?.[1]).toHaveProperty('as', 'legend0_highlightGroupId');
+    expect(data[0].transform?.[1]).toHaveProperty('as', `legend0_${GROUP_ID}`);
   });
   test('should add transform to table if they do not exist', () => {
     const data = addData([{ ...baseData[0], transform: undefined }, ...baseData], {

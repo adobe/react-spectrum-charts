@@ -15,6 +15,7 @@ import { Data, Legend, Mark, Scale, Signal } from 'vega';
 import {
   COLOR_SCALE,
   DEFAULT_COLOR_SCHEME,
+  GROUP_ID,
   LINEAR_COLOR_SCALE,
   LINE_TYPE_SCALE,
   OPACITY_SCALE,
@@ -301,7 +302,7 @@ export const addData = produce<Data[], [LegendSpecOptions & { facets: string[] }
       }
       tableData.transform.push({
         type: 'formula',
-        as: `${name}_highlightGroupId`,
+        as: `${name}_${GROUP_ID}`,
         expr: keys.map((key) => `datum.${key}`).join(' + " | " + '),
       });
     }
