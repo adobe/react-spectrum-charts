@@ -9,9 +9,9 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { Data, Signal } from 'vega';
+import { Data, NumericValueRef, Signal } from 'vega';
 
-import { HIGHLIGHTED_GROUP } from '@spectrum-charts/constants';
+import { DEFAULT_OPACITY_RULE, GROUP_ID, HIGHLIGHTED_GROUP, HOVERED_ITEM } from '@spectrum-charts/constants';
 
 import { defaultBarOptions } from '../bar/barTestUtils';
 import { defaultScatterOptions } from '../scatter/scatterTestUtils';
@@ -20,6 +20,7 @@ import { baseData } from '../specUtils';
 import { BarSpecOptions, ChartTooltipOptions, LineSpecOptions } from '../types';
 import {
   addHighlightMarkOpacityRules,
+  addHoveredItemOpacityRules,
   addTooltipData,
   addTooltipSignals,
   applyTooltipPropDefaults,
@@ -70,19 +71,19 @@ describe('addTooltipData()', () => {
     const markOptions = getDefautltMarkOptions({ highlightBy: 'dimension' });
     addTooltipData(data, markOptions);
     expect(data[1].transform?.length).toBe(1);
-    expect(data[1].transform?.[0]).toHaveProperty('as', 'bar0_highlightGroupId');
+    expect(data[1].transform?.[0]).toHaveProperty('as', `bar0_${GROUP_ID}`);
   });
   test('should add the group id transform if highlightBy is `series`', () => {
     const markOptions = getDefautltMarkOptions({ highlightBy: 'series' });
     addTooltipData(data, markOptions);
     expect(data[1].transform?.length).toBe(1);
-    expect(data[1].transform?.[0]).toHaveProperty('as', 'bar0_highlightGroupId');
+    expect(data[1].transform?.[0]).toHaveProperty('as', `bar0_${GROUP_ID}`);
   });
   test('should add the group id transform if highlightBy is a key array', () => {
     const markOptions = getDefautltMarkOptions({ highlightBy: ['operatingSystem'] });
     addTooltipData(data, markOptions);
     expect(data[1].transform?.length).toBe(1);
-    expect(data[1].transform?.[0]).toHaveProperty('as', 'bar0_highlightGroupId');
+    expect(data[1].transform?.[0]).toHaveProperty('as', `bar0_${GROUP_ID}`);
   });
   test('should not add highlightedData for the mark if false', () => {
     const dataLength = data.length;
@@ -168,5 +169,34 @@ describe('addTooltipMarkOpacityRules()', () => {
     const opacityRules = [];
     addHighlightMarkOpacityRules(opacityRules, getDefautltMarkOptions({ highlightBy: 'series' }));
     expect(opacityRules).toHaveLength(3);
+  });
+});
+
+
+describe('addHoveredItemOpacityRules()', () => {
+  test('should add hovered item opacity rules', () => {
+    const opacityRules = [];
+    addHoveredItemOpacityRules(opacityRules, getDefautltMarkOptions());
+    expect(opacityRules).toHaveLength(1);
+  });
+  test('should add hovered item opacity rule at the correct index', () => {
+    let opacityRules: ({ test?: string, description?: string } & NumericValueRef)[] = [DEFAULT_OPACITY_RULE];
+    addHoveredItemOpacityRules(opacityRules, getDefautltMarkOptions());
+    expect(opacityRules).toHaveLength(2);
+    expect(opacityRules[0].test).toContain(HOVERED_ITEM);
+    expect(opacityRules[1]).toBe(DEFAULT_OPACITY_RULE);
+
+    opacityRules = [DEFAULT_OPACITY_RULE, { description: 'Hover', test: 'this is a test' }];
+    addHoveredItemOpacityRules(opacityRules, getDefautltMarkOptions());
+    expect(opacityRules).toHaveLength(3);
+    expect(opacityRules[0]).toBe(DEFAULT_OPACITY_RULE);
+    expect(opacityRules[1]).toHaveProperty('description', 'Hover');
+    expect(opacityRules[2].test).toContain(HOVERED_ITEM);
+  });
+  test('should use group id if highlighted by group', () => {
+    const opacityRules: ({ test?: string, description?: string, signal?: string } & NumericValueRef)[] = [];
+    addHoveredItemOpacityRules(opacityRules, getDefautltMarkOptions({ highlightBy: 'dimension' }));
+    expect(opacityRules).toHaveLength(1);
+    expect(opacityRules[0].signal).toContain(GROUP_ID);
   });
 });

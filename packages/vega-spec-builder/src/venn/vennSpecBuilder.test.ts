@@ -60,7 +60,7 @@ describe('addSignal', () => {
       chartTooltips: [{}],
     });
 
-    expect(signals).toHaveLength(defaultSignals.length);
+    expect(signals).toHaveLength(defaultSignals.length + 1);
     expect(signals[0]).toHaveProperty('name', HIGHLIGHTED_ITEM);
     expect(signals[0].on).toHaveLength(4);
     expect(signals[0].on?.[0]).toHaveProperty('events', '@venn:mouseover');

@@ -24,6 +24,7 @@ import {
   FILTERED_TABLE,
   HIGHLIGHTED_ITEM,
   HIGHLIGHT_CONTRAST_RATIO,
+  HOVERED_ITEM,
   MARK_ID,
 } from '@spectrum-charts/constants';
 
@@ -118,6 +119,10 @@ const defaultMarkWithTooltip: Mark = {
       ...defaultDodgedXEncodings,
       ...defaultBarStrokeEncodings,
       opacity: [
+        {
+          test: `isValid(bar0_${HOVERED_ITEM})`,
+          signal: `bar0_${HOVERED_ITEM}.${MARK_ID} === datum.${MARK_ID} ? 1 : 1 / ${HIGHLIGHT_CONTRAST_RATIO}`,
+        },
         {
           test: `isArray(${HIGHLIGHTED_ITEM}) && length(${HIGHLIGHTED_ITEM}) > 0 && indexof(${HIGHLIGHTED_ITEM}, datum.rscMarkId) === -1`,
           value: 1 / HIGHLIGHT_CONTRAST_RATIO,

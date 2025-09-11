@@ -13,6 +13,7 @@ import { Mark } from 'vega';
 
 import {
   DEFAULT_OPACITY_RULE,
+  GROUP_ID,
   HIGHLIGHTED_GROUP,
   HIGHLIGHTED_SERIES,
   HIGHLIGHT_CONTRAST_RATIO,
@@ -48,7 +49,7 @@ describe('getHighlightOpacityRule()', () => {
     const opacityRule = getHighlightOpacityRule(['key1'], 'legend0');
     expect(opacityRule).toHaveProperty(
       'test',
-      `isValid(${HIGHLIGHTED_GROUP}) && ${HIGHLIGHTED_GROUP} !== datum.legend0_highlightGroupId`
+      `isValid(${HIGHLIGHTED_GROUP}) && ${HIGHLIGHTED_GROUP} !== datum.legend0_${GROUP_ID}`
     );
   });
 });

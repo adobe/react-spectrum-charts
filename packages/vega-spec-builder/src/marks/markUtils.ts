@@ -41,7 +41,7 @@ import {
 } from '@spectrum-charts/constants';
 import { getColorValue } from '@spectrum-charts/themes';
 
-import { addHighlightMarkOpacityRules } from '../chartTooltip/chartTooltipUtils';
+import { addHighlightMarkOpacityRules, addHoveredItemOpacityRules } from '../chartTooltip/chartTooltipUtils';
 import { LineMarkOptions } from '../line/lineUtils';
 import { getScaleName } from '../scale/scaleSpecBuilder';
 import {
@@ -430,6 +430,7 @@ export const getMarkOpacity = (
   }
 
   addHighlightMarkOpacityRules(rules, options);
+  addHoveredItemOpacityRules(rules, options);
 
   // if a bar is hovered/selected, all other bars should have reduced opacity
   if (hasPopover(options)) {

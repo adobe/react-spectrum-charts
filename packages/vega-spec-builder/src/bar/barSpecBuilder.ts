@@ -45,6 +45,7 @@ import {
 import { getDualAxisScaleNames } from '../scale/scaleUtils';
 import {
   addHighlightedItemSignalEvents,
+  addHoveredItemSignal,
   getFirstRscSeriesIdSignal,
   getGenericValueSignal,
   getLastRscSeriesIdSignal,
@@ -147,6 +148,7 @@ export const addSignals = produce<Signal[], [BarSpecOptions]>((signals, options)
     barAnnotations,
     chartTooltips,
     chartPopovers,
+    hasOnClick,
     idKey,
     name,
     paddingRatio,
@@ -161,10 +163,11 @@ export const addSignals = produce<Signal[], [BarSpecOptions]>((signals, options)
     signals.push(getFirstRscSeriesIdSignal(), getLastRscSeriesIdSignal(), getMouseOverSeriesSignal(name));
   }
 
-  if (!barAnnotations.length && !chartPopovers.length && !chartTooltips.length && !trendlines.length) {
+  if (!barAnnotations.length && !chartPopovers.length && !chartTooltips.length && !trendlines.length && !hasOnClick) {
     return;
   }
   addHighlightedItemSignalEvents(signals, name, idKey, 1, chartTooltips[0]?.excludeDataKeys);
+  addHoveredItemSignal(signals, name)
   addTooltipSignals(signals, options);
   setTrendlineSignals(signals, options);
 });

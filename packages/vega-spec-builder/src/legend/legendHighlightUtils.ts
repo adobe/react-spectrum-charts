@@ -13,6 +13,7 @@ import { GroupMark, Mark, NumericValueRef } from 'vega';
 
 import {
   COLOR_SCALE,
+  GROUP_ID,
   HIGHLIGHTED_GROUP,
   HIGHLIGHTED_SERIES,
   HIGHLIGHT_CONTRAST_RATIO,
@@ -54,7 +55,7 @@ export const setHoverOpacityForMarks = (marks: Mark[], keys?: string[], name?: s
 export const getHighlightOpacityRule = (keys?: string[], name?: string): { test?: string } & NumericValueRef => {
   let test = `isValid(${HIGHLIGHTED_SERIES}) && ${HIGHLIGHTED_SERIES} !== datum.${SERIES_ID}`;
   if (keys?.length) {
-    test = `isValid(${HIGHLIGHTED_GROUP}) && ${HIGHLIGHTED_GROUP} !== datum.${name}_highlightGroupId`;
+    test = `isValid(${HIGHLIGHTED_GROUP}) && ${HIGHLIGHTED_GROUP} !== datum.${name}_${GROUP_ID}`;
   }
   return { test, value: 1 / HIGHLIGHT_CONTRAST_RATIO };
 };
