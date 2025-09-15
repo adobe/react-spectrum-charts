@@ -219,10 +219,10 @@ export const addHighlightMarkOpacityRules = (
   }
 };
 
-export const addHoveredItemOpacityRules = (opacityRules: ({ test?: string, description?: string } & NumericValueRef)[], markOptions: TooltipParentOptions) => {
+export const addHoveredItemOpacityRules = (opacityRules: ({ test?: string } & NumericValueRef)[], markOptions: TooltipParentOptions) => {
   const { name: markName } = markOptions;
   // find the index of the first hover rule
-  const startIndex = opacityRules.findIndex((rule) => rule.description?.startsWith(`Hover`)) + 1;
+  const startIndex = opacityRules.findIndex((rule) => rule.test?.includes(HOVERED_ITEM)) + 1;
 
   const hoveredItemSignal = `${markName}_${HOVERED_ITEM}`;
 

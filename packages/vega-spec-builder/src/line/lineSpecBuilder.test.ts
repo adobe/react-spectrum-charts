@@ -23,6 +23,7 @@ import {
   FILTERED_TABLE,
   HIGHLIGHTED_ITEM,
   HIGHLIGHTED_SERIES,
+  HOVERED_ITEM,
   LINEAR_PADDING,
   MARK_ID,
   SERIES_ID,
@@ -557,11 +558,13 @@ describe('lineSpecBuilder', () => {
         ...defaultLineOptions,
         metricRanges: [{ metricEnd: 'end', metricStart: 'start', displayOnHover: true }],
       });
-      expect(signals).toHaveLength(defaultSignals.length);
+      expect(signals).toHaveLength(defaultSignals.length + 1);
       expect(signals[0]).toHaveProperty('name', HIGHLIGHTED_ITEM);
       expect(signals[0].on).toHaveLength(2);
       expect(signals[2]).toHaveProperty('name', HIGHLIGHTED_SERIES);
       expect(signals[2].on).toHaveLength(2);
+      expect(signals.at(-1)).toHaveProperty('name', `${defaultLineOptions.name}_${HOVERED_ITEM}`);
+      expect(signals.at(-1)?.on).toHaveLength(2);
     });
 
     test('adds hover signals when displayPointMark is not undefined', () => {
@@ -574,11 +577,13 @@ describe('lineSpecBuilder', () => {
         staticPoint: 'staticPoint',
         metricRanges: [{ metricEnd: 'end', metricStart: 'start', displayOnHover: true }],
       });
-      expect(signals).toHaveLength(defaultSignals.length);
+      expect(signals).toHaveLength(defaultSignals.length + 1);
       expect(signals[0]).toHaveProperty('name', HIGHLIGHTED_ITEM);
       expect(signals[0].on).toHaveLength(2);
       expect(signals[2]).toHaveProperty('name', HIGHLIGHTED_SERIES);
       expect(signals[2].on).toHaveLength(2);
+      expect(signals.at(-1)).toHaveProperty('name', `${defaultLineOptions.name}_${HOVERED_ITEM}`);
+      expect(signals.at(-1)?.on).toHaveLength(2);
     });
 
     test('hover signals with interactionMode item', () => {
@@ -587,11 +592,13 @@ describe('lineSpecBuilder', () => {
         interactionMode: 'item',
         chartTooltips: [{}],
       });
-      expect(signals).toHaveLength(defaultSignals.length);
+      expect(signals).toHaveLength(defaultSignals.length + 1);
       expect(signals[0]).toHaveProperty('name', HIGHLIGHTED_ITEM);
       expect(signals[0].on).toHaveLength(8);
       expect(signals[2]).toHaveProperty('name', HIGHLIGHTED_SERIES);
       expect(signals[2].on).toHaveLength(8);
+      expect(signals.at(-1)).toHaveProperty('name', `${defaultLineOptions.name}_${HOVERED_ITEM}`);
+      expect(signals.at(-1)?.on).toHaveLength(2);
     });
   });
 });

@@ -143,5 +143,12 @@ describe('signalSpecBuilder', () => {
       expect(hoveredItemSignal?.on?.[0]).toHaveProperty('events', '@line0:mouseover');
       expect(hoveredItemSignal?.on?.[1]).toHaveProperty('events', '@line0:mouseout');
     });
+    test('should despect datum order', () => {
+      signals = [];
+      addHoveredItemSignal(signals, 'line0', 'target0', 2);
+      expect(signals).toHaveLength(1);
+      expect(signals[0]).toHaveProperty('name', `line0_${HOVERED_ITEM}`);
+      expect(signals[0]?.on?.[0]).toHaveProperty('update', 'datum.datum');
+    })
   }); 
 });
