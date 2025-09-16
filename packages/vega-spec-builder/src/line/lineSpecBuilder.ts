@@ -35,7 +35,7 @@ import {
   getMetricRanges,
 } from '../metricRange/metricRangeUtils';
 import { addContinuousDimensionScale, addFieldToFacetScaleDomain, addMetricScale } from '../scale/scaleSpecBuilder';
-import { addHighlightedItemSignalEvents, addHighlightedSeriesSignalEvents } from '../signal/signalSpecBuilder';
+import { addHighlightedItemSignalEvents, addHighlightedSeriesSignalEvents, addHoveredItemSignal } from '../signal/signalSpecBuilder';
 import { getFacetsFromOptions } from '../specUtils';
 import { addTrendlineData, getTrendlineMarks, getTrendlineScales, setTrendlineSignals } from '../trendline';
 import { ColorScheme, HighlightedItem, LineOptions, LineSpecOptions, ScSpec } from '../types';
@@ -141,6 +141,7 @@ export const addSignals = produce<Signal[], [LineSpecOptions]>((signals, options
   if (!isInteractive(options)) return;
   addHighlightedItemSignalEvents(signals, `${name}_voronoi`, idKey, 2);
   addHighlightedSeriesSignalEvents(signals, `${name}_voronoi`, 2);
+  addHoveredItemSignal(signals, name, `${name}_voronoi`, 2);
   addHoverSignals(signals, options);
   addTooltipSignals(signals, options);
 });

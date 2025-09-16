@@ -13,7 +13,9 @@ import {
   COLOR_SCALE,
   DEFAULT_OPACITY_RULE,
   DEFAULT_TRANSFORMED_TIME_DIMENSION,
+  HIGHLIGHT_CONTRAST_RATIO,
   HIGHLIGHTED_SERIES,
+  HOVERED_ITEM,
   SELECTED_SERIES,
   SERIES_ID,
 } from '@spectrum-charts/constants';
@@ -121,11 +123,8 @@ describe('getLineOpacity()', () => {
       chartTooltips: [{}],
     });
     expect(opacityRule).toEqual([
-      { test: `isValid(${HIGHLIGHTED_SERIES}) && ${HIGHLIGHTED_SERIES} !== datum.${SERIES_ID}`, value: 0.2 },
-      {
-        test: `length(data('line0_highlightedData')) > 0 && indexof(pluck(data('line0_highlightedData'), '${SERIES_ID}'), datum.${SERIES_ID}) === -1`,
-        value: 0.2,
-      },
+      { test: `isValid(line0_${HOVERED_ITEM})`, signal: `line0_${HOVERED_ITEM}.${SERIES_ID} === datum.${SERIES_ID} ? 1 : 1 / ${HIGHLIGHT_CONTRAST_RATIO}`},
+      { test: `isValid(${HIGHLIGHTED_SERIES}) && ${HIGHLIGHTED_SERIES} !== datum.${SERIES_ID}`, value: 1 / HIGHLIGHT_CONTRAST_RATIO },
       { value: 1 },
     ]);
   });
@@ -138,12 +137,9 @@ describe('getLineOpacity()', () => {
       chartPopovers: [{}],
     });
     expect(opacityRule).toEqual([
-      { test: `isValid(${HIGHLIGHTED_SERIES}) && ${HIGHLIGHTED_SERIES} !== datum.${SERIES_ID}`, value: 0.2 },
-      {
-        test: `length(data('line0_highlightedData')) > 0 && indexof(pluck(data('line0_highlightedData'), '${SERIES_ID}'), datum.${SERIES_ID}) === -1`,
-        value: 0.2,
-      },
-      { test: `isValid(${SELECTED_SERIES}) && ${SELECTED_SERIES} !== datum.${SERIES_ID}`, value: 0.2 },
+      { signal: `line0_hoveredItem.${SERIES_ID} === datum.${SERIES_ID} ? 1 : 1 / ${HIGHLIGHT_CONTRAST_RATIO}`, test: 'isValid(line0_hoveredItem)' },
+      { test: `isValid(${HIGHLIGHTED_SERIES}) && ${HIGHLIGHTED_SERIES} !== datum.${SERIES_ID}`, value: 1 / HIGHLIGHT_CONTRAST_RATIO },
+      { test: `isValid(${SELECTED_SERIES}) && ${SELECTED_SERIES} !== datum.${SERIES_ID}`, value: 1 / HIGHLIGHT_CONTRAST_RATIO },
       { value: 1 },
     ]);
   });
@@ -164,10 +160,7 @@ describe('getLineOpacity()', () => {
       chartTooltips: [{}],
       isHighlightedByGroup: true,
     });
-    expect(opacityRule).toHaveLength(4);
-    expect(opacityRule[0]).toHaveProperty(
-      'test',
-      `indexof(pluck(data('line0_highlightedData'), '${SERIES_ID}'), datum.${SERIES_ID}) !== -1`
-    );
+    expect(opacityRule).toHaveLength(3);
+    expect(opacityRule[0]).toHaveProperty('test', `length(data('line0_highlightedData'))`);
   });
 });

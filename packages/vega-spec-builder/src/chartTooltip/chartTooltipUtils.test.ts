@@ -186,7 +186,7 @@ describe('addHoveredItemOpacityRules()', () => {
     expect(opacityRules[0].test).toContain(HOVERED_ITEM);
     expect(opacityRules[1]).toBe(DEFAULT_OPACITY_RULE);
 
-    opacityRules = [DEFAULT_OPACITY_RULE, { description: 'Hover', test: 'this is a test' }];
+    opacityRules = [DEFAULT_OPACITY_RULE, { description: 'Hover', test: `this is a test ${HOVERED_ITEM}` }];
     addHoveredItemOpacityRules(opacityRules, getDefautltMarkOptions());
     expect(opacityRules).toHaveLength(3);
     expect(opacityRules[0]).toBe(DEFAULT_OPACITY_RULE);

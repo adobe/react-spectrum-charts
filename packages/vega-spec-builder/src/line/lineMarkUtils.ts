@@ -16,6 +16,7 @@ import {
   DEFAULT_OPACITY_RULE,
   HIGHLIGHTED_SERIES,
   HIGHLIGHT_CONTRAST_RATIO,
+  HOVERED_ITEM,
   SELECTED_SERIES,
   SERIES_ID,
 } from '@spectrum-charts/constants';
@@ -104,8 +105,13 @@ export const getLineOpacity = ({
 
   if (isHighlightedByGroup) {
     strokeOpacityRules.push({
-      test: `indexof(pluck(data('${interactiveMarkName}_highlightedData'), '${SERIES_ID}'), datum.${SERIES_ID}) !== -1`,
-      value: 1,
+      test: `length(data('${interactiveMarkName}_highlightedData'))`,
+      signal: `indexof(pluck(data('${interactiveMarkName}_highlightedData'), '${SERIES_ID}'), datum.${SERIES_ID}) !== -1 ? 1 : 1 / ${HIGHLIGHT_CONTRAST_RATIO}`,
+    })
+  } else {
+    strokeOpacityRules.push({
+      test: `isValid(${interactiveMarkName}_${HOVERED_ITEM})`,
+      signal: `${interactiveMarkName}_${HOVERED_ITEM}.${SERIES_ID} === datum.${SERIES_ID} ? 1 : 1 / ${HIGHLIGHT_CONTRAST_RATIO}`,
     });
   }
 
@@ -115,10 +121,6 @@ export const getLineOpacity = ({
       test: `isValid(${HIGHLIGHTED_SERIES}) && ${HIGHLIGHTED_SERIES} !== datum.${SERIES_ID}`,
       value: 1 / HIGHLIGHT_CONTRAST_RATIO,
     },
-    {
-      test: `length(data('${interactiveMarkName}_highlightedData')) > 0 && indexof(pluck(data('${interactiveMarkName}_highlightedData'), '${SERIES_ID}'), datum.${SERIES_ID}) === -1`,
-      value: 1 / HIGHLIGHT_CONTRAST_RATIO,
-    }
   );
 
   if (popoverMarkName) {

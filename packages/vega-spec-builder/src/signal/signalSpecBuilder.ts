@@ -221,7 +221,7 @@ export const addHighlightedSeriesSignalEvents = (
   }
 };
 
-export const addHoveredItemSignal = (signals: Signal[], markName: string, targetName?: string): void => {
+export const addHoveredItemSignal = (signals: Signal[], markName: string, targetName?: string, datumOrder = 1): void => {
   targetName = targetName || markName;
   const signalName = `${markName}_${HOVERED_ITEM}`;
 
@@ -240,8 +240,10 @@ export const addHoveredItemSignal = (signals: Signal[], markName: string, target
     signal.on = [];
   }
 
+  const datum = new Array(datumOrder).fill('datum').join('.');
+
   signal.on.push(
-    { events: `@${targetName}:mouseover`, update: 'datum' },
+    { events: `@${targetName}:mouseover`, update: datum },
     { events: `@${targetName}:mouseout`, update: 'null' }
   );
 };

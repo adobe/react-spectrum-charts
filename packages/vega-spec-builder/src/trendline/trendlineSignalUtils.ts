@@ -12,7 +12,7 @@
 import { Signal } from 'vega';
 
 import { hasTooltip } from '../marks/markUtils';
-import { addHighlightedItemSignalEvents, addHighlightedSeriesSignalEvents } from '../signal/signalSpecBuilder';
+import { addHighlightedItemSignalEvents, addHighlightedSeriesSignalEvents, addHoveredItemSignal } from '../signal/signalSpecBuilder';
 import { TrendlineParentOptions, getTrendlines } from './trendlineUtils';
 
 export const setTrendlineSignals = (signals: Signal[], markOptions: TrendlineParentOptions): void => {
@@ -21,6 +21,7 @@ export const setTrendlineSignals = (signals: Signal[], markOptions: TrendlinePar
 
   if (trendlines.some((trendline) => hasTooltip(trendline))) {
     addHighlightedItemSignalEvents(signals, `${markName}Trendline_voronoi`, idKey, 2);
+    addHoveredItemSignal(signals, `${markName}Trendline`, `${markName}Trendline_voronoi`, 2);
     addHighlightedSeriesSignalEvents(signals, `${markName}Trendline_voronoi`, 2);
   }
 
