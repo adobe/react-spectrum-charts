@@ -86,7 +86,7 @@ describe('addSignals()', () => {
       ...defaultScatterOptions,
       chartTooltips: [{}],
     });
-    expect(signals).toHaveLength(defaultSignals.length);
+    expect(signals).toHaveLength(defaultSignals.length + 1);
     expect(signals[0].name).toBe(HIGHLIGHTED_ITEM);
     expect(signals[0].on).toHaveLength(2);
   });
@@ -95,7 +95,7 @@ describe('addSignals()', () => {
       ...defaultScatterOptions,
       trendlines: [{ displayOnHover: true }],
     });
-    expect(signals).toHaveLength(defaultSignals.length);
+    expect(signals).toHaveLength(defaultSignals.length + 1);
     expect(signals[0].name).toBe(HIGHLIGHTED_ITEM);
     expect(signals[0].on).toHaveLength(2);
   });

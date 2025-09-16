@@ -20,7 +20,7 @@ import {
 } from '@spectrum-charts/constants';
 import { spectrumColors } from '@spectrum-charts/themes';
 
-import { addHighlightMarkOpacityRules } from '../chartTooltip/chartTooltipUtils';
+import { addHighlightMarkOpacityRules, addHoveredItemOpacityRules } from '../chartTooltip/chartTooltipUtils';
 import {
   getColorProductionRule,
   getLineWidthProductionRule,
@@ -118,6 +118,7 @@ export const getOpacity = (scatterOptions: ScatterSpecOptions): ({ test?: string
 
   const rules: ({ test?: string } & NumericValueRef)[] = [];
   addHighlightMarkOpacityRules(rules, scatterOptions);
+  addHoveredItemOpacityRules(rules, scatterOptions);
   if (hasPopover(scatterOptions)) {
     rules.push({
       test: `isValid(${SELECTED_ITEM}) && ${SELECTED_ITEM} !== datum.${idKey}`,
