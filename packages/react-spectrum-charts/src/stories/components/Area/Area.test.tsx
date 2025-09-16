@@ -9,11 +9,10 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import React from 'react';
 
 import userEvent from '@testing-library/user-event';
 
-import { HIGHLIGHT_CONTRAST_RATIO } from '@spectrum-charts/constants';
+import { FADE_FACTOR } from '@spectrum-charts/constants';
 
 import { Area } from '../../../components';
 import {
@@ -81,7 +80,7 @@ describe('Area', () => {
     const tooltip = await screen.findByTestId('rsc-tooltip');
     expect(tooltip).toBeInTheDocument();
     expect(within(tooltip).getByText('OS: Windows')).toBeInTheDocument();
-    expect(areas[1].getAttribute('opacity')).toEqual((1 / HIGHLIGHT_CONTRAST_RATIO).toString());
+    expect(areas[1].getAttribute('opacity')).toEqual(`${FADE_FACTOR}`);
 
     const highlightRule = await findMarksByGroupName(chart, 'area0_rule', 'line');
     expect(highlightRule).toBeInTheDocument();

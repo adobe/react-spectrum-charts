@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { HIGHLIGHT_CONTRAST_RATIO } from '@spectrum-charts/constants';
+import { FADE_FACTOR } from '@spectrum-charts/constants';
 
 import {
   allElementsHaveAttributeValue,
@@ -37,7 +37,7 @@ describe('Basic', () => {
     expect(bars[2]).toHaveAttribute('opacity', '1');
     // all other bars
     expect(
-      allElementsHaveAttributeValue([...bars.slice(0, 2), ...bars.slice(3)], 'opacity', 1 / HIGHLIGHT_CONTRAST_RATIO)
+      allElementsHaveAttributeValue([...bars.slice(0, 2), ...bars.slice(3)], 'opacity', FADE_FACTOR)
     ).toBe(true);
   });
 });
@@ -56,7 +56,7 @@ describe('Dimension', () => {
     // first three bars (same dimension)
     expect(allElementsHaveAttributeValue(bars.slice(0, 2), 'opacity', '1')).toBe(true);
     // all other bars
-    expect(allElementsHaveAttributeValue(bars.slice(3), 'opacity', 1 / HIGHLIGHT_CONTRAST_RATIO)).toBe(true);
+    expect(allElementsHaveAttributeValue(bars.slice(3), 'opacity', FADE_FACTOR)).toBe(true);
   });
 });
 
@@ -78,7 +78,7 @@ describe('Series', () => {
       allElementsHaveAttributeValue(
         [...bars.slice(0, 1), ...bars.slice(3, 4), ...bars.slice(6, 7)],
         'opacity',
-        1 / HIGHLIGHT_CONTRAST_RATIO
+        FADE_FACTOR
       )
     ).toBe(true);
   });
@@ -102,7 +102,7 @@ describe('Keys', () => {
       allElementsHaveAttributeValue(
         [...bars.slice(0, 1), ...bars.slice(3, 4), ...bars.slice(6, 7)],
         'opacity',
-        1 / HIGHLIGHT_CONTRAST_RATIO
+        FADE_FACTOR
       )
     ).toBe(true);
   });
@@ -147,7 +147,7 @@ describe('ScatterChart', () => {
     // highlighted points
     expect(allElementsHaveAttributeValue(points.slice(0, 6), 'opacity', '1')).toBe(true);
     // all other points
-    expect(allElementsHaveAttributeValue(points.slice(6), 'opacity', 1 / HIGHLIGHT_CONTRAST_RATIO)).toBe(true);
+    expect(allElementsHaveAttributeValue(points.slice(6), 'opacity', FADE_FACTOR)).toBe(true);
   });
 });
 
@@ -194,7 +194,7 @@ describe('AreaChart', () => {
     const highlightVerticalRules = queryAllMarksByGroupName(chart, 'area0_rule', 'line');
     expect(highlightVerticalRules).toHaveLength(0);
     expect(areas[0]).toHaveAttribute('opacity', '1');
-    expect(allElementsHaveAttributeValue(areas.slice(1), 'opacity', (1 / HIGHLIGHT_CONTRAST_RATIO).toString())).toBe(
+    expect(allElementsHaveAttributeValue(areas.slice(1), 'opacity', (FADE_FACTOR).toString())).toBe(
       true
     );
   });

@@ -33,14 +33,14 @@ import {
   GROUP_ID,
   HIGHLIGHTED_GROUP,
   HIGHLIGHTED_SERIES,
-  HIGHLIGHT_CONTRAST_RATIO,
+  FADE_FACTOR,
   LINE_TYPE_SCALE,
   LINE_WIDTH_SCALE,
   OPACITY_SCALE,
   SELECTED_GROUP,
   SELECTED_SERIES,
   SYMBOL_SHAPE_SCALE,
-  SYMBOL_SIZE_SCALE,
+  SYMBOL_SIZE_SCALE
 } from '@spectrum-charts/constants';
 import { getColorValue, spectrumColors } from '@spectrum-charts/themes';
 
@@ -203,11 +203,11 @@ export const getOpacityEncoding = ({
     return [
       {
         test: `isValid(${highlightSignalName}) && datum.value !== ${highlightSignalName}`,
-        value: 1 / HIGHLIGHT_CONTRAST_RATIO,
+        value: FADE_FACTOR,
       },
       {
         test: `isValid(${selectedSignalName}) && datum.value !== ${selectedSignalName}`,
-        value: 1 / HIGHLIGHT_CONTRAST_RATIO,
+        value: FADE_FACTOR,
       },
       DEFAULT_OPACITY_RULE,
     ];

@@ -9,9 +9,8 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import React from 'react';
 
-import { HIGHLIGHT_CONTRAST_RATIO } from '@spectrum-charts/constants';
+import { FADE_FACTOR } from '@spectrum-charts/constants';
 import { spectrumColors } from '@spectrum-charts/themes';
 
 import {
@@ -114,7 +113,7 @@ test('Hidden series should not highlight any marks', async () => {
   // hovering the second entry should lower the opacity of the first series
   await hoverNthElement(entries, 1);
   let bars = await findAllMarksByGroupName(chart, 'bar0');
-  expect(bars[0]).toHaveAttribute('opacity', `${1 / HIGHLIGHT_CONTRAST_RATIO}`);
+  expect(bars[0]).toHaveAttribute('opacity', `${FADE_FACTOR}`);
 
   // hovering the third entry should not adjust the opcity of any of the bars since it is a hidden series
   await hoverNthElement(entries, 2);

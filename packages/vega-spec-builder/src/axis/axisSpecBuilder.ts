@@ -30,7 +30,7 @@ import {
   DEFAULT_LABEL_FONT_WEIGHT,
   DEFAULT_LABEL_ORIENTATION,
   FIRST_RSC_SERIES_ID,
-  HIGHLIGHT_CONTRAST_RATIO,
+  FADE_FACTOR,
   LAST_RSC_SERIES_ID,
   MOUSE_OVER_SERIES
 } from '@spectrum-charts/constants';
@@ -48,7 +48,6 @@ import { getGenericValueSignal } from '../signal/signalSpecBuilder';
 import { AxisOptions, AxisSpecOptions, ColorScheme, Label, Orientation, Position, ScSpec, UserMeta } from '../types';
 import { getAxisLabelsEncoding, getControlledLabelAnchorValues, getLabelValue } from './axisLabelUtils';
 import { getReferenceLineMarks, getReferenceLines, scaleTypeSupportsReferenceLines } from './axisReferenceLineUtils';
-import { encodeAxisTitle, getTrellisAxisOptions, isTrellisedChart } from './axisTrellisUtils';
 import {
   addAxisThumbnailSignals,
   getAxisThumbnailLabelOffset,
@@ -56,6 +55,7 @@ import {
   getAxisThumbnails,
   scaleTypeSupportsThumbnails,
 } from './axisThumbnailUtils';
+import { encodeAxisTitle, getTrellisAxisOptions, isTrellisedChart } from './axisTrellisUtils';
 import {
   getBaselineRule,
   getDefaultAxis,
@@ -238,7 +238,7 @@ export function applySecondaryMetricAxisEncodings(axis: Axis): void {
   const secondaryAxisFillOpacityRules = [
     {
       test: `isValid(${MOUSE_OVER_SERIES}) && ${MOUSE_OVER_SERIES} !== ${LAST_RSC_SERIES_ID}`,
-      value: 1 / HIGHLIGHT_CONTRAST_RATIO,
+      value: FADE_FACTOR,
     },
   ];
 
@@ -287,7 +287,7 @@ export function applyPrimaryMetricAxisEncodings(axis: Axis, colorScheme: ColorSc
   const primaryAxisFillOpacityRules = [
     {
       test: `${MOUSE_OVER_SERIES} === ${LAST_RSC_SERIES_ID}`,
-      value: 1 / HIGHLIGHT_CONTRAST_RATIO,
+      value: FADE_FACTOR,
     },
   ];
 

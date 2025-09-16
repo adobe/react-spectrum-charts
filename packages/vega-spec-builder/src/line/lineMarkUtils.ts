@@ -15,10 +15,10 @@ import {
   DEFAULT_INTERACTION_MODE,
   DEFAULT_OPACITY_RULE,
   HIGHLIGHTED_SERIES,
-  HIGHLIGHT_CONTRAST_RATIO,
+  FADE_FACTOR,
   HOVERED_ITEM,
   SELECTED_SERIES,
-  SERIES_ID,
+  SERIES_ID
 } from '@spectrum-charts/constants';
 
 import { getPopovers } from '../chartPopover/chartPopoverUtils';
@@ -106,12 +106,12 @@ export const getLineOpacity = ({
   if (isHighlightedByGroup) {
     strokeOpacityRules.push({
       test: `length(data('${interactiveMarkName}_highlightedData'))`,
-      signal: `indexof(pluck(data('${interactiveMarkName}_highlightedData'), '${SERIES_ID}'), datum.${SERIES_ID}) !== -1 ? 1 : 1 / ${HIGHLIGHT_CONTRAST_RATIO}`,
+      signal: `indexof(pluck(data('${interactiveMarkName}_highlightedData'), '${SERIES_ID}'), datum.${SERIES_ID}) !== -1 ? 1 : ${FADE_FACTOR}`,
     })
   } else {
     strokeOpacityRules.push({
       test: `isValid(${interactiveMarkName}_${HOVERED_ITEM})`,
-      signal: `${interactiveMarkName}_${HOVERED_ITEM}.${SERIES_ID} === datum.${SERIES_ID} ? 1 : 1 / ${HIGHLIGHT_CONTRAST_RATIO}`,
+      signal: `${interactiveMarkName}_${HOVERED_ITEM}.${SERIES_ID} === datum.${SERIES_ID} ? 1 : ${FADE_FACTOR}`,
     });
   }
 
@@ -119,14 +119,14 @@ export const getLineOpacity = ({
   strokeOpacityRules.push(
     {
       test: `isValid(${HIGHLIGHTED_SERIES}) && ${HIGHLIGHTED_SERIES} !== datum.${SERIES_ID}`,
-      value: 1 / HIGHLIGHT_CONTRAST_RATIO,
+      value: FADE_FACTOR,
     },
   );
 
   if (popoverMarkName) {
     strokeOpacityRules.push({
       test: `isValid(${SELECTED_SERIES}) && ${SELECTED_SERIES} !== datum.${SERIES_ID}`,
-      value: 1 / HIGHLIGHT_CONTRAST_RATIO,
+      value: FADE_FACTOR,
     });
   }
   // This allows us to only show the metric range when hovering over the parent line component.

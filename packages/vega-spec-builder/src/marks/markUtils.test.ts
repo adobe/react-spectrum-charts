@@ -20,7 +20,7 @@ import {
   DEFAULT_TIME_DIMENSION,
   DEFAULT_TRANSFORMED_TIME_DIMENSION,
   HIGHLIGHTED_ITEM,
-  HIGHLIGHT_CONTRAST_RATIO,
+  FADE_FACTOR,
   HOVERED_ITEM,
   LINEAR_COLOR_SCALE,
   LINE_TYPE_SCALE,
@@ -28,7 +28,7 @@ import {
   OPACITY_SCALE,
   SELECTED_GROUP,
   SELECTED_ITEM,
-  SYMBOL_SIZE_SCALE,
+  SYMBOL_SIZE_SCALE
 } from '@spectrum-charts/constants';
 
 import { defaultBarOptions } from '../bar/barTestUtils';
@@ -184,12 +184,12 @@ describe('getTooltip()', () => {
 describe('getHighlightOpacityValue()', () => {
   test('should divide a signal ref by the highlight contract ratio', () => {
     expect(getHighlightOpacityValue(getOpacityProductionRule(DEFAULT_COLOR))).toStrictEqual({
-      signal: `scale('${OPACITY_SCALE}', datum.${DEFAULT_COLOR}) / ${HIGHLIGHT_CONTRAST_RATIO}`,
+      signal: `scale('${OPACITY_SCALE}', datum.${DEFAULT_COLOR}) * ${FADE_FACTOR}`,
     });
   });
   test('shold divide a value ref by the highlight contrast ratio', () => {
     expect(getHighlightOpacityValue(getOpacityProductionRule({ value: 0.5 }))).toStrictEqual({
-      value: 0.5 / HIGHLIGHT_CONTRAST_RATIO,
+      value: 0.5 * FADE_FACTOR,
     });
   });
 });

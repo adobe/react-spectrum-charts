@@ -9,11 +9,10 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import React from 'react';
 
 import userEvent from '@testing-library/user-event';
 
-import { HIGHLIGHT_CONTRAST_RATIO, TOOLTIP_DELAY } from '@spectrum-charts/constants';
+import { FADE_FACTOR, TOOLTIP_DELAY } from '@spectrum-charts/constants';
 
 import { Chart } from '../../../Chart';
 import { Legend } from '../../../components';
@@ -218,7 +217,7 @@ describe('Legend', () => {
     // first symbol should be highlighted
     let symbols = getAllLegendSymbols(chart);
     expect(symbols[0]).toHaveAttribute('opacity', '1');
-    expect(symbols[1]).toHaveAttribute('opacity', `${1 / HIGHLIGHT_CONTRAST_RATIO}`);
+    expect(symbols[1]).toHaveAttribute('opacity', `${FADE_FACTOR}`);
 
     // shouldn't close the popover
     await userEvent.click(popover);

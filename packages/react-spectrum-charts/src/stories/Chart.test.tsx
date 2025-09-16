@@ -11,7 +11,7 @@
  */
 import { createRef } from 'react';
 
-import { HIGHLIGHT_CONTRAST_RATIO } from '@spectrum-charts/constants';
+import { FADE_FACTOR } from '@spectrum-charts/constants';
 import { ChartHandle } from '@spectrum-charts/vega-spec-builder';
 
 import { Chart } from '../Chart';
@@ -357,8 +357,8 @@ describe('Chart', () => {
       const bars = getAllMarksByGroupName(chart, 'bar0');
 
       expect(bars[14]).toHaveAttribute('opacity', '1');
-      expect(bars[13]).toHaveAttribute('opacity', `${1 / HIGHLIGHT_CONTRAST_RATIO}`);
-      expect(bars[15]).toHaveAttribute('opacity', `${1 / HIGHLIGHT_CONTRAST_RATIO}`);
+      expect(bars[13]).toHaveAttribute('opacity', `${FADE_FACTOR}`);
+      expect(bars[15]).toHaveAttribute('opacity', `${FADE_FACTOR}`);
     });
   });
 });

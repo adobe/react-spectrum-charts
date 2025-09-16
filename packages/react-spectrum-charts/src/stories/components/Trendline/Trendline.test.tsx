@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { HIGHLIGHT_CONTRAST_RATIO } from '@spectrum-charts/constants';
+import { FADE_FACTOR } from '@spectrum-charts/constants';
 import { spectrumColors } from '@spectrum-charts/themes';
 
 import { Trendline } from '../../../components';
@@ -191,7 +191,7 @@ describe('Trendline', () => {
 
       // other lines and trendlines are faded
       expect(
-        allElementsHaveAttributeValue([lines[1], trendlines[1]], 'opacity', 1 / HIGHLIGHT_CONTRAST_RATIO)
+        allElementsHaveAttributeValue([lines[1], trendlines[1]], 'opacity', FADE_FACTOR)
       ).toBeTruthy();
     });
   });
@@ -218,7 +218,7 @@ describe('Trendline', () => {
       expect(lines[0]).toHaveAttribute('opacity', '1');
 
       // other lines and trendlines are faded
-      expect(lines[1]).toHaveAttribute('opacity', `${1 / HIGHLIGHT_CONTRAST_RATIO}`);
+      expect(lines[1]).toHaveAttribute('opacity', `${FADE_FACTOR}`);
     });
   });
 

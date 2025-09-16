@@ -16,10 +16,10 @@ import {
   DEFAULT_TRANSFORMED_TIME_DIMENSION,
   HIGHLIGHTED_ITEM,
   HIGHLIGHTED_SERIES,
-  HIGHLIGHT_CONTRAST_RATIO,
+  FADE_FACTOR,
   HOVERED_ITEM,
   SELECTED_SERIES,
-  SERIES_ID,
+  SERIES_ID
 } from '@spectrum-charts/constants';
 
 import {
@@ -104,7 +104,6 @@ export const getAreaMark = (
 export function getAreaOpacity(areaOptions: AreaMarkOptions): ProductionRule<NumericValueRef> | undefined {
   const { chartPopovers, displayOnHover, isHighlightedByGroup, isMetricRange, highlightedItem, name } = areaOptions;
   // if metric ranges only display when hovering, we don't need to include other hover rules for this specific area
-  const fadedOpacity = 1 / HIGHLIGHT_CONTRAST_RATIO;
   if (isMetricRange && displayOnHover) {
     return [
       { test: `isValid(${HIGHLIGHTED_SERIES}) && ${HIGHLIGHTED_SERIES} === datum.${SERIES_ID}`, value: 1 },
@@ -133,15 +132,15 @@ export function getAreaOpacity(areaOptions: AreaMarkOptions): ProductionRule<Num
       ...opacityRules,
       {
         test: `!isValid(${SELECTED_SERIES}) && isValid(${HIGHLIGHTED_SERIES}) && ${HIGHLIGHTED_SERIES} !== datum.${SERIES_ID}`,
-        value: fadedOpacity,
+        value: FADE_FACTOR,
       },
       {
         test: `!isValid(${SELECTED_SERIES}) && length(data('${name}_highlightedData')) > 0 && indexof(pluck(data('${name}_highlightedData'), '${SERIES_ID}'), datum.${SERIES_ID}) === -1`,
-        value: fadedOpacity,
+        value: FADE_FACTOR,
       },
       {
         test: `isValid(${SELECTED_SERIES}) && ${SELECTED_SERIES} !== datum.${SERIES_ID}`,
-        value: fadedOpacity,
+        value: FADE_FACTOR,
       },
       DEFAULT_OPACITY_RULE,
     ];
@@ -151,15 +150,15 @@ export function getAreaOpacity(areaOptions: AreaMarkOptions): ProductionRule<Num
     ...opacityRules,
     {
       test: `isValid(${name}_${HOVERED_ITEM})`,
-      signal: `${name}_${HOVERED_ITEM}.${SERIES_ID} === datum.${SERIES_ID} ? 1 : ${fadedOpacity}`,
+      signal: `${name}_${HOVERED_ITEM}.${SERIES_ID} === datum.${SERIES_ID} ? 1 : ${FADE_FACTOR}`,
     },
     {
       test: `isValid(${HIGHLIGHTED_SERIES}) && ${HIGHLIGHTED_SERIES} !== datum.${SERIES_ID}`,
-      value: fadedOpacity,
+      value: FADE_FACTOR,
     },
     {
       test: `length(data('${name}_highlightedData')) > 0 && indexof(pluck(data('${name}_highlightedData'), '${SERIES_ID}'), datum.${SERIES_ID}) === -1`,
-      value: fadedOpacity,
+      value: FADE_FACTOR,
     },
     DEFAULT_OPACITY_RULE,
   ];

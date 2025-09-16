@@ -17,10 +17,10 @@ import {
   GROUP_ID,
   HIGHLIGHTED_GROUP,
   HIGHLIGHTED_ITEM,
-  HIGHLIGHT_CONTRAST_RATIO,
+  FADE_FACTOR,
   HOVERED_ITEM,
   INTERACTION_MODE,
-  SERIES_ID,
+  SERIES_ID
 } from '@spectrum-charts/constants';
 
 import { getFilteredTableData } from '../data/dataUtils';
@@ -203,11 +203,11 @@ export const addHighlightMarkOpacityRules = (
   opacityRules.unshift(
     {
       test: `isArray(${HIGHLIGHTED_ITEM}) && length(${HIGHLIGHTED_ITEM}) > 0 && indexof(${HIGHLIGHTED_ITEM}, datum.${markOptions.idKey}) === -1`,
-      value: 1 / HIGHLIGHT_CONTRAST_RATIO,
+      value: FADE_FACTOR,
     },
     {
       test: `!isArray(${HIGHLIGHTED_ITEM}) && isValid(${HIGHLIGHTED_ITEM}) && ${HIGHLIGHTED_ITEM} !== datum.${markOptions.idKey}`,
-      value: 1 / HIGHLIGHT_CONTRAST_RATIO,
+      value: FADE_FACTOR,
     }
   );
   if (isHighlightedByGroup(markOptions)) {
@@ -233,6 +233,6 @@ export const addHoveredItemOpacityRules = (opacityRules: ({ test?: string } & Nu
 
   opacityRules.splice(startIndex, 0, {
     test: `isValid(${hoveredItemSignal})`,
-    signal: `${hoveredItemSignal}.${key} === datum.${key} ? 1 : 1 / ${HIGHLIGHT_CONTRAST_RATIO}`,
+    signal: `${hoveredItemSignal}.${key} === datum.${key} ? 1 : ${FADE_FACTOR}`,
   });
 }

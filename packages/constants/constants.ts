@@ -128,7 +128,11 @@ export const DEFAULT_VENN_LABEL = 'label';
 
 // ratio that each opacity is divded by when hovering or highlighting from legend
 // TODO: invert this ratio so we don't have to do 1 / HIGHLIGHT_CONTRAST_RATIO every time
+/**
+ * @deprecated
+ */
 export const HIGHLIGHT_CONTRAST_RATIO = 5;
+export const FADE_FACTOR = 0.2;
 
 // legend tooltips
 export const TOOLTIP_DELAY = 350;

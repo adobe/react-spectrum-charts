@@ -16,8 +16,8 @@ import {
   GROUP_ID,
   HIGHLIGHTED_GROUP,
   HIGHLIGHTED_SERIES,
-  HIGHLIGHT_CONTRAST_RATIO,
-  SERIES_ID,
+  FADE_FACTOR,
+  SERIES_ID
 } from '@spectrum-charts/constants';
 
 import { getHighlightOpacityRule, setHoverOpacityForMarks } from './legendHighlightUtils';
@@ -32,7 +32,7 @@ const defaultOpacityEncoding = {
   opacity: [
     {
       test: `isValid(${HIGHLIGHTED_SERIES}) && ${HIGHLIGHTED_SERIES} !== datum.${SERIES_ID}`,
-      value: 1 / HIGHLIGHT_CONTRAST_RATIO,
+      value: FADE_FACTOR,
     },
   ],
 };
