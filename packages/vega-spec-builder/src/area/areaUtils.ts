@@ -17,6 +17,7 @@ import {
   HIGHLIGHTED_ITEM,
   HIGHLIGHTED_SERIES,
   HIGHLIGHT_CONTRAST_RATIO,
+  HOVERED_ITEM,
   SELECTED_SERIES,
   SERIES_ID,
 } from '@spectrum-charts/constants';
@@ -148,6 +149,10 @@ export function getAreaOpacity(areaOptions: AreaMarkOptions): ProductionRule<Num
 
   return [
     ...opacityRules,
+    {
+      test: `isValid(${name}_${HOVERED_ITEM})`,
+      signal: `${name}_${HOVERED_ITEM}.${SERIES_ID} === datum.${SERIES_ID} ? 1 : ${fadedOpacity}`,
+    },
     {
       test: `isValid(${HIGHLIGHTED_SERIES}) && ${HIGHLIGHTED_SERIES} !== datum.${SERIES_ID}`,
       value: fadedOpacity,

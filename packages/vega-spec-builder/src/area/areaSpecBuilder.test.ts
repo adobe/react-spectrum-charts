@@ -23,6 +23,7 @@ import {
   FILTERED_TABLE,
   HIGHLIGHTED_ITEM,
   HIGHLIGHTED_SERIES,
+  HOVERED_ITEM,
   LINEAR_PADDING,
   MARK_ID,
   SELECTED_GROUP,
@@ -210,14 +211,15 @@ describe('areaSpecBuilder', () => {
 
     test('children: should add signals', () => {
       const signals = addSignals(defaultSignals, { ...defaultAreaOptions, chartTooltips: [{}] });
-      expect(signals).toHaveLength(defaultSignals.length + 1);
+      expect(signals).toHaveLength(defaultSignals.length + 2);
       expect(signals[0]).toHaveProperty('name', HIGHLIGHTED_ITEM);
       expect(signals[2]).toHaveProperty('name', HIGHLIGHTED_SERIES);
       expect(signals[2].on).toHaveLength(2);
       expect(signals[3]).toHaveProperty('name', SELECTED_ITEM);
       expect(signals[4]).toHaveProperty('name', SELECTED_SERIES);
       expect(signals[5]).toHaveProperty('name', SELECTED_GROUP);
-      expect(signals[6]).toHaveProperty('name', 'area0_controlledHoveredId');
+      expect(signals[6]).toHaveProperty('name', `${defaultAreaOptions.name}_${HOVERED_ITEM}`);
+      expect(signals[7]).toHaveProperty('name', `${defaultAreaOptions.name}_controlledHoveredId`);
     });
 
     test('should exclude data with key from update if tooltip has excludeDataKey', () => {
@@ -225,7 +227,7 @@ describe('areaSpecBuilder', () => {
         ...defaultAreaOptions,
         chartTooltips: [{ excludeDataKeys: ['excludeFromTooltip'] }],
       });
-      expect(signals).toHaveLength(defaultSignals.length + 1);
+      expect(signals).toHaveLength(defaultSignals.length + 2);
       expect(signals[2]).toHaveProperty('name', HIGHLIGHTED_SERIES);
       expect(signals[2].on?.[0]).toHaveProperty('events', '@area0:mouseover');
       expect(signals[2].on?.[0]).toHaveProperty('update', '(datum.excludeFromTooltip) ? null : datum.rscSeriesId');
@@ -237,10 +239,12 @@ describe('areaSpecBuilder', () => {
         chartTooltips: [{}],
         highlightedItem: 'highlightedItem',
       });
-      expect(signals).toHaveLength(defaultSignals.length + 1);
+      expect(signals).toHaveLength(defaultSignals.length + 2);
       expect(signals[0]).toHaveProperty('name', HIGHLIGHTED_ITEM);
       expect(signals[0]).toHaveProperty('on');
       expect(signals[0].on).toHaveLength(1);
+      expect(signals.at(-2)).toHaveProperty('name', `${defaultAreaOptions.name}_${HOVERED_ITEM}`);
+      expect(signals.at(-1)).toHaveProperty('name', `${defaultAreaOptions.name}_controlledHoveredId`);
     });
   });
 

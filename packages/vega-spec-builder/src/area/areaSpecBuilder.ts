@@ -39,6 +39,7 @@ import { hasPopover, hasTooltip, isInteractive } from '../marks/markUtils';
 import { addContinuousDimensionScale, addFieldToFacetScaleDomain, addMetricScale } from '../scale/scaleSpecBuilder';
 import {
   addHighlightedSeriesSignalEvents,
+  addHoveredItemSignal,
   getControlledHoveredGroupSignal,
   getControlledHoveredIdSignal,
 } from '../signal/signalSpecBuilder';
@@ -191,6 +192,7 @@ export const addSignals = produce<Signal[], [AreaSpecOptions]>((signals, areaOpt
   const { chartTooltips, name } = areaOptions;
   if (!isInteractive(areaOptions)) return;
   addHighlightedSeriesSignalEvents(signals, name, 1, chartTooltips[0]?.excludeDataKeys);
+  addHoveredItemSignal(signals, name);
   if (areaOptions.highlightedItem) {
     addHighlightedItemEvents(signals, name);
   }
