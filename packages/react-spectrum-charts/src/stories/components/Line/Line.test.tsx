@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { HIGHLIGHT_CONTRAST_RATIO } from '@spectrum-charts/constants';
+import { FADE_FACTOR } from '@spectrum-charts/constants';
 
 import { Line } from '../../../components';
 import { workspaceTrendsData } from '../../../stories/data/data';
@@ -127,7 +127,6 @@ describe('Line', () => {
   });
 
   test('Hovering over the entries on HistoricalCompare should highlight hovered series', async () => {
-    const reducedOpacity = 1 / HIGHLIGHT_CONTRAST_RATIO;
     render(<HistoricalCompare {...HistoricalCompare.args} />);
     const chart = await findChart();
     expect(chart).toBeInTheDocument();
@@ -139,24 +138,24 @@ describe('Line', () => {
     // symbol opacity should be reduced for all but the first symbol
     let symbols = getAllLegendSymbols(chart);
     expect(symbols[0]).toHaveAttribute('opacity', '1');
-    expect(allElementsHaveAttributeValue(symbols.slice(1), 'opacity', reducedOpacity)).toBeTruthy();
+    expect(allElementsHaveAttributeValue(symbols.slice(1), 'opacity', FADE_FACTOR)).toBeTruthy();
 
     // line opacity should be reduced for all but the first line
     let lines = await findAllMarksByGroupName(chart, 'line0');
     expect(lines[0]).toHaveAttribute('opacity', '1');
-    expect(allElementsHaveAttributeValue(lines.slice(1), 'opacity', reducedOpacity)).toBeTruthy();
+    expect(allElementsHaveAttributeValue(lines.slice(1), 'opacity', FADE_FACTOR)).toBeTruthy();
 
     await unhoverNthElement(entries, 0);
     await hoverNthElement(entries, 3);
 
     // symbol opacity should be reduced for all but the last symbol
     symbols = getAllLegendSymbols(chart);
-    expect(allElementsHaveAttributeValue(symbols.slice(0, 3), 'opacity', reducedOpacity)).toBeTruthy();
+    expect(allElementsHaveAttributeValue(symbols.slice(0, 3), 'opacity', FADE_FACTOR)).toBeTruthy();
     expect(symbols[3]).toHaveAttribute('opacity', '1');
 
     // line opacity should be reduced for all but the last line
     lines = await findAllMarksByGroupName(chart, 'line0');
-    expect(allElementsHaveAttributeValue(lines.slice(0, 3), 'opacity', reducedOpacity)).toBeTruthy();
+    expect(allElementsHaveAttributeValue(lines.slice(0, 3), 'opacity', FADE_FACTOR)).toBeTruthy();
     expect(lines[3]).toHaveAttribute('opacity', '1');
   });
 

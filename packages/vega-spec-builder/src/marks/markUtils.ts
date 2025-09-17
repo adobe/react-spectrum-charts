@@ -27,7 +27,7 @@ import {
   COMPONENT_NAME,
   DEFAULT_OPACITY_RULE,
   DEFAULT_TRANSFORMED_TIME_DIMENSION,
-  HIGHLIGHT_CONTRAST_RATIO,
+  FADE_FACTOR,
   HOVER_SHAPE,
   HOVER_SHAPE_COUNT,
   HOVER_SIZE,
@@ -37,7 +37,7 @@ import {
   OPACITY_SCALE,
   SELECTED_GROUP,
   SELECTED_ITEM,
-  SYMBOL_SIZE_SCALE,
+  SYMBOL_SIZE_SCALE
 } from '@spectrum-charts/constants';
 import { getColorValue } from '@spectrum-charts/themes';
 
@@ -256,9 +256,9 @@ export const getHighlightOpacityValue = (
   opacityValue: { signal: string } | { value: number } = DEFAULT_OPACITY_RULE
 ): NumericValueRef => {
   if ('signal' in opacityValue) {
-    return { signal: `${opacityValue.signal} / ${HIGHLIGHT_CONTRAST_RATIO}` };
+    return { signal: `${opacityValue.signal} * ${FADE_FACTOR}` };
   }
-  return { value: opacityValue.value / HIGHLIGHT_CONTRAST_RATIO };
+  return { value: opacityValue.value * FADE_FACTOR };
 };
 
 /**
@@ -437,7 +437,7 @@ export const getMarkOpacity = (
     return [
       {
         test: `!isValid(${SELECTED_GROUP}) && ${SELECTED_ITEM} && ${SELECTED_ITEM} !== datum.${idKey}`,
-        value: 1 / HIGHLIGHT_CONTRAST_RATIO,
+        value: FADE_FACTOR,
       },
       { test: `isValid(${SELECTED_ITEM}) && ${SELECTED_ITEM} === datum.${idKey}`, ...DEFAULT_OPACITY_RULE },
       {
@@ -446,7 +446,7 @@ export const getMarkOpacity = (
       },
       {
         test: `isValid(${SELECTED_GROUP}) && ${SELECTED_GROUP} !== datum.${markName}_selectedGroupId`,
-        value: 1 / HIGHLIGHT_CONTRAST_RATIO,
+        value: FADE_FACTOR,
       },
       ...rules,
     ];

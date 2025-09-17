@@ -9,11 +9,10 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import React from 'react';
 
 import userEvent from '@testing-library/user-event';
 
-import { HIGHLIGHT_CONTRAST_RATIO } from '@spectrum-charts/constants';
+import { FADE_FACTOR } from '@spectrum-charts/constants';
 import { spectrumColors } from '@spectrum-charts/themes';
 
 import { ChartPopover } from '../../../components';
@@ -115,7 +114,7 @@ describe('ChartPopover', () => {
     expect(bars[0]).toHaveAttribute('stroke', spectrumColors.light['static-blue']);
     expect(bars[0]).toHaveAttribute('stroke-width', '2');
     // all other bars should be faded
-    expect(allElementsHaveAttributeValue(bars.slice(1), 'opacity', 1 / HIGHLIGHT_CONTRAST_RATIO)).toBeTruthy();
+    expect(allElementsHaveAttributeValue(bars.slice(1), 'opacity', FADE_FACTOR)).toBeTruthy();
   });
 
   test('Popover should be corrrect size', async () => {
@@ -220,7 +219,7 @@ describe('ChartPopover', () => {
 
     // validate the first line is still full opacity, but the other lines are faded
     expect(lines[0]).toHaveAttribute('opacity', '1');
-    expect(allElementsHaveAttributeValue(lines.slice(1), 'opacity', 1 / HIGHLIGHT_CONTRAST_RATIO)).toBeTruthy();
+    expect(allElementsHaveAttributeValue(lines.slice(1), 'opacity', FADE_FACTOR)).toBeTruthy();
   });
 
   test('Dodged bar popover opens on mark click and closes when clicking outside', async () => {
@@ -243,7 +242,7 @@ describe('ChartPopover', () => {
     bars = getAllMarksByGroupName(chart, 'bar0');
 
     // validate the highlight visuals are present
-    expect(bars[0]).toHaveAttribute('opacity', `${1 / HIGHLIGHT_CONTRAST_RATIO}`);
+    expect(bars[0]).toHaveAttribute('opacity', `${FADE_FACTOR}`);
     expect(bars[4]).toHaveAttribute('opacity', '1');
     expect(bars[4]).toHaveAttribute('stroke', spectrumColors.light['static-blue']);
     expect(bars[4]).toHaveAttribute('stroke-width', '2');
@@ -269,7 +268,7 @@ describe('ChartPopover', () => {
     bars = getAllMarksByGroupName(chart, 'bar0');
 
     // validate the highlight visuals are present
-    expect(bars[0]).toHaveAttribute('opacity', `${1 / HIGHLIGHT_CONTRAST_RATIO}`);
+    expect(bars[0]).toHaveAttribute('opacity', `${FADE_FACTOR}`);
     expect(bars[4]).toHaveAttribute('opacity', '1');
 
     const selectionRingMarks = getAllMarksByGroupName(chart, 'bar0_selectionRing');
@@ -319,7 +318,7 @@ describe('ChartPopover', () => {
     segments = getAllMarksByGroupName(chart, 'donut0');
 
     // validate the highlight visuals are present
-    expect(segments[0]).toHaveAttribute('opacity', `${1 / HIGHLIGHT_CONTRAST_RATIO}`);
+    expect(segments[0]).toHaveAttribute('opacity', `${FADE_FACTOR}`);
     expect(segments[4]).toHaveAttribute('opacity', '1');
     expect(segments[4]).toHaveAttribute('stroke', spectrumColors.light['static-blue']);
     expect(segments[4]).toHaveAttribute('stroke-width', '2');

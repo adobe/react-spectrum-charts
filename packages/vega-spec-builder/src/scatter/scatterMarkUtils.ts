@@ -15,8 +15,8 @@ import { GroupMark, Mark, NumericValueRef, SymbolMark } from 'vega';
 import {
   DEFAULT_OPACITY_RULE,
   FILTERED_TABLE,
-  HIGHLIGHT_CONTRAST_RATIO,
-  SELECTED_ITEM,
+  FADE_FACTOR,
+  SELECTED_ITEM
 } from '@spectrum-charts/constants';
 import { spectrumColors } from '@spectrum-charts/themes';
 
@@ -113,16 +113,13 @@ export const getOpacity = (scatterOptions: ScatterSpecOptions): ({ test?: string
   if (!isInteractive(scatterOptions) && highlightedItem === undefined) {
     return [DEFAULT_OPACITY_RULE];
   }
-  // if a point is hovered or selected, all other points should be reduced opacity
-  const fadedValue = 1 / HIGHLIGHT_CONTRAST_RATIO;
-
   const rules: ({ test?: string } & NumericValueRef)[] = [];
   addHighlightMarkOpacityRules(rules, scatterOptions);
   addHoveredItemOpacityRules(rules, scatterOptions);
   if (hasPopover(scatterOptions)) {
     rules.push({
       test: `isValid(${SELECTED_ITEM}) && ${SELECTED_ITEM} !== datum.${idKey}`,
-      value: fadedValue,
+      value: FADE_FACTOR,
     });
   }
 

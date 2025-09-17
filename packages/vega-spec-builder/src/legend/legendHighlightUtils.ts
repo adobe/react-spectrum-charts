@@ -16,8 +16,8 @@ import {
   GROUP_ID,
   HIGHLIGHTED_GROUP,
   HIGHLIGHTED_SERIES,
-  HIGHLIGHT_CONTRAST_RATIO,
-  SERIES_ID,
+  FADE_FACTOR,
+  SERIES_ID
 } from '@spectrum-charts/constants';
 
 /**
@@ -57,7 +57,7 @@ export const getHighlightOpacityRule = (keys?: string[], name?: string): { test?
   if (keys?.length) {
     test = `isValid(${HIGHLIGHTED_GROUP}) && ${HIGHLIGHTED_GROUP} !== datum.${name}_${GROUP_ID}`;
   }
-  return { test, value: 1 / HIGHLIGHT_CONTRAST_RATIO };
+  return { test, value: FADE_FACTOR };
 };
 
 /**

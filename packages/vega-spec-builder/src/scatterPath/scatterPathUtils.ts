@@ -16,10 +16,10 @@ import {
   FILTERED_TABLE,
   HIGHLIGHTED_ITEM,
   HIGHLIGHTED_SERIES,
-  HIGHLIGHT_CONTRAST_RATIO,
+  FADE_FACTOR,
   SELECTED_ITEM,
   SELECTED_SERIES,
-  SYMBOL_PATH_WIDTH_SCALE,
+  SYMBOL_PATH_WIDTH_SCALE
 } from '@spectrum-charts/constants';
 import { getColorValue } from '@spectrum-charts/themes';
 
@@ -152,12 +152,11 @@ export const getScatterPathTrailMark = ({
  */
 export const getOpacity = (): ({ test?: string } & NumericValueRef)[] => {
   // if a point is hovered or selected, all other points should be reduced opacity
-  const fadedValue = 1 / HIGHLIGHT_CONTRAST_RATIO;
 
   return [
     {
       test: `isValid(${HIGHLIGHTED_SERIES}) || isValid(${HIGHLIGHTED_ITEM}) || isValid(${SELECTED_SERIES}) || isValid(${SELECTED_ITEM})`,
-      value: fadedValue,
+      value: FADE_FACTOR,
     },
     DEFAULT_OPACITY_RULE,
   ];

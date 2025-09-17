@@ -9,9 +9,8 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import React from 'react';
 
-import { HIGHLIGHT_CONTRAST_RATIO } from '@spectrum-charts/constants';
+import { FADE_FACTOR } from '@spectrum-charts/constants';
 
 import { ChartTooltip } from '../../../components';
 import {
@@ -48,7 +47,7 @@ describe('ChartTooltip', () => {
     const tooltip = await screen.findByTestId('rsc-tooltip');
     expect(tooltip).toBeInTheDocument();
     expect(within(tooltip).getByText('Operating system: Windows')).toBeInTheDocument();
-    expect(bars[1].getAttribute('opacity')).toEqual(`${1 / HIGHLIGHT_CONTRAST_RATIO}`);
+    expect(bars[1].getAttribute('opacity')).toEqual(`${FADE_FACTOR}`);
 
     // unhover and validate the highlights go away
     await unhoverNthElement(bars, 0);
@@ -99,7 +98,7 @@ describe('ChartTooltip', () => {
     expect(within(tooltip).getByText('Users: 3')).toBeInTheDocument();
 
     // validate the highlight visuals are present
-    expect(bars[0]).toHaveAttribute('opacity', `${1 / HIGHLIGHT_CONTRAST_RATIO}`);
+    expect(bars[0]).toHaveAttribute('opacity', `${FADE_FACTOR}`);
     expect(bars[4]).toHaveAttribute('opacity', '1');
 
     await unhoverNthElement(bars, 4);

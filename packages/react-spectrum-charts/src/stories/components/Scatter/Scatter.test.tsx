@@ -11,7 +11,7 @@
  */
 import userEvent from '@testing-library/user-event';
 
-import { HIGHLIGHT_CONTRAST_RATIO } from '@spectrum-charts/constants';
+import { FADE_FACTOR } from '@spectrum-charts/constants';
 import { spectrumColors } from '@spectrum-charts/themes';
 
 import { Scatter } from '../../../components';
@@ -143,7 +143,7 @@ describe('Scatter', () => {
       expect(points[0]).toHaveAttribute('opacity', '1');
 
       // make sure all points after the first have reduced opacity
-      expect(allElementsHaveAttributeValue(points.slice(1), 'opacity', 1 / HIGHLIGHT_CONTRAST_RATIO)).toBeTruthy();
+      expect(allElementsHaveAttributeValue(points.slice(1), 'opacity', FADE_FACTOR)).toBeTruthy();
 
       // find the select ring
       const selectRing = await findMarksByGroupName(chart, 'scatter0_selectRing');
@@ -202,7 +202,7 @@ describe('Scatter', () => {
       expect(points[0]).toHaveAttribute('opacity', '1');
 
       // make sure all points after the first have reduced opacity
-      expect(allElementsHaveAttributeValue(points.slice(1), 'opacity', 1 / HIGHLIGHT_CONTRAST_RATIO)).toBeTruthy();
+      expect(allElementsHaveAttributeValue(points.slice(1), 'opacity', FADE_FACTOR)).toBeTruthy();
     });
   });
 });

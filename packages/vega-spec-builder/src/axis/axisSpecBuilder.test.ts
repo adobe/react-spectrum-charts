@@ -14,9 +14,9 @@ import { Axis, ColorValueRef, GroupMark, NumericValueRef, ProductionRule, Scale,
 import {
   DEFAULT_LABEL_FONT_WEIGHT,
   FILTERED_TABLE,
-  HIGHLIGHT_CONTRAST_RATIO,
+  FADE_FACTOR,
   LAST_RSC_SERIES_ID,
-  MOUSE_OVER_SERIES,
+  MOUSE_OVER_SERIES
 } from '@spectrum-charts/constants';
 
 import { SubLabel } from '../types';
@@ -310,7 +310,7 @@ describe('Spec builder, Axis', () => {
         expect(labelFillOpacityEncoding).toHaveLength(1);
         expect(labelFillOpacityEncoding?.[0]).toEqual({
           test: `${MOUSE_OVER_SERIES} === ${LAST_RSC_SERIES_ID}`,
-          value: 1 / HIGHLIGHT_CONTRAST_RATIO,
+          value: FADE_FACTOR,
         });
       });
 
@@ -343,7 +343,7 @@ describe('Spec builder, Axis', () => {
         expect(titleFillOpacityEncoding).toHaveLength(1);
         expect(titleFillOpacityEncoding?.[0]).toEqual({
           test: `${MOUSE_OVER_SERIES} === ${LAST_RSC_SERIES_ID}`,
-          value: 1 / HIGHLIGHT_CONTRAST_RATIO,
+          value: FADE_FACTOR,
         });
       });
 
@@ -378,7 +378,7 @@ describe('Spec builder, Axis', () => {
         expect(labelFillOpacityEncoding).toHaveLength(1);
         expect(labelFillOpacityEncoding?.[0]).toEqual({
           test: `${MOUSE_OVER_SERIES} === ${LAST_RSC_SERIES_ID}`,
-          value: 1 / HIGHLIGHT_CONTRAST_RATIO,
+          value: FADE_FACTOR,
         });
       });
 
@@ -434,7 +434,7 @@ describe('Spec builder, Axis', () => {
         expect(labelFillOpacityEncoding).toHaveLength(1);
         expect(labelFillOpacityEncoding?.[0]).toEqual({
           test: `isValid(${MOUSE_OVER_SERIES}) && ${MOUSE_OVER_SERIES} !== ${LAST_RSC_SERIES_ID}`,
-          value: 1 / HIGHLIGHT_CONTRAST_RATIO,
+          value: FADE_FACTOR,
         });
       });
 
@@ -465,7 +465,7 @@ describe('Spec builder, Axis', () => {
         expect(labelFillOpacityEncoding).toHaveLength(1);
         expect(labelFillOpacityEncoding?.[0]).toEqual({
           test: `isValid(${MOUSE_OVER_SERIES}) && ${MOUSE_OVER_SERIES} !== ${LAST_RSC_SERIES_ID}`,
-          value: 1 / HIGHLIGHT_CONTRAST_RATIO,
+          value: FADE_FACTOR,
         });
       });
 
