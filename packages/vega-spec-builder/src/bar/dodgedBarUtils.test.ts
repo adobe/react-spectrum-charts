@@ -127,10 +127,6 @@ const defaultMarkWithTooltip: Mark = {
           test: `isArray(${HIGHLIGHTED_ITEM}) && length(${HIGHLIGHTED_ITEM}) > 0 && indexof(${HIGHLIGHTED_ITEM}, datum.rscMarkId) === -1`,
           value: FADE_FACTOR,
         },
-        {
-          test: `!isArray(${HIGHLIGHTED_ITEM}) && isValid(${HIGHLIGHTED_ITEM}) && ${HIGHLIGHTED_ITEM} !== datum.${MARK_ID}`,
-          value: FADE_FACTOR,
-        },
         DEFAULT_OPACITY_RULE,
       ],
       cursor: undefined,

@@ -37,29 +37,47 @@ export const addCombo = produce<
     let { barCount, lineCount } = initializeComponentCounts();
     const comboName = toCamelCase(name || `combo${index}`);
 
+    const comboSiblingNames = marks.map((mark) => {
+      switch (mark.markType) {
+        case 'bar':
+          barCount++;
+          return getComboMarkName(mark, comboName, barCount);
+        case 'line':
+          lineCount++;
+          return getComboMarkName(mark, comboName, lineCount);
+      }
+    });
+
+    barCount = -1;
+    lineCount = -1;
+
     spec = [...marks].reduce((acc: ScSpec, mark) => {
       switch (mark.markType) {
         case 'bar':
           barCount++;
+          const barName = getComboMarkName(mark, comboName, barCount);
           return addBar(acc, {
             ...mark,
             colorScheme,
+            comboSiblingNames: comboSiblingNames.filter((siblingName) => siblingName !== barName),
             highlightedItem,
             idKey,
             index: barCount,
-            name: getComboMarkName(mark, comboName, barCount),
+            name: barName,
             dimension: getDimension(mark, dimension),
           });
         case 'line':
         default:
           lineCount++;
+          const lineName = getComboMarkName(mark, comboName, lineCount);
           return addLine(acc, {
             ...mark,
             colorScheme,
+            comboSiblingNames: comboSiblingNames.filter((siblingName) => siblingName !== lineName),
             highlightedItem,
             idKey,
             index: lineCount,
-            name: getComboMarkName(mark, comboName, lineCount),
+            name: lineName,
             dimension: getDimension(mark, dimension),
           });
       }

@@ -12,9 +12,10 @@
 import React from 'react';
 
 import { Combo } from '../../../alpha';
-import { findAllMarksByGroupName, findChart, hoverNthElement, render, screen, within } from '../../../test-utils';
+import { findAllMarksByGroupName, findChart, findMarksByGroupName, hoverNthElement, render, screen, unhoverNthElement, within } from '../../../test-utils';
 import '../../../test-utils/__mocks__/matchMedia.mock.js';
 import { Basic, DualAxis, Tooltip } from './Combo.story';
+import { FADE_FACTOR } from '@spectrum-charts/constants';
 
 describe('Combo', () => {
   // Combo is not a real React component. This test just provides test coverage for sonarqube
@@ -64,6 +65,35 @@ describe('Combo', () => {
     const tooltip = await screen.findByTestId('rsc-tooltip');
     expect(tooltip).toBeInTheDocument();
     expect(within(tooltip).getByText('Nov 8')).toBeInTheDocument();
+  });
+
+  test('Correct items are highlighted when hovering over a combo', async () => {
+    render(<Tooltip {...Tooltip.args} />);
+    const chart = await findChart();
+    expect(chart).toBeInTheDocument();
+
+    const bars = await findAllMarksByGroupName(chart, 'combo0Bar0');
+    const lines = await findAllMarksByGroupName(chart, 'combo0Line0');
+
+    const paths = await findAllMarksByGroupName(chart, 'combo0Line0_hover0');
+
+    // hover and validate all hover components are visible
+    await hoverNthElement(paths, 0);
+    expect(lines[0]).toHaveAttribute('opacity', '1');
+    expect(bars[0]).toHaveAttribute('opacity', `${FADE_FACTOR}`);
+    expect(bars[1]).toHaveAttribute('opacity', `${FADE_FACTOR}`);
+
+    const highlightRule = await findMarksByGroupName(chart, 'combo0Line0_hoverRule', 'line');
+    expect(highlightRule).toBeInTheDocument();
+    const highlightPoint = await findMarksByGroupName(chart, 'combo0Line0_point_highlight');
+    expect(highlightPoint).toBeInTheDocument();
+
+    await unhoverNthElement(paths, 0);
+
+    await hoverNthElement(bars, 0);
+    expect(lines[0]).toHaveAttribute('opacity', `${FADE_FACTOR}`);
+    expect(bars[0]).toHaveAttribute('opacity', '1');
+    expect(bars[1]).toHaveAttribute('opacity', `${FADE_FACTOR}`);
   });
 
   test('Dual Axis renders properly', async () => {

@@ -17,12 +17,11 @@ import {
   FIRST_RSC_SERIES_ID,
   GROUP_ID,
   HIGHLIGHTED_GROUP,
-  HIGHLIGHTED_ITEM,
   HIGHLIGHTED_SERIES,
   HOVERED_ITEM,
   LAST_RSC_SERIES_ID,
   MOUSE_OVER_SERIES,
-  SERIES_ID,
+  SERIES_ID
 } from '@spectrum-charts/constants';
 
 /**
@@ -150,41 +149,6 @@ export const getLastRscSeriesIdSignal = (): Signal => ({
   update: `length(domain("${COLOR_SCALE}")) > 0 ? peek(domain("${COLOR_SCALE}")) : null`,
 });
 
-/**
- * adds on events to the highlighted item signal
- * @param signals
- * @param markName
- * @param datumOrder how deep the datum is nested (i.e. 1 becomes datum.rscMarkId, 2 becomes datum.datum.rscMarkId, etc.)
- * @param excludeDataKey data items with a truthy value for this key will be excluded from the signal
- */
-export const addHighlightedItemSignalEvents = (
-  signals: Signal[],
-  markName: string,
-  idKey: string,
-  datumOrder = 1,
-  excludeDataKeys?: string[]
-) => {
-  const highlightedItemSignal = signals.find((signal) => signal.name === HIGHLIGHTED_ITEM);
-  if (highlightedItemSignal) {
-    if (highlightedItemSignal.on === undefined) {
-      highlightedItemSignal.on = [];
-    }
-    const datum = new Array(datumOrder).fill('datum.').join('');
-
-    const excludeDataKeysCondition = excludeDataKeys?.map((excludeDataKey) => `${datum}${excludeDataKey}`).join(' || ');
-    highlightedItemSignal.on.push(
-      ...[
-        {
-          events: `@${markName}:mouseover`,
-          update: excludeDataKeys?.length
-            ? `(${excludeDataKeysCondition}) ? null : ${datum}${idKey}`
-            : `${datum}${idKey}`,
-        },
-        { events: `@${markName}:mouseout`, update: 'null' },
-      ]
-    );
-  }
-};
 
 /**
  * adds on events to the highlighted series signal
@@ -221,14 +185,20 @@ export const addHighlightedSeriesSignalEvents = (
   }
 };
 
-export const addHoveredItemSignal = (signals: Signal[], markName: string, targetName?: string, datumOrder = 1): void => {
+export const addHoveredItemSignal = (
+  signals: Signal[],
+  markName: string,
+  targetName?: string,
+  datumOrder = 1,
+  excludeDataKeys?: string[]
+): void => {
   targetName = targetName || markName;
   const signalName = `${markName}_${HOVERED_ITEM}`;
 
   let signal = signals.find((signal) => signal.name === signalName);
   if (!signal) {
     signal = {
-      description: `Tracks the hovered item for ${targetName}`,
+      description: `Tracks the hovered item for ${markName}`,
       name: signalName,
       value: null,
       on: [],
@@ -242,8 +212,12 @@ export const addHoveredItemSignal = (signals: Signal[], markName: string, target
 
   const datum = new Array(datumOrder).fill('datum').join('.');
 
+  const excludeDataKeysCondition = excludeDataKeys?.map((excludeDataKey) => `${datum}.${excludeDataKey}`).join(' || ');
+
+  const update = excludeDataKeysCondition ? `(${excludeDataKeysCondition}) ? null : ${datum}` : datum;
+
   signal.on.push(
-    { events: `@${targetName}:mouseover`, update: datum },
+    { events: `@${targetName}:mouseover`, update },
     { events: `@${targetName}:mouseout`, update: 'null' }
   );
 };
