@@ -37,7 +37,8 @@ export const addCombo = produce<
     let { barCount, lineCount } = initializeComponentCounts();
     const comboName = toCamelCase(name || `combo${index}`);
 
-    const comboSiblingNames = marks.map((mark) => {
+    // Pre-calculate all mark names once
+    const allMarkNames = marks.map((mark) => {
       switch (mark.markType) {
         case 'bar':
           barCount++;
@@ -45,39 +46,48 @@ export const addCombo = produce<
         case 'line':
           lineCount++;
           return getComboMarkName(mark, comboName, lineCount);
+        default:
+          return '';
       }
     });
 
+    // Reset counters for processing
     barCount = -1;
     lineCount = -1;
 
-    spec = [...marks].reduce((acc: ScSpec, mark) => {
+    // Single pass: process marks and add to spec
+    spec = [...marks].reduce((acc: ScSpec, mark, markIndex) => {
+      let markName: string;
+      
+      // Get sibling names by excluding current mark
+      const comboSiblingNames = allMarkNames.filter((_, index) => index !== markIndex);
+      
       switch (mark.markType) {
         case 'bar':
           barCount++;
-          const barName = getComboMarkName(mark, comboName, barCount);
+          markName = allMarkNames[markIndex];
           return addBar(acc, {
             ...mark,
             colorScheme,
-            comboSiblingNames: comboSiblingNames.filter((siblingName) => siblingName !== barName),
+            comboSiblingNames,
             highlightedItem,
             idKey,
             index: barCount,
-            name: barName,
+            name: markName,
             dimension: getDimension(mark, dimension),
           });
         case 'line':
         default:
           lineCount++;
-          const lineName = getComboMarkName(mark, comboName, lineCount);
+          markName = allMarkNames[markIndex];
           return addLine(acc, {
             ...mark,
             colorScheme,
-            comboSiblingNames: comboSiblingNames.filter((siblingName) => siblingName !== lineName),
+            comboSiblingNames,
             highlightedItem,
             idKey,
             index: lineCount,
-            name: lineName,
+            name: markName,
             dimension: getDimension(mark, dimension),
           });
       }
