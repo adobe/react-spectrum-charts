@@ -33,7 +33,7 @@ import { addTimeTransform, getFilteredTooltipData, getTableData } from '../data/
 import { getInteractiveMarkName, hasPopover, isInteractive } from '../marks/markUtils';
 import { addContinuousDimensionScale, addFieldToFacetScaleDomain, addMetricScale } from '../scale/scaleSpecBuilder';
 import { setScatterPathScales } from '../scatterPath';
-import { addHighlightedItemSignalEvents, addHoveredItemSignal } from '../signal/signalSpecBuilder';
+import { addHoveredItemSignal } from '../signal/signalSpecBuilder';
 import { addTrendlineData, getTrendlineScales, setTrendlineSignals } from '../trendline';
 import { ColorScheme, HighlightedItem, ScSpec, ScatterOptions, ScatterSpecOptions } from '../types';
 import { addScatterMarks } from './scatterMarkUtils';
@@ -136,13 +136,12 @@ export const addData = produce<Data[], [ScatterSpecOptions]>((data, scatterOptio
  * @param scatterOptions ScatterSpecOptions
  */
 export const addSignals = produce<Signal[], [ScatterSpecOptions]>((signals, scatterOptions) => {
-  const { idKey, name: scatterName } = scatterOptions;
+  const { name: scatterName } = scatterOptions;
   // trendline signals
   setTrendlineSignals(signals, scatterOptions);
 
   if (!isInteractive(scatterOptions)) return;
   // interactive signals
-  addHighlightedItemSignalEvents(signals, `${scatterName}_voronoi`, idKey, 2);
   addHoveredItemSignal(signals, scatterName, `${scatterName}_voronoi`, 2);
   addTooltipSignals(signals, scatterOptions);
 });

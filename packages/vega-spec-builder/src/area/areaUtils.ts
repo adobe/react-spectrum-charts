@@ -108,7 +108,8 @@ export function getAreaOpacity(areaOptions: AreaMarkOptions): ProductionRule<Num
     return [
       { test: `isValid(${HIGHLIGHTED_SERIES}) && ${HIGHLIGHTED_SERIES} === datum.${SERIES_ID}`, value: 1 },
       {
-        test: `isValid(${HIGHLIGHTED_ITEM}) && indexof(pluck(data('${name}_highlightedData'), '${SERIES_ID}'), datum.${SERIES_ID}) > -1`,
+        test: `isArray(${HIGHLIGHTED_ITEM}) && indexof(pluck(data('${name}_highlightedData'), '${SERIES_ID}'), datum.${SERIES_ID}) > -1`,
+        value: 1
       },
       { test: `isValid(${SELECTED_SERIES}) && ${SELECTED_SERIES} === datum.${SERIES_ID}`, value: 1 },
       { value: 0 },

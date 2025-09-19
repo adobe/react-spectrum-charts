@@ -236,13 +236,15 @@ export const getDefaultSignals = ({
   // if the background color is transparent, then we want to set the signal background color to gray-50
   // if the signal background color were transparent then backgroundMarks and annotation fill would also be transparent
   const signalBackgroundColor = backgroundColor === 'transparent' ? 'gray-50' : backgroundColor;
+  // highlightedItem should be undefined or an array
+  const formattedHighlightedItem = highlightedItem === undefined || Array.isArray(highlightedItem) ? highlightedItem : [highlightedItem];
   return [
     getGenericValueSignal(BACKGROUND_COLOR, getColorValue(signalBackgroundColor, colorScheme)),
     getGenericValueSignal('colors', getTwoDimensionalColorScheme(colors, colorScheme)),
     getGenericValueSignal('lineTypes', getTwoDimensionalLineTypes(lineTypes)),
     getGenericValueSignal('opacities', getTwoDimensionalOpacities(opacities)),
     getGenericValueSignal('hiddenSeries', hiddenSeries ?? []),
-    getGenericValueSignal(HIGHLIGHTED_ITEM, highlightedItem),
+    getGenericValueSignal(HIGHLIGHTED_ITEM, formattedHighlightedItem),
     getGenericValueSignal(HIGHLIGHTED_GROUP),
     getGenericValueSignal(HIGHLIGHTED_SERIES, highlightedSeries),
     getGenericValueSignal(SELECTED_ITEM),

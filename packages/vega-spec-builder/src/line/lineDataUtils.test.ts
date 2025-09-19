@@ -11,7 +11,7 @@
  */
 import { FilterTransform } from 'vega';
 
-import { FILTERED_TABLE, HIGHLIGHTED_GROUP, MARK_ID, SELECTED_ITEM } from '@spectrum-charts/constants';
+import { FILTERED_TABLE, GROUP_ID, MARK_ID, SELECTED_ITEM } from '@spectrum-charts/constants';
 
 import { getLineHighlightedData } from './lineDataUtils';
 
@@ -32,6 +32,6 @@ describe('getLineHighlightedData()', () => {
     const expr = (
       getLineHighlightedData('line0', MARK_ID, FILTERED_TABLE, true, true).transform?.[0] as FilterTransform
     ).expr;
-    expect(expr.includes(HIGHLIGHTED_GROUP)).toBeTruthy();
+    expect(expr.includes(GROUP_ID)).toBeTruthy();
   });
 });

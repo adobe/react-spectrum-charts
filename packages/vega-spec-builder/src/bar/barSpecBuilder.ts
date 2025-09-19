@@ -44,12 +44,11 @@ import {
 } from '../scale/scaleSpecBuilder';
 import { getDualAxisScaleNames } from '../scale/scaleUtils';
 import {
-  addHighlightedItemSignalEvents,
   addHoveredItemSignal,
   getFirstRscSeriesIdSignal,
   getGenericValueSignal,
   getLastRscSeriesIdSignal,
-  getMouseOverSeriesSignal,
+  getMouseOverSeriesSignal
 } from '../signal/signalSpecBuilder';
 import { getFacetsFromOptions } from '../specUtils';
 import { addTrendlineData, getTrendlineMarks, setTrendlineSignals } from '../trendline';
@@ -69,7 +68,7 @@ import { addTrellisScale, getTrellisGroupMark, isTrellised } from './trellisedBa
 
 export const addBar = produce<
   ScSpec,
-  [BarOptions & { colorScheme?: ColorScheme; highlightedItem?: HighlightedItem; index?: number; idKey: string }]
+  [BarOptions & { colorScheme?: ColorScheme; highlightedItem?: HighlightedItem; index?: number; idKey: string, comboSiblingNames?: string[]; }]
 >(
   (
     spec,
@@ -149,7 +148,6 @@ export const addSignals = produce<Signal[], [BarSpecOptions]>((signals, options)
     chartTooltips,
     chartPopovers,
     hasOnClick,
-    idKey,
     name,
     paddingRatio,
     paddingOuter: barPaddingOuter,
@@ -166,8 +164,7 @@ export const addSignals = produce<Signal[], [BarSpecOptions]>((signals, options)
   if (!barAnnotations.length && !chartPopovers.length && !chartTooltips.length && !trendlines.length && !hasOnClick) {
     return;
   }
-  addHighlightedItemSignalEvents(signals, name, idKey, 1, chartTooltips[0]?.excludeDataKeys);
-  addHoveredItemSignal(signals, name)
+  addHoveredItemSignal(signals, name, undefined, 1, chartTooltips[0]?.excludeDataKeys);
   addTooltipSignals(signals, options);
   setTrendlineSignals(signals, options);
 });

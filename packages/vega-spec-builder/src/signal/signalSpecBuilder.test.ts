@@ -11,52 +11,19 @@
  */
 import { Signal } from 'vega';
 
-import { FILTERED_TABLE, HIGHLIGHTED_ITEM, HIGHLIGHTED_SERIES, HOVERED_ITEM, MARK_ID } from '@spectrum-charts/constants';
+import { FILTERED_TABLE, HIGHLIGHTED_SERIES, HOVERED_ITEM } from '@spectrum-charts/constants';
 
-import { defaultHighlightedItemSignal, defaultHighlightedSeriesSignal, defaultSignals } from '../specTestUtils';
+import { defaultHighlightedItemSignal, defaultSignals } from '../specTestUtils';
 import {
-  addHighlightedItemSignalEvents,
   addHighlightedSeriesSignalEvents,
   addHoveredItemSignal,
-  getHighlightSignalUpdateExpression,
+  getHighlightSignalUpdateExpression
 } from './signalSpecBuilder';
 
 describe('signalSpecBuilder', () => {
   let signals: Signal[];
   beforeEach(() => {
     signals = JSON.parse(JSON.stringify(defaultSignals));
-  });
-  describe('addHighlightedItemSignalEvents()', () => {
-    test('should add on events', () => {
-      addHighlightedItemSignalEvents(signals, 'line0', MARK_ID);
-      expect(signals).toHaveLength(defaultSignals.length);
-      expect(signals[0]).toHaveProperty('name', HIGHLIGHTED_ITEM);
-      expect(signals[0].on).toHaveLength(2);
-      expect(signals[0]?.on?.[0]).toHaveProperty('events', '@line0:mouseover');
-      expect(signals[0]?.on?.[1]).toHaveProperty('events', '@line0:mouseout');
-      expect(signals[1].on).toBeUndefined();
-      expect(signals[2].on).toBeUndefined();
-      expect(signals[3].on).toBeUndefined();
-      expect(signals[4].on).toBeUndefined();
-    });
-    test('should not do anything if the highlight signal is not found', () => {
-      const signals = JSON.parse(JSON.stringify([defaultHighlightedSeriesSignal]));
-      const signalsCopy = JSON.parse(JSON.stringify(signals));
-      addHighlightedItemSignalEvents(signals, 'line0', MARK_ID);
-      expect(signals).toEqual(signalsCopy);
-    });
-    test('should include update condition if excludeDataKey is provided', () => {
-      addHighlightedItemSignalEvents(signals, 'bar0', MARK_ID, 1, ['excludeFromTooltip']);
-      expect(signals).toHaveLength(defaultSignals.length);
-      expect(signals[0]).toHaveProperty('name', HIGHLIGHTED_ITEM);
-      expect(signals[0].on).toHaveLength(2);
-      expect(signals[0]?.on?.[0]).toHaveProperty('events', '@bar0:mouseover');
-      expect(signals[0]?.on?.[0]).toHaveProperty('update', '(datum.excludeFromTooltip) ? null : datum.rscMarkId');
-      expect(signals[1].on).toBeUndefined();
-      expect(signals[2].on).toBeUndefined();
-      expect(signals[3].on).toBeUndefined();
-      expect(signals[4].on).toBeUndefined();
-    });
   });
 
   describe('addHighlightedSeriesSignalEvents()', () => {

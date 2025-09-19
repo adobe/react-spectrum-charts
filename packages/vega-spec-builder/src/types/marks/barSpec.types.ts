@@ -94,6 +94,7 @@ type BarOptionsWithDefaults =
 
 export interface BarSpecOptions extends PartiallyRequired<BarOptions, BarOptionsWithDefaults> {
   colorScheme: ColorScheme;
+  comboSiblingNames?: string[];
   dimensionScaleType: 'band';
   highlightedItem?: HighlightedItem;
   idKey: string;

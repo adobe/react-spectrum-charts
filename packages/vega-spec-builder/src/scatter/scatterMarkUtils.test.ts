@@ -53,29 +53,21 @@ describe('getOpacity()', () => {
   });
   test('should include hover rules if tooltip exists', () => {
     const opacity = getOpacity({ ...defaultScatterOptions, chartTooltips: [{}] });
-    expect(opacity).toHaveLength(4);
+    expect(opacity).toHaveLength(3);
     expect(opacity[0]).toHaveProperty('test', `isValid(scatter0_${HOVERED_ITEM})`);
     expect(opacity[1]).toHaveProperty(
       'test',
       `isArray(${HIGHLIGHTED_ITEM}) && length(${HIGHLIGHTED_ITEM}) > 0 && indexof(${HIGHLIGHTED_ITEM}, datum.${MARK_ID}) === -1`
     );
-    expect(opacity[2]).toHaveProperty(
-      'test',
-      `!isArray(${HIGHLIGHTED_ITEM}) && isValid(${HIGHLIGHTED_ITEM}) && ${HIGHLIGHTED_ITEM} !== datum.${MARK_ID}`
-    );
   });
   test('should include select rule if popover exists', () => {
     const opacity = getOpacity({ ...defaultScatterOptions, chartPopovers: [{}] });
-    expect(opacity).toHaveLength(5);
+    expect(opacity).toHaveLength(4);
     expect(opacity[1]).toHaveProperty(
       'test',
       `isArray(${HIGHLIGHTED_ITEM}) && length(${HIGHLIGHTED_ITEM}) > 0 && indexof(${HIGHLIGHTED_ITEM}, datum.${MARK_ID}) === -1`
     );
-    expect(opacity[2]).toHaveProperty(
-      'test',
-      `!isArray(${HIGHLIGHTED_ITEM}) && isValid(${HIGHLIGHTED_ITEM}) && ${HIGHLIGHTED_ITEM} !== datum.${MARK_ID}`
-    );
-    expect(opacity[3]).toHaveProperty('test', `isValid(${SELECTED_ITEM}) && ${SELECTED_ITEM} !== datum.${MARK_ID}`);
+    expect(opacity[2]).toHaveProperty('test', `isValid(${SELECTED_ITEM}) && ${SELECTED_ITEM} !== datum.${MARK_ID}`);
   });
 });
 

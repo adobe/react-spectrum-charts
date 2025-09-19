@@ -84,6 +84,7 @@ type LineOptionsWithDefaults =
 
 export interface LineSpecOptions extends PartiallyRequired<LineOptions, LineOptionsWithDefaults> {
   colorScheme: ColorScheme;
+  comboSiblingNames?: string[];
   highlightedItem?: HighlightedItem;
   idKey: string;
   index: number;

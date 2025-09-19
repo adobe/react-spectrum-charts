@@ -16,6 +16,7 @@ import {
   FILTERED_TABLE,
   HIGHLIGHTED_ITEM,
   HIGHLIGHTED_SERIES,
+  HOVERED_ITEM,
   SELECTED_ITEM,
   SELECTED_SERIES,
   SERIES_ID,
@@ -226,7 +227,7 @@ const getWindowTrendlineData = (
  * @returns Data
  */
 const getHighlightTrendlineData = (markName: string, idKey: string): SourceData => {
-  const expr = `${SELECTED_ITEM} === datum.${idKey} || !isValid(${SELECTED_ITEM}) && (isArray(${HIGHLIGHTED_ITEM}) && indexof(${HIGHLIGHTED_ITEM}, datum.${idKey}) || ${HIGHLIGHTED_ITEM} === datum.${idKey})`;
+  const expr = `${SELECTED_ITEM} === datum.${idKey} || !isValid(${SELECTED_ITEM}) && (isArray(${HIGHLIGHTED_ITEM}) && indexof(${HIGHLIGHTED_ITEM}, datum.${idKey}) || isValid(${markName}Trendline_${HOVERED_ITEM}) && ${markName}Trendline_${HOVERED_ITEM}.${idKey} === datum.${idKey})`;
   return {
     name: `${markName}Trendline_highlightedData`,
     source: `${markName}_allTrendlineData`,

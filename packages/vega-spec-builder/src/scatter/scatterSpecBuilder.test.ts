@@ -12,12 +12,12 @@
 import {
   COLOR_SCALE,
   DEFAULT_COLOR,
-  HIGHLIGHTED_ITEM,
+  HOVERED_ITEM,
   LINEAR_COLOR_SCALE,
   LINE_TYPE_SCALE,
   LINE_WIDTH_SCALE,
   OPACITY_SCALE,
-  SYMBOL_SIZE_SCALE,
+  SYMBOL_SIZE_SCALE
 } from '@spectrum-charts/constants';
 
 import { defaultSignals } from '../specTestUtils';
@@ -86,18 +86,23 @@ describe('addSignals()', () => {
       ...defaultScatterOptions,
       chartTooltips: [{}],
     });
-    expect(signals).toHaveLength(defaultSignals.length + 1);
-    expect(signals[0].name).toBe(HIGHLIGHTED_ITEM);
-    expect(signals[0].on).toHaveLength(2);
+    
+    const hoveredItemSignal = signals.find((signal) => signal.name.includes(HOVERED_ITEM));
+
+    expect(hoveredItemSignal).toBeDefined()
+    expect(hoveredItemSignal?.on).toHaveLength(2);
+
   });
   test('should add trendline signal events if trendline exists as a child', () => {
     const signals = addSignals(defaultSignals, {
       ...defaultScatterOptions,
       trendlines: [{ displayOnHover: true }],
     });
-    expect(signals).toHaveLength(defaultSignals.length + 1);
-    expect(signals[0].name).toBe(HIGHLIGHTED_ITEM);
-    expect(signals[0].on).toHaveLength(2);
+
+    const hoveredItemSignal = signals.find((signal) => signal.name.includes(HOVERED_ITEM));
+
+    expect(hoveredItemSignal).toBeDefined()
+    expect(hoveredItemSignal?.on).toHaveLength(2);
   });
 });
 

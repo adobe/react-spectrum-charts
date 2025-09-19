@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { COLOR_SCALE, FILTERED_TABLE, HIGHLIGHTED_ITEM } from '@spectrum-charts/constants';
+import { COLOR_SCALE, FILTERED_TABLE, HOVERED_ITEM } from '@spectrum-charts/constants';
 
 import { defaultSignals } from '../specTestUtils';
 import { initializeSpec } from '../specUtils';
@@ -40,11 +40,13 @@ describe('addData', () => {
 describe('addSignals()', () => {
   test('should add hover events when tooltip is present', () => {
     const signals = addSignals(defaultSignals, { ...defaultDonutOptions, chartTooltips: [{}] });
-    expect(signals).toHaveLength(defaultSignals.length + 1);
-    expect(signals[0]).toHaveProperty('name', HIGHLIGHTED_ITEM);
-    expect(signals[0].on).toHaveLength(2);
-    expect(signals[0].on?.[0]).toHaveProperty('events', '@testName:mouseover');
-    expect(signals[0].on?.[1]).toHaveProperty('events', '@testName:mouseout');
+
+    const hoveredItemSignal = signals.find((signal) => signal.name.includes(HOVERED_ITEM));
+
+    expect(hoveredItemSignal).toBeDefined();
+    expect(hoveredItemSignal?.on).toHaveLength(2);
+    expect(hoveredItemSignal?.on?.[0]).toHaveProperty('events', '@testName:mouseover');
+    expect(hoveredItemSignal?.on?.[1]).toHaveProperty('events', '@testName:mouseout');
   });
   test('should exclude data with key from update if tooltip has excludeDataKey', () => {
     const signals = addSignals(defaultSignals, {
@@ -52,11 +54,14 @@ describe('addSignals()', () => {
       chartTooltips: [{ excludeDataKeys: ['excludeFromTooltip'] }],
     });
     expect(signals).toHaveLength(defaultSignals.length + 1);
-    expect(signals[0]).toHaveProperty('name', HIGHLIGHTED_ITEM);
-    expect(signals[0].on).toHaveLength(2);
-    expect(signals[0].on?.[0]).toHaveProperty('events', '@testName:mouseover');
-    expect(signals[0].on?.[0]).toHaveProperty('update', '(datum.excludeFromTooltip) ? null : datum.rscMarkId');
-    expect(signals[0].on?.[1]).toHaveProperty('events', '@testName:mouseout');
+
+    const hoveredItemSignal = signals.find((signal) => signal.name.includes(HOVERED_ITEM));
+
+    expect(hoveredItemSignal).toBeDefined();
+    expect(hoveredItemSignal?.on).toHaveLength(2);
+    expect(hoveredItemSignal?.on?.[0]).toHaveProperty('events', '@testName:mouseover');
+    expect(hoveredItemSignal?.on?.[0]).toHaveProperty('update', '(datum.excludeFromTooltip) ? null : datum');
+    expect(hoveredItemSignal?.on?.[1]).toHaveProperty('events', '@testName:mouseout');
   });
 });
 

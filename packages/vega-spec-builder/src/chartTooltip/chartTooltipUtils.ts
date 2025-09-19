@@ -12,12 +12,11 @@
 import { Data, FormulaTransform, NumericValueRef, Signal, SourceData } from 'vega';
 
 import {
-  DEFAULT_OPACITY_RULE,
+  FADE_FACTOR,
   FILTERED_TABLE,
   GROUP_ID,
   HIGHLIGHTED_GROUP,
   HIGHLIGHTED_ITEM,
-  FADE_FACTOR,
   HOVERED_ITEM,
   INTERACTION_MODE,
   SERIES_ID
@@ -189,37 +188,10 @@ const addMouseEvents = (highlightedGroupSignal: Signal, markName: string, update
   );
 };
 
-/**
- * Adds the appropriate opacity rules to the beginning of the opacityRules array
- *
- * NOTE: this function mutates the opacityRules array so it should only be called from a produce function
- * @param opacityRules
- * @param markOptions
- */
-export const addHighlightMarkOpacityRules = (
+export const addHoveredItemOpacityRules = (
   opacityRules: ({ test?: string } & NumericValueRef)[],
   markOptions: TooltipParentOptions
 ) => {
-  opacityRules.unshift(
-    {
-      test: `isArray(${HIGHLIGHTED_ITEM}) && length(${HIGHLIGHTED_ITEM}) > 0 && indexof(${HIGHLIGHTED_ITEM}, datum.${markOptions.idKey}) === -1`,
-      value: FADE_FACTOR,
-    },
-    {
-      test: `!isArray(${HIGHLIGHTED_ITEM}) && isValid(${HIGHLIGHTED_ITEM}) && ${HIGHLIGHTED_ITEM} !== datum.${markOptions.idKey}`,
-      value: FADE_FACTOR,
-    }
-  );
-  if (isHighlightedByGroup(markOptions)) {
-    const { name: markName } = markOptions;
-    opacityRules.unshift({
-      test: `${HIGHLIGHTED_GROUP} === datum.${markName}_${GROUP_ID}`,
-      ...DEFAULT_OPACITY_RULE,
-    });
-  }
-};
-
-export const addHoveredItemOpacityRules = (opacityRules: ({ test?: string } & NumericValueRef)[], markOptions: TooltipParentOptions) => {
   const { name: markName } = markOptions;
   // find the index of the first hover rule
   const startIndex = opacityRules.findIndex((rule) => rule.test?.includes(HOVERED_ITEM)) + 1;
@@ -231,8 +203,26 @@ export const addHoveredItemOpacityRules = (opacityRules: ({ test?: string } & Nu
     key = `${markName}_${GROUP_ID}`;
   }
 
-  opacityRules.splice(startIndex, 0, {
-    test: `isValid(${hoveredItemSignal})`,
-    signal: `${hoveredItemSignal}.${key} === datum.${key} ? 1 : ${FADE_FACTOR}`,
-  });
-}
+  const rules = [
+    {
+      test: `isValid(${hoveredItemSignal})`,
+      signal: `${hoveredItemSignal}.${key} === datum.${key} ? 1 : ${FADE_FACTOR}`,
+    },
+    {
+      test: `isArray(${HIGHLIGHTED_ITEM}) && length(${HIGHLIGHTED_ITEM}) > 0 && indexof(${HIGHLIGHTED_ITEM}, datum.${markOptions.idKey}) === -1`,
+      value: FADE_FACTOR,
+    },
+  ]
+
+  if ('comboSiblingNames' in markOptions && markOptions.comboSiblingNames?.length) {
+    const test = markOptions.comboSiblingNames.map((siblingName) => `isValid(${siblingName}_${HOVERED_ITEM})`).join(' || ');
+    console.log('test', test);
+    rules.push({ test, value: FADE_FACTOR });
+  }
+
+  opacityRules.splice(
+    startIndex,
+    0,
+    ...rules
+  );
+};

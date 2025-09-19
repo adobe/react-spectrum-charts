@@ -41,6 +41,7 @@ export interface LineMarkOptions {
   chartTooltips?: ChartTooltipOptions[];
   color: ColorFacet;
   colorScheme: ColorScheme;
+  comboSiblingNames?: string[];
   dimension: string;
   displayOnHover?: boolean;
   donutSummaries?: DonutSummaryOptions[];

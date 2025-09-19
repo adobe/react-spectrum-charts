@@ -35,7 +35,7 @@ import {
   getMetricRanges,
 } from '../metricRange/metricRangeUtils';
 import { addContinuousDimensionScale, addFieldToFacetScaleDomain, addMetricScale } from '../scale/scaleSpecBuilder';
-import { addHighlightedItemSignalEvents, addHighlightedSeriesSignalEvents, addHoveredItemSignal } from '../signal/signalSpecBuilder';
+import { addHighlightedSeriesSignalEvents, addHoveredItemSignal } from '../signal/signalSpecBuilder';
 import { getFacetsFromOptions } from '../specUtils';
 import { addTrendlineData, getTrendlineMarks, getTrendlineScales, setTrendlineSignals } from '../trendline';
 import { ColorScheme, HighlightedItem, LineOptions, LineSpecOptions, ScSpec } from '../types';
@@ -46,7 +46,7 @@ import { getPopoverMarkName } from './lineUtils';
 
 export const addLine = produce<
   ScSpec,
-  [LineOptions & { colorScheme?: ColorScheme; highlightedItem?: HighlightedItem; index?: number; idKey: string }]
+  [LineOptions & { colorScheme?: ColorScheme; highlightedItem?: HighlightedItem; index?: number; idKey: string, comboSiblingNames?: string[]; }]
 >(
   (
     spec,
@@ -134,13 +134,13 @@ export const addData = produce<Data[], [LineSpecOptions]>((data, options) => {
 });
 
 export const addSignals = produce<Signal[], [LineSpecOptions]>((signals, options) => {
-  const { idKey, name } = options;
+  const { name } = options;
   setTrendlineSignals(signals, options);
   signals.push(...getMetricRangeSignals(options));
 
   if (!isInteractive(options)) return;
-  addHighlightedItemSignalEvents(signals, `${name}_voronoi`, idKey, 2);
   addHighlightedSeriesSignalEvents(signals, `${name}_voronoi`, 2);
+  // we don't need to include the excludeDataKeys here because they will be excluded from the points for voronoi
   addHoveredItemSignal(signals, name, `${name}_voronoi`, 2);
   addHoverSignals(signals, options);
   addTooltipSignals(signals, options);
@@ -206,10 +206,11 @@ const getMetricKeys = (lineOptions: LineSpecOptions) => {
 };
 
 const addHoverSignals = (signals: Signal[], options: LineSpecOptions) => {
-  const { idKey, interactionMode, name } = options;
+  const { interactionMode, name: lineName } = options;
   if (interactionMode !== INTERACTION_MODE.ITEM) return;
-  getHoverMarkNames(name).forEach((hoverMarkName) => {
-    addHighlightedItemSignalEvents(signals, hoverMarkName, idKey, 1);
+  getHoverMarkNames(lineName).forEach((hoverMarkName) => {
+    console.log('hoverMarkName', hoverMarkName);
+    addHoveredItemSignal(signals, lineName, hoverMarkName);
     addHighlightedSeriesSignalEvents(signals, hoverMarkName, 1);
   });
 };

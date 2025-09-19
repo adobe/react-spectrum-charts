@@ -29,7 +29,7 @@ describe('getTrendlineSignals()', () => {
     });
     expect(signals).toHaveLength(defaultSignals.length + 1);
     expect(signals[0]).toHaveProperty('name', HIGHLIGHTED_ITEM);
-    expect(signals[0].on).toHaveLength(2);
+    expect(signals[0].on).toBeUndefined();
     expect(signals[2]).toHaveProperty('name', HIGHLIGHTED_SERIES);
     expect(signals[2].on).toHaveLength(2);
     expect(signals.at(-1)).toHaveProperty('name', `line0Trendline_${HOVERED_ITEM}`);

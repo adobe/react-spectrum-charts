@@ -14,13 +14,13 @@ import { GroupMark, Mark, NumericValueRef, SymbolMark } from 'vega';
 
 import {
   DEFAULT_OPACITY_RULE,
-  FILTERED_TABLE,
   FADE_FACTOR,
+  FILTERED_TABLE,
   SELECTED_ITEM
 } from '@spectrum-charts/constants';
 import { spectrumColors } from '@spectrum-charts/themes';
 
-import { addHighlightMarkOpacityRules, addHoveredItemOpacityRules } from '../chartTooltip/chartTooltipUtils';
+import { addHoveredItemOpacityRules } from '../chartTooltip/chartTooltipUtils';
 import {
   getColorProductionRule,
   getLineWidthProductionRule,
@@ -114,7 +114,6 @@ export const getOpacity = (scatterOptions: ScatterSpecOptions): ({ test?: string
     return [DEFAULT_OPACITY_RULE];
   }
   const rules: ({ test?: string } & NumericValueRef)[] = [];
-  addHighlightMarkOpacityRules(rules, scatterOptions);
   addHoveredItemOpacityRules(rules, scatterOptions);
   if (hasPopover(scatterOptions)) {
     rules.push({

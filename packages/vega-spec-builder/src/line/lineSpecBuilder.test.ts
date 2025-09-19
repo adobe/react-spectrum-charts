@@ -21,14 +21,13 @@ import {
   DEFAULT_TIME_DIMENSION,
   DEFAULT_TRANSFORMED_TIME_DIMENSION,
   FILTERED_TABLE,
-  HIGHLIGHTED_ITEM,
   HIGHLIGHTED_SERIES,
   HOVERED_ITEM,
   LINEAR_PADDING,
   MARK_ID,
   SERIES_ID,
   TABLE,
-  TRENDLINE_VALUE,
+  TRENDLINE_VALUE
 } from '@spectrum-charts/constants';
 
 import * as signalSpecBuilder from '../signal/signalSpecBuilder';
@@ -559,8 +558,6 @@ describe('lineSpecBuilder', () => {
         metricRanges: [{ metricEnd: 'end', metricStart: 'start', displayOnHover: true }],
       });
       expect(signals).toHaveLength(defaultSignals.length + 1);
-      expect(signals[0]).toHaveProperty('name', HIGHLIGHTED_ITEM);
-      expect(signals[0].on).toHaveLength(2);
       expect(signals[2]).toHaveProperty('name', HIGHLIGHTED_SERIES);
       expect(signals[2].on).toHaveLength(2);
       expect(signals.at(-1)).toHaveProperty('name', `${defaultLineOptions.name}_${HOVERED_ITEM}`);
@@ -578,8 +575,6 @@ describe('lineSpecBuilder', () => {
         metricRanges: [{ metricEnd: 'end', metricStart: 'start', displayOnHover: true }],
       });
       expect(signals).toHaveLength(defaultSignals.length + 1);
-      expect(signals[0]).toHaveProperty('name', HIGHLIGHTED_ITEM);
-      expect(signals[0].on).toHaveLength(2);
       expect(signals[2]).toHaveProperty('name', HIGHLIGHTED_SERIES);
       expect(signals[2].on).toHaveLength(2);
       expect(signals.at(-1)).toHaveProperty('name', `${defaultLineOptions.name}_${HOVERED_ITEM}`);
@@ -593,12 +588,10 @@ describe('lineSpecBuilder', () => {
         chartTooltips: [{}],
       });
       expect(signals).toHaveLength(defaultSignals.length + 1);
-      expect(signals[0]).toHaveProperty('name', HIGHLIGHTED_ITEM);
-      expect(signals[0].on).toHaveLength(8);
       expect(signals[2]).toHaveProperty('name', HIGHLIGHTED_SERIES);
       expect(signals[2].on).toHaveLength(8);
       expect(signals.at(-1)).toHaveProperty('name', `${defaultLineOptions.name}_${HOVERED_ITEM}`);
-      expect(signals.at(-1)?.on).toHaveLength(2);
+      expect(signals.at(-1)?.on).toHaveLength(8);
     });
   });
 });
