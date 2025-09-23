@@ -13,10 +13,11 @@ import { Axis, ColorValueRef, GroupMark, NumericValueRef, ProductionRule, Scale,
 
 import {
   DEFAULT_LABEL_FONT_WEIGHT,
-  FILTERED_TABLE,
   FADE_FACTOR,
+  FILTERED_TABLE,
   LAST_RSC_SERIES_ID,
-  MOUSE_OVER_SERIES
+  MOUSE_OVER_SERIES,
+  SERIES_ID,
 } from '@spectrum-charts/constants';
 
 import { SubLabel } from '../types';
@@ -305,12 +306,12 @@ describe('Spec builder, Axis', () => {
           position: 'left',
           scaleName: 'yLinear',
           scaleType: 'linear',
-          usermeta: {},
+          usermeta: { interactiveMarks: ['bar0'] },
         })[0].encode?.labels?.update?.fillOpacity;
         expect(labelFillOpacityEncoding).toHaveLength(1);
         expect(labelFillOpacityEncoding?.[0]).toEqual({
-          test: `${MOUSE_OVER_SERIES} === ${LAST_RSC_SERIES_ID}`,
-          value: FADE_FACTOR,
+          test: 'isValid(bar0_hoveredItem)',
+          signal: `bar0_hoveredItem.${SERIES_ID} !== lastRscSeriesId ? 1 : ${FADE_FACTOR}`,
         });
       });
 
@@ -338,12 +339,12 @@ describe('Spec builder, Axis', () => {
           position: 'left',
           scaleName: 'yLinear',
           scaleType: 'linear',
-          usermeta: {},
+          usermeta: { interactiveMarks: ['bar0'] },
         })[0].encode?.title?.update?.fillOpacity;
         expect(titleFillOpacityEncoding).toHaveLength(1);
         expect(titleFillOpacityEncoding?.[0]).toEqual({
-          test: `${MOUSE_OVER_SERIES} === ${LAST_RSC_SERIES_ID}`,
-          value: FADE_FACTOR,
+          test: 'isValid(bar0_hoveredItem)',
+          signal: `bar0_hoveredItem.${SERIES_ID} !== lastRscSeriesId ? 1 : ${FADE_FACTOR}`,
         });
       });
 
@@ -373,12 +374,12 @@ describe('Spec builder, Axis', () => {
           scaleName: 'yLinear',
           scaleType: 'linear',
           subLabels: defaultSubLabels,
-          usermeta: {},
+          usermeta: { interactiveMarks: ['bar0'] },
         })[1].encode?.labels?.update?.fillOpacity;
         expect(labelFillOpacityEncoding).toHaveLength(1);
         expect(labelFillOpacityEncoding?.[0]).toEqual({
-          test: `${MOUSE_OVER_SERIES} === ${LAST_RSC_SERIES_ID}`,
-          value: FADE_FACTOR,
+          test: 'isValid(bar0_hoveredItem)',
+          signal: `bar0_hoveredItem.${SERIES_ID} !== lastRscSeriesId ? 1 : ${FADE_FACTOR}`,
         });
       });
 
@@ -429,12 +430,12 @@ describe('Spec builder, Axis', () => {
           position: 'left',
           scaleName: 'yLinear',
           scaleType: 'linear',
-          usermeta: { metricAxisCount: 1 },
+          usermeta: { metricAxisCount: 1, interactiveMarks: ['bar0'] },
         })[0].encode?.labels?.update?.fillOpacity;
         expect(labelFillOpacityEncoding).toHaveLength(1);
         expect(labelFillOpacityEncoding?.[0]).toEqual({
-          test: `isValid(${MOUSE_OVER_SERIES}) && ${MOUSE_OVER_SERIES} !== ${LAST_RSC_SERIES_ID}`,
-          value: FADE_FACTOR,
+          test: 'isValid(bar0_hoveredItem)',
+          signal: `bar0_hoveredItem.${SERIES_ID} === lastRscSeriesId ? 1 : ${FADE_FACTOR}`,
         });
       });
 
@@ -460,12 +461,12 @@ describe('Spec builder, Axis', () => {
           scaleName: 'yLinear',
           scaleType: 'linear',
           subLabels: defaultSubLabels,
-          usermeta: { metricAxisCount: 1 },
+          usermeta: { metricAxisCount: 1, interactiveMarks: ['bar0'] },
         })[1].encode?.labels?.update?.fillOpacity;
         expect(labelFillOpacityEncoding).toHaveLength(1);
         expect(labelFillOpacityEncoding?.[0]).toEqual({
-          test: `isValid(${MOUSE_OVER_SERIES}) && ${MOUSE_OVER_SERIES} !== ${LAST_RSC_SERIES_ID}`,
-          value: FADE_FACTOR,
+          test: 'isValid(bar0_hoveredItem)',
+          signal: `bar0_hoveredItem.${SERIES_ID} === lastRscSeriesId ? 1 : ${FADE_FACTOR}`,
         });
       });
 

@@ -38,6 +38,7 @@ export interface ScSpec extends Spec {
 }
 
 export type UserMeta = {
+  interactiveMarks?: string[];
   chartOrientation?: Orientation;
   metricAxisCount?: number;
 };

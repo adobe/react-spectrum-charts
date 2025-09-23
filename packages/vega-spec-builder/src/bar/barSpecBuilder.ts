@@ -132,6 +132,7 @@ export const addBar = produce<
     };
 
     spec.usermeta = {
+      interactiveMarks: [...(spec.usermeta.interactiveMarks ?? []), (barOptions.interactiveMarkName ?? barName)],
       chartOrientation: barOptions.orientation,
     };
 
