@@ -47,8 +47,7 @@ import {
   addHoveredItemSignal,
   getFirstRscSeriesIdSignal,
   getGenericValueSignal,
-  getLastRscSeriesIdSignal,
-  getMouseOverSeriesSignal
+  getLastRscSeriesIdSignal
 } from '../signal/signalSpecBuilder';
 import { getFacetsFromOptions } from '../specUtils';
 import { addTrendlineData, getTrendlineMarks, setTrendlineSignals } from '../trendline';
@@ -159,7 +158,7 @@ export const addSignals = produce<Signal[], [BarSpecOptions]>((signals, options)
   signals.push(getGenericValueSignal('paddingInner', paddingInner));
 
   if (isDualMetricAxis(options)) {
-    signals.push(getFirstRscSeriesIdSignal(), getLastRscSeriesIdSignal(), getMouseOverSeriesSignal(name));
+    signals.push(getFirstRscSeriesIdSignal(), getLastRscSeriesIdSignal());
   }
 
   if (!barAnnotations.length && !chartPopovers.length && !chartTooltips.length && !trendlines.length && !hasOnClick) {

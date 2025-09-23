@@ -304,21 +304,6 @@ describe('barSpecBuilder', () => {
         return signal.name === 'lastRscSeriesId';
       }
 
-      test('should add mousedOverSeries if dualMetricAxis is true and type is dodged', () => {
-        const signals = addSignals(defaultSignals, {
-          ...defaultBarOptions,
-          type: 'dodged',
-          dualMetricAxis: true,
-        });
-        const mousedOverSeriesSignal = signals.find(getMousedOverSeriesSignal);
-        // update to moused over series id on mouseover
-        expect(mousedOverSeriesSignal?.on?.[0]).toHaveProperty('events', '@bar0:mouseover');
-        expect(mousedOverSeriesSignal?.on?.[0]).toHaveProperty('update', 'datum.rscSeriesId');
-        // update to null on mouseout
-        expect(mousedOverSeriesSignal?.on?.[1]).toHaveProperty('events', '@bar0:mouseout');
-        expect(mousedOverSeriesSignal?.on?.[1]).toHaveProperty('update', 'null');
-      });
-
       test('should add firstRscSeriesId if dualMetricAxis is true and type is dodged', () => {
         const signals = addSignals(defaultSignals, {
           ...defaultBarOptions,
