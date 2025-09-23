@@ -35,3 +35,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_SCANNER_OPTS: "-Dsonar.nodejs.executable=$(which node)"
+        with:
+          args: >
+            -Dsonar.nodejs.executable=node
+            -Dsonar.javascript.node=node
