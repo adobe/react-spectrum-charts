@@ -11,7 +11,7 @@
  */
 import { SourceData } from 'vega';
 
-import { GROUP_ID, HIGHLIGHTED_GROUP, HIGHLIGHTED_ITEM, SELECTED_ITEM } from '@spectrum-charts/constants';
+import { GROUP_ID, HIGHLIGHTED_ITEM, HOVERED_ITEM, SELECTED_ITEM } from '@spectrum-charts/constants';
 
 /**
  * gets the data used for highlighting hovered data points
@@ -26,9 +26,11 @@ export const getLineHighlightedData = (
   hasPopover: boolean,
   hasGroupId: boolean
 ): SourceData => {
+  const hoveredItemSignal = `${name}_${HOVERED_ITEM}`;
+  const groupKey = `${name}_${GROUP_ID}`;
   const highlightedExpr = hasGroupId
-    ? `${HIGHLIGHTED_GROUP} === datum.${name}_${GROUP_ID}`
-    : `isArray(${HIGHLIGHTED_ITEM}) && indexof(${HIGHLIGHTED_ITEM}, datum.${idKey}) > -1  || ${HIGHLIGHTED_ITEM} === datum.${idKey}`;
+    ? `isValid(${hoveredItemSignal}) && ${hoveredItemSignal}.${groupKey} === datum.${groupKey}`
+    : `isArray(${HIGHLIGHTED_ITEM}) && indexof(${HIGHLIGHTED_ITEM}, datum.${idKey}) > -1  || (isValid(${hoveredItemSignal}) && ${hoveredItemSignal}.${idKey} === datum.${idKey})`;
   const expr = hasPopover
     ? `${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${idKey} || !${SELECTED_ITEM} && ${highlightedExpr}`
     : highlightedExpr;

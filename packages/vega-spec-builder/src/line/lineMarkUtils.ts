@@ -95,6 +95,7 @@ export const getLineMark = (lineMarkOptions: LineMarkOptions, dataSource: string
 
 export const getLineOpacity = ({
   displayOnHover,
+  comboSiblingNames,
   interactiveMarkName,
   popoverMarkName,
   isHighlightedByGroup,
@@ -129,6 +130,15 @@ export const getLineOpacity = ({
       value: FADE_FACTOR,
     });
   }
+
+  if (comboSiblingNames?.length) {
+    const test = comboSiblingNames.map((siblingName) => `isValid(${siblingName}_${HOVERED_ITEM})`).join(' || ');
+    strokeOpacityRules.push({
+      test,
+      value: FADE_FACTOR,
+    });
+  }
+  
   // This allows us to only show the metric range when hovering over the parent line component.
   strokeOpacityRules.push(DEFAULT_OPACITY_RULE);
 

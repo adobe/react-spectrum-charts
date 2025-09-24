@@ -242,6 +242,7 @@ const defaultSpec: ScSpec = {
   ],
   usermeta: {
     chartOrientation: 'vertical',
+    interactiveMarks: ['bar0'],
   },
 };
 
@@ -275,19 +276,19 @@ describe('barSpecBuilder', () => {
     });
     test('should add hover events if tooltip is present', () => {
       const signals = addSignals(defaultSignals, { ...defaultBarOptions, chartTooltips: [{}] });
-      expect(signals[0]).toHaveProperty('on');
-      expect(signals[0].on).toHaveLength(2);
-      expect(signals[0].on?.[0]).toHaveProperty('events', '@bar0:mouseover');
+      expect(signals.at(-1)).toHaveProperty('on');
+      expect(signals.at(-1)?.on).toHaveLength(2);
+      expect(signals.at(-1)?.on?.[0]).toHaveProperty('events', '@bar0:mouseover');
     });
     test('should exclude data with key from update if tooltip has excludeDataKey', () => {
       const signals = addSignals(defaultSignals, {
         ...defaultBarOptions,
         chartTooltips: [{ excludeDataKeys: ['excludeFromTooltip'] }],
       });
-      expect(signals[0]).toHaveProperty('on');
-      expect(signals[0].on).toHaveLength(2);
-      expect(signals[0].on?.[0]).toHaveProperty('events', '@bar0:mouseover');
-      expect(signals[0].on?.[0]).toHaveProperty('update', '(datum.excludeFromTooltip) ? null : datum.rscMarkId');
+      expect(signals.at(-1)).toHaveProperty('on');
+      expect(signals.at(-1)?.on).toHaveLength(2);
+      expect(signals.at(-1)?.on?.[0]).toHaveProperty('events', '@bar0:mouseover');
+      expect(signals.at(-1)?.on?.[0]).toHaveProperty('update', '(datum.excludeFromTooltip) ? null : datum');
     });
 
     describe('dualMetricAxis signals', () => {
@@ -302,21 +303,6 @@ describe('barSpecBuilder', () => {
       function getLastRscSeriesIdSignal(signal) {
         return signal.name === 'lastRscSeriesId';
       }
-
-      test('should add mousedOverSeries if dualMetricAxis is true and type is dodged', () => {
-        const signals = addSignals(defaultSignals, {
-          ...defaultBarOptions,
-          type: 'dodged',
-          dualMetricAxis: true,
-        });
-        const mousedOverSeriesSignal = signals.find(getMousedOverSeriesSignal);
-        // update to moused over series id on mouseover
-        expect(mousedOverSeriesSignal?.on?.[0]).toHaveProperty('events', '@bar0:mouseover');
-        expect(mousedOverSeriesSignal?.on?.[0]).toHaveProperty('update', 'datum.rscSeriesId');
-        // update to null on mouseout
-        expect(mousedOverSeriesSignal?.on?.[1]).toHaveProperty('events', '@bar0:mouseout');
-        expect(mousedOverSeriesSignal?.on?.[1]).toHaveProperty('update', 'null');
-      });
 
       test('should add firstRscSeriesId if dualMetricAxis is true and type is dodged', () => {
         const signals = addSignals(defaultSignals, {

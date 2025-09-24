@@ -29,10 +29,11 @@ import {
   DEFAULT_LABEL_ALIGN,
   DEFAULT_LABEL_FONT_WEIGHT,
   DEFAULT_LABEL_ORIENTATION,
-  FIRST_RSC_SERIES_ID,
   FADE_FACTOR,
+  FIRST_RSC_SERIES_ID,
+  HOVERED_ITEM,
   LAST_RSC_SERIES_ID,
-  MOUSE_OVER_SERIES
+  SERIES_ID
 } from '@spectrum-charts/constants';
 import { spectrumColors } from '@spectrum-charts/themes';
 
@@ -232,15 +233,13 @@ export const getLabelSignalValue = (
  * Applies fill and opacity encoding rules to the secondary metric axis
  * @param axis Axis to apply encoding rules to
  */
-export function applySecondaryMetricAxisEncodings(axis: Axis): void {
+export function applySecondaryMetricAxisEncodings(axis: Axis, interactiveMarks: string[]): void {
   const secondaryAxisFillRules = [{ signal: `scale('${COLOR_SCALE}', ${LAST_RSC_SERIES_ID})` }];
 
-  const secondaryAxisFillOpacityRules = [
-    {
-      test: `isValid(${MOUSE_OVER_SERIES}) && ${MOUSE_OVER_SERIES} !== ${LAST_RSC_SERIES_ID}`,
-      value: FADE_FACTOR,
-    },
-  ];
+  const fillOpacity = interactiveMarks.map((interactiveMark) => ({
+    test: `isValid(${interactiveMark}_${HOVERED_ITEM})`,
+    signal: `${interactiveMark}_${HOVERED_ITEM}.${SERIES_ID} === ${LAST_RSC_SERIES_ID} ? 1 : ${FADE_FACTOR}`,
+  }));
 
   const encodings = {
     labels: {
@@ -248,7 +247,7 @@ export function applySecondaryMetricAxisEncodings(axis: Axis): void {
         fill: secondaryAxisFillRules,
       },
       update: {
-        fillOpacity: secondaryAxisFillOpacityRules,
+        fillOpacity,
       },
     },
     title: {
@@ -256,7 +255,7 @@ export function applySecondaryMetricAxisEncodings(axis: Axis): void {
         fill: secondaryAxisFillRules,
       },
       update: {
-        fillOpacity: secondaryAxisFillOpacityRules,
+        fillOpacity,
       },
     },
   };
@@ -273,7 +272,7 @@ export function applySecondaryMetricAxisEncodings(axis: Axis): void {
  * @param axis Axis to apply encoding rules to
  * @param colorScheme The color scheme (light or dark)
  */
-export function applyPrimaryMetricAxisEncodings(axis: Axis, colorScheme: ColorScheme = DEFAULT_COLOR_SCHEME): void {
+export function applyPrimaryMetricAxisEncodings(axis: Axis, interactiveMarks: string[], colorScheme: ColorScheme = DEFAULT_COLOR_SCHEME): void {
   // Get the appropriate font color value based on the colorScheme (light/dark theme)
   const defaultFontColor = spectrumColors[colorScheme][DEFAULT_FONT_COLOR];
 
@@ -284,24 +283,23 @@ export function applyPrimaryMetricAxisEncodings(axis: Axis, colorScheme: ColorSc
     },
     { value: defaultFontColor },
   ];
-  const primaryAxisFillOpacityRules = [
-    {
-      test: `${MOUSE_OVER_SERIES} === ${LAST_RSC_SERIES_ID}`,
-      value: FADE_FACTOR,
-    },
-  ];
+
+  const fillOpacity = interactiveMarks.map((interactiveMark) => ({
+    test: `isValid(${interactiveMark}_${HOVERED_ITEM})`,
+    signal: `${interactiveMark}_${HOVERED_ITEM}.${SERIES_ID} !== ${LAST_RSC_SERIES_ID} ? 1 : ${FADE_FACTOR}`,
+  }));
 
   const encodings = {
     labels: {
       update: {
         fill: primaryAxisFillRules,
-        fillOpacity: primaryAxisFillOpacityRules,
+        fillOpacity,
       },
     },
     title: {
       update: {
         fill: primaryAxisFillRules,
-        fillOpacity: primaryAxisFillOpacityRules,
+        fillOpacity,
       },
     },
   };
@@ -323,17 +321,18 @@ export function addDualMetricAxisConfig(
   axis: Axis,
   isPrimaryMetricAxis: boolean,
   scaleName: string,
-  colorScheme: ColorScheme = DEFAULT_COLOR_SCHEME
+  interactiveMarks: string[],
+  colorScheme: ColorScheme = DEFAULT_COLOR_SCHEME,
 ) {
   const scaleNames = getDualAxisScaleNames(scaleName);
   const { primaryScale, secondaryScale } = scaleNames;
 
   if (isPrimaryMetricAxis) {
     axis.scale = primaryScale;
-    applyPrimaryMetricAxisEncodings(axis, colorScheme);
+    applyPrimaryMetricAxisEncodings(axis, interactiveMarks, colorScheme);
   } else {
     axis.scale = secondaryScale;
-    applySecondaryMetricAxisEncodings(axis);
+    applySecondaryMetricAxisEncodings(axis, interactiveMarks);
   }
 }
 
@@ -522,7 +521,7 @@ const handleDualMetricAxisConfig = ({
     if (!usermeta.metricAxisCount) {
       usermeta.metricAxisCount = 0;
     }
-    addDualMetricAxisConfig(axis, usermeta.metricAxisCount === 0, scaleName, colorScheme);
+    addDualMetricAxisConfig(axis, usermeta.metricAxisCount === 0, scaleName, usermeta.interactiveMarks ?? [], colorScheme);
     if (incrementMetricAxisCount) {
       usermeta.metricAxisCount++;
     }

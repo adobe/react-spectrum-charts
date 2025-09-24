@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { COLOR_SCALE, HIGHLIGHTED_ITEM, TABLE } from '@spectrum-charts/constants';
+import { COLOR_SCALE, HOVERED_ITEM, TABLE } from '@spectrum-charts/constants';
 
 import { defaultSignals } from '../specTestUtils';
 import { initializeSpec } from '../specUtils';
@@ -61,12 +61,15 @@ describe('addSignal', () => {
     });
 
     expect(signals).toHaveLength(defaultSignals.length + 1);
-    expect(signals[0]).toHaveProperty('name', HIGHLIGHTED_ITEM);
-    expect(signals[0].on).toHaveLength(4);
-    expect(signals[0].on?.[0]).toHaveProperty('events', '@venn:mouseover');
-    expect(signals[0].on?.[1]).toHaveProperty('events', '@venn:mouseout');
-    expect(signals[0].on?.[2]).toHaveProperty('events', '@venn_intersections:mouseover');
-    expect(signals[0].on?.[3]).toHaveProperty('events', '@venn_intersections:mouseout');
+
+    const hoveredItemSignal = signals.find((signal) => signal.name.includes(HOVERED_ITEM));
+
+    expect(hoveredItemSignal).toBeDefined();
+    expect(hoveredItemSignal?.on).toHaveLength(4);
+    expect(hoveredItemSignal?.on?.[0]).toHaveProperty('events', '@venn:mouseover');
+    expect(hoveredItemSignal?.on?.[1]).toHaveProperty('events', '@venn:mouseout');
+    expect(hoveredItemSignal?.on?.[2]).toHaveProperty('events', '@venn_intersections:mouseover');
+    expect(hoveredItemSignal?.on?.[3]).toHaveProperty('events', '@venn_intersections:mouseout');
   });
 });
 

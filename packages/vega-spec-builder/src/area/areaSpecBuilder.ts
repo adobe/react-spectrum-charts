@@ -192,7 +192,7 @@ export const addSignals = produce<Signal[], [AreaSpecOptions]>((signals, areaOpt
   const { chartTooltips, name } = areaOptions;
   if (!isInteractive(areaOptions)) return;
   addHighlightedSeriesSignalEvents(signals, name, 1, chartTooltips[0]?.excludeDataKeys);
-  addHoveredItemSignal(signals, name);
+  addHoveredItemSignal(signals, name, undefined, 1, chartTooltips[0]?.excludeDataKeys);
   if (areaOptions.highlightedItem) {
     addHighlightedItemEvents(signals, name);
   }
