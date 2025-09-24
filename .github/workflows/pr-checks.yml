@@ -23,7 +23,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '20'
+          node-version: '18'
 
       - name: Install Dependencies 📦
         run: yarn install
@@ -41,11 +41,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_SCANNER_OPTS: "-Dsonar.nodejs.executable=$(which node)"
-        with:
-          args: >
-            -Dsonar.nodejs.executable=node
-            -Dsonar.javascript.node=node
 
       - name: Build 🛠️
         run: yarn build
