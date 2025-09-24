@@ -272,7 +272,7 @@ export function applySecondaryMetricAxisEncodings(axis: Axis, interactiveMarks: 
  * @param axis Axis to apply encoding rules to
  * @param colorScheme The color scheme (light or dark)
  */
-export function applyPrimaryMetricAxisEncodings(axis: Axis, colorScheme: ColorScheme = DEFAULT_COLOR_SCHEME, interactiveMarks: string[]): void {
+export function applyPrimaryMetricAxisEncodings(axis: Axis, interactiveMarks: string[], colorScheme: ColorScheme = DEFAULT_COLOR_SCHEME): void {
   // Get the appropriate font color value based on the colorScheme (light/dark theme)
   const defaultFontColor = spectrumColors[colorScheme][DEFAULT_FONT_COLOR];
 
@@ -321,15 +321,15 @@ export function addDualMetricAxisConfig(
   axis: Axis,
   isPrimaryMetricAxis: boolean,
   scaleName: string,
+  interactiveMarks: string[],
   colorScheme: ColorScheme = DEFAULT_COLOR_SCHEME,
-  interactiveMarks: string[]
 ) {
   const scaleNames = getDualAxisScaleNames(scaleName);
   const { primaryScale, secondaryScale } = scaleNames;
 
   if (isPrimaryMetricAxis) {
     axis.scale = primaryScale;
-    applyPrimaryMetricAxisEncodings(axis, colorScheme, interactiveMarks);
+    applyPrimaryMetricAxisEncodings(axis, interactiveMarks, colorScheme);
   } else {
     axis.scale = secondaryScale;
     applySecondaryMetricAxisEncodings(axis, interactiveMarks);
@@ -521,7 +521,7 @@ const handleDualMetricAxisConfig = ({
     if (!usermeta.metricAxisCount) {
       usermeta.metricAxisCount = 0;
     }
-    addDualMetricAxisConfig(axis, usermeta.metricAxisCount === 0, scaleName, colorScheme, usermeta.interactiveMarks ?? []);
+    addDualMetricAxisConfig(axis, usermeta.metricAxisCount === 0, scaleName, usermeta.interactiveMarks ?? [], colorScheme);
     if (incrementMetricAxisCount) {
       usermeta.metricAxisCount++;
     }
