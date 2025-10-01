@@ -228,12 +228,12 @@ export const getOpacityEncoding = (
       signal: `${highlightSignalName} === datum.value ? 1 : ${FADE_FACTOR}`,
     });
   }
-  userMeta.interactiveMarks?.forEach((markName) => {
+  for (const markName of userMeta.interactiveMarks || []) {
     rules.push({
       test: `isValid(${markName}_${HOVERED_ITEM})`,
       signal: `${markName}_${HOVERED_ITEM}.${SERIES_ID} === datum.value ? 1 : ${FADE_FACTOR}`,
     });
-  });
+  }
 
   if (rules.length) {
     return [...rules, DEFAULT_OPACITY_RULE];
