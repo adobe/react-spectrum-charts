@@ -149,6 +149,7 @@ const defaultSpec = initializeSpec({
     },
   ],
   signals: [],
+  usermeta: {interactiveMarks: []}
 });
 
 const defaultLinearScale = {
@@ -214,11 +215,11 @@ describe('areaSpecBuilder', () => {
       expect(signals).toHaveLength(defaultSignals.length + 2);
       expect(signals[0]).toHaveProperty('name', HIGHLIGHTED_ITEM);
       expect(signals[2]).toHaveProperty('name', HIGHLIGHTED_SERIES);
-      expect(signals[2].on).toHaveLength(2);
       expect(signals[3]).toHaveProperty('name', SELECTED_ITEM);
       expect(signals[4]).toHaveProperty('name', SELECTED_SERIES);
       expect(signals[5]).toHaveProperty('name', SELECTED_GROUP);
       expect(signals[6]).toHaveProperty('name', `${defaultAreaOptions.name}_${HOVERED_ITEM}`);
+      expect(signals[6].on).toHaveLength(2);
       expect(signals[7]).toHaveProperty('name', `${defaultAreaOptions.name}_controlledHoveredId`);
     });
 
@@ -228,9 +229,10 @@ describe('areaSpecBuilder', () => {
         chartTooltips: [{ excludeDataKeys: ['excludeFromTooltip'] }],
       });
       expect(signals).toHaveLength(defaultSignals.length + 2);
-      expect(signals[2]).toHaveProperty('name', HIGHLIGHTED_SERIES);
-      expect(signals[2].on?.[0]).toHaveProperty('events', '@area0:mouseover');
-      expect(signals[2].on?.[0]).toHaveProperty('update', '(datum.excludeFromTooltip) ? null : datum.rscSeriesId');
+      const hoverSignal = signals.find((signal) => signal.name === `${defaultAreaOptions.name}_${HOVERED_ITEM}`);
+      expect(hoverSignal).toBeDefined();
+      expect(hoverSignal?.on?.[0]).toHaveProperty('events', '@area0:mouseover');
+      expect(hoverSignal?.on?.[0]).toHaveProperty('update', '(datum.excludeFromTooltip) ? null : datum');
     });
 
     test('should add on event to HIGHLIGHTED_ITEM signal if highlightedItem is defined and there is a tooltip on the area', () => {

@@ -61,6 +61,7 @@ export const DEFAULT_LEGEND_LABEL_LIMIT = 184;
 // vega data table name
 export const TABLE = 'table';
 export const FILTERED_TABLE = 'filteredTable';
+export const CONTROLLED_HIGHLIGHTED_TABLE = 'controlledHighlightedTable';
 
 // vega data field names
 export const GROUP_DATA = 'rscGroupData';
@@ -73,6 +74,7 @@ export const TRENDLINE_VALUE = 'rscTrendlineValue';
 
 // signal names
 export const HOVERED_ITEM = 'hoveredItem'; // hovered item suffix
+export const HOVERED_SERIES = 'hoveredSeries'; // hovered item suffix
 export const HIGHLIGHTED_ITEM = 'highlightedItem'; // data point
 export const HIGHLIGHTED_GROUP = 'highlightedGroup'; // data point
 export const HIGHLIGHTED_SERIES = 'highlightedSeries'; // series

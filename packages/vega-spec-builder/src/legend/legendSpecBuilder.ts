@@ -16,9 +16,11 @@ import {
   COLOR_SCALE,
   DEFAULT_COLOR_SCHEME,
   GROUP_ID,
+  HOVERED_SERIES,
   LINEAR_COLOR_SCALE,
   LINE_TYPE_SCALE,
   OPACITY_SCALE,
+  SERIES_ID,
   SYMBOL_SHAPE_SCALE,
   SYMBOL_SIZE_SCALE,
 } from '@spectrum-charts/constants';
@@ -26,18 +28,20 @@ import { getColorValue } from '@spectrum-charts/themes';
 
 import { getTableData } from '../data/dataUtils';
 import { addFieldToFacetScaleDomain } from '../scale/scaleSpecBuilder';
-import { addHighlighSignalLegendHoverEvents, getGenericValueSignal } from '../signal/signalSpecBuilder';
+import { addHighlightSignalLegendHoverEvents, getGenericValueSignal } from '../signal/signalSpecBuilder';
 import { getLineWidthPixelsFromLineWidth, getPathFromSymbolShape, getStrokeDashFromLineType } from '../specUtils';
 import {
   ColorFacet,
   ColorScheme,
   FacetRef,
+  HighlightedItem,
   LegendOptions,
   LegendSpecOptions,
   LineTypeFacet,
   LineWidthFacet,
   ScSpec,
   SymbolShapeFacet,
+  UserMeta,
 } from '../types';
 import { getFacets, getFacetsFromKeys } from './legendFacetUtils';
 import { setHoverOpacityForMarks } from './legendHighlightUtils';
@@ -50,6 +54,7 @@ export const addLegend = produce<
       colorScheme?: ColorScheme;
       index?: number;
       hiddenSeries?: string[];
+      highlightedItem?: HighlightedItem;
       highlightedSeries?: string | number;
     }
   ]
@@ -63,14 +68,12 @@ export const addLegend = produce<
       hiddenEntries = [],
       hiddenSeries = [],
       highlight = false,
-      highlightedSeries,
       index = 0,
       isToggleable = false,
       lineType,
       lineWidth,
       position = 'bottom',
       symbolShape,
-      title,
       colorScheme = DEFAULT_COLOR_SCHEME,
       ...options
     }
@@ -93,7 +96,6 @@ export const addLegend = produce<
       hiddenEntries,
       hiddenSeries,
       highlight,
-      highlightedSeries,
       index,
       isToggleable,
       lineType: formattedLineType,
@@ -101,7 +103,6 @@ export const addLegend = produce<
       name,
       position,
       symbolShape: formattedSymbolShape,
-      title,
       colorScheme,
       ...options,
     };
@@ -134,7 +135,7 @@ export const addLegend = produce<
       spec.marks = addMarks(spec.marks ?? [], legendOptions);
 
       // add the legend
-      legends.push(getCategoricalLegend(ordinalFacets, legendOptions));
+      legends.push(getCategoricalLegend(ordinalFacets, legendOptions, spec.usermeta));
     }
 
     // continuous legends cannot be combined with any other legends
@@ -202,14 +203,14 @@ export const formatFacetRefsWithPresets = (
  * @param options
  * @returns
  */
-const getCategoricalLegend = (facets: Facet[], options: LegendSpecOptions): Legend => {
+const getCategoricalLegend = (facets: Facet[], options: LegendSpecOptions, userMeta: UserMeta): Legend => {
   const { name, position, title, labelLimit, titleLimit } = options;
   const legend: Legend = {
     fill: `${name}Entries`,
     direction: ['top', 'bottom'].includes(position) ? 'horizontal' : 'vertical',
     orient: position,
     title,
-    encode: getEncodings(facets, options),
+    encode: getEncodings(facets, options, userMeta),
     columns: getColumns(position, labelLimit),
     labelLimit,
   };
@@ -265,7 +266,7 @@ const addScales = produce<Scale[], [LegendSpecOptions]>((scales, { color, lineTy
 
 const addMarks = produce<Mark[], [LegendSpecOptions]>((marks, { highlight, keys, name }) => {
   if (highlight) {
-    setHoverOpacityForMarks(marks, keys, name);
+    setHoverOpacityForMarks(name, marks, keys);
   }
 });
 
@@ -306,13 +307,21 @@ export const addData = produce<Data[], [LegendSpecOptions & { facets: string[] }
         expr: keys.map((key) => `datum.${key}`).join(' + " | " + '),
       });
     }
+
+    // add legend hovered series to the trendline and metric range highlighted data
+    const highlightedDataSets = data.filter(data => /.*(Trendline|MetricRange).*highlightedData$/.test(data.name));
+    highlightedDataSets.forEach(data => {
+      if (data.transform && data.transform[0] && 'expr' in data.transform[0]) {
+        data.transform[0].expr += ` || datum.${SERIES_ID} === ${name}_${HOVERED_SERIES}`
+      }
+    })
   }
 );
 
 export const addSignals = produce<Signal[], [LegendSpecOptions]>(
   (signals, { hiddenSeries, highlight, isToggleable, keys, legendLabels, name }) => {
     if (highlight) {
-      addHighlighSignalLegendHoverEvents(signals, name, Boolean(isToggleable || hiddenSeries), keys);
+      addHighlightSignalLegendHoverEvents(signals, name, Boolean(isToggleable || hiddenSeries), keys);
     }
 
     if (legendLabels) {

@@ -361,7 +361,9 @@ describe('Chart spec builder', () => {
 
   describe('addData()', () => {
     test('should do nothing if there are not any facets and there is no filteredTable data', () => {
-      expect(addData(defaultData, { facets: [] })[0].transform).toHaveLength(1);
+      const data = addData(defaultData, { facets: [] });
+      expect(data[0].transform).toHaveLength(1);
+      expect(data).toHaveLength(2);
     });
 
     test('should add the hiddenSeries transform to the filteredTable if filteredTable data exists', () => {
@@ -416,17 +418,6 @@ describe('Chart spec builder', () => {
       const uncontrolledHighlightSignal = {
         name: HIGHLIGHTED_SERIES,
         value: null,
-        on: [
-          {
-            events: '@legend0_legendEntry:mouseover',
-            update:
-              'indexof(hiddenSeries, domain("legend0Entries")[datum.index]) === -1 ? domain("legend0Entries")[datum.index] : null',
-          },
-          {
-            events: '@legend0_legendEntry:mouseout',
-            update: 'null',
-          },
-        ],
       };
 
       expect(spec.signals?.find((signal) => signal.name === 'highlightedSeries')).toEqual(uncontrolledHighlightSignal);

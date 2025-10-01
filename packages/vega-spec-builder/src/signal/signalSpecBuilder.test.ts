@@ -11,11 +11,10 @@
  */
 import { Signal } from 'vega';
 
-import { FILTERED_TABLE, HIGHLIGHTED_SERIES, HOVERED_ITEM } from '@spectrum-charts/constants';
+import { FILTERED_TABLE, HOVERED_ITEM } from '@spectrum-charts/constants';
 
-import { defaultHighlightedItemSignal, defaultSignals } from '../specTestUtils';
+import { defaultSignals } from '../specTestUtils';
 import {
-  addHighlightedSeriesSignalEvents,
   addHoveredItemSignal,
   getHighlightSignalUpdateExpression
 } from './signalSpecBuilder';
@@ -24,41 +23,6 @@ describe('signalSpecBuilder', () => {
   let signals: Signal[];
   beforeEach(() => {
     signals = JSON.parse(JSON.stringify(defaultSignals));
-  });
-
-  describe('addHighlightedSeriesSignalEvents()', () => {
-    test('should add on events', () => {
-      addHighlightedSeriesSignalEvents(signals, 'line0');
-      expect(signals).toHaveLength(defaultSignals.length);
-      expect(signals[0].on).toBeUndefined();
-      expect(signals[1].on).toBeUndefined();
-      expect(signals[2]).toHaveProperty('name', HIGHLIGHTED_SERIES);
-      expect(signals[2].on).toHaveLength(2);
-      expect(signals[2]?.on?.[0]).toHaveProperty('events', '@line0:mouseover');
-      expect(signals[2]?.on?.[1]).toHaveProperty('events', '@line0:mouseout');
-      expect(signals[3].on).toBeUndefined();
-      expect(signals[4].on).toBeUndefined();
-    });
-    test('should not do anything if the highlight signal is not found', () => {
-      const signals = JSON.parse(JSON.stringify([defaultHighlightedItemSignal]));
-      const signalsCopy = JSON.parse(JSON.stringify(signals));
-      addHighlightedSeriesSignalEvents(signals, 'line0');
-      expect(signals).toEqual(signalsCopy);
-    });
-    test('should include update condition if excludeDataKey is provided', () => {
-      addHighlightedSeriesSignalEvents(signals, 'bar0', 1, ['excludeFromTooltip']);
-      expect(signals).toHaveLength(defaultSignals.length);
-      expect(signals[0].on).toBeUndefined();
-      expect(signals[1].on).toBeUndefined();
-      expect(signals[2]).toHaveProperty('name', HIGHLIGHTED_SERIES);
-      expect(signals[2].on).toHaveLength(2);
-      expect(signals[2]?.on?.[0]).toHaveProperty('events', '@bar0:mouseover');
-      expect(signals[2]?.on?.[0]).toHaveProperty('update', '(datum.excludeFromTooltip) ? null : datum.rscSeriesId');
-      expect(signals[2]?.on?.[1]).toHaveProperty('events', '@bar0:mouseout');
-      expect(signals[2]?.on?.[1]).toHaveProperty('update', 'null');
-      expect(signals[3].on).toBeUndefined();
-      expect(signals[4].on).toBeUndefined();
-    });
   });
 
   describe('getHighlightSignalUpdateExpression()', () => {

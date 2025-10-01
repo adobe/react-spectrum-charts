@@ -49,7 +49,7 @@ import {
   getGenericValueSignal,
   getLastRscSeriesIdSignal
 } from '../signal/signalSpecBuilder';
-import { getFacetsFromOptions } from '../specUtils';
+import { addUserMetaInteractiveMark, getFacetsFromOptions } from '../specUtils';
 import { addTrendlineData, getTrendlineMarks, setTrendlineSignals } from '../trendline';
 import { BarOptions, BarSpecOptions, ColorScheme, HighlightedItem, ScSpec } from '../types';
 import {
@@ -131,9 +131,11 @@ export const addBar = produce<
     };
 
     spec.usermeta = {
-      interactiveMarks: [...(spec.usermeta.interactiveMarks ?? []), (barOptions.interactiveMarkName ?? barName)],
+      ...spec.usermeta,
       chartOrientation: barOptions.orientation,
     };
+
+    spec.usermeta = addUserMetaInteractiveMark(spec.usermeta, barOptions.interactiveMarkName);
 
     spec.data = addData(spec.data ?? [], barOptions);
     spec.signals = addSignals(spec.signals ?? [], barOptions);

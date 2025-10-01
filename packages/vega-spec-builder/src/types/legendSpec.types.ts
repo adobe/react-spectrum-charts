@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { ColorScheme } from './chartSpec.types';
+import { ColorScheme, HighlightedItem } from './chartSpec.types';
 import { ChartPopoverOptions } from './dialogs/chartPopoverSpec.types';
 import {
   ColorFacet,
@@ -82,6 +82,7 @@ export interface LegendSpecOptions extends PartiallyRequired<LegendOptions, Lege
   color?: FacetRef<string>;
   colorScheme: ColorScheme;
   hiddenSeries: string[];
+  highlightedItem?: HighlightedItem;
   highlightedSeries?: string | number;
   index: number;
   lineType?: FacetRef<number[]>;

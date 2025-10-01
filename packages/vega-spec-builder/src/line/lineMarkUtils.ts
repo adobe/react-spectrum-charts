@@ -12,13 +12,14 @@
 import { LineMark, Mark, NumericValueRef, ProductionRule, RuleMark } from 'vega';
 
 import {
+  CONTROLLED_HIGHLIGHTED_TABLE,
   DEFAULT_INTERACTION_MODE,
   DEFAULT_OPACITY_RULE,
-  HIGHLIGHTED_SERIES,
   FADE_FACTOR,
+  HIGHLIGHTED_SERIES,
   HOVERED_ITEM,
   SELECTED_SERIES,
-  SERIES_ID
+  SERIES_ID,
 } from '@spectrum-charts/constants';
 
 import { getPopovers } from '../chartPopover/chartPopoverUtils';
@@ -104,24 +105,29 @@ export const getLineOpacity = ({
   if ((!interactiveMarkName || displayOnHover) && highlightedItem === undefined) return [DEFAULT_OPACITY_RULE];
   const strokeOpacityRules: ProductionRule<NumericValueRef> = [];
 
-  if (isHighlightedByGroup) {
-    strokeOpacityRules.push({
-      test: `length(data('${interactiveMarkName}_highlightedData'))`,
-      signal: `indexof(pluck(data('${interactiveMarkName}_highlightedData'), '${SERIES_ID}'), datum.${SERIES_ID}) !== -1 ? 1 : ${FADE_FACTOR}`,
-    })
-  } else {
-    strokeOpacityRules.push({
-      test: `isValid(${interactiveMarkName}_${HOVERED_ITEM})`,
-      signal: `${interactiveMarkName}_${HOVERED_ITEM}.${SERIES_ID} === datum.${SERIES_ID} ? 1 : ${FADE_FACTOR}`,
-    });
+  if (interactiveMarkName) {
+    if (isHighlightedByGroup) {
+      strokeOpacityRules.push({
+        test: `length(data('${interactiveMarkName}_highlightedData'))`,
+        signal: `indexof(pluck(data('${interactiveMarkName}_highlightedData'), '${SERIES_ID}'), datum.${SERIES_ID}) !== -1 ? 1 : ${FADE_FACTOR}`,
+      })
+    } else {
+      strokeOpacityRules.push({
+        test: `isValid(${interactiveMarkName}_${HOVERED_ITEM})`,
+        signal: `${interactiveMarkName}_${HOVERED_ITEM}.${SERIES_ID} === datum.${SERIES_ID} ? 1 : ${FADE_FACTOR}`,
+      });
+    }
   }
 
-  // add a rule that will lower the opacity of the line if there is a hovered series, but this line is not the one hovered
   strokeOpacityRules.push(
     {
-      test: `isValid(${HIGHLIGHTED_SERIES}) && ${HIGHLIGHTED_SERIES} !== datum.${SERIES_ID}`,
-      value: FADE_FACTOR,
+      test: `length(data('${CONTROLLED_HIGHLIGHTED_TABLE}'))`,
+      signal: `indexof(pluck(data('${CONTROLLED_HIGHLIGHTED_TABLE}'), '${SERIES_ID}'), datum.${SERIES_ID}) > -1 ? 1 : ${FADE_FACTOR}`,
     },
+    {
+      test: `isValid(${HIGHLIGHTED_SERIES})`,
+      signal: `${HIGHLIGHTED_SERIES} === datum.${SERIES_ID} ? 1 : ${FADE_FACTOR}`,
+    }
   );
 
   if (popoverMarkName) {
@@ -138,7 +144,7 @@ export const getLineOpacity = ({
       value: FADE_FACTOR,
     });
   }
-  
+
   // This allows us to only show the metric range when hovering over the parent line component.
   strokeOpacityRules.push(DEFAULT_OPACITY_RULE);
 

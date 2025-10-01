@@ -124,7 +124,7 @@ const defaultMarkWithTooltip: Mark = {
           signal: `bar0_${HOVERED_ITEM}.${MARK_ID} === datum.${MARK_ID} ? 1 : ${FADE_FACTOR}`,
         },
         {
-          test: `isArray(${HIGHLIGHTED_ITEM}) && length(${HIGHLIGHTED_ITEM}) > 0 && indexof(${HIGHLIGHTED_ITEM}, datum.rscMarkId) === -1`,
+          test: `isArray(${HIGHLIGHTED_ITEM}) && length(${HIGHLIGHTED_ITEM}) > 0 && indexof(${HIGHLIGHTED_ITEM}, datum.${MARK_ID}) === -1`,
           value: FADE_FACTOR,
         },
         DEFAULT_OPACITY_RULE,

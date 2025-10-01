@@ -11,26 +11,27 @@
  */
 import { FilterTransform } from 'vega';
 
-import { FILTERED_TABLE, GROUP_ID, MARK_ID, SELECTED_ITEM } from '@spectrum-charts/constants';
+import { GROUP_ID, SELECTED_ITEM } from '@spectrum-charts/constants';
 
 import { getLineHighlightedData } from './lineDataUtils';
+import { defaultLineOptions } from './lineTestUtils';
 
 describe('getLineHighlightedData()', () => {
   test('should include select signal if hasPopover', () => {
     const expr = (
-      getLineHighlightedData('line0', MARK_ID, FILTERED_TABLE, true, false).transform?.[0] as FilterTransform
+      getLineHighlightedData({...defaultLineOptions, chartPopovers: [{}]}).transform?.[0] as FilterTransform
     ).expr;
     expect(expr.includes(SELECTED_ITEM)).toBeTruthy();
   });
   test('should not include select signal if does not hasPopover', () => {
     const expr = (
-      getLineHighlightedData('line0', MARK_ID, FILTERED_TABLE, false, false).transform?.[0] as FilterTransform
+      getLineHighlightedData(defaultLineOptions).transform?.[0] as FilterTransform
     ).expr;
     expect(expr.includes(SELECTED_ITEM)).toBeFalsy();
   });
   test('should use groupId if hadGroupId', () => {
     const expr = (
-      getLineHighlightedData('line0', MARK_ID, FILTERED_TABLE, true, true).transform?.[0] as FilterTransform
+      getLineHighlightedData({...defaultLineOptions, chartPopovers: [{}], chartTooltips: [{highlightBy: 'dimension'}]}).transform?.[0] as FilterTransform
     ).expr;
     expect(expr.includes(GROUP_ID)).toBeTruthy();
   });

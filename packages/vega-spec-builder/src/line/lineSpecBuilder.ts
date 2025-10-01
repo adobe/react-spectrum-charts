@@ -27,16 +27,15 @@ import { toCamelCase } from '@spectrum-charts/utils';
 import { addPopoverData } from '../chartPopover/chartPopoverUtils';
 import { addTooltipData, addTooltipSignals, isHighlightedByGroup } from '../chartTooltip/chartTooltipUtils';
 import { addTimeTransform, getFilteredTooltipData, getTableData } from '../data/dataUtils';
-import { getHoverMarkNames, getInteractiveMarkName, hasPopover, isInteractive } from '../marks/markUtils';
+import { getHoverMarkNames, getInteractiveMarkName, isInteractive } from '../marks/markUtils';
 import {
   getMetricRangeData,
   getMetricRangeGroupMarks,
-  getMetricRangeSignals,
-  getMetricRanges,
+  getMetricRanges
 } from '../metricRange/metricRangeUtils';
 import { addContinuousDimensionScale, addFieldToFacetScaleDomain, addMetricScale } from '../scale/scaleSpecBuilder';
-import { addHighlightedSeriesSignalEvents, addHoveredItemSignal } from '../signal/signalSpecBuilder';
-import { getFacetsFromOptions } from '../specUtils';
+import { addHoveredItemSignal } from '../signal/signalSpecBuilder';
+import { addUserMetaInteractiveMark, getFacetsFromOptions } from '../specUtils';
 import { addTrendlineData, getTrendlineMarks, getTrendlineScales, setTrendlineSignals } from '../trendline';
 import { ColorScheme, HighlightedItem, LineOptions, LineSpecOptions, ScSpec } from '../types';
 import { getLineHighlightedData, getLineStaticPointData } from './lineDataUtils';
@@ -103,6 +102,7 @@ export const addLine = produce<
     };
     lineOptions.isHighlightedByGroup = isHighlightedByGroup(lineOptions);
 
+    spec.usermeta = addUserMetaInteractiveMark(spec.usermeta, lineOptions.interactiveMarkName);
     spec.data = addData(spec.data ?? [], lineOptions);
     spec.signals = addSignals(spec.signals ?? [], lineOptions);
     spec.scales = setScales(spec.scales ?? [], lineOptions);
@@ -121,7 +121,7 @@ export const addData = produce<Data[], [LineSpecOptions]>((data, options) => {
   }
   if (isInteractive(options) || highlightedItem !== undefined) {
     data.push(
-      getLineHighlightedData(name, options.idKey, FILTERED_TABLE, hasPopover(options), isHighlightedByGroup(options))
+      getLineHighlightedData(options)
     );
     data.push(getFilteredTooltipData(chartTooltips));
   }
@@ -136,10 +136,8 @@ export const addData = produce<Data[], [LineSpecOptions]>((data, options) => {
 export const addSignals = produce<Signal[], [LineSpecOptions]>((signals, options) => {
   const { name } = options;
   setTrendlineSignals(signals, options);
-  signals.push(...getMetricRangeSignals(options));
 
   if (!isInteractive(options)) return;
-  addHighlightedSeriesSignalEvents(signals, `${name}_voronoi`, 2);
   // we don't need to include the excludeDataKeys here because they will be excluded from the points for voronoi
   addHoveredItemSignal(signals, name, `${name}_voronoi`, 2);
   addHoverSignals(signals, options);
@@ -209,8 +207,6 @@ const addHoverSignals = (signals: Signal[], options: LineSpecOptions) => {
   const { interactionMode, name: lineName } = options;
   if (interactionMode !== INTERACTION_MODE.ITEM) return;
   getHoverMarkNames(lineName).forEach((hoverMarkName) => {
-    console.log('hoverMarkName', hoverMarkName);
     addHoveredItemSignal(signals, lineName, hoverMarkName);
-    addHighlightedSeriesSignalEvents(signals, hoverMarkName, 1);
   });
 };

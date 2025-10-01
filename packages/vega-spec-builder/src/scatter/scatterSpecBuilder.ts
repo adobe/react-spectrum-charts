@@ -37,6 +37,7 @@ import { addHoveredItemSignal } from '../signal/signalSpecBuilder';
 import { addTrendlineData, getTrendlineScales, setTrendlineSignals } from '../trendline';
 import { ColorScheme, HighlightedItem, ScSpec, ScatterOptions, ScatterSpecOptions } from '../types';
 import { addScatterMarks } from './scatterMarkUtils';
+import { addUserMetaInteractiveMark } from '../specUtils';
 
 /**
  * Adds all the necessary parts of a scatter to the spec
@@ -96,6 +97,7 @@ export const addScatter = produce<
       ...options,
     };
 
+    spec.usermeta = addUserMetaInteractiveMark(spec.usermeta, scatterOptions.interactiveMarkName);
     spec.data = addData(spec.data ?? [], scatterOptions);
     spec.signals = addSignals(spec.signals ?? [], scatterOptions);
     spec.scales = setScales(spec.scales ?? [], scatterOptions);

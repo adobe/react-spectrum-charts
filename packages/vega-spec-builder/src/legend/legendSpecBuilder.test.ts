@@ -18,9 +18,9 @@ import {
   DEFAULT_COLOR_SCHEME,
   DEFAULT_SECONDARY_COLOR,
   GROUP_ID,
-  HIGHLIGHTED_SERIES,
+  HOVERED_SERIES,
   LINEAR_COLOR_SCALE,
-  TABLE,
+  TABLE
 } from '@spectrum-charts/constants';
 
 import {
@@ -127,18 +127,6 @@ const defaultLegendEntriesScale: Scale = {
   domain: { data: 'legend0Aggregate', field: 'legend0Entries' },
 };
 
-const defaultHighlightSeriesSignal = {
-  ...defaultHighlightedSeriesSignal,
-  on: [
-    {
-      events: '@legend0_legendEntry:mouseover',
-      update:
-        'indexof(hiddenSeries, domain("legend0Entries")[datum.index]) === -1 ? domain("legend0Entries")[datum.index] : null',
-    },
-    { events: '@legend0_legendEntry:mouseout', update: 'null' },
-  ],
-};
-
 describe('addLegend()', () => {
   describe('no initial legend', () => {
     test('no options, should setup default legend', () => {
@@ -167,10 +155,21 @@ describe('addLegend()', () => {
         signals: [
           defaultHighlightedItemSignal,
           defaultHighlightedGroupSignal,
-          defaultHighlightSeriesSignal,
+          defaultHighlightedSeriesSignal,
           defaultSelectedItemSignal,
           defaultSelectedSeriesSignal,
           defaultSelectedGroupSignal,
+          {
+            name: `legend0_${HOVERED_SERIES}`,
+            value: null,
+            on: [
+              {
+                events: '@legend0_legendEntry:mouseover',
+                update: `indexof(hiddenSeries, domain("legend0Entries")[datum.index]) === -1 ? domain("legend0Entries")[datum.index] : null`,
+              },
+              { events: '@legend0_legendEntry:mouseout', update: 'null' },
+            ],
+          },
         ],
         legends: [{ ...defaultLegend, encode: defaultHighlightLegendEncoding }],
       });
@@ -271,7 +270,14 @@ describe('addLegend()', () => {
       });
       const legend = legendSpec.legends?.[0];
       expect(legend?.labelLimit).toBe(300);
-      expect(legendSpec.legends).toEqual([{ ...defaultLegend, labelLimit: 300, encode: defaultTooltipLegendEncoding, columns: { signal: 'max(1, floor(width / 336))' } }]);
+      expect(legendSpec.legends).toEqual([
+        {
+          ...defaultLegend,
+          labelLimit: 300,
+          encode: defaultTooltipLegendEncoding,
+          columns: { signal: 'max(1, floor(width / 336))' },
+        },
+      ]);
       expect(legendSpec.data).toEqual([defaultLegendAggregateData]);
       expect(legendSpec.scales).toEqual([...(defaultSpec.scales || []), defaultLegendEntriesScale]);
     });
@@ -394,11 +400,11 @@ describe('formatFacetRefsWithPresets()', () => {
 
 describe('addSignals()', () => {
   test('should add highlightedSeries signal events if highlight is true', () => {
-    const highlightSignal = addSignals(defaultSignals, { ...defaultLegendOptions, highlight: true }).find(
-      (signal) => signal.name === HIGHLIGHTED_SERIES
+    const legendHoverSignal = addSignals(defaultSignals, { ...defaultLegendOptions, highlight: true }).find(
+      (signal) => signal.name === `legend0_${HOVERED_SERIES}`
     );
-    expect(highlightSignal?.on).toHaveLength(2);
-    expect(highlightSignal?.on?.[0]).toHaveProperty('events', '@legend0_legendEntry:mouseover');
+    expect(legendHoverSignal?.on).toHaveLength(2);
+    expect(legendHoverSignal?.on?.[0]).toHaveProperty('events', '@legend0_legendEntry:mouseover');
   });
   test('should add legendLabels signal if legendLabels are defined', () => {
     expect(

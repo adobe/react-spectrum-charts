@@ -9,6 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { produce } from 'immer';
 import { Config, Data, Scale, ScaleType, Spec, mergeConfig } from 'vega';
 
 import {
@@ -23,7 +24,7 @@ import {
   SENTIMENT_NEGATIVE_PATH,
   SENTIMENT_NEUTRAL_PATH,
   SENTIMENT_POSITIVE_PATH,
-  TABLE,
+  TABLE
 } from '@spectrum-charts/constants';
 import { getColorValue, getSpectrumVegaConfig } from '@spectrum-charts/themes';
 
@@ -42,6 +43,7 @@ import {
   ScSpec,
   SymbolSize,
   SymbolSizeFacet,
+  UserMeta,
 } from './types';
 
 /**
@@ -303,3 +305,13 @@ export function getChartConfig(config: Config | undefined, colorScheme: ColorSch
   }
   return defaultConfig;
 }
+
+/**
+ * Adds an interactive mark to the user meta
+ * @param usermeta
+ * @param interactiveMarkName
+ * @returns
+ */
+export const addUserMetaInteractiveMark = produce<UserMeta, [string?]>((usermeta, interactiveMarkName) => {
+  usermeta.interactiveMarks = [...(usermeta.interactiveMarks ?? []), ...(interactiveMarkName ? [interactiveMarkName] : [])];
+});

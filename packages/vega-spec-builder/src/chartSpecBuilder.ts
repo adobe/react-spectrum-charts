@@ -14,6 +14,7 @@ import { Data, LinearScale, OrdinalScale, PointScale, Scale, Signal } from 'vega
 
 import {
   BACKGROUND_COLOR,
+  CONTROLLED_HIGHLIGHTED_TABLE,
   DEFAULT_BACKGROUND_COLOR,
   DEFAULT_COLOR_SCHEME,
   DEFAULT_LINE_TYPES,
@@ -173,6 +174,7 @@ export function buildSpec({
       ...specOptions,
       index,
       hiddenSeries,
+      highlightedItem,
       highlightedSeries,
     });
   }, spec);
@@ -195,7 +197,7 @@ export function buildSpec({
 
   // add signals and update marks for controlled highlighting if there isn't a legend with highlight enabled
   if (highlightedSeries) {
-    setHoverOpacityForMarks(spec.marks ?? []);
+    setHoverOpacityForMarks('', spec.marks ?? [], undefined, true);
   }
 
   // clear out all scales that don't have any fields on the domain
@@ -396,6 +398,7 @@ function getPathsFromSymbolShapes(symbolShapes: ChartSymbolShape[]) {
  * Adds a formula transform to the TABLE data that combines all the facets into a single key
  */
 export const addData = produce<Data[], [{ facets: string[] }]>((data, { facets }) => {
+  data.splice(2,0,{ name: CONTROLLED_HIGHLIGHTED_TABLE, source: FILTERED_TABLE, transform: [{ type: 'filter', expr: `isArray(${HIGHLIGHTED_ITEM}) && indexof(${HIGHLIGHTED_ITEM}, datum.${MARK_ID}) > -1` }] })
   if (facets.length === 0) return;
   data[0]?.transform?.push(...getSeriesIdTransform(facets));
 

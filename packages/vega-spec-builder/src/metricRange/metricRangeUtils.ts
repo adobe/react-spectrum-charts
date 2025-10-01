@@ -9,12 +9,14 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { AreaMark, GroupMark, LineMark, Signal, SourceData } from 'vega';
+import { AreaMark, GroupMark, LineMark, SourceData } from 'vega';
 
 import {
+  CONTROLLED_HIGHLIGHTED_TABLE,
   DEFAULT_METRIC,
   FILTERED_TABLE,
   HIGHLIGHTED_SERIES,
+  HOVERED_ITEM,
   SELECTED_SERIES,
   SERIES_ID,
 } from '@spectrum-charts/constants';
@@ -22,7 +24,6 @@ import {
 import { AreaMarkOptions, getAreaMark } from '../area/areaUtils';
 import { getLineMark } from '../line/lineMarkUtils';
 import { LineMarkOptions } from '../line/lineUtils';
-import { addHighlightedSeriesSignalEvents } from '../signal/signalSpecBuilder';
 import { getFacetsFromOptions } from '../specUtils';
 import { LineSpecOptions, MetricRangeOptions, MetricRangeSpecOptions } from '../types';
 
@@ -112,6 +113,7 @@ export const getMetricRangeMark = (
     isMetricRange: true,
     parentName: lineMarkOptions.name,
     displayOnHover: metricRangeOptions.displayOnHover,
+    interactiveMarkName: lineMarkOptions.interactiveMarkName,
   };
   const lineOptions: LineMarkOptions = {
     ...lineMarkOptions,
@@ -142,13 +144,17 @@ export const getMetricRangeData = (markOptions: LineSpecOptions): SourceData[] =
     const { displayOnHover, name } = metricRangeOptions;
     // if displayOnHover is true, add a data source for the highlighted data
     if (displayOnHover) {
+      const hoveredItem = `isValid(${markOptions.interactiveMarkName}_${HOVERED_ITEM}) && ${markOptions.interactiveMarkName}_${HOVERED_ITEM}.${SERIES_ID} === datum.${SERIES_ID}`
+      const selectedSeries = `isValid(${SELECTED_SERIES}) && ${SELECTED_SERIES} === datum.${SERIES_ID}`
+      const controlledHighlightedItem = `indexof(pluck(data('${CONTROLLED_HIGHLIGHTED_TABLE}'),'${SERIES_ID}'), datum.${SERIES_ID}) > -1`
+      const controlledHighlightedSeries = `isValid(${HIGHLIGHTED_SERIES}) && ${HIGHLIGHTED_SERIES} === datum.${SERIES_ID}`;
       data.push({
         name: `${name}_highlightedData`,
         source: FILTERED_TABLE,
         transform: [
           {
             type: 'filter',
-            expr: `isValid(${HIGHLIGHTED_SERIES}) && ${HIGHLIGHTED_SERIES} === datum.${SERIES_ID} || isValid(${SELECTED_SERIES}) && ${SELECTED_SERIES} === datum.${SERIES_ID}`,
+            expr: [hoveredItem, selectedSeries, controlledHighlightedItem, controlledHighlightedSeries].join(' || '),
           },
         ],
       });
@@ -156,20 +162,4 @@ export const getMetricRangeData = (markOptions: LineSpecOptions): SourceData[] =
   }
 
   return data;
-};
-
-/**
- * gets the signals for the metricRange
- * @param markOptions
- */
-export const getMetricRangeSignals = (markOptions: LineSpecOptions): Signal[] => {
-  const signals: Signal[] = [];
-  const { name: markName } = markOptions;
-  const metricRanges = getMetricRanges(markOptions);
-
-  if (metricRanges.length) {
-    addHighlightedSeriesSignalEvents(signals, `${markName}_voronoi`, 2);
-  }
-
-  return signals;
 };

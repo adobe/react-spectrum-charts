@@ -12,11 +12,11 @@
 import { AreaMark, NumericValueRef, ProductionRule } from 'vega';
 
 import {
+  CONTROLLED_HIGHLIGHTED_TABLE,
   DEFAULT_OPACITY_RULE,
   DEFAULT_TRANSFORMED_TIME_DIMENSION,
-  HIGHLIGHTED_ITEM,
-  HIGHLIGHTED_SERIES,
   FADE_FACTOR,
+  HIGHLIGHTED_SERIES,
   HOVERED_ITEM,
   SELECTED_SERIES,
   SERIES_ID
@@ -44,6 +44,7 @@ export interface AreaMarkOptions {
   dimension: string;
   displayOnHover?: boolean;
   highlightedItem?: HighlightedItem;
+  interactiveMarkName?: string;
   isHighlightedByGroup?: boolean;
   isMetricRange?: boolean;
   isStacked: boolean;
@@ -102,18 +103,22 @@ export const getAreaMark = (
 };
 
 export function getAreaOpacity(areaOptions: AreaMarkOptions): ProductionRule<NumericValueRef> | undefined {
-  const { chartPopovers, displayOnHover, isHighlightedByGroup, isMetricRange, highlightedItem, name } = areaOptions;
+  const { chartPopovers, displayOnHover, interactiveMarkName, isHighlightedByGroup, isMetricRange, highlightedItem, name } = areaOptions;
   // if metric ranges only display when hovering, we don't need to include other hover rules for this specific area
   if (isMetricRange && displayOnHover) {
-    return [
-      { test: `isValid(${HIGHLIGHTED_SERIES}) && ${HIGHLIGHTED_SERIES} === datum.${SERIES_ID}`, value: 1 },
+    const rules: ProductionRule<NumericValueRef> = [
+      { test: `isValid(${interactiveMarkName}_${HOVERED_ITEM})`, signal: `${interactiveMarkName}_${HOVERED_ITEM}.${SERIES_ID} === datum.${SERIES_ID} ? 1 : ${FADE_FACTOR}`},
       {
-        test: `isArray(${HIGHLIGHTED_ITEM}) && indexof(pluck(data('${name}_highlightedData'), '${SERIES_ID}'), datum.${SERIES_ID}) > -1`,
-        value: 1
+        test: `length(data('${CONTROLLED_HIGHLIGHTED_TABLE}'))`,
+        signal: `indexof(pluck(data('${CONTROLLED_HIGHLIGHTED_TABLE}'), '${SERIES_ID}'), datum.${SERIES_ID}) > -1 ? 1 : ${FADE_FACTOR}`
       },
       { test: `isValid(${SELECTED_SERIES}) && ${SELECTED_SERIES} === datum.${SERIES_ID}`, value: 1 },
-      { value: 0 },
-    ];
+      { value: 1 },
+    ]
+    if (interactiveMarkName) {
+      rules.unshift({ test: `isValid(${interactiveMarkName}_${HOVERED_ITEM})`, signal: `${interactiveMarkName}_${HOVERED_ITEM}.${SERIES_ID} === datum.${SERIES_ID} ? 1 : ${FADE_FACTOR}`});
+    }
+    return rules;
   }
 
   if (!isInteractive(areaOptions) && !highlightedItem) {
@@ -132,16 +137,16 @@ export function getAreaOpacity(areaOptions: AreaMarkOptions): ProductionRule<Num
     return [
       ...opacityRules,
       {
-        test: `!isValid(${SELECTED_SERIES}) && isValid(${HIGHLIGHTED_SERIES}) && ${HIGHLIGHTED_SERIES} !== datum.${SERIES_ID}`,
-        value: FADE_FACTOR,
+        test: `isValid(${SELECTED_SERIES})`,
+        signal: `${SELECTED_SERIES} === datum.${SERIES_ID} ? 1 : ${FADE_FACTOR}`,
       },
       {
-        test: `!isValid(${SELECTED_SERIES}) && length(data('${name}_highlightedData')) > 0 && indexof(pluck(data('${name}_highlightedData'), '${SERIES_ID}'), datum.${SERIES_ID}) === -1`,
-        value: FADE_FACTOR,
+        test: `length(data('${name}_highlightedData'))`,
+        signal: `indexof(pluck(data('${name}_highlightedData'), '${SERIES_ID}'), datum.${SERIES_ID}) !== -1 ? 1 : ${FADE_FACTOR}`,
       },
       {
-        test: `isValid(${SELECTED_SERIES}) && ${SELECTED_SERIES} !== datum.${SERIES_ID}`,
-        value: FADE_FACTOR,
+        test: `isValid(${HIGHLIGHTED_SERIES})`,
+        signal: `${HIGHLIGHTED_SERIES} === datum.${SERIES_ID} ? 1 : ${FADE_FACTOR}`,
       },
       DEFAULT_OPACITY_RULE,
     ];
@@ -154,12 +159,12 @@ export function getAreaOpacity(areaOptions: AreaMarkOptions): ProductionRule<Num
       signal: `${name}_${HOVERED_ITEM}.${SERIES_ID} === datum.${SERIES_ID} ? 1 : ${FADE_FACTOR}`,
     },
     {
-      test: `isValid(${HIGHLIGHTED_SERIES}) && ${HIGHLIGHTED_SERIES} !== datum.${SERIES_ID}`,
-      value: FADE_FACTOR,
+      test: `length(data('${name}_highlightedData'))`,
+      signal: `indexof(pluck(data('${name}_highlightedData'), '${SERIES_ID}'), datum.${SERIES_ID}) !== -1 ? 1 : ${FADE_FACTOR}`,
     },
     {
-      test: `length(data('${name}_highlightedData')) > 0 && indexof(pluck(data('${name}_highlightedData'), '${SERIES_ID}'), datum.${SERIES_ID}) === -1`,
-      value: FADE_FACTOR,
+      test: `isValid(${HIGHLIGHTED_SERIES})`,
+      signal: `${HIGHLIGHTED_SERIES} === datum.${SERIES_ID} ? 1 : ${FADE_FACTOR}`,
     },
     DEFAULT_OPACITY_RULE,
   ];

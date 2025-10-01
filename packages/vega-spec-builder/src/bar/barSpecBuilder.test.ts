@@ -242,7 +242,7 @@ const defaultSpec: ScSpec = {
   ],
   usermeta: {
     chartOrientation: 'vertical',
-    interactiveMarks: ['bar0'],
+    interactiveMarks: [],
   },
 };
 
