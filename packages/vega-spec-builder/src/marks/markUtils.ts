@@ -435,17 +435,12 @@ export const getMarkOpacity = (
   if (hasPopover(options)) {
     return [
       {
-        test: `!isValid(${SELECTED_GROUP}) && ${SELECTED_ITEM} && ${SELECTED_ITEM} !== datum.${idKey}`,
-        value: FADE_FACTOR,
-      },
-      { test: `isValid(${SELECTED_ITEM}) && ${SELECTED_ITEM} === datum.${idKey}`, ...DEFAULT_OPACITY_RULE },
-      {
-        test: `isValid(${SELECTED_GROUP}) && ${SELECTED_GROUP} === datum.${markName}_selectedGroupId`,
-        value: 1,
+        test: `isValid(${SELECTED_ITEM})`,
+        signal: `${SELECTED_ITEM} === datum.${idKey} ? 1 : ${FADE_FACTOR}`,
       },
       {
-        test: `isValid(${SELECTED_GROUP}) && ${SELECTED_GROUP} !== datum.${markName}_selectedGroupId`,
-        value: FADE_FACTOR,
+        test: `isValid(${SELECTED_GROUP})`,
+        signal: `${SELECTED_GROUP} === datum.${markName}_selectedGroupId ? 1 : ${FADE_FACTOR}`,
       },
       ...rules,
     ];

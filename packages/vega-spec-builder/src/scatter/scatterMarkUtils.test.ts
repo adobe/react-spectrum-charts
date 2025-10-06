@@ -67,7 +67,7 @@ describe('getOpacity()', () => {
       'test',
       `isArray(${CONTROLLED_HIGHLIGHTED_ITEM}) && length(${CONTROLLED_HIGHLIGHTED_ITEM}) > 0 && indexof(${CONTROLLED_HIGHLIGHTED_ITEM}, datum.${MARK_ID}) === -1`
     );
-    expect(opacity[2]).toHaveProperty('test', `isValid(${SELECTED_ITEM}) && ${SELECTED_ITEM} !== datum.${MARK_ID}`);
+    expect(opacity[2]).toHaveProperty('test', `isValid(${SELECTED_ITEM})`);
   });
 });
 

@@ -132,8 +132,8 @@ export const getLineOpacity = ({
 
   if (popoverMarkName) {
     strokeOpacityRules.push({
-      test: `isValid(${SELECTED_SERIES}) && ${SELECTED_SERIES} !== datum.${SERIES_ID}`,
-      value: FADE_FACTOR,
+      test: `isValid(${SELECTED_SERIES})`,
+      signal: `${SELECTED_SERIES} === datum.${SERIES_ID} ? 1 : ${FADE_FACTOR}`,
     });
   }
 

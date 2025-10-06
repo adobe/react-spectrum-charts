@@ -117,8 +117,8 @@ export const getOpacity = (scatterOptions: ScatterSpecOptions): ({ test?: string
   addHoveredItemOpacityRules(rules, scatterOptions);
   if (hasPopover(scatterOptions)) {
     rules.push({
-      test: `isValid(${SELECTED_ITEM}) && ${SELECTED_ITEM} !== datum.${idKey}`,
-      value: FADE_FACTOR,
+      test: `isValid(${SELECTED_ITEM})`,
+      signal: `${SELECTED_ITEM} === datum.${idKey} ? 1 : ${FADE_FACTOR}`,
     });
   }
 

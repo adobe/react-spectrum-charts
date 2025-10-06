@@ -280,14 +280,11 @@ describe('getMarkOpacity()', () => {
   });
   test('Popover child, should return tests for hover and select and default to opacity', () => {
     const opacity = getMarkOpacity({ ...defaultBarOptions, chartPopovers: [{}] });
-    expect(opacity).toHaveLength(7);
-    expect(opacity[0].test).toContain(`${SELECTED_ITEM} !==`);
-    expect(opacity[1].test).toContain(`${SELECTED_ITEM} ===`);
+    expect(opacity).toHaveLength(5);
+    expect(opacity[0].test).toEqual(`isValid(${SELECTED_ITEM})`);
+    expect(opacity[1].test).toEqual(`isValid(${SELECTED_GROUP})`);
 
-    expect(opacity[2].test).toContain(`${SELECTED_GROUP} ===`);
-    expect(opacity[3].test).toContain(`${SELECTED_GROUP} !==`);
-
-    expect(opacity[4].test).toContain(HOVERED_ITEM);
+    expect(opacity[2].test).toContain(HOVERED_ITEM);
     expect(opacity.at(-1)).toStrictEqual(DEFAULT_OPACITY_RULE);
   });
 });
