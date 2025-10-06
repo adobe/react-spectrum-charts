@@ -15,7 +15,7 @@ import {
   FADE_FACTOR,
   GROUP_ID,
   HIGHLIGHTED_GROUP,
-  HIGHLIGHTED_SERIES,
+  CONTROLLED_HIGHLIGHTED_SERIES,
   HOVERED_SERIES,
   SERIES_ID
 } from '@spectrum-charts/constants';
@@ -54,7 +54,7 @@ export const setHoverOpacityForMarks = (legendName: string, marks: Mark[], keys?
 
 export const getHighlightOpacityRule = (legendName: string, controlled: boolean, keys?: string[] ): { test?: string } & NumericValueRef => {
   if (controlled) {
-    return {test: `isValid(${HIGHLIGHTED_SERIES})`, signal: `${HIGHLIGHTED_SERIES} === datum.${SERIES_ID} ? 1 : ${FADE_FACTOR}`}
+    return {test: `isValid(${CONTROLLED_HIGHLIGHTED_SERIES})`, signal: `${CONTROLLED_HIGHLIGHTED_SERIES} === datum.${SERIES_ID} ? 1 : ${FADE_FACTOR}`}
   }
   if (keys?.length) {
     return {test: `isValid(${HIGHLIGHTED_GROUP})`, signal: `${HIGHLIGHTED_GROUP} === datum.${legendName}_${GROUP_ID} ? 1 : ${FADE_FACTOR}`};

@@ -11,7 +11,7 @@
  */
 import { Data, NumericValueRef, Signal } from 'vega';
 
-import { DEFAULT_OPACITY_RULE, GROUP_ID, HIGHLIGHTED_GROUP, HIGHLIGHTED_ITEM, HOVERED_ITEM } from '@spectrum-charts/constants';
+import { DEFAULT_OPACITY_RULE, GROUP_ID, HIGHLIGHTED_GROUP, CONTROLLED_HIGHLIGHTED_ITEM, HOVERED_ITEM } from '@spectrum-charts/constants';
 
 import { defaultBarOptions } from '../bar/barTestUtils';
 import { defaultScatterOptions } from '../scatter/scatterTestUtils';
@@ -170,7 +170,7 @@ describe('addHoveredItemOpacityRules()', () => {
     addHoveredItemOpacityRules(opacityRules, getDefautltMarkOptions());
     expect(opacityRules).toHaveLength(3);
     expect(opacityRules[0].test).toContain(HOVERED_ITEM);
-    expect(opacityRules[1].test).toContain(`isArray(${HIGHLIGHTED_ITEM})`);
+    expect(opacityRules[1].test).toContain(`isArray(${CONTROLLED_HIGHLIGHTED_ITEM})`);
     expect(opacityRules[2]).toBe(DEFAULT_OPACITY_RULE);
 
     opacityRules = [DEFAULT_OPACITY_RULE, { test: `this is a test ${HOVERED_ITEM}` }];

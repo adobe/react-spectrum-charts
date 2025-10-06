@@ -34,7 +34,7 @@ import {
   FILTERED_TABLE,
   GROUP_ID,
   HIGHLIGHTED_GROUP,
-  HIGHLIGHTED_SERIES,
+  CONTROLLED_HIGHLIGHTED_SERIES,
   HOVERED_ITEM,
   HOVERED_SERIES,
   LINE_TYPE_SCALE,
@@ -199,7 +199,7 @@ export const getOpacityEncoding = (
   { highlight, highlightedItem, highlightedSeries, keys, chartPopovers, name: legendName }: LegendSpecOptions,
   userMeta: UserMeta
 ): ProductionRule<NumericValueRef> | undefined => {
-  const highlightSignalName = keys?.length ? HIGHLIGHTED_GROUP : HIGHLIGHTED_SERIES;
+  const highlightSignalName = keys?.length ? HIGHLIGHTED_GROUP : CONTROLLED_HIGHLIGHTED_SERIES;
   const selectedSignalName = keys?.length ? SELECTED_GROUP : SELECTED_SERIES;
 
   const rules: ProductionRule<NumericValueRef> = [];

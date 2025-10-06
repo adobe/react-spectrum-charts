@@ -20,7 +20,7 @@ import {
   DEFAULT_LINE_TYPES,
   DEFAULT_SECONDARY_COLOR,
   FILTERED_TABLE,
-  HIGHLIGHTED_SERIES,
+  CONTROLLED_HIGHLIGHTED_SERIES,
   LINE_TYPE_SCALE,
   LINE_WIDTH_SCALE,
   MARK_ID,
@@ -389,8 +389,8 @@ describe('Chart spec builder', () => {
         highlightedSeries: 'Chrome',
       });
 
-      expect(spec.signals?.find((signal) => signal.name === HIGHLIGHTED_SERIES)).toEqual({
-        name: HIGHLIGHTED_SERIES,
+      expect(spec.signals?.find((signal) => signal.name === CONTROLLED_HIGHLIGHTED_SERIES)).toEqual({
+        name: CONTROLLED_HIGHLIGHTED_SERIES,
         value: 'Chrome',
       });
     });
@@ -403,8 +403,8 @@ describe('Chart spec builder', () => {
         highlightedSeries: 'Chrome',
       });
 
-      expect(spec.signals?.find((signal) => signal.name === HIGHLIGHTED_SERIES)).toEqual({
-        name: HIGHLIGHTED_SERIES,
+      expect(spec.signals?.find((signal) => signal.name === CONTROLLED_HIGHLIGHTED_SERIES)).toEqual({
+        name: CONTROLLED_HIGHLIGHTED_SERIES,
         value: 'Chrome',
       });
     });
@@ -416,11 +416,11 @@ describe('Chart spec builder', () => {
         legends: [{ highlight: true }],
       });
       const uncontrolledHighlightSignal = {
-        name: HIGHLIGHTED_SERIES,
+        name: CONTROLLED_HIGHLIGHTED_SERIES,
         value: null,
       };
 
-      expect(spec.signals?.find((signal) => signal.name === 'highlightedSeries')).toEqual(uncontrolledHighlightSignal);
+      expect(spec.signals?.find((signal) => signal.name === CONTROLLED_HIGHLIGHTED_SERIES)).toEqual(uncontrolledHighlightSignal);
     });
   });
 

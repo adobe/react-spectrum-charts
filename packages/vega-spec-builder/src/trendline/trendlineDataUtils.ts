@@ -14,8 +14,8 @@ import { Data, SourceData, Transforms } from 'vega';
 
 import {
   FILTERED_TABLE,
-  HIGHLIGHTED_ITEM,
-  HIGHLIGHTED_SERIES,
+  CONTROLLED_HIGHLIGHTED_ITEM,
+  CONTROLLED_HIGHLIGHTED_SERIES,
   HOVERED_ITEM,
   SELECTED_ITEM,
   SELECTED_SERIES,
@@ -227,7 +227,7 @@ const getWindowTrendlineData = (
  * @returns Data
  */
 const getHighlightTrendlineData = (markName: string, idKey: string): SourceData => {
-  const expr = `${SELECTED_ITEM} === datum.${idKey} || !isValid(${SELECTED_ITEM}) && (isArray(${HIGHLIGHTED_ITEM}) && indexof(${HIGHLIGHTED_ITEM}, datum.${idKey}) || isValid(${markName}Trendline_${HOVERED_ITEM}) && ${markName}Trendline_${HOVERED_ITEM}.${idKey} === datum.${idKey})`;
+  const expr = `${SELECTED_ITEM} === datum.${idKey} || !isValid(${SELECTED_ITEM}) && (isArray(${CONTROLLED_HIGHLIGHTED_ITEM}) && indexof(${CONTROLLED_HIGHLIGHTED_ITEM}, datum.${idKey}) || isValid(${markName}Trendline_${HOVERED_ITEM}) && ${markName}Trendline_${HOVERED_ITEM}.${idKey} === datum.${idKey})`;
   return {
     name: `${markName}Trendline_highlightedData`,
     source: `${markName}_allTrendlineData`,
@@ -315,7 +315,7 @@ export const getTrendlineDisplayOnHoverData = (trendlineName: string, method: Tr
     transform: [
       {
         type: 'filter',
-        expr: `datum.${SERIES_ID} === ${HIGHLIGHTED_SERIES} || datum.${SERIES_ID} === ${SELECTED_SERIES} || isValid(${hoveredItemSignal}) && ${hoveredItemSignal}.${SERIES_ID} === datum.${SERIES_ID}`,
+        expr: `datum.${SERIES_ID} === ${CONTROLLED_HIGHLIGHTED_SERIES} || datum.${SERIES_ID} === ${SELECTED_SERIES} || isValid(${hoveredItemSignal}) && ${hoveredItemSignal}.${SERIES_ID} === datum.${SERIES_ID}`,
       },
     ],
   };

@@ -20,8 +20,8 @@ import {
   DEFAULT_LINE_TYPES,
   FILTERED_TABLE,
   HIGHLIGHTED_GROUP,
-  HIGHLIGHTED_ITEM,
-  HIGHLIGHTED_SERIES,
+  CONTROLLED_HIGHLIGHTED_ITEM,
+  CONTROLLED_HIGHLIGHTED_SERIES,
   LINEAR_COLOR_SCALE,
   LINE_TYPE_SCALE,
   LINE_WIDTH_SCALE,
@@ -246,9 +246,9 @@ export const getDefaultSignals = ({
     getGenericValueSignal('lineTypes', getTwoDimensionalLineTypes(lineTypes)),
     getGenericValueSignal('opacities', getTwoDimensionalOpacities(opacities)),
     getGenericValueSignal('hiddenSeries', hiddenSeries ?? []),
-    getGenericValueSignal(HIGHLIGHTED_ITEM, formattedHighlightedItem),
+    getGenericValueSignal(CONTROLLED_HIGHLIGHTED_ITEM, formattedHighlightedItem),
     getGenericValueSignal(HIGHLIGHTED_GROUP),
-    getGenericValueSignal(HIGHLIGHTED_SERIES, highlightedSeries),
+    getGenericValueSignal(CONTROLLED_HIGHLIGHTED_SERIES, highlightedSeries),
     getGenericValueSignal(SELECTED_ITEM),
     getGenericValueSignal(SELECTED_SERIES),
     getGenericValueSignal(SELECTED_GROUP),
@@ -398,7 +398,7 @@ function getPathsFromSymbolShapes(symbolShapes: ChartSymbolShape[]) {
  * Adds a formula transform to the TABLE data that combines all the facets into a single key
  */
 export const addData = produce<Data[], [{ facets: string[] }]>((data, { facets }) => {
-  data.splice(2,0,{ name: CONTROLLED_HIGHLIGHTED_TABLE, source: FILTERED_TABLE, transform: [{ type: 'filter', expr: `isArray(${HIGHLIGHTED_ITEM}) && indexof(${HIGHLIGHTED_ITEM}, datum.${MARK_ID}) > -1` }] })
+  data.splice(2,0,{ name: CONTROLLED_HIGHLIGHTED_TABLE, source: FILTERED_TABLE, transform: [{ type: 'filter', expr: `isArray(${CONTROLLED_HIGHLIGHTED_ITEM}) && indexof(${CONTROLLED_HIGHLIGHTED_ITEM}, datum.${MARK_ID}) > -1` }] })
   if (facets.length === 0) return;
   data[0]?.transform?.push(...getSeriesIdTransform(facets));
 

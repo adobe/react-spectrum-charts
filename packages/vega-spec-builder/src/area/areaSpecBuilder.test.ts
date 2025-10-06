@@ -21,8 +21,8 @@ import {
   DEFAULT_TIME_DIMENSION,
   DEFAULT_TRANSFORMED_TIME_DIMENSION,
   FILTERED_TABLE,
-  HIGHLIGHTED_ITEM,
-  HIGHLIGHTED_SERIES,
+  CONTROLLED_HIGHLIGHTED_ITEM,
+  CONTROLLED_HIGHLIGHTED_SERIES,
   HOVERED_ITEM,
   LINEAR_PADDING,
   MARK_ID,
@@ -213,8 +213,8 @@ describe('areaSpecBuilder', () => {
     test('children: should add signals', () => {
       const signals = addSignals(defaultSignals, { ...defaultAreaOptions, chartTooltips: [{}] });
       expect(signals).toHaveLength(defaultSignals.length + 2);
-      expect(signals[0]).toHaveProperty('name', HIGHLIGHTED_ITEM);
-      expect(signals[2]).toHaveProperty('name', HIGHLIGHTED_SERIES);
+      expect(signals[0]).toHaveProperty('name', CONTROLLED_HIGHLIGHTED_ITEM);
+      expect(signals[2]).toHaveProperty('name', CONTROLLED_HIGHLIGHTED_SERIES);
       expect(signals[3]).toHaveProperty('name', SELECTED_ITEM);
       expect(signals[4]).toHaveProperty('name', SELECTED_SERIES);
       expect(signals[5]).toHaveProperty('name', SELECTED_GROUP);
@@ -235,14 +235,14 @@ describe('areaSpecBuilder', () => {
       expect(hoverSignal?.on?.[0]).toHaveProperty('update', '(datum.excludeFromTooltip) ? null : datum');
     });
 
-    test('should add on event to HIGHLIGHTED_ITEM signal if highlightedItem is defined and there is a tooltip on the area', () => {
+    test('should add on event to CONTROLLED_HIGHLIGHTED_ITEM signal if highlightedItem is defined and there is a tooltip on the area', () => {
       const signals = addSignals(defaultSignals, {
         ...defaultAreaOptions,
         chartTooltips: [{}],
         highlightedItem: 'highlightedItem',
       });
       expect(signals).toHaveLength(defaultSignals.length + 2);
-      expect(signals[0]).toHaveProperty('name', HIGHLIGHTED_ITEM);
+      expect(signals[0]).toHaveProperty('name', CONTROLLED_HIGHLIGHTED_ITEM);
       expect(signals[0]).toHaveProperty('on');
       expect(signals[0].on).toHaveLength(1);
       expect(signals.at(-2)).toHaveProperty('name', `${defaultAreaOptions.name}_${HOVERED_ITEM}`);
@@ -268,7 +268,7 @@ describe('areaSpecBuilder', () => {
     });
 
     test('should add not add the on property if it already exists', () => {
-      const signals = [{ ...getGenericValueSignal(HIGHLIGHTED_ITEM), on: [{ events: 'test', update: 'test' }] }];
+      const signals = [{ ...getGenericValueSignal(CONTROLLED_HIGHLIGHTED_ITEM), on: [{ events: 'test', update: 'test' }] }];
       addHighlightedItemEvents(signals, 'area0');
       expect(signals[0].on).toHaveLength(2);
     });
