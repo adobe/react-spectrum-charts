@@ -75,9 +75,9 @@ export const TRENDLINE_VALUE = 'rscTrendlineValue';
 // signal names
 export const HOVERED_ITEM = 'hoveredItem'; // hovered item suffix
 export const HOVERED_SERIES = 'hoveredSeries'; // hovered item suffix
-export const HIGHLIGHTED_ITEM = 'highlightedItem'; // data point
+export const CONTROLLED_HIGHLIGHTED_ITEM = 'controlledHighlightedItem'; // data point
 export const HIGHLIGHTED_GROUP = 'highlightedGroup'; // data point
-export const HIGHLIGHTED_SERIES = 'highlightedSeries'; // series
+export const CONTROLLED_HIGHLIGHTED_SERIES = 'controlledHighlightedSeries'; // series
 export const SELECTED_ITEM = 'selectedItem'; // data point
 export const SELECTED_SERIES = 'selectedSeries'; // series
 export const SELECTED_GROUP = 'selectedGroup'; // data point

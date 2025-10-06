@@ -16,7 +16,7 @@ import {
   FILTERED_TABLE,
   GROUP_ID,
   HIGHLIGHTED_GROUP,
-  HIGHLIGHTED_ITEM,
+  CONTROLLED_HIGHLIGHTED_ITEM,
   HOVERED_ITEM,
   INTERACTION_MODE,
   SERIES_ID
@@ -209,7 +209,7 @@ export const addHoveredItemOpacityRules = (
       signal: `${hoveredItemSignal}.${key} === datum.${key} ? 1 : ${FADE_FACTOR}`,
     },
     {
-      test: `isArray(${HIGHLIGHTED_ITEM}) && length(${HIGHLIGHTED_ITEM}) > 0 && indexof(${HIGHLIGHTED_ITEM}, datum.${markOptions.idKey}) === -1`,
+      test: `isArray(${CONTROLLED_HIGHLIGHTED_ITEM}) && length(${CONTROLLED_HIGHLIGHTED_ITEM}) > 0 && indexof(${CONTROLLED_HIGHLIGHTED_ITEM}, datum.${markOptions.idKey}) === -1`,
       value: FADE_FACTOR,
     },
   ]

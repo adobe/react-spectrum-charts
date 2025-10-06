@@ -13,8 +13,8 @@ import { Signal } from 'vega';
 
 import {
   HIGHLIGHTED_GROUP,
-  HIGHLIGHTED_ITEM,
-  HIGHLIGHTED_SERIES,
+  CONTROLLED_HIGHLIGHTED_ITEM,
+  CONTROLLED_HIGHLIGHTED_SERIES,
   SELECTED_GROUP,
   SELECTED_ITEM,
   SELECTED_SERIES,
@@ -22,9 +22,9 @@ import {
 
 import { getGenericValueSignal } from './signal/signalSpecBuilder';
 
-export const defaultHighlightedItemSignal = getGenericValueSignal(HIGHLIGHTED_ITEM);
+export const defaultHighlightedItemSignal = getGenericValueSignal(CONTROLLED_HIGHLIGHTED_ITEM);
 export const defaultHighlightedGroupSignal = getGenericValueSignal(HIGHLIGHTED_GROUP);
-export const defaultHighlightedSeriesSignal = getGenericValueSignal(HIGHLIGHTED_SERIES);
+export const defaultHighlightedSeriesSignal = getGenericValueSignal(CONTROLLED_HIGHLIGHTED_SERIES);
 export const defaultSelectedItemSignal = getGenericValueSignal(SELECTED_ITEM);
 export const defaultSelectedSeriesSignal = getGenericValueSignal(SELECTED_SERIES);
 export const defaultSelectedGroupSignal = getGenericValueSignal(SELECTED_GROUP);

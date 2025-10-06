@@ -21,7 +21,7 @@ import {
   DEFAULT_TIME_DIMENSION,
   FILTERED_TABLE,
   GROUP_ID,
-  HIGHLIGHTED_ITEM,
+  CONTROLLED_HIGHLIGHTED_ITEM,
   SELECTED_ITEM,
   SELECTED_SERIES,
 } from '@spectrum-charts/constants';
@@ -175,7 +175,7 @@ export const getAreaHighlightedData = (
   if (hasGroupId) {
     expr += `${name}_controlledHoveredGroup === datum.${name}_${GROUP_ID}`;
   } else {
-    expr += `isArray(${HIGHLIGHTED_ITEM}) && indexof(${HIGHLIGHTED_ITEM}, datum.${idKey}) > -1  || ${HIGHLIGHTED_ITEM} === datum.${idKey}`;
+    expr += `isArray(${CONTROLLED_HIGHLIGHTED_ITEM}) && indexof(${CONTROLLED_HIGHLIGHTED_ITEM}, datum.${idKey}) > -1  || ${CONTROLLED_HIGHLIGHTED_ITEM} === datum.${idKey}`;
     if (hasTooltip) {
       expr = `${name}_controlledHoveredId === datum.${idKey} || ${expr}`;
     }
@@ -216,7 +216,7 @@ export const addSignals = produce<Signal[], [AreaSpecOptions]>((signals, areaOpt
  * @param areaName
  */
 export const addHighlightedItemEvents = (signals: Signal[], areaName: string) => {
-  const highlightedItemSignal = signals.find((signal) => signal.name === HIGHLIGHTED_ITEM);
+  const highlightedItemSignal = signals.find((signal) => signal.name === CONTROLLED_HIGHLIGHTED_ITEM);
   if (highlightedItemSignal) {
     if (highlightedItemSignal.on === undefined) {
       highlightedItemSignal.on = [];

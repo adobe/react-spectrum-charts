@@ -11,7 +11,7 @@
  */
 import { Signal } from 'vega';
 
-import { HIGHLIGHTED_ITEM, HOVERED_ITEM } from '@spectrum-charts/constants';
+import { CONTROLLED_HIGHLIGHTED_ITEM, HOVERED_ITEM } from '@spectrum-charts/constants';
 
 import { defaultSignals } from '../specTestUtils';
 import { setTrendlineSignals } from './trendlineSignalUtils';
@@ -28,7 +28,7 @@ describe('getTrendlineSignals()', () => {
       trendlines: [{ chartTooltips: [{}] }],
     });
     expect(signals).toHaveLength(defaultSignals.length + 1);
-    expect(signals[0]).toHaveProperty('name', HIGHLIGHTED_ITEM);
+    expect(signals[0]).toHaveProperty('name', CONTROLLED_HIGHLIGHTED_ITEM);
     expect(signals[0].on).toBeUndefined();
     expect(signals.at(-1)).toHaveProperty('name', `line0Trendline_${HOVERED_ITEM}`);
     expect(signals.at(-1)?.on).toHaveLength(2);

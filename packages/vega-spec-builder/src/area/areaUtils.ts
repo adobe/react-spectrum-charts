@@ -16,7 +16,7 @@ import {
   DEFAULT_OPACITY_RULE,
   DEFAULT_TRANSFORMED_TIME_DIMENSION,
   FADE_FACTOR,
-  HIGHLIGHTED_SERIES,
+  CONTROLLED_HIGHLIGHTED_SERIES,
   HOVERED_ITEM,
   SELECTED_SERIES,
   SERIES_ID
@@ -145,8 +145,8 @@ export function getAreaOpacity(areaOptions: AreaMarkOptions): ProductionRule<Num
         signal: `indexof(pluck(data('${name}_highlightedData'), '${SERIES_ID}'), datum.${SERIES_ID}) !== -1 ? 1 : ${FADE_FACTOR}`,
       },
       {
-        test: `isValid(${HIGHLIGHTED_SERIES})`,
-        signal: `${HIGHLIGHTED_SERIES} === datum.${SERIES_ID} ? 1 : ${FADE_FACTOR}`,
+        test: `isValid(${CONTROLLED_HIGHLIGHTED_SERIES})`,
+        signal: `${CONTROLLED_HIGHLIGHTED_SERIES} === datum.${SERIES_ID} ? 1 : ${FADE_FACTOR}`,
       },
       DEFAULT_OPACITY_RULE,
     ];
@@ -163,8 +163,8 @@ export function getAreaOpacity(areaOptions: AreaMarkOptions): ProductionRule<Num
       signal: `indexof(pluck(data('${name}_highlightedData'), '${SERIES_ID}'), datum.${SERIES_ID}) !== -1 ? 1 : ${FADE_FACTOR}`,
     },
     {
-      test: `isValid(${HIGHLIGHTED_SERIES})`,
-      signal: `${HIGHLIGHTED_SERIES} === datum.${SERIES_ID} ? 1 : ${FADE_FACTOR}`,
+      test: `isValid(${CONTROLLED_HIGHLIGHTED_SERIES})`,
+      signal: `${CONTROLLED_HIGHLIGHTED_SERIES} === datum.${SERIES_ID} ? 1 : ${FADE_FACTOR}`,
     },
     DEFAULT_OPACITY_RULE,
   ];

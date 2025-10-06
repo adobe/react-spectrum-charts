@@ -13,7 +13,7 @@ import { GroupMark } from 'vega';
 
 import {
   DEFAULT_OPACITY_RULE,
-  HIGHLIGHTED_ITEM,
+  CONTROLLED_HIGHLIGHTED_ITEM,
   HOVERED_ITEM,
   MARK_ID,
   SELECTED_ITEM,
@@ -57,7 +57,7 @@ describe('getOpacity()', () => {
     expect(opacity[0]).toHaveProperty('test', `isValid(scatter0_${HOVERED_ITEM})`);
     expect(opacity[1]).toHaveProperty(
       'test',
-      `isArray(${HIGHLIGHTED_ITEM}) && length(${HIGHLIGHTED_ITEM}) > 0 && indexof(${HIGHLIGHTED_ITEM}, datum.${MARK_ID}) === -1`
+      `isArray(${CONTROLLED_HIGHLIGHTED_ITEM}) && length(${CONTROLLED_HIGHLIGHTED_ITEM}) > 0 && indexof(${CONTROLLED_HIGHLIGHTED_ITEM}, datum.${MARK_ID}) === -1`
     );
   });
   test('should include select rule if popover exists', () => {
@@ -65,7 +65,7 @@ describe('getOpacity()', () => {
     expect(opacity).toHaveLength(4);
     expect(opacity[1]).toHaveProperty(
       'test',
-      `isArray(${HIGHLIGHTED_ITEM}) && length(${HIGHLIGHTED_ITEM}) > 0 && indexof(${HIGHLIGHTED_ITEM}, datum.${MARK_ID}) === -1`
+      `isArray(${CONTROLLED_HIGHLIGHTED_ITEM}) && length(${CONTROLLED_HIGHLIGHTED_ITEM}) > 0 && indexof(${CONTROLLED_HIGHLIGHTED_ITEM}, datum.${MARK_ID}) === -1`
     );
     expect(opacity[2]).toHaveProperty('test', `isValid(${SELECTED_ITEM}) && ${SELECTED_ITEM} !== datum.${MARK_ID}`);
   });

@@ -11,7 +11,7 @@
  */
 import { SourceData } from 'vega';
 
-import { FILTERED_TABLE, GROUP_ID, HIGHLIGHTED_ITEM, HOVERED_ITEM, SELECTED_ITEM } from '@spectrum-charts/constants';
+import { FILTERED_TABLE, GROUP_ID, CONTROLLED_HIGHLIGHTED_ITEM, HOVERED_ITEM, SELECTED_ITEM } from '@spectrum-charts/constants';
 
 import { isHighlightedByGroup } from '../chartTooltip/chartTooltipUtils';
 import { hasPopover, isInteractive } from '../marks/markUtils';
@@ -26,7 +26,7 @@ import { LineSpecOptions } from '../types';
 export const getLineHighlightedData = (options: LineSpecOptions): SourceData => {
   const { name: lineName, idKey } = options;
 
-  let expr = `isArray(${HIGHLIGHTED_ITEM}) && indexof(${HIGHLIGHTED_ITEM}, datum.${idKey}) > -1`;
+  let expr = `isArray(${CONTROLLED_HIGHLIGHTED_ITEM}) && indexof(${CONTROLLED_HIGHLIGHTED_ITEM}, datum.${idKey}) > -1`;
 
   if (isInteractive(options)) {
     const hoveredItemSignal = `${lineName}_${HOVERED_ITEM}`;

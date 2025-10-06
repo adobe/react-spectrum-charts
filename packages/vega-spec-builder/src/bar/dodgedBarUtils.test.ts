@@ -22,7 +22,7 @@ import {
   DEFAULT_OPACITY_RULE,
   DEFAULT_SECONDARY_COLOR,
   FILTERED_TABLE,
-  HIGHLIGHTED_ITEM,
+  CONTROLLED_HIGHLIGHTED_ITEM,
   FADE_FACTOR,
   HOVERED_ITEM,
   MARK_ID
@@ -124,7 +124,7 @@ const defaultMarkWithTooltip: Mark = {
           signal: `bar0_${HOVERED_ITEM}.${MARK_ID} === datum.${MARK_ID} ? 1 : ${FADE_FACTOR}`,
         },
         {
-          test: `isArray(${HIGHLIGHTED_ITEM}) && length(${HIGHLIGHTED_ITEM}) > 0 && indexof(${HIGHLIGHTED_ITEM}, datum.${MARK_ID}) === -1`,
+          test: `isArray(${CONTROLLED_HIGHLIGHTED_ITEM}) && length(${CONTROLLED_HIGHLIGHTED_ITEM}) > 0 && indexof(${CONTROLLED_HIGHLIGHTED_ITEM}, datum.${MARK_ID}) === -1`,
           value: FADE_FACTOR,
         },
         DEFAULT_OPACITY_RULE,

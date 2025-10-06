@@ -14,8 +14,8 @@ import { GroupMark, NumericValueRef, Scale, TrailMark } from 'vega';
 import {
   DEFAULT_OPACITY_RULE,
   FILTERED_TABLE,
-  HIGHLIGHTED_ITEM,
-  HIGHLIGHTED_SERIES,
+  CONTROLLED_HIGHLIGHTED_ITEM,
+  CONTROLLED_HIGHLIGHTED_SERIES,
   FADE_FACTOR,
   SELECTED_ITEM,
   SELECTED_SERIES,
@@ -154,7 +154,7 @@ export const getOpacity = (): ({ test?: string } & NumericValueRef)[] => {
 
   return [
     {
-      test: `isValid(${HIGHLIGHTED_SERIES}) || isArray(${HIGHLIGHTED_ITEM}) || isValid(${SELECTED_SERIES}) || isValid(${SELECTED_ITEM})`,
+      test: `isValid(${CONTROLLED_HIGHLIGHTED_SERIES}) || isArray(${CONTROLLED_HIGHLIGHTED_ITEM}) || isValid(${SELECTED_SERIES}) || isValid(${SELECTED_ITEM})`,
       value: FADE_FACTOR,
     },
     DEFAULT_OPACITY_RULE,

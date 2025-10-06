@@ -16,7 +16,7 @@ import {
   DEFAULT_INTERACTION_MODE,
   DEFAULT_OPACITY_RULE,
   FADE_FACTOR,
-  HIGHLIGHTED_SERIES,
+  CONTROLLED_HIGHLIGHTED_SERIES,
   HOVERED_ITEM,
   SELECTED_SERIES,
   SERIES_ID,
@@ -125,8 +125,8 @@ export const getLineOpacity = ({
       signal: `indexof(pluck(data('${CONTROLLED_HIGHLIGHTED_TABLE}'), '${SERIES_ID}'), datum.${SERIES_ID}) > -1 ? 1 : ${FADE_FACTOR}`,
     },
     {
-      test: `isValid(${HIGHLIGHTED_SERIES})`,
-      signal: `${HIGHLIGHTED_SERIES} === datum.${SERIES_ID} ? 1 : ${FADE_FACTOR}`,
+      test: `isValid(${CONTROLLED_HIGHLIGHTED_SERIES})`,
+      signal: `${CONTROLLED_HIGHLIGHTED_SERIES} === datum.${SERIES_ID} ? 1 : ${FADE_FACTOR}`,
     }
   );
 
