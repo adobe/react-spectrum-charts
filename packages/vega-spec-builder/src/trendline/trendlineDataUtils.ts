@@ -67,7 +67,7 @@ export const addTrendlineData = (data: Data[], markOptions: TrendlineParentOptio
  */
 export const getTrendlineData = (markOptions: TrendlineParentOptions): SourceData[] => {
   const data: SourceData[] = [];
-  const { color, idKey, lineType, name: markName } = markOptions;
+  const { color, idKey, lineType, name: markName, interactiveMarkName } = markOptions;
   const trendlines = getTrendlines(markOptions);
 
   const concatenatedTrendlineData: { name: string; source: string[] } = {
@@ -87,7 +87,7 @@ export const getTrendlineData = (markOptions: TrendlineParentOptions): SourceDat
       data.push(getWindowTrendlineData(markOptions, trendlineOptions));
     }
     if (displayOnHover) {
-      data.push(getTrendlineDisplayOnHoverData(name, method));
+      data.push(getTrendlineDisplayOnHoverData(name, method, interactiveMarkName));
     }
     if (isInteractive(trendlineOptions)) {
       concatenatedTrendlineData.source.push(`${name}_data`);
@@ -306,15 +306,16 @@ export const addTableDataTransforms = produce<Transforms[], [TrendlineParentOpti
  * @param method
  * @returns SourceData
  */
-export const getTrendlineDisplayOnHoverData = (trendlineName: string, method: TrendlineMethod): SourceData => {
+export const getTrendlineDisplayOnHoverData = (trendlineName: string, method: TrendlineMethod, interactiveMarkName?: string): SourceData => {
   const source = isWindowMethod(method) ? `${trendlineName}_data` : `${trendlineName}_highResolutionData`;
+  const hoveredItemSignal = `${interactiveMarkName ?? trendlineName}_${HOVERED_ITEM}`
   return {
     name: `${trendlineName}_highlightedData`,
     source,
     transform: [
       {
         type: 'filter',
-        expr: `datum.${SERIES_ID} === ${HIGHLIGHTED_SERIES} || datum.${SERIES_ID} === ${SELECTED_SERIES}`,
+        expr: `datum.${SERIES_ID} === ${HIGHLIGHTED_SERIES} || datum.${SERIES_ID} === ${SELECTED_SERIES} || isValid(${hoveredItemSignal}) && ${hoveredItemSignal}.${SERIES_ID} === datum.${SERIES_ID}`,
       },
     ],
   };

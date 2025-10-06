@@ -18,22 +18,17 @@ import {
   DEFAULT_COLOR_SCHEME,
   DEFAULT_METRIC,
   DEFAULT_OPACITY_RULE,
-  FILTERED_TABLE,
-  HIGHLIGHTED_SERIES,
   FADE_FACTOR,
-  SELECTED_SERIES
+  FILTERED_TABLE,
+  HOVERED_SERIES
 } from '@spectrum-charts/constants';
 
 import { LegendSpecOptions } from '../types';
 
 export const opacityEncoding = [
   {
-    test: `isValid(${HIGHLIGHTED_SERIES}) && datum.value !== ${HIGHLIGHTED_SERIES}`,
-    value: FADE_FACTOR,
-  },
-  {
-    test: `isValid(${SELECTED_SERIES}) && datum.value !== ${SELECTED_SERIES}`,
-    value: FADE_FACTOR,
+    test: `isValid(legend0_${HOVERED_SERIES})`,
+    signal: `legend0_${HOVERED_SERIES} === datum.value ? 1 : ${FADE_FACTOR}`,
   },
   DEFAULT_OPACITY_RULE,
 ];

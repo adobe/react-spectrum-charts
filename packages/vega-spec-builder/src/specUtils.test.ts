@@ -24,6 +24,7 @@ import {
 import { getSpectrumVegaConfig } from '@spectrum-charts/themes';
 
 import {
+  addUserMetaInteractiveMark,
   getChartConfig,
   getD3FormatSpecifierFromNumberFormat,
   getDimensionField,
@@ -194,5 +195,11 @@ describe('getChartConfig()', () => {
     const mergedConfig = getChartConfig({ axis: { labelFontSize: 12 } }, 'light');
     expect(mergedConfig.axis).toHaveProperty('labelFontSize', 12);
     expect(mergedConfig.axis).toHaveProperty('labelFont');
+  });
+});
+
+describe('addUserMetaInteractiveMark()', () => {
+  test('should add the interactive mark to the user meta', () => {
+    expect(addUserMetaInteractiveMark({ interactiveMarks: [] }, 'line0')).toEqual({ interactiveMarks: ['line0'] });
   });
 });

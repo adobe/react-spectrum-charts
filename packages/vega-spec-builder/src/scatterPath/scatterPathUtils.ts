@@ -151,7 +151,6 @@ export const getScatterPathTrailMark = ({
  * @returns opacity production rule
  */
 export const getOpacity = (): ({ test?: string } & NumericValueRef)[] => {
-  // if a point is hovered or selected, all other points should be reduced opacity
 
   return [
     {

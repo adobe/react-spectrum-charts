@@ -35,14 +35,14 @@ import {
   isHighlightedByGroup,
 } from '../chartTooltip/chartTooltipUtils';
 import { addTimeTransform, getFilteredTableData, getTableData, getTransformSort } from '../data/dataUtils';
-import { hasPopover, hasTooltip, isInteractive } from '../marks/markUtils';
+import { getInteractiveMarkName, hasPopover, hasTooltip, isInteractive } from '../marks/markUtils';
 import { addContinuousDimensionScale, addFieldToFacetScaleDomain, addMetricScale } from '../scale/scaleSpecBuilder';
 import {
-  addHighlightedSeriesSignalEvents,
   addHoveredItemSignal,
   getControlledHoveredGroupSignal,
-  getControlledHoveredIdSignal,
+  getControlledHoveredIdSignal
 } from '../signal/signalSpecBuilder';
+import { addUserMetaInteractiveMark } from '../specUtils';
 import {
   AreaOptions,
   AreaSpecOptions,
@@ -76,6 +76,7 @@ export const addArea = produce<
       ...options
     }
   ) => {
+    const areaName = toCamelCase(name || `area${index}`);
     // put options back together now that all defaults are set
     const areaOptions: AreaSpecOptions = {
       chartPopovers,
@@ -84,8 +85,12 @@ export const addArea = produce<
       colorScheme,
       dimension,
       index,
+      interactiveMarkName: getInteractiveMarkName(
+        { chartPopovers, chartTooltips, highlightedItem: options.highlightedItem },
+        areaName
+      ),
       metric,
-      name: toCamelCase(name || `area${index}`),
+      name: areaName,
       scaleType,
       opacity,
       metricStart,
@@ -104,6 +109,8 @@ export const addArea = produce<
       areaOptions.metricStart = undefined;
     }
 
+    spec.usermeta = addUserMetaInteractiveMark(spec.usermeta ?? [], areaOptions.interactiveMarkName);
+    
     spec.data = addData(spec.data ?? [], areaOptions);
     spec.signals = addSignals(spec.signals ?? [], areaOptions);
     spec.scales = setScales(spec.scales ?? [], areaOptions);
@@ -191,7 +198,6 @@ export const getAreaHighlightedData = (
 export const addSignals = produce<Signal[], [AreaSpecOptions]>((signals, areaOptions) => {
   const { chartTooltips, name } = areaOptions;
   if (!isInteractive(areaOptions)) return;
-  addHighlightedSeriesSignalEvents(signals, name, 1, chartTooltips[0]?.excludeDataKeys);
   addHoveredItemSignal(signals, name, undefined, 1, chartTooltips[0]?.excludeDataKeys);
   if (areaOptions.highlightedItem) {
     addHighlightedItemEvents(signals, name);

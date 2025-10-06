@@ -16,6 +16,7 @@ import {
   FADE_FACTOR,
   HIGHLIGHTED_SERIES,
   HOVERED_ITEM,
+  CONTROLLED_HIGHLIGHTED_TABLE,
   SELECTED_SERIES,
   SERIES_ID
 } from '@spectrum-charts/constants';
@@ -124,7 +125,8 @@ describe('getLineOpacity()', () => {
     });
     expect(opacityRule).toEqual([
       { test: `isValid(line0_${HOVERED_ITEM})`, signal: `line0_${HOVERED_ITEM}.${SERIES_ID} === datum.${SERIES_ID} ? 1 : ${FADE_FACTOR}`},
-      { test: `isValid(${HIGHLIGHTED_SERIES}) && ${HIGHLIGHTED_SERIES} !== datum.${SERIES_ID}`, value: FADE_FACTOR },
+      { test: `length(data('${CONTROLLED_HIGHLIGHTED_TABLE}'))`, signal: `indexof(pluck(data('${CONTROLLED_HIGHLIGHTED_TABLE}'), '${SERIES_ID}'), datum.${SERIES_ID}) > -1 ? 1 : ${FADE_FACTOR}`},
+      { test: `isValid(${HIGHLIGHTED_SERIES})`, signal: `${HIGHLIGHTED_SERIES} === datum.${SERIES_ID} ? 1 : ${FADE_FACTOR}`},
       { value: 1 },
     ]);
   });
@@ -137,8 +139,9 @@ describe('getLineOpacity()', () => {
       chartPopovers: [{}],
     });
     expect(opacityRule).toEqual([
-      { signal: `line0_hoveredItem.${SERIES_ID} === datum.${SERIES_ID} ? 1 : ${FADE_FACTOR}`, test: 'isValid(line0_hoveredItem)' },
-      { test: `isValid(${HIGHLIGHTED_SERIES}) && ${HIGHLIGHTED_SERIES} !== datum.${SERIES_ID}`, value: FADE_FACTOR },
+      { test: 'isValid(line0_hoveredItem)', signal: `line0_hoveredItem.${SERIES_ID} === datum.${SERIES_ID} ? 1 : ${FADE_FACTOR}`},
+      { test: `length(data('${CONTROLLED_HIGHLIGHTED_TABLE}'))`, signal: `indexof(pluck(data('${CONTROLLED_HIGHLIGHTED_TABLE}'), '${SERIES_ID}'), datum.${SERIES_ID}) > -1 ? 1 : ${FADE_FACTOR}`},
+      { test: `isValid(${HIGHLIGHTED_SERIES})`, signal: `${HIGHLIGHTED_SERIES} === datum.${SERIES_ID} ? 1 : ${FADE_FACTOR}`},
       { test: `isValid(${SELECTED_SERIES}) && ${SELECTED_SERIES} !== datum.${SERIES_ID}`, value: FADE_FACTOR },
       { value: 1 },
     ]);
@@ -160,7 +163,7 @@ describe('getLineOpacity()', () => {
       chartTooltips: [{}],
       isHighlightedByGroup: true,
     });
-    expect(opacityRule).toHaveLength(3);
+    expect(opacityRule).toHaveLength(4);
     expect(opacityRule[0]).toHaveProperty('test', `length(data('line0_highlightedData'))`);
   });
 });

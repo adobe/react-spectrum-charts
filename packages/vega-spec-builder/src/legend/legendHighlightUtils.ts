@@ -9,21 +9,21 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { GroupMark, Mark, NumericValueRef } from 'vega';
+import { GroupMark, Mark, NumericValueRef, ProductionRule } from 'vega';
 
 import {
-  COLOR_SCALE,
+  FADE_FACTOR,
   GROUP_ID,
   HIGHLIGHTED_GROUP,
   HIGHLIGHTED_SERIES,
-  FADE_FACTOR,
+  HOVERED_SERIES,
   SERIES_ID
 } from '@spectrum-charts/constants';
 
 /**
  * Adds opacity tests for the fill and stroke of marks that use the color scale to set the fill or stroke value.
  */
-export const setHoverOpacityForMarks = (marks: Mark[], keys?: string[], name?: string) => {
+export const setHoverOpacityForMarks = (legendName: string, marks: Mark[], keys?: string[], controlled = false) => {
   if (!marks.length) return;
   const flatMarks = flattenMarks(marks);
   const seriesMarks = flatMarks.filter(markUsesSeriesColorScale);
@@ -40,7 +40,7 @@ export const setHoverOpacityForMarks = (marks: Mark[], keys?: string[], name?: s
 
     if (opacity !== undefined) {
       // the new production rule for highlighting
-      const highlightOpacityRule = getHighlightOpacityRule(keys, name);
+      const highlightOpacityRule = getHighlightOpacityRule(legendName, controlled, keys);
 
       if (!Array.isArray(update.opacity)) {
         update.opacity = [];
@@ -52,12 +52,14 @@ export const setHoverOpacityForMarks = (marks: Mark[], keys?: string[], name?: s
   });
 };
 
-export const getHighlightOpacityRule = (keys?: string[], name?: string): { test?: string } & NumericValueRef => {
-  let test = `isValid(${HIGHLIGHTED_SERIES}) && ${HIGHLIGHTED_SERIES} !== datum.${SERIES_ID}`;
-  if (keys?.length) {
-    test = `isValid(${HIGHLIGHTED_GROUP}) && ${HIGHLIGHTED_GROUP} !== datum.${name}_${GROUP_ID}`;
+export const getHighlightOpacityRule = (legendName: string, controlled: boolean, keys?: string[] ): { test?: string } & NumericValueRef => {
+  if (controlled) {
+    return {test: `isValid(${HIGHLIGHTED_SERIES})`, signal: `${HIGHLIGHTED_SERIES} === datum.${SERIES_ID} ? 1 : ${FADE_FACTOR}`}
   }
-  return { test, value: FADE_FACTOR };
+  if (keys?.length) {
+    return {test: `isValid(${HIGHLIGHTED_GROUP})`, signal: `${HIGHLIGHTED_GROUP} === datum.${legendName}_${GROUP_ID} ? 1 : ${FADE_FACTOR}`};
+  }
+  return { test: `isValid(${legendName}_${HOVERED_SERIES})`, signal: `${legendName}_${HOVERED_SERIES} === datum.${SERIES_ID} ? 1 : ${FADE_FACTOR}`}
 };
 
 /**
@@ -69,19 +71,32 @@ export const getHighlightOpacityRule = (keys?: string[], name?: string): { test?
 export const markUsesSeriesColorScale = (mark: Mark): boolean => {
   const enter = mark.encode?.enter;
   if (!enter) return false;
-  const { fill, stroke } = enter;
-  if (fill && 'scale' in fill && fill.scale === COLOR_SCALE) {
-    return true;
-  }
-  // some marks use a 2d color scale, these will use a signal expression to get the color for that series
-  if (fill && 'signal' in fill && fill.signal.includes("scale('colors',")) {
-    return true;
-  }
-  if (stroke && 'scale' in stroke && stroke.scale === COLOR_SCALE) {
-    return true;
+  
+  const { fill, fillOpacity, stroke, strokeDash, strokeOpacity } = enter;
+  const facetEncodings = [fill, fillOpacity, stroke, strokeDash, strokeOpacity];
+  
+  for (const facet of facetEncodings) {
+    if (encodingUsesScale(facet)) {
+      return true;
+    }
   }
   return false;
 };
+
+/**
+ * Determines if the supplied encoding uses a scale to set the value
+ * @param encoding
+ * @returns boolean
+ */
+export const encodingUsesScale = <T>(encoding?: ProductionRule<T>): boolean => {
+  if (!encoding || typeof encoding !== 'object') return false;
+  if ('scale' in encoding) return true;
+  if ('signal' in encoding && typeof encoding.signal === 'string' && encoding.signal.includes("scale(")) {
+    return true;
+  }
+  return false;
+}
+
 
 /**
  * Recursively flattens all nested marks into a flat array

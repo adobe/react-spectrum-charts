@@ -15,13 +15,11 @@ import {
   BACKGROUND_COLOR,
   COLOR_SCALE,
   DEFAULT_COLOR,
-  DEFAULT_COLOR_SCHEME,
   DEFAULT_METRIC,
   DEFAULT_OPACITY_RULE,
   DEFAULT_TIME_DIMENSION,
   DEFAULT_TRANSFORMED_TIME_DIMENSION,
   FILTERED_TABLE,
-  HIGHLIGHTED_SERIES,
   HOVERED_ITEM,
   LINEAR_PADDING,
   MARK_ID,
@@ -33,29 +31,9 @@ import {
 import * as signalSpecBuilder from '../signal/signalSpecBuilder';
 import { defaultSignals } from '../specTestUtils';
 import { initializeSpec } from '../specUtils';
-import { LineSpecOptions, ScSpec } from '../types';
+import { ScSpec } from '../types';
 import { addData, addLine, addLineMarks, addSignals, setScales } from './lineSpecBuilder';
-
-const defaultLineOptions: LineSpecOptions = {
-  chartPopovers: [],
-  chartTooltips: [],
-  name: 'line0',
-  dimension: DEFAULT_TIME_DIMENSION,
-  hasOnClick: false,
-  idKey: MARK_ID,
-  index: 0,
-  markType: 'line',
-  metric: DEFAULT_METRIC,
-  metricRanges: [],
-  color: DEFAULT_COLOR,
-  scaleType: 'time',
-  lineType: { value: 'solid' },
-  opacity: { value: 1 },
-  colorScheme: DEFAULT_COLOR_SCHEME,
-  interactiveMarkName: undefined,
-  popoverMarkName: undefined,
-  trendlines: [],
-};
+import { defaultLineOptions } from './lineTestUtils';
 
 const startingSpec: ScSpec = initializeSpec({
   scales: [{ name: COLOR_SCALE, type: 'ordinal' }],
@@ -134,6 +112,7 @@ const defaultSpec = initializeSpec({
     },
   ],
   signals: [],
+  usermeta: {interactiveMarks: []}
 });
 
 const defaultLinearScale = {
@@ -558,8 +537,6 @@ describe('lineSpecBuilder', () => {
         metricRanges: [{ metricEnd: 'end', metricStart: 'start', displayOnHover: true }],
       });
       expect(signals).toHaveLength(defaultSignals.length + 1);
-      expect(signals[2]).toHaveProperty('name', HIGHLIGHTED_SERIES);
-      expect(signals[2].on).toHaveLength(2);
       expect(signals.at(-1)).toHaveProperty('name', `${defaultLineOptions.name}_${HOVERED_ITEM}`);
       expect(signals.at(-1)?.on).toHaveLength(2);
     });
@@ -575,8 +552,6 @@ describe('lineSpecBuilder', () => {
         metricRanges: [{ metricEnd: 'end', metricStart: 'start', displayOnHover: true }],
       });
       expect(signals).toHaveLength(defaultSignals.length + 1);
-      expect(signals[2]).toHaveProperty('name', HIGHLIGHTED_SERIES);
-      expect(signals[2].on).toHaveLength(2);
       expect(signals.at(-1)).toHaveProperty('name', `${defaultLineOptions.name}_${HOVERED_ITEM}`);
       expect(signals.at(-1)?.on).toHaveLength(2);
     });
@@ -588,8 +563,6 @@ describe('lineSpecBuilder', () => {
         chartTooltips: [{}],
       });
       expect(signals).toHaveLength(defaultSignals.length + 1);
-      expect(signals[2]).toHaveProperty('name', HIGHLIGHTED_SERIES);
-      expect(signals[2].on).toHaveLength(8);
       expect(signals.at(-1)).toHaveProperty('name', `${defaultLineOptions.name}_${HOVERED_ITEM}`);
       expect(signals.at(-1)?.on).toHaveLength(8);
     });

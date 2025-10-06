@@ -17,9 +17,11 @@ import {
   findAllMarksByGroupName,
   findChart,
   findMarksByGroupName,
+  getAllLegendEntries,
   hoverNthElement,
   queryMarksByGroupName,
   render,
+  unhoverNthElement,
 } from '../../../test-utils';
 import '../../../test-utils/__mocks__/matchMedia.mock.js';
 import { Basic, DisplayOnHover, WithPopover } from './MetricRange.story';
@@ -71,6 +73,7 @@ describe('MetricRange', () => {
     expect(area).toHaveAttribute('fill', colors['categorical-100']);
     expect(area).toHaveAttribute('fill-opacity', '0.2');
 
+    await unhoverNthElement(points, 0);
     await hoverNthElement(points, 7);
 
     line = await findMarksByGroupName(chart, 'line0MetricRange0_line');
@@ -78,6 +81,16 @@ describe('MetricRange', () => {
 
     area = await findMarksByGroupName(chart, 'line0MetricRange0_area');
     expect(area).toHaveAttribute('fill', colors['categorical-200']);
+
+    await unhoverNthElement(points, 7);
+
+    const legendEntries = getAllLegendEntries(chart);
+    await hoverNthElement(legendEntries, 0);
+
+    line = await findMarksByGroupName(chart, 'line0MetricRange0_line');
+    expect(line).toHaveAttribute('stroke', colors['categorical-100']);
+    expect(line).toHaveAttribute('stroke-dasharray', '3,4');
+    expect(line).toHaveAttribute('stroke-width', '1.5');
   });
 
   test('Hovered range stays active with popover', async () => {

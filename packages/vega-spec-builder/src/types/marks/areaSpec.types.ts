@@ -61,5 +61,6 @@ export interface AreaSpecOptions extends PartiallyRequired<AreaOptions, AreaOpti
   colorScheme: ColorScheme;
   highlightedItem?: HighlightedItem;
   idKey: string;
+  interactiveMarkName?: string;
   index: number;
 }

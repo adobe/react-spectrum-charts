@@ -24,6 +24,7 @@ import { toCamelCase } from '@spectrum-charts/utils';
 import { isInteractive } from '../marks/markUtils';
 import { addFieldToFacetScaleDomain } from '../scale/scaleSpecBuilder';
 import { addHoveredItemSignal } from '../signal/signalSpecBuilder';
+import { addUserMetaInteractiveMark } from '../specUtils';
 import { ColorScheme, DonutOptions, DonutSpecOptions, HighlightedItem, ScSpec } from '../types';
 import {
   getDonutSummaryData,
@@ -73,6 +74,9 @@ export const addDonut = produce<
       ...options,
     };
 
+    if (isInteractive(donutOptions)) {
+      spec.usermeta = addUserMetaInteractiveMark(spec.usermeta, donutOptions.name);
+    }
     spec.data = addData(spec.data ?? [], donutOptions);
     spec.scales = addScales(spec.scales ?? [], donutOptions);
     spec.marks = addMarks(spec.marks ?? [], donutOptions);

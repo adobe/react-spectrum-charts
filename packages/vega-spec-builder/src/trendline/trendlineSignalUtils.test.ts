@@ -11,7 +11,7 @@
  */
 import { Signal } from 'vega';
 
-import { HIGHLIGHTED_ITEM, HIGHLIGHTED_SERIES, HOVERED_ITEM } from '@spectrum-charts/constants';
+import { HIGHLIGHTED_ITEM, HOVERED_ITEM } from '@spectrum-charts/constants';
 
 import { defaultSignals } from '../specTestUtils';
 import { setTrendlineSignals } from './trendlineSignalUtils';
@@ -30,8 +30,6 @@ describe('getTrendlineSignals()', () => {
     expect(signals).toHaveLength(defaultSignals.length + 1);
     expect(signals[0]).toHaveProperty('name', HIGHLIGHTED_ITEM);
     expect(signals[0].on).toBeUndefined();
-    expect(signals[2]).toHaveProperty('name', HIGHLIGHTED_SERIES);
-    expect(signals[2].on).toHaveLength(2);
     expect(signals.at(-1)).toHaveProperty('name', `line0Trendline_${HOVERED_ITEM}`);
     expect(signals.at(-1)?.on).toHaveLength(2);
   });
@@ -39,15 +37,5 @@ describe('getTrendlineSignals()', () => {
   test('should not modify any signals if there is not a ChartTooltip', () => {
     setTrendlineSignals(signals, defaultLineOptions);
     expect(signals).toStrictEqual(defaultSignals);
-  });
-
-  test('should add displayOnHover signal events', () => {
-    setTrendlineSignals(signals, {
-      ...defaultLineOptions,
-      trendlines: [{ displayOnHover: true }],
-    });
-    expect(signals).toHaveLength(defaultSignals.length);
-    expect(signals[2]).toHaveProperty('name', HIGHLIGHTED_SERIES);
-    expect(signals[2].on).toHaveLength(2);
   });
 });

@@ -26,21 +26,25 @@ import {
 import {
   COLOR_SCALE,
   COMPONENT_NAME,
+  CONTROLLED_HIGHLIGHTED_TABLE,
   DEFAULT_LEGEND_COLUMN_PADDING,
   DEFAULT_LEGEND_SYMBOL_WIDTH,
   DEFAULT_OPACITY_RULE,
+  FADE_FACTOR,
   FILTERED_TABLE,
   GROUP_ID,
   HIGHLIGHTED_GROUP,
   HIGHLIGHTED_SERIES,
-  FADE_FACTOR,
+  HOVERED_ITEM,
+  HOVERED_SERIES,
   LINE_TYPE_SCALE,
   LINE_WIDTH_SCALE,
   OPACITY_SCALE,
   SELECTED_GROUP,
   SELECTED_SERIES,
+  SERIES_ID,
   SYMBOL_SHAPE_SCALE,
-  SYMBOL_SIZE_SCALE
+  SYMBOL_SIZE_SCALE,
 } from '@spectrum-charts/constants';
 import { getColorValue, spectrumColors } from '@spectrum-charts/themes';
 
@@ -54,6 +58,7 @@ import {
   LegendSpecOptions,
   Position,
   SecondaryFacetType,
+  UserMeta,
 } from '../types';
 
 export interface Facet {
@@ -69,14 +74,14 @@ export interface Facet {
  */
 export const getColumns = (position: Position, labelLimit?: number): SignalRef | undefined => {
   if (['left', 'right'].includes(position)) return;
-  
+
   if (labelLimit !== undefined && labelLimit > 0) {
     const symbolAndSpacingWidth = DEFAULT_LEGEND_SYMBOL_WIDTH + DEFAULT_LEGEND_COLUMN_PADDING;
-    
+
     const itemWidth = labelLimit + symbolAndSpacingWidth;
     return { signal: `max(1, floor(width / ${itemWidth}))` };
   }
-  
+
   // Keeping hardcoded 220 for so we don't break existing behavior.
   return { signal: 'floor(width / 220)' };
 };
@@ -102,9 +107,9 @@ export const getHiddenEntriesFilter = (hiddenEntries: string[], name: string): F
  * @param legendOptions
  * @returns
  */
-export const getEncodings = (facets: Facet[], legendOptions: LegendSpecOptions): LegendEncode => {
+export const getEncodings = (facets: Facet[], legendOptions: LegendSpecOptions, userMeta: UserMeta): LegendEncode => {
   const symbolEncodings = getSymbolEncodings(facets, legendOptions);
-  const hoverEncodings = getHoverEncodings(legendOptions);
+  const hoverEncodings = getHoverEncodings(legendOptions, userMeta);
   const legendLabelsEncodings = getLegendLabelsEncodings(legendOptions.name, legendOptions.legendLabels);
   const showHideEncodings = getShowHideEncodings(legendOptions);
   const clickEncodings = getClickEncodings(legendOptions);
@@ -138,9 +143,9 @@ const getLegendLabelsEncodings = (name: string, legendLabels: LegendLabel[] | un
   return {};
 };
 
-const getHoverEncodings = (options: LegendSpecOptions): LegendEncode => {
+const getHoverEncodings = (options: LegendSpecOptions, userMeta: UserMeta): LegendEncode => {
   const { highlight, highlightedSeries, name, hasMouseInteraction, descriptions, chartPopovers } = options;
-  if (highlight || highlightedSeries || descriptions || chartPopovers?.length) {
+  if (highlight || highlightedSeries || descriptions || chartPopovers?.length || userMeta.interactiveMarks?.length) {
     return {
       entries: {
         name: `${name}_legendEntry`,
@@ -154,12 +159,12 @@ const getHoverEncodings = (options: LegendSpecOptions): LegendEncode => {
       },
       labels: {
         update: {
-          opacity: getOpacityEncoding(options),
+          opacity: getOpacityEncoding(options, userMeta),
         },
       },
       symbols: {
         update: {
-          opacity: getOpacityEncoding(options),
+          opacity: getOpacityEncoding(options, userMeta),
         },
       },
     };
@@ -190,27 +195,48 @@ const getTooltip = (descriptions: LegendDescription[] | undefined, name: string)
  * @param legendOptions
  * @returns opactiy encoding
  */
-export const getOpacityEncoding = ({
-  highlight,
-  highlightedSeries,
-  keys,
-  chartPopovers,
-}: LegendSpecOptions): ProductionRule<NumericValueRef> | undefined => {
+export const getOpacityEncoding = (
+  { highlight, highlightedItem, highlightedSeries, keys, chartPopovers, name: legendName }: LegendSpecOptions,
+  userMeta: UserMeta
+): ProductionRule<NumericValueRef> | undefined => {
   const highlightSignalName = keys?.length ? HIGHLIGHTED_GROUP : HIGHLIGHTED_SERIES;
   const selectedSignalName = keys?.length ? SELECTED_GROUP : SELECTED_SERIES;
-  // only add symbol opacity if highlight is true or highlightedSeries is defined
-  if (highlight || highlightedSeries || chartPopovers?.length) {
-    return [
-      {
-        test: `isValid(${highlightSignalName}) && datum.value !== ${highlightSignalName}`,
-        value: FADE_FACTOR,
-      },
-      {
-        test: `isValid(${selectedSignalName}) && datum.value !== ${selectedSignalName}`,
-        value: FADE_FACTOR,
-      },
-      DEFAULT_OPACITY_RULE,
-    ];
+
+  const rules: ProductionRule<NumericValueRef> = [];
+
+  if (chartPopovers?.length) {
+    rules.push({
+      test: `isValid(${selectedSignalName})`,
+      signal: `${selectedSignalName} === datum.value ? 1 : ${FADE_FACTOR}`,
+    });
+  }
+  if (highlight) {
+    rules.push({
+      test: `isValid(${legendName}_${HOVERED_SERIES})`,
+      signal: `${legendName}_${HOVERED_SERIES} === datum.value ? 1 : ${FADE_FACTOR}`,
+    });
+  }
+  if (highlightedItem) {
+    rules.push({
+      test: `length(data('${CONTROLLED_HIGHLIGHTED_TABLE}))`,
+      signal: `indexof(pluck(data('${CONTROLLED_HIGHLIGHTED_TABLE}'), '${SERIES_ID}'), datum.${SERIES_ID}) > -1 ? 1 : ${FADE_FACTOR}`,
+    });
+  }
+  if (highlightedSeries) {
+    rules.push({
+      test: `isValid(${highlightSignalName})`,
+      signal: `${highlightSignalName} === datum.value ? 1 : ${FADE_FACTOR}`,
+    });
+  }
+  for (const markName of userMeta.interactiveMarks || []) {
+    rules.push({
+      test: `isValid(${markName}_${HOVERED_ITEM})`,
+      signal: `${markName}_${HOVERED_ITEM}.${SERIES_ID} === datum.value ? 1 : ${FADE_FACTOR}`,
+    });
+  }
+
+  if (rules.length) {
+    return [...rules, DEFAULT_OPACITY_RULE];
   }
   return undefined;
 };

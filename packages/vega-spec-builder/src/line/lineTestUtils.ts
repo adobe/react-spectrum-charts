@@ -18,6 +18,7 @@ import {
 } from '@spectrum-charts/constants';
 
 import { LineMarkOptions } from './lineUtils';
+import { LineSpecOptions } from '../types';
 
 export const defaultLineMarkOptions: LineMarkOptions = {
   color: DEFAULT_COLOR,
@@ -30,4 +31,25 @@ export const defaultLineMarkOptions: LineMarkOptions = {
   opacity: { value: 1 },
   metric: DEFAULT_METRIC,
   scaleType: 'time',
+};
+
+export const defaultLineOptions: LineSpecOptions = {
+  chartPopovers: [],
+  chartTooltips: [],
+  name: 'line0',
+  dimension: DEFAULT_TIME_DIMENSION,
+  hasOnClick: false,
+  idKey: MARK_ID,
+  index: 0,
+  markType: 'line',
+  metric: DEFAULT_METRIC,
+  metricRanges: [],
+  color: DEFAULT_COLOR,
+  scaleType: 'time',
+  lineType: { value: 'solid' },
+  opacity: { value: 1 },
+  colorScheme: DEFAULT_COLOR_SCHEME,
+  interactiveMarkName: undefined,
+  popoverMarkName: undefined,
+  trendlines: [],
 };

@@ -11,7 +11,11 @@
  */
 import { SourceData } from 'vega';
 
-import { GROUP_ID, HIGHLIGHTED_ITEM, HOVERED_ITEM, SELECTED_ITEM } from '@spectrum-charts/constants';
+import { FILTERED_TABLE, GROUP_ID, HIGHLIGHTED_ITEM, HOVERED_ITEM, SELECTED_ITEM } from '@spectrum-charts/constants';
+
+import { isHighlightedByGroup } from '../chartTooltip/chartTooltipUtils';
+import { hasPopover, isInteractive } from '../marks/markUtils';
+import { LineSpecOptions } from '../types';
 
 /**
  * gets the data used for highlighting hovered data points
@@ -19,24 +23,27 @@ import { GROUP_ID, HIGHLIGHTED_ITEM, HOVERED_ITEM, SELECTED_ITEM } from '@spectr
  * @param source
  * @returns
  */
-export const getLineHighlightedData = (
-  name: string,
-  idKey: string,
-  source: string,
-  hasPopover: boolean,
-  hasGroupId: boolean
-): SourceData => {
-  const hoveredItemSignal = `${name}_${HOVERED_ITEM}`;
-  const groupKey = `${name}_${GROUP_ID}`;
-  const highlightedExpr = hasGroupId
-    ? `isValid(${hoveredItemSignal}) && ${hoveredItemSignal}.${groupKey} === datum.${groupKey}`
-    : `isArray(${HIGHLIGHTED_ITEM}) && indexof(${HIGHLIGHTED_ITEM}, datum.${idKey}) > -1  || (isValid(${hoveredItemSignal}) && ${hoveredItemSignal}.${idKey} === datum.${idKey})`;
-  const expr = hasPopover
-    ? `${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${idKey} || !${SELECTED_ITEM} && ${highlightedExpr}`
-    : highlightedExpr;
+export const getLineHighlightedData = (options: LineSpecOptions): SourceData => {
+  const { name: lineName, idKey } = options;
+
+  let expr = `isArray(${HIGHLIGHTED_ITEM}) && indexof(${HIGHLIGHTED_ITEM}, datum.${idKey}) > -1`;
+
+  if (isInteractive(options)) {
+    const hoveredItemSignal = `${lineName}_${HOVERED_ITEM}`;
+    const groupKey = `${lineName}_${GROUP_ID}`;
+    if (isHighlightedByGroup(options)) {
+      expr += ` || isValid(${hoveredItemSignal}) && ${hoveredItemSignal}.${groupKey} === datum.${groupKey}`
+    } else {
+      expr += ` || isValid(${hoveredItemSignal}) && ${hoveredItemSignal}.${idKey} === datum.${idKey}`
+    }
+    if (hasPopover(options)) {
+      expr = `${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${idKey} || !${SELECTED_ITEM} && ${expr}`
+    }
+  }
+  
   return {
-    name: `${name}_highlightedData`,
-    source,
+    name: `${lineName}_highlightedData`,
+    source: FILTERED_TABLE,
     transform: [
       {
         type: 'filter',
