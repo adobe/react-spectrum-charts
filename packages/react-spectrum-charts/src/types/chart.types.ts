@@ -36,6 +36,7 @@ import {
   ComboElement,
   DonutElement,
   DonutSummaryElement,
+  GaugeElement,
   LineElement,
   MetricRangeElement,
   ScatterElement,
@@ -54,6 +55,7 @@ export type ChartChildElement =
   | BigNumberElement
   | DonutElement
   | ComboElement
+  | GaugeElement
   | LegendElement
   | LineElement
   | ScatterElement
