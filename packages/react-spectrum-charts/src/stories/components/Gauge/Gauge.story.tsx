@@ -23,7 +23,7 @@ import { BulletProps, ChartProps } from '../../../types';
 import { basicBulletData, basicThresholdsData, coloredThresholdsData } from './data';
 
 export default {
-  title: 'RSC/Bullet (alpha)',
+  title: 'RSC/Gauge (alpha)',
   component: Bullet,
 };
 

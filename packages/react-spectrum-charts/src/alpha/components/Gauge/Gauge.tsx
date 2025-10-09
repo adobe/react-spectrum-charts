@@ -14,20 +14,20 @@
 import { FC } from 'react';
 
 import {
-  DEFAULT_GAUGE_DIRECTION,
+  DEFAULT_BULLET_DIRECTION,
   DEFAULT_LABEL_POSITION,
   DEFAULT_SCALE_TYPE,
   DEFAULT_SCALE_VALUE,
 } from '@spectrum-charts/constants';
 
-import { GaugeProps } from '../../../types';
+import { BulletProps } from '../../../types';
 
-const Gauge: FC<GaugeProps> = ({
-  name = 'bullet0',
+const Gauge: FC<BulletProps> = ({
+  name = 'gauge0',
   metric = 'currentAmount',
   dimension = 'graphLabel',
   target = 'target',
-  direction = DEFAULT_GAUGE_DIRECTION,
+  direction = DEFAULT_BULLET_DIRECTION,
   numberFormat = '',
   showTarget = true,
   showTargetValue = false,
