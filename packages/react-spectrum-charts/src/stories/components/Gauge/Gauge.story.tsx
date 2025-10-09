@@ -14,188 +14,76 @@ import { ReactElement } from 'react';
 import { StoryFn } from '@storybook/react';
 
 import { Chart } from '../../../Chart';
-// Assuming Bullet chart is a component in the @rsc/alpha export
-import { Bullet } from '../../../alpha';
+// Gauge chart component from alpha export
+import { Gauge } from '../../../alpha';
 import { Title } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
 import { bindWithProps } from '../../../test-utils';
-import { BulletProps, ChartProps } from '../../../types';
-import { basicBulletData, basicThresholdsData, coloredThresholdsData } from './data';
+import { GaugeProps, ChartProps } from '../../../types';
+import { basicGaugeData } from './data';
 
 export default {
-  title: 'RSC/Bullet (alpha)',
-  component: Bullet,
+  title: 'RSC/Gauge (alpha)',
+  component: Gauge,
 };
 
 // Default chart properties
 const defaultChartProps: ChartProps = {
-  data: basicBulletData,
-  width: 350,
-  height: 350,
+  data: basicGaugeData,
+  width: 500,
+  height: 600,
 };
 
-// Basic Bullet chart story
-const BulletStory: StoryFn<BulletProps & { width?: number; height?: number }> = (args): ReactElement => {
-  const { width, height, ...bulletProps } = args;
-  const chartProps = useChartProps({ ...defaultChartProps, width: width ?? 350, height: height ?? 350 });
+// Basic Gauge chart story
+const GaugeStory: StoryFn<GaugeProps & { width?: number; height?: number }> = (args): ReactElement => {
+  const { width, height, ...gaugeProps } = args;
+  const chartProps = useChartProps({ ...defaultChartProps, width: width ?? 500, height: height ?? 500 });
   return (
-    <Chart {...chartProps}>
-      <Bullet {...bulletProps} />
+    <Chart {...chartProps} debug>
+      <Gauge {...gaugeProps} />
     </Chart>
   );
 };
 
-// Bullet with Title
-const BulletTitleStory: StoryFn<typeof Bullet> = (args): ReactElement => {
+// Gauge with Title
+const GaugeTitleStory: StoryFn<typeof Gauge> = (args): ReactElement => {
   const chartProps = useChartProps({ ...defaultChartProps, width: 400 });
   return (
     <Chart {...chartProps}>
-      <Title text={'Title Bullet'} position={'start'} orient={'top'} />
-      <Bullet {...args} />
+      <Title text={'Title Gauge'} position={'start'} orient={'top'} />
+      <Gauge {...args} />
     </Chart>
   );
 };
 
-const Basic = bindWithProps(BulletStory);
+// Basic Gauge chart story. All the ones below it are variations of the Gauge chart. 
+const Basic = bindWithProps(GaugeStory);
 Basic.args = {
   metric: 'currentAmount',
-  dimension: 'graphLabel',
   target: 'target',
   color: 'blue-900',
-  direction: 'column',
   numberFormat: '$,.2f',
-  showTarget: true,
-  showTargetValue: false,
-  labelPosition: 'top',
-  scaleType: 'normal',
-  maxScaleValue: 100,
-  track: false,
-  thresholdBarColor: false,
-  metricAxis: false,
+  maxArcValue: 100
 };
 
-const Thresholds = bindWithProps(BulletStory);
-Thresholds.args = {
+const GaugeVariation2 = bindWithProps(GaugeStory);
+GaugeVariation2.args = {
   metric: 'currentAmount',
-  dimension: 'graphLabel',
   target: 'target',
-  color: 'blue-900',
-  direction: 'column',
+  color: 'red-900',
   numberFormat: '$,.2f',
-  showTarget: true,
-  showTargetValue: false,
-  labelPosition: 'top',
-  scaleType: 'normal',
-  maxScaleValue: 100,
-  thresholds: basicThresholdsData,
-  thresholdBarColor: false,
-  track: false,
-  metricAxis: false,
+  maxArcValue: 150
 };
 
-const ColoredMetric = bindWithProps(BulletStory);
-ColoredMetric.args = {
+const GaugeVariation3 = bindWithProps(GaugeStory);
+GaugeVariation3.args = {
   metric: 'currentAmount',
-  dimension: 'graphLabel',
   target: 'target',
-  color: 'blue-900',
-  direction: 'column',
+  color: 'fuchsia-900',
   numberFormat: '$,.2f',
-  showTarget: true,
-  showTargetValue: false,
-  labelPosition: 'top',
-  scaleType: 'normal',
-  maxScaleValue: 100,
-  track: false,
-  thresholdBarColor: true,
-  thresholds: coloredThresholdsData,
-  metricAxis: false,
+  maxArcValue: 90
 };
 
-const Track = bindWithProps(BulletStory);
-Track.args = {
-  metric: 'currentAmount',
-  dimension: 'graphLabel',
-  target: 'target',
-  color: 'blue-900',
-  direction: 'column',
-  numberFormat: '$,.2f',
-  showTarget: true,
-  showTargetValue: false,
-  labelPosition: 'top',
-  scaleType: 'normal',
-  maxScaleValue: 100,
-  track: true,
-  metricAxis: false,
-};
 
-const RowMode = bindWithProps(BulletStory);
-RowMode.args = {
-  metric: 'currentAmount',
-  dimension: 'graphLabel',
-  target: 'target',
-  color: 'blue-900',
-  direction: 'row',
-  numberFormat: '$,.2f',
-  showTarget: true,
-  showTargetValue: false,
-  labelPosition: 'top',
-  scaleType: 'normal',
-  maxScaleValue: 100,
-  thresholds: coloredThresholdsData,
-  thresholdBarColor: true,
-  track: false,
-  metricAxis: false,
-};
 
-const WithTitle = bindWithProps(BulletTitleStory);
-WithTitle.args = {
-  metric: 'currentAmount',
-  dimension: 'graphLabel',
-  target: 'target',
-  color: 'blue-900',
-  numberFormat: '$,.2f',
-  labelPosition: 'top',
-  scaleType: 'normal',
-  maxScaleValue: 100,
-  track: false,
-  direction: 'column',
-  metricAxis: false,
-};
-
-const FixedScale = bindWithProps(BulletStory);
-FixedScale.args = {
-  metric: 'currentAmount',
-  dimension: 'graphLabel',
-  target: 'target',
-  color: 'blue-900',
-  direction: 'column',
-  numberFormat: '$,.2f',
-  showTarget: true,
-  showTargetValue: false,
-  labelPosition: 'top',
-  scaleType: 'fixed',
-  maxScaleValue: 250,
-  thresholds: basicThresholdsData,
-  track: false,
-  metricAxis: false,
-};
-
-const MetricAxis = bindWithProps(BulletStory);
-MetricAxis.args = {
-  metric: 'currentAmount',
-  dimension: 'graphLabel',
-  target: 'target',
-  color: 'blue-900',
-  direction: 'column',
-  numberFormat: '$,.2f',
-  showTarget: true,
-  showTargetValue: false,
-  labelPosition: 'top',
-  scaleType: 'normal',
-  maxScaleValue: 250,
-  track: false,
-  metricAxis: true,
-};
-
-export { Basic, Thresholds, ColoredMetric, Track, RowMode, WithTitle, FixedScale, MetricAxis };
+export { Basic, GaugeVariation2, GaugeVariation3 };

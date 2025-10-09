@@ -14,27 +14,18 @@
 import { FC } from 'react';
 
 import {
-  DEFAULT_GAUGE_DIRECTION,
-  DEFAULT_LABEL_POSITION,
-  DEFAULT_SCALE_TYPE,
   DEFAULT_SCALE_VALUE,
 } from '@spectrum-charts/constants';
 
 import { GaugeProps } from '../../../types';
 
+// I assume this houses all the props for all variations of a Gauge chart?
 const Gauge: FC<GaugeProps> = ({
-  name = 'bullet0',
-  metric = 'currentAmount',
-  dimension = 'graphLabel',
-  target = 'target',
-  direction = DEFAULT_GAUGE_DIRECTION,
-  numberFormat = '',
-  showTarget = true,
-  showTargetValue = false,
-  labelPosition = DEFAULT_LABEL_POSITION,
-  scaleType = DEFAULT_SCALE_TYPE,
-  maxScaleValue = DEFAULT_SCALE_VALUE,
-  thresholdBarColor = false,
+  name = 'gauge0',
+  metric = 'currentAmount', // CurrVal
+  target = 'target', 
+  numberFormat = '', // ints or floats
+  maxArcValue = DEFAULT_SCALE_VALUE, // Max Arc Value
 }) => {
   return null;
 };

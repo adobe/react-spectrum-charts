@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { BulletOptions, ScSpec } from '../types';
+import { GaugeOptions, ScSpec } from '../types';
 import { addBullet, addData, addScales, addSignals } from './bulletSpecBuilder';
 import { sampleOptionsColumn, sampleOptionsRow } from './bulletTestUtils';
 

@@ -17,7 +17,7 @@ import { SELECTED_GROUP, SELECTED_ITEM, SELECTED_SERIES, SERIES_ID } from '@spec
 import { combineNames, toCamelCase } from '@spectrum-charts/utils';
 import { Datum } from '@spectrum-charts/vega-spec-builder';
 
-import { Bullet, Combo, Venn } from '../alpha';
+import { Bullet, Combo, Gauge, Venn } from '../alpha';
 import {
   Annotation,
   Area,
@@ -56,6 +56,7 @@ import {
   ComboElement,
   DonutElement,
   DonutSummaryElement,
+  GaugeElement,
   LegendElement,
   LineElement,
   MetricRangeElement,
@@ -102,6 +103,7 @@ type ElementCounts = {
   scatter: number;
   combo: number;
   bullet: number;
+  gauge: number;
   venn: number;
 };
 
@@ -134,6 +136,7 @@ export const sanitizeChildren = (children: unknown): (ChartChildElement | MarkCh
     AxisThumbnail.displayName,
     Bar.displayName,
     Bullet.displayName,
+    Gauge.displayName,
     ChartPopover.displayName,
     ChartTooltip.displayName,
     Combo.displayName,
@@ -165,6 +168,7 @@ export const sanitizeRscChartChildren = (children: unknown): ChartChildElement[]
     Axis.displayName,
     Bar.displayName,
     Donut.displayName,
+    Gauge.displayName,
     Legend.displayName,
     Line.displayName,
     Scatter.displayName,
@@ -409,6 +413,9 @@ const getElementName = (element: unknown, elementCounts: ElementCounts) => {
     case Bullet.displayName:
       elementCounts.bullet++;
       return getComponentName(element as BulletElement, `bullet${elementCounts.bullet}`);
+    case Gauge.displayName:
+      elementCounts.gauge++;
+      return getComponentName(element as GaugeElement, `gauge${elementCounts.gauge}`);
     case Legend.displayName:
       elementCounts.legend++;
       return getComponentName(element as LegendElement, `legend${elementCounts.legend}`);
@@ -449,6 +456,7 @@ const initElementCounts = (): ElementCounts => ({
   line: -1,
   scatter: -1,
   combo: -1,
+  gauge: -1,
   venn: -1,
 });
 
