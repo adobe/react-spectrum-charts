@@ -88,12 +88,13 @@ export const getCursor = (chartPopovers: ChartPopoverOptions[], hasOnClick?: boo
 export function getTooltip(
   chartTooltips: ChartTooltipOptions[],
   name: string,
-  nestedDatum?: boolean
+  nestedDatum?: boolean,
+  tooltipMetaData?: Record<string, unknown>
 ): ProductionRuleTests<SignalRef> | SignalRef | undefined {
   // skip annotations
   if (chartTooltips.length) {
     const defaultTooltip = {
-      signal: `merge(datum${nestedDatum ? '.datum' : ''}, {'${COMPONENT_NAME}': '${name}'})`,
+      signal: `merge(datum${nestedDatum ? '.datum' : ''}, {'${COMPONENT_NAME}': '${name}'}${tooltipMetaData ? `, ${JSON.stringify(tooltipMetaData)}` : ''})`,
     };
     // if the tooltip has an excludeDataKey option, then disable the tooltip where that key is present
     const excludeDataKeys = chartTooltips[0].excludeDataKeys;
