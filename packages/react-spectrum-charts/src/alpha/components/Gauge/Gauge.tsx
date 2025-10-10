@@ -23,18 +23,27 @@ import {
 import { BulletProps } from '../../../types';
 
 const Gauge: FC<BulletProps> = ({
-  name = 'gauge0',
-  metric = 'currentAmount',
-  dimension = 'graphLabel',
-  target = 'target',
-  direction = DEFAULT_BULLET_DIRECTION,
-  numberFormat = '',
-  showTarget = true,
-  showTargetValue = false,
-  labelPosition = DEFAULT_LABEL_POSITION,
-  scaleType = DEFAULT_SCALE_TYPE,
-  maxScaleValue = DEFAULT_SCALE_VALUE,
-  thresholdBarColor = false,
+  name = 'gauge0', // Why the zero?
+  metric = 'currentAmount', // CurrVal
+  dimension = 'graphLabel', // Graph Title ?
+  target = 'target', // Yes
+  direction = DEFAULT_BULLET_DIRECTION, // Left to right Note to selves: Do this
+  numberFormat = '', // ints or floats ??? Help Mr Almighty Wizard ???
+  showTarget = true, // Where you want
+  showTargetValue = false, // Number of what you want
+  labelPosition = DEFAULT_LABEL_POSITION, // Above gauge to label the needle
+  scaleType = DEFAULT_SCALE_TYPE, // Need Angle and Tick
+  maxScaleValue = DEFAULT_SCALE_VALUE, // Max Arc Value
+  thresholdBarColor = false, // filler color
+  // Things to add:
+    // ticksNumber
+    // clamping
+    // needle (on or off, sizing of it)
+    // arcMinVal and arcMaxVal
+    // size of tick lines
+    // needle length
+    // arc thickness
+    // label ticks? Enable and disable?
 }) => {
   return null;
 };
