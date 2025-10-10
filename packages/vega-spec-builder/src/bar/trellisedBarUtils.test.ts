@@ -113,7 +113,7 @@ describe('trellisedBarUtils', () => {
         markName: 'yTrellisGroup',
         scaleName: 'yTrellisBand',
         paddingInner: TRELLIS_PADDING,
-        rangeScale: 'height',
+        dimensionSizeSignal: 'height',
         axis: 'y',
       });
     });
@@ -130,7 +130,7 @@ describe('trellisedBarUtils', () => {
         markName: 'xTrellisGroup',
         scaleName: 'xTrellisBand',
         paddingInner: TRELLIS_PADDING,
-        rangeScale: 'width',
+        dimensionSizeSignal: 'width',
         axis: 'x',
       });
     });

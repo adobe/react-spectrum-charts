@@ -33,6 +33,37 @@ const data = [
 </Chart>;
 ```
 
+### Tooltip with dimension area targeting (stacked bars)
+
+```jsx
+<Chart data={data}>
+  <Bar type="stacked">
+    <ChartTooltip targets={['item']}>
+      {(datum) => (
+        <div>
+          <div>Series: {datum.series}</div>
+          <div>Value: {datum.value}</div>
+        </div>
+      )}
+    </ChartTooltip>
+    <ChartTooltip targets={['dimensionArea']}>
+      {(datum) => (
+        <div>
+          <div>Dimension: {datum.dimension}</div>
+          {datum.rscGroupData?.map((item, index) => (
+            <div key={index}>
+              {item.series}: {item.value}
+            </div>
+          ))}
+        </div>
+      )}
+    </ChartTooltip>
+  </Bar>
+</Chart>
+```
+
+In this example, two separate tooltips are defined: one for hovering over the actual bar marks (`item`) that shows individual segment data, and another for hovering anywhere within the dimension area (`dimensionArea`) that shows aggregated data across the dimension. The datum shape differs between these targets, so they require separate tooltip implementations.
+
 ## Props
 
 <table>
@@ -62,6 +93,12 @@ const data = [
       <td>'item' | 'dimension' | 'series' | string[]</td>
       <td>'item'</td>
       <td>Specifies which marks on the parent should be highlighted on hover. For example if set to `dimension`, when a user hovers a mark, it will highlight all marks with the same dimension value.<br/>If an array of strings is provided, each of those key will be used to find other marks that match and should be highlighted. For example, if `highlightBy` is set to `['company', 'quarter']`, when a mark is hovered, all marks with the same company and quarter values will be highlighted.<br/>If `highlightBy` uses `series`, `dimension`, or an array of string, the `item` passed to the tooltip callback will include the `rscGroupData` key. This will have the data for all highlighted marks so that your tooltip can provide info for all the highlighted marks, not just the hovered mark.</td>
+    </tr>
+    <tr>
+      <td>targets</td>
+      <td>('dimensionArea' | 'item')[]</td>
+      <td>['item']</td>
+      <td>Specifies which areas of the chart should trigger the tooltip. `item` will trigger the tooltip when hovering over the actual data mark. `dimensionArea` will trigger the tooltip when hovering anywhere within the dimension area (e.g., for stacked bars, hovering anywhere along the dimension slice).<br/><strong>Note:</strong> Currently only active for stacked bar charts.</td>
     </tr>
   </tbody>
 </table>

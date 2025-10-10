@@ -11,7 +11,7 @@
  */
 import { Data, NumericValueRef, Signal } from 'vega';
 
-import { DEFAULT_OPACITY_RULE, GROUP_ID, HIGHLIGHTED_GROUP, CONTROLLED_HIGHLIGHTED_ITEM, HOVERED_ITEM } from '@spectrum-charts/constants';
+import { DEFAULT_OPACITY_RULE, GROUP_ID, HIGHLIGHTED_GROUP, CONTROLLED_HIGHLIGHTED_ITEM, HOVERED_ITEM, DIMENSION_HOVER_AREA } from '@spectrum-charts/constants';
 
 import { defaultBarOptions } from '../bar/barTestUtils';
 import { defaultScatterOptions } from '../scatter/scatterTestUtils';
@@ -19,11 +19,13 @@ import { defaultSignals } from '../specTestUtils';
 import { baseData } from '../specUtils';
 import { BarSpecOptions, ChartTooltipOptions, LineSpecOptions } from '../types';
 import {
+  addHoverdDimenstionAreaOpacityRules,
   addHoveredItemOpacityRules,
   addTooltipData,
   addTooltipSignals,
   applyTooltipPropDefaults,
   getTooltips,
+  hasTooltipWithDimensionAreaTarget,
   isHighlightedByGroup
 } from './chartTooltipUtils';
 
@@ -195,5 +197,34 @@ describe('addHoveredItemOpacityRules()', () => {
     expect(opacityRules[2].test).toContain('combo0Bar0_');
     expect(opacityRules[2].test).toContain('combo0Line0_');
     expect(opacityRules[3]).toBe(DEFAULT_OPACITY_RULE);
+  });
+});
+
+describe('addHoverdDimenstionAreaOpacityRules()', () => {
+  test('should add hovered item opacity rules', () => {
+    const opacityRules = [];
+    addHoverdDimenstionAreaOpacityRules(opacityRules, getDefautltMarkOptions({ targets: ['dimensionArea'] }));
+    expect(opacityRules).toHaveLength(1);
+    expect(opacityRules[0]).toHaveProperty('test', `isValid(bar0_${DIMENSION_HOVER_AREA}_${HOVERED_ITEM})`);
+  });
+  test('should not add rules if targets is not dimensionArea', () => {
+    const opacityRules = [];
+    addHoverdDimenstionAreaOpacityRules(opacityRules, getDefautltMarkOptions());
+    expect(opacityRules).toHaveLength(0);
+  });
+  test('should not add rules if dimension is not provided', () => {
+    const opacityRules = [];
+    const { dimension: _dimension, ...markOptions } = getDefautltMarkOptions({ targets: ['dimensionArea'] });
+    addHoverdDimenstionAreaOpacityRules(opacityRules, markOptions as BarSpecOptions);
+    expect(opacityRules).toHaveLength(0);
+  });
+});
+
+describe('hasTooltipWithDimensionAreaTarget()', () => {
+  test('should return true if targets includes dimensionArea', () => {
+    expect(hasTooltipWithDimensionAreaTarget([{targets: ['dimensionArea']}])).toBe(true);
+  });
+  test('should return false if targets does not include dimensionArea', () => {
+    expect(hasTooltipWithDimensionAreaTarget([{targets: ['item']}, {}])).toBe(false);
   });
 });

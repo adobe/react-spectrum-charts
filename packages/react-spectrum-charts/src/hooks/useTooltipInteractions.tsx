@@ -14,7 +14,7 @@ import { FC } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { Position, Options as TooltipOptions } from 'vega-tooltip';
 
-import { COMPONENT_NAME, FILTERED_TABLE, GROUP_DATA, GROUP_ID } from '@spectrum-charts/constants';
+import { COMPONENT_NAME, DIMENSION_HOVER_AREA, FILTERED_TABLE, GROUP_DATA, GROUP_ID } from '@spectrum-charts/constants';
 import { ColorScheme, LegendDescription, TooltipAnchor, TooltipPlacement } from '@spectrum-charts/vega-spec-builder';
 
 import { useChartContext } from '../context/RscChartContext';
@@ -51,6 +51,21 @@ const useTooltipsInteractions = (props: RscChartProps, sanitizedChildren: ChartC
             descriptions={legendDescriptions}
             domain={chartView.current?.scale('legend0Entries').domain()}
           />
+        );
+      }
+      if (value[COMPONENT_NAME]?.endsWith(DIMENSION_HOVER_AREA)) {
+        const tooltipName = value[COMPONENT_NAME].replace(`_${DIMENSION_HOVER_AREA}`, '');
+        const tooltip = tooltips.find((t) => t.name === tooltipName && t.targets?.includes('dimensionArea'));
+        if (!tooltip) return '';
+
+        const tableData = chartView.current?.data(FILTERED_TABLE);
+        const dimension = value.dimension;
+        value[GROUP_DATA] = tableData?.filter((d) => d[dimension] === value[dimension]);
+
+        return renderToStaticMarkup(
+          <div className="rsc-tooltip" data-testid="rsc-tooltip">
+            {tooltip.callback(value)}
+          </div>
         );
       }
       // get the correct tooltip to render based on the hovered item

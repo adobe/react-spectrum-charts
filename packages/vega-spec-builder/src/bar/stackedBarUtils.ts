@@ -11,9 +11,9 @@
  */
 import { GroupMark, Mark, RectEncodeEntry, RectMark } from 'vega';
 
-import { BACKGROUND_COLOR, FILTERED_TABLE } from '@spectrum-charts/constants';
+import { BACKGROUND_COLOR, DIMENSION_HOVER_AREA, FILTERED_TABLE } from '@spectrum-charts/constants';
 
-import { isInteractive } from '../marks/markUtils';
+import { getTooltip, isInteractive } from '../marks/markUtils';
 import { BarSpecOptions } from '../types';
 import { getAnnotationMarks } from './barAnnotationUtils';
 import {
@@ -26,9 +26,15 @@ import {
   isDodgedAndStacked,
 } from './barUtils';
 import { getTrellisProperties, isTrellised } from './trellisedBarUtils';
+import { hasTooltipWithDimensionAreaTarget } from '../chartTooltip/chartTooltipUtils';
 
 export const getStackedBarMarks = (options: BarSpecOptions): Mark[] => {
   const marks: Mark[] = [];
+
+  if (hasTooltipWithDimensionAreaTarget(options.chartTooltips)) {
+    marks.push(getStackedBarDimensionHoverArea(options));
+  }
+
   // add background marks
   // these marks make it so that when the opacity of a bar is lowered (like on hover), you can't see the grid lines behind the bars
   marks.push(getStackedBackgroundBar(options));
@@ -63,6 +69,54 @@ export const getDodgedAndStackedBarMark = (options: BarSpecOptions): GroupMark =
   );
 
   return { ...getDodgedGroupMark(options), marks };
+};
+
+/**
+ * Returns the mark for the dimension area position of a stacked bar
+ * @param options
+ * @returns
+ */
+export const getStackedBarDimensionHoverArea = (options: BarSpecOptions): RectMark => {
+  const { name: barName } = options;
+
+  return {
+    name: `${barName}_${DIMENSION_HOVER_AREA}`,
+    description: `hover area for ${barName} dimensions`,
+    type: 'rect',
+    from: { data: `${barName}_stacks` },
+    interactive: true,
+    clip: true,
+    encode: {
+      enter: {
+        fill: { value: 'transparent' },
+        tooltip: getTooltip(options.chartTooltips ?? [], `${barName}_${DIMENSION_HOVER_AREA}`, false, { dimension: options.dimension }),
+      },
+      update: {
+        ...getStackedBarDimensionAreaPositionEncodings(options)
+      },
+    },
+  };
+};
+
+/**
+ * Returns the encodings for the dimension area position of a stacked bar
+ * @param options
+ * @returns
+ */
+export const getStackedBarDimensionAreaPositionEncodings = (options: BarSpecOptions): RectEncodeEntry => {
+  const { dimension, orientation } = options;
+  const { dimensionScaleKey, metricAxis, dimensionAxis, dimensionSizeSignal, metricSizeSignal } = getOrientationProperties(orientation);
+
+  return {
+    [metricAxis]: { value: 0 },
+    [`${metricAxis}2`]: { signal: `${metricSizeSignal}` },
+    [dimensionAxis]: {
+      signal: `scale('${dimensionScaleKey}', datum.${dimension}) - bandwidth('${dimensionScaleKey}') * paddingInner / 2 / (1 - paddingInner)`,
+    },
+    [dimensionSizeSignal]: {
+      signal: `bandwidth('${dimensionScaleKey}') * ( 1 + paddingInner / (1 - paddingInner))`,
+    },
+  };
 };
 
 export const getStackedBackgroundBar = (options: BarSpecOptions): RectMark => {
@@ -113,11 +167,11 @@ export const getStackedDimensionEncodings = (options: BarSpecOptions): RectEncod
     return getDodgedDimensionEncodings(options);
   }
 
-  const { dimensionAxis, rangeScale, dimensionScaleKey } = getOrientationProperties(orientation);
+  const { dimensionAxis, dimensionSizeSignal, dimensionScaleKey } = getOrientationProperties(orientation);
 
   return {
     [dimensionAxis]: { scale: dimensionScaleKey, field: dimension },
-    [rangeScale]: { scale: dimensionScaleKey, band: 1 },
+    [dimensionSizeSignal]: { scale: dimensionScaleKey, band: 1 },
   };
 };
 

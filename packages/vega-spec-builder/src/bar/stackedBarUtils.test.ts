@@ -22,7 +22,7 @@ import {
 } from '@spectrum-charts/constants';
 
 import { defaultBarEnterEncodings, defaultBarOptions, defaultBarStrokeEncodings } from './barTestUtils';
-import { getDodgedAndStackedBarMark, getStackedBarMarks, getStackedDimensionEncodings } from './stackedBarUtils';
+import { getDodgedAndStackedBarMark, getStackedBarDimensionAreaPositionEncodings, getStackedBarMarks, getStackedDimensionEncodings } from './stackedBarUtils';
 
 const defaultStackedBarXEncondings: RectEncodeEntry = {
   x: { scale: 'xBand', field: DEFAULT_CATEGORICAL_DIMENSION },
@@ -85,6 +85,16 @@ describe('stackedBarUtils', () => {
       expect(annotationGroup.marks).toHaveLength(2);
       expect(annotationGroup.marks?.[0].name).toEqual('bar0_annotationText');
       expect(annotationGroup.marks?.[1].name).toEqual('bar0_annotationBackground');
+    });
+    test('should add dimension hover area marks if has tooltip with dimension area target', () => {
+      const marks = getStackedBarMarks({
+        ...defaultBarOptions,
+        chartTooltips: [{ targets: ['dimensionArea'] }],
+      });
+      expect(marks).toHaveLength(3);
+      expect(marks[0].name).toEqual('bar0_dimensionHoverArea');
+      expect(marks[1].name).toEqual('bar0_background');
+      expect(marks[2].name).toEqual('bar0');
     });
   });
 
@@ -156,5 +166,16 @@ describe('stackedBarUtils', () => {
         x: { field: 'bar0_dodgeGroup', scale: 'bar0_position' },
       });
     });
+  });
+});
+
+describe('getStackedBarDimensionAreaPositionEncodings()', () => {
+  test('should return the correct encodings for vertical orientation', () => {
+    const positionsEncodings = getStackedBarDimensionAreaPositionEncodings({ ...defaultBarOptions, orientation: 'vertical' });
+    expect(Object.keys(positionsEncodings)).toEqual(['y', 'y2', 'x', 'width']);
+  });
+  test('should return the correct encodings for horizontal orientation', () => {
+    const positionsEncodings = getStackedBarDimensionAreaPositionEncodings({ ...defaultBarOptions, orientation: 'horizontal' });
+    expect(Object.keys(positionsEncodings)).toEqual(['x', 'x2', 'y', 'height']);
   });
 });

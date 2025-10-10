@@ -17,6 +17,7 @@ import {
   DEFAULT_CATEGORICAL_DIMENSION,
   DEFAULT_COLOR_SCHEME,
   DEFAULT_METRIC,
+  DIMENSION_HOVER_AREA,
   FILTERED_TABLE,
   LAST_RSC_SERIES_ID,
   LINE_TYPE_SCALE,
@@ -30,7 +31,7 @@ import {
 import { toCamelCase } from '@spectrum-charts/utils';
 
 import { addPopoverData, getPopovers } from '../chartPopover/chartPopoverUtils';
-import { addTooltipData, addTooltipSignals } from '../chartTooltip/chartTooltipUtils';
+import { addTooltipData, addTooltipSignals, hasTooltipWithDimensionAreaTarget } from '../chartTooltip/chartTooltipUtils';
 import { addTimeTransform, getTableData, getTransformSort } from '../data/dataUtils';
 import { getInteractiveMarkName } from '../marks/markUtils';
 import {
@@ -167,6 +168,9 @@ export const addSignals = produce<Signal[], [BarSpecOptions]>((signals, options)
     return;
   }
   addHoveredItemSignal(signals, name, undefined, 1, chartTooltips[0]?.excludeDataKeys);
+  if (hasTooltipWithDimensionAreaTarget(chartTooltips)) {
+    addHoveredItemSignal(signals, `${name}_${DIMENSION_HOVER_AREA}`);
+  }
   addTooltipSignals(signals, options);
   setTrendlineSignals(signals, options);
 });

@@ -16,9 +16,10 @@ export interface ChartTooltipOptions {
   excludeDataKeys?: string[];
   /** Sets which marks should be highlighted when a tooltip is visible */
   highlightBy?: 'series' | 'dimension' | 'item' | string[];
+  targets?: ('dimensionArea' | 'item')[];
 }
 
-type ChartTooltipOptionsWithDefaults = 'highlightBy';
+type ChartTooltipOptionsWithDefaults = 'highlightBy' | 'targets';
 
 export interface ChartTooltipSpecOptions
   extends PartiallyRequired<ChartTooltipOptions, ChartTooltipOptionsWithDefaults> {

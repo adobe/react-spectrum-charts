@@ -19,7 +19,8 @@ import {
   CONTROLLED_HIGHLIGHTED_ITEM,
   HOVERED_ITEM,
   INTERACTION_MODE,
-  SERIES_ID
+  SERIES_ID,
+  DIMENSION_HOVER_AREA
 } from '@spectrum-charts/constants';
 
 import { getFilteredTableData } from '../data/dataUtils';
@@ -58,12 +59,13 @@ export const getTooltips = (markOptions: TooltipParentOptions): ChartTooltipSpec
  * @returns ChartTooltipSpecOptions
  */
 export const applyTooltipPropDefaults = (
-  { highlightBy = 'item', ...options }: ChartTooltipOptions,
+  { highlightBy = 'item', targets = ['item'], ...options }: ChartTooltipOptions,
   markName: string
 ): ChartTooltipSpecOptions => {
   return {
     highlightBy,
     markName,
+    targets,
     ...options,
   };
 };
@@ -214,6 +216,8 @@ export const addHoveredItemOpacityRules = (
     },
   ]
 
+  addHoverdDimenstionAreaOpacityRules(rules, markOptions);
+
   if ('comboSiblingNames' in markOptions && markOptions.comboSiblingNames?.length) {
     const test = markOptions.comboSiblingNames.map((siblingName) => `isValid(${siblingName}_${HOVERED_ITEM})`).join(' || ');
     console.log('test', test);
@@ -226,3 +230,23 @@ export const addHoveredItemOpacityRules = (
     ...rules
   );
 };
+
+
+export const addHoverdDimenstionAreaOpacityRules = (
+  opacityRules: ({ test?: string } & NumericValueRef)[],
+  markOptions: TooltipParentOptions
+) => {
+  if (!hasTooltipWithDimensionAreaTarget(markOptions.chartTooltips) || !('dimension' in markOptions)) return
+  const {name, dimension} = markOptions
+  const hoveredItemSignal = `${name}_${DIMENSION_HOVER_AREA}_${HOVERED_ITEM}`
+  opacityRules.push(
+    {
+      test: `isValid(${hoveredItemSignal})`,
+      signal: `${hoveredItemSignal}.${dimension} === datum.${dimension} ? 1 : ${FADE_FACTOR}`,
+    }
+  )
+}
+
+export const hasTooltipWithDimensionAreaTarget = (chartTooltips: ChartTooltipOptions[]) => {
+  return chartTooltips.some(({ targets }) => targets?.includes('dimensionArea'));
+}

@@ -155,6 +155,9 @@ export const HOVER_SIZE = 3000;
 export const HOVER_SHAPE_COUNT = 3;
 export const HOVER_SHAPE = 'diamond';
 
+// tooltip constants
+export const DIMENSION_HOVER_AREA = 'dimensionHoverArea';
+
 //SVG Paths
 export const ROUNDED_SQUARE_PATH =
   'M -0.55 -1 h 1.1 a 0.45 0.45 0 0 1 0.45 0.45 v 1.1 a 0.45 0.45 0 0 1 -0.45 0.45 h -1.1 a 0.45 0.45 0 0 1 -0.45 -0.45 v -1.1 a 0.45 0.45 0 0 1 0.45 -0.45 z';

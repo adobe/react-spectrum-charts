@@ -67,7 +67,7 @@ export const isDualMetricAxis = (options: BarSpecOptions) => {
 export const getDodgedGroupMark = (options: BarSpecOptions): GroupMark => {
   const { dimension, groupedPadding, orientation, name, paddingRatio } = options;
 
-  const { dimensionScaleKey, dimensionAxis, rangeScale } = getOrientationProperties(orientation);
+  const { dimensionScaleKey, dimensionAxis, dimensionSizeSignal } = getOrientationProperties(orientation);
 
   return {
     name: `${name}_group`,
@@ -87,12 +87,12 @@ export const getDodgedGroupMark = (options: BarSpecOptions): GroupMark => {
         },
       },
     },
-    signals: [{ name: rangeScale, update: `bandwidth("${dimensionScaleKey}")` }],
+    signals: [{ name: dimensionSizeSignal, update: `bandwidth("${dimensionScaleKey}")` }],
     scales: [
       {
         name: `${name}_position`,
         type: 'band',
-        range: rangeScale,
+        range: dimensionSizeSignal,
         // want to reference the FILTERED_TABLE and not the facet table because we want the bar widths and positioning to be consistent across facets
         // if we don't do this, the bar widths could be different for the different groups if one of the groups is missing a value
         domain: { data: FILTERED_TABLE, field: `${name}_dodgeGroup` },
@@ -103,23 +103,23 @@ export const getDodgedGroupMark = (options: BarSpecOptions): GroupMark => {
 };
 
 export const getDodgedDimensionEncodings = (options: BarSpecOptions): RectEncodeEntry => {
-  const { dimensionAxis, rangeScale } = getOrientationProperties(options.orientation);
+  const { dimensionAxis, dimensionSizeSignal } = getOrientationProperties(options.orientation);
 
   const scale = `${options.name}_position`;
   const field = `${options.name}_dodgeGroup`;
 
   return {
     [dimensionAxis]: { scale, field },
-    [rangeScale]: { scale, band: 1 },
+    [dimensionSizeSignal]: { scale, band: 1 },
   };
 };
 
 export const getTrellisedDimensionEncodings = (options: BarSpecOptions): RectEncodeEntry => {
-  const { dimensionAxis, rangeScale, dimensionScaleKey } = getOrientationProperties(options.orientation);
+  const { dimensionAxis, dimensionSizeSignal, dimensionScaleKey } = getOrientationProperties(options.orientation);
 
   return {
     [dimensionAxis]: { scale: dimensionScaleKey, field: options.dimension },
-    [rangeScale]: { scale: dimensionScaleKey, band: 1 },
+    [dimensionSizeSignal]: { scale: dimensionScaleKey, band: 1 },
   };
 };
 
@@ -403,24 +403,27 @@ export interface BarOrientationProperties {
   dimensionAxis: 'x' | 'y';
   metricScaleKey: string;
   dimensionScaleKey: 'xBand' | 'yBand';
-  rangeScale: 'width' | 'height';
+  dimensionSizeSignal: 'width' | 'height';
+  metricSizeSignal: 'width' | 'height';
 }
 
-export const getOrientationProperties = (orientation: Orientation, scaleName?: string): BarOrientationProperties =>
+export const  getOrientationProperties = (orientation: Orientation, scaleName?: string): BarOrientationProperties =>
   orientation === 'vertical'
     ? {
         metricAxis: 'y',
         dimensionAxis: 'x',
         metricScaleKey: scaleName || 'yLinear',
         dimensionScaleKey: 'xBand',
-        rangeScale: 'width',
+        dimensionSizeSignal: 'width',
+        metricSizeSignal: 'height',
       }
-    : {
+      : {
         metricAxis: 'x',
         dimensionAxis: 'y',
         metricScaleKey: scaleName || 'xLinear',
         dimensionScaleKey: 'yBand',
-        rangeScale: 'height',
+        dimensionSizeSignal: 'height',
+        metricSizeSignal: 'width',
       };
 
 export const getBaseScaleName = (options: BarSpecOptions) => {

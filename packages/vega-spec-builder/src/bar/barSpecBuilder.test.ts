@@ -30,7 +30,9 @@ import {
   DEFAULT_METRIC,
   DEFAULT_OPACITY_RULE,
   DEFAULT_SECONDARY_COLOR,
+  DIMENSION_HOVER_AREA,
   FILTERED_TABLE,
+  HOVERED_ITEM,
   LINE_TYPE_SCALE,
   MARK_ID,
   OPACITY_SCALE,
@@ -470,6 +472,14 @@ describe('barSpecBuilder', () => {
         });
         const lastRscSeriesIdSignal = signals.find(getLastRscSeriesIdSignal);
         expect(lastRscSeriesIdSignal).toBeUndefined();
+      });
+
+      test('should add dimension hover area signal if has tooltip with dimension area target', () => {
+        const signals = addSignals(defaultSignals, {
+          ...defaultBarOptions,
+          chartTooltips: [{ targets: ['dimensionArea'] }],
+        });
+        expect(signals.find((signal) => signal.name === `${defaultBarOptions.name}_${DIMENSION_HOVER_AREA}_${HOVERED_ITEM}`)).toBeDefined();
       });
     });
   });

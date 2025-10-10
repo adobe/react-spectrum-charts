@@ -26,6 +26,7 @@ export type TooltipDetail = {
   name: string;
   callback: TooltipHandler;
   highlightBy: ChartTooltipProps['highlightBy'];
+  targets: ChartTooltipProps['targets'];
   width?: number;
 };
 
@@ -43,6 +44,7 @@ export default function useTooltips(children: ChartChildElement[]): TooltipDetai
           name: tooltip.name,
           callback: tooltip.element.props.children,
           highlightBy: tooltip.element.props.highlightBy,
+          targets: tooltip.element.props.targets,
         })) as TooltipDetail[],
     [tooltipElements]
   );

@@ -178,6 +178,16 @@ describe('getTooltip()', () => {
     expect(rule).toHaveLength(2);
     expect(rule[1]).toHaveProperty('signal');
   });
+  test('should add tooltipMetaData if provided', () => {
+    const rule = getTooltip(
+      [{ excludeDataKeys: ['excludeFromTooltip'] }],
+      'line0',
+      false,
+      { tooltipMetaData: 'tooltipMetaData' }
+    ) as ProductionRuleTests<SignalRef>;
+    expect(rule[1]).toHaveProperty('signal');
+    expect(rule[1].signal).toContain('tooltipMetaData');
+  });
 });
 
 describe('getHighlightOpacityValue()', () => {
