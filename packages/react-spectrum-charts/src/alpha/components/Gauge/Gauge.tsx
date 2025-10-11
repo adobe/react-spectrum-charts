@@ -23,11 +23,11 @@ import {
 import { BulletProps } from '../../../types';
 
 const Gauge: FC<BulletProps> = ({
-  name = 'gauge0', // Why the zero?
+  name = 'gauge0',
   metric = 'currentAmount', // CurrVal
   dimension = 'graphLabel', // Graph Title ?
-  target = 'target', // Yes
-  direction = DEFAULT_BULLET_DIRECTION, // Left to right Note to selves: Do this
+  target = 'target', 
+  direction = DEFAULT_BULLET_DIRECTION, // Left to right Note to selves: Not today
   numberFormat = '', // ints or floats ??? Help Mr Almighty Wizard ???
   showTarget = true, // Where you want
   showTargetValue = false, // Number of what you want

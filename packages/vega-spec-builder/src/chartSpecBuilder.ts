@@ -129,7 +129,7 @@ export function buildSpec({
   spec.signals = getDefaultSignals(options);
   spec.scales = getDefaultScales(colors, colorScheme, lineTypes, lineWidths, opacities, symbolShapes, symbolSizes);
 
-  let { areaCount, barCount, bulletCount, comboCount, donutCount, lineCount, scatterCount, vennCount } =
+  let { areaCount, barCount, bulletCount, comboCount, donutCount, gaugeCount, lineCount, scatterCount, vennCount } =
     initializeComponentCounts();
   const specOptions = { colorScheme, idKey, highlightedItem };
   spec = [...marks].reduce((acc: ScSpec, mark) => {
@@ -149,6 +149,9 @@ export function buildSpec({
       case 'donut':
         donutCount++;
         return addDonut(acc, { ...mark, ...specOptions, index: donutCount });
+      case 'gauge':
+        gaugeCount++;
+        return addGauge(acc, { ...mark, ...specOptions, index: gaugeCount });
       case 'line':
         lineCount++;
         return addLine(acc, { ...mark, ...specOptions, index: lineCount });
