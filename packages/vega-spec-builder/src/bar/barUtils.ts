@@ -22,6 +22,7 @@ import {
 
 import {
   CORNER_RADIUS,
+  DIMENSION_HOVER_AREA,
   FILTERED_TABLE,
   LAST_RSC_SERIES_ID,
   SELECTED_GROUP,
@@ -430,4 +431,52 @@ export const getBaseScaleName = (options: BarSpecOptions) => {
   const { metricAxis, orientation } = options;
   const { metricScaleKey } = getOrientationProperties(orientation);
   return metricAxis || metricScaleKey;
+};
+
+/**
+ * Returns the mark for the dimension area position of a stacked bar
+ * @param options
+ * @returns
+ */
+export const getBarDimensionHoverArea = (options: BarSpecOptions, type: 'stacked' | 'dodged'): RectMark => {
+  const { dimension, name: barName } = options;
+
+  return {
+    name: `${barName}_${DIMENSION_HOVER_AREA}`,
+    description: `hover area for ${barName} dimensions`,
+    type: 'rect',
+    from: { data: `${barName}_${type === 'stacked' ? 'stacks' : 'groups'}` },
+    interactive: true,
+    clip: true,
+    encode: {
+      enter: {
+        fill: { value: 'transparent' },
+        tooltip: getTooltip(options.chartTooltips ?? [], `${barName}_${DIMENSION_HOVER_AREA}`, false, { dimension }),
+      },
+      update: {
+        ...getBarDimensionAreaPositionEncodings(options)
+      },
+    },
+  };
+};
+
+/**
+ * Returns the encodings for the dimension area position of a stacked bar
+ * @param options
+ * @returns
+ */
+export const getBarDimensionAreaPositionEncodings = (options: BarSpecOptions): RectEncodeEntry => {
+  const { dimension, orientation } = options;
+  const { dimensionScaleKey, metricAxis, dimensionAxis, dimensionSizeSignal, metricSizeSignal } = getOrientationProperties(orientation);
+
+  return {
+    [metricAxis]: { value: 0 },
+    [`${metricAxis}2`]: { signal: `${metricSizeSignal}` },
+    [dimensionAxis]: {
+      signal: `scale('${dimensionScaleKey}', datum.${dimension}) - bandwidth('${dimensionScaleKey}') * paddingInner / 2 / (1 - paddingInner)`,
+    },
+    [dimensionSizeSignal]: {
+      signal: `bandwidth('${dimensionScaleKey}') * ( 1 + paddingInner / (1 - paddingInner))`,
+    },
+  };
 };

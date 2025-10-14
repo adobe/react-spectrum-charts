@@ -9,25 +9,27 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { GroupMark } from 'vega';
+import { GroupMark, RectMark } from 'vega';
 
 import { BACKGROUND_COLOR } from '@spectrum-charts/constants';
 
+import { hasTooltipWithDimensionAreaTarget } from '../chartTooltip/chartTooltipUtils';
 import { isInteractive } from '../marks/markUtils';
 import { BarSpecOptions } from '../types';
 import { getAnnotationMarks } from './barAnnotationUtils';
 import {
+  getBarDimensionHoverArea,
   getBarEnterEncodings,
   getBarUpdateEncodings,
   getBaseBarEnterEncodings,
   getDodgedDimensionEncodings,
-  getDodgedGroupMark,
+  getDodgedGroupMark
 } from './barUtils';
 
-export const getDodgedMark = (options: BarSpecOptions): GroupMark => {
+export const getDodgedMarks = (options: BarSpecOptions): (GroupMark | RectMark)[] => {
   const { name } = options;
 
-  return {
+  const marks: (GroupMark | RectMark)[] = [{
     ...getDodgedGroupMark(options),
     marks: [
       // background bars
@@ -65,5 +67,11 @@ export const getDodgedMark = (options: BarSpecOptions): GroupMark => {
       },
       ...getAnnotationMarks(options, `${name}_facet`, `${name}_position`, `${name}_dodgeGroup`),
     ],
-  };
+  }];
+
+  if (hasTooltipWithDimensionAreaTarget(options.chartTooltips)) {
+    marks.unshift(getBarDimensionHoverArea(options, 'dodged'));
+  }
+
+  return marks;
 };

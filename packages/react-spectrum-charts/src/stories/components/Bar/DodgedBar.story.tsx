@@ -22,6 +22,7 @@ import useChartProps from '../../../hooks/useChartProps';
 import { bindWithProps } from '../../../test-utils';
 import { BarProps } from '../../../types';
 import { barSeriesData, barSubSeriesData } from './data';
+import { GROUP_DATA, MARK_ID } from '@spectrum-charts/constants';
 
 export default {
   title: 'RSC/Bar/Dodged Bar',
@@ -80,6 +81,42 @@ const DodgedBarLineTypeStory: StoryFn<typeof Bar> = (args): ReactElement => {
       <Axis position={args.orientation === 'horizontal' ? 'bottom' : 'left'} grid title="Downloads" />
       <Bar {...args} />
       <Legend title="Operating system" opacity={{ value: 0.2 }} />
+    </Chart>
+  );
+};
+
+const DimensionAreaStory: StoryFn<typeof Bar> = (args): ReactElement => {
+  const chartProps = useChartProps({ data: barSeriesData, width: 800, height: 600 });
+  return (
+    <Chart {...chartProps}>
+      <Axis position={args.orientation === 'horizontal' ? 'left' : 'bottom'} baseline title="Browser" />
+      <Axis position={args.orientation === 'horizontal' ? 'bottom' : 'left'} grid title="Downloads" />
+      <Bar {...args}>
+        <ChartTooltip>
+          {(datum) => {
+            return <>
+              <div>Operating system: {datum.operatingSystem}</div>
+              <div>Browser: {datum.browser}</div>
+              <div>Downloads: {datum.value}</div>
+            </>
+          }}
+        </ChartTooltip>
+        <ChartTooltip targets={['dimensionArea']}>
+          {(datum) => {
+            return (
+              <>
+                <div style={{ fontWeight: 'bold' }}>{datum.browser} Downloads</div>
+                {datum[GROUP_DATA]?.map((d) => (
+                  <div key={d[MARK_ID]}>
+                    {d.operatingSystem}: {d.value}
+                  </div>
+                ))}
+              </>
+            );
+          }}
+        </ChartTooltip>
+      </Bar>
+      <Legend title="Operating system" highlight />
     </Chart>
   );
 };
@@ -145,4 +182,10 @@ OnClick.args = {
   },
 };
 
-export { Color, DodgedStacked, DodgedStackedWithLabels, LineType, Opacity, Popover, OnClick };
+const TooltipOnDimensionArea = bindWithProps(DimensionAreaStory);
+TooltipOnDimensionArea.args = {
+  ...defaultProps,
+  color: 'operatingSystem',
+};
+
+export { Color, DodgedStacked, DodgedStackedWithLabels, LineType, Opacity, Popover, OnClick, TooltipOnDimensionArea};

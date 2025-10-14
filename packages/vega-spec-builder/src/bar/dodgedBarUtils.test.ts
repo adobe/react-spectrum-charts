@@ -36,7 +36,7 @@ import {
   defaultDodgedYEncodings,
   dodgedAnnotationMarks,
 } from './barTestUtils';
-import { getDodgedMark } from './dodgedBarUtils';
+import { getDodgedMarks } from './dodgedBarUtils';
 
 const defaultDodgedOptions: BarSpecOptions = { ...defaultBarOptions, type: 'dodged' };
 
@@ -201,15 +201,16 @@ export const annotationDodgedMarks = {
 };
 
 describe('dodgedBarUtils', () => {
-  describe('getDodgedMark()', () => {
+  describe('getDodgedMarks()', () => {
     test('default options,', () => {
-      expect(getDodgedMark(defaultDodgedOptions)).toStrictEqual(defaultDodgedMark);
+      expect(getDodgedMarks(defaultDodgedOptions)).toStrictEqual([defaultDodgedMark]);
     });
     test('with annotation', () => {
-      const mark = getDodgedMark({
+      const marks = getDodgedMarks({
         ...defaultDodgedOptions,
         barAnnotations: [{ textKey: 'textLabel' }],
       });
+      const mark = marks[0] as GroupMark;
       expect(mark.marks).toHaveLength(3);
       expect(mark.marks?.[0].name).toEqual('bar0_background');
       expect(mark.marks?.[1].name).toEqual('bar0');
@@ -220,20 +221,27 @@ describe('dodgedBarUtils', () => {
       expect(annotationGroup.marks?.[1].name).toEqual('bar0_annotationBackground');
     });
     test('should add tooltip keys if ChartTooltip exists as child', () => {
-      expect(getDodgedMark({ ...defaultDodgedOptions, chartTooltips: [{}] })).toStrictEqual({
+      expect(getDodgedMarks({ ...defaultDodgedOptions, chartTooltips: [{}] })).toEqual([{
         ...defaultDodgedMark,
         marks: [defaultBackgroundMark, defaultMarkWithTooltip],
-      });
+      }]);
     });
-  });
-  describe('getDodgedMark()', () => {
     test('subseries, should include advanced fill, advanced corner radius, and border strokes,', () => {
-      expect(getDodgedMark({ ...defaultDodgedOptions, color: [DEFAULT_COLOR, DEFAULT_SECONDARY_COLOR] })).toStrictEqual(
-        {
+      expect(getDodgedMarks({ ...defaultDodgedOptions, color: [DEFAULT_COLOR, DEFAULT_SECONDARY_COLOR] })).toEqual(
+        [{
           ...defaultDodgedMark,
           marks: [defaultDodgedStackedBackgroundMark, defaultDodgedStackedMark],
-        }
+        }]
       );
+    });
+    test('should add dimension hover area marks if has tooltip with dimension area target', () => {
+      const marks = getDodgedMarks({
+        ...defaultDodgedOptions,
+        chartTooltips: [{ targets: ['dimensionArea'] }],
+      });
+      expect(marks).toHaveLength(2);
+      expect(marks[0].name).toEqual('bar0_dimensionHoverArea');
+      expect(marks[1].name).toEqual('bar0_group');
     });
   });
 });
