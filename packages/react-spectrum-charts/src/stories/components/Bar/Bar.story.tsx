@@ -92,6 +92,27 @@ const BarStory: StoryFn<typeof Bar> = (args): ReactElement => {
   );
 };
 
+const BarWithTooltipStory: StoryFn<typeof Bar> = (args): ReactElement => {
+  const chartProps = useChartProps({ data: barData, width: 600, height: 600 });
+  return (
+    <Chart {...chartProps}>
+      <Axis position={args.orientation === 'horizontal' ? 'left' : 'bottom'} baseline title="Browser" />
+      <Axis position={args.orientation === 'horizontal' ? 'bottom' : 'left'} grid title="Downloads" />
+      <Bar {...args}>
+        <ChartTooltip>
+          {(datum) => {
+            return (
+              <div>
+                {datum.browser}: {datum.downloads}
+              </div>
+            );
+          }}
+        </ChartTooltip>
+      </Bar>
+    </Chart>
+  );
+};
+
 const BarDimensionAreaStory: StoryFn<typeof Bar> = (args): ReactElement => {
   const chartProps = useChartProps({ data: barData, width: 600, height: 600 });
   return (
@@ -187,6 +208,11 @@ BarWithUTCDatetimeFormat.args = {
   dimensionDataType: 'time',
 };
 
+const WithTooltip = bindWithProps(BarWithTooltipStory);
+WithTooltip.args = {
+  ...defaultProps,
+};
+
 const TooltipOnDimensionArea = bindWithProps(BarDimensionAreaStory);
 TooltipOnDimensionArea.args = {
   ...defaultProps,
@@ -203,5 +229,6 @@ export {
   Opacity,
   PaddingRatio,
   TooltipOnDimensionArea,
+  WithTooltip,
   WithAnnotation,
 };

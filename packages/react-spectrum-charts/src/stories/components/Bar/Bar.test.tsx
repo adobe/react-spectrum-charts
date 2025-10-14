@@ -31,6 +31,7 @@ import {
   PaddingRatio,
   TooltipOnDimensionArea,
   WithAnnotation,
+  WithTooltip,
 } from './Bar.story';
 import { Color, DodgedStacked } from './DodgedBar.story';
 import { Basic as StackedBasic } from './StackedBar.story';
@@ -238,6 +239,25 @@ describe('Bar', () => {
       expect(bars[0]).toHaveAttribute('opacity', `${FADE_FACTOR}`);
       expect(bars[4]).toHaveAttribute('opacity', `1`);
       tooltip = await screen.findByTestId('rsc-tooltip');
+      expect(tooltip).toBeInTheDocument();
+      expect(within(tooltip).getByText('Explorer: 500')).toBeInTheDocument();
+
+    });
+  });
+  describe('WithTooltip', () => {
+    test('hovering bar should apply highlight styling and show tooltip', async () => {
+      render(<WithTooltip {...WithTooltip.args} />);
+      const chart = await findChart();
+      expect(chart).toBeInTheDocument();
+      const bars = await findAllMarksByGroupName(chart, 'bar0');
+      expect(bars).toHaveLength(5);
+      
+      
+      // hovering bar should do normal stuff
+      await hoverNthElement(bars, 4);
+      expect(bars[0]).toHaveAttribute('opacity', `${FADE_FACTOR}`);
+      expect(bars[4]).toHaveAttribute('opacity', `1`);
+      const tooltip = await screen.findByTestId('rsc-tooltip');
       expect(tooltip).toBeInTheDocument();
       expect(within(tooltip).getByText('Explorer: 500')).toBeInTheDocument();
 
