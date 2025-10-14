@@ -32,7 +32,7 @@ export const getTrellisGroupMark = (options: BarSpecOptions, marks: Mark[], repe
     facetName,
     scaleName,
     axis: trellisAxis,
-    rangeScale: trellisRangeScale,
+    dimensionSizeSignal: trellisDimensionSizeSignal,
   } = getTrellisProperties(options);
 
   return {
@@ -49,7 +49,7 @@ export const getTrellisGroupMark = (options: BarSpecOptions, marks: Mark[], repe
     },
 
     // Override the default 'height' or 'width' signal with the trellis scale bandwidth
-    signals: [{ name: trellisRangeScale, update: `bandwidth('${scaleName}')` }],
+    signals: [{ name: trellisDimensionSizeSignal, update: `bandwidth('${scaleName}')` }],
 
     // Encode the trellis on its axis
     encode: {
@@ -69,12 +69,12 @@ export const addTrellisScale = (scales: Scale[], options: BarSpecOptions) => {
   if (!options.trellis) {
     return;
   }
-  const { scaleName, rangeScale, paddingInner } = getTrellisProperties(options);
+  const { scaleName, dimensionSizeSignal, paddingInner } = getTrellisProperties(options);
   const trellisScaleIndex = getScaleIndexByName(scales, scaleName, 'band');
   scales[trellisScaleIndex] = addDomainFields(scales[trellisScaleIndex], [options.trellis]);
   scales[trellisScaleIndex] = {
     ...scales[trellisScaleIndex],
-    range: rangeScale,
+    range: dimensionSizeSignal,
     paddingInner,
   } as Scale;
 };
@@ -91,7 +91,7 @@ export interface BarTrellisProperties {
   facetName: string;
   scaleName: 'xTrellisBand' | 'yTrellisBand';
   markName: 'xTrellisGroup' | 'yTrellisGroup';
-  rangeScale: 'width' | 'height';
+  dimensionSizeSignal: 'width' | 'height';
   axis: 'x' | 'y';
   paddingInner: number;
 }
@@ -107,7 +107,7 @@ export const getTrellisProperties = ({
     facetName: `${name}_trellis`,
     scaleName: `${axis}TrellisBand`,
     markName: `${axis}TrellisGroup`,
-    rangeScale: axis === 'x' ? 'width' : 'height',
+    dimensionSizeSignal: axis === 'x' ? 'width' : 'height',
     axis,
     paddingInner: trellisPadding,
   };

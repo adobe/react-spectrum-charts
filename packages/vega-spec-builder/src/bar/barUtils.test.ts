@@ -292,14 +292,16 @@ describe('barUtils', () => {
         dimensionAxis: 'x',
         metricScaleKey: 'yLinear',
         dimensionScaleKey: 'xBand',
-        rangeScale: 'width',
+        dimensionSizeSignal: 'width',
+        metricSizeSignal: 'height',
       });
       expect(getOrientationProperties('vertical', 'scale1')).toEqual({
         metricAxis: 'y',
         dimensionAxis: 'x',
         metricScaleKey: 'scale1',
         dimensionScaleKey: 'xBand',
-        rangeScale: 'width',
+        dimensionSizeSignal: 'width',
+        metricSizeSignal: 'height',
       });
     });
     test('returns correct properties for horizontal orientation', () => {
@@ -308,14 +310,16 @@ describe('barUtils', () => {
         dimensionAxis: 'y',
         metricScaleKey: 'xLinear',
         dimensionScaleKey: 'yBand',
-        rangeScale: 'height',
+        dimensionSizeSignal: 'height',
+        metricSizeSignal: 'width',
       });
       expect(getOrientationProperties('horizontal', 'scale2')).toEqual({
         metricAxis: 'x',
         dimensionAxis: 'y',
         metricScaleKey: 'scale2',
         dimensionScaleKey: 'yBand',
-        rangeScale: 'height',
+        dimensionSizeSignal: 'height',
+        metricSizeSignal: 'width',
       });
     });
   });
