@@ -62,7 +62,7 @@ import {
   isDodgedAndStacked,
   isDualMetricAxis,
 } from './barUtils';
-import { getDodgedMark } from './dodgedBarUtils';
+import { getDodgedMarks } from './dodgedBarUtils';
 import { getDodgedAndStackedBarMark, getStackedBarMarks } from './stackedBarUtils';
 import { addTrellisScale, getTrellisGroupMark, isTrellised } from './trellisedBarUtils';
 
@@ -197,6 +197,7 @@ export const addData = produce<Data[], [BarSpecOptions]>((data, options) => {
     data.push(getStackAggregateData(options));
   }
   if (type === 'dodged' || isDodgedAndStacked(options)) {
+    data.push(getDodgedGroupAggregateData(options));
     data[index].transform?.push(getDodgeGroupTransform(options));
   }
 
@@ -248,6 +249,20 @@ const getStackFields = ({ trellis, color, dimension, lineType, opacity, type }: 
     ...(type === 'dodged' ? facets : []),
     ...(type === 'stacked' ? secondaryFacets : []),
   ];
+};
+
+export const getDodgedGroupAggregateData = (options: BarSpecOptions): Data => {
+  const { dimension, name } = options;
+  return {
+    name: `${name}_groups`,
+    source: FILTERED_TABLE,
+    transform: [
+      {
+        type: 'aggregate',
+        groupby: [dimension],
+      }
+    ],
+  };
 };
 
 export const getDodgeGroupTransform = ({ color, lineType, name, opacity, type }: BarSpecOptions): FormulaTransform => {
@@ -364,7 +379,7 @@ export const addMarks = produce<Mark[], [BarSpecOptions]>((marks, options) => {
   } else if (type === 'stacked') {
     barMarks.push(...getStackedBarMarks(options));
   } else {
-    barMarks.push(getDodgedMark(options));
+    barMarks.push(...getDodgedMarks(options));
   }
 
   const popovers = getPopovers(chartPopovers, name);

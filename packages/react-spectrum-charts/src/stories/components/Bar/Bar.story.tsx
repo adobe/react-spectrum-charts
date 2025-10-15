@@ -9,16 +9,19 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import React, { ReactElement, createElement, useState } from 'react';
+import { ReactElement, createElement, useState } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
+import { GROUP_DATA } from '@spectrum-charts/constants';
 import { Datum } from '@spectrum-charts/vega-spec-builder';
 
+import { Chart } from '../../../Chart';
+import { Axis, Bar, ChartTooltip } from '../../../components';
 import { Annotation } from '../../../components/Annotation';
 import useChartProps from '../../../hooks/useChartProps';
-import { Axis, Bar, BarProps, Chart } from '../../../index';
 import { bindWithProps } from '../../../test-utils';
+import { BarProps } from '../../../types';
 import { barData, barDataWithUTC } from './data';
 
 export default {
@@ -85,6 +88,49 @@ const BarStory: StoryFn<typeof Bar> = (args): ReactElement => {
       <Axis position={args.orientation === 'horizontal' ? 'left' : 'bottom'} baseline title="Browser" />
       <Axis position={args.orientation === 'horizontal' ? 'bottom' : 'left'} grid title="Downloads" />
       <Bar {...args} />
+    </Chart>
+  );
+};
+
+const BarWithTooltipStory: StoryFn<typeof Bar> = (args): ReactElement => {
+  const chartProps = useChartProps({ data: barData, width: 600, height: 600 });
+  return (
+    <Chart {...chartProps}>
+      <Axis position={args.orientation === 'horizontal' ? 'left' : 'bottom'} baseline title="Browser" />
+      <Axis position={args.orientation === 'horizontal' ? 'bottom' : 'left'} grid title="Downloads" />
+      <Bar {...args}>
+        <ChartTooltip>
+          {(datum) => {
+            return (
+              <div>
+                {datum.browser}: {datum.downloads}
+              </div>
+            );
+          }}
+        </ChartTooltip>
+      </Bar>
+    </Chart>
+  );
+};
+
+const BarDimensionAreaStory: StoryFn<typeof Bar> = (args): ReactElement => {
+  const chartProps = useChartProps({ data: barData, width: 600, height: 600 });
+  return (
+    <Chart {...chartProps}>
+      <Axis position={args.orientation === 'horizontal' ? 'left' : 'bottom'} baseline title="Browser" />
+      <Axis position={args.orientation === 'horizontal' ? 'bottom' : 'left'} grid title="Downloads" />
+      <Bar {...args}>
+        <ChartTooltip targets={['item', 'dimensionArea']}>
+          {(datum) => {
+            const d = datum[GROUP_DATA]?.[0] ?? datum;
+            return (
+              <div>
+                {d.browser}: {d.downloads}
+              </div>
+            );
+          }}
+        </ChartTooltip>
+      </Bar>
     </Chart>
   );
 };
@@ -162,15 +208,27 @@ BarWithUTCDatetimeFormat.args = {
   dimensionDataType: 'time',
 };
 
+const WithTooltip = bindWithProps(BarWithTooltipStory);
+WithTooltip.args = {
+  ...defaultProps,
+};
+
+const TooltipOnDimensionArea = bindWithProps(BarDimensionAreaStory);
+TooltipOnDimensionArea.args = {
+  ...defaultProps,
+};
+
 export {
+  BarWithUTCDatetimeFormat,
   Basic,
+  HasSquareCorners,
   Horizontal,
   LineType,
-  Opacity,
-  PaddingRatio,
-  WithAnnotation,
-  HasSquareCorners,
   OnClick,
   OnMouseInputs,
-  BarWithUTCDatetimeFormat,
+  Opacity,
+  PaddingRatio,
+  TooltipOnDimensionArea,
+  WithTooltip,
+  WithAnnotation,
 };

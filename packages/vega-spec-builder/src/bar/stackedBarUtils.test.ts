@@ -22,7 +22,7 @@ import {
 } from '@spectrum-charts/constants';
 
 import { defaultBarEnterEncodings, defaultBarOptions, defaultBarStrokeEncodings } from './barTestUtils';
-import { getDodgedAndStackedBarMark, getStackedBarDimensionAreaPositionEncodings, getStackedBarMarks, getStackedDimensionEncodings } from './stackedBarUtils';
+import { getDodgedAndStackedBarMark, getStackedBarMarks, getStackedDimensionEncodings } from './stackedBarUtils';
 
 const defaultStackedBarXEncondings: RectEncodeEntry = {
   x: { scale: 'xBand', field: DEFAULT_CATEGORICAL_DIMENSION },
@@ -166,16 +166,5 @@ describe('stackedBarUtils', () => {
         x: { field: 'bar0_dodgeGroup', scale: 'bar0_position' },
       });
     });
-  });
-});
-
-describe('getStackedBarDimensionAreaPositionEncodings()', () => {
-  test('should return the correct encodings for vertical orientation', () => {
-    const positionsEncodings = getStackedBarDimensionAreaPositionEncodings({ ...defaultBarOptions, orientation: 'vertical' });
-    expect(Object.keys(positionsEncodings)).toEqual(['y', 'y2', 'x', 'width']);
-  });
-  test('should return the correct encodings for horizontal orientation', () => {
-    const positionsEncodings = getStackedBarDimensionAreaPositionEncodings({ ...defaultBarOptions, orientation: 'horizontal' });
-    expect(Object.keys(positionsEncodings)).toEqual(['x', 'x2', 'y', 'height']);
   });
 });

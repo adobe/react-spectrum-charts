@@ -36,6 +36,8 @@ import {
   defaultStackedYEncodings,
 } from './barTestUtils';
 import {
+  getBarDimensionAreaPositionEncodings,
+  getBarDimensionHoverArea,
   getBarPadding,
   getBaseBarEnterEncodings,
   getBaseScaleName,
@@ -545,5 +547,23 @@ describe('barUtils', () => {
       };
       expect(getBaseScaleName(options)).toEqual('xLinear');
     });
+  });
+});
+
+describe('getBarDimensionHoverArea()', () => {
+  test('should use the correct data source based on the type', () => {
+    expect(getBarDimensionHoverArea({ ...defaultBarOptions, type: 'stacked' }, 'stacked').from).toHaveProperty('data', 'bar0_stacks');
+    expect(getBarDimensionHoverArea({ ...defaultBarOptions, type: 'dodged' }, 'dodged').from).toHaveProperty('data', 'bar0_groups');
+  });
+})
+
+describe('getBarDimensionAreaPositionEncodings()', () => {
+  test('should return the correct encodings for vertical orientation', () => {
+    const positionsEncodings = getBarDimensionAreaPositionEncodings({ ...defaultBarOptions, orientation: 'vertical' });
+    expect(Object.keys(positionsEncodings)).toEqual(['y', 'y2', 'x', 'width']);
+  });
+  test('should return the correct encodings for horizontal orientation', () => {
+    const positionsEncodings = getBarDimensionAreaPositionEncodings({ ...defaultBarOptions, orientation: 'horizontal' });
+    expect(Object.keys(positionsEncodings)).toEqual(['x', 'x2', 'y', 'height']);
   });
 });

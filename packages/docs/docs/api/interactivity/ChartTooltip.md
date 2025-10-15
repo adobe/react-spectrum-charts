@@ -33,7 +33,7 @@ const data = [
 </Chart>;
 ```
 
-### Tooltip with dimension area targeting (stacked bars)
+### Tooltip with dimension area targeting (Bar only)
 
 ```jsx
 <Chart data={data}>
@@ -98,7 +98,7 @@ In this example, two separate tooltips are defined: one for hovering over the ac
       <td>targets</td>
       <td>('dimensionArea' | 'item')[]</td>
       <td>['item']</td>
-      <td>Specifies which areas of the chart should trigger the tooltip. `item` will trigger the tooltip when hovering over the actual data mark. `dimensionArea` will trigger the tooltip when hovering anywhere within the dimension area (e.g., for stacked bars, hovering anywhere along the dimension slice).<br/><strong>Note:</strong> Currently only active for stacked bar charts.</td>
+      <td>Specifies which areas of the chart should trigger the tooltip. `item` will trigger the tooltip when hovering over the actual data mark. `dimensionArea` will trigger the tooltip when hovering anywhere within the dimension area (e.g., for bar charts, hovering anywhere along the dimension slice).<br/><strong>Note:</strong> Currently only active for bar charts.</td>
     </tr>
   </tbody>
 </table>
