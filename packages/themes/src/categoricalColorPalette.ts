@@ -39,3 +39,15 @@ export const categorical16 = [
   colors['categorical-1500'],
   colors['categorical-1600'],
 ];
+
+export const categorical24 = [
+  ...categorical16,
+  colors['categorical-1700'],
+  colors['categorical-1800'],
+  colors['categorical-1900'],
+  colors['categorical-2000'],
+  colors['categorical-2100'],
+  colors['categorical-2200'],
+  colors['categorical-2300'],
+  colors['categorical-2400'],
+];
