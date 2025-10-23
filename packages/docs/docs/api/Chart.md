@@ -213,6 +213,7 @@ Available color schemes:
 - `categorical6`
 - `categorical12`
 - `categorical16`
+- `categorical24`
 - `divergentOrangeYellowSeafoam5`
 - `divergentOrangeYellowSeafoam9`
 - `divergentOrangeYellowSeafoam15`
