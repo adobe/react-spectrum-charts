@@ -17,8 +17,6 @@ import { getColorValue } from '@spectrum-charts/themes';
 import { BulletSpecOptions } from '../types';
 
 export const addMarks = produce<Mark[], [BulletSpecOptions]>((marks, bulletOptions) => {
-  const markGroupEncodeUpdateDirection = bulletOptions.direction === 'column' ? 'y' : 'x';
-  const bulletGroupWidth = bulletOptions.direction === 'column' ? 'width' : 'bulletGroupWidth';
 
   const bulletMark: GroupMark = {
     name: 'bulletGroup',

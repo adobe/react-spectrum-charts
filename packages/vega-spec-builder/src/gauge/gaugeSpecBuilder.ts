@@ -105,12 +105,12 @@ export const addSignals = produce<Signal[], [GaugeSpecOptions]>((signals, option
   signals.push({ name: 'arcMaxVal', value: 100 });
   
   // Hardcoded angles 
-  signals.push({ name: 'startAngle', value: -Math.PI / 2 }); // -90 degrees
-  signals.push({ name: 'endAngle', value: Math.PI / 2 });    // 90 degrees
+  signals.push({ name: 'startAngle', value: "PI / 2" }); // -90 degrees
+  signals.push({ name: 'endAngle', value: "PI / 2" });    // 90 degrees
   
   // Get current value from first row of table data
-  signals.push({ name: 'currVal', update: "data('table')[0].currentAmount" });
-  signals.push({ name: 'target', update: "data('table')[0].target" });
+  signals.push({ name: 'currVal', value: "30" });
+  signals.push({ name: 'target', value: "80" });
   
   
 });
