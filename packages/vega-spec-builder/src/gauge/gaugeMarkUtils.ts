@@ -12,344 +12,168 @@
 import { produce } from 'immer';
 import { Mark } from 'vega';
 
-import { getColorValue } from '@spectrum-charts/themes';
+// import { getColorValue } from '@spectrum-charts/themes';
 
 import { GaugeSpecOptions } from '../types';
 
 export const addMarks = produce<Mark[], [GaugeSpecOptions]>((marks, GaugeOptions) => {
 
-  const gaugeMark: GroupMark = {
-    name: 'backgroundArcRoundEdge',
+  export const addGaugeMarks = produce<Mark[], [GaugeSpecOptions]>((marks, opt) => {
+  const {
+    name,
+    backgroundFill,
+    backgroundStroke,
+    fillerColorSignal,
+    straightEdgeOffsetExpr,
+    labelColor,
+    labelSize,
+  } = opt;
+
+  // Background arcs (rounded, then straight overlay)
+  marks.push(getBackgroundArcRounded(name, backgroundFill, backgroundStroke));
+  marks.push(getBackgroundArcStraight(name, backgroundFill, backgroundStroke, straightEdgeOffsetExpr));
+
+  // Text labels: max, target, min
+  marks.push(getMaxValueText(name, labelColor, labelSize));
+  marks.push(getTargetValueText(name, labelColor, labelSize));
+  marks.push(getMinValueText(name, labelColor, labelSize));
+
+  // Filler arc (value fill)
+  marks.push(getFillerArc(name, fillerColorSignal));
+}
+});
+
+function getBackgroundArcRounded(name: string, fill: string, stroke: string): Mark {
+  return {
+    name: `${name}BackgroundArcRounded`,
+    description: 'Background Arc (Round Edge)',
     type: 'arc',
     encode: {
       enter: {
-        { scale: 'groupScale', field: `${gaugeOptions.dimension}` },
-        height: { signal: 'bulletGroupHeight' },
-        width: { signal: bulletGroupWidth },
-      },
-    },
-    marks: [],
-  };
-
-  const thresholds = bulletOptions.thresholds;
-
-  if (Array.isArray(thresholds) && thresholds.length > 0) {
-    bulletMark.data = [
-      {
-        name: 'thresholds',
-        values: thresholds,
-        transform: [{ type: 'identifier', as: 'id' }],
-      },
-    ];
-    bulletMark.marks?.push(getBulletMarkThreshold(bulletOptions));
-  } else if (bulletOptions.track) {
-    bulletMark.marks?.push(getBulletTrack(bulletOptions));
-  }
-
-  bulletMark.marks?.push(getBulletMarkRect(bulletOptions));
-  if (bulletOptions.target && bulletOptions.showTarget !== false) {
-    bulletMark.marks?.push(getBulletMarkTarget(bulletOptions));
-    if (bulletOptions.showTargetValue) {
-      bulletMark.marks?.push(getBulletMarkTargetValueLabel(bulletOptions));
+        x:           { signal: 'centerX' },
+        y:           { signal: 'centerY' },
+        innerRadius: { signal: 'innerRadius' },
+        outerRadius: { signal: 'outerRadius' },
+        startAngle:  { signal: 'startAngle' },
+        endAngle:    { signal: 'endAngle' },
+        cornerRadius:{ signal: 'cornerR' },
+        fill:        { value: fill },
+        stroke:      { value: stroke }
+      }
     }
-  }
-
-  if (bulletOptions.labelPosition === 'top' || bulletOptions.direction === 'row') {
-    bulletMark.marks?.push(getBulletMarkLabel(bulletOptions));
-    bulletMark.marks?.push(getBulletMarkValueLabel(bulletOptions));
-  }
-
-  marks.push(bulletMark);
-});
-
-export function getBulletMarkRect(bulletOptions: BulletSpecOptions): Mark {
-  //The vertical positioning is calculated starting at the bulletgroupheight
-  //and then subtracting two times the bullet height to center the bullet bar
-  //in the middle of the threshold. The 3 is subtracted because the bulletgroup height
-  //starts the bullet below the threshold area.
-  //Additionally, the value of the targetValueLabelHeight is subtracted if the target value label is shown
-  //to make sure that the bullet bar is not drawn over the target value label.
-  const bulletMarkRectEncodeUpdateYSignal =
-    bulletOptions.showTarget && bulletOptions.showTargetValue
-      ? 'bulletGroupHeight - targetValueLabelHeight - 3 - 2 * bulletHeight'
-      : 'bulletGroupHeight - 3 - 2 * bulletHeight';
-
-  const fillColor =
-    bulletOptions.thresholdBarColor && (bulletOptions.thresholds?.length ?? 0) > 0
-      ? [{ field: 'barColor' }]
-      : [{ value: bulletOptions.color }];
-
-  const bulletMarkRect: Mark = {
-    name: `${bulletOptions.name}Rect`,
-    description: `${bulletOptions.name}Rect`,
-    type: 'rect',
-    from: { data: 'bulletGroups' },
-    encode: {
-      enter: {
-        cornerRadiusTopLeft: [{ test: `datum.${bulletOptions.metric} < 0`, value: 3 }],
-        cornerRadiusBottomLeft: [{ test: `datum.${bulletOptions.metric} < 0`, value: 3 }],
-        cornerRadiusTopRight: [{ test: `datum.${bulletOptions.metric} > 0`, value: 3 }],
-        cornerRadiusBottomRight: [{ test: `datum.${bulletOptions.metric} > 0`, value: 3 }],
-        fill: fillColor,
-      },
-      update: {
-        x: { scale: 'xscale', value: 0 },
-        x2: { scale: 'xscale', field: `${bulletOptions.metric}` },
-        height: { signal: 'bulletHeight' },
-        y: { signal: bulletMarkRectEncodeUpdateYSignal },
-      },
-    },
   };
-
-  return bulletMarkRect;
 }
 
-export function getBulletMarkTarget(bulletOptions: BulletSpecOptions): Mark {
-  const solidColor = getColorValue('gray-900', bulletOptions.colorScheme);
-
-  //When the target value label is shown, we must subtract the height of the target value label
-  //to make sure that the target line is not drawn over the target value label
-  const bulletMarkTargetEncodeUpdateY =
-    bulletOptions.showTarget && bulletOptions.showTargetValue
-      ? 'bulletGroupHeight - targetValueLabelHeight - targetHeight'
-      : 'bulletGroupHeight - targetHeight';
-  const bulletMarkTargetEncodeUpdateY2 =
-    bulletOptions.showTarget && bulletOptions.showTargetValue
-      ? 'bulletGroupHeight - targetValueLabelHeight'
-      : 'bulletGroupHeight';
-
-  const bulletMarkTarget: Mark = {
-    name: `${bulletOptions.name}Target`,
-    description: `${bulletOptions.name}Target`,
-    type: 'rule',
-    from: { data: 'bulletGroups' },
-    encode: {
-      enter: {
-        stroke: { value: `${solidColor}` },
-        strokeWidth: { value: 2 },
-      },
-      update: {
-        x: { scale: 'xscale', field: `${bulletOptions.target}` },
-        y: { signal: bulletMarkTargetEncodeUpdateY },
-        y2: { signal: bulletMarkTargetEncodeUpdateY2 },
-      },
-    },
-  };
-
-  return bulletMarkTarget;
-}
-
-export function getBulletMarkLabel(bulletOptions: BulletSpecOptions): Mark {
-  const barLabelColor = getColorValue('gray-600', bulletOptions.colorScheme);
-
-  const bulletMarkLabel: Mark = {
-    name: `${bulletOptions.name}Label`,
-    description: `${bulletOptions.name}Label`,
-    type: 'text',
-    from: { data: 'bulletGroups' },
-    encode: {
-      enter: {
-        text: { signal: `datum.${bulletOptions.dimension}` },
-        align: { value: 'left' },
-        baseline: { value: 'top' },
-        fill: { value: `${barLabelColor}` },
-      },
-      update: { x: { value: 0 }, y: { value: 0 } },
-    },
-  };
-
-  return bulletMarkLabel;
-}
-
-export function getBulletMarkValueLabel(bulletOptions: BulletSpecOptions): Mark {
-  const defaultColor = getColorValue(bulletOptions.color, bulletOptions.colorScheme);
-  const solidColor = getColorValue('gray-900', bulletOptions.colorScheme);
-  const encodeUpdateSignalWidth = bulletOptions.direction === 'column' ? 'width' : 'bulletGroupWidth';
-  const fillExpr =
-    bulletOptions.thresholdBarColor && (bulletOptions.thresholds?.length ?? 0) > 0
-      ? `datum.barColor === '${defaultColor}' ? '${solidColor}' : datum.barColor`
-      : `'${solidColor}'`;
-
-  const bulletMarkValueLabel: Mark = {
-    name: `${bulletOptions.name}ValueLabel`,
-    description: `${bulletOptions.name}ValueLabel`,
-    type: 'text',
-    from: { data: 'bulletGroups' },
-    encode: {
-      enter: {
-        text: {
-          signal: `datum.${bulletOptions.metric} != null ? format(datum.${bulletOptions.metric}, '${
-            bulletOptions.numberFormat || ''
-          }') : ''`,
-        },
-        align: { value: 'right' },
-        baseline: { value: 'top' },
-        fill: { signal: fillExpr },
-      },
-      update: { x: { signal: encodeUpdateSignalWidth }, y: { value: 0 } },
-    },
-  };
-
-  return bulletMarkValueLabel;
-}
-
-export function getBulletMarkTargetValueLabel(bulletOptions: BulletSpecOptions): Mark {
-  const solidColor = getColorValue('gray-900', bulletOptions.colorScheme);
-
-  const bulletMarkTargetValueLabel: Mark = {
-    name: `${bulletOptions.name}TargetValueLabel`,
-    description: `${bulletOptions.name}TargetValueLabel`,
-    type: 'text',
-    from: { data: 'bulletGroups' },
-    encode: {
-      enter: {
-        text: {
-          signal: `datum.${bulletOptions.target} != null ? 'Target: ' + format(datum.${bulletOptions.target}, '$,.2f') : 'No Target'`,
-        },
-        align: { value: 'center' },
-        baseline: { value: 'top' },
-        fill: { value: `${solidColor}` },
-      },
-      update: {
-        x: { scale: 'xscale', field: `${bulletOptions.target}` },
-        y: { signal: 'bulletGroupHeight - targetValueLabelHeight + 6' },
-      },
-    },
-  };
-
-  return bulletMarkTargetValueLabel;
-}
-
-export function getBulletMarkThreshold(bulletOptions: BulletSpecOptions): Mark {
-  // Vertically center the threshold bar by offsetting from bulletGroupHeight.
-  // Subtract 3 for alignment and targetValueLabelHeight if the label is shown.
-  const baseHeightSignal = 'bulletGroupHeight - 3 - bulletThresholdHeight';
-  const encodeUpdateYSignal =
-    bulletOptions.showTarget && bulletOptions.showTargetValue
-      ? `${baseHeightSignal} - targetValueLabelHeight`
-      : baseHeightSignal;
-
-  const bulletMarkThreshold: Mark = {
-    name: `${bulletOptions.name}Threshold`,
-    description: `${bulletOptions.name}Threshold`,
-    type: 'rect',
-    from: { data: 'thresholds' },
-    clip: true,
-    encode: {
-      enter: {
-        cornerRadiusTopLeft: [{ test: `!isDefined(datum.thresholdMin) && domain('xscale')[0] !== 0`, value: 3 }],
-        cornerRadiusBottomLeft: [{ test: `!isDefined(datum.thresholdMin) && domain('xscale')[0] !== 0`, value: 3 }],
-        cornerRadiusTopRight: [{ test: `!isDefined(datum.thresholdMax) && domain('xscale')[1] !== 0`, value: 3 }],
-        cornerRadiusBottomRight: [{ test: `!isDefined(datum.thresholdMax) && domain('xscale')[1] !== 0`, value: 3 }],
-        fill: { field: 'fill' },
-        fillOpacity: { value: 0.2 },
-      },
-      update: {
-        x: {
-          signal: "isDefined(datum.thresholdMin) ? scale('xscale', datum.thresholdMin) : 0",
-        },
-        x2: {
-          signal: "isDefined(datum.thresholdMax) ? scale('xscale', datum.thresholdMax) : width",
-        },
-        height: { signal: 'bulletThresholdHeight' },
-        y: { signal: encodeUpdateYSignal },
-      },
-    },
-  };
-  return bulletMarkThreshold;
-}
-
-export function getBulletTrack(bulletOptions: BulletSpecOptions): Mark {
-  const trackColor = getColorValue('gray-200', bulletOptions.colorScheme);
-  const trackWidth = bulletOptions.direction === 'column' ? 'width' : 'bulletGroupWidth';
-  // Subtracting 20 accounts for the space used by the target value label
-  const trackY =
-    bulletOptions.showTarget && bulletOptions.showTargetValue
-      ? 'bulletGroupHeight - 3 - 2 * bulletHeight - 20'
-      : 'bulletGroupHeight - 3 - 2 * bulletHeight';
-
-  const bulletTrack: Mark = {
-    name: `${bulletOptions.name}Track`,
-    description: `${bulletOptions.name}Track`,
-    type: 'rect',
-    from: { data: 'bulletGroups' },
-    encode: {
-      enter: {
-        fill: { value: trackColor },
-        cornerRadiusTopRight: [{ test: "domain('xscale')[1] !== 0", value: 3 }],
-        cornerRadiusBottomRight: [{ test: "domain('xscale')[1] !== 0", value: 3 }],
-        cornerRadiusTopLeft: [{ test: "domain('xscale')[0] !== 0", value: 3 }],
-        cornerRadiusBottomLeft: [{ test: "domain('xscale')[0] !== 0", value: 3 }],
-      },
-      update: {
-        x: { value: 0 },
-        width: { signal: trackWidth },
-        height: { signal: 'bulletHeight' },
-        y: { signal: trackY },
-      },
-    },
-  };
-
-  return bulletTrack;
-}
-
-export function getBulletLabelAxesLeft(labelOffset): Axis {
+function getBackgroundArcStraight(
+  name: string,
+  fill: string,
+  stroke: string,
+  offsetExpr: string
+): Mark {
   return {
-    scale: 'groupScale',
-    orient: 'left',
-    tickSize: 0,
-    labelOffset: labelOffset,
-    labelPadding: 10,
-    labelColor: '#797979',
-    domain: false,
-  };
-}
-
-export function getBulletLabelAxesRight(bulletOptions: BulletSpecOptions, labelOffset): Axis {
-  return {
-    scale: 'groupScale',
-    orient: 'right',
-    tickSize: 0,
-    labelOffset: labelOffset,
-    labelPadding: 10,
-    domain: false,
+    name: `${name}BackgroundArcStraight`,
+    description: 'Background Arc (Straight Edge)',
+    type: 'arc',
     encode: {
-      labels: {
-        update: {
-          text: {
-            signal: `info(data('table')[datum.index * (length(data('table')) - 1)].${
-              bulletOptions.metric
-            }) != null ? format(info(data('table')[datum.index * (length(data('table')) - 1)].${
-              bulletOptions.metric
-            }), '${bulletOptions.numberFormat || ''}') : ''`,
-          },
-        },
-      },
-    },
+      enter: {
+        x:           { signal: 'centerX' },
+        y:           { signal: 'centerY' },
+        innerRadius: { signal: 'innerRadius' },
+        outerRadius: { signal: 'outerRadius' },
+        // startAngle offset to flatten the left edge
+        startAngle:  { signal: `startAngle + (${offsetExpr})` },
+        endAngle:    { signal: 'endAngle' },
+        fill:        { value: fill },
+        stroke:      { value: stroke }
+      }
+    }
   };
 }
 
-export function getBulletScaleAxes(): Axis {
+function getMaxValueText(name: string, color: string, fontSize: number): Mark {
   return {
-    labelOffset: 2,
-    scale: 'xscale',
-    orient: 'bottom',
-    ticks: false,
-    labelColor: 'gray',
-    domain: false,
-    tickCount: 5,
-    offset: { signal: 'axisOffset' },
+    name: `${name}MaxValText`,
+    description: 'Max Val Text',
+    type: 'text',
+    encode: {
+      enter: {
+        x:         { signal: 'MaxTextX' },
+        y:         { signal: 'MaxTextY' },
+        text:      { signal: "format(arcMaxVal, '.0f')" },
+        align:     { value: 'center' },
+        baseline:  { value: 'middle' },
+        fontSize:  { value: fontSize },
+        fill:      { value: color },
+        fontWeight:{ value: 'bold' }
+      },
+      // Keeping parity with your example; this update prop is harmless for text
+      update: {
+        endAngle:  { signal: "scale('angleScale', arcMaxVal)" }
+      }
+    }
   };
 }
 
-export const addAxes = produce<Axis[], [BulletSpecOptions]>((axes, bulletOptions) => {
-  if (bulletOptions.metricAxis && bulletOptions.direction === 'column' && !bulletOptions.showTargetValue) {
-    axes.push(getBulletScaleAxes());
-  }
+function getTargetValueText(name: string, color: string, fontSize: number): Mark {
+  return {
+    name: `${name}TargetValText`,
+    description: 'Target Val Text',
+    type: 'text',
+    encode: {
+      enter: {
+        x:         { signal: 'targetTextX' },
+        y:         { signal: 'targetTextY' },
+        text:      { signal: "format(target, '.0f')" },
+        align:     { value: 'center' },
+        baseline:  { value: 'middle' },
+        fontSize:  { value: fontSize },
+        fontWeight:{ value: 'bold' },
+        fill:      { value: color }
+      }
+    }
+  };
+}
 
-  if (bulletOptions.labelPosition === 'side' && bulletOptions.direction === 'column') {
-    const labelOffset = bulletOptions.showTargetValue && bulletOptions.showTarget ? -8 : 2;
-    axes.push(getBulletLabelAxesLeft(labelOffset));
-    axes.push(getBulletLabelAxesRight(bulletOptions, labelOffset));
-  }
-});
+function getMinValueText(name: string, color: string, fontSize: number): Mark {
+  return {
+    name: `${name}MinValText`,
+    description: 'Min Val Text',
+    type: 'text',
+    encode: {
+      enter: {
+        x:         { signal: 'MinTextX' },
+        y:         { signal: 'MinTextY' },
+        text:      { signal: "format(arcMinVal, '.0f')" },
+        align:     { value: 'center' },
+        baseline:  { value: 'middle' },
+        fontSize:  { value: fontSize },
+        fontWeight:{ value: 'bold' },
+        fill:      { value: color }
+      }
+    }
+  };
+}
+
+function getFillerArc(name: string, fillerColorSignal: string): Mark {
+  return {
+    name: `${name}FillerArc`,
+    description: 'Filler Arc',
+    type: 'arc',
+    encode: {
+      enter: {
+        x:           { signal: 'centerX' },
+        y:           { signal: 'centerY' },
+        innerRadius: { signal: 'innerRadius' },
+        outerRadius: { signal: 'outerRadius' },
+        startAngle:  { signal: 'startAngle' },
+        endAngle:    { signal: 'endAngle' },
+        fill:        { signal: fillerColorSignal }
+      },
+      update: {
+        endAngle:     { signal: "scale('angleScale', clampedVal)" },
+        // Square end normally; rounded when “full”
+        cornerRadius: { signal: "!isFull ? cornerR : 0" }
+      }
+    }
+  };
+}
