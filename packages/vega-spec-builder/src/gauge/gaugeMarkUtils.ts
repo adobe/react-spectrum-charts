@@ -168,6 +168,8 @@ function getFillerArc(name: string, fillerColorSignal: string): Mark {
       }
     }
   };
+}
+
   function getNeedleRule(name: string): Mark {
   return {
     name: `${name}Needle`,
@@ -187,5 +189,4 @@ function getFillerArc(name: string, fillerColorSignal: string): Mark {
       }
     }
   };
-
 }
