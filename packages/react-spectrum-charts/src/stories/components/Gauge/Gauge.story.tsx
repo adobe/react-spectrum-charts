@@ -30,8 +30,8 @@ export default {
 // Default chart properties
 const defaultChartProps: ChartProps = {
   data: basicGaugeData,
-  width: 350,
-  height: 350,
+  width: 500,
+  height: 600,
 };
 
 // Basic Gauge chart story
@@ -60,57 +60,28 @@ const GaugeTitleStory: StoryFn<typeof Gauge> = (args): ReactElement => {
 const Basic = bindWithProps(GaugeStory);
 Basic.args = {
   metric: 'currentAmount',
-  dimension: 'graphLabel',
   target: 'target',
   color: 'blue-900',
-  direction: 'column',
   numberFormat: '$,.2f',
-  showTarget: true,
-  showTargetValue: false,
-  labelPosition: 'top',
-  scaleType: 'normal',
-  maxScaleValue: 100,
-  track: false,
-  thresholdBarColor: false,
-  metricAxis: false,
+  maxArcValue: 100
 };
 
 const GaugeVariation2 = bindWithProps(GaugeStory);
 GaugeVariation2.args = {
   metric: 'currentAmount',
-  dimension: 'graphLabel',
   target: 'target',
   color: 'red-900',
-  direction: 'column',
   numberFormat: '$,.2f',
-  showTarget: true,
-  showTargetValue: false,
-  labelPosition: 'top',
-  scaleType: 'normal',
-  maxScaleValue: 100,
-  thresholds: basicThresholdsData,
-  thresholdBarColor: false,
-  track: false,
-  metricAxis: false,
+  maxArcValue: 100
 };
 
 const GaugeVariation3 = bindWithProps(GaugeStory);
 GaugeVariation3.args = {
   metric: 'currentAmount',
-  dimension: 'graphLabel',
   target: 'target',
   color: 'fuchsia-900',
-  direction: 'column',
   numberFormat: '$,.2f',
-  showTarget: true,
-  showTargetValue: false,
-  labelPosition: 'top',
-  scaleType: 'normal',
-  maxScaleValue: 100,
-  track: false,
-  thresholdBarColor: true,
-  thresholds: coloredThresholdsData,
-  metricAxis: false,
+  maxArcValue: 100
 };
 
 // const Track = bindWithProps(GaugeStory);

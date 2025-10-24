@@ -66,7 +66,7 @@ export const addGauge = produce<
       showTargetValue: false,
       labelPosition: 'top',
       scaleType: 'normal',
-      maxScaleValue: 100,
+      maxArcValue: 100,
       track: false,
       thresholds: [],
       thresholdBarColor: false,
@@ -105,12 +105,11 @@ export const addSignals = produce<Signal[], [GaugeSpecOptions]>((signals, option
   signals.push({ name: 'arcMaxVal', value: 100 });
   
   // Hardcoded angles 
-  signals.push({ name: 'startAngle', value: "PI / 2" }); // -90 degrees
+  signals.push({ name: 'startAngle', value: "-PI / 2" }); // -90 degrees
   signals.push({ name: 'endAngle', value: "PI / 2" });    // 90 degrees
   
   // Get current value from first row of table data
   signals.push({ name: 'currVal', value: "30" });
   signals.push({ name: 'target', value: "80" });
-  
   
 });
