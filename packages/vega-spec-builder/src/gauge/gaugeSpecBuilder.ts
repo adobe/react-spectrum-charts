@@ -13,16 +13,8 @@ import { produce } from 'immer';
 import { Mark, Signal, Scale } from 'vega';
 import { addGaugeMarks } from './gaugeMarkUtils';
 
-// import {
-//   DEFAULT_GAUGE_DIRECTION,
-//   DEFAULT_COLOR_SCHEME,
-//   DEFAULT_LABEL_POSITION,
-//   DEFAULT_SCALE_TYPE,
-//   DEFAULT_SCALE_VALUE,
-// } from '@spectrum-charts/constants';
 
-
-import { DEFAULT_COLOR_SCHEME } from '@spectrum-charts/constants'; // this is the only constant i needed to get a simple blue rect to render
+import { DEFAULT_COLOR_SCHEME } from '@spectrum-charts/constants'; 
 
 // import { getColorValue, spectrumColors } from '@spectrum-charts/themes';
 import { getColorValue, spectrumColors } from '@spectrum-charts/themes'; 
@@ -37,7 +29,7 @@ const DEFAULT_COLOR = spectrumColors.light['blue-900']; // can't figure out why 
 
 /**
  * Adds a simple Gauge chart to the spec
- * This is a simplified version that just renders a blue rectangle as proof of concept
+ * 
  */
 export const addGauge = produce<
   ScSpec,
@@ -75,21 +67,6 @@ export const addGauge = produce<
     spec.signals = addSignals(spec.signals ?? [], gaugeOptions);
     spec.scales = addScales(spec.scales ?? [], gaugeOptions);
     spec.marks = addGaugeMarks(spec.marks ?? [], gaugeOptions);
-
-    // Add a simple blue rectangle mark as proof of concept
-    // spec.marks.push({
-    //   type: 'rect',
-    //   name: `${gaugeOptions.name}_test_rectangle`,
-    //   encode: {
-    //     enter: {
-    //       x: { value: 50 },
-    //       y: { value: 50 },
-    //       width: { value: 200 },
-    //       height: { value: 100 },
-    //       fill: { value: gaugeOptions.color },
-    //     },
-    //   },
-    // });
     
   }
 );
