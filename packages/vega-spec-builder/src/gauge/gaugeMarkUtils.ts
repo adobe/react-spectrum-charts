@@ -62,12 +62,7 @@ function getBackgroundArcRounded(name: string, fill: string, stroke: string): Ma
   };
 }
 
-function getBackgroundArcStraight(
-  name: string,
-  fill: string,
-  stroke: string,
-  offsetExpr: string
-): Mark {
+function getBackgroundArcStraight(name: string, fill: string, stroke: string, offsetExpr: string): Mark {
   return {
     name: `${name}BackgroundArcStraight`,
     description: 'Background Arc (Straight Edge)',
@@ -78,7 +73,7 @@ function getBackgroundArcStraight(
         y:           { signal: 'centerY' },
         innerRadius: { signal: 'innerRadius' },
         outerRadius: { signal: 'outerRadius' },
-        // startAngle offset to flatten the left edge
+        // startAngle offset to not flatten the right edge
         startAngle:  { signal: `startAngle + (${offsetExpr})` },
         endAngle:    { signal: 'endAngle' },
         fill:        { value: fill },
@@ -104,7 +99,6 @@ function getMaxValueText(name: string, color: string, fontSize: number): Mark {
         fill:      { value: color },
         fontWeight:{ value: 'bold' }
       },
-      // Keeping parity with your example; this update prop is harmless for text
       update: {
         endAngle:  { signal: "scale('angleScale', arcMaxVal)" }
       }
@@ -170,7 +164,7 @@ function getFillerArc(name: string, fillerColorSignal: string): Mark {
       update: {
         endAngle:     { signal: "scale('angleScale', clampedVal)" },
         // Square end normally; rounded when “full”
-        cornerRadius: { signal: "!isFull ? cornerR : 0" }
+        cornerRadius: { signal: "isFull ? cornerR : 0" }
       }
     }
   };
