@@ -20,9 +20,10 @@ import {
   DEFAULT_SCALE_VALUE,
 } from '@spectrum-charts/constants';
 
-import { BulletProps } from '../../../types';
+import { GaugeProps } from '../../../types';
 
-const Gauge: FC<BulletProps> = ({
+// I assume this houses all the props for all variations of a Gauge chart?
+const Gauge: FC<GaugeProps> = ({
   name = 'gauge0',
   metric = 'currentAmount', // CurrVal
   dimension = 'graphLabel', // Graph Title ?

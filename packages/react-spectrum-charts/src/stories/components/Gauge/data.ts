@@ -10,7 +10,11 @@
  * governing permissions and limitations under the License.
  */
 
-export const basicBulletData = [
+
+// ok this is the actual data for the bullet chart. 
+// We can keep it for now once we get a working Gauge chart to render.
+
+export const basicGaugeData = [
   { graphLabel: 'Customers', currentAmount: 150, target: 50 },
   { graphLabel: 'Revenue', currentAmount: 350, target: 450 },
 ];
