@@ -10,23 +10,20 @@
  * governing permissions and limitations under the License.
  */
 import { produce } from 'immer';
-import { Axis, GroupMark, Mark } from 'vega';
+import { Mark } from 'vega';
 
 import { getColorValue } from '@spectrum-charts/themes';
 
-import { BulletSpecOptions } from '../types';
+import { GaugeSpecOptions } from '../types';
 
-export const addMarks = produce<Mark[], [BulletSpecOptions]>((marks, bulletOptions) => {
+export const addMarks = produce<Mark[], [GaugeSpecOptions]>((marks, GaugeOptions) => {
 
-  const bulletMark: GroupMark = {
-    name: 'bulletGroup',
-    type: 'group',
-    from: {
-      facet: { data: 'table', name: 'bulletGroups', groupby: `${bulletOptions.dimension}` },
-    },
+  const gaugeMark: GroupMark = {
+    name: 'backgroundArcRoundEdge',
+    type: 'arc',
     encode: {
-      update: {
-        [markGroupEncodeUpdateDirection]: { scale: 'groupScale', field: `${bulletOptions.dimension}` },
+      enter: {
+        { scale: 'groupScale', field: `${gaugeOptions.dimension}` },
         height: { signal: 'bulletGroupHeight' },
         width: { signal: bulletGroupWidth },
       },
