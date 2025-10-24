@@ -79,8 +79,8 @@ export const addSignals = produce<Signal[], [GaugeSpecOptions]>((signals, option
   signals.push({ name: 'endAngle', update: "PI / 2" });    // 90 degrees
   signals.push({ name: 'currVal', value: "30" });
   signals.push({ name: 'target', value: "80" });
-  signals.push({ name: 'backgroundfillColor', value: "77A7FB"})
-  signals.push({ name: 'fillerColorToCurrVal', value: "89CFF0"})
+  signals.push({ name: 'backgroundfillColor', value: "#77A7FB"})
+  signals.push({ name: 'fillerColorToCurrVal', value: "#89CFF0"})
   signals.push({ name: 'TargetTextTheta', update: "scale('angleScale', target)"})
   signals.push({ name: 'targetTextX', update: "centerX + (outerRadius + 40) * sin(TargetTextTheta)"})
   signals.push({ name: 'targetTextY', update: "centerY - (outerRadius + 40) * cos(TargetTextTheta)"})
