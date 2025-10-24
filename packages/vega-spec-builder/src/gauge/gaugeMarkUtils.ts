@@ -164,8 +164,28 @@ function getFillerArc(name: string, fillerColorSignal: string): Mark {
       update: {
         endAngle:     { signal: "scale('angleScale', clampedVal)" },
         // Square end normally; rounded when “full”
-        cornerRadius: { signal: "isFull ? cornerR : 0" }
+        cornerRadius: { signal: "!isFull ? cornerR : 0" }
       }
     }
   };
+  function getNeedleRule(name: string): Mark {
+  return {
+    name: `${name}Needle`,
+    description: 'Needle (rule)',
+    type: 'rule',
+    encode: {
+      enter: {
+        stroke:      { value: '#333' },
+        strokeWidth: { value: 3 },
+        strokeCap:   { value: 'round' }
+      },
+      update: {
+        x:  { signal: 'centerX' },
+        y:  { signal: 'centerY' },
+        x2: { signal: 'needleTipX' },
+        y2: { signal: 'needleTipY' }
+      }
+    }
+  };
+
 }
