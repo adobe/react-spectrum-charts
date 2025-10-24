@@ -16,17 +16,15 @@ import { Mark } from 'vega';
 
 import { GaugeSpecOptions } from '../types';
 
-export const addMarks = produce<Mark[], [GaugeSpecOptions]>((marks, GaugeOptions) => {
-
-  export const addGaugeMarks = produce<Mark[], [GaugeSpecOptions]>((marks, opt) => {
+export const addGaugeMarks = produce<Mark[], [GaugeSpecOptions]>((marks, opt) => {
   const {
     name,
-    backgroundFill,
-    backgroundStroke,
-    fillerColorSignal,
-    straightEdgeOffsetExpr,
-    labelColor,
-    labelSize,
+    backgroundFill = '#eee',
+    backgroundStroke = '#999',
+    fillerColorSignal = 'fillerColorToCurrVal',
+    straightEdgeOffsetExpr = 'PI/15',
+    labelColor = '#333',
+    labelSize = 40,
   } = opt;
 
   // Background arcs (rounded, then straight overlay)
@@ -40,7 +38,7 @@ export const addMarks = produce<Mark[], [GaugeSpecOptions]>((marks, GaugeOptions
 
   // Filler arc (value fill)
   marks.push(getFillerArc(name, fillerColorSignal));
-}
+
 });
 
 function getBackgroundArcRounded(name: string, fill: string, stroke: string): Mark {
