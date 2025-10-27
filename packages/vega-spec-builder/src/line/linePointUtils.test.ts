@@ -21,11 +21,13 @@ import {
 } from '@spectrum-charts/constants';
 
 import {
+  getHighlightPoint,
   getHighlightPointFill,
   getHighlightPointSize,
   getHighlightPointStroke,
   getHighlightPointStrokeOpacity,
   getHighlightPointStrokeWidth,
+  getSelectionPoint,
 } from './linePointUtils';
 import { defaultLineMarkOptions } from './lineTestUtils';
 
@@ -119,5 +121,78 @@ describe('getHighlightPointStrokeWidth()', () => {
     const rules = getHighlightPointStrokeWidth({ ...defaultLineMarkOptions, staticPoint });
     expect(rules).toHaveLength(2);
     expect(rules[0]).toHaveProperty(`test`, `datum.${staticPoint} && datum.${staticPoint} === true`);
+  });
+});
+
+describe('getHighlightPoint()', () => {
+  test('should return symbol mark with correct name and description', () => {
+    const mark = getHighlightPoint(defaultLineMarkOptions);
+    expect(mark.name).toBe('line0_point_highlight');
+    expect(mark.description).toBe('line0_point_highlight');
+  });
+
+  test('should return symbol mark with correct properties', () => {
+    const mark = getHighlightPoint(defaultLineMarkOptions);
+    expect(mark.type).toBe('symbol');
+    expect(mark.interactive).toBe(false);
+    expect(mark.from).toEqual({ data: 'line0_highlightedData' });
+  });
+
+  test('should have correct encode structure', () => {
+    const mark = getHighlightPoint(defaultLineMarkOptions);
+    expect(mark.encode).toBeDefined();
+    expect(mark.encode?.enter).toBeDefined();
+    expect(mark.encode?.update).toBeDefined();
+    expect(mark.encode?.enter?.y).toEqual({ field: 'value', scale: 'yLinear' });
+    expect(mark.encode?.enter?.stroke).toEqual({ field: DEFAULT_COLOR, scale: COLOR_SCALE });
+  });
+
+  test('should use custom name in mark name and description', () => {
+    const customOptions = { ...defaultLineMarkOptions, name: 'customLine' };
+    const mark = getHighlightPoint(customOptions);
+    expect(mark.name).toBe('customLine_point_highlight');
+    expect(mark.description).toBe('customLine_point_highlight');
+    expect(mark.from).toEqual({ data: 'customLine_highlightedData' });
+  });
+});
+
+describe('getSelectionPoint()', () => {
+  test('should return symbol mark with correct name and description', () => {
+    const mark = getSelectionPoint(defaultLineMarkOptions);
+    expect(mark.name).toBe('line0_point_select');
+    expect(mark.description).toBe('line0_point_select');
+  });
+
+  test('should return symbol mark with correct properties', () => {
+    const mark = getSelectionPoint(defaultLineMarkOptions);
+    expect(mark.type).toBe('symbol');
+    expect(mark.interactive).toBe(false);
+    expect(mark.from).toEqual({ data: 'line0_selectedData' });
+  });
+
+  test('should have correct encode structure', () => {
+    const mark = getSelectionPoint(defaultLineMarkOptions);
+    expect(mark.encode).toBeDefined();
+    expect(mark.encode?.enter).toBeDefined();
+    expect(mark.encode?.update).toBeDefined();
+    expect(mark.encode?.enter?.y).toEqual({ field: 'value', scale: 'yLinear' });
+    expect(mark.encode?.enter?.stroke).toEqual({ field: DEFAULT_COLOR, scale: COLOR_SCALE });
+  });
+
+  test('should use custom name in mark name and description', () => {
+    const customOptions = { ...defaultLineMarkOptions, name: 'customLine' };
+    const mark = getSelectionPoint(customOptions);
+    expect(mark.name).toBe('customLine_point_select');
+    expect(mark.description).toBe('customLine_point_select');
+    expect(mark.from).toEqual({ data: 'customLine_selectedData' });
+  });
+
+  test('should use selectedData instead of highlightedData', () => {
+    const highlightMark = getHighlightPoint(defaultLineMarkOptions);
+    const selectionMark = getSelectionPoint(defaultLineMarkOptions);
+    expect(highlightMark.from).toEqual({ data: 'line0_highlightedData' });
+    expect(selectionMark.from).toEqual({ data: 'line0_selectedData' });
+    expect(highlightMark.name).toContain('highlight');
+    expect(selectionMark.name).toContain('select');
   });
 });
