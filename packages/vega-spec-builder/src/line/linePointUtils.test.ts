@@ -27,6 +27,7 @@ import {
   getHighlightPointStroke,
   getHighlightPointStrokeOpacity,
   getHighlightPointStrokeWidth,
+  getSecondaryHighlightPoint,
   getSelectionPoint,
 } from './linePointUtils';
 import { defaultLineMarkOptions } from './lineTestUtils';
@@ -194,5 +195,56 @@ describe('getSelectionPoint()', () => {
     expect(selectionMark.from).toEqual({ data: 'line0_selectedData' });
     expect(highlightMark.name).toContain('highlight');
     expect(selectionMark.name).toContain('select');
+  });
+});
+
+describe('getSecondaryHighlightPoint()', () => {
+  const secondaryMetric = 'trendlineValue';
+
+  test('should return symbol mark with correct name and description', () => {
+    const mark = getSecondaryHighlightPoint(defaultLineMarkOptions, secondaryMetric);
+    expect(mark.name).toBe('line0_secondaryPoint');
+    expect(mark.description).toBe('line0_secondaryPoint');
+  });
+
+  test('should return symbol mark with correct properties', () => {
+    const mark = getSecondaryHighlightPoint(defaultLineMarkOptions, secondaryMetric);
+    expect(mark.type).toBe('symbol');
+    expect(mark.interactive).toBe(false);
+    expect(mark.from).toEqual({ data: 'line0_highlightedData' });
+  });
+
+  test('should have correct encode structure with secondary metric', () => {
+    const mark = getSecondaryHighlightPoint(defaultLineMarkOptions, secondaryMetric);
+    expect(mark.encode).toBeDefined();
+    expect(mark.encode?.enter).toBeDefined();
+    expect(mark.encode?.update).toBeDefined();
+    expect(mark.encode?.enter?.y).toEqual({ field: secondaryMetric, scale: 'yLinear' });
+    expect(mark.encode?.enter?.fill).toEqual({ signal: BACKGROUND_COLOR });
+    expect(mark.encode?.enter?.stroke).toEqual({ field: DEFAULT_COLOR, scale: COLOR_SCALE });
+  });
+
+  test('should use custom name in mark name and description', () => {
+    const customOptions = { ...defaultLineMarkOptions, name: 'customLine' };
+    const mark = getSecondaryHighlightPoint(customOptions, secondaryMetric);
+    expect(mark.name).toBe('customLine_secondaryPoint');
+    expect(mark.description).toBe('customLine_secondaryPoint');
+    expect(mark.from).toEqual({ data: 'customLine_highlightedData' });
+  });
+
+  test('should use the secondary metric for y-axis encoding', () => {
+    const metric1 = 'metric1';
+    const metric2 = 'metric2';
+    const mark1 = getSecondaryHighlightPoint(defaultLineMarkOptions, metric1);
+    const mark2 = getSecondaryHighlightPoint(defaultLineMarkOptions, metric2);
+    expect(mark1.encode?.enter?.y).toEqual({ field: metric1, scale: 'yLinear' });
+    expect(mark2.encode?.enter?.y).toEqual({ field: metric2, scale: 'yLinear' });
+  });
+
+  test('should use highlightedData like the primary highlight point', () => {
+    const mark = getSecondaryHighlightPoint(defaultLineMarkOptions, secondaryMetric);
+    const highlightMark = getHighlightPoint(defaultLineMarkOptions);
+    expect(mark.from).toEqual(highlightMark.from);
+    expect(mark.from).toEqual({ data: 'line0_highlightedData' });
   });
 });

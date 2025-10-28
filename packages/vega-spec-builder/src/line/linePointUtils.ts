@@ -155,6 +155,7 @@ export const getSecondaryHighlightPoint = (
   const { color, colorScheme, dimension, metricAxis, name, scaleType } = lineOptions;
   return {
     name: `${name}_secondaryPoint`,
+    description: `${name}_secondaryPoint`,
     type: 'symbol',
     from: { data: `${name}_highlightedData` },
     interactive: false,
