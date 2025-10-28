@@ -29,7 +29,7 @@ export const addGaugeMarks = produce<Mark[], [GaugeSpecOptions]>((marks, opt) =>
 
   // Background arcs (rounded, then straight overlay)
   marks.push(getBackgroundArcRounded(name, backgroundFill, backgroundStroke));
-  marks.push(getBackgroundArcStraight(name, backgroundFill, backgroundStroke, straightEdgeOffsetExpr));
+  marks.push(getFillerArcStraight(name, fillerColorSignal, backgroundStroke, straightEdgeOffsetExpr));
 
   // Text labels: max, target, min
   marks.push(getMaxValueText(name, labelColor, labelSize));
@@ -55,27 +55,6 @@ function getBackgroundArcRounded(name: string, fill: string, stroke: string): Ma
         startAngle:  { signal: 'startAngle' },
         endAngle:    { signal: 'endAngle' },
         cornerRadius:{ signal: 'cornerR' },
-        fill:        { value: fill },
-        stroke:      { value: stroke }
-      }
-    }
-  };
-}
-
-function getBackgroundArcStraight(name: string, fill: string, stroke: string, offsetExpr: string): Mark {
-  return {
-    name: `${name}BackgroundArcStraight`,
-    description: 'Background Arc (Straight Edge)',
-    type: 'arc',
-    encode: {
-      enter: {
-        x:           { signal: 'centerX' },
-        y:           { signal: 'centerY' },
-        innerRadius: { signal: 'innerRadius' },
-        outerRadius: { signal: 'outerRadius' },
-        // startAngle offset to not flatten the right edge
-        startAngle:  { signal: `startAngle + (${offsetExpr})` },
-        endAngle:    { signal: 'endAngle' },
         fill:        { value: fill },
         stroke:      { value: stroke }
       }
@@ -165,6 +144,30 @@ function getFillerArc(name: string, fillerColorSignal: string): Mark {
         endAngle:     { signal: "scale('angleScale', clampedVal)" },
         // Square end normally; rounded when “full”
         cornerRadius: { signal: "!isFull ? cornerR : 0" }
+      }
+    }
+  };
+}
+
+function getFillerArcStraight(name: string, fillerColorSignal: string, stroke: string, offsetExpr: string): Mark {
+  return {
+    name: `${name}FillerArcStraight`,
+    description: 'Filler Arc (Straight Edge)',
+    type: 'arc',
+    encode: {
+      enter: {
+        x:           { signal: 'centerX' },
+        y:           { signal: 'centerY' },
+        innerRadius: { signal: 'innerRadius' },
+        outerRadius: { signal: 'outerRadius' },
+        // startAngle offset to not flatten the right edge
+        startAngle:  { signal: `startAngle + (${offsetExpr})` },
+        endAngle:    { signal: 'endAngle' },
+        fill:        { signal: fillerColorSignal },
+        stroke:      { value: stroke }
+      },
+      update: {
+        endAngle:     { signal: "scale('angleScale', clampedVal)" },
       }
     }
   };
