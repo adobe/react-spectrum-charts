@@ -103,6 +103,7 @@ const getHighlightOrSelectionPoint = (lineOptions: LineMarkOptions, useHighlight
   const { color, colorScheme, dimension, metric, metricAxis, name, scaleType } = lineOptions;
   return {
     name: `${name}_point_${useHighlightedData ? 'highlight' : 'select'}`,
+    description: `${name}_point_${useHighlightedData ? 'highlight' : 'select'}`,
     type: 'symbol',
     from: { data: `${name}${useHighlightedData ? '_highlightedData' : '_selectedData'}` },
     interactive: false,
@@ -154,6 +155,7 @@ export const getSecondaryHighlightPoint = (
   const { color, colorScheme, dimension, metricAxis, name, scaleType } = lineOptions;
   return {
     name: `${name}_secondaryPoint`,
+    description: `${name}_secondaryPoint`,
     type: 'symbol',
     from: { data: `${name}_highlightedData` },
     interactive: false,
