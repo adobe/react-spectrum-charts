@@ -21,11 +21,14 @@ import {
 } from '@spectrum-charts/constants';
 
 import {
+  getHighlightPoint,
   getHighlightPointFill,
   getHighlightPointSize,
   getHighlightPointStroke,
   getHighlightPointStrokeOpacity,
   getHighlightPointStrokeWidth,
+  getSecondaryHighlightPoint,
+  getSelectionPoint,
 } from './linePointUtils';
 import { defaultLineMarkOptions } from './lineTestUtils';
 
@@ -119,5 +122,26 @@ describe('getHighlightPointStrokeWidth()', () => {
     const rules = getHighlightPointStrokeWidth({ ...defaultLineMarkOptions, staticPoint });
     expect(rules).toHaveLength(2);
     expect(rules[0]).toHaveProperty(`test`, `datum.${staticPoint} && datum.${staticPoint} === true`);
+  });
+});
+
+describe('getHighlightPoint()', () => {
+  test('should set description property', () => {
+    const mark = getHighlightPoint(defaultLineMarkOptions);
+    expect(mark.description).toBe('line0_point_highlight');
+  });
+});
+
+describe('getSelectionPoint()', () => {
+  test('should set description property', () => {
+    const mark = getSelectionPoint(defaultLineMarkOptions);
+    expect(mark.description).toBe('line0_point_select');
+  });
+});
+
+describe('getSecondaryHighlightPoint()', () => {
+  test('should set description property', () => {
+    const mark = getSecondaryHighlightPoint(defaultLineMarkOptions, 'secondaryMetric');
+    expect(mark.description).toBe('line0_secondaryPoint');
   });
 });

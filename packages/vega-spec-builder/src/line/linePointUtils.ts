@@ -106,6 +106,7 @@ const getHighlightOrSelectionPoint = (lineOptions: LineMarkOptions, useHighlight
     type: 'symbol',
     from: { data: `${name}${useHighlightedData ? '_highlightedData' : '_selectedData'}` },
     interactive: false,
+    description: `${name}_point_${useHighlightedData ? 'highlight' : 'select'}`,
     encode: {
       enter: {
         y: getYProductionRule(metricAxis, metric),
@@ -154,6 +155,7 @@ export const getSecondaryHighlightPoint = (
   const { color, colorScheme, dimension, metricAxis, name, scaleType } = lineOptions;
   return {
     name: `${name}_secondaryPoint`,
+    description: `${name}_secondaryPoint`,
     type: 'symbol',
     from: { data: `${name}_highlightedData` },
     interactive: false,
