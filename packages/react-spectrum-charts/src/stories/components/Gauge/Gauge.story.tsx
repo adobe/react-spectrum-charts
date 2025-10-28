@@ -72,7 +72,7 @@ GaugeVariation2.args = {
   target: 'target',
   color: 'red-900',
   numberFormat: '$,.2f',
-  maxArcValue: 100
+  maxArcValue: 150
 };
 
 const GaugeVariation3 = bindWithProps(GaugeStory);
@@ -81,7 +81,7 @@ GaugeVariation3.args = {
   target: 'target',
   color: 'fuchsia-900',
   numberFormat: '$,.2f',
-  maxArcValue: 100
+  maxArcValue: 90
 };
 
 // const Track = bindWithProps(GaugeStory);

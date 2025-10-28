@@ -10,7 +10,7 @@
  * governing permissions and limitations under the License.
  */
 import { produce } from 'immer';
-import { Mark, Signal, Scale } from 'vega';
+import { Mark, Signal, Scale, Data } from 'vega';
 import { addGaugeMarks } from './gaugeMarkUtils';
 
 
@@ -21,6 +21,7 @@ import { getColorValue, spectrumColors } from '@spectrum-charts/themes';
 import { toCamelCase } from '@spectrum-charts/utils';
 
 import { ColorScheme, GaugeOptions, GaugeSpecOptions, ScSpec } from '../types';
+import { getGaugeTableData } from './gaugeDataUtils';
 
 const DEFAULT_COLOR = spectrumColors.light['blue-900']; // can't figure out why this doesnt change if i leave it blank
 // might be because this sets the default color for the gauge component for the user when they use a <Gauge /> component. 
@@ -53,20 +54,22 @@ export const addGauge = produce<
       target: 'target',
       color: getColorValue(color, colorScheme), // Convert spectrum color to RGB
       numberFormat: '',
-      maxArcValue: 100,
-      backgroundFill: '#eee',
-      backgroundStroke: '#999',
+      maxArcValue: 100, // sets the DEFAULT max value for the gauge
+      backgroundFill: spectrumColors[colorScheme]['gray-200'],
+      backgroundStroke: spectrumColors[colorScheme]['gray-300'],
       fillerColorSignal: 'fillerColorToCurrVal',
       straightEdgeOffsetExpr: 'PI/15',
-      labelColor: '#333',
+      labelColor: spectrumColors[colorScheme]['gray-800'],
       labelSize: 40,
-      ...options,
+      ...options, // this overrides the default if the user passes a prop when using the <Gauge /> component
     };
 
 
     spec.signals = addSignals(spec.signals ?? [], gaugeOptions);
     spec.scales = addScales(spec.scales ?? [], gaugeOptions);
     spec.marks = addGaugeMarks(spec.marks ?? [], gaugeOptions);
+    spec.data = addData(spec.data ?? [], gaugeOptions);  
+
     
   }
 );
@@ -74,13 +77,13 @@ export const addGauge = produce<
 export const addSignals = produce<Signal[], [GaugeSpecOptions]>((signals, options) => {
   
   signals.push({ name: 'arcMinVal', value: 0 });
-  signals.push({ name: 'arcMaxVal', value: 100 }); 
+  signals.push({ name: 'arcMaxVal', value: options.maxArcValue }); 
   signals.push({ name: 'startAngle', update: "-PI / 2" }); // -90 degrees
   signals.push({ name: 'endAngle', update: "PI / 2" });    // 90 degrees
-  signals.push({ name: 'currVal', value: "30" });
-  signals.push({ name: 'target', value: "80" });
-  signals.push({ name: 'backgroundfillColor', value: "#77A7FB"})
-  signals.push({ name: 'fillerColorToCurrVal', value: "#89CFF0"})
+  signals.push({ name: 'currVal', update: `data('table')[0].${options.metric}` });
+  signals.push({ name: 'target', update: `data('table')[0].${options.target}` });
+  signals.push({ name: 'backgroundfillColor', value: `${options.backgroundFill}`})
+  signals.push({ name: 'fillerColorToCurrVal', value: `${options.color}`})
   signals.push({ name: 'TargetTextTheta', update: "scale('angleScale', target)"})
   signals.push({ name: 'targetTextX', update: "centerX + (outerRadius + 40) * sin(TargetTextTheta)"})
   signals.push({ name: 'targetTextY', update: "centerY - (outerRadius + 40) * cos(TargetTextTheta)"})
@@ -119,4 +122,10 @@ export const addScales = produce<Scale[], [GaugeSpecOptions]>((scales, options) 
     range: [{ signal: 'startAngle' }, { signal: 'endAngle' }],
     clamp: true
   });
+});
+
+export const addData = produce<Data[], [GaugeSpecOptions]>((data, options) => {
+  const tableData = getGaugeTableData(data);
+  // We can add Transforms here if we need to.
+  tableData.transform = []; // Or add gauge-specific transforms here
 });

@@ -35,6 +35,16 @@ export interface GaugeOptions {
   target?: string;
   /** Color regions that fill the gauge bar to the metric value */
   track?: boolean;
+  /** Color of the background fill */
+  backgroundFill?: string;
+  /** Color of the background stroke */
+  backgroundStroke?: string;
+  /** Color of the filler color signal */
+  fillerColorSignal?: string;
+  /** Color of the label text */
+  labelColor?: string;
+  /** Size of the label text */
+  labelSize?: number;
 }
 
 type GaugeOptionsWithDefaults =
@@ -42,18 +52,17 @@ type GaugeOptionsWithDefaults =
   | 'metric'
   | 'target'
   | 'color'
-  | 'maxArcValue';
+  | 'maxArcValue'
+  | 'backgroundFill'
+  | 'backgroundStroke'
+  | 'fillerColorSignal'
+  | 'labelColor'
+  | 'labelSize';
 
 export interface GaugeSpecOptions extends PartiallyRequired<GaugeOptions, GaugeOptionsWithDefaults> {
   // What does this do?
   colorScheme: ColorScheme;
   idKey: string;
   index: number;
-  name: string;
-  backgroundFill: '#eee',
-  backgroundStroke: '#999',
-  fillerColorSignal: 'fillerColorToCurrVal',
-  straightEdgeOffsetExpr: 'PI/15',
-  labelColor: '#333',
-  labelSize: 40,
+  straightEdgeOffsetExpr: 'PI/15'; // hardcoded. change to number or string?
 }
