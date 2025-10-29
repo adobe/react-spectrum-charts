@@ -32,6 +32,8 @@ export interface ChartPopoverOptions {
   rightClick?: boolean;
   /** Sets which marks should be highlighted when a popover is visible.  This feature is incomplete. */
   UNSAFE_highlightBy?: 'series' | 'dimension' | 'item' | string[];
+  /** The margin that should be applied between the popover and its surrounding container */
+  containerMargin?: number;
 }
 
 type ChartPopoverOptionsWithDefaults = 'UNSAFE_highlightBy';

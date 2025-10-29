@@ -32,6 +32,7 @@ import {
 import '../../../test-utils/__mocks__/matchMedia.mock.js';
 import {
   Canvas,
+  ContainerMargin,
   DodgedBarChart,
   DonutChart,
   LineChart,
@@ -145,6 +146,52 @@ describe('ChartPopover', () => {
     await waitFor(() => expect(popover).toBeInTheDocument()); // waitFor to give the popover time to make sure it doesn't close
 
     expect(popover).toHaveStyle('width: auto; min-width: 250px;');
+  });
+
+  test('should honor containerMargin', async () => {
+    render(<ContainerMargin {...ContainerMargin.args} />);
+
+    const chart = await findChart();
+    expect(chart).toBeInTheDocument();
+    const bars = getAllMarksByGroupName(chart, 'bar0');
+
+    // clicking the bar should open the popover
+    await clickNthElement(bars, 0);
+    const popover = await screen.findByTestId('rsc-popover');
+    await waitFor(() => expect(popover).toBeInTheDocument()); // waitFor to give the popover time to make sure it doesn't close
+
+    // Check that the View inside the popover has the correct margin
+    const view = screen.getByTestId('rsc-popover-content');
+    // React Spectrum View applies margin using specific margin-* properties
+    expect(view).toHaveStyle({
+      marginTop: '24px',
+      marginRight: '24px',
+      marginBottom: '24px',
+      marginLeft: '24px',
+    });
+  });
+
+  test('should use default containerMargin when not provided', async () => {
+    render(<StackedBarChart {...StackedBarChart.args} />);
+
+    const chart = await findChart();
+    expect(chart).toBeInTheDocument();
+    const bars = getAllMarksByGroupName(chart, 'bar0');
+
+    // clicking the bar should open the popover
+    await clickNthElement(bars, 0);
+    const popover = await screen.findByTestId('rsc-popover');
+    await waitFor(() => expect(popover).toBeInTheDocument());
+
+    // Check that the View inside the popover has the default margin of 12px
+    const view = screen.getByTestId('rsc-popover-content');
+    // React Spectrum View applies margin using specific margin-* properties
+    expect(view).toHaveStyle({
+      marginTop: '12px',
+      marginRight: '12px',
+      marginBottom: '12px',
+      marginLeft: '12px',
+    });
   });
 
   test('Popover opens on right click, not left click', async () => {
