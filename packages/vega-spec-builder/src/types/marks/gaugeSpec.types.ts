@@ -34,7 +34,7 @@ export interface GaugeOptions {
   /** Flag to control whether the target is shown */
   target?: string;
   /** Color regions that fill the gauge bar to the metric value */
-  track?: boolean;
+  //track?: boolean;
   /** Color of the background fill */
   backgroundFill?: string;
   /** Color of the background stroke */
