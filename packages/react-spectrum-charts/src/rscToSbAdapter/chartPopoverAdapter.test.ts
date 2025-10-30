@@ -24,8 +24,8 @@ describe('getChartPopoverOptions()', () => {
     const options = getChartPopoverOptions({});
     expect(options).not.toHaveProperty('height');
   });
-  it('should pass through containerMargin prop', () => {
-    const options = getChartPopoverOptions({ containerMargin: 24 });
-    expect(options).toHaveProperty('containerMargin', 24);
+  it('should pass through contentMargin prop', () => {
+    const options = getChartPopoverOptions({ contentMargin: 24 });
+    expect(options).toHaveProperty('contentMargin', 24);
   });
 });

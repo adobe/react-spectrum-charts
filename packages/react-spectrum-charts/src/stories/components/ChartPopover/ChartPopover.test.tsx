@@ -32,7 +32,7 @@ import {
 import '../../../test-utils/__mocks__/matchMedia.mock.js';
 import {
   Canvas,
-  ContainerMargin,
+  ContentMargin,
   DodgedBarChart,
   DonutChart,
   LineChart,
@@ -148,8 +148,8 @@ describe('ChartPopover', () => {
     expect(popover).toHaveStyle('width: auto; min-width: 250px;');
   });
 
-  test('should honor containerMargin', async () => {
-    render(<ContainerMargin {...ContainerMargin.args} />);
+  test('should honor contentMargin', async () => {
+    render(<ContentMargin {...ContentMargin.args} />);
 
     const chart = await findChart();
     expect(chart).toBeInTheDocument();
@@ -171,7 +171,7 @@ describe('ChartPopover', () => {
     });
   });
 
-  test('should use default containerMargin when not provided', async () => {
+  test('should use default contentMargin when not provided', async () => {
     render(<StackedBarChart {...StackedBarChart.args} />);
 
     const chart = await findChart();

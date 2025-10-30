@@ -145,7 +145,7 @@ RscChart.displayName = 'RscChart';
 
 const ChartDialog = ({ datum, popover, setIsPopoverOpen, targetElement }: ChartDialogProps) => {
   const { chartPopoverProps, name } = popover;
-  const { children, onOpenChange, containerPadding, containerMargin, rightClick, ...dialogProps } = chartPopoverProps;
+  const { children, onOpenChange, containerPadding, contentMargin, rightClick, ...dialogProps } = chartPopoverProps;
   const minWidth = dialogProps.minWidth ?? 0;
 
   return (
@@ -170,7 +170,7 @@ const ChartDialog = ({ datum, popover, setIsPopoverOpen, targetElement }: ChartD
             data-testid="rsc-popover-content"
             gridColumn="1/-1"
             gridRow="1/-1"
-            margin={containerMargin ?? 12}
+            margin={contentMargin ?? 12}
           >
             {datum && datum[COMPONENT_NAME] === name && children?.(datum, close)}
           </SpectrumView>
