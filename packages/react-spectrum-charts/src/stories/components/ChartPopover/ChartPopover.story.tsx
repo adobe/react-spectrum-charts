@@ -170,9 +170,13 @@ StackedBarChart.args = { children: dialogContent, width: 'auto' };
 const Svg = bindWithProps(ChartPopoverSvgStory);
 Svg.args = { children: dialogContent, width: 'auto' };
 
+const ContentMargin = bindWithProps(ChartPopoverSvgStory);
+ContentMargin.args = { children: dialogContent, width: 'auto', contentMargin: 24 };
+
 export {
   AreaChart,
   Canvas,
+  ContentMargin,
   DodgedBarChart,
   DonutChart,
   LineChart,
