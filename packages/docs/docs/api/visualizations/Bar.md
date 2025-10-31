@@ -260,7 +260,7 @@ The `Annotation` component is used to display a text annotation. The annotation 
 ```jsx
 <Chart data={data}>
   <Bar {...props}>
-    <Annotation textKey="textKey" style={{ width: 48 }} />
+    <Annotation textKey="textKey" />
   </Bar>
 </Chart>
 ```
@@ -287,10 +287,16 @@ The `Annotation` component is used to display a text annotation. The annotation 
             <td>The key on each value in the data passed to the chart that contains the text to display in the annotation.</td>
         </tr>
         <tr>
+            <td>padding</td>
+            <td>number</td>
+            <td>4</td>
+            <td>Padding in pixels around the annotation text (applies to both horizontal and vertical padding).</td>
+        </tr>
+        <tr>
             <td>style</td>
             <td>\{width: number}</td>
             <td>-</td>
-            <td>Style overrides. Width is used in place of dynamically calculated width.</td>
+            <td>(Deprecated) Style overrides. Width is used in place of dynamically calculated width.</td>
         </tr>
     </tbody>
 </table>
