@@ -80,7 +80,8 @@ export const addSignals = produce<Signal[], [GaugeSpecOptions]>((signals, option
   signals.push({ name: 'arcMaxVal', value: options.maxArcValue }); 
   signals.push({ name: 'startAngle', update: "-PI / 2" }); // -90 degrees
   signals.push({ name: 'endAngle', update: "PI / 2" });    // 90 degrees
-  signals.push({ name: 'currVal', update: `data('table')[0].${options.metric}` });
+  // signals.push({ name: 'currVal', update: `data('table')[0].${options.metric}` });
+  signals.push({ name: 'currVal', value: options.metric });
   signals.push({ name: 'target', update: `data('table')[0].${options.target}` });
   signals.push({ name: 'backgroundfillColor', value: `${options.backgroundFill}`})
   signals.push({ name: 'fillerColorToCurrVal', value: `${options.color}`})

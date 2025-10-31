@@ -22,7 +22,7 @@ export interface GaugeOptions {
   /** Maximum value for the scale. This value must be greater than zero. */
   maxArcValue?: number;
   /** Key in the data that is used as the metric */
-  metric?: string;
+  metric?: string | number;
   /** Sets the name of the component. */
   name?: string;
   /** d3 number format specifier.
@@ -64,5 +64,6 @@ export interface GaugeSpecOptions extends PartiallyRequired<GaugeOptions, GaugeO
   colorScheme: ColorScheme;
   idKey: string;
   index: number;
-  straightEdgeOffsetExpr: 'PI/15'; // hardcoded. change to number or string?
+  straightEdgeOffsetExpr: 'PI/15'
+  // hardcoded. change to number or string?
 }

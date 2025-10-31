@@ -68,7 +68,7 @@ Basic.args = {
 
 const GaugeVariation2 = bindWithProps(GaugeStory);
 GaugeVariation2.args = {
-  metric: 'currentAmount',
+  metric: 50,
   target: 'target',
   color: 'red-900',
   numberFormat: '$,.2f',
