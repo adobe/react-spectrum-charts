@@ -17,13 +17,15 @@ export interface BarAnnotationStyleOptions {
 }
 
 export interface BarAnnotationOptions {
+  /** Padding around annotation text. A small amount of padding is always applied based on content */
+  padding?: number
   /** The key in the data that has the text to display */
   textKey?: string;
   /** @deprecated */
   style?: BarAnnotationStyleOptions;
 }
 
-type BarAnnotationOptionsWithDefaults = 'textKey';
+type BarAnnotationOptionsWithDefaults = 'textKey' | 'padding';
 
 export interface BarAnnotationSpecOptions
   extends PartiallyRequired<BarAnnotationOptions, BarAnnotationOptionsWithDefaults> {

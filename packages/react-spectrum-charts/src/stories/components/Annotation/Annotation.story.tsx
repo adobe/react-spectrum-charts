@@ -81,4 +81,18 @@ FixedWidthBar.args = {
   // color: 'operatingSystem',
 };
 
-export { HorizontalBarChart, VerticalBarChart, FixedWidthBar };
+const ReducedPadding = BarAnnotationStory.bind({});
+ReducedPadding.args = {
+  textKey: 'percentLabel',
+  padding: 2,
+  barOrientation: 'horizontal',
+};
+
+const NoPadding = BarAnnotationStory.bind({});
+NoPadding.args = {
+  textKey: 'percentLabel',
+  padding: 0,
+  barOrientation: 'horizontal',
+};
+
+export { HorizontalBarChart, VerticalBarChart, FixedWidthBar, ReducedPadding, NoPadding };
