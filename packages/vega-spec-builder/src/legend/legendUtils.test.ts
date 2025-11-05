@@ -163,21 +163,21 @@ describe('getColumns()', () => {
     const labelLimit = 100;
     const expectedItemWidth = labelLimit + DEFAULT_LEGEND_SYMBOL_WIDTH + DEFAULT_LEGEND_COLUMN_PADDING;
     const expectedSignal = `max(1, floor(width / ${expectedItemWidth}))`;
-    
+
     expect(getColumns('top', labelLimit)).toEqual({ signal: expectedSignal });
   });
 
   test('should calculate columns with different labelLimit values', () => {
     const labelLimit50 = 50;
     const expectedItemWidth50 = 50 + DEFAULT_LEGEND_SYMBOL_WIDTH + DEFAULT_LEGEND_COLUMN_PADDING;
-    expect(getColumns('bottom', labelLimit50)).toEqual({ 
-      signal: `max(1, floor(width / ${expectedItemWidth50}))` 
+    expect(getColumns('bottom', labelLimit50)).toEqual({
+      signal: `max(1, floor(width / ${expectedItemWidth50}))`,
     });
 
     const labelLimit200 = 200;
     const expectedItemWidth200 = 200 + DEFAULT_LEGEND_SYMBOL_WIDTH + DEFAULT_LEGEND_COLUMN_PADDING; // 200 + 16 + 20 = 236
-    expect(getColumns('top', labelLimit200)).toEqual({ 
-      signal: `max(1, floor(width / ${expectedItemWidth200}))` 
+    expect(getColumns('top', labelLimit200)).toEqual({
+      signal: `max(1, floor(width / ${expectedItemWidth200}))`,
     });
   });
 });

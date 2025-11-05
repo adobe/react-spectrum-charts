@@ -13,9 +13,9 @@ import { produce } from 'immer';
 import { Data, SourceData, Transforms } from 'vega';
 
 import {
-  FILTERED_TABLE,
   CONTROLLED_HIGHLIGHTED_ITEM,
   CONTROLLED_HIGHLIGHTED_SERIES,
+  FILTERED_TABLE,
   HOVERED_ITEM,
   SELECTED_ITEM,
   SELECTED_SERIES,
@@ -95,8 +95,7 @@ export const getTrendlineData = (markOptions: TrendlineParentOptions): SourceDat
   }
 
   if (trendlines.some((trendline) => isInteractive(trendline))) {
-    data.push(concatenatedTrendlineData);
-    data.push(getHighlightTrendlineData(markName, idKey));
+    data.push(concatenatedTrendlineData, getHighlightTrendlineData(markName, idKey));
   }
 
   return data;
@@ -306,9 +305,13 @@ export const addTableDataTransforms = produce<Transforms[], [TrendlineParentOpti
  * @param method
  * @returns SourceData
  */
-export const getTrendlineDisplayOnHoverData = (trendlineName: string, method: TrendlineMethod, interactiveMarkName?: string): SourceData => {
+export const getTrendlineDisplayOnHoverData = (
+  trendlineName: string,
+  method: TrendlineMethod,
+  interactiveMarkName?: string
+): SourceData => {
   const source = isWindowMethod(method) ? `${trendlineName}_data` : `${trendlineName}_highResolutionData`;
-  const hoveredItemSignal = `${interactiveMarkName ?? trendlineName}_${HOVERED_ITEM}`
+  const hoveredItemSignal = `${interactiveMarkName ?? trendlineName}_${HOVERED_ITEM}`;
   return {
     name: `${trendlineName}_highlightedData`,
     source,

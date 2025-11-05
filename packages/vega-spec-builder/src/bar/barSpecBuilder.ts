@@ -31,7 +31,11 @@ import {
 import { toCamelCase } from '@spectrum-charts/utils';
 
 import { addPopoverData, getPopovers } from '../chartPopover/chartPopoverUtils';
-import { addTooltipData, addTooltipSignals, hasTooltipWithDimensionAreaTarget } from '../chartTooltip/chartTooltipUtils';
+import {
+  addTooltipData,
+  addTooltipSignals,
+  hasTooltipWithDimensionAreaTarget,
+} from '../chartTooltip/chartTooltipUtils';
 import { addTimeTransform, getTableData, getTransformSort } from '../data/dataUtils';
 import { getInteractiveMarkName } from '../marks/markUtils';
 import {
@@ -48,7 +52,7 @@ import {
   addHoveredItemSignal,
   getFirstRscSeriesIdSignal,
   getGenericValueSignal,
-  getLastRscSeriesIdSignal
+  getLastRscSeriesIdSignal,
 } from '../signal/signalSpecBuilder';
 import { addUserMetaInteractiveMark, getFacetsFromOptions } from '../specUtils';
 import { addTrendlineData, getTrendlineMarks, setTrendlineSignals } from '../trendline';
@@ -68,7 +72,15 @@ import { addTrellisScale, getTrellisGroupMark, isTrellised } from './trellisedBa
 
 export const addBar = produce<
   ScSpec,
-  [BarOptions & { colorScheme?: ColorScheme; highlightedItem?: HighlightedItem; index?: number; idKey: string, comboSiblingNames?: string[]; }]
+  [
+    BarOptions & {
+      colorScheme?: ColorScheme;
+      highlightedItem?: HighlightedItem;
+      index?: number;
+      idKey: string;
+      comboSiblingNames?: string[];
+    }
+  ]
 >(
   (
     spec,
@@ -260,7 +272,7 @@ export const getDodgedGroupAggregateData = (options: BarSpecOptions): Data => {
       {
         type: 'aggregate',
         groupby: [dimension],
-      }
+      },
     ],
   };
 };
@@ -280,17 +292,18 @@ export const addDualMetricAxisData = (data: Data[], options: BarSpecOptions) => 
     const scaleNames = getDualAxisScaleNames(baseScaleName);
 
     if (scaleNames.primaryDomain && scaleNames.secondaryDomain) {
-      data.push({
-        name: scaleNames.primaryDomain,
-        source: FILTERED_TABLE,
-        transform: [{ type: 'filter', expr: `datum.${SERIES_ID} !== ${LAST_RSC_SERIES_ID}` }],
-      });
-
-      data.push({
-        name: scaleNames.secondaryDomain,
-        source: FILTERED_TABLE,
-        transform: [{ type: 'filter', expr: `datum.${SERIES_ID} === ${LAST_RSC_SERIES_ID}` }],
-      });
+      data.push(
+        {
+          name: scaleNames.primaryDomain,
+          source: FILTERED_TABLE,
+          transform: [{ type: 'filter', expr: `datum.${SERIES_ID} !== ${LAST_RSC_SERIES_ID}` }],
+        },
+        {
+          name: scaleNames.secondaryDomain,
+          source: FILTERED_TABLE,
+          transform: [{ type: 'filter', expr: `datum.${SERIES_ID} === ${LAST_RSC_SERIES_ID}` }],
+        }
+      );
     }
   }
 };

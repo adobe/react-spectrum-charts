@@ -19,7 +19,7 @@ import { AxisSpecOptions, AxisThumbnailOptions, AxisThumbnailSpecOptions, Positi
 /**
  * Extracts and processes axis thumbnail options from the main axis options.
  * Maps each thumbnail option to a fully configured specification with default values applied.
- * 
+ *
  * @param axisOptions - The complete axis specification options containing thumbnail configurations
  * @returns An array of fully configured axis thumbnail specification options
  */
@@ -32,7 +32,7 @@ export const getAxisThumbnails = (axisOptions: AxisSpecOptions): AxisThumbnailSp
 /**
  * Applies default values to axis thumbnail options and generates a unique name.
  * Ensures each thumbnail has a proper name and URL key for identification.
- * 
+ *
  * @param options - The individual axis thumbnail options to process
  * @param axisOptions - The parent axis specification options
  * @param index - The index of this thumbnail within the axis thumbnails array
@@ -51,7 +51,7 @@ const applyAxisThumbnailOptionDefaults = (
 /**
  * Determines whether a given scale type supports thumbnail rendering.
  * Currently only band scales are supported for thumbnails.
- * 
+ *
  * @param scaleType - The scale type to check for thumbnail support
  * @returns True if the scale type supports thumbnails, false otherwise
  */
@@ -64,21 +64,14 @@ export const scaleTypeSupportsThumbnails = (scaleType: ScaleType | undefined): b
  * Adds thumbnail size calculation signals to the signals array.
  * Creates a signal that calculates the appropriate thumbnail size based on the scale bandwidth
  * and maximum thumbnail size constraints.
- * 
+ *
  * @param signals - The array of Vega signals to append the thumbnail size signal to
  * @param axisThumbnailName - The name of the thumbnail for signal generation
  * @param scaleName - The name of the scale to calculate bandwidth from
  */
-export const addAxisThumbnailSignals = (
-  signals: Signal[],
-  axisThumbnailName: string,
-  scaleName: string
-) => {
+export const addAxisThumbnailSignals = (signals: Signal[], axisThumbnailName: string, scaleName: string) => {
   signals.push(
-    getGenericUpdateSignal(
-      `${axisThumbnailName}ThumbnailSize`,
-      `min(bandwidth('${scaleName}'), ${MAX_THUMBNAIL_SIZE})`
-    )
+    getGenericUpdateSignal(`${axisThumbnailName}ThumbnailSize`, `min(bandwidth('${scaleName}'), ${MAX_THUMBNAIL_SIZE})`)
   );
 };
 
@@ -86,7 +79,7 @@ export const addAxisThumbnailSignals = (
  * Generates Vega image marks for axis thumbnails based on the axis configuration.
  * Creates image marks that display thumbnails positioned relative to the axis,
  * with dynamic sizing and opacity based on available space.
- * 
+ *
  * @param axisOptions - The complete axis specification options
  * @param scaleName - The name of the scale used for positioning calculations
  * @param scaleField - The data field used for scale domain mapping
@@ -132,7 +125,7 @@ export const getAxisThumbnailMarks = (
  * Calculates the positioning coordinates for an axis thumbnail based on its position.
  * Returns the appropriate x/y coordinates to place the thumbnail relative to the axis,
  * taking into account the axis position (left, right, top, bottom).
- * 
+ *
  * @param scaleName - The name of the scale used for positioning calculations
  * @param scaleField - The data field used for scale domain mapping
  * @param position - The position of the axis (left, right, top, bottom)
@@ -175,15 +168,12 @@ export const getAxisThumbnailPosition = (
  * Calculates the offset needed for axis labels to accommodate thumbnails.
  * Returns text encoding entries that adjust label positioning based on thumbnail size,
  * ensuring labels don't overlap with thumbnails when they are visible.
- * 
+ *
  * @param axisThumbnailName - The name of the thumbnail for signal reference
  * @param position - The position of the axis (left, right, top, bottom)
  * @returns Text encoding entries for label offset adjustments
  */
-export const getAxisThumbnailLabelOffset = (
-  axisThumbnailName: string,
-  position: Position
-): TextEncodeEntry => {
+export const getAxisThumbnailLabelOffset = (axisThumbnailName: string, position: Position): TextEncodeEntry => {
   // if the thumbnail is too small, it will be hidden and we don't want padding
   const hideThumbnailCondition = { test: `${axisThumbnailName}ThumbnailSize < ${MIN_THUMBNAIL_SIZE}`, value: 0 };
 

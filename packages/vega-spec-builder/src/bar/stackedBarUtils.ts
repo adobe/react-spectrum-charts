@@ -36,15 +36,13 @@ export const getStackedBarMarks = (options: BarSpecOptions): Mark[] => {
     marks.push(getBarDimensionHoverArea(options, 'stacked'));
   }
 
-  // add background marks
-  // these marks make it so that when the opacity of a bar is lowered (like on hover), you can't see the grid lines behind the bars
-  marks.push(getStackedBackgroundBar(options));
-
-  // bar mark
-  marks.push(getStackedBar(options));
-
-  // add annotation marks
   marks.push(
+    // add background marks
+    // these marks make it so that when the opacity of a bar is lowered (like on hover), you can't see the grid lines behind the bars
+    getStackedBackgroundBar(options),
+    // bar mark
+    getStackedBar(options),
+    // add annotation marks
     ...getAnnotationMarks(
       options,
       getBaseDataSourceName(options),

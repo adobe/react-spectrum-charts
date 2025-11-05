@@ -27,7 +27,7 @@ import {
   OPACITY_SCALE,
   SELECTED_GROUP,
   SELECTED_ITEM,
-  SYMBOL_SIZE_SCALE
+  SYMBOL_SIZE_SCALE,
 } from '@spectrum-charts/constants';
 
 import { defaultBarOptions } from '../bar/barTestUtils';
@@ -179,12 +179,9 @@ describe('getTooltip()', () => {
     expect(rule[1]).toHaveProperty('signal');
   });
   test('should add tooltipMetaData if provided', () => {
-    const rule = getTooltip(
-      [{ excludeDataKeys: ['excludeFromTooltip'] }],
-      'line0',
-      false,
-      { tooltipMetaData: 'tooltipMetaData' }
-    ) as ProductionRuleTests<SignalRef>;
+    const rule = getTooltip([{ excludeDataKeys: ['excludeFromTooltip'] }], 'line0', false, {
+      tooltipMetaData: 'tooltipMetaData',
+    }) as ProductionRuleTests<SignalRef>;
     expect(rule[1]).toHaveProperty('signal');
     expect(rule[1].signal).toContain('tooltipMetaData');
   });

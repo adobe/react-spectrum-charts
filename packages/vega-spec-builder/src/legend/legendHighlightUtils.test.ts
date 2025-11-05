@@ -16,7 +16,7 @@ import {
   FADE_FACTOR,
   HIGHLIGHTED_GROUP,
   HOVERED_SERIES,
-  SERIES_ID
+  SERIES_ID,
 } from '@spectrum-charts/constants';
 
 import { encodingUsesScale, getHighlightOpacityRule, setHoverOpacityForMarks } from './legendHighlightUtils';
@@ -39,17 +39,11 @@ const defaultOpacityEncoding = {
 describe('getHighlightOpacityRule()', () => {
   test('should use HIGHLIGHTED_SERIES in test if there are not any keys', () => {
     const opacityRule = getHighlightOpacityRule('legend0', false);
-    expect(opacityRule).toHaveProperty(
-      'test',
-      `isValid(legend0_${HOVERED_SERIES})`
-    );
+    expect(opacityRule).toHaveProperty('test', `isValid(legend0_${HOVERED_SERIES})`);
   });
   test('should use keys in test if there are keys', () => {
     const opacityRule = getHighlightOpacityRule('legend0', false, ['key1']);
-    expect(opacityRule).toHaveProperty(
-      'test',
-      `isValid(${HIGHLIGHTED_GROUP})`
-    );
+    expect(opacityRule).toHaveProperty('test', `isValid(${HIGHLIGHTED_GROUP})`);
   });
 });
 
@@ -109,10 +103,10 @@ describe('setHoverOpacityForMarks()', () => {
 
 describe('encodingUsesScale()', () => {
   test('should return true if the encoding uses a scale', () => {
-    expect(encodingUsesScale({ scale: 'color'})).toBe(true);
+    expect(encodingUsesScale({ scale: 'color' })).toBe(true);
   });
   test('should return true if the encoding uses a signal that references a scale', () => {
-    expect(encodingUsesScale({ signal: 'scale("color", datum.color)'})).toBe(true);
+    expect(encodingUsesScale({ signal: 'scale("color", datum.color)' })).toBe(true);
   });
   test('should return false if the encoding is not an object', () => {
     expect(encodingUsesScale(1)).toBe(false);
@@ -121,6 +115,6 @@ describe('encodingUsesScale()', () => {
     expect(encodingUsesScale(undefined)).toBe(false);
   });
   test('should return false if encoding is not related to a scale', () => {
-    expect(encodingUsesScale({ value: 1})).toBe(false);
+    expect(encodingUsesScale({ value: 1 })).toBe(false);
   });
 });

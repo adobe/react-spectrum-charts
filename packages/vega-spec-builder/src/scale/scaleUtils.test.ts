@@ -9,8 +9,9 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { getDualAxisScaleNames, getScaleField } from './scaleUtils';
 import { Scale } from 'vega';
+
+import { getDualAxisScaleNames, getScaleField } from './scaleUtils';
 
 describe('getDualAxisScaleNames()', () => {
   test('should return correct scale names for "xLinear" base scale', () => {
@@ -59,9 +60,9 @@ describe('getScaleField()', () => {
     const scale: Scale = {
       name: 'testScale',
       type: 'linear',
-      domain: { data: 'table', field: 'category' }
+      domain: { data: 'table', field: 'category' },
     };
-    
+
     const result = getScaleField(scale);
     expect(result).toBe('category');
   });
@@ -70,9 +71,9 @@ describe('getScaleField()', () => {
     const scale: Scale = {
       name: 'testScale',
       type: 'linear',
-      domain: { data: 'table', fields: ['field1', 'field2'] }
+      domain: { data: 'table', fields: ['field1', 'field2'] },
     };
-    
+
     const result = getScaleField(scale);
     expect(result).toBe('field1');
   });
@@ -81,9 +82,9 @@ describe('getScaleField()', () => {
     const scale: Scale = {
       name: 'testScale',
       type: 'linear',
-      domain: { data: 'table', fields: [] }
+      domain: { data: 'table', fields: [] },
     };
-    
+
     const result = getScaleField(scale);
     expect(result).toBeUndefined();
   });
@@ -91,9 +92,9 @@ describe('getScaleField()', () => {
   test('should return undefined when scale has no domain', () => {
     const scale: Scale = {
       name: 'testScale',
-      type: 'linear'
+      type: 'linear',
     };
-    
+
     const result = getScaleField(scale);
     expect(result).toBeUndefined();
   });

@@ -23,51 +23,53 @@ import {
   getBarUpdateEncodings,
   getBaseBarEnterEncodings,
   getDodgedDimensionEncodings,
-  getDodgedGroupMark
+  getDodgedGroupMark,
 } from './barUtils';
 
 export const getDodgedMarks = (options: BarSpecOptions): (GroupMark | RectMark)[] => {
   const { name } = options;
 
-  const marks: (GroupMark | RectMark)[] = [{
-    ...getDodgedGroupMark(options),
-    marks: [
-      // background bars
-      {
-        name: `${name}_background`,
-        from: { data: `${name}_facet` },
-        type: 'rect',
-        interactive: false,
-        encode: {
-          enter: {
-            ...getBaseBarEnterEncodings(options),
-            fill: { signal: BACKGROUND_COLOR },
-          },
-          update: {
-            ...getDodgedDimensionEncodings(options),
-          },
-        },
-      },
-      // bars
-      {
-        name,
-        from: { data: `${name}_facet` },
-        type: 'rect',
-        interactive: isInteractive(options),
-        encode: {
-          enter: {
-            ...getBaseBarEnterEncodings(options),
-            ...getBarEnterEncodings(options),
-          },
-          update: {
-            ...getDodgedDimensionEncodings(options),
-            ...getBarUpdateEncodings(options),
+  const marks: (GroupMark | RectMark)[] = [
+    {
+      ...getDodgedGroupMark(options),
+      marks: [
+        // background bars
+        {
+          name: `${name}_background`,
+          from: { data: `${name}_facet` },
+          type: 'rect',
+          interactive: false,
+          encode: {
+            enter: {
+              ...getBaseBarEnterEncodings(options),
+              fill: { signal: BACKGROUND_COLOR },
+            },
+            update: {
+              ...getDodgedDimensionEncodings(options),
+            },
           },
         },
-      },
-      ...getAnnotationMarks(options, `${name}_facet`, `${name}_position`, `${name}_dodgeGroup`),
-    ],
-  }];
+        // bars
+        {
+          name,
+          from: { data: `${name}_facet` },
+          type: 'rect',
+          interactive: isInteractive(options),
+          encode: {
+            enter: {
+              ...getBaseBarEnterEncodings(options),
+              ...getBarEnterEncodings(options),
+            },
+            update: {
+              ...getDodgedDimensionEncodings(options),
+              ...getBarUpdateEncodings(options),
+            },
+          },
+        },
+        ...getAnnotationMarks(options, `${name}_facet`, `${name}_position`, `${name}_dodgeGroup`),
+      ],
+    },
+  ];
 
   if (hasTooltipWithDimensionAreaTarget(options.chartTooltips)) {
     marks.unshift(getBarDimensionHoverArea(options, 'dodged'));

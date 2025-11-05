@@ -155,7 +155,7 @@ const initializeSpec = (
     background: backgroundColor ? getColorValue(backgroundColor, colorScheme) : undefined,
   };
 
-  return { ...baseSpec, ...(spec || {}) };
+  return { ...baseSpec, ...spec };
 };
 
 /**

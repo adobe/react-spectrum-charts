@@ -55,7 +55,7 @@ export const formatShortNumber = (numberLocale?: string | FormatLocaleDefinition
     // get the decimal symbol for the locale by formatting a number with decimals
     const decimalSymbol = new Intl.NumberFormat(locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 })
       .format(1.1)
-      .replace(/\d/g, '');
+      .replaceAll(/\d/g, '');
 
     const shortNumber = Intl.NumberFormat(locale, { notation: 'compact' }).format(value);
     if (customDecimalSymbol) {
@@ -193,10 +193,10 @@ const truncateText = (text: string, maxWidth: number, fontWeight: FontWeight = '
   const elipsisWidth = getLabelWidth('\u2026', fontWeight, fontSize);
   if (textWidth <= maxWidth) return text;
 
-  let truncatedText = text.slice(0, text.length - 1).trim();
+  let truncatedText = text.slice(0, -1).trim();
 
   for (let i = truncatedText.length; i > 0; i--) {
-    truncatedText = truncatedText.slice(0, truncatedText.length - 1).trim();
+    truncatedText = truncatedText.slice(0, -1).trim();
     if (getLabelWidth(truncatedText, fontWeight, fontSize) + elipsisWidth <= maxWidth) break;
   }
 

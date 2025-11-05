@@ -21,8 +21,8 @@ import { Annotation, Axis, Bar, ChartPopover, ChartTooltip, Legend } from '../..
 import useChartProps from '../../../hooks/useChartProps';
 import { bindWithProps } from '../../../test-utils';
 import { BarProps } from '../../../types';
-import { barSeriesData, barSubSeriesData } from './data';
 import { DimensionAreaStory } from './SharedBarStories';
+import { barSeriesData, barSubSeriesData } from './data';
 
 export default {
   title: 'RSC/Bar/Dodged Bar',
@@ -153,4 +153,3 @@ TooltipOnDimensionArea.args = {
 };
 
 export { Color, DodgedStacked, DodgedStackedWithLabels, LineType, OnClick, Opacity, Popover, TooltipOnDimensionArea };
-

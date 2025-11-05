@@ -196,7 +196,7 @@ function getIconAndFontSizes(
   const valueSize = fontSizes.valueSize;
 
   const fontSize = orientation === 'vertical' ? labelSize : valueSize;
-  const iconSize = lineProps !== undefined ? getIconSizeWithChart(fontSize) : getIconSize(fontSize);
+  const iconSize = lineProps === undefined ? getIconSize(fontSize) : getIconSizeWithChart(fontSize);
 
   return {
     iconSize,
@@ -253,7 +253,7 @@ function getIconSize(textSize: CSSProperties['fontSize']): IconProps['size'] {
  */
 function getBigNumberValue(data: ChartData[], dataKey: string, method: BigNumberMethod = 'last'): number {
   if (method === 'last') {
-    const value = data[data.length - 1][dataKey];
+    const value = data.at(-1)?.[dataKey];
     return typeof value === 'number' ? value : 0; // Return 0 if the value is not a number
   } else {
     // This must be either 'sum' or 'avg'

@@ -849,12 +849,10 @@ describe('Spec builder, Axis', () => {
         const titleFillOpacity = marks[0].axes?.[0].encode?.title?.update
           ?.fillOpacity as ProductionRule<NumericValueRef>[];
 
-        function getDualMetricAxisEncoding(encoding: ProductionRule<ColorValueRef>[] | ProductionRule<NumericValueRef>[]) {
-          return encoding?.find(
-            (rule) =>
-              'signal' in rule &&
-              rule.signal.includes(LAST_RSC_SERIES_ID)
-          );
+        function getDualMetricAxisEncoding(
+          encoding: ProductionRule<ColorValueRef>[] | ProductionRule<NumericValueRef>[]
+        ) {
+          return encoding?.find((rule) => 'signal' in rule && rule.signal.includes(LAST_RSC_SERIES_ID));
         }
 
         expect(getDualMetricAxisEncoding(labelFillEncoding)).toBeUndefined();

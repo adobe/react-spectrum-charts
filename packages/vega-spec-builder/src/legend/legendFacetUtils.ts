@@ -50,7 +50,7 @@ export const getFacets = (scales: Scale[]): { ordinalFacets: Facet[]; continuous
   const ordinalFacets: Facet[] = [];
   const continuousFacets: Facet[] = [];
 
-  scales.forEach((scale) => {
+  for (const scale of scales) {
     if (
       facetScaleNames.has(scale.name as FacetType | SecondaryFacetType) &&
       isScaleWithMultiFields(scale) &&
@@ -65,7 +65,7 @@ export const getFacets = (scales: Scale[]): { ordinalFacets: Facet[]; continuous
         continuousFacets.push({ facetType: scale.name as FacetType, field: scale.domain.fields[0].toString() });
       }
     }
-  });
+  }
   return { ordinalFacets, continuousFacets };
 };
 
@@ -82,7 +82,7 @@ export const getFacetsFromKeys = (
 ): { ordinalFacets: Facet[]; continuousFacets: Facet[] } => {
   const ordinalFacets: Facet[] = [];
   const continuousFacets: Facet[] = [];
-  scales.forEach((scale) => {
+  for (const scale of scales) {
     if (isScaleWithMultiFields(scale) && scaleHasKey(scale, keys)) {
       if (scale.type === 'ordinal' || scale.type === 'point') {
         ordinalFacets.push({
@@ -96,7 +96,7 @@ export const getFacetsFromKeys = (
         });
       }
     }
-  });
+  }
   return { ordinalFacets, continuousFacets };
 };
 

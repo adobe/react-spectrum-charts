@@ -354,7 +354,6 @@ export const addAxes = produce<Axis[], [BulletSpecOptions]>((axes, bulletOptions
 
   if (bulletOptions.labelPosition === 'side' && bulletOptions.direction === 'column') {
     const labelOffset = bulletOptions.showTargetValue && bulletOptions.showTarget ? -8 : 2;
-    axes.push(getBulletLabelAxesLeft(labelOffset));
-    axes.push(getBulletLabelAxesRight(bulletOptions, labelOffset));
+    axes.push(getBulletLabelAxesLeft(labelOffset), getBulletLabelAxesRight(bulletOptions, labelOffset));
   }
 });

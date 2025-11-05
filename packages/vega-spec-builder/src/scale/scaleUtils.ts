@@ -9,8 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
-import { Scale } from "vega";
+import { Scale } from 'vega';
 
 /**
  * Generates consistent scale names for dual-axis charts
@@ -39,4 +38,4 @@ export const getScaleField = (scale: Scale): string | undefined => {
     }
   }
   return undefined;
-}
+};

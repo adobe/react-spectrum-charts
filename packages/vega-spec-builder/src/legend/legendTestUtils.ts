@@ -20,7 +20,7 @@ import {
   DEFAULT_OPACITY_RULE,
   FADE_FACTOR,
   FILTERED_TABLE,
-  HOVERED_SERIES
+  HOVERED_SERIES,
 } from '@spectrum-charts/constants';
 
 import { LegendSpecOptions } from '../types';

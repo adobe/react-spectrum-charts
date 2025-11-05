@@ -128,8 +128,22 @@ describe('rscPropsToSpecBuilderOptions()', () => {
     test('basic bar', () => {
       expect(rscPropsToSpecBuilderOptions(chartProps)).toStrictEqual({
         axes: [
-          { axisAnnotations: [], axisThumbnails: [], baseline: true, position: 'bottom', referenceLines: [], title: 'Browser' },
-          { axisAnnotations: [], axisThumbnails: [], grid: true, position: 'left', referenceLines: [], title: 'Downloads' },
+          {
+            axisAnnotations: [],
+            axisThumbnails: [],
+            baseline: true,
+            position: 'bottom',
+            referenceLines: [],
+            title: 'Browser',
+          },
+          {
+            axisAnnotations: [],
+            axisThumbnails: [],
+            grid: true,
+            position: 'left',
+            referenceLines: [],
+            title: 'Downloads',
+          },
         ],
         backgroundColor: DEFAULT_BACKGROUND_COLOR,
         colorScheme: DEFAULT_COLOR_SCHEME,

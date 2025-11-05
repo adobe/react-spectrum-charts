@@ -210,12 +210,14 @@ export const getAnnotationXEncode = (padding: number, width?: number): RectEncod
   };
 };
 
-export const getAnnotationWidth = (textKey: string, padding: number, style?: BarAnnotationStyleOptions): AnnotationWidth => {
+export const getAnnotationWidth = (
+  textKey: string,
+  padding: number,
+  style?: BarAnnotationStyleOptions
+): AnnotationWidth => {
   if (style?.width) return { value: style.width };
   return {
-    signal: `getLabelWidth(datum.${textKey}, '${ANNOTATION_FONT_WEIGHT}', ${ANNOTATION_FONT_SIZE}) + ${
-      2 * padding
-    }`,
+    signal: `getLabelWidth(datum.${textKey}, '${ANNOTATION_FONT_WEIGHT}', ${ANNOTATION_FONT_SIZE}) + ${2 * padding}`,
   };
 };
 

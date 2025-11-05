@@ -12,15 +12,15 @@
 import { Data, FormulaTransform, NumericValueRef, Signal, SourceData } from 'vega';
 
 import {
+  CONTROLLED_HIGHLIGHTED_ITEM,
+  DIMENSION_HOVER_AREA,
   FADE_FACTOR,
   FILTERED_TABLE,
   GROUP_ID,
   HIGHLIGHTED_GROUP,
-  CONTROLLED_HIGHLIGHTED_ITEM,
   HOVERED_ITEM,
   INTERACTION_MODE,
   SERIES_ID,
-  DIMENSION_HOVER_AREA
 } from '@spectrum-charts/constants';
 
 import { getFilteredTableData } from '../data/dataUtils';
@@ -161,9 +161,9 @@ export const addTooltipSignals = (signals: Signal[], markOptions: TooltipParentO
     let update = `datum.${markName}_${GROUP_ID}`;
 
     if ('interactionMode' in markOptions && markOptions.interactionMode === INTERACTION_MODE.ITEM) {
-      getHoverMarkNames(markName).forEach((name) => {
+      for (const name of getHoverMarkNames(markName)) {
         addMouseEvents(highlightedGroupSignal, name, update);
-      });
+      }
     }
 
     if (['scatter', 'line'].includes(markOptions.markType)) {
@@ -180,13 +180,11 @@ const addMouseEvents = (highlightedGroupSignal: Signal, markName: string, update
     highlightedGroupSignal.on = [];
   }
   highlightedGroupSignal.on.push(
-    ...[
-      {
-        events: `@${markName}:mouseover`,
-        update,
-      },
-      { events: `@${markName}:mouseout`, update: 'null' },
-    ]
+    {
+      events: `@${markName}:mouseover`,
+      update,
+    },
+    { events: `@${markName}:mouseout`, update: 'null' }
   );
 };
 
@@ -214,39 +212,34 @@ export const addHoveredItemOpacityRules = (
       test: `isArray(${CONTROLLED_HIGHLIGHTED_ITEM}) && length(${CONTROLLED_HIGHLIGHTED_ITEM}) > 0 && indexof(${CONTROLLED_HIGHLIGHTED_ITEM}, datum.${markOptions.idKey}) === -1`,
       value: FADE_FACTOR,
     },
-  ]
+  ];
 
   addHoverdDimenstionAreaOpacityRules(rules, markOptions);
 
   if ('comboSiblingNames' in markOptions && markOptions.comboSiblingNames?.length) {
-    const test = markOptions.comboSiblingNames.map((siblingName) => `isValid(${siblingName}_${HOVERED_ITEM})`).join(' || ');
+    const test = markOptions.comboSiblingNames
+      .map((siblingName) => `isValid(${siblingName}_${HOVERED_ITEM})`)
+      .join(' || ');
     console.log('test', test);
     rules.push({ test, value: FADE_FACTOR });
   }
 
-  opacityRules.splice(
-    startIndex,
-    0,
-    ...rules
-  );
+  opacityRules.splice(startIndex, 0, ...rules);
 };
-
 
 export const addHoverdDimenstionAreaOpacityRules = (
   opacityRules: ({ test?: string } & NumericValueRef)[],
   markOptions: TooltipParentOptions
 ) => {
-  if (!hasTooltipWithDimensionAreaTarget(markOptions.chartTooltips) || !('dimension' in markOptions)) return
-  const {name, dimension} = markOptions
-  const hoveredItemSignal = `${name}_${DIMENSION_HOVER_AREA}_${HOVERED_ITEM}`
-  opacityRules.push(
-    {
-      test: `isValid(${hoveredItemSignal})`,
-      signal: `${hoveredItemSignal}.${dimension} === datum.${dimension} ? 1 : ${FADE_FACTOR}`,
-    }
-  )
-}
+  if (!hasTooltipWithDimensionAreaTarget(markOptions.chartTooltips) || !('dimension' in markOptions)) return;
+  const { name, dimension } = markOptions;
+  const hoveredItemSignal = `${name}_${DIMENSION_HOVER_AREA}_${HOVERED_ITEM}`;
+  opacityRules.push({
+    test: `isValid(${hoveredItemSignal})`,
+    signal: `${hoveredItemSignal}.${dimension} === datum.${dimension} ? 1 : ${FADE_FACTOR}`,
+  });
+};
 
 export const hasTooltipWithDimensionAreaTarget = (chartTooltips: ChartTooltipOptions[]) => {
   return chartTooltips.some(({ targets }) => targets?.includes('dimensionArea'));
-}
+};

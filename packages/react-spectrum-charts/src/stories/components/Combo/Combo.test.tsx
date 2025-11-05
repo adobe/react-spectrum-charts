@@ -11,11 +11,21 @@
  */
 import React from 'react';
 
+import { FADE_FACTOR } from '@spectrum-charts/constants';
+
 import { Combo } from '../../../alpha';
-import { findAllMarksByGroupName, findChart, findMarksByGroupName, hoverNthElement, render, screen, unhoverNthElement, within } from '../../../test-utils';
+import {
+  findAllMarksByGroupName,
+  findChart,
+  findMarksByGroupName,
+  hoverNthElement,
+  render,
+  screen,
+  unhoverNthElement,
+  within,
+} from '../../../test-utils';
 import '../../../test-utils/__mocks__/matchMedia.mock.js';
 import { Basic, DualAxis, Tooltip } from './Combo.story';
-import { FADE_FACTOR } from '@spectrum-charts/constants';
 
 describe('Combo', () => {
   // Combo is not a real React component. This test just provides test coverage for sonarqube

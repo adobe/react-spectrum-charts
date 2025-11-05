@@ -235,7 +235,7 @@ export const getTrendlineParamFormulaTransforms = (
     const order = getPolynomialOrder(method);
     expr = [
       'datum.coef[0]',
-      ...Array(order)
+      ...new Array<number>(order)
         .fill(0)
         .map((_e, i) => `datum.coef[${i + 1}] * pow(datum.${trendlineDimension}, ${i + 1})`),
     ].join(' + ');

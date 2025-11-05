@@ -14,6 +14,8 @@ import { Data, GroupMark } from 'vega';
 import {
   BACKGROUND_COLOR,
   COLOR_SCALE,
+  CONTROLLED_HIGHLIGHTED_ITEM,
+  CONTROLLED_HIGHLIGHTED_SERIES,
   DEFAULT_COLOR,
   DEFAULT_COLOR_SCHEME,
   DEFAULT_METRIC,
@@ -21,8 +23,6 @@ import {
   DEFAULT_TIME_DIMENSION,
   DEFAULT_TRANSFORMED_TIME_DIMENSION,
   FILTERED_TABLE,
-  CONTROLLED_HIGHLIGHTED_ITEM,
-  CONTROLLED_HIGHLIGHTED_SERIES,
   HOVERED_ITEM,
   LINEAR_PADDING,
   MARK_ID,
@@ -149,7 +149,7 @@ const defaultSpec = initializeSpec({
     },
   ],
   signals: [],
-  usermeta: {interactiveMarks: []}
+  usermeta: { interactiveMarks: [] },
 });
 
 const defaultLinearScale = {
@@ -268,7 +268,9 @@ describe('areaSpecBuilder', () => {
     });
 
     test('should add not add the on property if it already exists', () => {
-      const signals = [{ ...getGenericValueSignal(CONTROLLED_HIGHLIGHTED_ITEM), on: [{ events: 'test', update: 'test' }] }];
+      const signals = [
+        { ...getGenericValueSignal(CONTROLLED_HIGHLIGHTED_ITEM), on: [{ events: 'test', update: 'test' }] },
+      ];
       addHighlightedItemEvents(signals, 'area0');
       expect(signals[0].on).toHaveLength(2);
     });

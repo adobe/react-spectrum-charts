@@ -17,8 +17,8 @@ import {
   MARK_ID,
 } from '@spectrum-charts/constants';
 
-import { LineMarkOptions } from './lineUtils';
 import { LineSpecOptions } from '../types';
+import { LineMarkOptions } from './lineUtils';
 
 export const defaultLineMarkOptions: LineMarkOptions = {
   color: DEFAULT_COLOR,

@@ -12,12 +12,12 @@
 import { GroupMark, Mark, NumericValueRef, ProductionRule } from 'vega';
 
 import {
+  CONTROLLED_HIGHLIGHTED_SERIES,
   FADE_FACTOR,
   GROUP_ID,
   HIGHLIGHTED_GROUP,
-  CONTROLLED_HIGHLIGHTED_SERIES,
   HOVERED_SERIES,
-  SERIES_ID
+  SERIES_ID,
 } from '@spectrum-charts/constants';
 
 /**
@@ -52,14 +52,27 @@ export const setHoverOpacityForMarks = (legendName: string, marks: Mark[], keys?
   });
 };
 
-export const getHighlightOpacityRule = (legendName: string, controlled: boolean, keys?: string[] ): { test?: string } & NumericValueRef => {
+export const getHighlightOpacityRule = (
+  legendName: string,
+  controlled: boolean,
+  keys?: string[]
+): { test?: string } & NumericValueRef => {
   if (controlled) {
-    return {test: `isValid(${CONTROLLED_HIGHLIGHTED_SERIES})`, signal: `${CONTROLLED_HIGHLIGHTED_SERIES} === datum.${SERIES_ID} ? 1 : ${FADE_FACTOR}`}
+    return {
+      test: `isValid(${CONTROLLED_HIGHLIGHTED_SERIES})`,
+      signal: `${CONTROLLED_HIGHLIGHTED_SERIES} === datum.${SERIES_ID} ? 1 : ${FADE_FACTOR}`,
+    };
   }
   if (keys?.length) {
-    return {test: `isValid(${HIGHLIGHTED_GROUP})`, signal: `${HIGHLIGHTED_GROUP} === datum.${legendName}_${GROUP_ID} ? 1 : ${FADE_FACTOR}`};
+    return {
+      test: `isValid(${HIGHLIGHTED_GROUP})`,
+      signal: `${HIGHLIGHTED_GROUP} === datum.${legendName}_${GROUP_ID} ? 1 : ${FADE_FACTOR}`,
+    };
   }
-  return { test: `isValid(${legendName}_${HOVERED_SERIES})`, signal: `${legendName}_${HOVERED_SERIES} === datum.${SERIES_ID} ? 1 : ${FADE_FACTOR}`}
+  return {
+    test: `isValid(${legendName}_${HOVERED_SERIES})`,
+    signal: `${legendName}_${HOVERED_SERIES} === datum.${SERIES_ID} ? 1 : ${FADE_FACTOR}`,
+  };
 };
 
 /**
@@ -71,10 +84,10 @@ export const getHighlightOpacityRule = (legendName: string, controlled: boolean,
 export const markUsesSeriesColorScale = (mark: Mark): boolean => {
   const enter = mark.encode?.enter;
   if (!enter) return false;
-  
+
   const { fill, fillOpacity, stroke, strokeDash, strokeOpacity } = enter;
   const facetEncodings = [fill, fillOpacity, stroke, strokeDash, strokeOpacity];
-  
+
   for (const facet of facetEncodings) {
     if (encodingUsesScale(facet)) {
       return true;
@@ -91,12 +104,11 @@ export const markUsesSeriesColorScale = (mark: Mark): boolean => {
 export const encodingUsesScale = <T>(encoding?: ProductionRule<T>): boolean => {
   if (!encoding || typeof encoding !== 'object') return false;
   if ('scale' in encoding) return true;
-  if ('signal' in encoding && typeof encoding.signal === 'string' && encoding.signal.includes("scale(")) {
+  if ('signal' in encoding && typeof encoding.signal === 'string' && encoding.signal.includes('scale(')) {
     return true;
   }
   return false;
-}
-
+};
 
 /**
  * Recursively flattens all nested marks into a flat array

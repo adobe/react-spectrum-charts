@@ -20,8 +20,8 @@ import { Annotation, Axis, Bar, Legend } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
 import { bindWithProps } from '../../../test-utils';
 import { BarProps } from '../../../types';
-import { barSeriesData, negativeBarSeriesData, stackedBarDataWithUTC } from './data';
 import { DimensionAreaStory } from './SharedBarStories';
+import { barSeriesData, negativeBarSeriesData, stackedBarDataWithUTC } from './data';
 
 export default {
   title: 'RSC/Bar/Stacked Bar',
@@ -124,4 +124,3 @@ TooltipOnDimensionArea.args = {
 };
 
 export { Basic, NegativeStack, OnClick, StackedBarWithUTCDatetimeFormat, TooltipOnDimensionArea, WithBarLabels };
-

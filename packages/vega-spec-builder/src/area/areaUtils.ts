@@ -12,14 +12,14 @@
 import { AreaMark, NumericValueRef, ProductionRule } from 'vega';
 
 import {
+  CONTROLLED_HIGHLIGHTED_SERIES,
   CONTROLLED_HIGHLIGHTED_TABLE,
   DEFAULT_OPACITY_RULE,
   DEFAULT_TRANSFORMED_TIME_DIMENSION,
   FADE_FACTOR,
-  CONTROLLED_HIGHLIGHTED_SERIES,
   HOVERED_ITEM,
   SELECTED_SERIES,
-  SERIES_ID
+  SERIES_ID,
 } from '@spectrum-charts/constants';
 
 import {
@@ -103,20 +103,34 @@ export const getAreaMark = (
 };
 
 export function getAreaOpacity(areaOptions: AreaMarkOptions): ProductionRule<NumericValueRef> | undefined {
-  const { chartPopovers, displayOnHover, interactiveMarkName, isHighlightedByGroup, isMetricRange, highlightedItem, name } = areaOptions;
+  const {
+    chartPopovers,
+    displayOnHover,
+    interactiveMarkName,
+    isHighlightedByGroup,
+    isMetricRange,
+    highlightedItem,
+    name,
+  } = areaOptions;
   // if metric ranges only display when hovering, we don't need to include other hover rules for this specific area
   if (isMetricRange && displayOnHover) {
     const rules: ProductionRule<NumericValueRef> = [
-      { test: `isValid(${interactiveMarkName}_${HOVERED_ITEM})`, signal: `${interactiveMarkName}_${HOVERED_ITEM}.${SERIES_ID} === datum.${SERIES_ID} ? 1 : ${FADE_FACTOR}`},
+      {
+        test: `isValid(${interactiveMarkName}_${HOVERED_ITEM})`,
+        signal: `${interactiveMarkName}_${HOVERED_ITEM}.${SERIES_ID} === datum.${SERIES_ID} ? 1 : ${FADE_FACTOR}`,
+      },
       {
         test: `length(data('${CONTROLLED_HIGHLIGHTED_TABLE}'))`,
-        signal: `indexof(pluck(data('${CONTROLLED_HIGHLIGHTED_TABLE}'), '${SERIES_ID}'), datum.${SERIES_ID}) > -1 ? 1 : ${FADE_FACTOR}`
+        signal: `indexof(pluck(data('${CONTROLLED_HIGHLIGHTED_TABLE}'), '${SERIES_ID}'), datum.${SERIES_ID}) > -1 ? 1 : ${FADE_FACTOR}`,
       },
       { test: `isValid(${SELECTED_SERIES})`, signal: `${SELECTED_SERIES} === datum.${SERIES_ID} ? 1 : ${FADE_FACTOR}` },
       { value: 1 },
-    ]
+    ];
     if (interactiveMarkName) {
-      rules.unshift({ test: `isValid(${interactiveMarkName}_${HOVERED_ITEM})`, signal: `${interactiveMarkName}_${HOVERED_ITEM}.${SERIES_ID} === datum.${SERIES_ID} ? 1 : ${FADE_FACTOR}`});
+      rules.unshift({
+        test: `isValid(${interactiveMarkName}_${HOVERED_ITEM})`,
+        signal: `${interactiveMarkName}_${HOVERED_ITEM}.${SERIES_ID} === datum.${SERIES_ID} ? 1 : ${FADE_FACTOR}`,
+      });
     }
     return rules;
   }

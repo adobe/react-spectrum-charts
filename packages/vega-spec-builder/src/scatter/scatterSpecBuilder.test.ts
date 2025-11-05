@@ -17,7 +17,7 @@ import {
   LINE_TYPE_SCALE,
   LINE_WIDTH_SCALE,
   OPACITY_SCALE,
-  SYMBOL_SIZE_SCALE
+  SYMBOL_SIZE_SCALE,
 } from '@spectrum-charts/constants';
 
 import { defaultSignals } from '../specTestUtils';
@@ -86,12 +86,11 @@ describe('addSignals()', () => {
       ...defaultScatterOptions,
       chartTooltips: [{}],
     });
-    
+
     const hoveredItemSignal = signals.find((signal) => signal.name.includes(HOVERED_ITEM));
 
-    expect(hoveredItemSignal).toBeDefined()
+    expect(hoveredItemSignal).toBeDefined();
     expect(hoveredItemSignal?.on).toHaveLength(2);
-
   });
   test('should add trendline signal events if trendline exists as a child', () => {
     const signals = addSignals(defaultSignals, {
@@ -101,7 +100,7 @@ describe('addSignals()', () => {
 
     const hoveredItemSignal = signals.find((signal) => signal.name.includes(HOVERED_ITEM));
 
-    expect(hoveredItemSignal).toBeDefined()
+    expect(hoveredItemSignal).toBeDefined();
     expect(hoveredItemSignal?.on).toHaveLength(2);
   });
 });

@@ -11,7 +11,13 @@
  */
 import { SourceData } from 'vega';
 
-import { FILTERED_TABLE, GROUP_ID, CONTROLLED_HIGHLIGHTED_ITEM, HOVERED_ITEM, SELECTED_ITEM } from '@spectrum-charts/constants';
+import {
+  CONTROLLED_HIGHLIGHTED_ITEM,
+  FILTERED_TABLE,
+  GROUP_ID,
+  HOVERED_ITEM,
+  SELECTED_ITEM,
+} from '@spectrum-charts/constants';
 
 import { isHighlightedByGroup } from '../chartTooltip/chartTooltipUtils';
 import { hasPopover, isInteractive } from '../marks/markUtils';
@@ -32,15 +38,15 @@ export const getLineHighlightedData = (options: LineSpecOptions): SourceData => 
     const hoveredItemSignal = `${lineName}_${HOVERED_ITEM}`;
     const groupKey = `${lineName}_${GROUP_ID}`;
     if (isHighlightedByGroup(options)) {
-      expr += ` || isValid(${hoveredItemSignal}) && ${hoveredItemSignal}.${groupKey} === datum.${groupKey}`
+      expr += ` || isValid(${hoveredItemSignal}) && ${hoveredItemSignal}.${groupKey} === datum.${groupKey}`;
     } else {
-      expr += ` || isValid(${hoveredItemSignal}) && ${hoveredItemSignal}.${idKey} === datum.${idKey}`
+      expr += ` || isValid(${hoveredItemSignal}) && ${hoveredItemSignal}.${idKey} === datum.${idKey}`;
     }
     if (hasPopover(options)) {
-      expr = `${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${idKey} || !${SELECTED_ITEM} && ${expr}`
+      expr = `${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${idKey} || !${SELECTED_ITEM} && ${expr}`;
     }
   }
-  
+
   return {
     name: `${lineName}_highlightedData`,
     source: FILTERED_TABLE,

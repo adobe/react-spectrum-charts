@@ -11,7 +11,14 @@
  */
 import { Data, NumericValueRef, Signal } from 'vega';
 
-import { DEFAULT_OPACITY_RULE, GROUP_ID, HIGHLIGHTED_GROUP, CONTROLLED_HIGHLIGHTED_ITEM, HOVERED_ITEM, DIMENSION_HOVER_AREA } from '@spectrum-charts/constants';
+import {
+  CONTROLLED_HIGHLIGHTED_ITEM,
+  DEFAULT_OPACITY_RULE,
+  DIMENSION_HOVER_AREA,
+  GROUP_ID,
+  HIGHLIGHTED_GROUP,
+  HOVERED_ITEM,
+} from '@spectrum-charts/constants';
 
 import { defaultBarOptions } from '../bar/barTestUtils';
 import { defaultScatterOptions } from '../scatter/scatterTestUtils';
@@ -26,7 +33,7 @@ import {
   applyTooltipPropDefaults,
   getTooltips,
   hasTooltipWithDimensionAreaTarget,
-  isHighlightedByGroup
+  isHighlightedByGroup,
 } from './chartTooltipUtils';
 
 const getDefautltMarkOptions = (tooltipOptions: ChartTooltipOptions = {}): BarSpecOptions => ({
@@ -159,8 +166,6 @@ describe('addTooltipSignals()', () => {
   });
 });
 
-
-
 describe('addHoveredItemOpacityRules()', () => {
   test('should add hovered item opacity rules', () => {
     const opacityRules = [];
@@ -183,13 +188,13 @@ describe('addHoveredItemOpacityRules()', () => {
     expect(opacityRules[2].test).toContain(HOVERED_ITEM);
   });
   test('should use group id if highlighted by group', () => {
-    const opacityRules: ({ test?: string, signal?: string } & NumericValueRef)[] = [];
+    const opacityRules: ({ test?: string; signal?: string } & NumericValueRef)[] = [];
     addHoveredItemOpacityRules(opacityRules, getDefautltMarkOptions({ highlightBy: 'dimension' }));
     expect(opacityRules).toHaveLength(2);
     expect(opacityRules[0].signal).toContain(GROUP_ID);
   });
   test('should add combo sibling names if combo sibling names are provided', () => {
-    const opacityRules: ({ test?: string, signal?: string } & NumericValueRef)[] = [DEFAULT_OPACITY_RULE];
+    const opacityRules: ({ test?: string; signal?: string } & NumericValueRef)[] = [DEFAULT_OPACITY_RULE];
     const options = getDefautltMarkOptions();
     options.comboSiblingNames = ['combo0Bar0', 'combo0Line0'];
     addHoveredItemOpacityRules(opacityRules, options);
@@ -222,9 +227,9 @@ describe('addHoverdDimenstionAreaOpacityRules()', () => {
 
 describe('hasTooltipWithDimensionAreaTarget()', () => {
   test('should return true if targets includes dimensionArea', () => {
-    expect(hasTooltipWithDimensionAreaTarget([{targets: ['dimensionArea']}])).toBe(true);
+    expect(hasTooltipWithDimensionAreaTarget([{ targets: ['dimensionArea'] }])).toBe(true);
   });
   test('should return false if targets does not include dimensionArea', () => {
-    expect(hasTooltipWithDimensionAreaTarget([{targets: ['item']}, {}])).toBe(false);
+    expect(hasTooltipWithDimensionAreaTarget([{ targets: ['item'] }, {}])).toBe(false);
   });
 });

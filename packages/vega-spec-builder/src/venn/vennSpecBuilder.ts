@@ -104,21 +104,22 @@ export const addVenn = produce<
 export const addData = produce<Data[], [VennSpecOptions]>((data, props) => {
   const { circles, intersections } = getVennSolution(props);
 
-  data.push({
-    name: 'circles',
-    values: circles,
-    transform: [
-      ...getTableJoinTransforms(),
-      { type: 'formula', as: 'strokeSize', expr: 'datum.size * 1' },
-      { type: 'filter', expr: 'indexof(hiddenSeries, datum.table_data.rscSeriesId) === -1' },
-    ],
-  });
-
-  data.push({
-    name: 'intersections',
-    values: intersections,
-    transform: [...getTableJoinTransforms(), ...getHiddenIntersectionTransforms()],
-  });
+  data.push(
+    {
+      name: 'circles',
+      values: circles,
+      transform: [
+        ...getTableJoinTransforms(),
+        { type: 'formula', as: 'strokeSize', expr: 'datum.size * 1' },
+        { type: 'filter', expr: 'indexof(hiddenSeries, datum.table_data.rscSeriesId) === -1' },
+      ],
+    },
+    {
+      name: 'intersections',
+      values: intersections,
+      transform: [...getTableJoinTransforms(), ...getHiddenIntersectionTransforms()],
+    }
+  );
 
   const tableIndex = data.findIndex((d) => d.name === TABLE);
   data[tableIndex].transform = data[tableIndex].transform ?? [];
@@ -126,11 +127,14 @@ export const addData = produce<Data[], [VennSpecOptions]>((data, props) => {
 });
 
 export const addMarks = produce<Mark[], [VennSpecOptions]>((marks, props) => {
-  marks.push(getCircleStrokeMark(props));
-  marks.push(getCircleMark(props));
-  marks.push(getIntersectionStrokeMark(props));
-  marks.push(getInterserctionMark(props));
-  marks.push(getTextMark(props, 'circles'), getTextMark(props, 'intersections'));
+  marks.push(
+    getCircleStrokeMark(props),
+    getCircleMark(props),
+    getIntersectionStrokeMark(props),
+    getInterserctionMark(props),
+    getTextMark(props, 'circles'),
+    getTextMark(props, 'intersections')
+  );
 });
 
 export const addScales = produce<Scale[]>((scales) => {

@@ -34,10 +34,10 @@ import { getInteractiveMarkName, hasPopover, isInteractive } from '../marks/mark
 import { addContinuousDimensionScale, addFieldToFacetScaleDomain, addMetricScale } from '../scale/scaleSpecBuilder';
 import { setScatterPathScales } from '../scatterPath';
 import { addHoveredItemSignal } from '../signal/signalSpecBuilder';
+import { addUserMetaInteractiveMark } from '../specUtils';
 import { addTrendlineData, getTrendlineScales, setTrendlineSignals } from '../trendline';
 import { ColorScheme, HighlightedItem, ScSpec, ScatterOptions, ScatterSpecOptions } from '../types';
 import { addScatterMarks } from './scatterMarkUtils';
-import { addUserMetaInteractiveMark } from '../specUtils';
 
 /**
  * Adds all the necessary parts of a scatter to the spec

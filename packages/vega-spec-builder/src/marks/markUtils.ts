@@ -37,7 +37,7 @@ import {
   OPACITY_SCALE,
   SELECTED_GROUP,
   SELECTED_ITEM,
-  SYMBOL_SIZE_SCALE
+  SYMBOL_SIZE_SCALE,
 } from '@spectrum-charts/constants';
 import { getColorValue } from '@spectrum-charts/themes';
 

@@ -139,13 +139,13 @@ export const addLegend = produce<
     }
 
     // continuous legends cannot be combined with any other legends
-    continuousFacets.forEach((facet) => {
+    for (const facet of continuousFacets) {
       // add the legend
       legends.push(getContinuousLegend(facet, legendOptions));
-    });
+    }
 
     // if legends is undefined, initialize it as an empty array
-    if (typeof spec.legends === 'undefined') {
+    if (spec.legends === undefined) {
       spec.legends = [];
     }
     spec.legends.push(...legends);
@@ -309,10 +309,10 @@ export const addData = produce<Data[], [LegendSpecOptions & { facets: string[] }
     }
 
     // add legend hovered series to the trendline and metric range highlighted data
-    const highlightedDataSets = data.filter(data => /.*(Trendline|MetricRange).*highlightedData$/.test(data.name));
+    const highlightedDataSets = data.filter((data) => /.*(Trendline|MetricRange).*highlightedData$/.test(data.name));
     for (const data of highlightedDataSets) {
       if (data.transform?.[0] && 'expr' in data.transform[0]) {
-        data.transform[0].expr += ` || datum.${SERIES_ID} === ${name}_${HOVERED_SERIES}`
+        data.transform[0].expr += ` || datum.${SERIES_ID} === ${name}_${HOVERED_SERIES}`;
       }
     }
   }

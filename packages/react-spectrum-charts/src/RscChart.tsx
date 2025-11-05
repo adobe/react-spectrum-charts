@@ -166,12 +166,7 @@ const ChartDialog = ({ datum, popover, setIsPopoverOpen, targetElement }: ChartD
       </ActionButton>
       {(close) => (
         <Dialog data-testid="rsc-popover" UNSAFE_className="rsc-popover" {...dialogProps} minWidth={minWidth}>
-          <SpectrumView
-            data-testid="rsc-popover-content"
-            gridColumn="1/-1"
-            gridRow="1/-1"
-            margin={contentMargin ?? 12}
-          >
+          <SpectrumView data-testid="rsc-popover-content" gridColumn="1/-1" gridRow="1/-1" margin={contentMargin ?? 12}>
             {datum && datum[COMPONENT_NAME] === name && children?.(datum, close)}
           </SpectrumView>
         </Dialog>

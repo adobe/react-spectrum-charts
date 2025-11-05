@@ -12,10 +12,10 @@
 import { AreaMark, GroupMark, LineMark, SourceData } from 'vega';
 
 import {
+  CONTROLLED_HIGHLIGHTED_SERIES,
   CONTROLLED_HIGHLIGHTED_TABLE,
   DEFAULT_METRIC,
   FILTERED_TABLE,
-  CONTROLLED_HIGHLIGHTED_SERIES,
   HOVERED_ITEM,
   SELECTED_SERIES,
   SERIES_ID,
@@ -144,9 +144,9 @@ export const getMetricRangeData = (markOptions: LineSpecOptions): SourceData[] =
     const { displayOnHover, name } = metricRangeOptions;
     // if displayOnHover is true, add a data source for the highlighted data
     if (displayOnHover) {
-      const hoveredItem = `isValid(${markOptions.interactiveMarkName}_${HOVERED_ITEM}) && ${markOptions.interactiveMarkName}_${HOVERED_ITEM}.${SERIES_ID} === datum.${SERIES_ID}`
-      const selectedSeries = `isValid(${SELECTED_SERIES}) && ${SELECTED_SERIES} === datum.${SERIES_ID}`
-      const controlledHighlightedItem = `indexof(pluck(data('${CONTROLLED_HIGHLIGHTED_TABLE}'),'${SERIES_ID}'), datum.${SERIES_ID}) > -1`
+      const hoveredItem = `isValid(${markOptions.interactiveMarkName}_${HOVERED_ITEM}) && ${markOptions.interactiveMarkName}_${HOVERED_ITEM}.${SERIES_ID} === datum.${SERIES_ID}`;
+      const selectedSeries = `isValid(${SELECTED_SERIES}) && ${SELECTED_SERIES} === datum.${SERIES_ID}`;
+      const controlledHighlightedItem = `indexof(pluck(data('${CONTROLLED_HIGHLIGHTED_TABLE}'),'${SERIES_ID}'), datum.${SERIES_ID}) > -1`;
       const controlledHighlightedSeries = `isValid(${CONTROLLED_HIGHLIGHTED_SERIES}) && ${CONTROLLED_HIGHLIGHTED_SERIES} === datum.${SERIES_ID}`;
       data.push({
         name: `${name}_highlightedData`,

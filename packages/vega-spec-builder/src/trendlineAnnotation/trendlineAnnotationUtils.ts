@@ -89,7 +89,7 @@ export const getTrendlineAnnotationMarks = (trendlineOptions: TrendlineSpecOptio
   const marks: GroupMark[] = [];
   const annotations = getTrendlineAnnotations(trendlineOptions, markName);
 
-  annotations.forEach((annotation) => {
+  for (const annotation of annotations) {
     marks.push({
       name: `${annotation.name}_group`,
       type: 'group',
@@ -100,7 +100,7 @@ export const getTrendlineAnnotationMarks = (trendlineOptions: TrendlineSpecOptio
         ...getTrendlineAnnotationBadgeMark(annotation),
       ],
     });
-  });
+  }
   return marks;
 };
 

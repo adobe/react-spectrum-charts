@@ -120,10 +120,12 @@ export const addScales = produce<Scale[], [BulletSpecOptions]>((scales, options)
 });
 
 export const addSignals = produce<Signal[], [BulletSpecOptions]>((signals, options) => {
-  signals.push({ name: 'gap', value: 12 });
-  signals.push({ name: 'bulletHeight', value: 8 });
-  signals.push({ name: 'bulletThresholdHeight', update: 'bulletHeight * 3' });
-  signals.push({ name: 'targetHeight', update: 'bulletThresholdHeight + 6' });
+  signals.push(
+    { name: 'gap', value: 12 },
+    { name: 'bulletHeight', value: 8 },
+    { name: 'bulletThresholdHeight', update: 'bulletHeight * 3' },
+    { name: 'targetHeight', update: 'bulletThresholdHeight + 6' }
+  );
 
   if (options.showTargetValue && options.showTarget) {
     signals.push({ name: 'targetValueLabelHeight', update: '20' });
@@ -138,14 +140,16 @@ export const addSignals = produce<Signal[], [BulletSpecOptions]>((signals, optio
     signals.push({ name: 'paddingRatio', update: 'gap / (gap + bulletGroupHeight)' });
 
     if (options.metricAxis && !options.showTargetValue) {
-      signals.push({
-        name: 'bulletChartHeight',
-        update: "length(data('table')) * bulletGroupHeight + (length(data('table')) - 1) * gap + 10",
-      });
-      signals.push({
-        name: 'axisOffset',
-        update: 'bulletChartHeight - height - 10',
-      });
+      signals.push(
+        {
+          name: 'bulletChartHeight',
+          update: "length(data('table')) * bulletGroupHeight + (length(data('table')) - 1) * gap + 10",
+        },
+        {
+          name: 'axisOffset',
+          update: 'bulletChartHeight - height - 10',
+        }
+      );
     } else {
       signals.push({
         name: 'bulletChartHeight',
@@ -153,9 +157,11 @@ export const addSignals = produce<Signal[], [BulletSpecOptions]>((signals, optio
       });
     }
   } else {
-    signals.push({ name: 'bulletGroupWidth', update: "(width / length(data('table'))) - gap" });
-    signals.push({ name: 'paddingRatio', update: 'gap / (gap + bulletGroupWidth)' });
-    signals.push({ name: 'bulletChartHeight', update: 'bulletGroupHeight' });
+    signals.push(
+      { name: 'bulletGroupWidth', update: "(width / length(data('table'))) - gap" },
+      { name: 'paddingRatio', update: 'gap / (gap + bulletGroupWidth)' },
+      { name: 'bulletChartHeight', update: 'bulletGroupHeight' }
+    );
   }
 });
 

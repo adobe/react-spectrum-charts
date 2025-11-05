@@ -79,15 +79,23 @@ describe('getAnnotationPositionOffset()', () => {
   });
 
   test('returns provided value / 2 + 2.5 when value is set and orientation is not vertical', () => {
-    expect(getAnnotationPositionOffset({ ...defaultBarOptions, orientation: 'horizontal' }, { value: 50 }, ANNOTATION_PADDING)).toEqual(
-      '27.5'
-    );
+    expect(
+      getAnnotationPositionOffset(
+        { ...defaultBarOptions, orientation: 'horizontal' },
+        { value: 50 },
+        ANNOTATION_PADDING
+      )
+    ).toEqual('27.5');
   });
 
   test('returns the signal string wrapped with parens when signal is set and orientation is not vertical', () => {
-    expect(getAnnotationPositionOffset({ ...defaultBarOptions, orientation: 'horizontal' }, { signal: 'foo' }, ANNOTATION_PADDING)).toEqual(
-      '((foo) / 2 + 2.5)'
-    );
+    expect(
+      getAnnotationPositionOffset(
+        { ...defaultBarOptions, orientation: 'horizontal' },
+        { signal: 'foo' },
+        ANNOTATION_PADDING
+      )
+    ).toEqual('((foo) / 2 + 2.5)');
   });
 });
 
@@ -95,7 +103,9 @@ describe('getAnnotationMetricAxisPosition()', () => {
   const defaultAnnotationWidth = { value: 22 };
 
   test("defaultBarOptions, should return '${value}1' field", () => {
-    expect(getAnnotationMetricAxisPosition(defaultBarOptions, defaultAnnotationWidth, ANNOTATION_PADDING)).toStrictEqual([
+    expect(
+      getAnnotationMetricAxisPosition(defaultBarOptions, defaultAnnotationWidth, ANNOTATION_PADDING)
+    ).toStrictEqual([
       {
         signal: `max(scale('yLinear', datum.${defaultBarOptions.metric}1), scale('yLinear', 0) + 12.5)`,
         test: `datum.${defaultBarOptions.metric}1 < 0`,
@@ -105,7 +115,11 @@ describe('getAnnotationMetricAxisPosition()', () => {
   });
   test('horizontal orientation, should return with xLinear scale and min/max properties flipped', () => {
     expect(
-      getAnnotationMetricAxisPosition({ ...defaultBarOptions, orientation: 'horizontal' }, defaultAnnotationWidth, ANNOTATION_PADDING)
+      getAnnotationMetricAxisPosition(
+        { ...defaultBarOptions, orientation: 'horizontal' },
+        defaultAnnotationWidth,
+        ANNOTATION_PADDING
+      )
     ).toStrictEqual([
       {
         test: `datum.${defaultBarOptions.metric}1 < 0`,
@@ -115,7 +129,9 @@ describe('getAnnotationMetricAxisPosition()', () => {
     ]);
   });
   test("stacked with seconday scale, should return '${value}1' field", () => {
-    expect(getAnnotationMetricAxisPosition(defaultBarOptionsWithSecondayColor, defaultAnnotationWidth, ANNOTATION_PADDING)).toStrictEqual([
+    expect(
+      getAnnotationMetricAxisPosition(defaultBarOptionsWithSecondayColor, defaultAnnotationWidth, ANNOTATION_PADDING)
+    ).toStrictEqual([
       {
         signal: `max(scale('yLinear', datum.${defaultBarOptions.metric}1), scale('yLinear', 0) + 12.5)`,
         test: `datum.${defaultBarOptions.metric}1 < 0`,
@@ -125,7 +141,11 @@ describe('getAnnotationMetricAxisPosition()', () => {
   });
   test("dodged without secondary scale, should return 'value' field", () => {
     expect(
-      getAnnotationMetricAxisPosition({ ...defaultBarOptions, type: 'dodged' }, defaultAnnotationWidth, ANNOTATION_PADDING)
+      getAnnotationMetricAxisPosition(
+        { ...defaultBarOptions, type: 'dodged' },
+        defaultAnnotationWidth,
+        ANNOTATION_PADDING
+      )
     ).toStrictEqual([
       {
         signal: `max(scale('yLinear', datum.${defaultBarOptions.metric}), scale('yLinear', 0) + 12.5)`,
@@ -135,7 +155,9 @@ describe('getAnnotationMetricAxisPosition()', () => {
     ]);
   });
   test("dodged with secondary scale, should return '${value}1' field", () => {
-    expect(getAnnotationMetricAxisPosition(defaultBarOptionsWithSecondayColor, defaultAnnotationWidth, ANNOTATION_PADDING)).toStrictEqual([
+    expect(
+      getAnnotationMetricAxisPosition(defaultBarOptionsWithSecondayColor, defaultAnnotationWidth, ANNOTATION_PADDING)
+    ).toStrictEqual([
       {
         signal: `max(scale('yLinear', datum.${defaultBarOptions.metric}1), scale('yLinear', 0) + 12.5)`,
         test: `datum.${defaultBarOptions.metric}1 < 0`,

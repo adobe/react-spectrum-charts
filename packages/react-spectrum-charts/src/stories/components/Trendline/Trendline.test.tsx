@@ -190,9 +190,7 @@ describe('Trendline', () => {
       expect(allElementsHaveAttributeValue([lines[0], trendlines[0]], 'opacity', 1)).toBeTruthy();
 
       // other lines and trendlines are faded
-      expect(
-        allElementsHaveAttributeValue([lines[1], trendlines[1]], 'opacity', FADE_FACTOR)
-      ).toBeTruthy();
+      expect(allElementsHaveAttributeValue([lines[1], trendlines[1]], 'opacity', FADE_FACTOR)).toBeTruthy();
     });
   });
 

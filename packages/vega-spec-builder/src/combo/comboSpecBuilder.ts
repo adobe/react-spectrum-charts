@@ -58,10 +58,10 @@ export const addCombo = produce<
     // Single pass: process marks and add to spec
     spec = [...marks].reduce((acc: ScSpec, mark, markIndex) => {
       let markName: string;
-      
+
       // Get sibling names by excluding current mark
       const comboSiblingNames = allMarkNames.filter((_, index) => index !== markIndex);
-      
+
       switch (mark.markType) {
         case 'bar':
           barCount++;
