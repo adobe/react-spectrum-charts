@@ -207,7 +207,7 @@ const getMetricKeys = (lineOptions: LineSpecOptions) => {
 const addHoverSignals = (signals: Signal[], options: LineSpecOptions) => {
   const { interactionMode, name: lineName } = options;
   if (interactionMode !== INTERACTION_MODE.ITEM) return;
-  getHoverMarkNames(lineName).forEach((hoverMarkName) => {
+  for (const hoverMarkName of getHoverMarkNames(lineName)) {
     addHoveredItemSignal(signals, lineName, hoverMarkName);
-  });
+  }
 };
