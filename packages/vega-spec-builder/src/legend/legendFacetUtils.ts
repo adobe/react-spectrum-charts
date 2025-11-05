@@ -26,7 +26,7 @@ import { Facet } from './legendUtils';
 /**
  * These are all the scale names that are used for facets
  */
-const facetScaleNames: (FacetType | SecondaryFacetType)[] = [
+const facetScaleNames = new Set<FacetType | SecondaryFacetType>([
   COLOR_SCALE,
   LINE_TYPE_SCALE,
   LINEAR_COLOR_SCALE,
@@ -37,7 +37,7 @@ const facetScaleNames: (FacetType | SecondaryFacetType)[] = [
   'secondarySymbolShape',
   SYMBOL_SHAPE_SCALE,
   SYMBOL_SIZE_SCALE,
-];
+]);
 
 /**
  * Goes through all the scales and finds all the facets that are used
@@ -52,7 +52,7 @@ export const getFacets = (scales: Scale[]): { ordinalFacets: Facet[]; continuous
 
   scales.forEach((scale) => {
     if (
-      facetScaleNames.includes(scale.name as FacetType) &&
+      facetScaleNames.has(scale.name as FacetType | SecondaryFacetType) &&
       isScaleWithMultiFields(scale) &&
       scale.domain.fields.length
     ) {

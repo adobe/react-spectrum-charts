@@ -87,7 +87,7 @@ export const formatLocaleCurrency = (numberLocale: FormatLocaleDefinition = numb
       let precision = 2;
       // Parse the precision if numberFormat is a format string.
       if (numberFormat !== 'currency') {
-        precision = parseInt(numberFormat.split('.')[1].replace('f', ''));
+        precision = Number.parseInt(numberFormat.split('.')[1].replace('f', ''));
       }
 
       // Format the value using the chart locale and the precision, then swap it into the currency template.

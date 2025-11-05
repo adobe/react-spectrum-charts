@@ -127,12 +127,12 @@ export const getWindowTransform = (
   markOptions: TrendlineParentOptions,
   { method, trendlineMetric }: TrendlineSpecOptions
 ): WindowTransform => {
-  const frameWidth = parseInt(method.split('-')[1]);
+  const frameWidth = Number.parseInt(method.split('-')[1]);
 
   const { color, lineType } = markOptions;
   const { facets } = getFacetsFromOptions({ color, lineType });
 
-  if (isNaN(frameWidth) || frameWidth < 1) {
+  if (Number.isNaN(frameWidth) || frameWidth < 1) {
     throw new Error(`Invalid moving average frame width: ${frameWidth}, frame width must be an integer greater than 0`);
   }
 
