@@ -39,3 +39,39 @@ export const categorical16 = [
   colors['categorical-1500'],
   colors['categorical-1600'],
 ];
+
+export const s2Categorical6 = [
+  colors['s2-categorical-100'],
+  colors['s2-categorical-200'],
+  colors['s2-categorical-300'],
+  colors['s2-categorical-400'],
+  colors['s2-categorical-500'],
+  colors['s2-categorical-600'],
+];
+
+export const s2Categorical12 = [
+  ...s2Categorical6,
+  colors['s2-categorical-700'],
+  colors['s2-categorical-800'],
+  colors['s2-categorical-900'],
+  colors['s2-categorical-1000'],
+  colors['s2-categorical-1100'],
+  colors['s2-categorical-1200'],
+];
+
+export const s2Categorical16 = [
+  ...s2Categorical12,
+  colors['s2-categorical-1300'],
+  colors['s2-categorical-1400'],
+  colors['s2-categorical-1500'],
+  colors['s2-categorical-1600'],
+];
+
+export const s2Categorical20 = [
+  ...s2Categorical16,
+  colors['s2-categorical-1700'],
+  colors['s2-categorical-1800'],
+  colors['s2-categorical-1900'],
+  colors['s2-categorical-2000'],
+];
+

@@ -10,6 +10,19 @@
  * governing permissions and limitations under the License.
  */
 
+import { s2SpectrumColors } from "./s2SpectrumColors";
+
+const {light: s2LightColors, dark: s2DarkColors} = s2SpectrumColors;
+
+// add 's2-' as a prefix to all s2 light colors
+const s2LightColorsWithPrefix = Object.fromEntries(
+  Object.entries(s2LightColors).map(([key, value]) => [`s2-${key}`, value])
+);
+// add 's2-' as a prefix to all s2 dark colors
+const s2DarkColorsWithPrefix = Object.fromEntries(
+  Object.entries(s2DarkColors).map(([key, value]) => [`s2-${key}`, value])
+);
+
 export const spectrumColors = {
   light: {
     'gray-50': 'rgb(255, 255, 255)',
@@ -533,6 +546,7 @@ export const spectrumColors = {
     'categorical-1400': 'rgb(192, 56, 204)',
     'categorical-1500': 'rgb(245, 107, 183)',
     'categorical-1600': 'rgb(255, 226, 46)',
+    ...s2LightColorsWithPrefix,
   },
   dark: {
     'gray-50': 'rgb(0, 0, 0)',
@@ -1056,5 +1070,7 @@ export const spectrumColors = {
     'categorical-1400': 'rgb(192, 56, 204)',
     'categorical-1500': 'rgb(245, 107, 183)',
     'categorical-1600': 'rgb(255, 226, 46)',
+    'categorical-1700': 'rgb(18, 176, 218)',
+    ...s2DarkColorsWithPrefix,
   },
 };

@@ -12,6 +12,7 @@
 import { createRef } from 'react';
 
 import { FADE_FACTOR } from '@spectrum-charts/constants';
+import { s2SpectrumColors } from '@spectrum-charts/themes';
 import { ChartHandle } from '@spectrum-charts/vega-spec-builder';
 
 import { Chart } from '../Chart';
@@ -22,6 +23,8 @@ import { getElement } from '../utils';
 import { BackgroundColor, Basic, Config, Height, HighlightedItem, Locale, TooltipAnchor, Width } from './Chart.story';
 import {
   CssColors,
+  Spectrum2CategoricalColorScheme,
+  Spectrum2ColorNames,
   SpectrumColorNames,
   SpectrumDivergentColorScheme,
   SpectrumSequentialColorScheme,
@@ -193,6 +196,51 @@ describe('Chart', () => {
 
       const container = document.querySelector('.rsc-container > div');
       expect(container).toHaveStyle('background-color: rgb(248, 248, 248);');
+    });
+
+    test('Spectrum diverging color scheme renders correctly', async () => {
+      render(<Spectrum2CategoricalColorScheme {...Spectrum2CategoricalColorScheme.args} />);
+
+      const chart = await findChart();
+      expect(chart).toBeInTheDocument();
+      const bars = getAllMarksByGroupName(chart, 'bar0');
+
+      const colors = s2SpectrumColors.light;
+
+      expect(bars[0].getAttribute('fill')).toEqual(colors['categorical-100']);
+      expect(bars[1].getAttribute('fill')).toEqual(colors['categorical-200']);
+      expect(bars[2].getAttribute('fill')).toEqual(colors['categorical-300']);
+      expect(bars[3].getAttribute('fill')).toEqual(colors['categorical-400']);
+    });
+
+    test('Spectrum colors render correctly (light)', async () => {
+      render(<Spectrum2ColorNames {...Spectrum2ColorNames.args} />);
+
+      const chart = await findChart();
+      expect(chart).toBeInTheDocument();
+      const bars = getAllMarksByGroupName(chart, 'bar0');
+      
+      const colors = s2SpectrumColors.light;
+
+      expect(bars[0].getAttribute('fill')).toEqual(colors['cinnamon-1200']);
+      expect(bars[1].getAttribute('fill')).toEqual(colors['cinnamon-1000']);
+      expect(bars[2].getAttribute('fill')).toEqual(colors['cinnamon-800']);
+      expect(bars[3].getAttribute('fill')).toEqual(colors['cinnamon-600']);
+    });
+
+    test('Spectrum colors render correctly (dark)', async () => {
+      render(<Spectrum2ColorNames {...Spectrum2ColorNames.args} colorScheme="dark" />);
+
+      const chart = await findChart();
+      expect(chart).toBeInTheDocument();
+      const bars = getAllMarksByGroupName(chart, 'bar0');
+
+      const colors = s2SpectrumColors.dark;
+
+      expect(bars[0].getAttribute('fill')).toEqual(colors['cinnamon-1200']);
+      expect(bars[1].getAttribute('fill')).toEqual(colors['cinnamon-1000']);
+      expect(bars[2].getAttribute('fill')).toEqual(colors['cinnamon-800']);
+      expect(bars[3].getAttribute('fill')).toEqual(colors['cinnamon-600']);
     });
   });
 

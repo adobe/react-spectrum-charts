@@ -43,4 +43,16 @@ CssColors.args = {
   data,
 };
 
-export { SpectrumColorNames, SpectrumDivergentColorScheme, SpectrumSequentialColorScheme, CssColors };
+const Spectrum2CategoricalColorScheme = bindWithProps(ChartBarStory);
+Spectrum2CategoricalColorScheme.args = {
+  colors: 's2Categorical12',
+  data,
+};
+
+const Spectrum2ColorNames = bindWithProps(ChartBarStory);
+Spectrum2ColorNames.args = {
+  colors: ['s2-cinnamon-1200', 's2-cinnamon-1000', 's2-cinnamon-800', 's2-cinnamon-600'],
+  data,
+};
+
+export { SpectrumColorNames, SpectrumDivergentColorScheme, SpectrumSequentialColorScheme, CssColors, Spectrum2CategoricalColorScheme, Spectrum2ColorNames };
