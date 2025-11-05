@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { categorical6, categorical12, categorical16 } from './categoricalColorPalette';
+import { categorical6, categorical12, categorical16, s2Categorical6, s2Categorical12, s2Categorical16, s2Categorical20 } from './categoricalColorPalette';
 import {
   divergentOrangeYellowSeafoam5,
   divergentOrangeYellowSeafoam9,
@@ -43,6 +43,10 @@ export const colorSchemes = {
   categorical6,
   categorical12,
   categorical16,
+  s2Categorical6,
+  s2Categorical12,
+  s2Categorical16,
+  s2Categorical20,
   divergentOrangeYellowSeafoam5,
   divergentOrangeYellowSeafoam9,
   divergentOrangeYellowSeafoam15,

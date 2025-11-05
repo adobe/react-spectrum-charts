@@ -213,7 +213,10 @@ Available color schemes:
 - `categorical6`
 - `categorical12`
 - `categorical16`
-- `categorical24`
+- `s2Categorical6`
+- `s2Categorical12`
+- `s2Categorical16`
+- `s2Categorical20`
 - `divergentOrangeYellowSeafoam5`
 - `divergentOrangeYellowSeafoam9`
 - `divergentOrangeYellowSeafoam15`
@@ -226,7 +229,7 @@ Available color schemes:
 
 #### Spectrum color names
 
-A color scale can be defined as an array of spectrum color names. Spectrum color names are responsive (excluding `static*` variants). This is great for when light and dark mode support is needed. The colors adjust so that they look ideal in both light and dark mode.
+A color scale can be defined as an array of spectrum color names. Spectrum color names are responsive (excluding `static*` variants). This is great for when light and dark mode support is needed. The colors adjust so that they look ideal in both light and dark mode. Spectrum 2 colors are also supported with the `s2-` prefix (ex. `s2-cinnamon-400`, `s2-silver-1600`).
 
 Example: `['red-500', 'blue-600', 'celery-400']`
 

@@ -15,5 +15,6 @@ export * from './colorSchemes';
 export * from './divergingColorPalette';
 export * from './sequentialColorPalette';
 export * from './spectrumColors';
+export * from './s2SpectrumColors';
 export * from './spectrumTheme';
 export * from './utils';
