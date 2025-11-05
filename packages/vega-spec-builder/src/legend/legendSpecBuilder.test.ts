@@ -20,7 +20,7 @@ import {
   GROUP_ID,
   HOVERED_SERIES,
   LINEAR_COLOR_SCALE,
-  TABLE
+  TABLE,
 } from '@spectrum-charts/constants';
 
 import {

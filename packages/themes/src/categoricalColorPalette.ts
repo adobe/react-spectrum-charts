@@ -74,4 +74,3 @@ export const s2Categorical20 = [
   colors['s2-categorical-1900'],
   colors['s2-categorical-2000'],
 ];
-

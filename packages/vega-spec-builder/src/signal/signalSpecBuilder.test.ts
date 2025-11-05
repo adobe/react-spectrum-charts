@@ -14,10 +14,7 @@ import { Signal } from 'vega';
 import { FILTERED_TABLE, HOVERED_ITEM } from '@spectrum-charts/constants';
 
 import { defaultSignals } from '../specTestUtils';
-import {
-  addHoveredItemSignal,
-  getHighlightSignalUpdateExpression
-} from './signalSpecBuilder';
+import { addHoveredItemSignal, getHighlightSignalUpdateExpression } from './signalSpecBuilder';
 
 describe('signalSpecBuilder', () => {
   let signals: Signal[];
@@ -80,6 +77,6 @@ describe('signalSpecBuilder', () => {
       expect(signals).toHaveLength(1);
       expect(signals[0]).toHaveProperty('name', `line0_${HOVERED_ITEM}`);
       expect(signals[0]?.on?.[0]).toHaveProperty('update', 'datum.datum');
-    })
-  }); 
+    });
+  });
 });

@@ -14,14 +14,14 @@ import { Data, LinearScale, OrdinalScale, PointScale, Scale, Signal } from 'vega
 
 import {
   BACKGROUND_COLOR,
+  CONTROLLED_HIGHLIGHTED_ITEM,
+  CONTROLLED_HIGHLIGHTED_SERIES,
   CONTROLLED_HIGHLIGHTED_TABLE,
   DEFAULT_BACKGROUND_COLOR,
   DEFAULT_COLOR_SCHEME,
   DEFAULT_LINE_TYPES,
   FILTERED_TABLE,
   HIGHLIGHTED_GROUP,
-  CONTROLLED_HIGHLIGHTED_ITEM,
-  CONTROLLED_HIGHLIGHTED_SERIES,
   LINEAR_COLOR_SCALE,
   LINE_TYPE_SCALE,
   LINE_WIDTH_SCALE,
@@ -239,7 +239,8 @@ export const getDefaultSignals = ({
   // if the signal background color were transparent then backgroundMarks and annotation fill would also be transparent
   const signalBackgroundColor = backgroundColor === 'transparent' ? 'gray-50' : backgroundColor;
   // highlightedItem should be undefined or an array
-  const formattedHighlightedItem = highlightedItem === undefined || Array.isArray(highlightedItem) ? highlightedItem : [highlightedItem];
+  const formattedHighlightedItem =
+    highlightedItem === undefined || Array.isArray(highlightedItem) ? highlightedItem : [highlightedItem];
   return [
     getGenericValueSignal(BACKGROUND_COLOR, getColorValue(signalBackgroundColor, colorScheme)),
     getGenericValueSignal('colors', getTwoDimensionalColorScheme(colors, colorScheme)),
@@ -398,7 +399,16 @@ function getPathsFromSymbolShapes(symbolShapes: ChartSymbolShape[]) {
  * Adds a formula transform to the TABLE data that combines all the facets into a single key
  */
 export const addData = produce<Data[], [{ facets: string[] }]>((data, { facets }) => {
-  data.splice(2,0,{ name: CONTROLLED_HIGHLIGHTED_TABLE, source: FILTERED_TABLE, transform: [{ type: 'filter', expr: `isArray(${CONTROLLED_HIGHLIGHTED_ITEM}) && indexof(${CONTROLLED_HIGHLIGHTED_ITEM}, datum.${MARK_ID}) > -1` }] })
+  data.splice(2, 0, {
+    name: CONTROLLED_HIGHLIGHTED_TABLE,
+    source: FILTERED_TABLE,
+    transform: [
+      {
+        type: 'filter',
+        expr: `isArray(${CONTROLLED_HIGHLIGHTED_ITEM}) && indexof(${CONTROLLED_HIGHLIGHTED_ITEM}, datum.${MARK_ID}) > -1`,
+      },
+    ],
+  });
   if (facets.length === 0) return;
   data[0]?.transform?.push(...getSeriesIdTransform(facets));
 

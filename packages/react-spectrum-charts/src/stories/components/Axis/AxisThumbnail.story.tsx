@@ -19,8 +19,8 @@ import { Chart } from '../../../Chart';
 import { Axis, AxisThumbnail, Bar } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
 import { bindWithProps } from '../../../test-utils';
-import { barData } from '../Bar/data';
 import { AxisThumbnailProps } from '../../../types';
+import { barData } from '../Bar/data';
 
 export default {
   title: 'RSC/Axis/AxisThumbnail',

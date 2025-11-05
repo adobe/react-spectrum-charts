@@ -127,12 +127,12 @@ export const getWindowTransform = (
   markOptions: TrendlineParentOptions,
   { method, trendlineMetric }: TrendlineSpecOptions
 ): WindowTransform => {
-  const frameWidth = parseInt(method.split('-')[1]);
+  const frameWidth = Number.parseInt(method.split('-')[1]);
 
   const { color, lineType } = markOptions;
   const { facets } = getFacetsFromOptions({ color, lineType });
 
-  if (isNaN(frameWidth) || frameWidth < 1) {
+  if (Number.isNaN(frameWidth) || frameWidth < 1) {
     throw new Error(`Invalid moving average frame width: ${frameWidth}, frame width must be an integer greater than 0`);
   }
 
@@ -235,7 +235,7 @@ export const getTrendlineParamFormulaTransforms = (
     const order = getPolynomialOrder(method);
     expr = [
       'datum.coef[0]',
-      ...Array(order)
+      ...new Array<number>(order)
         .fill(0)
         .map((_e, i) => `datum.coef[${i + 1}] * pow(datum.${trendlineDimension}, ${i + 1})`),
     ].join(' + ');

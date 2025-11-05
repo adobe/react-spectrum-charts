@@ -55,4 +55,11 @@ Spectrum2ColorNames.args = {
   data,
 };
 
-export { SpectrumColorNames, SpectrumDivergentColorScheme, SpectrumSequentialColorScheme, CssColors, Spectrum2CategoricalColorScheme, Spectrum2ColorNames };
+export {
+  SpectrumColorNames,
+  SpectrumDivergentColorScheme,
+  SpectrumSequentialColorScheme,
+  CssColors,
+  Spectrum2CategoricalColorScheme,
+  Spectrum2ColorNames,
+};

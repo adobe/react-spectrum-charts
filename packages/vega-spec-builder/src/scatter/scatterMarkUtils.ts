@@ -12,12 +12,7 @@
 import { produce } from 'immer';
 import { GroupMark, Mark, NumericValueRef, SymbolMark } from 'vega';
 
-import {
-  DEFAULT_OPACITY_RULE,
-  FADE_FACTOR,
-  FILTERED_TABLE,
-  SELECTED_ITEM
-} from '@spectrum-charts/constants';
+import { DEFAULT_OPACITY_RULE, FADE_FACTOR, FILTERED_TABLE, SELECTED_ITEM } from '@spectrum-charts/constants';
 import { spectrumColors } from '@spectrum-charts/themes';
 
 import { addHoveredItemOpacityRules } from '../chartTooltip/chartTooltipUtils';
@@ -46,9 +41,7 @@ export const addScatterMarks = produce<Mark[], [ScatterSpecOptions]>((marks, opt
     marks: [getScatterMark(options), ...getScatterHoverMarks(options), ...getScatterSelectMarks(options)],
   };
 
-  marks.push(...getScatterPathMarks(options));
-  marks.push(scatterGroup);
-  marks.push(...getTrendlineMarks(options));
+  marks.push(...getScatterPathMarks(options), scatterGroup, ...getTrendlineMarks(options));
 });
 
 /**

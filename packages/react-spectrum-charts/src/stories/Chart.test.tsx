@@ -219,7 +219,7 @@ describe('Chart', () => {
       const chart = await findChart();
       expect(chart).toBeInTheDocument();
       const bars = getAllMarksByGroupName(chart, 'bar0');
-      
+
       const colors = s2SpectrumColors.light;
 
       expect(bars[0].getAttribute('fill')).toEqual(colors['cinnamon-1200']);

@@ -12,14 +12,14 @@
 import { GroupMark, NumericValueRef, Scale, TrailMark } from 'vega';
 
 import {
-  DEFAULT_OPACITY_RULE,
-  FILTERED_TABLE,
   CONTROLLED_HIGHLIGHTED_ITEM,
   CONTROLLED_HIGHLIGHTED_SERIES,
+  DEFAULT_OPACITY_RULE,
   FADE_FACTOR,
+  FILTERED_TABLE,
   SELECTED_ITEM,
   SELECTED_SERIES,
-  SYMBOL_PATH_WIDTH_SCALE
+  SYMBOL_PATH_WIDTH_SCALE,
 } from '@spectrum-charts/constants';
 import { getColorValue } from '@spectrum-charts/themes';
 
@@ -85,16 +85,16 @@ export const getScatterPaths = (scatterOptions: ScatterSpecOptions): ScatterPath
 export const setScatterPathScales = (scales: Scale[], scatterOptions: ScatterSpecOptions) => {
   const paths = getScatterPaths(scatterOptions);
 
-  paths.forEach((path) => {
+  for (const path of paths) {
     addFieldToFacetScaleDomain(scales, SYMBOL_PATH_WIDTH_SCALE, path.pathWidth);
-  });
+  }
 };
 
 export const getScatterPathMarks = (scatterOptions: ScatterSpecOptions): GroupMark[] => {
   const marks: GroupMark[] = [];
   const paths = getScatterPaths(scatterOptions);
 
-  paths.forEach((path) => {
+  for (const path of paths) {
     const { groupBy, name } = path;
     marks.push({
       name: `${name}_group`,
@@ -108,7 +108,7 @@ export const getScatterPathMarks = (scatterOptions: ScatterSpecOptions): GroupMa
       },
       marks: [getScatterPathTrailMark(path)],
     });
-  });
+  }
 
   return marks;
 };
@@ -151,7 +151,6 @@ export const getScatterPathTrailMark = ({
  * @returns opacity production rule
  */
 export const getOpacity = (): ({ test?: string } & NumericValueRef)[] => {
-
   return [
     {
       test: `isValid(${CONTROLLED_HIGHLIGHTED_SERIES}) || isArray(${CONTROLLED_HIGHLIGHTED_ITEM}) || isValid(${SELECTED_SERIES}) || isValid(${SELECTED_ITEM})`,

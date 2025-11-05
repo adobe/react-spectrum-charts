@@ -26,7 +26,7 @@ import { Facet } from './legendUtils';
 /**
  * These are all the scale names that are used for facets
  */
-const facetScaleNames: (FacetType | SecondaryFacetType)[] = [
+const facetScaleNames = new Set<FacetType | SecondaryFacetType>([
   COLOR_SCALE,
   LINE_TYPE_SCALE,
   LINEAR_COLOR_SCALE,
@@ -37,7 +37,7 @@ const facetScaleNames: (FacetType | SecondaryFacetType)[] = [
   'secondarySymbolShape',
   SYMBOL_SHAPE_SCALE,
   SYMBOL_SIZE_SCALE,
-];
+]);
 
 /**
  * Goes through all the scales and finds all the facets that are used
@@ -50,9 +50,9 @@ export const getFacets = (scales: Scale[]): { ordinalFacets: Facet[]; continuous
   const ordinalFacets: Facet[] = [];
   const continuousFacets: Facet[] = [];
 
-  scales.forEach((scale) => {
+  for (const scale of scales) {
     if (
-      facetScaleNames.includes(scale.name as FacetType) &&
+      facetScaleNames.has(scale.name as FacetType | SecondaryFacetType) &&
       isScaleWithMultiFields(scale) &&
       scale.domain.fields.length
     ) {
@@ -65,7 +65,7 @@ export const getFacets = (scales: Scale[]): { ordinalFacets: Facet[]; continuous
         continuousFacets.push({ facetType: scale.name as FacetType, field: scale.domain.fields[0].toString() });
       }
     }
-  });
+  }
   return { ordinalFacets, continuousFacets };
 };
 
@@ -82,7 +82,7 @@ export const getFacetsFromKeys = (
 ): { ordinalFacets: Facet[]; continuousFacets: Facet[] } => {
   const ordinalFacets: Facet[] = [];
   const continuousFacets: Facet[] = [];
-  scales.forEach((scale) => {
+  for (const scale of scales) {
     if (isScaleWithMultiFields(scale) && scaleHasKey(scale, keys)) {
       if (scale.type === 'ordinal' || scale.type === 'point') {
         ordinalFacets.push({
@@ -96,7 +96,7 @@ export const getFacetsFromKeys = (
         });
       }
     }
-  });
+  }
   return { ordinalFacets, continuousFacets };
 };
 

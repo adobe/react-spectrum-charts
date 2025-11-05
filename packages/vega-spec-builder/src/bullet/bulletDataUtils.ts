@@ -86,8 +86,8 @@ export function generateThresholdColorExpr(
   if (!thresholds || thresholds.length === 0) return `'${defaultColor}'`;
 
   const sorted: ThresholdBackground[] = thresholds.slice().sort((a, b) => {
-    const aMin = a.thresholdMin !== undefined ? a.thresholdMin : -1e12;
-    const bMin = b.thresholdMin !== undefined ? b.thresholdMin : -1e12;
+    const aMin = a.thresholdMin === undefined ? -1e12 : a.thresholdMin;
+    const bMin = b.thresholdMin === undefined ? -1e12 : b.thresholdMin;
     return aMin - bMin;
   });
 
@@ -96,20 +96,19 @@ export function generateThresholdColorExpr(
   // For values below the first threshold's lower bound, use the default color.
   exprParts.push(
     `(datum.${metricField} < ${
-      sorted[0].thresholdMin !== undefined ? sorted[0].thresholdMin : -1e12
+      sorted[0].thresholdMin === undefined ? -1e12 : sorted[0].thresholdMin
     }) ? '${defaultColor}' : `
   );
 
   // For each threshold, check if the metric field is within the range defined by the thresholdMin and thresholdMax values.
   // If it is, use the corresponding fill color.
   for (let i = 0; i < sorted.length - 1; i++) {
-    const nextLower = sorted[i + 1].thresholdMin !== undefined ? sorted[i + 1].thresholdMin : -1e12;
+    const nextLower = sorted[i + 1].thresholdMin === undefined ? -1e12 : sorted[i + 1].thresholdMin;
     exprParts.push(`(datum.${metricField} < ${nextLower}) ? '${sorted[i].fill}' : `);
   }
 
   // For values above the last threshold's upper bound, use the last threshold's fill color.
-  exprParts.push(`'${sorted[sorted.length - 1].fill}'`);
+  exprParts.push(`'${sorted.at(-1)?.fill}'`);
 
-  const expr = exprParts.join('');
-  return expr;
+  return exprParts.join('');
 }

@@ -145,9 +145,7 @@ export const addScales = produce<Scale[], [DonutSpecOptions]>((scales, options) 
 });
 
 export const addMarks = produce<Mark[], [DonutSpecOptions]>((marks, options) => {
-  marks.push(getArcMark(options));
-  marks.push(...getDonutSummaryMarks(options));
-  marks.push(...getSegmentLabelMarks(options));
+  marks.push(getArcMark(options), ...getDonutSummaryMarks(options), ...getSegmentLabelMarks(options));
 });
 
 export const addSignals = produce<Signal[], [DonutSpecOptions]>((signals, options) => {

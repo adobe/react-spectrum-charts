@@ -10,7 +10,16 @@
  * governing permissions and limitations under the License.
  */
 import { DIMENSION_HOVER_AREA, FADE_FACTOR } from '@spectrum-charts/constants';
-import { findAllMarksByGroupName, findChart, hoverNthElement, render, screen, unhoverNthElement, within } from '../../../test-utils';
+
+import {
+  findAllMarksByGroupName,
+  findChart,
+  hoverNthElement,
+  render,
+  screen,
+  unhoverNthElement,
+  within,
+} from '../../../test-utils';
 import { TooltipOnDimensionArea } from './StackedBar.story';
 
 describe('TooltipOnDimensionArea', () => {
@@ -21,7 +30,7 @@ describe('TooltipOnDimensionArea', () => {
     const dimensionAreas = await findAllMarksByGroupName(chart, `bar0_${DIMENSION_HOVER_AREA}`);
     const bars = await findAllMarksByGroupName(chart, 'bar0');
     expect(dimensionAreas).toHaveLength(3);
-    
+
     // hovering dimension area should apply highlight styling and show tooltip
     await hoverNthElement(dimensionAreas, 0);
     const tooltip = await screen.findByTestId('rsc-tooltip');
@@ -29,7 +38,7 @@ describe('TooltipOnDimensionArea', () => {
     expect(within(tooltip).getByText('Chrome Downloads')).toBeInTheDocument();
     expect(bars[0]).toHaveAttribute('opacity', `1`);
     expect(bars[4]).toHaveAttribute('opacity', `${FADE_FACTOR}`);
-    
+
     await unhoverNthElement(dimensionAreas, 0);
 
     // hovering bar should do normal stuff

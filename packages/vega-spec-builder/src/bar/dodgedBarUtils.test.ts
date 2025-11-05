@@ -15,17 +15,17 @@ import {
   BACKGROUND_COLOR,
   COLOR_SCALE,
   COMPONENT_NAME,
+  CONTROLLED_HIGHLIGHTED_ITEM,
   CORNER_RADIUS,
   DEFAULT_CATEGORICAL_DIMENSION,
   DEFAULT_COLOR,
   DEFAULT_METRIC,
   DEFAULT_OPACITY_RULE,
   DEFAULT_SECONDARY_COLOR,
-  FILTERED_TABLE,
-  CONTROLLED_HIGHLIGHTED_ITEM,
   FADE_FACTOR,
+  FILTERED_TABLE,
   HOVERED_ITEM,
-  MARK_ID
+  MARK_ID,
 } from '@spectrum-charts/constants';
 
 import { BarSpecOptions } from '../types';
@@ -221,18 +221,20 @@ describe('dodgedBarUtils', () => {
       expect(annotationGroup.marks?.[1].name).toEqual('bar0_annotationBackground');
     });
     test('should add tooltip keys if ChartTooltip exists as child', () => {
-      expect(getDodgedMarks({ ...defaultDodgedOptions, chartTooltips: [{}] })).toEqual([{
-        ...defaultDodgedMark,
-        marks: [defaultBackgroundMark, defaultMarkWithTooltip],
-      }]);
+      expect(getDodgedMarks({ ...defaultDodgedOptions, chartTooltips: [{}] })).toEqual([
+        {
+          ...defaultDodgedMark,
+          marks: [defaultBackgroundMark, defaultMarkWithTooltip],
+        },
+      ]);
     });
     test('subseries, should include advanced fill, advanced corner radius, and border strokes,', () => {
-      expect(getDodgedMarks({ ...defaultDodgedOptions, color: [DEFAULT_COLOR, DEFAULT_SECONDARY_COLOR] })).toEqual(
-        [{
+      expect(getDodgedMarks({ ...defaultDodgedOptions, color: [DEFAULT_COLOR, DEFAULT_SECONDARY_COLOR] })).toEqual([
+        {
           ...defaultDodgedMark,
           marks: [defaultDodgedStackedBackgroundMark, defaultDodgedStackedMark],
-        }]
-      );
+        },
+      ]);
     });
     test('should add dimension hover area marks if has tooltip with dimension area target', () => {
       const marks = getDodgedMarks({

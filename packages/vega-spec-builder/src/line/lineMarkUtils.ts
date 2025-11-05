@@ -12,11 +12,11 @@
 import { LineMark, Mark, NumericValueRef, ProductionRule, RuleMark } from 'vega';
 
 import {
+  CONTROLLED_HIGHLIGHTED_SERIES,
   CONTROLLED_HIGHLIGHTED_TABLE,
   DEFAULT_INTERACTION_MODE,
   DEFAULT_OPACITY_RULE,
   FADE_FACTOR,
-  CONTROLLED_HIGHLIGHTED_SERIES,
   HOVERED_ITEM,
   SELECTED_SERIES,
   SERIES_ID,
@@ -110,7 +110,7 @@ export const getLineOpacity = ({
       strokeOpacityRules.push({
         test: `length(data('${interactiveMarkName}_highlightedData'))`,
         signal: `indexof(pluck(data('${interactiveMarkName}_highlightedData'), '${SERIES_ID}'), datum.${SERIES_ID}) !== -1 ? 1 : ${FADE_FACTOR}`,
-      })
+      });
     } else {
       strokeOpacityRules.push({
         test: `isValid(${interactiveMarkName}_${HOVERED_ITEM})`,

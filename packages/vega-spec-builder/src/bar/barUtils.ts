@@ -408,7 +408,7 @@ export interface BarOrientationProperties {
   metricSizeSignal: 'width' | 'height';
 }
 
-export const  getOrientationProperties = (orientation: Orientation, scaleName?: string): BarOrientationProperties =>
+export const getOrientationProperties = (orientation: Orientation, scaleName?: string): BarOrientationProperties =>
   orientation === 'vertical'
     ? {
         metricAxis: 'y',
@@ -418,7 +418,7 @@ export const  getOrientationProperties = (orientation: Orientation, scaleName?: 
         dimensionSizeSignal: 'width',
         metricSizeSignal: 'height',
       }
-      : {
+    : {
         metricAxis: 'x',
         dimensionAxis: 'y',
         metricScaleKey: scaleName || 'xLinear',
@@ -454,7 +454,7 @@ export const getBarDimensionHoverArea = (options: BarSpecOptions, type: 'stacked
         tooltip: getTooltip(options.chartTooltips ?? [], `${barName}_${DIMENSION_HOVER_AREA}`, false, { dimension }),
       },
       update: {
-        ...getBarDimensionAreaPositionEncodings(options)
+        ...getBarDimensionAreaPositionEncodings(options),
       },
     },
   };
@@ -467,7 +467,8 @@ export const getBarDimensionHoverArea = (options: BarSpecOptions, type: 'stacked
  */
 export const getBarDimensionAreaPositionEncodings = (options: BarSpecOptions): RectEncodeEntry => {
   const { dimension, orientation } = options;
-  const { dimensionScaleKey, metricAxis, dimensionAxis, dimensionSizeSignal, metricSizeSignal } = getOrientationProperties(orientation);
+  const { dimensionScaleKey, metricAxis, dimensionAxis, dimensionSizeSignal, metricSizeSignal } =
+    getOrientationProperties(orientation);
 
   return {
     [metricAxis]: { value: 0 },

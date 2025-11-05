@@ -69,12 +69,7 @@ const useNewChartView = (
           clearTimeout(tooltipTimeout);
           tooltipTimeout = undefined;
         }
-        if (
-          event &&
-          event.type === 'pointermove' &&
-          (itemIsLegendItem(item) || itemIsAxisLabel(item)) &&
-          'tooltip' in item
-        ) {
+        if (event?.type === 'pointermove' && (itemIsLegendItem(item) || itemIsAxisLabel(item)) && 'tooltip' in item) {
           tooltipTimeout = setTimeout(() => {
             tooltipHandler.call(viewRef, event, item, value);
             tooltipTimeout = undefined;

@@ -36,9 +36,7 @@ describe('Basic', () => {
     // highlighed bar
     expect(bars[2]).toHaveAttribute('opacity', '1');
     // all other bars
-    expect(
-      allElementsHaveAttributeValue([...bars.slice(0, 2), ...bars.slice(3)], 'opacity', FADE_FACTOR)
-    ).toBe(true);
+    expect(allElementsHaveAttributeValue([...bars.slice(0, 2), ...bars.slice(3)], 'opacity', FADE_FACTOR)).toBe(true);
   });
 });
 
@@ -194,9 +192,7 @@ describe('AreaChart', () => {
     const highlightVerticalRules = queryAllMarksByGroupName(chart, 'area0_rule', 'line');
     expect(highlightVerticalRules).toHaveLength(0);
     expect(areas[0]).toHaveAttribute('opacity', '1');
-    expect(allElementsHaveAttributeValue(areas.slice(1), 'opacity', (FADE_FACTOR).toString())).toBe(
-      true
-    );
+    expect(allElementsHaveAttributeValue(areas.slice(1), 'opacity', FADE_FACTOR.toString())).toBe(true);
   });
 });
 

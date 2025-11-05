@@ -24,7 +24,7 @@ import {
   SENTIMENT_NEGATIVE_PATH,
   SENTIMENT_NEUTRAL_PATH,
   SENTIMENT_POSITIVE_PATH,
-  TABLE
+  TABLE,
 } from '@spectrum-charts/constants';
 import { getColorValue, getSpectrumVegaConfig } from '@spectrum-charts/themes';
 
@@ -313,5 +313,8 @@ export function getChartConfig(config: Config | undefined, colorScheme: ColorSch
  * @returns
  */
 export const addUserMetaInteractiveMark = produce<UserMeta, [string?]>((usermeta, interactiveMarkName) => {
-  usermeta.interactiveMarks = [...(usermeta.interactiveMarks ?? []), ...(interactiveMarkName ? [interactiveMarkName] : [])];
+  usermeta.interactiveMarks = [
+    ...(usermeta.interactiveMarks ?? []),
+    ...(interactiveMarkName ? [interactiveMarkName] : []),
+  ];
 });

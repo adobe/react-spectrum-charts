@@ -126,7 +126,7 @@ export const getElementDisplayName = (element: unknown): string => {
 };
 
 export const sanitizeChildren = (children: unknown): (ChartChildElement | MarkChildElement)[] => {
-  const validDisplayNames = [
+  const validDisplayNames = new Set([
     Annotation.displayName,
     Area.displayName,
     Axis.displayName,
@@ -150,17 +150,17 @@ export const sanitizeChildren = (children: unknown): (ChartChildElement | MarkCh
     Trendline.displayName,
     TrendlineAnnotation.displayName,
     Venn.displayName,
-  ];
+  ]);
   return toArray(children)
     .flat()
     .filter((child): child is ChartChildElement | MarkChildElement =>
-      validDisplayNames.includes(getElementDisplayName(child))
+      validDisplayNames.has(getElementDisplayName(child))
     );
 };
 
 // removes all non-chart specific elements
 export const sanitizeRscChartChildren = (children: unknown): ChartChildElement[] => {
-  const chartChildDisplyNames = [
+  const chartChildDisplyNames = new Set([
     Area.displayName,
     Axis.displayName,
     Bar.displayName,
@@ -172,10 +172,10 @@ export const sanitizeRscChartChildren = (children: unknown): ChartChildElement[]
     Combo.displayName,
     Bullet.displayName,
     Venn.displayName,
-  ] as string[];
+  ]);
   return toArray(children)
     .flat()
-    .filter((child): child is ChartChildElement => chartChildDisplyNames.includes(getElementDisplayName(child)));
+    .filter((child): child is ChartChildElement => chartChildDisplyNames.has(getElementDisplayName(child)));
 };
 
 export const sanitizeBigNumberChildren = (children: unknown): LineElement[] => {
@@ -191,7 +191,7 @@ export const getBigNumberElementsFromChildren = (children: unknown): BigNumberEl
 };
 
 export const sanitizeMarkChildren = (children: unknown): MarkChildElement[] => {
-  const markChildDisplayNames = [
+  const markChildDisplayNames = new Set([
     Annotation.displayName,
     ChartTooltip.displayName,
     ChartPopover.displayName,
@@ -200,39 +200,39 @@ export const sanitizeMarkChildren = (children: unknown): MarkChildElement[] => {
     DonutSummary.displayName,
     SegmentLabel.displayName,
     Trendline.displayName,
-  ] as string[];
+  ]);
 
   return toArray(children)
     .flat()
-    .filter((child): child is MarkChildElement => markChildDisplayNames.includes(getElementDisplayName(child)));
+    .filter((child): child is MarkChildElement => markChildDisplayNames.has(getElementDisplayName(child)));
 };
 
 export const sanitizeAxisChildren = (children: unknown): AxisChildElement[] => {
-  const axisChildDisplayNames = [
+  const axisChildDisplayNames = new Set([
     AxisAnnotation.displayName,
     AxisThumbnail.displayName,
     ReferenceLine.displayName,
-  ] as string[];
+  ]);
   return toArray(children)
     .flat()
-    .filter((child): child is AxisChildElement => axisChildDisplayNames.includes(getElementDisplayName(child)));
+    .filter((child): child is AxisChildElement => axisChildDisplayNames.has(getElementDisplayName(child)));
 };
 
 export const sanitizeAxisAnnotationChildren = (children: ReactNode): AxisAnnotationChildElement[] => {
-  const axisAnnotationChildDisplayNames = [ChartTooltip.displayName, ChartPopover.displayName] as string[];
+  const axisAnnotationChildDisplayNames = new Set([ChartTooltip.displayName, ChartPopover.displayName]);
 
   return toArray(children)
     .flat()
     .filter((child): child is AxisAnnotationChildElement =>
-      axisAnnotationChildDisplayNames.includes(getElementDisplayName(child))
+      axisAnnotationChildDisplayNames.has(getElementDisplayName(child))
     );
 };
 
 export const sanitizeTrendlineChildren = (children: unknown): ChartTooltipElement[] => {
-  const trendlineChildDisplayNames = [ChartTooltip.displayName, TrendlineAnnotation.displayName] as string[];
+  const trendlineChildDisplayNames = new Set([ChartTooltip.displayName, TrendlineAnnotation.displayName]);
   return toArray(children)
     .flat()
-    .filter((child): child is ChartTooltipElement => trendlineChildDisplayNames.includes(getElementDisplayName(child)));
+    .filter((child): child is ChartTooltipElement => trendlineChildDisplayNames.has(getElementDisplayName(child)));
 };
 
 /**

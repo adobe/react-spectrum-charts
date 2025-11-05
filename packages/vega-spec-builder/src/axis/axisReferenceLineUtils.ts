@@ -68,11 +68,9 @@ export const getReferenceLineMarks = (
     const { layer } = referenceLine;
     const positionEncoding = getPositionEncoding(axisOptions, referenceLine, scaleName);
     referenceLineMarks[layer].push(
-      ...[
-        getReferenceLineRuleMark(axisOptions, referenceLine, positionEncoding),
-        ...getReferenceLineSymbolMark(axisOptions, referenceLine, positionEncoding),
-        ...getReferenceLineTextMark(axisOptions, referenceLine, positionEncoding),
-      ]
+      getReferenceLineRuleMark(axisOptions, referenceLine, positionEncoding),
+      ...getReferenceLineSymbolMark(axisOptions, referenceLine, positionEncoding),
+      ...getReferenceLineTextMark(axisOptions, referenceLine, positionEncoding)
     );
   }
   return referenceLineMarks;

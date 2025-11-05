@@ -28,11 +28,7 @@ import { addPopoverData } from '../chartPopover/chartPopoverUtils';
 import { addTooltipData, addTooltipSignals, isHighlightedByGroup } from '../chartTooltip/chartTooltipUtils';
 import { addTimeTransform, getFilteredTooltipData, getTableData } from '../data/dataUtils';
 import { getHoverMarkNames, getInteractiveMarkName, isInteractive } from '../marks/markUtils';
-import {
-  getMetricRangeData,
-  getMetricRangeGroupMarks,
-  getMetricRanges
-} from '../metricRange/metricRangeUtils';
+import { getMetricRangeData, getMetricRangeGroupMarks, getMetricRanges } from '../metricRange/metricRangeUtils';
 import { addContinuousDimensionScale, addFieldToFacetScaleDomain, addMetricScale } from '../scale/scaleSpecBuilder';
 import { addHoveredItemSignal } from '../signal/signalSpecBuilder';
 import { addUserMetaInteractiveMark, getFacetsFromOptions } from '../specUtils';
@@ -45,7 +41,15 @@ import { getPopoverMarkName } from './lineUtils';
 
 export const addLine = produce<
   ScSpec,
-  [LineOptions & { colorScheme?: ColorScheme; highlightedItem?: HighlightedItem; index?: number; idKey: string, comboSiblingNames?: string[]; }]
+  [
+    LineOptions & {
+      colorScheme?: ColorScheme;
+      highlightedItem?: HighlightedItem;
+      index?: number;
+      idKey: string;
+      comboSiblingNames?: string[];
+    }
+  ]
 >(
   (
     spec,
@@ -120,10 +124,7 @@ export const addData = produce<Data[], [LineSpecOptions]>((data, options) => {
     tableData.transform = addTimeTransform(tableData.transform ?? [], dimension);
   }
   if (isInteractive(options) || highlightedItem !== undefined) {
-    data.push(
-      getLineHighlightedData(options)
-    );
-    data.push(getFilteredTooltipData(chartTooltips));
+    data.push(getLineHighlightedData(options), getFilteredTooltipData(chartTooltips));
   }
   if (staticPoint || isSparkline)
     data.push(getLineStaticPointData(name, staticPoint, FILTERED_TABLE, isSparkline, isMethodLast));

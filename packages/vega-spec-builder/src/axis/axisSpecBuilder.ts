@@ -11,15 +11,7 @@
  */
 import deepmerge from 'deepmerge';
 import { produce } from 'immer';
-import {
-  Axis,
-  AxisEncode,
-  Data,
-  GroupMark,
-  Mark,
-  ScaleType,
-  Signal
-} from 'vega';
+import { Axis, AxisEncode, Data, GroupMark, Mark, ScaleType, Signal } from 'vega';
 
 import {
   COLOR_SCALE,
@@ -33,7 +25,7 @@ import {
   FIRST_RSC_SERIES_ID,
   HOVERED_ITEM,
   LAST_RSC_SERIES_ID,
-  SERIES_ID
+  SERIES_ID,
 } from '@spectrum-charts/constants';
 import { spectrumColors } from '@spectrum-charts/themes';
 
@@ -65,7 +57,7 @@ import {
   getScale,
   getSubLabelAxis,
   getTimeAxes,
-  hasSubLabels
+  hasSubLabels,
 } from './axisUtils';
 
 export const addAxis = produce<ScSpec, [AxisOptions & { colorScheme?: ColorScheme; index?: number }]>(
@@ -170,9 +162,9 @@ export const addAxis = produce<ScSpec, [AxisOptions & { colorScheme?: ColorSchem
 
 export const addAxisData = produce<Data[], [AxisSpecOptions & { scaleType: ScaleType }]>((data, options) => {
   const axisAnnotations = getAxisAnnotationsFromChildren(options);
-  axisAnnotations.forEach((annotationOptions) => {
-    addAxisAnnotationData(data, annotationOptions);
-  });
+  for (const annotation of axisAnnotations) {
+    addAxisAnnotationData(data, annotation);
+  }
 });
 
 export const addAxisSignals = produce<Signal[], [AxisSpecOptions, string]>((signals, options, scaleName) => {
@@ -194,15 +186,12 @@ export const addAxisSignals = produce<Signal[], [AxisSpecOptions, string]>((sign
       )
     );
   }
-  const axisAnnotations = getAxisAnnotationsFromChildren(options);
-  axisAnnotations.forEach((annotationOptions) => {
-    addAxisAnnotationSignals(signals, annotationOptions);
-  });
-
-  const axisThumbnails = getAxisThumbnails(options);
-  axisThumbnails.forEach(({name}) => {
-    addAxisThumbnailSignals(signals, name, scaleName);
-  });
+  for (const annotation of getAxisAnnotationsFromChildren(options)) {
+    addAxisAnnotationSignals(signals, annotation);
+  }
+  for (const axisThumbnail of getAxisThumbnails(options)) {
+    addAxisThumbnailSignals(signals, axisThumbnail.name, scaleName);
+  }
 });
 
 /**
@@ -260,10 +249,10 @@ export function applySecondaryMetricAxisEncodings(axis: Axis, interactiveMarks: 
     },
   };
 
-  if (!axis.encode) {
-    axis.encode = encodings;
-  } else {
+  if (axis.encode) {
     axis.encode = deepmerge(axis.encode, encodings);
+  } else {
+    axis.encode = encodings;
   }
 }
 
@@ -272,7 +261,11 @@ export function applySecondaryMetricAxisEncodings(axis: Axis, interactiveMarks: 
  * @param axis Axis to apply encoding rules to
  * @param colorScheme The color scheme (light or dark)
  */
-export function applyPrimaryMetricAxisEncodings(axis: Axis, interactiveMarks: string[], colorScheme: ColorScheme = DEFAULT_COLOR_SCHEME): void {
+export function applyPrimaryMetricAxisEncodings(
+  axis: Axis,
+  interactiveMarks: string[],
+  colorScheme: ColorScheme = DEFAULT_COLOR_SCHEME
+): void {
   // Get the appropriate font color value based on the colorScheme (light/dark theme)
   const defaultFontColor = spectrumColors[colorScheme][DEFAULT_FONT_COLOR];
 
@@ -304,10 +297,10 @@ export function applyPrimaryMetricAxisEncodings(axis: Axis, interactiveMarks: st
     },
   };
 
-  if (!axis.encode) {
-    axis.encode = encodings;
-  } else {
+  if (axis.encode) {
     axis.encode = deepmerge(axis.encode, encodings);
+  } else {
+    axis.encode = encodings;
   }
 }
 
@@ -322,7 +315,7 @@ export function addDualMetricAxisConfig(
   isPrimaryMetricAxis: boolean,
   scaleName: string,
   interactiveMarks: string[],
-  colorScheme: ColorScheme = DEFAULT_COLOR_SCHEME,
+  colorScheme: ColorScheme = DEFAULT_COLOR_SCHEME
 ) {
   const scaleNames = getDualAxisScaleNames(scaleName);
   const { primaryScale, secondaryScale } = scaleNames;
@@ -451,9 +444,8 @@ export const addAxes = produce<
 
   if (scaleTypeSupportsReferenceLines(axisOptions.scaleType)) {
     // encode axis to hide labels that overlap reference line icons
-    const referenceLines = getReferenceLines(axisOptions);
-    referenceLines.forEach((referenceLineOptions) => {
-      const { label: referenceLineLabel, icon, value, position: linePosition } = referenceLineOptions;
+    for (const referenceLine of getReferenceLines(axisOptions)) {
+      const { label: referenceLineLabel, icon, value, position: linePosition } = referenceLine;
       const text = newAxes[0].encode?.labels?.update?.text;
       if ((icon || referenceLineLabel) && text && Array.isArray(text) && (!linePosition || linePosition === 'center')) {
         // if the label is within 30 pixels of the reference line icon, hide it
@@ -462,35 +454,34 @@ export const addAxes = produce<
           value: '',
         });
       }
-    });
+    }
   }
 
   if (scaleTypeSupportsThumbnails(axisOptions.scaleType)) {
-    const axisThumbnails = getAxisThumbnails(axisOptions);
-    axisThumbnails.forEach((axisThumbnailOptions) => {
+    for (const axisThumbnail of getAxisThumbnails(axisOptions)) {
       const encodings: AxisEncode = {
         labels: {
           update: {
-            ...getAxisThumbnailLabelOffset(axisThumbnailOptions.name, position),
+            ...getAxisThumbnailLabelOffset(axisThumbnail.name, position),
           },
         },
       };
 
       // apply encodings to all axes
-      newAxes.forEach((axis) => {
-        if (!axis.encode) {
-          axis.encode = encodings;
-        } else {
+      for (const axis of newAxes) {
+        if (axis.encode) {
           axis.encode = deepmerge(axis.encode, encodings);
+        } else {
+          axis.encode = encodings;
         }
-      });
-    });
+      }
+    }
   }
 
   const axisAnnotations = getAxisAnnotationsFromChildren(axisOptions);
-  axisAnnotations.forEach((annotationOptions) => {
-    addAxisAnnotationAxis(newAxes, annotationOptions, scaleName);
-  });
+  for (const axisAnnotation of axisAnnotations) {
+    addAxisAnnotationAxis(newAxes, axisAnnotation, scaleName);
+  }
 
   axes.push(...newAxes);
 });
@@ -521,7 +512,13 @@ const handleDualMetricAxisConfig = ({
     if (!usermeta.metricAxisCount) {
       usermeta.metricAxisCount = 0;
     }
-    addDualMetricAxisConfig(axis, usermeta.metricAxisCount === 0, scaleName, usermeta.interactiveMarks ?? [], colorScheme);
+    addDualMetricAxisConfig(
+      axis,
+      usermeta.metricAxisCount === 0,
+      scaleName,
+      usermeta.interactiveMarks ?? [],
+      colorScheme
+    );
     if (incrementMetricAxisCount) {
       usermeta.metricAxisCount++;
     }
@@ -561,10 +558,9 @@ export const addAxesMarks = produce<
     addAxesToTrellisGroup(options, trellisGroupMark, scaleName, usermeta);
   }
 
-  const axisAnnotations = getAxisAnnotationsFromChildren(options);
-  axisAnnotations.forEach((annotationOptions) => {
-    addAxisAnnotationMarks(marks, annotationOptions, scaleName);
-  });
+  for (const axisAnnotation of getAxisAnnotationsFromChildren(options)) {
+    addAxisAnnotationMarks(marks, axisAnnotation, scaleName);
+  }
 
   if (scaleTypeSupportsThumbnails(scaleType) && scaleField) {
     const axisThumbnailMarks = getAxisThumbnailMarks(options, scaleName, scaleField);

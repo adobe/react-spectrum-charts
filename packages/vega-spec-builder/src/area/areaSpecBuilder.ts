@@ -15,13 +15,13 @@ import { Data, Mark, Scale, Signal, SourceData } from 'vega';
 import {
   BACKGROUND_COLOR,
   COLOR_SCALE,
+  CONTROLLED_HIGHLIGHTED_ITEM,
   DEFAULT_COLOR,
   DEFAULT_COLOR_SCHEME,
   DEFAULT_METRIC,
   DEFAULT_TIME_DIMENSION,
   FILTERED_TABLE,
   GROUP_ID,
-  CONTROLLED_HIGHLIGHTED_ITEM,
   SELECTED_ITEM,
   SELECTED_SERIES,
 } from '@spectrum-charts/constants';
@@ -40,7 +40,7 @@ import { addContinuousDimensionScale, addFieldToFacetScaleDomain, addMetricScale
 import {
   addHoveredItemSignal,
   getControlledHoveredGroupSignal,
-  getControlledHoveredIdSignal
+  getControlledHoveredIdSignal,
 } from '../signal/signalSpecBuilder';
 import { addUserMetaInteractiveMark } from '../specUtils';
 import {
@@ -110,7 +110,7 @@ export const addArea = produce<
     }
 
     spec.usermeta = addUserMetaInteractiveMark(spec.usermeta ?? [], areaOptions.interactiveMarkName);
-    
+
     spec.data = addData(spec.data ?? [], areaOptions);
     spec.signals = addSignals(spec.signals ?? [], areaOptions);
     spec.scales = setScales(spec.scales ?? [], areaOptions);
@@ -202,10 +202,10 @@ export const addSignals = produce<Signal[], [AreaSpecOptions]>((signals, areaOpt
   if (areaOptions.highlightedItem) {
     addHighlightedItemEvents(signals, name);
   }
-  if (!isHighlightedByGroup(areaOptions)) {
-    signals.push(getControlledHoveredIdSignal(name));
-  } else {
+  if (isHighlightedByGroup(areaOptions)) {
     signals.push(getControlledHoveredGroupSignal(name));
+  } else {
+    signals.push(getControlledHoveredIdSignal(name));
   }
   addTooltipSignals(signals, areaOptions);
 });
@@ -222,7 +222,7 @@ export const addHighlightedItemEvents = (signals: Signal[], areaName: string) =>
       highlightedItemSignal.on = [];
     }
     // as soon as the user mouses over the area, we want to null out the highlighted item
-    highlightedItemSignal.on.push(...[{ events: `@${areaName}:mouseover`, update: 'null' }]);
+    highlightedItemSignal.on.push({ events: `@${areaName}:mouseover`, update: 'null' });
   }
 };
 

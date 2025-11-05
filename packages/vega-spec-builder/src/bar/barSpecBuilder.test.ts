@@ -479,7 +479,9 @@ describe('barSpecBuilder', () => {
           ...defaultBarOptions,
           chartTooltips: [{ targets: ['dimensionArea'] }],
         });
-        expect(signals.find((signal) => signal.name === `${defaultBarOptions.name}_${DIMENSION_HOVER_AREA}_${HOVERED_ITEM}`)).toBeDefined();
+        expect(
+          signals.find((signal) => signal.name === `${defaultBarOptions.name}_${DIMENSION_HOVER_AREA}_${HOVERED_ITEM}`)
+        ).toBeDefined();
       });
     });
   });
@@ -895,12 +897,16 @@ describe('barSpecBuilder', () => {
         expect(data).toHaveLength(3);
         expect(data[2].name).toEqual('bar0_groups');
       }),
-      test('should add dodged group aggregate if stacked and dodged', () => {
-        const data = addData(defaultData, { ...defaultBarOptions, type: 'stacked', color: [DEFAULT_COLOR, DEFAULT_SECONDARY_COLOR] });
-        expect(data).toHaveLength(4);
-        expect(data[2].name).toEqual('bar0_stacks');
-        expect(data[3].name).toEqual('bar0_groups');
-      })
+        test('should add dodged group aggregate if stacked and dodged', () => {
+          const data = addData(defaultData, {
+            ...defaultBarOptions,
+            type: 'stacked',
+            color: [DEFAULT_COLOR, DEFAULT_SECONDARY_COLOR],
+          });
+          expect(data).toHaveLength(4);
+          expect(data[2].name).toEqual('bar0_stacks');
+          expect(data[3].name).toEqual('bar0_groups');
+        });
     });
 
     describe('transform already exists', () => {
@@ -977,9 +983,7 @@ describe('barSpecBuilder', () => {
         {
           name: 'bar0_groups',
           source: FILTERED_TABLE,
-          transform: [
-            { type: 'aggregate', groupby: [DEFAULT_CATEGORICAL_DIMENSION] },
-          ],
+          transform: [{ type: 'aggregate', groupby: [DEFAULT_CATEGORICAL_DIMENSION] }],
         },
       ]);
     });
@@ -1033,7 +1037,7 @@ describe('barSpecBuilder', () => {
               groupby: [DEFAULT_CATEGORICAL_DIMENSION],
             },
           ],
-        }
+        },
       ]);
     });
 

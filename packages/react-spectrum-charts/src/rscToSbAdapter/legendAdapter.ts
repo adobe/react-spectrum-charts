@@ -26,7 +26,7 @@ export const getLegendOptions = ({
 
   return {
     ...legendProps,
-    ...(titleLimit !== undefined ? { titleLimit } : {}),
+    ...(titleLimit === undefined ? undefined : { titleLimit }),
     hasOnClick: Boolean(onClick),
     hasMouseInteraction: Boolean(onMouseOut || onMouseOver),
     chartPopovers,

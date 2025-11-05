@@ -14,13 +14,13 @@ import { Data } from 'vega';
 import {
   BACKGROUND_COLOR,
   COLOR_SCALE,
+  CONTROLLED_HIGHLIGHTED_SERIES,
   DEFAULT_BACKGROUND_COLOR,
   DEFAULT_COLOR,
   DEFAULT_COLOR_SCHEME,
   DEFAULT_LINE_TYPES,
   DEFAULT_SECONDARY_COLOR,
   FILTERED_TABLE,
-  CONTROLLED_HIGHLIGHTED_SERIES,
   LINE_TYPE_SCALE,
   LINE_WIDTH_SCALE,
   MARK_ID,
@@ -420,7 +420,9 @@ describe('Chart spec builder', () => {
         value: null,
       };
 
-      expect(spec.signals?.find((signal) => signal.name === CONTROLLED_HIGHLIGHTED_SERIES)).toEqual(uncontrolledHighlightSignal);
+      expect(spec.signals?.find((signal) => signal.name === CONTROLLED_HIGHLIGHTED_SERIES)).toEqual(
+        uncontrolledHighlightSignal
+      );
     });
   });
 

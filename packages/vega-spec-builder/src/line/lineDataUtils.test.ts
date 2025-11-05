@@ -19,19 +19,21 @@ import { defaultLineOptions } from './lineTestUtils';
 describe('getLineHighlightedData()', () => {
   test('should include select signal if hasPopover', () => {
     const expr = (
-      getLineHighlightedData({...defaultLineOptions, chartPopovers: [{}]}).transform?.[0] as FilterTransform
+      getLineHighlightedData({ ...defaultLineOptions, chartPopovers: [{}] }).transform?.[0] as FilterTransform
     ).expr;
     expect(expr.includes(SELECTED_ITEM)).toBeTruthy();
   });
   test('should not include select signal if does not hasPopover', () => {
-    const expr = (
-      getLineHighlightedData(defaultLineOptions).transform?.[0] as FilterTransform
-    ).expr;
+    const expr = (getLineHighlightedData(defaultLineOptions).transform?.[0] as FilterTransform).expr;
     expect(expr.includes(SELECTED_ITEM)).toBeFalsy();
   });
   test('should use groupId if hadGroupId', () => {
     const expr = (
-      getLineHighlightedData({...defaultLineOptions, chartPopovers: [{}], chartTooltips: [{highlightBy: 'dimension'}]}).transform?.[0] as FilterTransform
+      getLineHighlightedData({
+        ...defaultLineOptions,
+        chartPopovers: [{}],
+        chartTooltips: [{ highlightBy: 'dimension' }],
+      }).transform?.[0] as FilterTransform
     ).expr;
     expect(expr.includes(GROUP_ID)).toBeTruthy();
   });

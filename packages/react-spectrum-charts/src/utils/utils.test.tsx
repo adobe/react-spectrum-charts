@@ -14,7 +14,13 @@ import { Fragment, createElement } from 'react';
 import { Chart } from '../Chart';
 import { Bar, ChartPopover, ChartTooltip, Line, Trendline } from '../components';
 import { Donut } from '../rc';
-import { getAllElements, getComponentName, sanitizeAxisAnnotationChildren, toggleStringArrayValue } from './utils';
+import {
+  debugLog,
+  getAllElements,
+  getComponentName,
+  sanitizeAxisAnnotationChildren,
+  toggleStringArrayValue,
+} from './utils';
 
 describe('utils', () => {
   describe('sanitizeAxisAnnotationChildren()', () => {
@@ -81,6 +87,22 @@ describe('utils', () => {
     });
     test('should return camelCase name if provide in props', () => {
       expect(getComponentName(createElement(Bar, { name: 'funnel chart' }), 'bar0')).toBe('funnelChart');
+    });
+  });
+
+  describe('debugLog()', () => {
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
+    test('should log the contents if debug is true', () => {
+      const consoleSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+      debugLog(true, { contents: 'test' });
+      expect(consoleSpy).toHaveBeenCalledWith('%c🌈 ', 'color: #2780eb', 'test');
+    });
+    test('should not log the contents if debug is false', () => {
+      const consoleSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+      debugLog(false, { contents: 'test' });
+      expect(consoleSpy).not.toHaveBeenCalled();
     });
   });
 });

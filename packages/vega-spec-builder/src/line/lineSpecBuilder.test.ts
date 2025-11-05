@@ -25,7 +25,7 @@ import {
   MARK_ID,
   SERIES_ID,
   TABLE,
-  TRENDLINE_VALUE
+  TRENDLINE_VALUE,
 } from '@spectrum-charts/constants';
 
 import * as signalSpecBuilder from '../signal/signalSpecBuilder';
@@ -112,7 +112,7 @@ const defaultSpec = initializeSpec({
     },
   ],
   signals: [],
-  usermeta: {interactiveMarks: []}
+  usermeta: { interactiveMarks: [] },
 });
 
 const defaultLinearScale = {

@@ -124,10 +124,10 @@ export const childrenToOptions = (
   const trendlineAnnotations: TrendlineAnnotationOptions[] = [];
   const trendlines: TrendlineOptions[] = [];
 
-  sanitizeChildren(children).forEach((child) => {
+  for (const child of sanitizeChildren(children)) {
     if (!('displayName' in child.type)) {
       console.error('Invalid component type. Component is missing display name.');
-      return;
+      continue;
     }
     switch (child.type.displayName) {
       case Area.displayName:
@@ -226,7 +226,7 @@ export const childrenToOptions = (
       default:
         console.error('Invalid component type: ', child.type.displayName);
     }
-  });
+  }
 
   return {
     axes,

@@ -146,8 +146,7 @@ GroupData.args = {
         Characters:
         <View marginStart={6}>
           {datum.rscGroupData
-            ?.map((d) => d.character)
-            .flat()
+            ?.flatMap((d) => d.character)
             .map((c, i) => (
               <div key={c + i}>{c}</div>
             ))}

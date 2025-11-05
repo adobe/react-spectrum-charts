@@ -18,8 +18,8 @@ import { Axis, Bar, Chart, ChartTooltip, Line } from '../index';
 import { bindWithProps } from '../test-utils';
 import './Chart.story.css';
 import { ChartBarStory } from './ChartBarStory';
-import { data, workspaceTrendsData } from './data/data';
 import { ChartDynamicHeightBarStory } from './ChartDynamicHeightBarStory';
+import { data, workspaceTrendsData } from './data/data';
 
 export default {
   title: 'RSC/Chart',
