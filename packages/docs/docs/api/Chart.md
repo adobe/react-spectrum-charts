@@ -335,7 +335,7 @@ const timeLocale: TimeLocale = {
         <tr>
             <td>colors</td>
             <td>Color | Color[]</td>
-            <td>'categorical12'</td>
+            <td>'categorical16'</td>
             <td>Defines the color scale used for coloring divisions (series). A single dimension color scale can be defined by supplying a ColorScheme or and array of CssColor | SpectrumColor[]</td>
         </tr>
         <tr>

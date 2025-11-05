@@ -53,7 +53,7 @@ export const Chart = forwardRef<ChartHandle, ChartProps>(
     {
       backgroundColor = DEFAULT_BACKGROUND_COLOR,
       data,
-      colors = 'categorical12',
+      colors = 'categorical16',
       colorScheme = DEFAULT_COLOR_SCHEME,
       dataTestId,
       debug = false,
