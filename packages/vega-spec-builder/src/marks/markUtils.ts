@@ -407,10 +407,10 @@ export const getItemHoverArea = (
 
 export const getHoverMarkName = (name: string, index: number): string => `${name}_hover${index}`;
 
-export const getHoverSizes = (): number[] => [...new Array(HOVER_SHAPE_COUNT)].map((_, i) => HOVER_SIZE / 2 ** i);
+export const getHoverSizes = (): number[] => new Array(HOVER_SHAPE_COUNT).fill(0).map((_, i) => HOVER_SIZE / 2 ** i);
 
 export const getHoverMarkNames = (markName: string): string[] =>
-  [...new Array(HOVER_SHAPE_COUNT)].map((_, i) => getHoverMarkName(markName, i));
+  new Array(HOVER_SHAPE_COUNT).fill(0).map((_, i) => getHoverMarkName(markName, i));
 
 const getHoverSizeSignal = (size: number): SignalRef => ({
   signal: `${size} * max(width, 1) / 1000`,

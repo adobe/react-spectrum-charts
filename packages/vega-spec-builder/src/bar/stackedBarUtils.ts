@@ -56,14 +56,12 @@ export const getStackedBarMarks = (options: BarSpecOptions): Mark[] => {
 
 export const getDodgedAndStackedBarMark = (options: BarSpecOptions): GroupMark => {
   const marks: Mark[] = [];
-  // add background marks
-  marks.push(getStackedBackgroundBar(options));
-
-  // bar mark
-  marks.push(getStackedBar(options));
-
-  // add annotation marks
   marks.push(
+    // add background marks
+    getStackedBackgroundBar(options),
+    // bar mark
+    getStackedBar(options),
+    // add annotation marks
     ...getAnnotationMarks(options, `${options.name}_facet`, `${options.name}_position`, `${options.name}_dodgeGroup`)
   );
 
