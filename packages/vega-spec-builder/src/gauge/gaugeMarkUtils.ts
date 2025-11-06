@@ -12,8 +12,6 @@
 import { produce } from 'immer';
 import { Mark } from 'vega';
 
-// import { getColorValue } from '@spectrum-charts/themes';
-
 import { GaugeSpecOptions } from '../types';
 
 export const addGaugeMarks = produce<Mark[], [GaugeSpecOptions]>((marks, opt) => {
@@ -22,26 +20,19 @@ export const addGaugeMarks = produce<Mark[], [GaugeSpecOptions]>((marks, opt) =>
     backgroundFill = '#eee',
     backgroundStroke = '#999',
     fillerColorSignal = 'fillerColorToCurrVal',
-    straightEdgeOffsetExpr = 'PI/15',
-    labelColor = '#333',
-    labelSize = 40,
   } = opt;
 
-  // Background arcs (rounded, then straight overlay)
-  marks.push(getBackgroundArcRounded(name, backgroundFill, backgroundStroke));
-  marks.push(getFillerArcStraight(name, fillerColorSignal, backgroundStroke, straightEdgeOffsetExpr));
+  // Background arc
+  marks.push(getBackgroundArc(name, backgroundFill, backgroundStroke));
 
-  // Text labels: max, target, min
-  marks.push(getMaxValueText(name, labelColor, labelSize));
-  marks.push(getTargetValueText(name, labelColor, labelSize));
-  marks.push(getMinValueText(name, labelColor, labelSize));
-
-  // Filler arc (value fill)
+  // Filler arc (fills to clampedValue)
   marks.push(getFillerArc(name, fillerColorSignal));
 
+  // Needle to clampedValue
+  marks.push(getNeedle(name));
 });
 
-function getBackgroundArcRounded(name: string, fill: string, stroke: string): Mark {
+function getBackgroundArc(name: string, fill: string, stroke: string): Mark {
   return {
     name: `${name}BackgroundArcRounded`,
     description: 'Background Arc (Round Edge)',
@@ -54,72 +45,8 @@ function getBackgroundArcRounded(name: string, fill: string, stroke: string): Ma
         outerRadius: { signal: 'outerRadius' },
         startAngle:  { signal: 'startAngle' },
         endAngle:    { signal: 'endAngle' },
-        cornerRadius:{ signal: 'cornerR' },
         fill:        { value: fill },
         stroke:      { value: stroke }
-      }
-    }
-  };
-}
-
-function getMaxValueText(name: string, color: string, fontSize: number): Mark {
-  return {
-    name: `${name}MaxValText`,
-    description: 'Max Val Text',
-    type: 'text',
-    encode: {
-      enter: {
-        x:         { signal: 'MaxTextX' },
-        y:         { signal: 'MaxTextY' },
-        text:      { signal: "format(arcMaxVal, '.0f')" },
-        align:     { value: 'center' },
-        baseline:  { value: 'middle' },
-        fontSize:  { value: fontSize },
-        fill:      { value: color },
-        fontWeight:{ value: 'bold' }
-      },
-      update: {
-        endAngle:  { signal: "scale('angleScale', arcMaxVal)" }
-      }
-    }
-  };
-}
-
-function getTargetValueText(name: string, color: string, fontSize: number): Mark {
-  return {
-    name: `${name}TargetValText`,
-    description: 'Target Val Text',
-    type: 'text',
-    encode: {
-      enter: {
-        x:         { signal: 'targetTextX' },
-        y:         { signal: 'targetTextY' },
-        text:      { signal: "format(target, '.0f')" },
-        align:     { value: 'center' },
-        baseline:  { value: 'middle' },
-        fontSize:  { value: fontSize },
-        fontWeight:{ value: 'bold' },
-        fill:      { value: color }
-      }
-    }
-  };
-}
-
-function getMinValueText(name: string, color: string, fontSize: number): Mark {
-  return {
-    name: `${name}MinValText`,
-    description: 'Min Val Text',
-    type: 'text',
-    encode: {
-      enter: {
-        x:         { signal: 'MinTextX' },
-        y:         { signal: 'MinTextY' },
-        text:      { signal: "format(arcMinVal, '.0f')" },
-        align:     { value: 'center' },
-        baseline:  { value: 'middle' },
-        fontSize:  { value: fontSize },
-        fontWeight:{ value: 'bold' },
-        fill:      { value: color }
       }
     }
   };
@@ -141,39 +68,13 @@ function getFillerArc(name: string, fillerColorSignal: string): Mark {
         fill:        { signal: fillerColorSignal }
       },
       update: {
-        endAngle:     { signal: "scale('angleScale', clampedVal)" },
-        // Square end normally; rounded when “full”
-        cornerRadius: { signal: "!isFull ? cornerR : 0" }
+        endAngle:     { signal: "scale('angleScale', clampedVal)" }
       }
     }
   };
 }
 
-function getFillerArcStraight(name: string, fillerColorSignal: string, stroke: string, offsetExpr: string): Mark {
-  return {
-    name: `${name}FillerArcStraight`,
-    description: 'Filler Arc (Straight Edge)',
-    type: 'arc',
-    encode: {
-      enter: {
-        x:           { signal: 'centerX' },
-        y:           { signal: 'centerY' },
-        innerRadius: { signal: 'innerRadius' },
-        outerRadius: { signal: 'outerRadius' },
-        // startAngle offset to not flatten the right edge
-        startAngle:  { signal: `startAngle + (${offsetExpr})` },
-        endAngle:    { signal: 'endAngle' },
-        fill:        { signal: fillerColorSignal },
-        stroke:      { value: stroke }
-      },
-      update: {
-        endAngle:     { signal: "scale('angleScale', clampedVal)" },
-      }
-    }
-  };
-}
-
-  function getNeedleRule(name: string): Mark {
+  function getNeedle(name: string): Mark {
   return {
     name: `${name}Needle`,
     description: 'Needle (rule)',

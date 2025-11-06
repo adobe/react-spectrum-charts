@@ -80,8 +80,7 @@ export const addSignals = produce<Signal[], [GaugeSpecOptions]>((signals, option
   signals.push({ name: 'arcMaxVal', value: options.maxArcValue }); 
   signals.push({ name: 'startAngle', update: "-PI / 2" }); // -90 degrees
   signals.push({ name: 'endAngle', update: "PI / 2" });    // 90 degrees
-  // signals.push({ name: 'currVal', update: `data('table')[0].${options.metric}` });
-  signals.push({ name: 'currVal', value: options.metric });
+  signals.push({ name: 'currVal', update: `data('table')[0].${options.metric}` });
   signals.push({ name: 'target', update: `data('table')[0].${options.target}` });
   signals.push({ name: 'backgroundfillColor', value: `${options.backgroundFill}`})
   signals.push({ name: 'fillerColorToCurrVal', value: `${options.color}`})
@@ -90,14 +89,8 @@ export const addSignals = produce<Signal[], [GaugeSpecOptions]>((signals, option
   signals.push({ name: 'targetTextY', update: "centerY - (outerRadius + 40) * cos(TargetTextTheta)"})
   signals.push({ name: 'StartTextTheta', update: "scale('angleScale', arcMinVal)"})
   signals.push({ name: 'EndTextTheta', update: "scale('angleScale', arcMaxVal)"})
-  signals.push({ name: 'MinTextX', update: "centerX + (innerRadius + (outerRadius - innerRadius) / 2) * sin(StartTextTheta)"})
-  signals.push({ name: 'MinTextY', update: "centerY + 40"})
-  signals.push({ name: 'MaxTextX', update: "centerX + (innerRadius + (outerRadius - innerRadius) / 2) * sin(EndTextTheta)"})
-  signals.push({ name: 'MaxTextY', update: "centerY + 40"})
-  signals.push({ name: 'cornerR', update: "(outerRadius - innerRadius) * 0.45"})
   signals.push({ name: 'capSpan', update: "(cornerR / outerRadius) * 2"})
   signals.push({ name: 'valueEnd', update: "scale('angleScale', clampedVal)"})
-  signals.push({ name: 'isFull', update: "clampedVal >= arcMaxVal"})
   signals.push({ name: 'capEnd', update: "min(valueEnd, startAngle + capSpan)"})
   signals.push({ name: 'mainStart', update: "isFull ? startAngle : capEnd"})
   signals.push({ name: 'radiusRef', update: "min(width/2, height/2)"})
