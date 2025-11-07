@@ -23,9 +23,7 @@ import { toCamelCase } from '@spectrum-charts/utils';
 import { ColorScheme, GaugeOptions, GaugeSpecOptions, ScSpec } from '../types';
 import { getGaugeTableData } from './gaugeDataUtils';
 
-const DEFAULT_COLOR = spectrumColors.light['blue-900']; // can't figure out why this doesnt change if i leave it blank
-// might be because this sets the default color for the gauge component for the user when they use a <Gauge /> component. 
-// the color I see in Storybook is what is hardcoded in Gauge.story.tsx
+const DEFAULT_COLOR = spectrumColors.light['blue-900']; 
 
 
 /**
