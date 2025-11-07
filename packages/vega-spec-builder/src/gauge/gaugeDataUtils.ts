@@ -43,31 +43,6 @@ export const getGaugeTableData = (data: Data[]): ValuesData => {
  * @returns An array of formula transforms.
  */
 export const getGaugeTransforms = (gaugeOptions: GaugeSpecOptions): FormulaTransform[] => {
-  const transforms: FormulaTransform[] = [
-    {
-      type: 'formula',
-      expr: `isValid(datum.${gaugeOptions.target}) ? round(datum.${gaugeOptions.target} * 1.05) : 0`,
-      as: 'xPaddingForTarget',
-    },
-  ];
-
-  if (gaugeOptions.scaleType === 'flexible') {
-    transforms.push({
-      type: 'formula',
-      expr: `${gaugeOptions.maxScaleValue}`,
-      as: 'flexibleScaleValue',
-    });
-  }
-
-  if (gaugeOptions.thresholdBarColor && (gaugeOptions.thresholds?.length ?? 0) > 0) {
-    transforms.push({
-      type: 'formula',
-      expr: generateThresholdColorExpr(gaugeOptions.thresholds ?? [], gaugeOptions.metric, gaugeOptions.color),
-      as: 'barColor',
-    });
-  }
-
-  return transforms;
 };
 
 /**

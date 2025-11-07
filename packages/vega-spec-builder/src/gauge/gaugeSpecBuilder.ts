@@ -52,16 +52,16 @@ export const addGauge = produce<
       name: toCamelCase(name ?? `gauge${index}`),
       metric: 'currentAmount',
       target: 'target',
-      color: getColorValue(color, colorScheme), // Convert spectrum color to RGB
+      color: getColorValue(color, colorScheme),
       numberFormat: '',
-      maxArcValue: 100, // sets the DEFAULT max value for the gauge
+      minArcValue: 0,
+      maxArcValue: 100,
       backgroundFill: spectrumColors[colorScheme]['gray-200'],
       backgroundStroke: spectrumColors[colorScheme]['gray-300'],
       fillerColorSignal: 'fillerColorToCurrVal',
-      straightEdgeOffsetExpr: 'PI/15',
       labelColor: spectrumColors[colorScheme]['gray-800'],
       labelSize: 40,
-      ...options, // this overrides the default if the user passes a prop when using the <Gauge /> component
+      ...options,
     };
 
 
@@ -75,37 +75,26 @@ export const addGauge = produce<
 );
 
 export const addSignals = produce<Signal[], [GaugeSpecOptions]>((signals, options) => {
-  
-  signals.push({ name: 'arcMinVal', value: 0 });
   signals.push({ name: 'arcMaxVal', value: options.maxArcValue }); 
-  signals.push({ name: 'startAngle', update: "-PI / 2" }); // -90 degrees
-  signals.push({ name: 'endAngle', update: "PI / 2" });    // 90 degrees
-  signals.push({ name: 'currVal', update: `data('table')[0].${options.metric}` });
-  signals.push({ name: 'target', update: `data('table')[0].${options.target}` });
-  signals.push({ name: 'backgroundfillColor', value: `${options.backgroundFill}`})
-  signals.push({ name: 'fillerColorToCurrVal', value: `${options.color}`})
-  signals.push({ name: 'TargetTextTheta', update: "scale('angleScale', target)"})
-  signals.push({ name: 'targetTextX', update: "centerX + (outerRadius + 40) * sin(TargetTextTheta)"})
-  signals.push({ name: 'targetTextY', update: "centerY - (outerRadius + 40) * cos(TargetTextTheta)"})
-  signals.push({ name: 'StartTextTheta', update: "scale('angleScale', arcMinVal)"})
-  signals.push({ name: 'EndTextTheta', update: "scale('angleScale', arcMaxVal)"})
-  signals.push({ name: 'capSpan', update: "(cornerR / outerRadius) * 2"})
-  signals.push({ name: 'valueEnd', update: "scale('angleScale', clampedVal)"})
-  signals.push({ name: 'capEnd', update: "min(valueEnd, startAngle + capSpan)"})
-  signals.push({ name: 'mainStart', update: "isFull ? startAngle : capEnd"})
-  signals.push({ name: 'radiusRef', update: "min(width/2, height/2)"})
-  signals.push({ name: 'outerRadius', update: "radiusRef * 0.95"})
-  signals.push({ name: 'innerRadius', update: "outerRadius - (radiusRef * 0.25)"})
-  signals.push({ name: 'theta', update: "scale('angleScale', clampedVal)"})
+  signals.push({ name: 'arcMinVal', value: options.minArcValue });
+  signals.push({ name: 'backgroundfillColor', value: `${options.backgroundFill}`});
   signals.push({ name: 'centerX', update: "width/2"})
   signals.push({ name: 'centerY', update: "height/2 + outerRadius/2"})
   signals.push({ name: 'clampedVal', update: "min(max(arcMinVal, currVal), arcMaxVal)"})
-  signals.push({ name: 'needleAngleRaw', update: "scale('angleScale', clampedVal)"})
-  signals.push({ name: 'needleAngle', update: "needleAngleRaw - PI/2"})
+  signals.push({ name: 'currVal', update: `data('table')[0].${options.metric}` });
+  signals.push({ name: 'endAngle', update: "PI * 2 / 3" }); // 120 degrees 
+  signals.push({ name: 'fillerColorToCurrVal', value: `${options.color}`})
+  signals.push({ name: 'innerRadius', update: "outerRadius - (radiusRef * 0.25)"})
+  signals.push({ name: 'needleAngle', update: "needleAngleOriginal - PI/2"})
+  signals.push({ name: 'needleAngleOriginal', update: "scale('angleScale', clampedVal)"})
   signals.push({ name: 'needleLength', update: "innerRadius"})
   signals.push({ name: 'needleTipX', update: "centerX + needleLength * cos(needleAngle)"})
   signals.push({ name: 'needleTipY', update: "centerY + needleLength * sin(needleAngle)"})
-
+  signals.push({ name: 'outerRadius', update: "radiusRef * 0.95"})
+  signals.push({ name: 'radiusRef', update: "min(width/2, height/2)"})
+  signals.push({ name: 'startAngle', update: "-PI * 2 / 3" }); // -120 degrees
+  signals.push({ name: 'target', update: `data('table')[0].${options.target}` });
+  signals.push({ name: 'theta', update: "scale('angleScale', clampedVal)"})
 });
 
 export const addScales = produce<Scale[], [GaugeSpecOptions]>((scales, options) => {
@@ -120,6 +109,5 @@ export const addScales = produce<Scale[], [GaugeSpecOptions]>((scales, options) 
 
 export const addData = produce<Data[], [GaugeSpecOptions]>((data, options) => {
   const tableData = getGaugeTableData(data);
-  // We can add Transforms here if we need to.
-  tableData.transform = []; // Or add gauge-specific transforms here
+  tableData.transform = [];
 });

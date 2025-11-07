@@ -19,6 +19,8 @@ export interface GaugeOptions {
 
   /** Key in the data that is used as the color facet */
   color?: string;
+  /** Minimum value for the scale. This value must be greater than zero. */
+  minArcValue?: number;
   /** Maximum value for the scale. This value must be greater than zero. */
   maxArcValue?: number;
   /** Key in the data that is used as the metric */
@@ -52,6 +54,7 @@ type GaugeOptionsWithDefaults =
   | 'metric'
   | 'target'
   | 'color'
+  | 'minArcValue'
   | 'maxArcValue'
   | 'backgroundFill'
   | 'backgroundStroke'
@@ -60,10 +63,7 @@ type GaugeOptionsWithDefaults =
   | 'labelSize';
 
 export interface GaugeSpecOptions extends PartiallyRequired<GaugeOptions, GaugeOptionsWithDefaults> {
-  // What does this do?
   colorScheme: ColorScheme;
   idKey: string;
   index: number;
-  straightEdgeOffsetExpr: 'PI/15'
-  // hardcoded. change to number or string?
 }
