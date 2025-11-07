@@ -58,9 +58,7 @@ type GaugeOptionsWithDefaults =
   | 'maxArcValue'
   | 'backgroundFill'
   | 'backgroundStroke'
-  | 'fillerColorSignal'
-  | 'labelColor'
-  | 'labelSize';
+  | 'fillerColorSignal';
 
 export interface GaugeSpecOptions extends PartiallyRequired<GaugeOptions, GaugeOptionsWithDefaults> {
   colorScheme: ColorScheme;

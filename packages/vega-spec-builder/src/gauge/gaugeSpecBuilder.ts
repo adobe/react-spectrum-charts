@@ -47,20 +47,18 @@ export const addGauge = produce<
     }
   ) => {
     const gaugeOptions: GaugeSpecOptions = {
-      colorScheme: colorScheme,
-      index,
-      name: toCamelCase(name ?? `gauge${index}`),
-      metric: 'currentAmount',
-      target: 'target',
-      color: getColorValue(color, colorScheme),
-      numberFormat: '',
-      minArcValue: 0,
-      maxArcValue: 100,
       backgroundFill: spectrumColors[colorScheme]['gray-200'],
       backgroundStroke: spectrumColors[colorScheme]['gray-300'],
+      color: getColorValue(color, colorScheme),
+      colorScheme: colorScheme,
       fillerColorSignal: 'fillerColorToCurrVal',
-      labelColor: spectrumColors[colorScheme]['gray-800'],
-      labelSize: 40,
+      index,
+      maxArcValue: 100,
+      minArcValue: 0,
+      metric: 'currentAmount',
+      name: toCamelCase(name ?? `gauge${index}`),
+      numberFormat: '',
+      target: 'target',
       ...options,
     };
 
@@ -109,5 +107,4 @@ export const addScales = produce<Scale[], [GaugeSpecOptions]>((scales, options) 
 
 export const addData = produce<Data[], [GaugeSpecOptions]>((data, options) => {
   const tableData = getGaugeTableData(data);
-  tableData.transform = [];
 });

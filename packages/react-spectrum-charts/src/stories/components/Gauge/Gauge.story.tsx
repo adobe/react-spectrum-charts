@@ -20,7 +20,7 @@ import { Title } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
 import { bindWithProps } from '../../../test-utils';
 import { GaugeProps, ChartProps } from '../../../types';
-import { basicGaugeData, basicThresholdsData, coloredThresholdsData } from './data';
+import { basicGaugeData } from './data';
 
 export default {
   title: 'RSC/Gauge (alpha)',
@@ -68,7 +68,7 @@ Basic.args = {
 
 const GaugeVariation2 = bindWithProps(GaugeStory);
 GaugeVariation2.args = {
-  metric: 50,
+  metric: 'currentAmount',
   target: 'target',
   color: 'red-900',
   numberFormat: '$,.2f',
@@ -84,91 +84,6 @@ GaugeVariation3.args = {
   maxArcValue: 90
 };
 
-// const Track = bindWithProps(GaugeStory);
-// Track.args = {
-//   metric: 'currentAmount',
-//   dimension: 'graphLabel',
-//   target: 'target',
-//   color: 'blue-900',
-//   direction: 'column',
-//   numberFormat: '$,.2f',
-//   showTarget: true,
-//   showTargetValue: false,
-//   labelPosition: 'top',
-//   scaleType: 'normal',
-//   maxScaleValue: 100,
-//   track: true,
-//   metricAxis: false,
-// };
 
-// const RowMode = bindWithProps(GaugeStory);
-// RowMode.args = {
-//   metric: 'currentAmount',
-//   dimension: 'graphLabel',
-//   target: 'target',
-//   color: 'blue-900',
-//   direction: 'row',
-//   numberFormat: '$,.2f',
-//   showTarget: true,
-//   showTargetValue: false,
-//   labelPosition: 'top',
-//   scaleType: 'normal',
-//   maxScaleValue: 100,
-//   thresholds: coloredThresholdsData,
-//   thresholdBarColor: true,
-//   track: false,
-//   metricAxis: false,
-// };
-
-// const WithTitle = bindWithProps(GaugeTitleStory);
-// WithTitle.args = {
-//   metric: 'currentAmount',
-//   dimension: 'graphLabel',
-//   target: 'target',
-//   color: 'blue-900',
-//   numberFormat: '$,.2f',
-//   labelPosition: 'top',
-//   scaleType: 'normal',
-//   maxScaleValue: 100,
-//   track: false,
-//   direction: 'column',
-//   metricAxis: false,
-// };
-
-// const FixedScale = bindWithProps(GaugeStory);
-// FixedScale.args = {
-//   metric: 'currentAmount',
-//   dimension: 'graphLabel',
-//   target: 'target',
-//   color: 'blue-900',
-//   direction: 'column',
-//   numberFormat: '$,.2f',
-//   showTarget: true,
-//   showTargetValue: false,
-//   labelPosition: 'top',
-//   scaleType: 'fixed',
-//   maxScaleValue: 250,
-//   thresholds: basicThresholdsData,
-//   track: false,
-//   metricAxis: false,
-// };
-
-// const MetricAxis = bindWithProps(GaugeStory);
-// MetricAxis.args = {
-//   metric: 'currentAmount',
-//   dimension: 'graphLabel',
-//   target: 'target',
-//   color: 'blue-900',
-//   direction: 'column',
-//   numberFormat: '$,.2f',
-//   showTarget: true,
-//   showTargetValue: false,
-//   labelPosition: 'top',
-//   scaleType: 'normal',
-//   maxScaleValue: 250,
-//   track: false,
-//   metricAxis: true,
-// };
 
 export { Basic, GaugeVariation2, GaugeVariation3 };
-// export { Basic, GaugeVariation2, GaugeVariation3, Track, RowMode, WithTitle, FixedScale, MetricAxis };

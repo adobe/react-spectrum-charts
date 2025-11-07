@@ -14,9 +14,6 @@
 import { FC } from 'react';
 
 import {
-  DEFAULT_BULLET_DIRECTION,
-  DEFAULT_LABEL_POSITION,
-  DEFAULT_SCALE_TYPE,
   DEFAULT_SCALE_VALUE,
 } from '@spectrum-charts/constants';
 
