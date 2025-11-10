@@ -130,5 +130,12 @@ WithThreeSeries.args = {
   color: 'series',
 };
 
-export { Basic, WithThreeSeries };
+const ItemTooltip = bindWithProps(BasicStory);
+ItemTooltip.args = {
+  ...defaultProps,
+  color: 'series',
+  interactionMode: 'item',
+};
+
+export { Basic, WithThreeSeries, ItemTooltip };
 

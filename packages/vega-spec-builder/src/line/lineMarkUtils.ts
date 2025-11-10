@@ -280,11 +280,11 @@ const getLinePointsForVoronoi = (lineOptions: LineMarkOptions, dataSource: strin
 };
 
 const getItemHoverMarks = (lineOptions: LineMarkOptions, dataSource: string): Mark[] => {
-  const { chartTooltips = [], dimension, metric, metricAxis, name, scaleType } = lineOptions;
+  const { chartTooltips = [], dimension, metric, name, scaleType } = lineOptions;
 
   return [
     // area around item that triggers hover
-    getItemHoverArea(chartTooltips, dataSource, dimension, metric, name, scaleType, metricAxis),
+    getItemHoverArea(chartTooltips, dataSource, dimension, metric, name, scaleType, getLineYEncoding(lineOptions, metric)),
   ];
 };
 
