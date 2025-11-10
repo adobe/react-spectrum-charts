@@ -75,7 +75,7 @@ const defaultSpec = initializeSpec({
               strokeDash: { value: [] },
               strokeOpacity: DEFAULT_OPACITY_RULE,
               strokeWidth: undefined,
-              y: { field: 'value', scale: 'yLinear' },
+              y: [{ field: 'value', scale: 'yLinear' }],
             },
             update: {
               x: { field: DEFAULT_TRANSFORMED_TIME_DIMENSION, scale: 'xTime' },
@@ -152,7 +152,7 @@ const line0_groupMark = {
       interactive: false,
       encode: {
         enter: {
-          y: { scale: 'yLinear', field: 'value' },
+          y: [{ scale: 'yLinear', field: 'value' }],
           stroke: { scale: COLOR_SCALE, field: 'series' },
           strokeDash: { value: [] },
           strokeOpacity: DEFAULT_OPACITY_RULE,
@@ -189,10 +189,12 @@ const metricRangeGroupMark = {
       interactive: false,
       encode: {
         enter: {
-          y: {
-            scale: 'yLinear',
-            field: 'value',
-          },
+          y: [
+            {
+              scale: 'yLinear',
+              field: 'value',
+            },
+          ],
           stroke: {
             scale: COLOR_SCALE,
             field: 'series',
@@ -266,10 +268,12 @@ const metricRangeWithDisplayPointMarks = [
     interactive: false,
     encode: {
       enter: {
-        y: {
-          scale: 'yLinear',
-          field: 'value',
-        },
+        y: [
+          {
+            scale: 'yLinear',
+            field: 'value',
+          },
+        ],
         size: {
           value: 125,
         },
@@ -304,10 +308,12 @@ const displayPointMarks = [
     interactive: false,
     encode: {
       enter: {
-        y: {
-          scale: 'yLinear',
-          field: 'value',
-        },
+        y: [
+          {
+            scale: 'yLinear',
+            field: 'value',
+          },
+        ],
         size: {
           value: 125,
         },
@@ -452,8 +458,8 @@ describe('lineSpecBuilder', () => {
                   strokeOpacity: DEFAULT_OPACITY_RULE,
                   strokeDash: { value: [8, 8] },
                   strokeWidth: undefined,
-                  y: { field: 'value', scale: 'yLinear' },
-                },
+              y: [{ field: 'value', scale: 'yLinear' }],
+            },
                 update: {
                   x: { field: DEFAULT_TRANSFORMED_TIME_DIMENSION, scale: 'xTime' },
                   opacity: [DEFAULT_OPACITY_RULE],

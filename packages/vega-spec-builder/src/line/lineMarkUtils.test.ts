@@ -39,7 +39,7 @@ describe('getLineMark()', () => {
           strokeDash: { value: [] },
           strokeOpacity: DEFAULT_OPACITY_RULE,
           strokeWidth: { value: 1 },
-          y: { field: 'value', scale: 'yLinear' },
+          y: [{ field: 'value', scale: 'yLinear' }],
         },
         update: {
           x: { field: DEFAULT_TRANSFORMED_TIME_DIMENSION, scale: 'xTime' },

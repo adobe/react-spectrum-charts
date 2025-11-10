@@ -19,8 +19,10 @@ import {
   DEFAULT_TIME_DIMENSION,
   FILTERED_TABLE,
   INTERACTION_MODE,
+  LAST_RSC_SERIES_ID,
   LINE_TYPE_SCALE,
   OPACITY_SCALE,
+  SERIES_ID,
 } from '@spectrum-charts/constants';
 import { toCamelCase } from '@spectrum-charts/utils';
 
@@ -30,14 +32,15 @@ import { addTimeTransform, getFilteredTooltipData, getTableData } from '../data/
 import { getHoverMarkNames, getInteractiveMarkName, isInteractive } from '../marks/markUtils';
 import { getMetricRangeData, getMetricRangeGroupMarks, getMetricRanges } from '../metricRange/metricRangeUtils';
 import { addContinuousDimensionScale, addFieldToFacetScaleDomain, addMetricScale } from '../scale/scaleSpecBuilder';
-import { addHoveredItemSignal } from '../signal/signalSpecBuilder';
+import { getDualAxisScaleNames } from '../scale/scaleUtils';
+import { addHoveredItemSignal, getFirstRscSeriesIdSignal, getLastRscSeriesIdSignal } from '../signal/signalSpecBuilder';
 import { addUserMetaInteractiveMark, getFacetsFromOptions } from '../specUtils';
 import { addTrendlineData, getTrendlineMarks, getTrendlineScales, setTrendlineSignals } from '../trendline';
 import { ColorScheme, HighlightedItem, LineOptions, LineSpecOptions, ScSpec } from '../types';
 import { getLineHighlightedData, getLineStaticPointData } from './lineDataUtils';
 import { getLineHoverMarks, getLineMark } from './lineMarkUtils';
 import { getLineStaticPoint } from './linePointUtils';
-import { getPopoverMarkName } from './lineUtils';
+import { getPopoverMarkName, isDualMetricAxis } from './lineUtils';
 
 export const addLine = produce<
   ScSpec,
@@ -59,6 +62,7 @@ export const addLine = produce<
       color = { value: 'categorical-100' },
       colorScheme = DEFAULT_COLOR_SCHEME,
       dimension = DEFAULT_TIME_DIMENSION,
+      dualMetricAxis = false,
       hasOnClick = false,
       index = 0,
       lineType = { value: 'solid' },
@@ -80,6 +84,7 @@ export const addLine = produce<
       color,
       colorScheme,
       dimension,
+      dualMetricAxis,
       hasOnClick,
       index,
       interactiveMarkName: getInteractiveMarkName(
@@ -128,15 +133,47 @@ export const addData = produce<Data[], [LineSpecOptions]>((data, options) => {
   }
   if (staticPoint || isSparkline)
     data.push(getLineStaticPointData(name, staticPoint, FILTERED_TABLE, isSparkline, isMethodLast));
+  addDualMetricAxisData(data, options);
   addTrendlineData(data, options);
   addTooltipData(data, options, false);
   addPopoverData(data, options);
   data.push(...getMetricRangeData(options));
 });
 
+/**
+ * Adds data sources for dual metric axis feature
+ * Creates filtered datasets for primary (all except last series) and secondary (last series only) scales
+ */
+export const addDualMetricAxisData = (data: Data[], options: LineSpecOptions) => {
+  if (isDualMetricAxis(options)) {
+    const { metricAxis } = options;
+    const baseScaleName = metricAxis || 'yLinear';
+    const scaleNames = getDualAxisScaleNames(baseScaleName);
+
+    if (scaleNames.primaryDomain && scaleNames.secondaryDomain) {
+      data.push(
+        {
+          name: scaleNames.primaryDomain,
+          source: FILTERED_TABLE,
+          transform: [{ type: 'filter', expr: `datum.${SERIES_ID} !== ${LAST_RSC_SERIES_ID}` }],
+        },
+        {
+          name: scaleNames.secondaryDomain,
+          source: FILTERED_TABLE,
+          transform: [{ type: 'filter', expr: `datum.${SERIES_ID} === ${LAST_RSC_SERIES_ID}` }],
+        }
+      );
+    }
+  }
+};
+
 export const addSignals = produce<Signal[], [LineSpecOptions]>((signals, options) => {
   const { name } = options;
   setTrendlineSignals(signals, options);
+
+  if (isDualMetricAxis(options)) {
+    signals.push(getFirstRscSeriesIdSignal(), getLastRscSeriesIdSignal());
+  }
 
   if (!isInteractive(options)) return;
   // we don't need to include the excludeDataKeys here because they will be excluded from the points for voronoi
@@ -160,6 +197,13 @@ export const setScales = produce<Scale[], [LineSpecOptions]>((scales, options) =
   // add linear scale with custom name
   if (metricAxis) {
     addMetricScale(scales, getMetricKeys(options), 'y', metricAxis);
+  }
+  // add dual metric axis scales
+  if (isDualMetricAxis(options)) {
+    const baseScaleName = metricAxis || 'yLinear';
+    const scaleNames = getDualAxisScaleNames(baseScaleName);
+    addMetricScale(scales, getMetricKeys(options), 'y', scaleNames.primaryScale, scaleNames.primaryDomain);
+    addMetricScale(scales, getMetricKeys(options), 'y', scaleNames.secondaryScale, scaleNames.secondaryDomain);
   }
   // add trendline scales
   scales.push(...getTrendlineScales(options));

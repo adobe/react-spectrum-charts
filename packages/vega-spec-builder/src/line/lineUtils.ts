@@ -35,6 +35,15 @@ export const getPopoverMarkName = (chartPopovers: ChartPopoverOptions[], lineNam
   }
 };
 
+/**
+ * Checks if the line chart is a dual metric axis chart
+ * @param options - The line chart options
+ * @returns True if the line chart is a dual metric axis chart, false otherwise
+ */
+export const isDualMetricAxis = (options: { dualMetricAxis?: boolean }): boolean => {
+  return Boolean(options.dualMetricAxis);
+};
+
 export interface LineMarkOptions {
   barAnnotations?: BarAnnotationOptions[];
   chartPopovers?: ChartPopoverOptions[];
@@ -45,6 +54,7 @@ export interface LineMarkOptions {
   dimension: string;
   displayOnHover?: boolean;
   donutSummaries?: DonutSummaryOptions[];
+  dualMetricAxis?: boolean;
   hasOnClick?: boolean;
   highlightedItem?: HighlightedItem;
   idKey: string;

@@ -81,7 +81,7 @@ const basicMetricRangeMarks = [
     interactive: false,
     encode: {
       enter: {
-        y: { scale: 'yLinear', field: 'metric' },
+        y: [{ scale: 'yLinear', field: 'metric' }],
         stroke: { scale: COLOR_SCALE, field: 'series' },
         strokeDash: { value: [3, 4] },
         strokeOpacity: DEFAULT_OPACITY_RULE,

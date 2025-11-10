@@ -144,7 +144,7 @@ describe('getHighlightPoint()', () => {
     expect(mark.encode).toBeDefined();
     expect(mark.encode?.enter).toBeDefined();
     expect(mark.encode?.update).toBeDefined();
-    expect(mark.encode?.enter?.y).toEqual({ field: 'value', scale: 'yLinear' });
+    expect(mark.encode?.enter?.y).toEqual([{ field: 'value', scale: 'yLinear' }]);
     expect(mark.encode?.enter?.stroke).toEqual({ field: DEFAULT_COLOR, scale: COLOR_SCALE });
   });
 
@@ -176,7 +176,7 @@ describe('getSelectionPoint()', () => {
     expect(mark.encode).toBeDefined();
     expect(mark.encode?.enter).toBeDefined();
     expect(mark.encode?.update).toBeDefined();
-    expect(mark.encode?.enter?.y).toEqual({ field: 'value', scale: 'yLinear' });
+    expect(mark.encode?.enter?.y).toEqual([{ field: 'value', scale: 'yLinear' }]);
     expect(mark.encode?.enter?.stroke).toEqual({ field: DEFAULT_COLOR, scale: COLOR_SCALE });
   });
 
@@ -219,7 +219,7 @@ describe('getSecondaryHighlightPoint()', () => {
     expect(mark.encode).toBeDefined();
     expect(mark.encode?.enter).toBeDefined();
     expect(mark.encode?.update).toBeDefined();
-    expect(mark.encode?.enter?.y).toEqual({ field: secondaryMetric, scale: 'yLinear' });
+    expect(mark.encode?.enter?.y).toEqual([{ field: secondaryMetric, scale: 'yLinear' }]);
     expect(mark.encode?.enter?.fill).toEqual({ signal: BACKGROUND_COLOR });
     expect(mark.encode?.enter?.stroke).toEqual({ field: DEFAULT_COLOR, scale: COLOR_SCALE });
   });
@@ -237,8 +237,8 @@ describe('getSecondaryHighlightPoint()', () => {
     const metric2 = 'metric2';
     const mark1 = getSecondaryHighlightPoint(defaultLineMarkOptions, metric1);
     const mark2 = getSecondaryHighlightPoint(defaultLineMarkOptions, metric2);
-    expect(mark1.encode?.enter?.y).toEqual({ field: metric1, scale: 'yLinear' });
-    expect(mark2.encode?.enter?.y).toEqual({ field: metric2, scale: 'yLinear' });
+    expect(mark1.encode?.enter?.y).toEqual([{ field: metric1, scale: 'yLinear' }]);
+    expect(mark2.encode?.enter?.y).toEqual([{ field: metric2, scale: 'yLinear' }]);
   });
 
   test('should use highlightedData like the primary highlight point', () => {
