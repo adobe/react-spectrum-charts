@@ -17,6 +17,7 @@ import {
   GroupMark,
   NumericValueRef,
   PathMark,
+  ProductionRule,
   SignalRef,
   SymbolMark,
 } from 'vega';
@@ -370,6 +371,7 @@ export const getVoronoiPath = (markOptions: LineMarkOptions | ScatterSpecOptions
  * @param metric the metric for the y encoding
  * @param name the name of the component the hover area is associated with, i.e. `scatter0`
  * @param scaleType the scale type for the x encoding
+ * @param yEncoding optional Y encoding production rule
  * @returns GroupMark
  */
 export const getItemHoverArea = (
@@ -379,7 +381,7 @@ export const getItemHoverArea = (
   metric: string,
   name: string,
   scaleType: ScaleType,
-  metricAxis?: string
+  yEncoding?: ProductionRule<NumericValueRef>
 ): GroupMark => {
   return {
     name: `${name}_hoverGroup`,
@@ -391,7 +393,7 @@ export const getItemHoverArea = (
       encode: {
         enter: {
           shape: { value: HOVER_SHAPE },
-          y: getYProductionRule(metricAxis, metric),
+          y: yEncoding,
           fill: { value: 'transparent' },
           stroke: { value: 'transparent' },
           tooltip: getTooltip(chartTooltips, name, false),

@@ -18,6 +18,7 @@ import {
   DEFAULT_OPACITY_RULE,
   FADE_FACTOR,
   HOVERED_ITEM,
+  LAST_RSC_SERIES_ID,
   SELECTED_SERIES,
   SERIES_ID,
 } from '@spectrum-charts/constants';
@@ -28,13 +29,12 @@ import {
   getItemHoverArea,
   getLineWidthProductionRule,
   getOpacityProductionRule,
-  getPointsForVoronoi,
   getStrokeDashProductionRule,
   getVoronoiPath,
   getXProductionRule,
-  getYProductionRule,
   hasPopover,
 } from '../marks/markUtils';
+import { getDualAxisScaleNames } from '../scale/scaleUtils';
 import { ScaleType } from '../types';
 import {
   getHighlightBackgroundPoint,
@@ -43,7 +43,36 @@ import {
   getSelectRingPoint,
   getSelectionPoint,
 } from './linePointUtils';
-import { LineMarkOptions } from './lineUtils';
+import { isDualMetricAxis, LineMarkOptions } from './lineUtils';
+
+/**
+ * Gets the Y encoding for line marks with dual metric axis support
+ * @param lineMarkOptions - Line mark options including metricAxis and dualMetricAxis
+ * @param metric - The metric field name
+ * @returns Y encoding with conditional scale selection for dual metric axis
+ */
+export const getLineYEncoding = (lineMarkOptions: LineMarkOptions, metric: string): ProductionRule<NumericValueRef> => {
+  const { metricAxis } = lineMarkOptions;
+  
+  if (isDualMetricAxis(lineMarkOptions)) {
+    const baseScaleName = metricAxis || 'yLinear';
+    const scaleNames = getDualAxisScaleNames(baseScaleName);
+    
+    return [
+      {
+        test: `datum.${SERIES_ID} === ${LAST_RSC_SERIES_ID}`,
+        scale: scaleNames.secondaryScale,
+        field: metric,
+      },
+      {
+        scale: scaleNames.primaryScale,
+        field: metric,
+      },
+    ];
+  }
+  
+  return [{ scale: metricAxis || 'yLinear', field: metric }];
+};
 
 /**
  * generates a line mark
@@ -60,7 +89,6 @@ export const getLineMark = (lineMarkOptions: LineMarkOptions, dataSource: string
     lineType,
     lineWidth,
     metric,
-    metricAxis,
     name,
     opacity,
     scaleType,
@@ -78,7 +106,7 @@ export const getLineMark = (lineMarkOptions: LineMarkOptions, dataSource: string
     interactive: false,
     encode: {
       enter: {
-        y: getYProductionRule(metricAxis, metric),
+        y: getLineYEncoding(lineMarkOptions, metric),
         stroke: getColorProductionRule(color, colorScheme),
         strokeDash: getStrokeDashProductionRule(lineType),
         strokeOpacity: getOpacityProductionRule(opacity),
@@ -213,21 +241,50 @@ const getInteractiveMarks = (dataSource: string, lineOptions: LineMarkOptions): 
 };
 
 const getVoronoiMarks = (lineOptions: LineMarkOptions, dataSource: string): Mark[] => {
-  const { dimension, metric, metricAxis, name, scaleType } = lineOptions;
+  const { name } = lineOptions;
 
   return [
     // points used for the voronoi transform
-    getPointsForVoronoi(dataSource, dimension, metric, name, scaleType, metricAxis),
+    getLinePointsForVoronoi(lineOptions, dataSource),
     // voronoi transform used to get nearest point paths
     getVoronoiPath(lineOptions, `${name}_pointsForVoronoi`),
   ];
 };
 
+/**
+ * Gets the points used for the voronoi calculation for line charts with dual metric axis support
+ * @param lineOptions - Line options including dual metric axis settings
+ * @param dataSource - the name of the data source that will be used in the voronoi calculation
+ * @returns SymbolMark
+ */
+const getLinePointsForVoronoi = (lineOptions: LineMarkOptions, dataSource: string): Mark => {
+  const { dimension, metric, name, scaleType } = lineOptions;
+  
+  return {
+    name: `${name}_pointsForVoronoi`,
+    description: `${name}_pointsForVoronoi`,
+    type: 'symbol',
+    from: { data: dataSource },
+    interactive: false,
+    encode: {
+      enter: {
+        y: getLineYEncoding(lineOptions, metric),
+        fill: { value: 'transparent' },
+        stroke: { value: 'transparent' },
+      },
+      update: {
+        x: getXProductionRule(scaleType, dimension),
+      },
+    },
+  };
+};
+
 const getItemHoverMarks = (lineOptions: LineMarkOptions, dataSource: string): Mark[] => {
-  const { chartTooltips = [], dimension, metric, metricAxis, name, scaleType } = lineOptions;
+  const { chartTooltips = [], dimension, metric, name, scaleType } = lineOptions;
 
   return [
     // area around item that triggers hover
-    getItemHoverArea(chartTooltips, dataSource, dimension, metric, name, scaleType, metricAxis),
+    getItemHoverArea(chartTooltips, dataSource, dimension, metric, name, scaleType, getLineYEncoding(lineOptions, metric)),
   ];
 };
+

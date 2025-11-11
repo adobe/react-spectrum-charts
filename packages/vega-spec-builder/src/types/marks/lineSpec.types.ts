@@ -60,6 +60,8 @@ export interface LineOptions {
   interactionMode?: InteractionMode;
   /** Axis that the metric is trended against (y-axis) */
   metricAxis?: string;
+  /** Enables dual metric axis mode where the last series uses a secondary axis with independent scale */
+  dualMetricAxis?: boolean;
 
   // children
   chartPopovers?: ChartPopoverOptions[];
