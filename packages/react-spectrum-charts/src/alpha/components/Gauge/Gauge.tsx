@@ -14,7 +14,8 @@
 import { FC } from 'react';
 
 import {
-  DEFAULT_SCALE_VALUE,
+  DEFAULT_MAX_ARC_VALUE,
+  DEFAULT_MIN_ARC_VALUE,
 } from '@spectrum-charts/constants';
 
 import { GaugeProps } from '../../../types';
@@ -23,9 +24,8 @@ import { GaugeProps } from '../../../types';
 const Gauge: FC<GaugeProps> = ({
   name = 'gauge0',
   metric = 'currentAmount', // CurrVal
-  target = 'target', 
-  numberFormat = '', // ints or floats
-  maxArcValue = DEFAULT_SCALE_VALUE, // Max Arc Value
+  minArcValue = DEFAULT_MIN_ARC_VALUE, // Min Arc Value
+  maxArcValue = DEFAULT_MAX_ARC_VALUE, // Max Arc Value
 }) => {
   return null;
 };

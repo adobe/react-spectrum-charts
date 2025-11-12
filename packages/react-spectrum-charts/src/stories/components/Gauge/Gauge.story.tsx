@@ -60,28 +60,19 @@ const GaugeTitleStory: StoryFn<typeof Gauge> = (args): ReactElement => {
 const Basic = bindWithProps(GaugeStory);
 Basic.args = {
   metric: 'currentAmount',
-  target: 'target',
   color: 'blue-900',
-  numberFormat: '$,.2f',
-  maxArcValue: 100
 };
 
 const GaugeVariation2 = bindWithProps(GaugeStory);
 GaugeVariation2.args = {
   metric: 'currentAmount',
-  target: 'target',
   color: 'red-900',
-  numberFormat: '$,.2f',
-  maxArcValue: 150
 };
 
 const GaugeVariation3 = bindWithProps(GaugeStory);
 GaugeVariation3.args = {
   metric: 'currentAmount',
-  target: 'target',
   color: 'fuchsia-900',
-  numberFormat: '$,.2f',
-  maxArcValue: 90
 };
 
 

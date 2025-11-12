@@ -39,7 +39,6 @@ export const addGauge = produce<
     {
       colorScheme = DEFAULT_COLOR_SCHEME,
       index = 0,
-      name,
       color = DEFAULT_COLOR,
       ...options
     }
@@ -48,24 +47,20 @@ export const addGauge = produce<
       backgroundFill: spectrumColors[colorScheme]['gray-200'],
       backgroundStroke: spectrumColors[colorScheme]['gray-300'],
       color: getColorValue(color, colorScheme),
-      colorScheme: colorScheme,
       fillerColorSignal: 'fillerColorToCurrVal',
+      colorScheme: colorScheme,
       index,
       maxArcValue: 100,
       minArcValue: 0,
       metric: 'currentAmount',
       name: toCamelCase(name ?? `gauge${index}`),
-      numberFormat: '',
-      target: 'target',
       ...options,
     };
-
 
     spec.signals = addSignals(spec.signals ?? [], gaugeOptions);
     spec.scales = addScales(spec.scales ?? [], gaugeOptions);
     spec.marks = addGaugeMarks(spec.marks ?? [], gaugeOptions);
     spec.data = addData(spec.data ?? [], gaugeOptions);  
-
     
   }
 );
@@ -89,7 +84,6 @@ export const addSignals = produce<Signal[], [GaugeSpecOptions]>((signals, option
   signals.push({ name: 'outerRadius', update: "radiusRef * 0.95"})
   signals.push({ name: 'radiusRef', update: "min(width/2, height/2)"})
   signals.push({ name: 'startAngle', update: "-PI * 2 / 3" }); // -120 degrees
-  signals.push({ name: 'target', update: `data('table')[0].${options.target}` });
   signals.push({ name: 'theta', update: "scale('angleScale', clampedVal)"})
 });
 

@@ -14,7 +14,6 @@
 
 export const basicGaugeData = [
   { graphLabel: 'Customers', currentAmount: 60, target: 80 },
-  { graphLabel: 'Revenue', currentAmount: 350, target: 450 },
 ];
 
 

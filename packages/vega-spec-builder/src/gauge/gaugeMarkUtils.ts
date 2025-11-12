@@ -12,15 +12,19 @@
 import { produce } from 'immer';
 import { Mark } from 'vega';
 
+import { DEFAULT_COLOR_SCHEME } from '@spectrum-charts/constants';
+
 import { GaugeSpecOptions } from '../types';
+import { spectrumColors } from '@spectrum-charts/themes';
 
 export const addGaugeMarks = produce<Mark[], [GaugeSpecOptions]>((marks, opt) => {
   const {
     name,
-    backgroundFill = '#eee',
-    backgroundStroke = '#999',
-    fillerColorSignal = 'fillerColorToCurrVal',
+    colorScheme = DEFAULT_COLOR_SCHEME,
   } = opt;
+  const backgroundFill = spectrumColors[colorScheme]['gray-200'];
+  const backgroundStroke = spectrumColors[colorScheme]['gray-300'];
+  const fillerColorSignal = 'fillerColorToCurrVal';
 
   // Background arc
   marks.push(getBackgroundArc(name, backgroundFill, backgroundStroke));
