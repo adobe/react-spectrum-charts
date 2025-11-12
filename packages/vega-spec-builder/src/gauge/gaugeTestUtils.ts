@@ -9,46 +9,23 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { BulletSpecOptions } from '../types';
+import { GaugeSpecOptions } from '../types';
+import { spectrumColors } from '@spectrum-charts/themes'; 
+import { DEFAULT_COLOR_SCHEME } from '@spectrum-charts/constants'; 
 
-export const sampleOptionsColumn: BulletSpecOptions = {
-  markType: 'bullet',
-  colorScheme: 'light',
-  index: 0,
-  color: 'green',
-  metric: 'currentAmount',
-  dimension: 'graphLabel',
-  target: 'target',
-  name: 'bullet0',
-  idKey: 'rscMarkId',
-  direction: 'column',
-  showTarget: true,
-  showTargetValue: false,
-  labelPosition: 'top',
-  scaleType: 'normal',
-  maxScaleValue: 100,
-  metricAxis: false,
-  track: false,
-  thresholdBarColor: false,
-};
 
-export const sampleOptionsRow: BulletSpecOptions = {
-  markType: 'bullet',
+import { MARK_ID } from '@spectrum-charts/constants';
+
+export const defaultGaugeOptions: GaugeSpecOptions = {
   colorScheme: 'light',
+  idKey: MARK_ID,
   index: 0,
-  color: 'green',
-  metric: 'currentAmount',
-  dimension: 'graphLabel',
-  target: 'target',
-  name: 'bullet0',
-  idKey: 'rscMarkId',
-  direction: 'row',
-  showTarget: true,
-  showTargetValue: false,
-  labelPosition: 'top',
-  scaleType: 'normal',
-  maxScaleValue: 100,
-  track: false,
-  thresholdBarColor: false,
-  metricAxis: false,
+  name: '',
+  metric: '',
+  color: DEFAULT_COLOR_SCHEME,
+  minArcValue: 0,
+  maxArcValue: 0,
+  backgroundFill: spectrumColors['light']['gray-200'],
+  backgroundStroke: spectrumColors['light']['gray-300'],
+  fillerColorSignal: ''
 };

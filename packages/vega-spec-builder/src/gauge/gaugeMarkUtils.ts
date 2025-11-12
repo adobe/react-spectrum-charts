@@ -36,7 +36,7 @@ export const addGaugeMarks = produce<Mark[], [GaugeSpecOptions]>((marks, opt) =>
   marks.push(getNeedle(name));
 });
 
-function getBackgroundArc(name: string, fill: string, stroke: string): Mark {
+export function getBackgroundArc(name: string, fill: string, stroke: string): Mark {
   return {
     name: `${name}BackgroundArcRounded`,
     description: 'Background Arc (Round Edge)',
@@ -56,7 +56,7 @@ function getBackgroundArc(name: string, fill: string, stroke: string): Mark {
   };
 }
 
-function getFillerArc(name: string, fillerColorSignal: string): Mark {
+export function getFillerArc(name: string, fillerColorSignal: string): Mark {
   return {
     name: `${name}FillerArc`,
     description: 'Filler Arc',
@@ -78,7 +78,7 @@ function getFillerArc(name: string, fillerColorSignal: string): Mark {
   };
 }
 
-  function getNeedle(name: string): Mark {
+  export function getNeedle(name: string): Mark {
   return {
     name: `${name}Needle`,
     description: 'Needle (rule)',
