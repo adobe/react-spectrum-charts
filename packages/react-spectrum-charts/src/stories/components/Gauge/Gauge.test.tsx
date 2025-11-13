@@ -9,11 +9,9 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { spectrumColors } from '@spectrum-charts/themes';
 import { Gauge } from '../../../alpha';
-import { findAllMarksByGroupName, findChart, findMarksByGroupName, render } from '../../../test-utils';
+import { findChart, findMarksByGroupName, render } from '../../../test-utils';
 import { Basic } from './Gauge.story';
-import { DEFAULT_COLOR_SCHEME } from '@spectrum-charts/constants';
 
 describe('Gauge', () => {
   // Gauge is not a real React component. This test provides test coverage for sonarqube
