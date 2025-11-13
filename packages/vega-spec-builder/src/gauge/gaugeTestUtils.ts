@@ -12,20 +12,18 @@
 import { GaugeSpecOptions } from '../types';
 import { spectrumColors } from '@spectrum-charts/themes'; 
 import { DEFAULT_COLOR_SCHEME } from '@spectrum-charts/constants'; 
-
-
 import { MARK_ID } from '@spectrum-charts/constants';
 
 export const defaultGaugeOptions: GaugeSpecOptions = {
-  colorScheme: 'light',
+  colorScheme: DEFAULT_COLOR_SCHEME,
   idKey: MARK_ID,
-  index: 0,
-  name: '',
-  metric: '',
+  index: 5,
+  name: 'gaugeTestName',
+  metric: 'currentAmount',
   color: DEFAULT_COLOR_SCHEME,
   minArcValue: 0,
-  maxArcValue: 0,
-  backgroundFill: spectrumColors['light']['gray-200'],
-  backgroundStroke: spectrumColors['light']['gray-300'],
-  fillerColorSignal: ''
+  maxArcValue: 100,
+  backgroundFill: spectrumColors[DEFAULT_COLOR_SCHEME]['gray-200'],
+  backgroundStroke: spectrumColors[DEFAULT_COLOR_SCHEME]['gray-300'],
+  fillerColorSignal: 'light'
 };

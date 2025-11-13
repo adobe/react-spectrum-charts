@@ -10,7 +10,7 @@
  * governing permissions and limitations under the License.
  */
 import { produce } from 'immer';
-import { Mark, Signal, Scale, Data } from 'vega';
+import { Signal, Scale, Data } from 'vega';
 import { addGaugeMarks } from './gaugeMarkUtils';
 
 

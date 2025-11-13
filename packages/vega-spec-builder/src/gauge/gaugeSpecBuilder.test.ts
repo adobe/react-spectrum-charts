@@ -10,27 +10,24 @@
  * governing permissions and limitations under the License.
  */
 import { GaugeOptions, ScSpec } from '../types';
-import { addBullet, addData, addScales, addSignals } from './bulletSpecBuilder';
-import { sampleOptionsColumn, sampleOptionsRow } from './bulletTestUtils';
+import { addGauge, addData, addScales, addSignals } from './gaugeSpecBuilder';
+import { defaultGaugeOptions } from './gaugeTestUtils';
 
-describe('addBullet', () => {
+import { getColorValue, spectrumColors } from '../../../themes';
+
+import { DEFAULT_COLOR_SCHEME } from '@spectrum-charts/constants';
+
+const byName = (signals: any[], name: string) => signals.find(s => s.name === name);
+
+describe('addGauge', () => {
   let spec: ScSpec;
 
   beforeEach(() => {
     spec = { data: [], marks: [], scales: [], usermeta: {} };
   });
 
-  test('should modify spec with bullet chart properties', () => {
-    const bulletOptions: BulletOptions & { idKey: string } = {
-      markType: 'bullet',
-      name: 'testBullet',
-      metric: 'revenue',
-      dimension: 'region',
-      target: 'goal',
-      idKey: 'rscMarkId',
-    };
-
-    const newSpec = addBullet(spec, bulletOptions);
+  test('should create a spec with gauge chart properties', () => {
+    const newSpec = addGauge(spec, defaultGaugeOptions);
 
     expect(newSpec).toBeDefined();
     expect(newSpec).toHaveProperty('data');
@@ -40,153 +37,102 @@ describe('addBullet', () => {
   });
 });
 
-describe('getBulletScales', () => {
-  test('Should return the correct scales object for column mode', () => {
-    const data = addScales([], sampleOptionsColumn);
+describe('getGaugeScales', () => {
+  test('Should return the correct scale object', () => {
+    const data = addScales([], defaultGaugeOptions);
     expect(data).toBeDefined();
-    expect(data).toHaveLength(2);
-    expect('range' in data[0] && data[0].range && data[0].range[1]).toBeTruthy();
-    if ('range' in data[0] && data[0].range && data[0].range[1]) {
-      expect(data[0].range[1].signal).toBe('bulletChartHeight');
+    expect(data).toHaveLength(1);
+    expect('range' in data[0] && data[0].range).toBeTruthy();
+    if ('range' in data[0] && data[0].range) {
+      expect(data[0].range[1].signal).toBe('endAngle');
     }
-  });
-
-  test('Should return the correct scales object for row mode', () => {
-    const data = addScales([], sampleOptionsRow);
-    expect(data).toBeDefined();
-    expect(data).toHaveLength(2);
-    expect('range' in data[0] && data[0].range && data[0].range[1]).toBeTruthy();
-    if ('range' in data[0] && data[0].range && data[0].range[1]) {
-      expect(data[0].range[1].signal).toBe('width');
-    }
-  });
-
-  test('Should return the correct scales object for flexible scale mode', () => {
-    const options = { ...sampleOptionsColumn, scaleType: 'flexible' as 'normal' | 'flexible' | 'fixed' };
-    const data = addScales([], options);
-    expect(data).toBeDefined();
-    expect(data[1].domain).toBeDefined();
-    expect(data[1].domain).toStrictEqual({
-      data: 'table',
-      fields: ['xPaddingForTarget', options.metric, 'flexibleScaleValue'],
-    });
-  });
-
-  test('Should return the correct scales object for fixed scale mode', () => {
-    const options = { ...sampleOptionsColumn, scaleType: 'fixed' as 'normal' | 'flexible' | 'fixed' };
-    const data = addScales([], options);
-    expect(data).toBeDefined();
-    expect(data[1].domain).toBeDefined();
-    expect(data[1].domain).toStrictEqual([0, `${options.maxScaleValue}`]);
-  });
-
-  test('Should return the correct scales object for normal scale mode', () => {
-    const options = { ...sampleOptionsColumn, scaleType: 'normal' as 'normal' | 'flexible' | 'fixed' };
-    const data = addScales([], options);
-    expect(data).toBeDefined();
-    expect(data[1].domain).toBeDefined();
-    expect(data[1].domain).toStrictEqual({ data: 'table', fields: ['xPaddingForTarget', options.metric] });
-  });
-
-  test('Should return the correct scales object when a negative value is passed for maxScaleValue', () => {
-    const options = {
-      ...sampleOptionsColumn,
-      scaleType: 'fixed' as 'normal' | 'flexible' | 'fixed',
-      maxScaleValue: -100,
-    };
-    const data = addScales([], options);
-    expect(data).toBeDefined();
-    expect(data[1].domain).toBeDefined();
-
-    // Expect normal scale mode to be used
-    expect(data[1].domain).toStrictEqual({ data: 'table', fields: ['xPaddingForTarget', options.metric] });
   });
 });
 
-describe('getBulletSignals', () => {
-  test('Should return the correct signals object in column mode', () => {
-    const data = addSignals([], sampleOptionsColumn);
+describe('getGaugeSignals', () => {
+  test('Should return the correct signals object', () => {
+    const data = addSignals([], defaultGaugeOptions);
     expect(data).toBeDefined();
-    expect(data).toHaveLength(7);
-  });
-
-  test('Should return the correct signals object in row mode', () => {
-    const data = addSignals([], sampleOptionsRow);
-    expect(data).toBeDefined();
-    expect(data).toHaveLength(8);
-  });
-
-  test('Should include targetValueLabelHeight signal when showTargetValue is true', () => {
-    const options = { ...sampleOptionsColumn, showTarget: true, showTargetValue: true };
-    const signals = addSignals([], options);
-    expect(signals.find((signal) => signal.name === 'targetValueLabelHeight')).toBeDefined();
-  });
-
-  test('Should include correct targetValueLabelHeight signal when showTargetValue is true', () => {
-    const options = {
-      ...sampleOptionsColumn,
-      showTarget: true,
-      showTargetValue: true,
-      labelPosition: 'side' as 'side' | 'top',
-    };
-    const signals = addSignals([], options);
-    expect(signals.find((signal) => signal.name === 'bulletGroupHeight')).toStrictEqual({
-      name: 'bulletGroupHeight',
-      update: 'bulletThresholdHeight + targetValueLabelHeight + 10',
-    });
-  });
-
-  test('Should include correct targetValueLabelHeight signal when showTargetValue is true', () => {
-    const options = {
-      ...sampleOptionsColumn,
-      showTarget: true,
-      showTargetValue: true,
-      labelPosition: 'top' as 'side' | 'top',
-    };
-    const signals = addSignals([], options);
-    expect(signals.find((signal) => signal.name === 'bulletGroupHeight')).toStrictEqual({
-      name: 'bulletGroupHeight',
-      update: 'bulletThresholdHeight + targetValueLabelHeight + 24',
-    });
-  });
-
-  test('Should include correct targetValueLabelHeight signal when showTargetValue is true', () => {
-    const options = {
-      ...sampleOptionsColumn,
-      showTarget: true,
-      showTargetValue: false,
-      labelPosition: 'side' as 'side' | 'top',
-    };
-    const signals = addSignals([], options);
-    expect(signals.find((signal) => signal.name === 'bulletGroupHeight')).toStrictEqual({
-      name: 'bulletGroupHeight',
-      update: 'bulletThresholdHeight + 10',
-    });
-  });
-
-  test('Should include correct bulletChartHeight signal when options.axis is true and showTargetValue is false', () => {
-    const options = {
-      ...sampleOptionsColumn,
-      showTargetValue: false,
-      metricAxis: true,
-    };
-    const signals = addSignals([], options);
-    expect(signals.find((signal) => signal.name === 'bulletChartHeight')).toStrictEqual({
-      name: 'bulletChartHeight',
-      update: "length(data('table')) * bulletGroupHeight + (length(data('table')) - 1) * gap + 10",
-    });
+    expect(data).toHaveLength(19);
   });
 });
 
-describe('getBulletData', () => {
+describe('getGaugeData', () => {
   test('Should return the data object', () => {
-    const data = addData([], sampleOptionsColumn);
+    const data = addData([], defaultGaugeOptions);
     expect(data).toHaveLength(1);
   });
-
-  test('Should return the correct data object in flexible scale mode', () => {
-    const options = { ...sampleOptionsColumn, scaleType: 'flexible' as 'normal' | 'flexible' | 'fixed' };
-    const data = addData([], options);
-    expect(data[0].transform).toHaveLength(2);
-  });
 });
+
+describe('addGauge (defaults & overrides for gaugeOptions)', () => {
+  let spec: ScSpec;
+
+  beforeEach(() => {
+    spec = { data: [], marks: [], scales: [], usermeta: {} };
+  });
+
+  test('uses defaults when no overrides are provided', () => {
+    const newSpec = addGauge(spec, defaultGaugeOptions);
+
+    expect(newSpec).toBeDefined();
+    expect(newSpec.signals).toBeDefined();
+
+    const signals = newSpec.signals as any[];
+
+    // min/max come from defaults in gaugeOptions
+    expect(byName(signals, 'arcMaxVal')?.value).toBe(100);
+    expect(byName(signals, 'arcMinVal')?.value).toBe(0);
+
+    // default angles: -120° .. +120°
+    expect(byName(signals, 'startAngle')?.update).toBe('-PI * 2 / 3');
+    expect(byName(signals, 'endAngle')?.update).toBe('PI * 2 / 3');
+
+    // default metric is 'currentAmount'
+    expect(byName(signals, 'currVal')?.update).toBe("data('table')[0].currentAmount");
+
+    // background fill from DEFAULT_COLOR_SCHEME
+    const scheme = DEFAULT_COLOR_SCHEME;
+    const expectedBgFill   = spectrumColors[scheme]['gray-200'];
+    expect(byName(signals, 'backgroundfillColor')?.value).toBe(expectedBgFill);
+
+    // fillerColorToCurrVal uses light
+    expect(byName(signals, 'fillerColorToCurrVal')?.value).toBe('light');
+  });
+
+  test('applies user overrides (colorScheme, color, min/max, metric, name, index)', () => {
+    const overrides = {
+      ...defaultGaugeOptions,
+      colorScheme: 'dark' as const,
+      color: spectrumColors.dark['yellow-900'],
+      backgroundFill: spectrumColors.dark['gray-200'],
+      minArcValue: 50,
+      maxArcValue: 500,
+      metric: 'myMetric',
+      name: 'Revenue Gauge',
+      index: 2,
+    };
+
+    const newSpec = addGauge(spec, overrides);
+    const signals = newSpec.signals as any[];
+
+    // min/max should reflect overrides
+    expect(byName(signals, 'arcMinVal')?.value).toBe(50);
+    expect(byName(signals, 'arcMaxVal')?.value).toBe(500);
+
+    // metric override reflected in currVal
+    expect(byName(signals, 'currVal')?.update).toBe("data('table')[0].myMetric");
+
+    // background fill should read from dark scheme
+    expect(byName(signals, 'backgroundfillColor')?.value).toBe(spectrumColors.dark['gray-200']);
+
+    // filler color should be computed via getColorValue with dark scheme
+    const expectedFillerDark = getColorValue(spectrumColors.dark['yellow-900'], 'dark');
+    expect(byName(signals, 'fillerColorToCurrVal')?.value).toBe(expectedFillerDark);
+
+    // sanity: start/end angles remain the same defaults
+    expect(byName(signals, 'startAngle')?.update).toBe('-PI * 2 / 3');
+    expect(byName(signals, 'endAngle')?.update).toBe('PI * 2 / 3');
+  });
+
+});
+
