@@ -9,36 +9,30 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { Bullet } from '../../../alpha';
-import { findAllMarksByGroupName, findChart, render } from '../../../test-utils';
+import { spectrumColors } from '@spectrum-charts/themes';
+import { Gauge } from '../../../alpha';
+import { findAllMarksByGroupName, findChart, findMarksByGroupName, render } from '../../../test-utils';
 import { Basic } from './Gauge.story';
+import { DEFAULT_COLOR_SCHEME } from '@spectrum-charts/constants';
 
-describe('Bullet', () => {
-  // Bullet is not a real React component. This is test just provides test coverage for sonarqube
-  test('Bullet pseudo element', () => {
-    render(<Bullet />);
+describe('Gauge', () => {
+  // Gauge is not a real React component. This test provides test coverage for sonarqube
+  test('Gauge pseudo element', () => {
+    render(<Gauge />);
   });
 
-  test('Basic bullet renders properly', async () => {
+  test('Basic gauge renders properly', async () => {
     render(<Basic {...Basic.args} />);
     const chart = await findChart();
     expect(chart).toBeInTheDocument();
 
-    const rects = await findAllMarksByGroupName(chart, 'bullet0Rect');
-    expect(rects.length).toEqual(2);
+    const backgroundArc = await findMarksByGroupName(chart, 'BackgroundArcRounded');
+    expect(backgroundArc).toBeDefined();
 
-    rects.forEach((rect) => {
-      // Expect blue-900 color
-      expect(rect).toHaveAttribute('fill', 'rgb(2, 101, 220)');
-    });
+    const fillerArc = await findMarksByGroupName(chart, 'FillerArc');
+    expect(fillerArc).toBeDefined();
 
-    const barLabels = await findAllMarksByGroupName(chart, 'bullet0Label', 'text');
-    expect(barLabels.length).toEqual(2);
-
-    const amountLabels = await findAllMarksByGroupName(chart, 'bullet0ValueLabel', 'text');
-    expect(amountLabels.length).toEqual(2);
-
-    const rules = await findAllMarksByGroupName(chart, 'bullet0Target', 'line');
-    expect(rules.length).toEqual(2);
+    const needleRule = await findMarksByGroupName(chart, 'Needle', 'line');
+    expect(needleRule).toBeDefined();
   });
 });
