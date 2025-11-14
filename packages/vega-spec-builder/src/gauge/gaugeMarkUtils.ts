@@ -36,7 +36,7 @@ export const addGaugeMarks = produce<Mark[], [GaugeSpecOptions]>((marks, opt) =>
   // Needle to clampedValue
   if (gaugeOptions.needle) {
       marks?.push(getNeedle(name));
-    }
+  }
 });
 
 export function getBackgroundArc(name: string, fill: string, stroke: string): Mark {
@@ -85,19 +85,21 @@ export function getFillerArc(name: string, fillerColorSignal: string): Mark {
   return {
     name: `${name}Needle`,
     description: 'Needle (rule)',
-    type: 'rule',
+    type: 'symbol',
     encode: {
-      enter: {
-        stroke:      { value: '#333' },
-        strokeWidth: { value: 3 },
-        strokeCap:   { value: 'round' }
-      },
-      update: {
-        x:  { signal: 'centerX' },
-        y:  { signal: 'centerY' },
-        x2: { signal: 'needleTipX' },
-        y2: { signal: 'needleTipY' }
-      }
+    enter: {
+      x: { signal: "centerX" },
+      y: { signal: "centerY" }
+    },
+    update: {
+      shape: {
+        signal:
+            "'M -5 0 Q -5 5 0 5 Q 5 5 5 0' + 'L 2.5 -30 ' + 'Q 2.5 -35 0 -35 Q -2.5 -35 -2.5 -30' + 'L -5 0 Z'" 
+        },
+      angle: { signal: "needleAngleDeg" },
+      fill: { signal: "fillerColorToCurrVal" },
+      stroke: { signal: "fillerColorToCurrVal" },
     }
+  }
   };
 }
