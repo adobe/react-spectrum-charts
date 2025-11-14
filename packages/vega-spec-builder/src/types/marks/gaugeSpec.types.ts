@@ -44,6 +44,7 @@ type GaugeOptionsWithDefaults =
   | 'backgroundFill'
   | 'backgroundStroke'
   | 'fillerColorSignal'
+  | 'needle'
 
 export interface GaugeSpecOptions extends PartiallyRequired<GaugeOptions, GaugeOptionsWithDefaults> {
   colorScheme: ColorScheme;

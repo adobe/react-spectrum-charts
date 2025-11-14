@@ -38,6 +38,7 @@ export const DEFAULT_LOCALE = 'en-US';
 export const DEFAULT_METRIC = 'value';
 export const DEFAULT_MAX_ARC_VALUE = 100;
 export const DEFAULT_MIN_ARC_VALUE = 0;
+export const DEFAULT_NEEDLE = false;
 export const DEFAULT_SCALE_TYPE = 'normal';
 export const DEFAULT_SCALE_VALUE = 100;
 export const DEFAULT_SECONDARY_COLOR = 'subSeries';

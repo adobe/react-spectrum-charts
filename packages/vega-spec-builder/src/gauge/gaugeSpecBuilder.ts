@@ -54,6 +54,7 @@ export const addGauge = produce<
       minArcValue: 0,
       metric: 'currentAmount',
       name: toCamelCase(name ?? `gauge${index}`),
+      needle: false,
       ...options,
     };
 
@@ -85,6 +86,7 @@ export const addSignals = produce<Signal[], [GaugeSpecOptions]>((signals, option
   signals.push({ name: 'radiusRef', update: "min(width/2, height/2)"})
   signals.push({ name: 'startAngle', update: "-PI * 2 / 3" }); // -120 degrees
   signals.push({ name: 'theta', update: "scale('angleScale', clampedVal)"})
+  signals.push({ name: 'needleAngleDeg', update: "needleAngleOriginal * 180 / PI"})
 });
 
 export const addScales = produce<Scale[], [GaugeSpecOptions]>((scales, options) => {

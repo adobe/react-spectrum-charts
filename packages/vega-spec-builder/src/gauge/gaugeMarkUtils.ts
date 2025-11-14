@@ -22,6 +22,7 @@ export const addGaugeMarks = produce<Mark[], [GaugeSpecOptions]>((marks, opt) =>
   const {
     name,
     colorScheme = DEFAULT_COLOR_SCHEME,
+    needle
   } = opt;
   const backgroundFill = spectrumColors[colorScheme]['gray-200'];
   const backgroundStroke = spectrumColors[colorScheme]['gray-300'];
@@ -34,7 +35,7 @@ export const addGaugeMarks = produce<Mark[], [GaugeSpecOptions]>((marks, opt) =>
   marks.push(getFillerArc(name, fillerColorSignal));
 
   // Needle to clampedValue
-  if (gaugeOptions.needle) {
+  if (needle) {
       marks?.push(getNeedle(name));
   }
 });
