@@ -31,6 +31,8 @@ export interface GaugeOptions {
   backgroundStroke?: string;
   /** Color of the filler color arc */
   fillerColorSignal?: string;
+  /** Showing the needle mark */
+  needle?: boolean;
 }
 
 type GaugeOptionsWithDefaults =

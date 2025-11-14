@@ -16,6 +16,7 @@ import { DEFAULT_COLOR_SCHEME } from '@spectrum-charts/constants';
 
 import { GaugeSpecOptions } from '../types';
 import { spectrumColors } from '@spectrum-charts/themes';
+import { defaultGaugeOptions } from './gaugeTestUtils';
 
 export const addGaugeMarks = produce<Mark[], [GaugeSpecOptions]>((marks, opt) => {
   const {
@@ -33,7 +34,9 @@ export const addGaugeMarks = produce<Mark[], [GaugeSpecOptions]>((marks, opt) =>
   marks.push(getFillerArc(name, fillerColorSignal));
 
   // Needle to clampedValue
-  marks.push(getNeedle(name));
+  if (gaugeOptions.needle) {
+      marks?.push(getNeedle(name));
+    }
 });
 
 export function getBackgroundArc(name: string, fill: string, stroke: string): Mark {
