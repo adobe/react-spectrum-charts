@@ -75,7 +75,6 @@ const dialog = (item: Datum): ReactNode => {
   );
 };
 
-// TODO: add component props and additional stories here
 const Basic = bindWithProps(ScatterAnnotationStory);
 Basic.args = {
   textKey: 'firstCharacter',
