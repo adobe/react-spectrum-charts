@@ -22,7 +22,8 @@ export const addGaugeMarks = produce<Mark[], [GaugeSpecOptions]>((marks, opt) =>
   const {
     name,
     colorScheme = DEFAULT_COLOR_SCHEME,
-    needle
+    needle,
+    targetLine
   } = opt;
   const backgroundFill = spectrumColors[colorScheme]['gray-200'];
   const backgroundStroke = spectrumColors[colorScheme]['gray-300'];
@@ -38,6 +39,9 @@ export const addGaugeMarks = produce<Mark[], [GaugeSpecOptions]>((marks, opt) =>
   if (needle) {
       marks.push(getNeedle(name));
       marks.push(getNeedleHole(name, BACKGROUND_COLOR));
+  }
+  if (targetLine){
+    marks.push(getTargetLine(name));
   }
 });
 
@@ -86,7 +90,7 @@ export function getFillerArc(name: string, fillerColorSignal: string): Mark {
 export function getNeedle(name: string): Mark {
   return {
     name: `${name}Needle`,
-    description: 'Needle (rule)',
+    description: 'Needle',
     type: 'symbol',
     encode: {
     enter: {
@@ -109,7 +113,7 @@ export function getNeedle(name: string): Mark {
 export function getNeedleHole(name: string, backgroundColor): Mark {
   return {
     name: `${name}Needle Hole`,
-    description: 'Needle Hole (rule)',
+    description: 'Needle Hole',
     type: 'symbol',
     encode: {
     enter: {
@@ -122,10 +126,31 @@ export function getNeedleHole(name: string, backgroundColor): Mark {
             "circle"  
         },
       angle: { signal: "needleAngleDeg" },
-      size: {"value": 750},
+      size: {value: 750},
       fill: { signal: backgroundColor },
       stroke: { signal: backgroundColor },
     }
   }
   };
 }
+
+export function getTargetLine(name: string): Mark {
+  return {
+    name: `${name}Target Line`,
+    description: 'Target Line',
+    type: 'rule',
+    encode: {
+    enter: {
+      stroke: { value: "black" },
+      strokeWidth: { value: 6 },
+      strokeCap: { value: "round" }
+    },
+    update: {
+      x:  { signal: "needleTipX" },
+      y:  { signal: "needleTipY" },
+      x2: { signal: "needleTipX2" },
+      y2: { signal: "needleTipY2" }
+    }
+  }
+  }
+};

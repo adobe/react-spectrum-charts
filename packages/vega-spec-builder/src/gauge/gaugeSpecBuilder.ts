@@ -55,6 +55,7 @@ export const addGauge = produce<
       metric: 'currentAmount',
       name: toCamelCase(name ?? `gauge${index}`),
       needle: false,
+      targetLine: false,
       ...options,
     };
 
@@ -80,8 +81,10 @@ export const addSignals = produce<Signal[], [GaugeSpecOptions]>((signals, option
   signals.push({ name: 'needleAngle', update: "needleAngleOriginal - PI/2"})
   signals.push({ name: 'needleAngleOriginal', update: "scale('angleScale', clampedVal)"})
   signals.push({ name: 'needleLength', update: "30"})
-  signals.push({ name: 'needleTipX', update: "centerX + needleLength * cos(needleAngle)"})
-  signals.push({ name: 'needleTipY', update: "centerY + needleLength * sin(needleAngle)"})
+  signals.push({ name: 'needleTipX', update: "centerX + ( innerRadius - 5) * cos(needleAngle)"})
+  signals.push({ name: 'needleTipY', update: "centerY + ( innerRadius - 5) * sin(needleAngle)"})
+  signals.push({ name: 'needleTipX2', update: "centerX + ( outerRadius + 5) * cos(needleAngle)"})
+  signals.push({ name: 'needleTipY2', update: "centerY + ( outerRadius + 5) * sin(needleAngle)"})
   signals.push({ name: 'outerRadius', update: "radiusRef * 0.95"})
   signals.push({ name: 'radiusRef', update: "min(width/2, height/2)"})
   signals.push({ name: 'startAngle', update: "-PI * 2 / 3" }); // -120 degrees

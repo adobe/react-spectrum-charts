@@ -16,7 +16,8 @@ import { FC } from 'react';
 import {
   DEFAULT_MAX_ARC_VALUE,
   DEFAULT_MIN_ARC_VALUE,
-  DEFAULT_NEEDLE
+  DEFAULT_NEEDLE,
+  DEFAULT_TARGET_LINE
 } from '@spectrum-charts/constants';
 
 import { GaugeProps } from '../../../types';
@@ -28,6 +29,7 @@ const Gauge: FC<GaugeProps> = ({
   minArcValue = DEFAULT_MIN_ARC_VALUE, // Min Arc Value
   maxArcValue = DEFAULT_MAX_ARC_VALUE, // Max Arc Value
   needle = DEFAULT_NEEDLE,
+  targetLine = DEFAULT_TARGET_LINE
 }) => {
   return null;
 };

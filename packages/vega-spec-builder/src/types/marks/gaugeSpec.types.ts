@@ -33,6 +33,8 @@ export interface GaugeOptions {
   fillerColorSignal?: string;
   /** Showing the needle mark */
   needle?: boolean;
+  /** Showing the target line */
+  targetLine?: boolean;
 }
 
 type GaugeOptionsWithDefaults =
@@ -45,6 +47,7 @@ type GaugeOptionsWithDefaults =
   | 'backgroundStroke'
   | 'fillerColorSignal'
   | 'needle'
+  | 'targetLine'
 
 export interface GaugeSpecOptions extends PartiallyRequired<GaugeOptions, GaugeOptionsWithDefaults> {
   colorScheme: ColorScheme;
