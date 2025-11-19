@@ -136,7 +136,7 @@ The `Trendline` component is fully supported by `Scatter`. To plot a trendline, 
     <tbody>
         <tr>
             <td>children</td>
-            <td>ChartTooltip | ChartPopover | Trendline</td>
+            <td>ChartTooltip | ChartPopover | Trendline | ScatterAnnotation</td>
             <td>–</td>
             <td>Optional elements that can be rendered within the chart.</td>
         </tr>
@@ -194,6 +194,56 @@ The `Trendline` component is fully supported by `Scatter`. To plot a trendline, 
             <td>string | \{value: SymbolSize | number}</td>
             <td>\{value: 'M'}</td>
             <td>Scatter point symbol size.<br/>If a string is provided, this string is the key in the data that symbols will be grouped into series by. Each unique value for this key in the provided data will map to an size from the symbol size scale. <br/>If an object with a value is provided, this will set the size for all symbols.</td>
+        </tr>
+    </tbody>
+</table>
+
+### ScatterAnnotation
+
+The `ScatterAnnotation` component can be passed into `Scatter` as a child. This allows you to add text labels directly on scatter plot points, making it easier to identify specific data points or highlight important information.
+
+The component supports an `anchor` prop to define where annotations should be placed relative to their corresponding points. You can pass a single position or an array of positions. When an array is provided, each position is tried in order until one fits within the chart bounds without overlapping other annotations or points. **If a label cannot be placed without overlapping, it will not be displayed. This means scatter annotations should be considered "nice to have" supplemental information.**
+
+#### Example
+
+```jsx
+<Chart data={data}>
+  <Axis baseline grid position="bottom" ticks title="Speed (normal)" />
+  <Axis baseline grid position="left" ticks title="Handling (normal)" />
+  <Scatter dimension="speedNormal" metric="handlingNormal" color="weightClass">
+    <ScatterAnnotation textKey="character" anchor={['right', 'top', 'bottom', 'left']} />
+  </Scatter>
+  <Legend highlight position="right" title="Weight class" />
+  <Title text="Mario Kart 8 Character Data" />
+</Chart>
+```
+
+![Scatter plot with text annotations for each point](/img/scatterAnnotation_light.png#gh-light-mode-only)
+![Scatter plot with text annotations for each point](/img/scatterAnnotation_dark.png#gh-dark-mode-only)
+
+#### Props
+
+<table>
+    <thead>
+        <tr>
+            <th>name</th>
+            <th>type</th>
+            <th>default</th>
+            <th>description</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>anchor</td>
+            <td>LabelAnchor | LabelAnchor[]</td>
+            <td>['right', 'top', 'bottom', 'left']</td>
+            <td>Specifies where to position the annotation relative to the data point. Possible values include 'top', 'bottom', 'left', 'right', 'top-left', 'top-right', 'bottom-left', and 'bottom-right'.<br/>When an array is provided, each position is tried in order until one fits within the chart bounds and doesn't overlap with other annotations or points. If no position fits, the annotation is not displayed. This is true even if only one position is supplied.</td>
+        </tr>
+        <tr>
+            <td>textKey</td>
+            <td>string</td>
+            <td>'annotation'</td>
+            <td>The key in the data that contains the text to display for each annotation.</td>
         </tr>
     </tbody>
 </table>
