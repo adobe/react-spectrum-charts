@@ -12,7 +12,7 @@
 import { produce } from 'immer';
 import { Mark } from 'vega';
 
-import { DEFAULT_COLOR_SCHEME } from '@spectrum-charts/constants';
+import { DEFAULT_COLOR_SCHEME, BACKGROUND_COLOR } from '@spectrum-charts/constants';
 
 import { GaugeSpecOptions } from '../types';
 import { spectrumColors } from '@spectrum-charts/themes';
@@ -36,7 +36,8 @@ export const addGaugeMarks = produce<Mark[], [GaugeSpecOptions]>((marks, opt) =>
 
   // Needle to clampedValue
   if (needle) {
-      marks?.push(getNeedle(name));
+      marks.push(getNeedle(name));
+      marks.push(getNeedleHole(name, BACKGROUND_COLOR));
   }
 });
 
@@ -82,7 +83,7 @@ export function getFillerArc(name: string, fillerColorSignal: string): Mark {
   };
 }
 
-  export function getNeedle(name: string): Mark {
+export function getNeedle(name: string): Mark {
   return {
     name: `${name}Needle`,
     description: 'Needle (rule)',
@@ -95,11 +96,35 @@ export function getFillerArc(name: string, fillerColorSignal: string): Mark {
     update: {
       shape: {
         signal:
-            "'M -5 0 Q -5 5 0 5 Q 5 5 5 0' + 'L 2.5 -30 ' + 'Q 2.5 -35 0 -35 Q -2.5 -35 -2.5 -30' + 'L -5 0 Z'" 
+            "'M -4 0 A 4 4 0 1 0 4 0 L 2 -' + needleLength + 'A 2 2 0 1 0 -2 -' + needleLength + ' ' +  'L -4 0 Z'"
         },
       angle: { signal: "needleAngleDeg" },
       fill: { signal: "fillerColorToCurrVal" },
       stroke: { signal: "fillerColorToCurrVal" },
+    }
+  }
+  };
+}
+
+export function getNeedleHole(name: string, backgroundColor): Mark {
+  return {
+    name: `${name}Needle Hole`,
+    description: 'Needle Hole (rule)',
+    type: 'symbol',
+    encode: {
+    enter: {
+      x: { signal: "centerX" },
+      y: { signal: "centerY" }
+    },
+    update: {
+      shape: {
+        value:
+            "circle"  
+        },
+      angle: { signal: "needleAngleDeg" },
+      size: {"value": 750},
+      fill: { signal: backgroundColor },
+      stroke: { signal: backgroundColor },
     }
   }
   };

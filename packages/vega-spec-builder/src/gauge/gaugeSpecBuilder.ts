@@ -79,7 +79,7 @@ export const addSignals = produce<Signal[], [GaugeSpecOptions]>((signals, option
   signals.push({ name: 'innerRadius', update: "outerRadius - (radiusRef * 0.25)"})
   signals.push({ name: 'needleAngle', update: "needleAngleOriginal - PI/2"})
   signals.push({ name: 'needleAngleOriginal', update: "scale('angleScale', clampedVal)"})
-  signals.push({ name: 'needleLength', update: "innerRadius"})
+  signals.push({ name: 'needleLength', update: "30"})
   signals.push({ name: 'needleTipX', update: "centerX + needleLength * cos(needleAngle)"})
   signals.push({ name: 'needleTipY', update: "centerY + needleLength * sin(needleAngle)"})
   signals.push({ name: 'outerRadius', update: "radiusRef * 0.95"})
