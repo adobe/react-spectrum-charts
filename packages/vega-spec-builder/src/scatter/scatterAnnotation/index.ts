@@ -9,12 +9,4 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
-export * from './barAnnotationSpec.types';
-export * from './dountSummarySpec.types';
-export * from './metricRangeSpec.types';
-export * from './scatterAnnotationSpec.types';
-export * from './scatterPathSpec.types';
-export * from './segmentLabelSpec.types';
-export * from './trendlineSpec.types';
-export * from './trendlineAnnotationSpec.types';
+export * from './scatterAnnotationUtils';

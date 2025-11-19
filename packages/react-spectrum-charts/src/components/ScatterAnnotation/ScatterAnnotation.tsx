@@ -10,11 +10,19 @@
  * governing permissions and limitations under the License.
  */
 
-export * from './barAnnotationSpec.types';
-export * from './dountSummarySpec.types';
-export * from './metricRangeSpec.types';
-export * from './scatterAnnotationSpec.types';
-export * from './scatterPathSpec.types';
-export * from './segmentLabelSpec.types';
-export * from './trendlineSpec.types';
-export * from './trendlineAnnotationSpec.types';
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import { FC } from 'react';
+
+import { ScatterAnnotationProps } from '../../types';
+
+// destructure props here and set defaults so that storybook can pick them up
+const ScatterAnnotation: FC<ScatterAnnotationProps> = ({
+  anchor = ['right', 'top', 'bottom', 'left'],
+  textKey = 'annotation',
+}) => {
+  return null;
+};
+
+// displayName is used to validate the component type in the spec builder
+ScatterAnnotation.displayName = 'ScatterAnnotation';
+export { ScatterAnnotation };

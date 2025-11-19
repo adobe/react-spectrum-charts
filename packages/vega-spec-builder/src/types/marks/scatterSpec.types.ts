@@ -21,6 +21,7 @@ import {
   ScaleType,
   SymbolSizeFacet,
 } from '../specUtil.types';
+import { ScatterAnnotationOptions } from './supplemental';
 import { ScatterPathOptions } from './supplemental/scatterPathSpec.types';
 import { TrendlineOptions } from './supplemental/trendlineSpec.types';
 
@@ -72,6 +73,7 @@ export interface ScatterOptions {
   //children
   chartPopovers?: ChartPopoverOptions[];
   chartTooltips?: ChartTooltipOptions[];
+  scatterAnnotations?: ScatterAnnotationOptions[];
   scatterPaths?: ScatterPathOptions[];
   trendlines?: TrendlineOptions[];
 }
@@ -89,6 +91,7 @@ type ScatterOptionsWithDefaults =
   | 'name'
   | 'opacity'
   | 'size'
+  | 'scatterAnnotations'
   | 'scatterPaths'
   | 'trendlines';
 

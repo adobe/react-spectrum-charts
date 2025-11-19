@@ -40,6 +40,11 @@ describe('addScatterMarks()', () => {
     const marks = addScatterMarks([], { ...defaultScatterOptions, colorScheme: 'dark' });
     expect((marks[0] as GroupMark).marks?.[0].encode?.enter?.blend).toEqual({ value: 'screen' });
   });
+  test('should add annotation marks if annotation exists as a child', () => {
+    const marks = addScatterMarks([], { ...defaultScatterOptions, scatterAnnotations: [{}] });
+    expect((marks[0] as GroupMark).marks).toHaveLength(2);
+    expect((marks[0] as GroupMark).marks?.[1].name).toBe('scatter0Annotation0');
+  });
   test('should add trendline marks if trendline exists as a child', () => {
     const marks = addScatterMarks([], { ...defaultScatterOptions, trendlines: [{}] });
     expect(marks).toHaveLength(2);

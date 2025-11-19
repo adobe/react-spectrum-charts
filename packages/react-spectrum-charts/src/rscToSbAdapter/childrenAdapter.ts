@@ -23,6 +23,7 @@ import {
   MarkOptions,
   MetricRangeOptions,
   ReferenceLineOptions,
+  ScatterAnnotationOptions,
   ScatterPathOptions,
   SegmentLabelOptions,
   TitleOptions,
@@ -44,6 +45,7 @@ import { Line } from '../components/Line';
 import { MetricRange } from '../components/MetricRange';
 import { ReferenceLine } from '../components/ReferenceLine';
 import { Scatter } from '../components/Scatter';
+import { ScatterAnnotation } from '../components/ScatterAnnotation';
 import { ScatterPath } from '../components/ScatterPath';
 import { Title } from '../components/Title';
 import { Trendline } from '../components/Trendline';
@@ -63,6 +65,7 @@ import {
   LegendProps,
   LineProps,
   ReferenceLineProps,
+  ScatterAnnotationProps,
   ScatterPathProps,
   ScatterProps,
   SegmentLabelProps,
@@ -100,6 +103,7 @@ export const childrenToOptions = (
   marks: MarkOptions[];
   metricRanges: MetricRangeOptions[];
   referenceLines: ReferenceLineOptions[];
+  scatterAnnotations: ScatterAnnotationOptions[];
   scatterPaths: ScatterPathOptions[];
   segmentLabels: SegmentLabelOptions[];
   titles: TitleOptions[];
@@ -119,6 +123,7 @@ export const childrenToOptions = (
   const metricRanges: MetricRangeOptions[] = [];
   const referenceLines: ReferenceLineOptions[] = [];
   const segmentLabels: SegmentLabelOptions[] = [];
+  const scatterAnnotations: ScatterAnnotationOptions[] = [];
   const scatterPaths: ScatterPathOptions[] = [];
   const titles: TitleOptions[] = [];
   const trendlineAnnotations: TrendlineAnnotationOptions[] = [];
@@ -199,6 +204,10 @@ export const childrenToOptions = (
         marks.push(getScatterOptions(child.props as ScatterProps));
         break;
 
+      case ScatterAnnotation.displayName:
+        scatterAnnotations.push(child.props as ScatterAnnotationProps);
+        break;
+
       case ScatterPath.displayName:
         scatterPaths.push(child.props as ScatterPathProps);
         break;
@@ -241,6 +250,7 @@ export const childrenToOptions = (
     marks,
     metricRanges,
     referenceLines,
+    scatterAnnotations,
     scatterPaths,
     segmentLabels,
     titles,

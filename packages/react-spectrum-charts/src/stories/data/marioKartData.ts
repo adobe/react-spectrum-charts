@@ -14,6 +14,7 @@ export const characterData = [
   {
     weightClass: 'light',
     character: ['Baby Peach', 'Baby Daisy'],
+    firstCharacter: 'Baby Peach',
     speedNormal: 2.25,
     speedAntigravity: 2,
     speedWater: 2.5,
@@ -30,6 +31,7 @@ export const characterData = [
   {
     weightClass: 'light',
     character: ['Baby Rosalina', 'Lemmy'],
+    firstCharacter: 'Baby Rosalina',
     speedNormal: 2.25,
     speedAntigravity: 2,
     speedWater: 2.5,
@@ -46,6 +48,7 @@ export const characterData = [
   {
     weightClass: 'light',
     character: ['Baby Mario', 'Baby Luigi', 'Dry Bones', 'Light Mii'],
+    firstCharacter: 'Baby Mario',
     speedNormal: 2.5,
     speedAntigravity: 2.25,
     speedWater: 2.75,
@@ -62,6 +65,7 @@ export const characterData = [
   {
     weightClass: 'light',
     character: ['Koopa Troopa', 'Lakitu', 'Bowser Jr.'],
+    firstCharacter: 'Koopa Troopa',
     speedNormal: 2.75,
     speedAntigravity: 2.5,
     speedWater: 3,
@@ -78,6 +82,7 @@ export const characterData = [
   {
     weightClass: 'light',
     character: ['Toadette', 'Wendy', 'Isabelle'],
+    firstCharacter: 'Toadette',
     speedNormal: 2.75,
     speedAntigravity: 2.5,
     speedWater: 3,
@@ -94,6 +99,7 @@ export const characterData = [
   {
     weightClass: 'light',
     character: ['Toad', 'Shy Guy', 'Larry'],
+    firstCharacter: 'Toad',
     speedNormal: 3,
     speedAntigravity: 2.75,
     speedWater: 3.25,
@@ -110,6 +116,7 @@ export const characterData = [
   {
     weightClass: 'medium',
     character: ['Cat Peach', 'Inkling Girl', 'Female Villager'],
+    firstCharacter: 'Cat Peach',
     speedNormal: 3.25,
     speedAntigravity: 3,
     speedWater: 3.5,
@@ -126,6 +133,7 @@ export const characterData = [
   {
     weightClass: 'medium',
     character: ['Peach', 'Daisy', 'Yoshi'],
+    firstCharacter: 'Peach',
     speedNormal: 3.5,
     speedAntigravity: 3.25,
     speedWater: 3.75,
@@ -142,6 +150,7 @@ export const characterData = [
   {
     weightClass: 'medium',
     character: ['Tanooki Mario', 'Inkling Boy', 'Male Villager'],
+    firstCharacter: 'Tanooki Mario',
     speedNormal: 3.5,
     speedAntigravity: 3.25,
     speedWater: 3.75,
@@ -158,6 +167,7 @@ export const characterData = [
   {
     weightClass: 'medium',
     character: ['Luigi', 'Iggy'],
+    firstCharacter: 'Luigi',
     speedNormal: 3.75,
     speedAntigravity: 3.5,
     speedWater: 4,
@@ -174,6 +184,7 @@ export const characterData = [
   {
     weightClass: 'medium',
     character: ['Mario', 'Ludwig', 'Medium Mii'],
+    firstCharacter: 'Mario',
     speedNormal: 3.75,
     speedAntigravity: 3.5,
     speedWater: 4,
@@ -190,6 +201,7 @@ export const characterData = [
   {
     weightClass: 'heavy',
     character: ['Rosalina', 'King Boo', 'Link'],
+    firstCharacter: 'Rosalina',
     speedNormal: 4,
     speedAntigravity: 3.75,
     speedWater: 4.25,
@@ -206,6 +218,7 @@ export const characterData = [
   {
     weightClass: 'heavy',
     character: ['Metal Mario', 'Gold Mario', 'Pink Gold Peach'],
+    firstCharacter: 'Metal Mario',
     speedNormal: 4.25,
     speedAntigravity: 4,
     speedWater: 4.5,
@@ -222,6 +235,7 @@ export const characterData = [
   {
     weightClass: 'heavy',
     character: ['Waluigi', 'Donkey Kong', 'Roy'],
+    firstCharacter: 'Waluigi',
     speedNormal: 4.5,
     speedAntigravity: 4.25,
     speedWater: 4.75,
@@ -238,6 +252,7 @@ export const characterData = [
   {
     weightClass: 'heavy',
     character: ['Wario', 'Dry Bowser'],
+    firstCharacter: 'Wario',
     speedNormal: 4.75,
     speedAntigravity: 4.5,
     speedWater: 5,
@@ -254,6 +269,7 @@ export const characterData = [
   {
     weightClass: 'heavy',
     character: ['Bowser', 'Morton', 'Heavy Mii'],
+    firstCharacter: 'Bowser',
     speedNormal: 4.75,
     speedAntigravity: 4.5,
     speedWater: 5,

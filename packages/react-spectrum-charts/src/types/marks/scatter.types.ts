@@ -15,9 +15,14 @@ import { ScatterOptions } from '@spectrum-charts/vega-spec-builder';
 
 import { ChartPopoverElement, ChartTooltipElement } from '../dialogs';
 import { Children } from '../util.types';
-import { ScatterPathElement, TrendlineElement } from './supplemental';
+import { ScatterAnnotationElement, ScatterPathElement, TrendlineElement } from './supplemental';
 
-type ScatterChildElement = ChartPopoverElement | ChartTooltipElement | ScatterPathElement | TrendlineElement;
+type ScatterChildElement =
+  | ChartPopoverElement
+  | ChartTooltipElement
+  | ScatterAnnotationElement
+  | ScatterPathElement
+  | TrendlineElement;
 
 export interface ScatterProps
   extends Omit<ScatterOptions, 'chartPopovers' | 'chartTooltips' | 'markType' | 'scatterPaths' | 'trendlines'> {

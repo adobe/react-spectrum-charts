@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 Adobe. All rights reserved.
+ * Copyright 2025 Adobe. All rights reserved.
  * This file is licensed to you under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License. You may obtain a copy
  * of the License at http://www.apache.org/licenses/LICENSE-2.0
@@ -9,23 +9,4 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
-export * from './Annotation';
-export * from './Area';
-export * from './Axis';
-export * from './AxisAnnotation';
-export * from './AxisThumbnail';
-export * from './Bar';
-export * from './ChartPopover';
-export * from './ChartTooltip';
-export * from './EmptyState';
-export * from './Legend';
-export * from './Line';
-export * from './ScatterPath';
-export * from './MetricRange';
-export * from './ReferenceLine';
-export * from './Scatter';
 export * from './ScatterAnnotation';
-export * from './Title';
-export * from './Trendline';
-export * from './TrendlineAnnotation';
