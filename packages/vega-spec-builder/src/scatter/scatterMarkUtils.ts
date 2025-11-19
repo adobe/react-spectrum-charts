@@ -31,6 +31,7 @@ import {
 import { getScatterPathMarks } from '../scatterPath/scatterPathUtils';
 import { getTrendlineMarks } from '../trendline';
 import { ScatterSpecOptions, SymbolSizeFacet } from '../types';
+import { getScatterAnnotationMarks } from './scatterAnnotation';
 
 export const addScatterMarks = produce<Mark[], [ScatterSpecOptions]>((marks, options) => {
   const { name } = options;
@@ -38,7 +39,12 @@ export const addScatterMarks = produce<Mark[], [ScatterSpecOptions]>((marks, opt
   const scatterGroup: GroupMark = {
     name: `${name}_group`,
     type: 'group',
-    marks: [getScatterMark(options), ...getScatterHoverMarks(options), ...getScatterSelectMarks(options)],
+    marks: [
+      getScatterMark(options),
+      ...getScatterAnnotationMarks(options),
+      ...getScatterHoverMarks(options),
+      ...getScatterSelectMarks(options),
+    ],
   };
 
   marks.push(...getScatterPathMarks(options), scatterGroup, ...getTrendlineMarks(options));

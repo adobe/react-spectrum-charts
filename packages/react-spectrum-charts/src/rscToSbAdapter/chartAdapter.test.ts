@@ -330,6 +330,7 @@ describe('rscPropsToSpecBuilderOptions()', () => {
             markType: 'scatter',
             metric: 'countAvg',
             opacity: 'period',
+            scatterAnnotations: [],
             scatterPaths: [{ groupBy: ['event', 'segment'], opacity: 0.2, pathWidth: 'pathWidth' }],
             trendlines: [
               {

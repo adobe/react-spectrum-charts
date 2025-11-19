@@ -15,12 +15,13 @@ import { ScatterProps } from '../types';
 import { childrenToOptions } from './childrenAdapter';
 
 export const getScatterOptions = ({ children, ...scatterProps }: ScatterProps): ScatterOptions => {
-  const { chartPopovers, chartTooltips, scatterPaths, trendlines } = childrenToOptions(children);
+  const { chartPopovers, chartTooltips, scatterAnnotations, scatterPaths, trendlines } = childrenToOptions(children);
   return {
     ...scatterProps,
     chartPopovers,
     chartTooltips,
     markType: 'scatter',
+    scatterAnnotations,
     scatterPaths,
     trendlines,
   };

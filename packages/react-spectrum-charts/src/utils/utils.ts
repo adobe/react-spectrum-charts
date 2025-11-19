@@ -32,6 +32,7 @@ import {
   MetricRange,
   ReferenceLine,
   Scatter,
+  ScatterAnnotation,
   ScatterPath,
   Title,
   Trendline,
@@ -59,6 +60,7 @@ import {
   LegendElement,
   LineElement,
   MetricRangeElement,
+  ScatterAnnotationElement,
   ScatterElement,
   ScatterPathElement,
   SegmentLabelElement,
@@ -71,6 +73,7 @@ type MarkChildElement =
   | BarAnnotationElement
   | ChartTooltipElement
   | ChartPopoverElement
+  | ScatterAnnotationElement
   | ScatterPathElement
   | MetricRangeElement
   | DonutSummaryElement
@@ -144,6 +147,7 @@ export const sanitizeChildren = (children: unknown): (ChartChildElement | MarkCh
     MetricRange.displayName,
     ReferenceLine.displayName,
     Scatter.displayName,
+    ScatterAnnotation.displayName,
     ScatterPath.displayName,
     SegmentLabel.displayName,
     Title.displayName,
@@ -195,6 +199,7 @@ export const sanitizeMarkChildren = (children: unknown): MarkChildElement[] => {
     Annotation.displayName,
     ChartTooltip.displayName,
     ChartPopover.displayName,
+    ScatterAnnotation.displayName,
     ScatterPath.displayName,
     MetricRange.displayName,
     DonutSummary.displayName,

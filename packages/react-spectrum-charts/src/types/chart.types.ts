@@ -38,6 +38,7 @@ import {
   DonutSummaryElement,
   LineElement,
   MetricRangeElement,
+  ScatterAnnotationElement,
   ScatterElement,
   ScatterPathElement,
   SegmentLabelElement,
@@ -65,6 +66,7 @@ export type MarkChildElement =
   | ChartTooltipElement
   | DonutSummaryElement
   | MetricRangeElement
+  | ScatterAnnotationElement
   | ScatterPathElement
   | SegmentLabelElement
   | TrendlineElement;

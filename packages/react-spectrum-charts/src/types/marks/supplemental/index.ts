@@ -13,6 +13,7 @@
 export * from './barAnnotation.types';
 export * from './dountSummary.types';
 export * from './metricRange.types';
+export * from './scatterAnnotation.types';
 export * from './scatterPath.types';
 export * from './segmentLabel.types';
 export * from './trendline.types';

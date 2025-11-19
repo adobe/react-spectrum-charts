@@ -64,7 +64,7 @@ export default {
 
 type MarioDataKey = keyof (typeof characterData)[0];
 
-const marioKeyTitle: Record<Exclude<MarioDataKey, 'character'>, string> = {
+const marioKeyTitle: Record<Exclude<MarioDataKey, 'character' | 'firstCharacter'>, string> = {
   weightClass: 'Weight class',
   speedNormal: 'Speed (normal)',
   speedAntigravity: 'Speed (antigravity)',
