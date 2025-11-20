@@ -118,26 +118,26 @@ describe('Small radius', () => {
   });
 });
 
-describe('S2 styling', () => {
-  test('summary value should have font-weight 800 when S2 is true', async () => {
+describe('s2 styling', () => {
+  test('summary value should have font-weight 800 when s2 is true', async () => {
     render(<Spectrum2 {...Spectrum2.args} />);
     const metricValue = await screen.findByText('40K');
     expect(metricValue).toHaveAttribute('font-weight', '800');
   });
 
-  test('summary label should have font-weight 700 when S2 is true', async () => {
+  test('summary label should have font-weight 700 when s2 is true', async () => {
     render(<Spectrum2 {...Spectrum2.args} />);
     const metricLabel = await screen.findByText('Visitors');
     expect(metricLabel).toHaveAttribute('font-weight', '700');
   });
 
-  test('summary value should not have font-weight when S2 is false', async () => {
+  test('summary value should not have font-weight when s2 is false', async () => {
     render(<Basic {...Basic.args} />);
     const metricValue = await screen.findByText('40K');
     expect(metricValue).not.toHaveAttribute('font-weight');
   });
 
-  test('summary label should not have font-weight when S2 is false', async () => {
+  test('summary label should not have font-weight when s2 is false', async () => {
     render(<Basic {...Basic.args} />);
     const metricLabel = await screen.findByText('Visitors');
     expect(metricLabel).not.toHaveAttribute('font-weight');

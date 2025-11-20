@@ -153,21 +153,21 @@ describe('getSummaryValueLimit()', () => {
   });
 });
 
-describe('S2 styles', () => {
+describe('s2 styles', () => {
   describe('getSummaryValueEncode()', () => {
-    test('should add fontWeight 800 when S2 is true', () => {
+    test('should add fontWeight 800 when s2 is true', () => {
       const encode = getSummaryValueEncode({
         ...defaultDonutSummaryOptions,
-        donutOptions: { ...defaultDonutOptions, S2: true },
+        donutOptions: { ...defaultDonutOptions, s2: true },
       });
 
       expect(encode.update?.fontWeight).toEqual({ value: 800 });
     });
 
-    test('should not add fontWeight when S2 is false', () => {
+    test('should not add fontWeight when s2 is false', () => {
       const encode = getSummaryValueEncode({
         ...defaultDonutSummaryOptions,
-        donutOptions: { ...defaultDonutOptions, S2: false },
+        donutOptions: { ...defaultDonutOptions, s2: false },
       });
 
       expect(encode.update?.fontWeight).toBeUndefined();
@@ -175,20 +175,20 @@ describe('S2 styles', () => {
   });
 
   describe('getSummaryLabelEncode()', () => {
-    test('should add fontWeight 700 when S2 is true', () => {
+    test('should add fontWeight 700 when s2 is true', () => {
       const encode = getSummaryLabelEncode({
         ...defaultDonutSummaryOptions,
-        donutOptions: { ...defaultDonutOptions, S2: true },
+        donutOptions: { ...defaultDonutOptions, s2: true },
         label: 'Visitors',
       });
 
       expect(encode.update?.fontWeight).toEqual({ value: 700 });
     });
 
-    test('should not add fontWeight when S2 is false', () => {
+    test('should not add fontWeight when s2 is false', () => {
       const encode = getSummaryLabelEncode({
         ...defaultDonutSummaryOptions,
-        donutOptions: { ...defaultDonutOptions, S2: false },
+        donutOptions: { ...defaultDonutOptions, s2: false },
         label: 'Visitors',
       });
 

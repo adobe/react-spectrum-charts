@@ -69,7 +69,7 @@ const defaultSpecOptions: ChartSpecOptions = {
   lineWidths: [1],
   marks: [],
   opacities: undefined,
-  S2: false,
+  s2: false,
   symbolShapes: ['rounded-square'],
   symbolSizes: ['XS', 'XL'],
   title: '',

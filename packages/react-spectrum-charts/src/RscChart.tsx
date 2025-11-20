@@ -53,7 +53,7 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>((props, forwarded
     opacities,
     padding,
     renderer,
-    S2,
+    s2,
     symbolShapes = DEFAULT_SYMBOL_SHAPES,
     symbolSizes = DEFAULT_SYMBOL_SIZES as [SymbolSize, SymbolSize],
     title,
@@ -84,7 +84,7 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>((props, forwarded
     lineWidths,
     opacities,
     colorScheme,
-    S2,
+    s2,
     title,
     UNSAFE_vegaSpec,
   });

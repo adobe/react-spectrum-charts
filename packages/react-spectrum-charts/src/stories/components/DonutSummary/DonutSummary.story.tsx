@@ -91,9 +91,9 @@ Responsive.args = {
 
 const S2Story: StoryFn<DonutSummaryProps & { width?: number; height?: number }> = (args): ReactElement => {
   const { width, height, ...donutSummaryProps } = args;
-  const chartProps = useChartProps({ ...defaultChartProps, width: width ?? 350, height: height ?? 350, S2: true });
+  const chartProps = useChartProps({ ...defaultChartProps, width: width ?? 350, height: height ?? 350, s2: true });
   return (
-    <Chart {...chartProps} debug>
+    <Chart {...chartProps}>
       <Donut metric="count" color="browser">
         <DonutSummary {...donutSummaryProps} />
       </Donut>

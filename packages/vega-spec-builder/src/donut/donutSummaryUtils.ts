@@ -224,7 +224,7 @@ export const getSummaryValueEncode = (
         { test: `${DONUT_RADIUS} * ${donutOptions.holeRatio} < ${DONUT_SUMMARY_MIN_RADIUS}`, value: 0 },
         { signal: `${donutOptions.name}_summaryFontSize` },
       ],
-      ...(donutOptions.S2 && { fontWeight: { value: 800 } }),
+      ...(donutOptions.s2 && { fontWeight: { value: 800 } }),
       align: { value: 'center' },
       baseline: getSummaryValueBaseline(label),
       limit: getSummaryValueLimit(options),
@@ -298,7 +298,7 @@ export const getSummaryLabelEncode = ({
         { test: `${DONUT_RADIUS} * ${donutOptions.holeRatio} < ${DONUT_SUMMARY_MIN_RADIUS}`, value: 0 },
         { signal: `ceil(${donutOptions.name}_summaryFontSize * 0.5)` },
       ],
-      ...(donutOptions.S2 && { fontWeight: { value: 700 } }),
+      ...(donutOptions.s2 && { fontWeight: { value: 700 } }),
       align: { value: 'center' },
       baseline: { value: 'top' },
       limit: {
