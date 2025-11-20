@@ -97,6 +97,7 @@ export function buildSpec({
   lineWidths = ['M'],
   marks = [],
   opacities,
+  S2 = false,
   symbolShapes = ['rounded-square'],
   symbolSizes = ['XS', 'XL'],
   title,
@@ -120,6 +121,7 @@ export function buildSpec({
     lineWidths,
     marks,
     opacities,
+    S2,
     symbolShapes,
     symbolSizes,
     title,
@@ -131,7 +133,7 @@ export function buildSpec({
 
   let { areaCount, barCount, bulletCount, comboCount, donutCount, lineCount, scatterCount, vennCount } =
     initializeComponentCounts();
-  const specOptions = { colorScheme, idKey, highlightedItem };
+  const specOptions = { colorScheme, idKey, highlightedItem, S2 };
   spec = [...marks].reduce((acc: ScSpec, mark) => {
     switch (mark.markType) {
       case 'area':
