@@ -16,7 +16,9 @@ import {
   getDonutSummaryGroupMark,
   getDonutSummaryScales,
   getDonutSummarySignals,
+  getSummaryLabelEncode,
   getSummaryValueBaseline,
+  getSummaryValueEncode,
   getSummaryValueLimit,
   getSummaryValueText,
 } from './donutSummaryUtils';
@@ -147,6 +149,50 @@ describe('getSummaryValueLimit()', () => {
   test('should use 1/2 font size in signal if label is falsey', () => {
     expect(getSummaryValueLimit({ ...defaultDonutSummaryOptions, label: '' })).toEqual({
       signal: '2 * sqrt(pow((min(width, height) / 2 - 2) * 0.85, 2) - pow(testName_summaryFontSize * 0.5, 2))',
+    });
+  });
+});
+
+describe('S2 styles', () => {
+  describe('getSummaryValueEncode()', () => {
+    test('should add fontWeight 800 when S2 is true', () => {
+      const encode = getSummaryValueEncode({
+        ...defaultDonutSummaryOptions,
+        donutOptions: { ...defaultDonutOptions, S2: true },
+      });
+
+      expect(encode.update?.fontWeight).toEqual({ value: 800 });
+    });
+
+    test('should not add fontWeight when S2 is false', () => {
+      const encode = getSummaryValueEncode({
+        ...defaultDonutSummaryOptions,
+        donutOptions: { ...defaultDonutOptions, S2: false },
+      });
+
+      expect(encode.update?.fontWeight).toBeUndefined();
+    });
+  });
+
+  describe('getSummaryLabelEncode()', () => {
+    test('should add fontWeight 700 when S2 is true', () => {
+      const encode = getSummaryLabelEncode({
+        ...defaultDonutSummaryOptions,
+        donutOptions: { ...defaultDonutOptions, S2: true },
+        label: 'Visitors',
+      });
+
+      expect(encode.update?.fontWeight).toEqual({ value: 700 });
+    });
+
+    test('should not add fontWeight when S2 is false', () => {
+      const encode = getSummaryLabelEncode({
+        ...defaultDonutSummaryOptions,
+        donutOptions: { ...defaultDonutOptions, S2: false },
+        label: 'Visitors',
+      });
+
+      expect(encode.update?.fontWeight).toBeUndefined();
     });
   });
 });

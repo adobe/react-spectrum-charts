@@ -58,4 +58,5 @@ export interface DonutSpecOptions extends PartiallyRequired<DonutOptions, DonutO
   idKey: string;
   index: number;
   markType: 'donut';
+  S2: boolean;
 }
