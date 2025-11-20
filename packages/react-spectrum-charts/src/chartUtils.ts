@@ -75,14 +75,14 @@ const baseDefaults: Required<Pick<ChartProps, ChartPropsWithDefaults>> = {
 
 type S2PropDefaults = 'colors';
 
-const s2ColorOverride: Required<Pick<ChartProps, S2PropDefaults>> = {
+const s2DefaultProps: Required<Pick<ChartProps, S2PropDefaults>> = {
   colors: 's2Categorical20',
 };
 
 export const applyChartPropsDefaults = (props: ChartProps): PartiallyRequired<ChartProps, ChartPropsWithDefaults> => {
   return {
     ...baseDefaults,
-    ...(props.s2 ? s2ColorOverride : {}),
+    ...(props.s2 ? s2DefaultProps : {}),
     ...props,
   };
 };
