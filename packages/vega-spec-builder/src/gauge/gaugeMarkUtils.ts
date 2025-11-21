@@ -145,6 +145,7 @@ export function getTargetLine(name: string): Mark {
       strokeCap: { value: "round" }
     },
     update: {
+      stroke: { signal: "fillerColorToCurrVal" },
       x:  { signal: "targetLineX" },
       y:  { signal: "targetLineY" },
       x2: { signal: "targetLineX2" },
