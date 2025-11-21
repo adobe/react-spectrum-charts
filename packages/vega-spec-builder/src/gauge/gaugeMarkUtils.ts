@@ -47,8 +47,8 @@ export const addGaugeMarks = produce<Mark[], [GaugeSpecOptions]>((marks, opt) =>
 
 export function getBackgroundArc(name: string, fill: string, stroke: string): Mark {
   return {
-    name: `${name}BackgroundArcRounded`,
-    description: 'Background Arc (Round Edge)',
+    name: `${name}BackgroundArc`,
+    description: 'Background Arc',
     type: 'arc',
     encode: {
       enter: {
