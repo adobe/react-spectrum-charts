@@ -53,6 +53,7 @@ export const addGauge = produce<
       maxArcValue: 100,
       minArcValue: 0,
       metric: 'currentAmount',
+      target: 'target',
       name: toCamelCase(name ?? `gauge${index}`),
       needle: false,
       targetLine: false,
@@ -68,28 +69,30 @@ export const addGauge = produce<
 );
 
 export const addSignals = produce<Signal[], [GaugeSpecOptions]>((signals, options) => {
-  signals.push({ name: 'arcMaxVal', value: options.maxArcValue }); 
-  signals.push({ name: 'arcMinVal', value: options.minArcValue });
-  signals.push({ name: 'backgroundfillColor', value: `${options.backgroundFill}`});
+  signals.push({ name: 'arcMaxVal', value: options.maxArcValue }) 
+  signals.push({ name: 'arcMinVal', value: options.minArcValue })
+  signals.push({ name: 'backgroundfillColor', value: `${options.backgroundFill}`})
   signals.push({ name: 'centerX', update: "width/2"})
   signals.push({ name: 'centerY', update: "height/2 + outerRadius/2"})
   signals.push({ name: 'clampedVal', update: "min(max(arcMinVal, currVal), arcMaxVal)"})
-  signals.push({ name: 'currVal', update: `data('table')[0].${options.metric}` });
-  signals.push({ name: 'endAngle', update: "PI * 2 / 3" }); // 120 degrees 
+  signals.push({ name: 'currVal', update: `data('table')[0].${options.metric}` })
+  signals.push({ name: 'endAngle', update: "PI * 2 / 3" });
   signals.push({ name: 'fillerColorToCurrVal', value: `${options.color}`})
   signals.push({ name: 'innerRadius', update: "outerRadius - (radiusRef * 0.25)"})
-  signals.push({ name: 'needleAngle', update: "needleAngleOriginal - PI/2"})
-  signals.push({ name: 'needleAngleOriginal', update: "scale('angleScale', clampedVal)"})
+  signals.push({ name: 'needleAngleTarget', update: "needleAngleTargetVal - PI/2"})
+  signals.push({ name: 'needleAngleDeg', update: "needleAngleClampedVal * 180 / PI"})
+  signals.push({ name: 'needleAngleClampedVal', update: "scale('angleScale', clampedVal)"})
+  signals.push({ name: 'needleAngleTargetVal', update: "scale('angleScale', target)"})
   signals.push({ name: 'needleLength', update: "30"})
-  signals.push({ name: 'needleTipX', update: "centerX + ( innerRadius - 5) * cos(needleAngle)"})
-  signals.push({ name: 'needleTipY', update: "centerY + ( innerRadius - 5) * sin(needleAngle)"})
-  signals.push({ name: 'needleTipX2', update: "centerX + ( outerRadius + 5) * cos(needleAngle)"})
-  signals.push({ name: 'needleTipY2', update: "centerY + ( outerRadius + 5) * sin(needleAngle)"})
+  signals.push({ name: 'target', value: `data('table')[0].${options.target}`})
+  signals.push({ name: 'targetLineX', update: "centerX + ( innerRadius - 5) * cos(needleAngleTarget)"})
+  signals.push({ name: 'targetLineY', update: "centerY + ( innerRadius - 5) * sin(needleAngleTarget)"})
+  signals.push({ name: 'targetLineX2', update: "centerX + ( outerRadius + 5) * cos(needleAngleTarget)"})
+  signals.push({ name: 'targetLineY2', update: "centerY + ( outerRadius + 5) * sin(needleAngleTarget)"})
   signals.push({ name: 'outerRadius', update: "radiusRef * 0.95"})
   signals.push({ name: 'radiusRef', update: "min(width/2, height/2)"})
-  signals.push({ name: 'startAngle', update: "-PI * 2 / 3" }); // -120 degrees
+  signals.push({ name: 'startAngle', update: "-PI * 2 / 3" })
   signals.push({ name: 'theta', update: "scale('angleScale', clampedVal)"})
-  signals.push({ name: 'needleAngleDeg', update: "needleAngleOriginal * 180 / PI"})
 });
 
 export const addScales = produce<Scale[], [GaugeSpecOptions]>((scales, options) => {

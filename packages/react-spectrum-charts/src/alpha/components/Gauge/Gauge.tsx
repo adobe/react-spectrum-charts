@@ -17,7 +17,7 @@ import {
   DEFAULT_MAX_ARC_VALUE,
   DEFAULT_MIN_ARC_VALUE,
   DEFAULT_NEEDLE,
-  DEFAULT_TARGET_LINE
+  DEFAULT_TARGET_LINE,
 } from '@spectrum-charts/constants';
 
 import { GaugeProps } from '../../../types';
@@ -25,11 +25,12 @@ import { GaugeProps } from '../../../types';
 // I assume this houses all the props for all variations of a Gauge chart?
 const Gauge: FC<GaugeProps> = ({
   name = 'gauge0',
-  metric = 'currentAmount', // CurrVal
-  minArcValue = DEFAULT_MIN_ARC_VALUE, // Min Arc Value
-  maxArcValue = DEFAULT_MAX_ARC_VALUE, // Max Arc Value
+  metric = 'currentAmount', 
+  minArcValue = DEFAULT_MIN_ARC_VALUE,
+  maxArcValue = DEFAULT_MAX_ARC_VALUE,
   needle = DEFAULT_NEEDLE,
-  targetLine = DEFAULT_TARGET_LINE
+  targetLine = DEFAULT_TARGET_LINE,
+  target = 'target',
 }) => {
   return null;
 };

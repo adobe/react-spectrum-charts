@@ -106,7 +106,7 @@ export function getNeedle(name: string): Mark {
       fill: { signal: "fillerColorToCurrVal" },
       stroke: { signal: "fillerColorToCurrVal" },
     }
-  }
+    }
   };
 }
 
@@ -125,7 +125,6 @@ export function getNeedleHole(name: string, backgroundColor): Mark {
         value:
             "circle"  
         },
-      angle: { signal: "needleAngleDeg" },
       size: {value: 750},
       fill: { signal: backgroundColor },
       stroke: { signal: backgroundColor },
@@ -146,10 +145,10 @@ export function getTargetLine(name: string): Mark {
       strokeCap: { value: "round" }
     },
     update: {
-      x:  { signal: "needleTipX" },
-      y:  { signal: "needleTipY" },
-      x2: { signal: "needleTipX2" },
-      y2: { signal: "needleTipY2" }
+      x:  { signal: "targetLineX" },
+      y:  { signal: "targetLineY" },
+      x2: { signal: "targetLineX2" },
+      y2: { signal: "targetLineY2" }
     }
   }
   }
