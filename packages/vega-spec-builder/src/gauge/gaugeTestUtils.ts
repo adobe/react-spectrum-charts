@@ -25,5 +25,8 @@ export const defaultGaugeOptions: GaugeSpecOptions = {
   maxArcValue: 100,
   backgroundFill: spectrumColors[DEFAULT_COLOR_SCHEME]['gray-200'],
   backgroundStroke: spectrumColors[DEFAULT_COLOR_SCHEME]['gray-300'],
-  fillerColorSignal: 'light'
+  fillerColorSignal: 'light',
+  needle: false,
+  target: 'target',
+  targetLine: false
 };

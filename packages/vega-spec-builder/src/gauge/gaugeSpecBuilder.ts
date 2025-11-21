@@ -89,6 +89,7 @@ export const addSignals = produce<Signal[], [GaugeSpecOptions]>((signals, option
   signals.push({ name: 'startAngle', update: "-PI * 2 / 3" })
   signals.push({ name: 'theta', update: "scale('angleScale', clampedVal)"})
   signals.push({ name: 'target', update: `data('table')[0].${options.target}`})
+  signals.push({ name: 'targetLineStroke', value: getColorValue('gray-900', options.colorScheme)})
   signals.push({ name: 'targetLineX', update: "centerX + ( innerRadius - 5) * cos(needleAngleTarget)"})
   signals.push({ name: 'targetLineY', update: "centerY + ( innerRadius - 5) * sin(needleAngleTarget)"})
   signals.push({ name: 'targetLineX2', update: "centerX + ( outerRadius + 5) * cos(needleAngleTarget)"})
