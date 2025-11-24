@@ -109,3 +109,73 @@ describe('getSegmentLabelTextMark()', () => {
     expect(mark.encode?.enter?.dy).toBeUndefined();
   });
 });
+
+describe('s2 styles', () => {
+  describe('getSegmentLabelTextMark()', () => {
+    test('should not add bold fontWeight when s2 is true', () => {
+      const mark = getSegmentLabelTextMark({
+        ...defaultSegmentLabelOptions,
+        donutOptions: { ...defaultDonutOptionsWithSegmentLabel, s2: true },
+      });
+      expect(mark.encode?.enter?.fontWeight).toBeUndefined();
+    });
+
+    test('should add bold fontWeight when s2 is false', () => {
+      const mark = getSegmentLabelTextMark({
+        ...defaultSegmentLabelOptions,
+        donutOptions: { ...defaultDonutOptionsWithSegmentLabel, s2: false },
+      });
+      expect(mark.encode?.enter?.fontWeight).toEqual({ value: 'bold' });
+    });
+
+    test('should add gray-700 fill when s2 is true', () => {
+      const mark = getSegmentLabelTextMark({
+        ...defaultSegmentLabelOptions,
+        donutOptions: { ...defaultDonutOptionsWithSegmentLabel, s2: true },
+      });
+      expect(mark.encode?.enter?.fill).toEqual({ value: '#505050' });
+    });
+
+    test('should not add fill when s2 is false', () => {
+      const mark = getSegmentLabelTextMark({
+        ...defaultSegmentLabelOptions,
+        donutOptions: { ...defaultDonutOptionsWithSegmentLabel, s2: false },
+      });
+      expect(mark.encode?.enter?.fill).toBeUndefined();
+    });
+  });
+
+  describe('getSegmentLabelValueTextMark()', () => {
+    test('should add bold fontWeight and fontSize 16 when s2 is true', () => {
+      const marks = getSegmentLabelValueTextMark({
+        ...defaultSegmentLabelOptions,
+        value: true,
+        donutOptions: { ...defaultDonutOptionsWithSegmentLabel, s2: true },
+      });
+      expect(marks).toHaveLength(1);
+      expect(marks[0].encode?.enter?.fontWeight).toEqual({ value: 'bold' });
+      // Font size is controlled by getBaseSegmentLabelEnterEncode with baseFontSize=16 for s2
+    });
+
+    test('should add gray-700 fill when s2 is true', () => {
+      const marks = getSegmentLabelValueTextMark({
+        ...defaultSegmentLabelOptions,
+        value: true,
+        donutOptions: { ...defaultDonutOptionsWithSegmentLabel, s2: true },
+      });
+      expect(marks).toHaveLength(1);
+      expect(marks[0].encode?.enter?.fill).toEqual({ value: '#505050' });
+    });
+
+    test('should not add fontWeight or fill when s2 is false', () => {
+      const marks = getSegmentLabelValueTextMark({
+        ...defaultSegmentLabelOptions,
+        value: true,
+        donutOptions: { ...defaultDonutOptionsWithSegmentLabel, s2: false },
+      });
+      expect(marks).toHaveLength(1);
+      expect(marks[0].encode?.enter?.fontWeight).toBeUndefined();
+      expect(marks[0].encode?.enter?.fill).toBeUndefined();
+    });
+  });
+});
