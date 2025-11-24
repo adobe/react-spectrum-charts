@@ -23,6 +23,7 @@ export const addGaugeMarks = produce<Mark[], [GaugeSpecOptions]>((marks, opt) =>
     name,
     colorScheme = DEFAULT_COLOR_SCHEME,
     needle,
+    showLabel,
     targetLine
   } = opt;
   const backgroundFill = spectrumColors[colorScheme]['gray-200'];
@@ -36,9 +37,27 @@ export const addGaugeMarks = produce<Mark[], [GaugeSpecOptions]>((marks, opt) =>
   marks.push(getFillerArc(name, fillerColorSignal));
 
   // Needle to clampedValue
-  if (needle) {
+  if (needle && showLabel) {
       marks.push(getNeedle(name));
       marks.push(getNeedleHole(name, BACKGROUND_COLOR));
+      const yOffset = 120;
+      const fontSize = 28;
+      marks.push(getLabel(name, fontSize, yOffset));
+
+      const labelYOffset = 80;
+      const labelFontSize = 36;
+      marks.push(getValueLabel(name, labelFontSize, labelYOffset));
+  } else if (needle){
+      marks.push(getNeedle(name));
+      marks.push(getNeedleHole(name, BACKGROUND_COLOR));
+  } else if (showLabel){
+      const yOffset = 40;
+      const fontSize = 32;
+      marks.push(getLabel(name, fontSize, yOffset));
+
+      const labelYOffset = 0;
+      const labelFontSize = 48;
+      marks.push(getValueLabel(name, labelFontSize, labelYOffset));
   }
   if (targetLine){
     marks.push(getTargetLine(name));
@@ -148,6 +167,50 @@ export function getTargetLine(name: string): Mark {
         y:  { signal: "targetLineY" },
         x2: { signal: "targetLineX2" },
         y2: { signal: "targetLineY2" }
+      }
+    }
+  }
+};
+
+export function getLabel(name: string, fontSize, yOffset): Mark {
+  const targetColor = getColorValue('gray-600', defaultGaugeOptions.colorScheme);
+  return {
+    name: `${name}graphLabelText`,
+    description: `graph label`,
+    type: `text`,
+    encode: {
+      enter: {
+        align: { value: "center" },
+        baseline: { value: "middle" },
+        fontSize: { value: fontSize },
+        fill: { value: targetColor }
+      },
+      update: {
+        x: { signal: "centerX" },   
+        y: { signal: `centerY + ${yOffset}` },   
+        text: { signal: "graphLabel" } 
+      }
+    }
+  }
+};
+
+export function getValueLabel(name: string, fontSize, yOffset): Mark {
+  const targetColor = getColorValue('gray-900', defaultGaugeOptions.colorScheme);
+  return {
+    name: `${name}graphLabelCurrentValueText`,
+    description: `graph current value label`,
+    type: `text`,
+    encode: {
+      enter: {
+        align: { value: "center" },
+        baseline: { value: "middle" },
+        fontSize: { value: fontSize },
+        fill: { value: targetColor }
+      },
+      update: {
+        x: { signal: "centerX" },   
+        y: { signal: `centerY + ${yOffset}` },   
+        text: { signal: "currVal" } 
       }
     }
   }

@@ -48,6 +48,8 @@ export const addGauge = produce<
       backgroundStroke: spectrumColors[colorScheme]['gray-300'],
       color: getColorValue(color, colorScheme),
       fillerColorSignal: 'fillerColorToCurrVal',
+      graphLabel: 'graphLabel',
+      showLabel: false,
       colorScheme: colorScheme,
       index,
       maxArcValue: 100,
@@ -78,6 +80,7 @@ export const addSignals = produce<Signal[], [GaugeSpecOptions]>((signals, option
   signals.push({ name: 'currVal', update: `data('table')[0].${options.metric}` })
   signals.push({ name: 'endAngle', update: "PI * 2 / 3" })
   signals.push({ name: 'fillerColorToCurrVal', value: `${options.color}`})
+  signals.push({ name: 'graphLabel', update: `data('table')[0].${options.graphLabel}` })
   signals.push({ name: 'innerRadius', update: "outerRadius - (radiusRef * 0.25)"})
   signals.push({ name: 'needleAngleTarget', update: "needleAngleTargetVal - PI/2"})
   signals.push({ name: 'needleAngleDeg', update: "needleAngleClampedVal * 180 / PI"})

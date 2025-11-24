@@ -19,6 +19,8 @@ export const defaultGaugeOptions: GaugeSpecOptions = {
   idKey: MARK_ID,
   index: 5,
   name: 'gaugeTestName',
+  graphLabel: 'graphLabel',
+  showLabel: false,
   metric: 'currentAmount',
   color: DEFAULT_COLOR_SCHEME,
   minArcValue: 0,
