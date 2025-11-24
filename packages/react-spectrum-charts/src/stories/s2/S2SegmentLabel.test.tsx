@@ -9,32 +9,31 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import React from 'react';
+import { render, screen } from '../../test-utils';
+import {
+  S2SegmentLabel,
+  S2SegmentLabelLabelKey,
+  S2SegmentLabelPercent,
+  S2SegmentLabelValue,
+  S2SegmentLabelValueFormat,
+} from './S2SegmentLabel.story';
 
-import { findChart, render, screen } from '../../../../test-utils';
-import '../../../../test-utils/__mocks__/matchMedia.mock.js';
-import { Basic, LabelKey, Percent, Value, ValueFormat } from './SegmentLabel.story';
-
-describe('Spectrum2 SegmentLabel', () => {
-  test('Basic renders properly with S2 styling', async () => {
-    render(<Basic {...Basic.args} />);
-    const chart = await findChart();
-    expect(chart).toBeInTheDocument();
+describe('s2 SegmentLabel styling', () => {
+  test('Basic renders properly with s2 styling', async () => {
+    render(<S2SegmentLabel {...S2SegmentLabel.args} />);
 
     const label = await screen.findByText('Chrome');
     expect(label).toBeInTheDocument();
-    // S2 should NOT have bold font-weight for segment labels
+    // s2 should NOT have bold font-weight for segment labels
     expect(label).not.toHaveAttribute('font-weight', 'bold');
-    // S2 should have fontSize 14 for segment labels
+    // s2 should have fontSize 14 for segment labels
     expect(label).toHaveAttribute('font-size', '14px');
     expect(await screen.findByText('Safari')).toBeInTheDocument();
     expect(await screen.findByText('Other')).toBeInTheDocument();
   });
 
-  test('LabelKey renders properly with S2 styling', async () => {
-    render(<LabelKey {...LabelKey.args} />);
-    const chart = await findChart();
-    expect(chart).toBeInTheDocument();
+  test('LabelKey renders properly with s2 styling', async () => {
+    render(<S2SegmentLabelLabelKey {...S2SegmentLabelLabelKey.args} />);
 
     const label = await screen.findByText('Chrome');
     expect(label).toBeInTheDocument();
@@ -42,10 +41,8 @@ describe('Spectrum2 SegmentLabel', () => {
     expect(label).toHaveAttribute('font-size', '14px');
   });
 
-  test('Percent renders properly with S2 styling', async () => {
-    render(<Percent {...Percent.args} />);
-    const chart = await findChart();
-    expect(chart).toBeInTheDocument();
+  test('Percent renders properly with s2 styling', async () => {
+    render(<S2SegmentLabelPercent {...S2SegmentLabelPercent.args} />);
 
     const label = await screen.findByText('Chrome');
     expect(label).toBeInTheDocument();
@@ -59,10 +56,8 @@ describe('Spectrum2 SegmentLabel', () => {
     expect(percentValue).toHaveAttribute('font-weight', 'bold');
   });
 
-  test('Value renders properly with S2 styling', async () => {
-    render(<Value {...Value.args} />);
-    const chart = await findChart();
-    expect(chart).toBeInTheDocument();
+  test('Value renders properly with s2 styling', async () => {
+    render(<S2SegmentLabelValue {...S2SegmentLabelValue.args} />);
 
     const label = await screen.findByText('Chrome');
     expect(label).toBeInTheDocument();
@@ -76,10 +71,8 @@ describe('Spectrum2 SegmentLabel', () => {
     expect(value).toHaveAttribute('font-weight', 'bold');
   });
 
-  test('Should format segment metric values with S2 styling', async () => {
-    render(<ValueFormat {...ValueFormat.args} />);
-    const chart = await findChart();
-    expect(chart).toBeInTheDocument();
+  test('Should format segment metric values with s2 styling', async () => {
+    render(<S2SegmentLabelValueFormat {...S2SegmentLabelValueFormat.args} />);
 
     const label = await screen.findByText('Chrome');
     expect(label).toBeInTheDocument();

@@ -89,8 +89,8 @@ export const getSegmentLabelTextMark = ({
       enter: {
         ...getBaseSegmentLabelEnterEncode(name),
         text: { field: labelKey ?? color },
-        ...(!donutOptions.S2 && { fontWeight: { value: 'bold' } }),
-        ...(donutOptions.S2 && {
+        ...(!donutOptions.s2 && { fontWeight: { value: 'bold' } }),
+        ...(donutOptions.s2 && {
           fill: { value: getS2ColorValue('gray-700', donutOptions.colorScheme) },
         }),
         dy:
@@ -113,7 +113,7 @@ export const getSegmentLabelTextMark = ({
 export const getSegmentLabelValueTextMark = (options: SegmentLabelSpecOptions): TextMark[] => {
   if (!options.value && !options.percent) return [];
   const { donutOptions } = options;
-  const baseFontSize = donutOptions.S2 ? 16 : 14;
+  const baseFontSize = donutOptions.s2 ? 16 : 14;
 
   return [
     {
@@ -124,7 +124,7 @@ export const getSegmentLabelValueTextMark = (options: SegmentLabelSpecOptions): 
         enter: {
           ...getBaseSegmentLabelEnterEncode(donutOptions.name, baseFontSize),
           text: getSegmentLabelValueText(options),
-          ...(donutOptions.S2 && {
+          ...(donutOptions.s2 && {
             fontWeight: { value: 'bold' },
             fill: { value: getS2ColorValue('gray-700', donutOptions.colorScheme) },
           }),
