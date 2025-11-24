@@ -388,6 +388,7 @@ describe('Chart spec builder', () => {
         ...defaultSpecOptions,
         marks: [defaultBarOptions],
         highlightedSeries: 'Chrome',
+        s2: undefined,
       });
 
       expect(spec.signals?.find((signal) => signal.name === CONTROLLED_HIGHLIGHTED_SERIES)).toEqual({
