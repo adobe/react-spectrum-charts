@@ -12,6 +12,7 @@
 import { GroupMark, NumericValueRef, ProductionRule, TextEncodeEntry, TextMark, TextValueRef } from 'vega';
 
 import { DONUT_RADIUS, DONUT_SEGMENT_LABEL_MIN_ANGLE, FILTERED_TABLE } from '@spectrum-charts/constants';
+import { getS2ColorValue } from '@spectrum-charts/themes';
 
 import { getTextNumberFormat } from '../textUtils';
 import { DonutSpecOptions, SegmentLabelOptions, SegmentLabelSpecOptions } from '../types';
@@ -88,7 +89,10 @@ export const getSegmentLabelTextMark = ({
       enter: {
         ...getBaseSegmentLabelEnterEncode(name),
         text: { field: labelKey ?? color },
-        fontWeight: { value: 'bold' },
+        ...(!donutOptions.s2 && { fontWeight: { value: 'bold' } }),
+        ...(donutOptions.s2 && {
+          fill: { value: getS2ColorValue('gray-700', donutOptions.colorScheme) },
+        }),
         dy:
           value || percent
             ? {
@@ -109,6 +113,7 @@ export const getSegmentLabelTextMark = ({
 export const getSegmentLabelValueTextMark = (options: SegmentLabelSpecOptions): TextMark[] => {
   if (!options.value && !options.percent) return [];
   const { donutOptions } = options;
+  const baseFontSize = donutOptions.s2 ? 16 : 14;
 
   return [
     {
@@ -117,8 +122,12 @@ export const getSegmentLabelValueTextMark = (options: SegmentLabelSpecOptions): 
       from: { data: FILTERED_TABLE },
       encode: {
         enter: {
-          ...getBaseSegmentLabelEnterEncode(donutOptions.name),
+          ...getBaseSegmentLabelEnterEncode(donutOptions.name, baseFontSize),
           text: getSegmentLabelValueText(options),
+          ...(donutOptions.s2 && {
+            fontWeight: { value: 'bold' },
+            fill: { value: getS2ColorValue('gray-700', donutOptions.colorScheme) },
+          }),
           dy: {
             signal: `datum['${donutOptions.name}_arcTheta'] <= 0.5 * PI || datum['${donutOptions.name}_arcTheta'] >= 1.5 * PI ? 0 : 16`,
           },
@@ -132,12 +141,13 @@ export const getSegmentLabelValueTextMark = (options: SegmentLabelSpecOptions): 
 /**
  * Gets all the standard entry encodes for segment label text marks
  * @param name
+ * @param baseFontSize - The base font size to use when arc is large enough (default 14)
  * @returns TextEncodeEntry
  */
-const getBaseSegmentLabelEnterEncode = (name: string): TextEncodeEntry => ({
+const getBaseSegmentLabelEnterEncode = (name: string, baseFontSize: number = 14): TextEncodeEntry => ({
   radius: { signal: `${DONUT_RADIUS} + 6` },
   theta: { field: `${name}_arcTheta` },
-  fontSize: getSegmentLabelFontSize(name),
+  fontSize: getSegmentLabelFontSize(name, baseFontSize),
   align: {
     signal: `datum['${name}_arcTheta'] <= PI ? 'left' : 'right'`,
   },
@@ -188,11 +198,12 @@ export const getSegmentLabelValueText = ({
  * Gets the font size for the segment label based on the arc length
  * If the arc length is less than 0.3 radians, the font size is 0
  * @param name
+ * @param baseFontSize - The base font size to use when arc is large enough (default 14)
  * @returns NumericValueRef
  */
-const getSegmentLabelFontSize = (name: string): ProductionRule<NumericValueRef> => {
+const getSegmentLabelFontSize = (name: string, baseFontSize: number = 14): ProductionRule<NumericValueRef> => {
   // need to use radians for this. 0.3 radians is about 17 degrees
   // if we used arc length, then showing a label could shrink the overall donut size which could make the arc to small
   // that would hide the label which would make the arc bigger which would show the label and so on
-  return [{ test: `datum['${name}_arcLength'] < ${DONUT_SEGMENT_LABEL_MIN_ANGLE}`, value: 0 }, { value: 14 }];
+  return [{ test: `datum['${name}_arcLength'] < ${DONUT_SEGMENT_LABEL_MIN_ANGLE}`, value: 0 }, { value: baseFontSize }];
 };
