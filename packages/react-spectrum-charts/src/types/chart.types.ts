@@ -106,7 +106,7 @@ type RscChartPropsWithDefaults =
   | 'locale'
   | 'padding'
   | 'renderer'
-  | 'S2'
+  | 's2'
   | 'tooltipAnchor'
   | 'tooltipPlacement';
 
@@ -123,7 +123,7 @@ type SpecPropsWithDefaults =
   | 'idKey'
   | 'lineTypes'
   | 'lineWidths'
-  | 'S2'
+  | 's2'
   | 'symbolShapes'
   | 'symbolSizes';
 

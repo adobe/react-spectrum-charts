@@ -37,7 +37,15 @@ import { getSegmentLabelMarks } from './segmentLabelUtils';
 
 export const addDonut = produce<
   ScSpec,
-  [DonutOptions & { colorScheme?: ColorScheme; highlightedItem?: HighlightedItem; index?: number; idKey: string; S2?: boolean }]
+  [
+    DonutOptions & {
+      colorScheme?: ColorScheme;
+      highlightedItem?: HighlightedItem;
+      index?: number;
+      idKey: string;
+      s2?: boolean;
+    }
+  ]
 >(
   (
     spec,
@@ -54,7 +62,7 @@ export const addDonut = produce<
       holeRatio = 0.85,
       isBoolean = false,
       segmentLabels = [],
-      S2 = false,
+      s2 = false,
       ...options
     }
   ) => {
@@ -72,7 +80,7 @@ export const addDonut = produce<
       name: toCamelCase(name ?? `donut${index}`),
       segmentLabels,
       startAngle,
-      S2,
+      s2,
       ...options,
     };
 

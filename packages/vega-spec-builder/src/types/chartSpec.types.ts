@@ -86,7 +86,7 @@ export interface ChartOptions {
   /** Opacity scale*/
   opacities?: Opacities;
   /** Spectrum 2 styling */
-  S2?: boolean;
+  s2?: boolean;
   /** Chart title. If the `Title` component is provided as a child, the component will override this prop. */
   title?: string;
   /** Vega spec to be used instead of generating one using the component API. */
@@ -122,7 +122,7 @@ type ChartOptionsWithDefaults =
   | 'lineTypes'
   | 'lineWidths'
   | 'marks'
-  | 'S2'
+  | 's2'
   | 'symbolShapes'
   | 'symbolSizes'
   | 'titles';

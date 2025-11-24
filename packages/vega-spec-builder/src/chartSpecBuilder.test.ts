@@ -69,7 +69,7 @@ const defaultSpecOptions: ChartSpecOptions = {
   lineWidths: [1],
   marks: [],
   opacities: undefined,
-  S2: false,
+  s2: false,
   symbolShapes: ['rounded-square'],
   symbolSizes: ['XS', 'XL'],
   title: '',
@@ -388,6 +388,7 @@ describe('Chart spec builder', () => {
         ...defaultSpecOptions,
         marks: [defaultBarOptions],
         highlightedSeries: 'Chrome',
+        s2: undefined,
       });
 
       expect(spec.signals?.find((signal) => signal.name === CONTROLLED_HIGHLIGHTED_SERIES)).toEqual({

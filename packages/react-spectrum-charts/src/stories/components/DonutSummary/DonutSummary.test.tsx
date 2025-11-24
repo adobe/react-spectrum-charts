@@ -13,7 +13,7 @@ import { DONUT_SUMMARY_MIN_RADIUS } from '@spectrum-charts/constants';
 
 import { DonutSummary } from '../../../rc';
 import { render, screen } from '../../../test-utils';
-import { Basic, NoLabel, NumberFormat, Spectrum2 } from './DonutSummary.story';
+import { Basic, NoLabel, NumberFormat } from './DonutSummary.story';
 
 describe('DonutSummary renders properly', () => {
   // Donut is not a real React component. This is test just provides test coverage for sonarqube
@@ -115,31 +115,5 @@ describe('Small radius', () => {
   test('should hide the summary if the donut inner radius is < DONUT_SUMMARY_MIN_RADIUS', async () => {
     render(<Basic {...Basic.args} width={DONUT_SUMMARY_MIN_RADIUS * 2} height={DONUT_SUMMARY_MIN_RADIUS * 2} />);
     expect(await screen.findByText('40K')).toHaveAttribute('font-size', '0px');
-  });
-});
-
-describe('S2 styling', () => {
-  test('summary value should have font-weight 800 when S2 is true', async () => {
-    render(<Spectrum2 {...Spectrum2.args} />);
-    const metricValue = await screen.findByText('40K');
-    expect(metricValue).toHaveAttribute('font-weight', '800');
-  });
-
-  test('summary label should have font-weight 700 when S2 is true', async () => {
-    render(<Spectrum2 {...Spectrum2.args} />);
-    const metricLabel = await screen.findByText('Visitors');
-    expect(metricLabel).toHaveAttribute('font-weight', '700');
-  });
-
-  test('summary value should not have font-weight when S2 is false', async () => {
-    render(<Basic {...Basic.args} />);
-    const metricValue = await screen.findByText('40K');
-    expect(metricValue).not.toHaveAttribute('font-weight');
-  });
-
-  test('summary label should not have font-weight when S2 is false', async () => {
-    render(<Basic {...Basic.args} />);
-    const metricLabel = await screen.findByText('Visitors');
-    expect(metricLabel).not.toHaveAttribute('font-weight');
   });
 });

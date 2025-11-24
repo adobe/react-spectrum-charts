@@ -471,7 +471,7 @@ const timeLocale: TimeLocale = {
             <td>Sets if the chart should be rendered as an <a href="https://developer.mozilla.org/en-US/docs/Web/SVG">SVG</a> or as a <a href="https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API">canvas</a> element</td>
         </tr>
         <tr>
-            <td>S2</td>
+            <td>s2</td>
             <td>boolean</td>
             <td>false</td>
             <td>Enables Spectrum 2 styling for some charts. Currently supported: Donut.</td>

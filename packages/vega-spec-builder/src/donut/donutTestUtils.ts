@@ -28,5 +28,5 @@ export const defaultDonutOptions: DonutSpecOptions = {
   metric: 'testMetric',
   segmentLabels: [],
   startAngle: 0,
-  S2: false,
+  s2: false,
 };
