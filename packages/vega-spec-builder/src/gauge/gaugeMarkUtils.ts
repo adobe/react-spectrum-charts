@@ -210,7 +210,7 @@ export function getValueLabel(name: string, fontSize, yOffset): Mark {
       update: {
         x: { signal: "centerX" },   
         y: { signal: `centerY + ${yOffset}` },   
-        text: { signal: "currVal" } 
+        text: { signal: "textSignal" } 
       }
     }
   }

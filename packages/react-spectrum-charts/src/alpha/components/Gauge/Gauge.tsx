@@ -27,6 +27,7 @@ const Gauge: FC<GaugeProps> = ({
   name = 'gauge0',
   graphLabel = 'graphLabel',
   showLabel = DEFAULT_LABEL,
+  showsAsPercent = false,
   metric = 'currentAmount', 
   minArcValue = DEFAULT_MIN_ARC_VALUE,
   maxArcValue = DEFAULT_MAX_ARC_VALUE,

@@ -21,6 +21,8 @@ export interface GaugeOptions {
   graphLabel?: string;
   /** Sets to show the label or not */
   showLabel?: boolean;
+  /** Sets to show the current value as a percentage or not */
+  showsAsPercent?: boolean;
   /** Key in the data that is used as the metric */
   metric?: string;
   /** Key in the data that is used as the color facet */
@@ -48,6 +50,7 @@ type GaugeOptionsWithDefaults =
   | 'name'
   | 'graphLabel'
   | 'showLabel'
+  | 'showsAsPercent'
   | 'metric'
   | 'color'
   | 'minArcValue'

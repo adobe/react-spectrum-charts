@@ -49,6 +49,7 @@ export const addGauge = produce<
       color: getColorValue(color, colorScheme),
       fillerColorSignal: 'fillerColorToCurrVal',
       graphLabel: 'graphLabel',
+      showsAsPercent: false,
       showLabel: false,
       colorScheme: colorScheme,
       index,
@@ -97,6 +98,8 @@ export const addSignals = produce<Signal[], [GaugeSpecOptions]>((signals, option
   signals.push({ name: 'targetLineY', update: "centerY + ( innerRadius - 5) * sin(needleAngleTarget)"})
   signals.push({ name: 'targetLineX2', update: "centerX + ( outerRadius + 5) * cos(needleAngleTarget)"})
   signals.push({ name: 'targetLineY2', update: "centerY + ( outerRadius + 5) * sin(needleAngleTarget)"})
+  signals.push({ name: 'showAsPercent', update: `${options.showsAsPercent}`})
+  signals.push({ name: 'textSignal', update: "showAsPercent ? format((currVal / arcMaxVal) * 100, '.2f') + '%' : format(currVal, '.0f')"})
 });
 
 export const addScales = produce<Scale[], [GaugeSpecOptions]>((scales, options) => {

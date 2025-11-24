@@ -21,6 +21,7 @@ export const defaultGaugeOptions: GaugeSpecOptions = {
   name: 'gaugeTestName',
   graphLabel: 'graphLabel',
   showLabel: false,
+  showsAsPercent: false,
   metric: 'currentAmount',
   color: DEFAULT_COLOR_SCHEME,
   minArcValue: 0,
