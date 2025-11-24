@@ -150,7 +150,6 @@ export function getNeedleHole(name: string, backgroundColor): Mark {
 }
 
 export function getTargetLine(name: string): Mark {
-  const targetColor = getColorValue('gray-900', defaultGaugeOptions.colorScheme);
   return {
     name: `${name}Target Line`,
     description: 'Target Line',
@@ -183,7 +182,7 @@ export function getLabel(name: string, fontSize, yOffset): Mark {
         align: { value: "center" },
         baseline: { value: "middle" },
         fontSize: { value: fontSize },
-        fill: { value: targetColor }
+        fill: { signal: 'labelTextColor' }
       },
       update: {
         x: { signal: "centerX" },   
@@ -195,7 +194,6 @@ export function getLabel(name: string, fontSize, yOffset): Mark {
 };
 
 export function getValueLabel(name: string, fontSize, yOffset): Mark {
-  const targetColor = getColorValue('gray-900', defaultGaugeOptions.colorScheme);
   return {
     name: `${name}graphLabelCurrentValueText`,
     description: `graph current value label`,
@@ -205,7 +203,7 @@ export function getValueLabel(name: string, fontSize, yOffset): Mark {
         align: { value: "center" },
         baseline: { value: "middle" },
         fontSize: { value: fontSize },
-        fill: { value: targetColor }
+        fill: { signal: 'valueTextColor' }
       },
       update: {
         x: { signal: "centerX" },   
