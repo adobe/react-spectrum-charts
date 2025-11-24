@@ -89,4 +89,26 @@ Responsive.args = {
   label: 'Visitors',
 };
 
+<<<<<<< HEAD
 export { Basic, NoLabel, NumberFormat, Responsive };
+=======
+const S2Story: StoryFn<DonutSummaryProps & { width?: number; height?: number }> = (args): ReactElement => {
+  const { width, height, ...donutSummaryProps } = args;
+  const chartProps = useChartProps({ ...defaultChartProps, width: width ?? 350, height: height ?? 350, S2: true });
+  return (
+    <Chart {...chartProps}>
+      <Donut metric="count" color="browser">
+        <DonutSummary {...donutSummaryProps} />
+      </Donut>
+    </Chart>
+  );
+};
+
+const Spectrum2 = bindWithProps(S2Story);
+Spectrum2.args = {
+  label: 'Visitors',
+  numberFormat: 'shortNumber',
+};
+
+export { Basic, NoLabel, NumberFormat, Responsive, Spectrum2 };
+>>>>>>> 5641c38f (feat: donut segmentLabels S2 styles)
