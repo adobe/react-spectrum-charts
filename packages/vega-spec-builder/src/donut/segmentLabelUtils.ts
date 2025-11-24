@@ -81,14 +81,13 @@ export const getSegmentLabelTextMark = ({
   donutOptions,
 }: SegmentLabelSpecOptions): TextMark => {
   const { name, color } = donutOptions;
-  const baseFontSize = donutOptions.S2 ? 12 : 14;
   return {
     type: 'text',
     name: `${name}_segmentLabel`,
     from: { data: FILTERED_TABLE },
     encode: {
       enter: {
-        ...getBaseSegmentLabelEnterEncode(name, baseFontSize),
+        ...getBaseSegmentLabelEnterEncode(name),
         text: { field: labelKey ?? color },
         ...(!donutOptions.S2 && { fontWeight: { value: 'bold' } }),
         ...(donutOptions.S2 && {
