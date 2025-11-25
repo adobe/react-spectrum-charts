@@ -40,23 +40,23 @@ export const addGaugeMarks = produce<Mark[], [GaugeSpecOptions]>((marks, opt) =>
   if (needle && showLabel) {
       marks.push(getNeedle(name));
       marks.push(getNeedleHole(name, BACKGROUND_COLOR));
-      const yOffset = 120;
+      const yOffset = 140;
       const fontSize = 28;
       marks.push(getLabel(name, fontSize, yOffset));
 
-      const labelYOffset = 80;
-      const labelFontSize = 36;
+      const labelYOffset = 100;
+      const labelFontSize = 60;
       marks.push(getValueLabel(name, labelFontSize, labelYOffset));
   } else if (needle){
       marks.push(getNeedle(name));
       marks.push(getNeedleHole(name, BACKGROUND_COLOR));
   } else if (showLabel){
-      const yOffset = 40;
+      const yOffset = 70;
       const fontSize = 32;
       marks.push(getLabel(name, fontSize, yOffset));
 
       const labelYOffset = 0;
-      const labelFontSize = 48;
+      const labelFontSize = 84;
       marks.push(getValueLabel(name, labelFontSize, labelYOffset));
   }
   if (targetLine){
