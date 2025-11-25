@@ -10,7 +10,7 @@
  * governing permissions and limitations under the License.
  */
 
-export const s2SpectrumColors = {
+export const spectrum2Colors = {
   light: {
     'gray-25': 'white',
     'gray-50': '#F8F8F8',

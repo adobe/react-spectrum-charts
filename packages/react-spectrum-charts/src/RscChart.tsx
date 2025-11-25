@@ -92,7 +92,7 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>((props, forwarded
   useSpecProps(spec);
 
   const { signals, targetStyle, tooltipOptions, onNewView } = useChartInteractions(props, sanitizedChildren);
-  const chartConfig = useMemo(() => getChartConfig(config, colorScheme), [config, colorScheme]);
+  const chartConfig = useMemo(() => getChartConfig(config, colorScheme, s2), [config, colorScheme, s2]);
 
   useEffect(() => {
     const tooltipElement = document.getElementById('vg-tooltip-element');
@@ -118,6 +118,7 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>((props, forwarded
         style={targetStyle}
       />
       <VegaChart
+        s2={s2}
         spec={spec}
         config={chartConfig}
         data={data}

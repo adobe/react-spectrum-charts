@@ -25,6 +25,7 @@ export const getVegaEmbedOptions = ({
   renderer = 'svg',
   config,
   colorScheme = DEFAULT_COLOR_SCHEME,
+  s2 = false,
 }: {
   locale?: Locale | LocaleCode | { number?: NumberLocaleCode | NumberLocale; time?: TimeLocaleCode | TimeLocale };
   height?: number;
@@ -32,11 +33,12 @@ export const getVegaEmbedOptions = ({
   padding?: Padding;
   renderer?: Renderers;
   config?: Config;
+  s2?: boolean;
   colorScheme?: 'light' | 'dark';
 }) => {
   const expressionFunctions = getExpressionFunctions(locale);
   const { number: numberLocale, time: timeLocale } = getLocale(locale);
-  const chartConfig = config ?? getChartConfig(undefined, colorScheme);
+  const chartConfig = config ?? getChartConfig(undefined, colorScheme, s2);
 
   return {
     actions: false,
