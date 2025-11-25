@@ -61,7 +61,6 @@ export function getBackgroundArc(name: string, fill: string, stroke: string): Ma
         startAngle:  { signal: 'startAngle' },
         endAngle:    { signal: 'endAngle' },
         fill:        { value: fill },
-        stroke:      { value: stroke }
       }
     }
   };
