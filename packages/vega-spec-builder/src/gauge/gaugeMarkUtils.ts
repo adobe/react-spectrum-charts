@@ -30,7 +30,7 @@ export const addGaugeMarks = produce<Mark[], [GaugeSpecOptions]>((marks, opt) =>
   const fillerColorSignal = 'fillerColorToCurrVal';
 
   // Background arc
-  marks.push(getBackgroundArc(name, backgroundFill, backgroundStroke));
+  marks.push(getBackgroundArc(name, backgroundFill));
 
   // Filler arc (fills to clampedValue)
   marks.push(getFillerArc(name, fillerColorSignal));
@@ -47,7 +47,7 @@ export const addGaugeMarks = produce<Mark[], [GaugeSpecOptions]>((marks, opt) =>
   }
 });
 
-export function getBackgroundArc(name: string, fill: string, stroke: string): Mark {
+export function getBackgroundArc(name: string, fill: string): Mark {
   return {
     name: `${name}BackgroundArcRounded`,
     description: 'Background Arc (Round Edge)',
@@ -142,18 +142,18 @@ export function getTargetLine(name: string): Mark {
     description: 'Target Line',
     type: 'rule',
     encode: {
-    enter: {
-      stroke: { value: "black" },
-      strokeWidth: { value: 6 },
-      strokeCap: { value: "round" }
-    },
-    update: {
-      x:  { signal: "targetLineX" },
-      y:  { signal: "targetLineY" },
-      x2: { signal: "targetLineX2" },
-      y2: { signal: "targetLineY2" }
+      enter: {
+        stroke: { value: "black" },
+        strokeWidth: { value: 6 },
+        strokeCap: { value: "round" }
+      },
+      update: {
+        x:  { signal: "targetLineX" },
+        y:  { signal: "targetLineY" },
+        x2: { signal: "targetLineX2" },
+        y2: { signal: "targetLineY2" }
+      }
     }
-  }
   }
 };
 
@@ -169,10 +169,11 @@ export function getStartCap(name: string, fillColor: string, backgroundColor: st
         "x":  { signal: xOffset },
         "y":  { signal: yOffset },
         "innerRadius":  { signal: '0' },
-        "outerRadius": { signal: "(outerRadius - innerRadius) / 2" },
+        "outerRadius": { signal: "(outerRadius - innerRadius) / 2 - 1" },
         "startAngle": { signal: "startAngle" },
         "endAngle": { signal: "startAngle-PI"},
         "stroke": { signal: fillColor },
+        "strokeWidth": { signal: "2" },
       },
       update: {
         "fill": {signal: `currVal <= arcMinVal ? ${backgroundColor} : ${fillColor}`},
@@ -194,12 +195,14 @@ export function getEndCap(name: string, fillColor: string, backgroundColor: stri
         "x":  { signal: xOffset },
         "y":  { signal: yOffset },
         "innerRadius":  { signal: '0' },
-        "outerRadius": { signal: "(outerRadius - innerRadius) / 2" },
+        "outerRadius": { signal: "((outerRadius - innerRadius) / 2)-1" },
         "startAngle": { signal: "endAngle" },
         "endAngle": { signal: "endAngle+PI"},
+        "strokeWidth": { signal: "2" },
       },
       update: {
-        "fill": {signal: `currVal >= arcMaxVal ? ${fillColor} : ${backgroundColor}`}
+        "fill": {signal: `currVal >= arcMaxVal ? ${fillColor} : ${backgroundColor}`},
+        "stroke": { signal: `currVal >= arcMaxVal ? ${fillColor} : ${backgroundColor}` }
       }
     }
   }
