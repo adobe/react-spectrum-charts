@@ -220,17 +220,19 @@ export const getStackedMetricEncodings = (options: BarSpecOptions): RectEncodeEn
 };
 
 export const getCornerRadiusEncodings = (options: BarSpecOptions): RectEncodeEntry => {
-  const { type, lineWidth, metric, hasSquareCorners } = options;
+  const { type, lineWidth, metric, hasSquareCorners, s2 } = options;
   const value = hasSquareCorners ? 0 : Math.max(1, CORNER_RADIUS - getLineWidthPixelsFromLineWidth(lineWidth) / 2);
+  const s2Value = hasSquareCorners ? 0 : 4;
+  const cornerRadius = s2 ? s2Value : value;
 
   let rectEncodeEntry: RectEncodeEntry;
 
   if (type === 'dodged' && !isDodgedAndStacked(options)) {
     rectEncodeEntry = {
-      cornerRadiusTopLeft: [{ test: `datum.${metric} > 0`, value }, { value: 0 }],
-      cornerRadiusTopRight: [{ test: `datum.${metric} > 0`, value }, { value: 0 }],
-      cornerRadiusBottomLeft: [{ test: `datum.${metric} < 0`, value }, { value: 0 }],
-      cornerRadiusBottomRight: [{ test: `datum.${metric} < 0`, value }, { value: 0 }],
+      cornerRadiusTopLeft: [{ test: `datum.${metric} > 0`, value: cornerRadius }, { value: 0 }],
+      cornerRadiusTopRight: [{ test: `datum.${metric} > 0`, value: cornerRadius }, { value: 0 }],
+      cornerRadiusBottomLeft: [{ test: `datum.${metric} < 0`, value: cornerRadius }, { value: 0 }],
+      cornerRadiusBottomRight: [{ test: `datum.${metric} < 0`, value: cornerRadius }, { value: 0 }],
     };
   } else {
     rectEncodeEntry = getStackedCornerRadiusEncodings(options);
@@ -244,16 +246,19 @@ export const getStackedCornerRadiusEncodings = ({
   metric,
   lineWidth,
   hasSquareCorners,
+  s2,
 }: BarSpecOptions): RectEncodeEntry => {
   const topTestString = `datum.${metric}1 > 0 && data('${name}_stacks')[indexof(pluck(data('${name}_stacks'), '${STACK_ID}'), datum.${STACK_ID})].max_${metric}1 === datum.${metric}1`;
   const bottomTestString = `datum.${metric}1 < 0 && data('${name}_stacks')[indexof(pluck(data('${name}_stacks'), '${STACK_ID}'), datum.${STACK_ID})].min_${metric}1 === datum.${metric}1`;
   const value = hasSquareCorners ? 0 : Math.max(1, CORNER_RADIUS - getLineWidthPixelsFromLineWidth(lineWidth) / 2);
+  const s2Value = hasSquareCorners ? 0 : 4;
+  const cornerRadius = s2 ? s2Value : value;
 
   return {
-    cornerRadiusTopLeft: [{ test: topTestString, value }, { value: 0 }],
-    cornerRadiusTopRight: [{ test: topTestString, value }, { value: 0 }],
-    cornerRadiusBottomLeft: [{ test: bottomTestString, value }, { value: 0 }],
-    cornerRadiusBottomRight: [{ test: bottomTestString, value }, { value: 0 }],
+    cornerRadiusTopLeft: [{ test: topTestString, value: cornerRadius }, { value: 0 }],
+    cornerRadiusTopRight: [{ test: topTestString, value: cornerRadius }, { value: 0 }],
+    cornerRadiusBottomLeft: [{ test: bottomTestString, value: cornerRadius }, { value: 0 }],
+    cornerRadiusBottomRight: [{ test: bottomTestString, value: cornerRadius }, { value: 0 }],
   };
 };
 
