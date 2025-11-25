@@ -28,10 +28,10 @@ import { divergentOrangeYellowSeafoam15 } from './divergingColorPalette';
 import { sequentialViridis16 } from './sequentialColorPalette';
 import { spectrum2Colors } from './spectrum2Colors';
 import { ADOBE_CLEAN_FONT } from './spectrumTheme';
-import { getColorValue } from './utils';
+import { getS2ColorValue } from './utils';
 
 export function getSpectrum2VegaConfig(colorScheme: 'light' | 'dark'): Config {
-  const FONT_COLOR = getColorValue(DEFAULT_FONT_COLOR, colorScheme);
+  const FONT_COLOR = getS2ColorValue(DEFAULT_FONT_COLOR, colorScheme);
   const {
     'blue-400': blue400,
     'gray-300': gray300,

@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { s2SpectrumColors } from './s2SpectrumColors';
+import { spectrum2Colors } from './spectrum2Colors';
 import { spectrumColors } from './spectrumColors';
 
 /**
@@ -29,5 +29,5 @@ export const getColorValue = (color: string, colorScheme: 'light' | 'dark'): str
  * @returns css color string
  */
 export const getS2ColorValue = (color: string, colorScheme: 'light' | 'dark'): string => {
-  return s2SpectrumColors[colorScheme][color] || color;
+  return spectrum2Colors[colorScheme][color] || color;
 };
