@@ -21,7 +21,12 @@ import {
   ROUNDED_SQUARE_PATH,
   TABLE,
 } from '@spectrum-charts/constants';
-import { getSpectrumVegaConfig } from '@spectrum-charts/themes';
+import {
+  getSpectrum2VegaConfig,
+  getSpectrumVegaConfig,
+  spectrum2Colors,
+  spectrumColors,
+} from '@spectrum-charts/themes';
 
 import {
   addUserMetaInteractiveMark,
@@ -191,10 +196,19 @@ describe('getD3FormatSpecifierFromNumberFormat()', () => {
 
 describe('getChartConfig()', () => {
   test('should merge the provided config with the Spectrum Vega config', () => {
-    expect(getChartConfig(undefined, 'light')).toEqual(getSpectrumVegaConfig('light'));
-    const mergedConfig = getChartConfig({ axis: { labelFontSize: 12 } }, 'light');
-    expect(mergedConfig.axis).toHaveProperty('labelFontSize', 12);
-    expect(mergedConfig.axis).toHaveProperty('labelFont');
+    const s1colors = spectrumColors.light;
+
+    expect(getChartConfig(undefined, 'light', false)).toEqual(getSpectrumVegaConfig('light'));
+    const mergedConfig = getChartConfig({ axis: { labelFontSize: 12 } }, 'light', false);
+    expect(mergedConfig.axis).toHaveProperty('domainWidth', 2);
+    expect(mergedConfig.axis).toHaveProperty('domainColor', s1colors['gray-900']);
+  });
+  test('should use the Spectrum 2 Vega config if s2 is true', () => {
+    const s2colors = spectrum2Colors.light;
+    expect(getChartConfig(undefined, 'light', true)).toEqual(getSpectrum2VegaConfig('light'));
+    const mergedConfig = getChartConfig({ axis: { labelFontSize: 12 } }, 'light', true);
+    expect(mergedConfig.axis).toHaveProperty('domainWidth', 1);
+    expect(mergedConfig.axis).toHaveProperty('domainColor', s2colors['gray-800']);
   });
 });
 

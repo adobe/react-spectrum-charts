@@ -35,6 +35,7 @@ export interface VegaChartProps {
   renderer: Renderers;
   signals?: Record<string, unknown>;
   spec: Spec;
+  s2: boolean;
   tooltip: TooltipOptions;
   width: number;
 }
@@ -50,6 +51,7 @@ export const VegaChart: FC<VegaChartProps> = ({
   renderer = 'svg',
   signals,
   spec,
+  s2,
   tooltip,
   width,
 }) => {
@@ -90,6 +92,7 @@ export const VegaChart: FC<VegaChartProps> = ({
       }
       embed(containerRef.current, specCopy, {
         ...getVegaEmbedOptions({
+          s2,
           locale,
           height,
           width,

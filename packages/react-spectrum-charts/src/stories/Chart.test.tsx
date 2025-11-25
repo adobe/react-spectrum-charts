@@ -12,7 +12,7 @@
 import { createRef } from 'react';
 
 import { FADE_FACTOR } from '@spectrum-charts/constants';
-import { s2SpectrumColors } from '@spectrum-charts/themes';
+import { spectrum2Colors } from '@spectrum-charts/themes';
 import { ChartHandle } from '@spectrum-charts/vega-spec-builder';
 
 import { Chart } from '../Chart';
@@ -205,7 +205,7 @@ describe('Chart', () => {
       expect(chart).toBeInTheDocument();
       const bars = getAllMarksByGroupName(chart, 'bar0');
 
-      const colors = s2SpectrumColors.light;
+      const colors = spectrum2Colors.light;
 
       expect(bars[0].getAttribute('fill')).toEqual(colors['categorical-100']);
       expect(bars[1].getAttribute('fill')).toEqual(colors['categorical-200']);
@@ -220,7 +220,7 @@ describe('Chart', () => {
       expect(chart).toBeInTheDocument();
       const bars = getAllMarksByGroupName(chart, 'bar0');
 
-      const colors = s2SpectrumColors.light;
+      const colors = spectrum2Colors.light;
 
       expect(bars[0].getAttribute('fill')).toEqual(colors['cinnamon-1200']);
       expect(bars[1].getAttribute('fill')).toEqual(colors['cinnamon-1000']);
@@ -235,7 +235,7 @@ describe('Chart', () => {
       expect(chart).toBeInTheDocument();
       const bars = getAllMarksByGroupName(chart, 'bar0');
 
-      const colors = s2SpectrumColors.dark;
+      const colors = spectrum2Colors.dark;
 
       expect(bars[0].getAttribute('fill')).toEqual(colors['cinnamon-1200']);
       expect(bars[1].getAttribute('fill')).toEqual(colors['cinnamon-1000']);

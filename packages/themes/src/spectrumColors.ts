@@ -9,9 +9,9 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { s2SpectrumColors } from './s2SpectrumColors';
+import { spectrum2Colors } from './spectrum2Colors';
 
-const { light: s2LightColors, dark: s2DarkColors } = s2SpectrumColors;
+const { light: s2LightColors, dark: s2DarkColors } = spectrum2Colors;
 
 // add 's2-' as a prefix to all s2 light colors
 const s2LightColorsWithPrefix = Object.fromEntries(
