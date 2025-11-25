@@ -75,6 +75,16 @@ GaugeVariation3.args = {
   color: 'fuchsia-900',
 };
 
+const Empty = bindWithProps(GaugeStory);
+Empty.args = {
+  metric: 'currentAmount-60'
+}
+
+const Full = bindWithProps(GaugeStory);
+Full.args = {
+  metric: 'currentAmount+40',
+  color: 'static-pruple-900'
+}
 
 
-export { Basic, GaugeVariation2, GaugeVariation3 };
+export { Basic, GaugeVariation2, GaugeVariation3, Empty, Full };
