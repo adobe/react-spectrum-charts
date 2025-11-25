@@ -113,4 +113,12 @@ GaugeLabelNeedlePercent.args = {
   showsAsPercent: true
 };
 
-export { Basic, GaugeVariation2, GaugeVariation3, GaugeLabelNoNeedleNoPercent, GaugeLabelNoNeedlePercent, GaugeLabelNeedleNoPercent, GaugeLabelNeedlePercent };
+export { 
+  Basic, 
+  GaugeVariation2, 
+  GaugeVariation3, 
+  GaugeLabelNoNeedleNoPercent, 
+  GaugeLabelNeedleNoPercent, 
+  GaugeLabelNoNeedlePercent,  
+  GaugeLabelNeedlePercent 
+};
