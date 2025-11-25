@@ -80,10 +80,12 @@ export function getFillerArc(name: string, fillerColorSignal: string): Mark {
         outerRadius: { signal: 'outerRadius' },
         startAngle:  { signal: 'startAngle' },
         endAngle:    { signal: 'endAngle' },
-        fill:        { signal: fillerColorSignal }
+        fill:        { signal: fillerColorSignal },
+        stroke:      { signal: fillerColorSignal }
       },
       update: {
-        endAngle:     { signal: "scale('angleScale', clampedVal)" }
+        endAngle:     { signal: "scale('angleScale', clampedVal)" },
+        stroke:       { signal: `currVal > arcMinVal ? ${fillerColorSignal} : ""`}
       }
     }
   };
@@ -157,35 +159,41 @@ export function getTargetLine(name: string): Mark {
 };
 
 export function getStartCap(name: string, fillColor: string, backgroundColor: string): Mark {
+  const xOffset = 'centerX+(sin(startAngle)*((outerRadius+innerRadius)/2))'
+  const yOffset = 'centerY-(cos(startAngle)*((outerRadius+innerRadius)/2))'
   return {
     name: `${name}Start Cap`,
     description: `Start Cap`,
     type: `arc`,
     encode: {
       enter: {
-        "x":  { signal: '69' },
-        "y":  { signal: '468'},
+        "x":  { signal: xOffset },
+        "y":  { signal: yOffset },
         "innerRadius":  { signal: '0' },
         "outerRadius": { signal: "(outerRadius - innerRadius) / 2" },
         "startAngle": { signal: "startAngle" },
         "endAngle": { signal: "startAngle-PI"},
+        "stroke": { signal: fillColor },
       },
       update: {
-        "fill": {signal: `currVal <= arcMinVal ? ${backgroundColor} : ${fillColor}`}
+        "fill": {signal: `currVal <= arcMinVal ? ${backgroundColor} : ${fillColor}`},
+        "stroke": { signal: `currVal <= arcMinVal ? ${backgroundColor} : ${fillColor}`}
       }
     }
   }
 }
 
 export function getEndCap(name: string, fillColor: string, backgroundColor: string): Mark {
+  const xOffset = 'centerX+(sin(startAngle)*((outerRadius+innerRadius)/2*-1))'
+  const yOffset = 'centerY-(cos(startAngle)*((outerRadius+innerRadius)/2))'
   return {
     name: `${name}End Cap`,
     description: `End Cap`,
     type: `arc`,
     encode: {
       enter: {
-        "x":  { signal: '500-69' },
-        "y":  { signal: '468'},
+        "x":  { signal: xOffset },
+        "y":  { signal: yOffset },
         "innerRadius":  { signal: '0' },
         "outerRadius": { signal: "(outerRadius - innerRadius) / 2" },
         "startAngle": { signal: "endAngle" },
