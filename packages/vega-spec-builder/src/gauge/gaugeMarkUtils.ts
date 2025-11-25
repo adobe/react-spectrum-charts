@@ -184,8 +184,8 @@ export function getStartCap(name: string, fillColor: string, backgroundColor: st
 }
 
 export function getEndCap(name: string, fillColor: string, backgroundColor: string): Mark {
-  const xOffset = 'centerX+(sin(startAngle)*((outerRadius+innerRadius)/2*-1))'
-  const yOffset = 'centerY-(cos(startAngle)*((outerRadius+innerRadius)/2))'
+  const xOffset = 'centerX+(sin(endAngle)*((outerRadius+innerRadius)/2))'
+  const yOffset = 'centerY-(cos(endAngle)*((outerRadius+innerRadius)/2))'
   return {
     name: `${name}End Cap`,
     description: `End Cap`,
