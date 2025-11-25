@@ -34,6 +34,8 @@ export const addGaugeMarks = produce<Mark[], [GaugeSpecOptions]>((marks, opt) =>
 
   // Filler arc (fills to clampedValue)
   marks.push(getFillerArc(name, fillerColorSignal));
+  marks.push(getStartCap(name, fillerColorSignal, backgroundFill));
+  marks.push(getEndCap(name, fillerColorSignal, backgroundFill));
 
   // Needle to clampedValue
   if (needle) {
@@ -153,3 +155,45 @@ export function getTargetLine(name: string): Mark {
   }
   }
 };
+
+export function getStartCap(name: string, fillColor: string, backgroundColor: string): Mark {
+  return {
+    name: `${name}Start Cap`,
+    description: `Start Cap`,
+    type: `arc`,
+    encode: {
+      enter: {
+        "x":  { signal: '69' },
+        "y":  { signal: '468'},
+        "innerRadius":  { signal: '0' },
+        "outerRadius": { signal: "(outerRadius - innerRadius) / 2" },
+        "startAngle": { signal: "startAngle" },
+        "endAngle": { signal: "startAngle-PI"},
+      },
+      update: {
+        "fill": {signal: `currVal <= arcMinVal ? ${backgroundColor} : ${fillColor}`}
+      }
+    }
+  }
+}
+
+export function getEndCap(name: string, fillColor: string, backgroundColor: string): Mark {
+  return {
+    name: `${name}End Cap`,
+    description: `End Cap`,
+    type: `arc`,
+    encode: {
+      enter: {
+        "x":  { signal: '500-69' },
+        "y":  { signal: '468'},
+        "innerRadius":  { signal: '0' },
+        "outerRadius": { signal: "(outerRadius - innerRadius) / 2" },
+        "startAngle": { signal: "endAngle" },
+        "endAngle": { signal: "endAngle+PI"},
+      },
+      update: {
+        "fill": {signal: `currVal >= arcMaxVal ? ${fillColor} : ${backgroundColor}`}
+      }
+    }
+  }
+}
