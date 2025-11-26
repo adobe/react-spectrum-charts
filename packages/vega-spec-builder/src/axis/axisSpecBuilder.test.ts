@@ -254,6 +254,15 @@ describe('Spec builder, Axis', () => {
         ).scales;
 
         expect(resultScales?.at(0)?.domain).toEqual([0, 100]);
+        expect(resultScales?.at(1)?.zero).toEqual(true);
+      });
+      test('custom X range that doesn\'t start at 0', () => {
+        const resultScales = addAxis(
+          { usermeta: {}, scales: defaultLinearScales },
+          { position: 'bottom', range: [10, 100] }
+        ).scales;
+
+        expect(resultScales?.at(0)?.domain).toEqual([10, 100]);
       });
       test('custom Y range', () => {
         const resultScales = addAxis(
@@ -262,6 +271,15 @@ describe('Spec builder, Axis', () => {
         ).scales;
 
         expect(resultScales?.at(1)?.domain).toEqual([0, 100]);
+      });
+      test('custom Y range that doesn\'t start at 0', () => {
+        const resultScales = addAxis(
+          { usermeta: {}, scales: defaultLinearScales },
+          { position: 'bottom', range: [100, 1000] }
+        ).scales;
+
+        expect(resultScales?.at(0)?.domain).toEqual([100, 1000]);
+        expect(resultScales?.at(0)?.zero).toEqual(false);
       });
     });
     describe('no scales', () => {
