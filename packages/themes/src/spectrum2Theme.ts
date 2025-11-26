@@ -69,7 +69,7 @@ export function getSpectrum2VegaConfig(colorScheme: 'light' | 'dark'): Config {
       labelFontWeight: 'normal',
       labelPadding: 8,
       labelOverlap: true,
-      labelColor: FONT_COLOR,
+      labelColor: gray700,
       ticks: false,
       tickColor: gray300,
       tickRound: true,
@@ -77,10 +77,10 @@ export function getSpectrum2VegaConfig(colorScheme: 'light' | 'dark'): Config {
       tickCap: 'round',
       tickWidth: 1,
       titleAnchor: 'middle',
-      titleColor: FONT_COLOR,
+      titleColor: gray700,
       titleFont: ADOBE_CLEAN_FONT,
       titleFontSize: DEFAULT_FONT_SIZE,
-      titleFontWeight: 'bold',
+      titleFontWeight: 'normal',
       titlePadding: 16,
     },
     range: {
@@ -120,7 +120,7 @@ export function getSpectrum2VegaConfig(colorScheme: 'light' | 'dark'): Config {
       opacity: 0.8,
     },
     line: {
-      strokeWidth: 1.5,
+      strokeWidth: 2.5,
       stroke: defaultColor,
     },
     path: {
@@ -151,8 +151,10 @@ export function getSpectrum2VegaConfig(colorScheme: 'light' | 'dark'): Config {
     title: {
       offset: 10,
       font: ADOBE_CLEAN_FONT,
-      fontSize: 18,
+      fontSize: 22,
       color: FONT_COLOR,
+      anchor: 'start',
+      frame: 'group',
     },
     autosize: {
       type: 'fit',

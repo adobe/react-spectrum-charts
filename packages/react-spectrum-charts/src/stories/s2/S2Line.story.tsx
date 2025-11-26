@@ -14,7 +14,7 @@ import { ReactElement } from 'react';
 import { StoryFn } from '@storybook/react';
 
 import { Chart } from '../../Chart';
-import { Axis, Legend, Line } from '../../components';
+import { Axis, Legend, Line, Title } from '../../components';
 import useChartProps from '../../hooks/useChartProps';
 import { bindWithProps } from '../../test-utils';
 import { ChartProps } from '../../types';
@@ -37,10 +37,11 @@ const LineStory: StoryFn<typeof Line> = (args): ReactElement => {
   const chartProps = useChartProps(defaultChartProps);
   return (
     <Chart {...chartProps}>
+      <Title text="Workspace Trends" />
       <Axis position="left" grid title="Users" />
       <Axis position="bottom" labelFormat="time" baseline ticks />
       <Line {...args} />
-      <Legend highlight />
+      <Legend highlight title="Events" />
     </Chart>
   );
 };
