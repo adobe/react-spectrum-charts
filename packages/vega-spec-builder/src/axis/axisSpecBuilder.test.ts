@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { Axis, ColorValueRef, GroupMark, NumericValueRef, ProductionRule, Scale, Signal, TextValueRef } from 'vega';
+import { Axis, ColorValueRef, GroupMark, NumericValueRef, ProductionRule, Scale, LinearScale, Signal, TextValueRef } from 'vega';
 
 import {
   DEFAULT_LABEL_FONT_WEIGHT,
@@ -138,6 +138,7 @@ const defaultLinearScales: Scale[] = [
     type: 'linear',
     range: 'width',
     domain: { data: FILTERED_TABLE, field: 'x' },
+    zero: true,
   },
   {
     name: 'yLinear',
@@ -247,6 +248,15 @@ describe('Spec builder, Axis', () => {
           usermeta: {},
         });
       });
+      test('zero should default to true if no custom range is set', () => {
+        const resultScales = addAxis(
+          { usermeta: {}, scales: defaultLinearScales },
+          { position: 'bottom' }
+        ).scales as LinearScale[];
+
+        expect(resultScales?.at(0)?.zero).toEqual(true);
+        expect(resultScales?.at(1)?.zero).toEqual(true);
+      });
       test('custom X range', () => {
         const resultScales = addAxis(
           { usermeta: {}, scales: defaultLinearScales },
@@ -262,6 +272,24 @@ describe('Spec builder, Axis', () => {
         ).scales;
 
         expect(resultScales?.at(1)?.domain).toEqual([0, 100]);
+      });
+      test('custom X range that doesn\'t start at 0', () => {
+        const resultScales = addAxis(
+          { usermeta: {}, scales: defaultLinearScales },
+          { position: 'bottom', range: [10, 100] }
+        ).scales as LinearScale[];
+
+        expect(resultScales?.at(0)?.domain).toEqual([10, 100]);
+        expect(resultScales?.at(0)?.zero).toEqual(false);
+      });
+      test('custom Y range that doesn\'t start at 0', () => {
+        const resultScales = addAxis(
+          { usermeta: {}, scales: defaultLinearScales },
+          { position: 'bottom', range: [100, 1000] }
+        ).scales as LinearScale[];
+
+        expect(resultScales?.at(0)?.domain).toEqual([100, 1000]);
+        expect(resultScales?.at(0)?.zero).toEqual(false);
       });
     });
     describe('no scales', () => {

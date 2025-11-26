@@ -183,13 +183,14 @@ export const getDefaultScale = (
     // if this is the dimension axis, add padding
     ...(isDimensionAxis ? getPadding(scaleType) : {}),
   };
+  
   if (scale.type === 'ordinal') {
     const { name, type, domain } = scale;
     return { name, type, domain };
   }
   // metric axis properties
   if (scale.type === 'linear' && !isDimensionAxis) {
-    return { ...scale, nice: true, zero: true };
+    return { ...scale, nice: true, zero: scale.zero ?? true }; 
   }
   return scale;
 };
