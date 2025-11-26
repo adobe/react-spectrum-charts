@@ -190,7 +190,7 @@ export function buildSpec({
   }, spec);
 
   if (titles.length) {
-    spec = addTitle(spec, titles[0]);
+    spec = addTitle(spec, { ...titles[0], s2 });
   }
 
   // copy the spec so we don't mutate the original

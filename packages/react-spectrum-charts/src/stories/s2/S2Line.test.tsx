@@ -11,7 +11,7 @@
  */
 import { spectrumColors } from '@spectrum-charts/themes';
 
-import { findAllMarksByGroupName, findChart, render } from '../../test-utils';
+import { allElementsHaveAttributeValue, findAllMarksByGroupName, findChart, render } from '../../test-utils';
 import { S2Line } from './S2Line.story';
 
 const colors = spectrumColors.light;
@@ -29,5 +29,17 @@ describe('s2 styling', () => {
     expect(lines[1]).toHaveAttribute('stroke', colors['s2-categorical-200']);
     expect(lines[2]).toHaveAttribute('stroke', colors['s2-categorical-300']);
     expect(lines[3]).toHaveAttribute('stroke', colors['s2-categorical-400']);
+    expect(allElementsHaveAttributeValue(lines, 'stroke-width', '2.5')).toBe(true);
+  });
+
+  test('title should be the correct size', async () => {
+    render(<S2Line {...S2Line.args} />);
+
+    const chart = await findChart();
+    expect(chart).toBeInTheDocument();
+
+    const titles = await findAllMarksByGroupName(chart, 'role-title-text', 'text');
+    expect(titles.length).toEqual(1);
+    expect(titles[0]).toHaveAttribute('font-size', '22px');
   });
 });
