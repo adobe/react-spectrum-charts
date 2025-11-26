@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { Axis, ColorValueRef, GroupMark, NumericValueRef, ProductionRule, Scale, Signal, TextValueRef } from 'vega';
+import { Axis, ColorValueRef, GroupMark, NumericValueRef, ProductionRule, Scale, LinearScale, Signal, TextValueRef } from 'vega';
 
 import {
   DEFAULT_LABEL_FONT_WEIGHT,
@@ -252,7 +252,7 @@ describe('Spec builder, Axis', () => {
         const resultScales = addAxis(
           { usermeta: {}, scales: defaultLinearScales },
           { position: 'bottom' }
-        ).scales;
+        ).scales as LinearScale[];
 
         expect(resultScales?.at(0)?.zero).toEqual(true);
         expect(resultScales?.at(1)?.zero).toEqual(true);
@@ -277,7 +277,7 @@ describe('Spec builder, Axis', () => {
         const resultScales = addAxis(
           { usermeta: {}, scales: defaultLinearScales },
           { position: 'bottom', range: [10, 100] }
-        ).scales;
+        ).scales as LinearScale[];
 
         expect(resultScales?.at(0)?.domain).toEqual([10, 100]);
         expect(resultScales?.at(0)?.zero).toEqual(false);
@@ -286,7 +286,7 @@ describe('Spec builder, Axis', () => {
         const resultScales = addAxis(
           { usermeta: {}, scales: defaultLinearScales },
           { position: 'bottom', range: [100, 1000] }
-        ).scales;
+        ).scales as LinearScale[];
 
         expect(resultScales?.at(0)?.domain).toEqual([100, 1000]);
         expect(resultScales?.at(0)?.zero).toEqual(false);
