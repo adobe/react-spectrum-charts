@@ -59,8 +59,6 @@ export default {
       control: 'select',
       options: marioDataKeys.filter((key) => key !== 'weightClass'),
     },
-    onMouseOver: { action: false },
-    onMouseOut: { action: false },
   },
 };
 
