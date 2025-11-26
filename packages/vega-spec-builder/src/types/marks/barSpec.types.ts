@@ -100,4 +100,5 @@ export interface BarSpecOptions extends PartiallyRequired<BarOptions, BarOptions
   idKey: string;
   index: number;
   interactiveMarkName: string | undefined;
+  s2?: boolean;
 }
