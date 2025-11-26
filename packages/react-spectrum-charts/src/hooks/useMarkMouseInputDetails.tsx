@@ -13,10 +13,10 @@ import { createElement, useMemo } from 'react';
 
 import { Datum } from '@spectrum-charts/vega-spec-builder';
 
-import { Bar, BarElement, Chart, ChartChildElement } from '../index';
+import { Bar, BarElement, Scatter, ScatterElement, Chart, ChartChildElement } from '../index';
 import { getAllMarkElements } from '../utils';
 
-type MappedMarkElement = { name: string; element: BarElement };
+type MappedMarkElement = { name: string; element: BarElement | ScatterElement };
 
 export type MarkMouseInputDetail = {
   markName?: string;
@@ -26,22 +26,25 @@ export type MarkMouseInputDetail = {
 
 export default function useMarkMouseInputDetails(children: ChartChildElement[]): MarkMouseInputDetail[] {
   const markElements = useMemo(() => {
-    return [...getAllMarkElements(createElement(Chart, { data: [] }, children), Bar, [])] as MappedMarkElement[];
+    return [
+      ...getAllMarkElements(createElement(Chart, { data: [] }, children), Bar, []),
+      ...getAllMarkElements(createElement(Chart, { data: [] }, children), Scatter, [])
+    ] as MappedMarkElement[];
   }, [children]);
 
   return useMemo(
     () =>
       markElements
         .filter((mark) => {
-          const barProps = mark.element.props;
-          return barProps.onMouseOver || barProps.onMouseOut;
+          const props = mark.element.props;
+          return props.onMouseOver || props.onMouseOut;
         })
         .map((mark) => {
-          const barProps = mark.element.props;
+          const props = mark.element.props;
           return {
             markName: mark.name,
-            onMouseOver: barProps.onMouseOver,
-            onMouseOut: barProps.onMouseOut,
+            onMouseOver: props.onMouseOver,
+            onMouseOut: props.onMouseOut,
           };
         }) as MarkMouseInputDetail[],
     [markElements]

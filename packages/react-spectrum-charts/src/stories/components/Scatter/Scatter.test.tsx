@@ -23,11 +23,13 @@ import {
   findMarksByGroupName,
   getAllLegendEntries,
   hoverNthElement,
+  unhoverNthElement,
   render,
   screen,
   within,
 } from '../../../test-utils';
-import { Basic, Color, ColorScaleType, LineType, Opacity, Popover, Size, Tooltip } from './Scatter.story';
+import { Basic, Color, ColorScaleType, LineType, OnMouseInputs, Opacity, Popover, Size, Tooltip } from './Scatter.story';
+import { characterData } from '../../../stories/data/marioKartData';
 
 const colors = spectrumColors.light;
 
@@ -168,6 +170,82 @@ describe('Scatter', () => {
 
     const legendEntries = getAllLegendEntries(chart);
     expect(legendEntries).toHaveLength(6);
+  });
+
+  test('should call onMouseOver and onMouseOut callbacks when hovering over scatter marks', async () => {
+    const onMouseOver = jest.fn();
+    const onMouseOut = jest.fn();
+    render(<Basic {...Basic.args} onMouseOver={onMouseOver} onMouseOut={onMouseOut} />);
+    const chart = await findChart();
+    const points = await findAllMarksByGroupName(chart, 'scatter0');
+
+    await hoverNthElement(points, 0);
+    expect(onMouseOver).toHaveBeenCalledWith(expect.objectContaining(characterData[0]));
+
+    await unhoverNthElement(points, 0);
+    expect(onMouseOut).toHaveBeenCalledWith(expect.objectContaining(characterData[0]));
+  });
+
+  test('should display custom hover information in UI when mousing over bar items', async () => {
+    render(<OnMouseInputs {...OnMouseInputs.args} />);
+    const chart = await findChart();
+    const points = await findAllMarksByGroupName(chart, 'scatter0');
+
+    // Initially no hover info should be displayed
+    expect(screen.getByTestId('no-hover')).toBeInTheDocument();
+    expect(screen.queryByTestId('hover-data')).not.toBeInTheDocument();
+
+    // Hover over first bar (Chrome, 27000)
+    await hoverNthElement(points, 0);
+
+    expect(screen.queryByTestId('no-hover')).not.toBeInTheDocument();
+    let hoverData = screen.getByTestId('hover-data');
+    expect(hoverData).toBeInTheDocument();
+
+    const firstMarkData = JSON.parse(hoverData.textContent || '{}');
+    expect(firstMarkData.weightClass).toBe(characterData[0].weightClass);
+    expect(firstMarkData.character).toEqual(characterData[0].character);
+    expect(firstMarkData.firstCharacter).toBe(characterData[0].firstCharacter);
+    expect(firstMarkData.speedNormal).toBe(characterData[0].speedNormal);
+    expect(firstMarkData.speedAntigravity).toBe(characterData[0].speedAntigravity);
+    expect(firstMarkData.speedWater).toBe(characterData[0].speedWater);
+    expect(firstMarkData.speedAir).toBe(characterData[0].speedAir);
+    expect(firstMarkData.acceleration).toBe(characterData[0].acceleration);
+    expect(firstMarkData.weight).toBe(characterData[0].weight);
+    expect(firstMarkData.handlingNormal).toBe(characterData[0].handlingNormal);
+    expect(firstMarkData.grip).toBe(characterData[0].grip);
+    expect(firstMarkData.miniTurbo).toBe(characterData[0].miniTurbo);
+
+    // Re-query bars after hover state change to get fresh DOM references
+    const marksAfterHover = await findAllMarksByGroupName(chart, 'scatter0');
+
+    // Unhover first bar
+    await unhoverNthElement(marksAfterHover, 0);
+    expect(screen.getByTestId('no-hover')).toBeInTheDocument();
+    expect(screen.queryByTestId('hover-data')).not.toBeInTheDocument();
+
+    // Re-query bars after unhover state change for fresh DOM references
+    const marksAfterUnhover = await findAllMarksByGroupName(chart, 'scatter0');
+
+    // Hover over second bar (Firefox, 8000)
+    await hoverNthElement(marksAfterUnhover, 1);
+
+    hoverData = screen.getByTestId('hover-data');
+    expect(hoverData).toBeInTheDocument();
+
+    const secondMarkData = JSON.parse(hoverData.textContent || '{}');
+    expect(secondMarkData.weightClass).toBe(characterData[1].weightClass);
+    expect(secondMarkData.character).toEqual(characterData[1].character);
+    expect(secondMarkData.firstCharacter).toBe(characterData[1].firstCharacter);
+    expect(secondMarkData.speedNormal).toBe(characterData[1].speedNormal);
+    expect(secondMarkData.speedAntigravity).toBe(characterData[1].speedAntigravity);
+    expect(secondMarkData.speedWater).toBe(characterData[1].speedWater);
+    expect(secondMarkData.speedAir).toBe(characterData[1].speedAir);
+    expect(secondMarkData.acceleration).toBe(characterData[1].acceleration);
+    expect(secondMarkData.weight).toBe(characterData[1].weight);
+    expect(secondMarkData.handlingNormal).toBe(characterData[1].handlingNormal);
+    expect(secondMarkData.grip).toBe(characterData[1].grip);
+    expect(secondMarkData.miniTurbo).toBe(characterData[1].miniTurbo);
   });
 
   describe('Tooltip', () => {
