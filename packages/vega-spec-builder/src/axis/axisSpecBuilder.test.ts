@@ -247,6 +247,14 @@ describe('Spec builder, Axis', () => {
           usermeta: {},
         });
       });
+      test('zero should default to true if no custom range is set', () => {
+        const resultScales = addAxis(
+          { usermeta: {}, scales: defaultLinearScales },
+          { position: 'bottom' }
+        ).scales;
+
+        expect(resultScales?.at(1)?.zero).toEqual(true);
+      });
       test('custom X range', () => {
         const resultScales = addAxis(
           { usermeta: {}, scales: defaultLinearScales },
@@ -254,7 +262,6 @@ describe('Spec builder, Axis', () => {
         ).scales;
 
         expect(resultScales?.at(0)?.domain).toEqual([0, 100]);
-        expect(resultScales?.at(1)?.zero).toEqual(true);
       });
       test('custom X range that doesn\'t start at 0', () => {
         const resultScales = addAxis(
@@ -263,6 +270,7 @@ describe('Spec builder, Axis', () => {
         ).scales;
 
         expect(resultScales?.at(0)?.domain).toEqual([10, 100]);
+        expect(resultScales?.at(0)?.zero).toEqual(false);
       });
       test('custom Y range', () => {
         const resultScales = addAxis(
@@ -271,6 +279,7 @@ describe('Spec builder, Axis', () => {
         ).scales;
 
         expect(resultScales?.at(1)?.domain).toEqual([0, 100]);
+        expect(resultScales?.at(0)?.zero).toEqual(false);
       });
       test('custom Y range that doesn\'t start at 0', () => {
         const resultScales = addAxis(
