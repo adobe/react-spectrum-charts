@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { ReactElement, ReactNode } from 'react';
+import { ReactElement, ReactNode, useState } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
@@ -59,6 +59,8 @@ export default {
       control: 'select',
       options: marioDataKeys.filter((key) => key !== 'weightClass'),
     },
+    onMouseOver: { action: false },
+    onMouseOut: { action: false },
   },
 };
 
@@ -93,6 +95,50 @@ const getLegendProps = (args: ScatterProps): LegendProps => {
     legendProps.opacity = args.opacity;
   }
   return legendProps;
+};
+
+
+const OnMouseInputsStory: StoryFn<typeof Scatter> = (args): ReactElement => {
+  const [hoveredData, setHoveredData] = useState<Datum | null>(null);
+  const [isHovering, setIsHovering] = useState(false);
+
+  const controlledMouseOver = (datum: Datum) => {
+    if (!isHovering) {
+      setHoveredData(datum);
+      setIsHovering(true);
+    }
+  };
+  const controlledMouseOut = () => {
+    if (isHovering) {
+      setIsHovering(false);
+    }
+  };
+
+  const colors: ChartColors = args.colorScaleType === 'linear' ? 'sequentialViridis5' : 'categorical16';
+  const chartProps = useChartProps({ ...defaultChartProps, colors });
+  const legendProps = getLegendProps(args);
+
+  return (
+    <div>
+      <div data-testid="hover-info">
+        {isHovering && hoveredData ? (
+          <div data-testid="hover-data" style={{ minHeight: '5rem' }}>{JSON.stringify(hoveredData, null, 2)}</div>
+        ) : (
+          <div 
+            data-testid="no-hover"
+            style={{ minHeight: '5rem' }}
+          >No point hovered</div>
+        )}
+      </div>
+      <Chart {...chartProps}>
+        <Axis position="bottom" grid ticks baseline title={marioKeyTitle[args.dimension as MarioDataKey]} />
+        <Axis position="left" grid ticks baseline title={marioKeyTitle[args.metric as MarioDataKey]} />
+        <Scatter {...args} onMouseOver={controlledMouseOver} onMouseOut={controlledMouseOut} />
+        <Legend {...legendProps} highlight />
+        <Title text="Mario Kart 8 Character Data" />
+      </Chart>
+    </div>
+  );
 };
 
 const ScatterStory: StoryFn<typeof Scatter> = (args): ReactElement => {
@@ -157,6 +203,15 @@ LineType.args = {
   metric: 'handlingNormal',
 };
 
+const OnMouseInputs = bindWithProps(OnMouseInputsStory);
+OnMouseInputs.args = {
+  dimension: 'speedNormal',
+  metric: 'handlingNormal',
+  children: [
+    <ChartPopover key="1" width="auto"/>
+  ],
+};
+
 const Opacity = bindWithProps(ScatterStory);
 Opacity.args = {
   opacity: 'weightClass',
@@ -192,4 +247,4 @@ Tooltip.args = {
   children: <ChartTooltip>{dialog}</ChartTooltip>,
 };
 
-export { Basic, Color, ColorScaleType, LineType, Opacity, Popover, Size, Tooltip };
+export { Basic, Color, ColorScaleType, LineType, OnMouseInputs, Opacity, Popover, Size, Tooltip };
