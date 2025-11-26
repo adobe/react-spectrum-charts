@@ -121,6 +121,7 @@ const defaultScales: Scale[] = [
     type: 'point',
     range: 'width',
     domain: { data: FILTERED_TABLE, field: 'x' },
+    zero: true,
   },
   {
     name: 'yLinear',
@@ -138,6 +139,7 @@ const defaultLinearScales: Scale[] = [
     type: 'linear',
     range: 'width',
     domain: { data: FILTERED_TABLE, field: 'x' },
+    zero: true,
   },
   {
     name: 'yLinear',
@@ -253,6 +255,7 @@ describe('Spec builder, Axis', () => {
           { position: 'bottom' }
         ).scales;
 
+        expect(resultScales?.at(0)?.zero).toEqual(true);
         expect(resultScales?.at(1)?.zero).toEqual(true);
       });
       test('custom X range', () => {
@@ -263,15 +266,6 @@ describe('Spec builder, Axis', () => {
 
         expect(resultScales?.at(0)?.domain).toEqual([0, 100]);
       });
-      test('custom X range that doesn\'t start at 0', () => {
-        const resultScales = addAxis(
-          { usermeta: {}, scales: defaultLinearScales },
-          { position: 'bottom', range: [10, 100] }
-        ).scales;
-
-        expect(resultScales?.at(0)?.domain).toEqual([10, 100]);
-        expect(resultScales?.at(0)?.zero).toEqual(false);
-      });
       test('custom Y range', () => {
         const resultScales = addAxis(
           { usermeta: {}, scales: defaultLinearScales },
@@ -279,6 +273,14 @@ describe('Spec builder, Axis', () => {
         ).scales;
 
         expect(resultScales?.at(1)?.domain).toEqual([0, 100]);
+      });
+      test('custom X range that doesn\'t start at 0', () => {
+        const resultScales = addAxis(
+          { usermeta: {}, scales: defaultLinearScales },
+          { position: 'bottom', range: [10, 100] }
+        ).scales;
+
+        expect(resultScales?.at(0)?.domain).toEqual([10, 100]);
         expect(resultScales?.at(0)?.zero).toEqual(false);
       });
       test('custom Y range that doesn\'t start at 0', () => {

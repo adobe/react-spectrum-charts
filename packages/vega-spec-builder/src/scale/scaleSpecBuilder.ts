@@ -182,15 +182,15 @@ export const getDefaultScale = (
     domain: { data: FILTERED_TABLE, fields: [] },
     // if this is the dimension axis, add padding
     ...(isDimensionAxis ? getPadding(scaleType) : {}),
-    zero: true,
   };
+  
   if (scale.type === 'ordinal') {
     const { name, type, domain } = scale;
     return { name, type, domain };
   }
   // metric axis properties
   if (scale.type === 'linear' && !isDimensionAxis) {
-    return { ...scale, nice: true, zero: scale.zero }; 
+    return { ...scale, nice: true, zero: scale.zero ?? true }; 
   }
   return scale;
 };
