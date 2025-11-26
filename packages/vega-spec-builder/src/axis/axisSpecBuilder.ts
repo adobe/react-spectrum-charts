@@ -132,6 +132,8 @@ export const addAxis = produce<ScSpec, [AxisOptions & { colorScheme?: ColorSchem
     // set custom range if applicable
     if (range && (scaleType === 'linear' || scaleType === 'time')) {
       scale.domain = range;
+      // if there's a custom range set, we don't want to start the axis at 0
+      scale.zero = false;
     }
 
     const usermeta = spec.usermeta;

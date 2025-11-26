@@ -254,6 +254,7 @@ export const getScale = (scales: Scale[], position: Position) => {
     name: getDefaultScaleNameFromPosition(position),
     type: 'linear',
     range: getRange(position),
+    zero: true,
   };
   scales.push(scale);
   return scale;
