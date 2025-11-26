@@ -42,18 +42,7 @@ const S2BasicBarStory: StoryFn<typeof Bar> = (args): ReactElement => {
   );
 };
 
-const S2StackedBarStory: StoryFn<typeof Bar> = (args): ReactElement => {
-  const chartProps = useChartProps({ data: barSeriesData, width: 600, height: 400, s2: true });
-  return (
-    <Chart {...chartProps}>
-      <Axis position="bottom" baseline title="Browser" />
-      <Axis position="left" grid title="Value" />
-      <Bar {...args} />
-    </Chart>
-  );
-};
-
-const S2DodgedBarStory: StoryFn<typeof Bar> = (args): ReactElement => {
+const S2SeriesBarStory: StoryFn<typeof Bar> = (args): ReactElement => {
   const chartProps = useChartProps({ data: barSeriesData, width: 600, height: 400, s2: true });
   return (
     <Chart {...chartProps}>
@@ -70,7 +59,7 @@ S2Bar.args = {
   metric: 'downloads',
 };
 
-const S2StackedBar = bindWithProps(S2StackedBarStory);
+const S2StackedBar = bindWithProps(S2SeriesBarStory);
 S2StackedBar.args = {
   dimension: 'browser',
   metric: 'value',
@@ -78,7 +67,7 @@ S2StackedBar.args = {
   type: 'stacked',
 };
 
-const S2DodgedBar = bindWithProps(S2DodgedBarStory);
+const S2DodgedBar = bindWithProps(S2SeriesBarStory);
 S2DodgedBar.args = {
   dimension: 'browser',
   metric: 'value',
