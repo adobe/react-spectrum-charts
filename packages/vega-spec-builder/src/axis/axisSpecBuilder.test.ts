@@ -121,7 +121,6 @@ const defaultScales: Scale[] = [
     type: 'point',
     range: 'width',
     domain: { data: FILTERED_TABLE, field: 'x' },
-    zero: true,
   },
   {
     name: 'yLinear',
