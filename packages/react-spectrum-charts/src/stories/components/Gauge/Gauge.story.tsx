@@ -71,10 +71,16 @@ PerformanceRange.args = {
   performanceRanges: coloredPerformanceData,
 };
 
-const GaugeVariation3 = bindWithProps(GaugeStory);
-GaugeVariation3.args = {
-  metric: 'currentAmount',
+const Empty = bindWithProps(GaugeStory);
+Empty.args = {
+  metric: 'currentAmount-60',
   color: 'fuchsia-900',
+};
+
+const Full = bindWithProps(GaugeStory);
+Full.args = {
+  metric: 'currentAmount+40',
+  color: 'static-pruple-900',
 };
 
 const GaugeLabelNoNeedleNoPercent = bindWithProps(GaugeStory);
@@ -117,8 +123,9 @@ GaugeLabelNeedlePercent.args = {
 
 export { 
   Basic, 
-  GaugeVariation2, 
-  GaugeVariation3, 
+  Empty, 
+  Full,
+  PerformanceRange,
   GaugeLabelNoNeedleNoPercent, 
   GaugeLabelNeedleNoPercent, 
   GaugeLabelNoNeedlePercent,  

@@ -59,7 +59,7 @@ export const addGaugeMarks = produce<Mark[], [GaugeSpecOptions]>((marks, opt) =>
       const labelYOffset = 100;
       const labelFontSize = 60;
       marks.push(getValueLabel(name, labelFontSize, labelYOffset));
-  } else if (needle){
+  } else if (needle || opt.showPerformanceRanges){
       marks.push(getNeedle(name));
       marks.push(getNeedleHole(name, BACKGROUND_COLOR));
   } else if (showLabel){
