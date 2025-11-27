@@ -29,23 +29,24 @@ export const addGaugeMarks = produce<Mark[], [GaugeSpecOptions]>((marks, opt) =>
   const backgroundStroke = spectrumColors[colorScheme]['gray-300'];
   const fillerColorSignal = 'fillerColorToCurrVal';
 
-  // Background arc
-  marks.push(getBackgroundArc(name, backgroundFill, backgroundStroke));
-
   // Performance ranges
   if (opt.showPerformanceRanges) {
     marks.push(...getPerformanceRangeMarks(name, opt.performanceRanges));
     const endCapColor = opt.performanceRanges[0];
     const startCapColor = opt.performanceRanges[2];
+    marks.push(getBandGap1(name));
+    marks.push(getBandGap2(name));
+  } else {
+    // Background arc
+    marks.push(getBackgroundArc(name, backgroundFill, backgroundStroke));
+    // Filler arc (fills to clampedValue)
+    marks.push(getFillerArc(name, fillerColorSignal));
+    const endCapColor = fillerColorSignal;
+    const startCapColor = fillerColorSignal;
   }
 
-  // Filler arc (fills to clampedValue)
-  marks.push(getFillerArc(name, fillerColorSignal));
-  const endCapColor = fillerColorSignal;
-  const startCapColor = fillerColorSignal;
-
   // Needle to clampedValue
-  if (needle) {
+  if (needle || opt.showPerformanceRanges) {
       marks.push(getNeedle(name));
       marks.push(getNeedleHole(name, BACKGROUND_COLOR));
   }
@@ -136,9 +137,7 @@ export function getPerformanceRangeMarks(
           outerRadius: { signal: 'outerRadius' },
           startAngle: { signal: 'band1StartAngle' },
           endAngle: { signal: 'band1EndAngle' },
-          fill: { value: band1.fill },
-          stroke: { signal: BACKGROUND_COLOR },
-          strokeWidth: { value: 6 },
+          fill: { value: band1.fill },        
         },
       },
     },
@@ -154,8 +153,6 @@ export function getPerformanceRangeMarks(
           startAngle: { signal: 'band2StartAngle' },
           endAngle: { signal: 'band2EndAngle' },
           fill: { value: band2.fill },
-          stroke: { signal: BACKGROUND_COLOR },
-          strokeWidth: { value: 6 },
         },
       },
     },
@@ -171,15 +168,57 @@ export function getPerformanceRangeMarks(
           startAngle: { signal: 'band3StartAngle' },
           endAngle: { signal: 'band3EndAngle' },
           fill: { value: band3.fill },
-          stroke: { signal: BACKGROUND_COLOR },
-          strokeWidth: { value: 6 },
         },
       },
     },
   ];
 }
 
+export function getBandGap1(name: string): Mark {
 
+  return {
+    name: `${name}Band1Gap`,
+    description: 'Band 1 Gap',
+    type: 'rule',
+    encode: {
+      enter: {
+        stroke: { signal: BACKGROUND_COLOR },
+        strokeWidth: { value: 6 },
+        strokeCap: { value: "round" }
+      },
+      update: {
+        stroke: { signal: BACKGROUND_COLOR },
+        x:  { signal: "band1GapX" },
+        y:  { signal: "band1GapY" },
+        x2: { signal: "band1GapX2" },
+        y2: { signal: "band1GapY2" }
+      }
+    }
+  }
+};
+
+export function getBandGap2(name: string): Mark {
+
+  return {
+    name: `${name}Band2Gap`,
+    description: 'Band 2 Gap',
+    type: 'rule',
+    encode: {
+      enter: {
+        stroke: { signal: BACKGROUND_COLOR },
+        strokeWidth: { value: 6 },
+        strokeCap: { value: "round" }
+      },
+      update: {
+        stroke: { signal: BACKGROUND_COLOR },
+        x:  { signal: "band2GapX" },
+        y:  { signal: "band2GapY" },
+        x2: { signal: "band2GapX2" },
+        y2: { signal: "band2GapY2" }
+      }
+    }
+  }
+};
 
 export function getNeedleHole(name: string, backgroundColor): Mark {
   return {

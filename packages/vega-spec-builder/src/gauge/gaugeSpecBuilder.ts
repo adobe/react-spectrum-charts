@@ -139,6 +139,16 @@ export const addSignals = produce<Signal[], [GaugeSpecOptions]>((signals, option
   signals.push({ name: 'band2EndAngle',   update: "scale('angleScale', band2EndVal)" });
   signals.push({ name: 'band3StartAngle', update: "scale('angleScale', band3StartVal)" });
   signals.push({ name: 'band3EndAngle',   update: "scale('angleScale', band3EndVal)" });
+
+  signals.push({ name: 'band1GapX', update: "centerX + ( innerRadius - 5 ) * cos(band1EndAngle - PI/2)"})
+  signals.push({ name: 'band1GapY', update: "centerY + ( innerRadius - 5 ) * sin(band1EndAngle - PI/2)"})
+  signals.push({ name: 'band1GapX2', update: "centerX + ( outerRadius + 5 ) * cos(band1EndAngle - PI/2)"})
+  signals.push({ name: 'band1GapY2', update: "centerY + ( outerRadius + 5 ) * sin(band1EndAngle - PI/2)"})
+
+  signals.push({ name: 'band2GapX', update: "centerX + ( innerRadius - 5 ) * cos(band2EndAngle - PI/2)"})
+  signals.push({ name: 'band2GapY', update: "centerY + ( innerRadius - 5 ) * sin(band2EndAngle - PI/2)"})
+  signals.push({ name: 'band2GapX2', update: "centerX + ( outerRadius + 5 ) * cos(band2EndAngle - PI/2)"})
+  signals.push({ name: 'band2GapY2', update: "centerY + ( outerRadius + 5 ) * sin(band2EndAngle - PI/2)"})
 });
 
 export const addScales = produce<Scale[], [GaugeSpecOptions]>((scales, options) => {
