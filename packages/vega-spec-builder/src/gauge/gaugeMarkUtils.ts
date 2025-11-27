@@ -15,7 +15,7 @@ import { Mark } from 'vega';
 import { DEFAULT_COLOR_SCHEME, BACKGROUND_COLOR } from '@spectrum-charts/constants';
 
 import { GaugeSpecOptions } from '../types';
-import { spectrumColors } from '@spectrum-charts/themes';
+import { spectrumColors, getColorValue } from '@spectrum-charts/themes';
 import { defaultGaugeOptions } from './gaugeTestUtils';
 
 export const addGaugeMarks = produce<Mark[], [GaugeSpecOptions]>((marks, opt) => {
@@ -49,8 +49,8 @@ export const addGaugeMarks = produce<Mark[], [GaugeSpecOptions]>((marks, opt) =>
 
 export function getBackgroundArc(name: string, fill: string): Mark {
   return {
-    name: `${name}BackgroundArcRounded`,
-    description: 'Background Arc (Round Edge)',
+    name: `${name}BackgroundArc`,
+    description: 'Background Arc',
     type: 'arc',
     encode: {
       enter: {
@@ -96,19 +96,19 @@ export function getNeedle(name: string): Mark {
     description: 'Needle',
     type: 'symbol',
     encode: {
-    enter: {
-      x: { signal: "centerX" },
-      y: { signal: "centerY" }
-    },
-    update: {
-      shape: {
-        signal:
-            "'M -4 0 A 4 4 0 1 0 4 0 L 2 -' + needleLength + 'A 2 2 0 1 0 -2 -' + needleLength + ' ' +  'L -4 0 Z'"
-        },
-      angle: { signal: "needleAngleDeg" },
-      fill: { signal: "fillerColorToCurrVal" },
-      stroke: { signal: "fillerColorToCurrVal" },
-    }
+      enter: {
+        x: { signal: "centerX" },
+        y: { signal: "centerY" }
+      },
+      update: {
+        shape: {
+          signal:
+              "'M -4 0 A 4 4 0 1 0 4 0 L 2 -' + needleLength + 'A 2 2 0 1 0 -2 -' + needleLength + ' ' +  'L -4 0 Z'"
+          },
+        angle: { signal: "needleAngleDeg" },
+        fill: { signal: "fillerColorToCurrVal" },
+        stroke: { signal: "fillerColorToCurrVal" },
+      }
     }
   };
 }
@@ -119,35 +119,34 @@ export function getNeedleHole(name: string, backgroundColor): Mark {
     description: 'Needle Hole',
     type: 'symbol',
     encode: {
-    enter: {
-      x: { signal: "centerX" },
-      y: { signal: "centerY" }
-    },
-    update: {
-      shape: {
-        value:
-            "circle"  
-        },
-      size: {value: 750},
-      fill: { signal: backgroundColor },
-      stroke: { signal: backgroundColor },
-    }
+      enter: {
+        x: { signal: "centerX" },
+        y: { signal: "centerY" }
+      },
+      update: {
+        shape: { value: "circle" },
+        size: { value: 750 },
+        fill: { signal: backgroundColor },
+        stroke: { signal: backgroundColor },
+      }
   }
   };
 }
 
 export function getTargetLine(name: string): Mark {
+  const targetColor = getColorValue('gray-900', defaultGaugeOptions.colorScheme);
   return {
     name: `${name}Target Line`,
     description: 'Target Line',
     type: 'rule',
     encode: {
       enter: {
-        stroke: { value: "black" },
+        stroke: { signal: 'targetLineStroke'  },
         strokeWidth: { value: 6 },
         strokeCap: { value: "round" }
       },
       update: {
+        stroke: { signal: 'targetLineStroke'  },
         x:  { signal: "targetLineX" },
         y:  { signal: "targetLineY" },
         x2: { signal: "targetLineX2" },
