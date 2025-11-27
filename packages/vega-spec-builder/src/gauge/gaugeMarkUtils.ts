@@ -32,17 +32,19 @@ export const addGaugeMarks = produce<Mark[], [GaugeSpecOptions]>((marks, opt) =>
   // Performance ranges
   if (opt.showPerformanceRanges) {
     marks.push(...getPerformanceRangeMarks(name, opt.performanceRanges));
-    const endCapColor = opt.performanceRanges[0];
-    const startCapColor = opt.performanceRanges[2];
     marks.push(getBandGap1(name));
     marks.push(getBandGap2(name));
+    // Add caps
+    marks.push(getStartCap(name, opt.performanceRanges[0].fill, opt.performanceRanges[0].fill));
+    marks.push(getEndCap(name, opt.performanceRanges[2].fill, opt.performanceRanges[2].fill));
   } else {
     // Background arc
-    marks.push(getBackgroundArc(name, backgroundFill, backgroundStroke));
+    marks.push(getBackgroundArc(name, backgroundFill));
     // Filler arc (fills to clampedValue)
     marks.push(getFillerArc(name, fillerColorSignal));
-    const endCapColor = fillerColorSignal;
-    const startCapColor = fillerColorSignal;
+    // Add caps
+    marks.push(getStartCap(name, fillerColorSignal, backgroundFill));
+    marks.push(getEndCap(name, fillerColorSignal, backgroundFill));
   }
 
   // Needle to clampedValue
@@ -301,7 +303,7 @@ export function getEndCap(name: string, fillColor: string, backgroundColor: stri
         "x":  { signal: xOffset },
         "y":  { signal: yOffset },
         "innerRadius":  { signal: '0' },
-        "outerRadius": { signal: "((outerRadius - innerRadius) / 2)-1" },
+        "outerRadius": { signal: "((outerRadius - innerRadius) / 2) - 1" },
         "startAngle": { signal: "endAngle" },
         "endAngle": { signal: "endAngle+PI"},
         "strokeWidth": { signal: "2" },
