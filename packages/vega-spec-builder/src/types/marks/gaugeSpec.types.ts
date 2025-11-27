@@ -17,6 +17,12 @@ export type PerformanceRanges = { bandEndPct: number; fill: string };
 export interface GaugeOptions {
   /** Sets the name of the component. */
   name?: string;
+  /** Key in the data that is used as the graph label */
+  graphLabel?: string;
+  /** Sets to show the label or not */
+  showLabel?: boolean;
+  /** Sets to show the current value as a percentage or not */
+  showsAsPercent?: boolean;
   /** Key in the data that is used as the metric */
   metric?: string;
   /** Key in the data that is used as the color facet */
@@ -50,6 +56,9 @@ export interface GaugeOptions {
 
 type GaugeOptionsWithDefaults =
   | 'name'
+  | 'graphLabel'
+  | 'showLabel'
+  | 'showsAsPercent'
   | 'metric'
   | 'color'
   | 'minArcValue'

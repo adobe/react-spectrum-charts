@@ -16,15 +16,18 @@ import { FC } from 'react';
 import {
   DEFAULT_MAX_ARC_VALUE,
   DEFAULT_MIN_ARC_VALUE,
+  DEFAULT_LABEL,
   DEFAULT_NEEDLE,
   DEFAULT_TARGET_LINE,
 } from '@spectrum-charts/constants';
 
 import { GaugeProps } from '../../../types';
 
-// I assume this houses all the props for all variations of a Gauge chart?
 const Gauge: FC<GaugeProps> = ({
   name = 'gauge0',
+  graphLabel = 'graphLabel',
+  showLabel = DEFAULT_LABEL,
+  showsAsPercent = false,
   metric = 'currentAmount', 
   minArcValue = DEFAULT_MIN_ARC_VALUE,
   maxArcValue = DEFAULT_MAX_ARC_VALUE,

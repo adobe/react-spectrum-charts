@@ -63,6 +63,9 @@ export const addGauge = produce<
       backgroundStroke: spectrumColors[colorScheme]['gray-300'],
       color: getColorValue(color, colorScheme),
       fillerColorSignal: 'fillerColorToCurrVal',
+      graphLabel: 'graphLabel',
+      showsAsPercent: false,
+      showLabel: false,
       colorScheme: colorScheme,
       index,
       maxArcValue: 100,
@@ -106,6 +109,7 @@ export const addSignals = produce<Signal[], [GaugeSpecOptions]>((signals, option
       ? `"${getColorValue('gray-900', options.colorScheme)}"`
       : `"${options.color}"`,
   });
+  signals.push({ name: 'graphLabel', update: `data('table')[0].${options.graphLabel}` })
   signals.push({ name: 'innerRadius', update: "outerRadius - (radiusRef * 0.25)"})
   signals.push({ name: 'needleAngleTarget', update: "needleAngleTargetVal - PI/2"})
   signals.push({ name: 'needleAngleDeg', update: "needleAngleClampedVal * 180 / PI"})
@@ -122,6 +126,10 @@ export const addSignals = produce<Signal[], [GaugeSpecOptions]>((signals, option
   signals.push({ name: 'targetLineY', update: "centerY + ( innerRadius - 5) * sin(needleAngleTarget)"})
   signals.push({ name: 'targetLineX2', update: "centerX + ( outerRadius + 5) * cos(needleAngleTarget)"})
   signals.push({ name: 'targetLineY2', update: "centerY + ( outerRadius + 5) * sin(needleAngleTarget)"})
+  signals.push({ name: 'showAsPercent', update: `${options.showsAsPercent}`})
+  signals.push({ name: 'valueTextColor', value: getColorValue('gray-900', options.colorScheme) })
+  signals.push({ name: 'labelTextColor', value: getColorValue('gray-600', options.colorScheme) })
+  signals.push({ name: 'textSignal', update: "showAsPercent ? format((currVal / arcMaxVal) * 100, '.2f') + '%' : format(currVal, '.0f')"})
 
   signals.push({ name: 'band1EndPct', value: ranges[0].bandEndPct });
   signals.push({ name: 'band2EndPct', value: ranges[1].bandEndPct });

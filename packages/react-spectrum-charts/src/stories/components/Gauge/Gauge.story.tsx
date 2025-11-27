@@ -77,16 +77,50 @@ GaugeVariation3.args = {
   color: 'fuchsia-900',
 };
 
-const Empty = bindWithProps(GaugeStory);
-Empty.args = {
-  metric: 'currentAmount-60'
-}
+const GaugeLabelNoNeedleNoPercent = bindWithProps(GaugeStory);
+GaugeLabelNoNeedleNoPercent.args = {
+  metric: 'currentAmount',
+  color: 'indigo-1200',
+  showLabel: true,
+  needle: false,
+  showsAsPercent: false
+};
 
-const Full = bindWithProps(GaugeStory);
-Full.args = {
-  metric: 'currentAmount+40',
-  color: 'static-pruple-900'
-}
+const GaugeLabelNoNeedlePercent = bindWithProps(GaugeStory);
+GaugeLabelNoNeedlePercent.args = {
+  metric: 'currentAmount',
+  color: 'celery-800',
+  maxArcValue: 151,
+  showLabel: true,
+  needle: false,
+  showsAsPercent: true
+};
 
+const GaugeLabelNeedleNoPercent = bindWithProps(GaugeStory);
+GaugeLabelNeedleNoPercent.args = {
+  metric: 'currentAmount',
+  color: 'cyan-700',
+  showLabel: true,
+  needle: true,
+  showsAsPercent: false
+};
 
-export { Basic, PerformanceRange, GaugeVariation3, Empty, Full };
+const GaugeLabelNeedlePercent = bindWithProps(GaugeStory);
+GaugeLabelNeedlePercent.args = {
+  metric: 'currentAmount',
+  color: 'magenta-1000',
+  maxArcValue: 151,
+  showLabel: true,
+  needle: true,
+  showsAsPercent: true
+};
+
+export { 
+  Basic, 
+  GaugeVariation2, 
+  GaugeVariation3, 
+  GaugeLabelNoNeedleNoPercent, 
+  GaugeLabelNeedleNoPercent, 
+  GaugeLabelNoNeedlePercent,  
+  GaugeLabelNeedlePercent 
+};

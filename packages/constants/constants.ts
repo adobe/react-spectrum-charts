@@ -26,6 +26,7 @@ export const DEFAULT_FONT_SIZE = 14;
 export const DEFAULT_FONT_COLOR = 'gray-800';
 export const DEFAULT_GRANULARITY = 'day';
 export const DEFAULT_HIDDEN_SERIES = [];
+export const DEFAULT_LABEL = false;
 export const DEFAULT_LABEL_ALIGN = 'center';
 export const DEFAULT_LABEL_FONT_WEIGHT = 'normal';
 export const DEFAULT_LABEL_ORIENTATION = 'horizontal';
