@@ -35,10 +35,14 @@ export const addGaugeMarks = produce<Mark[], [GaugeSpecOptions]>((marks, opt) =>
   // Performance ranges
   if (opt.showPerformanceRanges) {
     marks.push(...getPerformanceRangeMarks(name, opt.performanceRanges));
+    const endCapColor = opt.performanceRanges[0];
+    const startCapColor = opt.performanceRanges[2];
   }
 
   // Filler arc (fills to clampedValue)
   marks.push(getFillerArc(name, fillerColorSignal));
+  const endCapColor = fillerColorSignal;
+  const startCapColor = fillerColorSignal;
 
   // Needle to clampedValue
   if (needle) {
@@ -133,6 +137,8 @@ export function getPerformanceRangeMarks(
           startAngle: { signal: 'band1StartAngle' },
           endAngle: { signal: 'band1EndAngle' },
           fill: { value: band1.fill },
+          stroke: { signal: BACKGROUND_COLOR },
+          strokeWidth: { value: 6 },
         },
       },
     },
@@ -148,6 +154,8 @@ export function getPerformanceRangeMarks(
           startAngle: { signal: 'band2StartAngle' },
           endAngle: { signal: 'band2EndAngle' },
           fill: { value: band2.fill },
+          stroke: { signal: BACKGROUND_COLOR },
+          strokeWidth: { value: 6 },
         },
       },
     },
@@ -163,6 +171,8 @@ export function getPerformanceRangeMarks(
           startAngle: { signal: 'band3StartAngle' },
           endAngle: { signal: 'band3EndAngle' },
           fill: { value: band3.fill },
+          stroke: { signal: BACKGROUND_COLOR },
+          strokeWidth: { value: 6 },
         },
       },
     },
