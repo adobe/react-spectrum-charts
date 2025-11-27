@@ -11,7 +11,7 @@
  */
 import { JSXElementConstructor, ReactElement } from 'react';
 
-import { GaugeOptions } from '@spectrum-charts/vega-spec-builder'; // TODO: update this when GaugeOptions is added
+import { GaugeOptions } from '@spectrum-charts/vega-spec-builder'; 
 
 export interface GaugeProps extends Omit<GaugeOptions, 'markType'> {}
 
