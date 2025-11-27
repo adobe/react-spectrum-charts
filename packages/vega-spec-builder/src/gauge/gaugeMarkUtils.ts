@@ -14,7 +14,7 @@ import { Mark } from 'vega';
 
 import { DEFAULT_COLOR_SCHEME, BACKGROUND_COLOR } from '@spectrum-charts/constants';
 
-import { GaugeSpecOptions } from '../types';
+import { GaugeSpecOptions, PerformanceRanges } from '../types';
 import { spectrumColors, getColorValue } from '@spectrum-charts/themes';
 import { defaultGaugeOptions } from './gaugeTestUtils';
 
@@ -31,6 +31,11 @@ export const addGaugeMarks = produce<Mark[], [GaugeSpecOptions]>((marks, opt) =>
 
   // Background arc
   marks.push(getBackgroundArc(name, backgroundFill, backgroundStroke));
+
+  // Performance ranges
+  if (opt.showPerformanceRanges) {
+    marks.push(...getPerformanceRangeMarks(name, opt.performanceRanges));
+  }
 
   // Filler arc (fills to clampedValue)
   marks.push(getFillerArc(name, fillerColorSignal));
@@ -78,7 +83,7 @@ export function getFillerArc(name: string, fillerColorSignal: string): Mark {
         outerRadius: { signal: 'outerRadius' },
         startAngle:  { signal: 'startAngle' },
         endAngle:    { signal: 'endAngle' },
-        fill:        { signal: fillerColorSignal }
+        fill:        { signal: 'fillerColorToCurrVal' }
       },
       update: {
         endAngle:     { signal: "scale('angleScale', clampedVal)" }
@@ -103,12 +108,68 @@ export function getNeedle(name: string): Mark {
               "'M -4 0 A 4 4 0 1 0 4 0 L 2 -' + needleLength + 'A 2 2 0 1 0 -2 -' + needleLength + ' ' +  'L -4 0 Z'"
           },
         angle: { signal: "needleAngleDeg" },
-        fill: { signal: "fillerColorToCurrVal" },
-        stroke: { signal: "fillerColorToCurrVal" },
+        fill: { signal: "needleColor" },
+        stroke: { signal: "needleColor" },
       }
     }
   };
 }
+
+export function getPerformanceRangeMarks(
+  name: string,
+  performanceRanges: PerformanceRanges[]
+): Mark[] {
+  const [band1, band2, band3] = performanceRanges;
+  return [
+    {
+      name: `${name}Band1Arc`,
+      type: 'arc',
+      encode: {
+        enter: {
+          x: { signal: 'centerX' },
+          y: { signal: 'centerY' },
+          innerRadius: { signal: 'innerRadius' },
+          outerRadius: { signal: 'outerRadius' },
+          startAngle: { signal: 'band1StartAngle' },
+          endAngle: { signal: 'band1EndAngle' },
+          fill: { value: band1.fill },
+        },
+      },
+    },
+    {
+      name: `${name}Band2Arc`,
+      type: 'arc',
+      encode: {
+        enter: {
+          x: { signal: 'centerX' },
+          y: { signal: 'centerY' },
+          innerRadius: { signal: 'innerRadius' },
+          outerRadius: { signal: 'outerRadius' },
+          startAngle: { signal: 'band2StartAngle' },
+          endAngle: { signal: 'band2EndAngle' },
+          fill: { value: band2.fill },
+        },
+      },
+    },
+    {
+      name: `${name}Band3Arc`,
+      type: 'arc',
+      encode: {
+        enter: {
+          x: { signal: 'centerX' },
+          y: { signal: 'centerY' },
+          innerRadius: { signal: 'innerRadius' },
+          outerRadius: { signal: 'outerRadius' },
+          startAngle: { signal: 'band3StartAngle' },
+          endAngle: { signal: 'band3EndAngle' },
+          fill: { value: band3.fill },
+        },
+      },
+    },
+  ];
+}
+
+
 
 export function getNeedleHole(name: string, backgroundColor): Mark {
   return {

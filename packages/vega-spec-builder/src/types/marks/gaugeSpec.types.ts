@@ -12,7 +12,7 @@
 import { ColorScheme } from '../chartSpec.types';
 import { NumberFormat, PartiallyRequired } from '../specUtil.types';
 
-export type ThresholdBackground = { thresholdMin?: number; thresholdMax?: number; fill?: string };
+export type PerformanceRanges = { bandEndPct: number; fill: string };
 
 export interface GaugeOptions {
   /** Sets the name of the component. */
@@ -37,6 +37,14 @@ export interface GaugeOptions {
   target?: string;
   /** Showing the target line */
   targetLine?: boolean;
+  /** Performance ranges
+   * 
+   * Array of performance ranges to be rendered as filled bands on the gauge.
+   * 
+   */
+  performanceRanges?: PerformanceRanges[];
+  /** if true, show banded performance ranges instead of a colored filler arc */
+  showPerformanceRanges?: boolean;
   
 }
 
@@ -52,6 +60,7 @@ type GaugeOptionsWithDefaults =
   | 'needle'
   | 'target'
   | 'targetLine'
+  | 'performanceRanges'
 
 export interface GaugeSpecOptions extends PartiallyRequired<GaugeOptions, GaugeOptionsWithDefaults> {
   colorScheme: ColorScheme;

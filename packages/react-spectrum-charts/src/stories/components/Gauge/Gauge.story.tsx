@@ -20,7 +20,7 @@ import { Title } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
 import { bindWithProps } from '../../../test-utils';
 import { GaugeProps, ChartProps } from '../../../types';
-import { basicGaugeData } from './data';
+import { basicGaugeData, coloredPerformanceData } from './data';
 
 export default {
   title: 'RSC/Gauge (alpha)',
@@ -63,10 +63,12 @@ Basic.args = {
   color: 'blue-900',
 };
 
-const GaugeVariation2 = bindWithProps(GaugeStory);
-GaugeVariation2.args = {
+const PerformanceRange = bindWithProps(GaugeStory);
+PerformanceRange.args = {
   metric: 'currentAmount',
   color: 'red-900',
+  showPerformanceRanges: true,
+  performanceRanges: coloredPerformanceData,
 };
 
 const GaugeVariation3 = bindWithProps(GaugeStory);
@@ -77,4 +79,4 @@ GaugeVariation3.args = {
 
 
 
-export { Basic, GaugeVariation2, GaugeVariation3 };
+export { Basic, PerformanceRange, GaugeVariation3 };

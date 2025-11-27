@@ -16,4 +16,8 @@ export const basicGaugeData = [
   { graphLabel: 'Customers', currentAmount: 60, target: 80 },
 ];
 
-
+export const coloredPerformanceData = [
+  { bandEndPct: 0.55, fill: 'red-900' },
+  { bandEndPct: 0.8, fill: 'yellow-400' },
+  { bandEndPct: 1, fill: 'green-700' },
+];
