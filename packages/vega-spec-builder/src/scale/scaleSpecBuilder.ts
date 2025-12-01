@@ -169,6 +169,7 @@ export const getDefaultScale = (
   axis: AxisType,
   chartOrientation: Orientation = 'vertical'
 ): Scale => {
+  console.log('get default scale...');
   const orientationToAxis: { [key in Orientation]: AxisType } = {
     vertical: 'x',
     horizontal: 'y',
@@ -190,7 +191,7 @@ export const getDefaultScale = (
   }
   // metric axis properties
   if (scale.type === 'linear' && !isDimensionAxis) {
-    return { ...scale, nice: true, zero: scale.zero ?? true }; 
+    return { ...scale, nice: true, zero: true }; 
   }
   return scale;
 };
