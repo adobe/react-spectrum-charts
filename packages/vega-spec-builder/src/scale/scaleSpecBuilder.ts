@@ -183,7 +183,6 @@ export const getDefaultScale = (
     // if this is the dimension axis, add padding
     ...(isDimensionAxis ? getPadding(scaleType) : {}),
   };
-  
   if (scale.type === 'ordinal') {
     const { name, type, domain } = scale;
     return { name, type, domain };
