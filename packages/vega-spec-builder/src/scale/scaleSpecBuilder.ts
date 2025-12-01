@@ -190,7 +190,7 @@ export const getDefaultScale = (
   }
   // metric axis properties
   if (scale.type === 'linear' && !isDimensionAxis) {
-    return { ...scale, nice: true, zero: true }; 
+    return { ...scale, nice: true, zero: true };
   }
   return scale;
 };
