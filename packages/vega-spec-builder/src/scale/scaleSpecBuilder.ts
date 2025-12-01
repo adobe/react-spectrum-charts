@@ -169,7 +169,6 @@ export const getDefaultScale = (
   axis: AxisType,
   chartOrientation: Orientation = 'vertical'
 ): Scale => {
-  console.log('get default scale...');
   const orientationToAxis: { [key in Orientation]: AxisType } = {
     vertical: 'x',
     horizontal: 'y',
