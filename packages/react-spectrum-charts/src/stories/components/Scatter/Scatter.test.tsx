@@ -23,11 +23,13 @@ import {
   findMarksByGroupName,
   getAllLegendEntries,
   hoverNthElement,
+  unhoverNthElement,
   render,
   screen,
   within,
 } from '../../../test-utils';
-import { Basic, Color, ColorScaleType, LineType, Opacity, Popover, Size, Tooltip } from './Scatter.story';
+import { Basic, Color, ColorScaleType, LineType, OnMouseInputs, Opacity, Popover, Size, Tooltip } from './Scatter.story';
+import { characterData } from '../../../stories/data/marioKartData';
 
 const colors = spectrumColors.light;
 
@@ -168,6 +170,60 @@ describe('Scatter', () => {
 
     const legendEntries = getAllLegendEntries(chart);
     expect(legendEntries).toHaveLength(6);
+  });
+
+  test('should call onMouseOver and onMouseOut callbacks when hovering over scatter marks', async () => {
+    const onMouseOver = jest.fn();
+    const onMouseOut = jest.fn();
+    render(<Basic {...Basic.args} onMouseOver={onMouseOver} onMouseOut={onMouseOut} />);
+    const chart = await findChart();
+    const points = await findAllMarksByGroupName(chart, 'scatter0');
+
+    await hoverNthElement(points, 0);
+    expect(onMouseOver).toHaveBeenCalledWith(expect.objectContaining(characterData[0]));
+
+    await unhoverNthElement(points, 0);
+    expect(onMouseOut).toHaveBeenCalledWith(expect.objectContaining(characterData[0]));
+  });
+
+  test('should display custom hover information in UI when mousing over bar items', async () => {
+    render(<OnMouseInputs {...OnMouseInputs.args} />);
+    const chart = await findChart();
+    const points = await findAllMarksByGroupName(chart, 'scatter0');
+
+    // Initially no hover info should be displayed
+    expect(screen.getByTestId('no-hover')).toBeInTheDocument();
+    expect(screen.queryByTestId('hover-data')).not.toBeInTheDocument();
+
+    // Hover over first bar (Chrome, 27000)
+    await hoverNthElement(points, 0);
+
+    expect(screen.queryByTestId('no-hover')).not.toBeInTheDocument();
+    let hoverData = screen.getByTestId('hover-data');
+    expect(hoverData).toBeInTheDocument();
+
+    const firstMarkData = JSON.parse(hoverData.textContent || '{}');
+    expect(firstMarkData.firstCharacter).toBe(characterData[0].firstCharacter);
+
+    // Re-query bars after hover state change to get fresh DOM references
+    const marksAfterHover = await findAllMarksByGroupName(chart, 'scatter0');
+
+    // Unhover first bar
+    await unhoverNthElement(marksAfterHover, 0);
+    expect(screen.getByTestId('no-hover')).toBeInTheDocument();
+    expect(screen.queryByTestId('hover-data')).not.toBeInTheDocument();
+
+    // Re-query bars after unhover state change for fresh DOM references
+    const marksAfterUnhover = await findAllMarksByGroupName(chart, 'scatter0');
+
+    // Hover over second bar (Firefox, 8000)
+    await hoverNthElement(marksAfterUnhover, 1);
+
+    hoverData = screen.getByTestId('hover-data');
+    expect(hoverData).toBeInTheDocument();
+
+    const secondMarkData = JSON.parse(hoverData.textContent || '{}');
+    expect(secondMarkData.firstCharacter).toBe(characterData[1].firstCharacter);
   });
 
   describe('Tooltip', () => {

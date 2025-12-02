@@ -172,6 +172,18 @@ The `Trendline` component is fully supported by `Scatter`. To plot a trendline, 
             <td>Scatter point border line width in pixels.<br/>If a string is provided, this string is the key in the data that symbols will be grouped into series by. Each unique value for this key in the provided data will map to a line width from the line widths scale.<br/>If an object with a value is provided, this will set the line width for all symbols.</td>
         </tr>
         <tr>
+            <td>onMouseOver</td>
+            <td>function</td>
+            <td>–</td>
+            <td>Callback that will be run when a point is hovered.</td>
+        </tr>
+        <tr>
+            <td>onMouseOut</td>
+            <td>function</td>
+            <td>–</td>
+            <td>Callback that will be run when a point is no longer hovered.</td>
+        </tr>
+        <tr>
             <td>metric</td>
             <td>string</td>
             <td>'value'</td>

@@ -14,7 +14,7 @@ import { JSXElementConstructor, ReactElement } from 'react';
 import { ScatterOptions } from '@spectrum-charts/vega-spec-builder';
 
 import { ChartPopoverElement, ChartTooltipElement } from '../dialogs';
-import { Children } from '../util.types';
+import { Children, MarkCallback } from '../util.types';
 import { ScatterAnnotationElement, ScatterPathElement, TrendlineElement } from './supplemental';
 
 type ScatterChildElement =
@@ -27,6 +27,10 @@ type ScatterChildElement =
 export interface ScatterProps
   extends Omit<ScatterOptions, 'chartPopovers' | 'chartTooltips' | 'markType' | 'scatterPaths' | 'trendlines'> {
   children?: Children<ScatterChildElement>;
+  /** Callback that will be run when a point/section is hovered */
+  onMouseOver?: MarkCallback;
+  /** Callback that will be run when a point/section is no longer hovered */
+  onMouseOut?: MarkCallback;
 }
 
 export type ScatterElement = ReactElement<ScatterProps, JSXElementConstructor<ScatterProps>>;
