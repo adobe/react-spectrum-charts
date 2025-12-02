@@ -126,7 +126,7 @@ const LinearYAxisStory: StoryFn<typeof Axis> = (args): ReactElement => {
   const chartProps = useChartProps({ data: workspaceTrendsData, width: 600 });
   return (
     <Chart {...chartProps}>
-      <Axis position="bottom" grid baseline ticks tickMinStep={5} title="Users" />
+      <Axis position="bottom" grid baseline ticks tickMinStep={5} baselineOffset={args?.range?.[0]} title="Users" />
       <Axis {...args} />
       <Line color="series" dimension="point" scaleType="linear" />
     </Chart>
@@ -296,8 +296,11 @@ CustomXRange.args = {
 const CustomYRange = bindWithProps(LinearYAxisStory);
 CustomYRange.args = {
   position: 'left',
+  baseline: true,
+  grid: true,
   labelFormat: 'linear',
   ticks: true,
+  tickMinStep: 5,
   range: [0, 9000],
 };
 
