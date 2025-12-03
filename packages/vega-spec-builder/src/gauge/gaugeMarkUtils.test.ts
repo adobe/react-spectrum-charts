@@ -26,10 +26,9 @@ describe('getGaugeMarks', () => {
     const data = addGaugeMarks([], defaultGaugeOptions);
     expect(data).toBeDefined();
     expect(Array.isArray(data)).toBe(true);
-    expect(data).toHaveLength(3);
+    expect(data).toHaveLength(4);
     expect(data[0].type).toBe('arc');
     expect(data[1].type).toBe('arc');
-    expect(data[2].type).toBe('rule');
   });
 });
 
@@ -41,7 +40,7 @@ describe('getGaugeBackgroundArc', () => {
     expect(data.encode?.enter).toBeDefined();
 
     // Expect the correct amount of fields in the update object
-    expect(Object.keys(data.encode?.enter ?? {}).length).toBe(8);
+    expect(Object.keys(data.encode?.enter ?? {}).length).toBe(7);
   });
 });
 
@@ -52,7 +51,7 @@ describe('getFillerArc', () => {
     expect(data).toBeDefined();
 
     expect(data.encode?.update).toBeDefined();
-    expect(Object.keys(data.encode?.update ?? {}).length).toBe(1);
+    expect(Object.keys(data.encode?.update ?? {}).length).toBe(2);
 
     expect(data.encode?.enter).toBeDefined();
     expect(Object.keys(data.encode?.enter ?? {}).length).toBe(7)
@@ -68,7 +67,7 @@ describe('getGaugeNeedle', () => {
     expect(Object.keys(data.encode?.update ?? {}).length).toBe(4);
 
     expect(data.encode?.enter).toBeDefined();
-    expect(Object.keys(data.encode?.enter ?? {}).length).toBe(3)
+    expect(Object.keys(data.encode?.enter ?? {}).length).toBe(2)
   });
 });
 

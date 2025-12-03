@@ -99,16 +99,8 @@ export const addSignals = produce<Signal[], [GaugeSpecOptions]>((signals, option
   signals.push({ name: 'clampedVal', update: "min(max(arcMinVal, currVal), arcMaxVal)"})
   signals.push({ name: 'currVal', update: `data('table')[0].${options.metric}` })
   signals.push({ name: 'endAngle', update: "PI * 2 / 3" })
-  signals.push({
-    name: 'fillerColorToCurrVal',
-    update: options.showPerformanceRanges ? 'null' : `"${options.color}"`,
-  });
-  signals.push({
-    name: 'needleColor',
-    update: options.showPerformanceRanges
-      ? `"${getColorValue('gray-900', options.colorScheme)}"`
-      : `"${options.color}"`,
-  });
+  signals.push({ name: 'fillerColorToCurrVal', value: `${options.color}`});
+  signals.push({ name: 'needleColor', update: options.showPerformanceRanges? `"${getColorValue('gray-900', options.colorScheme)}"`: `"${options.color}"`});
   signals.push({ name: 'graphLabel', update: `data('table')[0].${options.graphLabel}` })
   signals.push({ name: 'innerRadius', update: "outerRadius - (radiusRef * 0.25)"})
   signals.push({ name: 'needleAngleTarget', update: "needleAngleTargetVal - PI/2"})
