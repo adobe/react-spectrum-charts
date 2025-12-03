@@ -49,7 +49,7 @@ export const addGaugeMarks = produce<Mark[], [GaugeSpecOptions]>((marks, opt) =>
   }
 
   // Needle to clampedValue
-  if (needle && showLabel) {
+if ((needle || opt.showPerformanceRanges) && showLabel) {
       marks.push(getNeedle(name));
       marks.push(getNeedleHole(name, BACKGROUND_COLOR));
       const yOffset = 140;

@@ -32,8 +32,6 @@ import { spectrumColors } from '../../../themes';
 import { DEFAULT_PERFORMANCE_RANGES } from './gaugeSpecBuilder';
 
 
-
-
 // getGaugeMarks
 describe('getGaugeMarks', () => {
   test('Should return the correct marks object', () => {
@@ -85,7 +83,7 @@ describe('getGaugeNeedle', () => {
   });
 });
 
-// getPerformanceRangeMarks
+// getDefaultPerformanceRanges
 describe('DEFAULT_PERFORMANCE_RANGES', () => {
   test('Should use the correct bandEndPct and fill colors for red, yellow, green', () => {
     expect(DEFAULT_PERFORMANCE_RANGES).toBeDefined();
@@ -106,6 +104,78 @@ describe('DEFAULT_PERFORMANCE_RANGES', () => {
     expect(band3.fill).toBe(spectrumColors.light['green-700']);
   });
 });
+
+// getPerformanceRangeTests
+describe('getPerformanceRangesTests', () => {
+  const performanceRanges = [
+    { bandEndPct: 0.55, fill: 'red-900' },
+    { bandEndPct: 0.8, fill: 'yellow-900' },
+    { bandEndPct: 1, fill: 'green-700' },
+  ];
+ 
+  test('Performance ranges enabled adds band arcs, gaps, and caps', () => {
+    const data = addGaugeMarks([], {
+      ...defaultGaugeOptions,
+      showPerformanceRanges: true,
+      performanceRanges,
+    });
+    expect(data).toHaveLength(9);
+    expect(data.map(mark => mark.type)).toEqual([
+      'arc',  
+      'arc',  
+      'arc',  
+      'rule',
+      'rule',
+      'arc',  
+      'arc',
+      'symbol',
+      'symbol',
+    ]);
+  });
+ 
+  test('Performance ranges disabled keeps background, filler, and caps', () => {
+    const data = addGaugeMarks([], {
+      ...defaultGaugeOptions,
+      showPerformanceRanges: false });
+    expect(data).toHaveLength(4);
+    expect(data.every(mark => mark.type === 'arc')).toBe(true);
+  });
+});describe('getPerformanceRangesTests', () => {
+  const performanceRanges = [
+    { bandEndPct: 0.55, fill: 'red-900' },
+    { bandEndPct: 0.8, fill: 'yellow-900' },
+    { bandEndPct: 1, fill: 'green-700' },
+  ];
+ 
+  test('Performance ranges enabled adds band arcs, gaps, and caps', () => {
+    const data = addGaugeMarks([], {
+      ...defaultGaugeOptions,
+      showPerformanceRanges: true,
+      performanceRanges,
+    });
+    expect(data).toHaveLength(9);
+    expect(data.map(mark => mark.type)).toEqual([
+      'arc',  
+      'arc',  
+      'arc',  
+      'rule',
+      'rule',
+      'arc',  
+      'arc',
+      'symbol',
+      'symbol',
+    ]);
+  });
+ 
+  test('Performance ranges disabled keeps background, filler, and caps', () => {
+    const data = addGaugeMarks([], {
+      ...defaultGaugeOptions,
+      showPerformanceRanges: false });
+    expect(data).toHaveLength(4);
+    expect(data.every(mark => mark.type === 'arc')).toBe(true);
+  });
+});
+ 
 
 
 // getBandGap1
@@ -227,7 +297,6 @@ describe('getGaugeValueLabel', () => {
   });
 });
 
-
 // getGaugeNeeldeAndLabelTests
 describe('getGaugeNeedleAndLabelTests', () => {
   test('Needle and Label Both True', () => {
@@ -296,3 +365,4 @@ describe('getGaugeNeedleAndLabelTests', () => {
     expect(data.some(m => m.type === 'text' && (m.name ?? '').includes('graphLabelCurrentValueText'))).toBe(true);
   });
 });
+
