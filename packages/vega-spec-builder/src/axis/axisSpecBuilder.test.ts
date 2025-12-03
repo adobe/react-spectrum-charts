@@ -12,12 +12,17 @@
 import { Axis, ColorValueRef, GroupMark, NumericValueRef, ProductionRule, Scale, LinearScale, Signal, TextValueRef } from 'vega';
 
 import {
+  COLOR_SCALE,
   DEFAULT_LABEL_FONT_WEIGHT,
   FADE_FACTOR,
   FILTERED_TABLE,
+  HOVERED_ITEM,
   LAST_RSC_SERIES_ID,
+  FIRST_RSC_SERIES_ID,
   SERIES_ID,
+  DEFAULT_FONT_COLOR,
 } from '@spectrum-charts/constants';
+import { spectrumColors } from '@spectrum-charts/themes';
 
 import { SubLabel } from '../types';
 import {
@@ -25,6 +30,8 @@ import {
   addAxesMarks,
   addAxis,
   addAxisSignals,
+  applyPrimaryMetricAxisEncodings,
+  applySecondaryMetricAxisEncodings,
   getLabelSignalValue,
   setAxisBaseline,
 } from './axisSpecBuilder';
@@ -972,6 +979,78 @@ describe('Spec builder, Axis', () => {
       );
       expect(labelValue).toHaveLength(1);
       expect(labelValue[0]).toEqual({ value: 2, label: 'two', align: 'left', baseline: 'top' });
+    });
+  });
+
+  describe('applySecondaryMetricAxisEncodings()', () => {
+    test('should apply encodings when axis.encode does not exist', () => {
+      const axis: Axis = {
+        scale: 'yLinear',
+        orient: 'left',
+      };
+      const interactiveMarks = ['scatter'];
+
+      applySecondaryMetricAxisEncodings(axis, interactiveMarks);
+
+      const fillOpacity = [
+        {
+          test: `isValid(scatter_${HOVERED_ITEM})`,
+          signal: `scatter_${HOVERED_ITEM}.${SERIES_ID} === ${LAST_RSC_SERIES_ID} ? 1 : ${FADE_FACTOR}`,
+        },
+      ];
+
+      const fillValue = [
+        { signal: `scale('${COLOR_SCALE}', ${LAST_RSC_SERIES_ID})` },
+      ];
+
+      // Should create new encode object
+      expect(axis.encode).toBeDefined();
+      expect(axis.encode?.labels).toBeDefined();
+      expect(axis.encode?.labels?.enter?.fill).toEqual(fillValue);
+      expect(axis.encode?.labels?.update?.fillOpacity).toEqual(fillOpacity);
+
+      // Should have title encodings
+      expect(axis.encode?.title).toBeDefined();
+      expect(axis.encode?.title?.enter?.fill).toEqual(fillValue);
+      expect(axis.encode?.title?.update?.fillOpacity).toEqual(fillOpacity);
+    });
+  });
+
+  describe('applyPrimaryMetricAxisEncodings()', () => {
+    test('should apply encodings when axis.encode does not exist', () => {
+      const axis: Axis = {
+        scale: 'yLinear',
+        orient: 'left',
+      };
+      const interactiveMarks = ['line'];
+
+      applyPrimaryMetricAxisEncodings(axis, interactiveMarks, 'dark');
+
+      const fillOpacity = interactiveMarks.map((interactiveMark) => ({
+        test: `isValid(${interactiveMark}_${HOVERED_ITEM})`,
+        signal: `${interactiveMark}_${HOVERED_ITEM}.${SERIES_ID} !== ${LAST_RSC_SERIES_ID} ? 1 : ${FADE_FACTOR}`,
+      }));
+
+      const fillValue = [
+        {
+          test: `length(domain('${COLOR_SCALE}')) -1 === 1`,
+          signal: `scale('${COLOR_SCALE}', ${FIRST_RSC_SERIES_ID})`,
+        },
+        { value: spectrumColors['dark'][DEFAULT_FONT_COLOR] },
+      ];
+
+      // Should create new encode object
+      expect(axis.encode).toBeDefined();
+      expect(axis.encode?.labels).toBeDefined();
+      expect(axis.encode?.labels?.update?.fill).toEqual(fillValue);
+      expect(axis.encode?.labels?.update?.fillOpacity).toBeDefined();
+      expect(axis.encode?.labels?.update?.fillOpacity).toEqual(fillOpacity);
+
+      // Should have title encodings
+      expect(axis.encode?.title).toBeDefined();
+      expect(axis.encode?.title?.update?.fill).toEqual(fillValue);
+      expect(axis.encode?.title?.update?.fillOpacity).toBeDefined();
+      expect(axis.encode?.title?.update?.fillOpacity).toEqual(fillOpacity);
     });
   });
 });
