@@ -1107,7 +1107,6 @@ describe('Spec builder, Axis', () => {
       ];
 
       expect(axis.encode?.labels?.update?.fill).toEqual(fillValue);
-
       // Verify the fill value uses the light theme color
       expect(axis.encode?.labels?.update?.fill).toEqual([
         {
@@ -1116,7 +1115,6 @@ describe('Spec builder, Axis', () => {
         },
         { value: spectrumColors['light'][DEFAULT_FONT_COLOR] },
       ]);
-
       // Should have title encodings
       expect(axis.encode?.title?.update?.fill).toEqual(fillValue);
     });
