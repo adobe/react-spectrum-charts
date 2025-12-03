@@ -32,6 +32,7 @@ import {
   addAxesMarks,
   addAxis,
   addAxisSignals,
+  addDualMetricAxisConfig,
   applyPrimaryMetricAxisEncodings,
   applySecondaryMetricAxisEncodings,
   getLabelSignalValue,
@@ -1118,6 +1119,81 @@ describe('Spec builder, Axis', () => {
 
       // Should have title encodings
       expect(axis.encode?.title?.update?.fill).toEqual(fillValue);
+    });
+  });
+
+  describe('addDualMetricAxisConfig()', () => {
+    test('should use default colorScheme when not provided for primary axis', () => {
+      const axis: Axis = {
+        scale: 'yLinear',
+        orient: 'left',
+      };
+      const isPrimaryMetricAxis = true;
+      const scaleName = 'yLinear';
+      const interactiveMarks = ['bar'];
+
+      // Call without colorScheme parameter to test the default
+      addDualMetricAxisConfig(axis, isPrimaryMetricAxis, scaleName, interactiveMarks);
+
+      // Should use DEFAULT_COLOR_SCHEME which is 'light'
+      const fillValue = [
+        {
+          test: `length(domain('${COLOR_SCALE}')) -1 === 1`,
+          signal: `scale('${COLOR_SCALE}', ${FIRST_RSC_SERIES_ID})`,
+        },
+        { value: spectrumColors[DEFAULT_COLOR_SCHEME][DEFAULT_FONT_COLOR] },
+      ];
+
+      // Should set the scale to primaryScale
+      expect(axis.scale).toBe('yLinearPrimary');
+      // Should apply primary axis encodings with default light theme colors
+      expect(axis.encode?.labels?.update?.fill).toEqual(fillValue);
+      // Should have title encodings
+      expect(axis.encode?.title?.update?.fill).toEqual(fillValue);
+    });
+
+    test('should apply secondary axis encodings when isPrimaryMetricAxis is false', () => {
+      const axis: Axis = {
+        scale: 'yLinear',
+        orient: 'right',
+      };
+      const isPrimaryMetricAxis = false;
+      const scaleName = 'yLinear';
+      const interactiveMarks = ['line'];
+
+      addDualMetricAxisConfig(axis, isPrimaryMetricAxis, scaleName, interactiveMarks);
+
+      // Should set the scale to secondaryScale
+      expect(axis.scale).toBe('yLinearSecondary');
+
+      // Should apply secondary axis encodings
+      const fillValue = [{ signal: `scale('${COLOR_SCALE}', ${LAST_RSC_SERIES_ID})` }];
+      expect(axis.encode?.labels?.enter?.fill).toEqual(fillValue);
+      expect(axis.encode?.title?.enter?.fill).toEqual(fillValue);
+    });
+
+    test('should pass explicit colorScheme to primary axis', () => {
+      const axis: Axis = {
+        scale: 'yLinear',
+        orient: 'left',
+      };
+      const isPrimaryMetricAxis = true;
+      const scaleName = 'yLinear';
+      const interactiveMarks = ['scatter'];
+
+      // Call with explicit dark colorScheme
+      addDualMetricAxisConfig(axis, isPrimaryMetricAxis, scaleName, interactiveMarks, 'dark');
+
+      // Should use dark theme colors
+      const fillValue = [
+        {
+          test: `length(domain('${COLOR_SCALE}')) -1 === 1`,
+          signal: `scale('${COLOR_SCALE}', ${FIRST_RSC_SERIES_ID})`,
+        },
+        { value: spectrumColors['dark'][DEFAULT_FONT_COLOR] },
+      ];
+
+      expect(axis.encode?.labels?.update?.fill).toEqual(fillValue);
     });
   });
 });
