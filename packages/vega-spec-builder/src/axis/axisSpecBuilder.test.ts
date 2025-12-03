@@ -13,6 +13,7 @@ import { Axis, ColorValueRef, GroupMark, NumericValueRef, ProductionRule, Scale,
 
 import {
   COLOR_SCALE,
+  DEFAULT_COLOR_SCHEME,
   DEFAULT_LABEL_FONT_WEIGHT,
   FADE_FACTOR,
   FILTERED_TABLE,
@@ -21,6 +22,7 @@ import {
   FIRST_RSC_SERIES_ID,
   SERIES_ID,
   DEFAULT_FONT_COLOR,
+  MIN_THUMBNAIL_SIZE,
 } from '@spectrum-charts/constants';
 import { spectrumColors } from '@spectrum-charts/themes';
 
@@ -598,6 +600,37 @@ describe('Spec builder, Axis', () => {
           { signal: '-testAxisAxisThumbnail0ThumbnailSize' },
         ]);
       });
+
+      test('should apply thumbnail encodings to sublabel axis when axis.encode does not exist', () => {
+        const subLabels: SubLabel[] = [
+          { value: 1, subLabel: 'One' },
+          { value: 2, subLabel: 'Two' },
+        ];
+
+        const axes = addAxes([], {
+          ...defaultAxisOptions,
+          scaleName: 'xBand',
+          scaleType: 'band',
+          position: 'bottom',
+          name: 'testAxis',
+          subLabels,
+          axisThumbnails: [{ urlKey: 'thumbnail' }],
+          usermeta: {},
+        });
+
+        const hideThumbnailCondition = { test: `testAxisAxisThumbnail0ThumbnailSize < ${MIN_THUMBNAIL_SIZE}`, value: 0 };
+        const expectedDy = [hideThumbnailCondition, { signal: `testAxisAxisThumbnail0ThumbnailSize` }];
+
+        expect(axes).toHaveLength(2);
+
+        expect(axes[0].encode).toBeDefined();
+        expect(axes[0].encode?.labels).toBeDefined();
+        expect(axes[0].encode?.labels?.update).toBeDefined();
+        expect(axes[0].encode?.labels?.update?.dy).toEqual(expectedDy);
+
+        expect(axes[1].encode).toBeDefined();
+        expect(axes[1].encode?.labels?.update?.dy).toEqual(expectedDy);
+      });
     });
 
     test('should add test to hide labels if they would overlap the reference line icon', () => {
@@ -1051,6 +1084,40 @@ describe('Spec builder, Axis', () => {
       expect(axis.encode?.title?.update?.fill).toEqual(fillValue);
       expect(axis.encode?.title?.update?.fillOpacity).toBeDefined();
       expect(axis.encode?.title?.update?.fillOpacity).toEqual(fillOpacity);
+    });
+
+    test('should use default colorScheme when not provided', () => {
+      const axis: Axis = {
+        scale: 'yLinear',
+        orient: 'left',
+      };
+      const interactiveMarks = ['bar'];
+
+      // Call without colorScheme parameter to test the default
+      applyPrimaryMetricAxisEncodings(axis, interactiveMarks);
+
+      // Should use DEFAULT_COLOR_SCHEME which is 'light'
+      const fillValue = [
+        {
+          test: `length(domain('${COLOR_SCALE}')) -1 === 1`,
+          signal: `scale('${COLOR_SCALE}', ${FIRST_RSC_SERIES_ID})`,
+        },
+        { value: spectrumColors[DEFAULT_COLOR_SCHEME][DEFAULT_FONT_COLOR] },
+      ];
+
+      expect(axis.encode?.labels?.update?.fill).toEqual(fillValue);
+
+      // Verify the fill value uses the light theme color
+      expect(axis.encode?.labels?.update?.fill).toEqual([
+        {
+          test: `length(domain('${COLOR_SCALE}')) -1 === 1`,
+          signal: `scale('${COLOR_SCALE}', ${FIRST_RSC_SERIES_ID})`,
+        },
+        { value: spectrumColors['light'][DEFAULT_FONT_COLOR] },
+      ]);
+
+      // Should have title encodings
+      expect(axis.encode?.title?.update?.fill).toEqual(fillValue);
     });
   });
 });
