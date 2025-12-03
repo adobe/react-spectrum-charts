@@ -24,13 +24,17 @@ describe('Gauge', () => {
     const chart = await findChart();
     expect(chart).toBeInTheDocument();
 
-    const backgroundArc = await findMarksByGroupName(chart, 'BackgroundArcRounded');
+    const backgroundArc = await findMarksByGroupName(chart, 'gauge0BackgroundArc');
     expect(backgroundArc).toBeDefined();
 
-    const fillerArc = await findMarksByGroupName(chart, 'FillerArc');
+    const fillerArc = await findMarksByGroupName(chart, 'gauge0FillerArc');
     expect(fillerArc).toBeDefined();
 
-    const needleRule = await findMarksByGroupName(chart, 'Needle', 'line');
-    expect(needleRule).toBeDefined();
+    const startCap = await findMarksByGroupName(chart, 'gauge0StartCap');
+    expect(startCap).toBeDefined();
+
+    const endCap = await findMarksByGroupName(chart, 'gauge0EndCap');
+    expect(endCap).toBeDefined();
+
   });
 });

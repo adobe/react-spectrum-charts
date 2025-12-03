@@ -25,7 +25,7 @@ import { getGaugeTableData } from './gaugeDataUtils';
 
 const DEFAULT_COLOR = spectrumColors.light['blue-900']; 
 
-const DEFAULT_PERFORMANCE_RANGES: PerformanceRanges[] = [
+export const DEFAULT_PERFORMANCE_RANGES: PerformanceRanges[] = [
   { bandEndPct: 0.55, fill: spectrumColors.light['red-900'] },
   { bandEndPct: 0.8,  fill: spectrumColors.light['yellow-400'] },
   { bandEndPct: 1,    fill: spectrumColors.light['green-700'] },
@@ -89,7 +89,7 @@ export const addGauge = produce<
 );
 
 export const addSignals = produce<Signal[], [GaugeSpecOptions]>((signals, options) => {
-  const ranges = options.performanceRanges;
+  const ranges = options.performanceRanges ?? DEFAULT_PERFORMANCE_RANGES;
   
   signals.push({ name: 'arcMaxVal', value: options.maxArcValue }) 
   signals.push({ name: 'arcMinVal', value: options.minArcValue })

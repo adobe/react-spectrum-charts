@@ -53,7 +53,7 @@ describe('getGaugeSignals', () => {
   test('Should return the correct signals object', () => {
     const data = addSignals([], defaultGaugeOptions);
     expect(data).toBeDefined();
-    expect(data).toHaveLength(19);
+    expect(data).toHaveLength(55);
   });
 });
 

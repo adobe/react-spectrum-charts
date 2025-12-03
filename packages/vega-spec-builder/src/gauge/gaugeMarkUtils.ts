@@ -243,7 +243,7 @@ export function getBandGap2(name: string): Mark {
 
 export function getNeedleHole(name: string, backgroundColor): Mark {
   return {
-    name: `${name}Needle Hole`,
+    name: `${name}NeedleHole`,
     description: 'Needle Hole',
     type: 'symbol',
     encode: {
@@ -263,7 +263,7 @@ export function getNeedleHole(name: string, backgroundColor): Mark {
 
 export function getTargetLine(name: string): Mark {
   return {
-    name: `${name}Target Line`,
+    name: `${name}TargetLine`,
     description: 'Target Line',
     type: 'rule',
     encode: {
@@ -287,7 +287,7 @@ export function getStartCap(name: string, fillColor: string, backgroundColor: st
   const xOffset = 'centerX+(sin(startAngle)*((outerRadius+innerRadius)/2))'
   const yOffset = 'centerY-(cos(startAngle)*((outerRadius+innerRadius)/2))'
   return {
-    name: `${name}Start Cap`,
+    name: `${name}StartCap`,
     description: `Start Cap`,
     type: `arc`,
     encode: {
@@ -313,7 +313,7 @@ export function getEndCap(name: string, fillColor: string, backgroundColor: stri
   const xOffset = 'centerX+(sin(endAngle)*((outerRadius+innerRadius)/2))'
   const yOffset = 'centerY-(cos(endAngle)*((outerRadius+innerRadius)/2))'
   return {
-    name: `${name}End Cap`,
+    name: `${name}EndCap`,
     description: `End Cap`,
     type: `arc`,
     encode: {
