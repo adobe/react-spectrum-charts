@@ -9,15 +9,22 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { Axis, ColorValueRef, GroupMark, NumericValueRef, ProductionRule, Scale, Signal, TextValueRef } from 'vega';
+import { Axis, ColorValueRef, GroupMark, NumericValueRef, ProductionRule, Scale, LinearScale, Signal, TextValueRef } from 'vega';
 
 import {
+  COLOR_SCALE,
+  DEFAULT_COLOR_SCHEME,
   DEFAULT_LABEL_FONT_WEIGHT,
   FADE_FACTOR,
   FILTERED_TABLE,
+  HOVERED_ITEM,
   LAST_RSC_SERIES_ID,
+  FIRST_RSC_SERIES_ID,
   SERIES_ID,
+  DEFAULT_FONT_COLOR,
+  MIN_THUMBNAIL_SIZE,
 } from '@spectrum-charts/constants';
+import { spectrumColors } from '@spectrum-charts/themes';
 
 import { SubLabel } from '../types';
 import {
@@ -25,6 +32,9 @@ import {
   addAxesMarks,
   addAxis,
   addAxisSignals,
+  addDualMetricAxisConfig,
+  applyPrimaryMetricAxisEncodings,
+  applySecondaryMetricAxisEncodings,
   getLabelSignalValue,
   setAxisBaseline,
 } from './axisSpecBuilder';
@@ -138,6 +148,7 @@ const defaultLinearScales: Scale[] = [
     type: 'linear',
     range: 'width',
     domain: { data: FILTERED_TABLE, field: 'x' },
+    zero: true,
   },
   {
     name: 'yLinear',
@@ -247,6 +258,15 @@ describe('Spec builder, Axis', () => {
           usermeta: {},
         });
       });
+      test('zero should default to true if no custom range is set', () => {
+        const resultScales = addAxis(
+          { usermeta: {}, scales: defaultLinearScales },
+          { position: 'bottom' }
+        ).scales as LinearScale[];
+
+        expect(resultScales?.at(0)?.zero).toEqual(true);
+        expect(resultScales?.at(1)?.zero).toEqual(true);
+      });
       test('custom X range', () => {
         const resultScales = addAxis(
           { usermeta: {}, scales: defaultLinearScales },
@@ -262,6 +282,24 @@ describe('Spec builder, Axis', () => {
         ).scales;
 
         expect(resultScales?.at(1)?.domain).toEqual([0, 100]);
+      });
+      test('custom X range that doesn\'t start at 0', () => {
+        const resultScales = addAxis(
+          { usermeta: {}, scales: defaultLinearScales },
+          { position: 'bottom', range: [10, 100] }
+        ).scales as LinearScale[];
+
+        expect(resultScales?.at(0)?.domain).toEqual([10, 100]);
+        expect(resultScales?.at(0)?.zero).toEqual(false);
+      });
+      test('custom Y range that doesn\'t start at 0', () => {
+        const resultScales = addAxis(
+          { usermeta: {}, scales: defaultLinearScales },
+          { position: 'bottom', range: [100, 1000] }
+        ).scales as LinearScale[];
+
+        expect(resultScales?.at(0)?.domain).toEqual([100, 1000]);
+        expect(resultScales?.at(0)?.zero).toEqual(false);
       });
     });
     describe('no scales', () => {
@@ -562,6 +600,37 @@ describe('Spec builder, Axis', () => {
           { test: 'testAxisAxisThumbnail0ThumbnailSize < 16', value: 0 },
           { signal: '-testAxisAxisThumbnail0ThumbnailSize' },
         ]);
+      });
+
+      test('should apply thumbnail encodings to sublabel axis when axis.encode does not exist', () => {
+        const subLabels: SubLabel[] = [
+          { value: 1, subLabel: 'One' },
+          { value: 2, subLabel: 'Two' },
+        ];
+
+        const axes = addAxes([], {
+          ...defaultAxisOptions,
+          scaleName: 'xBand',
+          scaleType: 'band',
+          position: 'bottom',
+          name: 'testAxis',
+          subLabels,
+          axisThumbnails: [{ urlKey: 'thumbnail' }],
+          usermeta: {},
+        });
+
+        const hideThumbnailCondition = { test: `testAxisAxisThumbnail0ThumbnailSize < ${MIN_THUMBNAIL_SIZE}`, value: 0 };
+        const expectedDy = [hideThumbnailCondition, { signal: `testAxisAxisThumbnail0ThumbnailSize` }];
+
+        expect(axes).toHaveLength(2);
+
+        expect(axes[0].encode).toBeDefined();
+        expect(axes[0].encode?.labels).toBeDefined();
+        expect(axes[0].encode?.labels?.update).toBeDefined();
+        expect(axes[0].encode?.labels?.update?.dy).toEqual(expectedDy);
+
+        expect(axes[1].encode).toBeDefined();
+        expect(axes[1].encode?.labels?.update?.dy).toEqual(expectedDy);
       });
     });
 
@@ -944,6 +1013,185 @@ describe('Spec builder, Axis', () => {
       );
       expect(labelValue).toHaveLength(1);
       expect(labelValue[0]).toEqual({ value: 2, label: 'two', align: 'left', baseline: 'top' });
+    });
+  });
+
+  describe('applySecondaryMetricAxisEncodings()', () => {
+    test('should apply encodings when axis.encode does not exist', () => {
+      const axis: Axis = {
+        scale: 'yLinear',
+        orient: 'left',
+      };
+      const interactiveMarks = ['scatter'];
+
+      applySecondaryMetricAxisEncodings(axis, interactiveMarks);
+
+      const fillOpacity = [
+        {
+          test: `isValid(scatter_${HOVERED_ITEM})`,
+          signal: `scatter_${HOVERED_ITEM}.${SERIES_ID} === ${LAST_RSC_SERIES_ID} ? 1 : ${FADE_FACTOR}`,
+        },
+      ];
+
+      const fillValue = [
+        { signal: `scale('${COLOR_SCALE}', ${LAST_RSC_SERIES_ID})` },
+      ];
+
+      // Should create new encode object
+      expect(axis.encode).toBeDefined();
+      expect(axis.encode?.labels).toBeDefined();
+      expect(axis.encode?.labels?.enter?.fill).toEqual(fillValue);
+      expect(axis.encode?.labels?.update?.fillOpacity).toEqual(fillOpacity);
+
+      // Should have title encodings
+      expect(axis.encode?.title).toBeDefined();
+      expect(axis.encode?.title?.enter?.fill).toEqual(fillValue);
+      expect(axis.encode?.title?.update?.fillOpacity).toEqual(fillOpacity);
+    });
+  });
+
+  describe('applyPrimaryMetricAxisEncodings()', () => {
+    test('should apply encodings when axis.encode does not exist', () => {
+      const axis: Axis = {
+        scale: 'yLinear',
+        orient: 'left',
+      };
+      const interactiveMarks = ['line'];
+
+      applyPrimaryMetricAxisEncodings(axis, interactiveMarks, 'dark');
+
+      const fillOpacity = interactiveMarks.map((interactiveMark) => ({
+        test: `isValid(${interactiveMark}_${HOVERED_ITEM})`,
+        signal: `${interactiveMark}_${HOVERED_ITEM}.${SERIES_ID} !== ${LAST_RSC_SERIES_ID} ? 1 : ${FADE_FACTOR}`,
+      }));
+
+      const fillValue = [
+        {
+          test: `length(domain('${COLOR_SCALE}')) -1 === 1`,
+          signal: `scale('${COLOR_SCALE}', ${FIRST_RSC_SERIES_ID})`,
+        },
+        { value: spectrumColors['dark'][DEFAULT_FONT_COLOR] },
+      ];
+
+      // Should create new encode object
+      expect(axis.encode).toBeDefined();
+      expect(axis.encode?.labels).toBeDefined();
+      expect(axis.encode?.labels?.update?.fill).toEqual(fillValue);
+      expect(axis.encode?.labels?.update?.fillOpacity).toBeDefined();
+      expect(axis.encode?.labels?.update?.fillOpacity).toEqual(fillOpacity);
+
+      // Should have title encodings
+      expect(axis.encode?.title).toBeDefined();
+      expect(axis.encode?.title?.update?.fill).toEqual(fillValue);
+      expect(axis.encode?.title?.update?.fillOpacity).toBeDefined();
+      expect(axis.encode?.title?.update?.fillOpacity).toEqual(fillOpacity);
+    });
+
+    test('should use default colorScheme when not provided', () => {
+      const axis: Axis = {
+        scale: 'yLinear',
+        orient: 'left',
+      };
+      const interactiveMarks = ['bar'];
+
+      // Call without colorScheme parameter to test the default
+      applyPrimaryMetricAxisEncodings(axis, interactiveMarks);
+
+      // Should use DEFAULT_COLOR_SCHEME which is 'light'
+      const fillValue = [
+        {
+          test: `length(domain('${COLOR_SCALE}')) -1 === 1`,
+          signal: `scale('${COLOR_SCALE}', ${FIRST_RSC_SERIES_ID})`,
+        },
+        { value: spectrumColors[DEFAULT_COLOR_SCHEME][DEFAULT_FONT_COLOR] },
+      ];
+
+      expect(axis.encode?.labels?.update?.fill).toEqual(fillValue);
+      // Verify the fill value uses the light theme color
+      expect(axis.encode?.labels?.update?.fill).toEqual([
+        {
+          test: `length(domain('${COLOR_SCALE}')) -1 === 1`,
+          signal: `scale('${COLOR_SCALE}', ${FIRST_RSC_SERIES_ID})`,
+        },
+        { value: spectrumColors['light'][DEFAULT_FONT_COLOR] },
+      ]);
+      // Should have title encodings
+      expect(axis.encode?.title?.update?.fill).toEqual(fillValue);
+    });
+  });
+
+  describe('addDualMetricAxisConfig()', () => {
+    test('should use default colorScheme when not provided for primary axis', () => {
+      const axis: Axis = {
+        scale: 'yLinear',
+        orient: 'left',
+      };
+      const isPrimaryMetricAxis = true;
+      const scaleName = 'yLinear';
+      const interactiveMarks = ['bar'];
+
+      // Call without colorScheme parameter to test the default
+      addDualMetricAxisConfig(axis, isPrimaryMetricAxis, scaleName, interactiveMarks);
+
+      // Should use DEFAULT_COLOR_SCHEME which is 'light'
+      const fillValue = [
+        {
+          test: `length(domain('${COLOR_SCALE}')) -1 === 1`,
+          signal: `scale('${COLOR_SCALE}', ${FIRST_RSC_SERIES_ID})`,
+        },
+        { value: spectrumColors[DEFAULT_COLOR_SCHEME][DEFAULT_FONT_COLOR] },
+      ];
+
+      // Should set the scale to primaryScale
+      expect(axis.scale).toBe('yLinearPrimary');
+      // Should apply primary axis encodings with default light theme colors
+      expect(axis.encode?.labels?.update?.fill).toEqual(fillValue);
+      // Should have title encodings
+      expect(axis.encode?.title?.update?.fill).toEqual(fillValue);
+    });
+
+    test('should apply secondary axis encodings when isPrimaryMetricAxis is false', () => {
+      const axis: Axis = {
+        scale: 'yLinear',
+        orient: 'right',
+      };
+      const isPrimaryMetricAxis = false;
+      const scaleName = 'yLinear';
+      const interactiveMarks = ['line'];
+
+      addDualMetricAxisConfig(axis, isPrimaryMetricAxis, scaleName, interactiveMarks);
+
+      // Should set the scale to secondaryScale
+      expect(axis.scale).toBe('yLinearSecondary');
+
+      // Should apply secondary axis encodings
+      const fillValue = [{ signal: `scale('${COLOR_SCALE}', ${LAST_RSC_SERIES_ID})` }];
+      expect(axis.encode?.labels?.enter?.fill).toEqual(fillValue);
+      expect(axis.encode?.title?.enter?.fill).toEqual(fillValue);
+    });
+
+    test('should pass explicit colorScheme to primary axis', () => {
+      const axis: Axis = {
+        scale: 'yLinear',
+        orient: 'left',
+      };
+      const isPrimaryMetricAxis = true;
+      const scaleName = 'yLinear';
+      const interactiveMarks = ['scatter'];
+
+      // Call with explicit dark colorScheme
+      addDualMetricAxisConfig(axis, isPrimaryMetricAxis, scaleName, interactiveMarks, 'dark');
+
+      // Should use dark theme colors
+      const fillValue = [
+        {
+          test: `length(domain('${COLOR_SCALE}')) -1 === 1`,
+          signal: `scale('${COLOR_SCALE}', ${FIRST_RSC_SERIES_ID})`,
+        },
+        { value: spectrumColors['dark'][DEFAULT_FONT_COLOR] },
+      ];
+
+      expect(axis.encode?.labels?.update?.fill).toEqual(fillValue);
     });
   });
 });
