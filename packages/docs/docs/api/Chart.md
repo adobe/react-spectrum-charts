@@ -263,6 +263,25 @@ The chart integrates with @adobe/react-spectrum's theming system through the `th
 </Chart>
 ```
 
+## Spectrum 2 Styling
+
+React-spectrum-charts supports Adobe's Spectrum 2 design system through the `s2` prop. When enabled, charts automatically adopt Spectrum 2 visual styles, including:
+
+- Updated color palettes (e.g., `s2Categorical6`, `s2Categorical12`, etc.)
+- Spectrum 2 typography and spacing
+- Modern visual refinements aligned with the Spectrum 2 design language
+
+This is particularly useful for applications migrating to or built with Spectrum 2 components, ensuring visual consistency across your entire interface.
+
+```jsx
+<Chart data={data} s2>
+  <Bar metric="sales" />
+  <Legend />
+</Chart>
+```
+
+When `s2` is enabled, the chart will automatically use Spectrum 2 defaults. You can still override individual styling properties as needed through other props.
+
 ## Locale
 
 `react-spectrum-charts` supports locale for both number and date/time values. There are multiple methods available for setting the locale definitions.
@@ -474,7 +493,7 @@ const timeLocale: TimeLocale = {
             <td>s2</td>
             <td>boolean</td>
             <td>false</td>
-            <td>Enables Spectrum 2 styling for some charts. Currently supported: Donut.</td>
+            <td>Enables Spectrum 2 styling for the chart. When set to true, applies Spectrum 2 design system defaults including updated colors, typography, and spacing. This ensures visual consistency with applications using Adobe's Spectrum 2 design language.</td>
         </tr>
         <tr>
             <td>theme</td>
