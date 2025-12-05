@@ -97,6 +97,69 @@ describe('addGauge (defaults & overrides for gaugeOptions)', () => {
 
     // fillerColorToCurrVal uses light
     expect(byName(signals, 'fillerColorToCurrVal')?.value).toBe('light');
+
+    // geometry defaults
+    expect(byName(signals, 'radiusRef')?.update).toBe('min(width/2, height/2)');
+    expect(byName(signals, 'outerRadius')?.update).toBe('radiusRef * 0.95');
+    expect(byName(signals, 'innerRadius')?.update).toBe('outerRadius - (radiusRef * 0.25)');
+    expect(byName(signals, 'centerX')?.update).toBe('width/2');
+    expect(byName(signals, 'centerY')?.update).toBe('height/2 + outerRadius/2');
+
+
+    // target value uses default target field from options
+    expect(byName(signals, 'target')?.update).toBe("data('table')[0].target");
+
+    // clamped value and angle mapping are wired as expressions
+    expect(byName(signals, 'clampedVal')?.update).toBe('min(max(arcMinVal, currVal), arcMaxVal)');
+    expect(byName(signals, 'theta')?.update).toBe("scale('angleScale', clampedVal)");
+    expect(byName(signals, 'needleAngleClampedVal')?.update).toBe("scale('angleScale', clampedVal)");
+    expect(byName(signals, 'needleAngleRaw')?.update).toBeUndefined(); // (if you don't have it anymore; or remove this line)
+
+    expect(byName(signals, 'needleAngleDeg')?.update).toBe('needleAngleClampedVal * 180 / PI');
+    expect(byName(signals, 'needleLength')?.update).toBe('30');
+
+    // label/value text colors from scheme
+    const expectedValueColor = getColorValue('gray-900', DEFAULT_COLOR_SCHEME);
+    const expectedLabelColor = getColorValue('gray-600', DEFAULT_COLOR_SCHEME);
+
+    expect(byName(signals, 'valueTextColor')?.value).toBe(expectedValueColor);
+    expect(byName(signals, 'labelTextColor')?.value).toBe(expectedLabelColor);
+
+    // showAsPercent default wiring
+    expect(byName(signals, 'showAsPercent')?.update).toBe(`${defaultGaugeOptions.showsAsPercent}`);
+
+    // textSignal formatting expression
+    expect(byName(signals, 'textSignal')?.update).toBe("showAsPercent ? format((currVal / arcMaxVal) * 100, '.2f') + '%' : format(currVal, '.0f')");
+
+    // --- band ranges: default formulas ---
+    expect(byName(signals, 'bandRange')?.update).toBe('arcMaxVal - arcMinVal');
+    expect(byName(signals, 'band1StartVal')?.update).toBe('arcMinVal');
+    expect(byName(signals, 'band1EndVal')?.update).toBe('arcMinVal + bandRange * band1EndPct');
+    expect(byName(signals, 'band2StartVal')?.update).toBe('band1EndVal');
+    expect(byName(signals, 'band2EndVal')?.update).toBe('arcMinVal + bandRange * band2EndPct');
+    expect(byName(signals, 'band3StartVal')?.update).toBe('band2EndVal');
+    expect(byName(signals, 'band3EndVal')?.update).toBe('arcMaxVal');
+
+    // --- band angle mapping formulas ---
+    expect(byName(signals, 'band1StartAngle')?.update).toBe("scale('angleScale', band1StartVal)");
+    expect(byName(signals, 'band1EndAngle')?.update).toBe("scale('angleScale', band1EndVal)");
+    expect(byName(signals, 'band2StartAngle')?.update).toBe("scale('angleScale', band2StartVal)");
+    expect(byName(signals, 'band2EndAngle')?.update).toBe("scale('angleScale', band2EndVal)");
+    expect(byName(signals, 'band3StartAngle')?.update).toBe("scale('angleScale', band3StartVal)");
+    expect(byName(signals, 'band3EndAngle')?.update).toBe("scale('angleScale', band3EndVal)");
+
+    // --- band gap geometry formulas (band 1) ---
+    expect(byName(signals, 'band1GapX')?.update).toBe("centerX + ( innerRadius - 5 ) * cos(band1EndAngle - PI/2)");
+    expect(byName(signals, 'band1GapY')?.update).toBe("centerY + ( innerRadius - 5 ) * sin(band1EndAngle - PI/2)");
+    expect(byName(signals, 'band1GapX2')?.update).toBe("centerX + ( outerRadius + 5 ) * cos(band1EndAngle - PI/2)");
+    expect(byName(signals, 'band1GapY2')?.update).toBe("centerY + ( outerRadius + 5 ) * sin(band1EndAngle - PI/2)");
+
+    // --- band gap geometry formulas (band 2) ---
+    expect(byName(signals, 'band2GapX')?.update).toBe("centerX + ( innerRadius - 5 ) * cos(band2EndAngle - PI/2)");
+    expect(byName(signals, 'band2GapY')?.update).toBe("centerY + ( innerRadius - 5 ) * sin(band2EndAngle - PI/2)");
+    expect(byName(signals, 'band2GapX2')?.update).toBe("centerX + ( outerRadius + 5 ) * cos(band2EndAngle - PI/2)");
+    expect(byName(signals, 'band2GapY2')?.update).toBe("centerY + ( outerRadius + 5 ) * sin(band2EndAngle - PI/2)");
+
   });
 
   test('applies user overrides (colorScheme, color, min/max, metric, name, index)', () => {
@@ -114,6 +177,13 @@ describe('addGauge (defaults & overrides for gaugeOptions)', () => {
 
     const newSpec = addGauge(spec, overrides);
     const signals = newSpec.signals as any[];
+    const expectedTargetStrokeDark = getColorValue('gray-900', 'dark');
+    const expectedValueColorDark = getColorValue('gray-900', 'dark');
+    const expectedLabelColorDark = getColorValue('gray-600', 'dark');
+
+    expect(byName(signals, 'targetLineStroke')?.value).toBe(expectedTargetStrokeDark);
+    expect(byName(signals, 'valueTextColor')?.value).toBe(expectedValueColorDark);
+    expect(byName(signals, 'labelTextColor')?.value).toBe(expectedLabelColorDark);
 
     // min/max should reflect overrides
     expect(byName(signals, 'arcMinVal')?.value).toBe(50);
@@ -133,6 +203,35 @@ describe('addGauge (defaults & overrides for gaugeOptions)', () => {
     expect(byName(signals, 'startAngle')?.update).toBe('-PI * 2 / 3');
     expect(byName(signals, 'endAngle')?.update).toBe('PI * 2 / 3');
   });
+
+describe('getGaugeSignals – performanceRanges overrides', () => {
+    let spec: ScSpec;
+
+    beforeEach(() => {
+      spec = { data: [], marks: [], scales: [], usermeta: {} };
+    });
+
+    test('binds band pct signals to options.performanceRanges', () => {
+      const performanceRanges = [
+        { bandEndPct: 0.4,  fill: 'red' },
+        { bandEndPct: 0.75, fill: 'yellow' },
+        { bandEndPct: 1,    fill: 'green' },
+      ];
+
+      const overrides = {
+        ...defaultGaugeOptions,
+        performanceRanges,
+      };
+
+      const newSpec = addGauge(spec, overrides);
+      const signals = newSpec.signals as any[];
+
+      expect(byName(signals, 'band1EndPct')?.value).toBe(0.4);
+      expect(byName(signals, 'band2EndPct')?.value).toBe(0.75);
+      expect(byName(signals, 'band3EndPct')?.value).toBe(1);
+    });
+  });
+
 
 });
 
