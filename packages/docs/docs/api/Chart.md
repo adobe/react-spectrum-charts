@@ -268,7 +268,6 @@ The chart integrates with @adobe/react-spectrum's theming system through the `th
 React-spectrum-charts supports Adobe's Spectrum 2 design system through the `s2` prop. When enabled, charts automatically adopt Spectrum 2 visual styles, including:
 
 - Updated color palettes (e.g., `s2Categorical6`, `s2Categorical12`, etc.)
-- Spectrum 2 typography and spacing
 - Modern visual refinements aligned with the Spectrum 2 design language
 
 This is particularly useful for applications migrating to or built with Spectrum 2 components, ensuring visual consistency across your entire interface.
