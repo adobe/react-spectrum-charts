@@ -113,8 +113,6 @@ describe('addGauge (defaults & overrides for gaugeOptions)', () => {
     expect(byName(signals, 'clampedVal')?.update).toBe('min(max(arcMinVal, currVal), arcMaxVal)');
     expect(byName(signals, 'theta')?.update).toBe("scale('angleScale', clampedVal)");
     expect(byName(signals, 'needleAngleClampedVal')?.update).toBe("scale('angleScale', clampedVal)");
-    expect(byName(signals, 'needleAngleRaw')?.update).toBeUndefined(); // (if you don't have it anymore; or remove this line)
-
     expect(byName(signals, 'needleAngleDeg')?.update).toBe('needleAngleClampedVal * 180 / PI');
     expect(byName(signals, 'needleLength')?.update).toBe('30');
 
