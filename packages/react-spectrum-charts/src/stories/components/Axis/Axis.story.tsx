@@ -335,6 +335,15 @@ CurrencyFormatSpecifier.args = {
   title: 'Conversion Rate',
 };
 
+const TickCountMinimum = bindWithProps(TimeAxisBarStory);
+TickCountMinimum.args = {
+  position: 'right',
+  tickCountMinimum: 3,
+  tickCountLimit: 5,
+  ticks: true,
+  title: 'Y-Axis with Limited Ticks',
+};
+
 const TickCountLimit = bindWithProps(TimeAxisBarStory);
 TickCountLimit.args = {
   position: 'right',
@@ -373,4 +382,5 @@ export {
   CurrencyLocale,
   CurrencyFormatSpecifier,
   TickCountLimit,
+  TickCountMinimum,
 };

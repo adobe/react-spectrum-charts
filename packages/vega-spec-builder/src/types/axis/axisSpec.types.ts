@@ -88,6 +88,10 @@ export interface AxisOptions {
   labelLimit?: number;
   /** Explicityly sets the axis labels (controlled). Providing a Label object allows for more control over the label display. */
   labels?: (Label | string | number)[];
+  /** Sets the minimum number of axis ticks.
+   * The default is 2. Smaller charts may want to use a minimum of 3 instead to show a more accurate representation of the data.
+   */
+  tickCountMinimum?: number;
   /** Sets the upper limit on the number of axis ticks.
    *  Base tick, typically 0, is not included in the count. e.g. 0, 1, 2, 3 is considered 3 ticks.
    *  Note: The final tick count may vary based on Vega's automatic calculations to create visually pleasing values.

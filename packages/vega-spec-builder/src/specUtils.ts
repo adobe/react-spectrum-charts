@@ -26,7 +26,7 @@ import {
   SENTIMENT_POSITIVE_PATH,
   TABLE,
 } from '@spectrum-charts/constants';
-import { getColorValue, getSpectrum2VegaConfig, getSpectrumVegaConfig } from '@spectrum-charts/themes';
+import { getColorValue, getSpectrumVegaConfig } from '@spectrum-charts/themes';
 
 import {
   ChartSpecOptions,
@@ -299,7 +299,7 @@ export const getD3FormatSpecifierFromNumberFormat = (numberFormat: NumberFormat 
  * @returns Vega config
  */
 export function getChartConfig(config: Config | undefined, colorScheme: ColorScheme, s2: boolean): Config {
-  const defaultConfig = s2 ? getSpectrum2VegaConfig(colorScheme) : getSpectrumVegaConfig(colorScheme);
+  const defaultConfig = getSpectrumVegaConfig(colorScheme);
   if (config) {
     return mergeConfig(defaultConfig, config);
   }
