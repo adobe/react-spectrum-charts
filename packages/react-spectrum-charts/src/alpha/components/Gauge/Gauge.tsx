@@ -34,6 +34,7 @@ const Gauge: FC<GaugeProps> = ({
   needle = DEFAULT_NEEDLE,
   targetLine = DEFAULT_TARGET_LINE,
   target = 'target',
+  showPerformanceRanges = false,
 }) => {
   return null;
 };

@@ -48,7 +48,7 @@ export const addGauge = produce<
       index = 0,
       color = DEFAULT_COLOR,
       performanceRanges,
-      showPerformanceRanges,
+      showPerformanceRanges = false,
       name,
       ...options
     }
@@ -76,7 +76,7 @@ export const addGauge = produce<
       needle: false,
       targetLine: false,
       performanceRanges: resolvedPerformanceRanges,
-      showPerformanceRanges: showPerformanceRanges ?? false,
+      showPerformanceRanges: false,
       ...options,
     };
 

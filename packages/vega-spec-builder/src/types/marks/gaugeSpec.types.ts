@@ -43,13 +43,9 @@ export interface GaugeOptions {
   target?: string;
   /** Showing the target line */
   targetLine?: boolean;
-  /** Performance ranges
-   * 
-   * Array of performance ranges to be rendered as filled bands on the gauge.
-   * 
-   */
+  /** Array of performance ranges to be rendered as filled bands on the gauge. */
   performanceRanges?: PerformanceRanges[];
-  /** if true, show banded performance ranges instead of a colored filler arc */
+  /** If true, show banded performance ranges instead of a colored filler arc */
   showPerformanceRanges?: boolean;
   
 }
@@ -70,6 +66,7 @@ type GaugeOptionsWithDefaults =
   | 'target'
   | 'targetLine'
   | 'performanceRanges'
+  | 'showPerformanceRanges'
 
 export interface GaugeSpecOptions extends PartiallyRequired<GaugeOptions, GaugeOptionsWithDefaults> {
   colorScheme: ColorScheme;

@@ -31,5 +31,7 @@ export const defaultGaugeOptions: GaugeSpecOptions = {
   fillerColorSignal: 'light',
   needle: false,
   target: 'target',
-  targetLine: false
+  targetLine: false,
+  showPerformanceRanges: false,
+  performanceRanges: []
 };
