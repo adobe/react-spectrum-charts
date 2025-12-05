@@ -72,6 +72,8 @@
     "tsc": "tsc --noEmit --skipLibCheck",
     "pack-test": "yarn workspaces run pack-test",
     "pack": "yarn workspaces run pack",
+    "link:all": "./scripts/linkAll.sh",
+    "unlink:all": "./scripts/unlinkAll.sh",
     "sonar": "node ./scripts/runSonarOnBranch.js",
     "sonar-fork-pr": "node ./scripts/runSonarOnFork.js",
     "start": "yarn storybook",
