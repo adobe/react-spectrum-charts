@@ -33,5 +33,9 @@ export const defaultGaugeOptions: GaugeSpecOptions = {
   target: 'target',
   targetLine: false,
   showPerformanceRanges: false,
-  performanceRanges: []
+  performanceRanges: [
+    { bandEndPct: 0.55, fill: spectrumColors[DEFAULT_COLOR_SCHEME]['red-900'] },
+    { bandEndPct: 0.8, fill: spectrumColors[DEFAULT_COLOR_SCHEME]['yellow-400'] },
+    { bandEndPct: 1, fill: spectrumColors[DEFAULT_COLOR_SCHEME]['green-700'] },
+  ]
 };

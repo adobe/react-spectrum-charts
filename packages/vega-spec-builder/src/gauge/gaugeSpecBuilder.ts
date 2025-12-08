@@ -76,7 +76,7 @@ export const addGauge = produce<
       needle: false,
       targetLine: false,
       performanceRanges: resolvedPerformanceRanges,
-      showPerformanceRanges: false,
+      showPerformanceRanges: showPerformanceRanges ?? false,
       ...options,
     };
 
