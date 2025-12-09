@@ -48,7 +48,9 @@
     }
   },
   "files": [
-    "/dist"
+    "/dist",
+    "docs-links.md",
+    "docs-links.json"
   ],
   "repository": {
     "type": "git",
@@ -67,6 +69,7 @@
     "generate": "plop component",
     "pack-test": "yarn clean && yarn build && cross-env NODE_ENV=development npm pack",
     "pack": "cross-env NODE_ENV=production npm pack",
+    "prepublishOnly": "node ../../scripts/generateDocsLinks.js markdown --external docs-links.md && node ../../scripts/generateDocsLinks.js json --external docs-links.json",
     "sonar": "node ./scripts/runSonarOnBranch.js",
     "sonar-fork-pr": "node ./scripts/runSonarOnFork.js",
     "test": "cross-env TZ=UTC BABEL_ENV=test jest --config ../../jest.config.js",
