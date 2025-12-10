@@ -1,0 +1,21 @@
+# Source files (we publish compiled dist/)
+*.ts
+!*.d.ts
+tsconfig.json
+
+# Development files
+demo.js
+test-*.js
+*.test.js
+*.spec.js
+
+# Config files
+.gitignore
+.eslintrc*
+.prettierrc*
+
+# Misc
+*.log
+.DS_Store
+node_modules/
+
