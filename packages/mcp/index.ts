@@ -39,14 +39,66 @@ function errorToString(err: unknown): string {
 
 // --- Simple in-memory index ---
 
+type Section = {
+  title: string;
+  level: number;
+  content: string;
+};
+
 type DocEntry = {
   id: string;
   relPath: string;
   title: string;
+  description: string;
+  sections: Section[];
   content: string;
 };
 
 const DOCS_INDEX: DocEntry[] = [];
+
+function extractDescription(content: string): string {
+  // Remove frontmatter if present
+  let body = content.replace(/^---[\s\S]*?---\n*/, '');
+  // Remove the title line
+  body = body.replace(/^#\s+.+\n*/, '');
+  // Remove import statements
+  body = body.replace(/^import\s+.+\n*/gm, '');
+  // Get first non-empty paragraph (stop at heading or empty line)
+  const match = body.match(/^([^\n#].+?)(?:\n\n|\n#|$)/s);
+  if (match) {
+    return match[1].replace(/\s+/g, ' ').trim();
+  }
+  return '';
+}
+
+function extractSections(content: string): Section[] {
+  const sections: Section[] = [];
+  const headingRegex = /^(#{2,6})\s+(.+)$/gm;
+  let match;
+
+  const headings: { level: number; title: string; start: number }[] = [];
+  while ((match = headingRegex.exec(content)) !== null) {
+    headings.push({
+      level: match[1].length,
+      title: match[2].trim(),
+      start: match.index,
+    });
+  }
+
+  for (let i = 0; i < headings.length; i++) {
+    const heading = headings[i];
+    const nextStart = headings[i + 1]?.start ?? content.length;
+    const sectionContent = content.slice(heading.start, nextStart).trim();
+
+    sections.push({
+      title: heading.title,
+      level: heading.level,
+      content: sectionContent,
+    });
+  }
+
+  return sections;
+}
 
 async function buildIndex(): Promise<void> {
   async function walk(current: string) {
@@ -67,7 +119,9 @@ async function buildIndex(): Promise<void> {
         const content = await fs.readFile(full, 'utf8');
         const titleMatch = content.match(/^#\s+(.+)$/m);
         const title = titleMatch ? titleMatch[1].trim() : path.basename(relPath, path.extname(relPath));
-        DOCS_INDEX.push({ id, relPath, title, content });
+        const description = extractDescription(content);
+        const sections = extractSections(content);
+        DOCS_INDEX.push({ id, relPath, title, description, sections, content });
       }
     }
   }
@@ -75,59 +129,12 @@ async function buildIndex(): Promise<void> {
   await walk(DOCS_ROOT);
 }
 
-function searchDocs(terms: string[], limit: number) {
-  const lowerTerms = terms.map((t) => t.toLowerCase());
-  const results: {
-    id: string;
-    title: string;
-    relPath: string;
-    snippet: string;
-    idMatch: boolean;
-  }[] = [];
-
-  for (const doc of DOCS_INDEX) {
-    const lower = doc.content.toLowerCase();
-    const lowerId = doc.id.toLowerCase();
-    let bestIdx = -1;
-
-    // Check if any term matches the doc ID
-    const idMatch = lowerTerms.some((term) => lowerId.includes(term));
-
-    for (const term of lowerTerms) {
-      const idx = lower.indexOf(term);
-      if (idx !== -1 && (bestIdx === -1 || idx < bestIdx)) {
-        bestIdx = idx;
-      }
-    }
-
-    if (bestIdx === -1) continue;
-
-    const start = Math.max(0, bestIdx - 120);
-    const end = Math.min(doc.content.length, bestIdx + 120);
-    const snippet = doc.content.slice(start, end).replace(/\s+/g, ' ').trim();
-
-    results.push({
-      id: doc.id,
-      title: doc.title,
-      relPath: doc.relPath,
-      snippet,
-      idMatch,
-    });
-  }
-
-  // Sort: ID matches first, then by original order
-  results.sort((a, b) => (a.idMatch === b.idMatch ? 0 : a.idMatch ? -1 : 1));
-
-  // Apply limit and remove internal idMatch field from output
-  return results.slice(0, limit).map(({ idMatch: _idMatch, ...rest }) => rest);
-}
-
-function getDocById(id: string): string {
+function getDocById(id: string): DocEntry {
   const doc = DOCS_INDEX.find((d) => d.id === id);
   if (!doc) {
     throw new Error(`Doc not found for id=${id}`);
   }
-  return doc.content;
+  return doc;
 }
 
 // --- CLI / MCP server bootstrap ---
@@ -141,8 +148,9 @@ function getDocById(id: string): string {
           'Usage: npx @adobe/react-spectrum-charts-mcp@latest\n\n' +
           'Starts the MCP server for React Spectrum Charts documentation.\n\n' +
           'Tools:\n' +
-          '  search_rsc_docs  Search documentation by terms\n' +
-          '  get_rsc_doc      Get full documentation page by ID\n'
+          '  get_rsc_docs      List all available documentation pages\n' +
+          '  get_rsc_doc_info  Get page description and section titles\n' +
+          '  get_rsc_doc       Get full page or a specific section\n'
       );
       process.exit(0);
     }
@@ -161,27 +169,27 @@ function getDocById(id: string): string {
       version: VERSION,
     });
 
-    // Search tool
+    // List all docs tool
     server.registerTool(
-      'search_rsc_docs',
+      'get_rsc_docs',
       {
-        title: 'Search RSC Docs',
-        description: 'Searches React Spectrum Charts docs by terms; returns matching pages with snippets.',
+        title: 'Get RSC Docs',
+        description: 'Lists all available React Spectrum Charts documentation pages with their IDs.',
         inputSchema: z.object({
-          terms: z.union([z.string(), z.array(z.string())]).describe('Search term(s) to find in documentation'),
-          limit: z.number().optional().describe('Maximum number of results to return (default: 5)'),
+          includeDescription: z.boolean().optional().describe('Include page descriptions (default: false)'),
         }),
       },
-      async ({ terms, limit }: { terms: string | string[]; limit?: number }) => {
-        const rawTerms = Array.isArray(terms) ? terms : [terms];
-        const normalized = Array.from(
-          new Set(rawTerms.map((t) => String(t ?? '').trim().toLowerCase()).filter(Boolean))
-        );
-        if (normalized.length === 0) {
-          throw new Error('Provide at least one non-empty search term.');
-        }
-
-        const results = searchDocs(normalized, limit ?? 5);
+      async ({ includeDescription }: { includeDescription?: boolean }) => {
+        const results = DOCS_INDEX.map((doc) => {
+          const entry: { id: string; title: string; description?: string } = {
+            id: doc.id,
+            title: doc.title,
+          };
+          if (includeDescription) {
+            entry.description = doc.description;
+          }
+          return entry;
+        });
 
         return {
           content: [
@@ -194,23 +202,71 @@ function getDocById(id: string): string {
       }
     );
 
-    // Get doc by ID tool
+    // Get doc info tool
     server.registerTool(
-      'get_rsc_doc',
+      'get_rsc_doc_info',
       {
-        title: 'Get RSC Doc',
-        description: 'Returns full markdown/MDX for a React Spectrum Charts docs page by ID.',
+        title: 'Get RSC Doc Info',
+        description: "Returns a page's description and list of section titles.",
         inputSchema: z.object({
-          id: z.string().describe('Document ID from search_rsc_docs results (e.g., "guides/chart-basics")'),
+          id: z.string().describe('Document ID (e.g., "guides/chart-basics")'),
         }),
       },
       async ({ id }: { id: string }) => {
-        const content = getDocById(id);
+        const doc = getDocById(id);
+        const result = {
+          id: doc.id,
+          title: doc.title,
+          description: doc.description,
+          sections: doc.sections.map((s) => ({ title: s.title, level: s.level })),
+        };
+
         return {
           content: [
             {
               type: 'text' as const,
-              text: content,
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
+        };
+      }
+    );
+
+    // Get doc content tool
+    server.registerTool(
+      'get_rsc_doc',
+      {
+        title: 'Get RSC Doc',
+        description: 'Returns full markdown/MDX for a page, or only the specified section.',
+        inputSchema: z.object({
+          id: z.string().describe('Document ID (e.g., "guides/chart-basics")'),
+          section: z.string().optional().describe('Section title to retrieve (returns full page if omitted)'),
+        }),
+      },
+      async ({ id, section }: { id: string; section?: string }) => {
+        const doc = getDocById(id);
+
+        if (section) {
+          const found = doc.sections.find((s) => s.title.toLowerCase() === section.toLowerCase());
+          if (!found) {
+            const available = doc.sections.map((s) => s.title).join(', ');
+            throw new Error(`Section "${section}" not found. Available sections: ${available}`);
+          }
+          return {
+            content: [
+              {
+                type: 'text' as const,
+                text: found.content,
+              },
+            ],
+          };
+        }
+
+        return {
+          content: [
+            {
+              type: 'text' as const,
+              text: doc.content,
             },
           ],
         };
