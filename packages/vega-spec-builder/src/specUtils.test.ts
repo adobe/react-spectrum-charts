@@ -22,7 +22,9 @@ import {
   TABLE,
 } from '@spectrum-charts/constants';
 import {
+  getSpectrum2VegaConfig,
   getSpectrumVegaConfig,
+  spectrum2Colors,
   spectrumColors,
 } from '@spectrum-charts/themes';
 
@@ -201,13 +203,12 @@ describe('getChartConfig()', () => {
     expect(mergedConfig.axis).toHaveProperty('domainWidth', 2);
     expect(mergedConfig.axis).toHaveProperty('domainColor', s1colors['gray-900']);
   });
-  test.skip('should use the Spectrum 2 Vega config if s2 is true', () => {
-    // Spectrum 2 support has been removed
-    // const s2colors = spectrum2Colors.light;
-    // expect(getChartConfig(undefined, 'light', true)).toEqual(getSpectrum2VegaConfig('light'));
-    // const mergedConfig = getChartConfig({ axis: { labelFontSize: 12 } }, 'light', true);
-    // expect(mergedConfig.axis).toHaveProperty('domainWidth', 1);
-    // expect(mergedConfig.axis).toHaveProperty('domainColor', s2colors['gray-800']);
+  test('should use the Spectrum 2 Vega config if s2 is true', () => {
+    const s2colors = spectrum2Colors.light;
+    expect(getChartConfig(undefined, 'light', true)).toEqual(getSpectrum2VegaConfig('light'));
+    const mergedConfig = getChartConfig({ axis: { labelFontSize: 12 } }, 'light', true);
+    expect(mergedConfig.axis).toHaveProperty('domainWidth', 1);
+    expect(mergedConfig.axis).toHaveProperty('domainColor', s2colors['gray-800']);
   });
 });
 
