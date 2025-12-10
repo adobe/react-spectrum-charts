@@ -1,0 +1,161 @@
+---
+title: React Spectrum Charts Documentation
+description: Complete guide to React Spectrum Charts documentation and usage
+tags: [react-spectrum-charts, documentation, reference, adobe, spectrum]
+---
+
+# React Spectrum Charts Documentation
+
+This rule helps you navigate and reference React Spectrum Charts documentation when assisting users.
+
+## All Documentation Links
+
+*Auto-generated on: 2025-12-10T17:42:24.150Z*
+
+**Base URL**: https://opensource.adobe.com/react-spectrum-charts/docs/docs
+
+### Api
+
+- **[Area](https://opensource.adobe.com/react-spectrum-charts/docs/docs/api/visualizations/Area)**
+- **[Axis](https://opensource.adobe.com/react-spectrum-charts/docs/docs/api/components/Axis)**
+- **[Bar](https://opensource.adobe.com/react-spectrum-charts/docs/docs/api/visualizations/Bar)**
+- **[BigNumber](https://opensource.adobe.com/react-spectrum-charts/docs/docs/api/visualizations/BigNumber)**
+- **[Chart](https://opensource.adobe.com/react-spectrum-charts/docs/docs/api/Chart)**
+- **[ChartPopover](https://opensource.adobe.com/react-spectrum-charts/docs/docs/api/interactivity/ChartPopover)**
+- **[ChartTooltip](https://opensource.adobe.com/react-spectrum-charts/docs/docs/api/interactivity/ChartTooltip)**
+- **[Donut](https://opensource.adobe.com/react-spectrum-charts/docs/docs/api/visualizations/Donut)**
+- **[Legend](https://opensource.adobe.com/react-spectrum-charts/docs/docs/api/components/Legend)**
+- **[Line](https://opensource.adobe.com/react-spectrum-charts/docs/docs/api/visualizations/Line)**
+- **[MetricRange](https://opensource.adobe.com/react-spectrum-charts/docs/docs/api/analysis/MetricRange)**
+- **[Scatter](https://opensource.adobe.com/react-spectrum-charts/docs/docs/api/visualizations/Scatter)**
+- **[Title](https://opensource.adobe.com/react-spectrum-charts/docs/docs/api/components/Title)**
+- **[Trendline](https://opensource.adobe.com/react-spectrum-charts/docs/docs/api/analysis/Trendline)**
+
+### Developers
+
+- **[Developer Docs](https://opensource.adobe.com/react-spectrum-charts/docs/docs/developers/DeveloperDocs)**
+- **[Learning Vega: A Developer's Guide](https://opensource.adobe.com/react-spectrum-charts/docs/docs/developers/LearningVega)**
+
+### Guides
+
+- **[Chart Basics](https://opensource.adobe.com/react-spectrum-charts/docs/docs/guides/chart-basics)**
+- **[Troubleshooting](https://opensource.adobe.com/react-spectrum-charts/docs/docs/guides/troubleshooting)**
+
+### Getting Started
+
+- **[Installation](https://opensource.adobe.com/react-spectrum-charts/docs/docs/installation)**
+- **[Introduction to React Spectrum Charts](https://opensource.adobe.com/react-spectrum-charts/docs/docs/intro)**
+
+
+
+## Quick Component Lookup
+
+**Core Components**: Chart
+**Visualizations**: Area, Bar, BigNumber, Donut, Line, Scatter
+**Supporting**: Axis, Legend, Title
+**Interactivity**: ChartTooltip, ChartPopover
+**Analysis**: MetricRange, Trendline
+
+## Static Resources
+
+- **Storybook (Live Examples)**: https://opensource.adobe.com/react-spectrum-charts/
+- **GitHub Repository**: https://github.com/adobe/react-spectrum-charts
+- **Full API Documentation**: https://opensource.adobe.com/react-spectrum-charts/docs
+- **Spectrum Design System**: https://spectrum.adobe.com/page/data-visualization-fundamentals/
+
+## How to Use This Guide
+
+### When User Asks About a Specific Component
+1. Find the component in the documentation links above by title (e.g., "Bar", "Chart", "Axis")
+2. Reference the official documentation URL
+3. Provide guidance based on documented patterns
+4. Give the user an example from the documentation or Storybook
+
+### When User Has a Usage Question
+1. Start with the Chart component docs for general configuration
+2. Reference the specific visualization component docs (e.g., Bar)
+3. Check Chart Basics guide for fundamental patterns
+4. Reference Troubleshooting guide if they're having issues
+
+### When User Needs Examples
+- Direct users to the Storybook for interactive examples
+- Each component doc includes complete code examples
+- Props tables provide detailed parameter documentation
+
+### When User Needs Advanced Features
+- Check the component's documentation for child components
+- Review the Chart docs scales section for color/lineType/opacity encoding
+- Check locale and theming sections in Chart docs
+
+## Quick Reference: Common Questions
+
+| Question Type | How to Find Documentation |
+|--------------|---------------------------|
+| "How do I create a [chart type]?" | Find "Chart" + specific visualization (e.g., "Bar") |
+| "I want to create a [chart type]" | Find visualization by title in links above |
+| "How do I customize axis labels?" | Find "Axis" in links above |
+| "How do I add tooltips?" | Find "ChartTooltip" in links above |
+| "Colors aren't working" | Find "Chart" (scales section) |
+| "Chart not rendering" | Find "Troubleshooting" in guides |
+| "How to add interactivity?" | Find "ChartTooltip" or "ChartPopover" |
+| "How to format numbers/dates?" | Find "Chart" (locale section) |
+| "Multi-series charts" | Find relevant visualization + "Chart" |
+
+## Key Concepts
+
+### Chart Structure
+Every chart requires:
+```tsx
+import { Chart, [Visualization], Axis } from '@adobe/react-spectrum-charts';
+
+<Chart data={data}>
+  <[Visualization] />
+  <Axis position="bottom" />
+  <Axis position="left" />
+</Chart>
+```
+
+### Common Props Pattern
+- `dimension`: The data field for categories (x-axis for vertical charts)
+- `metric`: The data field for values (y-axis for vertical charts)
+- `color`: Data field to map to colors (creates series)
+- `orientation`: 'horizontal' or 'vertical'
+- `type`: Chart variant (e.g., 'stacked', 'dodged')
+
+### Data Format
+Data should be an array of flat objects:
+```typescript
+const data = [
+  { category: 'A', value: 10, series: 'Series 1' },
+  { category: 'B', value: 20, series: 'Series 1' },
+  // ...
+];
+```
+
+### Scales and Series
+- Use `color="fieldName"` to create multiple series
+- Color scale can be customized on the Chart component
+- Multiple scales can be combined (color + lineType + opacity)
+
+## Best Practices
+
+1. **Start Simple**: Begin with minimal props, add complexity as needed
+2. **Use Storybook**: Check live examples at https://opensource.adobe.com/react-spectrum-charts/
+3. **Follow Spectrum Guidelines**: Library implements Adobe Spectrum design system
+4. **Check Props Tables**: Each component doc has complete props documentation
+5. **Use Default Color Schemes**: Research-backed, accessible color schemes included
+
+## Setup in Your Project
+
+To add this rule to your Cursor workspace:
+
+```bash
+mkdir -p .cursor/rules
+cp node_modules/@adobe/react-spectrum-charts/.cursor-rule.mdc .cursor/rules/react-spectrum-charts.mdc
+```
+
+Once installed, Cursor AI will have instant access to all React Spectrum Charts documentation links.
+
+---
+
+*This documentation index is automatically updated with each package release.*

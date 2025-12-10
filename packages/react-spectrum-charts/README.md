@@ -92,6 +92,20 @@ const MyChart: FC<MyChartProps> = (props) => {
 }
 ```
 
+## Cursor AI Integration (Optional)
+
+This package includes a Cursor AI rule with all React Spectrum Charts documentation links. To use it:
+
+```bash
+# From your project root
+mkdir -p .cursor/rules
+cp node_modules/@adobe/react-spectrum-charts/.cursor-rule.mdc .cursor/rules/react-spectrum-charts.mdc
+```
+
+Once installed, Cursor AI will have instant access to all component documentation links when helping you with React Spectrum Charts.
+
+The documentation links are automatically updated with each package release.
+
 ## Spectrum (Adobe Design System) Integration
 
 Adobe's design system has detailed guidelines for charting fundamentals, color selection for charts as well as design guidelines for the primary chart components.

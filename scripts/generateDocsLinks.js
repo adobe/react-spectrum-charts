@@ -309,10 +309,11 @@ FORMATS:
   json         JSON format
 
 OPTIONS:
-  --external, -e    Generate external URLs
-                    Base URL: ${BASE_URL}
-                    (automatically read from docusaurus.config.ts)
-  --help, -h        Show this help message
+  --external, -e         Generate external URLs
+                         Base URL: ${BASE_URL}
+                         (automatically read from docusaurus.config.ts)
+  --update-cursor-rule   Update the .cursor-rule.mdc file with current docs
+  --help, -h             Show this help message
 
 EXAMPLES:
   # Console output with relative links
@@ -340,20 +341,23 @@ NOTE:
 function main() {
 	const args = process.argv.slice(2);
 	
-	// Check for help flag
+	// Parse arguments
+	let format = 'console';
+	let outputFile = null;
+	let external = false;
+	let updateCursor = false;
+	
+	// Check for help flag first
 	if (args.includes('--help') || args.includes('-h')) {
 		showHelp();
 		return;
 	}
 	
-	// Parse arguments
-	let format = 'console';
-	let outputFile = null;
-	let external = false;
-	
 	for (const arg of args) {
 		if (arg === '--external' || arg === '-e') {
 			external = true;
+		} else if (arg === '--update-cursor-rule') {
+			updateCursor = true;
 		} else if (Object.values(OUTPUT_FORMATS).includes(arg)) {
 			format = arg;
 		} else if (!arg.startsWith('-')) {
@@ -375,6 +379,12 @@ function main() {
 		console.log(`🌐 Generating external URLs with base: ${BASE_URL}`);
 	}
 	console.log();
+
+	// Update cursor rule if requested
+	if (updateCursor) {
+		updateCursorRule(files);
+		return;
+	}
 
 	let output;
 	switch (format) {
@@ -398,9 +408,174 @@ function main() {
 	}
 }
 
+/**
+ * Updates the Cursor rule file with current documentation links
+ * @param {Array} files - Array of file objects
+ */
+function updateCursorRule(files) {
+	const cursorRulePath = path.join(__dirname, '../packages/react-spectrum-charts/.cursor-rule.mdc');
+	
+	// Sort files for consistent output
+	const sortedFiles = [...files].sort((a, b) => {
+		if (a.category !== b.category) return a.category.localeCompare(b.category);
+		return a.title.localeCompare(b.title);
+	});
+	
+	// Build the documentation links section
+	let docsLinksSection = '## All Documentation Links\n\n';
+	docsLinksSection += `*Auto-generated on: ${new Date().toISOString()}*\n\n`;
+	docsLinksSection += `**Base URL**: ${BASE_URL}\n\n`;
+	
+	// Group by category
+	const byCategory = {};
+	sortedFiles.forEach(file => {
+		if (!byCategory[file.category]) byCategory[file.category] = [];
+		byCategory[file.category].push(file);
+	});
+	
+	// Generate markdown for each category
+	Object.keys(byCategory).sort().forEach(category => {
+		const categoryTitle = category === 'root' ? 'Getting Started' : formatFileName(category);
+		docsLinksSection += `### ${categoryTitle}\n\n`;
+		byCategory[category].forEach(file => {
+			const link = `${BASE_URL}/${file.path.replace(/\\/g, '/').replace(/\.md$/, '')}`;
+			docsLinksSection += `- **[${file.title}](${link})**\n`;
+		});
+		docsLinksSection += '\n';
+	});
+	
+	// Create the cursor rule content with comprehensive information
+	const cursorRuleContent = `---
+title: React Spectrum Charts Documentation
+description: Complete guide to React Spectrum Charts documentation and usage
+tags: [react-spectrum-charts, documentation, reference, adobe, spectrum]
+---
+
+# React Spectrum Charts Documentation
+
+This rule helps you navigate and reference React Spectrum Charts documentation when assisting users.
+
+${docsLinksSection}
+
+## Quick Component Lookup
+
+**Core Components**: Chart
+**Visualizations**: Area, Bar, BigNumber, Donut, Line, Scatter
+**Supporting**: Axis, Legend, Title
+**Interactivity**: ChartTooltip, ChartPopover
+**Analysis**: MetricRange, Trendline
+
+## Static Resources
+
+- **Storybook (Live Examples)**: https://opensource.adobe.com/react-spectrum-charts/
+- **GitHub Repository**: https://github.com/adobe/react-spectrum-charts
+- **Full API Documentation**: https://opensource.adobe.com/react-spectrum-charts/docs
+- **Spectrum Design System**: https://spectrum.adobe.com/page/data-visualization-fundamentals/
+
+## How to Use This Guide
+
+### When User Asks About a Specific Component
+1. Find the component in the documentation links above by title (e.g., "Bar", "Chart", "Axis")
+2. Reference the official documentation URL
+3. Provide guidance based on documented patterns
+4. Give the user an example from the documentation or Storybook
+
+### When User Has a Usage Question
+1. Start with the Chart component docs for general configuration
+2. Reference the specific visualization component docs (e.g., Bar)
+3. Check Chart Basics guide for fundamental patterns
+4. Reference Troubleshooting guide if they're having issues
+
+### When User Needs Examples
+- Direct users to the Storybook for interactive examples
+- Each component doc includes complete code examples
+- Props tables provide detailed parameter documentation
+
+### When User Needs Advanced Features
+- Check the component's documentation for child components
+- Review the Chart docs scales section for color/lineType/opacity encoding
+- Check locale and theming sections in Chart docs
+
+## Quick Reference: Common Questions
+
+| Question Type | How to Find Documentation |
+|--------------|---------------------------|
+| "How do I create a [chart type]?" | Find "Chart" + specific visualization (e.g., "Bar") |
+| "I want to create a [chart type]" | Find visualization by title in links above |
+| "How do I customize axis labels?" | Find "Axis" in links above |
+| "How do I add tooltips?" | Find "ChartTooltip" in links above |
+| "Colors aren't working" | Find "Chart" (scales section) |
+| "Chart not rendering" | Find "Troubleshooting" in guides |
+| "How to add interactivity?" | Find "ChartTooltip" or "ChartPopover" |
+| "How to format numbers/dates?" | Find "Chart" (locale section) |
+| "Multi-series charts" | Find relevant visualization + "Chart" |
+
+## Key Concepts
+
+### Chart Structure
+Every chart requires:
+\`\`\`tsx
+import { Chart, [Visualization], Axis } from '@adobe/react-spectrum-charts';
+
+<Chart data={data}>
+  <[Visualization] />
+  <Axis position="bottom" />
+  <Axis position="left" />
+</Chart>
+\`\`\`
+
+### Common Props Pattern
+- \`dimension\`: The data field for categories (x-axis for vertical charts)
+- \`metric\`: The data field for values (y-axis for vertical charts)
+- \`color\`: Data field to map to colors (creates series)
+- \`orientation\`: 'horizontal' or 'vertical'
+- \`type\`: Chart variant (e.g., 'stacked', 'dodged')
+
+### Data Format
+Data should be an array of flat objects:
+\`\`\`typescript
+const data = [
+  { category: 'A', value: 10, series: 'Series 1' },
+  { category: 'B', value: 20, series: 'Series 1' },
+  // ...
+];
+\`\`\`
+
+### Scales and Series
+- Use \`color="fieldName"\` to create multiple series
+- Color scale can be customized on the Chart component
+- Multiple scales can be combined (color + lineType + opacity)
+
+## Best Practices
+
+1. **Start Simple**: Begin with minimal props, add complexity as needed
+2. **Use Storybook**: Check live examples at https://opensource.adobe.com/react-spectrum-charts/
+3. **Follow Spectrum Guidelines**: Library implements Adobe Spectrum design system
+4. **Check Props Tables**: Each component doc has complete props documentation
+5. **Use Default Color Schemes**: Research-backed, accessible color schemes included
+
+## Setup in Your Project
+
+To add this rule to your Cursor workspace:
+
+\`\`\`bash
+mkdir -p .cursor/rules
+cp node_modules/@adobe/react-spectrum-charts/.cursor-rule.mdc .cursor/rules/react-spectrum-charts.mdc
+\`\`\`
+
+Once installed, Cursor AI will have instant access to all React Spectrum Charts documentation links.
+
+---
+
+*This documentation index is automatically updated with each package release.*
+`;
+	
+	fs.writeFileSync(cursorRulePath, cursorRuleContent, 'utf-8');
+	console.log(`✅ Updated Cursor rule at: ${cursorRulePath}`);
+}
+
 if (require.main === module) {
 	main();
 }
 
-module.exports = { scanDirectory, generateMarkdown, generateJSON, generateConsole, BASE_URL };
-
+module.exports = { scanDirectory, generateMarkdown, generateJSON, generateConsole, updateCursorRule, BASE_URL };

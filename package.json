@@ -60,6 +60,8 @@
     "build": "yarn workspaces run build",
     "build:parallel": "concurrently 'yarn workspace @spectrum-charts/themes build' 'yarn workspace @spectrum-charts/constants build' 'yarn workspace @spectrum-charts/utils build' 'yarn workspace @spectrum-charts/locales build' && yarn workspace @spectrum-charts/vega-spec-builder build && yarn workspace @adobe/react-spectrum-charts build",
     "build:docs": "yarn workspace @spectrum-charts/docs build",
+    "docs:links": "node scripts/generateDocsLinks.js json --external",
+    "docs:update-cursor-rule": "node scripts/generateDocsLinks.js --update-cursor-rule",
     "clean": "yarn workspaces run clean",
     "clean:parallel": "concurrently 'yarn workspace @spectrum-charts/themes clean' 'yarn workspace @spectrum-charts/constants clean' 'yarn workspace @spectrum-charts/utils clean' 'yarn workspace @spectrum-charts/locales clean' 'yarn workspace @spectrum-charts/vega-spec-builder clean' 'yarn workspace @adobe/react-spectrum-charts clean'",
     "build:force": "yarn clean && yarn build",
