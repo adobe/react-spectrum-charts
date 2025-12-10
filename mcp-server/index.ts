@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 /*
  * Copyright 2025 Adobe. All rights reserved.
  * This file is licensed to you under the Apache License, Version 2.0 (the "License");
@@ -16,35 +15,24 @@
  * Provides tools and resources for exploring the React Spectrum Charts codebase
  * and generating chart components from text commands
  */
-
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
-import {
-  CallToolRequestSchema,
-  ListPromptsRequestSchema,
-  GetPromptRequestSchema,
-  ListResourcesRequestSchema,
-  ListToolsRequestSchema,
-  ReadResourceRequestSchema,
-} from '@modelcontextprotocol/sdk/types.js';
-import { readFileSync, readdirSync, statSync, writeFileSync, mkdirSync, existsSync } from 'fs';
-import { join, relative, resolve, dirname } from 'path';
+import { CallToolRequestSchema, GetPromptRequestSchema, ListPromptsRequestSchema, ListResourcesRequestSchema, ListToolsRequestSchema, ReadResourceRequestSchema } from '@modelcontextprotocol/sdk/types.js';
+import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from 'fs';
 import { homedir } from 'os';
+import { dirname, join, relative, resolve } from 'path';
 import { fileURLToPath } from 'url';
+
+
+
+import { PageInfo, buildPageIndex, getComponentPages, getPageContent, getPageInfo, isUsingRemoteMode, searchDocs } from './src/docs-manager.js';
+
 
 // ES Module equivalent of __dirname
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-import {
-  buildPageIndex,
-  getPageInfo,
-  getPageContent,
-  searchDocs,
-  getComponentPages,
-  PageInfo,
-} from './src/docs-manager.js';
 
-const VERSION = '3.0.0';
+const VERSION = '3.1.0';
 
 // ============================================
 // CLI Argument Parsing & Workspace Resolution
@@ -57,14 +45,14 @@ function showHelp(): void {
   console.log(`
 React Spectrum Charts MCP Server v${VERSION}
 
-A Model Context Protocol server for generating React Spectrum Charts
-components via AI assistants like Claude.
+A Model Context Protocol server for React Spectrum Charts.
+Browse documentation, explore the codebase, and generate chart components.
 
 Usage:
   spectrum-charts-mcp [options]
 
 Options:
-  --workspace=<path>  Path to react-spectrum-charts repository (required for external use)
+  --workspace=<path>  Path to react-spectrum-charts repository (optional)
   -w <path>           Short form of --workspace
   --help, -h          Show this help message
   --version, -v       Show version number
@@ -72,30 +60,34 @@ Options:
 Environment Variables:
   RSC_WORKSPACE       Path to react-spectrum-charts repository
 
+Modes:
+  Remote Mode (default):
+    Documentation is fetched from GitHub. No local clone needed.
+    Works anywhere - just install and use!
+
+  Local Mode (with --workspace):
+    Uses local files for faster access and file operations.
+    Required for saving generated files to the repository.
+
 Examples:
-  # Run with explicit workspace path
+  # Remote mode - works without any setup!
+  spectrum-charts-mcp
+
+  # Local mode - use with a cloned repo
   spectrum-charts-mcp --workspace=/Users/me/react-spectrum-charts
 
-  # Run with environment variable
-  RSC_WORKSPACE=/path/to/repo spectrum-charts-mcp
-
-  # Run from within the react-spectrum-charts repo (no args needed)
-  cd react-spectrum-charts && node mcp-server/dist/index.js
-
-Claude Desktop Configuration:
-  Add to ~/Library/Application Support/Claude/claude_desktop_config.json:
-
+Claude Desktop / Cursor Configuration:
   {
     "mcpServers": {
       "react-spectrum-charts": {
-        "command": "spectrum-charts-mcp",
-        "args": ["--workspace=/path/to/react-spectrum-charts"]
+        "command": "npx",
+        "args": ["@adobe/react-spectrum-charts-mcp"]
       }
     }
   }
 
-For more information, visit:
-  https://github.com/adobe/react-spectrum-charts/tree/main/mcp-server
+Documentation: https://opensource.adobe.com/react-spectrum-charts/docs/
+GitHub: https://github.com/adobe/react-spectrum-charts
 `);
   process.exit(0);
 }
@@ -112,13 +104,13 @@ function expandPath(path: string): string {
 
 /**
  * Parse command line arguments and environment variables
- * to determine the workspace path
+ * to determine the workspace path (optional - returns undefined for remote mode)
  */
-function getWorkspacePath(): string {
+function getWorkspacePath(): string | undefined {
   const args = process.argv.slice(2);
 
   // Priority 1: --workspace=/path argument
-  const workspaceArg = args.find(arg => arg.startsWith('--workspace='));
+  const workspaceArg = args.find((arg) => arg.startsWith('--workspace='));
   if (workspaceArg) {
     return expandPath(workspaceArg.split('=')[1]);
   }
@@ -134,48 +126,49 @@ function getWorkspacePath(): string {
     return expandPath(process.env.RSC_WORKSPACE);
   }
 
-  // Priority 4: Default - assume running from within repo (mcp-server/dist/)
-  // __dirname is mcp-server/dist, so go up two levels to reach repo root
-  return resolve(__dirname, '..', '..');
+  // Priority 4: Check if running from within repo (mcp-server/dist/)
+  const possibleRepoRoot = resolve(__dirname, '..', '..');
+  const packagesDir = join(possibleRepoRoot, 'packages');
+  if (existsSync(packagesDir)) {
+    return possibleRepoRoot;
+  }
+
+  // No workspace - will use remote mode
+  return undefined;
 }
 
 /**
- * Validate that the workspace contains react-spectrum-charts
+ * Validate that the workspace contains react-spectrum-charts (only if workspace provided)
  */
-function validateWorkspace(workspacePath: string): void {
+function validateWorkspace(workspacePath: string): boolean {
   const packageJsonPath = join(workspacePath, 'package.json');
 
   if (!existsSync(packageJsonPath)) {
-    console.error(`\nError: No package.json found at "${workspacePath}"`);
-    console.error('\nPlease specify the path to your react-spectrum-charts repository:');
-    console.error('  spectrum-charts-mcp --workspace=/path/to/react-spectrum-charts');
-    console.error('\nOr set the RSC_WORKSPACE environment variable:');
-    console.error('  export RSC_WORKSPACE=/path/to/react-spectrum-charts');
-    console.error('\nRun "spectrum-charts-mcp --help" for more information.\n');
-    process.exit(1);
+    console.error(`Warning: No package.json found at "${workspacePath}"`);
+    return false;
   }
 
   try {
     const pkg = JSON.parse(readFileSync(packageJsonPath, 'utf-8'));
-    const isSpectrumCharts = pkg.name?.includes('spectrum-charts') ||
-                             pkg.workspaces?.includes('packages/*');
+    const isSpectrumCharts = pkg.name?.includes('spectrum-charts') || pkg.workspaces?.includes('packages/*');
 
     if (!isSpectrumCharts) {
-      console.error(`\nWarning: "${workspacePath}" may not be a react-spectrum-charts repository.`);
-      console.error('Expected to find spectrum-charts in package name or workspaces config.\n');
+      console.error(`Warning: "${workspacePath}" may not be a react-spectrum-charts repository.`);
+      return false;
     }
   } catch (error) {
-    console.error(`\nError reading package.json: ${error}`);
-    process.exit(1);
+    console.error(`Warning: Error reading package.json: ${error}`);
+    return false;
   }
 
   // Check packages directory exists
   const packagesDir = join(workspacePath, 'packages');
   if (!existsSync(packagesDir)) {
-    console.error(`\nError: No "packages" directory found at "${workspacePath}"`);
-    console.error('This doesn\'t appear to be the react-spectrum-charts monorepo.\n');
-    process.exit(1);
+    console.error(`Warning: No "packages" directory found at "${workspacePath}"`);
+    return false;
   }
+
+  return true;
 }
 
 // Handle --help and --version flags early
@@ -188,10 +181,14 @@ if (cliArgs.includes('--version') || cliArgs.includes('-v')) {
   process.exit(0);
 }
 
-// Resolve and validate workspace path
+// Resolve workspace path (optional - undefined means remote mode)
 const WORKSPACE_ROOT = getWorkspacePath();
-validateWorkspace(WORKSPACE_ROOT);
-const PACKAGES_DIR = join(WORKSPACE_ROOT, 'packages');
+const PACKAGES_DIR = WORKSPACE_ROOT ? join(WORKSPACE_ROOT, 'packages') : undefined;
+
+// Validate if workspace is provided
+if (WORKSPACE_ROOT) {
+  validateWorkspace(WORKSPACE_ROOT);
+}
 
 interface PackageInfo {
   name: string;
@@ -294,18 +291,22 @@ const EXAMPLE_DATA_TEMPLATES: Record<string, ChartData[]> = {
 };
 
 /**
- * Get all packages in the monorepo
+ * Get all packages in the monorepo (requires local workspace)
  */
 function getPackages(): PackageInfo[] {
+  if (!PACKAGES_DIR || !WORKSPACE_ROOT) {
+    throw new Error('Local workspace required. Use --workspace=/path/to/react-spectrum-charts');
+  }
+
   const packages: PackageInfo[] = [];
-  
+
   try {
     const packageDirs = readdirSync(PACKAGES_DIR);
-    
+
     for (const dir of packageDirs) {
       const packagePath = join(PACKAGES_DIR, dir);
       const packageJsonPath = join(packagePath, 'package.json');
-      
+
       try {
         if (statSync(packageJsonPath).isFile()) {
           const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'));
@@ -317,53 +318,67 @@ function getPackages(): PackageInfo[] {
           });
         }
       } catch (error) {
-        console.error(`Warning: Could not read package at ${packagePath}:`, error instanceof Error ? error.message : error);
+        console.error(
+          `Warning: Could not read package at ${packagePath}:`,
+          error instanceof Error ? error.message : error
+        );
         continue;
       }
     }
   } catch (error) {
     console.error('Error reading packages:', error);
   }
-  
+
   return packages;
 }
 
 /**
- * Find files recursively in a directory
+ * Find files recursively in a directory (requires local workspace)
  */
 function findFiles(dir: string, pattern: RegExp, maxDepth: number = 5): string[] {
+  if (!WORKSPACE_ROOT) {
+    throw new Error('Local workspace required for file search');
+  }
+
+  const workspaceRoot = WORKSPACE_ROOT; // TypeScript narrowing
   const files: string[] = [];
-  
+
   function walk(currentDir: string, depth: number) {
     if (depth > maxDepth) return;
-    
+
     try {
       const entries = readdirSync(currentDir);
-      
+
       for (const entry of entries) {
         const fullPath = join(currentDir, entry);
         const stat = statSync(fullPath);
-        
+
         if (stat.isDirectory() && !entry.startsWith('.') && entry !== 'node_modules' && entry !== 'dist') {
           walk(fullPath, depth + 1);
         } else if (stat.isFile() && pattern.test(entry)) {
-          files.push(relative(WORKSPACE_ROOT, fullPath));
+          files.push(relative(workspaceRoot, fullPath));
         }
       }
     } catch (error) {
       // Log but continue on inaccessible directories
-      console.error(`Warning: Could not access directory ${currentDir}:`, error instanceof Error ? error.message : error);
+      console.error(
+        `Warning: Could not access directory ${currentDir}:`,
+        error instanceof Error ? error.message : error
+      );
     }
   }
-  
+
   walk(dir, 0);
   return files;
 }
 
 /**
- * Read file content safely
+ * Read file content safely (requires local workspace)
  */
 function readFileSafe(filePath: string): string {
+  if (!WORKSPACE_ROOT) {
+    throw new Error('Local workspace required for file operations');
+  }
   try {
     return readFileSync(join(WORKSPACE_ROOT, filePath), 'utf-8');
   } catch (error) {
@@ -392,19 +407,16 @@ function generateBarChartCode(data: ChartData[], config: BarChartConfig): string
 
   const isHorizontal = orientation === 'horizontal';
   const hasColorSeries = color && color !== 'value' && !color.startsWith('{');
-  
+
   // Generate imports
-  const imports = [
-    `import { ReactElement } from 'react';`,
-    `import { Chart } from '@adobe/react-spectrum-charts';`,
-  ];
-  
+  const imports = [`import { ReactElement } from 'react';`, `import { Chart } from '@adobe/react-spectrum-charts';`];
+
   const components = ['Axis', 'Bar'];
   if (showTooltip) components.push('ChartTooltip');
   if (showLegend && hasColorSeries) components.push('Legend');
   if (title) components.push('Title');
   if (showAnnotations) components.push('Annotation');
-  
+
   imports.push(`import { ${components.join(', ')} } from '@adobe/react-spectrum-charts';`);
 
   // Generate data constant
@@ -453,14 +465,18 @@ export const GeneratedBarChart = (): ReactElement => {
         ${orientation !== 'vertical' ? `orientation="${orientation}"` : ''}
         ${type !== 'stacked' ? `type="${type}"` : ''}
       >
-        ${showTooltip ? `<ChartTooltip>
+        ${
+          showTooltip
+            ? `<ChartTooltip>
           {(datum) => (
             <div style={{ padding: '8px' }}>
               <strong>{datum.${dimension}}</strong>
               <div>${metric}: {datum.${metric}?.toLocaleString()}</div>
             </div>
           )}
-        </ChartTooltip>` : ''}
+        </ChartTooltip>`
+            : ''
+        }
         ${showAnnotations && annotationKey ? `<Annotation textKey="${annotationKey}" />` : ''}
       </Bar>
     </Chart>
@@ -478,7 +494,7 @@ export default GeneratedBarChart;
  */
 function parseChartCommand(command: string): { dataType: string; config: Partial<BarChartConfig> } {
   const lowerCommand = command.toLowerCase();
-  
+
   // Determine data type
   let dataType = 'sales'; // default
   if (lowerCommand.includes('browser') || lowerCommand.includes('download')) {
@@ -493,19 +509,19 @@ function parseChartCommand(command: string): { dataType: string; config: Partial
 
   // Parse configuration from command
   const config: Partial<BarChartConfig> = {};
-  
+
   // Orientation
   if (lowerCommand.includes('horizontal')) {
     config.orientation = 'horizontal';
   }
-  
+
   // Type
   if (lowerCommand.includes('grouped') || lowerCommand.includes('dodged') || lowerCommand.includes('side by side')) {
     config.type = 'dodged';
   } else if (lowerCommand.includes('stacked')) {
     config.type = 'stacked';
   }
-  
+
   // Features
   if (lowerCommand.includes('tooltip') || lowerCommand.includes('hover')) {
     config.showTooltip = true;
@@ -516,10 +532,9 @@ function parseChartCommand(command: string): { dataType: string; config: Partial
   if (lowerCommand.includes('label') || lowerCommand.includes('annotation')) {
     config.showAnnotations = true;
   }
-  
+
   // Title extraction
-  const titleMatch = command.match(/titled?\s+["']([^"']+)["']/i) || 
-                     command.match(/title:\s*["']?([^"'\n,]+)["']?/i);
+  const titleMatch = command.match(/titled?\s+["']([^"']+)["']/i) || command.match(/title:\s*["']?([^"'\n,]+)["']?/i);
   if (titleMatch) {
     config.title = titleMatch[1].trim();
   }
@@ -556,17 +571,20 @@ async function main() {
         // ============================================
         {
           name: 'create_bar_chart',
-          description: 'Create a bar chart from a natural language command. Example: "create bar chart for sales data with horizontal orientation"',
+          description:
+            'Create a bar chart from a natural language command. Example: "create bar chart for sales data with horizontal orientation"',
           inputSchema: {
             type: 'object',
             properties: {
               command: {
                 type: 'string',
-                description: 'Natural language command describing the chart. Examples: "create bar chart for sales data", "horizontal bar chart with browser downloads", "stacked bar chart for quarterly revenue by region"',
+                description:
+                  'Natural language command describing the chart. Examples: "create bar chart for sales data", "horizontal bar chart with browser downloads", "stacked bar chart for quarterly revenue by region"',
               },
               customData: {
                 type: 'array',
-                description: 'Optional custom data array. If not provided, example data will be used based on the command.',
+                description:
+                  'Optional custom data array. If not provided, example data will be used based on the command.',
                 items: {
                   type: 'object',
                 },
@@ -653,7 +671,8 @@ async function main() {
         // ============================================
         {
           name: 'list_rsc_pages',
-          description: 'List available documentation pages for React Spectrum Charts. Returns page names and optionally descriptions.',
+          description:
+            'List available documentation pages for React Spectrum Charts. Returns page names and optionally descriptions.',
           inputSchema: {
             type: 'object',
             properties: {
@@ -800,15 +819,15 @@ async function main() {
 
           // Parse the command
           const { dataType, config } = parseChartCommand(command);
-          
+
           // Use custom data or example data
           const data = customData || EXAMPLE_DATA_TEMPLATES[dataType];
-          
+
           // Infer dimension and metric from data
           const dataKeys = Object.keys(data[0]);
-          const stringKeys = dataKeys.filter(k => typeof data[0][k] === 'string');
-          const numberKeys = dataKeys.filter(k => typeof data[0][k] === 'number');
-          
+          const stringKeys = dataKeys.filter((k) => typeof data[0][k] === 'string');
+          const numberKeys = dataKeys.filter((k) => typeof data[0][k] === 'number');
+
           const fullConfig: BarChartConfig = {
             dimension: stringKeys[0] || dataKeys[0],
             metric: numberKeys[0] || dataKeys[1],
@@ -825,9 +844,14 @@ async function main() {
           // Generate the code
           const code = generateBarChartCode(data, fullConfig);
 
-          // Optionally save to file
+          // Optionally save to file (requires local workspace)
           let savedPath = '';
           if (saveToFile) {
+            if (!PACKAGES_DIR || !WORKSPACE_ROOT) {
+              throw new Error(
+                'Saving to file requires --workspace. Use: spectrum-charts-mcp --workspace=/path/to/react-spectrum-charts'
+              );
+            }
             const storiesDir = join(PACKAGES_DIR, 'react-spectrum-charts', 'src', 'stories', 'generated');
             if (!existsSync(storiesDir)) {
               mkdirSync(storiesDir, { recursive: true });
@@ -841,14 +865,18 @@ async function main() {
             content: [
               {
                 type: 'text',
-                text: JSON.stringify({
-                  success: true,
-                  message: 'Bar chart generated successfully!',
-                  dataType,
-                  config: fullConfig,
-                  code,
-                  ...(savedPath && { savedTo: relative(WORKSPACE_ROOT, savedPath) }),
-                }, null, 2),
+                text: JSON.stringify(
+                  {
+                    success: true,
+                    message: 'Bar chart generated successfully!',
+                    dataType,
+                    config: fullConfig,
+                    code,
+                    ...(savedPath && WORKSPACE_ROOT && { savedTo: relative(WORKSPACE_ROOT, savedPath) }),
+                  },
+                  null,
+                  2
+                ),
               },
             ],
           };
@@ -882,12 +910,16 @@ async function main() {
             content: [
               {
                 type: 'text',
-                text: JSON.stringify({
-                  success: true,
-                  message: 'Bar chart generated successfully!',
-                  config,
-                  code,
-                }, null, 2),
+                text: JSON.stringify(
+                  {
+                    success: true,
+                    message: 'Bar chart generated successfully!',
+                    config,
+                    code,
+                  },
+                  null,
+                  2
+                ),
               },
             ],
           };
@@ -905,17 +937,22 @@ async function main() {
             content: [
               {
                 type: 'text',
-                text: JSON.stringify({
-                  availableTemplates: examples,
-                  usage: 'Use these template names in your create_bar_chart command, e.g., "create bar chart for sales data"',
-                }, null, 2),
+                text: JSON.stringify(
+                  {
+                    availableTemplates: examples,
+                    usage:
+                      'Use these template names in your create_bar_chart command, e.g., "create bar chart for sales data"',
+                  },
+                  null,
+                  2
+                ),
               },
             ],
           };
         }
 
         // ============================================
-        // Documentation Tool Handlers
+        // Documentation Tool Handlers (support remote mode)
         // ============================================
         case 'list_rsc_pages': {
           const includeDescription = (args as ToolArguments)?.includeDescription;
@@ -923,28 +960,37 @@ async function main() {
 
           let pages: PageInfo[];
           try {
-            pages = buildPageIndex(WORKSPACE_ROOT);
+            pages = await buildPageIndex(WORKSPACE_ROOT);
           } catch (error) {
             throw new Error(`Failed to build page index: ${error instanceof Error ? error.message : String(error)}`);
           }
 
           // Filter by category if specified
           if (category) {
-            pages = pages.filter(p => p.category === category || p.key.includes(category));
+            pages = pages.filter((p) => p.category === category || p.key.includes(category));
           }
 
           const items = pages
             .sort((a, b) => a.key.localeCompare(b.key))
-            .map(p => includeDescription
-              ? { name: p.name, key: p.key, category: p.category, description: p.description ?? '' }
-              : { name: p.name, key: p.key, category: p.category }
+            .map((p) =>
+              includeDescription
+                ? { name: p.name, key: p.key, category: p.category, description: p.description ?? '' }
+                : { name: p.name, key: p.key, category: p.category }
             );
 
           return {
             content: [
               {
                 type: 'text',
-                text: JSON.stringify(items, null, 2),
+                text: JSON.stringify(
+                  {
+                    mode: isUsingRemoteMode() ? 'remote (GitHub)' : 'local',
+                    count: items.length,
+                    pages: items,
+                  },
+                  null,
+                  2
+                ),
               },
             ],
           };
@@ -956,13 +1002,14 @@ async function main() {
             throw new Error('page_name is required');
           }
 
-          const info = getPageInfo(WORKSPACE_ROOT, pageName);
+          const info = await getPageInfo(WORKSPACE_ROOT, pageName);
           const out = {
             name: info.name,
             key: info.key,
             category: info.category,
             description: info.description ?? '',
-            sections: info.sections.map(s => s.name),
+            sections: info.sections.map((s) => s.name),
+            mode: info.isRemote ? 'remote (GitHub)' : 'local',
           };
 
           return {
@@ -983,7 +1030,7 @@ async function main() {
             throw new Error('page_name is required');
           }
 
-          const content = getPageContent(WORKSPACE_ROOT, pageName, sectionName);
+          const content = await getPageContent(WORKSPACE_ROOT, pageName, sectionName);
 
           return {
             content: [
@@ -1001,8 +1048,8 @@ async function main() {
             throw new Error('query is required');
           }
 
-          const results = searchDocs(WORKSPACE_ROOT, query);
-          const items = results.map(p => ({
+          const results = await searchDocs(WORKSPACE_ROOT, query);
+          const items = results.map((p) => ({
             name: p.name,
             key: p.key,
             category: p.category,
@@ -1013,19 +1060,24 @@ async function main() {
             content: [
               {
                 type: 'text',
-                text: JSON.stringify({
-                  query,
-                  resultsCount: items.length,
-                  results: items,
-                }, null, 2),
+                text: JSON.stringify(
+                  {
+                    query,
+                    resultsCount: items.length,
+                    mode: isUsingRemoteMode() ? 'remote (GitHub)' : 'local',
+                    results: items,
+                  },
+                  null,
+                  2
+                ),
               },
             ],
           };
         }
 
         case 'list_rsc_components': {
-          const components = getComponentPages(WORKSPACE_ROOT);
-          const items = components.map(p => ({
+          const components = await getComponentPages(WORKSPACE_ROOT);
+          const items = components.map((p) => ({
             name: p.name,
             key: p.key,
             category: p.category,
@@ -1036,7 +1088,15 @@ async function main() {
             content: [
               {
                 type: 'text',
-                text: JSON.stringify(items, null, 2),
+                text: JSON.stringify(
+                  {
+                    mode: isUsingRemoteMode() ? 'remote (GitHub)' : 'local',
+                    count: items.length,
+                    components: items,
+                  },
+                  null,
+                  2
+                ),
               },
             ],
           };
@@ -1058,6 +1118,10 @@ async function main() {
         }
 
         case 'get_package_info': {
+          if (!WORKSPACE_ROOT) {
+            throw new Error('Local workspace required. Use --workspace=/path/to/react-spectrum-charts');
+          }
+
           const packageName = (args as ToolArguments)?.packageName;
           if (!packageName) {
             throw new Error('packageName is required');
@@ -1065,7 +1129,7 @@ async function main() {
 
           const packages = getPackages();
           const pkg = packages.find((p) => p.name === packageName);
-          
+
           if (!pkg) {
             throw new Error(`Package not found: ${packageName}`);
           }
@@ -1084,9 +1148,13 @@ async function main() {
         }
 
         case 'search_files': {
+          if (!WORKSPACE_ROOT) {
+            throw new Error('Local workspace required. Use --workspace=/path/to/react-spectrum-charts');
+          }
+
           const pattern = (args as ToolArguments)?.pattern;
           const directory = (args as ToolArguments)?.directory;
-          
+
           if (!pattern) {
             throw new Error('pattern is required');
           }
@@ -1106,9 +1174,11 @@ async function main() {
         }
 
         case 'get_repo_structure': {
-          const rootPackageJson = JSON.parse(
-            readFileSync(join(WORKSPACE_ROOT, 'package.json'), 'utf-8')
-          );
+          if (!WORKSPACE_ROOT) {
+            throw new Error('Local workspace required. Use --workspace=/path/to/react-spectrum-charts');
+          }
+
+          const rootPackageJson = JSON.parse(readFileSync(join(WORKSPACE_ROOT, 'package.json'), 'utf-8'));
           const packages = getPackages();
 
           const structure = {
@@ -1185,7 +1255,7 @@ async function main() {
     if (name === 'create_bar_chart') {
       const dataType = (args as ToolArguments)?.dataType || 'sales';
       const orientation = (args as ToolArguments)?.orientation || 'vertical';
-      
+
       return {
         messages: [
           {
@@ -1207,7 +1277,7 @@ async function main() {
    */
   server.setRequestHandler(ListResourcesRequestSchema, async () => {
     const packages = getPackages();
-    
+
     return {
       resources: [
         {
@@ -1238,12 +1308,12 @@ async function main() {
    */
   server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
     const uri = request.params.uri;
-    
+
     // Handle example data resources
     if (uri.startsWith('data://')) {
       const dataName = uri.replace('data://', '');
       const data = EXAMPLE_DATA_TEMPLATES[dataName];
-      
+
       if (!data) {
         throw new Error(`Unknown data template: ${dataName}`);
       }
@@ -1258,7 +1328,7 @@ async function main() {
         ],
       };
     }
-    
+
     // Handle repo resources
     if (!uri.startsWith('repo://')) {
       throw new Error('Invalid resource URI');
@@ -1281,9 +1351,13 @@ async function main() {
   // Start the server
   const transport = new StdioServerTransport();
   await server.connect(transport);
-  
+
   console.error(`React Spectrum Charts MCP Server v${VERSION}`);
-  console.error(`Workspace: ${WORKSPACE_ROOT}`);
+  if (WORKSPACE_ROOT) {
+    console.error(`Mode: Local (workspace: ${WORKSPACE_ROOT})`);
+  } else {
+    console.error('Mode: Remote (fetching docs from GitHub)');
+  }
   console.error('Server running on stdio transport');
   console.error('Tools: create_bar_chart, list_rsc_pages, get_rsc_page, search_rsc_docs, list_packages');
 }

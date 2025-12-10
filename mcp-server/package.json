@@ -1,6 +1,6 @@
 {
   "name": "@adobe/react-spectrum-charts-mcp",
-  "version": "3.0.0",
+  "version": "3.1.0",
   "description": "MCP Server for React Spectrum Charts - Generate charts via AI assistants",
   "type": "module",
   "main": "./dist/index.js",
