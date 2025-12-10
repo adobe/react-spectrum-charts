@@ -82,11 +82,16 @@ function searchDocs(terms: string[], limit: number) {
     title: string;
     relPath: string;
     snippet: string;
+    idMatch: boolean;
   }[] = [];
 
   for (const doc of DOCS_INDEX) {
     const lower = doc.content.toLowerCase();
+    const lowerId = doc.id.toLowerCase();
     let bestIdx = -1;
+
+    // Check if any term matches the doc ID
+    const idMatch = lowerTerms.some((term) => lowerId.includes(term));
 
     for (const term of lowerTerms) {
       const idx = lower.indexOf(term);
@@ -106,12 +111,15 @@ function searchDocs(terms: string[], limit: number) {
       title: doc.title,
       relPath: doc.relPath,
       snippet,
+      idMatch,
     });
-
-    if (results.length >= limit) break;
   }
 
-  return results;
+  // Sort: ID matches first, then by original order
+  results.sort((a, b) => (a.idMatch === b.idMatch ? 0 : a.idMatch ? -1 : 1));
+
+  // Apply limit and remove internal idMatch field from output
+  return results.slice(0, limit).map(({ idMatch: _idMatch, ...rest }) => rest);
 }
 
 function getDocById(id: string): string {
