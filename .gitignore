@@ -29,7 +29,3 @@ cursor
 
 # docusaurus
 .docusaurus
-
-# auto-generated docs links (generated on publish)
-packages/react-spectrum-charts/docs-links.md
-packages/react-spectrum-charts/docs-links.json
