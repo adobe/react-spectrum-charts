@@ -464,6 +464,8 @@ ${docsLinksSection}
 **Supporting**: Axis, Legend, Title
 **Interactivity**: ChartTooltip, ChartPopover
 **Analysis**: MetricRange, Trendline
+**Guides**: Chart Basics, Troubleshooting, Installation, Introduction
+**Developer**: Developer Docs, Learning Vega
 
 ## Static Resources
 
@@ -502,13 +504,16 @@ ${docsLinksSection}
 |--------------|---------------------------|
 | "How do I create a [chart type]?" | Find "Chart" + specific visualization (e.g., "Bar") |
 | "I want to create a [chart type]" | Find visualization by title in links above |
+| "How to add a new feature to a [chart type]?" | Find visualization and search props |
 | "How do I customize axis labels?" | Find "Axis" in links above |
 | "How do I add tooltips?" | Find "ChartTooltip" in links above |
 | "Colors aren't working" | Find "Chart" (scales section) |
 | "Chart not rendering" | Find "Troubleshooting" in guides |
-| "How to add interactivity?" | Find "ChartTooltip" or "ChartPopover" |
+| "How to add interactivity?" | Find "ChartTooltip" or "ChartPopover" in links above |
+| "How to add analysis components?" | Find "MetricRange" or "Trendline" in links above |
 | "How to format numbers/dates?" | Find "Chart" (locale section) |
 | "Multi-series charts" | Find relevant visualization + "Chart" |
+| "Testing" | Refer to Developer Docs for testing information and Storybook for testing examples |
 
 ## Key Concepts
 

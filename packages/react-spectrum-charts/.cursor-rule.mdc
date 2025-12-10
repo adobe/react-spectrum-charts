@@ -10,7 +10,7 @@ This rule helps you navigate and reference React Spectrum Charts documentation w
 
 ## All Documentation Links
 
-*Auto-generated on: 2025-12-10T17:42:24.150Z*
+*Auto-generated on: 2025-12-10T18:53:55.053Z*
 
 **Base URL**: https://opensource.adobe.com/react-spectrum-charts/docs/docs
 
@@ -55,6 +55,8 @@ This rule helps you navigate and reference React Spectrum Charts documentation w
 **Supporting**: Axis, Legend, Title
 **Interactivity**: ChartTooltip, ChartPopover
 **Analysis**: MetricRange, Trendline
+**Guides**: Chart Basics, Troubleshooting, Installation, Introduction
+**Developer**: Developer Docs, Learning Vega
 
 ## Static Resources
 
@@ -93,13 +95,16 @@ This rule helps you navigate and reference React Spectrum Charts documentation w
 |--------------|---------------------------|
 | "How do I create a [chart type]?" | Find "Chart" + specific visualization (e.g., "Bar") |
 | "I want to create a [chart type]" | Find visualization by title in links above |
+| "How to add a new feature to a [chart type]?" | Find visualization and search props |
 | "How do I customize axis labels?" | Find "Axis" in links above |
 | "How do I add tooltips?" | Find "ChartTooltip" in links above |
 | "Colors aren't working" | Find "Chart" (scales section) |
 | "Chart not rendering" | Find "Troubleshooting" in guides |
-| "How to add interactivity?" | Find "ChartTooltip" or "ChartPopover" |
+| "How to add interactivity?" | Find "ChartTooltip" or "ChartPopover" in links above |
+| "How to add analysis components?" | Find "MetricRange" or "Trendline" in links above |
 | "How to format numbers/dates?" | Find "Chart" (locale section) |
 | "Multi-series charts" | Find relevant visualization + "Chart" |
+| "Testing" | Refer to Developer Docs for testing information and Storybook for testing examples |
 
 ## Key Concepts
 
@@ -147,6 +152,8 @@ const data = [
 
 ## Setup in Your Project
 
+### First Time Setup
+
 To add this rule to your Cursor workspace:
 
 ```bash
@@ -154,7 +161,39 @@ mkdir -p .cursor/rules
 cp node_modules/@adobe/react-spectrum-charts/.cursor-rule.mdc .cursor/rules/react-spectrum-charts.mdc
 ```
 
-Once installed, Cursor AI will have instant access to all React Spectrum Charts documentation links.
+### Updating After Package Upgrade
+
+When you upgrade `@adobe/react-spectrum-charts`, the documentation links are automatically updated. Get the latest version:
+
+**Option 1: Use the update script** (recommended)
+```bash
+node node_modules/@adobe/react-spectrum-charts/update-cursor-rule.js
+```
+
+**Option 2: Manual copy**
+```bash
+cp node_modules/@adobe/react-spectrum-charts/.cursor-rule.mdc .cursor/rules/react-spectrum-charts.mdc
+```
+
+**Option 3: Add as npm script**
+```json
+{
+  "scripts": {
+    "update-rsc-cursor": "node node_modules/@adobe/react-spectrum-charts/update-cursor-rule.js"
+  }
+}
+```
+
+**Option 4: Auto-update on install**
+```json
+{
+  "scripts": {
+    "postinstall": "node node_modules/@adobe/react-spectrum-charts/update-cursor-rule.js 2>/dev/null || true"
+  }
+}
+```
+
+**Tip**: Check the "Auto-generated on" timestamp at the top to see if you have the latest version.
 
 ---
 
