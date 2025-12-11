@@ -607,7 +607,8 @@ function main() {
  * @param {Array} files - Array of file objects
  */
 function updateCursorRule(files) {
-	const cursorRulePath = path.join(__dirname, '../packages/react-spectrum-charts/.cursor-rule.mdc');
+	const cursorRulePath = path.join(__dirname, '../llm/rules/react-spectrum-charts.mdc');
+	const directoryPath = path.join(__dirname, '../llm/rules/');
 	
 	// Sort files for consistent output
 	const sortedFiles = [...files].sort((a, b) => {
@@ -1013,6 +1014,11 @@ Once installed, Cursor AI will have instant access to all React Spectrum Charts 
 *This documentation index is automatically updated with each package release.*
 `;
 	
+	// Ensure directory exists
+	if (!fs.existsSync(directoryPath)) {
+		fs.mkdirSync(directoryPath, { recursive: true });
+	}
+
 	fs.writeFileSync(cursorRulePath, cursorRuleContent, 'utf-8');
 	console.log(`✅ Updated Cursor rule at: ${cursorRulePath}`);
 }
