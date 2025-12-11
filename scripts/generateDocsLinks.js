@@ -806,9 +806,10 @@ When a user asks you to create ANY chart, you MUST follow this checklist BEFORE 
 ✅ **Mandatory Props Checklist:**
 1. [ ] Include \`dimension\` prop - specifies the data field for categories/x-axis (REQUIRED for most charts)
 2. [ ] Include \`metric\` prop - specifies the data field for values/y-axis (REQUIRED for most charts)
-3. [ ] Consider \`color\` prop - if they mention multiple series, groups, or categories to distinguish
-4. [ ] Consider \`orientation\` prop - for horizontal vs vertical charts
-5. [ ] Consider \`type\` prop - for stacked, dodged, or other variants
+3. [ ] **Verify dimension data TYPE matches chart type (Line/Area = numeric/time, NOT categorical strings)**
+4. [ ] Consider \`color\` prop - if they mention multiple series, groups, or categories to distinguish
+5. [ ] Consider \`orientation\` prop - for horizontal vs vertical charts
+6. [ ] Consider \`type\` prop - for stacked, dodged, or other variants
 
 ⚠️ **NEVER generate a Line, Bar, Area, or Scatter chart without \`dimension\` and \`metric\` props** - these tell the chart which data fields to use.
 
@@ -824,8 +825,10 @@ After generating ANY chart code, you MUST mentally verify:
    - Line/Bar/Area/Scatter → must have \`dimension\` and \`metric\`
    - If missing, ADD THEM with appropriate field names
 
-3. **Check prop-to-data alignment:**
+3. **Check prop-to-data alignment AND data types:**
    - If you used \`dimension="x"\`, verify their data likely has an "x" field
+   - **FOR LINE/AREA: Verify dimension field contains NUMBERS or EPOCH TIMESTAMPS, not strings like "Mon" or "Jan"**
+   - **FOR BAR: Categorical strings are OK**
    - If data structure is unclear, ASK about field names rather than guessing
    - If props don't match data, EXPLAIN the issue and FIX IT
 
