@@ -45,7 +45,7 @@ const arg = (process.argv[2] || '').trim();
 if (arg === '--help' || arg === '-h' || arg === 'help') {
   console.log(
     `React Spectrum Charts MCP Server v${VERSION}\n\n` +
-      'Usage: npx @adobe/react-spectrum-charts-mcp@latest\n\n' +
+      'Usage: npx @spectrum-charts/mcp@latest\n\n' +
       'Starts the MCP server for React Spectrum Charts documentation.\n\n' +
       'Tools:\n' +
       '  list_rsc_docs  List all documentation pages\n' +

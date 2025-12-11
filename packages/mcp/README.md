@@ -22,7 +22,7 @@ Add to your project's `.cursor/mcp.json`:
   "mcpServers": {
     "react-spectrum-charts": {
       "command": "yarn",
-      "args": ["dlx", "@adobe/react-spectrum-charts-mcp"]
+      "args": ["dlx", "@spectrum-charts/mcp"]
     }
   }
 }
@@ -42,7 +42,7 @@ Add to your config file:
   "mcpServers": {
     "react-spectrum-charts": {
       "command": "yarn",
-      "args": ["dlx", "@adobe/react-spectrum-charts-mcp"]
+      "args": ["dlx", "@spectrum-charts/mcp"]
     }
   }
 }
