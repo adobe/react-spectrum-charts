@@ -1,0 +1,48 @@
+name: Attach Release Artifacts
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  attach-artifacts:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.release.tag_name }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install Dependencies
+        run: yarn install
+
+      - name: Generate Cursor Rules
+        run: yarn docs:update-cursor-rule
+
+      - name: Package Cursor Rules
+        run: |
+          if [ -d "llm/rules" ] && [ "$(ls -A llm/rules)" ]; then
+            cd llm
+            zip -r ../cursor-rules-${{ github.event.release.tag_name }}.zip rules/
+            cd ..
+            echo "✅ Packaged cursor rules"
+            ls -lh cursor-rules-${{ github.event.release.tag_name }}.zip
+          else
+            echo "⚠️  No cursor rules found in llm/rules directory"
+            exit 1
+          fi
+
+      - name: Upload to Release
+        run: |
+          gh release upload ${{ github.event.release.tag_name }} \
+            cursor-rules-${{ github.event.release.tag_name }}.zip \
+            --clobber
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
