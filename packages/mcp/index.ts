@@ -20,24 +20,9 @@ import { z } from 'zod';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 
+import { DocEntry, errorToString, getDocById } from './src/utils.js';
+
 const VERSION = '0.1.0';
-
-// --- Types ---
-
-type Section = {
-  title: string;
-  level: number;
-  content: string;
-};
-
-type DocEntry = {
-  id: string;
-  relPath: string;
-  title: string;
-  description: string;
-  sections: Section[];
-  content: string;
-};
 
 // --- Load bundled docs data ---
 
@@ -54,23 +39,6 @@ function loadDocsData(): DocEntry[] {
 }
 
 const DOCS_INDEX: DocEntry[] = loadDocsData();
-
-// --- Utilities ---
-
-function errorToString(err: unknown): string {
-  if (err instanceof Error) {
-    return err.message;
-  }
-  return String(err);
-}
-
-function getDocById(id: string): DocEntry {
-  const doc = DOCS_INDEX.find((d) => d.id === id);
-  if (!doc) {
-    throw new Error(`Doc not found for id=${id}`);
-  }
-  return doc;
-}
 
 // --- CLI / MCP server bootstrap ---
 
@@ -138,7 +106,7 @@ try {
       }),
     },
     async ({ id }: { id: string }) => {
-      const doc = getDocById(id);
+      const doc = getDocById(DOCS_INDEX, id);
       return {
         content: [
           {
