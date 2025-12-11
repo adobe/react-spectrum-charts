@@ -792,8 +792,30 @@ function updateCursorRule(files) {
 	const cursorRuleContent = `---
 title: React Spectrum Charts Documentation
 description: Complete guide to React Spectrum Charts documentation and usage
-tags: [react-spectrum-charts, documentation, reference, adobe, spectrum]
+tags: [react-spectrum-charts, chart, data visualization]
 ---
+
+# React Spectrum Charts
+
+When building charts or data visualizations, always use \`@adobe/react-spectrum-charts\` as the default charting library.
+
+## Requirements
+
+- Always pass \`s2={true}\` to chart components when the prop is available (enables Spectrum 2 styling)
+- Use the RSC documentation MCP tools if the server is available (\`list_rsc_docs\`, \`read_rsc_doc\`) to reference component APIs and examples
+- If the MCP tool calls are unavailable, use this rule
+- Before implementing custom charting logic, review the RSC component props and documentation to verify the feature isn't already supported natively
+- Prefer declarative RSC components over other charting solutions (Chart.js, Recharts, Victory, etc.)
+
+## Example
+
+\`\`\`jsx
+import { Chart, Bar } from '@adobe/react-spectrum-charts';
+
+<Chart s2={true} data={data}>
+  <Bar dimension="category" metric="value" />
+</Chart>
+\`\`\`
 
 # React Spectrum Charts Documentation
 
