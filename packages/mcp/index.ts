@@ -13,9 +13,9 @@
 
 /// <reference types="node" />
 
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { z } from 'zod';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
@@ -74,87 +74,86 @@ function getDocById(id: string): DocEntry {
 
 // --- CLI / MCP server bootstrap ---
 
-(async () => {
-  try {
-    const arg = (process.argv[2] || '').trim();
-    if (arg === '--help' || arg === '-h' || arg === 'help') {
-      console.log(
-        `React Spectrum Charts MCP Server v${VERSION}\n\n` +
-          'Usage: npx @adobe/react-spectrum-charts-mcp@latest\n\n' +
-          'Starts the MCP server for React Spectrum Charts documentation.\n\n' +
-          'Tools:\n' +
-          '  list_rsc_docs  List all documentation pages\n' +
-          '  read_rsc_doc   Get full page content by ID\n'
-      );
-      process.exit(0);
+const arg = (process.argv[2] || '').trim();
+
+if (arg === '--help' || arg === '-h' || arg === 'help') {
+  console.log(
+    `React Spectrum Charts MCP Server v${VERSION}\n\n` +
+      'Usage: npx @adobe/react-spectrum-charts-mcp@latest\n\n' +
+      'Starts the MCP server for React Spectrum Charts documentation.\n\n' +
+      'Tools:\n' +
+      '  list_rsc_docs  List all documentation pages\n' +
+      '  read_rsc_doc   Get full page content by ID\n'
+  );
+  process.exit(0);
+}
+
+if (arg === '--version' || arg === '-v') {
+  console.log(VERSION);
+  process.exit(0);
+}
+
+try {
+  console.error(`React Spectrum Charts MCP Server v${VERSION}`);
+  console.error(`Loaded ${DOCS_INDEX.length} documentation pages`);
+
+  const server = new McpServer({
+    name: 'react-spectrum-charts-docs',
+    version: VERSION,
+  });
+
+  // List all docs tool
+  server.registerTool(
+    'list_rsc_docs',
+    {
+      title: 'List RSC Docs',
+      description: 'Lists all React Spectrum Charts documentation pages with their IDs and titles.',
+      inputSchema: z.object({}),
+    },
+    async () => {
+      const results = DOCS_INDEX.map((doc) => ({
+        id: doc.id,
+        title: doc.title,
+      }));
+
+      return {
+        content: [
+          {
+            type: 'text' as const,
+            text: JSON.stringify(results, null, 2),
+          },
+        ],
+      };
     }
+  );
 
-    if (arg === '--version' || arg === '-v') {
-      console.log(VERSION);
-      process.exit(0);
+  // Read doc content tool
+  server.registerTool(
+    'read_rsc_doc',
+    {
+      title: 'Read RSC Doc',
+      description: 'Returns the full markdown content for a React Spectrum Charts documentation page.',
+      inputSchema: z.object({
+        id: z.string().describe('Document ID from list_rsc_docs (e.g., "api/Chart", "guides/chart-basics")'),
+      }),
+    },
+    async ({ id }: { id: string }) => {
+      const doc = getDocById(id);
+      return {
+        content: [
+          {
+            type: 'text' as const,
+            text: doc.content,
+          },
+        ],
+      };
     }
+  );
 
-    console.error(`React Spectrum Charts MCP Server v${VERSION}`);
-    console.error(`Loaded ${DOCS_INDEX.length} documentation pages`);
-
-    const server = new McpServer({
-      name: 'react-spectrum-charts-docs',
-      version: VERSION,
-    });
-
-    // List all docs tool
-    server.registerTool(
-      'list_rsc_docs',
-      {
-        title: 'List RSC Docs',
-        description: 'Lists all React Spectrum Charts documentation pages with their IDs and titles.',
-        inputSchema: z.object({}),
-      },
-      async () => {
-        const results = DOCS_INDEX.map((doc) => ({
-          id: doc.id,
-          title: doc.title,
-        }));
-
-        return {
-          content: [
-            {
-              type: 'text' as const,
-              text: JSON.stringify(results, null, 2),
-            },
-          ],
-        };
-      }
-    );
-
-    // Read doc content tool
-    server.registerTool(
-      'read_rsc_doc',
-      {
-        title: 'Read RSC Doc',
-        description: 'Returns the full markdown content for a React Spectrum Charts documentation page.',
-        inputSchema: z.object({
-          id: z.string().describe('Document ID from list_rsc_docs (e.g., "api/Chart", "guides/chart-basics")'),
-        }),
-      },
-      async ({ id }: { id: string }) => {
-        const doc = getDocById(id);
-        return {
-          content: [
-            {
-              type: 'text' as const,
-              text: doc.content,
-            },
-          ],
-        };
-      }
-    );
-
-    const transport = new StdioServerTransport();
-    await server.connect(transport);
-    console.error('Server running on stdio transport');
-  } catch (err) {
-    console.error(errorToString(err));
-    process.exit(1);
-  }
-})();
+  const transport = new StdioServerTransport();
+  await server.connect(transport);
+  console.error('Server running on stdio transport');
+} catch (err) {
+  console.error(errorToString(err));
+  process.exit(1);
+}
