@@ -39,4 +39,5 @@ module.exports = {
     '<rootDir>/packages/*/src/**/*.spec.{js,jsx,ts,tsx}',
   ],
   testPathIgnorePatterns: ['/node_modules/', '/dist/', '/build/', '/coverage/'],
+  coveragePathIgnorePatterns: ['/node_modules/', '/dist/', 'packages/mcp/index.ts'],
 };
