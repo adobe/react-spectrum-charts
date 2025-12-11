@@ -58,8 +58,6 @@ jobs:
           yarn workspace @spectrum-charts/themes publish-package
           yarn workspace @spectrum-charts/utils publish-package
           yarn workspace @spectrum-charts/vega-spec-builder publish-package
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.SPECTRUM_CHARTS_NPM_TOKEN }}
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v3
