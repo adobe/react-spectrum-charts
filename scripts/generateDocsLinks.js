@@ -18,6 +18,7 @@ const path = require('path');
 const DOCS_DIR = path.join(__dirname, '../packages/docs/docs');
 const DOCUSAURUS_CONFIG = path.join(__dirname, '../packages/docs/docusaurus.config.ts');
 const STORIES_DIR = path.join(__dirname, '../packages/react-spectrum-charts/src/stories');
+const RSC_SRC_DIR = path.join(__dirname, '../packages/react-spectrum-charts/src');
 const STORYBOOK_BASE_URL = 'https://opensource.adobe.com/react-spectrum-charts/';
 const OUTPUT_FORMATS = {
 	markdown: 'markdown',
@@ -272,6 +273,61 @@ function getCategoryFromStoryPath(filePath) {
 	// For root level stories or other structures
 	const fileName = path.basename(filePath, '.story.tsx');
 	return fileName;
+}
+
+/**
+ * Scans the React Spectrum Charts source to determine component maturity levels
+ * @returns {Object} Object with arrays of component names by maturity level
+ */
+function getComponentMaturityLevels() {
+	const maturityLevels = {
+		rc: [],
+		alpha: [],
+		beta: [],
+		stable: []
+	};
+	
+	try {
+		// Scan rc components
+		const rcPath = path.join(RSC_SRC_DIR, 'rc/components');
+		if (fs.existsSync(rcPath)) {
+			const rcDirs = fs.readdirSync(rcPath, { withFileTypes: true });
+			maturityLevels.rc = rcDirs
+				.filter(d => d.isDirectory())
+				.map(d => d.name);
+		}
+		
+		// Scan alpha components
+		const alphaPath = path.join(RSC_SRC_DIR, 'alpha/components');
+		if (fs.existsSync(alphaPath)) {
+			const alphaDirs = fs.readdirSync(alphaPath, { withFileTypes: true });
+			maturityLevels.alpha = alphaDirs
+				.filter(d => d.isDirectory())
+				.map(d => d.name);
+		}
+		
+		// Scan beta components
+		const betaPath = path.join(RSC_SRC_DIR, 'beta/components');
+		if (fs.existsSync(betaPath)) {
+			const betaDirs = fs.readdirSync(betaPath, { withFileTypes: true });
+			maturityLevels.beta = betaDirs
+				.filter(d => d.isDirectory())
+				.map(d => d.name);
+		}
+		
+		// Scan stable components
+		const stablePath = path.join(RSC_SRC_DIR, 'components');
+		if (fs.existsSync(stablePath)) {
+			const stableDirs = fs.readdirSync(stablePath, { withFileTypes: true });
+			maturityLevels.stable = stableDirs
+				.filter(d => d.isDirectory())
+				.map(d => d.name);
+		}
+	} catch (error) {
+		console.warn(`Warning: Could not scan component maturity levels: ${error.message}`);
+	}
+	
+	return maturityLevels;
 }
 
 /**
@@ -562,6 +618,9 @@ function updateCursorRule(files) {
 	// Scan storybook files
 	const storyFiles = scanStories(STORIES_DIR);
 	
+	// Get component maturity levels
+	const maturityLevels = getComponentMaturityLevels();
+	
 	// Build the documentation links section
 	let docsLinksSection = '## All Documentation Links\n\n';
 	docsLinksSection += `*Auto-generated on: ${new Date().toISOString()}*\n\n`;
@@ -640,9 +699,19 @@ function updateCursorRule(files) {
 	chartStructureSection += '| `type` | No | Chart variant: \'stacked\', \'dodged\', etc. | `type="stacked"` |\n';
 	chartStructureSection += '| `name` | No | Component identifier for traversal | `name="Sales Chart"` |\n\n';
 	chartStructureSection += '*Required for Line, Bar, Area, Scatter. Optional for Donut, BigNumber.\n\n';
+	
+	// Build import paths section dynamically
 	chartStructureSection += '**Import Paths:**\n';
-	chartStructureSection += '- **Donut, DonutSummary, SegmentLabel**: \`import { Donut } from \'@adobe/react-spectrum-charts/rc\'\` (release candidate)\n';
-	chartStructureSection += '- **All other components**: \`import { Line, Bar, etc } from \'@adobe/react-spectrum-charts\'\`\n\n';
+	if (maturityLevels.rc.length > 0) {
+		chartStructureSection += `- **${maturityLevels.rc.join(', ')}**: \`import { ComponentName } from '@adobe/react-spectrum-charts/rc'\` (release candidate)\n`;
+	}
+	if (maturityLevels.alpha.length > 0) {
+		chartStructureSection += `- **${maturityLevels.alpha.join(', ')}**: \`import { ComponentName } from '@adobe/react-spectrum-charts/alpha'\` (alpha)\n`;
+	}
+	if (maturityLevels.beta.length > 0) {
+		chartStructureSection += `- **${maturityLevels.beta.join(', ')}**: \`import { ComponentName } from '@adobe/react-spectrum-charts/beta'\` (beta)\n`;
+	}
+	chartStructureSection += '- **All other components**: \`import { Line, Bar, etc } from \'@adobe/react-spectrum-charts\'\` (stable)\n\n';
 	chartStructureSection += '**Data Format Requirements:**\n\n';
 	chartStructureSection += '- Data must be an array of flat objects\n';
 	chartStructureSection += '- Each object should contain fields matching your `dimension`, `metric`, and `color` props\n';
@@ -737,7 +806,7 @@ When a user asks you to create ANY chart, you MUST follow this checklist BEFORE 
 After generating ANY chart code, you MUST mentally verify:
 
 1. **Check imports are correct:**
-   - Check which import path is required for the chart type
+   - Check the Import Paths section in Common Props Reference for the component
    - If imports are wrong, FIX THEM before responding
 
 2. **Verify required props are included:**
@@ -888,7 +957,7 @@ Use this checklist to DEBUG issues when user reports a chart isn't working:
 3. **Resource Priority**: Chart Structure → Documentation → Storybook
 4. **Ask When Unclear**: If data structure is ambiguous, ASK about field names
 5. **Match Props to Data**: Ensure prop field names align with actual data fields (case-sensitive)
-6. **Check Import Paths**: Verify correct import paths (some components need \`/rc\`)
+6. **Check Import Paths**: Verify correct import paths using the Import Paths section in Common Props Reference
 7. **Follow Spectrum Guidelines**: Library implements Adobe Spectrum design system
 
 ## Setup in Your Project

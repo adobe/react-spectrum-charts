@@ -26,7 +26,7 @@ When a user asks you to create ANY chart, you MUST follow this checklist BEFORE 
 After generating ANY chart code, you MUST mentally verify:
 
 1. **Check imports are correct:**
-   - Check which import path is required for the chart type
+   - Check the Import Paths section in Common Props Reference for the component
    - If imports are wrong, FIX THEM before responding
 
 2. **Verify required props are included:**
@@ -96,8 +96,9 @@ import { Chart, [Visualization], Axis } from '@adobe/react-spectrum-charts';
 *Required for Line, Bar, Area, Scatter. Optional for Donut, BigNumber.
 
 **Import Paths:**
-- **Donut, DonutSummary, SegmentLabel**: `import { Donut } from '@adobe/react-spectrum-charts/rc'` (release candidate)
-- **All other components**: `import { Line, Bar, etc } from '@adobe/react-spectrum-charts'`
+- **BigNumber, Donut, DonutSummary, SegmentLabel**: `import { ComponentName } from '@adobe/react-spectrum-charts/rc'` (release candidate)
+- **Bullet, Combo, Venn**: `import { ComponentName } from '@adobe/react-spectrum-charts/alpha'` (alpha)
+- **All other components**: `import { Line, Bar, etc } from '@adobe/react-spectrum-charts'` (stable)
 
 **Data Format Requirements:**
 
@@ -283,7 +284,7 @@ const axisAnnotationProps = {
 
 ## Storybook Examples (Interactive)
 
-*Auto-generated on: 2025-12-11T17:15:39.063Z*
+*Auto-generated on: 2025-12-11T17:52:19.761Z*
 
 **Base URL**: https://opensource.adobe.com/react-spectrum-charts/
 
@@ -476,7 +477,7 @@ These are live, interactive examples. Click to explore component variations and 
 
 ## All Documentation Links
 
-*Auto-generated on: 2025-12-11T17:15:39.062Z*
+*Auto-generated on: 2025-12-11T17:52:19.760Z*
 
 **Base URL**: https://opensource.adobe.com/react-spectrum-charts/docs/docs
 
@@ -611,7 +612,7 @@ Use this checklist to DEBUG issues when user reports a chart isn't working:
 3. **Resource Priority**: Chart Structure → Documentation → Storybook
 4. **Ask When Unclear**: If data structure is ambiguous, ASK about field names
 5. **Match Props to Data**: Ensure prop field names align with actual data fields (case-sensitive)
-6. **Check Import Paths**: Verify correct import paths (some components need `/rc`)
+6. **Check Import Paths**: Verify correct import paths using the Import Paths section in Common Props Reference
 7. **Follow Spectrum Guidelines**: Library implements Adobe Spectrum design system
 
 ## Setup in Your Project
