@@ -127,9 +127,9 @@ function extractFirstExample(filePath) {
 	try {
 		const content = fs.readFileSync(filePath, 'utf-8');
 		
-		// Find the Examples section (## Examples or ### Examples, with optional colon)
-		// #{2,3} matches either ## or ###
-		let examplesMatch = content.match(/#{2,3}\s+Examples?:?\s*\n([\s\S]*?)(?=\n#{1,2}\s|$)/i);
+		// Find the Examples section (## Examples, ### Examples, or #### Example, with optional colon)
+		// #{2,4} matches ##, ###, or ####
+		let examplesMatch = content.match(/#{2,4}\s+Examples?:?\s*\n([\s\S]*?)(?=\n#{1,2}\s|$)/i);
 		
 		// If no Examples section found, try to find the first code block before any heading
 		if (!examplesMatch) {
@@ -195,6 +195,29 @@ function extractStoryTitle(filePath) {
 	} catch (error) {
 		return null;
 	}
+}
+
+/**
+ * Adds s2={true} prop to Chart components in code examples
+ * @param {string} example - Code example
+ * @returns {string} - Modified example with s2 prop
+ */
+function addS2PropToExamples(example) {
+	if (!example) return example;
+	
+	// Add s2={true} to <Chart> tags that don't already have it
+	// Handles both <Chart> and <Chart ...> cases
+	return example.replace(
+		/<Chart(\s+(?![^>]*s2\s*=)([^>]*?))?>/g,
+		(match, attrs) => {
+			// If no attributes at all, add s2 with space
+			if (!attrs || attrs.trim() === '') {
+				return '<Chart s2={true}>';
+			}
+			// If attributes exist, add s2 before them
+			return `<Chart s2={true}${attrs}>`;
+		}
+	);
 }
 
 /**
@@ -692,7 +715,7 @@ function updateCursorRule(files) {
 	chartStructureSection += '### Basic Pattern\n\n';
 	chartStructureSection += '```tsx\n';
 	chartStructureSection += 'import { Chart, [Visualization], Axis } from \'@adobe/react-spectrum-charts\';\n\n';
-	chartStructureSection += '<Chart data={data}>\n';
+	chartStructureSection += '<Chart s2={true} data={data}>\n';
 	chartStructureSection += '  <[Visualization] />\n';
 	chartStructureSection += '  <Axis position="bottom" />\n';
 	chartStructureSection += '  <Axis position="left" />\n';
@@ -748,7 +771,7 @@ function updateCursorRule(files) {
 		if (vizFile && vizFile.example) {
 			chartStructureSection += `#### ${vizType}\n\n`;
 			chartStructureSection += '```jsx\n';
-			chartStructureSection += vizFile.example + '\n';
+			chartStructureSection += addS2PropToExamples(vizFile.example) + '\n';
 			chartStructureSection += '```\n\n';
 		}
 	});
@@ -760,7 +783,7 @@ function updateCursorRule(files) {
 		analysisExamples.forEach(file => {
 			chartStructureSection += `#### ${file.title}\n\n`;
 			chartStructureSection += '```jsx\n';
-			chartStructureSection += file.example + '\n';
+			chartStructureSection += addS2PropToExamples(file.example) + '\n';
 			chartStructureSection += '```\n\n';
 		});
 	}
@@ -772,7 +795,7 @@ function updateCursorRule(files) {
 		interactivityExamples.forEach(file => {
 			chartStructureSection += `#### ${file.title}\n\n`;
 			chartStructureSection += '```jsx\n';
-			chartStructureSection += file.example + '\n';
+			chartStructureSection += addS2PropToExamples(file.example) + '\n';
 			chartStructureSection += '```\n\n';
 		});
 	}
@@ -784,7 +807,7 @@ function updateCursorRule(files) {
 		componentExamples.forEach(file => {
 			chartStructureSection += `#### ${file.title}\n\n`;
 			chartStructureSection += '```jsx\n';
-			chartStructureSection += file.example + '\n';
+			chartStructureSection += addS2PropToExamples(file.example) + '\n';
 			chartStructureSection += '```\n\n';
 		});
 	}
@@ -996,18 +1019,6 @@ Use this checklist to DEBUG issues when user reports a chart isn't working:
 5. **Match Props to Data**: Ensure prop field names align with actual data fields (case-sensitive)
 6. **Check Import Paths**: Verify correct import paths using the Import Paths section in Common Props Reference
 7. **Follow Spectrum Guidelines**: Library implements Adobe Spectrum design system
-
-## Setup in Your Project
-
-To add this rule to your Cursor workspace:
-
-Cursor -> Settings -> Cursor Settings -> Rules and Commands -> under Project Rules, click "Add Rule" -> create rule -> paste in the rule content or copy content over with command below:
-
-\`\`\`bash
-cp node_modules/@adobe/react-spectrum-charts/.cursor-rule.mdc .cursor/rules/{your-rule-name}.mdc
-\`\`\`
-
-Once installed, Cursor AI will have instant access to all React Spectrum Charts documentation links and examples.
 
 ---
 
