@@ -23,7 +23,7 @@ const OUT_FILE = path.resolve(__dirname, '../dist/docs-data.json');
 
 function extractDescription(content) {
   const body = content.replace(/^#\s+.+\n*/, '');
-  const match = body.match(/^([^\n#].+?)(?:\n\n|\n#|$)/s);
+  const match = /^([^\n#].+?)(?:\n\n|\n#|$)/s.exec(body);
   if (match) {
     return match[1].replace(/\s+/g, ' ').trim();
   }
@@ -32,7 +32,7 @@ function extractDescription(content) {
 
 function extractSections(content) {
   const sections = [];
-  const headingRegex = /^(#{2,6})\s+(.+)$/gm;
+  const headingRegex = /^(#{2,6})\s+([^\n]+)$/gm;
   let match;
 
   const headings = [];
@@ -87,7 +87,7 @@ function buildDocsData() {
     const relPath = path.relative(DOCS_ROOT, file);
     const id = relPath.replace(/\\/g, '/').replace(/\.(md|mdx)$/, '');
     const content = fs.readFileSync(file, 'utf8');
-    const titleMatch = content.match(/^#\s+(.+)$/m);
+    const titleMatch = /^#\s+(.+)$/m.exec(content);
     const title = titleMatch ? titleMatch[1].trim() : path.basename(relPath, path.extname(relPath));
     const description = extractDescription(content);
     const sections = extractSections(content);
@@ -110,4 +110,3 @@ function main() {
 }
 
 main();
-
