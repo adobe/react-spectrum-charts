@@ -1,0 +1,20 @@
+{
+  "id": "developers/McpServer",
+  "title": "MCP Server",
+  "description": "React Spectrum Charts provides an MCP (Model Context Protocol) server that exposes documentation to AI assistants like Claude and Cursor. This enables AI tools to access accurate, up-to-date documentation when helping you build charts.",
+  "source": "@site/docs/developers/McpServer.md",
+  "sourceDirName": "developers",
+  "slug": "/developers/McpServer",
+  "permalink": "/react-spectrum-charts/docs/docs/developers/McpServer",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/adobe/react-spectrum-charts/tree/main/packages/docs/docs/developers/McpServer.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "sidebar",
+  "previous": {
+    "title": "Learning Vega: A Developer's Guide",
+    "permalink": "/react-spectrum-charts/docs/docs/developers/LearningVega"
+  }
+}
