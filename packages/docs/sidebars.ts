@@ -62,7 +62,7 @@ const sidebars: SidebarsConfig = {
     {
       type: 'category',
       label: 'For Developers',
-      items: ['developers/DeveloperDocs', 'developers/LearningVega'],
+      items: ['developers/DeveloperDocs', 'developers/LearningVega', 'developers/McpServer'],
     },
   ],
 };

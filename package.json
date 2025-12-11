@@ -58,7 +58,7 @@
   "license": "Apache-2.0",
   "scripts": {
     "build": "yarn workspaces run build",
-    "build:parallel": "concurrently 'yarn workspace @spectrum-charts/themes build' 'yarn workspace @spectrum-charts/constants build' 'yarn workspace @spectrum-charts/utils build' 'yarn workspace @spectrum-charts/locales build' && yarn workspace @spectrum-charts/vega-spec-builder build && yarn workspace @adobe/react-spectrum-charts build",
+    "build:parallel": "concurrently 'yarn workspace @spectrum-charts/themes build' 'yarn workspace @spectrum-charts/constants build' 'yarn workspace @spectrum-charts/utils build' 'yarn workspace @spectrum-charts/locales build' && yarn workspace @spectrum-charts/vega-spec-builder build && concurrently 'yarn workspace @adobe/react-spectrum-charts build' 'yarn workspace @spectrum-charts/mcp build'",
     "build:docs": "yarn workspace @spectrum-charts/docs build",
     "docs:links": "node scripts/generateDocsLinks.js json --external",
     "docs:update-cursor-rule": "node scripts/generateDocsLinks.js --update-cursor-rule",
@@ -95,6 +95,7 @@
     "@babel/preset-react": "^7.24.1",
     "@babel/preset-typescript": "^7.18.6",
     "@babel/runtime": "^7.20.6",
+    "@modelcontextprotocol/sdk": "^1.24.3",
     "@storybook/addon-actions": "^8.4.1",
     "@storybook/addon-essentials": "^8.4.1",
     "@storybook/addon-links": "^8.4.1",
