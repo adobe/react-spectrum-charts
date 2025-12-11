@@ -2,22 +2,9 @@
 
 React Spectrum Charts provides an [MCP (Model Context Protocol)](https://modelcontextprotocol.io/) server that exposes documentation to AI assistants like Claude and Cursor. This enables AI tools to access accurate, up-to-date documentation when helping you build charts.
 
-## Installation
+## Setup
 
-The MCP server is published as a standalone package. AI tools run it directly using your preferred package runner:
-
-```bash
-# Using npx (npm)
-npx @adobe/react-spectrum-charts-mcp
-
-# Using yarn
-yarn dlx @adobe/react-spectrum-charts-mcp
-
-# Using pnpm
-pnpm dlx @adobe/react-spectrum-charts-mcp
-```
-
-## Configuration
+Add the MCP server to your AI tool's configuration. The tool will automatically download and run the server — no manual installation needed.
 
 ### Claude Desktop
 
@@ -37,6 +24,8 @@ Add to your Claude Desktop configuration file:
 }
 ```
 
+Then restart Claude Desktop.
+
 ### Cursor
 
 Add to your project's `.cursor/mcp.json`:
@@ -52,7 +41,9 @@ Add to your project's `.cursor/mcp.json`:
 }
 ```
 
-> **Note:** You can also use `npx` or `pnpm dlx` depending on your preferred package manager.
+Then restart Cursor.
+
+> **Note:** You can also use `npx` or `pnpm dlx` instead of `yarn dlx`.
 
 ## Available Tools
 

@@ -9,8 +9,7 @@
   },
   "files": [
     "dist",
-    "README.md",
-    "EXAMPLE_USAGE.md"
+    "README.md"
   ],
   "publishConfig": {
     "access": "public"
