@@ -8,9 +8,437 @@ tags: [react-spectrum-charts, documentation, reference, adobe, spectrum]
 
 This rule helps you navigate and reference React Spectrum Charts documentation when assisting users.
 
+**CRITICAL INSTRUCTIONS FOR GENERATING CHART CODE:**
+
+When a user asks you to create ANY chart, you MUST follow this checklist BEFORE writing code:
+
+✅ **Mandatory Props Checklist:**
+1. [ ] Include `dimension` prop - specifies the data field for categories/x-axis (REQUIRED for most charts)
+2. [ ] Include `metric` prop - specifies the data field for values/y-axis (REQUIRED for most charts)
+3. [ ] Consider `color` prop - if they mention multiple series, groups, or categories to distinguish
+4. [ ] Consider `orientation` prop - for horizontal vs vertical charts
+5. [ ] Consider `type` prop - for stacked, dodged, or other variants
+
+⚠️ **NEVER generate a Line, Bar, Area, or Scatter chart without `dimension` and `metric` props** - these tell the chart which data fields to use.
+
+**Example of CORRECT code generation:**
+```jsx
+// ✅ GOOD - includes dimension and metric
+<Line dimension="datetime" metric="users" />
+
+// ❌ BAD - missing dimension and metric
+<Line />
+```
+
+See Common Props Reference below for details on each prop.
+
+## Chart Structure
+
+Every chart requires a `Chart` wrapper component with `data` prop, at least one visualization component, and typically Axis components.
+
+### Basic Pattern
+
+```tsx
+import { Chart, [Visualization], Axis } from '@adobe/react-spectrum-charts';
+
+<Chart data={data}>
+  <[Visualization] />
+  <Axis position="bottom" />
+  <Axis position="left" />
+</Chart>
+```
+
+### ⚠️ Common Props Reference
+
+**CRITICAL: Line, Bar, Area, and Scatter charts REQUIRE `dimension` and `metric` props to function.**
+
+| Prop | Required? | Purpose | Example |
+|------|-----------|---------|----------|
+| `dimension` | **YES*** | Data field for categories/x-axis (for Line: typically "datetime", "date", or "x") | `dimension="datetime"` or `dimension="browser"` |
+| `metric` | **YES*** | Data field for values/y-axis (for Line: typically "users", "value", "count") | `metric="users"` or `metric="downloads"` |
+| `color` | No | Data field to map to colors (creates multiple series) | `color="operatingSystem"` |
+| `orientation` | No | Chart direction: 'horizontal' or 'vertical' (default: 'vertical') | `orientation="horizontal"` |
+| `type` | No | Chart variant: 'stacked', 'dodged', etc. | `type="stacked"` |
+| `name` | No | Component identifier for traversal | `name="Sales Chart"` |
+
+*Required for Line, Bar, Area, Scatter. Optional for Donut, BigNumber.
+
+**Data Format Requirements:**
+
+- Data must be an array of flat objects
+- Each object should contain fields matching your `dimension`, `metric`, and `color` props
+- For time-series: use epoch timestamps (milliseconds since Jan 1, 1970)
+- Check Storybook examples for component-specific data structures
+
+```typescript
+// Example data structure
+const data = [
+  { browser: "Chrome", downloads: 245, operatingSystem: "Windows" },
+  { browser: "Firefox", downloads: 189, operatingSystem: "Windows" },
+  { browser: "Chrome", downloads: 198, operatingSystem: "macOS" },
+  // ...
+];
+```
+
+### Visualization Examples
+
+**Note:** All examples below include `dimension` and `metric` props. When creating your own charts, ALWAYS include these props to specify which data fields to visualize.
+
+#### Bar
+
+```jsx
+<Chart data={data}>
+  <Axis position="bottom" grid ticks title="Downloads" />
+  <Axis position="left" baseline title="Browser" />
+  <Bar name="Bar Chart" orientation="horizontal" dimension="browser" metric="views" />
+</Chart>
+```
+
+#### Line
+
+```jsx
+<Chart data={data}>
+  <Axis position="bottom" labelFormat="time" ticks baseline />
+  <Axis position="left" grid title="Users" />
+  <Line metric="users" color="event" />
+  <Legend position="bottom" />
+</Chart>
+```
+
+#### Area
+
+```jsx
+<Chart data={data}>
+  <Axis baseline labelFormat="time" position="bottom" ticks />
+  <Axis grid position="left" ticks />
+  <Area dimension="date" metric="count" />
+</Chart>
+```
+
+#### Scatter
+
+```jsx
+<Chart data={data}>
+  <Axis baseline grid position="bottom" ticks title="Speed (normal)" />
+  <Axis baseline grid position="left" ticks title="Handling (normal)" />
+  <Scatter dimension="speedNormal" metric="handlingNormal" />
+  <Legend highlight position="right" title="Weight class" />
+  <Title text="Mario Kart 8 Character Data" />
+</Chart>
+```
+
+#### Donut
+
+```jsx
+<Chart data={data}>
+  <Donut color="operatingSystem" metric="visitors">
+    <DonutSummary label="Visitors" />
+  </Donut>
+  <Legend title="Operating system" />
+</Chart>
+```
+
+#### BigNumber
+
+```jsx
+<Chart data={[{ x: 20, y: 90 }]} height={100} width={200}>
+  <BigNumber dataKey="x" label="Visitors" orientation="horizontal" />
+</Chart>
+```
+
+### Analysis Components
+
+#### Trendline
+
+```jsx
+<Chart data={data}>
+  <Bar>
+    <Trendline method="average" color="gray-500" />
+  </Bar>
+</Chart>
+```
+
+#### MetricRange
+
+```jsx
+<Chart data={data}>
+  <Bar>
+    <MetricRange metricStart="minDataKey" metricEnd="maxDataKey" color="gray-500" />
+  </Bar>
+</Chart>
+```
+
+### Interactivity Components
+
+#### ChartTooltip
+
+```jsx
+<Chart data={data}>
+  <Bar>
+    <ChartTooltip>{(datum) => <div>Average: {datum.average}</div>}</ChartTooltip>
+  </Bar>
+</Chart>
+```
+
+#### ChartPopover
+
+```jsx
+<Chart data={data}>
+  <Bar>
+    <ChartPopover>
+      {(datum, close) => (
+        <Content>
+          <Text>Average: {datum.average}</Text>
+          <ActionButton onPress={close}>Close</ActionButton>
+        </Content>
+      )}
+    </ChartPopover>
+  </Bar>
+</Chart>
+```
+
+### Supporting Components
+
+#### Axis
+
+```jsx
+const axisAnnotationProps = {
+	dataKey: 'annotations',
+	color: 'gray-600',
+}
+
+<Chart data={data}>
+    <Axis position="bottom" granularity="hour" grid={false} title="My Axis Title">
+        <AxisAnnotation {...axisAnnotationProps} />
+    </Axis>
+</Chart>
+```
+
+#### Legend
+
+```jsx
+<Chart>
+  <Bar />
+  <Legend isToggleable />
+</Chart>
+```
+
+#### Title
+
+```jsx
+<Chart data={data}>
+  <Title text="Chart Title" position="middle" fontWeight="bolder" />
+</Chart>
+```
+
+
+
+## Quick Component Lookup
+
+**Core Components**: Chart
+**Visualizations**: Area, Bar, BigNumber, Donut, Line, Scatter
+**Supporting**: Axis, Legend, Title
+**Interactivity**: ChartTooltip, ChartPopover
+**Analysis**: MetricRange, Trendline
+**Guides**: Chart Basics, Troubleshooting, Installation, Introduction
+**Developer**: Developer Docs, Learning Vega
+
+## Storybook Examples (Interactive)
+
+*Auto-generated on: 2025-12-11T01:57:54.963Z*
+
+**Base URL**: https://opensource.adobe.com/react-spectrum-charts/
+
+These are live, interactive examples. Click to explore component variations and copy code.
+
+### Annotation
+
+- **[Bar/Annotation](https://opensource.adobe.com/react-spectrum-charts/?path=/story/rsc-bar-annotation)**
+
+### Area
+
+- **[Area](https://opensource.adobe.com/react-spectrum-charts/?path=/story/rsc-area)**
+
+### Axis
+
+- **[Axis](https://opensource.adobe.com/react-spectrum-charts/?path=/story/rsc-axis)**
+
+### AxisAnnotation
+
+- **[AxisAnnotation](https://opensource.adobe.com/react-spectrum-charts/?path=/story/rsc-axisannotation)**
+
+### AxisThumbnail
+
+- **[Axis/AxisThumbnail](https://opensource.adobe.com/react-spectrum-charts/?path=/story/rsc-axis-axisthumbnail)**
+
+### Bar
+
+- **[Bar](https://opensource.adobe.com/react-spectrum-charts/?path=/story/rsc-bar)**
+- **[Chart/S2/Bar](https://opensource.adobe.com/react-spectrum-charts/?path=/story/rsc-chart-s2-bar)**
+
+### BigNumber
+
+- **[BigNumber](https://opensource.adobe.com/react-spectrum-charts/?path=/story/rsc-bignumber)**
+
+### Bullet (alpha)
+
+- **[Bullet (alpha)](https://opensource.adobe.com/react-spectrum-charts/?path=/story/rsc-bullet-(alpha))**
+
+### Chart
+
+- **[Chart](https://opensource.adobe.com/react-spectrum-charts/?path=/story/rsc-chart)**
+
+### ChartPopover
+
+- **[ChartPopover](https://opensource.adobe.com/react-spectrum-charts/?path=/story/rsc-chartpopover)**
+
+### ChartTooltip
+
+- **[ChartTooltip](https://opensource.adobe.com/react-spectrum-charts/?path=/story/rsc-charttooltip)**
+
+### Colors
+
+- **[Chart/Colors](https://opensource.adobe.com/react-spectrum-charts/?path=/story/rsc-chart-colors)**
+
+### Combo (alpha)
+
+- **[Combo (alpha)](https://opensource.adobe.com/react-spectrum-charts/?path=/story/rsc-combo-(alpha))**
+
+### Dodged Bar
+
+- **[Bar/Dodged Bar](https://opensource.adobe.com/react-spectrum-charts/?path=/story/rsc-bar-dodged-bar)**
+
+### Donut
+
+- **[Donut](https://opensource.adobe.com/react-spectrum-charts/?path=/story/rsc-donut)**
+
+### DonutSummary
+
+- **[Donut/DonutSummary](https://opensource.adobe.com/react-spectrum-charts/?path=/story/rsc-donut-donutsummary)**
+
+### Dual Metric Axis
+
+- **[Bar/Dual Metric Axis](https://opensource.adobe.com/react-spectrum-charts/?path=/story/rsc-bar-dual-metric-axis)**
+- **[Line/Dual Metric Axis](https://opensource.adobe.com/react-spectrum-charts/?path=/story/rsc-line-dual-metric-axis)**
+
+### EmptyState
+
+- **[EmptyState](https://opensource.adobe.com/react-spectrum-charts/?path=/story/rsc-emptystate)**
+
+### Examples
+
+- **[Chart/Examples](https://opensource.adobe.com/react-spectrum-charts/?path=/story/rsc-chart-examples)**
+- **[Chart/Examples](https://opensource.adobe.com/react-spectrum-charts/?path=/story/rsc-chart-examples)**
+- **[Chart/Examples](https://opensource.adobe.com/react-spectrum-charts/?path=/story/rsc-chart-examples)**
+
+### Handles
+
+- **[Chart/Handles](https://opensource.adobe.com/react-spectrum-charts/?path=/story/rsc-chart-handles)**
+
+### Hide Show
+
+- **[Legend/Hide Show](https://opensource.adobe.com/react-spectrum-charts/?path=/story/rsc-legend-hide-show)**
+
+### Highlight
+
+- **[Legend/Highlight](https://opensource.adobe.com/react-spectrum-charts/?path=/story/rsc-legend-highlight)**
+
+### HighlightBy
+
+- **[ChartTooltip/HighlightBy](https://opensource.adobe.com/react-spectrum-charts/?path=/story/rsc-charttooltip-highlightby)**
+
+### Hover
+
+- **[Legend/Hover](https://opensource.adobe.com/react-spectrum-charts/?path=/story/rsc-legend-hover)**
+
+### Labels
+
+- **[Axis/Labels](https://opensource.adobe.com/react-spectrum-charts/?path=/story/rsc-axis-labels)**
+
+### Legend
+
+- **[Legend](https://opensource.adobe.com/react-spectrum-charts/?path=/story/rsc-legend)**
+
+### Line
+
+- **[Line](https://opensource.adobe.com/react-spectrum-charts/?path=/story/rsc-line)**
+
+### MetricRange
+
+- **[MetricRange](https://opensource.adobe.com/react-spectrum-charts/?path=/story/rsc-metricrange)**
+
+### ReferenceLine
+
+- **[Axis/ReferenceLine](https://opensource.adobe.com/react-spectrum-charts/?path=/story/rsc-axis-referenceline)**
+- **[Bar/ReferenceLine](https://opensource.adobe.com/react-spectrum-charts/?path=/story/rsc-bar-referenceline)**
+
+### S2
+
+- **[Chart/S2](https://opensource.adobe.com/react-spectrum-charts/?path=/story/rsc-chart-s2)**
+- **[Chart/S2](https://opensource.adobe.com/react-spectrum-charts/?path=/story/rsc-chart-s2)**
+- **[Chart/S2](https://opensource.adobe.com/react-spectrum-charts/?path=/story/rsc-chart-s2)**
+
+### Scatter
+
+- **[Scatter](https://opensource.adobe.com/react-spectrum-charts/?path=/story/rsc-scatter)**
+
+### ScatterAnnotation
+
+- **[Scatter/ScatterAnnotation](https://opensource.adobe.com/react-spectrum-charts/?path=/story/rsc-scatter-scatterannotation)**
+
+### ScatterPath
+
+- **[Scatter/ScatterPath](https://opensource.adobe.com/react-spectrum-charts/?path=/story/rsc-scatter-scatterpath)**
+
+### SegmentLabel
+
+- **[Donut/SegmentLabel](https://opensource.adobe.com/react-spectrum-charts/?path=/story/rsc-donut-segmentlabel)**
+
+### Stacked Bar
+
+- **[Bar/Stacked Bar](https://opensource.adobe.com/react-spectrum-charts/?path=/story/rsc-bar-stacked-bar)**
+
+### StackedArea
+
+- **[Area/StackedArea](https://opensource.adobe.com/react-spectrum-charts/?path=/story/rsc-area-stackedarea)**
+
+### States
+
+- **[Chart/States](https://opensource.adobe.com/react-spectrum-charts/?path=/story/rsc-chart-states)**
+
+### Symbols
+
+- **[Legend/Symbols](https://opensource.adobe.com/react-spectrum-charts/?path=/story/rsc-legend-symbols)**
+
+### Title
+
+- **[Title](https://opensource.adobe.com/react-spectrum-charts/?path=/story/rsc-title)**
+
+### Trellis
+
+- **[Bar/Trellis](https://opensource.adobe.com/react-spectrum-charts/?path=/story/rsc-bar-trellis)**
+
+### Trendline
+
+- **[Trendline](https://opensource.adobe.com/react-spectrum-charts/?path=/story/rsc-trendline)**
+
+### TrendlineAnnotation
+
+- **[Trendline/TrendlineAnnotation](https://opensource.adobe.com/react-spectrum-charts/?path=/story/rsc-trendline-trendlineannotation)**
+
+### UNSAFE_vegaSpec
+
+- **[Chart/UNSAFE_vegaSpec](https://opensource.adobe.com/react-spectrum-charts/?path=/story/rsc-chart-unsafe_vegaspec)**
+
+### Venn
+
+- **[Venn](https://opensource.adobe.com/react-spectrum-charts/?path=/story/rsc-venn)**
+
+
+
 ## All Documentation Links
 
-*Auto-generated on: 2025-12-10T18:53:55.053Z*
+*Auto-generated on: 2025-12-11T01:57:54.961Z*
 
 **Base URL**: https://opensource.adobe.com/react-spectrum-charts/docs/docs
 
@@ -48,16 +476,6 @@ This rule helps you navigate and reference React Spectrum Charts documentation w
 
 
 
-## Quick Component Lookup
-
-**Core Components**: Chart
-**Visualizations**: Area, Bar, BigNumber, Donut, Line, Scatter
-**Supporting**: Axis, Legend, Title
-**Interactivity**: ChartTooltip, ChartPopover
-**Analysis**: MetricRange, Trendline
-**Guides**: Chart Basics, Troubleshooting, Installation, Introduction
-**Developer**: Developer Docs, Learning Vega
-
 ## Static Resources
 
 - **Storybook (Live Examples)**: https://opensource.adobe.com/react-spectrum-charts/
@@ -68,91 +486,98 @@ This rule helps you navigate and reference React Spectrum Charts documentation w
 ## How to Use This Guide
 
 ### When User Asks About a Specific Component
-1. Find the component in the documentation links above by title (e.g., "Bar", "Chart", "Axis")
-2. Reference the official documentation URL
-3. Provide guidance based on documented patterns
-4. Give the user an example from the documentation or Storybook
+1. **Review the Common Props Reference** - ensure you include appropriate `dimension`, `metric`, `color` props
+2. **Start with the Chart Structure examples** - provide the relevant example code
+3. If they need more details about props, find the component in the documentation links by title (e.g., "Bar", "Chart", "Axis")
+4. Reference the official documentation URL for detailed prop tables
+5. Provide guidance based on documented patterns
+
+### When User Wants to Create a Chart
+1. **MANDATORY: Include dimension and metric props** - For Line/Bar/Area/Scatter, ALWAYS add `dimension="fieldName"` and `metric="fieldName"` props
+2. **Check Common Props Reference** - verify you're using the correct prop names for their data structure
+3. **Use the relevant visualization example** from Chart Structure section as a template
+4. **Add common props** appropriate to their use case (`color` for series, `orientation`, `type` for variants)
+5. Verify data structure matches the props you're using (e.g., if you use `dimension="datetime"`, data must have a `datetime` field)
+6. If they need customization, reference the specific component documentation
+
+**WRONG:**
+```jsx
+<Line />  // ❌ Missing dimension and metric - chart won't display data
+```
+
+**CORRECT:**
+```jsx
+<Line dimension="datetime" metric="users" />  // ✅ Includes required props
+```
 
 ### When User Has a Usage Question
-1. Start with the Chart component docs for general configuration
-2. Reference the specific visualization component docs (e.g., Bar)
-3. Check Chart Basics guide for fundamental patterns
-4. Reference Troubleshooting guide if they're having issues
+1. **Check Common Props Reference** - many questions are about standard props like `dimension`, `metric`, `color`
+2. **Show them a working example** from Chart Structure section
+3. If they need general configuration, reference the Chart component docs
+4. For specific visualization behavior, reference the specific visualization component docs (e.g., Bar)
+5. Check Chart Basics guide for fundamental patterns
+6. Reference Troubleshooting guide if they're having issues
 
 ### When User Needs Examples
-- Direct users to the Storybook for interactive examples
-- Each component doc includes complete code examples
-- Props tables provide detailed parameter documentation
+- **Use the Chart Structure examples above first** - these are real, tested examples from the docs
+- **Reference Storybook Examples links** - direct links to interactive, explorable examples for each component
+- Each component doc includes additional code examples and variations
 
 ### When User Needs Advanced Features
-- Check the component's documentation for child components
+- Start with examples above to show basic usage
+- Check the component's documentation for child components and advanced props
 - Review the Chart docs scales section for color/lineType/opacity encoding
 - Check locale and theming sections in Chart docs
 
 ## Quick Reference: Common Questions
 
-| Question Type | How to Find Documentation |
+| Question Type | How to Find Answer |
 |--------------|---------------------------|
-| "How do I create a [chart type]?" | Find "Chart" + specific visualization (e.g., "Bar") |
-| "I want to create a [chart type]" | Find visualization by title in links above |
-| "How to add a new feature to a [chart type]?" | Find visualization and search props |
-| "How do I customize axis labels?" | Find "Axis" in links above |
-| "How do I add tooltips?" | Find "ChartTooltip" in links above |
-| "Colors aren't working" | Find "Chart" (scales section) |
+| "How do I create a [chart type]?" | Check Common Props Reference, use Chart Structure example, include dimension/metric props |
+| "I want to create a [chart type]" | Use Chart Structure example with Common Props (dimension, metric, color as needed) |
+| "How to add a new feature to a [chart type]?" | Check Common Props first, then show example from Chart Structure, then check docs for advanced props |
+| "My chart isn't showing data" | Verify dimension/metric props match data field names - see Common Props Reference |
+| "How do I customize axis labels?" | Use Axis example above, then find "Axis" docs for detailed props |
+| "How do I add tooltips?" | Use ChartTooltip example above, then find "ChartTooltip" docs |
+| "Colors aren't working" | Show example from Chart Structure, then reference "Chart" docs (scales section) |
 | "Chart not rendering" | Find "Troubleshooting" in guides |
-| "How to add interactivity?" | Find "ChartTooltip" or "ChartPopover" in links above |
-| "How to add analysis components?" | Find "MetricRange" or "Trendline" in links above |
-| "How to format numbers/dates?" | Find "Chart" (locale section) |
-| "Multi-series charts" | Find relevant visualization + "Chart" |
-| "Testing" | Refer to Developer Docs for testing information and Storybook for testing examples |
+| "How to add interactivity?" | Use ChartTooltip/ChartPopover examples above |
+| "How to add analysis components?" | Use Trendline/MetricRange examples above |
+| "How to format numbers/dates?" | Show example, then reference "Chart" docs (locale section) |
+| "Multi-series charts" | Show multi-series examples from Chart Structure (Line with color, stacked Bar, etc.) |
+| "Testing" | Refer to Developer Docs and Storybook |
 
 ## Key Concepts
 
-### Chart Structure
-Every chart requires:
-```tsx
-import { Chart, [Visualization], Axis } from '@adobe/react-spectrum-charts';
+### Multiple Series and Scales
+- Use `color="fieldName"` to create multiple series (each unique value becomes a separate series)
+- Color scale can be customized on the Chart component using `colorScheme` or `colors` props
+- Multiple scales can be combined: `color` + `lineType` + `opacity` for rich visual encoding
+- For stacked/dodged variants, use the `type` prop on the visualization component
 
-<Chart data={data}>
-  <[Visualization] />
-  <Axis position="bottom" />
-  <Axis position="left" />
-</Chart>
-```
+### Axis Configuration
+- Charts typically need two axes: one for `dimension` (categories/x-axis) and one for `metric` (values/y-axis)
+- Use `position="bottom"` and `position="left"` for standard vertical charts
+- Use `position="left"` and `position="bottom"` for horizontal charts
+- Add `grid`, `ticks`, `baseline`, and `title` props to customize axis appearance
 
-### Common Props Pattern
-- `dimension`: The data field for categories (x-axis for vertical charts)
-- `metric`: The data field for values (y-axis for vertical charts)
-- `color`: Data field to map to colors (creates series)
-- `orientation`: 'horizontal' or 'vertical'
-- `type`: Chart variant (e.g., 'stacked', 'dodged')
-
-### Data Format
-Data should be an array of flat objects:
-```typescript
-const data = [
-  { category: 'A', value: 10, series: 'Series 1' },
-  { category: 'B', value: 20, series: 'Series 1' },
-  // ...
-];
-```
-
-### Scales and Series
-- Use `color="fieldName"` to create multiple series
-- Color scale can be customized on the Chart component
-- Multiple scales can be combined (color + lineType + opacity)
+### Time-Series Data
+- Time values must be in epoch format (milliseconds since Jan 1, 1970 UTC)
+- Use `scaleType="time"` on Line/Area components for time-based data
+- Use `labelFormat="time"` on the time axis to format timestamps
+- Set `granularity` prop on time axis to control label frequency (day, week, month, etc.)
 
 ## Best Practices
 
-1. **Start Simple**: Begin with minimal props, add complexity as needed
-2. **Use Storybook**: Check live examples at https://opensource.adobe.com/react-spectrum-charts/
-3. **Follow Spectrum Guidelines**: Library implements Adobe Spectrum design system
-4. **Check Props Tables**: Each component doc has complete props documentation
-5. **Use Default Color Schemes**: Research-backed, accessible color schemes included
+1. **Always Include Common Props**: Check the Common Props Reference at the top - most charts need at minimum `dimension` and `metric`
+2. **Start with Examples**: Use the Chart Structure examples as a starting point, then customize
+3. **Match Props to Data**: Ensure your data structure has fields that match your prop values (e.g., if `color="browser"`, data must have a `browser` field)
+4. **Use Storybook for Variations**: Check relevant live examples from Storybook link section for different chart types and configurations
+5. **Follow Spectrum Guidelines**: Library implements Adobe Spectrum design system for consistency
+6. **Check Props Tables for Advanced Features**: Refer to component documentation for detailed prop reference
+7. **Use Default Color Schemes**: Research-backed, accessible color schemes included
 
 ## Setup in Your Project
-
-### First Time Setup
 
 To add this rule to your Cursor workspace:
 
@@ -161,39 +586,7 @@ mkdir -p .cursor/rules
 cp node_modules/@adobe/react-spectrum-charts/.cursor-rule.mdc .cursor/rules/react-spectrum-charts.mdc
 ```
 
-### Updating After Package Upgrade
-
-When you upgrade `@adobe/react-spectrum-charts`, the documentation links are automatically updated. Get the latest version:
-
-**Option 1: Use the update script** (recommended)
-```bash
-node node_modules/@adobe/react-spectrum-charts/update-cursor-rule.js
-```
-
-**Option 2: Manual copy**
-```bash
-cp node_modules/@adobe/react-spectrum-charts/.cursor-rule.mdc .cursor/rules/react-spectrum-charts.mdc
-```
-
-**Option 3: Add as npm script**
-```json
-{
-  "scripts": {
-    "update-rsc-cursor": "node node_modules/@adobe/react-spectrum-charts/update-cursor-rule.js"
-  }
-}
-```
-
-**Option 4: Auto-update on install**
-```json
-{
-  "scripts": {
-    "postinstall": "node node_modules/@adobe/react-spectrum-charts/update-cursor-rule.js 2>/dev/null || true"
-  }
-}
-```
-
-**Tip**: Check the "Auto-generated on" timestamp at the top to see if you have the latest version.
+Once installed, Cursor AI will have instant access to all React Spectrum Charts documentation links and examples.
 
 ---
 
