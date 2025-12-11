@@ -45,7 +45,6 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 function loadDocsData(): DocEntry[] {
-  // In dist/, docs-data.json is copied alongside index.js
   const dataPath = path.resolve(__dirname, 'docs-data.json');
   if (!fs.existsSync(dataPath)) {
     throw new Error(`Bundled docs data not found at ${dataPath}. Run 'yarn build' first.`);
@@ -84,9 +83,8 @@ function getDocById(id: string): DocEntry {
           'Usage: npx @adobe/react-spectrum-charts-mcp@latest\n\n' +
           'Starts the MCP server for React Spectrum Charts documentation.\n\n' +
           'Tools:\n' +
-          '  list_rsc_docs     List all available documentation pages\n' +
-          '  describe_rsc_doc  Get page description and section titles\n' +
-          '  read_rsc_doc      Get full page or a specific section\n'
+          '  list_rsc_docs  List all documentation pages\n' +
+          '  read_rsc_doc   Get full page content by ID\n'
       );
       process.exit(0);
     }
@@ -109,22 +107,14 @@ function getDocById(id: string): DocEntry {
       'list_rsc_docs',
       {
         title: 'List RSC Docs',
-        description: 'Lists all available React Spectrum Charts documentation pages with their IDs.',
-        inputSchema: z.object({
-          includeDescription: z.boolean().optional().describe('Include page descriptions (default: false)'),
-        }),
+        description: 'Lists all React Spectrum Charts documentation pages with their IDs and titles.',
+        inputSchema: z.object({}),
       },
-      async ({ includeDescription }: { includeDescription?: boolean }) => {
-        const results = DOCS_INDEX.map((doc) => {
-          const entry: { id: string; title: string; description?: string } = {
-            id: doc.id,
-            title: doc.title,
-          };
-          if (includeDescription) {
-            entry.description = doc.description;
-          }
-          return entry;
-        });
+      async () => {
+        const results = DOCS_INDEX.map((doc) => ({
+          id: doc.id,
+          title: doc.title,
+        }));
 
         return {
           content: [
@@ -137,66 +127,18 @@ function getDocById(id: string): DocEntry {
       }
     );
 
-    // Describe doc tool
-    server.registerTool(
-      'describe_rsc_doc',
-      {
-        title: 'Describe RSC Doc',
-        description: "Returns a page's description and list of section titles.",
-        inputSchema: z.object({
-          id: z.string().describe('Document ID (e.g., "guides/chart-basics")'),
-        }),
-      },
-      async ({ id }: { id: string }) => {
-        const doc = getDocById(id);
-        const result = {
-          id: doc.id,
-          title: doc.title,
-          description: doc.description,
-          sections: doc.sections.map((s) => ({ title: s.title, level: s.level })),
-        };
-
-        return {
-          content: [
-            {
-              type: 'text' as const,
-              text: JSON.stringify(result, null, 2),
-            },
-          ],
-        };
-      }
-    );
-
     // Read doc content tool
     server.registerTool(
       'read_rsc_doc',
       {
         title: 'Read RSC Doc',
-        description: 'Returns full markdown/MDX for a React Spectrum Charts docs page by ID.',
+        description: 'Returns the full markdown content for a React Spectrum Charts documentation page.',
         inputSchema: z.object({
-          id: z.string().describe('Document ID from list_rsc_docs (e.g., "guides/chart-basics")'),
-          section: z.string().optional().describe('Section title to retrieve (returns full page if omitted)'),
+          id: z.string().describe('Document ID from list_rsc_docs (e.g., "api/Chart", "guides/chart-basics")'),
         }),
       },
-      async ({ id, section }: { id: string; section?: string }) => {
+      async ({ id }: { id: string }) => {
         const doc = getDocById(id);
-
-        if (section) {
-          const found = doc.sections.find((s) => s.title.toLowerCase() === section.toLowerCase());
-          if (!found) {
-            const available = doc.sections.map((s) => s.title).join(', ');
-            throw new Error(`Section "${section}" not found. Available sections: ${available}`);
-          }
-          return {
-            content: [
-              {
-                type: 'text' as const,
-                text: found.content,
-              },
-            ],
-          };
-        }
-
         return {
           content: [
             {
