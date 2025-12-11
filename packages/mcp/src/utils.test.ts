@@ -9,8 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
-import { errorToString, getDocById, DocEntry } from './utils';
+import { DocEntry, errorToString, getDocById } from './utils';
 
 describe('errorToString', () => {
   it('returns message from Error instances', () => {

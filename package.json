@@ -81,10 +81,7 @@
     "storybook": "cross-env NODE_OPTIONS=--openssl-legacy-provider && storybook dev -p 6009",
     "test": "cross-env TZ=UTC BABEL_ENV=test jest",
     "watch": "cross-env TZ=UTC BABEL_ENV=test jest --watch",
-    "skulk": "yarn watch --silent",
-    "mcp:build": "cd mcp-server && yarn build",
-    "mcp:start": "cd mcp-server && yarn start",
-    "mcp:dev": "cd mcp-server && yarn dev"
+    "skulk": "yarn watch --silent"
   },
   "devDependencies": {
     "@adobe/react-spectrum": "3.34.1",

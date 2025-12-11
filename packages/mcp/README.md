@@ -4,10 +4,10 @@ A [Model Context Protocol (MCP)](https://modelcontextprotocol.io) server that ex
 
 ## Tools
 
-| Tool | Description |
-|------|-------------|
-| `list_rsc_docs` | Lists all documentation pages with IDs and titles |
-| `read_rsc_doc` | Returns full markdown content for a documentation page |
+| Tool            | Description                                            |
+| --------------- | ------------------------------------------------------ |
+| `list_rsc_docs` | Lists all documentation pages with IDs and titles      |
+| `read_rsc_doc`  | Returns full markdown content for a documentation page |
 
 ## Setup
 
