@@ -123,6 +123,16 @@ const data = [
 
 ⚠️ **If any example below seems incomplete:** First check the Documentation links for that component, then use Storybook Examples as a fallback.
 
+#### Area
+
+```jsx
+<Chart data={data}>
+  <Axis baseline labelFormat="time" position="bottom" ticks />
+  <Axis grid position="left" ticks />
+  <Area dimension="date" metric="count" />
+</Chart>
+```
+
 #### Bar
 
 ```jsx
@@ -130,6 +140,25 @@ const data = [
   <Axis position="bottom" grid ticks title="Downloads" />
   <Axis position="left" baseline title="Browser" />
   <Bar name="Bar Chart" orientation="horizontal" dimension="browser" metric="views" />
+</Chart>
+```
+
+#### BigNumber
+
+```jsx
+<Chart data={[{ x: 20, y: 90 }]} height={100} width={200}>
+  <BigNumber dataKey="x" label="Visitors" orientation="horizontal" />
+</Chart>
+```
+
+#### Donut
+
+```jsx
+<Chart data={data}>
+  <Donut color="operatingSystem" metric="visitors">
+    <DonutSummary label="Visitors" />
+  </Donut>
+  <Legend title="Operating system" />
 </Chart>
 ```
 
@@ -141,16 +170,6 @@ const data = [
   <Axis position="left" grid title="Users" />
   <Line metric="users" color="event" />
   <Legend position="bottom" />
-</Chart>
-```
-
-#### Area
-
-```jsx
-<Chart data={data}>
-  <Axis baseline labelFormat="time" position="bottom" ticks />
-  <Axis grid position="left" ticks />
-  <Area dimension="date" metric="count" />
 </Chart>
 ```
 
@@ -166,36 +185,7 @@ const data = [
 </Chart>
 ```
 
-#### Donut
-
-```jsx
-<Chart data={data}>
-  <Donut color="operatingSystem" metric="visitors">
-    <DonutSummary label="Visitors" />
-  </Donut>
-  <Legend title="Operating system" />
-</Chart>
-```
-
-#### BigNumber
-
-```jsx
-<Chart data={[{ x: 20, y: 90 }]} height={100} width={200}>
-  <BigNumber dataKey="x" label="Visitors" orientation="horizontal" />
-</Chart>
-```
-
 ### Analysis Components
-
-#### Trendline
-
-```jsx
-<Chart data={data}>
-  <Bar>
-    <Trendline method="average" color="gray-500" />
-  </Bar>
-</Chart>
-```
 
 #### MetricRange
 
@@ -207,17 +197,17 @@ const data = [
 </Chart>
 ```
 
-### Interactivity Components
-
-#### ChartTooltip
+#### Trendline
 
 ```jsx
 <Chart data={data}>
   <Bar>
-    <ChartTooltip>{(datum) => <div>Average: {datum.average}</div>}</ChartTooltip>
+    <Trendline method="average" color="gray-500" />
   </Bar>
 </Chart>
 ```
+
+### Interactivity Components
 
 #### ChartPopover
 
@@ -232,6 +222,16 @@ const data = [
         </Content>
       )}
     </ChartPopover>
+  </Bar>
+</Chart>
+```
+
+#### ChartTooltip
+
+```jsx
+<Chart data={data}>
+  <Bar>
+    <ChartTooltip>{(datum) => <div>Average: {datum.average}</div>}</ChartTooltip>
   </Bar>
 </Chart>
 ```
@@ -284,7 +284,7 @@ const axisAnnotationProps = {
 
 ## Storybook Examples (Interactive)
 
-*Auto-generated on: 2025-12-11T17:52:19.761Z*
+*Auto-generated on: 2025-12-11T17:58:33.324Z*
 
 **Base URL**: https://opensource.adobe.com/react-spectrum-charts/
 
@@ -477,7 +477,7 @@ These are live, interactive examples. Click to explore component variations and 
 
 ## All Documentation Links
 
-*Auto-generated on: 2025-12-11T17:52:19.760Z*
+*Auto-generated on: 2025-12-11T17:58:33.324Z*
 
 **Base URL**: https://opensource.adobe.com/react-spectrum-charts/docs/docs
 

@@ -669,11 +669,22 @@ function updateCursorRule(files) {
 		storybookLinksSection += '\n';
 	});
 	
-	// Build chart structure examples section
-	const visualizationTypes = ['Bar', 'Line', 'Area', 'Scatter', 'Donut', 'BigNumber'];
-	const analysisTypes = ['Trendline', 'MetricRange'];
-	const interactivityTypes = ['ChartTooltip', 'ChartPopover'];
-	const componentTypes = ['Axis', 'Legend', 'Title'];
+	// Dynamically determine component categories from documentation structure
+	const visualizationTypes = sortedFiles
+		.filter(f => f.path.includes('api/visualizations/') && f.example)
+		.map(f => f.title);
+	
+	const analysisTypes = sortedFiles
+		.filter(f => f.path.includes('api/analysis/') && f.example)
+		.map(f => f.title);
+	
+	const interactivityTypes = sortedFiles
+		.filter(f => f.path.includes('api/interactivity/') && f.example)
+		.map(f => f.title);
+	
+	const componentTypes = sortedFiles
+		.filter(f => f.path.includes('api/components/') && f.example)
+		.map(f => f.title);
 	
 	let chartStructureSection = '## Chart Structure\n\n';
 	chartStructureSection += 'Every chart requires a `Chart` wrapper component with `data` prop, at least one visualization component, and typically Axis components.\n\n';
