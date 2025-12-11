@@ -58,7 +58,7 @@
   "license": "Apache-2.0",
   "scripts": {
     "build": "yarn workspaces run build",
-    "build:parallel": "concurrently 'yarn workspace @spectrum-charts/themes build' 'yarn workspace @spectrum-charts/constants build' 'yarn workspace @spectrum-charts/utils build' 'yarn workspace @spectrum-charts/locales build' && yarn workspace @spectrum-charts/vega-spec-builder build && concurrently 'yarn workspace @adobe/react-spectrum-charts build' 'yarn workspace @adobe/react-spectrum-charts-mcp build'",
+    "build:parallel": "concurrently 'yarn workspace @spectrum-charts/themes build' 'yarn workspace @spectrum-charts/constants build' 'yarn workspace @spectrum-charts/utils build' 'yarn workspace @spectrum-charts/locales build' && yarn workspace @spectrum-charts/vega-spec-builder build && concurrently 'yarn workspace @adobe/react-spectrum-charts build' 'yarn workspace @spectrum-charts/mcp build'",
     "build:docs": "yarn workspace @spectrum-charts/docs build",
     "clean": "yarn workspaces run clean",
     "clean:parallel": "concurrently 'yarn workspace @spectrum-charts/themes clean' 'yarn workspace @spectrum-charts/constants clean' 'yarn workspace @spectrum-charts/utils clean' 'yarn workspace @spectrum-charts/locales clean' 'yarn workspace @spectrum-charts/vega-spec-builder clean' 'yarn workspace @adobe/react-spectrum-charts clean'",
