@@ -1,6 +1,6 @@
 {
   "name": "@adobe/react-spectrum-charts-mcp",
-  "version": "4.0.0",
+  "version": "0.1.0",
   "description": "MCP Server for React Spectrum Charts documentation",
   "type": "module",
   "main": "./dist/index.js",
@@ -18,16 +18,16 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/adobe/react-spectrum-charts",
-    "directory": "mcp-server"
+    "directory": "packages/mcp"
   },
-  "homepage": "https://github.com/adobe/react-spectrum-charts/tree/main/mcp-server",
+  "homepage": "https://github.com/adobe/react-spectrum-charts/tree/main/packages/mcp",
   "bugs": {
     "url": "https://github.com/adobe/react-spectrum-charts/issues"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && node scripts/build-docs.mjs",
     "start": "node dist/index.js",
-    "dev": "tsc && node dist/index.js",
+    "dev": "yarn build && node dist/index.js",
     "prepublishOnly": "yarn build"
   },
   "keywords": [

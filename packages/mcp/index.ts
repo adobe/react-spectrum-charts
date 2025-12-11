@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-/* eslint-disable header/header */
 /*
  * Copyright 2025 Adobe. All rights reserved.
  * This file is licensed to you under the Apache License, Version 2.0 (the "License");
@@ -14,30 +13,16 @@
 
 /// <reference types="node" />
 
-import fs from 'fs/promises';
+import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { z } from 'zod';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 
-const VERSION = '4.0.0';
+const VERSION = '0.1.0';
 
-// Resolve docs path relative to this file's location in the monorepo
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const DOCS_ROOT = path.resolve(__dirname, '../../docs/docs');
-
-// --- Utilities ---
-
-function errorToString(err: unknown): string {
-  if (err instanceof Error) {
-    return err.message;
-  }
-  return String(err);
-}
-
-// --- Simple in-memory index ---
+// --- Types ---
 
 type Section = {
   title: string;
@@ -54,79 +39,30 @@ type DocEntry = {
   content: string;
 };
 
-const DOCS_INDEX: DocEntry[] = [];
+// --- Load bundled docs data ---
 
-function extractDescription(content: string): string {
-  // Remove frontmatter if present
-  let body = content.replace(/^---[\s\S]*?---\n*/, '');
-  // Remove the title line
-  body = body.replace(/^#\s+.+\n*/, '');
-  // Remove import statements
-  body = body.replace(/^import\s+.+\n*/gm, '');
-  // Get first non-empty paragraph (stop at heading or empty line)
-  const match = body.match(/^([^\n#].+?)(?:\n\n|\n#|$)/s);
-  if (match) {
-    return match[1].replace(/\s+/g, ' ').trim();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+function loadDocsData(): DocEntry[] {
+  // In dist/, docs-data.json is copied alongside index.js
+  const dataPath = path.resolve(__dirname, 'docs-data.json');
+  if (!fs.existsSync(dataPath)) {
+    throw new Error(`Bundled docs data not found at ${dataPath}. Run 'yarn build' first.`);
   }
-  return '';
+  const raw = fs.readFileSync(dataPath, 'utf8');
+  return JSON.parse(raw) as DocEntry[];
 }
 
-function extractSections(content: string): Section[] {
-  const sections: Section[] = [];
-  const headingRegex = /^(#{2,6})\s+(.+)$/gm;
-  let match;
+const DOCS_INDEX: DocEntry[] = loadDocsData();
 
-  const headings: { level: number; title: string; start: number }[] = [];
-  while ((match = headingRegex.exec(content)) !== null) {
-    headings.push({
-      level: match[1].length,
-      title: match[2].trim(),
-      start: match.index,
-    });
+// --- Utilities ---
+
+function errorToString(err: unknown): string {
+  if (err instanceof Error) {
+    return err.message;
   }
-
-  for (let i = 0; i < headings.length; i++) {
-    const heading = headings[i];
-    const nextStart = headings[i + 1]?.start ?? content.length;
-    const sectionContent = content.slice(heading.start, nextStart).trim();
-
-    sections.push({
-      title: heading.title,
-      level: heading.level,
-      content: sectionContent,
-    });
-  }
-
-  return sections;
-}
-
-async function buildIndex(): Promise<void> {
-  async function walk(current: string) {
-    let entries;
-    try {
-      entries = await fs.readdir(current, { withFileTypes: true });
-    } catch {
-      return;
-    }
-
-    for (const entry of entries) {
-      const full = path.join(current, entry.name);
-      if (entry.isDirectory()) {
-        await walk(full);
-      } else if (/\.(md|mdx)$/.test(entry.name)) {
-        const relPath = path.relative(DOCS_ROOT, full);
-        const id = relPath.replace(/\\/g, '/').replace(/\.(md|mdx)$/, '');
-        const content = await fs.readFile(full, 'utf8');
-        const titleMatch = content.match(/^#\s+(.+)$/m);
-        const title = titleMatch ? titleMatch[1].trim() : path.basename(relPath, path.extname(relPath));
-        const description = extractDescription(content);
-        const sections = extractSections(content);
-        DOCS_INDEX.push({ id, relPath, title, description, sections, content });
-      }
-    }
-  }
-
-  await walk(DOCS_ROOT);
+  return String(err);
 }
 
 function getDocById(id: string): DocEntry {
@@ -148,9 +84,9 @@ function getDocById(id: string): DocEntry {
           'Usage: npx @adobe/react-spectrum-charts-mcp@latest\n\n' +
           'Starts the MCP server for React Spectrum Charts documentation.\n\n' +
           'Tools:\n' +
-          '  get_rsc_docs      List all available documentation pages\n' +
-          '  get_rsc_doc_info  Get page description and section titles\n' +
-          '  get_rsc_doc       Get full page or a specific section\n'
+          '  list_rsc_docs     List all available documentation pages\n' +
+          '  describe_rsc_doc  Get page description and section titles\n' +
+          '  read_rsc_doc      Get full page or a specific section\n'
       );
       process.exit(0);
     }
@@ -160,9 +96,8 @@ function getDocById(id: string): DocEntry {
       process.exit(0);
     }
 
-    await buildIndex();
     console.error(`React Spectrum Charts MCP Server v${VERSION}`);
-    console.error(`Indexed ${DOCS_INDEX.length} documentation pages from ${DOCS_ROOT}`);
+    console.error(`Loaded ${DOCS_INDEX.length} documentation pages`);
 
     const server = new McpServer({
       name: 'react-spectrum-charts-docs',
@@ -171,9 +106,9 @@ function getDocById(id: string): DocEntry {
 
     // List all docs tool
     server.registerTool(
-      'get_rsc_docs',
+      'list_rsc_docs',
       {
-        title: 'Get RSC Docs',
+        title: 'List RSC Docs',
         description: 'Lists all available React Spectrum Charts documentation pages with their IDs.',
         inputSchema: z.object({
           includeDescription: z.boolean().optional().describe('Include page descriptions (default: false)'),
@@ -202,11 +137,11 @@ function getDocById(id: string): DocEntry {
       }
     );
 
-    // Get doc info tool
+    // Describe doc tool
     server.registerTool(
-      'get_rsc_doc_info',
+      'describe_rsc_doc',
       {
-        title: 'Get RSC Doc Info',
+        title: 'Describe RSC Doc',
         description: "Returns a page's description and list of section titles.",
         inputSchema: z.object({
           id: z.string().describe('Document ID (e.g., "guides/chart-basics")'),
@@ -232,14 +167,14 @@ function getDocById(id: string): DocEntry {
       }
     );
 
-    // Get doc content tool
+    // Read doc content tool
     server.registerTool(
-      'get_rsc_doc',
+      'read_rsc_doc',
       {
-        title: 'Get RSC Doc',
-        description: 'Returns full markdown/MDX for a page, or only the specified section.',
+        title: 'Read RSC Doc',
+        description: 'Returns full markdown/MDX for a React Spectrum Charts docs page by ID.',
         inputSchema: z.object({
-          id: z.string().describe('Document ID (e.g., "guides/chart-basics")'),
+          id: z.string().describe('Document ID from list_rsc_docs (e.g., "guides/chart-basics")'),
           section: z.string().optional().describe('Section title to retrieve (returns full page if omitted)'),
         }),
       },
