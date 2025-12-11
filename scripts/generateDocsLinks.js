@@ -975,9 +975,10 @@ Use this checklist to DEBUG issues when user reports a chart isn't working:
 
 To add this rule to your Cursor workspace:
 
+Cursor -> Settings -> Cursor Settings -> Rules and Commands -> under Project Rules, click "Add Rule" -> create rule -> paste in the rule content or copy content over with command below:
+
 \`\`\`bash
-mkdir -p .cursor/rules
-cp node_modules/@adobe/react-spectrum-charts/.cursor-rule.mdc .cursor/rules/react-spectrum-charts.mdc
+cp node_modules/@adobe/react-spectrum-charts/.cursor-rule.mdc .cursor/rules/{your-rule-name}.mdc
 \`\`\`
 
 Once installed, Cursor AI will have instant access to all React Spectrum Charts documentation links and examples.
