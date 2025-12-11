@@ -21,6 +21,38 @@ When a user asks you to create ANY chart, you MUST follow this checklist BEFORE 
 
 ⚠️ **NEVER generate a Line, Bar, Area, or Scatter chart without `dimension` and `metric` props** - these tell the chart which data fields to use.
 
+🔍 **VERIFICATION WORKFLOW - FOLLOW THIS BEFORE RESPONDING:**
+
+After generating ANY chart code, you MUST mentally verify:
+
+1. **Check imports are correct:**
+   - Check which import path is required for the chart type
+   - If imports are wrong, FIX THEM before responding
+
+2. **Verify required props are included:**
+   - Line/Bar/Area/Scatter → must have `dimension` and `metric`
+   - If missing, ADD THEM with appropriate field names
+
+3. **Check prop-to-data alignment:**
+   - If you used `dimension="x"`, verify their data likely has an "x" field
+   - If data structure is unclear, ASK about field names rather than guessing
+   - If props don't match data, EXPLAIN the issue and FIX IT
+
+4. **If example seems incomplete, follow this order:**
+   - First: Try the Chart Structure example
+   - Second: Check Documentation links for that component
+   - Third: Use Storybook Examples as the fallback source of truth
+   
+5. **Identify potential rendering issues:**
+   - Wrong import path? Fix it
+   - Missing props? Add them
+   - Data structure mismatch? Address it
+   - Chart Structure example incomplete? Check Documentation, then Storybook
+   
+6. **Only after verification, provide the code with any necessary explanations**
+
+DO NOT just provide code with a warning - FIX issues proactively.
+
 **Example of CORRECT code generation:**
 ```jsx
 // ✅ GOOD - includes dimension and metric
@@ -63,6 +95,10 @@ import { Chart, [Visualization], Axis } from '@adobe/react-spectrum-charts';
 
 *Required for Line, Bar, Area, Scatter. Optional for Donut, BigNumber.
 
+**Import Paths:**
+- **Donut, DonutSummary, SegmentLabel**: `import { Donut } from '@adobe/react-spectrum-charts/rc'` (release candidate)
+- **All other components**: `import { Line, Bar, etc } from '@adobe/react-spectrum-charts'`
+
 **Data Format Requirements:**
 
 - Data must be an array of flat objects
@@ -83,6 +119,8 @@ const data = [
 ### Visualization Examples
 
 **Note:** All examples below include `dimension` and `metric` props. When creating your own charts, ALWAYS include these props to specify which data fields to visualize.
+
+⚠️ **If any example below seems incomplete:** First check the Documentation links for that component, then use Storybook Examples as a fallback.
 
 #### Bar
 
@@ -245,7 +283,7 @@ const axisAnnotationProps = {
 
 ## Storybook Examples (Interactive)
 
-*Auto-generated on: 2025-12-11T01:57:54.963Z*
+*Auto-generated on: 2025-12-11T17:15:39.063Z*
 
 **Base URL**: https://opensource.adobe.com/react-spectrum-charts/
 
@@ -438,7 +476,7 @@ These are live, interactive examples. Click to explore component variations and 
 
 ## All Documentation Links
 
-*Auto-generated on: 2025-12-11T01:57:54.961Z*
+*Auto-generated on: 2025-12-11T17:15:39.062Z*
 
 **Base URL**: https://opensource.adobe.com/react-spectrum-charts/docs/docs
 
@@ -486,66 +524,32 @@ These are live, interactive examples. Click to explore component variations and 
 ## How to Use This Guide
 
 ### When User Asks About a Specific Component
-1. **Review the Common Props Reference** - ensure you include appropriate `dimension`, `metric`, `color` props
-2. **Start with the Chart Structure examples** - provide the relevant example code
-3. If they need more details about props, find the component in the documentation links by title (e.g., "Bar", "Chart", "Axis")
-4. Reference the official documentation URL for detailed prop tables
-5. Provide guidance based on documented patterns
-
-### When User Wants to Create a Chart
-1. **MANDATORY: Include dimension and metric props** - For Line/Bar/Area/Scatter, ALWAYS add `dimension="fieldName"` and `metric="fieldName"` props
-2. **Check Common Props Reference** - verify you're using the correct prop names for their data structure
-3. **Use the relevant visualization example** from Chart Structure section as a template
-4. **Add common props** appropriate to their use case (`color` for series, `orientation`, `type` for variants)
-5. Verify data structure matches the props you're using (e.g., if you use `dimension="datetime"`, data must have a `datetime` field)
-6. If they need customization, reference the specific component documentation
-
-**WRONG:**
-```jsx
-<Line />  // ❌ Missing dimension and metric - chart won't display data
-```
-
-**CORRECT:**
-```jsx
-<Line dimension="datetime" metric="users" />  // ✅ Includes required props
-```
+1. Start with Chart Structure example for that component
+2. For detailed props, check Documentation links
+3. Follow resource priority: Chart Structure → Documentation → Storybook
 
 ### When User Has a Usage Question
-1. **Check Common Props Reference** - many questions are about standard props like `dimension`, `metric`, `color`
-2. **Show them a working example** from Chart Structure section
-3. If they need general configuration, reference the Chart component docs
-4. For specific visualization behavior, reference the specific visualization component docs (e.g., Bar)
-5. Check Chart Basics guide for fundamental patterns
-6. Reference Troubleshooting guide if they're having issues
+1. Check Common Props Reference for standard props (`dimension`, `metric`, `color`)
+2. Show working example from Chart Structure
+3. Reference component Documentation for specific behavior
+4. For troubleshooting, see Troubleshooting Checklist below
 
 ### When User Needs Examples
-- **Use the Chart Structure examples above first** - these are real, tested examples from the docs
-- **Reference Storybook Examples links** - direct links to interactive, explorable examples for each component
-- Each component doc includes additional code examples and variations
+Use Chart Structure examples → Storybook links → Documentation
 
 ### When User Needs Advanced Features
-- Start with examples above to show basic usage
-- Check the component's documentation for child components and advanced props
-- Review the Chart docs scales section for color/lineType/opacity encoding
-- Check locale and theming sections in Chart docs
+Check component Documentation for: child components, advanced props, scales, locale, theming
 
 ## Quick Reference: Common Questions
 
 | Question Type | How to Find Answer |
 |--------------|---------------------------|
-| "How do I create a [chart type]?" | Check Common Props Reference, use Chart Structure example, include dimension/metric props |
-| "I want to create a [chart type]" | Use Chart Structure example with Common Props (dimension, metric, color as needed) |
-| "How to add a new feature to a [chart type]?" | Check Common Props first, then show example from Chart Structure, then check docs for advanced props |
-| "My chart isn't showing data" | Verify dimension/metric props match data field names - see Common Props Reference |
-| "How do I customize axis labels?" | Use Axis example above, then find "Axis" docs for detailed props |
-| "How do I add tooltips?" | Use ChartTooltip example above, then find "ChartTooltip" docs |
-| "Colors aren't working" | Show example from Chart Structure, then reference "Chart" docs (scales section) |
-| "Chart not rendering" | Find "Troubleshooting" in guides |
-| "How to add interactivity?" | Use ChartTooltip/ChartPopover examples above |
-| "How to add analysis components?" | Use Trendline/MetricRange examples above |
-| "How to format numbers/dates?" | Show example, then reference "Chart" docs (locale section) |
-| "Multi-series charts" | Show multi-series examples from Chart Structure (Line with color, stacked Bar, etc.) |
-| "Testing" | Refer to Developer Docs and Storybook |
+| "Create a [chart type]" | Check Common Props Reference, use Chart Structure example, include dimension/metric props |
+| "Chart not showing data" | Verify dimension/metric props match data field names - see Common Props Reference |
+| "Customize axis/tooltip/legend" | Use Chart Structure example, then find component docs for detailed props |
+| "Colors not working" | Reference "Chart" docs (scales section) |
+| "Multi-series charts" | Use `color` prop - see Chart Structure examples (Line with color, stacked Bar) |
+| "Chart not rendering" | See Troubleshooting Checklist below |
 
 ## Key Concepts
 
@@ -567,15 +571,48 @@ These are live, interactive examples. Click to explore component variations and 
 - Use `labelFormat="time"` on the time axis to format timestamps
 - Set `granularity` prop on time axis to control label frequency (day, week, month, etc.)
 
+## Troubleshooting Checklist
+
+Use this checklist to DEBUG issues when user reports a chart isn't working:
+
+### Chart Not Rendering / Blank Chart
+**Diagnostic questions to ask yourself:**
+1. Did I include `dimension` and `metric` props? (Required for Line/Bar/Area/Scatter)
+2. Do the prop field names match the user's data structure?
+3. Is the data structure correct (array of flat objects)?
+4. For time-series: Are timestamps in epoch format?
+5. **Did I base my code on a Chart Structure example that seems incomplete?**
+   - If YES: First check the Documentation links for that component
+   - Then check Storybook Examples if documentation doesn't help
+6. **Did I use the correct import path?**
+	- **Action**: Provide corrected import statements
+
+**Action**: Review your code, check Storybook if needed, and FIX the issue - don't just explain it
+
+### Data Display Issues
+**Diagnostic questions:**
+1. If `dimension="x"`, does their data have an "x" field?
+2. If `metric="value"`, does their data have a "value" field?
+3. If `color="category"`, does their data have a "category" field?
+4. Are field names case-sensitive matches?
+
+**Action**: If unclear, ASK about their data structure. If known, correct the prop values.
+
+### When User Says "It's not working"
+1. Ask to see their current code and data structure
+2. Identify the specific issue (missing props, wrong imports, data mismatch)
+3. Check resources in priority order: Chart Structure → Documentation → Storybook
+4. Provide FIXED code with explanation
+
 ## Best Practices
 
-1. **Always Include Common Props**: Check the Common Props Reference at the top - most charts need at minimum `dimension` and `metric`
-2. **Start with Examples**: Use the Chart Structure examples as a starting point, then customize
-3. **Match Props to Data**: Ensure your data structure has fields that match your prop values (e.g., if `color="browser"`, data must have a `browser` field)
-4. **Use Storybook for Variations**: Check relevant live examples from Storybook link section for different chart types and configurations
-5. **Follow Spectrum Guidelines**: Library implements Adobe Spectrum design system for consistency
-6. **Check Props Tables for Advanced Features**: Refer to component documentation for detailed prop reference
-7. **Use Default Color Schemes**: Research-backed, accessible color schemes included
+1. **Verify Before Responding**: Run through Verification Workflow before providing code
+2. **Fix, Don't Warn**: FIX issues rather than providing broken code with warnings
+3. **Resource Priority**: Chart Structure → Documentation → Storybook
+4. **Ask When Unclear**: If data structure is ambiguous, ASK about field names
+5. **Match Props to Data**: Ensure prop field names align with actual data fields (case-sensitive)
+6. **Check Import Paths**: Verify correct import paths (some components need `/rc`)
+7. **Follow Spectrum Guidelines**: Library implements Adobe Spectrum design system
 
 ## Setup in Your Project
 
