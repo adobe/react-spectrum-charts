@@ -69,6 +69,7 @@ jobs:
         run: |
           yarn workspace @spectrum-charts/constants publish-package
           yarn workspace @spectrum-charts/locales publish-package
+          yarn workspace @spectrum-charts/mcp publish-package
           yarn workspace @spectrum-charts/themes publish-package
           yarn workspace @spectrum-charts/utils publish-package
           yarn workspace @spectrum-charts/vega-spec-builder publish-package
