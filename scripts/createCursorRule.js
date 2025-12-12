@@ -20,11 +20,6 @@ const DOCUSAURUS_CONFIG = path.join(__dirname, '../packages/docs/docusaurus.conf
 const STORIES_DIR = path.join(__dirname, '../packages/react-spectrum-charts/src/stories');
 const RSC_SRC_DIR = path.join(__dirname, '../packages/react-spectrum-charts/src');
 const STORYBOOK_BASE_URL = 'https://opensource.adobe.com/react-spectrum-charts/';
-const OUTPUT_FORMATS = {
-	markdown: 'markdown',
-	json: 'json',
-	console: 'console',
-};
 
 /**
  * Reads the base URL from the Docusaurus config file
@@ -476,44 +471,23 @@ function generateConsole(files, external = false) {
  */
 function showHelp() {
 	console.log(`
-📚 Documentation Links Generator
+📚 React Spectrum Charts Cursor Rule Generator
 
-Generates a list of all documentation files with links.
+Generates the Cursor rule file with current documentation links and examples.
 
 USAGE:
-  node generateDocsLinks.js [format] [options] [output-file]
-
-FORMATS:
-  console      Pretty console output (default)
-  markdown     Markdown table of contents
-  json         JSON format
+  node createCursorRule.js [options]
 
 OPTIONS:
-  --external, -e         Generate external URLs
-                         Base URL: ${BASE_URL}
-                         (automatically read from docusaurus.config.ts)
-  --update-cursor-rule   Update the .cursor-rule.mdc file with current docs
   --help, -h             Show this help message
 
 EXAMPLES:
-  # Console output with relative links
-  node generateDocsLinks.js
-
-  # Console output with external URLs
-  node generateDocsLinks.js --external
-
-  # Generate markdown with external URLs
-  node generateDocsLinks.js markdown --external
-
-  # Save to file
-  node generateDocsLinks.js markdown --external docs-links.md
-
-  # Generate JSON
-  node generateDocsLinks.js json --external docs-links.json
+  # Generate/update cursor rule
+  node createCursorRule.js
 
 NOTE:
   The base URL is automatically read from packages/docs/docusaurus.config.ts
-  If the config changes, re-run the script to use the updated URL.
+  The cursor rule file is created at: llm/rules/react-spectrum-charts.mdc
 `);
 }
 
@@ -521,71 +495,19 @@ NOTE:
 function main() {
 	const args = process.argv.slice(2);
 	
-	// Parse arguments
-	let format = 'console';
-	let outputFile = null;
-	let external = false;
-	let updateCursor = false;
-	
 	// Check for help flag first
 	if (args.includes('--help') || args.includes('-h')) {
 		showHelp();
 		return;
 	}
 	
-	for (const arg of args) {
-		if (arg === '--external' || arg === '-e') {
-			external = true;
-		} else if (arg === '--update-cursor-rule') {
-			updateCursor = true;
-		} else if (Object.values(OUTPUT_FORMATS).includes(arg)) {
-			format = arg;
-		} else if (!arg.startsWith('-')) {
-			outputFile = arg;
-		}
-	}
-
-	if (!Object.values(OUTPUT_FORMATS).includes(format)) {
-		console.error(
-			`Invalid format: ${format}. Available formats: ${Object.values(OUTPUT_FORMATS).join(', ')}`
-		);
-		process.exit(1);
-	}
-
 	console.log('🔍 Scanning documentation directory...');
 	const files = scanDirectory(DOCS_DIR);
 	console.log(`✅ Found ${files.length} documentation files`);
-	if (external) {
-		console.log(`🌐 Generating external URLs with base: ${BASE_URL}`);
-	}
 	console.log();
 
-	// Update cursor rule if requested
-	if (updateCursor) {
-		updateCursorRule(files);
-		return;
-	}
-
-	let output;
-	switch (format) {
-		case OUTPUT_FORMATS.markdown:
-			output = generateMarkdown(files, external);
-			break;
-		case OUTPUT_FORMATS.json:
-			output = generateJSON(files, external);
-			break;
-		case OUTPUT_FORMATS.console:
-		default:
-			output = generateConsole(files, external);
-			break;
-	}
-
-	if (outputFile) {
-		fs.writeFileSync(outputFile, output, 'utf-8');
-		console.log(`💾 Output written to: ${outputFile}`);
-	} else {
-		console.log(output);
-	}
+	// Create/update cursor rule
+	updateCursorRule(files);
 }
 
 /**
