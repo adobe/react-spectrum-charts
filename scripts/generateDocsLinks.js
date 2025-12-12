@@ -1,7 +1,6 @@
 #!/usr/bin/env node
-
 /*
- * Copyright 2024 Adobe. All rights reserved.
+ * Copyright 2025 Adobe. All rights reserved.
  * This file is licensed to you under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License. You may obtain a copy
  * of the License at http://www.apache.org/licenses/LICENSE-2.0
@@ -12,6 +11,7 @@
  * governing permissions and limitations under the License.
  */
 
+/* eslint-disable @typescript-eslint/no-var-requires */
 const fs = require('fs');
 const path = require('path');
 
@@ -354,49 +354,12 @@ function getComponentMaturityLevels() {
 }
 
 /**
- * Organizes files into a hierarchical structure
- * @param {Array} files - Array of file objects
- * @returns {Object}
- */
-function organizeFiles(files) {
-	const organized = {};
-
-	for (const file of files) {
-		const pathParts = file.path.split(path.sep);
-		let current = organized;
-
-		for (let i = 0; i < pathParts.length - 1; i++) {
-			const part = pathParts[i];
-			if (!current[part]) {
-				current[part] = { _files: [], _subdirs: {} };
-			}
-			current = current[part]._subdirs;
-		}
-
-		const parentKey = pathParts.length > 1 ? pathParts[pathParts.length - 2] : '_root';
-		if (!current[parentKey]) {
-			current[parentKey] = { _files: [], _subdirs: {} };
-		}
-		current[parentKey]._files.push(file);
-	}
-
-	// Handle root level files
-	const rootFiles = files.filter((f) => !f.path.includes(path.sep));
-	if (rootFiles.length > 0) {
-		organized._root = { _files: rootFiles, _subdirs: {} };
-	}
-
-	return organized;
-}
-
-/**
  * Generates markdown output
  * @param {Array} files - Array of file objects
  * @param {boolean} external - Whether to generate external URLs
  * @returns {string}
  */
 function generateMarkdown(files, external = false) {
-	const organized = organizeFiles(files);
 	let markdown = '# Documentation Links\n\n';
 	markdown += `Generated on: ${new Date().toISOString()}\n\n`;
 	if (external) {
