@@ -8,6 +8,7 @@ cd ../utils && yarn unlink 2>/dev/null || true
 cd ../locales && yarn unlink 2>/dev/null || true
 cd ../vega-spec-builder && yarn unlink 2>/dev/null || true
 cd ../react-spectrum-charts && yarn unlink 2>/dev/null || true
+cd ../mcp && yarn unlink 2>/dev/null || true
 cd ../..
 
 # Build all packages
@@ -22,6 +23,7 @@ cd ../utils && yarn link
 cd ../locales && yarn link
 cd ../vega-spec-builder && yarn link
 cd ../react-spectrum-charts && yarn link
+cd ../mcp && yarn link
 
 echo ""
 echo "✓ All packages linked!"

@@ -8,6 +8,7 @@ cd ../utils && yarn unlink
 cd ../locales && yarn unlink
 cd ../vega-spec-builder && yarn unlink
 cd ../react-spectrum-charts && yarn unlink
+cd ../mcp && yarn unlink
 
 echo ""
 echo "✓ All packages unlinked!"

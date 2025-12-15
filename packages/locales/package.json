@@ -11,6 +11,10 @@
   ],
   "author": "marshallpete",
   "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/adobe/react-spectrum-charts.git"
+  },
   "scripts": {
     "build": "webpack --config ./webpack.config.js",
     "clean": "rm -rf dist",
