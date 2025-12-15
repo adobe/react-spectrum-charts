@@ -196,19 +196,37 @@ describe('getSubLabelAxis()', () => {
 
 describe('getTickCount()', () => {
   test('when maxTicks is provided, it should use maxTicks as the max value', () => {
-    expect(getTickCount('left', 5)).toEqual({
+    expect(getTickCount('left', undefined,5)).toEqual({
       signal: 'clamp(ceil(height/100), 2, 5)',
     });
-    expect(getTickCount('bottom', 15)).toEqual({
+    expect(getTickCount('bottom', undefined,15)).toEqual({
       signal: 'clamp(ceil(width/100), 2, 15)',
     });
   });
 
-  test('when grid is true and maxTicks is not provided, it should use 10 as the max value', () => {
-    expect(getTickCount('left', undefined, true)).toEqual({
+  test('when tickCountMinimum is provided, it should use tickCountMinimum as the min value', () => {
+    expect(getTickCount('left', 3, undefined, false)).toEqual({
+      signal: 'clamp(ceil(height/100), 3, 10)',
+    });
+    expect(getTickCount('bottom', 5, undefined, false)).toEqual({
+      signal: 'clamp(ceil(width/100), 5, 10)',
+    });
+  });
+
+  test('when both tickCountMinimum and tickCountLimit are provided, it should use tickCountMinimum as the min value and tickCountLimit as the max value', () => {
+    expect(getTickCount('left', 3, 5, false)).toEqual({
+      signal: 'clamp(ceil(height/100), 3, 5)',
+    });
+    expect(getTickCount('bottom', 5, 15, false)).toEqual({
+      signal: 'clamp(ceil(width/100), 5, 15)',
+    });
+  });
+
+  test('when grid is true and maxTicks or tickCountMinimum is not provided, it should use 2 as the min value and 10 as the max value', () => {
+    expect(getTickCount('left', undefined, undefined, true)).toEqual({
       signal: 'clamp(ceil(height/100), 2, 10)',
     });
-    expect(getTickCount('bottom', undefined, true)).toEqual({
+    expect(getTickCount('bottom', undefined, undefined, true)).toEqual({
       signal: 'clamp(ceil(width/100), 2, 10)',
     });
   });

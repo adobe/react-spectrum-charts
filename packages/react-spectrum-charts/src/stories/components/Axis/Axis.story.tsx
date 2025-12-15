@@ -357,6 +357,16 @@ CurrencyFormatSpecifier.args = {
   title: 'Conversion Rate',
 };
 
+const TickCountMinimum = bindWithProps(LinearYAxisStory);
+TickCountMinimum.args = {
+  position: 'left',
+  baseline: true,
+  grid: true,
+  labelFormat: 'linear',
+  ticks: true,
+  tickCountMinimum: 3,
+};
+
 const TickCountLimit = bindWithProps(TimeAxisBarStory);
 TickCountLimit.args = {
   position: 'right',
@@ -396,4 +406,5 @@ export {
   CurrencyLocale,
   CurrencyFormatSpecifier,
   TickCountLimit,
+  TickCountMinimum,
 };

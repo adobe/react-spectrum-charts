@@ -36,6 +36,7 @@ export const getDefaultAxis = (axisOptions: AxisSpecOptions, scaleName: string):
     labelLimit,
     labelOrientation,
     tickCountLimit,
+    tickCountMinimum,
     position,
     scaleType,
     ticks,
@@ -52,7 +53,7 @@ export const getDefaultAxis = (axisOptions: AxisSpecOptions, scaleName: string):
     orient: position,
     grid,
     ticks,
-    tickCount: getTickCount(position, tickCountLimit, grid),
+    tickCount: getTickCount(position, tickCountMinimum, tickCountLimit, grid),
     tickMinStep: scaleType !== 'linear' ? undefined : tickMinStep, //only supported for linear scales
     title,
     labelAngle: getLabelAngle(labelOrientation),
@@ -338,18 +339,29 @@ const getDefaultOpposingScaleNameFromPosition = (position: Position) => {
  * The final number of ticks may vary as Vega optimizes for visually pleasing values and intervals.
  *
  * @param position The position of the axis
+ * @param tickCountMinimum The minimum number of ticks
  * @param tickCountLimit The upper limit for the number of ticks
  * @param grid Whether grid lines are enabled
  * @returns tickCount production rule for Vega
  */
-export const getTickCount = (position: Position, tickCountLimit?: number, grid?: boolean): SignalRef | undefined => {
+export const getTickCount = (position: Position, tickCountMinimum?: number, tickCountLimit?: number, grid?: boolean): SignalRef | undefined => {
   const range = ['top', 'bottom'].includes(position) ? 'width' : 'height';
 
   // 0 is a valid tickCountLimit value.
   if (tickCountLimit !== undefined) {
+    // both min and max are provided
+    if (tickCountMinimum !== undefined) {
+      return {
+        signal: `clamp(ceil(${range}/100), ${tickCountMinimum}, ${tickCountLimit})`,
+      };
+    }
     // divide the range by 100 to get the ideal number of ticks (grid lines)
     return {
       signal: `clamp(ceil(${range}/100), 2, ${tickCountLimit})`,
+    };
+  } else if (tickCountMinimum !== undefined) {
+    return {
+      signal: `clamp(ceil(${range}/100), ${tickCountMinimum}, 10)`,
     };
   } else if (grid) {
     // divide the range by 100 to get the ideal number of ticks (grid lines)

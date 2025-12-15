@@ -39,6 +39,8 @@ const Axis: FC<AxisProps> = ({
   range = undefined,
   subLabels,
   ticks = false,
+  tickCountLimit = undefined,
+  tickCountMinimum = undefined,
   tickMinStep = undefined,
   title = undefined,
 }) => {
