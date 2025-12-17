@@ -155,7 +155,7 @@
     "tsconfig-paths-webpack-plugin": "^4.0.0",
     "typescript": "^5.4.5",
     "vega": "^5.32.0",
-    "vega-lite": "^5.18.1",
+    "vega-lite": "^6.0.0",
     "webpack": "^5.75.0",
     "webpack-cli": "^5.0.1",
     "webpack-dev-server": "^4.11.1",
