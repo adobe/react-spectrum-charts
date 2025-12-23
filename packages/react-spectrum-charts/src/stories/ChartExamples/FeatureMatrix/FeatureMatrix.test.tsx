@@ -45,7 +45,7 @@ describe('FeatureMatrix', () => {
     // horizontal trendline
     const horizontalTrendline = await findMarksByGroupName(chart, 'scatter0Trendline0', 'line');
     expect(horizontalTrendline).toBeInTheDocument();
-    expect(horizontalTrendline).toHaveAttribute('x2', '448');
+    expect(horizontalTrendline).toHaveAttribute('x2', '452');
     expect(horizontalTrendline).toHaveAttribute('y2', '0');
     expect(horizontalTrendline).toHaveAttribute('stroke', colors['gray-900']);
     expect(horizontalTrendline).toHaveAttribute('stroke-width', '1');

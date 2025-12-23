@@ -17,6 +17,7 @@ import {
   addContinuousDimensionScale,
   addDomainFields,
   addFieldToFacetScaleDomain,
+  setScalePadding,
   getPadding,
   getScaleName,
 } from './scaleSpecBuilder';
@@ -84,6 +85,15 @@ describe('addFieldToFacetScaleDomain()', () => {
     const scales: Scale[] = [{ name: COLOR_SCALE, type: 'ordinal' }];
     addFieldToFacetScaleDomain(scales, COLOR_SCALE, { value: 'red-500' });
     expect(scales).toStrictEqual([{ name: COLOR_SCALE, type: 'ordinal' }]);
+  });
+});
+
+describe('setScalePadding()', () => {
+  test('should set padding for a scale', () => {
+    const scales: Scale[] = [{ name: 'yLinear', type: 'linear' }];
+    setScalePadding(scales, { axis: 'y', type: 'linear', padding: 10 });
+    expect(scales[0]).toHaveProperty('padding', 10);
+    expect(scales[0]).toHaveProperty('paddingOuter', 10);
   });
 });
 

@@ -157,6 +157,28 @@ export const addFieldToFacetScaleDomain = (
   }
 };
 
+/**
+ * Sets the padding for a scale
+ * @param scales
+ * @param axis
+ * @param type
+ * @param padding
+ */
+export const setScalePadding = (
+  scales: Scale[],
+  { axis, type, padding }: { axis: 'x' | 'y'; type: SupportedScaleType; padding: number }
+) => {
+  const index = getScaleIndexByType(scales, type, axis);
+  const scale = scales[index] as any;
+  
+  if (scale.padding === undefined) {
+    scale.padding = padding;
+  }
+  if (scale.paddingOuter === undefined) {
+    scale.paddingOuter = padding;
+  }
+};
+
 export const generateScale = (type: SupportedScaleType, axis: AxisType, options?: Partial<Scale>): Scale => {
   return {
     ...getDefaultScale(type, axis),

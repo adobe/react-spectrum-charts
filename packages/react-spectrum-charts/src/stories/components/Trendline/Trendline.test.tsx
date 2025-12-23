@@ -164,7 +164,7 @@ describe('Trendline', () => {
 
       // if x2 is 0, then the trendline is vertical
       expect(allElementsHaveAttributeValue(trendlines, 'x2', '0')).toBeTruthy();
-      expect(allElementsHaveAttributeValue(trendlines, 'y2', '-405')).toBeTruthy();
+      expect(allElementsHaveAttributeValue(trendlines, 'y2', '-410')).toBeTruthy();
     });
   });
 

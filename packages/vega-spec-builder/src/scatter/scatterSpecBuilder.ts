@@ -25,13 +25,15 @@ import {
   OPACITY_SCALE,
   SELECTED_ITEM,
   SYMBOL_SIZE_SCALE,
+  SCATTER_DIMENSION_PADDING,
+  SCATTER_METRIC_PADDING,
 } from '@spectrum-charts/constants';
 import { toCamelCase } from '@spectrum-charts/utils';
 
 import { addTooltipData, addTooltipSignals } from '../chartTooltip/chartTooltipUtils';
 import { addTimeTransform, getFilteredTooltipData, getTableData } from '../data/dataUtils';
 import { getInteractiveMarkName, hasPopover, isInteractive } from '../marks/markUtils';
-import { addContinuousDimensionScale, addFieldToFacetScaleDomain, addMetricScale } from '../scale/scaleSpecBuilder';
+import { addContinuousDimensionScale, addFieldToFacetScaleDomain, setScalePadding, addMetricScale } from '../scale/scaleSpecBuilder';
 import { setScatterPathScales } from '../scatterPath';
 import { addHoveredItemSignal } from '../signal/signalSpecBuilder';
 import { addUserMetaInteractiveMark } from '../specUtils';
@@ -158,10 +160,13 @@ export const addSignals = produce<Signal[], [ScatterSpecOptions]>((signals, scat
 export const setScales = produce<Scale[], [ScatterSpecOptions]>((scales, scatterOptions) => {
   const { color, colorScaleType, dimension, dimensionScaleType, lineType, lineWidth, metric, opacity, size } =
     scatterOptions;
-  // add dimension scale
-  addContinuousDimensionScale(scales, { scaleType: dimensionScaleType, dimension });
-  // add metric scale
+
+  // add dimension scale and apply padding
+  addContinuousDimensionScale(scales, { scaleType: dimensionScaleType, dimension, padding: SCATTER_DIMENSION_PADDING });
+  // add metric scale and apply padding
   addMetricScale(scales, [metric]);
+  setScalePadding(scales, { axis: 'y', type: 'linear', padding: SCATTER_METRIC_PADDING });
+
   if (colorScaleType === 'linear') {
     // add color to the color domain
     addFieldToFacetScaleDomain(scales, LINEAR_COLOR_SCALE, color);

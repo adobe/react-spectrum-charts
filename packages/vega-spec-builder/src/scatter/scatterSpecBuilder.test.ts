@@ -109,6 +109,7 @@ describe('setScales()', () => {
   test('should add all the correct scales', () => {
     const scales = setScales([], defaultScatterOptions);
     expect(scales).toHaveLength(2);
+    console.log('SCALES', scales);
     expect(scales[0].name).toBe('xLinear');
     expect(scales[1].name).toBe('yLinear');
   });
