@@ -32,6 +32,8 @@ export interface ScatterOptions {
   name?: string;
   /** Key in the data that is used as the metric */
   metric?: string;
+  /** Whether to clip the scatter plot to the plot area.*/
+  clip?: boolean;
   /**
    * point fill and stroke color
    * uses a key in the data that will map to the color scale or a static color value

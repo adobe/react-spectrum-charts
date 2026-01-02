@@ -235,6 +235,7 @@ Size.args = {
   size: 'weight',
   dimension: 'speedNormal',
   metric: 'handlingNormal',
+  clip: true,
 };
 
 const Tooltip = bindWithProps(ScatterStory);

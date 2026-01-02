@@ -30,7 +30,7 @@ describe('addScatterMarks()', () => {
     expect(marks[0].name).toBe('scatter0_group');
     expect(marks[0].type).toBe('group');
     expect((marks[0] as GroupMark).marks).toHaveLength(1);
-    expect(marks[0].clip).toBe(true);
+
   });
 
   test('should use "multiply" blend mode in light mode', () => {
@@ -50,6 +50,12 @@ describe('addScatterMarks()', () => {
     const marks = addScatterMarks([], { ...defaultScatterOptions, trendlines: [{}] });
     expect(marks).toHaveLength(2);
     expect(marks[1].name).toBe('scatter0Trendline0_group');
+  });
+
+  test('should make clip true to enable disable group clipping', () => {
+    const marks = addScatterMarks([], { ...defaultScatterOptions, clip: true });
+    expect(marks).toHaveLength(1);
+    expect(marks[0].clip).toBe(true);
   });
 });
 
