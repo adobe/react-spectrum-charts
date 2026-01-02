@@ -576,7 +576,7 @@ describe('barSpecBuilder', () => {
         type: 'linear',
         domain: { data: 'yLinearPrimaryDomain', fields: [DEFAULT_METRIC] },
         range: 'height',
-      padding: LINEAR_PADDING,
+        padding: LINEAR_PADDING,
         nice: true,
         zero: true,
       };
