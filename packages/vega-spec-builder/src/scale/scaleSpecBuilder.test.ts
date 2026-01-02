@@ -17,7 +17,7 @@ import {
   addContinuousDimensionScale,
   addDomainFields,
   addFieldToFacetScaleDomain,
-  setScalePadding,
+  addMetricScale,
   getPadding,
   getScaleName,
 } from './scaleSpecBuilder';
@@ -88,15 +88,6 @@ describe('addFieldToFacetScaleDomain()', () => {
   });
 });
 
-describe('setScalePadding()', () => {
-  test('should set padding for a scale', () => {
-    const scales: Scale[] = [{ name: 'yLinear', type: 'linear' }];
-    setScalePadding(scales, { axis: 'y', type: 'linear', padding: 10 });
-    expect(scales[0]).toHaveProperty('padding', 10);
-    expect(scales[0]).toHaveProperty('paddingOuter', 10);
-  });
-});
-
 describe('addContinuousDimensionScale()', () => {
   test('should override padding if it exists', () => {
     const scales = [];
@@ -107,6 +98,16 @@ describe('addContinuousDimensionScale()', () => {
     const scales: Scale[] = [{ type: 'band', name: 'xBand', paddingInner: 0.3, paddingOuter: 0.7 }];
     addContinuousDimensionScale(scales, { scaleType: 'band', dimension: 'x', padding: 0 });
     expect(scales[0]).toHaveProperty('paddingOuter', 0);
+  });
+});
+
+describe('addMetricScale()', () => {
+  test('should override padding if it exists', () => {
+    const scales: Scale[] = [];
+    // add metric scale with custom padding
+    addMetricScale(scales, ['value'], 'y', undefined, undefined, { padding: 12 });
+    expect(scales[0].name).toBe('yLinear');
+    expect(scales[0]).toHaveProperty('padding', 12);
   });
 });
 

@@ -30,6 +30,7 @@ import {
   DEFAULT_METRIC,
   DEFAULT_OPACITY_RULE,
   DEFAULT_SECONDARY_COLOR,
+  LINEAR_PADDING,
   DIMENSION_HOVER_AREA,
   FILTERED_TABLE,
   HOVERED_ITEM,
@@ -74,6 +75,7 @@ const defaultMetricScale: Scale = {
   name: 'yLinear',
   type: 'linear',
   range: 'height',
+  padding: LINEAR_PADDING,
   nice: true,
   zero: true,
   domain: defaultMetricScaleDomain,
@@ -574,6 +576,7 @@ describe('barSpecBuilder', () => {
         type: 'linear',
         domain: { data: 'yLinearPrimaryDomain', fields: [DEFAULT_METRIC] },
         range: 'height',
+      padding: LINEAR_PADDING,
         nice: true,
         zero: true,
       };

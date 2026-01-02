@@ -113,16 +113,22 @@ const overridePadding = produce<Scale, [number]>((scale, padding) => {
  * @param metricAxis
  * @param scaleName
  * @param domainDataKey
+ * @param padding
  */
 export const addMetricScale = (
   scales: Scale[],
   metricKeys: string[],
   metricAxis: AxisType = 'y',
   scaleName?: string,
-  domainDataKey?: string
+  domainDataKey?: string,
+  { padding }: { padding?: number } = {}
 ) => {
   const index = getScaleIndexByType(scales, 'linear', metricAxis, scaleName, domainDataKey);
   scales[index] = addDomainFields(scales[index], metricKeys);
+
+  if (padding !== undefined) {
+    scales[index] = overridePadding(scales[index], padding);
+  }
 };
 
 /**
@@ -154,28 +160,6 @@ export const addFieldToFacetScaleDomain = (
     const index = getScaleIndexByName(scales, facetType);
     const facetField = Array.isArray(facetValue) ? facetValue[0] : facetValue;
     scales[index] = addDomainFields(scales[index], [facetField]);
-  }
-};
-
-/**
- * Sets the padding for a scale
- * @param scales
- * @param axis
- * @param type
- * @param padding
- */
-export const setScalePadding = (
-  scales: Scale[],
-  { axis, type, padding }: { axis: 'x' | 'y'; type: SupportedScaleType; padding: number }
-) => {
-  const index = getScaleIndexByType(scales, type, axis);
-  const scale = scales[index] as any;
-  
-  if (scale.padding === undefined) {
-    scale.padding = padding;
-  }
-  if (scale.paddingOuter === undefined) {
-    scale.paddingOuter = padding;
   }
 };
 
@@ -211,7 +195,8 @@ export const getDefaultScale = (
   }
   // metric axis properties
   if (scale.type === 'linear' && !isDimensionAxis) {
-    return { ...scale, nice: true, zero: true };
+    // add default metric padding (0) so the property exists
+    return { ...scale, nice: true, zero: true, padding: LINEAR_PADDING };
   }
   return scale;
 };

@@ -143,6 +143,7 @@ const defaultSpec = initializeSpec({
       domain: { data: FILTERED_TABLE, fields: ['value0', 'value1'] },
       name: 'yLinear',
       nice: true,
+      padding: LINEAR_PADDING,
       range: 'height',
       type: 'linear',
       zero: true,

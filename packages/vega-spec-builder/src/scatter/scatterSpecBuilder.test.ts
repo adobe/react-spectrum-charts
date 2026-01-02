@@ -18,6 +18,8 @@ import {
   LINE_WIDTH_SCALE,
   OPACITY_SCALE,
   SYMBOL_SIZE_SCALE,
+  SCATTER_DIMENSION_PADDING,
+  SCATTER_METRIC_PADDING
 } from '@spectrum-charts/constants';
 
 import { defaultSignals } from '../specTestUtils';
@@ -109,9 +111,17 @@ describe('setScales()', () => {
   test('should add all the correct scales', () => {
     const scales = setScales([], defaultScatterOptions);
     expect(scales).toHaveLength(2);
-    console.log('SCALES', scales);
     expect(scales[0].name).toBe('xLinear');
     expect(scales[1].name).toBe('yLinear');
+  });
+  test('sets padding on linear dimension and metric scales', () => {
+    const scales = setScales([], defaultScatterOptions);
+    expect(scales.find((s) => s.name === 'xLinear')).toEqual(
+      expect.objectContaining({ padding: SCATTER_DIMENSION_PADDING })
+    );
+    expect(scales.find((s) => s.name === 'yLinear')).toEqual(
+      expect.objectContaining({ padding: SCATTER_METRIC_PADDING })
+    );
   });
   test('should add the color scale if color is a reference to a key', () => {
     const scales = setScales([], { ...defaultScatterOptions, color: DEFAULT_COLOR });
