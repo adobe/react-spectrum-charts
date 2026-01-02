@@ -30,6 +30,7 @@ describe('addScatterMarks()', () => {
     expect(marks[0].name).toBe('scatter0_group');
     expect(marks[0].type).toBe('group');
     expect((marks[0] as GroupMark).marks).toHaveLength(1);
+    expect(marks[0].clip).toBe(true);
   });
 
   test('should use "multiply" blend mode in light mode', () => {
