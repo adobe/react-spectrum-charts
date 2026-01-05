@@ -147,6 +147,12 @@ The `Trendline` component is fully supported by `Scatter`. To plot a trendline, 
             <td>Symbol color.<br/>If a string is provided, this string is the key in the data that symbols will be grouped into series by. Each unique value for this key in the provided data will map to a color from the color scale.<br/>If an object with a value is provided, this will set the color for all symbols.</td>
         </tr>
         <tr>
+            <td>clip</td>
+            <td>boolean</td>
+            <td>false</td>
+            <td>If set to true, inner plot content will be clipped at the plot borders rather than extending into the surrounding space.</td>
+        </tr>
+        <tr>
             <td>colorScaleType</td>
             <td>'linear' | 'ordinal'</td>
             <td>'linear'</td>

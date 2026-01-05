@@ -32,7 +32,7 @@ export interface ScatterOptions {
   name?: string;
   /** Key in the data that is used as the metric */
   metric?: string;
-  /** Whether to clip the scatter plot to the plot area.*/
+  /** Restricts scatter plot contents to the plot boundaries.*/
   clip?: boolean;
   /**
    * point fill and stroke color
