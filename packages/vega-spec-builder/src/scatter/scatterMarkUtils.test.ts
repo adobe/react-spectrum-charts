@@ -50,6 +50,11 @@ describe('addScatterMarks()', () => {
     expect(marks).toHaveLength(2);
     expect(marks[1].name).toBe('scatter0Trendline0_group');
   });
+  test('should make clip true to enable disable group clipping', () => {
+    const marks = addScatterMarks([], { ...defaultScatterOptions, clip: true });
+    expect(marks).toHaveLength(1);
+    expect(marks[0].clip).toBe(true);
+  });
 });
 
 describe('getOpacity()', () => {

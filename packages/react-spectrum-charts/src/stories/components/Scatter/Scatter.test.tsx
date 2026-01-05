@@ -166,7 +166,7 @@ describe('Scatter', () => {
     // small circle (radius 3)
     expect(points[0]).toHaveAttribute('d', 'M3,0A3,3,0,1,1,-3,0A3,3,0,1,1,3,0');
     // big circle (radius 8)
-    expect(points[15]).toHaveAttribute('d', 'M8,0A8,8,0,1,1,-8,0A8,8,0,1,1,8,0');
+    expect(points[15]).toHaveAttribute('d', 'M20,0A20,20,0,1,1,-20,0A20,20,0,1,1,20,0');
 
     const legendEntries = getAllLegendEntries(chart);
     expect(legendEntries).toHaveLength(6);

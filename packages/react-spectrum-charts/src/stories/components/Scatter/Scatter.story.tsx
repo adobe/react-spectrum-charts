@@ -155,6 +155,22 @@ const ScatterStory: StoryFn<typeof Scatter> = (args): ReactElement => {
   );
 };
 
+const ScatterSizeStory: StoryFn<typeof Scatter> = (args): ReactElement => {
+  const colors: ChartColors = args.colorScaleType === 'linear' ? 'sequentialViridis5' : 'categorical16';
+  const chartProps = useChartProps({ ...defaultChartProps, colors });
+  const legendProps = getLegendProps(args);
+
+  return (
+    <Chart {...chartProps} symbolSizes={[6, 40]}>
+      <Axis position="bottom" grid ticks baseline title={marioKeyTitle[args.dimension as MarioDataKey]} />
+      <Axis position="left" grid ticks baseline title={marioKeyTitle[args.metric as MarioDataKey]} />
+      <Scatter {...args} />
+      <Legend {...legendProps} highlight />
+      <Title text="Mario Kart 8 Character Data" />
+    </Chart>
+  );
+};
+
 const dialog = (item: Datum): ReactNode => {
   return (
     <Content>
@@ -230,11 +246,12 @@ Popover.args = {
   ],
 };
 
-const Size = bindWithProps(ScatterStory);
+const Size = bindWithProps(ScatterSizeStory);
 Size.args = {
   size: 'weight',
   dimension: 'speedNormal',
   metric: 'handlingNormal',
+  clip: true,
 };
 
 const Tooltip = bindWithProps(ScatterStory);
