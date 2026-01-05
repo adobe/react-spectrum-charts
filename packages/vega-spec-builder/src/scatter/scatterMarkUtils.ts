@@ -39,6 +39,7 @@ export const addScatterMarks = produce<Mark[], [ScatterSpecOptions]>((marks, opt
   const scatterGroup: GroupMark = {
     name: `${name}_group`,
     type: 'group',
+    clip: options.clip ?? false,
     marks: [
       getScatterMark(options),
       ...getScatterAnnotationMarks(options),
