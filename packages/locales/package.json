@@ -1,6 +1,6 @@
 {
   "name": "@spectrum-charts/locales",
-  "version": "1.25.0",
+  "version": "1.26.0",
   "description": "Locales used in spectrum charts",
   "browser": "dist/index.js",
   "main": "dist/index.js",
