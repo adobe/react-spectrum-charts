@@ -13,7 +13,15 @@ import { Fragment, ReactNode } from 'react';
 
 import { View } from 'vega';
 
-import { SELECTED_GROUP, SELECTED_ITEM, SELECTED_SERIES, SERIES_ID } from '@spectrum-charts/constants';
+import {
+  DIMENSION_HOVER_AREA,
+  HOVERED_ITEM,
+  HOVERED_SERIES,
+  SELECTED_GROUP,
+  SELECTED_ITEM,
+  SELECTED_SERIES,
+  SERIES_ID,
+} from '@spectrum-charts/constants';
 import { combineNames, toCamelCase } from '@spectrum-charts/utils';
 import { Datum } from '@spectrum-charts/vega-spec-builder';
 
@@ -488,9 +496,27 @@ export const setSelectedSignals = ({
 
   const selectedGroupKey = Object.keys(selectedData ?? {}).find((k) => k.endsWith('_selectedGroupId'));
 
-  if (selectedGroupKey) {
-    view.signal(SELECTED_GROUP, selectedData?.[selectedGroupKey] ?? null);
-  }
+  // Always write the group signal so it doesn't get "stuck" with a previous value.
+  view.signal(SELECTED_GROUP, selectedGroupKey ? selectedData?.[selectedGroupKey] ?? null : null);
+};
+
+/**
+ * Clears hover-related signals for a given mark/component name.
+ */
+export const clearHoverSignals = (
+  view: View,
+  componentName: string,
+  knownSignalNames: ReadonlySet<string>
+): void => {
+  const safeClear = (signalName: string) => {
+    if (knownSignalNames.has(signalName)) {
+      view.signal(signalName, null);
+    }
+  };
+
+  safeClear(`${componentName}_${HOVERED_ITEM}`);
+  safeClear(`${componentName}_${HOVERED_SERIES}`);
+  safeClear(`${componentName}_${DIMENSION_HOVER_AREA}_${HOVERED_ITEM}`);
 };
 
 /**

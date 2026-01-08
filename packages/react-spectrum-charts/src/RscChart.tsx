@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { MutableRefObject, forwardRef, useEffect, useMemo } from 'react';
+import { MutableRefObject, forwardRef, useEffect, useMemo, useState } from 'react';
 
 import { ActionButton, Dialog, DialogTrigger, View as SpectrumView } from '@adobe/react-spectrum';
 import { COMPONENT_NAME, DEFAULT_SYMBOL_SHAPES, DEFAULT_SYMBOL_SIZES } from '@spectrum-charts/constants';
@@ -24,13 +24,14 @@ import usePopovers, { PopoverDetail } from './hooks/usePopovers';
 import useSpec from './hooks/useSpec';
 import useSpecProps from './hooks/useSpecProps';
 import { RscChartProps } from './types';
-import { sanitizeRscChartChildren } from './utils';
+import { clearHoverSignals, sanitizeRscChartChildren, setSelectedSignals } from './utils';
 
 interface ChartDialogProps {
-  datum: Datum | null;
   targetElement: MutableRefObject<HTMLElement | null>;
   setIsPopoverOpen: (isOpen: boolean) => void;
   popover: PopoverDetail;
+  idKey: string;
+  specSignalNames: ReadonlySet<string>;
 }
 
 export const RscChart = forwardRef<ChartHandle, RscChartProps>((props, forwardedRef) => {
@@ -61,7 +62,7 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>((props, forwarded
     idKey,
   } = props;
 
-  const { chartView, chartId, selectedData, popoverAnchorRef, isPopoverOpen, setIsPopoverOpen } = useChartContext();
+  const { chartView, chartId, popoverAnchorRef, isPopoverOpen, setIsPopoverOpen } = useChartContext();
 
   const sanitizedChildren = useMemo(() => sanitizeRscChartChildren(props.children), [props.children]);
 
@@ -93,18 +94,15 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>((props, forwarded
 
   const { signals, targetStyle, tooltipOptions, onNewView } = useChartInteractions(props, sanitizedChildren);
   const chartConfig = useMemo(() => getChartConfig(config, colorScheme, s2), [config, colorScheme, s2]);
+  const specSignalNames = useMemo(() => new Set(spec.signals?.map((s) => s.name) ?? []), [spec.signals]);
 
   useEffect(() => {
     const tooltipElement = document.getElementById('vg-tooltip-element');
-    if (!tooltipElement) return;
+    if (tooltipElement) {
     // Hide tooltips on all charts when a popover is open
     tooltipElement.hidden = isPopoverOpen;
-
-    // if the popover is closed, reset the selected data
-    if (!isPopoverOpen) {
-      selectedData.current = null;
     }
-  }, [isPopoverOpen, selectedData]);
+  }, [isPopoverOpen]);
 
   useChartImperativeHandle(forwardedRef, { chartView, title });
   const popovers = usePopovers(sanitizedChildren);
@@ -135,10 +133,11 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>((props, forwarded
       {popovers.map((popover) => (
         <ChartDialog
           key={popover.key}
-          datum={selectedData.current}
           targetElement={popoverAnchorRef}
           setIsPopoverOpen={setIsPopoverOpen}
           popover={popover}
+          idKey={idKey}
+          specSignalNames={specSignalNames}
         />
       ))}
     </>
@@ -146,7 +145,9 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>((props, forwarded
 });
 RscChart.displayName = 'RscChart';
 
-const ChartDialog = ({ datum, popover, setIsPopoverOpen, targetElement }: ChartDialogProps) => {
+const ChartDialog = ({ popover, setIsPopoverOpen, targetElement, idKey, specSignalNames }: ChartDialogProps) => {
+  const { chartView, selectedData, selectedDataName } = useChartContext();
+  const [renderDatum, setRenderDatum] = useState<Datum | null>(null);
   const { chartPopoverProps, name } = popover;
   const { children, onOpenChange, containerPadding, contentMargin, rightClick, ...dialogProps } = chartPopoverProps;
   const minWidth = dialogProps.minWidth ?? 0;
@@ -159,6 +160,29 @@ const ChartDialog = ({ datum, popover, setIsPopoverOpen, targetElement }: ChartD
       onOpenChange={(isOpen) => {
         onOpenChange?.(isOpen);
         setIsPopoverOpen(isOpen);
+
+        if (chartView.current) {
+          if (isOpen) {
+            // Cache render data so there isn't a flicker between view renders.
+            setRenderDatum(selectedData.current);
+          }
+          if (!isOpen) {
+            const componentName = selectedDataName.current;
+            selectedData.current = null;
+            selectedDataName.current = '';
+            // Clear hover signals so hover rules don't keep marks highlighted after the popover closes.
+            if (componentName) {
+              clearHoverSignals(chartView.current, componentName, specSignalNames);
+            }
+          }
+          setSelectedSignals({
+            idKey,
+            selectedData: selectedData.current,
+            view: chartView.current,
+          });
+
+          chartView.current.run();
+        }
       }}
       placement="top"
       hideArrow
@@ -170,7 +194,7 @@ const ChartDialog = ({ datum, popover, setIsPopoverOpen, targetElement }: ChartD
       {(close) => (
         <Dialog data-testid="rsc-popover" UNSAFE_className="rsc-popover" {...dialogProps} minWidth={minWidth}>
           <SpectrumView data-testid="rsc-popover-content" gridColumn="1/-1" gridRow="1/-1" margin={contentMargin ?? 12}>
-            {datum && datum[COMPONENT_NAME] === name && children?.(datum, close)}
+            {renderDatum && renderDatum[COMPONENT_NAME] === name && children?.(renderDatum, close)}
           </SpectrumView>
         </Dialog>
       )}

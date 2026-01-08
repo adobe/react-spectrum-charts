@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { FC } from 'react';
+import { FC, useMemo } from 'react';
 
 import { renderToStaticMarkup } from 'react-dom/server';
 import { Position, Options as TooltipOptions } from 'vega-tooltip';
@@ -35,10 +35,11 @@ const useTooltipsInteractions = (props: RscChartProps, sanitizedChildren: ChartC
   const tooltips = useTooltips(sanitizedChildren);
   const { descriptions: legendDescriptions } = useLegend(sanitizedChildren);
 
-  const tooltipOptions = getTooltipOptions(colorScheme, tooltipAnchor, tooltipPlacement);
+  const tooltipOptions = useMemo(() => {
+    const options = getTooltipOptions(colorScheme, tooltipAnchor, tooltipPlacement);
 
   if (tooltips.length || legendDescriptions) {
-    tooltipOptions.formatTooltip = (value) => {
+      options.formatTooltip = (value) => {
       debugLog(debug, { title: 'Tooltip datum', contents: value });
       if (value[COMPONENT_NAME]?.startsWith('legend') && legendDescriptions && 'index' in value) {
         debugLog(debug, {
@@ -94,6 +95,9 @@ const useTooltipsInteractions = (props: RscChartProps, sanitizedChildren: ChartC
       return '';
     };
   }
+
+    return options;
+  }, [colorScheme, tooltipAnchor, tooltipPlacement, tooltips, legendDescriptions, debug, idKey, chartView, controlledHoveredIdSignal, controlledHoveredGroupSignal]);
 
   return { tooltipOptions };
 };
