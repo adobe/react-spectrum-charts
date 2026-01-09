@@ -12,6 +12,7 @@
 import { GroupMark } from 'vega';
 
 import {
+  COLOR_SCALE,
   CONTROLLED_HIGHLIGHTED_ITEM,
   DEFAULT_OPACITY_RULE,
   HOVERED_ITEM,
@@ -20,7 +21,7 @@ import {
   SYMBOL_SIZE_SCALE,
 } from '@spectrum-charts/constants';
 
-import { addScatterMarks, getOpacity, getScatterHoverMarks, getSelectRingSize } from './scatterMarkUtils';
+import { addScatterMarks, getOpacity, getScatterHoverMarks, getScatterMark, getSelectRingSize } from './scatterMarkUtils';
 import { defaultScatterOptions } from './scatterTestUtils';
 
 describe('addScatterMarks()', () => {
@@ -109,5 +110,47 @@ describe('getScatterSelectMarks()', () => {
     const sizeKey = 'weight';
     const ringSize = getSelectRingSize(sizeKey);
     expect(ringSize).toHaveProperty('signal', `pow(sqrt(scale('${SYMBOL_SIZE_SCALE}', datum.${sizeKey})) + 4, 2)`);
+  });
+});
+
+describe('getScatterMark() stroke', () => {
+  test('should use color for stroke when stroke is not provided', () => {
+    const mark = getScatterMark({ ...defaultScatterOptions, color: 'category' });
+    expect(mark.encode?.enter?.stroke).toEqual({ scale: COLOR_SCALE, field: 'category' });
+    expect(mark.encode?.enter?.fill).toEqual({ scale: COLOR_SCALE, field: 'category' });
+  });
+
+  test('should use stroke prop when provided', () => {
+    const mark = getScatterMark({
+      ...defaultScatterOptions,
+      color: 'category',
+      stroke: { value: 'gray-800' },
+    });
+    // fill should use color
+    expect(mark.encode?.enter?.fill).toEqual({ scale: COLOR_SCALE, field: 'category' });
+    // stroke should use the stroke prop value
+    expect(mark.encode?.enter?.stroke).toHaveProperty('value');
+  });
+
+  test('should use stroke as data field when stroke is a string', () => {
+    const mark = getScatterMark({
+      ...defaultScatterOptions,
+      color: 'category',
+      stroke: 'borderCategory',
+    });
+    // fill should use color
+    expect(mark.encode?.enter?.fill).toEqual({ scale: COLOR_SCALE, field: 'category' });
+    // stroke should use the stroke field
+    expect(mark.encode?.enter?.stroke).toEqual({ scale: COLOR_SCALE, field: 'borderCategory' });
+  });
+
+  test('should allow different fill and stroke colors', () => {
+    const mark = getScatterMark({
+      ...defaultScatterOptions,
+      color: { value: 'blue-500' },
+      stroke: { value: 'gray-900' },
+    });
+    // fill and stroke should be different
+    expect(mark.encode?.enter?.fill).not.toEqual(mark.encode?.enter?.stroke);
   });
 });

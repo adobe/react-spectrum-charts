@@ -69,6 +69,7 @@ export const getScatterMark = (options: ScatterSpecOptions): SymbolMark => {
     name,
     opacity,
     size,
+    stroke,
   } = options;
   return {
     name,
@@ -91,7 +92,7 @@ export const getScatterMark = (options: ScatterSpecOptions): SymbolMark => {
         size: getSymbolSizeProductionRule(size),
         strokeDash: getStrokeDashProductionRule(lineType),
         strokeWidth: getLineWidthProductionRule(lineWidth),
-        stroke: getColorProductionRule(color, colorScheme, colorScaleType),
+        stroke: getColorProductionRule(stroke ?? color, colorScheme, colorScaleType),
       },
       update: {
         opacity: getOpacity(options),

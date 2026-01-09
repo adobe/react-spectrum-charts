@@ -35,7 +35,7 @@ export interface ScatterOptions {
   /** Restricts scatter plot contents to the plot boundaries.*/
   clip?: boolean;
   /**
-   * point fill and stroke color
+   * point fill color (and stroke color if `stroke` is not provided)
    * uses a key in the data that will map to the color scale or a static color value
    */
   color?: ColorFacet;
@@ -78,6 +78,12 @@ export interface ScatterOptions {
   scatterAnnotations?: ScatterAnnotationOptions[];
   scatterPaths?: ScatterPathOptions[];
   trendlines?: TrendlineOptions[];
+  /**
+   * point border/stroke color
+   * uses a key in the data that will map to the color scale or a static color value
+   * defaults to `color` if not provided
+   */
+  stroke?: ColorFacet;
 }
 
 type ScatterOptionsWithDefaults =

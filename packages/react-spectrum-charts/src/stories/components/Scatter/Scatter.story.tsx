@@ -20,7 +20,7 @@ import { ChartColors, Datum } from '@spectrum-charts/vega-spec-builder';
 import { Chart } from '../../../Chart';
 import { Axis, ChartPopover, ChartTooltip, Legend, Scatter, Title } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
-import { characterData } from '../../../stories/data/marioKartData';
+import { characterData, overlappingPointsData } from '../../../stories/data/marioKartData';
 import { bindWithProps } from '../../../test-utils';
 import { ChartProps, LegendProps, ScatterProps } from '../../../types';
 
@@ -262,4 +262,37 @@ Tooltip.args = {
   children: <ChartTooltip>{dialog}</ChartTooltip>,
 };
 
-export { Basic, Color, ColorScaleType, LineType, OnMouseInputs, Opacity, Popover, Size, Tooltip };
+const Stroke = bindWithProps(ScatterStory);
+Stroke.args = {
+  color: 'weightClass',
+  stroke: { value: 'gray-800' },
+  lineWidth: { value: 2 },
+  dimension: 'speedNormal',
+  metric: 'handlingNormal',
+};
+
+const OverlappingPointsStory: StoryFn<typeof Scatter> = (args): ReactElement => {
+  const chartProps = useChartProps({ data: overlappingPointsData, height: 500, width: 500, colors: 'categorical6' });
+  const legendProps = getLegendProps(args);
+
+  return (
+    <Chart {...chartProps}>
+      <Axis position="bottom" grid ticks baseline title={marioKeyTitle[args.dimension as MarioDataKey]} />
+      <Axis position="left" grid ticks baseline title={marioKeyTitle[args.metric as MarioDataKey]} />
+      <Scatter {...args} />
+      <Legend {...legendProps} highlight />
+      <Title text="Overlapping Points with Stroke Border" />
+    </Chart>
+  );
+};
+
+const StrokeWithOverlappingPoints = bindWithProps(OverlappingPointsStory);
+StrokeWithOverlappingPoints.args = {
+  dimension: 'speedNormal',
+  metric: 'handlingNormal',
+  color: 'weightClass',
+  stroke: { value: 'gray-900' },
+  lineWidth: { value: 2 },
+};
+
+export { Basic, Color, ColorScaleType, LineType, OnMouseInputs, Opacity, Popover, Size, Stroke, StrokeWithOverlappingPoints, Tooltip };

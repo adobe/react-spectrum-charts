@@ -68,6 +68,7 @@ export const addScatter = produce<
       scatterPaths = [],
       size = { value: 'M' },
       trendlines = [],
+      stroke,
       ...options
     }
   ) => {
@@ -90,6 +91,7 @@ export const addScatter = produce<
       lineType,
       lineWidth,
       metric,
+      stroke,
       name: scatterName,
       opacity,
       scatterAnnotations,
