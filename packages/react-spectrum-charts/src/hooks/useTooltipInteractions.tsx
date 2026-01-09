@@ -29,6 +29,30 @@ interface LegendTooltipProps {
   domain: string[];
 }
 
+type TooltipDatum = Record<string, unknown>;
+
+const getLegendTooltipMarkup = (
+  value: TooltipDatum,
+  legendDescriptions: LegendDescription[] | undefined,
+  chartView: { current?: { scale: (name: string) => { domain: () => string[] } } } | null,
+  debug: boolean | undefined
+): string | undefined => {
+  const componentName = value[COMPONENT_NAME];
+  if (typeof componentName === 'string' && componentName.startsWith('legend') && legendDescriptions && 'index' in value) {
+    debugLog(debug, {
+      title: 'Legend descriptions',
+      contents: legendDescriptions,
+    });
+    return renderToStaticMarkup(
+      <LegendTooltip
+        value={value as { index: number }}
+        descriptions={legendDescriptions}
+        domain={chartView?.current?.scale('legend0Entries').domain() ?? []}
+      />
+    );
+  }
+};
+
 const useTooltipsInteractions = (props: RscChartProps, sanitizedChildren: ChartChildElement[]) => {
   const { chartView, controlledHoveredIdSignal, controlledHoveredGroupSignal } = useChartContext();
   const { debug, colorScheme, idKey, tooltipAnchor, tooltipPlacement } = props;
@@ -38,22 +62,11 @@ const useTooltipsInteractions = (props: RscChartProps, sanitizedChildren: ChartC
   const tooltipOptions = useMemo(() => {
     const options = getTooltipOptions(colorScheme, tooltipAnchor, tooltipPlacement);
 
-  if (tooltips.length || legendDescriptions) {
+    if (tooltips.length || legendDescriptions) {
       options.formatTooltip = (value) => {
       debugLog(debug, { title: 'Tooltip datum', contents: value });
-      if (value[COMPONENT_NAME]?.startsWith('legend') && legendDescriptions && 'index' in value) {
-        debugLog(debug, {
-          title: 'Legend descriptions',
-          contents: legendDescriptions,
-        });
-        return renderToStaticMarkup(
-          <LegendTooltip
-            value={value}
-            descriptions={legendDescriptions}
-            domain={chartView.current?.scale('legend0Entries').domain()}
-          />
-        );
-      }
+      const legendTooltip = getLegendTooltipMarkup(value, legendDescriptions, chartView, debug);
+      if (legendTooltip) return legendTooltip;
       if (value[COMPONENT_NAME]?.endsWith(DIMENSION_HOVER_AREA)) {
         const tooltipName = value[COMPONENT_NAME].replace(`_${DIMENSION_HOVER_AREA}`, '');
         const tooltip = tooltips.find((t) => t.name === tooltipName && t.targets?.includes('dimensionArea'));
