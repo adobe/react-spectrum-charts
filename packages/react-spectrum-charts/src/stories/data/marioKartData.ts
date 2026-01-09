@@ -10,6 +10,39 @@
  * governing permissions and limitations under the License.
  */
 
+// Dataset with overlapping points to demonstrate stroke visibility
+export const overlappingPointsData = [
+  // Cluster 1 - overlapping points at similar coordinates
+  { speedNormal: 2.5, handlingNormal: 4.5, weightClass: 'light', id: 1 },
+  { speedNormal: 2.6, handlingNormal: 4.6, weightClass: 'medium', id: 2 },
+  { speedNormal: 2.5, handlingNormal: 4.7, weightClass: 'heavy', id: 3 },
+  { speedNormal: 2.7, handlingNormal: 4.5, weightClass: 'light', id: 4 },
+  { speedNormal: 2.6, handlingNormal: 4.4, weightClass: 'medium', id: 5 },
+  // Cluster 2
+  { speedNormal: 3.5, handlingNormal: 3.8, weightClass: 'light', id: 6 },
+  { speedNormal: 3.6, handlingNormal: 3.9, weightClass: 'medium', id: 7 },
+  { speedNormal: 3.5, handlingNormal: 4.0, weightClass: 'heavy', id: 8 },
+  { speedNormal: 3.4, handlingNormal: 3.8, weightClass: 'light', id: 9 },
+  { speedNormal: 3.6, handlingNormal: 3.7, weightClass: 'heavy', id: 10 },
+  // Cluster 3
+  { speedNormal: 4.2, handlingNormal: 3.2, weightClass: 'medium', id: 11 },
+  { speedNormal: 4.3, handlingNormal: 3.3, weightClass: 'heavy', id: 12 },
+  { speedNormal: 4.2, handlingNormal: 3.4, weightClass: 'light', id: 13 },
+  { speedNormal: 4.1, handlingNormal: 3.2, weightClass: 'medium', id: 14 },
+  { speedNormal: 4.3, handlingNormal: 3.1, weightClass: 'heavy', id: 15 },
+  // Cluster 4 - tightly packed
+  { speedNormal: 4.7, handlingNormal: 2.7, weightClass: 'light', id: 16 },
+  { speedNormal: 4.7, handlingNormal: 2.8, weightClass: 'medium', id: 17 },
+  { speedNormal: 4.8, handlingNormal: 2.7, weightClass: 'heavy', id: 18 },
+  { speedNormal: 4.7, handlingNormal: 2.7, weightClass: 'medium', id: 19 },
+  { speedNormal: 4.8, handlingNormal: 2.8, weightClass: 'light', id: 20 },
+  // Scattered points
+  { speedNormal: 2.8, handlingNormal: 5.0, weightClass: 'light', id: 21 },
+  { speedNormal: 4.5, handlingNormal: 2.5, weightClass: 'medium', id: 22 },
+  { speedNormal: 3.8, handlingNormal: 4.2, weightClass: 'heavy', id: 23 },
+  { speedNormal: 5.0, handlingNormal: 3.0, weightClass: 'light', id: 24 },
+];
+
 export const characterData = [
   {
     weightClass: 'light',
