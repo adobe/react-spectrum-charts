@@ -21,7 +21,7 @@ export const overlappingPointsData = [
   // Cluster 2
   { speedNormal: 3.5, handlingNormal: 3.8, weightClass: 'light', id: 6 },
   { speedNormal: 3.6, handlingNormal: 3.9, weightClass: 'medium', id: 7 },
-  { speedNormal: 3.5, handlingNormal: 4.0, weightClass: 'heavy', id: 8 },
+  { speedNormal: 3.5, handlingNormal: 4, weightClass: 'heavy', id: 8 },
   { speedNormal: 3.4, handlingNormal: 3.8, weightClass: 'light', id: 9 },
   { speedNormal: 3.6, handlingNormal: 3.7, weightClass: 'heavy', id: 10 },
   // Cluster 3
@@ -37,10 +37,10 @@ export const overlappingPointsData = [
   { speedNormal: 4.7, handlingNormal: 2.7, weightClass: 'medium', id: 19 },
   { speedNormal: 4.8, handlingNormal: 2.8, weightClass: 'light', id: 20 },
   // Scattered points
-  { speedNormal: 2.8, handlingNormal: 5.0, weightClass: 'light', id: 21 },
+  { speedNormal: 2.8, handlingNormal: 5, weightClass: 'light', id: 21 },
   { speedNormal: 4.5, handlingNormal: 2.5, weightClass: 'medium', id: 22 },
   { speedNormal: 3.8, handlingNormal: 4.2, weightClass: 'heavy', id: 23 },
-  { speedNormal: 5.0, handlingNormal: 3.0, weightClass: 'light', id: 24 },
+  { speedNormal: 5, handlingNormal: 3, weightClass: 'light', id: 24 },
 ];
 
 export const characterData = [
