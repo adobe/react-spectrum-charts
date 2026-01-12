@@ -11,10 +11,19 @@
  */
 import React from 'react';
 
+import { screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+
 import { AxisThumbnail } from '../../../components';
-import { allElementsHaveAttributeValue, findAllMarksByGroupName, findChart, render } from '../../../test-utils';
+import {
+  allElementsHaveAttributeValue,
+  findAllMarksByGroupName,
+  findChart,
+  getPopoverTriggerButtons,
+  render,
+} from '../../../test-utils';
 import '../../../test-utils/__mocks__/matchMedia.mock.js';
-import { Basic, YAxis } from './AxisThumbnail.story';
+import { Basic, Popover, YAxis } from './AxisThumbnail.story';
 
 describe('AxisThumbnail', () => {
   // AxisThumbnail is not a real React component. This is test just provides test coverage for sonarqube
@@ -51,5 +60,35 @@ describe('AxisThumbnail', () => {
     // Check that thumbnail icons are drawn to the chart
     const thumbnailMarks = await findAllMarksByGroupName(chart, 'axis0AxisThumbnail0', 'image');
     expect(thumbnailMarks).toHaveLength(5);
+  });
+
+  test('AxisThumbnail popover flicker regression', async () => {
+    render(<Popover {...Popover.args} />);
+
+    const chart = await findChart();
+    expect(chart).toBeInTheDocument();
+
+    const initialThumbnails = await findAllMarksByGroupName(chart, 'axis0AxisThumbnail0', 'image');
+    expect(initialThumbnails.length).toBeGreaterThan(0);
+
+    const popoverButtons = getPopoverTriggerButtons(chart);
+    expect(popoverButtons.length).toBeGreaterThan(0);
+    await userEvent.click(popoverButtons[0]);
+
+    const popover = await screen.findByTestId('rsc-popover');
+    await waitFor(() => expect(popover).toBeInTheDocument());
+
+    // shouldn't close the popover
+    await userEvent.click(popover);
+    expect(popover).toBeInTheDocument();
+
+    // should close the popover
+    await userEvent.click(chart);
+    await waitFor(() => expect(popover).not.toBeInTheDocument());
+
+    // Flicker regression: axis thumbnail <image> nodes should not be torn down/recreated by popover interactions.
+    for (const node of initialThumbnails) {
+      expect(node.isConnected).toBe(true);
+    }
   });
 });

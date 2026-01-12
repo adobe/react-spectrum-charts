@@ -13,14 +13,16 @@ import { ReactElement } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
-import { View } from '@adobe/react-spectrum';
+import { Content, View } from '@adobe/react-spectrum';
+import { Datum } from '@spectrum-charts/vega-spec-builder';
 
 import { Chart } from '../../../Chart';
-import { Axis, AxisThumbnail, Bar } from '../../../components';
+import { Axis, AxisThumbnail, Bar, ChartPopover, ChartTooltip } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
 import { bindWithProps } from '../../../test-utils';
 import { AxisThumbnailProps } from '../../../types';
 import { barData } from '../Bar/data';
+import { browserData as chartPopoverData } from '../../data/data';
 
 export default {
   title: 'RSC/Axis/AxisThumbnail',
@@ -87,4 +89,44 @@ YAxis.args = {
   orientation: 'horizontal',
 };
 
-export { Basic, YAxis };
+const dialogContent = (datum: Datum) => (
+  <Content>
+    <div>Operating system: {datum.series}</div>
+    <div>Browser: {datum.category}</div>
+    <div>Users: {datum.value}</div>
+  </Content>
+);
+
+const chartPopoverCategoryThumbnails: Record<string, string> = {
+  Chrome: '/chrome.png',
+  Firefox: '/firefox.png',
+  Safari: '/safari.png',
+  Edge: '/edge.png',
+  Explorer: '/explorer.png',
+};
+
+const chartPopoverDataWithThumbnails = chartPopoverData.map((d) => ({
+  ...d,
+  thumbnail: chartPopoverCategoryThumbnails[d.category] ?? '/chrome.png',
+}));
+
+const ChartPopoverSvgStory: StoryFn<typeof ChartPopover> = (args): ReactElement => {
+  const chartProps = useChartProps({ data: chartPopoverDataWithThumbnails, renderer: 'svg', width: 600 });
+  return (
+    <Chart {...chartProps}>
+      <Bar color="series">
+        <ChartTooltip>{dialogContent}</ChartTooltip>
+        <ChartPopover {...args} />
+      </Bar>
+      <Axis position="bottom" baseline>
+        <AxisThumbnail urlKey="thumbnail" />
+      </Axis>
+    </Chart>
+  );
+};
+
+const Popover = bindWithProps(ChartPopoverSvgStory);
+Popover.args = { children: dialogContent, width: 'auto' };
+Popover.storyName = 'Popover';
+
+export { Basic, YAxis, Popover };

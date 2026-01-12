@@ -28,6 +28,16 @@ export const clickNthElement = async (elements: HTMLElement[], index: number) =>
   await userEvent.click(elements[index]);
 };
 
+export const getChartContainer = (chart: HTMLElement): HTMLElement | null => {
+  return chart.closest('.rsc-container') as HTMLElement | null;
+};
+
+export const getPopoverTriggerButtons = (chart: HTMLElement): HTMLButtonElement[] => {
+  const container = getChartContainer(chart);
+  if (!container) return [];
+  return [...container.querySelectorAll<HTMLButtonElement>('[id$="-popover-button"]')];
+};
+
 export const rightClickNthElement = async (elements: HTMLElement[], index: number) => {
   const user = userEvent.setup();
   await user.pointer([{ target: elements[index], keys: '[MouseRight]' }]);
