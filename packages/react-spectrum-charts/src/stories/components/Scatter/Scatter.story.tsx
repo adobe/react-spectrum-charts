@@ -59,6 +59,10 @@ export default {
       control: 'select',
       options: marioDataKeys.filter((key) => key !== 'weightClass'),
     },
+    blend: {
+      control: 'select',
+      options: [undefined, 'normal', 'multiply', 'screen', 'overlay'],
+    },
   },
 };
 
@@ -291,8 +295,11 @@ StrokeWithOverlappingPoints.args = {
   dimension: 'speedNormal',
   metric: 'handlingNormal',
   color: 'weightClass',
-  stroke: { value: 'gray-900' },
+  stroke: { value: 'gray-300' },
   lineWidth: { value: 2 },
+  blend: 'normal',
+  opacity: { value: 0.7 },
+  size: { value: 60 },
 };
 
 export { Basic, Color, ColorScaleType, LineType, OnMouseInputs, Opacity, Popover, Size, Stroke, StrokeWithOverlappingPoints, Tooltip };

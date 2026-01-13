@@ -154,3 +154,25 @@ describe('getScatterMark() stroke', () => {
     expect(mark.encode?.enter?.fill).not.toEqual(mark.encode?.enter?.stroke);
   });
 });
+
+describe('getScatterMark() blend', () => {
+  test('should use default blend (multiply) in light mode when blend is not provided', () => {
+    const mark = getScatterMark({ ...defaultScatterOptions, colorScheme: 'light' });
+    expect(mark.encode?.enter?.blend).toEqual({ value: 'multiply' });
+  });
+
+  test('should use default blend (screen) in dark mode when blend is not provided', () => {
+    const mark = getScatterMark({ ...defaultScatterOptions, colorScheme: 'dark' });
+    expect(mark.encode?.enter?.blend).toEqual({ value: 'screen' });
+  });
+
+  test('should omit blend when blend is "normal"', () => {
+    const mark = getScatterMark({ ...defaultScatterOptions, blend: 'normal' });
+    expect(mark.encode?.enter?.blend).toBeUndefined();
+  });
+
+  test('should use custom blend mode when provided', () => {
+    const mark = getScatterMark({ ...defaultScatterOptions, blend: 'overlay' });
+    expect(mark.encode?.enter?.blend).toEqual({ value: 'overlay' });
+  });
+});

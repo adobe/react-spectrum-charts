@@ -10,7 +10,7 @@
  * governing permissions and limitations under the License.
  */
 import { produce } from 'immer';
-import { GroupMark, Mark, NumericValueRef, SymbolMark } from 'vega';
+import { Blend, GroupMark, Mark, NumericValueRef, SymbolMark } from 'vega';
 
 import { DEFAULT_OPACITY_RULE, FADE_FACTOR, FILTERED_TABLE, SELECTED_ITEM } from '@spectrum-charts/constants';
 import { spectrumColors } from '@spectrum-charts/themes';
@@ -56,8 +56,29 @@ export const addScatterMarks = produce<Mark[], [ScatterSpecOptions]>((marks, opt
  * @param scatterOptions scatterSpecOptions
  * @returns SymbolMark
  */
+/**
+ * Gets the blend encoding based on the blend prop
+ * - 'normal': no blend (returns undefined to omit from encoding)
+ * - other values: uses the specified blend mode
+ * - defaults to multiply (light) / screen (dark)
+ */
+const getBlendEncoding = (
+  blend: ScatterSpecOptions['blend'],
+  colorScheme: ScatterSpecOptions['colorScheme']
+): { value: Blend } | undefined => {
+  if (blend === 'normal') {
+    return undefined; // omit blend from encoding
+  }
+  if (blend) {
+    return { value: blend };
+  }
+  // default behavior: multiply in light mode, screen in dark mode
+  return { value: colorScheme === 'light' ? 'multiply' : 'screen' };
+};
+
 export const getScatterMark = (options: ScatterSpecOptions): SymbolMark => {
   const {
+    blend,
     color,
     colorScaleType,
     colorScheme,
@@ -71,6 +92,9 @@ export const getScatterMark = (options: ScatterSpecOptions): SymbolMark => {
     size,
     stroke,
   } = options;
+
+  const blendEncoding = getBlendEncoding(blend, colorScheme);
+
   return {
     name,
     description: name,
@@ -80,12 +104,7 @@ export const getScatterMark = (options: ScatterSpecOptions): SymbolMark => {
     },
     encode: {
       enter: {
-        /**
-         * the blend mode makes it possible to tell when there are overlapping points
-         * in light mode, the points are darker when they overlap (multiply)
-         * in dark mode, the points are lighter when they overlap (screen)
-         */
-        blend: { value: colorScheme === 'light' ? 'multiply' : 'screen' },
+        ...(blendEncoding && { blend: blendEncoding }),
         fill: getColorProductionRule(color, colorScheme, colorScaleType),
         fillOpacity: getOpacityProductionRule(opacity),
         shape: { value: 'circle' },
