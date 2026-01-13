@@ -35,6 +35,7 @@ const Scatter: FC<ScatterProps> = ({
   opacity = { value: 1 },
   size = { value: DEFAULT_SYMBOL_SIZE },
   stroke,
+  transparentPoints,
 }) => {
   return null;
 };

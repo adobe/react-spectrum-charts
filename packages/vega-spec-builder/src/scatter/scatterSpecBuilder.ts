@@ -69,6 +69,7 @@ export const addScatter = produce<
       size = { value: 'M' },
       trendlines = [],
       stroke,
+      transparentPoints,
       ...options
     }
   ) => {
@@ -97,6 +98,7 @@ export const addScatter = produce<
       scatterAnnotations,
       scatterPaths,
       size,
+      transparentPoints,
       trendlines,
       ...options,
     };

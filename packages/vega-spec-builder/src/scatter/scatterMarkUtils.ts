@@ -56,6 +56,8 @@ export const addScatterMarks = produce<Mark[], [ScatterSpecOptions]>((marks, opt
  * @param scatterOptions scatterSpecOptions
  * @returns SymbolMark
  */
+const TRANSPARENT_POINTS_OPACITY = 0.7;
+
 export const getScatterMark = (options: ScatterSpecOptions): SymbolMark => {
   const {
     color,
@@ -70,7 +72,13 @@ export const getScatterMark = (options: ScatterSpecOptions): SymbolMark => {
     opacity,
     size,
     stroke,
+    transparentPoints,
   } = options;
+
+  // Use semi-transparent opacity when transparentPoints is enabled
+  // User can still override by explicitly setting opacity
+  const effectiveOpacity = transparentPoints ? { value: TRANSPARENT_POINTS_OPACITY } : opacity;
+
   return {
     name,
     description: name,
@@ -87,7 +95,7 @@ export const getScatterMark = (options: ScatterSpecOptions): SymbolMark => {
          */
         blend: { value: colorScheme === 'light' ? 'multiply' : 'screen' },
         fill: getColorProductionRule(color, colorScheme, colorScaleType),
-        fillOpacity: getOpacityProductionRule(opacity),
+        fillOpacity: getOpacityProductionRule(effectiveOpacity),
         shape: { value: 'circle' },
         size: getSymbolSizeProductionRule(size),
         strokeDash: getStrokeDashProductionRule(lineType),

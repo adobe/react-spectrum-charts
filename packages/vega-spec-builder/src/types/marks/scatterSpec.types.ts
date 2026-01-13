@@ -25,6 +25,7 @@ import { ScatterAnnotationOptions } from './supplemental';
 import { ScatterPathOptions } from './supplemental/scatterPathSpec.types';
 import { TrendlineOptions } from './supplemental/trendlineSpec.types';
 
+
 export interface ScatterOptions {
   markType: 'scatter';
 
@@ -84,6 +85,12 @@ export interface ScatterOptions {
    * defaults to `color` if not provided
    */
   stroke?: ColorFacet;
+  /**
+   * when true, points are rendered semi-transparent (opacity 0.7) to show overlapping points
+   * this is useful for dense scatter plots where points may overlap
+   * takes precedence over `opacity` when set to true
+   */
+  transparentPoints?: boolean;
 }
 
 type ScatterOptionsWithDefaults =

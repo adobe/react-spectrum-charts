@@ -154,3 +154,35 @@ describe('getScatterMark() stroke', () => {
     expect(mark.encode?.enter?.fill).not.toEqual(mark.encode?.enter?.stroke);
   });
 });
+
+describe('getScatterMark() transparentPoints', () => {
+  test('should use default opacity (1) when transparentPoints is not set', () => {
+    const mark = getScatterMark({ ...defaultScatterOptions });
+    expect(mark.encode?.enter?.fillOpacity).toEqual({ value: 1 });
+  });
+
+  test('should use semi-transparent opacity (0.7) when transparentPoints is true', () => {
+    const mark = getScatterMark({ ...defaultScatterOptions, transparentPoints: true });
+    expect(mark.encode?.enter?.fillOpacity).toEqual({ value: 0.7 });
+  });
+
+  test('should use semi-transparent opacity even with custom opacity when transparentPoints is true', () => {
+    const mark = getScatterMark({
+      ...defaultScatterOptions,
+      transparentPoints: true,
+      opacity: { value: 0.5 },
+    });
+    // transparentPoints takes precedence
+    expect(mark.encode?.enter?.fillOpacity).toEqual({ value: 0.7 });
+  });
+
+  test('should use default opacity when transparentPoints is false', () => {
+    const mark = getScatterMark({
+      ...defaultScatterOptions,
+      transparentPoints: false,
+      opacity: { value: 0.5 },
+    });
+    // explicit opacity is used
+    expect(mark.encode?.enter?.fillOpacity).toEqual({ value: 0.5 });
+  });
+});

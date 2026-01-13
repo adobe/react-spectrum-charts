@@ -295,4 +295,13 @@ StrokeWithOverlappingPoints.args = {
   lineWidth: { value: 2 },
 };
 
-export { Basic, Color, ColorScaleType, LineType, OnMouseInputs, Opacity, Popover, Size, Stroke, StrokeWithOverlappingPoints, Tooltip };
+const OverlappingPoints = bindWithProps(OverlappingPointsStory);
+OverlappingPoints.args = {
+  dimension: 'speedNormal',
+  metric: 'handlingNormal',
+  color: 'weightClass',
+  transparentPoints: true,
+  size: { value: 80 },
+};
+
+export { Basic, Color, ColorScaleType, LineType, OnMouseInputs, Opacity, OverlappingPoints, Popover, Size, Stroke, StrokeWithOverlappingPoints, Tooltip };
