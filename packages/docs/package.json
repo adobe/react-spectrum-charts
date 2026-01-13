@@ -1,6 +1,6 @@
 {
   "name": "@spectrum-charts/docs",
-  "version": "1.25.0",
+  "version": "1.26.0",
   "private": true,
   "scripts": {
     "start": "docusaurus start",
