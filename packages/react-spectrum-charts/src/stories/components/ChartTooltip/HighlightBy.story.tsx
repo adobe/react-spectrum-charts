@@ -17,7 +17,7 @@ import { View } from '@adobe/react-spectrum';
 import { Datum } from '@spectrum-charts/vega-spec-builder';
 
 import { Chart } from '../../../Chart';
-import { Area, Bar, Line, Scatter } from '../../../components';
+import { Area, Bar, Line, Scatter, Legend } from '../../../components';
 import { ChartTooltip } from '../../../components/ChartTooltip';
 import useChartProps from '../../../hooks/useChartProps';
 import { browserData } from '../../../stories/data/data';
@@ -56,6 +56,7 @@ const StackedBarTooltipStory: StoryFn<typeof ChartTooltip> = (args): ReactElemen
     <Chart {...chartProps}>
       <Bar color="series">
         <ChartTooltip {...args} />
+        <Legend />
       </Bar>
     </Chart>
   );

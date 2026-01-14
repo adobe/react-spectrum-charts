@@ -218,7 +218,7 @@ export const getOpacityEncoding = (
   }
   if (highlightedItem) {
     rules.push({
-      test: `length(data('${CONTROLLED_HIGHLIGHTED_TABLE}))`,
+      test: `length(data('${CONTROLLED_HIGHLIGHTED_TABLE}'))`,
       signal: `indexof(pluck(data('${CONTROLLED_HIGHLIGHTED_TABLE}'), '${SERIES_ID}'), datum.${SERIES_ID}) > -1 ? 1 : ${FADE_FACTOR}`,
     });
   }
