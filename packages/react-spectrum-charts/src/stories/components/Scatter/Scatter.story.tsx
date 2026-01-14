@@ -191,6 +191,22 @@ const dialog = (item: Datum): ReactNode => {
   );
 };
 
+const overlappingPointsDialog = (item: Datum): ReactNode => {
+  return (
+    <Content>
+      <Flex direction="column">
+        <div style={{ fontWeight: 'bold' }}>Weight Class: {item.weightClass}</div>
+        <div>
+          {marioKeyTitle.speedNormal}: {item.speedNormal}
+        </div>
+        <div>
+          {marioKeyTitle.handlingNormal}: {item.handlingNormal}
+        </div>
+      </Flex>
+    </Content>
+  );
+};
+
 const Basic = bindWithProps(ScatterStory);
 Basic.args = {
   dimension: 'speedNormal',
@@ -297,9 +313,17 @@ StrokeWithOverlappingPoints.args = {
   color: 'weightClass',
   stroke: { value: 'gray-300' },
   lineWidth: { value: 2 },
-  blend: 'normal',
-  opacity: { value: 0.7 },
-  size: { value: 60 },
 };
 
-export { Basic, Color, ColorScaleType, LineType, OnMouseInputs, Opacity, Popover, Size, Stroke, StrokeWithOverlappingPoints, Tooltip };
+const Blend = bindWithProps(OverlappingPointsStory);
+Blend.args = {
+  dimension: 'speedNormal',
+  metric: 'handlingNormal',
+  color: 'weightClass',
+  blend: 'normal',
+  opacity: { value: 0.7 },
+  size: { value: 80 },
+  children: <ChartTooltip>{overlappingPointsDialog}</ChartTooltip>,
+};
+
+export { Basic, Blend, Color, ColorScaleType, LineType, OnMouseInputs, Opacity, Popover, Size, Stroke, StrokeWithOverlappingPoints, Tooltip };

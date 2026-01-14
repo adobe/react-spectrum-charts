@@ -52,11 +52,6 @@ export const addScatterMarks = produce<Mark[], [ScatterSpecOptions]>((marks, opt
 });
 
 /**
- * Gets the primary scatter mark
- * @param scatterOptions scatterSpecOptions
- * @returns SymbolMark
- */
-/**
  * Gets the blend encoding based on the blend prop
  * - 'normal': no blend (returns undefined to omit from encoding)
  * - other values: uses the specified blend mode
@@ -76,6 +71,11 @@ const getBlendEncoding = (
   return { value: colorScheme === 'light' ? 'multiply' : 'screen' };
 };
 
+/**
+ * Gets the primary scatter mark
+ * @param scatterOptions scatterSpecOptions
+ * @returns SymbolMark
+ */
 export const getScatterMark = (options: ScatterSpecOptions): SymbolMark => {
   const {
     blend,
