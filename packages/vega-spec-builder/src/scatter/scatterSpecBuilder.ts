@@ -69,6 +69,7 @@ export const addScatter = produce<
       size = { value: 'M' },
       trendlines = [],
       stroke,
+      blend,
       ...options
     }
   ) => {
@@ -76,6 +77,7 @@ export const addScatter = produce<
     // put options back together now that all the defaults have been set
 
     const scatterOptions: ScatterSpecOptions = {
+      blend,
       chartPopovers,
       chartTooltips,
       color,

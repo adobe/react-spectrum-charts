@@ -24,6 +24,7 @@ import { ScatterProps } from '../../types';
 
 // destructure props here and set defaults so that storybook can pick them up
 const Scatter: FC<ScatterProps> = ({
+  blend,
   color = DEFAULT_COLOR,
   colorScaleType,
   dimension = DEFAULT_LINEAR_DIMENSION,

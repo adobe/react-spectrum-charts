@@ -10,6 +10,8 @@ The `Scatter` component supports many different attributes for mapping data prop
 - `lineWidth`
 - `opacity`
 - `size`
+- `stroke`
+  - Symbol border/stroke color (defaults to `color` if not provided)
 
 ### Examples
 
@@ -141,6 +143,12 @@ The `Trendline` component is fully supported by `Scatter`. To plot a trendline, 
             <td>Optional elements that can be rendered within the chart.</td>
         </tr>
         <tr>
+            <td>blend</td>
+            <td>'normal' | Blend</td>
+            <td>–</td>
+            <td>CSS blend mode for overlapping points.<br/><code>'normal'</code>: Disables blending so points fully cover each other.<br/>Other CSS blend mode values (e.g., <code>'multiply'</code>, <code>'screen'</code>, <code>'overlay'</code>): Applies the specified blend mode.<br/>If not provided, defaults to <code>'multiply'</code> in light mode and <code>'screen'</code> in dark mode.</td>
+        </tr>
+        <tr>
             <td>color</td>
             <td>string | \{value: ColorValue}</td>
             <td>'series'</td>
@@ -212,6 +220,12 @@ The `Trendline` component is fully supported by `Scatter`. To plot a trendline, 
             <td>string | \{value: SymbolSize | number}</td>
             <td>\{value: 'M'}</td>
             <td>Scatter point symbol size.<br/>If a string is provided, this string is the key in the data that symbols will be grouped into series by. Each unique value for this key in the provided data will map to an size from the symbol size scale. <br/>If an object with a value is provided, this will set the size for all symbols.</td>
+        </tr>
+        <tr>
+            <td>stroke</td>
+            <td>string | \{value: ColorValue}</td>
+            <td>–</td>
+            <td>Symbol border/stroke color.<br/>If a string is provided, this string is the key in the data that symbols will be grouped into series by. Each unique value for this key in the provided data will map to a color from the color scale.<br/>If an object with a value is provided, this will set the stroke color for all symbols.<br/>If not provided, defaults to the <code>color</code> prop value.</td>
         </tr>
     </tbody>
 </table>
