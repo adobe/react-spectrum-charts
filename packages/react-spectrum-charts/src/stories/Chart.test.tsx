@@ -377,7 +377,7 @@ describe('Chart', () => {
       expect(tooltip).toBeInTheDocument();
       if (!tooltip) return;
 
-      expect(getPxValue(tooltip.style.getPropertyValue('top'))).toBe(239);
+      expect(getPxValue(tooltip.style.getPropertyValue('top'))).toBe(176);
       expect(getPxValue(tooltip.style.getPropertyValue('left'))).toBe(35);
     });
 
@@ -392,7 +392,7 @@ describe('Chart', () => {
       expect(tooltip).toBeInTheDocument();
       if (!tooltip) return;
 
-      expect(getPxValue(tooltip.style.getPropertyValue('top'))).toBe(284);
+      expect(getPxValue(tooltip.style.getPropertyValue('top'))).toBe(213);
       expect(getPxValue(tooltip.style.getPropertyValue('left'))).toBe(35);
     });
   });

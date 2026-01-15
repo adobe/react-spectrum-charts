@@ -14,7 +14,7 @@ import { ReactElement } from 'react';
 import { StoryFn } from '@storybook/react';
 
 import useChartProps from '../hooks/useChartProps';
-import { Axis, Bar, Chart, ChartTooltip, Line } from '../index';
+import { Axis, Bar, Chart, ChartTooltip, Legend, Line } from '../index';
 import { bindWithProps } from '../test-utils';
 import './Chart.story.css';
 import { ChartBarStory } from './ChartBarStory';
@@ -64,6 +64,7 @@ const ChartBarTooltipStory: StoryFn<typeof Chart> = (args): ReactElement => {
           )}
         </ChartTooltip>
       </Bar>
+      <Legend />
     </Chart>
   );
 };
