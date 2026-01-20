@@ -24,6 +24,7 @@ import {
 } from '../../../test-utils';
 import '../../../test-utils/__mocks__/matchMedia.mock.js';
 import { Basic, Popover, YAxis } from './AxisThumbnail.story';
+import { Resizable } from './AxisThumbnailResize.story';
 
 describe('AxisThumbnail', () => {
   // AxisThumbnail is not a real React component. This is test just provides test coverage for sonarqube
@@ -58,6 +59,15 @@ describe('AxisThumbnail', () => {
     expect(chart).toBeInTheDocument();
 
     // Check that thumbnail icons are drawn to the chart
+    const thumbnailMarks = await findAllMarksByGroupName(chart, 'axis0AxisThumbnail0', 'image');
+    expect(thumbnailMarks).toHaveLength(5);
+  });
+
+  test('Resizable renders properly', async () => {
+    render(<Resizable {...Resizable.args} />);
+    const chart = await findChart();
+    expect(chart).toBeInTheDocument();
+
     const thumbnailMarks = await findAllMarksByGroupName(chart, 'axis0AxisThumbnail0', 'image');
     expect(thumbnailMarks).toHaveLength(5);
   });
