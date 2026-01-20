@@ -23,6 +23,15 @@ import { useDebugSpec } from './hooks/useDebugSpec';
 import { extractValues, isVegaData } from './hooks/useSpec';
 import { ChartProps } from './types';
 
+/**
+ * Resizes an existing Vega view without recreating it.
+ */
+export const resizeView = (view: View | undefined, width: number, height: number): void => {
+  if (view && width && height) {
+    view.width(width).height(height).resize().runAsync();
+  }
+};
+
 export interface VegaChartProps {
   config: Config;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -75,6 +84,11 @@ export const VegaChart: FC<VegaChartProps> = ({
 
   useDebugSpec(debug, spec, chartData, width, height, config);
 
+  // Handle resize without recreating the view (prevents axis image flickering)
+  useEffect(() => {
+    resizeView(chartView.current, width, height);
+  }, [width, height]);
+
   useEffect(() => {
     if (width && height && containerRef.current) {
       const specCopy = JSON.parse(JSON.stringify(spec)) as Spec;
@@ -117,11 +131,11 @@ export const VegaChart: FC<VegaChartProps> = ({
         chartView.current = undefined;
       }
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     chartData.table,
     config,
     data,
-    height,
     numberLocale,
     timeLocale,
     onNewView,
@@ -130,8 +144,8 @@ export const VegaChart: FC<VegaChartProps> = ({
     signals,
     spec,
     tooltip,
-    width,
     locale,
+    s2,
   ]);
 
   return <div ref={containerRef} className="rsc"></div>;
