@@ -17,9 +17,11 @@ import {
   getBulletMarkLabel,
   getBulletMarkRect,
   getBulletMarkTarget,
+  getBulletMarkTargetValueLabel,
   getBulletMarkThreshold,
   getBulletMarkValueLabel,
   getBulletTrack,
+  getBulletValueText,
 } from './bulletMarkUtils';
 import { sampleOptionsColumn, sampleOptionsRow } from './bulletTestUtils';
 
@@ -300,6 +302,15 @@ describe('getBulletAxes', () => {
         domain: false,
         tickCount: 5,
         offset: { signal: 'axisOffset' },
+        encode: {
+          labels: {
+            update: {
+              text: {
+                signal: "(format(datum.value, ','))",
+              },
+            },
+          },
+        },
       },
     ]);
   });
@@ -323,6 +334,15 @@ describe('getBulletAxes', () => {
         domain: false,
         tickCount: 5,
         offset: { signal: 'axisOffset' },
+        encode: {
+          labels: {
+            update: {
+              text: {
+                signal: "(format(datum.value, ','))",
+              },
+            },
+          },
+        },
       },
       {
         scale: 'groupScale',
@@ -345,7 +365,7 @@ describe('getBulletAxes', () => {
             update: {
               text: {
                 signal:
-                  "info(data('table')[datum.index * (length(data('table')) - 1)].currentAmount) != null ? format(info(data('table')[datum.index * (length(data('table')) - 1)].currentAmount), '') : ''",
+                  "info(data('table')[datum.index * (length(data('table')) - 1)].currentAmount) != null ? (format(info(data('table')[datum.index * (length(data('table')) - 1)].currentAmount), ',')) : ''",
               },
             },
           },
@@ -471,5 +491,206 @@ describe('getBulletMarkTrack', () => {
     const data = getBulletTrack(options);
     expect(data.encode?.update?.y).toBeDefined();
     expect(data.encode?.update?.y).toStrictEqual({ signal: 'bulletGroupHeight - 3 - 2 * bulletHeight - 20' });
+  });
+});
+
+describe('getBulletValueText', () => {
+  test('Should return production rules for shortNumber format', () => {
+    const result = getBulletValueText('shortNumber', 'currentAmount');
+    expect(result).toHaveLength(1);
+    expect(result[0]).toHaveProperty('test', "isNumber(datum['currentAmount'])");
+    expect(result[0]).toHaveProperty('signal', "formatShortNumber(datum['currentAmount'])");
+  });
+
+  test('Should return production rules for shortCurrency format', () => {
+    const result = getBulletValueText('shortCurrency', 'currentAmount');
+    expect(result).toHaveLength(2);
+    expect(result[0]).toHaveProperty('test', "isNumber(datum['currentAmount']) && abs(datum['currentAmount']) >= 1000");
+    if ('signal' in result[0]) {
+      expect(result[0].signal).toContain('upper(replace(format(datum[\'currentAmount\'], \'$.3~s\')');
+    }
+    expect(result[1]).toHaveProperty('test', "isNumber(datum['currentAmount'])");
+    expect(result[1]).toHaveProperty('signal', "format(datum['currentAmount'], '$')");
+  });
+
+  test('Should return production rules for standardNumber format', () => {
+    const result = getBulletValueText('standardNumber', 'currentAmount');
+    expect(result).toHaveLength(1);
+    expect(result[0]).toHaveProperty('test', "isNumber(datum['currentAmount'])");
+    expect(result[0]).toHaveProperty('signal', "format(datum['currentAmount'], ',')");
+  });
+
+  test('Should return production rules for currency format', () => {
+    const result = getBulletValueText('currency', 'currentAmount');
+    expect(result).toHaveLength(1);
+    expect(result[0]).toHaveProperty('test', "isNumber(datum['currentAmount'])");
+    expect(result[0]).toHaveProperty('signal', "format(datum['currentAmount'], '$,.2f')");
+  });
+
+  test('Should return production rules for custom D3 format string', () => {
+    const result = getBulletValueText('.1f', 'currentAmount');
+    expect(result).toHaveLength(1);
+    expect(result[0]).toHaveProperty('test', "isNumber(datum['currentAmount'])");
+    expect(result[0]).toHaveProperty('signal', "format(datum['currentAmount'], '.1f')");
+  });
+});
+
+describe('Number format integration in marks', () => {
+  test('Value label should use shortNumber format correctly', () => {
+    const options = { ...sampleOptionsColumn, numberFormat: 'shortNumber' };
+    const valueLabelMark = getBulletMarkValueLabel(options);
+    
+    const textEncode = valueLabelMark.encode?.enter?.text;
+    expect(textEncode).toBeDefined();
+    
+    if (Array.isArray(textEncode)) {
+      expect(textEncode[0]).toHaveProperty('test', "isNumber(datum['currentAmount'])");
+      expect(textEncode[0]).toHaveProperty('signal', "formatShortNumber(datum['currentAmount'])");
+    }
+  });
+
+  test('Value label should use currency format correctly', () => {
+    const options = { ...sampleOptionsColumn, numberFormat: 'currency' };
+    const valueLabelMark = getBulletMarkValueLabel(options);
+    
+    const textEncode = valueLabelMark.encode?.enter?.text;
+    expect(textEncode).toBeDefined();
+    
+    if (Array.isArray(textEncode)) {
+      expect(textEncode[0]).toHaveProperty('test', "isNumber(datum['currentAmount'])");
+      expect(textEncode[0]).toHaveProperty('signal', "format(datum['currentAmount'], '$,.2f')");
+    }
+  });
+
+  test('Target value label should format with shortNumber', () => {
+    const options = { 
+      ...sampleOptionsColumn, 
+      showTargetValue: true,
+      numberFormat: 'shortNumber' 
+    };
+    const targetLabelMark = getBulletMarkTargetValueLabel(options);
+    
+    const textEncode = targetLabelMark.encode?.enter?.text;
+    expect(textEncode).toBeDefined();
+    
+    if (typeof textEncode === 'object' && 'signal' in textEncode) {
+      expect(textEncode.signal).toContain('formatShortNumber(datum.target)');
+      expect(textEncode.signal).toContain('Target: ');
+    }
+  });
+
+  test('Target value label should format with currency', () => {
+    const options = { 
+      ...sampleOptionsColumn, 
+      showTargetValue: true,
+      numberFormat: 'currency' 
+    };
+    const targetLabelMark = getBulletMarkTargetValueLabel(options);
+    
+    const textEncode = targetLabelMark.encode?.enter?.text;
+    expect(textEncode).toBeDefined();
+    
+    if (typeof textEncode === 'object' && 'signal' in textEncode) {
+      expect(textEncode.signal).toContain("format(datum.target, '$,.2f')");
+      expect(textEncode.signal).toContain('Target: ');
+    }
+  });
+
+  test('Target value label should format with custom D3 format', () => {
+    const options = { 
+      ...sampleOptionsColumn, 
+      showTargetValue: true,
+      numberFormat: '.2f' 
+    };
+    const targetLabelMark = getBulletMarkTargetValueLabel(options);
+    
+    const textEncode = targetLabelMark.encode?.enter?.text;
+    expect(textEncode).toBeDefined();
+    
+    if (typeof textEncode === 'object' && 'signal' in textEncode) {
+      expect(textEncode.signal).toContain("format(datum.target, '.2f')");
+    }
+  });
+});
+
+describe('Number format integration in axes', () => {
+  test('Side axis (right) should format labels with shortNumber', () => {
+    const options = { 
+      ...sampleOptionsColumn, 
+      labelPosition: 'side' as const,
+      numberFormat: 'shortNumber' 
+    };
+    const axes = addAxes([], options);
+    
+    const rightAxis = axes.find(axis => axis.orient === 'right');
+    expect(rightAxis).toBeDefined();
+    expect(rightAxis?.encode?.labels?.update?.text).toMatchObject({
+      signal: expect.stringContaining('formatShortNumber')
+    });
+  });
+
+  test('Side axis (right) should format labels with currency', () => {
+    const options = { 
+      ...sampleOptionsColumn, 
+      labelPosition: 'side' as const,
+      numberFormat: 'currency' 
+    };
+    const axes = addAxes([], options);
+    
+    const rightAxis = axes.find(axis => axis.orient === 'right');
+    expect(rightAxis).toBeDefined();
+    expect(rightAxis?.encode?.labels?.update?.text).toMatchObject({
+      signal: expect.stringContaining("'$,.2f'")
+    });
+  });
+
+  test('Metric axis should format labels with shortNumber', () => {
+    const options = { 
+      ...sampleOptionsColumn, 
+      metricAxis: true,
+      numberFormat: 'shortNumber' 
+    };
+    const axes = addAxes([], options);
+    
+    const metricAxis = axes.find(axis => axis.orient === 'bottom');
+    expect(metricAxis).toBeDefined();
+    expect(metricAxis?.encode?.labels?.update?.text).toMatchObject({
+      signal: expect.stringContaining('formatShortNumber(datum.value)')
+    });
+  });
+
+  test('Metric axis should format labels with shortCurrency', () => {
+    const options = { 
+      ...sampleOptionsColumn, 
+      metricAxis: true,
+      numberFormat: 'shortCurrency' 
+    };
+    const axes = addAxes([], options);
+    
+    const metricAxis = axes.find(axis => axis.orient === 'bottom');
+    expect(metricAxis).toBeDefined();
+    expect(metricAxis?.encode?.labels?.update?.text).toMatchObject({
+      signal: expect.stringMatching(/abs\(datum\.value\) >= 1000.*upper\(replace\(format\(datum\.value/)
+    });
+  });
+
+  test('Both side and metric axes should use the same numberFormat', () => {
+    const options = { 
+      ...sampleOptionsColumn, 
+      labelPosition: 'side' as const,
+      metricAxis: true,
+      numberFormat: 'shortNumber' 
+    };
+    const axes = addAxes([], options);
+    
+    const metricAxis = axes.find(axis => axis.orient === 'bottom');
+    const rightAxis = axes.find(axis => axis.orient === 'right');
+    
+    expect(metricAxis?.encode?.labels?.update?.text).toMatchObject({
+      signal: expect.stringContaining('formatShortNumber')
+    });
+    expect(rightAxis?.encode?.labels?.update?.text).toMatchObject({
+      signal: expect.stringContaining('formatShortNumber')
+    });
   });
 });

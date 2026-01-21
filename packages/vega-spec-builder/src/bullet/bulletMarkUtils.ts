@@ -10,10 +10,11 @@
  * governing permissions and limitations under the License.
  */
 import { produce } from 'immer';
-import { Axis, GroupMark, Mark } from 'vega';
+import { Axis, GroupMark, Mark, TextValueRef } from 'vega';
 
 import { getColorValue } from '@spectrum-charts/themes';
 
+import { getTextNumberFormat } from '../textUtils';
 import { BulletSpecOptions } from '../types';
 
 export const addMarks = produce<Mark[], [BulletSpecOptions]>((marks, bulletOptions) => {
@@ -166,6 +167,18 @@ export function getBulletMarkLabel(bulletOptions: BulletSpecOptions): Mark {
   return bulletMarkLabel;
 }
 
+/**
+ * Gets the text production rules for a bullet value label.
+ * Handles shortNumber, shortCurrency, and d3 format strings consistently.
+ */
+export function getBulletValueText(
+  numberFormat: string,
+  datumProperty: string
+): ({ test?: string } & TextValueRef)[] {
+  const textRules = getTextNumberFormat(numberFormat || 'standardNumber', datumProperty);
+  return [...textRules];
+}
+
 export function getBulletMarkValueLabel(bulletOptions: BulletSpecOptions): Mark {
   const defaultColor = getColorValue(bulletOptions.color, bulletOptions.colorScheme);
   const solidColor = getColorValue('gray-900', bulletOptions.colorScheme);
@@ -182,11 +195,7 @@ export function getBulletMarkValueLabel(bulletOptions: BulletSpecOptions): Mark 
     from: { data: 'bulletGroups' },
     encode: {
       enter: {
-        text: {
-          signal: `datum.${bulletOptions.metric} != null ? format(datum.${bulletOptions.metric}, '${
-            bulletOptions.numberFormat || ''
-          }') : ''`,
-        },
+        text: getBulletValueText(bulletOptions.numberFormat || 'standardNumber', bulletOptions.metric),
         align: { value: 'right' },
         baseline: { value: 'top' },
         fill: { signal: fillExpr },
@@ -200,6 +209,8 @@ export function getBulletMarkValueLabel(bulletOptions: BulletSpecOptions): Mark 
 
 export function getBulletMarkTargetValueLabel(bulletOptions: BulletSpecOptions): Mark {
   const solidColor = getColorValue('gray-900', bulletOptions.colorScheme);
+  const valueExpr = `datum.${bulletOptions.target}`;
+  const formatSignal = buildFormatSignal(valueExpr, bulletOptions.numberFormat || 'standardNumber');
 
   const bulletMarkTargetValueLabel: Mark = {
     name: `${bulletOptions.name}TargetValueLabel`,
@@ -209,7 +220,7 @@ export function getBulletMarkTargetValueLabel(bulletOptions: BulletSpecOptions):
     encode: {
       enter: {
         text: {
-          signal: `datum.${bulletOptions.target} != null ? 'Target: ' + format(datum.${bulletOptions.target}, '$,.2f') : 'No Target'`,
+          signal: `${valueExpr} != null ? 'Target: ' + (${formatSignal}) : 'No Target'`,
         },
         align: { value: 'center' },
         baseline: { value: 'top' },
@@ -310,7 +321,32 @@ export function getBulletLabelAxesLeft(labelOffset): Axis {
   };
 }
 
+/**
+ * Builds a format signal expression for the given value expression and numberFormat.
+ * This would make sense as a re-usable utility, but keeping it here for now since bullet is alpha
+ * and we don't have another component that needs the utility yet.
+ */
+function buildFormatSignal(valueExpr: string, numberFormat: string): string {
+  if (numberFormat === 'shortNumber') {
+    return `formatShortNumber(${valueExpr})`;
+  }
+  if (numberFormat === 'shortCurrency') {
+    return String.raw`abs(${valueExpr}) >= 1000 ? upper(replace(format(${valueExpr}, '$.3~s'), /(\d+)G/, '$1B')) : format(${valueExpr}, '$')`;
+  }
+  if (numberFormat === 'currency') {
+    return `format(${valueExpr}, '$,.2f')`;
+  }
+  if (numberFormat === 'standardNumber') {
+    return `format(${valueExpr}, ',')`;
+  }
+  // Default: use d3 format string
+  return `format(${valueExpr}, '${numberFormat}')`;
+}
+
 export function getBulletLabelAxesRight(bulletOptions: BulletSpecOptions, labelOffset): Axis {
+  const valueExpr = `info(data('table')[datum.index * (length(data('table')) - 1)].${bulletOptions.metric})`;
+  const formatSignal = buildFormatSignal(valueExpr, bulletOptions.numberFormat || 'standardNumber');
+
   return {
     scale: 'groupScale',
     orient: 'right',
@@ -322,11 +358,8 @@ export function getBulletLabelAxesRight(bulletOptions: BulletSpecOptions, labelO
       labels: {
         update: {
           text: {
-            signal: `info(data('table')[datum.index * (length(data('table')) - 1)].${
-              bulletOptions.metric
-            }) != null ? format(info(data('table')[datum.index * (length(data('table')) - 1)].${
-              bulletOptions.metric
-            }), '${bulletOptions.numberFormat || ''}') : ''`,
+            // Wrap formatSignal in parens to handle ternary expressions
+            signal: `${valueExpr} != null ? (${formatSignal}) : ''`,
           },
         },
       },
@@ -334,7 +367,9 @@ export function getBulletLabelAxesRight(bulletOptions: BulletSpecOptions, labelO
   };
 }
 
-export function getBulletScaleAxes(): Axis {
+export function getBulletScaleAxes(bulletOptions: BulletSpecOptions): Axis {
+  const formatSignal = buildFormatSignal('datum.value', bulletOptions.numberFormat || 'standardNumber');
+
   return {
     labelOffset: 2,
     scale: 'xscale',
@@ -344,12 +379,22 @@ export function getBulletScaleAxes(): Axis {
     domain: false,
     tickCount: 5,
     offset: { signal: 'axisOffset' },
+    encode: {
+      labels: {
+        update: {
+          text: {
+            // Wrap formatSignal in parens to handle ternary expressions
+            signal: `(${formatSignal})`,
+          },
+        },
+      },
+    },
   };
 }
 
 export const addAxes = produce<Axis[], [BulletSpecOptions]>((axes, bulletOptions) => {
   if (bulletOptions.metricAxis && bulletOptions.direction === 'column' && !bulletOptions.showTargetValue) {
-    axes.push(getBulletScaleAxes());
+    axes.push(getBulletScaleAxes(bulletOptions));
   }
 
   if (bulletOptions.labelPosition === 'side' && bulletOptions.direction === 'column') {
