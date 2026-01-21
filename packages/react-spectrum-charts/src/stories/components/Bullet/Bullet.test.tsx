@@ -12,6 +12,12 @@
 import { Bullet } from '../../../alpha';
 import { findAllMarksByGroupName, findChart, render } from '../../../test-utils';
 import { Basic } from './Bullet.story';
+import {
+  ShortNumberWithTarget,
+  ShortNumberWithAxis,
+  CurrencyWithTarget,
+  StandardNumberWithAxis,
+} from './BulletNumberFormat.story';
 
 describe('Bullet', () => {
   // Bullet is not a real React component. This is test just provides test coverage for sonarqube
@@ -40,5 +46,80 @@ describe('Bullet', () => {
 
     const rules = await findAllMarksByGroupName(chart, 'bullet0Target', 'line');
     expect(rules.length).toEqual(2);
+  });
+
+  describe('Number formatting', () => {
+    test('shortNumber format renders K/M/B/T suffixes on target labels', async () => {
+      render(<ShortNumberWithTarget {...ShortNumberWithTarget.args} />);
+      const chart = await findChart();
+      expect(chart).toBeInTheDocument();
+
+      const targetLabels = await findAllMarksByGroupName(chart, 'bullet0TargetValueLabel', 'text');
+      expect(targetLabels.length).toEqual(4); // K, M, B, T examples
+      
+      // Check for K, M, B, T suffixes in target labels
+      const targetText = targetLabels.map(label => label.textContent).join(' ');
+      expect(targetText).toMatch(/K/);
+      expect(targetText).toMatch(/M/);
+      expect(targetText).toMatch(/B/);
+      expect(targetText).toMatch(/T/);
+    });
+
+    test('shortNumber format renders on metric axis', async () => {
+      render(<ShortNumberWithAxis {...ShortNumberWithAxis.args} />);
+      const chart = await findChart();
+      expect(chart).toBeInTheDocument();
+
+      // Bullet metric axis renders at the bottom - look for all text elements
+      const allText = chart.querySelectorAll('text');
+      const textContents = Array.from(allText).map(el => el.textContent);
+      
+      // At least one text element should have K/M/B/T suffix (axis labels)
+      expect(textContents.some(text => text && /[KMBT]$/.test(text))).toBe(true);
+    });
+
+    test('currency format renders with $ symbol and decimal places', async () => {
+      render(<CurrencyWithTarget {...CurrencyWithTarget.args} />);
+      const chart = await findChart();
+      expect(chart).toBeInTheDocument();
+
+      const targetLabels = await findAllMarksByGroupName(chart, 'bullet0TargetValueLabel', 'text');
+      expect(targetLabels.length).toEqual(2);
+      
+      const targetText = targetLabels.map(label => label.textContent).join(' ');
+      // Check for $ symbol
+      expect(targetText).toMatch(/\$/);
+      // Check for decimal places (e.g., .00)
+      expect(targetText).toMatch(/\.\d{2}/);
+    });
+
+    test('standardNumber format renders with thousands separators', async () => {
+      render(<StandardNumberWithAxis {...StandardNumberWithAxis.args} />);
+      const chart = await findChart();
+      expect(chart).toBeInTheDocument();
+
+      // Bullet metric axis renders at the bottom - look for all text elements
+      const allText = chart.querySelectorAll('text');
+      const textContents = Array.from(allText).map(el => el.textContent);
+      
+      // At least one text element should have commas (axis labels for numbers >= 1000)
+      expect(textContents.some(text => text && text.includes(','))).toBe(true);
+    });
+
+    test('Value labels render with K/M/B/T formatting', async () => {
+      render(<ShortNumberWithTarget {...ShortNumberWithTarget.args} />);
+      const chart = await findChart();
+      expect(chart).toBeInTheDocument();
+
+      const valueLabels = await findAllMarksByGroupName(chart, 'bullet0ValueLabel', 'text');
+      expect(valueLabels.length).toEqual(4); // K, M, B, T examples
+      
+      // Check for K, M, B, T suffixes in value labels
+      const valueText = valueLabels.map(label => label.textContent).join(' ');
+      expect(valueText).toMatch(/K/);
+      expect(valueText).toMatch(/M/);
+      expect(valueText).toMatch(/B/);
+      expect(valueText).toMatch(/T/);
+    });
   });
 });
