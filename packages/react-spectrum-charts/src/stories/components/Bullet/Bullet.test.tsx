@@ -18,6 +18,7 @@ import {
   CurrencyWithTarget,
   StandardNumberWithAxis,
 } from './BulletNumberFormat.story';
+import { CustomLabels, CustomLabelsSidePosition } from './BulletCustomLabels.story';
 
 describe('Bullet', () => {
   // Bullet is not a real React component. This is test just provides test coverage for sonarqube
@@ -120,6 +121,53 @@ describe('Bullet', () => {
       expect(valueText).toMatch(/M/);
       expect(valueText).toMatch(/B/);
       expect(valueText).toMatch(/T/);
+    });
+  });
+
+  describe('Custom labels', () => {
+    test('custom metricLabel renders pre-formatted strings', async () => {
+      render(<CustomLabels {...CustomLabels.args} />);
+      const chart = await findChart();
+      expect(chart).toBeInTheDocument();
+
+      const valueLabels = await findAllMarksByGroupName(chart, 'bullet0ValueLabel', 'text');
+      expect(valueLabels.length).toEqual(3); // 3 rows in customLabelBulletData
+      
+      // Check for custom formatted values with units (GB, req/sec, ms)
+      const valueText = valueLabels.map(label => label.textContent).join(' ');
+      expect(valueText).toContain('750 GB');
+      expect(valueText).toContain('85K req/sec');
+      expect(valueText).toContain('245ms');
+    });
+
+    test('custom targetLabel renders pre-formatted strings', async () => {
+      render(<CustomLabels {...CustomLabels.args} />);
+      const chart = await findChart();
+      expect(chart).toBeInTheDocument();
+
+      const targetLabels = await findAllMarksByGroupName(chart, 'bullet0TargetValueLabel', 'text');
+      expect(targetLabels.length).toEqual(3); // 3 rows in customLabelBulletData
+      
+      // Check for custom formatted target values with units
+      const targetText = targetLabels.map(label => label.textContent).join(' ');
+      expect(targetText).toContain('1 TB');
+      expect(targetText).toContain('100K req/sec');
+      expect(targetText).toContain('200ms (goal)');
+    });
+
+    test('custom labels work with side label position', async () => {
+      render(<CustomLabelsSidePosition {...CustomLabelsSidePosition.args} />);
+      const chart = await findChart();
+      expect(chart).toBeInTheDocument();
+
+      // Side labels render on right axis
+      const allText = chart.querySelectorAll('text');
+      const textContents = Array.from(allText).map(el => el.textContent).join(' ');
+      
+      // Check for custom formatted values with units in axis labels
+      expect(textContents).toContain('750 GB');
+      expect(textContents).toContain('85K req/sec');
+      expect(textContents).toContain('245ms');
     });
   });
 });

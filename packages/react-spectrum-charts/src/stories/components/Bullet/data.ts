@@ -51,3 +51,35 @@ export const kmbtThresholdsData = [
   { thresholdMin: 1000000000000, thresholdMax: 1800000000000, fill: 'rgb(249, 137, 23)' }, // 1T-1.8T = orange
   { thresholdMin: 1800000000000, fill: 'rgb(21, 164, 110)' }, // > 1.8T = green
 ];
+
+// Data with pre-formatted labels for custom formatting
+// Use cases: adding units, custom precision, localized formatting, etc.
+export const customLabelBulletData = [
+  {
+    graphLabel: 'Storage Used',
+    currentAmount: 750,
+    currentAmountLabel: '750 GB',
+    target: 1000,
+    targetLabel: '1 TB',
+  },
+  {
+    graphLabel: 'API Requests',
+    currentAmount: 850,
+    currentAmountLabel: '85K req/sec',
+    target: 1000,
+    targetLabel: '100K req/sec',
+  },
+  {
+    graphLabel: 'Response Time',
+    currentAmount: 245,
+    currentAmountLabel: '245ms',
+    target: 200,
+    targetLabel: '200ms (goal)',
+  },
+];
+
+export const customLabelThresholdsData = [
+  { thresholdMax: 600, fill: 'rgb(21, 164, 110)' }, // < 60% = green (good)
+  { thresholdMin: 600, thresholdMax: 900, fill: 'rgb(249, 137, 23)' }, // 60-90% = orange (warning)
+  { thresholdMin: 900, fill: 'rgb(234, 56, 41)' }, // > 90% = red (critical)
+];

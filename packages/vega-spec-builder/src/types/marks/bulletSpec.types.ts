@@ -29,6 +29,8 @@ export interface BulletOptions {
   maxScaleValue?: number;
   /** Key in the data that is used as the metric */
   metric?: string;
+  /** Key in the data that contains a custom label for the metric value. When provided, this label will be displayed instead of the metric value. */
+  metricLabel?: string;
   /** Adds an axis that follows the max target in basic mode */
   metricAxis?: boolean;
   /** Sets the name of the component. */
@@ -55,6 +57,8 @@ export interface BulletOptions {
   showTargetValue?: boolean;
   /** Target line */
   target?: string;
+  /** Key in the data that contains a label for the target value. When provided, this label will be displayed instead of the target value. */
+  targetLabel?: string;
   /** changes color based on threshold */
   /** If true, the metric bar will be colored according to the thresholds. */
   thresholdBarColor?: boolean;

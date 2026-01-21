@@ -188,6 +188,11 @@ export function getBulletMarkValueLabel(bulletOptions: BulletSpecOptions): Mark 
       ? `datum.barColor === '${defaultColor}' ? '${solidColor}' : datum.barColor`
       : `'${solidColor}'`;
 
+  // Use metricLabel field if provided, otherwise format the metric value
+  const textValue = bulletOptions.metricLabel
+    ? [{ field: bulletOptions.metricLabel }]
+    : getBulletValueText(bulletOptions.numberFormat || 'standardNumber', bulletOptions.metric);
+
   const bulletMarkValueLabel: Mark = {
     name: `${bulletOptions.name}ValueLabel`,
     description: `${bulletOptions.name}ValueLabel`,
@@ -195,7 +200,7 @@ export function getBulletMarkValueLabel(bulletOptions: BulletSpecOptions): Mark 
     from: { data: 'bulletGroups' },
     encode: {
       enter: {
-        text: getBulletValueText(bulletOptions.numberFormat || 'standardNumber', bulletOptions.metric),
+        text: textValue,
         align: { value: 'right' },
         baseline: { value: 'top' },
         fill: { signal: fillExpr },
@@ -210,7 +215,11 @@ export function getBulletMarkValueLabel(bulletOptions: BulletSpecOptions): Mark 
 export function getBulletMarkTargetValueLabel(bulletOptions: BulletSpecOptions): Mark {
   const solidColor = getColorValue('gray-900', bulletOptions.colorScheme);
   const valueExpr = `datum.${bulletOptions.target}`;
-  const formatSignal = buildFormatSignal(valueExpr, bulletOptions.numberFormat || 'standardNumber');
+  
+  // Use targetLabel field if provided, otherwise format the target value
+  const textSignal = bulletOptions.targetLabel
+    ? `${valueExpr} != null ? 'Target: ' + datum.${bulletOptions.targetLabel} : 'No Target'`
+    : `${valueExpr} != null ? 'Target: ' + (${buildFormatSignal(valueExpr, bulletOptions.numberFormat || 'standardNumber')}) : 'No Target'`;
 
   const bulletMarkTargetValueLabel: Mark = {
     name: `${bulletOptions.name}TargetValueLabel`,
@@ -220,7 +229,7 @@ export function getBulletMarkTargetValueLabel(bulletOptions: BulletSpecOptions):
     encode: {
       enter: {
         text: {
-          signal: `${valueExpr} != null ? 'Target: ' + (${formatSignal}) : 'No Target'`,
+          signal: textSignal,
         },
         align: { value: 'center' },
         baseline: { value: 'top' },
@@ -345,7 +354,11 @@ function buildFormatSignal(valueExpr: string, numberFormat: string): string {
 
 export function getBulletLabelAxesRight(bulletOptions: BulletSpecOptions, labelOffset): Axis {
   const valueExpr = `info(data('table')[datum.index * (length(data('table')) - 1)].${bulletOptions.metric})`;
-  const formatSignal = buildFormatSignal(valueExpr, bulletOptions.numberFormat || 'standardNumber');
+  
+  // Use metricLabel field if provided, otherwise format the metric value
+  const textSignal = bulletOptions.metricLabel
+    ? `data('table')[datum.index * (length(data('table')) - 1)].${bulletOptions.metricLabel}`
+    : `${valueExpr} != null ? (${buildFormatSignal(valueExpr, bulletOptions.numberFormat || 'standardNumber')}) : ''`;
 
   return {
     scale: 'groupScale',
@@ -358,8 +371,7 @@ export function getBulletLabelAxesRight(bulletOptions: BulletSpecOptions, labelO
       labels: {
         update: {
           text: {
-            // Wrap formatSignal in parens to handle ternary expressions
-            signal: `${valueExpr} != null ? (${formatSignal}) : ''`,
+            signal: textSignal,
           },
         },
       },
