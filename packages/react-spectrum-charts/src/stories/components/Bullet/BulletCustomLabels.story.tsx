@@ -113,19 +113,19 @@ CustomLabelsRowDirection.args = {
 };
 
 /**
- * Mixing custom labels with standard number formatting.
- * Using metricLabel for custom formatting but letting targetLabel use the default numberFormat.
- * When targetLabel is not provided, the target value will be formatted using numberFormat.
+ * Custom target labels with pre-formatted strings.
+ * Shows the targetLabel prop rendering custom formatted target values.
  */
-export const PartialCustomLabels = bindWithProps(CustomLabelsStory);
-PartialCustomLabels.args = {
+export const CustomTargetLabel = bindWithProps(CustomLabelsStory);
+CustomTargetLabel.args = {
 	dimension: 'graphLabel',
 	metric: 'currentAmount',
 	metricLabel: 'currentAmountLabel',
 	target: 'target',
-	// targetLabel is intentionally omitted to show it falls back to numberFormat
-	numberFormat: 'shortNumber',
+	targetLabel: 'targetLabel',
 	showTargetValue: true,
 	labelPosition: 'top',
+	thresholds: customLabelThresholdsData,
+	thresholdBarColor: true,
 };
 

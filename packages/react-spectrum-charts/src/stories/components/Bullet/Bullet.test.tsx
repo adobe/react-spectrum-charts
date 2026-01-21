@@ -18,7 +18,7 @@ import {
   CurrencyWithTarget,
   StandardNumberWithAxis,
 } from './BulletNumberFormat.story';
-import { CustomLabels, CustomLabelsSidePosition } from './BulletCustomLabels.story';
+import { CustomLabels, CustomLabelsSidePosition, CustomTargetLabel } from './BulletCustomLabels.story';
 
 describe('Bullet', () => {
   // Bullet is not a real React component. This is test just provides test coverage for sonarqube
@@ -140,21 +140,6 @@ describe('Bullet', () => {
       expect(valueText).toContain('245ms');
     });
 
-    test('custom targetLabel renders pre-formatted strings', async () => {
-      render(<CustomLabels {...CustomLabels.args} />);
-      const chart = await findChart();
-      expect(chart).toBeInTheDocument();
-
-      const targetLabels = await findAllMarksByGroupName(chart, 'bullet0TargetValueLabel', 'text');
-      expect(targetLabels.length).toEqual(3); // 3 rows in customLabelBulletData
-      
-      // Check for custom formatted target values with units
-      const targetText = targetLabels.map(label => label.textContent).join(' ');
-      expect(targetText).toContain('1 TB');
-      expect(targetText).toContain('100K req/sec');
-      expect(targetText).toContain('200ms (goal)');
-    });
-
     test('custom labels work with side label position', async () => {
       render(<CustomLabelsSidePosition {...CustomLabelsSidePosition.args} />);
       const chart = await findChart();
@@ -168,6 +153,21 @@ describe('Bullet', () => {
       expect(textContents).toContain('750 GB');
       expect(textContents).toContain('85K req/sec');
       expect(textContents).toContain('245ms');
+    });
+
+    test('custom targetLabel renders pre-formatted strings', async () => {
+      render(<CustomTargetLabel {...CustomTargetLabel.args} />);
+      const chart = await findChart();
+      expect(chart).toBeInTheDocument();
+
+      const targetLabels = await findAllMarksByGroupName(chart, 'bullet0TargetValueLabel', 'text');
+      expect(targetLabels.length).toEqual(3); // 3 rows in customLabelBulletData
+      
+      // Check for custom formatted target values with units
+      const targetText = targetLabels.map(label => label.textContent).join(' ');
+      expect(targetText).toContain('1 TB');
+      expect(targetText).toContain('100K req/sec');
+      expect(targetText).toContain('200ms (goal)');
     });
   });
 });
