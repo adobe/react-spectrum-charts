@@ -1,6 +1,6 @@
 {
   "name": "@spectrum-charts/mcp",
-  "version": "1.26.0",
+  "version": "1.27.0",
   "description": "MCP Server for React Spectrum Charts documentation",
   "type": "module",
   "main": "./dist/index.js",
