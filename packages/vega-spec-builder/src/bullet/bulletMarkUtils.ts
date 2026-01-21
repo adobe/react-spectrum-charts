@@ -331,7 +331,7 @@ function buildFormatSignal(valueExpr: string, numberFormat: string): string {
     return `formatShortNumber(${valueExpr})`;
   }
   if (numberFormat === 'shortCurrency') {
-    return `abs(${valueExpr}) >= 1000 ? upper(replace(format(${valueExpr}, '$.3~s'), /(\\d+)G/, '$1B')) : format(${valueExpr}, '$')`;
+    return String.raw`abs(${valueExpr}) >= 1000 ? upper(replace(format(${valueExpr}, '$.3~s'), /(\d+)G/, '$1B')) : format(${valueExpr}, '$')`;
   }
   if (numberFormat === 'currency') {
     return `format(${valueExpr}, '$,.2f')`;
