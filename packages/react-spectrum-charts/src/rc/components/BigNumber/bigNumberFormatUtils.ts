@@ -22,9 +22,12 @@ export const formatBigNumber = (
   numberFormat?: string,
   numberLocale?: NumberLocale
 ): string => {
-  const formatter = numberLocale
-    ? numberFormatLocale(numberLocale)
-    : numberFormatLocale(getLocale(DEFAULT_LOCALE).number);
+  const locale = numberLocale ?? getLocale(DEFAULT_LOCALE).number;
+  if (!locale) {
+    throw new Error('Unable to resolve number locale');
+  }
+
+  const formatter = numberFormatLocale(locale);
 
   if (numberType === 'percentage') {
     return formatter.format('~%')(value);
@@ -32,7 +35,7 @@ export const formatBigNumber = (
 
   if (numberFormat) {
     return formatter.format(numberFormat)(value);
-  } else {
-    return formatter.format('')(value);
   }
+
+  return formatter.format('')(value);
 };

@@ -32,6 +32,9 @@ module.exports = {
     '^vega$': '<rootDir>/node_modules/vega/build/vega.js',
     ...pathsToModuleNameMapper(compilerOptions.paths),
   },
+  transformIgnorePatterns: [
+    'node_modules/(?!(vega|vega-.*|d3-.*|internmap|json-stringify-pretty-compact)/)',
+  ],
   testPathIgnorePatterns: ['<rootDir>/dist/'],
   setupFilesAfterEnv: ['@testing-library/jest-dom', 'jest-canvas-mock'],
   testMatch: [
