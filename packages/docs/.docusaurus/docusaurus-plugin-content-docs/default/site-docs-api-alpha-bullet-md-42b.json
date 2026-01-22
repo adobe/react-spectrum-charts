@@ -1,0 +1,24 @@
+{
+  "id": "api/alpha/Bullet",
+  "title": "Bullet",
+  "description": "Bullet is an alpha component and may undergo breaking changes. See Alpha Components for more information.",
+  "source": "@site/docs/api/alpha/Bullet.md",
+  "sourceDirName": "api/alpha",
+  "slug": "/api/alpha/Bullet",
+  "permalink": "/react-spectrum-charts/docs/docs/api/alpha/Bullet",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/adobe/react-spectrum-charts/tree/main/packages/docs/docs/api/alpha/Bullet.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "sidebar",
+  "previous": {
+    "title": "Alpha Components",
+    "permalink": "/react-spectrum-charts/docs/docs/api/alpha/"
+  },
+  "next": {
+    "title": "MetricRange",
+    "permalink": "/react-spectrum-charts/docs/docs/api/analysis/MetricRange"
+  }
+}

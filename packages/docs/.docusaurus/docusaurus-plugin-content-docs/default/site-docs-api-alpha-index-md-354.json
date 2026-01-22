@@ -1,0 +1,24 @@
+{
+  "id": "api/alpha/index",
+  "title": "Alpha Components",
+  "description": "Alpha components are experimental features that are under active development. They are available for testing and feedback but may undergo significant changes before reaching stable release.",
+  "source": "@site/docs/api/alpha/index.md",
+  "sourceDirName": "api/alpha",
+  "slug": "/api/alpha/",
+  "permalink": "/react-spectrum-charts/docs/docs/api/alpha/",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/adobe/react-spectrum-charts/tree/main/packages/docs/docs/api/alpha/index.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "sidebar",
+  "previous": {
+    "title": "Scatter",
+    "permalink": "/react-spectrum-charts/docs/docs/api/visualizations/Scatter"
+  },
+  "next": {
+    "title": "Bullet",
+    "permalink": "/react-spectrum-charts/docs/docs/api/alpha/Bullet"
+  }
+}
