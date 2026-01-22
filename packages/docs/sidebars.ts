@@ -44,6 +44,12 @@ const sidebars: SidebarsConfig = {
         },
         {
           type: 'category',
+          label: 'Alpha Components',
+          collapsed: true,
+          items: ['api/alpha/index', 'api/alpha/Bullet'],
+        },
+        {
+          type: 'category',
           label: 'Analysis',
           items: ['api/analysis/MetricRange', 'api/analysis/Trendline'],
         },
