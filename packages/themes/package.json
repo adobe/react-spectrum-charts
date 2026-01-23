@@ -31,6 +31,6 @@
   "dependencies": {
     "@spectrum-charts/constants": "1.27.0",
     "@spectrum-charts/utils": "1.27.0",
-    "vega": "^5.32.0"
+    "vega": "^6.2.0"
   }
 }
