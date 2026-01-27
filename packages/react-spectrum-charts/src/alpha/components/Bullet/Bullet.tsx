@@ -35,6 +35,7 @@ const Bullet: FC<BulletProps> = ({
   scaleType = DEFAULT_SCALE_TYPE,
   maxScaleValue = DEFAULT_SCALE_VALUE,
   thresholdBarColor = false,
+  children,
 }) => {
   return null;
 };

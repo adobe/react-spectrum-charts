@@ -30,6 +30,8 @@ export const sampleOptionsColumn: BulletSpecOptions = {
   metricAxis: false,
   track: false,
   thresholdBarColor: false,
+  chartTooltips: [],
+  interactiveMarkName: 'bullet0',
 };
 
 export const sampleOptionsRow: BulletSpecOptions = {
@@ -51,4 +53,6 @@ export const sampleOptionsRow: BulletSpecOptions = {
   track: false,
   thresholdBarColor: false,
   metricAxis: false,
+  chartTooltips: [],
+  interactiveMarkName: 'bullet0',
 };

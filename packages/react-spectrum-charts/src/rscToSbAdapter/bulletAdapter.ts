@@ -9,12 +9,16 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { JSXElementConstructor, ReactElement, ReactNode } from 'react';
-
 import { BulletOptions } from '@spectrum-charts/vega-spec-builder';
 
-export interface BulletProps extends Omit<BulletOptions, 'markType'> {
-	children?: ReactNode;
-}
+import { BulletProps } from '../types';
+import { childrenToOptions } from './childrenAdapter';
 
-export type BulletElement = ReactElement<BulletProps, JSXElementConstructor<BulletProps>>;
+export const getBulletOptions = ({ children, ...bulletProps }: BulletProps): BulletOptions => {
+  const { chartTooltips } = childrenToOptions(children);
+  return {
+    ...bulletProps,
+    chartTooltips,
+    markType: 'bullet',
+  };
+};

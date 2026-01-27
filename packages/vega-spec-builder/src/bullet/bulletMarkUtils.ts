@@ -14,6 +14,7 @@ import { Axis, GroupMark, Mark, TextValueRef } from 'vega';
 
 import { getColorValue } from '@spectrum-charts/themes';
 
+import { getTooltip } from '../marks/markUtils';
 import { getTextNumberFormat } from '../textUtils';
 import { BulletSpecOptions } from '../types';
 
@@ -63,6 +64,12 @@ export const addMarks = produce<Mark[], [BulletSpecOptions]>((marks, bulletOptio
   if (bulletOptions.labelPosition === 'top' || bulletOptions.direction === 'row') {
     bulletMark.marks?.push(getBulletMarkLabel(bulletOptions));
     bulletMark.marks?.push(getBulletMarkValueLabel(bulletOptions));
+  }
+
+  // Add hover area LAST if tooltips exist - this sits on top and covers the entire bullet area
+  // so it receives hover events from all parts (metric bar, target line, threshold, track)
+  if (bulletOptions.chartTooltips?.length) {
+    bulletMark.marks?.push(getBulletHoverArea(bulletOptions));
   }
 
   marks.push(bulletMark);
@@ -215,7 +222,7 @@ export function getBulletMarkValueLabel(bulletOptions: BulletSpecOptions): Mark 
 export function getBulletMarkTargetValueLabel(bulletOptions: BulletSpecOptions): Mark {
   const solidColor = getColorValue('gray-900', bulletOptions.colorScheme);
   const valueExpr = `datum.${bulletOptions.target}`;
-  
+
   // Use targetLabel field if provided, otherwise format the target value
   const textSignal = bulletOptions.targetLabel
     ? `${valueExpr} != null ? 'Target: ' + datum.${bulletOptions.targetLabel} : 'No Target'`
@@ -282,6 +289,56 @@ export function getBulletMarkThreshold(bulletOptions: BulletSpecOptions): Mark {
     },
   };
   return bulletMarkThreshold;
+}
+
+/**
+ * Returns the mark for the full hover area of a bullet
+ * Covers the entire bullet area including target line, metric bar, and threshold
+ * @param bulletOptions
+ * @returns
+ */
+export function getBulletHoverArea(bulletOptions: BulletSpecOptions): Mark {
+  // Calculate Y position - start at the top of the target (if shown) or threshold
+  let yPositionSignal: string;
+  let heightSignal: string;
+
+  if (bulletOptions.showTarget) {
+    // Start at the top of the target line and cover the full targetHeight
+    yPositionSignal =
+      bulletOptions.showTargetValue
+        ? 'bulletGroupHeight - targetValueLabelHeight - targetHeight'
+        : 'bulletGroupHeight - targetHeight';
+    heightSignal = 'targetHeight';
+  } else {
+    // No target, just cover the threshold area
+    yPositionSignal =
+      bulletOptions.showTargetValue
+        ? 'bulletGroupHeight - targetValueLabelHeight - 3 - bulletThresholdHeight'
+        : 'bulletGroupHeight - 3 - bulletThresholdHeight';
+    heightSignal = 'bulletThresholdHeight';
+  }
+
+  const bulletMarkHoverArea: Mark = {
+    name: `${bulletOptions.name}HoverArea`,
+    description: `hover area for ${bulletOptions.name}`,
+    type: 'rect',
+    from: { data: 'bulletGroups' },
+    interactive: true,
+    encode: {
+      enter: {
+        fill: { value: 'transparent' },
+        tooltip: getTooltip(bulletOptions.chartTooltips ?? [], bulletOptions.name),
+      },
+      update: {
+        x: { value: 0 },
+        x2: { signal: bulletOptions.direction === 'column' ? 'width' : 'bulletGroupWidth' },
+        height: { signal: heightSignal },
+        y: { signal: yPositionSignal },
+      },
+    },
+  };
+
+  return bulletMarkHoverArea;
 }
 
 export function getBulletTrack(bulletOptions: BulletSpecOptions): Mark {
@@ -354,7 +411,7 @@ function buildFormatSignal(valueExpr: string, numberFormat: string): string {
 
 export function getBulletLabelAxesRight(bulletOptions: BulletSpecOptions, labelOffset): Axis {
   const valueExpr = `info(data('table')[datum.index * (length(data('table')) - 1)].${bulletOptions.metric})`;
-  
+
   // Use metricLabel field if provided, otherwise format the metric value
   const textSignal = bulletOptions.metricLabel
     ? `data('table')[datum.index * (length(data('table')) - 1)].${bulletOptions.metricLabel}`

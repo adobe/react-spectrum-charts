@@ -22,6 +22,9 @@ import {
 import { getColorValue, spectrumColors } from '@spectrum-charts/themes';
 import { toCamelCase } from '@spectrum-charts/utils';
 
+import { addTooltipData, addTooltipSignals } from '../chartTooltip/chartTooltipUtils';
+import { getInteractiveMarkName } from '../marks/markUtils';
+import { addHoveredItemSignal } from '../signal/signalSpecBuilder';
 import { BulletOptions, BulletSpecOptions, ColorScheme, ScSpec } from '../types';
 import { getBulletTableData, getBulletTransforms } from './bulletDataUtils';
 import { addAxes, addMarks } from './bulletMarkUtils';
@@ -53,9 +56,11 @@ export const addBullet = produce<
       track = false,
       thresholdBarColor = false,
       metricAxis = false,
+      chartTooltips = [],
       ...options
     }
   ) => {
+    const bulletName = toCamelCase(name ?? `bullet${index}`);
     const bulletOptions: BulletSpecOptions = {
       colorScheme: colorScheme,
       index,
@@ -63,7 +68,7 @@ export const addBullet = produce<
       metric: metric ?? 'currentAmount',
       dimension: dimension ?? 'graphLabel',
       target: target ?? 'target',
-      name: toCamelCase(name ?? `bullet${index}`),
+      name: bulletName,
       direction: direction,
       numberFormat: numberFormat ?? '',
       showTarget: showTarget,
@@ -75,6 +80,8 @@ export const addBullet = produce<
       thresholds: thresholds,
       thresholdBarColor: thresholdBarColor,
       metricAxis: metricAxis,
+      chartTooltips,
+      interactiveMarkName: getInteractiveMarkName({ chartTooltips }, bulletName),
       ...options,
     };
 
@@ -163,6 +170,12 @@ export const addSignals = produce<Signal[], [BulletSpecOptions]>((signals, optio
       { name: 'bulletChartHeight', update: 'bulletGroupHeight' }
     );
   }
+
+  // Add tooltip signals if tooltips exist
+  if (options.chartTooltips?.length) {
+    addHoveredItemSignal(signals, options.name, undefined, 1, options.chartTooltips[0]?.excludeDataKeys);
+    addTooltipSignals(signals, options);
+  }
 });
 
 /**
@@ -184,4 +197,9 @@ function getBulletGroupHeightExpression(options: BulletSpecOptions): string {
 export const addData = produce<Data[], [BulletSpecOptions]>((data, options) => {
   const tableData = getBulletTableData(data);
   tableData.transform = getBulletTransforms(options);
+
+  // Add tooltip data if tooltips exist
+  if (options.chartTooltips?.length) {
+    addTooltipData(data, options);
+  }
 });

@@ -16,7 +16,7 @@ import { StoryFn } from '@storybook/react';
 import { Chart } from '../../../Chart';
 // Assuming Bullet chart is a component in the @rsc/alpha export
 import { Bullet } from '../../../alpha';
-import { Title } from '../../../components';
+import { ChartTooltip, Title } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
 import { bindWithProps } from '../../../test-utils';
 import { BulletProps, ChartProps } from '../../../types';
@@ -198,4 +198,42 @@ MetricAxis.args = {
   metricAxis: true,
 };
 
-export { Basic, Thresholds, ColoredMetric, Track, RowMode, WithTitle, FixedScale, MetricAxis };
+// Bullet with Tooltip
+const BulletWithTooltipStory: StoryFn<typeof Bullet> = (args): ReactElement => {
+  const chartProps = useChartProps({ ...defaultChartProps, width: 400 });
+  return (
+    <Chart {...chartProps}>
+      <Bullet {...args}>
+        <ChartTooltip>
+          {(datum) => (
+            <div>
+              <div>{datum.graphLabel}</div>
+              <div>Current: ${datum.currentAmount}</div>
+              <div>Target: ${datum.target}</div>
+            </div>
+          )}
+        </ChartTooltip>
+      </Bullet>
+    </Chart>
+  );
+};
+
+const WithTooltip = bindWithProps(BulletWithTooltipStory);
+WithTooltip.args = {
+  metric: 'currentAmount',
+  dimension: 'graphLabel',
+  target: 'target',
+  color: 'blue-900',
+  direction: 'column',
+  numberFormat: '$,.2f',
+  showTarget: true,
+  showTargetValue: false,
+  labelPosition: 'top',
+  scaleType: 'normal',
+  maxScaleValue: 100,
+  track: false,
+  thresholdBarColor: false,
+  metricAxis: false,
+};
+
+export { Basic, Thresholds, ColoredMetric, Track, RowMode, WithTitle, FixedScale, MetricAxis, WithTooltip };

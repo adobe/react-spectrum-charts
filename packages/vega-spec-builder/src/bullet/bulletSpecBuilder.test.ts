@@ -190,3 +190,46 @@ describe('getBulletData', () => {
     expect(data[0].transform).toHaveLength(2);
   });
 });
+
+describe('addSignals() - tooltip support', () => {
+  test('should add hover events if tooltip is present', () => {
+    const signals = addSignals([], { ...sampleOptionsColumn, chartTooltips: [{}] });
+    const hoveredItemSignal = signals.find((signal) => signal.name === 'bullet0_hoveredItem');
+    expect(hoveredItemSignal).toBeDefined();
+    expect(hoveredItemSignal).toHaveProperty('on');
+    expect(hoveredItemSignal?.on).toHaveLength(2);
+    expect(hoveredItemSignal?.on?.[0]).toHaveProperty('events', '@bullet0:mouseover');
+  });
+
+  test('should exclude data with key from update if tooltip has excludeDataKey', () => {
+    const signals = addSignals([], {
+      ...sampleOptionsColumn,
+      chartTooltips: [{ excludeDataKeys: ['excludeFromTooltip'] }],
+    });
+    const hoveredItemSignal = signals.find((signal) => signal.name === 'bullet0_hoveredItem');
+    expect(hoveredItemSignal).toHaveProperty('on');
+    expect(hoveredItemSignal?.on?.[0]).toHaveProperty('update', '(datum.excludeFromTooltip) ? null : datum');
+  });
+
+  test('should not add hover signals when no tooltips exist', () => {
+    const signals = addSignals([], sampleOptionsColumn);
+    const hoveredItemSignal = signals.find((signal) => signal.name === 'bullet0_hoveredItem');
+    expect(hoveredItemSignal).toBeUndefined();
+  });
+});
+
+describe('addData() - tooltip support', () => {
+  test('should create base data with tooltips using item highlighting', () => {
+    // Default tooltips use highlightBy: 'item' which doesn't require extra data sources
+    const data = addData([], { ...sampleOptionsColumn, chartTooltips: [{}] });
+    expect(data).toHaveLength(1);
+    expect(data[0].name).toBe('table');
+  });
+
+  test('should not break with tooltips', () => {
+    // Ensure adding tooltips doesn't break data creation
+    const data = addData([], { ...sampleOptionsColumn, chartTooltips: [{}] });
+    expect(data).toBeDefined();
+    expect(data.length).toBeGreaterThanOrEqual(1);
+  });
+});
