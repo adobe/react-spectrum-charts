@@ -14,7 +14,6 @@ import {
   AxisOptions,
   AxisThumbnailOptions,
   BarAnnotationOptions,
-  BulletOptions,
   ChartPopoverOptions,
   ChartTooltipOptions,
   DonutSummaryOptions,
@@ -57,6 +56,7 @@ import {
   AxisProps,
   AxisThumbnailProps,
   BarProps,
+  BulletProps,
   ChartPopoverProps,
   ChartTooltipProps,
   ComboProps,
@@ -78,6 +78,7 @@ import { sanitizeChildren } from '../utils';
 import { getAreaOptions } from './areaAdapter';
 import { getAxisAnnotationOptions, getAxisOptions } from './axisAdapter';
 import { getBarOptions } from './barAdapter';
+import { getBulletOptions } from './bulletAdapter';
 import { getChartPopoverOptions } from './chartPopoverAdapter';
 import { getChartTooltipOptions } from './chartTooltipAdapter';
 import { getComboOptions } from './comboAdapter';
@@ -160,7 +161,7 @@ export const childrenToOptions = (
         break;
 
       case Bullet.displayName:
-        marks.push({ ...child.props, markType: 'bullet' } as BulletOptions);
+        marks.push(getBulletOptions(child.props as BulletProps));
         break;
 
       case ChartPopover.displayName:

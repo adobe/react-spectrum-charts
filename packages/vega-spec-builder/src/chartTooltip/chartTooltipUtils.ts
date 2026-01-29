@@ -28,6 +28,7 @@ import { getHoverMarkNames } from '../marks/markUtils';
 import {
   AreaSpecOptions,
   BarSpecOptions,
+  BulletSpecOptions,
   ChartTooltipOptions,
   ChartTooltipSpecOptions,
   DonutSpecOptions,
@@ -39,6 +40,7 @@ import {
 type TooltipParentOptions =
   | AreaSpecOptions
   | BarSpecOptions
+  | BulletSpecOptions
   | DonutSpecOptions
   | LineSpecOptions
   | ScatterSpecOptions
