@@ -90,12 +90,60 @@ describe('getBulletMarks', () => {
 });
 
 describe('getBulletMarks() - tooltip support', () => {
-  test('should include hover area mark when chartTooltips exist', () => {
-    const marksGroup = addMarks([], { ...sampleOptionsColumn, chartTooltips: [{}] })[0] as GroupMark;
+  test('should include hover area mark when chartTooltips exist and thresholds are defined', () => {
+    const marksGroup = addMarks([], {
+      ...sampleOptionsColumn,
+      chartTooltips: [{}],
+      thresholds: [{ thresholdMax: 100, fill: 'red' }],
+    })[0] as GroupMark;
     const hoverAreaMark = marksGroup.marks?.find((mark) => mark.name === 'bullet0HoverArea');
     expect(hoverAreaMark).toBeDefined();
     expect(hoverAreaMark?.type).toBe('rect');
     expect(hoverAreaMark?.interactive).toBe(true);
+  });
+
+  test('should include hover area mark when chartTooltips exist and track is enabled', () => {
+    const marksGroup = addMarks([], {
+      ...sampleOptionsColumn,
+      chartTooltips: [{}],
+      track: true,
+    })[0] as GroupMark;
+    const hoverAreaMark = marksGroup.marks?.find((mark) => mark.name === 'bullet0HoverArea');
+    expect(hoverAreaMark).toBeDefined();
+    expect(hoverAreaMark?.type).toBe('rect');
+    expect(hoverAreaMark?.interactive).toBe(true);
+  });
+
+  test('should not include hover area mark when tooltips exist but no thresholds or track', () => {
+    const marksGroup = addMarks([], {
+      ...sampleOptionsColumn,
+      chartTooltips: [{}],
+      thresholds: [],
+      track: false,
+    })[0] as GroupMark;
+    const hoverAreaMark = marksGroup.marks?.find((mark) => mark.name?.includes('HoverArea'));
+    expect(hoverAreaMark).toBeUndefined();
+  });
+
+  test('should add tooltip to metric bar when tooltips are configured', () => {
+    const marksGroup = addMarks([], {
+      ...sampleOptionsColumn,
+      chartTooltips: [{}],
+    })[0] as GroupMark;
+    const rectMark = marksGroup.marks?.find((mark) => mark.name === 'bullet0Rect');
+    expect(rectMark?.interactive).toBe(true);
+    expect(rectMark?.encode?.enter?.tooltip).toBeDefined();
+  });
+
+  test('should add tooltip to target line when tooltips are configured', () => {
+    const marksGroup = addMarks([], {
+      ...sampleOptionsColumn,
+      chartTooltips: [{}],
+      showTarget: true,
+    })[0] as GroupMark;
+    const targetMark = marksGroup.marks?.find((mark) => mark.name === 'bullet0Target');
+    expect(targetMark?.interactive).toBe(true);
+    expect(targetMark?.encode?.enter?.tooltip).toBeDefined();
   });
 
   test('should not include hover area mark when no tooltips exist', () => {
@@ -104,10 +152,11 @@ describe('getBulletMarks() - tooltip support', () => {
     expect(hoverAreaMark).toBeUndefined();
   });
 
-  test('should render hover area mark last (on top)', () => {
+  test('should render hover area mark last (on top) when thresholds exist', () => {
     const marksGroup = addMarks([], {
       ...sampleOptionsColumn,
       chartTooltips: [{}],
+      thresholds: [{ thresholdMax: 100, fill: 'red' }],
       showTarget: true,
       showTargetValue: true,
     })[0] as GroupMark;
@@ -118,8 +167,12 @@ describe('getBulletMarks() - tooltip support', () => {
 });
 
 describe('getBulletHoverArea()', () => {
-  test('should return hover area mark with correct properties', () => {
-    const hoverArea = getBulletHoverArea({ ...sampleOptionsColumn, chartTooltips: [{}] });
+  test('should return hover area mark with correct properties when thresholds exist', () => {
+    const hoverArea = getBulletHoverArea({
+      ...sampleOptionsColumn,
+      thresholds: [{ thresholdMax: 100, fill: 'red' }],
+      chartTooltips: [{}],
+    });
     expect(hoverArea.name).toBe('bullet0HoverArea');
     expect(hoverArea.type).toBe('rect');
     expect(hoverArea.interactive).toBe(true);
@@ -127,22 +180,106 @@ describe('getBulletHoverArea()', () => {
     expect(hoverArea.encode?.enter?.tooltip).toBeDefined();
   });
 
-  test('should use targetHeight when target is shown', () => {
+  test('should use targetHeight when thresholds exist and target is shown', () => {
     const hoverArea = getBulletHoverArea({
       ...sampleOptionsColumn,
       showTarget: true,
+      thresholds: [{ thresholdMax: 100, fill: 'red' }],
       chartTooltips: [{}],
     });
     expect(hoverArea.encode?.update?.height).toEqual({ signal: 'targetHeight' });
   });
 
-  test('should use bulletThresholdHeight when no target', () => {
+  test('should use bulletThresholdHeight when thresholds exist and no target', () => {
     const hoverArea = getBulletHoverArea({
       ...sampleOptionsColumn,
       showTarget: false,
+      thresholds: [{ thresholdMax: 100, fill: 'red' }],
       chartTooltips: [{}],
     });
     expect(hoverArea.encode?.update?.height).toEqual({ signal: 'bulletThresholdHeight' });
+  });
+
+  test('should use bulletHeight when track exists (no thresholds)', () => {
+    const hoverArea = getBulletHoverArea({
+      ...sampleOptionsColumn,
+      track: true,
+      thresholds: [],
+      chartTooltips: [{}],
+    });
+    expect(hoverArea.encode?.update?.height).toEqual({ signal: 'bulletHeight' });
+  });
+
+  test('should calculate correct y position when thresholds exist with target and target value', () => {
+    const hoverArea = getBulletHoverArea({
+      ...sampleOptionsColumn,
+      showTarget: true,
+      showTargetValue: true,
+      thresholds: [{ thresholdMax: 100, fill: 'red' }],
+      chartTooltips: [{}],
+    });
+    expect(hoverArea.encode?.update?.y).toEqual({
+      signal: 'bulletGroupHeight - targetValueLabelHeight - targetHeight',
+    });
+    expect(hoverArea.encode?.update?.height).toEqual({ signal: 'targetHeight' });
+  });
+
+  test('should calculate correct y position when thresholds exist without target but with target value', () => {
+    const hoverArea = getBulletHoverArea({
+      ...sampleOptionsColumn,
+      showTarget: false,
+      showTargetValue: true,
+      thresholds: [{ thresholdMax: 100, fill: 'red' }],
+      chartTooltips: [{}],
+    });
+    expect(hoverArea.encode?.update?.y).toEqual({
+      signal: 'bulletGroupHeight - targetValueLabelHeight - 3 - bulletThresholdHeight',
+    });
+    expect(hoverArea.encode?.update?.height).toEqual({ signal: 'bulletThresholdHeight' });
+  });
+
+  test('should calculate correct y position when track exists with target and target value', () => {
+    const hoverArea = getBulletHoverArea({
+      ...sampleOptionsColumn,
+      track: true,
+      showTarget: true,
+      showTargetValue: true,
+      thresholds: [],
+      chartTooltips: [{}],
+    });
+    expect(hoverArea.encode?.update?.y).toEqual({ signal: 'bulletGroupHeight - 3 - 2 * bulletHeight - 20' });
+    expect(hoverArea.encode?.update?.height).toEqual({ signal: 'bulletHeight' });
+  });
+
+  test('should use fallback values when no thresholds and no track', () => {
+    const hoverArea = getBulletHoverArea({
+      ...sampleOptionsColumn,
+      track: false,
+      thresholds: [],
+      chartTooltips: [{}],
+    });
+    expect(hoverArea.encode?.update?.y).toEqual({ signal: 'bulletGroupHeight - 3 - 2 * bulletHeight' });
+    expect(hoverArea.encode?.update?.height).toEqual({ signal: 'bulletHeight' });
+  });
+
+  test('should set correct x2 signal for column direction', () => {
+    const hoverArea = getBulletHoverArea({
+      ...sampleOptionsColumn,
+      direction: 'column',
+      thresholds: [{ thresholdMax: 100, fill: 'red' }],
+      chartTooltips: [{}],
+    });
+    expect(hoverArea.encode?.update?.x2).toEqual({ signal: 'width' });
+  });
+
+  test('should set correct x2 signal for row direction', () => {
+    const hoverArea = getBulletHoverArea({
+      ...sampleOptionsColumn,
+      direction: 'row',
+      thresholds: [{ thresholdMax: 100, fill: 'red' }],
+      chartTooltips: [{}],
+    });
+    expect(hoverArea.encode?.update?.x2).toEqual({ signal: 'bulletGroupWidth' });
   });
 });
 
@@ -209,6 +346,19 @@ describe('getBulletMarkRect', () => {
       expect(rectMark.encode?.enter?.fill).toEqual([{ value: optionsNoThresholds.color }]);
     });
   });
+
+  describe('getBulletMarkRect tooltip logic', () => {
+    test('Adds tooltip and interactive to metric bar when tooltips are configured', () => {
+      const optionsWithTooltip = {
+        ...sampleOptionsColumn,
+        chartTooltips: [{ excludeDataKeys: [] }],
+      };
+
+      const rectMark = getBulletMarkRect(optionsWithTooltip);
+      expect(rectMark.interactive).toBe(true);
+      expect(rectMark.encode?.enter?.tooltip).toBeDefined();
+    });
+  });
 });
 
 describe('getBulletMarkTarget', () => {
@@ -217,6 +367,19 @@ describe('getBulletMarkTarget', () => {
     expect(data).toBeDefined();
     expect(data.encode?.update).toBeDefined();
     expect(Object.keys(data.encode?.update ?? {}).length).toBe(3);
+  });
+
+  describe('getBulletMarkTarget tooltip logic', () => {
+    test('Adds tooltip and interactive to target line when tooltips are configured', () => {
+      const optionsWithTooltip = {
+        ...sampleOptionsColumn,
+        chartTooltips: [{ excludeDataKeys: [] }],
+      };
+
+      const targetMark = getBulletMarkTarget(optionsWithTooltip);
+      expect(targetMark.interactive).toBe(true);
+      expect(targetMark.encode?.enter?.tooltip).toBeDefined();
+    });
   });
 });
 

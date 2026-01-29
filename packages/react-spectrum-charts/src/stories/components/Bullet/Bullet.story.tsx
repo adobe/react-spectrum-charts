@@ -236,4 +236,53 @@ WithTooltip.args = {
   metricAxis: false,
 };
 
-export { Basic, Thresholds, ColoredMetric, Track, RowMode, WithTitle, FixedScale, MetricAxis, WithTooltip };
+const WithTooltipAndThresholds = bindWithProps(BulletWithTooltipStory);
+WithTooltipAndThresholds.args = {
+  metric: 'currentAmount',
+  dimension: 'graphLabel',
+  target: 'target',
+  color: 'blue-900',
+  direction: 'column',
+  numberFormat: '$,.2f',
+  showTarget: true,
+  showTargetValue: false,
+  labelPosition: 'top',
+  scaleType: 'normal',
+  maxScaleValue: 100,
+  thresholds: coloredThresholdsData,
+  thresholdBarColor: false,
+  track: false,
+  metricAxis: false,
+};
+
+const WithTooltipAndTrack = bindWithProps(BulletWithTooltipStory);
+WithTooltipAndTrack.args = {
+  metric: 'currentAmount',
+  dimension: 'graphLabel',
+  target: 'target',
+  color: 'blue-900',
+  direction: 'column',
+  numberFormat: '$,.2f',
+  showTarget: true,
+  showTargetValue: false,
+  labelPosition: 'top',
+  scaleType: 'normal',
+  maxScaleValue: 100,
+  track: true,
+  thresholdBarColor: false,
+  metricAxis: false,
+};
+
+export {
+  Basic,
+  Thresholds,
+  ColoredMetric,
+  Track,
+  RowMode,
+  WithTitle,
+  FixedScale,
+  MetricAxis,
+  WithTooltip,
+  WithTooltipAndThresholds,
+  WithTooltipAndTrack,
+};
