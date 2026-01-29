@@ -10,8 +10,10 @@
  * governing permissions and limitations under the License.
  */
 import { spectrumColors } from './spectrumColors';
+import { spectrum2Colors } from './spectrum2Colors';
 
 const colors = spectrumColors.light;
+const s2Colors = spectrum2Colors.light;
 
 export const categorical6 = [
   colors['categorical-100'],
@@ -41,36 +43,36 @@ export const categorical16 = [
 ];
 
 export const s2Categorical6 = [
-  colors['s2-categorical-100'],
-  colors['s2-categorical-200'],
-  colors['s2-categorical-300'],
-  colors['s2-categorical-400'],
-  colors['s2-categorical-500'],
-  colors['s2-categorical-600'],
+  s2Colors['categorical-100'],
+  s2Colors['categorical-200'],
+  s2Colors['categorical-300'],
+  s2Colors['categorical-400'],
+  s2Colors['categorical-500'],
+  s2Colors['categorical-600'],
 ];
 
 export const s2Categorical12 = [
   ...s2Categorical6,
-  colors['s2-categorical-700'],
-  colors['s2-categorical-800'],
-  colors['s2-categorical-900'],
-  colors['s2-categorical-1000'],
-  colors['s2-categorical-1100'],
-  colors['s2-categorical-1200'],
+  s2Colors['categorical-700'],
+  s2Colors['categorical-800'],
+  s2Colors['categorical-900'],
+  s2Colors['categorical-1000'],
+  s2Colors['categorical-1100'],
+  s2Colors['categorical-1200'],
 ];
 
 export const s2Categorical16 = [
   ...s2Categorical12,
-  colors['s2-categorical-1300'],
-  colors['s2-categorical-1400'],
-  colors['s2-categorical-1500'],
-  colors['s2-categorical-1600'],
+  s2Colors['categorical-1300'],
+  s2Colors['categorical-1400'],
+  s2Colors['categorical-1500'],
+  s2Colors['categorical-1600'],
 ];
 
 export const s2Categorical20 = [
   ...s2Categorical16,
-  colors['s2-categorical-1700'],
-  colors['s2-categorical-1800'],
-  colors['s2-categorical-1900'],
-  colors['s2-categorical-2000'],
+  s2Colors['categorical-1700'],
+  s2Colors['categorical-1800'],
+  s2Colors['categorical-1900'],
+  s2Colors['categorical-2000'],
 ];

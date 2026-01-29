@@ -1,0 +1,178 @@
+/*
+ * Copyright 2026 Adobe. All rights reserved.
+ * This file is licensed to you under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy
+ * of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under
+ * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+ * OF ANY KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
+ */
+import { GroupMark } from 'vega';
+
+import {
+  COLOR_SCALE,
+  CONTROLLED_HIGHLIGHTED_ITEM,
+  DEFAULT_OPACITY_RULE,
+  HOVERED_ITEM,
+  MARK_ID,
+  SELECTED_ITEM,
+  SYMBOL_SIZE_SCALE,
+} from '@spectrum-charts/constants';
+
+import { addScatterMarks, getOpacity, getScatterHoverMarks, getScatterMark, getSelectRingSize } from './scatterMarkUtils';
+import { defaultScatterOptions } from './scatterTestUtils';
+
+describe('addScatterMarks()', () => {
+  test('should add the scatter group with the symbol marks', () => {
+    const marks = addScatterMarks([], defaultScatterOptions);
+    expect(marks).toHaveLength(1);
+    expect(marks[0].name).toBe('scatter0_group');
+    expect(marks[0].type).toBe('group');
+    expect((marks[0] as GroupMark).marks).toHaveLength(1);
+  });
+
+  test('should use "multiply" blend mode in light mode', () => {
+    const marks = addScatterMarks([], { ...defaultScatterOptions, colorScheme: 'light' });
+    expect((marks[0] as GroupMark).marks?.[0].encode?.enter?.blend).toEqual({ value: 'multiply' });
+  });
+  test('should "screen" blend mode in dark mode', () => {
+    const marks = addScatterMarks([], { ...defaultScatterOptions, colorScheme: 'dark' });
+    expect((marks[0] as GroupMark).marks?.[0].encode?.enter?.blend).toEqual({ value: 'screen' });
+  });
+  test('should add annotation marks if annotation exists as a child', () => {
+    const marks = addScatterMarks([], { ...defaultScatterOptions, scatterAnnotations: [{}] });
+    expect((marks[0] as GroupMark).marks).toHaveLength(2);
+    expect((marks[0] as GroupMark).marks?.[1].name).toBe('scatter0Annotation0');
+  });
+  test('should add trendline marks if trendline exists as a child', () => {
+    const marks = addScatterMarks([], { ...defaultScatterOptions, trendlines: [{}] });
+    expect(marks).toHaveLength(2);
+    expect(marks[1].name).toBe('scatter0Trendline0_group');
+  });
+  test('should make clip true to enable disable group clipping', () => {
+    const marks = addScatterMarks([], { ...defaultScatterOptions, clip: true });
+    expect(marks).toHaveLength(1);
+    expect(marks[0].clip).toBe(true);
+  });
+});
+
+describe('getOpacity()', () => {
+  test('should return the default rule if there are not any interactive children', () => {
+    expect(getOpacity(defaultScatterOptions)).toEqual([DEFAULT_OPACITY_RULE]);
+  });
+  test('should include hover rules if tooltip exists', () => {
+    const opacity = getOpacity({ ...defaultScatterOptions, chartTooltips: [{}] });
+    expect(opacity).toHaveLength(3);
+    expect(opacity[0]).toHaveProperty('test', `isValid(scatter0_${HOVERED_ITEM})`);
+    expect(opacity[1]).toHaveProperty(
+      'test',
+      `isArray(${CONTROLLED_HIGHLIGHTED_ITEM}) && length(${CONTROLLED_HIGHLIGHTED_ITEM}) > 0 && indexof(${CONTROLLED_HIGHLIGHTED_ITEM}, datum.${MARK_ID}) === -1`
+    );
+  });
+  test('should include select rule if popover exists', () => {
+    const opacity = getOpacity({ ...defaultScatterOptions, chartPopovers: [{}] });
+    expect(opacity).toHaveLength(4);
+    expect(opacity[1]).toHaveProperty(
+      'test',
+      `isArray(${CONTROLLED_HIGHLIGHTED_ITEM}) && length(${CONTROLLED_HIGHLIGHTED_ITEM}) > 0 && indexof(${CONTROLLED_HIGHLIGHTED_ITEM}, datum.${MARK_ID}) === -1`
+    );
+    expect(opacity[2]).toHaveProperty('test', `isValid(${SELECTED_ITEM})`);
+  });
+});
+
+describe('getScatterHoverMarks()', () => {
+  test('should return the pointsForVoronoi mark if there is a tooltip', () => {
+    expect(getScatterHoverMarks(defaultScatterOptions)).toHaveLength(0);
+
+    const marks = getScatterHoverMarks({ ...defaultScatterOptions, chartTooltips: [{}] });
+    expect(marks).toHaveLength(2);
+    expect(marks[0].name).toBe('scatter0_pointsForVoronoi');
+  });
+
+  test('should return the voronoi mark if there is a tooltip', () => {
+    expect(getScatterHoverMarks(defaultScatterOptions)).toHaveLength(0);
+
+    const marks = getScatterHoverMarks({ ...defaultScatterOptions, chartTooltips: [{}] });
+    expect(marks).toHaveLength(2);
+    expect(marks[1].name).toBe('scatter0_voronoi');
+  });
+});
+
+describe('getScatterSelectMarks()', () => {
+  test('should return a staic value if a static value is provided', () => {
+    const ringSize = getSelectRingSize({ value: 10 });
+    // sqrt of 196 is 14 which is 4 pixels larger than 10;
+    expect(ringSize).toHaveProperty('value', 196);
+  });
+  test('should return a signal if data key is provided', () => {
+    const sizeKey = 'weight';
+    const ringSize = getSelectRingSize(sizeKey);
+    expect(ringSize).toHaveProperty('signal', `pow(sqrt(scale('${SYMBOL_SIZE_SCALE}', datum.${sizeKey})) + 4, 2)`);
+  });
+});
+
+describe('getScatterMark() stroke', () => {
+  test('should use color for stroke when stroke is not provided', () => {
+    const mark = getScatterMark({ ...defaultScatterOptions, color: 'category' });
+    expect(mark.encode?.enter?.stroke).toEqual({ scale: COLOR_SCALE, field: 'category' });
+    expect(mark.encode?.enter?.fill).toEqual({ scale: COLOR_SCALE, field: 'category' });
+  });
+
+  test('should use stroke prop when provided', () => {
+    const mark = getScatterMark({
+      ...defaultScatterOptions,
+      color: 'category',
+      stroke: { value: 'gray-800' },
+    });
+    // fill should use color
+    expect(mark.encode?.enter?.fill).toEqual({ scale: COLOR_SCALE, field: 'category' });
+    // stroke should use the stroke prop value
+    expect(mark.encode?.enter?.stroke).toHaveProperty('value');
+  });
+
+  test('should use stroke as data field when stroke is a string', () => {
+    const mark = getScatterMark({
+      ...defaultScatterOptions,
+      color: 'category',
+      stroke: 'borderCategory',
+    });
+    // fill should use color
+    expect(mark.encode?.enter?.fill).toEqual({ scale: COLOR_SCALE, field: 'category' });
+    // stroke should use the stroke field
+    expect(mark.encode?.enter?.stroke).toEqual({ scale: COLOR_SCALE, field: 'borderCategory' });
+  });
+
+  test('should allow different fill and stroke colors', () => {
+    const mark = getScatterMark({
+      ...defaultScatterOptions,
+      color: { value: 'blue-500' },
+      stroke: { value: 'gray-900' },
+    });
+    // fill and stroke should be different
+    expect(mark.encode?.enter?.fill).not.toEqual(mark.encode?.enter?.stroke);
+  });
+});
+
+describe('getScatterMark() blend', () => {
+  test('should use default blend (multiply) in light mode when blend is not provided', () => {
+    const mark = getScatterMark({ ...defaultScatterOptions, colorScheme: 'light' });
+    expect(mark.encode?.enter?.blend).toEqual({ value: 'multiply' });
+  });
+
+  test('should use default blend (screen) in dark mode when blend is not provided', () => {
+    const mark = getScatterMark({ ...defaultScatterOptions, colorScheme: 'dark' });
+    expect(mark.encode?.enter?.blend).toEqual({ value: 'screen' });
+  });
+
+  test('should omit blend when blend is "normal"', () => {
+    const mark = getScatterMark({ ...defaultScatterOptions, blend: 'normal' });
+    expect(mark.encode?.enter?.blend).toBeUndefined();
+  });
+
+  test('should use custom blend mode when provided', () => {
+    const mark = getScatterMark({ ...defaultScatterOptions, blend: 'overlay' });
+    expect(mark.encode?.enter?.blend).toEqual({ value: 'overlay' });
+  });
+});
