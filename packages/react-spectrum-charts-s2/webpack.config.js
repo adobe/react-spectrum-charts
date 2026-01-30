@@ -37,6 +37,11 @@ module.exports = {
         exclude: /node_modules/,
         use: 'ts-loader',
       },
+      {
+        test: /\.(sa|sc|c)ss$/,
+        use: ['style-loader', 'css-loader'],
+        sideEffects: true,
+      },
     ],
   },
 
@@ -48,8 +53,11 @@ module.exports = {
       '@spectrum-charts/themes': '@spectrum-charts/themes',
       '@spectrum-charts/locales': '@spectrum-charts/locales',
       '@spectrum-charts/vega-spec-builder': '@spectrum-charts/vega-spec-builder',
+      '@adobe/react-spectrum': '@adobe/react-spectrum',
       'react': 'react',
       'react-dom': 'react-dom',
+      'vega': 'vega',
+      'vega-lite': 'vega-lite',
     },
   ],
 
@@ -60,7 +68,7 @@ module.exports = {
   plugins: [new webpack.BannerPlugin(banner)],
 
   resolve: {
-    extensions: ['.tsx', '.ts', '.js', '.jsx', '.json'],
+    extensions: ['.tsx', '.ts', '.js', '.jsx', '.css', '.json'],
   },
 
   devtool: 'source-map',
