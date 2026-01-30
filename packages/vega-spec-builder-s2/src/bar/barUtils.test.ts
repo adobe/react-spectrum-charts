@@ -19,7 +19,6 @@ import {
   FILTERED_TABLE,
   MARK_ID,
   PADDING_RATIO,
-  S2_CORNER_RADIUS,
   SELECTED_GROUP,
   SELECTED_ITEM,
   STACK_ID,
@@ -226,11 +225,11 @@ describe('barUtils', () => {
 
       const roundRadius = getCornerRadiusEncodings({ ...defaultBarOptions });
 
-      // S2 always uses S2_CORNER_RADIUS
+      // S2 always uses 4
       expect(roundRadius).toEqual(
         expect.objectContaining({
-          cornerRadiusTopLeft: expect.arrayContaining([expect.objectContaining({ value: S2_CORNER_RADIUS })]),
-          cornerRadiusTopRight: expect.arrayContaining([expect.objectContaining({ value: S2_CORNER_RADIUS })]),
+          cornerRadiusTopLeft: expect.arrayContaining([expect.objectContaining({ value: 4 })]),
+          cornerRadiusTopRight: expect.arrayContaining([expect.objectContaining({ value: 4 })]),
         })
       );
     });
@@ -240,8 +239,8 @@ describe('barUtils', () => {
 
       expect(radius).toEqual(
         expect.objectContaining({
-          cornerRadiusTopLeft: expect.arrayContaining([expect.objectContaining({ value: S2_CORNER_RADIUS })]),
-          cornerRadiusTopRight: expect.arrayContaining([expect.objectContaining({ value: S2_CORNER_RADIUS })]),
+          cornerRadiusTopLeft: expect.arrayContaining([expect.objectContaining({ value: 4 })]),
+          cornerRadiusTopRight: expect.arrayContaining([expect.objectContaining({ value: 4 })]),
         })
       );
     });
@@ -251,8 +250,8 @@ describe('barUtils', () => {
 
       expect(radius).toEqual(
         expect.objectContaining({
-          cornerRadiusTopLeft: expect.arrayContaining([expect.objectContaining({ value: S2_CORNER_RADIUS })]),
-          cornerRadiusTopRight: expect.arrayContaining([expect.objectContaining({ value: S2_CORNER_RADIUS })]),
+          cornerRadiusTopLeft: expect.arrayContaining([expect.objectContaining({ value: 4 })]),
+          cornerRadiusTopRight: expect.arrayContaining([expect.objectContaining({ value: 4 })]),
         })
       );
     });
@@ -277,7 +276,7 @@ describe('barUtils', () => {
       expect(getStackedCornerRadiusEncodings(defaultBarOptionsWithSecondayColor).cornerRadiusTopLeft).toStrictEqual([
         {
           test: `datum.${DEFAULT_METRIC}1 > 0 && data('bar0_stacks')[indexof(pluck(data('bar0_stacks'), '${STACK_ID}'), datum.${STACK_ID})].max_${DEFAULT_METRIC}1 === datum.${DEFAULT_METRIC}1`,
-          value: S2_CORNER_RADIUS,
+          value: 4,
         },
         { value: 0 },
       ]);
@@ -291,7 +290,7 @@ describe('barUtils', () => {
       ).toStrictEqual([
         {
           test: `datum.${DEFAULT_METRIC}1 > 0 && data('bar0_stacks')[indexof(pluck(data('bar0_stacks'), '${STACK_ID}'), datum.${STACK_ID})].max_${DEFAULT_METRIC}1 === datum.${DEFAULT_METRIC}1`,
-          value: S2_CORNER_RADIUS,
+          value: 4,
         },
         { value: 0 },
       ]);
@@ -312,21 +311,21 @@ describe('barUtils', () => {
 
       expect(roundRadius).toEqual(
         expect.objectContaining({
-          cornerRadiusTopLeft: expect.arrayContaining([expect.objectContaining({ value: S2_CORNER_RADIUS })]),
-          cornerRadiusTopRight: expect.arrayContaining([expect.objectContaining({ value: S2_CORNER_RADIUS })]),
+          cornerRadiusTopLeft: expect.arrayContaining([expect.objectContaining({ value: 4 })]),
+          cornerRadiusTopRight: expect.arrayContaining([expect.objectContaining({ value: 4 })]),
         })
       );
     });
 
-    test('corner radius should be S2_CORNER_RADIUS for stacked bars', () => {
+    test('corner radius should be 4 for stacked bars', () => {
       const radius = getStackedCornerRadiusEncodings({ ...defaultBarOptions });
 
       expect(radius).toEqual(
         expect.objectContaining({
-          cornerRadiusTopLeft: expect.arrayContaining([expect.objectContaining({ value: S2_CORNER_RADIUS })]),
-          cornerRadiusTopRight: expect.arrayContaining([expect.objectContaining({ value: S2_CORNER_RADIUS })]),
-          cornerRadiusBottomLeft: expect.arrayContaining([expect.objectContaining({ value: S2_CORNER_RADIUS })]),
-          cornerRadiusBottomRight: expect.arrayContaining([expect.objectContaining({ value: S2_CORNER_RADIUS })]),
+          cornerRadiusTopLeft: expect.arrayContaining([expect.objectContaining({ value: 4 })]),
+          cornerRadiusTopRight: expect.arrayContaining([expect.objectContaining({ value: 4 })]),
+          cornerRadiusBottomLeft: expect.arrayContaining([expect.objectContaining({ value: 4 })]),
+          cornerRadiusBottomRight: expect.arrayContaining([expect.objectContaining({ value: 4 })]),
         })
       );
     });
@@ -411,7 +410,7 @@ describe('barUtils', () => {
       expect(selectionRing).toStrictEqual({
         encode: {
           enter: {
-            cornerRadius: { value: S2_CORNER_RADIUS },
+            cornerRadius: { value: 4 },
             fill: { value: 'transparent' },
             stroke: { value: 'static-blue' },
             strokeWidth: { value: 2 },
@@ -439,7 +438,7 @@ describe('barUtils', () => {
       expect(selectionRing).toStrictEqual({
         encode: {
           enter: {
-            cornerRadius: { value: S2_CORNER_RADIUS },
+            cornerRadius: { value: 4 },
             fill: { value: 'transparent' },
             stroke: { value: 'static-blue' },
             strokeWidth: { value: 2 },

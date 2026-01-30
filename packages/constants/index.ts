@@ -11,4 +11,3 @@
  */
 
 export * from './constants';
-export * from './s2Constants';

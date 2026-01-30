@@ -22,7 +22,6 @@ import {
   FILTERED_TABLE,
   MARK_ID,
   PADDING_RATIO,
-  S2_CORNER_RADIUS,
   STACK_ID,
   TRELLIS_PADDING,
 } from '@spectrum-charts/constants';
@@ -82,38 +81,38 @@ export const defaultCornerRadiusEncodings: RectEncodeEntry = {
   cornerRadiusTopLeft: [
     {
       test: `datum.${DEFAULT_METRIC}1 > 0 && data('bar0_stacks')[indexof(pluck(data('bar0_stacks'), '${STACK_ID}'), datum.${STACK_ID})].max_${DEFAULT_METRIC}1 === datum.${DEFAULT_METRIC}1`,
-      value: S2_CORNER_RADIUS,
+      value: 4,
     },
     { value: 0 },
   ],
   cornerRadiusTopRight: [
     {
       test: `datum.${DEFAULT_METRIC}1 > 0 && data('bar0_stacks')[indexof(pluck(data('bar0_stacks'), '${STACK_ID}'), datum.${STACK_ID})].max_${DEFAULT_METRIC}1 === datum.${DEFAULT_METRIC}1`,
-      value: S2_CORNER_RADIUS,
+      value: 4,
     },
     { value: 0 },
   ],
   cornerRadiusBottomLeft: [
     {
       test: `datum.${DEFAULT_METRIC}1 < 0 && data('bar0_stacks')[indexof(pluck(data('bar0_stacks'), '${STACK_ID}'), datum.${STACK_ID})].min_${DEFAULT_METRIC}1 === datum.${DEFAULT_METRIC}1`,
-      value: S2_CORNER_RADIUS,
+      value: 4,
     },
     { value: 0 },
   ],
   cornerRadiusBottomRight: [
     {
       test: `datum.${DEFAULT_METRIC}1 < 0 && data('bar0_stacks')[indexof(pluck(data('bar0_stacks'), '${STACK_ID}'), datum.${STACK_ID})].min_${DEFAULT_METRIC}1 === datum.${DEFAULT_METRIC}1`,
-      value: S2_CORNER_RADIUS,
+      value: 4,
     },
     { value: 0 },
   ],
 };
 
 export const defaultDodgedCornerRadiusEncodings: RectEncodeEntry = {
-  cornerRadiusBottomLeft: [{ test: 'datum.value < 0', value: S2_CORNER_RADIUS }, { value: 0 }],
-  cornerRadiusBottomRight: [{ test: 'datum.value < 0', value: S2_CORNER_RADIUS }, { value: 0 }],
-  cornerRadiusTopLeft: [{ test: 'datum.value > 0', value: S2_CORNER_RADIUS }, { value: 0 }],
-  cornerRadiusTopRight: [{ test: 'datum.value > 0', value: S2_CORNER_RADIUS }, { value: 0 }],
+  cornerRadiusBottomLeft: [{ test: 'datum.value < 0', value: 4 }, { value: 0 }],
+  cornerRadiusBottomRight: [{ test: 'datum.value < 0', value: 4 }, { value: 0 }],
+  cornerRadiusTopLeft: [{ test: 'datum.value > 0', value: 4 }, { value: 0 }],
+  cornerRadiusTopRight: [{ test: 'datum.value > 0', value: 4 }, { value: 0 }],
 };
 
 export const defaultBarFillOpacity: ProductionRule<NumericValueRef> = [{ value: 1 }];
