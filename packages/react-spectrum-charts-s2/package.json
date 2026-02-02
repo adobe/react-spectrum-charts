@@ -57,7 +57,7 @@
   "publishConfig": {
     "access": "public"
   },
-  "author": "marshall.w.peterson@gmail.com",
+  "author": "c-lamoureux",
   "license": "Apache-2.0",
   "scripts": {
     "prebuild": "echo 'This will run before build'",
