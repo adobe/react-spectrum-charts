@@ -61,7 +61,7 @@
   "license": "Apache-2.0",
   "scripts": {
     "prebuild": "echo 'This will run before build'",
-    "build": "webpack --config webpack.config.js",
+    "build:s2": "webpack --config webpack.config.js",
     "clean": "rm -rf dist",
     "g": "plop component",
     "generate": "plop component",

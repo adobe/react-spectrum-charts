@@ -16,7 +16,7 @@
     "url": "https://github.com/adobe/react-spectrum-charts.git"
   },
   "scripts": {
-    "build": "webpack --config ./webpack.config.js",
+    "build:s2": "webpack --config ./webpack.config.js",
     "clean": "rm -rf dist",
     "pack-test": "yarn clean && yarn build && cross-env NODE_ENV=development npm pack",
     "pack": "cross-env NODE_ENV=production npm pack",

@@ -59,7 +59,7 @@
   "scripts": {
     "build": "yarn workspaces run build",
     "build:parallel": "concurrently 'yarn workspace @spectrum-charts/themes build' 'yarn workspace @spectrum-charts/constants build' 'yarn workspace @spectrum-charts/utils build' 'yarn workspace @spectrum-charts/locales build' && yarn workspace @spectrum-charts/vega-spec-builder build && concurrently 'yarn workspace @adobe/react-spectrum-charts build' 'yarn workspace @spectrum-charts/mcp build'",
-    "build:s2": "yarn workspace @spectrum-charts/constants build && yarn workspace @spectrum-charts/vega-spec-builder-s2 build && yarn workspace @spectrum-charts/react-spectrum-charts-s2 build",
+    "build:s2": "yarn workspace @spectrum-charts/constants build && yarn workspace @spectrum-charts/vega-spec-builder-s2 build:s2 && yarn workspace @spectrum-charts/react-spectrum-charts-s2 build:s2",
     "build:docs": "yarn workspace @spectrum-charts/docs build",
     "docs:update-cursor-rule": "node scripts/createCursorRule.js",
     "clean": "yarn workspaces run clean",
