@@ -53,6 +53,7 @@ module.exports = {
       '@spectrum-charts/themes': '@spectrum-charts/themes',
       '@spectrum-charts/locales': '@spectrum-charts/locales',
       '@spectrum-charts/vega-spec-builder': '@spectrum-charts/vega-spec-builder',
+      '@spectrum-charts/vega-spec-builder-s2': '@spectrum-charts/vega-spec-builder-s2',
       '@adobe/react-spectrum': '@adobe/react-spectrum',
       'react': 'react',
       'react-dom': 'react-dom',
