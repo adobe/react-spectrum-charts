@@ -61,6 +61,7 @@
   "license": "Apache-2.0",
   "scripts": {
     "prebuild": "echo 'This will run before build'",
+    "build": "echo 'S2 package - skipping default build. Use yarn build:s2 to build explicitly.'",
     "build:s2": "webpack --config webpack.config.js",
     "clean": "rm -rf dist",
     "g": "plop component",
