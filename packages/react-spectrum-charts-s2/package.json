@@ -80,7 +80,6 @@
     "@spectrum-charts/locales": "1.29.0",
     "@spectrum-charts/themes": "1.29.0",
     "@spectrum-charts/utils": "1.29.0",
-    "@spectrum-charts/vega-spec-builder-s2": "0.1.0",
     "d3-format": "^3.1.0",
     "deepmerge": ">= 4.0.0",
     "immer": ">= 9.0.0",
