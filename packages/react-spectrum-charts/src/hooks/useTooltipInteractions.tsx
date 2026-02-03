@@ -78,7 +78,7 @@ const getDimensionAreaTooltipMarkup = (
   );
 };
 
-const useTooltipsInteractions = (props: RscChartProps, sanitizedChildren: ChartChildElement[]) => {
+const useTooltipInteractions = (props: RscChartProps, sanitizedChildren: ChartChildElement[]) => {
   const { chartView, controlledHoveredIdSignal, controlledHoveredGroupSignal } = useChartContext();
   const { debug, colorScheme, idKey, tooltipAnchor, tooltipPlacement } = props;
   const tooltips = useTooltips(sanitizedChildren);
@@ -120,6 +120,12 @@ const useTooltipsInteractions = (props: RscChartProps, sanitizedChildren: ChartC
           </div>
         );
       }
+
+      //this allows for axis label tooltips to work at the same time as data tooltips
+      if (value !== null && value !== undefined && typeof value !== 'object') {
+        return String(value ?? '');
+      }
+
       return '';
     };
   }
@@ -130,7 +136,7 @@ const useTooltipsInteractions = (props: RscChartProps, sanitizedChildren: ChartC
   return { tooltipOptions };
 };
 
-export default useTooltipsInteractions;
+export default useTooltipInteractions;
 
 const getTooltipOptions = (
   colorScheme: ColorScheme,

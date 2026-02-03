@@ -9,8 +9,8 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { findChart, render, screen } from '../../../test-utils';
-import { LabelAlign, LabelOrientation } from './AxisLabels.story';
+import { findChart, render, screen, hoverNthElement, getAllAxisLabels, waitFor } from '../../../test-utils';
+import { LabelAlign, LabelOrientation, LabelWithTooltip } from './AxisLabels.story';
 
 describe('LabelAlign', () => {
   test('anchor should be on the left side of text for labelAlign="start" and labelOrientation="horizontal"', async () => {
@@ -41,4 +41,34 @@ describe('LabelOrientation', () => {
 
     expect(screen.getByText('0').getAttribute('transform')?.includes('rotate(270')).toBeTruthy();
   });
+});
+
+describe('LabelWithTooltip', () => {
+
+  test('tooltip should be included with the axis', async () => {
+    render(<LabelWithTooltip {...LabelWithTooltip.args} />);
+
+    const chart = await findChart();
+    expect(chart).toBeInTheDocument();
+
+    const el = document.getElementById('vg-tooltip-element');
+    expect(el).toBeInTheDocument();
+    expect(el).toHaveClass('vg-tooltip');
+  });
+
+  test('shows tooltip when first axis label is hovered', async () => {
+    render(<LabelWithTooltip {...LabelWithTooltip.args} />);
+  
+    const chart = await findChart();
+    const labels = getAllAxisLabels(chart);
+    expect(labels.length).toBeGreaterThan(0);
+  
+    await hoverNthElement(labels, 0);
+
+    await waitFor(() => {
+      const el = document.getElementById('vg-tooltip-element');
+      return expect(el?.textContent).toContain('Nov 8, 2022');
+    });
+  });
+
 });
