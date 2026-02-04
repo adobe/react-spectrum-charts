@@ -210,6 +210,7 @@ describe('rscPropsToSpecBuilderOptions()', () => {
             chartTooltips: [],
             color: 'series',
             dimension: 'datetime',
+            hasMouseInteraction: false,
             hasOnClick: false,
             markType: 'line',
             metric: 'value',
