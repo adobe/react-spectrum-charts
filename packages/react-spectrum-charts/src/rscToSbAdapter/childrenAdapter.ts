@@ -17,6 +17,7 @@ import {
   ChartPopoverOptions,
   ChartTooltipOptions,
   DonutSummaryOptions,
+  GaugeOptions,
   LegendOptions,
   LineOptions,
   MarkOptions,
@@ -30,7 +31,7 @@ import {
   TrendlineOptions,
 } from '@spectrum-charts/vega-spec-builder';
 
-import { Bullet, Combo, Venn } from '../alpha';
+import { Bullet, Combo, Gauge, Venn } from '../alpha';
 import { Annotation } from '../components/Annotation';
 import { Area } from '../components/Area';
 import { Axis } from '../components/Axis';
@@ -162,6 +163,10 @@ export const childrenToOptions = (
 
       case Bullet.displayName:
         marks.push(getBulletOptions(child.props as BulletProps));
+        break;
+
+      case Gauge.displayName:
+        marks.push({ ...child.props, markType: 'gauge' } as GaugeOptions);
         break;
 
       case ChartPopover.displayName:
