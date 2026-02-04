@@ -9,10 +9,12 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { ReactElement } from 'react';
+import { ReactElement, useState } from 'react';
 
 import { action } from '@storybook/addon-actions';
 import { StoryFn } from '@storybook/react';
+
+import { Datum } from '@spectrum-charts/vega-spec-builder';
 
 import { Chart } from '../../../Chart';
 import { Axis, ChartPopover, ChartTooltip, Legend, Line, ReferenceLine } from '../../../components';
@@ -319,6 +321,50 @@ OnClickWithTooltip.args = {
   ...OnClick.args,
 };
 
+const OnMouseInputsStory: StoryFn<typeof Line> = (args): ReactElement => {
+  const [hoveredData, setHoveredData] = useState<Datum | null>(null);
+  const [isHovering, setIsHovering] = useState(false);
+
+  const controlledMouseOver = (datum: Datum) => {
+    if (!isHovering) {
+      setHoveredData(datum);
+      setIsHovering(true);
+    }
+  };
+  const controlledMouseOut = () => {
+    if (isHovering) {
+      setIsHovering(false);
+    }
+  };
+
+  const chartProps = useChartProps(defaultChartProps);
+  return (
+    <div>
+      <div data-testid="hover-info">
+        {isHovering && hoveredData ? (
+          <div data-testid="hover-data">{JSON.stringify(hoveredData, null, 2)}</div>
+        ) : (
+          <div data-testid="no-hover">No point hovered</div>
+        )}
+      </div>
+      <Chart {...chartProps}>
+        <Axis position="left" grid title="Users" />
+        <Axis position="bottom" labelFormat="time" baseline ticks />
+        <Line {...args} onMouseOver={controlledMouseOver} onMouseOut={controlledMouseOut} />
+        <Legend highlight />
+      </Chart>
+    </div>
+  );
+};
+
+const OnMouseInputs = bindWithProps(OnMouseInputsStory);
+OnMouseInputs.args = {
+  ...defaultArgs,
+  dimension: 'datetime',
+  metric: 'users',
+  scaleType: 'time',
+};
+
 export {
   Basic,
   HistoricalCompare,
@@ -336,4 +382,5 @@ export {
   SparklineWithStaticPoint,
   OnClick,
   OnClickWithTooltip,
+  OnMouseInputs,
 };

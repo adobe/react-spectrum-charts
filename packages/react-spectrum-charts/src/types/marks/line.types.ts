@@ -26,6 +26,10 @@ export interface LineProps
   children?: Children<LineChildElement>;
   /** Callback that will be run when a point/section is clicked */
   onClick?: MarkCallback;
+  /** Callback that will be run when a point/section is hovered */
+  onMouseOver?: MarkCallback;
+  /** Callback that will be run when a point/section is no longer hovered */
+  onMouseOut?: MarkCallback;
 }
 
 export type LineElement = ReactElement<LineProps, JSXElementConstructor<LineProps>>;

@@ -13,10 +13,10 @@ import { createElement, useMemo } from 'react';
 
 import { Datum } from '@spectrum-charts/vega-spec-builder';
 
-import { Bar, BarElement, Scatter, ScatterElement, Chart, ChartChildElement } from '../index';
+import { Bar, BarElement, Line, LineElement, Scatter, ScatterElement, Chart, ChartChildElement } from '../index';
 import { getAllMarkElements } from '../utils';
 
-type MappedMarkElement = { name: string; element: BarElement | ScatterElement };
+type MappedMarkElement = { name: string; element: BarElement | LineElement | ScatterElement };
 
 export type MarkMouseInputDetail = {
   markName?: string;
@@ -28,6 +28,7 @@ export default function useMarkMouseInputDetails(children: ChartChildElement[]):
   const markElements = useMemo(() => {
     return [
       ...getAllMarkElements(createElement(Chart, { data: [] }, children), Bar, []),
+      ...getAllMarkElements(createElement(Chart, { data: [] }, children), Line, []),
       ...getAllMarkElements(createElement(Chart, { data: [] }, children), Scatter, [])
     ] as MappedMarkElement[];
   }, [children]);
