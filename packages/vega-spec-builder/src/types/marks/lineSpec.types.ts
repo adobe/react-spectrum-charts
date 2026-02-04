@@ -39,8 +39,10 @@ export interface LineOptions {
   color?: ColorFacet;
   /** Data field that the value is trended against (x-axis) */
   dimension?: string;
-  /** `true` if BarProps has an onClick callback. Will add the mouse pointer to the bar on hover. */
+  /** `true` if LineProps has an onClick callback. */
   hasOnClick?: boolean;
+  /** `true` if LineProps has interaction callbacks (onMouseOver, onMouseOut).*/
+  hasMouseInteraction?: boolean;
   /** Line type or key in the data that is used as the line type facet */
   lineType?: LineTypeFacet;
   /** Opacity or key in the data that is used as the opacity facet */

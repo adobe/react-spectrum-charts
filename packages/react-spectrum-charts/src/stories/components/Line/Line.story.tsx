@@ -160,6 +160,8 @@ const defaultArgs = {
   color: 'series',
   name: 'line0',
   onClick: undefined,
+  onMouseOver: undefined,
+  onMouseOut: undefined,
 };
 
 const Basic = bindWithProps(BasicLineStory);

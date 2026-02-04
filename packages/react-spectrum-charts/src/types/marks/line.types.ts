@@ -21,7 +21,7 @@ type LineChildElement = ChartTooltipElement | ChartPopoverElement | MetricRangeE
 export interface LineProps
   extends Omit<
     LineOptions,
-    'chartPopovers' | 'chartTooltips' | 'hasOnClick' | 'markType' | 'metricRanges' | 'trendlines'
+    'chartPopovers' | 'chartTooltips' | 'hasOnClick' | 'hasMouseInteraction' | 'markType' | 'metricRanges' | 'trendlines'
   > {
   children?: Children<LineChildElement>;
   /** Callback that will be run when a point/section is clicked */

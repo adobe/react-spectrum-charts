@@ -49,17 +49,13 @@ describe('getLineOptions()', () => {
     expect(getLineOptions({ onClick: () => {} }).hasOnClick).toBe(true);
     expect(getLineOptions({ onClick: undefined }).hasOnClick).toBe(false);
   });
-  test('should set hasOnClick to true if onMouseOver prop exists (needed for voronoi marks)', () => {
-    expect(getLineOptions({ onMouseOver: () => {} }).hasOnClick).toBe(true);
-    expect(getLineOptions({ onMouseOver: undefined }).hasOnClick).toBe(false);
+  test('should set hasMouseInteraction to true if onMouseOver prop exists', () => {
+    expect(getLineOptions({ onMouseOver: () => {} }).hasMouseInteraction).toBe(true);
+    expect(getLineOptions({ onMouseOver: undefined }).hasMouseInteraction).toBe(false);
   });
-  test('should set hasOnClick to true if onMouseOut prop exists (needed for voronoi marks)', () => {
-    expect(getLineOptions({ onMouseOut: () => {} }).hasOnClick).toBe(true);
-    expect(getLineOptions({ onMouseOut: undefined }).hasOnClick).toBe(false);
-  });
-  test('should set hasOnClick to true if any mouse event callback exists', () => {
-    expect(getLineOptions({ onClick: () => {}, onMouseOver: () => {} }).hasOnClick).toBe(true);
-    expect(getLineOptions({ onMouseOver: () => {}, onMouseOut: () => {} }).hasOnClick).toBe(true);
+  test('should set hasMouseInteraction to true if onMouseOut prop exists', () => {
+    expect(getLineOptions({ onMouseOut: () => {} }).hasMouseInteraction).toBe(true);
+    expect(getLineOptions({ onMouseOut: undefined }).hasMouseInteraction).toBe(false);
   });
   it('should pass through included props', () => {
     const options = getLineOptions({ color: DEFAULT_COLOR });

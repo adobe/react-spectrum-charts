@@ -64,6 +64,7 @@ export const addLine = produce<
       dimension = DEFAULT_TIME_DIMENSION,
       dualMetricAxis = false,
       hasOnClick = false,
+      hasMouseInteraction = false,
       index = 0,
       lineType = { value: 'solid' },
       metric = DEFAULT_METRIC,
@@ -87,11 +88,13 @@ export const addLine = produce<
       dualMetricAxis,
       hasOnClick,
       index,
+      hasMouseInteraction,
       interactiveMarkName: getInteractiveMarkName(
         {
           chartPopovers,
           chartTooltips,
           hasOnClick,
+          hasMouseInteraction,
           highlightedItem: options.highlightedItem,
           metricRanges,
           trendlines,
