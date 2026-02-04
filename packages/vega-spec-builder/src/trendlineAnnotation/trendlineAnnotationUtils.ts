@@ -114,6 +114,7 @@ const getTrendlineAnnotationPoints = (annotationOptions: TrendlineAnnotationSpec
   const data = displayOnHover ? `${trendlineName}_highlightedData` : `${trendlineName}_highResolutionData`;
   return {
     name: `${name}_points`,
+    description: `${name}_points`,
     type: 'symbol',
     from: { data },
     interactive: false,

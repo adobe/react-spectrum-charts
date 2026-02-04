@@ -192,6 +192,7 @@ export const getReferenceLineSymbolMark = (
   return [
     {
       name: `${name}_symbol`,
+      description: `${name}_symbol`,
       type: 'symbol',
       encode: {
         enter: {
@@ -228,6 +229,7 @@ export const getReferenceLineTextMark = (
   return [
     {
       name: `${name}_label`,
+      description: `${name}_label`,
       type: 'text',
       encode: {
         ...getReferenceLineLabelsEncoding(axisOptions, { ...referenceLineOptions, label }, positionEncoding),
