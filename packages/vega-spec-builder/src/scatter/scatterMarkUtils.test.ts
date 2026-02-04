@@ -111,6 +111,13 @@ describe('getScatterSelectMarks()', () => {
     const ringSize = getSelectRingSize(sizeKey);
     expect(ringSize).toHaveProperty('signal', `pow(sqrt(scale('${SYMBOL_SIZE_SCALE}', datum.${sizeKey})) + 4, 2)`);
   });
+  test('should add select ring with description when popover exists', () => {
+    const marks = addScatterMarks([], { ...defaultScatterOptions, chartPopovers: [{}] });
+    const groupMarks = (marks[0] as GroupMark).marks ?? [];
+    const selectRing = groupMarks.find((mark) => mark.name === 'scatter0_selectRing');
+    expect(selectRing).toBeDefined();
+    expect(selectRing?.description).toBe('scatter0_selectRing');
+  });
 });
 
 describe('getScatterMark() stroke', () => {

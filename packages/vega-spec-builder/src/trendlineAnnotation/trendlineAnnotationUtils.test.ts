@@ -84,6 +84,18 @@ describe('getTrendlineAnnotationMarks()', () => {
     expect(annotationGroups[0]).toHaveProperty('type', 'group');
     expect(annotationGroups[0]).toHaveProperty('name', 'line0Trendline0Annotation0_group');
   });
+  test('should include points mark with description for accessibility', () => {
+    const annotationGroups = getTrendlineAnnotationMarks(
+      { ...defaultTrendlineOptions, trendlineAnnotations: [{}] },
+      'line0'
+    );
+    const groupMark = annotationGroups[0];
+    const pointsMark = (groupMark as { marks?: { name: string; description?: string }[] }).marks?.find(
+      (mark) => mark.name === 'line0Trendline0Annotation0_points'
+    );
+    expect(pointsMark).toBeDefined();
+    expect(pointsMark?.description).toBe('line0Trendline0Annotation0_points');
+  });
 });
 
 describe('getTrendlineAnnotationPointX()', () => {
