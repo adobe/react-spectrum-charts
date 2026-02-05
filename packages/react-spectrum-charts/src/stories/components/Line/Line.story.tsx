@@ -342,19 +342,19 @@ const OnMouseInputsStory: StoryFn<typeof Line> = (args): ReactElement => {
   const chartProps = useChartProps(defaultChartProps);
   return (
     <div>
-      <div data-testid="hover-info">
-        {isHovering && hoveredData ? (
-          <div data-testid="hover-data">{JSON.stringify(hoveredData, null, 2)}</div>
-        ) : (
-          <div data-testid="no-hover">No point hovered</div>
-        )}
+      <div data-testid="hover-info" style={{ width: '800px', height: '100px' }}>
+          {isHovering && hoveredData ? (
+            <div data-testid="hover-data">{JSON.stringify(hoveredData, null, 2)}</div>
+          ) : (
+            <div data-testid="no-hover">No point hovered</div>
+          )}
       </div>
-      <Chart {...chartProps}>
-        <Axis position="left" grid title="Users" />
-        <Axis position="bottom" labelFormat="time" baseline ticks />
-        <Line {...args} onMouseOver={controlledMouseOver} onMouseOut={controlledMouseOut} />
-        <Legend highlight />
-      </Chart>
+        <Chart {...chartProps}>
+          <Axis position="left" grid title="Users" />
+          <Axis position="bottom" labelFormat="time" baseline ticks />
+          <Line {...args} onMouseOver={controlledMouseOver} onMouseOut={controlledMouseOut} />
+          <Legend highlight />
+        </Chart>
     </div>
   );
 };
