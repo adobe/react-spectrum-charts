@@ -170,6 +170,7 @@ const getScatterSelectMarks = (scatterOptions: ScatterSpecOptions): SymbolMark[]
   return [
     {
       name: `${name}_selectRing`,
+      description: `${name}_selectRing`,
       type: 'symbol',
       from: {
         data: `${name}_selectedData`,

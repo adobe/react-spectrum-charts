@@ -278,6 +278,7 @@ export const getSelectRingPoint = (lineOptions: LineMarkOptions): SymbolMark => 
 
   return {
     name: `${name}_pointSelectRing`,
+    description: `${name}_pointSelectRing`,
     type: 'symbol',
     from: { data: `${name}_selectedData` },
     interactive: false,

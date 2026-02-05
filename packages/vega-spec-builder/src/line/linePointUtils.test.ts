@@ -29,6 +29,7 @@ import {
   getHighlightPointStrokeWidth,
   getSecondaryHighlightPoint,
   getSelectionPoint,
+  getSelectRingPoint,
 } from './linePointUtils';
 import { defaultLineMarkOptions } from './lineTestUtils';
 
@@ -246,5 +247,28 @@ describe('getSecondaryHighlightPoint()', () => {
     const highlightMark = getHighlightPoint(defaultLineMarkOptions);
     expect(mark.from).toEqual(highlightMark.from);
     expect(mark.from).toEqual({ data: 'line0_highlightedData' });
+  });
+});
+
+describe('getSelectRingPoint()', () => {
+  test('should return symbol mark with correct name and description', () => {
+    const mark = getSelectRingPoint(defaultLineMarkOptions);
+    expect(mark.name).toBe('line0_pointSelectRing');
+    expect(mark.description).toBe('line0_pointSelectRing');
+  });
+
+  test('should return symbol mark with correct properties', () => {
+    const mark = getSelectRingPoint(defaultLineMarkOptions);
+    expect(mark.type).toBe('symbol');
+    expect(mark.interactive).toBe(false);
+    expect(mark.from).toEqual({ data: 'line0_selectedData' });
+  });
+
+  test('should use custom name in mark name and description', () => {
+    const customOptions = { ...defaultLineMarkOptions, name: 'customLine' };
+    const mark = getSelectRingPoint(customOptions);
+    expect(mark.name).toBe('customLine_pointSelectRing');
+    expect(mark.description).toBe('customLine_pointSelectRing');
+    expect(mark.from).toEqual({ data: 'customLine_selectedData' });
   });
 });

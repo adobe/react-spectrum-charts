@@ -252,6 +252,7 @@ describe('getReferenceLineSymbolMark()', () => {
     );
     expect(symbols).toStrictEqual([
       {
+        description: 'axis0ReferenceLine0_symbol',
         encode: {
           enter: {
             fill: { value: spectrumColors.light[DEFAULT_FONT_COLOR] },
@@ -339,6 +340,7 @@ describe('getReferenceLineTextMark()', () => {
     );
     expect(marks).toHaveLength(1);
     expect(marks[0]).toHaveProperty('type', 'text');
+    expect(marks[0]).toHaveProperty('description', 'axis0ReferenceLine0_label');
     expect(marks[0]?.encode?.update?.text?.[0]).toHaveProperty('value', 'Hello world!');
   });
 });
