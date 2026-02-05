@@ -137,13 +137,16 @@ export const isInteractive = (options: {
   hasOnClick?: boolean;
   metricRanges?: MetricRangeOptions[];
   trendlines?: TrendlineOptions[];
+  hasMouseInteraction?: boolean;
 }): boolean => {
   const hasOnClick = 'hasOnClick' in options && options.hasOnClick;
+  const hasMouseInteraction = 'hasMouseInteraction' in options && options.hasMouseInteraction;
   const metricRanges = ('metricRanges' in options && options.metricRanges) || [];
   const trendlines = ('trendlines' in options && options.trendlines) || [];
 
   return (
     hasOnClick ||
+    hasMouseInteraction ||
     hasPopover(options) ||
     hasTooltip(options) ||
     trendlines.some((trendline) => trendline.displayOnHover) ||
@@ -460,6 +463,7 @@ export const getInteractiveMarkName = (
     chartPopovers?: ChartPopoverOptions[];
     chartTooltips?: ChartTooltipOptions[];
     hasOnClick?: boolean;
+    hasMouseInteraction?: boolean;
     highlightedItem?: HighlightedItem;
     metricRanges?: MetricRangeOptions[];
     trendlines?: TrendlineOptions[];

@@ -403,4 +403,26 @@ describe('Line', () => {
       expect(onClick).toHaveBeenCalledWith(expect.objectContaining(workspaceTrendsData[4]));
     });
   });
+
+  describe('onMouseOver and onMouseOut callbacks', () => {
+    test('should call onMouseOver and onMouseOut callbacks when hovering line points', async () => {
+      const onMouseOver = jest.fn();
+      const onMouseOut = jest.fn();
+      render(<Basic {...Basic.args} onMouseOver={onMouseOver} onMouseOut={onMouseOut} />);
+
+      const chart = await findChart();
+      expect(chart).toBeInTheDocument();
+
+      const paths = await findAllMarksByGroupName(chart, 'line0_voronoi');
+      await hoverNthElement(paths, 4);
+
+      expect(onMouseOver).toHaveBeenCalledTimes(1);
+      expect(onMouseOver).toHaveBeenCalledWith(expect.objectContaining(workspaceTrendsData[4]));
+
+      await unhoverNthElement(paths, 4);
+
+      expect(onMouseOut).toHaveBeenCalledTimes(1);
+      expect(onMouseOut).toHaveBeenCalledWith(expect.objectContaining(workspaceTrendsData[4]));
+    });
+  });
 });

@@ -45,9 +45,17 @@ describe('getLineOptions()', () => {
     const options = getLineOptions({ children: [createElement(Trendline)] });
     expect(options.trendlines).toHaveLength(1);
   });
-  test('should set hasOnClick to true if onClickProp exists and is not undefined', () => {
+  test('should set hasOnClick to true if onClick prop exists and is not undefined', () => {
     expect(getLineOptions({ onClick: () => {} }).hasOnClick).toBe(true);
     expect(getLineOptions({ onClick: undefined }).hasOnClick).toBe(false);
+  });
+  test('should set hasMouseInteraction to true if onMouseOver prop exists', () => {
+    expect(getLineOptions({ onMouseOver: () => {} }).hasMouseInteraction).toBe(true);
+    expect(getLineOptions({ onMouseOver: undefined }).hasMouseInteraction).toBe(false);
+  });
+  test('should set hasMouseInteraction to true if onMouseOut prop exists', () => {
+    expect(getLineOptions({ onMouseOut: () => {} }).hasMouseInteraction).toBe(true);
+    expect(getLineOptions({ onMouseOut: undefined }).hasMouseInteraction).toBe(false);
   });
   it('should pass through included props', () => {
     const options = getLineOptions({ color: DEFAULT_COLOR });

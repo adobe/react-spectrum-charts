@@ -111,6 +111,18 @@ The `Line` component is used to display line charts. You can specify the type of
             <td>Callback function that will be executed when a point or section of the line is clicked. Receives the mouse event and the data point as arguments.</td>
         </tr>
         <tr>
+            <td>onMouseOver</td>
+            <td>function</td>
+            <td>–</td>
+            <td>Callback function that will be executed when a point or section of the line is hovered.</td>
+        </tr>
+        <tr>
+            <td>onMouseOut</td>
+            <td>function</td>
+            <td>–</td>
+            <td>Callback function that will be executed when a point or section of the line is no longer hovered.</td>
+        </tr>
+        <tr>
             <td>padding</td>
             <td>number</td>
             <td>–</td>
