@@ -168,6 +168,13 @@ describe('getMetricRangeMark', () => {
   test('creates MetricRange mark from basic input', () => {
     expect(getMetricRangeMark(defaultLineOptions, defaultMetricRangeSpecOptions)).toEqual(basicMetricRangeMarks);
   });
+  test('creates MetricRange mark with line opacity', () => {
+    const [lineMark] = getMetricRangeMark(defaultLineOptions, {
+      ...defaultMetricRangeSpecOptions,
+      lineOpacity: { value: 0.2 }
+    });
+    expect(lineMark.encode?.enter?.strokeOpacity).toEqual({ value: 0.2 });
+  });
 });
 
 describe('getMetricRangeGroupMarks', () => {

@@ -157,4 +157,15 @@ ScaleAxisToFit.args = {
   scaleAxisToFit: true,
 };
 
-export { Basic, DisplayOnHover, WithStaticPoints, WithPopover, ScaleAxisToFit };
+const LineOpacity = bindWithProps(MetricRangeStory);
+LineOpacity.args = {
+  lineType: 'shortDash',
+  lineWidth: 'S',
+  rangeOpacity: 0.2,
+  lineOpacity: { value: 0.2 },
+  metricEnd: 'metricEnd',
+  metricStart: 'metricStart',
+  metric: 'metric',
+};
+
+export { Basic, DisplayOnHover, WithStaticPoints, WithPopover, ScaleAxisToFit, LineOpacity };
