@@ -15,6 +15,7 @@ import { Granularity } from '../types';
 import {
   LabelDatum,
   expressionFunctions,
+  getLocaleCode,
   formatHorizontalTimeAxisLabels,
   formatVerticalAxisTimeLabelTooltips,
   formatLocaleCurrency,
@@ -86,6 +87,38 @@ describe('formatLocaleCurrency()', () => {
   });
 });
 
+describe('getLocaleCode()', () => {
+  const originalLanguage = navigator.language;
+
+  afterEach(() => {
+    // restore original navigator.language
+    Object.defineProperty(window.navigator, 'language', {
+      value: originalLanguage,
+      configurable: true,
+    });
+  });
+
+  test('returns the locale string when input is a string', () => {
+    expect(getLocaleCode('fr-FR')).toBe('fr-FR');
+    expect(getLocaleCode('en-GB')).toBe('en-GB');
+  });
+
+  test('returns time locale string when provided in object', () => {
+    expect(getLocaleCode({ time: 'de-DE' })).toBe('de-DE');
+  });
+
+  test('falls back to navigator.language when time is not a string', () => {
+    Object.defineProperty(window.navigator, 'language', {
+      value: 'es-ES',
+      configurable: true,
+    });
+    // no time provided
+    expect(getLocaleCode({} as any)).toBe('es-ES');
+    // time provided but not a string (simulating TimeLocale object)
+    expect(getLocaleCode({ time: {} as any })).toBe('es-ES');
+  });
+});
+
 describe('truncateText()', () => {
   const longText =
     'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec a diam lectus. Sed sit amet ipsum mauris. Maecenas congue ligula ac quam viverra nec consectetur ante hendrerit.';
@@ -153,6 +186,7 @@ describe('formatVerticalAxisTimeLabelTooltips()', () => {
     expect(formatter({ index: 0, label: '2024', value: 1667890800000 }, 'year')).toBe('2022');
     expect(formatter({ index: 0, label: '2024', value: 1667890800000 }, 'month')).toBe('Nov 2022');
     expect(formatter({ index: 0, label: '2024', value: 1667890800000 }, 'quarter')).toBe('Nov 2022');
+    expect(formatter({ index: 0, label: '2024', value: 1667890800000 }, 'week')).toBe('Nov 8, 2022');
     expect(formatter({ index: 0, label: '2024', value: 1667890800000 }, 'day')).toBe('Nov 8, 2022');
     expect(formatter({ index: 0, label: '2024', value: 1667890800000 }, 'hour')).toBe('Nov 8, 7 AM');
     expect(formatter({ index: 0, label: '2024', value: 1667890800000 }, 'minute')).toBe('Nov 8, 7:00 AM');

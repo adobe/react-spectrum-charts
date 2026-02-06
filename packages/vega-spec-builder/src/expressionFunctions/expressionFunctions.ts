@@ -31,12 +31,7 @@ export const getExpressionFunctions = (
 ) => {
   const { number: numberLocale } = getLocale(locale);
   const localeCode = typeof locale === 'string' ? locale : locale?.number;
-  const dateLocaleCode = 
-    typeof locale === 'string' 
-    ? locale 
-    : typeof locale.time === 'string' 
-    ? locale?.time 
-    : navigator.language;
+  const dateLocaleCode = getLocaleCode(locale);
   return {
     formatTimeDurationLabels: formatTimeDurationLabels(numberLocale),
     formatLocaleCurrency: formatLocaleCurrency(numberLocale),
@@ -48,6 +43,16 @@ export const getExpressionFunctions = (
     getLabelWidth,
     truncateText,
   };
+};
+
+export const getLocaleCode = (locale: Locale | LocaleCode | { time?: TimeLocaleCode | TimeLocale }) => {
+  if (typeof locale === 'string') {
+    return locale;
+  }
+  if (typeof locale.time === 'string') {
+    return locale.time;
+  }
+  return navigator.language;
 };
 
 /**
@@ -140,7 +145,7 @@ export const formatVerticalAxisTimeLabelTooltips = (timeLocale?: string) => {
         options = { year: 'numeric', month: 'short', day: 'numeric'};
         break;
       case 'week':
-        options = { month: 'short', day: 'numeric' };
+        options = { year: 'numeric', month: 'short', day: 'numeric'};
         break;
       case 'month':
         options = { month: 'short', year: 'numeric' };
