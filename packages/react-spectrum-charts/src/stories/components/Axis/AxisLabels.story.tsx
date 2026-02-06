@@ -95,8 +95,19 @@ LabelOrientation.args = {
   baseline: true,
 };
 
-const LabelWithTooltip = bindWithProps(AxisTimeLabelTooltipStory);
+const LabelWithTooltip = bindWithProps(AxisLabelStory);
 LabelWithTooltip.args = {
+  hasTooltip: true,
+  labelFontWeight: DEFAULT_LABEL_FONT_WEIGHT,
+  labelFormat: 'linear',
+  labelOrientation: DEFAULT_LABEL_ORIENTATION,
+  position: 'bottom',
+  ticks: true,
+  baseline: true,
+};
+
+const LabelWithTimeBasedTooltip = bindWithProps(AxisTimeLabelTooltipStory);
+LabelWithTimeBasedTooltip.args = {
   labelFontWeight: DEFAULT_LABEL_FONT_WEIGHT,
   labelOrientation: DEFAULT_LABEL_ORIENTATION,
   position: 'bottom',
@@ -128,4 +139,4 @@ LabelLimit.args = {
   labelLimit: 60,
 };
 
-export { Basic, LabelAlign, LabelOrientation, LabelLimit, LabelWithTooltip };
+export { Basic, LabelAlign, LabelOrientation, LabelLimit, LabelWithTooltip, LabelWithTimeBasedTooltip };

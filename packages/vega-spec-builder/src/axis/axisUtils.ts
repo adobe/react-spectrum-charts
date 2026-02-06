@@ -152,7 +152,7 @@ const getSecondaryTimeAxisLabelFormatting = (
       labels: {
         interactive: Boolean(hasTooltip),
         update: {
-          ...(hasTooltip ? { tooltip: { signal: 'timeFormat(datum.value, "%b %-d, %Y")' } } : {})
+          ...(hasTooltip ? { tooltip: { signal: `formatVerticalAxisTimeLabelTooltips(datum, '${granularity}')` } } : {})
         },
       },
     },

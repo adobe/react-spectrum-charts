@@ -10,11 +10,13 @@
  * governing permissions and limitations under the License.
  */
 import { numberLocales } from '@spectrum-charts/locales';
+import { Granularity } from '../types';
 
 import {
   LabelDatum,
   expressionFunctions,
   formatHorizontalTimeAxisLabels,
+  formatVerticalAxisTimeLabelTooltips,
   formatLocaleCurrency,
   formatShortNumber,
   formatTimeDurationLabels,
@@ -138,6 +140,36 @@ describe('formatHorizontalTimeAxisLabels()', () => {
   test('should return "" when previous label was the same', () => {
     expect(formatter({ index: 0, label: '2024', value: 2 })).toBe('2024');
     expect(formatter({ index: 1, label: '2024', value: 2 })).toBe('');
+  });
+});
+
+describe('formatVerticalAxisTimeLabelTooltips()', () => {
+  let formatter: (datum: LabelDatum, granularity: Granularity) => string;
+  beforeEach(() => {
+    formatter = formatVerticalAxisTimeLabelTooltips();
+  });
+
+  test('should return the correct tooltip label for the given granularity', () => {
+    expect(formatter({ index: 0, label: '2024', value: 1667890800000 }, 'year')).toBe('2022');
+    expect(formatter({ index: 0, label: '2024', value: 1667890800000 }, 'month')).toBe('Nov 2022');
+    expect(formatter({ index: 0, label: '2024', value: 1667890800000 }, 'quarter')).toBe('Nov 2022');
+    expect(formatter({ index: 0, label: '2024', value: 1667890800000 }, 'day')).toBe('Nov 8, 2022');
+    expect(formatter({ index: 0, label: '2024', value: 1667890800000 }, 'hour')).toBe('Nov 8, 7 AM');
+    expect(formatter({ index: 0, label: '2024', value: 1667890800000 }, 'minute')).toBe('Nov 8, 7:00 AM');
+    expect(formatter({ index: 0, label: '2024', value: 1667890800000 }, 'second')).toBe('7:00:00 AM');
+  });
+
+  test('should return correct format for different locales', () => {
+    const datum: LabelDatum = { index: 0, label: '2024', value: 1667890800000 }; // 2022-11-08T07:00:00Z
+    const enUS = formatVerticalAxisTimeLabelTooltips('en-US');
+    const enGB = formatVerticalAxisTimeLabelTooltips('en-GB');
+    const deDE = formatVerticalAxisTimeLabelTooltips('de-DE');
+    const frFR = formatVerticalAxisTimeLabelTooltips('fr-FR');
+    
+    expect(enUS(datum, 'day')).toBe('Nov 8, 2022');
+    expect(enGB(datum, 'day')).toBe('8 Nov 2022');
+    expect(deDE(datum, 'day')).toBe('8. Nov. 2022');
+    expect(frFR(datum, 'day')).toBe('8 nov. 2022');
   });
 });
 

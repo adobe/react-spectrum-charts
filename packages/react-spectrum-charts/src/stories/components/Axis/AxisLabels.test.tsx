@@ -10,7 +10,7 @@
  * governing permissions and limitations under the License.
  */
 import { findChart, render, screen, hoverNthElement, getAllAxisLabels, waitFor } from '../../../test-utils';
-import { LabelAlign, LabelOrientation, LabelWithTooltip } from './AxisLabels.story';
+import { LabelAlign, LabelOrientation, LabelWithTooltip, LabelWithTimeBasedTooltip } from './AxisLabels.story';
 
 describe('LabelAlign', () => {
   test('anchor should be on the left side of text for labelAlign="start" and labelOrientation="horizontal"', async () => {
@@ -44,7 +44,6 @@ describe('LabelOrientation', () => {
 });
 
 describe('LabelWithTooltip', () => {
-
   test('tooltip should be included with the axis', async () => {
     render(<LabelWithTooltip {...LabelWithTooltip.args} />);
 
@@ -58,6 +57,35 @@ describe('LabelWithTooltip', () => {
 
   test('shows tooltip when first axis label is hovered', async () => {
     render(<LabelWithTooltip {...LabelWithTooltip.args} />);
+  
+    const chart = await findChart();
+    const labels = getAllAxisLabels(chart);
+    expect(labels.length).toBeGreaterThan(0);
+  
+    await hoverNthElement(labels, 1);
+
+    await waitFor(() => {
+      const el = document.getElementById('vg-tooltip-element');
+      return expect(el?.textContent).toContain('0.1');
+    });
+  });
+});
+
+describe('LabelWithTimeBasedTooltip', () => {
+
+  test('tooltip should be included with the axis', async () => {
+    render(<LabelWithTimeBasedTooltip {...LabelWithTooltip.args} />);
+
+    const chart = await findChart();
+    expect(chart).toBeInTheDocument();
+
+    const el = document.getElementById('vg-tooltip-element');
+    expect(el).toBeInTheDocument();
+    expect(el).toHaveClass('vg-tooltip');
+  });
+
+  test('shows tooltip when first axis label is hovered', async () => {
+    render(<LabelWithTimeBasedTooltip {...LabelWithTooltip.args} />);
   
     const chart = await findChart();
     const labels = getAllAxisLabels(chart);
