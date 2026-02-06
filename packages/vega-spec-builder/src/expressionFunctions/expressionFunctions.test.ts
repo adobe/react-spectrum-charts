@@ -11,6 +11,7 @@
  */
 import { numberLocales } from '@spectrum-charts/locales';
 import { Granularity } from '../types';
+import { Locale, TimeLocale } from 'vega';
 
 import {
   LabelDatum,
@@ -113,9 +114,9 @@ describe('getLocaleCode()', () => {
       configurable: true,
     });
     // no time provided
-    expect(getLocaleCode({} as any)).toBe('es-ES');
+    expect(getLocaleCode({} as Locale)).toBe('es-ES');
     // time provided but not a string (simulating TimeLocale object)
-    expect(getLocaleCode({ time: {} as any })).toBe('es-ES');
+    expect(getLocaleCode({ time: {} as TimeLocale })).toBe('es-ES');
   });
 });
 
