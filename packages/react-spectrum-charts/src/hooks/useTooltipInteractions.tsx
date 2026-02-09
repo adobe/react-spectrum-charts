@@ -78,6 +78,43 @@ const getDimensionAreaTooltipMarkup = (
   );
 };
 
+const getDataTooltipMarkup = (
+  value: Datum,
+  tooltips: TooltipDetail[],
+  chartView: { current?: { data: (name: string) => Datum[]; signal: (name: string, value: unknown) => void } } | null,
+  idKey: string,
+  controlledHoveredIdSignal: { current?: { name: string } } | null,
+  controlledHoveredGroupSignal: { current?: { name: string } } | null
+): string | undefined => {
+  
+  // get the correct tooltip to render based on the hovered item
+  const tooltip = tooltips.find((t) => t.name === value[COMPONENT_NAME]);
+  if (!(tooltip?.callback) || 'index' in value) {
+    return;
+  }
+
+  if (controlledHoveredIdSignal?.current) {
+    chartView?.current?.signal(controlledHoveredIdSignal?.current.name, value?.[idKey] ?? null);
+  }
+  if (controlledHoveredGroupSignal?.current) {
+    const key = Object.keys(value).find((k) => k.endsWith(GROUP_ID));
+    if (key) {
+      chartView?.current?.signal(controlledHoveredGroupSignal?.current.name, value[key]);
+    }
+  }
+  if (tooltip.highlightBy && tooltip.highlightBy !== 'item') {
+    const tableData = chartView?.current?.data(FILTERED_TABLE);
+    const groupId = `${tooltip.name}_${GROUP_ID}`;
+    value[GROUP_DATA] = tableData?.filter((d) => d[groupId] === value[groupId]);
+  }
+
+  return renderToStaticMarkup(
+    <div className="rsc-tooltip" data-testid="rsc-tooltip">
+      {tooltip.callback(value)}
+    </div>
+  );
+};
+
 const useTooltipInteractions = (props: RscChartProps, sanitizedChildren: ChartChildElement[]) => {
   const { chartView, controlledHoveredIdSignal, controlledHoveredGroupSignal } = useChartContext();
   const { debug, colorScheme, idKey, tooltipAnchor, tooltipPlacement } = props;
@@ -89,46 +126,32 @@ const useTooltipInteractions = (props: RscChartProps, sanitizedChildren: ChartCh
 
     if (tooltips.length || legendDescriptions) {
       options.formatTooltip = (value) => {
-      debugLog(debug, { title: 'Tooltip datum', contents: value });
+        debugLog(debug, { title: 'Tooltip datum', contents: value });
 
-      const legendTooltip = getLegendTooltipMarkup(value, legendDescriptions, chartView, debug);
-      if (legendTooltip) return legendTooltip;
+        const legendTooltip = getLegendTooltipMarkup(value, legendDescriptions, chartView, debug);
+        if (legendTooltip) return legendTooltip;
 
-      const dimensionAreaTooltip = getDimensionAreaTooltipMarkup(value, tooltips, chartView);
-      if (dimensionAreaTooltip !== undefined) return dimensionAreaTooltip;
+        const dimensionAreaTooltip = getDimensionAreaTooltipMarkup(value, tooltips, chartView);
+        if (dimensionAreaTooltip !== undefined) return dimensionAreaTooltip;
 
-      // get the correct tooltip to render based on the hovered item
-      const tooltip = tooltips.find((t) => t.name === value[COMPONENT_NAME]);
-      if (tooltip?.callback && !('index' in value)) {
-        if (controlledHoveredIdSignal.current) {
-          chartView.current?.signal(controlledHoveredIdSignal.current.name, value?.[idKey] ?? null);
-        }
-        if (controlledHoveredGroupSignal.current) {
-          const key = Object.keys(value).find((k) => k.endsWith(GROUP_ID));
-          if (key) {
-            chartView.current?.signal(controlledHoveredGroupSignal.current.name, value[key]);
-          }
-        }
-        if (tooltip.highlightBy && tooltip.highlightBy !== 'item') {
-          const tableData = chartView.current?.data(FILTERED_TABLE);
-          const groupId = `${tooltip.name}_${GROUP_ID}`;
-          value[GROUP_DATA] = tableData?.filter((d) => d[groupId] === value[groupId]);
-        }
-        return renderToStaticMarkup(
-          <div className="rsc-tooltip" data-testid="rsc-tooltip">
-            {tooltip.callback(value)}
-          </div>
+        const dataTooltip = getDataTooltipMarkup(
+          value,
+          tooltips,
+          chartView,
+          idKey,
+          controlledHoveredIdSignal,
+          controlledHoveredGroupSignal
         );
-      }
+        if (dataTooltip !== undefined) return dataTooltip;
 
-      //this allows for axis label tooltips to work at the same time as data tooltips
-      if (value !== null && value !== undefined && typeof value !== 'object') {
-        return String(value ?? '');
-      }
+        //this allows for axis label tooltips to work at the same time as data tooltips
+        if (value !== null && value !== undefined && typeof value !== 'object') {
+          return String(value ?? '');
+        }
 
-      return '';
-    };
-  }
+        return '';
+      };
+    }
 
     return options;
   }, [colorScheme, tooltipAnchor, tooltipPlacement, tooltips, legendDescriptions, debug, idKey, chartView, controlledHoveredIdSignal, controlledHoveredGroupSignal]);
