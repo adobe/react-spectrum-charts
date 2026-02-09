@@ -186,9 +186,9 @@ describe('formatVerticalAxisTimeLabelTooltips()', () => {
   test('should return the correct tooltip label for the given granularity', () => {
     expect(formatter({ index: 0, label: '2024', value: 1667890800000 }, 'year')).toBe('2022');
     expect(formatter({ index: 0, label: '2024', value: 1667890800000 }, 'month')).toBe('Nov 2022');
-    expect(formatter({ index: 0, label: '2024', value: 1667890800000 }, 'quarter')).toBe('Nov 2022');
-    expect(formatter({ index: 0, label: '2024', value: 1667890800000 }, 'week')).toBe('Nov 8, 2022');
-    expect(formatter({ index: 0, label: '2024', value: 1667890800000 }, 'day')).toBe('Nov 8, 2022');
+    expect(formatter({ index: 0, label: '2024', value: 1667890800000 }, 'quarter')).toBe('Q4 2022');
+    expect(formatter({ index: 0, label: '2024', value: 1667890800000 }, 'week')).toBe('Nov 8');
+    expect(formatter({ index: 0, label: '2024', value: 1667890800000 }, 'day')).toBe('Nov 8');
     expect(formatter({ index: 0, label: '2024', value: 1667890800000 }, 'hour')).toBe('Nov 8, 7 AM');
     expect(formatter({ index: 0, label: '2024', value: 1667890800000 }, 'minute')).toBe('Nov 8, 7:00 AM');
     expect(formatter({ index: 0, label: '2024', value: 1667890800000 }, 'second')).toBe('7:00:00 AM');
@@ -201,10 +201,10 @@ describe('formatVerticalAxisTimeLabelTooltips()', () => {
     const deDE = formatVerticalAxisTimeLabelTooltips('de-DE');
     const frFR = formatVerticalAxisTimeLabelTooltips('fr-FR');
     
-    expect(enUS(datum, 'day')).toBe('Nov 8, 2022');
-    expect(enGB(datum, 'day')).toBe('8 Nov 2022');
-    expect(deDE(datum, 'day')).toBe('8. Nov. 2022');
-    expect(frFR(datum, 'day')).toBe('8 nov. 2022');
+    expect(enUS(datum, 'day')).toBe('Nov 8');
+    expect(enGB(datum, 'day')).toBe('8 Nov');
+    expect(deDE(datum, 'day')).toBe('8. Nov.');
+    expect(frFR(datum, 'day')).toBe('8 nov.');
   });
 });
 

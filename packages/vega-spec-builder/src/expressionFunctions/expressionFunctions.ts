@@ -142,17 +142,18 @@ export const formatVerticalAxisTimeLabelTooltips = (timeLocale?: string) => {
         options = { month: 'short', day: 'numeric', hour: 'numeric' };
         break;
       case 'day':
-        options = { year: 'numeric', month: 'short', day: 'numeric'};
+        options = { month: 'short', day: 'numeric'};
         break;
       case 'week':
-        options = { year: 'numeric', month: 'short', day: 'numeric'};
+        options = { month: 'short', day: 'numeric'};
         break;
       case 'month':
         options = { month: 'short', year: 'numeric' };
         break;
       case 'quarter': {
-        options = { month: 'short', year: 'numeric' };
-        break;
+        const quarter = Math.floor(date.getMonth() / 3) + 1;
+        const year = new Intl.DateTimeFormat(timeLocale, { year: 'numeric' }).format(date);
+        return `Q${quarter} ${year}`;
       }
       case 'year':
         options = { year: 'numeric' };
