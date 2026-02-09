@@ -81,6 +81,12 @@ The `MetricRange` component is used to add a custom area mark onto visualization
             <td>The opacity of the metric range</td>
         </tr>
         <tr>
+            <td>lineOpacity</td>
+            <td>OpacityFacet</td>
+            <td>{ value: 1 }</td>
+            <td>The opacity of the metric line</td>
+        </tr>
+        <tr>
             <td>scaleAxisToFit</td>
             <td>boolean</td>
             <td>false</td>
