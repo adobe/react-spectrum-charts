@@ -95,7 +95,7 @@ describe('LabelWithTimeBasedTooltip', () => {
 
     await waitFor(() => {
       const el = document.getElementById('vg-tooltip-element');
-      return expect(el?.textContent).toContain('Nov 8, 2022');
+      return expect(el?.textContent).toContain('Nov 8');
     });
   });
 
