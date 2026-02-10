@@ -995,79 +995,13 @@ export const workspaceTrendsDataWithExtremeMetricRange = [
 ];
 
 export const workspaceTrendsDataWithBreaksInMetricRange = [
-  {
-    datetime: 1667890800000,
-    point: 4,
-    value: 12208,
-    users: 5253,
-    series: 'Add Fallout',
-    metricEnd: 12708,
-    metricStart: 11208,
-    metric: 11708,
-  },
-  {
-    datetime: 1667977200000,
-    point: 5,
-    value: 11309,
-    users: 5103,
-    series: 'Add Fallout',
-    metricEnd: 10809,
-    metricStart: 9809,
-    metric: 10309,
-    staticPoint: true,
-  },
-  {
-    datetime: 1668063600000,
-    point: 17,
-    value: 11099,
-    users: 5047,
-    series: 'Add Fallout',
-    metricEnd: 10599,
-    metricStart: 9599,
-    metric: 10099,
-    staticPoint: true,
-  },
-  {
-    datetime: 1668150000000,
-    point: 20,
-    value: 7243,
-    users: 3386,
-    series: 'Add Fallout',
-    // missing metricEnd, metricStart and metric
-  },
-  {
-    datetime: 1668236400000,
-    point: 21,
-    value: 395,
-    users: 205,
-    series: 'Add Fallout',
-    // missing metricEnd, metricStart and metric
-    metricEnd: null,
-    metricStart: null,
-    metric: null,
-  },
-  {
-    datetime: 1668322800000,
-    point: 22,
-    value: 1606,
-    users: 790,
-    series: 'Add Fallout',
-    // missing metricEnd, metricStart and metric
-    metricEnd: undefined,
-    metricStart: undefined,
-    metric: undefined,
-  },
-  {
-    datetime: 1668409200000,
-    point: 25,
-    value: 10932,
-    users: 4913,
-    series: 'Add Fallout',
-    metricEnd: 8432,
-    metricStart: 7432,
-    metric: 7932,
-    staticPoint: true,
-  },
+  { datetime: 1667890800000, point: 4, value: 13100, users: 5380, series: 'Add Freeform table', metricEnd: 13600, metricStart: 12100, metric: 12850 },
+  { datetime: 1667977200000, point: 5, value: 12180, users: 5220, series: 'Add Freeform table', metricEnd: 11180, metricStart: 10180, metric: 10680, staticPoint: true },
+  { datetime: 1668063600000, point: 17, value: 11950, users: 5170, series: 'Add Freeform table', metricEnd: 10850, metricStart: 9850, metric: 10350, staticPoint: true },
+  { datetime: 1668150000000, point: 20, value: 7680, users: 3490, series: 'Add Freeform table' },
+  { datetime: 1668236400000, point: 21, value: 430, users: 218, series: 'Add Freeform table', metricEnd: null, metricStart: null, metric: null },
+  { datetime: 1668322800000, point: 22, value: 1720, users: 805, series: 'Add Freeform table', metricEnd: undefined, metricStart: undefined, metric: undefined },
+  { datetime: 1668409200000, point: 25, value: 11480, users: 5020, series: 'Add Freeform table', metricEnd: 8780, metricStart: 7680, metric: 8180, staticPoint: true },
 ];
 
 export const packedBubbleData = [
