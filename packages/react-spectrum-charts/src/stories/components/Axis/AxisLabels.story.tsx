@@ -14,7 +14,7 @@ import React, { ReactElement } from 'react';
 import { StoryFn } from '@storybook/react';
 
 import { DEFAULT_LABEL_FONT_WEIGHT, DEFAULT_LABEL_ORIENTATION } from '@spectrum-charts/constants';
-
+import { formatTimestamp } from '../../../stories/storyUtils';
 import { Axis, Bar, ChartTooltip } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
 import { Chart } from '../../../index';
@@ -53,7 +53,7 @@ const AxisTimeLabelTooltipStory: StoryFn<typeof Axis> = (args): ReactElement => 
         <ChartTooltip>
           {(datum) => {
             return (
-              <div>{datum.datetime}</div>
+              <div>{formatTimestamp(datum.datetime as number)}</div>
             );
           }}
         </ChartTooltip>
