@@ -14,11 +14,12 @@ import React, { ReactElement } from 'react';
 import { StoryFn } from '@storybook/react';
 
 import { DEFAULT_LABEL_FONT_WEIGHT, DEFAULT_LABEL_ORIENTATION } from '@spectrum-charts/constants';
-
-import { Axis, Bar } from '../../../components';
+import { formatTimestamp } from '../../../stories/storyUtils';
+import { Axis, Bar, ChartTooltip } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
 import { Chart } from '../../../index';
 import { bindWithProps } from '../../../test-utils';
+import { weekTimeData } from './data';
 
 export default {
   title: 'RSC/Axis/Labels',
@@ -38,6 +39,25 @@ const AxisLabelStory: StoryFn<typeof Axis> = (args): ReactElement => {
   return (
     <Chart {...chartProps}>
       <Axis {...args}></Axis>
+    </Chart>
+  );
+};
+
+const AxisTimeLabelTooltipStory: StoryFn<typeof Axis> = (args): ReactElement => {
+  const chartProps = useChartProps({ data: weekTimeData, width: 600, height: 400 });
+  return (
+    <Chart {...chartProps}>
+      <Axis {...args} position="bottom" labelFormat="time" granularity="day" title="Date"/>
+      <Axis position="left" grid title="Downloads"/>
+      <Bar dimension="datetime" metric="downloads" >
+        <ChartTooltip>
+          {(datum) => {
+            return (
+              <div>{formatTimestamp(datum.datetime as number)}</div>
+            );
+          }}
+        </ChartTooltip>
+      </Bar>
     </Chart>
   );
 };
@@ -77,12 +97,20 @@ LabelOrientation.args = {
 
 const LabelWithTooltip = bindWithProps(AxisLabelStory);
 LabelWithTooltip.args = {
-  labelAlign: 'center',
+  hasTooltip: true,
   labelFontWeight: DEFAULT_LABEL_FONT_WEIGHT,
   labelFormat: 'linear',
   labelOrientation: DEFAULT_LABEL_ORIENTATION,
   position: 'bottom',
   ticks: true,
+  baseline: true,
+};
+
+const LabelWithTimeBasedTooltip = bindWithProps(AxisTimeLabelTooltipStory);
+LabelWithTimeBasedTooltip.args = {
+  labelFontWeight: DEFAULT_LABEL_FONT_WEIGHT,
+  labelOrientation: DEFAULT_LABEL_ORIENTATION,
+  position: 'bottom',
   baseline: true,
   hasTooltip: true,
 };
@@ -111,4 +139,4 @@ LabelLimit.args = {
   labelLimit: 60,
 };
 
-export { Basic, LabelAlign, LabelOrientation, LabelLimit, LabelWithTooltip };
+export { Basic, LabelAlign, LabelOrientation, LabelLimit, LabelWithTooltip, LabelWithTimeBasedTooltip };

@@ -98,6 +98,7 @@ const getSecondaryTimeAxis = (
   {
     granularity,
     grid,
+    hasTooltip,
     labelAlign,
     labelOrientation,
     position,
@@ -119,12 +120,16 @@ const getSecondaryTimeAxis = (
     formatType: 'time',
     labelAngle: getLabelAngle(labelOrientation),
     labelSeparation: 12,
-    ...getSecondaryTimeAxisLabelFormatting(granularity, position),
+    ...getSecondaryTimeAxisLabelFormatting(granularity, position, hasTooltip),
     ...getLabelAnchorValues(position, labelOrientation, labelAlign, vegaLabelAlign, vegaLabelBaseline),
   };
 };
 
-const getSecondaryTimeAxisLabelFormatting = (granularity: Granularity, position: Position): Partial<Axis> => {
+const getSecondaryTimeAxisLabelFormatting = (
+  granularity: Granularity,
+  position: Position,
+  hasTooltip?: boolean
+): Partial<Axis> => {
   const { secondaryLabelFormat, primaryLabelFormat } = getTimeLabelFormats(granularity);
   const isVerticalAxis = ['left', 'right'].includes(position);
   if (isVerticalAxis) {
@@ -143,6 +148,14 @@ const getSecondaryTimeAxisLabelFormatting = (granularity: Granularity, position:
 
   return {
     format: secondaryLabelFormat,
+    encode: {
+      labels: {
+        interactive: Boolean(hasTooltip),
+        update: {
+          ...(hasTooltip ? { tooltip: { signal: `formatVerticalAxisTimeLabelTooltips(datum, '${granularity}')` } } : {})
+        },
+      },
+    },
   };
 };
 

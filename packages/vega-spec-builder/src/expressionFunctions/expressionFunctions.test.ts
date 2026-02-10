@@ -10,11 +10,15 @@
  * governing permissions and limitations under the License.
  */
 import { numberLocales } from '@spectrum-charts/locales';
+import { Granularity } from '../types';
+import { Locale, TimeLocale } from 'vega';
 
 import {
   LabelDatum,
   expressionFunctions,
+  getLocaleCode,
   formatHorizontalTimeAxisLabels,
+  formatVerticalAxisTimeLabelTooltips,
   formatLocaleCurrency,
   formatShortNumber,
   formatTimeDurationLabels,
@@ -84,6 +88,38 @@ describe('formatLocaleCurrency()', () => {
   });
 });
 
+describe('getLocaleCode()', () => {
+  const originalLanguage = navigator.language;
+
+  afterEach(() => {
+    // restore original navigator.language
+    Object.defineProperty(window.navigator, 'language', {
+      value: originalLanguage,
+      configurable: true,
+    });
+  });
+
+  test('returns the locale string when input is a string', () => {
+    expect(getLocaleCode('fr-FR')).toBe('fr-FR');
+    expect(getLocaleCode('en-GB')).toBe('en-GB');
+  });
+
+  test('returns time locale string when provided in object', () => {
+    expect(getLocaleCode({ time: 'de-DE' })).toBe('de-DE');
+  });
+
+  test('falls back to navigator.language when time is not a string', () => {
+    Object.defineProperty(window.navigator, 'language', {
+      value: 'es-ES',
+      configurable: true,
+    });
+    // no time provided
+    expect(getLocaleCode({} as Locale)).toBe('es-ES');
+    // time provided but not a string (simulating TimeLocale object)
+    expect(getLocaleCode({ time: {} as TimeLocale })).toBe('es-ES');
+  });
+});
+
 describe('truncateText()', () => {
   const longText =
     'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec a diam lectus. Sed sit amet ipsum mauris. Maecenas congue ligula ac quam viverra nec consectetur ante hendrerit.';
@@ -138,6 +174,37 @@ describe('formatHorizontalTimeAxisLabels()', () => {
   test('should return "" when previous label was the same', () => {
     expect(formatter({ index: 0, label: '2024', value: 2 })).toBe('2024');
     expect(formatter({ index: 1, label: '2024', value: 2 })).toBe('');
+  });
+});
+
+describe('formatVerticalAxisTimeLabelTooltips()', () => {
+  let formatter: (datum: LabelDatum, granularity: Granularity) => string;
+  beforeEach(() => {
+    formatter = formatVerticalAxisTimeLabelTooltips();
+  });
+
+  test('should return the correct tooltip label for the given granularity', () => {
+    expect(formatter({ index: 0, label: '2024', value: 1667890800000 }, 'year')).toBe('2022');
+    expect(formatter({ index: 0, label: '2024', value: 1667890800000 }, 'month')).toBe('Nov 2022');
+    expect(formatter({ index: 0, label: '2024', value: 1667890800000 }, 'quarter')).toBe('Q4 2022');
+    expect(formatter({ index: 0, label: '2024', value: 1667890800000 }, 'week')).toBe('Nov 8');
+    expect(formatter({ index: 0, label: '2024', value: 1667890800000 }, 'day')).toBe('Nov 8');
+    expect(formatter({ index: 0, label: '2024', value: 1667890800000 }, 'hour')).toBe('Nov 8, 7 AM');
+    expect(formatter({ index: 0, label: '2024', value: 1667890800000 }, 'minute')).toBe('Nov 8, 7:00 AM');
+    expect(formatter({ index: 0, label: '2024', value: 1667890800000 }, 'second')).toBe('7:00:00 AM');
+  });
+
+  test('should return correct format for different locales', () => {
+    const datum: LabelDatum = { index: 0, label: '2024', value: 1667890800000 }; // 2022-11-08T07:00:00Z
+    const enUS = formatVerticalAxisTimeLabelTooltips('en-US');
+    const enGB = formatVerticalAxisTimeLabelTooltips('en-GB');
+    const deDE = formatVerticalAxisTimeLabelTooltips('de-DE');
+    const frFR = formatVerticalAxisTimeLabelTooltips('fr-FR');
+    
+    expect(enUS(datum, 'day')).toBe('Nov 8');
+    expect(enGB(datum, 'day')).toBe('8 Nov');
+    expect(deDE(datum, 'day')).toBe('8. Nov.');
+    expect(frFR(datum, 'day')).toBe('8 nov.');
   });
 });
 
