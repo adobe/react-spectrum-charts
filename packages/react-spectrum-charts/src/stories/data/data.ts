@@ -1075,7 +1075,7 @@ export const workspaceTrendsDataWithBreaksInMetricRange = [
     users: 5253,
     series: 'Add Freeform table',
     metricEnd: 12708,
-    // missing metricStart
+    metricStart: 11208,
     metric: 11708,
   },
   {
@@ -1116,8 +1116,8 @@ export const workspaceTrendsDataWithBreaksInMetricRange = [
     series: 'Add Freeform table',
     // missing metricEnd, metricStart and metric
     metricEnd: null,
-    metricStart: undefined,
-    metric: undefined
+    metricStart: null,
+    metric: null,
   },
   {
     datetime: 1668322800000,
@@ -1126,6 +1126,9 @@ export const workspaceTrendsDataWithBreaksInMetricRange = [
     users: 790,
     series: 'Add Freeform table',
     // missing metricEnd, metricStart and metric
+    metricEnd: undefined,
+    metricStart: undefined,
+    metric: undefined,
   },
   {
     datetime: 1668409200000,
@@ -1133,7 +1136,7 @@ export const workspaceTrendsDataWithBreaksInMetricRange = [
     value: 10932,
     users: 4913,
     series: 'Add Freeform table',
-    // missing metricEnd
+    metricEnd: 8432,
     metricStart: 7432,
     metric: 7932,
     staticPoint: true,
