@@ -89,6 +89,7 @@ export const getAreaMark = (
         fill: getColorProductionRule(color, colorScheme),
         tooltip: getTooltip(chartTooltips ?? [], name),
         ...getBorderStrokeEncodings(isStacked, true),
+        defined: { signal: `isValid(datum["${metricStart}"]) || isValid(datum["${metricEnd}"])` },
       },
       update: {
         // this has to be in update because when you resize the window that doesn't rebuild the spec
@@ -97,6 +98,7 @@ export const getAreaMark = (
         cursor: getCursor(chartPopovers ?? []),
         fillOpacity: { value: opacity },
         opacity: getAreaOpacity(areaOptions),
+        defined: { signal: `isValid(datum["${metricStart}"]) || isValid(datum["${metricEnd}"])` },
       },
     },
   };
