@@ -74,6 +74,13 @@ describe('getLineMark()', () => {
     const lineMark = getLineMark({ ...defaultLineMarkOptions, displayOnHover: false }, 'line0_facet');
     expect(lineMark.encode?.update?.opacity).toEqual([{ value: 1 }]);
   });
+
+  test('uses signal-based y when treatNullAsZero is true', () => {
+    const lineMark = getLineMark(defaultLineMarkOptions, 'line0_facet', true);
+    expect(lineMark.encode?.enter?.y).toEqual([
+      { scale: 'yLinear', signal: 'datum["value"] ? datum["value"] : 0' },
+    ]);
+  });
 });
 
 describe('getLineHoverMarks()', () => {

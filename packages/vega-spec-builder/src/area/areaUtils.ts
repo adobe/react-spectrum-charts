@@ -61,7 +61,8 @@ export interface AreaMarkOptions {
 
 export const getAreaMark = (
   areaOptions: AreaMarkOptions,
-  dataSource: string = `${areaOptions.name}_facet`
+  dataSource: string = `${areaOptions.name}_facet`,
+  treatNullAsZero: boolean = false,
 ): AreaMark => {
   const {
     name,
@@ -76,6 +77,14 @@ export const getAreaMark = (
     dimension,
     opacity,
   } = areaOptions;
+  let y: ProductionRule<NumericValueRef> = { scale: 'yLinear', field: metricStart };
+  let y2: ProductionRule<NumericValueRef> = { scale: 'yLinear', field: metricEnd };
+
+  if (treatNullAsZero) {
+    y = { scale: 'yLinear', signal: `datum["${metricStart}"] ? datum["${metricStart}"] : 0` };
+    y2 = { scale: 'yLinear', signal: `datum["${metricEnd}"] ? datum["${metricEnd}"] : 0` };
+  }
+
   return {
     name,
     description: name,
@@ -84,8 +93,8 @@ export const getAreaMark = (
     interactive: isInteractive(areaOptions),
     encode: {
       enter: {
-        y: { scale: 'yLinear', field: metricStart },
-        y2: { scale: 'yLinear', field: metricEnd },
+        y: y,
+        y2: y2,
         fill: getColorProductionRule(color, colorScheme),
         tooltip: getTooltip(chartTooltips ?? [], name),
         ...getBorderStrokeEncodings(isStacked, true),

@@ -192,7 +192,7 @@ const metricRangeGroupMark = {
           y: [
             {
               scale: 'yLinear',
-              field: 'value',
+              signal: 'datum["value"] ? datum["value"] : 0',
             },
           ],
           stroke: {
@@ -227,12 +227,12 @@ const metricRangeGroupMark = {
       encode: {
         enter: {
           y: {
-            field: 'start',
             scale: 'yLinear',
+            signal: 'datum["start"] ? datum["start"] : 0',
           },
           y2: {
-            field: 'end',
             scale: 'yLinear',
+            signal: 'datum["end"] ? datum["end"] : 0',
           },
           fill: {
             scale: COLOR_SCALE,

@@ -20,7 +20,7 @@ import { Axis, ChartPopover, ChartTooltip, Legend, Line, MetricRange } from '../
 import useChartProps from '../../../hooks/useChartProps';
 import { bindWithProps } from '../../../test-utils';
 import { ChartProps } from '../../../types';
-import { workspaceTrendsDataWithAnomalies, workspaceTrendsDataWithExtremeMetricRange } from '../../data/data';
+import { workspaceTrendsDataWithAnomalies, workspaceTrendsDataWithExtremeMetricRange, workspaceTrendsDataWithBreaksInMetricRange } from '../../data/data';
 
 export default {
   title: 'RSC/MetricRange',
@@ -82,6 +82,23 @@ const MetricRangeScaleAxisToFitStory: StoryFn<typeof MetricRange> = (args): Reac
   const chartProps = useChartProps({
     ...defaultChartProps,
     data: workspaceTrendsDataWithExtremeMetricRange,
+  });
+  return (
+    <Chart {...chartProps}>
+      <Axis position="left" grid title="Users" />
+      <Axis position="bottom" labelFormat="time" baseline ticks />
+      <Line color="series">
+        <MetricRange {...args} />
+      </Line>
+      <Legend lineWidth={{ value: 0 }} highlight />
+    </Chart>
+  );
+};
+
+const MetricRangeWithBreaksStory: StoryFn<typeof MetricRange> = (args): ReactElement => {
+  const chartProps = useChartProps({
+    ...defaultChartProps,
+    data: workspaceTrendsDataWithBreaksInMetricRange,
   });
   return (
     <Chart {...chartProps}>
@@ -157,4 +174,14 @@ ScaleAxisToFit.args = {
   scaleAxisToFit: true,
 };
 
-export { Basic, DisplayOnHover, WithStaticPoints, WithPopover, ScaleAxisToFit };
+const WithBreaksInMetricRange = bindWithProps(MetricRangeWithBreaksStory);
+WithBreaksInMetricRange.args = {
+  lineType: 'shortDash',
+  lineWidth: 'S',
+  rangeOpacity: 0.2,
+  metricEnd: 'metricEnd',
+  metricStart: 'metricStart',
+  metric: 'metric',
+};
+
+export { Basic, DisplayOnHover, WithStaticPoints, WithPopover, ScaleAxisToFit, WithBreaksInMetricRange };

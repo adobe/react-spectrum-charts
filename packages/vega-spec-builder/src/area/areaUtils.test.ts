@@ -239,4 +239,30 @@ describe('getAreaMark', () => {
       },
     });
   });
+
+  test('uses signal-based y/y2 when treatNullAsZero is true', () => {
+    const areaMark = getAreaMark(
+      {
+        name: 'area0',
+        color: DEFAULT_COLOR,
+        colorScheme: DEFAULT_COLOR_SCHEME,
+        metricStart: 'minVal',
+        metricEnd: 'maxVal',
+        isStacked: false,
+        dimension: 'dimension',
+        scaleType: 'linear',
+        opacity: 0.5,
+      },
+      'area0_facet',
+      true
+    );
+    expect(areaMark.encode?.enter?.y).toEqual({
+      scale: 'yLinear',
+      signal: 'datum["minVal"] ? datum["minVal"] : 0',
+    });
+    expect(areaMark.encode?.enter?.y2).toEqual({
+      scale: 'yLinear',
+      signal: 'datum["maxVal"] ? datum["maxVal"] : 0',
+    });
+  });
 });

@@ -81,7 +81,7 @@ const basicMetricRangeMarks = [
     interactive: false,
     encode: {
       enter: {
-        y: [{ scale: 'yLinear', field: 'metric' }],
+        y: [{ scale: 'yLinear', signal: 'datum["metric"] ? datum["metric"] : 0' }],
         stroke: { scale: COLOR_SCALE, field: 'series' },
         strokeDash: { value: [3, 4] },
         strokeOpacity: DEFAULT_OPACITY_RULE,
@@ -107,8 +107,8 @@ const basicMetricRangeMarks = [
     encode: {
       enter: {
         tooltip: undefined,
-        y: { scale: 'yLinear', field: 'metricStart' },
-        y2: { scale: 'yLinear', field: 'metricEnd' },
+        y: { scale: 'yLinear', signal: 'datum["metricStart"] ? datum["metricStart"] : 0' },
+        y2: { scale: 'yLinear', signal: 'datum["metricEnd"] ? datum["metricEnd"] : 0' },
         fill: { scale: COLOR_SCALE, field: 'series' },
       },
       update: {
@@ -167,6 +167,21 @@ describe('applyMetricRangePropDefaults', () => {
 describe('getMetricRangeMark', () => {
   test('creates MetricRange mark from basic input', () => {
     expect(getMetricRangeMark(defaultLineOptions, defaultMetricRangeSpecOptions)).toEqual(basicMetricRangeMarks);
+  });
+
+  test('uses treatNullAsZero for line and area so null/undefined values are drawn as 0', () => {
+    const [lineMark, areaMark] = getMetricRangeMark(defaultLineOptions, defaultMetricRangeSpecOptions);
+    expect(lineMark.encode?.enter?.y).toEqual([
+      { scale: 'yLinear', signal: 'datum["metric"] ? datum["metric"] : 0' },
+    ]);
+    expect(areaMark.encode?.enter?.y).toEqual({
+      scale: 'yLinear',
+      signal: 'datum["metricStart"] ? datum["metricStart"] : 0',
+    });
+    expect(areaMark.encode?.enter?.y2).toEqual({
+      scale: 'yLinear',
+      signal: 'datum["metricEnd"] ? datum["metricEnd"] : 0',
+    });
   });
 });
 

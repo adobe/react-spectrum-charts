@@ -126,8 +126,8 @@ export const getMetricRangeMark = (
   };
 
   const dataSource = `${metricRangeOptions.name}_facet`;
-  const lineMark = getLineMark(lineOptions, dataSource);
-  const areaMark = getAreaMark(areaOptions, dataSource);
+  const lineMark = getLineMark(lineOptions, dataSource, true);
+  const areaMark = getAreaMark(areaOptions, dataSource, true);
 
   return [lineMark, areaMark];
 };

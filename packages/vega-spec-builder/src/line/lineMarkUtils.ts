@@ -49,9 +49,10 @@ import { isDualMetricAxis, LineMarkOptions } from './lineUtils';
  * Gets the Y encoding for line marks with dual metric axis support
  * @param lineMarkOptions - Line mark options including metricAxis and dualMetricAxis
  * @param metric - The metric field name
+ * @param treatNullAsZero - Whether to treat null values as zero
  * @returns Y encoding with conditional scale selection for dual metric axis
  */
-export const getLineYEncoding = (lineMarkOptions: LineMarkOptions, metric: string): ProductionRule<NumericValueRef> => {
+export const getLineYEncoding = (lineMarkOptions: LineMarkOptions, metric: string, treatNullAsZero: boolean = false): ProductionRule<NumericValueRef> => {
   const { metricAxis } = lineMarkOptions;
   
   if (isDualMetricAxis(lineMarkOptions)) {
@@ -70,7 +71,11 @@ export const getLineYEncoding = (lineMarkOptions: LineMarkOptions, metric: strin
       },
     ];
   }
-  
+
+  if (treatNullAsZero) {
+    return [{ scale: metricAxis || 'yLinear', signal: `datum["${metric}"] ? datum["${metric}"] : 0` }];
+  }
+
   return [{ scale: metricAxis || 'yLinear', field: metric }];
 };
 
@@ -80,7 +85,7 @@ export const getLineYEncoding = (lineMarkOptions: LineMarkOptions, metric: strin
  * @param dataSource
  * @returns LineMark
  */
-export const getLineMark = (lineMarkOptions: LineMarkOptions, dataSource: string): LineMark => {
+export const getLineMark = (lineMarkOptions: LineMarkOptions, dataSource: string, treatNullAsZero: boolean = false): LineMark => {
   const {
     chartPopovers,
     color,
@@ -106,7 +111,7 @@ export const getLineMark = (lineMarkOptions: LineMarkOptions, dataSource: string
     interactive: false,
     encode: {
       enter: {
-        y: getLineYEncoding(lineMarkOptions, metric),
+        y: getLineYEncoding(lineMarkOptions, metric, treatNullAsZero),
         stroke: getColorProductionRule(color, colorScheme),
         strokeDash: getStrokeDashProductionRule(lineType),
         strokeOpacity: getOpacityProductionRule(opacity),
