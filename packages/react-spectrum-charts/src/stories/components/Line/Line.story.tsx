@@ -23,6 +23,7 @@ import {
   simpleSparklineData,
   workspaceTrendsData,
   workspaceTrendsDataWithVisiblePoints,
+  workspaceTrendsDataWithGaps,
 } from '../../../stories/data/data';
 import { formatTimestamp } from '../../../stories/storyUtils';
 import { bindWithProps } from '../../../test-utils';
@@ -152,6 +153,18 @@ const PlainLineStory: StoryFn<typeof Line> = (args): ReactElement => {
   return (
     <Chart {...chartProps}>
       <Line {...args} />
+    </Chart>
+  );
+};
+
+const WithGapsInDataStory: StoryFn<typeof Line> = (args): ReactElement => {
+  const chartProps = useChartProps({ ...defaultChartProps, data: workspaceTrendsDataWithGaps });
+  return (
+    <Chart {...chartProps}>
+       <Axis position="left" grid title="Users" />
+       <Axis position="bottom" labelFormat="time" baseline ticks />
+      <Line {...args} />
+      <Legend highlight />
     </Chart>
   );
 };
@@ -323,6 +336,14 @@ OnClickWithTooltip.args = {
   ...OnClick.args,
 };
 
+const WithGapsInData = bindWithProps(WithGapsInDataStory);
+WithGapsInData.args = {
+  ...defaultArgs,
+  dimension: 'datetime',
+  metric: 'value',
+  scaleType: 'time',
+};
+
 const OnMouseInputsStory: StoryFn<typeof Line> = (args): ReactElement => {
   const [hoveredData, setHoveredData] = useState<Datum | null>(null);
   const [isHovering, setIsHovering] = useState(false);
@@ -385,4 +406,5 @@ export {
   OnClick,
   OnClickWithTooltip,
   OnMouseInputs,
+  WithGapsInData,
 };

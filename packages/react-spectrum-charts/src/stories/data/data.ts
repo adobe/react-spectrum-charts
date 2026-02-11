@@ -769,6 +769,23 @@ export const workspaceTrendsDataWithVisiblePoints = [
   { datetime: 1668409200000, point: 25, value: 10932, users: 4913, series: 'Add Freeform table', staticPoint: true },
 ];
 
+export const workspaceTrendsDataWithGaps = [
+  { datetime: 1667890800000, point: 4, value: 1200, users: 2253, series: 'Add Line viz' },
+  { datetime: 1667977200000, point: 5, value: 1309, users: 1103, series: 'Add Line viz' },
+  { datetime: 1668063600000, point: 17, value: 2743, users: 1547, series: 'Add Line viz' },
+  { datetime: 1668150000000, point: 20, value: 2632, users: 1386, series: 'Add Line viz' },
+  { datetime: 1668236400000, point: 21, value: undefined, users: 75, series: 'Add Line viz' },
+  { datetime: 1668322800000, point: 22, value: 2806, users: 270, series: 'Add Line viz' },
+  { datetime: 1668409200000, point: 25, value: 1932, users: 1413, series: 'Add Line viz' },
+  { datetime: 1667890800000, point: 4, value: 208, users: 3523, series: 'Add Bar viz' },
+  { datetime: 1667977200000, point: 5, value: 402, users: 3513, series: 'Add Bar viz' },
+  { datetime: 1668063600000, point: 17, value: 1099, users: 3507, series: 'Add Bar viz' },
+  { datetime: 1668150000000, point: 20, value: null, users: 3336, series: 'Add Bar viz' },
+  { datetime: 1668236400000, point: 21, value: 3350, users: 3025, series: 'Add Bar viz' },
+  { datetime: 1668322800000, point: 22, value: 4806, users: 3070, series: 'Add Bar viz' },
+  { datetime: 1668409200000, point: 25, value: 6932, users: 3493, series: 'Add Bar viz' },
+];
+
 export const workspaceTrendsDataWithAnomalies = [
   {
     datetime: 1667890800000,
