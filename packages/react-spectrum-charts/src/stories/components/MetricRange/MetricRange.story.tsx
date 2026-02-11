@@ -113,7 +113,7 @@ const LineOpacityByKeyStory: StoryFn<typeof MetricRange> = (args): ReactElement 
   );
 };
 
-const WithNullsInRangeStory: StoryFn<typeof MetricRange> = (args): ReactElement => {
+const MetricRangeWithBreaksStory: StoryFn<typeof MetricRange> = (args): ReactElement => {
   const chartProps = useChartProps({
     ...defaultChartProps,
     data: workspaceTrendsDataWithNullsInMetricRange,
@@ -214,8 +214,8 @@ LineOpacityByKey.args = {
   metric: 'metric',
 };
 
-const WithNullsInRange = bindWithProps(WithNullsInRangeStory);
-WithNullsInRange.args = {
+const WithBreaks = bindWithProps(MetricRangeWithBreaksStory);
+WithBreaks.args = {
   lineType: 'shortDash',
   lineWidth: 'S',
   rangeOpacity: 0.2,
@@ -232,5 +232,5 @@ export {
   ScaleAxisToFit,
   LineOpacity,
   LineOpacityByKey,
-  WithNullsInRange,
+  WithBreaks,
 };
