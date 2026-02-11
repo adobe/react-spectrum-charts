@@ -15,7 +15,7 @@ import { FontWeight, Locale, NumberLocale, TimeLocale } from 'vega';
 import { LocaleCode, NumberLocaleCode, TimeLocaleCode, getLocale, numberLocales } from '@spectrum-charts/locales';
 import { ADOBE_CLEAN_FONT } from '@spectrum-charts/themes';
 
-import { NumberFormat } from '../types';
+import { NumberFormat, Granularity } from '../types';
 
 export interface LabelDatum {
   index: number;
@@ -31,6 +31,7 @@ export const getExpressionFunctions = (
 ) => {
   const { number: numberLocale } = getLocale(locale);
   const localeCode = typeof locale === 'string' ? locale : locale?.number;
+  const dateLocaleCode = getLocaleCode(locale);
   return {
     formatTimeDurationLabels: formatTimeDurationLabels(numberLocale),
     formatLocaleCurrency: formatLocaleCurrency(numberLocale),
@@ -38,9 +39,20 @@ export const getExpressionFunctions = (
     consoleLog,
     formatHorizontalTimeAxisLabels: formatHorizontalTimeAxisLabels(),
     formatVerticalAxisTimeLabels: formatVerticalAxisTimeLabels(),
+    formatVerticalAxisTimeLabelTooltips: formatVerticalAxisTimeLabelTooltips(dateLocaleCode),
     getLabelWidth,
     truncateText,
   };
+};
+
+export const getLocaleCode = (locale: Locale | LocaleCode | { time?: TimeLocaleCode | TimeLocale }) => {
+  if (typeof locale === 'string') {
+    return locale;
+  }
+  if (typeof locale.time === 'string') {
+    return locale.time;
+  }
+  return navigator.language;
 };
 
 /**
@@ -111,6 +123,46 @@ export const formatHorizontalTimeAxisLabels = () => {
     const showLabel = datum.index === 0 || prevLabel !== datum.label;
     prevLabel = datum.label;
     return showLabel ? datum.label : '';
+  };
+};
+
+export const formatVerticalAxisTimeLabelTooltips = (timeLocale?: string) => {
+  return (datum: LabelDatum, granularity: Granularity) => {
+    const date = new Date(datum.value);
+    
+    let options: Intl.DateTimeFormatOptions = {};
+    switch (granularity) {
+      case 'second':
+        options = { hour: 'numeric', minute: '2-digit', second: '2-digit' };
+        break;
+      case 'minute':
+        options = { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' };
+        break;
+      case 'hour':
+        options = { month: 'short', day: 'numeric', hour: 'numeric' };
+        break;
+      case 'day':
+        options = { month: 'short', day: 'numeric'};
+        break;
+      case 'week':
+        options = { month: 'short', day: 'numeric'};
+        break;
+      case 'month':
+        options = { month: 'short', year: 'numeric' };
+        break;
+      case 'quarter': {
+        const quarter = Math.floor(date.getMonth() / 3) + 1;
+        const year = new Intl.DateTimeFormat(timeLocale, { year: 'numeric' }).format(date);
+        return `Q${quarter} ${year}`;
+      }
+      case 'year':
+        options = { year: 'numeric' };
+        break;
+      default:
+        options = {};
+    } 
+    
+    return new Intl.DateTimeFormat(timeLocale, options).format(date);
   };
 };
 
@@ -208,6 +260,7 @@ export const expressionFunctions = {
   consoleLog,
   formatHorizontalTimeAxisLabels: formatHorizontalTimeAxisLabels(),
   formatVerticalAxisTimeLabels: formatVerticalAxisTimeLabels(),
+  formatVerticalAxisTimeLabelTooltips: formatVerticalAxisTimeLabelTooltips(),
   getLabelWidth,
   truncateText,
 };
