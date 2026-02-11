@@ -32,7 +32,6 @@ const defaultChartProps: ChartProps = {
   minWidth: 400,
   maxWidth: 800,
   height: 400,
-  debug: true,
 };
 
 const MetricRangeStory: StoryFn<typeof MetricRange> = (args): ReactElement => {
