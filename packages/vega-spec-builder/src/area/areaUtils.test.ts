@@ -58,6 +58,7 @@ describe('getAreaMark', () => {
             scale: COLOR_SCALE,
             field: DEFAULT_COLOR,
           },
+          defined: { signal: 'isValid(datum["metricStart"]) || isValid(datum["metricEnd"])' },
         },
         update: {
           cursor: undefined,
@@ -119,6 +120,7 @@ describe('getAreaMark', () => {
           strokeJoin: {
             value: 'round',
           },
+          defined: { signal: 'isValid(datum["metricStart"]) || isValid(datum["metricEnd"])' },
         },
         update: {
           cursor: undefined,
@@ -172,6 +174,7 @@ describe('getAreaMark', () => {
             scale: COLOR_SCALE,
             field: DEFAULT_COLOR,
           },
+          defined: { signal: 'isValid(datum["metricStart"]) || isValid(datum["metricEnd"])' },
         },
         update: {
           cursor: undefined,
@@ -224,6 +227,7 @@ describe('getAreaMark', () => {
             scale: COLOR_SCALE,
             field: DEFAULT_COLOR,
           },
+          defined: { signal: 'isValid(datum["metricStart"]) || isValid(datum["metricEnd"])' },
         },
         update: {
           cursor: undefined,

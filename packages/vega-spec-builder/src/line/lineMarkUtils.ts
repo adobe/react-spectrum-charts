@@ -118,7 +118,6 @@ export const getLineMark = (lineMarkOptions: LineMarkOptions, dataSource: string
         // but it may change the x position if it causes the chart to resize
         x: getXProductionRule(scaleType, dimension),
         ...(popoverWithDimensionHighlightExists ? {} : { opacity: getLineOpacity(lineMarkOptions) }),
-        defined: { signal: `isValid(datum["${metric}"])` },
       },
     },
   };

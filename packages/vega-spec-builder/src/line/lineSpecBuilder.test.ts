@@ -76,6 +76,7 @@ const defaultSpec = initializeSpec({
               strokeOpacity: DEFAULT_OPACITY_RULE,
               strokeWidth: undefined,
               y: [{ field: 'value', scale: 'yLinear' }],
+              defined: { signal: 'isValid(datum["value"])' },
             },
             update: {
               x: { field: DEFAULT_TRANSFORMED_TIME_DIMENSION, scale: 'xTime' },
@@ -157,6 +158,7 @@ const line0_groupMark = {
           strokeDash: { value: [] },
           strokeOpacity: DEFAULT_OPACITY_RULE,
           strokeWidth: undefined,
+          defined: { signal: 'isValid(datum["value"])' },
         },
         update: {
           x: { scale: 'xTime', field: DEFAULT_TRANSFORMED_TIME_DIMENSION },
@@ -206,6 +208,7 @@ const metricRangeGroupMark = {
           strokeWidth: {
             value: 1.5,
           },
+          defined: { signal: 'isValid(datum["value"])' },
         },
         update: {
           x: {
@@ -239,6 +242,7 @@ const metricRangeGroupMark = {
             field: 'series',
           },
           tooltip: undefined,
+          defined: { signal: 'isValid(datum["start"]) || isValid(datum["end"])' },
         },
         update: {
           cursor: undefined,
@@ -458,8 +462,9 @@ describe('lineSpecBuilder', () => {
                   strokeOpacity: DEFAULT_OPACITY_RULE,
                   strokeDash: { value: [8, 8] },
                   strokeWidth: undefined,
-              y: [{ field: 'value', scale: 'yLinear' }],
-            },
+                  y: [{ field: 'value', scale: 'yLinear' }],
+                  defined: { signal: 'isValid(datum["value"])' },
+                },
                 update: {
                   x: { field: DEFAULT_TRANSFORMED_TIME_DIMENSION, scale: 'xTime' },
                   opacity: [DEFAULT_OPACITY_RULE],

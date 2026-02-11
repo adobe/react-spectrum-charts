@@ -98,7 +98,6 @@ export const getAreaMark = (
         cursor: getCursor(chartPopovers ?? []),
         fillOpacity: { value: opacity },
         opacity: getAreaOpacity(areaOptions),
-        defined: { signal: `isValid(datum["${metricStart}"]) || isValid(datum["${metricEnd}"])` },
       },
     },
   };
