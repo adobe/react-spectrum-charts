@@ -86,6 +86,7 @@ const basicMetricRangeMarks = [
         strokeDash: { value: [3, 4] },
         strokeOpacity: DEFAULT_OPACITY_RULE,
         strokeWidth: { value: 1.5 },
+        defined: { signal: 'isValid(datum["metric"])' },
       },
       update: {
         x: {
@@ -110,6 +111,7 @@ const basicMetricRangeMarks = [
         y: { scale: 'yLinear', field: 'metricStart' },
         y2: { scale: 'yLinear', field: 'metricEnd' },
         fill: { scale: COLOR_SCALE, field: 'series' },
+        defined: { signal: 'isValid(datum["metricStart"]) || isValid(datum["metricEnd"])' },
       },
       update: {
         cursor: undefined,
@@ -174,6 +176,16 @@ describe('getMetricRangeMark', () => {
       lineOpacity: { value: 0.2 }
     });
     expect(lineMark.encode?.enter?.strokeOpacity).toEqual({ value: 0.2 });
+  });
+  describe('defined encoding (creates gaps when metric values are null/undefined)', () => {
+    test('line and area mark have defined set in enter so null metric values creates a break', () => {
+      const [lineMark, areaMark] = getMetricRangeMark(defaultLineOptions, defaultMetricRangeSpecOptions);
+      const definedLineSignal = `isValid(datum["${defaultMetricRangeSpecOptions.metric}"])`;
+      expect(lineMark.encode?.enter?.defined).toEqual({ signal: definedLineSignal });
+
+      const definedAreaSignal = `isValid(datum["${defaultMetricRangeSpecOptions.metricStart}"]) || isValid(datum["${defaultMetricRangeSpecOptions.metricEnd}"])`;
+      expect(areaMark.encode?.enter?.defined).toEqual({ signal: definedAreaSignal });
+    });
   });
 });
 

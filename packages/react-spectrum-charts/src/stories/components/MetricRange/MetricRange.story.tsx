@@ -20,7 +20,7 @@ import { Axis, ChartPopover, ChartTooltip, Legend, Line, MetricRange } from '../
 import useChartProps from '../../../hooks/useChartProps';
 import { bindWithProps } from '../../../test-utils';
 import { ChartProps } from '../../../types';
-import { workspaceTrendsDataWithAnomalies, workspaceTrendsDataWithExtremeMetricRange } from '../../data/data';
+import { workspaceTrendsDataWithAnomalies, workspaceTrendsDataWithExtremeMetricRange, workspaceTrendsDataWithNullsInMetricRange } from '../../data/data';
 
 export default {
   title: 'RSC/MetricRange',
@@ -113,6 +113,23 @@ const LineOpacityByKeyStory: StoryFn<typeof MetricRange> = (args): ReactElement 
   );
 };
 
+const MetricRangeWithBreaksStory: StoryFn<typeof MetricRange> = (args): ReactElement => {
+  const chartProps = useChartProps({
+    ...defaultChartProps,
+    data: workspaceTrendsDataWithNullsInMetricRange,
+  });
+  return (
+    <Chart {...chartProps}>
+      <Axis position="left" grid title="Value" />
+      <Axis position="bottom" labelFormat="time" baseline ticks />
+      <Line color="series">
+        <MetricRange {...args} />
+      </Line>
+      <Legend lineWidth={{ value: 0 }} highlight />
+    </Chart>
+  );
+};
+
 const dialogContent = (datum) => (
   <Content>
     <div>Operating system: {datum.series}</div>
@@ -197,6 +214,16 @@ LineOpacityByKey.args = {
   metric: 'metric',
 };
 
+const WithBreaks = bindWithProps(MetricRangeWithBreaksStory);
+WithBreaks.args = {
+  lineType: 'shortDash',
+  lineWidth: 'S',
+  rangeOpacity: 0.2,
+  metricEnd: 'metricEnd',
+  metricStart: 'metricStart',
+  metric: 'metric',
+};
+
 export {
   Basic,
   DisplayOnHover,
@@ -205,4 +232,5 @@ export {
   ScaleAxisToFit,
   LineOpacity,
   LineOpacityByKey,
+  WithBreaks,
 };

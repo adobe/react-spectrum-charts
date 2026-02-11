@@ -40,6 +40,7 @@ describe('getLineMark()', () => {
           strokeOpacity: DEFAULT_OPACITY_RULE,
           strokeWidth: { value: 1 },
           y: [{ field: 'value', scale: 'yLinear' }],
+          defined: { signal: 'isValid(datum["value"])' },
         },
         update: {
           x: { field: DEFAULT_TRANSFORMED_TIME_DIMENSION, scale: 'xTime' },

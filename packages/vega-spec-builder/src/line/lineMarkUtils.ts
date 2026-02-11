@@ -111,6 +111,7 @@ export const getLineMark = (lineMarkOptions: LineMarkOptions, dataSource: string
         strokeDash: getStrokeDashProductionRule(lineType),
         strokeOpacity: getOpacityProductionRule(opacity),
         strokeWidth: getLineWidthProductionRule(lineWidth),
+        defined: { signal: `isValid(datum["${metric}"])` },
       },
       update: {
         // this has to be in update because when you resize the window that doesn't rebuild the spec
