@@ -95,6 +95,24 @@ const MetricRangeScaleAxisToFitStory: StoryFn<typeof MetricRange> = (args): Reac
   );
 };
 
+const LineOpacityByKeyStory: StoryFn<typeof MetricRange> = (args): ReactElement => {
+  const chartProps = useChartProps({
+    ...defaultChartProps,
+    opacities: [0.5, 1],
+  });
+  
+  return (
+    <Chart {...chartProps}>
+      <Axis position="left" grid title="Users" />
+      <Axis position="bottom" labelFormat="time" baseline ticks />
+      <Line color="series">
+        <MetricRange {...args} />
+      </Line>
+      <Legend lineWidth={{ value: 0 }} highlight opacity="series" />
+    </Chart>
+  );
+};
+
 const dialogContent = (datum) => (
   <Content>
     <div>Operating system: {datum.series}</div>
@@ -162,10 +180,29 @@ LineOpacity.args = {
   lineType: 'shortDash',
   lineWidth: 'S',
   rangeOpacity: 0.2,
-  lineOpacity: { value: 0.2 },
+  lineOpacity: { value: 0.5 },
   metricEnd: 'metricEnd',
   metricStart: 'metricStart',
   metric: 'metric',
 };
 
-export { Basic, DisplayOnHover, WithStaticPoints, WithPopover, ScaleAxisToFit, LineOpacity };
+const LineOpacityByKey = bindWithProps(LineOpacityByKeyStory);
+LineOpacityByKey.args = {
+  lineType: 'shortDash',
+  lineWidth: 'S',
+  rangeOpacity: 0.2,
+  lineOpacity: 'series',
+  metricEnd: 'metricEnd',
+  metricStart: 'metricStart',
+  metric: 'metric',
+};
+
+export {
+  Basic,
+  DisplayOnHover,
+  WithStaticPoints,
+  WithPopover,
+  ScaleAxisToFit,
+  LineOpacity,
+  LineOpacityByKey,
+};

@@ -22,7 +22,7 @@ export interface MetricRangeOptions {
   lineWidth?: LineWidth;
   /** The opacity of the area around the metric */
   rangeOpacity?: number;
-  /** The opacity of the metric line */
+  /** Opacity or key in the data that is used as the opacity facet */
   lineOpacity?: OpacityFacet;
   /** The key for the upper range in the data */
   metricEnd: string;

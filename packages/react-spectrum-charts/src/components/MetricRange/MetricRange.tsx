@@ -24,7 +24,7 @@ const MetricRange: FC<MetricRangeProps> = ({
   lineType = 'dashed',
   lineWidth = 'M',
   rangeOpacity = 0.2,
-  lineOpacity = { value: 1 },
+  lineOpacity,
   metricEnd,
   metricStart,
   metric = DEFAULT_METRIC,
