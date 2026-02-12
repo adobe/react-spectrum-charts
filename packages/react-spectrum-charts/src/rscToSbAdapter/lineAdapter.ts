@@ -15,7 +15,7 @@ import { LineProps } from '../types';
 import { childrenToOptions } from './childrenAdapter';
 
 export const getLineOptions = ({ children, onClick, onMouseOver, onMouseOut, ...lineProps }: LineProps): LineOptions => {
-  const { chartPopovers, chartTooltips, metricRanges, trendlines } = childrenToOptions(children);
+  const { chartPopovers, chartTooltips, linePointAnnotations, metricRanges, trendlines } = childrenToOptions(children);
   
   return {
     ...lineProps,
@@ -23,6 +23,7 @@ export const getLineOptions = ({ children, onClick, onMouseOver, onMouseOut, ...
     chartTooltips,
     hasOnClick: Boolean(onClick),
     hasMouseInteraction: Boolean(onMouseOut || onMouseOver),
+    linePointAnnotations,
     markType: 'line',
     metricRanges,
     trendlines,

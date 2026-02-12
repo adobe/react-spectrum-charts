@@ -212,6 +212,7 @@ describe('rscPropsToSpecBuilderOptions()', () => {
             dimension: 'datetime',
             hasMouseInteraction: false,
             hasOnClick: false,
+            linePointAnnotations: [],
             markType: 'line',
             metric: 'value',
             metricRanges: [],
