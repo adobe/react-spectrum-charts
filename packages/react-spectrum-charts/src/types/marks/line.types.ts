@@ -15,13 +15,13 @@ import { LineOptions } from '@spectrum-charts/vega-spec-builder';
 
 import { ChartPopoverElement, ChartTooltipElement } from '../dialogs';
 import { Children, MarkCallback } from '../util.types';
-import { MetricRangeElement, TrendlineElement } from './supplemental';
+import { LinePointAnnotationElement, MetricRangeElement, TrendlineElement } from './supplemental';
 
-type LineChildElement = ChartTooltipElement | ChartPopoverElement | MetricRangeElement | TrendlineElement;
+type LineChildElement = ChartTooltipElement | ChartPopoverElement | LinePointAnnotationElement | MetricRangeElement | TrendlineElement;
 export interface LineProps
   extends Omit<
     LineOptions,
-    'chartPopovers' | 'chartTooltips' | 'hasOnClick' | 'hasMouseInteraction' | 'markType' | 'metricRanges' | 'trendlines'
+    'chartPopovers' | 'chartTooltips' | 'hasOnClick' | 'hasMouseInteraction' | 'linePointAnnotations' | 'markType' | 'metricRanges' | 'trendlines'
   > {
   children?: Children<LineChildElement>;
   /** Callback that will be run when a point/section is clicked */

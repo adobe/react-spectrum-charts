@@ -37,6 +37,7 @@ import { addHoveredItemSignal, getFirstRscSeriesIdSignal, getLastRscSeriesIdSign
 import { addUserMetaInteractiveMark, getFacetsFromOptions } from '../specUtils';
 import { addTrendlineData, getTrendlineMarks, getTrendlineScales, setTrendlineSignals } from '../trendline';
 import { ColorScheme, HighlightedItem, LineOptions, LineSpecOptions, ScSpec } from '../types';
+import { getLinePointAnnotationMarks } from './linePointAnnotation';
 import { getLineHighlightedData, getLineStaticPointData } from './lineDataUtils';
 import { getLineHoverMarks, getLineMark } from './lineMarkUtils';
 import { getLineStaticPoint } from './linePointUtils';
@@ -66,6 +67,7 @@ export const addLine = produce<
       hasOnClick = false,
       hasMouseInteraction = false,
       index = 0,
+      linePointAnnotations = [],
       lineType = { value: 'solid' },
       metric = DEFAULT_METRIC,
       metricAxis,
@@ -101,6 +103,7 @@ export const addLine = produce<
         },
         lineName
       ),
+      linePointAnnotations,
       lineType,
       metric,
       metricAxis,
@@ -216,7 +219,7 @@ export const setScales = produce<Scale[], [LineSpecOptions]>((scales, options) =
 
 // The order that marks are added is important since it determines the draw order.
 export const addLineMarks = produce<Mark[], [LineSpecOptions]>((marks, options) => {
-  const { color, highlightedItem, isSparkline, lineType, name, opacity, staticPoint } = options;
+  const { color, highlightedItem, isSparkline, linePointAnnotations, lineType, name, opacity, staticPoint } = options;
 
   const { facets } = getFacetsFromOptions({ color, lineType, opacity });
 
@@ -233,6 +236,9 @@ export const addLineMarks = produce<Mark[], [LineSpecOptions]>((marks, options) 
     marks: [getLineMark(options, `${name}_facet`)],
   });
   if (staticPoint || isSparkline) marks.push(getLineStaticPoint(options));
+  if ((staticPoint || isSparkline) && linePointAnnotations.length > 0) {
+    marks.push(...getLinePointAnnotationMarks(options));
+  }
   marks.push(...getMetricRangeGroupMarks(options));
   if (isInteractive(options) || highlightedItem !== undefined) {
     marks.push(...getLineHoverMarks(options, `${FILTERED_TABLE}ForTooltip`));

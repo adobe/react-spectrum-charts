@@ -23,6 +23,7 @@ import {
   PartiallyRequired,
   ScaleType,
 } from '../specUtil.types';
+import { LinePointAnnotationOptions } from './supplemental/linePointAnnotationSpec.types';
 import { MetricRangeOptions } from './supplemental/metricRangeSpec.types';
 import { TrendlineOptions } from './supplemental/trendlineSpec.types';
 
@@ -68,6 +69,7 @@ export interface LineOptions {
   // children
   chartPopovers?: ChartPopoverOptions[];
   chartTooltips?: ChartTooltipOptions[];
+  linePointAnnotations?: LinePointAnnotationOptions[];
   metricRanges?: MetricRangeOptions[];
   trendlines?: TrendlineOptions[];
 }
@@ -78,6 +80,7 @@ type LineOptionsWithDefaults =
   | 'color'
   | 'dimension'
   | 'hasOnClick'
+  | 'linePointAnnotations'
   | 'lineType'
   | 'metric'
   | 'metricRanges'
