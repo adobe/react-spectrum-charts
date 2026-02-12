@@ -24,6 +24,7 @@ set all the default styling
   line-height: 21px;
   padding: 12px;
   max-width: 300px;
+  overflow-wrap: break-word;
 }
 /*
 sections sometimes add a 500ms transition but vega tooltips close instantly
