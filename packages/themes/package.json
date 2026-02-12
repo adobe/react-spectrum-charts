@@ -1,6 +1,6 @@
 {
   "name": "@spectrum-charts/themes",
-  "version": "1.30.0",
+  "version": "1.31.0",
   "description": "Spectrum colors and themes used for spectrum charts",
   "browser": "dist/index.js",
   "main": "dist/index.js",
@@ -29,8 +29,8 @@
     "webpack-cli": "^5.0.1"
   },
   "dependencies": {
-    "@spectrum-charts/constants": "1.30.0",
-    "@spectrum-charts/utils": "1.30.0",
+    "@spectrum-charts/constants": "1.31.0",
+    "@spectrum-charts/utils": "1.31.0",
     "vega": "^6.2.0"
   }
 }
