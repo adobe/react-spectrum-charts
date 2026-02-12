@@ -347,7 +347,7 @@ WithGapsInData.args = {
   children: (
     <ChartTooltip>
       {(datum) => (
-        <div className="bar-tooltip">
+        <div className="line-tooltip">
           <div>{formatTimestamp(datum.datetime as number)}</div>
           <div>Event: {datum.series}</div>
           <div>Users: {Number(datum.value).toLocaleString()}</div>
