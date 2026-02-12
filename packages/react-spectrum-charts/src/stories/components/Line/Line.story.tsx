@@ -342,6 +342,20 @@ WithGapsInData.args = {
   dimension: 'datetime',
   metric: 'value',
   scaleType: 'time',
+  onMouseOver: () => {},
+  onMouseOut: () => {},
+  children: (
+    <ChartTooltip>
+      {(datum) => (
+        <div className="bar-tooltip">
+          <div>{formatTimestamp(datum.datetime as number)}</div>
+          <div>Event: {datum.series}</div>
+          <div>Users: {Number(datum.value).toLocaleString()}</div>
+        </div>
+      )}
+    </ChartTooltip>
+  ),
+  interactionMode: 'item',
 };
 
 const OnMouseInputsStory: StoryFn<typeof Line> = (args): ReactElement => {

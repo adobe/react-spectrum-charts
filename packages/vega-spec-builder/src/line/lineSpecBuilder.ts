@@ -125,14 +125,15 @@ export const addLine = produce<
 );
 
 export const addData = produce<Data[], [LineSpecOptions]>((data, options) => {
-  const { chartTooltips, dimension, highlightedItem, isSparkline, isMethodLast, name, scaleType, staticPoint } =
+  const { chartTooltips, dimension, highlightedItem, metric, isSparkline, isMethodLast, name, scaleType, staticPoint } =
     options;
   if (scaleType === 'time') {
     const tableData = getTableData(data);
     tableData.transform = addTimeTransform(tableData.transform ?? [], dimension);
   }
   if (isInteractive(options) || highlightedItem !== undefined) {
-    data.push(getLineHighlightedData(options), getFilteredTooltipData(chartTooltips));
+    const validNumericKeys = scaleType === 'linear' ? [dimension, metric] : [metric];
+    data.push(getLineHighlightedData(options), getFilteredTooltipData(chartTooltips, validNumericKeys));
   }
   if (staticPoint || isSparkline)
     data.push(getLineStaticPointData(name, staticPoint, FILTERED_TABLE, isSparkline, isMethodLast));
