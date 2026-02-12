@@ -20,6 +20,7 @@ import {
   SYMBOL_SIZE_SCALE,
 } from '@spectrum-charts/constants';
 
+import { getFilteredTooltipData } from '../data/dataUtils';
 import { defaultSignals } from '../specTestUtils';
 import { initializeSpec } from '../specUtils';
 import { addData, addSignals, setScales } from './scatterSpecBuilder';
@@ -40,26 +41,48 @@ describe('addData()', () => {
     expect(data).toHaveLength(3);
     expect(data[2].name).toBe('filteredTableForTooltip');
   });
-  test('tooltipFilteredData has undefined transform by default', () => {
-    const data = addData(initializeSpec().data ?? [], {
-      ...defaultScatterOptions,
-      chartTooltips: [{}],
-    });
-
-    expect(data[2].transform).toBeUndefined();
+  test('tooltipFilteredData has undefined transform when no validNumericKeys and no excludeDataKeys', () => {
+    const result = getFilteredTooltipData([{}]);
+    expect(result.transform).toBeUndefined();
   });
-  test('tooltipFilteredData has undefined transform by default', () => {
-    const data = addData(initializeSpec().data ?? [], {
-      ...defaultScatterOptions,
-      chartTooltips: [{ excludeDataKeys: ['exclude'] }],
+  test('tooltipFilteredData has only excludeDataKeys filter when no validNumericKeys', () => {
+    const result = getFilteredTooltipData([{ excludeDataKeys: ['exclude'] }]);
+    expect(result.transform).toStrictEqual([{ type: 'filter', expr: '!datum.exclude' }]);
+  });
+  describe('validNumericKeys', () => {
+    test('adds dimension and metric validity filters when dimensionScaleType is linear', () => {
+      const data = addData(initializeSpec().data ?? [], {
+        ...defaultScatterOptions,
+        chartTooltips: [{}],
+      });
+      expect(data[2].transform).toHaveLength(2);
+      expect(data[2].transform).toStrictEqual([
+        { type: 'filter', expr: 'isValid(datum["x"]) && isFinite(datum["x"])' },
+        { type: 'filter', expr: 'isValid(datum["value"]) && isFinite(datum["value"])' },
+      ]);
     });
-
-    expect(data[2].transform).toStrictEqual([
-      {
-        type: 'filter',
-        expr: '!datum.exclude',
-      },
-    ]);
+    test('adds only metric validity filter when dimensionScaleType is time', () => {
+      const data = addData(initializeSpec().data ?? [], {
+        ...defaultScatterOptions,
+        chartTooltips: [{}],
+        dimensionScaleType: 'time',
+      });
+      expect(data[2].transform).toHaveLength(1);
+      expect(data[2].transform).toStrictEqual([
+        { type: 'filter', expr: 'isValid(datum["value"]) && isFinite(datum["value"])' },
+      ]);
+    });
+    test('adds validNumericKeys filters then excludeDataKeys filter', () => {
+      const data = addData(initializeSpec().data ?? [], {
+        ...defaultScatterOptions,
+        chartTooltips: [{ excludeDataKeys: ['exclude'] }],
+      });
+      expect(data[2].transform).toStrictEqual([
+        { type: 'filter', expr: 'isValid(datum["x"]) && isFinite(datum["x"])' },
+        { type: 'filter', expr: 'isValid(datum["value"]) && isFinite(datum["value"])' },
+        { type: 'filter', expr: '!datum.exclude' },
+      ]);
+    });
   });
   test('should add selectedData if popover exists', () => {
     const data = addData(initializeSpec().data ?? [], {

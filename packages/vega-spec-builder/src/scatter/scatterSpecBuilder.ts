@@ -112,14 +112,15 @@ export const addScatter = produce<
 );
 
 export const addData = produce<Data[], [ScatterSpecOptions]>((data, scatterOptions) => {
-  const { chartTooltips, dimension, dimensionScaleType, highlightedItem, idKey, name } = scatterOptions;
+  const { chartTooltips, dimension, dimensionScaleType, highlightedItem, idKey, metric, name } = scatterOptions;
   if (dimensionScaleType === 'time') {
     const tableData = getTableData(data);
     tableData.transform = addTimeTransform(tableData.transform ?? [], dimension);
   }
 
   if (isInteractive(scatterOptions) || highlightedItem !== undefined) {
-    data.push(getFilteredTooltipData(chartTooltips));
+    const validNumericKeys = dimensionScaleType === 'linear' ? [dimension, metric] : [metric];
+    data.push(getFilteredTooltipData(chartTooltips, validNumericKeys));
   }
 
   if (hasPopover(scatterOptions)) {

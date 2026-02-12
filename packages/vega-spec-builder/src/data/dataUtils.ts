@@ -78,19 +78,37 @@ export const getSeriesIdTransform = (facets: string[]): FormulaTransform[] => {
 };
 
 /**
- * @param children
- * @returns spec data that filters out items where the `excludeDataKey` is true
+ * @param chartTooltips
+ * @param validNumericKeys Optional list of keys that must be valid finite numbers in the data.
+ *                         Rows where any of these are NaN, null, or undefined are excluded
+ *                         so voronoi path marks do not receive invalid path parameters.
+ * @returns spec data that filters out items where the `excludeDataKey` is true and invalid numeric values
  */
-export const getFilteredTooltipData = (chartTooltips: ChartTooltipOptions[]) => {
+export const getFilteredTooltipData = (
+  chartTooltips: ChartTooltipOptions[],
+  validNumericKeys?: string[]
+): { name: string; source: string; transform?: { type: 'filter'; expr: string }[] } => {
+  const transforms: { type: 'filter'; expr: string }[] = [];
+
+  if (validNumericKeys?.length) {
+    validNumericKeys.forEach((key) => {
+      transforms.push({
+        type: 'filter',
+        expr: `isValid(datum["${key}"]) && isFinite(datum["${key}"])`,
+      });
+    });
+  }
+
   const excludeDataKeys = chartTooltips[0]?.excludeDataKeys;
-  const transform: { type: 'filter'; expr: string }[] | undefined = excludeDataKeys?.map((excludeDataKey) => ({
-    type: 'filter',
-    expr: `!datum.${excludeDataKey}`,
-  }));
+  if (excludeDataKeys?.length) {
+    excludeDataKeys.forEach((excludeDataKey) => {
+      transforms.push({ type: 'filter', expr: `!datum.${excludeDataKey}` });
+    });
+  }
 
   return {
     name: `${FILTERED_TABLE}ForTooltip`,
     source: FILTERED_TABLE,
-    transform,
+    transform: transforms.length ? transforms : undefined,
   };
 };
