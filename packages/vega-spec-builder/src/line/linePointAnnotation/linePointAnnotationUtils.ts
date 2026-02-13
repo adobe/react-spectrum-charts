@@ -14,13 +14,13 @@ import { TextMark } from 'vega';
 import { LinePointAnnotationOptions, LinePointAnnotationSpecOptions, LineSpecOptions } from '../../types';
 
 export const getLinePointAnnotationSpecOptions = (
-	{ anchor = ['right', 'top', 'bottom', 'left'], autoColor = false, textKey }: LinePointAnnotationOptions,
+	{ anchor = ['right', 'top', 'bottom', 'left'], matchLineColor = false, textKey }: LinePointAnnotationOptions,
 	index: number,
 	lineOptions: LineSpecOptions
 ): LinePointAnnotationSpecOptions => {
 	return {
 		anchor,
-		autoColor,
+		matchLineColor,
 		textKey: textKey ?? lineOptions.metric,
 		index,
 		name: `${lineOptions.name}Annotation${index}`,
@@ -39,7 +39,7 @@ export const getLinePointAnnotationMarks = (lineOptions: LineSpecOptions): TextM
 	const marks: TextMark[] = [];
 
 	for (const annotation of annotations) {
-		const { anchor, autoColor, name: linePointAnnotationName, textKey } = annotation;
+		const { anchor, matchLineColor, name: linePointAnnotationName, textKey } = annotation;
 		marks.push({
 			name: linePointAnnotationName,
 			type: 'text',
@@ -49,7 +49,7 @@ export const getLinePointAnnotationMarks = (lineOptions: LineSpecOptions): TextM
 			encode: {
 				enter: {
 					text: { signal: `datum.datum.${textKey}` },
-					...(autoColor && { fill: { signal: 'datum.fill' } }),
+					...(matchLineColor && { fill: { signal: 'datum.fill' } }),
 				},
 			},
 			transform: [

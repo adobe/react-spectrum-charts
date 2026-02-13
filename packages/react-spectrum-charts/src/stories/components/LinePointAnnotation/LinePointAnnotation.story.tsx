@@ -51,10 +51,10 @@ Basic.args = {
 	textKey: 'label',
 };
 
-const AutoColor = bindWithProps(LinePointAnnotationStory);
-AutoColor.args = {
+const MatchLineColor = bindWithProps(LinePointAnnotationStory);
+MatchLineColor.args = {
 	textKey: 'label',
-	autoColor: true,
+	matchLineColor: true,
 };
 
 const CustomAnchor = bindWithProps(LinePointAnnotationStory);
@@ -69,11 +69,11 @@ MultipleAnchors.args = {
 	anchor: ['top', 'right', 'bottom', 'left'],
 };
 
-const AutoColorWithCustomAnchor = bindWithProps(LinePointAnnotationStory);
-AutoColorWithCustomAnchor.args = {
+const MatchLineColorWithCustomAnchor = bindWithProps(LinePointAnnotationStory);
+MatchLineColorWithCustomAnchor.args = {
 	textKey: 'label',
-	autoColor: true,
+	matchLineColor: true,
 	anchor: 'bottom',
 };
 
-export { Basic, AutoColor, CustomAnchor, MultipleAnchors, AutoColorWithCustomAnchor };
+export { Basic, MatchLineColor, CustomAnchor, MultipleAnchors, MatchLineColorWithCustomAnchor };
