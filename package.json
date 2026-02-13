@@ -113,7 +113,7 @@
     "@types/node": "^20.8.2",
     "@types/react": "18.3.12",
     "@types/react-dom": "18.3.1",
-    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/eslint-plugin": "^7.0.0",
     "@typescript-eslint/parser": "^6.0.0",
     "axios": "^1.7.7",
     "babel-jest": "^29.7.0",
