@@ -1,4 +1,4 @@
-The `Line` component is used to display line charts. You can specify the type of data that the line is being trended over with the `scaleType` prop. You can add `Trendline`s and `MetricRanges` as children to show trends in your data or include a ranged area of data in addition to the line. It's also possible to define tooltips and on-click popovers for the line using the `ChartTooltip` and `ChartPopover` components respectively as children.
+The `Line` component is used to display line charts. You can specify the type of data that the line is being trended over with the `scaleType` prop. You can add `Trendline`s and `MetricRanges` as children to show trends in your data or include a ranged area of data in addition to the line. Use `LinePointAnnotation` to label specific static points on the line. It's also possible to define tooltips and on-click popovers for the line using the `ChartTooltip` and `ChartPopover` components respectively as children.
 
 ### Examples
 
@@ -70,9 +70,9 @@ The `Line` component is used to display line charts. You can specify the type of
     <tbody>
         <tr>
             <td>children</td>
-            <td>ChartTooltip | ChartPopover | MetricRange | Trendline</td>
+            <td>ChartTooltip | ChartPopover | LinePointAnnotation | MetricRange | Trendline</td>
             <td>–</td>
-            <td>Optional elements that can be rendered within the chart. Use these to add tooltips, popovers, metric ranges, or trendlines to your line chart.</td>
+            <td>Optional elements that can be rendered within the chart. Use these to add tooltips, popovers, annotations, metric ranges, or trendlines to your line chart.</td>
         </tr>
         <tr>
             <td>color</td>
@@ -143,6 +143,58 @@ The `Line` component is used to display line charts. You can specify the type of
     </tbody>
 </table>
 
+### LinePointAnnotation
+
+The `LinePointAnnotation` component can be passed into `Line` as a child. This allows you to add text labels at specific points on the line, making it easier to call out key values. It requires `staticPoint` to be set on the parent `Line` so there are anchor points to attach labels to.
+
+The component supports an `anchor` prop to define where annotations should be placed relative to their corresponding points. You can pass a single position or an array of positions. When an array is provided, each position is tried in order until one fits within the chart bounds without overlapping other annotations or points. **If a label cannot be placed without overlapping, it will not be displayed. This means line point annotations should be considered "nice to have" supplemental information.**
+
+#### Example
+
+```jsx
+<Chart data={data}>
+  <Axis position="bottom" labelFormat="time" ticks baseline />
+  <Axis position="left" grid title="Users" />
+  <Line color="series" dimension="datetime" metric="value" scaleType="time" staticPoint="staticPoint">
+    <LinePointAnnotation textKey="label" matchLineColor />
+  </Line>
+  <Legend position="bottom" />
+</Chart>
+```
+
+#### Props
+
+<table>
+    <thead>
+        <tr>
+            <th>name</th>
+            <th>type</th>
+            <th>default</th>
+            <th>description</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>anchor</td>
+            <td>LabelAnchor | LabelAnchor[]</td>
+            <td>['right', 'top', 'bottom', 'left']</td>
+            <td>Specifies where to position the annotation relative to the data point. Possible values include 'top', 'bottom', 'left', 'right', 'top-left', 'top-right', 'bottom-left', and 'bottom-right'.<br/>When an array is provided, each position is tried in order until one fits within the chart bounds and doesn't overlap with other annotations or points. If no position fits, the annotation is not displayed. This is true even if only one position is supplied.</td>
+        </tr>
+        <tr>
+            <td>matchLineColor</td>
+            <td>boolean</td>
+            <td>false</td>
+            <td>When true, the annotation text color matches the line/series color. When false, uses the default text color from the theme.</td>
+        </tr>
+        <tr>
+            <td>textKey</td>
+            <td>string</td>
+            <td>metric key</td>
+            <td>The key in the data that contains the text to display for each annotation. Defaults to the metric key from the parent Line.</td>
+        </tr>
+    </tbody>
+</table>
+
 ### Best Practices
 
 1. **Scale Type Selection**
@@ -161,6 +213,7 @@ The `Line` component is used to display line charts. You can specify the type of
    - Use `Trendline` to show data trends
    - Add `MetricRange` to display confidence intervals or bounds
    - Use `staticPoint` to highlight specific data points of interest
+   - Add `LinePointAnnotation` to label static points with data values
 
 ### Accessibility
 

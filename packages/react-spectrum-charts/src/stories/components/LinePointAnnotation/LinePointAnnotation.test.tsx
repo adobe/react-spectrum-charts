@@ -12,7 +12,7 @@
 import { LinePointAnnotation } from '../../../components';
 import { findAllMarksByGroupName, findChart, render } from '../../../test-utils';
 import '../../../test-utils/__mocks__/matchMedia.mock.js';
-import { AutoColor, Basic } from './LinePointAnnotation.story';
+import { CustomAnchor, MatchLineColor, Basic } from './LinePointAnnotation.story';
 
 describe('LinePointAnnotation', () => {
 	// LinePointAnnotation is not a real React component. This test just provides test coverage for sonarqube
@@ -32,14 +32,23 @@ describe('LinePointAnnotation', () => {
 		expect(textContents).toContain('2.7K');
 	});
 
-	test('AutoColor renders with series-colored text', async () => {
-		render(<AutoColor {...AutoColor.args} />);
+	test('CustomAnchor renders with specified anchor', async () => {
+		render(<CustomAnchor {...CustomAnchor.args} />);
 		const chart = await findChart();
 		expect(chart).toBeInTheDocument();
 
 		const annotations = await findAllMarksByGroupName(chart, 'line0Annotation0', 'text');
 		expect(annotations.length).toBeGreaterThan(0);
-		// when autoColor is true, fill should match series color (not default text color)
+	});
+
+	test('MatchLineColor renders with series-colored text', async () => {
+		render(<MatchLineColor {...MatchLineColor.args} />);
+		const chart = await findChart();
+		expect(chart).toBeInTheDocument();
+
+		const annotations = await findAllMarksByGroupName(chart, 'line0Annotation0', 'text');
+		expect(annotations.length).toBeGreaterThan(0);
+		// when matchLineColor is true, fill should match series color (not default text color)
 		for (const annotation of annotations) {
 			expect(annotation).toHaveAttribute('fill');
 		}

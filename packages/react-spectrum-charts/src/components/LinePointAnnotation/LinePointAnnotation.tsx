@@ -18,7 +18,7 @@ import { LinePointAnnotationProps } from '../../types';
 // destructure props here and set defaults so that storybook can pick them up
 const LinePointAnnotation: FC<LinePointAnnotationProps> = ({
   anchor = ['right', 'top', 'bottom', 'left'],
-  autoColor = false,
+  matchLineColor = false,
   textKey = 'annotation',
 }) => {
   return null;
