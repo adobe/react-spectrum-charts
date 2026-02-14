@@ -1,0 +1,372 @@
+/*
+ * Copyright 2026 Adobe. All rights reserved.
+ * This file is licensed to you under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy
+ * of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under
+ * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+ * OF ANY KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
+ */
+import React from 'react';
+
+import { findAllMarksByGroupName, findChart, findMarksByGroupName, render } from '../../../test-utils';
+import {
+  Basic,
+  HorizontalIcon,
+  HorizontalLabel,
+  HorizontalSupreme,
+  Icon,
+  Label,
+  ReferenceLineDashed,
+  Supreme,
+} from './ReferenceLineBar.story';
+
+describe('AxisReferenceLine', () => {
+  describe('Centered', () => {
+    test('Reference line renders', async () => {
+      render(<Basic {...Basic.args} />);
+
+      const chart = await findChart();
+      expect(chart).toBeInTheDocument();
+
+      // get bars
+      const bars = await findAllMarksByGroupName(chart, 'bar0');
+      expect(bars.length).toEqual(5);
+
+      const axisReferenceLine = await findMarksByGroupName(chart, 'axis0ReferenceLine0', 'line');
+      expect(axisReferenceLine).toBeInTheDocument();
+      expect(axisReferenceLine).toHaveAttribute('transform', 'translate(299,0)');
+
+      // Check that the line is solid by verifying stroke-dasharray is not set or is 'none'
+      // because the default line type is solid and for this lineType as in specUtils.ts strokeDash is empty array
+      const strokeDasharray = axisReferenceLine.getAttribute('stroke-dasharray');
+      if (strokeDasharray) {
+        expect(strokeDasharray).toBe('none');
+      }
+    });
+
+    test('Reference line renders with dashed line type', async () => {
+      render(<ReferenceLineDashed {...ReferenceLineDashed.args} />);
+
+      const chart = await findChart();
+      expect(chart).toBeInTheDocument();
+
+      const axisReferenceLine = await findMarksByGroupName(chart, 'axis0ReferenceLine0', 'line');
+      expect(axisReferenceLine).toBeInTheDocument();
+
+      // Check that the line is dotted by verifying stroke-dasharray attribute
+      expect(axisReferenceLine).toHaveAttribute('stroke-dasharray');
+
+      // For dotted lines, stroke-dasharray should have a value (e.g., "7,4" or similar)
+      const strokeDasharray = axisReferenceLine.getAttribute('stroke-dasharray');
+      expect(strokeDasharray).toBeTruthy();
+
+      // Check for specific stroke-dasharray pattern [7,4] as it is dashed line type
+      expect(strokeDasharray).toBe('7,4');
+    });
+
+    test('Icon renders', async () => {
+      render(<Icon {...Icon.args} />);
+
+      const chart = await findChart();
+      expect(chart).toBeInTheDocument();
+
+      // get bars
+      const bars = await findAllMarksByGroupName(chart, 'bar0');
+      expect(bars.length).toEqual(5);
+
+      const axisReferenceLineIcon = await findMarksByGroupName(chart, 'axis0ReferenceLine0_symbol');
+      expect(axisReferenceLineIcon).toBeInTheDocument();
+      expect(axisReferenceLineIcon).toHaveAttribute('transform', 'translate(299,291)');
+    });
+
+    test('Label renders', async () => {
+      render(<Label {...Label.args} />);
+
+      const chart = await findChart();
+      expect(chart).toBeInTheDocument();
+
+      // get bars
+      const bars = await findAllMarksByGroupName(chart, 'bar0');
+      expect(bars.length).toEqual(5);
+
+      const axisReferenceLineLabel = await findMarksByGroupName(chart, 'axis0ReferenceLine0_label', 'text');
+      expect(axisReferenceLineLabel).toHaveAttribute('transform', 'translate(299,296)');
+    });
+
+    test('Supreme renders bars', async () => {
+      render(<Supreme {...Supreme.args} />);
+
+      const chart = await findChart();
+      expect(chart).toBeInTheDocument();
+
+      // get bars
+      const bars = await findAllMarksByGroupName(chart, 'bar0');
+      expect(bars.length).toEqual(5);
+    });
+
+    test('Supreme renders icon', async () => {
+      render(<Supreme {...Supreme.args} />);
+
+      const chart = await findChart();
+      expect(chart).toBeInTheDocument();
+
+      const axisReferenceLineIcon = await findMarksByGroupName(chart, 'axis0ReferenceLine0_symbol');
+      expect(axisReferenceLineIcon).toBeInTheDocument();
+      expect(axisReferenceLineIcon).toHaveAttribute('transform', 'translate(299,270)');
+    });
+
+    test('Supreme renders label', async () => {
+      render(<Supreme {...Supreme.args} />);
+
+      const chart = await findChart();
+      expect(chart).toBeInTheDocument();
+
+      const axisReferenceLineLabel = await findMarksByGroupName(chart, 'axis0ReferenceLine0_label', 'text');
+      expect(axisReferenceLineLabel).toHaveAttribute('transform', 'translate(299,296)');
+    });
+  });
+
+  describe('Before', () => {
+    test('Reference line renders', async () => {
+      render(<Basic {...{ ...Basic.args, position: 'before' }} />);
+
+      const chart = await findChart();
+      expect(chart).toBeInTheDocument();
+
+      // get bars
+      const bars = await findAllMarksByGroupName(chart, 'bar0');
+      expect(bars.length).toEqual(5);
+
+      const axisReferenceLine = await findMarksByGroupName(chart, 'axis0ReferenceLine0', 'line');
+      expect(axisReferenceLine).toBeInTheDocument();
+      expect(axisReferenceLine).toHaveAttribute('transform', 'translate(239.20000000000002,0)');
+    });
+
+    test('Icon renders', async () => {
+      render(<Icon {...{ ...Icon.args, position: 'before' }} />);
+
+      const chart = await findChart();
+      expect(chart).toBeInTheDocument();
+
+      // get bars
+      const bars = await findAllMarksByGroupName(chart, 'bar0');
+      expect(bars.length).toEqual(5);
+
+      const axisReferenceLineIcon = await findMarksByGroupName(chart, 'axis0ReferenceLine0_symbol');
+      expect(axisReferenceLineIcon).toBeInTheDocument();
+      expect(axisReferenceLineIcon).toHaveAttribute('transform', 'translate(239.20000000000002,291)');
+    });
+
+    test('Label renders', async () => {
+      render(<Label {...{ ...Label.args, position: 'before' }} />);
+
+      const chart = await findChart();
+      expect(chart).toBeInTheDocument();
+
+      // get bars
+      const bars = await findAllMarksByGroupName(chart, 'bar0');
+      expect(bars.length).toEqual(5);
+
+      const axisReferenceLineLabel = await findMarksByGroupName(chart, 'axis0ReferenceLine0_label', 'text');
+      expect(axisReferenceLineLabel).toHaveAttribute('transform', 'translate(239.20000000000002,296)');
+    });
+
+    test('Supreme renders bars', async () => {
+      render(<Supreme {...{ ...Supreme.args, position: 'before' }} />);
+
+      const chart = await findChart();
+      expect(chart).toBeInTheDocument();
+
+      // get bars
+      const bars = await findAllMarksByGroupName(chart, 'bar0');
+      expect(bars.length).toEqual(5);
+    });
+
+    test('Supreme renders icon', async () => {
+      render(<Supreme {...{ ...Supreme.args, position: 'before' }} />);
+
+      const chart = await findChart();
+      expect(chart).toBeInTheDocument();
+
+      const axisReferenceLineIcon = await findMarksByGroupName(chart, 'axis0ReferenceLine0_symbol');
+      expect(axisReferenceLineIcon).toBeInTheDocument();
+      expect(axisReferenceLineIcon).toHaveAttribute('transform', 'translate(239.20000000000002,270)');
+    });
+
+    test('Supreme renders label', async () => {
+      render(<Supreme {...{ ...Supreme.args, position: 'before' }} />);
+
+      const chart = await findChart();
+      expect(chart).toBeInTheDocument();
+
+      const axisReferenceLineLabel = await findMarksByGroupName(chart, 'axis0ReferenceLine0_label', 'text');
+      expect(axisReferenceLineLabel).toHaveAttribute('transform', 'translate(239.20000000000002,296)');
+    });
+  });
+
+  describe('After', () => {
+    test('Reference line renders', async () => {
+      render(<Basic {...{ ...Basic.args, position: 'after' }} />);
+
+      const chart = await findChart();
+      expect(chart).toBeInTheDocument();
+
+      // get bars
+      const bars = await findAllMarksByGroupName(chart, 'bar0');
+      expect(bars.length).toEqual(5);
+
+      const axisReferenceLine = await findMarksByGroupName(chart, 'axis0ReferenceLine0', 'line');
+      expect(axisReferenceLine).toBeInTheDocument();
+      expect(axisReferenceLine).toHaveAttribute('transform', 'translate(358.8,0)');
+    });
+
+    test('Icon renders', async () => {
+      render(<Icon {...{ ...Icon.args, position: 'after' }} />);
+
+      const chart = await findChart();
+      expect(chart).toBeInTheDocument();
+
+      // get bars
+      const bars = await findAllMarksByGroupName(chart, 'bar0');
+      expect(bars.length).toEqual(5);
+
+      const axisReferenceLineIcon = await findMarksByGroupName(chart, 'axis0ReferenceLine0_symbol');
+      expect(axisReferenceLineIcon).toBeInTheDocument();
+      expect(axisReferenceLineIcon).toHaveAttribute('transform', 'translate(358.8,291)');
+    });
+
+    test('Label renders', async () => {
+      render(<Label {...{ ...Label.args, position: 'after' }} />);
+
+      const chart = await findChart();
+      expect(chart).toBeInTheDocument();
+
+      // get bars
+      const bars = await findAllMarksByGroupName(chart, 'bar0');
+      expect(bars.length).toEqual(5);
+
+      const axisReferenceLineLabel = await findMarksByGroupName(chart, 'axis0ReferenceLine0_label', 'text');
+      expect(axisReferenceLineLabel).toHaveAttribute('transform', 'translate(358.8,296)');
+    });
+
+    test('Supreme renders bars', async () => {
+      render(<Supreme {...{ ...Supreme.args, position: 'after' }} />);
+
+      const chart = await findChart();
+      expect(chart).toBeInTheDocument();
+
+      // get bars
+      const bars = await findAllMarksByGroupName(chart, 'bar0');
+      expect(bars.length).toEqual(5);
+    });
+
+    test('Supreme renders icon', async () => {
+      render(<Supreme {...{ ...Supreme.args, position: 'after' }} />);
+
+      const chart = await findChart();
+      expect(chart).toBeInTheDocument();
+
+      const axisReferenceLineIcon = await findMarksByGroupName(chart, 'axis0ReferenceLine0_symbol');
+      expect(axisReferenceLineIcon).toBeInTheDocument();
+      expect(axisReferenceLineIcon).toHaveAttribute('transform', 'translate(358.8,270)');
+    });
+
+    test('Supreme renders label', async () => {
+      render(<Supreme {...{ ...Supreme.args, position: 'after' }} />);
+
+      const chart = await findChart();
+      expect(chart).toBeInTheDocument();
+
+      const axisReferenceLineLabel = await findMarksByGroupName(chart, 'axis0ReferenceLine0_label', 'text');
+      expect(axisReferenceLineLabel).toHaveAttribute('transform', 'translate(358.8,296)');
+    });
+  });
+
+  describe('Horizontal', () => {
+    test('Label', async () => {
+      render(<HorizontalLabel {...HorizontalLabel.args} />);
+
+      const chart = await findChart();
+      expect(chart).toBeInTheDocument();
+
+      // get bars
+      const bars = await findAllMarksByGroupName(chart, 'bar0');
+      expect(bars.length).toEqual(5);
+
+      const axisReferenceLineLabel = await findMarksByGroupName(chart, 'axis0ReferenceLine0_label', 'text');
+      expect(axisReferenceLineLabel).toHaveAttribute('transform', 'translate(-40,111.60000000000001)');
+    });
+
+    test('Icon', async () => {
+      render(<HorizontalIcon {...HorizontalIcon.args} />);
+
+      const chart = await findChart();
+      expect(chart).toBeInTheDocument();
+
+      // get bars
+      const bars = await findAllMarksByGroupName(chart, 'bar0');
+      expect(bars.length).toEqual(5);
+
+      const axisReferenceLineIcon = await findMarksByGroupName(chart, 'axis0ReferenceLine0_symbol');
+      expect(axisReferenceLineIcon).toBeInTheDocument();
+      expect(axisReferenceLineIcon).toHaveAttribute('transform', 'translate(-24,107.60000000000001)');
+    });
+
+    test('Supreme renders bars', async () => {
+      render(<HorizontalSupreme {...HorizontalSupreme.args} />);
+
+      const chart = await findChart();
+      expect(chart).toBeInTheDocument();
+
+      // get bars
+      const bars = await findAllMarksByGroupName(chart, 'bar0');
+      expect(bars.length).toEqual(5);
+    });
+
+    test('Supreme renders icon', async () => {
+      render(<HorizontalSupreme {...HorizontalSupreme.args} />);
+
+      const chart = await findChart();
+      expect(chart).toBeInTheDocument();
+
+      const axisReferenceLineIcon = await findMarksByGroupName(chart, 'axis0ReferenceLine0_symbol');
+      expect(axisReferenceLineIcon).toBeInTheDocument();
+      expect(axisReferenceLineIcon).toHaveAttribute('transform', 'translate(-24,107.60000000000001)');
+    });
+
+    test('Supreme renders label', async () => {
+      render(<HorizontalSupreme {...HorizontalSupreme.args} />);
+
+      const chart = await findChart();
+      expect(chart).toBeInTheDocument();
+
+      const axisReferenceLineLabel = await findMarksByGroupName(chart, 'axis0ReferenceLine0_label', 'text');
+      expect(axisReferenceLineLabel).toHaveAttribute('transform', 'translate(-65,111.60000000000001)');
+    });
+  });
+
+  describe('Label styling', () => {
+    test('Default', async () => {
+      render(<Label {...Label.args} />);
+
+      const chart = await findChart();
+      expect(chart).toBeInTheDocument();
+
+      const axisReferenceLineLabel = await findMarksByGroupName(chart, 'axis0ReferenceLine0_label', 'text');
+      expect(axisReferenceLineLabel).toHaveAttribute('font-weight', 'normal');
+    });
+
+    test('Bold', async () => {
+      render(<Label {...{ ...Label.args, labelFontWeight: 'bold' }} />);
+
+      const chart = await findChart();
+      expect(chart).toBeInTheDocument();
+
+      const axisReferenceLineLabel = await findMarksByGroupName(chart, 'axis0ReferenceLine0_label', 'text');
+      expect(axisReferenceLineLabel).toHaveAttribute('font-weight', 'bold');
+    });
+  });
+});

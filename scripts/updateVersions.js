@@ -18,6 +18,9 @@ const { globSync } = require('glob');
 const TARGET_DEPENDENCIES = ['@adobe/react-spectrum-charts'];
 const TARGET_PREFIX = '@spectrum-charts/';
 
+// Packages that are independently versioned and should be excluded
+const EXCLUDED_PACKAGES = ['@spectrum-charts/react-spectrum-charts-s2', '@spectrum-charts/vega-spec-builder-s2'];
+
 // Get the new version from command line arguments
 const newVersion = process.argv[2];
 if (!newVersion) {
@@ -52,9 +55,17 @@ const packageJsonPaths = globSync('{package.json,packages/*/package.json}', {
 
 packageJsonPaths.forEach((filePath) => {
   try {
-    console.log(`Processing: ${path.relative(rootDir, filePath)}`);
     const packageJsonContent = fs.readFileSync(filePath, 'utf8');
     const packageJson = JSON.parse(packageJsonContent);
+    const packageName = packageJson.name;
+
+    // Skip S2 packages - they are independently versioned
+    if (EXCLUDED_PACKAGES.includes(packageName)) {
+      console.log(`Skipping: ${path.relative(rootDir, filePath)} (independently versioned)`);
+      return;
+    }
+
+    console.log(`Processing: ${path.relative(rootDir, filePath)}`);
 
     // Detect the original indentation
     const originalIndentation = detectIndentation(packageJsonContent);
