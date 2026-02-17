@@ -1,6 +1,6 @@
 {
   "name": "spectrum-charts-monorepo",
-  "version": "1.31.0",
+  "version": "1.32.0",
   "private": true,
   "workspaces": [
     "packages/*"
