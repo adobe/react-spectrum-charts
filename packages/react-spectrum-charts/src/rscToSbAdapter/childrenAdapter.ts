@@ -18,6 +18,7 @@ import {
   ChartTooltipOptions,
   DonutSummaryOptions,
   LegendOptions,
+  LinePointAnnotationOptions,
   LineOptions,
   MarkOptions,
   MetricRangeOptions,
@@ -41,6 +42,7 @@ import { ChartPopover } from '../components/ChartPopover';
 import { ChartTooltip } from '../components/ChartTooltip';
 import { Legend } from '../components/Legend';
 import { Line } from '../components/Line';
+import { LinePointAnnotation } from '../components/LinePointAnnotation';
 import { MetricRange } from '../components/MetricRange';
 import { ReferenceLine } from '../components/ReferenceLine';
 import { Scatter } from '../components/Scatter';
@@ -63,6 +65,7 @@ import {
   DonutProps,
   DonutSummaryProps,
   LegendProps,
+  LinePointAnnotationProps,
   LineProps,
   ReferenceLineProps,
   ScatterAnnotationProps,
@@ -100,6 +103,7 @@ export const childrenToOptions = (
   chartPopovers: ChartPopoverOptions[];
   donutSummaries: DonutSummaryOptions[];
   legends: LegendOptions[];
+  linePointAnnotations: LinePointAnnotationOptions[];
   lines: LineOptions[];
   marks: MarkOptions[];
   metricRanges: MetricRangeOptions[];
@@ -119,6 +123,7 @@ export const childrenToOptions = (
   const chartTooltips: ChartTooltipOptions[] = [];
   const donutSummaries: DonutSummaryOptions[] = [];
   const legends: LegendOptions[] = [];
+  const linePointAnnotations: LinePointAnnotationOptions[] = [];
   const lines: LineOptions[] = [];
   const marks: MarkOptions[] = [];
   const metricRanges: MetricRangeOptions[] = [];
@@ -197,6 +202,10 @@ export const childrenToOptions = (
         lines.push(getLineOptions(child.props as LineProps));
         break;
 
+      case LinePointAnnotation.displayName:
+        linePointAnnotations.push(child.props as LinePointAnnotationProps);
+        break;
+
       case ReferenceLine.displayName:
         referenceLines.push(child.props as ReferenceLineProps);
         break;
@@ -247,6 +256,7 @@ export const childrenToOptions = (
     chartPopovers,
     donutSummaries,
     legends,
+    linePointAnnotations,
     lines,
     marks,
     metricRanges,

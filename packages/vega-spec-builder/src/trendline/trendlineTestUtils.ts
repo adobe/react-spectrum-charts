@@ -23,6 +23,7 @@ export const defaultLineOptions: LineSpecOptions = {
   chartPopovers: [],
   chartTooltips: [],
   hasOnClick: false,
+  linePointAnnotations: [],
   metricRanges: [],
   trendlines: [{ method: 'average' }],
   color: DEFAULT_COLOR,

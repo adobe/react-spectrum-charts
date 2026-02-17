@@ -786,6 +786,23 @@ export const workspaceTrendsDataWithGaps = [
   { datetime: 1668409200000, point: 25, value: 6932, users: 3493, series: 'Add Bar viz' },
 ];
 
+export const workspaceTrendsDataWithAnnotations = [
+  { datetime: 1667890800000, point: 1, value: 3738, users: 477, series: 'Add Fallout' },
+  { datetime: 1667977200000, point: 2, value: 2704, users: 481, series: 'Add Fallout', staticPoint: true, label: '2.7K' },
+  { datetime: 1668063600000, point: 3, value: 1730, users: 483, series: 'Add Fallout' },
+  { datetime: 1668150000000, point: 4, value: 465, users: 310, series: 'Add Fallout', staticPoint: true, label: '465' },
+  { datetime: 1668236400000, point: 5, value: 31, users: 18, series: 'Add Fallout' },
+  { datetime: 1668322800000, point: 8, value: 108, users: 70, series: 'Add Fallout', staticPoint: true, label: '108' },
+  { datetime: 1668409200000, point: 12, value: 648, users: 438, series: 'Add Fallout' },
+  { datetime: 1667890800000, point: 4, value: 12208, users: 5253, series: 'Add Freeform table', staticPoint: true, label: '12.2K' },
+  { datetime: 1667977200000, point: 5, value: 11309, users: 5103, series: 'Add Freeform table', staticPoint: true, label: '11.3K' },
+  { datetime: 1668063600000, point: 17, value: 11099, users: 5047, series: 'Add Freeform table' },
+  { datetime: 1668150000000, point: 20, value: 7243, users: 3386, series: 'Add Freeform table' },
+  { datetime: 1668236400000, point: 21, value: 395, users: 205, series: 'Add Freeform table' },
+  { datetime: 1668322800000, point: 22, value: 1606, users: 790, series: 'Add Freeform table' },
+  { datetime: 1668409200000, point: 25, value: 10932, users: 4913, series: 'Add Freeform table', staticPoint: true, label: '10.9K' },
+];
+
 export const workspaceTrendsDataWithAnomalies = [
   {
     datetime: 1667890800000,
