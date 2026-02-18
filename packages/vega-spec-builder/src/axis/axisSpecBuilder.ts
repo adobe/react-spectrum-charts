@@ -377,7 +377,7 @@ export const addAxes = produce<
 
   if (labelFormat === 'time') {
     // time axis actually needs two axes. A primary and secondary.
-    newAxes.push(...getTimeAxes(scaleName, axisOptions));
+    newAxes.push(...getTimeAxes(scaleName, axisOptions, usermeta?.interactiveMarks));
   } else {
     const axis = getDefaultAxis(axisOptions, scaleName);
     // if labels exist, add them to the axis

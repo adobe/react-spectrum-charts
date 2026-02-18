@@ -10,6 +10,7 @@
  * governing permissions and limitations under the License.
  */
 import { Axis, Mark, Scale, SignalRef } from 'vega';
+import { HOVERED_ITEM } from '@spectrum-charts/constants';
 
 import { AxisSpecOptions, Granularity, Orientation, Position } from '../types';
 import {
@@ -81,8 +82,8 @@ export const getDefaultAxis = (axisOptions: AxisSpecOptions, scaleName: string):
  * @param axisOptions
  * @returns axes
  */
-export const getTimeAxes = (scaleName: string, axisOptions: AxisSpecOptions): Axis[] => {
-  return [getSecondaryTimeAxis(scaleName, axisOptions), ...getPrimaryTimeAxis(scaleName, axisOptions)];
+export const getTimeAxes = (scaleName: string, axisOptions: AxisSpecOptions, interactiveMarks?: string[]): Axis[] => {
+  return [getSecondaryTimeAxis(scaleName, axisOptions, interactiveMarks), ...getPrimaryTimeAxis(scaleName, axisOptions)];
 };
 
 /**
@@ -106,7 +107,8 @@ const getSecondaryTimeAxis = (
     title,
     vegaLabelAlign,
     vegaLabelBaseline,
-  }: AxisSpecOptions
+  }: AxisSpecOptions,
+  interactiveMarks?: string[]
 ): Axis => {
   const { tickCount } = getTimeLabelFormats(granularity);
 
@@ -120,15 +122,17 @@ const getSecondaryTimeAxis = (
     formatType: 'time',
     labelAngle: getLabelAngle(labelOrientation),
     labelSeparation: 12,
-    ...getSecondaryTimeAxisLabelFormatting(granularity, position, hasTooltip),
+    ...getSecondaryTimeAxisLabelFormatting(scaleName, granularity, position, hasTooltip, interactiveMarks),
     ...getLabelAnchorValues(position, labelOrientation, labelAlign, vegaLabelAlign, vegaLabelBaseline),
   };
 };
 
 const getSecondaryTimeAxisLabelFormatting = (
+  scaleName: string,
   granularity: Granularity,
   position: Position,
-  hasTooltip?: boolean
+  hasTooltip?: boolean,
+  interactiveMarks?: string[]
 ): Partial<Axis> => {
   const { secondaryLabelFormat, primaryLabelFormat } = getTimeLabelFormats(granularity);
   const isVerticalAxis = ['left', 'right'].includes(position);
@@ -146,12 +150,35 @@ const getSecondaryTimeAxisLabelFormatting = (
     };
   }
 
+
+  const hoverOpacityUpdate: Record<string, unknown> = {};
+  if (interactiveMarks && interactiveMarks.length > 0) {
+
+    const closeToHoveredTests = interactiveMarks.map((markName) => ({
+      test: `isValid(${markName}_${HOVERED_ITEM}) && abs(scale('${scaleName}', datum.value) - scale('${scaleName}', ${markName}_${HOVERED_ITEM}.datetime)) < getLabelWidth(formatVerticalAxisTimeLabelTooltips(datum, '${granularity}'))`,
+      //comment out the previous 'test' and uncomment the following 'test' as an example of something we may be able to do to show targeted label with only one axis. Not fully working yet.
+      //test: `isValid(${markName}_${HOVERED_ITEM}) && abs(scale('${scaleName}', datum.value) - scale('${scaleName}', ${markName}_${HOVERED_ITEM}.datetime)) > 0 && abs(scale('${scaleName}', datum.value) - scale('${scaleName}', ${markName}_${HOVERED_ITEM}.datetime)) < getLabelWidth(formatVerticalAxisTimeLabelTooltips(datum, '${granularity}'))`,
+      value: 0,
+    }));
+    
+    const anyValidHovered = interactiveMarks.map((markName) => `isValid(${markName}_${HOVERED_ITEM})`).join(' || ');
+    const anySameDayAsHovered = interactiveMarks
+      .map(
+        (markName) =>
+          `timeFormat(datum.value, '%Y-%m-%d') === timeFormat(${markName}_${HOVERED_ITEM}.datetime, '%Y-%m-%d')`
+      )
+      .join(' || ');
+    const finalSignal = `${anyValidHovered} ? (${anySameDayAsHovered} ? 1 : 0.15) : 1`;
+    (hoverOpacityUpdate as any).fillOpacity = [...closeToHoveredTests, { signal: finalSignal }];
+  }
+
   return {
     format: secondaryLabelFormat,
     encode: {
       labels: {
         interactive: Boolean(hasTooltip),
         update: {
+           ...hoverOpacityUpdate,
           ...(hasTooltip ? { tooltip: { signal: `formatVerticalAxisTimeLabelTooltips(datum, '${granularity}')` } } : {})
         },
       },
