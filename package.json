@@ -59,6 +59,7 @@
   "scripts": {
     "build": "yarn workspaces run build",
     "build:parallel": "concurrently 'yarn workspace @spectrum-charts/themes build' 'yarn workspace @spectrum-charts/constants build' 'yarn workspace @spectrum-charts/utils build' 'yarn workspace @spectrum-charts/locales build' && yarn workspace @spectrum-charts/vega-spec-builder build && concurrently 'yarn workspace @adobe/react-spectrum-charts build' 'yarn workspace @spectrum-charts/mcp build'",
+    "build:s2": "yarn workspace @spectrum-charts/constants build && yarn workspace @spectrum-charts/vega-spec-builder-s2 build:s2 && yarn workspace @spectrum-charts/react-spectrum-charts-s2 build:s2",
     "build:docs": "yarn workspace @spectrum-charts/docs build",
     "docs:update-cursor-rule": "node scripts/createCursorRule.js",
     "clean": "yarn workspaces run clean",
@@ -80,9 +81,13 @@
     "start": "yarn storybook",
     "start:docs": "yarn workspace @spectrum-charts/docs start",
     "storybook": "cross-env NODE_OPTIONS=--openssl-legacy-provider && storybook dev -p 6009",
+    "storybook:s2": "cross-env NODE_OPTIONS=--openssl-legacy-provider && storybook dev -p 6010 --config-dir .storybook-s2",
+    "build:storybook:s2": "storybook build --config-dir .storybook-s2 -o ./dist-storybook-s2 --quiet",
     "test": "cross-env TZ=UTC BABEL_ENV=test jest",
     "watch": "cross-env TZ=UTC BABEL_ENV=test jest --watch",
-    "skulk": "yarn watch --silent"
+    "skulk": "yarn watch --silent",
+    "version:s2": "node ./scripts/updateS2Versions.js",
+    "publish:s2": "yarn workspace @spectrum-charts/vega-spec-builder-s2 publish-package && yarn workspace @spectrum-charts/react-spectrum-charts-s2 publish-package"
   },
   "devDependencies": {
     "@adobe/react-spectrum": "3.34.1",

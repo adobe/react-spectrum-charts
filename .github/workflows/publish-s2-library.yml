@@ -1,0 +1,118 @@
+name: Publish S2 Library (Alpha)
+
+on:
+  push:
+    tags:
+      - 's2-v*.*.*' # Only trigger on tags like 's2-v0.1.0', 's2-v0.2.0', etc.
+
+permissions:
+  id-token: write # Required for OIDC
+  contents: write # Required to push branches and create PRs
+  pull-requests: write # Required to create pull requests
+
+jobs:
+  release-s2:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Update npm for trusted publishing
+        run: npm install -g npm@11.5.1
+
+      - name: Install Dependencies
+        run: yarn install
+
+      - name: Extract S2 Version Tag
+        id: extract_tag
+        run: |
+          FULL_TAG=${GITHUB_REF#refs/tags/}
+          VERSION_NUMBER=${FULL_TAG#s2-v}
+          echo "tag=$VERSION_NUMBER" >> "$GITHUB_ENV"
+          echo "tag=$VERSION_NUMBER" >> "$GITHUB_OUTPUT"
+          
+          # Validate version format (must be 0.x.x for alpha)
+          if [[ ! $VERSION_NUMBER =~ ^0\.[0-9]+\.[0-9]+(-[a-z]+\.[0-9]+)?$ ]]; then
+            echo "Error: S2 versions must be in alpha format (0.x.x or 0.x.x-alpha.x)"
+            exit 1
+          fi
+          
+          # Always use alpha tag for 0.x versions
+          echo "npm_tag=alpha" >> "$GITHUB_ENV"
+          echo "npm_tag=alpha" >> "$GITHUB_OUTPUT"
+
+      - name: Update S2 Package Versions
+        run: |
+          node ./scripts/updateS2Versions.js $tag
+
+      - name: Build S2 Dependencies
+        run: |
+          yarn workspace @spectrum-charts/constants build
+          yarn workspace @spectrum-charts/locales build
+          yarn workspace @spectrum-charts/themes build
+          yarn workspace @spectrum-charts/utils build
+          yarn workspace @spectrum-charts/vega-spec-builder build
+
+      - name: Build S2 Packages
+        run: |
+          yarn workspace @spectrum-charts/vega-spec-builder-s2 build
+          yarn workspace @spectrum-charts/react-spectrum-charts-s2 build
+
+      - name: Configure Yarn Registry
+        run: yarn config set registry https://registry.npmjs.org/
+
+      - name: Publish vega-spec-builder-s2
+        run: yarn workspace @spectrum-charts/vega-spec-builder-s2 publish-package
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.ADOBE_BOT_NPM_TOKEN }}
+          npm_config_tag: alpha
+
+      - name: Publish react-spectrum-charts-s2
+        run: yarn workspace @spectrum-charts/react-spectrum-charts-s2 publish-package
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.ADOBE_BOT_NPM_TOKEN }}
+          npm_config_tag: alpha
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: '[S2] Update package version to ${{ steps.extract_tag.outputs.tag }}'
+          title: '[S2 Alpha] Update package version to ${{ steps.extract_tag.outputs.tag }}'
+          body: |
+            ## S2 Package Release
+            
+            This PR updates the S2 package versions to **${{ steps.extract_tag.outputs.tag }}**.
+            
+            ### Published Packages
+            - ✅ `@spectrum-charts/vega-spec-builder-s2@${{ steps.extract_tag.outputs.tag }}`
+            - ✅ `@spectrum-charts/react-spectrum-charts-s2@${{ steps.extract_tag.outputs.tag }}`
+            
+            ### NPM Tag
+            Published with `alpha` tag (use `npm install @spectrum-charts/react-spectrum-charts-s2@alpha`)
+            
+            ### Installation
+            ```bash
+            npm install @spectrum-charts/react-spectrum-charts-s2@${{ steps.extract_tag.outputs.tag }}
+            # or
+            npm install @spectrum-charts/react-spectrum-charts-s2@alpha
+            ```
+            
+            ---
+            **Note:** S2 packages are independently versioned from the main library and follow 0.x.x (alpha) semantic versioning.
+          branch: 'release-s2-${{ steps.extract_tag.outputs.tag }}'
+          base: 'main'
+          labels: |
+            s2
+            alpha
+            release
+

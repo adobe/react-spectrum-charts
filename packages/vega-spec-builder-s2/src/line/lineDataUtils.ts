@@ -1,0 +1,90 @@
+/*
+ * Copyright 2026 Adobe. All rights reserved.
+ * This file is licensed to you under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy
+ * of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under
+ * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+ * OF ANY KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
+ */
+import { SourceData } from 'vega';
+
+import {
+  CONTROLLED_HIGHLIGHTED_ITEM,
+  FILTERED_TABLE,
+  GROUP_ID,
+  HOVERED_ITEM,
+  SELECTED_ITEM,
+} from '@spectrum-charts/constants';
+
+import { isHighlightedByGroup } from '../chartTooltip/chartTooltipUtils';
+import { hasPopover, isInteractive } from '../marks/markUtils';
+import { LineSpecOptions } from '../types';
+
+/**
+ * gets the data used for highlighting hovered data points
+ * @param name
+ * @param source
+ * @returns
+ */
+export const getLineHighlightedData = (options: LineSpecOptions): SourceData => {
+  const { name: lineName, idKey } = options;
+
+  let expr = `isArray(${CONTROLLED_HIGHLIGHTED_ITEM}) && indexof(${CONTROLLED_HIGHLIGHTED_ITEM}, datum.${idKey}) > -1`;
+
+  if (isInteractive(options)) {
+    const hoveredItemSignal = `${lineName}_${HOVERED_ITEM}`;
+    const groupKey = `${lineName}_${GROUP_ID}`;
+    if (isHighlightedByGroup(options)) {
+      expr += ` || isValid(${hoveredItemSignal}) && ${hoveredItemSignal}.${groupKey} === datum.${groupKey}`;
+    } else {
+      expr += ` || isValid(${hoveredItemSignal}) && ${hoveredItemSignal}.${idKey} === datum.${idKey}`;
+    }
+    if (hasPopover(options)) {
+      expr = `${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${idKey} || !${SELECTED_ITEM} && ${expr}`;
+    }
+  }
+
+  return {
+    name: `${lineName}_highlightedData`,
+    source: FILTERED_TABLE,
+    transform: [
+      {
+        type: 'filter',
+        expr,
+      },
+    ],
+  };
+};
+
+/**
+ * gets the data used for displaying points
+ * @param name
+ * @param staticPoint
+ * @param source
+ * @param isSparkline
+ * @param isMethodLast
+ * @returns
+ */
+export const getLineStaticPointData = (
+  name: string,
+  staticPoint: string | undefined,
+  source: string,
+  isSparkline: boolean | undefined,
+  isMethodLast: boolean | undefined
+): SourceData => {
+  const expr =
+    isSparkline && isMethodLast ? "datum === data('table')[data('table').length - 1]" : `datum.${staticPoint} === true`;
+  return {
+    name: `${name}_staticPointData`,
+    source,
+    transform: [
+      {
+        type: 'filter',
+        expr,
+      },
+    ],
+  };
+};
