@@ -38,7 +38,7 @@ import { addUserMetaInteractiveMark, getFacetsFromOptions } from '../specUtils';
 import { addTrendlineData, getTrendlineMarks, getTrendlineScales, setTrendlineSignals } from '../trendline';
 import { ColorScheme, HighlightedItem, LineOptions, LineSpecOptions, ScSpec } from '../types';
 import { getLineHighlightedData, getLineStaticPointData } from './lineDataUtils';
-import { getLineHoverMarks, getLineMark } from './lineMarkUtils';
+import { getLineGradientMark, getLineHoverMarks, getLineMark } from './lineMarkUtils';
 import { getLineStaticPoint } from './linePointUtils';
 import { getPopoverMarkName, isDualMetricAxis } from './lineUtils';
 
@@ -63,6 +63,7 @@ export const addLine = produce<
       colorScheme = DEFAULT_COLOR_SCHEME,
       dimension = DEFAULT_TIME_DIMENSION,
       dualMetricAxis = false,
+      gradient = false,
       hasOnClick = false,
       index = 0,
       lineType = { value: 'solid' },
@@ -85,6 +86,7 @@ export const addLine = produce<
       colorScheme,
       dimension,
       dualMetricAxis,
+      gradient,
       hasOnClick,
       index,
       interactiveMarkName: getInteractiveMarkName(
@@ -212,7 +214,7 @@ export const setScales = produce<Scale[], [LineSpecOptions]>((scales, options) =
 
 // The order that marks are added is important since it determines the draw order.
 export const addLineMarks = produce<Mark[], [LineSpecOptions]>((marks, options) => {
-  const { color, highlightedItem, isSparkline, lineType, name, opacity, staticPoint } = options;
+  const { color, gradient, highlightedItem, isSparkline, lineType, name, opacity, staticPoint } = options;
 
   const { facets } = getFacetsFromOptions({ color, lineType, opacity });
 
@@ -226,7 +228,10 @@ export const addLineMarks = produce<Mark[], [LineSpecOptions]>((marks, options) 
         groupby: facets,
       },
     },
-    marks: [getLineMark(options, `${name}_facet`)],
+    marks: [
+      ...(gradient ? [getLineGradientMark(options, `${name}_facet`)] : []),
+      getLineMark(options, `${name}_facet`),
+    ],
   });
   if (staticPoint || isSparkline) marks.push(getLineStaticPoint(options));
   marks.push(...getMetricRangeGroupMarks(options));

@@ -55,6 +55,7 @@ export interface LineMarkOptions {
   displayOnHover?: boolean;
   donutSummaries?: DonutSummaryOptions[];
   dualMetricAxis?: boolean;
+  gradient?: boolean;
   hasOnClick?: boolean;
   highlightedItem?: HighlightedItem;
   idKey: string;

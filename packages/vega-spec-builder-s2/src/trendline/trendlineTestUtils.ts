@@ -22,6 +22,7 @@ import { LineSpecOptions, TrendlineSpecOptions } from '../types';
 export const defaultLineOptions: LineSpecOptions = {
   chartPopovers: [],
   chartTooltips: [],
+  gradient: false,
   hasOnClick: false,
   metricRanges: [],
   trendlines: [{ method: 'average' }],
