@@ -38,6 +38,7 @@ export const defaultLineOptions: LineSpecOptions = {
   chartTooltips: [],
   name: 'line0',
   dimension: DEFAULT_TIME_DIMENSION,
+  gradient: false,
   hasOnClick: false,
   idKey: MARK_ID,
   index: 0,

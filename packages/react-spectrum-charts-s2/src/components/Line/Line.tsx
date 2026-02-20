@@ -23,6 +23,7 @@ const Line: FC<LineProps> = ({
   metric = DEFAULT_METRIC,
   metricAxis,
   dualMetricAxis,
+  gradient,
   color = { value: 'categorical-100' },
   scaleType = 'time',
   lineType = { value: 'solid' },

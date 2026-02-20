@@ -55,6 +55,7 @@ const defaultLineOptions: LineSpecOptions = {
   color: DEFAULT_COLOR,
   colorScheme: DEFAULT_COLOR_SCHEME,
   dimension: DEFAULT_TIME_DIMENSION,
+  gradient: false,
   hasOnClick: false,
   idKey: MARK_ID,
   index: 0,

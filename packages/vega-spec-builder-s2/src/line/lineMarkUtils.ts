@@ -12,6 +12,7 @@
 import { LineMark, Mark, NumericValueRef, ProductionRule, RuleMark } from 'vega';
 
 import {
+  COLOR_SCALE,
   CONTROLLED_HIGHLIGHTED_SERIES,
   CONTROLLED_HIGHLIGHTED_TABLE,
   DEFAULT_INTERACTION_MODE,
@@ -19,6 +20,8 @@ import {
   FADE_FACTOR,
   HOVERED_ITEM,
   LAST_RSC_SERIES_ID,
+  LINE_TYPE_SCALE,
+  OPACITY_SCALE,
   SELECTED_SERIES,
   SERIES_ID,
 } from '@spectrum-charts/constants';
@@ -26,6 +29,7 @@ import {
 import { getPopovers } from '../chartPopover/chartPopoverUtils';
 import {
   getColorProductionRule,
+  getColorProductionRuleSignalString,
   getItemHoverArea,
   getLineWidthProductionRule,
   getOpacityProductionRule,
@@ -72,6 +76,55 @@ export const getLineYEncoding = (lineMarkOptions: LineMarkOptions, metric: strin
   }
   
   return [{ scale: metricAxis || 'yLinear', field: metric }];
+};
+
+const GRADIENT_BASE_OPACITY = 0.2;
+
+/**
+ * Generates an area mark with a gradient fill beneath the line, fading from the line's color to transparent.
+ */
+export const getLineGradientMark = (lineMarkOptions: LineMarkOptions, dataSource: string): Mark => {
+  const { dimension, metric, name, scaleType } = lineMarkOptions;
+
+  return {
+    name: `${name}_gradient`,
+    description: `${name}_gradient`,
+    type: 'area',
+    from: { data: dataSource },
+    interactive: false,
+    encode: {
+      enter: {
+        y: getLineYEncoding(lineMarkOptions, metric),
+        y2: { signal: 'height' },
+        defined: { signal: `isValid(datum["${metric}"])` },
+        ...getGradientFillEncoding(lineMarkOptions),
+      },
+      update: {
+        x: getXProductionRule(scaleType, dimension),
+        opacity: [
+          { test: `length(domain('${COLOR_SCALE}')) > 1 || length(domain('${LINE_TYPE_SCALE}')) > 1 || length(domain('${OPACITY_SCALE}')) > 1`, value: 0 },
+          ...[getLineOpacity(lineMarkOptions)].flat(),
+        ],
+      },
+    },
+  };
+};
+
+const getGradientFillEncoding = ({ color, colorScheme, opacity }: LineMarkOptions) => {
+  const colorSignal = getColorProductionRuleSignalString(color, colorScheme);
+  return {
+    fill: {
+      signal: `{gradient: 'linear', stops: [{offset: 0, color: ${colorSignal}}, {offset: 1, color: 'transparent'}], x1: 0, y1: 0, x2: 0, y2: 1}`,
+    },
+    fillOpacity: getGradientOpacity(opacity),
+  };
+};
+
+const getGradientOpacity = (opacity: LineMarkOptions['opacity']): { value: number } | { signal: string } => {
+  if (typeof opacity === 'string') {
+    return { signal: `scale('${OPACITY_SCALE}', datum.${opacity}) * ${GRADIENT_BASE_OPACITY}` };
+  }
+  return { value: opacity.value * GRADIENT_BASE_OPACITY };
 };
 
 /**

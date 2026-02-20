@@ -62,6 +62,8 @@ export interface LineOptions {
   metricAxis?: string;
   /** Enables dual metric axis mode where the last series uses a secondary axis with independent scale */
   dualMetricAxis?: boolean;
+  /** If true, displays a gradient fill beneath the line fading from the line color to transparent */
+  gradient?: boolean;
 
   // children
   chartPopovers?: ChartPopoverOptions[];
@@ -75,6 +77,7 @@ type LineOptionsWithDefaults =
   | 'chartTooltips'
   | 'color'
   | 'dimension'
+  | 'gradient'
   | 'hasOnClick'
   | 'lineType'
   | 'metric'

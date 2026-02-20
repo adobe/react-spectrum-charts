@@ -5788,6 +5788,32 @@
     micromark-util-character "^1.1.0"
     micromark-util-symbol "^1.0.1"
 
+"@spectrum-charts/constants@1.29.0":
+  version "1.29.0"
+  resolved "https://registry.yarnpkg.com/@spectrum-charts/constants/-/constants-1.29.0.tgz#b775af83a5e8b2331c048cfeaaa4f0367948d9d0"
+  integrity sha512-MR8bXdxjMHCNb2Xi6rwIcLrHIsOYL3OMnyeirvVJKFwrhGBuYfKSyZ99hMqXlGpn6NTORrAesYtp049oBrqhtg==
+
+"@spectrum-charts/locales@1.29.0":
+  version "1.29.0"
+  resolved "https://registry.yarnpkg.com/@spectrum-charts/locales/-/locales-1.29.0.tgz#f724ba4d8ee8dc9b7f84e2c4315ccaef200dfb22"
+  integrity sha512-5uB+8lss5x2QSvww5hxpfY1Fg+t50iGiIjGSRg+qZ5WeDUicVO2UfT7FFfNSc3WffW5gopQc89AoU7N9CbI2CA==
+  dependencies:
+    vega "^6.2.0"
+
+"@spectrum-charts/themes@1.29.0":
+  version "1.29.0"
+  resolved "https://registry.yarnpkg.com/@spectrum-charts/themes/-/themes-1.29.0.tgz#be48f2b81b4395fa5f1d5572ad4bcf6ac7b36662"
+  integrity sha512-gVgvlTz/Sce+9bZrVEVqk36T/UFA3oyR03JEPC96LcovKqLCUCnavG5YQIxMeSk7BoicGbFUaiBOJ1SYLZOy7g==
+  dependencies:
+    "@spectrum-charts/constants" "1.29.0"
+    "@spectrum-charts/utils" "1.29.0"
+    vega "^6.2.0"
+
+"@spectrum-charts/utils@1.29.0":
+  version "1.29.0"
+  resolved "https://registry.yarnpkg.com/@spectrum-charts/utils/-/utils-1.29.0.tgz#4f9ad7e7ee9dff20f9edb7f27516b572d190175c"
+  integrity sha512-W1nr0Qp8HMU/Ba0bc+X1PBd84casGN75uKKcTG/6KBuTpD98jhQp82Ax0N2HsCjxVpoiqhsNyq4XjBr32HztBQ==
+
 "@spectrum-icons/ui@^3.6.5":
   version "3.6.5"
   resolved "https://registry.yarnpkg.com/@spectrum-icons/ui/-/ui-3.6.5.tgz#51fa3d5cf0d5737d0c318c7195b3c3512085a1c1"
