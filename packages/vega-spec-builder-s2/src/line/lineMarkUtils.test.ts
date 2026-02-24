@@ -17,11 +17,13 @@ import {
   DEFAULT_TRANSFORMED_TIME_DIMENSION,
   FADE_FACTOR,
   HOVERED_ITEM,
+  LINE_TYPE_SCALE,
+  OPACITY_SCALE,
   SELECTED_SERIES,
   SERIES_ID,
 } from '@spectrum-charts/constants';
 
-import { getLineHoverMarks, getLineMark, getLineOpacity } from './lineMarkUtils';
+import { getLineGradientMark, getLineHoverMarks, getLineMark, getLineOpacity } from './lineMarkUtils';
 import { defaultLineMarkOptions } from './lineTestUtils';
 
 describe('getLineMark()', () => {
@@ -183,5 +185,92 @@ describe('getLineOpacity()', () => {
     });
     expect(opacityRule).toHaveLength(4);
     expect(opacityRule[0]).toHaveProperty('test', `length(data('line0_highlightedData'))`);
+  });
+});
+
+describe('getLineGradientMark()', () => {
+  test('should return an area mark with gradient fill', () => {
+    const gradientMark = getLineGradientMark(defaultLineMarkOptions, 'line0_facet');
+    expect(gradientMark).toHaveProperty('name', 'line0_gradient');
+    expect(gradientMark).toHaveProperty('type', 'area');
+    expect(gradientMark).toHaveProperty('interactive', false);
+    expect(gradientMark.from).toEqual({ data: 'line0_facet' });
+  });
+
+  test('should have correct enter encoding with y, y2, fill, and fillOpacity', () => {
+    const gradientMark = getLineGradientMark(defaultLineMarkOptions, 'line0_facet');
+    const enter = gradientMark.encode?.enter;
+    expect(enter).toHaveProperty('y');
+    expect(enter).toHaveProperty('y2', { signal: 'height' });
+    expect(enter).toHaveProperty('fill');
+    expect(enter).toHaveProperty('fillOpacity');
+  });
+
+  test('should use a signal-based gradient fill with color from scale', () => {
+    const gradientMark = getLineGradientMark(defaultLineMarkOptions, 'line0_facet');
+    const fill = gradientMark.encode?.enter?.fill as { signal: string };
+    expect(fill).toHaveProperty('signal');
+    expect(fill.signal).toContain('gradient');
+    expect(fill.signal).toContain('linear');
+    expect(fill.signal).toContain('transparent');
+    expect(fill.signal).toContain(COLOR_SCALE);
+  });
+
+  test('should have correct update encoding with x and opacity', () => {
+    const gradientMark = getLineGradientMark(defaultLineMarkOptions, 'line0_facet');
+    const update = gradientMark.encode?.update;
+    expect(update).toHaveProperty('x', { field: DEFAULT_TRANSFORMED_TIME_DIMENSION, scale: 'xTime' });
+    expect(update).toHaveProperty('opacity');
+  });
+
+  test('should hide gradient when multiple series exist via scale domains', () => {
+    const gradientMark = getLineGradientMark(defaultLineMarkOptions, 'line0_facet');
+    const opacity = gradientMark.encode?.update?.opacity as { test: string; value: number }[];
+    expect(opacity[0]).toEqual({
+      test: `length(domain('${COLOR_SCALE}')) > 1 || length(domain('${LINE_TYPE_SCALE}')) > 1 || length(domain('${OPACITY_SCALE}')) > 1`,
+      value: 0,
+    });
+  });
+
+  test('should scale fillOpacity with static opacity value', () => {
+    const gradientMark = getLineGradientMark(
+      { ...defaultLineMarkOptions, opacity: { value: 0.6 } },
+      'line0_facet'
+    );
+    const fillOpacity = gradientMark.encode?.enter?.fillOpacity;
+    expect(fillOpacity).toEqual({ value: 0.6 * 0.2 });
+  });
+
+  test('should scale fillOpacity with dynamic opacity facet', () => {
+    const gradientMark = getLineGradientMark(
+      { ...defaultLineMarkOptions, opacity: 'weight' },
+      'line0_facet'
+    );
+    const fillOpacity = gradientMark.encode?.enter?.fillOpacity;
+    expect(fillOpacity).toEqual({ signal: `scale('${OPACITY_SCALE}', datum.weight) * 0.2` });
+  });
+
+  test('should include hover opacity rules when interactive', () => {
+    const gradientMark = getLineGradientMark(
+      { ...defaultLineMarkOptions, interactiveMarkName: 'line0', chartTooltips: [{}] },
+      'line0_facet'
+    );
+    const opacity = gradientMark.encode?.update?.opacity as unknown[];
+    expect(Array.isArray(opacity)).toBe(true);
+    expect(opacity[0]).toEqual({
+      test: `length(domain('${COLOR_SCALE}')) > 1 || length(domain('${LINE_TYPE_SCALE}')) > 1 || length(domain('${OPACITY_SCALE}')) > 1`,
+      value: 0,
+    });
+    expect(opacity.length).toBeGreaterThan(2);
+  });
+
+  test('should support dual metric axis y encoding', () => {
+    const gradientMark = getLineGradientMark(
+      { ...defaultLineMarkOptions, dualMetricAxis: true },
+      'line0_facet'
+    );
+    const y = gradientMark.encode?.enter?.y;
+    expect(Array.isArray(y)).toBe(true);
+    expect((y as unknown[]).length).toBe(2);
   });
 });

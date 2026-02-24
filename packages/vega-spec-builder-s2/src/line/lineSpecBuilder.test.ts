@@ -508,6 +508,35 @@ describe('lineSpecBuilder', () => {
       const voronoiPointsMark = marks.at(-2);
       expect(voronoiPointsMark?.description).toBe('line0_pointsForVoronoi');
     });
+
+    test('with gradient should add gradient area mark before line mark', () => {
+      const marks = addLineMarks([], { ...defaultLineOptions, gradient: true });
+      const groupMark = marks[0];
+      expect(groupMark.type).toBe('group');
+
+      const innerMarks = (groupMark as { marks: { name: string; type: string }[] }).marks;
+      expect(innerMarks).toHaveLength(2);
+      expect(innerMarks[0].name).toBe('line0_gradient');
+      expect(innerMarks[0].type).toBe('area');
+      expect(innerMarks[1].name).toBe('line0');
+      expect(innerMarks[1].type).toBe('line');
+    });
+
+    test('without gradient should not add gradient area mark', () => {
+      const marks = addLineMarks([], { ...defaultLineOptions, gradient: false });
+      const groupMark = marks[0];
+      const innerMarks = (groupMark as { marks: { name: string }[] }).marks;
+      expect(innerMarks).toHaveLength(1);
+      expect(innerMarks[0].name).toBe('line0');
+    });
+
+    test('with gradient and multi-series color should still add gradient mark', () => {
+      const marks = addLineMarks([], { ...defaultLineOptions, gradient: true, color: 'series' });
+      const innerMarks = (marks[0] as { marks: { name: string; type: string }[] }).marks;
+      expect(innerMarks).toHaveLength(2);
+      expect(innerMarks[0].name).toBe('line0_gradient');
+      expect(innerMarks[0].type).toBe('area');
+    });
   });
 
   describe('addSignals()', () => {
