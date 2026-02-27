@@ -92,9 +92,18 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>((props, forwarded
 
   useSpecProps(spec);
 
-  const { signals, targetStyle, tooltipOptions, onNewView } = useChartInteractions(props, sanitizedChildren);
-  const chartConfig = useMemo(() => getChartConfig(config, colorScheme, s2), [config, colorScheme, s2]);
   const specSignalNames = useMemo(() => new Set(spec.signals?.map((s) => s.name) ?? []), [spec.signals]);
+  const interactiveMarks = useMemo(
+    () => (spec.usermeta as { interactiveMarks?: string[] } | undefined)?.interactiveMarks ?? [],
+    [spec.usermeta]
+  );
+  const { signals, targetStyle, tooltipOptions, onNewView } = useChartInteractions(
+    props,
+    sanitizedChildren,
+    specSignalNames,
+    interactiveMarks
+  );
+  const chartConfig = useMemo(() => getChartConfig(config, colorScheme, s2), [config, colorScheme, s2]);
 
   useEffect(() => {
     const tooltipElement = document.getElementById('vg-tooltip-element');
@@ -106,6 +115,8 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>((props, forwarded
 
   useChartImperativeHandle(forwardedRef, { chartView, title });
   const popovers = usePopovers(sanitizedChildren);
+
+  console.log('MY RSC IS LINKED');
 
   return (
     <>

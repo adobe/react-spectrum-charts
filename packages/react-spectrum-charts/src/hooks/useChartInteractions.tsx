@@ -21,7 +21,12 @@ import useNewChartView from './useNewChartView';
 import usePopoverAnchorStyle from './usePopoverAnchorStyle';
 import useTooltipInteractions from './useTooltipInteractions';
 
-export const useChartInteractions = (props: RscChartProps, sanitizedChildren: ChartChildElement[]) => {
+export const useChartInteractions = (
+  props: RscChartProps,
+  sanitizedChildren: ChartChildElement[],
+  specSignalNames?: ReadonlySet<string>,
+  interactiveMarks?: string[]
+) => {
   const { selectedData } = useChartContext();
   const { tooltipOptions } = useTooltipInteractions(props, sanitizedChildren);
   const { legendHiddenSeries, isToggleable: legendIsToggleable } = useLegend(sanitizedChildren);
@@ -40,7 +45,7 @@ export const useChartInteractions = (props: RscChartProps, sanitizedChildren: Ch
     return signals;
   }, [legendHiddenSeries, legendIsToggleable, props.colorScheme, props.idKey, selectedData]);
 
-  const onNewView = useNewChartView(props, sanitizedChildren, tooltipOptions);
+  const onNewView = useNewChartView(props, sanitizedChildren, tooltipOptions, specSignalNames, interactiveMarks);
 
   return { signals, targetStyle, tooltipOptions, onNewView };
 };
