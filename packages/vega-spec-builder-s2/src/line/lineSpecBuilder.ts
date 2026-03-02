@@ -35,6 +35,7 @@ import { addContinuousDimensionScale, addFieldToFacetScaleDomain, addMetricScale
 import { getDualAxisScaleNames } from '../scale/scaleUtils';
 import { addHoveredItemSignal, getFirstRscSeriesIdSignal, getLastRscSeriesIdSignal } from '../signal/signalSpecBuilder';
 import { addUserMetaInteractiveMark, getFacetsFromOptions } from '../specUtils';
+import { getLineDirectLabelData, getLineDirectLabelMarks, getLineDirectLabelSpecOptions } from '../lineDirectLabel';
 import { addTrendlineData, getTrendlineMarks, getTrendlineScales, setTrendlineSignals } from '../trendline';
 import { ColorScheme, HighlightedItem, LineOptions, LineSpecOptions, ScSpec } from '../types';
 import { getLineHighlightedData, getLineStaticPointData } from './lineDataUtils';
@@ -66,6 +67,7 @@ export const addLine = produce<
       gradient = false,
       hasOnClick = false,
       index = 0,
+      lineDirectLabels = [],
       lineType = { value: 'solid' },
       metric = DEFAULT_METRIC,
       metricAxis,
@@ -89,6 +91,7 @@ export const addLine = produce<
       gradient,
       hasOnClick,
       index,
+      lineDirectLabels,
       interactiveMarkName: getInteractiveMarkName(
         {
           chartPopovers,
@@ -140,6 +143,10 @@ export const addData = produce<Data[], [LineSpecOptions]>((data, options) => {
   addTooltipData(data, options, false);
   addPopoverData(data, options);
   data.push(...getMetricRangeData(options));
+  for (const [i, label] of (options.lineDirectLabels ?? []).entries()) {
+    const specOpts = getLineDirectLabelSpecOptions(label, i, options);
+    data.push(getLineDirectLabelData(options.name, specOpts, options));
+  }
 });
 
 /**
@@ -239,6 +246,10 @@ export const addLineMarks = produce<Mark[], [LineSpecOptions]>((marks, options) 
     marks.push(...getLineHoverMarks(options, `${FILTERED_TABLE}ForTooltip`));
   }
   marks.push(...getTrendlineMarks(options));
+  for (const [i, label] of (options.lineDirectLabels ?? []).entries()) {
+    const specOpts = getLineDirectLabelSpecOptions(label, i, options);
+    marks.push(...getLineDirectLabelMarks(options.name, specOpts, options, options.backgroundColor, options.colorScheme));
+  }
 });
 
 const getMetricKeys = (lineOptions: LineSpecOptions) => {

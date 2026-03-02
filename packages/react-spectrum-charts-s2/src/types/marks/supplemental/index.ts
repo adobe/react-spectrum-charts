@@ -12,4 +12,5 @@
 
 export * from './barAnnotation.types';
 export * from './dountSummary.types';
+export * from './lineDirectLabel.types';
 export * from './segmentLabel.types';

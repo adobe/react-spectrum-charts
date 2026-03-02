@@ -17,6 +17,7 @@ import {
   ChartTooltipOptions,
   DonutSummaryOptions,
   LegendOptions,
+  LineDirectLabelOptions,
   LineOptions,
   MarkOptions,
   ReferenceLineOptions,
@@ -31,6 +32,7 @@ import { ChartPopover } from '../components/ChartPopover';
 import { ChartTooltip } from '../components/ChartTooltip';
 import { Legend } from '../components/Legend';
 import { Line } from '../components/Line';
+import { LineDirectLabel } from '../components/LineDirectLabel';
 import { ReferenceLine } from '../components/ReferenceLine';
 import { Title } from '../components/Title';
 import { Donut, DonutSummary, SegmentLabel } from '../rc';
@@ -43,6 +45,7 @@ import {
   DonutProps,
   DonutSummaryProps,
   LegendProps,
+  LineDirectLabelProps,
   LineProps,
   ReferenceLineProps,
   SegmentLabelProps,
@@ -63,10 +66,11 @@ export const childrenToOptions = (
   axes: AxisOptions[];
   axisThumbnails: AxisThumbnailOptions[];
   barAnnotations: BarAnnotationOptions[];
-  chartTooltips: ChartTooltipOptions[];
   chartPopovers: ChartPopoverOptions[];
+  chartTooltips: ChartTooltipOptions[];
   donutSummaries: DonutSummaryOptions[];
   legends: LegendOptions[];
+  lineDirectLabels: LineDirectLabelOptions[];
   lines: LineOptions[];
   marks: MarkOptions[];
   referenceLines: ReferenceLineOptions[];
@@ -80,6 +84,7 @@ export const childrenToOptions = (
   const chartTooltips: ChartTooltipOptions[] = [];
   const donutSummaries: DonutSummaryOptions[] = [];
   const legends: LegendOptions[] = [];
+  const lineDirectLabels: LineDirectLabelOptions[] = [];
   const lines: LineOptions[] = [];
   const marks: MarkOptions[] = [];
   const referenceLines: ReferenceLineOptions[] = [];
@@ -124,6 +129,10 @@ export const childrenToOptions = (
         legends.push(getLegendOptions(child.props as LegendProps));
         break;
 
+      case LineDirectLabel.displayName:
+        lineDirectLabels.push(child.props as LineDirectLabelProps);
+        break;
+
       case Line.displayName:
         marks.push(getLineOptions(child.props as LineProps));
         lines.push(getLineOptions(child.props as LineProps));
@@ -150,10 +159,11 @@ export const childrenToOptions = (
     axes,
     axisThumbnails,
     barAnnotations,
-    chartTooltips,
     chartPopovers,
+    chartTooltips,
     donutSummaries,
     legends,
+    lineDirectLabels,
     lines,
     marks,
     referenceLines,

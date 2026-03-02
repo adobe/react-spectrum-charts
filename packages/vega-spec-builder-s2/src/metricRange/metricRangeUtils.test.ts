@@ -60,6 +60,7 @@ const defaultLineOptions: LineSpecOptions = {
   idKey: MARK_ID,
   index: 0,
   interactiveMarkName: undefined,
+  lineDirectLabels: [],
   lineType: { value: 'solid' },
   markType: 'line',
   metric: DEFAULT_METRIC,

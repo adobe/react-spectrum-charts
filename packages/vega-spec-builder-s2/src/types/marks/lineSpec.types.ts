@@ -23,6 +23,7 @@ import {
   PartiallyRequired,
   ScaleType,
 } from '../specUtil.types';
+import { LineDirectLabelOptions } from './supplemental/lineDirectLabelSpec.types';
 import { MetricRangeOptions } from './supplemental/metricRangeSpec.types';
 import { TrendlineOptions } from './supplemental/trendlineSpec.types';
 
@@ -68,6 +69,7 @@ export interface LineOptions {
   // children
   chartPopovers?: ChartPopoverOptions[];
   chartTooltips?: ChartTooltipOptions[];
+  lineDirectLabels?: LineDirectLabelOptions[];
   metricRanges?: MetricRangeOptions[];
   trendlines?: TrendlineOptions[];
 }
@@ -79,6 +81,7 @@ type LineOptionsWithDefaults =
   | 'dimension'
   | 'gradient'
   | 'hasOnClick'
+  | 'lineDirectLabels'
   | 'lineType'
   | 'metric'
   | 'metricRanges'
@@ -88,6 +91,7 @@ type LineOptionsWithDefaults =
   | 'trendlines';
 
 export interface LineSpecOptions extends PartiallyRequired<LineOptions, LineOptionsWithDefaults> {
+  backgroundColor?: string;
   colorScheme: ColorScheme;
   comboSiblingNames?: string[];
   highlightedItem?: HighlightedItem;
