@@ -118,11 +118,11 @@ describe('rscPropsToSpecBuilderOptions()', () => {
       const options = rscPropsToSpecBuilderOptions({
         ...chartProps,
         children: [
-          createElement(Line, {
-            dimension: 'datetime',
-            metric: 'value',
-            children: createElement(LineDirectLabel, { value: 'series', position: 'start' }),
-          }),
+          createElement(
+            Line,
+            { dimension: 'datetime', metric: 'value' },
+            createElement(LineDirectLabel, { value: 'series', position: 'start' })
+          ),
         ],
       });
       expect(options.marks).toHaveLength(1);
@@ -136,11 +136,11 @@ describe('rscPropsToSpecBuilderOptions()', () => {
       const options = rscPropsToSpecBuilderOptions({
         ...chartProps,
         children: [
-          createElement(Line, {
-            dimension: 'datetime',
-            metric: 'value',
-            children: createElement(LineDirectLabel),
-          }),
+          createElement(
+            Line,
+            { dimension: 'datetime', metric: 'value' },
+            createElement(LineDirectLabel)
+          ),
         ],
       });
       const labels = (options.marks[0] as { lineDirectLabels: unknown[] }).lineDirectLabels;
@@ -160,14 +160,12 @@ describe('rscPropsToSpecBuilderOptions()', () => {
       const options = rscPropsToSpecBuilderOptions({
         ...chartProps,
         children: [
-          createElement(Line, {
-            dimension: 'datetime',
-            metric: 'value',
-            children: [
-              createElement(LineDirectLabel, { value: 'last', key: 'a' }),
-              createElement(LineDirectLabel, { value: 'series', position: 'start', key: 'b' }),
-            ],
-          }),
+          createElement(
+            Line,
+            { dimension: 'datetime', metric: 'value' },
+            createElement(LineDirectLabel, { value: 'last', key: 'a' }),
+            createElement(LineDirectLabel, { value: 'series', position: 'start', key: 'b' })
+          ),
         ],
       });
       const labels = (options.marks[0] as { lineDirectLabels: unknown[] }).lineDirectLabels;
