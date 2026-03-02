@@ -97,7 +97,7 @@ const DEFAULT_NUMBER_FORMAT = ',.2~f';
 
 function getLabelValueExpr(value: LabelValue, metric: string, colorField?: string, formatSpec?: string): string {
 	const resolvedFormat = formatSpec || DEFAULT_NUMBER_FORMAT;
-	const fmt = `"${resolvedFormat.replace(/"/g, '\\"')}"`;
+	const fmt = `"${resolvedFormat.replaceAll('"', String.raw`\"`)}"`;
 	switch (value) {
 		case 'last':
 		case 'first':
@@ -106,8 +106,6 @@ function getLabelValueExpr(value: LabelValue, metric: string, colorField?: strin
 			return `format(datum.directLabel_avg, ${fmt})`;
 		case 'series':
 			return colorField ? `datum["${colorField}"]` : "''";
-		default:
-			return `'${String(value).replace(/'/g, "\\'")}'`;
 	}
 }
 
@@ -127,7 +125,7 @@ export const getLineDirectLabelMarks = (
 	);
 	const dataName = `${lineName}DirectLabel${labelOptions.index}_data`;
 	const { prefix = '' } = labelOptions;
-	const textPrefix = prefix ? `'${prefix.replace(/'/g, "\\'")} ' + ` : '';
+	const textPrefix = prefix ? `'${prefix.replaceAll("'", String.raw`\'`)} ' + ` : '';
 	const textExpr = `${textPrefix}datum.directLabel_text`;
 
 	const { dimension, metric, position, scaleType } = labelOptions;

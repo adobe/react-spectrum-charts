@@ -222,20 +222,60 @@ describe('getLineDirectLabelData', () => {
 		expect((formula as { expr: string }).expr).toBe('datum["category"]');
 	});
 
-	test('generates formula for literal string value', () => {
-		const opts = { ...defaultLabelSpecOptions, value: 'My Label' };
-		const data = getLineDirectLabelData('line0', opts, defaultLineOptions);
-		const transforms = getTransforms(data);
-		const formula = transforms.find((t) => t.type === 'formula' && 'as' in t && t.as === 'directLabel_text');
-		expect((formula as { expr: string }).expr).toBe("'My Label'");
-	});
-
 	test('uses custom format when provided', () => {
 		const opts = { ...defaultLabelSpecOptions, format: ',.0f' };
 		const data = getLineDirectLabelData('line0', opts, defaultLineOptions);
 		const transforms = getTransforms(data);
 		const formula = transforms.find((t) => t.type === 'formula' && 'as' in t && t.as === 'directLabel_text');
 		expect((formula as { expr: string }).expr).toBe(`format(datum["${DEFAULT_METRIC}"], ",.0f")`);
+	});
+
+	test('generates formula for average value with default format', () => {
+		const opts = { ...defaultLabelSpecOptions, value: 'average' as const };
+		const data = getLineDirectLabelData('line0', opts, defaultLineOptions);
+		const transforms = getTransforms(data);
+		const formula = transforms.find((t) => t.type === 'formula' && 'as' in t && t.as === 'directLabel_text');
+		expect((formula as { expr: string }).expr).toBe('format(datum.directLabel_avg, ",.2~f")');
+	});
+
+	test('generates empty string for series value when color is not a string', () => {
+		const opts: LineDirectLabelSpecOptions = {
+			...defaultLabelSpecOptions,
+			value: 'series',
+			color: { value: 'blue' },
+		};
+		const data = getLineDirectLabelData('line0', opts, defaultLineOptions);
+		const transforms = getTransforms(data);
+		const formula = transforms.find((t) => t.type === 'formula' && 'as' in t && t.as === 'directLabel_text');
+		expect((formula as { expr: string }).expr).toBe("''");
+	});
+
+	test('escapes quotes in format string', () => {
+		const opts = { ...defaultLabelSpecOptions, format: '$"0.0"' };
+		const data = getLineDirectLabelData('line0', opts, defaultLineOptions);
+		const transforms = getTransforms(data);
+		const formula = transforms.find((t) => t.type === 'formula' && 'as' in t && t.as === 'directLabel_text');
+		expect((formula as { expr: string }).expr).toContain('\\"');
+	});
+
+	test('includes dimension filter expression', () => {
+		const data = getLineDirectLabelData('line0', defaultLabelSpecOptions, defaultLineOptions);
+		const transforms = getTransforms(data);
+		const filter = transforms.find(
+			(t) => t.type === 'filter' && 'expr' in t && t.expr.includes('_extremeDim')
+		);
+		expect(filter).toBeDefined();
+		expect((filter as { expr: string }).expr).toBe('datum["datetime"] === datum._extremeDim');
+	});
+
+	test('uses min when both position=start and value=first', () => {
+		const opts = { ...defaultLabelSpecOptions, position: 'start' as const, value: 'first' as const };
+		const data = getLineDirectLabelData('line0', opts, defaultLineOptions);
+		const transforms = getTransforms(data);
+		const joinagg = transforms.find(
+			(t) => t.type === 'joinaggregate' && 'as' in t && asArray(t.as).includes('_extremeDim')
+		);
+		expect(joinagg).toHaveProperty('ops', ['min']);
 	});
 
 	test('filters to min dimension for position=start', () => {
@@ -348,6 +388,54 @@ describe('getLineDirectLabelMarks', () => {
 		const bgStroke = marks[0].encode?.enter?.stroke as { value: string };
 		expect(bgStroke.value).toBeTruthy();
 		expect(bgStroke.value).not.toBe('transparent');
+	});
+
+	test('resolves undefined background to gray-50', () => {
+		const marks = getLineDirectLabelMarks('line0', defaultLabelSpecOptions, defaultLineOptions, undefined, 'light');
+		const bgStroke = marks[0].encode?.enter?.stroke as { value: string };
+		expect(bgStroke.value).toBeTruthy();
+		expect(bgStroke.value).not.toBe('transparent');
+	});
+
+	test('uses provided backgroundColor when not transparent or undefined', () => {
+		const marks = getLineDirectLabelMarks('line0', defaultLabelSpecOptions, defaultLineOptions, 'blue-100', 'light');
+		const bgStroke = marks[0].encode?.enter?.stroke as { value: string };
+		expect(bgStroke.value).toBeTruthy();
+	});
+
+	test('resolves background color with dark color scheme', () => {
+		const marks = getLineDirectLabelMarks('line0', defaultLabelSpecOptions, defaultLineOptions, 'gray-50', 'dark');
+		const bgStroke = marks[0].encode?.enter?.stroke as { value: string };
+		expect(bgStroke.value).toBeTruthy();
+	});
+
+	test('text expression has no prefix when prefix is empty', () => {
+		const marks = getLineDirectLabelMarks('line0', defaultLabelSpecOptions, defaultLineOptions, 'gray-50', 'light');
+		const textSignal = (marks[0].encode?.enter?.text as { signal: string }).signal;
+		expect(textSignal).toBe('datum.directLabel_text');
+	});
+
+	test('escapes single quotes in prefix', () => {
+		const opts = { ...defaultLabelSpecOptions, prefix: "it's" };
+		const marks = getLineDirectLabelMarks('line0', opts, defaultLineOptions, 'gray-50', 'light');
+		const textSignal = (marks[0].encode?.enter?.text as { signal: string }).signal;
+		expect(textSignal).toContain(String.raw`it\'s`);
+	});
+
+	test('marks reference correct data source', () => {
+		const opts = { ...defaultLabelSpecOptions, index: 1 };
+		const marks = getLineDirectLabelMarks('line0', opts, defaultLineOptions, 'gray-50', 'light');
+		expect(marks[0].from).toEqual({ data: 'line0DirectLabel1_data' });
+		expect(marks[1].from).toEqual({ data: 'line0DirectLabel1_data' });
+	});
+
+	test('both marks have matching encoding for position=start', () => {
+		const startOpts = { ...defaultLabelSpecOptions, position: 'start' as const };
+		const marks = getLineDirectLabelMarks('line0', startOpts, defaultLineOptions, 'gray-50', 'light');
+		expect(marks[0].encode?.enter?.x).toEqual({ value: 0 });
+		expect(marks[1].encode?.enter?.x).toEqual({ value: 0 });
+		expect(marks[0].encode?.enter?.align).toEqual({ value: 'left' });
+		expect(marks[1].encode?.enter?.align).toEqual({ value: 'left' });
 	});
 
 	describe('position=start', () => {

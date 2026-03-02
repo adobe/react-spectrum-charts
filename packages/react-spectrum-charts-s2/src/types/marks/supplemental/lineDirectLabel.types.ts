@@ -11,7 +11,7 @@
  */
 import { JSXElementConstructor, ReactElement } from 'react';
 
-export type LineDirectLabelValue = 'last' | 'first' | 'average' | 'series' | string;
+export type LineDirectLabelValue = 'last' | 'first' | 'average' | 'series';
 export type LineDirectLabelPosition = 'start' | 'end';
 
 export interface LineDirectLabelProps {

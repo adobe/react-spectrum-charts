@@ -12,7 +12,7 @@
 import { ColorScheme } from '../../chartSpec.types';
 import { ColorFacet, PartiallyRequired, ScaleType } from '../../specUtil.types';
 
-export type LabelValue = 'last' | 'first' | 'average' | 'series' | string;
+export type LabelValue = 'last' | 'first' | 'average' | 'series';
 export type LabelPosition = 'start' | 'end';
 
 export interface LineDirectLabelOptions {
@@ -22,7 +22,6 @@ export interface LineDirectLabelOptions {
    * - 'first': value at first data point
    * - 'average': average of all values in the line
    * - 'series': series key/name
-   * - string: literal text
    * @default 'last'
    */
   value?: LabelValue;
