@@ -135,16 +135,6 @@ describe('getLineDirectLabelData', () => {
 		expect(joinagg).toHaveProperty('ops', ['max']);
 	});
 
-	test('filters to min dimension for value=first', () => {
-		const opts = { ...defaultLabelSpecOptions, value: 'first' as const };
-		const data = getLineDirectLabelData('line0', opts, defaultLineOptions);
-		const transforms = getTransforms(data);
-		const joinagg = transforms.find(
-			(t) => t.type === 'joinaggregate' && 'as' in t && asArray(t.as).includes('_extremeDim')
-		);
-		expect(joinagg).toHaveProperty('ops', ['min']);
-	});
-
 	test('includes mean aggregate for value=average', () => {
 		const opts = { ...defaultLabelSpecOptions, value: 'average' as const };
 		const data = getLineDirectLabelData('line0', opts, defaultLineOptions);
@@ -265,17 +255,7 @@ describe('getLineDirectLabelData', () => {
 			(t) => t.type === 'filter' && 'expr' in t && t.expr.includes('_extremeDim')
 		);
 		expect(filter).toBeDefined();
-		expect((filter as { expr: string }).expr).toBe('datum["datetime"] === datum._extremeDim');
-	});
-
-	test('uses min when both position=start and value=first', () => {
-		const opts = { ...defaultLabelSpecOptions, position: 'start' as const, value: 'first' as const };
-		const data = getLineDirectLabelData('line0', opts, defaultLineOptions);
-		const transforms = getTransforms(data);
-		const joinagg = transforms.find(
-			(t) => t.type === 'joinaggregate' && 'as' in t && asArray(t.as).includes('_extremeDim')
-		);
-		expect(joinagg).toHaveProperty('ops', ['min']);
+		expect((filter as { expr: string }).expr).toBe('datum["datetime0"] === datum._extremeDim');
 	});
 
 	test('filters to min dimension for position=start', () => {

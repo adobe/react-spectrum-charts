@@ -42,7 +42,7 @@ export const getLineDirectLabelData = (
 	const formatSpec = labelOptions.format || '';
 	const valueExpr = getLabelValueExpr(value, metric, colorField, formatSpec);
 
-	const usesMin = isStart || value === 'first';
+	const usesMin = isStart;
 	const transforms: Transforms[] = [
 		...(value === 'average'
 			? [
@@ -100,7 +100,6 @@ function getLabelValueExpr(value: LabelValue, metric: string, colorField?: strin
 	const fmt = `"${resolvedFormat.replaceAll('"', String.raw`\"`)}"`;
 	switch (value) {
 		case 'last':
-		case 'first':
 			return `format(datum["${metric}"], ${fmt})`;
 		case 'average':
 			return `format(datum.directLabel_avg, ${fmt})`;

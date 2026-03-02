@@ -26,7 +26,7 @@ export default {
   argTypes: {
     value: {
       control: { type: 'select' },
-      options: ['last', 'first', 'average', 'series'],
+      options: ['last', 'average', 'series'],
     },
     position: {
       control: { type: 'select' },
@@ -63,8 +63,6 @@ Default.args = { value: 'series' };
 const ValueLast = bindWithProps(LineDirectLabelStory);
 ValueLast.args = { value: 'last' };
 
-const ValueFirst = bindWithProps(LineDirectLabelStory);
-ValueFirst.args = { value: 'first' };
 
 const ValueAverage = bindWithProps(LineDirectLabelStory);
 ValueAverage.args = { value: 'average' };
@@ -113,4 +111,4 @@ TwoSeries.args = { value: 'last' };
 const PositionStart = bindWithProps(LineDirectLabelStory);
 PositionStart.args = { value: 'series', position: 'start' };
 
-export { Default, PositionStart, TwoSeries, ValueAverage, ValueFirst, ValueLast, WithTooltip };
+export { Default, PositionStart, TwoSeries, ValueAverage, ValueLast, WithTooltip };

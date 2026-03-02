@@ -11,14 +11,13 @@
  */
 import { JSXElementConstructor, ReactElement } from 'react';
 
-export type LineDirectLabelValue = 'last' | 'first' | 'average' | 'series';
+export type LineDirectLabelValue = 'last' | 'average' | 'series';
 export type LineDirectLabelPosition = 'start' | 'end';
 
 export interface LineDirectLabelProps {
   /**
    * Value to display.
    * - 'last': value at last data point
-   * - 'first': value at first data point
    * - 'average': average of all values in the line
    * - 'series': series key/name
    * @default 'last'
