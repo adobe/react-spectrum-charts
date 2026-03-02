@@ -128,7 +128,7 @@ export const getLineDirectLabelMarks = (
 	);
 	const dataName = `${lineName}DirectLabel${labelOptions.index}_data`;
 	const { prefix = '' } = labelOptions;
-	const textPrefix = prefix ? `'${prefix.replaceAll("'", String.raw`\'`)} ' + ` : '';
+	const textPrefix = prefix ? "'" + prefix.replaceAll("'", String.raw`\'`) + " ' + " : '';
 	const textExpr = `${textPrefix}datum.directLabel_text`;
 
 	const { dimension, metric, position, scaleType } = labelOptions;
