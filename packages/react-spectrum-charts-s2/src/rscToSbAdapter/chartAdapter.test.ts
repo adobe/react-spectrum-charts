@@ -23,6 +23,7 @@ import { Axis } from '../components/Axis';
 import { Bar } from '../components/Bar';
 import { Legend } from '../components/Legend';
 import { Line } from '../components/Line';
+import { LineDirectLabel } from '../components/LineDirectLabel';
 import { Title } from '../components/Title';
 import { SanitizedSpecProps } from '../types';
 import { rscPropsToSpecBuilderOptions } from './chartAdapter';
@@ -109,6 +110,68 @@ describe('rscPropsToSpecBuilderOptions()', () => {
     test('should not return titles if title element is absent', () => {
       const options = rscPropsToSpecBuilderOptions(chartProps);
       expect(options.titles).toHaveLength(0);
+    });
+  });
+
+  describe('lineDirectLabels', () => {
+    test('should extract LineDirectLabel children from Line', () => {
+      const options = rscPropsToSpecBuilderOptions({
+        ...chartProps,
+        children: [
+          createElement(Line, {
+            dimension: 'datetime',
+            metric: 'value',
+            children: createElement(LineDirectLabel, { value: 'series', position: 'start' }),
+          }),
+        ],
+      });
+      expect(options.marks).toHaveLength(1);
+      expect(options.marks[0]).toHaveProperty('lineDirectLabels');
+      const labels = (options.marks[0] as { lineDirectLabels: unknown[] }).lineDirectLabels;
+      expect(labels).toHaveLength(1);
+      expect(labels[0]).toEqual({ value: 'series', position: 'start' });
+    });
+
+    test('should apply default props for LineDirectLabel', () => {
+      const options = rscPropsToSpecBuilderOptions({
+        ...chartProps,
+        children: [
+          createElement(Line, {
+            dimension: 'datetime',
+            metric: 'value',
+            children: createElement(LineDirectLabel),
+          }),
+        ],
+      });
+      const labels = (options.marks[0] as { lineDirectLabels: unknown[] }).lineDirectLabels;
+      expect(labels).toHaveLength(1);
+      expect(labels[0]).toEqual({});
+    });
+
+    test('should return empty lineDirectLabels when Line has no LineDirectLabel children', () => {
+      const options = rscPropsToSpecBuilderOptions({
+        ...chartProps,
+        children: [createElement(Line, { dimension: 'datetime', metric: 'value' })],
+      });
+      expect((options.marks[0] as { lineDirectLabels: unknown[] }).lineDirectLabels).toHaveLength(0);
+    });
+
+    test('should extract multiple LineDirectLabel children', () => {
+      const options = rscPropsToSpecBuilderOptions({
+        ...chartProps,
+        children: [
+          createElement(Line, {
+            dimension: 'datetime',
+            metric: 'value',
+            children: [
+              createElement(LineDirectLabel, { value: 'last', key: 'a' }),
+              createElement(LineDirectLabel, { value: 'series', position: 'start', key: 'b' }),
+            ],
+          }),
+        ],
+      });
+      const labels = (options.marks[0] as { lineDirectLabels: unknown[] }).lineDirectLabels;
+      expect(labels).toHaveLength(2);
     });
   });
 

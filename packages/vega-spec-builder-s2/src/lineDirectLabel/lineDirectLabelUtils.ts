@@ -95,16 +95,20 @@ export const getLineDirectLabelData = (
 
 const DEFAULT_NUMBER_FORMAT = ',.2~f';
 
+function getEscapedFormat(formatSpec?: string): string {
+	const resolved = formatSpec || DEFAULT_NUMBER_FORMAT;
+	return '"' + resolved.replaceAll('"', String.raw`\"`) + '"';
+}
+
 function getLabelValueExpr(value: LabelValue, metric: string, colorField?: string, formatSpec?: string): string {
-	const resolvedFormat = formatSpec || DEFAULT_NUMBER_FORMAT;
-	const fmt = `"${resolvedFormat.replaceAll('"', String.raw`\"`)}"`;
+	const fmt = getEscapedFormat(formatSpec);
 	switch (value) {
 		case 'last':
-			return `format(datum["${metric}"], ${fmt})`;
+			return 'format(datum["' + metric + '"], ' + fmt + ')';
 		case 'average':
-			return `format(datum.directLabel_avg, ${fmt})`;
+			return 'format(datum.directLabel_avg, ' + fmt + ')';
 		case 'series':
-			return colorField ? `datum["${colorField}"]` : "''";
+			return colorField ? 'datum["' + colorField + '"]' : "''";
 	}
 }
 
