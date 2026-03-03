@@ -356,12 +356,12 @@ describe('lineSpecBuilder', () => {
     });
 
     test('basic', () => {
-      expect(addData(baseData, defaultLineOptions)).toStrictEqual(defaultSpec.data);
+      expect(addData(baseData, defaultLineOptions, undefined)).toStrictEqual(defaultSpec.data);
     });
 
     test('scaleTypes "point" and "linear" should return the original data', () => {
-      expect(addData(baseData, { ...defaultLineOptions, scaleType: 'point' })).toEqual(baseData);
-      expect(addData(baseData, { ...defaultLineOptions, scaleType: 'linear' })).toEqual(baseData);
+      expect(addData(baseData, { ...defaultLineOptions, scaleType: 'point' }, undefined)).toEqual(baseData);
+      expect(addData(baseData, { ...defaultLineOptions, scaleType: 'linear' }, undefined)).toEqual(baseData);
     });
 
     test('should add trendline transform', () => {
@@ -369,7 +369,7 @@ describe('lineSpecBuilder', () => {
         addData(baseData, {
           ...defaultLineOptions,
           trendlines: [{ method: 'average' }],
-        })[2].transform
+        }, undefined)[2].transform
       ).toStrictEqual([
         {
           as: [TRENDLINE_VALUE, `${DEFAULT_TIME_DIMENSION}Min`, `${DEFAULT_TIME_DIMENSION}Max`],
@@ -387,7 +387,7 @@ describe('lineSpecBuilder', () => {
         addData(baseData, {
           ...defaultLineOptions,
           trendlines: [{ method: 'movingAverage-7' }],
-        })[0].transform
+        }, undefined)[0].transform
       ).toHaveLength(3);
     });
 
@@ -395,7 +395,7 @@ describe('lineSpecBuilder', () => {
       const resultData = addData(baseData ?? [], {
         ...defaultLineOptions,
         staticPoint: 'staticPoint',
-      });
+      }, undefined);
       expect(resultData.find((data) => data.name === 'line0_staticPointData')).toStrictEqual({
         name: 'line0_staticPointData',
         source: FILTERED_TABLE,

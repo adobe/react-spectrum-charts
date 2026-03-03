@@ -36,7 +36,7 @@ import { getDualAxisScaleNames } from '../scale/scaleUtils';
 import { addHoveredItemSignal, getFirstRscSeriesIdSignal, getLastRscSeriesIdSignal } from '../signal/signalSpecBuilder';
 import { addUserMetaInteractiveMark, getFacetsFromOptions } from '../specUtils';
 import { addTrendlineData, getTrendlineMarks, getTrendlineScales, setTrendlineSignals } from '../trendline';
-import { ColorScheme, HighlightedItem, LineOptions, LineSpecOptions, ScSpec } from '../types';
+import { ColorScheme, HighlightedItem, LineOptions, LineSpecOptions, ScSpec, Granularity } from '../types';
 import { getLinePointAnnotationMarks } from './linePointAnnotation';
 import { getLineHighlightedData, getLineStaticPointData } from './lineDataUtils';
 import { getLineHoverMarks, getLineMark } from './lineMarkUtils';
@@ -118,7 +118,7 @@ export const addLine = produce<
     lineOptions.isHighlightedByGroup = isHighlightedByGroup(lineOptions);
 
     spec.usermeta = addUserMetaInteractiveMark(spec.usermeta, lineOptions.interactiveMarkName);
-    spec.data = addData(spec.data ?? [], lineOptions);
+    spec.data = addData(spec.data ?? [], lineOptions, spec.usermeta);
     spec.signals = addSignals(spec.signals ?? [], lineOptions);
     spec.scales = setScales(spec.scales ?? [], lineOptions);
     spec.marks = addLineMarks(spec.marks ?? [], lineOptions);
@@ -127,13 +127,18 @@ export const addLine = produce<
   }
 );
 
-export const addData = produce<Data[], [LineSpecOptions]>((data, options) => {
-  const { chartTooltips, dimension, highlightedItem, metric, isSparkline, isMethodLast, name, scaleType, staticPoint } =
-    options;
-  if (scaleType === 'time') {
-    const tableData = getTableData(data);
-    tableData.transform = addTimeTransform(tableData.transform ?? [], dimension);
-  }
+export const addData = produce<Data[], [LineSpecOptions, { timeGranularity?: Granularity }?]>(
+  (data, options, usermeta) => {
+    const { chartTooltips, dimension, highlightedItem, metric, isSparkline, isMethodLast, name, scaleType, staticPoint } =
+      options;
+    if (scaleType === 'time') {
+      const tableData = getTableData(data);
+      tableData.transform = addTimeTransform(
+        tableData.transform ?? [],
+        dimension,
+        usermeta?.timeGranularity
+      );
+    }
   if (isInteractive(options) || highlightedItem !== undefined) {
     const validNumericKeys = scaleType === 'linear' ? [dimension, metric] : [metric];
     data.push(getLineHighlightedData(options), getFilteredTooltipData(chartTooltips, validNumericKeys));

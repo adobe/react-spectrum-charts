@@ -10,7 +10,7 @@
  * governing permissions and limitations under the License.
  */
 import { produce } from 'immer';
-import { Compare, Data, FormulaTransform, SourceData, Transforms, ValuesData } from 'vega';
+import { Compare, Data, FormulaTransform, SourceData, Transforms, ValuesData, TimeUnit } from 'vega';
 
 import {
   DEFAULT_TIME_DIMENSION,
@@ -20,25 +20,62 @@ import {
   TABLE,
 } from '@spectrum-charts/constants';
 
-import { ChartTooltipOptions } from '../types';
+import { ChartTooltipOptions, Granularity } from '../types';
 
-export const addTimeTransform = produce<Transforms[], [string]>((transforms, dimension) => {
-  if (transforms.findIndex((transform) => transform.type === 'timeunit') === -1) {
-    transforms.push(
-      {
-        type: 'formula',
-        expr: `toDate(datum["${dimension}"])`,
-        as: dimension,
-      },
-      {
-        type: 'timeunit',
-        field: dimension,
-        units: ['year', 'month', 'date', 'hours', 'minutes', 'seconds'],
-        as: [DEFAULT_TRANSFORMED_TIME_DIMENSION, `${DEFAULT_TIME_DIMENSION}1`],
-      }
-    );
+/**
+ * Maps granularity to appropriate timeunit units for Vega's timeunit transform.
+ * @param granularity The granularity level from the axis
+ * @returns Array of TimeUnit strings
+ */
+export const getTimeUnitsFromGranularity = (granularity?: Granularity): TimeUnit[] => {
+  const defaultUnits = ['year', 'month', 'date', 'hours', 'minutes', 'seconds'] as TimeUnit[];
+  
+  // Default to all units if no granularity specified
+  if (!granularity) {
+    return defaultUnits;
   }
-});
+
+  switch (granularity) {
+    case 'year':
+      return ['year', 'date'];
+    case 'quarter':
+      return ['year', 'month', 'date'];
+    case 'month':
+      return ['year', 'month', 'date'];
+    case 'week':
+      return ['year', 'month', 'date']; 
+    case 'day':
+      return ['year', 'month', 'date', 'hours',];
+    case 'hour':
+      return ['year', 'month', 'date', 'hours'];
+    case 'minute':
+      return ['year', 'month', 'date', 'hours', 'minutes'];
+    case 'second':
+      return ['year', 'month', 'date', 'hours', 'minutes', 'seconds'];
+    default:
+      return defaultUnits;
+  }
+};
+
+export const addTimeTransform = produce<Transforms[], [string, Granularity?]>(
+  (transforms, dimension, granularity) => {
+    if (transforms.findIndex((transform) => transform.type === 'timeunit') === -1) {
+      transforms.push(
+        {
+          type: 'formula',
+          expr: `toDate(datum["${dimension}"])`,
+          as: dimension,
+        },
+        {
+          type: 'timeunit',
+          field: dimension,
+          units: getTimeUnitsFromGranularity(granularity),
+          as: [DEFAULT_TRANSFORMED_TIME_DIMENSION, `${DEFAULT_TIME_DIMENSION}1`],
+        }
+      );
+    }
+  }
+);
 
 export const getTransformSort = (order?: string): Compare | undefined => {
   if (order) {

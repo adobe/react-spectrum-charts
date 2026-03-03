@@ -428,6 +428,56 @@ describe('Chart spec builder', () => {
     });
   });
 
+  describe('timeGranularity collection', () => {
+    test('should collect granularity from time axis into usermeta', () => {
+      const spec = buildSpec({
+        ...defaultSpecOptions,
+        axes: [
+          {
+            position: 'bottom',
+            labelFormat: 'time',
+            granularity: 'year',
+          },
+        ],
+        marks: [defaultBarOptions],
+      });
+
+      expect(spec.usermeta.timeGranularity).toBe('year');
+    });
+
+    test('should not collect granularity from non-time axis', () => {
+      const spec = buildSpec({
+        ...defaultSpecOptions,
+        axes: [
+          {
+            position: 'bottom',
+            labelFormat: 'linear',
+            granularity: 'year',
+          },
+        ],
+        marks: [defaultBarOptions],
+      });
+
+      expect(spec.usermeta.timeGranularity).toBeUndefined();
+    });
+
+    test('should not collect granularity when labelFormat is not time', () => {
+      const spec = buildSpec({
+        ...defaultSpecOptions,
+        axes: [
+          {
+            position: 'bottom',
+            labelFormat: 'percentage',
+            granularity: 'year',
+          },
+        ],
+        marks: [defaultBarOptions],
+      });
+
+      expect(spec.usermeta.timeGranularity).toBeUndefined();
+    });
+  });
+
   describe('getDefaultSignals()', () => {
     const beginningSignals = [
       { name: BACKGROUND_COLOR, value: 'rgb(255, 255, 255)' },
