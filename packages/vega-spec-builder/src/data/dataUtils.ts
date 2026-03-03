@@ -10,7 +10,7 @@
  * governing permissions and limitations under the License.
  */
 import { produce } from 'immer';
-import { Compare, Data, FormulaTransform, SourceData, Transforms, ValuesData } from 'vega';
+import { Compare, Data, FormulaTransform, SourceData, Transforms, ValuesData, TimeUnit } from 'vega';
 
 import {
   DEFAULT_TIME_DIMENSION,
@@ -21,7 +21,6 @@ import {
 } from '@spectrum-charts/constants';
 
 import { ChartTooltipOptions, Granularity } from '../types';
-import { TimeUnit } from 'vega';
 
 /**
  * Maps granularity to appropriate timeunit units for Vega's timeunit transform.
