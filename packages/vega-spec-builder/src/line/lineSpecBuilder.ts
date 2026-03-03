@@ -136,7 +136,7 @@ export const addData = produce<Data[], [LineSpecOptions, { timeGranularity?: Gra
       tableData.transform = addTimeTransform(
         tableData.transform ?? [],
         dimension,
-        usermeta?.timeGranularity as Granularity | undefined
+        usermeta?.timeGranularity
       );
     }
   if (isInteractive(options) || highlightedItem !== undefined) {
