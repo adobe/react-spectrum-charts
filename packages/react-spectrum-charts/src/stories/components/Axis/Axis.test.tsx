@@ -160,7 +160,9 @@ describe('Axis', () => {
       expect(chart).toBeInTheDocument();
 
       // make sure the year labels are visible
+      expect(screen.getByText('2015')).toBeInTheDocument();
       expect(screen.getByText('2016')).toBeInTheDocument();
+      expect(screen.getByText('2022')).toBeInTheDocument();
     });
   });
 

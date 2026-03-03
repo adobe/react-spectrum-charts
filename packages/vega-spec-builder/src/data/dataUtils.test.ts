@@ -11,10 +11,31 @@
  */
 import { DEFAULT_TIME_DIMENSION, DEFAULT_TRANSFORMED_TIME_DIMENSION, TABLE } from '@spectrum-charts/constants';
 
-import { addTimeTransform, getSeriesIdTransform, getTableData } from './dataUtils';
+import { addTimeTransform, getSeriesIdTransform, getTableData, getTimeUnitsFromGranularity } from './dataUtils';
+
+describe('getTimeUnitsFromGranularity()', () => {
+  test('should return all units when granularity is undefined', () => {
+    expect(getTimeUnitsFromGranularity(undefined)).toEqual([
+      'year',
+      'month',
+      'date',
+      'hours',
+      'minutes',
+      'seconds',
+    ]);
+  });
+
+  test('should return correct units based on year granularity', () => {
+    expect(getTimeUnitsFromGranularity('year')).toEqual(['year', 'date']);
+  });
+
+  test('should return correct units based on day granularity', () => {
+    expect(getTimeUnitsFromGranularity('day')).toEqual(['year', 'month', 'date', 'hours']);
+  });
+});
 
 describe('addTimeTransform()', () => {
-  test('should return the time transforms', () => {
+  test('should return the time transforms with default units when no granularity provided', () => {
     const inputTransforms = [];
     const dimension = 'datetime';
     const outputTransforms = [
@@ -31,6 +52,25 @@ describe('addTimeTransform()', () => {
       },
     ];
     expect(addTimeTransform(inputTransforms, dimension)).toEqual(outputTransforms);
+  });
+
+  test('should return the time transforms with year and date units for year granularity', () => {
+    const inputTransforms = [];
+    const dimension = 'datetime';
+    const outputTransforms = [
+      {
+        type: 'formula',
+        expr: `toDate(datum[\"${dimension}\"])`,
+        as: dimension,
+      },
+      {
+        type: 'timeunit',
+        field: dimension,
+        units: ['year', 'date'],
+        as: [DEFAULT_TRANSFORMED_TIME_DIMENSION, `${DEFAULT_TIME_DIMENSION}1`],
+      },
+    ];
+    expect(addTimeTransform(inputTransforms, dimension, 'year')).toEqual(outputTransforms);
   });
 });
 

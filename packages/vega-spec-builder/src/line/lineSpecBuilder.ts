@@ -29,6 +29,7 @@ import { toCamelCase } from '@spectrum-charts/utils';
 import { addPopoverData } from '../chartPopover/chartPopoverUtils';
 import { addTooltipData, addTooltipSignals, isHighlightedByGroup } from '../chartTooltip/chartTooltipUtils';
 import { addTimeTransform, getFilteredTooltipData, getTableData } from '../data/dataUtils';
+import { Granularity } from '../types';
 import { getHoverMarkNames, getInteractiveMarkName, isInteractive } from '../marks/markUtils';
 import { getMetricRangeData, getMetricRangeGroupMarks, getMetricRanges } from '../metricRange/metricRangeUtils';
 import { addContinuousDimensionScale, addFieldToFacetScaleDomain, addMetricScale } from '../scale/scaleSpecBuilder';
@@ -118,7 +119,7 @@ export const addLine = produce<
     lineOptions.isHighlightedByGroup = isHighlightedByGroup(lineOptions);
 
     spec.usermeta = addUserMetaInteractiveMark(spec.usermeta, lineOptions.interactiveMarkName);
-    spec.data = addData(spec.data ?? [], lineOptions);
+    spec.data = addData(spec.data ?? [], lineOptions, spec.usermeta);
     spec.signals = addSignals(spec.signals ?? [], lineOptions);
     spec.scales = setScales(spec.scales ?? [], lineOptions);
     spec.marks = addLineMarks(spec.marks ?? [], lineOptions);
@@ -127,13 +128,18 @@ export const addLine = produce<
   }
 );
 
-export const addData = produce<Data[], [LineSpecOptions]>((data, options) => {
-  const { chartTooltips, dimension, highlightedItem, metric, isSparkline, isMethodLast, name, scaleType, staticPoint } =
-    options;
-  if (scaleType === 'time') {
-    const tableData = getTableData(data);
-    tableData.transform = addTimeTransform(tableData.transform ?? [], dimension);
-  }
+export const addData = produce<Data[], [LineSpecOptions, { timeGranularity?: Granularity }?]>(
+  (data, options, usermeta) => {
+    const { chartTooltips, dimension, highlightedItem, metric, isSparkline, isMethodLast, name, scaleType, staticPoint } =
+      options;
+    if (scaleType === 'time') {
+      const tableData = getTableData(data);
+      tableData.transform = addTimeTransform(
+        tableData.transform ?? [],
+        dimension,
+        usermeta?.timeGranularity as Granularity | undefined
+      );
+    }
   if (isInteractive(options) || highlightedItem !== undefined) {
     const validNumericKeys = scaleType === 'linear' ? [dimension, metric] : [metric];
     data.push(getLineHighlightedData(options), getFilteredTooltipData(chartTooltips, validNumericKeys));

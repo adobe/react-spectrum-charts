@@ -15,6 +15,8 @@ import { GROUP_DATA, MARK_ID, SERIES_ID, TRENDLINE_VALUE } from '@spectrum-chart
 
 import { SpectrumVizColor } from './spectrumVizColor.types';
 
+import { Granularity } from './axis/axisSpec.types';
+
 export type PartiallyRequired<T, K extends keyof T> = Omit<T, K> & Required<Pick<T, K>>;
 
 // For overloading Spec typing when more strict typing is needed.
@@ -41,6 +43,7 @@ export type UserMeta = {
   interactiveMarks?: string[];
   chartOrientation?: Orientation;
   metricAxisCount?: number;
+  timeGranularity?: Granularity;
 };
 
 export interface MarkBounds {
