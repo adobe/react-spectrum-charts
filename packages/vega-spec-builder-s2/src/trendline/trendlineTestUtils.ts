@@ -38,6 +38,7 @@ export const defaultLineOptions: LineSpecOptions = {
   opacity: { value: 1 },
   scaleType: 'time',
   interactiveMarkName: undefined,
+  lineDirectLabels: [],
   popoverMarkName: undefined,
 };
 

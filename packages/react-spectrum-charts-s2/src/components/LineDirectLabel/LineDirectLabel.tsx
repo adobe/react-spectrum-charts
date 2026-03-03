@@ -10,12 +10,21 @@
  * governing permissions and limitations under the License.
  */
 
-export * from './barAnnotationSpec.types';
-export * from './dountSummarySpec.types';
-export * from './metricRangeSpec.types';
-export * from './scatterAnnotationSpec.types';
-export * from './scatterPathSpec.types';
-export * from './segmentLabelSpec.types';
-export * from './lineDirectLabelSpec.types';
-export * from './trendlineSpec.types';
-export * from './trendlineAnnotationSpec.types';
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import { FC } from 'react';
+
+import { LineDirectLabelProps } from '../../types';
+
+const LineDirectLabel: FC<LineDirectLabelProps> = ({
+  value = 'last',
+  position = 'end',
+  format,
+  prefix,
+  excludeSeries,
+}: LineDirectLabelProps) => {
+  return null;
+};
+
+LineDirectLabel.displayName = 'LineDirectLabel';
+
+export { LineDirectLabel };

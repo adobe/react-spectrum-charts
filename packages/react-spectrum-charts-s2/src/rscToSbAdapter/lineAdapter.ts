@@ -15,12 +15,13 @@ import { LineProps } from '../types';
 import { childrenToOptions } from './childrenAdapter';
 
 export const getLineOptions = ({ children, onClick, ...lineProps }: LineProps): LineOptions => {
-  const { chartPopovers, chartTooltips } = childrenToOptions(children);
+  const { chartPopovers, chartTooltips, lineDirectLabels } = childrenToOptions(children);
   return {
     ...lineProps,
     chartPopovers,
     chartTooltips,
     hasOnClick: Boolean(onClick),
+    lineDirectLabels,
     markType: 'line',
   };
 };

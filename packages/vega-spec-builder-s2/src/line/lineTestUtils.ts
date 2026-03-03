@@ -51,6 +51,7 @@ export const defaultLineOptions: LineSpecOptions = {
   opacity: { value: 1 },
   colorScheme: DEFAULT_COLOR_SCHEME,
   interactiveMarkName: undefined,
+  lineDirectLabels: [],
   popoverMarkName: undefined,
   trendlines: [],
 };

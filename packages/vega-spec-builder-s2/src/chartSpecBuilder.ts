@@ -131,7 +131,7 @@ export function buildSpec({
 
   let { areaCount, barCount, bulletCount, comboCount, donutCount, lineCount, scatterCount, vennCount } =
     initializeComponentCounts();
-  const specOptions = { colorScheme, idKey, highlightedItem };
+  const specOptions = { backgroundColor, colorScheme, idKey, highlightedItem };
   spec = [...marks].reduce((acc: ScSpec, mark) => {
     switch (mark.markType) {
       case 'area':

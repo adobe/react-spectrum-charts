@@ -33,6 +33,7 @@ import {
   ChartTooltip,
   Legend,
   Line,
+  LineDirectLabel,
   ReferenceLine,
   Title,
 } from '../components';
@@ -50,6 +51,7 @@ import {
   DonutElement,
   DonutSummaryElement,
   LegendElement,
+  LineDirectLabelElement,
   LineElement,
   SegmentLabelElement,
   TitleElement,
@@ -57,9 +59,10 @@ import {
 
 type MarkChildElement =
   | BarAnnotationElement
-  | ChartTooltipElement
   | ChartPopoverElement
+  | ChartTooltipElement
   | DonutSummaryElement
+  | LineDirectLabelElement
   | SegmentLabelElement;
 type RscElement =
   | MarkChildElement
@@ -111,6 +114,7 @@ export const sanitizeChildren = (children: unknown): (ChartChildElement | MarkCh
     DonutSummary.displayName,
     Legend.displayName,
     Line.displayName,
+    LineDirectLabel.displayName,
     ReferenceLine.displayName,
     SegmentLabel.displayName,
     Title.displayName,
@@ -140,9 +144,10 @@ export const sanitizeRscChartChildren = (children: unknown): ChartChildElement[]
 
 export const sanitizeMarkChildren = (children: unknown): MarkChildElement[] => {
   const markChildDisplayNames = new Set([
-    ChartTooltip.displayName,
     ChartPopover.displayName,
+    ChartTooltip.displayName,
     DonutSummary.displayName,
+    LineDirectLabel.displayName,
     SegmentLabel.displayName,
   ]);
 

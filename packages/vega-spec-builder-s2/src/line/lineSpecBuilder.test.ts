@@ -387,6 +387,25 @@ describe('lineSpecBuilder', () => {
       ).toHaveLength(3);
     });
 
+    test('adds direct label data when lineDirectLabels provided', () => {
+      const resultData = addData(baseData, {
+        ...defaultLineOptions,
+        lineDirectLabels: [{ value: 'last' }],
+      });
+      const labelData = resultData.find((d) => d.name === 'line0DirectLabel0_data');
+      expect(labelData).toBeDefined();
+      expect(labelData).toHaveProperty('source', FILTERED_TABLE);
+    });
+
+    test('adds multiple direct label data sources', () => {
+      const resultData = addData(baseData, {
+        ...defaultLineOptions,
+        lineDirectLabels: [{ value: 'last' }, { value: 'series' }],
+      });
+      expect(resultData.find((d) => d.name === 'line0DirectLabel0_data')).toBeDefined();
+      expect(resultData.find((d) => d.name === 'line0DirectLabel1_data')).toBeDefined();
+    });
+
     test('adds point data if displayPointMark is not undefined', () => {
       const resultData = addData(baseData ?? [], {
         ...defaultLineOptions,
@@ -528,6 +547,32 @@ describe('lineSpecBuilder', () => {
       const innerMarks = (groupMark as { marks: { name: string }[] }).marks;
       expect(innerMarks).toHaveLength(1);
       expect(innerMarks[0].name).toBe('line0');
+    });
+
+    test('adds direct label marks when lineDirectLabels provided', () => {
+      const marks = addLineMarks([], {
+        ...defaultLineOptions,
+        lineDirectLabels: [{ value: 'last' }],
+      });
+      const allMarks = marks.flatMap((m) => ('marks' in m ? [m, ...(m.marks ?? [])] : [m]));
+      const bgMark = allMarks.find((m) => m.name === 'line0DirectLabel0_bg');
+      const fgMark = allMarks.find((m) => m.name === 'line0DirectLabel0');
+      expect(bgMark).toBeDefined();
+      expect(bgMark?.type).toBe('text');
+      expect(fgMark).toBeDefined();
+      expect(fgMark?.type).toBe('text');
+    });
+
+    test('adds multiple direct label mark pairs', () => {
+      const marks = addLineMarks([], {
+        ...defaultLineOptions,
+        lineDirectLabels: [{ value: 'last' }, { value: 'series' }],
+      });
+      const allMarks = marks.flatMap((m) => ('marks' in m ? [m, ...(m.marks ?? [])] : [m]));
+      expect(allMarks.find((m) => m.name === 'line0DirectLabel0_bg')).toBeDefined();
+      expect(allMarks.find((m) => m.name === 'line0DirectLabel0')).toBeDefined();
+      expect(allMarks.find((m) => m.name === 'line0DirectLabel1_bg')).toBeDefined();
+      expect(allMarks.find((m) => m.name === 'line0DirectLabel1')).toBeDefined();
     });
 
     test('with gradient and multi-series color should still add gradient mark', () => {
