@@ -40,6 +40,7 @@ export const defaultLineOptions: LineSpecOptions = {
   interactiveMarkName: undefined,
   lineDirectLabels: [],
   popoverMarkName: undefined,
+  interpolate: undefined,
 };
 
 export const defaultTrendlineOptions: TrendlineSpecOptions = {

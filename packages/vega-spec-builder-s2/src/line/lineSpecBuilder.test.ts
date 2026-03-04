@@ -582,6 +582,12 @@ describe('lineSpecBuilder', () => {
       expect(innerMarks[0].name).toBe('line0_gradient');
       expect(innerMarks[0].type).toBe('area');
     });
+
+    test('with interpolate', () => {
+      const marks = addLineMarks([], { ...defaultLineOptions, interpolate: 'basis' });
+      const innerMarksEncodeObj = (marks[0] as { marks: { encode: { update: { interpolate: { value: string } } } }[] }).marks[0].encode;
+      expect(innerMarksEncodeObj?.update?.interpolate).toEqual({ value: 'basis' });
+    });
   });
 
   describe('addSignals()', () => {
