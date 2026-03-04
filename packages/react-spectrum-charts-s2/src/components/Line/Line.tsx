@@ -29,6 +29,7 @@ const Line: FC<LineProps> = ({
   lineType = { value: 'solid' },
   padding,
   interactionMode = DEFAULT_INTERACTION_MODE,
+  interpolate,
 }: LineProps) => {
   return null;
 };
