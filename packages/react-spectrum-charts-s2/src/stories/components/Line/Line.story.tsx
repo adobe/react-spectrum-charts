@@ -161,6 +161,20 @@ const PlainLineStory: StoryFn<typeof Line> = (args): ReactElement => {
   );
 };
 
+const InterpolateLineStory: StoryFn<typeof Line> = (args): ReactElement => {
+  const chartProps = useChartProps({
+    ...defaultChartProps,
+    data: workspaceTrendsData.filter((d) => d.series === 'Add Freeform table'),
+  });
+  return (
+    <Chart {...chartProps}>
+      <Axis position="left" grid title="Users" />
+      <Axis position="bottom" labelFormat="time" baseline ticks />
+      <Line {...args} />
+    </Chart>
+  );
+};
+
 const defaultArgs = {
   color: 'series',
   name: 'line0',
@@ -326,6 +340,16 @@ OnClickWithTooltip.args = {
   ...OnClick.args,
 };
 
+const WithInterpolate = bindWithProps(InterpolateLineStory);
+WithInterpolate.args = {
+  ...defaultArgs,
+  dimension: 'datetime',
+  metric: 'value',
+  scaleType: 'time',
+  color: { value: 'categorical-100' },
+  interpolate: 'step-after',
+};
+
 export {
   Basic,
   HistoricalCompare,
@@ -343,4 +367,5 @@ export {
   SparklineWithStaticPoint,
   OnClick,
   OnClickWithTooltip,
+  WithInterpolate,
 };

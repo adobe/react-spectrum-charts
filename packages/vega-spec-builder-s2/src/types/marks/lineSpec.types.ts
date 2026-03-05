@@ -28,6 +28,7 @@ import { MetricRangeOptions } from './supplemental/metricRangeSpec.types';
 import { TrendlineOptions } from './supplemental/trendlineSpec.types';
 
 export type InteractionMode = `${INTERACTION_MODE}`;
+export type InterpolationType = 'basis' | 'cardinal' | 'catmull-rom' | 'linear' | 'monotone' | 'natural' | 'step' | 'step-after' | 'step-before';
 
 export interface LineOptions {
   markType: 'line';
@@ -65,6 +66,8 @@ export interface LineOptions {
   dualMetricAxis?: boolean;
   /** If true, displays a gradient fill beneath the line fading from the line color to transparent */
   gradient?: boolean;
+  /** Sets the interpolation method for the line */
+  interpolate?: InterpolationType;
 
   // children
   chartPopovers?: ChartPopoverOptions[];
@@ -102,4 +105,5 @@ export interface LineSpecOptions extends PartiallyRequired<LineOptions, LineOpti
   lineWidth?: FacetRef<LineWidth>;
   popoverMarkName: string | undefined;
   interactionMode?: InteractionMode;
+  interpolate?: InterpolationType;
 }

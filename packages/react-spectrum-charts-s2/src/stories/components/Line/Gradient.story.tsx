@@ -134,4 +134,14 @@ MultiLineType.args = {
   gradient: true,
 };
 
-export { MultiSeries, SingleSeries, WithDialogs, StaticOpacity, MultiLineType };
+const WithInterpolate = bindWithProps(SingleSeriesStory);
+WithInterpolate.args = {
+  dimension: 'datetime',
+  metric: 'value',
+  scaleType: 'time',
+  color: { value: 'categorical-100' },
+  gradient: true,
+  interpolate: 'step-after',
+};
+
+export { MultiSeries, SingleSeries, WithDialogs, StaticOpacity, MultiLineType, WithInterpolate };

@@ -582,6 +582,33 @@ describe('lineSpecBuilder', () => {
       expect(innerMarks[0].name).toBe('line0_gradient');
       expect(innerMarks[0].type).toBe('area');
     });
+
+    test('with interpolate, should add interpolate to line mark', () => {
+      const marks = addLineMarks([], { ...defaultLineOptions, interpolate: 'basis' });
+      const innerMarks = (marks[0] as { marks: { type: string; encode: { update: { interpolate: { value: string } } } }[] }).marks;
+      expect(innerMarks).toHaveLength(1);
+      expect(innerMarks[0].type).toBe('line');
+      expect(innerMarks[0].encode?.update?.interpolate).toEqual({ value: 'basis' });
+    });
+
+    test('with gradient and interpolate, should add interpolate to gradient mark and line mark', () => {
+      const marks = addLineMarks([], { ...defaultLineOptions, interpolate: 'basis', gradient: true });
+      const innerMarks = (marks[0] as { marks: { type: string; encode: { update: { interpolate: { value: string } } } }[] }).marks;
+      expect(innerMarks).toHaveLength(2);
+      expect(innerMarks[0].type).toBe('area');
+      expect(innerMarks[0].encode?.update?.interpolate).toEqual({ value: 'basis' });
+      expect(innerMarks[1].type).toBe('line');
+      expect(innerMarks[1].encode?.update?.interpolate).toEqual({ value: 'basis' });
+     
+    });
+
+    test('without interpolate, should not add interpolate to line mark', () => {
+      const marks = addLineMarks([], { ...defaultLineOptions, interpolate: undefined });
+      const innerMarks = (marks[0] as { marks: { type: string; encode: { update: { interpolate: { value: string } } } }[] }).marks;
+      expect(innerMarks).toHaveLength(1);
+      expect(innerMarks[0].type).toBe('line');
+      expect(innerMarks[0].encode?.update?.interpolate).toBeUndefined();
+    });
   });
 
   describe('addSignals()', () => {

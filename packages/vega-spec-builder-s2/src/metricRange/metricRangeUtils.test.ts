@@ -70,6 +70,7 @@ const defaultLineOptions: LineSpecOptions = {
   popoverMarkName: undefined,
   scaleType: 'time',
   trendlines: [],
+  interpolate: undefined,
 };
 
 const basicMetricRangeMarks = [

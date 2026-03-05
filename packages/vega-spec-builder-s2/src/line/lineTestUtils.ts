@@ -54,4 +54,5 @@ export const defaultLineOptions: LineSpecOptions = {
   lineDirectLabels: [],
   popoverMarkName: undefined,
   trendlines: [],
+  interpolate: undefined,
 };

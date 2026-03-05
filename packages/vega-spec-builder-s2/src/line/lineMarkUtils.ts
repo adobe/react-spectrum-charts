@@ -84,7 +84,7 @@ const GRADIENT_BASE_OPACITY = 0.2;
  * Generates an area mark with a gradient fill beneath the line, fading from the line's color to transparent.
  */
 export const getLineGradientMark = (lineMarkOptions: LineMarkOptions, dataSource: string): Mark => {
-  const { dimension, metric, name, scaleType } = lineMarkOptions;
+  const { dimension, metric, name, scaleType, interpolate } = lineMarkOptions;
 
   return {
     name: `${name}_gradient`,
@@ -105,6 +105,7 @@ export const getLineGradientMark = (lineMarkOptions: LineMarkOptions, dataSource
           { test: `length(domain('${COLOR_SCALE}')) > 1 || length(domain('${LINE_TYPE_SCALE}')) > 1 || length(domain('${OPACITY_SCALE}')) > 1`, value: 0 },
           ...[getLineOpacity(lineMarkOptions)].flat(),
         ],
+        ...(interpolate ? { interpolate: { value: interpolate } } : {}),
       },
     },
   };
@@ -145,6 +146,7 @@ export const getLineMark = (lineMarkOptions: LineMarkOptions, dataSource: string
     name,
     opacity,
     scaleType,
+    interpolate
   } = lineMarkOptions;
   const popovers = getPopovers(chartPopovers ?? [], name);
   const popoverWithDimensionHighlightExists = popovers.some(
@@ -170,6 +172,7 @@ export const getLineMark = (lineMarkOptions: LineMarkOptions, dataSource: string
         // but it may change the x position if it causes the chart to resize
         x: getXProductionRule(scaleType, dimension),
         ...(popoverWithDimensionHighlightExists ? {} : { opacity: getLineOpacity(lineMarkOptions) }),
+        ...(interpolate ? { interpolate: { value: interpolate } } : {}),
       },
     },
   };

@@ -76,6 +76,7 @@ export const addLine = produce<
       opacity = { value: 1 },
       scaleType = 'time',
       trendlines = [],
+      interpolate,
       ...options
     }
   ) => {
@@ -112,6 +113,7 @@ export const addLine = produce<
       popoverMarkName: getPopoverMarkName(chartPopovers, lineName),
       scaleType,
       trendlines,
+      interpolate,
       ...options,
     };
     lineOptions.isHighlightedByGroup = isHighlightedByGroup(lineOptions);
@@ -136,8 +138,9 @@ export const addData = produce<Data[], [LineSpecOptions]>((data, options) => {
   if (isInteractive(options) || highlightedItem !== undefined) {
     data.push(getLineHighlightedData(options), getFilteredTooltipData(chartTooltips));
   }
-  if (staticPoint || isSparkline)
+  if (staticPoint || isSparkline) {
     data.push(getLineStaticPointData(name, staticPoint, FILTERED_TABLE, isSparkline, isMethodLast));
+  }
   addDualMetricAxisData(data, options);
   addTrendlineData(data, options);
   addTooltipData(data, options, false);

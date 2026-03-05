@@ -26,6 +26,7 @@ import {
   ScatterPathOptions,
   SegmentLabelOptions,
   TrendlineOptions,
+  InterpolationType,
 } from '../types';
 
 export const getPopoverMarkName = (chartPopovers: ChartPopoverOptions[], lineName: string): string | undefined => {
@@ -76,4 +77,5 @@ export interface LineMarkOptions {
   segmentLabels?: SegmentLabelOptions[];
   staticPoint?: string;
   trendlines?: TrendlineOptions[];
+  interpolate?: InterpolationType;
 }
