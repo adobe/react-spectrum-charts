@@ -35,6 +35,7 @@ export interface GetOnMarkClickCallbackArgs {
   legendHasPopover?: boolean;
   onLegendClick?: (seriesName: string) => void;
   trigger: 'click' | 'contextmenu';
+  markHasPopover?: boolean;
 }
 
 /**
@@ -58,7 +59,9 @@ export const getOnMarkClickCallback = (args: GetOnMarkClickCallbackArgs): ViewEv
       handleLegendItemClick(item, args);
       return;
     }
-    handleMarkClick(item, args);
+    if (args.markHasPopover) {
+      handleMarkClick(item, args);
+    }
   };
 };
 

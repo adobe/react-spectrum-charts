@@ -56,6 +56,10 @@ const useNewChartView = (
     () => popovers.some((p) => p.parent === Legend.displayName && p.chartPopoverProps.rightClick),
     [popovers]
   );
+  const markHasPopover = useMemo(
+    () => popovers.some((p) => p.parent !== Legend.displayName),
+    [popovers]
+  );
 
   return useCallback(
     (view: View) => {
@@ -101,6 +105,7 @@ const useNewChartView = (
             legendHasPopover,
             onLegendClick,
             trigger: 'click',
+            markHasPopover,
           })
         );
         if (popovers.some((p) => p.chartPopoverProps.rightClick)) {
@@ -122,6 +127,7 @@ const useNewChartView = (
               legendIsToggleable,
               onLegendClick,
               trigger: 'contextmenu',
+              markHasPopover: markHasPopover,
             })
           );
         }
@@ -139,6 +145,7 @@ const useNewChartView = (
       legendHiddenSeries,
       legendIsToggleable,
       markClickDetails,
+      markHasPopover,
       markMouseInputDetails,
       onLegendClick,
       onLegendMouseOut,

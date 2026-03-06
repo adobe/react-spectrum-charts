@@ -18,7 +18,7 @@ import { Datum, MarkBounds } from '@spectrum-charts/vega-spec-builder';
 
 import { MarkMouseInputDetail } from '../hooks/useMarkMouseInputDetails';
 import { MarkOnClickDetail } from '../hooks/useMarkOnClickDetails';
-import { toggleStringArrayValue } from '../utils';
+import { clearHoverSignals, toggleStringArrayValue } from '../utils';
 
 export type ActionItem = Item | undefined | null;
 type ViewEventCallback = (event: ScenegraphEvent, item: ActionItem) => void;
@@ -35,6 +35,7 @@ export interface GetOnMarkClickCallbackArgs {
   legendHasPopover?: boolean;
   onLegendClick?: (seriesName: string) => void;
   trigger: 'click' | 'contextmenu';
+  markHasPopover?: boolean;
 }
 
 /**
@@ -58,7 +59,9 @@ export const getOnMarkClickCallback = (args: GetOnMarkClickCallbackArgs): ViewEv
       handleLegendItemClick(item, args);
       return;
     }
-    handleMarkClick(item, args);
+    if (args.markHasPopover) {
+      handleMarkClick(item, args);
+    }
   };
 };
 
@@ -225,6 +228,7 @@ export const handleLegendItemClick = (
 ): void => {
   const legendItemValue = getLegendItemValue(item);
   if (legendItemValue === undefined) return;
+
 
   if (chartView.current && legendHasPopover) {
     const itemName = getItemName(item);
