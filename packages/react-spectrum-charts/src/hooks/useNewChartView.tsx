@@ -134,6 +134,7 @@ const useNewChartView = (
               specSignalNames,
               interactiveMarks,
               trigger: 'contextmenu',
+              markHasPopover: markHasPopover,
             })
           );
         }

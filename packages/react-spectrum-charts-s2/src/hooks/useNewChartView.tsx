@@ -127,6 +127,7 @@ const useNewChartView = (
               legendIsToggleable,
               onLegendClick,
               trigger: 'contextmenu',
+              markHasPopover: markHasPopover,
             })
           );
         }
