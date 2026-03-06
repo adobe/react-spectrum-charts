@@ -59,6 +59,11 @@ const useNewChartView = (
     [popovers]
   );
 
+  const markHasPopover = useMemo(
+    () => popovers.some((p) => p.parent !== Legend.displayName),
+    [popovers]
+  );
+
   return useCallback(
     (view: View) => {
       chartView.current = view;
@@ -105,6 +110,7 @@ const useNewChartView = (
             specSignalNames,
             interactiveMarks,
             trigger: 'click',
+            markHasPopover: markHasPopover
           })
         );
         if (popovers.some((p) => p.chartPopoverProps.rightClick)) {
@@ -146,6 +152,7 @@ const useNewChartView = (
       legendHiddenSeries,
       legendIsToggleable,
       markClickDetails,
+      markHasPopover,
       markMouseInputDetails,
       onLegendClick,
       onLegendMouseOut,

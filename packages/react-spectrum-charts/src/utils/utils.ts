@@ -503,15 +503,6 @@ export const setSelectedSignals = ({
 };
 
 /**
- * Clears the selected-item and selected-series signals (e.g. when legend is clicked).
- */
-export const clearSelectedSignals = (view: View): void => {
-  view.signal(SELECTED_ITEM, null);
-  view.signal(SELECTED_SERIES, null);
-  view.signal(SELECTED_GROUP, null);
-};
-
-/**
  * Clears hover-related signals for a given mark/component name.
  */
 export const clearHoverSignals = (

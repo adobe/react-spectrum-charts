@@ -18,7 +18,7 @@ import { Datum, MarkBounds } from '@spectrum-charts/vega-spec-builder';
 
 import { MarkMouseInputDetail } from '../hooks/useMarkMouseInputDetails';
 import { MarkOnClickDetail } from '../hooks/useMarkOnClickDetails';
-import { clearHoverSignals, clearSelectedSignals, toggleStringArrayValue } from '../utils';
+import { clearHoverSignals, toggleStringArrayValue } from '../utils';
 
 export type ActionItem = Item | undefined | null;
 type ViewEventCallback = (event: ScenegraphEvent, item: ActionItem) => void;
@@ -37,6 +37,7 @@ export interface GetOnMarkClickCallbackArgs {
   specSignalNames?: ReadonlySet<string>;
   interactiveMarks?: string[];
   trigger: 'click' | 'contextmenu';
+  markHasPopover?: boolean;
 }
 
 /**
@@ -60,7 +61,9 @@ export const getOnMarkClickCallback = (args: GetOnMarkClickCallbackArgs): ViewEv
       handleLegendItemClick(item, args);
       return;
     }
-    handleMarkClick(item, args);
+    if (args.markHasPopover) {
+      handleMarkClick(item, args);
+    }
   };
 };
 
@@ -230,13 +233,6 @@ export const handleLegendItemClick = (
   const legendItemValue = getLegendItemValue(item);
   if (legendItemValue === undefined) return;
 
-  // Clear chart selection when legend is clicked so no legend item stays visually "selected".
-  if (chartView.current) {
-    selectedData.current = null;
-    selectedDataName.current = '';
-    clearSelectedSignals(chartView.current);
-    chartView.current.run();
-  }
 
   if (chartView.current && legendHasPopover) {
     const itemName = getItemName(item);
