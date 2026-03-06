@@ -34,8 +34,6 @@ const useNewChartView = (
   { idKey }: RscChartProps,
   sanitizedChildren: ChartChildElement[],
   tooltipOptions: TooltipOptions,
-  specSignalNames?: ReadonlySet<string>,
-  interactiveMarks?: string[]
 ) => {
   const { chartView, selectedData, selectedDataBounds, selectedDataName, chartId } = useChartContext();
   const popovers = usePopovers(sanitizedChildren);
@@ -107,8 +105,6 @@ const useNewChartView = (
             legendIsToggleable,
             legendHasPopover,
             onLegendClick,
-            specSignalNames,
-            interactiveMarks,
             trigger: 'click',
             markHasPopover: markHasPopover
           })
@@ -131,8 +127,6 @@ const useNewChartView = (
               legendHasPopover: legendHasRightClickPopover,
               legendIsToggleable,
               onLegendClick,
-              specSignalNames,
-              interactiveMarks,
               trigger: 'contextmenu',
               markHasPopover: markHasPopover,
             })
@@ -147,7 +141,6 @@ const useNewChartView = (
       chartId,
       chartView,
       idKey,
-      interactiveMarks,
       legendHasPopover,
       legendHasRightClickPopover,
       legendHiddenSeries,
@@ -163,7 +156,6 @@ const useNewChartView = (
       selectedDataBounds,
       selectedDataName,
       setLegendHiddenSeries,
-      specSignalNames,
       tooltipOptions,
     ]
   );

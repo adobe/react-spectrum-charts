@@ -34,8 +34,6 @@ export interface GetOnMarkClickCallbackArgs {
   legendIsToggleable?: boolean;
   legendHasPopover?: boolean;
   onLegendClick?: (seriesName: string) => void;
-  specSignalNames?: ReadonlySet<string>;
-  interactiveMarks?: string[];
   trigger: 'click' | 'contextmenu';
   markHasPopover?: boolean;
 }
@@ -225,8 +223,6 @@ export const handleLegendItemClick = (
     legendHasPopover,
     legendIsToggleable,
     onLegendClick,
-    specSignalNames,
-    interactiveMarks,
     trigger,
   }: GetOnMarkClickCallbackArgs
 ): void => {
@@ -253,52 +249,7 @@ export const handleLegendItemClick = (
     if (legendIsToggleable && !legendHasPopover) {
       setHiddenSeries(toggleStringArrayValue(hiddenSeries, legendItemValue));
     }
-    clearHoverSignalsOnLegendClick(chartView, item, specSignalNames, interactiveMarks);
   }
-};
-
-/**
- * Clears legend and interactive-mark hover signals when a legend item is clicked,
- * so no series stays "stuck" highlighted (e.g. Bar/Line markName_HOVERED_ITEM).
- */
-function clearHoverSignalsOnLegendClick(
-  chartView: GetOnMarkClickCallbackArgs['chartView'],
-  item: NonNullable<ActionItem>,
-  specSignalNames: GetOnMarkClickCallbackArgs['specSignalNames'],
-  interactiveMarks: GetOnMarkClickCallbackArgs['interactiveMarks']
-): void {
-  if (!chartView.current || !specSignalNames?.size) return;
-  const legendName = getLegendNameFromItem(item);
-  if (legendName) {
-    clearHoverSignals(chartView.current, legendName, specSignalNames);
-  }
-  for (const markName of interactiveMarks ?? []) {
-    clearHoverSignals(chartView.current, markName, specSignalNames);
-  }
-  chartView.current.run();
-}
-
-/**
- * Gets the legend component name (e.g. "legend0") from a clicked legend item.
- */
-const getLegendNameFromItem = (item: ActionItem): string | undefined => {
-  if (!item) return;
-  const fromName = (name: string | undefined): string | undefined => {
-    if (typeof name !== 'string' || !name.includes('legend') || !name.endsWith('_legendEntry')) return;
-    return name.replace(/_legendEntry$/, '');
-  };
-  if (isItemSceneItem(item)) {
-    const mark = item.mark as { name?: string };
-    return fromName(mark?.name);
-  }
-  if (isSceneGroup(item)) {
-    const group = item as SceneGroup & { mark?: { name?: string } };
-    const n = fromName(group.mark?.name);
-    if (n) return n;
-    const first = item.items?.[0] as { mark?: { name?: string }; name?: string } | undefined;
-    return fromName(first?.mark?.name ?? first?.name);
-  }
-  return undefined;
 };
 
 /**

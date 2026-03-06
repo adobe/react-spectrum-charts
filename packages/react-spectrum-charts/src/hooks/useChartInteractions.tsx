@@ -24,8 +24,6 @@ import useTooltipInteractions from './useTooltipInteractions';
 export const useChartInteractions = (
   props: RscChartProps,
   sanitizedChildren: ChartChildElement[],
-  specSignalNames?: ReadonlySet<string>,
-  interactiveMarks?: string[]
 ) => {
   const { selectedData } = useChartContext();
   const { tooltipOptions } = useTooltipInteractions(props, sanitizedChildren);
@@ -45,7 +43,7 @@ export const useChartInteractions = (
     return signals;
   }, [legendHiddenSeries, legendIsToggleable, props.colorScheme, props.idKey, selectedData]);
 
-  const onNewView = useNewChartView(props, sanitizedChildren, tooltipOptions, specSignalNames, interactiveMarks);
+  const onNewView = useNewChartView(props, sanitizedChildren, tooltipOptions);
 
   return { signals, targetStyle, tooltipOptions, onNewView };
 };
