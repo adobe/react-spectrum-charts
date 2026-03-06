@@ -21,10 +21,7 @@ import useNewChartView from './useNewChartView';
 import usePopoverAnchorStyle from './usePopoverAnchorStyle';
 import useTooltipInteractions from './useTooltipInteractions';
 
-export const useChartInteractions = (
-  props: RscChartProps,
-  sanitizedChildren: ChartChildElement[],
-) => {
+export const useChartInteractions = (props: RscChartProps, sanitizedChildren: ChartChildElement[]) => {
   const { selectedData } = useChartContext();
   const { tooltipOptions } = useTooltipInteractions(props, sanitizedChildren);
   const { legendHiddenSeries, isToggleable: legendIsToggleable } = useLegend(sanitizedChildren);

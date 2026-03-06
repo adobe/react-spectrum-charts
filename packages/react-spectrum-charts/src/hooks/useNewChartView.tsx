@@ -33,7 +33,7 @@ import usePopovers from './usePopovers';
 const useNewChartView = (
   { idKey }: RscChartProps,
   sanitizedChildren: ChartChildElement[],
-  tooltipOptions: TooltipOptions,
+  tooltipOptions: TooltipOptions
 ) => {
   const { chartView, selectedData, selectedDataBounds, selectedDataName, chartId } = useChartContext();
   const popovers = usePopovers(sanitizedChildren);
