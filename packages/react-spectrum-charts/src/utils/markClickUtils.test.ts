@@ -94,6 +94,12 @@ describe('handleLegendItemClick()', () => {
       value: 'test',
     });
   });
+
+  // test('should clear selectedData when legend is clicked', () => {
+  //   const selectedData = { current: 'bar0' };
+  //   handleLegendItemClick(item, { ...defaultMarkClickArgs, selectedData });
+  //   expect(selectedData.current).toBeNull();
+  // });
 });
 
 describe('getLegendItemValue', () => {

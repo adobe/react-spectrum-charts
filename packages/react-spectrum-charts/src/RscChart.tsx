@@ -116,8 +116,6 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>((props, forwarded
   useChartImperativeHandle(forwardedRef, { chartView, title });
   const popovers = usePopovers(sanitizedChildren);
 
-  console.log('MY RSC IS LINKED');
-
   return (
     <>
       <div
