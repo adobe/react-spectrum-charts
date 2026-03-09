@@ -161,16 +161,35 @@ export const hasTooltip = (options: { chartTooltips?: ChartTooltipOptions[] }): 
   Boolean('chartTooltips' in options && options.chartTooltips?.length);
 
 /**
- * Gets the color encoding
- * @param color
- * @param colorScheme
- * @param colorScaleType
- * @returns ColorValueRef
+ * Options for {@link getColorProductionRule} and {@link getColorProductionRuleSignalString}.
+ * Used by Bar when {@link BarOptions.colorFromData} is true to support literal colors per mark.
+ */
+export interface GetColorProductionRuleOptions {
+  /**
+   * When true and color is a string (field name), return a field ref so fill uses datum[color]
+   * directly instead of mapping through the color scale. The data field should contain
+   * literal color values (e.g. hex, rgb(), or CSS color).
+   */
+  useLiteralColor?: boolean;
+}
+
+/**
+ * Returns the Vega color encoding for a mark (fill/stroke).
+ * When options.useLiteralColor is true and color is a field name, returns { field } so the
+ * datum's value is used as the color; otherwise maps through the ordinal/linear color scale
+ * or resolves a fixed color via the theme.
+ *
+ * @param color - Data field key, fixed color, or dual facet [primary, secondary]
+ * @param colorScheme - 'light' | 'dark' for resolving theme color names
+ * @param colorScaleType - 'ordinal' (default) or 'linear' scale name
+ * @param options - Optional. useLiteralColor: use datum[color] as fill without a scale
+ * @returns ColorValueRef for use in encode.fill or encode.stroke
  */
 export const getColorProductionRule = (
   color: ColorFacet | DualFacet,
   colorScheme: ColorScheme,
-  colorScaleType: 'linear' | 'ordinal' = 'ordinal'
+  colorScaleType: 'linear' | 'ordinal' = 'ordinal',
+  options?: GetColorProductionRuleOptions
 ): ColorValueRef => {
   const colorScaleName = colorScaleType === 'linear' ? LINEAR_COLOR_SCALE : COLOR_SCALE;
   if (Array.isArray(color)) {
@@ -179,26 +198,38 @@ export const getColorProductionRule = (
     };
   }
   if (typeof color === 'string') {
+    if (options?.useLiteralColor) {
+      return { field: color };
+    }
     return { scale: colorScaleName, field: color };
   }
   return { value: getColorValue(color.value, colorScheme) };
 };
 
 /**
- * gets the color encoding in a signal string format
- * @param color
- * @param colorScheme
- * @param colorScaleType
- * @returns string
+ * Returns the color encoding as a Vega expression string (e.g. for use in signals or formulas).
+ * Delegates to {@link getColorProductionRule}; when the result is a literal field ref, returns
+ * `datum.fieldName` so the datum's value is used as the color.
+ *
+ * @param color - Data field key, fixed color, or dual facet
+ * @param colorScheme - 'light' | 'dark' for theme resolution
+ * @param colorScaleType - 'ordinal' (default) or 'linear'
+ * @param options - Optional. useLiteralColor: output datum[color] instead of scale lookup
+ * @returns Expression string (e.g. `scale('color', datum.category)` or `datum.barColor`)
  */
 export const getColorProductionRuleSignalString = (
   color: ColorFacet | DualFacet,
   colorScheme: ColorScheme,
-  colorScaleType: 'linear' | 'ordinal' = 'ordinal'
+  colorScaleType: 'linear' | 'ordinal' = 'ordinal',
+  options?: GetColorProductionRuleOptions
 ): string => {
-  const colorRule = getColorProductionRule(color, colorScheme, colorScaleType);
+  const colorRule = getColorProductionRule(color, colorScheme, colorScaleType, options);
   if ('signal' in colorRule) {
     return colorRule.signal;
+  }
+  // Literal field ref (no scale): use datum value directly
+  if ('field' in colorRule && !('scale' in colorRule)) {
+    return `datum.${colorRule.field as string}`;
   }
   if ('scale' in colorRule && 'field' in colorRule) {
     return `scale('${colorRule.scale as string}', datum.${colorRule.field as string})`;

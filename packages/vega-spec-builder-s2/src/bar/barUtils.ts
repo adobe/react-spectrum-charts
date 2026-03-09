@@ -275,17 +275,32 @@ export const getBaseBarEnterEncodings = (options: BarSpecOptions): EncodeEntry =
   ...getCornerRadiusEncodings(options),
 });
 
-export const getBarEnterEncodings = ({
-  chartTooltips,
-  color,
-  colorScheme,
-  name,
-  opacity,
-}: BarSpecOptions): EncodeEntry => ({
-  fill: getColorProductionRule(color, colorScheme),
-  fillOpacity: getOpacityProductionRule(opacity),
-  tooltip: getTooltip(chartTooltips, name),
-});
+/**
+ * Returns the fill/stroke color encoding for the bar. When colorFromData is true and color is a
+ * field name, uses a production rule so that missing or null values fall back to a theme gray,
+ * avoiding transparent or undefined bars.
+ */
+export const getBarColorEncoding = (options: BarSpecOptions): ColorValueRef | ProductionRule<ColorValueRef> => {
+  const { color, colorFromData, colorScheme } = options;
+  const baseRule = getColorProductionRule(color, colorScheme, 'ordinal', { useLiteralColor: colorFromData });
+  if (colorFromData && typeof color === 'string') {
+    const fallback = getS2ColorValue('gray-500', colorScheme);
+    return [
+      { test: `datum.${color} == null`, value: fallback },
+      { field: color },
+    ];
+  }
+  return baseRule;
+};
+
+export const getBarEnterEncodings = (options: BarSpecOptions): EncodeEntry => {
+  const { chartTooltips, name, opacity } = options;
+  return {
+    fill: getBarColorEncoding(options),
+    fillOpacity: getOpacityProductionRule(opacity),
+    tooltip: getTooltip(chartTooltips, name),
+  };
+};
 
 export const getBarUpdateEncodings = (options: BarSpecOptions): EncodeEntry => ({
   cursor: getCursor(options.chartPopovers, options.hasOnClick),
@@ -295,16 +310,12 @@ export const getBarUpdateEncodings = (options: BarSpecOptions): EncodeEntry => (
   strokeWidth: getStrokeWidth(options),
 });
 
-export const getStroke = ({
-  name,
-  chartPopovers,
-  color,
-  colorScheme,
-  idKey,
-}: BarSpecOptions): ProductionRule<ColorValueRef> => {
-  const defaultProductionRule = getColorProductionRule(color, colorScheme);
+export const getStroke = (options: BarSpecOptions): ProductionRule<ColorValueRef> => {
+  const { name, chartPopovers, colorScheme, idKey } = options;
+  const defaultRule = getBarColorEncoding(options);
+  const defaultRules = Array.isArray(defaultRule) ? defaultRule : [defaultRule];
   if (!hasPopover({ chartPopovers })) {
-    return [defaultProductionRule];
+    return defaultRules;
   }
 
   return [
@@ -312,7 +323,7 @@ export const getStroke = ({
       test: `(${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${idKey}) || (${SELECTED_GROUP} && ${SELECTED_GROUP} === datum.${name}_selectedGroupId)`,
       value: getS2ColorValue('static-blue', colorScheme),
     },
-    defaultProductionRule,
+    ...defaultRules,
   ];
 };
 

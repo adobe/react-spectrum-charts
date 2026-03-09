@@ -326,7 +326,10 @@ export const addScales = produce<Scale[], [BarSpecOptions]>((scales, options) =>
   }
   addDimensionScale(scales, options);
   addTrellisScale(scales, options);
-  addFieldToFacetScaleDomain(scales, COLOR_SCALE, color);
+  // When colorFromData is true, bar fill uses datum[color] directly; do not add to color scale domain.
+  if (!options.colorFromData) {
+    addFieldToFacetScaleDomain(scales, COLOR_SCALE, color);
+  }
   addFieldToFacetScaleDomain(scales, LINE_TYPE_SCALE, lineType);
   addFieldToFacetScaleDomain(scales, OPACITY_SCALE, opacity);
   addSecondaryScales(scales, options);

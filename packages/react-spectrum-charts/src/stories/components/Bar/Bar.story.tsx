@@ -17,12 +17,12 @@ import { GROUP_DATA } from '@spectrum-charts/constants';
 import { Datum } from '@spectrum-charts/vega-spec-builder';
 
 import { Chart } from '../../../Chart';
-import { Axis, Bar, ChartTooltip } from '../../../components';
+import { Axis, Bar, ChartTooltip, Legend } from '../../../components';
 import { Annotation } from '../../../components/Annotation';
 import useChartProps from '../../../hooks/useChartProps';
 import { bindWithProps } from '../../../test-utils';
 import { BarProps } from '../../../types';
-import { barData, barDataWithUTC } from './data';
+import { barData, barDataWithLiteralColors, barDataWithUTC } from './data';
 
 export default {
   title: 'RSC/Bar',
@@ -218,6 +218,56 @@ TooltipOnDimensionArea.args = {
   ...defaultProps,
 };
 
+/**
+ * One story for "each bar its own color" with a control to switch between the three approaches:
+ * - Default palette: color by dimension, chart palette.
+ * - Custom palette: color by dimension, Chart `colors` prop.
+ * - From data: literal colors from a data field (`colorFromData`).
+ */
+type PerBarColorArgs = BarProps & { colorSource: 'defaultPalette' | 'customPalette' | 'fromData' };
+
+const PerBarColorStory: StoryFn<PerBarColorArgs> = (args): ReactElement => {
+  const { colorSource, ...barArgs } = args;
+  const data = colorSource === 'fromData' ? barDataWithLiteralColors : barData;
+  const chartProps = useChartProps({
+    data,
+    width: 600,
+    height: 600,
+    ...(colorSource === 'customPalette' && {
+      colors: ['#e34850', '#2680eb', '#2d9d78', '#e68619', '#ae7cbf'],
+    }),
+  });
+  const barProps: BarProps = {
+    ...defaultProps,
+    ...barArgs,
+    color: colorSource === 'fromData' ? 'barColor' : 'browser',
+    colorFromData: colorSource === 'fromData',
+  };
+  return (
+    <Chart {...chartProps}>
+      <Axis position={barArgs.orientation === 'horizontal' ? 'left' : 'bottom'} baseline title="Browser" />
+      <Axis position={barArgs.orientation === 'horizontal' ? 'bottom' : 'left'} grid title="Downloads" />
+      <Bar {...barProps} />
+      {colorSource !== 'fromData' && <Legend position="top" title="Browser" />}
+    </Chart>
+  );
+};
+
+const PerBarColor = bindWithProps(PerBarColorStory);
+PerBarColor.args = {
+  ...defaultProps,
+  colorSource: 'defaultPalette',
+};
+PerBarColor.argTypes = {
+  colorSource: {
+    name: 'Color source',
+    options: ['defaultPalette', 'customPalette', 'fromData'],
+    control: { type: 'select' },
+    description:
+      'Default palette: color by dimension. Custom palette: same + Chart colors. From data: literal field (colorFromData).',
+  },
+};
+
 export {
   BarWithUTCDatetimeFormat,
   Basic,
@@ -228,6 +278,7 @@ export {
   OnMouseInputs,
   Opacity,
   PaddingRatio,
+  PerBarColor,
   TooltipOnDimensionArea,
   WithTooltip,
   WithAnnotation,
