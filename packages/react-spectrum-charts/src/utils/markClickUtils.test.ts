@@ -11,12 +11,15 @@
  */
 import { Item, View } from 'vega';
 
+import { COMPONENT_NAME } from '@spectrum-charts/constants';
+
 import {
   ActionItem,
   GetOnMarkClickCallbackArgs,
   getItemBounds,
   getItemName,
   getLegendItemValue,
+  getOnMarkClickCallback,
   handleLegendItemClick,
   handleLegendItemMouseInput,
 } from './markClickUtils';
@@ -194,5 +197,46 @@ describe('handleLegendItemMouseInput()', () => {
   test('should not call onLegendMouseInput if legendItemValue is not found', () => {
     handleLegendItemMouseInput(undefined, onLegendMouseInput);
     expect(onLegendMouseInput).not.toHaveBeenCalled();
+  });
+});
+
+describe('getOnMarkClickCallback() mark click with markHasPopover', () => {
+  const markItem = {
+    datum: { foo: 1 },
+    bounds: { x1: 0, y1: 0, x2: 10, y2: 10 },
+    mark: {
+      role: 'mark',
+      name: 'bar0_rect',
+      marktype: 'rect',
+      group: { x: 0, y: 0 },
+      items: [],
+    },
+  } as unknown as Item;
+
+  const fakeClickEvent = { type: 'click' } as Parameters<ReturnType<typeof getOnMarkClickCallback>>[0];
+  // handleMarkClick is not called when there is not a popover on the mark 
+  test('should not set selectedData when markHasPopover is false', () => {
+    const selectedData = { current: null as unknown };
+    const callback = getOnMarkClickCallback({
+      ...defaultMarkClickArgs,
+      markHasPopover: false,
+      selectedData: selectedData as GetOnMarkClickCallbackArgs['selectedData'],
+    });
+    callback(fakeClickEvent, markItem);
+    expect(selectedData.current).toBeNull();
+  });
+
+  test('should set selectedData when markHasPopover is true', () => {
+    const selectedData = { current: null as unknown };
+    const callback = getOnMarkClickCallback({
+      ...defaultMarkClickArgs,
+      markHasPopover: true,
+      selectedData: selectedData as GetOnMarkClickCallbackArgs['selectedData'],
+    });
+    callback(fakeClickEvent, markItem);
+    expect(selectedData.current).toStrictEqual({
+      [COMPONENT_NAME]: 'bar0',
+      foo: 1,
+    });
   });
 });
