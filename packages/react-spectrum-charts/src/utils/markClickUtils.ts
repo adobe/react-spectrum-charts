@@ -18,7 +18,7 @@ import { Datum, MarkBounds } from '@spectrum-charts/vega-spec-builder';
 
 import { MarkMouseInputDetail } from '../hooks/useMarkMouseInputDetails';
 import { MarkOnClickDetail } from '../hooks/useMarkOnClickDetails';
-import { clearHoverSignals, toggleStringArrayValue } from '../utils';
+import { toggleStringArrayValue } from '../utils';
 
 export type ActionItem = Item | undefined | null;
 type ViewEventCallback = (event: ScenegraphEvent, item: ActionItem) => void;
