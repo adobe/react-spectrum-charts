@@ -10,23 +10,28 @@
  * governing permissions and limitations under the License.
  */
 import {
-  DATE_PATH,
+  REFERENCE_LINE_LABEL_BACKGROUND_STROKE,
   DEFAULT_COLOR_SCHEME,
   DEFAULT_FONT_COLOR,
   DEFAULT_GRANULARITY,
   DEFAULT_LABEL_ALIGN,
   DEFAULT_LABEL_FONT_WEIGHT,
   DEFAULT_LABEL_ORIENTATION,
+  REFERENCE_LINE_END_CAP_PATH,
+  REFERENCE_LINE_LABEL_BACKGROUND_STROKE_WIDTH,
+  REFERENCE_LINE_LABEL_FONT_WEIGHT,
+  REFERENCE_LINE_LABEL_OFFSET_FROM_LINE,
+  REFERENCE_LINE_START_CAP_PATH,
 } from '@spectrum-charts/constants';
 import { spectrum2Colors } from '@spectrum-charts/themes';
 
 import { AxisSpecOptions, ReferenceLineSpecOptions } from '../types';
 import {
   getPositionEncoding,
-  getReferenceLineLabelsEncoding,
+  getReferenceLineEndCapMark,
   getReferenceLineMarks,
   getReferenceLineRuleMark,
-  getReferenceLineSymbolMark,
+  getReferenceLineStartCapMark,
   getReferenceLineTextMark,
   getReferenceLines,
   scaleTypeSupportsReferenceLines,
@@ -34,17 +39,11 @@ import {
 
 const defaultReferenceLineOptions: ReferenceLineSpecOptions = {
   value: 10,
-  icon: 'date',
-  color: 'gray-900',
   colorScheme: DEFAULT_COLOR_SCHEME,
-  iconColor: DEFAULT_FONT_COLOR,
-  labelColor: DEFAULT_FONT_COLOR,
-  labelFontWeight: DEFAULT_LABEL_FONT_WEIGHT,
-  layer: 'front',
   name: 'axis0ReferenceLine0',
-  lineType: 'solid',
 };
 
+/** Base axis options for a vertical (left) axis — the only axis S2 supports reference lines on */
 const defaultAxisOptions: AxisSpecOptions = {
   axisAnnotations: [],
   axisThumbnails: [],
@@ -61,7 +60,7 @@ const defaultAxisOptions: AxisSpecOptions = {
   labels: [],
   name: 'axis0',
   numberFormat: 'shortNumber',
-  position: 'bottom',
+  position: 'left',
   referenceLines: [defaultReferenceLineOptions],
   scaleType: 'linear',
   subLabels: [],
@@ -69,19 +68,17 @@ const defaultAxisOptions: AxisSpecOptions = {
 };
 
 const defaultYPositionEncoding = { scale: 'yLinear', value: 10 };
-const defaultXPositionEncoding = { scale: 'xLinear', value: 10 };
 
 describe('getReferenceLines()', () => {
   test('should return the options for all reference lines', () => {
     const referenceLines = getReferenceLines({
       ...defaultAxisOptions,
-      referenceLines: [{ value: 1 }, { value: 0, icon: 'date' }],
+      referenceLines: [{ value: 1 }, { value: 0 }],
     });
 
     expect(referenceLines).toHaveLength(2);
     expect(referenceLines[0]).toHaveProperty('value', 1);
     expect(referenceLines[1]).toHaveProperty('value', 0);
-    expect(referenceLines[1]).toHaveProperty('icon', 'date');
   });
 
   test('should return an empty array if there are no referenceLines', () => {
@@ -103,15 +100,15 @@ describe('scaleTypeSupportsRefenceLines()', () => {
 describe('getPositionEncoding()', () => {
   test('creates the correct mark when value is a string', () => {
     expect(
-      getPositionEncoding(defaultAxisOptions, { ...defaultReferenceLineOptions, value: 'test' }, 'xLinear')
-    ).toStrictEqual({ scale: 'xLinear', value: 'test' });
+      getPositionEncoding(defaultAxisOptions, { ...defaultReferenceLineOptions, value: 'test' }, 'yLinear')
+    ).toStrictEqual({ scale: 'yLinear', value: 'test' });
   });
 
   test('creates the correct mark when value is a number', () => {
     expect(
-      getPositionEncoding(defaultAxisOptions, { ...defaultReferenceLineOptions, value: 10 }, 'xLinear')
+      getPositionEncoding(defaultAxisOptions, { ...defaultReferenceLineOptions, value: 10 }, 'yLinear')
     ).toStrictEqual({
-      scale: 'xLinear',
+      scale: 'yLinear',
       value: 10,
     });
   });
@@ -121,9 +118,9 @@ describe('getPositionEncoding()', () => {
       getPositionEncoding(
         { ...defaultAxisOptions, scaleType: 'band' },
         { ...defaultReferenceLineOptions, value: 'value' },
-        'xBand'
+        'yBand'
       )
-    ).toStrictEqual({ signal: "scale('xBand', 'value') + bandwidth('xBand') / 2" });
+    ).toStrictEqual({ signal: "scale('yBand', 'value') + bandwidth('yBand') / 2" });
   });
 
   test('creates the correct mark when value is a number and scaleType is band', () => {
@@ -131,249 +128,199 @@ describe('getPositionEncoding()', () => {
       getPositionEncoding(
         { ...defaultAxisOptions, scaleType: 'band' },
         { ...defaultReferenceLineOptions, value: 10 },
-        'xBand'
+        'yBand'
       )
-    ).toStrictEqual({ signal: "scale('xBand', 10) + bandwidth('xBand') / 2" });
+    ).toStrictEqual({ signal: "scale('yBand', 10) + bandwidth('yBand') / 2" });
   });
 });
 
-describe('getReferenceLineMarks()', () => {
-  test('should put reference lines in the correct group based on layer', () => {
-    let referenceLines = getReferenceLineMarks(
+describe('getReferenceLineMarks() — S2 vertical-only', () => {
+  test('returns empty marks for horizontal axes (top/bottom)', () => {
+    const bottom = getReferenceLineMarks({ ...defaultAxisOptions, position: 'bottom' }, 'xLinear');
+    expect(bottom).toHaveLength(0);
+
+    const top = getReferenceLineMarks({ ...defaultAxisOptions, position: 'top' }, 'xLinear');
+    expect(top).toHaveLength(0);
+  });
+
+  test('returns marks for vertical axes (left/right)', () => {
+    const left = getReferenceLineMarks({ ...defaultAxisOptions, position: 'left' }, 'yLinear');
+    expect(left.some((m) => m.type === 'rule')).toBe(true);
+
+    const right = getReferenceLineMarks({ ...defaultAxisOptions, position: 'right' }, 'yLinear');
+    expect(right.some((m) => m.type === 'rule')).toBe(true);
+  });
+
+  test('includes start cap, end cap, rule, and text marks when label is present', () => {
+    const marks = getReferenceLineMarks(
       {
         ...defaultAxisOptions,
-        referenceLines: [{ ...defaultReferenceLineOptions, layer: 'back' }],
+        referenceLines: [{ ...defaultReferenceLineOptions, label: 'Target' }],
       },
-      'xLinear'
+      'yLinear'
     );
+    expect(marks.some((m) => m.name === 'axis0ReferenceLine0')).toBe(true);
+    expect(marks.some((m) => m.name === 'axis0ReferenceLine0_startCap')).toBe(true);
+    expect(marks.some((m) => m.name === 'axis0ReferenceLine0_endCap')).toBe(true);
+    expect(marks.some((m) => m.name === 'axis0ReferenceLine0_labelBackground')).toBe(true);
+    expect(marks.some((m) => m.name === 'axis0ReferenceLine0_label')).toBe(true);
+  });
 
-    expect(referenceLines.back.filter((mark) => mark.type === 'rule')).toHaveLength(1);
-    expect(referenceLines.front.filter((mark) => mark.type === 'rule')).toHaveLength(0);
-
-    referenceLines = getReferenceLineMarks(
-      {
-        ...defaultAxisOptions,
-        referenceLines: [{ ...defaultReferenceLineOptions, layer: 'front' }],
-      },
-      'xLinear'
-    );
-    expect(referenceLines.back.filter((mark) => mark.type === 'rule')).toHaveLength(0);
-    expect(referenceLines.front.filter((mark) => mark.type === 'rule')).toHaveLength(1);
+  test('does not include symbol/icon marks', () => {
+    const marks = getReferenceLineMarks({ ...defaultAxisOptions }, 'yLinear');
+    expect(marks.some((m) => m.name?.endsWith('_symbol'))).toBe(false);
   });
 });
 
 describe('getReferenceLineRuleMark()', () => {
-  test('should generate rule mark', () => {
-    const rule = getReferenceLineRuleMark(defaultAxisOptions, defaultReferenceLineOptions, defaultXPositionEncoding);
-    expect(rule).toStrictEqual({
-      encode: {
-        enter: { stroke: { value: spectrum2Colors.light['gray-900'] }, strokeDash: { value: [] } },
-        update: { x: defaultXPositionEncoding, y: { value: 0 }, y2: { signal: 'height + 0' } },
-      },
-      interactive: false,
-      name: 'axis0ReferenceLine0',
-      type: 'rule',
-    });
+  test('should generate horizontal rule mark with fixed S2 color', () => {
+    const rule = getReferenceLineRuleMark(defaultAxisOptions, defaultReferenceLineOptions, defaultYPositionEncoding);
+    expect(rule.type).toBe('rule');
+    expect(rule.name).toBe('axis0ReferenceLine0');
+    expect(rule.encode?.enter?.stroke).toStrictEqual({ value: spectrum2Colors.light[DEFAULT_FONT_COLOR] });
+    expect(rule.encode?.enter?.strokeWidth).toStrictEqual({ value: 2 });
+    expect(rule.encode?.enter?.strokeCap).toStrictEqual({ value: 'round' });
+    expect(rule.encode?.enter?.strokeJoin).toStrictEqual({ value: 'round' });
   });
 
-  test('should apply the correct position encodings based on axis position', () => {
-    const topAxisRule = getReferenceLineRuleMark(
-      { ...defaultAxisOptions, position: 'top' },
-
-      defaultReferenceLineOptions,
-      defaultXPositionEncoding
-    );
-    expect(topAxisRule.encode?.update?.x).toStrictEqual(defaultXPositionEncoding);
-    expect(topAxisRule.encode?.update?.y).toStrictEqual({ value: -0 });
-    expect(topAxisRule.encode?.update?.y2).toStrictEqual({ signal: 'height' });
-
-    const bottomAxisRule = getReferenceLineRuleMark(
-      defaultAxisOptions,
-      defaultReferenceLineOptions,
-      defaultXPositionEncoding
-    );
-    expect(bottomAxisRule.encode?.update?.x).toStrictEqual(defaultXPositionEncoding);
-    expect(bottomAxisRule.encode?.update?.y).toStrictEqual({ value: 0 });
-    expect(bottomAxisRule.encode?.update?.y2).toStrictEqual({ signal: 'height + 0' });
-
-    const leftAxisRule = getReferenceLineRuleMark(
-      { ...defaultAxisOptions, position: 'left' },
-
-      defaultReferenceLineOptions,
-      defaultYPositionEncoding
-    );
-    expect(leftAxisRule.encode?.update?.x).toStrictEqual({ value: -0 });
-    expect(leftAxisRule.encode?.update?.x2).toStrictEqual({ signal: 'width' });
-    expect(leftAxisRule.encode?.update?.y).toStrictEqual(defaultYPositionEncoding);
-
-    const rightAxisRule = getReferenceLineRuleMark(
-      { ...defaultAxisOptions, position: 'right' },
-      defaultReferenceLineOptions,
-      defaultYPositionEncoding
-    );
-    expect(rightAxisRule.encode?.update?.x).toStrictEqual({ value: 0 });
-    expect(rightAxisRule.encode?.update?.x2).toStrictEqual({ signal: 'width + 0' });
-    expect(rightAxisRule.encode?.update?.y).toStrictEqual(defaultYPositionEncoding);
+  test('rule spans from x: 10 to x2: width - 7', () => {
+    const rule = getReferenceLineRuleMark(defaultAxisOptions, defaultReferenceLineOptions, defaultYPositionEncoding);
+    expect(rule.encode?.update?.x).toStrictEqual({ value: 10 });
+    expect(rule.encode?.update?.x2).toStrictEqual({ signal: 'width - 7' });
   });
 
-  test('should offset start of rule by 9 pixels if ticks are present', () => {
-    const bottomAxisRule = getReferenceLineRuleMark(
+  test('y is set to positionEncoding', () => {
+    const rule = getReferenceLineRuleMark(defaultAxisOptions, defaultReferenceLineOptions, defaultYPositionEncoding);
+    expect(rule.encode?.update?.y).toStrictEqual(defaultYPositionEncoding);
+  });
+
+  test('rule coordinates are position-independent (same for left/right, with/without ticks)', () => {
+    const rule = getReferenceLineRuleMark(
       { ...defaultAxisOptions, ticks: true },
-
       defaultReferenceLineOptions,
-      defaultXPositionEncoding
+      defaultYPositionEncoding
     );
-    expect(bottomAxisRule.encode?.update?.y2).toStrictEqual({ signal: 'height + 9' });
-
-    const topAxisRule = getReferenceLineRuleMark(
-      { ...defaultAxisOptions, position: 'top', ticks: true },
-
-      defaultReferenceLineOptions,
-      defaultXPositionEncoding
-    );
-    expect(topAxisRule.encode?.update?.y).toStrictEqual({ value: -9 });
+    expect(rule.encode?.update?.x).toStrictEqual({ value: 10 });
+    expect(rule.encode?.update?.x2).toStrictEqual({ signal: 'width - 7' });
   });
 });
 
-describe('getReferenceLineSymbolMark()', () => {
-  test('should return empty array if the icon property is not set', () => {
-    const symbols = getReferenceLineSymbolMark(
-      defaultAxisOptions,
-      { ...defaultReferenceLineOptions, icon: undefined },
-      defaultXPositionEncoding
-    );
-    expect(symbols).toHaveLength(0);
+describe('getReferenceLineStartCapMark()', () => {
+  test('start cap at x: 5', () => {
+    const cap = getReferenceLineStartCapMark(defaultAxisOptions, defaultReferenceLineOptions, defaultYPositionEncoding);
+    expect(cap.type).toBe('path');
+    expect(cap.name).toBe('axis0ReferenceLine0_startCap');
+    expect(cap.encode?.enter?.path).toStrictEqual({ value: REFERENCE_LINE_START_CAP_PATH });
+    expect(cap.encode?.enter?.fill).toStrictEqual({ value: spectrum2Colors.light[DEFAULT_FONT_COLOR] });
+    expect(cap.encode?.update?.x).toStrictEqual({ value: 5 });
+    expect(cap.encode?.update?.y).toStrictEqual(defaultYPositionEncoding);
   });
-  test('should generate symbol mark if icon id defined', () => {
-    const symbols = getReferenceLineSymbolMark(
-      defaultAxisOptions,
-      defaultReferenceLineOptions,
-      defaultXPositionEncoding
-    );
-    expect(symbols).toStrictEqual([
-      {
-        encode: {
-          enter: {
-            fill: { value: spectrum2Colors.light[DEFAULT_FONT_COLOR] },
-            shape: {
-              value: DATE_PATH,
-            },
-            size: { value: 324 },
-          },
-          update: {
-            x: defaultXPositionEncoding,
-            y: { signal: 'height + 24' },
-          },
-        },
-        name: 'axis0ReferenceLine0_symbol',
-        type: 'symbol',
-      },
-    ]);
-  });
-  test('should set the color of the icon based on labelColor', () => {
-    const symbols = getReferenceLineSymbolMark(
-      defaultAxisOptions,
-      { ...defaultReferenceLineOptions, iconColor: 'green-700' },
-      defaultXPositionEncoding
-    );
-    expect(symbols[0].encode?.enter?.fill).toStrictEqual({ value: spectrum2Colors.light['green-700'] });
-  });
-  test('should apply the correct position encodings based on axis position', () => {
-    const topAxisSymbol = getReferenceLineSymbolMark(
-      { ...defaultAxisOptions, position: 'top' },
-      defaultReferenceLineOptions,
-      defaultXPositionEncoding
-    )[0];
-    expect(topAxisSymbol.encode?.update).toStrictEqual({
-      x: defaultXPositionEncoding,
-      y: { value: -24 },
-    });
 
-    const bottomAxisSymbol = getReferenceLineSymbolMark(
-      defaultAxisOptions,
-      defaultReferenceLineOptions,
-      defaultXPositionEncoding
-    )[0];
-    expect(bottomAxisSymbol.encode?.update).toStrictEqual({
-      x: defaultXPositionEncoding,
-      y: { signal: 'height + 24' },
-    });
-
-    const leftAxisSymbol = getReferenceLineSymbolMark(
-      { ...defaultAxisOptions, position: 'left' },
-      defaultReferenceLineOptions,
-      defaultYPositionEncoding
-    )[0];
-    expect(leftAxisSymbol.encode?.update).toStrictEqual({
-      x: { value: -24 },
-      y: { ...defaultYPositionEncoding, offset: undefined },
-    });
-
-    const rightAxisSymbol = getReferenceLineSymbolMark(
+  test('right axis: start cap at x: 5', () => {
+    const cap = getReferenceLineStartCapMark(
       { ...defaultAxisOptions, position: 'right' },
       defaultReferenceLineOptions,
       defaultYPositionEncoding
-    )[0];
-    expect(rightAxisSymbol.encode?.update).toStrictEqual({
-      x: { signal: 'width + 24' },
-      y: { ...defaultYPositionEncoding, offset: undefined },
-    });
+    );
+    expect(cap.encode?.update?.x).toStrictEqual({ value: 5 });
   });
 });
 
-describe('getReferenceLineTextMark()', () => {
+describe('getReferenceLineEndCapMark()', () => {
+  test('left axis: end cap at x: width - 5 (aligned with rule end)', () => {
+    const cap = getReferenceLineEndCapMark(defaultAxisOptions, defaultReferenceLineOptions, defaultYPositionEncoding);
+    expect(cap.type).toBe('path');
+    expect(cap.name).toBe('axis0ReferenceLine0_endCap');
+    expect(cap.encode?.enter?.path).toStrictEqual({ value: REFERENCE_LINE_END_CAP_PATH });
+    expect(cap.encode?.enter?.fill).toStrictEqual({ value: spectrum2Colors.light[DEFAULT_FONT_COLOR] });
+    expect(cap.encode?.update?.x).toStrictEqual({ signal: 'width - 5' });
+    expect(cap.encode?.update?.y).toStrictEqual(defaultYPositionEncoding);
+  });
+
+  test('end cap at x: width - 5 (position-independent)', () => {
+    const cap = getReferenceLineEndCapMark(
+      { ...defaultAxisOptions, position: 'right', ticks: true },
+      defaultReferenceLineOptions,
+      defaultYPositionEncoding
+    );
+    expect(cap.encode?.update?.x).toStrictEqual({ signal: 'width - 5' });
+  });
+});
+
+describe('getReferenceLineTextMark() — S2 direct label pattern', () => {
   test('should return an empty array if there is no label', () => {
     const marks = getReferenceLineTextMark(
-      defaultAxisOptions,
       { ...defaultReferenceLineOptions, label: undefined },
       defaultYPositionEncoding
     );
     expect(marks).toHaveLength(0);
   });
 
-  test('should return a text mark if label is defined', () => {
+  test('should return two text marks (background + main) when label is defined', () => {
     const marks = getReferenceLineTextMark(
-      defaultAxisOptions,
-      { ...defaultReferenceLineOptions, label: 'Hello world!' },
+      { ...defaultReferenceLineOptions, label: 'Target' },
       defaultYPositionEncoding
     );
-    expect(marks).toHaveLength(1);
-    expect(marks[0]).toHaveProperty('type', 'text');
-    expect(marks[0]?.encode?.update?.text?.[0]).toHaveProperty('value', 'Hello world!');
+    expect(marks).toHaveLength(2);
+    expect(marks[0].name).toBe('axis0ReferenceLine0_labelBackground');
+    expect(marks[1].name).toBe('axis0ReferenceLine0_label');
+    expect(marks[0].type).toBe('text');
+    expect(marks[1].type).toBe('text');
   });
-});
 
-describe('getReferenceLineLabelsEncoding()', () => {
-  test('should use a vertical offset of 50 if there is an icon', () => {
-    const encoding = getReferenceLineLabelsEncoding(
-      defaultAxisOptions,
-      { ...defaultReferenceLineOptions, icon: 'sentimentPositive', label: 'Hello world!' },
+  test('background mark: transparent fill, REFERENCE_LINE_LABEL_BACKGROUND_STROKE signal for stroke, strokeWidth = REFERENCE_LINE_LABEL_BACKGROUND_STROKE_WIDTH', () => {
+    const marks = getReferenceLineTextMark(
+      { ...defaultReferenceLineOptions, label: 'Target' },
       defaultYPositionEncoding
     );
-    expect(encoding.update?.y).toHaveProperty('signal', 'height + 50');
+    expect(marks[0].encode?.enter?.fill).toStrictEqual({ value: 'transparent' });
+    expect(marks[0].encode?.enter?.stroke).toStrictEqual({ signal: REFERENCE_LINE_LABEL_BACKGROUND_STROKE });
+    expect(marks[0].encode?.enter?.strokeWidth).toStrictEqual({ value: REFERENCE_LINE_LABEL_BACKGROUND_STROKE_WIDTH });
   });
-  test('should use a vertical offset of 28 if icon is undefined', () => {
-    const encoding = getReferenceLineLabelsEncoding(
-      defaultAxisOptions,
-      { ...defaultReferenceLineOptions, icon: undefined, label: 'Hello world!' },
+
+  test('main mark: fixed S2 content neutral fill, no stroke', () => {
+    const marks = getReferenceLineTextMark(
+      { ...defaultReferenceLineOptions, label: 'Target' },
       defaultYPositionEncoding
     );
-    expect(encoding.update?.y).toHaveProperty('signal', 'height + 28');
+    expect(marks[1].encode?.enter?.fill).toStrictEqual({ value: spectrum2Colors.light[DEFAULT_FONT_COLOR] });
+    expect(marks[1].encode?.enter?.stroke).toBeUndefined();
   });
-  test('should use a horizontal offset of 4 if there is an icon', () => {
-    const encoding = getReferenceLineLabelsEncoding(
-      { ...defaultAxisOptions, position: 'left' },
-      { ...defaultReferenceLineOptions, icon: 'sentimentPositive', label: 'Hello world!' },
-      defaultXPositionEncoding
+
+  test('both marks inherit font, fontSize, lineHeight from theme (no explicit overrides)', () => {
+    const marks = getReferenceLineTextMark(
+      { ...defaultReferenceLineOptions, label: 'Target' },
+      defaultYPositionEncoding
     );
-    expect(encoding.update?.y).toHaveProperty('offset', 4);
+    for (const mark of marks) {
+      expect(mark.encode?.enter?.font).toBeUndefined();
+      expect(mark.encode?.enter?.fontSize).toBeUndefined();
+      expect(mark.encode?.enter?.lineHeight).toBeUndefined();
+    }
   });
-  test('should use a horizontal offset of 4 if icon is undefined', () => {
-    const encoding = getReferenceLineLabelsEncoding(
-      { ...defaultAxisOptions, position: 'left' },
-      { ...defaultReferenceLineOptions, icon: undefined, label: 'Hello world!' },
-      defaultXPositionEncoding
+
+  test('fontWeight 700 in update block', () => {
+    const marks = getReferenceLineTextMark(
+      { ...defaultReferenceLineOptions, label: 'Target' },
+      defaultYPositionEncoding
     );
-    expect(encoding.update?.y).toHaveProperty('offset', 4);
+    for (const mark of marks) {
+      expect(mark.encode?.update?.fontWeight).toBeDefined();
+      expect((mark.encode?.update?.fontWeight as { value: number }).value).toBe(REFERENCE_LINE_LABEL_FONT_WEIGHT);
+    }
+  });
+
+  test('label position: x = width signal, y = positionEncoding, dy = 9, baseline = top, align = right', () => {
+    const marks = getReferenceLineTextMark(
+      { ...defaultReferenceLineOptions, label: 'Target' },
+      defaultYPositionEncoding
+    );
+    for (const mark of marks) {
+      expect(mark.encode?.enter?.x).toStrictEqual({ signal: 'width' });
+      expect(mark.encode?.enter?.y).toStrictEqual(defaultYPositionEncoding);
+      expect(mark.encode?.enter?.dy).toStrictEqual({ value: REFERENCE_LINE_LABEL_OFFSET_FROM_LINE });
+      expect(mark.encode?.enter?.baseline).toStrictEqual({ value: 'top' });
+      expect(mark.encode?.enter?.align).toStrictEqual({ value: 'right' });
+    }
   });
 });

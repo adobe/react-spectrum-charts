@@ -17,6 +17,7 @@ import {
   BACKGROUND_COLOR,
   COLOR_SCALE,
   CONTROLLED_HIGHLIGHTED_SERIES,
+  REFERENCE_LINE_LABEL_BACKGROUND_STROKE,
   DEFAULT_BACKGROUND_COLOR,
   DEFAULT_COLOR,
   DEFAULT_COLOR_SCHEME,
@@ -429,7 +430,8 @@ describe('Chart spec builder', () => {
 
   describe('getDefaultSignals()', () => {
     const beginningSignals = [
-      { name: BACKGROUND_COLOR, value: '#F8F8F8' }, // gray-50 in S2
+      { name: BACKGROUND_COLOR, value: 'white' }, // gray-25 in S2 light (default Spectrum 2 background)
+      { name: REFERENCE_LINE_LABEL_BACKGROUND_STROKE, value: 'white' }, // spectrum background when transparent (gray-25 light)
       {
         name: 'colors',
         value: [

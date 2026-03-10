@@ -364,18 +364,19 @@ describe('getLineDirectLabelMarks', () => {
 		expect(textSignal).toContain("'$ '");
 	});
 
-	test('resolves transparent background to gray-50', () => {
-		const marks = getLineDirectLabelMarks('line0', defaultLabelSpecOptions, defaultLineOptions, 'transparent', 'light');
-		const bgStroke = marks[0].encode?.enter?.stroke as { value: string };
-		expect(bgStroke.value).toBeTruthy();
-		expect(bgStroke.value).not.toBe('transparent');
+	test('resolves transparent background to spectrum background (gray-25)', () => {
+		const lightMarks = getLineDirectLabelMarks('line0', defaultLabelSpecOptions, defaultLineOptions, 'transparent', 'light');
+		const lightStroke = lightMarks[0].encode?.enter?.stroke as { value: string };
+		expect(lightStroke.value).toBe('white'); // gray-25 in light
+		const darkMarks = getLineDirectLabelMarks('line0', defaultLabelSpecOptions, defaultLineOptions, 'transparent', 'dark');
+		const darkStroke = darkMarks[0].encode?.enter?.stroke as { value: string };
+		expect(darkStroke.value).toBe('#111111'); // gray-25 in dark
 	});
 
-	test('resolves undefined background to gray-50', () => {
+	test('resolves undefined background to spectrum background', () => {
 		const marks = getLineDirectLabelMarks('line0', defaultLabelSpecOptions, defaultLineOptions, undefined, 'light');
 		const bgStroke = marks[0].encode?.enter?.stroke as { value: string };
-		expect(bgStroke.value).toBeTruthy();
-		expect(bgStroke.value).not.toBe('transparent');
+		expect(bgStroke.value).toBe('white');
 	});
 
 	test('uses provided backgroundColor when not transparent or undefined', () => {

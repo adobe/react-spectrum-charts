@@ -11,7 +11,7 @@
  */
 import { Data, Mark, TextMark, Transforms } from 'vega';
 
-import { FILTERED_TABLE, SERIES_ID } from '@spectrum-charts/constants';
+import { DIRECT_LABEL_BACKGROUND_STROKE_WIDTH, DIRECT_LABEL_FONT_WEIGHT, FILTERED_TABLE, SERIES_ID } from '@spectrum-charts/constants';
 import { getS2ColorValue } from '@spectrum-charts/themes';
 
 import { getLineOpacity } from '../line/lineMarkUtils';
@@ -123,7 +123,7 @@ export const getLineDirectLabelMarks = (
 	colorScheme: 'light' | 'dark'
 ): Mark[] => {
 	const resolvedBg = getS2ColorValue(
-		backgroundColor === 'transparent' || !backgroundColor ? 'gray-50' : backgroundColor,
+		backgroundColor === 'transparent' || !backgroundColor ? 'gray-25' : backgroundColor,
 		colorScheme
 	);
 	const dataName = `${lineName}DirectLabel${labelOptions.index}_data`;
@@ -164,10 +164,10 @@ export const getLineDirectLabelMarks = (
 			enter: {
 				...baseEnter,
 				stroke: { value: resolvedBg },
-				strokeWidth: { value: 4 },
+				strokeWidth: { value: DIRECT_LABEL_BACKGROUND_STROKE_WIDTH },
 				fill: { value: 'transparent' },
 			},
-			update: { fontWeight: { value: 700 }, opacity: opacityRules },
+			update: { fontWeight: { value: DIRECT_LABEL_FONT_WEIGHT }, opacity: opacityRules },
 		},
 	};
 
@@ -181,7 +181,7 @@ export const getLineDirectLabelMarks = (
 				...baseEnter,
 				fill: getColorProductionRule(labelOptions.color, labelOptions.colorScheme),
 			},
-			update: { fontWeight: { value: 700 }, opacity: opacityRules },
+			update: { fontWeight: { value: DIRECT_LABEL_FONT_WEIGHT }, opacity: opacityRules },
 		},
 	};
 

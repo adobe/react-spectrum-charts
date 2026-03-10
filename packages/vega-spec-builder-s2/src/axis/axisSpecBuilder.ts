@@ -40,7 +40,7 @@ import { getDualAxisScaleNames, getScaleField } from '../scale/scaleUtils';
 import { getGenericValueSignal } from '../signal/signalSpecBuilder';
 import { AxisOptions, AxisSpecOptions, ColorScheme, Label, Orientation, Position, ScSpec, UserMeta } from '../types';
 import { getAxisLabelsEncoding, getControlledLabelAnchorValues, getLabelValue } from './axisLabelUtils';
-import { getReferenceLineMarks, getReferenceLines, scaleTypeSupportsReferenceLines } from './axisReferenceLineUtils';
+import { getReferenceLineMarks, scaleTypeSupportsReferenceLines } from './axisReferenceLineUtils';
 import {
   addAxisThumbnailSignals,
   getAxisThumbnailLabelOffset,
@@ -448,21 +448,6 @@ export const addAxes = produce<
     newAxes[0] = setAxisBaseline(newAxes[0], baseline);
   }
 
-  if (scaleTypeSupportsReferenceLines(axisOptions.scaleType)) {
-    // encode axis to hide labels that overlap reference line icons
-    for (const referenceLine of getReferenceLines(axisOptions)) {
-      const { label: referenceLineLabel, icon, value, position: linePosition } = referenceLine;
-      const text = newAxes[0].encode?.labels?.update?.text;
-      if ((icon || referenceLineLabel) && text && Array.isArray(text) && (!linePosition || linePosition === 'center')) {
-        // if the label is within 30 pixels of the reference line icon, hide it
-        text.unshift({
-          test: `abs(scale('${scaleName}', ${value}) - scale('${scaleName}', datum.value)) < 30`,
-          value: '',
-        });
-      }
-    }
-  }
-
   if (scaleTypeSupportsThumbnails(axisOptions.scaleType)) {
     for (const axisThumbnail of getAxisThumbnails(axisOptions)) {
       const encodings: AxisEncode = {
@@ -548,9 +533,7 @@ export const addAxesMarks = produce<
 
   // only add reference lines to linear or time scales
   if (scaleTypeSupportsReferenceLines(scaleType)) {
-    const { back, front } = getReferenceLineMarks(options, scaleName);
-    marks.unshift(...back);
-    marks.push(...front);
+    marks.push(...getReferenceLineMarks(options, scaleName));
   }
 
   const trellisGroupMark = marks.find((mark) => mark.name?.includes('Trellis')) as GroupMark;

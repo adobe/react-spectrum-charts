@@ -634,34 +634,40 @@ describe('Spec builder, Axis', () => {
       });
     });
 
-    test('should add test to hide labels if they would overlap the reference line icon', () => {
+    test('should NOT add label-hiding rules for reference lines (S2 spec: no axis label hiding)', () => {
       const labelTextEncoding = addAxes([], {
         ...defaultAxisOptions,
-        referenceLines: [{ value: 10, icon: 'date' }],
+        referenceLines: [{ value: 10 }],
         scaleName: 'xLinear',
         scaleType: 'linear',
         usermeta: {},
       })[0].encode?.labels?.update?.text as ProductionRule<TextValueRef>;
-      expect(labelTextEncoding).toHaveLength(3);
-      expect(labelTextEncoding[0]).toEqual({
-        test: "abs(scale('xLinear', 10) - scale('xLinear', datum.value)) < 30",
-        value: '',
-      });
+      // S2: no label-hiding test is prepended for reference lines
+      const hasHidingRule = Array.isArray(labelTextEncoding) &&
+        labelTextEncoding.some(
+          (rule) => typeof (rule as { test?: string }).test === 'string' &&
+            (rule as { test: string }).test.includes('scale(')
+        );
+      expect(hasHidingRule).toBe(false);
     });
-    test('should add and tests for each referenceline to hide labels if they would overlap the reference line icon', () => {
+    test('should NOT add label-hiding rules for multiple reference lines (S2 spec: no axis label hiding)', () => {
       const labelTextEncoding = addAxes([], {
         ...defaultAxisOptions,
         referenceLines: [
-          { value: 10, icon: 'date' },
-          { value: 15, icon: 'date' },
+          { value: 10 },
+          { value: 15 },
         ],
         scaleName: 'xLinear',
         scaleType: 'linear',
         usermeta: {},
       })[0].encode?.labels?.update?.text as ProductionRule<TextValueRef>;
 
-      // 2 tests for the two reference lines plus 2 default tests = 4 tests
-      expect(labelTextEncoding).toHaveLength(4);
+      const hasHidingRule = Array.isArray(labelTextEncoding) &&
+        labelTextEncoding.some(
+          (rule) => typeof (rule as { test?: string }).test === 'string' &&
+            (rule as { test: string }).test.includes('scale(')
+        );
+      expect(hasHidingRule).toBe(false);
     });
     test('should set the values on the axis if labels is set', () => {
       const axes = addAxes([], {
