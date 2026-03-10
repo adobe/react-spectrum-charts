@@ -41,6 +41,12 @@ describe('getBarOptions()', () => {
     const options = getBarOptions({ color: DEFAULT_COLOR });
     expect(options).toHaveProperty('color', DEFAULT_COLOR);
   });
+  it('should pass through colorOverrides when provided', () => {
+    const colorOverrides = { Firefox: '#FFEA00', Chrome: '#2680eb' };
+    const options = getBarOptions({ color: 'browser', colorOverrides });
+    expect(options).toHaveProperty('colorOverrides', colorOverrides);
+    expect(options).toHaveProperty('color', 'browser');
+  });
   it('should not add props that are not provided', () => {
     const options = getBarOptions({});
     expect(options).not.toHaveProperty('color');
