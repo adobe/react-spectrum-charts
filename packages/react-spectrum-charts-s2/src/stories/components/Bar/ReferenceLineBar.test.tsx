@@ -11,7 +11,7 @@
  */
 import React from 'react';
 
-import { findAllMarksByGroupName, findChart, findMarksByGroupName, render, screen } from '../../../test-utils';
+import { findAllMarksByGroupName, findChart, findMarksByGroupName, render } from '../../../test-utils';
 import { Basic, Label } from './ReferenceLineBar.story';
 
 describe('ReferenceLineBar', () => {
