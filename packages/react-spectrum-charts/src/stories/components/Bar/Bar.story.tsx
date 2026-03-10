@@ -21,7 +21,7 @@ import { Axis, Bar, ChartTooltip, Legend } from '../../../components';
 import { Annotation } from '../../../components/Annotation';
 import useChartProps from '../../../hooks/useChartProps';
 import { bindWithProps } from '../../../test-utils';
-import { BarProps } from '../../../types';
+import { BarProps, LegendProps } from '../../../types';
 import { barData, barDataWithUTC } from './data';
 
 /** Shared palette for color stories (custom palette, colorOverrides). */
@@ -239,14 +239,19 @@ const BarColorsStory: StoryFn<BarColorsArgs> = (args): ReactElement => {
     ...defaultProps,
     ...barArgs,
     color: 'browser',
-    colorOverrides: { Firefox: '#FFEA00' },
+  };
+  const legendProps: LegendProps = {
+    position: 'top',
+    title: 'Browser',
+    color: 'browser',
+    colorOverrides: barArgs.colorOverrides,
   };
   return (
     <Chart {...chartProps}>
       <Axis position={barArgs.orientation === 'horizontal' ? 'left' : 'bottom'} baseline title="Browser" />
       <Axis position={barArgs.orientation === 'horizontal' ? 'bottom' : 'left'} grid title="Downloads" />
       <Bar {...barProps} />
-      <Legend position="top" title="Browser" />
+      <Legend {...legendProps} />
     </Chart>
   );
 };
@@ -255,7 +260,7 @@ const BarColors = bindWithProps(BarColorsStory);
 BarColors.args = {
   ...defaultProps,
   color: 'browser',
-  colorOverrides: { Firefox: '#FFEA00' },
+  colorOverrides: { Firefox: '#39FF14' },
   colorSource: 'customPalette',
 };
 BarColors.argTypes = {
@@ -263,7 +268,7 @@ BarColors.argTypes = {
     name: 'Palette',
     options: ['defaultPalette', 'customPalette'],
     control: { type: 'select' },
-    description: 'Default chart palette or custom Chart `colors`. Firefox bar uses colorOverrides (yellow) in both.',
+    description: 'Default chart palette or custom Chart `colors`. Use Controls to set colorOverrides (e.g. Firefox bar).',
   },
 };
 

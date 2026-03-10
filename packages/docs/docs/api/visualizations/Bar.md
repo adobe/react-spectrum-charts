@@ -87,7 +87,7 @@ Use the Chart's `colors` prop to set the palette for the chart (including bars).
 
 #### Override one or more bar colors
 
-Use `colorOverrides` to give specific bars a different color while the rest use the color scale. Keys are values of the `dimension` (e.g. category labels); values are CSS colors.
+Use `colorOverrides` to give specific bars a different color while the rest use the color scale. Keys are values of the `dimension` (e.g. category labels); values are CSS colors. Pass the same `colorOverrides` to `Legend` so the legend symbols match the bar colors.
 
 ```jsx
 <Chart data={data}>
@@ -99,7 +99,7 @@ Use `colorOverrides` to give specific bars a different color while the rest use 
     color="browser"
     colorOverrides={{ Firefox: '#e34850' }}
   />
-  <Legend position="top" title="Browser" />
+  <Legend position="top" title="Browser" color="browser" colorOverrides={{ Firefox: '#e34850' }} />
 </Chart>
 ```
 

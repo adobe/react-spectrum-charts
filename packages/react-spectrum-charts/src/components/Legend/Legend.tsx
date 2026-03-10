@@ -17,6 +17,7 @@ import { LegendProps } from '../../types';
 
 const Legend: FC<LegendProps> = ({
   color,
+  colorOverrides,
   defaultHiddenSeries,
   descriptions,
   hiddenEntries,

@@ -242,7 +242,7 @@ export const getOpacityEncoding = (
 };
 
 export const getSymbolEncodings = (facets: Facet[], options: LegendSpecOptions): LegendEncode => {
-  const { color, lineType, lineWidth, name, opacity, symbolShape, colorScheme } = options;
+  const { color, colorOverrides, lineType, lineWidth, name, opacity, symbolShape, colorScheme } = options;
   const enter: SymbolEncodeEntry = {
     fillOpacity: getSymbolFacetEncoding<number>({ facets, facetType: OPACITY_SCALE, customValue: opacity, name }),
     shape: getSymbolFacetEncoding<string>({
@@ -265,19 +265,26 @@ export const getSymbolEncodings = (facets: Facet[], options: LegendSpecOptions):
       name,
     }),
   };
+  const scaleFallback =
+    getSymbolFacetEncoding<Color>({ facets, facetType: COLOR_SCALE, customValue: color, name }) ?? {
+      value: spectrumColors[colorScheme]['categorical-100'],
+    };
+  const colorField =
+    typeof color === 'string' ? color : facets?.find((f) => f.facetType === COLOR_SCALE)?.field;
+  const colorEncoding: (ColorValueRef & { test?: string })[] =
+    colorOverrides && colorField
+      ? [
+          ...getHiddenSeriesColorRule(options, 'gray-300'),
+          ...Object.entries(colorOverrides).map(([dimVal, overrideColor]) => ({
+            test: `data('${name}Aggregate')[datum.index].${colorField} === ${JSON.stringify(dimVal)}`,
+            value: overrideColor,
+          })),
+          scaleFallback,
+        ]
+      : [...getHiddenSeriesColorRule(options, 'gray-300'), scaleFallback];
   const update: SymbolEncodeEntry = {
-    fill: [
-      ...getHiddenSeriesColorRule(options, 'gray-300'),
-      getSymbolFacetEncoding<Color>({ facets, facetType: COLOR_SCALE, customValue: color, name }) ?? {
-        value: spectrumColors[colorScheme]['categorical-100'],
-      },
-    ],
-    stroke: [
-      ...getHiddenSeriesColorRule(options, 'gray-300'),
-      getSymbolFacetEncoding<Color>({ facets, facetType: COLOR_SCALE, customValue: color, name }) ?? {
-        value: spectrumColors[colorScheme]['categorical-100'],
-      },
-    ],
+    fill: colorEncoding,
+    stroke: colorEncoding,
   };
   // Remove undefined values
   const symbols: GuideEncodeEntry<SymbolEncodeEntry> = JSON.parse(JSON.stringify({ enter, update }));

@@ -16,7 +16,12 @@ import { LegendOptions } from '@spectrum-charts/vega-spec-builder';
 import { ChartPopoverElement } from './dialogs/chartPopover.types';
 import { Children } from './util.types';
 
-export interface LegendProps extends Omit<LegendOptions, 'hasOnClick' | 'hasMouseInteraction'> {
+export type LegendProps = Omit<LegendOptions, 'hasOnClick' | 'hasMouseInteraction'> & {
+  /**
+   * Override color for specific legend entries (e.g. to match Bar colorOverrides).
+   * Keys are values of the color facet; values are CSS colors.
+   */
+  colorOverrides?: Record<string, string>;
   /** callback that will be run when a legend item is selected */
   onClick?: (seriesName: string) => void;
   /** callback that will be run when mousing out of a legend item */
@@ -25,6 +30,6 @@ export interface LegendProps extends Omit<LegendOptions, 'hasOnClick' | 'hasMous
   onMouseOver?: (seriesName: string) => void;
 
   children?: Children<ChartPopoverElement>;
-}
+};
 
 export type LegendElement = ReactElement<LegendProps, JSXElementConstructor<LegendProps>>;
