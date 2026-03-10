@@ -72,22 +72,34 @@ If you only have one series in your data, both the `type` and `color` props can 
 ![Horizontal dodged bar chart](/img/bar_dodgedHorizontal_light.png#gh-light-mode-only)
 ![Horizontal dodged bar chart](/img/bar_dodgedHorizontal_dark.png#gh-dark-mode-only)
 
-#### Literal color per bar (user-defined colors from data)
+#### Color scheme for bars
 
-To give each bar its own color supplied by your data, add a field to each datum with a literal color value (hex, `rgb()`, or CSS color name) and set `color` to that field name with `colorFromData={true}`. The chart color scale is not used; each bar uses the value from the data directly. If a datum's color field is missing or null, a theme gray is used so the bar stays visible. For this mode, `color` must be a single field name (dual facet and fixed color are not used for literal fill).
+Use the Chart's `colors` prop to set the palette for the chart (including bars). Pass an array of hex/CSS colors or a scale name (e.g. `'categorical12'`). Bars colored by a dimension will use this palette.
 
 ```jsx
-const dataWithColors = [
-  { browser: 'Chrome', downloads: 27000, barColor: '#e34850' },
-  { browser: 'Firefox', downloads: 8000, barColor: '#2680eb' },
-  { browser: 'Safari', downloads: 7750, barColor: '#2d9d78' },
-  // ...
-];
-
-<Chart data={dataWithColors}>
+<Chart data={data} colors={['#e34850', '#2680eb', '#2d9d78', '#e68619', '#ae7cbf']}>
   <Axis position="bottom" baseline title="Browser" />
   <Axis position="left" grid title="Downloads" />
-  <Bar dimension="browser" metric="downloads" color="barColor" colorFromData />
+  <Bar dimension="browser" metric="downloads" color="browser" />
+  <Legend position="top" title="Browser" />
+</Chart>
+```
+
+#### Override one or more bar colors
+
+Use `colorOverrides` to give specific bars a different color while the rest use the color scale. Keys are values of the `dimension` (e.g. category labels); values are CSS colors.
+
+```jsx
+<Chart data={data}>
+  <Axis position="bottom" baseline title="Browser" />
+  <Axis position="left" grid title="Downloads" />
+  <Bar
+    dimension="browser"
+    metric="downloads"
+    color="browser"
+    colorOverrides={{ Firefox: '#e34850' }}
+  />
+  <Legend position="top" title="Browser" />
 </Chart>
 ```
 
@@ -135,13 +147,13 @@ const dataWithColors = [
             <td>color</td>
             <td>string | [string, string]</td>
             <td>'series'</td>
-            <td>The key in the data that defines what color that bar will be, or a dual facet array for more complex color mapping. This is not a color value itself but rather the key in the data that will map to the colors scale.<br/>For example: A stacked bar chart that has a different color for each operating system, `color` would be set to the name of the key in the data that defines which operating system it is (color="operatingSystem"). When <code>colorFromData</code> is true, the field's values are used directly as fill (e.g. hex, rgb(), or CSS color); the chart color scale is not used.</td>
+            <td>Data key for bar color (maps to the color scale).</td>
         </tr>
         <tr>
-            <td>colorFromData</td>
-            <td>boolean</td>
-            <td>false</td>
-            <td>When true and <code>color</code> is a field name, each bar's fill uses that field's value directly as the color (literal hex, <code>rgb()</code>, or CSS color name). Use this for a different literal color per bar from the data; the chart palette is not used. The data field should contain valid CSS color values. If a datum's color field is missing or null, a theme fallback (gray) is used so the bar remains visible.</td>
+            <td>colorOverrides</td>
+            <td>Record&lt;string, string&gt;</td>
+            <td>–</td>
+            <td>Map dimension values to CSS colors. Overridden bars use these colors; others use the color scale. Only when <code>color</code> is a field.</td>
         </tr>
         <tr>
             <td>dimension</td>

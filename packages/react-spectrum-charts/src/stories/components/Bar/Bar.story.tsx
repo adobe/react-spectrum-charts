@@ -22,7 +22,10 @@ import { Annotation } from '../../../components/Annotation';
 import useChartProps from '../../../hooks/useChartProps';
 import { bindWithProps } from '../../../test-utils';
 import { BarProps } from '../../../types';
-import { barData, barDataWithLiteralColors, barDataWithUTC } from './data';
+import { barData, barDataWithUTC } from './data';
+
+/** Shared palette for color stories (custom palette, colorOverrides). */
+const STORY_PALETTE = ['#e34850', '#2680eb', '#2d9d78', '#e68619', '#ae7cbf'];
 
 export default {
   title: 'RSC/Bar',
@@ -219,58 +222,55 @@ TooltipOnDimensionArea.args = {
 };
 
 /**
- * One story for "each bar its own color" with a control to switch between the three approaches:
- * - Default palette: color by dimension, chart palette.
- * - Custom palette: color by dimension, Chart `colors` prop.
- * - From data: literal colors from a data field (`colorFromData`).
+ * Color scheme (Chart `colors`) + override one or more bars (`colorOverrides`).
+ * Toggle palette: default or custom; Firefox is overridden to yellow in both.
  */
-type PerBarColorArgs = BarProps & { colorSource: 'defaultPalette' | 'customPalette' | 'fromData' };
+type BarColorsArgs = BarProps & { colorSource: 'defaultPalette' | 'customPalette' };
 
-const PerBarColorStory: StoryFn<PerBarColorArgs> = (args): ReactElement => {
+const BarColorsStory: StoryFn<BarColorsArgs> = (args): ReactElement => {
   const { colorSource, ...barArgs } = args;
-  const data = colorSource === 'fromData' ? barDataWithLiteralColors : barData;
   const chartProps = useChartProps({
-    data,
+    data: barData,
     width: 600,
     height: 600,
-    ...(colorSource === 'customPalette' && {
-      colors: ['#e34850', '#2680eb', '#2d9d78', '#e68619', '#ae7cbf'],
-    }),
+    ...(colorSource === 'customPalette' && { colors: STORY_PALETTE }),
   });
   const barProps: BarProps = {
     ...defaultProps,
     ...barArgs,
-    color: colorSource === 'fromData' ? 'barColor' : 'browser',
-    colorFromData: colorSource === 'fromData',
+    color: 'browser',
+    colorOverrides: { Firefox: '#FFEA00' },
   };
   return (
     <Chart {...chartProps}>
       <Axis position={barArgs.orientation === 'horizontal' ? 'left' : 'bottom'} baseline title="Browser" />
       <Axis position={barArgs.orientation === 'horizontal' ? 'bottom' : 'left'} grid title="Downloads" />
       <Bar {...barProps} />
-      {colorSource !== 'fromData' && <Legend position="top" title="Browser" />}
+      <Legend position="top" title="Browser" />
     </Chart>
   );
 };
 
-const PerBarColor = bindWithProps(PerBarColorStory);
-PerBarColor.args = {
+const BarColors = bindWithProps(BarColorsStory);
+BarColors.args = {
   ...defaultProps,
-  colorSource: 'defaultPalette',
+  color: 'browser',
+  colorOverrides: { Firefox: '#FFEA00' },
+  colorSource: 'customPalette',
 };
-PerBarColor.argTypes = {
+BarColors.argTypes = {
   colorSource: {
-    name: 'Color source',
-    options: ['defaultPalette', 'customPalette', 'fromData'],
+    name: 'Palette',
+    options: ['defaultPalette', 'customPalette'],
     control: { type: 'select' },
-    description:
-      'Default palette: color by dimension. Custom palette: same + Chart colors. From data: literal field (colorFromData).',
+    description: 'Default chart palette or custom Chart `colors`. Firefox bar uses colorOverrides (yellow) in both.',
   },
 };
 
 export {
   BarWithUTCDatetimeFormat,
   Basic,
+  BarColors,
   HasSquareCorners,
   Horizontal,
   LineType,
@@ -278,7 +278,6 @@ export {
   OnMouseInputs,
   Opacity,
   PaddingRatio,
-  PerBarColor,
   TooltipOnDimensionArea,
   WithTooltip,
   WithAnnotation,

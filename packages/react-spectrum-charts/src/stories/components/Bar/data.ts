@@ -18,7 +18,7 @@ export const barData = [
   { browser: 'Explorer', downloads: 500, percentLabel: '1.0%' },
 ];
 
-/** Data with a literal color per bar for colorFromData stories. */
+/** Data with a color per bar (e.g. for reference or for building colorOverrides from data). */
 export const barDataWithLiteralColors = [
   { browser: 'Chrome', downloads: 27000, barColor: '#e34850' },
   { browser: 'Firefox', downloads: 8000, barColor: '#2680eb' },

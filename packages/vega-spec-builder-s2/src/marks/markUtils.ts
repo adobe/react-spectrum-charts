@@ -157,24 +157,14 @@ export const hasPopover = (options: { chartPopovers?: ChartPopoverOptions[] }): 
 export const hasTooltip = (options: { chartTooltips?: ChartTooltipOptions[] }): boolean =>
   Boolean('chartTooltips' in options && options.chartTooltips?.length);
 
-export interface GetColorProductionRuleOptions {
-  /** When true and color is a field name, use datum[color] directly as the fill (literal color per mark) */
-  useLiteralColor?: boolean;
-}
-
 /**
- * Gets the color encoding
- * @param color
- * @param colorScheme
- * @param colorScaleType
- * @param options
- * @returns ColorValueRef
+ * Gets the color encoding for a mark (fill/stroke). Maps through the ordinal/linear color scale
+ * or resolves a fixed color via the theme.
  */
 export const getColorProductionRule = (
   color: ColorFacet | DualFacet,
   colorScheme: ColorScheme,
-  colorScaleType: 'linear' | 'ordinal' = 'ordinal',
-  options?: GetColorProductionRuleOptions
+  colorScaleType: 'linear' | 'ordinal' = 'ordinal'
 ): ColorValueRef => {
   const colorScaleName = colorScaleType === 'linear' ? LINEAR_COLOR_SCALE : COLOR_SCALE;
   if (Array.isArray(color)) {
@@ -183,34 +173,22 @@ export const getColorProductionRule = (
     };
   }
   if (typeof color === 'string') {
-    if (options?.useLiteralColor) {
-      return { field: color };
-    }
     return { scale: colorScaleName, field: color };
   }
   return { value: getS2ColorValue(color.value, colorScheme) };
 };
 
 /**
- * gets the color encoding in a signal string format
- * @param color
- * @param colorScheme
- * @param colorScaleType
- * @param options
- * @returns string
+ * Returns the color encoding as a Vega expression string (e.g. for use in signals or formulas).
  */
 export const getColorProductionRuleSignalString = (
   color: ColorFacet | DualFacet,
   colorScheme: ColorScheme,
-  colorScaleType: 'linear' | 'ordinal' = 'ordinal',
-  options?: GetColorProductionRuleOptions
+  colorScaleType: 'linear' | 'ordinal' = 'ordinal'
 ): string => {
-  const colorRule = getColorProductionRule(color, colorScheme, colorScaleType, options);
+  const colorRule = getColorProductionRule(color, colorScheme, colorScaleType);
   if ('signal' in colorRule) {
     return colorRule.signal;
-  }
-  if ('field' in colorRule && !('scale' in colorRule)) {
-    return `datum.${colorRule.field as string}`;
   }
   if ('scale' in colorRule && 'field' in colorRule) {
     return `scale('${colorRule.scale as string}', datum.${colorRule.field as string})`;

@@ -26,18 +26,14 @@ export interface BarOptions {
   metric?: string;
   /**
    * Bar color: a data field key (maps values through the color scale), a fixed color, or a dual facet.
-   * When {@link colorFromData} is true, the field's values are used directly as fill (no scale).
    */
   color?: ColorFacet | DualFacet;
   /**
-   * When true and {@link color} is a field name, use each datum's value for that field directly
-   * as the bar fill (e.g. hex, rgb(), or CSS color). The chart color scale is not used; values
-   * should be literal colors. Enables a different color per bar from the data.
-   * Only applies when color is a string (single field); dual facet and fixed color are ignored.
-   * Missing or null values in the color field fall back to a theme gray.
-   * @default false
+   * Override color for specific dimension values. Keys are values of {@link dimension} (e.g. category
+   * labels); values are CSS colors. Those bars use the override; others use the color scale.
+   * Only applies when {@link color} is a field name.
    */
-  colorFromData?: boolean;
+  colorOverrides?: Record<string, string>;
   /** Data field used for the bar categories (x-axis for a vertical bar) */
   dimension?: string;
   /** Data type field used for the bar categories (x-axis for a vertical bar) */

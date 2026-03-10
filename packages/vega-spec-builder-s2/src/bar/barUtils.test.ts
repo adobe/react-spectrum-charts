@@ -383,24 +383,24 @@ describe('barUtils', () => {
   });
 
   describe('getBarColorEncoding()', () => {
-    test('returns scale ref when colorFromData is false', () => {
+    test('returns scale ref for default options', () => {
       const encoding = getBarColorEncoding(defaultBarOptions);
       expect(encoding).toStrictEqual({ scale: COLOR_SCALE, field: DEFAULT_COLOR });
     });
-    test('returns production rule with fallback when colorFromData is true and color is field name', () => {
+    test('returns production rule when colorOverrides is set', () => {
       const options: BarSpecOptions = {
         ...defaultBarOptions,
-        color: 'barColor',
-        colorFromData: true,
+        color: 'browser',
+        dimension: 'browser',
+        colorOverrides: { Firefox: '#e34850' },
       };
       const encoding = getBarColorEncoding(options);
       expect(Array.isArray(encoding)).toBe(true);
-      expect((encoding as unknown[]).length).toBe(2);
-      expect((encoding as unknown[])[0]).toMatchObject({
-        test: "datum.barColor == null",
-        value: expect.any(String),
+      expect((encoding as unknown[])[0]).toStrictEqual({
+        test: 'datum.browser === "Firefox"',
+        value: '#e34850',
       });
-      expect((encoding as unknown[])[1]).toStrictEqual({ field: 'barColor' });
+      expect((encoding as unknown[])[1]).toStrictEqual({ scale: COLOR_SCALE, field: 'browser' });
     });
   });
 
@@ -417,19 +417,6 @@ describe('barUtils', () => {
         test: `(${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${MARK_ID}) || (${SELECTED_GROUP} && ${SELECTED_GROUP} === datum.bar0_selectedGroupId)`,
         value: 'static-blue',
       });
-    });
-    test('when colorFromData is true, flattens default rules so selected rule comes first', () => {
-      const options: BarSpecOptions = {
-        ...defaultBarOptions,
-        color: 'barColor',
-        colorFromData: true,
-        chartPopovers: [{}],
-      };
-      const strokeRule = getStroke(options);
-      expect(strokeRule).toHaveLength(3);
-      expect(strokeRule[0]).toMatchObject({ value: 'static-blue' });
-      expect(strokeRule[1]).toMatchObject({ test: "datum.barColor == null" });
-      expect(strokeRule[2]).toStrictEqual({ field: 'barColor' });
     });
   });
 
