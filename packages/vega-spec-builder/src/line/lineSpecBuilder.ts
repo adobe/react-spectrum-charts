@@ -36,10 +36,10 @@ import { getDualAxisScaleNames } from '../scale/scaleUtils';
 import { addHoveredItemSignal, getFirstRscSeriesIdSignal, getLastRscSeriesIdSignal } from '../signal/signalSpecBuilder';
 import { addUserMetaInteractiveMark, getFacetsFromOptions } from '../specUtils';
 import { addTrendlineData, getTrendlineMarks, getTrendlineScales, setTrendlineSignals } from '../trendline';
-import { ColorScheme, HighlightedItem, LineOptions, LineSpecOptions, ScSpec, Granularity } from '../types';
-import { getLinePointAnnotationMarks } from './linePointAnnotation';
+import { ColorScheme, Granularity, HighlightedItem, LineOptions, LineSpecOptions, ScSpec } from '../types';
 import { getLineHighlightedData, getLineStaticPointData } from './lineDataUtils';
 import { getLineHoverMarks, getLineMark } from './lineMarkUtils';
+import { getLinePointAnnotationMarks } from './linePointAnnotation';
 import { getLineStaticPoint } from './linePointUtils';
 import { getPopoverMarkName, isDualMetricAxis } from './lineUtils';
 
@@ -129,28 +129,34 @@ export const addLine = produce<
 
 export const addData = produce<Data[], [LineSpecOptions, { timeGranularity?: Granularity }?]>(
   (data, options, usermeta) => {
-    const { chartTooltips, dimension, highlightedItem, metric, isSparkline, isMethodLast, name, scaleType, staticPoint } =
-      options;
+    const {
+      chartTooltips,
+      dimension,
+      highlightedItem,
+      metric,
+      isSparkline,
+      isMethodLast,
+      name,
+      scaleType,
+      staticPoint,
+    } = options;
     if (scaleType === 'time') {
       const tableData = getTableData(data);
-      tableData.transform = addTimeTransform(
-        tableData.transform ?? [],
-        dimension,
-        usermeta?.timeGranularity
-      );
+      tableData.transform = addTimeTransform(tableData.transform ?? [], dimension, usermeta?.timeGranularity);
     }
-  if (isInteractive(options) || highlightedItem !== undefined) {
-    const validNumericKeys = scaleType === 'linear' ? [dimension, metric] : [metric];
-    data.push(getLineHighlightedData(options), getFilteredTooltipData(chartTooltips, validNumericKeys));
+    if (isInteractive(options) || highlightedItem !== undefined) {
+      const validNumericKeys = scaleType === 'linear' ? [dimension, metric] : [metric];
+      data.push(getLineHighlightedData(options), getFilteredTooltipData(chartTooltips, validNumericKeys));
+    }
+    if (staticPoint || isSparkline)
+      data.push(getLineStaticPointData(name, staticPoint, FILTERED_TABLE, isSparkline, isMethodLast));
+    addDualMetricAxisData(data, options);
+    addTrendlineData(data, options);
+    addTooltipData(data, options, false);
+    addPopoverData(data, options);
+    data.push(...getMetricRangeData(options));
   }
-  if (staticPoint || isSparkline)
-    data.push(getLineStaticPointData(name, staticPoint, FILTERED_TABLE, isSparkline, isMethodLast));
-  addDualMetricAxisData(data, options);
-  addTrendlineData(data, options);
-  addTooltipData(data, options, false);
-  addPopoverData(data, options);
-  data.push(...getMetricRangeData(options));
-});
+);
 
 /**
  * Adds data sources for dual metric axis feature

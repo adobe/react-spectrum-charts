@@ -40,6 +40,38 @@ The `Line` component is used to display line charts. You can specify the type of
 ![Line tooltip chart example](/img/line_tooltip_light.png#gh-light-mode-only)
 ![Line tooltip chart example](/img/line_tooltip_dark.png#gh-dark-mode-only)
 
+#### Line with custom context menu (right-click)
+
+Use the `onContextMenu` prop to show your own context menu when the user right-clicks a point. The callback receives the native `MouseEvent` (for positioning and `preventDefault()`) and the datum for the clicked point.
+
+```jsx
+const [menu, setMenu] = useState({ x: 0, y: 0, datum: null, open: false });
+
+<Chart data={data}>
+  <Axis position="bottom" labelFormat="time" ticks baseline />
+  <Axis position="left" grid title="Users" />
+  <Line
+    metric="users"
+    color="event"
+    onContextMenu={(event, datum) => {
+      event.preventDefault();
+      setMenu({ x: event.clientX, y: event.clientY, datum, open: true });
+    }}
+  >
+    <ChartTooltip>{(d) => <div>{d.date} – {Number(d.users).toLocaleString()} users</div>}</ChartTooltip>
+  </Line>
+  <Legend position="bottom" />
+</Chart>
+{menu.open && (
+  <YourContextMenu
+    x={menu.x}
+    y={menu.y}
+    datum={menu.datum}
+    onClose={() => setMenu((m) => ({ ...m, open: false }))}
+  />
+)}
+```
+
 #### Line with Trendline and MetricRange
 
 ```jsx
@@ -109,6 +141,12 @@ The `Line` component is used to display line charts. You can specify the type of
             <td>(event: MouseEvent, data: any) => void</td>
             <td>–</td>
             <td>Callback function that will be executed when a point or section of the line is clicked. Receives the mouse event and the data point as arguments.</td>
+        </tr>
+        <tr>
+            <td>onContextMenu</td>
+            <td>(event: MouseEvent, data: any) => void</td>
+            <td>–</td>
+            <td>Callback function that will be executed when a point or section of the line is right-clicked. Receives the native mouse event (e.g. for <code>clientX</code>/<code>clientY</code> and <code>preventDefault()</code>) and the data point. Use this to show your own custom context menu anchored to the clicked point.</td>
         </tr>
         <tr>
             <td>onMouseOver</td>

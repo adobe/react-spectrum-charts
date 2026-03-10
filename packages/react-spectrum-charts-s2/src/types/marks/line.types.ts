@@ -15,7 +15,7 @@ import { LineOptions } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { ChartPopoverElement, ChartTooltipElement } from '../dialogs';
 import { LineDirectLabelElement } from './supplemental/lineDirectLabel.types';
-import { Children, MarkCallback } from '../util.types';
+import { Children, ContextMenuCallback, MarkCallback } from '../util.types';
 
 type LineChildElement = ChartPopoverElement | ChartTooltipElement | LineDirectLabelElement;
 export interface LineProps
@@ -26,6 +26,8 @@ export interface LineProps
   children?: Children<LineChildElement>;
   /** Callback that will be run when a point/section is clicked */
   onClick?: MarkCallback;
+  /** Callback that will be run when a point/section is right-clicked. Use to show a custom context menu. */
+  onContextMenu?: ContextMenuCallback;
 }
 
 export type LineElement = ReactElement<LineProps, JSXElementConstructor<LineProps>>;

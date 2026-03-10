@@ -17,7 +17,12 @@ export type ChildElement<T> = T | string | boolean | Iterable<ReactNode>;
 export type Children<T> = ChildElement<T> | ChildElement<T>[];
 export type MarkCallback = (datum: Datum) => void;
 
+/** Callback for right-click context menu. Receives the native mouse event (for position and preventDefault) and the datum. */
+export type ContextMenuCallback = (event: MouseEvent, datum: Datum) => void;
+
 export interface ClickableChartProps {
   /** Callback that will be run when a point/section is clicked */
   onClick?: MarkCallback;
+  /** Callback that will be run when a point/section is right-clicked. Use to show a custom context menu. */
+  onContextMenu?: ContextMenuCallback;
 }

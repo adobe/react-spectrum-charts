@@ -21,6 +21,7 @@ import { useChartContext } from '../context/RscChartContext';
 import { ChartChildElement, RscChartProps } from '../types';
 import {
   getOnChartMarkClickCallback,
+  getOnChartMarkContextMenuCallback,
   getOnMarkClickCallback,
   getOnMouseInputCallback,
   setSelectedSignals,
@@ -131,6 +132,13 @@ const useNewChartView = (
             })
           );
         }
+      }
+      if (markClickDetails.some((d) => d.onContextMenu)) {
+        const chartContainer = document.querySelector(`#${chartId}`);
+        if (chartContainer) {
+          chartContainer.addEventListener('contextmenu', (e) => e.preventDefault());
+        }
+        view.addEventListener('contextmenu', getOnChartMarkContextMenuCallback(chartView, markClickDetails));
       }
       view.addEventListener('click', getOnChartMarkClickCallback(chartView, markClickDetails));
       view.addEventListener('mouseover', getOnMouseInputCallback(onLegendMouseOver, markMouseInputDetails));

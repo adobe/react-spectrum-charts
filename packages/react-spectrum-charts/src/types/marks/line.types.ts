@@ -14,7 +14,7 @@ import { JSXElementConstructor, ReactElement } from 'react';
 import { LineOptions } from '@spectrum-charts/vega-spec-builder';
 
 import { ChartPopoverElement, ChartTooltipElement } from '../dialogs';
-import { Children, MarkCallback } from '../util.types';
+import { Children, ContextMenuCallback, MarkCallback } from '../util.types';
 import { LinePointAnnotationElement, MetricRangeElement, TrendlineElement } from './supplemental';
 
 type LineChildElement = ChartTooltipElement | ChartPopoverElement | LinePointAnnotationElement | MetricRangeElement | TrendlineElement;
@@ -26,6 +26,8 @@ export interface LineProps
   children?: Children<LineChildElement>;
   /** Callback that will be run when a point/section is clicked */
   onClick?: MarkCallback;
+  /** Callback that will be run when a point/section is right-clicked. Use to show a custom context menu. */
+  onContextMenu?: ContextMenuCallback;
   /** Callback that will be run when a point/section is hovered */
   onMouseOver?: MarkCallback;
   /** Callback that will be run when a point/section is no longer hovered */
