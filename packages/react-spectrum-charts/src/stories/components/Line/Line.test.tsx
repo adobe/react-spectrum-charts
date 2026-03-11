@@ -23,6 +23,7 @@ import {
   getAllLegendSymbols,
   hoverNthElement,
   render,
+  rightClickNthElement,
   screen,
   unhoverNthElement,
   within,
@@ -401,6 +402,28 @@ describe('Line', () => {
 
       expect(onClick).toHaveBeenCalledTimes(1);
       expect(onClick).toHaveBeenCalledWith(expect.objectContaining(workspaceTrendsData[4]));
+    });
+  });
+
+  describe('onContextMenu callback', () => {
+    test('should call the onContextMenu function with event and expected data when right-clicking a point', async () => {
+      const onContextMenu = jest.fn();
+      render(<OnClickStory {...OnClickStory.args} onContextMenu={onContextMenu} />);
+
+      const chart = await findChart();
+      expect(chart).toBeInTheDocument();
+
+      const paths = await findAllMarksByGroupName(chart, 'line0_voronoi');
+      await rightClickNthElement(paths, 4);
+
+      expect(onContextMenu).toHaveBeenCalledTimes(1);
+      expect(onContextMenu).toHaveBeenCalledWith(
+        expect.any(Object),
+        expect.objectContaining(workspaceTrendsData[4])
+      );
+      expect(onContextMenu.mock.calls[0][0]).toMatchObject(
+        expect.objectContaining({ clientX: expect.any(Number), clientY: expect.any(Number) })
+      );
     });
   });
 

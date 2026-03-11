@@ -114,6 +114,33 @@ export const getOnChartMarkClickCallback = (
   };
 };
 
+/**
+ * Returns the callback to be used for the `onContextMenu` prop on a mark.
+ * Invokes the mark's onContextMenu with the native event and datum so the consumer can show a custom context menu.
+ * @param chartView - The mutable ref object containing the chart view.
+ * @param markClickDetails - The details for all marks with the onContextMenu prop.
+ * @returns The callback for contextmenu events.
+ */
+export const getOnChartMarkContextMenuCallback = (
+  chartView: MutableRefObject<View | undefined>,
+  markClickDetails?: MarkOnClickDetail[]
+): ViewEventCallback => {
+  return (event, item) => {
+    if (!item || !markClickDetails?.length || isLegendItem(item) || !chartView.current) return;
+    if (event.type !== 'contextmenu') return;
+
+    item = getGroupOrAreaMarkItemFromItem(item);
+    if (!userDidNotClickOnLegend(item)) return;
+
+    const itemName = getItemName(item);
+    const detail = markClickDetails.find((d) => d.markName === itemName);
+    if (detail?.onContextMenu) {
+      const nativeEvent = (event as unknown as { sourceEvent?: MouseEvent }).sourceEvent ?? (event as unknown as MouseEvent);
+      detail.onContextMenu(nativeEvent, item.datum);
+    }
+  };
+};
+
 const getGroupOrAreaMarkItemFromItem = (item: NonNullable<ActionItem>) => {
   // if they clicked on a mark group then we want to go down an additional level
   if (isGroupMarkItem(item)) {

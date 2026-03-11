@@ -14,7 +14,7 @@ import { JSXElementConstructor, ReactElement } from 'react';
 import { BarOptions } from '@spectrum-charts/vega-spec-builder';
 
 import { ChartPopoverElement, ChartTooltipElement } from '../dialogs';
-import { Children, MarkCallback } from '../util.types';
+import { Children, ContextMenuCallback, MarkCallback } from '../util.types';
 import { BarAnnotationElement, TrendlineElement } from './supplemental';
 
 export interface BarProps
@@ -25,6 +25,8 @@ export interface BarProps
   children?: Children<BarAnnotationElement | ChartPopoverElement | ChartTooltipElement | TrendlineElement>;
   /** Callback that will be run when a point/section is clicked */
   onClick?: MarkCallback;
+  /** Callback that will be run when a point/section is right-clicked. Use to show a custom context menu. */
+  onContextMenu?: ContextMenuCallback;
   /** Callback that will be run when a point/section is hovered */
   onMouseOver?: MarkCallback;
   /** Callback that will be run when a point/section is no longer hovered */

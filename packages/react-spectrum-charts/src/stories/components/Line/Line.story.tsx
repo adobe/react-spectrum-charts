@@ -22,8 +22,8 @@ import useChartProps from '../../../hooks/useChartProps';
 import {
   simpleSparklineData,
   workspaceTrendsData,
-  workspaceTrendsDataWithVisiblePoints,
   workspaceTrendsDataWithGaps,
+  workspaceTrendsDataWithVisiblePoints,
 } from '../../../stories/data/data';
 import { formatTimestamp } from '../../../stories/storyUtils';
 import { bindWithProps } from '../../../test-utils';
@@ -161,8 +161,8 @@ const WithGapsInDataStory: StoryFn<typeof Line> = (args): ReactElement => {
   const chartProps = useChartProps({ ...defaultChartProps, data: workspaceTrendsDataWithGaps });
   return (
     <Chart {...chartProps}>
-       <Axis position="left" grid title="Users" />
-       <Axis position="bottom" labelFormat="time" baseline ticks />
+      <Axis position="left" grid title="Users" />
+      <Axis position="bottom" labelFormat="time" baseline ticks />
       <Line {...args} />
       <Legend highlight />
     </Chart>
@@ -328,6 +328,7 @@ OnClick.args = {
   metric: 'value',
   scaleType: 'time',
   onClick: action('onClick'),
+  onContextMenu: action('onContextMenu'),
 };
 
 const OnClickWithTooltip = bindWithProps(BasicLineStory);
@@ -378,18 +379,18 @@ const OnMouseInputsStory: StoryFn<typeof Line> = (args): ReactElement => {
   return (
     <div>
       <div data-testid="hover-info" style={{ width: '800px', height: '100px' }}>
-          {isHovering && hoveredData ? (
-            <div data-testid="hover-data">{JSON.stringify(hoveredData, null, 2)}</div>
-          ) : (
-            <div data-testid="no-hover">No point hovered</div>
-          )}
+        {isHovering && hoveredData ? (
+          <div data-testid="hover-data">{JSON.stringify(hoveredData, null, 2)}</div>
+        ) : (
+          <div data-testid="no-hover">No point hovered</div>
+        )}
       </div>
-        <Chart {...chartProps}>
-          <Axis position="left" grid title="Users" />
-          <Axis position="bottom" labelFormat="time" baseline ticks />
-          <Line {...args} onMouseOver={controlledMouseOver} onMouseOut={controlledMouseOut} />
-          <Legend highlight />
-        </Chart>
+      <Chart {...chartProps}>
+        <Axis position="left" grid title="Users" />
+        <Axis position="bottom" labelFormat="time" baseline ticks />
+        <Line {...args} onMouseOver={controlledMouseOver} onMouseOut={controlledMouseOut} />
+        <Legend highlight />
+      </Chart>
     </div>
   );
 };
