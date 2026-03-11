@@ -275,14 +275,14 @@ const metricRangeWithDisplayPointMarks = [
           },
         ],
         size: {
-          value: 125,
+          value: 64,
         },
         fill: {
-          scale: COLOR_SCALE,
-          field: 'series',
+          signal: BACKGROUND_COLOR,
         },
         stroke: {
-          signal: BACKGROUND_COLOR,
+          scale: COLOR_SCALE,
+          field: 'series',
         },
       },
       update: {
@@ -315,14 +315,14 @@ const displayPointMarks = [
           },
         ],
         size: {
-          value: 125,
+          value: 64,
         },
         fill: {
-          scale: COLOR_SCALE,
-          field: 'series',
+          signal: BACKGROUND_COLOR,
         },
         stroke: {
-          signal: BACKGROUND_COLOR,
+          scale: COLOR_SCALE,
+          field: 'series',
         },
       },
       update: {

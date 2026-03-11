@@ -44,6 +44,7 @@ import {
   getHighlightBackgroundPoint,
   getHighlightPoint,
   getSecondaryHighlightPoint,
+  getSelectionPoint,
 } from './linePointUtils';
 import { isDualMetricAxis, LineMarkOptions } from './lineUtils';
 
@@ -251,6 +252,7 @@ export const getLineHoverMarks = (
     getHoverRule(dimension, name, scaleType),
     // point behind the hovered or selected point used to prevent bacgorund elements from being visible through low opacity point
     getHighlightBackgroundPoint(lineOptions),
+    ...(hasPopover(lineOptions) ? [getSelectionPoint(lineOptions)] : []),
     // hover or select point
     getHighlightPoint(lineOptions),
     // additional point that gets highlighted like the trendline or raw line point
