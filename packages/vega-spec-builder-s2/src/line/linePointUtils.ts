@@ -70,7 +70,7 @@ export const getLineStaticPoint = (lineOptions: LineSpecOptions): SymbolMark => 
  * @returns SymbolMark
  */
 export const getHighlightBackgroundPoint = (lineOptions: LineMarkOptions): SymbolMark => {
-  const { dimension, metric, name, scaleType } = lineOptions;
+  const { dimension, metric, name, pointSize = 64, scaleType } = lineOptions;
   return {
     name: `${name}_pointBackground`,
     description: `${name}_pointBackground`,
@@ -79,6 +79,7 @@ export const getHighlightBackgroundPoint = (lineOptions: LineMarkOptions): Symbo
     interactive: false,
     encode: {
       enter: {
+        size: { value: pointSize },
         y: getLineYEncoding(lineOptions, metric),
         fill: { signal: BACKGROUND_COLOR },
         stroke: { signal: BACKGROUND_COLOR },
@@ -91,7 +92,7 @@ export const getHighlightBackgroundPoint = (lineOptions: LineMarkOptions): Symbo
 };
 
 const getHighlightOrSelectionPoint = (lineOptions: LineMarkOptions, useHighlightedData = true): SymbolMark => {
-  const { color, colorScheme, dimension, metric, name, scaleType } = lineOptions;
+  const { color, colorScheme, dimension, metric, name, pointSize = 64, scaleType } = lineOptions;
   return {
     name: `${name}_point_${useHighlightedData ? 'highlight' : 'select'}`,
     description: `${name}_point_${useHighlightedData ? 'highlight' : 'select'}`,
@@ -100,8 +101,10 @@ const getHighlightOrSelectionPoint = (lineOptions: LineMarkOptions, useHighlight
     interactive: false,
     encode: {
       enter: {
-        y: getLineYEncoding(lineOptions, metric),
+        size: { value: pointSize },
+        fill: { signal: BACKGROUND_COLOR },
         stroke: getColorProductionRule(color, colorScheme),
+        y: getLineYEncoding(lineOptions, metric),
       },
       update: {
         x: getXProductionRule(scaleType, dimension),
@@ -157,4 +160,3 @@ export const getSecondaryHighlightPoint = (
     },
   };
 };
-
