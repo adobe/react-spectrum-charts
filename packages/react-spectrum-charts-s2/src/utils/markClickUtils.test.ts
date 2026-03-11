@@ -19,6 +19,7 @@ import {
   getItemBounds,
   getItemName,
   getLegendItemValue,
+  getOnChartMarkContextMenuCallback,
   getOnMarkClickCallback,
   handleLegendItemClick,
   handleLegendItemMouseInput,
@@ -238,5 +239,110 @@ describe('getOnMarkClickCallback() mark click with markHasPopover', () => {
       [COMPONENT_NAME]: 'bar0',
       foo: 1,
     });
+  });
+});
+
+describe('getOnChartMarkContextMenuCallback()', () => {
+  const chartView = { current: true as unknown as View };
+  const lineMarkItem = {
+    datum: { date: 1000, value: 42 },
+    bounds: { x1: 5, y1: 10, x2: 15, y2: 20 },
+    mark: {
+      role: 'mark',
+      name: 'line0_voronoi',
+      marktype: 'path',
+      group: { x: 0, y: 0 },
+      items: [],
+    },
+  } as unknown as Item;
+
+  const fakeContextMenuEvent = { type: 'contextmenu', clientX: 10, clientY: 15 } as unknown as Parameters<
+    ReturnType<typeof getOnChartMarkContextMenuCallback>
+  >[0];
+
+  test('should call onContextMenu with event and datum when contextmenu event on matching mark', () => {
+    const onContextMenu = jest.fn();
+    const callback = getOnChartMarkContextMenuCallback(chartView, [
+      { markName: 'line0', onContextMenu },
+    ]);
+    callback(fakeContextMenuEvent, lineMarkItem);
+    expect(onContextMenu).toHaveBeenCalledTimes(1);
+    expect(onContextMenu).toHaveBeenCalledWith(
+      expect.objectContaining({ clientX: 10, clientY: 15 }),
+      { date: 1000, value: 42 }
+    );
+  });
+
+  test('should not call onContextMenu when event type is click', () => {
+    const onContextMenu = jest.fn();
+    const callback = getOnChartMarkContextMenuCallback(chartView, [
+      { markName: 'line0', onContextMenu },
+    ]);
+    callback({ type: 'click' } as unknown as typeof fakeContextMenuEvent, lineMarkItem);
+    expect(onContextMenu).not.toHaveBeenCalled();
+  });
+
+  test('should not call onContextMenu when item is legend item', () => {
+    const onContextMenu = jest.fn();
+    const legendItem = {
+      datum: { value: 'Chrome' },
+      mark: { role: 'legend-symbol', name: 'legend', marktype: 'symbol', group: { x: 0, y: 0 }, items: [] },
+      bounds: { x1: 0, y1: 0, x2: 10, y2: 10 },
+    } as unknown as Item;
+    const callback = getOnChartMarkContextMenuCallback(chartView, [
+      { markName: 'line0', onContextMenu },
+    ]);
+    callback(fakeContextMenuEvent, legendItem);
+    expect(onContextMenu).not.toHaveBeenCalled();
+  });
+
+  test('should not call onContextMenu when no detail matches mark name', () => {
+    const onContextMenu = jest.fn();
+    const callback = getOnChartMarkContextMenuCallback(chartView, [
+      { markName: 'bar0', onContextMenu },
+    ]);
+    callback(fakeContextMenuEvent, lineMarkItem);
+    expect(onContextMenu).not.toHaveBeenCalled();
+  });
+
+  test('should not call onContextMenu when markClickDetails is empty', () => {
+    const onContextMenu = jest.fn();
+    const callback = getOnChartMarkContextMenuCallback(chartView, []);
+    callback(fakeContextMenuEvent, lineMarkItem);
+    expect(onContextMenu).not.toHaveBeenCalled();
+  });
+
+  test('should not call onContextMenu when chartView.current is undefined', () => {
+    const onContextMenu = jest.fn();
+    const callback = getOnChartMarkContextMenuCallback({ current: undefined }, [
+      { markName: 'line0', onContextMenu },
+    ]);
+    callback(fakeContextMenuEvent, lineMarkItem);
+    expect(onContextMenu).not.toHaveBeenCalled();
+  });
+
+  test('should not call onContextMenu when item is null', () => {
+    const onContextMenu = jest.fn();
+    const callback = getOnChartMarkContextMenuCallback(chartView, [
+      { markName: 'line0', onContextMenu },
+    ]);
+    callback(fakeContextMenuEvent, null as unknown as ActionItem);
+    expect(onContextMenu).not.toHaveBeenCalled();
+  });
+
+  test('should use sourceEvent when present on event', () => {
+    const onContextMenu = jest.fn();
+    const eventWithSource = {
+      type: 'contextmenu',
+      sourceEvent: { clientX: 100, clientY: 200 } as MouseEvent,
+    } as unknown as Parameters<ReturnType<typeof getOnChartMarkContextMenuCallback>>[0];
+    const callback = getOnChartMarkContextMenuCallback(chartView, [
+      { markName: 'line0', onContextMenu },
+    ]);
+    callback(eventWithSource, lineMarkItem);
+    expect(onContextMenu).toHaveBeenCalledWith(
+      expect.objectContaining({ clientX: 100, clientY: 200 }),
+      { date: 1000, value: 42 }
+    );
   });
 });

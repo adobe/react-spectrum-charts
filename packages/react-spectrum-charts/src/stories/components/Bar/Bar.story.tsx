@@ -191,6 +191,9 @@ OnClick.args = {
   onClick: (datum) => {
     console.log('datum:', datum);
   },
+  onContextMenu: (event, datum) => {
+    console.log('event, datum', event, datum);
+  },
 };
 
 const OnMouseInputs = bindWithProps(OnMouseInputsStory);

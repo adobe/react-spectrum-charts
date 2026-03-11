@@ -18,6 +18,7 @@ import {
   findChart,
   hoverNthElement,
   render,
+  rightClickNthElement,
   screen,
   unhoverNthElement,
   within,
@@ -148,6 +149,23 @@ describe('Bar', () => {
 
     await clickNthElement(bars, 4);
     expect(onClick).toHaveBeenCalledWith(expect.objectContaining(barData[4]));
+  });
+
+  test('should call onContextMenu callback when right-clicking a bar item', async () => {
+    const onContextMenu = jest.fn();
+    render(<OnClick {...OnClick.args} onContextMenu={onContextMenu} />);
+    const chart = await findChart();
+    const bars = await findAllMarksByGroupName(chart, 'bar0');
+
+    await rightClickNthElement(bars, 0);
+    expect(onContextMenu).toHaveBeenCalledTimes(1);
+    expect(onContextMenu).toHaveBeenCalledWith(
+      expect.any(Object),
+      expect.objectContaining(barData[0])
+    );
+    expect(onContextMenu.mock.calls[0][0]).toMatchObject(
+      expect.objectContaining({ clientX: expect.any(Number), clientY: expect.any(Number) })
+    );
   });
 
   test('should call onMouseOver and onMouseOut callbacks when hovering bar items', async () => {
