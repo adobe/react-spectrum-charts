@@ -14,6 +14,7 @@ import { Data, LinearScale, OrdinalScale, PointScale, Scale, Signal } from 'vega
 
 import {
   BACKGROUND_COLOR,
+  REFERENCE_LINE_LABEL_BACKGROUND_STROKE,
   CONTROLLED_HIGHLIGHTED_ITEM,
   CONTROLLED_HIGHLIGHTED_SERIES,
   CONTROLLED_HIGHLIGHTED_TABLE,
@@ -235,14 +236,19 @@ export const getDefaultSignals = ({
   highlightedItem,
   highlightedSeries,
 }: ChartSpecOptions): Signal[] => {
-  // if the background color is transparent, then we want to set the signal background color to gray-50
-  // if the signal background color were transparent then backgroundMarks and annotation fill would also be transparent
-  const signalBackgroundColor = backgroundColor === 'transparent' ? 'gray-50' : backgroundColor;
+  // default Spectrum 2 background is gray-25 when transparent
+  const signalBackgroundColor = backgroundColor === 'transparent' ? 'gray-25' : backgroundColor;
+  // reference line label backing: spectrum background when no chart background, else match chart background
+  const referenceLineLabelStroke =
+    backgroundColor === 'transparent' || !backgroundColor
+      ? getS2ColorValue('gray-25', colorScheme)
+      : getS2ColorValue(signalBackgroundColor, colorScheme);
   // highlightedItem should be undefined or an array
   const formattedHighlightedItem =
     highlightedItem === undefined || Array.isArray(highlightedItem) ? highlightedItem : [highlightedItem];
   return [
     getGenericValueSignal(BACKGROUND_COLOR, getS2ColorValue(signalBackgroundColor, colorScheme)),
+    getGenericValueSignal(REFERENCE_LINE_LABEL_BACKGROUND_STROKE, referenceLineLabelStroke),
     getGenericValueSignal('colors', getTwoDimensionalColorScheme(colors, colorScheme)),
     getGenericValueSignal('lineTypes', getTwoDimensionalLineTypes(lineTypes)),
     getGenericValueSignal('opacities', getTwoDimensionalOpacities(opacities)),

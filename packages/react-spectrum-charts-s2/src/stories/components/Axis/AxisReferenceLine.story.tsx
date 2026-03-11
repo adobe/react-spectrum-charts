@@ -14,76 +14,47 @@ import React, { ReactElement } from 'react';
 import { StoryFn } from '@storybook/react';
 
 import { Chart } from '../../../Chart';
-import { Axis, ReferenceLine } from '../../../components';
+import { Axis, Line, ReferenceLine } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
+import { workspaceTrendsData } from '../../../stories/data/data';
 import { bindWithProps } from '../../../test-utils';
+import { ChartProps } from '../../../types';
 
 export default {
   title: 'RSC/Axis/ReferenceLine',
   component: ReferenceLine,
 };
 
-const data = [
-  { x: 0, y: 0, series: 0 },
-  { x: 1, y: 1, series: 0 },
-];
+const defaultChartProps: ChartProps = {
+  data: workspaceTrendsData,
+  minWidth: 400,
+  maxWidth: 800,
+  height: 400,
+  backgroundColor: 'gray-50',
+};
 
 const ReferenceLineStory: StoryFn<typeof ReferenceLine> = (args): ReactElement => {
-  const chartProps = useChartProps({ data, width: 600 });
+  const chartProps = useChartProps(defaultChartProps);
   return (
     <Chart {...chartProps}>
-      <Axis position="bottom" baseline ticks>
+      <Axis position="left" grid title="Users">
         <ReferenceLine {...args} />
       </Axis>
+      <Axis position="bottom" labelFormat="time" baseline ticks />
+      <Line dimension="datetime" metric="users" color="series" scaleType="time" />
     </Chart>
   );
 };
 
 const Basic = bindWithProps(ReferenceLineStory);
 Basic.args = {
-  value: 0.5,
-};
-
-const Color = bindWithProps(ReferenceLineStory);
-Color.args = {
-  color: 'blue-500',
-  value: 0.5,
-};
-
-const Icon = bindWithProps(ReferenceLineStory);
-Icon.args = {
-  icon: 'date',
-  value: 0.5,
-};
-
-const IconColor = bindWithProps(ReferenceLineStory);
-IconColor.args = {
-  icon: 'date',
-  iconColor: 'blue-500',
-  value: 0.5,
+  value: 5000,
 };
 
 const Label = bindWithProps(ReferenceLineStory);
 Label.args = {
-  label: 'Middle',
-  value: 0.5,
+  label: 'Target',
+  value: 5000,
 };
 
-const LabelColor = bindWithProps(ReferenceLineStory);
-LabelColor.args = {
-  label: 'Positive',
-  value: 0.5,
-  labelColor: 'green-700',
-};
-
-const Supreme = bindWithProps(ReferenceLineStory);
-Supreme.args = {
-  color: 'blue-500',
-  icon: 'sentimentPositive',
-  iconColor: 'yellow-700',
-  label: 'Good',
-  labelColor: 'green-700',
-  value: 0.5,
-};
-
-export { Basic, Color, Icon, IconColor, Label, LabelColor, Supreme };
+export { Basic, Label };

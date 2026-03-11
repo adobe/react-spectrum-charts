@@ -142,6 +142,21 @@ export const TOOLTIP_DELAY = 350;
 // 'backgroundColor' is an undocumented protected signal name used by vega
 export const BACKGROUND_COLOR = 'chartBackgroundColor';
 
+// S2 direct label shared style constants (used by LineDirectLabel and ReferenceLine)
+export const DIRECT_LABEL_FONT_WEIGHT = 700 as const;
+export const DIRECT_LABEL_BACKGROUND_STROKE_WIDTH = 4;
+
+// S2 reference line label constants — alias the shared direct label values
+export const REFERENCE_LINE_LABEL_FONT_WEIGHT = DIRECT_LABEL_FONT_WEIGHT;
+export const REFERENCE_LINE_LABEL_BACKGROUND_STROKE = 'referenceLineLabelBackgroundStroke';
+export const REFERENCE_LINE_LABEL_BACKGROUND_STROKE_WIDTH = DIRECT_LABEL_BACKGROUND_STROKE_WIDTH;
+export const REFERENCE_LINE_LABEL_OFFSET_FROM_LINE = 9;
+// Arrow cap SVG paths from referenceLineSpec.json
+export const REFERENCE_LINE_START_CAP_PATH =
+  'M2.82 -0.59249 C3.3 -0.31536 3.3 0.37746 2.82 0.65459 L-2.22 3.56444 C-2.7 3.84157 -3.3 3.49516 -3.3 2.9409 L-3.3 -2.87879 C-3.3 -3.43304 -2.7 -3.77946 -2.22 -3.50233 L2.82 -0.59249Z';
+export const REFERENCE_LINE_END_CAP_PATH =
+  'M0.360029 -0.623544C-0.119971 -0.346416 -0.119970 0.346404 0.360030 0.623532L5.400036 3.533388C5.880024 3.810516 6.480024 3.464100 6.480024 2.909844L6.480024 -2.909844C6.480024 -3.464100 5.880024 -3.810516 5.400024 -3.533388L0.360029 -0.623544Z';
+
 // time constants
 export const MS_PER_DAY = 86400000;
 export const TIME = 'time';
