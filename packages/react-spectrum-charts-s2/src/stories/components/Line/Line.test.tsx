@@ -272,14 +272,14 @@ describe('Line', () => {
 
       const hoverPoints = await findAllMarksByGroupName(chart, 'line0_point_highlight');
       expect(hoverPoints.length).toBe(1);
-      expect(hoverPoints[0].getAttribute('fill')).toBeNull();
+      expect(hoverPoints[0].getAttribute('fill')).toEqual('white');
       expect(hoverPoints[0].getAttribute('stroke')).toEqual('#5424DB'); // S2 categorical-100
       expect(hoverPoints[0]).toHaveAttribute('stroke-width', '2');
       expect(hoverPoints[0].getAttribute('stroke-opacity')).toBeNull();
       expect(hoverPoints[0]).not.toHaveAttribute('fill-opacity');
     });
 
-    test('Static point hovering', async () => {
+    test('Static point hovering (currently there is no visible change on hover)', async () => {
       render(<WithStaticPointsAndDialogs {...WithStaticPointsAndDialogs.args} />);
       const chart = await findChart();
       expect(chart).toBeInTheDocument();
@@ -322,7 +322,7 @@ describe('Line', () => {
 
       const hoverPoints = await findAllMarksByGroupName(chart, 'line0_point_highlight');
       expect(hoverPoints.length).toBe(1);
-      expect(hoverPoints[0].getAttribute('fill')).toBeNull();
+      expect(hoverPoints[0].getAttribute('fill')).toEqual('white');
       expect(hoverPoints[0].getAttribute('stroke')).toEqual('#5424DB'); // S2 categorical-100
       expect(hoverPoints[0]).toHaveAttribute('stroke-width', '2');
       expect(hoverPoints[0].getAttribute('stroke-opacity')).toBeNull();
@@ -331,12 +331,13 @@ describe('Line', () => {
   });
 
   describe('selected point styling', () => {
-    test('points on a line should have a selection ring around them when selected', async () => {
+    test('points on a line should have no visible change when selected', async () => {
       render(<WithStaticPointsAndDialogs {...WithStaticPointsAndDialogs.args} />);
       const chart = await findChart();
       expect(chart).toBeInTheDocument();
 
       const paths = await findAllMarksByGroupName(chart, 'line0_voronoi');
+      // hover a static point
       await clickNthElement(paths, 1);
 
       const point = await findMarksByGroupName(chart, 'line0_point_select');
@@ -346,24 +347,7 @@ describe('Line', () => {
       expect(point.getAttribute('stroke-width')).toEqual('2');
     });
 
-    test('static points should have extra wide, low opacity, series color border and series color fill when selected', async () => {
-      render(<WithStaticPointsAndDialogs {...WithStaticPointsAndDialogs.args} />);
-      const chart = await findChart();
-      expect(chart).toBeInTheDocument();
-
-      const paths = await findAllMarksByGroupName(chart, 'line0_voronoi');
-      await clickNthElement(paths, 1);
-
-      const point = await findMarksByGroupName(chart, 'line0_point_select');
-      expect(point).toBeInTheDocument();
-
-      expect(point.getAttribute('fill')).toBeNull();
-      expect(point.getAttribute('stroke')).toEqual('#5424DB'); // S2 categorical-100
-      expect(point.getAttribute('stroke-opacity')).toBeNull();
-      expect(point.getAttribute('stroke-width')).toEqual('2');
-    });
-
-    test('standard points should have backgroundColor border and series color fill when selected', async () => {
+    test('standard points should have series color border and background color fill when selected', async () => {
       render(<WithStaticPointsAndDialogs {...WithStaticPointsAndDialogs.args} />);
       const chart = await findChart();
       expect(chart).toBeInTheDocument();
@@ -374,11 +358,13 @@ describe('Line', () => {
       const point = await findMarksByGroupName(chart, 'line0_point_select');
       expect(point).toBeInTheDocument();
 
-      expect(point.getAttribute('fill')).toBeNull();
+      expect(point.getAttribute('fill')).toEqual('white');
       expect(point.getAttribute('stroke')).toEqual('#5424DB'); // S2 categorical-100
       expect(point.getAttribute('stroke-opacity')).toBeNull();
       expect(point.getAttribute('stroke-width')).toEqual('2');
     });
+
+
   });
 
   describe('onClick callback', () => {

@@ -252,6 +252,7 @@ export const getLineHoverMarks = (
     getHoverRule(dimension, name, scaleType),
     // point behind the hovered or selected point used to prevent bacgorund elements from being visible through low opacity point
     getHighlightBackgroundPoint(lineOptions),
+    // if has popover, add selection point
     ...(hasPopover(lineOptions) ? [getSelectionPoint(lineOptions)] : []),
     // hover or select point
     getHighlightPoint(lineOptions),
