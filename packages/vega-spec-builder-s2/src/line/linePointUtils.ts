@@ -9,12 +9,10 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { ColorValueRef, NumericValueRef, SymbolMark } from 'vega';
+import { SymbolMark } from 'vega';
 
 import {
   BACKGROUND_COLOR,
-  SELECTED_GROUP,
-  SELECTED_ITEM,
 } from '@spectrum-charts/constants';
 
 import {
@@ -24,10 +22,6 @@ import {
 import { LineSpecOptions } from '../types';
 import { getLineYEncoding } from './lineMarkUtils';
 import { LineMarkOptions } from './lineUtils';
-
-const staticPointTest = (staticPoint: string) => `datum.${staticPoint} && datum.${staticPoint} === true`;
-const getSelectedTest = (name: string, idKey: string) =>
-  `(${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${idKey}) || (${SELECTED_GROUP} && ${SELECTED_GROUP} === datum.${name}_selectedGroupId)`;
 
 /**
  * Gets the point mark for static points on a line chart.
